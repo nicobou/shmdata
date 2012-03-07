@@ -1,22 +1,32 @@
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
-#include <pcl/visualization/cloud_viewer.h>
-#include <pcl/compression/octree_pointcloud_compression.h>
+/*
+ * Copyright (C) 2012 Nicolas Bouillot (http://www.nicolasbouillot.net)
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
 
-#include <stdio.h>
-#include <iostream>
-#include <sstream>
-#include <stdlib.h>
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include <gst/gst.h>
 #include <gst/app/gstappsrc.h>
 #include <gst/app/gstappbuffer.h>
 #include <gst/app/gstappsink.h>
-#include "shmdata.h"
 
-#ifdef WIN32
-# define sleep(x) Sleep((x)*1000)
-#endif
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+#include <string>
+#include "shmdata.h"
 
 typedef struct _App App;
 struct _App
@@ -24,46 +34,29 @@ struct _App
     GstElement *pipe;
     GstElement *funnel;
     GstElement *sink;
-    pcl::visualization::CloudViewer *viewer;
-    pcl::octree::PointCloudCompression<pcl::PointXYZRGB> *PointCloudDecoder;
 };
- 
+
 App s_app;
-
-
-
-
 
 static void
 on_new_buffer_from_source (GstElement * elt, gpointer user_data)
 {
+    g_print ("on_new_buffer_from_source \n");
     GstBuffer *buf;
     
     /* pull the next item, this can return NULL when there is no more data and
      * EOS has been received */
     buf = gst_app_sink_pull_buffer (GST_APP_SINK (s_app.sink));
 
-    // g_print ("retrieved buffer %p, data %p, data size %d, timestamp %d, caps %s\n", buf, 
-    // 	    GST_BUFFER_DATA(buf), GST_BUFFER_SIZE(buf),
-    // 	    GST_TIME_AS_MSECONDS(GST_BUFFER_TIMESTAMP(buf)),
-    // 	    gst_caps_to_string(GST_BUFFER_CAPS(buf)));
+    g_print ("retrieved buffer %p, data %p, data size %d, timestamp %d, caps %s\n", buf, 
+	    GST_BUFFER_DATA(buf), GST_BUFFER_SIZE(buf),
+	    GST_TIME_AS_MSECONDS(GST_BUFFER_TIMESTAMP(buf)),
+	    gst_caps_to_string(GST_BUFFER_CAPS(buf)));
     //g_print ("received: %s\n",GST_BUFFER_DATA(buf));
-  
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudOut (new pcl::PointCloud<pcl::PointXYZRGB> ());
-    // // stringstream to store compressed point cloud
-     std::stringstream compressedData;
-     compressedData.write ((const char *)GST_BUFFER_DATA(buf),GST_BUFFER_SIZE(buf));
-    // // decompress point cloud
-
-     s_app.PointCloudDecoder->decodePointCloud (compressedData, cloudOut);
-    // // show decompressed point cloud
-     s_app.viewer->showCloud (cloudOut);
     
     if (buf)
 	gst_buffer_unref (buf);
 }
-
-
 
 
 void
@@ -93,23 +86,18 @@ void
 leave(int sig) {
     gst_element_set_state (s_app.pipe, GST_STATE_NULL);
     gst_object_unref (GST_OBJECT (s_app.pipe));
-    // delete point cloud compression instances
-    delete (s_app.PointCloudDecoder);
     exit(sig);
 }
 
 
-int
-main (int argc, char** argv)
-{
 
+int
+main (int argc, char *argv[])
+{
     GMainLoop *loop;
     
     (void) signal(SIGINT,leave);
     
-    s_app.PointCloudDecoder = new pcl::octree::PointCloudCompression<pcl::PointXYZRGB> ();
-    s_app.viewer = new pcl::visualization::CloudViewer ("Compressed Point Cloud receiver");
-
     std::string socketName;
     gst_init (&argc, &argv);
     loop = g_main_loop_new (NULL, FALSE);
@@ -124,13 +112,12 @@ main (int argc, char** argv)
     g_assert (s_app.pipe);
     
     gst_element_set_state (s_app.pipe, GST_STATE_PLAYING);
-
     
     shmdata::Reader *reader;
     reader = new shmdata::Reader (socketName, &on_first_video_data,NULL);
     
-
     g_main_loop_run (loop);
-
+    
     return 0;
 }
+
