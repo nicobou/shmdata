@@ -1,5 +1,3 @@
-# Process this file with autoconf to produce a configure script.
-
 AC_PREREQ([2.61])
 AC_INIT(libshmdata, [0.1.0], [http://github.com/sat-metalab/libshmdata/issues], [libshmdata], [http://github.com/sat-metalab/libshmdata])
 AC_CONFIG_MACRO_DIR([m4])
@@ -75,6 +73,8 @@ fi
 #CXXFLAGS+=" -g3 -ggdb -Wall -Wextra -Wfatal-errors"
 CXXFLAGS+=" -Wall "
 
+
+# -- ( mandatory libraries) --
 #Trying to set GST_CFLAGS GST_LIBS using pkg-config
 PKG_CHECK_MODULES(GST, gstreamer-0.10, have_gstreamer=true, have_gstreamer=false)
 if test "x${have_gstreamer}" = "xfalse" ; then
@@ -93,43 +93,45 @@ if test "x${have_gio}" = "xfalse" ; then
     AC_MSG_ERROR([missing package:  gio-2.0  ])
 fi
 
-#(clutter example) Trying to set CLUTTER using pkg-config
+# -- (clutter example) -- 
+#Trying to set CLUTTER using pkg-config
 PKG_CHECK_MODULES(CLUTTER, clutter-1.0, have_clutter=true, have_clutter=false)
 if test "x${have_clutter}" = "xfalse" ; then
-    AC_MSG_ERROR([missing package:  clutter-1.0  ])
+    AC_MSG_WARN([missing package:  clutter-1.0  ])
 fi
 
-#(clutter example) Trying to set GLEW using pkg-config
+#Trying to set GLEW using pkg-config
 PKG_CHECK_MODULES(GLEW, glew, have_glew=true, have_glew=false)
 if test "x${have_glew}" = "xfalse" ; then
-    AC_MSG_ERROR([missing package:  glew  ])
+    AC_MSG_WARN([***** missing optional package:  libglew headers ***** ])
+    AM_CONDITIONAL(BUILD_CLUTTER_EXAMPLE, false)
+else
+    if test "x${have_clutter}" = "xtrue" ; then
+        AM_CONDITIONAL(BUILD_CLUTTER_EXAMPLE, true)
+    else
+        AM_CONDITIONAL(BUILD_CLUTTER_EXAMPLE, false)
+    fi
 fi
 
-#(openscenegraph example) Trying to set OPENSCENEGRAPH using pkg-config
+# -- (openscenegraph example) --
+# Trying to set OPENSCENEGRAPH using pkg-config
 PKG_CHECK_MODULES(OPENSCENEGRAPH, openscenegraph, have_openscenegraph=true, have_openscenegraph=false)
 if test "x${have_openscenegraph}" = "xfalse" ; then
-    AC_MSG_ERROR([missing package:  openscenegraph  ])
+    AC_MSG_WARN([***** missing optional package:  openscenegraph ***** ])
+    AM_CONDITIONAL(HAVE_OPENSCENEGRAPH, false)
+else
+    AM_CONDITIONAL(HAVE_OPENSCENEGRAPH, true)
 fi
 
-#(point cloud library example) Trying to set PCL using pkg-config
+# -- (point cloud library example) --
+# Trying to set PCL using pkg-config
 PKG_CHECK_MODULES(PCL, pcl_visualization-1.4, have_pcl=true, have_pcl=false)
 if test "x${have_pcl}" = "xfalse" ; then
-    AC_MSG_ERROR([missing package:  pcl_visualization-1.4  ])
+    AC_MSG_WARN([***** missing optional package:  pcl_visualization-1.4 ***** ])
+    AM_CONDITIONAL(HAVE_PCL, false)
+else
+    AM_CONDITIONAL(HAVE_PCL, true)
 fi
-
-
-
-# GNU help2man creates man pages from --help output; in many cases, this
-# is sufficient, and obviates the need to maintain man pages separately.
-# However, this means invoking executables, which we generally cannot do
-# when cross-compiling, so we test to avoid that (the variable
-# "cross_compiling" is set by AC_PROG_CC).
-dnl (not used right now)
-dnl if test $cross_compiling = no; then
-dnl     AM_MISSING_PROG(HELP2MAN, help2man)
-dnl else
-dnl     HELP2MAN=:
-dnl fi
 
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
@@ -137,6 +139,7 @@ AC_CONFIG_FILES([
         Makefile 
         shmdata/Makefile
         examples/Makefile
+        doxyfile
         libshmdata-${LIBSHMDATA_API_VERSION}.pc:libshmdata.pc.in
         ])
 

@@ -2,17 +2,29 @@ AM_CXXFLAGS = -I$(top_srcdir)/shmdata/ $(GST_CFLAGS) $(GIO_CFLAGS)
 LDADD = $(GST_LIBS) $(GIO_LIBS) $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la 
 
 bin_PROGRAMS = \
-    clutter_reader \
     data_reader \
     data_reader_from_rtp \
     data_reader_to_rtp \
     data_writer \
     data_writer_from_rtp \
-    osg_reader \
-    pcd_reader \
-    pcd_writer \
     video_reader \
     video_writer
+
+if BUILD_CLUTTER_EXAMPLE 
+       bin_PROGRAMS += \
+           clutter_reader
+endif
+
+if HAVE_OPENSCENEGRAPH
+    bin_PROGRAMS += \
+        osg_reader
+endif
+
+if HAVE_PCL
+    bin_PROGRAMS += \
+        pcd_reader \
+        pcd_writer 
+endif
 
 clutter_reader_CPPFLAGS = $(CLUTTER_CFLAGS) $(GLEW_CFLAGS)
 clutter_reader_LDADD = $(LDADD) $(CLUTTER_LIBS) $(GLEW_LIBS)

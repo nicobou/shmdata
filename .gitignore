@@ -39,3 +39,6 @@ shmdata/.deps/
 shmdata/.libs/
 shmdata/Makefile
 stamp-h1
+doxyfile
+doxyfile.stamp
+html/
