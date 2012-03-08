@@ -12,21 +12,21 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "shmdata.h"
+#include "writer.h"
+
+#define G_LOG_DOMAIN "shmdata"
 
 namespace shmdata 
 { 
-    Writer::Writer ()
-    {}
-    
-    Writer::Writer (GstElement *pipeline,GstElement *srcElement,const std::string socketPath) : pipeline_ (pipeline), timereset_ (FALSE), timeshift_ (0)
+   
+    Writer::Writer (const std::string socketPath,GstElement *pipeline,GstElement *srcElement) : pipeline_ (pipeline), timereset_ (FALSE), timeshift_ (0)
     {
 	make_shm_branch (socketPath);
 	link_branch (srcElement);
 	set_branch_state_as_pipeline ();
     }
 
-    Writer::Writer (GstElement *pipeline,GstPad *srcPad,const std::string socketPath) : pipeline_ (pipeline), timereset_ (FALSE), timeshift_ (0)
+    Writer::Writer (const std::string socketPath,GstElement *pipeline,GstPad *srcPad) : pipeline_ (pipeline), timereset_ (FALSE), timeshift_ (0)
     {
 	make_shm_branch (socketPath);
 	link_branch (srcPad);	
@@ -35,7 +35,6 @@ namespace shmdata
     
 
     Writer::~Writer (){
-   
 	//todo (maybe remove from pipeline and set states to NULL)
     }
 
@@ -53,7 +52,6 @@ namespace shmdata
 	GstPadLinkReturn lres = gst_pad_link (srcPad, sinkPad);
 	g_assert (lres == GST_PAD_LINK_OK);
 	gst_object_unref (sinkPad);
-
 	gst_element_link_many (qserial_, serializer_, shmsink_,NULL);
     }
 

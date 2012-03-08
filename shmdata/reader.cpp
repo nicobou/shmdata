@@ -12,12 +12,12 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "shmdata.h"
+#include "reader.h"
+
+#define G_LOG_DOMAIN "shmdata"
 
 namespace shmdata 
 { 
-    Reader::Reader ()
-    {}
 
     Reader::Reader (const std::string socketName, void(*on_first_video_data)(Reader *, void *),void *user_data) 	
     {
@@ -26,12 +26,15 @@ namespace shmdata
 	userData_ = user_data;
 	socketName_.append(socketName);
 
+	g_log_set_handler ("shmdata", 
+	 		   (GLogLevelFlags) (G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION), 
+	 		   shmdata_log_handler, 
+	 		   static_cast<void *>(this));
+	
         //monitoring the shared memory file
 	shmfile_ = g_file_new_for_commandline_arg (socketName_.c_str());
-	if (shmfile_ == NULL) {
-	    g_printerr ("argument not valid. \n");
-	}
-	
+	g_debug("shmdata::reader -> monitoring %s\n",g_file_get_uri (shmfile_));
+		
 	if (g_file_query_exists (shmfile_,NULL)){
 	    initialized_ = TRUE;
 	    on_first_video_data_ (this,userData_);
@@ -56,6 +59,7 @@ namespace shmdata
     }
     
     Reader::~Reader (){
+	//todo
 	g_object_unref(shmfile_);
 	g_object_unref(dirMonitor_);
     }
@@ -68,7 +72,7 @@ namespace shmdata
 	source_       = gst_element_factory_make ("shmsrc",  NULL);
 	deserializer_ = gst_element_factory_make ("gdpdepay",  NULL);   
 	if ( !source_ || !deserializer_ ) {
-	    g_printerr ("One element could not be created. Exiting.\n");
+	    g_critical ("One element could not be created. Exiting.\n");
 	}
 	g_object_set (G_OBJECT (source_), "socket-path", socketName_.c_str(), NULL);
 	
@@ -111,9 +115,6 @@ namespace shmdata
     GstBusSyncReply Reader::message_handler (GstBus *bus, GstMessage *msg, gpointer user_data)
     {
 	switch (GST_MESSAGE_TYPE (msg)) {
-	case GST_MESSAGE_EOS:
-	    g_print ("End of stream\n");
-	    break;
 	case GST_MESSAGE_ERROR: {
 	    gchar  *debug;
 	    GError *error;
@@ -178,6 +179,15 @@ namespace shmdata
 	    break;
 	}
 	g_free (filename);
+    }
+
+    void
+    Reader::shmdata_log_handler (const gchar *log_domain,
+				 GLogLevelFlags log_level,
+				 const gchar *message,
+				 gpointer user_data)
+    {
+	g_print ("log handler received: %s\n",message);
     }
 
 } //end namespace  shmdata

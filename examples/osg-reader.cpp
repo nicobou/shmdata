@@ -29,7 +29,7 @@
 #include <osgViewer/Viewer>
 
 #include <gst/gst.h>
-#include "shmdata.h"
+#include "shmdata/reader.h"
 #include <gst/app/gstappsink.h>
 
 // #include <string.h> //memcpy

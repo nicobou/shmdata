@@ -17,7 +17,7 @@
 #include <math.h>
 #include <gst/gst.h>
 #include <gst/app/gstappsink.h>
-#include "shmdata.h"
+#include "shmdata/writer.h"
 
 /*
  * A simple RTP receiver 
@@ -129,14 +129,14 @@ App app;
    /* add depayloading and playback to the pipeline and link */
    gst_bin_add (GST_BIN (app->pipeline), gstdepay);
    
-    sinkpad = gst_element_get_static_pad (gstdepay, "sink");
-    g_assert (sinkpad);
-
-    lres = gst_pad_link (new_pad, sinkpad);
-    g_assert (lres == GST_PAD_LINK_OK);
-    gst_object_unref (sinkpad);
-
-    app->writer = new shmdata::Writer (app->pipeline,gstdepay,app->socketName);
+   sinkpad = gst_element_get_static_pad (gstdepay, "sink");
+   g_assert (sinkpad);
+   
+   lres = gst_pad_link (new_pad, sinkpad);
+   g_assert (lres == GST_PAD_LINK_OK);
+   gst_object_unref (sinkpad);
+   
+   app->writer = new shmdata::Writer (app->socketName,app->pipeline,gstdepay);
  }
 
 

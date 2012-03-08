@@ -26,7 +26,7 @@
 #include <stdlib.h>
 
 #include <string>
-#include "shmdata.h"
+#include "shmdata/reader.h"
 
 typedef struct _App App;
 struct _App

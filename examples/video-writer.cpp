@@ -15,7 +15,7 @@
 #include <gst/gst.h>
 #include <signal.h>
 #include <string>
-#include "shmdata.h"
+#include "shmdata/writer.h"
 
 
 GstElement *pipeline;
@@ -45,7 +45,7 @@ leave(int sig) {
 static gboolean  
 add_shared_video_writer()
 {
-    writer = new shmdata::Writer (pipeline,tee,socketName);
+    writer = new shmdata::Writer (socketName,pipeline,tee);
     g_print ("Now writing to the shared memory\n");
     return FALSE;
 }

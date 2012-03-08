@@ -26,7 +26,7 @@
 #include <gst/app/gstappsrc.h>
 #include <gst/app/gstappbuffer.h>
 #include <gst/app/gstappsink.h>
-#include "shmdata.h"
+#include "shmdata/reader.h"
 
 #ifdef WIN32
 # define sleep(x) Sleep((x)*1000)

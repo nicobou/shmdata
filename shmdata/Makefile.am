@@ -16,8 +16,8 @@ lib_LTLIBRARIES = libshmdata-@LIBSHMDATA_API_VERSION@.la
 
 ## PLEASE KEEP THEM IN ALPHABETICAL ORDER
 libshmdata_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
-    shmdata-reader.cpp \
-    shmdata-writer.cpp
+    reader.cpp \
+    writer.cpp
 
 ## Instruct libtool to include ABI version information in the generated shared
 ## library file (.so).  The library ABI version is defined in configure.ac, so
@@ -27,5 +27,6 @@ libshmdata_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = $(GST_LIBS) $(GIO_LIBS) -export
 libshmdata_@LIBSHMDATA_API_VERSION@_la_includedir = $(includedir)/shmdata-$(LIBSHMDATA_API_VERSION)/shmdata
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
-    shmdata.h
+    reader.h \
+    writer.h
 

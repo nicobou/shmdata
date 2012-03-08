@@ -15,7 +15,7 @@
 #include <gst/gst.h>
 #include <signal.h>
 #include <string>
-#include "shmdata.h"
+#include "shmdata/reader.h"
 
 GstElement *pipeline;
 GstElement *shmDisplay;

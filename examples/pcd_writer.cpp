@@ -29,7 +29,7 @@
 #include <gst/gst.h>
 #include <gst/app/gstappsrc.h>
 #include <gst/app/gstappbuffer.h>
-#include "shmdata.h"
+#include "shmdata/writer.h"
 
 
 #ifdef WIN32
@@ -94,7 +94,7 @@ main (int argc, char** argv)
     g_assert (app->id);
     gst_bin_add (GST_BIN (app->pipe), app->id);
 
-    app->writer = new shmdata::Writer (app->pipe,app->id,socketName);
+    app->writer = new shmdata::Writer (socketName,app->pipe,app->id);
     gst_element_link (app->src, app->id);
 
     app->on = true;

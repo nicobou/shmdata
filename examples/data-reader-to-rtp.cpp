@@ -21,7 +21,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "shmdata.h"
+#include "shmdata/reader.h"
 
 
 GstElement *pipeline;

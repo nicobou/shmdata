@@ -27,7 +27,7 @@
 #endif
 #include <gst/gst.h>
 
-#include "shmdata.h"
+#include "shmdata/reader.h"
 
 /* This example shows how to use textures that come from a
  * gst-plugins-gl pipeline, into the clutter framework
