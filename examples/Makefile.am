@@ -10,7 +10,7 @@ LDADD = \
     $(GIO_LIBS) \
     $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la 
 
-NOINST_bin_PROGRAMS = \
+noinst_PROGRAMS = \
     data_reader \
     data_reader_from_rtp \
     data_reader_to_rtp \
@@ -20,17 +20,17 @@ NOINST_bin_PROGRAMS = \
     video_writer
 
 if BUILD_CLUTTER_EXAMPLE 
-       bin_PROGRAMS += \
+       noinst_PROGRAMS += \
            clutter_reader
 endif
 
 if HAVE_OPENSCENEGRAPH
-    bin_PROGRAMS += \
+    noinst_PROGRAMS += \
         osg_reader
 endif
 
 if HAVE_PCL
-    bin_PROGRAMS += \
+    noinst_PROGRAMS += \
         pcd_reader \
         pcd_writer 
 endif
@@ -71,3 +71,4 @@ pcd_writer_SOURCES = pcd_reader.cpp
 
 video_reader_SOURCES = video-reader.c
 video_writer_SOURCES = video-writer.c
+
