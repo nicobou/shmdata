@@ -12,9 +12,10 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "reader.h"
+#include "shmdata/reader.h"
+#include "shmdata/exception.h"
 
-#define G_LOG_DOMAIN "shmdata"
+#define G_LOG_DOMAIN "shmdata/reader"
 
 namespace shmdata 
 { 
@@ -26,14 +27,14 @@ namespace shmdata
 	userData_ = user_data;
 	socketName_.append(socketName);
 
-	g_log_set_handler ("shmdata", 
+	g_log_set_handler (G_LOG_DOMAIN, 
 	 		   (GLogLevelFlags) (G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION), 
 	 		   shmdata_log_handler, 
 	 		   static_cast<void *>(this));
 	
         //monitoring the shared memory file
 	shmfile_ = g_file_new_for_commandline_arg (socketName_.c_str());
-	g_debug("shmdata::reader -> monitoring %s\n",g_file_get_uri (shmfile_));
+	g_debug("monitoring %s",g_file_get_uri (shmfile_));
 		
 	if (g_file_query_exists (shmfile_,NULL)){
 	    initialized_ = TRUE;
@@ -74,6 +75,9 @@ namespace shmdata
 	if ( !source_ || !deserializer_ ) {
 	    g_critical ("One element could not be created. Exiting.\n");
 	}
+
+	g_critical ("tada \n");
+
 	g_object_set (G_OBJECT (source_), "socket-path", socketName_.c_str(), NULL);
 	
 	gst_bin_add_many (GST_BIN (pipeline_),
@@ -187,7 +191,8 @@ namespace shmdata
 				 const gchar *message,
 				 gpointer user_data)
     {
-	g_print ("log handler received: %s\n",message);
+	throw (BaseException(message));
+	       //g_print ("log handler received: %s, level %d, domain %s, object: %p\n",message,log_level,log_domain,user_data);
     }
 
 } //end namespace  shmdata
