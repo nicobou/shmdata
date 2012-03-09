@@ -29,12 +29,10 @@
 #include <osgViewer/Viewer>
 
 #include <gst/gst.h>
-#include "shmdata/reader.h"
-#include <gst/app/gstappsink.h>
 
-// #include <string.h> //memcpy
-// gpointer raw_buffer=NULL;
-// int raw_buffer_size=0;
+#include "shmdata/reader.h"
+
+#include <gst/app/gstappsink.h>
 
 GstBuffer *last_buffer_ = NULL;
 
@@ -148,7 +146,7 @@ on_new_buffer_from_source (GstElement * elt, gpointer user_data)
 
 
 void
-on_first_video_data (shmdata::Reader *context, void *user_data)
+on_first_video_data (shmdata_reader_t *context, void *user_data)
 {
 
     osg::Texture2D* texture = (osg::Texture2D*) user_data;
@@ -183,7 +181,7 @@ on_first_video_data (shmdata::Reader *context, void *user_data)
     gst_element_link_many (funnel, videoConv, shmDisplay,NULL);
     
     //now tells the shared video reader where to write the data
-    context->setSink (pipeline, funnel);
+    shmdata_reader_set_sink (context,pipeline, funnel);
 }
 
 
@@ -215,8 +213,8 @@ sharedVideoRead (gpointer user_data)
     //   }
     //  gst_bin_add_many (GST_BIN (pipeline), localVideoSource, localDisplay, NULL);
     //   gst_element_link (localVideoSource, localDisplay);
-    
-    /*shmdata::Reader *reader =*/ new shmdata::Reader ("/tmp/rt", &on_first_video_data,texture);
+    const char *socketName = "/tmp/rt";
+    shmdata_reader_init (socketName, &on_first_video_data,texture);
     
 //    gst_element_set_state (pipeline, GST_STATE_PLAYING);
     

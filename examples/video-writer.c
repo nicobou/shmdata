@@ -14,7 +14,6 @@
 
 #include <gst/gst.h>
 #include <signal.h>
-#include <string>
 #include "shmdata/writer.h"
 
 
@@ -26,8 +25,8 @@ GstElement *imgsink;
 GstElement *timeoverlay;
 GstElement *camsource;
 
-std::string socketName;
-shmdata::Writer *writer;
+const char * socketName;
+shmdata_writer_t *writer;
 
 //clean up pipeline when ctrl-c
 void
@@ -45,7 +44,7 @@ leave(int sig) {
 static gboolean  
 add_shared_video_writer()
 {
-    writer = new shmdata::Writer (socketName,pipeline,tee);
+    writer = shmdata_writer_init (socketName,pipeline,tee);
     g_print ("Now writing to the shared memory\n");
     return FALSE;
 }
@@ -64,7 +63,7 @@ main (int   argc,
 	g_printerr ("Usage: %s <socket-path>\n", argv[0]);
 	return -1;
     }
-    socketName.append (argv[1]);
+    socketName = argv[1];
 
 
     /* Create gstreamer elements */

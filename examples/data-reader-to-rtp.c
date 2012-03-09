@@ -116,7 +116,7 @@ leave(int sig) {
 
 // ---- data ready ----------------------------
 void
-on_first_video_data (shmdata::Reader *context, void *user_data)
+on_first_video_data (shmdata_reader_t *context, void *user_data)
 {
   GstElement *gstpay;
   GstElement *rtpbin, *rtpsink, *rtcpsink, *rtcpsrc;
@@ -138,7 +138,7 @@ on_first_video_data (shmdata::Reader *context, void *user_data)
 
   gst_element_link (funnel,gstpay);
   
-  context->setSink (pipeline,funnel); 
+  shmdata_reader_set_sink (context,pipeline,funnel); 
   //gstpay);
 
   /* the rtpbin element */
@@ -224,20 +224,20 @@ main (int argc, char *argv[])
   /* always init first */
   gst_init (&argc, &argv);
 
-  std::string socketName;
+  const char* socketName;
   if (argc != 2) {
       g_printerr ("Usage: %s <socket-path>\n", argv[0]);
       return -1;
   }
-  socketName.append (argv[1]);
+  socketName = argv[1];
   
   
   /* the pipeline to hold everything */
   pipeline = gst_pipeline_new (NULL);
   g_assert (pipeline);
 
-  shmdata::Reader *reader;
-  reader = new shmdata::Reader (socketName, &on_first_video_data,pipeline);
+  shmdata_reader_t *reader;
+  reader = shmdata_reader_init (socketName, &on_first_video_data,pipeline);
 
   /* we need to run a GLib main loop to get the messages */
   loop = g_main_loop_new (NULL, FALSE);

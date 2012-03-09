@@ -14,36 +14,28 @@
 
 #ifndef _SHM_DATA_WRITER_H_
 #define _SHM_DATA_WRITER_H_
-#include <string>
+
 #include <gst/gst.h>
 
-namespace shmdata
-{
-    class Writer {
-    public:
-	Writer (const std::string socketPath,GstElement *pipeline,GstElement *Element);
-	Writer (const std::string socketPath,GstElement *pipeline,GstPad *srcPad);
-	~Writer ();
-    private:
-	GstElement *qserial_;
-	GstElement *serializer_;
-	GstElement *shmsink_;
-	GstElement *pipeline_;
-	gboolean timereset_;
-	GstClockTime timeshift_;
-	void make_shm_branch(const std::string socketPath);
-	void set_branch_state_as_pipeline ();
-	void link_branch(GstElement *srcElement);
-	void link_branch(GstPad *srcPad);
-	static gboolean reset_time (GstPad * pad, GstMiniObject * mini_obj, gpointer user_data);
-	static void pad_unblocked (GstPad * pad, gboolean blocked, gpointer user_data);
-	static void switch_to_new_serializer (GstPad * pad, gboolean blocked, gpointer user_data );
-	static void on_client_connected (GstElement * shmsink, gint num, gpointer user_data); 
-	static void shmdata_log_handler (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data);
+typedef struct shmdata_writer_ shmdata_writer_t;
+struct shmdata_writer_ {
+    GstElement *qserial_;
+    GstElement *serializer_;
+    GstElement *shmsink_;
+    GstElement *pipeline_;
+    gboolean timereset_;
+    GstClockTime timeshift_;
+};
 
-    };
+shmdata_writer_t *shmdata_writer_init (const char *socketPath,
+				       GstElement *pipeline,
+				       GstElement *Element);
 
+shmdata_writer_t *shmdata_writer_init_pad (const char *socketPath,
+					   GstElement *pipeline,
+					   GstPad *srcPad);
 
-}      //end namespace  shmdata
+gboolean shmdata_writer_close (shmdata_writer_t *writer);
+
 #endif //_SHM_DATA_WRITER_H_
 

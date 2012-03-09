@@ -24,9 +24,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-
 #include <unistd.h>//sleep
-#include <string>
 #include "shmdata/writer.h"
 
 typedef struct _App App;
@@ -36,19 +34,17 @@ struct _App
     GstElement *src;
     GstElement *id;
     gboolean on;
-    shmdata::Writer *writer;
+    shmdata_writer_t *writer;
 };
 
 App s_app;
-
-
 
 static void dont_eat_my_chicken_wings (void *priv);
 
 //clean up pipeline when ctrl-c
 void
 leave(int sig) {
-    s_app.on = false;
+    s_app.on = FALSE;
     gst_element_set_state (s_app.pipe, GST_STATE_NULL);
     gst_object_unref (GST_OBJECT (s_app.pipe));
     exit(sig);
@@ -63,14 +59,14 @@ main (int argc, char *argv[])
 
     (void) signal(SIGINT,leave);
 
-    std::string socketName;
+    char *socketName;
 
     /* Check input arguments */
     if (argc != 2) {
 	g_printerr ("Usage: %s <socket-path>\n", argv[0]);
 	return -1;
     }
-    socketName.append (argv[1]);
+    socketName = argv[1];
     
     gst_init (&argc, &argv);
 
@@ -89,10 +85,10 @@ main (int argc, char *argv[])
     g_assert (app->id);
     gst_bin_add (GST_BIN (app->pipe), app->id);
 
-    app->writer = new shmdata::Writer (socketName,app->pipe,app->id);
+    app->writer = shmdata_writer_init (socketName,app->pipe,app->id);
     gst_element_link (app->src, app->id);
 
-    app->on = true;
+    app->on = TRUE;
     gst_element_set_state (app->pipe, GST_STATE_PLAYING);
 
     int mytime=0;

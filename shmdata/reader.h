@@ -14,48 +14,40 @@
 
 #ifndef _SHM_DATA_READER_H_
 #define _SHM_DATA_READER_H_
-#include <string>
+
 #include <gst/gst.h>
 #include <gio/gio.h>
 
-namespace shmdata
-{
-   class Reader {
-   public:
-       Reader (const std::string socketPath, void(*on_first_video_data)( Reader *, void *), void *user_data);
-       //Reader ();
-       ~Reader ();
-       //where to push the video data
-       void setSink (GstElement *Pipeline, GstElement *sink); 
-   private:
-       //pipeline elements
-       GstElement *pipeline_;
-       GstElement *source_;
-       GstElement *deserializer_;
-       GstElement *sink_;
-       GstPad *sinkPad_;
-       GstPad *deserialPad_;
-       //monitoring the shm file
-       GFile *shmfile_; 
-       GFileMonitor* dirMonitor_;
-       std::string socketName_;
-       //user callback
-       void (*on_first_video_data_)(Reader *,void *);
-       void* userData_;
-       //state boolean
-       gboolean initialized_; //the shared video has been attached once
-       //dynamic linking
-       void attach ();
-       void detach ();
-       //gcallbacks
-       static gboolean clean_source (gpointer user_data);
-       static GstBusSyncReply message_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
-       static void file_system_monitor_change (GFileMonitor *monitor, GFile *file, GFile *other_file, GFileMonitorEvent type, gpointer user_data);
-       //log
-       static void shmdata_log_handler (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data);
+typedef struct shmdata_reader_ shmdata_reader_t;
+struct shmdata_reader_ {
+    //pipeline elements
+    GstElement *pipeline_;
+    GstElement *source_;
+    GstElement *deserializer_;
+    GstElement *sink_;
+    GstPad *sinkPad_;
+    GstPad *deserialPad_;
+    //monitoring the shm file
+    GFile *shmfile_; 
+    GFileMonitor* dirMonitor_;
+    const char *socketName_;
+    //user callback
+    void (*on_first_video_data_)(shmdata_reader_t *,void *);
+    void* userData_;
+    //state boolean
+    gboolean initialized_; //the shared video has been attached once
+};
 
-   };
+shmdata_reader_t *shmdata_reader_init (const char *socketPath, 
+				       void(*on_first_video_data)(shmdata_reader_t *, void *), 
+				       void *user_data);
 
-}      //end namespace  shmdata
+gboolean shmdata_reader_close(shmdata_reader_t *reader);
+
+//where to push the video data
+void shmdata_reader_set_sink (shmdata_reader_t *reader,
+			      GstElement *Pipeline, 
+			      GstElement *sink); 
+
 #endif //_SHM_DATA_READER_H_
 

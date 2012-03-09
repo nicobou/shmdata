@@ -45,7 +45,7 @@ struct _App
     GstElement *src;
     GstElement *id;
     gboolean on;
-    shmdata::Writer *writer;
+    shmdata_writer_t *writer;
 };
 
 App s_app;
@@ -94,7 +94,7 @@ main (int argc, char** argv)
     g_assert (app->id);
     gst_bin_add (GST_BIN (app->pipe), app->id);
 
-    app->writer = new shmdata::Writer (socketName,app->pipe,app->id);
+    app->writer = shmdata_writer_init (socketName.c_str(),app->pipe,app->id);
     gst_element_link (app->src, app->id);
 
     app->on = true;

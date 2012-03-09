@@ -69,8 +69,8 @@ ClutterActor *stage = NULL;
 ClutterTimeline *timeline = NULL;
 
 //sharedvideo
-std::string socketName;
-shmdata::Reader *reader;
+const char *socketName;
+shmdata_reader_t *reader;
 
 /* rotation */
 void
@@ -192,7 +192,7 @@ end_stream_cb (GstBus * bus, GstMessage * msg, gpointer data)
 }
 
 void
-on_first_video_data (shmdata::Reader *context, void *user_data)
+on_first_video_data (shmdata_reader_t *context, void *user_data)
 {
 
     /* texture actor */
@@ -262,7 +262,7 @@ on_first_video_data (shmdata::Reader *context, void *user_data)
 		      clutter_texture);
 
     //now tells the shared video reader where to write the data 
-    context->setSink (pipeline, funnel);
+    shmdata_reader_set_sink (context,pipeline, funnel);
   
     /* NULL to PAUSED state pipeline to make sure the gst opengl context is created and
      * shared with the clutter one */
@@ -298,7 +298,7 @@ main (int argc, char *argv[])
 	g_printerr ("Usage: %s <socket-path>\n", argv[0]);
 	return -1;
     }
-    socketName.append (argv[1]);
+    socketName = argv[1];
   
     /* init gstreamer then clutter */
 
@@ -359,7 +359,7 @@ main (int argc, char *argv[])
 
  
     //shared video creation
-    reader = new shmdata::Reader (socketName, &on_first_video_data,NULL);
+    reader = shmdata_reader_init (socketName, &on_first_video_data,NULL);
 
 
 
