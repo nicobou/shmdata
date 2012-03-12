@@ -64,7 +64,6 @@ main (int argc, char** argv)
 {
 
     App *app = &s_app;
-    int i;
 
     (void) signal(SIGINT,leave);
 

@@ -129,7 +129,7 @@ shmdata_reader_t *shmdata_reader_init (const char * socketName,
 				       void(*on_first_video_data)(shmdata_reader_t *, void *),
 				       void *user_data) 	
 {
-    shmdata_reader_t *reader = g_malloc0 (sizeof(shmdata_reader_t));
+    shmdata_reader_t *reader = (shmdata_reader_t *)g_malloc0 (sizeof(shmdata_reader_t));
     reader->initialized_ = FALSE;
     reader->on_first_video_data_ = on_first_video_data;
     reader->userData_ = user_data;

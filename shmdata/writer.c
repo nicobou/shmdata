@@ -18,33 +18,6 @@
 #define G_LOG_DOMAIN "shmdata"
 #endif 
   
-shmdata_writer_t *shmdata_writer_init (const char* socketPath, 
-				       GstElement *pipeline, 
-				       GstElement *srcElement) 
-{
-    shmdata_writer_t *writer = g_malloc0(sizeof(shmdata_writer_t));
-    writer->pipeline_ = pipeline;
-    writer->timereset_ = FALSE;
-    writer->timeshift_ = 0;
-    shmdata_writer_make_shm_branch (writer,socketPath);
-    shmdata_writer_link_branch (writer,srcElement);
-    shmdata_writer_set_branch_state_as_pipeline (writer);
-    return writer;    
-}
-
-shmdata_writer_t *shmdata_writer_init_pad (const char *socketPath,
-					   GstElement *pipeline,
-					   GstPad *srcPad)
-{
-    shmdata_writer_t *writer = g_malloc0(sizeof(shmdata_writer_t));
-    writer->pipeline_ = pipeline;
-    writer->timereset_ = FALSE;
-    writer->timeshift_ = 0;
-    shmdata_writer_make_shm_branch (socketPath);
-    shmdata_writer_link_branch_pad (srcPad);	
-    shmdata_writer_set_branch_state_as_pipeline ();
-    return writer;
-}
 
 
 gboolean shmdata_writer_close (shmdata_writer_t *writer){
@@ -226,3 +199,30 @@ void shmdata_writer_make_shm_branch(shmdata_writer_t *writer,
 
 
 
+shmdata_writer_t *shmdata_writer_init (const char* socketPath, 
+				       GstElement *pipeline, 
+				       GstElement *srcElement) 
+{
+    shmdata_writer_t *writer = (shmdata_writer_t *)g_malloc0(sizeof(shmdata_writer_t));
+    writer->pipeline_ = pipeline;
+    writer->timereset_ = FALSE;
+    writer->timeshift_ = 0;
+    shmdata_writer_make_shm_branch (writer,socketPath);
+    shmdata_writer_link_branch (writer,srcElement);
+    shmdata_writer_set_branch_state_as_pipeline (writer);
+    return writer;    
+}
+
+shmdata_writer_t *shmdata_writer_init_pad (const char *socketPath,
+					   GstElement *pipeline,
+					   GstPad *srcPad)
+{
+    shmdata_writer_t *writer = (shmdata_writer_t *)g_malloc0(sizeof(shmdata_writer_t));
+    writer->pipeline_ = pipeline;
+    writer->timereset_ = FALSE;
+    writer->timeshift_ = 0;
+    shmdata_writer_make_shm_branch (writer,socketPath);
+    shmdata_writer_link_branch_pad (writer,srcPad);	
+    shmdata_writer_set_branch_state_as_pipeline (writer);
+    return writer;
+}

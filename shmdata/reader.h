@@ -18,6 +18,10 @@
 #include <gst/gst.h>
 #include <gio/gio.h>
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 typedef struct shmdata_reader_ shmdata_reader_t;
 struct shmdata_reader_ {
     //pipeline elements
@@ -49,5 +53,9 @@ void shmdata_reader_set_sink (shmdata_reader_t *reader,
 			      GstElement *Pipeline, 
 			      GstElement *sink); 
 
+
+#ifdef __cplusplus
+}
+#endif /* extern "C" */
 #endif //_SHM_DATA_READER_H_
 

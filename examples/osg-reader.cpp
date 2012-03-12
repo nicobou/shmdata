@@ -177,7 +177,9 @@ on_first_video_data (shmdata_reader_t *context, void *user_data)
     gst_element_link_many (funnel, videoConv, shmDisplay,NULL);
     
     //now tells the shared video reader where to write the data
-    shmdata_reader_set_sink (context,pipeline, funnel);
+	shmdata_reader_set_sink (context,
+				 pipeline, 
+				 funnel);
 }
 
 

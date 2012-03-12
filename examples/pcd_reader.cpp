@@ -124,7 +124,7 @@ main (int argc, char** argv)
     s_app.PointCloudDecoder = new pcl::octree::PointCloudCompression<pcl::PointXYZRGB> ();
     s_app.viewer = new pcl::visualization::CloudViewer ("Compressed Point Cloud receiver");
 
-    std::string socketName;
+    const char *socketName;
     gst_init (&argc, &argv);
     loop = g_main_loop_new (NULL, FALSE);
     
@@ -132,7 +132,7 @@ main (int argc, char** argv)
 	g_printerr ("Usage: %s <socket-path>\n", argv[0]);
 	return -1;
     }
-    socketName.append (argv[1]);
+    socketName = argv[1];
     
     s_app.pipe = gst_pipeline_new (NULL);
     g_assert (s_app.pipe);
@@ -140,8 +140,9 @@ main (int argc, char** argv)
     gst_element_set_state (s_app.pipe, GST_STATE_PLAYING);
 
     
-    shmdata_reader_t *reader;
-    reader =  shmdata_reader_init(socketName, &on_first_video_data,NULL);
+    // shmdata_reader_t *reader;
+    // reader =
+	shmdata_reader_init(socketName, &on_first_video_data,NULL);
     
 
     g_main_loop_run (loop);

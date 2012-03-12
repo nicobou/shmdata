@@ -17,6 +17,10 @@
 
 #include <gst/gst.h>
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 typedef struct shmdata_writer_ shmdata_writer_t;
 struct shmdata_writer_ {
     GstElement *qserial_;
@@ -37,5 +41,8 @@ shmdata_writer_t *shmdata_writer_init_pad (const char *socketPath,
 
 gboolean shmdata_writer_close (shmdata_writer_t *writer);
 
+#ifdef __cplusplus
+}
+#endif /* extern "C" */
 #endif //_SHM_DATA_WRITER_H_
 
