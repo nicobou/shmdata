@@ -20,8 +20,8 @@ noinst_PROGRAMS = \
     video_writer
 
 if BUILD_CLUTTER_EXAMPLE 
-       noinst_PROGRAMS += \
-           clutter_reader
+    noinst_PROGRAMS += \
+        clutter_reader
 endif
 
 if HAVE_OPENSCENEGRAPH
@@ -52,7 +52,7 @@ data_reader_to_rtp_LDADD = $(LDADD) $(GSTAPP_LIBS)
 data_reader_to_rtp_SOURCES = data-reader-to-rtp.c
 
 data_writer_CPPFLAGS = $(GSTAPP_CFLAGS)
-data_writer_LDADD = $(LDADD) $(GSTAPP_LIBS)
+data_writer_LDADD = $(GSTAPP_LIBS) $(LDADD)
 data_writer_SOURCES = data-writer.c
 
 data_writer_from_rtp_SOURCES = data-writer-from-rtp.c
@@ -62,7 +62,7 @@ osg_reader_LDADD = $(LDADD) $(OPENSCENEGRAPH_LIBS) $(GSTAPP_LIBS)
 osg_reader_SOURCES = osg-reader.cpp
 
 pcd_reader_CPPFLAGS = $(PCL_CFLAGS) -I /usr/include/vtk-5.6/ $(GSTAPP_CFLAGS)
-pcd_reader_LDADD = $(LDADD) $(PCL_LIBS) $(GSTAPP_LIBS)
+pcd_reader_LDADD = $(PCL_LIBS) $(GSTAPP_LIBS) $(LDADD)
 pcd_reader_SOURCES = pcd_writer.cpp
 
 pcd_writer_CPPFLAGS = $(PCL_CFLAGS) -I /usr/include/vtk-5.6/ $(GSTAPP_CFLAGS)

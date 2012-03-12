@@ -55,7 +55,11 @@ gboolean shmdata_writer_close (shmdata_writer_t *writer){
 void shmdata_writer_link_branch(shmdata_writer_t *writer,
 			   GstElement *srcElement)
 {
-    gst_element_link_many (srcElement, writer->qserial_, writer->serializer_, writer->shmsink_,NULL);
+    gst_element_link_many (srcElement, 
+			   writer->qserial_, 
+			   writer->serializer_, 
+			   writer->shmsink_,
+			   NULL);
 }
 
 void shmdata_writer_link_branch_pad(shmdata_writer_t *writer,GstPad *srcPad)
@@ -65,7 +69,10 @@ void shmdata_writer_link_branch_pad(shmdata_writer_t *writer,GstPad *srcPad)
     GstPadLinkReturn lres = gst_pad_link (srcPad, sinkPad);
     g_assert (lres == GST_PAD_LINK_OK);
     gst_object_unref (sinkPad);
-    gst_element_link_many (writer->qserial_, writer->serializer_, writer->shmsink_,NULL);
+    gst_element_link_many (writer->qserial_, 
+			   writer->serializer_, 
+			   writer->shmsink_,
+			   NULL);
 }
 
 void shmdata_writer_set_branch_state_as_pipeline (shmdata_writer_t *writer)
@@ -95,7 +102,8 @@ gboolean shmdata_writer_reset_time (GstPad * pad,
 	    context->timeshift_=GST_BUFFER_TIMESTAMP(buffer);
 	    context->timereset_=FALSE;
 	}
-	GST_BUFFER_TIMESTAMP(buffer)=GST_BUFFER_TIMESTAMP(buffer) - context->timeshift_;
+	GST_BUFFER_TIMESTAMP(buffer)=
+	    GST_BUFFER_TIMESTAMP(buffer) - context->timeshift_;
     } 
     else if (GST_IS_MESSAGE (mini_obj)) {
     }
@@ -137,7 +145,8 @@ void shmdata_writer_switch_to_new_serializer (GstPad * pad,
     
     GstBin *bin=GST_BIN (GST_ELEMENT_PARENT(context->serializer_));
 
-    //supposed to be PLAYING, possible issue because of not taking care of pending state 
+    // supposed to be PLAYING, possible issue because of not taking care 
+    // of pending state 
     GstState current;
     gst_element_get_state (context->serializer_,&current,NULL,GST_CLOCK_TIME_NONE);
 

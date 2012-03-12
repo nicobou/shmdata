@@ -20,19 +20,15 @@
 #include <osg/DrawPixels>
 #include <osg/PolygonOffset>
 #include <osg/Geode>
-
 #include <osgDB/Registry>
 #include <osgDB/ReadFile>
-
 #include <osgText/Text>
-
 #include <osgViewer/Viewer>
 
 #include <gst/gst.h>
+#include <gst/app/gstappsink.h>
 
 #include "shmdata/reader.h"
-
-#include <gst/app/gstappsink.h>
 
 GstBuffer *last_buffer_ = NULL;
 
