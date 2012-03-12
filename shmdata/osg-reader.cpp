@@ -12,29 +12,6 @@
  * GNU Lesser General Public License for more details.
  */
 
-#ifndef _SHM_DATA_WRITER_H_
-#define _SHM_DATA_WRITER_H_
-
-#include <gst/gst.h>
-
-#ifdef __cplusplus
- extern "C" {
-#endif
-
-typedef struct shmdata_writer_ shmdata_writer_t;
-
-shmdata_writer_t *shmdata_writer_init (const char *socketPath,
-				       GstElement *pipeline,
-				       GstElement *Element);
-
-shmdata_writer_t *shmdata_writer_init_pad (const char *socketPath,
-					   GstElement *pipeline,
-					   GstPad *srcPad);
-
-gboolean shmdata_writer_close (shmdata_writer_t *writer);
-
-#ifdef __cplusplus
-}
-#endif /* extern "C" */
-#endif //_SHM_DATA_WRITER_H_
+#include "shmdata/reader.h"
+#include "shmdata/osg-reader.h"
 

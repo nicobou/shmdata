@@ -99,7 +99,7 @@ on_first_video_data (shmdata_reader_t *context, void *user_data)
     gst_element_link (s_app.funnel, s_app.sink);
 
     //now tells the shared data reader where to write the data
-    shmdata_reader_set_sink (context,s_app.pipe, s_app.funnel);
+    shmdata_reader_set_sink (context, s_app.funnel);
     
 }
 
@@ -142,7 +142,7 @@ main (int argc, char** argv)
     
     // shmdata_reader_t *reader;
     // reader =
-	shmdata_reader_init(socketName, &on_first_video_data,NULL);
+    shmdata_reader_init(socketName, s_app.pipe, &on_first_video_data,NULL);
     
 
     g_main_loop_run (loop);

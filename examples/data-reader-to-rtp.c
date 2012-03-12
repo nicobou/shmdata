@@ -138,7 +138,7 @@ on_first_video_data (shmdata_reader_t *context, void *user_data)
 
   gst_element_link (funnel,gstpay);
   
-  shmdata_reader_set_sink (context,pipeline,funnel); 
+  shmdata_reader_set_sink (context,funnel); 
   //gstpay);
 
   /* the rtpbin element */
@@ -237,7 +237,10 @@ main (int argc, char *argv[])
   g_assert (pipeline);
 
   shmdata_reader_t *reader;
-  reader = shmdata_reader_init (socketName, &on_first_video_data,pipeline);
+  reader = shmdata_reader_init (socketName, 
+				pipeline, 
+				&on_first_video_data, 
+				pipeline);
 
   /* we need to run a GLib main loop to get the messages */
   loop = g_main_loop_new (NULL, FALSE);

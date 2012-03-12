@@ -14,10 +14,15 @@
 
 #include "shmdata/writer.h"
 
-#ifndef G_LOG_DOMAIN
-#define G_LOG_DOMAIN "shmdata"
-#endif 
-  
+ 
+struct shmdata_writer_ {
+    GstElement *qserial_;
+    GstElement *serializer_;
+    GstElement *shmsink_;
+    GstElement *pipeline_;
+    gboolean timereset_;
+    GstClockTime timeshift_;
+};
 
 
 gboolean shmdata_writer_close (shmdata_writer_t *writer){
@@ -26,7 +31,7 @@ gboolean shmdata_writer_close (shmdata_writer_t *writer){
 }
 
 void shmdata_writer_link_branch(shmdata_writer_t *writer,
-			   GstElement *srcElement)
+				GstElement *srcElement)
 {
     gst_element_link_many (srcElement, 
 			   writer->qserial_, 
@@ -38,9 +43,11 @@ void shmdata_writer_link_branch(shmdata_writer_t *writer,
 void shmdata_writer_link_branch_pad(shmdata_writer_t *writer,GstPad *srcPad)
 {
     GstPad *sinkPad = gst_element_get_static_pad (writer->qserial_, "sink");
-    g_assert (sinkPad);
+    if (sinkPad) 
+	g_critical ("sinkPad");
     GstPadLinkReturn lres = gst_pad_link (srcPad, sinkPad);
-    g_assert (lres == GST_PAD_LINK_OK);
+    if (lres == GST_PAD_LINK_OK) 
+	g_critical ("lres == GST_PAD_LINK_OK");
     gst_object_unref (sinkPad);
     gst_element_link_many (writer->qserial_, 
 			   writer->serializer_, 
@@ -90,7 +97,7 @@ void shmdata_writer_pad_unblocked (GstPad * pad,
 {
     shmdata_writer_t *context = (shmdata_writer_t *) user_data;
     if(blocked)
-	g_printerr ("Error: pad not unblocked\n");
+	g_critical ("Error: pad not unblocked");
     else
 	context->timereset_=TRUE;
 }
@@ -106,12 +113,12 @@ void shmdata_writer_switch_to_new_serializer (GstPad * pad,
     GstPad *srcPad=gst_element_get_static_pad(context->serializer_,"src");
     GstPad *srcPadPeer=gst_pad_get_peer(srcPad);
     if (!gst_pad_unlink (srcPad,srcPadPeer))
-	g_printerr("Error: cannot unlink src\n");
+	g_critical ("Error: cannot unlink src");
 
     GstPad *sinkPad=gst_element_get_static_pad(context->serializer_,"sink");
     GstPad *sinkPadPeer=gst_pad_get_peer(sinkPad);
     if (!gst_pad_unlink (sinkPadPeer,sinkPad))
-	g_printerr("Error: cannot unlink sink\n");
+	g_critical ("Error: cannot unlink sink");
 
     gst_object_unref (srcPad);
     gst_object_unref (sinkPad);
@@ -131,7 +138,7 @@ void shmdata_writer_switch_to_new_serializer (GstPad * pad,
     //creating and linking the new serializer
     context->serializer_ = gst_element_factory_make ("gdppay",  NULL); 
     if(gst_element_set_state (context->serializer_, current) != GST_STATE_CHANGE_SUCCESS) 
-	g_printerr ("Error: issue changing newSerializer state\n"); 
+	g_critical ("Error: issue changing newSerializer state");
     else{ 
 	gst_bin_add (bin,context->serializer_); 
 	GstPad *newSinkPad=gst_element_get_static_pad (context->serializer_,"sink"); 
@@ -163,19 +170,19 @@ void shmdata_writer_on_client_connected (GstElement * shmsink,
 				   TRUE, 
 				   (GstPadBlockCallback) (shmdata_writer_switch_to_new_serializer), 
 				   (void *)context))
-	g_printerr("Error: when requesting the pad to be blocked\n");
+	g_critical ("Error: when requesting the pad to be blocked");
     gst_object_unref (serializerSinkPad);
     gst_object_unref (padToBlock);
 } 
 
 void shmdata_writer_make_shm_branch(shmdata_writer_t *writer,
-			       const char *socketPath){
+				    const char *socketPath){
     writer->qserial_     = gst_element_factory_make ("queue", NULL);
     writer->serializer_  = gst_element_factory_make ("gdppay",  NULL);
     writer->shmsink_     = gst_element_factory_make ("shmsink", NULL);
     
     if ( !writer->qserial_ || !writer->serializer_ || !writer->shmsink_) {
-	g_printerr ("Writer: One gstreamer element could not be created.\n");
+	g_critical ("Writer: One gstreamer element could not be created.");
     }
 
     g_object_set (G_OBJECT (writer->shmsink_), "socket-path", socketPath, NULL);

@@ -106,6 +106,7 @@ main (int   argc,
 
     //shared video can be pluged before or after the pipeline state is set to PLAYING 
     g_timeout_add (1000, (GSourceFunc) add_shared_video_writer, NULL);
+    //or added here
     //add_shared_video_writer();
 
     /* we link the elements together */

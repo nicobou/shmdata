@@ -15,16 +15,29 @@
 #include "shmdata/reader.h"
 
 #ifndef G_LOG_DOMAIN 
-#define G_LOG_DOMAIN "shmdata/reader"
+#define G_LOG_DOMAIN "shmdata"
 #endif
 
-void shmdata_reader_log_handler (const gchar *log_domain,
-					 GLogLevelFlags log_level,
-					 const gchar *message,
-					 gpointer user_data)
-{
-    g_print ("log handler received: %s, level %d, domain %s, object: %p\n",message,log_level,log_domain,user_data);
-}
+
+struct shmdata_reader_ {
+    //pipeline elements
+    GstElement *pipeline_;
+    GstElement *source_;
+    GstElement *deserializer_;
+    GstElement *sink_;
+    GstPad *sinkPad_;
+    GstPad *deserialPad_;
+    //monitoring the shm file
+    GFile *shmfile_; 
+    GFileMonitor* dirMonitor_;
+    const char *socketName_;
+    //user callback
+    void (*on_first_data_)(shmdata_reader_t *,void *);
+    void* on_first_data_userData_;
+    //state boolean
+    gboolean initialized_; //the shared video has been attached once
+};
+
 
 
 gboolean shmdata_reader_clean_source (gpointer user_data)
@@ -40,13 +53,12 @@ gboolean shmdata_reader_clean_source (gpointer user_data)
 
 void shmdata_reader_attach (shmdata_reader_t *reader)
 {
-    reader->source_       = gst_element_factory_make ("shmsrc",  NULL);
+    reader->source_ = gst_element_factory_make ("shmsrc",  NULL);
     reader->deserializer_ = gst_element_factory_make ("gdpdepay",  NULL);   
-    if ( !reader->source_ || !reader->deserializer_ ) {
-	g_critical ("One element could not be created. Exiting.\n");
-    }
-
-    g_critical ("tada \n");
+    if ( !reader->source_ )
+	g_critical ("shmsrc element could not be created. Exiting.\n");
+    if ( !reader->deserializer_ )
+	g_critical ("gdpdepay element could not be created. Exiting.\n");
 
     g_object_set (G_OBJECT (reader->source_), "socket-path", reader->socketName_, NULL);
 	
@@ -63,17 +75,27 @@ void shmdata_reader_attach (shmdata_reader_t *reader)
 
     gst_element_link (reader->source_, reader->deserializer_);
     gst_pad_link (reader->deserialPad_,reader->sinkPad_);
-	
-    gst_element_set_state (reader->deserializer_, GST_STATE_PLAYING);
-    gst_element_set_state (reader->source_, GST_STATE_PLAYING);
+
+    gst_element_set_state (reader->deserializer_, GST_STATE_PLAYING);    
+    gst_element_set_state (reader->source_, GST_STATE_PLAYING);    
+
+    //the following is blocking:
+    /* GstState current;    */
+    /* gst_element_get_state (reader->pipeline_,&current,NULL,GST_CLOCK_TIME_NONE);    */
+    
+    /* if(current != GST_STATE_NULL)    */
+    /* {    */
+    /*   	gst_element_set_state (reader->deserializer_, current);    */
+    /*   	gst_element_set_state (reader->source_, current);    */
+    /* }    */
 }
 
 
 void shmdata_reader_file_system_monitor_change (GFileMonitor * monitor,
-					   GFile *file,
-					   GFile *other_file,
-					   GFileMonitorEvent type,
-					   gpointer user_data)
+						GFile *file,
+						GFile *other_file,
+						GFileMonitorEvent type,
+						gpointer user_data)
 {
     char *filename = g_file_get_path (file);
     shmdata_reader_t *context = (shmdata_reader_t *)user_data;
@@ -85,7 +107,7 @@ void shmdata_reader_file_system_monitor_change (GFileMonitor * monitor,
 	    if (! context->initialized_)
 	    {
 		context->initialized_ = TRUE;
-		context->on_first_video_data_ (context,context->userData_);
+		context->on_first_data_ (context,context->on_first_data_userData_);
 	    }
 	    shmdata_reader_attach(context);
 	}	  
@@ -125,45 +147,6 @@ void shmdata_reader_detach (shmdata_reader_t *reader)
     g_idle_add ((GSourceFunc) shmdata_reader_clean_source,reader);
 }
 
-shmdata_reader_t *shmdata_reader_init (const char * socketName, 
-				       void(*on_first_video_data)(shmdata_reader_t *, void *),
-				       void *user_data) 	
-{
-    shmdata_reader_t *reader = (shmdata_reader_t *)g_malloc0 (sizeof(shmdata_reader_t));
-    reader->initialized_ = FALSE;
-    reader->on_first_video_data_ = on_first_video_data;
-    reader->userData_ = user_data;
-    reader->socketName_ = socketName;
-    
-    g_log_set_handler (G_LOG_DOMAIN, 
-		       (GLogLevelFlags) (G_LOG_LEVEL_MASK |
-					 G_LOG_FLAG_FATAL |
-					 G_LOG_FLAG_RECURSION), 
-		       shmdata_reader_log_handler, 
-		       reader);
-	
-    //monitoring the shared memory file
-    reader->shmfile_ = g_file_new_for_commandline_arg (reader->socketName_);
-    g_debug("monitoring %s",g_file_get_uri (reader->shmfile_));
-    
-    if (g_file_query_exists (reader->shmfile_,NULL)){
-	reader->initialized_ = TRUE;
-	reader->on_first_video_data_ (reader,reader->userData_);
-	shmdata_reader_attach (reader);
-    }
-    
-    GFile *dir = g_file_get_parent (reader->shmfile_);
-    reader->dirMonitor_ = g_file_monitor_directory (dir, 
-						    G_FILE_MONITOR_NONE, 
-						    NULL, NULL); 
-    g_object_unref(dir);
-    g_signal_connect (reader->dirMonitor_, 
-		      "changed", 
-		      G_CALLBACK (shmdata_reader_file_system_monitor_change), 
-		      reader); 
-}
-
-
 GstBusSyncReply shmdata_reader_message_handler (GstBus *bus, 
 						GstMessage *msg, 
 						gpointer user_data)
@@ -190,21 +173,57 @@ GstBusSyncReply shmdata_reader_message_handler (GstBus *bus,
     return GST_BUS_PASS;
 }
 
-void shmdata_reader_set_sink (shmdata_reader_t *reader,
-			     GstElement *pipeline, 
-			     GstElement *sink)
-{
-    reader->sink_         = sink;
-    reader->pipeline_     = pipeline;
 
-    GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+shmdata_reader_t *shmdata_reader_init (const char * socketName, 
+				       GstElement *pipeline,
+				       void(*on_first_data)(shmdata_reader_t *, void *),
+				       void *user_data) 	
+{
+
+    shmdata_reader_t *reader = (shmdata_reader_t *)g_malloc0 (sizeof(shmdata_reader_t));
+    reader->initialized_ = FALSE;
+    reader->on_first_data_ = on_first_data;
+    reader->on_first_data_userData_ = user_data;
+    reader->socketName_ = socketName;
+    reader->pipeline_ = pipeline;
+
+    GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (reader->pipeline_));
     gst_bus_set_sync_handler (bus, shmdata_reader_message_handler, reader);
     gst_object_unref (bus);
+
+    //monitoring the shared memory file
+    reader->shmfile_ = g_file_new_for_commandline_arg (reader->socketName_);
+    g_debug("monitoring %s",g_file_get_uri (reader->shmfile_));
+    
+    if (g_file_query_exists (reader->shmfile_,NULL)){
+	reader->initialized_ = TRUE;
+	reader->on_first_data_ (reader,reader->on_first_data_userData_);
+	shmdata_reader_attach (reader);
+    }
+    
+    GFile *dir = g_file_get_parent (reader->shmfile_);
+    reader->dirMonitor_ = g_file_monitor_directory (dir, 
+						    G_FILE_MONITOR_NONE, 
+						    NULL, NULL); 
+    g_object_unref(dir);
+    g_signal_connect (reader->dirMonitor_, 
+		      "changed", 
+		      G_CALLBACK (shmdata_reader_file_system_monitor_change), 
+		      reader); 
+
+    return reader;
+}
+
+
+void shmdata_reader_set_sink (shmdata_reader_t *reader,
+			     GstElement *sink)
+{
+    reader->sink_ = sink;
 }
     
-gboolean shmdata_reader_close (shmdata_reader_t *reader)
+void shmdata_reader_close (shmdata_reader_t *reader)
 {
-    //todo
+    shmdata_reader_detach (reader);
     g_object_unref(reader->shmfile_);
     g_object_unref(reader->dirMonitor_);
     g_free (reader);

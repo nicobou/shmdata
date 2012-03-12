@@ -195,6 +195,8 @@ void
 on_first_video_data (shmdata_reader_t *context, void *user_data)
 {
 
+    GstElement *pipeline = (GstElement *)user_data;
+
     /* texture actor */
     clutter_texture = clutter_texture_new ();
     clutter_container_add_actor (CLUTTER_CONTAINER (stage), clutter_texture);
@@ -227,17 +229,6 @@ on_first_video_data (shmdata_reader_t *context, void *user_data)
     glXMakeCurrent (clutter_display, None, 0);
 #endif
 
-    /* setup gstreamer pipeline */
-    pipeline = gst_pipeline_new (NULL);
-
-    /* setup bus */
-    bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
-    gst_bus_add_signal_watch (bus);
-    g_signal_connect (bus, "message::error", G_CALLBACK (end_stream_cb), NULL);
-    g_signal_connect (bus, "message::warning", G_CALLBACK (end_stream_cb), NULL);
-    g_signal_connect (bus, "message::eos", G_CALLBACK (end_stream_cb), NULL);
-    gst_object_unref (bus);
-
     // GST_PIPELINE (gst_parse_launch
     // 		    ("shmsrc socket-path=/tmp/rt ! gdpdepay ! "
     // 		     "glupload ! fakesink sync=1",
@@ -262,7 +253,7 @@ on_first_video_data (shmdata_reader_t *context, void *user_data)
 		      clutter_texture);
 
     //now tells the shared video reader where to write the data 
-    shmdata_reader_set_sink (context,pipeline, funnel);
+    shmdata_reader_set_sink (context,funnel);
   
     /* NULL to PAUSED state pipeline to make sure the gst opengl context is created and
      * shared with the clutter one */
@@ -300,6 +291,19 @@ main (int argc, char *argv[])
     }
     socketName = argv[1];
   
+
+    /* setup gstreamer pipeline */
+    pipeline = gst_pipeline_new (NULL);
+
+    /* setup bus */
+    bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+    gst_bus_add_signal_watch (bus);
+    g_signal_connect (bus, "message::error", G_CALLBACK (end_stream_cb), NULL);
+    g_signal_connect (bus, "message::warning", G_CALLBACK (end_stream_cb), NULL);
+    g_signal_connect (bus, "message::eos", G_CALLBACK (end_stream_cb), NULL);
+    gst_object_unref (bus);
+
+
     /* init gstreamer then clutter */
 
     gst_init (&argc, &argv);
@@ -359,7 +363,7 @@ main (int argc, char *argv[])
 
  
     //shared video creation
-    reader = shmdata_reader_init (socketName, &on_first_video_data,NULL);
+    reader = shmdata_reader_init (socketName, pipeline, &on_first_video_data, pipeline);
 
 
 

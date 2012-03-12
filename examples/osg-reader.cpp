@@ -32,6 +32,14 @@
 
 GstBuffer *last_buffer_ = NULL;
 
+typedef struct myapp_ myapp;
+struct myapp_ {
+    osg::Texture2D* texture_;
+    GstElement *pipeline_;
+};
+
+myapp app;
+
 osg::Node* createFilterWall(osg::BoundingBox& bb,osg::Texture2D* texture)
 {
     osg::Group* group = new osg::Group;
@@ -142,13 +150,12 @@ on_new_buffer_from_source (GstElement * elt, gpointer user_data)
 
 
 void
-on_first_video_data (shmdata_reader_t *context, void *user_data)
+on_first_video_data (shmdata_reader_t *reader, void *user_data)
 {
 
-    osg::Texture2D* texture = (osg::Texture2D*) user_data;
-    
-    GstElement *pipeline = gst_pipeline_new (NULL);
-    gst_element_set_state (pipeline, GST_STATE_PLAYING);
+    myapp *context = (myapp *)user_data;
+
+    gst_element_set_state (context->pipeline_, GST_STATE_PLAYING);
 
     g_print ("creating element to display the shared video \n");
     GstElement *shmDisplay = gst_element_factory_make ("appsink", NULL);
@@ -158,7 +165,7 @@ on_first_video_data (shmdata_reader_t *context, void *user_data)
 
     g_object_set (G_OBJECT (shmDisplay), "emit-signals", TRUE, "sync", FALSE, NULL);
     g_signal_connect (shmDisplay, "new-buffer",
-     		      G_CALLBACK (on_new_buffer_from_source), texture);
+     		      G_CALLBACK (on_new_buffer_from_source), context->texture_);
 
     //in order to be dynamic, the shared video is linking to an 
     //element accepting request pad (as funnel of videomixer)
@@ -173,12 +180,11 @@ on_first_video_data (shmdata_reader_t *context, void *user_data)
     gst_element_set_state (shmDisplay, GST_STATE_PLAYING);
     gst_element_set_state (funnel, GST_STATE_PLAYING);
     gst_element_set_state (videoConv, GST_STATE_PLAYING);
-    gst_bin_add_many (GST_BIN (pipeline), funnel, videoConv, shmDisplay, NULL);
+    gst_bin_add_many (GST_BIN (context->pipeline_), funnel, videoConv, shmDisplay, NULL);
     gst_element_link_many (funnel, videoConv, shmDisplay,NULL);
     
     //now tells the shared video reader where to write the data
-	shmdata_reader_set_sink (context,
-				 pipeline, 
+	shmdata_reader_set_sink (reader, 
 				 funnel);
 }
 
@@ -188,19 +194,17 @@ sharedVideoRead (gpointer user_data)
 {
     osg::Texture2D* texture = (osg::Texture2D*) user_data; 
     //texture->setImage(osgDB::readImageFile("truc.tga"));
-
+    
     GMainLoop *loop;
- 
-    
-    // GstElement *pipeline;
-    
-    /* Initialisation */
+     
+    GstElement *pipeline;
+     /* Initialisation */
     gst_init (NULL, NULL);
     loop = g_main_loop_new (NULL, FALSE);
     // /* Create gstreamer elements */
-    // pipeline   = gst_pipeline_new (NULL);
+    pipeline   = gst_pipeline_new (NULL);
     // /* we add a message handler */
-    // bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+    // GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
     // gst_bus_add_watch (bus, bus_call, loop);
     // gst_object_unref (bus);
     
@@ -211,8 +215,13 @@ sharedVideoRead (gpointer user_data)
     //   }
     //  gst_bin_add_many (GST_BIN (pipeline), localVideoSource, localDisplay, NULL);
     //   gst_element_link (localVideoSource, localDisplay);
+    
+    app.texture_ = texture;
+    app.pipeline_ = pipeline;
+    
     const char *socketName = "/tmp/rt";
-    shmdata_reader_init (socketName, &on_first_video_data,texture);
+
+    shmdata_reader_init (socketName, pipeline, &on_first_video_data,&app);
     
 //    gst_element_set_state (pipeline, GST_STATE_PLAYING);
     

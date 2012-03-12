@@ -86,23 +86,34 @@ on_first_video_data (shmdata_reader_t *context, void *user_data)
     }
 
     //element must have the same state as the pipeline
-    gst_element_set_state (shmDisplay, GST_STATE_PLAYING);
-    gst_element_set_state (funnel, GST_STATE_PLAYING);
     gst_bin_add_many (GST_BIN (pipeline), funnel, shmDisplay, NULL);
     gst_element_link (funnel, shmDisplay);
     
     //now tells the shared video reader where to write the data
-    shmdata_reader_set_sink (context,pipeline, funnel);
+    shmdata_reader_set_sink (context, funnel);
+
+    gst_element_set_state (shmDisplay, GST_STATE_PLAYING); 
+    gst_element_set_state (funnel, GST_STATE_PLAYING); 
+
 }
 
 static gboolean  
-add_shared_video_reader()
+add_shared_video_reader(gpointer user_data)
 {
-    g_print ("add shared video reader");
-    reader = shmdata_reader_init (socketName, &on_first_video_data,NULL);
+    GstElement *pipeline = (GstElement *)user_data;
+    g_print ("add shared video reader\n");
+    reader = shmdata_reader_init (socketName, pipeline, &on_first_video_data,NULL);
     return FALSE;
 }
 
+
+void my_log_handler (const gchar *log_domain,
+		     GLogLevelFlags log_level,
+		     const gchar *message,
+		     gpointer user_data)
+{
+    g_print ("%s\n",message);
+}
 
 int
 main (int   argc,
@@ -125,6 +136,10 @@ main (int   argc,
     gst_init (&argc, &argv);
     loop = g_main_loop_new (NULL, FALSE);
 
+    //get logs
+    g_print ("set logs\n");
+    g_log_set_default_handler (my_log_handler, NULL);
+
     /* Create gstreamer elements */
     pipeline   = gst_pipeline_new (NULL);
     /* we add a message handler */
@@ -145,7 +160,7 @@ main (int   argc,
 
 
     // shmdata_reader_init (socketName,&on_first_video_data);
-    g_timeout_add (1000, (GSourceFunc) add_shared_video_reader, NULL);
+    g_timeout_add (1000, (GSourceFunc) add_shared_video_reader, pipeline);
 
     gst_element_set_state (pipeline, GST_STATE_PLAYING);
 

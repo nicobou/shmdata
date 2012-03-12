@@ -46,10 +46,12 @@ on_new_buffer_from_source (GstElement * elt, gpointer user_data)
      * EOS has been received */
     buf = gst_app_sink_pull_buffer (GST_APP_SINK (s_app.sink));
 
-    g_print ("retrieved buffer %p, data %p, data size %d, timestamp %d, caps %s\n", buf, 
-	    GST_BUFFER_DATA(buf), GST_BUFFER_SIZE(buf),
-	    GST_TIME_AS_MSECONDS(GST_BUFFER_TIMESTAMP(buf)),
-	    gst_caps_to_string(GST_BUFFER_CAPS(buf)));
+    g_print ("retrieved buffer %p, data %p, data size %d, timestamp %llu, caps %s\n", 
+	     buf, 
+	     GST_BUFFER_DATA(buf), 
+	     GST_BUFFER_SIZE(buf),
+	     GST_TIME_AS_MSECONDS(GST_BUFFER_TIMESTAMP(buf)),
+	     gst_caps_to_string(GST_BUFFER_CAPS(buf)));
     //g_print ("received: %s\n",GST_BUFFER_DATA(buf));
     
     if (buf)
@@ -76,7 +78,7 @@ on_first_video_data (shmdata_reader_t *context, void *user_data)
     gst_element_link (s_app.funnel, s_app.sink);
 
     //now tells the shared data reader where to write the data
-    shmdata_reader_set_sink (context,s_app.pipe, s_app.funnel);
+    shmdata_reader_set_sink (context, s_app.funnel);
     
 }
 
@@ -112,7 +114,7 @@ main (int argc, char *argv[])
     gst_element_set_state (s_app.pipe, GST_STATE_PLAYING);
     
     shmdata_reader_t *reader;
-    reader = shmdata_reader_init (socketName, &on_first_video_data,NULL);
+    reader = shmdata_reader_init (socketName, s_app.pipe,&on_first_video_data,NULL);
     
     g_main_loop_run (loop);
     
