@@ -12,6 +12,38 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "shmdata/reader.h"
 #include "shmdata/osg-reader.h"
+#include "shmdata/osg-reader_impl.h"
 
+namespace shmdata
+{
+
+    OsgReader::OsgReader ()
+	: impl_ (new OsgReader_impl())
+    {//do nothing
+    }
+
+    void
+    OsgReader::start (const std::string &socketPath)
+    {
+	impl_->start (socketPath);
+    }
+
+    osg::Texture2D* 
+    OsgReader::getTexture()
+    {
+	return impl_->getTexture();
+    }
+    
+    OsgReader::~OsgReader ()
+    {
+	delete impl_;
+    }
+
+    void
+    OsgReader::setDebug(bool debug)
+    {
+	impl_->setDebug(debug);
+    }
+    
+} //end namespace

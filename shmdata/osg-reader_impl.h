@@ -12,26 +12,41 @@
  * GNU Lesser General Public License for more details.
  */
 
-#ifndef _SHM_DATA_OSG_READER_H_
-#define _SHM_DATA_OSG_READER_H_
+#ifndef _SHM_DATA_OSG_READER_IMPL_H_
+#define _SHM_DATA_OSG_READER_IMPL_H_
 
 #include <osg/Texture2D>
+#include <gst/gst.h>
+#include "shmdata/reader.h"
 
 namespace shmdata 
 {
-    class OsgReader_impl; // forward declaration
-
-    class OsgReader{
+    class OsgReader_impl{
     public:
-	OsgReader ();
+	OsgReader_impl ();
 	void start (const std::string &socketPath);
 	osg::Texture2D* getTexture();
-	~OsgReader ();
+	~OsgReader_impl ();
 	void setDebug(bool debug);
     private:
-	OsgReader_impl *impl_; // PIMPL opaque pointer
+	const std::string *socketName_;
+	GstBuffer *last_buffer_;
+	osg::Texture2D* texture_;
+	GstElement *pipeline_;
+	GThread *sharedVideoThread_;
+	GMainLoop *loop_;
+	bool debug_;
+	static void log_handler (const gchar *log_domain, 
+				    GLogLevelFlags log_level,
+				    const gchar *message,
+				    gpointer user_data);
+	static void on_new_buffer_from_source (GstElement * elt, 
+					       gpointer user_data);
+	static void on_first_video_data (shmdata_reader_t *reader, 
+					 void *user_data);
+	static void g_loop_thread (gpointer user_data);
     };
-    
+
 }//end namespace
 
-#endif //_SHM_DATA_READER_H_
+#endif //_SHM_DATA_READER_IMPL_H_

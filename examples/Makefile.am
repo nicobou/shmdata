@@ -36,37 +36,37 @@ if HAVE_PCL
 endif
 
 clutter_reader_CPPFLAGS = $(CLUTTER_CFLAGS) $(GLEW_CFLAGS)
-clutter_reader_LDADD = $(LDADD) $(CLUTTER_LIBS) $(GLEW_LIBS)
+clutter_reader_LDADD = $(LDADD) $(CLUTTER_LIBS) $(GLEW_LIBS) 
 clutter_reader_SOURCES = clutter-actor-reader.c
 
 data_reader_CPPFLAGS = $(GSTAPP_CFLAGS)
-data_reader_LDADD = $(LDADD) $(GSTAPP_LIBS)
+data_reader_LDADD = $(LDADD) $(GSTAPP_LIBS) 
 data_reader_SOURCES = data-reader.c
 
 data_reader_from_rtp_CPPFLAGS = $(GSTAPP_CFLAGS)
-data_reader_from_rtp_LDADD = $(LDADD) $(GSTAPP_LIBS)
+data_reader_from_rtp_LDADD = $(LDADD) $(GSTAPP_LIBS) 
 data_reader_from_rtp_SOURCES = data-reader-from-rtp.c
 
 data_reader_to_rtp_CPPFLAGS = $(GSTAPP_CFLAGS)
-data_reader_to_rtp_LDADD = $(LDADD) $(GSTAPP_LIBS)
+data_reader_to_rtp_LDADD = $(LDADD) $(GSTAPP_LIBS) 
 data_reader_to_rtp_SOURCES = data-reader-to-rtp.c
 
 data_writer_CPPFLAGS = $(GSTAPP_CFLAGS)
-data_writer_LDADD = $(GSTAPP_LIBS) $(LDADD)
+data_writer_LDADD = $(GSTAPP_LIBS) $(LDADD) 
 data_writer_SOURCES = data-writer.c
 
 data_writer_from_rtp_SOURCES = data-writer-from-rtp.c
 
-osg_reader_CPPFLAGS = $(OPENSCENEGRAPH_CFLAGS) $(GSTAPP_CFLAGS)
-osg_reader_LDADD = $(LDADD) $(OPENSCENEGRAPH_LIBS) $(GSTAPP_LIBS)
+osg_reader_CPPFLAGS = $(OPENSCENEGRAPH_CFLAGS) 
+osg_reader_LDADD = $(OPENSCENEGRAPH_LIBS) $(top_builddir)/shmdata/libshmdata-osg-@LIBSHMDATA_API_VERSION@.la 
 osg_reader_SOURCES = osg-reader.cpp
 
 pcd_reader_CPPFLAGS = $(PCL_CFLAGS) -I /usr/include/vtk-5.6/ $(GSTAPP_CFLAGS)
-pcd_reader_LDADD = $(PCL_LIBS) $(GSTAPP_LIBS) $(LDADD)
+pcd_reader_LDADD = $(PCL_LIBS) $(GSTAPP_LIBS) $(LDADD) 
 pcd_reader_SOURCES = pcd_reader.cpp
 
 pcd_writer_CPPFLAGS = $(PCL_CFLAGS) -I /usr/include/vtk-5.6/ $(GSTAPP_CFLAGS)
-pcd_writer_LDADD = $(LDADD) $(PCL_LIBS) $(GSTAPP_LIBS)
+pcd_writer_LDADD = $(LDADD) $(PCL_LIBS) $(GSTAPP_LIBS) 
 pcd_writer_SOURCES = pcd_writer.cpp
 
 video_reader_SOURCES = video-reader.c

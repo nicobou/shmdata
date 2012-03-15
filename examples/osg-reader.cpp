@@ -25,20 +25,7 @@
 #include <osgText/Text>
 #include <osgViewer/Viewer>
 
-#include <gst/gst.h>
-#include <gst/app/gstappsink.h>
-
-#include "shmdata/reader.h"
-
-GstBuffer *last_buffer_ = NULL;
-
-typedef struct myapp_ myapp;
-struct myapp_ {
-    osg::Texture2D* texture_;
-    GstElement *pipeline_;
-};
-
-myapp app;
+#include "shmdata/osg-reader.h"
 
 osg::Node* createFilterWall(osg::BoundingBox& bb,osg::Texture2D* texture)
 {
@@ -111,139 +98,38 @@ osg::Node* createModel(osg::Texture2D* texture)
 }
 
 
-/* called when the appsink notifies us that there is a new buffer ready for
- * processing */
-static void
-on_new_buffer_from_source (GstElement * elt, gpointer user_data)
-{
-  GstBuffer *buffer;
-  osg::Texture2D* texture = (osg::Texture2D*) user_data;
-
-  buffer = gst_app_sink_pull_buffer (GST_APP_SINK (elt));
-  GstStructure *imgProp=gst_caps_get_structure (GST_BUFFER_CAPS(buffer),0);
-  
-  //g_print ("%s\n",gst_caps_to_string (GST_BUFFER_CAPS(buffer)));
-//  g_print ("%d %d\n",g_value_get_int (gst_structure_get_value (imgProp,"width")), g_value_get_int (gst_structure_get_value (imgProp,"height")));
-
-  int curWidth = g_value_get_int (gst_structure_get_value (imgProp,"width"));
-  int curHeight = g_value_get_int (gst_structure_get_value (imgProp,"height"));
-
-  osg::Image *img = new osg::Image;
-  img->setOrigin(osg::Image::TOP_LEFT); 
-  img->setImage(curWidth, 
-   		curHeight, 
-   		0, 
-   		GL_RGB, 
-   		GL_RGB, 
-   		GL_UNSIGNED_SHORT_5_6_5, 
-		GST_BUFFER_DATA (buffer),
-   		osg::Image::NO_DELETE, 
-   		1);
-
-  texture->setImage(img);
-
-   if (last_buffer_ != NULL)  
-       gst_buffer_unref (last_buffer_);
-  last_buffer_ = buffer;
-}
 
 
 
-void
-on_first_video_data (shmdata_reader_t *reader, void *user_data)
-{
-
-    myapp *context = (myapp *)user_data;
-
-    gst_element_set_state (context->pipeline_, GST_STATE_PLAYING);
-
-    g_print ("creating element to display the shared video \n");
-    GstElement *shmDisplay = gst_element_factory_make ("appsink", NULL);
-    GstElement *videoConv = gst_element_factory_make ("ffmpegcolorspace", NULL);
-
-    g_object_set (G_OBJECT (shmDisplay), "caps", gst_caps_from_string ("video/x-raw-rgb, bpp=16, depth=16"), NULL);
-
-    g_object_set (G_OBJECT (shmDisplay), "emit-signals", TRUE, "sync", FALSE, NULL);
-    g_signal_connect (shmDisplay, "new-buffer",
-     		      G_CALLBACK (on_new_buffer_from_source), context->texture_);
-
-    //in order to be dynamic, the shared video is linking to an 
-    //element accepting request pad (as funnel of videomixer)
-    GstElement *funnel       = gst_element_factory_make ("funnel", NULL);
-    g_object_set (G_OBJECT (shmDisplay), "sync", FALSE, NULL);
-    
-    if (!shmDisplay || !videoConv || !funnel ) {
-	g_printerr ("One element could not be created. \n");
-    }
-
-    //element must have the same state as the pipeline
-    gst_element_set_state (shmDisplay, GST_STATE_PLAYING);
-    gst_element_set_state (funnel, GST_STATE_PLAYING);
-    gst_element_set_state (videoConv, GST_STATE_PLAYING);
-    gst_bin_add_many (GST_BIN (context->pipeline_), funnel, videoConv, shmDisplay, NULL);
-    gst_element_link_many (funnel, videoConv, shmDisplay,NULL);
-    
-    //now tells the shared video reader where to write the data
-	shmdata_reader_set_sink (reader, 
-				 funnel);
-}
-
-
-void
-sharedVideoRead (gpointer user_data)
-{
-    osg::Texture2D* texture = (osg::Texture2D*) user_data; 
-    //texture->setImage(osgDB::readImageFile("truc.tga"));
-    
-    GMainLoop *loop;
-     
-    GstElement *pipeline;
-     /* Initialisation */
-    gst_init (NULL, NULL);
-    loop = g_main_loop_new (NULL, FALSE);
-    // /* Create gstreamer elements */
-    pipeline   = gst_pipeline_new (NULL);
-    // /* we add a message handler */
-    // GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
-    // gst_bus_add_watch (bus, bus_call, loop);
-    // gst_object_unref (bus);
-    
-    //   GstElement *localVideoSource = gst_element_factory_make ("videotestsrc", NULL);
-    //   GstElement *localDisplay = gst_element_factory_make ("xvimagesink", NULL);
-    // if (!pipeline || !localVideoSource || !localDisplay) {
-    // 	g_printerr ("One element could not be created. Exiting.\n");
-    //   }
-    //  gst_bin_add_many (GST_BIN (pipeline), localVideoSource, localDisplay, NULL);
-    //   gst_element_link (localVideoSource, localDisplay);
-    
-    app.texture_ = texture;
-    app.pipeline_ = pipeline;
-    
-    const char *socketName = "/tmp/rt";
-
-    shmdata_reader_init (socketName, pipeline, &on_first_video_data,&app);
-    
-//    gst_element_set_state (pipeline, GST_STATE_PLAYING);
-    
-    /* Iterate */
-    g_print ("Running...\n");
-    g_main_loop_run (loop);
-}
-
-int main(int , char **)
+int main(int argc, char *argv[])
 {
     // construct the viewer.
     osgViewer::Viewer viewer;
+
+
+    if (argc != 2) {
+	std::cerr << "Usage: " << argv[0] << " <socket-path>" << std::endl;
+	return -1;
+    }
+
+    std::string *socketName = new std::string (argv[1]); 
+
+    int i;
+    for (i=0;i<5;i++)
+     {
+     	//creating the Reader
+     	shmdata::OsgReader *reader = new shmdata::OsgReader ();
+     	reader->setDebug(true);
+     	reader->start(*socketName);
+     	delete reader;
+     }
+
+    shmdata::OsgReader *reader = new shmdata::OsgReader ();
+    reader->setDebug(true);
+    reader->start(*socketName);
     
-    osg::Texture2D* texture = new osg::Texture2D;
-    texture->setDataVariance(osg::Object::DYNAMIC);
-    texture->setResizeNonPowerOfTwoHint(false);
-
-    // add model to viewer.
-    viewer.setSceneData( createModel(texture) );
-
-    g_thread_init (NULL);
-    /*GThread *sharedVideoThread =*/ g_thread_create ((GThreadFunc) sharedVideoRead, texture, FALSE, NULL);
+    //using the texture
+    viewer.setSceneData(createModel(reader->getTexture()));
     
     return viewer.run();
 }
