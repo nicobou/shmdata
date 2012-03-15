@@ -9,7 +9,8 @@ AM_LIBS = \
 
 lib_LTLIBRARIES = \
     libshmdata-@LIBSHMDATA_API_VERSION@.la \
-    libshmdata-osg-@LIBSHMDATA_API_VERSION@.la 
+    libshmdata-osg-@LIBSHMDATA_API_VERSION@.la \
+    libshmdata-data-@LIBSHMDATA_API_VERSION@.la 
 
 ## core library
 libshmdata_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
@@ -42,9 +43,7 @@ libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_CXXFLAGS = \
     $(OPENSCENEGRAPH_CFLAGS) 
 
 libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
-    $(GIO_LIBS) \
     $(GSTAPP_LIBS) \
-    $(GST_LIBS) \
     $(OPENSCENEGRAPH_LIBS) \
     -export-dynamic \
     -lshmdata-@LIBSHMDATA_API_VERSION@ \
@@ -55,4 +54,20 @@ libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_includedir = \
 
 libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
     osg-reader.h 
+
+## data library
+libshmdata_data_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
+    data-reader.c
+
+libshmdata_data_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
+    $(GSTAPP_LIBS) \
+    -export-dynamic \
+    -lshmdata-@LIBSHMDATA_API_VERSION@ \
+    -version-info $(LIBSHMDATA_SO_VERSION)
+
+libshmdata_data_@LIBSHMDATA_API_VERSION@_la_includedir = \
+    $(includedir)/shmdata-$(LIBSHMDATA_API_VERSION)/shmdata
+
+libshmdata_data_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
+    data-reader.h 
 

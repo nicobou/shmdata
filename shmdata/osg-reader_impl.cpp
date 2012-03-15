@@ -56,10 +56,11 @@ namespace shmdata
 
     OsgReader_impl::~OsgReader_impl ()
     {
+	//TODO call shmdata_reader_close
 	gst_element_set_state (pipeline_, GST_STATE_NULL);
 	gst_object_unref (GST_OBJECT (pipeline_));
 	g_main_loop_quit (loop_);
-        //delete texture_; 
+        //delete texture_; //desctructor protected
 	g_debug ("object deleted");
     }
     

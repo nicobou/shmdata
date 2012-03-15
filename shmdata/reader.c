@@ -14,11 +14,6 @@
 
 #include "shmdata/reader.h"
 
-#ifndef G_LOG_DOMAIN 
-#define G_LOG_DOMAIN "shmdata"
-#endif
-
-
 struct shmdata_reader_ {
     //pipeline elements
     GstElement *pipeline_;

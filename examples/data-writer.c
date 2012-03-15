@@ -103,7 +103,6 @@ main (int argc, char *argv[])
     while (app->on){  
 	for (i = 0; i < 1; i++) {
 	    GstBuffer *buf;
-
 	    
 //data here should be serialized in order
 	

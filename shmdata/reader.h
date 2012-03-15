@@ -26,7 +26,7 @@ typedef struct shmdata_reader_ shmdata_reader_t;
 
 shmdata_reader_t *shmdata_reader_init (const char *socketPath, 
 				       GstElement *Pipeline,
-				       void(*on_first_video_data)(shmdata_reader_t *, void *), 
+				       void(*on_first_data)(shmdata_reader_t *, void *), 
 				       void *user_data);
 
 //where to push the video data
