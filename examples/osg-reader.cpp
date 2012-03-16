@@ -24,6 +24,7 @@
 #include <osgDB/ReadFile>
 #include <osgText/Text>
 #include <osgViewer/Viewer>
+#include <iostream>
 
 #include "shmdata/osg-reader.h"
 
