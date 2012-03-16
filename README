@@ -4,3 +4,6 @@ libshmdata
 Library to share flows of data frames between processes.
 
 License: LGPL.
+
+Project URL: http://codered.sat.qc.ca/redmine/projects/libshmdata
+
