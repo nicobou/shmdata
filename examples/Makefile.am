@@ -40,7 +40,7 @@ clutter_reader_LDADD = $(LDADD) $(CLUTTER_LIBS) $(GLEW_LIBS)
 clutter_reader_SOURCES = clutter-actor-reader.c
 
 #data_reader_CPPFLAGS = $(GSTAPP_CFLAGS)
-data_reader_LDADD = $(top_builddir)/shmdata/libshmdata-data-@LIBSHMDATA_API_VERSION@.la
+data_reader_LDADD = $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
 data_reader_SOURCES = data-reader.c
 
 data_reader_from_rtp_CPPFLAGS = $(GSTAPP_CFLAGS)

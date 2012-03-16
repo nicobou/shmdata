@@ -13,13 +13,13 @@
  */
 
 #include "shmdata/base-reader.h"
-#include "shmdata/data-reader.h"
+#include "shmdata/any-data-reader.h"
 #include <gst/gst.h>
 #include <gst/app/gstappsrc.h>
 #include <gst/app/gstappbuffer.h>
 #include <gst/app/gstappsink.h>
 
-struct shmdata_data_reader_ {
+struct shmdata_any_reader_ {
     shmdata_base_reader_t *reader_;
     //pipeline elements
     GstElement *pipeline_;
@@ -30,7 +30,8 @@ struct shmdata_data_reader_ {
     GMainLoop *loop_;
     GThread *sharedDataThread_;
     //user callback
-    void(*on_data_)(shmdata_data_reader_t *,
+    void(*on_data_)(shmdata_any_reader_t *,
+		    void *,
 		    void *, 
 		    int, 
 		    unsigned long long, 
@@ -42,41 +43,41 @@ struct shmdata_data_reader_ {
 
 
 void
-shmdata_data_reader_log_handler (const gchar *log_domain, 
+shmdata_any_reader_log_handler (const gchar *log_domain, 
 				 GLogLevelFlags log_level,
 				 const gchar *message,
 				 gpointer user_data)
 {
     if ( g_strcmp0 (log_domain,G_LOG_DOMAIN) == 0 )
     {
-	shmdata_data_reader_t *context = (shmdata_data_reader_t *)user_data;
+	shmdata_any_reader_t *context = (shmdata_any_reader_t *)user_data;
 	switch (log_level) {
 	case G_LOG_LEVEL_ERROR:
-	    if (context->debug_ == SHMDATA_DATA_READER_ENABLE_DEBUG) 
+	    if (context->debug_ == SHMDATA_ANY_READER_ENABLE_DEBUG) 
 		g_print ("%s, ERROR: %s\n",G_LOG_DOMAIN,message);
 	    break;
 	case G_LOG_LEVEL_CRITICAL:
-	    if (context->debug_ == SHMDATA_DATA_READER_ENABLE_DEBUG) 
+	    if (context->debug_ == SHMDATA_ANY_READER_ENABLE_DEBUG) 
 		g_print ("%s, CRITICAL: %s\n",G_LOG_DOMAIN,message);
 	    break;
 	case G_LOG_LEVEL_WARNING:
-	    if (context->debug_ == SHMDATA_DATA_READER_ENABLE_DEBUG) 
+	    if (context->debug_ == SHMDATA_ANY_READER_ENABLE_DEBUG) 
 		g_print ("%s, WARNING: %s\n",G_LOG_DOMAIN,message);
 	    break;
 	case G_LOG_LEVEL_MESSAGE:
-	    if (context->debug_ == SHMDATA_DATA_READER_ENABLE_DEBUG) 
+	    if (context->debug_ == SHMDATA_ANY_READER_ENABLE_DEBUG) 
 		g_print ("%s, MESSAGE: %s\n",G_LOG_DOMAIN,message);
 	    break;
 	case G_LOG_LEVEL_INFO:
-	    if (context->debug_ == SHMDATA_DATA_READER_ENABLE_DEBUG) 
+	    if (context->debug_ == SHMDATA_ANY_READER_ENABLE_DEBUG) 
 		g_print ("%s, INFO: %s\n",G_LOG_DOMAIN,message);
 	    break;
 	case G_LOG_LEVEL_DEBUG:
-	    if (context->debug_ == SHMDATA_DATA_READER_ENABLE_DEBUG) 
+	    if (context->debug_ == SHMDATA_ANY_READER_ENABLE_DEBUG) 
 		g_print ("%s, DEBUG: %s\n",G_LOG_DOMAIN,message);
 	    break;
 	default:
-	    if (context->debug_ == SHMDATA_DATA_READER_ENABLE_DEBUG) 
+	    if (context->debug_ == SHMDATA_ANY_READER_ENABLE_DEBUG) 
 		g_print ("%s: %s\n",G_LOG_DOMAIN,message);
 	    break;
 	}
@@ -84,9 +85,9 @@ shmdata_data_reader_log_handler (const gchar *log_domain,
 }
 
 static void
-shmdata_data_reader_on_new_buffer_from_source (GstElement * elt, gpointer user_data)
+shmdata_any_reader_on_new_buffer_from_source (GstElement * elt, gpointer user_data)
 {
-    shmdata_data_reader_t *me = (shmdata_data_reader_t *)user_data;
+    shmdata_any_reader_t *me = (shmdata_any_reader_t *)user_data;
     
     GstBuffer *buf;
     
@@ -100,33 +101,40 @@ shmdata_data_reader_on_new_buffer_from_source (GstElement * elt, gpointer user_d
 	if (me->type_ == NULL || gst_caps_is_always_compatible (me->data_caps_,GST_BUFFER_CAPS(buf)))
 	 { 
 	     me->on_data_ (me, 
-	 		  (void *)GST_BUFFER_DATA(buf), 
-	 		  (int)GST_BUFFER_SIZE(buf), 
-	 		  (unsigned long)GST_TIME_AS_MSECONDS(GST_BUFFER_TIMESTAMP(buf)), 
-	 		  (const char *)gst_caps_to_string(GST_BUFFER_CAPS(buf)), 
-	 		  (void *)me->on_data_user_data_); 
-	    
+			   (void *)buf,
+			   (void *)GST_BUFFER_DATA(buf), 
+			   (int)GST_BUFFER_SIZE(buf), 
+			   (unsigned long)GST_TIME_AS_MSECONDS(GST_BUFFER_TIMESTAMP(buf)), 
+			   (const char *)gst_caps_to_string(GST_BUFFER_CAPS(buf)), 
+			   (void *)me->on_data_user_data_); 
 	 } 
-	 else 
-	 { 
-	       g_warning ("incompatible data frame retrieved, data %p, data size %d, timestamp %llu, caps %s",     
-	        	       GST_BUFFER_DATA(buf),     
-	        	       GST_BUFFER_SIZE(buf),    
-	        	       GST_TIME_AS_MSECONDS(GST_BUFFER_TIMESTAMP(buf)),    
-	        	       gst_caps_to_string(GST_BUFFER_CAPS(buf)));    
+	else 
+	{ 
+	    g_warning ("incompatible data frame retrieved, data %p, data size %d, timestamp %llu, caps %s",     
+		       GST_BUFFER_DATA(buf),     
+		       GST_BUFFER_SIZE(buf),    
+		       GST_TIME_AS_MSECONDS(GST_BUFFER_TIMESTAMP(buf)),    
+		       gst_caps_to_string(GST_BUFFER_CAPS(buf)));    
 	    
-	 } 
+	} 
 	
     }
 
-    if (buf)
-	gst_buffer_unref (buf);
+    /* if (buf) */
+    /* 	gst_buffer_unref (buf); */
+}
+
+void 
+shmdata_any_reader_free (void *shmbuf)
+{
+    if (shmbuf)
+	gst_buffer_unref ((GstBuffer *)shmbuf);
 }
 
 void
-shmdata_data_reader_on_first_video_data (shmdata_base_reader_t *context, void *user_data)
+shmdata_any_reader_on_first_video_data (shmdata_base_reader_t *context, void *user_data)
 {
-    shmdata_data_reader_t *me = (shmdata_data_reader_t *)user_data;
+    shmdata_any_reader_t *me = (shmdata_any_reader_t *)user_data;
 
     g_debug ("on first data received");
     me->funnel_ = gst_element_factory_make ("funnel", NULL);
@@ -141,7 +149,7 @@ shmdata_data_reader_on_first_video_data (shmdata_base_reader_t *context, void *u
 		  NULL);
     g_signal_connect (me->sink_, 
 		      "new-buffer",
-     		      G_CALLBACK (shmdata_data_reader_on_new_buffer_from_source), 
+     		      G_CALLBACK (shmdata_any_reader_on_new_buffer_from_source), 
 		      me);
     
     gst_element_set_state (me->funnel_, GST_STATE_PLAYING);
@@ -155,12 +163,12 @@ shmdata_data_reader_on_first_video_data (shmdata_base_reader_t *context, void *u
     shmdata_base_reader_set_sink (context, me->funnel_);
 }
 
-shmdata_data_reader_t *
-shmdata_data_reader_init (const char *socketName)
+shmdata_any_reader_t *
+shmdata_any_reader_init (const char *socketName)
 {
-    shmdata_data_reader_t *reader = (shmdata_data_reader_t *)g_malloc0 (sizeof(shmdata_data_reader_t));
-    reader->debug_ = SHMDATA_DATA_READER_DISABLE_DEBUG;
-    g_log_set_default_handler (shmdata_data_reader_log_handler,
+    shmdata_any_reader_t *reader = (shmdata_any_reader_t *)g_malloc0 (sizeof(shmdata_any_reader_t));
+    reader->debug_ = SHMDATA_ANY_READER_DISABLE_DEBUG;
+    g_log_set_default_handler (shmdata_any_reader_log_handler,
 			       reader);
     reader->on_data_ = NULL;
     reader->on_data_user_data_ = NULL;
@@ -178,13 +186,14 @@ shmdata_data_reader_init (const char *socketName)
 }
 
 void 
-shmdata_data_reader_set_debug (shmdata_data_reader_t *context,int debug)
+shmdata_any_reader_set_debug (shmdata_any_reader_t *context,int debug)
 {
     context->debug_ = debug;
 }
 
-void shmdata_data_reader_set_on_data_handler (shmdata_data_reader_t *reader,
-					      void(*on_data)(shmdata_data_reader_t *,
+void shmdata_any_reader_set_on_data_handler (shmdata_any_reader_t *reader,
+					      void(*on_data)(shmdata_any_reader_t *,
+							     void *,
 							     void *, 
 							     int, 
 							     unsigned long long, 
@@ -198,23 +207,23 @@ void shmdata_data_reader_set_on_data_handler (shmdata_data_reader_t *reader,
 
 
 void
-shmdata_data_reader_g_loop_thread (gpointer user_data)
+shmdata_any_reader_g_loop_thread (gpointer user_data)
 {
-    shmdata_data_reader_t *context = (shmdata_data_reader_t *)user_data;
+    shmdata_any_reader_t *context = (shmdata_any_reader_t *)user_data;
     g_main_loop_run (context->loop_);
 }
 
 
 void 
-shmdata_data_reader_start (shmdata_data_reader_t *context,const char *socketName)
+shmdata_any_reader_start (shmdata_any_reader_t *context,const char *socketName)
 {
     //initializing lower layer library
     context->reader_ = shmdata_base_reader_init (socketName, 
 					    context->pipeline_,
-					    &shmdata_data_reader_on_first_video_data,
+					    &shmdata_any_reader_on_first_video_data,
 					    context);
     g_thread_init (NULL);
-    context->sharedDataThread_ = g_thread_create ((GThreadFunc) shmdata_data_reader_g_loop_thread, 
+    context->sharedDataThread_ = g_thread_create ((GThreadFunc) shmdata_any_reader_g_loop_thread, 
 					  context, 
 					  FALSE, 
 					  NULL);
@@ -223,14 +232,14 @@ shmdata_data_reader_start (shmdata_data_reader_t *context,const char *socketName
 }
 
 void 
-shmdata_data_reader_set_data_type(shmdata_data_reader_t *reader,const char *type)
+shmdata_any_reader_set_data_type(shmdata_any_reader_t *reader,const char *type)
 {
      reader->type_ = g_strdup (type); 
      reader->data_caps_ = gst_caps_from_string (reader->type_);
 }
      
 void 
-shmdata_data_reader_close(shmdata_data_reader_t *reader)
+shmdata_any_reader_close(shmdata_any_reader_t *reader)
 {
     shmdata_base_reader_close (reader->reader_);
     gst_caps_unref (reader->data_caps_);

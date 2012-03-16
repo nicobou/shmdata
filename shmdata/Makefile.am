@@ -10,9 +10,9 @@ AM_LIBS = \
 lib_LTLIBRARIES = \
     libshmdata-@LIBSHMDATA_API_VERSION@.la \
     libshmdata-osg-@LIBSHMDATA_API_VERSION@.la \
-    libshmdata-data-@LIBSHMDATA_API_VERSION@.la 
+    libshmdata-any-@LIBSHMDATA_API_VERSION@.la 
 
-## core library
+## base library
 libshmdata_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
     base-reader.c \
     base-writer.c
@@ -55,19 +55,19 @@ libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_includedir = \
 libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
     osg-reader.h 
 
-## data library
-libshmdata_data_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
-    data-reader.c
+## any data library
+libshmdata_any_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
+    any-data-reader.c
 
-libshmdata_data_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
+libshmdata_any_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
     $(GSTAPP_LIBS) \
     -export-dynamic \
     -lshmdata-@LIBSHMDATA_API_VERSION@ \
     -version-info $(LIBSHMDATA_SO_VERSION)
 
-libshmdata_data_@LIBSHMDATA_API_VERSION@_la_includedir = \
+libshmdata_any_@LIBSHMDATA_API_VERSION@_la_includedir = \
     $(includedir)/shmdata-$(LIBSHMDATA_API_VERSION)/shmdata
 
-libshmdata_data_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
-    data-reader.h 
+libshmdata_any_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
+    any-data-reader.h 
 

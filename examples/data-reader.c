@@ -16,25 +16,25 @@
 #include <stdlib.h>
 #include <signal.h>
 
-#include "shmdata/data-reader.h"
+#include "shmdata/any-data-reader.h"
 
-shmdata_data_reader_t *reader;
+shmdata_any_reader_t *reader;
 
 void
 leave(int sig) {
-    shmdata_data_reader_close(reader);
+    shmdata_any_reader_close(reader);
     exit(sig);
 }
 
 
-void on_data (shmdata_data_reader_t *reader,
+void on_data (shmdata_any_reader_t *reader,
+	      void *shmbuf,
 	      void *data, 
 	      int data_size, 
 	      unsigned long long timestamp, 
 	      const char *type_description,
 	      void *user_data)
 {
-    
      printf ("data %p, data size %d, timestamp %llu, type descr %s\n", 
      	    data, 
      	    data_size, 
@@ -42,6 +42,8 @@ void on_data (shmdata_data_reader_t *reader,
      	    type_description); 
      printf ("user_data: %s\n",(const char *)user_data); 
 
+     //free the data...
+     shmdata_any_reader_free (shmbuf);
 }
     
     int
@@ -60,13 +62,13 @@ main (int argc, char *argv[])
     
     const char *my_user_data="hello world";
     
-    shmdata_data_reader_t *reader = shmdata_data_reader_init ();
-    shmdata_data_reader_set_debug (reader,SHMDATA_DATA_READER_ENABLE_DEBUG);
-    shmdata_data_reader_set_on_data_handler (reader, &on_data, (void *)my_user_data);
-    shmdata_data_reader_set_data_type(reader, "video/x-raw-yuv, format=(fourcc)YUY2, framerate=(fraction)25/1, width=(int)924, height=(int)576, interlaced=(boolean)true, pixel-aspect-ratio=(fraction)1/1");
-    shmdata_data_reader_start (reader,argv[1]);
+    shmdata_any_reader_t *reader = shmdata_any_reader_init ();
+    shmdata_any_reader_set_debug (reader,SHMDATA_ANY_READER_ENABLE_DEBUG);
+    shmdata_any_reader_set_on_data_handler (reader, &on_data, (void *)my_user_data);
+    shmdata_any_reader_set_data_type(reader, "video/x-raw-yuv, format=(fourcc)YUY2, framerate=(fraction)25/1, width=(int)924, height=(int)576, interlaced=(boolean)true, pixel-aspect-ratio=(fraction)1/1");
+    shmdata_any_reader_start (reader,argv[1]);
     
-    //shmdata_data_reader is non blocking
+    //shmdata_any_reader is non blocking
     while (0 != 1)
     {
 	sleep (1);
