@@ -23,12 +23,16 @@ struct shmdata_any_reader_ {
     shmdata_base_reader_t *reader_;
     //pipeline elements
     GstElement *pipeline_;
+    //data type
     gchar *type_;
+    GstCaps *data_caps_;
+    //gstreamer
     GstElement *funnel_;
     GstElement *sink_;
-    int debug_;
     GMainLoop *loop_;
     GThread *sharedDataThread_;
+    //debug
+    int debug_;
     //user callback
     void(*on_data_)(shmdata_any_reader_t *,
 		    void *,
@@ -38,7 +42,6 @@ struct shmdata_any_reader_ {
 		    const char *,
 		    void *);
     void* on_data_user_data_;
-    GstCaps *data_caps_;
 };
 
 
@@ -53,31 +56,31 @@ shmdata_any_reader_log_handler (const gchar *log_domain,
 	shmdata_any_reader_t *context = (shmdata_any_reader_t *)user_data;
 	switch (log_level) {
 	case G_LOG_LEVEL_ERROR:
-	    if (context->debug_ == SHMDATA_ANY_READER_ENABLE_DEBUG) 
+	    if (context->debug_ == SHMDATA_ENABLE_DEBUG) 
 		g_print ("%s, ERROR: %s\n",G_LOG_DOMAIN,message);
 	    break;
 	case G_LOG_LEVEL_CRITICAL:
-	    if (context->debug_ == SHMDATA_ANY_READER_ENABLE_DEBUG) 
+	    if (context->debug_ == SHMDATA_ENABLE_DEBUG) 
 		g_print ("%s, CRITICAL: %s\n",G_LOG_DOMAIN,message);
 	    break;
 	case G_LOG_LEVEL_WARNING:
-	    if (context->debug_ == SHMDATA_ANY_READER_ENABLE_DEBUG) 
+	    if (context->debug_ == SHMDATA_ENABLE_DEBUG) 
 		g_print ("%s, WARNING: %s\n",G_LOG_DOMAIN,message);
 	    break;
 	case G_LOG_LEVEL_MESSAGE:
-	    if (context->debug_ == SHMDATA_ANY_READER_ENABLE_DEBUG) 
+	    if (context->debug_ == SHMDATA_ENABLE_DEBUG) 
 		g_print ("%s, MESSAGE: %s\n",G_LOG_DOMAIN,message);
 	    break;
 	case G_LOG_LEVEL_INFO:
-	    if (context->debug_ == SHMDATA_ANY_READER_ENABLE_DEBUG) 
+	    if (context->debug_ == SHMDATA_ENABLE_DEBUG) 
 		g_print ("%s, INFO: %s\n",G_LOG_DOMAIN,message);
 	    break;
 	case G_LOG_LEVEL_DEBUG:
-	    if (context->debug_ == SHMDATA_ANY_READER_ENABLE_DEBUG) 
+	    if (context->debug_ == SHMDATA_ENABLE_DEBUG) 
 		g_print ("%s, DEBUG: %s\n",G_LOG_DOMAIN,message);
 	    break;
 	default:
-	    if (context->debug_ == SHMDATA_ANY_READER_ENABLE_DEBUG) 
+	    if (context->debug_ == SHMDATA_ENABLE_DEBUG) 
 		g_print ("%s: %s\n",G_LOG_DOMAIN,message);
 	    break;
 	}
@@ -104,7 +107,7 @@ shmdata_any_reader_on_new_buffer_from_source (GstElement * elt, gpointer user_da
 			   (void *)buf,
 			   (void *)GST_BUFFER_DATA(buf), 
 			   (int)GST_BUFFER_SIZE(buf), 
-			   (unsigned long)GST_TIME_AS_MSECONDS(GST_BUFFER_TIMESTAMP(buf)), 
+			   (unsigned long long)GST_TIME_AS_NSECONDS(GST_BUFFER_TIMESTAMP(buf)), 
 			   (const char *)gst_caps_to_string(GST_BUFFER_CAPS(buf)), 
 			   (void *)me->on_data_user_data_); 
 	 } 
@@ -167,7 +170,7 @@ shmdata_any_reader_t *
 shmdata_any_reader_init (const char *socketName)
 {
     shmdata_any_reader_t *reader = (shmdata_any_reader_t *)g_malloc0 (sizeof(shmdata_any_reader_t));
-    reader->debug_ = SHMDATA_ANY_READER_DISABLE_DEBUG;
+    reader->debug_ = SHMDATA_DISABLE_DEBUG;
     g_log_set_default_handler (shmdata_any_reader_log_handler,
 			       reader);
     reader->on_data_ = NULL;

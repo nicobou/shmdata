@@ -26,7 +26,6 @@ struct shmdata_base_writer_ {
 
 
 gboolean shmdata_base_writer_close (shmdata_base_writer_t *writer){
-    //todo (maybe remove from pipeline and set states to NULL)
     g_free (writer);
 }
 
@@ -158,11 +157,22 @@ void shmdata_base_writer_switch_to_new_serializer (GstPad * pad,
 			       (void *)context); 
 }
 
+void shmdata_base_writer_on_client_disconnected (GstElement * shmsink, 
+					 gint num, 
+					 gpointer user_data) 
+{ 
+    g_message ("client disconnected (number %d)",num);
+} 
+
+
 void shmdata_base_writer_on_client_connected (GstElement * shmsink, 
 					 gint num, 
 					 gpointer user_data) 
 { 
     shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
+
+    g_message ("new client connected (number %d)",num);
+
     GstPad *serializerSinkPad=gst_element_get_static_pad(context->serializer_,"sink");
     GstPad *padToBlock = gst_pad_get_peer(serializerSinkPad);
 	
@@ -199,6 +209,10 @@ void shmdata_base_writer_make_shm_branch(shmdata_base_writer_t *writer,
 	
     g_signal_connect (writer->shmsink_, "client-connected", 
 		      G_CALLBACK (shmdata_base_writer_on_client_connected), 
+		      writer);
+
+    g_signal_connect (writer->shmsink_, "client-disconnected", 
+		      G_CALLBACK (shmdata_base_writer_on_client_disconnected), 
 		      writer);
 
     gst_bin_add_many (GST_BIN (writer->pipeline_), writer->qserial_, writer->serializer_, writer->shmsink_, NULL);

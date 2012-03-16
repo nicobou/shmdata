@@ -19,9 +19,13 @@
 #ifdef __cplusplus
  extern "C" {
 #endif
-     
-#define SHMDATA_ANY_READER_ENABLE_DEBUG 1
-#define SHMDATA_ANY_READER_DISABLE_DEBUG 0
+
+#ifndef SHMDATA_ENABLE_DEBUG     
+#define SHMDATA_ENABLE_DEBUG 1
+#endif
+#ifndef SHMDATA_DISABLE_DEBUG
+#define SHMDATA_DISABLE_DEBUG 0
+#endif
 
 typedef struct shmdata_any_reader_ shmdata_any_reader_t;
      

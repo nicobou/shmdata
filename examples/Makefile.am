@@ -51,8 +51,8 @@ data_reader_to_rtp_CPPFLAGS = $(GSTAPP_CFLAGS)
 data_reader_to_rtp_LDADD = $(LDADD) $(GSTAPP_LIBS) 
 data_reader_to_rtp_SOURCES = data-reader-to-rtp.c
 
-data_writer_CPPFLAGS = $(GSTAPP_CFLAGS)
-data_writer_LDADD = $(GSTAPP_LIBS) $(LDADD) 
+#data_writer_CPPFLAGS = $(GSTAPP_CFLAGS)
+data_writer_LDADD = $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
 data_writer_SOURCES = data-writer.c
 
 data_writer_from_rtp_SOURCES = data-writer-from-rtp.c

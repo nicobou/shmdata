@@ -57,7 +57,8 @@ libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
 
 ## any data library
 libshmdata_any_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
-    any-data-reader.c
+    any-data-reader.c \
+    any-data-writer.c
 
 libshmdata_any_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
     $(GSTAPP_LIBS) \
@@ -69,5 +70,6 @@ libshmdata_any_@LIBSHMDATA_API_VERSION@_la_includedir = \
     $(includedir)/shmdata-$(LIBSHMDATA_API_VERSION)/shmdata
 
 libshmdata_any_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
-    any-data-reader.h 
+    any-data-reader.h \
+    any-data-writer.h 
 
