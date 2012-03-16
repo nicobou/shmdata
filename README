@@ -1,0 +1,6 @@
+libshmdata
+==========
+
+Library to share flows of data frames between processes.
+
+License: LGPL.
