@@ -27,7 +27,7 @@
 #endif
 #include <gst/gst.h>
 
-#include "shmdata/reader.h"
+#include "shmdata/base-reader.h"
 
 /* This example shows how to use textures that come from a
  * gst-plugins-gl pipeline, into the clutter framework
@@ -70,7 +70,7 @@ ClutterTimeline *timeline = NULL;
 
 //sharedvideo
 const char *socketName;
-shmdata_reader_t *reader;
+shmdata_base_reader_t *reader;
 
 /* rotation */
 void
@@ -192,7 +192,7 @@ end_stream_cb (GstBus * bus, GstMessage * msg, gpointer data)
 }
 
 void
-on_first_video_data (shmdata_reader_t *context, void *user_data)
+on_first_video_data (shmdata_base_reader_t *context, void *user_data)
 {
 
     GstElement *pipeline = (GstElement *)user_data;
@@ -253,7 +253,7 @@ on_first_video_data (shmdata_reader_t *context, void *user_data)
 		      clutter_texture);
 
     //now tells the shared video reader where to write the data 
-    shmdata_reader_set_sink (context,funnel);
+    shmdata_base_reader_set_sink (context,funnel);
   
     /* NULL to PAUSED state pipeline to make sure the gst opengl context is created and
      * shared with the clutter one */
@@ -363,7 +363,7 @@ main (int argc, char *argv[])
 
  
     //shared video creation
-    reader = shmdata_reader_init (socketName, pipeline, &on_first_video_data, pipeline);
+    reader = shmdata_base_reader_init (socketName, pipeline, &on_first_video_data, pipeline);
 
 
 

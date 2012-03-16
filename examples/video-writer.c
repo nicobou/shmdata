@@ -14,7 +14,7 @@
 
 #include <gst/gst.h>
 #include <signal.h>
-#include "shmdata/writer.h"
+#include "shmdata/base-writer.h"
 
 
 GstElement *pipeline;
@@ -26,7 +26,7 @@ GstElement *timeoverlay;
 GstElement *camsource;
 
 const char * socketName;
-shmdata_writer_t *writer;
+shmdata_base_writer_t *writer;
 
 //clean up pipeline when ctrl-c
 void
@@ -44,7 +44,7 @@ leave(int sig) {
 static gboolean  
 add_shared_video_writer()
 {
-    writer = shmdata_writer_init (socketName,pipeline,tee);
+    writer = shmdata_base_writer_init (socketName,pipeline,tee);
     g_print ("Now writing to the shared memory\n");
     return FALSE;
 }

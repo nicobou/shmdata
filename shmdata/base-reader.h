@@ -12,29 +12,32 @@
  * GNU Lesser General Public License for more details.
  */
 
-#ifndef _SHM_DATA_WRITER_H_
-#define _SHM_DATA_WRITER_H_
+#ifndef _SHMDATA_BASE_READER_H_
+#define _SHMDATA_BASE_READER_H_
 
 #include <gst/gst.h>
+#include <gio/gio.h>
 
 #ifdef __cplusplus
  extern "C" {
 #endif
 
-typedef struct shmdata_writer_ shmdata_writer_t;
+typedef struct shmdata_base_reader_ shmdata_base_reader_t;
 
-shmdata_writer_t *shmdata_writer_init (const char *socketPath,
-				       GstElement *pipeline,
-				       GstElement *Element);
+shmdata_base_reader_t *shmdata_base_reader_init (const char *socketPath, 
+				       GstElement *Pipeline,
+				       void(*on_first_data)(shmdata_base_reader_t *, void *), 
+				       void *user_data);
 
-shmdata_writer_t *shmdata_writer_init_pad (const char *socketPath,
-					   GstElement *pipeline,
-					   GstPad *srcPad);
+//where to push the video data
+void shmdata_base_reader_set_sink (shmdata_base_reader_t *reader,
+//			      GstElement *Pipeline, 
+			      GstElement *sink); 
 
-gboolean shmdata_writer_close (shmdata_writer_t *writer);
+void shmdata_base_reader_close(shmdata_base_reader_t *reader);
+
 
 #ifdef __cplusplus
 }
 #endif /* extern "C" */
-#endif //_SHM_DATA_WRITER_H_
-
+#endif //_SHM_DATA_READER_H_

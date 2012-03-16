@@ -21,7 +21,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "shmdata/reader.h"
+#include "shmdata/base-reader.h"
 
 
 GstElement *pipeline;
@@ -116,7 +116,7 @@ leave(int sig) {
 
 // ---- data ready ----------------------------
 void
-on_first_video_data (shmdata_reader_t *context, void *user_data)
+on_first_video_data (shmdata_base_reader_t *context, void *user_data)
 {
   GstElement *gstpay;
   GstElement *rtpbin, *rtpsink, *rtcpsink, *rtcpsrc;
@@ -138,7 +138,7 @@ on_first_video_data (shmdata_reader_t *context, void *user_data)
 
   gst_element_link (funnel,gstpay);
   
-  shmdata_reader_set_sink (context,funnel); 
+  shmdata_base_reader_set_sink (context,funnel); 
   //gstpay);
 
   /* the rtpbin element */
@@ -236,8 +236,8 @@ main (int argc, char *argv[])
   pipeline = gst_pipeline_new (NULL);
   g_assert (pipeline);
 
-  shmdata_reader_t *reader;
-  reader = shmdata_reader_init (socketName, 
+  shmdata_base_reader_t *reader;
+  reader = shmdata_base_reader_init (socketName, 
 				pipeline, 
 				&on_first_video_data, 
 				pipeline);

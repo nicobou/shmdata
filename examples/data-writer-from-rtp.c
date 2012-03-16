@@ -17,7 +17,7 @@
 #include <math.h>
 #include <gst/gst.h>
 #include <gst/app/gstappsink.h>
-#include "shmdata/writer.h"
+#include "shmdata/base-writer.h"
 
 /*
  * A simple RTP receiver 
@@ -51,7 +51,7 @@ typedef struct _App App;
 struct _App
 {
     GstElement *pipeline;
-    shmdata_writer_t *writer;
+    shmdata_base_writer_t *writer;
     const char *socketName;
 };
 
@@ -136,7 +136,7 @@ App app;
    g_assert (lres == GST_PAD_LINK_OK);
    gst_object_unref (sinkpad);
    
-   app->writer = shmdata_writer_init (app->socketName,app->pipeline,gstdepay);
+   app->writer = shmdata_base_writer_init (app->socketName,app->pipeline,gstdepay);
  }
 
 void

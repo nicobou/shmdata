@@ -12,9 +12,9 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "shmdata/reader.h"
+#include "shmdata/base-reader.h"
 
-struct shmdata_reader_ {
+struct shmdata_base_reader_ {
     //pipeline elements
     GstElement *pipeline_;
     GstElement *source_;
@@ -27,7 +27,7 @@ struct shmdata_reader_ {
     GFileMonitor* dirMonitor_;
     const char *socketName_;
     //user callback
-    void (*on_first_data_)(shmdata_reader_t *,void *);
+    void (*on_first_data_)(shmdata_base_reader_t *,void *);
     void* on_first_data_userData_;
     //state boolean
     gboolean initialized_; //the shared video has been attached once
@@ -35,9 +35,9 @@ struct shmdata_reader_ {
 
 
 
-gboolean shmdata_reader_clean_source (gpointer user_data)
+gboolean shmdata_base_reader_clean_source (gpointer user_data)
 {
-    shmdata_reader_t *context = (shmdata_reader_t *)user_data;
+    shmdata_base_reader_t *context = (shmdata_base_reader_t *)user_data;
     gst_object_unref(context->sinkPad_);
     gst_element_set_state (context->deserializer_, GST_STATE_NULL);
     gst_bin_remove (GST_BIN (context->pipeline_),context->deserializer_);
@@ -46,7 +46,7 @@ gboolean shmdata_reader_clean_source (gpointer user_data)
     return FALSE;
 }
 
-void shmdata_reader_attach (shmdata_reader_t *reader)
+void shmdata_base_reader_attach (shmdata_base_reader_t *reader)
 {
     reader->source_ = gst_element_factory_make ("shmsrc",  NULL);
     reader->deserializer_ = gst_element_factory_make ("gdpdepay",  NULL);   
@@ -86,14 +86,14 @@ void shmdata_reader_attach (shmdata_reader_t *reader)
 }
 
 
-void shmdata_reader_file_system_monitor_change (GFileMonitor * monitor,
+void shmdata_base_reader_file_system_monitor_change (GFileMonitor * monitor,
 						GFile *file,
 						GFile *other_file,
 						GFileMonitorEvent type,
 						gpointer user_data)
 {
     char *filename = g_file_get_path (file);
-    shmdata_reader_t *context = (shmdata_reader_t *)user_data;
+    shmdata_base_reader_t *context = (shmdata_base_reader_t *)user_data;
 	
     switch (type)
     {
@@ -104,7 +104,7 @@ void shmdata_reader_file_system_monitor_change (GFileMonitor * monitor,
 		context->initialized_ = TRUE;
 		context->on_first_data_ (context,context->on_first_data_userData_);
 	    }
-	    shmdata_reader_attach(context);
+	    shmdata_base_reader_attach(context);
 	}	  
 	break;
 	/* case G_FILE_MONITOR_EVENT_DELETED:*/
@@ -132,17 +132,17 @@ void shmdata_reader_file_system_monitor_change (GFileMonitor * monitor,
 
 
 
-void shmdata_reader_detach (shmdata_reader_t *reader)
+void shmdata_base_reader_detach (shmdata_base_reader_t *reader)
 {
     gst_element_unlink (reader->source_, reader->deserializer_);
     gst_pad_unlink (reader->deserialPad_,reader->sinkPad_);
     gst_object_unref (reader->deserialPad_);
     gst_element_release_request_pad (reader->sink_,reader->sinkPad_);
     //ask for element cleaning in the main thread
-    g_idle_add ((GSourceFunc) shmdata_reader_clean_source,reader);
+    g_idle_add ((GSourceFunc) shmdata_base_reader_clean_source,reader);
 }
 
-GstBusSyncReply shmdata_reader_message_handler (GstBus *bus, 
+GstBusSyncReply shmdata_base_reader_message_handler (GstBus *bus, 
 						GstMessage *msg, 
 						gpointer user_data)
 {
@@ -150,12 +150,12 @@ GstBusSyncReply shmdata_reader_message_handler (GstBus *bus,
     case GST_MESSAGE_ERROR: {
 	gchar  *debug;
 	GError *error;
-	shmdata_reader_t *context = (shmdata_reader_t *)user_data;
+	shmdata_base_reader_t *context = (shmdata_base_reader_t *)user_data;
 	gst_message_parse_error (msg, &error, &debug);
 	g_free (debug);
 	if (g_strcmp0 (GST_ELEMENT_NAME(context->source_),GST_OBJECT_NAME(msg->src)) == 0 ){
 	    if (error->code == GST_RESOURCE_ERROR_READ)
-		shmdata_reader_detach (context);
+		shmdata_base_reader_detach (context);
 	    g_error_free (error);
 	    return GST_BUS_DROP;
 	}
@@ -169,13 +169,13 @@ GstBusSyncReply shmdata_reader_message_handler (GstBus *bus,
 }
 
 
-shmdata_reader_t *shmdata_reader_init (const char * socketName, 
+shmdata_base_reader_t *shmdata_base_reader_init (const char * socketName, 
 				       GstElement *pipeline,
-				       void(*on_first_data)(shmdata_reader_t *, void *),
+				       void(*on_first_data)(shmdata_base_reader_t *, void *),
 				       void *user_data) 	
 {
 
-    shmdata_reader_t *reader = (shmdata_reader_t *)g_malloc0 (sizeof(shmdata_reader_t));
+    shmdata_base_reader_t *reader = (shmdata_base_reader_t *)g_malloc0 (sizeof(shmdata_base_reader_t));
     reader->initialized_ = FALSE;
     reader->on_first_data_ = on_first_data;
     reader->on_first_data_userData_ = user_data;
@@ -183,7 +183,7 @@ shmdata_reader_t *shmdata_reader_init (const char * socketName,
     reader->pipeline_ = pipeline;
 
     GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (reader->pipeline_));
-    gst_bus_set_sync_handler (bus, shmdata_reader_message_handler, reader);
+    gst_bus_set_sync_handler (bus, shmdata_base_reader_message_handler, reader);
     gst_object_unref (bus);
 
     //monitoring the shared memory file
@@ -193,7 +193,7 @@ shmdata_reader_t *shmdata_reader_init (const char * socketName,
     if (g_file_query_exists (reader->shmfile_,NULL)){
 	reader->initialized_ = TRUE;
 	reader->on_first_data_ (reader,reader->on_first_data_userData_);
-	shmdata_reader_attach (reader);
+	shmdata_base_reader_attach (reader);
     }
     
     GFile *dir = g_file_get_parent (reader->shmfile_);
@@ -203,22 +203,22 @@ shmdata_reader_t *shmdata_reader_init (const char * socketName,
     g_object_unref(dir);
     g_signal_connect (reader->dirMonitor_, 
 		      "changed", 
-		      G_CALLBACK (shmdata_reader_file_system_monitor_change), 
+		      G_CALLBACK (shmdata_base_reader_file_system_monitor_change), 
 		      reader); 
 
     return reader;
 }
 
 
-void shmdata_reader_set_sink (shmdata_reader_t *reader,
+void shmdata_base_reader_set_sink (shmdata_base_reader_t *reader,
 			     GstElement *sink)
 {
     reader->sink_ = sink;
 }
     
-void shmdata_reader_close (shmdata_reader_t *reader)
+void shmdata_base_reader_close (shmdata_base_reader_t *reader)
 {
-    shmdata_reader_detach (reader);
+    shmdata_base_reader_detach (reader);
     g_object_unref(reader->shmfile_);
     g_object_unref(reader->dirMonitor_);
     g_free (reader);

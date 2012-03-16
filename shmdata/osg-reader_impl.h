@@ -17,7 +17,7 @@
 
 #include <osg/Texture2D>
 #include <gst/gst.h>
-#include "shmdata/reader.h"
+#include "shmdata/base-reader.h"
 
 namespace shmdata 
 {
@@ -42,7 +42,7 @@ namespace shmdata
 				    gpointer user_data);
 	static void on_new_buffer_from_source (GstElement * elt, 
 					       gpointer user_data);
-	static void on_first_video_data (shmdata_reader_t *reader, 
+	static void on_first_video_data (shmdata_base_reader_t *reader, 
 					 void *user_data);
 	static void g_loop_thread (gpointer user_data);
     };

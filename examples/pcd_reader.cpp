@@ -26,7 +26,7 @@
 #include <gst/app/gstappsrc.h>
 #include <gst/app/gstappbuffer.h>
 #include <gst/app/gstappsink.h>
-#include "shmdata/reader.h"
+#include "shmdata/base-reader.h"
 
 #ifdef WIN32
 # define sleep(x) Sleep((x)*1000)
@@ -81,7 +81,7 @@ on_new_buffer_from_source (GstElement * elt, gpointer user_data)
 
 
 void
-on_first_video_data (shmdata_reader_t *context, void *user_data)
+on_first_video_data (shmdata_base_reader_t *context, void *user_data)
 {
     g_print ("on first data received \n");
     s_app.funnel = gst_element_factory_make ("funnel", NULL);
@@ -99,7 +99,7 @@ on_first_video_data (shmdata_reader_t *context, void *user_data)
     gst_element_link (s_app.funnel, s_app.sink);
 
     //now tells the shared data reader where to write the data
-    shmdata_reader_set_sink (context, s_app.funnel);
+    shmdata_base_reader_set_sink (context, s_app.funnel);
     
 }
 
@@ -140,9 +140,9 @@ main (int argc, char** argv)
     gst_element_set_state (s_app.pipe, GST_STATE_PLAYING);
 
     
-    // shmdata_reader_t *reader;
+    // shmdata_base_reader_t *reader;
     // reader =
-    shmdata_reader_init(socketName, s_app.pipe, &on_first_video_data,NULL);
+    shmdata_base_reader_init(socketName, s_app.pipe, &on_first_video_data,NULL);
     
 
     g_main_loop_run (loop);

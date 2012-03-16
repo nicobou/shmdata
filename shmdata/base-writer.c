@@ -12,10 +12,10 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "shmdata/writer.h"
+#include "shmdata/base-writer.h"
 
  
-struct shmdata_writer_ {
+struct shmdata_base_writer_ {
     GstElement *qserial_;
     GstElement *serializer_;
     GstElement *shmsink_;
@@ -25,12 +25,12 @@ struct shmdata_writer_ {
 };
 
 
-gboolean shmdata_writer_close (shmdata_writer_t *writer){
+gboolean shmdata_base_writer_close (shmdata_base_writer_t *writer){
     //todo (maybe remove from pipeline and set states to NULL)
     g_free (writer);
 }
 
-void shmdata_writer_link_branch(shmdata_writer_t *writer,
+void shmdata_base_writer_link_branch(shmdata_base_writer_t *writer,
 				GstElement *srcElement)
 {
     gst_element_link_many (srcElement, 
@@ -40,7 +40,7 @@ void shmdata_writer_link_branch(shmdata_writer_t *writer,
 			   NULL);
 }
 
-void shmdata_writer_link_branch_pad(shmdata_writer_t *writer,GstPad *srcPad)
+void shmdata_base_writer_link_branch_pad(shmdata_base_writer_t *writer,GstPad *srcPad)
 {
     GstPad *sinkPad = gst_element_get_static_pad (writer->qserial_, "sink");
     if (sinkPad) 
@@ -55,7 +55,7 @@ void shmdata_writer_link_branch_pad(shmdata_writer_t *writer,GstPad *srcPad)
 			   NULL);
 }
 
-void shmdata_writer_set_branch_state_as_pipeline (shmdata_writer_t *writer)
+void shmdata_base_writer_set_branch_state_as_pipeline (shmdata_base_writer_t *writer)
 {
     GstState current;
     gst_element_get_state (writer->pipeline_,&current,NULL,GST_CLOCK_TIME_NONE);
@@ -68,11 +68,11 @@ void shmdata_writer_set_branch_state_as_pipeline (shmdata_writer_t *writer)
     }
 }
     
-gboolean shmdata_writer_reset_time (GstPad * pad, 
+gboolean shmdata_base_writer_reset_time (GstPad * pad, 
 				    GstMiniObject * mini_obj, 
 				    gpointer user_data)
 {
-    shmdata_writer_t *context = (shmdata_writer_t *) user_data;
+    shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
     if (GST_IS_EVENT (mini_obj)) {
     }
     else if (GST_IS_BUFFER (mini_obj)) {
@@ -91,11 +91,11 @@ gboolean shmdata_writer_reset_time (GstPad * pad,
     return TRUE;
 }
 
-void shmdata_writer_pad_unblocked (GstPad * pad, 
+void shmdata_base_writer_pad_unblocked (GstPad * pad, 
 				   gboolean blocked, 
 				   gpointer user_data)
 {
-    shmdata_writer_t *context = (shmdata_writer_t *) user_data;
+    shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
     if(blocked)
 	g_critical ("Error: pad not unblocked");
     else
@@ -103,11 +103,11 @@ void shmdata_writer_pad_unblocked (GstPad * pad,
 }
 
 
-void shmdata_writer_switch_to_new_serializer (GstPad * pad, 
+void shmdata_base_writer_switch_to_new_serializer (GstPad * pad, 
 					      gboolean blocked, 
 					      gpointer user_data )
 {
-    shmdata_writer_t *context = (shmdata_writer_t *) user_data;
+    shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
 
     //unlink the old serializer
     GstPad *srcPad=gst_element_get_static_pad(context->serializer_,"src");
@@ -154,28 +154,28 @@ void shmdata_writer_switch_to_new_serializer (GstPad * pad,
     //unblocking data stream 
     gst_pad_set_blocked_async (pad, 
 			       FALSE,
-			       (GstPadBlockCallback) (shmdata_writer_pad_unblocked),
+			       (GstPadBlockCallback) (shmdata_base_writer_pad_unblocked),
 			       (void *)context); 
 }
 
-void shmdata_writer_on_client_connected (GstElement * shmsink, 
+void shmdata_base_writer_on_client_connected (GstElement * shmsink, 
 					 gint num, 
 					 gpointer user_data) 
 { 
-    shmdata_writer_t *context = (shmdata_writer_t *) user_data;
+    shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
     GstPad *serializerSinkPad=gst_element_get_static_pad(context->serializer_,"sink");
     GstPad *padToBlock = gst_pad_get_peer(serializerSinkPad);
 	
     if(!gst_pad_set_blocked_async (padToBlock, 
 				   TRUE, 
-				   (GstPadBlockCallback) (shmdata_writer_switch_to_new_serializer), 
+				   (GstPadBlockCallback) (shmdata_base_writer_switch_to_new_serializer), 
 				   (void *)context))
 	g_critical ("Error: when requesting the pad to be blocked");
     gst_object_unref (serializerSinkPad);
     gst_object_unref (padToBlock);
 } 
 
-void shmdata_writer_make_shm_branch(shmdata_writer_t *writer,
+void shmdata_base_writer_make_shm_branch(shmdata_base_writer_t *writer,
 				    const char *socketPath){
     writer->qserial_     = gst_element_factory_make ("queue", NULL);
     writer->serializer_  = gst_element_factory_make ("gdppay",  NULL);
@@ -193,12 +193,12 @@ void shmdata_writer_make_shm_branch(shmdata_writer_t *writer,
     //adding a probe for reseting timestamp when reconnecting
     GstPad *qserialPad = gst_element_get_pad (writer->qserial_, "src");
     gst_pad_add_data_probe (qserialPad, 
-			    G_CALLBACK (shmdata_writer_reset_time),
+			    G_CALLBACK (shmdata_base_writer_reset_time),
 			    writer);
     gst_object_unref(qserialPad);
 	
     g_signal_connect (writer->shmsink_, "client-connected", 
-		      G_CALLBACK (shmdata_writer_on_client_connected), 
+		      G_CALLBACK (shmdata_base_writer_on_client_connected), 
 		      writer);
 
     gst_bin_add_many (GST_BIN (writer->pipeline_), writer->qserial_, writer->serializer_, writer->shmsink_, NULL);
@@ -206,30 +206,30 @@ void shmdata_writer_make_shm_branch(shmdata_writer_t *writer,
 
 
 
-shmdata_writer_t *shmdata_writer_init (const char* socketPath, 
+shmdata_base_writer_t *shmdata_base_writer_init (const char* socketPath, 
 				       GstElement *pipeline, 
 				       GstElement *srcElement) 
 {
-    shmdata_writer_t *writer = (shmdata_writer_t *)g_malloc0(sizeof(shmdata_writer_t));
+    shmdata_base_writer_t *writer = (shmdata_base_writer_t *)g_malloc0(sizeof(shmdata_base_writer_t));
     writer->pipeline_ = pipeline;
     writer->timereset_ = FALSE;
     writer->timeshift_ = 0;
-    shmdata_writer_make_shm_branch (writer,socketPath);
-    shmdata_writer_link_branch (writer,srcElement);
-    shmdata_writer_set_branch_state_as_pipeline (writer);
+    shmdata_base_writer_make_shm_branch (writer,socketPath);
+    shmdata_base_writer_link_branch (writer,srcElement);
+    shmdata_base_writer_set_branch_state_as_pipeline (writer);
     return writer;    
 }
 
-shmdata_writer_t *shmdata_writer_init_pad (const char *socketPath,
+shmdata_base_writer_t *shmdata_base_writer_init_pad (const char *socketPath,
 					   GstElement *pipeline,
 					   GstPad *srcPad)
 {
-    shmdata_writer_t *writer = (shmdata_writer_t *)g_malloc0(sizeof(shmdata_writer_t));
+    shmdata_base_writer_t *writer = (shmdata_base_writer_t *)g_malloc0(sizeof(shmdata_base_writer_t));
     writer->pipeline_ = pipeline;
     writer->timereset_ = FALSE;
     writer->timeshift_ = 0;
-    shmdata_writer_make_shm_branch (writer,socketPath);
-    shmdata_writer_link_branch_pad (writer,srcPad);	
-    shmdata_writer_set_branch_state_as_pipeline (writer);
+    shmdata_base_writer_make_shm_branch (writer,socketPath);
+    shmdata_base_writer_link_branch_pad (writer,srcPad);	
+    shmdata_base_writer_set_branch_state_as_pipeline (writer);
     return writer;
 }

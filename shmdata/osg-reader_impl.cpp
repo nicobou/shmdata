@@ -41,7 +41,7 @@ namespace shmdata
 				   OsgReader_impl::log_handler, 
 				   static_cast<void *>(this));
 
-	shmdata_reader_init (socketName_->c_str(), pipeline_, 
+	shmdata_base_reader_init (socketName_->c_str(), pipeline_, 
 	  		     OsgReader_impl::on_first_video_data,
 	  		     static_cast<void *>(this));
     
@@ -56,7 +56,7 @@ namespace shmdata
 
     OsgReader_impl::~OsgReader_impl ()
     {
-	//TODO call shmdata_reader_close
+	//TODO call shmdata_base_reader_close
 	gst_element_set_state (pipeline_, GST_STATE_NULL);
 	gst_object_unref (GST_OBJECT (pipeline_));
 	g_main_loop_quit (loop_);
@@ -80,7 +80,7 @@ namespace shmdata
 
 
     void
-    OsgReader_impl::on_first_video_data (shmdata_reader_t *reader, void *user_data)
+    OsgReader_impl::on_first_video_data (shmdata_base_reader_t *reader, void *user_data)
     {
 
 	OsgReader_impl *context = static_cast<OsgReader_impl*>(user_data);
@@ -127,7 +127,7 @@ namespace shmdata
 	gst_element_link_many (funnel, videoConv, shmDisplay,NULL);
     
 	//now tells the shared video reader where to write the data
-	shmdata_reader_set_sink (reader, 
+	shmdata_base_reader_set_sink (reader, 
 				 funnel);
     }
 

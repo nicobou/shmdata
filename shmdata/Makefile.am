@@ -14,8 +14,8 @@ lib_LTLIBRARIES = \
 
 ## core library
 libshmdata_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
-    reader.c \
-    writer.c
+    base-reader.c \
+    base-writer.c
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
     $(GIO_LIBS) \
@@ -27,8 +27,8 @@ libshmdata_@LIBSHMDATA_API_VERSION@_la_includedir = \
     $(includedir)/shmdata-$(LIBSHMDATA_API_VERSION)/shmdata
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
-    reader.h \
-    writer.h
+    base-reader.h \
+    base-writer.h
 
 ## openscenegraph library
 libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_SOURCES = \

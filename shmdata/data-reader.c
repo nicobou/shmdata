@@ -12,7 +12,7 @@
  * GNU Lesser General Public License for more details.
  */
 
-#include "shmdata/reader.h"
+#include "shmdata/base-reader.h"
 #include "shmdata/data-reader.h"
 #include <gst/gst.h>
 #include <gst/app/gstappsrc.h>
@@ -20,7 +20,7 @@
 #include <gst/app/gstappsink.h>
 
 struct shmdata_data_reader_ {
-    shmdata_reader_t *reader_;
+    shmdata_base_reader_t *reader_;
     //pipeline elements
     GstElement *pipeline_;
     gchar *type_;
@@ -124,7 +124,7 @@ shmdata_data_reader_on_new_buffer_from_source (GstElement * elt, gpointer user_d
 }
 
 void
-shmdata_data_reader_on_first_video_data (shmdata_reader_t *context, void *user_data)
+shmdata_data_reader_on_first_video_data (shmdata_base_reader_t *context, void *user_data)
 {
     shmdata_data_reader_t *me = (shmdata_data_reader_t *)user_data;
 
@@ -152,7 +152,7 @@ shmdata_data_reader_on_first_video_data (shmdata_reader_t *context, void *user_d
 		      NULL);
     gst_element_link (me->funnel_, me->sink_);
     //now tells the shared data reader where to write the data
-    shmdata_reader_set_sink (context, me->funnel_);
+    shmdata_base_reader_set_sink (context, me->funnel_);
 }
 
 shmdata_data_reader_t *
@@ -209,7 +209,7 @@ void
 shmdata_data_reader_start (shmdata_data_reader_t *context,const char *socketName)
 {
     //initializing lower layer library
-    context->reader_ = shmdata_reader_init (socketName, 
+    context->reader_ = shmdata_base_reader_init (socketName, 
 					    context->pipeline_,
 					    &shmdata_data_reader_on_first_video_data,
 					    context);
@@ -232,7 +232,7 @@ shmdata_data_reader_set_data_type(shmdata_data_reader_t *reader,const char *type
 void 
 shmdata_data_reader_close(shmdata_data_reader_t *reader)
 {
-    shmdata_reader_close (reader->reader_);
+    shmdata_base_reader_close (reader->reader_);
     gst_caps_unref (reader->data_caps_);
     g_free (reader->type_);
     g_free (reader);

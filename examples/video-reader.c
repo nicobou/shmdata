@@ -14,14 +14,14 @@
 
 #include <gst/gst.h>
 #include <signal.h>
-#include "shmdata/reader.h"
+#include "shmdata/base-reader.h"
 
 GstElement *pipeline;
 GstElement *shmDisplay;
 GstElement *funnel;
 
 const char *socketName;
-shmdata_reader_t *reader;
+shmdata_base_reader_t *reader;
 
 static gboolean
 bus_call (GstBus     *bus,
@@ -72,7 +72,7 @@ leave(int sig) {
 
 
 void
-on_first_video_data (shmdata_reader_t *context, void *user_data)
+on_first_video_data (shmdata_base_reader_t *context, void *user_data)
 {
     g_print ("creating element to display the shared video \n");
     shmDisplay   = gst_element_factory_make ("xvimagesink", NULL);
@@ -90,7 +90,7 @@ on_first_video_data (shmdata_reader_t *context, void *user_data)
     gst_element_link (funnel, shmDisplay);
     
     //now tells the shared video reader where to write the data
-    shmdata_reader_set_sink (context, funnel);
+    shmdata_base_reader_set_sink (context, funnel);
 
     gst_element_set_state (shmDisplay, GST_STATE_PLAYING); 
     gst_element_set_state (funnel, GST_STATE_PLAYING); 
@@ -102,7 +102,7 @@ add_shared_video_reader(gpointer user_data)
 {
     GstElement *pipeline = (GstElement *)user_data;
     g_print ("add shared video reader\n");
-    reader = shmdata_reader_init (socketName, pipeline, &on_first_video_data,NULL);
+    reader = shmdata_base_reader_init (socketName, pipeline, &on_first_video_data,NULL);
     return FALSE;
 }
 
@@ -159,7 +159,7 @@ main (int   argc,
     gst_element_link (localVideoSource, localDisplay);
 
 
-    // shmdata_reader_init (socketName,&on_first_video_data);
+    // shmdata_base_reader_init (socketName,&on_first_video_data);
     g_timeout_add (1000, (GSourceFunc) add_shared_video_reader, pipeline);
 
     gst_element_set_state (pipeline, GST_STATE_PLAYING);
