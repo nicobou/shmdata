@@ -147,16 +147,16 @@ main (int   argc,
     gst_bus_add_watch (bus, bus_call, loop);
     gst_object_unref (bus);
 
-    GstElement *localVideoSource = gst_element_factory_make ("videotestsrc", NULL);
-    GstElement *localDisplay = gst_element_factory_make ("xvimagesink", NULL);
+    /* GstElement *localVideoSource = gst_element_factory_make ("videotestsrc", NULL); */
+    /* GstElement *localDisplay = gst_element_factory_make ("xvimagesink", NULL); */
 
-    if (!pipeline || !localVideoSource || !localDisplay) {
+    if (!pipeline /* || !localVideoSource || !localDisplay */) {
 	g_printerr ("One element could not be created. Exiting.\n");
 	return -1;
     }
 
-    gst_bin_add_many (GST_BIN (pipeline), localVideoSource, localDisplay, NULL);
-    gst_element_link (localVideoSource, localDisplay);
+    /* gst_bin_add_many (GST_BIN (pipeline), localVideoSource, localDisplay, NULL); */
+    /* gst_element_link (localVideoSource, localDisplay); */
 
 
     // shmdata_base_reader_init (socketName,&on_first_video_data);
