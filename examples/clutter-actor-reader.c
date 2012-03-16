@@ -27,7 +27,7 @@
 #endif
 #include <gst/gst.h>
 
-#include "shmdata/reader.h"
+#include "shmdata/base-reader.h"
 
 /* This example shows how to use textures that come from a
  * gst-plugins-gl pipeline, into the clutter framework
@@ -69,8 +69,8 @@ ClutterActor *stage = NULL;
 ClutterTimeline *timeline = NULL;
 
 //sharedvideo
-std::string socketName;
-shmdata::Reader *reader;
+const char *socketName;
+shmdata_base_reader_t *reader;
 
 /* rotation */
 void
@@ -192,8 +192,10 @@ end_stream_cb (GstBus * bus, GstMessage * msg, gpointer data)
 }
 
 void
-on_first_video_data (shmdata::Reader *context, void *user_data)
+on_first_video_data (shmdata_base_reader_t *context, void *user_data)
 {
+
+    GstElement *pipeline = (GstElement *)user_data;
 
     /* texture actor */
     clutter_texture = clutter_texture_new ();
@@ -227,17 +229,6 @@ on_first_video_data (shmdata::Reader *context, void *user_data)
     glXMakeCurrent (clutter_display, None, 0);
 #endif
 
-    /* setup gstreamer pipeline */
-    pipeline = gst_pipeline_new (NULL);
-
-    /* setup bus */
-    bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
-    gst_bus_add_signal_watch (bus);
-    g_signal_connect (bus, "message::error", G_CALLBACK (end_stream_cb), NULL);
-    g_signal_connect (bus, "message::warning", G_CALLBACK (end_stream_cb), NULL);
-    g_signal_connect (bus, "message::eos", G_CALLBACK (end_stream_cb), NULL);
-    gst_object_unref (bus);
-
     // GST_PIPELINE (gst_parse_launch
     // 		    ("shmsrc socket-path=/tmp/rt ! gdpdepay ! "
     // 		     "glupload ! fakesink sync=1",
@@ -262,7 +253,7 @@ on_first_video_data (shmdata::Reader *context, void *user_data)
 		      clutter_texture);
 
     //now tells the shared video reader where to write the data 
-    context->setSink (pipeline, funnel);
+    shmdata_base_reader_set_sink (context,funnel);
   
     /* NULL to PAUSED state pipeline to make sure the gst opengl context is created and
      * shared with the clutter one */
@@ -298,8 +289,21 @@ main (int argc, char *argv[])
 	g_printerr ("Usage: %s <socket-path>\n", argv[0]);
 	return -1;
     }
-    socketName.append (argv[1]);
+    socketName = argv[1];
   
+
+    /* setup gstreamer pipeline */
+    pipeline = gst_pipeline_new (NULL);
+
+    /* setup bus */
+    bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline));
+    gst_bus_add_signal_watch (bus);
+    g_signal_connect (bus, "message::error", G_CALLBACK (end_stream_cb), NULL);
+    g_signal_connect (bus, "message::warning", G_CALLBACK (end_stream_cb), NULL);
+    g_signal_connect (bus, "message::eos", G_CALLBACK (end_stream_cb), NULL);
+    gst_object_unref (bus);
+
+
     /* init gstreamer then clutter */
 
     gst_init (&argc, &argv);
@@ -359,7 +363,7 @@ main (int argc, char *argv[])
 
  
     //shared video creation
-    reader = new shmdata::Reader (socketName, &on_first_video_data,NULL);
+    reader = shmdata_base_reader_init (socketName, pipeline, &on_first_video_data, pipeline);
 
 
 

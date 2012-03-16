@@ -12,29 +12,26 @@
  * GNU Lesser General Public License for more details.
  */
 
-#ifndef __SHMDATA_EXCEPTIONS_H__
-#define __SHMDATA_EXCEPTIONS_H__
+#ifndef _SHM_DATA_OSG_READER_H_
+#define _SHM_DATA_OSG_READER_H_
 
-#include <stdexcept>
-#include <string>
+#include <osg/Texture2D>
 
-namespace shmdata
+namespace shmdata 
 {
+    class OsgReader_impl; // forward declaration
 
-class BaseException : public std::runtime_error
-{
+    class OsgReader{
     public:
-        BaseException(const char *error_message) :
-            std::runtime_error(error_message)
-        {}
-        // BaseException(const std::string &error_message) :
-        //     std::runtime_error(error_message.c_str())
-        // {}
-        BaseException() :
-            std::runtime_error("")
-        {}
-};
+	OsgReader ();
+	void start (const std::string &socketPath);
+	osg::Texture2D* getTexture();
+	~OsgReader ();
+	void setDebug(bool debug);
+    private:
+	OsgReader_impl *impl_; // PIMPL opaque pointer
+    };
+    
+}//end namespace
 
-} // end of namespace
-
-#endif // ifndef
+#endif //_SHM_DATA_READER_H_

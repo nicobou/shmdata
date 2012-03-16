@@ -26,7 +26,7 @@
 #include <gst/app/gstappsrc.h>
 #include <gst/app/gstappbuffer.h>
 #include <gst/app/gstappsink.h>
-#include "shmdata/reader.h"
+#include "shmdata/base-reader.h"
 
 #ifdef WIN32
 # define sleep(x) Sleep((x)*1000)
@@ -81,7 +81,7 @@ on_new_buffer_from_source (GstElement * elt, gpointer user_data)
 
 
 void
-on_first_video_data (shmdata::Reader *context, void *user_data)
+on_first_video_data (shmdata_base_reader_t *context, void *user_data)
 {
     g_print ("on first data received \n");
     s_app.funnel = gst_element_factory_make ("funnel", NULL);
@@ -99,7 +99,7 @@ on_first_video_data (shmdata::Reader *context, void *user_data)
     gst_element_link (s_app.funnel, s_app.sink);
 
     //now tells the shared data reader where to write the data
-    context->setSink (s_app.pipe, s_app.funnel);
+    shmdata_base_reader_set_sink (context, s_app.funnel);
     
 }
 
@@ -124,7 +124,7 @@ main (int argc, char** argv)
     s_app.PointCloudDecoder = new pcl::octree::PointCloudCompression<pcl::PointXYZRGB> ();
     s_app.viewer = new pcl::visualization::CloudViewer ("Compressed Point Cloud receiver");
 
-    std::string socketName;
+    const char *socketName;
     gst_init (&argc, &argv);
     loop = g_main_loop_new (NULL, FALSE);
     
@@ -132,7 +132,7 @@ main (int argc, char** argv)
 	g_printerr ("Usage: %s <socket-path>\n", argv[0]);
 	return -1;
     }
-    socketName.append (argv[1]);
+    socketName = argv[1];
     
     s_app.pipe = gst_pipeline_new (NULL);
     g_assert (s_app.pipe);
@@ -140,8 +140,9 @@ main (int argc, char** argv)
     gst_element_set_state (s_app.pipe, GST_STATE_PLAYING);
 
     
-    shmdata::Reader *reader;
-    reader = new shmdata::Reader (socketName, &on_first_video_data,NULL);
+    // shmdata_base_reader_t *reader;
+    // reader =
+    shmdata_base_reader_init(socketName, s_app.pipe, &on_first_video_data,NULL);
     
 
     g_main_loop_run (loop);
