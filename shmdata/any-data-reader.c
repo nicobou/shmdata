@@ -245,7 +245,8 @@ void
 shmdata_any_reader_close(shmdata_any_reader_t *reader)
 {
     shmdata_base_reader_close (reader->reader_);
-    gst_caps_unref (reader->data_caps_);
+    if (reader->data_caps_ != NULL)
+	gst_caps_unref (reader->data_caps_);
     g_free (reader->type_);
     g_free (reader);
 }

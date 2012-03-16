@@ -13,6 +13,7 @@
  * GNU Lesser General Public License for more details.
  */
 
+/* this file is streaming whatever in comming through the shared memory*/
 
 #include <string.h>
 #include <math.h>
@@ -116,7 +117,7 @@ leave(int sig) {
 
 // ---- data ready ----------------------------
 void
-on_first_video_data (shmdata_base_reader_t *context, void *user_data)
+on_first_data (shmdata_base_reader_t *context, void *user_data)
 {
   GstElement *gstpay;
   GstElement *rtpbin, *rtpsink, *rtcpsink, *rtcpsrc;
@@ -139,7 +140,6 @@ on_first_video_data (shmdata_base_reader_t *context, void *user_data)
   gst_element_link (funnel,gstpay);
   
   shmdata_base_reader_set_sink (context,funnel); 
-  //gstpay);
 
   /* the rtpbin element */
   rtpbin = gst_element_factory_make ("gstrtpbin", "rtpbin");
@@ -239,7 +239,7 @@ main (int argc, char *argv[])
   shmdata_base_reader_t *reader;
   reader = shmdata_base_reader_init (socketName, 
 				pipeline, 
-				&on_first_video_data, 
+				&on_first_data, 
 				pipeline);
 
   /* we need to run a GLib main loop to get the messages */

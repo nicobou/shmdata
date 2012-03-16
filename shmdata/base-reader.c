@@ -40,9 +40,12 @@ gboolean shmdata_base_reader_clean_source (gpointer user_data)
     shmdata_base_reader_t *context = (shmdata_base_reader_t *)user_data;
     gst_object_unref(context->sinkPad_);
     gst_element_set_state (context->deserializer_, GST_STATE_NULL);
-    gst_bin_remove (GST_BIN (context->pipeline_),context->deserializer_);
     gst_element_set_state (context->source_, GST_STATE_NULL);
-    gst_bin_remove (GST_BIN (context->pipeline_),context->source_); 
+    if (GST_IS_BIN (context->pipeline_))
+    {
+	gst_bin_remove (GST_BIN (context->pipeline_),context->deserializer_);
+	gst_bin_remove (GST_BIN (context->pipeline_),context->source_); 
+    }
     return FALSE;
 }
 

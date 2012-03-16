@@ -26,7 +26,7 @@
 #include <gst/app/gstappsrc.h>
 #include <gst/app/gstappbuffer.h>
 #include <gst/app/gstappsink.h>
-#include "shmdata/base-reader.h"
+#include "shmdata/any-data-reader.h"
 
 #ifdef WIN32
 # define sleep(x) Sleep((x)*1000)
@@ -35,117 +35,69 @@
 typedef struct _App App;
 struct _App
 {
-    GstElement *pipe;
-    GstElement *funnel;
-    GstElement *sink;
+    shmdata_any_reader_t *reader;
     pcl::visualization::CloudViewer *viewer;
     pcl::octree::PointCloudCompression<pcl::PointXYZRGB> *PointCloudDecoder;
+    bool on;
 };
  
 App s_app;
 
-
-
-
-
-static void
-on_new_buffer_from_source (GstElement * elt, gpointer user_data)
+void on_data (shmdata_any_reader_t *reader,
+	      void *shmbuf,
+	      void *data, 
+	      int data_size, 
+	      unsigned long long timestamp, 
+	      const char *type_description,
+	      void *user_data)
 {
-    GstBuffer *buf;
-    
-    /* pull the next item, this can return NULL when there is no more data and
-     * EOS has been received */
-    buf = gst_app_sink_pull_buffer (GST_APP_SINK (s_app.sink));
 
-    // g_print ("retrieved buffer %p, data %p, data size %d, timestamp %d, caps %s\n", buf, 
-    // 	    GST_BUFFER_DATA(buf), GST_BUFFER_SIZE(buf),
-    // 	    GST_TIME_AS_MSECONDS(GST_BUFFER_TIMESTAMP(buf)),
-    // 	    gst_caps_to_string(GST_BUFFER_CAPS(buf)));
-    //g_print ("received: %s\n",GST_BUFFER_DATA(buf));
-  
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloudOut (new pcl::PointCloud<pcl::PointXYZRGB> ());
-    // // stringstream to store compressed point cloud
-     std::stringstream compressedData;
-     compressedData.write ((const char *)GST_BUFFER_DATA(buf),GST_BUFFER_SIZE(buf));
-    // // decompress point cloud
-
-     s_app.PointCloudDecoder->decodePointCloud (compressedData, cloudOut);
-    // // show decompressed point cloud
-     s_app.viewer->showCloud (cloudOut);
+    // stringstream to store compressed point cloud
+    std::stringstream compressedData;
+    compressedData.write ((const char *)data, data_size);
+    //decode and show the point cloud
+    s_app.PointCloudDecoder->decodePointCloud (compressedData, cloudOut);
+    s_app.viewer->showCloud (cloudOut);
     
-    if (buf)
-	gst_buffer_unref (buf);
-}
-
-
-
-
-void
-on_first_video_data (shmdata_base_reader_t *context, void *user_data)
-{
-    g_print ("on first data received \n");
-    s_app.funnel = gst_element_factory_make ("funnel", NULL);
-    g_assert (s_app.funnel);
-    s_app.sink = gst_element_factory_make ("appsink", NULL);
-    g_assert (s_app.sink);
-    g_object_set (G_OBJECT (s_app.sink), "emit-signals", TRUE, "sync", FALSE, NULL);
-    g_signal_connect (s_app.sink, "new-buffer",
-     		      G_CALLBACK (on_new_buffer_from_source), NULL);
-    
-    
-    gst_element_set_state (s_app.funnel, GST_STATE_PLAYING);
-    gst_element_set_state (s_app.sink, GST_STATE_PLAYING);
-    gst_bin_add_many (GST_BIN (s_app.pipe), s_app.funnel, s_app.sink, NULL);
-    gst_element_link (s_app.funnel, s_app.sink);
-
-    //now tells the shared data reader where to write the data
-    shmdata_base_reader_set_sink (context, s_app.funnel);
-    
+    shmdata_any_reader_free (shmbuf);
 }
 
 void
 leave(int sig) {
-    gst_element_set_state (s_app.pipe, GST_STATE_NULL);
-    gst_object_unref (GST_OBJECT (s_app.pipe));
-    // delete point cloud compression instances
-    delete (s_app.PointCloudDecoder);
-    exit(sig);
+    shmdata_any_reader_close(s_app.reader);
+    delete s_app.PointCloudDecoder;
+    delete s_app.viewer;
+    s_app.on = false;
+    //exit(sig);
 }
 
 
 int
-main (int argc, char** argv)
+main (int argc, char *argv[])
 {
-
-    GMainLoop *loop;
-    
     (void) signal(SIGINT,leave);
     
     s_app.PointCloudDecoder = new pcl::octree::PointCloudCompression<pcl::PointXYZRGB> ();
     s_app.viewer = new pcl::visualization::CloudViewer ("Compressed Point Cloud receiver");
 
-    const char *socketName;
-    gst_init (&argc, &argv);
-    loop = g_main_loop_new (NULL, FALSE);
-    
     if (argc != 2) {
 	g_printerr ("Usage: %s <socket-path>\n", argv[0]);
 	return -1;
     }
-    socketName = argv[1];
+       
+    s_app.reader = shmdata_any_reader_init ();
+    shmdata_any_reader_set_debug (s_app.reader,SHMDATA_ENABLE_DEBUG);
+    shmdata_any_reader_set_on_data_handler (s_app.reader, &on_data, NULL);
+    shmdata_any_reader_set_data_type(s_app.reader, "application/pcd_");
+    shmdata_any_reader_start (s_app.reader,argv[1]);
     
-    s_app.pipe = gst_pipeline_new (NULL);
-    g_assert (s_app.pipe);
-    
-    gst_element_set_state (s_app.pipe, GST_STATE_PLAYING);
-
-    
-    // shmdata_base_reader_t *reader;
-    // reader =
-    shmdata_base_reader_init(socketName, s_app.pipe, &on_first_video_data,NULL);
-    
-
-    g_main_loop_run (loop);
+    //shmdata_any_reader is non blocking
+    s_app.on = true;
+    while (s_app.on)
+    {
+	sleep (1);
+    }
 
     return 0;
 }
