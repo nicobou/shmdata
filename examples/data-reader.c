@@ -18,14 +18,23 @@
 
 #include "shmdata/any-data-reader.h"
 
-shmdata_any_reader_t *reader;
+typedef enum _bool
+{
+    no = 0,
+    yes = 1 
+} Bool;
+
+static shmdata_any_reader_t *reader;
+static Bool keep_going;
 
 void
-leave(int sig) {
+leave(int sig)
+{
+    printf("\nCalling shmdata_any_reader_close...\n");
     shmdata_any_reader_close(reader);
-    exit(sig);
+    printf("\nWin!\n");
+    keep_going = no;
 }
-
 
 void on_data (shmdata_any_reader_t *reader,
 	      void *shmbuf,
@@ -46,17 +55,15 @@ void on_data (shmdata_any_reader_t *reader,
      shmdata_any_reader_free (shmbuf);
 }
     
-    int
-main (int argc, char *argv[])
+int main (int argc, char *argv[])
 {
-    
     (void) signal(SIGINT,leave);
-    
     const char* socketName;
     
-    if (argc != 2) {
-	g_printerr ("Usage: %s <socket-path>\n", argv[0]);
-	return -1;
+    if (argc != 2)
+    {
+        g_printerr ("Usage: %s <socket-path>\n", argv[0]);
+        return -1;
     }
     socketName = argv[1];
     
@@ -70,11 +77,11 @@ main (int argc, char *argv[])
     shmdata_any_reader_start (reader,argv[1]);
     
     //shmdata_any_reader is non blocking
-    while (0 != 1)
+    keep_going = yes;
+    while (keep_going == yes)
     {
-	sleep (1);
+	    sleep (1);
     }
-        
     return 0;
 }
 
