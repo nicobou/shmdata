@@ -64,8 +64,8 @@ pcd_reader_CPPFLAGS = $(PCL_CFLAGS) -I /usr/include/vtk-5.6/
 pcd_reader_LDADD = $(PCL_LIBS) $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
 pcd_reader_SOURCES = pcd_reader.cpp
 
-pcd_writer_CPPFLAGS = $(PCL_CFLAGS) -I /usr/include/vtk-5.6/ $(GSTAPP_CFLAGS)
-pcd_writer_LDADD = $(LDADD) $(PCL_LIBS) $(GSTAPP_LIBS) 
+pcd_writer_CPPFLAGS = $(PCL_CFLAGS) -I /usr/include/vtk-5.6/ 
+pcd_writer_LDADD = $(PCL_LIBS) $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
 pcd_writer_SOURCES = pcd_writer.cpp
 
 video_reader_SOURCES = video-reader.c
