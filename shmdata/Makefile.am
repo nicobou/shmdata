@@ -46,9 +46,11 @@ libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_CXXFLAGS = \
 libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
     $(GSTAPP_LIBS) \
     $(OPENSCENEGRAPH_LIBS) \
-    $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la \
     -export-dynamic \
     -version-info $(LIBSHMDATA_SO_VERSION) 
+
+libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_LDADD = \
+    $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la \
 
 libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_includedir = \
     $(includedir)/shmdata-$(LIBSHMDATA_API_VERSION)/shmdata
@@ -64,8 +66,10 @@ libshmdata_any_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
 libshmdata_any_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
     $(GSTAPP_LIBS) \
     -export-dynamic \
-    $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la \
     -version-info $(LIBSHMDATA_SO_VERSION)
+
+libshmdata_any_@LIBSHMDATA_API_VERSION@_la_LDADD = \
+    $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la \
 
 libshmdata_any_@LIBSHMDATA_API_VERSION@_la_includedir = \
     $(includedir)/shmdata-$(LIBSHMDATA_API_VERSION)/shmdata
