@@ -63,7 +63,7 @@ libshmdata_any_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
 libshmdata_any_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
     $(GSTAPP_LIBS) \
     -export-dynamic \
-    -lshmdata-@LIBSHMDATA_API_VERSION@ \
+    $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la \
     -version-info $(LIBSHMDATA_SO_VERSION)
 
 libshmdata_any_@LIBSHMDATA_API_VERSION@_la_includedir = \
