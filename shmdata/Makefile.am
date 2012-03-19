@@ -49,7 +49,7 @@ libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
     -export-dynamic \
     -version-info $(LIBSHMDATA_SO_VERSION) 
 
-libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_LDADD = \
+libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_LIBADD = \
     $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la
 
 libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_includedir = \
@@ -68,7 +68,7 @@ libshmdata_any_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
     -export-dynamic \
     -version-info $(LIBSHMDATA_SO_VERSION)
 
-libshmdata_any_@LIBSHMDATA_API_VERSION@_la_LDADD = \
+libshmdata_any_@LIBSHMDATA_API_VERSION@_la_LIBADD = \
     $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la
 
 libshmdata_any_@LIBSHMDATA_API_VERSION@_la_includedir = \
