@@ -40,13 +40,11 @@ leave(int sig) {
 int
 main (int argc, char *argv[])
 {
-    int i;
-
     (void) signal(SIGINT,leave);
 
     /* Check input arguments */
     if (argc != 2) {
-	g_printerr ("Usage: %s <socket-path>\n", argv[0]);
+	printf ("Usage: %s <socket-path>\n", argv[0]);
 	return -1;
     }
 

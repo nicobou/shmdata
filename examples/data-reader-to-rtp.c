@@ -236,8 +236,7 @@ main (int argc, char *argv[])
   pipeline = gst_pipeline_new (NULL);
   g_assert (pipeline);
 
-  shmdata_base_reader_t *reader;
-  reader = shmdata_base_reader_init (socketName, 
+  shmdata_base_reader_init (socketName, 
 				pipeline, 
 				&on_first_data, 
 				pipeline);

@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <unistd.h>
 
 #include "shmdata/any-data-reader.h"
 
@@ -56,14 +57,12 @@ void on_data (shmdata_any_reader_t *reader,
 int main (int argc, char *argv[])
 {
     (void) signal(SIGINT,leave);
-    const char* socketName;
     
     if (argc != 2)
     {
-        g_printerr ("Usage: %s <socket-path>\n", argv[0]);
+        printf ("Usage: %s <socket-path>\n", argv[0]);
         return -1;
     }
-    socketName = argv[1];
     
     const char *my_user_data="hello world";
     

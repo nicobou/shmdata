@@ -15,6 +15,7 @@ EXTRA_DIST = \
 # pkg-config file:
 DISTCLEANFILES = \
     shmdata-@LIBSHMDATA_API_VERSION@.pc \
+    shmdata-@LIBSHMDATA_API_VERSION@.tar.gz \
     shmdata-any-@LIBSHMDATA_API_VERSION@.pc \
     shmdata-osg-@LIBSHMDATA_API_VERSION@.pc
 

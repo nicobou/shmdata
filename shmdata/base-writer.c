@@ -25,8 +25,9 @@ struct shmdata_base_writer_ {
 };
 
 
-gboolean shmdata_base_writer_close (shmdata_base_writer_t *writer){
-    g_free (writer);
+void shmdata_base_writer_close (shmdata_base_writer_t *writer){
+    if (writer != NULL)
+	g_free (writer);
 }
 
 void shmdata_base_writer_link_branch(shmdata_base_writer_t *writer,

@@ -32,7 +32,7 @@ shmdata_base_writer_t *shmdata_base_writer_init_pad (const char *socketPath,
 					   GstElement *pipeline,
 					   GstPad *srcPad);
 
-gboolean shmdata_base_writer_close (shmdata_base_writer_t *writer);
+void shmdata_base_writer_close (shmdata_base_writer_t *writer);
 
 #ifdef __cplusplus
 }
