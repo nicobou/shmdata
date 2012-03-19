@@ -13,9 +13,9 @@ EXTRA_DIST = \
     README
 
 # pkg-config file:
-DISTCLEANFILES = libshmdata.pc
+DISTCLEANFILES = shmdata.pc
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libshmdata-@LIBSHMDATA_API_VERSION@.pc
+pkgconfig_DATA = shmdata-@LIBSHMDATA_API_VERSION@.pc
 
 html-local: htmldoc
 htmldoc:

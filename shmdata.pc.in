@@ -3,8 +3,8 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: libshmdata
-Description: share data flows between applications
+Name: shmdata
+Description: shares data flows between applications
 URL: @PACKAGE_URL@
 Version: @PACKAGE_VERSION@
 Requires.private: gstreamer-0.10 >= 0.10

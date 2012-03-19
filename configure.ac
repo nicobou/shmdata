@@ -1,5 +1,5 @@
 AC_PREREQ([2.61])
-AC_INIT(libshmdata, [0.1.0], [http://codered.sat.qc.ca/redmine/projects/libshmdata/issues], [libshmdata], [http://codered.sat.qc.ca/redmine/projects/libshmdata])
+AC_INIT(shmdata, [0.1.0], [http://codered.sat.qc.ca/redmine/projects/libshmdata/issues], [shmdata], [http://codered.sat.qc.ca/redmine/projects/libshmdata])
 #AC_CONFIG_MACRO_DIR([m4])
 AC_MSG_NOTICE([Configuring libshmdata])
 AM_INIT_AUTOMAKE([subdir-objects -Wno-portability])
@@ -70,9 +70,8 @@ if test "x$universal_build" = xyes; then
     LDFLAGS+=" -arch i386 -arch x86_64"
 fi
 
-#CXXFLAGS+=" -g3 -ggdb -Wall -Wextra -Wfatal-errors"
-CXXFLAGS+=" -Wall "
-
+CXXFLAGS+=" -g3 -ggdb -Wall -Wextra -Wfatal-errors -Wno-unused-parameter"
+CFLAGS+=" -g3 -ggdb -Wall -Wextra -Wfatal-errors -Wno-unused-parameter"
 
 # -- ( mandatory libraries) --
 #Trying to set GST_CFLAGS GST_LIBS using pkg-config
@@ -140,7 +139,7 @@ AC_CONFIG_FILES([
         shmdata/Makefile
         examples/Makefile
         doxyfile
-        libshmdata-${LIBSHMDATA_API_VERSION}.pc:libshmdata.pc.in
+        shmdata-${LIBSHMDATA_API_VERSION}.pc:shmdata.pc.in
         ])
 
 AC_OUTPUT
