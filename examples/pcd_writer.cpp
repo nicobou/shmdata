@@ -70,7 +70,7 @@ main (int argc, char *argv[])
     //shmdata 
     s_app.writer = shmdata_any_writer_init ();
     shmdata_any_writer_set_debug (s_app.writer, SHMDATA_ENABLE_DEBUG);
-    shmdata_any_writer_set_data_type(s_app.writer, "application/pcd_");
+    shmdata_any_writer_set_data_type(s_app.writer, "application/x-pcd");
     shmdata_any_writer_start (s_app.writer,argv[1]);
 
     //---- reading a pcd file 

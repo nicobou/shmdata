@@ -96,7 +96,7 @@ void shmdata_base_writer_pad_unblocked (GstPad * pad,
 {
     shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
     if(blocked)
-	g_critical ("Error: pad not unblocked");
+	g_critical ("Error: pad not in unblocked state");
     else
 	context->timereset_=TRUE;
 }
@@ -228,6 +228,15 @@ shmdata_base_writer_t *shmdata_base_writer_init (const char* socketPath,
     writer->pipeline_ = pipeline;
     writer->timereset_ = FALSE;
     writer->timeshift_ = 0;
+
+    GFile *shmfile = g_file_new_for_commandline_arg (socketPath);
+    if (g_file_query_exists (shmfile,NULL)){
+	g_object_unref(shmfile);
+	g_critical ("file %s exist, could be a writer or a file to delete",socketPath);
+	return NULL;
+    }
+    g_object_unref(shmfile);
+    
     shmdata_base_writer_make_shm_branch (writer,socketPath);
     shmdata_base_writer_link_branch (writer,srcElement);
     shmdata_base_writer_set_branch_state_as_pipeline (writer);

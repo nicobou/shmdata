@@ -16,6 +16,7 @@
 #define _SHMDATA_BASE__WRITER_H_
 
 #include <gst/gst.h>
+#include <gio/gio.h>
 
 #ifdef __cplusplus
  extern "C" {

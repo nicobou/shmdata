@@ -89,7 +89,7 @@ main (int argc, char *argv[])
     s_app.reader = shmdata_any_reader_init ();
     shmdata_any_reader_set_debug (s_app.reader,SHMDATA_ENABLE_DEBUG);
     shmdata_any_reader_set_on_data_handler (s_app.reader, &on_data, NULL);
-    shmdata_any_reader_set_data_type(s_app.reader, "application/pcd_");
+    shmdata_any_reader_set_data_type(s_app.reader, "application/x-pcd");
     shmdata_any_reader_start (s_app.reader,argv[1]);
     
     //shmdata_any_reader is non blocking

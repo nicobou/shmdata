@@ -225,6 +225,7 @@ shmdata_any_reader_start (shmdata_any_reader_t *context,const char *socketName)
 					    context->pipeline_,
 					    &shmdata_any_reader_on_first_video_data,
 					    context);
+    
     g_thread_init (NULL);
     context->sharedDataThread_ = g_thread_create ((GThreadFunc) shmdata_any_reader_g_loop_thread, 
 					  context, 
@@ -244,12 +245,18 @@ shmdata_any_reader_set_data_type(shmdata_any_reader_t *reader,const char *type)
 void 
 shmdata_any_reader_close(shmdata_any_reader_t *reader)
 {
-    shmdata_base_reader_close (reader->reader_); 
+    if (reader->reader_)
+	shmdata_base_reader_close (reader->reader_); 
+    else 
+	g_warning ("trying to close a NULL (base-)reader");
     if (reader->data_caps_ != NULL)  
       	gst_caps_unref (reader->data_caps_);  
     if (reader->type_ != NULL)  
       	g_free (reader->type_);  
-    g_free (reader);  
+    if (reader)
+	g_free (reader);
+    else
+	g_warning ("trying to close a NULL (base-)reader");
 }
 
 

@@ -29,12 +29,6 @@
 
 #include "shmdata/base-reader.h"
 
-/* This example shows how to use textures that come from a
- * gst-plugins-gl pipeline, into the clutter framework
- * It requires at least clutter 0.8.6
- */
-
-/* hack */
 typedef struct _GstGLBuffer GstGLBuffer;
 struct _GstGLBuffer
 {
@@ -159,42 +153,33 @@ void
 end_stream_cb (GstBus * bus, GstMessage * msg, gpointer data)
 {
     switch (GST_MESSAGE_TYPE (msg)) {
-
     case GST_MESSAGE_EOS:
 	g_print ("End-of-stream\n");
 	g_print
 	    ("For more information, try to run: GST_DEBUG=gldisplay:2 ./cluttershare\n");
 	break;
-
     case GST_MESSAGE_ERROR:
     {
 	gchar *debug = NULL;
 	GError *err = NULL;
-
 	gst_message_parse_error (msg, &err, &debug);
-
 	g_print ("Error: %s\n", err->message);
 	g_error_free (err);
-
 	if (debug) {
 	    g_print ("Debug deails: %s\n", debug);
 	    g_free (debug);
 	}
-
 	break;
     }
-
     default:
 	break;
     }
-
     clutter_main_quit ();
 }
 
 void
 on_first_video_data (shmdata_base_reader_t *context, void *user_data)
 {
-
     GstElement *pipeline = (GstElement *)user_data;
 
     /* texture actor */
@@ -229,11 +214,6 @@ on_first_video_data (shmdata_base_reader_t *context, void *user_data)
     glXMakeCurrent (clutter_display, None, 0);
 #endif
 
-    // GST_PIPELINE (gst_parse_launch
-    // 		    ("shmsrc socket-path=/tmp/rt ! gdpdepay ! "
-    // 		     "glupload ! fakesink sync=1",
-    // 		     NULL));
-
     funnel   = gst_element_factory_make ("funnel", NULL);
     glupload = gst_element_factory_make ("glupload", NULL);
     fakesink = gst_element_factory_make ("fakesink", NULL);
@@ -255,16 +235,6 @@ on_first_video_data (shmdata_base_reader_t *context, void *user_data)
     //now tells the shared video reader where to write the data 
     shmdata_base_reader_set_sink (context,funnel);
   
-    /* NULL to PAUSED state pipeline to make sure the gst opengl context is created and
-     * shared with the clutter one */
-  
-    // gst_element_set_state (GST_ELEMENT (pipeline), GST_STATE_PAUSED);
-    // state = GST_STATE_PAUSED;
-    // if (gst_element_get_state (GST_ELEMENT (pipeline), &state, NULL,
-    // 			     GST_CLOCK_TIME_NONE) != GST_STATE_CHANGE_SUCCESS) {
-    //     g_debug ("failed to pause pipeline\n");
-    // }
-
     /* turn on back clutter opengl context */
   
 #ifdef WIN32
@@ -275,7 +245,6 @@ on_first_video_data (shmdata_base_reader_t *context, void *user_data)
  
     /* play gst */
     gst_element_set_state (GST_ELEMENT (pipeline), GST_STATE_PLAYING);
-   
 }
 
 
@@ -290,7 +259,6 @@ main (int argc, char *argv[])
 	return -1;
     }
     socketName = argv[1];
-  
 
     /* setup gstreamer pipeline */
     pipeline = gst_pipeline_new (NULL);
@@ -303,9 +271,7 @@ main (int argc, char *argv[])
     g_signal_connect (bus, "message::eos", G_CALLBACK (end_stream_cb), NULL);
     gst_object_unref (bus);
 
-
     /* init gstreamer then clutter */
-
     gst_init (&argc, &argv);
     clutter_threads_init ();
     clutter_err = clutter_init (&argc, &argv);
@@ -316,13 +282,11 @@ main (int argc, char *argv[])
     clutter_set_default_frame_rate (2);
 
     /* init glew */
-
     err = glewInit ();
     if (err != GLEW_OK)
 	g_debug ("failed to init GLEW: %s", glewGetErrorString (err));
 
     /* avoid to dispatch unecesary events */
-
     clutter_ungrab_keyboard ();
     clutter_ungrab_pointer ();
 
@@ -331,14 +295,12 @@ main (int argc, char *argv[])
     stage = clutter_stage_get_default ();
 
     /* clutter stage */
-  
     clutter_actor_set_size (stage, 640, 480);
     clutter_actor_set_position (stage, 0, 0);
     clutter_stage_set_title (CLUTTER_STAGE (stage), "clutter and gst-plugins-gl");
 
     /* clutter scene */
     //clutter_texture = setup_stage (CLUTTER_STAGE (stage));
-  
     ClutterColor rect_color = { 125, 50, 200, 255 };
     ClutterActor *rect_actor = NULL;
 
@@ -357,18 +319,14 @@ main (int argc, char *argv[])
     g_signal_connect (timeline, "new-frame", G_CALLBACK (on_new_frame),
 		      NULL);
   
-/* we can now show the clutter scene if not yet visible */
+    /* we can now show the clutter scene if not yet visible */
     if (!CLUTTER_ACTOR_IS_VISIBLE (stage))
 	clutter_actor_show_all (stage);
-
  
     //shared video creation
     reader = shmdata_base_reader_init (socketName, pipeline, &on_first_video_data, pipeline);
 
-
-
     /* main loop */
-
     clutter_main ();
 
     /* before to deinitialize the gst-gl-opengl context,
@@ -383,26 +341,21 @@ main (int argc, char *argv[])
     clutter_threads_leave ();
 
     /* stop and clean up the pipeline */
-
     gst_element_set_state (GST_ELEMENT (pipeline), GST_STATE_NULL);
     g_object_unref (pipeline);
 
     /* make sure there is no pending gst gl buffer in the communication queues
      * between clutter and gst-gl
      */
-
     while (g_async_queue_length (queue_input_buf) > 0) {
 	GstBuffer *buf = (GstBuffer *)g_async_queue_pop (queue_input_buf);
 	gst_buffer_unref (buf);
     }
-
     while (g_async_queue_length (queue_output_buf) > 0) {
 	GstBuffer *buf = (GstBuffer *)g_async_queue_pop (queue_output_buf);
 	gst_buffer_unref (buf);
     }
-
     g_print ("END\n");
 
     return 0;
-
 }
