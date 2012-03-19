@@ -45,8 +45,8 @@ libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_CXXFLAGS = \
 libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
     $(GSTAPP_LIBS) \
     $(OPENSCENEGRAPH_LIBS) \
+    $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la \
     -export-dynamic \
-    -lshmdata-@LIBSHMDATA_API_VERSION@ \
     -version-info $(LIBSHMDATA_SO_VERSION) 
 
 libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_includedir = \
