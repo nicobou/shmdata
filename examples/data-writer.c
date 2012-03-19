@@ -16,13 +16,10 @@
 #include "config.h"
 #endif
 
-#include <gst/gst.h>
-#include <gst/app/gstappsrc.h>
-#include <gst/app/gstappbuffer.h>
-
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <signal.h>
 
 #include <unistd.h>//sleep
 #include "shmdata/any-data-writer.h"
@@ -30,7 +27,7 @@
 
 shmdata_any_writer_t *writer;
 
-static void dont_eat_my_chicken_wings (void *priv);
+static void data_not_required_anymore (void *priv);
 
 //clean up pipeline when ctrl-c
 void
@@ -61,7 +58,7 @@ shmdata_any_writer_start (writer,argv[1]);
 unsigned long long myclock=0;
 unsigned long long nsecPeriod=30000000;
 
-gchar hello[21]="helloworldhelloworld";
+char hello[21]="helloworldhelloworld";
 
 while (0 == 0){  
     //data should be serialized if network is involved
@@ -69,7 +66,7 @@ while (0 == 0){
 				  hello, 
 				  sizeof(hello),
 				  myclock,
-				  &dont_eat_my_chicken_wings,
+				  &data_not_required_anymore,
 				  hello);	
     usleep (nsecPeriod/1000);
     myclock += nsecPeriod;
@@ -79,7 +76,7 @@ return 0;
 }
 
 static void
-dont_eat_my_chicken_wings (void *priv)
+data_not_required_anymore (void *priv)
 {
     //printf ("freeing buffer for pointer %p\n", priv);
     //free (priv);
