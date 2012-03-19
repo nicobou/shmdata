@@ -1,4 +1,5 @@
 AM_CFLAGS = \
+    -I$(top_srcdir) \
     -DG_LOG_DOMAIN=\"shmdata\" \
     $(GST_CFLAGS) \
     $(GIO_CFLAGS)
