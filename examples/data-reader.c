@@ -30,9 +30,7 @@ static Bool keep_going;
 void
 leave(int sig)
 {
-    printf("\nCalling shmdata_any_reader_close...\n");
     shmdata_any_reader_close(reader);
-    printf("\nWin!\n");
     keep_going = no;
 }
 
@@ -69,7 +67,7 @@ int main (int argc, char *argv[])
     
     const char *my_user_data="hello world";
     
-    shmdata_any_reader_t *reader = shmdata_any_reader_init ();
+    reader = shmdata_any_reader_init ();
     shmdata_any_reader_set_debug (reader,SHMDATA_ENABLE_DEBUG);
     shmdata_any_reader_set_on_data_handler (reader, &on_data, (void *)my_user_data);
 //    shmdata_any_reader_set_data_type(reader, "video/x-raw-yuv, format=(fourcc)YUY2, framerate=(fraction)25/1, width=(int)924, height=(int)576, interlaced=(boolean)true, pixel-aspect-ratio=(fraction)1/1");

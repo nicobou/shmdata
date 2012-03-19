@@ -84,6 +84,7 @@ main (int   argc,
     }
 
     g_object_set (G_OBJECT (imgsink), "sync", FALSE, NULL);
+    g_object_set (G_OBJECT (videosource), "is-live", TRUE, NULL);
 
     /*specifying video format*/
      GstCaps *videocaps;  

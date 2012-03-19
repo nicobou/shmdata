@@ -244,11 +244,12 @@ shmdata_any_reader_set_data_type(shmdata_any_reader_t *reader,const char *type)
 void 
 shmdata_any_reader_close(shmdata_any_reader_t *reader)
 {
-    shmdata_base_reader_close (reader->reader_);
-    if (reader->data_caps_ != NULL)
-	gst_caps_unref (reader->data_caps_);
-    g_free (reader->type_);
-    g_free (reader);
+    shmdata_base_reader_close (reader->reader_); 
+    if (reader->data_caps_ != NULL)  
+      	gst_caps_unref (reader->data_caps_);  
+    if (reader->type_ != NULL)  
+      	g_free (reader->type_);  
+    g_free (reader);  
 }
 
 
