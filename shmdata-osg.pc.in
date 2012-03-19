@@ -3,10 +3,10 @@ exec_prefix=@exec_prefix@
 libdir=@libdir@
 includedir=@includedir@
 
-Name: shmdata
-Description: shares data flows between gstreamer applications
+Name: shmdata-osg
+Description: shares video to OpenSceneGraph applications
 URL: @PACKAGE_URL@
 Version: @PACKAGE_VERSION@
-Requires.private: gstreamer-0.10 >= 0.10
-Libs: -L${libdir} -lshmdata-@LIBSHMDATA_API_VERSION@
+Requires.private: 
+Libs: -L${libdir} -lshmdata-osg-@LIBSHMDATA_API_VERSION@
 Cflags: -I${includedir}/shmdata-@LIBSHMDATA_API_VERSION@

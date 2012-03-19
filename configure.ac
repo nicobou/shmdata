@@ -140,6 +140,8 @@ AC_CONFIG_FILES([
         examples/Makefile
         doxyfile
         shmdata-${LIBSHMDATA_API_VERSION}.pc:shmdata.pc.in
+        shmdata-any-${LIBSHMDATA_API_VERSION}.pc:shmdata-any.pc.in
+        shmdata-osg-${LIBSHMDATA_API_VERSION}.pc:shmdata-osg.pc.in
         ])
 
 AC_OUTPUT
