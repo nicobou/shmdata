@@ -19,23 +19,23 @@
 #include <gio/gio.h>
 
 #ifdef __cplusplus
- extern "C" {
+extern "C"
+{
 #endif
 
-typedef struct shmdata_base_writer_ shmdata_base_writer_t;
+  typedef struct shmdata_base_writer_ shmdata_base_writer_t;
 
-shmdata_base_writer_t *shmdata_base_writer_init (const char *socketPath,
-				       GstElement *pipeline,
-				       GstElement *Element);
+  shmdata_base_writer_t *shmdata_base_writer_init (const char *socketPath,
+						   GstElement * pipeline,
+						   GstElement * Element);
 
-shmdata_base_writer_t *shmdata_base_writer_init_pad (const char *socketPath,
-					   GstElement *pipeline,
-					   GstPad *srcPad);
+  shmdata_base_writer_t *shmdata_base_writer_init_pad (const char *socketPath,
+						       GstElement * pipeline,
+						       GstPad * srcPad);
 
-void shmdata_base_writer_close (shmdata_base_writer_t *writer);
+  void shmdata_base_writer_close (shmdata_base_writer_t * writer);
 
 #ifdef __cplusplus
 }
-#endif /* extern "C" */
-#endif //_SHMDATA_BASE_WRITER_H_
-
+#endif				/* extern "C" */
+#endif				//_SHMDATA_BASE_WRITER_H_

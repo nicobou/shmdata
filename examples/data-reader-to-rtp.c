@@ -24,15 +24,11 @@
 #include <stdlib.h>
 #include "shmdata/base-reader.h"
 
-
 GstElement *pipeline;
-
-
-
 
 //--------------------------RTP---------------------------------------------------
 /*
- * A simple RTP server 
+ * A simple RTP server
  *  sends the output of alsasrc as alaw encoded RTP on port 5002, RTCP is sent on
  *  port 5003. The destination is 127.0.0.1.
  *  the receiver RTCP reports are received on port 5007
@@ -41,19 +37,18 @@ GstElement *pipeline;
  *              |appsrc |    | gstpay |      | rtpbin   |     |udpsink|  RTP
  *              |      src->sink     src->send_rtp send_rtp->sink     | port=5002
  *              '-------'    '--------'      |          |     '-------'
- *                                           |          |      
+ *                                           |          |
  *                                           |          |     .-------.
  *                                           |          |     |udpsink|  RTCP
  *                                           |    send_rtcp->sink     | port=5003
  *                            .-------.      |          |     '-------' sync=false
  *                 RTCP       |udpsrc |      |          |               async=false
- *               port=5007    |     src->recv_rtcp      |                       
- *                            '-------'      '----------'              
+ *               port=5007    |     src->recv_rtcp      |
+ *                            '-------'      '----------'
  */
 
 /* change this to send the RTP data and RTCP to another host */
 #define DEST_HOST "127.0.0.1"
-
 
 /* print the stats of a source */
 static void
@@ -77,69 +72,66 @@ print_source_stats (GObject * source)
 static gboolean
 print_stats (GstElement * rtpbin)
 {
-   GObject *session;
-   GValueArray *arr;
-   GValue *val;
-   guint i;
+  GObject *session;
+  GValueArray *arr;
+  GValue *val;
+  guint i;
 
-   g_print ("***********************************\n");
+  g_print ("***********************************\n");
 
-   /* get session 0 */
-   g_signal_emit_by_name (rtpbin, "get-internal-session", 0, &session);
+  /* get session 0 */
+  g_signal_emit_by_name (rtpbin, "get-internal-session", 0, &session);
 
-   /* print all the sources in the session, this includes the internal source */
-   g_object_get (session, "sources", &arr, NULL);
+  /* print all the sources in the session, this includes the internal source */
+  g_object_get (session, "sources", &arr, NULL);
 
-   for (i = 0; i < arr->n_values; i++) {
-       GObject *source;
+  for (i = 0; i < arr->n_values; i++)
+    {
+      GObject *source;
 
-       val = g_value_array_get_nth (arr, i);
-       source = (GObject *)g_value_get_object (val);
-      
-       print_source_stats (source);
-   }
-   g_value_array_free (arr);
+      val = g_value_array_get_nth (arr, i);
+      source = (GObject *) g_value_get_object (val);
 
-   g_object_unref (session);
+      print_source_stats (source);
+    }
+  g_value_array_free (arr);
+
+  g_object_unref (session);
 
   return TRUE;
 }
 
-
-
 // ------------------------------- cleaning --------------------------------------
 void
-leave(int sig) {
-    gst_element_set_state (pipeline, GST_STATE_NULL);
-    gst_object_unref (GST_OBJECT (pipeline));
-    exit(sig);
+leave (int sig)
+{
+  gst_element_set_state (pipeline, GST_STATE_NULL);
+  gst_object_unref (GST_OBJECT (pipeline));
+  exit (sig);
 }
 
 // ---- data ready ----------------------------
 void
-on_first_data (shmdata_base_reader_t *context, void *user_data)
+on_first_data (shmdata_base_reader_t * context, void *user_data)
 {
   GstElement *gstpay;
   GstElement *rtpbin, *rtpsink, *rtcpsink, *rtcpsrc;
   GstPad *srcpad, *sinkpad;
-    
-  GstElement *pipeline = (GstElement *)user_data;
-  
-  
+
+  GstElement *pipeline = (GstElement *) user_data;
+
   gstpay = gst_element_factory_make ("rtpgstpay", NULL);
   g_assert (gstpay);
 
-  GstElement *funnel= gst_element_factory_make ("funnel",NULL);
+  GstElement *funnel = gst_element_factory_make ("funnel", NULL);
   g_assert (funnel);
 
-    /* add capture and payloading to the pipeline and link */
-  gst_bin_add_many (GST_BIN (pipeline), gstpay, 
-		    funnel,
-		    NULL);
+  /* add capture and payloading to the pipeline and link */
+  gst_bin_add_many (GST_BIN (pipeline), gstpay, funnel, NULL);
 
-  gst_element_link (funnel,gstpay);
-  
-  shmdata_base_reader_set_sink (context,funnel); 
+  gst_element_link (funnel, gstpay);
+
+  shmdata_base_reader_set_sink (context, funnel);
 
   /* the rtpbin element */
   rtpbin = gst_element_factory_make ("gstrtpbin", "rtpbin");
@@ -171,7 +163,7 @@ on_first_data (shmdata_base_reader_t *context, void *user_data)
     g_error ("Failed to link audio payloader to rtpbin");
   gst_object_unref (srcpad);
 
-  g_print ("srcpadcaps %s\n",gst_caps_to_string (gst_pad_get_caps(srcpad)));
+  g_print ("srcpadcaps %s\n", gst_caps_to_string (gst_pad_get_caps (srcpad)));
 
   /* get the RTP srcpad that was created when we requested the sinkpad above and
    * link it to the rtpsink sinkpad*/
@@ -218,28 +210,25 @@ int
 main (int argc, char *argv[])
 {
   GMainLoop *loop;
-  
-  (void) signal(SIGINT,leave);
+
+  (void) signal (SIGINT, leave);
 
   /* always init first */
   gst_init (&argc, &argv);
 
-  const char* socketName;
-  if (argc != 2) {
+  const char *socketName;
+  if (argc != 2)
+    {
       g_printerr ("Usage: %s <socket-path>\n", argv[0]);
       return -1;
-  }
+    }
   socketName = argv[1];
-  
-  
+
   /* the pipeline to hold everything */
   pipeline = gst_pipeline_new (NULL);
   g_assert (pipeline);
 
-  shmdata_base_reader_init (socketName, 
-				pipeline, 
-				&on_first_data, 
-				pipeline);
+  shmdata_base_reader_init (socketName, pipeline, &on_first_data, pipeline);
 
   /* we need to run a GLib main loop to get the messages */
   loop = g_main_loop_new (NULL, FALSE);

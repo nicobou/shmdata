@@ -17,21 +17,22 @@
 
 #include <osg/Texture2D>
 
-namespace shmdata 
+namespace shmdata
 {
-    class OsgReader_impl; // forward declaration
+  class OsgReader_impl;		// forward declaration
 
-    class OsgReader{
-    public:
-	OsgReader ();
-	void start (const std::string &socketPath);
-	osg::Texture2D* getTexture();
-	~OsgReader ();
-	void setDebug(bool debug);
-    private:
-	OsgReader_impl *impl_; // PIMPL opaque pointer
-    };
-    
-}//end namespace
+  class OsgReader
+  {
+  public:
+    OsgReader ();
+    void start (const std::string & socketPath);
+      osg::Texture2D * getTexture ();
+     ~OsgReader ();
+    void setDebug (bool debug);
+  private:
+      OsgReader_impl * impl_;	// PIMPL opaque pointer
+  };
 
-#endif //_SHM_DATA_READER_H_
+}				//end namespace
+
+#endif				//_SHM_DATA_READER_H_

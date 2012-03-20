@@ -19,25 +19,26 @@
 #include <gio/gio.h>
 
 #ifdef __cplusplus
- extern "C" {
+extern "C"
+{
 #endif
 
-typedef struct shmdata_base_reader_ shmdata_base_reader_t;
+  typedef struct shmdata_base_reader_ shmdata_base_reader_t;
 
-shmdata_base_reader_t *shmdata_base_reader_init (const char *socketPath, 
-				       GstElement *Pipeline,
-				       void(*on_first_data)(shmdata_base_reader_t *, void *), 
-				       void *user_data);
+  shmdata_base_reader_t *shmdata_base_reader_init (const char *socketPath,
+						   GstElement * Pipeline,
+						   void (*on_first_data)
+						   (shmdata_base_reader_t *,
+						    void *), void *user_data);
 
 //where to push the video data
-void shmdata_base_reader_set_sink (shmdata_base_reader_t *reader,
-//			      GstElement *Pipeline, 
-			      GstElement *sink); 
+  void shmdata_base_reader_set_sink (shmdata_base_reader_t * reader,
+//                            GstElement *Pipeline,
+				     GstElement * sink);
 
-void shmdata_base_reader_close(shmdata_base_reader_t *reader);
-
+  void shmdata_base_reader_close (shmdata_base_reader_t * reader);
 
 #ifdef __cplusplus
 }
-#endif /* extern "C" */
-#endif //_SHM_DATA_READER_H_
+#endif				/* extern "C" */
+#endif				//_SHM_DATA_READER_H_
