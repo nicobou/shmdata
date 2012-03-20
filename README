@@ -13,6 +13,8 @@ License: LGPL.
 
 Project URL: http://codered.sat.qc.ca/redmine/projects/libshmdata
 
+This is an outcome of the Scenic research project at the SAT[Metalab]. http://www.sat.qc.ca
+
 Installation
 ------------
 Here is how to build and install it on Debian GNU/Linux or Ubuntu::
@@ -34,9 +36,9 @@ Here is how to build and install the PCL library headers on Ubuntu::
   $ sudo apt-get update
   $ sudo apt-get install libpcl-all
 
-
 Authors
 -------
+Written by:
 
 * Nicolas Bouillot (initial author)
 * Alexandre Quessy (help with packaging)
