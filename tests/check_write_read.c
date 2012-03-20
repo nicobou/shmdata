@@ -84,36 +84,38 @@ check_read_write ()
   const char *my_user_data = "You can pass a pointer to the reader's data handler function.";
   const char *SOCKET_PATH = "/tmp/shmdata-test-check-write-read";
 
+  writer = shmdata_any_writer_init ();
+  shmdata_any_writer_set_debug (writer, SHMDATA_ENABLE_DEBUG);
+  shmdata_any_writer_set_data_type (writer, "text/plain");
+  shmdata_any_writer_start (writer, SOCKET_PATH);
+
   reader = shmdata_any_reader_init ();
   shmdata_any_reader_set_debug (reader, SHMDATA_ENABLE_DEBUG);
   shmdata_any_reader_set_on_data_handler (reader, &on_data,
 					  (void *) my_user_data);
-  shmdata_any_reader_set_data_type (reader, "application/helloworld_");
+  shmdata_any_reader_set_data_type (reader, "text/plain");
   shmdata_any_reader_start (reader, SOCKET_PATH);
-
-  writer = shmdata_any_writer_init ();
-  shmdata_any_writer_set_debug (writer, SHMDATA_ENABLE_DEBUG);
-  shmdata_any_writer_set_data_type (writer, "application/helloworld_");
-  shmdata_any_writer_start (writer, SOCKET_PATH);
 
   unsigned long long myclock = 0;
   unsigned long long nsecPeriod = 30000000;
 
   keep_going = yes;
+  shmdata_any_writer_push_data (writer,
+                message,
+                sizeof (message),
+                myclock,
+                &data_not_required_anymore, message);
   while (keep_going == yes)
     {
       //data should be serialized if network is involved
-      shmdata_any_writer_push_data (writer,
-				    message,
-				    sizeof (message),
-				    myclock,
-				    &data_not_required_anymore, message);
+      // here it is not
       usleep (nsecPeriod / 1000);
       myclock += nsecPeriod;
     }
 
   shmdata_any_writer_close (writer);
   shmdata_any_reader_close (reader);
+
   if (success == yes)
     return 0;
   else
