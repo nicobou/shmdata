@@ -43,7 +43,9 @@ static Bool keep_going;
 
 // Function signatures:
 static void data_not_required_anymore (void *priv);
-static void on_data (shmdata_any_reader_t * reader, void *shmbuf, void *data, int data_size, unsigned long long timestamp, const char *type_description, void *user_data);
+static void on_data (shmdata_any_reader_t * reader, void *shmbuf, void *data,
+		     int data_size, unsigned long long timestamp,
+		     const char *type_description, void *user_data);
 static int check_read_write ();
 
 // Implementations:
@@ -68,8 +70,12 @@ on_data (shmdata_any_reader_t * reader,
       printf ("user_data: %s\n", (const char *) user_data);
     }
 
-  if (strcmp(data, message) == 0)
-    success = yes;
+  if (strcmp (data, message) == 0)
+    {
+      if (VERBOSE == yes)
+	printf ("The two strings match! Success!\n");
+      success = yes;
+    }
   //free the data, can also be called later
   shmdata_any_reader_free (shmbuf);
   keep_going = no;
@@ -81,16 +87,19 @@ check_read_write ()
   shmdata_any_reader_t *reader;
   shmdata_any_writer_t *writer;
 
-  const char *my_user_data = "You can pass a pointer to the reader's data handler function.";
+  const char *my_user_data =
+    "You can pass a pointer to the reader's data handler function.";
   const char *SOCKET_PATH = "/tmp/shmdata-test-check-write-read";
 
   writer = shmdata_any_writer_init ();
-  shmdata_any_writer_set_debug (writer, SHMDATA_ENABLE_DEBUG);
+  if (VERBOSE == yes)
+    shmdata_any_writer_set_debug (writer, SHMDATA_ENABLE_DEBUG);
   shmdata_any_writer_set_data_type (writer, "text/plain");
   shmdata_any_writer_start (writer, SOCKET_PATH);
 
   reader = shmdata_any_reader_init ();
-  shmdata_any_reader_set_debug (reader, SHMDATA_ENABLE_DEBUG);
+  if (VERBOSE == yes)
+    shmdata_any_reader_set_debug (reader, SHMDATA_ENABLE_DEBUG);
   shmdata_any_reader_set_on_data_handler (reader, &on_data,
 					  (void *) my_user_data);
   shmdata_any_reader_set_data_type (reader, "text/plain");
@@ -101,10 +110,9 @@ check_read_write ()
 
   keep_going = yes;
   shmdata_any_writer_push_data (writer,
-                message,
-                sizeof (message),
-                myclock,
-                &data_not_required_anymore, message);
+				message,
+				sizeof (message),
+				myclock, &data_not_required_anymore, message);
   while (keep_going == yes)
     {
       //data should be serialized if network is involved
@@ -123,9 +131,9 @@ check_read_write ()
 }
 
 int
-main (int argc, char * argv)
+main (int argc, char *argv)
 {
-  if (check_read_write() != 0)
+  if (check_read_write () != 0)
     return 1;
   return 0;
 }

@@ -1,5 +1,5 @@
 #!/bin/bash
-FILES=`ls shmdata/*.{h,c} examples/*.{c,cpp}`
+FILES=`ls shmdata/*.{h,c} examples/*.{c,cpp} tests/*.c`
 
 # reindent
 indent -gnu -sob $FILES
