@@ -6,6 +6,7 @@ AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = \
     shmdata \
+    tests \
     examples 
 
 EXTRA_DIST = \
