@@ -69,8 +69,8 @@ shmdata_base_reader_attach (shmdata_base_reader_t * reader)
 						     "src");
   reader->sinkPad_ = gst_element_get_compatible_pad (reader->sink_,
 						     reader->deserialPad_,
-						     GST_PAD_CAPS (reader->
-								   deserialPad_));
+						     GST_PAD_CAPS
+						     (reader->deserialPad_));
 
   gst_element_link (reader->source_, reader->deserializer_);
   gst_pad_link (reader->deserialPad_, reader->sinkPad_);
@@ -236,3 +236,4 @@ shmdata_base_reader_close (shmdata_base_reader_t * reader)
   g_object_unref (reader->dirMonitor_);
   g_free (reader);
 }
+

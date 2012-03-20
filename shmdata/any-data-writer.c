@@ -157,3 +157,4 @@ shmdata_any_writer_close (shmdata_any_writer_t * writer)
   g_free (writer->type_);
   g_free (writer);
 }
+

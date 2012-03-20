@@ -278,3 +278,4 @@ shmdata_base_writer_init_pad (const char *socketPath,
   shmdata_base_writer_set_branch_state_as_pipeline (writer);
   return writer;
 }
+

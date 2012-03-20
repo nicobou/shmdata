@@ -42,3 +42,4 @@ extern "C"
 }
 #endif				/* extern "C" */
 #endif				//_SHM_DATA_READER_H_
+

@@ -56,3 +56,4 @@ extern "C"
 }
 #endif				/* extern "C" */
 #endif				//_SHMDATA_ANY_WRITER_H_
+

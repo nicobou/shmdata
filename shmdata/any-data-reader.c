@@ -254,3 +254,4 @@ shmdata_any_reader_close (shmdata_any_reader_t * reader)
   else
     g_warning ("trying to close a NULL (base-)reader");
 }
+

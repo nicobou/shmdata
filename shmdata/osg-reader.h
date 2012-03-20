@@ -36,3 +36,4 @@ namespace shmdata
 }				//end namespace
 
 #endif				//_SHM_DATA_READER_H_
+

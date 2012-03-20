@@ -39,3 +39,4 @@ extern "C"
 }
 #endif				/* extern "C" */
 #endif				//_SHMDATA_BASE_WRITER_H_
+

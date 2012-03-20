@@ -50,3 +50,4 @@ namespace shmdata
 }				//end namespace
 
 #endif				//_SHM_DATA_READER_IMPL_H_
+
