@@ -7,7 +7,10 @@
                                     
 shmdata
 =======
-Library to share flows of data frames between processes via shared memory.
+Library to share flows of data frames between processes via shared memory. Several libraries are provided: 
+* libshmdata for hot pluging between GStreamer pipelines
+* libshmdata-any for sharing data flows without including GStreamer headers
+* libshmdata-osg for receiving video writen to a shared memory into an OpenSceneGraph texture  
 
 License: LGPL.
 
