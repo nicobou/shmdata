@@ -38,14 +38,13 @@ gboolean
 shmdata_base_reader_clean_source (gpointer user_data)
 {
   shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
-  gst_object_unref (context->sinkPad_);
+  //gst_object_unref (context->sinkPad_);
   gst_element_set_state (context->deserializer_, GST_STATE_NULL);
   gst_element_set_state (context->source_, GST_STATE_NULL);
   if (GST_IS_BIN (context->pipeline_))
-    {
-      gst_bin_remove (GST_BIN (context->pipeline_), context->deserializer_);
-      gst_bin_remove (GST_BIN (context->pipeline_), context->source_);
-    }
+    gst_bin_remove (GST_BIN (context->pipeline_), context->deserializer_);
+  if (GST_IS_BIN (context->pipeline_))
+    gst_bin_remove (GST_BIN (context->pipeline_), context->source_);
   return FALSE;
 }
 
@@ -139,12 +138,14 @@ shmdata_base_reader_file_system_monitor_change (GFileMonitor * monitor,
 void
 shmdata_base_reader_detach (shmdata_base_reader_t * reader)
 {
-  gst_element_unlink (reader->source_, reader->deserializer_);
-  gst_pad_unlink (reader->deserialPad_, reader->sinkPad_);
-  gst_object_unref (reader->deserialPad_);
-  gst_element_release_request_pad (reader->sink_, reader->sinkPad_);
-  //ask for element cleaning in the main thread
-  g_idle_add ((GSourceFunc) shmdata_base_reader_clean_source, reader);
+  if (reader != NULL)
+    {
+      gst_element_unlink (reader->source_, reader->deserializer_);
+      if (GST_IS_PAD(reader->deserialPad_) && GST_IS_PAD(reader->sinkPad_))
+	gst_pad_unlink (reader->deserialPad_, reader->sinkPad_);
+      //ask for element cleaning in the main thread
+      g_idle_add ((GSourceFunc) shmdata_base_reader_clean_source, reader);
+    }
 }
 
 GstBusSyncReply

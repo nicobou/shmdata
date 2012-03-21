@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>		//sleep
+#include <unistd.h>  //sleep
 
 // types:
 typedef enum _bool
@@ -49,7 +49,7 @@ static void on_data (shmdata_any_reader_t * reader, void *shmbuf, void *data,
 static int check_read_write ();
 
 // Implementations:
-static void
+static void 
 data_not_required_anymore (void *priv)
 {
   // FIXME: what is this?

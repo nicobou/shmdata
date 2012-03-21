@@ -150,11 +150,20 @@ shmdata_any_writer_close (shmdata_any_writer_t * writer)
 {
   /* push EOS */
   //gst_app_src_end_of_stream (GST_APP_SRC (app->src));
-  shmdata_base_writer_close (writer->base_writer_);
-  gst_element_set_state (writer->pipeline_, GST_STATE_NULL);
-  gst_object_unref (GST_OBJECT (writer->pipeline_));
-  gst_caps_unref (writer->data_caps_);
-  g_free (writer->type_);
-  g_free (writer);
+  if (writer != NULL)
+    {
+      if (writer->base_writer_ != NULL)
+	shmdata_base_writer_close (writer->base_writer_);
+      if (writer->pipeline_ != NULL)
+	{
+	  gst_element_set_state (writer->pipeline_, GST_STATE_NULL);
+	  gst_object_unref (GST_OBJECT (writer->pipeline_));
+	}
+      if (writer->data_caps_ != NULL)
+	gst_caps_unref (writer->data_caps_);
+      if (writer->type_ != NULL)
+	g_free (writer->type_);
+      g_free (writer);
+    }
 }
 
