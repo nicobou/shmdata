@@ -112,15 +112,15 @@ main (int argc, char *argv[])
 
   std::string * socketName = new std::string (argv[1]);
 
-  int i;
-  for (i = 0; i < 5; i++)
-    {
-      //creating the Reader
-      shmdata::OsgReader * reader = new shmdata::OsgReader ();
-      reader->setDebug (true);
-      reader->start (*socketName);
-      delete reader;
-    }
+  // int i;
+  // for (i = 0; i < 5; i++)
+  //   {
+  //     //creating the Reader
+  //     shmdata::OsgReader * reader = new shmdata::OsgReader ();
+  //     reader->setDebug (true);
+  //     reader->start (*socketName);
+  //     delete reader;
+  //   }
 
   shmdata::OsgReader * reader = new shmdata::OsgReader ();
   reader->setDebug (true);
