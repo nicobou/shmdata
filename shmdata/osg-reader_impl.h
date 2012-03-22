@@ -47,7 +47,7 @@ namespace shmdata
     static void g_loop_thread (gpointer user_data);
   };
 
-}				//end namespace
+} //end namespace
 
-#endif				//_SHM_DATA_READER_IMPL_H_
+#endif //_SHM_DATA_READER_IMPL_H_
 

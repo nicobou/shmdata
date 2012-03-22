@@ -23,23 +23,63 @@ extern "C"
 {
 #endif
 
-  typedef struct shmdata_base_reader_ shmdata_base_reader_t;
+  /**
+   * @file   base-reader.h
+   * 
+   * @brief  Reading from a shared memory and forward to a GStreamer pipeline
+   * 
+   * The base reader provides a shared memory reader, allowing forwarding 
+   * of a data flow to a GStreamer pipeline. It supports hot connections 
+   * and disconnections of the writer. The reader is monitoring the socket 
+   * path for automatically connect to the shared memory when created.
+   * 
+   */
 
+
+  typedef struct shmdata_base_reader_ shmdata_base_reader_t; 
+
+  /** 
+   * Initialization function that start monitoring socketPath.
+   * 
+   * @param socketPath is the file name of the shared memory
+   * @param Pipeline is the pipeline where the base writer will be added
+   * @param on_first_data is the function pointer that will be called when 
+   * the connecting with the writer.
+   * @param user_data is the user data pointer for the on_first_video_data
+   * callback
+   * 
+   * @return a base reader
+   */
   shmdata_base_reader_t *shmdata_base_reader_init (const char *socketPath,
 						   GstElement * Pipeline,
 						   void (*on_first_data)
 						   (shmdata_base_reader_t *,
 						    void *), void *user_data);
 
-//where to push the video data
+  /** 
+   * Tell the reader in which GStreamer element the reader should push the 
+   * data. This function should be called in the on_first_data handler.
+   * 
+   * @param reader is the base reader to inform
+   * @param sink is the element the base reader must link with in order to
+   * transmit data. This element is assumed to be in the same pipeline as the 
+   * reader.
+   *
+   */
+
   void shmdata_base_reader_set_sink (shmdata_base_reader_t * reader,
-//                            GstElement *Pipeline,
 				     GstElement * sink);
 
+  /** 
+   * Close the reader: free the memory, remove internal GStreamer elements 
+   * from the pipeline. 
+   * 
+   * @param reader is the base reader to close
+   */
   void shmdata_base_reader_close (shmdata_base_reader_t * reader);
 
 #ifdef __cplusplus
 }
 #endif				/* extern "C" */
-#endif				//_SHM_DATA_READER_H_
+#endif				//_SHMDATA_BASE_READER_H_
 

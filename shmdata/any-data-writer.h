@@ -27,30 +27,84 @@ extern "C"
 #define SHMDATA_DISABLE_DEBUG 0
 #endif
 
+  /**
+   * @file   any-data-writer.h
+   * 
+   * @brief  Writing any kind of data flow to a shared memory 
+   * 
+   * The any writer provides a shared memory writer, allowing transmission 
+   * of any kind data flows to a shared memory. It supports hot connections 
+   * and disconnections of multiple reader. A single writer is allowed for 
+   * a given shared memory (socket path).
+   *
+   * Data are pushed to the writer, with a mendatory timestamp. 
+   */
+
+
   typedef struct shmdata_any_writer_ shmdata_any_writer_t;
 
+  /** 
+   * Initialization function.
+   * 
+   * @return a writer instance 
+   */
   shmdata_any_writer_t *shmdata_any_writer_init ();
 
-  void shmdata_any_writer_set_debug (shmdata_any_writer_t * context,
+  /** 
+   * Set function for writer debuging. Debuging is disabled by default.
+   * 
+   * @param writer is the writer that needsto be set
+   * @param debug is either SHMDATA_ENABLE_DEBUG or SHMDATA_DISABLE_DEBUG  
+   */
+  void shmdata_any_writer_set_debug (shmdata_any_writer_t *writer,
 				     int debug);
 
-//type can be either a gstreamer caps (gst_caps_to_string) or a user defined string
-//if not called, data type is set to "application/shmdata_"
-//call before shmdata_any_writer_start
-  void shmdata_any_writer_set_data_type (shmdata_any_writer_t * context,
+  /** 
+   * Set funtion for describing the type of data to be transmitted. 
+   * This function should be called before shmdata_any_writer_start.
+   * 
+   * @param writer is the writer to update 
+   * @param type is a string describing the data. It can also be a string 
+   * describing a GStreamer caps as provided by the gst_caps_to_string 
+   * function, enabling compatibility with a base reader.  
+   */
+  void shmdata_any_writer_set_data_type (shmdata_any_writer_t *writer,
 					 const char *type);
 
-  void shmdata_any_writer_start (shmdata_any_writer_t * context,
-				 const char *socketName);
+  /** 
+   * Start function creating the shared memory.
+   * 
+   * @param writer is the writer to start
+   * @param socketPath is the file name of the shared memory
+   */
+  void shmdata_any_writer_start (shmdata_any_writer_t *writer,
+				 const char *socketPath);
 
-  void shmdata_any_writer_push_data (shmdata_any_writer_t * context,
+  /** 
+   * Writing to the shared memory. The done_with_data callback is provided in 
+   * order to inform when data are not used anymore by the writer, and therefore
+   * can be freed if necessary. 
+   * 
+   * @param writer is the writer that should push the data 
+   * @param data is a pointer to the data to transmit
+   * @param size is the size of the data to transmit
+   * @param timestamp is the timestamp associated to the data
+   * @param done_with_data is the callback informing when data can be freed
+   * @param user_data is the user data for the done_with_data callback
+   */
+  void shmdata_any_writer_push_data (shmdata_any_writer_t *writer,
 				     void *data,
 				     int size,
 				     unsigned long long timestamp,
 				     void (*done_with_data) (void *),
 				     void *user_data);
 
-  void shmdata_any_writer_close (shmdata_any_writer_t * context);
+  /** 
+   * Close the writer: free the memory and the shared memory socket. 
+   * 
+   * @param writer is the writer to close
+   */
+  void shmdata_any_writer_close (shmdata_any_writer_t *writer);
 
 #ifdef __cplusplus
 }

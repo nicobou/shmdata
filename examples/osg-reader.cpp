@@ -51,12 +51,12 @@ osg::Node * createFilterWall (osg::BoundingBox & bb, osg::Texture2D * texture)
   (*vertices)[3] = top_right;
   geom->setVertexArray (vertices);
 
-  osg::Vec2Array * texcoords = new osg::Vec2Array (4);
-  (*texcoords)[0].set (0.0f, 1.0f);
-  (*texcoords)[1].set (0.0f, 0.0f);
-  (*texcoords)[2].set (1.0f, 0.0f);
-  (*texcoords)[3].set (1.0f, 1.0f);
-  geom->setTexCoordArray (0, texcoords);
+   osg::Vec2Array * texcoords = new osg::Vec2Array (4);
+   (*texcoords)[0].set (0.0f, 1.0f);
+   (*texcoords)[1].set (0.0f, 0.0f);
+   (*texcoords)[2].set (1.0f, 0.0f);
+   (*texcoords)[3].set (1.0f, 1.0f);
+   geom->setTexCoordArray (0, texcoords);
 
   osg::Vec3Array * normals = new osg::Vec3Array (1);
   (*normals)[0].set (1.0f, 0.0f, 0.0f);

@@ -75,6 +75,7 @@ main (int argc, char *argv[])
   qlocalxv = gst_element_factory_make ("queue", NULL);
   imgsink = gst_element_factory_make ("xvimagesink", NULL);
 
+
   if (!pipeline || !timeoverlay || !tee || !qlocalxv || !imgsink)
     {
       g_printerr ("One element could not be created. Exiting.\n");
