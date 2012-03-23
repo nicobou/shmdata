@@ -67,7 +67,7 @@ namespace shmdata
      /** 
       * Set debug enable printing debug messages
       * 
-      * @param debug is the boolean enabling or deisabling debug 
+      * @param debug is the boolean enabling or disabling debug 
       */
     void setDebug (bool debug);
   private:

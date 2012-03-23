@@ -13,7 +13,7 @@
  */
 
 /** \addtogroup libshmdata
- * provides hot pluging between GStreamer pipelines via a shared memory.
+ * provides hot plugging between GStreamer pipelines via a shared memory.
  * compile with `pkg-config --cflags --libs shmdata-0.1.pc`
  *  @{
  */

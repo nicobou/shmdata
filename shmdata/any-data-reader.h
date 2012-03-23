@@ -51,7 +51,7 @@ extern "C"
   shmdata_any_reader_t *shmdata_any_reader_init ();
 
   /** 
-   * Set function for reader debuging. Debuging is disabled by default.
+   * Set function for reader debugging. Debugging is disabled by default.
    * 
    * @param reader is the reader that needs to be set
    * @param debug is either SHMDATA_ENABLE_DEBUG or SHMDATA_DISABLE_DEBUG  
@@ -62,7 +62,7 @@ extern "C"
 
   /*! \fn void (*shmdata_any_reader_on_data)(shmdata_any_reader_t *,void *, void *, int, unsigned long long, const char *, void *);
    *  \brief Callback triggered when a data frame has been written to the shared memory. You must free shmbuf when done with shmdata_any_reader_free.
-   *  \param shmbuf is the pointer used to free the buffer with shmdata_any_reader_free when wone with the data
+   *  \param shmbuf is the pointer used to free the buffer with shmdata_any_reader_free when the reader is done with the data
    *  \param data is the data written by the writer
    *  \param data_size is the size of data
    *  \param timestamp is the date the writer has associated to the data
@@ -80,7 +80,7 @@ extern "C"
   /** 
    * Free the received buffer.
    * 
-   * @param shmbuf is the buffer obtainned with the shmdata_any_reader_on_data callback
+   * @param shmbuf is the buffer obtained with the shmdata_any_reader_on_data callback
    */
   void shmdata_any_reader_free (void *shmbuf);
 
@@ -101,8 +101,8 @@ extern "C"
 
 
   /** 
-   * Set funtion for describing the type of data to be received. Any data not 
-   * maching this descrption are not received. If not called, no data are filtered.
+   * Set function for describing the type of data to be received. Any data not 
+   * matching this description are not received. If not called, no data are filtered.
    * 
    * @param reader is the reader to update 
    * @param type is a string describing the data. It can also be a string 

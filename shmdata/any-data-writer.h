@@ -41,7 +41,7 @@ extern "C"
    * and disconnections of multiple reader. A single writer is allowed for 
    * a given shared memory (socket path).
    *
-   * Data are pushed to the writer, with a mendatory timestamp. 
+   * Data are pushed to the writer, with a mandatory timestamp. 
    */
 
 
@@ -55,16 +55,16 @@ extern "C"
   shmdata_any_writer_t *shmdata_any_writer_init ();
 
   /** 
-   * Set function for writer debuging. Debuging is disabled by default.
+   * Set function for writer debugging. Debugging is disabled by default.
    * 
-   * @param writer is the writer that needsto be set
+   * @param writer is the writer that needs to be set
    * @param debug is either SHMDATA_ENABLE_DEBUG or SHMDATA_DISABLE_DEBUG  
    */
   void shmdata_any_writer_set_debug (shmdata_any_writer_t *writer,
 				     int debug);
 
   /** 
-   * Set funtion for describing the type of data to be transmitted. 
+   * Set function for describing the type of data to be transmitted. 
    * This function should be called before shmdata_any_writer_start.
    * 
    * @param writer is the writer to update 

@@ -12,8 +12,8 @@
  * GNU Lesser General Public License for more details.
  */
 
-#ifndef _SHM_DATA_OSG_READER_IMPL_H_
-#define _SHM_DATA_OSG_READER_IMPL_H_
+#ifndef _SHMDATA_OSG_READER_IMPL_H_
+#define _SHMDATA_OSG_READER_IMPL_H_
 
 #include <osg/Texture2D>
 #include <gst/gst.h>
@@ -49,5 +49,5 @@ namespace shmdata
 
 } //end namespace
 
-#endif //_SHM_DATA_READER_IMPL_H_
+#endif //_SHMDATA_READER_IMPL_H_
 
