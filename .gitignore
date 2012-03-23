@@ -22,6 +22,7 @@ configure
 depcomp
 doxyfile
 doxyfile.stamp
+doxymain.h
 examples/.deps/
 examples/.libs/
 examples/clutter_reader
@@ -42,4 +43,3 @@ ltmain.sh
 missing
 stamp-h1
 tests/check_write_read
-
