@@ -27,6 +27,10 @@ extern "C"
 #define SHMDATA_DISABLE_DEBUG 0
 #endif
 
+  /** \addtogroup libshmdata-any
+   *  @{
+   */
+  
   /**
    * @file   any-data-writer.h
    * 
@@ -80,6 +84,16 @@ extern "C"
   void shmdata_any_writer_start (shmdata_any_writer_t *writer,
 				 const char *socketPath);
 
+
+  typedef struct shmdata_base_reader_ shmdata_base_reader_t; 
+
+  /*! \fn void (*shmdata_any_writer_done_with_data)(void *user_data);
+   *  \brief Callback triggered when the writer is done with the data. This can 
+   *  in order to free the data if necessary.
+   *  \param user_data is a pointer to the user data. 
+   */  
+  typedef void (*shmdata_any_writer_done_with_data)(void *user_data);
+
   /** 
    * Writing to the shared memory. The done_with_data callback is provided in 
    * order to inform when data are not used anymore by the writer, and therefore
@@ -96,7 +110,7 @@ extern "C"
 				     void *data,
 				     int size,
 				     unsigned long long timestamp,
-				     void (*done_with_data) (void *),
+				     shmdata_any_writer_done_with_data cb,
 				     void *user_data);
 
   /** 
@@ -111,3 +125,5 @@ extern "C"
 #endif				/* extern "C" */
 #endif				//_SHMDATA_ANY_WRITER_H_
 
+
+/** @}*/

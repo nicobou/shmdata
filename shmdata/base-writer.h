@@ -12,6 +12,13 @@
  * GNU Lesser General Public License for more details.
  */
 
+/** \addtogroup libshmdata
+ * provides hot pluging between GStreamer pipelines via a shared memory.
+ * compile with `pkg-config --cflags --libs shmdata-0.1.pc`
+ *  @{
+ */
+
+
 #ifndef _SHMDATA_BASE_WRITER_H_
 #define _SHMDATA_BASE_WRITER_H_
 
@@ -46,7 +53,7 @@ extern "C"
    * @param Element is the element which src pad will provide data to write
    * This element is assumed to be added in the pipeline
    * 
-   * @return a base writer instance
+   * @return a writer instance
    */  
   shmdata_base_writer_t *shmdata_base_writer_init (const char *socketPath,
 						   GstElement * pipeline,
@@ -79,3 +86,4 @@ extern "C"
 #endif				/* extern "C" */
 #endif				//_SHMDATA_BASE_WRITER_H_
 
+/** @}*/

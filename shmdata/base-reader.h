@@ -12,6 +12,12 @@
  * GNU Lesser General Public License for more details.
  */
 
+/** \addtogroup libshmdata
+ * provides hot pluging between GStreamer pipelines via a shared memory.
+ * compile with `pkg-config --cflags --libs shmdata-0.1.pc`
+ *  @{
+ */
+
 #ifndef _SHMDATA_BASE_READER_H_
 #define _SHMDATA_BASE_READER_H_
 
@@ -38,6 +44,14 @@ extern "C"
 
   typedef struct shmdata_base_reader_ shmdata_base_reader_t; 
 
+  /*! \fn void (*on_first_data)(shmdata_base_reader_t *reader, void *userdata);
+   *  \brief Callback triggered when the writer is connecting. In this function 
+   *  the sink must be set with shmdata_base_reader_set_sink. 
+   *  \param reader is the reader 
+   *  \param user_data is a pointer to the user data 
+   */
+  typedef void (*shmdata_base_reader_on_first_data)(shmdata_base_reader_t *reader, void *user_data);
+
   /** 
    * Initialization function that start monitoring socketPath.
    * 
@@ -52,9 +66,8 @@ extern "C"
    */
   shmdata_base_reader_t *shmdata_base_reader_init (const char *socketPath,
 						   GstElement * Pipeline,
-						   void (*on_first_data)
-						   (shmdata_base_reader_t *,
-						    void *), void *user_data);
+						   shmdata_base_reader_on_first_data cb,
+						   void *user_data);
 
   /** 
    * Tell the reader in which GStreamer element the reader should push the 
@@ -83,3 +96,4 @@ extern "C"
 #endif				/* extern "C" */
 #endif				//_SHMDATA_BASE_READER_H_
 
+/** @}*/

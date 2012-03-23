@@ -12,6 +12,7 @@
  * GNU Lesser General Public License for more details.
  */
 
+
 #ifndef _SHMDATA_ANY_READER_H_
 #define _SHMDATA_ANY_READER_H_
 
@@ -27,11 +28,16 @@ extern "C"
 #define SHMDATA_DISABLE_DEBUG 0
 #endif
 
+  /** \addtogroup libshmdata-any
+   * provides sharing of custom data flows between processes.
+   * compile with `pkg-config --cflags --libs shmdata-any-0.1.pc`
+   *  @{
+   */
+
   /**
    * @file   any-data-reader.h
    * 
    * @brief  Reading any kind of data flow to a shared memory 
-   * 
    * 
    */
 
@@ -53,6 +59,33 @@ extern "C"
   void shmdata_any_reader_set_debug (shmdata_any_reader_t *reader,
 				     int debug);
 
+
+  /*! \fn void (*shmdata_any_reader_on_data)(shmdata_any_reader_t *,void *, void *, int, unsigned long long, const char *, void *);
+   *  \brief Callback triggered when a data frame has been written to the shared memory. You must free shmbuf when done with shmdata_any_reader_free.
+   *  \param shmbuf is the pointer used to free the buffer with shmdata_any_reader_free when wone with the data
+   *  \param data is the data written by the writer
+   *  \param data_size is the size of data
+   *  \param timestamp is the date the writer has associated to the data
+   *  \param type_description is a string describing the data type
+   *  \param user_data is the user data
+   */
+  typedef void (*shmdata_any_reader_on_data)(shmdata_any_reader_t * reader,
+					     void *shmbuf,
+					     void *data,
+					     int data_size,
+					     unsigned long long timestamp,
+					     const char *type_description, 
+					     void *user_data);
+  
+  /** 
+   * Free the received buffer.
+   * 
+   * @param shmbuf is the buffer obtainned with the shmdata_any_reader_on_data callback
+   */
+  void shmdata_any_reader_free (void *shmbuf);
+
+
+
   /** 
    * Set function for registering data reception callback.
    * 
@@ -62,15 +95,10 @@ extern "C"
    * callback
    */
   void shmdata_any_reader_set_on_data_handler (shmdata_any_reader_t *reader,
-					       void (*on_data)
-					       (shmdata_any_reader_t *,
-						void *, void *, int,
-						unsigned long long,
-						const char *, void *),
+					       shmdata_any_reader_on_data cb,    
 					       void *user_data);
 
 
-  void shmdata_any_reader_free (void *shmbuf);
 
   /** 
    * Set funtion for describing the type of data to be received. Any data not 
@@ -105,3 +133,4 @@ extern "C"
 #endif				/* extern "C" */
 #endif				//_SHMDATA_ANY_READER_H_
 
+/** @}*/

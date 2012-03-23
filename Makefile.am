@@ -15,6 +15,7 @@ EXTRA_DIST = \
 
 # pkg-config file:
 DISTCLEANFILES = \
+    doxymain.h \
     shmdata-@LIBSHMDATA_API_VERSION@.pc \
     shmdata-@LIBSHMDATA_API_VERSION@.tar.gz \
     shmdata-any-@LIBSHMDATA_API_VERSION@.pc \
@@ -35,6 +36,11 @@ htmldoc:
 if HAVE_DOXYGEN
 
 doxyfile.stamp:
+	echo "/*! \mainpage Library for sharing data flows between processes" > doxymain.h
+	echo " * \verbatim" >> doxymain.h
+	cat README >> doxymain.h
+	echo " \endverbatim" >> doxymain.h
+	echo " */" >> doxymain.h
 	$(DOXYGEN) doxyfile
 	echo `date -R` > doxyfile.stamp
 

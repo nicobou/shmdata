@@ -12,10 +12,31 @@
  * GNU Lesser General Public License for more details.
  */
 
+/** \addtogroup libshmdata-osg
+ * provides video reading to an OpenSceneGraph Texture.
+ * compile with `pkg-config --cflags --libs shmdata-osg-0.1.pc`
+ *  @{
+ */
+
 #ifndef _SHM_DATA_OSG_READER_H_
 #define _SHM_DATA_OSG_READER_H_
 
 #include <osg/Texture2D>
+
+/**
+ * @file   osg-reader.h
+ * 
+ * @brief Reading video data from a shared memory into an OpenSceneGraph texture 
+ * 
+ * 
+ */
+
+/**
+ * \class shmdata::OsgReader
+ *
+ * \brief Reading video data from a shared memory into an OpenSceneGraph texture 
+ */
+
 
 namespace shmdata
 {
@@ -24,10 +45,30 @@ namespace shmdata
   class OsgReader
   {
   public:
+    /// Create a shmdata::OsgReader
     OsgReader ();
+    
+    /** 
+     * Start the reader
+     * 
+     * @param socketPath is the file name of the shared memory
+     */
     void start (const std::string & socketPath);
-      osg::Texture2D * getTexture ();
+
+    /** 
+     * Get the texture where the video read from the shared memory is written.
+     * 
+     * @return the pointer to the osg::Texture2D instance where video is written
+     */
+    osg::Texture2D * getTexture ();
+
      ~OsgReader ();
+
+     /** 
+      * Set debug enable printing debug messages
+      * 
+      * @param debug is the boolean enabling or deisabling debug 
+      */
     void setDebug (bool debug);
   private:
       OsgReader_impl * impl_;	// PIMPL opaque pointer
@@ -37,3 +78,4 @@ namespace shmdata
 
 #endif				//_SHM_DATA_READER_H_
 
+/** @}*/
