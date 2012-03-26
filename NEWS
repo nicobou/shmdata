@@ -1,13 +1,14 @@
 shmdata release notes
 ========================
 
-shmdata 0.1.10 (2012-0?-??)
+shmdata 0.1.2 (2012-03-26)
 ---------------------------
 This release is a developer snapshot in the 0.1 series.
 
 New features:
 
-* (fill me)
+* libshmdata-osg supports alpha channel
+* doxygen documentation
 
 Bugs fixed:
 
