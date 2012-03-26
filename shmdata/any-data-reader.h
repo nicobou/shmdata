@@ -61,7 +61,7 @@ extern "C"
 
 
   /*! \fn void (*shmdata_any_reader_on_data)(shmdata_any_reader_t *,void *, void *, int, unsigned long long, const char *, void *);
-   *  \brief Callback triggered when a data frame has been written to the shared memory. You must free shmbuf when done with shmdata_any_reader_free.
+   *  \brief Callback triggered when a data frame has been written to the shared memory. You must free shmbuf when done using the shmdata_any_reader_free function.
    *  \param shmbuf is the pointer used to free the buffer with shmdata_any_reader_free when the reader is done with the data
    *  \param data is the data written by the writer
    *  \param data_size is the size of data

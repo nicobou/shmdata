@@ -34,7 +34,8 @@
 /**
  * \class shmdata::OsgReader
  *
- * \brief Reading video data from a shared memory into an OpenSceneGraph texture 
+ * \brief Reading video data from a shared memory into an OpenSceneGraph texture.  
+ *  Alpha channel is supported.
  */
 
 
@@ -56,7 +57,7 @@ namespace shmdata
     void start (const std::string & socketPath);
 
     /** 
-     * Get the texture where the video read from the shared memory is written.
+     * Get the texture where video is written.
      * 
      * @return the pointer to the osg::Texture2D instance where video is written
      */

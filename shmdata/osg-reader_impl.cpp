@@ -159,7 +159,6 @@ namespace shmdata
 		      osg::Image::NO_DELETE, 
 		      1);
 
-	g_print ("%d, %d, buffer size %d\n",curWidth, curHeight, GST_BUFFER_SIZE (buffer));
 	context->texture_->setImage(img);
 
 	if (context->last_buffer_ != NULL)  

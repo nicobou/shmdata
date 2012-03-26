@@ -9,17 +9,16 @@ shmdata
 =======
 Library to share flows of data frames between processes via shared memory. 
 shmdata can be compared to the JACK audio connection kit project or to the
-VideoJack projet. shmdata, while providing similar service for any kind of 
-data stream, does not provide reader and writer discovery but 
-might be implemented if in the future.  
-Note that readers and writers can hot connect/disconnect/reconnect/... 
+VideoJack project. shmdata, although providing a similar service for 
+any kind of data stream, does not provide (yet) reader and writer discovery. 
+Note that shmdata readers and writers can hot connect/disconnect/reconnect/... 
 and that a shared memory supports a single writer with multiple readers.
 
 Several libraries are provided: 
 
-* libshmdata for hot pluging between GStreamer pipelines (C library)
+* libshmdata for hot plugging between GStreamer pipelines (C library)
 * libshmdata-any for sharing custom data flows without including GStreamer headers (C library)
-* libshmdata-osg for receiving video writen to a shared memory into an OpenSceneGraph texture (C++ library)
+* libshmdata-osg for receiving video written to a shared memory into an OpenSceneGraph texture (C++ library)
 
 License: LGPL.
 

@@ -53,7 +53,7 @@ extern "C"
   typedef void (*shmdata_base_reader_on_first_data)(shmdata_base_reader_t *reader, void *user_data);
 
   /** 
-   * Initialization function that start monitoring socketPath.
+   * Initialization function that starts monitoring the socket path.
    * 
    * @param socketPath is the file name of the shared memory
    * @param Pipeline is the pipeline where the base writer will be added
@@ -84,8 +84,8 @@ extern "C"
 				     GstElement * sink);
 
   /** 
-   * Close the reader: free the memory, remove internal GStreamer elements 
-   * from the pipeline. 
+   * Close the reader (freeing memory and removing internal GStreamer elements 
+   * from the pipeline). 
    * 
    * @param reader is the base reader to close
    */

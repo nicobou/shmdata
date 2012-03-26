@@ -25,3 +25,10 @@ The GIMP coding style is defined as follows:
     starting in the first column of the following line. All
     parameters are prototyped and there's a new line for each.
 
+Version Number
+--------------
+It is made of major.minor.micro numbers. Releases with an odd minor version number are in an unstable branch, whose API and command line argument might change. (sometimes a lot) When the minor number is even, it means it's a stable branch, with only new features that don't break old ones, or bug fixes. 
+
+The micro version indicates the origin of the release: even micro numbers are only used for released archives; odd micro numbers are only used on the Git repository.
+
+The version number is located in configure.ac and must always be one micro number ahead, unless this is a tag. That means that if we have released 0.1.0, the version number in configure.ac must be 0.1.1 until we release 0.1.2, and so forth.

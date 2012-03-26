@@ -89,7 +89,7 @@ extern "C"
 
   /*! \fn void (*shmdata_any_writer_done_with_data)(void *user_data);
    *  \brief Callback triggered when the writer is done with the data. This can 
-   *  in order to free the data if necessary.
+   *  be used for freeing your data.
    *  \param user_data is a pointer to the user data. 
    */  
   typedef void (*shmdata_any_writer_done_with_data)(void *user_data);
@@ -114,7 +114,7 @@ extern "C"
 				     void *user_data);
 
   /** 
-   * Close the writer: free the memory and the shared memory socket. 
+   * Close the writer (free memory and close shared memory socket). 
    * 
    * @param writer is the writer to close
    */

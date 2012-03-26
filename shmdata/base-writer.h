@@ -46,7 +46,7 @@ extern "C"
   typedef struct shmdata_base_writer_ shmdata_base_writer_t;
 
   /** 
-   * Initialization function that create the shared memory.
+   * Initialization function that creates the shared memory.
    * 
    * @param socketPath is the file name of the shared memory  
    * @param pipeline is the pipeline where the base writer will be added
@@ -74,8 +74,8 @@ extern "C"
 						       GstPad * srcPad);
 
   /** 
-   * Close the writer: free the memory, remove internal GStreamer elements 
-   * from the pipeline and close the shared memory socket. 
+   * Close the writer (freeing memory, removing internal GStreamer elements 
+   * from the pipeline and closing the shared memory socket). 
    * 
    * @param writer is the base writer to close. 
    */
