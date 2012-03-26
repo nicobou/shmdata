@@ -38,7 +38,7 @@ if HAVE_DOXYGEN
 doxyfile.stamp:
 	echo "/*! \mainpage Library for sharing data flows between processes" > doxymain.h
 	echo " * \verbatim" >> doxymain.h
-	cat README >> doxymain.h
+	cat $(srcdir)/README >> doxymain.h
 	echo " \endverbatim" >> doxymain.h
 	echo " */" >> doxymain.h
 	$(DOXYGEN) doxyfile
