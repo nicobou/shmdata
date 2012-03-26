@@ -93,7 +93,8 @@ namespace shmdata
 
 	g_object_set (G_OBJECT (shmDisplay), 
 		      "caps", 
-		      gst_caps_from_string ("video/x-raw-rgb, bpp=16, depth=16"), 
+		      //		      gst_caps_from_string ("video/x-raw-rgb, bpp=16, depth=16"), 
+		      gst_caps_from_string ("video/x-raw-rgb, bpp=32, depth=32, endianness=4321, red_mask=65280, green_mask=16711680, blue_mask=-16777216, alpha_mask=255"), 
 		      NULL);
 	g_object_set (G_OBJECT (shmDisplay), 
 		      "emit-signals", 
@@ -150,13 +151,15 @@ namespace shmdata
 	img->setImage(curWidth, 
 		      curHeight, 
 		      0, 
-		      GL_RGB, 
-		      GL_RGB, 
-		      GL_UNSIGNED_SHORT_5_6_5, 
+		      GL_RGBA, 
+		      GL_BGRA, 
+		      GL_UNSIGNED_BYTE,		      
+		      //GL_UNSIGNED_SHORT_5_6_5, 
 		      GST_BUFFER_DATA (buffer),
 		      osg::Image::NO_DELETE, 
 		      1);
 
+	g_print ("%d, %d, buffer size %d\n",curWidth, curHeight, GST_BUFFER_SIZE (buffer));
 	context->texture_->setImage(img);
 
 	if (context->last_buffer_ != NULL)  

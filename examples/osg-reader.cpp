@@ -76,6 +76,7 @@ osg::Node * createFilterWall (osg::BoundingBox & bb, osg::Texture2D * texture)
 
   osg::StateSet * stateset = geom->getOrCreateStateSet ();
   stateset->setTextureAttributeAndModes (0, texture, osg::StateAttribute::ON);
+  stateset->setMode(GL_BLEND,osg::StateAttribute::ON);
 
   return group;
 
