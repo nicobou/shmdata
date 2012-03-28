@@ -83,13 +83,13 @@ fi
 #Trying to set GSTAPP using pkg-config
 PKG_CHECK_MODULES(GSTAPP, gstreamer-app-0.10, have_gstreamer_app=true, have_gstreamer_app=false)
 if test "x${have_gstreamer_app}" = "xfalse" ; then
-    AC_MSG_ERROR([missing package:  libgstreamer-plugins-app0.10-dev  ])
+    AC_MSG_ERROR([missing package:  libgstreamer-plugins-base0.10-dev  ])
 fi
 
 #Trying to set GIO using pkg-config
 PKG_CHECK_MODULES(GIO, gio-2.0, have_gio=true, have_gio=false)
 if test "x${have_gio}" = "xfalse" ; then
-    AC_MSG_ERROR([missing package:  gio-2.0  ])
+    AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
 fi
 
 # -- (clutter example) -- 
@@ -102,7 +102,7 @@ fi
 #Trying to set GLEW using pkg-config
 PKG_CHECK_MODULES(GLEW, glew, have_glew=true, have_glew=false)
 if test "x${have_glew}" = "xfalse" ; then
-    AC_MSG_WARN([***** missing optional package:  libglew headers ***** ])
+    AC_MSG_WARN([***** missing optional package:  libglew1.5-dev ***** ])
     AM_CONDITIONAL(BUILD_CLUTTER_EXAMPLE, false)
 else
     if test "x${have_clutter}" = "xtrue" ; then
@@ -116,7 +116,7 @@ fi
 # Trying to set OPENSCENEGRAPH using pkg-config
 PKG_CHECK_MODULES(OPENSCENEGRAPH, openscenegraph, have_openscenegraph=true, have_openscenegraph=false)
 if test "x${have_openscenegraph}" = "xfalse" ; then
-    AC_MSG_WARN([***** missing optional package:  openscenegraph ***** ])
+    AC_MSG_WARN([***** missing optional package:  libopenscenegraph-dev ***** ])
     AM_CONDITIONAL(HAVE_OPENSCENEGRAPH, false)
 else
     AM_CONDITIONAL(HAVE_OPENSCENEGRAPH, true)
