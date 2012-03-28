@@ -96,7 +96,7 @@ fi
 #Trying to set CLUTTER using pkg-config
 PKG_CHECK_MODULES(CLUTTER, clutter-1.0, have_clutter=true, have_clutter=false)
 if test "x${have_clutter}" = "xfalse" ; then
-    AC_MSG_WARN([missing package:  clutter-1.0  ])
+    AC_MSG_WARN([missing package:  libclutter-1.0-dev  ])
 fi
 
 #Trying to set GLEW using pkg-config
