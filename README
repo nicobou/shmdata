@@ -9,8 +9,8 @@ shmdata
 =======
 Library to share flows of data frames between processes via shared memory. 
 shmdata can be compared to the JACK audio connection kit project or to the
-VideoJack project. shmdata, although providing a similar service for 
-any kind of data stream, does not provide (yet) reader and writer discovery. 
+VideoJack project. shmdata, however, does not provide yet reader and 
+writer discovery. 
 Note that shmdata readers and writers can hot connect/disconnect/reconnect/... 
 and that a shared memory supports a single writer with multiple readers.
 
