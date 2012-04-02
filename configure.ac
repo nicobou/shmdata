@@ -1,5 +1,5 @@
 AC_PREREQ([2.61])
-AC_INIT(shmdata, [0.1.2], [http://codered.sat.qc.ca/redmine/projects/libshmdata/issues], [shmdata], [http://codered.sat.qc.ca/redmine/projects/libshmdata])
+AC_INIT(shmdata, [0.2.0], [http://codered.sat.qc.ca/redmine/projects/libshmdata/issues], [shmdata], [http://codered.sat.qc.ca/redmine/projects/libshmdata])
 #AC_CONFIG_MACRO_DIR([m4])
 AC_MSG_NOTICE([Configuring libshmdata])
 AM_INIT_AUTOMAKE([subdir-objects -Wno-portability])
@@ -20,7 +20,7 @@ AC_CANONICAL_HOST # fills $host variable
 AC_SUBST([LIBSHMDATA_SO_VERSION], [0:0:0])
 
 # The version of the API. Should be major.minor and not change until not backward-compatible
-AC_SUBST([LIBSHMDATA_API_VERSION], [0.1])
+AC_SUBST([LIBSHMDATA_API_VERSION], [0.2])
 
 # Checks for programs.
 AC_PROG_CXX
@@ -83,26 +83,26 @@ fi
 #Trying to set GSTAPP using pkg-config
 PKG_CHECK_MODULES(GSTAPP, gstreamer-app-0.10, have_gstreamer_app=true, have_gstreamer_app=false)
 if test "x${have_gstreamer_app}" = "xfalse" ; then
-    AC_MSG_ERROR([missing package:  libgstreamer-plugins-app0.10-dev  ])
+    AC_MSG_ERROR([missing package:  libgstreamer-plugins-base0.10-dev  ])
 fi
 
 #Trying to set GIO using pkg-config
 PKG_CHECK_MODULES(GIO, gio-2.0, have_gio=true, have_gio=false)
 if test "x${have_gio}" = "xfalse" ; then
-    AC_MSG_ERROR([missing package:  gio-2.0  ])
+    AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
 fi
 
 # -- (clutter example) -- 
 #Trying to set CLUTTER using pkg-config
 PKG_CHECK_MODULES(CLUTTER, clutter-1.0, have_clutter=true, have_clutter=false)
 if test "x${have_clutter}" = "xfalse" ; then
-    AC_MSG_WARN([missing package:  clutter-1.0  ])
+    AC_MSG_WARN([missing package:  libclutter-1.0-dev  ])
 fi
 
 #Trying to set GLEW using pkg-config
 PKG_CHECK_MODULES(GLEW, glew, have_glew=true, have_glew=false)
 if test "x${have_glew}" = "xfalse" ; then
-    AC_MSG_WARN([***** missing optional package:  libglew headers ***** ])
+    AC_MSG_WARN([***** missing optional package:  libglew1.5-dev ***** ])
     AM_CONDITIONAL(BUILD_CLUTTER_EXAMPLE, false)
 else
     if test "x${have_clutter}" = "xtrue" ; then
@@ -116,7 +116,7 @@ fi
 # Trying to set OPENSCENEGRAPH using pkg-config
 PKG_CHECK_MODULES(OPENSCENEGRAPH, openscenegraph, have_openscenegraph=true, have_openscenegraph=false)
 if test "x${have_openscenegraph}" = "xfalse" ; then
-    AC_MSG_WARN([***** missing optional package:  openscenegraph ***** ])
+    AC_MSG_WARN([***** missing optional package:  libopenscenegraph-dev ***** ])
     AM_CONDITIONAL(HAVE_OPENSCENEGRAPH, false)
 else
     AM_CONDITIONAL(HAVE_OPENSCENEGRAPH, true)

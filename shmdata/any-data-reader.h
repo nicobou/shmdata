@@ -30,7 +30,7 @@ extern "C"
 
   /** \addtogroup libshmdata-any
    * provides sharing of custom data flows between processes.
-   * compile with `pkg-config --cflags --libs shmdata-any-0.1.pc`
+   * compile with `pkg-config --cflags --libs shmdata-any-0.2`
    *  @{
    */
 

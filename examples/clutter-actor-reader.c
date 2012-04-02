@@ -270,6 +270,18 @@ main (int argc, char *argv[])
     }
   socketName = argv[1];
 
+  /* init gstreamer then clutter */
+  gst_init (&argc, &argv);
+  clutter_threads_init ();
+  clutter_err = clutter_init (&argc, &argv);
+  if (clutter_err != CLUTTER_INIT_SUCCESS)
+    g_warning ("Failed to initalize clutter: %d\n", clutter_err);
+  clutter_threads_enter ();
+  g_print ("clutter version: %s\n", CLUTTER_VERSION_S);
+  clutter_set_default_frame_rate (2);
+
+
+
   /* setup gstreamer pipeline */
   pipeline = gst_pipeline_new (NULL);
 
@@ -282,15 +294,6 @@ main (int argc, char *argv[])
   g_signal_connect (bus, "message::eos", G_CALLBACK (end_stream_cb), NULL);
   gst_object_unref (bus);
 
-  /* init gstreamer then clutter */
-  gst_init (&argc, &argv);
-  clutter_threads_init ();
-  clutter_err = clutter_init (&argc, &argv);
-  if (clutter_err != CLUTTER_INIT_SUCCESS)
-    g_warning ("Failed to initalize clutter: %d\n", clutter_err);
-  clutter_threads_enter ();
-  g_print ("clutter version: %s\n", CLUTTER_VERSION_S);
-  clutter_set_default_frame_rate (2);
 
   /* init glew */
   err = glewInit ();
