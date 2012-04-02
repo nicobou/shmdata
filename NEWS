@@ -1,17 +1,13 @@
 shmdata release notes
 ========================
 
-shmdata 0.1.4 (2012-??-??)
+shmdata 0.2.0 (2012-04-02)
 ---------------------------
-This release is a developer snapshot in the 0.1 series.
-
-New features:
-
-* ???
+This release is the first stable release.
 
 Bugs fixed:
 
-* ???
+* clutter example fixed
 
 shmdata 0.1.2 (2012-03-26)
 ---------------------------
