@@ -1,0 +1,109 @@
+dnl required version of autoconf
+AC_PREREQ([2.53])
+
+dnl TODO: fill in your package name and package version here
+AC_INIT([switcher],[0.1.1])
+
+dnl required version of gstreamer and gst-plugins-base
+GST_REQUIRED=0.10.36
+
+dnl AC_CONFIG_SRCDIR([src/main.c])
+AC_CONFIG_HEADERS([config.h])
+
+dnl required version of automake
+AM_INIT_AUTOMAKE([1.10])
+
+dnl enable mainainer mode by default
+dnl AM_MAINTAINER_MODE([enable])
+
+# Define these substitions here to keep all version information in one place.
+# For information on how to properly maintain the library version information,
+# refer to the libtool manual, section "Updating library version information":
+# http://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html
+# see http://sourceware.org/autobook/autobook/autobook_91.html
+# format is [current:revision:age]
+# libtool versioning is different than the project's versioning. It's for the ABI and API.
+# It's in the form "current:revision:age" where:
+#  * current: Increment when the interface changes. (and set revision to 0)
+#  * revision: Increment when the implementation changes, but not the interface.
+#  * age: Backward-compatible with how many interface numbers.
+AC_SUBST([LIBSWITCHER_LIVE_INPUT_SO_VERSION], [0:0:0])
+AC_SUBST([LIBSWITCHER_STORED_INPUT_SO_VERSION], [0:0:0])
+
+# The version of the API. Should be major.minor and not change until not backward-compatible
+AC_SUBST([LIBSWITCHER_LIVE_INPUT_API_VERSION], [0.1])
+AC_SUBST([LIBSWITCHER_STORED_INPUT_API_VERSION], [0.1])
+
+
+
+dnl check for tools (compiler etc.)
+AC_PROG_CXX
+AM_PROG_CC_C_O
+AC_PROG_INSTALL
+AC_PROG_LIBTOOL
+
+dnl required version of libtool
+LT_PREREQ([2.2.6])
+LT_INIT
+
+dnl error out if we can't find pkg-config
+AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ], [
+  AC_MSG_ERROR([You need to have pkg-config installed or set the PATH.])
+])
+
+dnl =======================================================================
+dnl Check for the required version of GStreamer core (and gst-plugins-base)
+dnl
+dnl This will export GST_CFLAGS and GST_LIBS variables for use in Makefile.am
+dnl
+dnl =======================================================================
+
+PKG_CHECK_MODULES(GST, [
+    gstreamer-0.10              >= $GST_REQUIRED
+    gstreamer-base-0.10         >= $GST_REQUIRED
+    gstreamer-controller-0.10   >= $GST_REQUIRED
+  ], [
+    AC_SUBST(GST_CFLAGS)
+    AC_SUBST(GST_LIBS)
+  ], [
+  AC_MSG_ERROR([
+    Can't find the following GStreamer development packages:
+
+      gstreamer-0.10              >= $GST_REQUIRED
+      gstreamer-base-0.10         >= $GST_REQUIRED
+      gstreamer-controller-0.10   >= $GST_REQUIRED
+
+    Please make sure you have the necessary GStreamer-0.10
+    development headers installed.
+
+    On debian/Ubuntu systems you will probably need to install the
+    'libgstreamer0.10-dev' and 'libgstreamer-plugins-base0.10-dev' packages.
+
+    On RPM-based systems you will probably need to install the
+    'gstreamer-devel-0.10' package.
+  ])
+])
+
+dnl check if compiler understands -Wall (if yes, add -Wall to GST_CFLAGS)
+AC_MSG_CHECKING([to see if compiler understands -Wall])
+save_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Wall"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  GST_CFLAGS="$GST_CFLAGS -Wall"
+  AC_MSG_RESULT([yes])
+], [
+  AC_MSG_RESULT([no])
+])
+                                                                                
+dnl =======================================================================
+dnl Finally, create Makefiles in all directories
+dnl =======================================================================
+
+AC_CONFIG_FILES([
+Makefile
+input-live/Makefile
+input-stored/Makefile
+switcher/Makefile
+])
+AC_OUTPUT
+
