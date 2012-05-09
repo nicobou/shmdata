@@ -1,6 +1,5 @@
 SUBDIRS= \
-    input-live \
-    input-stored \
+    libswitcher \
     switcher
 
 EXTRA_DIST=autogen.sh

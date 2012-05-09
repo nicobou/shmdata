@@ -101,8 +101,7 @@ dnl =======================================================================
 
 AC_CONFIG_FILES([
 Makefile
-input-live/Makefile
-input-stored/Makefile
+libswitcher/Makefile
 switcher/Makefile
 ])
 AC_OUTPUT
