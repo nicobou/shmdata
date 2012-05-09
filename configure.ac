@@ -27,14 +27,10 @@ dnl AM_MAINTAINER_MODE([enable])
 #  * current: Increment when the interface changes. (and set revision to 0)
 #  * revision: Increment when the implementation changes, but not the interface.
 #  * age: Backward-compatible with how many interface numbers.
-AC_SUBST([LIBSWITCHER_LIVE_INPUT_SO_VERSION], [0:0:0])
-AC_SUBST([LIBSWITCHER_STORED_INPUT_SO_VERSION], [0:0:0])
+AC_SUBST([LIBSWITCHER_SO_VERSION], [0:0:0])
 
 # The version of the API. Should be major.minor and not change until not backward-compatible
-AC_SUBST([LIBSWITCHER_LIVE_INPUT_API_VERSION], [0.1])
-AC_SUBST([LIBSWITCHER_STORED_INPUT_API_VERSION], [0.1])
-
-
+AC_SUBST([LIBSWITCHER_API_VERSION], [0.1])
 
 dnl check for tools (compiler etc.)
 AC_PROG_CXX
