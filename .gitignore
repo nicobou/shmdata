@@ -24,10 +24,11 @@ install-sh
 libtool
 ltmain.sh
 missing
+src/.deps/
+src/.libs/
+src/switcher
 stamp-h1
 switcher/.deps/
 switcher/.libs/
 switcher/Makefile
-src/switcher	
-src/.libs/
-src/.deps/
+switcher/classes.cxx
