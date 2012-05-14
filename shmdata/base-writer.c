@@ -252,7 +252,7 @@ shmdata_base_writer_init (const char *socketPath,
   if (g_file_query_exists (shmfile, NULL))
     {
       g_object_unref (shmfile);
-      g_critical ("file %s exist, could be a writer or a file to delete",
+      g_critical ("file %s exists, could be a writer or a file to delete",
 		  socketPath);
       return NULL;
     }
