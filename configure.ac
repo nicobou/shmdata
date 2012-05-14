@@ -97,8 +97,8 @@ dnl =======================================================================
 
 AC_CONFIG_FILES([
 Makefile
-libswitcher/Makefile
 switcher/Makefile
+src/Makefile
 ])
 AC_OUTPUT
 

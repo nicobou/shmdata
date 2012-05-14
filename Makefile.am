@@ -1,5 +1,5 @@
 SUBDIRS= \
-    libswitcher \
-    switcher
+    switcher \
+    src
 
 EXTRA_DIST=autogen.sh

@@ -1,16 +1,26 @@
-bin_PROGRAMS = \
-    gst-app
+AM_CXXFLAGS = \
+    $(GST_CFLAGS) 
 
-gst_app_SOURCES = \
-   main.c \
-   play.c
+AM_LIBS = \
+    $(GST_LIBS) 
 
-noinst_HEADERS = \
-   gst-app.h \
-   play.h
+lib_LTLIBRARIES = \
+    libswitcher-@LIBSWITCHER_API_VERSION@.la
 
-gst_app_CFLAGS = \
-    $(GST_CFLAGS)
+libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
+    base-entity.cpp \
+    controller.cpp \
+    runtime.cpp 
 
-gst_app_LDFLAGS = \
-    $(GST_LIBS)
+libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
+    $(GST_LIBS) \
+    -export-dynamic \
+    -version-info $(LIBSWITCHER_SO_VERSION)
+
+libswitcher_@LIBSWITCHER_API_VERSION@_la_includedir = \
+    $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
+
+libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
+    base-entity.h \
+    controller.h \
+    runtime.h 
