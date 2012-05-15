@@ -25,17 +25,5 @@
 
 namespace switcher
 {
-
-  BaseEntity::BaseEntity ()
-  {}
-
-  BaseEntity::~BaseEntity ()
-  {}
-  
-  void
-  BaseEntity::setName (std::string name)
-  {
-    name_ = name;
-  }
   
 }

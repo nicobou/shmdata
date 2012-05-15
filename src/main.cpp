@@ -18,18 +18,34 @@
  */
 
 #include "switcher/controller.h"
+#include "switcher/runtime.h"
+#include "switcher/base-entity.h"
 #include <iostream>
+
 
 int
 main (int argc,
       char *argv[])
 {
 
+  using namespace switcher;
+  
   std::cout <<"Hello World\n";
   
-  switcher::Controller test;
+  //Register
+  Factory<BaseEntity, std::string> temp;
+  temp.Register("runtime", (Creator<BaseEntity>*)new DerivedCreator<Runtime>);
   
-  test.run();
+  //Pointer to base interface
+    BaseEntity* pBase = 0;
+
+    //Create and call
+    pBase = temp.Create("runtime");
+    printf("Runtime %u\n", pBase->Get());
+    delete pBase;
+
+  
   std::cout <<"Bye World\n";
   
+  return 0;
 }

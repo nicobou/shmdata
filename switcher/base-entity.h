@@ -27,6 +27,7 @@
 
 #include <string>
 #include <tr1/memory>
+#include <map>
 
 namespace switcher
 {
@@ -35,17 +36,56 @@ namespace switcher
   {
   public:
     typedef std::tr1::shared_ptr<BaseEntity> ptr;
-    BaseEntity ();
-    virtual ~BaseEntity ();
-    std::string getName ();
-  private:
-    std::string name_;
-  protected:
-    void setName (std::string name);
+    virtual bool Get() = 0;
+
   };
+  
 
-
- 
+  template <class T>
+    class Creator
+    {
+    public:
+      virtual ~Creator(){}
+      virtual T* Create() = 0;
+    };
+  
+  template <class T>
+    class DerivedCreator : public Creator<T>
+  {
+  public:
+    T* Create()
+    {
+      return new T;
+    }
+  };
+  
+  template <class T, class Key>
+    class Factory
+  {
+  public:
+    void Register(Key Id, Creator<T>* Fn)
+    {
+      FunctionMap[Id] = Fn;
+    }
+    
+    T* Create(Key Id)
+    {
+      return FunctionMap[Id]->Create();
+    }
+    
+    ~Factory()
+      {
+        /* std::map<Key, Creator<T>*>::iterator i = FunctionMap.begin(); */
+        /* while (i != FunctionMap.end()) */
+	/*   { */
+        /*     delete (*i).second; */
+        /*     ++i; */
+	/*   } */
+      }
+  private:
+    std::map<Key, Creator<T>*> FunctionMap;
+  };
+  
 } // end of namespace
 
 #endif // ifndef

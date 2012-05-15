@@ -23,15 +23,10 @@ namespace switcher
 {
 
   Controller::Controller (){
-    runtime_ = Runtime::ptr (new Runtime ());
   }
 
   Controller::~Controller (){
   }
  
-  void
-  Controller::run () {
-    runtime_->run();
-  }
 
 }

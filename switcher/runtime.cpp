@@ -28,19 +28,19 @@ namespace switcher
 
   Runtime::Runtime (){
     
+
     gst_init (NULL,NULL);
     mainloop_ = g_main_loop_new (NULL, FALSE);
     g_print ("tada\n");
     
-    pipeline_ = gst_pipeline_new (SWITCHER_RUNTIME_NAME);
-
-    setName (gst_element_get_name (pipeline_));
+    pipeline_ = gst_pipeline_new (NULL);
 
     bus_ = gst_pipeline_get_bus (GST_PIPELINE (pipeline_)); 
     gst_bus_add_watch (bus_, bus_called, NULL);
     gst_object_unref (bus_); 
 
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
+
   }
   
   Runtime::~Runtime ()
@@ -55,7 +55,7 @@ namespace switcher
   {
     g_main_loop_run (mainloop_);
   }
-  
+
   gboolean
   Runtime::bus_called (GstBus *bus,
 		     GstMessage *msg,
@@ -90,6 +90,5 @@ namespace switcher
     return TRUE;
   }
   
-
 }
 

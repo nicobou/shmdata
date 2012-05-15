@@ -28,19 +28,20 @@
 #include "switcher/base-entity.h"
 #include <tr1/memory>
 
-#define SWITCHER_RUNTIME_NAME "switcher"
 
 namespace switcher
 {
   
-  class Runtime : BaseEntity 
+  class Runtime : public BaseEntity 
     {
     public:
       typedef std::tr1::shared_ptr<Runtime> ptr;
       Runtime ();
       ~Runtime ();
-      void run();
-      GstElement *getPipeline();
+      void run ();
+      GstElement *getPipeline ();
+      bool Get () { return true; }
+
     private:
       GstElement *pipeline_;
       GstBus *bus_;
