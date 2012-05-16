@@ -28,6 +28,8 @@
 #include <string>
 #include <tr1/memory>
 #include <map>
+#include <gst/gst.h>
+#include <set>
 
 namespace switcher
 {
@@ -36,54 +38,20 @@ namespace switcher
   {
   public:
     typedef std::tr1::shared_ptr<BaseEntity> ptr;
-    virtual bool Get() = 0;
 
-  };
-  
+    virtual bool Get () = 0;
+    virtual std::string getName ();
 
-  template <class T>
-    class Creator
-    {
-    public:
-      virtual ~Creator(){}
-      virtual T* Create() = 0;
-    };
-  
-  template <class T>
-    class DerivedCreator : public Creator<T>
-  {
-  public:
-    T* Create()
-    {
-      return new T;
-    }
-  };
-  
-  template <class T, class Key>
-    class Factory
-  {
-  public:
-    void Register(Key Id, Creator<T>* Fn)
-    {
-      FunctionMap[Id] = Fn;
-    }
-    
-    T* Create(Key Id)
-    {
-      return FunctionMap[Id]->Create();
-    }
-    
-    ~Factory()
-      {
-        /* std::map<Key, Creator<T>*>::iterator i = FunctionMap.begin(); */
-        /* while (i != FunctionMap.end()) */
-	/*   { */
-        /*     delete (*i).second; */
-        /*     ++i; */
-	/*   } */
-      }
+    BaseEntity ();
+    virtual ~BaseEntity ();
+
   private:
-    std::map<Key, Creator<T>*> FunctionMap;
+    // not using shared pointer here in order to avoir ref counting
+    // entities are added and removed with constructor and destructor
+    static std::set<BaseEntity *> entities_;
+    
+  protected:
+    std::string name_;
   };
   
 } // end of namespace

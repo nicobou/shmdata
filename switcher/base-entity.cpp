@@ -25,5 +25,25 @@
 
 namespace switcher
 {
+
+
+  std::set<BaseEntity *> BaseEntity::entities_;
+
+  BaseEntity::BaseEntity ()
+  {
+    entities_.insert(this);
+    g_print ("call: BaseEntity constructor\n");
+  }
   
+  BaseEntity::~BaseEntity () { 
+    entities_.erase(this);
+    g_print ("call: BaseEntity destructor for %s\n",getName().c_str());
+    };
+
+  std::string
+  BaseEntity::getName()
+  {
+    return name_;
+  }
+
 }

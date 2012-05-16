@@ -27,24 +27,23 @@ namespace switcher
 {
 
   Runtime::Runtime (){
-    
 
     gst_init (NULL,NULL);
     mainloop_ = g_main_loop_new (NULL, FALSE);
-    g_print ("tada\n");
+    g_print ("creating runtime\n");
     
     pipeline_ = gst_pipeline_new (NULL);
-
+    name_ = gst_element_get_name (pipeline_);
     bus_ = gst_pipeline_get_bus (GST_PIPELINE (pipeline_)); 
     gst_bus_add_watch (bus_, bus_called, NULL);
     gst_object_unref (bus_); 
 
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
-
   }
-  
+
   Runtime::~Runtime ()
   {
+    g_print ("deleting runtime\n");
     gst_element_set_state (pipeline_, GST_STATE_NULL);
     gst_object_unref (GST_OBJECT (pipeline_));
     g_main_loop_quit (mainloop_);

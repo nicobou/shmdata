@@ -43,6 +43,7 @@ namespace switcher
       bool Get () { return true; }
 
     private:
+      //TODO pipeline should be static
       GstElement *pipeline_;
       GstBus *bus_;
       GMainLoop *mainloop_;
