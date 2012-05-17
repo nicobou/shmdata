@@ -17,7 +17,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/controller.h"
+#include "switcher/audio-source.h"
 
 namespace switcher
 {

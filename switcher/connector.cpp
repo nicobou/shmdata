@@ -17,9 +17,17 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/controller.h"
+
+#ifndef __SWITCHER_CONNECTOR_H__
+#define __SWITCHER_CONNECTOR_H__
+
+#include "switcher/connector.h"
 
 namespace switcher
 {
 
-}
+
+
+}  // end of namespace
+
+#endif // ifndef

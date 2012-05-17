@@ -17,9 +17,27 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/controller.h"
+
+#ifndef __SWITCHER_CONNECTOR_H__
+#define __SWITCHER_CONNECTOR_H__
+
+#include "switcher/base-entity.h"
+#include <memory>
+
 
 namespace switcher
 {
 
-}
+  class Connector : public BaseEntity
+  {
+  public:
+    typedef std::tr1::shared_ptr<Connector> ptr;
+
+  private:
+    GstElement *tee_;
+
+  };
+
+}  // end of namespace
+
+#endif // ifndef

@@ -17,9 +17,22 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/controller.h"
+
+#ifndef __SWITCHER_VIDEO_SINK_H__
+#define __SWITCHER_VIDEO_SINK_H__
+
+#include "switcher/base-sink.h"
+#include <memory>
 
 namespace switcher
 {
 
-}
+  class VideoSink : public BaseSink
+  {
+  public:
+    typedef std::tr1::shared_ptr<VideoSink> ptr;
+  };
+
+}  // end of namespace
+
+#endif // ifndef

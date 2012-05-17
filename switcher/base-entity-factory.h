@@ -17,9 +17,29 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/controller.h"
+/**
+ * The BaseEntityFactory class
+ */
+
+#ifndef __SWITCHER_BASE_ENTITY_FACTORY_H__
+#define __SWITCHER_BASE_ENTITY_FACTORY_H__
+
+#include "switcher/base-entity.h"
 
 namespace switcher
 {
 
-}
+  class BaseEntityFactory
+  {
+  public:
+    typedef std::tr1::shared_ptr<BaseEntityFactory> ptr;
+  };
+
+
+} // end of namespace
+
+#endif // ifndef
+
+
+
+

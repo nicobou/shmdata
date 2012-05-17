@@ -36,8 +36,10 @@ main (int argc,
   
   //Create and call
   BaseEntity::ptr runtime = temp.Create("runtime");
-  //dynamic_cast<Runtime> (runtime)->run();
   printf("Runtime %u\n", runtime->Get());
+  
+  Runtime::ptr rt = std::tr1::dynamic_pointer_cast<Runtime> (runtime);
+  rt->run();
   
   return 0;
 }

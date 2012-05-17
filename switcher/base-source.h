@@ -17,9 +17,22 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/controller.h"
+
+#ifndef __SWITCHER_BASE_SOURCE_H__
+#define __SWITCHER_BASE_SOURCE_H__
+
+#include "switcher/segment.h"
+#include <memory>
 
 namespace switcher
 {
 
-}
+  class BaseSource : public Segment
+  {
+  public:
+    typedef std::tr1::shared_ptr<BaseSource> ptr;
+  };
+
+}  // end of namespace
+
+#endif // ifndef

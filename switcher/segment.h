@@ -17,9 +17,27 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/controller.h"
+
+#ifndef __SWITCHER_SEGMENT_H__
+#define __SWITCHER_SEGMENT_H__
+
+#include "switcher/runtime.h"
+#include "switcher/base-entity.h"
+#include <memory>
 
 namespace switcher
 {
 
-}
+  class Segment : public BaseEntity
+  {
+  public:
+    typedef std::tr1::shared_ptr<Segment> ptr;
+        
+  protected:
+    Runtime::ptr runtime_;
+    
+  };
+
+}  // end of namespace
+
+#endif // ifndef

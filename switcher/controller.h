@@ -20,11 +20,6 @@
 #ifndef __SWITCHER_CONTROLLER_H__
 #define __SWITCHER_CONTROLLER_H__
 
-#include <gst/gst.h>
-#include "switcher/runtime.h"
-#include "switcher/base-entity.h"
-#include <set>
-
 namespace switcher
 {
 
@@ -34,11 +29,6 @@ namespace switcher
   public:
     Controller ();
     ~Controller ();
-    void run();
-
-  private:
-    Runtime::ptr  runtime_;
-    std::set<BaseEntity::ptr> entities_;
   };
 
 } // end of namespace

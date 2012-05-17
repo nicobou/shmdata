@@ -17,9 +17,23 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/controller.h"
+
+#ifndef __SWITCHER_AUDIO_SOURCE_H__
+#define __SWITCHER_AUDIO_SOURCE_H__
+
+#include "switcher/base-source.h"
+#include <memory>
+
 
 namespace switcher
 {
 
-}
+  class AudioSource : public BaseSource
+  {
+  public:
+    typedef std::tr1::shared_ptr<AudioSource> ptr;
+  };
+
+}  // end of namespace
+
+#endif // ifndef

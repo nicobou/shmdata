@@ -17,9 +17,23 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/controller.h"
+
+#ifndef __SWITCHER_VIDEO_TEST_SOURCE_H__
+#define __SWITCHER_VIDEO_TEST_SOURCE_H__
+
+#include "switcher/video-source.h"
+#include <memory>
 
 namespace switcher
 {
 
-}
+  class VideoTestSource : public VideoSource
+  {
+  public:
+    
+    typedef std::tr1::shared_ptr<VideoSource> ptr;
+  };
+
+}  // end of namespace
+
+#endif // ifndef
