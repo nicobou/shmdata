@@ -42,10 +42,18 @@
 /* the caps of the sender RTP stream. This is usually negotiated out of band with
  * SDP or RTSP. */
 
-/* the destination machine to send RTCP to. This is the address of the sender and
- * is used to send back the RTCP reports of this receiver. If the data is sent
- * from another machine, change this address. */
-#define DEST_HOST "127.0.0.1"
+static gint bind_port = 5000;
+static gchar *socket_path = "socket-path-write";
+static gchar *remote_host = "localhost";
+
+static GOptionEntry entries[] =
+{
+  { "socket-path", 's', 0, G_OPTION_ARG_STRING, &socket_path, "socket path for writing (default socket-path-write)", NULL },
+  { "port", 'p', 0, G_OPTION_ARG_INT, &bind_port, "port to listen (default 5000)", NULL },
+  { "remote_host", 'r', 0, G_OPTION_ARG_STRING, &remote_host, "remote host to receive from (default localhost)", NULL },
+  { NULL }
+};
+
 
 typedef struct _App App;
 struct _App
@@ -158,6 +166,18 @@ leave (int sig)
 int
 main (int argc, char *argv[])
 {
+
+  //command line options
+  GError *error = NULL;
+  GOptionContext *context;
+  context = g_option_context_new ("- receive data and write to a shmdata-any");
+  g_option_context_add_main_entries (context, entries, NULL);
+  if (!g_option_context_parse (context, &argc, &argv, &error))
+    {
+      g_print ("option parsing failed: %s\n", error->message);
+      exit (1);
+    } 
+
   GstElement *rtpbin, *rtcpsrc, *rtcpsink;
   GstElement *rtpsrc;
   GMainLoop *loop;
@@ -165,13 +185,8 @@ main (int argc, char *argv[])
   GstPadLinkReturn lres;
   GstPad *srcpad, *sinkpad;
 
-  /* Check input arguments */
-  if (argc != 2)
-    {
-      g_printerr ("Usage: %s <socket-path>\n", argv[0]);
-      return -1;
-    }
-  app.socketName = argv[1];
+
+  app.socketName = socket_path;
 
   (void) signal (SIGINT, leave);
 
@@ -185,7 +200,7 @@ main (int argc, char *argv[])
   /* the udp src and source we will use for RTP and RTCP */
   rtpsrc = gst_element_factory_make ("udpsrc", "rtpsrc");
   g_assert (rtpsrc);
-  g_object_set (rtpsrc, "port", 5002, NULL);
+  g_object_set (rtpsrc, "port", bind_port, NULL);
 
   /* we need to set caps on the udpsrc for the RTP data */
   // caps inside caps is obtained with "echo application/x-pcd | base64", removing the "0=" at the end
@@ -197,11 +212,11 @@ main (int argc, char *argv[])
 
   rtcpsrc = gst_element_factory_make ("udpsrc", "rtcpsrc");
   g_assert (rtcpsrc);
-  g_object_set (rtcpsrc, "port", 5003, NULL);
+  g_object_set (rtcpsrc, "port", bind_port + 1, NULL);
 
   rtcpsink = gst_element_factory_make ("udpsink", "rtcpsink");
   g_assert (rtcpsink);
-  g_object_set (rtcpsink, "port", 5007, "host", DEST_HOST, NULL);
+  g_object_set (rtcpsink, "port", bind_port + 5, "host", remote_host, NULL);
   /* no need for synchronisation or preroll on the RTCP sink */
   g_object_set (rtcpsink, "async", FALSE, "sync", FALSE, NULL);
 

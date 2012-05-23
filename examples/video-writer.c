@@ -72,17 +72,17 @@ main (int argc, char *argv[])
   timeoverlay = gst_element_factory_make ("timeoverlay", NULL);
   tee = gst_element_factory_make ("tee", NULL);
 
-  qlocalxv = gst_element_factory_make ("queue", NULL);
-  imgsink = gst_element_factory_make ("xvimagesink", NULL);
+  qlocalxv = gst_element_factory_make ("queue", NULL); 
+  imgsink = gst_element_factory_make ("fakesink", NULL); //("xvimagesink", NULL); 
+  
 
-
-  if (!pipeline || !timeoverlay || !tee || !qlocalxv || !imgsink)
+  if (!pipeline || !timeoverlay || !tee  || !qlocalxv || !imgsink )
     {
       g_printerr ("One element could not be created. Exiting.\n");
       return -1;
     }
 
-  g_object_set (G_OBJECT (imgsink), "sync", FALSE, NULL);
+  /* g_object_set (G_OBJECT (imgsink), "sync", FALSE, NULL); */
   g_object_set (G_OBJECT (videosource), "is-live", TRUE, NULL);
 
   /*specifying video format */
@@ -92,14 +92,14 @@ main (int argc, char *argv[])
 				   GST_MAKE_FOURCC ('I', '4', '2', '0'),
 				   "framerate", GST_TYPE_FRACTION, 30, 1,
 				   "pixel-aspect-ratio", GST_TYPE_FRACTION, 1,
-				   1, "width", G_TYPE_INT, 600, "height",
-				   G_TYPE_INT, 400,
+				   1, "width", G_TYPE_INT, 640, "height",
+				   G_TYPE_INT, 480,
 				   /* "width", G_TYPE_INT, 1920,    */
 				   /* "height", G_TYPE_INT, 1080,    */
 				   NULL);
 
   gst_bin_add_many (GST_BIN (pipeline),
-		    videosource, timeoverlay, tee, qlocalxv, imgsink, NULL);
+		    videosource, timeoverlay, tee,  qlocalxv, imgsink,  NULL);
 
   //shared video can be pluged before or after the pipeline state is set to PLAYING
   g_timeout_add (1000, (GSourceFunc) add_shared_video_writer, NULL);
@@ -108,7 +108,7 @@ main (int argc, char *argv[])
 
   /* we link the elements together */
   gst_element_link_filtered (videosource, timeoverlay, videocaps);
-  //gst_element_link (videosource,timeoverlay);
+  gst_element_link (videosource,timeoverlay);
   gst_element_link (timeoverlay, tee);
   gst_element_link_many (tee, qlocalxv, imgsink, NULL);
 

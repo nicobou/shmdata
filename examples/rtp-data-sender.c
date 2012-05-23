@@ -47,8 +47,17 @@ GstElement *pipeline;
  *                            '-------'      '----------'
  */
 
-/* change this to send the RTP data and RTCP to another host */
-#define DEST_HOST "127.0.0.1"
+static gint dest_port = 5000;
+static gchar *remote_host = "localhost";
+static gchar *socket_path = "socket-path-read";
+
+static GOptionEntry entries[] =
+{
+  { "socket-path", 's', 0, G_OPTION_ARG_STRING, &socket_path, "socket path to read from (default socket-path-read)", NULL },
+  { "port", 'p', 0, G_OPTION_ARG_INT, &dest_port, "destination port (default 5000)", NULL },
+  { "remote-host", 'r', 0, G_OPTION_ARG_STRING, &remote_host, "remote host (default localhost)", NULL },
+  { NULL }
+};
 
 /* print the stats of a source */
 static void
@@ -142,17 +151,17 @@ on_first_data (shmdata_base_reader_t * context, void *user_data)
   /* the udp sinks and source we will use for RTP and RTCP */
   rtpsink = gst_element_factory_make ("udpsink", "rtpsink");
   g_assert (rtpsink);
-  g_object_set (rtpsink, "port", 5002, "host", DEST_HOST, NULL);
+  g_object_set (rtpsink, "port", dest_port, "host", remote_host, NULL);
 
   rtcpsink = gst_element_factory_make ("udpsink", "rtcpsink");
   g_assert (rtcpsink);
-  g_object_set (rtcpsink, "port", 5003, "host", DEST_HOST, NULL);
+  g_object_set (rtcpsink, "port", dest_port + 1, "host", remote_host, NULL);
   /* no need for synchronisation or preroll on the RTCP sink */
   g_object_set (rtcpsink, "async", FALSE, "sync", FALSE, NULL);
 
   rtcpsrc = gst_element_factory_make ("udpsrc", "rtcpsrc");
   g_assert (rtcpsrc);
-  g_object_set (rtcpsrc, "port", 5007, NULL);
+  g_object_set (rtcpsrc, "port", dest_port + 5, NULL);
 
   gst_bin_add_many (GST_BIN (pipeline), rtpsink, rtcpsink, rtcpsrc, NULL);
 
@@ -209,6 +218,20 @@ on_first_data (shmdata_base_reader_t * context, void *user_data)
 int
 main (int argc, char *argv[])
 {
+
+  //command line options
+  GError *error = NULL;
+  GOptionContext *context;
+  context = g_option_context_new ("- stream data from a shmdata-any");
+  g_option_context_add_main_entries (context, entries, NULL);
+  if (!g_option_context_parse (context, &argc, &argv, &error))
+    {
+      g_print ("option parsing failed: %s\n", error->message);
+      exit (1);
+    } 
+  
+  //g_print ("-%s-%s-%d\n",socket_path,remote_host,dest_port);  
+
   GMainLoop *loop;
 
   (void) signal (SIGINT, leave);
@@ -216,19 +239,11 @@ main (int argc, char *argv[])
   /* always init first */
   gst_init (&argc, &argv);
 
-  const char *socketName;
-  if (argc != 2)
-    {
-      g_printerr ("Usage: %s <socket-path>\n", argv[0]);
-      return -1;
-    }
-  socketName = argv[1];
-
   /* the pipeline to hold everything */
   pipeline = gst_pipeline_new (NULL);
   g_assert (pipeline);
 
-  shmdata_base_reader_init (socketName, pipeline, &on_first_data, pipeline);
+  shmdata_base_reader_init (socket_path, pipeline, &on_first_data, pipeline);
 
   /* we need to run a GLib main loop to get the messages */
   loop = g_main_loop_new (NULL, FALSE);
