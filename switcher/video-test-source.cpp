@@ -22,4 +22,12 @@
 namespace switcher
 {
 
+  VideoTestSource::VideoTestSource ()
+  {
+    g_print ("video test source constructor \n");
+    videotestsrc_ = gst_element_factory_make ("videotestsrc",NULL);
+    name_ = gst_element_get_name (videotestsrc_);
+    set_raw_video_element (videotestsrc_);
+  }
+
 }

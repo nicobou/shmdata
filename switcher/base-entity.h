@@ -39,8 +39,8 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<BaseEntity> ptr;
 
-    virtual bool Get () = 0;
-    virtual std::string getName ();
+    //virtual bool Get () = 0;
+    std::string get_name ();
 
     BaseEntity ();
     virtual ~BaseEntity ();

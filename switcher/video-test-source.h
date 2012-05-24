@@ -30,8 +30,11 @@ namespace switcher
   class VideoTestSource : public VideoSource
   {
   public:
-    
-    typedef std::tr1::shared_ptr<VideoSource> ptr;
+    typedef std::tr1::shared_ptr<VideoTestSource> ptr;
+    VideoTestSource ();
+
+  private:
+    GstElement *videotestsrc_;
   };
 
 }  // end of namespace

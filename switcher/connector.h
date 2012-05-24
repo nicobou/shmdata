@@ -21,21 +21,21 @@
 #ifndef __SWITCHER_CONNECTOR_H__
 #define __SWITCHER_CONNECTOR_H__
 
-#include "switcher/base-entity.h"
+#include "switcher/segment.h"
 #include <memory>
-
 
 namespace switcher
 {
 
-  class Connector : public BaseEntity
+  class Connector : public Segment
   {
   public:
     typedef std::tr1::shared_ptr<Connector> ptr;
-
+    Connector ();
+    GstElement *get_src_element ();
+    GstElement *get_sink_element ();
   private:
     GstElement *tee_;
-
   };
 
 }  // end of namespace

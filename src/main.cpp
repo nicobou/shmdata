@@ -21,6 +21,7 @@
 #include "switcher/runtime.h"
 #include "switcher/base-entity.h"
 #include "switcher/creator.h"
+#include "switcher/video-test-source.h"
 #include <iostream>
 
 
@@ -33,12 +34,23 @@ main (int argc,
   //Factory + registration of base entity
   Factory<BaseEntity, std::string> temp;
   temp.Register<Runtime> ("runtime");
-  
+  temp.Register<VideoTestSource> ("videotestsource");
+
   //Create and call
-  BaseEntity::ptr runtime = temp.Create("runtime");
-  printf("Runtime %u\n", runtime->Get());
-  
+  BaseEntity::ptr runtime = temp.Create ("runtime");
+  //printf("Runtime %u\n", runtime->Get());
   Runtime::ptr rt = std::tr1::dynamic_pointer_cast<Runtime> (runtime);
+  
+  BaseEntity::ptr videotest = temp.Create("videotestsource");
+  VideoTestSource::ptr seg = std::tr1::dynamic_pointer_cast<VideoTestSource> (videotest); 
+  seg->set_runtime (rt); //..and play
+  
+  // BaseEntity::ptr myvideotest = temp.Create("videotestsource");
+  // VideoTestSource::ptr myseg = std::tr1::dynamic_pointer_cast<VideoTestSource> (myvideotest); 
+  // rt->add_segment (myseg);
+
+  
+
   rt->run();
   
   return 0;

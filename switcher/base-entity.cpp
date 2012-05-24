@@ -37,11 +37,11 @@ namespace switcher
   
   BaseEntity::~BaseEntity () { 
     entities_.erase(this);
-    g_print ("call: BaseEntity destructor for %s\n",getName().c_str());
+    g_print ("call: BaseEntity destructor for %s\n",get_name().c_str());
     };
 
   std::string
-  BaseEntity::getName()
+  BaseEntity::get_name()
   {
     return name_;
   }

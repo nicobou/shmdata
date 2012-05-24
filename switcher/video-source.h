@@ -22,6 +22,7 @@
 #define __SWITCHER_VIDEO_SOURCE_H__
 
 #include "switcher/base-source.h"
+#include "switcher/connector.h"
 #include <memory>
 
 namespace switcher
@@ -31,6 +32,31 @@ namespace switcher
   {
   public:
     typedef std::tr1::shared_ptr<VideoSource> ptr;
+    
+    VideoSource();
+
+  private:
+    GstElement *rawvideo_;
+
+    //internal connector between raw video and included filters
+    Connector::ptr rawvideo_connector_;
+   
+    GstElement *textoverlay_;
+    GstElement *videoflip_;
+    GstElement *deinterlace_;
+
+
+    //connector to a sink
+    //Connector::ptr src_connector;
+        //TODO use a connector 
+    GstElement *identity_; 
+    /* //TODO remove me */
+    GstElement *xvimagesink_;
+    
+  protected:
+    //called in the derived class constructor
+    void set_raw_video_element (GstElement *elt);
+    
   };
 
 }  // end of namespace

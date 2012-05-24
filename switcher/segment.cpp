@@ -22,4 +22,29 @@
 namespace switcher
 {
 
+  Segment::Segment()
+  {
+    bin_ = gst_element_factory_make ("bin", NULL);
+  }
+
+  void
+  Segment::set_runtime (Runtime::ptr runtime)
+  {
+    runtime_ = runtime;
+    attach_to_runtime ();
+  }
+  
+  void 
+  Segment::attach_to_runtime ()
+  {
+    
+    gst_bin_add (GST_BIN (runtime_->get_pipeline ()),bin_);
+    gst_element_sync_state_with_parent (bin_);
+  }
+  
+  GstElement *
+  Segment::get_bin()
+  {
+    return bin_;
+  }
 }

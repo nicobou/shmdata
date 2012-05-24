@@ -21,8 +21,8 @@
 #ifndef __SWITCHER_SEGMENT_H__
 #define __SWITCHER_SEGMENT_H__
 
-#include "switcher/runtime.h"
 #include "switcher/base-entity.h"
+#include "switcher/runtime.h"
 #include <memory>
 
 namespace switcher
@@ -32,10 +32,15 @@ namespace switcher
   {
   public:
     typedef std::tr1::shared_ptr<Segment> ptr;
-        
+    Segment();
+    // the segment is managing itself the presence/attachment with the runtime
+    void set_runtime(Runtime::ptr runtime);
+    GstElement *get_bin();
+
   protected:
+    GstElement *bin_;
     Runtime::ptr runtime_;
-    
+    void attach_to_runtime();
   };
 
 }  // end of namespace

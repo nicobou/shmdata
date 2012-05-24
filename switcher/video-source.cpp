@@ -21,5 +21,41 @@
 
 namespace switcher
 {
+  VideoSource::VideoSource () :
+    rawvideo_connector_ (new Connector()),
+    textoverlay_ (gst_element_factory_make ("textoverlay",NULL)),
+    videoflip_ (gst_element_factory_make ("videoflip",NULL)),
+    deinterlace_ (gst_element_factory_make ("deinterlace",NULL)),
+    identity_ (gst_element_factory_make ("identity",NULL)),
+    xvimagesink_ (gst_element_factory_make ("xvimagesink",NULL))
+  {
+    g_print ("video source constructor \n");
+    
+    gst_bin_add_many (GST_BIN (bin_),
+		      rawvideo_connector_->get_bin (),
+		      textoverlay_,
+		      videoflip_,
+		      deinterlace_,
+		      identity_,
+		      xvimagesink_,
+		      NULL);
+    gst_element_link_many (textoverlay_,
+			   videoflip_,
+			   deinterlace_,
+			   identity_,
+			   xvimagesink_,
+			   NULL);
+  }
+
+  void
+  VideoSource::set_raw_video_element (GstElement *element)
+  {
+    rawvideo_ = element;
+    gst_bin_add (GST_BIN (bin_),rawvideo_);
+    gst_element_link (rawvideo_,rawvideo_connector_->get_sink_element());
+    gst_element_link (rawvideo_connector_->get_src_element (),
+		      textoverlay_);
+
+  }
 
 }

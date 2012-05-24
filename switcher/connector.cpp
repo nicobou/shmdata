@@ -17,17 +17,29 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#ifndef __SWITCHER_CONNECTOR_H__
-#define __SWITCHER_CONNECTOR_H__
-
 #include "switcher/connector.h"
 
 namespace switcher
 {
 
+  Connector::Connector ()
+  {
+    g_print ("connector constructor \n");
+    tee_ = gst_element_factory_make ("tee",NULL);
+    gst_bin_add (GST_BIN (bin_),tee_);
+  }
+  
+  GstElement *
+  Connector::get_src_element ()
+  {
+    return tee_;
+  }
+
+  GstElement *
+  Connector::get_sink_element ()
+  {
+    return tee_;
+  }
 
 
 }  // end of namespace
-
-#endif // ifndef
