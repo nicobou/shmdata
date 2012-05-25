@@ -49,7 +49,6 @@ main (int argc,
   // VideoTestSource::ptr myseg = std::tr1::dynamic_pointer_cast<VideoTestSource> (myvideotest); 
   // rt->add_segment (myseg);
 
-  
 
   rt->run();
   

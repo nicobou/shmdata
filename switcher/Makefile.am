@@ -16,6 +16,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     base-source.cpp \
     connector.cpp \
     controller.cpp \
+    property.cpp \
     runtime.cpp \
     segment.cpp \
     video-sink.cpp \
@@ -40,6 +41,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     connector.h \
     controller.h \
     creator.h \
+    property.h \
     runtime.h \
     segment.h \
     video-sink.h \
