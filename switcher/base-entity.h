@@ -30,6 +30,7 @@
 #include <map>
 #include <gst/gst.h>
 #include <set>
+#include "switcher/property.h"
 
 namespace switcher
 {
@@ -41,7 +42,9 @@ namespace switcher
 
     //virtual bool Get () = 0;
     std::string get_name ();
-
+    void list_properties ();
+    void set_property (std::string name, std::string value);
+    std::string get_property (std::string name);
     BaseEntity ();
     virtual ~BaseEntity ();
 
@@ -49,9 +52,12 @@ namespace switcher
     // not using shared pointer here in order to avoir ref counting
     // entities are added and removed with constructor and destructor
     static std::set<BaseEntity *> entities_;
-    
+    //properties are registered by derived class
+    std::map<std::string, Property::ptr> properties_;
+
   protected:
     std::string name_;
+    void register_property (GObject *object, GParamSpec *pspec);
   };
   
 } // end of namespace

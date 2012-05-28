@@ -45,6 +45,14 @@ main (int argc,
   VideoTestSource::ptr seg = std::tr1::dynamic_pointer_cast<VideoTestSource> (videotest); 
   seg->set_runtime (rt); //..and play
   
+  videotest->list_properties ();
+  
+  std::cout << "----- pattern  " << videotest->get_property ("videotestsrc0_pattern") << std::endl ;
+  
+  videotest->set_property ("videotestsrc0_pattern","snow");
+
+  std::cout << "----- pattern  " << videotest->get_property ("videotestsrc0_pattern") << std::endl ;
+
   // BaseEntity::ptr myvideotest = temp.Create("videotestsource");
   // VideoTestSource::ptr myseg = std::tr1::dynamic_pointer_cast<VideoTestSource> (myvideotest); 
   // rt->add_segment (myseg);

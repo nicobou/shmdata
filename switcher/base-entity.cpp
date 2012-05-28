@@ -31,19 +31,53 @@ namespace switcher
 
   BaseEntity::BaseEntity ()
   {
-    entities_.insert(this);
+    entities_.insert (this);
     g_print ("call: BaseEntity constructor\n");
   }
   
   BaseEntity::~BaseEntity () { 
     entities_.erase(this);
     g_print ("call: BaseEntity destructor for %s\n",get_name().c_str());
+    //TODO remove properties
     };
 
   std::string
   BaseEntity::get_name()
   {
     return name_;
+  }
+
+  void
+  BaseEntity::register_property (GObject *object, GParamSpec *pspec)
+  {
+    Property::ptr prop (new Property (object, pspec));
+    gchar * prop_name = g_strconcat (name_.c_str(), "_", pspec->name, NULL);
+    properties_ [prop_name] = prop;
+    //g_free (prop_name);
+  }
+
+  void
+  BaseEntity::list_properties ()
+  {
+    for( std::map<std::string, Property::ptr>::iterator ii=properties_.begin(); ii!=properties_.end(); ++ii)
+      {
+	g_print ("\n....\n%s\n",(*ii).first.c_str());
+	(*ii).second->print ();
+      }
+  }
+
+  void 
+  BaseEntity::set_property (std::string name, std::string value)
+  {
+    Property::ptr prop = properties_[name];
+    prop->set (value);
+  }
+
+  std::string 
+  BaseEntity::get_property (std::string name)
+  {
+    Property::ptr prop = properties_[name];
+    return prop->get ();
   }
 
 }

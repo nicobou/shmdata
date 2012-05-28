@@ -24,10 +24,10 @@
 #include <gst/gst.h>
 #include <tr1/memory>
 #include <map>
+#include <string>
 
 namespace switcher
 {
-
   
   class Property
   {
@@ -35,7 +35,8 @@ namespace switcher
     typedef std::tr1::shared_ptr<Property> ptr;
 
     Property (GObject *object, GParamSpec *pspec);
-    ~Property ();
+    void set(std::string value);
+    std::string get ();
     void print();
 
   private:

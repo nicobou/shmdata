@@ -30,9 +30,39 @@ namespace switcher
   Property::Property (GObject *object, GParamSpec *pspec) :
     property_ (pspec),
     object_ (object)
-  {
-  }
+  {}
   
+  void 
+  Property::set (std::string value)
+  {
+
+    GValue transformed_val = G_VALUE_INIT;
+    g_value_init (&transformed_val, property_->value_type);
+
+    if ( !gst_value_deserialize (&transformed_val,value.c_str()))
+      g_print ("string not transformable into gvalue \n");
+    
+    g_object_set_property (object_,
+			   property_->name, 
+			   &transformed_val);
+  }
+
+  std::string 
+  Property::get ()
+  {
+    GValue val = G_VALUE_INIT;
+    g_value_init (&val, property_->value_type);
+    
+    g_object_get_property (object_,
+			   property_->name,
+			   &val);
+    
+    gchar *val_str = gst_value_serialize (&val);
+    std::string res (val_str);
+    g_free (val_str);
+    return res;
+  }
+
 
   //from gst-inspect
   void 
@@ -46,8 +76,7 @@ namespace switcher
 
     GValue value = { 0, };
         
-    GObject * element = (GObject *) g_param_spec_get_qdata (property_,
-							    g_quark_from_static_string("origin_object"));
+    GObject *element = object_; 
 	
     readable = FALSE;
 	
