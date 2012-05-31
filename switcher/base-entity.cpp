@@ -47,13 +47,21 @@ namespace switcher
     return name_;
   }
 
-  void
-  BaseEntity::register_property (GObject *object, GParamSpec *pspec)
+  bool
+  BaseEntity::register_property (GObject *object, std::string name)
   {
+    GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), name.c_str());
+    if (pspec == NULL)
+      {
+	g_print ("property not found %s\n",name.c_str());
+	return false;
+      }
+
     Property::ptr prop (new Property (object, pspec));
-    gchar * prop_name = g_strconcat (name_.c_str(), "_", pspec->name, NULL);
-    properties_ [prop_name] = prop;
+    //gchar * prop_name = g_strconcat (name_.c_str(), "_", pspec->name, NULL);
+    //properties_ [prop_name] = prop;
     //g_free (prop_name);
+    properties_[name] = prop; 
   }
 
   void
@@ -66,16 +74,23 @@ namespace switcher
       }
   }
 
-  void 
+  bool 
   BaseEntity::set_property (std::string name, std::string value)
   {
+    if (properties_.find( name ) == properties_.end())
+      return false;
+
     Property::ptr prop = properties_[name];
     prop->set (value);
+    return true;
   }
 
   std::string 
   BaseEntity::get_property (std::string name)
   {
+    if (properties_.find( name ) == properties_.end())
+      return "property not found";
+
     Property::ptr prop = properties_[name];
     return prop->get ();
   }

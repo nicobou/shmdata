@@ -43,7 +43,7 @@ namespace switcher
     //virtual bool Get () = 0;
     std::string get_name ();
     void list_properties ();
-    void set_property (std::string name, std::string value);
+    bool set_property (std::string name, std::string value);
     std::string get_property (std::string name);
     BaseEntity ();
     virtual ~BaseEntity ();
@@ -57,7 +57,7 @@ namespace switcher
 
   protected:
     std::string name_;
-    void register_property (GObject *object, GParamSpec *pspec);
+    bool register_property (GObject *object, std::string name);
   };
   
 } // end of namespace
