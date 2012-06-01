@@ -25,6 +25,7 @@
 #define __SWITCHER_CREATOR_H__
 
 #include "memory.h"
+#include <vector>
 
 namespace switcher 
 {
@@ -48,6 +49,7 @@ namespace switcher
     }
   };
   
+
   template <class T, class Key>
     class Factory
   {
@@ -57,8 +59,14 @@ namespace switcher
     {
       Creator<T>* Fn = (Creator<T>*)new DerivedCreator<U>();
       FunctionMap[Id] = Fn;
+      FunctionNames.push_back (Id);
     }
     
+    std::vector<Key> getList ()
+      {
+	return FunctionNames;
+      }
+
     std::tr1::shared_ptr<T> Create(Key Id)
     {
       std::tr1::shared_ptr<T> pointer (FunctionMap[Id]->Create());
@@ -77,6 +85,9 @@ namespace switcher
 
   private:
     std::map<Key, Creator<T>*> FunctionMap;
+    //this is not scaling to millions of classes 
+    //but avoids new vector each time a list is required
+    std::vector<Key> FunctionNames;
   };
 
 

@@ -17,14 +17,15 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#import "stlvector.h"
 
-//gsoap switcher service name:	    switcher-control Switcher control interface
+//gsoap switcher service name:	    control Switcher control interface
 //gsoap switcher service style:	    rpc
 //gsoap switcher service encoding:  encoded
 //gsoap switcher service namespace: http://localhost:8080/switcher-control.wsdl
 //gsoap switcher service location:  http://localhost:8080/switcher-control.cgi
 
-//gsoap switcher schema namespace:	urn:switcher-control
+//gsoap switcher schema namespace:	urn:control
 
 //gsoap switcher service method-documentation: add Sums two values
 int switcher__add(double a, double b, double *result);
@@ -40,3 +41,6 @@ int switcher__div(double a, double b, double *result);
 
 //gsoap switcher service method-documentation: pow Raises a to b
 int switcher__pow(double a, double b, double *result);
+
+//gsoap switcher service method-documentation: get available names for instantiation 
+int switcher__list_factory_capabilities(std::vector<std::string> *result);

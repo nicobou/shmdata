@@ -22,10 +22,9 @@
 #include "switcher/base-entity.h"
 #include "switcher/creator.h"
 #include "switcher/video-test-source.h"
+#include "switcher/ctrl-server.h"
 #include <iostream>
 
-#include "soapswitcher_controlService.h"
-#include "switcher_control.nsmap"
 
 
 int
@@ -35,49 +34,47 @@ main (int argc,
   using namespace switcher;
   
   //Factory + registration of base entity
-  Factory<BaseEntity, std::string> temp;
-  temp.Register<Runtime> ("runtime");
-  temp.Register<VideoTestSource> ("videotestsource");
+  Factory<BaseEntity, std::string> factory;
+  factory.Register<Runtime> ("runtime");
+  factory.Register<VideoTestSource> ("videotestsource");
+  factory.Register<CtrlServer> ("controlserver");
+  
+  //list available object in factory
+  std::vector<std::string> available_object_list = factory.getList ();
+  for (uint i=0; i < available_object_list.size (); i++)
+    {
+      std::cout<< "** available object: " << available_object_list[i] << std::endl; 
+    }    
 
-  switcher_controlService switcher_control;
-  if (argc < 2)
-    switcher_control.serve();	/* serve as CGI application */
-  else
-  { int port = atoi(argv[1]);
-    if (!port)
-    { fprintf(stderr, "Usage: switcher <port>\n");
-      exit(0);
-    }
-    /* run iterative server on port until fatal error */
-    if (switcher_control.run(port))
-    { switcher_control.soap_stream_fault(std::cerr);
-      exit(-1);
-    }
-  }
-  return 0;
+  //creating a webservice 
+  BaseEntity::ptr baseserv = factory.Create ("controlserver");
+  CtrlServer::ptr serv = std::tr1::dynamic_pointer_cast<CtrlServer> (baseserv);
+  serv->start ();
 
-  //Create and call
-  BaseEntity::ptr runtime = temp.Create ("runtime");
+  //Create a runtime
+  BaseEntity::ptr runtime = factory.Create ("runtime");
   //printf("Runtime %u\n", runtime->Get());
   Runtime::ptr rt = std::tr1::dynamic_pointer_cast<Runtime> (runtime);
   
-  BaseEntity::ptr videotest = temp.Create("videotestsource");
+  //create a videotest
+  BaseEntity::ptr videotest = factory.Create("videotestsource");
   VideoTestSource::ptr seg = std::tr1::dynamic_pointer_cast<VideoTestSource> (videotest); 
   seg->set_runtime (rt); //..and play
   
+  //list registered properties of video test
   videotest->list_properties ();
   
+  //print, set and print value of a given property 
   std::cout << "----- pattern  " << videotest->get_property ("pattern") << std::endl ;
-  
   videotest->set_property ("pattern","snow");
-
   std::cout << "----- pattern  " << videotest->get_property ("pattern") << std::endl ;
 
-  // BaseEntity::ptr myvideotest = temp.Create("videotestsource");
+  // BaseEntity::ptr myvideotest = factory.Create("videotestsource");
   // VideoTestSource::ptr myseg = std::tr1::dynamic_pointer_cast<VideoTestSource> (myvideotest); 
   // rt->add_segment (myseg);
 
 
+  //start the runtime (blocking)
   rt->run();
   
   return 0;
@@ -85,40 +82,3 @@ main (int argc,
 
 
 
-
-int switcher_controlService::add(double a, double b, double *result)
-{ *result = a + b;
-  return SOAP_OK;
-} 
-
-int switcher_controlService::sub(double a, double b, double *result)
-{ *result = a - b;
-  return SOAP_OK;
-} 
-
-int switcher_controlService::mul(double a, double b, double *result)
-{ *result = a * b;
-  return SOAP_OK;
-} 
-
-int switcher_controlService::div(double a, double b, double *result)
-{ if (b)
-    *result = a / b;
-  else
-  { char *s = (char*)soap_malloc(this, 1024);
-    sprintf(s, "<error xmlns=\"http://tempuri.org/\">Can't divide %f by %f</error>", a, b);
-    return soap_senderfault("Division by zero", s);
-  }
-  return SOAP_OK;
-} 
-
-int switcher_controlService::pow(double a, double b, double *result)
-{ *result = ::pow(a, b);
-  if (soap_errno == EDOM)	/* soap_errno is like errno, but compatible with Win32 */
-  { char *s = (char*)soap_malloc(this, 1024);
-    sprintf(s, "Can't take the power of %f to %f", a, b);
-    sprintf(s, "<error xmlns=\"http://tempuri.org/\">Can't take power of %f to %f</error>", a, b);
-    return soap_senderfault("Power function domain error", s);
-  }
-  return SOAP_OK;
-}

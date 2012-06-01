@@ -1,7 +1,10 @@
 AM_CXXFLAGS = \
-    $(GST_CFLAGS) 
+    $(GSOAP_CFLAGS) \
+    $(GST_CFLAGS) \
+    -I$(top_srcdir)/switcher/webservices 
 
 AM_LIBS = \
+    $(GSOAP_LIBS) \
     $(GST_LIBS) 
 
 lib_LTLIBRARIES = \
@@ -10,20 +13,25 @@ lib_LTLIBRARIES = \
 libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     audio-sink.cpp \
     audio-source.cpp \
-    base-entity.cpp \
     base-entity-factory.cpp \
+    base-entity.cpp \
     base-sink.cpp \
     base-source.cpp \
     connector.cpp \
     controller.cpp \
+    ctrl-server.cpp \
     property.cpp \
     runtime.cpp \
     segment.cpp \
     video-sink.cpp \
     video-source.cpp \
-    video-test-source.cpp
+    video-test-source.cpp \
+    webservices/soapC.cpp \
+    webservices/soapcontrolProxy.cpp \
+    webservices/soapcontrolService.cpp
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
+    $(GSOAP_LIBS) \
     $(GST_LIBS) \
     -export-dynamic \
     -version-info $(LIBSWITCHER_SO_VERSION)
@@ -41,6 +49,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     connector.h \
     controller.h \
     creator.h \
+    ctrl-server.h \
+    ctrl-webservice-definition.h \
     property.h \
     runtime.h \
     segment.h \
@@ -48,3 +58,29 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     video-source.h \
     video-test-source.h
 
+####### webservice code generation into the "webservices" directory
+####### note: soapcpp2 -q <namespace> -d <directory-where-goes-generated-cpp>
+####### note: webservices/stdsoap2.cpp comes from gsoap sources and 
+#######       is required here for linking. Maybe a better solution exists
+#######       but did not find anything else. See:
+#######       http://stackoverflow.com/questions/6340524/gsoap-linking-error
+
+BUILT_SOURCES = \
+    webservices/soapC.cpp \
+    webservices/soapcontrolProxy.cpp \
+    webservices/soapcontrolService.cpp
+
+webservices/soapC.cpp: ctrl-webservice-definition.h
+	soapcpp2 -I /usr/share/gsoap/import/ -i -d webservices ctrl-webservice-definition.h
+
+webservices/soapcontrolProxy.cpp: ctrl-webservice-definition.h
+	soapcpp2 -I /usr/share/gsoap/import/ -i -d webservices ctrl-webservice-definition.h
+
+webservices/soapcontrolService.cpp: ctrl-webservice-definition.h
+	soapcpp2 -I /usr/share/gsoap/import/ -i  -d webservices ctrl-webservice-definition.h
+
+####### end webservice code generation 
+
+# cleaning generated files for webservices
+clean-local:
+	-rm -f webservices/*
