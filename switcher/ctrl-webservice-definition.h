@@ -44,3 +44,6 @@ int switcher__pow(double a, double b, double *result);
 
 //gsoap switcher service method-documentation: get available names for instantiation 
 int switcher__list_factory_capabilities(std::vector<std::string> *result);
+
+//gsoap switcher service method-documentation: get names of instances 
+int switcher__list_base_entities(std::vector<std::string> *result);

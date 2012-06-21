@@ -27,13 +27,21 @@ namespace switcher
   
   CtrlServer::CtrlServer() : 
     port_ (8080)
-  {  }
+  { 
+    soap_init(&soap_);
+  }
 
   CtrlServer::~CtrlServer ()
   {
     stop ();
   }
 
+   void
+   CtrlServer::set_user_data (void *user_data)
+   {
+     soap_.user = user_data;
+   }
+  
   void 
   CtrlServer::set_port (int port)
   {
@@ -43,7 +51,7 @@ namespace switcher
   void 
   CtrlServer::start ()
   {
-    service_ = new controlService ();
+    service_ = new controlService (soap_);
     thread_ = g_thread_new ("CtrlServer", GThreadFunc(server_thread), this);
   }
 
@@ -65,10 +73,8 @@ namespace switcher
       }
     return NULL;
   }
-
-
-
 }
+
 
 // below is the implementation of the service
 int 
@@ -115,9 +121,26 @@ controlService::pow(double a, double b, double *result)
 
 int
 controlService::list_factory_capabilities(std::vector<std::string> *result){
-  result->push_back ("one");
-  result->push_back ("truc");
-  result->push_back ("coucou");
-  result->push_back ("blabla");
+  using namespace switcher;
+
+  Factory<BaseEntity, std::string> *factory = (Factory<BaseEntity, std::string> *) this->user;
+  // //list available object in factory
+  // std::vector<std::string> available_object_list = factory->getList ();
+  // for (uint i=0; i < available_object_list.size (); i++)
+  //   {
+  //     std::cout<< "** available object: " << available_object_list[i] << std::endl; 
+  //   }    
+  
+  *result = factory->getList ();
+  return SOAP_OK;
+}
+
+int
+controlService::list_base_entities(std::vector<std::string> *result){
+  using namespace switcher;
+
+  //TODO use base-entity-factory
+  Factory<BaseEntity, std::string> *factory = (Factory<BaseEntity, std::string> *) this->user;
+  *result = factory->getList ();
   return SOAP_OK;
 }

@@ -33,6 +33,7 @@ namespace switcher
   {
   public:
     typedef std::tr1::shared_ptr<BaseEntityFactory> ptr;
+
   };
 
 

@@ -26,6 +26,7 @@
 #define __SWITCHER_BASE_ENTITY_H__
 
 #include <string>
+#include <vector>
 #include <tr1/memory>
 #include <map>
 #include <gst/gst.h>
@@ -40,17 +41,17 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<BaseEntity> ptr;
 
+    BaseEntity ();
+    virtual ~BaseEntity ();
+    
     //virtual bool Get () = 0;
     std::string get_name ();
     void list_properties ();
     bool set_property (std::string name, std::string value);
     std::string get_property (std::string name);
-    BaseEntity ();
-    virtual ~BaseEntity ();
+    static std::vector<std::string> *get_entity_instance_names();
 
   private:
-    // not using shared pointer here in order to avoir ref counting
-    // entities are added and removed with constructor and destructor
     static std::set<BaseEntity *> entities_;
     //properties are registered by derived class
     std::map<std::string, Property::ptr> properties_;
