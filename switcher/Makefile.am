@@ -13,7 +13,7 @@ lib_LTLIBRARIES = \
 libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     audio-sink.cpp \
     audio-source.cpp \
-    base-entity-factory.cpp \
+    base-entity-manager.cpp \
     base-entity.cpp \
     base-sink.cpp \
     base-source.cpp \
@@ -42,7 +42,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_includedir = \
 libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     audio-sink.h \
     audio-source.h \
-    base-entity-factory.h \
+    base-entity-manager.h \
     base-entity.h \
     base-sink.h \
     base-source.h \

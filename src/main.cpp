@@ -17,13 +17,13 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/controller.h"
 #include "switcher/runtime.h"
 #include "switcher/base-entity.h"
 #include "switcher/creator.h"
 #include "switcher/video-test-source.h"
 #include "switcher/ctrl-server.h"
 #include <iostream>
+#include "switcher/webservices/control.nsmap"
 
 int
 main (int argc,

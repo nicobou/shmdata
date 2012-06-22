@@ -19,9 +19,6 @@
 
 #include "switcher/ctrl-server.h"
 
-
-  
-
 namespace switcher
 {
   
@@ -123,7 +120,9 @@ int
 controlService::list_factory_capabilities(std::vector<std::string> *result){
   using namespace switcher;
 
-  Factory<BaseEntity, std::string> *factory = (Factory<BaseEntity, std::string> *) this->user;
+    Factory<BaseEntity, std::string> *factory = 
+    (Factory<BaseEntity, std::string> *) this->user;
+ 
   // //list available object in factory
   // std::vector<std::string> available_object_list = factory->getList ();
   // for (uint i=0; i < available_object_list.size (); i++)
@@ -137,10 +136,8 @@ controlService::list_factory_capabilities(std::vector<std::string> *result){
 
 int
 controlService::list_base_entities(std::vector<std::string> *result){
-  using namespace switcher;
+  //  using namespace switcher;
 
   //TODO use base-entity-factory
-  Factory<BaseEntity, std::string> *factory = (Factory<BaseEntity, std::string> *) this->user;
-  *result = factory->getList ();
   return SOAP_OK;
 }

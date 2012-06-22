@@ -25,10 +25,12 @@
 #include <memory>
 
 #include "switcher/webservices/soapcontrolService.h"
-#include "switcher/webservices/control.nsmap"
-#include "switcher/creator.h"
+/* #ifndef __SWITCHER_WEBSERVICES_CONTROL_NSMAP__ */
+/* #define __SWITCHER_WEBSERVICES_CONTROL_NSMAP__ */
+/* #include "switcher/webservices/control.nsmap" */
+/* #endif */
 
-class switcherControlService;
+#include "switcher/creator.h"
 
 namespace switcher
 {
@@ -40,8 +42,8 @@ namespace switcher
     CtrlServer();
     ~CtrlServer ();
     void set_user_data (void *user_data);
-    void set_port (int port);
-    void start (); //default port is 8080
+    void set_port (int port);//default port is 8080
+    void start (); 
     void stop ();
   private:
     struct soap soap_;

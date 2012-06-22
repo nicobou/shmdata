@@ -50,7 +50,7 @@ namespace switcher
     bool set_property (std::string name, std::string value);
     std::string get_property (std::string name);
     static std::vector<std::string> *get_entity_instance_names();
-
+    
   private:
     static std::set<BaseEntity *> entities_;
     //properties are registered by derived class
