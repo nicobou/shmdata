@@ -28,7 +28,9 @@ src/.deps/
 src/.libs/
 src/switcher
 stamp-h1
+switcher-ctrl
 switcher/.deps/
 switcher/.libs/
 switcher/Makefile
 switcher/classes.cxx
+switcher/webservices

@@ -95,4 +95,10 @@ namespace switcher
     return prop->get ();
   }
 
+  std::vector<std::string> *
+  BaseEntity::get_entity_instance_names()
+  {
+    
+  }
+
 }

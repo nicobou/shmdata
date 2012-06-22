@@ -25,9 +25,12 @@
 #include <memory>
 
 #include "switcher/webservices/soapcontrolService.h"
-#include "switcher/webservices/control.nsmap"
+/* #ifndef __SWITCHER_WEBSERVICES_CONTROL_NSMAP__ */
+/* #define __SWITCHER_WEBSERVICES_CONTROL_NSMAP__ */
+/* #include "switcher/webservices/control.nsmap" */
+/* #endif */
 
-class switcherControlService;
+#include "switcher/creator.h"
 
 namespace switcher
 {
@@ -38,12 +41,14 @@ namespace switcher
     typedef std::tr1::shared_ptr<CtrlServer> ptr;
     CtrlServer();
     ~CtrlServer ();
-    void set_port (int port);
-    void start (); //default port is 8080
+    void set_user_data (void *user_data);
+    void set_port (int port);//default port is 8080
+    void start (); 
     void stop ();
   private:
+    struct soap soap_;
     int port_;
-    controlService *service_; //TODO implement a class the inherit from that 
+    controlService *service_; 
     GThread *thread_;
     static gpointer server_thread (gpointer user_data);
   };

@@ -27,7 +27,7 @@ int main(int argc, char **argv)
 
 
   if (argc < 4)
-    { fprintf(stderr, "Usage: [list|add|sub|mul|div|pow] num num\n");
+    { fprintf(stderr, "Usage: [list|base-entities|add|sub|mul|div|pow] num num\n");
          exit(0);
     }
   double a, b, result;
@@ -37,6 +37,8 @@ int main(int argc, char **argv)
   b = strtod(argv[3], NULL);
   controlProxy switcher_control;
   switcher_control.soap_endpoint = server;
+
+  int i;
   switch (*argv[1])
     { case 'a':
 	switcher_control.add(a, b, &result);
@@ -60,12 +62,19 @@ int main(int argc, char **argv)
       break;
     case 'l':
       switcher_control.list_factory_capabilities(&resultlist);
-      int i;
       for(i=0; i < resultlist.size(); i++)
 	{
 	  std::cout << resultlist[i] << std::endl;
 	}
       break;
+    case 'b':
+      switcher_control.list_base_entities(&resultlist);
+      for(i=0; i < resultlist.size(); i++)
+	{
+	  std::cout << resultlist[i] << std::endl;
+	}
+      break;
+      
     default:
       fprintf(stderr, "Unknown command\n");
       exit(0);

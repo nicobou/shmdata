@@ -17,9 +17,40 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/base-entity-factory.h"
+/**
+ * The BaseEntityManager class
+ */
 
-namespace switcher
-{
+#ifndef __SWITCHER_BASE_ENTITY_MANAGER_H__
+#define __SWITCHER_BASE_ENTITY_MANAGER_H__
 
-}
+ #include "switcher/base-entity.h" 
+ #include "switcher/creator.h" 
+
+
+
+ namespace switcher 
+ { 
+
+   class BaseEntityManager 
+   { 
+   public: 
+     typedef std::tr1::shared_ptr<BaseEntityManager> ptr; 
+    
+     BaseEntityManager(); 
+     ~BaseEntityManager(); 
+     std::vector<std::string> get_list_of_creatable_entities (); 
+     BaseEntity::ptr create_entity (std::string entity_class); 
+
+   private: 
+     Factory<BaseEntity, std::string> abstract_factory_; 
+   }; 
+
+
+ } // end of namespace 
+
+#endif  
+
+
+
+

@@ -17,15 +17,13 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/controller.h"
 #include "switcher/runtime.h"
 #include "switcher/base-entity.h"
 #include "switcher/creator.h"
 #include "switcher/video-test-source.h"
 #include "switcher/ctrl-server.h"
 #include <iostream>
-
-
+#include "switcher/webservices/control.nsmap"
 
 int
 main (int argc,
@@ -49,6 +47,7 @@ main (int argc,
   //creating a webservice 
   BaseEntity::ptr baseserv = factory.Create ("controlserver");
   CtrlServer::ptr serv = std::tr1::dynamic_pointer_cast<CtrlServer> (baseserv);
+  serv->set_user_data ((void *)&factory);
   serv->start ();
 
   //Create a runtime
