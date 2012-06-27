@@ -24,13 +24,18 @@
 #ifndef __SWITCHER_BASE_ENTITY_MANAGER_H__
 #define __SWITCHER_BASE_ENTITY_MANAGER_H__
 
- #include "switcher/base-entity.h" 
- #include "switcher/creator.h" 
+#include <vector>
+#include <map>
+#include <string>
+#include "switcher/base-entity.h" 
+#include "switcher/creator.h" 
 
 
 
  namespace switcher 
  { 
+
+   class BaseEntity;
 
    class BaseEntityManager 
    { 
@@ -39,11 +44,34 @@
     
      BaseEntityManager(); 
      ~BaseEntityManager(); 
-     std::vector<std::string> get_list_of_creatable_entities (); 
-     BaseEntity::ptr create_entity (std::string entity_class); 
 
+     std::vector<std::string> get_list_of_creatable_entities (); 
+     
+     std::vector<std::string> get_list_of_entities (); 
+ 
+
+     //properties
+
+     bool set_entity_property (std::string entity_name,
+			       std::string property_name,
+			       std::string property_value);
+
+     std::string get_entity_property (std::string entity_name, 
+				      std::string property_name);
+
+     //create entity and insert it into the entity set
+     std::tr1::shared_ptr<BaseEntity>  
+       create_entity (std::string entity_class_name); 
+ 
+     //should be called from the entity destructor
+     void unref_entity (std::string entity_name);
+     
    private: 
-     Factory<BaseEntity, std::string> abstract_factory_; 
+     Factory<BaseEntity, std::string> abstract_factory_;
+     //do not use shared pointers here since inserting and erasing 
+     //are done during the entity creation and destruction 
+     std::map<std::string, BaseEntity *> entities_;
+
    }; 
 
 

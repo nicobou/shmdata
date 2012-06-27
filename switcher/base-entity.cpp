@@ -26,20 +26,26 @@
 namespace switcher
 {
 
-
-  std::set<BaseEntity *> BaseEntity::entities_;
-
   BaseEntity::BaseEntity ()
   {
-    entities_.insert (this);
     g_print ("call: BaseEntity constructor\n");
   }
   
   BaseEntity::~BaseEntity () { 
-    entities_.erase(this);
+    if (base_entity_manager_ != NULL)
+      {
+	base_entity_manager_->unref_entity (name_);
+      }
+
     g_print ("call: BaseEntity destructor for %s\n",get_name().c_str());
     //TODO remove properties
-    };
+  }
+
+  void
+  BaseEntity::set_manager (BaseEntityManager *manager)
+  {
+    base_entity_manager_ = manager;
+  }
 
   std::string
   BaseEntity::get_name()
@@ -47,13 +53,14 @@ namespace switcher
     return name_;
   }
 
+  
   bool
-  BaseEntity::register_property (GObject *object, std::string name)
+  BaseEntity::register_property (GObject *object, std::string object_property, std::string prefix)
   {
-    GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), name.c_str());
+    GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), object_property.c_str());
     if (pspec == NULL)
       {
-	g_print ("property not found %s\n",name.c_str());
+	g_printerr ("property not found %s\n",object_property.c_str());
 	return false;
       }
 
@@ -61,7 +68,10 @@ namespace switcher
     //gchar * prop_name = g_strconcat (name_.c_str(), "_", pspec->name, NULL);
     //properties_ [prop_name] = prop;
     //g_free (prop_name);
-    properties_[name] = prop; 
+    //    g_print ("%s\n",G_OBJECT_TYPE_NAME(object));
+    properties_[prefix + "/" + object_property] = prop; 
+    
+    return true;
   }
 
   void
@@ -93,12 +103,6 @@ namespace switcher
 
     Property::ptr prop = properties_[name];
     return prop->get ();
-  }
-
-  std::vector<std::string> *
-  BaseEntity::get_entity_instance_names()
-  {
-    
   }
 
 }

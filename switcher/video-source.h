@@ -41,10 +41,10 @@ namespace switcher
     //internal connector between raw video and included filters
     Connector::ptr rawvideo_connector_;
    
+    GstElement *alpha_;
     GstElement *textoverlay_;
     GstElement *videoflip_;
     GstElement *deinterlace_;
-
 
     //connector to a sink
     //Connector::ptr src_connector;

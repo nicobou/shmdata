@@ -47,3 +47,14 @@ int switcher__list_factory_capabilities(std::vector<std::string> *result);
 
 //gsoap switcher service method-documentation: get names of instances 
 int switcher__list_base_entities(std::vector<std::string> *result);
+
+//gsoap switcher service method-documentation: set a value of a entity property  
+int switcher__set_entity_property(std::string entity_name, 
+ 				  std::string property_name, 
+ 				  std::string property_value,
+				  void); 
+
+//gsoap switcher service method-documentation: get a value of a entity property  
+int switcher__get_entity_property(std::string entity_name, 
+ 				  std::string property_name, 
+				  std::string *result); 

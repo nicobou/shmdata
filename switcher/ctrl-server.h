@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_CTRL_SERVER_H__
 #define __SWITCHER_CTRL_SERVER_H__
 
-#include "switcher/base-entity.h"
+#include "switcher/base-entity-manager.h"
 #include <memory>
 
 #include "switcher/webservices/soapcontrolService.h"
@@ -41,7 +41,8 @@ namespace switcher
     typedef std::tr1::shared_ptr<CtrlServer> ptr;
     CtrlServer();
     ~CtrlServer ();
-    void set_user_data (void *user_data);
+    //void set_user_data (void *user_data);
+    void set_base_entity_manager (BaseEntityManager *manager);
     void set_port (int port);//default port is 8080
     void start (); 
     void stop ();

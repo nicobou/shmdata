@@ -39,22 +39,16 @@ namespace switcher
     //   //prop->print();
     // }
 
-    //registering "pattern" and "is-live" properties 
+    //registering only the "pattern" property 
     // GParamSpec *pspec_pattern = g_object_class_find_property (G_OBJECT_GET_CLASS(videotestsrc_), "pattern");
     // if (pspec_pattern != NULL)
     //   {
     // 	register_property (G_OBJECT (videotestsrc_), pspec_pattern);
     //   }
 
-    // GParamSpec *pspec_islive = g_object_class_find_property (G_OBJECT_GET_CLASS(videotestsrc_), "is-live");
-    // if (pspec_islive != NULL)
-    //   {
-    //  	register_property (G_OBJECT (videotestsrc_), pspec_islive);
-    //   }
-    
     //registering "pattern" and "is-live" properties 
-    register_property (G_OBJECT (videotestsrc_),"pattern");
-    register_property (G_OBJECT (videotestsrc_),"is-live");
+    register_property (G_OBJECT (videotestsrc_),"pattern","videotestsrc");
+    //register_property (G_OBJECT (videotestsrc_),"is-live");
     
     set_raw_video_element (videotestsrc_);
   }

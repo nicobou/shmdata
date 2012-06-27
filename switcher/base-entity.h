@@ -30,11 +30,13 @@
 #include <tr1/memory>
 #include <map>
 #include <gst/gst.h>
-#include <set>
 #include "switcher/property.h"
+#include "switcher/base-entity-manager.h"
 
 namespace switcher
 {
+
+  class BaseEntityManager;
 
   class BaseEntity
   {
@@ -49,16 +51,17 @@ namespace switcher
     void list_properties ();
     bool set_property (std::string name, std::string value);
     std::string get_property (std::string name);
-    static std::vector<std::string> *get_entity_instance_names();
-    
+    void set_manager (BaseEntityManager *manager);
+
   private:
-    static std::set<BaseEntity *> entities_;
     //properties are registered by derived class
     std::map<std::string, Property::ptr> properties_;
+    //the manager responsible for this entity:
+    BaseEntityManager *base_entity_manager_;
 
   protected:
     std::string name_;
-    bool register_property (GObject *object, std::string name);
+    bool register_property (GObject *object, std::string object_property, std::string prefix);
   };
   
 } // end of namespace

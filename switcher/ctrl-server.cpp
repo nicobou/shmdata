@@ -18,6 +18,8 @@
  */
 
 #include "switcher/ctrl-server.h"
+#include <ctime>    // For time()
+#include <cstdlib>  // For srand() and rand()
 
 namespace switcher
 {
@@ -26,18 +28,25 @@ namespace switcher
     port_ (8080)
   { 
     soap_init(&soap_);
+    //TODO find a better name for CtrlServer
+    srand(time(0));
+    name_ = g_strdup_printf ("ctrlserver%d",rand() % 1024);
   }
 
   CtrlServer::~CtrlServer ()
   {
     stop ();
+    g_free ((gchar *)name_.c_str());
   }
 
-   void
-   CtrlServer::set_user_data (void *user_data)
-   {
-     soap_.user = user_data;
-   }
+
+  void
+  CtrlServer::set_base_entity_manager (BaseEntityManager *manager)
+  {
+    soap_.user = (void *)manager;
+  }
+
+
   
   void 
   CtrlServer::set_port (int port)
@@ -119,25 +128,46 @@ controlService::pow(double a, double b, double *result)
 int
 controlService::list_factory_capabilities(std::vector<std::string> *result){
   using namespace switcher;
-
-    Factory<BaseEntity, std::string> *factory = 
-    (Factory<BaseEntity, std::string> *) this->user;
- 
-  // //list available object in factory
-  // std::vector<std::string> available_object_list = factory->getList ();
-  // for (uint i=0; i < available_object_list.size (); i++)
-  //   {
-  //     std::cout<< "** available object: " << available_object_list[i] << std::endl; 
-  //   }    
   
-  *result = factory->getList ();
+  //TODO check this->user and return error when required
+  BaseEntityManager *manager = (BaseEntityManager *) this->user;
+  *result = manager->get_list_of_creatable_entities ();
+
   return SOAP_OK;
 }
 
 int
 controlService::list_base_entities(std::vector<std::string> *result){
-  //  using namespace switcher;
+  using namespace switcher;
 
-  //TODO use base-entity-factory
+  BaseEntityManager *manager = (BaseEntityManager *) this->user;
+  *result = manager->get_list_of_entities ();
+
+  return SOAP_OK;
+}
+
+int
+controlService::set_entity_property (std::string entity_name, 
+				     std::string property_name,
+				     std::string property_value)
+{
+  using namespace switcher;
+  
+  BaseEntityManager *manager = (BaseEntityManager *) this->user;
+  manager->set_entity_property (entity_name, property_name, property_value);
+  
+  return SOAP_OK;
+}
+
+int
+controlService::get_entity_property (std::string entity_name, 
+				     std::string property_name,
+				     std::string *result)
+{
+  using namespace switcher;
+  
+  BaseEntityManager *manager = (BaseEntityManager *) this->user;
+  *result = manager->get_entity_property (entity_name, property_name);
+  
   return SOAP_OK;
 }

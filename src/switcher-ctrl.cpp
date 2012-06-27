@@ -27,27 +27,30 @@ int main(int argc, char **argv)
 
 
   if (argc < 4)
-    { fprintf(stderr, "Usage: [list|base-entities|add|sub|mul|div|pow] num num\n");
+    { fprintf(stderr, "Usage: [list|base-entities|set-prop|get-prop|add|sub|mul|div|pow] num num\n");
          exit(0);
     }
   double a, b, result;
   std::vector<std::string> resultlist;
+  std::string val;
+
 
   a = strtod(argv[2], NULL);
   b = strtod(argv[3], NULL);
+
   controlProxy switcher_control;
   switcher_control.soap_endpoint = server;
-
+  
   int i;
   switch (*argv[1])
     { case 'a':
 	switcher_control.add(a, b, &result);
 	printf("result = %g\n", result);
 	break;
-    case 's':
-      switcher_control.sub(a, b, &result);
-      printf("result = %g\n", result);
-      break;
+    // case 'sub':
+    //   switcher_control.sub(a, b, &result);
+    //   printf("result = %g\n", result);
+    //   break;
     case 'm':
       switcher_control.mul(a, b, &result);
       printf("result = %g\n", result);
@@ -74,7 +77,14 @@ int main(int argc, char **argv)
 	  std::cout << resultlist[i] << std::endl;
 	}
       break;
-      
+    case 's':
+      switcher_control.set_entity_property (argv[2], argv[3], argv[4]);
+      break;
+    case 'g':
+      switcher_control.get_entity_property(argv[2], argv[3],&val);
+      std::cout << "val is"<< val << std::endl;
+      break;
+     
     default:
       fprintf(stderr, "Unknown command\n");
       exit(0);
