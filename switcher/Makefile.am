@@ -33,7 +33,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
 libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
-    -export-dynamic \
     -version-info $(LIBSWITCHER_SO_VERSION)
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_includedir = \
@@ -70,17 +69,21 @@ BUILT_SOURCES = \
     webservices/soapcontrolProxy.cpp \
     webservices/soapcontrolService.cpp
 
-webservices/soapC.cpp: ctrl-webservice-definition.h
+webservices/soapC.cpp: ctrl-webservice-definition.h webservices
 	soapcpp2 -I /usr/share/gsoap/import/ -i -d webservices ctrl-webservice-definition.h
 
-webservices/soapcontrolProxy.cpp: ctrl-webservice-definition.h
+webservices/soapcontrolProxy.cpp: ctrl-webservice-definition.h webservices
 	soapcpp2 -I /usr/share/gsoap/import/ -i -d webservices ctrl-webservice-definition.h
 
-webservices/soapcontrolService.cpp: ctrl-webservice-definition.h
+webservices/soapcontrolService.cpp: ctrl-webservice-definition.h webservices
 	soapcpp2 -I /usr/share/gsoap/import/ -i  -d webservices ctrl-webservice-definition.h
+
+webservices:
+	mkdir -p webservices
 
 ####### end webservice code generation 
 
 # cleaning generated files for webservices
 clean-local:
 	-rm -f webservices/*
+
