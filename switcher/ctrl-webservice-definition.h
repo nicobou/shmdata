@@ -43,18 +43,23 @@ int switcher__div(double a, double b, double *result);
 int switcher__pow(double a, double b, double *result);
 
 //gsoap switcher service method-documentation: get available names for instantiation 
-int switcher__list_factory_capabilities(std::vector<std::string> *result);
+int switcher__get_factory_capabilities(std::vector<std::string> *result);
 
 //gsoap switcher service method-documentation: get names of instances 
-int switcher__list_base_entities(std::vector<std::string> *result);
+int switcher__get_entity_names(std::vector<std::string> *result);
 
-//gsoap switcher service method-documentation: set a value of a entity property  
-int switcher__set_entity_property(std::string entity_name, 
- 				  std::string property_name, 
- 				  std::string property_value,
-				  void); 
+//gsoap switcher service method-documentation: get a property names of an entity instance  
+int switcher__get_property_names (std::string entity_name, 
+				  std::vector<std::string> *result); 
 
-//gsoap switcher service method-documentation: get a value of a entity property  
-int switcher__get_entity_property(std::string entity_name, 
- 				  std::string property_name, 
-				  std::string *result); 
+//gsoap switcher service method-documentation: set a value of a property from an entity instance  
+int switcher__set_property(std::string entity_name, 
+			   std::string property_name, 
+			   std::string property_value,
+			   void); 
+
+//gsoap switcher service method-documentation: get a value of a property from an entity instance  
+int switcher__get_property(std::string entity_name, 
+			   std::string property_name, 
+			   std::string *result); 
+

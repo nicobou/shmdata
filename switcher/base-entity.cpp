@@ -74,14 +74,27 @@ namespace switcher
     return true;
   }
 
+
   void
-  BaseEntity::list_properties ()
+  BaseEntity::print_properties ()
   {
     for( std::map<std::string, Property::ptr>::iterator ii=properties_.begin(); ii!=properties_.end(); ++ii)
       {
-	g_print ("\n....\n%s\n",(*ii).first.c_str());
-	(*ii).second->print ();
+     	g_print ("\n....\n%s\n",(*ii).first.c_str());
+     	(*ii).second->print ();
       }
+  }
+
+
+  std::vector<std::string>
+  BaseEntity::get_property_names ()
+  {
+    std::vector<std::string> list_of_properties;
+    for(std::map<std::string, Property::ptr>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
+      {
+	list_of_properties.push_back(it->first);
+      }
+    return list_of_properties;
   }
 
   bool 

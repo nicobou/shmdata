@@ -40,7 +40,7 @@
     }
   
     std::vector<std::string> 
-    BaseEntityManager::get_list_of_creatable_entities ()
+    BaseEntityManager::get_list_of_entity_classes ()
     {
       return abstract_factory_.getList ();
     }
@@ -55,6 +55,13 @@
       }
       return list_of_entities;
     }
+   
+   std::vector<std::string> 
+   BaseEntityManager::get_property_names (std::string entity_name)
+   {
+     //TODO handle errors
+     return entities_[entity_name]->get_property_names ();
+   }
 
    bool
    BaseEntityManager::set_entity_property (std::string entity_name,
@@ -89,7 +96,4 @@
    {
      entities_.erase(entity_name);
    }
-
-   
-
  }

@@ -74,7 +74,7 @@ namespace switcher
     gboolean first_flag;
     
 
-    GValue value = { 0, };
+    GValue value = G_VALUE_INIT;
         
     GObject *element = object_; 
 	
@@ -239,7 +239,7 @@ namespace switcher
 	  j++;
 	}
 
-	g_print ("%-23.23s Enum \"%s\" Default: %d, \"%s\"", "",
+	g_print ("%v-23.23s Enum \"%s\" Default: %d, \"%s\"", "",
 		 g_type_name (G_VALUE_TYPE (&value)), enum_value, value_nick);
 
 	j = 0;

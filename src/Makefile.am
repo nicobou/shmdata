@@ -23,9 +23,11 @@ switcher_ctrl_SOURCES = \
    switcher-ctrl.cpp 
 
 switcher_ctrl_CXXFLAGS = \
+    $(GST_CFLAGS) \
     -I$(top_srcdir) 
 
 switcher_ctrl_LDFLAGS = \
+    $(GST_LIBS) \
     $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
 
 

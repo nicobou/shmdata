@@ -46,11 +46,15 @@ namespace switcher
     BaseEntity ();
     virtual ~BaseEntity ();
     
-    //virtual bool Get () = 0;
     std::string get_name ();
-    void list_properties ();
+
+    //properties
+    void print_properties ();
+    std::vector<std::string> get_property_names ();
     bool set_property (std::string name, std::string value);
     std::string get_property (std::string name);
+    
+    //attach a manager to be notifyed when destructed, this is called by the manager itself (FIXME)
     void set_manager (BaseEntityManager *manager);
 
   private:

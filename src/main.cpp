@@ -35,7 +35,7 @@ main (int argc,
   
   
   BaseEntityManager manager;  
-  std::vector<std::string> available_object_list = manager.get_list_of_creatable_entities ();
+  std::vector<std::string> available_object_list = manager.get_list_of_entity_classes ();
   //list available object in factory
   for (uint i=0; i < available_object_list.size (); i++)
     {
@@ -59,7 +59,7 @@ main (int argc,
   serv->start ();
 
   //list registered properties of video test
-  videotest->list_properties ();
+  videotest->print_properties ();
   
   //print, set and print value of a given property 
   std::cout << "----- pattern  " << videotest->get_property ("pattern") << std::endl ;

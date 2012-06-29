@@ -45,12 +45,14 @@
      BaseEntityManager(); 
      ~BaseEntityManager(); 
 
-     std::vector<std::string> get_list_of_creatable_entities (); 
+     //in order to know what entity can be created
+     std::vector<std::string> get_list_of_entity_classes (); 
      
      std::vector<std::string> get_list_of_entities (); 
  
 
      //properties
+     std::vector<std::string> get_property_names (std::string entity_name);
 
      bool set_entity_property (std::string entity_name,
 			       std::string property_name,
@@ -59,9 +61,10 @@
      std::string get_entity_property (std::string entity_name, 
 				      std::string property_name);
 
+     
+
      //create entity and insert it into the entity set
-     std::tr1::shared_ptr<BaseEntity>  
-       create_entity (std::string entity_class_name); 
+     std::tr1::shared_ptr<BaseEntity>  create_entity (std::string entity_class_name); 
  
      //should be called from the entity destructor
      void unref_entity (std::string entity_name);

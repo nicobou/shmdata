@@ -126,30 +126,42 @@ controlService::pow(double a, double b, double *result)
 }
 
 int
-controlService::list_factory_capabilities(std::vector<std::string> *result){
+controlService::get_factory_capabilities(std::vector<std::string> *result){
   using namespace switcher;
   
   //TODO check this->user and return error when required
   BaseEntityManager *manager = (BaseEntityManager *) this->user;
-  *result = manager->get_list_of_creatable_entities ();
+  *result = manager->get_list_of_entity_classes ();
 
   return SOAP_OK;
 }
 
 int
-controlService::list_base_entities(std::vector<std::string> *result){
+controlService::get_entity_names(std::vector<std::string> *result){
   using namespace switcher;
-
+  
   BaseEntityManager *manager = (BaseEntityManager *) this->user;
   *result = manager->get_list_of_entities ();
+  
+  return SOAP_OK;
+}
+
+int
+controlService::get_property_names (std::string entity_name,
+				    std::vector<std::string> *result)
+{
+  using namespace switcher;
+  
+  BaseEntityManager *manager = (BaseEntityManager *) this->user;
+  *result = manager->get_property_names (entity_name);
 
   return SOAP_OK;
 }
 
 int
-controlService::set_entity_property (std::string entity_name, 
-				     std::string property_name,
-				     std::string property_value)
+controlService::set_property (std::string entity_name, 
+			      std::string property_name,
+			      std::string property_value)
 {
   using namespace switcher;
   
@@ -159,10 +171,11 @@ controlService::set_entity_property (std::string entity_name,
   return SOAP_OK;
 }
 
+
 int
-controlService::get_entity_property (std::string entity_name, 
-				     std::string property_name,
-				     std::string *result)
+controlService::get_property (std::string entity_name, 
+			      std::string property_name,
+			      std::string *result)
 {
   using namespace switcher;
   
