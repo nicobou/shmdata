@@ -1,0 +1,35 @@
+::
+                _ _       _
+   _____      _(_) |_ ___| |__   ___ _ __
+  / __\ \ /\ / / | __/ __| '_ \ / _ \ '__|
+  \__ \\ V  V /| | || (__| | | |  __/ |
+  |___/ \_/\_/ |_|\__\___|_| |_|\___|_|
+
+Switcher
+========
+Switcher for audio, video, data and network streams.
+
+Switcher is the successor of Scenic's milhouse utility. It provides basic video signal routing, switching and mixing features. It was created at the Society for Arts and Technology (SAT) to give to artists a powerful tool for telepresence in contexts of live arts and new media installations.
+
+License
+-------
+Switcher is free software. It is released under the terms of the GNU GPL v3 or above.
+
+Project URL
+-----------
+http://code.sat.qc.ca/redmine/projects/switcher
+
+Authors
+-------
+* Nicolas Bouillot
+* Alexandre Quessy
+
+See also
+--------
+* shmdata: http://code.sat.qc.ca/redmine/projects/libshmdata
+* scenic: http://code.sat.qc.ca/redmine/projects/scenic
+
+Build Dependencies (Ubuntu LTS 12.04 Precise)
+---------------------------------------------
+automake bison cdbs debhelper doxygen ffmpeg flex gettext gnome-doc-utils gstreamer0.10-alsa gstreamer0.10-ffmpeg gstreamer0.10-plugins-bad gstreamer0.10-plugins-base gstreamer0.10-plugins-good gstreamer0.10-plugins-ugly gstreamer0.10-pulseaudio gstreamer0.10-x help2man jackd libasound2-dev libavc1394-dev libbz2-dev libdc1394-22-dev libdv4-dev libglew1.5-dev libglu1-mesa-dev libgstreamer-plugins-base0.10-dev libgstreamer0.10-dev libgtk2.0-dev libid3tag0-dev libiec61883-dev libjack-dev libmad0-dev liboil0.3-dev libpulse-dev libraw1394-dev libshmdata-0.2-dev libtheora-dev libtool libvorbis-dev libxml2-dev libxv-dev
+
