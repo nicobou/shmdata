@@ -124,9 +124,9 @@ fi
 
 # -- (point cloud library example) --
 # Trying to set PCL using pkg-config
-PKG_CHECK_MODULES(PCL, pcl_visualization-1.4, have_pcl=true, have_pcl=false)
+PKG_CHECK_MODULES(PCL, pcl_visualization-1.5, have_pcl=true, have_pcl=false)
 if test "x${have_pcl}" = "xfalse" ; then
-    AC_MSG_WARN([***** missing optional package:  pcl_visualization-1.4 ***** ])
+    AC_MSG_WARN([***** missing optional package:  libpcl-visualization-1.5-dev ***** ])
     AM_CONDITIONAL(HAVE_PCL, false)
 else
     AM_CONDITIONAL(HAVE_PCL, true)
