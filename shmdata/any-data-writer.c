@@ -90,6 +90,9 @@ shmdata_any_writer_init ()
   writer->pipeline_ = gst_pipeline_new (NULL);
   g_assert (writer->pipeline_);
 
+  writer->base_writer_ =
+    shmdata_base_writer_init ();
+
   return writer;
 }
 
@@ -99,9 +102,17 @@ shmdata_any_writer_set_debug (shmdata_any_writer_t * context, int debug)
   context->debug_ = debug;
 }
 
+int
+shmdata_any_writer_set_path (shmdata_any_writer_t * writer,
+				 const char *socketPath)
+{
+  return (int)shmdata_base_writer_set_path (writer->base_writer_,
+					 socketPath);
+}
+
+
 void
-shmdata_any_writer_start (shmdata_any_writer_t * writer,
-			  const char *socketName)
+shmdata_any_writer_start (shmdata_any_writer_t * writer)
 {
 
   writer->src_ = gst_element_factory_make ("appsrc", NULL);
@@ -116,8 +127,7 @@ shmdata_any_writer_start (shmdata_any_writer_t * writer,
   g_assert (writer->id_);
   gst_bin_add (GST_BIN (writer->pipeline_), writer->id_);
 
-  writer->base_writer_ =
-    shmdata_base_writer_init (socketName, writer->pipeline_, writer->id_);
+  shmdata_base_writer_plug (writer->base_writer_, writer->pipeline_, writer->id_);
   gst_element_link (writer->src_, writer->id_);
 
   gst_element_set_state (writer->pipeline_, GST_STATE_PLAYING);

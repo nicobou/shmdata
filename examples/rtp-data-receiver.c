@@ -42,10 +42,23 @@
 /* the caps of the sender RTP stream. This is usually negotiated out of band with
  * SDP or RTSP. */
 
-/* the destination machine to send RTCP to. This is the address of the sender and
- * is used to send back the RTCP reports of this receiver. If the data is sent
- * from another machine, change this address. */
-#define DEST_HOST "127.0.0.1"
+static gint bind_port = 5000;
+static gchar *socket_path = "/tmp/pcd_to_read";
+static gchar *remote_host = "localhost";
+static gboolean printstats = FALSE;
+static gboolean verbose = FALSE;
+
+static GOptionEntry entries[] =
+{
+  
+  { "socket-path", 's', 0, G_OPTION_ARG_STRING, &socket_path, "socket path for writing (default /tmp/pcd_to_read)", NULL },
+  { "port", 'p', 0, G_OPTION_ARG_INT, &bind_port, "port to listen, will use actually a port range of [port, port+10] (default port is 5000)", NULL },
+  { "remote-host", 'r', 0, G_OPTION_ARG_STRING, &remote_host, "remote host to receive from (default localhost)", NULL },
+  { "print-rtp-stats", 'P', 0, G_OPTION_ARG_NONE, &printstats, "print rtp statistics", NULL },
+  { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "print messages about what is happening", NULL },
+  { NULL }
+};
+
 
 typedef struct _App App;
 struct _App
@@ -71,7 +84,9 @@ print_source_stats (GObject * source)
 
   /* simply dump the stats structure */
   str = gst_structure_to_string (stats);
-  g_print ("source stats: %s\n", str);
+  
+  if (printstats)
+    g_print ("source stats: %s\n", str);
 
   gst_structure_free (stats);
   g_free (str);
@@ -84,9 +99,10 @@ on_ssrc_active_cb (GstElement * rtpbin, guint sessid, guint ssrc,
 		   gpointer user_data /*GstElement * depay */ )
 {
   GObject *session, *isrc, *osrc;
-
-  g_print ("got RTCP from session %u, SSRC %u\n", sessid, ssrc);
-
+  
+  if (printstats)
+    g_print ("got RTCP from session %u, SSRC %u\n", sessid, ssrc);
+  
   /* get the right session */
   g_signal_emit_by_name (rtpbin, "get-internal-session", sessid, &session);
 
@@ -103,8 +119,8 @@ static void
 pad_removed_cb (GstElement * rtpbin, GstPad * new_pad,
 		gpointer user_data /*GstElement * depay */ )
 {
-  g_print ("pad removed: %s\n", GST_PAD_NAME (new_pad));
-
+  if (verbose)
+    g_print ("debug: pad removed: %s\n", GST_PAD_NAME (new_pad));
 }
 
 /* will be called when rtpbin has validated a payload that we can depayload */
@@ -116,8 +132,12 @@ pad_added_cb (GstElement * rtpbin, GstPad * new_pad,
   GstPadLinkReturn lres;
 
   App *app = (App *) user_data;
-
-  g_print ("new payload on pad: %s\n", GST_PAD_NAME (new_pad));
+  
+  if (verbose)
+    {
+      g_print ("new incoming RTP data stream, writing to  shared memory socket %s\n",socket_path);
+      //g_print ("debug new payload on pad: %s\n", GST_PAD_NAME (new_pad));
+    }
 
   /* the depayloading and decoding */
   GstElement *gstdepay = gst_element_factory_make ("rtpgstdepay", NULL);
@@ -135,9 +155,21 @@ pad_added_cb (GstElement * rtpbin, GstPad * new_pad,
   g_assert (lres == GST_PAD_LINK_OK);
   gst_object_unref (sinkpad);
 
-  app->writer =
-    shmdata_base_writer_init (app->socketName, app->pipeline, gstdepay);
+  app->writer = shmdata_base_writer_init ();
+
+  if(shmdata_base_writer_set_path (app->writer,app->socketName) == SHMDATA_FILE_EXISTS)
+    {
+      g_print ("**** The file %s exists, therefore a shmdata cannot be operated with this path.\n",app->socketName);	
+      gst_element_set_state (app->pipeline, GST_STATE_NULL);
+      
+      g_print ("Deleting pipeline\n");
+      gst_object_unref (GST_OBJECT (app->pipeline));
+      exit(0);
+    }
+
+  shmdata_base_writer_plug (app->writer, app->pipeline, gstdepay);
 }
+
 
 void
 leave (int sig)
@@ -158,6 +190,18 @@ leave (int sig)
 int
 main (int argc, char *argv[])
 {
+
+  //command line options
+  GError *error = NULL;
+  GOptionContext *context;
+  context = g_option_context_new ("- receive a data stream from rtp and forward it to a shared memory (libshmdata)");
+  g_option_context_add_main_entries (context, entries, NULL);
+  if (!g_option_context_parse (context, &argc, &argv, &error))
+    {
+      g_print ("option parsing failed: %s\n", error->message);
+      exit (1);
+    } 
+
   GstElement *rtpbin, *rtcpsrc, *rtcpsink;
   GstElement *rtpsrc;
   GMainLoop *loop;
@@ -165,13 +209,9 @@ main (int argc, char *argv[])
   GstPadLinkReturn lres;
   GstPad *srcpad, *sinkpad;
 
-  /* Check input arguments */
-  if (argc != 2)
-    {
-      g_printerr ("Usage: %s <socket-path>\n", argv[0]);
-      return -1;
-    }
-  app.socketName = argv[1];
+  
+  
+  app.socketName = socket_path;
 
   (void) signal (SIGINT, leave);
 
@@ -185,7 +225,7 @@ main (int argc, char *argv[])
   /* the udp src and source we will use for RTP and RTCP */
   rtpsrc = gst_element_factory_make ("udpsrc", "rtpsrc");
   g_assert (rtpsrc);
-  g_object_set (rtpsrc, "port", 5002, NULL);
+  g_object_set (rtpsrc, "port", bind_port, NULL);
 
   /* we need to set caps on the udpsrc for the RTP data */
   // caps inside caps is obtained with "echo application/x-pcd | base64", removing the "0=" at the end
@@ -197,11 +237,11 @@ main (int argc, char *argv[])
 
   rtcpsrc = gst_element_factory_make ("udpsrc", "rtcpsrc");
   g_assert (rtcpsrc);
-  g_object_set (rtcpsrc, "port", 5003, NULL);
+  g_object_set (rtcpsrc, "port", bind_port + 1, NULL);
 
   rtcpsink = gst_element_factory_make ("udpsink", "rtcpsink");
   g_assert (rtcpsink);
-  g_object_set (rtcpsink, "port", 5007, "host", DEST_HOST, NULL);
+  g_object_set (rtcpsink, "port", bind_port + 5, "host", remote_host, NULL);
   /* no need for synchronisation or preroll on the RTCP sink */
   g_object_set (rtcpsink, "async", FALSE, "sync", FALSE, NULL);
 
@@ -219,7 +259,6 @@ main (int argc, char *argv[])
   sinkpad = gst_element_get_request_pad (rtpbin, "recv_rtp_sink_0");
   g_assert (sinkpad);
   lres = gst_pad_link (srcpad, sinkpad);
-  g_print ("%d \n", lres);
   g_assert (lres == GST_PAD_LINK_OK);
   gst_object_unref (srcpad);
 
@@ -249,14 +288,18 @@ main (int argc, char *argv[])
 		    NULL);
 
   /* set the pipeline to playing */
-  g_print ("starting receiver pipeline\n");
+  if (verbose)
+    g_print ("listening for an incoming stream from %s, port %d\n", remote_host,bind_port);
+
   gst_element_set_state (app.pipeline, GST_STATE_PLAYING);
 
   /* we need to run a GLib main loop to get the messages */
   loop = g_main_loop_new (NULL, FALSE);
   g_main_loop_run (loop);
 
-  g_print ("stopping receiver pipeline\n");
+  if (verbose)
+    g_print ("stopping receiver\n");
+
   gst_element_set_state (app.pipeline, GST_STATE_NULL);
 
   gst_object_unref (app.pipeline);

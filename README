@@ -31,7 +31,7 @@ Installation
 Here is how to build and install it on Debian GNU/Linux or Ubuntu::
 
   $ sudo apt-get install automake bison build-essential flex libtool 
-  $ sudo apt-get install libglib-2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev
+  $ sudo apt-get install libglib2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev
   $ sudo apt-get install libclutter-1.0-dev libopenscenegraph-dev
   $ ./autogen.sh
   $ ./configure
@@ -45,7 +45,7 @@ Here is how to build and install the PCL library headers on Ubuntu::
 
   $ sudo add-apt-repository ppa:v-launchpad-jochen-sprickerhof-de/pcl
   $ sudo apt-get update
-  $ sudo apt-get install libpcl-all
+  $ sudo apt-get install libpcl-visualization-1.5-dev libvtk5-dev
 
 Authors
 -------

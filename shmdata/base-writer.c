@@ -20,6 +20,7 @@ struct shmdata_base_writer_
   GstElement *serializer_;
   GstElement *shmsink_;
   GstElement *pipeline_;
+  gchar *socket_path_;
   gboolean timereset_;
   GstClockTime timeshift_;
 };
@@ -27,6 +28,8 @@ struct shmdata_base_writer_
 void
 shmdata_base_writer_close (shmdata_base_writer_t * writer)
 {
+  if (writer->socket_path_ != NULL)
+    g_free (writer->socket_path_);
   if (writer != NULL)
     g_free (writer);
 }
@@ -45,11 +48,12 @@ shmdata_base_writer_link_branch_pad (shmdata_base_writer_t * writer,
 				     GstPad * srcPad)
 {
   GstPad *sinkPad = gst_element_get_static_pad (writer->qserial_, "sink");
-  if (sinkPad)
-    g_critical ("sinkPad");
-  GstPadLinkReturn lres = gst_pad_link (srcPad, sinkPad);
-  if (lres == GST_PAD_LINK_OK)
-    g_critical ("lres == GST_PAD_LINK_OK");
+  /* if (sinkPad) */
+  /*   g_warning ("sinkPad"); */
+  /* GstPadLinkReturn lres =  */ 
+  gst_pad_link (srcPad, sinkPad);
+  /* if (lres == GST_PAD_LINK_OK) */
+  /*   g_critical ("lres == GST_PAD_LINK_OK"); */
   gst_object_unref (sinkPad);
   gst_element_link_many (writer->qserial_,
 			 writer->serializer_, writer->shmsink_, NULL);
@@ -239,43 +243,58 @@ shmdata_base_writer_make_shm_branch (shmdata_base_writer_t * writer,
 }
 
 shmdata_base_writer_t *
-shmdata_base_writer_init (const char *socketPath,
-			  GstElement * pipeline, GstElement * srcElement)
+shmdata_base_writer_init ()
 {
   shmdata_base_writer_t *writer =
     (shmdata_base_writer_t *) g_malloc0 (sizeof (shmdata_base_writer_t));
-  writer->pipeline_ = pipeline;
   writer->timereset_ = FALSE;
   writer->timeshift_ = 0;
 
-  GFile *shmfile = g_file_new_for_commandline_arg (socketPath);
-  if (g_file_query_exists (shmfile, NULL))
-    {
-      g_object_unref (shmfile);
-      g_critical ("file %s exist, could be a writer or a file to delete",
-		  socketPath);
-      return NULL;
-    }
-  g_object_unref (shmfile);
-
-  shmdata_base_writer_make_shm_branch (writer, socketPath);
-  shmdata_base_writer_link_branch (writer, srcElement);
-  shmdata_base_writer_set_branch_state_as_pipeline (writer);
   return writer;
 }
 
-shmdata_base_writer_t *
-shmdata_base_writer_init_pad (const char *socketPath,
-			      GstElement * pipeline, GstPad * srcPad)
+gboolean 
+shmdata_base_writer_set_path (shmdata_base_writer_t * writer,
+			      const char *socket_path)
 {
-  shmdata_base_writer_t *writer =
-    (shmdata_base_writer_t *) g_malloc0 (sizeof (shmdata_base_writer_t));
+  GFile *shmfile = g_file_new_for_commandline_arg (socket_path);
+  if (g_file_query_exists (shmfile, NULL))
+    {
+      g_object_unref (shmfile);
+      g_critical ("file %s exists, could be a writer or a file to delete",
+		  socket_path);
+      return FALSE; 
+    }
+  g_object_unref (shmfile);
+  
+  writer->socket_path_ = g_strdup (socket_path);;
+  
+  return TRUE;
+}
+
+void
+shmdata_base_writer_plug (shmdata_base_writer_t *writer,
+			  GstElement *pipeline, 
+			  GstElement *srcElement)
+{
   writer->pipeline_ = pipeline;
-  writer->timereset_ = FALSE;
-  writer->timeshift_ = 0;
-  shmdata_base_writer_make_shm_branch (writer, socketPath);
+  if (writer->socket_path_ == NULL) 
+        g_critical ("cannot start when socket path has not been set");
+  shmdata_base_writer_make_shm_branch (writer, writer->socket_path_);
+  shmdata_base_writer_link_branch (writer, srcElement);
+  shmdata_base_writer_set_branch_state_as_pipeline (writer);
+}
+
+void
+shmdata_base_writer_plug_pad (shmdata_base_writer_t * writer,
+			      GstElement * pipeline, 
+			      GstPad * srcPad)
+{
+  writer->pipeline_ = pipeline; //TODO get rid of the pipeline arg
+  if (writer->socket_path_ == NULL) 
+    g_critical ("cannot start when socket path has not been set");
+  shmdata_base_writer_make_shm_branch (writer, writer->socket_path_);
   shmdata_base_writer_link_branch_pad (writer, srcPad);
   shmdata_base_writer_set_branch_state_as_pipeline (writer);
-  return writer;
 }
 

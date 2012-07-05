@@ -1,6 +1,16 @@
 shmdata release notes
 ========================
 
+shmdata 0.3.0 (2012-07-05)
+---------------------------
+This release is a developer snapshot in the 0.3 series.
+
+New features:
+
+* upgrade to pcl 1.5
+* API provide set_path functions
+* command line options in several examples
+ 
 shmdata 0.2.0 (2012-04-02)
 ---------------------------
 This release is the first stable release.
