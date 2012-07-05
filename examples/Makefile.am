@@ -55,12 +55,17 @@ osg_reader_CPPFLAGS = $(OPENSCENEGRAPH_CFLAGS)
 osg_reader_LDADD = $(OPENSCENEGRAPH_LIBS) $(top_builddir)/shmdata/libshmdata-osg-@LIBSHMDATA_API_VERSION@.la 
 osg_reader_SOURCES = osg-reader.cpp
 
-pcd_reader_CPPFLAGS = $(PCL_CFLAGS) -I /usr/include/vtk-5.6/ 
-pcd_reader_LDADD = $(PCL_LIBS) $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
+pcd_reader_CPPFLAGS = -Wno-deprecated $(PCL_CFLAGS) -I /usr/include/vtk-5.8/ 
+#next line commented because of bugy pc file in libflann
+#pcd_reader_LDADD = $(PCL_LIBS) $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
+pcd_reader_LDADD = -lpcl_visualization -lpcl_io -lpcl_kdtree -lOpenNI -lpcl_octree -lusb-1.0 -lflann_cpp -lpcl_common  $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
+
 pcd_reader_SOURCES = pcd_reader.cpp
 
-pcd_writer_CPPFLAGS = $(PCL_CFLAGS) -I /usr/include/vtk-5.6/ 
-pcd_writer_LDADD = $(PCL_LIBS) $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
+pcd_writer_CPPFLAGS = $(PCL_CFLAGS) -I /usr/include/vtk-5.8/ 
+#next line commented because of bugy pc file in libflann
+#pcd_writer_LDADD = $(PCL_LIBS) $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
+pcd_writer_LDADD =  -lpcl_visualization -lpcl_io -lpcl_kdtree -lOpenNI -lpcl_octree -lusb-1.0 -lflann_cpp -lpcl_common $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
 pcd_writer_SOURCES = pcd_writer.cpp
 
 video_reader_SOURCES = video-reader.c

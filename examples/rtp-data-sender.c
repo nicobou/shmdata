@@ -49,13 +49,17 @@ GstElement *pipeline;
 
 static gint dest_port = 5000;
 static gchar *remote_host = "localhost";
-static gchar *socket_path = "socket-path-read";
+static gchar *socket_path = "/tmp/posture-rtpsend";
+static gboolean printstats = FALSE;
+static gboolean verbose = FALSE;
 
 static GOptionEntry entries[] =
 {
-  { "socket-path", 's', 0, G_OPTION_ARG_STRING, &socket_path, "socket path to read from (default socket-path-read)", NULL },
-  { "port", 'p', 0, G_OPTION_ARG_INT, &dest_port, "destination port (default 5000)", NULL },
+  { "socket-path", 's', 0, G_OPTION_ARG_STRING, &socket_path, "socket path to read from (default /tmp/posture-rtp)", NULL },
+  { "port", 'p', 0, G_OPTION_ARG_INT, &dest_port, "port to listen, will use actually a port range of [port, port+10] (default port is 5000)", NULL },
   { "remote-host", 'r', 0, G_OPTION_ARG_STRING, &remote_host, "remote host (default localhost)", NULL },
+  { "print-rtp-stats", 'P', 0, G_OPTION_ARG_NONE, &printstats, "print rtp statistics", NULL },
+  { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "print messages about what is happening", NULL },
   { NULL }
 };
 
@@ -71,8 +75,9 @@ print_source_stats (GObject * source)
 
   /* simply dump the stats structure */
   str = gst_structure_to_string (stats);
-  g_print ("source stats: %s\n", str);
-
+  if (printstats)
+    g_print ("source stats: %s\n", str);
+  
   gst_structure_free (stats);
   g_free (str);
 }
@@ -128,6 +133,8 @@ on_first_data (shmdata_base_reader_t * context, void *user_data)
   GstPad *srcpad, *sinkpad;
 
   GstElement *pipeline = (GstElement *) user_data;
+  if (verbose)
+    g_print ("forwarding data to %s, port %d\n",remote_host,dest_port);
 
   gstpay = gst_element_factory_make ("rtpgstpay", NULL);
   g_assert (gstpay);
@@ -172,8 +179,6 @@ on_first_data (shmdata_base_reader_t * context, void *user_data)
     g_error ("Failed to link audio payloader to rtpbin");
   gst_object_unref (srcpad);
 
-  g_print ("srcpadcaps %s\n", gst_caps_to_string (gst_pad_get_caps (srcpad)));
-
   /* get the RTP srcpad that was created when we requested the sinkpad above and
    * link it to the rtpsink sinkpad*/
   srcpad = gst_element_get_static_pad (rtpbin, "send_rtp_src_0");
@@ -199,11 +204,11 @@ on_first_data (shmdata_base_reader_t * context, void *user_data)
   gst_object_unref (srcpad);
 
   /* set the pipeline to playing */
-  g_print ("starting sender pipeline\n");
   gst_element_set_state (pipeline, GST_STATE_PLAYING);
 
   /* print stats every second */
-  g_timeout_add (1000, (GSourceFunc) print_stats, rtpbin);
+  if (printstats)
+    g_timeout_add (1000, (GSourceFunc) print_stats, rtpbin);
 
 }
 
@@ -222,7 +227,7 @@ main (int argc, char *argv[])
   //command line options
   GError *error = NULL;
   GOptionContext *context;
-  context = g_option_context_new ("- stream data from a shmdata-any");
+  context = g_option_context_new ("- read data stream from a shared memory (libshmdata) and stream it over the network with rtp");
   g_option_context_add_main_entries (context, entries, NULL);
   if (!g_option_context_parse (context, &argc, &argv, &error))
     {
@@ -230,8 +235,6 @@ main (int argc, char *argv[])
       exit (1);
     } 
   
-  //g_print ("-%s-%s-%d\n",socket_path,remote_host,dest_port);  
-
   GMainLoop *loop;
 
   (void) signal (SIGINT, leave);
@@ -243,13 +246,20 @@ main (int argc, char *argv[])
   pipeline = gst_pipeline_new (NULL);
   g_assert (pipeline);
 
+  if (verbose)
+    g_print ("listening to shared memory socket %s\n",socket_path);
+  
   shmdata_base_reader_init (socket_path, pipeline, &on_first_data, pipeline);
 
   /* we need to run a GLib main loop to get the messages */
   loop = g_main_loop_new (NULL, FALSE);
+  
+
   g_main_loop_run (loop);
 
-  g_print ("stopping sender pipeline\n");
+  if (verbose)
+    g_print ("stopping sender\n");
+
   gst_element_set_state (pipeline, GST_STATE_NULL);
 
   return 0;
