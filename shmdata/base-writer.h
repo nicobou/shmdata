@@ -14,7 +14,7 @@
 
 /** \addtogroup libshmdata
  * provides hot plugging between GStreamer pipelines via a shared memory.
- * compile with `pkg-config --cflags --libs shmdata-0.2`
+ * compile with `pkg-config --cflags --libs shmdata-0.3`
  *  @{
  */
 
@@ -65,7 +65,7 @@ extern "C"
    * @param socketPath is the file name of the shared memory  
    *
    * @return TRUE if set, FALSE if the file already exists. 
-   * If the file exists, this function shuoud be called again.
+   * If the file exists, this function shoud be called again.
    */  
   gboolean shmdata_base_writer_set_path (shmdata_base_writer_t * writer,
 					 const char *socketPath);

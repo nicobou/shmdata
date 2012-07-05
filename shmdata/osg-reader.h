@@ -14,7 +14,7 @@
 
 /** \addtogroup libshmdata-osg
  * provides video reading to an OpenSceneGraph Texture.
- * compile with `pkg-config --cflags --libs shmdata-osg-0.2`
+ * compile with `pkg-config --cflags --libs shmdata-osg-0.3`
  *  @{
  */
 
