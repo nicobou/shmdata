@@ -53,7 +53,7 @@ static GOptionEntry entries[] =
   
   { "socket-path", 's', 0, G_OPTION_ARG_STRING, &socket_path, "socket path for writing (default /tmp/pcd_to_read)", NULL },
   { "port", 'p', 0, G_OPTION_ARG_INT, &bind_port, "port to listen, will use actually a port range of [port, port+10] (default port is 5000)", NULL },
-  { "remote_host", 'r', 0, G_OPTION_ARG_STRING, &remote_host, "remote host to receive from (default localhost)", NULL },
+  { "remote-host", 'r', 0, G_OPTION_ARG_STRING, &remote_host, "remote host to receive from (default localhost)", NULL },
   { "print-rtp-stats", 'P', 0, G_OPTION_ARG_NONE, &printstats, "print rtp statistics", NULL },
   { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "print messages about what is happening", NULL },
   { NULL }
