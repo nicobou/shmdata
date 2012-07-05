@@ -155,9 +155,21 @@ pad_added_cb (GstElement * rtpbin, GstPad * new_pad,
   g_assert (lres == GST_PAD_LINK_OK);
   gst_object_unref (sinkpad);
 
-  app->writer =
-    shmdata_base_writer_init (app->socketName, app->pipeline, gstdepay);
+  app->writer = shmdata_base_writer_init ();
+
+  if(shmdata_base_writer_set_path (app->writer,app->socketName) == SHMDATA_FILE_EXISTS)
+    {
+      g_print ("**** The file %s exists, therefore a shmdata cannot be operated with this path.\n",app->socketName);	
+      gst_element_set_state (app->pipeline, GST_STATE_NULL);
+      
+      g_print ("Deleting pipeline\n");
+      gst_object_unref (GST_OBJECT (app->pipeline));
+      exit(0);
+    }
+
+  shmdata_base_writer_plug (app->writer, app->pipeline, gstdepay);
 }
+
 
 void
 leave (int sig)

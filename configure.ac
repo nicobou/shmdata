@@ -17,10 +17,10 @@ AC_CANONICAL_HOST # fills $host variable
 #  * current: Increment when the interface changes. (and set revision to 0)
 #  * revision: Increment when the implementation changes, but not the interface.
 #  * age: Backward-compatible with how many interface numbers.
-AC_SUBST([LIBSHMDATA_SO_VERSION], [0:0:0])
+AC_SUBST([LIBSHMDATA_SO_VERSION], [1:0:0])
 
 # The version of the API. Should be major.minor and not change until not backward-compatible
-AC_SUBST([LIBSHMDATA_API_VERSION], [0.2])
+AC_SUBST([LIBSHMDATA_API_VERSION], [0.3])
 
 # Checks for programs.
 AC_PROG_CXX

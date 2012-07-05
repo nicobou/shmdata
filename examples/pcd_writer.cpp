@@ -113,8 +113,19 @@ main (int argc, char *argv[])
   shmdata_any_writer_set_data_type (s_app.writer, "application/x-pcd");
   
   if (verbose)
-    g_print ("writing to %s\n",socket_path);
-  shmdata_any_writer_start (s_app.writer, socket_path);
+    g_print ("set shared memory path to %s\n",socket_path);
+      
+  if (! shmdata_any_writer_set_path (s_app.writer,socket_path))
+    {
+      g_printerr ("**** The file %s exists, therefore a shmdata cannot be operated with this path.\n",socket_path);	
+      shmdata_any_writer_close (s_app.writer);
+      exit(0);
+    }
+
+if (verbose)
+    g_print ("writing now\n",socket_path);
+
+  shmdata_any_writer_start (s_app.writer);
 
   //---- reading a pcd file
   pcl::PointCloud < pcl::PointXYZRGB >::Ptr cloud (new pcl::PointCloud <
