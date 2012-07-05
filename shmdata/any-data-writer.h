@@ -55,6 +55,18 @@ extern "C"
   shmdata_any_writer_t *shmdata_any_writer_init ();
 
   /** 
+   * Initialization function that set the file path for the shared memory.
+   * 
+   * @param socketPath is the file name of the shared memory  
+   *
+   * @return 1 if set, 0 if the file already exists. 
+   * If the file exists, the path is not set.
+   */  
+  int shmdata_any_writer_set_path (shmdata_any_writer_t * writer,
+				   const char *socketPath);
+
+
+  /** 
    * Set function for writer debugging. Debugging is disabled by default.
    * 
    * @param writer is the writer that needs to be set
@@ -76,21 +88,18 @@ extern "C"
 					 const char *type);
 
   /** 
-   * Start function creating the shared memory.
+   * Start to write.
    * 
    * @param writer is the writer to start
-   * @param socketPath is the file name of the shared memory
    */
-  void shmdata_any_writer_start (shmdata_any_writer_t *writer,
-				 const char *socketPath);
+  void shmdata_any_writer_start (shmdata_any_writer_t *writer);
 
 
   typedef struct shmdata_base_reader_ shmdata_base_reader_t; 
 
   /*! \fn void (*shmdata_any_writer_done_with_data)(void *user_data);
-   *  \brief Callback triggered when the writer is done with the data. This can 
-   *  be used for freeing your data.
-   *  \param user_data is a pointer to the user data. 
+   *  \brief triggered when the writer is done with the your data. 
+   *  \param user_data is a pointer to your data. 
    */  
   typedef void (*shmdata_any_writer_done_with_data)(void *user_data);
 

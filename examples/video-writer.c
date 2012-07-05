@@ -43,7 +43,18 @@ leave (int sig)
 static gboolean
 add_shared_video_writer ()
 {
-  writer = shmdata_base_writer_init (socketName, pipeline, tee);
+  writer = shmdata_base_writer_init ();
+  //socketName, pipeline, tee);
+  if(shmdata_base_writer_set_path (writer,socketName) == SHMDATA_FILE_EXISTS)
+    {
+      g_printerr ("**** The file %s exists, therefore a shmdata cannot be operated with this path.\n",socketName);	
+      gst_element_set_state (pipeline, GST_STATE_NULL);
+      
+      g_print ("Deleting pipeline\n");
+      gst_object_unref (GST_OBJECT (pipeline));
+      exit(0);
+    }
+  shmdata_base_writer_plug (writer, pipeline, tee);
   g_print ("Now writing to the shared memory\n");
   return FALSE;
 }

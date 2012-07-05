@@ -49,9 +49,15 @@ main (int argc, char *argv[])
     }
 
   writer = shmdata_any_writer_init ();
+  if (! shmdata_any_writer_set_path (writer, argv[1]))
+    {
+      g_printerr ("**** The file %s exists, therefore a shmdata cannot be operated with this path.\n",argv[1]);
+      shmdata_any_writer_close (writer);
+      exit(0);
+    }
   shmdata_any_writer_set_debug (writer, SHMDATA_ENABLE_DEBUG);
   shmdata_any_writer_set_data_type (writer, "application/helloworld_");
-  shmdata_any_writer_start (writer, argv[1]);
+  shmdata_any_writer_start (writer);
 
   unsigned long long myclock = 0;
   unsigned long long nsecPeriod = 30000000;

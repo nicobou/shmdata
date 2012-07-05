@@ -14,7 +14,7 @@
 
 /** \addtogroup libshmdata
  * provides hot plugging between GStreamer pipelines via a shared memory.
- * compile with `pkg-config --cflags --libs shmdata-0.2`
+ * compile with `pkg-config --cflags --libs shmdata-0.3`
  *  @{
  */
 
@@ -28,6 +28,13 @@
 #ifdef __cplusplus
 extern "C"
 {
+#endif
+
+#ifndef SHMDATA_OK
+#define SHMDATA_OK 1
+#endif
+#ifndef SHMDATA_FILE_EXISTS
+#define SHMDATA_FILE_EXISTS 0
 #endif
 
   /**
@@ -48,30 +55,45 @@ extern "C"
   /** 
    * Initialization function that creates the shared memory.
    * 
+   * @return a writer instance
+   */  
+  shmdata_base_writer_t *shmdata_base_writer_init ();
+
+  /** 
+   * Initialization function that set the file path for the shared memory.
+   * 
    * @param socketPath is the file name of the shared memory  
+   *
+   * @return TRUE if set, FALSE if the file already exists. 
+   * If the file exists, this function shoud be called again.
+   */  
+  gboolean shmdata_base_writer_set_path (shmdata_base_writer_t * writer,
+					 const char *socketPath);
+
+  
+  /** 
+   * Initialization function that hot plug the shared memory writer to a GStreamer element.
+   * 
    * @param pipeline is the pipeline where the base writer will be added
    * @param Element is the element which src pad will provide data to write
    * This element is assumed to be added in the pipeline
    * 
-   * @return a writer instance
    */  
-  shmdata_base_writer_t *shmdata_base_writer_init (const char *socketPath,
-						   GstElement * pipeline,
-						   GstElement * Element);
-
+  void shmdata_base_writer_plug (shmdata_base_writer_t * writer,
+				 GstElement * pipeline,
+				 GstElement * Element);
+  
   /** 
-   * Alternative to shmdata_base_writer_init,
-   * providing a pad instead of an element. 
+   * Alternative to shmdata_base_writer_plug,
+   * using a pad instead of an element. 
    * 
-   * @param socketPath is the file name of the shared memory  
    * @param pipeline is the pipeline where the base writer will be added
    * @param srcPad is the src pad of the element  
    * 
-   * @return writer instance
    */
-  shmdata_base_writer_t *shmdata_base_writer_init_pad (const char *socketPath,
-						       GstElement * pipeline,
-						       GstPad * srcPad);
+  void shmdata_base_writer_plug_pad (shmdata_base_writer_t * writer,
+				     GstElement *pipeline,
+				     GstPad     *srcPad);
 
   /** 
    * Close the writer (freeing memory, removing internal GStreamer elements 
