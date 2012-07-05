@@ -94,12 +94,14 @@ check_read_write ()
   writer = shmdata_any_writer_init ();
   if (VERBOSE == yes)
     shmdata_any_writer_set_debug (writer, SHMDATA_ENABLE_DEBUG);
+  shmdata_any_writer_set_path (writer, SOCKET_PATH);
   shmdata_any_writer_set_data_type (writer, "text/plain");
-  shmdata_any_writer_start (writer, SOCKET_PATH);
+  shmdata_any_writer_start (writer);
 
   reader = shmdata_any_reader_init ();
   if (VERBOSE == yes)
     shmdata_any_reader_set_debug (reader, SHMDATA_ENABLE_DEBUG);
+
   shmdata_any_reader_set_on_data_handler (reader, &on_data,
 					  (void *) my_user_data);
   shmdata_any_reader_set_data_type (reader, "text/plain");
