@@ -14,6 +14,7 @@
 
 #include "shmdata/osg-reader_impl.h"
 #include <gst/app/gstappsink.h>
+#include <iostream>
 
 namespace shmdata
 {
@@ -24,44 +25,66 @@ namespace shmdata
 	texture_ = new osg::Texture2D;
 	texture_->setDataVariance(osg::Object::DYNAMIC);
 	texture_->setResizeNonPowerOfTwoHint(false);
+
+	/* Initialisation */
+	gst_init (NULL, NULL);
     }
 
-    void
-    OsgReader_impl::start (const std::string &socketPath)
-    {
-
-        /* Initialisation */
-	gst_init (NULL, NULL);
-	pipeline_ = gst_pipeline_new (NULL);
-
-	socketName_ = &socketPath;
-
-	g_log_set_default_handler (//G_LOG_DOMAIN, 
-//				   (GLogLevelFlags) (G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION), 
-				   OsgReader_impl::log_handler, 
-				   static_cast<void *>(this));
-
-	shmdata_base_reader_init (socketName_->c_str(), pipeline_, 
-	  		     OsgReader_impl::on_first_video_data,
-	  		     static_cast<void *>(this));
+  bool
+  OsgReader_impl::setPath (const std::string &socketPath)
+  {
+    if (&socketPath == NULL || socketPath == "")
+      return false;
     
+    socketName_ = new std::string (socketPath);
+    
+    return true;
+  }  
 
-	loop_ = g_main_loop_new (NULL, FALSE);
-	g_thread_init (NULL);
-	sharedVideoThread_ = g_thread_create ((GThreadFunc) OsgReader_impl::g_loop_thread, 
-	  				      static_cast<void *>(this), 
-	  				      FALSE, 
-	  				      NULL);
+    bool
+    OsgReader_impl::start ()
+    {
+      // if (socketName_ == NULL)
+      // 	return false;
+
+      pipeline_ = gst_pipeline_new (NULL);
+      
+      g_log_set_default_handler (//G_LOG_DOMAIN, 
+				 //				   (GLogLevelFlags) (G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION), 
+				 OsgReader_impl::log_handler, 
+				 static_cast<void *>(this));
+     
+    reader_ = shmdata_base_reader_init (socketName_->c_str(), pipeline_, 
+					  OsgReader_impl::on_first_video_data,
+					  static_cast<void *>(this));
+      
+      loop_ = g_main_loop_new (NULL, FALSE);
+      g_thread_init (NULL);
+      sharedVideoThread_ = g_thread_create ((GThreadFunc) OsgReader_impl::g_loop_thread, 
+					    static_cast<void *>(this), 
+					    FALSE, 
+					    NULL);
+      return true;
     }    
+
+  void
+  OsgReader_impl::stop()
+  {
+    if (reader_ != NULL)
+      shmdata_base_reader_close (reader_);
+    if (pipeline_ != NULL)
+      {
+	gst_element_set_state (pipeline_, GST_STATE_NULL);
+	gst_object_unref (GST_OBJECT (pipeline_));
+      }
+    if (loop_ != NULL)
+      g_main_loop_quit (loop_);
+    g_debug ("object deleted");
+  }
 
     OsgReader_impl::~OsgReader_impl ()
     {
-	//TODO call shmdata_base_reader_close
-	gst_element_set_state (pipeline_, GST_STATE_NULL);
-	gst_object_unref (GST_OBJECT (pipeline_));
-	g_main_loop_quit (loop_);
-        //delete texture_; //desctructor protected
-	g_debug ("object deleted");
+      stop();
     }
     
     osg::Texture2D* 

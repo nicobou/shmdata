@@ -25,14 +25,17 @@ namespace shmdata
   {
   public:
     OsgReader_impl ();
-    void start (const std::string & socketPath);
-      osg::Texture2D * getTexture ();
+    bool setPath (const std::string &socketPath);
+    bool start ();
+    void stop ();
+    osg::Texture2D * getTexture ();
      ~OsgReader_impl ();
     void setDebug (bool debug);
   private:
     const std::string * socketName_;
+    shmdata_base_reader_t *reader_;
     GstBuffer *last_buffer_;
-      osg::Texture2D * texture_;
+    osg::Texture2D * texture_;
     GstElement *pipeline_;
     GThread *sharedVideoThread_;
     GMainLoop *loop_;

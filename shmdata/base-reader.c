@@ -185,7 +185,7 @@ shmdata_base_reader_init (const char *socketName,
 			  void (*on_first_data) (shmdata_base_reader_t *,
 						 void *), void *user_data)
 {
-
+  
   shmdata_base_reader_t *reader =
     (shmdata_base_reader_t *) g_malloc0 (sizeof (shmdata_base_reader_t));
   reader->initialized_ = FALSE;

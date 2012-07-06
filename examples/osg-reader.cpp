@@ -27,6 +27,8 @@
 #include <iostream>
 
 #include "shmdata/osg-reader.h"
+shmdata::OsgReader * reader;
+
 
 osg::Node * createFilterWall (osg::BoundingBox & bb, osg::Texture2D * texture)
 {
@@ -99,6 +101,16 @@ osg::Node * createModel (osg::Texture2D * texture)
   return root;
 }
 
+//clean up pipeline when ctrl-c
+void
+leave (int sig)
+{
+  reader->stop();
+  delete reader;
+  exit (sig);
+}
+
+
 int
 main (int argc, char *argv[])
 {
@@ -111,7 +123,7 @@ main (int argc, char *argv[])
       return -1;
     }
 
-  std::string * socketName = new std::string (argv[1]);
+  //std::string * socketName = new std::string (argv[1]);
 
   // int i;
   // for (i = 0; i < 5; i++)
@@ -123,10 +135,13 @@ main (int argc, char *argv[])
   //     delete reader;
   //   }
 
-  shmdata::OsgReader * reader = new shmdata::OsgReader ();
-  reader->setDebug (true);
-  reader->start (*socketName);
+  reader = new shmdata::OsgReader ();
 
+  if (! reader->setPath (argv[1]) )
+    std::cerr << "path not correct " << argv[1] << std::endl;
+  reader->setDebug (true);
+  reader->start ();
+  
   //using the texture
   viewer.setSceneData (createModel (reader->getTexture ()));
 
