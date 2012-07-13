@@ -49,25 +49,26 @@ namespace shmdata
     OsgReader ();
 
     /** 
-     * Start the reader
+     * update the texture with incoming video
      * 
      * @return true started, false otherwise (due to an incorrect or not set socket path).
      */
-    bool start ();
+    void play ();
 
     /** 
-     * Stop the reader
+     * do not update the texture with incoming video
      * 
      */
-    void stop ();
+    void pause ();
 
     /** 
-     * Set the socket path. 
+     * Set the socket path and start (and play if pause() has not been called before). 
      * 
      * @return true if the path has been set, false if the socket path is not correct.
      */
     bool setPath (const std::string & socketPath);
-    
+
+   
     /** 
      * Get the texture where video is written. Can be called after constructor.
      * 

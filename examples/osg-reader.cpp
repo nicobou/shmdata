@@ -105,7 +105,6 @@ osg::Node * createModel (osg::Texture2D * texture)
 void
 leave (int sig)
 {
-  reader->stop();
   delete reader;
   exit (sig);
 }
@@ -137,10 +136,9 @@ main (int argc, char *argv[])
 
   reader = new shmdata::OsgReader ();
 
+  reader->setDebug (true);
   if (! reader->setPath (argv[1]) )
     std::cerr << "path not correct " << argv[1] << std::endl;
-  reader->setDebug (true);
-  reader->start ();
   
   //using the texture
   viewer.setSceneData (createModel (reader->getTexture ()));
