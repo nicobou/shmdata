@@ -28,19 +28,32 @@ namespace shmdata
   {
     return impl_->setPath (socketPath.c_str());
   }
-  
-  bool
-  OsgReader::start ()
+
+ 
+  void
+  OsgReader::play ()
   {
-    return impl_->start ();
+    return impl_->play ();
   }
 
   void
-  OsgReader::stop ()
+  OsgReader::pause ()
   {
-    return impl_->stop ();
+    return impl_->pause ();
   }
 
+  int 
+  OsgReader::getWidth()
+  {
+    return impl_->getWidth();
+  }
+
+  int 
+  OsgReader::getHeight()
+  {
+    return impl_->getHeight();
+  }
+  
   osg::Texture2D* 
   OsgReader::getTexture()
   {

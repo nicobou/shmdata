@@ -16,6 +16,7 @@
 #define _SHMDATA_OSG_READER_IMPL_H_
 
 #include <osg/Texture2D>
+#include <osg/Image>
 #include <gst/gst.h>
 #include "shmdata/base-reader.h"
 
@@ -26,8 +27,10 @@ namespace shmdata
   public:
     OsgReader_impl ();
     bool setPath (const std::string &socketPath);
-    bool start ();
-    void stop ();
+    void play ();
+    void pause ();
+    int getWidth ();
+    int getHeight();
     osg::Texture2D * getTexture ();
      ~OsgReader_impl ();
     void setDebug (bool debug);
@@ -35,11 +38,15 @@ namespace shmdata
     const std::string * socketName_;
     shmdata_base_reader_t *reader_;
     GstBuffer *last_buffer_;
-    osg::Texture2D * texture_;
+    osg::Texture2D *texture_;
+    osg::Image *image_;
     GstElement *pipeline_;
     GThread *sharedVideoThread_;
     GMainLoop *loop_;
     bool debug_;
+    bool playing_;
+    int width_;
+    int height_;
     static void log_handler (const gchar * log_domain,
 			     GLogLevelFlags log_level,
 			     const gchar * message, gpointer user_data);
