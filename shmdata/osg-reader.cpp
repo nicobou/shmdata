@@ -42,6 +42,18 @@ namespace shmdata
     return impl_->pause ();
   }
 
+  int 
+  OsgReader::getWidth()
+  {
+    return impl_->getWidth();
+  }
+
+  int 
+  OsgReader::getHeight()
+  {
+    return impl_->getHeight();
+  }
+  
   osg::Texture2D* 
   OsgReader::getTexture()
   {

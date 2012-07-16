@@ -29,6 +29,8 @@ namespace shmdata
     bool setPath (const std::string &socketPath);
     void play ();
     void pause ();
+    int getWidth ();
+    int getHeight();
     osg::Texture2D * getTexture ();
      ~OsgReader_impl ();
     void setDebug (bool debug);
@@ -43,6 +45,8 @@ namespace shmdata
     GMainLoop *loop_;
     bool debug_;
     bool playing_;
+    int width_;
+    int height_;
     static void log_handler (const gchar * log_domain,
 			     GLogLevelFlags log_level,
 			     const gchar * message, gpointer user_data);

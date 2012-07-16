@@ -68,7 +68,23 @@ namespace shmdata
      */
     bool setPath (const std::string & socketPath);
 
-   
+
+    /** 
+     * Get video width of the last frame received from the shared memory. 
+     * Initialized with -1. 
+     * 
+     * @return the width
+     */
+    int getWidth ();
+
+    /** 
+     * Get video height of the last frame received from the shared memory. 
+     * Initialized with -1. 
+     * 
+     * @return the height
+     */
+    int getHeight ();
+
     /** 
      * Get the texture where video is written. Can be called after constructor.
      * 
