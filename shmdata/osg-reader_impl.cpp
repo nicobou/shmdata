@@ -22,6 +22,7 @@ namespace shmdata
   OsgReader_impl::OsgReader_impl ()
     : reader_ (NULL),
       last_buffer_ (NULL), 
+      sharedVideoThread_ (NULL),
       debug_ (false), 
       playing_ (true), 
       width_ (-1), // will with incoming video frame 
@@ -55,10 +56,14 @@ namespace shmdata
     if (&socketPath == NULL || socketPath == "")
       return false;
     
+    if (reader_ != NULL)
+      {
+	g_debug ("path cannot be dynamically switched (%s)\n",socketPath.c_str());
+	return false;
+      }
+    
     socketName_ = new std::string (socketPath);
 
-    if (reader_ != NULL)
-      shmdata_base_reader_close (reader_);
     
     reader_ = shmdata_base_reader_init (socketName_->c_str(), pipeline_, 
 					OsgReader_impl::on_first_video_data,
@@ -187,7 +192,7 @@ namespace shmdata
     GstBuffer *buffer;
     OsgReader_impl *context = static_cast<OsgReader_impl*>(user_data);
 
-	
+
     buffer = gst_app_sink_pull_buffer (GST_APP_SINK (elt));
     GstStructure *imgProp=gst_caps_get_structure (GST_BUFFER_CAPS(buffer),0);
   

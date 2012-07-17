@@ -43,9 +43,9 @@ shmdata_base_reader_clean_source (gpointer user_data)
     gst_element_set_state (context->deserializer_, GST_STATE_NULL);
   if (GST_IS_ELEMENT (context->source_))
     gst_element_set_state (context->source_, GST_STATE_NULL);
-  if (GST_IS_BIN (context->pipeline_))
+  if (GST_IS_BIN (context->pipeline_) && GST_IS_ELEMENT (context->deserializer_))
     gst_bin_remove (GST_BIN (context->pipeline_), context->deserializer_);
-  if (GST_IS_BIN (context->pipeline_))
+  if (GST_IS_BIN (context->pipeline_) && GST_IS_ELEMENT (context->source_))
     gst_bin_remove (GST_BIN (context->pipeline_), context->source_);
   return FALSE;
 }
@@ -243,8 +243,9 @@ shmdata_base_reader_close (shmdata_base_reader_t * reader)
 	g_object_unref (reader->shmfile_);
       if (reader->dirMonitor_ != NULL)
 	g_object_unref (reader->dirMonitor_);
-      if (reader != NULL)
-	g_free (reader);
+      g_free (reader);
+      g_debug ("reader freed %p\n",reader);
     }
+
 }
 
