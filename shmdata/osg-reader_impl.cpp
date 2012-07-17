@@ -42,7 +42,7 @@ namespace shmdata
       g_critical ("cannot create gstreamer pipeline");
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
     g_log_set_default_handler (//G_LOG_DOMAIN, 
-			       //				   (GLogLevelFlags) (G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION), 
+			       //(GLogLevelFlags) (G_LOG_LEVEL_WARNING | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION), 
 			       OsgReader_impl::log_handler, 
 			       static_cast<void *>(this));
 
@@ -57,6 +57,9 @@ namespace shmdata
     
     socketName_ = new std::string (socketPath);
 
+    if (reader_ != NULL)
+      shmdata_base_reader_close (reader_);
+    
     reader_ = shmdata_base_reader_init (socketName_->c_str(), pipeline_, 
 					OsgReader_impl::on_first_video_data,
 					static_cast<void *>(this));
