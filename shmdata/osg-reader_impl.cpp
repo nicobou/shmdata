@@ -47,6 +47,11 @@ namespace shmdata
 			       OsgReader_impl::log_handler, 
 			       static_cast<void *>(this));
 
+    sharedVideoThread_ = g_thread_create ((GThreadFunc) OsgReader_impl::g_loop_thread, 
+					  static_cast<void *>(this), 
+					  FALSE, 
+					  NULL);
+
 	
   }
 
@@ -58,8 +63,16 @@ namespace shmdata
     
     if (reader_ != NULL)
       {
-	g_debug ("path cannot be dynamically switched (%s)\n",socketPath.c_str());
-	return false;
+	g_message ("closing old reader %p",reader_);
+	shmdata_base_reader_close (reader_);
+	if (pipeline_ != NULL)
+	  gst_element_set_state (pipeline_, GST_STATE_NULL);
+	if (pipeline_ != NULL)
+	  gst_object_unref (GST_OBJECT (pipeline_));
+	pipeline_ = gst_pipeline_new (NULL);
+	if (pipeline_ == NULL)
+	  g_critical ("cannot create gstreamer pipeline");
+	gst_element_set_state (pipeline_, GST_STATE_PLAYING);
       }
     
     socketName_ = new std::string (socketPath);
@@ -68,11 +81,8 @@ namespace shmdata
     reader_ = shmdata_base_reader_init (socketName_->c_str(), pipeline_, 
 					OsgReader_impl::on_first_video_data,
 					static_cast<void *>(this));
+    g_message ("new reader %p",reader_);
     
-    sharedVideoThread_ = g_thread_create ((GThreadFunc) OsgReader_impl::g_loop_thread, 
-					  static_cast<void *>(this), 
-					  FALSE, 
-					  NULL);
     return true;
   }  
 
@@ -163,11 +173,16 @@ namespace shmdata
 		      G_CALLBACK (OsgReader_impl::on_new_buffer_from_source), 
 		      context);
 
+    g_message ("frame reception handler is set");
+
 
     //element must have the same state as the pipeline
     gst_element_set_state (shmDisplay, GST_STATE_PLAYING);
     gst_element_set_state (funnel, GST_STATE_PLAYING);
     gst_element_set_state (videoConv, GST_STATE_PLAYING);
+
+    g_message ("elements state to playing");
+
     gst_bin_add_many (GST_BIN (context->pipeline_), 
 		      funnel, 
 		      videoConv, 
@@ -178,6 +193,8 @@ namespace shmdata
 			   shmDisplay,
 			   NULL);
     
+    g_message ("elements linked");
+
     //now tells the shared video reader where to write the data
     shmdata_base_reader_set_sink (reader, funnel);
 

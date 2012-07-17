@@ -147,7 +147,8 @@ shmdata_base_reader_detach (shmdata_base_reader_t * reader)
       if (GST_IS_PAD(reader->deserialPad_) && GST_IS_PAD(reader->sinkPad_))
 	gst_pad_unlink (reader->deserialPad_, reader->sinkPad_);
       //ask for element cleaning in the main thread
-      g_idle_add ((GSourceFunc) shmdata_base_reader_clean_source, reader);
+      //g_idle_add ((GSourceFunc) shmdata_base_reader_clean_source, reader);
+      shmdata_base_reader_clean_source (reader);
     }
 }
 
