@@ -27,8 +27,6 @@
 #include <iostream>
 
 #include "shmdata/osg-reader.h"
-shmdata::OsgReader * reader;
-
 
 osg::Node * createFilterWall (osg::BoundingBox & bb, osg::Texture2D * texture)
 {
@@ -105,7 +103,6 @@ osg::Node * createModel (osg::Texture2D * texture)
 void
 leave (int sig)
 {
-  delete reader;
   exit (sig);
 }
 
@@ -115,6 +112,7 @@ main (int argc, char *argv[])
 {
   // construct the viewer.
   osgViewer::Viewer viewer;
+  shmdata::OsgReader reader;
 
   if (argc != 2)
     {
@@ -134,14 +132,11 @@ main (int argc, char *argv[])
   //     delete reader;
   //   }
 
-  reader = new shmdata::OsgReader ();
+  reader.setDebug (true);
+  reader.setPath (argv[1]);
 
-  reader->setDebug (true);
-  if (! reader->setPath (argv[1]) )
-    std::cerr << "path not correct " << argv[1] << std::endl;
-  
   //using the texture
-  viewer.setSceneData (createModel (reader->getTexture ()));
+  viewer.setSceneData (createModel (reader.getTexture ()));
 
   return viewer.run ();
 }

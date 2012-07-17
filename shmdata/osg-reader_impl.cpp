@@ -20,7 +20,8 @@ namespace shmdata
 {
 
   OsgReader_impl::OsgReader_impl ()
-    : last_buffer_ (NULL), 
+    : reader_ (NULL),
+      last_buffer_ (NULL), 
       debug_ (false), 
       playing_ (true), 
       width_ (-1), // will with incoming video frame 
@@ -90,10 +91,8 @@ namespace shmdata
       gst_element_set_state (pipeline_, GST_STATE_NULL);
     if (pipeline_ != NULL)
       gst_object_unref (GST_OBJECT (pipeline_));
-      
     if (loop_ != NULL)
       g_main_loop_quit (loop_);
-    g_debug ("OsgReader_impl deleted");
   }
   
   osg::Texture2D* 
