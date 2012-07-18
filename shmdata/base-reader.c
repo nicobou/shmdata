@@ -39,11 +39,13 @@ shmdata_base_reader_clean_source (gpointer user_data)
 {
   shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
   //gst_object_unref (context->sinkPad_);
-  gst_element_set_state (context->deserializer_, GST_STATE_NULL);
-  gst_element_set_state (context->source_, GST_STATE_NULL);
-  if (GST_IS_BIN (context->pipeline_))
+  if (GST_IS_ELEMENT (context->deserializer_))
+    gst_element_set_state (context->deserializer_, GST_STATE_NULL);
+  if (GST_IS_ELEMENT (context->source_))
+    gst_element_set_state (context->source_, GST_STATE_NULL);
+  if (GST_IS_BIN (context->pipeline_) && GST_IS_ELEMENT (context->deserializer_))
     gst_bin_remove (GST_BIN (context->pipeline_), context->deserializer_);
-  if (GST_IS_BIN (context->pipeline_))
+  if (GST_IS_BIN (context->pipeline_) && GST_IS_ELEMENT (context->source_))
     gst_bin_remove (GST_BIN (context->pipeline_), context->source_);
   return FALSE;
 }
@@ -140,11 +142,13 @@ shmdata_base_reader_detach (shmdata_base_reader_t * reader)
 {
   if (reader != NULL)
     {
-      gst_element_unlink (reader->source_, reader->deserializer_);
+      if (GST_IS_ELEMENT (reader->source_) && GST_IS_ELEMENT(reader->deserializer_))
+	gst_element_unlink (reader->source_, reader->deserializer_);
       if (GST_IS_PAD(reader->deserialPad_) && GST_IS_PAD(reader->sinkPad_))
 	gst_pad_unlink (reader->deserialPad_, reader->sinkPad_);
       //ask for element cleaning in the main thread
-      g_idle_add ((GSourceFunc) shmdata_base_reader_clean_source, reader);
+      //g_idle_add ((GSourceFunc) shmdata_base_reader_clean_source, reader);
+      shmdata_base_reader_clean_source (reader);
     }
 }
 
@@ -185,7 +189,7 @@ shmdata_base_reader_init (const char *socketName,
 			  void (*on_first_data) (shmdata_base_reader_t *,
 						 void *), void *user_data)
 {
-
+  
   shmdata_base_reader_t *reader =
     (shmdata_base_reader_t *) g_malloc0 (sizeof (shmdata_base_reader_t));
   reader->initialized_ = FALSE;
@@ -232,9 +236,17 @@ shmdata_base_reader_set_sink (shmdata_base_reader_t * reader,
 void
 shmdata_base_reader_close (shmdata_base_reader_t * reader)
 {
-  shmdata_base_reader_detach (reader);
-  g_object_unref (reader->shmfile_);
-  g_object_unref (reader->dirMonitor_);
-  g_free (reader);
+  if (reader != NULL)
+    {
+      if (reader->initialized_)
+	shmdata_base_reader_detach (reader);
+      if (reader->shmfile_ != NULL)
+	g_object_unref (reader->shmfile_);
+      if (reader->dirMonitor_ != NULL)
+	g_object_unref (reader->dirMonitor_);
+      g_free (reader);
+      g_debug ("reader freed %p\n",reader);
+    }
+
 }
 

@@ -18,32 +18,57 @@
 namespace shmdata
 {
 
-    OsgReader::OsgReader ()
-	: impl_ (new OsgReader_impl())
-    {//do nothing
-    }
+  OsgReader::OsgReader ()
+    : impl_ (new OsgReader_impl())
+  {
+  }
 
-    void
-    OsgReader::start (const std::string &socketPath)
-    {
-	impl_->start (socketPath);
-    }
+  bool
+  OsgReader::setPath (const std::string &socketPath)
+  {
+    return impl_->setPath (socketPath.c_str());
+  }
 
-    osg::Texture2D* 
-    OsgReader::getTexture()
-    {
-	return impl_->getTexture();
-    }
+ 
+  void
+  OsgReader::play ()
+  {
+    return impl_->play ();
+  }
+
+  void
+  OsgReader::pause ()
+  {
+    return impl_->pause ();
+  }
+
+  int 
+  OsgReader::getWidth()
+  {
+    return impl_->getWidth();
+  }
+
+  int 
+  OsgReader::getHeight()
+  {
+    return impl_->getHeight();
+  }
+  
+  osg::Texture2D* 
+  OsgReader::getTexture()
+  {
+    return impl_->getTexture();
+  }
     
-    OsgReader::~OsgReader ()
-    {
-	delete impl_;
-    }
+  OsgReader::~OsgReader ()
+  {
+    delete impl_;
+  }
 
-    void
-    OsgReader::setDebug(bool debug)
-    {
-	impl_->setDebug(debug);
-    }
+  void
+  OsgReader::setDebug(bool debug)
+  {
+    impl_->setDebug(debug);
+  }
     
 } //end namespace

@@ -1,5 +1,28 @@
 shmdata release notes
-========================
+===================== 
+
+shmdata 0.6.0 (2012-07-18)
+---------------------------
+This is an official release in the 0.6 stable series.
+
+Bugs fixed:
+
+* occasional seg fault when deleting OSG reader
+* occasionnal seg fault when deleting base reader
+* occasionnal seg fault when deleting and then creating with the same path 
+
+New features:
+
+* dynamic setPath for OSG reader
+* play/pause texture writing in the OSG reader
+* get width and get height provided by OSG reader
+
+shmdata 0.4.0 (2012-07-05)
+---------------------------
+This is an official release in the 0.4 stable series.
+
+See the release notes for the 0.3.0 version.
+
 
 shmdata 0.3.0 (2012-07-05)
 ---------------------------
@@ -11,6 +34,7 @@ New features:
 * API provide set_path functions
 * command line options in several examples
  
+
 shmdata 0.2.0 (2012-04-02)
 ---------------------------
 This release is the first stable release.
@@ -18,6 +42,7 @@ This release is the first stable release.
 Bugs fixed:
 
 * clutter example fixed
+
 
 shmdata 0.1.2 (2012-03-26)
 ---------------------------

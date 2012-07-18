@@ -46,18 +46,47 @@ namespace shmdata
   class OsgReader
   {
   public:
-    /// Create a shmdata::OsgReader
     OsgReader ();
-    
-    /** 
-     * Start the reader
-     * 
-     * @param socketPath is the file name of the shared memory
-     */
-    void start (const std::string & socketPath);
 
     /** 
-     * Get the texture where video is written.
+     * update the texture with incoming video
+     * 
+     * @return true started, false otherwise (due to an incorrect or not set socket path).
+     */
+    void play ();
+
+    /** 
+     * do not update the texture with incoming video
+     * 
+     */
+    void pause ();
+
+    /** 
+     * Set the socket path and start (and play if pause() has not been called before). 
+     * 
+     * @return true if the path has been set, false if the socket path is not correct.
+     */
+    bool setPath (const std::string & socketPath);
+
+
+    /** 
+     * Get video width of the last frame received from the shared memory. 
+     * Initialized with -1. 
+     * 
+     * @return the width
+     */
+    int getWidth ();
+
+    /** 
+     * Get video height of the last frame received from the shared memory. 
+     * Initialized with -1. 
+     * 
+     * @return the height
+     */
+    int getHeight ();
+
+    /** 
+     * Get the texture where video is written. Can be called after constructor.
      * 
      * @return the pointer to the osg::Texture2D instance where video is written
      */
