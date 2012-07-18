@@ -20,6 +20,12 @@ Several libraries are provided:
 * libshmdata-any for sharing custom data flows without including GStreamer headers (C library)
 * libshmdata-osg for receiving video written to a shared memory into an OpenSceneGraph texture (C++ library)
 
+shmdata is currently used in several metalab projects:
+
+* scenic 
+* spinframework
+* posturevision
+
 License: LGPL.
 
 Project URL: http://codered.sat.qc.ca/redmine/projects/libshmdata
