@@ -23,11 +23,6 @@ if BUILD_CLUTTER_EXAMPLE
         clutter_reader
 endif
 
-if HAVE_OPENSCENEGRAPH
-    noinst_PROGRAMS += \
-        osg_reader
-endif
-
 if HAVE_PCL
     noinst_PROGRAMS += \
         pcd_reader \
@@ -50,10 +45,6 @@ data_writer_LDADD = $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSI
 data_writer_SOURCES = data-writer.c
 
 rtp_data_receiver_SOURCES = rtp-data-receiver.c
-
-osg_reader_CPPFLAGS = $(OPENSCENEGRAPH_CFLAGS) 
-osg_reader_LDADD = $(OPENSCENEGRAPH_LIBS) $(top_builddir)/shmdata/libshmdata-osg-@LIBSHMDATA_API_VERSION@.la 
-osg_reader_SOURCES = osg-reader.cpp
 
 pcd_reader_CPPFLAGS = -Wno-deprecated $(PCL_CFLAGS) -I /usr/include/vtk-5.8/ 
 #next line commented because of bugy pc file in libflann
