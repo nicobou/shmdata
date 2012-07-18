@@ -45,38 +45,39 @@
      BaseEntityManager(); 
      ~BaseEntityManager(); 
 
-     //in order to know what entity can be created
-     std::vector<std::string> get_list_of_entity_classes (); 
-     
-     std::vector<std::string> get_list_of_entities (); 
+     //know what entity can be created
+     std::vector<std::string> 
+       get_list_of_entity_classes (); 
  
-
+     //list entity instances 
+     std::vector<std::string> 
+       get_list_of_entities (); 
+ 
      //properties
-     std::vector<std::string> get_property_names (std::string entity_name);
-
-     bool set_entity_property (std::string entity_name,
-			       std::string property_name,
-			       std::string property_value);
-
-     std::string get_entity_property (std::string entity_name, 
+     std::vector<std::string> 
+       get_property_names (std::string entity_name);
+     bool 
+       set_entity_property (std::string entity_name,
+			    std::string property_name,
+			    std::string property_value);
+     
+     std::string 
+       get_entity_property (std::string entity_name, 
 				      std::string property_name);
 
-     
-
-     //create entity and insert it into the entity set
-     std::tr1::shared_ptr<BaseEntity>  create_entity (std::string entity_class_name); 
+     //entity life cycle
+     std::tr1::shared_ptr<BaseEntity>  
+       create_entity (std::string entity_class_name); 
+     bool
+       delete_entity (std::string entity_name);
  
-     //should be called from the entity destructor
-     void unref_entity (std::string entity_name);
-     
    private: 
      Factory<BaseEntity, std::string> abstract_factory_;
      //do not use shared pointers here since inserting and erasing 
      //are done during the entity creation and destruction 
-     std::map<std::string, BaseEntity *> entities_;
-
+     //std::map<std::string, std::tr1::shared_ptr<BaseEntity> > entities_;
+     std::map<std::string, BaseEntity::ptr > entities_;
    }; 
-
 
  } // end of namespace 
 

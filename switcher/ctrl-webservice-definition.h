@@ -63,3 +63,11 @@ int switcher__get_property(std::string entity_name,
 			   std::string property_name, 
 			   std::string *result); 
 
+//gsoap switcher service method-documentation: create an entity instance and return its name  
+int switcher__create_entity (std::string entity_class,
+			     std::string *result); 
+
+//gsoap switcher service method-documentation: create an entity instance and return its name  
+int switcher__delete_entity (std::string entity_name,
+			     void); 
+

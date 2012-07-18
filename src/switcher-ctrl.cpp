@@ -29,16 +29,20 @@ static gboolean listentities;
 static gboolean listprop;
 static gboolean setprop;
 static gboolean getprop;
+static gboolean createentity;
+static gboolean deleteentity;
 
 static GOptionEntry entries[] =
   {
     { "server", 'S', 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:8080)", NULL },
     { "list-classes", 'c', 0, G_OPTION_ARG_NONE, &listclasses, "list entity classes", NULL },
     { "list-entities", 'e', 0, G_OPTION_ARG_NONE, &listentities, "list entity instances", NULL },
-    { "list-prop", 'p', 0, G_OPTION_ARG_NONE, &listprop, "list entity property names ()", NULL },
+    { "list-prop", 'p', 0, G_OPTION_ARG_NONE, &listprop, "list properties of an entity", NULL },
     { "set-prop", 's', 0, G_OPTION_ARG_NONE, &setprop, "set property value (-s entity_name prop_name val)", NULL },
     { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g entity_name prop_name)", NULL },
-  { NULL }
+    { "create-entity", 'C', 0, G_OPTION_ARG_NONE, &createentity, "create an entity instance (-C entity_class)", NULL },
+    { "delete-prop", 'D', 0, G_OPTION_ARG_NONE, &deleteentity, "delete an entity instance by its name", NULL },
+    { NULL }
 };
 
 
@@ -48,7 +52,7 @@ int main(int argc, char **argv)
   //command line options
   GError *error = NULL;
   GOptionContext *context;
-  context = g_option_context_new ("- switcher control");
+  context = g_option_context_new ("- switcher control via webservice");
   g_option_context_add_main_entries (context, entries, NULL);
   if (!g_option_context_parse (context, &argc, &argv, &error))
     {
@@ -57,14 +61,15 @@ int main(int argc, char **argv)
     } 
   
 
-  if (! (listclasses ^ listentities ^ listprop ^ setprop ^ getprop))
+  if (! (listclasses ^ listentities ^ listprop ^ setprop ^ getprop ^ createentity ^ deleteentity))
     {
-      g_printerr ("I am very sorry for the inconvenience, but I am able to process on one command at a time. \n");
+      g_printerr ("I am very sorry for the inconvenience, but I am able to process only one command at a time. \n");
       exit (1);
     }
 
-  controlProxy switcher_control;
-  switcher_control.soap_endpoint = server;
+  //  controlProxy switcher_control;
+  controlProxy switcher_control(SOAP_IO_KEEPALIVE | SOAP_XML_INDENT);
+   switcher_control.soap_endpoint = server;
   
   if (listclasses)
     {
@@ -95,15 +100,32 @@ int main(int argc, char **argv)
     }
   else if (setprop)
     {
-      switcher_control.set_property (argv[argc-2], argv[argc-1], argv[4]);
+      //special since on
+      switcher_control.send_set_property (argv[argc-3], argv[argc-2], argv[argc-1]);
+      if (switcher_control.recv_set_property_empty_response())
+	switcher_control.soap_print_fault(stderr);
+      // connection should not be kept alive after the last call: be nice to the server and tell it that we close the connection after this call
+      soap_clr_omode(&switcher_control, SOAP_IO_KEEPALIVE);
+      switcher_control.soap_close_socket();
+      return 0;
     }
   else if (getprop)
     {
       std::string val;
-      switcher_control.get_property(argv[argc-2], argv[argc-1],&val);
+      switcher_control.get_property (argv[argc-2], argv[argc-1],&val);
       std::cout << val << std::endl;
     }
-
+  else if (createentity)
+    {
+      std::string name;
+      switcher_control.create_entity (argv[argc-1], &name);
+      std::cout << name << std::endl;
+    }
+  else if (deleteentity)
+    {
+      switcher_control.delete_entity (argv[argc-1]);
+    }
+  
   if (switcher_control.error)
     switcher_control.soap_stream_fault(std::cerr);
 

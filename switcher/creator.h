@@ -24,7 +24,7 @@
 #ifndef __SWITCHER_CREATOR_H__
 #define __SWITCHER_CREATOR_H__
 
-#include "memory.h"
+
 #include <vector>
 
 namespace switcher 
@@ -69,7 +69,11 @@ namespace switcher
 
     std::tr1::shared_ptr<T> Create(Key Id)
     {
-      std::tr1::shared_ptr<T> pointer (FunctionMap[Id]->Create());
+      std::tr1::shared_ptr<T> pointer;
+      
+      if ( FunctionMap.find( Id) != FunctionMap.end() ) 
+   	pointer.reset (FunctionMap[Id]->Create());
+
       return pointer;
     }
     

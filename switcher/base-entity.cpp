@@ -32,19 +32,8 @@ namespace switcher
   }
   
   BaseEntity::~BaseEntity () { 
-    if (base_entity_manager_ != NULL)
-      {
-	base_entity_manager_->unref_entity (name_);
-      }
-
     g_print ("call: BaseEntity destructor for %s\n",get_name().c_str());
     //TODO remove properties
-  }
-
-  void
-  BaseEntity::set_manager (BaseEntityManager *manager)
-  {
-    base_entity_manager_ = manager;
   }
 
   std::string

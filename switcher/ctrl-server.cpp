@@ -57,8 +57,19 @@ namespace switcher
   void 
   CtrlServer::start ()
   {
+    //simple version
+    // service_ = new controlService (soap_);
+
     service_ = new controlService (soap_);
+    SOAP_SOCKET m = service_->bind(NULL, port_, 100 /* BACKLOG */);
+    if (!soap_valid_socket(m))
+      { service_->soap_print_fault(stderr);
+	//exit(1);
+      }
+    g_printerr("Socket connection successful %d\n", m);
+    
     thread_ = g_thread_new ("CtrlServer", GThreadFunc(server_thread), this);
+
   }
 
   void
@@ -73,9 +84,30 @@ namespace switcher
   {
     CtrlServer *context = static_cast<CtrlServer*>(user_data);
     
-    /* run iterative server on port until fatal error */
-    if (context->service_->run(context->port_))
-      { context->service_->soap_stream_fault(std::cerr);
+    // /* run iterative server on port until fatal error */
+    // if (context->service_->run(context->port_))
+    //   { context->service_->soap_stream_fault(std::cerr);
+    //   }
+    // return NULL;
+
+    for (int i = 1; ; i++)
+      { SOAP_SOCKET s = context->service_->accept();
+	if (!soap_valid_socket(s))
+	  { if (context->service_->errnum)
+	      context->service_->soap_print_fault(stderr);
+	    else
+	      g_printerr("SOAP server timed out\n");	/* should really wait for threads to terminate, but 24hr timeout should be enough ... */
+	    break;
+	  }
+	g_printerr ("client request %d accepted on socket %d, client IP is %d.%d.%d.%d\n", 
+		    i, s, 
+		    (int)(context->service_->ip>>24)&0xFF, 
+		    (int)(context->service_->ip>>16)&0xFF, 
+		    (int)(context->service_->ip>>8)&0xFF, 
+		    (int)context->service_->ip&0xFF);
+	controlService *tcontrol = context->service_->copy();
+	tcontrol->serve();
+	delete tcontrol;
       }
     return NULL;
   }
@@ -129,8 +161,15 @@ int
 controlService::get_factory_capabilities(std::vector<std::string> *result){
   using namespace switcher;
   
-  //TODO check this->user and return error when required
   BaseEntityManager *manager = (BaseEntityManager *) this->user;
+  if (this->user == NULL)
+    {
+      char *s = (char*)soap_malloc(this, 1024);
+      g_printerr ("controlService::get_factory_capabilities: cannot get manager (NULL)\n");
+      sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (NULL)</error>");
+      return soap_senderfault("error in get_factory_capabilities", s);
+    }
+
   *result = manager->get_list_of_entity_classes ();
 
   return SOAP_OK;
@@ -167,8 +206,8 @@ controlService::set_property (std::string entity_name,
   
   BaseEntityManager *manager = (BaseEntityManager *) this->user;
   manager->set_entity_property (entity_name, property_name, property_value);
-  
-  return SOAP_OK;
+
+  return send_set_property_empty_response(SOAP_OK);
 }
 
 
@@ -183,4 +222,43 @@ controlService::get_property (std::string entity_name,
   *result = manager->get_entity_property (entity_name, property_name);
   
   return SOAP_OK;
+}
+
+
+int
+controlService::create_entity (std::string entity_class, 
+			       std::string *result)
+{
+  using namespace switcher;
+  
+   BaseEntityManager *manager = (BaseEntityManager *) this->user;
+   BaseEntity::ptr entit = manager->create_entity (entity_class);
+   if (entit.get() != NULL)
+     *result = entit->get_name ();
+   else 
+    { 
+      char *s = (char*)soap_malloc(this, 1024);
+      sprintf(s, "%s is not an available class", entity_class.c_str());
+      sprintf(s, "<error xmlns=\"http://tempuri.org/\">%s is not an available class</error>", entity_class.c_str());
+      return soap_senderfault("Entity creation error", s);
+    }
+  return SOAP_OK;
+}
+
+
+int
+controlService::delete_entity (std::string entity_name)
+{
+  using namespace switcher;
+  BaseEntityManager *manager = (BaseEntityManager *) this->user;
+  
+  if (manager->delete_entity (entity_name))
+    return send_set_property_empty_response(SOAP_OK);
+  else
+    {
+      char *s = (char*)soap_malloc(this, 1024);
+      sprintf(s, "%s is not found, not deleting", entity_name.c_str());
+      sprintf(s, "<error xmlns=\"http://tempuri.org/\">%s is not found, not deleting</error>", entity_name.c_str());
+      return send_set_property_empty_response(soap_senderfault("Entity creation error", s));
+    }
 }

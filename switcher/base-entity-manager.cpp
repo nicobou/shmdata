@@ -36,6 +36,7 @@
 
     BaseEntityManager::~BaseEntityManager()
     {
+      g_print ("base entity destructed\n");
       //TODO remove reference to this in the entities
     }
   
@@ -50,7 +51,7 @@
     BaseEntityManager::get_list_of_entities ()
     {
       std::vector<std::string> list_of_entities;
-      for(std::map<std::string, BaseEntity *>::iterator it = entities_.begin(); it != entities_.end(); ++it) {
+      for(std::map<std::string, std::tr1::shared_ptr<BaseEntity> >::iterator it = entities_.begin(); it != entities_.end(); ++it) {
 	list_of_entities.push_back(it->first);
       }
       return list_of_entities;
@@ -86,14 +87,31 @@
     std::tr1::shared_ptr<BaseEntity>
     BaseEntityManager::create_entity (std::string entity_class)
     {
+      std::cout << entity_class << std::endl;
       std::tr1::shared_ptr<BaseEntity> entity = abstract_factory_.Create (entity_class);
-      entities_[entity->get_name()] = entity.get();
+      
+      if (entity.get() != NULL)
+	{
+	  entities_[entity->get_name()] = entity/*.get()*/;
+	}
       return entity;
     }
 
-   void
-   BaseEntityManager::unref_entity (std::string entity_name)
+   
+
+   bool
+   BaseEntityManager::delete_entity (std::string entity_name)
    {
-     entities_.erase(entity_name);
+     std::map<std::string, BaseEntity::ptr >::iterator it;
+     it = entities_.find(entity_name);
+     if (it != entities_.end())
+       {
+	 entities_.erase(entity_name);
+	 return true;
+       }
+     else
+       return false;
    }
+
+
  }

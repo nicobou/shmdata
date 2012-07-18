@@ -42,15 +42,20 @@ main (int argc,
       std::cout<< "** available object: " << available_object_list[i] << std::endl; 
     }    
   
-  // Create a runtime
-  BaseEntity::ptr runtime = manager.create_entity ("runtime");
-  //printf("Runtime %u\n", runtime->Get());
-  Runtime::ptr rt = std::tr1::dynamic_pointer_cast<Runtime> (runtime);
+   // Create a runtime
+   BaseEntity::ptr runtime = manager.create_entity ("runtime");
+   //printf("Runtime %u\n", runtime->Get());
+   Runtime::ptr rt = std::tr1::dynamic_pointer_cast<Runtime> (runtime);
   
-  //create a videotest
-  BaseEntity::ptr videotest = manager.create_entity("videotestsource");
-  VideoTestSource::ptr seg = std::tr1::dynamic_pointer_cast<VideoTestSource> (videotest); 
-  seg->set_runtime (rt); //..and play
+   // //create a videotest
+   BaseEntity::ptr videotest = manager.create_entity("videotestsource");
+   VideoTestSource::ptr seg = std::tr1::dynamic_pointer_cast<VideoTestSource> (videotest); 
+   seg->set_runtime (rt); //..and play
+
+  // // //create a videotest
+  // BaseEntity::ptr videotest2 = manager.create_entity("videotestsource");
+  // VideoTestSource::ptr seg2 = std::tr1::dynamic_pointer_cast<VideoTestSource> (videotest2); 
+  // seg2->set_runtime (rt); //..and play
   
   //creating a webservice 
   BaseEntity::ptr baseserv = manager.create_entity ("controlserver");
@@ -58,13 +63,15 @@ main (int argc,
   serv->set_base_entity_manager (&manager);
   serv->start ();
 
-  //list registered properties of video test
-  videotest->print_properties ();
+  g_print ("main: basemanager %p\n",&manager);
+
+  // //  list registered properties of video test
+  // videotest->print_properties ();
   
-  //print, set and print value of a given property 
-  std::cout << "----- pattern  " << videotest->get_property ("pattern") << std::endl ;
-  videotest->set_property ("pattern","snow");
-  std::cout << "----- pattern  " << videotest->get_property ("pattern") << std::endl ;
+  // //print, set and print value of a given property 
+  // std::cout << "----- pattern  " << videotest->get_property ("pattern") << std::endl ;
+  // videotest->set_property ("pattern","snow");
+  // std::cout << "----- pattern  " << videotest->get_property ("pattern") << std::endl ;
   
   //start the runtime (blocking)
   rt->run();
