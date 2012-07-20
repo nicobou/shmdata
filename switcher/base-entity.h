@@ -31,6 +31,7 @@
 #include <map>
 #include <gst/gst.h>
 #include "switcher/property.h"
+#include "switcher/method.h"
 
 namespace switcher
 {
@@ -39,12 +40,12 @@ namespace switcher
   {
   public:
     typedef std::tr1::shared_ptr<BaseEntity> ptr;
-
+    
     BaseEntity ();
     virtual ~BaseEntity ();
     
     std::string get_name ();
-
+    
     //properties
     void print_properties ();
     std::vector<std::string> get_property_names ();
@@ -54,10 +55,14 @@ namespace switcher
   private:
     //properties are registered by derived class
     std::map<std::string, Property::ptr> properties_;
+    std::map<std::string, Method::ptr> methods_;
 
   protected:
     std::string name_;
+    //property name will be <prefix>/<object_property>
     bool register_property (GObject *object, std::string object_property, std::string prefix);
+    bool register_method (void *method, std::string method_name);
+
   };
   
 } // end of namespace

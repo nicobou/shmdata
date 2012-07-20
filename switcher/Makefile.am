@@ -20,6 +20,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     connector.cpp \
     controller.cpp \
     ctrl-server.cpp \
+    method.cpp \
     property.cpp \
     runtime.cpp \
     segment.cpp \
@@ -50,6 +51,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     creator.h \
     ctrl-server.h \
     ctrl-webservice-definition.h \
+    method.h \
     property.h \
     runtime.h \
     segment.h \

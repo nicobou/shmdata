@@ -33,7 +33,7 @@ namespace switcher
   
   BaseEntity::~BaseEntity () { 
     g_print ("call: BaseEntity destructor for %s\n",get_name().c_str());
-    //TODO remove properties
+    //TODO remove properties & methods
   }
 
   std::string
@@ -54,15 +54,43 @@ namespace switcher
       }
 
     Property::ptr prop (new Property (object, pspec));
-    //gchar * prop_name = g_strconcat (name_.c_str(), "_", pspec->name, NULL);
-    //properties_ [prop_name] = prop;
-    //g_free (prop_name);
-    //    g_print ("%s\n",G_OBJECT_TYPE_NAME(object));
-    properties_[prefix + "/" + object_property] = prop; 
-    
-    return true;
+
+    std::string name ( prefix + "/" + object_property );
+    if (properties_.find( name ) == properties_.end())
+      {
+	properties_[ name ] = prop; 
+	return true;
+      }
+    else 
+      {
+	g_printerr ("registering name %s already exists\n",name.c_str());
+	return false;
+      }
   }
 
+  bool
+  BaseEntity::register_method (void *method, std::string method_name)
+  {
+    if (method == NULL)
+      {
+	g_printerr ("fail registering %s (method is NULL)\n",method_name.c_str());
+	return false;
+      }
+    
+    Method::ptr meth (new Method (method));
+    
+    if (methods_.find( method_name ) == methods_.end())
+      {
+	methods_[method_name] = meth;
+	return true;
+      }
+    else 
+      {
+	g_printerr ("registering name %s already exists\n",method_name.c_str());
+	return false;
+      }
+
+  }
 
   void
   BaseEntity::print_properties ()
