@@ -22,6 +22,14 @@
 
 namespace switcher
 {
+  void
+  VideoTestSource::hello(gint a, GString b, gpointer user_data)
+  {
+    
+    VideoTestSource *context = static_cast<VideoTestSource*>(user_data);
+
+    g_print ("hello %d, %s from %s\n",a,b.str, context->name_.c_str());
+  }
 
   VideoTestSource::VideoTestSource ()
   {
@@ -39,18 +47,18 @@ namespace switcher
     //   //prop->print();
     // }
 
-    //registering only the "pattern" property 
-    // GParamSpec *pspec_pattern = g_object_class_find_property (G_OBJECT_GET_CLASS(videotestsrc_), "pattern");
-    // if (pspec_pattern != NULL)
-    //   {
-    // 	register_property (G_OBJECT (videotestsrc_), pspec_pattern);
-    //   }
-
     //registering "pattern" and "is-live" properties 
     register_property (G_OBJECT (videotestsrc_),"pattern","videotestsrc");
     //register_property (G_OBJECT (videotestsrc_),"is-live");
     
     set_raw_video_element (videotestsrc_);
+
+    std::vector<GType> arg_types;
+    arg_types.push_back (G_TYPE_INT);
+    arg_types.push_back (G_TYPE_STRING);
+    register_method((void *)&VideoTestSource::hello, arg_types,this, "hello");
+   
   }
+
 
 }

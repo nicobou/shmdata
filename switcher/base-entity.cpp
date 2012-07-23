@@ -69,7 +69,7 @@ namespace switcher
   }
 
   bool
-  BaseEntity::register_method (void *method, std::string method_name)
+  BaseEntity::register_method (void *method, std::vector<GType> arg_types, gpointer user_data, std::string method_name)
   {
     if (method == NULL)
       {
@@ -77,8 +77,9 @@ namespace switcher
 	return false;
       }
     
-    Method::ptr meth (new Method (method));
-    
+    Method::ptr meth (new Method ());
+    meth->set_method (method, arg_types, user_data);
+
     if (methods_.find( method_name ) == methods_.end())
       {
 	methods_[method_name] = meth;

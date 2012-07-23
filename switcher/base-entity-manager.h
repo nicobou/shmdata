@@ -54,22 +54,28 @@
        get_list_of_entities (); 
  
      //properties
-     std::vector<std::string> 
-       get_property_names (std::string entity_name);
-     bool 
-       set_entity_property (std::string entity_name,
-			    std::string property_name,
-			    std::string property_value);
+     std::vector<std::string> get_property_names (std::string entity_name);
+     bool set_entity_property (std::string entity_name,
+			       std::string property_name,
+			       std::string property_value);
      
-     std::string 
-       get_entity_property (std::string entity_name, 
+     std::string get_entity_property (std::string entity_name, 
 				      std::string property_name);
+     
+      //method 
+     std::vector<std::string> get_list_of_method_names (std::string entity_name); 
+     
+      bool entity_invoke_function (std::string entity_name, 
+				   std::string function_name,
+				   std::vector<std::string> args);  
 
      //entity life cycle
      std::tr1::shared_ptr<BaseEntity>  
        create_entity (std::string entity_class_name); 
      bool
        delete_entity (std::string entity_name);
+
+
  
    private: 
      Factory<BaseEntity, std::string> abstract_factory_;

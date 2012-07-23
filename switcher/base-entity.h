@@ -49,8 +49,14 @@ namespace switcher
     //properties
     void print_properties ();
     std::vector<std::string> get_property_names ();
-    bool set_property (std::string name, std::string value);
+    bool set_property (std::string name, 
+		       std::string value);
     std::string get_property (std::string name);
+    
+    //methods
+    std::vector<std::string> get_method_names ();
+    bool invoke (std::string function_name,
+		 std::vector<std::string> args);
     
   private:
     //properties are registered by derived class
@@ -60,8 +66,13 @@ namespace switcher
   protected:
     std::string name_;
     //property name will be <prefix>/<object_property>
-    bool register_property (GObject *object, std::string object_property, std::string prefix);
-    bool register_method (void *method, std::string method_name);
+    bool register_property (GObject *object, 
+			    std::string object_property, 
+			    std::string prefix);
+    bool register_method (void *method, 
+			  std::vector<GType> arg_types, 
+			  gpointer user_data,  
+			  std::string method_name);
 
   };
   

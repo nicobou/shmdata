@@ -32,6 +32,8 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<VideoTestSource> ptr;
     VideoTestSource ();
+    //test function to remove
+    void hello (gint a, GString b, gpointer user_data);
 
   private:
     GstElement *videotestsrc_;

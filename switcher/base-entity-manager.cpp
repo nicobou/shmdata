@@ -46,7 +46,6 @@
       return abstract_factory_.getList ();
     }
 
-
     std::vector<std::string> 
     BaseEntityManager::get_list_of_entities ()
     {
@@ -60,7 +59,6 @@
    std::vector<std::string> 
    BaseEntityManager::get_property_names (std::string entity_name)
    {
-     //TODO handle errors
      return entities_[entity_name]->get_property_names ();
    }
 
@@ -69,7 +67,6 @@
 			       std::string property_name,
 			       std::string property_value)
    {
-     //TODO handle errors
      entities_[entity_name]->set_property(property_name.c_str(),property_value.c_str());
      return true;
    }
@@ -78,12 +75,22 @@
    BaseEntityManager::get_entity_property (std::string entity_name,
 					   std::string property_name)
    {
-     //TODO handle errors
      return entities_[entity_name]->get_property(property_name.c_str());
    }
 
+   std::vector<std::string>
+   BaseEntityManager::get_list_of_method_names(std::string entity_name)
+   {
+     return entities_.[entity_name]->get_method_names ();
+   }
    
-
+   bool entity_invoke_function (std::string entity_name, 
+				std::string function_name,
+				std::vector<std::string> args)
+   {
+     return entities_.[entity_name]->invoke (function_name, args);
+   } 
+   
     std::tr1::shared_ptr<BaseEntity>
     BaseEntityManager::create_entity (std::string entity_class)
     {

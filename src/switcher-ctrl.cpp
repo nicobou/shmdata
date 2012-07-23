@@ -41,7 +41,7 @@ static GOptionEntry entries[] =
     { "set-prop", 's', 0, G_OPTION_ARG_NONE, &setprop, "set property value (-s entity_name prop_name val)", NULL },
     { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g entity_name prop_name)", NULL },
     { "create-entity", 'C', 0, G_OPTION_ARG_NONE, &createentity, "create an entity instance (-C entity_class)", NULL },
-    { "delete-prop", 'D', 0, G_OPTION_ARG_NONE, &deleteentity, "delete an entity instance by its name", NULL },
+    { "delete-entity", 'D', 0, G_OPTION_ARG_NONE, &deleteentity, "delete an entity instance by its name", NULL },
     { NULL }
 };
 

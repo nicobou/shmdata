@@ -18,12 +18,14 @@
  */
 
 
+
+
 #ifndef __SWITCHER_METHOD_H__
 #define __SWITCHER_METHOD_H__
 
 #include <gst/gst.h>
 #include <tr1/memory>
-#include <map>
+#include <vector>
 #include <string>
 
 namespace switcher
@@ -34,8 +36,20 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<Method> ptr;
 
-    Method (void *method);
-
+    Method ();
+    ~Method ();
+    void set_method (void *method, 
+		     std::vector<GType> arg_types, 
+		     gpointer user_data);
+    bool invoke (std::vector<std::string> args);
+    
+  private:
+    GClosure *closure_;
+    std::vector<GType> arg_types_; 
+    
+    static void destroy_data (gpointer  data,
+			      GClosure *closure);
+    
   };
 
 }  // end of namespace
