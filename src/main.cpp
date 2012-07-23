@@ -65,6 +65,18 @@ main (int argc,
 
   g_print ("main: basemanager %p\n",&manager);
 
+
+  std::vector<std::string> available_method = manager.get_list_of_method_names ("videotestsrc0");
+  for (uint i=0; i < available_method.size (); i++)
+    {
+      std::cout<< "** available method: " << available_method[i] << std::endl; 
+    }    
+
+  std::vector<std::string> method_args;
+  method_args.push_back ("3");
+  method_args.push_back ("nico");
+  manager.entity_invoke_method ("videotestsrc0", "hello", method_args);
+
   // //  list registered properties of video test
   // videotest->print_properties ();
   

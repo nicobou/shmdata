@@ -67,6 +67,33 @@ namespace switcher
 	return false;
       }
   }
+  
+  bool 
+  BaseEntity::invoke_method (std::string function_name, std::vector<std::string> args)
+  {
+    if (methods_.find( function_name ) == methods_.end())
+      {
+	g_printerr ("BaseEntity::invoke_method error: methode %s not found\n",function_name.c_str());
+	return false;
+      }
+    else 
+      {
+	return methods_[function_name]->invoke (args); 
+      }
+    
+  }
+  
+  std::vector<std::string>
+  BaseEntity::get_method_names ()
+  {
+    std::vector<std::string> list_of_methods;
+    for(std::map<std::string, Method::ptr>::iterator it = methods_.begin(); it != methods_.end(); ++it) 
+      {
+	list_of_methods.push_back(it->first);
+      }
+    return list_of_methods;
+  }
+
 
   bool
   BaseEntity::register_method (void *method, std::vector<GType> arg_types, gpointer user_data, std::string method_name)
@@ -103,7 +130,8 @@ namespace switcher
       }
   }
 
-
+  
+  
   std::vector<std::string>
   BaseEntity::get_property_names ()
   {

@@ -65,9 +65,9 @@
       //method 
      std::vector<std::string> get_list_of_method_names (std::string entity_name); 
      
-      bool entity_invoke_function (std::string entity_name, 
-				   std::string function_name,
-				   std::vector<std::string> args);  
+     bool entity_invoke_method (std::string entity_name, 
+				std::string function_name,
+				std::vector<std::string> args);  
 
      //entity life cycle
      std::tr1::shared_ptr<BaseEntity>  

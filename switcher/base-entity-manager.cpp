@@ -81,14 +81,15 @@
    std::vector<std::string>
    BaseEntityManager::get_list_of_method_names(std::string entity_name)
    {
-     return entities_.[entity_name]->get_method_names ();
+     return entities_[entity_name]->get_method_names ();
    }
-   
-   bool entity_invoke_function (std::string entity_name, 
-				std::string function_name,
-				std::vector<std::string> args)
+
+   bool 
+   BaseEntityManager::entity_invoke_method (std::string entity_name, 
+					    std::string function_name,
+					    std::vector<std::string> args)
    {
-     return entities_.[entity_name]->invoke (function_name, args);
+     return entities_[entity_name]->invoke_method (function_name, args);
    } 
    
     std::tr1::shared_ptr<BaseEntity>
