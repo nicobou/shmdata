@@ -74,7 +74,9 @@ main (int argc,
 
   std::vector<std::string> method_args;
   method_args.push_back ("3");
-  method_args.push_back ("nico");
+  method_args.push_back ("6");
+  method_args.push_back ("7");
+
   manager.entity_invoke_method ("videotestsrc0", "hello", method_args);
 
   // //  list registered properties of video test

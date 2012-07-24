@@ -89,6 +89,7 @@
 					    std::string function_name,
 					    std::vector<std::string> args)
    {
+     g_print ("   BaseEntityManager::entity_invoke_method\n");
      return entities_[entity_name]->invoke_method (function_name, args);
    } 
    

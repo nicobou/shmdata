@@ -22,13 +22,15 @@
 
 namespace switcher
 {
-  void
-  VideoTestSource::hello(gint a, GString b, gpointer user_data)
+  gboolean
+  VideoTestSource::hello(guint a, gint b, gint c, gpointer user_data)
   {
     
     VideoTestSource *context = static_cast<VideoTestSource*>(user_data);
+    g_print ("  VideoTestSource::hello %d, %d, %d, %p, %s\n",a, b, c, user_data, context->name_.c_str());
 
-    g_print ("hello %d, %s from %s\n",a,b.str, context->name_.c_str());
+    // g_print ("hello %d, %s from %s\n",a,b.str, context->name_.c_str());
+    return TRUE;
   }
 
   VideoTestSource::VideoTestSource ()
@@ -54,9 +56,10 @@ namespace switcher
     set_raw_video_element (videotestsrc_);
 
     std::vector<GType> arg_types;
+    arg_types.push_back (G_TYPE_UINT);
     arg_types.push_back (G_TYPE_INT);
-    arg_types.push_back (G_TYPE_STRING);
-    register_method((void *)&VideoTestSource::hello, arg_types,this, "hello");
+    arg_types.push_back (G_TYPE_INT);
+    register_method("hello",(void *)&VideoTestSource::hello, arg_types,(gpointer)this);
    
   }
 

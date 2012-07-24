@@ -69,10 +69,10 @@ namespace switcher
     bool register_property (GObject *object, 
 			    std::string object_property, 
 			    std::string prefix);
-    bool register_method (void *method, 
+    bool register_method (std::string method_name,
+			  void *method, 
 			  std::vector<GType> arg_types, 
-			  gpointer user_data,  
-			  std::string method_name);
+			  gpointer user_data);
 
   };
   

@@ -61,23 +61,28 @@ namespace switcher
       }
 
     GValue params[arg_types_.size()];
-    
-    for (guint i=0; i <args.size(); i++)
+
+    for (gulong i=0; i < arg_types_.size(); i++)
       {
 	params[i] = G_VALUE_INIT;
+	
 	g_value_init (&params[i],arg_types_[i]);
+
 	if ( !gst_value_deserialize (&params[i],args[i].c_str()))
 	  {
 	    g_printerr ("Method::invoke string not transformable into gvalue (argument: %s) \n",
 			args[i].c_str());
 	  }
       }
-    
+
+   
     GValue result_value = G_VALUE_INIT;
     gboolean result;
     g_value_init (&result_value, G_TYPE_BOOLEAN);
     
-    g_closure_invoke (closure_, &result_value, arg_types_.size(), params, NULL); 
+    g_closure_invoke (closure_, &result_value, arg_types_.size()
+		      , params, NULL); 
+    
     result = g_value_get_boolean (&result_value);
 
     //unset

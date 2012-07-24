@@ -71,6 +71,7 @@ namespace switcher
   bool 
   BaseEntity::invoke_method (std::string function_name, std::vector<std::string> args)
   {
+    g_print ("  BaseEntity::invoke_method\n");
     if (methods_.find( function_name ) == methods_.end())
       {
 	g_printerr ("BaseEntity::invoke_method error: methode %s not found\n",function_name.c_str());
@@ -96,7 +97,7 @@ namespace switcher
 
 
   bool
-  BaseEntity::register_method (void *method, std::vector<GType> arg_types, gpointer user_data, std::string method_name)
+  BaseEntity::register_method (std::string method_name, void *method, std::vector<GType> arg_types, gpointer user_data)
   {
     if (method == NULL)
       {
