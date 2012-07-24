@@ -42,6 +42,8 @@ namespace switcher
 		     std::vector<GType> arg_types, 
 		     gpointer user_data);
     bool invoke (std::vector<std::string> args);
+    bool invoke (std::vector<std::string> args,
+		 std::vector<void *> entity_args);
     
   private:
     GClosure *closure_;

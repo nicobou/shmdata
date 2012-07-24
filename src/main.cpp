@@ -49,8 +49,8 @@ main (int argc,
   
    // //create a videotest
    BaseEntity::ptr videotest = manager.create_entity("videotestsource");
-   VideoTestSource::ptr seg = std::tr1::dynamic_pointer_cast<VideoTestSource> (videotest); 
-   seg->set_runtime (rt); //..and play
+   // VideoTestSource::ptr seg = std::tr1::dynamic_pointer_cast<VideoTestSource> (videotest); 
+   // seg->set_runtime (rt); //..and play
 
   // // //create a videotest
   // BaseEntity::ptr videotest2 = manager.create_entity("videotestsource");
@@ -79,6 +79,10 @@ main (int argc,
 
   manager.entity_invoke_method ("videotestsrc0", "hello", method_args);
 
+  std::vector<std::string> empty;
+  std::vector<std::string> ent_name;
+  ent_name.push_back (runtime->get_name());
+  manager.entity_invoke_method_with_name_args ("videotestsrc0","set_runtime",empty,ent_name);
   // //  list registered properties of video test
   // videotest->print_properties ();
   

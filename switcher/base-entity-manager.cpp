@@ -93,6 +93,30 @@
      return entities_[entity_name]->invoke_method (function_name, args);
    } 
    
+   bool 
+   BaseEntityManager::entity_invoke_method_with_name_args (std::string entity_name, 
+							   std::string function_name,
+							   std::vector<std::string> args,
+							   std::vector<std::string> entity_names)
+   {
+     g_print ("   BaseEntityManager::entity_invoke_method_with_args\n");
+     
+     std::vector<void *> entity_args;
+     for(std::vector<std::string>::iterator it = entity_names.begin(); it != entity_names.end(); ++it) {
+       std::map<std::string,BaseEntity::ptr>::iterator ent = entities_.find(*it);
+       if (ent == entities_.end())
+	 {
+ 	   g_printerr ("BaseEntityManager::entity_invoke_method_with_name_args error: entity %s not found\n",
+		       (*it).c_str());
+	   return false;
+	 }
+       entity_args.push_back((void *)&ent->second);
+     }
+     
+     return entities_[entity_name]->invoke_method (function_name, args,entity_args);
+   } 
+     
+
     std::tr1::shared_ptr<BaseEntity>
     BaseEntityManager::create_entity (std::string entity_class)
     {

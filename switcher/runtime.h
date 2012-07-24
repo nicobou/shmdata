@@ -26,7 +26,6 @@
 
 #include <gst/gst.h>
 #include "switcher/base-entity.h"
-//#include "switcher/segment.h"
 #include <memory>
 
 
@@ -41,11 +40,8 @@ namespace switcher
       ~Runtime ();
       void run ();
       GstElement *get_pipeline ();
-      //void add_segment (Segment::ptr segment);
-      //bool Get () { return true; }
 
     private:
-      //TODO pipeline should be static
       GstElement *pipeline_;
       GstBus *bus_;
       GMainLoop *mainloop_;

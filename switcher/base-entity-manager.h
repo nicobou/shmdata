@@ -69,6 +69,11 @@
 				std::string function_name,
 				std::vector<std::string> args);  
 
+     bool entity_invoke_method_with_name_args (std::string entity_name, 
+					       std::string function_name,
+					       std::vector<std::string> args,
+					       std::vector<std::string> entity_names);  
+
      //entity life cycle
      std::tr1::shared_ptr<BaseEntity>  
        create_entity (std::string entity_class_name); 

@@ -69,9 +69,10 @@ namespace switcher
   }
   
   bool 
-  BaseEntity::invoke_method (std::string function_name, std::vector<std::string> args)
+  BaseEntity::invoke_method (std::string function_name, 
+			     std::vector<std::string> args, 
+			     std::vector<void *> pointers)
   {
-    g_print ("  BaseEntity::invoke_method\n");
     if (methods_.find( function_name ) == methods_.end())
       {
 	g_printerr ("BaseEntity::invoke_method error: methode %s not found\n",function_name.c_str());
@@ -79,9 +80,17 @@ namespace switcher
       }
     else 
       {
-	return methods_[function_name]->invoke (args); 
+	return methods_[function_name]->invoke (args, pointers); 
       }
-    
+ 
+  }
+
+  bool 
+  BaseEntity::invoke_method (std::string function_name, 
+			     std::vector<std::string> args)
+  {
+    std::vector<void *> empty;
+    return invoke_method (function_name, args, empty);
   }
   
   std::vector<std::string>

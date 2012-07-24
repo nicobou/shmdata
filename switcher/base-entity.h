@@ -57,6 +57,9 @@ namespace switcher
     std::vector<std::string> get_method_names ();
     bool invoke_method (std::string function_name,
 			std::vector<std::string> args);
+    bool invoke_method (std::string function_name,
+			std::vector<std::string> args,
+			std::vector<void *> pointers);
     
   private:
     //properties are registered by derived class
