@@ -24,24 +24,29 @@
 
 //options
 static char server[] = "http://localhost:8080";
+static gboolean createentity;
+static gboolean deleteentity;
 static gboolean listclasses;
 static gboolean listentities;
 static gboolean listprop;
+static gboolean listmethods;
 static gboolean setprop;
 static gboolean getprop;
-static gboolean createentity;
-static gboolean deleteentity;
+static gboolean invokemethod;
 
 static GOptionEntry entries[] =
   {
     { "server", 'S', 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:8080)", NULL },
-    { "list-classes", 'c', 0, G_OPTION_ARG_NONE, &listclasses, "list entity classes", NULL },
-    { "list-entities", 'e', 0, G_OPTION_ARG_NONE, &listentities, "list entity instances", NULL },
-    { "list-prop", 'p', 0, G_OPTION_ARG_NONE, &listprop, "list properties of an entity", NULL },
-    { "set-prop", 's', 0, G_OPTION_ARG_NONE, &setprop, "set property value (-s entity_name prop_name val)", NULL },
-    { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g entity_name prop_name)", NULL },
     { "create-entity", 'C', 0, G_OPTION_ARG_NONE, &createentity, "create an entity instance (-C entity_class)", NULL },
     { "delete-entity", 'D', 0, G_OPTION_ARG_NONE, &deleteentity, "delete an entity instance by its name", NULL },
+    { "list-classes", 'c', 0, G_OPTION_ARG_NONE, &listclasses, "list entity classes", NULL },
+    { "list-entities", 'e', 0, G_OPTION_ARG_NONE, &listentities, "list entity instances", NULL },
+    { "list-props", 'p', 0, G_OPTION_ARG_NONE, &listprop, "list properties of an entity", NULL },
+    { "list-methods", 'm', 0, G_OPTION_ARG_NONE, &listmethods, "list methods of an entity", NULL },
+    { "set-prop", 's', 0, G_OPTION_ARG_NONE, &setprop, "set property value (-s entity_name prop_name val)", NULL },
+    { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g entity_name prop_name)", NULL },
+    { "invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod, "invoke method of an entity", NULL },
+
     { NULL }
 };
 
@@ -61,7 +66,15 @@ int main(int argc, char **argv)
     } 
   
 
-  if (! (listclasses ^ listentities ^ listprop ^ setprop ^ getprop ^ createentity ^ deleteentity))
+  if (! (listclasses 
+	 ^ listentities 
+	 ^ listprop 
+	 ^ setprop 
+	 ^ getprop 
+	 ^ createentity 
+	 ^ deleteentity
+	 ^ listmethods
+	 ^ invokemethod))
     {
       g_printerr ("I am very sorry for the inconvenience, but I am able to process only one command at a time. \n");
       exit (1);
@@ -125,7 +138,37 @@ int main(int argc, char **argv)
     {
       switcher_control.delete_entity (argv[argc-1]);
     }
-  
+  else if (listmethods)
+    {
+      std::vector<std::string> resultlist;
+      switcher_control.get_method_names(argv[argc-1],&resultlist);
+      for(uint i = 0; i < resultlist.size(); i++)
+	{
+	  std::cout << resultlist[i] << std::endl;
+	}
+    }
+  else if (invokemethod)
+    {
+      g_print ("WARNING HARD CODED\n");
+      std::string name = "videotestsrc0";
+      std::string meth = "hello";
+      std::vector<std::string> args;
+      args.push_back ("3");
+      args.push_back ("5");
+      args.push_back ("9");
+      std::vector<std::string> empty;
+      bool result;
+      switcher_control.invoke_method (name,
+				      meth,
+				      args,
+				      empty,
+				      &result);
+      if (result) 
+	g_print ("invocaion returned true\n");
+      else 
+	g_print  ("invocation returned false\n");
+    }
+
   if (switcher_control.error)
     switcher_control.soap_stream_fault(std::cerr);
 

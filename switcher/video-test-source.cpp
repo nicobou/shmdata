@@ -22,20 +22,18 @@
 
 namespace switcher
 {
-  gboolean
-  VideoTestSource::hello(guint a, gint b, gint c, gpointer user_data)
-  {
+   gboolean
+   VideoTestSource::hello(guint a, gint b, gint c, gpointer user_data)
+   {
     
-    VideoTestSource *context = static_cast<VideoTestSource*>(user_data);
-    g_print ("  VideoTestSource::hello %d, %d, %d, %p, %s\n",a, b, c, user_data, context->name_.c_str());
+     VideoTestSource *context = static_cast<VideoTestSource*>(user_data);
+     g_print ("  VideoTestSource::hello %d, %d, %d, %p, %s\n",a, b, c, user_data, context->name_.c_str());
 
-    // g_print ("hello %d, %s from %s\n",a,b.str, context->name_.c_str());
-    return TRUE;
-  }
+     return TRUE;
+   }
 
   VideoTestSource::VideoTestSource ()
   {
-    g_print ("video test source constructor \n");
     videotestsrc_ = gst_element_factory_make ("videotestsrc",NULL);
     //set the name before registering properties
     name_ = gst_element_get_name (videotestsrc_);
@@ -60,7 +58,6 @@ namespace switcher
     arg_types.push_back (G_TYPE_INT);
     arg_types.push_back (G_TYPE_INT);
     register_method("hello",(void *)&VideoTestSource::hello, arg_types,(gpointer)this);
-   
   }
 
 

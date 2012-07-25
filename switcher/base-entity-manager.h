@@ -72,7 +72,7 @@
      bool entity_invoke_method_with_name_args (std::string entity_name, 
 					       std::string function_name,
 					       std::vector<std::string> args,
-					       std::vector<std::string> entity_names);  
+					       std::vector<std::string> entity_names_args);  
 
      //entity life cycle
      std::tr1::shared_ptr<BaseEntity>  

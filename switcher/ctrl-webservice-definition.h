@@ -71,3 +71,15 @@ int switcher__create_entity (std::string entity_class,
 int switcher__delete_entity (std::string entity_name,
 			     void); 
 
+//gsoap switcher service method-documentation: get method names of an entity   
+int switcher__get_method_names (std::string entity_name,
+				std::vector<std::string> *result);
+
+//gsoap switcher service method-documentation: invoke a method of an entity   
+int switcher__invoke_method (std::string entity_name,
+			     std::string method_name,
+			     std::vector<std::string> args,
+			     std::vector<std::string> entity_names_args,
+			     bool *result);
+
+

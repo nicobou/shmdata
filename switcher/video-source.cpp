@@ -30,7 +30,6 @@ namespace switcher
     identity_ (gst_element_factory_make ("identity",NULL)),
     xvimagesink_ (gst_element_factory_make ("xvimagesink",NULL))
   {
-    g_print ("video source constructor \n");
     
     GstElement *colorspace = gst_element_factory_make ("ffmpegcolorspace",NULL);
     

@@ -27,9 +27,8 @@ namespace switcher
 {
 
   BaseEntity::BaseEntity ()
-  {
-    g_print ("call: BaseEntity constructor\n");
-  }
+  {}
+
   
   BaseEntity::~BaseEntity () { 
     g_print ("call: BaseEntity destructor for %s\n",get_name().c_str());

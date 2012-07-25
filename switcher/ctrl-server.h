@@ -46,6 +46,7 @@ namespace switcher
     void set_port (int port);//default port is 8080
     void start (); 
     void stop ();
+    
   private:
     struct soap soap_;
     int port_;

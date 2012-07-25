@@ -31,22 +31,21 @@ namespace switcher
     //TODO find a better name for CtrlServer
     srand(time(0));
     name_ = g_strdup_printf ("ctrlserver%d",rand() % 1024);
+   
   }
 
   CtrlServer::~CtrlServer ()
   {
     stop ();
     g_free ((gchar *)name_.c_str());
-  }
 
+  }
 
   void
   CtrlServer::set_base_entity_manager (BaseEntityManager *manager)
   {
     soap_.user = (void *)manager;
   }
-
-
   
   void 
   CtrlServer::set_port (int port)
@@ -57,19 +56,13 @@ namespace switcher
   void 
   CtrlServer::start ()
   {
-    //simple version
-    // service_ = new controlService (soap_);
-
     service_ = new controlService (soap_);
     SOAP_SOCKET m = service_->bind(NULL, port_, 100 /* BACKLOG */);
     if (!soap_valid_socket(m))
-      { service_->soap_print_fault(stderr);
-	//exit(1);
-      }
-    g_printerr("Socket connection successful %d\n", m);
+	service_->soap_print_fault(stderr);
+    //g_print("Socket connection successful %d\n", m);
     
     thread_ = g_thread_new ("CtrlServer", GThreadFunc(server_thread), this);
-
   }
 
   void
@@ -261,4 +254,40 @@ controlService::delete_entity (std::string entity_name)
       sprintf(s, "<error xmlns=\"http://tempuri.org/\">%s is not found, not deleting</error>", entity_name.c_str());
       return send_set_property_empty_response(soap_senderfault("Entity creation error", s));
     }
+}
+
+
+int
+controlService::invoke_method (std::string entity_name,
+			       std::string method_name,
+			       std::vector<std::string> args,
+			       std::vector<std::string> entity_names_args,
+			       bool *result)
+{
+  using namespace switcher;
+  BaseEntityManager *manager = (BaseEntityManager *) this->user;
+
+  *result = true; 
+  manager->entity_invoke_method_with_name_args (entity_name, method_name, args, entity_names_args);
+  if (*result)
+    return send_set_property_empty_response(SOAP_OK);
+  else
+    {
+      char *s = (char*)soap_malloc(this, 1024);
+      sprintf(s, "invoking %s/%s returned false", entity_name.c_str(), method_name.c_str());
+      sprintf(s, "<error xmlns=\"http://tempuri.org/\">invoking %s/%s returned false</error>", entity_name.c_str(), method_name.c_str());
+      return send_set_property_empty_response(soap_senderfault("Method invocation error", s));
+    }
+}
+
+
+int
+controlService::get_method_names (std::string entity_name,
+				  std::vector<std::string> *result)
+{
+  using namespace switcher;
+  BaseEntityManager *manager = (BaseEntityManager *) this->user;
+
+  *result = manager->get_list_of_method_names (entity_name);
+  return SOAP_OK;
 }

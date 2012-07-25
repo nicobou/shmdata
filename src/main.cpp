@@ -17,9 +17,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/runtime.h"
-//#include "switcher/base-entity.h"
-// #include "switcher/creator.h"
+//#include "switcher/runtime.h"
 #include "switcher/video-test-source.h"
 #include "switcher/ctrl-server.h"
 #include "switcher/webservices/control.nsmap"
@@ -42,57 +40,33 @@ main (int argc,
       std::cout<< "** available object: " << available_object_list[i] << std::endl; 
     }    
   
-   // Create a runtime
-   BaseEntity::ptr runtime = manager.create_entity ("runtime");
-   //printf("Runtime %u\n", runtime->Get());
-   Runtime::ptr rt = std::tr1::dynamic_pointer_cast<Runtime> (runtime);
-  
-   // //create a videotest
-   BaseEntity::ptr videotest = manager.create_entity("videotestsource");
-   // VideoTestSource::ptr seg = std::tr1::dynamic_pointer_cast<VideoTestSource> (videotest); 
-   // seg->set_runtime (rt); //..and play
 
-  // // //create a videotest
-  // BaseEntity::ptr videotest2 = manager.create_entity("videotestsource");
-  // VideoTestSource::ptr seg2 = std::tr1::dynamic_pointer_cast<VideoTestSource> (videotest2); 
-  // seg2->set_runtime (rt); //..and play
-  
-  //creating a webservice 
+  //creating a SOAP webservice controling the manager
   BaseEntity::ptr baseserv = manager.create_entity ("controlserver");
   CtrlServer::ptr serv = std::tr1::dynamic_pointer_cast<CtrlServer> (baseserv);
   serv->set_base_entity_manager (&manager);
   serv->start ();
 
-  g_print ("main: basemanager %p\n",&manager);
+  // Create a runtime
+   BaseEntity::ptr runtime = manager.create_entity ("runtime");
 
+  // //create a videotest
+  BaseEntity::ptr videotest = manager.create_entity("videotestsource");
 
   std::vector<std::string> available_method = manager.get_list_of_method_names ("videotestsrc0");
   for (uint i=0; i < available_method.size (); i++)
-    {
       std::cout<< "** available method: " << available_method[i] << std::endl; 
-    }    
 
-  std::vector<std::string> method_args;
-  method_args.push_back ("3");
-  method_args.push_back ("6");
-  method_args.push_back ("7");
-
-  manager.entity_invoke_method ("videotestsrc0", "hello", method_args);
-
+  //attaching videotestsrc to the runtime
   std::vector<std::string> empty;
   std::vector<std::string> ent_name;
   ent_name.push_back (runtime->get_name());
   manager.entity_invoke_method_with_name_args ("videotestsrc0","set_runtime",empty,ent_name);
-  // //  list registered properties of video test
-  // videotest->print_properties ();
-  
-  // //print, set and print value of a given property 
-  // std::cout << "----- pattern  " << videotest->get_property ("pattern") << std::endl ;
-  // videotest->set_property ("pattern","snow");
-  // std::cout << "----- pattern  " << videotest->get_property ("pattern") << std::endl ;
-  
+
   //start the runtime (blocking)
+  Runtime::ptr rt = std::tr1::dynamic_pointer_cast<Runtime> (runtime);
   rt->run();
+  
   
   return 0;
 }

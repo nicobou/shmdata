@@ -30,8 +30,7 @@ namespace switcher
 
     gst_init (NULL,NULL);
     mainloop_ = g_main_loop_new (NULL, FALSE);
-    g_print ("creating runtime\n");
-    
+        
     pipeline_ = gst_pipeline_new (NULL);
     name_ = gst_element_get_name (pipeline_);
     bus_ = gst_pipeline_get_bus (GST_PIPELINE (pipeline_)); 
@@ -62,6 +61,7 @@ namespace switcher
   //   gst_bin_add (GST_BIN (pipeline_),segment->get_bin());
   //   gst_element_sync_state_with_parent (segment->get_bin());
   // }
+
 
   void
   Runtime::run ()

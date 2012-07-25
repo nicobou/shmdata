@@ -24,7 +24,7 @@ namespace switcher
 
   Connector::Connector ()
   {
-    g_print ("connector constructor \n");
+    //g_print ("connector constructor \n");
     tee_ = gst_element_factory_make ("tee",NULL);
     gst_bin_add (GST_BIN (bin_),tee_);
   }

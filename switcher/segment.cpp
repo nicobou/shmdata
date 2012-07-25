@@ -34,14 +34,14 @@ namespace switcher
   void 
   Segment::set_runtime_wrapped (void *arg, gpointer user_data)
   {
-    Segment *context = static_cast<Segment*>(user_data);
-    Runtime::ptr runtime = *(static_cast<Runtime::ptr *>(arg));
-    
-    context->runtime_ = runtime;
-    context->attach_to_runtime ();
+     Runtime::ptr runtime = *(static_cast<Runtime::ptr *>(arg));
+     Segment *context = static_cast<Segment*>(user_data);
+     
+     context->runtime_ = runtime;
+     context->attach_to_runtime ();
+     
+     g_print ("%s is attached to runtime %s\n",context->get_name().c_str(),runtime->get_name().c_str());
 
-    
-    g_print ("coucou\n");
   }
   
   // void
