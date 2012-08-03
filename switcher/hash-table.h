@@ -32,27 +32,32 @@
 namespace switcher
 {
 
-  class HashTable
-  {
-  public:
-    typedef std::tr1::shared_ptr<HashTable> ptr;
-    
-    HashTable ();
-    ~HashTable ();
+  template <class T>
+    class HashTable
+    {
+    public:
+      typedef std::tr1::shared_ptr< HashTable<T> > ptr;
+      
+      HashTable ();
+      ~HashTable ();
+      
+      void insert (const std::string key, T *value);
+      bool remove (const std::string key);
+      bool contains (const std::string key);
+      unsigned int size ();
+      T *lookup (const std::string key);
+      std::vector<std::string> get_keys ();
+      std::vector<T *> get_values ();
+      void for_each (GHFunc function, void *user_data);
+      
+    private:
+      GHashTable *table_;
+    };
 
-    void insert (const std::string key, void *value);
-    bool remove (const std::string key);
-    bool contains (const std::string key);
-    unsigned int size ();
-    void *lookup (const std::string key);
-    std::vector<std::string> get_keys ();
-    std::vector<void *> get_values ();
-    void for_each (GHFunc function, void *user_data);
-
-  private:
-    GHashTable *table_;
-  };
-  
 } // end of namespace
+
+  //including the actual code here
+#include "hash-table_spec.h"
+
 
 #endif // ifndef

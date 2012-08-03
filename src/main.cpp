@@ -40,15 +40,20 @@ main (int argc,
       std::cout<< "** available object: " << available_object_list[i] << std::endl; 
     }    
   
+  std::cout << "coucou1" << std::endl ;
 
-  //creating a SOAP webservice controling the manager
-  BaseEntity::ptr baseserv = manager.create_entity ("controlserver");
-  CtrlServer::ptr serv = std::tr1::dynamic_pointer_cast<CtrlServer> (baseserv);
-  serv->set_base_entity_manager (&manager);
-  serv->start ();
+  // //creating a SOAP webservice controling the manager
+   BaseEntity::ptr baseserv = manager.create_entity ("controlserver");
+  // CtrlServer::ptr serv = std::tr1::dynamic_pointer_cast<CtrlServer> (baseserv);
+  // serv->set_base_entity_manager (&manager);
+  // serv->start ();
+
+  std::cout << "coucou2" << std::endl ;
 
   // Create a runtime
-   BaseEntity::ptr runtime = manager.create_entity ("runtime");
+  BaseEntity::ptr runtime = manager.create_entity ("runtime");
+
+  std::cout << "coucou3" << std::endl ;
 
   // //create a videotest
   BaseEntity::ptr videotest = manager.create_entity("videotestsource");

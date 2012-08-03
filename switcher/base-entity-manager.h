@@ -84,8 +84,8 @@
  
    private: 
      Factory<BaseEntity, std::string> abstract_factory_;
-     std::map<std::string, BaseEntity::ptr > entities_;
-     HashTable::ptr hashed_;
+     //std::map<std::string, BaseEntity::ptr > entities_;
+     HashTable<BaseEntity::ptr>::ptr hashed_;
    }; 
 
  } // end of namespace 
