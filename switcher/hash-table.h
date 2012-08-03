@@ -21,14 +21,13 @@
  * The HashTable class (keys are string, values are void *)
  */
 
-
 #ifndef __SWITCHER_HASH_TABLE_H__
 #define __SWITCHER_HASH_TABLE_H__
 
 #include <glib.h>
 #include <tr1/memory>
 #include <string>
-
+#include <vector>
 
 namespace switcher
 {
@@ -46,6 +45,8 @@ namespace switcher
     bool contains (const std::string key);
     unsigned int size ();
     void *lookup (const std::string key);
+    std::vector<std::string> get_keys ();
+    std::vector<void *> get_values ();
     void for_each (GHFunc function, void *user_data);
 
   private:

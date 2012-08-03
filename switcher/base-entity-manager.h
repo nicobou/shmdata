@@ -29,7 +29,7 @@
 #include <string>
 #include "switcher/base-entity.h" 
 #include "switcher/creator.h" 
-
+#include "switcher/hash-table.h"
 
 
  namespace switcher 
@@ -84,10 +84,8 @@
  
    private: 
      Factory<BaseEntity, std::string> abstract_factory_;
-     //do not use shared pointers here since inserting and erasing 
-     //are done during the entity creation and destruction 
-     //std::map<std::string, std::tr1::shared_ptr<BaseEntity> > entities_;
      std::map<std::string, BaseEntity::ptr > entities_;
+     HashTable::ptr hashed_;
    }; 
 
  } // end of namespace 

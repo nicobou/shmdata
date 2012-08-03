@@ -90,6 +90,36 @@ namespace switcher
     return (void *)value;
   }
 
+  std::vector<std::string> 
+  HashTable::get_keys ()
+  {
+    GList *list = g_hash_table_get_keys (table_);
+    std::vector<std::string> keys;
+   
+    while (list != NULL)
+      {
+	keys.push_back ((char *)list->data);
+	list = g_list_remove(list,list->data);
+      }
+
+    return keys;
+  }
+
+  std::vector<void *> 
+  HashTable::get_values ()
+  {
+    GList *list = g_hash_table_get_values (table_);
+    std::vector<void *> values;
+    
+    while (list != NULL)
+      {
+	values.push_back ((char *)list->data);
+	list = g_list_remove(list,list->data);
+      }
+
+    return values;
+  }
+  
   void
   HashTable::for_each (GHFunc function, 
 		       void *user_data)

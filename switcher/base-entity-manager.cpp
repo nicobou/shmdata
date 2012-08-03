@@ -119,7 +119,7 @@
     std::tr1::shared_ptr<BaseEntity>
     BaseEntityManager::create_entity (std::string entity_class)
     {
-      std::cout << entity_class << std::endl;
+      //std::cout << entity_class << std::endl;
       std::tr1::shared_ptr<BaseEntity> entity = abstract_factory_.Create (entity_class);
       
       if (entity.get() != NULL)
