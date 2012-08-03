@@ -42,6 +42,7 @@ namespace switcher
     ~HashTable ();
 
     void insert (const std::string key, void *value);
+    bool remove (const std::string key);
     bool contains (const std::string key);
     unsigned int size ();
     void *lookup (const std::string key);

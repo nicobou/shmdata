@@ -49,6 +49,15 @@ namespace switcher
 			 (gpointer)key_to_record,
 			 (gpointer)value);
   }
+
+  bool 
+  HashTable::remove (const std::string key)
+  {
+    if (g_hash_table_remove (table_,(gconstpointer) key.c_str()))
+      return true;
+    else
+      return false;
+  }
   
   bool 
   HashTable::contains (const std::string key)
@@ -89,4 +98,6 @@ namespace switcher
 			  function,
 			  (gpointer)user_data);
   }
+
+
 }
