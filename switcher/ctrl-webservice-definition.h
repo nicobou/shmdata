@@ -79,7 +79,6 @@ int switcher__get_method_names (std::string entity_name,
 int switcher__invoke_method (std::string entity_name,
 			     std::string method_name,
 			     std::vector<std::string> args,
-			     std::vector<std::string> entity_names_args,
 			     bool *result);
 
 

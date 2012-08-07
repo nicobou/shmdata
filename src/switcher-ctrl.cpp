@@ -33,6 +33,7 @@ static gboolean listmethods;
 static gboolean setprop;
 static gboolean getprop;
 static gboolean invokemethod;
+static gchar **remaining_args = NULL;
 
 static GOptionEntry entries[] =
   {
@@ -45,8 +46,8 @@ static GOptionEntry entries[] =
     { "list-methods", 'm', 0, G_OPTION_ARG_NONE, &listmethods, "list methods of an entity", NULL },
     { "set-prop", 's', 0, G_OPTION_ARG_NONE, &setprop, "set property value (-s entity_name prop_name val)", NULL },
     { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g entity_name prop_name)", NULL },
-    { "invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod, "invoke method of an entity", NULL },
-
+    { "invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod, "invoke method of an entity (-i entity_name method_name args...)", NULL },
+    {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &remaining_args, "remaining arguments", NULL},
     { NULL }
 };
 
@@ -80,9 +81,8 @@ int main(int argc, char **argv)
       exit (1);
     }
 
-  //  controlProxy switcher_control;
   controlProxy switcher_control(SOAP_IO_KEEPALIVE | SOAP_XML_INDENT);
-   switcher_control.soap_endpoint = server;
+  switcher_control.soap_endpoint = server;
   
   if (listclasses)
     {
@@ -105,7 +105,12 @@ int main(int argc, char **argv)
   else if (listprop)
     {
       std::vector<std::string> resultlist;
-      switcher_control.get_property_names(argv[argc-1],&resultlist);
+      if (remaining_args[0] == NULL)
+	{
+	  g_printerr ("entity name missing for listing properties\n");
+	  return false;
+	}
+      switcher_control.get_property_names(remaining_args[0],&resultlist);
       for(uint i = 0; i < resultlist.size(); i++)
 	{
 	  std::cout << resultlist[i] << std::endl;
@@ -113,8 +118,13 @@ int main(int argc, char **argv)
     }
   else if (setprop)
     {
+      if (remaining_args[0] == NULL || remaining_args[1] == NULL || remaining_args[2] == NULL)
+	{
+	  g_printerr ("missing argument for set property\n");
+	  return false;
+	}
       //special since on
-      switcher_control.send_set_property (argv[argc-3], argv[argc-2], argv[argc-1]);
+      switcher_control.send_set_property (remaining_args[0], remaining_args[1], remaining_args[2]);
       if (switcher_control.recv_set_property_empty_response())
 	switcher_control.soap_print_fault(stderr);
       // connection should not be kept alive after the last call: be nice to the server and tell it that we close the connection after this call
@@ -124,24 +134,46 @@ int main(int argc, char **argv)
     }
   else if (getprop)
     {
+      if (remaining_args[0] == NULL || remaining_args[1] == NULL)
+	{
+	  g_printerr ("missing argument for get property\n");
+	  return false;
+	}
       std::string val;
-      switcher_control.get_property (argv[argc-2], argv[argc-1],&val);
+      switcher_control.get_property (remaining_args[0], remaining_args[1],&val);
       std::cout << val << std::endl;
     }
   else if (createentity)
     {
+      if (remaining_args[0] == NULL )
+	{
+	  g_printerr ("missing class name for creating entity\n");
+	  return false;
+	}
       std::string name;
-      switcher_control.create_entity (argv[argc-1], &name);
+      switcher_control.create_entity (remaining_args[0], &name);
       std::cout << name << std::endl;
     }
   else if (deleteentity)
     {
-      switcher_control.delete_entity (argv[argc-1]);
+      if (remaining_args[0] == NULL )
+	{
+	  g_printerr ("missing entity name for deleting entity\n");
+	  return false;
+	}
+
+      switcher_control.delete_entity (remaining_args[0]);
     }
   else if (listmethods)
     {
+      if (remaining_args[0] == NULL )
+	{
+	  g_printerr ("missing entity name for list methods\n");
+	  return false;
+	}
+      
       std::vector<std::string> resultlist;
-      switcher_control.get_method_names(argv[argc-1],&resultlist);
+      switcher_control.get_method_names(remaining_args[0], &resultlist);
       for(uint i = 0; i < resultlist.size(); i++)
 	{
 	  std::cout << resultlist[i] << std::endl;
@@ -149,22 +181,27 @@ int main(int argc, char **argv)
     }
   else if (invokemethod)
     {
-      g_print ("WARNING HARD CODED\n");
-      std::string name = "videotestsrc0";
-      std::string meth = "hello";
+      //g_print ("WARNING HARD CODED argc %d\n",argc);
+      if (remaining_args[0] == NULL || remaining_args[1] == NULL)
+	{
+	  g_printerr ("not enough argument for invoking a function\n");
+	  return false;
+	}
       std::vector<std::string> args;
-      args.push_back ("3");
-      args.push_back ("5");
-      args.push_back ("9");
-      std::vector<std::string> empty;
+      int i=2;
+      while (remaining_args[i] != NULL)
+      {
+	  args.push_back (remaining_args[i]);
+	  i++;
+      }
+      
       bool result;
-      switcher_control.invoke_method (name,
-				      meth,
+      switcher_control.invoke_method (remaining_args[0],
+				      remaining_args[1],
 				      args,
-				      empty,
 				      &result);
       if (result) 
-	g_print ("invocaion returned true\n");
+	g_print ("invocation returned true\n");
       else 
 	g_print  ("invocation returned false\n");
     }

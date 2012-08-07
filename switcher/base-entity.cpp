@@ -38,7 +38,7 @@ namespace switcher
   std::string
   BaseEntity::get_name()
   {
-    return name_;
+    return std::string (name_);
   }
 
   
@@ -67,6 +67,32 @@ namespace switcher
       }
   }
   
+  //return -1 if method not found
+  int 
+  BaseEntity::method_get_num_value_args (std::string function_name)
+  {
+    if (methods_.find( function_name ) == methods_.end())
+      {
+	g_printerr ("BaseEntity::method_get_num_value_args error: method %s not found\n",function_name.c_str());
+	return -1;
+      }
+    else 
+      return (int)methods_[function_name]->get_num_of_value_args(); 
+  }
+
+  //return -1 if method not found
+  int 
+  BaseEntity::method_get_num_pointer_args (std::string function_name)
+  {
+    if (methods_.find( function_name ) == methods_.end())
+      {
+	g_printerr ("BaseEntity::method_get_num_value_args error: method %s not found\n",function_name.c_str());
+	return -1;
+      }
+    else 
+      return (int)methods_[function_name]->get_num_of_pointer_args(); 
+  }
+
   bool 
   BaseEntity::invoke_method (std::string function_name, 
 			     std::vector<std::string> args, 
@@ -74,7 +100,7 @@ namespace switcher
   {
     if (methods_.find( function_name ) == methods_.end())
       {
-	g_printerr ("BaseEntity::invoke_method error: methode %s not found\n",function_name.c_str());
+	g_printerr ("BaseEntity::invoke_method error: method %s not found\n",function_name.c_str());
 	return false;
       }
     else 

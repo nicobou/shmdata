@@ -51,21 +51,15 @@
     std::vector<std::string> 
     BaseEntityManager::get_list_of_entities ()
     {
-      // std::vector<std::string> list_of_entities;
-      // for(std::map<std::string, std::tr1::shared_ptr<BaseEntity> >::iterator it = entities_.begin(); it != entities_.end(); ++it) {
-      // 	list_of_entities.push_back(it->first);
-      // }
-      // return list_of_entities;
-
-      return hashed_->get_keys();
+      //return hashed_->get_keys();
+      return entities_.get_keys();
     }
    
    std::vector<std::string> 
    BaseEntityManager::get_property_names (std::string entity_name)
    {
-     //     return entities_[entity_name]->get_property_names ();
-     return (*hashed_->lookup (entity_name))->get_property_names ();
-   
+     //return (*hashed_->lookup (entity_name))->get_property_names ();
+     return (entities_.lookup (entity_name))->get_property_names ();
    }
 
    bool
@@ -73,24 +67,24 @@
 			       std::string property_name,
 			       std::string property_value)
    {
-     //     entities_[entity_name]->set_property(property_name.c_str(),property_value.c_str());
-     (*hashed_->lookup (entity_name))->set_property(property_name.c_str(),property_value.c_str());
-     return true;
+     return (entities_.lookup (entity_name))->set_property(property_name.c_str(),property_value.c_str());
+     //(*hashed_->lookup (entity_name))->set_property(property_name.c_str(),property_value.c_str());
+     //return true;
    }
 
    std::string
    BaseEntityManager::get_entity_property (std::string entity_name,
 					   std::string property_name)
    {
-     //     return entities_[entity_name]->get_property(property_name.c_str());
-     return (*hashed_->lookup (entity_name))->get_property(property_name.c_str());
+     return (entities_.lookup (entity_name))->get_property(property_name.c_str());
+     //return (*hashed_->lookup (entity_name))->get_property(property_name.c_str());
    }
 
    std::vector<std::string>
    BaseEntityManager::get_list_of_method_names(std::string entity_name)
    {
-     //     return entities_[entity_name]->get_method_names ();
-     return (*hashed_->lookup (entity_name))->get_method_names ();
+     return (entities_.lookup (entity_name))->get_method_names ();
+     //return (*hashed_->lookup (entity_name))->get_method_names ();
    }
 
    bool 
@@ -98,73 +92,80 @@
 					    std::string function_name,
 					    std::vector<std::string> args)
    {
-     g_print ("   BaseEntityManager::entity_invoke_method\n");
-     //     return entities_[entity_name]->invoke_method (function_name, args);
-     return (*hashed_->lookup (entity_name))->invoke_method (function_name, args);
-   } 
-   
-   bool 
-   BaseEntityManager::entity_invoke_method_with_name_args (std::string entity_name, 
-							   std::string function_name,
-							   std::vector<std::string> args,
-							   std::vector<std::string> entity_names_args)
-   {
+     g_print ("   BaseEntityManager::entity_invoke_method %s %s\n",entity_name.c_str(), function_name.c_str());
+     
+     //BaseEntity::ptr entity = (*hashed_->lookup (entity_name));
+     BaseEntity::ptr entity = entities_.lookup (entity_name);
 
-     //looking up entities from strings in "entity_names_args"  
-     std::vector<void *> entity_args;
-     for(std::vector<std::string>::iterator it = entity_names_args.begin(); it != entity_names_args.end(); ++it) 
+     int num_val = entity->method_get_num_value_args(function_name);
+
+     if (num_val == -1) 
        {
-	 // std::map<std::string,BaseEntity::ptr>::iterator ent = entities_.find(*it);
-	 // if (ent == entities_.end())
-	 //   {
-	 //     g_printerr ("BaseEntityManager::entity_invoke_method_with_name_args error: entity %s not found\n",
-	 // 		 (*it).c_str());
-	 //     return false;
-	 //   }
-	 // entity_args.push_back((void *)&ent->second);
+	 g_printerr ("function %s not found, cannot invoke\n",entity_name.c_str());
+	 return false;
+       }
 
-	 BaseEntity::ptr *retrieved_entity = hashed_->lookup (*it);
-	 if (retrieved_entity == NULL)
-	   g_printerr ("BaseEntityManager::entity_invoke_method_with_name_args error: entity %s not found\n",
-		       (*it).c_str());
-	 else
-	   entity_args.push_back((void *)retrieved_entity);
-	 
+     int num_pointer = entity->method_get_num_pointer_args(function_name);
+
+     if ((int)args.size () != num_val + num_pointer)
+       {
+	 g_printerr ("invoking %s/%s, number of arguments does not match\n",entity_name.c_str(),function_name.c_str());
+	 return false;
        }
      
-     //     return entities_[entity_name]->invoke_method (function_name, args,entity_args);
-     return (*hashed_->lookup (entity_name))->invoke_method (function_name, args,entity_args);
+     //checking if pointer to entity must be retrieved     
+     if (args.size() == num_val)
+       //invoke with value only
+       return entity->invoke_method (function_name, args);
+     else
+       {
+	 //invoke with pointer to entity
+	 std::vector<std::string> value_args (args.begin(), args.begin() + num_val);
+	 std::vector<void *> entity_args;
+	 
+	 for(std::vector<std::string>::iterator it = args.begin() + num_val; it != args.end(); ++it) 
+	   {
+	     //BaseEntity::ptr *retrieved_entity = hashed_->lookup (*it);
+	     if (!entities_.contains (*it))
+	       {
+		 g_printerr ("BaseEntityManager::entity_invoke_method error: entity %s not found\n",
+			     (*it).c_str());
+		 return false;
+	       }
+	     else
+	       {
+		 BaseEntity::ptr retrieved_entity = entities_.lookup (*it);
+		 entity_args.push_back ((void *)retrieved_entity.get());
+	       }
+	   }
+	 bool res = entity->invoke_method (function_name, value_args,entity_args);
+	 return res;
+       }
    } 
-     
-
-   std::tr1::shared_ptr<BaseEntity>
+   
+   BaseEntity::ptr
    BaseEntityManager::create_entity (std::string entity_class)
    {
      //std::cout << entity_class << std::endl;
-     std::tr1::shared_ptr<BaseEntity> entity = abstract_factory_.Create (entity_class);
-     
+     BaseEntity::ptr entity = abstract_factory_.Create (entity_class);
+
+     g_print ("create_entity %p %p\n",&entity,entity.get());
+
      if (entity.get() != NULL)
        {
-	 //entities_[entity->get_name()] = entity;
-	 hashed_->insert (entity->get_name(),&entity);
+	 //hashed_->insert (entity->get_name(),&entity);
+	 entities_.insert (entity->get_name(),entity);
        }
+     
      return entity;
    }
+
 
    bool
    BaseEntityManager::delete_entity (std::string entity_name)
    {
-     // std::map<std::string, BaseEntity::ptr >::iterator it;
-     // it = entities_.find(entity_name);
-     // if (it != entities_.end())
-     //   {
-     // 	 entities_.erase(entity_name);
-     // 	 return true;
-     //   }
-     // else
-     //   return false;
-     
-     return hashed_->remove (entity_name);
+     //return (hashed_->remove (entity_name));
+     return entities_.remove (entity_name);
    }
 
 

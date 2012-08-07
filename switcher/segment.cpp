@@ -34,22 +34,31 @@ namespace switcher
   void 
   Segment::set_runtime_wrapped (void *arg, gpointer user_data)
   {
-     Runtime::ptr runtime = *(static_cast<Runtime::ptr *>(arg));
+     Runtime *runtime = static_cast<Runtime *>(arg);
      Segment *context = static_cast<Segment*>(user_data);
      
-     context->runtime_ = runtime;
-     context->attach_to_runtime ();
-     
+     if (runtime == NULL) 
+       {
+	 g_printerr ("Segment::set_runtime_wrapped Error: runtime is NULL\n");
+	 return;
+       }
+     if (context == NULL) 
+       {
+	 g_printerr ("Segment::set_runtime_wrapped Error: segment is NULL\n");
+	 return;
+       }
+     context->set_runtime(runtime);
+
      g_print ("%s is attached to runtime %s\n",context->get_name().c_str(),runtime->get_name().c_str());
 
   }
   
-  // void
-  // Segment::set_runtime (Runtime::ptr runtime)
-  // {
-  //   runtime_ = runtime;
-  //   attach_to_runtime ();
-  // }
+  void
+  Segment::set_runtime (Runtime *runtime)
+  {
+    runtime_ = runtime;
+    attach_to_runtime ();
+  }
   
   void 
   Segment::attach_to_runtime ()

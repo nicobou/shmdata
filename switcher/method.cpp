@@ -34,8 +34,12 @@ namespace switcher
     if (closure_ != NULL)
       g_closure_unref (closure_);
   }
-   
 
+  /*
+   * the first elements of arg_type should be args passed by value, 
+   * with args passed by pointers at the end (as references to base entities)  
+   *
+   */
   void 
   Method::set_method (void *method, std::vector<GType> arg_types, gpointer user_data)  
   {
@@ -48,7 +52,33 @@ namespace switcher
     g_closure_set_marshal  (closure_,g_cclosure_marshal_generic);
     
     arg_types_ = arg_types;
-}
+    
+    //counting by value and by pointer args
+    num_of_value_args_ = 0;
+    num_of_pointer_args_ = 0;
+     std::vector<GType>::iterator it = arg_types.begin();
+     while ((*it) != G_TYPE_POINTER && it != arg_types.end())
+       {
+	 num_of_value_args_ ++;
+	 ++it;
+       }
+     num_of_pointer_args_ = arg_types_.size() - num_of_value_args_;
+     //g_print ("num value args : %u num pointer arg %u\n", num_of_value_args_, num_of_pointer_args_);
+  }
+
+
+  uint 
+  Method::get_num_of_value_args()
+  {
+    return num_of_value_args_;
+  }
+  
+  uint 
+  Method::get_num_of_pointer_args()
+  {
+    return num_of_pointer_args_;
+  }
+
 
   bool
   Method::invoke(std::vector<std::string> args, std::vector<void *> pointers)
@@ -88,8 +118,7 @@ namespace switcher
     gboolean result;
     g_value_init (&result_value, G_TYPE_BOOLEAN);
     
-    g_closure_invoke (closure_, &result_value, arg_types_.size()
-		      , params, NULL); 
+    g_closure_invoke (closure_, &result_value, arg_types_.size(), params, NULL); 
     
     result = g_value_get_boolean (&result_value);
 

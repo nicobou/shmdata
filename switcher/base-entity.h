@@ -60,6 +60,8 @@ namespace switcher
     bool invoke_method (std::string function_name,
 			std::vector<std::string> args,
 			std::vector<void *> pointers);
+    int method_get_num_value_args (std::string function_name); //return -1 if method not found
+    int method_get_num_pointer_args (std::string function_name); //return -1 if method not found
     
   private:
     //properties are registered by derived class

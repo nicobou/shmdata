@@ -57,6 +57,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     property.h \
     runtime.h \
     segment.h \
+    string-map.h \
+    string-map_spec.h \
     video-sink.h \
     video-source.h \
     video-test-source.h

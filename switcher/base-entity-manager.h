@@ -30,7 +30,7 @@
 #include "switcher/base-entity.h" 
 #include "switcher/creator.h" 
 #include "switcher/hash-table.h"
-
+#include "switcher/string-map.h"
 
  namespace switcher 
  { 
@@ -46,8 +46,7 @@
      ~BaseEntityManager(); 
 
      //know what entity can be created
-     std::vector<std::string> 
-       get_list_of_entity_classes (); 
+     std::vector<std::string> get_list_of_entity_classes (); 
  
      //list entity instances 
      std::vector<std::string> 
@@ -69,23 +68,17 @@
 				std::string function_name,
 				std::vector<std::string> args);  
 
-     bool entity_invoke_method_with_name_args (std::string entity_name, 
-					       std::string function_name,
-					       std::vector<std::string> args,
-					       std::vector<std::string> entity_names_args);  
-
      //entity life cycle
-     std::tr1::shared_ptr<BaseEntity>  
-       create_entity (std::string entity_class_name); 
-     bool
-       delete_entity (std::string entity_name);
-
-
+     BaseEntity::ptr create_entity (std::string entity_class_name); 
+     bool delete_entity (std::string entity_name);
  
    private: 
      Factory<BaseEntity, std::string> abstract_factory_;
      //std::map<std::string, BaseEntity::ptr > entities_;
      HashTable<BaseEntity::ptr>::ptr hashed_;
+     
+     StringMap<BaseEntity::ptr> entities_;
+     
    }; 
 
  } // end of namespace 

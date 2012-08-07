@@ -21,8 +21,8 @@
  * The Hash Table class
  */
 
-// no includes here since this file is included from hash-table spec
-// this separation is done in order to make hash-table.h easy to read 
+// no includes here since this file is included from hash-table
+// this separation is done in order to make hash-table.h easier to read 
 // when using it  
 
 namespace switcher
@@ -47,13 +47,10 @@ namespace switcher
     HashTable<T>::insert (const std::string key, 
 			  T *value)
     {
-      g_print ("blabla 1\n");
       char* key_to_record = g_strdup (key.c_str());
-      g_print ("blabla 2 %s, %p\n",key_to_record, value);
       g_hash_table_insert (table_,
 			   (gpointer)key_to_record,
 			   (gpointer)value);
-      g_print ("blabla 3\n");
     }
   
   template <typename T>
@@ -61,7 +58,7 @@ namespace switcher
     HashTable<T>::remove (const std::string key)
     {
       if (g_hash_table_remove (table_,(gconstpointer) key.c_str()))
-	return true;
+	  return true;
       else
 	return false;
     }
@@ -93,6 +90,7 @@ namespace switcher
 						 (gconstpointer) key.c_str(),
 						 NULL, //origin key
 						 &value);
+
       if (res && value == NULL)
 	g_print ("warning: key %s has been found with a NULL value", key.c_str() );
       
@@ -114,7 +112,6 @@ namespace switcher
 	
       return keys;
     }
-
        
   template <typename T>
     std::vector<T *> 

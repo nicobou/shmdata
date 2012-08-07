@@ -34,13 +34,13 @@ namespace switcher
     typedef std::tr1::shared_ptr<Segment> ptr;
     Segment();
     // the segment is managing itself the presence/attachment with the runtime
-    //void set_runtime (Runtime::ptr runtime);
+    void set_runtime (Runtime *runtime);
     static void set_runtime_wrapped (gpointer runtime, gpointer context);
     GstElement *get_bin ();
 
   protected:
     GstElement *bin_;
-    Runtime::ptr runtime_;
+    Runtime *runtime_;
     void attach_to_runtime();
   };
 

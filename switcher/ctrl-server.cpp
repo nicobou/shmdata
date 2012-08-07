@@ -225,16 +225,22 @@ controlService::create_entity (std::string entity_class,
   using namespace switcher;
   
    BaseEntityManager *manager = (BaseEntityManager *) this->user;
-   BaseEntity::ptr entit = manager->create_entity (entity_class);
-   if (entit.get() != NULL)
-     *result = entit->get_name ();
-   else 
-    { 
-      char *s = (char*)soap_malloc(this, 1024);
-      sprintf(s, "%s is not an available class", entity_class.c_str());
-      sprintf(s, "<error xmlns=\"http://tempuri.org/\">%s is not an available class</error>", entity_class.c_str());
-      return soap_senderfault("Entity creation error", s);
-    }
+   // manager->create_entity ("videotestsource");
+   // *result = "truc";
+    BaseEntity::ptr entit = manager->create_entity (entity_class);
+    if (entit.get() != NULL)
+      {
+        *result = entit->get_name ();
+       
+      }
+   
+    else 
+     { 
+       char *s = (char*)soap_malloc(this, 1024);
+       sprintf(s, "%s is not an available class", entity_class.c_str());
+       sprintf(s, "<error xmlns=\"http://tempuri.org/\">%s is not an available class</error>", entity_class.c_str());
+       return soap_senderfault("Entity creation error", s);
+     }
   return SOAP_OK;
 }
 
@@ -261,22 +267,27 @@ int
 controlService::invoke_method (std::string entity_name,
 			       std::string method_name,
 			       std::vector<std::string> args,
-			       std::vector<std::string> entity_names_args,
 			       bool *result)
 {
   using namespace switcher;
   BaseEntityManager *manager = (BaseEntityManager *) this->user;
 
-  *result = true; 
-  manager->entity_invoke_method_with_name_args (entity_name, method_name, args, entity_names_args);
+  *result = manager->entity_invoke_method (entity_name, method_name, args);
+
+  // std::vector<std::string> myargs;
+  // myargs.push_back("2");
+  // myargs.push_back("2");
+  // myargs.push_back("2");
+  // manager->entity_invoke_method ("videotestsrc2","hello", myargs);
+
   if (*result)
-    return send_set_property_empty_response(SOAP_OK);
+    return SOAP_OK;
   else
     {
       char *s = (char*)soap_malloc(this, 1024);
       sprintf(s, "invoking %s/%s returned false", entity_name.c_str(), method_name.c_str());
       sprintf(s, "<error xmlns=\"http://tempuri.org/\">invoking %s/%s returned false</error>", entity_name.c_str(), method_name.c_str());
-      return send_set_property_empty_response(soap_senderfault("Method invocation error", s));
+      return soap_senderfault("Method invocation error", s);
     }
 }
 
