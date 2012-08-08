@@ -21,20 +21,22 @@
 #ifndef __SWITCHER_CONNECTOR_H__
 #define __SWITCHER_CONNECTOR_H__
 
-#include "switcher/segment.h"
-#include <memory>
+#include <gst/gst.h>
+#include <tr1/memory>
 
 namespace switcher
 {
 
-  class Connector : public Segment
+  class Connector 
   {
   public:
     typedef std::tr1::shared_ptr<Connector> ptr;
     Connector ();
+    GstElement *get_bin ();
     GstElement *get_src_element ();
     GstElement *get_sink_element ();
   private:
+    GstElement *bin_;
     GstElement *tee_;
     GstElement *fakesink_;
   };

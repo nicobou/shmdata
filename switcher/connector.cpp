@@ -22,14 +22,14 @@
 namespace switcher
 {
 
-  Connector::Connector ()
+  Connector::Connector () :
+    bin_ (gst_element_factory_make ("bin", NULL)),
+    tee_ (gst_element_factory_make ("tee",NULL)),
+    fakesink_ (gst_element_factory_make ("tee",NULL))
   {
-    g_print ("connector constructor \n");
-    tee_ = gst_element_factory_make ("tee",NULL);
-    fakesink_ = gst_element_factory_make ("tee",NULL);
     
     GstElement *xvimagesink = gst_element_factory_make ("tee",NULL);
-
+    
     gst_bin_add_many (GST_BIN (bin_),
 		      tee_,
 		      fakesink_,
@@ -52,4 +52,9 @@ namespace switcher
     return tee_;
   }
 
+  GstElement *
+  Connector::get_bin ()
+  {
+    return bin_;
+  }
 }  // end of namespace
