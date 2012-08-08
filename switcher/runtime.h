@@ -38,7 +38,6 @@ namespace switcher
       typedef std::tr1::shared_ptr<Runtime> ptr;
       Runtime ();
       ~Runtime ();
-      void run ();
       GstElement *get_pipeline ();
 
     private:

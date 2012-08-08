@@ -54,20 +54,6 @@ namespace switcher
   {
     return pipeline_;
   }
-  // void
-  // Runtime::add_segment (Segment::ptr segment)
-  // {
-  //   g_print ("add segment %s\n",segment->get_name().c_str());
-  //   gst_bin_add (GST_BIN (pipeline_),segment->get_bin());
-  //   gst_element_sync_state_with_parent (segment->get_bin());
-  // }
-
-
-  void
-  Runtime::run ()
-  {
-    g_main_loop_run (mainloop_);
-  }
 
   gboolean
   Runtime::bus_called (GstBus *bus,
