@@ -38,7 +38,7 @@ namespace switcher
   private:
     GstElement *bin_;
     GstElement *tee_;
-    GstElement *fakesink_;
+    GstElement *queue_;
   };
 
 }  // end of namespace
