@@ -36,6 +36,7 @@ namespace switcher
     GstElement *get_sink_element ();
   private:
     GstElement *tee_;
+    GstElement *fakesink_;
   };
 
 }  // end of namespace
