@@ -24,6 +24,7 @@
 #include "switcher/base-entity.h"
 #include "switcher/runtime.h"
 #include <memory>
+#include <vector>
 
 namespace switcher
 {
@@ -41,7 +42,6 @@ namespace switcher
   protected:
     GstElement *bin_;
     Runtime *runtime_;
-    void attach_to_runtime();
   };
 
 }  // end of namespace

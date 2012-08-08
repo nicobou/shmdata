@@ -22,7 +22,6 @@
 namespace switcher
 {
   VideoSource::VideoSource () :
-    rawvideo_connector_ (new Connector()),
     alpha_ (gst_element_factory_make ("alpha",NULL)),
     textoverlay_ (gst_element_factory_make ("textoverlay",NULL)),
     videoflip_ (gst_element_factory_make ("videoflip",NULL)),
@@ -30,6 +29,8 @@ namespace switcher
     identity_ (gst_element_factory_make ("identity",NULL)),
     xvimagesink_ (gst_element_factory_make ("xvimagesink",NULL))
   {
+
+    rawvideo_connector_.reset(new Connector());
     
     GstElement *colorspace = gst_element_factory_make ("ffmpegcolorspace",NULL);
     
@@ -90,8 +91,6 @@ namespace switcher
     register_property (G_OBJECT (textoverlay_),"color","textoverlay");
     register_property (G_OBJECT (textoverlay_),"shadow","textoverlay");
     register_property (G_OBJECT (textoverlay_),"outline-color","textoverlay");
-
-
   }
 
   void
