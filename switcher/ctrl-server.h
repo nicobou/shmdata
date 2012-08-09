@@ -30,7 +30,7 @@
 /* #include "switcher/webservices/control.nsmap" */
 /* #endif */
 
-#include "switcher/creator.h"
+//#include "switcher/creator.h"
 
 namespace switcher
 {
