@@ -61,7 +61,7 @@
      std::string get_entity_property (std::string entity_name, 
 				      std::string property_name);
      
-      //method 
+     //method 
      std::vector<std::string> get_list_of_method_names (std::string entity_name); 
      
      bool entity_invoke_method (std::string entity_name, 
@@ -75,7 +75,7 @@
    private: 
      Factory<BaseEntity, std::string> abstract_factory_;
      //std::map<std::string, BaseEntity::ptr > entities_;
-     HashTable<BaseEntity::ptr>::ptr hashed_;
+     //HashTable<BaseEntity::ptr>::ptr hashed_;
      
      StringMap<BaseEntity::ptr> entities_;
      

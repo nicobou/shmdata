@@ -26,14 +26,15 @@ namespace switcher
     textoverlay_ (gst_element_factory_make ("textoverlay",NULL)),
     videoflip_ (gst_element_factory_make ("videoflip",NULL)),
     deinterlace_ (gst_element_factory_make ("deinterlace",NULL)),
-    identity_ (gst_element_factory_make ("identity",NULL)),
-    xvimagesink_ (gst_element_factory_make ("xvimagesink",NULL))
+    identity_ (gst_element_factory_make ("identity",NULL))
+    //,xvimagesink_ (gst_element_factory_make ("xvimagesink",NULL))
   {
 
     rawvideo_connector_.reset(new Connector());
-    
+    video_connector_.reset(new Connector());
+
     GstElement *colorspace = gst_element_factory_make ("ffmpegcolorspace",NULL);
-    
+
     gst_bin_add_many (GST_BIN (bin_),
 		      rawvideo_connector_->get_bin (),
 		      textoverlay_,
@@ -42,7 +43,8 @@ namespace switcher
 		      alpha_,
 		      identity_,
 		      colorspace,
-		      xvimagesink_,
+		      //xvimagesink_,
+		      video_connector_->get_bin (),
 		      NULL);
     
     gst_element_link_many (textoverlay_,
@@ -51,7 +53,9 @@ namespace switcher
 			   alpha_,
 			   identity_,
 			   colorspace,
-			   xvimagesink_,
+			   video_connector_->get_sink_element(),
+			   //queue,
+			   //xvimagesink_,
 			   NULL);
     //properties
     register_property (G_OBJECT (videoflip_),"method","flip");

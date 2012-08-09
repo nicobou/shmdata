@@ -24,10 +24,9 @@ namespace switcher
 
   Connector::Connector () :
     bin_ (gst_element_factory_make ("bin", NULL)),
-    tee_ (gst_element_factory_make ("tee",NULL)),
-    queue_ (gst_element_factory_make ("queue",NULL))
+    tee_ (gst_element_factory_make ("tee",NULL))
   {
-    
+
     GstElement *xvimagesink = gst_element_factory_make ("xvimagesink",NULL);
     GstElement *xvimagesink_queue = gst_element_factory_make ("queue",NULL);
     GstElement *fakesink = gst_element_factory_make ("fakesink",NULL);
@@ -35,21 +34,29 @@ namespace switcher
 
     gst_bin_add_many (GST_BIN (bin_),
 		      tee_,
-		      queue_,
 		      //fakesink_queue,
 		      //fakesink,
 		      xvimagesink_queue,
 		      xvimagesink,
 		      NULL);
-    gst_element_link (tee_,queue_);
     //gst_element_link_many (tee_, fakesink_queue, fakesink, NULL);
     gst_element_link_many (tee_, xvimagesink_queue, xvimagesink, NULL);
+    //g_object_set (G_OBJECT (xvimagesink),
+		  // "sync", 
+		  // FALSE, 
+		  // NULL);
   }
   
   GstElement *
   Connector::get_src_element ()
   {
-    return queue_;
+
+     GstElement *queue = gst_element_factory_make ("queue",NULL);
+
+     gst_bin_add (GST_BIN (bin_), queue);
+     gst_element_sync_state_with_parent (queue);
+     gst_element_link (tee_, queue);
+     return queue;
   }
 
   GstElement *

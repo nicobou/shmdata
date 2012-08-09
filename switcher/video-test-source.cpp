@@ -35,6 +35,10 @@ namespace switcher
   VideoTestSource::VideoTestSource ()
   {
     videotestsrc_ = gst_element_factory_make ("videotestsrc",NULL);
+    g_object_set (G_OBJECT (videotestsrc_),
+		  "is-live", TRUE,
+		  NULL);
+    
     //set the name before registering properties
     name_ = gst_element_get_name (videotestsrc_);
 

@@ -33,7 +33,7 @@
       abstract_factory_.Register<VideoTestSource> ("videotestsource");
       abstract_factory_.Register<CtrlServer> ("controlserver");
 
-      hashed_.reset(new HashTable<BaseEntity::ptr>);
+      //hashed_.reset(new HashTable<BaseEntity::ptr>);
     }
 
     BaseEntityManager::~BaseEntityManager()
