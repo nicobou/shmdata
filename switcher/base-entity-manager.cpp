@@ -24,7 +24,9 @@
  {
 
    BaseEntityManager::BaseEntityManager()
-    {}
+    {
+      life_manager_.reset (new BaseEntityLifeManager());
+    }
 
     BaseEntityManager::~BaseEntityManager()
     {
@@ -34,7 +36,7 @@
    std::vector<std::string> 
    BaseEntityManager::get_properties (std::string entity_name)
    {
-     return (life_manager_.get (entity_name))->get_property_names ();
+     return (life_manager_->get (entity_name))->get_property_names ();
    }
 
    bool
@@ -42,20 +44,20 @@
 				    std::string property_name,
 				    std::string property_value)
    {
-     return (life_manager_.get (entity_name))->set_property(property_name.c_str(),property_value.c_str());
+     return (life_manager_->get (entity_name))->set_property(property_name.c_str(),property_value.c_str());
    }
 
    std::string
    BaseEntityManager::get_property (std::string entity_name,
 				    std::string property_name)
    {
-     return (life_manager_.get (entity_name))->get_property(property_name.c_str());
+     return (life_manager_->get (entity_name))->get_property(property_name.c_str());
    }
 
    std::vector<std::string>
    BaseEntityManager::get_methods (std::string entity_name)
    {
-     return (life_manager_.get (entity_name))->get_method_names ();
+     return (life_manager_->get (entity_name))->get_method_names ();
    }
 
    bool 
@@ -65,7 +67,7 @@
    {
      g_print ("   BaseEntityManager::entity_invoke_method %s %s\n",entity_name.c_str(), function_name.c_str());
      
-     BaseEntity::ptr entity = life_manager_.get (entity_name);
+     BaseEntity::ptr entity = life_manager_->get (entity_name);
 
      int num_val = entity->method_get_num_value_args(function_name);
 
@@ -95,7 +97,7 @@
 	 
 	 for(std::vector<std::string>::iterator it = args.begin() + num_val; it != args.end(); ++it) 
 	   {
-	     if (!life_manager_.exists (*it))
+	     if (!life_manager_->exists (*it))
 	       {
 		 g_printerr ("BaseEntityManager::entity_invoke_method error: entity %s not found\n",
 			     (*it).c_str());
@@ -103,7 +105,7 @@
 	       }
 	     else
 	       {
-		 BaseEntity::ptr retrieved_entity = life_manager_.get (*it);//entities_.lookup (*it);
+		 BaseEntity::ptr retrieved_entity = life_manager_->get (*it);//entities_.lookup (*it);
 		 entity_args.push_back ((void *)retrieved_entity.get());
 	       }
 	   }
@@ -115,7 +117,7 @@
    BaseEntity::ptr
    BaseEntityManager::create (std::string entity_class)
    {
-     BaseEntity::ptr entity = life_manager_.create (entity_class);
+     BaseEntity::ptr entity = life_manager_->create (entity_class);
      return entity;
    }
 
@@ -123,19 +125,19 @@
    bool
    BaseEntityManager::remove (std::string entity_name)
    {
-     return life_manager_.create (entity_name);
+     return life_manager_->create (entity_name);
    }
 
        std::vector<std::string> 
     BaseEntityManager::get_classes ()
     {
-      return life_manager_.get_classes ();
+      return life_manager_->get_classes ();
     }
 
     std::vector<std::string> 
     BaseEntityManager::get_entities ()
     {
-      return life_manager_.get_instances ();
+      return life_manager_->get_instances ();
     }
 
 

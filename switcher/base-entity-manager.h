@@ -58,8 +58,6 @@
 			 std::vector<std::string> args);  
 
      //life manager
-     
-     //shortcuts avoiding getting the life manager
      std::vector<std::string> get_classes (); //know what entity can be created
      std::vector<std::string> get_entities (); //know instances
      BaseEntity::ptr create (std::string entity_class_name); 
@@ -67,9 +65,7 @@
      
 
    private: 
-     BaseEntityLifeManager life_manager_;
-     /* AbstractFactory<BaseEntity, std::string> abstract_factory_; */
-     /* StringMap<BaseEntity::ptr> entities_; */
+     BaseEntityLifeManager::ptr life_manager_; //may be shared with others for automatic entity creation 
 
    }; 
 
