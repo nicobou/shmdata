@@ -18,80 +18,54 @@
  */
 
 #include "switcher/base-entity-manager.h"
-#include "switcher/video-test-source.h"
-#include "switcher/ctrl-server.h"
-#include "switcher/runtime.h"
 
 
  namespace switcher
  {
 
    BaseEntityManager::BaseEntityManager()
-    {
-      //registering base entity to make available
-      abstract_factory_.register_class<Runtime> ("runtime");
-      abstract_factory_.register_class<VideoTestSource> ("videotestsource");
-      abstract_factory_.register_class<CtrlServer> ("controlserver");
-
-    }
+    {}
 
     BaseEntityManager::~BaseEntityManager()
     {
       g_print ("base entity manager destructed\n");
     }
   
-    std::vector<std::string> 
-    BaseEntityManager::get_list_of_entity_classes ()
-    {
-      return abstract_factory_.get_keys ();
-    }
-
-    std::vector<std::string> 
-    BaseEntityManager::get_list_of_entities ()
-    {
-      return entities_.get_keys();
-    }
-   
    std::vector<std::string> 
-   BaseEntityManager::get_property_names (std::string entity_name)
+   BaseEntityManager::get_properties (std::string entity_name)
    {
-     return (entities_.lookup (entity_name))->get_property_names ();
+     return (life_manager_.get (entity_name))->get_property_names ();
    }
 
    bool
-   BaseEntityManager::set_entity_property (std::string entity_name,
-			       std::string property_name,
-			       std::string property_value)
+   BaseEntityManager::set_property (std::string entity_name,
+				    std::string property_name,
+				    std::string property_value)
    {
-     return (entities_.lookup (entity_name))->set_property(property_name.c_str(),property_value.c_str());
-     //(*hashed_->lookup (entity_name))->set_property(property_name.c_str(),property_value.c_str());
-     //return true;
+     return (life_manager_.get (entity_name))->set_property(property_name.c_str(),property_value.c_str());
    }
 
    std::string
-   BaseEntityManager::get_entity_property (std::string entity_name,
-					   std::string property_name)
+   BaseEntityManager::get_property (std::string entity_name,
+				    std::string property_name)
    {
-     return (entities_.lookup (entity_name))->get_property(property_name.c_str());
-     //return (*hashed_->lookup (entity_name))->get_property(property_name.c_str());
+     return (life_manager_.get (entity_name))->get_property(property_name.c_str());
    }
 
    std::vector<std::string>
-   BaseEntityManager::get_list_of_method_names(std::string entity_name)
+   BaseEntityManager::get_methods (std::string entity_name)
    {
-     return (entities_.lookup (entity_name))->get_method_names ();
-     //return (*hashed_->lookup (entity_name))->get_method_names ();
+     return (life_manager_.get (entity_name))->get_method_names ();
    }
 
    bool 
-   BaseEntityManager::entity_invoke_method (std::string entity_name, 
-					    std::string function_name,
-					    std::vector<std::string> args)
+   BaseEntityManager::invoke_method (std::string entity_name, 
+				     std::string function_name,
+				     std::vector<std::string> args)
    {
      g_print ("   BaseEntityManager::entity_invoke_method %s %s\n",entity_name.c_str(), function_name.c_str());
      
-     //BaseEntity::ptr entity = (*hashed_->lookup (entity_name));
-     BaseEntity::ptr entity = entities_.lookup (entity_name);
+     BaseEntity::ptr entity = life_manager_.get (entity_name);
 
      int num_val = entity->method_get_num_value_args(function_name);
 
@@ -121,8 +95,7 @@
 	 
 	 for(std::vector<std::string>::iterator it = args.begin() + num_val; it != args.end(); ++it) 
 	   {
-	     //BaseEntity::ptr *retrieved_entity = hashed_->lookup (*it);
-	     if (!entities_.contains (*it))
+	     if (!life_manager_.exists (*it))
 	       {
 		 g_printerr ("BaseEntityManager::entity_invoke_method error: entity %s not found\n",
 			     (*it).c_str());
@@ -130,7 +103,7 @@
 	       }
 	     else
 	       {
-		 BaseEntity::ptr retrieved_entity = entities_.lookup (*it);
+		 BaseEntity::ptr retrieved_entity = life_manager_.get (*it);//entities_.lookup (*it);
 		 entity_args.push_back ((void *)retrieved_entity.get());
 	       }
 	   }
@@ -140,29 +113,30 @@
    } 
    
    BaseEntity::ptr
-   BaseEntityManager::create_entity (std::string entity_class)
+   BaseEntityManager::create (std::string entity_class)
    {
-     //std::cout << entity_class << std::endl;
-     BaseEntity::ptr entity = abstract_factory_.create (entity_class);
-
-     g_print ("create_entity %p %p\n",&entity,entity.get());
-
-     if (entity.get() != NULL)
-       {
-	 //hashed_->insert (entity->get_name(),&entity);
-	 entities_.insert (entity->get_name(),entity);
-       }
-     
+     BaseEntity::ptr entity = life_manager_.create (entity_class);
      return entity;
    }
 
 
    bool
-   BaseEntityManager::delete_entity (std::string entity_name)
+   BaseEntityManager::remove (std::string entity_name)
    {
-     //return (hashed_->remove (entity_name));
-     return entities_.remove (entity_name);
+     return life_manager_.create (entity_name);
    }
+
+       std::vector<std::string> 
+    BaseEntityManager::get_classes ()
+    {
+      return life_manager_.get_classes ();
+    }
+
+    std::vector<std::string> 
+    BaseEntityManager::get_entities ()
+    {
+      return life_manager_.get_instances ();
+    }
 
 
  }

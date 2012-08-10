@@ -35,53 +35,31 @@ main (int argc,
   
   
   BaseEntityManager manager;  
-  std::vector<std::string> available_object_list = manager.get_list_of_entity_classes ();
+  std::vector<std::string> available_object_list = manager.get_classes ();
+
   //list available object in factory
   for (uint i=0; i < available_object_list.size (); i++)
     {
       std::cout<< "** available object: " << available_object_list[i] << std::endl; 
     }    
   
-  // //creating a SOAP webservice controling the manager
-   BaseEntity::ptr baseserv = manager.create_entity ("controlserver");
-   CtrlServer::ptr serv = std::tr1::dynamic_pointer_cast<CtrlServer> (baseserv);
-   serv->set_base_entity_manager (&manager);
-   serv->start ();
+  //creating a SOAP webservice controling the manager
+  BaseEntity::ptr baseserv = manager.create ("controlserver");
+  CtrlServer::ptr serv = std::tr1::dynamic_pointer_cast<CtrlServer> (baseserv);
+  serv->set_base_entity_manager (&manager);
+  serv->start ();
 
 
   // Create a runtime
-  BaseEntity::ptr runtime = manager.create_entity ("runtime");
+  BaseEntity::ptr runtime = manager.create ("runtime");
 
-  // //create a videotest
-  BaseEntity::ptr videotest = manager.create_entity("videotestsource");
-
-  // std::vector<std::string> available_method = manager.get_list_of_method_names ("videotestsrc0");
-  // for (uint i=0; i < available_method.size (); i++)
-  //     std::cout<< "** available method: " << available_method[i] << std::endl; 
+  //create a videotest
+  BaseEntity::ptr videotest = manager.create ("videotestsource");
 
   //attaching videotestsrc to the runtime
   std::vector<std::string> ent_name;
   ent_name.push_back (runtime->get_name());
-  manager.entity_invoke_method ("videotestsrc0","set_runtime",ent_name);
-  
-  // {
-  //   // //create a second videotesto
-  //   /*BaseEntity::ptr videotest2 =*/ manager.create_entity("videotestsource");
-  // }
-  // std::vector<std::string> available_method2 = manager.get_list_of_method_names ("videotestsrc1");
-  // for (uint i=0; i < available_method2.size (); i++)
-  //   std::cout<< "** available method: " << available_method2[i] << std::endl; 
-  
-  // //attaching videotestsrc to the runtime
-  // std::vector<std::string> ent_name2;
-  // ent_name2.push_back (runtime->get_name());
-  // manager.entity_invoke_method ("videotestsrc1","set_runtime",ent_name2);
-  
-  
-    
-  //start the runtime (blocking)
-  //Runtime::ptr rt = std::tr1::dynamic_pointer_cast<Runtime> (runtime);
-  //rt->run();
+  manager.invoke_method ("videotestsrc0","set_runtime",ent_name);
 
   //wait for something to hapen
   while (1)

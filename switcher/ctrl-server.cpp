@@ -163,7 +163,7 @@ controlService::get_factory_capabilities(std::vector<std::string> *result){
       return soap_senderfault("error in get_factory_capabilities", s);
     }
 
-  *result = manager->get_list_of_entity_classes ();
+  *result = manager->get_classes ();
 
   return SOAP_OK;
 }
@@ -173,7 +173,7 @@ controlService::get_entity_names(std::vector<std::string> *result){
   using namespace switcher;
   
   BaseEntityManager *manager = (BaseEntityManager *) this->user;
-  *result = manager->get_list_of_entities ();
+  *result = manager->get_entities ();
   
   return SOAP_OK;
 }
@@ -185,7 +185,7 @@ controlService::get_property_names (std::string entity_name,
   using namespace switcher;
   
   BaseEntityManager *manager = (BaseEntityManager *) this->user;
-  *result = manager->get_property_names (entity_name);
+  *result = manager->get_properties (entity_name);
 
   return SOAP_OK;
 }
@@ -198,7 +198,7 @@ controlService::set_property (std::string entity_name,
   using namespace switcher;
   
   BaseEntityManager *manager = (BaseEntityManager *) this->user;
-  manager->set_entity_property (entity_name, property_name, property_value);
+  manager->set_property (entity_name, property_name, property_value);
 
   return send_set_property_empty_response(SOAP_OK);
 }
@@ -212,7 +212,7 @@ controlService::get_property (std::string entity_name,
   using namespace switcher;
   
   BaseEntityManager *manager = (BaseEntityManager *) this->user;
-  *result = manager->get_entity_property (entity_name, property_name);
+  *result = manager->get_property (entity_name, property_name);
   
   return SOAP_OK;
 }
@@ -227,7 +227,7 @@ controlService::create_entity (std::string entity_class,
    BaseEntityManager *manager = (BaseEntityManager *) this->user;
    // manager->create_entity ("videotestsource");
    // *result = "truc";
-    BaseEntity::ptr entit = manager->create_entity (entity_class);
+    BaseEntity::ptr entit = manager->create (entity_class);
     if (entit.get() != NULL)
       {
         *result = entit->get_name ();
@@ -251,7 +251,7 @@ controlService::delete_entity (std::string entity_name)
   using namespace switcher;
   BaseEntityManager *manager = (BaseEntityManager *) this->user;
   
-  if (manager->delete_entity (entity_name))
+  if (manager->remove (entity_name))
     return send_set_property_empty_response(SOAP_OK);
   else
     {
@@ -272,7 +272,7 @@ controlService::invoke_method (std::string entity_name,
   using namespace switcher;
   BaseEntityManager *manager = (BaseEntityManager *) this->user;
 
-  *result = manager->entity_invoke_method (entity_name, method_name, args);
+  *result = manager->invoke_method (entity_name, method_name, args);
 
   // std::vector<std::string> myargs;
   // myargs.push_back("2");
@@ -299,6 +299,6 @@ controlService::get_method_names (std::string entity_name,
   using namespace switcher;
   BaseEntityManager *manager = (BaseEntityManager *) this->user;
 
-  *result = manager->get_list_of_method_names (entity_name);
+  *result = manager->get_methods (entity_name);
   return SOAP_OK;
 }

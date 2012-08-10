@@ -36,13 +36,13 @@ namespace switcher
   }
 
   std::vector<std::string> 
-  BaseEntityLifeManager::get_list_of_entity_classes ()
+  BaseEntityLifeManager::get_classes ()
   {
     return abstract_factory_.get_keys ();
   }
 
   BaseEntity::ptr 
-  BaseEntityLifeManager::create_entity (std::string entity_class)
+  BaseEntityLifeManager::create (std::string entity_class)
   {
     BaseEntity::ptr entity = abstract_factory_.create (entity_class);
     g_print ("create_entity %p %p\n",&entity,entity.get());
@@ -55,13 +55,13 @@ namespace switcher
   }
 
   std::vector<std::string> 
-  BaseEntityLifeManager::get_instances_names ()
+  BaseEntityLifeManager::get_instances ()
   {
     return entities_.get_keys();
   }
 
   BaseEntity::ptr 
-  BaseEntityLifeManager::get_entity (std::string entity_name)
+  BaseEntityLifeManager::get (std::string entity_name)
   {
     return entities_.lookup (entity_name);
   }

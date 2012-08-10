@@ -28,8 +28,7 @@
 #include <map>
 #include <string>
 #include "switcher/base-entity.h" 
-#include "switcher/abstract-factory.h" 
-#include "switcher/string-map.h"
+#include "switcher/base-entity-life-manager.h"
 
  namespace switcher 
  { 
@@ -42,38 +41,35 @@
      BaseEntityManager(); 
      ~BaseEntityManager(); 
 
-     //know what entity can be created
-     std::vector<std::string> get_list_of_entity_classes (); 
- 
-     //list entity instances 
-     std::vector<std::string> 
-       get_list_of_entities (); 
- 
      //properties
-     std::vector<std::string> get_property_names (std::string entity_name);
-     bool set_entity_property (std::string entity_name,
-			       std::string property_name,
-			       std::string property_value);
+     std::vector<std::string> get_properties (std::string entity_name);
+     bool set_property (std::string entity_name,
+			std::string property_name,
+			std::string property_value);
      
-     std::string get_entity_property (std::string entity_name, 
-				      std::string property_name);
+     std::string get_property (std::string entity_name, 
+			       std::string property_name);
      
      //methods 
-     std::vector<std::string> get_list_of_method_names (std::string entity_name); 
+     std::vector<std::string> get_methods (std::string entity_name); 
      
-     bool entity_invoke_method (std::string entity_name, 
-				std::string function_name,
-				std::vector<std::string> args);  
+     bool invoke_method (std::string entity_name, 
+			 std::string function_name,
+			 std::vector<std::string> args);  
+
      //life manager
      
-     //life cycle
-     BaseEntity::ptr create_entity (std::string entity_class_name); 
-     bool delete_entity (std::string entity_name);
- 
-   private: 
-     AbstractFactory<BaseEntity, std::string> abstract_factory_;
+     //shortcuts avoiding getting the life manager
+     std::vector<std::string> get_classes (); //know what entity can be created
+     std::vector<std::string> get_entities (); //know instances
+     BaseEntity::ptr create (std::string entity_class_name); 
+     bool remove (std::string entity_name);
      
-     StringMap<BaseEntity::ptr> entities_;
+
+   private: 
+     BaseEntityLifeManager life_manager_;
+     /* AbstractFactory<BaseEntity, std::string> abstract_factory_; */
+     /* StringMap<BaseEntity::ptr> entities_; */
 
    }; 
 

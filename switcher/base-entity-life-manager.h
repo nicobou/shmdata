@@ -41,15 +41,15 @@ namespace switcher
     BaseEntityLifeManager();
     
     //info
-    std::vector<std::string> get_list_of_entity_classes ();
-    std::vector<std::string> get_instances_names ();
+    std::vector<std::string> get_classes ();
+    std::vector<std::string> get_instances ();
     bool exists (std::string entity_name);
 
     //creation
-    BaseEntity::ptr create_entity (std::string entity_class);
+    BaseEntity::ptr create (std::string entity_class);
     
     //subsistence
-    BaseEntity::ptr get_entity (std::string entity_name);
+    BaseEntity::ptr get (std::string entity_name);
     
     //release base entity (destructeed with the shared pointer)
     bool remove (std::string entity_name);
