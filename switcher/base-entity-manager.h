@@ -34,8 +34,6 @@
  namespace switcher 
  { 
 
-   class BaseEntity;
-
    class BaseEntityManager 
    { 
    public: 
@@ -60,14 +58,15 @@
      std::string get_entity_property (std::string entity_name, 
 				      std::string property_name);
      
-     //method 
+     //methods 
      std::vector<std::string> get_list_of_method_names (std::string entity_name); 
      
      bool entity_invoke_method (std::string entity_name, 
 				std::string function_name,
 				std::vector<std::string> args);  
-
-     //entity life cycle
+     //life manager
+     
+     //life cycle
      BaseEntity::ptr create_entity (std::string entity_class_name); 
      bool delete_entity (std::string entity_name);
  

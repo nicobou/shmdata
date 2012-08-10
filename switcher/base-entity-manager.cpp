@@ -33,13 +33,11 @@
       abstract_factory_.register_class<VideoTestSource> ("videotestsource");
       abstract_factory_.register_class<CtrlServer> ("controlserver");
 
-      //hashed_.reset(new HashTable<BaseEntity::ptr>);
     }
 
     BaseEntityManager::~BaseEntityManager()
     {
-      g_print ("base entity destructed\n");
-      //TODO remove reference to this in the entities
+      g_print ("base entity manager destructed\n");
     }
   
     std::vector<std::string> 
@@ -51,14 +49,12 @@
     std::vector<std::string> 
     BaseEntityManager::get_list_of_entities ()
     {
-      //return hashed_->get_keys();
       return entities_.get_keys();
     }
    
    std::vector<std::string> 
    BaseEntityManager::get_property_names (std::string entity_name)
    {
-     //return (*hashed_->lookup (entity_name))->get_property_names ();
      return (entities_.lookup (entity_name))->get_property_names ();
    }
 
@@ -114,7 +110,7 @@
        }
      
      //checking if pointer to entity must be retrieved     
-     if (args.size() == num_val)
+     if ((int)args.size() == num_val)
        //invoke with value only
        return entity->invoke_method (function_name, args);
      else
