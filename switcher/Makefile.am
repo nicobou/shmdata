@@ -40,7 +40,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
-    abstract-life-manager.h \
+    abstract-factory.h \
+    abstract-factory_spec.h \
     audio-sink.h \
     audio-source.h \
     base-entity-manager.h \
@@ -49,6 +50,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     base-source.h \
     connector.h \
     controller.h \
+    creator.h \
     ctrl-server.h \
     ctrl-webservice-definition.h \
     hash-table.h \

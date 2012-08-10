@@ -28,9 +28,8 @@
 #include <map>
 #include <string>
 #include "switcher/base-entity.h" 
-#include "switcher/abstract-life-manager.h" 
-#include "switcher/hash-table.h"
-//#include "switcher/string-map.h"
+#include "switcher/abstract-factory.h" 
+#include "switcher/string-map.h"
 
  namespace switcher 
  { 
@@ -73,12 +72,10 @@
      bool delete_entity (std::string entity_name);
  
    private: 
-     AbstractLifeManager<BaseEntity, std::string> abstract_life_manager_;
-     //std::map<std::string, BaseEntity::ptr > entities_;
-     //HashTable<BaseEntity::ptr>::ptr hashed_;
+     AbstractFactory<BaseEntity, std::string> abstract_factory_;
      
      StringMap<BaseEntity::ptr> entities_;
-     
+
    }; 
 
  } // end of namespace 

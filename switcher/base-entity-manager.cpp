@@ -29,9 +29,9 @@
    BaseEntityManager::BaseEntityManager()
     {
       //registering base entity to make available
-      abstract_life_manager_.Register<Runtime> ("runtime");
-      abstract_life_manager_.Register<VideoTestSource> ("videotestsource");
-      abstract_life_manager_.Register<CtrlServer> ("controlserver");
+      abstract_factory_.register_class<Runtime> ("runtime");
+      abstract_factory_.register_class<VideoTestSource> ("videotestsource");
+      abstract_factory_.register_class<CtrlServer> ("controlserver");
 
       //hashed_.reset(new HashTable<BaseEntity::ptr>);
     }
@@ -45,7 +45,7 @@
     std::vector<std::string> 
     BaseEntityManager::get_list_of_entity_classes ()
     {
-      return abstract_life_manager_.getList ();
+      return abstract_factory_.get_keys ();
     }
 
     std::vector<std::string> 
@@ -147,7 +147,7 @@
    BaseEntityManager::create_entity (std::string entity_class)
    {
      //std::cout << entity_class << std::endl;
-     BaseEntity::ptr entity = abstract_life_manager_.Create (entity_class);
+     BaseEntity::ptr entity = abstract_factory_.create (entity_class);
 
      g_print ("create_entity %p %p\n",&entity,entity.get());
 

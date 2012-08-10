@@ -50,54 +50,6 @@ namespace switcher
     }
   };
   
-
-  template <class T, class Key>
-    class AbstractLifeManager
-  {
-  public:
-    template <class U>
-      void Register(Key Id)
-      {
-	Creator<T>* Fn = (Creator<T>*)new DerivedCreator<U>();
-	ConstructorMap[Id] = Fn;
-	ConstructorNames.push_back (Id);
-      }
-    
-    std::vector<Key> getList ()
-      {
-	return ConstructorNames;
-      }
-    
-    std::tr1::shared_ptr<T> Create(Key Id)
-      {
-	std::tr1::shared_ptr<T> pointer;
-	
-	if ( ConstructorMap.find( Id) != ConstructorMap.end() ) 
-	  pointer.reset (ConstructorMap[Id]->Create());
-	
-	return pointer;
-      }
-    
-    ~AbstractLifeManager()
-      {
-        typename std::map<Key, Creator<T>*>::iterator i = ConstructorMap.begin();
-        while (i != ConstructorMap.end())
-	  {
-            delete (*i).second;
-            ++i;
-	  }
-      }
-    
-  private:
-    std::map<Key, Creator<T>*> ConstructorMap;
-    //this is not scaling to millions of classes 
-    //but avoids new vector each time a list is required
-    std::vector<Key> ConstructorNames;
-    
-    std::map<Key, std::tr1::shared_ptr<T> > instances_;
-  };
-  
-  
 } // end of namespace
-
+ 
 #endif // ifndef
