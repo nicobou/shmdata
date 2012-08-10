@@ -27,14 +27,6 @@
 
 namespace switcher
 {
-  /* template <typename T> */
-  /*   StringMap<T>::StringMap ()  */
-  /*   { */
-  /*   } */
-  
-  /* template <typename T> */
-  /*   StringMap<T>::~StringMap ()  */
-  /*   {} */
   
   template <typename T>
     bool

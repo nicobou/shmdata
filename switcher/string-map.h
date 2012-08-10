@@ -35,9 +35,6 @@ namespace switcher
     public:
       typedef std::tr1::shared_ptr< StringMap<T> > ptr;
       
-      /* StringMap (); */
-      /* ~StringMap (); */
-      
       bool insert (const std::string key, T value);
       bool remove (const std::string key);
       bool contains (const std::string key);
