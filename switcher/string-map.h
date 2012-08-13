@@ -26,6 +26,7 @@
 
 #include <string>
 #include <map>
+
 namespace switcher
 {
 

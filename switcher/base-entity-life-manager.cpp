@@ -18,6 +18,7 @@
  */
 
 #include "switcher/base-entity-life-manager.h"
+#include "switcher/base-entity.h" 
 
 //the base entities to manage
 #include "switcher/video-test-source.h"

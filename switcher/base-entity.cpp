@@ -22,6 +22,7 @@
  */
 
 #include "switcher/base-entity.h"
+#include "switcher/base-entity-life-manager.h"
 
 namespace switcher
 {
@@ -199,4 +200,10 @@ namespace switcher
     return prop->get ();
   }
 
+  void 
+   BaseEntity::set_life_manager (std::tr1::shared_ptr<BaseEntityLifeManager> life_manager)
+  {
+    life_manager_ = life_manager; 
+  }
+ 
 }

@@ -44,21 +44,22 @@ main (int argc,
     }    
   
   //creating a SOAP webservice controling the manager
-  BaseEntity::ptr baseserv = manager.create ("controlserver");
-  CtrlServer::ptr serv = std::tr1::dynamic_pointer_cast<CtrlServer> (baseserv);
+  //BaseEntity::ptr baseserv = manager.create ("controlserver");
+  //TODO make this available from the base manager interface 
+  //(for instance "this" or better could be string for the manager)
+  CtrlServer  *serv =  new CtrlServer(); //std::tr1::dynamic_pointer_cast<CtrlServer> (baseserv);
   serv->set_base_entity_manager (&manager);
   serv->start ();
 
-
   // Create a runtime
-  BaseEntity::ptr runtime = manager.create ("runtime");
+  std::string runtime = manager.create ("runtime");
 
   //create a videotest
-  BaseEntity::ptr videotest = manager.create ("videotestsource");
+  std::string videotest = manager.create ("videotestsource");
 
   //attaching videotestsrc to the runtime
   std::vector<std::string> ent_name;
-  ent_name.push_back (runtime->get_name());
+  ent_name.push_back (runtime);
   manager.invoke_method ("videotestsrc0","set_runtime",ent_name);
 
   //wait for something to hapen

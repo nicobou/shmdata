@@ -27,7 +27,6 @@
 #include <vector>
 #include <map>
 #include <string>
-#include "switcher/base-entity.h" 
 #include "switcher/base-entity-life-manager.h"
 
  namespace switcher 
@@ -60,9 +59,9 @@
      //life manager
      std::vector<std::string> get_classes (); //know what entity can be created
      std::vector<std::string> get_entities (); //know instances
-     BaseEntity::ptr create (std::string entity_class_name); 
+     std::string create (std::string entity_class_name); //returns the name
      bool remove (std::string entity_name);
-     
+     BaseEntityLifeManager::ptr get_life_manager ();
 
    private: 
      BaseEntityLifeManager::ptr life_manager_; //may be shared with others for automatic entity creation 

@@ -25,38 +25,32 @@ namespace switcher
     alpha_ (gst_element_factory_make ("alpha",NULL)),
     textoverlay_ (gst_element_factory_make ("textoverlay",NULL)),
     videoflip_ (gst_element_factory_make ("videoflip",NULL)),
-    deinterlace_ (gst_element_factory_make ("deinterlace",NULL)),
-    identity_ (gst_element_factory_make ("identity",NULL))
-    //,xvimagesink_ (gst_element_factory_make ("xvimagesink",NULL))
+    deinterlace_ (gst_element_factory_make ("deinterlace",NULL))
   {
 
-    rawvideo_connector_.reset(new Connector());
-    video_connector_.reset(new Connector());
+    connectors_.insert ("rawvideo",rawvideo_connector_);
+    connectors_.insert ("video",video_connector_); 
 
     GstElement *colorspace = gst_element_factory_make ("ffmpegcolorspace",NULL);
 
     gst_bin_add_many (GST_BIN (bin_),
-		      rawvideo_connector_->get_bin (),
+		      rawvideo_connector_.get_bin (),
 		      textoverlay_,
 		      videoflip_,
 		      deinterlace_,
 		      alpha_,
-		      identity_,
 		      colorspace,
-		      //xvimagesink_,
-		      video_connector_->get_bin (),
+		      video_connector_.get_bin (),
 		      NULL);
     
     gst_element_link_many (textoverlay_,
 			   videoflip_,
 			   deinterlace_,
 			   alpha_,
-			   identity_,
 			   colorspace,
-			   video_connector_->get_sink_element(),
-			   //queue,
-			   //xvimagesink_,
+			   video_connector_.get_sink_element(),
 			   NULL);
+
     //properties
     register_property (G_OBJECT (videoflip_),"method","flip");
     
@@ -102,8 +96,8 @@ namespace switcher
   {
     rawvideo_ = element;
     gst_bin_add (GST_BIN (bin_),rawvideo_);
-    gst_element_link (rawvideo_,rawvideo_connector_->get_sink_element());
-    gst_element_link (rawvideo_connector_->get_src_element (),
+    gst_element_link (rawvideo_,rawvideo_connector_.get_sink_element());
+    gst_element_link (rawvideo_connector_.get_src_element (),
 		      textoverlay_);
 
   }

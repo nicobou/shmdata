@@ -18,7 +18,7 @@
  */
 
 #include "switcher/base-entity-manager.h"
-
+#include "switcher/base-entity.h" 
 
  namespace switcher
  {
@@ -114,11 +114,13 @@
        }
    } 
    
-   BaseEntity::ptr
+   std::string//BaseEntity::ptr
    BaseEntityManager::create (std::string entity_class)
    {
      BaseEntity::ptr entity = life_manager_->create (entity_class);
-     return entity;
+     //give reference to life manager to entity
+     entity->set_life_manager (get_life_manager());
+     return entity->get_name ();
    }
 
 
@@ -140,5 +142,11 @@
       return life_manager_->get_instances ();
     }
 
-
+   BaseEntityLifeManager::ptr 
+   BaseEntityManager::get_life_manager ()
+   {
+     // BaseEntityLifeManager::ptr life_manager_copy = life_manager_;
+     // return life_manager_copy;
+     return life_manager_;
+   }
  }

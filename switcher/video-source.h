@@ -39,21 +39,14 @@ namespace switcher
     GstElement *rawvideo_;
 
     //internal connector between raw video and included filters
-    Connector::ptr rawvideo_connector_;
-    Connector::ptr video_connector_;
+    Connector rawvideo_connector_;
+    Connector video_connector_;
     
     GstElement *alpha_;
     GstElement *textoverlay_;
     GstElement *videoflip_;
     GstElement *deinterlace_;
 
-    //connector to a sink
-    //Connector::ptr src_connector;
-        //TODO use a connector 
-    GstElement *identity_; 
-    /* //TODO remove me */
-    //GstElement *xvimagesink_;
-    
   protected:
     //called in the derived class constructor
     void set_raw_video_element (GstElement *elt);

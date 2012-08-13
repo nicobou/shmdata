@@ -26,12 +26,16 @@
 #ifndef __SWITCHER_BASE_ENTITY_LIFE_MANAGER_H__
 #define __SWITCHER_BASE_ENTITY_LIFE_MANAGER_H__
 
-#include "switcher/base-entity.h" 
+
+#include <tr1/memory>
 #include "switcher/abstract-factory.h" 
 #include "switcher/string-map.h"
 
+#include "switcher/base-entity.h" 
+
 namespace switcher
 {
+  class BaseEntity;
 
   class BaseEntityLifeManager
   {
@@ -46,17 +50,17 @@ namespace switcher
     bool exists (std::string entity_name);
 
     //creation
-    BaseEntity::ptr create (std::string entity_class);
+    std::tr1::shared_ptr<BaseEntity> create (std::string entity_class);
     
     //subsistence
-    BaseEntity::ptr get (std::string entity_name);
+    std::tr1::shared_ptr<BaseEntity> get (std::string entity_name);
     
     //release base entity (destructeed with the shared pointer)
     bool remove (std::string entity_name);
 
   private:
     AbstractFactory<BaseEntity, std::string> abstract_factory_;
-    StringMap<BaseEntity::ptr> entities_;
+    StringMap< std::tr1::shared_ptr<BaseEntity> > entities_;
     };
 
 } // end of namespace

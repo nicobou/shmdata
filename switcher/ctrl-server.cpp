@@ -227,14 +227,18 @@ controlService::create_entity (std::string entity_class,
    BaseEntityManager *manager = (BaseEntityManager *) this->user;
    // manager->create_entity ("videotestsource");
    // *result = "truc";
-    BaseEntity::ptr entit = manager->create (entity_class);
-    if (entit.get() != NULL)
-      {
-        *result = entit->get_name ();
+    // BaseEntity::ptr entit = manager->create (entity_class);
+    // if (entit.get() != NULL)
+    //   {
+    //     *result = entit->get_name ();
        
-      }
-   
-    else 
+    //   }
+   std::string name = manager->create (entity_class);
+   if (name != "")
+     {
+       *result = name; 
+     }
+   else 
      { 
        char *s = (char*)soap_malloc(this, 1024);
        sprintf(s, "%s is not an available class", entity_class.c_str());

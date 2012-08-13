@@ -23,6 +23,8 @@
 
 #include <gst/gst.h>
 #include <tr1/memory>
+#include <string>
+#include "switcher/base-entity-life-manager.h"
 
 namespace switcher
 {
@@ -35,7 +37,9 @@ namespace switcher
     GstElement *get_bin ();
     GstElement *get_src_element ();
     GstElement *get_sink_element ();
+    std::string get_name ();
   private:
+    std::string name_;
     GstElement *bin_;
     GstElement *tee_;
   };

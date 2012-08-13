@@ -27,9 +27,15 @@ namespace switcher
     bin_ = gst_element_factory_make ("bin", NULL);
 
     //registering set_runtime
-    std::vector<GType> arg_types;
-    arg_types.push_back (G_TYPE_POINTER);
-    register_method("set_runtime",(void *)&Segment::set_runtime_wrapped, arg_types,(gpointer)this);
+    std::vector<GType> set_runtime_arg_types;
+    set_runtime_arg_types.push_back (G_TYPE_POINTER);
+    register_method("set_runtime",(void *)&Segment::set_runtime_wrapped, set_runtime_arg_types,(gpointer)this);
+    
+    //registering connect
+    std::vector<GType> connect_arg_types;
+    connect_arg_types.push_back (G_TYPE_POINTER);
+    register_method("connect",(void *)&Segment::connect, connect_arg_types,(gpointer)this);
+
   }
   
   void 
@@ -67,4 +73,20 @@ namespace switcher
   {
     return bin_;
   }
+
+  std::vector<std::string> 
+  Segment::get_connectors ()
+  {
+    return connectors_.get_keys ();
+  }
+
+  bool
+  Segment::connect (std::string connector_name, Segment *segment)
+  {
+    
+    return TRUE;
+  }
+
+  
+
 }

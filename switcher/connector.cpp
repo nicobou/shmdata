@@ -70,4 +70,11 @@ namespace switcher
   {
     return bin_;
   }
+
+  std::string
+  Connector::get_name()
+  {
+    return name_;
+  }
+
 }  // end of namespace

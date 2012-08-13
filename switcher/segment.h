@@ -23,6 +23,8 @@
 
 #include "switcher/base-entity.h"
 #include "switcher/runtime.h"
+#include "switcher/string-map.h"
+#include "switcher/connector.h"
 #include <memory>
 #include <vector>
 
@@ -36,12 +38,22 @@ namespace switcher
     Segment();
     // the segment is managing itself the presence/attachment with the runtime
     void set_runtime (Runtime *runtime);
-    static void set_runtime_wrapped (gpointer runtime, gpointer context);
     GstElement *get_bin ();
+
+    //TODO register this function as char * get_connectors () returning json
+    std::vector<std::string> get_connectors ();
+
+    bool connect (std::string connector_name, Segment *segment);
+
+    //wrappers for calls from base entity manager
+    static void set_runtime_wrapped (gpointer runtime, gpointer context);
+    static bool connect_wrapped (char *connector_name, gpointer segment, gpointer user_data);
+
 
   protected:
     GstElement *bin_;
     Runtime *runtime_;
+    StringMap<Connector> connectors_;
   };
 
 }  // end of namespace

@@ -21,8 +21,8 @@
 #ifndef __SWITCHER_BASE_SOURCE_H__
 #define __SWITCHER_BASE_SOURCE_H__
 
-#include "switcher/segment.h"
 #include <memory>
+#include "switcher/segment.h"
 
 namespace switcher
 {
