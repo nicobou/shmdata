@@ -65,7 +65,7 @@
 				     std::string function_name,
 				     std::vector<std::string> args)
    {
-     g_print ("   BaseEntityManager::entity_invoke_method %s %s\n",entity_name.c_str(), function_name.c_str());
+     g_print ("   BaseEntityManager::entity_invoke_method %s %s, arg size %d\n",entity_name.c_str(), function_name.c_str(), args.size ());
      
      BaseEntity::ptr entity = life_manager_->get (entity_name);
 
@@ -114,7 +114,7 @@
        }
    } 
    
-   std::string//BaseEntity::ptr
+   std::string
    BaseEntityManager::create (std::string entity_class)
    {
      BaseEntity::ptr entity = life_manager_->create (entity_class);
@@ -149,4 +149,5 @@
      // return life_manager_copy;
      return life_manager_;
    }
+
  }

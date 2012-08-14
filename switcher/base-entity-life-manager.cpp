@@ -21,9 +21,10 @@
 #include "switcher/base-entity.h" 
 
 //the base entities to manage
-#include "switcher/video-test-source.h"
 #include "switcher/ctrl-server.h"
 #include "switcher/runtime.h"
+#include "switcher/video-test-source.h"
+#include "switcher/xvimagesink.h"
 
 namespace switcher
 {
@@ -32,8 +33,9 @@ namespace switcher
   {
     //registering base entity to make available
     abstract_factory_.register_class<Runtime> ("runtime");
-    abstract_factory_.register_class<VideoTestSource> ("videotestsource");
     abstract_factory_.register_class<CtrlServer> ("controlserver");
+    abstract_factory_.register_class<VideoTestSource> ("videotestsource");
+    abstract_factory_.register_class<Xvimagesink> ("xvimagesink");
   }
 
   std::vector<std::string> 

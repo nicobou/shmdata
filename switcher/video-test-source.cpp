@@ -51,9 +51,8 @@ namespace switcher
     //   //prop->print();
     // }
 
-    //registering "pattern" and "is-live" properties 
+    //registering "pattern"
     register_property (G_OBJECT (videotestsrc_),"pattern","videotestsrc");
-    //register_property (G_OBJECT (videotestsrc_),"is-live");
     
     set_raw_video_element (videotestsrc_);
 

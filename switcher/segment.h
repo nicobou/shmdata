@@ -43,11 +43,11 @@ namespace switcher
     //TODO register this function as char * get_connectors () returning json
     std::vector<std::string> get_connectors ();
 
-    bool connect (std::string connector_name, Segment *segment);
+   bool connect (char *connector_name, Segment *segment);
 
     //wrappers for calls from base entity manager
     static void set_runtime_wrapped (gpointer runtime, gpointer context);
-    static bool connect_wrapped (char *connector_name, gpointer segment, gpointer user_data);
+    static gboolean connect_wrapped (gpointer connector_name, gpointer segment, gpointer user_data);
 
 
   protected:

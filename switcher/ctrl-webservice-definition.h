@@ -80,5 +80,3 @@ int switcher__invoke_method (std::string entity_name,
 			     std::string method_name,
 			     std::vector<std::string> args,
 			     bool *result);
-
-

@@ -31,6 +31,15 @@ namespace switcher
   {
   public:
     typedef std::tr1::shared_ptr<VideoSink> ptr;
+
+    GstElement *get_sink();
+ 
+  private:
+    GstElement *raw_video_sink_;
+
+  protected:
+    void set_sink_element (GstElement *sink);
+    
   };
 
 }  // end of namespace

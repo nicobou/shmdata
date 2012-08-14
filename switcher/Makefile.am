@@ -30,7 +30,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     video-test-source.cpp \
     webservices/soapC.cpp \
     webservices/soapcontrolProxy.cpp \
-    webservices/soapcontrolService.cpp
+    webservices/soapcontrolService.cpp \
+    xvimagesink.cpp
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
     $(GSOAP_LIBS) \
@@ -65,7 +66,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     string-map_spec.h \
     video-sink.h \
     video-source.h \
-    video-test-source.h
+    video-test-source.h \
+    xvimagesink.h
 
 ####### webservice code generation into the "webservices" directory
 ####### note: soapcpp2 -q <namespace> -d <directory-where-goes-generated-cpp>

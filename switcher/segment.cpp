@@ -18,6 +18,8 @@
  */
 
 #include "switcher/segment.h"
+//TODO remove this include
+#include "switcher/video-sink.h"
 
 namespace switcher
 {
@@ -33,13 +35,14 @@ namespace switcher
     
     //registering connect
     std::vector<GType> connect_arg_types;
+    connect_arg_types.push_back (G_TYPE_STRING);
     connect_arg_types.push_back (G_TYPE_POINTER);
-    register_method("connect",(void *)&Segment::connect, connect_arg_types,(gpointer)this);
+    register_method("connect",(void *)&Segment::connect_wrapped, connect_arg_types,(gpointer)this);
 
   }
   
   void 
-  Segment::set_runtime_wrapped (void *arg, gpointer user_data)
+  Segment::set_runtime_wrapped (gpointer arg, gpointer user_data)
   {
      Runtime *runtime = static_cast<Runtime *>(arg);
      Segment *context = static_cast<Segment*>(user_data);
@@ -80,11 +83,27 @@ namespace switcher
     return connectors_.get_keys ();
   }
 
-  bool
-  Segment::connect (std::string connector_name, Segment *segment)
+  
+  gboolean
+  Segment::connect_wrapped (gpointer connector_name, gpointer segment, gpointer user_data)
   {
+    //std::string connector = static_cast<std::string>(connector_name);
+    Segment *seg = static_cast<Segment*>(segment);
+    Segment *context = static_cast<Segment*>(user_data);
     
-    return TRUE;
+    if (context->connect ((char *)connector_name,seg))
+      return TRUE;
+    else
+      return FALSE;
+  }
+
+  bool
+  Segment::connect (char *connector_name, Segment *segment)
+  {
+    VideoSink *xv = static_cast<VideoSink*>(segment);
+    gst_element_link (connectors_.lookup("video").get_src_element(), xv->get_sink ());
+    g_print ("connected\n");
+    return true;
   }
 
   

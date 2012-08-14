@@ -306,3 +306,4 @@ controlService::get_method_names (std::string entity_name,
   *result = manager->get_methods (entity_name);
   return SOAP_OK;
 }
+
