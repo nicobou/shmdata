@@ -39,8 +39,8 @@ namespace switcher
     GstElement *rawvideo_;
 
     //internal connector between raw video and included filters
-    Connector rawvideo_connector_;
-    Connector video_connector_;
+    Connector::ptr rawvideo_connector_;
+    Connector::ptr video_connector_;
     
     GstElement *alpha_;
     GstElement *textoverlay_;

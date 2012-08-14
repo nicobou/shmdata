@@ -78,7 +78,7 @@ namespace switcher
   }
 
   std::vector<std::string> 
-  Segment::get_connectors ()
+  Segment::get_src_connectors ()
   {
     return connectors_.get_keys ();
   }
@@ -101,7 +101,8 @@ namespace switcher
   Segment::connect (char *connector_name, Segment *segment)
   {
     VideoSink *xv = static_cast<VideoSink*>(segment);
-    gst_element_link (connectors_.lookup("video").get_src_element(), xv->get_sink ());
+    //gst_element_link (connectors_.lookup("video")->get_src_element(), xv->get_sink ());
+    
     g_print ("connected\n");
     return true;
   }

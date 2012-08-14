@@ -18,6 +18,7 @@
  */
 
 #include "switcher/video-source.h"
+#include "switcher/gst-utils.h"
 
 namespace switcher
 {
@@ -28,19 +29,21 @@ namespace switcher
     deinterlace_ (gst_element_factory_make ("deinterlace",NULL))
   {
 
+    rawvideo_connector_.reset (new Connector ());
+    video_connector_.reset (new Connector ());
     connectors_.insert ("rawvideo",rawvideo_connector_);
     connectors_.insert ("video",video_connector_); 
 
     GstElement *colorspace = gst_element_factory_make ("ffmpegcolorspace",NULL);
 
     gst_bin_add_many (GST_BIN (bin_),
-		      rawvideo_connector_.get_bin (),
+		      rawvideo_connector_->get_bin (),
 		      textoverlay_,
 		      videoflip_,
 		      deinterlace_,
 		      alpha_,
 		      colorspace,
-		      video_connector_.get_bin (),
+		      video_connector_->get_bin (),
 		      NULL);
     
     gst_element_link_many (textoverlay_,
@@ -48,8 +51,16 @@ namespace switcher
 			   deinterlace_,
 			   alpha_,
 			   colorspace,
-			   video_connector_.get_sink_element(),
+			   //video_connector_->get_sink_element(),
 			   NULL);
+    
+    video_connector_->connect_to_sink (colorspace);
+    
+    // GstPad *colorspace_srcpad = gst_element_get_static_pad (colorspace, "src");
+    // if (video_connector_->connect_to_sink (colorspace_srcpad))
+    //   gst_object_unref (colorspace_srcpad);
+    
+    //GstUtils::link_static_to_request (colorspace,video_connector_->get_sink_element());
 
     //properties
     register_property (G_OBJECT (videoflip_),"method","flip");
@@ -96,9 +107,12 @@ namespace switcher
   {
     rawvideo_ = element;
     gst_bin_add (GST_BIN (bin_),rawvideo_);
-    gst_element_link (rawvideo_,rawvideo_connector_.get_sink_element());
-    gst_element_link (rawvideo_connector_.get_src_element (),
-		      textoverlay_);
+
+    //gst_element_link (rawvideo_,rawvideo_connector_->get_sink_element());
+    //GstUtils::link_static_to_request (rawvideo_,rawvideo_connector_->get_sink_element());
+    rawvideo_connector_->connect_to_sink (rawvideo_);
+    //gst_element_link (rawvideo_connector_->get_src_element (), textoverlay_);
+    rawvideo_connector_->connect_to_src (textoverlay_);
 
   }
 

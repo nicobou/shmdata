@@ -18,35 +18,20 @@
  */
 
 
-#ifndef __SWITCHER_CONNECTOR_H__
-#define __SWITCHER_CONNECTOR_H__
+#ifndef __SWITCHER_GST_UTILS_H__
+#define __SWITCHER_GST_UTILS_H__
 
 #include <gst/gst.h>
-#include <tr1/memory>
-#include <string>
-#include <vector>
 
 namespace switcher
 {
 
-  class Connector 
+  class GstUtils
   {
   public:
-    typedef std::tr1::shared_ptr<Connector> ptr;
-    Connector ();
-    GstElement *get_bin ();
-    bool connect_to_sink (GstPad *srcpad);
-    bool connect_to_sink (GstElement *src_element);
-    bool connect_to_src (GstElement *sink_element);
-    GstPad * get_src_pad ();
-    std::string get_name ();
-  protected:
-    std::vector<GstPad *> ghost_src_pads_;
-    std::vector<GstPad *> ghost_sink_pads_;
-    std::string name_;
-    GstElement *bin_;
-    GstElement *tee_;
-    GstElement *input_selector_;
+    static bool link_static_to_request (GstElement *src,GstElement *sink);
+    static bool check_pad_link_return (GstPadLinkReturn res);
+
   };
 
 }  // end of namespace

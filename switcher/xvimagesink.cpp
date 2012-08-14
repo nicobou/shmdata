@@ -17,38 +17,23 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#ifndef __SWITCHER_CONNECTOR_H__
-#define __SWITCHER_CONNECTOR_H__
-
-#include <gst/gst.h>
-#include <tr1/memory>
-#include <string>
-#include <vector>
+#include "switcher/xvimagesink.h"
 
 namespace switcher
 {
 
-  class Connector 
+  Xvimagesink::Xvimagesink ()
   {
-  public:
-    typedef std::tr1::shared_ptr<Connector> ptr;
-    Connector ();
-    GstElement *get_bin ();
-    bool connect_to_sink (GstPad *srcpad);
-    bool connect_to_sink (GstElement *src_element);
-    bool connect_to_src (GstElement *sink_element);
-    GstPad * get_src_pad ();
-    std::string get_name ();
-  protected:
-    std::vector<GstPad *> ghost_src_pads_;
-    std::vector<GstPad *> ghost_sink_pads_;
-    std::string name_;
-    GstElement *bin_;
-    GstElement *tee_;
-    GstElement *input_selector_;
-  };
+    xvimagesink_ = gst_element_factory_make ("xvimagesink",NULL);
+    
+    //set the name before registering properties
+    name_ = gst_element_get_name (xvimagesink_);
 
-}  // end of namespace
+    //registering "sync"
+    register_property (G_OBJECT (xvimagesink_),"sync","xvimagesink");
 
-#endif // ifndef
+    set_sink_element (xvimagesink_);
+  }
+
+
+}

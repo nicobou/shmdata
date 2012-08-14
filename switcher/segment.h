@@ -41,9 +41,9 @@ namespace switcher
     GstElement *get_bin ();
 
     //TODO register this function as char * get_connectors () returning json
-    std::vector<std::string> get_connectors ();
+    std::vector<std::string> get_src_connectors ();
 
-   bool connect (char *connector_name, Segment *segment);
+   bool connect (char *src_connector_name, Segment *segment);
 
     //wrappers for calls from base entity manager
     static void set_runtime_wrapped (gpointer runtime, gpointer context);
@@ -53,7 +53,7 @@ namespace switcher
   protected:
     GstElement *bin_;
     Runtime *runtime_;
-    StringMap<Connector> connectors_;
+    StringMap<Connector::ptr> connectors_;
   };
 
 }  // end of namespace

@@ -21,6 +21,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     connector.cpp \
     controller.cpp \
     ctrl-server.cpp \
+    gst-utils.cpp \
     method.cpp \
     property.cpp \
     runtime.cpp \
@@ -56,6 +57,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     creator.h \
     ctrl-server.h \
     ctrl-webservice-definition.h \
+    gst-utils.h \
     hash-table.h \
     hash-table_spec.h \
     method.h \
