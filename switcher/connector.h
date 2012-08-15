@@ -24,7 +24,7 @@
 #include <gst/gst.h>
 #include <tr1/memory>
 #include <string>
-#include <vector>
+//#include <vector>
 
 namespace switcher
 {
@@ -41,8 +41,8 @@ namespace switcher
     GstPad * get_src_pad ();
     std::string get_name ();
   protected:
-    std::vector<GstPad *> ghost_src_pads_;
-    std::vector<GstPad *> ghost_sink_pads_;
+    //std::vector<GstPad *> ghost_src_pads_;
+    //std::vector<GstPad *> ghost_sink_pads_;
     std::string name_;
     GstElement *bin_;
     GstElement *tee_;

@@ -18,6 +18,7 @@
  */
 
 #include "switcher/segment.h"
+#include "switcher/gst-utils.h"
 //TODO remove this include
 #include "switcher/video-sink.h"
 
@@ -101,10 +102,24 @@ namespace switcher
   Segment::connect (char *connector_name, Segment *segment)
   {
     VideoSink *xv = static_cast<VideoSink*>(segment);
-    //gst_element_link (connectors_.lookup("video")->get_src_element(), xv->get_sink ());
+    std::string name (connector_name);
+    GstPad *sinkpad = gst_element_get_static_pad (xv->get_sink (), "sink");
+
+    //a real pad cannot be ghost pad twice, so creating identity for pad reification
+    GstElement *identity = gst_element_factory_make ("identity", NULL);
+    gst_bin_add (GST_BIN(bin_), identity);
+    gst_element_sync_state_with_parent (identity);
+    connectors_.lookup(name)->connect_to_src(identity);
+        
+    GstPad *identity_srcpad = gst_element_get_static_pad (identity, "src");
+    GstPad *ghost_srcpad = gst_ghost_pad_new (NULL, identity_srcpad);
+    gst_pad_set_active(ghost_srcpad,TRUE);
+    gst_element_add_pad (bin_, ghost_srcpad); 
     
-    g_print ("connected\n");
-    return true;
+    GstPadLinkReturn linkret = gst_pad_link (ghost_srcpad, sinkpad);
+    gst_object_unref (sinkpad);
+
+    return GstUtils::check_pad_link_return (linkret);
   }
 
   

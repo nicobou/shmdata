@@ -42,10 +42,12 @@ namespace switcher
     Connector::ptr rawvideo_connector_;
     Connector::ptr video_connector_;
     
+    GstElement *colorspace_in_;
     GstElement *alpha_;
     GstElement *textoverlay_;
     GstElement *videoflip_;
     GstElement *deinterlace_;
+    GstElement *colorspace_out_;
 
   protected:
     //called in the derived class constructor

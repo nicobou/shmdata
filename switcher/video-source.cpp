@@ -23,44 +23,40 @@
 namespace switcher
 {
   VideoSource::VideoSource () :
+    colorspace_in_ (gst_element_factory_make ("ffmpegcolorspace",NULL)),
     alpha_ (gst_element_factory_make ("alpha",NULL)),
     textoverlay_ (gst_element_factory_make ("textoverlay",NULL)),
     videoflip_ (gst_element_factory_make ("videoflip",NULL)),
-    deinterlace_ (gst_element_factory_make ("deinterlace",NULL))
+    deinterlace_ (gst_element_factory_make ("deinterlace",NULL)),
+    colorspace_out_ (gst_element_factory_make ("ffmpegcolorspace",NULL))
   {
-
     rawvideo_connector_.reset (new Connector ());
     video_connector_.reset (new Connector ());
     connectors_.insert ("rawvideo",rawvideo_connector_);
     connectors_.insert ("video",video_connector_); 
 
-    GstElement *colorspace = gst_element_factory_make ("ffmpegcolorspace",NULL);
-
     gst_bin_add_many (GST_BIN (bin_),
 		      rawvideo_connector_->get_bin (),
+		      colorspace_in_,
 		      textoverlay_,
 		      videoflip_,
 		      deinterlace_,
 		      alpha_,
-		      colorspace,
+		      colorspace_out_,
 		      video_connector_->get_bin (),
 		      NULL);
+
     
-    gst_element_link_many (textoverlay_,
+    gst_element_link_many (colorspace_in_,
+			   textoverlay_,
 			   videoflip_,
 			   deinterlace_,
 			   alpha_,
-			   colorspace,
+			   colorspace_out_,
 			   //video_connector_->get_sink_element(),
 			   NULL);
     
-    video_connector_->connect_to_sink (colorspace);
-    
-    // GstPad *colorspace_srcpad = gst_element_get_static_pad (colorspace, "src");
-    // if (video_connector_->connect_to_sink (colorspace_srcpad))
-    //   gst_object_unref (colorspace_srcpad);
-    
-    //GstUtils::link_static_to_request (colorspace,video_connector_->get_sink_element());
+    video_connector_->connect_to_sink (colorspace_out_);
 
     //properties
     register_property (G_OBJECT (videoflip_),"method","flip");
@@ -105,15 +101,25 @@ namespace switcher
   void
   VideoSource::set_raw_video_element (GstElement *element)
   {
+    
     rawvideo_ = element;
     gst_bin_add (GST_BIN (bin_),rawvideo_);
 
-    //gst_element_link (rawvideo_,rawvideo_connector_->get_sink_element());
-    //GstUtils::link_static_to_request (rawvideo_,rawvideo_connector_->get_sink_element());
     rawvideo_connector_->connect_to_sink (rawvideo_);
-    //gst_element_link (rawvideo_connector_->get_src_element (), textoverlay_);
-    rawvideo_connector_->connect_to_src (textoverlay_);
+    rawvideo_connector_->connect_to_src (colorspace_in_);
+    
+    // GstElement *xv = gst_element_factory_make ("xvimagesink",NULL);
+    // GstElement *xvqueue = gst_element_factory_make ("queue",NULL);
+    // g_object_set (G_OBJECT (xv), "sync", FALSE, NULL);
+    // gst_bin_add_many  (GST_BIN (bin_), xv, xvqueue,NULL);
+    // gst_element_link (xvqueue,xv);
+    // rawvideo_connector_->connect_to_src (xvqueue);
 
+    //GstElement *videotestsrc = gst_element_factory_make ("videotestsrc",NULL);
+    // g_object_set (G_OBJECT (videotestsrc), "pattern", 2, NULL);
+    // gst_bin_add (GST_BIN (bin_),videotestsrc);
+    // gst_element_link (videotestsrc, textoverlay_);
+    
   }
 
 }

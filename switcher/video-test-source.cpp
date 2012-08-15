@@ -39,6 +39,7 @@ namespace switcher
 		  "is-live", TRUE,
 		  NULL);
     
+    
     //set the name before registering properties
     name_ = gst_element_get_name (videotestsrc_);
 
