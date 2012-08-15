@@ -24,16 +24,24 @@ namespace switcher
 {
 
   Connector::Connector () :
-    bin_ (gst_element_factory_make ("bin", NULL)),
+    //bin_ (gst_element_factory_make ("bin", NULL)),
     tee_ (gst_element_factory_make ("tee",NULL)),
     input_selector_ (gst_element_factory_make ("input-selector",NULL))
   {
+  }
+  
+  bool
+  Connector::set_bin (GstElement *bin)
+  {
+    
+    bin_ = bin;
+  
     GstElement *xvimagesink = gst_element_factory_make ("xvimagesink",NULL);
     GstElement *xvimagesink_queue = gst_element_factory_make ("queue",NULL);
     GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
     GstElement *fakesink_queue = gst_element_factory_make ("queue",NULL);
     GstElement *queue = gst_element_factory_make ("queue",NULL);
-
+        
     gst_bin_add_many (GST_BIN (bin_),
 		      input_selector_,
 		      queue,
@@ -47,22 +55,12 @@ namespace switcher
     //gst_element_link_many (tee_, fakesink_queue, fakesink, NULL);
     gst_element_link_many (tee_, xvimagesink_queue, xvimagesink, NULL);
     //g_object_set (G_OBJECT (xvimagesink),
-		  // "sync", 
-		  // FALSE, 
-		  // NULL);   
-  }
-  
-  GstElement *
-  Connector::get_bin ()
-  {
-    return bin_;
+    // "sync", 
+    // FALSE, 
+    // NULL);   
+    return true;
   }
 
-  std::string
-  Connector::get_name()
-  {
-    return name_;
-  }
 
   bool
   Connector::connect_to_sink (GstPad *srcpad)
@@ -71,25 +69,25 @@ namespace switcher
 						     srcpad,
 						     NULL); //const GstCaps *caps to use as a filter
     
-    GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sinkpad);
-    gst_element_add_pad (bin_, ghost_sinkpad);
+    return GstUtils::check_pad_link_return (gst_pad_link (srcpad, sinkpad));
 
-    return GstUtils::check_pad_link_return (gst_pad_link (srcpad, ghost_sinkpad));
+    // GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sinkpad);
+    // gst_element_add_pad (bin_, ghost_sinkpad);
+    //return GstUtils::check_pad_link_return (gst_pad_link (srcpad, ghost_sinkpad));
   }
 
-  //src_element must be in the segment sink
   bool
   Connector::connect_to_sink (GstElement *src_element)
   {
 
     g_print ("Connector::connect_to_sink\n");
-    g_print ("Connector::connect_to_sink - %s, %s\n", GST_ELEMENT_NAME (src_element), get_name().c_str());
+    g_print ("Connector::connect_to_sink - %s\n", GST_ELEMENT_NAME (src_element));
     GstPad *srcpad = gst_element_get_static_pad (src_element, "src");
     
     GstPad *sinkpad = gst_element_get_compatible_pad(input_selector_,
 						     srcpad,
 						     NULL); //const GstCaps *caps to use as a filter
-    
+ 
     
     if (! GST_IS_PAD (srcpad))
       {
@@ -102,26 +100,28 @@ namespace switcher
 	return false;
       }
     
-    GstPad *ghost_sinkpad = gst_ghost_pad_new (get_name().c_str(), sinkpad);
-    gst_element_add_pad (bin_, ghost_sinkpad);
-    gst_pad_set_active (ghost_sinkpad, TRUE);
+    // GstPad *ghost_sinkpad = gst_ghost_pad_new (get_name().c_str(), sinkpad);
+    // gst_element_add_pad (bin_, ghost_sinkpad);
+    // gst_pad_set_active (ghost_sinkpad, TRUE);
 
-    if (! GST_IS_PAD (ghost_sinkpad))
-      {
-	g_printerr ("Connector::connect_to_sink - sinkpad is not a pad, not linking") ;
-	return false;
-      }
+    // if (! GST_IS_PAD (ghost_sinkpad))
+    //   {
+    // 	g_printerr ("Connector::connect_to_sink - sinkpad is not a pad, not linking") ;
+    // 	return false;
+    //   }
 
-    bool res = GstUtils::check_pad_link_return (gst_pad_link (srcpad, ghost_sinkpad));
+    // bool res = GstUtils::check_pad_link_return (gst_pad_link (srcpad, ghost_sinkpad));
     
+    bool res = GstUtils::check_pad_link_return (gst_pad_link (srcpad, sinkpad));
+
     if (res)
       gst_object_unref (srcpad);
-
-    
+   
     return res;
   }
 
 
+  //unref after usage
   GstPad *
   Connector::get_src_pad ()
   {
@@ -133,12 +133,14 @@ namespace switcher
     gst_element_link (tee_, queue);
     
     GstPad *queue_srcpad = gst_element_get_static_pad (queue, "src");
-    GstPad *ghost_srcpad = gst_ghost_pad_new (NULL, queue_srcpad);
-    gst_pad_set_active(ghost_srcpad,TRUE);
-    gst_element_add_pad (bin_, ghost_srcpad); 
+    return queue_srcpad;
 
-    gst_object_unref (queue_srcpad);
-    return ghost_srcpad;
+    // GstPad *ghost_srcpad = gst_ghost_pad_new (NULL, queue_srcpad);
+    // gst_pad_set_active(ghost_srcpad,TRUE);
+    // gst_element_add_pad (bin_, ghost_srcpad); 
+
+    // gst_object_unref (queue_srcpad);
+    // return ghost_srcpad;
   }
   
 
@@ -166,7 +168,8 @@ namespace switcher
     
      GstPadLinkReturn linkret = gst_pad_link (srcpad, sinkpad);
      gst_object_unref (sinkpad);
-     
+     gst_object_unref (srcpad);
+
      return GstUtils::check_pad_link_return (linkret);
   }
 

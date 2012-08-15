@@ -30,22 +30,20 @@ namespace switcher
     deinterlace_ (gst_element_factory_make ("deinterlace",NULL)),
     colorspace_out_ (gst_element_factory_make ("ffmpegcolorspace",NULL))
   {
+
+    //creating a connector in order to allow connect with the raw video
     rawvideo_connector_.reset (new Connector ());
-    video_connector_.reset (new Connector ());
-    connectors_.insert ("rawvideo",rawvideo_connector_);
-    connectors_.insert ("video",video_connector_); 
+    connectors_.insert ("rawvideo_src",rawvideo_connector_);
+    rawvideo_connector_->set_bin (bin_);
 
     gst_bin_add_many (GST_BIN (bin_),
-		      rawvideo_connector_->get_bin (),
 		      colorspace_in_,
 		      textoverlay_,
 		      videoflip_,
 		      deinterlace_,
 		      alpha_,
 		      colorspace_out_,
-		      video_connector_->get_bin (),
 		      NULL);
-
     
     gst_element_link_many (colorspace_in_,
 			   textoverlay_,
@@ -53,17 +51,15 @@ namespace switcher
 			   deinterlace_,
 			   alpha_,
 			   colorspace_out_,
-			   //video_connector_->get_sink_element(),
 			   NULL);
     
-    video_connector_->connect_to_sink (colorspace_out_);
+    //link with the "src" connector from the base source  
+    default_connector_->connect_to_sink (colorspace_out_);
 
-    //properties
+    //registering selected properties
     register_property (G_OBJECT (videoflip_),"method","flip");
-    
     register_property (G_OBJECT (deinterlace_),"mode","deinterlace");//default "Auto detection"
     register_property (G_OBJECT (deinterlace_),"method","deinterlace");
-
     register_property (G_OBJECT (alpha_),"method","alpha");
     register_property (G_OBJECT (alpha_),"alpha","alpha");
     register_property (G_OBJECT (alpha_),"target-r","alpha");
@@ -74,8 +70,6 @@ namespace switcher
     register_property (G_OBJECT (alpha_),"black-sensitivity","alpha");
     register_property (G_OBJECT (alpha_),"white-sensitivity","alpha");
     register_property (G_OBJECT (alpha_),"prefer-passthrough","alpha");
-
-    //properties for textoverlay
     register_property (G_OBJECT (textoverlay_),"text","textoverlay");
     register_property (G_OBJECT (textoverlay_),"shaded-background","textoverlay");
     register_property (G_OBJECT (textoverlay_),"halignment","textoverlay");

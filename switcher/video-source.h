@@ -40,7 +40,7 @@ namespace switcher
 
     //internal connector between raw video and included filters
     Connector::ptr rawvideo_connector_;
-    Connector::ptr video_connector_;
+    //    Connector::ptr video_connector_;
     
     GstElement *colorspace_in_;
     GstElement *alpha_;

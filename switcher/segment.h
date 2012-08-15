@@ -45,17 +45,17 @@ namespace switcher
 
    bool connect (char *src_connector_name, Segment *segment);
 
-    //wrappers for calls from base entity manager
-    static void set_runtime_wrapped (gpointer runtime, gpointer context);
-    static gboolean connect_wrapped (gpointer connector_name, gpointer segment, gpointer user_data);
-
-
+   //wrappers for calls from base entity manager
+   static void set_runtime_wrapped (gpointer runtime, gpointer context);
+   static gboolean connect_wrapped (gpointer connector_name, gpointer segment, gpointer user_data);
+   
+   
   protected:
-    GstElement *bin_;
-    Runtime *runtime_;
-    StringMap<Connector::ptr> connectors_;
+   GstElement *bin_;
+   Runtime *runtime_;
+   StringMap<Connector::ptr> connectors_;
   };
-
+  
 }  // end of namespace
 
 #endif // ifndef

@@ -31,6 +31,11 @@ namespace switcher
   {
   public:
     typedef std::tr1::shared_ptr<BaseSource> ptr;
+    BaseSource ();
+    
+  protected:
+    Connector::ptr default_connector_;
+    
   };
 
 }  // end of namespace

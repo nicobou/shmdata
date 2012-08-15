@@ -34,17 +34,13 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<Connector> ptr;
     Connector ();
-    GstElement *get_bin ();
+    bool set_bin (GstElement *bin);
     bool connect_to_sink (GstPad *srcpad);
     bool connect_to_sink (GstElement *src_element);
     bool connect_to_src (GstElement *sink_element);
     GstPad * get_src_pad ();
-    std::string get_name ();
   protected:
-    //std::vector<GstPad *> ghost_src_pads_;
-    //std::vector<GstPad *> ghost_sink_pads_;
-    std::string name_;
-    GstElement *bin_;
+    GstElement *bin_; //the segment bin
     GstElement *tee_;
     GstElement *input_selector_;
   };

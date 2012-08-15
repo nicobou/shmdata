@@ -98,21 +98,24 @@ namespace switcher
       return FALSE;
   }
 
+
+  //this is from src to sink
   bool
   Segment::connect (char *connector_name, Segment *segment)
   {
     VideoSink *xv = static_cast<VideoSink*>(segment);
-    std::string name (connector_name);
     GstPad *sinkpad = gst_element_get_static_pad (xv->get_sink (), "sink");
 
-    //a real pad cannot be ghost pad twice, so creating identity for pad reification
-    GstElement *identity = gst_element_factory_make ("identity", NULL);
-    gst_bin_add (GST_BIN(bin_), identity);
-    gst_element_sync_state_with_parent (identity);
-    connectors_.lookup(name)->connect_to_src(identity);
-        
-    GstPad *identity_srcpad = gst_element_get_static_pad (identity, "src");
-    GstPad *ghost_srcpad = gst_ghost_pad_new (NULL, identity_srcpad);
+    std::string name (connector_name);
+    if (!connectors_.contains (name))
+      {
+	g_printerr ("Segment::connect, connector %s not found in %s\n",connector_name, get_name().c_str());
+	return false;
+      }
+
+    GstPad *this_srcpad = connectors_.lookup(name)->get_src_pad ();
+       
+    GstPad *ghost_srcpad = gst_ghost_pad_new (NULL, this_srcpad);
     gst_pad_set_active(ghost_srcpad,TRUE);
     gst_element_add_pad (bin_, ghost_srcpad); 
     

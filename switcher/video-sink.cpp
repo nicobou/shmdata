@@ -27,13 +27,8 @@ namespace switcher
   {
     raw_video_sink_ = sink;
     gst_bin_add (GST_BIN (bin_),raw_video_sink_);
+    
+    default_connector_->connect_to_src (raw_video_sink_);
   }
   
-  GstElement *
-  VideoSink::get_sink ()
-  {
-    return raw_video_sink_;
-  }
-
-
 }

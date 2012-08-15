@@ -21,5 +21,11 @@
 
 namespace switcher
 {
+  BaseSource::BaseSource()
+  {
+    default_connector_.reset (new Connector ());
+    connectors_.insert ("default_src",default_connector_); 
+    default_connector_->set_bin (bin_);
+  }
 
 }
