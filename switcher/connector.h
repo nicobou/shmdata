@@ -38,6 +38,8 @@ namespace switcher
     bool connect_to_sink (GstPad *srcpad);
     bool connect_to_sink (GstElement *src_element);
     bool connect_to_src (GstElement *sink_element);
+    GstPad * get_ghost_sink_pad_compatible_with (GstPad *srcpad);
+    GstPad * get_ghost_src_pad ();
     GstPad * get_src_pad ();
   protected:
     GstElement *bin_; //the segment bin
