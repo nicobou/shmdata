@@ -32,8 +32,6 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<BaseSink> ptr;
     BaseSink ();
-  protected:
-    Connector::ptr default_connector_;
   };
 
 }  // end of namespace

@@ -31,10 +31,6 @@ namespace switcher
     colorspace_out_ (gst_element_factory_make ("ffmpegcolorspace",NULL))
   {
 
-    //creating a connector in order to allow connect with the raw video
-    rawvideo_connector_.reset (new Connector ());
-    connectors_.insert ("rawvideo_src",rawvideo_connector_);
-    rawvideo_connector_->set_bin (bin_);
 
     gst_bin_add_many (GST_BIN (bin_),
 		      colorspace_in_,
@@ -53,8 +49,6 @@ namespace switcher
 			   colorspace_out_,
 			   NULL);
     
-    //link with the "src" connector from the base source  
-    default_connector_->connect_to_sink (colorspace_out_);
 
     //registering selected properties
     register_property (G_OBJECT (videoflip_),"method","flip");
@@ -95,25 +89,27 @@ namespace switcher
   void
   VideoSource::set_raw_video_element (GstElement *element)
   {
-    
     rawvideo_ = element;
     gst_bin_add (GST_BIN (bin_),rawvideo_);
-
-    rawvideo_connector_->connect_to_sink (rawvideo_);
-    rawvideo_connector_->connect_to_src (colorspace_in_);
     
-    // GstElement *xv = gst_element_factory_make ("xvimagesink",NULL);
-    // GstElement *xvqueue = gst_element_factory_make ("queue",NULL);
-    // g_object_set (G_OBJECT (xv), "sync", FALSE, NULL);
-    // gst_bin_add_many  (GST_BIN (bin_), xv, xvqueue,NULL);
-    // gst_element_link (xvqueue,xv);
-    // rawvideo_connector_->connect_to_src (xvqueue);
-
-    //GstElement *videotestsrc = gst_element_factory_make ("videotestsrc",NULL);
-    // g_object_set (G_OBJECT (videotestsrc), "pattern", 2, NULL);
-    // gst_bin_add (GST_BIN (bin_),videotestsrc);
-    // gst_element_link (videotestsrc, textoverlay_);
     
+    gst_element_link (rawvideo_,colorspace_in_);
+    //rawvideo_connector_->connect_to_src (colorspace_in_);
+
+    // //creating a connector in order to allow connect with the raw video
+    // ShmdataWriter::ptr rawvideo_connector;
+    // rawvideo_connector.reset (new ShmdataWriter ());
+    // std::string connector_name ("/tmp/switcher_pid_"+name_+"_rawvideo"); 
+    // rawvideo_connector->set_absolute_name (connector_name.c_str());
+    // rawvideo_connector->plug (bin_, rawvideo_);
+    // shmdata_writers_.insert (connector_name, rawvideo_connector);
+    
+    //link with the "src" connector from the base source  
+    std::string default_connector_name ("/tmp/switcher_pid_"+name_+"_default"); 
+    default_connector_->set_absolute_name (default_connector_name.c_str());
+    default_connector_->plug (bin_, colorspace_out_);
+    shmdata_writers_.insert (default_connector_name, default_connector_);
+   
   }
 
 }

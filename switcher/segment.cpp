@@ -79,14 +79,14 @@ namespace switcher
   std::vector<std::string> 
   Segment::get_src_connectors ()
   {
-    return connectors_.get_keys ();
+    return shmdata_writers_.get_keys ();
   }
   
-  Connector::ptr 
-  Segment::get_connector (std::string name)
-  {
-    return connectors_.lookup (name);
-  }
+  // Connector::ptr 
+  // Segment::get_connector (std::string name)
+  // {
+  //   return connectors_.lookup (name);
+  // }
   
   
   gboolean

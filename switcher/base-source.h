@@ -34,7 +34,7 @@ namespace switcher
     BaseSource ();
     
   protected:
-    Connector::ptr default_connector_;
+    ShmdataWriter::ptr default_connector_;
     
   };
 

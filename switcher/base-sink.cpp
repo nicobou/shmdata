@@ -23,8 +23,5 @@ namespace switcher
 {
   BaseSink::BaseSink ()
   {
-    default_connector_.reset (new Connector ());
-    connectors_.insert ("default_sink",default_connector_); 
-    default_connector_->set_bin (bin_);
   }
 }

@@ -41,6 +41,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
 libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
+    $(SHMDATA_LIBS) \
     -version-info $(LIBSWITCHER_SO_VERSION)
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_includedir = \

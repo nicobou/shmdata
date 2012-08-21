@@ -36,23 +36,43 @@ namespace switcher
   bool 
   ShmdataWriter::set_absolute_name (std::string name)
   {
-    //this might be entered by the user so not deleting it
-    if(shmdata_base_writer_set_path (writer_,name.c_str()) == SHMDATA_FILE_EXISTS)
-      {
-	g_printerr ("**** The file %s exists, therefore a shmdata cannot be operated with this path.\n", name.c_str());
-	return false;
+
+    GFile *shmfile = g_file_new_for_commandline_arg (name.c_str());
+    if( g_file_query_exists (shmfile, NULL))
+      {    
+	//thrash it
+	g_printerr ("ShmdataWriter::set_absolute_name warning: file %s exists and will be trashed.\n",name.c_str());
+	if (! g_file_trash (shmfile, NULL, NULL)) 
+	  {
+	    g_printerr("ShmdataWriter::set_absolute_name error: file %s is already existing and cannot be trashed.",name.c_str());
+	    return false;
+	  }
       }
-    else
-      {
-	name_ = name;
-	return true;
-      }
+    
+    //setting the writer
+    shmdata_base_writer_set_path (writer_,name.c_str());
+    name_ = name;
+    return true;
   }
   
   void 
-  ShmdataWriter::plug (GstElement *pipeline, GstElement *source_element)
+  ShmdataWriter::plug (GstElement *bin, GstElement *source_element)
   {
-    shmdata_base_writer_plug (writer_, pipeline, source_element);
+    g_print ("coucou\n");
+    GstElement *vts = gst_element_factory_make ("videotestsrc",NULL);
+    g_object_set (G_OBJECT (vts), "is-live",TRUE,NULL);
+    GstElement *tee = gst_element_factory_make ("tee",NULL);
+    GstElement *queue = gst_element_factory_make ("queue", NULL); 
+    GstElement *fakesink = gst_element_factory_make ("xvimagesink", NULL);
+    gst_bin_add_many (GST_BIN (bin), vts, tee, queue, fakesink, NULL);
+    gst_element_link_many (vts, tee, NULL);
+    gst_element_link_many (tee, queue, fakesink, NULL);
+    // gst_element_sync_state_with_parent (vts);
+    // gst_element_sync_state_with_parent (tee);
+    // gst_element_sync_state_with_parent (queue);
+    // gst_element_sync_state_with_parent (fakesink);
+    
+    shmdata_base_writer_plug (writer_, bin, tee);
   }
   
 }

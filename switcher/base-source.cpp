@@ -23,9 +23,8 @@ namespace switcher
 {
   BaseSource::BaseSource()
   {
-    default_connector_.reset (new Connector ());
-    connectors_.insert ("default_src",default_connector_); 
-    default_connector_->set_bin (bin_);
+    //will be updated when leak classes will have set "name_"
+    default_connector_.reset (new ShmdataWriter ());
   }
 
 }

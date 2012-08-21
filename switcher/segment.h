@@ -24,7 +24,9 @@
 #include "switcher/base-entity.h"
 #include "switcher/runtime.h"
 #include "switcher/string-map.h"
-#include "switcher/connector.h"
+//#include "switcher/connector.h"
+#include "switcher/shmdata-writer.h"
+#include "switcher/shmdata-reader.h"
 #include <memory>
 #include <vector>
 
@@ -43,7 +45,7 @@ namespace switcher
     //TODO register this function as char * get_connectors () returning json
     std::vector<std::string> get_src_connectors ();
 
-    Connector::ptr get_connector (std::string name);
+    //Connector::ptr get_connector (std::string name);
 
     bool connect (char *src_connector_name, Segment *segment);
 
@@ -55,7 +57,8 @@ namespace switcher
   protected:
     GstElement *bin_;
     Runtime *runtime_;
-    StringMap<Connector::ptr> connectors_;
+    StringMap<ShmdataWriter::ptr> shmdata_writers_;
+    StringMap<ShmdataReader::ptr> shmdata_reader_;
   };
   
 }  // end of namespace
