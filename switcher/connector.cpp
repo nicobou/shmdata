@@ -35,8 +35,8 @@ namespace switcher
     
     bin_ = bin;
   
-    //GstElement *xvimagesink = gst_element_factory_make ("xvimagesink",NULL);
-    //GstElement *xvimagesink_queue = gst_element_factory_make ("queue",NULL);
+    GstElement *xvimagesink = gst_element_factory_make ("xvimagesink",NULL);
+    GstElement *xvimagesink_queue = gst_element_factory_make ("queue",NULL);
     GstElement *fakesink = gst_element_factory_make ("fakesink", NULL);
     GstElement *fakesink_queue = gst_element_factory_make ("queue",NULL);
     GstElement *queue = gst_element_factory_make ("queue",NULL);

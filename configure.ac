@@ -85,6 +85,11 @@ if test "x${have_gsoap}" = "xfalse" ; then
     AC_MSG_ERROR([Missing gsoap package])
 fi
 
+PKG_CHECK_MODULES(SHMDATA, shmdata-0.6, have_shmdata=true, have_shmdata=false)
+if test "x${have_shmdata}" = "xfalse" ; then
+    AC_MSG_ERROR([Missing libshmdata-0.6-dev])
+fi
+
 
 dnl check if compiler understands -Wall (if yes, add -Wall to GST_CFLAGS)
 AC_MSG_CHECKING([to see if compiler understands -Wall])

@@ -1,11 +1,13 @@
 AM_CXXFLAGS = \
     $(GSOAP_CFLAGS) \
     $(GST_CFLAGS) \
+    $(SHMDATA_CFLAGS) \
     -I$(top_srcdir)/switcher/webservices 
 
 AM_LIBS = \
     $(GSOAP_LIBS) \
-    $(GST_LIBS) 
+    $(GST_LIBS) \
+    $(SHMDATA_LIBS)
 
 lib_LTLIBRARIES = \
     libswitcher-@LIBSWITCHER_API_VERSION@.la
@@ -26,6 +28,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     property.cpp \
     runtime.cpp \
     segment.cpp \
+    shmdata-reader.cpp \
+    shmdata-writer.cpp \
     video-sink.cpp \
     video-source.cpp \
     video-test-source.cpp \
@@ -64,6 +68,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     property.h \
     runtime.h \
     segment.h \
+    shmdata-reader.h \
+    shmdata-writer.h \
     string-map.h \
     string-map_spec.h \
     video-sink.h \
