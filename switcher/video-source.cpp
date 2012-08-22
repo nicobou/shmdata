@@ -24,6 +24,7 @@ namespace switcher
 {
   VideoSource::VideoSource () :
     colorspace_in_ (gst_element_factory_make ("ffmpegcolorspace",NULL)),
+    //FIXME in order to add back alpha here, we must be sure reader will use ffmpegcolorspace. Maybe alpha belong elsewhere, with a videomixer for instance
     //    alpha_ (gst_element_factory_make ("alpha",NULL)),
     textoverlay_ (gst_element_factory_make ("textoverlay",NULL)),
     videoflip_ (gst_element_factory_make ("videoflip",NULL)),
@@ -90,51 +91,32 @@ namespace switcher
   VideoSource::set_raw_video_element (GstElement *element)
   {
     rawvideo_ = element;
-    gst_bin_add (GST_BIN (bin_), rawvideo_);
     
-    //creating element for plugin with shmdata
-    GstElement *videotee = gst_element_factory_make ("tee", NULL);
-    GstElement *videoqueue = gst_element_factory_make ("queue", NULL); 
-    GstElement *videosink = gst_element_factory_make ("fakesink", NULL); //("xvimagesink", NULL);
-    g_object_set (G_OBJECT(videosink),"sync",FALSE,NULL);
-    GstCaps *videocaps;
-    videocaps = gst_caps_new_simple ("video/x-raw-yuv",
-				     // "format", GST_TYPE_FOURCC,
-				     // GST_MAKE_FOURCC ('A', 'Y', 'U', 'V'),
-				     //"format", GST_TYPE_FOURCC,
-				     //  GST_MAKE_FOURCC ('I', '4', '2', '0'),
-				     // "framerate", GST_TYPE_FRACTION, 30, 1,
-				     // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1, 
-				     //  "width", G_TYPE_INT, 640, 
-				     //  "height", G_TYPE_INT, 480,
-				     NULL);
+    GstCaps *videocaps = gst_caps_new_simple ("video/x-raw-yuv",
+					      // "format", GST_TYPE_FOURCC,
+					      // GST_MAKE_FOURCC ('A', 'Y', 'U', 'V'),
+					      //"format", GST_TYPE_FOURCC,
+					      //  GST_MAKE_FOURCC ('I', '4', '2', '0'),
+					      // "framerate", GST_TYPE_FRACTION, 30, 1,
+					      // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1, 
+					      //  "width", G_TYPE_INT, 640, 
+					      //  "height", G_TYPE_INT, 480,
+					      NULL);
 
-    gst_bin_add_many (GST_BIN (bin_), videotee, videoqueue, videosink, NULL);
+
+    //FIXME create a connector in order to allow connect with the raw video
+    gst_bin_add (GST_BIN (bin_), rawvideo_);
+    gst_element_link (rawvideo_, colorspace_in_);
     
-    
-    //gst_element_link (colorspace_out_, xvimagesink);
-    
-    // //creating a connector in order to allow connect with the raw video
+    //creating a connector in order to allow connect with the transformed video
     ShmdataWriter::ptr rawvideo_connector;
     rawvideo_connector.reset (new ShmdataWriter ());
     std::string connector_name ("/tmp/switcher_pid_"+name_+"_rawvideo"); 
     rawvideo_connector->set_absolute_name (connector_name.c_str());
-    rawvideo_connector->plug (bin_, videotee);
+    rawvideo_connector->plug (bin_, colorspace_out_, videocaps);
     shmdata_writers_.insert (connector_name, rawvideo_connector);
 
-    gst_element_link (rawvideo_, colorspace_in_);
-    gst_element_link_filtered (colorspace_out_,
-			       videotee, videocaps);
-    gst_element_link_many (videotee, videoqueue, videosink,NULL);
-    
-
-    
-    //link with the "src" connector from the base source  
-    // std::string default_connector_name ("/tmp/switcher_pid_"+name_+"_default"); 
-    // default_connector_->set_absolute_name (default_connector_name.c_str());
-    // default_connector_->plug (bin_, colorspace_out_);
-    // shmdata_writers_.insert (default_connector_name, default_connector_);
-   
+    //gst_object_unref (videocaps);
   }
 
 }

@@ -23,5 +23,6 @@ namespace switcher
 {
   BaseSink::BaseSink ()
   {
+    
   }
 }

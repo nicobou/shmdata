@@ -43,6 +43,7 @@ namespace switcher
     GstElement *get_bin ();
 
     //TODO register this function as char * get_connectors () returning json
+    //TODO should be in base-source
     std::vector<std::string> get_src_connectors ();
 
     //Connector::ptr get_connector (std::string name);

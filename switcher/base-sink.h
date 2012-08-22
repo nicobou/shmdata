@@ -32,6 +32,8 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<BaseSink> ptr;
     BaseSink ();
+
+    
   };
 
 }  // end of namespace

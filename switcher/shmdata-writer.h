@@ -35,11 +35,14 @@ namespace switcher
     ShmdataWriter();
     bool set_name (std::string name); //path will be /tmp/switcher_<pid>
     bool set_absolute_name (std::string name); //path will be fully specified
-    void plug (GstElement *bin, GstElement *source_element);
+    void plug (GstElement *bin, GstElement *source_element,GstCaps *caps);//caps does not need to be fully specified
 
   private:
     std::string name_;
     shmdata_base_writer_t *writer_;
+    GstElement *tee_;
+    GstElement *queue_;
+    GstElement *fakesink_;
   };
   
 }  // end of namespace
