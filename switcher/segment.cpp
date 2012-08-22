@@ -32,12 +32,6 @@ namespace switcher
     set_runtime_arg_types.push_back (G_TYPE_POINTER);
     register_method("set_runtime",(void *)&Segment::set_runtime_wrapped, set_runtime_arg_types,(gpointer)this);
     
-    //registering connect
-    std::vector<GType> connect_arg_types;
-    connect_arg_types.push_back (G_TYPE_STRING);
-    connect_arg_types.push_back (G_TYPE_POINTER);
-    register_method("connect",(void *)&Segment::connect_wrapped, connect_arg_types,(gpointer)this);
-
   }
   
   void 
@@ -82,35 +76,4 @@ namespace switcher
     return shmdata_writers_.get_keys ();
   }
   
-  // Connector::ptr 
-  // Segment::get_connector (std::string name)
-  // {
-  //   return connectors_.lookup (name);
-  // }
-  
-  
-  gboolean
-  Segment::connect_wrapped (gpointer connector_name, gpointer segment, gpointer user_data)
-  {
-    //std::string connector = static_cast<std::string>(connector_name);
-    Segment *seg = static_cast<Segment*>(segment);
-    Segment *context = static_cast<Segment*>(user_data);
-    
-    if (context->connect ((char *)connector_name,seg))
-      return TRUE;
-    else
-      return FALSE;
-  }
-
-
-  //this is from src to sink
-  bool
-  Segment::connect (char *connector_name, Segment *seg)
-  {
-    
-    return false;
-  }
-
-  
-
 }

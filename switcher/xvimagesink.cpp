@@ -25,13 +25,14 @@ namespace switcher
   Xvimagesink::Xvimagesink ()
   {
     xvimagesink_ = gst_element_factory_make ("xvimagesink",NULL);
-    
+   
     //set the name before registering properties
     name_ = gst_element_get_name (xvimagesink_);
     
     //registering "sync"
     register_property (G_OBJECT (xvimagesink_),"sync","xvimagesink");
     
+    //FIXME should give a bin 
     set_sink_element (xvimagesink_);
   }
   

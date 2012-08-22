@@ -22,11 +22,5 @@
 namespace switcher
 {
 
-  void
-  VideoSink::set_sink_element (GstElement *sink)
-  {
-    raw_video_sink_ = sink;
-    gst_bin_add (GST_BIN (bin_),raw_video_sink_);
-  }
   
 }

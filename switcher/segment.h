@@ -24,9 +24,8 @@
 #include "switcher/base-entity.h"
 #include "switcher/runtime.h"
 #include "switcher/string-map.h"
-//#include "switcher/connector.h"
 #include "switcher/shmdata-writer.h"
-#include "switcher/shmdata-reader.h"
+//#include "switcher/shmdata-reader.h"
 #include <memory>
 #include <vector>
 
@@ -48,18 +47,17 @@ namespace switcher
 
     //Connector::ptr get_connector (std::string name);
 
-    bool connect (char *src_connector_name, Segment *segment);
+    //bool connect (char *src_connector_name, Segment *segment);
 
     //wrappers for calls from base entity manager
     static void set_runtime_wrapped (gpointer runtime, gpointer context);
-    static gboolean connect_wrapped (gpointer connector_name, gpointer segment, gpointer user_data);
+    //static gboolean connect_wrapped (gpointer connector_name, gpointer segment, gpointer user_data);
    
     
   protected:
     GstElement *bin_;
     Runtime *runtime_;
     StringMap<ShmdataWriter::ptr> shmdata_writers_;
-    StringMap<ShmdataReader::ptr> shmdata_reader_;
   };
   
 }  // end of namespace

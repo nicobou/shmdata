@@ -23,6 +23,39 @@ namespace switcher
 {
   BaseSink::BaseSink ()
   {
+
+    reader_.reset (new ShmdataReader ());
     
+    //registering connect
+    std::vector<GType> connect_arg_types;
+    connect_arg_types.push_back (G_TYPE_STRING);
+    register_method("connect",(void *)&BaseSink::connect_wrapped, connect_arg_types,(gpointer)this);
   }
+
+   gboolean
+   BaseSink::connect_wrapped (gpointer connector_name, gpointer user_data)
+  {
+    //std::string connector = static_cast<std::string>(connector_name);
+    BaseSink *context = static_cast<BaseSink*>(user_data);
+    
+    if (context->connect ((char *)connector_name))
+      return TRUE;
+    else
+      return FALSE;
+  }
+
+  bool
+  BaseSink::connect (std::string shmdata_socket_path)
+  {
+    gst_bin_add (GST_BIN (bin_), sink_element_);
+    reader_->plug (shmdata_socket_path.c_str(),bin_,sink_element_);
+    return false;
+  }
+
+  void
+  BaseSink::set_sink_element (GstElement *sink)
+  {
+    sink_element_ = sink;
+  }
+
 }

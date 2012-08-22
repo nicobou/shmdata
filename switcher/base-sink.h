@@ -22,6 +22,7 @@
 #define __SWITCHER_BASE_SINK_H__
 
 #include "switcher/segment.h"
+#include "switcher/shmdata-reader.h"
 #include <memory>
 
 namespace switcher
@@ -32,6 +33,17 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<BaseSink> ptr;
     BaseSink ();
+
+    bool connect (std::string shmdata_socket_path);
+    //wrapper for being called
+    static gboolean connect_wrapped (gpointer shmdata_socket_path, gpointer user_data);
+    
+  private:
+    GstElement *sink_element_;
+    ShmdataReader::ptr reader_;
+
+  protected:
+    void set_sink_element (GstElement *sink);
 
     
   };

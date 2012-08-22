@@ -34,7 +34,7 @@ namespace switcher
     BaseSource ();
     
   protected:
-    ShmdataWriter::ptr default_connector_;
+    ShmdataWriter::ptr default_connector_;//FIXME rename into default_writer_
     
   };
 
