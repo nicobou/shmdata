@@ -24,7 +24,8 @@ namespace switcher
 
   ShmdataWriter::ShmdataWriter() :
     writer_ (shmdata_base_writer_init ())
-  {}
+  {    g_print ("ShmdataWriter\n");
+}
   
   bool 
   ShmdataWriter::set_name (std::string name)
@@ -36,7 +37,7 @@ namespace switcher
   bool 
   ShmdataWriter::set_absolute_name (std::string name)
   {
-
+    g_print ("ShmdataWriter::set_absolute_name \n");
     GFile *shmfile = g_file_new_for_commandline_arg (name.c_str());
     if( g_file_query_exists (shmfile, NULL))
       {    
@@ -59,20 +60,20 @@ namespace switcher
   ShmdataWriter::plug (GstElement *bin, GstElement *source_element)
   {
     g_print ("coucou\n");
-    GstElement *vts = gst_element_factory_make ("videotestsrc",NULL);
-    g_object_set (G_OBJECT (vts), "is-live",TRUE,NULL);
-    GstElement *tee = gst_element_factory_make ("tee",NULL);
-    GstElement *queue = gst_element_factory_make ("queue", NULL); 
-    GstElement *fakesink = gst_element_factory_make ("xvimagesink", NULL);
-    gst_bin_add_many (GST_BIN (bin), vts, tee, queue, fakesink, NULL);
-    gst_element_link_many (vts, tee, NULL);
-    gst_element_link_many (tee, queue, fakesink, NULL);
+    // GstElement *vts = gst_element_factory_make ("videotestsrc",NULL);
+    // g_object_set (G_OBJECT (vts), "is-live",TRUE,NULL);
+    // GstElement *tee = gst_element_factory_make ("tee",NULL);
+    // GstElement *queue = gst_element_factory_make ("queue", NULL); 
+    // GstElement *fakesink = gst_element_factory_make ("xvimagesink", NULL);
+    // gst_bin_add_many (GST_BIN (bin), vts, tee, queue, fakesink, NULL);
+    // gst_element_link_many (vts, tee, NULL);
+    // gst_element_link_many (tee, queue, fakesink, NULL);
     // gst_element_sync_state_with_parent (vts);
     // gst_element_sync_state_with_parent (tee);
     // gst_element_sync_state_with_parent (queue);
     // gst_element_sync_state_with_parent (fakesink);
     
-    shmdata_base_writer_plug (writer_, bin, tee);
+    shmdata_base_writer_plug (writer_, bin, source_element);
   }
   
 }

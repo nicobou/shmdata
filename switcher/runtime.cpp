@@ -26,8 +26,8 @@
 namespace switcher
 {
 
-  Runtime::Runtime (){
-
+  Runtime::Runtime ()
+  {
     gst_init (NULL,NULL);
     mainloop_ = g_main_loop_new (NULL, FALSE);
         
@@ -38,6 +38,8 @@ namespace switcher
     gst_object_unref (bus_); 
 
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
+
+
   }
 
   Runtime::~Runtime ()

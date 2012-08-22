@@ -28,7 +28,6 @@
 #include "switcher/base-entity.h"
 #include <memory>
 
-
 namespace switcher
 {
   
@@ -47,6 +46,7 @@ namespace switcher
       static gboolean bus_called (GstBus *bus,
 				  GstMessage *msg,
 				  gpointer data); 
+
     };
 
   

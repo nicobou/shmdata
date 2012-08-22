@@ -12,11 +12,13 @@ switcher_SOURCES = \
 switcher_CXXFLAGS = \
     $(GSOAP_CFLAGS) \
     $(GST_CFLAGS) \
+    $(SHMDATA_CFLAGS) \
     -I$(top_srcdir) 
 
 switcher_LDFLAGS = \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
+    $(SHMDATA_LIBS) \
     $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
 
 ############# control ##########################
