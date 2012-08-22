@@ -50,6 +50,31 @@ shmdata_base_reader_clean_source (gpointer user_data)
   return FALSE;
 }
 
+gboolean
+test_probe (GstPad * pad,
+	    GstMiniObject * mini_obj, gpointer user_data)
+{
+  //shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
+  if (GST_IS_EVENT (mini_obj))
+    {
+      /* GstEvent *event = GST_EVENT_CAST (mini_obj); */
+      /* g_print ("hey %s\n",GST_EVENT_TYPE_NAME(event)); */
+    }
+  else if (GST_IS_BUFFER (mini_obj))
+    {
+    }
+  else if (GST_IS_MESSAGE (mini_obj))
+    {
+      GstMessage *message = GST_MESSAGE_CAST (mini_obj);
+      g_print ("message \n");
+      if (GST_MESSAGE_TYPE (message) == GST_MESSAGE_ERROR )
+	g_print ("erreur !! hehe \n");
+    }
+
+  
+  return TRUE;
+}
+
 void
 shmdata_base_reader_attach (shmdata_base_reader_t * reader)
 {
@@ -78,6 +103,14 @@ shmdata_base_reader_attach (shmdata_base_reader_t * reader)
 
   gst_element_set_state (reader->deserializer_, GST_STATE_PLAYING);
   gst_element_set_state (reader->source_, GST_STATE_PLAYING);
+
+  //trying to get error messages
+  GstPad *source_pad = gst_element_get_pad (reader->source_, "src");
+  gst_pad_add_data_probe (source_pad,
+			  G_CALLBACK (test_probe),
+			  reader);
+  gst_object_unref (source_pad);
+
 
   //the following is blocking:
   /* GstState current;    */
@@ -198,9 +231,9 @@ shmdata_base_reader_init (const char *socketName,
   reader->socketName_ = socketName;
   reader->pipeline_ = pipeline;
 
-  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (reader->pipeline_));
-  gst_bus_set_sync_handler (bus, shmdata_base_reader_message_handler, reader);
-  gst_object_unref (bus);
+   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (reader->pipeline_)); 
+   gst_bus_set_sync_handler (bus, shmdata_base_reader_message_handler, reader); 
+   gst_object_unref (bus); 
 
   //monitoring the shared memory file
   reader->shmfile_ = g_file_new_for_commandline_arg (reader->socketName_);
