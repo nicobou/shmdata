@@ -39,6 +39,7 @@ namespace switcher
   private:
     std::string name_;
     shmdata_base_reader_t *reader_;
+    GstElement *bin_;
     GstElement *sink_element_;
     static void on_first_data (shmdata_base_reader_t * context, void *user_data);
   };

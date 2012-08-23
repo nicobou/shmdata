@@ -26,7 +26,7 @@ namespace switcher
   Segment::Segment()
   {
     bin_ = gst_element_factory_make ("bin", NULL);
-
+    //g_object_set (G_OBJECT (bin_), "message-forward",TRUE, NULL);
     //registering set_runtime
     std::vector<GType> set_runtime_arg_types;
     set_runtime_arg_types.push_back (G_TYPE_POINTER);

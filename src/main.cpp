@@ -38,6 +38,10 @@ main (int argc,
 {
      (void) signal (SIGINT, leave);
 
+     //this should be into runtime
+     gst_init (NULL,NULL);
+     GMainLoop *loop = g_main_loop_new (NULL, FALSE);  
+
 
      using namespace switcher;
 
@@ -62,21 +66,19 @@ main (int argc,
      serv->start ();
 
 
-    //create a videotest
-    std::string videotest = manager.create ("videotestsource");
+    // //create a videotest
+    // std::string videotest = manager.create ("videotestsource");
 
-    //attaching videotestsrc to the runtime
-    std::vector<std::string> ent_name;
-    ent_name.push_back (runtime);
-    manager.invoke_method ("videotestsrc0","set_runtime",ent_name);
+    // //attaching videotestsrc to the runtime
+    // std::vector<std::string> ent_name;
+    // ent_name.push_back (runtime);
+    // manager.invoke_method ("videotestsrc0","set_runtime",ent_name);
 
 
-    //wait for something to hapen
-    while (1)
-      {
-	sleep (1);
-      }
-    
+     /* Iterate */
+     g_print ("Running...\n");
+     g_main_loop_run (loop);
+     
 
   return 0;
 }

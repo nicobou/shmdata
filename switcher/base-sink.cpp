@@ -37,7 +37,7 @@ namespace switcher
   {
     //std::string connector = static_cast<std::string>(connector_name);
     BaseSink *context = static_cast<BaseSink*>(user_data);
-    
+       
     if (context->connect ((char *)connector_name))
       return TRUE;
     else
@@ -47,9 +47,8 @@ namespace switcher
   bool
   BaseSink::connect (std::string shmdata_socket_path)
   {
-    gst_bin_add (GST_BIN (bin_), sink_element_);
     reader_->plug (shmdata_socket_path.c_str(),bin_,sink_element_);
-    return false;
+    return true;
   }
 
   void

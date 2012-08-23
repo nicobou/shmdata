@@ -127,7 +127,7 @@
    bool
    BaseEntityManager::remove (std::string entity_name)
    {
-     return life_manager_->create (entity_name);
+     return life_manager_->remove (entity_name);
    }
 
        std::vector<std::string> 

@@ -22,10 +22,14 @@
 namespace switcher
 {
   ShmdataReader::ShmdataReader()
-  {}
+  {
+      g_print ("ShmdataReader::ShmdataReader\n");
+
+  }
 
   ShmdataReader::~ShmdataReader()
   {
+      g_print ("ShmdataReader::~ShmdataReader\n");
     if (reader_ != NULL)
       shmdata_base_reader_close (reader_);
   }
@@ -33,19 +37,30 @@ namespace switcher
   void 
   ShmdataReader::plug (const char *absolute_path, GstElement *bin, GstElement *sink_element)
   {
-    sink_element_ = sink_element;
-    reader_ = shmdata_base_reader_init (absolute_path, 
-					bin, 
-					ShmdataReader::on_first_data,
-					this);
+      g_print ("ShmdataReader::plug\n");
+
+      bin_ = bin;
+      sink_element_ = sink_element;
+      reader_ = shmdata_base_reader_init (absolute_path, 
+					  bin, 
+					  ShmdataReader::on_first_data,
+					  this);
   }
   
 
   void 
-  ShmdataReader::on_first_data (shmdata_base_reader_t * context, void *user_data)
+  ShmdataReader::on_first_data (shmdata_base_reader_t *context, void *user_data)
   {
-    ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
-    shmdata_base_reader_set_sink (context, reader->sink_element_);
+
+      g_print ("------------------- ON FIRST DATA \n");
+      ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
+      if (!GST_IS_ELEMENT (GST_ELEMENT_PARENT (reader->sink_element_)))
+	  {
+	      gst_bin_add (GST_BIN (reader->bin_), reader->sink_element_);
+	      gst_element_sync_state_with_parent (reader->bin_);
+ 	  }
+      shmdata_base_reader_set_sink (context, reader->sink_element_);
+      
   }
 
 }

@@ -42,7 +42,7 @@ namespace switcher
     private:
       GstElement *pipeline_;
       GstBus *bus_;
-      GMainLoop *mainloop_;
+      //GMainLoop *mainloop_;
       static gboolean bus_called (GstBus *bus,
 				  GstMessage *msg,
 				  gpointer data); 
