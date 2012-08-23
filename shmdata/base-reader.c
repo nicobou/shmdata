@@ -50,30 +50,6 @@ shmdata_base_reader_clean_source (gpointer user_data)
   return FALSE;
 }
 
-gboolean
-test_probe (GstPad * pad,
-	    GstMiniObject * mini_obj, gpointer user_data)
-{
-  //shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
-  if (GST_IS_EVENT (mini_obj))
-    {
-      /* GstEvent *event = GST_EVENT_CAST (mini_obj); */
-      /* g_print ("hey %s\n",GST_EVENT_TYPE_NAME(event)); */
-    }
-  else if (GST_IS_BUFFER (mini_obj))
-    {
-    }
-  else if (GST_IS_MESSAGE (mini_obj))
-    {
-      GstMessage *message = GST_MESSAGE_CAST (mini_obj);
-      g_print ("message \n");
-      if (GST_MESSAGE_TYPE (message) == GST_MESSAGE_ERROR )
-	g_print ("erreur !! hehe \n");
-    }
-
-  
-  return TRUE;
-}
 
 void
 shmdata_base_reader_attach (shmdata_base_reader_t * reader)
@@ -81,9 +57,13 @@ shmdata_base_reader_attach (shmdata_base_reader_t * reader)
   reader->source_ = gst_element_factory_make ("shmsrc", NULL);
   reader->deserializer_ = gst_element_factory_make ("gdpdepay", NULL);
   if (!reader->source_)
-    g_critical ("shmsrc element could not be created. Exiting.\n");
+    g_critical ("shmsrc element could not be created. \n");
   if (!reader->deserializer_)
-    g_critical ("gdpdepay element could not be created. Exiting.\n");
+    g_critical ("gdpdepay element could not be created. \n");
+
+  g_object_set_data (G_OBJECT (reader->source_), 
+		     "shmdata_base_reader",
+		     (gpointer)reader);
 
   g_object_set (G_OBJECT (reader->source_), "socket-path",
 		reader->socketName_, NULL);
@@ -101,26 +81,10 @@ shmdata_base_reader_attach (shmdata_base_reader_t * reader)
   gst_element_link (reader->source_, reader->deserializer_);
   gst_pad_link (reader->deserialPad_, reader->sinkPad_);
 
+  //FIXME sync state with parent
   gst_element_set_state (reader->deserializer_, GST_STATE_PLAYING);
   gst_element_set_state (reader->source_, GST_STATE_PLAYING);
 
-  //trying to get error messages
-  GstPad *source_pad = gst_element_get_pad (reader->source_, "src");
-  gst_pad_add_data_probe (source_pad,
-			  G_CALLBACK (test_probe),
-			  reader);
-  gst_object_unref (source_pad);
-
-
-  //the following is blocking:
-  /* GstState current;    */
-  /* gst_element_get_state (reader->pipeline_,&current,NULL,GST_CLOCK_TIME_NONE);    */
-
-  /* if(current != GST_STATE_NULL)    */
-  /* {    */
-  /*          gst_element_set_state (reader->deserializer_, current);    */
-  /*          gst_element_set_state (reader->source_, current);    */
-  /* }    */
 }
 
 void
@@ -185,9 +149,8 @@ shmdata_base_reader_detach (shmdata_base_reader_t * reader)
     }
 }
 
-GstBusSyncReply
-shmdata_base_reader_message_handler (GstBus * bus,
-				     GstMessage * msg, gpointer user_data)
+gboolean
+shmdata_base_reader_process_error (shmdata_base_reader_t * reader, GstMessage *msg)
 {
   switch (GST_MESSAGE_TYPE (msg))
     {
@@ -195,17 +158,16 @@ shmdata_base_reader_message_handler (GstBus * bus,
       {
 	gchar *debug;
 	GError *error;
-	shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
 	gst_message_parse_error (msg, &error, &debug);
 	g_free (debug);
 	if (g_strcmp0
-	    (GST_ELEMENT_NAME (context->source_),
+	    (GST_ELEMENT_NAME (reader->source_),
 	     GST_OBJECT_NAME (msg->src)) == 0)
 	  {
 	    if (error->code == GST_RESOURCE_ERROR_READ)
-	      shmdata_base_reader_detach (context);
+	      shmdata_base_reader_detach (reader);
 	    g_error_free (error);
-	    return GST_BUS_DROP;
+	    return TRUE;
 	  }
 	g_error_free (error);
 	break;
@@ -213,12 +175,55 @@ shmdata_base_reader_message_handler (GstBus * bus,
     default:
       break;
     }
-  return GST_BUS_PASS;
+  return FALSE;
+}
+
+GstBusSyncReply
+shmdata_base_reader_message_handler (GstBus * bus,
+				     GstMessage * msg, gpointer user_data)
+{
+    
+    //shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
+
+    /* if ( shmdata_base_reader_process_error (context, msg)) */
+    /* 	return GST_BUS_DROP; */
+    /* else */
+    /* 	return GST_BUS_PASS; */
+
+   switch (GST_MESSAGE_TYPE (msg)) 
+     { 
+     case GST_MESSAGE_ERROR: 
+       { 
+   	gchar *debug; 
+   	GError *error; 
+	
+   	gst_message_parse_error (msg, &error, &debug); 
+   	g_free (debug); 
+
+	shmdata_base_reader_t *reader = (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), "shmdata_base_reader");
+	if ( reader != NULL)
+	    {
+		/* if (g_strcmp0  */
+		/*     (GST_ELEMENT_NAME (context->source_),  */
+		/*      GST_OBJECT_NAME (msg->src)) == 0)  */
+		/*   {  */
+		if (error->code == GST_RESOURCE_ERROR_READ) 
+		    shmdata_base_reader_detach (reader); 
+		g_error_free (error); 
+		return GST_BUS_DROP; 
+	    } 
+   	g_error_free (error); 
+   	break; 
+       } 
+     default: 
+       break; 
+     } 
+   return GST_BUS_PASS; 
 }
 
 shmdata_base_reader_t *
 shmdata_base_reader_init (const char *socketName,
-			  GstElement * pipeline,
+			  GstElement *pipeline,
 			  void (*on_first_data) (shmdata_base_reader_t *,
 						 void *), void *user_data)
 {
@@ -228,17 +233,29 @@ shmdata_base_reader_init (const char *socketName,
   reader->initialized_ = FALSE;
   reader->on_first_data_ = on_first_data;
   reader->on_first_data_userData_ = user_data;
-  reader->socketName_ = socketName;
+  reader->socketName_ = g_strdup (socketName);
   reader->pipeline_ = pipeline;
 
-   GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (reader->pipeline_)); 
-   gst_bus_set_sync_handler (bus, shmdata_base_reader_message_handler, reader); 
-   gst_object_unref (bus); 
+  //looking for the bus, searching the top level
+  GstElement *pipe = reader->pipeline_;
+  
+  while (pipe != NULL && !GST_IS_PIPELINE (pipe))
+      pipe = GST_ELEMENT_PARENT (pipe);
 
+  if( GST_IS_PIPELINE (pipe))
+      {
+	  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipe));  
+	  
+	  gst_bus_set_sync_handler (bus, shmdata_base_reader_message_handler, NULL);  
+	  gst_object_unref (bus);  
+      }
+  /* else */
+  /*     g_debug ("not watching the bus. Application should handle error messages (GST_RESOURCE_ERROR_READ from shmsrc) and call shmdata_base_reader_process_error.\n"); */
+  
   //monitoring the shared memory file
   reader->shmfile_ = g_file_new_for_commandline_arg (reader->socketName_);
   g_debug ("monitoring %s", g_file_get_uri (reader->shmfile_));
-
+  
   if (g_file_query_exists (reader->shmfile_, NULL))
     {
       reader->initialized_ = TRUE;

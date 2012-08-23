@@ -14,7 +14,7 @@
 
 /** \addtogroup libshmdata
  * provides hot plugging between GStreamer pipelines via a shared memory.
- * compile with `pkg-config --cflags --libs shmdata-0.4`
+ * compile with `pkg-config --cflags --libs shmdata-0.6`
  *  @{
  */
 
@@ -56,16 +56,16 @@ extern "C"
    * Initialization function that starts monitoring the socket path.
    * 
    * @param socketPath is the file name of the shared memory
-   * @param Pipeline is the pipeline where the base writer will be added
+   * @param bin is the bin where the base writer will be added. This bin should already be added to a pipeline. 
    * @param on_first_data is the function pointer that will be called when 
-   * the connecting with the writer.
+   * the connecting with the writer. Your sink elements may need to be added to the bin and state synchronized in this function.   
    * @param user_data is the user data pointer for the on_first_video_data
    * callback
    * 
    * @return a base reader
    */
   shmdata_base_reader_t *shmdata_base_reader_init (const char *socketPath,
-						   GstElement * Pipeline,
+						   GstElement *bin,
 						   shmdata_base_reader_on_first_data cb,
 						   void *user_data);
 
@@ -80,8 +80,17 @@ extern "C"
    *
    */
 
+
   void shmdata_base_reader_set_sink (shmdata_base_reader_t * reader,
 				     GstElement * sink);
+
+
+  /**
+   * FIXME document that
+   */ 
+
+  gboolean shmdata_base_reader_process_error (shmdata_base_reader_t * reader, GstMessage *msg);
+
 
   /** 
    * Close the reader (freeing memory and removing internal GStreamer elements 
