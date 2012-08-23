@@ -23,13 +23,13 @@ namespace switcher
 {
   ShmdataReader::ShmdataReader()
   {
-      g_print ("ShmdataReader::ShmdataReader\n");
+      //g_print ("ShmdataReader::ShmdataReader\n");
 
   }
 
   ShmdataReader::~ShmdataReader()
   {
-      g_print ("ShmdataReader::~ShmdataReader\n");
+      //g_print ("ShmdataReader::~ShmdataReader\n");
     if (reader_ != NULL)
       shmdata_base_reader_close (reader_);
   }
@@ -37,7 +37,7 @@ namespace switcher
   void 
   ShmdataReader::plug (const char *absolute_path, GstElement *bin, GstElement *sink_element)
   {
-      g_print ("ShmdataReader::plug\n");
+      //g_print ("ShmdataReader::plug\n");
 
       bin_ = bin;
       sink_element_ = sink_element;
@@ -52,7 +52,7 @@ namespace switcher
   ShmdataReader::on_first_data (shmdata_base_reader_t *context, void *user_data)
   {
 
-      g_print ("------------------- ON FIRST DATA \n");
+      //g_print ("------------------- ON FIRST DATA \n");
       ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
       if (!GST_IS_ELEMENT (GST_ELEMENT_PARENT (reader->sink_element_)))
 	  {
