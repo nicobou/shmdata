@@ -23,6 +23,7 @@
 namespace switcher
 {
   VideoSource::VideoSource () :
+    video_tee_ (gst_element_factory_make ("tee",NULL)),
     colorspace_in_ (gst_element_factory_make ("ffmpegcolorspace",NULL)),
     //FIXME in order to add back alpha here, we must be sure reader will use ffmpegcolorspace. Maybe alpha belong elsewhere, with a videomixer for instance
     //    alpha_ (gst_element_factory_make ("alpha",NULL)),
@@ -34,7 +35,8 @@ namespace switcher
 
 
     gst_bin_add_many (GST_BIN (bin_),
-     		      colorspace_in_,
+     		      video_tee_,
+		      colorspace_in_,
      		      textoverlay_,
      		      videoflip_,
      		      deinterlace_,
@@ -42,7 +44,8 @@ namespace switcher
      		      colorspace_out_,
      		      NULL);
     
-    gst_element_link_many (colorspace_in_,
+    gst_element_link_many (video_tee_,
+			   colorspace_in_,
      			   textoverlay_,
      			   videoflip_,
      			   deinterlace_,
@@ -106,15 +109,30 @@ namespace switcher
 
     //FIXME create a connector in order to allow connect with the raw video
     gst_bin_add (GST_BIN (bin_), rawvideo_);
-    gst_element_link (rawvideo_, colorspace_in_);
+    gst_element_link (rawvideo_, video_tee_);
     
-    //creating a connector in order to allow connect with the transformed video
     ShmdataWriter::ptr rawvideo_connector;
     rawvideo_connector.reset (new ShmdataWriter ());
-    std::string connector_name ("/tmp/switcher_pid_"+name_+"_rawvideo"); 
-    rawvideo_connector->set_absolute_name (connector_name.c_str());
-    rawvideo_connector->plug (bin_, colorspace_out_, videocaps);
-    shmdata_writers_.insert (connector_name, rawvideo_connector);
+    std::string rawconnector_name ("/tmp/switcher_pid_"+name_+"_rawvideo"); 
+    rawvideo_connector->set_absolute_name (rawconnector_name.c_str());
+    rawvideo_connector->plug (bin_, video_tee_, videocaps);
+    shmdata_writers_.insert (rawconnector_name, rawvideo_connector);
+    
+     // //(will be pluged by segment when setting the runtime)
+    // ShmdataReader::ptr rawvideo_reader;
+    // rawvideo_reader.reset (new ShmdataReader ());
+    // rawvideo_reader->set_path (rawconnector_name.c_str());
+    // rawvideo_reader->set_bin (bin_);
+    // rawvideo_reader->set_sink_element (colorspace_in_);
+    // shmdata_readers_.insert (rawconnector_name, rawvideo_reader);
+
+    //creating a connector in order to allow connect with the transformed video
+    ShmdataWriter::ptr video_connector;
+    video_connector.reset (new ShmdataWriter ());
+    std::string connector_name ("/tmp/switcher_pid_"+name_+"_video"); 
+    video_connector->set_absolute_name (connector_name.c_str());
+    video_connector->plug (bin_, colorspace_out_, videocaps);
+    shmdata_writers_.insert (connector_name, video_connector);
 
     //gst_object_unref (videocaps);
   }

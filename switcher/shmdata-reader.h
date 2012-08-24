@@ -34,14 +34,19 @@ namespace switcher
     typedef std::tr1::shared_ptr<ShmdataReader> ptr;
     ShmdataReader();
     ~ShmdataReader();
-    void plug (const char *socketName, GstElement *bin, GstElement *sink_element);
-   
+    void set_path (const char *absolute_path);
+    void set_bin (GstElement *bin);
+    void set_sink_element (GstElement *sink_element);
+    void start();
+
   private:
+    static bool async_handler_installed_;
     std::string name_;
     shmdata_base_reader_t *reader_;
     GstElement *bin_;
     GstElement *sink_element_;
     static void on_first_data (shmdata_base_reader_t * context, void *user_data);
+    static GstBusSyncReply bus_async_handler (GstBus * bus, GstMessage * msg, gpointer user_data);
   };
   
 }  // end of namespace

@@ -25,7 +25,7 @@
 #include "switcher/runtime.h"
 #include "switcher/string-map.h"
 #include "switcher/shmdata-writer.h"
-//#include "switcher/shmdata-reader.h"
+#include "switcher/shmdata-reader.h"
 #include <memory>
 #include <vector>
 
@@ -42,12 +42,7 @@ namespace switcher
     GstElement *get_bin ();
 
     //TODO register this function as char * get_connectors () returning json
-    //TODO should be in base-source
     std::vector<std::string> get_src_connectors ();
-
-    //Connector::ptr get_connector (std::string name);
-
-    //bool connect (char *src_connector_name, Segment *segment);
 
     //wrappers for calls from base entity manager
     static void set_runtime_wrapped (gpointer runtime, gpointer context);
@@ -58,6 +53,8 @@ namespace switcher
     GstElement *bin_;
     Runtime *runtime_;
     StringMap<ShmdataWriter::ptr> shmdata_writers_;
+    StringMap<ShmdataReader::ptr> shmdata_readers_;
+
   };
   
 }  // end of namespace

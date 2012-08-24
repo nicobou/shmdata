@@ -22,7 +22,7 @@
 #define __SWITCHER_VIDEO_SOURCE_H__
 
 #include "switcher/base-source.h"
-#include "switcher/connector.h"
+//#include "switcher/connector.h"
 #include <memory>
 
 namespace switcher
@@ -42,6 +42,7 @@ namespace switcher
     //Connector::ptr rawvideo_connector_;
     //    Connector::ptr video_connector_;
     
+    GstElement *video_tee_;
     GstElement *colorspace_in_;
     GstElement *alpha_;
     GstElement *textoverlay_;

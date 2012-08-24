@@ -47,7 +47,12 @@ namespace switcher
   bool
   BaseSink::connect (std::string shmdata_socket_path)
   {
-    reader_->plug (shmdata_socket_path.c_str(),bin_,sink_element_);
+    //FIXME can be called when runtime has been set
+    reader_->set_path (shmdata_socket_path.c_str());
+    reader_->set_bin (bin_);
+    reader_->set_sink_element (sink_element_);
+    reader_->start ();
+    shmdata_readers_.insert (shmdata_socket_path, reader_);
     return true;
   }
 

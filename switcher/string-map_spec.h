@@ -84,6 +84,7 @@ namespace switcher
     StringMap<T>::get_keys ()
     {
       std::vector<std::string> keys;
+
       typename std::map<std::string, T>::iterator it;
       for (it = map_.begin(); it != map_.end(); ++it)
 	{
@@ -92,19 +93,21 @@ namespace switcher
       return keys;
     }
        
-  template <typename T>
-    std::vector<T> 
-    StringMap<T>::get_values ()
-    {
-      std::vector<T> values;
+  /* template <typename T> */
+  /*   std::vector<T>  */
+  /*   StringMap<T>::get_values () */
+  /*   { */
+  /*     std::vector<T> values; */
 
-      typename std::map<std::string, T>::iterator  it;
-      for (it = map_.begin();it=map_.end(); ++it)
-	{
-	  values.push_back (it->second);
-	}
+  /*     typename std::map<std::string, T>::iterator  it; */
+  /*     for (it = map_.begin(); */
+  /* 	   it = map_.end();  */
+  /* 	   it++) */
+  /* 	{ */
+  /* 	  values.push_back (it->second); */
+  /* 	} */
 	
-      return values;
-    }
+  /*     return values; */
+  /*   } */
     
 }

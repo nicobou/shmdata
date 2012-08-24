@@ -62,6 +62,15 @@ namespace switcher
     runtime_ = runtime;
     gst_bin_add (GST_BIN (runtime_->get_pipeline ()),bin_);
     gst_element_sync_state_with_parent (bin_);
+
+    std::vector<std::string> readers = shmdata_readers_.get_keys();
+    std::vector<std::string>::iterator iter;
+    for(iter = readers.begin(); iter != readers.end(); iter++)
+      {
+	g_print ("----------------------- starting reader for %s\n",iter->c_str());
+      	shmdata_readers_.lookup (*iter)->start ();
+      }
+    
   }
   
   GstElement *
