@@ -66,11 +66,6 @@ leave (int sig)
   g_print ("Returned, closing the reader\n");
   shmdata_base_reader_close (reader);
 
-  g_print ("Returned, stopping playback\n");
-  gst_element_set_state (pipeline, GST_STATE_NULL);
-
-  g_print ("Deleting pipeline\n");
-  gst_object_unref (GST_OBJECT (pipeline));
   exit (sig);
 }
 
