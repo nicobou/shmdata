@@ -24,16 +24,16 @@ namespace switcher
   ShmdataReader::ShmdataReader()
   {
       //g_print ("ShmdataReader::ShmdataReader\n");
-
+    reader_ = shmdata_base_reader_new ();
   }
 
   ShmdataReader::~ShmdataReader()
   {
       //g_print ("ShmdataReader::~ShmdataReader\n");
-    if (reader_ != NULL)
       shmdata_base_reader_close (reader_);
   }
 
+  
   void 
   ShmdataReader::plug (const char *absolute_path, GstElement *bin, GstElement *sink_element)
   {
@@ -41,10 +41,11 @@ namespace switcher
 
       bin_ = bin;
       sink_element_ = sink_element;
-      reader_ = shmdata_base_reader_init (absolute_path, 
-					  bin, 
-					  ShmdataReader::on_first_data,
-					  this);
+
+      shmdata_base_reader_set_callback (reader_, ShmdataReader::on_first_data, this);
+      shmdata_base_reader_install_sync_handler (reader_, TRUE);
+      shmdata_base_reader_set_bin (reader_, bin);
+      shmdata_base_reader_start (reader_, absolute_path);
   }
   
 
