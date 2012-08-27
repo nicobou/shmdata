@@ -39,7 +39,7 @@ namespace switcher
 		      colorspace_in_,
      		      textoverlay_,
      		      videoflip_,
-     		      deinterlace_,
+		      //deinterlace_,
 		      //alpha_,
      		      colorspace_out_,
      		      NULL);
@@ -48,16 +48,16 @@ namespace switcher
 			   colorspace_in_,
      			   textoverlay_,
      			   videoflip_,
-     			   deinterlace_,
 			   //alpha_,
+			   //deinterlace_,
      			   colorspace_out_,
      			   NULL);
     
 
      //registering selected properties
      register_property (G_OBJECT (videoflip_),"method","flip");
-     register_property (G_OBJECT (deinterlace_),"mode","deinterlace");//default "Auto detection"
-     register_property (G_OBJECT (deinterlace_),"method","deinterlace");
+     //register_property (G_OBJECT (deinterlace_),"mode","deinterlace");//default "Auto detection"
+     //register_property (G_OBJECT (deinterlace_),"method","deinterlace");
      // register_property (G_OBJECT (alpha_),"method","alpha");
      // register_property (G_OBJECT (alpha_),"alpha","alpha");
      // register_property (G_OBJECT (alpha_),"target-r","alpha");
@@ -93,6 +93,7 @@ namespace switcher
   void
   VideoSource::set_raw_video_element (GstElement *element)
   {
+
     rawvideo_ = element;
     
     GstCaps *videocaps = gst_caps_new_simple ("video/x-raw-yuv",
@@ -100,14 +101,12 @@ namespace switcher
 					      // GST_MAKE_FOURCC ('A', 'Y', 'U', 'V'),
 					      //"format", GST_TYPE_FOURCC,
 					      //  GST_MAKE_FOURCC ('I', '4', '2', '0'),
-					      // "framerate", GST_TYPE_FRACTION, 30, 1,
+					      "framerate", GST_TYPE_FRACTION, 30, 1,
 					      // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1, 
 					      //  "width", G_TYPE_INT, 640, 
 					      //  "height", G_TYPE_INT, 480,
 					      NULL);
 
-
-    //FIXME create a connector in order to allow connect with the raw video
     gst_bin_add (GST_BIN (bin_), rawvideo_);
     gst_element_link (rawvideo_, video_tee_);
     
@@ -118,14 +117,6 @@ namespace switcher
     rawvideo_connector->plug (bin_, video_tee_, videocaps);
     shmdata_writers_.insert (rawconnector_name, rawvideo_connector);
     
-     // //(will be pluged by segment when setting the runtime)
-    // ShmdataReader::ptr rawvideo_reader;
-    // rawvideo_reader.reset (new ShmdataReader ());
-    // rawvideo_reader->set_path (rawconnector_name.c_str());
-    // rawvideo_reader->set_bin (bin_);
-    // rawvideo_reader->set_sink_element (colorspace_in_);
-    // shmdata_readers_.insert (rawconnector_name, rawvideo_reader);
-
     //creating a connector in order to allow connect with the transformed video
     ShmdataWriter::ptr video_connector;
     video_connector.reset (new ShmdataWriter ());

@@ -42,7 +42,7 @@ main (int argc,
      gst_init (NULL,NULL);
      GMainLoop *loop = g_main_loop_new (NULL, FALSE);  
 
-
+ 
      using namespace switcher;
 
     BaseEntityManager manager;  
@@ -73,7 +73,6 @@ main (int argc,
     // std::vector<std::string> ent_name;
     // ent_name.push_back (runtime);
     // manager.invoke_method ("videotestsrc0","set_runtime",ent_name);
-
 
      /* Iterate */
      g_print ("Running...\n");

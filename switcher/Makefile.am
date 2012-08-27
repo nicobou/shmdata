@@ -23,6 +23,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     connector.cpp \
     controller.cpp \
     ctrl-server.cpp \
+    gconf-video-source.cpp \
     gst-utils.cpp \
     method.cpp \
     property.cpp \
@@ -62,6 +63,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     creator.h \
     ctrl-server.h \
     ctrl-webservice-definition.h \
+    gconf-video-source.h \
     gst-utils.h \
     hash-table.h \
     hash-table_spec.h \

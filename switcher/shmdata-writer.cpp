@@ -24,8 +24,9 @@ namespace switcher
 
   ShmdataWriter::ShmdataWriter() :
     writer_ (shmdata_base_writer_init ())
-  {    g_print ("ShmdataWriter\n");
-}
+  {
+      g_print ("ShmdataWriter\n");
+  }
   
   bool 
   ShmdataWriter::set_name (std::string name)
@@ -34,6 +35,7 @@ namespace switcher
     return false;
   }
   
+  //WARNING is the file exist it will be deleted
   bool 
   ShmdataWriter::set_absolute_name (std::string name)
   {
@@ -42,8 +44,8 @@ namespace switcher
     if( g_file_query_exists (shmfile, NULL))
       {    
 	//thrash it
-	g_printerr ("ShmdataWriter::set_absolute_name warning: file %s exists and will be trashed.\n",name.c_str());
-	if (! g_file_trash (shmfile, NULL, NULL)) 
+	g_printerr ("ShmdataWriter::set_absolute_name warning: file %s exists and will be deleted.\n",name.c_str());
+	if (! g_file_delete (shmfile, NULL, NULL)) 
 	  {
 	    g_printerr("ShmdataWriter::set_absolute_name error: file %s is already existing and cannot be trashed.",name.c_str());
 	    return false;

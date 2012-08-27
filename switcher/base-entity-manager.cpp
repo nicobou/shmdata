@@ -67,13 +67,18 @@
    {
      g_print ("   BaseEntityManager::entity_invoke_method %s %s, arg size %d\n",entity_name.c_str(), function_name.c_str(), args.size ());
      
+     if (!life_manager_->exists (entity_name))
+       {
+	 g_printerr ("entity %s not found, cannot invoke\n",entity_name.c_str());
+	 return false;
+       }
      BaseEntity::ptr entity = life_manager_->get (entity_name);
 
      int num_val = entity->method_get_num_value_args(function_name);
 
      if (num_val == -1) 
        {
-	 g_printerr ("function %s not found, cannot invoke\n",entity_name.c_str());
+	 g_printerr ("function %s not found, cannot invoke\n",function_name.c_str());
 	 return false;
        }
 

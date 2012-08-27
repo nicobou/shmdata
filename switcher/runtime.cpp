@@ -40,8 +40,6 @@ namespace switcher
     gst_object_unref (bus_); 
 
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
-
-
   }
 
   Runtime::~Runtime ()
