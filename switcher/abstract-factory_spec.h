@@ -45,12 +45,19 @@ namespace switcher
   }
     
   template <typename T, typename Key>
+    bool 
+    AbstractFactory<T, Key>::key_exists(Key Id)
+    {
+      return ( constructor_map_.find(Id) != constructor_map_.end() );
+    }
+
+  template <typename T, typename Key>
     std::tr1::shared_ptr<T> 
     AbstractFactory<T, Key>::create(Key Id)
   {
     std::tr1::shared_ptr<T> pointer;
 	
-    if ( constructor_map_.find( Id) != constructor_map_.end() ) 
+    if ( constructor_map_.find(Id) != constructor_map_.end() ) 
       pointer.reset (constructor_map_[Id]->Create());
 	
     return pointer;

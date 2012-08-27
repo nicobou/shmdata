@@ -225,14 +225,7 @@ controlService::create_entity (std::string entity_class,
   using namespace switcher;
   
    BaseEntityManager *manager = (BaseEntityManager *) this->user;
-   // manager->create_entity ("videotestsource");
-   // *result = "truc";
-    // BaseEntity::ptr entit = manager->create (entity_class);
-    // if (entit.get() != NULL)
-    //   {
-    //     *result = entit->get_name ();
-       
-    //   }
+
    std::string name = manager->create (entity_class);
    if (name != "")
      {

@@ -117,6 +117,9 @@
    std::string
    BaseEntityManager::create (std::string entity_class)
    {
+     if(!life_manager_->class_exists (entity_class))
+       return "";
+     
      BaseEntity::ptr entity = life_manager_->create (entity_class);
      //give reference to life manager to entity
      entity->set_life_manager (get_life_manager());

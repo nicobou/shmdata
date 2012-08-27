@@ -46,9 +46,10 @@ namespace switcher
     
     //info
     std::vector<std::string> get_classes ();
+    bool class_exists (std::string class_name);
     std::vector<std::string> get_instances ();
     bool exists (std::string entity_name);
-
+    
     //creation
     std::tr1::shared_ptr<BaseEntity> create (std::string entity_class);
     

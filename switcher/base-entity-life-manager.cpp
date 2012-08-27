@@ -20,8 +20,9 @@
 #include "switcher/base-entity-life-manager.h"
 #include "switcher/base-entity.h" 
 
-//the base entities to manage
+//the base entities to manage (line sorted)
 #include "switcher/ctrl-server.h"
+#include "switcher/gconf-video-source.h"
 #include "switcher/runtime.h"
 #include "switcher/video-test-source.h"
 #include "switcher/xvimagesink.h"
@@ -31,9 +32,10 @@ namespace switcher
 
   BaseEntityLifeManager::BaseEntityLifeManager()
   {
-    //registering base entity to make available
-    abstract_factory_.register_class<Runtime> ("runtime");
+    //registering base entity to make available (line sorted)
     abstract_factory_.register_class<CtrlServer> ("controlserver");
+    abstract_factory_.register_class<GconfVideoSource> ("gconfvideosource");
+    abstract_factory_.register_class<Runtime> ("runtime");
     abstract_factory_.register_class<VideoTestSource> ("videotestsource");
     abstract_factory_.register_class<Xvimagesink> ("xvimagesink");
   }
@@ -42,6 +44,12 @@ namespace switcher
   BaseEntityLifeManager::get_classes ()
   {
     return abstract_factory_.get_keys ();
+  }
+
+  bool 
+  BaseEntityLifeManager::class_exists (std::string class_name)
+  {
+    return abstract_factory_.key_exists (class_name);
   }
 
   BaseEntity::ptr 
