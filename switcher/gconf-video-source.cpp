@@ -25,48 +25,42 @@ namespace switcher
 
   GconfVideoSource::GconfVideoSource ()
   {
+    data_cond_ = g_cond_new (); 
+    data_mutex_ = g_mutex_new ();
     
-    GstElement *bin = gst_element_factory_make ("bin", NULL);
+    //g_idle_add ((GSourceFunc) GconfVideoSource::do_init, (gpointer) this);
+    g_main_context_invoke (NULL, (GSourceFunc) GconfVideoSource::do_init, (gpointer) this);
+    
+    g_mutex_lock (data_mutex_);
+    g_cond_wait (data_cond_, data_mutex_);
+    g_mutex_unlock (data_mutex_);
 
-    gconfvideosource_ = gst_element_factory_make ("autovideosrc",NULL);
-    //g_object_set (G_OBJECT (gconfvideosource_), "is-live", TRUE, NULL);
     
-    videorate_ = gst_element_factory_make ("videorate",NULL);
-
-    //CAPS
-    capsfilter_ = gst_element_factory_make ("capsfilter",NULL);
-    caps_ =     gst_caps_new_simple ("video/x-raw-yuv",
-				     // "format", GST_TYPE_FOURCC,
-				     // GST_MAKE_FOURCC ('A', 'Y', 'U', 'V'),
-				     //"format", GST_TYPE_FOURCC,
-				     //  GST_MAKE_FOURCC ('I', '4', '2', '0'),
-				     "framerate", GST_TYPE_FRACTION, 10, 1,
-				     // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1, 
-				     //  "width", G_TYPE_INT, 640, 
-				     //  "height", G_TYPE_INT, 480,
-				     NULL);
-    g_object_set (G_OBJECT (capsfilter_), "caps", caps_, NULL);
-        
-    gst_bin_add_many (GST_BIN (bin),
-		      gconfvideosource_,
-		      videorate_,
-		      capsfilter_,
-		      NULL);
-    gst_element_link_many (gconfvideosource_,
-			   videorate_,
-			   capsfilter_,
-			   NULL);
+    //name_ = "truc";
     
-    GstPad *sinkpad = gst_element_get_static_pad(capsfilter_, "src"); 
-    GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sinkpad);
-    gst_element_add_pad (bin, ghost_sinkpad);
-    gst_object_unref (sinkpad);
-    
-    //set the name
-    name_ = gst_element_get_name (gconfvideosource_);
-
-    set_raw_video_element (bin);
+    // gconfvideosource_ = gst_element_factory_make ("gconfvideosrc",NULL);
+    // //set the name
+    //name_ = gst_element_get_name (gconfvideosource_);
+    // set_raw_video_element (gconfvideosource_);
   }
 
+
+  gboolean 
+  GconfVideoSource::do_init(gpointer user_data)
+  {
+    GconfVideoSource *context = static_cast<GconfVideoSource *>(user_data);
+
+    g_mutex_lock (context->data_mutex_);
+
+    context->gconfvideosource_ = gst_element_factory_make ("gconfvideosrc",NULL);
+    //set the name
+    context->name_ = gst_element_get_name (context->gconfvideosource_);
+    context->set_raw_video_element (context->gconfvideosource_);
+
+    g_cond_signal (context->data_cond_);
+    g_mutex_unlock (context->data_mutex_);
+
+    return FALSE; //the source should be removed from the main loop
+  }
 
 }

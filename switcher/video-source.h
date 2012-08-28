@@ -43,6 +43,7 @@ namespace switcher
     //    Connector::ptr video_connector_;
     
     GstElement *video_tee_;
+    GstElement *videorate_;
     GstElement *colorspace_in_;
     GstElement *alpha_;
     GstElement *textoverlay_;

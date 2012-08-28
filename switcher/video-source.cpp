@@ -27,37 +27,41 @@ namespace switcher
     colorspace_in_ (gst_element_factory_make ("ffmpegcolorspace",NULL)),
     //FIXME in order to add back alpha here, we must be sure reader will use ffmpegcolorspace. Maybe alpha belong elsewhere, with a videomixer for instance
     //    alpha_ (gst_element_factory_make ("alpha",NULL)),
+    videorate_ (gst_element_factory_make ("videorate",NULL)),
     textoverlay_ (gst_element_factory_make ("textoverlay",NULL)),
     videoflip_ (gst_element_factory_make ("videoflip",NULL)),
     deinterlace_ (gst_element_factory_make ("deinterlace",NULL)),
     colorspace_out_ (gst_element_factory_make ("ffmpegcolorspace",NULL))
   {
 
-
     gst_bin_add_many (GST_BIN (bin_),
      		      video_tee_,
+		      videorate_,
+		      deinterlace_,
 		      colorspace_in_,
      		      textoverlay_,
      		      videoflip_,
-		      //deinterlace_,
 		      //alpha_,
      		      colorspace_out_,
      		      NULL);
     
     gst_element_link_many (video_tee_,
+			   videorate_,
+			   deinterlace_,
 			   colorspace_in_,
      			   textoverlay_,
      			   videoflip_,
 			   //alpha_,
-			   //deinterlace_,
      			   colorspace_out_,
      			   NULL);
     
 
      //registering selected properties
      register_property (G_OBJECT (videoflip_),"method","flip");
-     //register_property (G_OBJECT (deinterlace_),"mode","deinterlace");//default "Auto detection"
-     //register_property (G_OBJECT (deinterlace_),"method","deinterlace");
+     register_property (G_OBJECT (videorate_), "max-rate", "rate");
+     register_property (G_OBJECT (videorate_), "force-fps", "rate");
+     register_property (G_OBJECT (deinterlace_),"mode","deinterlace");//default "Auto detection"
+     register_property (G_OBJECT (deinterlace_),"method","deinterlace");
      // register_property (G_OBJECT (alpha_),"method","alpha");
      // register_property (G_OBJECT (alpha_),"alpha","alpha");
      // register_property (G_OBJECT (alpha_),"target-r","alpha");
@@ -101,7 +105,7 @@ namespace switcher
 					      // GST_MAKE_FOURCC ('A', 'Y', 'U', 'V'),
 					      //"format", GST_TYPE_FOURCC,
 					      //  GST_MAKE_FOURCC ('I', '4', '2', '0'),
-					      "framerate", GST_TYPE_FRACTION, 30, 1,
+					      //"framerate", GST_TYPE_FRACTION, 30, 1,
 					      // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1, 
 					      //  "width", G_TYPE_INT, 640, 
 					      //  "height", G_TYPE_INT, 480,

@@ -66,13 +66,13 @@ main (int argc,
      serv->start ();
 
 
-    // //create a videotest
-    // std::string videotest = manager.create ("videotestsource");
+    // // //create a videotest
+    // std::string videotest = manager.create ("gconfvideosource");
 
-    // //attaching videotestsrc to the runtime
+    // // //attaching videotestsrc to the runtime
     // std::vector<std::string> ent_name;
     // ent_name.push_back (runtime);
-    // manager.invoke_method ("videotestsrc0","set_runtime",ent_name);
+    // manager.invoke_method (videotest,"set_runtime",ent_name);
 
      /* Iterate */
      g_print ("Running...\n");
