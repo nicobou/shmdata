@@ -35,9 +35,6 @@ namespace switcher
 
   private:
     GstElement *gconfvideosource_;
-    GstElement *videorate_;
-    GstElement * capsfilter_;
-    GstCaps *caps_;
     static gboolean do_init(gpointer user_data);
     GCond* data_cond_; //required in order to ensure gconf element will be factored into the main thread
     GMutex* data_mutex_;

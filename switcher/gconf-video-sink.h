@@ -17,23 +17,31 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/xvimagesink.h"
+
+#ifndef __SWITCHER_GCONF_VIDEO_SINK_H__
+#define __SWITCHER_GCONF_VIDEO_SINK_H__
+
+#include "switcher/video-sink.h"
+#include <memory>
 
 namespace switcher
 {
-  
-  Xvimagesink::Xvimagesink ()
-  {
-    xvimagesink_ = gst_element_factory_make ("xvimagesink",NULL);
-   
-    //set the name before registering properties
-    name_ = gst_element_get_name (xvimagesink_);
-    
-    //registering "sync"
-    register_property (G_OBJECT (xvimagesink_),"sync","videosink");
-    
-    //FIXME should give a bin 
-    set_sink_element (xvimagesink_);
-  }
 
-}
+  class GconfVideoSink : public VideoSink
+  {
+  public:
+    typedef std::tr1::shared_ptr<GconfVideoSink> ptr;
+    GconfVideoSink ();
+
+  private:
+    GstElement *gconfvideosink_;
+    GCond* data_cond_; //required in order to ensure gconf element will be factored into the main thread
+    GMutex* data_mutex_;
+    static gboolean do_init(gpointer user_data);
+    //static void update_sub_sync_foreach (const GValue * item, gpointer data);
+    static gboolean sync_sinks_wrapped (gpointer do_sync, gpointer user_data);
+  };
+
+}  // end of namespace
+
+#endif // ifndef
