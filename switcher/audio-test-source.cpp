@@ -17,36 +17,31 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
-#ifndef __SWITCHER_AUDIO_SOURCE_H__
-#define __SWITCHER_AUDIO_SOURCE_H__
-
-#include "switcher/base-source.h"
-#include <memory>
-
+#include "switcher/audio-test-source.h"
+#include <gst/gst.h>
 
 namespace switcher
 {
 
-  class AudioSource : public BaseSource
+  AudioTestSource::AudioTestSource ()
   {
-  public:
-    typedef std::tr1::shared_ptr<AudioSource> ptr;
-    AudioSource ();
+    audiotestsrc_ = gst_element_factory_make ("audiotestsrc",NULL);
+    g_object_set (G_OBJECT (audiotestsrc_),
+		  "is-live", TRUE,
+		  NULL);
+    
+    
+    //set the name before registering properties
+    name_ = gst_element_get_name (audiotestsrc_);
+    
+    //registering "pattern"
+    register_property (G_OBJECT (audiotestsrc_),"samplesperbuffer","audiotestsrc");
+    register_property (G_OBJECT (audiotestsrc_),"wave","audiotestsrc");
+    register_property (G_OBJECT (audiotestsrc_),"freq","audiotestsrc");
+    register_property (G_OBJECT (audiotestsrc_),"volume","audiotestsrc");
 
-  private:
-    GstElement *rawaudio_;
-    GstElement *audio_tee_;
-    GstElement *audio_queue_;
-    GstElement *audioconvert_;   
-    GstElement *pitch_;
-    GstElement *resample_;
+    set_raw_audio_element (audiotestsrc_);
+  }
 
-  protected:
-    //called in the derived class constructor
-    void set_raw_audio_element (GstElement *elt);
-  };
 
-}  // end of namespace
-
-#endif // ifndef
+}

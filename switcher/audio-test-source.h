@@ -18,33 +18,23 @@
  */
 
 
-#ifndef __SWITCHER_AUDIO_SOURCE_H__
-#define __SWITCHER_AUDIO_SOURCE_H__
+#ifndef __SWITCHER_AUDIO_TEST_SOURCE_H__
+#define __SWITCHER_AUDIO_TEST_SOURCE_H__
 
-#include "switcher/base-source.h"
+#include "switcher/audio-source.h"
 #include <memory>
-
 
 namespace switcher
 {
 
-  class AudioSource : public BaseSource
+  class AudioTestSource : public AudioSource
   {
   public:
-    typedef std::tr1::shared_ptr<AudioSource> ptr;
-    AudioSource ();
+    typedef std::tr1::shared_ptr<AudioTestSource> ptr;
+    AudioTestSource ();
 
   private:
-    GstElement *rawaudio_;
-    GstElement *audio_tee_;
-    GstElement *audio_queue_;
-    GstElement *audioconvert_;   
-    GstElement *pitch_;
-    GstElement *resample_;
-
-  protected:
-    //called in the derived class constructor
-    void set_raw_audio_element (GstElement *elt);
+    GstElement *audiotestsrc_;
   };
 
 }  // end of namespace

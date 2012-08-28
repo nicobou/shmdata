@@ -15,6 +15,7 @@ lib_LTLIBRARIES = \
 libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     audio-sink.cpp \
     audio-source.cpp \
+    audio-test-source.cpp \
     base-entity-life-manager.cpp \
     base-entity-manager.cpp \
     base-entity.cpp \
@@ -52,6 +53,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_includedir = \
 libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     abstract-factory.h \
     abstract-factory_spec.h \
+    audio-test-source.h \
     audio-sink.h \
     audio-source.h \
     base-entity-life-manager.h \

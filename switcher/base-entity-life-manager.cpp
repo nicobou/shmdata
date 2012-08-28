@@ -21,6 +21,7 @@
 #include "switcher/base-entity.h" 
 
 //the base entities to manage (line sorted)
+#include "switcher/audio-test-source.h"
 #include "switcher/ctrl-server.h"
 #include "switcher/gconf-video-sink.h"
 #include "switcher/gconf-video-source.h"
@@ -34,6 +35,7 @@ namespace switcher
   BaseEntityLifeManager::BaseEntityLifeManager()
   {
     //registering base entity to make available (line sorted)
+    abstract_factory_.register_class<AudioTestSource> ("audiotestsource");
     abstract_factory_.register_class<CtrlServer> ("controlserver");
     abstract_factory_.register_class<GconfVideoSink> ("gconfvideosink");
     abstract_factory_.register_class<GconfVideoSource> ("gconfvideosource");
