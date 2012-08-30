@@ -37,16 +37,11 @@ main (int argc,
 {
      (void) signal (SIGINT, leave);
 
-     //this should be into runtime
-     //gst_init (NULL,NULL);
-     //GMainLoop *loop = g_main_loop_new (NULL, FALSE);  
-
- 
      using namespace switcher;
-
-    BaseEntityManager manager;  
-    std::vector<std::string> available_object_list = manager.get_classes ();
-
+     
+     BaseEntityManager manager;  
+     std::vector<std::string> available_object_list = manager.get_classes ();
+     
     //list available object in factory
     for (uint i=0; i < available_object_list.size (); i++)
       {
@@ -73,9 +68,6 @@ main (int argc,
     // ent_name.push_back (runtime);
     // manager.invoke_method (videotest,"set_runtime",ent_name);
 
-     /* Iterate */
-     // g_print ("Running...\n");
-     // g_main_loop_run (loop);
      while (1)
        sleep (1);
 
