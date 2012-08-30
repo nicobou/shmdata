@@ -1,17 +1,16 @@
 shmdata release notes
 ===================== 
 
-shmdata 0.6.2 (2012-0?-??)
+shmdata 0.6.2 (2012-08-30)
 ---------------------------
-This is ...
+This is an official release in the 0.6 stable series.
 
 Bugs fixed:
 
-* 
+* implementing a new interface for base reader, allowing to install or not the sync_handler
+* fixing bus sync handler singleton issue
+* calling close in video reader example
 
-New features:
-
-* 
 
 shmdata 0.6.0 (2012-07-18)
 ---------------------------
