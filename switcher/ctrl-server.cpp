@@ -20,6 +20,7 @@
 #include "switcher/ctrl-server.h"
 #include <ctime>    // For time()
 #include <cstdlib>  // For srand() and rand()
+#include "switcher/webservices/control.nsmap"
 
 namespace switcher
 {

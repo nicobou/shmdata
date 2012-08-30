@@ -18,9 +18,8 @@
  */
 
 #include "switcher/ctrl-server.h"
-#include "switcher/webservices/control.nsmap"
+//#include "switcher/webservices/control.nsmap"
 #include "switcher/base-entity-manager.h"
-//#include "switcher/shmdata-writer.h"
 #include <iostream>
 #include <signal.h>
 

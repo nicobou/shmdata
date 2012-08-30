@@ -25,12 +25,6 @@
 #include <memory>
 
 #include "switcher/webservices/soapcontrolService.h"
-/* #ifndef __SWITCHER_WEBSERVICES_CONTROL_NSMAP__ */
-/* #define __SWITCHER_WEBSERVICES_CONTROL_NSMAP__ */
-/* #include "switcher/webservices/control.nsmap" */
-/* #endif */
-
-//#include "switcher/creator.h"
 
 namespace switcher
 {
