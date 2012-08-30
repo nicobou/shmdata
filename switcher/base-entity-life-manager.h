@@ -56,7 +56,7 @@ namespace switcher
     //subsistence
     std::tr1::shared_ptr<BaseEntity> get (std::string entity_name);
     
-    //release base entity (destructeed with the shared pointer)
+    //release base entity (destructed with the shared pointer)
     bool remove (std::string entity_name);
 
   private:

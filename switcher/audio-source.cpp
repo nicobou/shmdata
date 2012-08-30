@@ -58,8 +58,15 @@ namespace switcher
     gst_element_link (rawaudio_, audio_tee_);
 
     GstElement *pulsesink = gst_element_factory_make ("pulsesink",NULL);
-    gst_bin_add (GST_BIN (bin_), pulsesink);
-    gst_element_link (audio_tee_, pulsesink);
+    //GstElement *resample = gst_element_factory_make ("resample",NULL);
+    gst_bin_add_many (GST_BIN (bin_), 
+		      //resample, 
+		      pulsesink,
+		      NULL);
+    gst_element_link_many (audio_tee_, 
+			   //resample, 
+			   pulsesink,
+			   NULL);
     
    
     GstCaps *audiocaps = gst_caps_new_simple ("audio/x-raw-int",
