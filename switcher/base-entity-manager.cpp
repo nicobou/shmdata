@@ -61,9 +61,9 @@
    }
 
    bool 
-   BaseEntityManager::invoke_method (std::string entity_name, 
-				     std::string function_name,
-				     std::vector<std::string> args)
+   BaseEntityManager::invoke (std::string entity_name, 
+			      std::string function_name,
+			      std::vector<std::string> args)
    {
      g_print ("   BaseEntityManager::entity_invoke_method %s %s, arg size %d\n",entity_name.c_str(), function_name.c_str(), args.size ());
      

@@ -52,8 +52,8 @@
      //methods 
      std::vector<std::string> get_methods (std::string entity_name); 
      
-     bool invoke_method (std::string entity_name, 
-			 std::string function_name,
+     bool invoke (std::string entity_name, 
+			 std::string method_name,
 			 std::vector<std::string> args);  
 
      //life manager

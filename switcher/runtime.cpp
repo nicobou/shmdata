@@ -22,21 +22,27 @@
  */
 
 #include "switcher/runtime.h"
-//#include <shmdata/base-reader.h>
 
 namespace switcher
 {
+  
+  bool Runtime::initialized_ = false;
 
   Runtime::Runtime ()
   {
-    //gst_init (NULL,NULL);
-    //mainloop_ = g_main_loop_new (NULL, FALSE);
-        
+    
+    if (!initialized_)
+      {
+	gst_init (NULL,NULL);
+	mainloop_ = g_main_loop_new (NULL, FALSE);
+	thread_ = g_thread_new ("SwitcherMainLoop", GThreadFunc(main_loop_thread), this);
+	initialized_ = true;
+      }
+
     pipeline_ = gst_pipeline_new (NULL);
     name_ = gst_element_get_name (pipeline_);
     bus_ = gst_pipeline_get_bus (GST_PIPELINE (pipeline_)); 
     gst_bus_add_watch (bus_, bus_called, NULL);
-    //gst_bus_set_sync_handler (bus_, bus_called, NULL);
     gst_object_unref (bus_); 
 
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
@@ -47,9 +53,17 @@ namespace switcher
     g_print ("deleting runtime\n");
     gst_element_set_state (pipeline_, GST_STATE_NULL);
     gst_object_unref (GST_OBJECT (pipeline_));
+    //FIXME count instances and do quit main loop
     //g_main_loop_quit (mainloop_);
   }
 
+  gpointer
+  Runtime::main_loop_thread (gpointer user_data)
+  {
+    Runtime *context = static_cast<Runtime*>(user_data);
+    g_main_loop_run (context->mainloop_);
+    return NULL;
+  }
 
   GstElement * 
   Runtime::get_pipeline ()

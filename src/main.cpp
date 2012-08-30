@@ -38,8 +38,8 @@ main (int argc,
      (void) signal (SIGINT, leave);
 
      //this should be into runtime
-     gst_init (NULL,NULL);
-     GMainLoop *loop = g_main_loop_new (NULL, FALSE);  
+     //gst_init (NULL,NULL);
+     //GMainLoop *loop = g_main_loop_new (NULL, FALSE);  
 
  
      using namespace switcher;
@@ -74,9 +74,10 @@ main (int argc,
     // manager.invoke_method (videotest,"set_runtime",ent_name);
 
      /* Iterate */
-     g_print ("Running...\n");
-     g_main_loop_run (loop);
-     
+     // g_print ("Running...\n");
+     // g_main_loop_run (loop);
+     while (1)
+       sleep (1);
 
   return 0;
 }

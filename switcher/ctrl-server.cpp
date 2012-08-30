@@ -270,13 +270,7 @@ controlService::invoke_method (std::string entity_name,
   using namespace switcher;
   BaseEntityManager *manager = (BaseEntityManager *) this->user;
 
-  *result = manager->invoke_method (entity_name, method_name, args);
-
-  // std::vector<std::string> myargs;
-  // myargs.push_back("2");
-  // myargs.push_back("2");
-  // myargs.push_back("2");
-  // manager->entity_invoke_method ("videotestsrc2","hello", myargs);
+  *result = manager->invoke (entity_name, method_name, args);
 
   if (*result)
     return SOAP_OK;
