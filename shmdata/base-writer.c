@@ -28,6 +28,8 @@ struct shmdata_base_writer_
 void
 shmdata_base_writer_close (shmdata_base_writer_t * writer)
 {
+
+    
   if (writer->socket_path_ != NULL)
     g_free (writer->socket_path_);
   if (writer != NULL)
@@ -194,12 +196,14 @@ shmdata_base_writer_on_client_connected (GstElement * shmsink,
     gst_element_get_static_pad (context->serializer_, "sink");
   GstPad *padToBlock = gst_pad_get_peer (serializerSinkPad);
 
-  if (!gst_pad_set_blocked_async (padToBlock,
-				  TRUE,
-				  (GstPadBlockCallback)
-				  (shmdata_base_writer_switch_to_new_serializer),
-				  (void *) context))
-    g_critical ("Error: when requesting the pad to be blocked");
+  //if (!
+ gst_pad_set_blocked_async (padToBlock,
+			    TRUE,
+			    (GstPadBlockCallback)
+			    (shmdata_base_writer_switch_to_new_serializer),
+			    (void *) context);
+ //) g_critical ("Error: when requesting the pad to be blocked");
+
   gst_object_unref (serializerSinkPad);
   gst_object_unref (padToBlock);
 }

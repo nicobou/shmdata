@@ -14,7 +14,7 @@
 
 /** \addtogroup libshmdata
  * provides hot plugging between GStreamer pipelines via a shared memory.
- * compile with `pkg-config --cflags --libs shmdata-0.4`
+ * compile with `pkg-config --cflags --libs shmdata-0.6`
  *  @{
  */
 
@@ -53,21 +53,108 @@ extern "C"
   typedef void (*shmdata_base_reader_on_first_data)(shmdata_base_reader_t *reader, void *user_data);
 
   /** 
-   * Initialization function that starts monitoring the socket path.
+   * \deprecated use shmdata_base_reader_new instead
+   * Initialization function that starts monitoring the socket path. This install by default a sync_handler on 
+   * the gst_bus. Using multiple readers will warn about trying to replace the sync handler, but does not 
+   * affect the readers.   
    * 
    * @param socketPath is the file name of the shared memory
-   * @param Pipeline is the pipeline where the base writer will be added
+   * @param bin is the bin where the base writer will be added. This bin should already be added to a pipeline. 
    * @param on_first_data is the function pointer that will be called when 
-   * the connecting with the writer.
+   * the connecting with the writer. Your sink elements may need to be added to the bin and state synchronized in this function.   
    * @param user_data is the user data pointer for the on_first_video_data
    * callback
    * 
    * @return a base reader
    */
   shmdata_base_reader_t *shmdata_base_reader_init (const char *socketPath,
-						   GstElement * Pipeline,
+						   GstElement *bin,
 						   shmdata_base_reader_on_first_data cb,
 						   void *user_data);
+
+  /** 
+   * Initialization function that will replace shmdata_base_reader_init. 
+   * Before starting the shmdata, one need to set the callback function and 
+   * set if the Gstreamer bus sync handler (singleton) is managed by the library (see
+   * shmdata_base_reader_install_sync_handler) 
+   * 
+   * @return a base reader
+   */
+  shmdata_base_reader_t *shmdata_base_reader_new ();
+
+
+
+  /** 
+   * Required configuration function set the on_first data callback. When called, the application 
+   * must link with some sink element in order to get the stream. After being called, 
+   * the function shmdata_base_reader_set_sink will have no effect on the reader 
+   * 
+   * 
+   * @param on_first_data is the function pointer that will be called when 
+   * the connecting with the writer. 
+   * @param user_data is the user data pointer for the on_first_video_data
+   * callback
+   * 
+   */
+  void *shmdata_base_reader_set_callback (shmdata_base_reader_t * reader, shmdata_base_reader_on_first_data cb,
+					  void *user_data);
+  
+  /** 
+   * Configuration function that enable the choice of managing the gst_bus sync_handler by he library or
+   * by the application
+   *
+   * @param install set the installation of the sync_handler by the library
+   * 
+   * The gst_bus sync_handler is singleton. In this case, using multiple shmdata readers with library manager
+   * sync_handler will introduce warnings when starting the reader. The sync_handler installed by the library
+   * is however able to work with multiple reader. In order to avoid the warning, the application can ensure
+   * only one sync_handler is installed, using this function.
+   * 
+   * Alternatively, the application can install its own sync handler and have related error messages 
+   * by the reader being processed. In this case, here is how to call error processing from 
+   * your sync_handler:  
+   @code
+   //write the async handler
+    GstBusSyncReply my_handler (GstBus * bus,
+                                GstMessage * msg, gpointer user_data) {
+      shmdata_base_reader_t *reader = (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), 
+                                                                                   "shmdata_base_reader");
+      if ( reader != NULL)
+        {
+          if ( shmdata_base_reader_process_error (reader, msg)) 
+     	    return GST_BUS_DROP; 
+          else 
+     	    return GST_BUS_PASS; 
+        }
+    
+      return GST_BUS_PASS; 
+    }
+
+   //and install your sync_handler where desired
+   gst_bus_set_sync_handler (bus, my_handler, NULL);  
+   
+   @endcode
+   */
+  void *shmdata_base_reader_install_sync_handler (shmdata_base_reader_t * reader, gboolean install);
+
+
+  /** 
+   * Configuration function that set the bin in which the reader will be. If the sync_handler is used
+   * by the reader, the bin must be in a top level pipeline before starting the reader.
+   * 
+   * @param bin is the bin where the base writer will be added. if This bin should already be added to a pipeline. 
+   */
+  gboolean shmdata_base_reader_set_bin (shmdata_base_reader_t * reader, GstElement *bin);
+  
+
+  /** 
+   * Starting the reader. The reader will monitor the file socketPath. When created by a 
+   * writer, the reader will open the socket and will forward the stream. 
+   * 
+   * @param socketPath is the file name of the shared memory
+   */
+  gboolean shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPath);
+
 
   /** 
    * Tell the reader in which GStreamer element the reader should push the 
@@ -80,8 +167,18 @@ extern "C"
    *
    */
 
+
   void shmdata_base_reader_set_sink (shmdata_base_reader_t * reader,
 				     GstElement * sink);
+
+
+  /**
+   * Function to call in the gst_bus async handler when it is installed by the application. 
+   * See shmdata_base_reader_install_sync_handler for more details. 
+   */ 
+
+  gboolean shmdata_base_reader_process_error (shmdata_base_reader_t * reader, GstMessage *msg);
+
 
   /** 
    * Close the reader (freeing memory and removing internal GStreamer elements 
