@@ -41,7 +41,8 @@
      ~BaseEntityManager(); 
 
      //properties
-     std::vector<std::string> get_properties (std::string entity_name);
+     std::vector<std::string> get_properties (std::string entity_name); //TODO remove that
+     std::string get_properties_json (std::string entity_name);
      bool set_property (std::string entity_name,
 			std::string property_name,
 			std::string property_value);

@@ -24,6 +24,7 @@
 #include "switcher/base-entity.h"
 #include "switcher/base-entity-life-manager.h"
 
+
 namespace switcher
 {
 
@@ -179,6 +180,26 @@ namespace switcher
     return list_of_properties;
   }
 
+  std::string 
+  BaseEntity::get_properties_description ()
+  {
+    std::string res;
+    res.append ("{ properties: [ \n");
+    for(std::map<std::string, Property::ptr>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
+      {
+	res.append ("{ \"name\": \"");
+	res.append (it->first);
+	res.append ("\",\n ");
+        res.append (" \"description\": ");
+	res.append (it->second->get_description ());
+	res.append ("}, \n");
+      }
+    res.append ("]}");
+    return res;
+  }
+
+  
+
   bool 
   BaseEntity::set_property (std::string name, std::string value)
   {
@@ -198,6 +219,17 @@ namespace switcher
 
     Property::ptr prop = properties_[name];
     return prop->get ();
+  }
+
+  std::string 
+  BaseEntity::get_property_description (std::string name)
+  {
+    //FIXME return a json formated message
+    if (properties_.find( name ) == properties_.end())
+      return "property not found";
+    
+    Property::ptr prop = properties_[name];
+    return prop->get_description ();
   }
 
   void 

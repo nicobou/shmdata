@@ -39,6 +39,12 @@
      return (life_manager_->get (entity_name))->get_property_names ();
    }
 
+   std::string 
+   BaseEntityManager::get_properties_json (std::string entity_name)
+   {
+     return (life_manager_->get (entity_name))->get_properties_description ();
+   }
+
    bool
    BaseEntityManager::set_property (std::string entity_name,
 				    std::string property_name,

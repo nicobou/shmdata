@@ -22,9 +22,10 @@
  */
 
 #include "switcher/property.h"
+
+
 namespace switcher
 {
-
 
   //should not be used because it is writing a name property
   Property::Property (GObject *object, GParamSpec *pspec) :
@@ -60,6 +61,15 @@ namespace switcher
     gchar *val_str = gst_value_serialize (&val);
     std::string res (val_str);
     g_free (val_str);
+    return res;
+  }
+ 
+  //json formated 
+  std::string 
+  Property::get_description ()
+  {
+    std::string res;
+    res.append ("\"truc\"");   
     return res;
   }
 

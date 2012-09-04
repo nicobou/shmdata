@@ -53,6 +53,8 @@ namespace switcher
     //properties
     void print_properties ();
     std::vector<std::string> get_property_names ();
+    std::string get_property_description (std::string name);
+    std::string get_properties_description ();
     bool set_property (std::string name, 
 		       std::string value);
     std::string get_property (std::string name);

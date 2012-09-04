@@ -52,6 +52,10 @@ int switcher__get_entity_names(std::vector<std::string> *result);
 int switcher__get_property_names (std::string entity_name, 
 				  std::vector<std::string> *result); 
 
+//gsoap switcher service method-documentation: get a property names of an entity instance  
+int switcher__get_properties_description (std::string entity_name, 
+					  std::string *result); 
+
 //gsoap switcher service method-documentation: set a value of a property from an entity instance  
 int switcher__set_property(std::string entity_name, 
 			   std::string property_name, 

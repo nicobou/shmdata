@@ -104,17 +104,14 @@ int main(int argc, char **argv)
     }
   else if (listprop)
     {
-      std::vector<std::string> resultlist;
+      std::string resultlist;
       if (remaining_args[0] == NULL)
 	{
 	  g_printerr ("entity name missing for listing properties\n");
 	  return false;
 	}
-      switcher_control.get_property_names(remaining_args[0],&resultlist);
-      for(uint i = 0; i < resultlist.size(); i++)
-	{
-	  std::cout << resultlist[i] << std::endl;
-	}
+      switcher_control.get_properties_description (remaining_args[0],&resultlist);
+      std::cout << resultlist << std::endl;
     }
   else if (setprop)
     {

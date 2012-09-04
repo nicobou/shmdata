@@ -179,6 +179,7 @@ controlService::get_entity_names(std::vector<std::string> *result){
   return SOAP_OK;
 }
 
+//TODO remove that 
 int
 controlService::get_property_names (std::string entity_name,
 				    std::vector<std::string> *result)
@@ -190,6 +191,20 @@ controlService::get_property_names (std::string entity_name,
 
   return SOAP_OK;
 }
+
+
+int
+controlService::get_properties_description (std::string entity_name,
+					    std::string *result)
+{
+  using namespace switcher;
+  
+  BaseEntityManager *manager = (BaseEntityManager *) this->user;
+  *result = manager->get_properties_json (entity_name);
+
+  return SOAP_OK;
+}
+
 
 int
 controlService::set_property (std::string entity_name, 

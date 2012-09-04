@@ -37,6 +37,7 @@ namespace switcher
     Property (GObject *object, GParamSpec *pspec);
     void set(std::string value);
     std::string get ();
+    std::string get_description ();
     void print();
 
   private:
