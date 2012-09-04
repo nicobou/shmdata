@@ -101,15 +101,24 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
 ], [
   AC_MSG_RESULT([no])
 ])
-                                                                                
+                                          
+AC_CHECK_PROGS([DOXYGEN], [doxygen])
+if test -z "$DOXYGEN";
+    then AC_MSG_WARN([Doxygen not found - continuing without Doxygen support])
+fi
+
+AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])
+                                      
 dnl =======================================================================
 dnl Finally, create Makefiles in all directories
 dnl =======================================================================
 
 AC_CONFIG_FILES([
 Makefile
-switcher/Makefile
+doxyfile
 src/Makefile
+switcher-${LIBSWITCHER_API_VERSION}.pc:switcher.pc.in
+switcher/Makefile
 ])
 AC_OUTPUT
 
