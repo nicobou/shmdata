@@ -33,15 +33,21 @@
       g_print ("base entity manager destructed\n");
     }
   
-   std::vector<std::string> 
-   BaseEntityManager::get_properties (std::string entity_name)
-   {
-     return (life_manager_->get (entity_name))->get_property_names ();
-   }
+   // std::vector<std::string> 
+   // BaseEntityManager::get_properties (std::string entity_name)
+   // {
+   //   return (life_manager_->get (entity_name))->get_property_names ();
+   // }
 
    std::string 
-   BaseEntityManager::get_properties_json (std::string entity_name)
+   BaseEntityManager::get_properties_description (std::string entity_name)
    {
+
+   if (!life_manager_->exists (entity_name))
+       {
+	 g_printerr ("entity %s not found, cannot get description of properties\n",entity_name.c_str());
+	 return "";
+       }
      return (life_manager_->get (entity_name))->get_properties_description ();
    }
 
@@ -50,6 +56,11 @@
 				    std::string property_name,
 				    std::string property_value)
    {
+     if (!life_manager_->exists (entity_name))
+       {
+	 g_printerr ("entity %s not found, cannot set property\n",entity_name.c_str());
+	 return false;
+       }
      return (life_manager_->get (entity_name))->set_property(property_name.c_str(),property_value.c_str());
    }
 
@@ -57,21 +68,27 @@
    BaseEntityManager::get_property (std::string entity_name,
 				    std::string property_name)
    {
+     if (!life_manager_->exists (entity_name))
+       {
+	 g_printerr ("entity %s not found, cannot get property\n",entity_name.c_str());
+	 return "error, entity not found";
+       }
      return (life_manager_->get (entity_name))->get_property(property_name.c_str());
    }
 
-   std::vector<std::string>
-   BaseEntityManager::get_methods (std::string entity_name)
-   {
-     return (life_manager_->get (entity_name))->get_method_names ();
-   }
+   // std::vector<std::string>
+   // BaseEntityManager::get_methods (std::string entity_name)
+   // {
+   //   return (life_manager_->get (entity_name))->get_method_names ();
+   // }
+
 
    bool 
    BaseEntityManager::invoke (std::string entity_name, 
 			      std::string function_name,
 			      std::vector<std::string> args)
    {
-     g_print ("   BaseEntityManager::entity_invoke_method %s %s, arg size %d\n",entity_name.c_str(), function_name.c_str(), args.size ());
+     //g_print ("   BaseEntityManager::entity_invoke_method %s %s, arg size %d\n",entity_name.c_str(), function_name.c_str(), args.size ());
      
      if (!life_manager_->exists (entity_name))
        {
@@ -124,6 +141,18 @@
 	 return res;
        }
    } 
+
+   std::string
+   BaseEntityManager::get_methods_description (std::string entity_name)
+   {
+     if (!life_manager_->exists (entity_name))
+       {
+	 g_printerr ("entity %s not found, cannot get description of methods\n",entity_name.c_str());
+	 return "error, entity not found";
+       }
+     
+     return (life_manager_->get (entity_name))->get_methods_description ();
+   }
    
    std::string
    BaseEntityManager::create (std::string entity_class)

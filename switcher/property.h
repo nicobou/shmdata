@@ -43,6 +43,8 @@ namespace switcher
   private:
     GParamSpec *property_;
     GObject *object_;
+    std::string json_description_;
+    void add_json_object (const char *name, const char *value, bool put_comma);
   };
 
 }  // end of namespace

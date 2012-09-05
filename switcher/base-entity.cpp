@@ -120,17 +120,6 @@ namespace switcher
     return invoke_method (function_name, args, empty);
   }
   
-  std::vector<std::string>
-  BaseEntity::get_method_names ()
-  {
-    std::vector<std::string> list_of_methods;
-    for(std::map<std::string, Method::ptr>::iterator it = methods_.begin(); it != methods_.end(); ++it) 
-      {
-	list_of_methods.push_back(it->first);
-      }
-    return list_of_methods;
-  }
-
 
   bool
   BaseEntity::register_method (std::string method_name, void *method, std::vector<GType> arg_types, gpointer user_data)
@@ -157,28 +146,49 @@ namespace switcher
 
   }
 
-  void
-  BaseEntity::print_properties ()
+  bool 
+  BaseEntity::set_method_description (std::string method_name,
+				      std::string short_description,
+				      std::vector<std::pair<std::string,std::string> > arg_description)
   {
-    for( std::map<std::string, Property::ptr>::iterator ii=properties_.begin(); ii!=properties_.end(); ++ii)
+    
+    if (methods_.find( method_name ) == methods_.end())
       {
-     	g_print ("\n....\n%s\n",(*ii).first.c_str());
-     	(*ii).second->print ();
+	g_printerr ("cannot set description of not existing ");
+	return false;
       }
+
+    methods_[method_name]->set_description (method_name, short_description, arg_description);
+    
+    return true;
+  }
+
+    std::string 
+  BaseEntity::get_methods_description ()
+  {
+    std::string res;
+    res.append ("{ methods: [ \n");
+    for(std::map<std::string, Method::ptr>::iterator it = methods_.begin(); it != methods_.end(); ++it) 
+      {
+	if (it != methods_.begin())
+	  res.append (", \n");
+	res.append (it->second->get_description ());
+      }
+    res.append ("\n ]}");
+    return res;
+  }
+
+  std::string 
+  BaseEntity::get_method_description (std::string method_name)
+  {
+    if (methods_.find( method_name ) == methods_.end())
+      return "";
+    
+    Method::ptr meth = methods_[method_name];
+    return meth->get_description ();
   }
 
   
-  
-  std::vector<std::string>
-  BaseEntity::get_property_names ()
-  {
-    std::vector<std::string> list_of_properties;
-    for(std::map<std::string, Property::ptr>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
-      {
-	list_of_properties.push_back(it->first);
-      }
-    return list_of_properties;
-  }
 
   std::string 
   BaseEntity::get_properties_description ()
@@ -187,18 +197,29 @@ namespace switcher
     res.append ("{ properties: [ \n");
     for(std::map<std::string, Property::ptr>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
       {
+	if (it != properties_.begin())
+	  res.append (", \n");
+
 	res.append ("{ \"name\": \"");
 	res.append (it->first);
-	res.append ("\",\n ");
+	res.append ("\", ");
         res.append (" \"description\": ");
 	res.append (it->second->get_description ());
-	res.append ("}, \n");
+	res.append ("}");
       }
-    res.append ("]}");
+    res.append (" ]}");
     return res;
   }
 
-  
+  std::string 
+  BaseEntity::get_property_description (std::string name)
+  {
+    if (properties_.find( name ) == properties_.end())
+      return "";
+    
+    Property::ptr prop = properties_[name];
+    return prop->get_description ();
+  }
 
   bool 
   BaseEntity::set_property (std::string name, std::string value)
@@ -219,17 +240,6 @@ namespace switcher
 
     Property::ptr prop = properties_[name];
     return prop->get ();
-  }
-
-  std::string 
-  BaseEntity::get_property_description (std::string name)
-  {
-    //FIXME return a json formated message
-    if (properties_.find( name ) == properties_.end())
-      return "property not found";
-    
-    Property::ptr prop = properties_[name];
-    return prop->get_description ();
   }
 
   void 

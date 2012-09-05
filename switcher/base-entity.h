@@ -51,23 +51,22 @@ namespace switcher
     std::string get_name ();
     
     //properties
-    void print_properties ();
-    std::vector<std::string> get_property_names ();
-    std::string get_property_description (std::string name);
+    std::string get_property_description (std::string property_name);
     std::string get_properties_description ();
     bool set_property (std::string name, 
 		       std::string value);
     std::string get_property (std::string name);
     
     //methods
-    std::vector<std::string> get_method_names ();
+    std::string get_method_description (std::string method_name);
+    std::string get_methods_description ();
     bool invoke_method (std::string function_name,
 			std::vector<std::string> args);
     bool invoke_method (std::string function_name,
 			std::vector<std::string> args,
 			std::vector<void *> pointers);
-    int method_get_num_value_args (std::string function_name); //return -1 if method not found
-    int method_get_num_pointer_args (std::string function_name); //return -1 if method not found
+    int method_get_num_value_args (std::string function_name); //returns -1 if method not found
+    int method_get_num_pointer_args (std::string function_name); //returns -1 if method not found
     
     //setting life manager reference for dynamic creation
     void set_life_manager (std::tr1::shared_ptr<BaseEntityLifeManager> life_manager);
@@ -90,7 +89,9 @@ namespace switcher
 			  void *method, 
 			  std::vector<GType> arg_types, 
 			  gpointer user_data);
-
+    bool set_method_description (std::string method_name,
+				 std::string short_description,
+				 std::vector<std::pair<std::string,std::string> > arg_description);
   };
   
 } // end of namespace

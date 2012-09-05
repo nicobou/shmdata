@@ -18,6 +18,7 @@
  */
 
 #include "switcher/base-sink.h"
+#include <utility>
 
 namespace switcher
 {
@@ -30,6 +31,14 @@ namespace switcher
     std::vector<GType> connect_arg_types;
     connect_arg_types.push_back (G_TYPE_STRING);
     register_method("connect",(void *)&BaseSink::connect_wrapped, connect_arg_types,(gpointer)this);
+    std::vector<std::pair<std::string,std::string> > arg_desc;
+    std::pair<std::string,std::string> socket;
+    socket.first = "socket";
+    socket.second = "socket path of the shmdata to connect to";
+    arg_desc.push_back ( socket); 
+    if (!set_method_description ("connect", "connect the sink to a shmdata socket", arg_desc))
+      g_printerr ("base sink: cannot set method description for \"connect\"\n");
+
   }
 
    gboolean

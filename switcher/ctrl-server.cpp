@@ -179,20 +179,6 @@ controlService::get_entity_names(std::vector<std::string> *result){
   return SOAP_OK;
 }
 
-//TODO remove that 
-int
-controlService::get_property_names (std::string entity_name,
-				    std::vector<std::string> *result)
-{
-  using namespace switcher;
-  
-  BaseEntityManager *manager = (BaseEntityManager *) this->user;
-  *result = manager->get_properties (entity_name);
-
-  return SOAP_OK;
-}
-
-
 int
 controlService::get_properties_description (std::string entity_name,
 					    std::string *result)
@@ -200,7 +186,7 @@ controlService::get_properties_description (std::string entity_name,
   using namespace switcher;
   
   BaseEntityManager *manager = (BaseEntityManager *) this->user;
-  *result = manager->get_properties_json (entity_name);
+  *result = manager->get_properties_description (entity_name);
 
   return SOAP_OK;
 }
@@ -300,13 +286,13 @@ controlService::invoke_method (std::string entity_name,
 
 
 int
-controlService::get_method_names (std::string entity_name,
-				  std::vector<std::string> *result)
+controlService::get_methods_description (std::string entity_name,
+					 std::string *result)
 {
   using namespace switcher;
   BaseEntityManager *manager = (BaseEntityManager *) this->user;
 
-  *result = manager->get_methods (entity_name);
+  *result = manager->get_methods_description (entity_name);
   return SOAP_OK;
 }
 

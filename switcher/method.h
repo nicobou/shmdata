@@ -27,6 +27,7 @@
 #include <tr1/memory>
 #include <vector>
 #include <string>
+#include <map>
 
 namespace switcher
 {
@@ -46,13 +47,19 @@ namespace switcher
 		 std::vector<void *> entity_args);
     uint get_num_of_value_args();
     uint get_num_of_pointer_args();
+    void set_description (std::string method_name,
+			  std::string short_description,
+			  std::vector<std::pair<std::string,std::string> > arg_description);
+    std::string get_description (); //json formated description
 
   private:
     GClosure *closure_;
     std::vector<GType> arg_types_; 
     uint num_of_value_args_;
     uint num_of_pointer_args_;
-
+    std::string method_name_;
+    std::string short_description_;
+    std::vector<std::pair<std::string,std::string> > arg_description_;
     static void destroy_data (gpointer  data,
 			      GClosure *closure);
     

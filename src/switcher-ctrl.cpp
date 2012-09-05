@@ -169,12 +169,9 @@ int main(int argc, char **argv)
 	  return false;
 	}
       
-      std::vector<std::string> resultlist;
-      switcher_control.get_method_names(remaining_args[0], &resultlist);
-      for(uint i = 0; i < resultlist.size(); i++)
-	{
-	  std::cout << resultlist[i] << std::endl;
-	}
+      std::string resultlist;
+      switcher_control.get_methods_description(remaining_args[0], &resultlist);
+	  std::cout << resultlist << std::endl;
     }
   else if (invokemethod)
     {

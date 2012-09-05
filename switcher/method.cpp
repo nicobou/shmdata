@@ -144,4 +144,58 @@ namespace switcher
     g_print ("Method::destroy data\n");
   }
   
+
+  void
+  Method::set_description (std::string method_name,
+			   std::string short_description,
+			   std::vector< std::pair<std::string,std::string> > arg_description)
+  {
+    g_print ("set description\n");
+    method_name_ = method_name;
+    short_description_ = short_description;
+    arg_description_ = arg_description;
+  }
+
+  //json formated description
+  std::string
+  Method::get_description ()
+  {
+    std::string res;
+    
+    res.append ("{");
+    
+    //name
+    res.append ("\"function name\": \"");
+    res.append (method_name_);
+    res.append ("\", ");
+
+    //short description
+    res.append ("\"short description\": \"");
+    res.append (short_description_);
+    res.append ("\", ");
+
+    //arg names and description
+    res.append ("\"arguments\": [");
+    std::vector<std::pair<std::string,std::string> >::iterator it;
+    int j=0;
+    for (it = arg_description_.begin() ; it != arg_description_.end(); it++ )
+      {
+	if (it != arg_description_.begin()) 
+	  res.append (", ");
+	res.append ("\"name\": \"");
+	res.append (it->first);
+	res.append ("\", \"short description\": \"");
+	res.append (it->second);
+	res.append ("\", \"type\": \"");
+	res.append (g_type_name (arg_types_[j]));
+	res.append ("\"");
+	j++;
+      }
+    res.append ("]");
+
+    res.append ("}");
+    return res;
+  }
+  
+
 }

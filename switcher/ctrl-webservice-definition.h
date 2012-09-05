@@ -48,11 +48,7 @@ int switcher__get_factory_capabilities(std::vector<std::string> *result);
 //gsoap switcher service method-documentation: get names of instances 
 int switcher__get_entity_names(std::vector<std::string> *result);
 
-//gsoap switcher service method-documentation: get a property names of an entity instance  
-int switcher__get_property_names (std::string entity_name, 
-				  std::vector<std::string> *result); 
-
-//gsoap switcher service method-documentation: get a property names of an entity instance  
+//gsoap switcher service method-documentation: get a json formated description of the properties  
 int switcher__get_properties_description (std::string entity_name, 
 					  std::string *result); 
 
@@ -75,9 +71,9 @@ int switcher__create_entity (std::string entity_class,
 int switcher__delete_entity (std::string entity_name,
 			     void); 
 
-//gsoap switcher service method-documentation: get method names of an entity   
-int switcher__get_method_names (std::string entity_name,
-				std::vector<std::string> *result);
+//gsoap switcher service method-documentation: get a json formated description of methods   
+int switcher__get_methods_description (std::string entity_name,
+				       std::string *result);
 
 //gsoap switcher service method-documentation: invoke a method of an entity   
 int switcher__invoke_method (std::string entity_name,

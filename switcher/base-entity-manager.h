@@ -41,8 +41,7 @@
      ~BaseEntityManager(); 
 
      //properties
-     std::vector<std::string> get_properties (std::string entity_name); //TODO remove that
-     std::string get_properties_json (std::string entity_name);
+     std::string get_properties_description (std::string entity_name); //json formated
      bool set_property (std::string entity_name,
 			std::string property_name,
 			std::string property_value);
@@ -51,11 +50,10 @@
 			       std::string property_name);
      
      //methods 
-     std::vector<std::string> get_methods (std::string entity_name); 
-     
+     std::string get_methods_description (std::string entity_name); //json formated
      bool invoke (std::string entity_name, 
-			 std::string method_name,
-			 std::vector<std::string> args);  
+		  std::string method_name,
+		  std::vector<std::string> args);  
 
      //life manager
      std::vector<std::string> get_classes (); //know what entity can be created
