@@ -56,7 +56,14 @@ namespace switcher
     std::vector<GType> connect_arg_types;
     connect_arg_types.push_back (G_TYPE_BOOLEAN);
     context->register_method("sync_sinks",(void *)&GconfVideoSink::sync_sinks_wrapped, connect_arg_types,(gpointer)context);
-
+    
+    std::vector<std::pair<std::string,std::string> > arg_desc;
+    std::pair<std::string,std::string> sync;
+    sync.first = "sync";
+    sync.second = "true for synchronizing, false otherwise";
+    arg_desc.push_back (sync); 
+    if (!context->set_method_description ("sync_sinks", "synchronize sink(s) of the element on the pipeline clock", arg_desc))
+      g_printerr ("gconfvideosink: cannot set method description for \"sync_sinks\"\n");
 
     return FALSE; //the source should be removed from the main loop
   }

@@ -45,6 +45,7 @@ namespace switcher
     GObject *object_;
     std::string json_description_;
     void add_json_object (const char *name, const char *value, bool put_comma);
+    void make_description();
   };
 
 }  // end of namespace

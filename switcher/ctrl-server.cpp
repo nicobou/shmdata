@@ -191,6 +191,19 @@ controlService::get_properties_description (std::string entity_name,
   return SOAP_OK;
 }
 
+int
+controlService::get_property_description (std::string entity_name,
+					  std::string property_name,
+					  std::string *result)
+{
+  using namespace switcher;
+  
+  BaseEntityManager *manager = (BaseEntityManager *) this->user;
+  *result = manager->get_property_description (entity_name, property_name);
+
+  return SOAP_OK;
+}
+
 
 int
 controlService::set_property (std::string entity_name, 
@@ -293,6 +306,18 @@ controlService::get_methods_description (std::string entity_name,
   BaseEntityManager *manager = (BaseEntityManager *) this->user;
 
   *result = manager->get_methods_description (entity_name);
+  return SOAP_OK;
+}
+
+int
+controlService::get_method_description (std::string entity_name,
+					std::string method_name,
+					std::string *result)
+{
+  using namespace switcher;
+  BaseEntityManager *manager = (BaseEntityManager *) this->user;
+
+  *result = manager->get_method_description (entity_name, method_name);
   return SOAP_OK;
 }
 

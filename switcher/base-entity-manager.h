@@ -42,6 +42,7 @@
 
      //properties
      std::string get_properties_description (std::string entity_name); //json formated
+     std::string get_property_description (std::string entity_name, std::string property_name); //json formated
      bool set_property (std::string entity_name,
 			std::string property_name,
 			std::string property_value);
@@ -51,6 +52,7 @@
      
      //methods 
      std::string get_methods_description (std::string entity_name); //json formated
+     std::string get_method_description (std::string entity_name, std::string method_name); //json formated
      bool invoke (std::string entity_name, 
 		  std::string method_name,
 		  std::vector<std::string> args);  

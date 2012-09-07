@@ -165,7 +165,7 @@ namespace switcher
     res.append ("{");
     
     //name
-    res.append ("\"function name\": \"");
+    res.append ("\"method name\": \"");
     res.append (method_name_);
     res.append ("\", ");
 

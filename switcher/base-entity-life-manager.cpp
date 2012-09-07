@@ -36,7 +36,7 @@ namespace switcher
   {
     //registering base entity to make available (line sorted)
     abstract_factory_.register_class<AudioTestSource> ("audiotestsource");
-    abstract_factory_.register_class<CtrlServer> ("controlserver");
+    abstract_factory_.register_class<CtrlServer> ("soapcontrolserver");
     abstract_factory_.register_class<GconfVideoSink> ("gconfvideosink");
     abstract_factory_.register_class<GconfVideoSource> ("gconfvideosource");
     abstract_factory_.register_class<Runtime> ("runtime");

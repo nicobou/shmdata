@@ -31,7 +31,9 @@ namespace switcher
   Property::Property (GObject *object, GParamSpec *pspec) :
     property_ (pspec),
     object_ (object)
-  {}
+  {
+    make_description ();
+  }
   
   void 
   Property::set (std::string value)
@@ -75,10 +77,17 @@ namespace switcher
     if (comma)
       json_description_.append (",");
   }
-
-  //json formated 
-  std::string 
+  
+  std::string
   Property::get_description ()
+  {
+    return json_description_;
+  }
+
+
+  //make json formated description 
+  void
+  Property::make_description ()
   {
     guint i;
     gboolean readable;
@@ -398,7 +407,6 @@ namespace switcher
   g_value_reset (&value);
 
   json_description_.append ("}\n");   
-  return json_description_;
 }
 
 

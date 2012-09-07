@@ -110,7 +110,10 @@ int main(int argc, char **argv)
 	  g_printerr ("entity name missing for listing properties\n");
 	  return false;
 	}
-      switcher_control.get_properties_description (remaining_args[0],&resultlist);
+      if (remaining_args[1] == NULL)
+	switcher_control.get_properties_description (remaining_args[0],&resultlist);
+      else
+	switcher_control.get_property_description (remaining_args[0],remaining_args[1],&resultlist);
       std::cout << resultlist << std::endl;
     }
   else if (setprop)
@@ -170,12 +173,14 @@ int main(int argc, char **argv)
 	}
       
       std::string resultlist;
-      switcher_control.get_methods_description(remaining_args[0], &resultlist);
-	  std::cout << resultlist << std::endl;
+      if (remaining_args[1] == NULL)
+	switcher_control.get_methods_description(remaining_args[0], &resultlist);
+      else
+	switcher_control.get_method_description(remaining_args[0], remaining_args[1], &resultlist);
+      std::cout << resultlist << std::endl;
     }
   else if (invokemethod)
     {
-      //g_print ("WARNING HARD CODED argc %d\n",argc);
       if (remaining_args[0] == NULL || remaining_args[1] == NULL)
 	{
 	  g_printerr ("not enough argument for invoking a function\n");
