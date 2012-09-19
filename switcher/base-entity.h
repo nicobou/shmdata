@@ -92,6 +92,8 @@ namespace switcher
     bool set_method_description (std::string method_name,
 				 std::string short_description,
 				 std::vector<std::pair<std::string,std::string> > arg_description);
+
+    
   };
   
 } // end of namespace
