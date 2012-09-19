@@ -18,33 +18,31 @@
  */
 
 
-#ifndef __SWITCHER_AUDIO_SOURCE_H__
-#define __SWITCHER_AUDIO_SOURCE_H__
+#ifndef __SWITCHER_GCONF_AUDIO_SINK_H__
+#define __SWITCHER_GCONF_AUDIO_SINK_H__
 
-#include "switcher/base-source.h"
+#include "switcher/audio-sink.h"
 #include <memory>
-
 
 namespace switcher
 {
 
-  class AudioSource : public BaseSource
+  class GconfAudioSink : public AudioSink
   {
   public:
-    typedef std::tr1::shared_ptr<AudioSource> ptr;
-    AudioSource ();
+    typedef std::tr1::shared_ptr<GconfAudioSink> ptr;
+    GconfAudioSink ();
 
   private:
-    GstElement *rawaudio_;
-    GstElement *audio_tee_;
-    //GstElement *audio_queue_;
-    GstElement *audioconvert_;   
-    GstElement *pitch_;
+    GstElement *audiobin_;
+    GstElement *audioconvert_;
     GstElement *resample_;
-
-  protected:
-    //called in the derived class constructor
-    void set_raw_audio_element (GstElement *elt);
+    GstElement *gconfaudiosink_;
+    GCond* data_cond_; //required in order to ensure gconf element will be factored into the main thread
+    GMutex* data_mutex_;
+    static gboolean do_init(gpointer user_data);
+    //static void update_sub_sync_foreach (const GValue * item, gpointer data);
+    static gboolean sync_sinks_wrapped (gpointer do_sync, gpointer user_data);
   };
 
 }  // end of namespace

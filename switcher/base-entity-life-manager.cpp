@@ -23,11 +23,13 @@
 //the base entities to manage (line sorted)
 #include "switcher/audio-test-source.h"
 #include "switcher/ctrl-server.h"
+#include "switcher/gconf-audio-sink.h"
 #include "switcher/gconf-video-sink.h"
 #include "switcher/gconf-video-source.h"
 #include "switcher/runtime.h"
 #include "switcher/video-test-source.h"
 #include "switcher/xvimagesink.h"
+#include "switcher/gconf-audio-sink.h"
 
 namespace switcher
 {
@@ -37,6 +39,7 @@ namespace switcher
     //registering base entity to make available (line sorted)
     abstract_factory_.register_class<AudioTestSource> ("audiotestsource");
     abstract_factory_.register_class<CtrlServer> ("soapcontrolserver");
+    abstract_factory_.register_class<GconfAudioSink> ("gconfaudiosink");
     abstract_factory_.register_class<GconfVideoSink> ("gconfvideosink");
     abstract_factory_.register_class<GconfVideoSource> ("gconfvideosource");
     abstract_factory_.register_class<Runtime> ("runtime");

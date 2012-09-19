@@ -23,7 +23,7 @@ namespace switcher
 {
   AudioSource::AudioSource() :
     audio_tee_ (gst_element_factory_make ("tee",NULL)),
-    audio_queue_ (gst_element_factory_make ("queue",NULL)),
+    //audio_queue_ (gst_element_factory_make ("queue",NULL)),
     audioconvert_ (gst_element_factory_make ("audioconvert",NULL)),
     pitch_  (gst_element_factory_make ("pitch",NULL)),
     resample_ (gst_element_factory_make ("audioresample",NULL))
@@ -31,16 +31,16 @@ namespace switcher
      gst_bin_add_many (GST_BIN (bin_),
       		       audio_tee_,
 		       //audio_queue_,
-      		       //audioconvert_,
-      		       //pitch_,
-      		       //resample_,
+      		       audioconvert_,
+      		       pitch_,
+      		       resample_,
       		       NULL);
-      gst_element_link_many (audio_tee_,
-			     //audio_queue_,
-			     //audioconvert_,
-			     //pitch_,
-			     //resample_,
-			     NULL);
+     gst_element_link_many (audio_tee_,
+			    //audio_queue_,
+			    audioconvert_,
+			    pitch_,
+			    resample_,
+			    NULL);
 
       register_property (G_OBJECT (pitch_),"output-rate","pitch");
       register_property (G_OBJECT (pitch_),"rate","pitch");
@@ -57,19 +57,20 @@ namespace switcher
     gst_bin_add (GST_BIN (bin_), rawaudio_);
     gst_element_link (rawaudio_, audio_tee_);
 
-    GstElement *pulsesink = gst_element_factory_make ("pulsesink",NULL);
-    //GstElement *resample = gst_element_factory_make ("resample",NULL);
-    gst_bin_add_many (GST_BIN (bin_), 
-		      //resample, 
-		      pulsesink,
-		      NULL);
-    gst_element_link_many (audio_tee_, 
-			   //resample, 
-			   pulsesink,
-			   NULL);
+    //GstElement *pulsesink = gst_element_factory_make ("pulsesink",NULL);
+    // g_object_set (G_OBJECT(pulsesink), "sync", FALSE,NULL);
+     //GstElement *resample = gst_element_factory_make ("audioresample",NULL);
+    // gst_bin_add_many (GST_BIN (bin_), 
+    // 		      //resample, 
+    // 		      pulsesink,
+    // 		      NULL);
+    // gst_element_link_many (audio_tee_, 
+    // 			   //resample, 
+    // 			   pulsesink,
+    // 			   NULL);
     
    
-    GstCaps *audiocaps = gst_caps_new_simple ("audio/x-raw-int",
+    GstCaps *audiocaps = gst_caps_new_simple ("audio/x-raw-float",
      					      NULL);
     ShmdataWriter::ptr rawaudio_connector;
     rawaudio_connector.reset (new ShmdataWriter ());
@@ -85,9 +86,9 @@ namespace switcher
     audio_connector->set_absolute_name (connector_name.c_str());
     audio_connector->plug (bin_, audio_tee_, audiocaps);
     shmdata_writers_.insert (connector_name, audio_connector);
-
-    // //gst_object_unref (audiocaps);
-
+    
+    //gst_object_unref (audiocaps);
+    gst_caps_unref(audiocaps);
   }
 
 }
