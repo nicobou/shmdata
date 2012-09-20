@@ -33,8 +33,8 @@ namespace switcher
     typedef std::tr1::shared_ptr<BaseSource> ptr;
     BaseSource ();
     
-  protected:
-    ShmdataWriter::ptr default_connector_;//FIXME rename into default_writer_
+  /* protected: */
+  /*   ShmdataWriter::ptr default_writer_;//FIXME rename into default_writer_ */
     
   };
 

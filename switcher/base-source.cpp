@@ -23,8 +23,8 @@ namespace switcher
 {
   BaseSource::BaseSource()
   {
-    //will be updated when leak classes will have set "name_"
-    default_connector_.reset (new ShmdataWriter ());
+    // //will be updated when child classes will have set "name_"
+    // default_writer_.reset (new ShmdataWriter ());
   }
 
 }
