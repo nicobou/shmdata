@@ -41,6 +41,8 @@ namespace switcher
     void start (); 
     void stop ();
     
+    std::string get_json_documentation() {return "TODO";}
+
   private:
     struct soap soap_;
     int port_;

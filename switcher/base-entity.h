@@ -48,6 +48,10 @@ namespace switcher
     BaseEntity ();
     virtual ~BaseEntity ();
     
+    //class documentation
+    virtual std::string get_json_documentation() = 0;
+
+    //instance name
     std::string get_name ();
     
     //properties

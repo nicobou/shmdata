@@ -32,6 +32,8 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<GconfAudioSink> ptr;
     GconfAudioSink ();
+    
+    std::string get_json_documentation() {return "TODO";}
 
   private:
     GstElement *audiobin_;

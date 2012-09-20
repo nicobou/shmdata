@@ -32,7 +32,9 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<VideoTestSource> ptr;
     VideoTestSource ();
-
+    
+    std::string get_json_documentation() {return "TODO";}
+    
   private:
     GstElement *videotestsrc_;
   };

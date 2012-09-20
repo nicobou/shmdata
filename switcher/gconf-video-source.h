@@ -33,6 +33,8 @@ namespace switcher
     typedef std::tr1::shared_ptr<GconfVideoSource> ptr;
     GconfVideoSource ();
 
+    std::string get_json_documentation() {return "TODO";}
+
   private:
     GstElement *gconfvideosource_;
     static gboolean do_init(gpointer user_data);

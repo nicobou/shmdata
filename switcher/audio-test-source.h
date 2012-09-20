@@ -33,6 +33,8 @@ namespace switcher
     typedef std::tr1::shared_ptr<AudioTestSource> ptr;
     AudioTestSource ();
 
+    std::string get_json_documentation() {return "TODO";}
+
   private:
     GstElement *audiotestsrc_;
   };

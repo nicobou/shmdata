@@ -38,7 +38,9 @@ namespace switcher
       Runtime ();
       ~Runtime ();
       GstElement *get_pipeline ();
-
+      
+      std::string get_json_documentation() {return "TODO";}
+	
     private:
       static bool initialized_;
       GstElement *pipeline_;
