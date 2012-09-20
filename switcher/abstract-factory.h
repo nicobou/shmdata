@@ -31,18 +31,20 @@
 namespace switcher 
 {
 
-  template <class T, class Key>
+  template <class T, class Key, class Doc>
     class AbstractFactory
   {
   public:
-    template <class U> void register_class (Key Id);
+    template <class U> void register_class (Key Id, Doc doc);
     std::vector<Key> get_keys ();
+    std::vector<Doc> get_classes_documentation ();
     std::tr1::shared_ptr<T> create(Key Id);
     bool key_exists (Key Id);
     ~AbstractFactory();
 
   private:
     std::map<Key, Creator<T>*> constructor_map_;
+    std::map<Key, Doc> classes_documentation_;
     std::vector<Key> constructor_names_;
   };
   

@@ -28,32 +28,47 @@
 namespace switcher 
 {
   
-    template <typename T, typename Key>
+  template <typename T, typename Key, typename Doc>
     template <class U> void 
-    AbstractFactory<T,  Key>::register_class (Key Id)
+    AbstractFactory<T,  Key, Doc>::register_class (Key Id, Doc doc)
   {
     Creator<T>* Fn = (Creator<T>*)new DerivedCreator<U>();
     constructor_map_[Id] = Fn;
     constructor_names_.push_back (Id);
+    classes_documentation_[Id] = doc;
   }
 
-  template <typename T, typename Key>
+  template <typename T, typename Key, typename Doc>
     std::vector<Key> 
-    AbstractFactory<T, Key>::get_keys ()
+    AbstractFactory<T, Key, Doc>::get_keys ()
   {
     return constructor_names_;
   }
+
+  template <typename T, typename Key, typename Doc>
+    std::vector<Doc> 
+    AbstractFactory<T, Key, Doc>::get_classes_documentation ()
+  {
+    std::vector<Doc> tmp;
+    typename std::map<Key, Doc>::iterator i = classes_documentation_.begin();
+    while (i != classes_documentation_.end())
+      {
+	tmp.push_back ((*i).second);
+	++i;
+      }
+    return tmp;
+  }
     
-  template <typename T, typename Key>
+  template <typename T, typename Key, typename Doc>
     bool 
-    AbstractFactory<T, Key>::key_exists(Key Id)
+    AbstractFactory<T, Key, Doc>::key_exists(Key Id)
     {
       return ( constructor_map_.find(Id) != constructor_map_.end() );
     }
 
-  template <typename T, typename Key>
+  template <typename T, typename Key, typename Doc>
     std::tr1::shared_ptr<T> 
-    AbstractFactory<T, Key>::create(Key Id)
+    AbstractFactory<T, Key, Doc>::create(Key Id)
   {
     std::tr1::shared_ptr<T> pointer;
 	
@@ -63,8 +78,8 @@ namespace switcher
     return pointer;
   }
 
-  template <typename T, typename Key>
-    AbstractFactory<T, Key>::~AbstractFactory()
+  template <typename T, typename Key, typename Doc>
+    AbstractFactory<T, Key, Doc>::~AbstractFactory()
   {
     typename std::map<Key, Creator<T>*>::iterator i = constructor_map_.begin();
     while (i != constructor_map_.end())
