@@ -17,6 +17,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "switcher/base-entity-documentation.h"
 #include "switcher/base-entity-life-manager.h"
 #include "switcher/base-entity.h" 
 
@@ -36,15 +37,23 @@ namespace switcher
 
   BaseEntityLifeManager::BaseEntityLifeManager()
   {
-    //registering base entity to make available (line sorted)
-    abstract_factory_.register_class<AudioTestSource> ("audiotestsource","truc");
-    abstract_factory_.register_class<CtrlServer> ("soapcontrolserver","truc");
-    abstract_factory_.register_class<GconfAudioSink> ("gconfaudiosink","truc");
-    abstract_factory_.register_class<GconfVideoSink> ("gconfvideosink","truc");
-    abstract_factory_.register_class<GconfVideoSource> ("gconfvideosource","truc");
-    abstract_factory_.register_class<Runtime> ("runtime","truc");
-    abstract_factory_.register_class<VideoTestSource> ("videotestsource","truc");
-    abstract_factory_.register_class<Xvimagesink> ("xvimagesink","truc");
+    //registering base entity to make available
+    abstract_factory_.register_class<AudioTestSource> (AudioTestSource::get_documentation().get_class_name (), 
+						       AudioTestSource::get_documentation().get_json_documentation ());
+    abstract_factory_.register_class<CtrlServer> (CtrlServer::get_documentation().get_class_name (), 
+						  CtrlServer::get_documentation().get_json_documentation ());
+    abstract_factory_.register_class<GconfAudioSink> (GconfAudioSink::get_documentation().get_class_name (), 
+						      GconfAudioSink::get_documentation().get_json_documentation ());
+    abstract_factory_.register_class<GconfVideoSink> (GconfVideoSink::get_documentation().get_class_name (), 
+						      GconfVideoSink::get_documentation().get_json_documentation ());
+    abstract_factory_.register_class<GconfVideoSource> (GconfVideoSource::get_documentation().get_class_name (),
+							GconfVideoSource::get_documentation().get_json_documentation ());
+    abstract_factory_.register_class<Runtime> (Runtime::get_documentation().get_class_name (), 
+					       Runtime::get_documentation().get_json_documentation ());
+    abstract_factory_.register_class<VideoTestSource> (VideoTestSource::get_documentation().get_class_name (),
+						       VideoTestSource::get_documentation().get_json_documentation ());
+    abstract_factory_.register_class<Xvimagesink> (Xvimagesink::get_documentation().get_class_name (),
+						   Xvimagesink::get_documentation().get_json_documentation ());
   }
 
   std::vector<std::string> 

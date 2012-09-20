@@ -118,4 +118,14 @@ namespace switcher
     return TRUE;
   }
 
+  BaseEntityDocumentation GconfVideoSink::doc_ ("video sink", "gconfvideosink", 
+						"Video sink embedding the GConf-settings for video output");
+  
+  BaseEntityDocumentation 
+  GconfVideoSink::get_documentation ()
+  {
+    return doc_;
+  }
+  
+
 }

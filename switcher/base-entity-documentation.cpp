@@ -21,5 +21,70 @@
 
 namespace switcher
 {
+  BaseEntityDocumentation::BaseEntityDocumentation (std::string cathegory, 
+						    std::string class_name, 
+						    std::string description)
+  {
+    cathegory_ = cathegory;
+    class_name_ = class_name;
+    description_ = description;
+  }
 
+  std::string 
+  BaseEntityDocumentation::get_cathegory () const
+  {
+    return cathegory_;
+  }
+ 
+  std::string 
+  BaseEntityDocumentation::get_class_name () const
+  {
+    return class_name_;
+  }
+  
+  std::string
+  BaseEntityDocumentation::get_description () const
+  {
+    return description_;
+  }
+  
+  std::string 
+  BaseEntityDocumentation::get_json_documentation () const
+  {
+    std::string documentation;
+    documentation.append("{");
+
+    documentation.append("\"cathegory\":\"");
+    documentation.append(cathegory_);
+    documentation.append("\",");
+
+    documentation.append("\"class name\":\"");
+    documentation.append(class_name_);
+    documentation.append("\",");
+
+    documentation.append("\"description\":\"");
+    documentation.append(description_);
+    documentation.append("\"");
+
+    documentation.append("}");
+    return documentation;
+  }
+    
+  void
+  BaseEntityDocumentation::set_cathegory (std::string cathegory)
+  {
+    cathegory_ = cathegory;
+  }
+
+  void
+  BaseEntityDocumentation::set_class_name (std::string class_name)
+  {
+    class_name_ = class_name;
+  }
+
+  void
+  BaseEntityDocumentation::set_description (std::string description)
+  {
+    description_ = description;
+  }
 }

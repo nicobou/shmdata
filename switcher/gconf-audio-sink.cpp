@@ -194,4 +194,13 @@ namespace switcher
     return TRUE;
   }
 
+  BaseEntityDocumentation GconfAudioSink::doc_ ("audio sink", "gconfaudiosink", 
+						"Audio sink embedding the GConf-settings for audio output");
+  
+  BaseEntityDocumentation 
+  GconfAudioSink::get_documentation ()
+  {
+    return doc_;
+  }
+  
 }

@@ -34,9 +34,10 @@ namespace switcher
     typedef std::tr1::shared_ptr<Xvimagesink> ptr;
     Xvimagesink ();
 
-    std::string get_json_documentation() {return "TODO";}
+    static BaseEntityDocumentation get_documentation ();
 
   private:
+    static BaseEntityDocumentation doc_;
     GstElement *xvimagesink_;
   };
 

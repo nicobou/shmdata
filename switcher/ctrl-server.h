@@ -41,9 +41,10 @@ namespace switcher
     void start (); 
     void stop ();
     
-    std::string get_json_documentation() {return "TODO";}
+    static BaseEntityDocumentation get_documentation ();
 
   private:
+    static BaseEntityDocumentation doc_;
     struct soap soap_;
     int port_;
     controlService *service_; 

@@ -33,15 +33,16 @@ namespace switcher
     typedef std::tr1::shared_ptr<GconfVideoSink> ptr;
     GconfVideoSink ();
    
-    std::string get_json_documentation() {return "TODO";}
+   static BaseEntityDocumentation get_documentation ();
 
   private:
-    GstElement *gconfvideosink_;
-    GCond* data_cond_; //required in order to ensure gconf element will be factored into the main thread
-    GMutex* data_mutex_;
-    static gboolean do_init(gpointer user_data);
-    //static void update_sub_sync_foreach (const GValue * item, gpointer data);
-    static gboolean sync_sinks_wrapped (gpointer do_sync, gpointer user_data);
+   static BaseEntityDocumentation doc_;
+   GstElement *gconfvideosink_;
+   GCond* data_cond_; //required in order to ensure gconf element will be factored into the main thread
+   GMutex* data_mutex_;
+   static gboolean do_init(gpointer user_data);
+   //static void update_sub_sync_foreach (const GValue * item, gpointer data);
+   static gboolean sync_sinks_wrapped (gpointer do_sync, gpointer user_data);
   };
 
 }  // end of namespace

@@ -33,9 +33,10 @@ namespace switcher
     typedef std::tr1::shared_ptr<GconfVideoSource> ptr;
     GconfVideoSource ();
 
-    std::string get_json_documentation() {return "TODO";}
+    static BaseEntityDocumentation get_documentation ();
 
   private:
+    static BaseEntityDocumentation doc_;
     GstElement *gconfvideosource_;
     static gboolean do_init(gpointer user_data);
     GCond* data_cond_; //required in order to ensure gconf element will be factored into the main thread

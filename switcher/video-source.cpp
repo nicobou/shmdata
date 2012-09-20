@@ -24,10 +24,10 @@ namespace switcher
 {
   VideoSource::VideoSource () :
     video_tee_ (gst_element_factory_make ("tee",NULL)),
-    colorspace_in_ (gst_element_factory_make ("ffmpegcolorspace",NULL)),
     //FIXME in order to add back alpha here, we must be sure reader will use ffmpegcolorspace. Maybe alpha belong elsewhere, with a videomixer for instance
     //    alpha_ (gst_element_factory_make ("alpha",NULL)),
     videorate_ (gst_element_factory_make ("videorate",NULL)),
+    colorspace_in_ (gst_element_factory_make ("ffmpegcolorspace",NULL)),
     textoverlay_ (gst_element_factory_make ("textoverlay",NULL)),
     videoflip_ (gst_element_factory_make ("videoflip",NULL)),
     deinterlace_ (gst_element_factory_make ("deinterlace",NULL)),

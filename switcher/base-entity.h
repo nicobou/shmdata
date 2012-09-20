@@ -33,6 +33,7 @@
 #include "switcher/property.h"
 #include "switcher/method.h"
 
+#include "switcher/base-entity-documentation.h"
 #include "switcher/base-entity-life-manager.h"
 
 
@@ -49,8 +50,8 @@ namespace switcher
     virtual ~BaseEntity ();
     
     //class documentation
-    virtual std::string get_json_documentation() = 0;
-
+    //virtual BaseEntityDocumentation get_documentation() = 0;
+    
     //instance name
     std::string get_name ();
     

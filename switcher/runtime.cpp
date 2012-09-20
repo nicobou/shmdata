@@ -108,6 +108,16 @@ namespace switcher
     }
     return TRUE;
   }
+
+  BaseEntityDocumentation Runtime::doc_ ("runtime", "runtime",
+					 "Complete pipeline container and scheduler");
+  
+  BaseEntityDocumentation 
+  Runtime::get_documentation ()
+  {
+    return doc_;
+  }
+  
   
 }
 

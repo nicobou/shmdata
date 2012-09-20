@@ -38,7 +38,7 @@ namespace switcher
     GstElement *video_tee_;
     GstElement *videorate_;
     GstElement *colorspace_in_;
-    GstElement *alpha_;
+    //GstElement *alpha_;
     GstElement *textoverlay_;
     GstElement *videoflip_;
     GstElement *deinterlace_;

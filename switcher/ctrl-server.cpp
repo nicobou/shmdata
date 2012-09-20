@@ -24,7 +24,7 @@
 
 namespace switcher
 {
-  
+
   CtrlServer::CtrlServer() : 
     port_ (8080)
   { 
@@ -42,6 +42,16 @@ namespace switcher
 
   }
 
+
+  BaseEntityDocumentation CtrlServer::doc_ ("control", "SOAPcontrolServer",
+					    "SOAPcontrolServer allows for managing switcher through SOAP webservices");
+  
+  BaseEntityDocumentation 
+  CtrlServer::get_documentation ()
+  {
+    return doc_;
+  }
+  
   void
   CtrlServer::set_base_entity_manager (BaseEntityManager *manager)
   {

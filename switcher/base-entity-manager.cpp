@@ -184,7 +184,6 @@
      return entity->get_name ();
    }
 
-
    bool
    BaseEntityManager::remove (std::string entity_name)
    {

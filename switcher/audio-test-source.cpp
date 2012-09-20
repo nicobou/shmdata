@@ -43,5 +43,13 @@ namespace switcher
     set_raw_audio_element (audiotestsrc_);
   }
 
-
+  BaseEntityDocumentation AudioTestSource::doc_ ("audio source", "audiotestsrc", 
+						 "Creates audio test signals");
+  
+  BaseEntityDocumentation 
+  AudioTestSource::get_documentation ()
+  {
+    return doc_;
+  }
+  
 }

@@ -63,4 +63,13 @@ namespace switcher
     return FALSE; //the source should be removed from the main loop
   }
 
+  BaseEntityDocumentation GconfVideoSource::doc_ ("video source", "gconfvideosrc",
+						  "Video source embedding the GConf-settings for video input");
+  
+  BaseEntityDocumentation 
+  GconfVideoSource::get_documentation ()
+  {
+    return doc_;
+  }
+
 }

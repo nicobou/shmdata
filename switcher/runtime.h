@@ -39,9 +39,10 @@ namespace switcher
       ~Runtime ();
       GstElement *get_pipeline ();
       
-      std::string get_json_documentation() {return "TODO";}
+      static BaseEntityDocumentation get_documentation ();
 	
     private:
+      static BaseEntityDocumentation doc_;
       static bool initialized_;
       GstElement *pipeline_;
       GstBus *bus_;

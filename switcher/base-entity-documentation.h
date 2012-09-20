@@ -29,17 +29,16 @@ namespace switcher
   {
 
   public:
-    BaseEntityDocumentation ();
-    ~BaseEntityDocumentation ();
+    BaseEntityDocumentation (std::string cathegory, std::string class_name, std::string description);
+   
+    std::string get_cathegory () const;
+    std::string get_class_name () const;
+    std::string get_description () const;
+    std::string get_json_documentation () const;
     
-    std::string get_cathegory() const;
-    std::string get_class_name() const;
-    std::string get_description() const;
-    std::string get_json_documentation() const;
-    
-    std::string set_cathegory(std::string cathegory);
-    std::string set_class_name(std::string class_name);
-    std::string get_description(std::string description);
+    void set_cathegory (std::string cathegory);
+    void set_class_name (std::string class_name);
+    void set_description (std::string description);
     
   private:
     std::string cathegory_;

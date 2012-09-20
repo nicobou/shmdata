@@ -21,7 +21,6 @@
 
 namespace switcher
 {
-  
   Xvimagesink::Xvimagesink ()
   {
     xvimagesink_ = gst_element_factory_make ("xvimagesink",NULL);
@@ -36,4 +35,13 @@ namespace switcher
     set_sink_element (xvimagesink_);
   }
 
+  BaseEntityDocumentation Xvimagesink::doc_ ("video sink", "xvimagesink",
+					     "Video window with minimal features");
+
+  BaseEntityDocumentation 
+  Xvimagesink::get_documentation ()
+  {
+    return doc_;
+  }
+  
 }
