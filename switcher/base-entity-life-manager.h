@@ -60,7 +60,7 @@ namespace switcher
     bool remove (std::string entity_name);
 
   private:
-    AbstractFactory<BaseEntity, std::string> abstract_factory_;
+    AbstractFactory<BaseEntity, std::string, std::string> abstract_factory_;
     StringMap< std::tr1::shared_ptr<BaseEntity> > entities_;
     };
 

@@ -37,20 +37,21 @@ namespace switcher
   BaseEntityLifeManager::BaseEntityLifeManager()
   {
     //registering base entity to make available (line sorted)
-    abstract_factory_.register_class<AudioTestSource> ("audiotestsource");
-    abstract_factory_.register_class<CtrlServer> ("soapcontrolserver");
-    abstract_factory_.register_class<GconfAudioSink> ("gconfaudiosink");
-    abstract_factory_.register_class<GconfVideoSink> ("gconfvideosink");
-    abstract_factory_.register_class<GconfVideoSource> ("gconfvideosource");
-    abstract_factory_.register_class<Runtime> ("runtime");
-    abstract_factory_.register_class<VideoTestSource> ("videotestsource");
-    abstract_factory_.register_class<Xvimagesink> ("xvimagesink");
+    abstract_factory_.register_class<AudioTestSource> ("audiotestsource","truc");
+    abstract_factory_.register_class<CtrlServer> ("soapcontrolserver","truc");
+    abstract_factory_.register_class<GconfAudioSink> ("gconfaudiosink","truc");
+    abstract_factory_.register_class<GconfVideoSink> ("gconfvideosink","truc");
+    abstract_factory_.register_class<GconfVideoSource> ("gconfvideosource","truc");
+    abstract_factory_.register_class<Runtime> ("runtime","truc");
+    abstract_factory_.register_class<VideoTestSource> ("videotestsource","truc");
+    abstract_factory_.register_class<Xvimagesink> ("xvimagesink","truc");
   }
 
   std::vector<std::string> 
   BaseEntityLifeManager::get_classes ()
   {
-    return abstract_factory_.get_keys ();
+    //return abstract_factory_.get_keys ();
+    return abstract_factory_.get_classes_documentation ();
   }
 
   bool 
