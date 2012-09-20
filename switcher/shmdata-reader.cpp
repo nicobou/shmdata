@@ -41,7 +41,8 @@ namespace switcher
     return GST_BUS_PASS; 
   }
   
-  ShmdataReader::ShmdataReader()
+  ShmdataReader::ShmdataReader() :
+    connection_hook_ (NULL)
   {
     //g_print ("ShmdataReader::ShmdataReader\n");
     reader_ = shmdata_base_reader_new ();
@@ -115,7 +116,13 @@ namespace switcher
 
   }
   
-
+  void 
+  ShmdataReader::set_on_first_data_hook (on_first_data_hook cb, void *user_data)
+  {
+    connection_hook_ = cb;
+    hook_user_data_ = user_data;
+  }
+ 
   void 
   ShmdataReader::on_first_data (shmdata_base_reader_t *context, void *user_data)
   {
@@ -124,8 +131,10 @@ namespace switcher
       ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
       if (!GST_IS_ELEMENT (GST_ELEMENT_PARENT (reader->sink_element_)))
 	  {
-	      gst_bin_add (GST_BIN (reader->bin_), reader->sink_element_);
-	      gst_element_sync_state_with_parent (reader->bin_);
+	    if (reader->connection_hook_ != NULL) 
+	      g_print ("coucou\n");
+	    gst_bin_add (GST_BIN (reader->bin_), reader->sink_element_);
+	    gst_element_sync_state_with_parent (reader->bin_);
  	  }
       shmdata_base_reader_set_sink (context, reader->sink_element_);
       

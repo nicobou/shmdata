@@ -29,6 +29,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gconf-video-sink.cpp \
     gconf-video-source.cpp \
     gst-utils.cpp \
+    h264.cpp \
     method.cpp \
     property.cpp \
     runtime.cpp \
@@ -73,6 +74,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gconf-video-sink.h \
     gconf-video-source.h \
     gst-utils.h \
+    h264.h \
     hash-table.h \
     hash-table_spec.h \
     method.h \

@@ -18,40 +18,29 @@
  */
 
 
-#ifndef __SWITCHER_BASE_SINK_H__
-#define __SWITCHER_BASE_SINK_H__
+#ifndef __SWITCHER_H264_H__
+#define __SWITCHER_H264_H__
 
-#include "switcher/segment.h"
-#include "switcher/shmdata-reader.h"
+#include "switcher/video-sink.h"
+#include <gst/gst.h>
 #include <memory>
 
 namespace switcher
 {
 
-  class BaseSink : public Segment
+  class H264 : public VideoSink
   {
   public:
-    typedef std::tr1::shared_ptr<BaseSink> ptr;
-    //typedef void (*on_first_data_hook)(void *user_data);
+    typedef std::tr1::shared_ptr<H264> ptr;
+    H264 ();
 
-    BaseSink ();
+    static void make_shmdata_writer(void *h264_instance);
 
-    bool connect (std::string shmdata_socket_path);
-    //wrapper for being called
-    static gboolean connect_wrapped (gpointer shmdata_socket_path, gpointer user_data);
-    
-  protected:
-    void set_sink_element (GstElement *sink);
-    void set_on_first_data_hook (ShmdataReader::on_first_data_hook cb, void *user_data);
+    static BaseEntityDocumentation get_documentation ();
 
   private:
-    ShmdataReader::on_first_data_hook connection_hook_;
-    void *hook_user_data_;
-    GstElement *sink_element_;
-    ShmdataReader::ptr reader_;
-    
-
-    
+    static BaseEntityDocumentation doc_;
+    GstElement *h264_;
   };
 
 }  // end of namespace

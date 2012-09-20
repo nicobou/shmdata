@@ -43,10 +43,10 @@ main (int argc,
      std::vector<std::string> available_object_list = manager.get_classes ();
      
     //list available object in factory
-    for (uint i=0; i < available_object_list.size (); i++)
-      {
-        std::cout<< "** available object: " << available_object_list[i] << std::endl; 
-      }    
+    // for (uint i=0; i < available_object_list.size (); i++)
+    //   {
+    //     std::cout<< "** available object: " << available_object_list[i] << std::endl; 
+    //   }    
   
     // Create a runtime
     std::string runtime = manager.create ("runtime");
