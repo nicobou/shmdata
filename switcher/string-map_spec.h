@@ -93,21 +93,19 @@ namespace switcher
       return keys;
     }
        
-  /* template <typename T> */
-  /*   std::vector<T>  */
-  /*   StringMap<T>::get_values () */
-  /*   { */
-  /*     std::vector<T> values; */
-
-  /*     typename std::map<std::string, T>::iterator  it; */
-  /*     for (it = map_.begin(); */
-  /* 	   it = map_.end();  */
-  /* 	   it++) */
-  /* 	{ */
-  /* 	  values.push_back (it->second); */
-  /* 	} */
-	
-  /*     return values; */
-  /*   } */
+  template <typename T> 
+    typename std::vector<T>  
+    StringMap<T>::get_values () 
+    { 
+      typename std::vector<T> values; 
+      
+      typename std::map<std::string, T>::iterator  it; 
+      for (it = map_.begin(); it != map_.end(); it++) 
+   	{ 
+   	  values.push_back (it->second); 
+   	} 
+      
+      return values; 
+     } 
     
 }

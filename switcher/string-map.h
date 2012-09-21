@@ -42,7 +42,7 @@ namespace switcher
       unsigned int size ();
       T lookup (const std::string key);
       std::vector<std::string> get_keys ();
-      //FIXME NOT WORKING std::vector<T> get_values ();
+      std::vector<T> get_values ();
       
     private:
       std::map<std::string, T> map_;
