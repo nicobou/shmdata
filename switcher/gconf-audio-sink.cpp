@@ -77,6 +77,8 @@ namespace switcher
     gst_pad_set_active(ghost_sinkpad,TRUE);
     gst_element_add_pad (context->audiobin_, ghost_sinkpad); 
 
+    //FIXME unref sinkpad
+
 
     //set the name
     context->name_ = gst_element_get_name (context->gconfaudiosink_);

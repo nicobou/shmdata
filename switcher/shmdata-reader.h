@@ -34,13 +34,14 @@ namespace switcher
     typedef std::tr1::shared_ptr<ShmdataReader> ptr;
     typedef void (*on_first_data_hook)(void *user_data);
 
-    ShmdataReader();
-    ~ShmdataReader();
+    ShmdataReader ();
+    ~ShmdataReader ();
     void set_path (const char *absolute_path);
     void set_bin (GstElement *bin);
     void set_sink_element (GstElement *sink_element);
     void set_on_first_data_hook (on_first_data_hook cb, void *user_data);
-    void start();
+    void start ();
+    void stop ();
 
   private:
     on_first_data_hook connection_hook_;

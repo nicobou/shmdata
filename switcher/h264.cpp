@@ -23,13 +23,34 @@ namespace switcher
 {
   H264::H264 ()
   {
-    h264_ = gst_element_factory_make ("x264enc",NULL);
-   
-    //set the name before registering properties
-    name_ = gst_element_get_name (h264_);
+    h264bin_ = gst_element_factory_make ("bin",NULL);
+    
 
-    //should give a bin if composed of multiple elements 
-    set_sink_element (h264_);
+    GstElement *h264 = gst_element_factory_make ("x264enc",NULL);
+    GstElement *colorspace = gst_element_factory_make ("ffmpegcolorspace",NULL);
+
+    gst_bin_add_many (GST_BIN (h264bin_),
+		      h264,
+		      colorspace,
+		      NULL);
+    gst_element_link (colorspace,h264);
+
+    GstPad *sink_pad = gst_element_get_static_pad (colorspace, "sink");
+    GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
+    gst_pad_set_active(ghost_sinkpad,TRUE);
+    gst_element_add_pad (h264bin_, ghost_sinkpad); 
+    //FIXME unref sinkpad
+
+    GstPad *src_pad = gst_element_get_static_pad (h264, "src");
+    GstPad *ghost_srcpad = gst_ghost_pad_new (NULL, src_pad);
+    gst_pad_set_active(ghost_srcpad,TRUE);
+    gst_element_add_pad (h264bin_, ghost_srcpad); 
+    //FIXME unref srcpad
+
+    //set the name before registering properties
+    name_ = gst_element_get_name (h264);
+
+    set_sink_element (h264bin_);
 
     set_on_first_data_hook (H264::make_shmdata_writer,this);
 
@@ -45,17 +66,27 @@ namespace switcher
   }
   
   void 
-  H264::make_shmdata_writer(void *h264_instance)
+  H264::make_shmdata_writer(void *h264bin_instance)
   {
-    H264 *context = static_cast<H264 *>(h264_instance);
+    H264 *context = static_cast<H264 *>(h264bin_instance);
 
-    GstCaps *h264caps = gst_caps_new_simple ("video/x-h264", NULL);
-    ShmdataWriter::ptr h264frames_writer;
-    h264frames_writer.reset (new ShmdataWriter ());
-    std::string writer_name ("/tmp/switcher_pid_"+context->name_+"_h264frames"); 
-    h264frames_writer->set_absolute_name (writer_name.c_str());
-    h264frames_writer->plug (context->bin_, context->h264_, h264caps);
-    context->shmdata_writers_.insert (writer_name, h264frames_writer);
+
+    g_print ("*****************************make_shmdata_writer\n");
+     GstElement *fakesink = gst_element_factory_make ("fakesink",NULL);
+     gst_bin_add (GST_BIN (context->bin_), fakesink);
+    
+     gst_element_link (context->h264bin_, fakesink);
+     gst_element_sync_state_with_parent (fakesink);
+
+     g_object_set (G_OBJECT (fakesink), "sync", FALSE, NULL);
+    
+    // GstCaps *h264caps = gst_caps_new_simple ("video/x-h264", NULL);
+    // ShmdataWriter::ptr h264frames_writer;
+    // h264frames_writer.reset (new ShmdataWriter ());
+    // std::string writer_name ("/tmp/switcher_pid_"+context->name_+"_h264frames"); 
+    // h264frames_writer->set_absolute_name (writer_name.c_str());
+    // h264frames_writer->plug (context->bin_, context->h264bin_, h264caps);
+    // context->shmdata_writers_.insert (writer_name, h264frames_writer);
   }
 
 }

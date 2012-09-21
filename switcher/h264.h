@@ -40,7 +40,7 @@ namespace switcher
 
   private:
     static BaseEntityDocumentation doc_;
-    GstElement *h264_;
+    GstElement *h264bin_;
   };
 
 }  // end of namespace

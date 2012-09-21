@@ -115,7 +115,13 @@ namespace switcher
     shmdata_base_reader_start (reader_, name_.c_str());
 
   }
-  
+
+  void 
+  ShmdataReader::stop ()
+  {
+      shmdata_base_reader_close (reader_);
+  } 
+ 
   void 
   ShmdataReader::set_on_first_data_hook (on_first_data_hook cb, void *user_data)
   {
@@ -132,7 +138,10 @@ namespace switcher
       if (!GST_IS_ELEMENT (GST_ELEMENT_PARENT (reader->sink_element_)))
 	  {
 	    if (reader->connection_hook_ != NULL) 
-	      g_print ("coucou\n");
+	      {
+		g_print ("calling hook\n");
+		reader->connection_hook_ (reader->hook_user_data_);
+	      }
 	    gst_bin_add (GST_BIN (reader->bin_), reader->sink_element_);
 	    gst_element_sync_state_with_parent (reader->bin_);
  	  }

@@ -25,6 +25,7 @@ namespace switcher
 
   Segment::Segment()
   {
+    runtime_ = NULL;
     bin_ = gst_element_factory_make ("bin", NULL);
     //g_object_set (G_OBJECT (bin_), "message-forward",TRUE, NULL);
     //registering set_runtime
@@ -66,19 +67,31 @@ namespace switcher
   void
   Segment::set_runtime (Runtime *runtime)
   {
+   
+    
     runtime_ = runtime;
     gst_bin_add (GST_BIN (runtime_->get_pipeline ()),bin_);
-    gst_element_sync_state_with_parent (bin_);
 
-    std::vector<std::string> readers = shmdata_readers_.get_keys();
-    std::vector<std::string>::iterator iter;
-    for(iter = readers.begin(); iter != readers.end(); iter++)
+
+    //starting the shmdata reader
+    std::vector<ShmdataReader::ptr> shmreaders = shmdata_readers_.get_values ();
+    std::vector<ShmdataReader::ptr>::iterator it;
+    for (it = shmreaders.begin (); it != shmreaders.end (); it++)
       {
-	g_print ("----------------------- starting reader for %s\n",iter->c_str());
-      	shmdata_readers_.lookup (*iter)->start ();
+	(*it)->start ();
       }
+
+    gst_element_sync_state_with_parent (bin_);
     
-  }
+    // std::vector<std::string> readers = shmdata_readers_.get_keys();
+    // std::vector<std::string>::iterator iter;
+    // for(iter = readers.begin(); iter != readers.end(); iter++)
+    //   {
+    // 	g_print ("----------------------- starting reader for %s\n",iter->c_str());
+    //   	shmdata_readers_.lookup (*iter)->start ();
+    //   }
+    
+     }
   
   GstElement *
   Segment::get_bin()
