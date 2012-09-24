@@ -137,12 +137,16 @@ namespace switcher
       ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
       if (!GST_IS_ELEMENT (GST_ELEMENT_PARENT (reader->sink_element_)))
 	  {
+	    gst_bin_add (GST_BIN (reader->bin_), reader->sink_element_);
+
+
 	    if (reader->connection_hook_ != NULL) 
 	      {
 		g_print ("calling hook\n");
 		reader->connection_hook_ (reader->hook_user_data_);
 	      }
-	    gst_bin_add (GST_BIN (reader->bin_), reader->sink_element_);
+
+
 	    gst_element_sync_state_with_parent (reader->bin_);
  	  }
       shmdata_base_reader_set_sink (context, reader->sink_element_);
