@@ -25,29 +25,10 @@ namespace switcher
   {
     h264bin_ = gst_element_factory_make ("bin",NULL);
 
-    GstElement *h264 = gst_element_factory_make ("x264enc",NULL);
-    GstElement *colorspace = gst_element_factory_make ("ffmpegcolorspace",NULL);
-
-    gst_bin_add_many (GST_BIN (h264bin_),
-		      h264,
-		      colorspace,
-		      NULL);
-    gst_element_link (colorspace,h264);
-
-    GstPad *sink_pad = gst_element_get_static_pad (colorspace, "sink");
-    GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
-    gst_pad_set_active(ghost_sinkpad,TRUE);
-    gst_element_add_pad (h264bin_, ghost_sinkpad); 
-    gst_object_unref (sink_pad);
-
-    GstPad *src_pad = gst_element_get_static_pad (h264, "src");
-    GstPad *ghost_srcpad = gst_ghost_pad_new (NULL, src_pad);
-    gst_pad_set_active(ghost_srcpad,TRUE);
-    gst_element_add_pad (h264bin_, ghost_srcpad); 
-    gst_object_unref (src_pad);
+    h264enc_ = gst_element_factory_make ("x264enc",NULL);
 
     //set the name before registering properties
-    name_ = gst_element_get_name (h264);
+    name_ = gst_element_get_name (h264enc_);
 
     set_sink_element (h264bin_);
 
@@ -68,6 +49,29 @@ namespace switcher
   H264::make_shmdata_writer(void *h264bin_instance)
   {
     H264 *context = static_cast<H264 *>(h264bin_instance);
+
+    GstElement *colorspace = gst_element_factory_make ("ffmpegcolorspace",NULL);
+
+    gst_bin_add_many (GST_BIN (context->h264bin_),
+		      context->h264enc_,
+		      colorspace,
+		      NULL);
+    gst_element_link (colorspace,context->h264enc_);
+    gst_element_sync_state_with_parent (context->h264enc_);
+    gst_element_sync_state_with_parent (colorspace);
+
+    GstPad *sink_pad = gst_element_get_static_pad (colorspace, "sink");
+    GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
+    gst_pad_set_active(ghost_sinkpad,TRUE);
+    gst_element_add_pad (context->h264bin_, ghost_sinkpad); 
+    gst_object_unref (sink_pad);
+
+    GstPad *src_pad = gst_element_get_static_pad (context->h264enc_, "src");
+    GstPad *ghost_srcpad = gst_ghost_pad_new (NULL, src_pad);
+    gst_pad_set_active(ghost_srcpad,TRUE);
+    gst_element_add_pad (context->h264bin_, ghost_srcpad); 
+    gst_object_unref (src_pad);
+
     
     GstCaps *h264caps = gst_caps_new_simple ("video/x-h264", NULL);
     ShmdataWriter::ptr h264frames_writer;
