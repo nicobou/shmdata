@@ -22,7 +22,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     base-entity.cpp \
     base-sink.cpp \
     base-source.cpp \
-    connector.cpp \
     controller.cpp \
     ctrl-server.cpp \
     gconf-audio-sink.cpp \
@@ -65,7 +64,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     base-entity.h \
     base-sink.h \
     base-source.h \
-    connector.h \
     controller.h \
     creator.h \
     ctrl-server.h \
