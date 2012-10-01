@@ -63,17 +63,21 @@ namespace switcher
   {
      tee_ = gst_element_factory_make ("tee", NULL);
      queue_ = gst_element_factory_make ("queue", NULL); 
-     fakesink_ = gst_element_factory_make ("fakesink", NULL); //("xvimagesink", NULL);
+     fakesink_ = gst_element_factory_make ("fakesink", NULL); 
      g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
     
      gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
 
-    shmdata_base_writer_plug (writer_, bin, tee_);
+     shmdata_base_writer_plug (writer_, bin, tee_);
 
      gst_element_link_filtered (source_element,
 				tee_, caps);
      gst_element_link_many (tee_, queue_, fakesink_,NULL);
   
+     gst_element_sync_state_with_parent (tee_);
+     gst_element_sync_state_with_parent (queue_);
+     gst_element_sync_state_with_parent (fakesink_);
+
   }
   
 }

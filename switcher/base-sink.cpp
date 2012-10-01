@@ -58,14 +58,17 @@ namespace switcher
   bool
   BaseSink::connect (std::string shmdata_socket_path)
   {
-    //FIXME can be called when runtime has been set
     reader_->set_path (shmdata_socket_path.c_str());
     reader_->set_bin (bin_);
     reader_->set_sink_element (sink_element_);
     if (connection_hook_ != NULL) 
       reader_->set_on_first_data_hook (connection_hook_, hook_user_data_);
+    else
+      g_print ("not setting connection hook\n");
     if (runtime_ != NULL) // starting the reader if runtime is set
       reader_->start ();
+    else
+      g_print ("not starting the reader\n");
     shmdata_readers_.insert (shmdata_socket_path, reader_);
     return true;
   }
@@ -73,16 +76,14 @@ namespace switcher
   void
   BaseSink::set_sink_element (GstElement *sink)
   {
+    //sink element will be added to bin_ by the shmdata reader when appropriate
     sink_element_ = sink;
-    //g_print ("avant\n");
-    //gst_bin_add (GST_BIN (bin_), sink_element_);
-    //g_print ("apres\n");
-
   }
 
   void 
   BaseSink::set_on_first_data_hook (ShmdataReader::on_first_data_hook cb, void *user_data)
   {
+    g_print (")))))))))))))) set_on_first_data_hook\n");
     connection_hook_ = cb;
     hook_user_data_ = user_data;
   }
