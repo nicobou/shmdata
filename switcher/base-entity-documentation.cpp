@@ -21,19 +21,19 @@
 
 namespace switcher
 {
-  BaseEntityDocumentation::BaseEntityDocumentation (std::string cathegory, 
+  BaseEntityDocumentation::BaseEntityDocumentation (std::string category, 
 						    std::string class_name, 
 						    std::string description)
   {
-    cathegory_ = cathegory;
+    category_ = category;
     class_name_ = class_name;
     description_ = description;
   }
 
   std::string 
-  BaseEntityDocumentation::get_cathegory () const
+  BaseEntityDocumentation::get_category () const
   {
-    return cathegory_;
+    return category_;
   }
  
   std::string 
@@ -54,8 +54,8 @@ namespace switcher
     std::string documentation;
     documentation.append("{");
 
-    documentation.append("\"cathegory\":\"");
-    documentation.append(cathegory_);
+    documentation.append("\"category\":\"");
+    documentation.append(category_);
     documentation.append("\",");
 
     documentation.append("\"class name\":\"");
@@ -71,9 +71,9 @@ namespace switcher
   }
     
   void
-  BaseEntityDocumentation::set_cathegory (std::string cathegory)
+  BaseEntityDocumentation::set_category (std::string category)
   {
-    cathegory_ = cathegory;
+    category_ = category;
   }
 
   void
