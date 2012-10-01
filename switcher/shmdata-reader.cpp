@@ -43,7 +43,6 @@ namespace switcher
   
   ShmdataReader::ShmdataReader()
   {
-    //g_print ("ShmdataReader::ShmdataReader\n");
     reader_ = shmdata_base_reader_new ();
     bin_ = NULL;
     name_ = "";
@@ -53,7 +52,6 @@ namespace switcher
   
   ShmdataReader::~ShmdataReader()
   {
-      //g_print ("ShmdataReader::~ShmdataReader\n");
       shmdata_base_reader_close (reader_);
   }
 
@@ -144,7 +142,6 @@ namespace switcher
 
 	    if (reader->connection_hook_ != NULL) 
 	      {
-		g_print ("ShmdataReader::on_first_data: calling hook\n");
 		reader->connection_hook_ (reader->hook_user_data_);
 	      }
 

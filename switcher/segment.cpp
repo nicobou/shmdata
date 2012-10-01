@@ -73,7 +73,7 @@ namespace switcher
     gst_bin_add (GST_BIN (runtime_->get_pipeline ()),bin_);
 
 
-    //FIXME start the shmdata reader if needed
+    //start the shmdata reader
     std::vector<ShmdataReader::ptr> shmreaders = shmdata_readers_.get_values ();
     std::vector<ShmdataReader::ptr>::iterator it;
     for (it = shmreaders.begin (); it != shmreaders.end (); it++)
