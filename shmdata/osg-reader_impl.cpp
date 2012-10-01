@@ -23,6 +23,8 @@ namespace shmdata
     : reader_ (NULL),
       last_buffer_ (NULL), 
       sharedVideoThread_ (NULL),
+      pbo_ (NULL),
+      image_ (NULL),
       debug_ (false), 
       playing_ (true), 
       width_ (-1), // will with incoming video frame 
@@ -33,6 +35,8 @@ namespace shmdata
     texture_->setFilter( osg::Texture2D::MIN_FILTER, osg::Texture2D::NEAREST );
     texture_->setFilter( osg::Texture2D::MAG_FILTER, osg::Texture2D::NEAREST );
     texture_->setResizeNonPowerOfTwoHint(false);
+
+    //pbo_ = new osg::PixelBufferObject;
 
     /* Initialisation */
     gst_init (NULL, NULL);
@@ -217,22 +221,32 @@ namespace shmdata
     context->height_ = g_value_get_int (gst_structure_get_value (imgProp,"height"));
 
     if(context->playing_)
-      {
-	osg::Image *img = new osg::Image;
-	img->setOrigin(osg::Image::TOP_LEFT); 
-	img->setImage(context->width_, 
-		      context->height_, 
-		      0, 
-		      GL_RGBA, 
-		      GL_BGRA, 
-		      GL_UNSIGNED_BYTE,		      
-		      //GL_UNSIGNED_SHORT_5_6_5, 
-		      GST_BUFFER_DATA (buffer),
-		      osg::Image::NO_DELETE, 
-		      1);
-	      
-	context->texture_->setImage(img);
-      }
+    {
+        if( context->image_ == NULL)
+        {
+	        context->image_ = new osg::Image;
+        }
+	    
+        //context->image_->setOrigin(osg::Image::TOP_LEFT); 
+	    context->image_->setImage(context->width_, 
+	    	      context->height_, 
+	    	      1, 
+	    	      GL_RGBA, 
+	    	      GL_BGRA, 
+	    	      GL_UNSIGNED_BYTE,		      
+	    	      //GL_UNSIGNED_SHORT_5_6_5, 
+	    	      GST_BUFFER_DATA (buffer),
+	    	      osg::Image::NO_DELETE, 
+	    	      1);
+	    
+        if(context->pbo_ == NULL)
+        {
+            context->pbo_ = new osg::PixelBufferObject(context->image_);
+            context->image_->setPixelBufferObject(context->pbo_);
+        }
+
+	    context->texture_->setImage(context->image_);
+    }
 
     if (context->last_buffer_ != NULL)  
       gst_buffer_unref (context->last_buffer_);

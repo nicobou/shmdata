@@ -38,8 +38,11 @@ namespace shmdata
     const std::string * socketName_;
     shmdata_base_reader_t *reader_;
     GstBuffer *last_buffer_;
+
     osg::Texture2D *texture_;
+    osg::PixelBufferObject *pbo_;
     osg::Image *image_;
+    
     GstElement *pipeline_;
     GThread *sharedVideoThread_;
     GMainLoop *loop_;
