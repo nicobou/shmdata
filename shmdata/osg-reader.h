@@ -92,6 +92,9 @@ namespace shmdata
      */
     osg::Texture2D * getTexture ();
 
+    bool isReady();
+    void updateImage();
+
      ~OsgReader ();
 
      /** 

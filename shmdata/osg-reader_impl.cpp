@@ -21,10 +21,10 @@ namespace shmdata
 
   OsgReader_impl::OsgReader_impl ()
     : reader_ (NULL),
-      last_buffer_ (NULL), 
       sharedVideoThread_ (NULL),
       pbo_ (NULL),
       image_ (NULL),
+      bufferReady_ (false),
       debug_ (false), 
       playing_ (true), 
       width_ (-1), // will with incoming video frame 
@@ -32,8 +32,8 @@ namespace shmdata
   {
     texture_ = new osg::Texture2D;
     texture_->setDataVariance(osg::Object::DYNAMIC);
-    texture_->setFilter( osg::Texture2D::MIN_FILTER, osg::Texture2D::NEAREST );
-    texture_->setFilter( osg::Texture2D::MAG_FILTER, osg::Texture2D::NEAREST );
+    texture_->setFilter( osg::Texture2D::MIN_FILTER, osg::Texture2D::LINEAR );
+    texture_->setFilter( osg::Texture2D::MAG_FILTER, osg::Texture2D::LINEAR );
     texture_->setResizeNonPowerOfTwoHint(false);
 
     //pbo_ = new osg::PixelBufferObject;
@@ -134,6 +134,11 @@ namespace shmdata
   {
     return height_;
   }
+
+  bool OsgReader_impl::isReady()
+  {
+    return bufferReady_;
+  }
   
   void
   OsgReader_impl::g_loop_thread (gpointer user_data)
@@ -213,7 +218,6 @@ namespace shmdata
     GstBuffer *buffer;
     OsgReader_impl *context = static_cast<OsgReader_impl*>(user_data);
 
-
     buffer = gst_app_sink_pull_buffer (GST_APP_SINK (elt));
     GstStructure *imgProp=gst_caps_get_structure (GST_BUFFER_CAPS(buffer),0);
   
@@ -222,41 +226,47 @@ namespace shmdata
 
     if(context->playing_)
     {
-        if( context->image_ == NULL)
-        {
-	        context->image_ = new osg::Image;
-        }
-	    
-        //context->image_->setOrigin(osg::Image::TOP_LEFT); 
-	    context->image_->setImage(context->width_, 
-	    	      context->height_, 
-	    	      1, 
-	    	      GL_RGBA, 
-	    	      GL_BGRA, 
-	    	      GL_UNSIGNED_BYTE,		      
-	    	      //GL_UNSIGNED_SHORT_5_6_5, 
-	    	      GST_BUFFER_DATA (buffer),
-	    	      osg::Image::NO_DELETE, 
-	    	      1);
-	    
-        if(context->pbo_ == NULL)
-        {
-            context->pbo_ = new osg::PixelBufferObject(context->image_);
-            context->image_->setPixelBufferObject(context->pbo_);
-        }
-
-	    context->texture_->setImage(context->image_);
+        context->buffers_.push_back(buffer);
+        context->bufferReady_ = true;
     }
-
-    if (context->last_buffer_ != NULL)  
-      gst_buffer_unref (context->last_buffer_);
-    context->last_buffer_ = buffer;
   }
 
-  void 
+  void 	
   OsgReader_impl::setDebug(bool debug)
   {
     debug_ = debug;
+  }
+
+  void
+  OsgReader_impl::updateImage()
+  {
+    if(!bufferReady_)
+        return;
+    if( image_ == NULL)
+    {
+	    image_ = new osg::ImageStream;
+	    texture_->setImage(image_);
+    }
+	
+    for(int i=0; i<buffers_.size()-1; ++i)
+    {
+        gst_buffer_unref(buffers_[0]);
+        buffers_.erase(buffers_.begin());
+    }
+
+	image_->setImage(width_, 
+	      height_, 
+	      1, 
+	      GL_RGBA, 
+	      GL_BGRA, 
+	      GL_UNSIGNED_BYTE,		      
+	      GST_BUFFER_DATA (buffers_[0]),
+	      osg::Image::NO_DELETE, 
+	      1);
+  
+    texture_->dirtyTextureObject();
+
+    bufferReady_ = false;
   }
 
   void
