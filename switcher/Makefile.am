@@ -13,6 +13,7 @@ lib_LTLIBRARIES = \
     libswitcher-@LIBSWITCHER_API_VERSION@.la
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
+    aac.cpp \
     audio-sink.cpp \
     audio-source.cpp \
     audio-test-source.cpp \
@@ -54,6 +55,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
+    aac.h \
     abstract-factory.h \
     abstract-factory_spec.h \
     audio-test-source.h \

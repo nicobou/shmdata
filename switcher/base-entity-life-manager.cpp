@@ -22,6 +22,7 @@
 #include "switcher/base-entity.h" 
 
 //the base entities to manage (line sorted)
+#include "switcher/aac.h"
 #include "switcher/audio-test-source.h"
 #include "switcher/ctrl-server.h"
 #include "switcher/gconf-audio-sink.h"
@@ -39,6 +40,8 @@ namespace switcher
   BaseEntityLifeManager::BaseEntityLifeManager()
   {
     //registering base entity to make available
+    abstract_factory_.register_class<AAC> (AAC::get_documentation().get_class_name (), 
+					   AAC::get_documentation().get_json_documentation ());
     abstract_factory_.register_class<AudioTestSource> (AudioTestSource::get_documentation().get_class_name (), 
 						       AudioTestSource::get_documentation().get_json_documentation ());
     abstract_factory_.register_class<CtrlServer> (CtrlServer::get_documentation().get_class_name (), 
