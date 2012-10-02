@@ -25,13 +25,13 @@
 #include "switcher/audio-test-source.h"
 #include "switcher/ctrl-server.h"
 #include "switcher/gconf-audio-sink.h"
+#include "switcher/gconf-audio-source.h"
 #include "switcher/gconf-video-sink.h"
 #include "switcher/gconf-video-source.h"
 #include "switcher/h264.h"
 #include "switcher/runtime.h"
 #include "switcher/video-test-source.h"
 #include "switcher/xvimagesink.h"
-#include "switcher/gconf-audio-sink.h"
 
 namespace switcher
 {
@@ -45,6 +45,8 @@ namespace switcher
 						  CtrlServer::get_documentation().get_json_documentation ());
     abstract_factory_.register_class<GconfAudioSink> (GconfAudioSink::get_documentation().get_class_name (), 
 						      GconfAudioSink::get_documentation().get_json_documentation ());
+    abstract_factory_.register_class<GconfAudioSource> (GconfAudioSource::get_documentation().get_class_name (), 
+							GconfAudioSource::get_documentation().get_json_documentation ());
     abstract_factory_.register_class<GconfVideoSink> (GconfVideoSink::get_documentation().get_class_name (), 
 						      GconfVideoSink::get_documentation().get_json_documentation ());
     abstract_factory_.register_class<GconfVideoSource> (GconfVideoSource::get_documentation().get_class_name (),
