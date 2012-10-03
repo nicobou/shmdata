@@ -1,6 +1,17 @@
 shmdata release notes
 ===================== 
 
+shmdata 0.6.4 (2012-10-03)
+---------------------------
+This is an official release in the 0.6 stable series.
+
+Bugs fixed:
+
+* Fix OSG tearing with HD video
+* Add video-writer-uri example
+* Fix freeze when plug is called from uridecodebin on_pad_added handler
+
+
 shmdata 0.6.2 (2012-08-30)
 ---------------------------
 This is an official release in the 0.6 stable series.

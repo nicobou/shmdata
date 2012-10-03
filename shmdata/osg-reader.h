@@ -92,6 +92,11 @@ namespace shmdata
      */
     osg::Texture2D * getTexture ();
 
+    /** 
+     * Updates the texture with the latest image from the shared memory
+     */
+     void updateImage();
+
      ~OsgReader ();
 
      /** 

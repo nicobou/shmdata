@@ -65,16 +65,9 @@ void
 shmdata_base_writer_set_branch_state_as_pipeline (shmdata_base_writer_t *
 						  writer)
 {
-  GstState current;
-  gst_element_get_state (writer->pipeline_, &current, NULL,
-			 GST_CLOCK_TIME_NONE);
-
-  if (current != GST_STATE_NULL)
-    {
-      gst_element_set_state (writer->qserial_, current);
-      gst_element_set_state (writer->serializer_, current);
-      gst_element_set_state (writer->shmsink_, current);
-    }
+  gst_element_sync_state_with_parent (writer->qserial_);
+  gst_element_sync_state_with_parent (writer->serializer_);
+  gst_element_sync_state_with_parent (writer->shmsink_);
 }
 
 gboolean

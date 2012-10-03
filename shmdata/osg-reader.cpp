@@ -59,6 +59,12 @@ namespace shmdata
   {
     return impl_->getTexture();
   }
+
+  void
+  OsgReader::updateImage()
+  {
+    impl_->updateImage();
+  }
     
   OsgReader::~OsgReader ()
   {

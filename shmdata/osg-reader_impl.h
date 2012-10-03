@@ -17,6 +17,7 @@
 
 #include <osg/Texture2D>
 #include <osg/Image>
+#include <osg/ImageStream>
 #include <gst/gst.h>
 #include "shmdata/base-reader.h"
 
@@ -32,14 +33,21 @@ namespace shmdata
     int getWidth ();
     int getHeight();
     osg::Texture2D * getTexture ();
+    void updateImage();
      ~OsgReader_impl ();
     void setDebug (bool debug);
   private:
     const std::string * socketName_;
     shmdata_base_reader_t *reader_;
-    GstBuffer *last_buffer_;
+
     osg::Texture2D *texture_;
-    osg::Image *image_;
+    osg::PixelBufferObject *pbo_;
+    osg::ImageStream *image_;
+    GstBuffer *buffer1_, *buffer2_;
+    std::vector<GstBuffer*> buffers_;
+    bool oddFrame_;
+    bool bufferReady_;
+    
     GstElement *pipeline_;
     GThread *sharedVideoThread_;
     GMainLoop *loop_;

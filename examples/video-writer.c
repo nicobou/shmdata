@@ -101,12 +101,12 @@ main (int argc, char *argv[])
   videocaps = gst_caps_new_simple ("video/x-raw-yuv",
 				   "format", GST_TYPE_FOURCC,
 				   GST_MAKE_FOURCC ('I', '4', '2', '0'),
-				   "framerate", GST_TYPE_FRACTION, 30, 1,
+				   "framerate", GST_TYPE_FRACTION, 60, 1,
 				   "pixel-aspect-ratio", GST_TYPE_FRACTION, 1,
-				   1, "width", G_TYPE_INT, 640, "height",
-				   G_TYPE_INT, 480,
-				   /* "width", G_TYPE_INT, 1920,    */
-				   /* "height", G_TYPE_INT, 1080,    */
+				   1, /*"width", G_TYPE_INT, 640, "height",
+				   G_TYPE_INT, 480,*/
+				   "width", G_TYPE_INT, 1920,
+				   "height", G_TYPE_INT, 1080,
 				   NULL);
 
   gst_bin_add_many (GST_BIN (pipeline),
