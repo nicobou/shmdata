@@ -33,6 +33,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     h264.cpp \
     method.cpp \
     property.cpp \
+    rtpsession.cpp \
     runtime.cpp \
     segment.cpp \
     shmdata-reader.cpp \
@@ -81,6 +82,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     hash-table_spec.h \
     method.h \
     property.h \
+    rtpsession.h \
     runtime.h \
     segment.h \
     shmdata-reader.h \
