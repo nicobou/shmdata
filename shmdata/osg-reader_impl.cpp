@@ -134,11 +134,6 @@ namespace shmdata
   {
     return height_;
   }
-
-  bool OsgReader_impl::isReady()
-  {
-    return bufferReady_;
-  }
   
   void
   OsgReader_impl::g_loop_thread (gpointer user_data)

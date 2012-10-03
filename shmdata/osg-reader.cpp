@@ -60,12 +60,6 @@ namespace shmdata
     return impl_->getTexture();
   }
 
-  bool
-  OsgReader::isReady()
-  {
-    return impl_->isReady();
-  }
-
   void
   OsgReader::updateImage()
   {

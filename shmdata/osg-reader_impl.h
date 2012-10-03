@@ -33,7 +33,6 @@ namespace shmdata
     int getWidth ();
     int getHeight();
     osg::Texture2D * getTexture ();
-    bool isReady();
     void updateImage();
      ~OsgReader_impl ();
     void setDebug (bool debug);
