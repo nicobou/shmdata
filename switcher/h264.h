@@ -34,7 +34,7 @@ namespace switcher
     typedef std::tr1::shared_ptr<H264> ptr;
     H264 ();
 
-    static void make_shmdata_writer(void *h264_instance);
+    static void make_shmdata_writer(ShmdataReader *caller, void *h264_instance);
 
     static BaseEntityDocumentation get_documentation ();
 

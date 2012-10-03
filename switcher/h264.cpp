@@ -46,7 +46,7 @@ namespace switcher
   }
   
   void 
-  H264::make_shmdata_writer(void *h264bin_instance)
+  H264::make_shmdata_writer(ShmdataReader *caller, void *h264bin_instance)
   {
     H264 *context = static_cast<H264 *>(h264bin_instance);
 

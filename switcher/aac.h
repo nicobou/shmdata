@@ -34,7 +34,7 @@ namespace switcher
     typedef std::tr1::shared_ptr<AAC> ptr;
     AAC ();
 
-    static void make_shmdata_writer(void *aac_instance);
+    static void make_shmdata_writer(ShmdataReader *caller, void *aac_instance);
 
     static BaseEntityDocumentation get_documentation ();
 

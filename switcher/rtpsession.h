@@ -36,17 +36,24 @@ namespace switcher
 
     static BaseEntityDocumentation get_documentation ();
 
+    static void attach_data_stream(ShmdataReader *caller, void *rtpsession_instance); //will be call by shmdata reader
+    bool add_data_stream (std::string shmdata_socket_path);
+    //wrapper for registering function
+    static gboolean add_data_stream_wrapped (gpointer shmdata_socket_path, gpointer user_data);
+    
   private:
     static BaseEntityDocumentation doc_;
     GstElement *rtpsession_;
 
+    
     // //other signals (to emit to the rtpbin)
     /* clear-pt-map */
     /* get-internal-session */
     /* request_pt_map  */
     /* reset_sync  */
     /* payload_type_change */
-
+    
+    //internal rtpbin signals
      static void on_bye_ssrc (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data); 
      static void on_bye_timeout (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data); 
      static void on_new_ssrc (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data); 

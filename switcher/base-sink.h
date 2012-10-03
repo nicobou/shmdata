@@ -32,7 +32,6 @@ namespace switcher
   {
   public:
     typedef std::tr1::shared_ptr<BaseSink> ptr;
-    //typedef void (*on_first_data_hook)(void *user_data);
 
     BaseSink ();
 

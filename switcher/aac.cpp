@@ -46,7 +46,7 @@ namespace switcher
   }
   
   void 
-  AAC::make_shmdata_writer(void *aacbin_instance)
+  AAC::make_shmdata_writer(ShmdataReader *caller, void *aacbin_instance)
   {
     AAC *context = static_cast<AAC *>(aacbin_instance);
 

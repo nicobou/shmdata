@@ -32,7 +32,7 @@ namespace switcher
   {
   public:
     typedef std::tr1::shared_ptr<ShmdataReader> ptr;
-    typedef void (*on_first_data_hook)(void *user_data);
+    typedef void (*on_first_data_hook)(ShmdataReader *caller, void *user_data);
 
     ShmdataReader ();
     ~ShmdataReader ();

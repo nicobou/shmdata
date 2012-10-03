@@ -81,7 +81,7 @@ namespace switcher
     shmdata_base_reader_close (reader_);
     reader_ = shmdata_base_reader_new ();
     
-    if (name_ == "" ||  bin_ == NULL || sink_element_ == NULL)
+    if (name_ == "" ||  bin_ == NULL)
       {
 	g_printerr ("cannot start the shmdata reader: name or bin or sink element has not bin set\n");
 	return;
@@ -136,15 +136,20 @@ namespace switcher
 
       ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
   
+      if (reader->sink_element_ == NULL)
+	{
+	  g_printerr ("ShmdataReader::on_first_data: sink element is NULL\n");
+	}
+
       if (!GST_IS_ELEMENT (GST_ELEMENT_PARENT (reader->sink_element_)))
 	  {
 	    gst_bin_add (GST_BIN (reader->bin_), reader->sink_element_);
 
 	    if (reader->connection_hook_ != NULL) 
 	      {
-		reader->connection_hook_ (reader->hook_user_data_);
+		reader->connection_hook_ (reader, reader->hook_user_data_);
 	      }
-
+	    
 	    gst_element_sync_state_with_parent (reader->sink_element_);
 	    gst_element_sync_state_with_parent (reader->bin_);
  	  }
