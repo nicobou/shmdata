@@ -50,6 +50,11 @@ namespace switcher
   {
     AAC *context = static_cast<AAC *>(aacbin_instance);
 
+    caller->set_sink_element (context->aacbin_);
+    gst_bin_add (GST_BIN (context->bin_), context->aacbin_);
+    gst_element_sync_state_with_parent (context->bin_);
+    gst_element_sync_state_with_parent (context->aacbin_);
+    
     GstElement *audioconvert = gst_element_factory_make ("audioconvert",NULL);
 
     gst_bin_add_many (GST_BIN (context->aacbin_),

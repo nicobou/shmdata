@@ -136,26 +136,22 @@ namespace switcher
 
       ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
   
-      if (reader->sink_element_ == NULL)
-	{
-	  g_printerr ("ShmdataReader::on_first_data: sink element is NULL\n");
+      if (reader->connection_hook_ != NULL) //user want to create the sink_element_ 
+	reader->connection_hook_ (reader, reader->hook_user_data_);
+      else
+	{	
+	  
+	  if (!GST_IS_ELEMENT (GST_ELEMENT_PARENT (reader->sink_element_)))
+	    {
+	      gst_bin_add (GST_BIN (reader->bin_), reader->sink_element_);
+	      
+	      gst_element_sync_state_with_parent (reader->sink_element_);
+	      gst_element_sync_state_with_parent (reader->bin_);
+	    }
+	  else 
+	    g_printerr ("ShmdataReader::on_first_data: sink element has not parent\n");
 	}
-
-      if (!GST_IS_ELEMENT (GST_ELEMENT_PARENT (reader->sink_element_)))
-	  {
-	    gst_bin_add (GST_BIN (reader->bin_), reader->sink_element_);
-
-	    if (reader->connection_hook_ != NULL) 
-	      {
-		reader->connection_hook_ (reader, reader->hook_user_data_);
-	      }
-	    
-	    gst_element_sync_state_with_parent (reader->sink_element_);
-	    gst_element_sync_state_with_parent (reader->bin_);
- 	  }
-      else 
-	g_printerr ("ShmdataReader::on_first_data: sink element has not parent\n");
-
+      
       shmdata_base_reader_set_sink (context, reader->sink_element_);
       
   }

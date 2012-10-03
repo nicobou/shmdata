@@ -25,9 +25,9 @@ namespace switcher
   BaseSink::BaseSink () :
     connection_hook_ (NULL)
   {
-
-    reader_.reset (new ShmdataReader ());
     
+    reader_.reset (new ShmdataReader ());
+    sink_element_ = NULL;
     
     //registering connect
     std::vector<GType> connect_arg_types;
@@ -60,7 +60,8 @@ namespace switcher
   {
     reader_->set_path (shmdata_socket_path.c_str());
     reader_->set_bin (bin_);
-    reader_->set_sink_element (sink_element_);
+    if (sink_element_ !=NULL)
+      reader_->set_sink_element (sink_element_);
     if (connection_hook_ != NULL) 
       reader_->set_on_first_data_hook (connection_hook_, hook_user_data_);
     if (runtime_ != NULL) // starting the reader if runtime is set

@@ -30,8 +30,6 @@ namespace switcher
     //set the name before registering properties
     name_ = gst_element_get_name (h264enc_);
 
-    set_sink_element (h264bin_);
-
     set_on_first_data_hook (H264::make_shmdata_writer,this);
 
   }
@@ -49,6 +47,11 @@ namespace switcher
   H264::make_shmdata_writer(ShmdataReader *caller, void *h264bin_instance)
   {
     H264 *context = static_cast<H264 *>(h264bin_instance);
+
+    caller->set_sink_element (context->h264bin_);
+    gst_bin_add (GST_BIN (context->bin_), context->h264bin_);
+    gst_element_sync_state_with_parent (context->bin_);
+    gst_element_sync_state_with_parent (context->h264bin_);
 
     GstElement *colorspace = gst_element_factory_make ("ffmpegcolorspace",NULL);
 
@@ -76,7 +79,8 @@ namespace switcher
      h264frames_writer->set_absolute_name (writer_name.c_str());
      h264frames_writer->plug (context->bin_, context->h264enc_, h264caps);
      context->shmdata_writers_.insert (writer_name, h264frames_writer);
-    
+
+
   }
 
 }
