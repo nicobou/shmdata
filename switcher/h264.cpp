@@ -21,21 +21,33 @@
 
 namespace switcher
 {
-  H264::H264 ()
-  {
-    h264bin_ = gst_element_factory_make ("bin",NULL);
-
-    h264enc_ = gst_element_factory_make ("x264enc",NULL);
-
-    //set the name before registering properties
-    name_ = gst_element_get_name (h264enc_);
-
-    set_on_first_data_hook (H264::make_shmdata_writer,this);
-
-  }
 
   QuiddityDocumentation H264::doc_ ("video encoder", "x264enc",
-				      "H264 encoder");
+				    "H264 encoder");
+  
+  H264::H264 ()
+  {
+    make_h264 ();
+  }
+
+  H264::H264 (QuiddityLifeManager::ptr life_manager)
+  {
+    life_manager_ = life_manager;
+    make_h264 ();
+  }
+
+  void
+  H264::make_h264 ()
+  {
+    h264bin_ = gst_element_factory_make ("bin",NULL);
+    
+    h264enc_ = gst_element_factory_make ("x264enc",NULL);
+    
+    //set the name before registering properties
+    name_ = gst_element_get_name (h264enc_);
+    
+    set_on_first_data_hook (H264::make_shmdata_writer,this);
+  }
 
   QuiddityDocumentation 
   H264::get_documentation ()

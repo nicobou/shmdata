@@ -21,10 +21,24 @@
 
 namespace switcher
 {
+
+  Xvimagesink::Xvimagesink (QuiddityLifeManager::ptr life_manager)
+  {
+    life_manager_ = life_manager;
+    make_xvimagesink ();
+  }
+
+  
   Xvimagesink::Xvimagesink ()
   {
+    make_xvimagesink ();
+  }
+
+  void 
+  Xvimagesink::make_xvimagesink ()
+  {
     xvimagesink_ = gst_element_factory_make ("xvimagesink",NULL);
-   
+    
     //set the name before registering properties
     name_ = gst_element_get_name (xvimagesink_);
     
@@ -34,9 +48,10 @@ namespace switcher
     //FIXME should give a bin 
     set_sink_element (xvimagesink_);
   }
+  
 
   QuiddityDocumentation Xvimagesink::doc_ ("video sink", "xvimagesink",
-					     "Video window with minimal features");
+					   "Video window with minimal features");
 
   QuiddityDocumentation 
   Xvimagesink::get_documentation ()

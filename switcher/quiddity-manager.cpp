@@ -32,7 +32,7 @@
    QuiddityManager::QuiddityManager(std::string name) :
      name_ (name)
     {
-      life_manager_.reset (new QuiddityLifeManager());
+      life_manager_.reset (new QuiddityLifeManager(name));
     }
 
     QuiddityManager::~QuiddityManager()
@@ -184,10 +184,7 @@
    {
      if(!life_manager_->class_exists (quiddity_class))
        return "";
-     
-     Quiddity::ptr quiddity = life_manager_->create (quiddity_class);
-     //give reference of life manager to the quiddity
-     quiddity->set_life_manager (get_life_manager());
+     Quiddity::ptr quiddity = life_manager_->create (quiddity_class, get_life_manager ());
      return quiddity->get_name ();
    }
 

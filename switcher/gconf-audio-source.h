@@ -32,10 +32,12 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<GconfAudioSource> ptr;
     GconfAudioSource ();
+    GconfAudioSource (QuiddityLifeManager::ptr life_manager);
 
     static QuiddityDocumentation get_documentation ();
 
   private:
+    void make_gconfaudiosource ();
     static QuiddityDocumentation doc_;
     GstElement *gconfaudiosource_;
     static gboolean do_init(gpointer user_data);

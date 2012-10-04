@@ -25,18 +25,25 @@ namespace switcher
 
   GconfAudioSource::GconfAudioSource ()
   {
+    make_gconfaudiosource ();
+  }
+
+  GconfAudioSource::GconfAudioSource (QuiddityLifeManager::ptr life_manager)
+  {
+    life_manager_ = life_manager;
+    make_gconfaudiosource ();
+  }
+
+  void 
+  GconfAudioSource::make_gconfaudiosource ()
+  {
     data_cond_ = g_cond_new (); 
     data_mutex_ = g_mutex_new ();
-    
-    //g_idle_add ((GSourceFunc) GconfAudioSource::do_init, (gpointer) this);
     g_main_context_invoke (NULL, (GSourceFunc) GconfAudioSource::do_init, (gpointer) this);
-    
     g_mutex_lock (data_mutex_);
     g_cond_wait (data_cond_, data_mutex_);
     g_mutex_unlock (data_mutex_);
-    
   }
-
 
   gboolean 
   GconfAudioSource::do_init(gpointer user_data)

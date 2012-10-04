@@ -36,12 +36,14 @@ namespace switcher
     public:
       typedef std::tr1::shared_ptr<Runtime> ptr;
       Runtime ();
+      Runtime (QuiddityLifeManager::ptr life_manager);
       ~Runtime ();
       GstElement *get_pipeline ();
       
       static QuiddityDocumentation get_documentation ();
 	
     private:
+      void make_runtime();
       static QuiddityDocumentation doc_;
       static bool initialized_;
       GstElement *pipeline_;

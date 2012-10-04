@@ -32,17 +32,19 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<GconfVideoSink> ptr;
     GconfVideoSink ();
+    GconfVideoSink (QuiddityLifeManager::ptr life_manager);
    
-   static QuiddityDocumentation get_documentation ();
-
+    static QuiddityDocumentation get_documentation ();
+   
   private:
-   static QuiddityDocumentation doc_;
-   GstElement *gconfvideosink_;
-   GCond* data_cond_; //required in order to ensure gconf element will be factored into the main thread
-   GMutex* data_mutex_;
-   static gboolean do_init(gpointer user_data);
-   //static void update_sub_sync_foreach (const GValue * item, gpointer data);
-   static gboolean sync_sinks_wrapped (gpointer do_sync, gpointer user_data);
+    void make_gconfvideosink ();
+    static QuiddityDocumentation doc_;
+    GstElement *gconfvideosink_;
+    GCond* data_cond_; //required in order to ensure gconf element will be factored into the main thread
+    GMutex* data_mutex_;
+    static gboolean do_init(gpointer user_data);
+    //static void update_sub_sync_foreach (const GValue * item, gpointer data);
+    static gboolean sync_sinks_wrapped (gpointer do_sync, gpointer user_data);
   };
 
 }  // end of namespace

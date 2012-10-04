@@ -30,7 +30,18 @@ namespace switcher
 
   Runtime::Runtime ()
   {
-    
+    make_runtime ();
+  }
+
+  Runtime::Runtime (QuiddityLifeManager::ptr life_manager)
+  {
+    life_manager_ = life_manager;
+    make_runtime ();
+  }
+  
+  void
+  Runtime::make_runtime ()
+  {
     if (!initialized_)
       {
 	gst_init (NULL,NULL);
@@ -38,16 +49,16 @@ namespace switcher
 	thread_ = g_thread_new ("SwitcherMainLoop", GThreadFunc(main_loop_thread), this);
 	initialized_ = true;
       }
-
+    
     pipeline_ = gst_pipeline_new (NULL);
     name_ = gst_element_get_name (pipeline_);
     bus_ = gst_pipeline_get_bus (GST_PIPELINE (pipeline_)); 
     gst_bus_add_watch (bus_, bus_called, NULL);
     gst_object_unref (bus_); 
-
+    
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
   }
-
+  
   Runtime::~Runtime ()
   {
     g_print ("deleting runtime\n");

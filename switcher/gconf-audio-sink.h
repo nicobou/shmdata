@@ -32,10 +32,12 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<GconfAudioSink> ptr;
     GconfAudioSink ();
+    GconfAudioSink (QuiddityLifeManager::ptr life_manager);
     
     static QuiddityDocumentation get_documentation ();
 
   private:
+    void make_gconfaudiosink ();
     static QuiddityDocumentation doc_;
     GstElement *audiobin_;
     GstElement *audioconvert_;

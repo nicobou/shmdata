@@ -31,7 +31,10 @@ namespace switcher
   Quiddity::Quiddity ()
   {}
   
-  
+  // Quiddity::Quiddity (std::tr1::shared_ptr<QuiddityLifeManager> life_manager) :
+  // life_manager_ (life_manager)
+  // {}
+    
   Quiddity::~Quiddity () { 
     g_print ("call: Quiddity destructor for %s\n",get_name().c_str());
     //TODO remove properties & methods
@@ -242,20 +245,18 @@ namespace switcher
     return prop->get ();
   }
 
-  void 
-   Quiddity::set_life_manager (std::tr1::shared_ptr<QuiddityLifeManager> life_manager)
+
+  std::string
+  Quiddity::make_shmdata_writer_name (std::string suffix)
   {
-    life_manager_ = life_manager; 
-    if ((bool)life_manager_.lock()) g_print ("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm\n");
-    if ((bool)life_manager_.lock()) g_print ("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm\n");
+    std::string connector_name;
+    QuiddityLifeManager::ptr life_manager = life_manager_.lock();
+    if ( (bool)life_manager)
+      connector_name.append ("/tmp/switcher_"+life_manager->get_name ()+"_"+name_+"_"+suffix);
+    else
+      connector_name.append ("/tmp/switcher_"+name_+"_"+ suffix); //should not happend
+
+    return connector_name;
   }
 
-  std::tr1::weak_ptr<QuiddityLifeManager>
-  Quiddity::get_life_manager ()
-  {
-    if ((bool)life_manager_.expired()) g_print ("ggggggggggggggggggggggmmmm\n");
-
-    return life_manager_ ;
-  }
- 
 }

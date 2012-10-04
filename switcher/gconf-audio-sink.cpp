@@ -25,6 +25,18 @@ namespace switcher
 
   GconfAudioSink::GconfAudioSink ()
   {
+    make_gconfaudiosink ();
+  }
+
+  GconfAudioSink::GconfAudioSink (QuiddityLifeManager::ptr life_manager)
+  {
+    life_manager_ = life_manager;
+    make_gconfaudiosink ();
+  }
+
+  void 
+  GconfAudioSink::make_gconfaudiosink ()
+  {
     //FIXME use async queue in base quiddity manager in order to avoid that (constructor called in the right thread)
     data_cond_ = g_cond_new (); 
 
@@ -36,8 +48,7 @@ namespace switcher
     g_cond_wait (data_cond_, data_mutex_);
     g_mutex_unlock (data_mutex_);
   }
-
-
+  
   gboolean 
   GconfAudioSink::do_init(gpointer user_data)
   {

@@ -101,14 +101,13 @@ namespace switcher
   }
 
   Quiddity::ptr 
-  QuiddityLifeManager::create (std::string quiddity_class)
+  QuiddityLifeManager::create (std::string quiddity_class, QuiddityLifeManager::ptr life_manager)
   {
-    Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class);
+    Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class, life_manager);
     g_print ("create_quiddity %p %p\n",&quiddity,quiddity.get());
     if (quiddity.get() != NULL)
       {
-	//hashed_->insert (quiddity->get_name(),&quiddity);
-	quiddities_.insert (quiddity->get_name(),quiddity);
+     	quiddities_.insert (quiddity->get_name(),quiddity);
       }
     return quiddity;
   }

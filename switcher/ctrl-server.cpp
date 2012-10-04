@@ -24,15 +24,30 @@
 
 namespace switcher
 {
-
-  CtrlServer::CtrlServer() : 
-    port_ (8080)
+  QuiddityDocumentation CtrlServer::doc_ ("control", "SOAPcontrolServer",
+					  "SOAPcontrolServer allows for managing switcher through SOAP webservices");
+    
+  CtrlServer::CtrlServer()
   { 
+    make_ctrlserver ();
+  }
+
+  CtrlServer::CtrlServer(QuiddityLifeManager::ptr life_manager)
+  { 
+    life_manager_ = life_manager;
+    make_ctrlserver ();
+  }
+
+  void
+  CtrlServer::make_ctrlserver ()
+  {
+    port_ = 8080;
     soap_init(&soap_);
     //TODO find a better name for CtrlServer
     srand(time(0));
     name_ = g_strdup_printf ("ctrlserver%d",rand() % 1024);
    
+  
   }
 
   CtrlServer::~CtrlServer ()
@@ -41,10 +56,6 @@ namespace switcher
     g_free ((gchar *)name_.c_str());
 
   }
-
-
-  QuiddityDocumentation CtrlServer::doc_ ("control", "SOAPcontrolServer",
-					    "SOAPcontrolServer allows for managing switcher through SOAP webservices");
   
   QuiddityDocumentation 
   CtrlServer::get_documentation ()

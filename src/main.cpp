@@ -23,6 +23,17 @@
 #include <iostream>
 #include <signal.h>
 
+
+
+static gchar *server_name = NULL;
+//static gchar **remaining_args = NULL;
+
+static GOptionEntry entries[] =
+  {
+    { "server-name", 's', 0, G_OPTION_ARG_STRING, &server_name, "server name (default is \"default\")", NULL },
+    { NULL }
+};
+
  //clean up pipeline when ctrl-c
  void
  leave (int sig)
@@ -37,9 +48,26 @@ main (int argc,
 {
      (void) signal (SIGINT, leave);
 
+     //command line options
+     GError *error = NULL;
+     GOptionContext *context;
+     context = g_option_context_new ("- switcher server");
+     g_option_context_add_main_entries (context, entries, NULL);
+     if (!g_option_context_parse (context, &argc, &argv, &error))
+       {
+	 g_print ("option parsing failed: %s\n", error->message);
+	 exit (1);
+       } 
+  
+
+
      using namespace switcher;
      
-     QuiddityManager manager("hehe");  
+     if (server_name == NULL)
+       server_name = "default";
+
+       QuiddityManager manager(server_name);  
+
      std::vector<std::string> available_object_list = manager.get_classes ();
      
     //list available object in factory

@@ -32,10 +32,12 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<GconfVideoSource> ptr;
     GconfVideoSource ();
-
+    GconfVideoSource (QuiddityLifeManager::ptr life_manager);
+ 
     static QuiddityDocumentation get_documentation ();
 
   private:
+    void make_gconfvideosource ();
     static QuiddityDocumentation doc_;
     GstElement *gconfvideosource_;
     static gboolean do_init(gpointer user_data);

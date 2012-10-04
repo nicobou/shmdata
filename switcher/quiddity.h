@@ -32,7 +32,6 @@
 #include <gst/gst.h>
 #include "switcher/property.h"
 #include "switcher/method.h"
-
 #include "switcher/quiddity-documentation.h"
 #include "switcher/quiddity-life-manager.h"
 
@@ -73,16 +72,10 @@ namespace switcher
     int method_get_num_value_args (std::string function_name); //returns -1 if method not found
     int method_get_num_pointer_args (std::string function_name); //returns -1 if method not found
     
-    //setting life manager reference for dynamic creation
-    void set_life_manager (std::tr1::shared_ptr<QuiddityLifeManager> life_manager);
-
   private:
     //properties are registered by derived class
     std::map<std::string, Property::ptr> properties_;
     std::map<std::string, Method::ptr> methods_;
-    //used in order to dynamically create other quiddity, weak_ptr is used in order to 
-    //avoid circular references to the life manager 
-    std::tr1::weak_ptr<QuiddityLifeManager> life_manager_;
 
   protected:
     std::string name_;
@@ -97,7 +90,11 @@ namespace switcher
     bool set_method_description (std::string method_name,
 				 std::string short_description,
 				 std::vector<std::pair<std::string,std::string> > arg_description);
-    std::tr1::weak_ptr<QuiddityLifeManager> get_life_manager ();
+    //used in order to dynamically create other quiddity, weak_ptr is used in order to 
+    //avoid circular references to the life manager 
+    std::tr1::weak_ptr<QuiddityLifeManager> life_manager_;
+    //std::tr1::weak_ptr<QuiddityLifeManager> get_life_manager ();
+    std::string make_shmdata_writer_name (std::string suffix);
     
   };
   

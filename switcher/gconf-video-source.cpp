@@ -25,25 +25,25 @@ namespace switcher
 
   GconfVideoSource::GconfVideoSource ()
   {
+    make_gconfvideosource ();
+  }
+ 
+  GconfVideoSource::GconfVideoSource (QuiddityLifeManager::ptr life_manager)
+  {
+    life_manager_ = life_manager;
+    make_gconfvideosource ();
+  }
+
+  void 
+  GconfVideoSource::make_gconfvideosource ()
+  {
     data_cond_ = g_cond_new (); 
     data_mutex_ = g_mutex_new ();
-    
-    //g_idle_add ((GSourceFunc) GconfVideoSource::do_init, (gpointer) this);
     g_main_context_invoke (NULL, (GSourceFunc) GconfVideoSource::do_init, (gpointer) this);
-    
     g_mutex_lock (data_mutex_);
     g_cond_wait (data_cond_, data_mutex_);
     g_mutex_unlock (data_mutex_);
-
-    
-    //name_ = "truc";
-    
-    // gconfvideosource_ = gst_element_factory_make ("gconfvideosrc",NULL);
-    // //set the name
-    //name_ = gst_element_get_name (gconfvideosource_);
-    // set_raw_video_element (gconfvideosource_);
   }
-
 
   gboolean 
   GconfVideoSource::do_init(gpointer user_data)

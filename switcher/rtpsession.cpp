@@ -21,7 +21,23 @@
 
 namespace switcher
 {
+  
+  QuiddityDocumentation RtpSession::doc_ ("RTP session", "rtpsession",
+					 "RTP session manager");
+  
   RtpSession::RtpSession ()
+  {
+    make_rtpsession ();
+  }
+
+  RtpSession::RtpSession (QuiddityLifeManager::ptr life_manager)
+  {
+    life_manager_ = life_manager;
+    make_rtpsession ();
+  }
+
+  void 
+  RtpSession::make_rtpsession ()
   {
     rtpsession_ = gst_element_factory_make ("gstrtpbin",NULL);
     
@@ -62,12 +78,8 @@ namespace switcher
 
     //set the name before registering properties
     name_ = gst_element_get_name (rtpsession_);
-    
   }
 
-
-  QuiddityDocumentation RtpSession::doc_ ("RTP session", "rtpsession",
-					 "RTP session manager");
 
   QuiddityDocumentation 
   RtpSession::get_documentation ()

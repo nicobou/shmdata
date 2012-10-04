@@ -22,31 +22,31 @@
 
 namespace switcher
 {
-  AudioSource::AudioSource() :
-    audio_tee_ (gst_element_factory_make ("tee",NULL)),
-    //audio_queue_ (gst_element_factory_make ("queue",NULL)),
-    audioconvert_ (gst_element_factory_make ("audioconvert",NULL)),
-    pitch_  (gst_element_factory_make ("pitch",NULL)),
-    resample_ (gst_element_factory_make ("audioresample",NULL))
+  AudioSource::AudioSource() 
   { 
-     gst_bin_add_many (GST_BIN (bin_),
-      		       audio_tee_,
-		       //audio_queue_,
-      		       audioconvert_,
-      		       pitch_,
-      		       resample_,
-      		       NULL);
-     gst_element_link_many (audio_tee_,
-			    //audio_queue_,
-			    audioconvert_,
-			    pitch_,
-			    resample_,
-			    NULL);
-
-      register_property (G_OBJECT (pitch_),"output-rate","pitch");
-      register_property (G_OBJECT (pitch_),"rate","pitch");
-      register_property (G_OBJECT (pitch_),"tempo","pitch");
-      register_property (G_OBJECT (pitch_),"pitch","pitch");
+    audio_tee_ = gst_element_factory_make ("tee",NULL);
+    audioconvert_ = gst_element_factory_make ("audioconvert",NULL);
+    pitch_ = gst_element_factory_make ("pitch",NULL);
+    resample_ = gst_element_factory_make ("audioresample",NULL);
+    
+    gst_bin_add_many (GST_BIN (bin_),
+		      audio_tee_,
+		      //audio_queue_,
+		      audioconvert_,
+		      pitch_,
+		      resample_,
+		      NULL);
+    gst_element_link_many (audio_tee_,
+			   //audio_queue_,
+			   audioconvert_,
+			   pitch_,
+			   resample_,
+			   NULL);
+    
+    register_property (G_OBJECT (pitch_),"output-rate","pitch");
+    register_property (G_OBJECT (pitch_),"rate","pitch");
+    register_property (G_OBJECT (pitch_),"tempo","pitch");
+    register_property (G_OBJECT (pitch_),"pitch","pitch");
 
   }
 
@@ -58,45 +58,21 @@ namespace switcher
     gst_bin_add (GST_BIN (bin_), rawaudio_);
     gst_element_link (rawaudio_, audio_tee_);
 
-    //GstElement *pulsesink = gst_element_factory_make ("pulsesink",NULL);
-    // g_object_set (G_OBJECT(pulsesink), "sync", FALSE,NULL);
-     //GstElement *resample = gst_element_factory_make ("audioresample",NULL);
-    // gst_bin_add_many (GST_BIN (bin_), 
-    // 		      //resample, 
-    // 		      pulsesink,
-    // 		      NULL);
-    // gst_element_link_many (audio_tee_, 
-    // 			   //resample, 
-    // 			   pulsesink,
-    // 			   NULL);
-    
-   
     GstCaps *audiocaps = gst_caps_new_simple ("audio/x-raw-float",
      					      NULL);
+
+    //creating a connector for raw audio
     ShmdataWriter::ptr rawaudio_connector;
     rawaudio_connector.reset (new ShmdataWriter ());
-    std::string rawconnector_name ("/tmp/switcher_pid_"+name_+"_rawaudio"); 
+    std::string rawconnector_name = make_shmdata_writer_name ("rawaudio");
     rawaudio_connector->set_absolute_name (rawconnector_name.c_str());
     rawaudio_connector->plug (bin_, audio_tee_, audiocaps);
     shmdata_writers_.insert (rawconnector_name, rawaudio_connector);
     
-    //creating a connector in order to allow connect with the transformed audio
+    //creating a connector for transformed audio
     ShmdataWriter::ptr audio_connector;
-
     audio_connector.reset (new ShmdataWriter ());
-    
-    std::string connector_name;
-
-    {
-      if ((bool)get_life_manager().lock())
-	g_print ("----------------------------------\n");
-      QuiddityLifeManager::ptr life_manager = get_life_manager().lock();
-      if ( (bool)life_manager)
-	connector_name.append ("/tmp/switcher_"+life_manager->get_name ()+"_"+name_+"_audio");
-      else
-	connector_name.append ("/tmp/switcher_not_managed_"+name_+"_audio");
-    }
-    
+    std::string connector_name = make_shmdata_writer_name ("audio");
     audio_connector->set_absolute_name (connector_name.c_str());
     audio_connector->plug (bin_, audio_tee_, audiocaps);
     shmdata_writers_.insert (connector_name, audio_connector);

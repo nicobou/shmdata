@@ -34,6 +34,7 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<CtrlServer> ptr;
     CtrlServer();
+    CtrlServer(QuiddityLifeManager::ptr life_manager);
     ~CtrlServer ();
     //void set_user_data (void *user_data);
     void set_quiddity_manager (QuiddityManager *manager);
@@ -44,6 +45,7 @@ namespace switcher
     static QuiddityDocumentation get_documentation ();
 
   private:
+    void make_ctrlserver ();
     static QuiddityDocumentation doc_;
     struct soap soap_;
     int port_;
