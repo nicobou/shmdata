@@ -44,7 +44,7 @@ namespace switcher
 		     gpointer user_data);
     bool invoke (std::vector<std::string> args);
     bool invoke (std::vector<std::string> args,
-		 std::vector<void *> entity_args);
+		 std::vector<void *> quiddity_args);
     uint get_num_of_value_args();
     uint get_num_of_pointer_args();
     void set_description (std::string method_name,

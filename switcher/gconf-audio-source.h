@@ -33,10 +33,10 @@ namespace switcher
     typedef std::tr1::shared_ptr<GconfAudioSource> ptr;
     GconfAudioSource ();
 
-    static BaseEntityDocumentation get_documentation ();
+    static QuiddityDocumentation get_documentation ();
 
   private:
-    static BaseEntityDocumentation doc_;
+    static QuiddityDocumentation doc_;
     GstElement *gconfaudiosource_;
     static gboolean do_init(gpointer user_data);
     GCond* data_cond_; //required in order to ensure gconf element will be factored into the main thread

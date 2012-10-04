@@ -17,19 +17,19 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SWITCHER_BASE_ENTITY_DOCUMENTATION_H__
-#define __SWITCHER_BASE_ENTITY_DOCUMENTATION_H__
+#ifndef __SWITCHER_QUIDDITY_DOCUMENTATION_H__
+#define __SWITCHER_QUIDDITY_DOCUMENTATION_H__
 
 #include <string>
 
 namespace switcher
 {
 
-  class BaseEntityDocumentation 
+  class QuiddityDocumentation 
   {
 
   public:
-    BaseEntityDocumentation (std::string category, std::string class_name, std::string description);
+    QuiddityDocumentation (std::string category, std::string class_name, std::string description);
    
     std::string get_category () const;
     std::string get_class_name () const;

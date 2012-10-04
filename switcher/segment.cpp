@@ -33,11 +33,11 @@ namespace switcher
     set_runtime_arg_types.push_back (G_TYPE_POINTER);
     register_method("set_runtime",(void *)&Segment::set_runtime_wrapped, set_runtime_arg_types,(gpointer)this);
     std::vector<std::pair<std::string,std::string> > arg_desc;
-    std::pair<std::string,std::string> entity_name;
-    entity_name.first = "runtime_name";
-    entity_name.second = "the name of the runtime to attach with (e.g. \"pipeline0\")";
-    arg_desc.push_back (entity_name); 
-    if (!set_method_description ("set_runtime", "attach entity to a runtime ", arg_desc))
+    std::pair<std::string,std::string> quiddity_name;
+    quiddity_name.first = "runtime_name";
+    quiddity_name.second = "the name of the runtime to attach with (e.g. \"pipeline0\")";
+    arg_desc.push_back (quiddity_name); 
+    if (!set_method_description ("set_runtime", "attach quiddity to a runtime ", arg_desc))
       g_printerr ("segment: cannot set method description for \"set_runtime\"\n");
     
   }

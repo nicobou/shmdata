@@ -18,34 +18,34 @@
  */
 
 /**
- * The BaseEntity class
+ * The Quiddity class
  */
 
-#include "switcher/base-entity.h"
-#include "switcher/base-entity-life-manager.h"
+#include "switcher/quiddity.h"
+#include "switcher/quiddity-life-manager.h"
 
 
 namespace switcher
 {
 
-  BaseEntity::BaseEntity ()
+  Quiddity::Quiddity ()
   {}
-
   
-  BaseEntity::~BaseEntity () { 
-    g_print ("call: BaseEntity destructor for %s\n",get_name().c_str());
+  
+  Quiddity::~Quiddity () { 
+    g_print ("call: Quiddity destructor for %s\n",get_name().c_str());
     //TODO remove properties & methods
   }
 
   std::string
-  BaseEntity::get_name()
+  Quiddity::get_name()
   {
     return std::string (name_);
   }
 
   
   bool
-  BaseEntity::register_property (GObject *object, std::string object_property, std::string prefix)
+  Quiddity::register_property (GObject *object, std::string object_property, std::string prefix)
   {
     GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), object_property.c_str());
     if (pspec == NULL)
@@ -71,11 +71,11 @@ namespace switcher
   
   //return -1 if method not found
   int 
-  BaseEntity::method_get_num_value_args (std::string function_name)
+  Quiddity::method_get_num_value_args (std::string function_name)
   {
     if (methods_.find( function_name ) == methods_.end())
       {
-	g_printerr ("BaseEntity::method_get_num_value_args error: method %s not found\n",function_name.c_str());
+	g_printerr ("Quiddity::method_get_num_value_args error: method %s not found\n",function_name.c_str());
 	return -1;
       }
     else 
@@ -84,11 +84,11 @@ namespace switcher
 
   //return -1 if method not found
   int 
-  BaseEntity::method_get_num_pointer_args (std::string function_name)
+  Quiddity::method_get_num_pointer_args (std::string function_name)
   {
     if (methods_.find( function_name ) == methods_.end())
       {
-	g_printerr ("BaseEntity::method_get_num_value_args error: method %s not found\n",function_name.c_str());
+	g_printerr ("Quiddity::method_get_num_value_args error: method %s not found\n",function_name.c_str());
 	return -1;
       }
     else 
@@ -96,13 +96,13 @@ namespace switcher
   }
 
   bool 
-  BaseEntity::invoke_method (std::string function_name, 
+  Quiddity::invoke_method (std::string function_name, 
 			     std::vector<std::string> args, 
 			     std::vector<void *> pointers)
   {
     if (methods_.find( function_name ) == methods_.end())
       {
-	g_printerr ("BaseEntity::invoke_method error: method %s not found\n",function_name.c_str());
+	g_printerr ("Quiddity::invoke_method error: method %s not found\n",function_name.c_str());
 	return false;
       }
     else 
@@ -113,7 +113,7 @@ namespace switcher
   }
 
   bool 
-  BaseEntity::invoke_method (std::string function_name, 
+  Quiddity::invoke_method (std::string function_name, 
 			     std::vector<std::string> args)
   {
     std::vector<void *> empty;
@@ -122,7 +122,7 @@ namespace switcher
   
 
   bool
-  BaseEntity::register_method (std::string method_name, void *method, std::vector<GType> arg_types, gpointer user_data)
+  Quiddity::register_method (std::string method_name, void *method, std::vector<GType> arg_types, gpointer user_data)
   {
     if (method == NULL)
       {
@@ -147,7 +147,7 @@ namespace switcher
   }
 
   bool 
-  BaseEntity::set_method_description (std::string method_name,
+  Quiddity::set_method_description (std::string method_name,
 				      std::string short_description,
 				      std::vector<std::pair<std::string,std::string> > arg_description)
   {
@@ -164,7 +164,7 @@ namespace switcher
   }
 
     std::string 
-  BaseEntity::get_methods_description ()
+  Quiddity::get_methods_description ()
   {
     std::string res;
     res.append ("{ methods: [ \n");
@@ -179,7 +179,7 @@ namespace switcher
   }
 
   std::string 
-  BaseEntity::get_method_description (std::string method_name)
+  Quiddity::get_method_description (std::string method_name)
   {
     if (methods_.find( method_name ) == methods_.end())
       return "";
@@ -191,7 +191,7 @@ namespace switcher
   
 
   std::string 
-  BaseEntity::get_properties_description ()
+  Quiddity::get_properties_description ()
   {
     std::string res;
     res.append ("{ properties: [ \n");
@@ -212,7 +212,7 @@ namespace switcher
   }
 
   std::string 
-  BaseEntity::get_property_description (std::string name)
+  Quiddity::get_property_description (std::string name)
   {
     if (properties_.find( name ) == properties_.end())
       return "";
@@ -222,7 +222,7 @@ namespace switcher
   }
 
   bool 
-  BaseEntity::set_property (std::string name, std::string value)
+  Quiddity::set_property (std::string name, std::string value)
   {
     if (properties_.find( name ) == properties_.end())
       return false;
@@ -233,7 +233,7 @@ namespace switcher
   }
 
   std::string 
-  BaseEntity::get_property (std::string name)
+  Quiddity::get_property (std::string name)
   {
     if (properties_.find( name ) == properties_.end())
       return "property not found";
@@ -243,9 +243,19 @@ namespace switcher
   }
 
   void 
-   BaseEntity::set_life_manager (std::tr1::shared_ptr<BaseEntityLifeManager> life_manager)
+   Quiddity::set_life_manager (std::tr1::shared_ptr<QuiddityLifeManager> life_manager)
   {
     life_manager_ = life_manager; 
+    if ((bool)life_manager_.lock()) g_print ("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm\n");
+    if ((bool)life_manager_.lock()) g_print ("mmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm\n");
+  }
+
+  std::tr1::weak_ptr<QuiddityLifeManager>
+  Quiddity::get_life_manager ()
+  {
+    if ((bool)life_manager_.expired()) g_print ("ggggggggggggggggggggggmmmm\n");
+
+    return life_manager_ ;
   }
  
 }

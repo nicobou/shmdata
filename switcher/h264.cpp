@@ -34,10 +34,10 @@ namespace switcher
 
   }
 
-  BaseEntityDocumentation H264::doc_ ("video encoder", "x264enc",
+  QuiddityDocumentation H264::doc_ ("video encoder", "x264enc",
 				      "H264 encoder");
 
-  BaseEntityDocumentation 
+  QuiddityDocumentation 
   H264::get_documentation ()
   {
     return doc_;

@@ -18,6 +18,7 @@
  */
 
 #include "switcher/audio-source.h"
+#include <memory>
 
 namespace switcher
 {
@@ -81,8 +82,21 @@ namespace switcher
     
     //creating a connector in order to allow connect with the transformed audio
     ShmdataWriter::ptr audio_connector;
+
     audio_connector.reset (new ShmdataWriter ());
-    std::string connector_name ("/tmp/switcher_pid_"+name_+"_audio"); 
+    
+    std::string connector_name;
+
+    {
+      if ((bool)get_life_manager().lock())
+	g_print ("----------------------------------\n");
+      QuiddityLifeManager::ptr life_manager = get_life_manager().lock();
+      if ( (bool)life_manager)
+	connector_name.append ("/tmp/switcher_"+life_manager->get_name ()+"_"+name_+"_audio");
+      else
+	connector_name.append ("/tmp/switcher_not_managed_"+name_+"_audio");
+    }
+    
     audio_connector->set_absolute_name (connector_name.c_str());
     audio_connector->plug (bin_, audio_tee_, audiocaps);
     shmdata_writers_.insert (connector_name, audio_connector);

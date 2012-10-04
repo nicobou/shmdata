@@ -17,10 +17,10 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     audio-sink.cpp \
     audio-source.cpp \
     audio-test-source.cpp \
-    base-entity-documentation.cpp \
-    base-entity-life-manager.cpp \
-    base-entity-manager.cpp \
-    base-entity.cpp \
+    quiddity-documentation.cpp \
+    quiddity-life-manager.cpp \
+    quiddity-manager.cpp \
+    quiddity.cpp \
     base-sink.cpp \
     base-source.cpp \
     controller.cpp \
@@ -62,10 +62,10 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     audio-test-source.h \
     audio-sink.h \
     audio-source.h \
-    base-entity-documentation.h \
-    base-entity-life-manager.h \
-    base-entity-manager.h \
-    base-entity.h \
+    quiddity-documentation.h \
+    quiddity-life-manager.h \
+    quiddity-manager.h \
+    quiddity.h \
     base-sink.h \
     base-source.h \
     controller.h \

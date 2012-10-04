@@ -34,7 +34,7 @@ namespace switcher
     typedef std::tr1::shared_ptr<RtpSession> ptr;
     RtpSession ();
 
-    static BaseEntityDocumentation get_documentation ();
+    static QuiddityDocumentation get_documentation ();
 
     static void attach_data_stream(ShmdataReader *caller, void *rtpsession_instance); //will be call by shmdata reader
     bool add_data_stream (std::string shmdata_socket_path);
@@ -42,7 +42,7 @@ namespace switcher
     static gboolean add_data_stream_wrapped (gpointer shmdata_socket_path, gpointer user_data);
     
   private:
-    static BaseEntityDocumentation doc_;
+    static QuiddityDocumentation doc_;
     GstElement *rtpsession_;
 
     

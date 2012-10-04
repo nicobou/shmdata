@@ -66,10 +66,10 @@ namespace switcher
   }
 
 
-  BaseEntityDocumentation RtpSession::doc_ ("RTP session", "rtpsession",
+  QuiddityDocumentation RtpSession::doc_ ("RTP session", "rtpsession",
 					 "RTP session manager");
 
-  BaseEntityDocumentation 
+  QuiddityDocumentation 
   RtpSession::get_documentation ()
   {
     return doc_;

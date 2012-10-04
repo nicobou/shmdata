@@ -25,13 +25,13 @@
 #define __SWITCHER_RUNTIME_H__
 
 #include <gst/gst.h>
-#include "switcher/base-entity.h"
+#include "switcher/quiddity.h"
 #include <memory>
 
 namespace switcher
 {
   
-  class Runtime : public BaseEntity 
+  class Runtime : public Quiddity 
     {
     public:
       typedef std::tr1::shared_ptr<Runtime> ptr;
@@ -39,10 +39,10 @@ namespace switcher
       ~Runtime ();
       GstElement *get_pipeline ();
       
-      static BaseEntityDocumentation get_documentation ();
+      static QuiddityDocumentation get_documentation ();
 	
     private:
-      static BaseEntityDocumentation doc_;
+      static QuiddityDocumentation doc_;
       static bool initialized_;
       GstElement *pipeline_;
       GstBus *bus_;

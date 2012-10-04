@@ -37,7 +37,7 @@ namespace switcher
 
   /*
    * the first elements of arg_type should be args passed by value, 
-   * with args passed by pointers at the end (as references to base entities)  
+   * with args passed by pointers at the end (as references to base quiddities)  
    *
    */
   void 

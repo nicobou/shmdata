@@ -25,7 +25,7 @@ namespace switcher
 
   GconfAudioSink::GconfAudioSink ()
   {
-    //FIXME use async queue in base entity manager in order to avoid that (constructor called in the right thread)
+    //FIXME use async queue in base quiddity manager in order to avoid that (constructor called in the right thread)
     data_cond_ = g_cond_new (); 
 
     data_mutex_ = g_mutex_new ();
@@ -196,10 +196,10 @@ namespace switcher
     return TRUE;
   }
 
-  BaseEntityDocumentation GconfAudioSink::doc_ ("audio sink", "gconfaudiosink", 
+  QuiddityDocumentation GconfAudioSink::doc_ ("audio sink", "gconfaudiosink", 
 						"Audio sink embedding the GConf-settings for audio output");
   
-  BaseEntityDocumentation 
+  QuiddityDocumentation 
   GconfAudioSink::get_documentation ()
   {
     return doc_;

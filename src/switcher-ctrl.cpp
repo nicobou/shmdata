@@ -24,10 +24,10 @@
 
 //options
 static char server[] = "http://localhost:8080";
-static gboolean createentity;
-static gboolean deleteentity;
+static gboolean createquiddity;
+static gboolean deletequiddity;
 static gboolean listclasses;
-static gboolean listentities;
+static gboolean listquiddities;
 static gboolean listprop;
 static gboolean listmethods;
 static gboolean setprop;
@@ -38,15 +38,15 @@ static gchar **remaining_args = NULL;
 static GOptionEntry entries[] =
   {
     { "server", 'S', 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:8080)", NULL },
-    { "create-entity", 'C', 0, G_OPTION_ARG_NONE, &createentity, "create an entity instance (-C entity_class)", NULL },
-    { "delete-entity", 'D', 0, G_OPTION_ARG_NONE, &deleteentity, "delete an entity instance by its name", NULL },
-    { "list-classes", 'c', 0, G_OPTION_ARG_NONE, &listclasses, "list entity classes", NULL },
-    { "list-entities", 'e', 0, G_OPTION_ARG_NONE, &listentities, "list entity instances", NULL },
-    { "list-props", 'p', 0, G_OPTION_ARG_NONE, &listprop, "list properties of an entity", NULL },
-    { "list-methods", 'm', 0, G_OPTION_ARG_NONE, &listmethods, "list methods of an entity", NULL },
-    { "set-prop", 's', 0, G_OPTION_ARG_NONE, &setprop, "set property value (-s entity_name prop_name val)", NULL },
-    { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g entity_name prop_name)", NULL },
-    { "invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod, "invoke method of an entity (-i entity_name method_name args...)", NULL },
+    { "create-quiddity", 'C', 0, G_OPTION_ARG_NONE, &createquiddity, "create an quiddity instance (-C quiddity_class)", NULL },
+    { "delete-quiddity", 'D', 0, G_OPTION_ARG_NONE, &deletequiddity, "delete an quiddity instance by its name", NULL },
+    { "list-classes", 'c', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", NULL },
+    { "list-quiddities", 'e', 0, G_OPTION_ARG_NONE, &listquiddities, "list quiddity instances", NULL },
+    { "list-props", 'p', 0, G_OPTION_ARG_NONE, &listprop, "list properties of an quiddity", NULL },
+    { "list-methods", 'm', 0, G_OPTION_ARG_NONE, &listmethods, "list methods of an quiddity", NULL },
+    { "set-prop", 's', 0, G_OPTION_ARG_NONE, &setprop, "set property value (-s quiddity_name prop_name val)", NULL },
+    { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g quiddity_name prop_name)", NULL },
+    { "invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod, "invoke method of an quiddity (-i quiddity_name method_name args...)", NULL },
     {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &remaining_args, "remaining arguments", NULL},
     { NULL }
 };
@@ -68,12 +68,12 @@ int main(int argc, char **argv)
   
 
   if (! (listclasses 
-	 ^ listentities 
+	 ^ listquiddities 
 	 ^ listprop 
 	 ^ setprop 
 	 ^ getprop 
-	 ^ createentity 
-	 ^ deleteentity
+	 ^ createquiddity 
+	 ^ deletequiddity
 	 ^ listmethods
 	 ^ invokemethod))
     {
@@ -93,10 +93,10 @@ int main(int argc, char **argv)
 	  std::cout << resultlist[i] << std::endl;
 	}
     }
-  else if (listentities)
+  else if (listquiddities)
     {
       std::vector<std::string> resultlist;
-      switcher_control.get_entity_names(&resultlist);
+      switcher_control.get_quiddity_names(&resultlist);
       for(uint i = 0; i < resultlist.size(); i++)
 	{
 	  std::cout << resultlist[i] << std::endl;
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
       std::string resultlist;
       if (remaining_args[0] == NULL)
 	{
-	  g_printerr ("entity name missing for listing properties\n");
+	  g_printerr ("quiddity name missing for listing properties\n");
 	  return false;
 	}
       if (remaining_args[1] == NULL)
@@ -143,32 +143,32 @@ int main(int argc, char **argv)
       switcher_control.get_property (remaining_args[0], remaining_args[1],&val);
       std::cout << val << std::endl;
     }
-  else if (createentity)
+  else if (createquiddity)
     {
       if (remaining_args[0] == NULL )
 	{
-	  g_printerr ("missing class name for creating entity\n");
+	  g_printerr ("missing class name for creating quiddity\n");
 	  return false;
 	}
       std::string name;
-      switcher_control.create_entity (remaining_args[0], &name);
+      switcher_control.create_quiddity (remaining_args[0], &name);
       std::cout << name << std::endl;
     }
-  else if (deleteentity)
+  else if (deletequiddity)
     {
       if (remaining_args[0] == NULL )
 	{
-	  g_printerr ("missing entity name for deleting entity\n");
+	  g_printerr ("missing quiddity name for deleting quiddity\n");
 	  return false;
 	}
 
-      switcher_control.delete_entity (remaining_args[0]);
+      switcher_control.delete_quiddity (remaining_args[0]);
     }
   else if (listmethods)
     {
       if (remaining_args[0] == NULL )
 	{
-	  g_printerr ("missing entity name for list methods\n");
+	  g_printerr ("missing quiddity name for list methods\n");
 	  return false;
 	}
       

@@ -18,50 +18,54 @@
  */
 
 /**
- * The BaseEntityLifeManager class wraps abstract factory for creating instace by name (birth) 
+ * The QuiddityLifeManager class wraps abstract factory for creating instace by name (birth) 
  * It wraps StringMap for managing instances (subsistence). 
  * Object destruction is managed through the use of std::tr1::shared_ptr
  */
 
-#ifndef __SWITCHER_BASE_ENTITY_LIFE_MANAGER_H__
-#define __SWITCHER_BASE_ENTITY_LIFE_MANAGER_H__
+#ifndef __SWITCHER_QUIDDITY_LIFE_MANAGER_H__
+#define __SWITCHER_QUIDDITY_LIFE_MANAGER_H__
 
 
 #include <tr1/memory>
 #include "switcher/abstract-factory.h" 
 #include "switcher/string-map.h"
 
-#include "switcher/base-entity.h" 
+#include "switcher/quiddity.h" 
 
 namespace switcher
 {
-  class BaseEntity;
+  class Quiddity;
 
-  class BaseEntityLifeManager
+  class QuiddityLifeManager
   {
   public:
-    typedef std::tr1::shared_ptr< BaseEntityLifeManager > ptr;
+    typedef std::tr1::shared_ptr< QuiddityLifeManager > ptr;
     
-    BaseEntityLifeManager();
+    QuiddityLifeManager();//will get name "default"
+    QuiddityLifeManager(std::string);
     
     //info
+    std::string get_name ();
     std::vector<std::string> get_classes ();
     bool class_exists (std::string class_name);
     std::vector<std::string> get_instances ();
-    bool exists (std::string entity_name);
+    bool exists (std::string quiddity_name);
     
     //creation
-    std::tr1::shared_ptr<BaseEntity> create (std::string entity_class);
-    
+    std::tr1::shared_ptr<Quiddity> create (std::string quiddity_class);
+ 
     //subsistence
-    std::tr1::shared_ptr<BaseEntity> get (std::string entity_name);
+    std::tr1::shared_ptr<Quiddity> get (std::string quiddity_name);
     
-    //release base entity (destructed with the shared pointer)
-    bool remove (std::string entity_name);
+    //release base quiddity (destructed with the shared pointer)
+    bool remove (std::string quiddity_name);
 
   private:
-    AbstractFactory<BaseEntity, std::string, std::string> abstract_factory_;
-    StringMap< std::tr1::shared_ptr<BaseEntity> > entities_;
+    std::string name_;
+    void register_classes ();
+    AbstractFactory<Quiddity, std::string, std::string> abstract_factory_;
+    StringMap< std::tr1::shared_ptr<Quiddity> > quiddities_;
     };
 
 } // end of namespace

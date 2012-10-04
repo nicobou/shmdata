@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_CTRL_SERVER_H__
 #define __SWITCHER_CTRL_SERVER_H__
 
-#include "switcher/base-entity-manager.h"
+#include "switcher/quiddity-manager.h"
 #include <memory>
 
 #include "switcher/webservices/soapcontrolService.h"
@@ -29,22 +29,22 @@
 namespace switcher
 {
 
-  class CtrlServer : public BaseEntity
+  class CtrlServer : public Quiddity
   {
   public:
     typedef std::tr1::shared_ptr<CtrlServer> ptr;
     CtrlServer();
     ~CtrlServer ();
     //void set_user_data (void *user_data);
-    void set_base_entity_manager (BaseEntityManager *manager);
+    void set_quiddity_manager (QuiddityManager *manager);
     void set_port (int port);//default port is 8080
     void start (); 
     void stop ();
     
-    static BaseEntityDocumentation get_documentation ();
+    static QuiddityDocumentation get_documentation ();
 
   private:
-    static BaseEntityDocumentation doc_;
+    static QuiddityDocumentation doc_;
     struct soap soap_;
     int port_;
     controlService *service_; 

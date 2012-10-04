@@ -17,11 +17,11 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/base-entity-documentation.h"
-#include "switcher/base-entity-life-manager.h"
-#include "switcher/base-entity.h" 
+#include "switcher/quiddity-documentation.h"
+#include "switcher/quiddity-life-manager.h"
+#include "switcher/quiddity.h" 
 
-//the base entities to manage (line sorted)
+//the base quiddities to manage (line sorted)
 #include "switcher/aac.h"
 #include "switcher/audio-test-source.h"
 #include "switcher/ctrl-server.h"
@@ -38,9 +38,28 @@
 namespace switcher
 {
 
-  BaseEntityLifeManager::BaseEntityLifeManager()
+  QuiddityLifeManager::QuiddityLifeManager() :
+    name_ ("default")
   {
-    //registering base entity to make available
+    register_classes ();
+  }
+
+  QuiddityLifeManager::QuiddityLifeManager(std::string name) :
+    name_ (name)
+  {
+    register_classes ();
+  }
+
+  std::string
+  QuiddityLifeManager::get_name ()
+  {
+    return name_; 
+  }
+  
+  void
+  QuiddityLifeManager::register_classes ()
+  {
+    //registering quiddities
     abstract_factory_.register_class<AAC> (AAC::get_documentation().get_class_name (), 
 					   AAC::get_documentation().get_json_documentation ());
     abstract_factory_.register_class<AudioTestSource> (AudioTestSource::get_documentation().get_class_name (), 
@@ -65,56 +84,57 @@ namespace switcher
 						       VideoTestSource::get_documentation().get_json_documentation ());
     abstract_factory_.register_class<Xvimagesink> (Xvimagesink::get_documentation().get_class_name (),
 						   Xvimagesink::get_documentation().get_json_documentation ());
+    
   }
 
   std::vector<std::string> 
-  BaseEntityLifeManager::get_classes ()
+  QuiddityLifeManager::get_classes ()
   {
     //return abstract_factory_.get_keys ();
     return abstract_factory_.get_classes_documentation ();
   }
 
   bool 
-  BaseEntityLifeManager::class_exists (std::string class_name)
+  QuiddityLifeManager::class_exists (std::string class_name)
   {
     return abstract_factory_.key_exists (class_name);
   }
 
-  BaseEntity::ptr 
-  BaseEntityLifeManager::create (std::string entity_class)
+  Quiddity::ptr 
+  QuiddityLifeManager::create (std::string quiddity_class)
   {
-    BaseEntity::ptr entity = abstract_factory_.create (entity_class);
-    g_print ("create_entity %p %p\n",&entity,entity.get());
-    if (entity.get() != NULL)
+    Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class);
+    g_print ("create_quiddity %p %p\n",&quiddity,quiddity.get());
+    if (quiddity.get() != NULL)
       {
-	//hashed_->insert (entity->get_name(),&entity);
-	entities_.insert (entity->get_name(),entity);
+	//hashed_->insert (quiddity->get_name(),&quiddity);
+	quiddities_.insert (quiddity->get_name(),quiddity);
       }
-    return entity;
+    return quiddity;
   }
 
   std::vector<std::string> 
-  BaseEntityLifeManager::get_instances ()
+  QuiddityLifeManager::get_instances ()
   {
-    return entities_.get_keys();
+    return quiddities_.get_keys();
   }
 
-  BaseEntity::ptr 
-  BaseEntityLifeManager::get (std::string entity_name)
+  Quiddity::ptr 
+  QuiddityLifeManager::get (std::string quiddity_name)
   {
-    return entities_.lookup (entity_name);
-  }
-
-  bool 
-  BaseEntityLifeManager::exists (std::string entity_name)
-  {
-    return entities_.contains (entity_name);
+    return quiddities_.lookup (quiddity_name);
   }
 
   bool 
-  BaseEntityLifeManager::remove (std::string entity_name)
+  QuiddityLifeManager::exists (std::string quiddity_name)
   {
-    return entities_.remove (entity_name);
+    return quiddities_.contains (quiddity_name);
+  }
+
+  bool 
+  QuiddityLifeManager::remove (std::string quiddity_name)
+  {
+    return quiddities_.remove (quiddity_name);
   }
   
 } // end of namespace

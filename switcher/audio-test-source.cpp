@@ -43,10 +43,10 @@ namespace switcher
     set_raw_audio_element (audiotestsrc_);
   }
 
-  BaseEntityDocumentation AudioTestSource::doc_ ("audio source", "audiotestsrc", 
+  QuiddityDocumentation AudioTestSource::doc_ ("audio source", "audiotestsrc", 
 						 "Creates audio test signals");
   
-  BaseEntityDocumentation 
+  QuiddityDocumentation 
   AudioTestSource::get_documentation ()
   {
     return doc_;

@@ -50,10 +50,10 @@ namespace switcher
 
   }
 
-  BaseEntityDocumentation VideoTestSource::doc_  ("video source", "videotestsrc",
+  QuiddityDocumentation VideoTestSource::doc_  ("video source", "videotestsrc",
 						  "Creates a test video stream");
   
-  BaseEntityDocumentation 
+  QuiddityDocumentation 
   VideoTestSource::get_documentation ()
   {
     return doc_;

@@ -33,10 +33,10 @@ namespace switcher
     typedef std::tr1::shared_ptr<GconfVideoSink> ptr;
     GconfVideoSink ();
    
-   static BaseEntityDocumentation get_documentation ();
+   static QuiddityDocumentation get_documentation ();
 
   private:
-   static BaseEntityDocumentation doc_;
+   static QuiddityDocumentation doc_;
    GstElement *gconfvideosink_;
    GCond* data_cond_; //required in order to ensure gconf element will be factored into the main thread
    GMutex* data_mutex_;

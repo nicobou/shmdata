@@ -46,47 +46,47 @@ int switcher__pow(double a, double b, double *result);
 int switcher__get_factory_capabilities(std::vector<std::string> *result);
 
 //gsoap switcher service method-documentation: get names of instances 
-int switcher__get_entity_names(std::vector<std::string> *result);
+int switcher__get_quiddity_names(std::vector<std::string> *result);
 
 //gsoap switcher service method-documentation: get a json formated description of the properties  
-int switcher__get_properties_description (std::string entity_name, 
+int switcher__get_properties_description (std::string quiddity_name, 
 					  std::string *result); 
 
 //gsoap switcher service method-documentation: get a json formated description of the properties  
-int switcher__get_property_description (std::string entity_name, 
+int switcher__get_property_description (std::string quiddity_name, 
 					std::string property_name, 
 					std::string *result); 
 
-//gsoap switcher service method-documentation: set a value of a property from an entity instance  
-int switcher__set_property(std::string entity_name, 
+//gsoap switcher service method-documentation: set a value of a property from an quiddity instance  
+int switcher__set_property(std::string quiddity_name, 
 			   std::string property_name, 
 			   std::string property_value,
 			   void); 
 
-//gsoap switcher service method-documentation: get a value of a property from an entity instance  
-int switcher__get_property(std::string entity_name, 
+//gsoap switcher service method-documentation: get a value of a property from an quiddity instance  
+int switcher__get_property(std::string quiddity_name, 
 			   std::string property_name, 
 			   std::string *result); 
 
-//gsoap switcher service method-documentation: create an entity instance and return its name  
-int switcher__create_entity (std::string entity_class,
+//gsoap switcher service method-documentation: create an quiddity instance and return its name  
+int switcher__create_quiddity (std::string quiddity_class,
 			     std::string *result); 
 
-//gsoap switcher service method-documentation: create an entity instance and return its name  
-int switcher__delete_entity (std::string entity_name,
+//gsoap switcher service method-documentation: create an quiddity instance and return its name  
+int switcher__delete_quiddity (std::string quiddity_name,
 			     void); 
 
 //gsoap switcher service method-documentation: get a json formated description of methods   
-int switcher__get_methods_description (std::string entity_name,
+int switcher__get_methods_description (std::string quiddity_name,
 				       std::string *result);
 
 //gsoap switcher service method-documentation: get a json formated description of methods   
-int switcher__get_method_description (std::string entity_name,
+int switcher__get_method_description (std::string quiddity_name,
 				      std::string method_name,
 				      std::string *result);
 
-//gsoap switcher service method-documentation: invoke a method of an entity   
-int switcher__invoke_method (std::string entity_name,
+//gsoap switcher service method-documentation: invoke a method of an quiddity   
+int switcher__invoke_method (std::string quiddity_name,
 			     std::string method_name,
 			     std::vector<std::string> args,
 			     bool *result);

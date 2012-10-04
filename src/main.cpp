@@ -19,7 +19,7 @@
 
 #include "switcher/ctrl-server.h"
 //#include "switcher/webservices/control.nsmap"
-#include "switcher/base-entity-manager.h"
+#include "switcher/quiddity-manager.h"
 #include <iostream>
 #include <signal.h>
 
@@ -39,7 +39,7 @@ main (int argc,
 
      using namespace switcher;
      
-     BaseEntityManager manager;  
+     QuiddityManager manager("hehe");  
      std::vector<std::string> available_object_list = manager.get_classes ();
      
     //list available object in factory
@@ -52,11 +52,11 @@ main (int argc,
     std::string runtime = manager.create ("runtime");
 
      //creating a SOAP webservice controling the manager
-     //BaseEntity::ptr baseserv = manager.create ("controlserver");
+     //Quiddity::ptr baseserv = manager.create ("controlserver");
      //TODO make this available from the base manager interface 
      //(for instance "this" or better could be the string naming the manager)
      CtrlServer  *serv =  new CtrlServer(); //std::tr1::dynamic_pointer_cast<CtrlServer> (baseserv);
-     serv->set_base_entity_manager (&manager);
+     serv->set_quiddity_manager (&manager);
      serv->start ();
 
 

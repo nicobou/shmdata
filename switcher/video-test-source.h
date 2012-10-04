@@ -33,10 +33,10 @@ namespace switcher
     typedef std::tr1::shared_ptr<VideoTestSource> ptr;
     VideoTestSource ();
     
-   static BaseEntityDocumentation get_documentation ();
+   static QuiddityDocumentation get_documentation ();
     
   private:
-   static BaseEntityDocumentation doc_;
+   static QuiddityDocumentation doc_;
     GstElement *videotestsrc_;
   };
 

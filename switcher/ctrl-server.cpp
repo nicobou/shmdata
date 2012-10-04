@@ -43,17 +43,17 @@ namespace switcher
   }
 
 
-  BaseEntityDocumentation CtrlServer::doc_ ("control", "SOAPcontrolServer",
+  QuiddityDocumentation CtrlServer::doc_ ("control", "SOAPcontrolServer",
 					    "SOAPcontrolServer allows for managing switcher through SOAP webservices");
   
-  BaseEntityDocumentation 
+  QuiddityDocumentation 
   CtrlServer::get_documentation ()
   {
     return doc_;
   }
   
   void
-  CtrlServer::set_base_entity_manager (BaseEntityManager *manager)
+  CtrlServer::set_quiddity_manager (QuiddityManager *manager)
   {
     soap_.user = (void *)manager;
   }
@@ -165,7 +165,7 @@ int
 controlService::get_factory_capabilities(std::vector<std::string> *result){
   using namespace switcher;
   
-  BaseEntityManager *manager = (BaseEntityManager *) this->user;
+  QuiddityManager *manager = (QuiddityManager *) this->user;
   if (this->user == NULL)
     {
       char *s = (char*)soap_malloc(this, 1024);
@@ -180,78 +180,78 @@ controlService::get_factory_capabilities(std::vector<std::string> *result){
 }
 
 int
-controlService::get_entity_names(std::vector<std::string> *result){
+controlService::get_quiddity_names(std::vector<std::string> *result){
   using namespace switcher;
   
-  BaseEntityManager *manager = (BaseEntityManager *) this->user;
-  *result = manager->get_entities ();
+  QuiddityManager *manager = (QuiddityManager *) this->user;
+  *result = manager->get_quiddities ();
   
   return SOAP_OK;
 }
 
 int
-controlService::get_properties_description (std::string entity_name,
+controlService::get_properties_description (std::string quiddity_name,
 					    std::string *result)
 {
   using namespace switcher;
   
-  BaseEntityManager *manager = (BaseEntityManager *) this->user;
-  *result = manager->get_properties_description (entity_name);
+  QuiddityManager *manager = (QuiddityManager *) this->user;
+  *result = manager->get_properties_description (quiddity_name);
 
   return SOAP_OK;
 }
 
 int
-controlService::get_property_description (std::string entity_name,
+controlService::get_property_description (std::string quiddity_name,
 					  std::string property_name,
 					  std::string *result)
 {
   using namespace switcher;
   
-  BaseEntityManager *manager = (BaseEntityManager *) this->user;
-  *result = manager->get_property_description (entity_name, property_name);
+  QuiddityManager *manager = (QuiddityManager *) this->user;
+  *result = manager->get_property_description (quiddity_name, property_name);
 
   return SOAP_OK;
 }
 
 
 int
-controlService::set_property (std::string entity_name, 
+controlService::set_property (std::string quiddity_name, 
 			      std::string property_name,
 			      std::string property_value)
 {
   using namespace switcher;
   
-  BaseEntityManager *manager = (BaseEntityManager *) this->user;
-  manager->set_property (entity_name, property_name, property_value);
+  QuiddityManager *manager = (QuiddityManager *) this->user;
+  manager->set_property (quiddity_name, property_name, property_value);
 
   return send_set_property_empty_response(SOAP_OK);
 }
 
 
 int
-controlService::get_property (std::string entity_name, 
+controlService::get_property (std::string quiddity_name, 
 			      std::string property_name,
 			      std::string *result)
 {
   using namespace switcher;
   
-  BaseEntityManager *manager = (BaseEntityManager *) this->user;
-  *result = manager->get_property (entity_name, property_name);
+  QuiddityManager *manager = (QuiddityManager *) this->user;
+  *result = manager->get_property (quiddity_name, property_name);
   
   return SOAP_OK;
 }
 
 
 int
-controlService::create_entity (std::string entity_class, 
+controlService::create_quiddity (std::string quiddity_class, 
 			       std::string *result)
 {
   using namespace switcher;
   
-   BaseEntityManager *manager = (BaseEntityManager *) this->user;
+   QuiddityManager *manager = (QuiddityManager *) this->user;
 
-   std::string name = manager->create (entity_class);
+   std::string name = manager->create (quiddity_class);
    if (name != "")
      {
        *result = name; 
@@ -259,75 +259,75 @@ controlService::create_entity (std::string entity_class,
    else 
      { 
        char *s = (char*)soap_malloc(this, 1024);
-       sprintf(s, "%s is not an available class", entity_class.c_str());
-       sprintf(s, "<error xmlns=\"http://tempuri.org/\">%s is not an available class</error>", entity_class.c_str());
-       return soap_senderfault("Entity creation error", s);
+       sprintf(s, "%s is not an available class", quiddity_class.c_str());
+       sprintf(s, "<error xmlns=\"http://tempuri.org/\">%s is not an available class</error>", quiddity_class.c_str());
+       return soap_senderfault("Quiddity creation error", s);
      }
   return SOAP_OK;
 }
 
 
 int
-controlService::delete_entity (std::string entity_name)
+controlService::delete_quiddity (std::string quiddity_name)
 {
   using namespace switcher;
-  BaseEntityManager *manager = (BaseEntityManager *) this->user;
+  QuiddityManager *manager = (QuiddityManager *) this->user;
   
-  if (manager->remove (entity_name))
+  if (manager->remove (quiddity_name))
     return send_set_property_empty_response(SOAP_OK);
   else
     {
       char *s = (char*)soap_malloc(this, 1024);
-      sprintf(s, "%s is not found, not deleting", entity_name.c_str());
-      sprintf(s, "<error xmlns=\"http://tempuri.org/\">%s is not found, not deleting</error>", entity_name.c_str());
-      return send_set_property_empty_response(soap_senderfault("Entity creation error", s));
+      sprintf(s, "%s is not found, not deleting", quiddity_name.c_str());
+      sprintf(s, "<error xmlns=\"http://tempuri.org/\">%s is not found, not deleting</error>", quiddity_name.c_str());
+      return send_set_property_empty_response(soap_senderfault("Quiddity creation error", s));
     }
 }
 
 
 int
-controlService::invoke_method (std::string entity_name,
+controlService::invoke_method (std::string quiddity_name,
 			       std::string method_name,
 			       std::vector<std::string> args,
 			       bool *result)
 {
   using namespace switcher;
-  BaseEntityManager *manager = (BaseEntityManager *) this->user;
+  QuiddityManager *manager = (QuiddityManager *) this->user;
 
-  *result = manager->invoke (entity_name, method_name, args);
+  *result = manager->invoke (quiddity_name, method_name, args);
 
   if (*result)
     return SOAP_OK;
   else
     {
       char *s = (char*)soap_malloc(this, 1024);
-      sprintf(s, "invoking %s/%s returned false", entity_name.c_str(), method_name.c_str());
-      sprintf(s, "<error xmlns=\"http://tempuri.org/\">invoking %s/%s returned false</error>", entity_name.c_str(), method_name.c_str());
+      sprintf(s, "invoking %s/%s returned false", quiddity_name.c_str(), method_name.c_str());
+      sprintf(s, "<error xmlns=\"http://tempuri.org/\">invoking %s/%s returned false</error>", quiddity_name.c_str(), method_name.c_str());
       return soap_senderfault("Method invocation error", s);
     }
 }
 
 
 int
-controlService::get_methods_description (std::string entity_name,
+controlService::get_methods_description (std::string quiddity_name,
 					 std::string *result)
 {
   using namespace switcher;
-  BaseEntityManager *manager = (BaseEntityManager *) this->user;
+  QuiddityManager *manager = (QuiddityManager *) this->user;
 
-  *result = manager->get_methods_description (entity_name);
+  *result = manager->get_methods_description (quiddity_name);
   return SOAP_OK;
 }
 
 int
-controlService::get_method_description (std::string entity_name,
+controlService::get_method_description (std::string quiddity_name,
 					std::string method_name,
 					std::string *result)
 {
   using namespace switcher;
-  BaseEntityManager *manager = (BaseEntityManager *) this->user;
+  QuiddityManager *manager = (QuiddityManager *) this->user;
 
-  *result = manager->get_method_description (entity_name, method_name);
+  *result = manager->get_method_description (quiddity_name, method_name);
   return SOAP_OK;
 }
 

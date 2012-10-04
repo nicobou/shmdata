@@ -18,12 +18,12 @@
  */
 
 /**
- * The BaseEntity class
+ * The Quiddity class
  */
 
 
-#ifndef __SWITCHER_BASE_ENTITY_H__
-#define __SWITCHER_BASE_ENTITY_H__
+#ifndef __SWITCHER_QUIDDITY_H__
+#define __SWITCHER_QUIDDITY_H__
 
 #include <string>
 #include <vector>
@@ -33,24 +33,24 @@
 #include "switcher/property.h"
 #include "switcher/method.h"
 
-#include "switcher/base-entity-documentation.h"
-#include "switcher/base-entity-life-manager.h"
+#include "switcher/quiddity-documentation.h"
+#include "switcher/quiddity-life-manager.h"
 
 
 namespace switcher
 {
-  class BaseEntityLifeManager;
+  class QuiddityLifeManager;
  
-  class BaseEntity
+  class Quiddity
   {
   public:
-    typedef std::tr1::shared_ptr<BaseEntity> ptr;
+    typedef std::tr1::shared_ptr<Quiddity> ptr;
     
-    BaseEntity ();
-    virtual ~BaseEntity ();
+    Quiddity ();
+    virtual ~Quiddity ();
     
     //class documentation
-    //virtual BaseEntityDocumentation get_documentation() = 0;
+    //virtual QuiddityDocumentation get_documentation() = 0;
     
     //instance name
     std::string get_name ();
@@ -74,15 +74,15 @@ namespace switcher
     int method_get_num_pointer_args (std::string function_name); //returns -1 if method not found
     
     //setting life manager reference for dynamic creation
-    void set_life_manager (std::tr1::shared_ptr<BaseEntityLifeManager> life_manager);
+    void set_life_manager (std::tr1::shared_ptr<QuiddityLifeManager> life_manager);
 
   private:
     //properties are registered by derived class
     std::map<std::string, Property::ptr> properties_;
     std::map<std::string, Method::ptr> methods_;
-    //used in order to dynamically create other entity, weak_ptr is used in order to 
+    //used in order to dynamically create other quiddity, weak_ptr is used in order to 
     //avoid circular references to the life manager 
-    std::tr1::weak_ptr<BaseEntityLifeManager> life_manager_;
+    std::tr1::weak_ptr<QuiddityLifeManager> life_manager_;
 
   protected:
     std::string name_;
@@ -97,7 +97,7 @@ namespace switcher
     bool set_method_description (std::string method_name,
 				 std::string short_description,
 				 std::vector<std::pair<std::string,std::string> > arg_description);
-
+    std::tr1::weak_ptr<QuiddityLifeManager> get_life_manager ();
     
   };
   

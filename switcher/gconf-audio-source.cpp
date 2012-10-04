@@ -56,10 +56,10 @@ namespace switcher
     return FALSE; //the source should be removed from the main loop
   }
 
-  BaseEntityDocumentation GconfAudioSource::doc_ ("audio source", "gconfaudiosrc",
+  QuiddityDocumentation GconfAudioSource::doc_ ("audio source", "gconfaudiosrc",
 						  "Audio source embedding the GConf-settings for audio input");
   
-  BaseEntityDocumentation 
+  QuiddityDocumentation 
   GconfAudioSource::get_documentation ()
   {
     return doc_;

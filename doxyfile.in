@@ -82,7 +82,7 @@ REPEAT_BRIEF           = YES
 # stripped from the text and the result after processing the whole list, is
 # used as the annotated text. Otherwise, the brief description is used as-is.
 # If left blank, the following values are used ("$name" is automatically
-# replaced with the name of the entity): "The $name class" "The $name widget"
+# replaced with the name of the quiddity): "The $name class" "The $name widget"
 # "The $name file" "is" "provides" "specifies" "contains"
 # "represents" "a" "an" "the"
 
@@ -292,7 +292,7 @@ SYMBOL_CACHE_SIZE      = 0
 # Build related configuration options
 #---------------------------------------------------------------------------
 
-# If the EXTRACT_ALL tag is set to YES doxygen will assume all entities in
+# If the EXTRACT_ALL tag is set to YES doxygen will assume all quiddities in
 # documentation are documented, even if no documentation was available.
 # Private class members and static file members will be hidden unless
 # the EXTRACT_PRIVATE and EXTRACT_STATIC tags are set to YES
@@ -686,7 +686,7 @@ FILTER_SOURCE_FILES    = NO
 #---------------------------------------------------------------------------
 
 # If the SOURCE_BROWSER tag is set to YES then a list of source files will
-# be generated. Documented entities will be cross-referenced with these sources.
+# be generated. Documented quiddities will be cross-referenced with these sources.
 # Note: To get rid of all source code in the generated output, make sure also
 # VERBATIM_HEADERS is set to NO.
 
@@ -710,7 +710,7 @@ STRIP_CODE_COMMENTS    = YES
 REFERENCED_BY_RELATION = NO
 
 # If the REFERENCES_RELATION tag is set to YES
-# then for each documented function all documented entities
+# then for each documented function all documented quiddities
 # called/used by that function will be listed.
 
 REFERENCES_RELATION    = NO
@@ -1156,7 +1156,7 @@ MAN_OUTPUT             = man
 MAN_EXTENSION          = .3
 
 # If the MAN_LINKS tag is set to YES and Doxygen generates man output,
-# then it will generate one additional man file for each entity
+# then it will generate one additional man file for each quiddity
 # documented in the real man page(s). These additional files
 # only source the real man page, but without them the man command
 # would be unable to find the correct page. The default is NO.

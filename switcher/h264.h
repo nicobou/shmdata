@@ -36,10 +36,10 @@ namespace switcher
 
     static void make_shmdata_writer(ShmdataReader *caller, void *h264_instance);
 
-    static BaseEntityDocumentation get_documentation ();
+    static QuiddityDocumentation get_documentation ();
 
   private:
-    static BaseEntityDocumentation doc_;
+    static QuiddityDocumentation doc_;
     GstElement *h264bin_;
     GstElement *h264enc_;
   };

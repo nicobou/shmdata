@@ -17,11 +17,11 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/base-entity-documentation.h"
+#include "switcher/quiddity-documentation.h"
 
 namespace switcher
 {
-  BaseEntityDocumentation::BaseEntityDocumentation (std::string category, 
+  QuiddityDocumentation::QuiddityDocumentation (std::string category, 
 						    std::string class_name, 
 						    std::string description)
   {
@@ -31,25 +31,25 @@ namespace switcher
   }
 
   std::string 
-  BaseEntityDocumentation::get_category () const
+  QuiddityDocumentation::get_category () const
   {
     return category_;
   }
  
   std::string 
-  BaseEntityDocumentation::get_class_name () const
+  QuiddityDocumentation::get_class_name () const
   {
     return class_name_;
   }
   
   std::string
-  BaseEntityDocumentation::get_description () const
+  QuiddityDocumentation::get_description () const
   {
     return description_;
   }
   
   std::string 
-  BaseEntityDocumentation::get_json_documentation () const
+  QuiddityDocumentation::get_json_documentation () const
   {
     std::string documentation;
     documentation.append("{");
@@ -71,19 +71,19 @@ namespace switcher
   }
     
   void
-  BaseEntityDocumentation::set_category (std::string category)
+  QuiddityDocumentation::set_category (std::string category)
   {
     category_ = category;
   }
 
   void
-  BaseEntityDocumentation::set_class_name (std::string class_name)
+  QuiddityDocumentation::set_class_name (std::string class_name)
   {
     class_name_ = class_name;
   }
 
   void
-  BaseEntityDocumentation::set_description (std::string description)
+  QuiddityDocumentation::set_description (std::string description)
   {
     description_ = description;
   }

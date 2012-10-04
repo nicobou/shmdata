@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_SEGMENT_H__
 #define __SWITCHER_SEGMENT_H__
 
-#include "switcher/base-entity.h"
+#include "switcher/quiddity.h"
 #include "switcher/runtime.h"
 #include "switcher/string-map.h"
 #include "switcher/shmdata-writer.h"
@@ -32,7 +32,7 @@
 namespace switcher
 {
 
-  class Segment : public BaseEntity
+  class Segment : public Quiddity
   {
   public:
     typedef std::tr1::shared_ptr<Segment> ptr;
@@ -44,7 +44,7 @@ namespace switcher
     //TODO register this function as char * get_connectors () returning json
     std::vector<std::string> get_src_connectors ();
 
-    //wrappers for calls from base entity manager
+    //wrappers for calls from base quiddity manager
     static void set_runtime_wrapped (gpointer runtime, gpointer context);
     //static gboolean connect_wrapped (gpointer connector_name, gpointer segment, gpointer user_data);
    

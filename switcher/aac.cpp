@@ -36,10 +36,10 @@ namespace switcher
 
   }
 
-  BaseEntityDocumentation AAC::doc_ ("audio encoder", "voaacenc",
+  QuiddityDocumentation AAC::doc_ ("audio encoder", "voaacenc",
 				      "AAC encoder");
 
-  BaseEntityDocumentation 
+  QuiddityDocumentation 
   AAC::get_documentation ()
   {
     return doc_;
