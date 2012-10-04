@@ -84,7 +84,7 @@ namespace switcher
      GstCaps *aaccaps = gst_caps_new_simple ("audio/mpeg", NULL);
      ShmdataWriter::ptr aacframes_writer;
      aacframes_writer.reset (new ShmdataWriter ());
-     std::string writer_name ("/tmp/switcher_pid_"+context->name_+"_aacframes"); 
+     std::string writer_name = context->make_shmdata_writer_name ("aacframes"); 
      aacframes_writer->set_absolute_name (writer_name.c_str());
      aacframes_writer->plug (context->bin_, context->aacenc_, aaccaps);
      context->shmdata_writers_.insert (writer_name, aacframes_writer);

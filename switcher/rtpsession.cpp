@@ -92,27 +92,15 @@ namespace switcher
   RtpSession::attach_data_stream(ShmdataReader *caller, void *rtpsession_instance)
   {
     RtpSession *context = static_cast<RtpSession *>(rtpsession_instance);
-
-    //  GstCaps *h264caps = gst_caps_new_simple ("video/x-h264", NULL);
-    //  ShmdataWriter::ptr h264frames_writer;
-    //  h264frames_writer.reset (new ShmdataWriter ());
-    //  std::string writer_name ("/tmp/switcher_pid_"+context->name_+"_h264frames"); 
-    //  h264frames_writer->set_absolute_name (writer_name.c_str());
-    //  h264frames_writer->plug (context->bin_, context->h264enc_, h264caps);
-    //  context->shmdata_writers_.insert (writer_name, h264frames_writer);
-
-
     GstElement *pay, *funnel;
     GstElement *rtpsink, *rtcpsink, *rtcpsrc;
     GstPad *srcpad, *sinkpad;
-
 
     pay = gst_element_factory_make ("rtpgstpay", NULL);
     funnel = gst_element_factory_make ("funnel", NULL);
     
     /* add capture and payloading to the pipeline and link */
     gst_bin_add_many (GST_BIN (context->bin_), pay, funnel, NULL);
-    
     gst_element_link (funnel, pay);
     gst_element_sync_state_with_parent (pay);
     gst_element_sync_state_with_parent (funnel);

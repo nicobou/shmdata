@@ -33,7 +33,7 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<ShmdataWriter> ptr;
     ShmdataWriter();
-    bool set_name (std::string name); //path will be /tmp/switcher_<pid>
+    bool set_name (std::string name); 
     bool set_absolute_name (std::string name); //path will be fully specified
     void plug (GstElement *bin, GstElement *source_element,GstCaps *caps);//caps does not need to be fully specified
 

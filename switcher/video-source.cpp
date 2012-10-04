@@ -114,17 +114,18 @@ namespace switcher
     gst_bin_add (GST_BIN (bin_), rawvideo_);
     gst_element_link (rawvideo_, video_tee_);
     
+    //creating a connector for the raw video
     ShmdataWriter::ptr rawvideo_connector;
     rawvideo_connector.reset (new ShmdataWriter ());
-    std::string rawconnector_name ("/tmp/switcher_pid_"+name_+"_rawvideo"); 
+    std::string rawconnector_name = make_shmdata_writer_name ("rawvideo"); 
     rawvideo_connector->set_absolute_name (rawconnector_name.c_str());
     rawvideo_connector->plug (bin_, video_tee_, videocaps);
     shmdata_writers_.insert (rawconnector_name, rawvideo_connector);
     
-    //creating a connector in order to allow connect with the transformed video
+    //creating a connector for the transformed video
     ShmdataWriter::ptr video_connector;
     video_connector.reset (new ShmdataWriter ());
-    std::string connector_name ("/tmp/switcher_pid_"+name_+"_video"); 
+    std::string connector_name = make_shmdata_writer_name ("video"); 
     video_connector->set_absolute_name (connector_name.c_str());
     video_connector->plug (bin_, colorspace_out_, videocaps);
     shmdata_writers_.insert (connector_name, video_connector);

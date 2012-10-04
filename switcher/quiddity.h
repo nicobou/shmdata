@@ -90,11 +90,13 @@ namespace switcher
     bool set_method_description (std::string method_name,
 				 std::string short_description,
 				 std::vector<std::pair<std::string,std::string> > arg_description);
+    //use a consistent naming for shmdatas
+    std::string make_shmdata_writer_name (std::string suffix);
+
     //used in order to dynamically create other quiddity, weak_ptr is used in order to 
     //avoid circular references to the life manager 
     std::tr1::weak_ptr<QuiddityLifeManager> life_manager_;
-    //std::tr1::weak_ptr<QuiddityLifeManager> get_life_manager ();
-    std::string make_shmdata_writer_name (std::string suffix);
+
     
   };
   
