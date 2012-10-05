@@ -78,8 +78,54 @@ namespace switcher
 
     //set the name before registering properties
     name_ = gst_element_get_name (rtpsession_);
+    
+    make_sdp_init ();
+    
   }
 
+  void
+  RtpSession::make_sdp_init ()
+  {
+    //prepare SDP description
+    gst_sdp_message_new (&sdp_description_);
+    
+    /* some standard things first */
+    gst_sdp_message_set_version (sdp_description_, "0");
+    
+    //FIXME check and chose between IP4 and IP6, IP4 hardcoded
+    gst_sdp_message_set_origin (sdp_description_, 
+				"-",                // the user name
+				"1188340656180883", // a session id
+				"1",                // a session version
+				"IN",               // a network type
+				"IP4",              // an address type
+				"localhost"); //an address
+    username :
+	the user name
+
+sess_id :
+	a session id
+
+sess_version :
+	a session version
+
+nettype :
+	a network type
+
+addrtype :
+	an address type
+
+addr :
+	an address
+
+    gst_sdp_message_set_session_name (sdp_description_, "switcher session");
+    gst_sdp_message_set_information (sdp_description_, "telepresence");
+    gst_sdp_message_add_time (sdp_description_, "0", "0", NULL);
+    gst_sdp_message_add_attribute (sdp_description_, "tool", "switcher (with GStreamer)");
+    gst_sdp_message_add_attribute (sdp_description_, "type", "broadcast");
+    gst_sdp_message_add_attribute (sdp_description_, "control", "*");
+
+  }
 
   QuiddityDocumentation 
   RtpSession::get_documentation ()
@@ -87,25 +133,69 @@ namespace switcher
     return doc_;
   }
 
-
-  void 
-  RtpSession::attach_data_stream(ShmdataReader *caller, void *rtpsession_instance)
+  //fuction used as a filter for selecting the appropriate rtp payloader
+  gboolean
+  RtpSession::sink_factory_filter (GstPluginFeature * feature, gpointer data)
   {
-    RtpSession *context = static_cast<RtpSession *>(rtpsession_instance);
-    GstElement *pay, *funnel;
+    // guint rank;
+    const gchar *klass;
+    
+    GstCaps* caps = (GstCaps *)data;
+
+    /* we only care about element factories */
+    if (!GST_IS_ELEMENT_FACTORY (feature))
+      return FALSE;
+    
+    klass = gst_element_factory_get_klass (GST_ELEMENT_FACTORY (feature));
+    if (!(g_strrstr (klass, "Payloader") && g_strrstr (klass, "RTP")))
+      return FALSE;
+    
+    if (!gst_element_factory_can_sink_caps (GST_ELEMENT_FACTORY (feature), caps))
+      return FALSE;
+    
+    return TRUE;
+  }
+  
+  //sorting factory by rank
+  gint
+  RtpSession::sink_compare_ranks (GstPluginFeature * f1, GstPluginFeature * f2)
+  {
+    gint diff;
+    
+    diff = gst_plugin_feature_get_rank (f2) - gst_plugin_feature_get_rank (f1);
+    if (diff != 0)
+      return diff;
+    return g_strcmp0 (gst_plugin_feature_get_name (f2),
+		      gst_plugin_feature_get_name (f1));
+  }
+
+  //this is a typefind function, called when type of input stream from a shmdata is found
+  void
+  RtpSession::make_sender (GstElement* typefind, guint probability, GstCaps* caps, gpointer user_data)
+  {
+    RtpSession *context = static_cast<RtpSession *>(user_data);
+    
+    GstElement *pay;
     GstElement *rtpsink, *rtcpsink, *rtcpsrc;
     GstPad *srcpad, *sinkpad;
 
-    pay = gst_element_factory_make ("rtpgstpay", NULL);
-    funnel = gst_element_factory_make ("funnel", NULL);
-    
-    /* add capture and payloading to the pipeline and link */
-    gst_bin_add_many (GST_BIN (context->bin_), pay, funnel, NULL);
-    gst_element_link (funnel, pay);
-    gst_element_sync_state_with_parent (pay);
-    gst_element_sync_state_with_parent (funnel);
+        
+    GList *list = gst_registry_feature_filter (gst_registry_get_default (),
+					       (GstPluginFeatureFilter) sink_factory_filter, 
+					       FALSE, caps);
+    list = g_list_sort (list, (GCompareFunc) sink_compare_ranks);
 
-    caller->set_sink_element (funnel);
+    if (list != NULL)
+      pay = gst_element_factory_create (GST_ELEMENT_FACTORY (list->data), NULL);
+    else
+      pay = gst_element_factory_make ("rtpgstpay", NULL);
+
+    g_print ("RtpSession: selection %s payloader\n",GST_ELEMENT_NAME (pay));
+
+    /* add capture and payloading to the pipeline and link */
+    gst_bin_add_many (GST_BIN (context->bin_), pay, NULL);
+    gst_element_link (typefind, pay);
+    gst_element_sync_state_with_parent (pay);
 
     /* the udp sinks and source we will use for RTP and RTCP */
     rtpsink = gst_element_factory_make ("udpsink", NULL);
@@ -155,6 +245,24 @@ namespace switcher
    gst_element_sync_state_with_parent (rtpsink);
    gst_element_sync_state_with_parent (rtcpsink);
    gst_element_sync_state_with_parent (rtcpsrc);
+
+  }
+
+  void 
+  RtpSession::attach_data_stream(ShmdataReader *caller, void *rtpsession_instance)
+  {
+    RtpSession *context = static_cast<RtpSession *>(rtpsession_instance);
+
+    GstElement *funnel, *typefind;
+    funnel = gst_element_factory_make ("funnel", NULL);
+    typefind = gst_element_factory_make ("typefind", NULL);
+    g_signal_connect (typefind, "have-type", G_CALLBACK (RtpSession::make_sender), context);
+    gst_bin_add_many (GST_BIN (context->bin_), funnel, typefind, NULL);
+    gst_element_link (funnel, typefind);
+    gst_element_sync_state_with_parent (funnel);
+    gst_element_sync_state_with_parent (typefind);
+
+    caller->set_sink_element (funnel);
 
   }
 

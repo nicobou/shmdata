@@ -23,6 +23,7 @@
 
 #include "switcher/segment.h"
 #include <gst/gst.h>
+#include <gst/sdp/gstsdpmessage.h>
 #include <memory>
 
 namespace switcher
@@ -39,15 +40,21 @@ namespace switcher
 
     //will be call by shmdata reader
     static void attach_data_stream(ShmdataReader *caller, void *rtpsession_instance); 
+
     bool add_data_stream (std::string shmdata_socket_path);
 
-    //wrapper for registering function
+    //wrapper for registering the add_data_stream function
     static gboolean add_data_stream_wrapped (gpointer shmdata_socket_path, gpointer user_data);
     
   private:
+    GstSDPMessage *sdp_description_;
     void make_rtpsession ();
     static QuiddityDocumentation doc_;
     GstElement *rtpsession_;
+    static void make_sender (GstElement* typefind, guint probability, GstCaps* caps, gpointer user_data);
+    static gboolean sink_factory_filter (GstPluginFeature * feature, gpointer data);
+    static gint sink_compare_ranks (GstPluginFeature * f1, GstPluginFeature * f2);
+    void make_sdp_init ();
     //internal rtpbin signals
      static void on_bye_ssrc (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data); 
      static void on_bye_timeout (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data); 

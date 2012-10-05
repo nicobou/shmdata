@@ -133,7 +133,6 @@ namespace switcher
   void 
   ShmdataReader::on_first_data (shmdata_base_reader_t *context, void *user_data)
   {
-
       ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
   
       if (reader->connection_hook_ != NULL) //user want to create the sink_element_ 
