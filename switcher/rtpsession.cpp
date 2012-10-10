@@ -275,7 +275,6 @@ namespace switcher
   RtpSession::attach_data_stream(ShmdataReader *caller, void *rtpsession_instance)
   {
     RtpSession *context = static_cast<RtpSession *>(rtpsession_instance);
-
     GstElement *funnel, *typefind;
     funnel = gst_element_factory_make ("funnel", NULL);
     typefind = gst_element_factory_make ("typefind", NULL);
@@ -284,9 +283,7 @@ namespace switcher
     gst_element_link (funnel, typefind);
     gst_element_sync_state_with_parent (funnel);
     gst_element_sync_state_with_parent (typefind);
-
     caller->set_sink_element (funnel);
-
   }
 
   gboolean
