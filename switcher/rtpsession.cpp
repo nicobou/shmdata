@@ -23,7 +23,7 @@ namespace switcher
 {
   
   QuiddityDocumentation RtpSession::doc_ ("RTP session", "rtpsession",
-					 "RTP session manager");
+					  "RTP session manager");
   
   RtpSession::RtpSession ()
   {
@@ -59,9 +59,15 @@ namespace switcher
 		      (GCallback)  on_ssrc_sdes, (gpointer) this);
     g_signal_connect (G_OBJECT (rtpsession_), "on_ssrc_validated",  
 		      (GCallback) on_ssrc_validated, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_timeout ",  
+    g_signal_connect (G_OBJECT (rtpsession_), "on_timeout",  
 		      (GCallback) on_timeout, (gpointer) this);
-    
+    g_signal_connect (G_OBJECT (rtpsession_), "pad-added",  
+		      (GCallback) on_pad_added, (gpointer) this);
+    g_signal_connect (G_OBJECT (rtpsession_), "pad-removed",  
+		      (GCallback) on_pad_removed, (gpointer) this);
+    g_signal_connect (G_OBJECT (rtpsession_), "no-more-pads",  
+		      (GCallback) on_no_more_pad, (gpointer) this);
+
     gst_bin_add (GST_BIN (bin_), rtpsession_);
 
     //registering add_data_stream
@@ -86,44 +92,27 @@ namespace switcher
   void
   RtpSession::make_sdp_init ()
   {
-    //prepare SDP description
-    gst_sdp_message_new (&sdp_description_);
+    // //prepare SDP description
+    // gst_sdp_message_new (&sdp_description_);
     
-    /* some standard things first */
-    gst_sdp_message_set_version (sdp_description_, "0");
+    // /* some standard things first */
+    // gst_sdp_message_set_version (sdp_description_, "0");
     
-    //FIXME check and chose between IP4 and IP6, IP4 hardcoded
-    gst_sdp_message_set_origin (sdp_description_, 
-				"-",                // the user name
-				"1188340656180883", // a session id
-				"1",                // a session version
-				"IN",               // a network type
-				"IP4",              // an address type
-				"localhost"); //an address
-    username :
-	the user name
+    // //FIXME check and chose between IP4 and IP6, IP4 hardcoded
+    // gst_sdp_message_set_origin (sdp_description_, 
+    // 				"-",                // the user name
+    // 				"1188340656180883", // a session id
+    // 				"1",                // a session version
+    // 				"IN",               // a network type
+    // 				"IP4",              // an address type
+    // 				"localhost"); //an address
 
-sess_id :
-	a session id
-
-sess_version :
-	a session version
-
-nettype :
-	a network type
-
-addrtype :
-	an address type
-
-addr :
-	an address
-
-    gst_sdp_message_set_session_name (sdp_description_, "switcher session");
-    gst_sdp_message_set_information (sdp_description_, "telepresence");
-    gst_sdp_message_add_time (sdp_description_, "0", "0", NULL);
-    gst_sdp_message_add_attribute (sdp_description_, "tool", "switcher (with GStreamer)");
-    gst_sdp_message_add_attribute (sdp_description_, "type", "broadcast");
-    gst_sdp_message_add_attribute (sdp_description_, "control", "*");
+    // gst_sdp_message_set_session_name (sdp_description_, "switcher session");
+    // gst_sdp_message_set_information (sdp_description_, "telepresence");
+    // gst_sdp_message_add_time (sdp_description_, "0", "0", NULL);
+    // gst_sdp_message_add_attribute (sdp_description_, "tool", "switcher (with GStreamer)");
+    // gst_sdp_message_add_attribute (sdp_description_, "type", "broadcast");
+    // gst_sdp_message_add_attribute (sdp_description_, "control", "*");
 
   }
 
@@ -133,7 +122,7 @@ addr :
     return doc_;
   }
 
-  //fuction used as a filter for selecting the appropriate rtp payloader
+  //function used as a filter for selecting the appropriate rtp payloader
   gboolean
   RtpSession::sink_factory_filter (GstPluginFeature * feature, gpointer data)
   {
@@ -176,7 +165,8 @@ addr :
     RtpSession *context = static_cast<RtpSession *>(user_data);
     
     GstElement *pay;
-    GstElement *rtpsink, *rtcpsink, *rtcpsrc;
+    //    GstElement *rtpsink, *rtcpsink;
+    //GstElement *rtcpsrc;
     GstPad *srcpad, *sinkpad;
 
         
@@ -196,56 +186,89 @@ addr :
     gst_bin_add_many (GST_BIN (context->bin_), pay, NULL);
     gst_element_link (typefind, pay);
     gst_element_sync_state_with_parent (pay);
+    
 
-    /* the udp sinks and source we will use for RTP and RTCP */
-    rtpsink = gst_element_factory_make ("udpsink", NULL);
-    g_object_set (rtpsink, "port", 10000, "host", "localhost", NULL);
+    // /* the udp sinks and source we will use for RTP and RTCP */
+    // rtpsink = gst_element_factory_make ("udpsink", NULL);
+    // g_object_set (rtpsink, "port", 10000, "host", "localhost", NULL);
 
-    rtcpsink = gst_element_factory_make ("udpsink", NULL);
-    g_object_set (rtcpsink, "port", 10001, "host", "localhost", NULL);
-   /* no need for synchronisation or preroll on the RTCP sink */
-   g_object_set (rtcpsink, "async", FALSE, "sync", FALSE, NULL);
+    // rtcpsink = gst_element_factory_make ("udpsink", NULL);
+    // g_object_set (rtcpsink, "port", 10001, "host", "localhost", NULL);
+    // /* no need for synchronisation or preroll on the RTCP sink */
+    // g_object_set (rtcpsink, "async", FALSE, "sync", FALSE, NULL);
 
-   rtcpsrc = gst_element_factory_make ("udpsrc", NULL);
-   g_object_set (rtcpsrc, "port", 10005, NULL);
+    //rtcpsrc = gst_element_factory_make ("udpsrc", NULL);
+    // g_object_set (rtcpsrc, "port", 10005, NULL);
 
-   gst_bin_add_many (GST_BIN (context->bin_), rtpsink, rtcpsink, rtcpsrc, NULL);
+     //gst_bin_add_many (GST_BIN (context->bin_), /*rtpsink, rtcpsink,*/ rtcpsrc, NULL);
 
-   /* now link all to the rtpbin, start by getting an RTP sinkpad for session 0 */
-   sinkpad = gst_element_get_request_pad (context->rtpsession_, "send_rtp_sink_0");
-   srcpad = gst_element_get_static_pad (pay, "src");
-   if (gst_pad_link (srcpad, sinkpad) != GST_PAD_LINK_OK)
-     g_error ("Failed to link payloader to rtpbin");
-   gst_object_unref (srcpad);
 
-   /* get the RTP srcpad that was created when we requested the sinkpad above and
-    * link it to the rtpsink sinkpad*/
-   srcpad = gst_element_get_static_pad (context->rtpsession_, "send_rtp_src_0");
-   sinkpad = gst_element_get_static_pad (rtpsink, "sink");
-   if (gst_pad_link (srcpad, sinkpad) != GST_PAD_LINK_OK)
-     g_error ("Failed to link rtpbin to rtpsink");
-   gst_object_unref (srcpad);
-   gst_object_unref (sinkpad);
+    //gst_element_link (pay, context->rtpsession_);
+    
+    /* now link all to the rtpbin, start by getting an RTP sinkpad for session 0 */
+    sinkpad = gst_element_get_request_pad (context->rtpsession_, "send_rtp_sink_%d");
+    srcpad = gst_element_get_static_pad (pay, "src");
+    if (gst_pad_link (srcpad, sinkpad) != GST_PAD_LINK_OK)
+      g_error ("Failed to link payloader to rtpbin");
+    gst_object_unref (sinkpad);
+    gst_object_unref (srcpad);
+    
+    //get name for the newly created pad
+    gchar *rtp_sink_pad_name = gst_pad_get_name (sinkpad);// to be freed
+    gchar **rtp_session_array = g_strsplit_set (rtp_sink_pad_name, "_",0);// to be freed
+    gchar *session_id = rtp_session_array[3];
 
-   /* get an RTCP srcpad for sending RTCP to the receiver */
-   srcpad = gst_element_get_request_pad (context->rtpsession_, "send_rtcp_src_0");
-   sinkpad = gst_element_get_static_pad (rtcpsink, "sink");
-   if (gst_pad_link (srcpad, sinkpad) != GST_PAD_LINK_OK)
-     g_error ("Failed to link rtpbin to rtcpsink");
-   gst_object_unref (sinkpad);
+    // rtp src pad (is a static pad since created after the request of rtp sink pad)
+    gchar *rtp_src_pad_name = g_strconcat ("send_rtp_src_", session_id, NULL); 
+    g_print ("RtpSession: request rtp src pad and create a corresponding shmwriter %s\n",rtp_src_pad_name);
+    GstPad *rtp_src_pad = gst_element_get_static_pad (context->rtpsession_, rtp_src_pad_name);
+    if (!GST_IS_PAD (rtp_src_pad)) 
+      g_printerr ("RtpSession: rtp_src_pad is not a pad\n"); 
+    ShmdataWriter::ptr rtp_writer;
+    rtp_writer.reset (new ShmdataWriter ());
+    std::string rtp_writer_name = context->make_shmdata_writer_name (rtp_src_pad_name); 
+    rtp_writer->set_absolute_name (rtp_writer_name.c_str ());
+    rtp_writer->plug (context->bin_, rtp_src_pad);
+    context->shmdata_writers_.insert (rtp_writer_name, rtp_writer);
+    g_free (rtp_src_pad_name);
 
-   /* we also want to receive RTCP, request an RTCP sinkpad for session 0 and
-    * link it to the srcpad of the udpsrc for RTCP */
-   srcpad = gst_element_get_static_pad (rtcpsrc, "src");
-   sinkpad = gst_element_get_request_pad (context->rtpsession_, "recv_rtcp_sink_0");
-   if (gst_pad_link (srcpad, sinkpad) != GST_PAD_LINK_OK)
-     g_error ("Failed to link rtcpsrc to rtpbin");
-   gst_object_unref (srcpad);
+    //rtcp src pad
+    gchar *rtcp_src_pad_name = g_strconcat ("send_rtcp_src_", session_id,NULL); 
+    g_print ("RtpSession: request rtcp src pad and create shmwriter %s\n",rtcp_src_pad_name);
+    GstPad *rtcp_src_pad = gst_element_get_request_pad (context->rtpsession_, rtcp_src_pad_name);
+    ShmdataWriter::ptr rtcp_writer;
+    rtcp_writer.reset (new ShmdataWriter ());
+    std::string rtcp_writer_name = context->make_shmdata_writer_name (rtcp_src_pad_name); 
+    rtcp_writer->set_absolute_name (rtcp_writer_name.c_str());
+    rtcp_writer->plug (context->bin_, rtcp_src_pad);
+    context->shmdata_writers_.insert (rtcp_writer_name, rtcp_writer);
+    g_free (rtcp_src_pad_name);
+    
+    /* we also want to receive RTCP, request an RTCP sinkpad for given session and
+     * link it to the corresponding shmdata reader  */
+    GstElement *funnel = gst_element_factory_make ("funnel", NULL);
+    gst_bin_add_many (GST_BIN (context->bin_), funnel, NULL);
+    GstPad *funnel_src_pad = gst_element_get_static_pad (funnel, "src");
+    gchar *rtcp_sink_pad_name = g_strconcat ("recv_rtcp_sink_", session_id,NULL); 
+    GstPad *rtcp_sink_pad = gst_element_get_request_pad (context->rtpsession_, rtcp_sink_pad_name);
+    if (gst_pad_link (funnel_src_pad, rtcp_sink_pad) != GST_PAD_LINK_OK)
+         g_error ("Failed to link rtcpsrc to rtpbin");
+    gst_object_unref (funnel_src_pad);
+    ShmdataReader::ptr rtcp_reader;
+    rtcp_reader.reset (new ShmdataReader ());
+    //assuming the writer will use the appropriate name, i.e. <prefix>recv_rtcp_sink_<session_num>
+    std::string rtcp_reader_name = context->make_shmdata_writer_name (rtcp_sink_pad_name); 
+    rtcp_reader->set_path (rtcp_reader_name.c_str ());
+    rtcp_reader->set_bin (context->bin_);
+    rtcp_reader->set_sink_element (funnel);
+    if (context->runtime_ != NULL) // starting the reader if runtime is set
+      rtcp_reader->start ();
+    context->shmdata_readers_.insert (rtcp_reader_name, rtcp_reader);
+    gst_element_sync_state_with_parent (funnel);
+    g_free (rtcp_sink_pad_name);
 
-   gst_element_sync_state_with_parent (rtpsink);
-   gst_element_sync_state_with_parent (rtcpsink);
-   gst_element_sync_state_with_parent (rtcpsrc);
-
+    g_free (rtp_sink_pad_name);
+    g_strfreev (rtp_session_array);
   }
 
   void 
@@ -266,8 +289,8 @@ addr :
 
   }
 
-   gboolean
-   RtpSession::add_data_stream_wrapped (gpointer connector_name, gpointer user_data)
+  gboolean
+  RtpSession::add_data_stream_wrapped (gpointer connector_name, gpointer user_data)
   {
     //std::string connector = static_cast<std::string>(connector_name);
     RtpSession *context = static_cast<RtpSession*>(user_data);
@@ -299,62 +322,99 @@ addr :
   void
   RtpSession::on_bye_ssrc (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
+    //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_print ("on_bye_ssrc\n");
   }
 
   void
   RtpSession::on_bye_timeout (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
+    //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_print ("on_bye_timeout\n");
   }
 
   void
   RtpSession::on_new_ssrc (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
+    //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_print ("on_new_ssrc\n");
   }
 
   void
   RtpSession::on_npt_stop (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
+    //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_print ("on_npt_stop\n");
   }
 
   void
   RtpSession::on_sender_timeout (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
+    //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_print ("on_sender_timeout\n");
   }
 
   void
   RtpSession::on_ssrc_active  (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
+    //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_print ("on_ssrc_active\n");
   }
 
   void
   RtpSession::on_ssrc_collision (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
+    //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_print ("on_ssrc_active\n");
   }
 
   void
   RtpSession::on_ssrc_sdes  (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
+    //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_print ("on_ssrc_sdes\n");
   }
 
   void
   RtpSession::on_ssrc_validated (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
+    //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_print ("on_ssrc_validated\n");
   }
  
   void
   RtpSession::on_timeout  (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
+    //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_print ("on_timeout\n");
   }
 
+  void
+  RtpSession::on_pad_added (GstElement *gstelement, GstPad *new_pad, gpointer user_data) 
+  {
+    g_print ("on_pad_added, name: %s, direction: %d\n", 
+	     gst_pad_get_name(new_pad),
+	     gst_pad_get_direction (new_pad));
+    RtpSession *context = static_cast<RtpSession *>(user_data);
+    std::string pad_name (gst_pad_get_name (new_pad));
+
+    if (g_str_has_prefix (pad_name.c_str (), "send_rtp_src"))// a new rtp session has been created
+      {
+      }
+  }
+
+  void
+  RtpSession::on_pad_removed (GstElement *gstelement, GstPad *new_pad, gpointer user_data) 
+  {
+    //RtpSession *context = static_cast<RtpSession *>(user_data);
+    g_print ("on_pad_removed\n");
+  }
+
+  void
+  RtpSession::on_no_more_pad   (GstElement *gstelement, gpointer user_data) 
+  {
+    //RtpSession *context = static_cast<RtpSession *>(user_data);
+    g_print ("on_no_more_pad\n");
+  }
 
 }
