@@ -36,7 +36,7 @@ namespace switcher
     bool set_name (std::string name); 
     bool set_absolute_name (std::string name); //path will be fully specified
     void plug (GstElement *bin, GstElement *source_element,GstCaps *caps);//caps does not need to be fully specified
-
+    void plug (GstElement *bin, GstPad *source_pad);
   private:
     std::string name_;
     shmdata_base_writer_t *writer_;
