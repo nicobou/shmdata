@@ -73,20 +73,43 @@ namespace switcher
     //registering add_data_stream
     std::vector<GType> add_data_stream_arg_types;
     add_data_stream_arg_types.push_back (G_TYPE_STRING);
-    register_method("add_data_stream",(void *)&add_data_stream_wrapped, add_data_stream_arg_types,(gpointer)this);
+    register_method("add_data_stream",
+		    (void *)&add_data_stream_wrapped, 
+		    add_data_stream_arg_types,
+		    (gpointer)this);
     std::vector<std::pair<std::string,std::string> > arg_desc;
     std::pair<std::string,std::string> socket;
     socket.first = "socket";
     socket.second = "socket path of the shmdata to add to the session (sending)";
     arg_desc.push_back (socket); 
-    if (!set_method_description ("add_data_stream", "add a data stream to the RTP session (sending)", arg_desc))
+    if (!set_method_description ("add_data_stream", 
+				 "add a data stream to the RTP session (sending)", 
+				 arg_desc))
       g_printerr ("RTP session: cannot set method description for \"add_data_stream\"\n");
+
+    //registering remove_data_stream
+    std::vector<GType> remove_data_stream_arg_types;
+    remove_data_stream_arg_types.push_back (G_TYPE_STRING);
+    register_method("remove_data_stream",
+		    (void *)&remove_data_stream_wrapped, 
+		    remove_data_stream_arg_types,
+		    (gpointer)this);
+    std::vector<std::pair<std::string,std::string> > arg_desc_remove;
+    std::pair<std::string,std::string> socket_to_remove;
+    socket_to_remove.first = "socket";
+    socket_to_remove.second = "socket path of the shmdata to remove from the session (sending)";
+    arg_desc_remove.push_back (socket_to_remove); 
+    if (!set_method_description ("remove_data_stream", 
+				 "remove a data stream from the RTP session (sending)", 
+				 arg_desc_remove))
+      g_printerr ("RTP session: cannot set method description for \"remove_data_stream\"\n");
+
+
 
     //set the name before registering properties
     name_ = gst_element_get_name (rtpsession_);
     
     make_sdp_init ();
-    
   }
 
   void
@@ -167,9 +190,7 @@ namespace switcher
     GstElement *pay;
     //    GstElement *rtpsink, *rtcpsink;
     //GstElement *rtcpsrc;
-    GstPad *srcpad, *sinkpad;
-
-        
+       
     GList *list = gst_registry_feature_filter (gst_registry_get_default (),
 					       (GstPluginFeatureFilter) sink_factory_filter, 
 					       FALSE, caps);
@@ -180,6 +201,9 @@ namespace switcher
     else
       pay = gst_element_factory_make ("rtpgstpay", NULL);
 
+    ShmdataReader *reader= (ShmdataReader *) g_object_get_data (G_OBJECT (typefind),"shmdata-reader");
+    reader->add_element_to_remove (pay);
+        
     g_print ("RtpSession: selection %s payloader\n",GST_ELEMENT_NAME (pay));
 
     /* add capture and payloading to the pipeline and link */
@@ -187,25 +211,8 @@ namespace switcher
     gst_element_link (typefind, pay);
     gst_element_sync_state_with_parent (pay);
     
-
-    // /* the udp sinks and source we will use for RTP and RTCP */
-    // rtpsink = gst_element_factory_make ("udpsink", NULL);
-    // g_object_set (rtpsink, "port", 10000, "host", "localhost", NULL);
-
-    // rtcpsink = gst_element_factory_make ("udpsink", NULL);
-    // g_object_set (rtcpsink, "port", 10001, "host", "localhost", NULL);
-    // /* no need for synchronisation or preroll on the RTCP sink */
-    // g_object_set (rtcpsink, "async", FALSE, "sync", FALSE, NULL);
-
-    //rtcpsrc = gst_element_factory_make ("udpsrc", NULL);
-    // g_object_set (rtcpsrc, "port", 10005, NULL);
-
-     //gst_bin_add_many (GST_BIN (context->bin_), /*rtpsink, rtcpsink,*/ rtcpsrc, NULL);
-
-
-    //gst_element_link (pay, context->rtpsession_);
-    
     /* now link all to the rtpbin, start by getting an RTP sinkpad for session 0 */
+    GstPad *srcpad, *sinkpad;
     sinkpad = gst_element_get_request_pad (context->rtpsession_, "send_rtp_sink_%d");
     srcpad = gst_element_get_static_pad (pay, "src");
     if (gst_pad_link (srcpad, sinkpad) != GST_PAD_LINK_OK)
@@ -217,7 +224,8 @@ namespace switcher
     gchar *rtp_sink_pad_name = gst_pad_get_name (sinkpad);// to be freed
     gchar **rtp_session_array = g_strsplit_set (rtp_sink_pad_name, "_",0);// to be freed
     gchar *session_id = rtp_session_array[3];
-
+    context->shmdata_reader_rtp_id_.insert (reader->get_path (), session_id);
+    
     // rtp src pad (is a static pad since created after the request of rtp sink pad)
     gchar *rtp_src_pad_name = g_strconcat ("send_rtp_src_", session_id, NULL); 
     g_print ("RtpSession: request rtp src pad and create a corresponding shmwriter %s\n",rtp_src_pad_name);
@@ -246,16 +254,18 @@ namespace switcher
     
     /* we also want to receive RTCP, request an RTCP sinkpad for given session and
      * link it to the corresponding shmdata reader  */
+    ShmdataReader::ptr rtcp_reader;
+    rtcp_reader.reset (new ShmdataReader ());
     GstElement *funnel = gst_element_factory_make ("funnel", NULL);
     gst_bin_add_many (GST_BIN (context->bin_), funnel, NULL);
+    rtcp_reader->add_element_to_remove (funnel);
     GstPad *funnel_src_pad = gst_element_get_static_pad (funnel, "src");
     gchar *rtcp_sink_pad_name = g_strconcat ("recv_rtcp_sink_", session_id,NULL); 
     GstPad *rtcp_sink_pad = gst_element_get_request_pad (context->rtpsession_, rtcp_sink_pad_name);
     if (gst_pad_link (funnel_src_pad, rtcp_sink_pad) != GST_PAD_LINK_OK)
          g_error ("Failed to link rtcpsrc to rtpbin");
     gst_object_unref (funnel_src_pad);
-    ShmdataReader::ptr rtcp_reader;
-    rtcp_reader.reset (new ShmdataReader ());
+
     //assuming the writer will use the appropriate name, i.e. <prefix>recv_rtcp_sink_<session_num>
     std::string rtcp_reader_name = context->make_shmdata_writer_name (rtcp_sink_pad_name); 
     rtcp_reader->set_path (rtcp_reader_name.c_str ());
@@ -269,6 +279,23 @@ namespace switcher
 
     g_free (rtp_sink_pad_name);
     g_strfreev (rtp_session_array);
+
+    // /* the udp sinks and source we will use for RTP and RTCP */
+    // rtpsink = gst_element_factory_make ("udpsink", NULL);
+    // g_object_set (rtpsink, "port", 10000, "host", "localhost", NULL);
+
+    // rtcpsink = gst_element_factory_make ("udpsink", NULL);
+    // g_object_set (rtcpsink, "port", 10001, "host", "localhost", NULL);
+    // /* no need for synchronisation or preroll on the RTCP sink */
+    // g_object_set (rtcpsink, "async", FALSE, "sync", FALSE, NULL);
+
+    //rtcpsrc = gst_element_factory_make ("udpsrc", NULL);
+    // g_object_set (rtcpsrc, "port", 10005, NULL);
+
+     //gst_bin_add_many (GST_BIN (context->bin_), /*rtpsink, rtcpsink,*/ rtcpsrc, NULL);
+
+
+    //gst_element_link (pay, context->rtpsession_);
   }
 
   void 
@@ -278,18 +305,21 @@ namespace switcher
     GstElement *funnel, *typefind;
     funnel = gst_element_factory_make ("funnel", NULL);
     typefind = gst_element_factory_make ("typefind", NULL);
+    //give caller to typefind in order to register telement to remove
+    g_object_set_data (G_OBJECT (typefind), "shmdata-reader", (gpointer)caller);
     g_signal_connect (typefind, "have-type", G_CALLBACK (RtpSession::make_sender), context);
     gst_bin_add_many (GST_BIN (context->bin_), funnel, typefind, NULL);
     gst_element_link (funnel, typefind);
     gst_element_sync_state_with_parent (funnel);
     gst_element_sync_state_with_parent (typefind);
     caller->set_sink_element (funnel);
+    caller->add_element_to_remove (funnel);
+    caller->add_element_to_remove (typefind);
   }
-
+  
   gboolean
   RtpSession::add_data_stream_wrapped (gpointer connector_name, gpointer user_data)
   {
-    //std::string connector = static_cast<std::string>(connector_name);
     RtpSession *context = static_cast<RtpSession*>(user_data);
        
     if (context->add_data_stream ((char *)connector_name))
@@ -298,8 +328,6 @@ namespace switcher
       return FALSE;
   }
 
-  
-
   bool
   RtpSession::add_data_stream (std::string shmdata_socket_path)
   {
@@ -307,14 +335,41 @@ namespace switcher
     reader.reset (new ShmdataReader ());
     reader->set_path (shmdata_socket_path.c_str());
     reader->set_bin (bin_);
-    //    reader_->set_sink_element (sink_element_);
-    //if (connection_hook_ != NULL) 
     reader->set_on_first_data_hook (attach_data_stream, this);
     if (runtime_ != NULL) // starting the reader if runtime is set
       reader->start ();
     shmdata_readers_.insert (shmdata_socket_path, reader);
     return true;
   }  
+
+
+  gboolean
+  RtpSession::remove_data_stream_wrapped (gpointer connector_name, gpointer user_data)
+  {
+    //std::string connector = static_cast<std::string>(connector_name);
+    RtpSession *context = static_cast<RtpSession*>(user_data);
+       
+    if (context->remove_data_stream ((char *)connector_name))
+      return TRUE;
+    else
+      return FALSE;
+  }
+
+  bool
+  RtpSession::remove_data_stream (std::string shmdata_socket_path)
+  {
+    if (!shmdata_reader_rtp_id_.contains (shmdata_socket_path))
+      return false;
+    
+    std::string id = shmdata_reader_rtp_id_.lookup (shmdata_socket_path);
+    
+    shmdata_writers_.remove (make_shmdata_writer_name ("send_rtp_src_"+id));
+    shmdata_writers_.remove (make_shmdata_writer_name ("send_rtcp_src_"+id));
+    shmdata_readers_.remove (shmdata_socket_path);
+    shmdata_readers_.remove (make_shmdata_writer_name ("recv_rtcp_sink_"+id));
+    shmdata_reader_rtp_id_.remove (shmdata_socket_path);
+    return true;
+  }
 
   void
   RtpSession::on_bye_ssrc (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
@@ -392,19 +447,17 @@ namespace switcher
     g_print ("on_pad_added, name: %s, direction: %d\n", 
 	     gst_pad_get_name(new_pad),
 	     gst_pad_get_direction (new_pad));
-    RtpSession *context = static_cast<RtpSession *>(user_data);
-    std::string pad_name (gst_pad_get_name (new_pad));
-
-    if (g_str_has_prefix (pad_name.c_str (), "send_rtp_src"))// a new rtp session has been created
-      {
-      }
+    // RtpSession *context = static_cast<RtpSession *>(user_data);
   }
 
   void
   RtpSession::on_pad_removed (GstElement *gstelement, GstPad *new_pad, gpointer user_data) 
   {
     //RtpSession *context = static_cast<RtpSession *>(user_data);
-    g_print ("on_pad_removed\n");
+    g_print ("on_pad_removed, name: %s, direction: %d\n", 
+	     gst_pad_get_name(new_pad),
+	     gst_pad_get_direction (new_pad));
+    
   }
 
   void
