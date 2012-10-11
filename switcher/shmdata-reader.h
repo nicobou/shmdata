@@ -23,6 +23,7 @@
 
 #include <tr1/memory>
 #include <string>
+#include <vector>
 #include <shmdata/base-reader.h>
 
 namespace switcher
@@ -40,6 +41,8 @@ namespace switcher
     void set_bin (GstElement *bin);
     void set_sink_element (GstElement *sink_element);
     void set_on_first_data_hook (on_first_data_hook cb, void *user_data);
+    std::string get_path ();
+    void add_element_to_remove (GstElement *element);
     void start ();
     void stop ();
 
@@ -47,12 +50,14 @@ namespace switcher
     on_first_data_hook connection_hook_;
     void *hook_user_data_;
     static bool async_handler_installed_;
-    std::string name_;
+    std::string name_;//path
     shmdata_base_reader_t *reader_;
     GstElement *bin_;
     GstElement *sink_element_;
-    static void on_first_data (shmdata_base_reader_t * context, void *user_data);
-    static GstBusSyncReply bus_async_handler (GstBus * bus, GstMessage * msg, gpointer user_data);
+    std::vector<GstElement *> elements_to_remove_;
+    static void on_first_data (shmdata_base_reader_t *context, void *user_data);
+    static GstBusSyncReply bus_async_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
+    static void unlink_pad (GstPad * pad);
   };
   
 }  // end of namespace

@@ -50,9 +50,46 @@ namespace switcher
     connection_hook_ = NULL;
    }
   
+  void
+  ShmdataReader::unlink_pad (GstPad * pad)
+  {
+    GstPad *peer;
+    if ((peer = gst_pad_get_peer (pad))) {
+      if (gst_pad_get_direction (pad) == GST_PAD_SRC)
+	gst_pad_unlink (pad, peer);
+      else
+	gst_pad_unlink (peer, pad);
+      //checking if the pad has been requested and releasing it needed 
+      GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);//check if this must be unrefed for GST 1
+      if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
+	gst_element_release_request_pad (gst_pad_get_parent_element(peer), peer);
+      gst_object_unref (peer);
+    }
+  }
+
+
   ShmdataReader::~ShmdataReader()
   {
       shmdata_base_reader_close (reader_);
+
+      std::vector<GstElement *>::iterator element;
+      for (element = elements_to_remove_.begin(); element != elements_to_remove_.end (); element ++)
+	{
+	  GstIterator *pad_iter;
+	  pad_iter = gst_element_iterate_pads (*element);
+	  gst_iterator_foreach (pad_iter, (GFunc) unlink_pad, *element);
+	  gst_iterator_free (pad_iter);
+	  gst_element_set_state (*element, GST_STATE_NULL);
+	  gst_bin_remove (GST_BIN (gst_element_get_parent (*element)), *element);
+	}
+  
+      g_print ("ShmdataReader: %s deleted \n", name_.c_str());
+  }
+
+  std::string 
+  ShmdataReader::get_path ()
+  {
+    return name_;
   }
 
   void 
@@ -122,6 +159,12 @@ namespace switcher
       shmdata_base_reader_close (reader_);
   } 
  
+  void 
+  ShmdataReader::add_element_to_remove (GstElement *element)
+  {
+    elements_to_remove_.push_back (element);
+  }
+  
   void 
   ShmdataReader::set_on_first_data_hook (on_first_data_hook cb, void *user_data)
   {
