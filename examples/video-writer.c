@@ -30,6 +30,9 @@ shmdata_base_writer_t *writer;
 void
 leave (int sig)
 {
+
+  shmdata_base_writer_close (writer);
+
   g_print ("Returned, stopping playback\n");
   gst_element_set_state (pipeline, GST_STATE_NULL);
 
