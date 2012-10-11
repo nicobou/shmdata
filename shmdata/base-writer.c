@@ -28,8 +28,20 @@ struct shmdata_base_writer_
 void
 shmdata_base_writer_close (shmdata_base_writer_t * writer)
 {
-
-    
+  if (GST_IS_ELEMENT (writer->qserial_))
+      gst_element_set_state (writer->qserial_, GST_STATE_NULL);
+  if (GST_IS_ELEMENT (writer->serializer_))
+    gst_element_set_state (writer->serializer_, GST_STATE_NULL);
+  if (GST_IS_ELEMENT (writer->shmsink_))
+    gst_element_set_state (writer->shmsink_, GST_STATE_NULL);
+  if (GST_IS_BIN (writer->pipeline_))
+    gst_bin_remove_many (GST_BIN (writer->pipeline_),
+			 writer->qserial_,
+			 writer->serializer_,
+			 writer->shmsink_,
+			 NULL);
+  else
+    g_message ("shmdata_base_writer_close:");
   if (writer->socket_path_ != NULL)
     g_free (writer->socket_path_);
   if (writer != NULL)
