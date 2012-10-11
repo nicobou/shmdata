@@ -25,7 +25,40 @@ namespace switcher
   ShmdataWriter::ShmdataWriter() :
     writer_ (shmdata_base_writer_init ())
   {
-      g_print ("ShmdataWriter\n");
+  }
+
+  ShmdataWriter::~ShmdataWriter()
+  {
+    shmdata_base_writer_close (writer_);
+   
+    //cleaning tee_, queue_, fakesink_
+    if (GST_IS_ELEMENT (tee_))
+      {
+	gst_element_set_state (tee_, GST_STATE_NULL);
+	GstPad *sinkpad = gst_element_get_static_pad (tee_,"sink");
+	GstPad *peer;
+	if ((peer = gst_pad_get_peer (sinkpad))) 
+	  {
+	    gst_pad_unlink (peer, sinkpad);
+	    GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);//check if must be unrefed for GST 1
+	    if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
+	      gst_element_release_request_pad (gst_pad_get_parent_element(peer), peer);
+	    gst_object_unref (peer);
+	  }
+	gst_object_unref (sinkpad);
+	gst_bin_remove (GST_BIN (gst_element_get_parent (tee_)), tee_);
+      }
+    if (GST_IS_ELEMENT (queue_))
+      {
+	gst_element_set_state (queue_, GST_STATE_NULL);
+	gst_bin_remove (GST_BIN (gst_element_get_parent (queue_)), queue_);
+      }
+    if (GST_IS_ELEMENT (fakesink_))
+      {
+	gst_element_set_state (fakesink_, GST_STATE_NULL);
+	gst_bin_remove (GST_BIN (gst_element_get_parent (fakesink_)), fakesink_);
+      }
+    g_print ("ShmdataWriter: %s deleted \n", name_.c_str());
   }
   
   bool 
@@ -39,7 +72,6 @@ namespace switcher
   bool 
   ShmdataWriter::set_absolute_name (std::string name)
   {
-    g_print ("ShmdataWriter::set_absolute_name \n");
     GFile *shmfile = g_file_new_for_commandline_arg (name.c_str());
     if( g_file_query_exists (shmfile, NULL))
       {    
@@ -93,7 +125,7 @@ namespace switcher
 
      GstPad *sinkpad = gst_element_get_static_pad (tee_, "sink");
      if (gst_pad_link (source_pad, sinkpad) != GST_PAD_LINK_OK)
-       g_error ("Failed to %d with tee");
+       g_error ("ShmdataWirter: failed to link with tee");
      gst_object_unref (sinkpad);
      //gst_element_link_filtered (source_element,
      //				tee_, caps);
