@@ -37,6 +37,7 @@ namespace switcher
   public:
     typedef std::tr1::shared_ptr<Segment> ptr;
     Segment ();
+    ~Segment ();
     // the segment is managing itself the presence/attachment with the runtime
     void set_runtime (Runtime *runtime);
     GstElement *get_bin ();

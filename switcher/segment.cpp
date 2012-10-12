@@ -42,25 +42,37 @@ namespace switcher
       g_printerr ("segment: cannot set method description for \"set_runtime\"\n");
   }
 
+  Segment::~Segment()
+  {
+    if (GST_IS_ELEMENT (bin_))
+      {
+	gst_element_set_state (bin_, GST_STATE_NULL);
+	GstObject *parent = gst_element_get_parent (bin_);
+	if (GST_IS_BIN (parent))
+	  gst_bin_remove (GST_BIN (parent), bin_);
+      }
+  }
+  
+  
   void 
   Segment::set_runtime_wrapped (gpointer arg, gpointer user_data)
   {
-     Runtime *runtime = static_cast<Runtime *>(arg);
-     Segment *context = static_cast<Segment*>(user_data);
-     
-     if (runtime == NULL) 
-       {
-	 g_printerr ("Segment::set_runtime_wrapped Error: runtime is NULL\n");
-	 return;
-       }
-     if (context == NULL) 
-       {
-	 g_printerr ("Segment::set_runtime_wrapped Error: segment is NULL\n");
-	 return;
-       }
-     context->set_runtime(runtime);
-
-     //g_print ("%s is attached to runtime %s\n",context->get_name().c_str(),runtime->get_name().c_str());
+    Runtime *runtime = static_cast<Runtime *>(arg);
+    Segment *context = static_cast<Segment*>(user_data);
+    
+    if (runtime == NULL) 
+      {
+	g_printerr ("Segment::set_runtime_wrapped Error: runtime is NULL\n");
+	return;
+      }
+    if (context == NULL) 
+      {
+	g_printerr ("Segment::set_runtime_wrapped Error: segment is NULL\n");
+	return;
+      }
+    context->set_runtime(runtime);
+    
+    //g_print ("%s is attached to runtime %s\n",context->get_name().c_str(),runtime->get_name().c_str());
 
   }
   
