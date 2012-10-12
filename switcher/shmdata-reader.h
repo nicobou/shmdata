@@ -25,11 +25,12 @@
 #include <string>
 #include <vector>
 #include <shmdata/base-reader.h>
+#include <switcher/shmdata-helper.h>
 
 namespace switcher
 {
 
-  class ShmdataReader
+  class ShmdataReader : public ShmdataHelper 
   {
   public:
     typedef std::tr1::shared_ptr<ShmdataReader> ptr;
@@ -42,15 +43,14 @@ namespace switcher
     void set_sink_element (GstElement *sink_element);
     void set_on_first_data_hook (on_first_data_hook cb, void *user_data);
     std::string get_path ();
-    void add_element_to_remove (GstElement *element);
     void start ();
     void stop ();
 
   private:
     on_first_data_hook connection_hook_;
     void *hook_user_data_;
-    static bool async_handler_installed_;
-    std::string name_;//path
+    static bool async_handler_installed_; //FIXME should not work with multiple pipelines
+    std::string path_;
     shmdata_base_reader_t *reader_;
     GstElement *bin_;
     GstElement *sink_element_;

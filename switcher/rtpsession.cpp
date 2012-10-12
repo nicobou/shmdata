@@ -154,7 +154,7 @@ namespace switcher
     
     GstCaps* caps = (GstCaps *)data;
 
-    /* we only care about element factories */
+    // searching element factories only
     if (!GST_IS_ELEMENT_FACTORY (feature))
       return FALSE;
     
@@ -183,14 +183,14 @@ namespace switcher
 
   //this is a typefind function, called when type of input stream from a shmdata is found
   void
-  RtpSession::make_sender (GstElement* typefind, guint probability, GstCaps* caps, gpointer user_data)
+  RtpSession::make_data_stream_available (GstElement* typefind, 
+					  guint probability, 
+					  GstCaps *caps, 
+					  gpointer user_data)
   {
     RtpSession *context = static_cast<RtpSession *>(user_data);
     
     GstElement *pay;
-    //    GstElement *rtpsink, *rtcpsink;
-    //GstElement *rtcpsrc;
-       
     GList *list = gst_registry_feature_filter (gst_registry_get_default (),
 					       (GstPluginFeatureFilter) sink_factory_filter, 
 					       FALSE, caps);
@@ -235,7 +235,7 @@ namespace switcher
     ShmdataWriter::ptr rtp_writer;
     rtp_writer.reset (new ShmdataWriter ());
     std::string rtp_writer_name = context->make_shmdata_writer_name (rtp_src_pad_name); 
-    rtp_writer->set_absolute_name (rtp_writer_name.c_str ());
+    rtp_writer->set_path (rtp_writer_name.c_str ());
     rtp_writer->plug (context->bin_, rtp_src_pad);
     context->shmdata_writers_.insert (rtp_writer_name, rtp_writer);
     g_free (rtp_src_pad_name);
@@ -247,7 +247,7 @@ namespace switcher
     ShmdataWriter::ptr rtcp_writer;
     rtcp_writer.reset (new ShmdataWriter ());
     std::string rtcp_writer_name = context->make_shmdata_writer_name (rtcp_src_pad_name); 
-    rtcp_writer->set_absolute_name (rtcp_writer_name.c_str());
+    rtcp_writer->set_path (rtcp_writer_name.c_str());
     rtcp_writer->plug (context->bin_, rtcp_src_pad);
     context->shmdata_writers_.insert (rtcp_writer_name, rtcp_writer);
     g_free (rtcp_src_pad_name);
@@ -310,7 +310,7 @@ namespace switcher
     typefind = gst_element_factory_make ("typefind", NULL);
     //give caller to typefind in order to register telement to remove
     g_object_set_data (G_OBJECT (typefind), "shmdata-reader", (gpointer)caller);
-    g_signal_connect (typefind, "have-type", G_CALLBACK (RtpSession::make_sender), context);
+    g_signal_connect (typefind, "have-type", G_CALLBACK (RtpSession::make_data_stream_available), context);
     gst_bin_add_many (GST_BIN (context->bin_), funnel, typefind, NULL);
     gst_element_link (funnel, typefind);
     gst_element_sync_state_with_parent (funnel);

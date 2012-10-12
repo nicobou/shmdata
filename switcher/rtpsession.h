@@ -54,9 +54,12 @@ namespace switcher
     static QuiddityDocumentation doc_;
     GstElement *rtpsession_;
     StringMap <std::string> shmdata_reader_rtp_id_;
-    static void make_sender (GstElement* typefind, guint probability, GstCaps* caps, gpointer user_data);
+    static void make_data_stream_available (GstElement* typefind, 
+					    guint probability, 
+					    GstCaps *caps, 
+					    gpointer user_data);
     static gboolean sink_factory_filter (GstPluginFeature * feature, gpointer data);
-    static gint sink_compare_ranks (GstPluginFeature * f1, GstPluginFeature * f2);
+    static gint sink_compare_ranks (GstPluginFeature *f1, GstPluginFeature *f2);
     void make_sdp_init ();
     //internal rtpbin signals
     static void on_bye_ssrc (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data); 

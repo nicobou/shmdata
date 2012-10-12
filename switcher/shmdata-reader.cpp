@@ -24,6 +24,21 @@ namespace switcher
 
   bool ShmdataReader::async_handler_installed_ = false;
 
+  ShmdataReader::ShmdataReader()
+  {
+    reader_ = shmdata_base_reader_new ();
+    bin_ = NULL;
+    path_ = "";
+    sink_element_ = NULL;
+    connection_hook_ = NULL;
+   }
+
+  ShmdataReader::~ShmdataReader()
+  {
+      shmdata_base_reader_close (reader_);
+      g_print ("ShmdataReader: %s deleted \n", path_.c_str());
+  }
+
   GstBusSyncReply 
   ShmdataReader::bus_async_handler (GstBus * bus,
 				     GstMessage * msg, gpointer user_data) 
@@ -40,33 +55,6 @@ namespace switcher
     
     return GST_BUS_PASS; 
   }
-  
-  ShmdataReader::~ShmdataReader()
-  {
-      shmdata_base_reader_close (reader_);
-
-      std::vector<GstElement *>::iterator element;
-      for (element = elements_to_remove_.begin(); element != elements_to_remove_.end (); element ++)
-	{
-	  GstIterator *pad_iter;
-	  pad_iter = gst_element_iterate_pads (*element);
-	  gst_iterator_foreach (pad_iter, (GFunc) unlink_pad, *element);
-	  gst_iterator_free (pad_iter);
-	  gst_element_set_state (*element, GST_STATE_NULL);
-	  gst_bin_remove (GST_BIN (gst_element_get_parent (*element)), *element);
-	}
-  
-      g_print ("ShmdataReader: %s deleted \n", name_.c_str());
-  }
-
-  ShmdataReader::ShmdataReader()
-  {
-    reader_ = shmdata_base_reader_new ();
-    bin_ = NULL;
-    name_ = "";
-    sink_element_ = NULL;
-    connection_hook_ = NULL;
-   }
   
   void
   ShmdataReader::unlink_pad (GstPad * pad)
@@ -88,13 +76,13 @@ namespace switcher
   std::string 
   ShmdataReader::get_path ()
   {
-    return name_;
+    return path_;
   }
 
   void 
   ShmdataReader::set_path (const char *absolute_path)
   {
-    name_ = absolute_path;
+    path_ = absolute_path;
   }
 
   void 
@@ -117,7 +105,7 @@ namespace switcher
     shmdata_base_reader_close (reader_);
     reader_ = shmdata_base_reader_new ();
     
-    if (name_ == "" ||  bin_ == NULL)
+    if (path_ == "" ||  bin_ == NULL)
       {
 	g_printerr ("cannot start the shmdata reader: name or bin or sink element has not bin set\n");
 	return;
@@ -148,7 +136,7 @@ namespace switcher
     shmdata_base_reader_set_callback (reader_, ShmdataReader::on_first_data, this);
     shmdata_base_reader_install_sync_handler (reader_, FALSE);
     shmdata_base_reader_set_bin (reader_, bin_);
-    shmdata_base_reader_start (reader_, name_.c_str());
+    shmdata_base_reader_start (reader_, path_.c_str());
 
   }
 
@@ -158,12 +146,6 @@ namespace switcher
       shmdata_base_reader_close (reader_);
   } 
  
-  void 
-  ShmdataReader::add_element_to_remove (GstElement *element)
-  {
-    elements_to_remove_.push_back (element);
-  }
-  
   void 
   ShmdataReader::set_on_first_data_hook (on_first_data_hook cb, void *user_data)
   {
@@ -194,7 +176,6 @@ namespace switcher
 	}
       
       shmdata_base_reader_set_sink (context, reader->sink_element_);
-      
   }
 
 }

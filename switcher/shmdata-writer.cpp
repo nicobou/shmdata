@@ -30,7 +30,7 @@ namespace switcher
   ShmdataWriter::~ShmdataWriter()
   {
     shmdata_base_writer_close (writer_);
-   
+
     //cleaning tee_, queue_, fakesink_
     if (GST_IS_ELEMENT (tee_))
       {
@@ -48,45 +48,40 @@ namespace switcher
 	gst_object_unref (sinkpad);
 	gst_bin_remove (GST_BIN (gst_element_get_parent (tee_)), tee_);
       }
+
     if (GST_IS_ELEMENT (queue_))
       {
 	gst_element_set_state (queue_, GST_STATE_NULL);
 	gst_bin_remove (GST_BIN (gst_element_get_parent (queue_)), queue_);
       }
+
     if (GST_IS_ELEMENT (fakesink_))
       {
 	gst_element_set_state (fakesink_, GST_STATE_NULL);
 	gst_bin_remove (GST_BIN (gst_element_get_parent (fakesink_)), fakesink_);
       }
-    g_print ("ShmdataWriter: %s deleted \n", name_.c_str());
-  }
-  
-  bool 
-  ShmdataWriter::set_name (std::string name)
-  {
-    g_printerr ("ShmdataWriter::set_name (const char *name) IS NOT IMPLEMENTED");
-    return false;
+    g_print ("ShmdataWriter: %s deleted \n", path_.c_str());
   }
   
   //WARNING is the file exist it will be deleted
   bool 
-  ShmdataWriter::set_absolute_name (std::string name)
+  ShmdataWriter::set_path (std::string name)
   {
     GFile *shmfile = g_file_new_for_commandline_arg (name.c_str());
     if( g_file_query_exists (shmfile, NULL))
       {    
 	//thrash it
-	g_printerr ("ShmdataWriter::set_absolute_name warning: file %s exists and will be deleted.\n",name.c_str());
+	g_printerr ("ShmdataWriter::set_path warning: file %s exists and will be deleted.\n",name.c_str());
 	if (! g_file_delete (shmfile, NULL, NULL)) 
 	  {
-	    g_printerr("ShmdataWriter::set_absolute_name error: file %s is already existing and cannot be trashed.",name.c_str());
+	    g_printerr("ShmdataWriter::set_path error: file %s is already existing and cannot be trashed.",name.c_str());
 	    return false;
 	  }
       }
     
     //setting the writer
     shmdata_base_writer_set_path (writer_,name.c_str());
-    name_ = name;
+    path_ = name;
     return true;
   }
   

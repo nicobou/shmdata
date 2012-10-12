@@ -36,6 +36,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     rtpsession.cpp \
     runtime.cpp \
     segment.cpp \
+    shmdata-helper.cpp \
     shmdata-reader.cpp \
     shmdata-writer.cpp \
     video-sink.cpp \
@@ -85,6 +86,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     rtpsession.h \
     runtime.h \
     segment.h \
+    shmdata-helper.h \
     shmdata-reader.h \
     shmdata-writer.h \
     string-map.h \

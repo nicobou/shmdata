@@ -24,22 +24,22 @@
 #include <tr1/memory>
 #include <string>
 #include <shmdata/base-writer.h>
+#include <switcher/shmdata-helper.h>
 
 namespace switcher
 {
 
-  class ShmdataWriter
+  class ShmdataWriter : public ShmdataHelper
   {
   public:
     typedef std::tr1::shared_ptr<ShmdataWriter> ptr;
     ShmdataWriter();
     ~ShmdataWriter();
-    bool set_name (std::string name); 
-    bool set_absolute_name (std::string name); //path will be fully specified
+    bool set_path (std::string name); //path will be fully specified
     void plug (GstElement *bin, GstElement *source_element,GstCaps *caps);//caps does not need to be fully specified
     void plug (GstElement *bin, GstPad *source_pad);
   private:
-    std::string name_;
+    std::string path_;
     shmdata_base_writer_t *writer_;
     GstElement *tee_;
     GstElement *queue_;
