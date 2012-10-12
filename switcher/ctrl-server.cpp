@@ -43,6 +43,10 @@ namespace switcher
   {
     port_ = 8080;
     soap_init(&soap_);
+    //release port
+    soap_.connect_flags = SO_LINGER; 
+    soap_.accept_flags = SO_LINGER;
+
     //TODO find a better name for CtrlServer
     srand(time(0));
     name_ = g_strdup_printf ("ctrlserver%d",rand() % 1024);
@@ -53,8 +57,6 @@ namespace switcher
   CtrlServer::~CtrlServer ()
   {
     stop ();
-    g_free ((gchar *)name_.c_str());
-
   }
   
   QuiddityDocumentation 
@@ -78,6 +80,7 @@ namespace switcher
   void 
   CtrlServer::start ()
   {
+    quit_server_thread_ = false;
     service_ = new controlService (soap_);
     SOAP_SOCKET m = service_->bind(NULL, port_, 100 /* BACKLOG */);
     if (!soap_valid_socket(m))
@@ -90,8 +93,8 @@ namespace switcher
   void
   CtrlServer::stop ()
   {
-    if (service_)
-      delete service_;
+    quit_server_thread_ = true;
+    //g_thread_join (thread_);
   }
   
   gpointer
@@ -105,8 +108,10 @@ namespace switcher
     //   }
     // return NULL;
 
-    for (int i = 1; ; i++)
-      { SOAP_SOCKET s = context->service_->accept();
+    //for (int i = 1; ; i++)
+    while(!context->quit_server_thread_)
+      { 
+	SOAP_SOCKET s = context->service_->accept();
 	if (!soap_valid_socket(s))
 	  { if (context->service_->errnum)
 	      context->service_->soap_print_fault(stderr);
@@ -114,19 +119,22 @@ namespace switcher
 	      g_printerr("SOAP server timed out\n");	/* should really wait for threads to terminate, but 24hr timeout should be enough ... */
 	    break;
 	  }
-	g_printerr ("client request %d accepted on socket %d, client IP is %d.%d.%d.%d\n", 
-		    i, s, 
-		    (int)(context->service_->ip>>24)&0xFF, 
-		    (int)(context->service_->ip>>16)&0xFF, 
-		    (int)(context->service_->ip>>8)&0xFF, 
-		    (int)context->service_->ip&0xFF);
+	// g_print ("client request %d accepted on socket %d, client IP is %d.%d.%d.%d\n", 
+	// 	    i, s, 
+	// 	    (int)(context->service_->ip>>24)&0xFF, 
+	// 	    (int)(context->service_->ip>>16)&0xFF, 
+	// 	    (int)(context->service_->ip>>8)&0xFF, 
+	// 	    (int)context->service_->ip&0xFF);
 	controlService *tcontrol = context->service_->copy();
 	tcontrol->serve();
 	delete tcontrol;
       }
+    if (context->service_)
+      delete context->service_;
     return NULL;
   }
-}
+
+}//end of CtrlServer class
 
 
 // below is the implementation of the service

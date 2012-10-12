@@ -49,6 +49,7 @@ namespace switcher
     static QuiddityDocumentation doc_;
     struct soap soap_;
     int port_;
+    bool quit_server_thread_;
     controlService *service_; 
     GThread *thread_;
     static gpointer server_thread (gpointer user_data);
