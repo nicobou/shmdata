@@ -18,87 +18,75 @@
  */
 
 #include "switcher/ctrl-server.h"
-//#include "switcher/webservices/control.nsmap"
 #include "switcher/quiddity-manager.h"
 #include <iostream>
 #include <signal.h>
 
 
-
 static gchar *server_name = NULL;
 //static gchar **remaining_args = NULL;
+static switcher::QuiddityManager *quidman = NULL;
+static switcher::CtrlServer  *serv = NULL;
+static switcher::QuiddityManager *manager = NULL;
 
 static GOptionEntry entries[] =
   {
     { "server-name", 's', 0, G_OPTION_ARG_STRING, &server_name, "server name (default is \"default\")", NULL },
     { NULL }
-};
+  };
 
- //clean up pipeline when ctrl-c
- void
- leave (int sig)
- {
-   exit (sig);
- }
+
+void
+leave (int sig)
+{
+  if (serv != NULL)
+    delete serv;
+  if (manager != NULL)
+      delete manager;
+  exit (sig);
+}
 
 
 int
 main (int argc,
       char *argv[])
 {
-     (void) signal (SIGINT, leave);
+  (void) signal (SIGINT, leave);
 
-     //command line options
-     GError *error = NULL;
-     GOptionContext *context;
-     context = g_option_context_new ("- switcher server");
-     g_option_context_add_main_entries (context, entries, NULL);
-     if (!g_option_context_parse (context, &argc, &argv, &error))
-       {
-	 g_print ("option parsing failed: %s\n", error->message);
-	 exit (1);
-       } 
+  //command line options
+  GError *error = NULL;
+  GOptionContext *context;
+  context = g_option_context_new ("- switcher server");
+  g_option_context_add_main_entries (context, entries, NULL);
+  if (!g_option_context_parse (context, &argc, &argv, &error))
+    {
+      g_print ("option parsing failed: %s\n", error->message);
+      exit (1);
+    } 
   
-
-
-     using namespace switcher;
+  using namespace switcher;
      
-     if (server_name == NULL)
-       server_name = "default";
+  if (server_name == NULL)
+    server_name = "default";
 
-       QuiddityManager manager(server_name);  
-
-     std::vector<std::string> available_object_list = manager.get_classes ();
-     
-    //list available object in factory
-    // for (uint i=0; i < available_object_list.size (); i++)
-    //   {
-    //     std::cout<< "** available object: " << available_object_list[i] << std::endl; 
-    //   }    
+  manager = new QuiddityManager(server_name);  
+  //saving ref for exiting properly
   
-    // Create a runtime
-    std::string runtime = manager.create ("runtime");
+  // Create a runtime (pipeline0)
+  std::string runtime = manager->create ("runtime");
 
-     //creating a SOAP webservice controling the manager
-     //Quiddity::ptr baseserv = manager.create ("controlserver");
-     //TODO make this available from the base manager interface 
-     //(for instance "this" or better could be the string naming the manager)
-     CtrlServer  *serv =  new CtrlServer(); //std::tr1::dynamic_pointer_cast<CtrlServer> (baseserv);
-     serv->set_quiddity_manager (&manager);
-     serv->start ();
+  //creating a SOAP webservice controling the manager
+  //Quiddity::ptr baseserv = manager.create ("controlserver");
+  //TODO make this available from the base manager interface 
+  //(for instance "this" or better could be the string naming the manager)
+   serv =  new CtrlServer(); //std::tr1::dynamic_pointer_cast<CtrlServer> (baseserv);
+   serv->set_quiddity_manager (manager);
+   serv->start ();
 
-
-    // // //create a videotest
-    // std::string videotest = manager.create ("gconfvideosource");
-
-    // // //attaching videotestsrc to the runtime
-    // std::vector<std::string> ent_name;
-    // ent_name.push_back (runtime);
-    // manager.invoke_method (videotest,"set_runtime",ent_name);
-
-     while (1)
-       sleep (1);
-
+  //waiting for end of life
+  while (1)
+    sleep (1);
+  
   return 0;
 }
 
