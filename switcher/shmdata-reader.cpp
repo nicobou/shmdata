@@ -41,6 +41,24 @@ namespace switcher
     return GST_BUS_PASS; 
   }
   
+  ShmdataReader::~ShmdataReader()
+  {
+      shmdata_base_reader_close (reader_);
+
+      std::vector<GstElement *>::iterator element;
+      for (element = elements_to_remove_.begin(); element != elements_to_remove_.end (); element ++)
+	{
+	  GstIterator *pad_iter;
+	  pad_iter = gst_element_iterate_pads (*element);
+	  gst_iterator_foreach (pad_iter, (GFunc) unlink_pad, *element);
+	  gst_iterator_free (pad_iter);
+	  gst_element_set_state (*element, GST_STATE_NULL);
+	  gst_bin_remove (GST_BIN (gst_element_get_parent (*element)), *element);
+	}
+  
+      g_print ("ShmdataReader: %s deleted \n", name_.c_str());
+  }
+
   ShmdataReader::ShmdataReader()
   {
     reader_ = shmdata_base_reader_new ();
@@ -65,25 +83,6 @@ namespace switcher
 	gst_element_release_request_pad (gst_pad_get_parent_element(peer), peer);
       gst_object_unref (peer);
     }
-  }
-
-
-  ShmdataReader::~ShmdataReader()
-  {
-      shmdata_base_reader_close (reader_);
-
-      std::vector<GstElement *>::iterator element;
-      for (element = elements_to_remove_.begin(); element != elements_to_remove_.end (); element ++)
-	{
-	  GstIterator *pad_iter;
-	  pad_iter = gst_element_iterate_pads (*element);
-	  gst_iterator_foreach (pad_iter, (GFunc) unlink_pad, *element);
-	  gst_iterator_free (pad_iter);
-	  gst_element_set_state (*element, GST_STATE_NULL);
-	  gst_bin_remove (GST_BIN (gst_element_get_parent (*element)), *element);
-	}
-  
-      g_print ("ShmdataReader: %s deleted \n", name_.c_str());
   }
 
   std::string 
