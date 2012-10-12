@@ -266,7 +266,8 @@ namespace switcher
          g_error ("Failed to link rtcpsrc to rtpbin");
     gst_object_unref (funnel_src_pad);
 
-    //assuming the writer will use the appropriate name, i.e. <prefix>recv_rtcp_sink_<session_num>
+    //making a shmdata reader for rtcp reception 
+    //from a shmdata writer agregating multiple incoming streams
     std::string rtcp_reader_name = context->make_shmdata_writer_name (rtcp_sink_pad_name); 
     rtcp_reader->set_path (rtcp_reader_name.c_str ());
     rtcp_reader->set_bin (context->bin_);
@@ -276,6 +277,8 @@ namespace switcher
     context->shmdata_readers_.insert (rtcp_reader_name, rtcp_reader);
     gst_element_sync_state_with_parent (funnel);
     g_free (rtcp_sink_pad_name);
+
+    
 
     g_free (rtp_sink_pad_name);
     g_strfreev (rtp_session_array);

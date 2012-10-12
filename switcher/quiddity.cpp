@@ -37,7 +37,6 @@ namespace switcher
     
   Quiddity::~Quiddity () { 
     g_print ("call: Quiddity destructor for %s\n",get_name().c_str());
-    //TODO remove properties & methods
   }
 
   std::string

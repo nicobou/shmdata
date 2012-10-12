@@ -36,22 +36,20 @@ namespace switcher
   {
   public:
     typedef std::tr1::shared_ptr<Segment> ptr;
-    Segment();
+    Segment ();
     // the segment is managing itself the presence/attachment with the runtime
     void set_runtime (Runtime *runtime);
     GstElement *get_bin ();
 
-    //TODO register this function as char * get_connectors () returning json
+    //TODO rename and register this function returning json
     std::vector<std::string> get_src_connectors ();
 
     //wrappers for calls from base quiddity manager
     static void set_runtime_wrapped (gpointer runtime, gpointer context);
-    //static gboolean connect_wrapped (gpointer connector_name, gpointer segment, gpointer user_data);
-   
     
   protected:
     GstElement *bin_;
-    Runtime *runtime_;
+    Runtime *runtime_;//FIXME must be a shared pointer
     StringMap<ShmdataWriter::ptr> shmdata_writers_;
     StringMap<ShmdataReader::ptr> shmdata_readers_;
 

@@ -40,7 +40,7 @@ namespace switcher
 	if ((peer = gst_pad_get_peer (sinkpad))) 
 	  {
 	    gst_pad_unlink (peer, sinkpad);
-	    GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);//check if must be unrefed for GST 1
+	    GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);//TODO check if must be unrefed for GST 1
 	    if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
 	      gst_element_release_request_pad (gst_pad_get_parent_element(peer), peer);
 	    gst_object_unref (peer);

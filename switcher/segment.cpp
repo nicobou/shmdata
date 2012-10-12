@@ -28,7 +28,8 @@ namespace switcher
     runtime_ = NULL;
     bin_ = gst_element_factory_make ("bin", NULL);
     //g_object_set (G_OBJECT (bin_), "message-forward",TRUE, NULL);
-    //registering set_runtime
+
+    //registering set_runtime method
     std::vector<GType> set_runtime_arg_types;
     set_runtime_arg_types.push_back (G_TYPE_POINTER);
     register_method("set_runtime",(void *)&Segment::set_runtime_wrapped, set_runtime_arg_types,(gpointer)this);
@@ -39,9 +40,8 @@ namespace switcher
     arg_desc.push_back (quiddity_name); 
     if (!set_method_description ("set_runtime", "attach quiddity to a runtime ", arg_desc))
       g_printerr ("segment: cannot set method description for \"set_runtime\"\n");
-    
   }
-  
+
   void 
   Segment::set_runtime_wrapped (gpointer arg, gpointer user_data)
   {
@@ -60,7 +60,7 @@ namespace switcher
        }
      context->set_runtime(runtime);
 
-     g_print ("%s is attached to runtime %s\n",context->get_name().c_str(),runtime->get_name().c_str());
+     //g_print ("%s is attached to runtime %s\n",context->get_name().c_str(),runtime->get_name().c_str());
 
   }
   

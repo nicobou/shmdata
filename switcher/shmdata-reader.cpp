@@ -113,7 +113,7 @@ namespace switcher
   void 
   ShmdataReader::start ()
   {
-    g_print ("shmdata-reader START \n");
+    //g_print ("shmdata-reader START \n");
 
     shmdata_base_reader_close (reader_);
     reader_ = shmdata_base_reader_new ();
@@ -168,7 +168,7 @@ namespace switcher
   void 
   ShmdataReader::set_on_first_data_hook (on_first_data_hook cb, void *user_data)
   {
-    g_print ("  ShmdataReader::set_on_first_data_hook\n");
+    //g_print ("ShmdataReader::set_on_first_data_hook\n");
     connection_hook_ = cb;
     hook_user_data_ = user_data;
   }

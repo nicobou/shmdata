@@ -150,7 +150,6 @@ namespace switcher
 			   std::string short_description,
 			   std::vector< std::pair<std::string,std::string> > arg_description)
   {
-    g_print ("set description\n");
     method_name_ = method_name;
     short_description_ = short_description;
     arg_description_ = arg_description;
