@@ -55,7 +55,7 @@ namespace switcher
     GstElement *rtpsession_;
     //maps shmdata path with the rtp id 
     StringMap <std::string> local_stream_rtp_id_;
-    StringMap <ShmdataHelper::ptr> rtp_id_funnel_; //for receiving rtcp
+    StringMap <GstElementCleaner::ptr> rtp_id_funnel_; //for receiving rtcp
     static void make_data_stream_available (GstElement* typefind, 
 					    guint probability, 
 					    GstCaps *caps, 

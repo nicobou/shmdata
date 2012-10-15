@@ -29,6 +29,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gconf-audio-source.cpp \
     gconf-video-sink.cpp \
     gconf-video-source.cpp \
+    gst-element-cleaner.cpp \
     gst-utils.cpp \
     h264.cpp \
     method.cpp \
@@ -36,7 +37,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     rtpsession.cpp \
     runtime.cpp \
     segment.cpp \
-    shmdata-helper.cpp \
     shmdata-reader.cpp \
     shmdata-writer.cpp \
     video-sink.cpp \
@@ -77,6 +77,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gconf-audio-source.h \
     gconf-video-sink.h \
     gconf-video-source.h \
+    gst-element-cleaner.h \
     gst-utils.h \
     h264.h \
     hash-table.h \
@@ -86,7 +87,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     rtpsession.h \
     runtime.h \
     segment.h \
-    shmdata-helper.h \
     shmdata-reader.h \
     shmdata-writer.h \
     string-map.h \

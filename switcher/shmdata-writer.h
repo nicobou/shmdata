@@ -24,12 +24,12 @@
 #include <tr1/memory>
 #include <string>
 #include <shmdata/base-writer.h>
-#include <switcher/shmdata-helper.h>
+#include <switcher/gst-element-cleaner.h>
 
 namespace switcher
 {
 
-  class ShmdataWriter : public ShmdataHelper
+  class ShmdataWriter : public GstElementCleaner
   {
   public:
     typedef std::tr1::shared_ptr<ShmdataWriter> ptr;

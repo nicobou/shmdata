@@ -18,8 +18,8 @@
  */
 
 
-#ifndef __SWITCHER_SHMDATA_HELPER_H__
-#define __SWITCHER_SHMDATA_HELPER_H__
+#ifndef __SWITCHER_GST_ELEMENT_CLEANER_H__
+#define __SWITCHER_GST_ELEMENT_CLEANER_H__
 
 #include <vector>
 #include <gst/gst.h>
@@ -28,11 +28,11 @@
 namespace switcher
 {
   
-  class ShmdataHelper
+  class GstElementCleaner
   {
   public:
-    typedef std::tr1::shared_ptr<ShmdataHelper> ptr;
-    ~ShmdataHelper ();
+    typedef std::tr1::shared_ptr<GstElementCleaner> ptr;
+    ~GstElementCleaner ();
     void add_element_to_remove (GstElement *element);
 
   private:

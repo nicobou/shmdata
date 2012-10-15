@@ -25,12 +25,12 @@
 #include <string>
 #include <vector>
 #include <shmdata/base-reader.h>
-#include <switcher/shmdata-helper.h>
+#include <switcher/gst-element-cleaner.h>
 
 namespace switcher
 {
 
-  class ShmdataReader : public ShmdataHelper 
+  class ShmdataReader : public GstElementCleaner 
   {
   public:
     typedef std::tr1::shared_ptr<ShmdataReader> ptr;

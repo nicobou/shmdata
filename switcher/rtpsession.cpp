@@ -267,8 +267,8 @@ namespace switcher
     gst_object_unref (funnel_src_pad);
     g_free (rtcp_sink_pad_name);
     //for cleaning of funnel
-    ShmdataHelper::ptr funnel_cleaning;
-    funnel_cleaning.reset (new ShmdataHelper ());
+    GstElementCleaner::ptr funnel_cleaning;
+    funnel_cleaning.reset (new GstElementCleaner ());
     funnel_cleaning->add_element_to_remove (funnel);
     context->rtp_id_funnel_.insert (session_id,funnel_cleaning);
     g_free (session_id);

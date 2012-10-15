@@ -17,12 +17,12 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/shmdata-helper.h"
+#include "switcher/gst-element-cleaner.h"
 
 namespace switcher
 {
 
-  ShmdataHelper::~ShmdataHelper ()
+  GstElementCleaner::~GstElementCleaner ()
   {
       std::vector<GstElement *>::iterator element;
       for (element = elements_to_remove_.begin(); element != elements_to_remove_.end (); element ++)
@@ -37,7 +37,7 @@ namespace switcher
   }
 
   void
-  ShmdataHelper::unlink_pad (GstPad * pad)
+  GstElementCleaner::unlink_pad (GstPad * pad)
   {
     GstPad *peer;
     if ((peer = gst_pad_get_peer (pad))) {
@@ -55,7 +55,7 @@ namespace switcher
 
  
   void 
-  ShmdataHelper::add_element_to_remove (GstElement *element)
+  GstElementCleaner::add_element_to_remove (GstElement *element)
   {
     elements_to_remove_.push_back (element);
   }
