@@ -32,6 +32,7 @@
 #include "switcher/h264.h"
 #include "switcher/rtpsession.h"
 #include "switcher/runtime.h"
+#include "switcher/udpsink.h"
 #include "switcher/video-test-source.h"
 #include "switcher/xvimagesink.h"
 
@@ -80,6 +81,9 @@ namespace switcher
 						  RtpSession::get_documentation().get_json_documentation ());
     abstract_factory_.register_class<Runtime> (Runtime::get_documentation().get_class_name (), 
 					       Runtime::get_documentation().get_json_documentation ());
+    abstract_factory_.register_class<UDPSink> (UDPSink::get_documentation().get_class_name (), 
+					       UDPSink::get_documentation().get_json_documentation ());
+
     abstract_factory_.register_class<VideoTestSource> (VideoTestSource::get_documentation().get_class_name (),
 						       VideoTestSource::get_documentation().get_json_documentation ());
     abstract_factory_.register_class<Xvimagesink> (Xvimagesink::get_documentation().get_class_name (),
