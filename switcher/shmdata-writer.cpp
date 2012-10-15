@@ -120,7 +120,7 @@ namespace switcher
 
      GstPad *sinkpad = gst_element_get_static_pad (tee_, "sink");
      if (gst_pad_link (source_pad, sinkpad) != GST_PAD_LINK_OK)
-       g_error ("ShmdataWirter: failed to link with tee");
+       g_error ("ShmdataWriter: failed to link with tee");
      gst_object_unref (sinkpad);
      //gst_element_link_filtered (source_element,
      //				tee_, caps);
