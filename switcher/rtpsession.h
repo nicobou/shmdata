@@ -35,34 +35,41 @@ namespace switcher
     typedef std::tr1::shared_ptr<RtpSession> ptr;
     RtpSession ();
     RtpSession (QuiddityLifeManager::ptr life_manager);
-
     static QuiddityDocumentation get_documentation ();
 
-    //will be call by shmdata reader
-    static void attach_data_stream(ShmdataReader *caller, void *rtpsession_instance); 
-
+    //local streams
     bool add_data_stream (std::string shmdata_socket_path);
     bool remove_data_stream (std::string shmdata_socket_path);
 
     //wrapper for registering the data_stream functions
     static gboolean add_data_stream_wrapped (gpointer shmdata_socket_path, gpointer user_data);
     static gboolean remove_data_stream_wrapped (gpointer shmdata_socket_path, gpointer user_data);
+
+    //will be call by shmdata reader
+    static void attach_data_stream(ShmdataReader *caller, void *rtpsession_instance); 
     
   private:
-    GstSDPMessage *sdp_description_;
     void make_rtpsession ();
-    static QuiddityDocumentation doc_;
     GstElement *rtpsession_;
-    //maps shmdata path with the rtp id 
-    StringMap <std::string> local_stream_rtp_id_;
-    StringMap <GstElementCleaner::ptr> rtp_id_funnel_; //for receiving rtcp
+
+    //local streams
+    StringMap <std::string> local_stream_rtp_id_; //maps shmdata path with the rtp id 
+    StringMap <GstElementCleaner::ptr> rtp_id_funnel_; //rtcp reports from receivers
     static void make_data_stream_available (GstElement* typefind, 
 					    guint probability, 
 					    GstCaps *caps, 
 					    gpointer user_data);
     static gboolean sink_factory_filter (GstPluginFeature * feature, gpointer data);
     static gint sink_compare_ranks (GstPluginFeature *f1, GstPluginFeature *f2);
+
+    //send to 
+    
+    //sdp
+    GstSDPMessage *sdp_description_;
     void make_sdp_init ();
+
+    //quiddity
+    static QuiddityDocumentation doc_;
 
     //internal rtpbin signals
     static void on_bye_ssrc (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data); 
