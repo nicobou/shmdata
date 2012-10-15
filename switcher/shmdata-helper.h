@@ -21,9 +21,9 @@
 #ifndef __SWITCHER_SHMDATA_HELPER_H__
 #define __SWITCHER_SHMDATA_HELPER_H__
 
-#include <string>
 #include <vector>
 #include <gst/gst.h>
+#include <tr1/memory>
 
 namespace switcher
 {
@@ -31,6 +31,7 @@ namespace switcher
   class ShmdataHelper
   {
   public:
+    typedef std::tr1::shared_ptr<ShmdataHelper> ptr;
     ~ShmdataHelper ();
     void add_element_to_remove (GstElement *element);
 
