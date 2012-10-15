@@ -204,7 +204,7 @@ namespace switcher
     ShmdataReader *reader= (ShmdataReader *) g_object_get_data (G_OBJECT (typefind),"shmdata-reader");
     reader->add_element_to_remove (pay);
         
-    g_print ("RtpSession: selection %s payloader\n",GST_ELEMENT_NAME (pay));
+    g_print ("RtpSession::make_data_stream_available: %s payloader\n",GST_ELEMENT_NAME (pay));
 
     /* add capture and payloading to the pipeline and link */
     gst_bin_add_many (GST_BIN (context->bin_), pay, NULL);
@@ -216,16 +216,18 @@ namespace switcher
     sinkpad = gst_element_get_request_pad (context->rtpsession_, "send_rtp_sink_%d");
     srcpad = gst_element_get_static_pad (pay, "src");
     if (gst_pad_link (srcpad, sinkpad) != GST_PAD_LINK_OK)
-      g_error ("Failed to link payloader to rtpbin");
+      g_error ("RtpSession::make_data_stream_available: failed to link payloader to rtpbin");
     gst_object_unref (sinkpad);
     gst_object_unref (srcpad);
     
     //get name for the newly created pad
-    gchar *rtp_sink_pad_name = gst_pad_get_name (sinkpad);// to be freed
-    gchar **rtp_session_array = g_strsplit_set (rtp_sink_pad_name, "_",0);// to be freed
-    gchar *session_id = rtp_session_array[3];
+    gchar *rtp_sink_pad_name = gst_pad_get_name (sinkpad);
+    gchar **rtp_session_array = g_strsplit_set (rtp_sink_pad_name, "_",0);
+    gchar *session_id = g_strdup(rtp_session_array[3]);
     context->shmdata_reader_rtp_id_.insert (reader->get_path (), session_id);
-    
+    g_free (rtp_sink_pad_name);
+    g_strfreev (rtp_session_array);
+
     // rtp src pad (is a static pad since created after the request of rtp sink pad)
     gchar *rtp_src_pad_name = g_strconcat ("send_rtp_src_", session_id, NULL); 
     g_print ("RtpSession: request rtp src pad and create a corresponding shmwriter %s\n",rtp_src_pad_name);
@@ -252,36 +254,19 @@ namespace switcher
     context->shmdata_writers_.insert (rtcp_writer_name, rtcp_writer);
     g_free (rtcp_src_pad_name);
     
-    /* we also want to receive RTCP, request an RTCP sinkpad for given session and
-     * link it to the corresponding shmdata reader  */
-    ShmdataReader::ptr rtcp_reader;
-    rtcp_reader.reset (new ShmdataReader ());
+    // We also want to receive RTCP, request an RTCP sinkpad for given session and
+    // link it to a funnel for future linking with network connections
     GstElement *funnel = gst_element_factory_make ("funnel", NULL);
-    gst_bin_add_many (GST_BIN (context->bin_), funnel, NULL);
-    rtcp_reader->add_element_to_remove (funnel);
+    gst_bin_add (GST_BIN (context->bin_), funnel);
     GstPad *funnel_src_pad = gst_element_get_static_pad (funnel, "src");
     gchar *rtcp_sink_pad_name = g_strconcat ("recv_rtcp_sink_", session_id,NULL); 
     GstPad *rtcp_sink_pad = gst_element_get_request_pad (context->rtpsession_, rtcp_sink_pad_name);
     if (gst_pad_link (funnel_src_pad, rtcp_sink_pad) != GST_PAD_LINK_OK)
-         g_error ("Failed to link rtcpsrc to rtpbin");
+      g_error ("RtpSession::make_data_stream_available: Failed to link rtcpsrc to rtpbin");
     gst_object_unref (funnel_src_pad);
-
-    //making a shmdata reader for rtcp reception 
-    //from a shmdata writer agregating multiple incoming streams
-    std::string rtcp_reader_name = context->make_shmdata_writer_name (rtcp_sink_pad_name); 
-    rtcp_reader->set_path (rtcp_reader_name.c_str ());
-    rtcp_reader->set_bin (context->bin_);
-    rtcp_reader->set_sink_element (funnel);
-    if (context->runtime_ != NULL) // starting the reader if runtime is set
-      rtcp_reader->start ();
-    context->shmdata_readers_.insert (rtcp_reader_name, rtcp_reader);
-    gst_element_sync_state_with_parent (funnel);
     g_free (rtcp_sink_pad_name);
-
     
-
-    g_free (rtp_sink_pad_name);
-    g_strfreev (rtp_session_array);
+    g_free (session_id);
 
     // /* the udp sinks and source we will use for RTP and RTCP */
     // rtpsink = gst_element_factory_make ("udpsink", NULL);
