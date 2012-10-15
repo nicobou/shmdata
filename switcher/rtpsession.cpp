@@ -224,7 +224,7 @@ namespace switcher
     gchar *rtp_sink_pad_name = gst_pad_get_name (sinkpad);
     gchar **rtp_session_array = g_strsplit_set (rtp_sink_pad_name, "_",0);
     gchar *session_id = g_strdup(rtp_session_array[3]);
-    context->shmdata_reader_rtp_id_.insert (reader->get_path (), session_id);
+    context->local_stream_rtp_id_.insert (reader->get_path (), session_id);
     g_free (rtp_sink_pad_name);
     g_strfreev (rtp_session_array);
 
@@ -258,6 +258,7 @@ namespace switcher
     // link it to a funnel for future linking with network connections
     GstElement *funnel = gst_element_factory_make ("funnel", NULL);
     gst_bin_add (GST_BIN (context->bin_), funnel);
+    gst_element_sync_state_with_parent (funnel);
     GstPad *funnel_src_pad = gst_element_get_static_pad (funnel, "src");
     gchar *rtcp_sink_pad_name = g_strconcat ("recv_rtcp_sink_", session_id,NULL); 
     GstPad *rtcp_sink_pad = gst_element_get_request_pad (context->rtpsession_, rtcp_sink_pad_name);
@@ -265,7 +266,11 @@ namespace switcher
       g_error ("RtpSession::make_data_stream_available: Failed to link rtcpsrc to rtpbin");
     gst_object_unref (funnel_src_pad);
     g_free (rtcp_sink_pad_name);
-    
+    //for cleaning of funnel
+    ShmdataHelper::ptr funnel_cleaning;
+    funnel_cleaning.reset (new ShmdataHelper ());
+    funnel_cleaning->add_element_to_remove (funnel);
+    context->rtp_id_funnel_.insert (session_id,funnel_cleaning);
     g_free (session_id);
 
     // /* the udp sinks and source we will use for RTP and RTCP */
@@ -346,16 +351,26 @@ namespace switcher
   bool
   RtpSession::remove_data_stream (std::string shmdata_socket_path)
   {
-    if (!shmdata_reader_rtp_id_.contains (shmdata_socket_path))
-      return false;
-    
-    std::string id = shmdata_reader_rtp_id_.lookup (shmdata_socket_path);
+    if (!local_stream_rtp_id_.contains (shmdata_socket_path))
+      {
+	g_printerr ("RtpSession::remove_data_stream: %s not present",shmdata_socket_path.c_str ());
+	return false;
+      }
+    std::string id = local_stream_rtp_id_.lookup (shmdata_socket_path);
     
     shmdata_writers_.remove (make_shmdata_writer_name ("send_rtp_src_"+id));
     shmdata_writers_.remove (make_shmdata_writer_name ("send_rtcp_src_"+id));
     shmdata_readers_.remove (shmdata_socket_path);
     shmdata_readers_.remove (make_shmdata_writer_name ("recv_rtcp_sink_"+id));
-    shmdata_reader_rtp_id_.remove (shmdata_socket_path);
+    local_stream_rtp_id_.remove (shmdata_socket_path);
+    
+    if (!rtp_id_funnel_.contains (id))
+      {
+	g_printerr ("RtpSession::remove_data_stream: no funnel");
+	return false;
+      }
+    rtp_id_funnel_.remove (id);
+
     return true;
   }
 
