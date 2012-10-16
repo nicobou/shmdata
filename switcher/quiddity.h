@@ -54,7 +54,8 @@ namespace switcher
     //instance name
     std::string get_name ();
     std::string get_nick_name ();
-    
+    bool set_nick_name (std::string nick_name);
+
     //properties
     std::string get_property_description (std::string property_name);
     std::string get_properties_description ();
@@ -83,7 +84,6 @@ namespace switcher
   protected:
     //naming
     bool set_name (std::string name);
-    bool set_nick_name (std::string nick_name);
 
     //property name will be <prefix>/<object_property>
     bool register_property (GObject *object, 

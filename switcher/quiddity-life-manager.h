@@ -53,7 +53,11 @@ namespace switcher
     bool exists (std::string quiddity_name);
     
     //creation
-    std::tr1::shared_ptr<Quiddity> create (std::string quiddity_class, QuiddityLifeManager::ptr life_manager);
+    std::string create (std::string quiddity_class, 
+			QuiddityLifeManager::ptr life_manager);
+    std::string create (std::string quiddity_class, 
+			std::string nick_name, 
+			QuiddityLifeManager::ptr life_manager);
  
     //subsistence
     std::tr1::shared_ptr<Quiddity> get (std::string quiddity_name);
@@ -66,6 +70,7 @@ namespace switcher
     void register_classes ();
     AbstractFactory< Quiddity, std::string, std::string, QuiddityLifeManager::ptr > abstract_factory_;
     StringMap< std::tr1::shared_ptr<Quiddity> > quiddities_;
+    StringMap< std::string> quiddities_nick_names_;
     };
 
 } // end of namespace

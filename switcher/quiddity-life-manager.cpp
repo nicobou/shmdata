@@ -104,7 +104,7 @@ namespace switcher
     return abstract_factory_.key_exists (class_name);
   }
 
-  Quiddity::ptr 
+  std::string 
   QuiddityLifeManager::create (std::string quiddity_class, QuiddityLifeManager::ptr life_manager)
   {
     Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class, life_manager);
@@ -112,32 +112,53 @@ namespace switcher
     if (quiddity.get() != NULL)
       {
      	quiddities_.insert (quiddity->get_name(),quiddity);
+	quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
       }
-    return quiddity;
+    return quiddity->get_nick_name ();
+  }
+
+  std::string 
+  QuiddityLifeManager::create (std::string quiddity_class, std::string nick_name, QuiddityLifeManager::ptr life_manager)
+  {
+    Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class, life_manager);
+    g_print ("create_quiddity %p %p\n",&quiddity,quiddity.get());
+    if (quiddity.get() != NULL)
+      {
+	if (!nick_name.empty () && !quiddities_nick_names_.contains (nick_name))
+	  quiddity->set_nick_name (nick_name);
+	else
+	  g_print ("QuiddityLifeManager::create: nick name %s not valid, using %s\n",
+		   nick_name.c_str (),
+		   quiddity->get_name().c_str ());
+     	quiddities_.insert (quiddity->get_name(),quiddity);
+	quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
+      }
+    return quiddity->get_nick_name ();
   }
 
   std::vector<std::string> 
   QuiddityLifeManager::get_instances ()
   {
-    return quiddities_.get_keys();
+    return quiddities_nick_names_.get_keys();
   }
 
   Quiddity::ptr 
   QuiddityLifeManager::get (std::string quiddity_name)
   {
-    return quiddities_.lookup (quiddity_name);
+    return quiddities_.lookup (quiddities_nick_names_.lookup (quiddity_name));
   }
 
   bool 
   QuiddityLifeManager::exists (std::string quiddity_name)
   {
-    return quiddities_.contains (quiddity_name);
+    return quiddities_.contains (quiddities_nick_names_.lookup (quiddity_name));
   }
 
   bool 
   QuiddityLifeManager::remove (std::string quiddity_name)
   {
-    return quiddities_.remove (quiddity_name);
+    quiddities_nick_names_.remove (quiddity_name);
+    return quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
   }
   
 } // end of namespace
