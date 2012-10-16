@@ -49,14 +49,13 @@ namespace switcher
   private:
     on_first_data_hook connection_hook_;
     void *hook_user_data_;
-    static bool async_handler_installed_; //FIXME should not work with multiple pipelines
     std::string path_;
     shmdata_base_reader_t *reader_;
     GstElement *bin_;
     GstElement *sink_element_;
     std::vector<GstElement *> elements_to_remove_;
     static void on_first_data (shmdata_base_reader_t *context, void *user_data);
-    static GstBusSyncReply bus_async_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
+    static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
     static void unlink_pad (GstPad * pad);
   };
   

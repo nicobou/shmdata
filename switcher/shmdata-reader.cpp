@@ -22,8 +22,6 @@
 namespace switcher
 {
 
-  bool ShmdataReader::async_handler_installed_ = false;
-
   ShmdataReader::ShmdataReader()
   {
     reader_ = shmdata_base_reader_new ();
@@ -40,8 +38,8 @@ namespace switcher
   }
 
   GstBusSyncReply 
-  ShmdataReader::bus_async_handler (GstBus * bus,
-				     GstMessage * msg, gpointer user_data) 
+  ShmdataReader::bus_sync_handler (GstBus * bus,
+				   GstMessage * msg, gpointer user_data) 
   {
     shmdata_base_reader_t *reader = (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), 
 										 "shmdata_base_reader");
@@ -111,27 +109,26 @@ namespace switcher
 	return;
       }
     
-    if (!async_handler_installed_)
+    //looking for the bus, searching the top level pipeline
+    GstElement *pipe = bin_;
+	
+    while (pipe != NULL && !GST_IS_PIPELINE (pipe))
+      pipe = GST_ELEMENT_PARENT (pipe);
+	
+    if( GST_IS_PIPELINE (pipe))
       {
-	async_handler_installed_ = true;
-	//looking for the bus, searching the top level pipeline
-	GstElement *pipe = bin_;
-	
-	while (pipe != NULL && !GST_IS_PIPELINE (pipe))
-	  pipe = GST_ELEMENT_PARENT (pipe);
-	
-	if( GST_IS_PIPELINE (pipe))
-	  {
-	    GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipe));  
-	    gst_bus_set_sync_handler (bus, ShmdataReader::bus_async_handler, NULL);  
-	    gst_object_unref (bus);  
-	  }
-	else
-	  {
-	    g_warning ("no top level pipeline found when starting, cannot install async_handler");
-	    return;
-	  }
+	GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipe));  
+	//clear old handler and install a new one 
+	gst_bus_set_sync_handler (bus, NULL, NULL);
+	gst_bus_set_sync_handler (bus, ShmdataReader::bus_sync_handler, NULL);  
+	gst_object_unref (bus);  
       }
+    else
+      {
+	g_warning ("no top level pipeline found when starting, cannot install sync_handler");
+	return;
+      }
+
     
     shmdata_base_reader_set_callback (reader_, ShmdataReader::on_first_data, this);
     shmdata_base_reader_install_sync_handler (reader_, FALSE);
