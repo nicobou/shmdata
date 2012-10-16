@@ -56,13 +56,18 @@ namespace switcher
     //counting by value and by pointer args
     num_of_value_args_ = 0;
     num_of_pointer_args_ = 0;
-     std::vector<GType>::iterator it = arg_types.begin();
-     while ((*it) != G_TYPE_POINTER && it != arg_types.end())
-       {
-	 num_of_value_args_ ++;
-	 ++it;
-       }
-     num_of_pointer_args_ = arg_types_.size() - num_of_value_args_;
+    
+    if (!arg_types.empty())
+      {
+	std::vector<GType>::iterator it = arg_types.begin();
+	while ((*it) != G_TYPE_POINTER && it != arg_types.end())
+	  {
+	    num_of_value_args_ ++;
+	    ++it;
+	  }
+      }
+    num_of_pointer_args_ = arg_types_.size() - num_of_value_args_;
+    
      //g_print ("num value args : %u num pointer arg %u\n", num_of_value_args_, num_of_pointer_args_);
   }
 
@@ -177,21 +182,24 @@ namespace switcher
     res.append ("\"arguments\": [");
     std::vector<std::pair<std::string,std::string> >::iterator it;
     int j=0;
-    for (it = arg_description_.begin() ; it != arg_description_.end(); it++ )
+    if (!arg_description_.empty ())
       {
-	if (it != arg_description_.begin()) 
-	  res.append (", ");
-	res.append ("\"name\": \"");
-	res.append (it->first);
-	res.append ("\", \"short description\": \"");
-	res.append (it->second);
-	res.append ("\", \"type\": \"");
-	res.append (g_type_name (arg_types_[j]));
-	res.append ("\"");
-	j++;
+	for (it = arg_description_.begin() ; it != arg_description_.end(); it++ )
+	  {
+	    if (it != arg_description_.begin()) 
+	      res.append (", ");
+	    res.append ("\"name\": \"");
+	    res.append (it->first);
+	    res.append ("\", \"short description\": \"");
+	    res.append (it->second);
+	    res.append ("\", \"type\": \"");
+	    res.append (g_type_name (arg_types_[j]));
+	    res.append ("\"");
+	    j++;
+	  }
       }
     res.append ("]");
-
+    
     res.append ("}");
     return res;
   }
