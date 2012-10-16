@@ -61,7 +61,9 @@
      //life manager
      std::vector<std::string> get_classes (); //know which quiddities can be created
      std::vector<std::string> get_quiddities (); //know instances
-     std::string create (std::string quiddity_class_name); //returns the name
+     std::string create (std::string class_name); //returns the name
+     std::string create (std::string class_name, 
+			 std::string nick_name);
      bool remove (std::string quiddity_name);
      QuiddityLifeManager::ptr get_life_manager ();
 

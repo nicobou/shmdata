@@ -157,8 +157,8 @@ namespace switcher
   bool 
   QuiddityLifeManager::remove (std::string quiddity_name)
   {
-    quiddities_nick_names_.remove (quiddity_name);
-    return quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
+    quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
+    return quiddities_nick_names_.remove (quiddity_name);
   }
   
 } // end of namespace

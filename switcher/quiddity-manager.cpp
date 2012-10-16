@@ -180,6 +180,14 @@ namespace switcher
     return life_manager_->create (quiddity_class, get_life_manager ());
   }
 
+  std::string
+  QuiddityManager::create (std::string quiddity_class, std::string nick_name)
+  {
+    if(!life_manager_->class_exists (quiddity_class))
+      return "";
+    return life_manager_->create (quiddity_class, nick_name, get_life_manager ());
+  }
+
   bool
   QuiddityManager::remove (std::string quiddity_name)
   {

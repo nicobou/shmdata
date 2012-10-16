@@ -285,6 +285,29 @@ controlService::create_quiddity (std::string quiddity_class,
   return SOAP_OK;
 }
 
+int
+controlService::create_named_quiddity (std::string quiddity_class, 
+				       std::string nick_name,
+				       std::string *result)
+{
+  using namespace switcher;
+  
+   QuiddityManager *manager = (QuiddityManager *) this->user;
+
+   std::string name = manager->create (quiddity_class, nick_name);
+   if (name != "")
+     {
+       *result = name; 
+     }
+   else 
+     { 
+       char *s = (char*)soap_malloc(this, 1024);
+       sprintf(s, "%s is not an available class", quiddity_class.c_str());
+       sprintf(s, "<error xmlns=\"http://tempuri.org/\">%s is not an available class</error>", quiddity_class.c_str());
+       return soap_senderfault("Quiddity creation error", s);
+     }
+  return SOAP_OK;
+}
 
 int
 controlService::delete_quiddity (std::string quiddity_name)

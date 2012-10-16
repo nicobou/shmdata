@@ -38,7 +38,7 @@ static gchar **remaining_args = NULL;
 static GOptionEntry entries[] =
   {
     { "server", 'S', 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:8080)", NULL },
-    { "create-quiddity", 'C', 0, G_OPTION_ARG_NONE, &createquiddity, "create an quiddity instance (-C quiddity_class)", NULL },
+    { "create-quiddity", 'C', 0, G_OPTION_ARG_NONE, &createquiddity, "create an quiddity instance (-C quiddity_class [optional nick name])", NULL },
     { "delete-quiddity", 'D', 0, G_OPTION_ARG_NONE, &deletequiddity, "delete an quiddity instance by its name", NULL },
     { "list-classes", 'c', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", NULL },
     { "list-quiddities", 'e', 0, G_OPTION_ARG_NONE, &listquiddities, "list quiddity instances", NULL },
@@ -151,7 +151,10 @@ int main(int argc, char **argv)
 	  return false;
 	}
       std::string name;
-      switcher_control.create_quiddity (remaining_args[0], &name);
+      if (remaining_args[1] == NULL)
+	switcher_control.create_quiddity (remaining_args[0], &name);
+      else
+	switcher_control.create_named_quiddity (remaining_args[0], remaining_args[1], &name);
       std::cout << name << std::endl;
     }
   else if (deletequiddity)
