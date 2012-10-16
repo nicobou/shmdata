@@ -25,7 +25,6 @@
 
 static gchar *server_name = NULL;
 //static gchar **remaining_args = NULL;
-static switcher::QuiddityManager *quidman = NULL;
 static switcher::CtrlServer  *serv = NULL;
 static switcher::QuiddityManager *manager = NULL;
 
