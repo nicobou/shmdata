@@ -37,10 +37,23 @@ namespace switcher
 
     static QuiddityDocumentation get_documentation ();
 
+    //client management
+    bool remove_client (gchar *host, gint port);
+    bool add_client (gchar *host, gint port);
+    bool clear_clients ();
+    
+    //client management (wrapped for being invoked from the quiddity manager)
+    static gboolean remove_client_wrapped (gpointer host, gint port, gpointer user_data);
+    static gboolean add_client_wrapped (gpointer host, gint port, gpointer user_data);
+    static gboolean clear_wrapped (gpointer user_data);
+
   private:
     static QuiddityDocumentation doc_;
     GstElement *udpsink_;
     void make_udpsink ();
+    static void on_client_added (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data);
+    static void on_client_removed (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data);
+
   };
 
 }  // end of namespace
