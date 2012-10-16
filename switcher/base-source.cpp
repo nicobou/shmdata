@@ -22,9 +22,6 @@
 namespace switcher
 {
   BaseSource::BaseSource()
-  {
-    // //will be updated when child classes will have set "name_"
-    // default_writer_.reset (new ShmdataWriter ());
-  }
+  {}
 
 }

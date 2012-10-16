@@ -31,10 +31,6 @@ namespace switcher
   Quiddity::Quiddity ()
   {}
   
-  // Quiddity::Quiddity (std::tr1::shared_ptr<QuiddityLifeManager> life_manager) :
-  // life_manager_ (life_manager)
-  // {}
-    
   Quiddity::~Quiddity () { 
     g_print ("call: Quiddity destructor for %s\n",get_name().c_str());
   }
@@ -43,6 +39,28 @@ namespace switcher
   Quiddity::get_name()
   {
     return std::string (name_);
+  }
+
+  std::string
+  Quiddity::get_nick_name()
+  {
+    return std::string (nick_name_);
+  }
+
+  bool
+  Quiddity::set_name(std::string name)
+  {
+    name_ = name;
+    if (nick_name_.empty ()) 
+      nick_name_ = name;
+    return true;
+  }
+
+  bool
+  Quiddity::set_nick_name(std::string nick_name)
+  {
+    nick_name_ = nick_name;
+    return true;
   }
 
   
@@ -251,9 +269,9 @@ namespace switcher
     std::string connector_name;
     QuiddityLifeManager::ptr life_manager = life_manager_.lock();
     if ( (bool)life_manager)
-      connector_name.append ("/tmp/switcher_"+life_manager->get_name ()+"_"+name_+"_"+suffix);
+      connector_name.append ("/tmp/switcher_"+life_manager->get_name ()+"_"+nick_name_+"_"+suffix);
     else
-      connector_name.append ("/tmp/switcher_"+name_+"_"+ suffix); //should not happend
+      connector_name.append ("/tmp/switcher_"+nick_name_+"_"+ suffix); //should not happend
 
     return connector_name;
   }

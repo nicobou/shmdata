@@ -55,7 +55,7 @@ namespace switcher
     context->gconfvideosink_ = gst_element_factory_make ("gconfvideosink",NULL);
     
     //set the name
-    context->name_ = gst_element_get_name (context->gconfvideosink_);
+    context->set_name (gst_element_get_name (context->gconfvideosink_));
     context->set_sink_element (context->gconfvideosink_);
 
     g_cond_signal (context->data_cond_);

@@ -44,7 +44,7 @@ namespace switcher
     h264enc_ = gst_element_factory_make ("x264enc",NULL);
     
     //set the name before registering properties
-    name_ = gst_element_get_name (h264enc_);
+    set_name (gst_element_get_name (h264enc_));
     
     set_on_first_data_hook (H264::make_shmdata_writer,this);
   }

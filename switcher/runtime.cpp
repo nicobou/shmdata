@@ -51,7 +51,7 @@ namespace switcher
       }
     
     pipeline_ = gst_pipeline_new (NULL);
-    name_ = gst_element_get_name (pipeline_);
+    set_name (gst_element_get_name (pipeline_));
     bus_ = gst_pipeline_get_bus (GST_PIPELINE (pipeline_)); 
     gst_bus_add_watch (bus_, bus_called, NULL);
     gst_object_unref (bus_); 

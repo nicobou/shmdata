@@ -107,7 +107,7 @@ namespace switcher
 
 
     //set the name before registering properties
-    name_ = gst_element_get_name (rtpsession_);
+    set_name (gst_element_get_name (rtpsession_));
     
     make_sdp_init ();
   }

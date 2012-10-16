@@ -54,7 +54,7 @@ namespace switcher
 
     context->gconfaudiosource_ = gst_element_factory_make ("gconfaudiosrc",NULL);
     //set the name
-    context->name_ = gst_element_get_name (context->gconfaudiosource_);
+    context->set_name (gst_element_get_name (context->gconfaudiosource_));
     context->set_raw_audio_element (context->gconfaudiosource_);
 
     g_cond_signal (context->data_cond_);

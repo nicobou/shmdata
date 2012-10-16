@@ -46,7 +46,7 @@ namespace switcher
 		  NULL);
 
     //set the name before registering properties
-    name_ = gst_element_get_name (audiotestsrc_);
+    set_name (gst_element_get_name (audiotestsrc_));
     
     //registering "pattern"
     register_property (G_OBJECT (audiotestsrc_),"samplesperbuffer","audiotestsrc");

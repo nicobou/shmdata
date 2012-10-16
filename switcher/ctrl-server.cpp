@@ -49,7 +49,7 @@ namespace switcher
 
     //TODO find a better name for CtrlServer
     srand(time(0));
-    name_ = g_strdup_printf ("ctrlserver%d",rand() % 1024);
+    set_name (g_strdup_printf ("ctrlserver%d",rand() % 1024));
    
   
   }

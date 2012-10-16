@@ -53,6 +53,7 @@ namespace switcher
     
     //instance name
     std::string get_name ();
+    std::string get_nick_name ();
     
     //properties
     std::string get_property_description (std::string property_name);
@@ -76,9 +77,14 @@ namespace switcher
     //properties are registered by derived class
     std::map<std::string, Property::ptr> properties_;
     std::map<std::string, Method::ptr> methods_;
-
-  protected:
     std::string name_;
+    std::string nick_name_;
+ 
+  protected:
+    //naming
+    bool set_name (std::string name);
+    bool set_nick_name (std::string nick_name);
+
     //property name will be <prefix>/<object_property>
     bool register_property (GObject *object, 
 			    std::string object_property, 

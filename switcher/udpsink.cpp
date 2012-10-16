@@ -40,7 +40,7 @@ namespace switcher
     udpsink_ = gst_element_factory_make ("multiudpsink",NULL);
     
     //set the name before registering properties
-    name_ = gst_element_get_name (udpsink_);
+    set_name (gst_element_get_name (udpsink_));
     g_object_set (G_OBJECT (udpsink_), "sync", FALSE, NULL);
     
     register_property (G_OBJECT (udpsink_),"blocksize","");

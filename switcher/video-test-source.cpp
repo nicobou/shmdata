@@ -46,7 +46,7 @@ namespace switcher
     
     
     //set the name before registering properties
-    name_ = gst_element_get_name (videotestsrc_);
+    set_name (gst_element_get_name (videotestsrc_));
 
     // //This register all the properties
     // guint numproperty;

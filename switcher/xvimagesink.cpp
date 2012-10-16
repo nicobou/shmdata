@@ -40,7 +40,7 @@ namespace switcher
     xvimagesink_ = gst_element_factory_make ("xvimagesink",NULL);
     
     //set the name before registering properties
-    name_ = gst_element_get_name (xvimagesink_);
+    set_name (gst_element_get_name (xvimagesink_));
     g_object_set (G_OBJECT (xvimagesink_), "sync", FALSE, NULL);
 
     //registering "sync"
