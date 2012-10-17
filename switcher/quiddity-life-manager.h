@@ -60,7 +60,7 @@ namespace switcher
 			QuiddityLifeManager::ptr life_manager);
  
     //subsistence
-    std::tr1::shared_ptr<Quiddity> get (std::string quiddity_name);
+    std::tr1::shared_ptr<Quiddity> get_quiddity (std::string quiddity_name);
     
     //release base quiddity (destructed with the shared pointer)
     bool remove (std::string quiddity_name);

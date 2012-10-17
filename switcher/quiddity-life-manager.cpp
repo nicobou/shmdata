@@ -149,7 +149,7 @@ namespace switcher
   }
 
   Quiddity::ptr 
-  QuiddityLifeManager::get (std::string quiddity_name)
+  QuiddityLifeManager::get_quiddity (std::string quiddity_name)
   {
     return quiddities_.lookup (quiddities_nick_names_.lookup (quiddity_name));
   }
@@ -176,7 +176,7 @@ namespace switcher
 	g_printerr ("quiddity %s not found, cannot get description of properties\n",quiddity_name.c_str());
 	return "";
       }
-    return (get (quiddity_name))->get_properties_description ();
+    return (get_quiddity (quiddity_name))->get_properties_description ();
   }
 
   std::string 
@@ -188,7 +188,7 @@ namespace switcher
 	g_printerr ("quiddity %s not found, cannot get description of properties\n",quiddity_name.c_str());
 	return "";
       }
-    return (get (quiddity_name))->get_property_description (property_name);
+    return (get_quiddity (quiddity_name))->get_property_description (property_name);
   }
 
   bool
@@ -201,7 +201,7 @@ namespace switcher
 	g_printerr ("quiddity %s not found, cannot set property\n",quiddity_name.c_str());
 	return false;
       }
-    return (get (quiddity_name))->set_property(property_name.c_str(),property_value.c_str());
+    return (get_quiddity (quiddity_name))->set_property(property_name.c_str(),property_value.c_str());
   }
 
   std::string
@@ -213,7 +213,7 @@ namespace switcher
 	g_printerr ("quiddity %s not found, cannot get property\n",quiddity_name.c_str());
 	return "error, quiddity not found";
       }
-    return (get (quiddity_name))->get_property(property_name.c_str());
+    return (get_quiddity (quiddity_name))->get_property(property_name.c_str());
   }
 
   bool 
@@ -228,7 +228,7 @@ namespace switcher
 	g_printerr ("quiddity %s not found, cannot invoke\n",quiddity_name.c_str());
 	return false;
       }
-    Quiddity::ptr quiddity = get (quiddity_name);
+    Quiddity::ptr quiddity = get_quiddity (quiddity_name);
 
     int num_val = quiddity->method_get_num_value_args(function_name);
 
@@ -266,7 +266,7 @@ namespace switcher
 	      }
 	    else
 	      {
-		Quiddity::ptr retrieved_quiddity = get (*it);//quiddities_.lookup (*it);
+		Quiddity::ptr retrieved_quiddity = get_quiddity (*it);//quiddities_.lookup (*it);
 		quiddity_args.push_back ((void *)retrieved_quiddity.get());
 	      }
 	  }
@@ -284,7 +284,7 @@ namespace switcher
 	return "error, quiddity not found";
       }
      
-    return (get (quiddity_name))->get_methods_description ();
+    return (get_quiddity (quiddity_name))->get_methods_description ();
   }
 
   std::string
@@ -296,7 +296,7 @@ namespace switcher
 	return "error, quiddity not found";
       }
      
-    return (get (quiddity_name))->get_method_description (method_name);
+    return (get_quiddity (quiddity_name))->get_method_description (method_name);
   }
 
   
