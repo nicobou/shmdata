@@ -52,23 +52,8 @@ namespace switcher
     g_closure_set_marshal  (closure_,g_cclosure_marshal_generic);
     
     arg_types_ = arg_types;
-    
-    //counting by value and by pointer args
-    num_of_value_args_ = 0;
-    num_of_pointer_args_ = 0;
-    
-    if (!arg_types.empty())
-      {
-	std::vector<GType>::iterator it = arg_types.begin();
-	while ((*it) != G_TYPE_POINTER && it != arg_types.end())
-	  {
-	    num_of_value_args_ ++;
-	    ++it;
-	  }
-      }
-    num_of_pointer_args_ = arg_types_.size() - num_of_value_args_;
-    
-     //g_print ("num value args : %u num pointer arg %u\n", num_of_value_args_, num_of_pointer_args_);
+
+    num_of_value_args_ = arg_types_.size();
   }
 
 
@@ -78,13 +63,6 @@ namespace switcher
     return num_of_value_args_;
   }
   
-  uint 
-  Method::get_num_of_pointer_args()
-  {
-    return num_of_pointer_args_;
-  }
-
-
   bool
   Method::invoke(std::vector<std::string> args, std::vector<void *> pointers)
   {

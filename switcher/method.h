@@ -46,7 +46,6 @@ namespace switcher
     bool invoke (std::vector<std::string> args,
 		 std::vector<void *> quiddity_args);
     uint get_num_of_value_args();
-    uint get_num_of_pointer_args();
     void set_description (std::string method_name,
 			  std::string short_description,
 			  std::vector<std::pair<std::string,std::string> > arg_description);
@@ -56,7 +55,6 @@ namespace switcher
     GClosure *closure_;
     std::vector<GType> arg_types_; 
     uint num_of_value_args_;
-    uint num_of_pointer_args_;
     std::string method_name_;
     std::string short_description_;
     std::vector<std::pair<std::string,std::string> > arg_description_;
