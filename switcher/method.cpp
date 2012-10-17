@@ -63,16 +63,17 @@ namespace switcher
     return num_of_value_args_;
   }
   
-  bool
-  Method::invoke(std::vector<std::string> args, std::vector<void *> pointers)
+  bool 
+  Method::invoke(std::vector<std::string> args)
   {
-    if (args.size () + pointers.size() != arg_types_.size())
+
+    if (args.size () != arg_types_.size())
       {
 	g_printerr ("Method::invoke number of arguments does not correspond to the size of argument types\n");
 	return false;
       }
 
-    GValue params[arg_types_.size() + pointers.size()];
+    GValue params[arg_types_.size() ];
 
     for (gulong i=0; i < args.size(); i++)
       {
@@ -87,16 +88,6 @@ namespace switcher
 	  }
       }
     
-    for (gulong i=args.size(); i < args.size() + pointers.size(); i++)
-      {
-	params[i] = G_VALUE_INIT;
-	
-	g_value_init (&params[i], G_TYPE_POINTER);
-
-	g_value_set_pointer (&params[i],pointers[i - args.size()]);
-
-      }
-   
     GValue result_value = G_VALUE_INIT;
     gboolean result;
     g_value_init (&result_value, G_TYPE_BOOLEAN);
@@ -111,13 +102,7 @@ namespace switcher
 	g_value_unset (&params[i]);
 
     return result;
-  }
 
-  bool 
-  Method::invoke(std::vector<std::string> args)
-  {
-    std::vector<void *> empty;
-    return invoke(args,empty);
   } 
   
   void

@@ -30,14 +30,14 @@
 #include <tr1/memory>
 #include "switcher/abstract-factory.h" 
 #include "switcher/string-map.h"
-
 #include "switcher/quiddity.h" 
 
 namespace switcher
 {
   class Quiddity;
 
-  class QuiddityLifeManager
+  class QuiddityLifeManager //FIXME rename that into QuiddityManager_Impl 
+  //or find a way to provide a shared/weak ptr for "this" (and name it QuiddityManager) 
   {
   public:
     typedef std::tr1::shared_ptr< QuiddityLifeManager > ptr;

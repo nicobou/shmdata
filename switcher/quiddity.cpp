@@ -90,6 +90,7 @@ namespace switcher
   }
   
   //return -1 if method not found
+  //TODO implement get method and let the manager to call invoke, get_num_args etc...
   int 
   Quiddity::method_get_num_value_args (std::string function_name)
   {
@@ -102,23 +103,9 @@ namespace switcher
       return (int)methods_[function_name]->get_num_of_value_args(); 
   }
 
-  //return -1 if method not found
-  int 
-  Quiddity::method_get_num_pointer_args (std::string function_name)
-  {
-    if (methods_.find( function_name ) == methods_.end())
-      {
-	g_printerr ("Quiddity::method_get_num_value_args error: method %s not found\n",function_name.c_str());
-	return -1;
-      }
-    else 
-      return (int)methods_[function_name]->get_num_of_pointer_args(); 
-  }
-
   bool 
   Quiddity::invoke_method (std::string function_name, 
-			     std::vector<std::string> args, 
-			     std::vector<void *> pointers)
+			   std::vector<std::string> args)
   {
     if (methods_.find( function_name ) == methods_.end())
       {
@@ -127,18 +114,9 @@ namespace switcher
       }
     else 
       {
-	return methods_[function_name]->invoke (args, pointers); 
+	return methods_[function_name]->invoke (args); 
       }
- 
-  }
-
-  bool 
-  Quiddity::invoke_method (std::string function_name, 
-			     std::vector<std::string> args)
-  {
-    std::vector<void *> empty;
-    return invoke_method (function_name, args, empty);
-  }
+ }
   
 
   bool

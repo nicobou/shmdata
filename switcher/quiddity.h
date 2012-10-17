@@ -68,9 +68,6 @@ namespace switcher
     std::string get_methods_description ();
     bool invoke_method (std::string function_name,
 			std::vector<std::string> args);
-    bool invoke_method (std::string function_name,
-			std::vector<std::string> args,
-			std::vector<void *> pointers);
     int method_get_num_value_args (std::string function_name); //returns -1 if method not found
     int method_get_num_pointer_args (std::string function_name); //returns -1 if method not found
     

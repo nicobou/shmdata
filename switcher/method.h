@@ -43,8 +43,8 @@ namespace switcher
 		     std::vector<GType> arg_types, 
 		     gpointer user_data);
     bool invoke (std::vector<std::string> args);
-    bool invoke (std::vector<std::string> args,
-		 std::vector<void *> quiddity_args);
+    /* bool invoke (std::vector<std::string> args, */
+    /* 		 std::vector<void *> quiddity_args); */
     uint get_num_of_value_args();
     void set_description (std::string method_name,
 			  std::string short_description,

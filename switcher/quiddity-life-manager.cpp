@@ -109,15 +109,15 @@ namespace switcher
   {
      if(!class_exists (quiddity_class))
       return "";
-
-    Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class, life_manager);
-    g_print ("create_quiddity %p %p\n",&quiddity,quiddity.get());
-    if (quiddity.get() != NULL)
-      {
-     	quiddities_.insert (quiddity->get_name(),quiddity);
-	quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
-      }
-    return quiddity->get_nick_name ();
+    
+     Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class, life_manager);
+     g_print ("create_quiddity %p %p\n",&quiddity,quiddity.get());
+     if (quiddity.get() != NULL)
+       {
+	 quiddities_.insert (quiddity->get_name(),quiddity);
+	 quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
+       }
+     return quiddity->get_nick_name ();
   }
 
   std::string 
@@ -244,41 +244,13 @@ namespace switcher
 	return false;
       }
 
-    int num_pointer = quiddity->method_get_num_pointer_args(function_name);
-
-    if ((int)args.size () != num_val + num_pointer)
+    if ((int)args.size () != num_val)
       {
 	g_printerr ("invoking %s/%s, number of arguments does not match\n",quiddity_name.c_str(),function_name.c_str());
 	return false;
       }
-     
-    //checking if pointer to quiddity must be retrieved     
-    if ((int)args.size() == num_val)
-      //invoke with value only
-      return quiddity->invoke_method (function_name, args);
-    else
-      {
-	//invoke with pointer to quiddity
-	std::vector<std::string> value_args (args.begin(), args.begin() + num_val);
-	std::vector<void *> quiddity_args;
-	 
-	for(std::vector<std::string>::iterator it = args.begin() + num_val; it != args.end(); ++it) 
-	  {
-	    if (!exists (*it))
-	      {
-		g_printerr ("QuiddityLifeManager::quiddity_invoke_method error: quiddity %s not found\n",
-			    (*it).c_str());
-		return false;
-	      }
-	    else
-	      {
-		Quiddity::ptr retrieved_quiddity = get_quiddity (*it);//quiddities_.lookup (*it);
-		quiddity_args.push_back ((void *)retrieved_quiddity.get());
-	      }
-	  }
-	bool res = quiddity->invoke_method (function_name, value_args,quiddity_args);
-	return res;
-      }
+    
+    return quiddity->invoke_method (function_name, args);
   } 
 
   std::string
