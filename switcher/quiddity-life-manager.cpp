@@ -151,6 +151,12 @@ namespace switcher
   Quiddity::ptr 
   QuiddityLifeManager::get_quiddity (std::string quiddity_name)
   {
+     if (!exists (quiddity_name))
+      {
+	g_printerr ("quiddity %s not found, cannot provide ptr\n",quiddity_name.c_str());
+	Quiddity::ptr empty_quiddity_ptr;
+	return empty_quiddity_ptr;
+      }
     return quiddities_.lookup (quiddities_nick_names_.lookup (quiddity_name));
   }
 

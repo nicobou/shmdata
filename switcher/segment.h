@@ -39,8 +39,7 @@ namespace switcher
     Segment ();
     ~Segment ();
     // the segment is managing itself the presence/attachment with the runtime
-    void set_runtime (Runtime *runtime);
-    GstElement *get_bin ();
+    void set_runtime (Runtime::ptr runtime);
 
     //TODO rename and register this function returning json
     std::vector<std::string> get_src_connectors ();
@@ -49,10 +48,12 @@ namespace switcher
     static void set_runtime_wrapped (gpointer runtime, gpointer context);
     
   protected:
+    GstElement *get_bin ();
     GstElement *bin_;
-    Runtime *runtime_;//FIXME must be a shared pointer
+    Runtime::ptr runtime_;
     StringMap<ShmdataWriter::ptr> shmdata_writers_;
     StringMap<ShmdataReader::ptr> shmdata_readers_;
+
 
   };
   

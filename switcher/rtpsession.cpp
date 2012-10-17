@@ -329,7 +329,7 @@ namespace switcher
     reader->set_path (shmdata_socket_path.c_str());
     reader->set_bin (bin_);
     reader->set_on_first_data_hook (attach_data_stream, this);
-    if (runtime_ != NULL) // starting the reader if runtime is set
+    if (runtime_) // starting the reader if runtime is set
       reader->start ();
     shmdata_readers_.insert (shmdata_socket_path, reader);
     return true;

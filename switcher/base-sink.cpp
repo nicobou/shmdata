@@ -64,7 +64,7 @@ namespace switcher
       reader_->set_sink_element (sink_element_);
     if (connection_hook_ != NULL) 
       reader_->set_on_first_data_hook (connection_hook_, hook_user_data_);
-    if (runtime_ != NULL) // starting the reader if runtime is set
+    if (runtime_) // starting the reader if runtime is set
       reader_->start ();
     shmdata_readers_.insert (shmdata_socket_path, reader_);
     return true;

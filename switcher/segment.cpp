@@ -25,13 +25,12 @@ namespace switcher
 
   Segment::Segment()
   {
-    runtime_ = NULL;
     bin_ = gst_element_factory_make ("bin", NULL);
     //g_object_set (G_OBJECT (bin_), "message-forward",TRUE, NULL);
 
     //registering set_runtime method
     std::vector<GType> set_runtime_arg_types;
-    set_runtime_arg_types.push_back (G_TYPE_POINTER);
+    set_runtime_arg_types.push_back (G_TYPE_STRING);
     register_method("set_runtime",(void *)&Segment::set_runtime_wrapped, set_runtime_arg_types,(gpointer)this);
     std::vector<std::pair<std::string,std::string> > arg_desc;
     std::pair<std::string,std::string> quiddity_name;
@@ -57,12 +56,12 @@ namespace switcher
   void 
   Segment::set_runtime_wrapped (gpointer arg, gpointer user_data)
   {
-    Runtime *runtime = static_cast<Runtime *>(arg);
+    gchar *runtime_name = (gchar *)arg;
     Segment *context = static_cast<Segment*>(user_data);
     
-    if (runtime == NULL) 
+    if (runtime_name == NULL) 
       {
-	g_printerr ("Segment::set_runtime_wrapped Error: runtime is NULL\n");
+	g_printerr ("Segment::set_runtime_wrapped Error: runtime_name is NULL\n");
 	return;
       }
     if (context == NULL) 
@@ -70,20 +69,25 @@ namespace switcher
 	g_printerr ("Segment::set_runtime_wrapped Error: segment is NULL\n");
 	return;
       }
-    context->set_runtime(runtime);
     
+    QuiddityLifeManager::ptr life_manager = context->life_manager_.lock ();
+    if ( (bool)life_manager)
+      {
+	Quiddity::ptr quidd = life_manager->get_quiddity (runtime_name);
+	Runtime::ptr runtime = std::tr1::dynamic_pointer_cast<Runtime> (quidd);
+	if(runtime)
+	   context->set_runtime(runtime);
+	 else
+	   g_printerr ("Segment::set_runtime_wrapped Error: %s is not a runtime\n",runtime_name);
+      }
     //g_print ("%s is attached to runtime %s\n",context->get_name().c_str(),runtime->get_name().c_str());
-
   }
   
   void
-  Segment::set_runtime (Runtime *runtime)
+  Segment::set_runtime (Runtime::ptr runtime)
   {
-   
-    
     runtime_ = runtime;
     gst_bin_add (GST_BIN (runtime_->get_pipeline ()),bin_);
-
 
     //start the shmdata reader
     std::vector<ShmdataReader::ptr> shmreaders = shmdata_readers_.get_values ();
