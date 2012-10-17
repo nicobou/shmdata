@@ -25,6 +25,7 @@
 #include <gst/gst.h>
 #include <gst/sdp/gstsdpmessage.h>
 #include <memory>
+#include <switcher/quiddity-manager.h>
 
 namespace switcher
 {
@@ -40,21 +41,34 @@ namespace switcher
     //local streams
     bool add_data_stream (std::string shmdata_socket_path);
     bool remove_data_stream (std::string shmdata_socket_path);
+    
+    //remote dest
+    bool add_unicast_udp_dest (std::string shmdata_socket_path, std::string host, std::string port);
 
     //wrapper for registering the data_stream functions
-    static gboolean add_data_stream_wrapped (gpointer shmdata_socket_path, gpointer user_data);
-    static gboolean remove_data_stream_wrapped (gpointer shmdata_socket_path, gpointer user_data);
-
+    static gboolean add_data_stream_wrapped (gpointer shmdata_socket_path, 
+					     gpointer user_data);
+    static gboolean remove_data_stream_wrapped (gpointer shmdata_socket_path, 
+						gpointer user_data);
+    static gboolean add_unicast_udp_dest_wrapped (gpointer shmdata_name, 
+						  gpointer host, 
+						  gpointer port, 
+						  gpointer user_data);
     //will be call by shmdata reader
     static void attach_data_stream(ShmdataReader *caller, void *rtpsession_instance); 
     
   private:
     void make_rtpsession ();
     GstElement *rtpsession_;
-
+    QuiddityManager::ptr internal_manager_;
     //local streams
     StringMap <std::string> local_stream_rtp_id_; //maps shmdata path with the rtp id 
     StringMap <GstElementCleaner::ptr> rtp_id_funnel_; //rtcp reports from receivers
+
+    StringMap<ShmdataWriter::ptr> internal_shmdata_writers_;
+    StringMap<ShmdataReader::ptr> internal_shmdata_readers_;
+
+
     static void make_data_stream_available (GstElement* typefind, 
 					    guint probability, 
 					    GstCaps *caps, 
@@ -62,8 +76,6 @@ namespace switcher
     static gboolean sink_factory_filter (GstPluginFeature * feature, gpointer data);
     static gint sink_compare_ranks (GstPluginFeature *f1, GstPluginFeature *f2);
 
-    //send to 
-    
     //sdp
     GstSDPMessage *sdp_description_;
     void make_sdp_init ();
