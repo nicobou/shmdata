@@ -65,13 +65,31 @@ namespace switcher
     //release base quiddity (destructed with the shared pointer)
     bool remove (std::string quiddity_name);
 
+    //properties
+    std::string get_properties_description (std::string quiddity_name); //json formated
+    std::string get_property_description (std::string quiddity_name, std::string property_name); //json formated
+    bool set_property (std::string quiddity_name,
+		       std::string property_name,
+		       std::string property_value);
+     
+    std::string get_property (std::string quiddity_name, 
+			      std::string property_name);
+     
+    //methods 
+    std::string get_methods_description (std::string quiddity_name); //json formated
+    std::string get_method_description (std::string quiddity_name, std::string method_name); //json formated
+    bool invoke (std::string quiddity_name, 
+		 std::string method_name,
+		 std::vector<std::string> args);  
+
+
   private:
     std::string name_;
     void register_classes ();
     AbstractFactory< Quiddity, std::string, std::string, QuiddityLifeManager::ptr > abstract_factory_;
     StringMap< std::tr1::shared_ptr<Quiddity> > quiddities_;
     StringMap< std::string> quiddities_nick_names_;
-    };
+  };
 
 } // end of namespace
 
