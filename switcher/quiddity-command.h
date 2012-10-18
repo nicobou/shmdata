@@ -55,7 +55,7 @@ namespace switcher
     command name_;
     std::vector<std::string> args_;
     std::vector<std::string> vector_arg_;
-    std::vector<std::string> exec_return_;
+    std::vector<std::string> result_;
  
     void clear();
     void set_name (command name);

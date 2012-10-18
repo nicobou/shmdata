@@ -31,7 +31,7 @@ namespace switcher
   {
     args_.clear ();
     vector_arg_.clear ();
-    exec_return_.clear ();
+    result_.clear ();
   }
 
   void 

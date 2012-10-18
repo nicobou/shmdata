@@ -88,9 +88,9 @@ namespace switcher
   QuiddityManager::seq_invoke (QuiddityCommand::command command, ...)
   {
     std::string res;
+    g_mutex_lock (seq_mutex_);
     va_list vl;
     va_start(vl, command);
-    g_mutex_lock (seq_mutex_);
     command_.clear();
     command_.set_name (command);
     char *command_arg = va_arg( vl, char *);
@@ -101,7 +101,7 @@ namespace switcher
       }
     va_end(vl);
     invoke_in_gmainloop ();
-    res = command_.exec_return_[0];
+    res = command_.result_[0];
     g_mutex_unlock (seq_mutex_);
     return res;
   }
@@ -173,7 +173,15 @@ namespace switcher
   bool
   QuiddityManager::remove (std::string quiddity_name)
   {
-    return life_manager_->remove (quiddity_name);
+    
+    std::string res = seq_invoke (QuiddityCommand::remove, 
+				  quiddity_name.c_str(),
+				  NULL);
+    if (res == "true")
+      return true;
+    else
+      return false;
+    //return life_manager_->remove (quiddity_name);
   }
 
   std::vector<std::string> 
@@ -191,8 +199,8 @@ namespace switcher
   void
   QuiddityManager::invoke_in_gmainloop ()
   {
-    g_idle_add ((GSourceFunc) QuiddityManager::gmainloop_run, (gpointer) this);
     g_mutex_lock (exec_mutex_);
+    g_idle_add ((GSourceFunc) QuiddityManager::gmainloop_run, (gpointer) this);
     g_cond_wait (exec_cond_, exec_mutex_);
     g_mutex_unlock (exec_mutex_);
   }
@@ -205,37 +213,43 @@ namespace switcher
     g_mutex_lock (context->exec_mutex_);
     switch (context->command_.name_)
       {
-         case QuiddityCommand::get_classes:
-            break;
-         case QuiddityCommand::get_quiddities:
-            break;
-         case QuiddityCommand::create:
-	   context->command_.exec_return_.push_back(context->life_manager_->create (context->command_.args_[0],
-										    context->life_manager_));
-          break;
-         case QuiddityCommand::create_nick_named:
-	   context->command_.exec_return_.push_back(context->life_manager_->create (context->command_.args_[0],
-										    context->command_.args_[1],
-										    context->life_manager_));
-            break;
-         case QuiddityCommand::remove:
-            break;
-         case QuiddityCommand::get_properties_description:
-            break;
-         case QuiddityCommand::get_property_description:
-            break;
-         case QuiddityCommand::set_property:
-            break;
-         case QuiddityCommand::get_property:
-            break;
-         case QuiddityCommand::get_methods_description:
-            break;
-         case QuiddityCommand::get_method_description:
-            break;
-         case QuiddityCommand::invoke:
-            break;
-         default:
-	   g_printerr("unknown command");
+      case QuiddityCommand::get_classes:
+	//TODO
+	break;
+      case QuiddityCommand::get_quiddities:
+	//TODO
+	break;
+      case QuiddityCommand::create:
+	context->command_.result_.push_back (context->life_manager_->create (context->command_.args_[0],
+									     context->life_manager_));
+	break;
+      case QuiddityCommand::create_nick_named:
+	context->command_.result_.push_back (context->life_manager_->create (context->command_.args_[0],
+									      context->command_.args_[1],
+									      context->life_manager_));
+	break;
+      case QuiddityCommand::remove:
+	if (context->life_manager_->remove (context->command_.args_[0]))
+	  context->command_.result_.push_back ("true");
+	else
+	  context->command_.result_.push_back ("false");
+	break;
+      case QuiddityCommand::get_properties_description:
+	break;
+      case QuiddityCommand::get_property_description:
+	break;
+      case QuiddityCommand::set_property:
+	break;
+      case QuiddityCommand::get_property:
+	break;
+      case QuiddityCommand::get_methods_description:
+	break;
+      case QuiddityCommand::get_method_description:
+	break;
+      case QuiddityCommand::invoke:
+	break;
+      default:
+	g_printerr("unknown command");
       }
     g_cond_signal (context->exec_cond_);
     g_mutex_unlock (context->exec_mutex_);
