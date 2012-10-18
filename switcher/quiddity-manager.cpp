@@ -49,6 +49,137 @@ namespace switcher
     g_print ("base quiddity manager destructed\n");
   }
 
+  std::string 
+  QuiddityManager::get_properties_description (std::string quiddity_name)
+  {
+    return seq_invoke (QuiddityCommand::get_properties_description,
+		       quiddity_name.c_str(),
+		       NULL);
+    //return life_manager_->get_properties_description (quiddity_name);
+  }
+
+  std::string 
+  QuiddityManager::get_property_description (std::string quiddity_name, std::string property_name)
+  {
+    return seq_invoke (QuiddityCommand::get_property_description,
+		       quiddity_name.c_str(),
+		       property_name.c_str(),
+		       NULL);
+    //return life_manager_->get_property_description (quiddity_name, property_name);
+  }
+
+  bool
+  QuiddityManager::set_property (std::string quiddity_name,
+				 std::string property_name,
+				 std::string property_value)
+  {
+    std::string res = seq_invoke (QuiddityCommand::set_property,
+		       quiddity_name.c_str(),
+		       property_name.c_str(),
+		       property_value.c_str(),
+		       NULL);
+    if (res == "true")
+      return true;
+    else 
+      return false;
+     //return life_manager_->set_property(quiddity_name, property_name,property_value);
+  }
+
+  std::string
+  QuiddityManager::get_property (std::string quiddity_name,
+				 std::string property_name)
+  {
+    return seq_invoke (QuiddityCommand::get_property,
+		       quiddity_name.c_str(),
+		       property_name.c_str(),
+		       NULL);
+    //return life_manager_->get_property(quiddity_name, property_name);
+  }
+
+  bool 
+  QuiddityManager::invoke (std::string quiddity_name, 
+			   std::string function_name,
+			   std::vector<std::string> args)
+  {
+    std::string res;
+    g_mutex_lock (seq_mutex_);
+    command_.clear();
+    command_.set_name (QuiddityCommand::invoke);
+    command_.add_arg (quiddity_name);
+    command_.add_arg (function_name);
+    command_.set_vector_arg (args);
+    invoke_in_gmainloop ();
+    res = command_.result_[0];
+    g_mutex_unlock (seq_mutex_);
+    
+    if (res == "true")
+      return true;
+    else 
+      return false;
+    //return life_manager_->invoke (quiddity_name, function_name, args);
+  } 
+
+  std::string
+  QuiddityManager::get_methods_description (std::string quiddity_name)
+  {
+    return seq_invoke (QuiddityCommand::get_methods_description, 
+		       quiddity_name.c_str(),
+		       NULL);
+  }
+  
+  std::string
+  QuiddityManager::get_method_description (std::string quiddity_name, std::string method_name)
+  {
+    return seq_invoke (QuiddityCommand::get_method_description, 
+		       quiddity_name.c_str(),
+		       method_name.c_str(),
+		       NULL);
+  }
+   
+  std::string
+  QuiddityManager::create (std::string quiddity_class)
+  {
+    return seq_invoke (QuiddityCommand::create, 
+		       quiddity_class.c_str(),
+		       NULL);
+  }
+
+  std::string
+  QuiddityManager::create (std::string quiddity_class, std::string nick_name)
+  {
+    return seq_invoke (QuiddityCommand::create_nick_named, 
+		       quiddity_class.c_str(), 
+		       nick_name.c_str(), 
+		       NULL);
+  }
+
+  bool
+  QuiddityManager::remove (std::string quiddity_name)
+  {
+    
+    std::string res = seq_invoke (QuiddityCommand::remove, 
+				  quiddity_name.c_str(),
+				  NULL);
+    if (res == "true")
+      return true;
+    else
+      return false;
+  }
+
+  std::vector<std::string> 
+  QuiddityManager::get_classes ()
+  {
+    //FIXME make this return a json formated std::string
+    return life_manager_->get_classes ();
+  }
+   
+  std::vector<std::string> 
+  QuiddityManager::get_quiddities ()
+  {
+    //FIXME make this return a json formated std::string
+    return life_manager_->get_instances ();
+  }
+  
   void
   QuiddityManager::init_gmainloop ()
   {
@@ -106,96 +237,6 @@ namespace switcher
     return res;
   }
 
-  std::string 
-  QuiddityManager::get_properties_description (std::string quiddity_name)
-  {
-    return life_manager_->get_properties_description (quiddity_name);
-  }
-
-  std::string 
-  QuiddityManager::get_property_description (std::string quiddity_name, std::string property_name)
-  {
-    return life_manager_->get_property_description (quiddity_name, property_name);
-  }
-
-  bool
-  QuiddityManager::set_property (std::string quiddity_name,
-				 std::string property_name,
-				 std::string property_value)
-  {
-    return life_manager_->set_property(quiddity_name, property_name,property_value);
-  }
-
-  std::string
-  QuiddityManager::get_property (std::string quiddity_name,
-				 std::string property_name)
-  {
-    return life_manager_->get_property(quiddity_name, property_name);
-  }
-
-  bool 
-  QuiddityManager::invoke (std::string quiddity_name, 
-			   std::string function_name,
-			   std::vector<std::string> args)
-  {
-    return life_manager_->invoke (quiddity_name, function_name, args);
-  } 
-
-  std::string
-  QuiddityManager::get_methods_description (std::string quiddity_name)
-{
-    return life_manager_->get_methods_description (quiddity_name);
-  }
-
-  std::string
-  QuiddityManager::get_method_description (std::string quiddity_name, std::string method_name)
-  {
-    return life_manager_->get_method_description (quiddity_name, method_name);
-  }
-   
-  std::string
-  QuiddityManager::create (std::string quiddity_class)
-  {
-    return seq_invoke (QuiddityCommand::create, 
-		       quiddity_class.c_str(),
-		       NULL);
-  }
-
-  std::string
-  QuiddityManager::create (std::string quiddity_class, std::string nick_name)
-  {
-    return seq_invoke (QuiddityCommand::create_nick_named, 
-		       quiddity_class.c_str(), 
-		       nick_name.c_str(), 
-		       NULL);
-  }
-
-  bool
-  QuiddityManager::remove (std::string quiddity_name)
-  {
-    
-    std::string res = seq_invoke (QuiddityCommand::remove, 
-				  quiddity_name.c_str(),
-				  NULL);
-    if (res == "true")
-      return true;
-    else
-      return false;
-    //return life_manager_->remove (quiddity_name);
-  }
-
-  std::vector<std::string> 
-  QuiddityManager::get_classes ()
-  {
-    return life_manager_->get_classes ();
-  }
-   
-  std::vector<std::string> 
-  QuiddityManager::get_quiddities ()
-  {
-    return life_manager_->get_instances ();
-  }
-  
   void
   QuiddityManager::invoke_in_gmainloop ()
   {
@@ -235,18 +276,34 @@ namespace switcher
 	  context->command_.result_.push_back ("false");
 	break;
       case QuiddityCommand::get_properties_description:
+	context->command_.result_.push_back (context->life_manager_->get_properties_description (context->command_.args_[0]));
 	break;
       case QuiddityCommand::get_property_description:
+	context->command_.result_.push_back (context->life_manager_->get_property_description (context->command_.args_[0],
+											       context->command_.args_[1]));
 	break;
       case QuiddityCommand::set_property:
+	if (context->life_manager_->set_property (context->command_.args_[0], context->command_.args_[1], context->command_.args_[2]))
+	  context->command_.result_.push_back ("true");
+	else
+	  context->command_.result_.push_back ("false");
 	break;
       case QuiddityCommand::get_property:
+	context->command_.result_.push_back (context->life_manager_->get_property (context->command_.args_[0],
+										   context->command_.args_[1]));
 	break;
       case QuiddityCommand::get_methods_description:
+	context->command_.result_.push_back (context->life_manager_->get_methods_description (context->command_.args_[0]));
 	break;
       case QuiddityCommand::get_method_description:
+	context->command_.result_.push_back (context->life_manager_->get_method_description (context->command_.args_[0],
+											     context->command_.args_[1]));
 	break;
       case QuiddityCommand::invoke:
+	if (context->life_manager_->invoke (context->command_.args_[0], context->command_.args_[1], context->command_.vector_arg_))
+	  context->command_.result_.push_back ("true");
+	else
+	  context->command_.result_.push_back ("false");
 	break;
       default:
 	g_printerr("unknown command");
