@@ -38,15 +38,15 @@ static gchar **remaining_args = NULL;
 static GOptionEntry entries[] =
   {
     { "server", 'S', 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:8080)", NULL },
-    { "create-quiddity", 'C', 0, G_OPTION_ARG_NONE, &createquiddity, "create an quiddity instance (-C quiddity_class [optional nick name])", NULL },
-    { "delete-quiddity", 'D', 0, G_OPTION_ARG_NONE, &deletequiddity, "delete an quiddity instance by its name", NULL },
+    { "create-quiddity", 'C', 0, G_OPTION_ARG_NONE, &createquiddity, "create a quiddity instance (-C quiddity_class [optional nick name])", NULL },
+    { "delete-quiddity", 'D', 0, G_OPTION_ARG_NONE, &deletequiddity, "delete a quiddity instance by its name", NULL },
     { "list-classes", 'c', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", NULL },
     { "list-quiddities", 'e', 0, G_OPTION_ARG_NONE, &listquiddities, "list quiddity instances", NULL },
-    { "list-props", 'p', 0, G_OPTION_ARG_NONE, &listprop, "list properties of an quiddity", NULL },
-    { "list-methods", 'm', 0, G_OPTION_ARG_NONE, &listmethods, "list methods of an quiddity", NULL },
+    { "list-props", 'p', 0, G_OPTION_ARG_NONE, &listprop, "list properties of a quiddity", NULL },
+    { "list-methods", 'm', 0, G_OPTION_ARG_NONE, &listmethods, "list methods of a quiddity", NULL },
     { "set-prop", 's', 0, G_OPTION_ARG_NONE, &setprop, "set property value (-s quiddity_name prop_name val)", NULL },
     { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g quiddity_name prop_name)", NULL },
-    { "invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod, "invoke method of an quiddity (-i quiddity_name method_name args...)", NULL },
+    { "invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod, "invoke method of a quiddity (-i quiddity_name method_name args...)", NULL },
     {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &remaining_args, "remaining arguments", NULL},
     { NULL }
 };
