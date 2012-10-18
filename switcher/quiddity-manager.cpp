@@ -90,13 +90,13 @@ namespace switcher
   std::string
   QuiddityManager::create (std::string quiddity_class)
   {
-    return life_manager_->create (quiddity_class, get_life_manager ());
+    return life_manager_->create (quiddity_class, life_manager_);
   }
 
   std::string
   QuiddityManager::create (std::string quiddity_class, std::string nick_name)
   {
-    return life_manager_->create (quiddity_class, nick_name, get_life_manager ());
+    return life_manager_->create (quiddity_class, nick_name, life_manager_);
   }
 
   bool
@@ -115,12 +115,6 @@ namespace switcher
   QuiddityManager::get_quiddities ()
   {
     return life_manager_->get_instances ();
-  }
-
-  QuiddityLifeManager::ptr 
-  QuiddityManager::get_life_manager ()
-  {
-    return life_manager_;
   }
 
 }

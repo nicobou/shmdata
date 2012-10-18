@@ -65,7 +65,7 @@
      std::string create (std::string class_name, 
 			 std::string nick_name);
      bool remove (std::string quiddity_name);
-     QuiddityLifeManager::ptr get_life_manager ();
+
 
    private: 
      QuiddityLifeManager::ptr life_manager_; //may be shared with others for automatic quiddity creation 
