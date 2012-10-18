@@ -56,25 +56,11 @@ namespace switcher
     std::vector<std::string> args_;
     std::vector<std::string> vector_arg_;
     std::vector<std::string> exec_return_;
-
-    void make (command name); 
-    void make (command name, 
-	       std::string arg0); 
-    void make (command name, 
-	       std::string arg0, 
-	       std::string arg1); 
-    void make (command name, 
-	       std::string arg0, 
-	       std::string arg1, 
-	       std::string arg2); 
-    void make (command name, 
-	       std::string arg0, 
-	       std::string arg1, 
-	       std::vector<std::string> vector_arg); 
-   
-  private:
+ 
     void clear();
-    
+    void set_name (command name);
+    void add_arg (std::string arg);
+    void set_vector_arg (std::vector<std::string> vector_arg);
   };
   
 } // end of namespace

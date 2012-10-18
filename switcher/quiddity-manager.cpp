@@ -74,15 +74,37 @@ namespace switcher
   {
     exec_cond_ = g_cond_new ();
     exec_mutex_ = g_mutex_new ();
+    seq_mutex_ = g_mutex_new ();
   }
 
   void
   QuiddityManager::clear_command_sync ()
   {
-    //FIXME may get the mutex in order to clean quit
+    //FIXME may get the mutex before exiting 
   }
 
-  
+  //works for char * args only. Use NULL sentinel
+  std::string
+  QuiddityManager::seq_invoke (QuiddityCommand::command command, ...)
+  {
+    std::string res;
+    va_list vl;
+    va_start(vl, command);
+    g_mutex_lock (seq_mutex_);
+    command_.clear();
+    command_.set_name (command);
+    char *command_arg = va_arg( vl, char *);
+    while (command_arg != NULL)
+      {
+	command_.add_arg (command_arg);
+	command_arg = va_arg( vl, char *);
+      }
+    va_end(vl);
+    invoke_in_gmainloop ();
+    res = command_.exec_return_[0];
+    g_mutex_unlock (seq_mutex_);
+    return res;
+  }
 
   std::string 
   QuiddityManager::get_properties_description (std::string quiddity_name)
@@ -134,17 +156,18 @@ namespace switcher
   std::string
   QuiddityManager::create (std::string quiddity_class)
   {
-    //preparing the command
-    command_.make (QuiddityCommand::create,quiddity_class);
-    invoke_in_gmainloop ();
-    return command_.exec_return_[0];
-    //    return life_manager_->create (quiddity_class, life_manager_);
+    return seq_invoke (QuiddityCommand::create, 
+		       quiddity_class.c_str(),
+		       NULL);
   }
 
   std::string
   QuiddityManager::create (std::string quiddity_class, std::string nick_name)
   {
-    return life_manager_->create (quiddity_class, nick_name, life_manager_);
+    return seq_invoke (QuiddityCommand::create_nick_named, 
+		       quiddity_class.c_str(), 
+		       nick_name.c_str(), 
+		       NULL);
   }
 
   bool
@@ -187,9 +210,13 @@ namespace switcher
          case QuiddityCommand::get_quiddities:
             break;
          case QuiddityCommand::create:
-	   context->command_.exec_return_.push_back(context->life_manager_->create (context->command_.args_[0], context->life_manager_));
+	   context->command_.exec_return_.push_back(context->life_manager_->create (context->command_.args_[0],
+										    context->life_manager_));
           break;
          case QuiddityCommand::create_nick_named:
+	   context->command_.exec_return_.push_back(context->life_manager_->create (context->command_.args_[0],
+										    context->command_.args_[1],
+										    context->life_manager_));
             break;
          case QuiddityCommand::remove:
             break;

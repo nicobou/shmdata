@@ -35,57 +35,22 @@ namespace switcher
   }
 
   void 
-  QuiddityCommand::make (command name)
+  QuiddityCommand::set_name (command name)
   {
     clear ();
     name_ = name;
   } 
   
   void 
-  QuiddityCommand::make (command name, 
-			 std::string arg0)
+  QuiddityCommand::add_arg (std::string arg)
   {
-    clear ();
-    name_ = name;
-    args_.push_back (arg0);
+    args_.push_back (arg);
   } 
-  
+ 
   void 
-  QuiddityCommand::make (command name, 
-			 std::string arg0, 
-			 std::string arg1)
+  QuiddityCommand::set_vector_arg (std::vector<std::string> vector_arg)
   {
-    clear();
-    name_ = name;
-    args_.push_back (arg0);
-    args_.push_back (arg1);
-  } 
-  
-  void 
-  QuiddityCommand::make (command name, 
-	       std::string arg0, 
-	       std::string arg1, 
-	       std::string arg2)
-  {
-    clear ();
-    name_ = name;
-    args_.push_back (arg0);
-    args_.push_back (arg1);
-    args_.push_back (arg2);
-  } 
-
-  void 
-  QuiddityCommand::make (command name, 
-			 std::string arg0, 
-			 std::string arg1, 
-			 std::vector<std::string> vector_arg)
-  {
-    clear ();
-    name_ = name;
-    args_.push_back (arg0);
-    args_.push_back (arg1);
     vector_arg_ = vector_arg;
   } 
-  
 
 }

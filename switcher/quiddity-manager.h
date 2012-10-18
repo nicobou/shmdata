@@ -29,6 +29,7 @@
 #include <string>
 #include "switcher/quiddity-life-manager.h"
 #include "switcher/quiddity-command.h"
+#include <stdarg.h>
 
  namespace switcher 
  { 
@@ -82,11 +83,14 @@
      static gboolean gmainloop_run (gpointer user_data);//thread for the loop
      void invoke_in_gmainloop();
      QuiddityCommand command_;
-     GCond* exec_cond_;
-     GMutex* exec_mutex_;
+     GCond *exec_cond_; //sync current thread and gmainloop
+     GMutex *exec_mutex_; //sync current thread and gmainloop
      void init_command_sync(); 
      void clear_command_sync(); 
 
+     //ensure sequential invokation
+     GMutex *seq_mutex_; 
+     std::string seq_invoke (QuiddityCommand::command command, ...);
    }; 
 
  } // end of namespace 
