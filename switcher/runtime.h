@@ -45,15 +45,11 @@ namespace switcher
     private:
       void make_runtime();
       static QuiddityDocumentation doc_;
-      static bool initialized_;
       GstElement *pipeline_;
       GstBus *bus_;
-      GThread *thread_; //runing the main loop
-      GMainLoop *mainloop_;
       static gboolean bus_called (GstBus *bus,
 				  GstMessage *msg,
 				  gpointer data); 
-      static gpointer main_loop_thread (gpointer user_data);
     };
 
   

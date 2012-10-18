@@ -17,6 +17,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     audio-sink.cpp \
     audio-source.cpp \
     audio-test-source.cpp \
+    quiddity-command.cpp \
     quiddity-documentation.cpp \
     quiddity-life-manager.cpp \
     quiddity-manager.cpp \
@@ -64,6 +65,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     audio-test-source.h \
     audio-sink.h \
     audio-source.h \
+    quiddity-command.h \
     quiddity-documentation.h \
     quiddity-life-manager.h \
     quiddity-manager.h \

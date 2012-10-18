@@ -28,6 +28,7 @@
 #include <map>
 #include <string>
 #include "switcher/quiddity-life-manager.h"
+#include "switcher/quiddity-command.h"
 
  namespace switcher 
  { 
@@ -40,6 +41,14 @@
      QuiddityManager();//will get name "default"
      QuiddityManager(std::string name); 
      ~QuiddityManager(); 
+
+     //life manager
+     std::vector<std::string> get_classes (); //know which quiddities can be created
+     std::vector<std::string> get_quiddities (); //know instances
+     std::string create (std::string class_name); //returns the name
+     std::string create (std::string class_name, 
+			 std::string nick_name);
+     bool remove (std::string quiddity_name);
 
      //properties
      std::string get_properties_description (std::string quiddity_name); //json formated
@@ -58,18 +67,26 @@
 		  std::string method_name,
 		  std::vector<std::string> args);  
 
-     //life manager
-     std::vector<std::string> get_classes (); //know which quiddities can be created
-     std::vector<std::string> get_quiddities (); //know instances
-     std::string create (std::string class_name); //returns the name
-     std::string create (std::string class_name, 
-			 std::string nick_name);
-     bool remove (std::string quiddity_name);
-
-
    private: 
      QuiddityLifeManager::ptr life_manager_; //may be shared with others for automatic quiddity creation 
      std::string name_;
+
+     //gmainloop
+     static bool gmainloop_initialized_;
+     GThread *thread_; //runing the main loop
+     GMainLoop *mainloop_;
+     void init_gmainloop ();
+     static gpointer main_loop_thread (gpointer user_data);
+
+     //running commands in the gmain_loop context
+     static gboolean gmainloop_run (gpointer user_data);//thread for the loop
+     void invoke_in_gmainloop();
+     QuiddityCommand command_;
+     GCond* exec_cond_;
+     GMutex* exec_mutex_;
+     void init_command_sync(); 
+     void clear_command_sync(); 
+
    }; 
 
  } // end of namespace 

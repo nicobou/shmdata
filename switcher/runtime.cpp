@@ -25,8 +25,6 @@
 
 namespace switcher
 {
-  
-  bool Runtime::initialized_ = false;
 
   Runtime::Runtime ()
   {
@@ -42,14 +40,6 @@ namespace switcher
   void
   Runtime::make_runtime ()
   {
-    if (!initialized_)
-      {
-	gst_init (NULL,NULL);
-	mainloop_ = g_main_loop_new (NULL, FALSE);
-	thread_ = g_thread_new ("SwitcherMainLoop", GThreadFunc(main_loop_thread), this);
-	initialized_ = true;
-      }
-    
     pipeline_ = gst_pipeline_new (NULL);
     set_name (gst_element_get_name (pipeline_));
     bus_ = gst_pipeline_get_bus (GST_PIPELINE (pipeline_)); 
@@ -64,17 +54,7 @@ namespace switcher
     g_print ("deleting runtime\n");
     gst_element_set_state (pipeline_, GST_STATE_NULL);
     gst_object_unref (GST_OBJECT (pipeline_));
-    //FIXME count instances and do quit main loop
-    //g_main_loop_quit (mainloop_);
     g_print ("runtime deleted\n");
-  }
-
-  gpointer
-  Runtime::main_loop_thread (gpointer user_data)
-  {
-    Runtime *context = static_cast<Runtime*>(user_data);
-    g_main_loop_run (context->mainloop_);
-    return NULL;
   }
 
   GstElement * 
