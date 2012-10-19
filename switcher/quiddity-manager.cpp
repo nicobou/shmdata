@@ -241,12 +241,12 @@ namespace switcher
   QuiddityManager::invoke_in_gmainloop ()
   {
     g_mutex_lock (exec_mutex_);
-    g_idle_add ((GSourceFunc) QuiddityManager::gmainloop_run, (gpointer) this);
+    g_thread_new (NULL, (GThreadFunc) QuiddityManager::gmainloop_run, (gpointer) this);
     g_cond_wait (exec_cond_, exec_mutex_);
     g_mutex_unlock (exec_mutex_);
   }
 
-  gboolean 
+  gpointer
   QuiddityManager::gmainloop_run (gpointer user_data)
   {
     QuiddityManager *context = static_cast<QuiddityManager *>(user_data);
@@ -310,7 +310,7 @@ namespace switcher
       }
     g_cond_signal (context->exec_cond_);
     g_mutex_unlock (context->exec_mutex_);
-    return FALSE; //this thread should be removed from the main loop
+    return NULL;
   }
   
   }

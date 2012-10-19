@@ -80,7 +80,7 @@
      static gpointer main_loop_thread (gpointer user_data);
 
      //running commands in the gmain_loop context
-     static gboolean gmainloop_run (gpointer user_data);//thread for the loop
+     static gpointer gmainloop_run (gpointer user_data);//thread for the loop
      void invoke_in_gmainloop();
      QuiddityCommand command_;
      GCond *exec_cond_; //sync current thread and gmainloop
