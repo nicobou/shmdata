@@ -111,7 +111,7 @@ namespace switcher
       return "";
     
      Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class, life_manager);
-     g_print ("create_quiddity %p %p\n",&quiddity,quiddity.get());
+     g_print ("%s: create_quiddity %p %s\n",name_.c_str(), &quiddity,quiddity->get_name ().c_str());
      if (quiddity.get() != NULL)
        {
 	 quiddities_.insert (quiddity->get_name(),quiddity);
@@ -127,7 +127,7 @@ namespace switcher
       return "";
 
     Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class, life_manager);
-    g_print ("create_quiddity %p %p\n",&quiddity,quiddity.get());
+    g_print ("%s: create_quiddity %p %s\n",name_.c_str(), &quiddity,quiddity->get_name ().c_str());
     if (quiddity.get() != NULL)
       {
 	if (!nick_name.empty () && !quiddities_nick_names_.contains (nick_name))
@@ -163,7 +163,7 @@ namespace switcher
   bool 
   QuiddityLifeManager::exists (std::string quiddity_name)
   {
-    return quiddities_.contains (quiddities_nick_names_.lookup (quiddity_name));
+    return quiddities_nick_names_.contains (quiddity_name);
   }
 
   bool 
@@ -228,7 +228,6 @@ namespace switcher
 			       std::vector<std::string> args)
   {
     //g_print ("   QuiddityLifeManager::quiddity_invoke_method %s %s, arg size %d\n",quiddity_name.c_str(), function_name.c_str(), args.size ());
-     
     if (!exists (quiddity_name))
       {
 	g_printerr ("quiddity %s not found, cannot invoke\n",quiddity_name.c_str());
