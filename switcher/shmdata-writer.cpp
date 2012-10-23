@@ -124,9 +124,7 @@ namespace switcher
      gst_object_unref (sinkpad);
      //gst_element_link_filtered (source_element,
      //				tee_, caps);
-    
-    gst_element_link_many (tee_, queue_, fakesink_,NULL);
-  
+     gst_element_link_many (tee_, queue_, fakesink_,NULL);
      gst_element_sync_state_with_parent (tee_);
      gst_element_sync_state_with_parent (queue_);
      gst_element_sync_state_with_parent (fakesink_);
