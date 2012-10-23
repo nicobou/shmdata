@@ -60,14 +60,18 @@ namespace switcher
   private:
     void make_rtpsession ();
     GstElement *rtpsession_;
-    QuiddityManager::ptr internal_manager_;
+    //a counter used for setting id of internal streams
+    guint next_id_;
+    //QuiddityManager::ptr internal_manager_;
+
     //local streams
-    StringMap <std::string> local_stream_rtp_id_; //maps shmdata path with the rtp id 
-    StringMap <GstElementCleaner::ptr> rtp_id_funnel_; //rtcp reports from receivers
+    StringMap <std::string> internal_id_; //maps shmdata path with internal id 
+    StringMap <std::string> rtp_id_; //maps shmdata path with rtp id
+    StringMap <QuiddityManager::ptr> quiddity_managers_;
+    StringMap <GstElementCleaner::ptr> funnels_; //maps internal id with funnel cleaner
 
     StringMap<ShmdataWriter::ptr> internal_shmdata_writers_;
     StringMap<ShmdataReader::ptr> internal_shmdata_readers_;
-
 
     static void make_data_stream_available (GstElement* typefind, 
 					    guint probability, 
