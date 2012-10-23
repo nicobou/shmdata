@@ -93,9 +93,17 @@ namespace switcher
       g_error_free (error);
     
       break;
+      case GST_MESSAGE_STATE_CHANGED:
+	// GstState old_state, new_state;
+        // gst_message_parse_state_changed (msg, &old_state, &new_state, NULL);
+	// g_print ("Element %s changed state from %s to %s.\n",
+	// 	 GST_OBJECT_NAME (msg->src),
+	// 	 gst_element_state_get_name (old_state),
+	// 	 gst_element_state_get_name (new_state));
+	break;
     }
     default:
-      //g_print ("unknown message type \n");
+      //g_print ("message %s from %s\n",GST_MESSAGE_TYPE_NAME(msg),GST_MESSAGE_SRC_NAME(msg));
       break;
     }
     return TRUE;
