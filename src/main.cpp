@@ -34,7 +34,6 @@ static GOptionEntry entries[] =
     { NULL }
   };
 
-
 void
 leave (int sig)
 {
@@ -81,6 +80,19 @@ main (int argc,
    serv =  new CtrlServer(); //std::tr1::dynamic_pointer_cast<CtrlServer> (baseserv);
    serv->set_quiddity_manager (manager);
    serv->start ();
+
+
+   // std::vector<std::string> args;
+   // args.push_back ("pipeline0");
+   // manager->create ("videotestsrc");
+   // manager->invoke ("videotestsrc0","set_runtime",args);
+   // std::vector<std::string> pipe_arg;
+   // pipe_arg.push_back ("pipeline0");
+   // manager->create ("xvimagesink");
+   // manager->invoke ("xvimagesink0","set_runtime",pipe_arg);
+   // std::vector<std::string> connect_arg;
+   // connect_arg.push_back ("/tmp/switcher_default_videotestsrc0_video");
+   // manager->invoke ("xvimagesink0","connect",connect_arg);
 
   //waiting for end of life
   while (1)
