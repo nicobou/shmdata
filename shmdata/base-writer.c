@@ -77,6 +77,8 @@ void
 shmdata_base_writer_set_branch_state_as_pipeline (shmdata_base_writer_t *
 						  writer)
 {
+  //warning infinite timeout
+  gst_element_get_state (GST_ELEMENT_PARENT (writer->qserial_), NULL, NULL, GST_CLOCK_TIME_NONE);
   gst_element_sync_state_with_parent (writer->qserial_);
   gst_element_sync_state_with_parent (writer->serializer_);
   gst_element_sync_state_with_parent (writer->shmsink_);
@@ -142,38 +144,30 @@ shmdata_base_writer_switch_to_new_serializer (GstPad * pad,
 
   GstBin *bin = GST_BIN (GST_ELEMENT_PARENT (context->serializer_));
 
-  // supposed to be PLAYING, possible issue because of not taking care
-  // of pending state
-  GstState current;
-  gst_element_get_state (context->serializer_, &current, NULL,
-			 GST_CLOCK_TIME_NONE);
-
-  //get rid of the old serializer TODO ensure object has been cleaned up
-  gst_element_set_state (context->serializer_, GST_STATE_NULL);
-  //waiting for possible async state change
-  gst_element_get_state (context->serializer_, NULL, NULL,
-			 GST_CLOCK_TIME_NONE);
+  gst_element_set_state (context->serializer_, GST_STATE_NULL); 
+  gst_bin_remove (GST_BIN (bin), context->serializer_);
 
   //creating and linking the new serializer
   context->serializer_ = gst_element_factory_make ("gdppay", NULL);
-  if (gst_element_set_state (context->serializer_, current) !=
-      GST_STATE_CHANGE_SUCCESS)
-    g_critical ("Error: issue changing newSerializer state");
-  else
-    {
-      gst_bin_add (bin, context->serializer_);
-      GstPad *newSinkPad =
-	gst_element_get_static_pad (context->serializer_, "sink");
-      GstPad *newSrcPad =
-	gst_element_get_static_pad (context->serializer_, "src");
-      gst_pad_link (newSrcPad, srcPadPeer);
-      gst_pad_link (sinkPadPeer, newSinkPad);
-      gst_object_unref (newSinkPad);
-      gst_object_unref (newSrcPad);
-    }
+  gst_bin_add (bin, context->serializer_);
+  
+  GstPad *newSinkPad =
+    gst_element_get_static_pad (context->serializer_, "sink");
+  GstPad *newSrcPad =
+    gst_element_get_static_pad (context->serializer_, "src");
+  gst_pad_link (newSrcPad, srcPadPeer);
+  gst_pad_link (sinkPadPeer, newSinkPad);
+  gst_object_unref (newSinkPad);
+  gst_object_unref (newSrcPad);
+
   gst_object_unref (srcPadPeer);
   gst_object_unref (sinkPadPeer);
 
+
+  gst_element_get_state (GST_ELEMENT_PARENT (context->serializer_), NULL, NULL, GST_CLOCK_TIME_NONE);
+  if (!gst_element_sync_state_with_parent (context->serializer_))
+    g_critical ("Error: issue changing newSerializer state");
+  
   //unblocking data stream
   gst_pad_set_blocked_async (pad,
 			     FALSE,

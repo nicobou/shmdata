@@ -43,14 +43,20 @@ shmdata_base_reader_clean_source (gpointer user_data)
 {
   shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
   //gst_object_unref (context->sinkPad_);
+
   if (GST_IS_ELEMENT (context->deserializer_))
-      gst_element_set_state (context->deserializer_, GST_STATE_NULL);
-  if (GST_IS_ELEMENT (context->source_))
-    gst_element_set_state (context->source_, GST_STATE_NULL);
+    gst_element_set_state (context->deserializer_, GST_STATE_NULL);
+  
+  //this is blocking
+   /* if (GST_IS_ELEMENT (context->source_))  */
+   /*   gst_element_set_state (context->source_, GST_STATE_NULL);  */
+
   if (GST_IS_BIN (context->bin_) && GST_IS_ELEMENT (context->deserializer_))
     gst_bin_remove (GST_BIN (context->bin_), context->deserializer_);
+
   if (GST_IS_BIN (context->bin_) && GST_IS_ELEMENT (context->source_))
     gst_bin_remove (GST_BIN (context->bin_), context->source_);
+
   return FALSE;
 }
 
@@ -86,10 +92,8 @@ shmdata_base_reader_attach (shmdata_base_reader_t * reader)
   gst_element_link (reader->source_, reader->deserializer_);
   gst_pad_link (reader->deserialPad_, reader->sinkPad_);
 
-  //FIXME sync state with parent
-  gst_element_set_state (reader->deserializer_, GST_STATE_PLAYING);
-  gst_element_set_state (reader->source_, GST_STATE_PLAYING);
-
+  gst_element_sync_state_with_parent (reader->deserializer_);
+  gst_element_sync_state_with_parent (reader->source_);
 }
 
 void
@@ -145,12 +149,6 @@ shmdata_base_reader_detach (shmdata_base_reader_t * reader)
   if (reader != NULL)
     {
       reader->attached_ = FALSE;
-      if (GST_IS_ELEMENT (reader->source_) && GST_IS_ELEMENT(reader->deserializer_))
-	gst_element_unlink (reader->source_, reader->deserializer_);
-      if (GST_IS_PAD(reader->deserialPad_) && GST_IS_PAD(reader->sinkPad_))
-	gst_pad_unlink (reader->deserialPad_, reader->sinkPad_);
-      //ask for element cleaning in the main thread
-      //g_idle_add ((GSourceFunc) shmdata_base_reader_clean_source, reader);
       shmdata_base_reader_clean_source (reader);
     }
 }
