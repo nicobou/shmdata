@@ -167,5 +167,49 @@ namespace switcher
     return res;
   }
   
+   std::vector<GType> 
+   Method::make_arg_type_description (GType first_arg_type, ...)
+   {
+     std::vector<GType> res;
+     GType arg_type;
+     va_list vl;
+     va_start(vl, first_arg_type);
+     if (first_arg_type != G_TYPE_NONE)
+       {
+	 res.push_back (first_arg_type);
+	 while (arg_type = va_arg( vl, GType))
+	   res.push_back (arg_type);
+       }
+     va_end(vl);
+     return res;
+   }
 
+  std::vector<std::pair<std::string,std::string> > 
+  Method::make_arg_description (char *first_arg_name, ...)
+  {
+    std::vector<std::pair<std::string,std::string> > res;
+    std::pair<std::string,std::string> arg_desc_pair;
+    va_list vl;
+    char *arg_name;
+    char *arg_desc;
+    va_start(vl, first_arg_name);
+    if (first_arg_name !=NULL && (arg_desc = va_arg( vl, char *)))
+      {
+	std::pair<std::string,std::string> arg_pair;
+	arg_desc_pair.first = std::string (first_arg_name);
+	arg_desc_pair.second = std::string (arg_desc);
+	res.push_back (arg_desc_pair);
+      }
+    while ( (arg_name = va_arg( vl, char *)) && (arg_desc = va_arg( vl, char *)))
+      {
+	std::pair<std::string,std::string> arg_pair;
+	arg_desc_pair.first = std::string (arg_name);
+	arg_desc_pair.second = std::string (arg_desc);
+	res.push_back (arg_desc_pair);
+      }
+    
+    va_end(vl);
+    return res;
+  }
+  
 }

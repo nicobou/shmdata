@@ -28,6 +28,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <stdarg.h>
 
 namespace switcher
 {
@@ -50,6 +51,10 @@ namespace switcher
 			  std::string short_description,
 			  std::vector<std::pair<std::string,std::string> > arg_description);
     std::string get_description (); //json formated description
+
+    //helper methods, use NULL sentinel
+    static std::vector<GType> make_arg_type_description (GType arg_type, ...);//use G_TYPE_NONE if no arg
+    static std::vector<std::pair<std::string,std::string> > make_arg_description (char *first_arg_name, ...);
 
   private:
     GClosure *closure_;
