@@ -37,32 +37,32 @@ namespace switcher
   {
   public:
     typedef std::tr1::shared_ptr<Method> ptr;
-
+    typedef std::vector<GType> args_types;
+    typedef std::vector<std::pair<std::string,std::string> > args_doc;
+      
     Method ();
     ~Method ();
     void set_method (void *method, 
-		     std::vector<GType> arg_types, 
+		     args_types arg_types, 
 		     gpointer user_data);
     bool invoke (std::vector<std::string> args);
-    /* bool invoke (std::vector<std::string> args, */
-    /* 		 std::vector<void *> quiddity_args); */
     uint get_num_of_value_args();
     void set_description (std::string method_name,
 			  std::string short_description,
-			  std::vector<std::pair<std::string,std::string> > arg_description);
+			  args_doc arg_description);
     std::string get_description (); //json formated description
 
     //helper methods, use NULL sentinel
-    static std::vector<GType> make_arg_type_description (GType arg_type, ...);//use G_TYPE_NONE if no arg
-    static std::vector<std::pair<std::string,std::string> > make_arg_description (char *first_arg_name, ...);
+    static args_types make_arg_type_description (GType arg_type, ...);//use G_TYPE_NONE if no arg
+    static args_doc make_arg_description (char *first_arg_name, ...);
 
   private:
     GClosure *closure_;
-    std::vector<GType> arg_types_; 
+    args_types arg_types_; 
     uint num_of_value_args_;
     std::string method_name_;
     std::string short_description_;
-    std::vector<std::pair<std::string,std::string> > arg_description_;
+    args_doc arg_description_;
     static void destroy_data (gpointer  data,
 			      GClosure *closure);
     
