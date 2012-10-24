@@ -40,7 +40,7 @@ namespace switcher
   void 
   RtpSession::make_rtpsession ()
   {
-    next_id_ = 666;
+    next_id_ = 79;
     rtpsession_ = gst_element_factory_make ("gstrtpbin",NULL);
     
     g_signal_connect (G_OBJECT (rtpsession_), "on-bye-ssrc", 
@@ -72,69 +72,53 @@ namespace switcher
 
     gst_bin_add (GST_BIN (bin_), rtpsession_);
 
+
     //registering add_data_stream
-    std::vector<GType> add_data_stream_arg_types;
-    add_data_stream_arg_types.push_back (G_TYPE_STRING);
     register_method("add_data_stream",
 		    (void *)&add_data_stream_wrapped, 
-		    add_data_stream_arg_types,
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    (gpointer)this);
-    std::vector<std::pair<std::string,std::string> > arg_desc;
-    std::pair<std::string,std::string> socket;
-    socket.first = "socket";
-    socket.second = "socket path of the shmdata to add to the session (sending)";
-    arg_desc.push_back (socket); 
-    if (!set_method_description ("add_data_stream", 
-				 "add a data stream to the RTP session (sending)", 
-				 arg_desc))
-      g_printerr ("RTP session: cannot set method description for \"add_data_stream\"\n");
+    set_method_description ("add_data_stream", 
+			    "add a data stream to the RTP session (sending)", 
+			    Method::make_arg_description ("socket", 
+							  "shmdata socket path to add to the session",
+							  NULL));
 
     //registering remove_data_stream
-    std::vector<GType> remove_data_stream_arg_types;
-    remove_data_stream_arg_types.push_back (G_TYPE_STRING);
-    register_method("remove_data_stream",
+    register_method("remove_data_stream", 
 		    (void *)&remove_data_stream_wrapped, 
-		    remove_data_stream_arg_types,
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    (gpointer)this);
-    std::vector<std::pair<std::string,std::string> > arg_desc_remove;
-    std::pair<std::string,std::string> socket_to_remove;
-    socket_to_remove.first = "socket";
-    socket_to_remove.second = "socket path of the shmdata to remove from the session (sending)";
-    arg_desc_remove.push_back (socket_to_remove); 
-    if (!set_method_description ("remove_data_stream", 
-				 "remove a data stream from the RTP session (sending)", 
-				 arg_desc_remove))
-      g_printerr ("RTP session: cannot set method description for \"remove_data_stream\"\n");
-
-
-    //registering add_unicast_udp_dest
-    std::vector<GType> add_unicast_udp_dest_arg_types;
-    add_unicast_udp_dest_arg_types.push_back (G_TYPE_STRING);
-    add_unicast_udp_dest_arg_types.push_back (G_TYPE_STRING);
-    add_unicast_udp_dest_arg_types.push_back (G_TYPE_STRING);
-    register_method("add_unicast_udp_dest",
-		    (void *)&add_unicast_udp_dest_wrapped, 
-		    add_unicast_udp_dest_arg_types,
+    set_method_description ("remove_data_stream", 
+			    "remove a data stream from the RTP session (sending)", 
+			    Method::make_arg_description ("socket", 
+							  "shmdata socket path to remove from the session", 
+							  NULL));
+    
+    //registering "add_udp_dest"
+    register_method("add_udp_dest",
+		    (void *)&add_udp_dest_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,G_TYPE_STRING,NULL),
 		    (gpointer)this);
-    std::vector<std::pair<std::string,std::string> > arg_desc_udp;
-    std::pair<std::string,std::string> socket_udp;
-    socket_udp.first = "socket";
-    socket_udp.second = "local socket path of the shmdata to send";
-    arg_desc_udp.push_back (socket_udp); 
-    std::pair<std::string,std::string> host_udp;
-    host_udp.first = "host";
-    host_udp.second = "destination host";
-    arg_desc.push_back (host_udp); 
-    std::pair<std::string,std::string> port_udp;
-    host_udp.first = "port";
-    host_udp.second = "destination port";
-    arg_desc.push_back (port_udp); 
-    if (!set_method_description ("add_unicast_udp_dest", 
-				 "stream RTP with udp", 
-				 arg_desc_udp))
-      g_printerr ("RTP session: cannot set method description for \"add_unicast_udp_dest\"\n");
+    set_method_description ("add_udp_dest", 
+			    "stream RTP to a port with udp", 
+			    Method::make_arg_description ("socket", "local socket path of the shmdata",
+							  "host", "destination host",
+							  "port", "destination port",
+							  NULL));
 
-
+    //registering "remove_udp_dest"
+    register_method("remove_udp_dest",
+		    (void *)&remove_udp_dest_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,G_TYPE_STRING,NULL),
+		    (gpointer)this);
+    set_method_description ("remove_udp_dest", 
+			    "remove destination", 
+			    Method::make_arg_description ("socket", "local socket path of the shmdata",
+							  "host", "destination host",
+							  "port", "destination port",
+							  NULL));
+   
 
     //set the name before registering properties
     set_name (gst_element_get_name (rtpsession_));
@@ -255,7 +239,7 @@ namespace switcher
     gchar **rtp_session_array = g_strsplit_set (rtp_sink_pad_name, "_",0);
     
     gchar *rtp_session_id = g_strdup(rtp_session_array[3]);
-    context->rtp_id_.insert (reader->get_path (), rtp_session_id);
+    context->rtp_ids_.insert (reader->get_path (), rtp_session_id);
     //using internal session id for this local stream
     std::string internal_session_id (context->internal_id_.lookup (reader->get_path ()));
     
@@ -304,7 +288,7 @@ namespace switcher
     GstElementCleaner::ptr funnel_cleaning;
     funnel_cleaning.reset (new GstElementCleaner ());
     funnel_cleaning->add_element_to_remove (funnel);
-    context->funnels_.insert (internal_session_id,funnel_cleaning);
+    context->funnels_.insert (reader->get_path (),funnel_cleaning);
     g_free (rtp_session_id);
   }
 
@@ -328,14 +312,14 @@ namespace switcher
   }
   
   gboolean
-  RtpSession::add_unicast_udp_dest_wrapped (gpointer shmdata_name, 
+  RtpSession::add_udp_dest_wrapped (gpointer shmdata_name, 
 					    gpointer host, 
 					    gpointer port, 
 					    gpointer user_data)
   {
     RtpSession *context = static_cast<RtpSession*>(user_data);
        
-    if (context->add_unicast_udp_dest ((char *)shmdata_name,(char *)host,(char *)port))
+    if (context->add_udp_dest ((char *)shmdata_name,(char *)host,(char *)port))
       return TRUE;
     else
       return FALSE;
@@ -343,7 +327,7 @@ namespace switcher
   
  
   bool
-  RtpSession::add_unicast_udp_dest (std::string shmdata_socket_path, std::string host, std::string port)
+  RtpSession::add_udp_dest (std::string shmdata_socket_path, std::string host, std::string port)
   {
     
 
@@ -353,9 +337,11 @@ namespace switcher
 	return false;
       }
     
-    if (atoi(port.c_str()) %2 !=0)
+    gint rtp_port = atoi(port.c_str());
+
+    if (rtp_port %2 !=0)
       {
-	g_printerr ("RtpSession port %s must be even, not odd\n",port.c_str ());
+	g_printerr ("RtpSession rtp destination port %s must be even, not odd\n",port.c_str ());
 	return false;
       }
     std::string id = internal_id_.lookup (shmdata_socket_path);
@@ -366,25 +352,87 @@ namespace switcher
 	QuiddityManager::ptr manager;
 	manager.reset (new QuiddityManager(get_name()+"_"+id));
 	manager->create ("runtime","single_runtime");//only one runtime for all
-	quiddity_managers_.insert (shmdata_socket_path,manager);
+	quiddity_managers_.insert (shmdata_socket_path, manager);
+
+	std::vector <std::string> arg;
+	manager->create ("udpsink","udpsend_rtp");
+	manager->create ("udpsink","udpsend_rtcp");
+	arg.push_back ("single_runtime");
+	manager->invoke ("udpsend_rtp","set_runtime",arg);
+	manager->invoke ("udpsend_rtcp","set_runtime",arg);
+	
+	arg.clear ();
+	arg.push_back (make_shmdata_writer_name ("send_rtp_src_"+id));
+	manager->invoke ("udpsend_rtp","connect",arg);
+
+	arg.clear ();
+	arg.push_back (make_shmdata_writer_name ("send_rtcp_src_"+id));
+	manager->invoke ("udpsend_rtcp","connect",arg);
       }
 
     QuiddityManager::ptr manager = quiddity_managers_.lookup (shmdata_socket_path);
-
+    
+    //rtp stream
     std::vector <std::string> arg;
-    manager->create ("udpsink","udp").c_str();
-    arg.push_back ("single_runtime");
-    manager->invoke ("udp","set_runtime",arg);
-    
-    arg.clear ();
-    arg.push_back (make_shmdata_writer_name ("send_rtp_src_"+id));
-    manager->invoke ("udp","connect",arg);
-    
-    arg.clear ();
     arg.push_back (host);
     arg.push_back (port);
-    manager->invoke ("udp","add_client",arg);
+    manager->invoke ("udpsend_rtp","add_client",arg);
+    
+    //rtcp stream
+    arg.clear ();
+    arg.push_back (host);
+    std::ostringstream rtcp_port;
+    rtcp_port << rtp_port + 1;
+    arg.push_back (rtcp_port.str());
+    manager->invoke ("udpsend_rtcp","add_client",arg);
+    
+    //TODO connect to funnel for rtcp receiving
+    return true;
+  }
 
+  
+  gboolean 
+  RtpSession::remove_udp_dest_wrapped (gpointer shmdata_socket_path, 
+				       gpointer host, 
+				       gpointer port,
+				       gpointer user_data)
+  {
+    RtpSession *context = static_cast<RtpSession*>(user_data);
+
+    if (context->remove_udp_dest ((char *)shmdata_socket_path, (char *)host, (char *)port))
+      return TRUE;
+    else
+      return FALSE;
+  }
+  
+ bool
+  RtpSession::remove_udp_dest (std::string shmdata_socket_path, std::string host, std::string port)
+  {
+    
+
+    if (!internal_id_.contains (shmdata_socket_path))
+      {
+	g_printerr ("RtpSession is not connected to %s\n",shmdata_socket_path.c_str ());
+	return false;
+      }
+    
+    QuiddityManager::ptr manager = quiddity_managers_.lookup (shmdata_socket_path);
+    
+    //rtp
+    std::vector <std::string> arg;
+    arg.push_back (host);
+    arg.push_back (port);
+    manager->invoke ("udpsend_rtp","remove_client",arg);
+    
+    //rtcp
+    arg.clear ();
+    gint rtp_port = atoi(port.c_str());
+    arg.push_back (host);
+    std::ostringstream rtcp_port;
+    rtcp_port << rtp_port + 1;
+    arg.push_back (rtcp_port.str());
+    manager->invoke ("udpsend_rtp","remove_client",arg);
+    
     return true;
   }
 
@@ -439,29 +487,32 @@ namespace switcher
 	return false;
       }
 
-    if(quiddity_managers_.contains (shmdata_socket_path))
-      {
-	quiddity_managers_.remove (shmdata_socket_path);
-      }
+    
 
     std::string id = internal_id_.lookup (shmdata_socket_path);
+    internal_id_.remove (shmdata_socket_path);
     
     internal_shmdata_writers_.remove (make_shmdata_writer_name ("send_rtp_src_"+id));
     internal_shmdata_writers_.remove (make_shmdata_writer_name ("send_rtcp_src_"+id));
     shmdata_readers_.remove (shmdata_socket_path);
     internal_shmdata_readers_.remove (make_shmdata_writer_name ("recv_rtcp_sink_"+id));
-    internal_id_.remove (shmdata_socket_path);
     
+    if(quiddity_managers_.contains (shmdata_socket_path))
+      {
+	quiddity_managers_.remove (shmdata_socket_path);
+      }
+    rtp_ids_.remove (shmdata_socket_path);
 
-    if (!funnels_.contains (id))
+
+    if (!funnels_.contains (shmdata_socket_path))
       {
 	g_printerr ("RtpSession::remove_data_stream: no funnel");
 	return false;
       }
-    funnels_.remove (id);
+    funnels_.remove (shmdata_socket_path);
     
     
-
+    g_print ("data_stream removed\n");
     return true;
   }
 

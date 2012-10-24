@@ -43,17 +43,24 @@ namespace switcher
     bool remove_data_stream (std::string shmdata_socket_path);
     
     //remote dest
-    bool add_unicast_udp_dest (std::string shmdata_socket_path, std::string host, std::string port);
+    bool add_udp_dest (std::string shmdata_socket_path, std::string host, std::string port);
+    bool remove_udp_dest (std::string shmdata_socket_path, std::string host, std::string port);
 
     //wrapper for registering the data_stream functions
     static gboolean add_data_stream_wrapped (gpointer shmdata_socket_path, 
 					     gpointer user_data);
     static gboolean remove_data_stream_wrapped (gpointer shmdata_socket_path, 
 						gpointer user_data);
-    static gboolean add_unicast_udp_dest_wrapped (gpointer shmdata_name, 
+    static gboolean add_udp_dest_wrapped (gpointer shmdata_name, 
 						  gpointer host, 
 						  gpointer port, 
 						  gpointer user_data);
+    static gboolean remove_udp_dest_wrapped (gpointer shmdata_socket_path, 
+						     gpointer host, 
+						     gpointer port,
+						     gpointer user_data);
+    
+
     //will be call by shmdata reader
     static void attach_data_stream(ShmdataReader *caller, void *rtpsession_instance); 
     
@@ -66,7 +73,7 @@ namespace switcher
 
     //local streams
     StringMap <std::string> internal_id_; //maps shmdata path with internal id 
-    StringMap <std::string> rtp_id_; //maps shmdata path with rtp id
+    StringMap <std::string> rtp_ids_; //maps shmdata path with rtp id
     StringMap <QuiddityManager::ptr> quiddity_managers_;
     StringMap <GstElementCleaner::ptr> funnels_; //maps internal id with funnel cleaner
 
