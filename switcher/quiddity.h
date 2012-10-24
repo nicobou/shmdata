@@ -88,11 +88,11 @@ namespace switcher
 			    std::string prefix);
     bool register_method (std::string method_name,
 			  void *method, 
-			  std::vector<GType> arg_types, 
+			  Method::args_types arg_types, 
 			  gpointer user_data);
     bool set_method_description (std::string method_name,
 				 std::string short_description,
-				 std::vector<std::pair<std::string,std::string> > arg_description);
+				 Method::args_doc arg_description);
     //use a consistent naming for shmdatas FIXME move that to segment
     std::string make_shmdata_writer_name (std::string suffix);
 

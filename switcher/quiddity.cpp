@@ -152,7 +152,7 @@ namespace switcher
     
     if (methods_.find( method_name ) == methods_.end())
       {
-	g_printerr ("cannot set description of not existing ");
+	g_printerr ("cannot set description of a not existing method");
 	return false;
       }
 
