@@ -77,11 +77,12 @@ void
 shmdata_base_writer_set_branch_state_as_pipeline (shmdata_base_writer_t *
 						  writer)
 {
-  //warning infinite timeout
-  gst_element_get_state (GST_ELEMENT_PARENT (writer->qserial_), NULL, NULL, GST_CLOCK_TIME_NONE);
-  gst_element_sync_state_with_parent (writer->qserial_);
-  gst_element_sync_state_with_parent (writer->serializer_);
-  gst_element_sync_state_with_parent (writer->shmsink_);
+  gst_element_set_state (writer->qserial_,
+			 GST_STATE_TARGET(GST_ELEMENT_PARENT(writer->qserial_)));
+  gst_element_set_state (writer->serializer_,
+			 GST_STATE_TARGET(GST_ELEMENT_PARENT(writer->serializer_)));
+  gst_element_set_state (writer->shmsink_,
+			 GST_STATE_TARGET(GST_ELEMENT_PARENT(writer->shmsink_)));
 }
 
 gboolean
