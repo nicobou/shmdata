@@ -32,7 +32,8 @@ bus_call (GstBus * bus, GstMessage * msg, gpointer data)
     {
 
     case GST_MESSAGE_EOS:
-      g_print ("End of stream\n");
+      g_print ("message %s from %s\n",GST_MESSAGE_TYPE_NAME(msg),GST_MESSAGE_SRC_NAME(msg));
+      gst_element_set_state (pipeline, GST_STATE_NULL);
       g_main_loop_quit (loop);
       break;
 
@@ -44,7 +45,7 @@ bus_call (GstBus * bus, GstMessage * msg, gpointer data)
 	gst_message_parse_error (msg, &error, &debug);
 	g_free (debug);
 
-	g_printerr ("Error: %s\n", error->message);
+	g_printerr ("Error: %s (message %s from %s)\n", error->message,GST_MESSAGE_TYPE_NAME(msg),GST_MESSAGE_SRC_NAME(msg));
 	g_error_free (error);
 
 	g_print ("Now nulling: \n");
@@ -52,8 +53,21 @@ bus_call (GstBus * bus, GstMessage * msg, gpointer data)
 	g_main_loop_quit (loop);
 	break;
       }
+    case GST_MESSAGE_STATE_CHANGED:
+      {
+	/* GstState old_state, new_state; */
+	/* gst_message_parse_state_changed (msg, &old_state, &new_state, NULL); */
+	/* g_print ("Element %s changed state from %s to %s.\n", */
+	/* 	 GST_OBJECT_NAME (msg->src), */
+	/* 	 gst_element_state_get_name (old_state), */
+	/* 	 gst_element_state_get_name (new_state)); */
+	break;
+      }
     default:
-      break;
+      {
+	//g_print ("message %s from %s\n",GST_MESSAGE_TYPE_NAME(msg),GST_MESSAGE_SRC_NAME(msg));
+	break;
+      }
     }
 
   return TRUE;
