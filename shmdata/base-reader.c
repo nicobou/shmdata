@@ -44,24 +44,26 @@ shmdata_base_reader_clean_source (gpointer user_data)
   shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
   //gst_object_unref (context->sinkPad_);
 
-  if (GST_IS_ELEMENT (context->deserializer_))
-    gst_element_set_state (context->deserializer_, GST_STATE_NULL);
+   if (GST_IS_ELEMENT (context->deserializer_)) 
+     gst_element_set_state (context->deserializer_, GST_STATE_NULL); 
   
-  //this is blocking
-   /* if (GST_IS_ELEMENT (context->source_))  */
-   /*   gst_element_set_state (context->source_, GST_STATE_NULL);  */
+  if (GST_IS_ELEMENT (context->source_))   
+     gst_element_set_state (context->source_, GST_STATE_NULL);   
 
-  if (GST_IS_BIN (context->bin_) && GST_IS_ELEMENT (context->deserializer_))
+  if (GST_IS_BIN (context->bin_) 
+      && GST_IS_ELEMENT (context->deserializer_)
+      && GST_ELEMENT_PARENT (context->deserializer_) == context->bin_)
     gst_bin_remove (GST_BIN (context->bin_), context->deserializer_);
 
-  if (GST_IS_BIN (context->bin_) && GST_IS_ELEMENT (context->source_))
+  if (GST_IS_BIN (context->bin_) 
+      && GST_IS_ELEMENT (context->source_)
+      && GST_ELEMENT_PARENT (context->source_) == context->bin_)
     gst_bin_remove (GST_BIN (context->bin_), context->source_);
 
   return FALSE;
 }
 
-
-void
+gboolean
 shmdata_base_reader_attach (shmdata_base_reader_t * reader)
 {
   reader->attached_ = TRUE;
@@ -73,6 +75,10 @@ shmdata_base_reader_attach (shmdata_base_reader_t * reader)
     g_critical ("gdpdepay element could not be created. \n");
 
   g_object_set_data (G_OBJECT (reader->source_), 
+		     "shmdata_base_reader",
+		     (gpointer)reader);
+
+  g_object_set_data (G_OBJECT (reader->deserializer_), 
 		     "shmdata_base_reader",
 		     (gpointer)reader);
 
@@ -92,8 +98,10 @@ shmdata_base_reader_attach (shmdata_base_reader_t * reader)
   gst_element_link (reader->source_, reader->deserializer_);
   gst_pad_link (reader->deserialPad_, reader->sinkPad_);
 
-  gst_element_sync_state_with_parent (reader->deserializer_);
-  gst_element_sync_state_with_parent (reader->source_);
+  gst_element_set_state (reader->deserializer_,GST_STATE_TARGET(reader->bin_));
+  gst_element_set_state (reader->source_,GST_STATE_TARGET(reader->bin_));
+
+  return FALSE; //for g_idle_add
 }
 
 void
@@ -154,6 +162,17 @@ shmdata_base_reader_detach (shmdata_base_reader_t * reader)
 }
 
 gboolean
+shmdata_base_reader_recover_from_deserializer_error (shmdata_base_reader_t * reader)
+{
+  shmdata_base_reader_detach (reader);
+  shmdata_base_reader_attach (reader);
+  /* gst_object_unref (reader->deserializer_); */
+  /* gst_object_unref (reader->bin_); */
+
+  return FALSE; //for g_idle_add use
+}
+
+gboolean
 shmdata_base_reader_process_error (shmdata_base_reader_t * reader, GstMessage *msg)
 {
   switch (GST_MESSAGE_TYPE (msg))
@@ -173,6 +192,27 @@ shmdata_base_reader_process_error (shmdata_base_reader_t * reader, GstMessage *m
 	    g_error_free (error);
 	    return TRUE;
 	  }
+
+	if (g_strcmp0
+	    (GST_ELEMENT_NAME (reader->deserializer_),
+	     GST_OBJECT_NAME (msg->src)) == 0)
+	  {
+	    if (GST_IS_BIN (reader->bin_) && GST_IS_ELEMENT (reader->deserializer_))
+	      {
+		gst_object_ref (reader->deserializer_);
+		gst_bin_remove (GST_BIN (reader->bin_), reader->deserializer_);
+	      }
+	    
+	    if (GST_IS_BIN (reader->bin_) && GST_IS_ELEMENT (reader->source_))
+	      {
+		gst_object_ref (reader->source_);
+		gst_bin_remove (GST_BIN (reader->bin_), reader->source_);
+	      }
+
+	    g_idle_add ((GSourceFunc)shmdata_base_reader_recover_from_deserializer_error, (gpointer)reader);
+	    g_error_free (error);
+	    return TRUE; 
+	  }
 	g_error_free (error);
 	break;
       }
@@ -187,6 +227,11 @@ shmdata_base_reader_message_handler (GstBus * bus,
 				     GstMessage * msg, gpointer user_data)
 {
     
+  if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS)
+    {
+      g_print ("message %s from %s\n",GST_MESSAGE_TYPE_NAME(msg),GST_MESSAGE_SRC_NAME(msg));
+    }
+
   shmdata_base_reader_t *reader = (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), "shmdata_base_reader");
   if ( reader != NULL)
     {
@@ -248,7 +293,7 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
   
   if (reader->install_sync_handler_)
     {
-      g_debug ("installing an async handler");
+      g_debug ("installing an sync handler");
       //looking for the bus, searching the top level
       GstElement *pipe = reader->bin_;
       
@@ -264,7 +309,7 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
 	}
       else
 	{
-	  g_warning ("no top level pipeline found when starting, cannot install async_handler");
+	  g_warning ("no top level pipeline found when starting, cannot install sync_handler");
 	  return FALSE;
 	}
     }
@@ -379,4 +424,6 @@ shmdata_base_reader_close (shmdata_base_reader_t * reader)
     }
 
 }
+
+
 
