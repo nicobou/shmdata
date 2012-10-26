@@ -102,6 +102,7 @@ namespace switcher
 
     shmdata_base_reader_close (reader_);
     reader_ = shmdata_base_reader_new ();
+    shmdata_base_reader_set_on_have_type_callback (reader_, ShmdataReader::on_have_type, this);
     
     if (path_ == "" ||  bin_ == NULL)
       {
@@ -134,7 +135,17 @@ namespace switcher
     shmdata_base_reader_install_sync_handler (reader_, FALSE);
     shmdata_base_reader_set_bin (reader_, bin_);
     shmdata_base_reader_start (reader_, path_.c_str());
+  }
 
+
+  void 
+  ShmdataReader::on_have_type (shmdata_base_reader_t *base_reader, 
+			       GstCaps *caps, 
+			       void *user_data)
+  {
+    ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
+    reader->caps_ = caps;
+    g_print ("shmdata new caps: %s",gst_caps_to_string (reader->caps_));
   }
 
   void 
@@ -168,6 +179,7 @@ namespace switcher
       // 		      GST_IS_ELEMENT(GST_ELEMENT_PARENT (reader->sink_element_)));
       gst_element_sync_state_with_parent (reader->sink_element_);
       gst_element_sync_state_with_parent (reader->bin_);
+
       shmdata_base_reader_set_sink (context, reader->sink_element_);
   }
 

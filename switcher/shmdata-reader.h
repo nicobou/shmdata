@@ -49,6 +49,7 @@ namespace switcher
   private:
     on_first_data_hook connection_hook_;
     void *hook_user_data_;
+    GstCaps *caps_;
     std::string path_;
     shmdata_base_reader_t *reader_;
     GstElement *bin_;
@@ -57,6 +58,7 @@ namespace switcher
     static void on_first_data (shmdata_base_reader_t *context, void *user_data);
     static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
     static void unlink_pad (GstPad * pad);
+    static void on_have_type (shmdata_base_reader_t *base_reader, GstCaps *caps, void *user_data);
   };
   
 }  // end of namespace
