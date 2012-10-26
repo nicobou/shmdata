@@ -46,19 +46,22 @@ namespace switcher
     bool add_udp_dest (std::string shmdata_socket_path, std::string host, std::string port);
     bool remove_udp_dest (std::string shmdata_socket_path, std::string host, std::string port);
 
+    //sdp
+    static void print_sdp_description ();
+
     //wrapper for registering the data_stream functions
     static gboolean add_data_stream_wrapped (gpointer shmdata_socket_path, 
 					     gpointer user_data);
     static gboolean remove_data_stream_wrapped (gpointer shmdata_socket_path, 
 						gpointer user_data);
     static gboolean add_udp_dest_wrapped (gpointer shmdata_name, 
-						  gpointer host, 
-						  gpointer port, 
-						  gpointer user_data);
+					  gpointer host, 
+					  gpointer port, 
+					  gpointer user_data);
     static gboolean remove_udp_dest_wrapped (gpointer shmdata_socket_path, 
-						     gpointer host, 
-						     gpointer port,
-						     gpointer user_data);
+					     gpointer host, 
+					     gpointer port,
+					     gpointer user_data);
     
 
     //will be call by shmdata reader
@@ -86,10 +89,6 @@ namespace switcher
 					    gpointer user_data);
     static gboolean sink_factory_filter (GstPluginFeature * feature, gpointer data);
     static gint sink_compare_ranks (GstPluginFeature *f1, GstPluginFeature *f2);
-
-    //sdp
-    GstSDPMessage *sdp_description_;
-    void make_sdp_init ();
 
     //quiddity
     static QuiddityDocumentation doc_;
