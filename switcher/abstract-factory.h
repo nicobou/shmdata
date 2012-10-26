@@ -26,6 +26,7 @@
 
 
 #include <vector>
+#include <map>
 #include "switcher/creator.h"
 
 namespace switcher 
