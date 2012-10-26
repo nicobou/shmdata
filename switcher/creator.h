@@ -24,9 +24,7 @@
 #ifndef __SWITCHER_CREATOR_H__
 #define __SWITCHER_CREATOR_H__
 
-
 #include <vector>
-#include "switcher/string-map.h"
 
 namespace switcher 
 {
