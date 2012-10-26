@@ -20,16 +20,20 @@ struct shmdata_base_reader_
   GstElement *bin_;
   GstElement *source_;
   GstElement *deserializer_;
+  GstElement *typefind_;
   GstElement *sink_;
-  GstPad *sinkPad_;
-  GstPad *deserialPad_;
+  GstPad *sink_pad_;
+  GstPad *src_pad_;
+  GstCaps *caps_;
   //monitoring the shm file
   GFile *shmfile_;
   GFileMonitor *dirMonitor_;
-  const char *socketName_;
+  char *socketName_;
   //user callback
   void (*on_first_data_) (shmdata_base_reader_t *, void *);
   void *on_first_data_userData_;
+  void (*on_have_type_) (shmdata_base_reader_t *, GstCaps*, void *);
+  void *on_have_type_userData_;
   //sync_handler
   gboolean install_sync_handler_;
   //state
@@ -42,13 +46,21 @@ gboolean
 shmdata_base_reader_clean_source (gpointer user_data)
 {
   shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
-  //gst_object_unref (context->sinkPad_);
+  //gst_object_unref (context->sink_pad_);
+
+  if (GST_IS_ELEMENT (context->typefind_))   
+     gst_element_set_state (context->typefind_, GST_STATE_NULL);   
 
    if (GST_IS_ELEMENT (context->deserializer_)) 
      gst_element_set_state (context->deserializer_, GST_STATE_NULL); 
   
   if (GST_IS_ELEMENT (context->source_))   
      gst_element_set_state (context->source_, GST_STATE_NULL);   
+
+  if (GST_IS_BIN (context->bin_) 
+      && GST_IS_ELEMENT (context->typefind_)
+      && GST_ELEMENT_PARENT (context->typefind_) == context->bin_)
+    gst_bin_remove (GST_BIN (context->bin_), context->typefind_);
 
   if (GST_IS_BIN (context->bin_) 
       && GST_IS_ELEMENT (context->deserializer_)
@@ -63,16 +75,42 @@ shmdata_base_reader_clean_source (gpointer user_data)
   return FALSE;
 }
 
+void
+shmdata_base_reader_on_type_found (GstElement* typefind, 
+				   guint probability, 
+				   GstCaps *caps, 
+				   gpointer user_data)
+{
+  shmdata_base_reader_t * reader = (shmdata_base_reader_t *) user_data; 
+  reader->caps_ = caps;
+  if (reader->on_have_type_ != NULL)
+    reader->on_have_type_ (reader,
+			   reader->caps_,
+			   reader->on_have_type_userData_);
+  g_debug ("new caps for base reader: %s",gst_caps_to_string (reader->caps_));
+}
+
+GstCaps *
+shmdata_base_reader_get_caps (shmdata_base_reader_t *reader)
+{
+  return reader->caps_;
+}
+
 gboolean
-shmdata_base_reader_attach (shmdata_base_reader_t * reader)
+shmdata_base_reader_attach (shmdata_base_reader_t *reader)
 {
   reader->attached_ = TRUE;
   reader->source_ = gst_element_factory_make ("shmsrc", NULL);
   reader->deserializer_ = gst_element_factory_make ("gdpdepay", NULL);
+  reader->typefind_ = gst_element_factory_make ("typefind", NULL);
+  g_signal_connect (reader->typefind_, "have-type", G_CALLBACK (shmdata_base_reader_on_type_found), reader);
+
   if (!reader->source_)
     g_critical ("shmsrc element could not be created. \n");
   if (!reader->deserializer_)
     g_critical ("gdpdepay element could not be created. \n");
+  if (!reader->typefind_)
+    g_critical ("typefind element could not be created. \n");
 
   g_object_set_data (G_OBJECT (reader->source_), 
 		     "shmdata_base_reader",
@@ -86,18 +124,22 @@ shmdata_base_reader_attach (shmdata_base_reader_t * reader)
 		reader->socketName_, NULL);
 
   gst_bin_add_many (GST_BIN (reader->bin_),
-		    reader->source_, reader->deserializer_, NULL);
+		    reader->source_, reader->deserializer_, reader->typefind_, NULL);
 
-  reader->deserialPad_ = gst_element_get_static_pad (reader->deserializer_,
+  reader->src_pad_ = gst_element_get_static_pad (reader->typefind_,
 						     "src");
-  reader->sinkPad_ = gst_element_get_compatible_pad (reader->sink_,
-						     reader->deserialPad_,
+  reader->sink_pad_ = gst_element_get_compatible_pad (reader->sink_,
+						     reader->src_pad_,
 						     GST_PAD_CAPS
-						     (reader->deserialPad_));
+						     (reader->src_pad_));
 
-  gst_element_link (reader->source_, reader->deserializer_);
-  gst_pad_link (reader->deserialPad_, reader->sinkPad_);
+  gst_element_link_many (reader->source_, 
+			 reader->deserializer_,
+			 reader->typefind_,
+			 NULL);
+  gst_pad_link (reader->src_pad_, reader->sink_pad_);
 
+  gst_element_set_state (reader->typefind_,GST_STATE_TARGET(reader->bin_));
   gst_element_set_state (reader->deserializer_,GST_STATE_TARGET(reader->bin_));
   gst_element_set_state (reader->source_,GST_STATE_TARGET(reader->bin_));
 
@@ -105,9 +147,9 @@ shmdata_base_reader_attach (shmdata_base_reader_t * reader)
 }
 
 void
-shmdata_base_reader_file_system_monitor_change (GFileMonitor * monitor,
-						GFile * file,
-						GFile * other_file,
+shmdata_base_reader_file_system_monitor_change (GFileMonitor *monitor,
+						GFile *file,
+						GFile *other_file,
 						GFileMonitorEvent type,
 						gpointer user_data)
 {
@@ -251,13 +293,16 @@ shmdata_base_reader_new ()
   reader->initialized_ = FALSE;
   reader->on_first_data_ = NULL;
   reader->on_first_data_userData_ = NULL;
+  reader->on_have_type_ = NULL;
+  reader->on_have_type_userData_ = NULL;
   reader->bin_ = NULL;
   reader->install_sync_handler_ = TRUE;
   reader->attached_ = FALSE;
   return reader;
 }
 
-void *
+
+void 
 shmdata_base_reader_set_callback (shmdata_base_reader_t *reader,
 				  shmdata_base_reader_on_first_data cb,
 				  void *user_data)
@@ -266,7 +311,15 @@ shmdata_base_reader_set_callback (shmdata_base_reader_t *reader,
   reader->on_first_data_userData_ = user_data;
 }
 
-void *
+void 
+shmdata_base_reader_set_on_have_type_callback (shmdata_base_reader_t *reader,
+					       shmdata_base_reader_on_have_type cb,
+					       void *user_data)
+{
+  reader->on_have_type_ = cb;
+  reader->on_have_type_userData_ = user_data;
+}
+void 
 shmdata_base_reader_install_sync_handler (shmdata_base_reader_t *reader,
 					  gboolean install)
 {

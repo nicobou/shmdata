@@ -50,7 +50,18 @@ extern "C"
    *  \param reader is the reader 
    *  \param user_data is a pointer to the user data 
    */
-  typedef void (*shmdata_base_reader_on_first_data)(shmdata_base_reader_t *reader, void *user_data);
+  typedef void (*shmdata_base_reader_on_first_data)(shmdata_base_reader_t *reader, 
+						    void *user_data);
+
+  /*! \fn void (*on_have_type)(shmdata_base_reader_t *reader, GstCaps *caps, void *userdata);
+   *  \brief Callback triggered when a type for data passing through the reader has been found.  
+   *  \param reader is the reader 
+   *  \param caps is the caps of the data stream
+   *  \param user_data is a pointer to the user data 
+   */
+  typedef void (*shmdata_base_reader_on_have_type)(shmdata_base_reader_t *reader, 
+						   GstCaps *caps, 
+						   void *user_data);
 
   /** 
    * \deprecated use shmdata_base_reader_new instead
@@ -90,14 +101,28 @@ extern "C"
    * the function shmdata_base_reader_set_sink will have no effect on the reader 
    * 
    * 
-   * @param on_first_data is the function pointer that will be called when 
+   * @param cb is the function that will be called when 
    * the connecting with the writer. 
-   * @param user_data is the user data pointer for the on_first_video_data
-   * callback
+   * @param user_data is the user data for the callback
    * 
    */
-  void *shmdata_base_reader_set_callback (shmdata_base_reader_t * reader, shmdata_base_reader_on_first_data cb,
-					  void *user_data);
+  void shmdata_base_reader_set_callback (shmdata_base_reader_t * reader, 
+					 shmdata_base_reader_on_first_data cb,
+					 void *user_data);
+
+  /** 
+   * Set the user callback for being informed of the type found when data is starting 
+   * to go through the reader.
+   * 
+   * 
+   * @param cb is the function that will be called when 
+   * the type has been found. 
+   * @param user_data is the user data for the callback
+   * 
+   */
+  void shmdata_base_reader_set_on_have_type_callback (shmdata_base_reader_t *reader,
+						      shmdata_base_reader_on_have_type cb,
+						      void *user_data);
   
   /** 
    * Configuration function that enable the choice of managing the gst_bus sync_handler by he library or
@@ -114,7 +139,7 @@ extern "C"
    * by the reader being processed. In this case, here is how to call error processing from 
    * your sync_handler:  
    @code
-   //write the async handler
+   //write the sync handler
     GstBusSyncReply my_handler (GstBus * bus,
                                 GstMessage * msg, gpointer user_data) {
       shmdata_base_reader_t *reader = (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), 
@@ -135,7 +160,7 @@ extern "C"
    
    @endcode
    */
-  void *shmdata_base_reader_install_sync_handler (shmdata_base_reader_t * reader, gboolean install);
+  void shmdata_base_reader_install_sync_handler (shmdata_base_reader_t * reader, gboolean install);
 
 
   /** 
@@ -172,8 +197,18 @@ extern "C"
 				     GstElement * sink);
 
 
+  /** 
+   * Get the caps of the data passing through the shmdata reader.
+   * 
+   * @param reader is the base reader 
+   *
+   * @return the detected capabilities in stream or NULL
+   */
+  
+  GstCaps *shmdata_base_reader_get_caps (shmdata_base_reader_t *reader);
+
   /**
-   * Function to call in the gst_bus async handler when it is installed by the application. 
+   * Function to call in the gst_bus sync handler when it is installed by the application. 
    * See shmdata_base_reader_install_sync_handler for more details. 
    */ 
 
