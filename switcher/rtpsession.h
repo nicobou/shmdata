@@ -21,12 +21,13 @@
 #ifndef __SWITCHER_RTPSESSION_H__
 #define __SWITCHER_RTPSESSION_H__
 
-#include "switcher/segment.h"
 #include <gst/gst.h>
 #include <gst/sdp/gstsdpmessage.h>
 #include <memory>
-#include <switcher/quiddity-manager.h>
-
+#include "switcher/segment.h"
+#include "switcher/quiddity-manager.h"
+#include "switcher/rtp-destination.h"
+ 
 namespace switcher
 {
 
@@ -43,7 +44,10 @@ namespace switcher
     bool remove_data_stream (std::string shmdata_socket_path);
     
     //remote dest
-    bool add_udp_dest (std::string shmdata_socket_path, std::string host, std::string port);
+    bool add_destination (std::string nick_name,std::string host_name);
+    bool remove_destination (std::string nick_name);
+    
+    bool add_udp_stream_to_dest (std::string shmdata_socket_path, std::string host, std::string port);
     bool remove_udp_dest (std::string shmdata_socket_path, std::string host, std::string port);
 
     //sdp
@@ -54,7 +58,12 @@ namespace switcher
 					     gpointer user_data);
     static gboolean remove_data_stream_wrapped (gpointer shmdata_socket_path, 
 						gpointer user_data);
-    static gboolean add_udp_dest_wrapped (gpointer shmdata_name, 
+    static gboolean add_destination_wrapped (gpointer nick_name,
+					     gpointer host_name,
+					     gpointer user_data);
+    static gboolean remove_destination_wrapped (gpointer nick_name, 
+     						gpointer user_data); 
+    static gboolean add_udp_stream_to_dest_wrapped (gpointer shmdata_name, 
 					  gpointer host, 
 					  gpointer port, 
 					  gpointer user_data);
@@ -82,6 +91,9 @@ namespace switcher
 
     StringMap<ShmdataWriter::ptr> internal_shmdata_writers_;
     StringMap<ShmdataReader::ptr> internal_shmdata_readers_;
+
+    //destinations
+    StringMap <RtpDestination::ptr> destinations_;
 
     static void make_data_stream_available (GstElement* typefind, 
 					    guint probability, 

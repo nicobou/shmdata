@@ -97,15 +97,39 @@ namespace switcher
 							  "shmdata socket path to remove from the session", 
 							  NULL));
     
-    //registering "add_udp_dest"
-    register_method("add_udp_dest",
-		    (void *)&add_udp_dest_wrapped, 
+    //registering add_dest
+    register_method("add_destination", 
+		    (void *)&add_destination_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
+		    (gpointer)this);
+    set_method_description ("add_destination", 
+			    "add a destination (two destinations can share the same host name)", 
+			    Method::make_arg_description ("nick_name", 
+							  "a destination name (user defined)",
+							  "host_name",
+							  "the host name of the destination",
+							  NULL));
+
+    //registering remove_dest
+    register_method("remove_destination", 
+		    (void *)&remove_destination_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    (gpointer)this);
+    set_method_description ("remove_destination", 
+			    "remove a destination", 
+			    Method::make_arg_description ("nick_name", 
+							  "the destination name",
+							  NULL));
+
+    //registering "add_udp_stream_to_dest"
+    register_method("add_udp_stream_to_dest",
+		    (void *)&add_udp_stream_to_dest_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,G_TYPE_STRING,NULL),
 		    (gpointer)this);
-    set_method_description ("add_udp_dest", 
+    set_method_description ("add_udp_stream_to_dest", 
 			    "stream RTP to a port with udp", 
 			    Method::make_arg_description ("socket", "local socket path of the shmdata",
-							  "host", "destination host",
+							  "dest", "name of the destination",
 							  "port", "destination port",
 							  NULL));
 
@@ -153,7 +177,10 @@ namespace switcher
       gst_sdp_message_add_attribute (sdp_description_, "type", "broadcast");
       gst_sdp_message_add_attribute (sdp_description_, "control", "*");
 
-      GstCaps *media_caps = gst_caps_from_string ("video/x-raw-yuv, format=(fourcc)YUY2, width=(int)320, height=(int)240, framerate=(fraction)30/1, color-matrix=(string)sdtv, chroma-site=(string)mpeg2");
+      //GstCaps *media_caps = gst_caps_from_string ("video/x-raw-yuv, format=(fourcc)YUY2, width=(int)320, height=(int)240, framerate=(fraction)30/1, color-matrix=(string)sdtv, chroma-site=(string)mpeg2");
+      //GstCaps *media_caps = gst_caps_from_string ("video/x-h264, width=(int)320, height=(int)240, framerate=(fraction)30/1, pixel-aspect-ratio=(fraction)1/1, codec_data=(buffer)014d4015ffe10017674d4015eca0a0fd8088000003000bb9aca00078b16cb001000468ebecb2, stream-format=(string)avc, alignment=(string)au, level=(string)2.1, profile=(string)main");
+
+      GstCaps *media_caps = gst_caps_from_string ("application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, ssrc=(uint)3978370044, payload=(int)96, clock-base=(uint)3851066683, seqnum-base=(uint)14240");
 
      // guint i, n_streams;
      // gchar *rangestr;
@@ -191,7 +218,7 @@ namespace switcher
      gst_sdp_media_add_format (smedia, tmp);
      g_free (tmp);
 
-     gst_sdp_media_set_port_info (smedia, 0, 1);
+     gst_sdp_media_set_port_info (smedia, 9000, 1);
      gst_sdp_media_set_proto (smedia, "RTP/AVP");
 
      /* for the c= line */
@@ -427,15 +454,75 @@ namespace switcher
     caller->add_element_to_remove (typefind);
   }
   
+
+
   gboolean
-  RtpSession::add_udp_dest_wrapped (gpointer shmdata_name, 
-					    gpointer host, 
-					    gpointer port, 
-					    gpointer user_data)
+  RtpSession::add_destination_wrapped (gpointer nick_name, 
+				       gpointer host_name,
+				       gpointer user_data)
   {
     RtpSession *context = static_cast<RtpSession*>(user_data);
        
-    if (context->add_udp_dest ((char *)shmdata_name,(char *)host,(char *)port))
+    if (context->add_destination ((char *)nick_name,(char *)host_name))
+      return TRUE;
+    else
+      return FALSE;
+  }
+  
+  bool 
+  RtpSession::add_destination (std::string nick_name,std::string host_name)
+  {
+    if (destinations_.contains (nick_name))
+      {
+	g_printerr ("RtpSession: a destination named %s already exists, cannot add",
+		    nick_name.c_str ());
+	return false;
+      }
+    RtpDestination::ptr dest;
+    dest.reset (new RtpDestination ());
+    dest->set_host_name (host_name);
+    destinations_.insert (nick_name, dest);
+    return true;
+  }
+
+  gboolean
+  RtpSession::remove_destination_wrapped (gpointer nick_name, 
+					  gpointer user_data)
+  {
+    RtpSession *context = static_cast<RtpSession*>(user_data);
+       
+    if (context->remove_destination ((char *)nick_name))
+      return TRUE;
+    else
+      return FALSE;
+  }
+  
+  bool 
+  RtpSession::remove_destination (std::string nick_name)
+  {
+    if (!destinations_.contains (nick_name))
+      {
+	g_printerr ("RtpSession: destination named %s does not exists, cannot remove",
+		    nick_name.c_str ());
+	return false;
+      }
+    //FIXME free streams
+    destinations_.remove (nick_name);
+    return true;
+  }
+
+
+
+
+  gboolean
+  RtpSession::add_udp_stream_to_dest_wrapped (gpointer shmdata_name, 
+					      gpointer nick_name, 
+					      gpointer port, 
+					      gpointer user_data)
+  {
+    RtpSession *context = static_cast<RtpSession*>(user_data);
+       
+    if (context->add_udp_stream_to_dest ((char *)shmdata_name,(char *)nick_name,(char *)port))
       return TRUE;
     else
       return FALSE;
@@ -443,14 +530,22 @@ namespace switcher
   
  
   bool
-  RtpSession::add_udp_dest (std::string shmdata_socket_path, std::string host, std::string port)
+  RtpSession::add_udp_stream_to_dest (std::string shmdata_socket_path, std::string nick_name, std::string port)
   {
+    g_print ("coucou\n");
     if (!internal_id_.contains (shmdata_socket_path))
       {
 	g_printerr ("RtpSession is not connected to %s\n",shmdata_socket_path.c_str ());
 	return false;
       }
     
+    g_print ("coucou\n");
+    if (!destinations_.contains (nick_name))
+      {
+	g_printerr ("RtpSession does not contain a destination named %s\n",nick_name.c_str ());
+	return false;
+      }
+
     gint rtp_port = atoi(port.c_str());
 
     if (rtp_port %2 !=0)
@@ -459,6 +554,9 @@ namespace switcher
 	return false;
       }
     std::string id = internal_id_.lookup (shmdata_socket_path);
+
+    g_print ("coucou2\n");
+
     
     if (!quiddity_managers_.contains (shmdata_socket_path))
       {
@@ -484,22 +582,34 @@ namespace switcher
 	manager->invoke ("udpsend_rtcp","connect",arg);
       }
 
-    QuiddityManager::ptr manager = quiddity_managers_.lookup (shmdata_socket_path);
+    g_print ("coucou3\n");
 
+    QuiddityManager::ptr manager = quiddity_managers_.lookup (shmdata_socket_path);
     
+    g_print ("coucou4\n");
+
     //rtp stream
+    RtpDestination::ptr dest = destinations_.lookup (nick_name);
+    
+    g_print ("coucou5\n");
+
+    //dest->add_stream (,port);
     std::vector <std::string> arg;
-    arg.push_back (host);
+    arg.push_back (dest->get_host_name ());
     arg.push_back (port);
     manager->invoke ("udpsend_rtp","add_client",arg);
     
+    g_print ("coucou6\n");
+        
     //rtcp stream
     arg.clear ();
-    arg.push_back (host);
+    arg.push_back (dest->get_host_name ());
     std::ostringstream rtcp_port;
     rtcp_port << rtp_port + 1;
     arg.push_back (rtcp_port.str());
     manager->invoke ("udpsend_rtcp","add_client",arg);
+
+    g_print ("coucou7\n");
 
     g_timeout_add (100, (GSourceFunc) RtpSession::print_sdp_description, NULL);
     //TODO connect to funnel for rtcp receiving
