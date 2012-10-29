@@ -27,13 +27,14 @@
 namespace switcher
 {
 
-  //should not be used because it is writing a name property
-  Property::Property (GObject *object, GParamSpec *pspec) :
-    property_ (pspec),
-    object_ (object)
+  void
+  Property::set_gobject_pspec (GObject *object, GParamSpec *pspec)
   {
+    property_ = pspec;
+    object_ = object;
     make_description ();
   }
+
   
   void 
   Property::set (std::string value)

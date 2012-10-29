@@ -74,7 +74,8 @@ namespace switcher
 	return false;
       }
 
-    Property::ptr prop (new Property (object, pspec));
+    Property::ptr prop (new Property ());
+    prop->set_gobject_pspec (object, pspec);
 
     std::string name ( prefix + "/" + object_property );
     if (properties_.find( name ) == properties_.end())

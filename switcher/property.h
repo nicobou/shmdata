@@ -33,12 +33,13 @@ namespace switcher
   {
   public:
     typedef std::tr1::shared_ptr<Property> ptr;
-
-    Property (GObject *object, GParamSpec *pspec);
-    void set(std::string value);
+    
+    //this is when using an existing property
+    void set_gobject_pspec (GObject *object, GParamSpec *pspec);
+    void set (std::string value);
     std::string get ();
     std::string get_description ();
-    void print();
+    void print ();
 
   private:
     GParamSpec *property_;
