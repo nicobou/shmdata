@@ -48,9 +48,7 @@ namespace switcher
     void *hook_user_data_;
     GstElement *sink_element_;
     ShmdataReader::ptr reader_;
-    
-
-    
+   
   };
 
 }  // end of namespace
