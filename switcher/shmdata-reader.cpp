@@ -183,4 +183,9 @@ namespace switcher
       shmdata_base_reader_set_sink (context, reader->sink_element_);
   }
 
+  GstCaps *
+  ShmdataReader::get_caps () 
+  {
+    return caps_; 
+  }
 }
