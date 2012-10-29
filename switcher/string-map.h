@@ -26,6 +26,8 @@
 
 #include <string>
 #include <map>
+#include <vector>
+#include <tr1/memory>
 
 namespace switcher
 {
