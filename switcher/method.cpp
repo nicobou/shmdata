@@ -193,7 +193,7 @@ namespace switcher
     char *arg_name;
     char *arg_desc;
     va_start(vl, first_arg_name);
-    if (first_arg_name !=NULL && (arg_desc = va_arg( vl, char *)))
+    if (first_arg_name != "none" && (arg_desc = va_arg( vl, char *)))
       {
 	std::pair<std::string,std::string> arg_pair;
 	arg_desc_pair.first = std::string (first_arg_name);
