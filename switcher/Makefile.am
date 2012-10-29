@@ -35,6 +35,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     h264.cpp \
     method.cpp \
     property.cpp \
+    rtp-destination.cpp \
     rtpsession.cpp \
     runtime.cpp \
     segment.cpp \
@@ -87,6 +88,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     hash-table_spec.h \
     method.h \
     property.h \
+    rtp-destination.h \
     rtpsession.h \
     runtime.h \
     segment.h \
