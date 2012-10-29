@@ -41,7 +41,7 @@ namespace switcher
     bool remove_client (gchar *host, gint port);
     bool add_client (gchar *host, gint port);
     bool clear_clients ();
-    
+
     //client management (wrapped for being invoked from the quiddity manager)
     static gboolean remove_client_wrapped (gpointer host, gint port, gpointer user_data);
     static gboolean add_client_wrapped (gpointer host, gint port, gpointer user_data);

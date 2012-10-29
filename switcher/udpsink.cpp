@@ -56,65 +56,43 @@ namespace switcher
     // 		      (GCallback)  on_client_removed, (gpointer) this);
     
      //registering add_client
-     std::vector<GType> add_client_arg_types;
-     add_client_arg_types.push_back (G_TYPE_STRING);
-     add_client_arg_types.push_back (G_TYPE_INT);
-     register_method("add_client",
+    register_method("add_client",
      		    (void *)&add_client_wrapped, 
-     		    add_client_arg_types,
+		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, NULL),
      		    (gpointer)this);
-     std::vector<std::pair<std::string,std::string> > add_client_arg_desc;
-     std::pair<std::string,std::string> add_client_host;
-     add_client_host.first = "host";
-     add_client_host.second = "the hostname/IP address of the client to add";
-     add_client_arg_desc.push_back (add_client_host); 
-     std::pair<std::string,std::string> add_client_port;
-     add_client_port.first = "port";
-     add_client_port.second = "the port of the client to add";
-     add_client_arg_desc.push_back (add_client_port); 
+    set_method_description ("add_client", 
+			    "add a client with destination host and port to the list of clients", 
+			    //add_client_arg_desc))
+			    Method::make_arg_description ("host", 
+							  "the hostname/IP address of the client to add",
+							  "port",
+							  "the port of the client to add",
+							  NULL));
     
-     if (!set_method_description ("add_client", 
-     				 "add a client with destination host and port to the list of clients", 
-     				 add_client_arg_desc))
-       g_printerr ("UDP sink: cannot set method description for \"add_client\"\n");
-
      //registering remove_client
-     std::vector<GType> remove_client_arg_types;
-     remove_client_arg_types.push_back (G_TYPE_STRING);
-     remove_client_arg_types.push_back (G_TYPE_INT);
      register_method("remove_client",
-     		    (void *)&remove_client_wrapped, 
-     		    remove_client_arg_types,
+		     (void *)&remove_client_wrapped, 
+		     Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, NULL),
      		    (gpointer)this);
-     std::vector<std::pair<std::string,std::string> > remove_client_arg_desc;
-     std::pair<std::string,std::string> remove_client_host;
-     remove_client_host.first = "host";
-     remove_client_host.second = "the hostname/IP address of the client to remove";
-     remove_client_arg_desc.push_back (remove_client_host); 
-     std::pair<std::string,std::string> remove_client_port;
-     remove_client_port.first = "port";
-     remove_client_port.second = "the port of the client to remove";
-     remove_client_arg_desc.push_back (remove_client_port); 
-    
-     if (!set_method_description ("remove_client", 
-     				 "remove a client with destination host and port to the list of clients", 
-     				 remove_client_arg_desc))
-       g_printerr ("UDP sink: cannot set method description for \"remove_client\"\n");
+      set_method_description ("remove_client", 
+			      "remove a client with destination host and port to the list of clients", 
+			      Method::make_arg_description ("host",
+							    "the hostname/IP address of the client to remove",
+							    "port",
+							    "the port of the client to remove",
+							    NULL));
+      
 
      //registering clear
-     std::vector<GType> clear_arg_types;
-     register_method("clear",
-     		    (void *)&clear_wrapped, 
-     		    clear_arg_types,
-     		    (gpointer)this);
-     std::vector<std::pair<std::string,std::string> > clear_arg_desc;
-     if (!set_method_description ("clear", 
-				  "remove a client with destination host and port to the list of clients", 
-				  clear_arg_desc))
-       g_printerr ("UDP sink: cannot set method description for \"clear\"\n");
+      register_method("clear",
+      		     (void *)&clear_wrapped, 
+      		     Method::make_arg_type_description (G_TYPE_NONE),
+      		     (gpointer)this);
+      set_method_description ("clear", 
+			      "remove a client with destination host and port to the list of clients", 
+			      Method::make_arg_description ("none",NULL));
      
-
-    set_sink_element (udpsink_);
+     set_sink_element (udpsink_);
   }
   
 
