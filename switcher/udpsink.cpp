@@ -37,6 +37,8 @@ namespace switcher
   void 
   UDPSink::make_udpsink ()
   {
+    udpsink_bin_ = gst_element_factory_make ("bin",NULL);
+    typefind_ =  gst_element_factory_make ("typefind",NULL);
     udpsink_ = gst_element_factory_make ("multiudpsink",NULL);
     
     //set the name before registering properties
@@ -49,7 +51,9 @@ namespace switcher
     register_property (G_OBJECT (udpsink_),"ttl","");
     register_property (G_OBJECT (udpsink_),"ttl-mc","");
     register_property (G_OBJECT (udpsink_),"loop","");
-    
+
+    register_property (G_OBJECT (typefind_), "caps","");
+
     // g_signal_connect (G_OBJECT (udpsink_), "client-added",  
     // 		      (GCallback)  on_client_added, (gpointer) this);
     // g_signal_connect (G_OBJECT (udpsink_), "client-removed",  
@@ -92,9 +96,38 @@ namespace switcher
 			      "remove a client with destination host and port to the list of clients", 
 			      Method::make_arg_description ("none",NULL));
      
-     set_sink_element (udpsink_);
+      
+      //registering sink element
+      set_sink_element (udpsink_bin_);
+      set_on_first_data_hook (UDPSink::add_elements_to_bin,this);
   }
   
+  void
+  UDPSink::add_elements_to_bin (ShmdataReader *caller, void *udpbin_instance)
+  {
+    
+    UDPSink *context= static_cast<UDPSink *>(udpbin_instance);
+    
+    caller->set_sink_element (context->udpsink_bin_);
+    gst_bin_add (GST_BIN (context->bin_), context->udpsink_bin_);
+    gst_element_sync_state_with_parent (context->bin_);
+    gst_element_sync_state_with_parent (context->udpsink_bin_);
+
+    gst_bin_add_many (GST_BIN (context->udpsink_bin_),
+		      context->typefind_,
+		      context->udpsink_,
+		      NULL);
+    gst_element_link (context->typefind_,
+     		      context->udpsink_);
+    gst_element_sync_state_with_parent (context->typefind_);
+    gst_element_sync_state_with_parent (context->udpsink_);
+    
+    GstPad *sink_pad = gst_element_get_static_pad (context->typefind_, "sink");
+    GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
+    gst_pad_set_active(ghost_sinkpad,TRUE);
+    gst_element_add_pad (context->udpsink_bin_, ghost_sinkpad); 
+    gst_object_unref (sink_pad);
+  }
 
   QuiddityDocumentation UDPSink::doc_ ("udp sink", "udpsink",
 				       "send data stream with udp");

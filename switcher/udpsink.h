@@ -50,10 +50,12 @@ namespace switcher
   private:
     static QuiddityDocumentation doc_;
     GstElement *udpsink_;
+    GstElement *udpsink_bin_;
+    GstElement *typefind_;
     void make_udpsink ();
     static void on_client_added (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data);
     static void on_client_removed (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data);
-
+    static void add_elements_to_bin (ShmdataReader *caller, void *udpbin_instance);
   };
 
 }  // end of namespace
