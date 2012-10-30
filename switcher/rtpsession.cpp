@@ -44,7 +44,7 @@ namespace switcher
     next_id_ = 79; //this value is arbitrary and can be changed
 
     rtpsession_ = gst_element_factory_make ("gstrtpbin",NULL);
-    
+
     g_signal_connect (G_OBJECT (rtpsession_), "on-bye-ssrc", 
 		      (GCallback) on_bye_ssrc, (gpointer) this);
     g_signal_connect (G_OBJECT (rtpsession_), "on_bye_timeout", 
@@ -144,13 +144,56 @@ namespace switcher
 							  "host", "destination host",
 							  "port", "destination port",
 							  NULL));
+
+    //registering "print_sdp"
+    register_method("print_sdp",
+		    (void *)&print_sdp_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING,NULL),
+		    (gpointer)this);
+    set_method_description ("print_sdp", 
+			    "print sdp for the given destination", 
+			    Method::make_arg_description ("nickname", 
+							  "the name of the destination",
+							  NULL));
    
 
     //set the name before registering properties
     set_name (gst_element_get_name (rtpsession_));
     
   }
+  
+  gboolean
+  RtpSession::print_sdp_wrapped (gpointer nick_name, 
+				 gpointer user_data)
+  {
+    RtpSession *context = static_cast<RtpSession*>(user_data);
+    
+    if (context->print_sdp ((char *)nick_name))
+      return TRUE;
+    else
+      return FALSE;
+  }
 
+
+  bool
+  RtpSession::print_sdp (std::string nick_name)
+  {
+    if (!destinations_.contains (nick_name))
+      {
+	g_printerr ("RtpSession: destination named %s does not exists, cannot print sdp",
+		    nick_name.c_str ());
+	return false;
+      }
+    std::string res = destinations_.lookup (nick_name)->get_sdp();
+      
+    g_print ("RtpSession::print_sdp For %s:\n%s\n",
+     	     nick_name.c_str (),
+     	     res.c_str ());
+    return true;
+  }
+
+
+  //FIXME remove this method
   void
   RtpSession::print_sdp_description ()
   {
@@ -532,14 +575,12 @@ namespace switcher
   bool
   RtpSession::add_udp_stream_to_dest (std::string shmdata_socket_path, std::string nick_name, std::string port)
   {
-    g_print ("coucou\n");
     if (!internal_id_.contains (shmdata_socket_path))
       {
 	g_printerr ("RtpSession is not connected to %s\n",shmdata_socket_path.c_str ());
 	return false;
       }
     
-    g_print ("coucou\n");
     if (!destinations_.contains (nick_name))
       {
 	g_printerr ("RtpSession does not contain a destination named %s\n",nick_name.c_str ());
@@ -555,9 +596,6 @@ namespace switcher
       }
     std::string id = internal_id_.lookup (shmdata_socket_path);
 
-    g_print ("coucou2\n");
-
-    
     if (!quiddity_managers_.contains (shmdata_socket_path))
       {
 	//creating an internal quiddity manager 
@@ -582,25 +620,17 @@ namespace switcher
 	manager->invoke ("udpsend_rtcp","connect",arg);
       }
 
-    g_print ("coucou3\n");
-
     QuiddityManager::ptr manager = quiddity_managers_.lookup (shmdata_socket_path);
     
-    g_print ("coucou4\n");
-
     //rtp stream
     RtpDestination::ptr dest = destinations_.lookup (nick_name);
     
-    g_print ("coucou5\n");
-
-    //dest->add_stream (,port);
+    dest->add_stream (shmdata_socket_path,manager,port);
     std::vector <std::string> arg;
     arg.push_back (dest->get_host_name ());
     arg.push_back (port);
     manager->invoke ("udpsend_rtp","add_client",arg);
     
-    g_print ("coucou6\n");
-        
     //rtcp stream
     arg.clear ();
     arg.push_back (dest->get_host_name ());
@@ -609,9 +639,7 @@ namespace switcher
     arg.push_back (rtcp_port.str());
     manager->invoke ("udpsend_rtcp","add_client",arg);
 
-    g_print ("coucou7\n");
-
-    g_timeout_add (100, (GSourceFunc) RtpSession::print_sdp_description, NULL);
+    //g_timeout_add (100, (GSourceFunc) RtpSession::print_sdp_description, NULL);
     //TODO connect to funnel for rtcp receiving
     return true;
   }

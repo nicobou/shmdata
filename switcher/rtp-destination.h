@@ -25,6 +25,7 @@
 #include <gst/gst.h>
 #include "switcher/string-map.h"
 #include "switcher/shmdata-reader.h"
+#include "switcher/quiddity-manager.h"
 
 namespace switcher
 {
@@ -35,14 +36,22 @@ namespace switcher
     void set_host_name (std::string host_name);
     std::string get_host_name ();
     //the reader of the rtp stream sent
-    bool add_stream (ShmdataReader::ptr rtp_shmdata_reader,std::string port);
+    bool add_stream (std::string orig_shmdata_path,
+		     QuiddityManager::ptr manager, 
+		     std::string port);
     bool remove_stream (std::string shmdata_stream_path);
     std::string get_sdp ();
-
+    
   private:
     std::string host_name_;
-    StringMap<ShmdataReader::ptr> ports_; //maps port with thr rtp shmdata reader
+    StringMap<QuiddityManager::ptr> ports_; //maps port with thr rtp shmdata reader
     StringMap<std::string> source_streams_; //maps shmdata source stream with port
+    static void sdp_write_media_from_caps (GstSDPMessage *sdp_description, 
+					   GstCaps *media_caps,
+					   gint dest_port,
+					   std::string server_host_name,
+					   std::string transport_proto,
+					   gint stream_number);
   };
 }  // end of namespace
 

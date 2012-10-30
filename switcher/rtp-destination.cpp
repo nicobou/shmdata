@@ -36,10 +36,12 @@ namespace switcher
   }
 
   bool 
-  RtpDestination::add_stream (ShmdataReader::ptr rtp_shmdata_reader, std::string port)
+  RtpDestination::add_stream (std::string orig_shmdata_path,
+			      QuiddityManager::ptr manager, 
+			      std::string port)
   {
-    ports_.insert (port,rtp_shmdata_reader);
-    source_streams_.insert (rtp_shmdata_reader->get_path (),port);
+    ports_.insert (port, manager);
+    source_streams_.insert (orig_shmdata_path, port);
     return true;
   }
 
@@ -80,40 +82,65 @@ namespace switcher
     gst_sdp_message_set_session_name (sdp_description, "switcher session");
     gst_sdp_message_set_information (sdp_description, "telepresence");
     gst_sdp_message_add_time (sdp_description, "0", "0", NULL);
-    gst_sdp_message_add_attribute (sdp_description, "tool", "switcher (based on GStreamer)");
+    gst_sdp_message_add_attribute (sdp_description, "tool", "switcher");
     gst_sdp_message_add_attribute (sdp_description, "type", "broadcast");
     gst_sdp_message_add_attribute (sdp_description, "control", "*");
 
-    //GstCaps *media_caps = gst_caps_from_string ("video/x-raw-yuv, format=(fourcc)YUY2, width=(int)320, height=(int)240, framerate=(fraction)30/1, color-matrix=(string)sdtv, chroma-site=(string)mpeg2");
-    //GstCaps *media_caps = gst_caps_from_string ("video/x-h264, width=(int)320, height=(int)240, framerate=(fraction)30/1, pixel-aspect-ratio=(fraction)1/1, codec_data=(buffer)014d4015ffe10017674d4015eca0a0fd8088000003000bb9aca00078b16cb001000468ebecb2, stream-format=(string)avc, alignment=(string)au, level=(string)2.1, profile=(string)main");
+ 
+    //    GstCaps *media_caps = gst_caps_from_string ("application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, ssrc=(uint)3978370044, payload=(int)96, clock-base=(uint)3851066683, seqnum-base=(uint)14240");
 
-    GstCaps *media_caps = gst_caps_from_string ("application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, ssrc=(uint)3978370044, payload=(int)96, clock-base=(uint)3851066683, seqnum-base=(uint)14240");
+    gint index = 0;
+    std::map<std::string, QuiddityManager::ptr> medias = ports_.get_map ();
+    std::map<std::string, QuiddityManager::ptr>::iterator iter;
+    for(iter = medias.begin () ; iter != medias.end(); ++iter)
+      {
+	// i->first is your key
+	// i->second is it''s value
+	std::string string_caps = (iter->second)->get_property ("udpsend_rtp","/caps");
+	GstCaps *caps = gst_caps_from_string (string_caps.c_str ());
+	if (caps != NULL)
+	  {
+	    gint port = atoi(iter->first.c_str());
 
-    // guint i, n_streams;
-    // gchar *rangestr;
-     
-    // if (media->status != GST_RTSP_MEDIA_STATUS_PREPARED)
-    //   goto not_prepared;
-     
-    // n_streams = gst_rtsp_media_n_streams (media);
-     
-    // rangestr = gst_rtsp_media_get_range_string (media, FALSE);
-    // gst_sdp_message_add_attribute (sdp, "range", rangestr);
-    // g_free (rangestr);
-     
-    // for (i = 0; i < n_streams; i++) {
-    GstSDPMedia *smedia;
-    GstStructure *s;
-    const gchar *caps_str, *caps_enc, *caps_params;
-    gchar *tmp;
-    gint caps_pt, caps_rate;
-    guint n_fields, j;
-    gboolean first;
-    GString *fmtp;
-     
+	    sdp_write_media_from_caps (sdp_description, 
+				       caps,
+				       port,
+				       "127.0.0.1",
+				       "udp",
+				       index);
+	    index ++;
+	  }
+      }
+
+    std::string res (gst_sdp_message_as_text (sdp_description));
+    gst_sdp_message_free (sdp_description);
+    
+    return res;
+  }
+
+
+void
+RtpDestination::sdp_write_media_from_caps (GstSDPMessage *sdp_description, 
+					   GstCaps *media_caps,
+					   gint dest_port,
+					   std::string server_host_name,
+					   std::string transport_proto,
+					   gint stream_number)
+{
+
+  //check if sdp "range" is useful/...
+  
+  GstSDPMedia *smedia;
+  GstStructure *s;
+  const gchar *caps_str, *caps_enc, *caps_params;
+  gchar *tmp;
+  gint caps_pt, caps_rate;
+  guint n_fields, j;
+  gboolean first;
+  GString *fmtp;
 
     s = gst_caps_get_structure (media_caps, 0);
-      
+     
     gst_sdp_media_new (&smedia);
       
     /* get media type and payload for the m= line */
@@ -125,12 +152,12 @@ namespace switcher
     gst_sdp_media_add_format (smedia, tmp);
     g_free (tmp);
 
-    gst_sdp_media_set_port_info (smedia, 9000, 1);
+    gst_sdp_media_set_port_info (smedia, dest_port, 1);
     gst_sdp_media_set_proto (smedia, "RTP/AVP");
 
     /* for the c= line */
-    gst_sdp_media_add_connection (smedia, "IN", "udp",
-				  "127.0.0.1", //server ip 
+    gst_sdp_media_add_connection (smedia, "IN", transport_proto.c_str (),
+				  server_host_name.c_str (),
 				  16, 0);
 
     /* get clock-rate, media type and params for the rtpmap attribute */
@@ -150,7 +177,7 @@ namespace switcher
     }
 
     /* the config uri */
-    tmp = g_strdup_printf ("stream=%d", 0);
+    tmp = g_strdup_printf ("stream=%d", stream_number);
     gst_sdp_media_add_attribute (smedia, "control", tmp);
     g_free (tmp);
 
@@ -163,7 +190,7 @@ namespace switcher
       const gchar *fname, *fval;
 
       fname = gst_structure_nth_field_name (s, j);
-
+      
       /* filter out standard properties */
       if (g_strcmp0 (fname, "media") == 0)
 	continue;
@@ -196,11 +223,8 @@ namespace switcher
     }
     gst_sdp_message_add_media (sdp_description, smedia);
     gst_sdp_media_free (smedia);
-     
-    g_print ("--- SDP: \n%s\n",gst_sdp_message_as_text (sdp_description));
-    gst_sdp_message_free (sdp_description);
 
-    return gst_sdp_message_as_text (sdp_description);
-  }
+}
+
 
 }

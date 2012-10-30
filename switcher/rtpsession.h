@@ -43,12 +43,13 @@ namespace switcher
     bool add_data_stream (std::string shmdata_socket_path);
     bool remove_data_stream (std::string shmdata_socket_path);
     
-    //remote dest
+    //remote dest (using user defined "nick_name")
     bool add_destination (std::string nick_name,std::string host_name);
     bool remove_destination (std::string nick_name);
     
     bool add_udp_stream_to_dest (std::string shmdata_socket_path, std::string host, std::string port);
     bool remove_udp_dest (std::string shmdata_socket_path, std::string host, std::string port);
+    bool print_sdp (std::string nick_name);
 
     //sdp
     static void print_sdp_description ();
@@ -71,7 +72,8 @@ namespace switcher
 					     gpointer host, 
 					     gpointer port,
 					     gpointer user_data);
-    
+    static gboolean print_sdp_wrapped (gpointer nick_name,
+				       gpointer user_data);
 
     //will be call by shmdata reader
     static void attach_data_stream(ShmdataReader *caller, void *rtpsession_instance); 
