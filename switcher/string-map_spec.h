@@ -107,5 +107,12 @@ namespace switcher
       
       return values; 
      } 
+
+  template <typename T> 
+    typename std::map<std::string, T>  
+    StringMap<T>::get_map () 
+    { 
+      return map_; 
+     } 
     
 }

@@ -37,7 +37,7 @@ namespace switcher
     {
     public:
       typedef std::tr1::shared_ptr< StringMap<T> > ptr;
-      
+
       bool insert (const std::string key, T value);
       bool remove (const std::string key);
       bool contains (const std::string key);
@@ -45,7 +45,8 @@ namespace switcher
       T lookup (const std::string key);
       std::vector<std::string> get_keys ();
       std::vector<T> get_values ();
-      
+      std::map<std::string, T> get_map ();
+
     private:
       std::map<std::string, T> map_;
     };
