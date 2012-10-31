@@ -53,6 +53,7 @@ namespace switcher
     controlService *service_; 
     GThread *thread_;
     static gpointer server_thread (gpointer user_data);
+    static int http_get (struct soap *soap);
   };
 
 }  // end of namespace

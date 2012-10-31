@@ -46,7 +46,9 @@ namespace switcher
     //release port
     soap_.connect_flags = SO_LINGER; 
     soap_.accept_flags = SO_LINGER;
-
+    
+    soap_.fget = CtrlServer::http_get;
+    
     //TODO find a better name for CtrlServer
     srand(time(0));
     set_name (g_strdup_printf ("ctrlserver%d",rand() % 1024));
@@ -59,6 +61,61 @@ namespace switcher
     stop ();
   }
   
+ int 
+ CtrlServer::http_get (struct soap *soap)
+ {
+   g_print ("hehe%s\n",soap->path);
+
+   char *rtpsession = NULL;
+   char *destination = NULL;
+
+   QuiddityManager *manager = (QuiddityManager *) soap->user;
+   
+   
+   if (rtpsession != NULL && destination !=NULL)
+     {
+       std::vector<std::string> arg;
+       arg.push_back (destination);
+       manager->invoke (rtpsession,"print_sdp",arg);
+     }
+   
+   std::vector<std::string> arg;
+   arg.push_back ("truc1");
+   manager->invoke ("rtp","print_sdp",arg);
+     
+   soap_response(soap, SOAP_HTML); // HTTP response header with text/html
+   soap_send(soap, "<HTML>My Web server is operational.</HTML>");
+   soap_end_send(soap); 
+   return SOAP_OK;
+      
+// FILE *fd;
+//   size_t r;
+//   fd = fopen(name, "rb"); /* open file to copy */
+//   if (!fd)
+//     return 404; /* return HTTP not found */
+//   soap->http_content = type;
+//   if (soap_response(soap, SOAP_FILE)) /* OK HTTP response header */
+//   { soap_end_send(soap);
+//     fclose(fd);
+//     return soap->error;
+//   }
+//   for (;;)
+//   { r = fread(soap->tmpbuf, 1, sizeof(soap->tmpbuf), fd);
+//     if (!r)
+//       break;
+//     if (soap_send_raw(soap, soap->tmpbuf, r))
+//     { soap_end_send(soap);
+//       fclose(fd);
+//       return soap->error;
+//     }
+//   }
+//   fclose(fd);
+//   return soap_end_send(soap);
+
+
+ }
+
+
   QuiddityDocumentation 
   CtrlServer::get_documentation ()
   {
