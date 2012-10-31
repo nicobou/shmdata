@@ -1,6 +1,7 @@
 SUBDIRS= \
     switcher \
-    src
+    src \
+    tests
 
 EXTRA_DIST=autogen.sh
 

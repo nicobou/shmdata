@@ -120,6 +120,7 @@ doxyfile
 src/Makefile
 switcher-${LIBSWITCHER_API_VERSION}.pc:switcher.pc.in
 switcher/Makefile
+tests/Makefile
 ])
 AC_OUTPUT
 
