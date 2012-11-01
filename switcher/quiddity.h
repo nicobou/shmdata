@@ -94,7 +94,7 @@ namespace switcher
 				 std::string short_description,
 				 Method::args_doc arg_description);
     //use a consistent naming for shmdatas FIXME move that to segment
-    std::string make_shmdata_writer_name (std::string suffix);
+    std::string make_file_name (std::string suffix);
 
     //used in order to dynamically create other quiddity, weak_ptr is used in order to 
     //avoid circular references to the life manager 

@@ -20,6 +20,7 @@
 #include "switcher/rtpsession.h"
 #include <sstream>
 #include <gst/sdp/gstsdpmessage.h>
+#include <glib/gstdio.h> //writing sdp file
 
 namespace switcher
 {
@@ -185,10 +186,13 @@ namespace switcher
 	return false;
       }
     std::string res = destinations_.lookup (nick_name)->get_sdp();
-      
-    g_print ("RtpSession::print_sdp For %s:\n%s\n",
-     	     nick_name.c_str (),
-     	     res.c_str ());
+    
+    //FIXME remove files in destructor
+    // g_print ("RtpSession::print_sdp For %s:\n%s\n",
+    //  	     nick_name.c_str (),
+    //  	     res.c_str ());
+    
+    
     return true;
   }
 
@@ -440,7 +444,7 @@ namespace switcher
       g_printerr ("RtpSession: rtp_src_pad is not a pad\n"); 
     ShmdataWriter::ptr rtp_writer;
     rtp_writer.reset (new ShmdataWriter ());
-    std::string rtp_writer_name = context->make_shmdata_writer_name ("send_rtp_src_"+internal_session_id); 
+    std::string rtp_writer_name = context->make_file_name ("send_rtp_src_"+internal_session_id); 
     rtp_writer->set_path (rtp_writer_name.c_str ());
     rtp_writer->plug (context->bin_, rtp_src_pad);
     context->internal_shmdata_writers_.insert (rtp_writer_name, rtp_writer);
@@ -452,7 +456,7 @@ namespace switcher
     GstPad *rtcp_src_pad = gst_element_get_request_pad (context->rtpsession_, rtcp_src_pad_name);
     ShmdataWriter::ptr rtcp_writer;
     rtcp_writer.reset (new ShmdataWriter ());
-    std::string rtcp_writer_name = context->make_shmdata_writer_name ("send_rtcp_src_"+internal_session_id); 
+    std::string rtcp_writer_name = context->make_file_name ("send_rtcp_src_"+internal_session_id); 
     rtcp_writer->set_path (rtcp_writer_name.c_str());
     rtcp_writer->plug (context->bin_, rtcp_src_pad);
     context->internal_shmdata_writers_.insert (rtcp_writer_name, rtcp_writer);
@@ -612,11 +616,11 @@ namespace switcher
 	manager->invoke ("udpsend_rtcp","set_runtime",arg);
 	
 	arg.clear ();
-	arg.push_back (make_shmdata_writer_name ("send_rtp_src_"+id));
+	arg.push_back (make_file_name ("send_rtp_src_"+id));
 	manager->invoke ("udpsend_rtp","connect",arg);
 
 	arg.clear ();
-	arg.push_back (make_shmdata_writer_name ("send_rtcp_src_"+id));
+	arg.push_back (make_file_name ("send_rtcp_src_"+id));
 	manager->invoke ("udpsend_rtcp","connect",arg);
       }
 
@@ -746,10 +750,10 @@ namespace switcher
     std::string id = internal_id_.lookup (shmdata_socket_path);
     internal_id_.remove (shmdata_socket_path);
     
-    internal_shmdata_writers_.remove (make_shmdata_writer_name ("send_rtp_src_"+id));
-    internal_shmdata_writers_.remove (make_shmdata_writer_name ("send_rtcp_src_"+id));
+    internal_shmdata_writers_.remove (make_file_name ("send_rtp_src_"+id));
+    internal_shmdata_writers_.remove (make_file_name ("send_rtcp_src_"+id));
     shmdata_readers_.remove (shmdata_socket_path);
-    internal_shmdata_readers_.remove (make_shmdata_writer_name ("recv_rtcp_sink_"+id));
+    internal_shmdata_readers_.remove (make_file_name ("recv_rtcp_sink_"+id));
     
     if(quiddity_managers_.contains (shmdata_socket_path))
       {

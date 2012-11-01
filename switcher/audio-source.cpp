@@ -64,7 +64,7 @@ namespace switcher
     //creating a connector for raw audio
     ShmdataWriter::ptr rawaudio_connector;
     rawaudio_connector.reset (new ShmdataWriter ());
-    std::string rawconnector_name = make_shmdata_writer_name ("rawaudio");
+    std::string rawconnector_name = make_file_name ("rawaudio");
     rawaudio_connector->set_path (rawconnector_name.c_str());
     rawaudio_connector->plug (bin_, audio_tee_, audiocaps);
     shmdata_writers_.insert (rawconnector_name, rawaudio_connector);
@@ -72,7 +72,7 @@ namespace switcher
     //creating a connector for transformed audio
     ShmdataWriter::ptr audio_connector;
     audio_connector.reset (new ShmdataWriter ());
-    std::string connector_name = make_shmdata_writer_name ("audio");
+    std::string connector_name = make_file_name ("audio");
     audio_connector->set_path (connector_name.c_str());
     audio_connector->plug (bin_, audio_tee_, audiocaps);
     shmdata_writers_.insert (connector_name, audio_connector);

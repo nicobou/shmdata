@@ -243,7 +243,7 @@ namespace switcher
 
 
   std::string
-  Quiddity::make_shmdata_writer_name (std::string suffix)
+  Quiddity::make_file_name (std::string suffix)
   {
     std::string connector_name;
     QuiddityLifeManager::ptr life_manager = life_manager_.lock ();

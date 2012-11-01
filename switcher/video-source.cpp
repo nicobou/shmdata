@@ -117,7 +117,7 @@ namespace switcher
     //creating a connector for the raw video
     ShmdataWriter::ptr rawvideo_connector;
     rawvideo_connector.reset (new ShmdataWriter ());
-    std::string rawconnector_name = make_shmdata_writer_name ("rawvideo"); 
+    std::string rawconnector_name = make_file_name ("rawvideo"); 
     rawvideo_connector->set_path (rawconnector_name.c_str());
     rawvideo_connector->plug (bin_, video_tee_, videocaps);
     shmdata_writers_.insert (rawconnector_name, rawvideo_connector);
@@ -125,7 +125,7 @@ namespace switcher
     //creating a connector for the transformed video
     ShmdataWriter::ptr video_connector;
     video_connector.reset (new ShmdataWriter ());
-    std::string connector_name = make_shmdata_writer_name ("video"); 
+    std::string connector_name = make_file_name ("video"); 
     video_connector->set_path (connector_name.c_str());
     video_connector->plug (bin_, colorspace_out_, videocaps);
     shmdata_writers_.insert (connector_name, video_connector);
