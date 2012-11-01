@@ -30,7 +30,7 @@
 #include "switcher/gconf-video-sink.h"
 #include "switcher/gconf-video-source.h"
 #include "switcher/h264.h"
-#include "switcher/rtpsession.h"
+#include "switcher/rtp-session.h"
 #include "switcher/runtime.h"
 #include "switcher/udpsink.h"
 #include "switcher/video-test-source.h"

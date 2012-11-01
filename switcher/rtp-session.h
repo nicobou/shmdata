@@ -44,15 +44,12 @@ namespace switcher
     bool remove_data_stream (std::string shmdata_socket_path);
     
     //remote dest (using user defined "nick_name")
-    bool add_destination (std::string nick_name,std::string host_name);
-    bool remove_destination (std::string nick_name);
+    bool add_destination (std::string dest_name,std::string host_name);
+    bool remove_destination (std::string dest_name);
     
     bool add_udp_stream_to_dest (std::string shmdata_socket_path, std::string host, std::string port);
     bool remove_udp_dest (std::string shmdata_socket_path, std::string host, std::string port);
-    bool print_sdp (std::string nick_name);
-
-    //sdp
-    static void print_sdp_description ();
+    bool print_sdp (std::string dest_name);
 
     //wrapper for registering the data_stream functions
     static gboolean add_data_stream_wrapped (gpointer shmdata_socket_path, 

@@ -36,7 +36,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     method.cpp \
     property.cpp \
     rtp-destination.cpp \
-    rtpsession.cpp \
+    rtp-session.cpp \
     runtime.cpp \
     segment.cpp \
     shmdata-reader.cpp \
@@ -89,7 +89,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     method.h \
     property.h \
     rtp-destination.h \
-    rtpsession.h \
+    rtp-session.h \
     runtime.h \
     segment.h \
     shmdata-reader.h \
