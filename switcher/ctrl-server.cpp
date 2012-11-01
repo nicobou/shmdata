@@ -64,29 +64,68 @@ namespace switcher
  int 
  CtrlServer::http_get (struct soap *soap)
  {
-   g_print ("hehe%s\n",soap->path);
+   g_print ("%s\n",soap->path);
 
-   char *rtpsession = NULL;
-   char *destination = NULL;
 
-   QuiddityManager *manager = (QuiddityManager *) soap->user;
-   
-   
-   if (rtpsession != NULL && destination !=NULL)
+   if (g_str_has_suffix (soap->path, ".sdp"))
      {
+       gchar** query = g_strsplit_set (soap->path + 1, ".",-1);
+       
+       QuiddityManager *manager = (QuiddityManager *) soap->user;       
+       std::string rtpsession_name;
+       rtpsession_name.append (query[0]);
+       std::string destination_name;
+       destination_name.append (query[1]);
+       
        std::vector<std::string> arg;
-       arg.push_back (destination);
-       manager->invoke (rtpsession,"print_sdp",arg);
+       arg.push_back (destination_name);
+       g_strfreev(query);
+       if (!manager->invoke (rtpsession_name,"write_sdp_file",arg))
+	 {
+	   soap_response(soap, SOAP_HTML); // HTTP response header with text/html
+	   soap_send(soap, "<HTML></HTML>");
+	   soap_end_send(soap); 
+	   return 404;
+	 }
+       
+       //sending file to client
+       std::string sdp_file = get_file_name_suffix ();
+       sdp_file.append(manager->get_name()+"_"+rtpsession_name+"_"+destination_name+".sdp");
+       gchar *sdp_contents;
+       gsize file_length;
+       g_file_get_contents (sdp_file.c_str (), 
+			    &sdp_contents, 
+			    &file_length, 
+			    NULL); //not getting errors
+       
+       soap->http_content = "application/x-sdp";
+       soap_send_raw(soap, sdp_contents, file_length);
+       g_free (sdp_contents);
+       return soap_end_send(soap);
      }
    
-   std::vector<std::string> arg;
-   arg.push_back ("truc1");
-   manager->invoke ("rtp","print_sdp",arg);
+
+   // char *rtpsession = NULL;
+   // char *destination = NULL;
+
+   // 
+   
+   
+   // if (rtpsession != NULL && destination !=NULL)
+   //   {
+   //     std::vector<std::string> arg;
+   //     arg.push_back (destination);
+   //     manager->invoke (rtpsession,"print_sdp",arg);
+   //   }
+   
+   // std::vector<std::string> arg;
+   // arg.push_back ("truc1");
+   // manager->invoke ("rtp","print_sdp",arg);
      
    soap_response(soap, SOAP_HTML); // HTTP response header with text/html
-   soap_send(soap, "<HTML>My Web server is operational.</HTML>");
+   soap_send(soap, "<HTML></HTML>");
    soap_end_send(soap); 
-   return SOAP_OK;
+   return 404;
       
 // FILE *fd;
 //   size_t r;

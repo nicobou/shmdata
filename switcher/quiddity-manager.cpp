@@ -49,6 +49,12 @@ namespace switcher
     g_print ("base quiddity manager destructed %s\n",name_.c_str ());
   }
 
+  std::string
+  QuiddityManager::get_name()
+  {
+    return name_;
+  }
+
   std::string 
   QuiddityManager::get_properties_description (std::string quiddity_name)
   {

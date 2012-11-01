@@ -49,7 +49,7 @@ namespace switcher
     
     bool add_udp_stream_to_dest (std::string shmdata_socket_path, std::string host, std::string port);
     bool remove_udp_dest (std::string shmdata_socket_path, std::string host, std::string port);
-    bool print_sdp (std::string dest_name);
+    bool write_sdp_file (std::string dest_name);
 
     //wrapper for registering the data_stream functions
     static gboolean add_data_stream_wrapped (gpointer shmdata_socket_path, 
@@ -69,7 +69,7 @@ namespace switcher
 					     gpointer host, 
 					     gpointer port,
 					     gpointer user_data);
-    static gboolean print_sdp_wrapped (gpointer nick_name,
+    static gboolean write_sdp_file_wrapped (gpointer nick_name,
 				       gpointer user_data);
 
     //will be call by shmdata reader

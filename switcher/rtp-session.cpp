@@ -146,12 +146,12 @@ namespace switcher
 							  "port", "destination port",
 							  NULL));
 
-    //registering "print_sdp"
-    register_method("print_sdp",
-		    (void *)&print_sdp_wrapped, 
+    //registering "write_sdp_file"
+    register_method("write_sdp_file",
+		    (void *)&write_sdp_file_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING,NULL),
 		    (gpointer)this);
-    set_method_description ("print_sdp", 
+    set_method_description ("write_sdp_file", 
 			    "print sdp for the given destination", 
 			    Method::make_arg_description ("nickname", 
 							  "the name of the destination",
@@ -164,12 +164,12 @@ namespace switcher
   }
   
   gboolean
-  RtpSession::print_sdp_wrapped (gpointer nick_name, 
+  RtpSession::write_sdp_file_wrapped (gpointer nick_name, 
 				 gpointer user_data)
   {
     RtpSession *context = static_cast<RtpSession*>(user_data);
     
-    if (context->print_sdp ((char *)nick_name))
+    if (context->write_sdp_file ((char *)nick_name))
       return TRUE;
     else
       return FALSE;
@@ -177,7 +177,7 @@ namespace switcher
 
 
   bool
-  RtpSession::print_sdp (std::string dest_name)
+  RtpSession::write_sdp_file (std::string dest_name)
   {
     if (!destinations_.contains (dest_name))
       {

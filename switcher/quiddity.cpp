@@ -250,9 +250,16 @@ namespace switcher
     if ( (bool)life_manager)
       connector_name.append ("/tmp/switcher_"+life_manager->get_name ()+"_"+nick_name_+"_"+suffix);
     else
-      connector_name.append ("/tmp/switcher_"+nick_name_+"_"+ suffix); 
+      connector_name.append ("/tmp/switcher__"+nick_name_+"_"+ suffix); 
 
     return connector_name;
   }
+
+  std::string
+  Quiddity::get_file_name_suffix ()
+  {
+    return "/tmp/switcher_";
+  }
+
 
 }
