@@ -26,8 +26,14 @@ struct shmdata_base_writer_
 };
 
 void
-shmdata_base_writer_close (shmdata_base_writer_t * writer)
+shmdata_base_writer_close (shmdata_base_writer_t *writer)
 {
+  if (writer == NULL)
+    {
+      g_printerr("trying to close a NULL writer");
+      return;
+    }
+
   if (GST_IS_ELEMENT (writer->qserial_))
       gst_element_set_state (writer->qserial_, GST_STATE_NULL);
   if (GST_IS_ELEMENT (writer->serializer_))
@@ -40,12 +46,9 @@ shmdata_base_writer_close (shmdata_base_writer_t * writer)
 			 writer->serializer_,
 			 writer->shmsink_,
 			 NULL);
-  else
-    g_message ("shmdata_base_writer_close:");
   if (writer->socket_path_ != NULL)
     g_free (writer->socket_path_);
-  if (writer != NULL)
-    g_free (writer);
+  g_free (writer);
 }
 
 void
