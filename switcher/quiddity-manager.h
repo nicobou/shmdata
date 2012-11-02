@@ -49,7 +49,7 @@
      std::vector<std::string> get_quiddities (); //know instances
      std::string create (std::string class_name); //returns the name
      std::string create (std::string class_name, 
-			 std::string nick_name); // "." chars are not allowed in nicknames
+			 std::string nick_name); // &?= chars are not allowed in nicknames
      bool remove (std::string quiddity_name);
 
      //properties

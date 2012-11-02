@@ -64,22 +64,36 @@ namespace switcher
  int 
  CtrlServer::http_get (struct soap *soap)
  {
-   g_print ("%s\n",soap->path);
-
-
-   if (g_str_has_suffix (soap->path, ".sdp"))
+   std::string rtpsession_name;
+   std::string destination_name;
+   
+   if (g_str_has_prefix (soap->path, "/sdp"))
      {
-       gchar** query = g_strsplit_set (soap->path + 1, ".",-1);
+       gchar **query = g_strsplit_set (soap->path, "?",-1);
+       gchar **query_vars = g_strsplit_set (query[1], "&",-1);
+       int i=0;
+       while (query_vars [i] != NULL)
+	 {
+	   gchar **var = g_strsplit_set (query_vars [i], "=",-1);
+	   if (g_strcmp0 (var[0],"rtpsession") == 0 && var[1] != NULL)
+	     {
+	       rtpsession_name.clear ();
+	       rtpsession_name.append (var[1]);
+	     }
+	   else if (g_strcmp0 (var[0],"destination") == 0 && var[1] != NULL)
+	     {
+	       destination_name.clear ();
+	       destination_name.append (var[1]);
+	     }	   
+	   g_strfreev(var);
+	   i++;
+	 }
+       g_strfreev(query_vars);
+       g_strfreev(query);
        
        QuiddityManager *manager = (QuiddityManager *) soap->user;       
-       std::string rtpsession_name;
-       rtpsession_name.append (query[0]);
-       std::string destination_name;
-       destination_name.append (query[1]);
-       
        std::vector<std::string> arg;
        arg.push_back (destination_name);
-       g_strfreev(query);
        if (!manager->invoke (rtpsession_name,"write_sdp_file",arg))
 	 {
 	   soap_response(soap, SOAP_HTML); // HTTP response header with text/html
