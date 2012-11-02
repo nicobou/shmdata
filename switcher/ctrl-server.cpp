@@ -97,7 +97,8 @@ namespace switcher
 			    &sdp_contents, 
 			    &file_length, 
 			    NULL); //not getting errors
-       
+
+       soap_response(soap, SOAP_FILE); 
        soap->http_content = "application/x-sdp";
        soap_send_raw(soap, sdp_contents, file_length);
        g_free (sdp_contents);
