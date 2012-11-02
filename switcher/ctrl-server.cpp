@@ -60,16 +60,21 @@ namespace switcher
   {
     stop ();
   }
-  
+
+
  int 
  CtrlServer::http_get (struct soap *soap)
  {
    std::string rtpsession_name;
    std::string destination_name;
-   
+      
    if (g_str_has_prefix (soap->path, "/sdp"))
      {
        gchar **query = g_strsplit_set (soap->path, "?",-1);
+       
+       if (query[1] == NULL)
+	 return 404;
+
        gchar **query_vars = g_strsplit_set (query[1], "&",-1);
        int i=0;
        while (query_vars [i] != NULL)
@@ -95,12 +100,7 @@ namespace switcher
        std::vector<std::string> arg;
        arg.push_back (destination_name);
        if (!manager->invoke (rtpsession_name,"write_sdp_file",arg))
-	 {
-	   soap_response(soap, SOAP_HTML); // HTTP response header with text/html
-	   soap_send(soap, "<HTML></HTML>");
-	   soap_end_send(soap); 
 	   return 404;
-	 }
        
        //sending file to client
        std::string sdp_file = get_file_name_suffix ();
@@ -118,55 +118,8 @@ namespace switcher
        g_free (sdp_contents);
        return soap_end_send(soap);
      }
-   
 
-   // char *rtpsession = NULL;
-   // char *destination = NULL;
-
-   // 
-   
-   
-   // if (rtpsession != NULL && destination !=NULL)
-   //   {
-   //     std::vector<std::string> arg;
-   //     arg.push_back (destination);
-   //     manager->invoke (rtpsession,"print_sdp",arg);
-   //   }
-   
-   // std::vector<std::string> arg;
-   // arg.push_back ("truc1");
-   // manager->invoke ("rtp","print_sdp",arg);
-     
-   soap_response(soap, SOAP_HTML); // HTTP response header with text/html
-   soap_send(soap, "<HTML></HTML>");
-   soap_end_send(soap); 
    return 404;
-      
-// FILE *fd;
-//   size_t r;
-//   fd = fopen(name, "rb"); /* open file to copy */
-//   if (!fd)
-//     return 404; /* return HTTP not found */
-//   soap->http_content = type;
-//   if (soap_response(soap, SOAP_FILE)) /* OK HTTP response header */
-//   { soap_end_send(soap);
-//     fclose(fd);
-//     return soap->error;
-//   }
-//   for (;;)
-//   { r = fread(soap->tmpbuf, 1, sizeof(soap->tmpbuf), fd);
-//     if (!r)
-//       break;
-//     if (soap_send_raw(soap, soap->tmpbuf, r))
-//     { soap_end_send(soap);
-//       fclose(fd);
-//       return soap->error;
-//     }
-//   }
-//   fclose(fd);
-//   return soap_end_send(soap);
-
-
  }
 
 
