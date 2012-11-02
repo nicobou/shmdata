@@ -24,7 +24,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     quiddity.cpp \
     base-sink.cpp \
     base-source.cpp \
-    controller.cpp \
     ctrl-server.cpp \
     gconf-audio-sink.cpp \
     gconf-audio-source.cpp \
@@ -35,6 +34,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     h264.cpp \
     method.cpp \
     property.cpp \
+    pulse-sink.cpp \
     rtp-destination.cpp \
     rtp-session.cpp \
     runtime.cpp \
@@ -73,7 +73,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     quiddity.h \
     base-sink.h \
     base-source.h \
-    controller.h \
     creator.h \
     ctrl-server.h \
     ctrl-webservice-definition.h \
@@ -88,6 +87,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     hash-table_spec.h \
     method.h \
     property.h \
+    pulse-sink.h \
     rtp-destination.h \
     rtp-session.h \
     runtime.h \

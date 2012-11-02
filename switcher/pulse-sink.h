@@ -17,9 +17,32 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/controller.h"
+
+#ifndef __SWITCHER_PULSESINK_H__
+#define __SWITCHER_PULSESINK_H__
+
+#include "switcher/audio-sink.h"
+#include <gst/gst.h>
+#include <memory>
 
 namespace switcher
 {
 
-}
+  class PulseSink : public AudioSink
+  {
+  public:
+    typedef std::tr1::shared_ptr<PulseSink> ptr;
+    PulseSink ();
+    PulseSink (QuiddityLifeManager::ptr life_manager);
+
+    static QuiddityDocumentation get_documentation ();
+
+  private:
+    static QuiddityDocumentation doc_;
+    GstElement *pulse_sink_;
+    void make_pulse_sink ();
+  };
+
+}  // end of namespace
+
+#endif // ifndef
