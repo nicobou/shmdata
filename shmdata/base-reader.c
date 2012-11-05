@@ -99,6 +99,9 @@ shmdata_base_reader_get_caps (shmdata_base_reader_t *reader)
 gboolean
 shmdata_base_reader_attach (shmdata_base_reader_t *reader)
 {
+  if (reader->attached_)
+    return FALSE;
+  
   reader->attached_ = TRUE;
   reader->source_ = gst_element_factory_make ("shmsrc", NULL);
   reader->deserializer_ = gst_element_factory_make ("gdpdepay", NULL);
@@ -206,7 +209,9 @@ shmdata_base_reader_detach (shmdata_base_reader_t * reader)
 gboolean
 shmdata_base_reader_recover_from_deserializer_error (shmdata_base_reader_t * reader)
 {
+  
   shmdata_base_reader_detach (reader);
+
   shmdata_base_reader_attach (reader);
   /* gst_object_unref (reader->deserializer_); */
   /* gst_object_unref (reader->bin_); */
@@ -269,10 +274,10 @@ shmdata_base_reader_message_handler (GstBus * bus,
 				     GstMessage * msg, gpointer user_data)
 {
     
-  if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS)
-    {
-      g_print ("message %s from %s\n",GST_MESSAGE_TYPE_NAME(msg),GST_MESSAGE_SRC_NAME(msg));
-    }
+  /* if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS) */
+  /*   { */
+  /*     g_print ("message %s from %s\n",GST_MESSAGE_TYPE_NAME(msg),GST_MESSAGE_SRC_NAME(msg)); */
+  /*   } */
 
   shmdata_base_reader_t *reader = (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), "shmdata_base_reader");
   if ( reader != NULL)
