@@ -194,7 +194,7 @@ shmdata_base_writer_on_client_connected (GstElement * shmsink,
 {
   shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
 
-  g_message ("new client connected (number %d)", num);
+  g_message ("new client connected (number %d, socket:%s)", num, context->socket_path_);
 
   GstPad *serializerSinkPad =
     gst_element_get_static_pad (context->serializer_, "sink");
