@@ -168,10 +168,11 @@ shmdata_base_writer_switch_to_new_serializer (GstPad * pad,
   gst_object_unref (sinkPadPeer);
 
 
-  gst_element_get_state (GST_ELEMENT_PARENT (context->serializer_), NULL, NULL, GST_CLOCK_TIME_NONE);
-  if (!gst_element_sync_state_with_parent (context->serializer_))
-    g_critical ("Error: issue changing newSerializer state");
+  if (!gst_element_set_state (context->serializer_,
+			      GST_STATE_TARGET(GST_ELEMENT_PARENT(context->serializer_))))
+      g_critical ("Error: issue changing newSerializer state");
   
+
   //unblocking data stream
   gst_pad_set_blocked_async (pad,
 			     FALSE,
