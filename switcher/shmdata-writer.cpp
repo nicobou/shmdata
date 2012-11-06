@@ -29,6 +29,8 @@ namespace switcher
 
   ShmdataWriter::~ShmdataWriter()
   {
+    g_print ("ShmdataWriter: deleting %s\n", path_.c_str());
+
     shmdata_base_writer_close (writer_);
 
     //cleaning tee_, queue_, fakesink_

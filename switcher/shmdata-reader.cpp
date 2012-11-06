@@ -33,6 +33,7 @@ namespace switcher
 
   ShmdataReader::~ShmdataReader()
   {
+      g_print ("ShmdataReader: deleting %s\n", path_.c_str());
       shmdata_base_reader_close (reader_);
       g_print ("ShmdataReader: %s deleted \n", path_.c_str());
   }
@@ -145,7 +146,7 @@ namespace switcher
   {
     ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
     reader->caps_ = caps;
-    g_print ("shmdata new caps: %s",gst_caps_to_string (reader->caps_));
+    g_print ("++ shmdata new caps: \n%s\n",gst_caps_to_string (reader->caps_));
   }
 
   void 
