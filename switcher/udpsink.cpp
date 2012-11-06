@@ -34,13 +34,45 @@ namespace switcher
     make_udpsink ();
   }
 
+  UDPSink::~UDPSink ()
+  {
+    //g_print ("removing udpsink %s (%s)\n", get_nick_name ().c_str (), GST_ELEMENT_NAME (udpsink_bin_));
+    
+    // GstBin *parent = GST_BIN( GST_ELEMENT_PARENT (udpsink_bin_));
+    // g_print ("num child in parent bin : %d", 
+    // 	     GST_BIN_NUMCHILDREN (parent));
+    
+    if (ghost_sinkpad_ != NULL)
+      {
+	if (gst_pad_is_linked (ghost_sinkpad_))
+	  {
+	    GstPad *peer_pad = gst_pad_get_peer (ghost_sinkpad_);
+	    gst_pad_unlink (peer_pad, ghost_sinkpad_);
+	    gst_object_unref (peer_pad);
+	  }
+	gst_pad_set_active(ghost_sinkpad_,FALSE);
+	gst_element_remove_pad (udpsink_bin_, ghost_sinkpad_);
+      }
+    gst_element_set_state (typefind_, GST_STATE_NULL);
+
+    gst_element_set_state (udpsink_, GST_STATE_NULL);
+    gst_bin_remove (GST_BIN (udpsink_bin_), typefind_);
+    gst_bin_remove (GST_BIN (udpsink_bin_), udpsink_);
+    gst_element_set_state (udpsink_bin_, GST_STATE_NULL);
+    if (GST_IS_BIN (GST_ELEMENT_PARENT (udpsink_bin_)))
+      gst_bin_remove (GST_BIN (GST_ELEMENT_PARENT (udpsink_bin_)), udpsink_bin_);
+   
+  }
+  
+
   void 
   UDPSink::make_udpsink ()
   {
     udpsink_bin_ = gst_element_factory_make ("bin",NULL);
     typefind_ =  gst_element_factory_make ("typefind",NULL);
     udpsink_ = gst_element_factory_make ("multiudpsink",NULL);
-    
+    ghost_sinkpad_ = NULL;
+
     //set the name before registering properties
     set_name (gst_element_get_name (udpsink_));
     g_object_set (G_OBJECT (udpsink_), "sync", FALSE, NULL);
@@ -123,9 +155,9 @@ namespace switcher
     gst_element_sync_state_with_parent (context->udpsink_);
     
     GstPad *sink_pad = gst_element_get_static_pad (context->typefind_, "sink");
-    GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
-    gst_pad_set_active(ghost_sinkpad,TRUE);
-    gst_element_add_pad (context->udpsink_bin_, ghost_sinkpad); 
+    context->ghost_sinkpad_ = gst_ghost_pad_new (NULL, sink_pad);
+    gst_pad_set_active(context->ghost_sinkpad_,TRUE);
+    gst_element_add_pad (context->udpsink_bin_, context->ghost_sinkpad_); 
     gst_object_unref (sink_pad);
   }
 
