@@ -69,6 +69,14 @@ namespace switcher
     }
 
   template <typename T>
+    void 
+    StringMap<T>::clear ()
+    {
+      map_.clear();
+      return;
+    }
+
+  template <typename T>
     T 
     StringMap<T>::lookup (const std::string key)
     {

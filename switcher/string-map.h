@@ -46,7 +46,8 @@ namespace switcher
       std::vector<std::string> get_keys ();
       std::vector<T> get_values ();
       std::map<std::string, T> get_map ();
-
+      void clear ();
+      
     private:
       std::map<std::string, T> map_;
     };
