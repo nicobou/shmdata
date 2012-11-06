@@ -39,6 +39,30 @@ namespace switcher
     make_rtpsession ();
   }
 
+  RtpSession::~RtpSession ()
+  {
+    g_print ("rtpsession deleting\n");
+
+    //removing sdp files
+    std::vector <std::string> destinations = destinations_.get_keys ();
+    std::vector <std::string>::iterator iter;
+    for (iter = destinations.begin (); iter != destinations.end (); iter++)
+      {
+	std::string sdp_file = make_file_name (*iter);
+	sdp_file.append(".sdp");
+	g_remove (sdp_file.c_str ());
+      }
+
+    //removing rtpsession
+    gst_element_set_state (rtpsession_, GST_STATE_NULL);
+    GstObject *parent = gst_element_get_parent (rtpsession_);
+    if (GST_IS_BIN (parent))
+      gst_bin_remove (GST_BIN (parent), rtpsession_);
+
+    g_print ("rtpsession deleted\n");
+
+  }
+
   void 
   RtpSession::make_rtpsession ()
   {
@@ -187,7 +211,6 @@ namespace switcher
       }
     std::string res = destinations_.lookup (dest_name)->get_sdp();
     
-    //FIXME remove files in destructor
     std::string sdp_file = make_file_name (dest_name);
     sdp_file.append(".sdp");
 
@@ -414,6 +437,8 @@ namespace switcher
 	return false;
       }
     //FIXME free streams
+
+    
     destinations_.remove (nick_name);
     return true;
   }
@@ -464,7 +489,7 @@ namespace switcher
       {
 	//creating an internal quiddity manager 
 	QuiddityManager::ptr manager;
-	manager.reset (new QuiddityManager(get_name()+"_"+id));
+	manager.reset (new QuiddityManager("manager_"+get_name()+"_"+id));
 	manager->create ("runtime","single_runtime");//only one runtime for all
 	quiddity_managers_.insert (shmdata_socket_path, manager);
 

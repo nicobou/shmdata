@@ -37,6 +37,7 @@ namespace switcher
     typedef std::tr1::shared_ptr<RtpSession> ptr;
     RtpSession ();
     RtpSession (QuiddityLifeManager::ptr life_manager);
+    ~RtpSession ();
     static QuiddityDocumentation get_documentation ();
 
     //local streams
