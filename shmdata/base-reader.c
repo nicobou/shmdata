@@ -49,19 +49,20 @@ shmdata_base_reader_clean_source (gpointer user_data)
   //gst_object_unref (context->sink_pad_);
 
   if (GST_IS_ELEMENT (context->typefind_))   
-     gst_element_set_state (context->typefind_, GST_STATE_NULL);   
-
-   if (GST_IS_ELEMENT (context->deserializer_)) 
-     gst_element_set_state (context->deserializer_, GST_STATE_NULL); 
+      gst_element_set_state (context->typefind_, GST_STATE_NULL);   
   
-  if (GST_IS_ELEMENT (context->source_))   
-     gst_element_set_state (context->source_, GST_STATE_NULL);   
+   if (GST_IS_ELEMENT (context->deserializer_)) 
+       gst_element_set_state (context->deserializer_, GST_STATE_NULL); 
 
+  if (GST_IS_ELEMENT (context->source_)) 
+    if (GST_STATE (context->source_) == GST_STATE_PLAYING)
+      gst_element_set_state (context->source_, GST_STATE_NULL);   
+  
   if (GST_IS_BIN (context->bin_) 
       && GST_IS_ELEMENT (context->typefind_)
       && GST_ELEMENT_PARENT (context->typefind_) == context->bin_)
     gst_bin_remove (GST_BIN (context->bin_), context->typefind_);
-
+  
   if (GST_IS_BIN (context->bin_) 
       && GST_IS_ELEMENT (context->deserializer_)
       && GST_ELEMENT_PARENT (context->deserializer_) == context->bin_)
@@ -70,7 +71,7 @@ shmdata_base_reader_clean_source (gpointer user_data)
   if (GST_IS_BIN (context->bin_) 
       && GST_IS_ELEMENT (context->source_)
       && GST_ELEMENT_PARENT (context->source_) == context->bin_)
-    gst_bin_remove (GST_BIN (context->bin_), context->source_);
+      gst_bin_remove (GST_BIN (context->bin_), context->source_);
 
   return FALSE;
 }
@@ -471,8 +472,7 @@ shmdata_base_reader_close (shmdata_base_reader_t * reader)
     {
       if (reader->socketName_ != NULL)
 	g_free (reader->socketName_);
-      if (reader->initialized_ && reader->attached_)
-	shmdata_base_reader_detach (reader);
+      shmdata_base_reader_detach (reader);
       if (reader->shmfile_ != NULL)
 	g_object_unref (reader->shmfile_);
       if (reader->dirMonitor_ != NULL)
