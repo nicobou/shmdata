@@ -43,13 +43,34 @@ namespace switcher
 
   Segment::~Segment()
   {
-    if (GST_IS_ELEMENT (bin_))
-      {
-	gst_element_set_state (bin_, GST_STATE_NULL);
-	GstObject *parent = gst_element_get_parent (bin_);
-	if (GST_IS_BIN (parent))
-	  gst_bin_remove (GST_BIN (parent), bin_);
-      }
+
+     shmdata_readers_.clear ();
+     shmdata_writers_.clear ();
+
+     if (GST_IS_ELEMENT (bin_))
+       {
+	 // g_print ("Segment, bin state %s num children %d \n", 
+	 // 	  gst_element_state_get_name (GST_STATE (bin_)), 
+	 // 	  GST_BIN_NUMCHILDREN(GST_BIN (bin_)));
+
+	 if (GST_BIN_CHILDREN (bin_) > 0)
+	   {
+	     g_print ("segment warning: some child elements have not been cleaned in %s\n",
+		      get_nick_name ().c_str ());
+	     GList *child = NULL, *children = GST_BIN_CHILDREN (bin_);
+	     for (child = children; child != NULL; child = g_list_next (child)) 
+	       {
+		 g_print ("segment warning: child %s \n", GST_ELEMENT_NAME (GST_ELEMENT (child->data)));
+		 // gst_element_set_state (GST_ELEMENT (child->data), GST_STATE_PLAYING);
+		 // gst_element_set_state (GST_ELEMENT (child->data), GST_STATE_NULL);
+		 // gst_bin_remove (GST_BIN (bin_), GST_ELEMENT (child->data));
+	       }
+	   }
+	 
+	 gst_element_set_state (bin_, GST_STATE_NULL);
+	 if (GST_IS_BIN (GST_ELEMENT_PARENT (bin_)))
+	   gst_bin_remove (GST_BIN (GST_ELEMENT_PARENT (bin_)), bin_);
+       }
   }
   
   
