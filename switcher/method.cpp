@@ -109,7 +109,7 @@ namespace switcher
   Method::destroy_data (gpointer  data,
 			GClosure *closure)
   {
-    g_print ("Method::destroy data\n");
+    //g_print ("Method::destroy data\n");
   }
   
 
