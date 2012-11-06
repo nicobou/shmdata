@@ -134,6 +134,17 @@ namespace switcher
 
     //FIXME THIS DOES NOT WORK
 
+    /* try something like this 
+    	 GList *child = NULL, *children = GST_BIN_CHILDREN (camera->view_sink);
+	 for (child = children; child != NULL; child = g_list_next (child)) {
+	   GObject *ch = G_OBJECT (child->data);
+	   if (g_object_class_find_property (G_OBJECT_GET_CLASS (ch), "sync")) {
+	     g_object_set (G_OBJECT (ch), "sync", FALSE, "qos", FALSE, "async",
+			   FALSE, NULL);
+	   }
+    */
+
+
     //std::string connector = static_cast<std::string>(connector_name);
     GconfAudioSink *context = static_cast<GconfAudioSink*>(user_data);
 
