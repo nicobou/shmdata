@@ -30,7 +30,7 @@ namespace switcher
   class GconfAudioSource : public AudioSource
   {
   public:
-    typedef std::tr1::shared_ptr<GconfAudioSource> ptr;
+    typedef std::shared_ptr<GconfAudioSource> ptr;
     GconfAudioSource ();
     GconfAudioSource (QuiddityLifeManager::ptr life_manager);
 

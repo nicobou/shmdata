@@ -30,7 +30,7 @@ namespace switcher
   class AudioSink : public BaseSink
   {
   public:
-    typedef std::tr1::shared_ptr<AudioSink> ptr;
+    typedef std::shared_ptr<AudioSink> ptr;
   };
 
 }  // end of namespace

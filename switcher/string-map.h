@@ -27,7 +27,7 @@
 #include <string>
 #include <map>
 #include <vector>
-#include <tr1/memory>
+#include <memory>
 
 namespace switcher
 {
@@ -36,7 +36,7 @@ namespace switcher
     class StringMap
     {
     public:
-      typedef std::tr1::shared_ptr< StringMap<T> > ptr;
+      typedef std::shared_ptr< StringMap<T> > ptr;
 
       bool insert (const std::string key, T value);
       bool remove (const std::string key);

@@ -31,7 +31,7 @@ namespace switcher
   class Xvimagesink : public VideoSink
   {
   public:
-    typedef std::tr1::shared_ptr<Xvimagesink> ptr;
+    typedef std::shared_ptr<Xvimagesink> ptr;
     Xvimagesink ();
     Xvimagesink (QuiddityLifeManager::ptr life_manager);
 

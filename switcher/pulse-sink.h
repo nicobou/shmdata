@@ -31,7 +31,7 @@ namespace switcher
   class PulseSink : public AudioSink
   {
   public:
-    typedef std::tr1::shared_ptr<PulseSink> ptr;
+    typedef std::shared_ptr<PulseSink> ptr;
     PulseSink ();
     PulseSink (QuiddityLifeManager::ptr life_manager);
 

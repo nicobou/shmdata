@@ -30,7 +30,7 @@ namespace switcher
   class VideoSource : public BaseSource
   {
   public:
-    typedef std::tr1::shared_ptr<VideoSource> ptr;
+    typedef std::shared_ptr<VideoSource> ptr;
     VideoSource();
 
   private:

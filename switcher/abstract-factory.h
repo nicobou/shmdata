@@ -39,8 +39,8 @@ namespace switcher
     template <class U> void register_class (Key Id, Doc doc);
     std::vector<Key> get_keys ();
     std::vector<Doc> get_classes_documentation ();
-    std::tr1::shared_ptr<T> create(Key Id);
-    std::tr1::shared_ptr<T> create(Key Id, Arg arg);
+    std::shared_ptr<T> create(Key Id);
+    std::shared_ptr<T> create(Key Id, Arg arg);
     bool key_exists (Key Id);
     ~AbstractFactory();
 

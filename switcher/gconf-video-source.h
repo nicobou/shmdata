@@ -30,7 +30,7 @@ namespace switcher
   class GconfVideoSource : public VideoSource
   {
   public:
-    typedef std::tr1::shared_ptr<GconfVideoSource> ptr;
+    typedef std::shared_ptr<GconfVideoSource> ptr;
     GconfVideoSource ();
     GconfVideoSource (QuiddityLifeManager::ptr life_manager);
  

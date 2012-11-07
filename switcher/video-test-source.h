@@ -30,7 +30,7 @@ namespace switcher
   class VideoTestSource : public VideoSource
   {
   public:
-    typedef std::tr1::shared_ptr<VideoTestSource> ptr;
+    typedef std::shared_ptr<VideoTestSource> ptr;
     VideoTestSource ();
     VideoTestSource (QuiddityLifeManager::ptr life_manager);
     

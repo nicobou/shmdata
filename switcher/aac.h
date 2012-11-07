@@ -31,7 +31,7 @@ namespace switcher
   class AAC : public VideoSink
   {
   public:
-    typedef std::tr1::shared_ptr<AAC> ptr;
+    typedef std::shared_ptr<AAC> ptr;
     AAC ();
     AAC (QuiddityLifeManager::ptr life_manager);
 

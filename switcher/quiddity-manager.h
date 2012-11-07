@@ -37,7 +37,7 @@
    class QuiddityManager 
    { 
    public: 
-     typedef std::tr1::shared_ptr<QuiddityManager> ptr; 
+     typedef std::shared_ptr<QuiddityManager> ptr; 
     
      QuiddityManager();//will get name "default"
      QuiddityManager(std::string name); 

@@ -31,7 +31,7 @@ namespace switcher
   class H264 : public VideoSink
   {
   public:
-    typedef std::tr1::shared_ptr<H264> ptr;
+    typedef std::shared_ptr<H264> ptr;
     H264 ();
     H264 (QuiddityLifeManager::ptr life_manager);
 

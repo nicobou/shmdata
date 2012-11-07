@@ -67,10 +67,10 @@ namespace switcher
     }
 
   template <typename T, typename Key, typename Doc, typename Arg>
-    std::tr1::shared_ptr<T> 
+    std::shared_ptr<T> 
     AbstractFactory<T, Key, Doc, Arg>::create(Key Id)
   {
-    std::tr1::shared_ptr<T> pointer;
+    std::shared_ptr<T> pointer;
 	
     if ( constructor_map_.find(Id) != constructor_map_.end() ) 
       pointer.reset (constructor_map_[Id]->Create());
@@ -79,10 +79,10 @@ namespace switcher
   }
 
   template <typename T, typename Key, typename Doc, typename Arg>
-    std::tr1::shared_ptr<T> 
+    std::shared_ptr<T> 
     AbstractFactory<T, Key, Doc, Arg>::create(Key Id, Arg arg)
   {
-    std::tr1::shared_ptr<T> pointer;
+    std::shared_ptr<T> pointer;
 	
     if ( constructor_map_.find(Id) != constructor_map_.end() ) 
       pointer.reset (constructor_map_[Id]->Create(arg));

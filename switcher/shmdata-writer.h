@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_SHMDATA_WRITER_H__
 #define __SWITCHER_SHMDATA_WRITER_H__
 
-#include <tr1/memory>
+#include <memory>
 #include <string>
 #include <shmdata/base-writer.h>
 #include <switcher/gst-element-cleaner.h>
@@ -32,7 +32,7 @@ namespace switcher
   class ShmdataWriter : public GstElementCleaner
   {
   public:
-    typedef std::tr1::shared_ptr<ShmdataWriter> ptr;
+    typedef std::shared_ptr<ShmdataWriter> ptr;
     ShmdataWriter();
     ~ShmdataWriter();
     bool set_path (std::string name); //path will be fully specified

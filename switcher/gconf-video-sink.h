@@ -30,7 +30,7 @@ namespace switcher
   class GconfVideoSink : public VideoSink
   {
   public:
-    typedef std::tr1::shared_ptr<GconfVideoSink> ptr;
+    typedef std::shared_ptr<GconfVideoSink> ptr;
     GconfVideoSink ();
     GconfVideoSink (QuiddityLifeManager::ptr life_manager);
    

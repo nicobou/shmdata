@@ -95,7 +95,7 @@ namespace switcher
     if ( (bool)life_manager)
       {
 	Quiddity::ptr quidd = life_manager->get_quiddity (runtime_name);
-	Runtime::ptr runtime = std::tr1::dynamic_pointer_cast<Runtime> (quidd);
+	Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
 	if(runtime)
 	   context->set_runtime(runtime);
 	 else

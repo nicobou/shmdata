@@ -22,7 +22,7 @@
 #define __SWITCHER_PROPERTY_H__
 
 #include <gst/gst.h>
-#include <tr1/memory>
+#include <memory>
 #include <map>
 #include <string>
 
@@ -32,7 +32,7 @@ namespace switcher
   class Property
   {
   public:
-    typedef std::tr1::shared_ptr<Property> ptr;
+    typedef std::shared_ptr<Property> ptr;
     
     //this is when using an existing property
     void set_gobject_pspec (GObject *object, GParamSpec *pspec);

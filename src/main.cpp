@@ -77,7 +77,7 @@ main (int argc,
   //Quiddity::ptr baseserv = manager.create ("controlserver");
   //TODO make this available from the base manager interface 
   //(for instance "this" or better could be the string naming the manager)
-   serv =  new CtrlServer(); //std::tr1::dynamic_pointer_cast<CtrlServer> (baseserv);
+   serv =  new CtrlServer(); //std::dynamic_pointer_cast<CtrlServer> (baseserv);
    serv->set_quiddity_manager (manager);
    serv->start ();
 

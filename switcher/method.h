@@ -24,7 +24,7 @@
 #define __SWITCHER_METHOD_H__
 
 #include <gst/gst.h>
-#include <tr1/memory>
+#include <memory>
 #include <vector>
 #include <string>
 #include <map>
@@ -36,7 +36,7 @@ namespace switcher
   class Method
   {
   public:
-    typedef std::tr1::shared_ptr<Method> ptr;
+    typedef std::shared_ptr<Method> ptr;
     typedef std::vector<GType> args_types;
     typedef std::vector<std::pair<std::string,std::string> > args_doc;
       

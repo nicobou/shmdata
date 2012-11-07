@@ -34,7 +34,7 @@ namespace switcher
   class RtpSession : public Segment
   {
   public:
-    typedef std::tr1::shared_ptr<RtpSession> ptr;
+    typedef std::shared_ptr<RtpSession> ptr;
     RtpSession ();
     RtpSession (QuiddityLifeManager::ptr life_manager);
     ~RtpSession ();

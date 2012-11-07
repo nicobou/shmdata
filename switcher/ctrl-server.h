@@ -32,7 +32,7 @@ namespace switcher
   class CtrlServer : public Quiddity
   {
   public:
-    typedef std::tr1::shared_ptr<CtrlServer> ptr;
+    typedef std::shared_ptr<CtrlServer> ptr;
     CtrlServer();
     CtrlServer(QuiddityLifeManager::ptr life_manager);
     ~CtrlServer ();

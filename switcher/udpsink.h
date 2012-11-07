@@ -31,7 +31,7 @@ namespace switcher
   class UDPSink : public BaseSink
   {
   public:
-    typedef std::tr1::shared_ptr<UDPSink> ptr;
+    typedef std::shared_ptr<UDPSink> ptr;
     UDPSink ();
     UDPSink (QuiddityLifeManager::ptr life_manager);
     ~UDPSink ();

@@ -92,6 +92,18 @@ if test "x${have_shmdata}" = "xfalse" ; then
     AC_MSG_ERROR([Missing libshmdata-0.6-dev])
 fi
 
+AC_MSG_CHECKING([to see if compiler understands -std=c++0x])
+save_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CFLAGS -std=c++0x"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  CXXFLAGS="$CFLAGS -std=c++0x"
+  AC_MSG_RESULT([yes])
+], [
+  AC_MSG_RESULT([no])
+  AC_MSG_ERROR([compiler does not understand -std=c++0x])
+])
+
+
 dnl check if compiler understands -Wall (if yes, add -Wall to GST_CFLAGS)
 AC_MSG_CHECKING([to see if compiler understands -Wall])
 save_CFLAGS="$CFLAGS"

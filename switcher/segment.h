@@ -35,7 +35,7 @@ namespace switcher
   class Segment : public Quiddity
   {
   public:
-    typedef std::tr1::shared_ptr<Segment> ptr;
+    typedef std::shared_ptr<Segment> ptr;
     Segment ();
     ~Segment ();
     // the segment is managing itself the presence/attachment with the runtime

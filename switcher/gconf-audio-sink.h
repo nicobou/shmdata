@@ -30,7 +30,7 @@ namespace switcher
   class GconfAudioSink : public AudioSink
   {
   public:
-    typedef std::tr1::shared_ptr<GconfAudioSink> ptr;
+    typedef std::shared_ptr<GconfAudioSink> ptr;
     GconfAudioSink ();
     GconfAudioSink (QuiddityLifeManager::ptr life_manager);
     

@@ -31,7 +31,7 @@ namespace switcher
   class AudioSource : public BaseSource
   {
   public:
-    typedef std::tr1::shared_ptr<AudioSource> ptr;
+    typedef std::shared_ptr<AudioSource> ptr;
     AudioSource ();
 
   private:

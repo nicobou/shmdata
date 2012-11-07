@@ -30,7 +30,7 @@ namespace switcher
   class AudioTestSource : public AudioSource
   {
   public:
-    typedef std::tr1::shared_ptr<AudioTestSource> ptr;
+    typedef std::shared_ptr<AudioTestSource> ptr;
     AudioTestSource ();
     AudioTestSource (QuiddityLifeManager::ptr life_manager);
 

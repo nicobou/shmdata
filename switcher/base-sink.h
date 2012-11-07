@@ -31,7 +31,7 @@ namespace switcher
   class BaseSink : public Segment
   {
   public:
-    typedef std::tr1::shared_ptr<BaseSink> ptr;
+    typedef std::shared_ptr<BaseSink> ptr;
 
     BaseSink ();
 

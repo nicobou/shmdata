@@ -30,7 +30,7 @@ namespace switcher
   class BaseSource : public Segment
   {
   public:
-    typedef std::tr1::shared_ptr<BaseSource> ptr;
+    typedef std::shared_ptr<BaseSource> ptr;
     BaseSource ();
     
   /* protected: */

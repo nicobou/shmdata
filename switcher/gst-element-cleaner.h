@@ -23,7 +23,7 @@
 
 #include <vector>
 #include <gst/gst.h>
-#include <tr1/memory>
+#include <memory>
 
 namespace switcher
 {
@@ -31,7 +31,7 @@ namespace switcher
   class GstElementCleaner
   {
   public:
-    typedef std::tr1::shared_ptr<GstElementCleaner> ptr;
+    typedef std::shared_ptr<GstElementCleaner> ptr;
     ~GstElementCleaner ();
     void add_element_to_remove (GstElement *element);
 

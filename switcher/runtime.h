@@ -34,7 +34,7 @@ namespace switcher
   class Runtime : public Quiddity 
     {
     public:
-      typedef std::tr1::shared_ptr<Runtime> ptr;
+      typedef std::shared_ptr<Runtime> ptr;
       Runtime ();
       Runtime (QuiddityLifeManager::ptr life_manager);
       ~Runtime ();

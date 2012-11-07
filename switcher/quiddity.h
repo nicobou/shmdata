@@ -27,7 +27,7 @@
 
 #include <string>
 #include <vector>
-#include <tr1/memory>
+#include <memory>
 #include <map>
 #include <gst/gst.h>
 #include "switcher/property.h"
@@ -43,7 +43,7 @@ namespace switcher
   class Quiddity
   {
   public:
-    typedef std::tr1::shared_ptr<Quiddity> ptr;
+    typedef std::shared_ptr<Quiddity> ptr;
     
     Quiddity ();
     virtual ~Quiddity ();
@@ -101,7 +101,7 @@ namespace switcher
 
     //used in order to dynamically create other quiddity, weak_ptr is used in order to 
     //avoid circular references to the life manager 
-    std::tr1::weak_ptr<QuiddityLifeManager> life_manager_;
+    std::weak_ptr<QuiddityLifeManager> life_manager_;
   };
   
 } // end of namespace

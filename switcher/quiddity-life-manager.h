@@ -20,14 +20,14 @@
 /**
  * The QuiddityLifeManager class wraps abstract factory for creating instace by name (birth) 
  * It wraps StringMap for managing instances (subsistence). 
- * Object destruction is managed through the use of std::tr1::shared_ptr
+ * Object destruction is managed through the use of std::shared_ptr
  */
 
 #ifndef __SWITCHER_QUIDDITY_LIFE_MANAGER_H__
 #define __SWITCHER_QUIDDITY_LIFE_MANAGER_H__
 
 
-#include <tr1/memory>
+#include <memory>
 #include "switcher/abstract-factory.h" 
 #include "switcher/string-map.h"
 #include "switcher/quiddity.h" 
@@ -40,7 +40,7 @@ namespace switcher
   //or find a way to provide a shared/weak ptr for "this" (and name it QuiddityManager) 
   {
   public:
-    typedef std::tr1::shared_ptr< QuiddityLifeManager > ptr;
+    typedef std::shared_ptr< QuiddityLifeManager > ptr;
     
     QuiddityLifeManager();//will get name "default"
     QuiddityLifeManager(std::string);
@@ -60,7 +60,7 @@ namespace switcher
 			QuiddityLifeManager::ptr life_manager);
  
     //subsistence
-    std::tr1::shared_ptr<Quiddity> get_quiddity (std::string quiddity_name);
+    std::shared_ptr<Quiddity> get_quiddity (std::string quiddity_name);
     
     //release base quiddity (destructed with the shared pointer)
     bool remove (std::string quiddity_name);
@@ -87,7 +87,7 @@ namespace switcher
     std::string name_;
     void register_classes ();
     AbstractFactory< Quiddity, std::string, std::string, QuiddityLifeManager::ptr > abstract_factory_;
-    StringMap< std::tr1::shared_ptr<Quiddity> > quiddities_;
+    StringMap< std::shared_ptr<Quiddity> > quiddities_;
     StringMap< std::string> quiddities_nick_names_;
   };
 

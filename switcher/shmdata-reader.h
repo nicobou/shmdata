@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_SHMDATA_READER_H__
 #define __SWITCHER_SHMDATA_READER_H__
 
-#include <tr1/memory>
+#include <memory>
 #include <string>
 #include <vector>
 #include <shmdata/base-reader.h>
@@ -33,7 +33,7 @@ namespace switcher
   class ShmdataReader : public GstElementCleaner 
   {
   public:
-    typedef std::tr1::shared_ptr<ShmdataReader> ptr;
+    typedef std::shared_ptr<ShmdataReader> ptr;
     typedef void (*on_first_data_hook)(ShmdataReader *caller, void *user_data);
 
     ShmdataReader ();

@@ -27,7 +27,7 @@
 
 #include <string>
 #include <vector>
-#include <tr1/memory>
+#include <memory>
 
 namespace switcher
 {
@@ -35,7 +35,7 @@ namespace switcher
   class QuiddityCommand
   {
   public:
-    typedef std::tr1::shared_ptr<QuiddityCommand> ptr;
+    typedef std::shared_ptr<QuiddityCommand> ptr;
     
     enum command 
     {

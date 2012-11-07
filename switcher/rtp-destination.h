@@ -32,7 +32,7 @@ namespace switcher
   class RtpDestination
   {
   public:
-    typedef std::tr1::shared_ptr<RtpDestination> ptr;
+    typedef std::shared_ptr<RtpDestination> ptr;
     void set_host_name (std::string host_name);
     std::string get_host_name ();
     //the reader of the rtp stream sent

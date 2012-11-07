@@ -25,7 +25,7 @@
 #define __SWITCHER_HASH_TABLE_H__
 
 #include <glib.h>
-#include <tr1/memory>
+#include <memory>
 #include <string>
 #include <vector>
 #include <map>
@@ -36,7 +36,7 @@ namespace switcher
     class HashTable
     {
     public:
-      typedef std::tr1::shared_ptr< HashTable<T> > ptr;
+      typedef std::shared_ptr< HashTable<T> > ptr;
       
       HashTable ();
       ~HashTable ();
