@@ -97,7 +97,6 @@ namespace switcher
   std::vector<std::string> 
   QuiddityLifeManager::get_classes ()
   {
-    //return abstract_factory_.get_keys ();
     return abstract_factory_.get_classes_documentation ();
   }
 
