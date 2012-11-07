@@ -129,10 +129,11 @@ namespace switcher
     return doc_;
   }
   
+
   void
-  CtrlServer::set_quiddity_manager (QuiddityManager *manager)
+  CtrlServer::set_quiddity_manager (QuiddityManager::ptr manager)
   {
-    soap_.user = (void *)manager;
+    soap_.user = (void *)manager.get ();
   }
   
   void 

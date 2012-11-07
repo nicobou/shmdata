@@ -36,8 +36,7 @@ namespace switcher
     CtrlServer();
     CtrlServer(QuiddityLifeManager::ptr life_manager);
     ~CtrlServer ();
-    //void set_user_data (void *user_data);
-    void set_quiddity_manager (QuiddityManager *manager);
+    void set_quiddity_manager (QuiddityManager::ptr manager);
     void set_port (int port);//default port is 8080
     void start (); 
     void stop ();
