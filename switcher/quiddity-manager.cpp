@@ -25,6 +25,21 @@ namespace switcher
 
   bool QuiddityManager::gmainloop_initialized_ = false;
 
+  QuiddityManager::ptr 
+  QuiddityManager::make_manager ()
+  {
+    QuiddityManager::ptr manager(new QuiddityManager);
+    return manager;
+  }
+  
+  QuiddityManager::ptr 
+  QuiddityManager::make_manager (std::string name)
+  {
+    QuiddityManager::ptr manager(new QuiddityManager(name));
+    return manager;
+  }
+
+  
   QuiddityManager::QuiddityManager() :
     name_ ("default")
   {

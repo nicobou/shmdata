@@ -26,7 +26,7 @@
 static gchar *server_name = NULL;
 //static gchar **remaining_args = NULL;
 static switcher::CtrlServer  *serv = NULL;
-static switcher::QuiddityManager *manager = NULL;
+static std::vector<switcher::QuiddityManager::ptr> container;
 
 static GOptionEntry entries[] =
   {
@@ -39,8 +39,8 @@ leave (int sig)
 {
   if (serv != NULL)
     delete serv;
-  if (manager != NULL)
-      delete manager;
+  //removing reference to manager in order to delete it
+  container.clear ();
   exit (sig);
 }
 
@@ -67,32 +67,21 @@ main (int argc,
   if (server_name == NULL)
     server_name = "default";
 
-  manager = new QuiddityManager(server_name);  
-  //saving ref for exiting properly
   
-  // Create a runtime (pipeline0)
-  std::string runtime = manager->create ("runtime");
-
+  {//using context in order to let excluse ownership of manager by the container
+    QuiddityManager::ptr manager = QuiddityManager::make_manager (server_name);  
+    container.push_back (manager); // keep reference only in the container
+    // Create a runtime (pipeline0)
+    std::string runtime = manager->create ("runtime");
+  
   //creating a SOAP webservice controling the manager
   //Quiddity::ptr baseserv = manager.create ("controlserver");
   //TODO make this available from the base manager interface 
   //(for instance "this" or better could be the string naming the manager)
    serv =  new CtrlServer(); //std::dynamic_pointer_cast<CtrlServer> (baseserv);
-   serv->set_quiddity_manager (manager);
+   serv->set_quiddity_manager (manager.get ());
    serv->start ();
-
-
-   // std::vector<std::string> args;
-   // args.push_back ("pipeline0");
-   // manager->create ("videotestsrc");
-   // manager->invoke ("videotestsrc0","set_runtime",args);
-   // std::vector<std::string> pipe_arg;
-   // pipe_arg.push_back ("pipeline0");
-   // manager->create ("xvimagesink");
-   // manager->invoke ("xvimagesink0","set_runtime",pipe_arg);
-   // std::vector<std::string> connect_arg;
-   // connect_arg.push_back ("/tmp/switcher_default_videotestsrc0_video");
-   // manager->invoke ("xvimagesink0","connect",connect_arg);
+  }
 
   //waiting for end of life
   while (1)

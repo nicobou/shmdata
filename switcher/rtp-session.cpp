@@ -488,10 +488,9 @@ namespace switcher
     if (!quiddity_managers_.contains (shmdata_socket_path))
       {
 	//creating an internal quiddity manager 
-	QuiddityManager::ptr manager;
-	manager.reset (new QuiddityManager("manager_"+get_name()+"_"+id));
-	manager->create ("runtime","single_runtime");//only one runtime for all
+	QuiddityManager::ptr manager = QuiddityManager::make_manager ("manager_"+get_name()+"_"+id);
 	quiddity_managers_.insert (shmdata_socket_path, manager);
+	manager->create ("runtime","single_runtime");//only one runtime for all
 
 	std::vector <std::string> arg;
 	manager->create ("udpsink","udpsend_rtp");

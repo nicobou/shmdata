@@ -34,13 +34,13 @@
  namespace switcher 
  { 
 
-   class QuiddityManager 
+   class QuiddityManager : public std::enable_shared_from_this<QuiddityManager>
    { 
    public: 
      typedef std::shared_ptr<QuiddityManager> ptr; 
-    
-     QuiddityManager();//will get name "default"
-     QuiddityManager(std::string name); 
+
+     static QuiddityManager::ptr make_manager ();//will get name "default"
+     static QuiddityManager::ptr make_manager (std::string name);
      ~QuiddityManager(); 
      std::string get_name ();
      
@@ -70,6 +70,8 @@
 		  std::vector<std::string> args);  
 
    private: 
+     QuiddityManager();//will get name "default"
+     QuiddityManager(std::string name); 
      QuiddityLifeManager::ptr life_manager_; //may be shared with others for automatic quiddity creation 
      std::string name_;
 
