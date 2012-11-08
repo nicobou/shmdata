@@ -229,7 +229,8 @@ namespace switcher
 			       std::string function_name,
 			       std::vector<std::string> args)
   {
-    //g_print ("   QuiddityLifeManager::quiddity_invoke_method %s %s, arg size %d\n",quiddity_name.c_str(), function_name.c_str(), args.size ());
+    //g_print ("QuiddityLifeManager::quiddity_invoke_method %s %s, arg size %d\n",quiddity_name.c_str(), function_name.c_str(), args.size ());
+    
     if (!exists (quiddity_name))
       {
 	g_printerr ("quiddity %s not found, cannot invoke\n",quiddity_name.c_str());
@@ -250,7 +251,7 @@ namespace switcher
 	g_printerr ("invoking %s/%s, number of arguments does not match\n",quiddity_name.c_str(),function_name.c_str());
 	return false;
       }
-    
+
     return quiddity->invoke_method (function_name, args);
   } 
 

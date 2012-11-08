@@ -101,7 +101,6 @@ namespace switcher
      		    (gpointer)this);
     set_method_description ("add_client", 
 			    "add a client with destination host and port to the list of clients", 
-			    //add_client_arg_desc))
 			    Method::make_arg_description ("host", 
 							  "the hostname/IP address of the client to add",
 							  "port",

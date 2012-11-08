@@ -610,7 +610,6 @@ namespace switcher
   gboolean
   RtpSession::remove_data_stream_wrapped (gpointer connector_name, gpointer user_data)
   {
-    //std::string connector = static_cast<std::string>(connector_name);
     RtpSession *context = static_cast<RtpSession*>(user_data);
        
     if (context->remove_data_stream ((char *)connector_name))

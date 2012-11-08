@@ -66,34 +66,30 @@ namespace switcher
   bool 
   Method::invoke(std::vector<std::string> args)
   {
-
     if (args.size () != arg_types_.size())
       {
 	g_printerr ("Method::invoke number of arguments does not correspond to the size of argument types\n");
 	return false;
       }
 
-    GValue params[arg_types_.size() ];
-
+    GValue params[arg_types_.size()];
     for (gulong i=0; i < args.size(); i++)
       {
 	params[i] = G_VALUE_INIT;
 	
 	g_value_init (&params[i],arg_types_[i]);
-
+	
 	if ( !gst_value_deserialize (&params[i],args[i].c_str()))
 	  {
 	    g_printerr ("Method::invoke string not transformable into gvalue (argument: %s) \n",
 			args[i].c_str());
 	  }
       }
-    
+
     GValue result_value = G_VALUE_INIT;
     gboolean result;
     g_value_init (&result_value, G_TYPE_BOOLEAN);
-    
     g_closure_invoke (closure_, &result_value, arg_types_.size(), params, NULL); 
-    
     result = g_value_get_boolean (&result_value);
 
     //unset

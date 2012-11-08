@@ -23,7 +23,7 @@ namespace switcher
 {
 
   void
-  QuiddityManagerTranslator::set_quiddity_manager (QuiddityManager::ptr manager)
+  QuiddityManagerTranslator::set_quiddity_manager (std::shared_ptr<QuiddityManager> manager)
   {
     manager_ = manager;
   }

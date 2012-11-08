@@ -39,7 +39,9 @@ namespace switcher
     void set_port (int port);//default port is 8080
     void start (); 
     void stop ();
-    
+    //wrappers
+    static gboolean set_port_wrapped (gint port, gpointer user_data);
+
     QuiddityDocumentation get_documentation ();
     static const QuiddityDocumentation doc_;
 

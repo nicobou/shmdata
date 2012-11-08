@@ -160,18 +160,27 @@ namespace switcher
   std::string
   QuiddityManager::create (std::string quiddity_class)
   {
-    return seq_invoke (QuiddityCommand::create, 
-		       quiddity_class.c_str(),
-		       NULL);
+    std::string res = seq_invoke (QuiddityCommand::create, 
+				  quiddity_class.c_str(),
+				  NULL);
+    return res;
   }
 
   std::string
   QuiddityManager::create (std::string quiddity_class, std::string nick_name)
   {
-    return seq_invoke (QuiddityCommand::create_nick_named, 
-		       quiddity_class.c_str(), 
-		       nick_name.c_str(), 
-		       NULL);
+    std::string res= seq_invoke (QuiddityCommand::create_nick_named, 
+				 quiddity_class.c_str(), 
+				 nick_name.c_str(), 
+				 NULL);
+
+    Quiddity::ptr quidd = life_manager_->get_quiddity (res);
+    // std::string category = quidd->get_documentation ().get_category ();
+    // if (category.compare ("quiddity manager invoker"))
+    QuiddityManagerTranslator::ptr translator = std::dynamic_pointer_cast<QuiddityManagerTranslator> (quidd);
+    if (translator)
+	translator->set_quiddity_manager (shared_from_this());
+    return res;
   }
 
   bool

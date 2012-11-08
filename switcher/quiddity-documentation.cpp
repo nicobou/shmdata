@@ -22,8 +22,8 @@
 namespace switcher
 {
   QuiddityDocumentation::QuiddityDocumentation (std::string category, 
-						    std::string class_name, 
-						    std::string description)
+						std::string class_name, 
+						std::string description)
   {
     category_ = category;
     class_name_ = class_name;

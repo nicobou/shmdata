@@ -72,15 +72,13 @@ main (int argc,
     QuiddityManager::ptr manager = QuiddityManager::make_manager (server_name);  
     container.push_back (manager); // keep reference only in the container
     // Create a runtime (pipeline0)
-    std::string runtime = manager->create ("runtime");
+    //std::string runtime = 
+    manager->create ("runtime");
   
-  //creating a SOAP webservice controling the manager
-  //Quiddity::ptr baseserv = manager.create ("controlserver");
-  //TODO make this available from the base manager interface 
-  //(for instance "this" or better could be the string naming the manager)
-   serv =  new CtrlServer(); //std::dynamic_pointer_cast<CtrlServer> (baseserv);
-   serv->set_quiddity_manager (manager);
-   serv->start ();
+    std::string soap_name = manager->create ("SOAPcontrolServer", "soapserver");
+    std::vector<std::string> port_arg;
+    port_arg.push_back ("8080");
+    manager->invoke (soap_name, "set_port", port_arg);
   }
 
   //waiting for end of life

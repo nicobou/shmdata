@@ -26,14 +26,15 @@
 
 namespace switcher
 {
+  class QuiddityManager;
 
   class QuiddityManagerTranslator : public Quiddity
   {
   public:
     typedef std::shared_ptr<QuiddityManagerTranslator> ptr;
-    void set_quiddity_manager (QuiddityManager::ptr manager);
+    void set_quiddity_manager (std::shared_ptr<QuiddityManager> manager);
   protected:
-    QuiddityManager::ptr manager_;
+    std::shared_ptr<QuiddityManager> manager_;
   };
 
 }  // end of namespace

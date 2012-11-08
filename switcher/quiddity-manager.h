@@ -29,6 +29,7 @@
 #include <string>
 #include "switcher/quiddity-life-manager.h"
 #include "switcher/quiddity-command.h"
+#include "switcher/quiddity-manager-translator.h"
 #include <stdarg.h>
 
  namespace switcher 

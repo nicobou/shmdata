@@ -36,8 +36,7 @@ namespace switcher
 {
   class Quiddity;
 
-  class QuiddityLifeManager //FIXME rename that into QuiddityManager_Impl 
-  //or find a way to provide a shared/weak ptr for "this" (and name it QuiddityManager) 
+  class QuiddityLifeManager //FIXME rename that into QuiddityManager_Impl or better 
   {
   public:
     typedef std::shared_ptr< QuiddityLifeManager > ptr;
@@ -45,13 +44,13 @@ namespace switcher
     QuiddityLifeManager();//will get name "default"
     QuiddityLifeManager(std::string);
     
-    //info
+    //info about manager
     std::string get_name ();
-    std::vector<std::string> get_classes ();
+    std::vector<std::string> get_classes ();//FIXME rename it get_classes_description returning a std::string
+    std::vector<std::string> get_instances ();//FIXME rename it get_classes_description returning a std::string
     bool class_exists (std::string class_name);
-    std::vector<std::string> get_instances ();
     bool exists (std::string quiddity_name);
-    
+
     //creation
     std::string create (std::string quiddity_class, 
 			QuiddityLifeManager::ptr life_manager);

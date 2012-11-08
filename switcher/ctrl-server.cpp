@@ -49,11 +49,20 @@ namespace switcher
     
     soap_.fget = CtrlServer::http_get;
     
-    //TODO find a better name for CtrlServer
     srand(time(0));
     set_name (g_strdup_printf ("ctrlserver%d",rand() % 1024));
    
-  
+    //registering set_port
+    register_method("set_port",
+     		    (void *)&set_port_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_INT, NULL),
+     		    (gpointer)this);
+    set_method_description ("set_port", 
+			    "select the port used by the soap server", 
+			    Method::make_arg_description ("port",
+							  "the port to bind",
+							  NULL));
+
   }
 
   CtrlServer::~CtrlServer ()
@@ -130,16 +139,19 @@ namespace switcher
   }
   
 
-  // void
-  // CtrlServer::set_quiddity_manager (QuiddityManager::ptr manager)
-  // {
-  //   soap_.user = (void *)manager.get ();
-  // }
-  
+  gboolean
+  CtrlServer::set_port_wrapped (gint port, gpointer user_data)
+  {
+    CtrlServer *context = static_cast<CtrlServer*>(user_data);
+    context->set_port (port);
+    return TRUE;
+  }
+
   void 
   CtrlServer::set_port (int port)
   {
     port_ = port;
+    start ();
   }
 
   void 
@@ -151,10 +163,17 @@ namespace switcher
     SOAP_SOCKET m = service_->bind(NULL, port_, 100 /* BACKLOG */);
     if (!soap_valid_socket(m))
 	service_->soap_print_fault(stderr);
-    //g_print("Socket connection successful %d\n", m);
-    
     thread_ = g_thread_new ("CtrlServer", GThreadFunc(server_thread), this);
   }
+
+
+  // gboolean
+  // CtrlServer::stop_wrapped (gpointer user_data)
+  // {
+  //   CtrlServer *context = static_cast<CtrlServer*>(user_data);
+  //   context->stop ();
+  //   return TRUE;
+  // }
 
   void
   CtrlServer::stop ()
