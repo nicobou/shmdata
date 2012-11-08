@@ -17,28 +17,26 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/ctrl-server.h"
 #include "switcher/quiddity-manager.h"
 #include <iostream>
 #include <signal.h>
 
 
 static gchar *server_name = NULL;
+static gchar *port_number = NULL;
 //static gchar **remaining_args = NULL;
-static switcher::CtrlServer  *serv = NULL;
 static std::vector<switcher::QuiddityManager::ptr> container;
 
 static GOptionEntry entries[] =
   {
     { "server-name", 's', 0, G_OPTION_ARG_STRING, &server_name, "server name (default is \"default\")", NULL },
+    { "port-number", 'p', 0, G_OPTION_ARG_STRING, &port_number, "port number the server will bind (default is 8080)", NULL },
     { NULL }
   };
 
 void
 leave (int sig)
 {
-  if (serv != NULL)
-    delete serv;
   //removing reference to manager in order to delete it
   container.clear ();
   exit (sig);
@@ -62,14 +60,15 @@ main (int argc,
       exit (1);
     } 
   
-  using namespace switcher;
-     
   if (server_name == NULL)
     server_name = "default";
+  if (port_number == NULL)
+    port_number = "8080";
 
   
   {//using context in order to let excluse ownership of manager by the container
-    QuiddityManager::ptr manager = QuiddityManager::make_manager (server_name);  
+    switcher::QuiddityManager::ptr manager 
+      = switcher::QuiddityManager::make_manager (server_name);  
     container.push_back (manager); // keep reference only in the container
     // Create a runtime (pipeline0)
     //std::string runtime = 
@@ -77,7 +76,7 @@ main (int argc,
   
     std::string soap_name = manager->create ("SOAPcontrolServer", "soapserver");
     std::vector<std::string> port_arg;
-    port_arg.push_back ("8080");
+    port_arg.push_back (port_number);
     manager->invoke (soap_name, "set_port", port_arg);
   }
 
