@@ -34,11 +34,11 @@ namespace switcher
     GconfVideoSink ();
     GconfVideoSink (QuiddityLifeManager::ptr life_manager);
    
-    static QuiddityDocumentation get_documentation ();
+    QuiddityDocumentation get_documentation ();
+    static const QuiddityDocumentation doc_;
    
   private:
     void make_gconfvideosink ();
-    static QuiddityDocumentation doc_;
     GstElement *gconfvideosink_;
     GCond* data_cond_; //required in order to ensure gconf element will be factored into the main thread
     GMutex* data_mutex_;

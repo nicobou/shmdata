@@ -24,7 +24,7 @@
 
 namespace switcher
 {
-  QuiddityDocumentation CtrlServer::doc_ ("control", "SOAPcontrolServer",
+  const QuiddityDocumentation CtrlServer::doc_ ("control", "SOAPcontrolServer",
 					  "SOAPcontrolServer allows for managing switcher through SOAP webservices");
     
   CtrlServer::CtrlServer()

@@ -23,7 +23,7 @@
 namespace switcher
 {
 
-  QuiddityDocumentation AudioTestSource::doc_ ("audio source", "audiotestsrc", 
+  const QuiddityDocumentation AudioTestSource::doc_ ("audio source", "audiotestsrc", 
 						 "Creates audio test signals");
   
   AudioTestSource::AudioTestSource ()

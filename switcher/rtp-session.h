@@ -38,7 +38,8 @@ namespace switcher
     RtpSession ();
     RtpSession (QuiddityLifeManager::ptr life_manager);
     ~RtpSession ();
-    static QuiddityDocumentation get_documentation ();
+    QuiddityDocumentation get_documentation ();
+    static const QuiddityDocumentation doc_;
 
     //local streams
     bool add_data_stream (std::string shmdata_socket_path);
@@ -101,9 +102,6 @@ namespace switcher
 					    gpointer user_data);
     static gboolean sink_factory_filter (GstPluginFeature * feature, gpointer data);
     static gint sink_compare_ranks (GstPluginFeature *f1, GstPluginFeature *f2);
-
-    //quiddity
-    static QuiddityDocumentation doc_;
 
     //internal rtpbin signals
     static void on_bye_ssrc (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data); 

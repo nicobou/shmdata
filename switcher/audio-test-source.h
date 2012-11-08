@@ -34,11 +34,11 @@ namespace switcher
     AudioTestSource ();
     AudioTestSource (QuiddityLifeManager::ptr life_manager);
 
-   static QuiddityDocumentation get_documentation ();
+   QuiddityDocumentation get_documentation ();
+   static const QuiddityDocumentation doc_;
 
   private: 
    void make_audiotestsource ();
-   static QuiddityDocumentation doc_;
    GstElement *audiotestsrc_;
   };
 

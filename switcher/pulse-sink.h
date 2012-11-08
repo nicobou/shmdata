@@ -35,10 +35,10 @@ namespace switcher
     PulseSink ();
     PulseSink (QuiddityLifeManager::ptr life_manager);
 
-    static QuiddityDocumentation get_documentation ();
+    QuiddityDocumentation get_documentation ();
+    static const QuiddityDocumentation doc_;
 
   private:
-    static QuiddityDocumentation doc_;
     GstElement *pulse_sink_;
     void make_pulse_sink ();
   };

@@ -36,7 +36,8 @@ namespace switcher
     UDPSink (QuiddityLifeManager::ptr life_manager);
     ~UDPSink ();
 
-    static QuiddityDocumentation get_documentation ();
+    QuiddityDocumentation get_documentation ();
+    static const QuiddityDocumentation doc_;
 
     //client management
     bool remove_client (gchar *host, gint port);
@@ -49,7 +50,6 @@ namespace switcher
     static gboolean clear_wrapped (gpointer user_data);
 
   private:
-    static QuiddityDocumentation doc_;
     GstElement *udpsink_;
     GstElement *udpsink_bin_;
     GstElement *typefind_;

@@ -34,11 +34,11 @@ namespace switcher
     VideoTestSource ();
     VideoTestSource (QuiddityLifeManager::ptr life_manager);
     
-    static QuiddityDocumentation get_documentation ();
+    QuiddityDocumentation get_documentation ();
+    static const QuiddityDocumentation doc_;
     
   private:
     void make_videotestsource ();
-    static QuiddityDocumentation doc_;
     GstElement *videotestsrc_;
   };
 

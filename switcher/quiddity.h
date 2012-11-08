@@ -49,7 +49,7 @@ namespace switcher
     virtual ~Quiddity ();
     
     //class documentation
-    //virtual QuiddityDocumentation get_documentation() = 0;
+    virtual QuiddityDocumentation get_documentation() = 0;
     
     //instance name
     std::string get_name ();

@@ -22,7 +22,7 @@
 
 namespace switcher
 {
-  QuiddityDocumentation VideoTestSource::doc_  ("video source", "videotestsrc",
+  const QuiddityDocumentation VideoTestSource::doc_  ("video source", "videotestsrc",
 						"Creates a test video stream");
   
   VideoTestSource::VideoTestSource ()

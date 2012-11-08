@@ -217,7 +217,7 @@ namespace switcher
     return TRUE;
   }
 
-  QuiddityDocumentation GconfAudioSink::doc_ ("audio sink", "gconfaudiosink", 
+  const QuiddityDocumentation GconfAudioSink::doc_ ("audio sink", "gconfaudiosink", 
 						"Audio sink embedding the GConf-settings for audio output");
   
   QuiddityDocumentation 

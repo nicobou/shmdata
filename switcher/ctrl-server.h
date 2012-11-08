@@ -41,11 +41,11 @@ namespace switcher
     void start (); 
     void stop ();
     
-    static QuiddityDocumentation get_documentation ();
+    QuiddityDocumentation get_documentation ();
+    static const QuiddityDocumentation doc_;
 
   private:
     void make_ctrlserver ();
-    static QuiddityDocumentation doc_;
     struct soap soap_;
     int port_;
     bool quit_server_thread_;

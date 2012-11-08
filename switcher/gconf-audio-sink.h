@@ -34,11 +34,11 @@ namespace switcher
     GconfAudioSink ();
     GconfAudioSink (QuiddityLifeManager::ptr life_manager);
     
-    static QuiddityDocumentation get_documentation ();
+    QuiddityDocumentation get_documentation ();
+    static const QuiddityDocumentation doc_;
 
   private:
     void make_gconfaudiosink ();
-    static QuiddityDocumentation doc_;
     GstElement *audiobin_;
     GstElement *audioconvert_;
     GstElement *resample_;

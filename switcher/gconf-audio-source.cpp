@@ -63,7 +63,7 @@ namespace switcher
     return FALSE; //the source should be removed from the main loop
   }
 
-  QuiddityDocumentation GconfAudioSource::doc_ ("audio source", "gconfaudiosrc",
+  const QuiddityDocumentation GconfAudioSource::doc_ ("audio source", "gconfaudiosrc",
 						  "Audio source embedding the GConf-settings for audio input");
   
   QuiddityDocumentation 

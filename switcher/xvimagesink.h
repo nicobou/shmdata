@@ -35,10 +35,10 @@ namespace switcher
     Xvimagesink ();
     Xvimagesink (QuiddityLifeManager::ptr life_manager);
 
-    static QuiddityDocumentation get_documentation ();
+    QuiddityDocumentation get_documentation ();
+    static const QuiddityDocumentation doc_;
 
   private:
-    static QuiddityDocumentation doc_;
     GstElement *xvimagesink_;
     void make_xvimagesink ();
   };

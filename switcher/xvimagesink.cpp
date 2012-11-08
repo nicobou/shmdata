@@ -22,12 +22,15 @@
 namespace switcher
 {
 
+  const QuiddityDocumentation Xvimagesink::doc_ ("video sink", "xvimagesink",
+						 "Video window with minimal features");
+  
+  
   Xvimagesink::Xvimagesink (QuiddityLifeManager::ptr life_manager)
   {
     life_manager_ = life_manager;
     make_xvimagesink ();
   }
-
   
   Xvimagesink::Xvimagesink ()
   {
@@ -50,8 +53,6 @@ namespace switcher
   }
   
 
-  QuiddityDocumentation Xvimagesink::doc_ ("video sink", "xvimagesink",
-					   "Video window with minimal features");
 
   QuiddityDocumentation 
   Xvimagesink::get_documentation ()

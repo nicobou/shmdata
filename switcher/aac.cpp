@@ -21,7 +21,7 @@
 
 namespace switcher
 {
-  QuiddityDocumentation AAC::doc_ ("audio encoder", "voaacenc",
+  const QuiddityDocumentation AAC::doc_ ("audio encoder", "voaacenc",
 				      "AAC encoder");
 
   AAC::AAC ()

@@ -37,11 +37,11 @@ namespace switcher
 
     static void make_shmdata_writer(ShmdataReader *caller, void *h264_instance);
 
-    static QuiddityDocumentation get_documentation ();
+    QuiddityDocumentation get_documentation ();
+    static const QuiddityDocumentation doc_;
 
   private:
     void make_h264 ();
-    static QuiddityDocumentation doc_;
     GstElement *h264bin_;
     GstElement *h264enc_;
   };

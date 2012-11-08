@@ -26,7 +26,7 @@ main (int argc,
       char *argv[])
 {
   bool success = true;
-  switcher::QuiddityManager *manager = new switcher::QuiddityManager("test_manager");  
+  switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
   
   std::vector<std::string> classes = manager->get_classes ();
   

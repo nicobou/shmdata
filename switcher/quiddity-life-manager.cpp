@@ -62,35 +62,35 @@ namespace switcher
   QuiddityLifeManager::register_classes ()
   {
     //registering quiddities
-    abstract_factory_.register_class<AAC> (AAC::get_documentation().get_class_name (), 
-					   AAC::get_documentation().get_json_documentation ());
-    abstract_factory_.register_class<AudioTestSource> (AudioTestSource::get_documentation().get_class_name (), 
-						       AudioTestSource::get_documentation().get_json_documentation ());
-    abstract_factory_.register_class<CtrlServer> (CtrlServer::get_documentation().get_class_name (), 
-						  CtrlServer::get_documentation().get_json_documentation ());
-    abstract_factory_.register_class<GconfAudioSink> (GconfAudioSink::get_documentation().get_class_name (), 
-						      GconfAudioSink::get_documentation().get_json_documentation ());
-    abstract_factory_.register_class<GconfAudioSource> (GconfAudioSource::get_documentation().get_class_name (), 
-							GconfAudioSource::get_documentation().get_json_documentation ());
-    abstract_factory_.register_class<GconfVideoSink> (GconfVideoSink::get_documentation().get_class_name (), 
-						      GconfVideoSink::get_documentation().get_json_documentation ());
-    abstract_factory_.register_class<GconfVideoSource> (GconfVideoSource::get_documentation().get_class_name (),
-							GconfVideoSource::get_documentation().get_json_documentation ());
-    abstract_factory_.register_class<H264> (H264::get_documentation().get_class_name (), 
-					    H264::get_documentation().get_json_documentation ());
-    abstract_factory_.register_class<PulseSink> (PulseSink::get_documentation().get_class_name (), 
-						 PulseSink::get_documentation().get_json_documentation ());
-    abstract_factory_.register_class<RtpSession> (RtpSession::get_documentation().get_class_name (), 
-						  RtpSession::get_documentation().get_json_documentation ());
-    abstract_factory_.register_class<Runtime> (Runtime::get_documentation().get_class_name (), 
-					       Runtime::get_documentation().get_json_documentation ());
-    abstract_factory_.register_class<UDPSink> (UDPSink::get_documentation().get_class_name (), 
-					       UDPSink::get_documentation().get_json_documentation ());
+    abstract_factory_.register_class<AAC> (AAC::doc_.get_class_name (), 
+					   AAC::doc_.get_json_documentation ());
+    abstract_factory_.register_class<AudioTestSource> (AudioTestSource::doc_.get_class_name (), 
+						       AudioTestSource::doc_.get_json_documentation ());
+    abstract_factory_.register_class<CtrlServer> (CtrlServer::doc_.get_class_name (), 
+						  CtrlServer::doc_.get_json_documentation ());
+    abstract_factory_.register_class<GconfAudioSink> (GconfAudioSink::doc_.get_class_name (), 
+						      GconfAudioSink::doc_.get_json_documentation ());
+    abstract_factory_.register_class<GconfAudioSource> (GconfAudioSource::doc_.get_class_name (), 
+							GconfAudioSource::doc_.get_json_documentation ());
+    abstract_factory_.register_class<GconfVideoSink> (GconfVideoSink::doc_.get_class_name (), 
+						      GconfVideoSink::doc_.get_json_documentation ());
+    abstract_factory_.register_class<GconfVideoSource> (GconfVideoSource::doc_.get_class_name (),
+							GconfVideoSource::doc_.get_json_documentation ());
+    abstract_factory_.register_class<H264> (H264::doc_.get_class_name (), 
+					    H264::doc_.get_json_documentation ());
+    abstract_factory_.register_class<PulseSink> (PulseSink::doc_.get_class_name (), 
+						 PulseSink::doc_.get_json_documentation ());
+    abstract_factory_.register_class<RtpSession> (RtpSession::doc_.get_class_name (), 
+						  RtpSession::doc_.get_json_documentation ());
+    abstract_factory_.register_class<Runtime> (Runtime::doc_.get_class_name (), 
+					       Runtime::doc_.get_json_documentation ());
+    abstract_factory_.register_class<UDPSink> (UDPSink::doc_.get_class_name (), 
+					       UDPSink::doc_.get_json_documentation ());
 
-    abstract_factory_.register_class<VideoTestSource> (VideoTestSource::get_documentation().get_class_name (),
-						       VideoTestSource::get_documentation().get_json_documentation ());
-    abstract_factory_.register_class<Xvimagesink> (Xvimagesink::get_documentation().get_class_name (),
-						   Xvimagesink::get_documentation().get_json_documentation ());
+    abstract_factory_.register_class<VideoTestSource> (VideoTestSource::doc_.get_class_name (),
+						       VideoTestSource::doc_.get_json_documentation ());
+    abstract_factory_.register_class<Xvimagesink> (Xvimagesink::doc_.get_class_name (),
+						   Xvimagesink::doc_.get_json_documentation ());
     
   }
 

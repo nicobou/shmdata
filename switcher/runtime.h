@@ -40,11 +40,11 @@ namespace switcher
       ~Runtime ();
       GstElement *get_pipeline ();
       
-      static QuiddityDocumentation get_documentation ();
+      QuiddityDocumentation get_documentation ();
+      static const QuiddityDocumentation doc_;
 	
     private:
       void make_runtime();
-      static QuiddityDocumentation doc_;
       GstElement *pipeline_;
       GstBus *bus_;
       static gboolean bus_called (GstBus *bus,

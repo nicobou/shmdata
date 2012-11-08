@@ -22,6 +22,9 @@
 namespace switcher
 {
 
+  const QuiddityDocumentation UDPSink::doc_ ("udp sink", "udpsink",
+					     "send data stream with udp");
+
   UDPSink::UDPSink (QuiddityLifeManager::ptr life_manager)
   {
     life_manager_ = life_manager;
@@ -160,9 +163,6 @@ namespace switcher
     gst_element_add_pad (context->udpsink_bin_, context->ghost_sinkpad_); 
     gst_object_unref (sink_pad);
   }
-
-  QuiddityDocumentation UDPSink::doc_ ("udp sink", "udpsink",
-				       "send data stream with udp");
 
   QuiddityDocumentation 
   UDPSink::get_documentation ()
