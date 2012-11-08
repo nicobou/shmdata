@@ -130,11 +130,11 @@ namespace switcher
   }
   
 
-  void
-  CtrlServer::set_quiddity_manager (QuiddityManager::ptr manager)
-  {
-    soap_.user = (void *)manager.get ();
-  }
+  // void
+  // CtrlServer::set_quiddity_manager (QuiddityManager::ptr manager)
+  // {
+  //   soap_.user = (void *)manager.get ();
+  // }
   
   void 
   CtrlServer::set_port (int port)
@@ -145,6 +145,7 @@ namespace switcher
   void 
   CtrlServer::start ()
   {
+    soap_.user = (void *)manager_.get ();//FIXME this should use the shared pointer, maybe giving this insteead of the manager
     quit_server_thread_ = false;
     service_ = new controlService (soap_);
     SOAP_SOCKET m = service_->bind(NULL, port_, 100 /* BACKLOG */);

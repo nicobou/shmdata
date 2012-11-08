@@ -18,40 +18,22 @@
  */
 
 
-#ifndef __SWITCHER_CTRL_SERVER_H__
-#define __SWITCHER_CTRL_SERVER_H__
+#ifndef __SWITCHER_QUIDDITY_MANAGER_TRANSLATOR_H__
+#define __SWITCHER_QUIDDITY_MANAGER_TRANSLATOR_H__
 
-#include "switcher/quiddity-manager-translator.h"
+#include "switcher/quiddity-manager.h"
 #include <memory>
-
-#include "switcher/webservices/soapcontrolService.h"
 
 namespace switcher
 {
 
-  class CtrlServer : public QuiddityManagerTranslator
+  class QuiddityManagerTranslator : public Quiddity
   {
   public:
-    typedef std::shared_ptr<CtrlServer> ptr;
-    CtrlServer();
-    CtrlServer(QuiddityLifeManager::ptr life_manager);
-    ~CtrlServer ();
-    void set_port (int port);//default port is 8080
-    void start (); 
-    void stop ();
-    
-    QuiddityDocumentation get_documentation ();
-    static const QuiddityDocumentation doc_;
-
-  private:
-    void make_ctrlserver ();
-    struct soap soap_;
-    int port_;
-    bool quit_server_thread_;
-    controlService *service_; 
-    GThread *thread_;
-    static gpointer server_thread (gpointer user_data);
-    static int http_get (struct soap *soap);
+    typedef std::shared_ptr<QuiddityManagerTranslator> ptr;
+    void set_quiddity_manager (QuiddityManager::ptr manager);
+  protected:
+    QuiddityManager::ptr manager_;
   };
 
 }  // end of namespace
