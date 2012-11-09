@@ -23,7 +23,7 @@
 #include "switcher/webservices/control.nsmap"
 
 //options
-static char server[] = "http://localhost:8080";
+static gchar *server = NULL;
 static gboolean createquiddity;
 static gboolean deletequiddity;
 static gboolean listclasses;
@@ -66,6 +66,11 @@ int main(int argc, char **argv)
       exit (1);
     } 
   
+  
+  if (server == NULL)
+    {
+      server = "http://localhost:8080";
+    }
 
   if (! (listclasses 
 	 ^ listquiddities 
