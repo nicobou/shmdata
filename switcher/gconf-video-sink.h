@@ -31,14 +31,12 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<GconfVideoSink> ptr;
-    GconfVideoSink ();
-    GconfVideoSink (QuiddityLifeManager::ptr life_manager);
    
+    bool init ();
     QuiddityDocumentation get_documentation ();
     static const QuiddityDocumentation doc_;
    
   private:
-    void make_gconfvideosink ();
     GstElement *gconfvideosink_;
     GCond* data_cond_; //required in order to ensure gconf element will be factored into the main thread
     GMutex* data_mutex_;

@@ -32,16 +32,14 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<H264> ptr;
-    H264 ();
-    H264 (QuiddityLifeManager::ptr life_manager);
 
-    static void make_shmdata_writer(ShmdataReader *caller, void *h264_instance);
-
+    bool init ();
     QuiddityDocumentation get_documentation ();
     static const QuiddityDocumentation doc_;
+    
+    static void make_shmdata_writer(ShmdataReader *caller, void *h264_instance);
 
   private:
-    void make_h264 ();
     GstElement *h264bin_;
     GstElement *h264enc_;
   };

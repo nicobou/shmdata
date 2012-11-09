@@ -261,5 +261,9 @@ namespace switcher
     return "/tmp/switcher_";
   }
 
-
+  void
+  Quiddity::set_life_manager (QuiddityLifeManager::ptr life_manager)
+  {
+    life_manager_ = life_manager;
+  }
 }

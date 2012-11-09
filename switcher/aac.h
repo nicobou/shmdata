@@ -32,16 +32,13 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<AAC> ptr;
-    AAC ();
-    AAC (QuiddityLifeManager::ptr life_manager);
-
-    static void make_shmdata_writer(ShmdataReader *caller, void *aac_instance);
-
+    bool init ();
     QuiddityDocumentation get_documentation ();
     static const QuiddityDocumentation doc_;
 
+    static void make_shmdata_writer(ShmdataReader *caller, void *aac_instance);
+
   private:
-    void make_aac ();
     GstElement *aacbin_;
     GstElement *aacenc_;
   };

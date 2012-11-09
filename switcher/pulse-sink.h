@@ -32,15 +32,13 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<PulseSink> ptr;
-    PulseSink ();
-    PulseSink (QuiddityLifeManager::ptr life_manager);
 
+    bool init ();
     QuiddityDocumentation get_documentation ();
     static const QuiddityDocumentation doc_;
 
   private:
     GstElement *pulse_sink_;
-    void make_pulse_sink ();
   };
 
 }  // end of namespace

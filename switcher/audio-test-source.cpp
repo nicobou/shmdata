@@ -26,19 +26,8 @@ namespace switcher
   const QuiddityDocumentation AudioTestSource::doc_ ("audio source", "audiotestsrc", 
 						 "Creates audio test signals");
   
-  AudioTestSource::AudioTestSource ()
-  {
-    make_audiotestsource ();
-  }
-
-  AudioTestSource::AudioTestSource (QuiddityLifeManager::ptr life_manager)
-  {
-    life_manager_ = life_manager;
-    make_audiotestsource ();
-  }
-
-  void
-  AudioTestSource::make_audiotestsource ()
+  bool
+  AudioTestSource::init ()
   {
     audiotestsrc_ = gst_element_factory_make ("audiotestsrc",NULL);
     g_object_set (G_OBJECT (audiotestsrc_),
@@ -55,6 +44,7 @@ namespace switcher
     register_property (G_OBJECT (audiotestsrc_),"volume","audiotestsrc");
 
     set_raw_audio_element (audiotestsrc_);
+    return true;
   }
 
   QuiddityDocumentation 

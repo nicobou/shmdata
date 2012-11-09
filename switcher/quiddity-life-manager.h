@@ -36,7 +36,8 @@ namespace switcher
 {
   class Quiddity;
 
-  class QuiddityLifeManager //FIXME rename that into QuiddityManager_Impl or better 
+  class QuiddityLifeManager : public std::enable_shared_from_this<QuiddityLifeManager>
+//FIXME rename that into QuiddityManager_Impl or better 
   {
   public:
     typedef std::shared_ptr< QuiddityLifeManager > ptr;
@@ -52,11 +53,9 @@ namespace switcher
     bool exists (std::string quiddity_name);
 
     //creation
+    std::string create (std::string quiddity_class);
     std::string create (std::string quiddity_class, 
-			QuiddityLifeManager::ptr life_manager);
-    std::string create (std::string quiddity_class, 
-			std::string nick_name, 
-			QuiddityLifeManager::ptr life_manager);
+			std::string nick_name);
  
     //subsistence
     std::shared_ptr<Quiddity> get_quiddity (std::string quiddity_name);
@@ -85,9 +84,10 @@ namespace switcher
   private:
     std::string name_;
     void register_classes ();
-    AbstractFactory< Quiddity, std::string, std::string, QuiddityLifeManager::ptr > abstract_factory_;
+    AbstractFactory< Quiddity, std::string, std::string> abstract_factory_;
     StringMap< std::shared_ptr<Quiddity> > quiddities_;
     StringMap< std::string> quiddities_nick_names_;
+    void init_quiddity (std::shared_ptr<Quiddity> quiddity);
   };
 
 } // end of namespace

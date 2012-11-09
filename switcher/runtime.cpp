@@ -29,19 +29,8 @@ namespace switcher
   const QuiddityDocumentation Runtime::doc_ ("runtime", "runtime",
 					     "Complete pipeline container and scheduler");
 
-  Runtime::Runtime ()
-  {
-    make_runtime ();
-  }
-
-  Runtime::Runtime (QuiddityLifeManager::ptr life_manager)
-  {
-    life_manager_ = life_manager;
-    make_runtime ();
-  }
-  
-  void
-  Runtime::make_runtime ()
+  bool
+  Runtime::init ()
   {
     pipeline_ = gst_pipeline_new (NULL);
     set_name (gst_element_get_name (pipeline_));
@@ -50,6 +39,7 @@ namespace switcher
     gst_object_unref (bus_); 
     
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
+    return true;
   }
   
   Runtime::~Runtime ()

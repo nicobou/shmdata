@@ -29,30 +29,23 @@
 namespace switcher 
 {
 
-  template <class T, class Arg>
+  template <class T>
     class Creator
     {
     public:
       virtual ~Creator(){}
       virtual T* Create() = 0;
-      virtual T* Create(Arg arg) = 0;
-
     };
   
 
-  template <class T, class Arg>
-    class DerivedCreator : public Creator<T,Arg>
+  template <class T>
+    class DerivedCreator : public Creator<T>
   {
   public:
     T* Create()
     {
       return new T;
     }
-    T* Create(Arg arg)
-    {
-      return new T(arg);
-    }
-
   };
   
 } // end of namespace

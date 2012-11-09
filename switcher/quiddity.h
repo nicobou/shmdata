@@ -51,6 +51,10 @@ namespace switcher
     //class documentation
     virtual QuiddityDocumentation get_documentation() = 0;
     
+    //class initialisation
+    //bool init() {return true;};
+    virtual bool init () = 0;
+
     //instance name
     std::string get_name ();
     std::string get_nick_name ();
@@ -73,6 +77,9 @@ namespace switcher
     
     //file names
     static std::string get_file_name_suffix ();
+
+    //life manager  initialization
+    void set_life_manager (std::shared_ptr<QuiddityLifeManager> life_manager);
 
   private:
     //properties are registered by derived class

@@ -32,7 +32,7 @@
 namespace switcher 
 {
 
-  template <class T, class Key, class Doc, class Arg>
+  template <class T, class Key, class Doc>
     class AbstractFactory
   {
   public:
@@ -40,12 +40,11 @@ namespace switcher
     std::vector<Key> get_keys ();
     std::vector<Doc> get_classes_documentation ();
     std::shared_ptr<T> create(Key Id);
-    std::shared_ptr<T> create(Key Id, Arg arg);
     bool key_exists (Key Id);
     ~AbstractFactory();
 
   private:
-    std::map<Key, Creator<T,Arg>*> constructor_map_;
+    std::map<Key, Creator<T>*> constructor_map_;
     std::map<Key, Doc> classes_documentation_;
     std::vector<Key> constructor_names_;
   };

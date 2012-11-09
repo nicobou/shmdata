@@ -35,9 +35,9 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<RtpSession> ptr;
-    RtpSession ();
-    RtpSession (QuiddityLifeManager::ptr life_manager);
     ~RtpSession ();
+
+    bool init ();
     QuiddityDocumentation get_documentation ();
     static const QuiddityDocumentation doc_;
 
@@ -78,7 +78,6 @@ namespace switcher
     static void attach_data_stream(ShmdataReader *caller, void *rtpsession_instance); 
     
   private:
-    void make_rtpsession ();
     GstElement *rtpsession_;
     //a counter used for setting id of internal streams
     guint next_id_;

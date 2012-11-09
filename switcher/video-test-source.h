@@ -31,14 +31,12 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<VideoTestSource> ptr;
-    VideoTestSource ();
-    VideoTestSource (QuiddityLifeManager::ptr life_manager);
     
+    bool init ();
     QuiddityDocumentation get_documentation ();
     static const QuiddityDocumentation doc_;
     
   private:
-    void make_videotestsource ();
     GstElement *videotestsrc_;
   };
 

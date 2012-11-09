@@ -35,16 +35,14 @@ namespace switcher
     {
     public:
       typedef std::shared_ptr<Runtime> ptr;
-      Runtime ();
-      Runtime (QuiddityLifeManager::ptr life_manager);
       ~Runtime ();
-      GstElement *get_pipeline ();
-      
+      bool init ();
       QuiddityDocumentation get_documentation ();
       static const QuiddityDocumentation doc_;
+
+      GstElement *get_pipeline ();
 	
     private:
-      void make_runtime();
       GstElement *pipeline_;
       GstBus *bus_;
       static gboolean bus_called (GstBus *bus,

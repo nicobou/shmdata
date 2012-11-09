@@ -28,17 +28,6 @@ namespace switcher
   const QuiddityDocumentation RtpSession::doc_ ("RTP session", "rtpsession",
 					  "RTP session manager");
   
-  RtpSession::RtpSession ()
-  {
-    make_rtpsession ();
-  }
-
-  RtpSession::RtpSession (QuiddityLifeManager::ptr life_manager)
-  {
-    life_manager_ = life_manager;
-    make_rtpsession ();
-  }
-
   RtpSession::~RtpSession ()
   {
     g_print ("rtpsession deleting\n");
@@ -63,8 +52,8 @@ namespace switcher
 
   }
 
-  void 
-  RtpSession::make_rtpsession ()
+  bool 
+  RtpSession::init ()
   {
     next_id_ = 79; //this value is arbitrary and can be changed
 
@@ -185,6 +174,7 @@ namespace switcher
     //set the name before registering properties
     set_name (gst_element_get_name (rtpsession_));
     
+    return true;
   }
   
   gboolean

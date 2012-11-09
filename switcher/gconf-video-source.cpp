@@ -23,19 +23,9 @@
 namespace switcher
 {
 
-  GconfVideoSource::GconfVideoSource ()
-  {
-    make_gconfvideosource ();
-  }
- 
-  GconfVideoSource::GconfVideoSource (QuiddityLifeManager::ptr life_manager)
-  {
-    life_manager_ = life_manager;
-    make_gconfvideosource ();
-  }
 
-  void 
-  GconfVideoSource::make_gconfvideosource ()
+  bool
+  GconfVideoSource::init ()
   {
     data_cond_ = g_cond_new (); 
     data_mutex_ = g_mutex_new ();
@@ -43,6 +33,7 @@ namespace switcher
     g_mutex_lock (data_mutex_);
     g_cond_wait (data_cond_, data_mutex_);
     g_mutex_unlock (data_mutex_);
+    return true;
   }
 
   gboolean 

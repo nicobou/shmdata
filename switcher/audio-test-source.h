@@ -31,14 +31,11 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<AudioTestSource> ptr;
-    AudioTestSource ();
-    AudioTestSource (QuiddityLifeManager::ptr life_manager);
-
-   QuiddityDocumentation get_documentation ();
-   static const QuiddityDocumentation doc_;
+    bool init ();
+    QuiddityDocumentation get_documentation ();
+    static const QuiddityDocumentation doc_;
 
   private: 
-   void make_audiotestsource ();
    GstElement *audiotestsrc_;
   };
 

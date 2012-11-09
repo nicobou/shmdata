@@ -24,19 +24,8 @@ namespace switcher
   const QuiddityDocumentation AAC::doc_ ("audio encoder", "voaacenc",
 				      "AAC encoder");
 
-  AAC::AAC ()
-  {
-    make_aac ();
-  }
-
-  AAC::AAC (QuiddityLifeManager::ptr life_manager)
-  {
-    life_manager_ = life_manager;
-    make_aac ();
-  }
-
-  void 
-  AAC::make_aac ()
+  bool
+  AAC::init ()
   {
     aacbin_ = gst_element_factory_make ("bin",NULL);
     aacenc_ = gst_element_factory_make ("voaacenc",NULL);
@@ -44,6 +33,7 @@ namespace switcher
     set_name (gst_element_get_name (aacenc_));
     set_sink_element (aacbin_);
     set_on_first_data_hook (AAC::make_shmdata_writer,this);
+    return true;
   }
   
   QuiddityDocumentation 

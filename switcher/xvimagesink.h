@@ -32,15 +32,12 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<Xvimagesink> ptr;
-    Xvimagesink ();
-    Xvimagesink (QuiddityLifeManager::ptr life_manager);
-
+    bool init ();
     QuiddityDocumentation get_documentation ();
     static const QuiddityDocumentation doc_;
 
   private:
     GstElement *xvimagesink_;
-    void make_xvimagesink ();
   };
 
 }  // end of namespace

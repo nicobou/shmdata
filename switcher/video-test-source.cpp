@@ -25,19 +25,8 @@ namespace switcher
   const QuiddityDocumentation VideoTestSource::doc_  ("video source", "videotestsrc",
 						"Creates a test video stream");
   
-  VideoTestSource::VideoTestSource ()
-  {
-    make_videotestsource ();
-  }
-
-  VideoTestSource::VideoTestSource (QuiddityLifeManager::ptr life_manager) 
-  {
-    life_manager_ = life_manager;
-    make_videotestsource ();
-  }
-
-  void
-  VideoTestSource::make_videotestsource ()
+  bool
+  VideoTestSource::init ()
   {
     videotestsrc_ = gst_element_factory_make ("videotestsrc",NULL);
     g_object_set (G_OBJECT (videotestsrc_),
@@ -62,6 +51,7 @@ namespace switcher
     
     set_raw_video_element (videotestsrc_);
 
+    return true;
   }
   
   

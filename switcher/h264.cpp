@@ -25,19 +25,8 @@ namespace switcher
   const QuiddityDocumentation H264::doc_ ("video encoder", "x264enc",
 				    "H264 encoder");
   
-  H264::H264 ()
-  {
-    make_h264 ();
-  }
-
-  H264::H264 (QuiddityLifeManager::ptr life_manager)
-  {
-    life_manager_ = life_manager;
-    make_h264 ();
-  }
-
-  void
-  H264::make_h264 ()
+  bool
+  H264::init ()
   {
     h264bin_ = gst_element_factory_make ("bin",NULL);
     
@@ -47,6 +36,7 @@ namespace switcher
     set_name (gst_element_get_name (h264enc_));
     
     set_on_first_data_hook (H264::make_shmdata_writer,this);
+    return true;
   }
 
   QuiddityDocumentation 

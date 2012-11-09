@@ -22,20 +22,8 @@
 namespace switcher
 {
 
-  PulseSink::PulseSink (QuiddityLifeManager::ptr life_manager)
-  {
-    life_manager_ = life_manager;
-    make_pulse_sink ();
-  }
-
-  
-  PulseSink::PulseSink ()
-  {
-    make_pulse_sink ();
-  }
-
-  void 
-  PulseSink::make_pulse_sink ()
+  bool 
+  PulseSink::init ()
   {
     pulse_sink_ = gst_parse_bin_from_description ("audioconvert ! pulsesink sync=false",
 						  TRUE,
@@ -48,6 +36,7 @@ namespace switcher
     // g_object_set (G_OBJECT (pulse_sink_), "sync", FALSE, NULL);
 
     set_sink_element (pulse_sink_);
+    return true;
   }
   
 

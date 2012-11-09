@@ -33,8 +33,6 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<CtrlServer> ptr;
-    CtrlServer();
-    CtrlServer(QuiddityLifeManager::ptr life_manager);
     ~CtrlServer ();
     void set_port (int port);//default port is 8080
     void start (); 
@@ -42,11 +40,11 @@ namespace switcher
     //wrappers
     static gboolean set_port_wrapped (gint port, gpointer user_data);
 
+    bool init ();
     QuiddityDocumentation get_documentation ();
     static const QuiddityDocumentation doc_;
 
   private:
-    void make_ctrlserver ();
     struct soap soap_;
     int port_;
     bool quit_server_thread_;

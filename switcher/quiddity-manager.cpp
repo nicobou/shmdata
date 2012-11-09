@@ -291,13 +291,11 @@ namespace switcher
 	//TODO
 	break;
       case QuiddityCommand::create:
-	context->command_.result_.push_back (context->life_manager_->create (context->command_.args_[0],
-									     context->life_manager_));
+	context->command_.result_.push_back (context->life_manager_->create (context->command_.args_[0]));
 	break;
       case QuiddityCommand::create_nick_named:
 	context->command_.result_.push_back (context->life_manager_->create (context->command_.args_[0],
-									      context->command_.args_[1],
-									      context->life_manager_));
+									      context->command_.args_[1]));
 	break;
       case QuiddityCommand::remove:
 	if (context->life_manager_->remove (context->command_.args_[0]))

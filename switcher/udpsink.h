@@ -32,10 +32,9 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<UDPSink> ptr;
-    UDPSink ();
-    UDPSink (QuiddityLifeManager::ptr life_manager);
     ~UDPSink ();
 
+    bool init ();
     QuiddityDocumentation get_documentation ();
     static const QuiddityDocumentation doc_;
 
@@ -54,7 +53,6 @@ namespace switcher
     GstElement *udpsink_bin_;
     GstElement *typefind_;
     GstPad *ghost_sinkpad_;
-    void make_udpsink ();
     static void on_client_added (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data);
     static void on_client_removed (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data);
     static void add_elements_to_bin (ShmdataReader *caller, void *udpbin_instance);

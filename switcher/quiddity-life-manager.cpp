@@ -40,6 +40,9 @@
 namespace switcher
 {
 
+
+  //FIXME make constructor private and provide a factory of shared pointer 
+  //in order to make the use of shared_from_this safe
   QuiddityLifeManager::QuiddityLifeManager() :
     name_ ("default")
   {
@@ -106,29 +109,40 @@ namespace switcher
     return abstract_factory_.key_exists (class_name);
   }
 
+
+  void 
+  QuiddityLifeManager::init_quiddity (Quiddity::ptr quiddity)
+  {
+    	quiddity->set_life_manager (shared_from_this());
+	 if (!quiddity->init ())
+	   g_printerr ("QuiddityLifeManager: intialization of %s (%s) return false\n",
+		       quiddity->get_name ().c_str (),
+		       quiddity->get_documentation ().get_class_name ().c_str ());
+	quiddities_.insert (quiddity->get_name(),quiddity);
+	quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
+  }
+
   std::string 
-  QuiddityLifeManager::create (std::string quiddity_class, QuiddityLifeManager::ptr life_manager)
+  QuiddityLifeManager::create (std::string quiddity_class)
   {
      if(!class_exists (quiddity_class))
       return "";
     
-     Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class, life_manager);
+     Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class);
      g_print ("%s: create_quiddity %p %s\n",name_.c_str(), &quiddity,quiddity->get_name ().c_str());
      if (quiddity.get() != NULL)
-       {
-	 quiddities_.insert (quiddity->get_name(),quiddity);
-	 quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
-       }
+	 init_quiddity (quiddity);
+
      return quiddity->get_nick_name ();
   }
 
   std::string 
-  QuiddityLifeManager::create (std::string quiddity_class, std::string nick_name, QuiddityLifeManager::ptr life_manager)
+  QuiddityLifeManager::create (std::string quiddity_class, std::string nick_name)
   {
     if(!class_exists (quiddity_class))
       return "";
 
-    Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class, life_manager);
+    Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class);
     g_print ("%s: create_quiddity %p %s\n",name_.c_str(), &quiddity,quiddity->get_name ().c_str());
     if (quiddity.get() != NULL)
       {
@@ -138,8 +152,8 @@ namespace switcher
 	  g_print ("QuiddityLifeManager::create: nick name %s not valid, using %s\n",
 		   nick_name.c_str (),
 		   quiddity->get_name().c_str ());
-     	quiddities_.insert (quiddity->get_name(),quiddity);
-	quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
+
+	init_quiddity (quiddity);
       }
     return quiddity->get_nick_name ();
   }

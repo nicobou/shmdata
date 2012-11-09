@@ -26,19 +26,8 @@ namespace switcher
 						 "Video window with minimal features");
   
   
-  Xvimagesink::Xvimagesink (QuiddityLifeManager::ptr life_manager)
-  {
-    life_manager_ = life_manager;
-    make_xvimagesink ();
-  }
-  
-  Xvimagesink::Xvimagesink ()
-  {
-    make_xvimagesink ();
-  }
-
-  void 
-  Xvimagesink::make_xvimagesink ()
+  bool
+  Xvimagesink::init ()
   {
     xvimagesink_ = gst_element_factory_make ("xvimagesink",NULL);
     
@@ -50,6 +39,8 @@ namespace switcher
     //register_property (G_OBJECT (xvimagesink_),"sync","videosink");
     
     set_sink_element (xvimagesink_);
+
+    return true;
   }
   
 
