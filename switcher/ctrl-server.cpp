@@ -62,7 +62,6 @@ namespace switcher
 			    Method::make_arg_description ("port",
 							  "the port to bind",
 							  NULL));
-
   }
 
   CtrlServer::~CtrlServer ()

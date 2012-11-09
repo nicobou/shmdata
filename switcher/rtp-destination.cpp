@@ -18,9 +18,36 @@
  */
 
 #include "switcher/rtp-destination.h"
+#include <sstream>
 
 namespace switcher
 {
+  
+  RtpDestination::~RtpDestination ()
+  {
+    std::map<std::string, QuiddityManager::ptr> streams_to_clean = ports_.get_map ();
+    std::map<std::string, QuiddityManager::ptr>::iterator iter;
+    for (iter = streams_to_clean.begin (); iter != streams_to_clean.end (); iter ++)
+      {
+	QuiddityManager::ptr manager = iter->second;
+
+	//cleaning rtp
+	std::vector <std::string> arg;
+	arg.push_back (host_name_);
+	arg.push_back (iter->first);
+	manager->invoke ("udpsend_rtp","remove_client",arg);
+
+	//cleaning rtcp
+	arg.clear ();
+	arg.push_back (host_name_);
+	std::ostringstream rtcp_port;
+	rtcp_port << atoi(iter->first.c_str()); + 1;
+	arg.push_back (rtcp_port.str());
+	manager->invoke ("udpsend_rtp","remove_client",arg);
+
+	//TODO remove connection to funnel
+      }
+  }
   
   void 
   RtpDestination::set_host_name (std::string host_name)

@@ -205,7 +205,7 @@ namespace switcher
   {
     if (!destinations_.contains (dest_name))
       {
-	g_printerr ("RtpSession: destination named %s does not exists, cannot print sdp",
+	g_printerr ("RtpSession: destination named %s does not exists, cannot print sdp \n",
 		    dest_name.c_str ());
 	return false;
       }
@@ -436,9 +436,6 @@ namespace switcher
 		    nick_name.c_str ());
 	return false;
       }
-    //FIXME free streams
-
-    
     destinations_.remove (nick_name);
     return true;
   }
