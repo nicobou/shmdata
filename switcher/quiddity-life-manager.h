@@ -42,8 +42,8 @@ namespace switcher
   public:
     typedef std::shared_ptr< QuiddityLifeManager > ptr;
     
-    QuiddityLifeManager();//will get name "default"
-    QuiddityLifeManager(std::string);
+     static QuiddityLifeManager::ptr make_life_manager ();//will get name "default"
+     static QuiddityLifeManager::ptr make_life_manager (std::string name);
     
     //info about manager
     std::string get_name ();
@@ -82,6 +82,8 @@ namespace switcher
 
 
   private:
+    QuiddityLifeManager();//will get name "default"
+    QuiddityLifeManager(std::string);
     std::string name_;
     void register_classes ();
     AbstractFactory< Quiddity, std::string, std::string> abstract_factory_;

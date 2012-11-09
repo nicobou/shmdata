@@ -41,8 +41,20 @@ namespace switcher
 {
 
 
-  //FIXME make constructor private and provide a factory of shared pointer 
-  //in order to make the use of shared_from_this safe
+  QuiddityLifeManager::ptr 
+  QuiddityLifeManager::make_life_manager ()
+  {
+    QuiddityLifeManager::ptr manager(new QuiddityLifeManager);
+    return manager;
+  }
+  
+  QuiddityLifeManager::ptr 
+  QuiddityLifeManager::make_life_manager (std::string name)
+  {
+    QuiddityLifeManager::ptr manager(new QuiddityLifeManager(name));
+    return manager;
+  }
+
   QuiddityLifeManager::QuiddityLifeManager() :
     name_ ("default")
   {
