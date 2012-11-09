@@ -18,7 +18,7 @@
  */
 
 /**
- * the Abstract Life Manager class
+ * the Abstract factory class
  */
 
 #ifndef __SWITCHER_ABSTRACT_FACTORY_H__
