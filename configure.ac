@@ -1,5 +1,5 @@
 AC_PREREQ([2.61])
-AC_INIT(shmdata, [0.6.5], [http://codered.sat.qc.ca/redmine/projects/libshmdata/issues], [shmdata], [http://codered.sat.qc.ca/redmine/projects/libshmdata])
+AC_INIT(shmdata, [0.6.4], [http://codered.sat.qc.ca/redmine/projects/libshmdata/issues], [shmdata], [http://codered.sat.qc.ca/redmine/projects/libshmdata])
 #AC_CONFIG_MACRO_DIR([m4])
 AC_MSG_NOTICE([Configuring libshmdata])
 AM_INIT_AUTOMAKE([subdir-objects -Wno-portability])
@@ -39,6 +39,25 @@ AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])
 
 # Checks for header files.
 AC_CHECK_HEADERS([string.h math.h signal.h stdio.h stdlib.h unistd.h])
+
+# was included for the puredata plugins
+AM_CONDITIONAL(MINGW, false)
+AM_CONDITIONAL(DARWIN, false)
+case "${build_os}" in
+*mingw* | *cygwin*)
+  mingw32_support="yes"
+  AC_CHECK_HEADER(windows.h)
+  AM_CONDITIONAL(MINGW, true)
+  LDFLAGS="$LDFLAGS -no-undefined"
+  ;;
+*darwin* | *rhapsody* | *macosx*)
+  AC_ISC_POSIX
+  AM_CONDITIONAL(DARWIN, true)
+  ;;
+*)
+  AC_ISC_POSIX
+  ;;
+esac
 
 # Special cases
 case "$host" in *-darwin* | *-macos10*)
@@ -132,6 +151,11 @@ else
     AM_CONDITIONAL(HAVE_PCL, true)
 fi
 
+# Check for Puredata
+AC_CHECK_HEADER(m_pd.h,PUREDATA=y,AC_MSG_WARN([Puredata header not found.]))
+AM_CONDITIONAL(PUREDATAFOUND, test "${PUREDATA}" = "y")
+
+
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
 AC_CONFIG_FILES([
@@ -143,6 +167,9 @@ AC_CONFIG_FILES([
         shmdata-${LIBSHMDATA_API_VERSION}.pc:shmdata.pc.in
         shmdata-any-${LIBSHMDATA_API_VERSION}.pc:shmdata-any.pc.in
         shmdata-osg-${LIBSHMDATA_API_VERSION}.pc:shmdata-osg.pc.in
+         plugins/Makefile
+         plugins/puredata/Makefile
+
         ])
 
 AC_OUTPUT
