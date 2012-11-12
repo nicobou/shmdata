@@ -123,6 +123,28 @@ extern "C"
 				     void *user_data);
 
   /** 
+   * same as shmdata_any_writer_push_data, but adds buffer duration, as required for some 
+   * data (audio for instance).
+   * 
+   * @param writer is the writer that should push the data 
+   * @param data is a pointer to the data to transmit
+   * @param size is the size of the data to transmit
+   * @param timestamp is the timestamp associated to the data
+   * @param duration is the duration of data contained in the buffer
+   * @param done_with_data is the callback informing when data can be freed
+   * @param user_data is the user data for the done_with_data callback
+   */
+  void shmdata_any_writer_push_data_with_duration (shmdata_any_writer_t *writer,
+						   void *data,
+						   int size,
+						   unsigned long long timestamp,
+						   unsigned long long duration,
+						   unsigned long long offset,
+						   unsigned long long offeset_end,
+						   shmdata_any_writer_done_with_data cb,
+						   void *user_data);
+
+  /** 
    * Close the writer (free memory and close shared memory socket). 
    * 
    * @param writer is the writer to close
