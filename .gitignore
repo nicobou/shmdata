@@ -41,5 +41,7 @@ install-sh
 libtool
 ltmain.sh
 missing
+plugins/puredata/.deps/
+plugins/puredata/.libs/
 stamp-h1
 tests/check_write_read
