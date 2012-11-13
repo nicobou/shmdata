@@ -43,29 +43,29 @@ namespace switcher
       return true;
     else
       {
-	g_printerr ("GstUtils::check_pad_link_return - ERROR %d (GstPadLinkReturn)\n", res);
+	g_error ("GstUtils::check_pad_link_return - ERROR %d (GstPadLinkReturn)\n", res);
 	 // switch ( res )
 	 //   {
 	 //   case 'GST_PAD_LINK_WRONG_HIERARCHY':
-         //     g_printerr ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_HIERARCHY\n");
+         //     g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_HIERARCHY\n");
          //     break;
 	 //   case 'GST_PAD_LINK_WAS_LINKED':
-         //     g_printerr ("GstUtils::check_pad_link_return - GST_PAD_LINK_WAS_LINKED\n");
+         //     g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_WAS_LINKED\n");
          //     break;
 	 //   case 'GST_PAD_LINK_WRONG_DIRECTION':
-         //     g_printerr ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_DIRECTION\n");
+         //     g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_DIRECTION\n");
          //     break;
 	 //   case 'GST_PAD_LINK_NOFORMAT':
-         //     g_printerr ("GstUtils::check_pad_link_return - GST_PAD_LINK_NOFORMAT\n");
+         //     g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_NOFORMAT\n");
          //     break;
 	 //   case 'GST_PAD_LINK_NOSCHED':
-         //     g_printerr ("GstUtils::check_pad_link_return - GST_PAD_LINK_NOSCHED\n");
+         //     g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_NOSCHED\n");
          //     break;
 	 //   case 'GST_PAD_LINK_REFUSED':
-         //     g_printerr ("GstUtils::check_pad_link_return - GST_PAD_LINK_REFUSED\n");
+         //     g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_REFUSED\n");
          //     break;
 	 //   default:
-         //     g_printerr ("GstUtils::check_pad_link_return - UNKNOWN ERROR\n");
+         //     g_error ("GstUtils::check_pad_link_return - UNKNOWN ERROR\n");
 	 //   }
 	return false;
       }

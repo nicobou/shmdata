@@ -77,8 +77,8 @@ namespace switcher
   {
     if (!source_streams_.contains (shmdata_stream_path))
       {
-	g_printerr ("RtpDestination: stream not found, cannot remove %s\n", 
-		    shmdata_stream_path.c_str ());
+	g_warning ("RtpDestination: stream not found, cannot remove %s\n", 
+		   shmdata_stream_path.c_str ());
 	return false;
       }
     std::string port = source_streams_.lookup (shmdata_stream_path);

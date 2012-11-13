@@ -45,7 +45,7 @@ namespace switcher
   {
     if (method == NULL)
       {
-	g_printerr ("Method::set_method is call with a NULL function\n");
+	g_error ("Method::set_method is call with a NULL function\n");
 	return;
       }
     closure_ = g_cclosure_new (G_CALLBACK (method), user_data, Method::destroy_data);
@@ -68,7 +68,7 @@ namespace switcher
   {
     if (args.size () != arg_types_.size())
       {
-	g_printerr ("Method::invoke number of arguments does not correspond to the size of argument types\n");
+	g_error ("Method::invoke number of arguments does not correspond to the size of argument types\n");
 	return false;
       }
 
@@ -81,7 +81,7 @@ namespace switcher
 	
 	if ( !gst_value_deserialize (&params[i],args[i].c_str()))
 	  {
-	    g_printerr ("Method::invoke string not transformable into gvalue (argument: %s) \n",
+	    g_error ("Method::invoke string not transformable into gvalue (argument: %s) \n",
 			args[i].c_str());
 	  }
       }
@@ -105,7 +105,7 @@ namespace switcher
   Method::destroy_data (gpointer  data,
 			GClosure *closure)
   {
-    //g_print ("Method::destroy data\n");
+    //g_debug ("Method::destroy data\n");
   }
   
 

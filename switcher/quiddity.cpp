@@ -32,7 +32,7 @@ namespace switcher
   {}
   
   Quiddity::~Quiddity () { 
-    g_print ("call: Quiddity destructor for %s\n",get_name().c_str());
+    g_debug ("call: Quiddity destructor for %s\n",get_name().c_str());
   }
 
   std::string
@@ -70,7 +70,7 @@ namespace switcher
     GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), object_property.c_str());
     if (pspec == NULL)
       {
-	g_printerr ("property not found %s\n",object_property.c_str());
+	g_error ("property not found %s\n",object_property.c_str());
 	return false;
       }
 
@@ -85,7 +85,7 @@ namespace switcher
       }
     else 
       {
-	g_printerr ("registering name %s already exists\n",name.c_str());
+	g_error ("registering name %s already exists\n",name.c_str());
 	return false;
       }
   }
@@ -97,7 +97,7 @@ namespace switcher
   {
     if (methods_.find( function_name ) == methods_.end())
       {
-	g_printerr ("Quiddity::method_get_num_value_args error: method %s not found\n",function_name.c_str());
+	g_error ("Quiddity::method_get_num_value_args error: method %s not found\n",function_name.c_str());
 	return -1;
       }
     else 
@@ -110,7 +110,7 @@ namespace switcher
   {
     if (methods_.find( function_name ) == methods_.end())
       {
-	g_printerr ("Quiddity::invoke_method error: method %s not found\n",function_name.c_str());
+	g_error ("Quiddity::invoke_method error: method %s not found\n",function_name.c_str());
 	return false;
       }
     else 
@@ -125,7 +125,7 @@ namespace switcher
   {
     if (method == NULL)
       {
-	g_printerr ("fail registering %s (method is NULL)\n",method_name.c_str());
+	g_error ("fail registering %s (method is NULL)\n",method_name.c_str());
 	return false;
       }
     
@@ -139,7 +139,7 @@ namespace switcher
       }
     else 
       {
-	g_printerr ("registering name %s already exists\n",method_name.c_str());
+	g_error ("registering name %s already exists\n",method_name.c_str());
 	return false;
       }
 
@@ -153,7 +153,7 @@ namespace switcher
     
     if (methods_.find( method_name ) == methods_.end())
       {
-	g_printerr ("cannot set description of a not existing method");
+	g_error ("cannot set description of a not existing method");
 	return false;
       }
 

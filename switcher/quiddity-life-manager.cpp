@@ -127,7 +127,7 @@ namespace switcher
   {
     	quiddity->set_life_manager (shared_from_this());
 	 if (!quiddity->init ())
-	   g_printerr ("QuiddityLifeManager: intialization of %s (%s) return false\n",
+	   g_error ("QuiddityLifeManager: intialization of %s (%s) return false\n",
 		       quiddity->get_name ().c_str (),
 		       quiddity->get_documentation ().get_class_name ().c_str ());
 	quiddities_.insert (quiddity->get_name(),quiddity);
@@ -141,7 +141,7 @@ namespace switcher
       return "";
     
      Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class);
-     g_print ("%s: create_quiddity %p %s\n",name_.c_str(), &quiddity,quiddity->get_name ().c_str());
+     g_debug ("%s: create_quiddity %p %s",name_.c_str(), &quiddity,quiddity->get_name ().c_str());
      if (quiddity.get() != NULL)
 	 init_quiddity (quiddity);
 
@@ -155,13 +155,13 @@ namespace switcher
       return "";
 
     Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class);
-    g_print ("%s: create_quiddity %p %s\n",name_.c_str(), &quiddity,quiddity->get_name ().c_str());
+    g_debug ("%s: create_quiddity %p %s",name_.c_str(), &quiddity,quiddity->get_name ().c_str());
     if (quiddity.get() != NULL)
       {
 	if (!nick_name.empty () && !quiddities_nick_names_.contains (nick_name))
 	  quiddity->set_nick_name (nick_name);
 	else
-	  g_print ("QuiddityLifeManager::create: nick name %s not valid, using %s\n",
+	  g_debug ("QuiddityLifeManager::create: nick name %s not valid, using %s\n",
 		   nick_name.c_str (),
 		   quiddity->get_name().c_str ());
 
@@ -181,7 +181,7 @@ namespace switcher
   {
      if (!exists (quiddity_name))
       {
-	g_printerr ("quiddity %s not found, cannot provide ptr\n",quiddity_name.c_str());
+	g_error ("quiddity %s not found, cannot provide ptr\n",quiddity_name.c_str());
 	Quiddity::ptr empty_quiddity_ptr;
 	return empty_quiddity_ptr;
       }
@@ -207,7 +207,7 @@ namespace switcher
 
     if (!exists (quiddity_name))
       {
-	g_printerr ("quiddity %s not found, cannot get description of properties\n",quiddity_name.c_str());
+	g_error ("quiddity %s not found, cannot get description of properties\n",quiddity_name.c_str());
 	return "";
       }
     return (get_quiddity (quiddity_name))->get_properties_description ();
@@ -219,7 +219,7 @@ namespace switcher
 
     if (!exists (quiddity_name))
       {
-	g_printerr ("quiddity %s not found, cannot get description of properties\n",quiddity_name.c_str());
+	g_error ("quiddity %s not found, cannot get description of properties\n",quiddity_name.c_str());
 	return "";
       }
     return (get_quiddity (quiddity_name))->get_property_description (property_name);
@@ -232,7 +232,7 @@ namespace switcher
   {
     if (!exists (quiddity_name))
       {
-	g_printerr ("quiddity %s not found, cannot set property\n",quiddity_name.c_str());
+	g_error ("quiddity %s not found, cannot set property\n",quiddity_name.c_str());
 	return false;
       }
     return (get_quiddity (quiddity_name))->set_property(property_name.c_str(),property_value.c_str());
@@ -244,7 +244,7 @@ namespace switcher
   {
     if (!exists (quiddity_name))
       {
-	g_printerr ("quiddity %s not found, cannot get property\n",quiddity_name.c_str());
+	g_error ("quiddity %s not found, cannot get property\n",quiddity_name.c_str());
 	return "error, quiddity not found";
       }
     return (get_quiddity (quiddity_name))->get_property(property_name.c_str());
@@ -255,11 +255,11 @@ namespace switcher
 			       std::string function_name,
 			       std::vector<std::string> args)
   {
-    //g_print ("QuiddityLifeManager::quiddity_invoke_method %s %s, arg size %d\n",quiddity_name.c_str(), function_name.c_str(), args.size ());
+    //g_debug ("QuiddityLifeManager::quiddity_invoke_method %s %s, arg size %d\n",quiddity_name.c_str(), function_name.c_str(), args.size ());
     
     if (!exists (quiddity_name))
       {
-	g_printerr ("quiddity %s not found, cannot invoke\n",quiddity_name.c_str());
+	g_error ("quiddity %s not found, cannot invoke\n",quiddity_name.c_str());
 	return false;
       }
     Quiddity::ptr quiddity = get_quiddity (quiddity_name);
@@ -268,13 +268,13 @@ namespace switcher
 
     if (num_val == -1) 
       {
-	g_printerr ("function %s not found, cannot invoke\n",function_name.c_str());
+	g_error ("function %s not found, cannot invoke\n",function_name.c_str());
 	return false;
       }
 
     if ((int)args.size () != num_val)
       {
-	g_printerr ("invoking %s/%s, number of arguments does not match\n",quiddity_name.c_str(),function_name.c_str());
+	g_error ("invoking %s/%s, number of arguments does not match\n",quiddity_name.c_str(),function_name.c_str());
 	return false;
       }
 
@@ -286,7 +286,7 @@ namespace switcher
   {
     if (!exists (quiddity_name))
       {
-	g_printerr ("quiddity %s not found, cannot get description of methods\n",quiddity_name.c_str());
+	g_error ("quiddity %s not found, cannot get description of methods\n",quiddity_name.c_str());
 	return "error, quiddity not found";
       }
      
@@ -298,7 +298,7 @@ namespace switcher
   {
     if (!exists (quiddity_name))
       {
-	g_printerr ("quiddity %s not found, cannot get description of methods\n",quiddity_name.c_str());
+	g_error ("quiddity %s not found, cannot get description of methods\n",quiddity_name.c_str());
 	return "error, quiddity not found";
       }
      

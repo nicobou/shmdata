@@ -39,7 +39,7 @@ namespace switcher
     socket.second = "socket path of the shmdata to connect to";
     arg_desc.push_back (socket); 
     if (!set_method_description ("connect", "connect the sink to a shmdata socket", arg_desc))
-      g_printerr ("base sink: cannot set method description for \"connect\"\n");
+      g_error ("base sink: cannot set method description for \"connect\"\n");
 
   }
 

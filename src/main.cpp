@@ -42,6 +42,37 @@ leave (int sig)
   exit (sig);
 }
 
+ static void
+ log_handler (const gchar *log_domain, 
+ 	     GLogLevelFlags log_level,
+ 	     const gchar *message,
+ 	     gpointer user_data)
+ {
+   //OsgReader_impl *context = static_cast<OsgReader_impl*>(user_data);
+   switch (log_level) {
+   case G_LOG_LEVEL_ERROR:
+     g_print ("%s, ERROR: %s\n",G_LOG_DOMAIN, message);
+     break;
+   case G_LOG_LEVEL_CRITICAL:
+     g_print ("%s, CRITICAL: %s\n",G_LOG_DOMAIN, message);
+     break;
+   case G_LOG_LEVEL_WARNING:
+     g_print ("%s, WARNING: %s\n",G_LOG_DOMAIN, message);
+     break;
+   case G_LOG_LEVEL_MESSAGE:
+     g_print ("%s, MESSAGE: %s\n",G_LOG_DOMAIN, message);
+     break;
+   case G_LOG_LEVEL_INFO:
+     g_print ("%s, INFO: %s\n",G_LOG_DOMAIN, message);
+     break;
+   case G_LOG_LEVEL_DEBUG:
+     g_print ("%s, DEBUG: %s\n",G_LOG_DOMAIN, message);
+     break;
+   default:
+     g_print ("%s: %s\n",G_LOG_DOMAIN,message);
+     break;
+   }
+ }
 
 int
 main (int argc,
@@ -59,12 +90,13 @@ main (int argc,
       g_print ("option parsing failed: %s\n", error->message);
       exit (1);
     } 
-  
+
   if (server_name == NULL)
     server_name = "default";
   if (port_number == NULL)
     port_number = "8080";
 
+  g_log_set_default_handler (log_handler, NULL);
   
   {//using context in order to let excluse ownership of manager by the container
     switcher::QuiddityManager::ptr manager 

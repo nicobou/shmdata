@@ -44,7 +44,7 @@ namespace switcher
     g_value_init (&transformed_val, property_->value_type);
 
     if ( !gst_value_deserialize (&transformed_val,value.c_str()))
-      g_print ("string not transformable into gvalue \n");
+      g_debug ("string not transformable into gvalue \n");
     
     g_object_set_property (object_,
 			   property_->name, 
@@ -296,7 +296,7 @@ namespace switcher
 	add_json_object ("name",value_name,false);
 	json_description_.append ("}, ");
 
-	// g_print ("Enum \"%s\" Default: %d, \"%s\" \"%s\"",
+	// g_debug ("Enum \"%s\" Default: %d, \"%s\" \"%s\"",
 	// 	 g_type_name (G_VALUE_TYPE (&value)), 
 	// 	 enum_value, 
 	// 	 value_nick,
@@ -321,7 +321,7 @@ namespace switcher
 	
 	/* g_type_class_unref (ec); */
       } else if (G_IS_PARAM_SPEC_FLAGS (property_)) {
-	g_printerr ("warning: param spec flags not handled\n");
+	g_error ("warning: param spec flags not handled\n");
 	// GParamSpecFlags *pflags = G_PARAM_SPEC_FLAGS (property_);
 	// GFlagsValue *vals;
 	// gchar *cur;
@@ -330,41 +330,41 @@ namespace switcher
 
 	// cur = flags_to_string (vals, g_value_get_flags (&value));
 
-	// g_print ("%-23.23s Flags \"%s\" Default: 0x%08x, \"%s\"", "",
+	// g_debug ("%-23.23s Flags \"%s\" Default: 0x%08x, \"%s\"", "",
 	// 	   g_type_name (G_VALUE_TYPE (&value)),
 	// 	   g_value_get_flags (&value), cur);
 
 	// while (vals[0].value_name) {
-	//   g_print ("\n");
+	//   g_debug ("\n");
 	//   if (_name)
-	//     g_print ("%s", _name);
-	//   g_print ("%-23.23s    (0x%08x): %-16s - %s", "",
+	//     g_debug ("%s", _name);
+	//   g_debug ("%-23.23s    (0x%08x): %-16s - %s", "",
 	// 	     vals[0].value, vals[0].value_nick, vals[0].value_name);
 	//   ++vals;
 	// }
 
 	// g_free (cur);
       } else if (G_IS_PARAM_SPEC_OBJECT (property_)) {
-	g_printerr ("warning: param spec object not handled\n");
-	// g_print ("%-23.23s Object of type \"%s\"", "",
+	g_error ("warning: param spec object not handled\n");
+	// g_debug ("%-23.23s Object of type \"%s\"", "",
 	// 	 g_type_name (property_->value_type));
       } else if (G_IS_PARAM_SPEC_BOXED (property_)) {
-	g_printerr ("warning: param spec boxed not handled\n");
-	// g_print ("%-23.23s Boxed pointer of type \"%s\"", "",
+	g_error ("warning: param spec boxed not handled\n");
+	// g_debug ("%-23.23s Boxed pointer of type \"%s\"", "",
 	// 	 g_type_name (property_->value_type));
       } else if (G_IS_PARAM_SPEC_POINTER (property_)) {
-	g_printerr ("warning: param spec pointer not handled\n");
+	g_error ("warning: param spec pointer not handled\n");
 	// if (property_->value_type != G_TYPE_POINTER) {
-	//   g_print ("%-23.23s Pointer of type \"%s\".", "",
+	//   g_debug ("%-23.23s Pointer of type \"%s\".", "",
 	// 	   g_type_name (property_->value_type));
       } else if (property_->value_type == G_TYPE_VALUE_ARRAY) {
 	GParamSpecValueArray *pvarray = G_PARAM_SPEC_VALUE_ARRAY (property_);
-	g_printerr ("warning: array not handled\n");
+	g_error ("warning: array not handled\n");
 	// if (pvarray->element_spec) {
-	//   g_print ("%-23.23s Array of GValues of type \"%s\"", "",
+	//   g_debug ("%-23.23s Array of GValues of type \"%s\"", "",
 	// 	   g_type_name (pvarray->element_spec->value_type));
 	// } else {
-	//   g_print ("%-23.23s Array of GValues", "");
+	//   g_debug ("%-23.23s Array of GValues", "");
 	// }
       } else if (GST_IS_PARAM_SPEC_FRACTION (property_)) {
 	GstParamSpecFraction *pfraction = GST_PARAM_SPEC_FRACTION (property_);
@@ -388,18 +388,18 @@ namespace switcher
 	g_free (maxden);
 	g_free (defaultnum);
 	g_free (defaultden);
-	// g_print ("Range: %d/%d - %d/%d Default: %d/%d ",
+	// g_debug ("Range: %d/%d - %d/%d Default: %d/%d ",
 	// 	 pfraction->min_num, pfraction->min_den,
 	// 	 pfraction->max_num, pfraction->max_den,
 	// 	 gst_value_get_fraction_numerator (&value),
 	// 	 gst_value_get_fraction_denominator (&value));
       } else if (GST_IS_PARAM_SPEC_MINI_OBJECT (property_)) {
-	g_printerr ("warning param spec mini object not handled \n");
-	// g_print ("%-23.23s MiniObject of type \"%s\"", "",
+	g_error ("warning param spec mini object not handled \n");
+	// g_debug ("%-23.23s MiniObject of type \"%s\"", "",
 	// 	 g_type_name (property_->value_type));
       } else {
-	g_printerr ("warning: unknown type\n");
-	// g_print ("%-23.23s Unknown type %ld \"%s\"", "", property_->value_type,
+	g_error ("warning: unknown type\n");
+	// g_debug ("%-23.23s Unknown type %ld \"%s\"", "", property_->value_type,
 	// 	 g_type_name (property_->value_type));
       }
       break;
@@ -429,15 +429,15 @@ Property::print()
 	
   g_value_init (&value, property_->value_type);
 	
-  g_print ("  %-20s: %s\n", g_param_spec_get_name (property_),
+  g_debug ("  %-20s: %s\n", g_param_spec_get_name (property_),
 	   g_param_spec_get_blurb (property_));
 	
   // first_flag = TRUE;
-  // g_print ("%-23.23s flags: ", "");
+  // g_debug ("%-23.23s flags: ", "");
   // if (property_->flags & G_PARAM_READABLE) {
   // 	g_object_get_property (G_OBJECT (element), property_->name, &value);
   // 	readable = TRUE;
-  // 	g_print ("%s%s", (first_flag) ? "" : ", ", ("readable"));
+  // 	g_debug ("%s%s", (first_flag) ? "" : ", ", ("readable"));
   // 	first_flag = FALSE;
   // } else {
   // 	/* if we can't read the property value, assume it's set to the default
@@ -446,54 +446,54 @@ Property::print()
   // 	g_param_value_set_default (property_, &value);
   // }
   // if (property_->flags & G_PARAM_WRITABLE) {
-  // 	g_print ("%s%s", (first_flag) ? "" : ", ", ("writable"));
+  // 	g_debug ("%s%s", (first_flag) ? "" : ", ", ("writable"));
   // 	first_flag = FALSE;
   // }
   // if (property_->flags & GST_PARAM_CONTROLLABLE) {
-  // 	g_print (", %s", ("controllable"));
+  // 	g_debug (", %s", ("controllable"));
   // 	first_flag = FALSE;
   // }
   // if (property_->flags & GST_PARAM_MUTABLE_PLAYING) {
-  // 	g_print (", %s", ("changeable in NULL, READY, PAUSED or PLAYING state"));
+  // 	g_debug (", %s", ("changeable in NULL, READY, PAUSED or PLAYING state"));
   // } else if (property_->flags & GST_PARAM_MUTABLE_PAUSED) {
-  // 	g_print (", %s", ("changeable only in NULL, READY or PAUSED state"));
+  // 	g_debug (", %s", ("changeable only in NULL, READY or PAUSED state"));
   // } else if (property_->flags & GST_PARAM_MUTABLE_READY) {
-  // 	g_print (", %s", ("changeable only in NULL or READY state"));
+  // 	g_debug (", %s", ("changeable only in NULL or READY state"));
   // }
   // if (property_->flags & ~KNOWN_PARAM_FLAGS) {
-  // 	g_print ("%s0x%0x", (first_flag) ? "" : ", ",
+  // 	g_debug ("%s0x%0x", (first_flag) ? "" : ", ",
   // 		 property_->flags & ~KNOWN_PARAM_FLAGS);
   // }
-  // g_print ("\n");
+  // g_debug ("\n");
 
   switch (G_VALUE_TYPE (&value)) {
   case G_TYPE_STRING:
     {
       const char *string_val = g_value_get_string (&value);
 
-      g_print ("%-23.23s String. ", "");
+      g_debug ("%-23.23s String. ", "");
 
       if (string_val == NULL)
-	g_print ("Default: null");
+	g_debug ("Default: null");
       else
-	g_print ("Default: \"%s\"", string_val);
+	g_debug ("Default: \"%s\"", string_val);
       break;
     }
   case G_TYPE_BOOLEAN:
     {
       gboolean bool_val = g_value_get_boolean (&value);
 
-      g_print ("%-23.23s Boolean. ", "");
+      g_debug ("%-23.23s Boolean. ", "");
 
-      g_print ("Default: %s", bool_val ? "true" : "false");
+      g_debug ("Default: %s", bool_val ? "true" : "false");
       break;
     }
   case G_TYPE_ULONG:
     {
       GParamSpecULong *pulong = G_PARAM_SPEC_ULONG (property_);
 
-      g_print ("%-23.23s Unsigned Long. ", "");
-      g_print ("Range: %lu - %lu Default: %lu ",
+      g_debug ("%-23.23s Unsigned Long. ", "");
+      g_debug ("Range: %lu - %lu Default: %lu ",
 	       pulong->minimum, pulong->maximum, g_value_get_ulong (&value));
       break;
     }
@@ -501,8 +501,8 @@ Property::print()
     {
       GParamSpecLong *plong = G_PARAM_SPEC_LONG (property_);
 
-      g_print ("%-23.23s Long. ", "");
-      g_print ("Range: %ld - %ld Default: %ld ",
+      g_debug ("%-23.23s Long. ", "");
+      g_debug ("Range: %ld - %ld Default: %ld ",
 	       plong->minimum, plong->maximum, g_value_get_long (&value));
       break;
     }
@@ -510,8 +510,8 @@ Property::print()
     {
       GParamSpecUInt *puint = G_PARAM_SPEC_UINT (property_);
 
-      g_print ("%-23.23s Unsigned Integer. ", "");
-      g_print ("Range: %u - %u Default: %u ",
+      g_debug ("%-23.23s Unsigned Integer. ", "");
+      g_debug ("Range: %u - %u Default: %u ",
 	       puint->minimum, puint->maximum, g_value_get_uint (&value));
       break;
     }
@@ -519,8 +519,8 @@ Property::print()
     {
       GParamSpecInt *pint = G_PARAM_SPEC_INT (property_);
 
-      g_print ("%-23.23s Integer. ", "");
-      g_print ("Range: %d - %d Default: %d ",
+      g_debug ("%-23.23s Integer. ", "");
+      g_debug ("Range: %d - %d Default: %d ",
 	       pint->minimum, pint->maximum, g_value_get_int (&value));
       break;
     }
@@ -528,8 +528,8 @@ Property::print()
     {
       GParamSpecUInt64 *puint64 = G_PARAM_SPEC_UINT64 (property_);
 
-      g_print ("%-23.23s Unsigned Integer64. ", "");
-      g_print ("Range: %" G_GUINT64_FORMAT " - %" G_GUINT64_FORMAT
+      g_debug ("%-23.23s Unsigned Integer64. ", "");
+      g_debug ("Range: %" G_GUINT64_FORMAT " - %" G_GUINT64_FORMAT
 	       " Default: %" G_GUINT64_FORMAT " ",
 	       puint64->minimum, puint64->maximum, g_value_get_uint64 (&value));
       break;
@@ -538,8 +538,8 @@ Property::print()
     {
       GParamSpecInt64 *pint64 = G_PARAM_SPEC_INT64 (property_);
 
-      g_print ("%-23.23s Integer64. ", "");
-      g_print ("Range: %" G_GINT64_FORMAT " - %" G_GINT64_FORMAT
+      g_debug ("%-23.23s Integer64. ", "");
+      g_debug ("Range: %" G_GINT64_FORMAT " - %" G_GINT64_FORMAT
 	       " Default: %" G_GINT64_FORMAT " ",
 	       pint64->minimum, pint64->maximum, g_value_get_int64 (&value));
       break;
@@ -548,8 +548,8 @@ Property::print()
     {
       GParamSpecFloat *pfloat = G_PARAM_SPEC_FLOAT (property_);
 
-      g_print ("%-23.23s Float. ", "");
-      g_print ("Range: %15.7g - %15.7g Default: %15.7g ",
+      g_debug ("%-23.23s Float. ", "");
+      g_debug ("Range: %15.7g - %15.7g Default: %15.7g ",
 	       pfloat->minimum, pfloat->maximum, g_value_get_float (&value));
       break;
     }
@@ -557,8 +557,8 @@ Property::print()
     {
       GParamSpecDouble *pdouble = G_PARAM_SPEC_DOUBLE (property_);
 
-      g_print ("%-23.23s Double. ", "");
-      g_print ("Range: %15.7g - %15.7g Default: %15.7g ",
+      g_debug ("%-23.23s Double. ", "");
+      g_debug ("Range: %15.7g - %15.7g Default: %15.7g ",
 	       pdouble->minimum, pdouble->maximum, g_value_get_double (&value));
       break;
     }
@@ -567,9 +567,9 @@ Property::print()
       const GstCaps *caps = gst_value_get_caps (&value);
 
       if (!caps)
-	g_print ("%-23.23s Caps (NULL)", "");
+	g_debug ("%-23.23s Caps (NULL)", "");
       else {
-	g_print ("%-23.23s Caps (%s)", "", gst_caps_to_string (caps));
+	g_debug ("%-23.23s Caps (%s)", "", gst_caps_to_string (caps));
       }
     } else if (G_IS_PARAM_SPEC_ENUM (property_)) {
       GEnumValue *values;
@@ -586,15 +586,15 @@ Property::print()
 	j++;
       }
 
-      g_print ("%v-23.23s Enum \"%s\" Default: %d, \"%s\"", "",
+      g_debug ("%v-23.23s Enum \"%s\" Default: %d, \"%s\"", "",
 	       g_type_name (G_VALUE_TYPE (&value)), enum_value, value_nick);
 
       j = 0;
       while (values[j].value_name) {
-	g_print ("\n");
+	g_debug ("\n");
 	// if (_name)
-	//   g_print ("%s", _name);
-	g_print ("%-23.23s    (%d): %-16s - %s", "",
+	//   g_debug ("%s", _name);
+	g_debug ("%-23.23s    (%d): %-16s - %s", "",
 		 values[j].value, values[j].value_nick, values[j].value_name);
 	j++;
       }
@@ -608,65 +608,65 @@ Property::print()
 
       // cur = flags_to_string (vals, g_value_get_flags (&value));
 
-      // g_print ("%-23.23s Flags \"%s\" Default: 0x%08x, \"%s\"", "",
+      // g_debug ("%-23.23s Flags \"%s\" Default: 0x%08x, \"%s\"", "",
       // 	   g_type_name (G_VALUE_TYPE (&value)),
       // 	   g_value_get_flags (&value), cur);
 
       // while (vals[0].value_name) {
-      //   g_print ("\n");
+      //   g_debug ("\n");
       //   if (_name)
-      //     g_print ("%s", _name);
-      //   g_print ("%-23.23s    (0x%08x): %-16s - %s", "",
+      //     g_debug ("%s", _name);
+      //   g_debug ("%-23.23s    (0x%08x): %-16s - %s", "",
       // 	     vals[0].value, vals[0].value_nick, vals[0].value_name);
       //   ++vals;
       // }
 
       // g_free (cur);
     } else if (G_IS_PARAM_SPEC_OBJECT (property_)) {
-      g_print ("%-23.23s Object of type \"%s\"", "",
+      g_debug ("%-23.23s Object of type \"%s\"", "",
 	       g_type_name (property_->value_type));
     } else if (G_IS_PARAM_SPEC_BOXED (property_)) {
-      g_print ("%-23.23s Boxed pointer of type \"%s\"", "",
+      g_debug ("%-23.23s Boxed pointer of type \"%s\"", "",
 	       g_type_name (property_->value_type));
     } else if (G_IS_PARAM_SPEC_POINTER (property_)) {
       if (property_->value_type != G_TYPE_POINTER) {
-	g_print ("%-23.23s Pointer of type \"%s\".", "",
+	g_debug ("%-23.23s Pointer of type \"%s\".", "",
 		 g_type_name (property_->value_type));
       } else {
-	g_print ("%-23.23s Pointer.", "");
+	g_debug ("%-23.23s Pointer.", "");
       }
     } else if (property_->value_type == G_TYPE_VALUE_ARRAY) {
       GParamSpecValueArray *pvarray = G_PARAM_SPEC_VALUE_ARRAY (property_);
 
       if (pvarray->element_spec) {
-	g_print ("%-23.23s Array of GValues of type \"%s\"", "",
+	g_debug ("%-23.23s Array of GValues of type \"%s\"", "",
 		 g_type_name (pvarray->element_spec->value_type));
       } else {
-	g_print ("%-23.23s Array of GValues", "");
+	g_debug ("%-23.23s Array of GValues", "");
       }
     } else if (GST_IS_PARAM_SPEC_FRACTION (property_)) {
       GstParamSpecFraction *pfraction = GST_PARAM_SPEC_FRACTION (property_);
 
-      g_print ("%-23.23s Fraction. ", "");
+      g_debug ("%-23.23s Fraction. ", "");
 
-      g_print ("Range: %d/%d - %d/%d Default: %d/%d ",
+      g_debug ("Range: %d/%d - %d/%d Default: %d/%d ",
 	       pfraction->min_num, pfraction->min_den,
 	       pfraction->max_num, pfraction->max_den,
 	       gst_value_get_fraction_numerator (&value),
 	       gst_value_get_fraction_denominator (&value));
     } else if (GST_IS_PARAM_SPEC_MINI_OBJECT (property_)) {
-      g_print ("%-23.23s MiniObject of type \"%s\"", "",
+      g_debug ("%-23.23s MiniObject of type \"%s\"", "",
 	       g_type_name (property_->value_type));
     } else {
-      g_print ("%-23.23s Unknown type %ld \"%s\"", "", property_->value_type,
+      g_debug ("%-23.23s Unknown type %ld \"%s\"", "", property_->value_type,
 	       g_type_name (property_->value_type));
     }
     break;
   }
   if (!readable)
-    g_print (" Write only\n");
+    g_debug (" Write only\n");
   else
-    g_print ("\n");
+    g_debug ("\n");
 
   g_value_reset (&value);
 }

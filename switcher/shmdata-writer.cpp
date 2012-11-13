@@ -29,7 +29,7 @@ namespace switcher
 
   ShmdataWriter::~ShmdataWriter()
   {
-    g_print ("ShmdataWriter: deleting %s\n", path_.c_str());
+    g_debug ("ShmdataWriter: deleting %s\n", path_.c_str());
 
     shmdata_base_writer_close (writer_);
 
@@ -62,7 +62,7 @@ namespace switcher
 	gst_element_set_state (fakesink_, GST_STATE_NULL);
 	gst_bin_remove (GST_BIN (gst_element_get_parent (fakesink_)), fakesink_);
       }
-    g_print ("ShmdataWriter: %s deleted \n", path_.c_str());
+    g_debug ("ShmdataWriter: %s deleted \n", path_.c_str());
   }
   
   //WARNING is the file exist it will be deleted
@@ -73,10 +73,10 @@ namespace switcher
     if( g_file_query_exists (shmfile, NULL))
       {    
 	//thrash it
-	g_printerr ("ShmdataWriter::set_path warning: file %s exists and will be deleted.\n",name.c_str());
+	g_warning ("ShmdataWriter::set_path warning: file %s exists and will be deleted.",name.c_str());
 	if (! g_file_delete (shmfile, NULL, NULL)) 
 	  {
-	    g_printerr("ShmdataWriter::set_path error: file %s is already existing and cannot be trashed.",name.c_str());
+	    g_warning ("ShmdataWriter::set_path error: file %s is already existing and cannot be trashed.",name.c_str());
 	    return false;
 	  }
       }

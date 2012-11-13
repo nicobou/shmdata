@@ -33,9 +33,9 @@ namespace switcher
 
   ShmdataReader::~ShmdataReader()
   {
-      g_print ("ShmdataReader: deleting %s\n", path_.c_str());
+      g_debug ("ShmdataReader: deleting %s\n", path_.c_str());
       shmdata_base_reader_close (reader_);
-      g_print ("ShmdataReader: %s deleted \n", path_.c_str());
+      g_debug ("ShmdataReader: %s deleted \n", path_.c_str());
   }
 
   GstBusSyncReply 
@@ -99,7 +99,7 @@ namespace switcher
   void 
   ShmdataReader::start ()
   {
-    //g_print ("shmdata-reader START \n");
+    //g_debug ("shmdata-reader START \n");
 
     shmdata_base_reader_close (reader_);
     reader_ = shmdata_base_reader_new ();
@@ -107,7 +107,7 @@ namespace switcher
     
     if (path_ == "" ||  bin_ == NULL)
       {
-	g_printerr ("cannot start the shmdata reader: name or bin or sink element has not bin set\n");
+	g_error ("cannot start the shmdata reader: name or bin or sink element has not bin set\n");
 	return;
       }
     
@@ -146,7 +146,7 @@ namespace switcher
   {
     ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
     reader->caps_ = caps;
-    g_print ("++ shmdata new caps: \n%s\n",gst_caps_to_string (reader->caps_));
+    g_debug ("++ shmdata new caps: \n%s\n",gst_caps_to_string (reader->caps_));
   }
 
   void 
@@ -158,7 +158,7 @@ namespace switcher
   void 
   ShmdataReader::set_on_first_data_hook (on_first_data_hook cb, void *user_data)
   {
-    //g_print ("ShmdataReader::set_on_first_data_hook\n");
+    //g_debug ("ShmdataReader::set_on_first_data_hook\n");
     connection_hook_ = cb;
     hook_user_data_ = user_data;
   }
@@ -173,7 +173,7 @@ namespace switcher
       if (!GST_IS_ELEMENT (GST_ELEMENT_PARENT (reader->sink_element_)))
 	  gst_bin_add (GST_BIN (reader->bin_), reader->sink_element_);
       // else 
-      // 	  g_printerr ("ShmdataReader::on_first_data: (%s) sink element (%s) has a parent (%s) %d\n", 
+      // 	  g_debug ("ShmdataReader::on_first_data: (%s) sink element (%s) has a parent (%s) %d\n", 
       // 		      reader->get_path ().c_str(), 
       // 		      GST_ELEMENT_NAME (reader->sink_element_), 
       // 		      GST_ELEMENT_NAME(GST_ELEMENT_PARENT (reader->sink_element_)),

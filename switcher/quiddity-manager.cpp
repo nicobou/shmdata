@@ -61,7 +61,7 @@ namespace switcher
     clear_command_sync ();
     //FIXME count instances and do quit main loop
     //g_main_loop_quit (mainloop_);
-    g_print ("base quiddity manager destructed %s\n",name_.c_str ());
+    g_debug ("base quiddity manager destructed %s\n",name_.c_str ());
   }
 
   std::string
@@ -334,7 +334,7 @@ namespace switcher
 	  context->command_.result_.push_back ("false");
 	break;
       default:
-	g_printerr("unknown command");
+	g_error("unknown command");
       }
     g_cond_signal (context->exec_cond_);
     g_mutex_unlock (context->exec_mutex_);

@@ -38,7 +38,7 @@ namespace switcher
     quiddity_name.second = "the name of the runtime to attach with (e.g. \"pipeline0\")";
     arg_desc.push_back (quiddity_name); 
     if (!set_method_description ("set_runtime", "attach quiddity to a runtime ", arg_desc))
-      g_printerr ("segment: cannot set method description for \"set_runtime\"\n");
+      g_error ("segment: cannot set method description for \"set_runtime\"\n");
   }
 
   Segment::~Segment()
@@ -49,18 +49,18 @@ namespace switcher
 
      if (GST_IS_ELEMENT (bin_))
        {
-	 // g_print ("Segment, bin state %s num children %d \n", 
+	 // g_debug ("Segment, bin state %s num children %d \n", 
 	 // 	  gst_element_state_get_name (GST_STATE (bin_)), 
 	 // 	  GST_BIN_NUMCHILDREN(GST_BIN (bin_)));
 
 	 if (GST_BIN_CHILDREN (bin_) > 0)
 	   {
-	     g_print ("segment warning: some child elements have not been cleaned in %s\n",
+	     g_warning ("segment: some child elements have not been cleaned in %s",
 		      get_nick_name ().c_str ());
 	     GList *child = NULL, *children = GST_BIN_CHILDREN (bin_);
 	     for (child = children; child != NULL; child = g_list_next (child)) 
 	       {
-		 g_print ("segment warning: child %s \n", GST_ELEMENT_NAME (GST_ELEMENT (child->data)));
+		 g_debug ("segment warning: child %s", GST_ELEMENT_NAME (GST_ELEMENT (child->data)));
 		 // gst_element_set_state (GST_ELEMENT (child->data), GST_STATE_PLAYING);
 		 // gst_element_set_state (GST_ELEMENT (child->data), GST_STATE_NULL);
 		 // gst_bin_remove (GST_BIN (bin_), GST_ELEMENT (child->data));
@@ -82,12 +82,12 @@ namespace switcher
     
     if (runtime_name == NULL) 
       {
-	g_printerr ("Segment::set_runtime_wrapped Error: runtime_name is NULL\n");
+	g_error ("Segment::set_runtime_wrapped Error: runtime_name is NULL");
 	return;
       }
     if (context == NULL) 
       {
-	g_printerr ("Segment::set_runtime_wrapped Error: segment is NULL\n");
+	g_error ("Segment::set_runtime_wrapped Error: segment is NULL");
 	return;
       }
     
@@ -99,9 +99,9 @@ namespace switcher
 	if(runtime)
 	   context->set_runtime(runtime);
 	 else
-	   g_printerr ("Segment::set_runtime_wrapped Error: %s is not a runtime\n",runtime_name);
+	   g_error ("Segment::set_runtime_wrapped Error: %s is not a runtime",runtime_name);
       }
-    //g_print ("%s is attached to runtime %s\n",context->get_name().c_str(),runtime->get_name().c_str());
+    //g_debug ("%s is attached to runtime %s\n",context->get_name().c_str(),runtime->get_name().c_str());
   }
   
   void
@@ -124,7 +124,7 @@ namespace switcher
     //possible state change
     if (GST_STATE_TARGET(runtime_->get_pipeline ()) != GST_STATE(runtime_->get_pipeline ()))
       {
-	g_print ("Segment::set_runtime waiting for parent to finish state change\n");
+	g_debug ("Segment::set_runtime waiting for parent to finish state change\n");
 	gst_element_get_state (runtime_->get_pipeline (), NULL, NULL, GST_CLOCK_TIME_NONE);
       }
     gst_element_sync_state_with_parent (bin_);

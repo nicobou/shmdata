@@ -44,10 +44,10 @@ namespace switcher
   
   Runtime::~Runtime ()
   {
-    g_print ("deleting runtime\n");
+    g_debug ("deleting runtime\n");
     gst_element_set_state (pipeline_, GST_STATE_NULL);
     gst_object_unref (GST_OBJECT (pipeline_));
-    g_print ("runtime deleted\n");
+    g_debug ("runtime deleted\n");
   }
 
   GstElement * 
@@ -65,11 +65,11 @@ namespace switcher
     switch (GST_MESSAGE_TYPE (msg)) {
       
     case GST_MESSAGE_EOS:
-      g_print ("bus_call End of stream, name: %s\n",
+      g_debug ("bus_call End of stream, name: %s\n",
 	       GST_MESSAGE_SRC_NAME(msg));
       break;
     case GST_MESSAGE_SEGMENT_DONE:
-      g_print ("bus_call segment done\n");
+      g_debug ("bus_call segment done\n");
       break;
     case GST_MESSAGE_ERROR: {
       gchar *debug;
@@ -82,21 +82,21 @@ namespace switcher
       // if ( reader != NULL)
       // 	shmdata_base_reader_process_error (reader, msg);
 
-      g_printerr ("bus_call Error: %s\n", error->message);
+      g_error ("bus_call Error: %s", error->message);
       g_error_free (error);
     
       break;
       case GST_MESSAGE_STATE_CHANGED:
 	// GstState old_state, new_state;
         // gst_message_parse_state_changed (msg, &old_state, &new_state, NULL);
-	// g_print ("Element %s changed state from %s to %s.\n",
+	// g_debug ("Element %s changed state from %s to %s.\n",
 	// 	 GST_OBJECT_NAME (msg->src),
 	// 	 gst_element_state_get_name (old_state),
 	// 	 gst_element_state_get_name (new_state));
 	break;
     }
     default:
-      //g_print ("message %s from %s\n",GST_MESSAGE_TYPE_NAME(msg),GST_MESSAGE_SRC_NAME(msg));
+      //g_debug ("message %s from %s\n",GST_MESSAGE_TYPE_NAME(msg),GST_MESSAGE_SRC_NAME(msg));
       break;
     }
     return TRUE;

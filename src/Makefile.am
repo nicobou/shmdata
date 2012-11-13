@@ -13,6 +13,7 @@ switcher_CXXFLAGS = \
     $(GSOAP_CFLAGS) \
     $(GST_CFLAGS) \
     $(SHMDATA_CFLAGS) \
+    -DG_LOG_DOMAIN=\"SWITCHER\" \
     -I$(top_srcdir) 
 
 switcher_LDFLAGS = \

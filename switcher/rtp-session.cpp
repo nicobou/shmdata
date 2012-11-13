@@ -30,7 +30,7 @@ namespace switcher
   
   RtpSession::~RtpSession ()
   {
-    g_print ("rtpsession deleting\n");
+    g_debug ("rtpsession deleting\n");
 
     //removing sdp files
     std::vector <std::string> destinations = destinations_.get_keys ();
@@ -48,7 +48,7 @@ namespace switcher
     if (GST_IS_BIN (parent))
       gst_bin_remove (GST_BIN (parent), rtpsession_);
 
-    g_print ("rtpsession deleted\n");
+    g_debug ("rtpsession deleted\n");
 
   }
 
@@ -195,7 +195,7 @@ namespace switcher
   {
     if (!destinations_.contains (dest_name))
       {
-	g_printerr ("RtpSession: destination named %s does not exists, cannot print sdp \n",
+	g_error ("RtpSession: destination named %s does not exists, cannot print sdp \n",
 		    dest_name.c_str ());
 	return false;
       }
@@ -281,7 +281,7 @@ namespace switcher
     ShmdataReader *reader= (ShmdataReader *) g_object_get_data (G_OBJECT (typefind),"shmdata-reader");
     reader->add_element_to_remove (pay);
         
-    g_print ("RtpSession::make_data_stream_available: %s payloader\n",GST_ELEMENT_NAME (pay));
+    g_debug ("RtpSession::make_data_stream_available: %s payloader\n",GST_ELEMENT_NAME (pay));
 
     /* add capture and payloading to the pipeline and link */
     gst_bin_add_many (GST_BIN (context->bin_), pay, NULL);
@@ -311,10 +311,10 @@ namespace switcher
 
     // rtp src pad (is a static pad since created after the request of rtp sink pad)
     gchar *rtp_src_pad_name = g_strconcat ("send_rtp_src_", rtp_session_id, NULL); 
-    g_print ("RtpSession: request rtp src pad and create a corresponding shmwriter %s\n",rtp_src_pad_name);
+    g_debug ("RtpSession: request rtp src pad and create a corresponding shmwriter %s\n",rtp_src_pad_name);
     GstPad *rtp_src_pad = gst_element_get_static_pad (context->rtpsession_, rtp_src_pad_name);
     if (!GST_IS_PAD (rtp_src_pad)) 
-      g_printerr ("RtpSession: rtp_src_pad is not a pad\n"); 
+      g_error ("RtpSession: rtp_src_pad is not a pad\n"); 
     ShmdataWriter::ptr rtp_writer;
     rtp_writer.reset (new ShmdataWriter ());
     std::string rtp_writer_name = context->make_file_name ("send_rtp_src_"+internal_session_id); 
@@ -325,7 +325,7 @@ namespace switcher
 
     //rtcp src pad
     gchar *rtcp_src_pad_name = g_strconcat ("send_rtcp_src_", rtp_session_id,NULL); 
-    g_print ("RtpSession: request rtcp src pad %s\n",rtcp_src_pad_name);
+    g_debug ("RtpSession: request rtcp src pad %s\n",rtcp_src_pad_name);
     GstPad *rtcp_src_pad = gst_element_get_request_pad (context->rtpsession_, rtcp_src_pad_name);
     ShmdataWriter::ptr rtcp_writer;
     rtcp_writer.reset (new ShmdataWriter ());
@@ -394,7 +394,7 @@ namespace switcher
   {
     if (destinations_.contains (nick_name))
       {
-	g_printerr ("RtpSession: a destination named %s already exists, cannot add",
+	g_error ("RtpSession: a destination named %s already exists, cannot add",
 		    nick_name.c_str ());
 	return false;
       }
@@ -422,7 +422,7 @@ namespace switcher
   {
     if (!destinations_.contains (nick_name))
       {
-	g_printerr ("RtpSession: destination named %s does not exists, cannot remove",
+	g_error ("RtpSession: destination named %s does not exists, cannot remove",
 		    nick_name.c_str ());
 	return false;
       }
@@ -453,13 +453,13 @@ namespace switcher
   {
     if (!internal_id_.contains (shmdata_socket_path))
       {
-	g_printerr ("RtpSession is not connected to %s\n",shmdata_socket_path.c_str ());
+	g_error ("RtpSession is not connected to %s\n",shmdata_socket_path.c_str ());
 	return false;
       }
     
     if (!destinations_.contains (nick_name))
       {
-	g_printerr ("RtpSession does not contain a destination named %s\n",nick_name.c_str ());
+	g_error ("RtpSession does not contain a destination named %s\n",nick_name.c_str ());
 	return false;
       }
 
@@ -467,7 +467,7 @@ namespace switcher
 
     if (rtp_port %2 !=0)
       {
-	g_printerr ("RtpSession rtp destination port %s must be even, not odd\n",port.c_str ());
+	g_error ("RtpSession rtp destination port %s must be even, not odd\n",port.c_str ());
 	return false;
       }
     std::string id = internal_id_.lookup (shmdata_socket_path);
@@ -540,7 +540,7 @@ namespace switcher
 
     if (!internal_id_.contains (shmdata_socket_path))
       {
-	g_printerr ("RtpSession is not connected to %s\n",shmdata_socket_path.c_str ());
+	g_error ("RtpSession is not connected to %s\n",shmdata_socket_path.c_str ());
 	return false;
       }
     
@@ -610,7 +610,7 @@ namespace switcher
   {
     if (!internal_id_.contains (shmdata_socket_path))
       {
-	g_printerr ("RtpSession::remove_data_stream: %s not present",shmdata_socket_path.c_str ());
+	g_error ("RtpSession::remove_data_stream: %s not present",shmdata_socket_path.c_str ());
 	return false;
       }
 
@@ -633,13 +633,13 @@ namespace switcher
 
     if (!funnels_.contains (shmdata_socket_path))
       {
-	g_printerr ("RtpSession::remove_data_stream: no funnel");
+	g_error ("RtpSession::remove_data_stream: no funnel");
 	return false;
       }
     funnels_.remove (shmdata_socket_path);
     
     
-    g_print ("data_stream removed\n");
+    g_debug ("data_stream removed\n");
     return true;
   }
 
@@ -647,76 +647,76 @@ namespace switcher
   RtpSession::on_bye_ssrc (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
     //RtpSession *context = static_cast<RtpSession *>(user_data);
-    g_print ("on_bye_ssrc\n");
+    g_debug ("on_bye_ssrc\n");
   }
 
   void
   RtpSession::on_bye_timeout (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
     //RtpSession *context = static_cast<RtpSession *>(user_data);
-    g_print ("on_bye_timeout\n");
+    g_debug ("on_bye_timeout\n");
   }
 
   void
   RtpSession::on_new_ssrc (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
     //RtpSession *context = static_cast<RtpSession *>(user_data);
-    g_print ("on_new_ssrc\n");
+    g_debug ("on_new_ssrc\n");
   }
 
   void
   RtpSession::on_npt_stop (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
     //RtpSession *context = static_cast<RtpSession *>(user_data);
-    g_print ("on_npt_stop\n");
+    g_debug ("on_npt_stop\n");
   }
 
   void
   RtpSession::on_sender_timeout (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
     //RtpSession *context = static_cast<RtpSession *>(user_data);
-    g_print ("on_sender_timeout\n");
+    g_debug ("on_sender_timeout\n");
   }
 
   void
   RtpSession::on_ssrc_active  (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
     //RtpSession *context = static_cast<RtpSession *>(user_data);
-    g_print ("on_ssrc_active\n");
+    g_debug ("on_ssrc_active\n");
   }
 
   void
   RtpSession::on_ssrc_collision (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
     //RtpSession *context = static_cast<RtpSession *>(user_data);
-    g_print ("on_ssrc_active\n");
+    g_debug ("on_ssrc_active\n");
   }
 
   void
   RtpSession::on_ssrc_sdes  (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
     //RtpSession *context = static_cast<RtpSession *>(user_data);
-    g_print ("on_ssrc_sdes\n");
+    g_debug ("on_ssrc_sdes\n");
   }
 
   void
   RtpSession::on_ssrc_validated (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
     //RtpSession *context = static_cast<RtpSession *>(user_data);
-    g_print ("on_ssrc_validated\n");
+    g_debug ("on_ssrc_validated\n");
   }
  
   void
   RtpSession::on_timeout  (GstElement *rtpbin, guint session, guint ssrc, gpointer user_data)
   {
     //RtpSession *context = static_cast<RtpSession *>(user_data);
-    g_print ("on_timeout\n");
+    g_debug ("on_timeout\n");
   }
 
   void
   RtpSession::on_pad_added (GstElement *gstelement, GstPad *new_pad, gpointer user_data) 
   {
-    g_print ("on_pad_added, name: %s, direction: %d\n", 
+    g_debug ("on_pad_added, name: %s, direction: %d\n", 
 	     gst_pad_get_name(new_pad),
 	     gst_pad_get_direction (new_pad));
     // RtpSession *context = static_cast<RtpSession *>(user_data);
@@ -726,7 +726,7 @@ namespace switcher
   RtpSession::on_pad_removed (GstElement *gstelement, GstPad *new_pad, gpointer user_data) 
   {
     //RtpSession *context = static_cast<RtpSession *>(user_data);
-    g_print ("on_pad_removed, name: %s, direction: %d\n", 
+    g_debug ("on_pad_removed, name: %s, direction: %d\n", 
 	     gst_pad_get_name(new_pad),
 	     gst_pad_get_direction (new_pad));
     
@@ -736,7 +736,7 @@ namespace switcher
   RtpSession::on_no_more_pad   (GstElement *gstelement, gpointer user_data) 
   {
     //RtpSession *context = static_cast<RtpSession *>(user_data);
-    g_print ("on_no_more_pad\n");
+    g_debug ("on_no_more_pad\n");
   }
 
 }

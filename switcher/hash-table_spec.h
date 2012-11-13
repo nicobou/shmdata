@@ -92,7 +92,7 @@ namespace switcher
 						 &value);
 
       if (res && value == NULL)
-	g_print ("warning: key %s has been found with a NULL value", key.c_str() );
+	g_debug ("warning: key %s has been found with a NULL value", key.c_str() );
       
       return (T *)value;
     }

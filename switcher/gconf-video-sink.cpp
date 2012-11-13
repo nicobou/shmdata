@@ -51,7 +51,7 @@ namespace switcher
     g_cond_signal (context->data_cond_);
     g_mutex_unlock (context->data_mutex_);
 
-    g_print ("GconfVideoSink: WARNING, set sync property of the sinks to false\n");
+    g_debug ("GconfVideoSink: WARNING, set sync property of the sinks to false\n");
     // //registering sync_sink
     // std::vector<GType> connect_arg_types;
     // connect_arg_types.push_back (G_TYPE_BOOLEAN);
@@ -63,7 +63,7 @@ namespace switcher
     // sync.second = "true for synchronizing, false otherwise";
     // arg_desc.push_back (sync); 
     // if (!context->set_method_description ("sync_sinks", "synchronize sink(s) of the element on the pipeline clock", arg_desc))
-    //   g_printerr ("gconfvideosink: cannot set method description for \"sync_sinks\"\n");
+    //   g_error ("gconfvideosink: cannot set method description for \"sync_sinks\"\n");
 
     return FALSE; //the source should be removed from the main loop
   }
@@ -95,7 +95,7 @@ namespace switcher
 		if (g_object_class_find_property (G_OBJECT_GET_CLASS (G_OBJECT(item)), "sync"))
 		  g_object_set (G_OBJECT (item), "sync", FALSE, NULL);
 		else
-		  g_printerr("Internal sink doesn't have sync property");
+		  g_error("Internal sink doesn't have sync property");
 		
 		gst_object_unref (GST_OBJECT(item));
 		break;
@@ -103,7 +103,7 @@ namespace switcher
 		gst_iterator_resync (it);
 		break;
 	      case GST_ITERATOR_ERROR:
-		g_printerr ("...wrong parameters were given...\n");
+		g_error ("...wrong parameters were given...\n");
 		done = TRUE;
 		break;
 	      case GST_ITERATOR_DONE:

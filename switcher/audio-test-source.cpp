@@ -24,7 +24,7 @@ namespace switcher
 {
 
   const QuiddityDocumentation AudioTestSource::doc_ ("audio source", "audiotestsrc", 
-						 "Creates audio test signals");
+						     "Creates audio test signals");
   
   bool
   AudioTestSource::init ()
@@ -32,7 +32,9 @@ namespace switcher
     audiotestsrc_ = gst_element_factory_make ("audiotestsrc",NULL);
     g_object_set (G_OBJECT (audiotestsrc_),
 		  "is-live", TRUE,
+		  "samplesperbuffer",64,
 		  NULL);
+
 
     //set the name before registering properties
     set_name (gst_element_get_name (audiotestsrc_));
