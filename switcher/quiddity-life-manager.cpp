@@ -24,7 +24,7 @@
 //the base quiddities to manage (line sorted)
 #include "switcher/aac.h"
 #include "switcher/audio-test-source.h"
-#include "switcher/ctrl-server.h"
+#include "switcher/soap-ctrl-server.h"
 #include "switcher/gconf-audio-sink.h"
 #include "switcher/gconf-audio-source.h"
 #include "switcher/gconf-video-sink.h"
@@ -81,8 +81,8 @@ namespace switcher
 					   AAC::doc_.get_json_documentation ());
     abstract_factory_.register_class<AudioTestSource> (AudioTestSource::doc_.get_class_name (), 
 						       AudioTestSource::doc_.get_json_documentation ());
-    abstract_factory_.register_class<CtrlServer> (CtrlServer::doc_.get_class_name (), 
-						  CtrlServer::doc_.get_json_documentation ());
+    abstract_factory_.register_class<SoapCtrlServer> (SoapCtrlServer::doc_.get_class_name (), 
+						  SoapCtrlServer::doc_.get_json_documentation ());
     abstract_factory_.register_class<GconfAudioSink> (GconfAudioSink::doc_.get_class_name (), 
 						      GconfAudioSink::doc_.get_json_documentation ());
     abstract_factory_.register_class<GconfAudioSource> (GconfAudioSource::doc_.get_class_name (), 

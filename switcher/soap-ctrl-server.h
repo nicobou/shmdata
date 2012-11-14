@@ -29,11 +29,11 @@
 namespace switcher
 {
 
-  class CtrlServer : public QuiddityManagerWrapper
+  class SoapCtrlServer : public QuiddityManagerWrapper
   {
   public:
-    typedef std::shared_ptr<CtrlServer> ptr;
-    ~CtrlServer ();
+    typedef std::shared_ptr<SoapCtrlServer> ptr;
+    ~SoapCtrlServer ();
     void set_port (int port);//default port is 8080
     void start (); 
     void stop ();

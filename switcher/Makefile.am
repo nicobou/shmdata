@@ -26,7 +26,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     quiddity.cpp \
     base-sink.cpp \
     base-source.cpp \
-    ctrl-server.cpp \
+    soap-ctrl-server.cpp \
     gconf-audio-sink.cpp \
     gconf-audio-source.cpp \
     gconf-video-sink.cpp \
@@ -77,7 +77,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     base-sink.h \
     base-source.h \
     creator.h \
-    ctrl-server.h \
+    soap-ctrl-server.h \
     ctrl-webservice-definition.h \
     gconf-audio-sink.h \
     gconf-audio-source.h \

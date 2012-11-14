@@ -17,18 +17,18 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/ctrl-server.h"
+#include "switcher/soap-ctrl-server.h"
 #include <ctime>    // For time()
 #include <cstdlib>  // For srand() and rand()
 #include "switcher/webservices/control.nsmap"
 
 namespace switcher
 {
-  const QuiddityDocumentation CtrlServer::doc_ ("control", "SOAPcontrolServer",
+  const QuiddityDocumentation SoapCtrlServer::doc_ ("control", "SOAPcontrolServer",
 					  "SOAPcontrolServer allows for managing switcher through SOAP webservices");
     
   bool
-  CtrlServer::init ()
+  SoapCtrlServer::init ()
   {
     port_ = 8080;
     soap_init(&soap_);
@@ -36,7 +36,7 @@ namespace switcher
     soap_.connect_flags = SO_LINGER; 
     soap_.accept_flags = SO_LINGER;
     
-    soap_.fget = CtrlServer::http_get;
+    soap_.fget = SoapCtrlServer::http_get;
     
     srand(time(0));
     set_name (g_strdup_printf ("ctrlserver%d",rand() % 1024));
@@ -54,20 +54,20 @@ namespace switcher
     return true;
   }
 
-  CtrlServer::~CtrlServer ()
+  SoapCtrlServer::~SoapCtrlServer ()
   {
     stop ();
   }
 
   std::shared_ptr<QuiddityManager>
-  CtrlServer::get_quiddity_manager ()
+  SoapCtrlServer::get_quiddity_manager ()
   {
     return manager_.lock ();
   }
 
 
  int 
- CtrlServer::http_get (struct soap *soap)
+ SoapCtrlServer::http_get (struct soap *soap)
  {
    std::string rtpsession_name;
    std::string destination_name;
@@ -128,29 +128,29 @@ namespace switcher
 
 
   QuiddityDocumentation 
-  CtrlServer::get_documentation ()
+  SoapCtrlServer::get_documentation ()
   {
     return doc_;
   }
   
 
   gboolean
-  CtrlServer::set_port_wrapped (gint port, gpointer user_data)
+  SoapCtrlServer::set_port_wrapped (gint port, gpointer user_data)
   {
-    CtrlServer *context = static_cast<CtrlServer*>(user_data);
+    SoapCtrlServer *context = static_cast<SoapCtrlServer*>(user_data);
     context->set_port (port);
     return TRUE;
   }
 
   void 
-  CtrlServer::set_port (int port)
+  SoapCtrlServer::set_port (int port)
   {
     port_ = port;
     start ();
   }
 
   void 
-  CtrlServer::start ()
+  SoapCtrlServer::start ()
   {
     soap_.user = (void *)this;//manager_.get ();//FIXME this should use the shared pointer, maybe giving this insteead of the manager
     quit_server_thread_ = false;
@@ -158,29 +158,29 @@ namespace switcher
     SOAP_SOCKET m = service_->bind(NULL, port_, 100 /* BACKLOG */);
     if (!soap_valid_socket(m))
 	service_->soap_print_fault(stderr);
-    thread_ = g_thread_new ("CtrlServer", GThreadFunc(server_thread), this);
+    thread_ = g_thread_new ("SoapCtrlServer", GThreadFunc(server_thread), this);
   }
 
 
   // gboolean
-  // CtrlServer::stop_wrapped (gpointer user_data)
+  // SoapCtrlServer::stop_wrapped (gpointer user_data)
   // {
-  //   CtrlServer *context = static_cast<CtrlServer*>(user_data);
+  //   SoapCtrlServer *context = static_cast<SoapCtrlServer*>(user_data);
   //   context->stop ();
   //   return TRUE;
   // }
 
   void
-  CtrlServer::stop ()
+  SoapCtrlServer::stop ()
   {
     quit_server_thread_ = true;
     //g_thread_join (thread_);
   }
   
   gpointer
-  CtrlServer::server_thread (gpointer user_data)
+  SoapCtrlServer::server_thread (gpointer user_data)
   {
-    CtrlServer *context = static_cast<CtrlServer*>(user_data);
+    SoapCtrlServer *context = static_cast<SoapCtrlServer*>(user_data);
     
     // /* run iterative server on port until fatal error */
     // if (context->service_->run(context->port_))
@@ -214,7 +214,7 @@ namespace switcher
     return NULL;
   }
 
-}//end of CtrlServer class
+}//end of SoapCtrlServer class
 
 
 /**********************************************
@@ -266,7 +266,7 @@ controlService::pow(double a, double b, double *result)
 int
 controlService::get_factory_capabilities(std::vector<std::string> *result){
   using namespace switcher;
-  CtrlServer *ctrl_server = (CtrlServer *) this->user;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
   if (ctrl_server != NULL)
     manager = ctrl_server->get_quiddity_manager ();
@@ -274,7 +274,7 @@ controlService::get_factory_capabilities(std::vector<std::string> *result){
   if (ctrl_server == NULL || !(bool)manager)
     {
       char *s = (char*)soap_malloc(this, 1024);
-      g_error ("controlService::get_factory_capabilities: cannot get manager from CtrlServer (NULL)");
+      g_error ("controlService::get_factory_capabilities: cannot get manager from SoapCtrlServer (NULL)");
       sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (NULL)</error>");
       return soap_senderfault("error in get_factory_capabilities", s);
     }
@@ -288,7 +288,7 @@ int
 controlService::get_quiddity_names(std::vector<std::string> *result)
 {
   using namespace switcher;
-  CtrlServer *ctrl_server = (CtrlServer *) this->user;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
   if (ctrl_server != NULL)
     manager = ctrl_server->get_quiddity_manager ();
@@ -303,7 +303,7 @@ controlService::get_properties_description (std::string quiddity_name,
 					    std::string *result)
 {
   using namespace switcher;
-  CtrlServer *ctrl_server = (CtrlServer *) this->user;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
   if (ctrl_server != NULL)
     manager = ctrl_server->get_quiddity_manager ();
@@ -319,7 +319,7 @@ controlService::get_property_description (std::string quiddity_name,
 					  std::string *result)
 {
   using namespace switcher;
-  CtrlServer *ctrl_server = (CtrlServer *) this->user;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
   if (ctrl_server != NULL)
     manager = ctrl_server->get_quiddity_manager ();
@@ -336,7 +336,7 @@ controlService::set_property (std::string quiddity_name,
 			      std::string property_value)
 {
   using namespace switcher;
-  CtrlServer *ctrl_server = (CtrlServer *) this->user;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
   if (ctrl_server != NULL)
     manager = ctrl_server->get_quiddity_manager ();
@@ -353,7 +353,7 @@ controlService::get_property (std::string quiddity_name,
 			      std::string *result)
 {
   using namespace switcher;
-  CtrlServer *ctrl_server = (CtrlServer *) this->user;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
   if (ctrl_server != NULL)
     manager = ctrl_server->get_quiddity_manager ();
@@ -369,7 +369,7 @@ controlService::create_quiddity (std::string quiddity_class,
 			       std::string *result)
 {
   using namespace switcher;
-  CtrlServer *ctrl_server = (CtrlServer *) this->user;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
   if (ctrl_server != NULL)
     manager = ctrl_server->get_quiddity_manager ();
@@ -396,7 +396,7 @@ controlService::create_named_quiddity (std::string quiddity_class,
 {
   using namespace switcher;
 
-  CtrlServer *ctrl_server = (CtrlServer *) this->user;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
   if (ctrl_server != NULL)
     manager = ctrl_server->get_quiddity_manager ();
@@ -421,7 +421,7 @@ int
 controlService::delete_quiddity (std::string quiddity_name)
 {
   using namespace switcher;
-  CtrlServer *ctrl_server = (CtrlServer *) this->user;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
   if (ctrl_server != NULL)
     manager = ctrl_server->get_quiddity_manager ();
@@ -446,7 +446,7 @@ controlService::invoke_method (std::string quiddity_name,
 {
   using namespace switcher;
 
-  CtrlServer *ctrl_server = (CtrlServer *) this->user;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
   if (ctrl_server != NULL)
     manager = ctrl_server->get_quiddity_manager ();
@@ -470,7 +470,7 @@ controlService::get_methods_description (std::string quiddity_name,
 {
   using namespace switcher;
 
-  CtrlServer *ctrl_server = (CtrlServer *) this->user;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
   if (ctrl_server != NULL)
     manager = ctrl_server->get_quiddity_manager ();
@@ -486,7 +486,7 @@ controlService::get_method_description (std::string quiddity_name,
 {
   using namespace switcher;
 
-  CtrlServer *ctrl_server = (CtrlServer *) this->user;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
   if (ctrl_server != NULL)
     manager = ctrl_server->get_quiddity_manager ();
