@@ -22,12 +22,13 @@
 #define __SWITCHER_AUDIO_TEST_SOURCE_H__
 
 #include "switcher/audio-source.h"
+#include "switcher/gst-element-cleaner.h"
 #include <memory>
 
 namespace switcher
 {
 
-  class AudioTestSource : public AudioSource
+  class AudioTestSource : public AudioSource, public GstElementCleaner
   {
   public:
     typedef std::shared_ptr<AudioTestSource> ptr;

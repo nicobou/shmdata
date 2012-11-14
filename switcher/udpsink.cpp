@@ -117,8 +117,10 @@ namespace switcher
     gst_element_set_state (typefind_, GST_STATE_NULL);
 
     gst_element_set_state (udpsink_, GST_STATE_NULL);
-    gst_bin_remove (GST_BIN (udpsink_bin_), typefind_);
-    gst_bin_remove (GST_BIN (udpsink_bin_), udpsink_);
+    if (GST_IS_BIN (gst_element_get_parent (typefind_)))
+      gst_bin_remove (GST_BIN (udpsink_bin_), typefind_);
+    if (GST_IS_BIN (gst_element_get_parent (udpsink_)))
+      gst_bin_remove (GST_BIN (udpsink_bin_), udpsink_);
     gst_element_set_state (udpsink_bin_, GST_STATE_NULL);
     if (GST_IS_BIN (GST_ELEMENT_PARENT (udpsink_bin_)))
       gst_bin_remove (GST_BIN (GST_ELEMENT_PARENT (udpsink_bin_)), udpsink_bin_);

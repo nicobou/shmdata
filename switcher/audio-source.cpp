@@ -28,6 +28,8 @@ namespace switcher
     audioconvert_ = gst_element_factory_make ("audioconvert",NULL);
     pitch_ = gst_element_factory_make ("pitch",NULL);
     resample_ = gst_element_factory_make ("audioresample",NULL);
+
+
     
     gst_bin_add_many (GST_BIN (bin_),
 		      audio_tee_,

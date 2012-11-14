@@ -55,7 +55,7 @@ namespace switcher
 
 	 if (GST_BIN_CHILDREN (bin_) > 0)
 	   {
-	     g_warning ("segment: some child elements have not been cleaned in %s",
+	     g_debug ("segment: some child elements have not been cleaned in %s",
 		      get_nick_name ().c_str ());
 	     GList *child = NULL, *children = GST_BIN_CHILDREN (bin_);
 	     for (child = children; child != NULL; child = g_list_next (child)) 

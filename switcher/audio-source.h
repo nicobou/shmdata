@@ -27,7 +27,6 @@
 
 namespace switcher
 {
-
   class AudioSource : public BaseSource
   {
   public:
