@@ -185,7 +185,7 @@ void
 shmdata_base_writer_on_client_disconnected (GstElement * shmsink,
 					    gint num, gpointer user_data)
 {
-  g_message ("client disconnected (number %d)", num);
+  g_debug ("client disconnected (number %d)", num);
 }
 
 void
