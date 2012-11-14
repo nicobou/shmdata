@@ -1,67 +1,156 @@
+/*
+ * Copyright (C) 2012 Nicolas Bouillot (http://www.nicolasbouillot.net)
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; either version 2.1
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
+
 #include "m_pd.h"
+#include "shmdata/base-reader.h"
+
 #ifdef NT
 #pragma warning( disable : 4244 )
 #pragma warning( disable : 4305 )
 #endif
 
-/* ------------------------ shmdata~ ----------------------------- */
+/* ------------------------ shmsrc~ ----------------------------- */
 
 /* tilde object to take absolute value. */
 
-static t_class *shmdata_class;
+static t_class *shmsrc_tilde_class;
 
-typedef struct _shmdata
+typedef struct _shmsrc_tilde
 {
-    t_object x_obj; 	/* obligatory header */
-    t_float x_f;    	/* place to hold inlet's value if it's set by message */
-} t_shmdata;
+  t_object x_obj; 
+  shmdata_base_reader_t *x_reader;
+  double x_init_date;
+  int x_num_outlets;
+  unsigned long long x_offset;
+  long x_samplerate;               /* samplerate we're running at */
+  char x_caps[256];
+  char x_shmdata_path[512];
+  char x_shmdata_prefix[256];
+  char x_shmdata_name[256];
+  t_int **x_myvec;                               /* vector we pass on in the DSP routine */
+  t_float x_f;    	/* place to hold inlet's value if it's set by message */
+} t_shmsrc_tilde;
 
-    /* this is the actual performance routine which acts on the samples.
-    It's called with a single pointer "w" which is our location in the
-    DSP call list.  We return a new "w" which will point to the next item
-    after us.  Meanwhile, w[0] is just a pointer to dsp-perform itself
-    (no use to us), w[1] and w[2] are the input and output vector locations,
-    and w[3] is the number of points to calculate. */
-static t_int *shmdata_perform(t_int *w)
+
+static void shmsrc_tilde_reader_restart (t_shmsrc_tilde *x)
 {
-    t_float *in = (t_float *)(w[1]);
-    t_float *out = (t_float *)(w[2]);
-    int n = (int)(w[3]);
-    while (n--)
+}
+
+
+static t_int *shmsrc_tilde_perform(t_int *w)
+{
+	t_shmsrc_tilde *x = (t_shmsrc_tilde*) (w[1]);
+	int n = (int)(w[2]);
+	t_float *out[x->x_num_outlets];
+	int i;
+	for (i = 0; i < x->x_num_outlets; i++)
+	  out[i] = (t_float *)(w[3 + i]);
+	
+	/* set output to zero */
+	while (n--)
+	  for (i = 0; i < x->x_num_outlets; i++)
+	    *(out[i]++) = 0.;
+
+	return (w + 3 + x->x_num_outlets);	
+}
+
+/* called to start DSP.  Here we call Pd back to add our perform
+   routine to a linear callback list which Pd in turn calls to grind
+   out the samples. */
+static void shmsrc_tilde_dsp(t_shmsrc_tilde *x, t_signal **sp)
+{
+  dsp_add(shmsrc_tilde_perform, 3, sp[0]->s_vec, sp[1]->s_vec, sp[0]->s_n);
+}
+
+static void shmsrc_tilde_free(t_shmsrc_tilde *x)
+{
+  if (x->x_myvec)
+    t_freebytes(x->x_myvec, sizeof(t_int *) * (x->x_num_outlets + 3));
+}
+
+
+
+static void *shmsrc_tilde_new(t_symbol *s, t_floatarg num_outlets)
+{
+  t_shmsrc_tilde *x = (t_shmsrc_tilde *)pd_new(shmsrc_tilde_class);
+
+  //num inlet is also considered as the number of channels
+  if (num_outlets < 1)
+    x->x_num_outlets = 1;
+  else
+    x->x_num_outlets = num_outlets;
+
+  x->x_f = 0;
+  x->x_offset = 0;
+  x->x_init_date = clock_getlogicaltime();
+  x->x_reader = NULL;
+  x->x_samplerate = 0;
+  
+  sprintf (x->x_shmdata_prefix, "/tmp/pd_");
+  sprintf (x->x_shmdata_name, "%s",s->s_name);
+  sprintf (x->x_shmdata_path, "%s%s",
+	   x->x_shmdata_prefix,
+	   x->x_shmdata_name);
+
+  int i;
+  for (i = 1; i < x->x_num_outlets; i++)
+    outlet_new(&x->x_obj, &s_signal);
+
+  x->x_myvec = (t_int **)t_getbytes(sizeof(t_int *) * (x->x_num_outlets + 3));
+  if (!x->x_myvec)
     {
-    	float f = *(in++);
-	*out++ = (f > 0 ? f : -f);
+      error("shmsrc~: out of memory");
+      return NULL;
     }
-    return (w+4);
+
+  return (x);
 }
 
-    /* called to start DSP.  Here we call Pd back to add our perform
-    routine to a linear callback list which Pd in turn calls to grind
-    out the samples. */
-static void shmdata_dsp(t_shmdata *x, t_signal **sp)
+static void shmsrc_tilde_set_name (t_shmsrc_tilde *x, t_symbol *name)
 {
-    dsp_add(shmdata_perform, 3, sp[0]->s_vec, sp[1]->s_vec, sp[0]->s_n);
+  sprintf (x->x_shmdata_name, "%s", name->s_name);
+  sprintf (x->x_shmdata_path, "%s%s", x->x_shmdata_prefix, x->x_shmdata_name);
+  shmsrc_tilde_reader_restart (x);
 }
 
-static void *shmdata_new(void)
+static void shmsrc_tilde_set_prefix (t_shmsrc_tilde *x, t_symbol *prefix)
 {
-    t_shmdata *x = (t_shmdata *)pd_new(shmdata_class);
-    outlet_new(&x->x_obj, gensym("signal"));
-    x->x_f = 0;
-    return (x);
+  sprintf (x->x_shmdata_prefix, "%s", prefix->s_name);
+  sprintf (x->x_shmdata_path, "%s%s", x->x_shmdata_prefix, x->x_shmdata_name);
+  shmsrc_tilde_reader_restart (x);
 }
 
-    /* this routine, which must have exactly this name (with the "~" replaced
-    by "_tilde) is called when the code is first loaded, and tells Pd how
-    to build the "class". */
-void shmdata_tilde_setup(void)
+
+void shmsrc_tilde_setup(void)
 {
-    shmdata_class = class_new(gensym("shmdata~"), (t_newmethod)shmdata_new, 0,
-    	sizeof(t_shmdata), 0, A_DEFFLOAT, 0);
-	    /* this is magic to declare that the leftmost, "main" inlet
-	    takes signals; other signal inlets are done differently... */
-    CLASS_MAINSIGNALIN(shmdata_class, t_shmdata, x_f);
-    	/* here we tell Pd about the "dsp" method, which is called back
-	when DSP is turned on. */
-    class_addmethod(shmdata_class, (t_method)shmdata_dsp, gensym("dsp"), 0);
+  shmsrc_tilde_class = class_new(gensym("shmsrc~"), 
+				 (t_newmethod)shmsrc_tilde_new, 
+				 (t_method)shmsrc_tilde_free,
+				 sizeof(t_shmsrc_tilde), 
+				 0, 
+				 A_DEFSYM, 
+				 A_DEFFLOAT, 
+				 A_NULL);
+  /* this is magic to declare that the leftmost, "main" inlet
+     takes signals; other signal inlets are done differently... */
+  CLASS_MAINSIGNALIN(shmsrc_tilde_class, t_shmsrc_tilde, x_f);
+  /* here we tell Pd about the "dsp" method, which is called back
+     when DSP is turned on. */
+  class_addmethod(shmsrc_tilde_class, (t_method)shmsrc_tilde_dsp, gensym("dsp"), 0);
+  class_addmethod(shmsrc_tilde_class, (t_method)shmsrc_tilde_set_name, gensym("set_name"), A_DEFSYM, 0);
+  class_addmethod(shmsrc_tilde_class, (t_method)shmsrc_tilde_set_prefix, gensym("set_prefix"), A_DEFSYM, 0);
+
+
+
 }

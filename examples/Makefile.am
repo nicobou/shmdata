@@ -1,6 +1,7 @@
 AM_CXXFLAGS = \
     -I$(top_srcdir) \
-    $(GST_CFLAGS) $(GIO_CFLAGS)
+    $(GST_CFLAGS) \
+    $(GIO_CFLAGS)
 
 AM_CFLAGS = \
     $(AM_CXXFLAGS)
