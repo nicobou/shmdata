@@ -177,9 +177,9 @@ namespace switcher
     Quiddity::ptr quidd = life_manager_->get_quiddity (res);
     // std::string category = quidd->get_documentation ().get_category ();
     // if (category.compare ("quiddity manager invoker"))
-    QuiddityManagerTranslator::ptr translator = std::dynamic_pointer_cast<QuiddityManagerTranslator> (quidd);
-    if (translator)
-	translator->set_quiddity_manager (shared_from_this());
+    QuiddityManagerWrapper::ptr wrapper = std::dynamic_pointer_cast<QuiddityManagerWrapper> (quidd);
+    if (wrapper)
+	wrapper->set_quiddity_manager (shared_from_this());
     return res;
   }
 

@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_CTRL_SERVER_H__
 #define __SWITCHER_CTRL_SERVER_H__
 
-#include "switcher/quiddity-manager-translator.h"
+#include "switcher/quiddity-manager-wrapper.h"
 #include <memory>
 
 #include "switcher/webservices/soapcontrolService.h"
@@ -29,7 +29,7 @@
 namespace switcher
 {
 
-  class CtrlServer : public QuiddityManagerTranslator
+  class CtrlServer : public QuiddityManagerWrapper
   {
   public:
     typedef std::shared_ptr<CtrlServer> ptr;

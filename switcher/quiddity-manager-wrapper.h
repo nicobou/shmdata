@@ -17,16 +17,26 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/quiddity-manager-translator.h"
+
+#ifndef __SWITCHER_QUIDDITY_MANAGER_TRANSLATOR_H__
+#define __SWITCHER_QUIDDITY_MANAGER_TRANSLATOR_H__
+
+#include "switcher/quiddity-manager.h"
+#include <memory>
 
 namespace switcher
 {
+  class QuiddityManager;
 
-  void
-  QuiddityManagerTranslator::set_quiddity_manager (std::shared_ptr<QuiddityManager> manager)
+  class QuiddityManagerWrapper : public Quiddity
   {
-    manager_ = manager;
-  }
+  public:
+    typedef std::shared_ptr<QuiddityManagerWrapper> ptr;
+    void set_quiddity_manager (std::shared_ptr<QuiddityManager> manager);
+  protected:
+    std::weak_ptr<QuiddityManager> manager_;
+  };
 
-}//end of class
+}  // end of namespace
 
+#endif // ifndef

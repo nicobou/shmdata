@@ -22,7 +22,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     quiddity-documentation.cpp \
     quiddity-life-manager.cpp \
     quiddity-manager.cpp \
-    quiddity-manager-translator.cpp \
+    quiddity-manager-wrapper.cpp \
     quiddity.cpp \
     base-sink.cpp \
     base-source.cpp \
@@ -72,7 +72,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     quiddity-documentation.h \
     quiddity-life-manager.h \
     quiddity-manager.h \
-    quiddity-manager-translator.h \
+    quiddity-manager-wrapper.h \
     quiddity.h \
     base-sink.h \
     base-source.h \
