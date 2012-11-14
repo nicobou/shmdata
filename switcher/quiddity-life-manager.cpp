@@ -200,8 +200,16 @@ namespace switcher
   bool 
   QuiddityLifeManager::remove (std::string quiddity_name)
   {
+    
     quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
-    return quiddities_nick_names_.remove (quiddity_name);
+    
+    if (quiddities_nick_names_.remove (quiddity_name))
+      {  
+        g_message ("(%s) quiddity removed (%s)",name_.c_str(), quiddity_name.c_str());
+	return true;
+      }
+    g_warning ("(%s) quiddity %s not found for removing",name_.c_str(), quiddity_name.c_str());
+    return false; 
   }
 
   std::string 

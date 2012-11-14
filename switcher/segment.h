@@ -26,14 +26,13 @@
 #include "switcher/string-map.h"
 #include "switcher/shmdata-writer.h"
 #include "switcher/shmdata-reader.h"
-#include "switcher/gst-element-cleaner.h"
 #include <memory>
 #include <vector>
 
 namespace switcher
 {
 
-  class Segment : public Quiddity, public GstElementCleaner
+  class Segment : public Quiddity
   {
   public:
     typedef std::shared_ptr<Segment> ptr;
