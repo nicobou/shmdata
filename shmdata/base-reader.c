@@ -478,9 +478,8 @@ shmdata_base_reader_close (shmdata_base_reader_t * reader)
       if (reader->dirMonitor_ != NULL)
 	g_object_unref (reader->dirMonitor_);
       g_free (reader);
-      g_debug ("reader freed %p\n",reader);
+      g_debug ("base reader closed");
     }
-
 }
 
 
