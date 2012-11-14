@@ -22,13 +22,12 @@
 #define __SWITCHER_AAC_H__
 
 #include "switcher/audio-sink.h"
-#include "switcher/gst-element-cleaner.h"
 #include <gst/gst.h>
 #include <memory>
 
 namespace switcher
 {
-  class AAC : public AudioSink, public GstElementCleaner
+  class AAC : public AudioSink
   {
   public:
     typedef std::shared_ptr<AAC> ptr;

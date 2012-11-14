@@ -22,14 +22,13 @@
 #define __SWITCHER_H264_H__
 
 #include "switcher/video-sink.h"
-#include "switcher/gst-element-cleaner.h"
 #include <gst/gst.h>
 #include <memory>
 
 namespace switcher
 {
 
-  class H264 : public VideoSink, public GstElementCleaner
+  class H264 : public VideoSink
   {
   public:
     typedef std::shared_ptr<H264> ptr;
