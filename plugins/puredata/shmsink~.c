@@ -96,7 +96,11 @@ static void shmsink_tilde_writer_restart (t_shmsink_tilde *x)
 	   (int)x->x_samplerate,
 	   x->x_num_inlets);
   shmdata_any_writer_set_data_type (x->x_writer, x->x_caps);
-  shmdata_any_writer_set_path (x->x_writer,x->x_shmdata_path);
+  if (shmdata_any_writer_set_path (x->x_writer,x->x_shmdata_path) == 0)
+    {
+      remove (x->x_shmdata_path);
+      shmdata_any_writer_set_path (x->x_writer,x->x_shmdata_path);
+    }
   shmdata_any_writer_start (x->x_writer);
 }
 
@@ -193,9 +197,7 @@ static void shmsink_tilde_set_prefix (t_shmsink_tilde *x, t_symbol *prefix)
   shmsink_tilde_writer_restart (x);
 }
 
-/* this routine, which must have exactly this name (with the "~" replaced
-   by "_tilde) is called when the code is first loaded, and tells Pd how
-   to build the "class". */
+
 void shmsink_tilde_setup(void)
 {
   shmsink_tilde_class = class_new(gensym("shmsink~"), 
