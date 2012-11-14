@@ -34,7 +34,7 @@ namespace switcher
     typedef std::shared_ptr<QuiddityManagerTranslator> ptr;
     void set_quiddity_manager (std::shared_ptr<QuiddityManager> manager);
   protected:
-    std::shared_ptr<QuiddityManager> manager_;
+    std::weak_ptr<QuiddityManager> manager_;
   };
 
 }  // end of namespace
