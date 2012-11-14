@@ -279,7 +279,7 @@ namespace switcher
       pay = gst_element_factory_make ("rtpgstpay", NULL);
 
     ShmdataReader *reader= (ShmdataReader *) g_object_get_data (G_OBJECT (typefind),"shmdata-reader");
-    reader->add_element_to_remove (pay);
+    reader->add_element_to_cleaner (pay);
         
     g_debug ("RtpSession::make_data_stream_available: %s payloader",GST_ELEMENT_NAME (pay));
 
@@ -350,7 +350,7 @@ namespace switcher
     //for cleaning of funnel
     GstElementCleaner::ptr funnel_cleaning;
     funnel_cleaning.reset (new GstElementCleaner ());
-    funnel_cleaning->add_element_to_remove (funnel);
+    funnel_cleaning->add_element_to_cleaner (funnel);
     context->funnels_.insert (reader->get_path (),funnel_cleaning);
     g_free (rtp_session_id);
   }
@@ -370,8 +370,8 @@ namespace switcher
     gst_element_sync_state_with_parent (funnel);
     gst_element_sync_state_with_parent (typefind);
     caller->set_sink_element (funnel);
-    caller->add_element_to_remove (funnel);
-    caller->add_element_to_remove (typefind);
+    caller->add_element_to_cleaner (funnel);
+    caller->add_element_to_cleaner (typefind);
   }
   
 

@@ -33,7 +33,7 @@ namespace switcher
   public:
     typedef std::shared_ptr<GstElementCleaner> ptr;
     ~GstElementCleaner ();
-    void add_element_to_remove (GstElement *element);
+    void add_element_to_cleaner (GstElement *element);
 
   private:
     std::vector<GstElement *> elements_to_remove_;

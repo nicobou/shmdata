@@ -55,7 +55,7 @@ namespace switcher
 
  
   void 
-  GstElementCleaner::add_element_to_remove (GstElement *element)
+  GstElementCleaner::add_element_to_cleaner (GstElement *element)
   {
     elements_to_remove_.push_back (element);
   }

@@ -21,14 +21,14 @@
 #ifndef __SWITCHER_AAC_H__
 #define __SWITCHER_AAC_H__
 
-#include "switcher/video-sink.h"
+#include "switcher/audio-sink.h"
+#include "switcher/gst-element-cleaner.h"
 #include <gst/gst.h>
 #include <memory>
 
 namespace switcher
 {
-
-  class AAC : public VideoSink
+  class AAC : public AudioSink, public GstElementCleaner
   {
   public:
     typedef std::shared_ptr<AAC> ptr;

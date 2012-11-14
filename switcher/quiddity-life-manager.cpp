@@ -144,7 +144,7 @@ namespace switcher
      if (quiddity.get() != NULL)
 	 init_quiddity (quiddity);
      
-     g_message ("%s: quiddity created (%s)",name_.c_str(), quiddity->get_name ().c_str());
+     g_message ("(%s) quiddity created (%s)",name_.c_str(), quiddity->get_name ().c_str());
 
      return quiddity->get_nick_name ();
   }
@@ -168,7 +168,7 @@ namespace switcher
 
 	init_quiddity (quiddity);
 
-	g_message ("%s: quiddity created (%s)",name_.c_str(), quiddity->get_name ().c_str());
+	g_message ("(%s) quiddity created (%s)",name_.c_str(), quiddity->get_name ().c_str());
       }
     return quiddity->get_nick_name ();
   }

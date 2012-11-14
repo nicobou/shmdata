@@ -29,12 +29,12 @@ namespace switcher
   H264::init ()
   {
     h264bin_ = gst_element_factory_make ("bin",NULL);
-    
     h264enc_ = gst_element_factory_make ("x264enc",NULL);
-    
+    add_element_to_cleaner (h264enc_);
+    add_element_to_cleaner (h264bin_);
+
     //set the name before registering properties
     set_name (gst_element_get_name (h264enc_));
-    
     set_on_first_data_hook (H264::make_shmdata_writer,this);
     return true;
   }

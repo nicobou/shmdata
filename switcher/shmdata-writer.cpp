@@ -65,7 +65,7 @@ namespace switcher
     g_debug ("ShmdataWriter: %s deleted", path_.c_str());
   }
   
-  //WARNING is the file exist it will be deleted
+  //WARNING if the file exist it will be deleted
   bool 
   ShmdataWriter::set_path (std::string name)
   {
@@ -73,10 +73,10 @@ namespace switcher
     if( g_file_query_exists (shmfile, NULL))
       {    
 	//thrash it
-	g_warning ("ShmdataWriter::set_path warning: file %s exists and will be deleted.",name.c_str());
+	g_debug ("ShmdataWriter::set_path warning: file %s exists and will be deleted.",name.c_str());
 	if (! g_file_delete (shmfile, NULL, NULL)) 
 	  {
-	    g_warning ("ShmdataWriter::set_path error: file %s is already existing and cannot be trashed.",name.c_str());
+	    g_error ("ShmdataWriter::set_path error: file %s is already existing and cannot be trashed.",name.c_str());
 	    return false;
 	  }
       }
