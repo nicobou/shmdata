@@ -77,7 +77,7 @@ namespace switcher
   {
     if (!source_streams_.contains (shmdata_stream_path))
       {
-	g_warning ("RtpDestination: stream not found, cannot remove %s\n", 
+	g_warning ("RtpDestination: stream not found, cannot remove %s", 
 		   shmdata_stream_path.c_str ());
 	return false;
       }

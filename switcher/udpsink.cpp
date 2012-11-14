@@ -97,7 +97,7 @@ namespace switcher
 
   UDPSink::~UDPSink ()
   {
-    g_debug ("removing udpsink %s (%s)\n", get_nick_name ().c_str (), GST_ELEMENT_NAME (udpsink_bin_));
+    g_debug ("removing udpsink %s (%s)", get_nick_name ().c_str (), GST_ELEMENT_NAME (udpsink_bin_));
     
     // GstBin *parent = GST_BIN( GST_ELEMENT_PARENT (udpsink_bin_));
     // g_debug ("num child in parent bin : %d", 
@@ -162,14 +162,14 @@ namespace switcher
   UDPSink::on_client_added (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data)
   {
     //UDPSink *context = static_cast<UDPSink *>(user_data);
-    g_debug ("UDPSink::on_client_added\n");
+    g_debug ("UDPSink::on_client_added");
   }
 
   void 
   UDPSink::on_client_removed (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data)
   {
     //UDPSink *context = static_cast<UDPSink *>(user_data);
-    g_debug ("UDPSink::on_client_removed\n");
+    g_debug ("UDPSink::on_client_removed");
   }
 
   gboolean

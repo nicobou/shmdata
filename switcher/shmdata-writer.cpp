@@ -29,7 +29,7 @@ namespace switcher
 
   ShmdataWriter::~ShmdataWriter()
   {
-    g_debug ("ShmdataWriter: deleting %s\n", path_.c_str());
+    g_debug ("ShmdataWriter: deleting %s", path_.c_str());
 
     shmdata_base_writer_close (writer_);
 
@@ -62,7 +62,7 @@ namespace switcher
 	gst_element_set_state (fakesink_, GST_STATE_NULL);
 	gst_bin_remove (GST_BIN (gst_element_get_parent (fakesink_)), fakesink_);
       }
-    g_debug ("ShmdataWriter: %s deleted \n", path_.c_str());
+    g_debug ("ShmdataWriter: %s deleted", path_.c_str());
   }
   
   //WARNING is the file exist it will be deleted

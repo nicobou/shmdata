@@ -38,7 +38,7 @@ namespace switcher
     quiddity_name.second = "the name of the runtime to attach with (e.g. \"pipeline0\")";
     arg_desc.push_back (quiddity_name); 
     if (!set_method_description ("set_runtime", "attach quiddity to a runtime ", arg_desc))
-      g_error ("segment: cannot set method description for \"set_runtime\"\n");
+      g_error ("segment: cannot set method description for \"set_runtime\"");
   }
 
   Segment::~Segment()
@@ -49,7 +49,7 @@ namespace switcher
 
      if (GST_IS_ELEMENT (bin_))
        {
-	 // g_debug ("Segment, bin state %s num children %d \n", 
+	 // g_debug ("Segment, bin state %s num children %d ", 
 	 // 	  gst_element_state_get_name (GST_STATE (bin_)), 
 	 // 	  GST_BIN_NUMCHILDREN(GST_BIN (bin_)));
 
@@ -101,7 +101,7 @@ namespace switcher
 	 else
 	   g_error ("Segment::set_runtime_wrapped Error: %s is not a runtime",runtime_name);
       }
-    //g_debug ("%s is attached to runtime %s\n",context->get_name().c_str(),runtime->get_name().c_str());
+    //g_debug ("%s is attached to runtime %s",context->get_name().c_str(),runtime->get_name().c_str());
   }
   
   void
@@ -124,7 +124,7 @@ namespace switcher
     //possible state change
     if (GST_STATE_TARGET(runtime_->get_pipeline ()) != GST_STATE(runtime_->get_pipeline ()))
       {
-	g_debug ("Segment::set_runtime waiting for parent to finish state change\n");
+	g_debug ("Segment::set_runtime waiting for parent to finish state change");
 	gst_element_get_state (runtime_->get_pipeline (), NULL, NULL, GST_CLOCK_TIME_NONE);
       }
     gst_element_sync_state_with_parent (bin_);

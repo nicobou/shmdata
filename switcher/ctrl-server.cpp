@@ -190,10 +190,10 @@ namespace switcher
 	  { if (context->service_->errnum)
 	      context->service_->soap_print_fault(stderr);
 	    else
-	      g_error("SOAP server timed out\n");	/* should really wait for threads to terminate, but 24hr timeout should be enough ... */
+	      g_error("SOAP server timed out");	/* should really wait for threads to terminate, but 24hr timeout should be enough ... */
 	    break;
 	  }
-	// g_debug ("client request %d accepted on socket %d, client IP is %d.%d.%d.%d\n", 
+	// g_debug ("client request %d accepted on socket %d, client IP is %d.%d.%d.%d", 
 	// 	    i, s, 
 	// 	    (int)(context->service_->ip>>24)&0xFF, 
 	// 	    (int)(context->service_->ip>>16)&0xFF, 
@@ -262,7 +262,7 @@ controlService::get_factory_capabilities(std::vector<std::string> *result){
   if (this->user == NULL)
     {
       char *s = (char*)soap_malloc(this, 1024);
-      g_error ("controlService::get_factory_capabilities: cannot get manager (NULL)\n");
+      g_error ("controlService::get_factory_capabilities: cannot get manager (NULL)");
       sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (NULL)</error>");
       return soap_senderfault("error in get_factory_capabilities", s);
     }

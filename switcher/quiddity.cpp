@@ -32,7 +32,7 @@ namespace switcher
   {}
   
   Quiddity::~Quiddity () { 
-    g_debug ("call: Quiddity destructor for %s\n",get_name().c_str());
+    g_debug ("call: Quiddity destructor for %s",get_name().c_str());
   }
 
   std::string
@@ -70,7 +70,7 @@ namespace switcher
     GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), object_property.c_str());
     if (pspec == NULL)
       {
-	g_error ("property not found %s\n",object_property.c_str());
+	g_error ("property not found %s",object_property.c_str());
 	return false;
       }
 
@@ -85,7 +85,7 @@ namespace switcher
       }
     else 
       {
-	g_error ("registering name %s already exists\n",name.c_str());
+	g_error ("registering name %s already exists",name.c_str());
 	return false;
       }
   }
@@ -97,7 +97,7 @@ namespace switcher
   {
     if (methods_.find( function_name ) == methods_.end())
       {
-	g_error ("Quiddity::method_get_num_value_args error: method %s not found\n",function_name.c_str());
+	g_error ("Quiddity::method_get_num_value_args error: method %s not found",function_name.c_str());
 	return -1;
       }
     else 
@@ -110,7 +110,7 @@ namespace switcher
   {
     if (methods_.find( function_name ) == methods_.end())
       {
-	g_error ("Quiddity::invoke_method error: method %s not found\n",function_name.c_str());
+	g_error ("Quiddity::invoke_method error: method %s not found",function_name.c_str());
 	return false;
       }
     else 
@@ -125,7 +125,7 @@ namespace switcher
   {
     if (method == NULL)
       {
-	g_error ("fail registering %s (method is NULL)\n",method_name.c_str());
+	g_error ("fail registering %s (method is NULL)",method_name.c_str());
 	return false;
       }
     
@@ -139,7 +139,7 @@ namespace switcher
       }
     else 
       {
-	g_error ("registering name %s already exists\n",method_name.c_str());
+	g_error ("registering name %s already exists",method_name.c_str());
 	return false;
       }
 
@@ -166,14 +166,14 @@ namespace switcher
   Quiddity::get_methods_description ()
   {
     std::string res;
-    res.append ("{ methods: [ \n");
+    res.append ("{ methods: [ ");
     for(std::map<std::string, Method::ptr>::iterator it = methods_.begin(); it != methods_.end(); ++it) 
       {
 	if (it != methods_.begin())
-	  res.append (", \n");
+	  res.append (", ");
 	res.append (it->second->get_description ());
       }
-    res.append ("\n ]}");
+    res.append (" ]}");
     return res;
   }
 
@@ -193,11 +193,11 @@ namespace switcher
   Quiddity::get_properties_description ()
   {
     std::string res;
-    res.append ("{ properties: [ \n");
+    res.append ("{ properties: [ ");
     for(std::map<std::string, Property::ptr>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
       {
 	if (it != properties_.begin())
-	  res.append (", \n");
+	  res.append (", ");
 
 	res.append ("{ \"name\": \"");
 	res.append (it->first);

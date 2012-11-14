@@ -99,7 +99,7 @@ namespace switcher
     // }
 
 
-    g_debug ("GconfAudioSink: WARNING, set sync property of the sinks to false\n");
+    g_debug ("GconfAudioSink: WARNING, set sync property of the sinks to false");
     // //registering sync_sink
     // std::vector<GType> connect_arg_types;
     // connect_arg_types.push_back (G_TYPE_BOOLEAN);
@@ -111,7 +111,7 @@ namespace switcher
     // sync.second = "true for synchronizing, false otherwise";
     // arg_desc.push_back (sync); 
     // if (!context->set_method_description ("sync_sinks", "synchronize sink(s) of the element on the pipeline clock", arg_desc))
-    //   g_error ("gconfaudiosink: cannot set method description for \"sync_sinks\"\n");
+    //   g_error ("gconfaudiosink: cannot set method description for \"sync_sinks\"");
 
     return FALSE; //the source should be removed from the main loop
   }
@@ -139,11 +139,11 @@ namespace switcher
     //std::string connector = static_cast<std::string>(connector_name);
     GconfAudioSink *context = static_cast<GconfAudioSink*>(user_data);
 
-    //g_debug ("GconfAudioSink: %s\n",gst_element_get_name (context->gconfaudiosink_));
+    //g_debug ("GconfAudioSink: %s",gst_element_get_name (context->gconfaudiosink_));
 
     // if (g_object_class_find_property (G_OBJECT_GET_CLASS (G_OBJECT(context->gconfaudiosink_)), "sync"))
     //   {
-    // 	g_debug ("GconfAudioSink: sync_sinks gconfaudiosink\n");
+    // 	g_debug ("GconfAudioSink: sync_sinks gconfaudiosink");
     // 	g_object_set (G_OBJECT (context->gconfaudiosink_), "sync", FALSE, NULL);
     //   }
 
@@ -171,30 +171,30 @@ namespace switcher
 		if (g_object_class_find_property (G_OBJECT_GET_CLASS (G_OBJECT(item)), "sync"))
 		  {
 		    g_object_set (G_OBJECT (item), "sync", FALSE, NULL);
-		    g_debug ("GconfAudioSink: setting sink sync to false %s\n",gst_element_get_name (GST_OBJECT(item))); 
+		    g_debug ("GconfAudioSink: setting sink sync to false %s",gst_element_get_name (GST_OBJECT(item))); 
 		  }
 		else
 		  g_error("Internal sink doesn't have sync property");
 			
 		
-		g_debug ("-----------%u\n",gst_child_proxy_get_children_count  ((GstChildProxy *)context->gconfaudiosink_));
+		g_debug ("-----------%u",gst_child_proxy_get_children_count  ((GstChildProxy *)context->gconfaudiosink_));
 		
 		 
 		// if (GST_IS_BIN (GST_OBJECT(item)))
-		//   g_print ("item is bin\n");
+		//   g_print ("item is bin");
 
 		gst_object_unref (GST_OBJECT(item));
 		break;
 	      case GST_ITERATOR_RESYNC:
-		g_debug ("gst_iterator_resync\n");
+		g_debug ("gst_iterator_resync");
 		gst_iterator_resync (it);
 		break;
 	      case GST_ITERATOR_ERROR:
-		g_error ("...wrong parameters were given...\n");
+		g_error ("...wrong parameters were given...");
 		done = TRUE;
 		break;
 	      case GST_ITERATOR_DONE:
-		g_debug ("GST_ITERATOR_DONE\n");
+		g_debug ("GST_ITERATOR_DONE");
 		done = TRUE;
 		break;
 	      }
@@ -203,7 +203,7 @@ namespace switcher
       }
     else
       {
-	g_error ("GconfAudioSink is not a bin\n");
+	g_warning ("GconfAudioSink is not a bin");
       }
     return TRUE;
   }

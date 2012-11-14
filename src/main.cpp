@@ -24,13 +24,20 @@
 
 static gchar *server_name = NULL;
 static gchar *port_number = NULL;
+static gboolean quiet;
+static gboolean debug;
+static gboolean verbose;
 //static gchar **remaining_args = NULL;
+
 static std::vector<switcher::QuiddityManager::ptr> container;
 
 static GOptionEntry entries[] =
   {
     { "server-name", 's', 0, G_OPTION_ARG_STRING, &server_name, "server name (default is \"default\")", NULL },
     { "port-number", 'p', 0, G_OPTION_ARG_STRING, &port_number, "port number the server will bind (default is 8080)", NULL },
+    { "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet, "do not display any message", NULL },
+    { "verbose", 'v', 0, G_OPTION_ARG_NONE, &debug, "display all messages, excluding debug", NULL },
+    { "debug", 'd', 0, G_OPTION_ARG_NONE, &debug, "display all messages, including debug", NULL },
     { NULL }
   };
 
@@ -49,6 +56,9 @@ leave (int sig)
  	     gpointer user_data)
  {
    //OsgReader_impl *context = static_cast<OsgReader_impl*>(user_data);
+    if (quiet)
+      return;
+
    switch (log_level) {
    case G_LOG_LEVEL_ERROR:
      g_print ("%s, ERROR: %s\n",G_LOG_DOMAIN, message);
@@ -60,13 +70,16 @@ leave (int sig)
      g_print ("%s, WARNING: %s\n",G_LOG_DOMAIN, message);
      break;
    case G_LOG_LEVEL_MESSAGE:
-     g_print ("%s, MESSAGE: %s\n",G_LOG_DOMAIN, message);
+     if (debug || verbose)
+       g_print ("%s, MESSAGE: %s\n",G_LOG_DOMAIN, message);
      break;
    case G_LOG_LEVEL_INFO:
-     g_print ("%s, INFO: %s\n",G_LOG_DOMAIN, message);
+     if (debug || verbose)
+       g_print ("%s, INFO: %s\n",G_LOG_DOMAIN, message);
      break;
    case G_LOG_LEVEL_DEBUG:
-     g_print ("%s, DEBUG: %s\n",G_LOG_DOMAIN, message);
+     if (debug)
+       g_print ("%s, DEBUG: %s\n",G_LOG_DOMAIN, message);
      break;
    default:
      g_print ("%s: %s\n",G_LOG_DOMAIN,message);
@@ -95,6 +108,7 @@ main (int argc,
     server_name = "default";
   if (port_number == NULL)
     port_number = "8080";
+
 
   g_log_set_default_handler (log_handler, NULL);
   

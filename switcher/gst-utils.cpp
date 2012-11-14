@@ -43,32 +43,31 @@ namespace switcher
       return true;
     else
       {
-	g_error ("GstUtils::check_pad_link_return - ERROR %d (GstPadLinkReturn)\n", res);
-	 // switch ( res )
-	 //   {
-	 //   case 'GST_PAD_LINK_WRONG_HIERARCHY':
-         //     g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_HIERARCHY\n");
-         //     break;
-	 //   case 'GST_PAD_LINK_WAS_LINKED':
-         //     g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_WAS_LINKED\n");
-         //     break;
-	 //   case 'GST_PAD_LINK_WRONG_DIRECTION':
-         //     g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_DIRECTION\n");
-         //     break;
-	 //   case 'GST_PAD_LINK_NOFORMAT':
-         //     g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_NOFORMAT\n");
-         //     break;
-	 //   case 'GST_PAD_LINK_NOSCHED':
-         //     g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_NOSCHED\n");
-         //     break;
-	 //   case 'GST_PAD_LINK_REFUSED':
-         //     g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_REFUSED\n");
-         //     break;
-	 //   default:
-         //     g_error ("GstUtils::check_pad_link_return - UNKNOWN ERROR\n");
-	 //   }
+	switch ( res )
+	  {
+	  case 'GST_PAD_LINK_WRONG_HIERARCHY':
+	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_HIERARCHY");
+	    break;
+	  case 'GST_PAD_LINK_WAS_LINKED':
+	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_WAS_LINKED");
+	    break;
+	  case 'GST_PAD_LINK_WRONG_DIRECTION':
+	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_DIRECTION");
+	    break;
+	  case 'GST_PAD_LINK_NOFORMAT':
+	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_NOFORMAT");
+	    break;
+	  case 'GST_PAD_LINK_NOSCHED':
+	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_NOSCHED");
+	    break;
+	  case 'GST_PAD_LINK_REFUSED':
+	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_REFUSED");
+	    break;
+	  default:
+	    g_error ("GstUtils::check_pad_link_return - UNKNOWN ERROR");
+	  }
 	return false;
       }
   }
-    
+  
 }

@@ -44,7 +44,7 @@ namespace switcher
     g_value_init (&transformed_val, property_->value_type);
 
     if ( !gst_value_deserialize (&transformed_val,value.c_str()))
-      g_debug ("string not transformable into gvalue \n");
+      g_debug ("string not transformable into gvalue ");
     
     g_object_set_property (object_,
 			   property_->name, 
@@ -321,7 +321,7 @@ namespace switcher
 	
 	/* g_type_class_unref (ec); */
       } else if (G_IS_PARAM_SPEC_FLAGS (property_)) {
-	g_error ("warning: param spec flags not handled\n");
+	g_error ("warning: param spec flags not handled");
 	// GParamSpecFlags *pflags = G_PARAM_SPEC_FLAGS (property_);
 	// GFlagsValue *vals;
 	// gchar *cur;
@@ -335,7 +335,7 @@ namespace switcher
 	// 	   g_value_get_flags (&value), cur);
 
 	// while (vals[0].value_name) {
-	//   g_debug ("\n");
+	//   g_debug ("");
 	//   if (_name)
 	//     g_debug ("%s", _name);
 	//   g_debug ("%-23.23s    (0x%08x): %-16s - %s", "",
@@ -345,21 +345,21 @@ namespace switcher
 
 	// g_free (cur);
       } else if (G_IS_PARAM_SPEC_OBJECT (property_)) {
-	g_error ("warning: param spec object not handled\n");
+	g_error ("warning: param spec object not handled");
 	// g_debug ("%-23.23s Object of type \"%s\"", "",
 	// 	 g_type_name (property_->value_type));
       } else if (G_IS_PARAM_SPEC_BOXED (property_)) {
-	g_error ("warning: param spec boxed not handled\n");
+	g_error ("warning: param spec boxed not handled");
 	// g_debug ("%-23.23s Boxed pointer of type \"%s\"", "",
 	// 	 g_type_name (property_->value_type));
       } else if (G_IS_PARAM_SPEC_POINTER (property_)) {
-	g_error ("warning: param spec pointer not handled\n");
+	g_error ("warning: param spec pointer not handled");
 	// if (property_->value_type != G_TYPE_POINTER) {
 	//   g_debug ("%-23.23s Pointer of type \"%s\".", "",
 	// 	   g_type_name (property_->value_type));
       } else if (property_->value_type == G_TYPE_VALUE_ARRAY) {
 	GParamSpecValueArray *pvarray = G_PARAM_SPEC_VALUE_ARRAY (property_);
-	g_error ("warning: array not handled\n");
+	g_error ("warning: array not handled");
 	// if (pvarray->element_spec) {
 	//   g_debug ("%-23.23s Array of GValues of type \"%s\"", "",
 	// 	   g_type_name (pvarray->element_spec->value_type));
@@ -394,11 +394,11 @@ namespace switcher
 	// 	 gst_value_get_fraction_numerator (&value),
 	// 	 gst_value_get_fraction_denominator (&value));
       } else if (GST_IS_PARAM_SPEC_MINI_OBJECT (property_)) {
-	g_error ("warning param spec mini object not handled \n");
+	g_error ("warning param spec mini object not handled ");
 	// g_debug ("%-23.23s MiniObject of type \"%s\"", "",
 	// 	 g_type_name (property_->value_type));
       } else {
-	g_error ("warning: unknown type\n");
+	g_error ("warning: unknown type");
 	// g_debug ("%-23.23s Unknown type %ld \"%s\"", "", property_->value_type,
 	// 	 g_type_name (property_->value_type));
       }
@@ -407,7 +407,7 @@ namespace switcher
 
   g_value_reset (&value);
 
-  json_description_.append ("}\n");   
+  json_description_.append ("}");   
 }
 
 
@@ -429,7 +429,7 @@ Property::print()
 	
   g_value_init (&value, property_->value_type);
 	
-  g_debug ("  %-20s: %s\n", g_param_spec_get_name (property_),
+  g_debug ("  %-20s: %s", g_param_spec_get_name (property_),
 	   g_param_spec_get_blurb (property_));
 	
   // first_flag = TRUE;
@@ -464,7 +464,7 @@ Property::print()
   // 	g_debug ("%s0x%0x", (first_flag) ? "" : ", ",
   // 		 property_->flags & ~KNOWN_PARAM_FLAGS);
   // }
-  // g_debug ("\n");
+  // g_debug ("");
 
   switch (G_VALUE_TYPE (&value)) {
   case G_TYPE_STRING:
@@ -591,7 +591,7 @@ Property::print()
 
       j = 0;
       while (values[j].value_name) {
-	g_debug ("\n");
+	g_debug ("");
 	// if (_name)
 	//   g_debug ("%s", _name);
 	g_debug ("%-23.23s    (%d): %-16s - %s", "",
@@ -613,7 +613,7 @@ Property::print()
       // 	   g_value_get_flags (&value), cur);
 
       // while (vals[0].value_name) {
-      //   g_debug ("\n");
+      //   g_debug ("");
       //   if (_name)
       //     g_debug ("%s", _name);
       //   g_debug ("%-23.23s    (0x%08x): %-16s - %s", "",
@@ -664,9 +664,9 @@ Property::print()
     break;
   }
   if (!readable)
-    g_debug (" Write only\n");
+    g_debug (" Write only");
   else
-    g_debug ("\n");
+    g_debug ("");
 
   g_value_reset (&value);
 }
