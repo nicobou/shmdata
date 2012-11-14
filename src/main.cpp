@@ -36,7 +36,7 @@ static GOptionEntry entries[] =
     { "server-name", 's', 0, G_OPTION_ARG_STRING, &server_name, "server name (default is \"default\")", NULL },
     { "port-number", 'p', 0, G_OPTION_ARG_STRING, &port_number, "port number the server will bind (default is 8080)", NULL },
     { "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet, "do not display any message", NULL },
-    { "verbose", 'v', 0, G_OPTION_ARG_NONE, &debug, "display all messages, excluding debug", NULL },
+    { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "display all messages, excluding debug", NULL },
     { "debug", 'd', 0, G_OPTION_ARG_NONE, &debug, "display all messages, including debug", NULL },
     { NULL }
   };
@@ -61,28 +61,28 @@ leave (int sig)
 
    switch (log_level) {
    case G_LOG_LEVEL_ERROR:
-     g_print ("%s, ERROR: %s\n",G_LOG_DOMAIN, message);
+     g_print ("%s-error: %s\n",log_domain, message);
      break;
    case G_LOG_LEVEL_CRITICAL:
-     g_print ("%s, CRITICAL: %s\n",G_LOG_DOMAIN, message);
+     g_print ("%s-critical: %s\n",log_domain, message);
      break;
    case G_LOG_LEVEL_WARNING:
-     g_print ("%s, WARNING: %s\n",G_LOG_DOMAIN, message);
+     g_print ("%s-warning: %s\n",log_domain, message);
      break;
    case G_LOG_LEVEL_MESSAGE:
      if (debug || verbose)
-       g_print ("%s, MESSAGE: %s\n",G_LOG_DOMAIN, message);
+       g_print ("%s-message: %s\n",log_domain, message);
      break;
    case G_LOG_LEVEL_INFO:
      if (debug || verbose)
-       g_print ("%s, INFO: %s\n",G_LOG_DOMAIN, message);
+       g_print ("%s-info: %s\n",log_domain, message);
      break;
    case G_LOG_LEVEL_DEBUG:
      if (debug)
-       g_print ("%s, DEBUG: %s\n",G_LOG_DOMAIN, message);
+       g_print ("%s-debug: %s\n",log_domain, message);
      break;
    default:
-     g_print ("%s: %s\n",G_LOG_DOMAIN,message);
+     g_print ("%s-unknown-level: %s\n",log_domain,message);
      break;
    }
  }

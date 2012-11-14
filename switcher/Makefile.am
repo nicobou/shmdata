@@ -2,7 +2,7 @@ AM_CXXFLAGS = \
     $(GSOAP_CFLAGS) \
     $(GST_CFLAGS) \
     $(SHMDATA_CFLAGS) \
-    -DG_LOG_DOMAIN=\"SWITCHER\" \
+    -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir)/switcher/webservices
 
 AM_LIBS = \

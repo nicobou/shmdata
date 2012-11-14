@@ -141,9 +141,10 @@ namespace switcher
       return "";
     
      Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class);
-     g_debug ("%s: create_quiddity %p %s",name_.c_str(), &quiddity,quiddity->get_name ().c_str());
      if (quiddity.get() != NULL)
 	 init_quiddity (quiddity);
+     
+     g_message ("%s: quiddity created (%s)",name_.c_str(), quiddity->get_name ().c_str());
 
      return quiddity->get_nick_name ();
   }
@@ -155,17 +156,19 @@ namespace switcher
       return "";
 
     Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class);
-    g_debug ("%s: create_quiddity %p %s",name_.c_str(), &quiddity,quiddity->get_name ().c_str());
+
     if (quiddity.get() != NULL)
       {
 	if (!nick_name.empty () && !quiddities_nick_names_.contains (nick_name))
 	  quiddity->set_nick_name (nick_name);
 	else
-	  g_debug ("QuiddityLifeManager::create: nick name %s not valid, using %s",
+	  g_warning ("QuiddityLifeManager::create: nick name %s not valid, using %s",
 		   nick_name.c_str (),
 		   quiddity->get_name().c_str ());
 
 	init_quiddity (quiddity);
+
+	g_message ("%s: quiddity created (%s)",name_.c_str(), quiddity->get_name ().c_str());
       }
     return quiddity->get_nick_name ();
   }
