@@ -39,29 +39,22 @@ namespace switcher
 		      "pad-added", 
 		      (GCallback) Uridecodebin::uridecodebin_pad_added_cb,
 		      (gpointer) this);
-    // g_signal_connect (G_OBJECT (uridecodebin_),  
-    //  		    "no-more-pads",  
-    //  		    (GCallback) uridecodebin_no_more_pads_cb ,  
-    //  		    (gpointer) this);      
+    g_signal_connect (G_OBJECT (uridecodebin_),  
+		      "no-more-pads",  
+		      (GCallback) Uridecodebin::no_more_pads_cb ,  
+		      (gpointer) this);      
   // g_signal_connect (G_OBJECT (uridecodebin_),  
   //  		    "drained",  
   //  		    (GCallback) uridecodebin_drained_cb ,  
   //  		    (gpointer) this);      
-   g_object_set (G_OBJECT (uridecodebin_),  
-		 "ring-buffer-max-size",(guint64)200000000, 
-		 "download",TRUE, 
-		 "use-buffering",TRUE, 
-		 "async-handling",TRUE, 
-		 "buffer-duration",9223372036854775807, 
-		 NULL); 
-
-   // g_object_set (G_OBJECT (src), "uri",   
-   //   		uri, NULL);  
-
-  // gst_bin_add (GST_BIN (group->bin), src);
-  // //gst_element_set_state (src, GST_STATE_PLAYING);
-  // if (!gst_element_sync_state_with_parent (src))  
-  //   g_error ("add_uri: pb sync uridecodebin state with parent\n");  
+    g_object_set (G_OBJECT (uridecodebin_),  
+		  //"ring-buffer-max-size",(guint64)200000000, 
+		  //"download",TRUE, 
+		  //"use-buffering",TRUE, 
+		  "expose-all-streams", TRUE,
+    		  "async-handling",TRUE, 
+		  //"buffer-duration",9223372036854775807, 
+		  NULL); 
 
    
    //registering add_data_stream
@@ -84,10 +77,19 @@ namespace switcher
   }
 
   void 
+  Uridecodebin::no_more_pads_cb (GstElement* object, gpointer user_data)   
+  {   
+    g_print ("no more pad");
+  }
+
+
+  void 
   Uridecodebin::uridecodebin_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data)   
   {   
     Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
     
+    g_print ("coucou\n");
+
     const gchar *padname= gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
     g_debug ("uridecodebin new pad name is %s\n",padname);
     
@@ -109,6 +111,7 @@ namespace switcher
 	       context->get_nick_name ().c_str(), 
 	       connector_name.c_str ());
 
+    
   }   
   
   gboolean
@@ -126,11 +129,16 @@ namespace switcher
   bool
   Uridecodebin::to_shmdata (std::string uri)
   {
+    g_debug ("to_shmdata set uri %s", uri.c_str ());
     g_object_set (G_OBJECT (uridecodebin_), "uri", uri.c_str (), NULL);  
     gst_bin_add (GST_BIN (bin_), uridecodebin_);
-    if (!gst_element_sync_state_with_parent (uridecodebin_))  
-      g_error ("pb sync uridecodebin state with parent\n");
+    gst_element_set_state (uridecodebin_, GST_STATE_READY);
+    gst_element_set_state (uridecodebin_, GST_STATE_PLAYING);
+    
+     // if (!gst_element_sync_state_with_parent (uridecodebin_))  
+     //   g_error ("pb sync uridecodebin state with parent\n");
  
+    g_debug ("to_shmdata end");
     return true;
   }
 

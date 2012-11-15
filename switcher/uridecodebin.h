@@ -42,6 +42,7 @@ namespace switcher
    int media_counter_;
    static void uridecodebin_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
    static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);
+   static void no_more_pads_cb (GstElement* object, gpointer user_data);
   };
 
 }  // end of namespace
