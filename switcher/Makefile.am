@@ -44,6 +44,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     shmdata-reader.cpp \
     shmdata-writer.cpp \
     udpsink.cpp \
+    uridecodebin.cpp \
     video-sink.cpp \
     video-source.cpp \
     video-test-source.cpp \
@@ -100,6 +101,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     string-map.h \
     string-map_spec.h \
     udpsink.h \
+    uridecodebin.h \
     video-sink.h \
     video-source.h \
     video-test-source.h \

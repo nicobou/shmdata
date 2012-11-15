@@ -71,7 +71,7 @@ namespace switcher
  {
    std::string rtpsession_name;
    std::string destination_name;
-      
+   
    if (g_str_has_prefix (soap->path, "/sdp"))
      {
        gchar **query = g_strsplit_set (soap->path, "?",-1);
@@ -100,7 +100,16 @@ namespace switcher
        g_strfreev(query_vars);
        g_strfreev(query);
        
-       QuiddityManager *manager = (QuiddityManager *) soap->user;       
+       //QuiddityManager *manager = (QuiddityManager *) soap->user;       
+
+       SoapCtrlServer *ctrl_server = (SoapCtrlServer *) soap->user;
+       QuiddityManager::ptr manager;
+       if (ctrl_server != NULL)
+	 manager = ctrl_server->get_quiddity_manager ();
+
+       if (!(bool) manager)
+	 return 404;//FIXME find better for that
+
        std::vector<std::string> arg;
        arg.push_back (destination_name);
        if (!manager->invoke (rtpsession_name,"write_sdp_file",arg))
@@ -122,7 +131,6 @@ namespace switcher
        g_free (sdp_contents);
        return soap_end_send(soap);
      }
-
    return 404;
  }
 

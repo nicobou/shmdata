@@ -34,6 +34,7 @@
 #include "switcher/rtp-session.h"
 #include "switcher/runtime.h"
 #include "switcher/udpsink.h"
+#include "switcher/uridecodebin.h"
 #include "switcher/video-test-source.h"
 #include "switcher/xvimagesink.h"
 
@@ -101,7 +102,8 @@ namespace switcher
 					       Runtime::doc_.get_json_documentation ());
     abstract_factory_.register_class<UDPSink> (UDPSink::doc_.get_class_name (), 
 					       UDPSink::doc_.get_json_documentation ());
-
+    abstract_factory_.register_class<Uridecodebin> (Uridecodebin::doc_.get_class_name (), 
+						    Uridecodebin::doc_.get_json_documentation ());
     abstract_factory_.register_class<VideoTestSource> (VideoTestSource::doc_.get_class_name (),
 						       VideoTestSource::doc_.get_json_documentation ());
     abstract_factory_.register_class<Xvimagesink> (Xvimagesink::doc_.get_class_name (),
