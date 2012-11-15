@@ -1,4 +1,4 @@
-#N canvas 364 355 894 718 10;
+#N canvas 194 82 894 718 10;
 #X floatatom 115 97 5 0 0 0 - - -;
 #X floatatom 136 141 5 0 0 0 - - -;
 #X floatatom 157 189 5 0 0 0 - - -;
@@ -27,6 +27,9 @@ softwares \, like switcher. (http://code.sat.qc.ca/redmine/projects/libshmdata)
 (http://code.sat.qc.ca/redmine/projects/switcher) In order to hear
 your multichannel audio in pulse (linux) \, type the following in a
 terminal:;
+#X obj 533 489 dac~;
+#X obj 126 523 dac~;
+#X obj 492 363 shmsrc~ testshm 6;
 #X connect 0 0 11 0;
 #X connect 1 0 7 0;
 #X connect 2 0 3 0;
@@ -37,5 +40,13 @@ terminal:;
 #X connect 7 0 12 1;
 #X connect 8 0 12 3;
 #X connect 9 0 12 4;
+#X connect 9 0 22 1;
 #X connect 10 0 12 5;
+#X connect 10 0 22 0;
 #X connect 11 0 12 0;
+#X connect 23 0 21 0;
+#X connect 23 1 21 0;
+#X connect 23 2 21 1;
+#X connect 23 3 21 0;
+#X connect 23 4 21 0;
+#X connect 23 5 21 1;

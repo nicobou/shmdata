@@ -13,7 +13,7 @@
  */
 
 #include "m_pd.h"
-#include "shmdata/base-reader.h"
+#include "shmdata/any-data-reader.h"
 
 #ifdef NT
 #pragma warning( disable : 4244 )
@@ -29,7 +29,7 @@ static t_class *shmsrc_tilde_class;
 typedef struct _shmsrc_tilde
 {
   t_object x_obj; 
-  shmdata_base_reader_t *x_reader;
+  shmdata_any_reader_t *x_reader;
   double x_init_date;
   int x_num_outlets;
   unsigned long long x_offset;
@@ -42,25 +42,46 @@ typedef struct _shmsrc_tilde
   t_float x_f;    	/* place to hold inlet's value if it's set by message */
 } t_shmsrc_tilde;
 
+void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
+	      void *shmbuf,
+	      void *data,
+	      int data_size,
+	      unsigned long long timestamp,
+	      const char *type_description, void *user_data)
+{
+  t_shmsrc_tilde *x = (t_shmsrc_tilde *) user_data;
+  
+  printf ("data %p, data size %d, timestamp %llu, type descr %s\n",
+	  data, data_size, timestamp, type_description);
+
+  //free the data, can also be called later
+  shmdata_any_reader_free (shmbuf);
+}
 
 static void shmsrc_tilde_reader_restart (t_shmsrc_tilde *x)
 {
+  shmdata_any_reader_close (x->x_reader);
+  x->x_reader = shmdata_any_reader_init ();
+  shmdata_any_reader_set_debug (x->x_reader, SHMDATA_ENABLE_DEBUG);
+  shmdata_any_reader_set_on_data_handler (x->x_reader, &shmsrc_tilde_on_data, (void *) x);
+  //shmdata_any_reader_set_data_type (reader, "application/helloworld_");
+  shmdata_any_reader_start (x->x_reader, x->x_shmdata_path);
 }
 
 
 static t_int *shmsrc_tilde_perform(t_int *w)
 {
-	t_shmsrc_tilde *x = (t_shmsrc_tilde*) (w[1]);
-	int n = (int)(w[2]);
-	t_float *out[x->x_num_outlets];
-	int i;
-	for (i = 0; i < x->x_num_outlets; i++)
-	  out[i] = (t_float *)(w[3 + i]);
+	 t_shmsrc_tilde *x = (t_shmsrc_tilde*) (w[1]); 
+	  int n = (int)(w[2]);  
+	  t_float *out[x->x_num_outlets];  
+	  int i;  
+	  for (i = 0; i < x->x_num_outlets; i++)  
+	    out[i] = (t_float *)(w[3 + i]);  
 	
-	/* set output to zero */
-	while (n--)
-	  for (i = 0; i < x->x_num_outlets; i++)
-	    *(out[i]++) = 0.;
+	  /* set output to zero */  
+	  while (n--)  
+	    for (i = 0; i < x->x_num_outlets; i++)  
+	      *(out[i]++) = 0.;  
 
 	return (w + 3 + x->x_num_outlets);	
 }
@@ -70,7 +91,13 @@ static t_int *shmsrc_tilde_perform(t_int *w)
    out the samples. */
 static void shmsrc_tilde_dsp(t_shmsrc_tilde *x, t_signal **sp)
 {
-  dsp_add(shmsrc_tilde_perform, 3, sp[0]->s_vec, sp[1]->s_vec, sp[0]->s_n);
+  x->x_myvec[0] = (t_int*)x;
+  x->x_myvec[1] = (t_int*)sp[0]->s_n;
+  int i;
+  for (i = 0; i < x->x_num_outlets; i++)
+      x->x_myvec[2 + i] = (t_int*)sp[i+1]->s_vec;
+
+  dsp_addv(shmsrc_tilde_perform, x->x_num_outlets + 2, (t_int *)x->x_myvec);
 }
 
 static void shmsrc_tilde_free(t_shmsrc_tilde *x)
@@ -104,7 +131,7 @@ static void *shmsrc_tilde_new(t_symbol *s, t_floatarg num_outlets)
 	   x->x_shmdata_name);
 
   int i;
-  for (i = 1; i < x->x_num_outlets; i++)
+  for (i = 0; i < x->x_num_outlets; i++)
     outlet_new(&x->x_obj, &s_signal);
 
   x->x_myvec = (t_int **)t_getbytes(sizeof(t_int *) * (x->x_num_outlets + 3));
@@ -113,6 +140,8 @@ static void *shmsrc_tilde_new(t_symbol *s, t_floatarg num_outlets)
       error("shmsrc~: out of memory");
       return NULL;
     }
+  x->x_reader = NULL;
+  shmsrc_tilde_reader_restart (x);
 
   return (x);
 }
@@ -150,7 +179,5 @@ void shmsrc_tilde_setup(void)
   class_addmethod(shmsrc_tilde_class, (t_method)shmsrc_tilde_dsp, gensym("dsp"), 0);
   class_addmethod(shmsrc_tilde_class, (t_method)shmsrc_tilde_set_name, gensym("set_name"), A_DEFSYM, 0);
   class_addmethod(shmsrc_tilde_class, (t_method)shmsrc_tilde_set_prefix, gensym("set_prefix"), A_DEFSYM, 0);
-
-
 
 }
