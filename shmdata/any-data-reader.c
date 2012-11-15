@@ -241,17 +241,20 @@ shmdata_any_reader_set_data_type (shmdata_any_reader_t * reader,
 void
 shmdata_any_reader_close (shmdata_any_reader_t * reader)
 {
-  if (reader->reader_)
-    shmdata_base_reader_close (reader->reader_);
-  else
-    g_warning ("trying to close a NULL (base-)reader");
-  if (reader->data_caps_ != NULL)
-    gst_caps_unref (reader->data_caps_);
-  if (reader->type_ != NULL)
-    g_free (reader->type_);
-  if (reader)
-    g_free (reader);
-  else
-    g_warning ("trying to close a NULL (base-)reader");
+  if (reader != NULL)
+    {
+      if (reader->reader_)
+	shmdata_base_reader_close (reader->reader_);
+      else
+	g_warning ("trying to close a NULL (base-)reader");
+      if (reader->data_caps_ != NULL)
+	gst_caps_unref (reader->data_caps_);
+      if (reader->type_ != NULL)
+	g_free (reader->type_);
+      if (reader)
+	g_free (reader);
+      else
+	g_warning ("trying to close a NULL (base-)reader");
+    }
 }
 
