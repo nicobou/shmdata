@@ -43,18 +43,53 @@ namespace switcher
 		      "no-more-pads",  
 		      (GCallback) Uridecodebin::no_more_pads_cb ,  
 		      (gpointer) this);      
+    g_signal_connect (G_OBJECT (uridecodebin_),  
+		      "source-setup",  
+		      (GCallback) Uridecodebin::source_setup_cb ,  
+		      (gpointer) this);      
+
+
+    g_signal_connect (G_OBJECT (uridecodebin_),  
+		      "pad-removed",  
+		      (GCallback) Uridecodebin::pad_removed_cb ,  
+		      (gpointer) this);      
+    g_signal_connect (G_OBJECT (uridecodebin_),  
+		      "unknown-type",  
+		      (GCallback) Uridecodebin::unknown_type_cb ,  
+		      (gpointer) this);      
+    g_signal_connect (G_OBJECT (uridecodebin_),  
+		      "autoplug-continue",  
+		      (GCallback) Uridecodebin::autoplug_continue_cb ,  
+		      (gpointer) this);      
+    g_signal_connect (G_OBJECT (uridecodebin_),  
+		      "autoplug-factory",  
+		      (GCallback) Uridecodebin::autoplug_factory_cb ,  
+		      (gpointer) this);      
+    g_signal_connect (G_OBJECT (uridecodebin_),  
+		      "autoplug-sort",  
+		      (GCallback) Uridecodebin::autoplug_sort_cb ,  
+		      (gpointer) this);      
+    g_signal_connect (G_OBJECT (uridecodebin_),  
+		      "autoplug-select",  
+		      (GCallback) Uridecodebin::autoplug_select_cb ,  
+		      (gpointer) this);      
+    g_signal_connect (G_OBJECT (uridecodebin_),  
+		      "drained",  
+		      (GCallback) Uridecodebin::drained_cb ,  
+		      (gpointer) this);      
+
   // g_signal_connect (G_OBJECT (uridecodebin_),  
   //  		    "drained",  
   //  		    (GCallback) uridecodebin_drained_cb ,  
   //  		    (gpointer) this);      
     g_object_set (G_OBJECT (uridecodebin_),  
-		  //"ring-buffer-max-size",(guint64)200000000, 
-		  //"download",TRUE, 
-		  //"use-buffering",TRUE, 
-		  "expose-all-streams", TRUE,
-    		  "async-handling",TRUE, 
-		  //"buffer-duration",9223372036854775807, 
-		  NULL); 
+    // 		  //"ring-buffer-max-size",(guint64)200000000, 
+    // 		  //"download",TRUE, 
+    // 		  //"use-buffering",TRUE, 
+    // 		  "expose-all-streams", TRUE,
+		  "async-handling",FALSE, 
+    // 		  //"buffer-duration",9223372036854775807, 
+     		  NULL); 
 
    
    //registering add_data_stream
@@ -80,6 +115,7 @@ namespace switcher
   Uridecodebin::no_more_pads_cb (GstElement* object, gpointer user_data)   
   {   
     g_print ("no more pad");
+    //Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   }
 
 
@@ -110,9 +146,14 @@ namespace switcher
     g_message ("%s created a new shmdata writer (%s)", 
 	       context->get_nick_name ().c_str(), 
 	       connector_name.c_str ());
-
-    
   }   
+
+  void 
+  Uridecodebin::source_setup_cb (GstElement *uridecodebin, GstElement *source, gpointer user_data)
+  {
+    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+    g_print ("source %s %s\n",  GST_ELEMENT_NAME(source), G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (source)));
+  }
   
   gboolean
   Uridecodebin::to_shmdata_wrapped (gpointer uri, 
@@ -134,7 +175,7 @@ namespace switcher
     gst_bin_add (GST_BIN (bin_), uridecodebin_);
     gst_element_set_state (uridecodebin_, GST_STATE_READY);
     gst_element_set_state (uridecodebin_, GST_STATE_PLAYING);
-    
+
      // if (!gst_element_sync_state_with_parent (uridecodebin_))  
      //   g_error ("pb sync uridecodebin state with parent\n");
  
