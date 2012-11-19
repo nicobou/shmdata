@@ -30,8 +30,16 @@ namespace switcher
   {
     h264bin_ = gst_element_factory_make ("bin",NULL);
     h264enc_ = gst_element_factory_make ("x264enc",NULL);
+    g_object_set (G_OBJECT (h264enc_), 
+		  "speed-preset",3, //"ultrafast", 
+		  "bitrate",10000,
+		  NULL);
     add_element_to_cleaner (h264enc_);
     add_element_to_cleaner (h264bin_);
+
+    register_property (G_OBJECT (h264enc_),"speed-preset","x264enc");
+    register_property (G_OBJECT (h264enc_),"interlaced","x264enc");
+    register_property (G_OBJECT (h264enc_),"bitrate","x264enc");
 
     //set the name before registering properties
     set_name (gst_element_get_name (h264enc_));

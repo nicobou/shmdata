@@ -55,12 +55,13 @@ namespace switcher
      			   colorspace_out_,
      			   NULL);
     
+    g_object_set (G_OBJECT (deinterlace_), "mode", 1,NULL);
 
      //registering selected properties
      register_property (G_OBJECT (videoflip_),"method","flip");
      register_property (G_OBJECT (videorate_), "max-rate", "rate");
      register_property (G_OBJECT (videorate_), "force-fps", "rate");
-     register_property (G_OBJECT (deinterlace_),"mode","deinterlace");//default "Auto detection"
+     register_property (G_OBJECT (deinterlace_),"mode","deinterlace");
      register_property (G_OBJECT (deinterlace_),"method","deinterlace");
      // register_property (G_OBJECT (alpha_),"method","alpha");
      // register_property (G_OBJECT (alpha_),"alpha","alpha");

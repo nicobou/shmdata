@@ -49,34 +49,34 @@ namespace switcher
 		      (gpointer) this);      
 
 
-    g_signal_connect (G_OBJECT (uridecodebin_),  
-		      "pad-removed",  
-		      (GCallback) Uridecodebin::pad_removed_cb ,  
-		      (gpointer) this);      
-    g_signal_connect (G_OBJECT (uridecodebin_),  
-		      "unknown-type",  
-		      (GCallback) Uridecodebin::unknown_type_cb ,  
-		      (gpointer) this);      
-    g_signal_connect (G_OBJECT (uridecodebin_),  
-		      "autoplug-continue",  
-		      (GCallback) Uridecodebin::autoplug_continue_cb ,  
-		      (gpointer) this);      
-    g_signal_connect (G_OBJECT (uridecodebin_),  
-		      "autoplug-factory",  
-		      (GCallback) Uridecodebin::autoplug_factory_cb ,  
-		      (gpointer) this);      
-    g_signal_connect (G_OBJECT (uridecodebin_),  
-		      "autoplug-sort",  
-		      (GCallback) Uridecodebin::autoplug_sort_cb ,  
-		      (gpointer) this);      
-    g_signal_connect (G_OBJECT (uridecodebin_),  
-		      "autoplug-select",  
-		      (GCallback) Uridecodebin::autoplug_select_cb ,  
-		      (gpointer) this);      
-    g_signal_connect (G_OBJECT (uridecodebin_),  
-		      "drained",  
-		      (GCallback) Uridecodebin::drained_cb ,  
-		      (gpointer) this);      
+    // g_signal_connect (G_OBJECT (uridecodebin_),  
+    // 		      "pad-removed",  
+    // 		      (GCallback) Uridecodebin::pad_removed_cb ,  
+    // 		      (gpointer) this);      
+    // g_signal_connect (G_OBJECT (uridecodebin_),  
+    // 		      "unknown-type",  
+    // 		      (GCallback) Uridecodebin::unknown_type_cb ,  
+    // 		      (gpointer) this);      
+    // g_signal_connect (G_OBJECT (uridecodebin_),  
+    // 		      "autoplug-continue",  
+    // 		      (GCallback) Uridecodebin::autoplug_continue_cb ,  
+    // 		      (gpointer) this);      
+    // g_signal_connect (G_OBJECT (uridecodebin_),  
+    // 		      "autoplug-factory",  
+    // 		      (GCallback) Uridecodebin::autoplug_factory_cb ,  
+    // 		      (gpointer) this);      
+    // g_signal_connect (G_OBJECT (uridecodebin_),  
+    // 		      "autoplug-sort",  
+    // 		      (GCallback) Uridecodebin::autoplug_sort_cb ,  
+    // 		      (gpointer) this);      
+    // g_signal_connect (G_OBJECT (uridecodebin_),  
+    // 		      "autoplug-select",  
+    // 		      (GCallback) Uridecodebin::autoplug_select_cb ,  
+    // 		      (gpointer) this);      
+    // g_signal_connect (G_OBJECT (uridecodebin_),  
+    // 		      "drained",  
+    // 		      (GCallback) Uridecodebin::drained_cb ,  
+    // 		      (gpointer) this);      
 
   // g_signal_connect (G_OBJECT (uridecodebin_),  
   //  		    "drained",  
