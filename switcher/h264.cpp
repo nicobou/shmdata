@@ -31,8 +31,9 @@ namespace switcher
     h264bin_ = gst_element_factory_make ("bin",NULL);
     h264enc_ = gst_element_factory_make ("x264enc",NULL);
     g_object_set (G_OBJECT (h264enc_), 
-		  "speed-preset",3, //"ultrafast", 
+		  "speed-preset",1, 
 		  "bitrate",10000,
+		  "sliced-threads", TRUE,
 		  NULL);
     add_element_to_cleaner (h264enc_);
     add_element_to_cleaner (h264bin_);
