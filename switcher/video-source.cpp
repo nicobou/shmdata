@@ -55,7 +55,7 @@ namespace switcher
      			   colorspace_out_,
      			   NULL);
     
-    g_object_set (G_OBJECT (deinterlace_), "mode", 1,NULL);
+    g_object_set (G_OBJECT (deinterlace_), "mode", 2,NULL); //disabled
 
      //registering selected properties
      register_property (G_OBJECT (videoflip_),"method","flip");
