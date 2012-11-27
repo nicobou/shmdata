@@ -351,6 +351,8 @@ namespace switcher
     GstElementCleaner::ptr funnel_cleaning;
     funnel_cleaning.reset (new GstElementCleaner ());
     funnel_cleaning->add_element_to_cleaner (funnel);
+    //saving funnel for being retried
+    funnel_cleaning->add_labeled_element ("funnel",funnel);
     context->funnels_.insert (reader->get_path (),funnel_cleaning);
     g_free (rtp_session_id);
   }
@@ -490,14 +492,14 @@ namespace switcher
 	arg.push_back (make_file_name ("send_rtp_src_"+id));
 	manager->invoke ("udpsend_rtp","connect",arg);
 
-	arg.clear ();
-	arg.push_back (make_file_name ("send_rtcp_src_"+id));
-	manager->invoke ("udpsend_rtcp","connect",arg);
+	 arg.clear ();
+	 arg.push_back (make_file_name ("send_rtcp_src_"+id));
+	 manager->invoke ("udpsend_rtcp","connect",arg);
       }
 
     QuiddityManager::ptr manager = quiddity_managers_.lookup (shmdata_socket_path);
     
-    //rtp stream
+    //rtp stream (sending)
     RtpDestination::ptr dest = destinations_.lookup (nick_name);
     
     dest->add_stream (shmdata_socket_path,manager,port);
@@ -506,16 +508,35 @@ namespace switcher
     arg.push_back (port);
     manager->invoke ("udpsend_rtp","add_client",arg);
     
-    //rtcp stream
-    arg.clear ();
-    arg.push_back (dest->get_host_name ());
-    std::ostringstream rtcp_port;
-    rtcp_port << rtp_port + 1;
-    arg.push_back (rtcp_port.str());
-    manager->invoke ("udpsend_rtcp","add_client",arg);
+     //rtcp stream (sending)
+     arg.clear ();
+     arg.push_back (dest->get_host_name ());
+     std::ostringstream rtcp_port;
+     rtcp_port << rtp_port + 1;
+     arg.push_back (rtcp_port.str());
+     manager->invoke ("udpsend_rtcp","add_client",arg);
 
     //TODO connect to funnel for rtcp receiving
-    return true;
+     //getting the funnel element
+     g_debug ("coucou1\n");
+     GstElementCleaner::ptr funnel_cleaner = funnels_.lookup (shmdata_socket_path);
+
+     GstElement *funnel = funnel_cleaner->get_labeled_element ("funnel");
+     g_debug ("----- funnel is %s",  GST_ELEMENT_NAME (funnel));
+     GstElement *udpsrc = gst_element_factory_make ("udpsrc", NULL);
+     g_object_set (G_OBJECT (udpsrc), "port", rtp_port + 5, NULL);
+     gst_bin_add (GST_BIN (bin_), udpsrc);
+     gst_element_sync_state_with_parent (udpsrc);
+     
+     if (!gst_element_link (udpsrc, funnel))
+       g_debug ("link failled");
+     g_debug ("coucou5\n");
+
+     // gst_object_unref (funnel_pad);
+     // gst_object_unref (funnel_peer_pad);
+    
+
+     return true;
   }
 
   

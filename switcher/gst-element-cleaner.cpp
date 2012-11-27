@@ -61,4 +61,16 @@ namespace switcher
     elements_to_remove_.push_back (element);
   }
 
+    void 
+    GstElementCleaner::add_labeled_element (std::string label, GstElement *element)
+    {
+      labeled_elements_.insert (label, element);
+    }
+  
+    GstElement *
+    GstElementCleaner::get_labeled_element (std::string label)
+    {
+      return labeled_elements_.lookup (label);
+    }
+
 }

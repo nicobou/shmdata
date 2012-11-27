@@ -24,6 +24,7 @@
 #include <vector>
 #include <gst/gst.h>
 #include <memory>
+#include <switcher/string-map.h>
 
 namespace switcher
 {
@@ -34,9 +35,13 @@ namespace switcher
     typedef std::shared_ptr<GstElementCleaner> ptr;
     ~GstElementCleaner ();
     void add_element_to_cleaner (GstElement *element);
+    void add_labeled_element (std::string label, GstElement *element);
+    GstElement *get_labeled_element (std::string label);
 
   private:
     std::vector<GstElement *> elements_to_remove_;
+    StringMap<GstElement *> labeled_elements_;
+
     static void unlink_pad (GstPad * pad);
   };
   
