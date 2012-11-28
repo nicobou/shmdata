@@ -36,7 +36,7 @@ namespace switcher
 
     gst_bin_add_many (GST_BIN (bin_),
      		      video_tee_,
-		      videorate_,
+		      //videorate_,
 		      deinterlace_,
 		      colorspace_in_,
      		      textoverlay_,
@@ -46,7 +46,7 @@ namespace switcher
      		      NULL);
     
     gst_element_link_many (video_tee_,
-			   videorate_,
+			   //videorate_,
 			   deinterlace_,
 			   colorspace_in_,
      			   textoverlay_,
