@@ -62,13 +62,13 @@ namespace switcher
   }
 
     void 
-    GstElementCleaner::add_labeled_element (std::string label, GstElement *element)
+    GstElementCleaner::add_labeled_element_to_cleaner (std::string label, GstElement *element)
     {
       labeled_elements_.insert (label, element);
     }
   
     GstElement *
-    GstElementCleaner::get_labeled_element (std::string label)
+    GstElementCleaner::get_labeled_element_from_cleaner (std::string label)
     {
       return labeled_elements_.lookup (label);
     }

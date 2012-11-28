@@ -352,7 +352,7 @@ namespace switcher
     funnel_cleaning.reset (new GstElementCleaner ());
     funnel_cleaning->add_element_to_cleaner (funnel);
     //saving funnel for being retried
-    funnel_cleaning->add_labeled_element ("funnel",funnel);
+    funnel_cleaning->add_labeled_element_to_cleaner ("funnel",funnel);
     context->funnels_.insert (reader->get_path (),funnel_cleaning);
     g_free (rtp_session_id);
   }
@@ -465,6 +465,8 @@ namespace switcher
 	return false;
       }
 
+    //TODO check port has not been set for this destination
+
     gint rtp_port = atoi(port.c_str());
 
     if (rtp_port %2 !=0)
@@ -516,25 +518,16 @@ namespace switcher
      arg.push_back (rtcp_port.str());
      manager->invoke ("udpsend_rtcp","add_client",arg);
 
-    //TODO connect to funnel for rtcp receiving
-     //getting the funnel element
-     g_debug ("coucou1\n");
+     //FIXME rtcp receiving, port + 5 is hard coded but should be negociated 
      GstElementCleaner::ptr funnel_cleaner = funnels_.lookup (shmdata_socket_path);
-
-     GstElement *funnel = funnel_cleaner->get_labeled_element ("funnel");
-     g_debug ("----- funnel is %s",  GST_ELEMENT_NAME (funnel));
+     GstElement *funnel = funnel_cleaner->get_labeled_element_from_cleaner ("funnel");
      GstElement *udpsrc = gst_element_factory_make ("udpsrc", NULL);
+     dest->add_element_to_cleaner (udpsrc);
      g_object_set (G_OBJECT (udpsrc), "port", rtp_port + 5, NULL);
      gst_bin_add (GST_BIN (bin_), udpsrc);
      gst_element_sync_state_with_parent (udpsrc);
-     
      if (!gst_element_link (udpsrc, funnel))
-       g_debug ("link failled");
-     g_debug ("coucou5\n");
-
-     // gst_object_unref (funnel_pad);
-     // gst_object_unref (funnel_peer_pad);
-    
+       g_debug ("udpsrc and funnel link failled in rtp-session");
 
      return true;
   }

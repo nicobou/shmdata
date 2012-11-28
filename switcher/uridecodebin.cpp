@@ -124,8 +124,6 @@ namespace switcher
   {   
     Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
     
-    g_print ("coucou\n");
-
     const gchar *padname= gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
     g_debug ("uridecodebin new pad name is %s\n",padname);
     
@@ -175,10 +173,6 @@ namespace switcher
     gst_bin_add (GST_BIN (bin_), uridecodebin_);
     gst_element_set_state (uridecodebin_, GST_STATE_READY);
     gst_element_set_state (uridecodebin_, GST_STATE_PLAYING);
-
-     // if (!gst_element_sync_state_with_parent (uridecodebin_))  
-     //   g_error ("pb sync uridecodebin state with parent\n");
- 
     g_debug ("to_shmdata end");
     return true;
   }

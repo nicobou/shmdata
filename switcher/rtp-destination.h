@@ -29,7 +29,7 @@
 
 namespace switcher
 {
-  class RtpDestination
+  class RtpDestination : public GstElementCleaner
   {
   public:
     typedef std::shared_ptr<RtpDestination> ptr;
@@ -46,7 +46,7 @@ namespace switcher
     
   private:
     std::string host_name_;
-    StringMap<QuiddityManager::ptr> ports_; //maps port with thr rtp shmdata reader
+    StringMap<QuiddityManager::ptr> ports_; //maps port with rtp shmdata reader
     StringMap<std::string> source_streams_; //maps shmdata source stream with port
     static void sdp_write_media_from_caps (GstSDPMessage *sdp_description, 
 					   GstCaps *media_caps,
