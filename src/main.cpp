@@ -20,6 +20,7 @@
 #include "switcher/quiddity-manager.h"
 #include <iostream>
 #include <signal.h>
+#include <time.h>
 
 
 static gchar *server_name = NULL;
@@ -127,8 +128,11 @@ main (int argc,
   }
 
   //waiting for end of life
+  timespec delay;
+  delay.tv_sec = 1;
+  delay.tv_nsec = 1e9;
   while (1)
-    sleep (1);
+    nanosleep(&delay, NULL);
   
   return 0;
 }

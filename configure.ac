@@ -16,6 +16,9 @@ AM_INIT_AUTOMAKE([1.10])
 dnl enable mainainer mode by default
 dnl AM_MAINTAINER_MODE([enable])
 
+dnl sets host_* variables
+AC_CANONICAL_HOST
+
 # Define these substitions here to keep all version information in one place.
 # For information on how to properly maintain the library version information,
 # refer to the libtool manual, section "Updating library version information":
@@ -46,6 +49,34 @@ dnl error out if we can't find pkg-config
 AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ], [
   AC_MSG_ERROR([You need to have pkg-config installed or set the PATH.])
 ])
+
+case "$host" in *-darwin* | *-macos10*)
+  LIBTOOL="glibtool"
+  CXXFLAGS+=" -D__Darwin"
+  LDFLAGS+=" -undefined dynamic_lookup -Wl,-headerpad_max_install_names"
+  if test -d /opt/local ; then
+    CXXFLAGS+=" -I/usr/local/include -I/opt/local/include"
+    #LDFLAGS+=" -L/usr/local/lib -L/opt/local/lib"
+  elif test -d /sw ; then
+    CXXFLAGS+=" -I/sw/include"
+    #LDFLAGS+=" -L/sw/lib"
+  fi
+  
+  AM_CONDITIONAL([HAVE_OSX], true)
+  AC_DEFINE(HAVE_OSX,[1],[Apple Mac OS X operating system detected])
+  
+  # OSX does not include /usr/local/lib/pkgconfig path, so we export it here
+  # (for everyone, just in case)
+  PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+  export PKG_CONFIG_PATH
+  
+  LDFLAGS+=" -fPIC -L/usr/local/lib -L/usr/local/lib64"
+  ;;
+*)
+  AM_CONDITIONAL([HAVE_OSX], false)
+  AC_DEFINE(HAVE_OSX,[0],[Apple Mac OS X operating system not detected])
+  ;;
+esac
 
 dnl =======================================================================
 dnl Check for the required version of GStreamer core (and gst-plugins-base)

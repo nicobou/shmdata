@@ -119,14 +119,21 @@ BUILT_SOURCES = \
     webservices/soapcontrolProxy.cpp \
     webservices/soapcontrolService.cpp
 
+####### On OSX, gsoap is not installed in /usr (if installed through MacPorts)
+if HAVE_OSX
+gsoap_INCLUDE = /opt/local/share/gsoap/import/
+else
+gsoap_INCLUDE = /usr/share/gsoap/import/
+endif
+
 webservices/soapC.cpp: ctrl-webservice-definition.h webservices
-	soapcpp2 -I /usr/share/gsoap/import/ -i -d webservices ctrl-webservice-definition.h
+	soapcpp2 -I $(gsoap_INCLUDE) -i -d webservices ctrl-webservice-definition.h
 
 webservices/soapcontrolProxy.cpp: ctrl-webservice-definition.h webservices
-	soapcpp2 -I /usr/share/gsoap/import/ -i -d webservices ctrl-webservice-definition.h
+	soapcpp2 -I $(gsoap_INCLUDE) -i -d webservices ctrl-webservice-definition.h
 
 webservices/soapcontrolService.cpp: ctrl-webservice-definition.h webservices
-	soapcpp2 -I /usr/share/gsoap/import/ -i  -d webservices ctrl-webservice-definition.h
+	soapcpp2 -I $(gsoap_INCLUDE) -i  -d webservices ctrl-webservice-definition.h
 
 webservices:
 	mkdir -p webservices
