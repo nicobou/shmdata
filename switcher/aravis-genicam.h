@@ -18,33 +18,27 @@
  */
 
 
-#ifndef __SWITCHER_VIDEO_SOURCE_H__
-#define __SWITCHER_VIDEO_SOURCE_H__
+#ifndef __SWITCHER_ARAVIS_GENICAM_H__
+#define __SWITCHER_ARAVIS_GENICAM_H__
 
-#include "switcher/base-source.h"
+#include "switcher/video-source.h"
+#include "switcher/aravis-genicam.h"
+#include <gst/gst.h>
 #include <memory>
 
 namespace switcher
 {
 
-  class VideoSource : public BaseSource
+  class AravisGenicam : public VideoSource
   {
   public:
-    typedef std::shared_ptr<VideoSource> ptr;
-    VideoSource();
+    typedef std::shared_ptr<AravisGenicam> ptr;
+    bool init ();
+    QuiddityDocumentation get_documentation ();
+    static const QuiddityDocumentation doc_;
 
   private:
-    GstElement *rawvideo_;
-    GstElement *video_tee_;
-    GstElement *colorspace_in_;
-    GstElement *textoverlay_;
-    GstElement *videoflip_;
-    GstElement *colorspace_out_;
-
-  protected:
-    //called in the derived class constructor
-    void set_raw_video_element (GstElement *elt);
-    
+    GstElement *aravissrc_;
   };
 
 }  // end of namespace

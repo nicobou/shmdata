@@ -27,7 +27,6 @@ namespace switcher
   bool 
   GconfAudioSink::init ()
   {
-    //FIXME use async queue in base quiddity manager in order to avoid that (constructor called in the right thread)
     data_cond_ = g_cond_new (); 
 
     data_mutex_ = g_mutex_new ();
@@ -53,9 +52,6 @@ namespace switcher
     context->gconfaudiosink_ = gst_element_factory_make ("gconfaudiosink",NULL);
     g_object_set (G_OBJECT (context->gconfaudiosink_), "profile",2,NULL); //profile "music"
 
-    // GstElement *testsrc = gst_element_factory_make ("audiotestsrc",NULL);
-    // GstElement *testsink = gst_element_factory_make ("pulsesink",NULL);
-
     gst_bin_add_many (GST_BIN (context->audiobin_),
 		      // testsrc,
 		      // testsink,
@@ -63,11 +59,6 @@ namespace switcher
 		      context->resample_,
 		      context->gconfaudiosink_,
 		      NULL);
-    
-    // gst_element_link_many (testsrc,
-    // 			   testsink,
-    // 			   NULL);
-    
 
     gst_element_link_many (context->audioconvert_,
 			   context->resample_,
@@ -79,7 +70,7 @@ namespace switcher
     gst_pad_set_active(ghost_sinkpad,TRUE);
     gst_element_add_pad (context->audiobin_, ghost_sinkpad); 
 
-    //FIXME unref sinkpad
+    gst_object_unref (sink_pad);
 
     //set the name
     context->set_name (gst_element_get_name (context->gconfaudiosink_));
@@ -99,7 +90,6 @@ namespace switcher
     // }
 
 
-    g_debug ("GconfAudioSink: WARNING, set sync property of the sinks to false");
     // //registering sync_sink
     // std::vector<GType> connect_arg_types;
     // connect_arg_types.push_back (G_TYPE_BOOLEAN);

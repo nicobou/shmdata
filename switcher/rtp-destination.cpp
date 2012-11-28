@@ -155,7 +155,7 @@ RtpDestination::sdp_write_media_from_caps (GstSDPMessage *sdp_description,
 					   gint stream_number)
 {
 
-  //check if sdp "range" is useful/...
+  //TODO check if sdp "range" is useful/...
   
   GstSDPMedia *smedia;
   GstStructure *s;

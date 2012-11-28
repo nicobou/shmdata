@@ -24,75 +24,49 @@ namespace switcher
 {
   VideoSource::VideoSource () :
     video_tee_ (gst_element_factory_make ("tee",NULL)),
-    //FIXME in order to add back alpha here, we must be sure reader will use ffmpegcolorspace. Maybe alpha belong elsewhere, with a videomixer for instance
-    //    alpha_ (gst_element_factory_make ("alpha",NULL)),
-    videorate_ (gst_element_factory_make ("videorate",NULL)),
     colorspace_in_ (gst_element_factory_make ("ffmpegcolorspace",NULL)),
     textoverlay_ (gst_element_factory_make ("textoverlay",NULL)),
     videoflip_ (gst_element_factory_make ("videoflip",NULL)),
-    deinterlace_ (gst_element_factory_make ("deinterlace",NULL)),
     colorspace_out_ (gst_element_factory_make ("ffmpegcolorspace",NULL))
   {
 
     gst_bin_add_many (GST_BIN (bin_),
      		      video_tee_,
-		      //videorate_,
-		      deinterlace_,
 		      colorspace_in_,
      		      textoverlay_,
      		      videoflip_,
-		      //alpha_,
      		      colorspace_out_,
      		      NULL);
     
     gst_element_link_many (video_tee_,
-			   //videorate_,
-			   deinterlace_,
 			   colorspace_in_,
      			   textoverlay_,
      			   videoflip_,
-			   //alpha_,
      			   colorspace_out_,
      			   NULL);
     
-    g_object_set (G_OBJECT (deinterlace_), "mode", 2,NULL); //disabled
-
      //registering selected properties
      register_property (G_OBJECT (videoflip_),"method","flip");
-     register_property (G_OBJECT (videorate_), "max-rate", "rate");
-     register_property (G_OBJECT (videorate_), "force-fps", "rate");
-     register_property (G_OBJECT (deinterlace_),"mode","deinterlace");
-     register_property (G_OBJECT (deinterlace_),"method","deinterlace");
-     // register_property (G_OBJECT (alpha_),"method","alpha");
-     // register_property (G_OBJECT (alpha_),"alpha","alpha");
-     // register_property (G_OBJECT (alpha_),"target-r","alpha");
-     // register_property (G_OBJECT (alpha_),"target-g","alpha");
-     // register_property (G_OBJECT (alpha_),"target-b","alpha");
-     // register_property (G_OBJECT (alpha_),"angle","alpha");
-     // register_property (G_OBJECT (alpha_),"noise-level","alpha");
-     // register_property (G_OBJECT (alpha_),"black-sensitivity","alpha");
-     // register_property (G_OBJECT (alpha_),"white-sensitivity","alpha");
-     // register_property (G_OBJECT (alpha_),"prefer-passthrough","alpha");
      register_property (G_OBJECT (textoverlay_),"text","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"shaded-background","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"halignment","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"valignment","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"xpad","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"ypad","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"deltax","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"deltay","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"xpos","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"ypos","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"wrap-mode","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"font-desc","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"silent","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"line-alignment","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"wait-text","textoverlay");
      register_property (G_OBJECT (textoverlay_),"auto-resize","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"vertical-render","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"color","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"shadow","textoverlay");
-     register_property (G_OBJECT (textoverlay_),"outline-color","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"shaded-background","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"halignment","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"valignment","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"xpad","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"ypad","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"deltax","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"deltay","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"xpos","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"ypos","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"wrap-mode","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"font-desc","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"silent","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"line-alignment","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"wait-text","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"vertical-render","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"color","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"shadow","textoverlay");
+     // register_property (G_OBJECT (textoverlay_),"outline-color","textoverlay");
   }
 
   void
