@@ -30,6 +30,7 @@ namespace switcher
   {
   public:
     static bool link_static_to_request (GstElement *src,GstElement *sink);
+    static bool link_static_to_request (GstPad *srcpad,GstElement *sink);
     static bool check_pad_link_return (GstPadLinkReturn res);
 
   };

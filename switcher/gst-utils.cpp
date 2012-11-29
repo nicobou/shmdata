@@ -30,8 +30,25 @@ namespace switcher
 						     srcpad,
 						     NULL); //const GstCaps *caps to use as a filter
     bool res = GstUtils::check_pad_link_return(gst_pad_link (srcpad,sinkpad));
-    if (res)
+    if (GST_IS_PAD (src))
 	gst_object_unref (srcpad);
+
+    if (GST_IS_PAD (sinkpad))
+      gst_object_unref (sinkpad);
+
+    return res;
+  }
+
+  bool 
+  GstUtils::link_static_to_request (GstPad *srcpad,GstElement *sink)
+  {
+    GstPad *sinkpad = gst_element_get_compatible_pad(sink,
+						     srcpad,
+						     NULL); //const GstCaps *caps to use as a filter
+    bool res = GstUtils::check_pad_link_return(gst_pad_link (srcpad,sinkpad));
+    
+    if (GST_IS_PAD (sinkpad))
+      gst_object_unref (sinkpad);
 
     return res;
   }
@@ -45,22 +62,22 @@ namespace switcher
       {
 	switch ( res )
 	  {
-	  case 'GST_PAD_LINK_WRONG_HIERARCHY':
+	  case GST_PAD_LINK_WRONG_HIERARCHY:
 	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_HIERARCHY");
 	    break;
-	  case 'GST_PAD_LINK_WAS_LINKED':
+	  case GST_PAD_LINK_WAS_LINKED:
 	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_WAS_LINKED");
 	    break;
-	  case 'GST_PAD_LINK_WRONG_DIRECTION':
+	  case GST_PAD_LINK_WRONG_DIRECTION:
 	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_DIRECTION");
 	    break;
-	  case 'GST_PAD_LINK_NOFORMAT':
+	  case GST_PAD_LINK_NOFORMAT:
 	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_NOFORMAT");
 	    break;
-	  case 'GST_PAD_LINK_NOSCHED':
+	  case GST_PAD_LINK_NOSCHED:
 	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_NOSCHED");
 	    break;
-	  case 'GST_PAD_LINK_REFUSED':
+	  case GST_PAD_LINK_REFUSED:
 	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_REFUSED");
 	    break;
 	  default:
