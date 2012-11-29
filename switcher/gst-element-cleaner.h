@@ -41,8 +41,6 @@ namespace switcher
   private:
     std::vector<GstElement *> elements_to_remove_;
     StringMap<GstElement *> labeled_elements_;
-
-    static void unlink_pad (GstPad * pad);
   };
   
 }  // end of namespace

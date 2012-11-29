@@ -30,7 +30,6 @@ namespace switcher
   AudioTestSource::init ()
   {
     audiotestsrc_ = gst_element_factory_make ("audiotestsrc",NULL);
-    add_element_to_cleaner (audiotestsrc_);
     g_object_set (G_OBJECT (audiotestsrc_),
 		  "is-live", TRUE,
 		  "samplesperbuffer",64,
@@ -49,6 +48,7 @@ namespace switcher
     set_raw_audio_element (audiotestsrc_);
     return true;
   }
+
 
   QuiddityDocumentation 
   AudioTestSource::get_documentation ()

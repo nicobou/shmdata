@@ -37,6 +37,8 @@ namespace switcher
       }
     set_name (gst_element_get_name (aravissrc_));
     
+    register_property (G_OBJECT (aravissrc_),"camera-name","aravissrc");
+
     register_property (G_OBJECT (aravissrc_),"gain","aravissrc");
 
     register_property (G_OBJECT (aravissrc_),"gain-auto","aravissrc");

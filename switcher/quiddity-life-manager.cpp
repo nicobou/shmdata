@@ -281,10 +281,10 @@ namespace switcher
     Quiddity::ptr quiddity = get_quiddity (quiddity_name);
 
     int num_val = quiddity->method_get_num_value_args(function_name);
-
+    
     if (num_val == -1) 
       {
-	g_error ("function %s not found, cannot invoke",function_name.c_str());
+	g_debug ("function %s not found, cannot invoke",function_name.c_str());
 	return false;
       }
 

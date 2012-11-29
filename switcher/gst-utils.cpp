@@ -86,5 +86,34 @@ namespace switcher
 	return false;
       }
   }
+
+  void
+  GstUtils::unlink_pad (GstPad * pad)
+  {
+    GstPad *peer;
+    if ((peer = gst_pad_get_peer (pad))) {
+      if (gst_pad_get_direction (pad) == GST_PAD_SRC)
+	gst_pad_unlink (pad, peer);
+      else
+	gst_pad_unlink (peer, pad);
+      //checking if the pad has been requested and releasing it needed 
+      GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);//check if this must be unrefed for GST 1
+      if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
+	gst_element_release_request_pad (gst_pad_get_parent_element(peer), peer);
+      gst_object_unref (peer);
+    }
+  }
+
+  void
+  GstUtils::clean_element (GstElement *element)
+  {
+    GstIterator *pad_iter;
+    pad_iter = gst_element_iterate_pads (element);
+    gst_iterator_foreach (pad_iter, (GFunc) GstUtils::unlink_pad, element);
+    gst_iterator_free (pad_iter);
+    gst_element_set_state (element, GST_STATE_NULL);
+    if (GST_IS_BIN (gst_element_get_parent (element)))
+      gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element);
+  }
   
 }

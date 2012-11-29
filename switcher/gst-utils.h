@@ -32,7 +32,8 @@ namespace switcher
     static bool link_static_to_request (GstElement *src,GstElement *sink);
     static bool link_static_to_request (GstPad *srcpad,GstElement *sink);
     static bool check_pad_link_return (GstPadLinkReturn res);
-
+    static void unlink_pad (GstPad * pad);
+    static void clean_element (GstElement *element);
   };
 
 }  // end of namespace

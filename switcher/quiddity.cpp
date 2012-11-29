@@ -97,7 +97,7 @@ namespace switcher
   {
     if (methods_.find( function_name ) == methods_.end())
       {
-	g_error ("Quiddity::method_get_num_value_args error: method %s not found",function_name.c_str());
+	g_debug ("Quiddity::method_get_num_value_args error: method %s not found",function_name.c_str());
 	return -1;
       }
     else 
