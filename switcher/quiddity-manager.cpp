@@ -186,7 +186,7 @@ namespace switcher
 
     if (!auto_invoke_method_name_.empty ())
       {
-	//FIXME this should test if the method exists 
+	//TODO this should test if the method exists 
 	invoke (quidd->get_nick_name (), auto_invoke_method_name_,auto_invoke_args_);
       }
     return res;
