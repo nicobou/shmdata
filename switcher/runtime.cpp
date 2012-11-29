@@ -63,7 +63,6 @@ namespace switcher
   {
     
     switch (GST_MESSAGE_TYPE (msg)) {
-      
     case GST_MESSAGE_EOS:
       g_debug ("bus_call End of stream, name: %s",
 	       GST_MESSAGE_SRC_NAME(msg));
@@ -71,30 +70,29 @@ namespace switcher
     case GST_MESSAGE_SEGMENT_DONE:
       g_debug ("bus_call segment done");
       break;
-    case GST_MESSAGE_ERROR: {
+    case GST_MESSAGE_ERROR: 
       gchar *debug;
       GError *error;
-    
+      
       gst_message_parse_error (msg, &error, &debug);
       g_free (debug);
       
       // shmdata_base_reader_t *reader = (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), "shmdata_base_reader");
       // if ( reader != NULL)
       // 	shmdata_base_reader_process_error (reader, msg);
-
+      
       g_error ("bus_call Error: %s", error->message);
       g_error_free (error);
-    
+      
       break;
-      case GST_MESSAGE_STATE_CHANGED:
-	// GstState old_state, new_state;
-        // gst_message_parse_state_changed (msg, &old_state, &new_state, NULL);
-	// g_debug ("Element %s changed state from %s to %s.",
-	// 	 GST_OBJECT_NAME (msg->src),
-	// 	 gst_element_state_get_name (old_state),
-	// 	 gst_element_state_get_name (new_state));
-	break;
-    }
+    case GST_MESSAGE_STATE_CHANGED:
+      // GstState old_state, new_state;
+      // gst_message_parse_state_changed (msg, &old_state, &new_state, NULL);
+      // g_debug ("Element %s changed state from %s to %s.",
+      // 	 GST_OBJECT_NAME (msg->src),
+      // 	 gst_element_state_get_name (old_state),
+      // 	 gst_element_state_get_name (new_state));
+      break;
     default:
       //g_debug ("message %s from %s",GST_MESSAGE_TYPE_NAME(msg),GST_MESSAGE_SRC_NAME(msg));
       break;
