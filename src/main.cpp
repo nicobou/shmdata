@@ -113,7 +113,8 @@ main (int argc,
 
   g_log_set_default_handler (log_handler, NULL);
   
-  {//using context in order to let excluse ownership of manager by the container
+  {//using context in order to let excluse ownership of manager by the container,
+    //allowing to properly call destructor when SIGINT
     switcher::QuiddityManager::ptr manager 
       = switcher::QuiddityManager::make_manager (server_name);  
     container.push_back (manager); // keep reference only in the container
@@ -125,6 +126,11 @@ main (int argc,
     std::vector<std::string> port_arg;
     port_arg.push_back (port_number);
     manager->invoke (soap_name, "set_port", port_arg);
+
+    //setting auto_invoke for attaching to gst pipeline "pipeline0"
+    std::vector<std::string> arg;
+    arg.push_back ("pipeline0");
+    manager->auto_invoke ("set_runtime",arg);
   }
 
   //waiting for end of life

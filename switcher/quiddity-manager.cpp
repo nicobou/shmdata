@@ -76,7 +76,6 @@ namespace switcher
     return seq_invoke (QuiddityCommand::get_properties_description,
 		       quiddity_name.c_str(),
 		       NULL);
-    //return life_manager_->get_properties_description (quiddity_name);
   }
 
   std::string 
@@ -86,7 +85,6 @@ namespace switcher
 		       quiddity_name.c_str(),
 		       property_name.c_str(),
 		       NULL);
-    //return life_manager_->get_property_description (quiddity_name, property_name);
   }
 
   bool
@@ -103,7 +101,6 @@ namespace switcher
       return true;
     else 
       return false;
-     //return life_manager_->set_property(quiddity_name, property_name,property_value);
   }
 
   std::string
@@ -114,12 +111,11 @@ namespace switcher
 		       quiddity_name.c_str(),
 		       property_name.c_str(),
 		       NULL);
-    //return life_manager_->get_property(quiddity_name, property_name);
   }
 
   bool 
   QuiddityManager::invoke (std::string quiddity_name, 
-			   std::string function_name,
+			   std::string method_name,
 			   std::vector<std::string> args)
   {
     std::string res;
@@ -127,7 +123,7 @@ namespace switcher
     command_.clear();
     command_.set_name (QuiddityCommand::invoke);
     command_.add_arg (quiddity_name);
-    command_.add_arg (function_name);
+    command_.add_arg (method_name);
     command_.set_vector_arg (args);
     invoke_in_gmainloop ();
     res = command_.result_[0];
@@ -137,8 +133,15 @@ namespace switcher
       return true;
     else 
       return false;
-    //return life_manager_->invoke (quiddity_name, function_name, args);
   } 
+  
+  bool
+  QuiddityManager::auto_invoke (std::string method_name,
+				std::vector<std::string> args)
+  {
+    auto_invoke_method_name_ = method_name;
+    auto_invoke_args_ = args;
+  }
 
   std::string
   QuiddityManager::get_methods_description (std::string quiddity_name)
@@ -148,6 +151,8 @@ namespace switcher
 		       NULL);
   }
   
+  
+
   std::string
   QuiddityManager::get_method_description (std::string quiddity_name, std::string method_name)
   {
@@ -175,11 +180,15 @@ namespace switcher
 				 NULL);
 
     Quiddity::ptr quidd = life_manager_->get_quiddity (res);
-    // std::string category = quidd->get_documentation ().get_category ();
-    // if (category.compare ("quiddity manager invoker"))
     QuiddityManagerWrapper::ptr wrapper = std::dynamic_pointer_cast<QuiddityManagerWrapper> (quidd);
     if (wrapper)
 	wrapper->set_quiddity_manager (shared_from_this());
+
+    if (!auto_invoke_method_name_.empty ())
+      {
+	//FIXME this should test if the method exists 
+	invoke (quidd->get_nick_name (), auto_invoke_method_name_,auto_invoke_args_);
+      }
     return res;
   }
 

@@ -106,6 +106,8 @@ namespace switcher
      gst_element_sync_state_with_parent (tee_);
      gst_element_sync_state_with_parent (queue_);
      gst_element_sync_state_with_parent (fakesink_);
+
+     g_debug ("shmdata writer plugged (%s)",path_.c_str());
   }
 
   void 

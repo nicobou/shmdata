@@ -45,6 +45,7 @@
      ~QuiddityManager(); 
      std::string get_name ();
      
+     //--------------------------------------------------------------------------------------------
      //life manager
      std::vector<std::string> get_classes (); //know which quiddities can be created
      std::vector<std::string> get_quiddities (); //know instances
@@ -53,6 +54,7 @@
 			 std::string nick_name); // &?= chars are not allowed in nicknames
      bool remove (std::string quiddity_name);
 
+     //--------------------------------------------------------------------------------------------
      //properties
      std::string get_properties_description (std::string quiddity_name); //json formated
      std::string get_property_description (std::string quiddity_name, std::string property_name); //json formated
@@ -63,18 +65,26 @@
      std::string get_property (std::string quiddity_name, 
 			       std::string property_name);
      
+     //--------------------------------------------------------------------------------------------
      //methods 
      std::string get_methods_description (std::string quiddity_name); //json formated
      std::string get_method_description (std::string quiddity_name, std::string method_name); //json formated
      bool invoke (std::string quiddity_name, 
 		  std::string method_name,
 		  std::vector<std::string> args);  
+     // will invoke the given method after quiddity creation, if method exists (only one method)
+     bool auto_invoke  (std::string method_name,
+			std::vector<std::string> args);  
 
    private: 
      QuiddityManager();//will get name "default"
      QuiddityManager(std::string name); 
      QuiddityLifeManager::ptr life_manager_; //may be shared with others for automatic quiddity creation 
      std::string name_;
+
+     //auto invoke
+     std::string auto_invoke_method_name_;
+     std::vector<std::string> auto_invoke_args_;
 
      //gmainloop
      static bool gmainloop_initialized_;
