@@ -18,6 +18,7 @@
  */
 
 #include "switcher/uridecodebin.h"
+#include "switcher/gst-utils.h"
 #include <glib/gprintf.h>
 #include <memory>
 
@@ -114,7 +115,7 @@ namespace switcher
   void 
   Uridecodebin::no_more_pads_cb (GstElement* object, gpointer user_data)   
   {   
-    g_print ("no more pad");
+    //g_print ("no more pad");
     //Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   }
 
@@ -126,6 +127,14 @@ namespace switcher
     
     const gchar *padname= gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
     g_debug ("uridecodebin new pad name is %s\n",padname);
+    
+    GstElement *identity = gst_element_factory_make ("identity",NULL);
+    g_object_set (identity, "sync", TRUE, NULL);
+
+    gst_bin_add (GST_BIN (context->bin_), identity);
+    GstUtils::link_static_to_request (pad, identity);
+    gst_element_sync_state_with_parent (identity);
+
     
     //giving a name to the stream
     gchar **padname_splitted = g_strsplit_set (padname, "/",-1);
@@ -139,7 +148,11 @@ namespace switcher
     connector.reset (new ShmdataWriter ());
     std::string connector_name = context->make_file_name (media_name);
     connector->set_path (connector_name.c_str());
-    connector->plug (context->bin_, pad);
+    //connector->plug (context->bin_, pad);
+    GstCaps *caps = gst_pad_get_caps_reffed (pad);
+    connector->plug (context->bin_, identity, caps);
+    if (G_IS_OBJECT (caps))
+      gst_object_unref (caps);
     context->shmdata_writers_.insert (connector_name, connector);
     g_message ("%s created a new shmdata writer (%s)", 
 	       context->get_nick_name ().c_str(), 
@@ -149,7 +162,7 @@ namespace switcher
   void 
   Uridecodebin::source_setup_cb (GstElement *uridecodebin, GstElement *source, gpointer user_data)
   {
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+    //Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
     g_print ("source %s %s\n",  GST_ELEMENT_NAME(source), G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (source)));
   }
   
