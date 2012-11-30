@@ -44,10 +44,8 @@ namespace switcher
 	
     private:
       GstElement *pipeline_;
-      GstBus *bus_;
-      static gboolean bus_called (GstBus *bus,
-				  GstMessage *msg,
-				  gpointer data); 
+      static gboolean bus_called (GstBus *bus, GstMessage *msg, gpointer data); 
+      static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
     };
 
   

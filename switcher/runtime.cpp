@@ -23,6 +23,7 @@
 
 #include "switcher/runtime.h"
 #include "switcher/gst-utils.h"
+#include <shmdata/base-reader.h>
 
 namespace switcher
 {
@@ -35,10 +36,10 @@ namespace switcher
   {
     pipeline_ = gst_pipeline_new (NULL);
     set_name (gst_element_get_name (pipeline_));
-    bus_ = gst_pipeline_get_bus (GST_PIPELINE (pipeline_)); 
-    gst_bus_add_watch (bus_, bus_called, NULL);
-    //FIXME install sync handler here and call shmdareader cleanner from here
-    gst_object_unref (bus_); 
+    GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_)); 
+    gst_bus_add_watch (bus, bus_called, NULL);
+    gst_bus_set_sync_handler (bus, bus_sync_handler, NULL);  
+    gst_object_unref (bus); 
     
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
     return true;
@@ -56,6 +57,23 @@ namespace switcher
   Runtime::get_pipeline ()
   {
     return pipeline_;
+  }
+
+  GstBusSyncReply 
+  Runtime::bus_sync_handler (GstBus * bus,
+			     GstMessage * msg, gpointer user_data) 
+  {
+    shmdata_base_reader_t *reader = (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), 
+										 "shmdata_base_reader");
+    if ( reader != NULL)
+      {
+	if ( shmdata_base_reader_process_error (reader, msg)) 
+	  return GST_BUS_DROP; 
+	else 
+	  return GST_BUS_PASS; 
+      }
+    
+    return GST_BUS_PASS; 
   }
 
   gboolean

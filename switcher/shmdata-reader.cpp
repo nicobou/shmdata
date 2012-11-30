@@ -18,6 +18,7 @@
  */
 
 #include "switcher/shmdata-reader.h"
+#include "switcher/gst-utils.h"
 
 namespace switcher
 {
@@ -28,6 +29,7 @@ namespace switcher
     bin_ = NULL;
     path_ = "";
     sink_element_ = NULL;
+    funnel_ = NULL;
     connection_hook_ = NULL;
    }
 
@@ -35,25 +37,26 @@ namespace switcher
   {
       g_debug ("ShmdataReader: deleting %s", path_.c_str());
       shmdata_base_reader_close (reader_);
+      GstUtils::clean_element (funnel_);
       g_debug ("ShmdataReader: %s deleted ", path_.c_str());
   }
 
-  GstBusSyncReply 
-  ShmdataReader::bus_sync_handler (GstBus * bus,
-				   GstMessage * msg, gpointer user_data) 
-  {
-    shmdata_base_reader_t *reader = (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), 
-										 "shmdata_base_reader");
-    if ( reader != NULL)
-      {
-	if ( shmdata_base_reader_process_error (reader, msg)) 
-	  return GST_BUS_DROP; 
-	else 
-	  return GST_BUS_PASS; 
-      }
+  // GstBusSyncReply 
+  // ShmdataReader::bus_sync_handler (GstBus * bus,
+  // 				   GstMessage * msg, gpointer user_data) 
+  // {
+  //   shmdata_base_reader_t *reader = (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), 
+  // 										 "shmdata_base_reader");
+  //   if ( reader != NULL)
+  //     {
+  // 	if ( shmdata_base_reader_process_error (reader, msg)) 
+  // 	  return GST_BUS_DROP; 
+  // 	else 
+  // 	  return GST_BUS_PASS; 
+  //     }
     
-    return GST_BUS_PASS; 
-  }
+  //   return GST_BUS_PASS; 
+  // }
   
   void
   ShmdataReader::unlink_pad (GstPad * pad)
@@ -99,9 +102,10 @@ namespace switcher
   void 
   ShmdataReader::start ()
   {
-    //g_debug ("shmdata-reader START ");
+    g_debug ("shmdata-reader::start");
 
     shmdata_base_reader_close (reader_);
+    GstUtils::clean_element (funnel_);
     reader_ = shmdata_base_reader_new ();
     shmdata_base_reader_set_on_have_type_callback (reader_, ShmdataReader::on_have_type, this);
     
@@ -111,31 +115,33 @@ namespace switcher
 	return;
       }
     
-    //looking for the bus, searching the top level pipeline
-    GstElement *pipe = bin_;
+    // //looking for the bus, searching the top level pipeline
+    // GstElement *pipe = bin_;
 	
-    while (pipe != NULL && !GST_IS_PIPELINE (pipe))
-      pipe = GST_ELEMENT_PARENT (pipe);
+    // while (pipe != NULL && !GST_IS_PIPELINE (pipe))
+    //   pipe = GST_ELEMENT_PARENT (pipe);
 	
-    if( GST_IS_PIPELINE (pipe))
-      {
-	GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipe));  
-	//clear old handler and install a new one 
-	gst_bus_set_sync_handler (bus, NULL, NULL);
-	gst_bus_set_sync_handler (bus, ShmdataReader::bus_sync_handler, NULL);  
-	gst_object_unref (bus);  
-      }
-    else
-      {
-	g_warning ("no top level pipeline found when starting, cannot install sync_handler");
-	return;
-      }
+    // if( GST_IS_PIPELINE (pipe))
+    //   {
+    // 	GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipe));  
+    // 	//clear old handler and install a new one 
+    // 	gst_bus_set_sync_handler (bus, NULL, NULL);
+    // 	gst_bus_set_sync_handler (bus, ShmdataReader::bus_sync_handler, NULL);  
+    // 	gst_object_unref (bus);  
+    //   }
+    // else
+    //   {
+    // 	g_warning ("no top level pipeline found when starting, cannot install sync_handler");
+    // 	return;
+    //   }
 
     
     shmdata_base_reader_set_callback (reader_, ShmdataReader::on_first_data, this);
     shmdata_base_reader_install_sync_handler (reader_, FALSE);
     shmdata_base_reader_set_bin (reader_, bin_);
     shmdata_base_reader_start (reader_, path_.c_str());
+
+    g_debug ("shmdata-reader::start done");
   }
 
 
@@ -152,7 +158,8 @@ namespace switcher
   void 
   ShmdataReader::stop ()
   {
-      shmdata_base_reader_close (reader_);
+    shmdata_base_reader_close (reader_);
+    GstUtils::clean_element (funnel_);
   } 
  
   void 
@@ -167,6 +174,8 @@ namespace switcher
   ShmdataReader::on_first_data (shmdata_base_reader_t *context, void *user_data)
   {
       ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
+      
+      g_debug (" ShmdataReader::on_first_data");
 
       if (reader->connection_hook_ != NULL) //user want to create the sink_element_ 
 	reader->connection_hook_ (reader, reader->hook_user_data_);
@@ -178,10 +187,16 @@ namespace switcher
       // 		      GST_ELEMENT_NAME (reader->sink_element_), 
       // 		      GST_ELEMENT_NAME(GST_ELEMENT_PARENT (reader->sink_element_)),
       // 		      GST_IS_ELEMENT(GST_ELEMENT_PARENT (reader->sink_element_)));
+
+      reader->funnel_ = gst_element_factory_make ("funnel", NULL);
+      gst_bin_add (GST_BIN (reader->bin_), reader->funnel_);
+      gst_element_link (reader->funnel_, reader->sink_element_);
+
       gst_element_sync_state_with_parent (reader->sink_element_);
+      gst_element_sync_state_with_parent (reader->funnel_);
       gst_element_sync_state_with_parent (reader->bin_);
 
-      shmdata_base_reader_set_sink (context, reader->sink_element_);
+      shmdata_base_reader_set_sink (context, reader->funnel_);
   }
 
   GstCaps *

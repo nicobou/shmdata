@@ -107,13 +107,16 @@ namespace switcher
   void
   GstUtils::clean_element (GstElement *element)
   {
-    GstIterator *pad_iter;
-    pad_iter = gst_element_iterate_pads (element);
-    gst_iterator_foreach (pad_iter, (GFunc) GstUtils::unlink_pad, element);
-    gst_iterator_free (pad_iter);
-    gst_element_set_state (element, GST_STATE_NULL);
-    if (GST_IS_BIN (gst_element_get_parent (element)))
-      gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element);
+    if (element != NULL && GST_IS_ELEMENT (element))
+      {
+	GstIterator *pad_iter;
+	pad_iter = gst_element_iterate_pads (element);
+	gst_iterator_foreach (pad_iter, (GFunc) GstUtils::unlink_pad, element);
+	gst_iterator_free (pad_iter);
+	gst_element_set_state (element, GST_STATE_NULL);
+	if (GST_IS_BIN (gst_element_get_parent (element)))
+	  gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element);
+      }
   }
   
 }

@@ -55,9 +55,10 @@ namespace switcher
     shmdata_base_reader_t *reader_;
     GstElement *bin_;
     GstElement *sink_element_;
+    GstElement *funnel_;
     std::vector<GstElement *> elements_to_remove_;
     static void on_first_data (shmdata_base_reader_t *context, void *user_data);
-    static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
+    //static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
     static void unlink_pad (GstPad * pad);
     static void on_have_type (shmdata_base_reader_t *base_reader, GstCaps *caps, void *user_data);
   };
