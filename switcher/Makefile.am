@@ -35,6 +35,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gst-element-cleaner.cpp \
     gst-utils.cpp \
     h264.cpp \
+    http-sdp.cpp \
     method.cpp \
     property.cpp \
     pulse-sink.cpp \
@@ -89,6 +90,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gst-element-cleaner.h \
     gst-utils.h \
     h264.h \
+    http-sdp.h \
     hash-table.h \
     hash-table_spec.h \
     method.h \

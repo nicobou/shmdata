@@ -31,6 +31,7 @@
 #include "switcher/gconf-video-sink.h"
 #include "switcher/gconf-video-source.h"
 #include "switcher/h264.h"
+#include "switcher/http-sdp.h"
 #include "switcher/pulse-sink.h"
 #include "switcher/rtp-session.h"
 #include "switcher/runtime.h"
@@ -97,6 +98,8 @@ namespace switcher
 							GconfVideoSource::doc_.get_json_documentation ());
     abstract_factory_.register_class<H264> (H264::doc_.get_class_name (), 
 					    H264::doc_.get_json_documentation ());
+    abstract_factory_.register_class<HTTPSDP> (HTTPSDP::doc_.get_class_name (), 
+					       HTTPSDP::doc_.get_json_documentation ());
     abstract_factory_.register_class<PulseSink> (PulseSink::doc_.get_class_name (), 
 						 PulseSink::doc_.get_json_documentation ());
     abstract_factory_.register_class<RtpSession> (RtpSession::doc_.get_class_name (), 
