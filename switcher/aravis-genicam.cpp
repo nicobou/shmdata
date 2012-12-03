@@ -32,7 +32,7 @@ namespace switcher
     aravissrc_ = gst_element_factory_make ("aravissrc",NULL);
     if (aravissrc_ == NULL)
       {
-	g_error ("aravissrc not available, install aravis (http://git.gnome.org/browse/aravis/)");
+	g_critical ("aravissrc not available, install aravis (http://git.gnome.org/browse/aravis/)");
 	return false;
       }
     set_name (gst_element_get_name (aravissrc_));

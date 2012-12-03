@@ -135,7 +135,7 @@ namespace switcher
   {
     	quiddity->set_life_manager (shared_from_this());
 	 if (!quiddity->init ())
-	   g_error ("QuiddityLifeManager: intialization of %s (%s) return false",
+	   g_critical ("QuiddityLifeManager: intialization of %s (%s) return false",
 		       quiddity->get_name ().c_str (),
 		       quiddity->get_documentation ().get_class_name ().c_str ());
 	quiddities_.insert (quiddity->get_name(),quiddity);
@@ -192,7 +192,7 @@ namespace switcher
   {
      if (!exists (quiddity_name))
       {
-	g_error ("quiddity %s not found, cannot provide ptr",quiddity_name.c_str());
+	g_critical ("quiddity %s not found, cannot provide ptr",quiddity_name.c_str());
 	Quiddity::ptr empty_quiddity_ptr;
 	return empty_quiddity_ptr;
       }
@@ -226,7 +226,7 @@ namespace switcher
 
     if (!exists (quiddity_name))
       {
-	g_error ("quiddity %s not found, cannot get description of properties",quiddity_name.c_str());
+	g_warning ("quiddity %s not found, cannot get description of properties",quiddity_name.c_str());
 	return "";
       }
     return (get_quiddity (quiddity_name))->get_properties_description ();
@@ -238,7 +238,7 @@ namespace switcher
 
     if (!exists (quiddity_name))
       {
-	g_error ("quiddity %s not found, cannot get description of properties",quiddity_name.c_str());
+	g_warning ("quiddity %s not found, cannot get description of properties",quiddity_name.c_str());
 	return "";
       }
     return (get_quiddity (quiddity_name))->get_property_description (property_name);
@@ -251,7 +251,7 @@ namespace switcher
   {
     if (!exists (quiddity_name))
       {
-	g_error ("quiddity %s not found, cannot set property",quiddity_name.c_str());
+	g_warning ("quiddity %s not found, cannot set property",quiddity_name.c_str());
 	return false;
       }
     return (get_quiddity (quiddity_name))->set_property(property_name.c_str(),property_value.c_str());
@@ -263,7 +263,7 @@ namespace switcher
   {
     if (!exists (quiddity_name))
       {
-	g_error ("quiddity %s not found, cannot get property",quiddity_name.c_str());
+	g_warning ("quiddity %s not found, cannot get property",quiddity_name.c_str());
 	return "error, quiddity not found";
       }
     return (get_quiddity (quiddity_name))->get_property(property_name.c_str());
@@ -278,7 +278,7 @@ namespace switcher
     
     if (!exists (quiddity_name))
       {
-	g_error ("quiddity %s not found, cannot invoke",quiddity_name.c_str());
+	g_warning ("quiddity %s not found, cannot invoke",quiddity_name.c_str());
 	return false;
       }
     Quiddity::ptr quiddity = get_quiddity (quiddity_name);
@@ -293,7 +293,7 @@ namespace switcher
 
     if ((int)args.size () != num_val)
       {
-	g_error ("invoking %s/%s, number of arguments does not match",quiddity_name.c_str(),function_name.c_str());
+	g_warning ("invoking %s/%s, number of arguments does not match",quiddity_name.c_str(),function_name.c_str());
 	return false;
       }
 
@@ -305,7 +305,7 @@ namespace switcher
   {
     if (!exists (quiddity_name))
       {
-	g_error ("quiddity %s not found, cannot get description of methods",quiddity_name.c_str());
+	g_warning ("quiddity %s not found, cannot get description of methods",quiddity_name.c_str());
 	return "error, quiddity not found";
       }
      
@@ -317,7 +317,7 @@ namespace switcher
   {
     if (!exists (quiddity_name))
       {
-	g_error ("quiddity %s not found, cannot get description of methods",quiddity_name.c_str());
+	g_warning ("quiddity %s not found, cannot get description of methods",quiddity_name.c_str());
 	return "error, quiddity not found";
       }
      
