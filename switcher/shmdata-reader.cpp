@@ -61,6 +61,7 @@ namespace switcher
   void
   ShmdataReader::unlink_pad (GstPad * pad)
   {
+    g_debug ("ShmdataReader::unlink_pad SHOULD NOT BE CALLED, ");
     GstPad *peer;
     if ((peer = gst_pad_get_peer (pad))) {
       if (gst_pad_get_direction (pad) == GST_PAD_SRC)
@@ -158,6 +159,7 @@ namespace switcher
   void 
   ShmdataReader::stop ()
   {
+    g_debug ("ShmdataReader::stop");
     shmdata_base_reader_close (reader_);
     GstUtils::clean_element (funnel_);
   } 
@@ -165,7 +167,7 @@ namespace switcher
   void 
   ShmdataReader::set_on_first_data_hook (on_first_data_hook cb, void *user_data)
   {
-    //g_debug ("ShmdataReader::set_on_first_data_hook");
+    g_debug ("ShmdataReader::set_on_first_data_hook");
     connection_hook_ = cb;
     hook_user_data_ = user_data;
   }
