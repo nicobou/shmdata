@@ -51,7 +51,7 @@ main (int argc, char *argv[])
   writer = shmdata_any_writer_init ();
   if (! shmdata_any_writer_set_path (writer, argv[1]))
     {
-      g_printerr ("**** The file %s exists, therefore a shmdata cannot be operated with this path.\n",argv[1]);
+      fprintf (stderr, "**** The file %s exists, therefore a shmdata cannot be operated with this path.\n", argv[1]);
       shmdata_any_writer_close (writer);
       exit(0);
     }
