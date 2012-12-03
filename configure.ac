@@ -135,7 +135,8 @@ fi
 # Trying to set OPENSCENEGRAPH using pkg-config
 PKG_CHECK_MODULES(OPENSCENEGRAPH, openscenegraph, have_openscenegraph=true, have_openscenegraph=false)
 if test "x${have_openscenegraph}" = "xfalse" ; then
-    AC_MSG_WARN([***** missing optional package:  libopenscenegraph-dev ***** ])
+    #AC_MSG_WARN([***** missing optional package:  libopenscenegraph-dev ***** ])
+    AC_MSG_ERROR([***** missing package:  libopenscenegraph-dev ***** ])
     AM_CONDITIONAL(HAVE_OPENSCENEGRAPH, false)
 else
     AM_CONDITIONAL(HAVE_OPENSCENEGRAPH, true)
@@ -167,9 +168,8 @@ AC_CONFIG_FILES([
         shmdata-${LIBSHMDATA_API_VERSION}.pc:shmdata.pc.in
         shmdata-any-${LIBSHMDATA_API_VERSION}.pc:shmdata-any.pc.in
         shmdata-osg-${LIBSHMDATA_API_VERSION}.pc:shmdata-osg.pc.in
-         plugins/Makefile
-         plugins/puredata/Makefile
-
+        plugins/Makefile
+        plugins/puredata/Makefile
         ])
 
 AC_OUTPUT
