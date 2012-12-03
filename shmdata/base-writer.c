@@ -34,6 +34,11 @@ shmdata_base_writer_close (shmdata_base_writer_t *writer)
       return;
     }
 
+  if (writer->socket_path_ != NULL)
+    g_debug ("closing writer %s",writer->socket_path_);
+  else
+    g_debug ("closing writer with no socket path");
+
   if (GST_IS_ELEMENT (writer->qserial_))
       gst_element_set_state (writer->qserial_, GST_STATE_NULL);
   if (GST_IS_ELEMENT (writer->serializer_))

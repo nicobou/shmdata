@@ -377,14 +377,17 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
   
   //monitoring the shared memory file
   reader->shmfile_ = g_file_new_for_commandline_arg (reader->socketName_);
-  g_debug ("monitoring %s", g_file_get_uri (reader->shmfile_));
   
   if (g_file_query_exists (reader->shmfile_, NULL))
     {
+      g_debug ("existing shmdata, attaching (%s)", g_file_get_uri (reader->shmfile_));
       reader->initialized_ = TRUE;
       reader->on_first_data_ (reader, reader->on_first_data_userData_);
       shmdata_base_reader_attach (reader);
     }
+  else
+    g_debug ("monitoring %s", g_file_get_uri (reader->shmfile_));
+
 
   GFile *dir = g_file_get_parent (reader->shmfile_);
   reader->dirMonitor_ = g_file_monitor_directory (dir,
@@ -396,6 +399,7 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
 		    G_CALLBACK
 		    (shmdata_base_reader_file_system_monitor_change), reader);
 
+  g_debug ("shmdata started (%s)", g_file_get_uri (reader->shmfile_));
   return TRUE;
   
 }
