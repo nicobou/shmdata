@@ -17,8 +17,7 @@ noinst_PROGRAMS = \
     rtp_data_receiver \
     rtp_data_sender \
     video_reader \
-    video_writer \
-    video_writer_uri
+    video_writer 
 
 if BUILD_CLUTTER_EXAMPLE 
     noinst_PROGRAMS += \
@@ -64,5 +63,4 @@ pcd_writer_SOURCES = pcd_writer.cpp
 video_reader_SOURCES = video-reader.c
 video_writer_SOURCES = video-writer.c
 
-video_writer_uri_SOURCES = video-writer-uri.c
 
