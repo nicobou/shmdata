@@ -43,9 +43,11 @@ namespace switcher
 
   Segment::~Segment()
   {
-
+    g_debug ("Segment::~Segment begin");
      shmdata_readers_.clear ();
+     g_debug ("Segment::~Segment shmdata readers cleared");
      shmdata_writers_.clear ();
+     g_debug ("Segment::~Segment shmdata writers cleared");
 
      if (GST_IS_ELEMENT (bin_))
        {
@@ -67,10 +69,15 @@ namespace switcher
 	       }
 	   }
 	 
-	 gst_element_set_state (bin_, GST_STATE_NULL);
-	 if (GST_IS_BIN (GST_ELEMENT_PARENT (bin_)))
-	   gst_bin_remove (GST_BIN (GST_ELEMENT_PARENT (bin_)), bin_);
+	 GstUtils::clean_element (bin_);
+	 // g_debug ("Segment::~Segment set bin_ state to NULL");
+	 // if (GST_STATE_TARGET (bin_) != GST_STATE_NULL)
+	 //   gst_element_set_state (bin_, GST_STATE_NULL);
+	 // if (GST_IS_BIN (GST_ELEMENT_PARENT (bin_)))
+	 //   gst_bin_remove (GST_BIN (GST_ELEMENT_PARENT (bin_)), bin_);
        }
+    g_debug ("Segment::~Segment end");
+
   }
   
   
@@ -122,12 +129,16 @@ namespace switcher
     //warning, gst_element_sync_state_with_parent is not working when parent element is pending  
     //so before invoking, waiting an infinite amount of time for the parent element to finish 
     //possible state change
-    if (GST_STATE_TARGET(runtime_->get_pipeline ()) != GST_STATE(runtime_->get_pipeline ()))
-      {
-	g_debug ("Segment::set_runtime waiting for parent to finish state change");
-	gst_element_get_state (runtime_->get_pipeline (), NULL, NULL, GST_CLOCK_TIME_NONE);
-      }
-    gst_element_sync_state_with_parent (bin_);
+      if (GST_STATE_TARGET(runtime_->get_pipeline ()) != GST_STATE(runtime_->get_pipeline ()))
+        {
+      	g_debug ("Segment::set_runtime waiting for parent to finish state change");
+      	gst_element_get_state (runtime_->get_pipeline (), NULL, NULL, GST_CLOCK_TIME_NONE);
+        }
+
+      g_debug ("Segment::set_runtime (before sync) %s", GST_ELEMENT_NAME (bin_));
+      gst_element_sync_state_with_parent (bin_);
+      g_debug ("Segment::set_runtime (after sync)");
+    //gst_element_set_state (bin_, GST_STATE_TARGET(runtime_->get_pipeline ()));
   }
   
   GstElement *

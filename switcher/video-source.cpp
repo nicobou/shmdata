@@ -105,6 +105,8 @@ namespace switcher
     video_connector->plug (bin_, colorspace_out_, videocaps);
     shmdata_writers_.insert (connector_name, video_connector);
 
+    g_debug ("VideoSource::set_raw_video_element (done)");
+
     //gst_object_unref (videocaps);
   }
 
