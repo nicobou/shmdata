@@ -42,36 +42,81 @@ struct shmdata_base_reader_
   gboolean initialized_;	//the shared video has been attached once
 };
 
+//FIXME this should be part of the library
+void
+shmdata_base_reader_unlink_pad (GstPad * pad)
+{
+  GstPad *peer;
+  if ((peer = gst_pad_get_peer (pad))) {
+    if (gst_pad_get_direction (pad) == GST_PAD_SRC)
+      gst_pad_unlink (pad, peer);
+    else
+      gst_pad_unlink (peer, pad);
+    //checking if the pad has been requested and releasing it needed 
+    GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);//check if this must be unrefed for GST 1
+    if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
+      gst_element_release_request_pad (gst_pad_get_parent_element(peer), peer);
+    gst_object_unref (peer);
+  }
+}
+
+//FIXME this should be part of the library
+void
+shmdata_base_reader_clean_element (GstElement *element)
+{
+  if (element != NULL && GST_IS_ELEMENT (element))
+    {
+      GstIterator *pad_iter;
+      pad_iter = gst_element_iterate_pads (element);
+      gst_iterator_foreach (pad_iter, (GFunc) shmdata_base_reader_unlink_pad, element);
+      gst_iterator_free (pad_iter);
+      if (GST_STATE_TARGET (element) != GST_STATE_NULL)
+	if (GST_STATE_CHANGE_ASYNC == gst_element_set_state (element, GST_STATE_NULL))
+	  gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
+      if (GST_IS_BIN (gst_element_get_parent (element)))
+	gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element);
+    }
+}
+
+
+
 gboolean
 shmdata_base_reader_clean_source (gpointer user_data)
 {
   shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
-  //gst_object_unref (context->sink_pad_);
 
-  if (GST_IS_ELEMENT (context->typefind_))   
-      gst_element_set_state (context->typefind_, GST_STATE_NULL);   
-  
-   if (GST_IS_ELEMENT (context->deserializer_)) 
-       gst_element_set_state (context->deserializer_, GST_STATE_NULL); 
+  g_debug ("shmdata_base_reader_clean_source");
 
-  if (GST_IS_ELEMENT (context->source_)) 
-    if (GST_STATE (context->source_) == GST_STATE_PLAYING)
-      gst_element_set_state (context->source_, GST_STATE_NULL);   
-  
-  if (GST_IS_BIN (context->bin_) 
-      && GST_IS_ELEMENT (context->typefind_)
-      && GST_ELEMENT_PARENT (context->typefind_) == context->bin_)
-    gst_bin_remove (GST_BIN (context->bin_), context->typefind_);
-  
-  if (GST_IS_BIN (context->bin_) 
-      && GST_IS_ELEMENT (context->deserializer_)
-      && GST_ELEMENT_PARENT (context->deserializer_) == context->bin_)
-    gst_bin_remove (GST_BIN (context->bin_), context->deserializer_);
+  shmdata_base_reader_clean_element (context->typefind_);
+  shmdata_base_reader_clean_element (context->deserializer_);
+  shmdata_base_reader_clean_element (context->source_);
 
-  if (GST_IS_BIN (context->bin_) 
-      && GST_IS_ELEMENT (context->source_)
-      && GST_ELEMENT_PARENT (context->source_) == context->bin_)
-      gst_bin_remove (GST_BIN (context->bin_), context->source_);
+  g_debug ("shmdata_base_reader_clean_source done");
+  
+  /* if (GST_IS_ELEMENT (context->typefind_))    */
+  /*     gst_element_set_state (context->typefind_, GST_STATE_NULL);    */
+  
+  /*  if (GST_IS_ELEMENT (context->deserializer_))  */
+  /*      gst_element_set_state (context->deserializer_, GST_STATE_NULL);  */
+
+  /* if (GST_IS_ELEMENT (context->source_))  */
+  /*   if (GST_STATE (context->source_) == GST_STATE_PLAYING) */
+  /*     gst_element_set_state (context->source_, GST_STATE_NULL);    */
+  
+  /* if (GST_IS_BIN (context->bin_)  */
+  /*     && GST_IS_ELEMENT (context->typefind_) */
+  /*     && GST_ELEMENT_PARENT (context->typefind_) == context->bin_) */
+  /*   gst_bin_remove (GST_BIN (context->bin_), context->typefind_); */
+  
+  /* if (GST_IS_BIN (context->bin_)  */
+  /*     && GST_IS_ELEMENT (context->deserializer_) */
+  /*     && GST_ELEMENT_PARENT (context->deserializer_) == context->bin_) */
+  /*   gst_bin_remove (GST_BIN (context->bin_), context->deserializer_); */
+
+  /* if (GST_IS_BIN (context->bin_)  */
+  /*     && GST_IS_ELEMENT (context->source_) */
+  /*     && GST_ELEMENT_PARENT (context->source_) == context->bin_) */
+  /*     gst_bin_remove (GST_BIN (context->bin_), context->source_); */
 
   return FALSE;
 }

@@ -25,12 +25,50 @@ struct shmdata_base_writer_
   GstClockTime timeshift_;
 };
 
+
+//FIXME this should be part of the library
+void
+shmdata_base_writer_unlink_pad (GstPad * pad)
+{
+  GstPad *peer;
+  if ((peer = gst_pad_get_peer (pad))) {
+    if (gst_pad_get_direction (pad) == GST_PAD_SRC)
+      gst_pad_unlink (pad, peer);
+    else
+      gst_pad_unlink (peer, pad);
+    //checking if the pad has been requested and releasing it needed 
+    GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);//check if this must be unrefed for GST 1
+    if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
+      gst_element_release_request_pad (gst_pad_get_parent_element(peer), peer);
+    gst_object_unref (peer);
+  }
+}
+
+//FIXME this should be part of the library
+void
+shmdata_base_writer_clean_element (GstElement *element)
+{
+  if (element != NULL && GST_IS_ELEMENT (element))
+    {
+      GstIterator *pad_iter;
+      pad_iter = gst_element_iterate_pads (element);
+      gst_iterator_foreach (pad_iter, (GFunc) shmdata_base_writer_unlink_pad, element);
+      gst_iterator_free (pad_iter);
+      if (GST_STATE_TARGET (element) != GST_STATE_NULL)
+	if (GST_STATE_CHANGE_ASYNC == gst_element_set_state (element, GST_STATE_NULL))
+	  gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
+      if (GST_IS_BIN (gst_element_get_parent (element)))
+	gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element);
+    }
+}
+
+
 void
 shmdata_base_writer_close (shmdata_base_writer_t *writer)
 {
   if (writer == NULL)
     {
-      g_printerr("trying to close a NULL writer");
+      g_debug("trying to close a NULL writer");
       return;
     }
 
@@ -39,21 +77,30 @@ shmdata_base_writer_close (shmdata_base_writer_t *writer)
   else
     g_debug ("closing writer with no socket path");
 
-  if (GST_IS_ELEMENT (writer->qserial_))
-      gst_element_set_state (writer->qserial_, GST_STATE_NULL);
-  if (GST_IS_ELEMENT (writer->serializer_))
-    gst_element_set_state (writer->serializer_, GST_STATE_NULL);
-  if (GST_IS_ELEMENT (writer->shmsink_))
-    gst_element_set_state (writer->shmsink_, GST_STATE_NULL);
-  if (GST_IS_BIN (writer->pipeline_))
-    gst_bin_remove_many (GST_BIN (writer->pipeline_),
-			 writer->qserial_,
-			 writer->serializer_,
-			 writer->shmsink_,
-			 NULL);
+   shmdata_base_writer_clean_element (writer->qserial_); 
+   shmdata_base_writer_clean_element (writer->serializer_); 
+   shmdata_base_writer_clean_element (writer->shmsink_); 
+
+   /* if (GST_IS_ELEMENT (writer->qserial_))  */
+   /*     gst_element_set_state (writer->qserial_, GST_STATE_NULL);  */
+   /* if (GST_IS_ELEMENT (writer->serializer_))  */
+   /*   gst_element_set_state (writer->serializer_, GST_STATE_NULL);  */
+   /* if (GST_IS_ELEMENT (writer->shmsink_))  */
+   /*   gst_element_set_state (writer->shmsink_, GST_STATE_NULL);  */
+
+   /* if (GST_IS_BIN (writer->pipeline_))  */
+   /*   gst_bin_remove_many (GST_BIN (writer->pipeline_),  */
+   /* 			 writer->qserial_,  */
+   /* 			 writer->serializer_,  */
+   /* 			 writer->shmsink_,  */
+   /* 			 NULL);  */
+
+  g_debug ("writer closed (%s)",writer->socket_path_);
   if (writer->socket_path_ != NULL)
     g_free (writer->socket_path_);
   g_free (writer);
+
+    
 }
 
 void
@@ -85,12 +132,31 @@ void
 shmdata_base_writer_set_branch_state_as_pipeline (shmdata_base_writer_t *
 						  writer)
 {
-  gst_element_set_state (writer->qserial_,
-			 GST_STATE_TARGET(GST_ELEMENT_PARENT(writer->qserial_)));
-  gst_element_set_state (writer->serializer_,
-			 GST_STATE_TARGET(GST_ELEMENT_PARENT(writer->serializer_)));
-  gst_element_set_state (writer->shmsink_,
-			 GST_STATE_TARGET(GST_ELEMENT_PARENT(writer->shmsink_)));
+
+  GstElement *parent = GST_ELEMENT_PARENT(writer->shmsink_);
+
+  if (GST_STATE (parent) == GST_STATE_NULL && GST_STATE_TARGET (parent) == GST_STATE_NULL)
+    return;
+
+  if (GST_STATE (parent) != GST_STATE_TARGET (parent))
+        gst_element_get_state (parent, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
+
+  g_debug ("pipeline (%s) state %s, target %s",
+	   GST_ELEMENT_NAME (parent),
+	   gst_element_state_get_name (GST_STATE (parent)),
+	   gst_element_state_get_name (GST_STATE_TARGET (parent)));
+
+
+  gst_element_sync_state_with_parent (writer->qserial_);
+  gst_element_sync_state_with_parent (writer->serializer_);
+  gst_element_sync_state_with_parent (writer->shmsink_);
+
+  /* gst_element_set_state (writer->qserial_, */
+  /* 			 GST_STATE_TARGET(GST_ELEMENT_PARENT(writer->qserial_))); */
+  /* gst_element_set_state (writer->serializer_, */
+  /* 			 GST_STATE_TARGET(GST_ELEMENT_PARENT(writer->serializer_))); */
+  /* gst_element_set_state (writer->shmsink_, */
+  /* 			 GST_STATE_TARGET(GST_ELEMENT_PARENT(writer->shmsink_))); */
 }
 
 gboolean
@@ -200,19 +266,26 @@ shmdata_base_writer_on_client_connected (GstElement * shmsink,
   shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
 
   g_debug ("new client connected (number %d, socket:%s)", num, context->socket_path_);
-
+  
+  if (GST_STATE (context->pipeline_) != GST_STATE_TARGET (context->pipeline_))
+    {
+      g_debug ("shmdata_base_writer_on_client_connected -- waiting for parent state");
+      gst_element_get_state (context->pipeline_, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
+      g_debug ("shmdata_base_writer_on_client_connected -- waiting for parent state done");
+  }
+  
   GstPad *serializerSinkPad =
     gst_element_get_static_pad (context->serializer_, "sink");
   GstPad *padToBlock = gst_pad_get_peer (serializerSinkPad);
 
-  //if (!
- gst_pad_set_blocked_async (padToBlock,
-			    TRUE,
-			    (GstPadBlockCallback)
-			    (shmdata_base_writer_switch_to_new_serializer),
-			    (void *) context);
- //) g_critical ("Error: when requesting the pad to be blocked");
 
+  gst_pad_set_blocked_async (padToBlock,
+			     TRUE,
+			     (GstPadBlockCallback)
+			     (shmdata_base_writer_switch_to_new_serializer),
+			     (void *) context);
+ 
+  
   gst_object_unref (serializerSinkPad);
   gst_object_unref (padToBlock);
 }
