@@ -444,7 +444,7 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
 		    G_CALLBACK
 		    (shmdata_base_reader_file_system_monitor_change), reader);
 
-  g_debug ("shmdata started (%s)", g_file_get_uri (reader->shmfile_));
+  g_debug ("shmdata reader started (%s)", g_file_get_uri (reader->shmfile_));
   return TRUE;
   
 }
