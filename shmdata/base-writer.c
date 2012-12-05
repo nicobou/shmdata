@@ -19,7 +19,7 @@ struct shmdata_base_writer_
   GstElement *qserial_;
   GstElement *serializer_;
   GstElement *shmsink_;
-  GstElement *pipeline_;
+  GstElement *parent_bin_;
   gchar *socket_path_;
   gboolean timereset_;
   GstClockTime timeshift_;
@@ -88,8 +88,8 @@ shmdata_base_writer_close (shmdata_base_writer_t *writer)
    /* if (GST_IS_ELEMENT (writer->shmsink_))  */
    /*   gst_element_set_state (writer->shmsink_, GST_STATE_NULL);  */
 
-   /* if (GST_IS_BIN (writer->pipeline_))  */
-   /*   gst_bin_remove_many (GST_BIN (writer->pipeline_),  */
+   /* if (GST_IS_BIN (writer->parent_bin_))  */
+   /*   gst_bin_remove_many (GST_BIN (writer->parent_bin_),  */
    /* 			 writer->qserial_,  */
    /* 			 writer->serializer_,  */
    /* 			 writer->shmsink_,  */
@@ -203,6 +203,8 @@ shmdata_base_writer_switch_to_new_serializer (GstPad * pad,
 {
   shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
 
+  g_debug ("base_writer switch_to_new_serializer");
+
   //unlink the old serializer
   GstPad *srcPad = gst_element_get_static_pad (context->serializer_, "src");
   GstPad *srcPadPeer = gst_pad_get_peer (srcPad);
@@ -264,26 +266,18 @@ shmdata_base_writer_on_client_connected (GstElement * shmsink,
 					 gint num, gpointer user_data)
 {
   shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
-
+  
   g_debug ("new client connected (number %d, socket:%s)", num, context->socket_path_);
   
-  if (GST_STATE (context->pipeline_) != GST_STATE_TARGET (context->pipeline_))
-    {
-      g_debug ("shmdata_base_writer_on_client_connected -- waiting for parent state");
-      gst_element_get_state (context->pipeline_, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
-      g_debug ("shmdata_base_writer_on_client_connected -- waiting for parent state done");
-  }
-  
-  GstPad *serializerSinkPad =
-    gst_element_get_static_pad (context->serializer_, "sink");
+  GstPad *serializerSinkPad = gst_element_get_static_pad (context->serializer_, "sink");
   GstPad *padToBlock = gst_pad_get_peer (serializerSinkPad);
-
-
-  gst_pad_set_blocked_async (padToBlock,
-			     TRUE,
-			     (GstPadBlockCallback)
-			     (shmdata_base_writer_switch_to_new_serializer),
-			     (void *) context);
+ 
+ 
+ gst_pad_set_blocked_async (padToBlock,
+			    TRUE,
+			    (GstPadBlockCallback)
+			    (shmdata_base_writer_switch_to_new_serializer),
+			    (void *) context);
  
   
   gst_object_unref (serializerSinkPad);
@@ -324,7 +318,7 @@ shmdata_base_writer_make_shm_branch (shmdata_base_writer_t * writer,
 		    G_CALLBACK (shmdata_base_writer_on_client_disconnected),
 		    writer);
 
-  gst_bin_add_many (GST_BIN (writer->pipeline_), writer->qserial_,
+  gst_bin_add_many (GST_BIN (writer->parent_bin_), writer->qserial_,
 		    writer->serializer_, writer->shmsink_, NULL);
 }
 
@@ -364,7 +358,18 @@ shmdata_base_writer_plug (shmdata_base_writer_t *writer,
 			  GstElement *pipeline, 
 			  GstElement *srcElement)
 {
-  writer->pipeline_ = pipeline;
+  if (!GST_IS_BIN (pipeline))
+    {
+      g_critical ("shmdata_base_writer_plug, not a bin");
+      return;
+    }
+
+  writer->parent_bin_ = pipeline;
+
+  //following is required in order to avoid occasionnal blocking when invoking gst_element_sync_with_parent 
+  //on the parent bin 
+  g_object_set (G_OBJECT ( writer->parent_bin_), "async-handling", TRUE, NULL);
+
   if (writer->socket_path_ == NULL) 
         g_critical ("cannot start when socket path has not been set");
   shmdata_base_writer_make_shm_branch (writer, writer->socket_path_);
@@ -377,7 +382,7 @@ shmdata_base_writer_plug_pad (shmdata_base_writer_t * writer,
 			      GstElement * pipeline, 
 			      GstPad * srcPad)
 {
-  writer->pipeline_ = pipeline; //TODO get rid of the pipeline arg
+  writer->parent_bin_ = pipeline; //TODO get rid of the pipeline arg
   if (writer->socket_path_ == NULL) 
     g_critical ("cannot start when socket path has not been set");
   shmdata_base_writer_make_shm_branch (writer, writer->socket_path_);
