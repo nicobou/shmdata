@@ -139,8 +139,10 @@ shmdata_base_writer_set_branch_state_as_pipeline (shmdata_base_writer_t *
     return;
 
   if (GST_STATE (parent) != GST_STATE_TARGET (parent))
-        gst_element_get_state (parent, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
-
+    {
+      g_debug ("shmdata writer: no sync with parent since already changing state");
+      return;//parent is already doing something
+    }
   g_debug ("pipeline (%s) state %s, target %s",
 	   GST_ELEMENT_NAME (parent),
 	   gst_element_state_get_name (GST_STATE (parent)),
@@ -282,6 +284,7 @@ shmdata_base_writer_on_client_connected (GstElement * shmsink,
   
   gst_object_unref (serializerSinkPad);
   gst_object_unref (padToBlock);
+  //  g_debug ("new client connected (number %d, socket:%s) -- done", num, context->socket_path_);
 }
 
 void
@@ -358,12 +361,13 @@ shmdata_base_writer_plug (shmdata_base_writer_t *writer,
 			  GstElement *pipeline, 
 			  GstElement *srcElement)
 {
+  g_debug ("shmdata_base_writer_plug");
+
   if (!GST_IS_BIN (pipeline))
     {
       g_critical ("shmdata_base_writer_plug, not a bin");
       return;
     }
-
   writer->parent_bin_ = pipeline;
 
   //following is required in order to avoid occasionnal blocking when invoking gst_element_sync_with_parent 
@@ -372,9 +376,11 @@ shmdata_base_writer_plug (shmdata_base_writer_t *writer,
 
   if (writer->socket_path_ == NULL) 
         g_critical ("cannot start when socket path has not been set");
+
   shmdata_base_writer_make_shm_branch (writer, writer->socket_path_);
   shmdata_base_writer_link_branch (writer, srcElement);
   shmdata_base_writer_set_branch_state_as_pipeline (writer);
+  g_debug ("shmdata_base_writer_plug (done) ");
 }
 
 void
@@ -382,11 +388,27 @@ shmdata_base_writer_plug_pad (shmdata_base_writer_t * writer,
 			      GstElement * pipeline, 
 			      GstPad * srcPad)
 {
-  writer->parent_bin_ = pipeline; //TODO get rid of the pipeline arg
+  
+  g_debug ("shmdata_base_writer_plug_pad ");
+
+  if (!GST_IS_BIN (pipeline))
+    {
+      g_critical ("shmdata_base_writer_plug, not a bin");
+      return;
+    }
+  writer->parent_bin_ = pipeline; //TODO get rid of the pipeline arg ?
+
+  //following is required in order to avoid occasionnal blocking when invoking gst_element_sync_with_parent 
+  //on the parent bin 
+  g_object_set (G_OBJECT ( writer->parent_bin_), "async-handling", TRUE, NULL);
+
   if (writer->socket_path_ == NULL) 
     g_critical ("cannot start when socket path has not been set");
+
   shmdata_base_writer_make_shm_branch (writer, writer->socket_path_);
   shmdata_base_writer_link_branch_pad (writer, srcPad);
   shmdata_base_writer_set_branch_state_as_pipeline (writer);
+
+  g_debug ("shmdata_base_writer_plug_pad (done)");
 }
 
