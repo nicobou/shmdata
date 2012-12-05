@@ -313,6 +313,7 @@ namespace switcher
     gchar *rtp_src_pad_name = g_strconcat ("send_rtp_src_", rtp_session_id, NULL); 
     g_debug ("RtpSession: request rtp src pad and create a corresponding shmwriter %s",rtp_src_pad_name);
     GstPad *rtp_src_pad = gst_element_get_static_pad (context->rtpsession_, rtp_src_pad_name);
+
     if (!GST_IS_PAD (rtp_src_pad)) 
       g_error ("RtpSession: rtp_src_pad is not a pad"); 
     ShmdataWriter::ptr rtp_writer;
@@ -453,6 +454,7 @@ namespace switcher
   bool
   RtpSession::add_udp_stream_to_dest (std::string shmdata_socket_path, std::string nick_name, std::string port)
   {
+    
     if (!internal_id_.contains (shmdata_socket_path))
       {
 	g_error ("RtpSession is not connected to %s",shmdata_socket_path.c_str ());
@@ -466,7 +468,6 @@ namespace switcher
       }
 
     //TODO check port has not been set for this destination
-
     gint rtp_port = atoi(port.c_str());
 
     if (rtp_port %2 !=0)
@@ -500,7 +501,7 @@ namespace switcher
       }
 
     QuiddityManager::ptr manager = quiddity_managers_.lookup (shmdata_socket_path);
-    
+
     //rtp stream (sending)
     RtpDestination::ptr dest = destinations_.lookup (nick_name);
     
@@ -509,7 +510,7 @@ namespace switcher
     arg.push_back (dest->get_host_name ());
     arg.push_back (port);
     manager->invoke ("udpsend_rtp","add_client",arg);
-    
+
      //rtcp stream (sending)
      arg.clear ();
      arg.push_back (dest->get_host_name ());
@@ -518,16 +519,16 @@ namespace switcher
      arg.push_back (rtcp_port.str());
      manager->invoke ("udpsend_rtcp","add_client",arg);
 
-     //FIXME rtcp receiving, port + 5 is hard coded but should be negociated 
-     GstElementCleaner::ptr funnel_cleaner = funnels_.lookup (shmdata_socket_path);
-     GstElement *funnel = funnel_cleaner->get_labeled_element_from_cleaner ("funnel");
-     GstElement *udpsrc = gst_element_factory_make ("udpsrc", NULL);
-     dest->add_element_to_cleaner (udpsrc);
-     g_object_set (G_OBJECT (udpsrc), "port", rtp_port + 5, NULL);
-     gst_bin_add (GST_BIN (bin_), udpsrc);
-     gst_element_sync_state_with_parent (udpsrc);
-     if (!gst_element_link (udpsrc, funnel))
-       g_debug ("udpsrc and funnel link failled in rtp-session");
+     //TODO rtcp receiving should be negociated 
+     // GstElementCleaner::ptr funnel_cleaner = funnels_.lookup (shmdata_socket_path);
+    //  GstElement *funnel = funnel_cleaner->get_labeled_element_from_cleaner ("funnel");
+    //  GstElement *udpsrc = gst_element_factory_make ("udpsrc", NULL);
+    //  dest->add_element_to_cleaner (udpsrc);
+    //  g_object_set (G_OBJECT (udpsrc), "port", rtp_port + 5, NULL);
+    //  gst_bin_add (GST_BIN (bin_), udpsrc);
+    //  gst_element_sync_state_with_parent (udpsrc);
+    //  if (!gst_element_link (udpsrc, funnel))
+    //    g_debug ("udpsrc and funnel link failled in rtp-session");
 
      return true;
   }
