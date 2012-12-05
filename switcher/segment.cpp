@@ -116,8 +116,7 @@ namespace switcher
   {
     runtime_ = runtime;
     gst_bin_add (GST_BIN (runtime_->get_pipeline ()),bin_);
-
-
+    
     //start the shmdata reader
     std::vector<ShmdataReader::ptr> shmreaders = shmdata_readers_.get_values ();
     std::vector<ShmdataReader::ptr>::iterator it;
@@ -129,16 +128,15 @@ namespace switcher
     //warning, gst_element_sync_state_with_parent is not working when parent element is pending  
     //so before invoking, waiting an infinite amount of time for the parent element to finish 
     //possible state change
-      if (GST_STATE_TARGET(runtime_->get_pipeline ()) != GST_STATE(runtime_->get_pipeline ()))
-        {
-      	g_debug ("Segment::set_runtime waiting for parent to finish state change");
-      	gst_element_get_state (runtime_->get_pipeline (), NULL, NULL, GST_CLOCK_TIME_NONE);
-        }
+      // if (GST_STATE_TARGET(runtime_->get_pipeline ()) != GST_STATE(runtime_->get_pipeline ()))
+      //   {
+      // 	g_debug ("Segment::set_runtime waiting for parent to finish state change");
+      // 	gst_element_get_state (runtime_->get_pipeline (), NULL, NULL, GST_CLOCK_TIME_NONE);
+      //   }
+    GstUtils::wait_state_changed (runtime_->get_pipeline ());
 
-      g_debug ("Segment::set_runtime (before sync) %s", GST_ELEMENT_NAME (bin_));
       gst_element_sync_state_with_parent (bin_);
-      g_debug ("Segment::set_runtime (after sync)");
-    //gst_element_set_state (bin_, GST_STATE_TARGET(runtime_->get_pipeline ()));
+      gst_element_get_state (bin_, NULL, NULL, GST_CLOCK_TIME_NONE);
   }
   
   GstElement *
