@@ -96,34 +96,24 @@ namespace switcher
   void 
   ShmdataWriter::plug (GstElement *bin, GstElement *source_element, GstCaps *caps)
   {
-    g_debug ("ShmdataWriter::plug (source element)");
-
+    //    g_debug ("ShmdataWriter::plug (source element)");
     tee_ = gst_element_factory_make ("tee", NULL);
     queue_ = gst_element_factory_make ("queue", NULL); 
     fakesink_ = gst_element_factory_make ("fakesink", NULL); 
     g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
-    
+
+    GstUtils::wait_state_changed (bin);
+
     gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
-    
-    if (GST_STATE (bin) != GST_STATE_TARGET (bin))
-      gst_element_get_state (bin, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
-    
+
     shmdata_base_writer_plug (writer_, bin, tee_);
 
-     gst_element_link_filtered (source_element,
-				tee_, caps);
-     gst_element_link_many (tee_, queue_, fakesink_,NULL);
-     
-     g_debug ("ShmdataWriter::plug bin target state %s, current state %s",
-	      gst_element_state_get_name (GST_STATE_TARGET (bin)),
-	      gst_element_state_get_name (GST_STATE (bin)));
-     
-     
-     gst_element_sync_state_with_parent (tee_);
-     gst_element_sync_state_with_parent (queue_);
-     gst_element_sync_state_with_parent (fakesink_);
-     
-     g_debug ("shmdata writer plugged (%s)",path_.c_str());
+    gst_element_link_filtered (source_element, tee_, caps);
+    gst_element_link_many (tee_, queue_, fakesink_,NULL);
+    gst_element_sync_state_with_parent (tee_);
+    gst_element_sync_state_with_parent (queue_);
+    gst_element_sync_state_with_parent (fakesink_);
+    g_debug ("shmdata writer plugged (%s)",path_.c_str());
   }
 
   void 
@@ -133,7 +123,9 @@ namespace switcher
      queue_ = gst_element_factory_make ("queue", NULL); 
      fakesink_ = gst_element_factory_make ("fakesink", NULL); 
      g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
-    
+
+     GstUtils::wait_state_changed (bin);
+
      gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
 
      shmdata_base_writer_plug (writer_, bin, tee_);
@@ -142,19 +134,13 @@ namespace switcher
      if (gst_pad_link (source_pad, sinkpad) != GST_PAD_LINK_OK)
        g_error ("ShmdataWriter: failed to link with tee");
      gst_object_unref (sinkpad);
-     //gst_element_link_filtered (source_element,
-     //				tee_, caps);
      gst_element_link_many (tee_, queue_, fakesink_,NULL);
 
-     g_debug ("ShmdataWriter::plug bin target state %s, current state %s",
-	      gst_element_state_get_name (GST_STATE_TARGET (bin)),
-	      gst_element_state_get_name (GST_STATE (bin)));
-     if (GST_STATE (bin) != GST_STATE_TARGET (bin))
-        gst_element_get_state (bin, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
-     
      gst_element_sync_state_with_parent (tee_);
      gst_element_sync_state_with_parent (queue_);
      gst_element_sync_state_with_parent (fakesink_);
+     g_debug ("shmdata writer pad plugged (%s)",path_.c_str());
+
   }
 
 }
