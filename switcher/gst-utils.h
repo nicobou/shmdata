@@ -34,6 +34,7 @@ namespace switcher
     static bool check_pad_link_return (GstPadLinkReturn res);
     static void unlink_pad (GstPad * pad);
     static void clean_element (GstElement *element);
+    static void wait_state_changed (GstElement *bin);
   };
 
 }  // end of namespace

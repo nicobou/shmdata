@@ -109,6 +109,9 @@ namespace switcher
   {
     if (element != NULL && GST_IS_ELEMENT (element))
       {
+	if (GST_IS_BIN (gst_element_get_parent (element)))
+	  GstUtils::wait_state_changed (GST_ELEMENT (gst_element_get_parent (element)));
+	
 	GstIterator *pad_iter;
 	pad_iter = gst_element_iterate_pads (element);
 	gst_iterator_foreach (pad_iter, (GFunc) GstUtils::unlink_pad, element);
@@ -121,5 +124,27 @@ namespace switcher
       }
   }
   
+
+  void
+  GstUtils::wait_state_changed (GstElement *bin)
+  {
+    if (!GST_IS_BIN (bin))
+      {
+	g_warning ("GstUtils::wait_state_changed not a bin");
+	return;
+      }
+    GValue val = G_VALUE_INIT;
+    g_value_init (&val, G_TYPE_BOOLEAN);
+    
+    g_object_get_property (G_OBJECT (bin),
+			   "async-handling",
+			   &val);
+
+    if (g_value_get_boolean (&val) == FALSE)
+      if (GST_STATE (bin) != GST_STATE_TARGET (bin))
+        gst_element_get_state (bin, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
+
+    return;
+  }
 
 }
