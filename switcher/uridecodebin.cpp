@@ -84,13 +84,13 @@ namespace switcher
     //  		    (GCallback) uridecodebin_drained_cb ,  
     //  		    (gpointer) this);      
     g_object_set (G_OBJECT (uridecodebin_),  
-    // 		  //"ring-buffer-max-size",(guint64)200000000, 
-    // 		  //"download",TRUE, 
-    // 		  //"use-buffering",TRUE, 
+     		  //"ring-buffer-max-size",(guint64)200000000, 
+     		  //"download",TRUE, 
+                  //"use-buffering",TRUE, 
     // 		  "expose-all-streams", TRUE,
-    		  "async-handling",FALSE, 
+    		  "async-handling",TRUE, 
     // 		  //"buffer-duration",9223372036854775807, 
-     NULL); 
+		  NULL); 
 
    
     //registering add_data_stream
@@ -133,8 +133,8 @@ namespace switcher
 
     gst_bin_add (GST_BIN (context->bin_), identity);
     GstUtils::link_static_to_request (pad, identity);
-    gst_element_sync_state_with_parent (identity);
-    //gst_element_set_state (identity, GST_STATE_PLAYING);
+    //gst_element_sync_state_with_parent (identity);
+    gst_element_set_state (identity, GST_STATE_TARGET (context->bin_));
 
     //giving a name to the stream
     gchar **padname_splitted = g_strsplit_set (padname, "/",-1);
@@ -165,7 +165,7 @@ namespace switcher
   Uridecodebin::source_setup_cb (GstElement *uridecodebin, GstElement *source, gpointer user_data)
   {
     //Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-    g_print ("source %s %s\n",  GST_ELEMENT_NAME(source), G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (source)));
+    //g_debug ("source %s %s\n",  GST_ELEMENT_NAME(source), G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (source)));
   }
 
   gboolean
@@ -188,9 +188,6 @@ namespace switcher
 
     gst_bin_add (GST_BIN (bin_), uridecodebin_);
     gst_element_sync_state_with_parent (uridecodebin_);
-    //gst_element_set_state (uridecodebin_, GST_STATE_PAUSED);
-
-    g_debug ("to_shmdata end");
     return true;
   }
 

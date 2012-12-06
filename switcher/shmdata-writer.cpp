@@ -108,9 +108,18 @@ namespace switcher
 
     gst_element_link_filtered (source_element, tee_, caps);
     gst_element_link_many (tee_, queue_, fakesink_,NULL);
-    gst_element_sync_state_with_parent (tee_);
-    gst_element_sync_state_with_parent (queue_);
-    gst_element_sync_state_with_parent (fakesink_);
+    if (GST_STATE (bin) != GST_STATE_TARGET (bin))
+      {
+	gst_element_set_state (tee_, GST_STATE_TARGET (bin));
+	gst_element_set_state (queue_, GST_STATE_TARGET (bin));
+	gst_element_set_state (fakesink_, GST_STATE_TARGET (bin));
+      }
+    else
+      {
+	gst_element_sync_state_with_parent (tee_);
+	gst_element_sync_state_with_parent (queue_);
+	gst_element_sync_state_with_parent (fakesink_);
+      }
     g_debug ("shmdata writer plugged (%s)",path_.c_str());
   }
 
