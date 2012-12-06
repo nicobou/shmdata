@@ -88,7 +88,7 @@ namespace switcher
     // 		  //"download",TRUE, 
     // 		  //"use-buffering",TRUE, 
     // 		  "expose-all-streams", TRUE,
-		  "async-handling",FALSE, 
+    		  "async-handling",FALSE, 
     // 		  //"buffer-duration",9223372036854775807, 
      		  NULL); 
 
@@ -115,8 +115,8 @@ namespace switcher
   void 
   Uridecodebin::no_more_pads_cb (GstElement* object, gpointer user_data)   
   {   
-    //g_print ("no more pad");
-    //Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+    // g_print ("no more pad");
+    // Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   }
 
 
@@ -134,8 +134,8 @@ namespace switcher
     gst_bin_add (GST_BIN (context->bin_), identity);
     GstUtils::link_static_to_request (pad, identity);
     gst_element_sync_state_with_parent (identity);
+    //gst_element_set_state (identity, GST_STATE_PLAYING);
 
-    
     //giving a name to the stream
     gchar **padname_splitted = g_strsplit_set (padname, "/",-1);
     gchar media_name[256];
@@ -148,12 +148,14 @@ namespace switcher
     connector.reset (new ShmdataWriter ());
     std::string connector_name = context->make_file_name (media_name);
     connector->set_path (connector_name.c_str());
-    //connector->plug (context->bin_, pad);
     GstCaps *caps = gst_pad_get_caps_reffed (pad);
+
     connector->plug (context->bin_, identity, caps);
+
     if (G_IS_OBJECT (caps))
       gst_object_unref (caps);
     context->shmdata_writers_.insert (connector_name, connector);
+
     g_message ("%s created a new shmdata writer (%s)", 
 	       context->get_nick_name ().c_str(), 
 	       connector_name.c_str ());
@@ -182,10 +184,14 @@ namespace switcher
   Uridecodebin::to_shmdata (std::string uri)
   {
     g_debug ("to_shmdata set uri %s", uri.c_str ());
-    g_object_set (G_OBJECT (uridecodebin_), "uri", uri.c_str (), NULL);  
+    g_object_set (G_OBJECT (uridecodebin_), "uri", uri.c_str (), NULL); 
+
+    GstUtils::wait_state_changed (bin_);
+ 
     gst_bin_add (GST_BIN (bin_), uridecodebin_);
-    gst_element_set_state (uridecodebin_, GST_STATE_READY);
-    gst_element_set_state (uridecodebin_, GST_STATE_PLAYING);
+    
+    gst_element_sync_state_with_parent (uridecodebin_);
+    
     g_debug ("to_shmdata end");
     return true;
   }

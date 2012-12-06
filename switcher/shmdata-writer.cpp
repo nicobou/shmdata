@@ -96,13 +96,11 @@ namespace switcher
   void 
   ShmdataWriter::plug (GstElement *bin, GstElement *source_element, GstCaps *caps)
   {
-    //    g_debug ("ShmdataWriter::plug (source element)");
+    g_debug ("ShmdataWriter::plug (source element)");
     tee_ = gst_element_factory_make ("tee", NULL);
     queue_ = gst_element_factory_make ("queue", NULL); 
     fakesink_ = gst_element_factory_make ("fakesink", NULL); 
     g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
-
-    GstUtils::wait_state_changed (bin);
 
     gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
 
@@ -123,8 +121,6 @@ namespace switcher
      queue_ = gst_element_factory_make ("queue", NULL); 
      fakesink_ = gst_element_factory_make ("fakesink", NULL); 
      g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
-
-     GstUtils::wait_state_changed (bin);
 
      gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
 

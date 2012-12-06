@@ -128,6 +128,7 @@ namespace switcher
   void
   GstUtils::wait_state_changed (GstElement *bin)
   {
+    g_debug ("GstUtils::wait_state_changed");
     if (!GST_IS_BIN (bin))
       {
 	g_warning ("GstUtils::wait_state_changed not a bin");
@@ -142,7 +143,9 @@ namespace switcher
 
     if (g_value_get_boolean (&val) == FALSE)
       if (GST_STATE (bin) != GST_STATE_TARGET (bin))
-        gst_element_get_state (bin, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
+	gst_element_get_state (bin, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
+    
+    g_debug ("GstUtils::wait_state_changed (done)");
 
     return;
   }

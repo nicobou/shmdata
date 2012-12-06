@@ -44,40 +44,39 @@ namespace switcher
   Segment::~Segment()
   {
     g_debug ("Segment::~Segment begin");
-     shmdata_readers_.clear ();
-     g_debug ("Segment::~Segment shmdata readers cleared");
-     shmdata_writers_.clear ();
-     g_debug ("Segment::~Segment shmdata writers cleared");
-
-     if (GST_IS_ELEMENT (bin_))
-       {
-	 // g_debug ("Segment, bin state %s num children %d ", 
-	 // 	  gst_element_state_get_name (GST_STATE (bin_)), 
-	 // 	  GST_BIN_NUMCHILDREN(GST_BIN (bin_)));
-
-	 if (GST_BIN_CHILDREN (bin_) > 0)
-	   {
-	     g_debug ("segment: some child elements have not been cleaned in %s",
-		      get_nick_name ().c_str ());
-	     GList *child = NULL, *children = GST_BIN_CHILDREN (bin_);
-	     for (child = children; child != NULL; child = g_list_next (child)) 
-	       {
-		 g_debug ("segment warning: child %s", GST_ELEMENT_NAME (GST_ELEMENT (child->data)));
-		 // gst_element_set_state (GST_ELEMENT (child->data), GST_STATE_PLAYING);
-		 // gst_element_set_state (GST_ELEMENT (child->data), GST_STATE_NULL);
-		 // gst_bin_remove (GST_BIN (bin_), GST_ELEMENT (child->data));
-	       }
-	   }
-	 
-	 GstUtils::clean_element (bin_);
-	 // g_debug ("Segment::~Segment set bin_ state to NULL");
-	 // if (GST_STATE_TARGET (bin_) != GST_STATE_NULL)
-	 //   gst_element_set_state (bin_, GST_STATE_NULL);
-	 // if (GST_IS_BIN (GST_ELEMENT_PARENT (bin_)))
-	 //   gst_bin_remove (GST_BIN (GST_ELEMENT_PARENT (bin_)), bin_);
-       }
+    shmdata_readers_.clear ();
+    //g_debug ("Segment::~Segment shmdata readers cleared");
+    shmdata_writers_.clear ();
+    //g_debug ("Segment::~Segment shmdata writers cleared");
+    
+    if (GST_IS_ELEMENT (bin_))
+      {
+	// g_debug ("Segment, bin state %s num children %d ", 
+	// 	  gst_element_state_get_name (GST_STATE (bin_)), 
+	// 	  GST_BIN_NUMCHILDREN(GST_BIN (bin_)));
+	
+	if (GST_BIN_CHILDREN (bin_) > 0)
+	  {
+	    g_debug ("segment: some child elements have not been cleaned in %s",
+		     get_nick_name ().c_str ());
+	    GList *child = NULL, *children = GST_BIN_CHILDREN (bin_);
+	    for (child = children; child != NULL; child = g_list_next (child)) 
+	      {
+		g_debug ("segment warning: child %s", GST_ELEMENT_NAME (GST_ELEMENT (child->data)));
+		// gst_element_set_state (GST_ELEMENT (child->data), GST_STATE_PLAYING);
+		// gst_element_set_state (GST_ELEMENT (child->data), GST_STATE_NULL);
+		// gst_bin_remove (GST_BIN (bin_), GST_ELEMENT (child->data));
+	      }
+	  }
+	
+	GstUtils::clean_element (bin_);
+	// g_debug ("Segment::~Segment set bin_ state to NULL");
+	// if (GST_STATE_TARGET (bin_) != GST_STATE_NULL)
+	//   gst_element_set_state (bin_, GST_STATE_NULL);
+	// if (GST_IS_BIN (GST_ELEMENT_PARENT (bin_)))
+	//   gst_bin_remove (GST_BIN (GST_ELEMENT_PARENT (bin_)), bin_);
+      }
     g_debug ("Segment::~Segment end");
-
   }
   
   

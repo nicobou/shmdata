@@ -28,6 +28,10 @@ namespace switcher
   bool
   VideoTestSource::init ()
   {
+    
+    g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
+
+
     videotestsrc_ = gst_element_factory_make ("videotestsrc",NULL);
     g_object_set (G_OBJECT (videotestsrc_),
 		  "is-live", TRUE,

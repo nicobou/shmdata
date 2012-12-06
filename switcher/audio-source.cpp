@@ -18,6 +18,7 @@
  */
 
 #include "switcher/audio-source.h"
+#include "switcher/gst-utils.h"
 #include <memory>
 
 namespace switcher
@@ -29,7 +30,7 @@ namespace switcher
     pitch_ = gst_element_factory_make ("pitch",NULL);
     resample_ = gst_element_factory_make ("audioresample",NULL);
 
-
+    
     
     gst_bin_add_many (GST_BIN (bin_),
 		      audio_tee_,
@@ -62,7 +63,7 @@ namespace switcher
 
     GstCaps *audiocaps = gst_caps_new_simple ("audio/x-raw-float",
      					      NULL);
-
+    
     //creating a connector for raw audio
     ShmdataWriter::ptr rawaudio_connector;
     rawaudio_connector.reset (new ShmdataWriter ());
