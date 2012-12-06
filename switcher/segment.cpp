@@ -133,9 +133,8 @@ namespace switcher
       // 	gst_element_get_state (runtime_->get_pipeline (), NULL, NULL, GST_CLOCK_TIME_NONE);
       //   }
     GstUtils::wait_state_changed (runtime_->get_pipeline ());
-
-      gst_element_sync_state_with_parent (bin_);
-      gst_element_get_state (bin_, NULL, NULL, GST_CLOCK_TIME_NONE);
+    gst_element_sync_state_with_parent (bin_);
+    //gst_element_get_state (bin_, NULL, NULL, GST_CLOCK_TIME_NONE);
   }
   
   GstElement *

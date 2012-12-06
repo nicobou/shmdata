@@ -123,7 +123,9 @@ namespace switcher
        	       gst_element_state_get_name (new_state));
        if (GST_IS_ELEMENT (GST_ELEMENT_PARENT (msg->src)))
        	{
-       	  g_debug ("parent :%s",GST_OBJECT_NAME (GST_ELEMENT_PARENT (msg->src)));
+       	  g_debug ("parent :%s (%s)",
+		   GST_OBJECT_NAME (GST_ELEMENT_PARENT (msg->src)),
+		   gst_element_state_get_name (GST_STATE(GST_ELEMENT_PARENT (msg->src))));
        	}
       break;
     default:

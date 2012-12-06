@@ -79,10 +79,10 @@ namespace switcher
     // 		      (GCallback) Uridecodebin::drained_cb ,  
     // 		      (gpointer) this);      
 
-  // g_signal_connect (G_OBJECT (uridecodebin_),  
-  //  		    "drained",  
-  //  		    (GCallback) uridecodebin_drained_cb ,  
-  //  		    (gpointer) this);      
+    // g_signal_connect (G_OBJECT (uridecodebin_),  
+    //  		    "drained",  
+    //  		    (GCallback) uridecodebin_drained_cb ,  
+    //  		    (gpointer) this);      
     g_object_set (G_OBJECT (uridecodebin_),  
     // 		  //"ring-buffer-max-size",(guint64)200000000, 
     // 		  //"download",TRUE, 
@@ -90,19 +90,19 @@ namespace switcher
     // 		  "expose-all-streams", TRUE,
     		  "async-handling",FALSE, 
     // 		  //"buffer-duration",9223372036854775807, 
-     		  NULL); 
+     NULL); 
 
    
-   //registering add_data_stream
-   register_method("to_shmdata",
-		   (void *)&to_shmdata_wrapped, 
-		   Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		   (gpointer)this);
-   set_method_description ("to_shmdata", 
-			   "decode streams from an uri and write them to shmdatas", 
-			   Method::make_arg_description ("uri", 
-							 "the uri to decode",
-							 NULL));
+    //registering add_data_stream
+    register_method("to_shmdata",
+		    (void *)&to_shmdata_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    (gpointer)this);
+    set_method_description ("to_shmdata", 
+			    "decode streams from an uri and write them to shmdatas", 
+			    Method::make_arg_description ("uri", 
+							  "the uri to decode",
+							  NULL));
     return true;
   }
   
@@ -115,7 +115,7 @@ namespace switcher
   void 
   Uridecodebin::no_more_pads_cb (GstElement* object, gpointer user_data)   
   {   
-    // g_print ("no more pad");
+    //g_print ("---- no more pad\n");
     // Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   }
 
@@ -167,13 +167,13 @@ namespace switcher
     //Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
     g_print ("source %s %s\n",  GST_ELEMENT_NAME(source), G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (source)));
   }
-  
+
   gboolean
   Uridecodebin::to_shmdata_wrapped (gpointer uri, 
-			      gpointer user_data)
+				    gpointer user_data)
   {
     Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-    
+  
     if (context->to_shmdata ((char *)uri))
       return TRUE;
     else
@@ -186,12 +186,10 @@ namespace switcher
     g_debug ("to_shmdata set uri %s", uri.c_str ());
     g_object_set (G_OBJECT (uridecodebin_), "uri", uri.c_str (), NULL); 
 
-    GstUtils::wait_state_changed (bin_);
- 
     gst_bin_add (GST_BIN (bin_), uridecodebin_);
-    
     gst_element_sync_state_with_parent (uridecodebin_);
-    
+    //gst_element_set_state (uridecodebin_, GST_STATE_PAUSED);
+
     g_debug ("to_shmdata end");
     return true;
   }
