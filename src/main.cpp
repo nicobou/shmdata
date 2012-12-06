@@ -136,7 +136,7 @@ main (int argc,
   //waiting for end of life
   timespec delay;
   delay.tv_sec = 1;
-  delay.tv_nsec = 1e9;
+  delay.tv_nsec = 0;
   while (1)
     nanosleep(&delay, NULL);
   
