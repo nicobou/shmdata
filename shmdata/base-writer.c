@@ -138,27 +138,11 @@ shmdata_base_writer_set_branch_state_as_pipeline (shmdata_base_writer_t *
   if (GST_STATE (parent) == GST_STATE_NULL && GST_STATE_TARGET (parent) == GST_STATE_NULL)
     return;
 
-  if (GST_STATE (parent) != GST_STATE_TARGET (parent))
-    {
-      g_debug ("shmdata writer: no sync with parent since already changing state");
-      return;//parent is already doing something
-    }
-  g_debug ("pipeline (%s) state %s, target %s",
-	   GST_ELEMENT_NAME (parent),
-	   gst_element_state_get_name (GST_STATE (parent)),
-	   gst_element_state_get_name (GST_STATE_TARGET (parent)));
-
-
-  gst_element_sync_state_with_parent (writer->qserial_);
-  gst_element_sync_state_with_parent (writer->serializer_);
-  gst_element_sync_state_with_parent (writer->shmsink_);
-
-  /* gst_element_set_state (writer->qserial_, */
-  /* 			 GST_STATE_TARGET(GST_ELEMENT_PARENT(writer->qserial_))); */
-  /* gst_element_set_state (writer->serializer_, */
-  /* 			 GST_STATE_TARGET(GST_ELEMENT_PARENT(writer->serializer_))); */
-  /* gst_element_set_state (writer->shmsink_, */
-  /* 			 GST_STATE_TARGET(GST_ELEMENT_PARENT(writer->shmsink_))); */
+  g_debug ("base writer: manual state sync");
+  gst_element_set_state (writer->qserial_,GST_STATE_TARGET (parent));
+  gst_element_set_state (writer->serializer_,GST_STATE_TARGET (parent));
+  gst_element_set_state (writer->shmsink_,GST_STATE_TARGET (parent));
+  return;//parent is already doing something
 }
 
 gboolean
@@ -370,10 +354,6 @@ shmdata_base_writer_plug (shmdata_base_writer_t *writer,
     }
   writer->parent_bin_ = pipeline;
 
-  //following is required in order to avoid occasionnal blocking when invoking gst_element_sync_with_parent 
-  //on the parent bin 
-  g_object_set (G_OBJECT ( writer->parent_bin_), "async-handling", TRUE, NULL);
-
   if (writer->socket_path_ == NULL) 
         g_critical ("cannot start when socket path has not been set");
 
@@ -397,10 +377,6 @@ shmdata_base_writer_plug_pad (shmdata_base_writer_t * writer,
       return;
     }
   writer->parent_bin_ = pipeline; //TODO get rid of the pipeline arg ?
-
-  //following is required in order to avoid occasionnal blocking when invoking gst_element_sync_with_parent 
-  //on the parent bin 
-  g_object_set (G_OBJECT ( writer->parent_bin_), "async-handling", TRUE, NULL);
 
   if (writer->socket_path_ == NULL) 
     g_critical ("cannot start when socket path has not been set");
