@@ -33,8 +33,7 @@ namespace switcher
     
     //set the name before registering properties
     set_name (gst_element_get_name (pulse_sink_));
-    g_object_set (G_OBJECT (pulse_sink_), "sync", FALSE, NULL);
-
+    
     set_sink_element (pulse_sink_);
     return true;
   }
