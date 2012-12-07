@@ -124,17 +124,8 @@ namespace switcher
       	(*it)->start ();
       }
     
-    //warning, gst_element_sync_state_with_parent is not working when parent element is pending  
-    //so before invoking, waiting an infinite amount of time for the parent element to finish 
-    //possible state change
-      // if (GST_STATE_TARGET(runtime_->get_pipeline ()) != GST_STATE(runtime_->get_pipeline ()))
-      //   {
-      // 	g_debug ("Segment::set_runtime waiting for parent to finish state change");
-      // 	gst_element_get_state (runtime_->get_pipeline (), NULL, NULL, GST_CLOCK_TIME_NONE);
-      //   }
     GstUtils::wait_state_changed (runtime_->get_pipeline ());
-    gst_element_sync_state_with_parent (bin_);
-    //gst_element_get_state (bin_, NULL, NULL, GST_CLOCK_TIME_NONE);
+    GstUtils::sync_state_with_parent (bin_);
   }
   
   GstElement *

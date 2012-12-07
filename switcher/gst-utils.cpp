@@ -150,4 +150,24 @@ namespace switcher
     return;
   }
 
+  void
+  GstUtils::sync_state_with_parent (GstElement *element)
+  {
+    if (!GST_IS_ELEMENT (element))
+      {
+	g_debug ("GstUtils::sync_state_with_parent, arg is not an element");
+	return;
+      }
+    
+    GstElement *parent = GST_ELEMENT (gst_element_get_parent (element));
+    if (GST_IS_ELEMENT (parent))
+      {
+	if (GST_STATE (parent) != GST_STATE_TARGET (parent))
+	  gst_element_set_state (element, GST_STATE_TARGET (parent));
+	else
+	  gst_element_sync_state_with_parent (parent);
+      }
+    else
+      g_warning ("GstUtils::sync_state_with_parent, cannot sync an orphan element");
+  }
 }

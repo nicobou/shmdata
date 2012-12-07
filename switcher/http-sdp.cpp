@@ -92,8 +92,7 @@ namespace switcher
 
     gst_bin_add (GST_BIN (context->bin_), identity);
     GstUtils::link_static_to_request (pad, identity);
-    gst_element_sync_state_with_parent (identity);
-
+    GstUtils::sync_state_with_parent (identity);
     
     //giving a name to the stream
     gchar **padname_splitted = g_strsplit_set (padname, "/",-1);
@@ -138,8 +137,8 @@ namespace switcher
     g_object_set (G_OBJECT (souphttpsrc_), "location", uri.c_str (), NULL);  
     gst_bin_add_many (GST_BIN (bin_), souphttpsrc_, sdpdemux_, NULL);
     gst_element_link (souphttpsrc_,sdpdemux_);
-    gst_element_sync_state_with_parent (souphttpsrc_);
-    gst_element_sync_state_with_parent (sdpdemux_);
+    GstUtils::sync_state_with_parent (souphttpsrc_);
+    GstUtils::sync_state_with_parent (sdpdemux_);
     g_debug ("to_shmdata end");
     return true;
   }

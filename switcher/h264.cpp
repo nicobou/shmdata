@@ -18,6 +18,7 @@
  */
 
 #include "switcher/h264.h"
+#include "switcher/gst-utils.h"
 
 namespace switcher
 {
@@ -61,8 +62,6 @@ namespace switcher
 
     caller->set_sink_element (context->h264bin_);
     gst_bin_add (GST_BIN (context->bin_), context->h264bin_);
-    gst_element_sync_state_with_parent (context->bin_);
-    gst_element_sync_state_with_parent (context->h264bin_);
 
     GstElement *colorspace = gst_element_factory_make ("ffmpegcolorspace",NULL);
 
@@ -74,8 +73,7 @@ namespace switcher
 			   context->h264enc_,
 			   NULL);
     
-    gst_element_sync_state_with_parent (colorspace);
-    gst_element_sync_state_with_parent (context->h264enc_);
+    GstUtils::sync_state_with_parent (context->h264bin_);
 
     GstPad *sink_pad = gst_element_get_static_pad (colorspace, "sink");
     GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);

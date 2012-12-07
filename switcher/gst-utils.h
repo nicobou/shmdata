@@ -35,6 +35,7 @@ namespace switcher
     static void unlink_pad (GstPad * pad);
     static void clean_element (GstElement *element);
     static void wait_state_changed (GstElement *bin);
+    static void sync_state_with_parent (GstElement *element);
   };
 
 }  // end of namespace

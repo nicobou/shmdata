@@ -18,6 +18,7 @@
  */
 
 #include "switcher/udpsink.h"
+#include "switcher/gst-utils.h"
 
 namespace switcher
 {
@@ -135,17 +136,16 @@ namespace switcher
     
     caller->set_sink_element (context->udpsink_bin_);
     gst_bin_add (GST_BIN (context->bin_), context->udpsink_bin_);
-    gst_element_sync_state_with_parent (context->bin_);
-    gst_element_sync_state_with_parent (context->udpsink_bin_);
-
+    
+    
     gst_bin_add_many (GST_BIN (context->udpsink_bin_),
 		      context->typefind_,
 		      context->udpsink_,
 		      NULL);
     gst_element_link (context->typefind_,
      		      context->udpsink_);
-    gst_element_sync_state_with_parent (context->typefind_);
-    gst_element_sync_state_with_parent (context->udpsink_);
+    
+    GstUtils::sync_state_with_parent (context->udpsink_bin_);
     
     GstPad *sink_pad = gst_element_get_static_pad (context->typefind_, "sink");
     context->ghost_sinkpad_ = gst_ghost_pad_new (NULL, sink_pad);

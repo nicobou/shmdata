@@ -21,6 +21,7 @@
 #include <sstream>
 #include <gst/sdp/gstsdpmessage.h>
 #include <glib/gstdio.h> //writing sdp file
+#include "switcher/gst-utils.h"
 
 namespace switcher
 {
@@ -286,7 +287,7 @@ namespace switcher
     /* add capture and payloading to the pipeline and link */
     gst_bin_add_many (GST_BIN (context->bin_), pay, NULL);
     gst_element_link (typefind, pay);
-    gst_element_sync_state_with_parent (pay);
+    GstUtils::sync_state_with_parent (pay);
     
     /* now link all to the rtpbin, start by getting an RTP sinkpad for session "%d" */
     GstPad *srcpad, *sinkpad;
@@ -340,7 +341,7 @@ namespace switcher
     // link it to a funnel for future linking with network connections
     GstElement *funnel = gst_element_factory_make ("funnel", NULL);
     gst_bin_add (GST_BIN (context->bin_), funnel);
-    gst_element_sync_state_with_parent (funnel);
+    GstUtils::sync_state_with_parent (funnel);
     GstPad *funnel_src_pad = gst_element_get_static_pad (funnel, "src");
     gchar *rtcp_sink_pad_name = g_strconcat ("recv_rtcp_sink_", rtp_session_id,NULL); 
     GstPad *rtcp_sink_pad = gst_element_get_request_pad (context->rtpsession_, rtcp_sink_pad_name);
@@ -370,8 +371,8 @@ namespace switcher
     g_signal_connect (typefind, "have-type", G_CALLBACK (RtpSession::make_data_stream_available), context);
     gst_bin_add_many (GST_BIN (context->bin_), funnel, typefind, NULL);
     gst_element_link (funnel, typefind);
-    gst_element_sync_state_with_parent (funnel);
-    gst_element_sync_state_with_parent (typefind);
+    GstUtils::sync_state_with_parent (funnel);
+    GstUtils::sync_state_with_parent (typefind);
     caller->set_sink_element (funnel);
     caller->add_element_to_cleaner (funnel);
     caller->add_element_to_cleaner (typefind);
@@ -526,7 +527,7 @@ namespace switcher
     //  dest->add_element_to_cleaner (udpsrc);
     //  g_object_set (G_OBJECT (udpsrc), "port", rtp_port + 5, NULL);
     //  gst_bin_add (GST_BIN (bin_), udpsrc);
-    //  gst_element_sync_state_with_parent (udpsrc);
+    //  GstUtils::sync_state_with_parent (udpsrc);
     //  if (!gst_element_link (udpsrc, funnel))
     //    g_debug ("udpsrc and funnel link failled in rtp-session");
 

@@ -32,10 +32,7 @@ namespace switcher
   public:
     typedef std::shared_ptr<BaseSource> ptr;
     BaseSource ();
-    
-  /* protected: */
-  /*   ShmdataWriter::ptr default_writer_;//FIXME rename into default_writer_ */
-    
+ 
   };
 
 }  // end of namespace

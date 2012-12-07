@@ -58,7 +58,7 @@ namespace switcher
 
     // if (GST_IS_ELEMENT (queue_))
     //   {
-    // 	gst_element_set_state (queue_, GST_STATE_NULL);
+    // 	gst_element_set_state (queue_, GST_STAT_NULL);
     // 	gst_bin_remove (GST_BIN (gst_element_get_parent (queue_)), queue_);
     //   }
 
@@ -108,18 +108,10 @@ namespace switcher
 
     gst_element_link_filtered (source_element, tee_, caps);
     gst_element_link_many (tee_, queue_, fakesink_,NULL);
-    if (GST_STATE (bin) != GST_STATE_TARGET (bin))
-      {
-	gst_element_set_state (tee_, GST_STATE_TARGET (bin));
-	gst_element_set_state (queue_, GST_STATE_TARGET (bin));
-	gst_element_set_state (fakesink_, GST_STATE_TARGET (bin));
-      }
-    else
-      {
-	gst_element_sync_state_with_parent (tee_);
-	gst_element_sync_state_with_parent (queue_);
-	gst_element_sync_state_with_parent (fakesink_);
-      }
+
+    GstUtils::sync_state_with_parent (tee_);
+    GstUtils::sync_state_with_parent (queue_);
+    GstUtils::sync_state_with_parent (fakesink_);
     g_debug ("shmdata writer plugged (%s)",path_.c_str());
   }
 
@@ -140,12 +132,11 @@ namespace switcher
        g_error ("ShmdataWriter: failed to link with tee");
      gst_object_unref (sinkpad);
      gst_element_link_many (tee_, queue_, fakesink_,NULL);
-
-     gst_element_sync_state_with_parent (tee_);
-     gst_element_sync_state_with_parent (queue_);
-     gst_element_sync_state_with_parent (fakesink_);
+     
+     GstUtils::sync_state_with_parent (tee_);
+     GstUtils::sync_state_with_parent (queue_);
+     GstUtils::sync_state_with_parent (fakesink_);
      g_debug ("shmdata writer pad plugged (%s)",path_.c_str());
-
   }
 
 }

@@ -194,9 +194,9 @@ namespace switcher
       gst_bin_add (GST_BIN (reader->bin_), reader->funnel_);
       gst_element_link (reader->funnel_, reader->sink_element_);
 
-      gst_element_sync_state_with_parent (reader->sink_element_);
-      gst_element_sync_state_with_parent (reader->funnel_);
-      gst_element_sync_state_with_parent (reader->bin_);
+      GstUtils::sync_state_with_parent (reader->sink_element_);
+      GstUtils::sync_state_with_parent (reader->funnel_);
+      GstUtils::sync_state_with_parent (reader->bin_);
 
       shmdata_base_reader_set_sink (context, reader->funnel_);
   }

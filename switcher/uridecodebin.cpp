@@ -133,8 +133,7 @@ namespace switcher
 
     gst_bin_add (GST_BIN (context->bin_), identity);
     GstUtils::link_static_to_request (pad, identity);
-    //gst_element_sync_state_with_parent (identity);
-    gst_element_set_state (identity, GST_STATE_TARGET (context->bin_));
+    GstUtils::sync_state_with_parent (identity);
 
     //giving a name to the stream
     gchar **padname_splitted = g_strsplit_set (padname, "/",-1);
@@ -187,7 +186,7 @@ namespace switcher
     g_object_set (G_OBJECT (uridecodebin_), "uri", uri.c_str (), NULL); 
 
     gst_bin_add (GST_BIN (bin_), uridecodebin_);
-    gst_element_sync_state_with_parent (uridecodebin_);
+    GstUtils::sync_state_with_parent (uridecodebin_);
     return true;
   }
 

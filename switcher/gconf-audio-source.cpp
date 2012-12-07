@@ -43,7 +43,7 @@ namespace switcher
 
     g_mutex_lock (context->data_mutex_);
 
-    context->gconfaudiosource_ = gst_element_factory_make ("gconfaudiosrc",NULL);
+    context->gconfaudiosource_ = gst_element_factory_make ("gconfaudiosrc", NULL);
     //set the name
     context->set_name (gst_element_get_name (context->gconfaudiosource_));
     context->set_raw_audio_element (context->gconfaudiosource_);
