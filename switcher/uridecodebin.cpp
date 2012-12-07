@@ -31,6 +31,7 @@ namespace switcher
   Uridecodebin::init() 
   { 
     media_counter_ = 0;
+    main_pad_ = NULL;
     uridecodebin_ = gst_element_factory_make ("uridecodebin",NULL);   
     //set the name before registering properties
     set_name (gst_element_get_name (uridecodebin_));
@@ -83,14 +84,15 @@ namespace switcher
     //  		    "drained",  
     //  		    (GCallback) uridecodebin_drained_cb ,  
     //  		    (gpointer) this);      
-    g_object_set (G_OBJECT (uridecodebin_),  
-     		  //"ring-buffer-max-size",(guint64)200000000, 
-     		  //"download",TRUE, 
-                  //"use-buffering",TRUE, 
-    // 		  "expose-all-streams", TRUE,
-    		  "async-handling",TRUE, 
-    // 		  //"buffer-duration",9223372036854775807, 
-		  NULL); 
+
+     g_object_set (G_OBJECT (uridecodebin_),  
+      		  "ring-buffer-max-size",(guint64)200000000, 
+      		  "download",TRUE, 
+                   "use-buffering",TRUE, 
+      		  "expose-all-streams", TRUE,
+     		  "async-handling",FALSE, 
+      		  "buffer-duration",9223372036854775807, 
+     		  NULL); 
 
    
     //registering add_data_stream
@@ -119,21 +121,109 @@ namespace switcher
     // Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   }
 
+ 
+  gboolean
+  Uridecodebin::rewind (gpointer user_data)
+  {
+    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+
+    GstQuery *query;
+    gboolean res;
+    query = gst_query_new_segment (GST_FORMAT_TIME);
+    res = gst_element_query (context->runtime_->get_pipeline (), query);
+    gdouble rate = -2.0;
+    gint64 start_value = -2.0;
+    gint64 stop_value = -2.0;
+    if (res) {
+      gst_query_parse_segment (query, &rate, NULL, &start_value, &stop_value);
+      // g_print ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n", 
+      // 	       rate,
+      // 	       GST_TIME_ARGS (start_value),
+      // 	       GST_TIME_ARGS (stop_value));
+    }
+    else {
+      g_debug ("duration query failed...");
+    }
+    gst_query_unref (query);
+    
+    gboolean ret;
+    ret = gst_element_seek (GST_ELEMENT (gst_pad_get_parent (context->main_pad_)),
+			    rate,  
+			    GST_FORMAT_TIME,  
+			    (GstSeekFlags) (GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE), 
+			    //| GST_SEEK_FLAG_SKIP 
+			    //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization 
+			    GST_SEEK_TYPE_SET,  
+			    0.0 * GST_SECOND,  
+			    GST_SEEK_TYPE_NONE,  
+			    GST_CLOCK_TIME_NONE);  
+    if (!ret)
+      g_warning ("looping error\n");
+   
+    g_debug ("finish looping");
+    return FALSE;
+  }
+
+  gboolean
+  Uridecodebin::event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data)
+  {
+    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+    if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) { 
+      //g_print ("EOS caught and disabled \n");
+      // g_print ("----- pad with EOS %s:%s, src: %p %s\n",
+      // 	       GST_DEBUG_PAD_NAME (pad),GST_EVENT_SRC(event), gst_element_get_name (GST_EVENT_SRC(event)));
+
+      if (pad == context->main_pad_)
+	{
+	  //g_print ("main pad !@! \n");
+	  g_idle_add ((GSourceFunc) rewind,   
+	  	    (gpointer)context);   
+	}
+      return FALSE;
+    }  
+
+    if (GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_START || 
+	GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_STOP /*||
+	GST_EVENT_TYPE (event) == GST_EVENT_LATENCY */) 
+      {
+	return FALSE;
+      }
+    
+    //g_print ("event probed (%s)\n", GST_EVENT_TYPE_NAME(event));
+    
+
+    return TRUE; 
+  }
 
   void 
   Uridecodebin::uridecodebin_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data)   
   {   
     Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
     
+ 
     const gchar *padname= gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
     g_debug ("uridecodebin new pad name is %s\n",padname);
     
     GstElement *identity = gst_element_factory_make ("identity",NULL);
-    g_object_set (identity, "sync", TRUE, NULL);
+    g_object_set (identity, 
+		  "sync", TRUE, 
+		  "single-segment", TRUE,
+		  NULL);
+    GstElement *funnel = gst_element_factory_make ("funnel",NULL);
 
-    gst_bin_add (GST_BIN (context->bin_), identity);
-    GstUtils::link_static_to_request (pad, identity);
+    gst_bin_add_many (GST_BIN (context->bin_), identity, funnel, NULL);
+    GstUtils::link_static_to_request (pad, funnel);
+    gst_element_link (funnel, identity);
     GstUtils::sync_state_with_parent (identity);
+    GstUtils::sync_state_with_parent (funnel);
+    
+
+    //probing eos   
+    GstPad *srcpad = gst_element_get_static_pad (funnel, "src");
+    if (context->main_pad_ == NULL)
+      context->main_pad_ = srcpad;//saving first pad for looping
+    gst_pad_add_event_probe (srcpad, (GCallback) event_probe_cb, context);   
+    gst_object_unref (srcpad);
 
     //giving a name to the stream
     gchar **padname_splitted = g_strsplit_set (padname, "/",-1);

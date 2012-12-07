@@ -70,11 +70,6 @@ namespace switcher
 	  }
 	
 	GstUtils::clean_element (bin_);
-	// g_debug ("Segment::~Segment set bin_ state to NULL");
-	// if (GST_STATE_TARGET (bin_) != GST_STATE_NULL)
-	//   gst_element_set_state (bin_, GST_STATE_NULL);
-	// if (GST_IS_BIN (GST_ELEMENT_PARENT (bin_)))
-	//   gst_bin_remove (GST_BIN (GST_ELEMENT_PARENT (bin_)), bin_);
       }
     g_debug ("Segment::~Segment end");
   }
@@ -123,8 +118,8 @@ namespace switcher
       {
       	(*it)->start ();
       }
-    
-    GstUtils::wait_state_changed (runtime_->get_pipeline ());
+
+    //GstUtils::wait_state_changed (runtime_->get_pipeline ());
     GstUtils::sync_state_with_parent (bin_);
     g_debug ("Segment::set_runtime (done)");
   }

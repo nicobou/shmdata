@@ -109,8 +109,8 @@ namespace switcher
   {
     if (element != NULL && GST_IS_ELEMENT (element))
       {
-	if (GST_IS_BIN (gst_element_get_parent (element)))
-	  GstUtils::wait_state_changed (GST_ELEMENT (gst_element_get_parent (element)));
+	// if (GST_IS_BIN (gst_element_get_parent (element)))
+	//   GstUtils::wait_state_changed (GST_ELEMENT (gst_element_get_parent (element)));
 	
 	GstIterator *pad_iter;
 	pad_iter = gst_element_iterate_pads (element);

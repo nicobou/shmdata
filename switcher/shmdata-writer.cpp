@@ -38,36 +38,6 @@ namespace switcher
     GstUtils::clean_element (queue_);
     GstUtils::clean_element (fakesink_);
     
-    // //cleaning tee_, queue_, fakesink_
-    // if (GST_IS_ELEMENT (tee_))
-    //   {
-    // 	gst_element_set_state (tee_, GST_STATE_NULL);
-    // 	GstPad *sinkpad = gst_element_get_static_pad (tee_,"sink");
-    // 	GstPad *peer;
-    // 	if ((peer = gst_pad_get_peer (sinkpad))) 
-    // 	  {
-    // 	    gst_pad_unlink (peer, sinkpad);
-    // 	    GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);//TODO check if must be unrefed for GST 1
-    // 	    if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
-    // 	      gst_element_release_request_pad (gst_pad_get_parent_element(peer), peer);
-    // 	    gst_object_unref (peer);
-    // 	  }
-    // 	gst_object_unref (sinkpad);
-    // 	gst_bin_remove (GST_BIN (gst_element_get_parent (tee_)), tee_);
-    //   }
-
-    // if (GST_IS_ELEMENT (queue_))
-    //   {
-    // 	gst_element_set_state (queue_, GST_STAT_NULL);
-    // 	gst_bin_remove (GST_BIN (gst_element_get_parent (queue_)), queue_);
-    //   }
-
-    // if (GST_IS_ELEMENT (fakesink_))
-    //   {
-    // 	gst_element_set_state (fakesink_, GST_STATE_NULL);
-    // 	gst_bin_remove (GST_BIN (gst_element_get_parent (fakesink_)), fakesink_);
-    //   }
-
     g_debug ("ShmdataWriter: %s deleted", path_.c_str());
   }
   
