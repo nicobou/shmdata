@@ -159,13 +159,13 @@ namespace switcher
 	return;
       }
     
-    GstElement *parent = GST_ELEMENT (gst_element_get_parent (element));
+    GstElement *parent = GST_ELEMENT (GST_ELEMENT_PARENT (element));
     if (GST_IS_ELEMENT (parent))
       {
 	if (GST_STATE (parent) != GST_STATE_TARGET (parent))
-	  gst_element_set_state (element, GST_STATE_TARGET (parent));
+	    gst_element_set_state (element, GST_STATE_TARGET (parent));
 	else
-	  gst_element_sync_state_with_parent (parent);
+	    gst_element_sync_state_with_parent (element);
       }
     else
       g_warning ("GstUtils::sync_state_with_parent, cannot sync an orphan element");
