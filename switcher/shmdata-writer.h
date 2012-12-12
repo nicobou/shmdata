@@ -41,6 +41,7 @@ namespace switcher
   private:
     std::string path_;
     shmdata_base_writer_t *writer_;
+    GstElement *bin_;
     GstElement *tee_;
     GstElement *queue_;
     GstElement *fakesink_;

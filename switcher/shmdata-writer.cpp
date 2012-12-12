@@ -37,7 +37,7 @@ namespace switcher
     GstUtils::clean_element (tee_);
     GstUtils::clean_element (queue_);
     GstUtils::clean_element (fakesink_);
-    
+
     g_debug ("ShmdataWriter: %s deleted", path_.c_str());
   }
   
@@ -67,6 +67,7 @@ namespace switcher
   ShmdataWriter::plug (GstElement *bin, GstElement *source_element, GstCaps *caps)
   {
     g_debug ("ShmdataWriter::plug (source element)");
+    bin_ = bin;
     tee_ = gst_element_factory_make ("tee", NULL);
     queue_ = gst_element_factory_make ("queue", NULL); 
     fakesink_ = gst_element_factory_make ("fakesink", NULL); 
@@ -88,25 +89,26 @@ namespace switcher
   void 
   ShmdataWriter::plug (GstElement *bin, GstPad *source_pad)
   {
-     tee_ = gst_element_factory_make ("tee", NULL);
-     queue_ = gst_element_factory_make ("queue", NULL); 
-     fakesink_ = gst_element_factory_make ("fakesink", NULL); 
-     g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
-
-     gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
-
-     shmdata_base_writer_plug (writer_, bin, tee_);
-
-     GstPad *sinkpad = gst_element_get_static_pad (tee_, "sink");
-     if (gst_pad_link (source_pad, sinkpad) != GST_PAD_LINK_OK)
-       g_error ("ShmdataWriter: failed to link with tee");
-     gst_object_unref (sinkpad);
-     gst_element_link_many (tee_, queue_, fakesink_,NULL);
-     
-     GstUtils::sync_state_with_parent (tee_);
-     GstUtils::sync_state_with_parent (queue_);
-     GstUtils::sync_state_with_parent (fakesink_);
-     g_debug ("shmdata writer pad plugged (%s)",path_.c_str());
+    bin_ = bin;
+    tee_ = gst_element_factory_make ("tee", NULL);
+    queue_ = gst_element_factory_make ("queue", NULL); 
+    fakesink_ = gst_element_factory_make ("fakesink", NULL); 
+    g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
+    
+    gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
+    
+    shmdata_base_writer_plug (writer_, bin, tee_);
+    
+    GstPad *sinkpad = gst_element_get_static_pad (tee_, "sink");
+    if (gst_pad_link (source_pad, sinkpad) != GST_PAD_LINK_OK)
+      g_error ("ShmdataWriter: failed to link with tee");
+    gst_object_unref (sinkpad);
+    gst_element_link_many (tee_, queue_, fakesink_,NULL);
+    
+    GstUtils::sync_state_with_parent (tee_);
+    GstUtils::sync_state_with_parent (queue_);
+    GstUtils::sync_state_with_parent (fakesink_);
+    g_debug ("shmdata writer pad plugged (%s)",path_.c_str());
   }
 
 }
