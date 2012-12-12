@@ -44,10 +44,7 @@ namespace switcher
   Segment::~Segment()
   {
     g_debug ("Segment::~Segment begin");
-    shmdata_readers_.clear ();
-    //g_debug ("Segment::~Segment shmdata readers cleared");
-    shmdata_writers_.clear ();
-    //g_debug ("Segment::~Segment shmdata writers cleared");
+    GstUtils::wait_state_changed (bin_);
     
     if (GST_IS_ELEMENT (bin_))
       {
@@ -71,7 +68,14 @@ namespace switcher
 	
 	GstUtils::clean_element (bin_);
       }
-    g_debug ("Segment::~Segment end");
+    
+    shmdata_readers_.clear ();
+    //g_debug ("Segment::~Segment shmdata readers cleared");
+    shmdata_writers_.clear ();
+    //g_debug ("Segment::~Segment shmdata writers cleared");
+ 
+
+   g_debug ("Segment::~Segment end");
   }
   
   
