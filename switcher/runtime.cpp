@@ -42,6 +42,8 @@ namespace switcher
     gst_object_unref (bus); 
     
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
+    GstUtils::wait_state_changed (pipeline_);
+
     return true;
   }
   

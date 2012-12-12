@@ -44,11 +44,7 @@ namespace switcher
       }
 
     //removing rtpsession
-    gst_element_set_state (rtpsession_, GST_STATE_NULL);
-    GstObject *parent = gst_element_get_parent (rtpsession_);
-    if (GST_IS_BIN (parent))
-      gst_bin_remove (GST_BIN (parent), rtpsession_);
-
+    GstUtils::clean_element (rtpsession_);
     g_debug ("rtpsession deleted");
 
   }
@@ -57,6 +53,8 @@ namespace switcher
   RtpSession::init ()
   {
     next_id_ = 79; //this value is arbitrary and can be changed
+
+    g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
 
     rtpsession_ = gst_element_factory_make ("gstrtpbin",NULL);
 
@@ -88,7 +86,7 @@ namespace switcher
 		      (GCallback) on_no_more_pad, (gpointer) this);
 
     gst_bin_add (GST_BIN (bin_), rtpsession_);
-
+    GstUtils::sync_state_with_parent (rtpsession_);
 
     //registering add_data_stream
     register_method("add_data_stream",
@@ -267,6 +265,8 @@ namespace switcher
 					  gpointer user_data)
   {
     RtpSession *context = static_cast<RtpSession *>(user_data);
+
+    GstUtils::wait_state_changed (context->bin_);
     
     GstElement *pay;
     GList *list = gst_registry_feature_filter (gst_registry_get_default (),
@@ -287,6 +287,7 @@ namespace switcher
     /* add capture and payloading to the pipeline and link */
     gst_bin_add_many (GST_BIN (context->bin_), pay, NULL);
     gst_element_link (typefind, pay);
+    GstUtils::wait_state_changed (context->bin_);
     GstUtils::sync_state_with_parent (pay);
     
     /* now link all to the rtpbin, start by getting an RTP sinkpad for session "%d" */
@@ -321,6 +322,7 @@ namespace switcher
     rtp_writer.reset (new ShmdataWriter ());
     std::string rtp_writer_name = context->make_file_name ("send_rtp_src_"+internal_session_id); 
     rtp_writer->set_path (rtp_writer_name.c_str ());
+    GstUtils::wait_state_changed (context->bin_);
     rtp_writer->plug (context->bin_, rtp_src_pad);
     context->internal_shmdata_writers_.insert (rtp_writer_name, rtp_writer);
     g_free (rtp_src_pad_name);
@@ -333,6 +335,7 @@ namespace switcher
     rtcp_writer.reset (new ShmdataWriter ());
     std::string rtcp_writer_name = context->make_file_name ("send_rtcp_src_"+internal_session_id); 
     rtcp_writer->set_path (rtcp_writer_name.c_str());
+    GstUtils::wait_state_changed (context->bin_);
     rtcp_writer->plug (context->bin_, rtcp_src_pad);
     context->internal_shmdata_writers_.insert (rtcp_writer_name, rtcp_writer);
     g_free (rtcp_src_pad_name);
@@ -341,6 +344,7 @@ namespace switcher
     // link it to a funnel for future linking with network connections
     GstElement *funnel = gst_element_factory_make ("funnel", NULL);
     gst_bin_add (GST_BIN (context->bin_), funnel);
+    GstUtils::wait_state_changed (context->bin_);
     GstUtils::sync_state_with_parent (funnel);
     GstPad *funnel_src_pad = gst_element_get_static_pad (funnel, "src");
     gchar *rtcp_sink_pad_name = g_strconcat ("recv_rtcp_sink_", rtp_session_id,NULL); 
@@ -598,15 +602,21 @@ namespace switcher
     reader.reset (new ShmdataReader ());
     reader->set_path (shmdata_socket_path.c_str());
     reader->set_bin (bin_);
+
     reader->set_on_first_data_hook (attach_data_stream, this);
     if (runtime_) // starting the reader if runtime is set
-      reader->start ();
+      {
+	GstUtils::wait_state_changed (bin_);
+	reader->start ();
+      }
+
     //saving info about this local stream
     std::ostringstream os_id;
     os_id << next_id_;
     next_id_++;
     internal_id_.insert (shmdata_socket_path, os_id.str());
     shmdata_readers_.insert (shmdata_socket_path, reader);
+
     return true;
   }  
 

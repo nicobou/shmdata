@@ -30,6 +30,7 @@ namespace switcher
   UDPSink::init ()
   {
     udpsink_bin_ = gst_element_factory_make ("bin",NULL);
+    g_object_set (G_OBJECT (udpsink_bin_), "async-handling", TRUE, NULL);
     typefind_ =  gst_element_factory_make ("typefind",NULL);
     udpsink_ = gst_element_factory_make ("multiudpsink",NULL);
     ghost_sinkpad_ = NULL;
@@ -115,16 +116,21 @@ namespace switcher
 	gst_pad_set_active(ghost_sinkpad_,FALSE);
 	gst_element_remove_pad (udpsink_bin_, ghost_sinkpad_);
       }
-    gst_element_set_state (typefind_, GST_STATE_NULL);
 
-    gst_element_set_state (udpsink_, GST_STATE_NULL);
-    if (GST_IS_BIN (gst_element_get_parent (typefind_)))
-      gst_bin_remove (GST_BIN (udpsink_bin_), typefind_);
-    if (GST_IS_BIN (gst_element_get_parent (udpsink_)))
-      gst_bin_remove (GST_BIN (udpsink_bin_), udpsink_);
-    gst_element_set_state (udpsink_bin_, GST_STATE_NULL);
-    if (GST_IS_BIN (GST_ELEMENT_PARENT (udpsink_bin_)))
-      gst_bin_remove (GST_BIN (GST_ELEMENT_PARENT (udpsink_bin_)), udpsink_bin_);
+    GstUtils::clean_element (typefind_);
+    GstUtils::clean_element (udpsink_);
+    GstUtils::clean_element (udpsink_bin_);
+    
+      // gst_element_set_state (typefind_, GST_STATE_NULL);
+
+    // gst_element_set_state (udpsink_, GST_STATE_NULL);
+    // if (GST_IS_BIN (gst_element_get_parent (typefind_)))
+    //   gst_bin_remove (GST_BIN (udpsink_bin_), typefind_);
+    // if (GST_IS_BIN (gst_element_get_parent (udpsink_)))
+    //   gst_bin_remove (GST_BIN (udpsink_bin_), udpsink_);
+    // gst_element_set_state (udpsink_bin_, GST_STATE_NULL);
+    // if (GST_IS_BIN (GST_ELEMENT_PARENT (udpsink_bin_)))
+    //   gst_bin_remove (GST_BIN (GST_ELEMENT_PARENT (udpsink_bin_)), udpsink_bin_);
    
   }
   
@@ -145,6 +151,7 @@ namespace switcher
     gst_element_link (context->typefind_,
      		      context->udpsink_);
     
+    GstUtils::wait_state_changed (context->udpsink_bin_);
     GstUtils::sync_state_with_parent (context->udpsink_bin_);
     
     GstPad *sink_pad = gst_element_get_static_pad (context->typefind_, "sink");

@@ -193,7 +193,7 @@ namespace switcher
       reader->funnel_ = gst_element_factory_make ("funnel", NULL);
       gst_bin_add (GST_BIN (reader->bin_), reader->funnel_);
       gst_element_link (reader->funnel_, reader->sink_element_);
-
+      
       GstUtils::sync_state_with_parent (reader->sink_element_);
       GstUtils::sync_state_with_parent (reader->funnel_);
       GstUtils::sync_state_with_parent (reader->bin_);

@@ -121,6 +121,8 @@ namespace switcher
 
     //GstUtils::wait_state_changed (runtime_->get_pipeline ());
     GstUtils::sync_state_with_parent (bin_);
+    GstUtils::wait_state_changed (bin_);
+
     g_debug ("Segment::set_runtime (done)");
   }
   
