@@ -10,7 +10,6 @@ AM_LIBS = \
 
 lib_LTLIBRARIES = \
     libshmdata-@LIBSHMDATA_API_VERSION@.la \
-    libshmdata-osg-@LIBSHMDATA_API_VERSION@.la \
     libshmdata-any-@LIBSHMDATA_API_VERSION@.la 
 
 ## base library
@@ -31,7 +30,12 @@ libshmdata_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
     base-reader.h \
     base-writer.h
 
+
 ## openscenegraph library
+if HAVE_OPENSCENEGRAPH
+lib_LTLIBRARIES += \
+    libshmdata-osg-@LIBSHMDATA_API_VERSION@.la 
+
 libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
     osg-reader.h \
     osg-reader.cpp \
@@ -57,6 +61,8 @@ libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_includedir = \
 
 libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_include_HEADERS = \
     osg-reader.h 
+
+endif
 
 ## any data library
 libshmdata_any_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
