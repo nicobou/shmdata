@@ -41,13 +41,29 @@ namespace switcher
    GstElement *uridecodebin_;
    int media_counter_;
    GstPad *main_pad_;
+   GstCaps *rtpgstcaps_;
    static void uridecodebin_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
    static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);
    static void no_more_pads_cb (GstElement* object, gpointer user_data);
    static void source_setup_cb (GstElement *uridecodebin, GstElement *source, gpointer user_data);
    static gboolean event_probe_cb (GstPad *pad, GstEvent * event, gpointer data);
    static gboolean rewind (gpointer user_data);
-
+   static void unknown_type_cb (GstElement *bin, GstPad *pad, GstCaps *caps, gpointer user_data);
+   static int autoplug_select_cb (GstElement *bin, 
+				  GstPad *pad, 
+				  GstCaps *caps, 
+				  GstElementFactory *factory, 
+				  gpointer user_data);
+   void pad_to_shmdata_writer (GstElement *bin, GstPad *pad);
+   /* static GValueArray *autoplug_sort_cb (GstElement *bin, */
+   /* 					 GstPad *pad, */
+   /* 					 GstCaps *caps, */
+   /* 					 GValueArray *factories, */
+   /* 					 gpointer user_data); */
+   /* static GValueArray *autoplug_factory_cb (GstElement *bin, */
+   /* 					    GstPad *pad, */
+   /* 					    GstCaps *caps, */
+   /* 					    gpointer user_data); */
   };
 
 }  // end of namespace

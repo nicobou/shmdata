@@ -32,7 +32,9 @@ namespace switcher
   { 
     media_counter_ = 0;
     main_pad_ = NULL;
-    uridecodebin_ = gst_element_factory_make ("uridecodebin",NULL);   
+    uridecodebin_ = gst_element_factory_make ("uridecodebin",NULL);
+    rtpgstcaps_ = gst_caps_from_string ("application/x-rtp, media=(string)application");
+
     //set the name before registering properties
     set_name (gst_element_get_name (uridecodebin_));
     add_element_to_cleaner (uridecodebin_);
@@ -55,26 +57,26 @@ namespace switcher
     // 		      "pad-removed",  
     // 		      (GCallback) Uridecodebin::pad_removed_cb ,  
     // 		      (gpointer) this);      
-    // g_signal_connect (G_OBJECT (uridecodebin_),  
-    // 		      "unknown-type",  
-    // 		      (GCallback) Uridecodebin::unknown_type_cb ,  
-    // 		      (gpointer) this);      
+    g_signal_connect (G_OBJECT (uridecodebin_),  
+     		      "unknown-type",  
+     		      (GCallback) Uridecodebin::unknown_type_cb ,  
+     		      (gpointer) this);      
     // g_signal_connect (G_OBJECT (uridecodebin_),  
     // 		      "autoplug-continue",  
     // 		      (GCallback) Uridecodebin::autoplug_continue_cb ,  
     // 		      (gpointer) this);      
-    // g_signal_connect (G_OBJECT (uridecodebin_),  
-    // 		      "autoplug-factory",  
-    // 		      (GCallback) Uridecodebin::autoplug_factory_cb ,  
-    // 		      (gpointer) this);      
-    // g_signal_connect (G_OBJECT (uridecodebin_),  
-    // 		      "autoplug-sort",  
-    // 		      (GCallback) Uridecodebin::autoplug_sort_cb ,  
-    // 		      (gpointer) this);      
-    // g_signal_connect (G_OBJECT (uridecodebin_),  
-    // 		      "autoplug-select",  
-    // 		      (GCallback) Uridecodebin::autoplug_select_cb ,  
-    // 		      (gpointer) this);      
+     // g_signal_connect (G_OBJECT (uridecodebin_),  
+     // 		      "autoplug-factory",  
+     // 		      (GCallback) Uridecodebin::autoplug_factory_cb ,  
+     // 		      (gpointer) this);      
+     // g_signal_connect (G_OBJECT (uridecodebin_),  
+     // 		      "autoplug-sort",  
+     // 		      (GCallback) Uridecodebin::autoplug_sort_cb ,  
+     // 		      (gpointer) this);      
+     g_signal_connect (G_OBJECT (uridecodebin_),  
+     		      "autoplug-select",  
+     		      (GCallback) Uridecodebin::autoplug_select_cb ,  
+     		      (gpointer) this);      
     // g_signal_connect (G_OBJECT (uridecodebin_),  
     // 		      "drained",  
     // 		      (GCallback) Uridecodebin::drained_cb ,  
@@ -85,15 +87,15 @@ namespace switcher
     //  		    (GCallback) uridecodebin_drained_cb ,  
     //  		    (gpointer) this);      
 
-     g_object_set (G_OBJECT (uridecodebin_),  
-      		  "ring-buffer-max-size",(guint64)200000000, 
-      		  "download",TRUE, 
-                   "use-buffering",TRUE, 
-      		  "expose-all-streams", TRUE,
-     		  "async-handling",FALSE, 
-      		  "buffer-duration",9223372036854775807, 
-     		  NULL); 
-
+    g_object_set (G_OBJECT (uridecodebin_),  
+       		  // "ring-buffer-max-size",(guint64)200000000, 
+       		  // "download",TRUE, 
+		  // "use-buffering",TRUE, 
+       		  "expose-all-streams", TRUE,
+       		  "async-handling",TRUE, 
+       		  //"buffer-duration",9223372036854775807, 
+       		  NULL); 
+    
    
     //registering add_data_stream
     register_method("to_shmdata",
@@ -121,7 +123,55 @@ namespace switcher
     // Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   }
 
- 
+  void 
+  Uridecodebin::unknown_type_cb (GstElement *bin, 
+				 GstPad *pad, 
+				 GstCaps *caps, 
+				 gpointer user_data)
+  {
+    g_error ("Uridecodebin unknown type: %s (%s)\n", gst_caps_to_string (caps), gst_element_get_name (bin));
+  }
+
+  int 
+  Uridecodebin::autoplug_select_cb (GstElement *bin, 
+				    GstPad *pad, 
+				    GstCaps *caps, 
+				    GstElementFactory *factory, 
+				    gpointer user_data)
+  {
+    g_debug ("uridecodebin autoplug select %s, (factory %s)",  gst_caps_to_string (caps), GST_OBJECT_NAME (factory));
+    //     typedef enum {
+    //   GST_AUTOPLUG_SELECT_TRY,
+    //   GST_AUTOPLUG_SELECT_EXPOSE,
+    //   GST_AUTOPLUG_SELECT_SKIP
+    // } GstAutoplugSelectResult;
+
+    if (g_strcmp0 (GST_OBJECT_NAME (factory), "rtpgstdepay") == 0)
+      return 1; //expose
+    return 0; //try
+  }
+
+  // GValueArray*
+  // Uridecodebin::autoplug_factory_cb (GstElement *bin,
+  // 				     GstPad          *pad,
+  // 				     GstCaps         *caps,
+  // 				     gpointer         user_data)
+  // {
+  //   g_print ("autoplug factory ---------- %s\n",gst_caps_to_string (caps));
+  //   return NULL;
+  // }
+
+  // GValueArray *
+  // Uridecodebin::autoplug_sort_cb (GstElement *bin,
+  // 				  GstPad *pad,
+  // 				  GstCaps *caps,
+  // 				  GValueArray *factories,
+  // 				  gpointer user_data)  
+  // {
+  //   g_print ("sort---------------- bin: %s\n%s\n", gst_element_get_name (bin), gst_caps_to_string (caps)); 
+  //   return g_value_array_copy(factories);
+  // }
+  
   gboolean
   Uridecodebin::rewind (gpointer user_data)
   {
@@ -195,66 +245,97 @@ namespace switcher
     return TRUE; 
   }
 
-  void 
-  Uridecodebin::uridecodebin_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data)   
-  {   
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-    
- 
-    const gchar *padname= gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
+
+  void
+  Uridecodebin::pad_to_shmdata_writer (GstElement *bin, GstPad *pad)
+  {
+
+    const gchar *padname= "truc";//gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
     g_debug ("uridecodebin new pad name is %s\n",padname);
     
     GstElement *identity = gst_element_factory_make ("identity",NULL);
     g_object_set (identity, 
-		  "sync", TRUE, 
-		  "single-segment", TRUE,
-		  NULL);
+     		  "sync", TRUE, 
+     		  "single-segment", TRUE,
+     		  NULL);
     GstElement *funnel = gst_element_factory_make ("funnel",NULL);
-
-    gst_bin_add_many (GST_BIN (context->bin_), identity, funnel, NULL);
+    
+    
+    gst_bin_add_many (GST_BIN (bin), identity, funnel, NULL);
     GstUtils::link_static_to_request (pad, funnel);
     gst_element_link (funnel, identity);
-    GstUtils::sync_state_with_parent (identity);
-    GstUtils::sync_state_with_parent (funnel);
+
+     //GstUtils::wait_state_changed (bin);
+     GstUtils::sync_state_with_parent (identity);
+     GstUtils::sync_state_with_parent (funnel);
     
+     //probing eos   
+     GstPad *srcpad = gst_element_get_static_pad (funnel, "src");
+     if (main_pad_ == NULL)
+       main_pad_ = srcpad;//saving first pad for looping
+     gst_pad_add_event_probe (srcpad, (GCallback) event_probe_cb, this);   
+     gst_object_unref (srcpad);
 
-    //probing eos   
-    GstPad *srcpad = gst_element_get_static_pad (funnel, "src");
-    if (context->main_pad_ == NULL)
-      context->main_pad_ = srcpad;//saving first pad for looping
-    gst_pad_add_event_probe (srcpad, (GCallback) event_probe_cb, context);   
-    gst_object_unref (srcpad);
+     //giving a name to the stream
+     gchar **padname_splitted = g_strsplit_set (padname, "/",-1);
+     gchar media_name[256];
+     g_sprintf (media_name,"%s_%d",padname_splitted[0],media_counter_);
+     media_counter_++;
+     g_strfreev(padname_splitted);
 
-    //giving a name to the stream
-    gchar **padname_splitted = g_strsplit_set (padname, "/",-1);
-    gchar media_name[256];
-    g_sprintf (media_name,"%s_%d",padname_splitted[0],context->media_counter_);
-    context->media_counter_++;
-    g_strfreev(padname_splitted);
+     //creating a shmdata
+     ShmdataWriter::ptr connector;
+     connector.reset (new ShmdataWriter ());
+     std::string connector_name = make_file_name (media_name);
+     connector->set_path (connector_name.c_str());
+     GstCaps *caps = gst_pad_get_caps_reffed (pad);
 
-    //creating a shmdata
-    ShmdataWriter::ptr connector;
-    connector.reset (new ShmdataWriter ());
-    std::string connector_name = context->make_file_name (media_name);
-    connector->set_path (connector_name.c_str());
-    GstCaps *caps = gst_pad_get_caps_reffed (pad);
+     connector->plug (bin, identity, caps);
 
-    connector->plug (context->bin_, identity, caps);
+     if (G_IS_OBJECT (caps))
+       gst_object_unref (caps);
+     shmdata_writers_.insert (connector_name, connector);
 
-    if (G_IS_OBJECT (caps))
-      gst_object_unref (caps);
-    context->shmdata_writers_.insert (connector_name, connector);
+     g_message ("%s created a new shmdata writer (%s)", 
+     	       get_nick_name ().c_str(), 
+     	       connector_name.c_str ());
+  }
 
-    g_message ("%s created a new shmdata writer (%s)", 
-	       context->get_nick_name ().c_str(), 
-	       connector_name.c_str ());
+
+  void 
+  Uridecodebin::uridecodebin_pad_added_cb (GstElement* object, GstPad *pad, gpointer user_data)   
+  {   
+    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+   
+
+    // g_print ("------------- caps 1 %s \n-------------- caps 2 %s\n",
+    // 	     gst_caps_to_string (context->gstrtpcaps_), 
+    // 	     gst_caps_to_string (gst_pad_get_caps (pad)));
+   
+    if (gst_caps_can_intersect (context->rtpgstcaps_,
+				gst_pad_get_caps (pad)))
+      {
+	g_message ("custom rtp stream found");
+	GstElement *rtpgstdepay = gst_element_factory_make ("rtpgstdepay",NULL);
+	gst_bin_add (GST_BIN (context->bin_), rtpgstdepay);
+	GstPad *sinkpad = gst_element_get_static_pad (rtpgstdepay, "sink");
+	GstUtils::check_pad_link_return (gst_pad_link (pad, sinkpad));
+	gst_object_unref (sinkpad);
+	GstPad *srcpad = gst_element_get_static_pad (rtpgstdepay, "src");
+	GstUtils::sync_state_with_parent (rtpgstdepay);
+	gst_element_get_state (rtpgstdepay, NULL, NULL, GST_CLOCK_TIME_NONE);
+	context->pad_to_shmdata_writer (context->bin_, srcpad);
+	//gst_object_unref (srcpad);
+      }
+    else
+      context->pad_to_shmdata_writer (context->bin_, pad);
   }   
 
   void 
   Uridecodebin::source_setup_cb (GstElement *uridecodebin, GstElement *source, gpointer user_data)
   {
     //Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-    //g_debug ("source %s %s\n",  GST_ELEMENT_NAME(source), G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (source)));
+    g_debug ("source %s %s\n",  GST_ELEMENT_NAME(source), G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (source)));
   }
 
   gboolean
@@ -276,6 +357,7 @@ namespace switcher
     g_object_set (G_OBJECT (uridecodebin_), "uri", uri.c_str (), NULL); 
 
     gst_bin_add (GST_BIN (bin_), uridecodebin_);
+    GstUtils::wait_state_changed (bin_);
     GstUtils::sync_state_with_parent (uridecodebin_);
     return true;
   }
