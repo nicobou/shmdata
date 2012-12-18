@@ -75,8 +75,9 @@ namespace switcher
     int method_get_num_value_args (std::string function_name); //returns -1 if method not found
     int method_get_num_pointer_args (std::string function_name); //returns -1 if method not found
     
-    //file names
-    static std::string get_file_name_suffix ();
+    //shmdata socket names
+    static std::string get_socket_name_prefix ();
+    static std::string get_socket_dir ();
 
     //life manager  initialization
     void set_life_manager (std::shared_ptr<QuiddityLifeManager> life_manager);

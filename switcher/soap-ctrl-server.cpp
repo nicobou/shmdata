@@ -116,7 +116,9 @@ namespace switcher
 	   return 404;
        
        //sending file to client
-       std::string sdp_file = get_file_name_suffix ();
+       std::string sdp_file = get_socket_dir ();
+       sdp_file.append ("/");
+       sdp_file.append (get_socket_name_prefix ());
        sdp_file.append(manager->get_name()+"_"+rtpsession_name+"_"+destination_name+".sdp");
        gchar *sdp_contents;
        gsize file_length;

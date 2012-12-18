@@ -21,6 +21,9 @@
 #include "switcher/quiddity-life-manager.h"
 #include "switcher/quiddity.h" 
 
+//removing shmdata 
+#include <gio/gio.h>
+
 //the base quiddities to manage (line sorted)
 #include "switcher/aac.h"
 #include "switcher/audio-test-source.h"
@@ -61,15 +64,87 @@ namespace switcher
   QuiddityLifeManager::QuiddityLifeManager() :
     name_ ("default")
   {
+    remove_shmdata_sockets ();
     register_classes ();
   }
 
   QuiddityLifeManager::QuiddityLifeManager(std::string name) :
     name_ (name)
   {
+    remove_shmdata_sockets ();
     register_classes ();
   }
 
+  void
+  QuiddityLifeManager::remove_shmdata_sockets ()
+  {
+    
+    //GFile *shmfile = g_file_new_for_commandline_arg (app->socketName);
+      // if (! g_file_trash (shmfile, NULL, NULL))
+      //   {
+      //     g_printerr("The file %s cannot be trashed, exiting.",app->socketName);
+      //     exit (0);
+      //   }
+
+    GFile *shmdata_dir = g_file_new_for_commandline_arg (Quiddity::get_socket_dir().c_str ());
+
+    gchar *shmdata_prefix = g_strconcat (Quiddity::get_socket_name_prefix ().c_str (), 
+					 name_.c_str (), 
+					 "_",
+					 NULL);
+    
+    gboolean res;
+    GError *error;
+    GFileEnumerator *enumerator;
+    GFileInfo *info;
+    GFile *descend;
+    char *relative_path;
+    
+    error = NULL;
+    enumerator =
+      g_file_enumerate_children (shmdata_dir, "*",
+				 G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, NULL,
+				 &error);
+    if (! enumerator)
+      return;
+    error = NULL;
+    info = g_file_enumerator_next_file (enumerator, NULL, &error);
+    while ((info) && (!error))
+      {
+	descend = g_file_get_child (shmdata_dir, g_file_info_get_name (info));
+	//g_assert (descend != NULL);
+	relative_path = g_file_get_relative_path (shmdata_dir, descend);
+
+	
+	
+	error = NULL;
+	
+	if (g_str_has_prefix (relative_path, shmdata_prefix))
+	  {
+	    g_warning ("deleting previous shmdata socket (%s)", g_file_get_path (descend));
+	    res = g_file_delete (descend, NULL, &error);
+	    if(res != TRUE)
+	      g_warning ("socket cannot be deleted");
+	  }
+	
+	g_object_unref (descend);
+	error = NULL;
+	info = g_file_enumerator_next_file (enumerator, NULL, &error);
+      }
+    if (error != NULL)
+      g_debug ("error not NULL");
+    
+    error = NULL;
+    res = g_file_enumerator_close (enumerator, NULL, &error);
+    if (res != TRUE)
+      g_debug ("QuiddityLifeManager: file enumerator not properly closed");
+    if (error != NULL)
+      g_debug ("error not NULL");
+    
+    g_object_unref (shmdata_dir);
+    g_free (shmdata_prefix);
+  }
+  
   std::string
   QuiddityLifeManager::get_name ()
   {

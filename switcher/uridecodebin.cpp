@@ -250,7 +250,7 @@ namespace switcher
   Uridecodebin::pad_to_shmdata_writer (GstElement *bin, GstPad *pad)
   {
 
-    const gchar *padname= "truc";//gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
+    const gchar *padname= gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
     g_debug ("uridecodebin new pad name is %s\n",padname);
     
     GstElement *identity = gst_element_factory_make ("identity",NULL);

@@ -256,10 +256,17 @@ namespace switcher
   }
 
   std::string
-  Quiddity::get_file_name_suffix ()
+  Quiddity::get_socket_name_prefix ()
   {
-    return "/tmp/switcher_";
+    return "switcher_";
   }
+
+  std::string
+  Quiddity::get_socket_dir ()
+  {
+    return "/tmp";
+  }
+
 
   void
   Quiddity::set_life_manager (QuiddityLifeManager::ptr life_manager)
