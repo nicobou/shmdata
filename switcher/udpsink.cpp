@@ -53,7 +53,7 @@ namespace switcher
     // g_signal_connect (G_OBJECT (udpsink_), "client-removed",  
     // 		      (GCallback)  on_client_removed, (gpointer) this);
     
-     //registering add_client
+    //registering add_client
     register_method("add_client",
      		    (void *)&add_client_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, NULL),
@@ -66,35 +66,35 @@ namespace switcher
 							  "the port of the client to add",
 							  NULL));
     
-     //registering remove_client
-     register_method("remove_client",
-		     (void *)&remove_client_wrapped, 
-		     Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, NULL),
+    //registering remove_client
+    register_method("remove_client",
+		    (void *)&remove_client_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, NULL),
      		    (gpointer)this);
-      set_method_description ("remove_client", 
-			      "remove a client with destination host and port to the list of clients", 
-			      Method::make_arg_description ("host",
-							    "the hostname/IP address of the client to remove",
-							    "port",
-							    "the port of the client to remove",
-							    NULL));
+    set_method_description ("remove_client", 
+			    "remove a client with destination host and port to the list of clients", 
+			    Method::make_arg_description ("host",
+							  "the hostname/IP address of the client to remove",
+							  "port",
+							  "the port of the client to remove",
+							  NULL));
       
 
-     //registering clear
-      register_method("clear",
-      		     (void *)&clear_wrapped, 
-      		     Method::make_arg_type_description (G_TYPE_NONE),
-      		     (gpointer)this);
-      set_method_description ("clear", 
-			      "remove a client with destination host and port to the list of clients", 
-			      Method::make_arg_description ("none",NULL));
+    //registering clear
+    register_method("clear",
+		    (void *)&clear_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_NONE),
+		    (gpointer)this);
+    set_method_description ("clear", 
+			    "remove a client with destination host and port to the list of clients", 
+			    Method::make_arg_description ("none",NULL));
      
       
-      //registering sink element
-      set_sink_element (udpsink_bin_);
-      set_on_first_data_hook (UDPSink::add_elements_to_bin,this);
+    //registering sink element
+    set_on_first_data_hook (UDPSink::add_elements_to_bin,this);
+    set_sink_element (udpsink_bin_);
       
-      return true;
+    return true;
   }
 
   UDPSink::~UDPSink ()
@@ -120,18 +120,6 @@ namespace switcher
     GstUtils::clean_element (typefind_);
     GstUtils::clean_element (udpsink_);
     GstUtils::clean_element (udpsink_bin_);
-    
-      // gst_element_set_state (typefind_, GST_STATE_NULL);
-
-    // gst_element_set_state (udpsink_, GST_STATE_NULL);
-    // if (GST_IS_BIN (gst_element_get_parent (typefind_)))
-    //   gst_bin_remove (GST_BIN (udpsink_bin_), typefind_);
-    // if (GST_IS_BIN (gst_element_get_parent (udpsink_)))
-    //   gst_bin_remove (GST_BIN (udpsink_bin_), udpsink_);
-    // gst_element_set_state (udpsink_bin_, GST_STATE_NULL);
-    // if (GST_IS_BIN (GST_ELEMENT_PARENT (udpsink_bin_)))
-    //   gst_bin_remove (GST_BIN (GST_ELEMENT_PARENT (udpsink_bin_)), udpsink_bin_);
-   
   }
   
   void
@@ -219,7 +207,7 @@ namespace switcher
     return true;
   }
 
- gboolean
+  gboolean
   UDPSink::clear_wrapped (gpointer user_data)
   {
     //std::string connector = static_cast<std::string>(connector_name);

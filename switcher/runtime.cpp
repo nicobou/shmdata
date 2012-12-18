@@ -117,18 +117,18 @@ namespace switcher
 
       break;
     case GST_MESSAGE_STATE_CHANGED:
-       GstState old_state, new_state;
-       gst_message_parse_state_changed (msg, &old_state, &new_state, NULL);
-       g_debug ("Element %s changed state from %s to %s.",
-       	       GST_OBJECT_NAME (msg->src),
-       	       gst_element_state_get_name (old_state),
-       	       gst_element_state_get_name (new_state));
-       if (GST_IS_ELEMENT (GST_ELEMENT_PARENT (msg->src)))
-       	{
-       	  g_debug ("parent :%s (%s)",
-		   GST_OBJECT_NAME (GST_ELEMENT_PARENT (msg->src)),
-		   gst_element_state_get_name (GST_STATE(GST_ELEMENT_PARENT (msg->src))));
-       	}
+       // GstState old_state, new_state;
+       // gst_message_parse_state_changed (msg, &old_state, &new_state, NULL);
+       // g_debug ("Element %s changed state from %s to %s.",
+       // 	       GST_OBJECT_NAME (msg->src),
+       // 	       gst_element_state_get_name (old_state),
+       // 	       gst_element_state_get_name (new_state));
+       // if (GST_IS_ELEMENT (GST_ELEMENT_PARENT (msg->src)))
+       // 	{
+       // 	  g_debug ("parent :%s (%s)",
+       // 		   GST_OBJECT_NAME (GST_ELEMENT_PARENT (msg->src)),
+       // 		   gst_element_state_get_name (GST_STATE(GST_ELEMENT_PARENT (msg->src))));
+       // 	}
       break;
     default:
       //g_debug ("message %s from %s",GST_MESSAGE_TYPE_NAME(msg),GST_MESSAGE_SRC_NAME(msg));

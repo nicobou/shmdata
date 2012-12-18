@@ -266,6 +266,8 @@ namespace switcher
   {
     RtpSession *context = static_cast<RtpSession *>(user_data);
 
+    g_debug ("RtpSession::make_data_stream_available");
+
     GstUtils::wait_state_changed (context->bin_);
     
     GstElement *pay;
@@ -287,7 +289,7 @@ namespace switcher
     /* add capture and payloading to the pipeline and link */
     gst_bin_add_many (GST_BIN (context->bin_), pay, NULL);
     gst_element_link (typefind, pay);
-    GstUtils::wait_state_changed (context->bin_);
+    //GstUtils::wait_state_changed (context->bin_);
     GstUtils::sync_state_with_parent (pay);
     
     /* now link all to the rtpbin, start by getting an RTP sinkpad for session "%d" */
@@ -322,7 +324,7 @@ namespace switcher
     rtp_writer.reset (new ShmdataWriter ());
     std::string rtp_writer_name = context->make_file_name ("send_rtp_src_"+internal_session_id); 
     rtp_writer->set_path (rtp_writer_name.c_str ());
-    GstUtils::wait_state_changed (context->bin_);
+    //GstUtils::wait_state_changed (context->bin_);
     rtp_writer->plug (context->bin_, rtp_src_pad);
     context->internal_shmdata_writers_.insert (rtp_writer_name, rtp_writer);
     g_free (rtp_src_pad_name);
@@ -335,7 +337,7 @@ namespace switcher
     rtcp_writer.reset (new ShmdataWriter ());
     std::string rtcp_writer_name = context->make_file_name ("send_rtcp_src_"+internal_session_id); 
     rtcp_writer->set_path (rtcp_writer_name.c_str());
-    GstUtils::wait_state_changed (context->bin_);
+    //GstUtils::wait_state_changed (context->bin_);
     rtcp_writer->plug (context->bin_, rtcp_src_pad);
     context->internal_shmdata_writers_.insert (rtcp_writer_name, rtcp_writer);
     g_free (rtcp_src_pad_name);
@@ -344,7 +346,7 @@ namespace switcher
     // link it to a funnel for future linking with network connections
     GstElement *funnel = gst_element_factory_make ("funnel", NULL);
     gst_bin_add (GST_BIN (context->bin_), funnel);
-    GstUtils::wait_state_changed (context->bin_);
+    //GstUtils::wait_state_changed (context->bin_);
     GstUtils::sync_state_with_parent (funnel);
     GstPad *funnel_src_pad = gst_element_get_static_pad (funnel, "src");
     gchar *rtcp_sink_pad_name = g_strconcat ("recv_rtcp_sink_", rtp_session_id,NULL); 
@@ -361,6 +363,8 @@ namespace switcher
     funnel_cleaning->add_labeled_element_to_cleaner ("funnel",funnel);
     context->funnels_.insert (reader->get_path (),funnel_cleaning);
     g_free (rtp_session_id);
+
+    g_debug ("RtpSession::make_data_stream_available (done)");
   }
 
   void 
@@ -375,6 +379,8 @@ namespace switcher
     g_signal_connect (typefind, "have-type", G_CALLBACK (RtpSession::make_data_stream_available), context);
     gst_bin_add_many (GST_BIN (context->bin_), funnel, typefind, NULL);
     gst_element_link (funnel, typefind);
+    
+    GstUtils::wait_state_changed (context->bin_);
     GstUtils::sync_state_with_parent (funnel);
     GstUtils::sync_state_with_parent (typefind);
     caller->set_sink_element (funnel);
@@ -459,7 +465,9 @@ namespace switcher
   bool
   RtpSession::add_udp_stream_to_dest (std::string shmdata_socket_path, std::string nick_name, std::string port)
   {
-    
+    g_debug ("RtpSession::add_udp_stream_to_dest");
+
+
     if (!internal_id_.contains (shmdata_socket_path))
       {
 	g_error ("RtpSession is not connected to %s",shmdata_socket_path.c_str ());
@@ -534,6 +542,8 @@ namespace switcher
     //  GstUtils::sync_state_with_parent (udpsrc);
     //  if (!gst_element_link (udpsrc, funnel))
     //    g_debug ("udpsrc and funnel link failled in rtp-session");
+
+     g_debug ("RtpSession::add_udp_stream_to_dest (done)");
 
      return true;
   }

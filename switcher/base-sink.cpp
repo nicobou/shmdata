@@ -58,6 +58,7 @@ namespace switcher
   bool
   BaseSink::connect (std::string shmdata_socket_path)
   {
+    g_debug ("BaseSink::connect");
     reader_->set_path (shmdata_socket_path.c_str());
     reader_->set_bin (bin_);
     if (sink_element_ !=NULL)
