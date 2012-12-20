@@ -152,10 +152,15 @@ shmdata_base_writer_reset_time (GstPad * pad,
   shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
   if (GST_IS_EVENT (mini_obj))
     {
+      g_debug ("x-pcd EVENT %s", GST_EVENT_TYPE_NAME (GST_EVENT_CAST(mini_obj)));
     }
   else if (GST_IS_BUFFER (mini_obj))
     {
       GstBuffer *buffer = GST_BUFFER_CAST (mini_obj);
+      /* g_debug ("shmdata writer data frame (%p), data size %d, timestamp %llu, caps %s", */
+      /* 	       GST_BUFFER_DATA (buffer), GST_BUFFER_SIZE (buffer), */
+      /* 	       GST_TIME_AS_MSECONDS (GST_BUFFER_TIMESTAMP (buffer)), */
+      /* 	       gst_caps_to_string (GST_BUFFER_CAPS (buffer))); */
       if (context->timereset_)
 	{
 	  context->timeshift_ = GST_BUFFER_TIMESTAMP (buffer);
@@ -295,6 +300,7 @@ shmdata_base_writer_make_shm_branch (shmdata_base_writer_t * writer,
   gst_pad_add_data_probe (qserialPad,
 			  G_CALLBACK (shmdata_base_writer_reset_time),
 			  writer);
+
   gst_object_unref (qserialPad);
 
   g_signal_connect (writer->shmsink_, "client-connected",
