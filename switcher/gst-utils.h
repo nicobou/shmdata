@@ -36,6 +36,11 @@ namespace switcher
     static void clean_element (GstElement *element);
     static void wait_state_changed (GstElement *bin);
     static void sync_state_with_parent (GstElement *element);
+    static void set_element_property_in_bin (GstElement *bin, 
+					     const gchar *factory_name, 
+					     const gchar *property_name,
+					     gboolean property_value);
+
   };
 
 }  // end of namespace

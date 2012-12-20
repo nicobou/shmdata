@@ -23,6 +23,7 @@
 
 #include "switcher/base-source.h"
 #include "switcher/gst-element-cleaner.h"
+#include "switcher/string-map.h"
 #include <memory>
 
 namespace switcher
@@ -39,9 +40,10 @@ namespace switcher
 
   private: 
    GstElement *uridecodebin_;
-   int media_counter_;
+   StringMap<int> media_counters_;
    GstPad *main_pad_;
    GstCaps *rtpgstcaps_;
+   bool discard_next_uncomplete_buffer_;
    static void uridecodebin_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
    static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);
    static void no_more_pads_cb (GstElement* object, gpointer user_data);
@@ -49,12 +51,12 @@ namespace switcher
    static gboolean event_probe_cb (GstPad *pad, GstEvent * event, gpointer data);
    static gboolean rewind (gpointer user_data);
    static void unknown_type_cb (GstElement *bin, GstPad *pad, GstCaps *caps, gpointer user_data);
-   static int autoplug_select_cb (GstElement *bin, 
-				  GstPad *pad, 
-				  GstCaps *caps, 
-				  GstElementFactory *factory, 
-				  gpointer user_data);
+   static int autoplug_select_cb (GstElement *bin, GstPad *pad, GstCaps *caps, GstElementFactory *factory, gpointer user_data);
+   //filtering uncomplete custum buffers
+   static gboolean gstrtpdepay_buffer_probe_cb (GstPad * pad, GstMiniObject * mini_obj, gpointer user_data);
+   static gboolean gstrtpdepay_event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data);
    void pad_to_shmdata_writer (GstElement *bin, GstPad *pad);
+   
    /* static GValueArray *autoplug_sort_cb (GstElement *bin, */
    /* 					 GstPad *pad, */
    /* 					 GstCaps *caps, */

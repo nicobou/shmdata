@@ -269,6 +269,7 @@ namespace switcher
     g_debug ("RtpSession::make_data_stream_available");
 
     GstUtils::wait_state_changed (context->bin_);
+    GstUtils::wait_state_changed (context->rtpsession_);
     
     GstElement *pay;
     GList *list = gst_registry_feature_filter (gst_registry_get_default (),
@@ -280,7 +281,7 @@ namespace switcher
       pay = gst_element_factory_create (GST_ELEMENT_FACTORY (list->data), NULL);
     else
       pay = gst_element_factory_make ("rtpgstpay", NULL);
-
+    
     ShmdataReader *reader= (ShmdataReader *) g_object_get_data (G_OBJECT (typefind),"shmdata-reader");
     reader->add_element_to_cleaner (pay);
         

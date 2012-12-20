@@ -30,8 +30,8 @@ namespace switcher
   bool
   Uridecodebin::init() 
   { 
-    media_counter_ = 0;
     main_pad_ = NULL;
+    discard_next_uncomplete_buffer_ = false;
     uridecodebin_ = gst_element_factory_make ("uridecodebin",NULL);
     rtpgstcaps_ = gst_caps_from_string ("application/x-rtp, media=(string)application");
 
@@ -249,12 +249,16 @@ namespace switcher
   void
   Uridecodebin::pad_to_shmdata_writer (GstElement *bin, GstPad *pad)
   {
-    g_print ("---- (%s)\n", gst_caps_to_string (gst_pad_get_caps (pad)));
+    //g_print ("---- (%s)\n", gst_caps_to_string (gst_pad_get_caps (pad)));
+
+    //detecting type of media
     const gchar *padname;
     if (0 == g_strcmp0 ("ANY", gst_caps_to_string (gst_pad_get_caps (pad))))
       padname = "custom";
     else
       padname= gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
+
+      
 
     g_debug ("uridecodebin new pad name is %s\n",padname);
     
@@ -283,9 +287,19 @@ namespace switcher
 
      //giving a name to the stream
      gchar **padname_splitted = g_strsplit_set (padname, "/",-1);
+     //counting 
+     int count = 0;
+     if (media_counters_.contains (std::string (padname_splitted[0])))
+       {
+	 count = media_counters_. lookup (std::string (padname_splitted[0]));
+	 g_print ("------------- count %d\n", count);
+	 count = count+1;
+       }
+     media_counters_.replace (std::string (padname_splitted[0]), count);
+
      gchar media_name[256];
-     g_sprintf (media_name,"%s_%d",padname_splitted[0],media_counter_);
-     media_counter_++;
+     g_sprintf (media_name,"%s_%d",padname_splitted[0],count);
+     g_print ("---------------------------- %s %d\n",media_name, count );
      g_strfreev(padname_splitted);
 
      //creating a shmdata
@@ -307,6 +321,46 @@ namespace switcher
   }
 
 
+  gboolean 
+  Uridecodebin::gstrtpdepay_buffer_probe_cb (GstPad * pad, GstMiniObject * mini_obj, gpointer user_data)
+  {
+    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+    
+    /* if (GST_IS_BUFFER (mini_obj)) */
+    /*   { */
+    /*     GstBuffer *buffer = GST_BUFFER_CAST (mini_obj); */
+    /*     g_print ("data size %d \n", */
+    /* 	       GST_BUFFER_SIZE (buffer)); */
+    /*   } */
+    
+    if (context->discard_next_uncomplete_buffer_ == true)
+      {
+	g_debug ("discarding uncomplete custom frame due to a network loss");
+	context->discard_next_uncomplete_buffer_ = false;
+	return FALSE;// drop buffer
+      }
+    else
+      return TRUE; // pass buffer
+  }
+  
+  gboolean
+  Uridecodebin::gstrtpdepay_event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data)
+  {
+    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+
+    if (GST_EVENT_TYPE (event) == GST_EVENT_CUSTOM_DOWNSTREAM) 
+      {
+	const GstStructure *s;
+	s = gst_event_get_structure (event);
+	//g_debug ("event probed (%s)\n", gst_structure_get_name (s));
+	if (gst_structure_has_name (s, "GstRTPPacketLost")) 
+	  context->discard_next_uncomplete_buffer_ = true;
+	return FALSE;
+      }
+    return TRUE; 
+  }
+  
+
   void 
   Uridecodebin::uridecodebin_pad_added_cb (GstElement* object, GstPad *pad, gpointer user_data)   
   {   
@@ -320,10 +374,24 @@ namespace switcher
     if (gst_caps_can_intersect (context->rtpgstcaps_,
 				gst_pad_get_caps (pad)))
       {
+	//asking rtpbin to send an event when a packet is lost (do-lost property)
+	GstUtils::set_element_property_in_bin (object, "gstrtpbin", "do-lost", TRUE);
+
 	g_message ("custom rtp stream found");
 	GstElement *rtpgstdepay = gst_element_factory_make ("rtpgstdepay",NULL);
+
+	//adding a probe for discarding uncomplete packets
+	GstPad *depaysrcpad = gst_element_get_static_pad (rtpgstdepay, "src");
+	gst_pad_add_buffer_probe (depaysrcpad,
+				  G_CALLBACK (Uridecodebin::gstrtpdepay_buffer_probe_cb),
+				  context);
+	gst_object_unref (depaysrcpad);
+
 	gst_bin_add (GST_BIN (context->bin_), rtpgstdepay);
 	GstPad *sinkpad = gst_element_get_static_pad (rtpgstdepay, "sink");
+	//adding a probe for handling loss messages from rtpbin
+	gst_pad_add_event_probe (sinkpad, (GCallback) Uridecodebin::gstrtpdepay_event_probe_cb, context);   
+
 	GstUtils::check_pad_link_return (gst_pad_link (pad, sinkpad));
 	gst_object_unref (sinkpad);
 	GstPad *srcpad = gst_element_get_static_pad (rtpgstdepay, "src");

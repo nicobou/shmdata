@@ -116,6 +116,10 @@ namespace switcher
     static void on_pad_added (GstElement *gstelement, GstPad *new_pad, gpointer user_data);
     static void on_pad_removed (GstElement *gstelement, GstPad *new_pad, gpointer user_data);
     static void on_no_more_pad (GstElement *gstelement, gpointer user_data);
+    
+    static gboolean data_probe (GstPad * pad,GstMiniObject * mini_obj, gpointer user_data);
+
+
   };
 }  // end of namespace
 

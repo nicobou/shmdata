@@ -41,6 +41,16 @@ namespace switcher
     }
   
   template <typename T>
+    bool
+    StringMap<T>::replace (const std::string key, 
+			   T value)
+    {
+      map_[key]=value;
+      return true;
+    }
+   
+
+  template <typename T>
     bool 
     StringMap<T>::remove (const std::string key)
     {
