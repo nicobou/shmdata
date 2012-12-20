@@ -152,7 +152,7 @@ shmdata_base_writer_reset_time (GstPad * pad,
   shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
   if (GST_IS_EVENT (mini_obj))
     {
-      g_debug ("x-pcd EVENT %s", GST_EVENT_TYPE_NAME (GST_EVENT_CAST(mini_obj)));
+      g_debug ("EVENT %s", GST_EVENT_TYPE_NAME (GST_EVENT_CAST(mini_obj)));
     }
   else if (GST_IS_BUFFER (mini_obj))
     {
