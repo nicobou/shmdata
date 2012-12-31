@@ -284,10 +284,12 @@ shmdata_base_writer_make_shm_branch (shmdata_base_writer_t * writer,
   writer->serializer_ = gst_element_factory_make ("gdppay", NULL);
   writer->shmsink_ = gst_element_factory_make ("shmsink", NULL);
 
-  if (!writer->qserial_ || !writer->serializer_ || !writer->shmsink_)
-    {
-      g_critical ("Writer: One gstreamer element could not be created.");
-    }
+  if (!writer->qserial_)
+      g_critical ("Writer: \"queue\" element is not available");
+  if (!writer->serializer_)
+      g_critical ("Writer: \"gdppay\" element is not available");
+  if (!writer->shmsink_)
+      g_critical ("Writer: \"shmsink\" element is not available");
 
   g_object_set (G_OBJECT (writer->shmsink_), "socket-path", socketPath, NULL);
   g_object_set (G_OBJECT (writer->shmsink_), "shm-size", 94967295, NULL);

@@ -22,7 +22,7 @@ AC_SUBST([LIBSHMDATA_SO_VERSION], [3:0:3])
 # The version of the API. Should be major.minor and not change until not backward-compatible
 AC_SUBST([LIBSHMDATA_API_VERSION], [0.6])
 
-# Checks for programs.
+# -- checks for programs --
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_INSTALL
@@ -34,15 +34,15 @@ if test -z "$DOXYGEN";
 fi
 
 AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])
-# AM_COND_IF([HAVE_DOXYGEN], [AC_CONFIG_FILES([doxyfile])])
 
 
-# Checks for header files.
+# -- checks for header files --
 AC_CHECK_HEADERS([string.h math.h signal.h stdio.h stdlib.h unistd.h])
 
-# was included for the puredata plugins
+# DARWIN and mingw
 AM_CONDITIONAL(MINGW, false)
 AM_CONDITIONAL(DARWIN, false)
+
 case "${build_os}" in
 *mingw* | *cygwin*)
   mingw32_support="yes"
@@ -59,7 +59,7 @@ case "${build_os}" in
   ;;
 esac
 
-# Special cases
+# -- special cases --
 case "$host" in *-darwin* | *-macos10*)
   LIBTOOL="glibtool"
   CXXFLAGS+=" -D__Darwin"
@@ -92,8 +92,21 @@ if test "x$universal_build" = xyes; then
     LDFLAGS+=" -arch i386 -arch x86_64"
 fi
 
+# -- compilation flags --
 CXXFLAGS+=" -g3 -ggdb -Wall -Wextra -Wfatal-errors -Wno-unused-parameter"
 CFLAGS+=" -g3 -ggdb -Wall -Wextra -Wfatal-errors -Wno-unused-parameter"
+
+# -- FIXME the following should be a test with condition, with osx included 
+# should also set the a specific variable in order to set plugindir path in gst/shm
+PKG_CONFIG_PATH=/opt/gstreamer-sdk/lib/pkgconfig:$PKG_CONFIG_PATH
+export PKG_CONFIG_PATH
+PKG_CHECK_MODULES(GST_BASE, gstreamer-base-0.10, have_gstreamer_base=true, have_gstreamer_base=false)
+if test "x${have_gstreamer_base}" = "xfalse" ; then
+    AC_MSG_ERROR([missing package: gstreamer-sdk-gstreamer-core-dev])
+fi
+AC_CONFIG_FILES([gst/Makefile
+                 gst/shm/Makefile])
+
 
 # -- ( mandatory libraries) --
 #Trying to set GST_CFLAGS GST_LIBS using pkg-config
@@ -156,11 +169,12 @@ else
     AM_CONDITIONAL(HAVE_PCL, true)
 fi
 
-# Check for Puredata
+# Check for Puredata FIXME move AC_CONFIG_FILES for puredata here
 AC_CHECK_HEADER(m_pd.h,PUREDATA=y,AC_MSG_WARN([Puredata header not found.]))
 AM_CONDITIONAL(PUREDATAFOUND, test "${PUREDATA}" = "y")
 
 
+### FIXME shm should be optionnal, if gstreamer sdk found
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
 AC_CONFIG_FILES([
