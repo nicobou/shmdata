@@ -88,7 +88,13 @@ void
 on_first_video_data (shmdata_base_reader_t * context, void *user_data)
 {
   g_print ("creating element to display the shared video \n");
+
+#ifdef DARWIN
   shmDisplay = gst_element_factory_make ("osxvideosink", NULL);
+#else
+  shmDisplay = gst_element_factory_make ("xvimagesink", NULL);
+#endif
+
   ffmpegcolorspace = gst_element_factory_make ("ffmpegcolorspace", NULL);
   //in order to be dynamic, the shared video is linking to an
   //element accepting request pad (as funnel of videomixer)
