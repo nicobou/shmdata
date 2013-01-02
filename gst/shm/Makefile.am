@@ -17,6 +17,7 @@ libgstshm_la_CFLAGS = \
 
 if DARWIN
  libgstshm_la_LIBADD =
+ libgstshm_la_CFLAGS += -DDARWIN
 else
  libgstshm_la_LIBADD = -lrt
 endif
