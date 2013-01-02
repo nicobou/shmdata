@@ -72,11 +72,8 @@ case "$host" in *-darwin* | *-macos10*)
     #LDFLAGS+=" -L/sw/lib"
   fi
   # OSX does not include /usr/local/lib/pkgconfig path, so we need to
-  # add it. Also, the GStreamer .pkg installer for OSX installs GStreamer
-  # as a framework, so we need to add that pkgconfig path too.
-  # Note: the .pkg installer can be found here:
-  # http://docs.gstreamer.com/display/GstSDK/Installing+on+Mac+OS+X
-  PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig:$PKG_CONFIG_PATH
+  # add it. 
+  PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
   export PKG_CONFIG_PATH
   LDFLAGS+=" -fPIC -L/usr/local/lib -L/usr/local/lib64"
   ;;
@@ -96,23 +93,44 @@ fi
 CXXFLAGS+=" -g3 -ggdb -Wall -Wextra -Wfatal-errors -Wno-unused-parameter"
 CFLAGS+=" -g3 -ggdb -Wall -Wextra -Wfatal-errors -Wno-unused-parameter"
 
-# -- FIXME the following should be a test with condition, with osx included 
-# should also set the a specific variable in order to set plugindir path in gst/shm
-PKG_CONFIG_PATH=/opt/gstreamer-sdk/lib/pkgconfig:$PKG_CONFIG_PATH
-export PKG_CONFIG_PATH
-PKG_CHECK_MODULES(GST_BASE, gstreamer-base-0.10, have_gstreamer_base=true, have_gstreamer_base=false)
-if test "x${have_gstreamer_base}" = "xfalse" ; then
-    AC_MSG_ERROR([missing package: gstreamer-sdk-gstreamer-core-dev])
+ # -- testing GStreamer SDK, if found, then building against --
+AM_CONDITIONAL(HAVE_GST_SDK, false)
+ # linux
+ AC_CHECK_FILE([/opt/gstreamer-sdk/lib/pkgconfig/gstreamer-0.10.pc], 
+                [AC_MSG_WARN([building against Linux GStreamer SDK.]) 
+                 AM_CONDITIONAL(HAVE_GST_SDK, true)
+                 PKG_CONFIG_PATH=/opt/gstreamer-sdk/lib/pkgconfig:$PKG_CONFIG_PATH
+                 export PKG_CONFIG_PATH],
+                [AC_MSG_WARN([Linux GStreamer SDK not found])])
+
+ # osx
+AC_CHECK_FILE([/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig], 
+              [AC_MSG_WARN([building against OSX GStreamer SDK.]) 
+               AM_CONDITIONAL(HAVE_GST_SDK, true)
+               PKG_CONFIG_PATH=/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig:$PKG_CONFIG_PATH
+               export PKG_CONFIG_PATH],
+              [AC_MSG_WARN([OSX GStreamer SDK not found])])
+
+# --define where to install gstreamer elements built -- 
+if test "x${prefix}" = "x$HOME"; then
+  SHMDATA_GST_PLUGIN_PATH="$(HOME)/.gstreamer-0.10/plugins"
+else
+  SHMDATA_GST_PLUGIN_PATH="\$(libdir)/gstreamer-0.10"
 fi
-AC_CONFIG_FILES([gst/Makefile
-                 gst/shm/Makefile])
+AC_SUBST(SHMDATA_GST_PLUGIN_PATH)
 
 
 # -- ( mandatory libraries) --
-#Trying to set GST_CFLAGS GST_LIBS using pkg-config
+#Trying to set GST_CFLAGS and GST_LIBS using pkg-config
 PKG_CHECK_MODULES(GST, gstreamer-0.10, have_gstreamer=true, have_gstreamer=false)
 if test "x${have_gstreamer}" = "xfalse" ; then
     AC_MSG_ERROR([missing package: libgstreamer0.10-dev])
+fi
+
+#for building shmsrc and shmsink elements
+PKG_CHECK_MODULES(GST_BASE, gstreamer-base-0.10, have_gstreamer_base=true, have_gstreamer_base=false)
+if test "x${have_gstreamer_base}" = "xfalse" ; then
+  AC_MSG_ERROR([missing package: gstreamer-sdk-gstreamer-core-dev])
 fi
 
 #Trying to set GSTAPP using pkg-config
@@ -127,8 +145,8 @@ if test "x${have_gio}" = "xfalse" ; then
     AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
 fi
 
-# -- (clutter example) -- 
-#Trying to set CLUTTER using pkg-config
+# -- (optionnal libraries) --
+#Trying to set CLUTTER using pkg-config (for the clutter example only
 PKG_CHECK_MODULES(CLUTTER, clutter-1.0, have_clutter=true, have_clutter=false)
 if test "x${have_clutter}" = "xfalse" ; then
     AC_MSG_WARN([missing package:  libclutter-1.0-dev  ])
@@ -152,7 +170,6 @@ fi
 PKG_CHECK_MODULES(OPENSCENEGRAPH, openscenegraph, have_openscenegraph=true, have_openscenegraph=false)
 if test "x${have_openscenegraph}" = "xfalse" ; then
     AC_MSG_WARN([***** missing optional package:  libopenscenegraph-dev ***** ])
-    #AC_MSG_ERROR([***** missing package:  libopenscenegraph-dev ***** ])
     AM_CONDITIONAL(HAVE_OPENSCENEGRAPH, false)
 else
     AM_CONDITIONAL(HAVE_OPENSCENEGRAPH, true)
@@ -169,12 +186,13 @@ else
     AM_CONDITIONAL(HAVE_PCL, true)
 fi
 
-# Check for Puredata FIXME move AC_CONFIG_FILES for puredata here
-AC_CHECK_HEADER(m_pd.h,PUREDATA=y,AC_MSG_WARN([Puredata header not found.]))
+# Check for Puredata
+AC_CHECK_HEADER(m_pd.h,
+                PUREDATA=y,
+                AC_MSG_WARN([Puredata header not found.]))
 AM_CONDITIONAL(PUREDATAFOUND, test "${PUREDATA}" = "y")
 
 
-### FIXME shm should be optionnal, if gstreamer sdk found
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
 AC_CONFIG_FILES([
@@ -187,6 +205,8 @@ AC_CONFIG_FILES([
         shmdata-any-${LIBSHMDATA_API_VERSION}.pc:shmdata-any.pc.in
         plugins/Makefile
         plugins/puredata/Makefile
+        gst/Makefile
+        gst/shm/Makefile
         ])
 
 AC_OUTPUT

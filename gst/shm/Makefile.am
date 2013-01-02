@@ -1,9 +1,8 @@
-#fixme should be set from configure.ac
 plugindir = \
-    $(HOME)/.gstreamer-0.10/plugins
+    $(SHMDATA_GST_PLUGIN_PATH)
 
 plugin_LTLIBRARIES = \
-    libgstshm.la
+    libgstshm.la 
 
 libgstshm_la_SOURCES = \
     gstshm.c \
