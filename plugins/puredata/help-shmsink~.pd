@@ -1,4 +1,4 @@
-#N canvas 194 82 894 718 10;
+#N canvas 502 231 894 718 10;
 #X floatatom 115 97 5 0 0 0 - - -;
 #X floatatom 136 141 5 0 0 0 - - -;
 #X floatatom 157 189 5 0 0 0 - - -;
@@ -40,9 +40,7 @@ terminal:;
 #X connect 7 0 12 1;
 #X connect 8 0 12 3;
 #X connect 9 0 12 4;
-#X connect 9 0 22 1;
 #X connect 10 0 12 5;
-#X connect 10 0 22 0;
 #X connect 11 0 12 0;
 #X connect 23 0 21 0;
 #X connect 23 1 21 0;

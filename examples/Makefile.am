@@ -63,6 +63,8 @@ pcd_writer_SOURCES = pcd_writer.cpp
 video_reader_SOURCES = video-reader.c
 if DARWIN
 video_reader_CFLAGS = $(AM_CFLAGS) -DDARWIN
+else
+video_reader_CFLAGS = $(AM_CFLAGS)
 endif
 video_writer_SOURCES = video-writer.c
 

@@ -51,8 +51,8 @@ void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
 {
   t_shmsrc_tilde *x = (t_shmsrc_tilde *) user_data;
   
-  printf ("data %p, data size %d, timestamp %llu, type descr %s\n",
-	  data, data_size, timestamp, type_description);
+  /* printf ("data %p, data size %d, timestamp %llu, type descr %s\n", */
+  /* 	  data, data_size, timestamp, type_description); */
 
   //free the data, can also be called later
   shmdata_any_reader_free (shmbuf);
