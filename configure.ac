@@ -130,7 +130,7 @@ fi
 #for building shmsrc and shmsink elements
 PKG_CHECK_MODULES(GST_BASE, gstreamer-base-0.10, have_gstreamer_base=true, have_gstreamer_base=false)
 if test "x${have_gstreamer_base}" = "xfalse" ; then
-  AC_MSG_ERROR([missing package: gstreamer-sdk-gstreamer-core-dev])
+  AC_MSG_ERROR([missing package: libgstreamer0.10-dev])
 fi
 
 #Trying to set GSTAPP using pkg-config
