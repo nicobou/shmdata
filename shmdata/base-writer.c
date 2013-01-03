@@ -296,7 +296,7 @@ shmdata_base_writer_make_shm_branch (shmdata_base_writer_t * writer,
     }
   if (!writer->shmsink_)
     {
-      g_critical ("Writer: \"shmsink\" element is not available");
+      g_critical ("Writer: \"shmsink\" element is not available, consider installing libshmdata");
       return;
     }
 

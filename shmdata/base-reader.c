@@ -155,11 +155,20 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
   g_signal_connect (reader->typefind_, "have-type", G_CALLBACK (shmdata_base_reader_on_type_found), reader);
 
   if (!reader->source_)
-    g_critical ("shmsrc element could not be created. \n");
+    {
+      g_critical ("Reader: \"shmsrc\" element could not be created, consider installing libshmdata.");
+      return;
+    }
   if (!reader->deserializer_)
-    g_critical ("gdpdepay element could not be created. \n");
+    {
+      g_critical ("Reader: \"gdpdepay\" element could not be created.");
+      return;
+    }
   if (!reader->typefind_)
-    g_critical ("typefind element could not be created. \n");
+    {
+      g_critical ("Reader: \"typefind\" element could not be created.");
+      return;
+    }
 
   g_object_set_data (G_OBJECT (reader->source_), 
 		     "shmdata_base_reader",
