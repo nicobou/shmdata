@@ -13,6 +13,10 @@
  * GNU Lesser General Public License for more details.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <string.h>
 #include <math.h>
 #include <gst/gst.h>
@@ -217,6 +221,12 @@ main (int argc, char *argv[])
 
   /* always init first */
   gst_init (&argc, &argv);
+#ifdef HAVE_CONFIG_H 
+  GstRegistry *registry; 
+  registry = gst_registry_get_default(); 
+  gst_registry_scan_path (registry, SHMDATA_SHM_GST_PLUGIN_BUILD_PATH); 
+  gst_registry_scan_path (registry, SHMDATA_GST_PLUGIN_PATH);
+#endif 
 
   /* the pipeline to hold everything */
   app.pipeline = gst_pipeline_new (NULL);

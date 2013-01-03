@@ -1,7 +1,13 @@
+export GST_PLUGIN_PATH=$(top_builddir)/gst/shm:$GST_PLUGIN_PATH
+
 AM_CFLAGS = -I$(top_srcdir)
+
 LDADD = \
     $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la \
     $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
+
+#LD_LIBRARY_PATH = \
+#    $(top_builddir)/gst/shm/
 
 check_PROGRAMS = \
     check_write_read
