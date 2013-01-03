@@ -12,9 +12,15 @@ AM_LDFLAGS =  \
     -module \
     -avoid-version \
     -shared \
-    -shrext .pd_linux \
     -export-dynamic \
     -fPIC
+
+if HAVE_OSX
+ AM_LDFLAGS += -shrext .d_fat -arch i386 -arch x86_64
+else
+ AM_LDFLAGS += -shrext .pd_linux 
+endif
+
 
 plugin_LTLIBRARIES = \
     shmsink~.la \
