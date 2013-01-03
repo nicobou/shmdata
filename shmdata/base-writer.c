@@ -285,11 +285,20 @@ shmdata_base_writer_make_shm_branch (shmdata_base_writer_t * writer,
   writer->shmsink_ = gst_element_factory_make ("shmsink", NULL);
 
   if (!writer->qserial_)
+    {
       g_critical ("Writer: \"queue\" element is not available");
+      return;
+    }
   if (!writer->serializer_)
+    {
       g_critical ("Writer: \"gdppay\" element is not available");
+      return;
+    }
   if (!writer->shmsink_)
+    {
       g_critical ("Writer: \"shmsink\" element is not available");
+      return;
+    }
 
   g_object_set (G_OBJECT (writer->shmsink_), "socket-path", socketPath, NULL);
   g_object_set (G_OBJECT (writer->shmsink_), "shm-size", 94967295, NULL);
@@ -318,14 +327,19 @@ shmdata_base_writer_make_shm_branch (shmdata_base_writer_t * writer,
 }
 
 shmdata_base_writer_t *
-shmdata_base_writer_init ()
+shmdata_base_writer_new ()
 {
   shmdata_base_writer_t *writer =
     (shmdata_base_writer_t *) g_malloc0 (sizeof (shmdata_base_writer_t));
   writer->timereset_ = FALSE;
   writer->timeshift_ = 0;
-
   return writer;
+}
+
+shmdata_base_writer_t *
+shmdata_base_writer_init ()
+{
+  return shmdata_base_writer_new ();
 }
 
 gboolean 

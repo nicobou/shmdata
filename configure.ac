@@ -39,9 +39,9 @@ AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])
 # -- checks for header files --
 AC_CHECK_HEADERS([string.h math.h signal.h stdio.h stdlib.h unistd.h])
 
-# DARWIN and mingw
+# OSX and MINGW
 AM_CONDITIONAL(MINGW, false)
-AM_CONDITIONAL(DARWIN, false)
+AM_CONDITIONAL(HAVE_OSX, false)
 
 case "${build_os}" in
 *mingw* | *cygwin*)
@@ -52,7 +52,8 @@ case "${build_os}" in
   ;;
 *darwin* | *rhapsody* | *macosx*)
   AC_ISC_POSIX
-  AM_CONDITIONAL(DARWIN, true)
+  AM_CONDITIONAL(HAVE_OSX, true)
+  AC_DEFINE(HAVE_OSX,[1],[Apple Mac OS X operating system detected])
   ;;
 *)
   AC_ISC_POSIX
@@ -113,12 +114,29 @@ AC_CHECK_FILE([/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig],
 
 # --define where to install gstreamer elements built -- 
 if test "x${prefix}" = "x$HOME"; then
-  SHMDATA_GST_PLUGIN_PATH="$(HOME)/.gstreamer-0.10/plugins"
+  SHMDATA_GST_PLUGIN_PATH="\$(HOME)/.gstreamer-0.10/plugins"
+  FLAT_SHMDATA_GST_PLUGIN_PATH=\"$HOME/.gstreamer-0.10/plugins\"
 else
   SHMDATA_GST_PLUGIN_PATH="\$(libdir)/gstreamer-0.10"
+  dnl set install paths.
+  if test "x$prefix" = "xNONE" ; then
+    prefix="/usr/local"
+  fi
+  if test "x$exec_prefix" = "xNONE" ; then
+    exec_prefix=$prefix
+  fi
+  LIBDIR=`eval echo $libdir`
+  LIBDIR=`eval echo $LIBDIR`
+  FLAT_SHMDATA_GST_PLUGIN_PATH=\"$LIBDIR/gstreamer-0.10\"
 fi
 AC_SUBST(SHMDATA_GST_PLUGIN_PATH)
+AC_DEFINE_UNQUOTED([SHMDATA_GST_PLUGIN_PATH],[$FLAT_SHMDATA_GST_PLUGIN_PATH],
+                   [GStreamer plugin path for element built])
 
+BUILDDIR=`pwd`
+SHMDATA_SHM_GST_PLUGIN_BUILD_PATH=\"$BUILDDIR/gst/shm/.libs\"
+AC_DEFINE_UNQUOTED([SHMDATA_SHM_GST_PLUGIN_BUILD_PATH],[$SHMDATA_SHM_GST_PLUGIN_BUILD_PATH],
+                   [Path where the shm elements have been built])
 
 # -- ( mandatory libraries) --
 #Trying to set GST_CFLAGS and GST_LIBS using pkg-config

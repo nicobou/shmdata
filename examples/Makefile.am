@@ -61,11 +61,6 @@ pcd_writer_LDADD =  -lpcl_visualization -lpcl_io -lpcl_kdtree -lOpenNI -lpcl_oct
 pcd_writer_SOURCES = pcd_writer.cpp
 
 video_reader_SOURCES = video-reader.c
-if DARWIN
-video_reader_CFLAGS = $(AM_CFLAGS) -DDARWIN
-else
-video_reader_CFLAGS = $(AM_CFLAGS)
-endif
 video_writer_SOURCES = video-writer.c
 
 

@@ -12,6 +12,10 @@
  * GNU Lesser General Public License for more details.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <gst/gst.h>
 #include <signal.h>
 #include "shmdata/base-reader.h"
@@ -89,7 +93,7 @@ on_first_video_data (shmdata_base_reader_t * context, void *user_data)
 {
   g_print ("creating element to display the shared video \n");
 
-#ifdef DARWIN
+#ifdef HAVE_OSX
   shmDisplay = gst_element_factory_make ("osxvideosink", NULL);
 #else
   shmDisplay = gst_element_factory_make ("xvimagesink", NULL);
@@ -158,6 +162,13 @@ main (int argc, char *argv[])
   gst_init (&argc, &argv);
   loop = g_main_loop_new (NULL, FALSE);
 
+#ifdef HAVE_CONFIG_H 
+  GstRegistry *registry; 
+  registry = gst_registry_get_default(); 
+  gst_registry_scan_path (registry, SHMDATA_SHM_GST_PLUGIN_BUILD_PATH); 
+  gst_registry_scan_path (registry, SHMDATA_GST_PLUGIN_PATH);
+#endif 
+  
   //get logs
   g_print ("set logs\n");
   g_log_set_default_handler (my_log_handler, NULL);

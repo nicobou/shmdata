@@ -15,9 +15,8 @@ libgstshm_la_CFLAGS = \
     $(GST_CFLAGS) \
     -DSHM_PIPE_USE_GLIB
 
-if DARWIN
+if HAVE_OSX
  libgstshm_la_LIBADD =
- libgstshm_la_CFLAGS += -DDARWIN
 else
  libgstshm_la_LIBADD = -lrt
 endif

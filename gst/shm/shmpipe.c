@@ -22,7 +22,11 @@
  * THE SOFTWARE.
  */
 
-#ifdef DARWIN
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#ifdef HAVE_OSX
 #ifndef MSG_NOSIGNAL
 #define MSG_NOSIGNAL SO_NOSIGPIPE
 #endif
@@ -279,7 +283,7 @@ sp_open_shm (char *path, int id, mode_t perms, size_t size)
   if (path)
     flags = O_RDONLY;
   else
-#ifdef DARWIN
+#ifdef HAVE_OSX
     flags = O_RDWR | O_CREAT | O_EXCL;
 #else
     flags = O_RDWR | O_CREAT | O_TRUNC | O_EXCL;
