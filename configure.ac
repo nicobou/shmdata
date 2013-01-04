@@ -194,16 +194,6 @@ else
     AC_CONFIG_FILES([shmdata-osg-${LIBSHMDATA_API_VERSION}.pc:shmdata-osg.pc.in])
 fi
 
-# -- (point cloud library example) --
-# Trying to set PCL using pkg-config
-PKG_CHECK_MODULES(PCL, pcl_visualization-1.5, have_pcl=true, have_pcl=false)
-if test "x${have_pcl}" = "xfalse" ; then
-    AC_MSG_WARN([***** missing optional package:  libpcl-visualization-1.5-dev ***** ])
-    AM_CONDITIONAL(HAVE_PCL, false)
-else
-    AM_CONDITIONAL(HAVE_PCL, true)
-fi
-
 # Check for Puredata
 AC_CHECK_HEADER(m_pd.h,
                 PUREDATA=y,
