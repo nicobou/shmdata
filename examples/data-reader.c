@@ -41,7 +41,8 @@ on_data (shmdata_any_reader_t * reader,
 	 void *data,
 	 int data_size,
 	 unsigned long long timestamp,
-	 const char *type_description, void *user_data)
+	 const char *type_description, 
+	 void *user_data)
 {
   printf ("data %p, data size %d, timestamp %llu, type descr %s\n",
 	  data, data_size, timestamp, type_description);

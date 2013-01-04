@@ -71,11 +71,14 @@ static t_int *shmsink_tilde_perform(t_int *w)
 
       for (j=0; j < n; j++)  
 	{
+	  //FIXME do no use memcpy
 	  memcpy( output, input, sizeof(t_float));
 	  output += x->x_num_inlets * sizeof (t_float);
 	  input += sizeof (t_float);
 	}
     }
+
+  //printf ("shmsink: buf size %d\n", buf_size * x->x_num_inlets);
 
   shmdata_any_writer_push_data (x->x_writer, 
 				x->x_buf[x->x_cur_buf],  

@@ -13,6 +13,8 @@
  */
 
 #include "m_pd.h"
+#include <glib.h>
+#include <string.h>
 #include "shmdata/any-data-reader.h"
 
 #ifdef NT
@@ -38,6 +40,8 @@ typedef struct _shmsrc_tilde
   char x_shmdata_path[512];
   char x_shmdata_prefix[256];
   char x_shmdata_name[256];
+  GAsyncQueue *x_audio_queue;
+  GAsyncQueue *x_shmbuf_queue;
   t_int **x_myvec;                               /* vector we pass on in the DSP routine */
   t_float x_f;    	/* place to hold inlet's value if it's set by message */
 } t_shmsrc_tilde;
@@ -51,11 +55,16 @@ void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
 {
   t_shmsrc_tilde *x = (t_shmsrc_tilde *) user_data;
   
-  /* printf ("data %p, data size %d, timestamp %llu, type descr %s\n", */
-  /* 	  data, data_size, timestamp, type_description); */
-
+    /* printf ("data %p, data size %d, timestamp %llu, type descr %s\n",   */
+    /* 	  data, data_size, timestamp, type_description);   */
+   
+  // void *audio_data = g_malloc0 (data_size);
+  //memcpy (audio_data, data, data_size);
+    g_async_queue_push (x->x_shmbuf_queue, shmbuf);
+    g_async_queue_push (x->x_audio_queue, data);
+   
   //free the data, can also be called later
-  shmdata_any_reader_free (shmbuf);
+  //shmdata_any_reader_free (shmbuf);
 }
 
 static void shmsrc_tilde_reader_restart (t_shmsrc_tilde *x)
@@ -71,19 +80,39 @@ static void shmsrc_tilde_reader_restart (t_shmsrc_tilde *x)
 
 static t_int *shmsrc_tilde_perform(t_int *w)
 {
-	 t_shmsrc_tilde *x = (t_shmsrc_tilde*) (w[1]); 
-	  int n = (int)(w[2]);  
-	  t_float *out[x->x_num_outlets];  
-	  int i;  
-	  for (i = 0; i < x->x_num_outlets; i++)  
-	    out[i] = (t_float *)(w[3 + i]);  
-	
-	  /* set output to zero */  
-	  while (n--)  
-	    for (i = 0; i < x->x_num_outlets; i++)  
-	      *(out[i]++) = 0.;  
+  t_shmsrc_tilde *x = (t_shmsrc_tilde*) (w[1]); 
+  int n = (int)(w[2]);  
+  t_float *out[x->x_num_outlets];  
+  int i;  
+  for (i = 0; i < x->x_num_outlets; i++)  
+    out[i] = (t_float *)(w[3 + i]);  
+  
+  //printf ("hehe %d\n",n*x->x_num_outlets*sizeof (t_float));
 
-	return (w + 3 + x->x_num_outlets);	
+  t_float *shm_audio_data = (t_float *)g_async_queue_try_pop (x->x_audio_queue);
+
+  if (shm_audio_data != NULL)
+    {
+      void *shmbuf = g_async_queue_pop (x->x_shmbuf_queue);
+      //deinterleaving channels 
+      while (n--) 
+	for (i=0; i < x->x_num_outlets; i++) //fixme this should be the number of channels in the stream 
+	  { 
+	    *(out[i]++) = (t_float) *shm_audio_data;  
+	    shm_audio_data ++;
+	  } 
+      //g_free ((void *)shm_audio_data);
+      shmdata_any_reader_free (shmbuf);
+    }
+  else
+    {
+      /* set output to zero */  
+      while (n--)  
+	for (i = 0; i < x->x_num_outlets; i++)  
+	  *(out[i]++) = 0.;  
+    }
+
+  return (w + 3 + x->x_num_outlets);	
 }
 
 /* called to start DSP.  Here we call Pd back to add our perform
@@ -102,6 +131,9 @@ static void shmsrc_tilde_dsp(t_shmsrc_tilde *x, t_signal **sp)
 
 static void shmsrc_tilde_free(t_shmsrc_tilde *x)
 {
+  //FIXME clean existing buffers in queue before
+  g_async_queue_unref (x->x_audio_queue);
+  g_async_queue_unref (x->x_shmbuf_queue);
   if (x->x_myvec)
     t_freebytes(x->x_myvec, sizeof(t_int *) * (x->x_num_outlets + 3));
 }
@@ -111,6 +143,9 @@ static void shmsrc_tilde_free(t_shmsrc_tilde *x)
 static void *shmsrc_tilde_new(t_symbol *s, t_floatarg num_outlets)
 {
   t_shmsrc_tilde *x = (t_shmsrc_tilde *)pd_new(shmsrc_tilde_class);
+
+  x->x_audio_queue = g_async_queue_new();
+  x->x_shmbuf_queue = g_async_queue_new();
 
   //num inlet is also considered as the number of channels
   if (num_outlets < 1)
