@@ -7,7 +7,6 @@ AM_CFLAGS = \
     $(GST_CFLAGS) \
     $(GIO_CFLAGS)
 
-
 AM_LDFLAGS =  \
     -module \
     -avoid-version \
@@ -16,7 +15,8 @@ AM_LDFLAGS =  \
     -fPIC
 
 if HAVE_OSX
- AM_LDFLAGS += -shrext .d_fat -arch i386 -arch x86_64
+ AM_LDFLAGS += -shrext .pd_darwin
+# AM_CFLAGS += -arch i386 -arch x86_64
 else
  AM_LDFLAGS += -shrext .pd_linux 
 endif
