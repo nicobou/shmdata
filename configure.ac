@@ -163,26 +163,6 @@ if test "x${have_gio}" = "xfalse" ; then
     AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
 fi
 
-# -- (optionnal libraries) --
-#Trying to set CLUTTER using pkg-config (for the clutter example only
-PKG_CHECK_MODULES(CLUTTER, clutter-1.0, have_clutter=true, have_clutter=false)
-if test "x${have_clutter}" = "xfalse" ; then
-    AC_MSG_WARN([missing package:  libclutter-1.0-dev  ])
-fi
-
-#Trying to set GLEW using pkg-config
-PKG_CHECK_MODULES(GLEW, glew, have_glew=true, have_glew=false)
-if test "x${have_glew}" = "xfalse" ; then
-    AC_MSG_WARN([***** missing optional package:  libglew1.5-dev ***** ])
-    AM_CONDITIONAL(BUILD_CLUTTER_EXAMPLE, false)
-else
-    if test "x${have_clutter}" = "xtrue" ; then
-        AM_CONDITIONAL(BUILD_CLUTTER_EXAMPLE, true)
-    else
-        AM_CONDITIONAL(BUILD_CLUTTER_EXAMPLE, false)
-    fi
-fi
-
 # -- (openscenegraph library) --
 # Trying to set OPENSCENEGRAPH using pkg-config
 PKG_CHECK_MODULES(OPENSCENEGRAPH, openscenegraph, have_openscenegraph=true, have_openscenegraph=false)

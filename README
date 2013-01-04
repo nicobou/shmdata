@@ -56,12 +56,6 @@ Before building shmdata, install the puredata headers on Ubuntu::
 
   $ sudo apt-get install puredata-dev 
 
-Build with the Clutter example
-------------------------------------------
-Before building shmdata, install the clutter with headers on Ubuntu::
-
-  $ sudo apt-get install libclutter-1.0-dev 
-
 Authors
 -------
 Written by:

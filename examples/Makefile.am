@@ -19,25 +19,16 @@ noinst_PROGRAMS = \
     video_reader \
     video_writer 
 
-if BUILD_CLUTTER_EXAMPLE 
-    noinst_PROGRAMS += \
-        clutter_reader
-endif
-
-clutter_reader_CPPFLAGS = $(CLUTTER_CFLAGS) $(GLEW_CFLAGS)
-clutter_reader_LDADD = $(LDADD) $(CLUTTER_LIBS) $(GLEW_LIBS) 
-clutter_reader_SOURCES = clutter-actor-reader.c
-
-#data_reader_CPPFLAGS = $(GSTAPP_CFLAGS)
 data_reader_LDADD = $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
 data_reader_SOURCES = data-reader.c
+
+data_writer_LDADD = $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
+data_writer_SOURCES = data-writer.c
+
 
 rtp_data_sender_CPPFLAGS = $(GSTAPP_CFLAGS)
 rtp_data_sender_LDADD = $(LDADD) $(GSTAPP_LIBS) 
 rtp_data_sender_SOURCES = rtp-data-sender.c
-
-data_writer_LDADD = $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
-data_writer_SOURCES = data-writer.c
 
 rtp_data_receiver_SOURCES = rtp-data-receiver.c
 
