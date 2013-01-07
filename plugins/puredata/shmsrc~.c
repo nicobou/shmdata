@@ -13,6 +13,7 @@
  */
 
 #include "m_pd.h"
+#include <gst/gst.h>
 #include <glib.h>
 #include <string.h>
 #include "shmdata/any-data-reader.h"
@@ -34,9 +35,13 @@ typedef struct _shmsrc_tilde
   shmdata_any_reader_t *x_reader;
   double x_init_date;
   int x_num_outlets;
+  int x_num_channels_to_output;
+  int x_stream_sample_size;
+  int x_stream_num_unused_channels;
   unsigned long long x_offset;
   long x_samplerate;               /* samplerate we're running at */
-  char x_caps[256];
+  
+  //char x_caps[256];
   char x_shmdata_path[512];
   char x_shmdata_prefix[256];
   char x_shmdata_name[256];
@@ -55,9 +60,47 @@ void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
 {
   t_shmsrc_tilde *x = (t_shmsrc_tilde *) user_data;
   
-    /* printf ("data %p, data size %d, timestamp %llu, type descr %s\n",   */
-    /* 	  data, data_size, timestamp, type_description);   */
-   
+  /* printf ("data %p, data size %d, timestamp %llu, type descr %s\n",   */
+  /* 	  data, data_size, timestamp, type_description);   */
+  GstStructure *meta_data = gst_structure_from_string (type_description, NULL);
+  if (meta_data == NULL) 
+    { 
+      //post ("metadata is NULL\n"); 
+      return; 
+    } 
+  if (!g_str_has_prefix (gst_structure_get_name (meta_data), "audio/")) 
+    { 
+      //post ("not an audio stream\n"); 
+      return; 
+    } //should be "audio/... 
+  
+  int channels = -1; 
+  int samplerate = -1; 
+  int width = -1; 
+  gst_structure_get (meta_data,  
+   		     "rate", G_TYPE_INT, &samplerate,  
+   		     "channels", G_TYPE_INT, &channels,  
+   		     "width", G_TYPE_INT, &width,  
+   		     NULL); 
+  //FIXME check sample rate
+  
+  if (channels > x->x_num_outlets)
+      x->x_num_channels_to_output = x->x_num_outlets;
+ else if (channels < 0)
+    x->x_num_channels_to_output = 0;
+  else 
+    x->x_num_channels_to_output = channels;
+  
+  x->x_stream_num_unused_channels = channels - x->x_num_outlets;
+  if (x->x_stream_num_unused_channels < 0)
+    x->x_stream_num_unused_channels = 0;
+
+  
+  x->x_stream_sample_size = width;
+ 
+  //printf ("rate %d, channels %d, width %d\n",samplerate, channels, width); 
+  //printf ("rate %d, channels %d, width %d\n",samplerate, x->x_num_channels_to_output, x->x_stream_sample_size); 
+  
   // void *audio_data = g_malloc0 (data_size);
   //memcpy (audio_data, data, data_size);
     g_async_queue_push (x->x_shmbuf_queue, shmbuf);
@@ -93,18 +136,26 @@ static t_int *shmsrc_tilde_perform(t_int *w)
 
   if (shm_audio_data != NULL)
     {
-      void *shmbuf = g_async_queue_pop (x->x_shmbuf_queue);
       //deinterleaving channels 
       while (n--) 
-	for (i=0; i < x->x_num_outlets; i++) //fixme this should be the number of channels in the stream 
-	  { 
-	    *(out[i]++) = (t_float) *shm_audio_data;  
+	{
+	  //give audio data
+	  for (i=0; i < x->x_num_channels_to_output; i++)
+	    { 
+	      *(out[i]++) = (t_float) *shm_audio_data;  
+	      shm_audio_data ++;
+	    } 
+	  for (i=0; i < x->x_stream_num_unused_channels; i++)
 	    shm_audio_data ++;
-	  } 
-      //g_free ((void *)shm_audio_data);
+	  //give zero when not enough audio for all outlets
+	  for (i=x->x_num_channels_to_output; i < x->x_num_outlets; i++) 
+	    *(out[i]++) = 0.;   
+	  //g_free ((void *)shm_audio_data);
+	}
+      void *shmbuf = g_async_queue_pop (x->x_shmbuf_queue);
       shmdata_any_reader_free (shmbuf);
     }
-  else
+  else //no data to play
     {
       /* set output to zero */  
       while (n--)  
@@ -158,7 +209,8 @@ static void *shmsrc_tilde_new(t_symbol *s, t_floatarg num_outlets)
   x->x_init_date = clock_getlogicaltime();
   x->x_reader = NULL;
   x->x_samplerate = 0;
-  
+  x->x_num_channels_to_output = 0;
+
   sprintf (x->x_shmdata_prefix, "/tmp/pd_");
   sprintf (x->x_shmdata_name, "%s",s->s_name);
   sprintf (x->x_shmdata_path, "%s%s",
