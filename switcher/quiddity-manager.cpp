@@ -161,13 +161,30 @@ namespace switcher
 		       method_name.c_str(),
 		       NULL);
   }
-   
+
+
+  void 
+  QuiddityManager::auto_init (std::string quiddity_name)
+  {
+    Quiddity::ptr quidd = life_manager_->get_quiddity (quiddity_name);
+    QuiddityManagerWrapper::ptr wrapper = std::dynamic_pointer_cast<QuiddityManagerWrapper> (quidd);
+    if (wrapper)
+      wrapper->set_quiddity_manager (shared_from_this());
+    
+    if (!auto_invoke_method_name_.empty ())
+      {
+	//TODO this should test if the method exists 
+	invoke (quidd->get_nick_name (), auto_invoke_method_name_,auto_invoke_args_);
+      }
+  }
+  
   std::string
   QuiddityManager::create (std::string quiddity_class)
   {
     std::string res = seq_invoke (QuiddityCommand::create, 
 				  quiddity_class.c_str(),
 				  NULL);
+    auto_init (res);
     return res;
   }
 
@@ -178,17 +195,7 @@ namespace switcher
 				 quiddity_class.c_str(), 
 				 nick_name.c_str(), 
 				 NULL);
-
-    Quiddity::ptr quidd = life_manager_->get_quiddity (res);
-    QuiddityManagerWrapper::ptr wrapper = std::dynamic_pointer_cast<QuiddityManagerWrapper> (quidd);
-    if (wrapper)
-	wrapper->set_quiddity_manager (shared_from_this());
-
-    if (!auto_invoke_method_name_.empty ())
-      {
-	//TODO this should test if the method exists 
-	invoke (quidd->get_nick_name (), auto_invoke_method_name_,auto_invoke_args_);
-      }
+    auto_init (res);
     return res;
   }
 

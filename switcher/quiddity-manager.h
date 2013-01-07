@@ -82,7 +82,8 @@
      QuiddityLifeManager::ptr life_manager_; //may be shared with others for automatic quiddity creation 
      std::string name_;
 
-     //auto invoke
+     //auto invoke and init
+     void auto_init (std::string quiddity_name);
      std::string auto_invoke_method_name_;
      std::vector<std::string> auto_invoke_args_;
 

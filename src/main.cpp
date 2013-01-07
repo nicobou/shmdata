@@ -110,7 +110,6 @@ main (int argc,
   if (port_number == NULL)
     port_number = "8080";
 
-
   g_log_set_default_handler (log_handler, NULL);
   
   {//using context in order to let excluse ownership of manager by the container,
@@ -121,7 +120,7 @@ main (int argc,
     // Create a runtime (pipeline0)
     //std::string runtime = 
     manager->create ("runtime");
-  
+
     std::string soap_name = manager->create ("SOAPcontrolServer", "soapserver");
     std::vector<std::string> port_arg;
     port_arg.push_back (port_number);
