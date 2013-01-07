@@ -29,8 +29,10 @@ plugin_LTLIBRARIES = \
 ##sink
 shmsink__la_LIBADD = \
     $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
+
 shmsink__la_includedir = \
     $(includedir)/shmdata-$(LIBSHMDATA_API_VERSION)/shmdata
+
 shmsink__la_SOURCES = \
     shmsink~.c
 
@@ -38,9 +40,11 @@ shmsink__la_SOURCES = \
 shmsrc__la_LIBADD = \
     $(GST_LIBS) \
     $(GIO_LIBS) \
-    $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la
+    $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
+
 shmsrc__la_includedir = \
     $(includedir)/shmdata-$(LIBSHMDATA_API_VERSION)/shmdata
+
 shmsrc__la_SOURCES = \
     shmsrc~.c
 
