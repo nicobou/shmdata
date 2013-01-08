@@ -29,24 +29,29 @@
 
 static t_class *shmsrc_tilde_class;
 
+typedef struct _shmsrc_tilde_buf
+{
+  void *audio_data;
+  void *shm_buf; //for freeing memory after being used
+  int remaining_samples;
+  int num_channels_to_output;
+  int sample_size;
+  int num_unused_channels;
+  int sample_rate;
+} t_shmsrc_tilde_buf;
+
 typedef struct _shmsrc_tilde
 {
   t_object x_obj; 
   shmdata_any_reader_t *x_reader;
   double x_init_date;
   int x_num_outlets;
-  int x_num_channels_to_output;
-  int x_stream_sample_size;
-  int x_stream_num_unused_channels;
-  unsigned long long x_offset;
-  long x_samplerate;               /* samplerate we're running at */
-  
-  //char x_caps[256];
+  t_shmsrc_tilde_buf *x_current_audio_buf; 
+  long x_samplerate;/* samplerate we're running at */
   char x_shmdata_path[512];
   char x_shmdata_prefix[256];
   char x_shmdata_name[256];
   GAsyncQueue *x_audio_queue;
-  GAsyncQueue *x_shmbuf_queue;
   t_int **x_myvec;                               /* vector we pass on in the DSP routine */
   t_float x_f;    	/* place to hold inlet's value if it's set by message */
 } t_shmsrc_tilde;
@@ -74,6 +79,8 @@ void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
       return; 
     } //should be "audio/... 
   
+  t_shmsrc_tilde_buf *audio_buf = g_malloc0 (sizeof (t_shmsrc_tilde_buf));
+
   int channels = -1; 
   int samplerate = -1; 
   int width = -1; 
@@ -82,29 +89,26 @@ void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
    		     "channels", G_TYPE_INT, &channels,  
    		     "width", G_TYPE_INT, &width,  
    		     NULL); 
-  //FIXME check sample rate
-  
   if (channels > x->x_num_outlets)
-      x->x_num_channels_to_output = x->x_num_outlets;
+      audio_buf->num_channels_to_output = x->x_num_outlets;
  else if (channels < 0)
-    x->x_num_channels_to_output = 0;
+    audio_buf->num_channels_to_output = 0;
   else 
-    x->x_num_channels_to_output = channels;
-  
-  x->x_stream_num_unused_channels = channels - x->x_num_outlets;
-  if (x->x_stream_num_unused_channels < 0)
-    x->x_stream_num_unused_channels = 0;
+    audio_buf->num_channels_to_output = channels;
 
+   audio_buf->num_unused_channels = channels - x->x_num_outlets;
+  if (audio_buf->num_unused_channels < 0)
+    audio_buf->num_unused_channels = 0;
+
+  audio_buf->sample_rate = samplerate;
+  audio_buf->sample_size = width;
+  audio_buf->remaining_samples = data_size / ((width/8) * channels);
+  audio_buf->audio_data = data;
+  audio_buf->shm_buf = shmbuf;
+
+  //printf ("rate %d, channels %d, width %d num sample=%d\n",samplerate, channels, width, data_size / ((width/8) *channels)); 
   
-  x->x_stream_sample_size = width;
- 
-  //printf ("rate %d, channels %d, width %d\n",samplerate, channels, width); 
-  //printf ("rate %d, channels %d, width %d\n",samplerate, x->x_num_channels_to_output, x->x_stream_sample_size); 
-  
-  // void *audio_data = g_malloc0 (data_size);
-  //memcpy (audio_data, data, data_size);
-    g_async_queue_push (x->x_shmbuf_queue, shmbuf);
-    g_async_queue_push (x->x_audio_queue, data);
+  g_async_queue_push (x->x_audio_queue, audio_buf);
    
   //free the data, can also be called later
   //shmdata_any_reader_free (shmbuf);
@@ -130,32 +134,51 @@ static t_int *shmsrc_tilde_perform(t_int *w)
   for (i = 0; i < x->x_num_outlets; i++)  
     out[i] = (t_float *)(w[3 + i]);  
   
-  //printf ("hehe %d\n",n*x->x_num_outlets*sizeof (t_float));
-
-  t_float *shm_audio_data = (t_float *)g_async_queue_try_pop (x->x_audio_queue);
-
-  if (shm_audio_data != NULL)
-    {
-      //deinterleaving channels 
-      while (n--) 
-	{
-	  //give audio data
-	  for (i=0; i < x->x_num_channels_to_output; i++)
-	    { 
-	      *(out[i]++) = (t_float) *shm_audio_data;  
-	      shm_audio_data ++;
-	    } 
-	  for (i=0; i < x->x_stream_num_unused_channels; i++)
-	    shm_audio_data ++;
-	  //give zero when not enough audio for all outlets
-	  for (i=x->x_num_channels_to_output; i < x->x_num_outlets; i++) 
-	    *(out[i]++) = 0.;   
-	  //g_free ((void *)shm_audio_data);
-	}
-      void *shmbuf = g_async_queue_pop (x->x_shmbuf_queue);
-      shmdata_any_reader_free (shmbuf);
-    }
-  else //no data to play
+  if (x->x_current_audio_buf == NULL)
+    x->x_current_audio_buf = g_async_queue_try_pop (x->x_audio_queue); //FIXME wrap this in a function and resample
+  
+  if (x->x_current_audio_buf != NULL) 
+    { 
+      //deinterleaving channels  
+      while (n--)  
+   	{ 
+	  //if case the audio buf ended during the loop
+	  if (x->x_current_audio_buf == NULL)
+	    for (i=0; i < x->x_num_outlets; i++)  
+	      *(out[i]++) = 0.;
+	  else
+	    {
+	      //give audio data 
+	      for (i=0; i < x->x_current_audio_buf->num_channels_to_output; i++) 
+		{ 
+		  if (x->x_current_audio_buf->sample_size == 32)
+		    {
+		      *(out[i]++) = (t_float) *(t_float *)x->x_current_audio_buf->audio_data;   
+		      x->x_current_audio_buf->audio_data += sizeof(t_float); 
+		    }
+		  else if (x->x_current_audio_buf->sample_size == 16)
+		    {
+		      *out[i]++ = (t_float)(*(gint16 *)x->x_current_audio_buf->audio_data * 3.051850e-05);
+		      x->x_current_audio_buf->audio_data += sizeof(gint16); 
+		    }
+		}  
+	      for (i=0; i < x->x_current_audio_buf->num_unused_channels; i++) 
+		x->x_current_audio_buf->audio_data ++; 
+	      //give zero when not enough audio for all outlets 
+	      for (i=x->x_current_audio_buf->num_channels_to_output; i < x->x_num_outlets; i++)  
+		*(out[i]++) = 0.;    
+	      //tracking remaining samples in the audio buf
+	      x->x_current_audio_buf->remaining_samples--;
+	      if (x->x_current_audio_buf->remaining_samples == 0)
+		{
+		  shmdata_any_reader_free (x->x_current_audio_buf->shm_buf);
+		  g_free (x->x_current_audio_buf);
+		  x->x_current_audio_buf = g_async_queue_try_pop (x->x_audio_queue); 
+		}
+	    }
+	} 
+    } 
+   else //no data to play 
     {
       /* set output to zero */  
       while (n--)  
@@ -182,9 +205,15 @@ static void shmsrc_tilde_dsp(t_shmsrc_tilde *x, t_signal **sp)
 
 static void shmsrc_tilde_free(t_shmsrc_tilde *x)
 {
-  //FIXME clean existing buffers in queue before
+  shmdata_any_reader_close (x->x_reader);
+  t_shmsrc_tilde_buf *buf = g_async_queue_try_pop (x->x_audio_queue); 
+  while (buf != NULL)
+    {
+      shmdata_any_reader_free (buf->shm_buf);
+      g_free (buf);
+      buf = g_async_queue_try_pop (x->x_audio_queue); 
+    }
   g_async_queue_unref (x->x_audio_queue);
-  g_async_queue_unref (x->x_shmbuf_queue);
   if (x->x_myvec)
     t_freebytes(x->x_myvec, sizeof(t_int *) * (x->x_num_outlets + 3));
 }
@@ -196,7 +225,6 @@ static void *shmsrc_tilde_new(t_symbol *s, t_floatarg num_outlets)
   t_shmsrc_tilde *x = (t_shmsrc_tilde *)pd_new(shmsrc_tilde_class);
 
   x->x_audio_queue = g_async_queue_new();
-  x->x_shmbuf_queue = g_async_queue_new();
 
   //num inlet is also considered as the number of channels
   if (num_outlets < 1)
@@ -205,11 +233,10 @@ static void *shmsrc_tilde_new(t_symbol *s, t_floatarg num_outlets)
     x->x_num_outlets = num_outlets;
 
   x->x_f = 0;
-  x->x_offset = 0;
   x->x_init_date = clock_getlogicaltime();
   x->x_reader = NULL;
   x->x_samplerate = 0;
-  x->x_num_channels_to_output = 0;
+  x->x_current_audio_buf = NULL;
 
   sprintf (x->x_shmdata_prefix, "/tmp/pd_");
   sprintf (x->x_shmdata_name, "%s",s->s_name);
