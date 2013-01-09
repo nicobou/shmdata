@@ -41,14 +41,13 @@ namespace switcher
     void set (std::string value);
     std::string get ();
     std::string get_description ();
+    JsonNode *get_json_root_node ();
     void print ();
 
   private:
     GParamSpec *property_;
     GObject *object_;
     JSONBuilder::ptr json_description_;
-    std::string old_json_description_;
-    void add_json_object (const char *name, const char *value, bool put_comma);
     void make_description();
   };
 

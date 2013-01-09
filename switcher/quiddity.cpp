@@ -29,7 +29,9 @@ namespace switcher
 {
 
   Quiddity::Quiddity ()
-  {}
+  {
+    properties_description_.reset (new JSONBuilder());
+  }
   
   Quiddity::~Quiddity () { 
     g_debug ("call: Quiddity destructor for %s",get_name().c_str());
@@ -192,22 +194,42 @@ namespace switcher
   std::string 
   Quiddity::get_properties_description ()
   {
-    std::string res;
-    res.append ("{ properties: [ ");
+    properties_description_->reset();
+    properties_description_->begin_object ();
+    properties_description_->set_member_name ("properties");
+    properties_description_->begin_array ();
+
     for(std::map<std::string, Property::ptr>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
       {
-	if (it != properties_.begin())
-	  res.append (", ");
-
-	res.append ("{ \"name\": \"");
-	res.append (it->first);
-	res.append ("\", ");
-        res.append (" \"description\": ");
-	res.append (it->second->get_description ());
-	res.append ("}");
+	properties_description_->begin_object ();
+	properties_description_->add_string_member ("name",it->first.c_str ());
+	//	properties_description_->set_member_name ("description");
+	JsonNode *root_node = it->second->get_json_root_node ();
+	properties_description_->add_JsonNode_member ("description", root_node);
+	//JSONBuilder::node_free (root_node); //FIXME this must be called but not here
+	properties_description_->end_object ();
       }
-    res.append (" ]}");
-    return res;
+
+    properties_description_->end_array ();
+    properties_description_->end_object ();
+    
+    return properties_description_->get_string ();
+    // std::string res;
+    // res.append ("{ properties: [ ");
+    // for(std::map<std::string, Property::ptr>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
+    //   {
+    // 	if (it != properties_.begin())
+    // 	  res.append (", ");
+
+    // 	res.append ("{ \"name\": \"");
+    // 	res.append (it->first);
+    // 	res.append ("\", ");
+    //     res.append (" \"description\": ");
+    // 	res.append (it->second->get_description ());
+    // 	res.append ("}");
+    //   }
+    // res.append (" ]}");
+    // return res;
   }
 
   std::string 

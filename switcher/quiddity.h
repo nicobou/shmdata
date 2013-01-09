@@ -34,7 +34,7 @@
 #include "switcher/method.h"
 #include "switcher/quiddity-documentation.h"
 #include "switcher/quiddity-life-manager.h"
-
+#include "switcher/json-builder.h"
 
 namespace switcher
 {
@@ -85,6 +85,7 @@ namespace switcher
   private:
     //properties are registered by derived class
     std::map<std::string, Property::ptr> properties_;
+    JSONBuilder::ptr properties_description_;
     std::map<std::string, Method::ptr> methods_;
     std::string name_;
     std::string nick_name_;

@@ -71,25 +71,17 @@ namespace switcher
     return res;
   }
  
-  void
-  Property::add_json_object (const char *name, const char *value, bool comma)
-  {
-    old_json_description_.append ("\"");
-    old_json_description_.append (name);
-    old_json_description_.append ("\": \"");
-    old_json_description_.append (value);
-    old_json_description_.append ("\"");
-    if (comma)
-      old_json_description_.append (",");
-  }
-  
   std::string
   Property::get_description ()
   {
-    //return old_json_description_;
     return json_description_->get_string();
   }
 
+  JsonNode *
+  Property::get_json_root_node ()
+  {
+    return json_description_->get_root ();
+  }
 
   //make json formated description 
   void
@@ -105,56 +97,35 @@ namespace switcher
    
     json_description_->reset ();
     json_description_->begin_object ();
-    old_json_description_.append ("{");   
 
     //nickname 
     json_description_->add_string_member ("nickname", g_param_spec_get_nick (property_));
-    add_json_object ("nickname",g_param_spec_get_nick (property_),true);
 
     // short description
     json_description_->add_string_member ("short description", g_param_spec_get_blurb (property_));
-    add_json_object ("short description",g_param_spec_get_blurb (property_),true);
     
     // name
-    //add_json_object ("internal name",g_param_spec_get_name (property_),true);
+    json_description_->add_string_member ("internal name", g_param_spec_get_name (property_));
     
     switch (G_VALUE_TYPE (&value)) {
     case G_TYPE_STRING:
       {
 	const char *string_val = g_value_get_string (&value);
-	
 	json_description_->add_string_member ("type", "string");
-	add_json_object ("type","string",true);
-
 	if (string_val == NULL)
-	  {
 	    json_description_->add_string_member ("default value","");
-	    add_json_object ("default value","",false);
-	  }
 	else
-	  {
 	    json_description_->add_string_member ("default value",string_val);
-	    add_json_object ("default value",string_val,false);
-	  }
 	break;
       }
     case G_TYPE_BOOLEAN:
       {
 	gboolean bool_val = g_value_get_boolean (&value);
-
 	json_description_->add_string_member ("type","boolean");
-	add_json_object ("type","boolean",true);
-	
 	if (bool_val)
-	  {
 	    json_description_->add_string_member ("default value","true");
-	    add_json_object ("default value","true",false);
-	  }	
 	else
-	  {
 	    json_description_->add_string_member ("default value","false");
-	    add_json_object ("default value","false",false);
-	  }
 	break;
       }
     case G_TYPE_ULONG:
@@ -162,16 +133,12 @@ namespace switcher
 	GParamSpecULong *pulong = G_PARAM_SPEC_ULONG (property_);
 
 	json_description_->add_string_member ("type","ulong");
-	add_json_object ("type","ulong",true);
 	gchar *min = g_strdup_printf ("%lu",pulong->minimum);
 	gchar *max = g_strdup_printf ("%lu",pulong->maximum);
 	gchar *default_value = g_strdup_printf ("%lu",g_value_get_ulong (&value));
 	json_description_->add_string_member ("minimum",min);
-	add_json_object ("minimum",min,true);
 	json_description_->add_string_member ("maximum",max);
-	add_json_object ("maximum",max,true);
 	json_description_->add_string_member ("default value",default_value);
-	add_json_object ("default value",default_value,false);
 	g_free (min);
 	g_free (max);
 	g_free (default_value); 
@@ -184,13 +151,9 @@ namespace switcher
 	gchar *max = g_strdup_printf ("%ld",plong->maximum);
 	gchar *default_value = g_strdup_printf ("%ld",g_value_get_ulong (&value));
 	json_description_->add_string_member ("type","long");
-	add_json_object ("type","long",true);
 	json_description_->add_string_member ("minimum",min);
-	add_json_object ("minimum",min,true);
 	json_description_->add_string_member ("maximum",max);
-	add_json_object ("maximum",max,true);
 	json_description_->add_string_member ("default value",default_value);
-	add_json_object ("default value",default_value,false);
 	g_free (min);
 	g_free (max);
 	g_free (default_value); 
@@ -203,13 +166,9 @@ namespace switcher
 	gchar *max = g_strdup_printf ("%u",puint->maximum);
 	gchar *default_value = g_strdup_printf ("%u",g_value_get_uint (&value));
 	json_description_->add_string_member ("type","uint");
-	add_json_object ("type","uint",true);
 	json_description_->add_string_member ("minimum",min);
-	add_json_object ("minimum",min,true);
 	json_description_->add_string_member ("maximum",max);
-	add_json_object ("maximum",max,true);
 	json_description_->add_string_member ("default value",default_value);
-	add_json_object ("default value",default_value,false);
 	g_free (min);
 	g_free (max);
 	g_free (default_value); 
@@ -222,13 +181,9 @@ namespace switcher
 	gchar *max = g_strdup_printf ("%d",pint->maximum);
 	gchar *default_value = g_strdup_printf ("%d",g_value_get_int (&value));
 	json_description_->add_string_member ("type","int");
-	add_json_object ("type","int",true);
 	json_description_->add_string_member ("minimum",min);
-	add_json_object ("minimum",min,true);
 	json_description_->add_string_member ("maximum",max);
-	add_json_object ("maximum",max,true);
 	json_description_->add_string_member ("default value",default_value);
-	add_json_object ("default value",default_value,false);
 	g_free (min);
 	g_free (max);
 	g_free (default_value); 
@@ -241,13 +196,9 @@ namespace switcher
 	gchar *max = g_strdup_printf ("%" G_GUINT64_FORMAT,puint64->maximum);
 	gchar *default_value = g_strdup_printf ("%" G_GUINT64_FORMAT,g_value_get_uint64 (&value));
 	json_description_->add_string_member ("type","uint64");
-	add_json_object ("type","uint64",true);
 	json_description_->add_string_member ("minimum",min);
-	add_json_object ("minimum",min,true);
 	json_description_->add_string_member ("maximum",max);
-	add_json_object ("maximum",max,true);
 	json_description_->add_string_member ("default value",default_value);
-	add_json_object ("default value",default_value,false);
 	g_free (min);
 	g_free (max);
 	g_free (default_value); 
@@ -260,13 +211,9 @@ namespace switcher
 	gchar *max = g_strdup_printf ("%" G_GINT64_FORMAT,pint64->maximum);
 	gchar *default_value = g_strdup_printf ("%" G_GINT64_FORMAT,g_value_get_int64 (&value));
 	json_description_->add_string_member ("type","int64");
-	add_json_object ("type","int64",true);
 	json_description_->add_string_member ("minimum",min);
-	add_json_object ("minimum",min,true);
 	json_description_->add_string_member ("maximum",max);
-	add_json_object ("maximum",max,true);
 	json_description_->add_string_member ("default value",default_value);
-	add_json_object ("default value",default_value,false);
 	g_free (min);
 	g_free (max);
 	g_free (default_value); 
@@ -279,13 +226,9 @@ namespace switcher
 	gchar *max = g_strdup_printf ("%.7g",pfloat->maximum);
 	gchar *default_value = g_strdup_printf ("%.7g",g_value_get_float (&value));
 	json_description_->add_string_member ("type","float");
-	add_json_object ("type","float",true);
 	json_description_->add_string_member ("minimum",min);
-	add_json_object ("minimum",min,true);
 	json_description_->add_string_member ("maximum",max);
-	add_json_object ("maximum",max,true);
 	json_description_->add_string_member ("default value",default_value);
-	add_json_object ("default value",default_value,false);
 	g_free (min);
 	g_free (max);
 	g_free (default_value); 
@@ -298,13 +241,9 @@ namespace switcher
 	gchar *max = g_strdup_printf ("%.7g",pdouble->maximum);
 	gchar *default_value = g_strdup_printf ("%.7g",g_value_get_double (&value));
 	json_description_->add_string_member ("type","double");
-	add_json_object ("type","double",true);
 	json_description_->add_string_member ("minimum",min);
-	add_json_object ("minimum",min,true);
 	json_description_->add_string_member ("maximum",max);
-	add_json_object ("maximum",max,true);
 	json_description_->add_string_member ("default value",default_value);
-	add_json_object ("default value",default_value,false);
 	g_free (min);
 	g_free (max);
 	g_free (default_value); 
@@ -314,30 +253,19 @@ namespace switcher
       if (property_->value_type == GST_TYPE_CAPS) {
 	const GstCaps *caps = gst_value_get_caps (&value);
 	json_description_->add_string_member ("type","caps");
-	add_json_object ("type","caps",true);
 	if (!caps)
-	  {
 	    json_description_->add_string_member ("default value","");
-	    add_json_object ("default value","",false);
-	  }
 	else 
-	  {
 	  json_description_->add_string_member ("default value",gst_caps_to_string (caps));
-	  add_json_object ("default value",gst_caps_to_string (caps),false);
-	}
       } else if (G_IS_PARAM_SPEC_ENUM (property_)) {
 	GEnumValue *values;
 	guint j = 0;
 	gint enum_value;
 	const gchar *value_nick = "";
 	const gchar *value_name = "";
-
 	json_description_->add_string_member ("type","enum");
-	add_json_object ("type","enum",true);
-	
 	values = G_ENUM_CLASS (g_type_class_ref (property_->value_type))->values;
 	enum_value = g_value_get_enum (&value);
-
 	while (values[j].value_name) {
 	  if (values[j].value == enum_value)
 	    {
@@ -349,18 +277,12 @@ namespace switcher
 
 	json_description_->set_member_name ("default value");
 	json_description_->begin_object ();
-	old_json_description_.append ("\"default value\": {");
-	
 	gchar *value = g_strdup_printf ("%d",enum_value);
 	json_description_->add_string_member ("value",value);
-	add_json_object ("value",value,true);
 	g_free (value);
 	json_description_->add_string_member ("nick",value_nick);
-	add_json_object ("nick",value_nick,true);
 	json_description_->add_string_member ("name",value_name);
-	add_json_object ("name",value_name,false);
 	json_description_->end_object ();
-	old_json_description_.append ("}, ");
 
 	// g_debug ("Enum \"%s\" Default: %d, \"%s\" \"%s\"",
 	// 	 g_type_name (G_VALUE_TYPE (&value)), 
@@ -372,26 +294,17 @@ namespace switcher
 
 	json_description_->set_member_name ("values");
 	json_description_->begin_array ();
-	old_json_description_.append ("\"values\": [");
 	while (values[j].value_name) {
-	  if (j!=0)
-	    old_json_description_.append (",");
 	  json_description_->begin_object ();
-	  old_json_description_.append ("{");
 	  json_description_->add_string_member ("name",values[j].value_name);
-	  add_json_object ("name",values[j].value_name,false);
 	  json_description_->add_string_member ("nick",values[j].value_nick);
-	  add_json_object ("nick",values[j].value_nick,true);
 	  gchar *values_value = g_strdup_printf ("%d",values[j].value);
 	  json_description_->add_string_member ("value",values_value);
-	  add_json_object ("value",values_value,true);
 	  g_free (values_value);
 	  json_description_->end_object ();
-	  old_json_description_.append ("}");
 	  j++;
 	}
 	json_description_->end_array ();
-	old_json_description_.append ("]");
 	
 	/* g_type_class_unref (ec); */
       } else if (G_IS_PARAM_SPEC_FLAGS (property_)) {
@@ -443,7 +356,6 @@ namespace switcher
       } else if (GST_IS_PARAM_SPEC_FRACTION (property_)) {
 	GstParamSpecFraction *pfraction = GST_PARAM_SPEC_FRACTION (property_);
 	json_description_->add_string_member ("type","fraction");
-	add_json_object ("type","fraction",true);
 	gchar *minnum = g_strdup_printf ("%d",pfraction->min_num);
 	gchar *minden = g_strdup_printf ("%d",pfraction->min_den);
 	gchar *maxnum = g_strdup_printf ("%d",pfraction->max_num);
@@ -451,17 +363,11 @@ namespace switcher
 	gchar *defaultnum = g_strdup_printf ("%d",gst_value_get_fraction_numerator (&value));
 	gchar *defaultden = g_strdup_printf ("%d",gst_value_get_fraction_denominator (&value));
 	json_description_->add_string_member ("minimum numerator",minnum);
-	add_json_object ("minimum numerator",minnum,true);
 	json_description_->add_string_member ("maximum numerator",minden);
-	add_json_object ("maximum numerator",minden,true);
 	json_description_->add_string_member ("minimum denominator",maxnum);
-        add_json_object ("minimum denominator",maxnum,true);
 	json_description_->add_string_member ("maximum denominator",maxden);
-	add_json_object ("maximum denominator",maxden,true);
 	json_description_->add_string_member ("default numerator",defaultnum);
-        add_json_object ("default numerator",defaultnum,true);
 	json_description_->add_string_member ("default denominator",defaultden);
-	add_json_object ("default denominator",defaultden,true);
 	g_free (minnum);
 	g_free (minden);
 	g_free (maxnum);
@@ -488,7 +394,6 @@ namespace switcher
   g_value_reset (&value);
   
   json_description_->end_object ();
-  old_json_description_.append ("}");   
 }
 
 

@@ -48,8 +48,11 @@ namespace switcher
     void end_array ();
     void set_member_name (const gchar *member_name);
     void add_string_member (const gchar *member_name, const gchar *string_value);
-    
-    std::string get_string ();//FIXME remove that
+    void add_JsonNode_member (const gchar *member_name, JsonNode *JsonNode_value);
+ 
+    std::string get_string ();
+    JsonNode *get_root ();
+    static void node_free (JsonNode *root_node);
   private:
     JsonBuilder *builder_;
     
