@@ -62,6 +62,7 @@ namespace switcher
     gst_element_link (rawaudio_, audio_tee_);
 
     GstCaps *audiocaps = gst_caps_new_simple ("audio/x-raw-float",
+					      "width", G_TYPE_INT, 32,
      					      NULL);
     
     //creating a connector for raw audio
