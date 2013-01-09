@@ -113,14 +113,19 @@ PKG_CHECK_MODULES(GST, [
   ])
 ])
 
+PKG_CHECK_MODULES(SHMDATA, shmdata-0.6, have_shmdata=true, have_shmdata=false)
+if test "x${have_shmdata}" = "xfalse" ; then
+    AC_MSG_ERROR([Missing libshmdata-0.6-dev])
+fi
+
 PKG_CHECK_MODULES(GSOAP, gsoap++, have_gsoap=true, have_gsoap=false)
 if test "x${have_gsoap}" = "xfalse" ; then
     AC_MSG_ERROR([Missing gsoap package])
 fi
 
-PKG_CHECK_MODULES(SHMDATA, shmdata-0.6, have_shmdata=true, have_shmdata=false)
-if test "x${have_shmdata}" = "xfalse" ; then
-    AC_MSG_ERROR([Missing libshmdata-0.6-dev])
+PKG_CHECK_MODULES(JSONGLIB, json-glib-1.0, have_jsonglib=true, have_jsonglib=false)
+if test "x${have_jsonglib}" = "xfalse" ; then
+    AC_MSG_ERROR([Missing libjson-glib-dev package])
 fi
 
 AC_MSG_CHECKING([to see if compiler understands -std=c++0x])

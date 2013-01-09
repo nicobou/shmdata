@@ -1,6 +1,7 @@
 AM_CXXFLAGS = \
     $(GSOAP_CFLAGS) \
     $(GST_CFLAGS) \
+    $(JSONGLIB_CFLAGS) \
     $(SHMDATA_CFLAGS) \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir)/switcher/webservices
@@ -8,6 +9,7 @@ AM_CXXFLAGS = \
 AM_LIBS = \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
+    $(JSONGLIB_LIBS) \
     $(SHMDATA_LIBS)
 
 lib_LTLIBRARIES = \
@@ -36,6 +38,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gst-utils.cpp \
     h264.cpp \
     http-sdp.cpp \
+    json-builder.cpp \
     method.cpp \
     property.cpp \
     pulse-sink.cpp \
@@ -58,6 +61,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
 libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
+    $(JSONGLIB_LIBS) \
     $(SHMDATA_LIBS) \
     -version-info $(LIBSWITCHER_SO_VERSION)
 
@@ -93,6 +97,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     http-sdp.h \
     hash-table.h \
     hash-table_spec.h \
+    json-builder.h \
     method.h \
     property.h \
     pulse-sink.h \

@@ -22,7 +22,6 @@
 #include <signal.h>
 #include <time.h>
 
-
 static gchar *server_name = NULL;
 static gchar *port_number = NULL;
 static gboolean quiet;

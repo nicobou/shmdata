@@ -15,12 +15,14 @@ check_quiddity_create_remove_SOURCES = \
 check_quiddity_create_remove_CXXFLAGS = \
     $(GSOAP_CFLAGS) \
     $(GST_CFLAGS) \
+    $(JSONGLIB_CFLAGS) \
     $(SHMDATA_CFLAGS) \
     -I$(top_srcdir) 
 
 check_quiddity_create_remove_LDFLAGS = \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
+    $(JSONGLIB_LIBS) \
     $(SHMDATA_LIBS) \
     $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
 
@@ -31,11 +33,13 @@ check_quiddity_create_remove_with_auto_pipeline_SOURCES = \
 check_quiddity_create_remove_with_auto_pipeline_CXXFLAGS = \
     $(GSOAP_CFLAGS) \
     $(GST_CFLAGS) \
+    $(JSONGLIB_CFLAGS) \
     $(SHMDATA_CFLAGS) \
     -I$(top_srcdir) 
 
 check_quiddity_create_remove_with_auto_pipeline_LDFLAGS = \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
+    $(JSONGLIB_LIBS) \
     $(SHMDATA_LIBS) \
     $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la

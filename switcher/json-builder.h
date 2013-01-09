@@ -17,41 +17,46 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * The JSON Builder allows for building json strings
+ */
 
-#ifndef __SWITCHER_PROPERTY_H__
-#define __SWITCHER_PROPERTY_H__
+#ifndef __SWITCHER_JSON_BUILDER_H__
+#define __SWITCHER_JSON_BUILDER_H__
 
-#include <gst/gst.h>
+
 #include <memory>
-#include <map>
 #include <string>
-#include "switcher/json-builder.h"
+#include <json-glib/json-glib.h>
+#include "glib.h" 
 
 namespace switcher
 {
-  
-  class Property
+
+  class JSONBuilder 
   {
   public:
-    typedef std::shared_ptr<Property> ptr;
-    Property ();
+    typedef std::shared_ptr< JSONBuilder > ptr;
+    JSONBuilder ();
+    ~JSONBuilder ();
 
-    //this is when using an existing property
-    void set_gobject_pspec (GObject *object, GParamSpec *pspec);
-    void set (std::string value);
-    std::string get ();
-    std::string get_description ();
-    void print ();
-
+    void reset();
+    void begin_object ();
+    void end_object ();
+    void begin_array ();
+    void add_string_value (const gchar *string_value);
+    void end_array ();
+    void set_member_name (const gchar *member_name);
+    void add_string_member (const gchar *member_name, const gchar *string_value);
+    
+    std::string get_string ();//FIXME remove that
   private:
-    GParamSpec *property_;
-    GObject *object_;
-    JSONBuilder::ptr json_description_;
-    std::string old_json_description_;
-    void add_json_object (const char *name, const char *value, bool put_comma);
-    void make_description();
+    JsonBuilder *builder_;
+    
   };
 
-}  // end of namespace
+} // end of namespace
+
+
 
 #endif // ifndef

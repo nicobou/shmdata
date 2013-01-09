@@ -72,6 +72,7 @@
      bool invoke (std::string quiddity_name, 
 		  std::string method_name,
 		  std::vector<std::string> args);  
+
      // will invoke the given method after quiddity creation, if method exists (only one method)
      bool auto_invoke  (std::string method_name,
 			std::vector<std::string> args);  
