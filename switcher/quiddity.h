@@ -87,6 +87,7 @@ namespace switcher
     std::map<std::string, Property::ptr> properties_;
     JSONBuilder::ptr properties_description_;
     std::map<std::string, Method::ptr> methods_;
+    JSONBuilder::ptr methods_description_;
     std::string name_;
     std::string nick_name_;
  

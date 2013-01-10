@@ -37,6 +37,7 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr< JSONBuilder > ptr;
+    typedef JsonNode * Node;
     JSONBuilder ();
     ~JSONBuilder ();
 
@@ -45,14 +46,15 @@ namespace switcher
     void end_object ();
     void begin_array ();
     void add_string_value (const gchar *string_value);
+    void add_node_value (Node node_value);
     void end_array ();
     void set_member_name (const gchar *member_name);
     void add_string_member (const gchar *member_name, const gchar *string_value);
-    void add_JsonNode_member (const gchar *member_name, JsonNode *JsonNode_value);
+    void add_JsonNode_member (const gchar *member_name, Node JsonNode_value);
  
     std::string get_string ();
-    JsonNode *get_root ();
-    static void node_free (JsonNode *root_node);
+    Node get_root ();
+    static void node_free (Node root_node);
   private:
     JsonBuilder *builder_;
     

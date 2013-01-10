@@ -22,12 +22,16 @@
  */
 
 #include "switcher/method.h"
+#include "switcher/json-builder.h"
+
 namespace switcher
 {
 
   Method::Method () :
     closure_ (NULL)
-  {}
+  {
+    json_description_.reset (new JSONBuilder());
+  }
 
   Method::~Method ()
   {
@@ -115,54 +119,40 @@ namespace switcher
 			   std::string short_description,
 			   std::vector< std::pair<std::string,std::string> > arg_description)
   {
-    method_name_ = method_name;
-    short_description_ = short_description;
-    arg_description_ = arg_description;
+    json_description_->reset ();
+    json_description_->begin_object ();
+    json_description_->add_string_member ("name", method_name.c_str ());
+    json_description_->add_string_member ("description", short_description.c_str ());
+    json_description_->set_member_name ("arguments");
+    json_description_->begin_array ();
+    std::vector<std::pair<std::string,std::string> >::iterator it;
+    int j=0;
+    if (!arg_description.empty ())
+      for (it = arg_description.begin() ; it != arg_description.end(); it++ )
+	{
+	  json_description_->begin_object ();
+	  json_description_->add_string_member ("name",it->first.c_str ());
+	  json_description_->add_string_member ("description",it->second.c_str ());
+	  json_description_->add_string_member ("type",g_type_name (arg_types_[j])); 
+	  json_description_->end_object ();
+	}
+    json_description_->end_array ();
+    json_description_->end_object ();
   }
 
   //json formated description
   std::string
   Method::get_description ()
   {
-    std::string res;
-    
-    res.append ("{");
-    
-    //name
-    res.append ("\"method name\": \"");
-    res.append (method_name_);
-    res.append ("\", ");
-
-    //short description
-    res.append ("\"short description\": \"");
-    res.append (short_description_);
-    res.append ("\", ");
-
-    //arg names and description
-    res.append ("\"arguments\": [");
-    std::vector<std::pair<std::string,std::string> >::iterator it;
-    int j=0;
-    if (!arg_description_.empty ())
-      {
-	for (it = arg_description_.begin() ; it != arg_description_.end(); it++ )
-	  {
-	    if (it != arg_description_.begin()) 
-	      res.append (", ");
-	    res.append ("\"name\": \"");
-	    res.append (it->first);
-	    res.append ("\", \"short description\": \"");
-	    res.append (it->second);
-	    res.append ("\", \"type\": \"");
-	    res.append (g_type_name (arg_types_[j]));
-	    res.append ("\"");
-	    j++;
-	  }
-      }
-    res.append ("]");
-    
-    res.append ("}");
-    return res;
+    return json_description_->get_string ();
   }
+
+  JSONBuilder::Node 
+  Method::get_json_root_node ()
+  {
+    return json_description_->get_root ();
+  }
+
   
    std::vector<GType> 
    Method::make_arg_type_description (GType first_arg_type, ...)

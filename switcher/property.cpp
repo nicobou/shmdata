@@ -77,7 +77,7 @@ namespace switcher
     return json_description_->get_string();
   }
 
-  JsonNode *
+  JSONBuilder::Node
   Property::get_json_root_node ()
   {
     return json_description_->get_root ();
@@ -105,7 +105,7 @@ namespace switcher
     json_description_->add_string_member ("short description", g_param_spec_get_blurb (property_));
     
     // name
-    json_description_->add_string_member ("internal name", g_param_spec_get_name (property_));
+    //json_description_->add_string_member ("internal name", g_param_spec_get_name (property_));
     
     switch (G_VALUE_TYPE (&value)) {
     case G_TYPE_STRING:

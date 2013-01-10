@@ -31,6 +31,7 @@ namespace switcher
   Quiddity::Quiddity ()
   {
     properties_description_.reset (new JSONBuilder());
+    methods_description_.reset (new JSONBuilder());
   }
   
   Quiddity::~Quiddity () { 
@@ -144,7 +145,6 @@ namespace switcher
 	g_error ("registering name %s already exists",method_name.c_str());
 	return false;
       }
-
   }
 
   bool 
@@ -152,31 +152,28 @@ namespace switcher
 				      std::string short_description,
 				      std::vector<std::pair<std::string,std::string> > arg_description)
   {
-    
     if (methods_.find( method_name ) == methods_.end())
       {
 	g_error ("cannot set description of a not existing method");
 	return false;
       }
-
     methods_[method_name]->set_description (method_name, short_description, arg_description);
-    
     return true;
   }
 
-    std::string 
+  std::string 
   Quiddity::get_methods_description ()
   {
-    std::string res;
-    res.append ("{ methods: [ ");
+    
+    methods_description_->reset();
+    methods_description_->begin_object ();
+    methods_description_->set_member_name ("methods");
+    methods_description_->begin_array ();
     for(std::map<std::string, Method::ptr>::iterator it = methods_.begin(); it != methods_.end(); ++it) 
-      {
-	if (it != methods_.begin())
-	  res.append (", ");
-	res.append (it->second->get_description ());
-      }
-    res.append (" ]}");
-    return res;
+	methods_description_->add_node_value (it->second->get_json_root_node ());
+    methods_description_->end_array ();
+    methods_description_->end_object ();
+    return methods_description_->get_string ();
   }
 
   std::string 
@@ -188,8 +185,6 @@ namespace switcher
     Method::ptr meth = methods_[method_name];
     return meth->get_description ();
   }
-
-  
 
   std::string 
   Quiddity::get_properties_description ()
@@ -203,10 +198,8 @@ namespace switcher
       {
 	properties_description_->begin_object ();
 	properties_description_->add_string_member ("name",it->first.c_str ());
-	//	properties_description_->set_member_name ("description");
 	JsonNode *root_node = it->second->get_json_root_node ();
 	properties_description_->add_JsonNode_member ("description", root_node);
-	//JSONBuilder::node_free (root_node); //FIXME this must be called but not here
 	properties_description_->end_object ();
       }
 
@@ -214,22 +207,6 @@ namespace switcher
     properties_description_->end_object ();
     
     return properties_description_->get_string ();
-    // std::string res;
-    // res.append ("{ properties: [ ");
-    // for(std::map<std::string, Property::ptr>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
-    //   {
-    // 	if (it != properties_.begin())
-    // 	  res.append (", ");
-
-    // 	res.append ("{ \"name\": \"");
-    // 	res.append (it->first);
-    // 	res.append ("\", ");
-    //     res.append (" \"description\": ");
-    // 	res.append (it->second->get_description ());
-    // 	res.append ("}");
-    //   }
-    // res.append (" ]}");
-    // return res;
   }
 
   std::string 

@@ -41,7 +41,7 @@ namespace switcher
     void set (std::string value);
     std::string get ();
     std::string get_description ();
-    JsonNode *get_json_root_node ();
+    JSONBuilder::Node get_json_root_node ();
     void print ();
 
   private:
