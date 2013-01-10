@@ -44,7 +44,7 @@ namespace switcher
 
     bool init ();
     QuiddityDocumentation get_documentation ();
-    static const QuiddityDocumentation doc_;
+    static QuiddityDocumentation doc_;
 
   private:
     struct soap soap_;

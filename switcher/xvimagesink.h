@@ -34,7 +34,7 @@ namespace switcher
     typedef std::shared_ptr<Xvimagesink> ptr;
     bool init ();
     QuiddityDocumentation get_documentation ();
-    static const QuiddityDocumentation doc_;
+    static QuiddityDocumentation doc_;
 
   private:
     GstElement *xvimagesink_;

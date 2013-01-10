@@ -34,7 +34,7 @@ namespace switcher
     typedef std::shared_ptr<AAC> ptr;
     bool init ();
     QuiddityDocumentation get_documentation ();
-    static const QuiddityDocumentation doc_;
+    static QuiddityDocumentation doc_;
 
     static void make_shmdata_writer(ShmdataReader *caller, void *aac_instance);
 

@@ -33,7 +33,7 @@ namespace switcher
     typedef std::shared_ptr<AudioTestSource> ptr;
     bool init ();
     QuiddityDocumentation get_documentation ();
-    static const QuiddityDocumentation doc_;
+    static QuiddityDocumentation doc_;
 
   private: 
    GstElement *audiotestsrc_;

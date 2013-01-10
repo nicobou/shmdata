@@ -39,7 +39,7 @@ namespace switcher
   }
   
 
-  const QuiddityDocumentation PulseSink::doc_ ("audio sink", "pulsesink",
+  QuiddityDocumentation PulseSink::doc_ ("audio sink", "pulsesink",
 					 "Output sound to pulse server");
 
   QuiddityDocumentation 

@@ -22,7 +22,7 @@
 namespace switcher
 {
 
-  const QuiddityDocumentation Xvimagesink::doc_ ("video sink", "xvimagesink",
+  QuiddityDocumentation Xvimagesink::doc_ ("video sink", "xvimagesink",
 						 "Video window with minimal features");
   
   

@@ -35,7 +35,7 @@ namespace switcher
     typedef std::shared_ptr<AravisGenicam> ptr;
     bool init ();
     QuiddityDocumentation get_documentation ();
-    static const QuiddityDocumentation doc_;
+    static QuiddityDocumentation doc_;
 
   private:
     GstElement *aravissrc_;

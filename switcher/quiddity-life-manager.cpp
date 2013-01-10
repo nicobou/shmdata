@@ -158,38 +158,37 @@ namespace switcher
     abstract_factory_.register_class<AAC> (AAC::doc_.get_class_name (), 
 					   AAC::doc_.get_json_documentation ());
     abstract_factory_.register_class<AudioTestSource> (AudioTestSource::doc_.get_class_name (), 
-						       AudioTestSource::doc_.get_json_documentation ());
+     						       AudioTestSource::doc_.get_json_documentation ());
     abstract_factory_.register_class<AravisGenicam> (AravisGenicam::doc_.get_class_name (), 
-						     AravisGenicam::doc_.get_json_documentation ());
+     						     AravisGenicam::doc_.get_json_documentation ());
     abstract_factory_.register_class<SoapCtrlServer> (SoapCtrlServer::doc_.get_class_name (), 
-						  SoapCtrlServer::doc_.get_json_documentation ());
+						      SoapCtrlServer::doc_.get_json_documentation ());
     abstract_factory_.register_class<GconfAudioSink> (GconfAudioSink::doc_.get_class_name (), 
-						      GconfAudioSink::doc_.get_json_documentation ());
+     						      GconfAudioSink::doc_.get_json_documentation ());
     abstract_factory_.register_class<GconfAudioSource> (GconfAudioSource::doc_.get_class_name (), 
-							GconfAudioSource::doc_.get_json_documentation ());
+     							GconfAudioSource::doc_.get_json_documentation ());
     abstract_factory_.register_class<GconfVideoSink> (GconfVideoSink::doc_.get_class_name (), 
-						      GconfVideoSink::doc_.get_json_documentation ());
+     						      GconfVideoSink::doc_.get_json_documentation ());
     abstract_factory_.register_class<GconfVideoSource> (GconfVideoSource::doc_.get_class_name (),
-							GconfVideoSource::doc_.get_json_documentation ());
+     							GconfVideoSource::doc_.get_json_documentation ());
     abstract_factory_.register_class<H264> (H264::doc_.get_class_name (), 
-					    H264::doc_.get_json_documentation ());
+     					    H264::doc_.get_json_documentation ());
     abstract_factory_.register_class<HTTPSDP> (HTTPSDP::doc_.get_class_name (), 
-					       HTTPSDP::doc_.get_json_documentation ());
+     					       HTTPSDP::doc_.get_json_documentation ());
     abstract_factory_.register_class<PulseSink> (PulseSink::doc_.get_class_name (), 
-						 PulseSink::doc_.get_json_documentation ());
+     						 PulseSink::doc_.get_json_documentation ());
     abstract_factory_.register_class<RtpSession> (RtpSession::doc_.get_class_name (), 
-						  RtpSession::doc_.get_json_documentation ());
+     						  RtpSession::doc_.get_json_documentation ());
     abstract_factory_.register_class<Runtime> (Runtime::doc_.get_class_name (), 
-					       Runtime::doc_.get_json_documentation ());
+     					       Runtime::doc_.get_json_documentation ());
     abstract_factory_.register_class<UDPSink> (UDPSink::doc_.get_class_name (), 
-					       UDPSink::doc_.get_json_documentation ());
+     					       UDPSink::doc_.get_json_documentation ());
     abstract_factory_.register_class<Uridecodebin> (Uridecodebin::doc_.get_class_name (), 
-						    Uridecodebin::doc_.get_json_documentation ());
+     						    Uridecodebin::doc_.get_json_documentation ());
     abstract_factory_.register_class<VideoTestSource> (VideoTestSource::doc_.get_class_name (),
-						       VideoTestSource::doc_.get_json_documentation ());
+     						       VideoTestSource::doc_.get_json_documentation ());
     abstract_factory_.register_class<Xvimagesink> (Xvimagesink::doc_.get_class_name (),
-						   Xvimagesink::doc_.get_json_documentation ());
-    
+     						   Xvimagesink::doc_.get_json_documentation ());
   }
 
   std::vector<std::string> 

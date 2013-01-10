@@ -38,7 +38,7 @@ namespace switcher
       ~Runtime ();
       bool init ();
       QuiddityDocumentation get_documentation ();
-      static const QuiddityDocumentation doc_;
+      static QuiddityDocumentation doc_;
 
       GstElement *get_pipeline ();
 	

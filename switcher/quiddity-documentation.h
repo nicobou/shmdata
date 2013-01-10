@@ -39,8 +39,8 @@ namespace switcher
     void set_class_name (std::string class_name);
     void set_description (std::string description);
 
-    std::string get_json_documentation () const;
-    JSONBuilder::Node get_json_root_node () const;
+    std::string get_json_documentation ();
+    JSONBuilder::Node get_json_root_node ();
     
   private:
     std::string category_;

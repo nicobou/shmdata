@@ -39,7 +39,7 @@ namespace switcher
 
     bool init ();
     QuiddityDocumentation get_documentation ();
-    static const QuiddityDocumentation doc_;
+    static QuiddityDocumentation doc_;
 
     //local streams
     bool add_data_stream (std::string shmdata_socket_path);

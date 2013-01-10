@@ -23,7 +23,7 @@
 namespace switcher
 {
 
-  const QuiddityDocumentation UDPSink::doc_ ("udp sink", "udpsink",
+  QuiddityDocumentation UDPSink::doc_ ("udp sink", "udpsink",
 					     "send data stream with udp");
 
   bool 

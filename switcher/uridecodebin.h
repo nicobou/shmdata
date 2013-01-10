@@ -36,7 +36,7 @@ namespace switcher
     bool init ();
     bool to_shmdata (std::string uri);
     QuiddityDocumentation get_documentation ();
-    static const QuiddityDocumentation doc_;
+    static QuiddityDocumentation doc_;
 
   private: 
    GstElement *uridecodebin_;

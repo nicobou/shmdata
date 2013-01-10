@@ -24,7 +24,7 @@
 
 namespace switcher
 {
-  const QuiddityDocumentation SoapCtrlServer::doc_ ("control", "SOAPcontrolServer",
+  QuiddityDocumentation SoapCtrlServer::doc_ ("control", "SOAPcontrolServer",
 					  "SOAPcontrolServer allows for managing switcher through SOAP webservices");
     
   bool

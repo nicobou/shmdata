@@ -36,7 +36,7 @@ namespace switcher
 
     bool init ();
     QuiddityDocumentation get_documentation ();
-    static const QuiddityDocumentation doc_;
+    static QuiddityDocumentation doc_;
 
     //client management
     bool remove_client (gchar *host, gint port);
