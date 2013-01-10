@@ -28,6 +28,8 @@ namespace switcher
     category_ = category;
     class_name_ = class_name;
     description_ = description;
+    json_description_.reset (new JSONBuilder());
+    make_json_description ();
   }
 
   std::string 
@@ -47,44 +49,48 @@ namespace switcher
   {
     return description_;
   }
+
+  void 
+  QuiddityDocumentation::make_json_description ()
+  {
+    json_description_->reset ();
+    json_description_->begin_object ();
+    json_description_->add_string_member ("category",category_.c_str ());
+    json_description_->add_string_member ("class name",class_name_.c_str ());
+    json_description_->add_string_member ("short description",description_.c_str ());
+    json_description_->end_object ();
+  }
   
   std::string 
   QuiddityDocumentation::get_json_documentation () const
   {
-    std::string documentation;
-    documentation.append("{");
-
-    documentation.append("\"category\":\"");
-    documentation.append(category_);
-    documentation.append("\",");
-
-    documentation.append("\"class name\":\"");
-    documentation.append(class_name_);
-    documentation.append("\",");
-
-    documentation.append("\"description\":\"");
-    documentation.append(description_);
-    documentation.append("\"");
-
-    documentation.append("}");
-    return documentation;
+    return json_description_->get_string ();;
   }
-    
+
+  JSONBuilder::Node 
+  QuiddityDocumentation::get_json_root_node () const
+  {
+    return json_description_->get_root ();
+  }
+
   void
   QuiddityDocumentation::set_category (std::string category)
   {
     category_ = category;
+    make_json_description ();
   }
 
   void
   QuiddityDocumentation::set_class_name (std::string class_name)
   {
     class_name_ = class_name;
+    make_json_description ();
   }
 
   void
   QuiddityDocumentation::set_description (std::string description)
   {
     description_ = description;
+    make_json_description ();
   }
 }
