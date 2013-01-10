@@ -66,26 +66,23 @@ namespace switcher
   {
     remove_shmdata_sockets ();
     register_classes ();
+    classes_doc_.reset (new JSONBuilder ());
+    make_classes_doc ();
   }
-
+  
   QuiddityLifeManager::QuiddityLifeManager(std::string name) :
     name_ (name)
   {
     remove_shmdata_sockets ();
     register_classes ();
+    classes_doc_.reset (new JSONBuilder ());
+    make_classes_doc ();
   }
 
   void
   QuiddityLifeManager::remove_shmdata_sockets ()
   {
     
-    //GFile *shmfile = g_file_new_for_commandline_arg (app->socketName);
-      // if (! g_file_trash (shmfile, NULL, NULL))
-      //   {
-      //     g_printerr("The file %s cannot be trashed, exiting.",app->socketName);
-      //     exit (0);
-      //   }
-
     GFile *shmdata_dir = g_file_new_for_commandline_arg (Quiddity::get_socket_dir().c_str ());
 
     gchar *shmdata_prefix = g_strconcat (Quiddity::get_socket_name_prefix ().c_str (), 
@@ -156,47 +153,68 @@ namespace switcher
   {
     //registering quiddities
     abstract_factory_.register_class<AAC> (AAC::doc_.get_class_name (), 
-					   AAC::doc_.get_json_documentation ());
+					   AAC::doc_.get_json_root_node ());
     abstract_factory_.register_class<AudioTestSource> (AudioTestSource::doc_.get_class_name (), 
-     						       AudioTestSource::doc_.get_json_documentation ());
+      						       AudioTestSource::doc_.get_json_root_node ());
     abstract_factory_.register_class<AravisGenicam> (AravisGenicam::doc_.get_class_name (), 
-     						     AravisGenicam::doc_.get_json_documentation ());
+      						     AravisGenicam::doc_.get_json_root_node ());
     abstract_factory_.register_class<SoapCtrlServer> (SoapCtrlServer::doc_.get_class_name (), 
-						      SoapCtrlServer::doc_.get_json_documentation ());
+     						      SoapCtrlServer::doc_.get_json_root_node ());
     abstract_factory_.register_class<GconfAudioSink> (GconfAudioSink::doc_.get_class_name (), 
-     						      GconfAudioSink::doc_.get_json_documentation ());
+      						      GconfAudioSink::doc_.get_json_root_node ());
     abstract_factory_.register_class<GconfAudioSource> (GconfAudioSource::doc_.get_class_name (), 
-     							GconfAudioSource::doc_.get_json_documentation ());
+      							GconfAudioSource::doc_.get_json_root_node ());
     abstract_factory_.register_class<GconfVideoSink> (GconfVideoSink::doc_.get_class_name (), 
-     						      GconfVideoSink::doc_.get_json_documentation ());
+      						      GconfVideoSink::doc_.get_json_root_node ());
     abstract_factory_.register_class<GconfVideoSource> (GconfVideoSource::doc_.get_class_name (),
-     							GconfVideoSource::doc_.get_json_documentation ());
+      							GconfVideoSource::doc_.get_json_root_node ());
     abstract_factory_.register_class<H264> (H264::doc_.get_class_name (), 
-     					    H264::doc_.get_json_documentation ());
+      					    H264::doc_.get_json_root_node ());
     abstract_factory_.register_class<HTTPSDP> (HTTPSDP::doc_.get_class_name (), 
-     					       HTTPSDP::doc_.get_json_documentation ());
+      					       HTTPSDP::doc_.get_json_root_node ());
     abstract_factory_.register_class<PulseSink> (PulseSink::doc_.get_class_name (), 
-     						 PulseSink::doc_.get_json_documentation ());
+      						 PulseSink::doc_.get_json_root_node ());
     abstract_factory_.register_class<RtpSession> (RtpSession::doc_.get_class_name (), 
-     						  RtpSession::doc_.get_json_documentation ());
+      						  RtpSession::doc_.get_json_root_node ());
     abstract_factory_.register_class<Runtime> (Runtime::doc_.get_class_name (), 
-     					       Runtime::doc_.get_json_documentation ());
+      					       Runtime::doc_.get_json_root_node ());
     abstract_factory_.register_class<UDPSink> (UDPSink::doc_.get_class_name (), 
-     					       UDPSink::doc_.get_json_documentation ());
+      					       UDPSink::doc_.get_json_root_node ());
     abstract_factory_.register_class<Uridecodebin> (Uridecodebin::doc_.get_class_name (), 
-     						    Uridecodebin::doc_.get_json_documentation ());
+      						    Uridecodebin::doc_.get_json_root_node ());
     abstract_factory_.register_class<VideoTestSource> (VideoTestSource::doc_.get_class_name (),
-     						       VideoTestSource::doc_.get_json_documentation ());
+      						       VideoTestSource::doc_.get_json_root_node ());
     abstract_factory_.register_class<Xvimagesink> (Xvimagesink::doc_.get_class_name (),
-     						   Xvimagesink::doc_.get_json_documentation ());
+      						   Xvimagesink::doc_.get_json_root_node ());
   }
 
   std::vector<std::string> 
   QuiddityLifeManager::get_classes ()
   {
-    return abstract_factory_.get_classes_documentation ();
+    //return abstract_factory_.get_classes_documentation ();
+    return abstract_factory_.get_keys ();
   }
 
+  void
+  QuiddityLifeManager::make_classes_doc ()
+  {
+    std::vector<JSONBuilder::Node> docs = abstract_factory_.get_classes_documentation ();
+    classes_doc_->reset ();
+    classes_doc_->begin_object ();
+    classes_doc_->set_member_name ("classes");
+    classes_doc_->begin_array ();
+    for(std::vector<JSONBuilder::Node>::iterator it = docs.begin(); it != docs.end(); ++it) 
+      classes_doc_->add_node_value (*it);
+    classes_doc_->end_array ();
+    classes_doc_->end_object ();
+  }
+
+  std::string 
+  QuiddityLifeManager::get_classes_doc ()
+  {
+    return classes_doc_->get_string ();
+  }
+  
   bool 
   QuiddityLifeManager::class_exists (std::string class_name)
   {
