@@ -26,8 +26,8 @@
 namespace switcher
 {
   
-  const QuiddityDocumentation RtpSession::doc_ ("RTP session", "rtpsession",
-					  "RTP session manager");
+  QuiddityDocumentation RtpSession::doc_ ("RTP session", "rtpsession",
+						"RTP session manager");
   
   RtpSession::~RtpSession ()
   {

@@ -24,7 +24,7 @@
 
 namespace switcher
 {
-  const QuiddityDocumentation HTTPSDP::doc_ ("sdp decoding", "httpsdp", 
+  QuiddityDocumentation HTTPSDP::doc_ ("sdp decoding", "httpsdp", 
 					     "get raw stream from sdp file distributed with http");
   
   bool

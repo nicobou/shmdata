@@ -22,7 +22,7 @@
 namespace switcher
 {
 
-  const QuiddityDocumentation AravisGenicam::doc_ ("video source", "genicam",
+  QuiddityDocumentation AravisGenicam::doc_ ("video source", "genicam",
 						   "Genicam video source using the Aravis library");
   
   

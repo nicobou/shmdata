@@ -87,6 +87,12 @@ namespace switcher
   }
   
   void 
+  JSONBuilder::add_node_value (Node node_value)
+  {
+    json_builder_add_value (builder_, node_value);
+  }
+  
+  void 
   JSONBuilder::add_JsonNode_member (const gchar *member_name, JsonNode *JsonNode_value)
   {
     json_builder_set_member_name (builder_, member_name);

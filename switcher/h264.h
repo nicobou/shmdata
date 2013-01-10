@@ -36,7 +36,7 @@ namespace switcher
 
     bool init ();
     QuiddityDocumentation get_documentation ();
-    static const QuiddityDocumentation doc_;
+    static QuiddityDocumentation doc_;
     
     static void make_shmdata_writer(ShmdataReader *caller, void *h264_instance);
 

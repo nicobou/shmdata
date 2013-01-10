@@ -141,6 +141,7 @@ namespace switcher
   {
     auto_invoke_method_name_ = method_name;
     auto_invoke_args_ = args;
+    return true;
   }
 
   std::string
@@ -215,8 +216,13 @@ namespace switcher
   std::vector<std::string> 
   QuiddityManager::get_classes ()
   {
-    //FIXME make this return a json formated std::string
     return life_manager_->get_classes ();
+  }
+
+  std::string 
+  QuiddityManager::get_classes_doc ()
+  {
+    return life_manager_->get_classes_doc ();
   }
    
   std::vector<std::string> 

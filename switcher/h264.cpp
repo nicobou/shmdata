@@ -23,7 +23,7 @@
 namespace switcher
 {
 
-  const QuiddityDocumentation H264::doc_ ("video encoder", "x264enc",
+  QuiddityDocumentation H264::doc_ ("video encoder", "x264enc",
 				    "H264 encoder");
   
   bool

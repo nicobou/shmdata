@@ -110,25 +110,30 @@ main (int argc,
     port_number = "8080";
 
   g_log_set_default_handler (log_handler, NULL);
+
   
-  {//using context in order to let excluse ownership of manager by the container,
+  {
+    //using context in order to let excluse ownership of manager by the container,
     //allowing to properly call destructor when SIGINT
     switcher::QuiddityManager::ptr manager 
       = switcher::QuiddityManager::make_manager (server_name);  
-    container.push_back (manager); // keep reference only in the container
-    // Create a runtime (pipeline0)
-    //std::string runtime = 
-    manager->create ("runtime");
 
-    std::string soap_name = manager->create ("SOAPcontrolServer", "soapserver");
-    std::vector<std::string> port_arg;
-    port_arg.push_back (port_number);
-    manager->invoke (soap_name, "set_port", port_arg);
+     container.push_back (manager); // keep reference only in the container
+     // Create a runtime (pipeline0)
+     //std::string runtime = 
+     manager->create ("runtime");
 
-    //setting auto_invoke for attaching to gst pipeline "pipeline0"
-    std::vector<std::string> arg;
-    arg.push_back ("pipeline0");
-    manager->auto_invoke ("set_runtime",arg);
+     std::string soap_name = manager->create ("SOAPcontrolServer", "soapserver");
+     std::vector<std::string> port_arg;
+     port_arg.push_back (port_number);
+     manager->invoke (soap_name, "set_port", port_arg);
+
+     //setting auto_invoke for attaching to gst pipeline "pipeline0"
+     std::vector<std::string> arg;
+     arg.push_back ("pipeline0");
+     manager->auto_invoke ("set_runtime",arg);
+
+     g_print ("%s\n",manager->get_classes_doc ().c_str ());
   }
 
   //waiting for end of life

@@ -31,6 +31,7 @@
 #include "switcher/abstract-factory.h" 
 #include "switcher/string-map.h"
 #include "switcher/quiddity.h" 
+#include "switcher/json-builder.h"
 
 namespace switcher
 {
@@ -47,8 +48,9 @@ namespace switcher
     
     //info about manager
     std::string get_name ();
-    std::vector<std::string> get_classes ();//FIXME rename it get_classes_description returning a std::string
-    std::vector<std::string> get_instances ();//FIXME rename it get_classes_description returning a std::string
+    std::vector<std::string> get_classes ();//vector of class names
+    std::vector<std::string> get_instances ();//vector of instance names
+    std::string get_classes_doc ();//json formatted doc of classes
     bool class_exists (std::string class_name);
     bool exists (std::string quiddity_name);
 
@@ -84,14 +86,15 @@ namespace switcher
   private:
     QuiddityLifeManager();//will get name "default"
     QuiddityLifeManager(std::string);
+    void make_classes_doc ();
     std::string name_;
     void register_classes ();
-    AbstractFactory< Quiddity, std::string, std::string> abstract_factory_;
+    AbstractFactory< Quiddity, std::string, JSONBuilder::Node> abstract_factory_;
     StringMap< std::shared_ptr<Quiddity> > quiddities_;
     StringMap< std::string> quiddities_nick_names_;
     void init_quiddity (std::shared_ptr<Quiddity> quiddity);
     void remove_shmdata_sockets ();
-
+    JSONBuilder::ptr classes_doc_;
   };
 
 } // end of namespace

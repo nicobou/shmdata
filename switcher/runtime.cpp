@@ -28,7 +28,7 @@
 namespace switcher
 {
 
-  const QuiddityDocumentation Runtime::doc_ ("runtime", "runtime",
+  QuiddityDocumentation Runtime::doc_ ("runtime", "runtime",
 					     "Complete pipeline container and scheduler");
 
   bool

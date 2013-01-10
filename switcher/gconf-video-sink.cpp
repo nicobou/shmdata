@@ -117,7 +117,7 @@ namespace switcher
     return TRUE;
   }
 
-  const QuiddityDocumentation GconfVideoSink::doc_ ("video sink", "gconfvideosink", 
+  QuiddityDocumentation GconfVideoSink::doc_ ("video sink", "gconfvideosink", 
 						"Video sink embedding the GConf-settings for video output");
   
   QuiddityDocumentation 

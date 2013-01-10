@@ -54,7 +54,7 @@ namespace switcher
     return FALSE; //the source should be removed from the main loop
   }
 
-  const QuiddityDocumentation GconfVideoSource::doc_ ("video source", "gconfvideosrc",
+  QuiddityDocumentation GconfVideoSource::doc_ ("video source", "gconfvideosrc",
 						  "Video source embedding the GConf-settings for video input");
   
   QuiddityDocumentation 
