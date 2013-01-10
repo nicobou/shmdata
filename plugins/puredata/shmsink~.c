@@ -65,17 +65,19 @@ static t_int *shmsink_tilde_perform(t_int *w)
   //interleaving channels
   for (i =0; i < x->x_num_inlets;i++) 
     {
-      void *input = in[i];
-      void *output = x->x_buf[x->x_cur_buf];
-      output += i * sizeof (t_float);
+      t_float *input = in[i];
+      t_float *output = x->x_buf[x->x_cur_buf];
+      output += i;
 
       for (j=0; j < n; j++)  
 	{
-	  memcpy( output, input, sizeof(t_float));
-	  output += x->x_num_inlets * sizeof (t_float);
-	  input += sizeof (t_float);
+	  *output = *input;
+	  output += x->x_num_inlets;
+	  input ++;
 	}
     }
+
+  //printf ("shmsink: buf size %d\n", buf_size * x->x_num_inlets);
 
   shmdata_any_writer_push_data (x->x_writer, 
 				x->x_buf[x->x_cur_buf],  

@@ -8,6 +8,11 @@ AM_LIBS = \
     $(GST_LIBS) \
     $(GIO_LIBS)
 
+# if HAVE_OSX
+#  AM_CFLAGS += -arch i386 -arch x86_64 -mmacosx-version-min=10.4 -ftree-vectorize  -fPIC 
+#  AM_LDFLAGS = -arch i386 -arch x86_64 -mmacosx-version-min=10.4 -bundle -undefined dynamic_lookup
+# endif
+
 lib_LTLIBRARIES = \
     libshmdata-@LIBSHMDATA_API_VERSION@.la \
     libshmdata-any-@LIBSHMDATA_API_VERSION@.la 
@@ -18,6 +23,7 @@ libshmdata_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
     base-writer.c
 
 libshmdata_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
+    $(AM_LDFLAGS) \
     $(GIO_LIBS) \
     $(GST_LIBS) \
     -export-dynamic \
@@ -48,6 +54,7 @@ libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_CXXFLAGS = \
     $(OPENSCENEGRAPH_CFLAGS) 
 
 libshmdata_osg_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
+    $(AM_LDFLAGS) \
     $(GSTAPP_LIBS) \
     $(OPENSCENEGRAPH_LIBS) \
     -export-dynamic \
@@ -70,6 +77,7 @@ libshmdata_any_@LIBSHMDATA_API_VERSION@_la_SOURCES = \
     any-data-writer.c
 
 libshmdata_any_@LIBSHMDATA_API_VERSION@_la_LDFLAGS = \
+    $(AM_LDFLAGS) \
     $(GSTAPP_LIBS) \
     -export-dynamic \
     -version-info $(LIBSHMDATA_SO_VERSION)

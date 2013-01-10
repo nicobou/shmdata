@@ -1,4 +1,4 @@
-#N canvas 194 82 894 718 10;
+#N canvas 2633 181 894 718 10;
 #X floatatom 115 97 5 0 0 0 - - -;
 #X floatatom 136 141 5 0 0 0 - - -;
 #X floatatom 157 189 5 0 0 0 - - -;
@@ -11,7 +11,6 @@
 #X obj 200 288 osc~ 301;
 #X obj 221 337 osc~ 299;
 #X obj 115 118 osc~ 299;
-#X obj 115 384 shmsink~ testshm 6;
 #X text 53 28 write multichannel audio to a shmdata. Here the shmdata
 name is "testshm". The actual shmdata socket path is /tmp/pd_testshm.
 ("/tmp/pd_" is used as prefix);
@@ -27,26 +26,39 @@ softwares \, like switcher. (http://code.sat.qc.ca/redmine/projects/libshmdata)
 (http://code.sat.qc.ca/redmine/projects/switcher) In order to hear
 your multichannel audio in pulse (linux) \, type the following in a
 terminal:;
-#X obj 533 489 dac~;
-#X obj 126 523 dac~;
-#X obj 492 363 shmsrc~ testshm 6;
+#X obj 114 384 shmsink~ testshm 6;
+#X msg 58 521 set_prefix /tmp/;
+#X msg 164 551 set_name switcher_default_youtube_audio_0;
+#X obj 83 672 dac~;
+#X obj 82 583 shmsrc~ truc 2;
+#X msg 173 521 set_name switcher_default_audiotestsrc0_audio;
+#X obj 83 633 *~ 0.5;
+#X obj 686 559 dac~;
+#X obj 699 501 *~ 0.05;
+#X obj 683 424 shmsrc~ testshm 6;
 #X connect 0 0 11 0;
 #X connect 1 0 7 0;
 #X connect 2 0 3 0;
-#X connect 3 0 12 2;
+#X connect 3 0 20 2;
 #X connect 4 0 8 0;
 #X connect 5 0 9 0;
 #X connect 6 0 10 0;
-#X connect 7 0 12 1;
-#X connect 8 0 12 3;
-#X connect 9 0 12 4;
-#X connect 9 0 22 1;
-#X connect 10 0 12 5;
-#X connect 10 0 22 0;
-#X connect 11 0 12 0;
-#X connect 23 0 21 0;
-#X connect 23 1 21 0;
-#X connect 23 2 21 1;
-#X connect 23 3 21 0;
-#X connect 23 4 21 0;
-#X connect 23 5 21 1;
+#X connect 7 0 20 1;
+#X connect 8 0 20 3;
+#X connect 9 0 20 4;
+#X connect 10 0 20 5;
+#X connect 11 0 20 0;
+#X connect 21 0 24 0;
+#X connect 22 0 24 0;
+#X connect 24 0 26 0;
+#X connect 24 1 26 0;
+#X connect 25 0 24 0;
+#X connect 26 0 23 0;
+#X connect 26 0 23 1;
+#X connect 28 0 27 0;
+#X connect 29 0 28 0;
+#X connect 29 1 28 0;
+#X connect 29 2 28 0;
+#X connect 29 3 28 0;
+#X connect 29 4 28 0;
+#X connect 29 5 28 0;

@@ -7,14 +7,20 @@ AM_CFLAGS = \
     $(GST_CFLAGS) \
     $(GIO_CFLAGS)
 
-
 AM_LDFLAGS =  \
     -module \
     -avoid-version \
     -shared \
-    -shrext .pd_linux \
     -export-dynamic \
     -fPIC
+
+if HAVE_OSX
+ AM_LDFLAGS += -shrext .pd_darwin
+# AM_CFLAGS += -arch i386 -arch x86_64
+else
+ AM_LDFLAGS += -shrext .pd_linux 
+endif
+
 
 plugin_LTLIBRARIES = \
     shmsink~.la \
@@ -23,8 +29,10 @@ plugin_LTLIBRARIES = \
 ##sink
 shmsink__la_LIBADD = \
     $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
+
 shmsink__la_includedir = \
     $(includedir)/shmdata-$(LIBSHMDATA_API_VERSION)/shmdata
+
 shmsink__la_SOURCES = \
     shmsink~.c
 
@@ -32,9 +40,11 @@ shmsink__la_SOURCES = \
 shmsrc__la_LIBADD = \
     $(GST_LIBS) \
     $(GIO_LIBS) \
-    $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la
+    $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
+
 shmsrc__la_includedir = \
     $(includedir)/shmdata-$(LIBSHMDATA_API_VERSION)/shmdata
+
 shmsrc__la_SOURCES = \
     shmsrc~.c
 

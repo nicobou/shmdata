@@ -12,6 +12,10 @@
  * GNU Lesser General Public License for more details.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <gst/gst.h>
 #include <signal.h>
 #include "shmdata/base-writer.h"
@@ -70,6 +74,13 @@ main (int argc, char *argv[])
   gst_init (&argc, &argv);
   GMainLoop *loop = g_main_loop_new (NULL, FALSE);
 
+#ifdef HAVE_CONFIG_H 
+  GstRegistry *registry; 
+  registry = gst_registry_get_default(); 
+  gst_registry_scan_path (registry, SHMDATA_SHM_GST_PLUGIN_BUILD_PATH); 
+  gst_registry_scan_path (registry, SHMDATA_GST_PLUGIN_PATH);
+#endif 
+
   /* Check input arguments */
   if (argc != 2)
     {
@@ -106,10 +117,10 @@ main (int argc, char *argv[])
 				   GST_MAKE_FOURCC ('I', '4', '2', '0'),
 				   "framerate", GST_TYPE_FRACTION, 60, 1,
 				   "pixel-aspect-ratio", GST_TYPE_FRACTION, 1,
-				   1, /*"width", G_TYPE_INT, 640, "height",
-				   G_TYPE_INT, 480,*/
-				   "width", G_TYPE_INT, 1920,
-				   "height", G_TYPE_INT, 1080,
+				   1, "width", G_TYPE_INT, 640, "height",
+				   G_TYPE_INT, 480,
+				   /*"width", G_TYPE_INT, 1920,
+				     "height", G_TYPE_INT, 1080,*/
 				   NULL);
 
   gst_bin_add_many (GST_BIN (pipeline),

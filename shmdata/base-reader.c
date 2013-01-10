@@ -197,11 +197,20 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
     reader->timereset_ = TRUE;
 
   if (!reader->source_)
-    g_critical ("shmsrc element could not be created. \n");
+    {
+      g_critical ("Reader: \"shmsrc\" element could not be created, consider installing libshmdata.");
+      return FALSE;
+    }
   if (!reader->deserializer_)
-    g_critical ("gdpdepay element could not be created. \n");
+    {
+      g_critical ("Reader: \"gdpdepay\" element could not be created.");
+      return FALSE;
+    }
   if (!reader->typefind_)
-    g_critical ("typefind element could not be created. \n");
+    {
+      g_critical ("Reader: \"typefind\" element could not be created.");
+      return FALSE;
+    }
 
   g_object_set_data (G_OBJECT (reader->source_), 
 		     "shmdata_base_reader",
@@ -370,7 +379,7 @@ shmdata_base_reader_message_handler (GstBus * bus,
   shmdata_base_reader_t *reader = (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), "shmdata_base_reader");
   if ( reader != NULL)
     {
-      if ( shmdata_base_reader_process_error (reader, msg)) 
+      if (shmdata_base_reader_process_error (reader, msg)) 
      	return GST_BUS_DROP; 
       else 
      	return GST_BUS_PASS; 

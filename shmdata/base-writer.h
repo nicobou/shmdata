@@ -53,11 +53,19 @@ extern "C"
   typedef struct shmdata_base_writer_ shmdata_base_writer_t;
 
   /** 
+   * \deprecated use shmdata_base_writer_new instead
    * Initialization function that creates the shared memory.
    * 
    * @return a writer instance
    */  
   shmdata_base_writer_t *shmdata_base_writer_init ();
+
+  /** 
+   * Initialization function that creates the shared memory.
+   * 
+   * @return a writer instance
+   */  
+  shmdata_base_writer_t *shmdata_base_writer_new ();
 
   /** 
    * Initialization function that set the file path for the shared memory.
