@@ -21,8 +21,6 @@ struct shmdata_base_writer_
   GstElement *shmsink_;
   GstElement *parent_bin_;
   gchar *socket_path_;
-  gboolean timereset_;
-  GstClockTime timeshift_;
 };
 
 
@@ -145,37 +143,6 @@ shmdata_base_writer_set_branch_state_as_pipeline (shmdata_base_writer_t *
   return;//parent is already doing something
 }
 
-gboolean
-shmdata_base_writer_reset_time (GstPad * pad,
-				GstMiniObject * mini_obj, gpointer user_data)
-{
-  shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
-  if (GST_IS_EVENT (mini_obj))
-    {
-      g_debug ("EVENT %s", GST_EVENT_TYPE_NAME (GST_EVENT_CAST(mini_obj)));
-    }
-  else if (GST_IS_BUFFER (mini_obj))
-    {
-      GstBuffer *buffer = GST_BUFFER_CAST (mini_obj);
-      /* g_debug ("shmdata writer data frame (%p), data size %d, timestamp %llu, caps %s", */
-      /* 	       GST_BUFFER_DATA (buffer), GST_BUFFER_SIZE (buffer), */
-      /* 	       GST_TIME_AS_MSECONDS (GST_BUFFER_TIMESTAMP (buffer)), */
-      /* 	       gst_caps_to_string (GST_BUFFER_CAPS (buffer))); */
-      if (context->timereset_)
-	{
-	  context->timeshift_ = GST_BUFFER_TIMESTAMP (buffer);
-	  context->timereset_ = FALSE;
-	}
-      GST_BUFFER_TIMESTAMP (buffer) =
-	GST_BUFFER_TIMESTAMP (buffer) - context->timeshift_;
-    }
-  else if (GST_IS_MESSAGE (mini_obj))
-    {
-    }
-
-  return TRUE;
-}
-
 void
 shmdata_base_writer_pad_unblocked (GstPad * pad,
 				   gboolean blocked, gpointer user_data)
@@ -183,8 +150,6 @@ shmdata_base_writer_pad_unblocked (GstPad * pad,
   shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
   if (blocked)
     g_critical ("Error: pad not in unblocked state");
-  else
-    context->timereset_ = TRUE;
 }
 
 void
@@ -295,14 +260,6 @@ shmdata_base_writer_make_shm_branch (shmdata_base_writer_t * writer,
   g_object_set (G_OBJECT (writer->shmsink_), "wait-for-connection", FALSE,
 		NULL);
 
-  //adding a probe for reseting timestamp when reconnecting
-  GstPad *qserialPad = gst_element_get_pad (writer->qserial_, "src");
-  gst_pad_add_data_probe (qserialPad,
-			  G_CALLBACK (shmdata_base_writer_reset_time),
-			  writer);
-
-  gst_object_unref (qserialPad);
-
   g_signal_connect (writer->shmsink_, "client-connected",
 		    G_CALLBACK (shmdata_base_writer_on_client_connected),
 		    writer);
@@ -320,8 +277,6 @@ shmdata_base_writer_init ()
 {
   shmdata_base_writer_t *writer =
     (shmdata_base_writer_t *) g_malloc0 (sizeof (shmdata_base_writer_t));
-  writer->timereset_ = FALSE;
-  writer->timeshift_ = 0;
 
   return writer;
 }

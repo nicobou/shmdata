@@ -32,6 +32,8 @@ struct shmdata_any_reader_
   GstElement *sink_;
   GMainLoop *loop_;
   GThread *sharedDataThread_;
+  //timestamp
+  gboolean do_absolute_;
   //debug
   int debug_;
   //user callback
@@ -174,6 +176,7 @@ shmdata_any_reader_init (const char *socketName)
   reader->on_data_user_data_ = NULL;
   reader->type_ = NULL;
   reader->data_caps_ = NULL;
+  reader->do_absolute_ = FALSE;
 
   gst_init (NULL, NULL);
   reader->loop_ = g_main_loop_new (NULL, FALSE);
@@ -217,10 +220,23 @@ shmdata_any_reader_start (shmdata_any_reader_t * context,
 			  const char *socketName)
 {
   //initializing lower layer library
-  context->reader_ = shmdata_base_reader_init (socketName,
-					       context->pipeline_,
-					       &shmdata_any_reader_on_first_video_data,
-					       context);
+//  context->reader_ = shmdata_base_reader_init (socketName,
+//					       context->pipeline_,
+//					       &shmdata_any_reader_on_first_video_data,
+//					       context);
+
+  //FIXME: Move reader_new and configuration method function where it belongs
+  // and do not use do_absolute_ member in the any reader structure
+  context->reader_ = shmdata_base_reader_new ();
+  shmdata_base_reader_set_callback (context->reader_,
+                                    &shmdata_any_reader_on_first_video_data,
+                                    context);
+  shmdata_base_reader_set_bin (context->reader_,
+                               context->pipeline_);
+
+  shmdata_base_reader_set_absolute_timestamp (context->reader_, context->do_absolute_);
+
+  shmdata_base_reader_start (context->reader_, socketName);
 
   g_thread_init (NULL);
   context->sharedDataThread_ =
@@ -236,6 +252,14 @@ shmdata_any_reader_set_data_type (shmdata_any_reader_t * reader,
 {
   reader->type_ = g_strdup (type);
   reader->data_caps_ = gst_caps_from_string (reader->type_);
+}
+
+void
+shmdata_any_reader_set_absolute_timestamp (shmdata_any_reader_t * reader,
+                                            int do_absolute)
+{
+    if (do_absolute != 0)
+        reader->do_absolute_ = TRUE;
 }
 
 void

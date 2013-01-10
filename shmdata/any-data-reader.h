@@ -28,6 +28,13 @@ extern "C"
 #define SHMDATA_DISABLE_DEBUG 0
 #endif
 
+#ifndef SHMDATA_ENABLE_ABSOLUTE_TIMESTAMP
+#define SHMDATA_ENABLE_ABSOLUTE_TIMESTAMP 1
+#endif
+#ifndef SHMDATA_DISABLE_ABSOLUTE_TIMESTAMP
+#define SHMDATA_DISABLE_ABSOLUTE_TIMESTAMP 0
+#endif
+
   /** \addtogroup libshmdata-any
    * provides sharing of custom data flows between processes.
    * compile with `pkg-config --cflags --libs shmdata-any-0.4`
@@ -111,6 +118,16 @@ extern "C"
    */
   void shmdata_any_reader_set_data_type (shmdata_any_reader_t *reader,
 					 const char *type);
+
+  /** 
+   * Tell the reader to use an absolute timestamp, i.e. do not reset timestamp to 0
+   * when connecting or reconnecting to the writer.
+   * 
+   * @param reader is the any reader to inform
+   * @param do_absolute use absolute timestamp if set to SHMDATA_ENABLE_ABSOLUTE_TIMESTAMP
+   */
+  void shmdata_any_reader_set_absolute_timestamp (shmdata_any_reader_t * reader,
+                                                  int do_absolute);
 
   /** 
    * Start reading from the shared memory.

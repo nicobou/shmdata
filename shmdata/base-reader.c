@@ -40,6 +40,9 @@ struct shmdata_base_reader_
   gboolean attached_;
   //state boolean
   gboolean initialized_;	//the shared video has been attached once
+  gboolean do_absolute_;
+  gboolean timereset_;
+  GstClockTime timeshift_;
 };
 
 //FIXME this should be part of the library
@@ -143,6 +146,37 @@ shmdata_base_reader_get_caps (shmdata_base_reader_t *reader)
 }
 
 gboolean
+shmdata_base_reader_reset_time (GstPad * pad,
+				GstMiniObject * mini_obj, gpointer user_data)
+{
+  shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
+  if (GST_IS_EVENT (mini_obj))
+    {
+      g_debug ("EVENT %s", GST_EVENT_TYPE_NAME (GST_EVENT_CAST(mini_obj)));
+    }
+  else if (GST_IS_BUFFER (mini_obj))
+    {
+      GstBuffer *buffer = GST_BUFFER_CAST (mini_obj);
+      /* g_debug ("shmdata writer data frame (%p), data size %d, timestamp %llu, caps %s", */
+      /* 	       GST_BUFFER_DATA (buffer), GST_BUFFER_SIZE (buffer), */
+      /* 	       GST_TIME_AS_MSECONDS (GST_BUFFER_TIMESTAMP (buffer)), */
+      /* 	       gst_caps_to_string (GST_BUFFER_CAPS (buffer))); */
+      if (context->timereset_)
+	{
+	  context->timeshift_ = GST_BUFFER_TIMESTAMP (buffer);
+	  context->timereset_ = FALSE;
+	}
+      GST_BUFFER_TIMESTAMP (buffer) =
+	GST_BUFFER_TIMESTAMP (buffer) - context->timeshift_;
+    }
+  else if (GST_IS_MESSAGE (mini_obj))
+    {
+    }
+
+  return TRUE;
+}
+
+gboolean
 shmdata_base_reader_attach (shmdata_base_reader_t *reader)
 {
   if (reader->attached_)
@@ -151,8 +185,16 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
   reader->attached_ = TRUE;
   reader->source_ = gst_element_factory_make ("shmsrc", NULL);
   reader->deserializer_ = gst_element_factory_make ("gdpdepay", NULL);
+  GstPad *pad = gst_element_get_pad(reader->deserializer_, "src");
+  gst_pad_add_data_probe (pad,
+              G_CALLBACK (shmdata_base_reader_reset_time),
+              reader);
+
   reader->typefind_ = gst_element_factory_make ("typefind", NULL);
   g_signal_connect (reader->typefind_, "have-type", G_CALLBACK (shmdata_base_reader_on_type_found), reader);
+
+  if (!reader->do_absolute_)
+    reader->timereset_ = TRUE;
 
   if (!reader->source_)
     g_critical ("shmsrc element could not be created. \n");
@@ -349,6 +391,9 @@ shmdata_base_reader_new ()
   reader->bin_ = NULL;
   reader->install_sync_handler_ = TRUE;
   reader->attached_ = FALSE;
+  reader->do_absolute_ = FALSE;
+  reader->timereset_ = FALSE;
+  reader->timeshift_ = 0;
   return reader;
 }
 
@@ -466,6 +511,9 @@ shmdata_base_reader_init (const char *socketName,
   reader->socketName_ = g_strdup (socketName);
   reader->attached_ = FALSE;
   reader->bin_ = bin;
+  reader->do_absolute_ = FALSE;
+  reader->timereset_ = FALSE;
+  reader->timeshift_ = 0;
 
   //looking for the bus, searching the top level
   GstElement *pipe = reader->bin_;
@@ -509,9 +557,16 @@ shmdata_base_reader_init (const char *socketName,
 
 void
 shmdata_base_reader_set_sink (shmdata_base_reader_t * reader,
-			      GstElement * sink)
+            			      GstElement * sink)
 {
   reader->sink_ = sink;
+}
+
+void
+shmdata_base_reader_set_absolute_timestamp (shmdata_base_reader_t * reader,
+                                            gboolean do_absolute)
+{
+  reader->do_absolute_ = do_absolute;
 }
 
 void

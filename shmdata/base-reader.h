@@ -194,7 +194,19 @@ extern "C"
 
 
   void shmdata_base_reader_set_sink (shmdata_base_reader_t * reader,
-				     GstElement * sink);
+				                     GstElement * sink);
+
+
+  /** 
+   * Tell the reader to use an absolute timestamp, i.e. do not reset timestamp to 0
+   * when connecting or reconnecting to the writer.
+   * 
+   * @param reader is the base reader to inform
+   * @param do_absolute use absolute timestamp if != 0
+   */
+  void shmdata_base_reader_set_absolute_timestamp (shmdata_base_reader_t * reader,
+                                                   gboolean do_absolute);
+
 
 
   /** 
