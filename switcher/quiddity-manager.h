@@ -49,7 +49,10 @@
      //life manager
      std::vector<std::string> get_classes (); //know which quiddities can be created
      std::vector<std::string> get_quiddities (); //know instances
-     std::string get_classes_doc ();//json doc without methods and properties
+     std::string get_classes_doc ();//all classes json doc *without* methods and properties
+     std::string get_classes_doc_full ();//all classes json doc *with* methods and properties
+     std::string get_class_doc (std::string class_name);//json doc *without* methods and properties
+     std::string get_class_doc_full (std::string class_name);//json doc *with* methods and properties
      std::string create (std::string class_name); //returns the name
      std::string create (std::string class_name, 
 			 std::string nick_name); // &?= chars are not allowed in nicknames

@@ -28,6 +28,9 @@ static gboolean createquiddity;
 static gboolean deletequiddity;
 static gboolean listclasses;
 static gboolean classesdoc;
+static gboolean classdoc;
+static gboolean classesdocfull;
+static gboolean classdocfull;
 static gboolean listquiddities;
 static gboolean listprop;
 static gboolean listmethods;
@@ -49,7 +52,10 @@ static GOptionEntry entries[] =
     { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g quiddity_name prop_name)", NULL },
     { "invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod, "invoke method of a quiddity (-i quiddity_name method_name args...)", NULL },
     {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &remaining_args, "remaining arguments", NULL},
-    { "classes-doc", NULL, 0, G_OPTION_ARG_NONE, &classesdoc, "print JSON-formated classes documentation", NULL },
+    { "classes-doc", NULL, 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", NULL },
+    { "class-doc", NULL, 0, G_OPTION_ARG_NONE, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
+    { "classes-doc-full", NULL, 0, G_OPTION_ARG_NONE, &classesdocfull, "print classes documentation with properties and methods, JSON-formated", NULL },
+    { "class-doc-full", NULL, 0, G_OPTION_ARG_NONE, &classdocfull, "print class documentation with properties and methods, JSON-formated (--class-doc-full class_name)", NULL },
     { NULL }
 };
 
@@ -76,6 +82,9 @@ int main(int argc, char **argv)
 
   if (! (listclasses 
 	 ^ classesdoc
+	 ^ classdoc
+	 ^ classesdocfull
+	 ^ classdocfull
 	 ^ listquiddities 
 	 ^ listprop 
 	 ^ setprop 
@@ -104,6 +113,34 @@ int main(int argc, char **argv)
       std::string result;
       switcher_control.get_classes_doc (&result);
       std::cout << result << std::endl;
+    }
+  else if (classdoc)
+    {
+      std::string resultlist;
+      if (remaining_args[0] == NULL)
+	{
+	  g_printerr ("class name missing\n");
+	  return false;
+	}
+      switcher_control.get_class_doc (remaining_args[0],&resultlist);
+      std::cout << resultlist << std::endl;
+    }
+  else if (classesdocfull)
+    {
+      std::string result;
+      switcher_control.get_classes_doc_full (&result);
+      std::cout << result << std::endl;
+    }
+  else if (classdocfull)
+    {
+      std::string resultlist;
+      if (remaining_args[0] == NULL)
+	{
+	  g_printerr ("class name missing\n");
+	  return false;
+	}
+      switcher_control.get_class_doc_full (remaining_args[0],&resultlist);
+      std::cout << resultlist << std::endl;
     }
   else if (listquiddities)
     {

@@ -132,8 +132,6 @@ main (int argc,
      std::vector<std::string> arg;
      arg.push_back ("pipeline0");
      manager->auto_invoke ("set_runtime",arg);
-
-     g_print ("%s\n",manager->get_classes_doc ().c_str ());
   }
 
   //waiting for end of life

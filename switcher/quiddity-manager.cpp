@@ -224,6 +224,24 @@ namespace switcher
   {
     return life_manager_->get_classes_doc ();
   }
+
+  std::string 
+  QuiddityManager::get_class_doc (std::string class_name)
+  {
+    return life_manager_->get_class_doc (class_name);
+  }
+
+  std::string 
+  QuiddityManager::get_classes_doc_full ()
+  {
+    return life_manager_->get_classes_doc_full ();
+  }
+
+  std::string 
+  QuiddityManager::get_class_doc_full (std::string class_name)
+  {
+    return life_manager_->get_class_doc_full (class_name);
+  }
    
   std::vector<std::string> 
   QuiddityManager::get_quiddities ()

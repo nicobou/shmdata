@@ -51,6 +51,9 @@ namespace switcher
     std::vector<std::string> get_classes ();//vector of class names
     std::vector<std::string> get_instances ();//vector of instance names
     std::string get_classes_doc ();//json formatted doc of classes
+    std::string get_class_doc (std::string class_name);//json formatted doc of the class
+    std::string get_classes_doc_full ();//json formatted doc (with props and methods)
+    std::string get_class_doc_full (std::string class_name);//json formatted doc (with props and methods)
     bool class_exists (std::string class_name);
     bool exists (std::string quiddity_name);
 

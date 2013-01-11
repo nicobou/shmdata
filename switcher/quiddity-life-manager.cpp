@@ -215,6 +215,23 @@ namespace switcher
     return classes_doc_->get_string ();
   }
   
+  std::string 
+  QuiddityLifeManager::get_class_doc (std::string class_name)
+  {
+    return "TODO";
+  }
+
+  std::string 
+  QuiddityLifeManager::get_classes_doc_full ()
+  {
+    return "TODO";
+  }
+  std::string 
+  QuiddityLifeManager::get_class_doc_full (std::string class_name)
+  {
+    return "TODO";
+  }
+
   bool 
   QuiddityLifeManager::class_exists (std::string class_name)
   {

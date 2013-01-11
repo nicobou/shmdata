@@ -45,8 +45,19 @@ int switcher__pow(double a, double b, double *result);
 //gsoap switcher service method-documentation: get available names 
 int switcher__get_factory_capabilities(std::vector<std::string> *result);
 
-//gsoap switcher service method-documentation: get available json doc 
+//gsoap switcher service method-documentation: get available json doc *without* props and methods
 int switcher__get_classes_doc(std::string *result);
+
+//gsoap switcher service method-documentation: get available json doc *with* props and methods
+int switcher__get_classes_doc_full(std::string *result);
+
+//gsoap switcher service method-documentation: get available json doc *without* props and methods
+int switcher__get_class_doc(std::string class_name, std::string *result);
+
+//gsoap switcher service method-documentation: get available json doc *with* props and methods
+int switcher__get_class_doc_full(std::string class_name, std::string *result);
+
+
 
 //gsoap switcher service method-documentation: get names of instances 
 int switcher__get_quiddity_names(std::vector<std::string> *result);
