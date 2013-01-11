@@ -107,6 +107,9 @@ namespace switcher
     // name
     //json_description_->add_string_member ("internal name", g_param_spec_get_name (property_));
     
+    json_description_->set_member_name ("type description");
+    json_description_->begin_object ();
+
     switch (G_VALUE_TYPE (&value)) {
     case G_TYPE_STRING:
       {
@@ -389,18 +392,20 @@ namespace switcher
 	// 	 g_type_name (property_->value_type));
       }
       break;
+    }
+   
+    json_description_->end_object ();//type decription
+
+    g_value_reset (&value);
+    
+    json_description_->end_object ();
   }
-
-  g_value_reset (&value);
   
-  json_description_->end_object ();
-}
-
-
-//from gst-inspect
-void 
-Property::print()
-{
+  
+  //from gst-inspect
+  void 
+  Property::print()
+  {
     
   guint i;
   gboolean readable;
