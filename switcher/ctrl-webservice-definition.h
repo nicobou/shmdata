@@ -42,8 +42,11 @@ int switcher__div(double a, double b, double *result);
 //gsoap switcher service method-documentation: pow Raises a to b
 int switcher__pow(double a, double b, double *result);
 
-//gsoap switcher service method-documentation: get available names for instantiation 
+//gsoap switcher service method-documentation: get available names 
 int switcher__get_factory_capabilities(std::vector<std::string> *result);
+
+//gsoap switcher service method-documentation: get available json doc 
+int switcher__get_classes_doc(std::string *result);
 
 //gsoap switcher service method-documentation: get names of instances 
 int switcher__get_quiddity_names(std::vector<std::string> *result);

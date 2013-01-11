@@ -27,6 +27,7 @@ static gchar *server = NULL;
 static gboolean createquiddity;
 static gboolean deletequiddity;
 static gboolean listclasses;
+static gboolean classesdoc;
 static gboolean listquiddities;
 static gboolean listprop;
 static gboolean listmethods;
@@ -48,6 +49,7 @@ static GOptionEntry entries[] =
     { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g quiddity_name prop_name)", NULL },
     { "invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod, "invoke method of a quiddity (-i quiddity_name method_name args...)", NULL },
     {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &remaining_args, "remaining arguments", NULL},
+    { "classes-doc", NULL, 0, G_OPTION_ARG_NONE, &classesdoc, "print JSON-formated classes documentation", NULL },
     { NULL }
 };
 
@@ -73,6 +75,7 @@ int main(int argc, char **argv)
     }
 
   if (! (listclasses 
+	 ^ classesdoc
 	 ^ listquiddities 
 	 ^ listprop 
 	 ^ setprop 
@@ -94,9 +97,13 @@ int main(int argc, char **argv)
       std::vector<std::string> resultlist;
       switcher_control.get_factory_capabilities(&resultlist);
       for(uint i = 0; i < resultlist.size(); i++)
-	{
 	  std::cout << resultlist[i] << std::endl;
-	}
+    }
+  else if (classesdoc)
+    {
+      std::string result;
+      switcher_control.get_classes_doc (&result);
+      std::cout << result << std::endl;
     }
   else if (listquiddities)
     {

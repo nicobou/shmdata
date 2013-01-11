@@ -273,8 +273,9 @@ controlService::pow(double a, double b, double *result)
   return SOAP_OK;
 }
 
+
 int
-controlService::get_factory_capabilities(std::vector<std::string> *result){
+controlService::get_factory_capabilities(std::vector<std::string> *result){//FIXME rename that to get_classes
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
@@ -293,6 +294,28 @@ controlService::get_factory_capabilities(std::vector<std::string> *result){
   
   return SOAP_OK;
 }
+
+int
+controlService::get_classes_doc(std::string *result){
+  using namespace switcher;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
+  QuiddityManager::ptr manager;
+  if (ctrl_server != NULL)
+    manager = ctrl_server->get_quiddity_manager ();
+    
+  if (ctrl_server == NULL || !(bool)manager)
+    {
+      char *s = (char*)soap_malloc(this, 1024);
+      g_error ("controlService::get_classes_doc: cannot get manager from SoapCtrlServer (NULL)");
+      sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (NULL)</error>");
+      return soap_senderfault("error in get_classes_doc", s);
+    }
+  
+  *result = manager->get_classes_doc ();
+  
+  return SOAP_OK;
+}
+
 
 int
 controlService::get_quiddity_names(std::vector<std::string> *result)
