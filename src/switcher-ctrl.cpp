@@ -29,10 +29,9 @@ static gboolean deletequiddity;
 static gboolean listclasses;
 static gboolean classesdoc;
 static gboolean classdoc;
-static gboolean classesdocfull;
-static gboolean classdocfull;
 static gboolean listquiddities;
 static gboolean listprop;
+static gboolean listpropbyclass;
 static gboolean listmethods;
 static gboolean setprop;
 static gboolean getprop;
@@ -47,6 +46,8 @@ static GOptionEntry entries[] =
     { "list-classes", 'c', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", NULL },
     { "list-quiddities", 'e', 0, G_OPTION_ARG_NONE, &listquiddities, "list quiddity instances", NULL },
     { "list-props", 'p', 0, G_OPTION_ARG_NONE, &listprop, "list properties of a quiddity", NULL },
+    { "list-props-by-class", 'P', 0, G_OPTION_ARG_NONE, &listpropbyclass, "list properties of a class", NULL },
+
     { "list-methods", 'm', 0, G_OPTION_ARG_NONE, &listmethods, "list methods of a quiddity", NULL },
     { "set-prop", 's', 0, G_OPTION_ARG_NONE, &setprop, "set property value (-s quiddity_name prop_name val)", NULL },
     { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g quiddity_name prop_name)", NULL },
@@ -54,8 +55,6 @@ static GOptionEntry entries[] =
     {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &remaining_args, "remaining arguments", NULL},
     { "classes-doc", NULL, 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", NULL },
     { "class-doc", NULL, 0, G_OPTION_ARG_NONE, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
-    { "classes-doc-full", NULL, 0, G_OPTION_ARG_NONE, &classesdocfull, "print classes documentation with properties and methods, JSON-formated", NULL },
-    { "class-doc-full", NULL, 0, G_OPTION_ARG_NONE, &classdocfull, "print class documentation with properties and methods, JSON-formated (--class-doc-full class_name)", NULL },
     { NULL }
 };
 
@@ -83,10 +82,9 @@ int main(int argc, char **argv)
   if (! (listclasses 
 	 ^ classesdoc
 	 ^ classdoc
-	 ^ classesdocfull
-	 ^ classdocfull
 	 ^ listquiddities 
 	 ^ listprop 
+	 ^ listpropbyclass 
 	 ^ setprop 
 	 ^ getprop 
 	 ^ createquiddity 
@@ -125,23 +123,6 @@ int main(int argc, char **argv)
       switcher_control.get_class_doc (remaining_args[0],&resultlist);
       std::cout << resultlist << std::endl;
     }
-  else if (classesdocfull)
-    {
-      std::string result;
-      switcher_control.get_classes_doc_full (&result);
-      std::cout << result << std::endl;
-    }
-  else if (classdocfull)
-    {
-      std::string resultlist;
-      if (remaining_args[0] == NULL)
-	{
-	  g_printerr ("class name missing\n");
-	  return false;
-	}
-      switcher_control.get_class_doc_full (remaining_args[0],&resultlist);
-      std::cout << resultlist << std::endl;
-    }
   else if (listquiddities)
     {
       std::vector<std::string> resultlist;
@@ -160,9 +141,29 @@ int main(int argc, char **argv)
 	  return false;
 	}
       if (remaining_args[1] == NULL)
-	switcher_control.get_properties_description (remaining_args[0],&resultlist);
+	switcher_control.get_properties_description (remaining_args[0],
+						     &resultlist);
       else
-	switcher_control.get_property_description (remaining_args[0],remaining_args[1],&resultlist);
+	switcher_control.get_property_description (remaining_args[0],
+						   remaining_args[1],
+						   &resultlist);
+      std::cout << resultlist << std::endl;
+    }
+  else if (listpropbyclass)
+    {
+      std::string resultlist;
+      if (remaining_args[0] == NULL)
+	{
+	  g_printerr ("class name missing for listing properties\n");
+	  return false;
+	}
+      if (remaining_args[1] == NULL)
+	switcher_control.get_properties_description_by_class (remaining_args[0],
+							      &resultlist);
+      else
+	switcher_control.get_property_description_by_class (remaining_args[0],
+							    remaining_args[1],
+							    &resultlist);
       std::cout << resultlist << std::endl;
     }
   else if (setprop)

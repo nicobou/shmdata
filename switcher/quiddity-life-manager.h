@@ -46,41 +46,48 @@ namespace switcher
      static QuiddityLifeManager::ptr make_life_manager ();//will get name "default"
      static QuiddityLifeManager::ptr make_life_manager (std::string name);
     
-    //info about manager
+    //**** info about manager
     std::string get_name ();
     std::vector<std::string> get_classes ();//vector of class names
     std::vector<std::string> get_instances ();//vector of instance names
     std::string get_classes_doc ();//json formatted doc of classes
     std::string get_class_doc (std::string class_name);//json formatted doc of the class
-    std::string get_classes_doc_full ();//json formatted doc (with props and methods)
-    std::string get_class_doc_full (std::string class_name);//json formatted doc (with props and methods)
     bool class_exists (std::string class_name);
     bool exists (std::string quiddity_name);
 
+    //**** life
     //creation
     std::string create (std::string quiddity_class);
     std::string create (std::string quiddity_class, 
 			std::string nick_name);
- 
     //subsistence
     std::shared_ptr<Quiddity> get_quiddity (std::string quiddity_name);
     
     //release base quiddity (destructed with the shared pointer)
     bool remove (std::string quiddity_name);
 
-    //properties
-    std::string get_properties_description (std::string quiddity_name); //json formated
-    std::string get_property_description (std::string quiddity_name, std::string property_name); //json formated
+    //**** properties
+    //doc (json formatted)
+    std::string get_properties_description (std::string quiddity_name);
+    std::string get_property_description (std::string quiddity_name, 
+					  std::string property_name);
+    //following "by_class" methods provide properties available after creation only
+    std::string get_properties_description_by_class (std::string class_name); 
+    std::string get_property_description_by_class (std::string class_name, 
+						   std::string property_name); 
+    //set & get
     bool set_property (std::string quiddity_name,
 		       std::string property_name,
 		       std::string property_value);
-     
     std::string get_property (std::string quiddity_name, 
 			      std::string property_name);
      
-    //methods 
-    std::string get_methods_description (std::string quiddity_name); //json formated
-    std::string get_method_description (std::string quiddity_name, std::string method_name); //json formated
+    //**** methods 
+    //doc (json formatted)
+    std::string get_methods_description (std::string quiddity_name); 
+    std::string get_method_description (std::string quiddity_name, 
+					std::string method_name);
+    //invoke
     bool invoke (std::string quiddity_name, 
 		 std::string method_name,
 		 std::vector<std::string> args);  

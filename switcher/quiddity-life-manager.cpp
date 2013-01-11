@@ -218,18 +218,13 @@ namespace switcher
   std::string 
   QuiddityLifeManager::get_class_doc (std::string class_name)
   {
-    return "TODO";
-  }
-
-  std::string 
-  QuiddityLifeManager::get_classes_doc_full ()
-  {
-    return "TODO";
-  }
-  std::string 
-  QuiddityLifeManager::get_class_doc_full (std::string class_name)
-  {
-    return "TODO";
+    if (abstract_factory_.key_exists (class_name))
+      {
+	JSONBuilder::Node doc = abstract_factory_.get_class_documentation (class_name);
+	return JSONBuilder::get_string (doc);
+      }
+    else
+      return "{ \"error\":\"class not found\" }";
   }
 
   bool 
@@ -359,6 +354,30 @@ namespace switcher
       }
     return (get_quiddity (quiddity_name))->get_property_description (property_name);
   }
+
+  std::string 
+  QuiddityLifeManager::get_properties_description_by_class (std::string class_name)
+  {
+    if (!class_exists (class_name))
+      return "{\"error\":\"class not found\"}";
+    std::string quid_name = create (class_name);
+    std::string descr = get_properties_description (quid_name);
+    remove (quid_name);
+    return descr;
+  }
+  
+  std::string
+  QuiddityLifeManager::get_property_description_by_class (std::string class_name, 
+							  std::string property_name)
+  {
+    if (!class_exists (class_name))
+      return "{\"error\":\"class not found\"}";
+    std::string quid_name = create (class_name);
+    std::string descr = get_property_description (quid_name, property_name);
+    remove (quid_name);
+    return descr;
+  }
+
 
   bool
   QuiddityLifeManager::set_property (std::string quiddity_name,

@@ -58,6 +58,19 @@ namespace switcher
       }
     return tmp;
   }
+
+  template <typename T, typename Key, typename Doc>
+    Doc 
+    AbstractFactory<T, Key, Doc>::get_class_documentation (Key id)
+  {
+    typename std::map<Key, Doc>::iterator iter = classes_documentation_.find(id); 
+    if (iter == classes_documentation_.end())
+      {
+	Doc doc;
+	return doc;
+      }
+    return iter->second;
+  }
     
   template <typename T, typename Key, typename Doc>
     bool 

@@ -87,6 +87,23 @@ namespace switcher
 		       NULL);
   }
 
+  std::string 
+  QuiddityManager::get_properties_description_by_class (std::string class_name)
+  {
+    return seq_invoke (QuiddityCommand::get_properties_description_by_class,
+		       class_name.c_str(),
+		       NULL);
+  }
+
+  std::string 
+  QuiddityManager::get_property_description_by_class (std::string class_name, std::string property_name)
+  {
+    return seq_invoke (QuiddityCommand::get_property_description_by_class,
+		       class_name.c_str(),
+		       property_name.c_str(),
+		       NULL);
+  }
+
   bool
   QuiddityManager::set_property (std::string quiddity_name,
 				 std::string property_name,
@@ -231,18 +248,7 @@ namespace switcher
     return life_manager_->get_class_doc (class_name);
   }
 
-  std::string 
-  QuiddityManager::get_classes_doc_full ()
-  {
-    return life_manager_->get_classes_doc_full ();
-  }
-
-  std::string 
-  QuiddityManager::get_class_doc_full (std::string class_name)
-  {
-    return life_manager_->get_class_doc_full (class_name);
-  }
-   
+ 
   std::vector<std::string> 
   QuiddityManager::get_quiddities ()
   {
@@ -325,7 +331,7 @@ namespace switcher
     switch (context->command_.name_)
       {
       case QuiddityCommand::get_classes:
-	//TODO
+	//TODO + make commands for json formatted docs including props and methods
 	break;
       case QuiddityCommand::get_quiddities:
 	//TODO
@@ -347,8 +353,13 @@ namespace switcher
 	context->command_.result_.push_back (context->life_manager_->get_properties_description (context->command_.args_[0]));
 	break;
       case QuiddityCommand::get_property_description:
-	context->command_.result_.push_back (context->life_manager_->get_property_description (context->command_.args_[0],
-											       context->command_.args_[1]));
+	context->command_.result_.push_back (context->life_manager_->get_property_description (context->command_.args_[0], context->command_.args_[1]));
+	break;
+      case QuiddityCommand::get_properties_description_by_class:
+	context->command_.result_.push_back (context->life_manager_->get_properties_description_by_class (context->command_.args_[0]));
+	break;
+      case QuiddityCommand::get_property_description_by_class:
+	context->command_.result_.push_back (context->life_manager_->get_property_description_by_class (context->command_.args_[0], context->command_.args_[1]));
 	break;
       case QuiddityCommand::set_property:
 	if (context->life_manager_->set_property (context->command_.args_[0], context->command_.args_[1], context->command_.args_[2]))

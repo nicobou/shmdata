@@ -48,16 +48,8 @@ int switcher__get_factory_capabilities(std::vector<std::string> *result);
 //gsoap switcher service method-documentation: get available json doc *without* props and methods
 int switcher__get_classes_doc(std::string *result);
 
-//gsoap switcher service method-documentation: get available json doc *with* props and methods
-int switcher__get_classes_doc_full(std::string *result);
-
 //gsoap switcher service method-documentation: get available json doc *without* props and methods
 int switcher__get_class_doc(std::string class_name, std::string *result);
-
-//gsoap switcher service method-documentation: get available json doc *with* props and methods
-int switcher__get_class_doc_full(std::string class_name, std::string *result);
-
-
 
 //gsoap switcher service method-documentation: get names of instances 
 int switcher__get_quiddity_names(std::vector<std::string> *result);
@@ -70,6 +62,15 @@ int switcher__get_properties_description (std::string quiddity_name,
 int switcher__get_property_description (std::string quiddity_name, 
 					std::string property_name, 
 					std::string *result); 
+
+//gsoap switcher service method-documentation: get a json formated description of the properties  
+int switcher__get_properties_description_by_class (std::string class_name, 
+						   std::string *result); 
+
+//gsoap switcher service method-documentation: get a json formated description of the properties  
+int switcher__get_property_description_by_class (std::string class_name, 
+						 std::string property_name, 
+						 std::string *result); 
 
 //gsoap switcher service method-documentation: set a value of a property from an quiddity instance  
 int switcher__set_property(std::string quiddity_name, 

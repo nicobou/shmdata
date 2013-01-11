@@ -53,7 +53,8 @@ namespace switcher
     void add_JsonNode_member (const gchar *member_name, Node JsonNode_value);
  
     std::string get_string ();
-    Node get_root ();
+    static std::string get_string (Node root_node);
+    Node get_root ();// call node free when done if not used with add_node_value
     static void node_free (Node root_node);
   private:
     JsonBuilder *builder_;

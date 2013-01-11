@@ -45,39 +45,50 @@
      ~QuiddityManager(); 
      std::string get_name ();
      
-     //--------------------------------------------------------------------------------------------
-     //life manager
+
+     //**** life manager
      std::vector<std::string> get_classes (); //know which quiddities can be created
      std::vector<std::string> get_quiddities (); //know instances
-     std::string get_classes_doc ();//all classes json doc *without* methods and properties
-     std::string get_classes_doc_full ();//all classes json doc *with* methods and properties
-     std::string get_class_doc (std::string class_name);//json doc *without* methods and properties
-     std::string get_class_doc_full (std::string class_name);//json doc *with* methods and properties
+     //doc (json formatted) 
+     std::string get_classes_doc ();
+     std::string get_class_doc (std::string class_name);
+     //create & remove
      std::string create (std::string class_name); //returns the name
      std::string create (std::string class_name, 
 			 std::string nick_name); // &?= chars are not allowed in nicknames
      bool remove (std::string quiddity_name);
 
-     //--------------------------------------------------------------------------------------------
-     //properties
-     std::string get_properties_description (std::string quiddity_name); //json formated
-     std::string get_property_description (std::string quiddity_name, std::string property_name); //json formated
-     bool set_property (std::string quiddity_name,
+
+     //**** properties
+     //doc (json formatted)
+     std::string get_properties_description (std::string quiddity_name);
+     std::string get_property_description (std::string quiddity_name, 
+					   std::string property_name);
+    //following "by_class" methods provide properties available after creation only
+    std::string get_properties_description_by_class (std::string class_name); 
+    std::string get_property_description_by_class (std::string class_name, 
+						   std::string property_name); 
+    //set & get
+    bool set_property (std::string quiddity_name,
 			std::string property_name,
 			std::string property_value);
      
      std::string get_property (std::string quiddity_name, 
 			       std::string property_name);
+
      
-     //--------------------------------------------------------------------------------------------
-     //methods 
-     std::string get_methods_description (std::string quiddity_name); //json formated
-     std::string get_method_description (std::string quiddity_name, std::string method_name); //json formated
+     //**** methods 
+     //doc (json formatted)
+     std::string get_methods_description (std::string quiddity_name);
+     std::string get_method_description (std::string quiddity_name, 
+					 std::string method_name);
+     //invoke
      bool invoke (std::string quiddity_name, 
 		  std::string method_name,
 		  std::vector<std::string> args);  
 
-     // will invoke the given method after quiddity creation, if method exists (only one method)
+     // will invoke the given method after quiddity creation, 
+     //if method exists (only one method)
      bool auto_invoke  (std::string method_name,
 			std::vector<std::string> args);  
 

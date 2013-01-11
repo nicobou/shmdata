@@ -46,6 +46,8 @@ namespace switcher
       remove,
       get_properties_description,
       get_property_description,
+      get_properties_description_by_class,
+      get_property_description_by_class,
       set_property,
       get_property,
       get_methods_description,

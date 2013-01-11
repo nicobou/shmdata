@@ -317,27 +317,6 @@ controlService::get_classes_doc(std::string *result){
 }
 
 int
-controlService::get_classes_doc_full(std::string *result){
-  using namespace switcher;
-  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
-  QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
-    manager = ctrl_server->get_quiddity_manager ();
-    
-  if (ctrl_server == NULL || !(bool)manager)
-    {
-      char *s = (char*)soap_malloc(this, 1024);
-      g_error ("controlService::get_classes_doc: cannot get manager from SoapCtrlServer (NULL)");
-      sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (NULL)</error>");
-      return soap_senderfault("error in get_classes_doc", s);
-    }
-  
-  *result = manager->get_classes_doc_full ();
-  
-  return SOAP_OK;
-}
-
-int
 controlService::get_class_doc(std::string class_name, std::string *result){
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
@@ -357,28 +336,6 @@ controlService::get_class_doc(std::string class_name, std::string *result){
   
   return SOAP_OK;
 }
-
-int
-controlService::get_class_doc_full(std::string class_name, std::string *result){
-  using namespace switcher;
-  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
-  QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
-    manager = ctrl_server->get_quiddity_manager ();
-    
-  if (ctrl_server == NULL || !(bool)manager)
-    {
-      char *s = (char*)soap_malloc(this, 1024);
-      g_error ("controlService::get_class_doc_full: cannot get manager from SoapCtrlServer (NULL)");
-      sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (NULL)</error>");
-      return soap_senderfault("error in get_class_doc_full", s);
-    }
-  
-  *result = manager->get_class_doc_full (class_name);
-  
-  return SOAP_OK;
-}
-
 
 int
 controlService::get_quiddity_names(std::vector<std::string> *result)
@@ -410,6 +367,21 @@ controlService::get_properties_description (std::string quiddity_name,
 }
 
 int
+controlService::get_properties_description_by_class (std::string class_name,
+						     std::string *result)
+{
+  using namespace switcher;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
+  QuiddityManager::ptr manager;
+  if (ctrl_server != NULL)
+    manager = ctrl_server->get_quiddity_manager ();
+
+  *result = manager->get_properties_description_by_class (class_name);
+
+  return SOAP_OK;
+}
+
+int
 controlService::get_property_description (std::string quiddity_name,
 					  std::string property_name,
 					  std::string *result)
@@ -421,6 +393,23 @@ controlService::get_property_description (std::string quiddity_name,
     manager = ctrl_server->get_quiddity_manager ();
 
   *result = manager->get_property_description (quiddity_name, property_name);
+
+  return SOAP_OK;
+}
+
+int
+controlService::get_property_description_by_class (std::string class_name,
+						   std::string property_name,
+						   std::string *result)
+{
+  using namespace switcher;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
+  QuiddityManager::ptr manager;
+  if (ctrl_server != NULL)
+    manager = ctrl_server->get_quiddity_manager ();
+
+  g_print ("coucou\n");
+  *result = manager->get_property_description_by_class (class_name, property_name);
 
   return SOAP_OK;
 }

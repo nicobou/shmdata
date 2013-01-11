@@ -102,21 +102,28 @@ namespace switcher
   std::string 
   JSONBuilder::get_string ()
   {
-    JsonNode *node;
+    JsonNode *node = json_builder_get_root (builder_);
+    std::string res = get_string (node);
+    json_node_free (node);
+    return res;
+  }
+  
+  std::string 
+  JSONBuilder::get_string (Node root_node)
+  {
     JsonGenerator *generator;
     gsize length;
     gchar *data;
-    node = json_builder_get_root (builder_);
     generator = json_generator_new ();
-    json_generator_set_root (generator, node);
+    json_generator_set_root (generator, root_node);
     data = json_generator_to_data (generator, &length);
     //g_print ("%*s\n", (int)length, data);
     std::string description (data);
     g_free (data);
-    json_node_free (node);
     g_object_unref (generator);
     return description;
   }
+
 
   JsonNode *
   JSONBuilder::get_root ()
