@@ -30,6 +30,7 @@ static gboolean listclasses;
 static gboolean classesdoc;
 static gboolean classdoc;
 static gboolean listquiddities;
+static gboolean quidditiesdescr;
 static gboolean listprop;
 static gboolean listpropbyclass;
 static gboolean listmethods;
@@ -59,6 +60,7 @@ static GOptionEntry entries[] =
     {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &remaining_args, "remaining arguments", NULL},
     { "classes-doc", NULL, 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", NULL },
     { "class-doc", NULL, 0, G_OPTION_ARG_NONE, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
+    { "quiddities-descr", NULL, 0, G_OPTION_ARG_NONE, &quidditiesdescr, "provide JSON description of instanciated quiddities", NULL },
     { NULL }
 };
 
@@ -87,6 +89,7 @@ int main(int argc, char **argv)
 	 ^ classesdoc
 	 ^ classdoc
 	 ^ listquiddities 
+	 ^ quidditiesdescr 
 	 ^ listprop 
 	 ^ listpropbyclass 
 	 ^ setprop 
@@ -126,6 +129,12 @@ int main(int argc, char **argv)
 	  return false;
 	}
       switcher_control.get_class_doc (remaining_args[0],&resultlist);
+      std::cout << resultlist << std::endl;
+    }
+  else if (quidditiesdescr)
+    {
+      std::string resultlist;
+      switcher_control.get_quiddities_description (&resultlist);
       std::cout << resultlist << std::endl;
     }
   else if (listquiddities)

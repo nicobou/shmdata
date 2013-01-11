@@ -298,6 +298,27 @@ namespace switcher
     return quiddities_nick_names_.get_keys();
   }
 
+  std::string 
+  QuiddityLifeManager::get_quiddities_description ()
+  {
+    JSONBuilder::ptr descr (new JSONBuilder ());
+    descr->begin_object();
+    classes_doc_->set_member_name ("quiddities");
+    descr->begin_array();
+    std::vector<std::string> quids = get_instances (); 
+    for(std::vector<std::string>::iterator it = quids.begin(); it != quids.end(); ++it) 
+      {
+	std::shared_ptr<Quiddity> quid = get_quiddity (*it);
+	descr->add_string_member (quid->get_name().c_str (), 
+				  quid->get_documentation().get_class_name().c_str ());
+      }
+
+    descr->end_array();
+    descr->end_object ();
+
+    return descr->get_string();
+  }
+
   Quiddity::ptr 
   QuiddityLifeManager::get_quiddity (std::string quiddity_name)
   {

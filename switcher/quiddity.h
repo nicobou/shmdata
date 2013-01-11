@@ -52,7 +52,6 @@ namespace switcher
     virtual QuiddityDocumentation get_documentation() = 0;
     
     //class initialisation
-    //bool init() {return true;};
     virtual bool init () = 0;
 
     //instance name

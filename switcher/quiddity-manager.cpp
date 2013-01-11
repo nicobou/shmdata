@@ -257,17 +257,24 @@ namespace switcher
     return life_manager_->get_classes_doc ();
   }
 
+  
   std::string 
   QuiddityManager::get_class_doc (std::string class_name)
   {
     return life_manager_->get_class_doc (class_name);
   }
 
+  //FIXME make this a command (or not)
+  std::string 
+  QuiddityManager::get_quiddities_description ()
+  {
+    return life_manager_->get_quiddities_description ();
+  }
+
  
   std::vector<std::string> 
   QuiddityManager::get_quiddities ()
   {
-    //FIXME make this return a json formated std::string
     return life_manager_->get_instances ();
   }
   
