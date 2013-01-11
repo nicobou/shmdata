@@ -41,10 +41,7 @@ main (int argc,
   
   for (iter = classes.begin(); iter != classes.end (); ++iter)
     {
-
-      // gchar **class_description = g_strsplit_set (iter->c_str (), "\"",-1);
-      // std::string class_name (class_description[7]);
-       std::string class_name (*iter);
+      std::string class_name (*iter);
       std::string res = manager->create(class_name, class_name);
       
       if (res.compare (class_name) != 0)
