@@ -52,6 +52,8 @@ namespace switcher
       get_property,
       get_methods_description,
       get_method_description,
+      get_methods_description_by_class,
+      get_method_description_by_class,
       invoke
     };
     command name_;

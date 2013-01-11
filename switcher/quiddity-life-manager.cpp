@@ -447,6 +447,7 @@ namespace switcher
     return (get_quiddity (quiddity_name))->get_methods_description ();
   }
 
+
   std::string
   QuiddityLifeManager::get_method_description (std::string quiddity_name, std::string method_name)
   {
@@ -457,6 +458,31 @@ namespace switcher
       }
      
     return (get_quiddity (quiddity_name))->get_method_description (method_name);
+  }
+
+  std::string
+  QuiddityLifeManager::get_methods_description_by_class (std::string class_name)
+  {
+    if (!class_exists (class_name))
+      return "{\"error\":\"class not found\"}";
+    std::string quid_name = create (class_name);
+    std::string descr = get_methods_description (quid_name);
+    remove (quid_name);
+    return descr;
+
+  }
+
+  std::string
+  QuiddityLifeManager::get_method_description_by_class (std::string class_name, 
+							std::string method_name)
+  {
+    if (!class_exists (class_name))
+      return "{\"error\":\"class not found\"}";
+    std::string quid_name = create (class_name);
+    std::string descr = get_method_description (quid_name, method_name);
+    remove (quid_name);
+    return descr;
+
   }
 
   

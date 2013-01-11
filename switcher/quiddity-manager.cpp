@@ -168,8 +168,6 @@ namespace switcher
 		       quiddity_name.c_str(),
 		       NULL);
   }
-  
-  
 
   std::string
   QuiddityManager::get_method_description (std::string quiddity_name, std::string method_name)
@@ -180,6 +178,23 @@ namespace switcher
 		       NULL);
   }
 
+  std::string
+  QuiddityManager::get_methods_description_by_class (std::string class_name)
+  {
+    return seq_invoke (QuiddityCommand::get_methods_description_by_class, 
+		       class_name.c_str(),
+		       NULL);
+  }
+
+  std::string
+  QuiddityManager::get_method_description_by_class (std::string class_name, 
+						    std::string method_name)
+  {
+    return seq_invoke (QuiddityCommand::get_method_description_by_class, 
+		       class_name.c_str(),
+		       method_name.c_str(),
+		       NULL);
+  }
 
   void 
   QuiddityManager::auto_init (std::string quiddity_name)
@@ -331,7 +346,7 @@ namespace switcher
     switch (context->command_.name_)
       {
       case QuiddityCommand::get_classes:
-	//TODO + make commands for json formatted docs including props and methods
+	//TODO + other get_class docs
 	break;
       case QuiddityCommand::get_quiddities:
 	//TODO
@@ -340,8 +355,7 @@ namespace switcher
 	context->command_.result_.push_back (context->life_manager_->create (context->command_.args_[0]));
 	break;
       case QuiddityCommand::create_nick_named:
-	context->command_.result_.push_back (context->life_manager_->create (context->command_.args_[0],
-									      context->command_.args_[1]));
+	context->command_.result_.push_back (context->life_manager_->create (context->command_.args_[0], context->command_.args_[1]));
 	break;
       case QuiddityCommand::remove:
 	if (context->life_manager_->remove (context->command_.args_[0]))
@@ -368,15 +382,19 @@ namespace switcher
 	  context->command_.result_.push_back ("false");
 	break;
       case QuiddityCommand::get_property:
-	context->command_.result_.push_back (context->life_manager_->get_property (context->command_.args_[0],
-										   context->command_.args_[1]));
+	context->command_.result_.push_back (context->life_manager_->get_property (context->command_.args_[0], context->command_.args_[1]));
 	break;
       case QuiddityCommand::get_methods_description:
 	context->command_.result_.push_back (context->life_manager_->get_methods_description (context->command_.args_[0]));
 	break;
       case QuiddityCommand::get_method_description:
-	context->command_.result_.push_back (context->life_manager_->get_method_description (context->command_.args_[0],
-											     context->command_.args_[1]));
+	context->command_.result_.push_back (context->life_manager_->get_method_description (context->command_.args_[0], context->command_.args_[1]));
+	break;
+      case QuiddityCommand::get_methods_description_by_class:
+	context->command_.result_.push_back (context->life_manager_->get_methods_description_by_class (context->command_.args_[0]));
+	break;
+      case QuiddityCommand::get_method_description_by_class:
+	context->command_.result_.push_back (context->life_manager_->get_method_description_by_class (context->command_.args_[0], context->command_.args_[1]));
 	break;
       case QuiddityCommand::invoke:
 	if (context->life_manager_->invoke (context->command_.args_[0], context->command_.args_[1], context->command_.vector_arg_))

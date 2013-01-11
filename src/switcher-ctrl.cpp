@@ -33,10 +33,13 @@ static gboolean listquiddities;
 static gboolean listprop;
 static gboolean listpropbyclass;
 static gboolean listmethods;
+static gboolean listmethodsbyclass;
 static gboolean setprop;
 static gboolean getprop;
 static gboolean invokemethod;
 static gchar **remaining_args = NULL;
+
+//FIXME the list-something should actually give lists, and json formated should be given without one-char option
 
 static GOptionEntry entries[] =
   {
@@ -49,6 +52,7 @@ static GOptionEntry entries[] =
     { "list-props-by-class", 'P', 0, G_OPTION_ARG_NONE, &listpropbyclass, "list properties of a class", NULL },
 
     { "list-methods", 'm', 0, G_OPTION_ARG_NONE, &listmethods, "list methods of a quiddity", NULL },
+    { "list-methods", 'M', 0, G_OPTION_ARG_NONE, &listmethodsbyclass, "list methods of a class", NULL },
     { "set-prop", 's', 0, G_OPTION_ARG_NONE, &setprop, "set property value (-s quiddity_name prop_name val)", NULL },
     { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g quiddity_name prop_name)", NULL },
     { "invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod, "invoke method of a quiddity (-i quiddity_name method_name args...)", NULL },
@@ -90,6 +94,7 @@ int main(int argc, char **argv)
 	 ^ createquiddity 
 	 ^ deletequiddity
 	 ^ listmethods
+	 ^ listmethodsbyclass
 	 ^ invokemethod))
     {
       g_printerr ("I am very sorry for the inconvenience, but I am able to process only one command at a time. \n");
@@ -230,6 +235,24 @@ int main(int argc, char **argv)
 	switcher_control.get_methods_description(remaining_args[0], &resultlist);
       else
 	switcher_control.get_method_description(remaining_args[0], remaining_args[1], &resultlist);
+      std::cout << resultlist << std::endl;
+    }
+  else if (listmethodsbyclass)
+    {
+      if (remaining_args[0] == NULL )
+	{
+	  g_printerr ("missing quiddity name for list methods\n");
+	  return false;
+	}
+      
+      std::string resultlist;
+      if (remaining_args[1] == NULL)
+	switcher_control.get_methods_description_by_class (remaining_args[0], 
+							   &resultlist);
+      else
+	switcher_control.get_method_description_by_class (remaining_args[0], 
+							  remaining_args[1], 
+							  &resultlist);
       std::cout << resultlist << std::endl;
     }
   else if (invokemethod)

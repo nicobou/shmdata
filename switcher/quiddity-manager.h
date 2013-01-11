@@ -82,6 +82,10 @@
      std::string get_methods_description (std::string quiddity_name);
      std::string get_method_description (std::string quiddity_name, 
 					 std::string method_name);
+     //following "by_class" methods provide properties available after creation only
+    std::string get_methods_description_by_class (std::string class_name); 
+    std::string get_method_description_by_class (std::string class_name, 
+						 std::string method_name);
      //invoke
      bool invoke (std::string quiddity_name, 
 		  std::string method_name,

@@ -580,3 +580,34 @@ controlService::get_method_description (std::string quiddity_name,
   return SOAP_OK;
 }
 
+int
+controlService::get_methods_description_by_class (std::string class_name,
+						  std::string *result)
+{
+  using namespace switcher;
+
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
+  QuiddityManager::ptr manager;
+  if (ctrl_server != NULL)
+    manager = ctrl_server->get_quiddity_manager ();
+
+  *result = manager->get_methods_description_by_class (class_name);
+  return SOAP_OK;
+}
+
+int
+controlService::get_method_description_by_class (std::string class_name,
+						 std::string method_name,
+						 std::string *result)
+{
+  using namespace switcher;
+
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
+  QuiddityManager::ptr manager;
+  if (ctrl_server != NULL)
+    manager = ctrl_server->get_quiddity_manager ();
+
+  *result = manager->get_method_description_by_class (class_name, method_name);
+  return SOAP_OK;
+}
+
