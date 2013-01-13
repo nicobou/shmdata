@@ -302,15 +302,19 @@ namespace switcher
   QuiddityLifeManager::get_quiddities_description ()
   {
     JSONBuilder::ptr descr (new JSONBuilder ());
+    descr->reset ();
     descr->begin_object();
-    classes_doc_->set_member_name ("quiddities");
+    descr->set_member_name ("quiddities");
     descr->begin_array();
     std::vector<std::string> quids = get_instances (); 
     for(std::vector<std::string>::iterator it = quids.begin(); it != quids.end(); ++it) 
       {
+	descr->begin_object();
 	std::shared_ptr<Quiddity> quid = get_quiddity (*it);
-	descr->add_string_member (quid->get_name().c_str (), 
-				  quid->get_documentation().get_class_name().c_str ());
+	descr->add_string_member ("name", quid->get_name().c_str ());
+	descr->add_string_member ("class", quid->get_documentation().get_class_name().c_str ());
+	descr->end_object();
+
       }
 
     descr->end_array();
