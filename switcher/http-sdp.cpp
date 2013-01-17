@@ -84,8 +84,9 @@ namespace switcher
     HTTPSDP *context = static_cast<HTTPSDP *>(user_data);
     
     const gchar *padname= gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
-    g_debug ("httpsdp new pad name is %s\n",padname);
-    
+    g_debug ("httpsdp new pad name is %s",padname);
+    g_debug ("httpsdp new caps %s",gst_caps_to_string (gst_pad_get_caps (pad)));
+
     GstElement *identity = gst_element_factory_make ("identity",NULL);
     g_object_set (identity, "sync", TRUE, NULL);
 
