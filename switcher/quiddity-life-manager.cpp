@@ -29,6 +29,7 @@
 #include "switcher/aravis-genicam.h"
 #include "switcher/audio-test-source.h"
 #include "switcher/decodebin2.h"
+#include "switcher/file-sdp.h"
 #include "switcher/gconf-audio-sink.h"
 #include "switcher/gconf-audio-source.h"
 #include "switcher/gconf-video-sink.h"
@@ -42,6 +43,7 @@
 #include "switcher/udpsink.h"
 #include "switcher/uridecodebin.h"
 #include "switcher/video-test-source.h"
+#include "switcher/vorbis.h"
 #include "switcher/xvimagesink.h"
 
 namespace switcher
@@ -161,6 +163,8 @@ namespace switcher
       						     AravisGenicam::doc_.get_json_root_node ());
     abstract_factory_.register_class<Decodebin2> (Decodebin2::doc_.get_class_name (), 
 						  Decodebin2::doc_.get_json_root_node ());
+    abstract_factory_.register_class<FileSDP> (FileSDP::doc_.get_class_name (), 
+					       FileSDP::doc_.get_json_root_node ());
     abstract_factory_.register_class<GconfAudioSink> (GconfAudioSink::doc_.get_class_name (), 
       						      GconfAudioSink::doc_.get_json_root_node ());
     abstract_factory_.register_class<GconfAudioSource> (GconfAudioSource::doc_.get_class_name (), 
@@ -187,6 +191,8 @@ namespace switcher
       						    Uridecodebin::doc_.get_json_root_node ());
     abstract_factory_.register_class<VideoTestSource> (VideoTestSource::doc_.get_class_name (),
       						       VideoTestSource::doc_.get_json_root_node ());
+    abstract_factory_.register_class<Vorbis> (Vorbis::doc_.get_class_name (),
+					      Vorbis::doc_.get_json_root_node ());
     abstract_factory_.register_class<Xvimagesink> (Xvimagesink::doc_.get_class_name (),
       						   Xvimagesink::doc_.get_json_root_node ());
   }

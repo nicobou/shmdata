@@ -17,20 +17,14 @@ lib_LTLIBRARIES = \
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     aac.cpp \
+    aravis-genicam.cpp \
     audio-sink.cpp \
     audio-source.cpp \
     audio-test-source.cpp \
-    aravis-genicam.cpp \
-    decodebin2.cpp \
-    quiddity-command.cpp \
-    quiddity-documentation.cpp \
-    quiddity-life-manager.cpp \
-    quiddity-manager.cpp \
-    quiddity-manager-wrapper.cpp \
-    quiddity.cpp \
     base-sink.cpp \
     base-source.cpp \
-    soap-ctrl-server.cpp \
+    decodebin2.cpp \
+    file-sdp.cpp \
     gconf-audio-sink.cpp \
     gconf-audio-source.cpp \
     gconf-video-sink.cpp \
@@ -43,17 +37,25 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     method.cpp \
     property.cpp \
     pulse-sink.cpp \
+    quiddity-command.cpp \
+    quiddity-documentation.cpp \
+    quiddity-life-manager.cpp \
+    quiddity-manager-wrapper.cpp \
+    quiddity-manager.cpp \
+    quiddity.cpp \
     rtp-destination.cpp \
     rtp-session.cpp \
     runtime.cpp \
     segment.cpp \
     shmdata-reader.cpp \
     shmdata-writer.cpp \
+    soap-ctrl-server.cpp \
     udpsink.cpp \
     uridecodebin.cpp \
     video-sink.cpp \
     video-source.cpp \
     video-test-source.cpp \
+    vorbis.cpp \
     webservices/soapC.cpp \
     webservices/soapcontrolProxy.cpp \
     webservices/soapcontrolService.cpp \
@@ -73,22 +75,16 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     aac.h \
     abstract-factory.h \
     abstract-factory_spec.h \
-    audio-test-source.h \
+    aravis-genicam.h \
     audio-sink.h \
     audio-source.h \
-    aravis-genicam.h \
-    decodebin2.h \
-    quiddity-command.h \
-    quiddity-documentation.h \
-    quiddity-life-manager.h \
-    quiddity-manager.h \
-    quiddity-manager-wrapper.h \
-    quiddity.h \
+    audio-test-source.h \
     base-sink.h \
     base-source.h \
     creator.h \
-    soap-ctrl-server.h \
     ctrl-webservice-definition.h \
+    decodebin2.h \
+    file-sdp.h \
     gconf-audio-sink.h \
     gconf-audio-source.h \
     gconf-video-sink.h \
@@ -96,19 +92,26 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gst-element-cleaner.h \
     gst-utils.h \
     h264.h \
-    http-sdp.h \
     hash-table.h \
     hash-table_spec.h \
+    http-sdp.h \
     json-builder.h \
     method.h \
     property.h \
     pulse-sink.h \
+    quiddity-command.h \
+    quiddity-documentation.h \
+    quiddity-life-manager.h \
+    quiddity-manager-wrapper.h \
+    quiddity-manager.h \
+    quiddity.h \
     rtp-destination.h \
     rtp-session.h \
     runtime.h \
     segment.h \
     shmdata-reader.h \
     shmdata-writer.h \
+    soap-ctrl-server.h \
     string-map.h \
     string-map_spec.h \
     udpsink.h \
@@ -116,6 +119,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     video-sink.h \
     video-source.h \
     video-test-source.h \
+    vorbis.h \
     xvimagesink.h
 
 ####### webservice code generation into the "webservices" directory
