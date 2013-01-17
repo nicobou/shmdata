@@ -20,7 +20,6 @@
 #include "switcher/http-sdp.h"
 #include <glib/gprintf.h>
 #include "switcher/gst-utils.h"
-#include <memory>
 
 namespace switcher
 {
