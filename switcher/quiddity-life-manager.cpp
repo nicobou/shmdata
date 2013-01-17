@@ -26,9 +26,9 @@
 
 //the base quiddities to manage (line sorted)
 #include "switcher/aac.h"
-#include "switcher/audio-test-source.h"
 #include "switcher/aravis-genicam.h"
-#include "switcher/soap-ctrl-server.h"
+#include "switcher/audio-test-source.h"
+#include "switcher/decodebin2.h"
 #include "switcher/gconf-audio-sink.h"
 #include "switcher/gconf-audio-source.h"
 #include "switcher/gconf-video-sink.h"
@@ -38,6 +38,7 @@
 #include "switcher/pulse-sink.h"
 #include "switcher/rtp-session.h"
 #include "switcher/runtime.h"
+#include "switcher/soap-ctrl-server.h"
 #include "switcher/udpsink.h"
 #include "switcher/uridecodebin.h"
 #include "switcher/video-test-source.h"
@@ -158,8 +159,8 @@ namespace switcher
       						       AudioTestSource::doc_.get_json_root_node ());
     abstract_factory_.register_class<AravisGenicam> (AravisGenicam::doc_.get_class_name (), 
       						     AravisGenicam::doc_.get_json_root_node ());
-    abstract_factory_.register_class<SoapCtrlServer> (SoapCtrlServer::doc_.get_class_name (), 
-     						      SoapCtrlServer::doc_.get_json_root_node ());
+    abstract_factory_.register_class<Decodebin2> (Decodebin2::doc_.get_class_name (), 
+						  Decodebin2::doc_.get_json_root_node ());
     abstract_factory_.register_class<GconfAudioSink> (GconfAudioSink::doc_.get_class_name (), 
       						      GconfAudioSink::doc_.get_json_root_node ());
     abstract_factory_.register_class<GconfAudioSource> (GconfAudioSource::doc_.get_class_name (), 
@@ -178,6 +179,8 @@ namespace switcher
       						  RtpSession::doc_.get_json_root_node ());
     abstract_factory_.register_class<Runtime> (Runtime::doc_.get_class_name (), 
       					       Runtime::doc_.get_json_root_node ());
+    abstract_factory_.register_class<SoapCtrlServer> (SoapCtrlServer::doc_.get_class_name (), 
+     						      SoapCtrlServer::doc_.get_json_root_node ());
     abstract_factory_.register_class<UDPSink> (UDPSink::doc_.get_class_name (), 
       					       UDPSink::doc_.get_json_root_node ());
     abstract_factory_.register_class<Uridecodebin> (Uridecodebin::doc_.get_class_name (), 
