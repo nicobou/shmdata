@@ -292,14 +292,14 @@ namespace switcher
      if (media_counters_.contains (std::string (padname_splitted[0])))
        {
 	 count = media_counters_. lookup (std::string (padname_splitted[0]));
-	 g_print ("------------- count %d\n", count);
+	 //g_print ("------------- count %d\n", count);
 	 count = count+1;
        }
      media_counters_.replace (std::string (padname_splitted[0]), count);
 
      gchar media_name[256];
      g_sprintf (media_name,"%s_%d",padname_splitted[0],count);
-     g_print ("---------------------------- %s %d\n",media_name, count );
+     g_debug ("uridecodebin: new media %s %d\n",media_name, count );
      g_strfreev(padname_splitted);
 
      //creating a shmdata
