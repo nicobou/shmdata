@@ -24,6 +24,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     base-sink.cpp \
     base-source.cpp \
     decodebin2.cpp \
+    deinterleave.cpp \
     file-sdp.cpp \
     gconf-audio-sink.cpp \
     gconf-audio-source.cpp \
@@ -84,6 +85,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     creator.h \
     ctrl-webservice-definition.h \
     decodebin2.h \
+    deinterleave.h \
     file-sdp.h \
     gconf-audio-sink.h \
     gconf-audio-source.h \

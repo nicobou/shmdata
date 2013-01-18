@@ -29,6 +29,7 @@
 #include "switcher/aravis-genicam.h"
 #include "switcher/audio-test-source.h"
 #include "switcher/decodebin2.h"
+#include "switcher/deinterleave.h"
 #include "switcher/file-sdp.h"
 #include "switcher/gconf-audio-sink.h"
 #include "switcher/gconf-audio-source.h"
@@ -163,6 +164,8 @@ namespace switcher
       						     AravisGenicam::doc_.get_json_root_node ());
     abstract_factory_.register_class<Decodebin2> (Decodebin2::doc_.get_class_name (), 
 						  Decodebin2::doc_.get_json_root_node ());
+    abstract_factory_.register_class<Deinterleave> (Deinterleave::doc_.get_class_name (), 
+						    Deinterleave::doc_.get_json_root_node ());
     abstract_factory_.register_class<FileSDP> (FileSDP::doc_.get_class_name (), 
 					       FileSDP::doc_.get_json_root_node ());
     abstract_factory_.register_class<GconfAudioSink> (GconfAudioSink::doc_.get_class_name (), 
