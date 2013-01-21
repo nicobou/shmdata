@@ -401,7 +401,7 @@ shmdata_base_reader_new ()
   reader->install_sync_handler_ = TRUE;
   reader->attached_ = FALSE;
   reader->do_absolute_ = FALSE;
-  reader->timereset_ = FALSE;
+  reader->timereset_ = TRUE;
   reader->timeshift_ = 0;
   return reader;
 }
