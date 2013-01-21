@@ -12,11 +12,17 @@
  * GNU Lesser General Public License for more details.
  */
 
+//FIXME change license to GPL (libsamplerate) 
+
 #include "m_pd.h"
 #include <gst/gst.h>
 #include <glib.h>
 #include <string.h>
+#include <math.h>
+#include <samplerate.h>
+
 #include "shmdata/any-data-reader.h"
+
 
 #ifdef NT
 #pragma warning( disable : 4244 )
@@ -55,7 +61,6 @@ typedef struct _shmsrc_tilde
   t_int **x_myvec;                               /* vector we pass on in the DSP routine */
   t_float x_f;    	/* place to hold inlet's value if it's set by message */
   
-  t_resample x_updown;
 } t_shmsrc_tilde;
 
 void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
@@ -139,14 +144,58 @@ static t_int *shmsrc_tilde_perform(t_int *w)
   if (x->x_current_audio_buf == NULL)
     {
       x->x_current_audio_buf = g_async_queue_try_pop (x->x_audio_queue); //FIXME wrap this in a function and resample
+      if (x->x_current_audio_buf != NULL) 
+	{ 
+	  static float input [2048], output [2048] ;
+	  SRC_DATA src_data ;
+	  int input_len, output_len, error, terminate ;
+	  double src_ratio = 0.789;
+
+	  if (src_ratio >= 1.0)
+	    {
+	      output_len = 2048;
+	      input_len = (int) floor (2048 / src_ratio) ;
+	    }
+	  else
+	  {	
+	    input_len = 2048;
+	    output_len = (int) floor (2048 * src_ratio) ;
+	  } ;
+	
+	src_data.data_in = input ;
+	src_data.input_frames = input_len ;
+	
+	src_data.src_ratio =  src_ratio;
+	
+	src_data.data_out = output ;
+	src_data.output_frames = output_len;
+
+	if ((error = src_simple (&src_data, SRC_ZERO_ORDER_HOLD, 1))) //SRC_ZERO_ORDER_HOLD SRC_LINEAR SRC_SINC_FASTEST
+	  {
+	    printf ("\n\nLine %d : %s\n\n", __LINE__, src_strerror (error)) ;
+	    exit (1) ;
+	  };
+
+	terminate = (int) ceil ((src_ratio >= 1.0) ? src_ratio : 1.0 / src_ratio) ;
+
+	if (fabs (src_data.output_frames_gen - src_ratio * input_len) > 2 * terminate)
+	{	
+	  printf ("\n\nLine %d : bad output data length %ld should be %d.\n", __LINE__,
+		  src_data.output_frames_gen, (int) floor (src_ratio * input_len)) ;
+	  printf ("\tsrc_ratio  : %.4f\n", src_ratio) ;
+	  printf ("\tinput_len  : %d\n\toutput_len : %d\n\n", input_len, output_len) ;
+	} ;
+
+	  g_print ("stream sample rate %d, pd sample rate=%d queue size=%d\n",
+		   x->x_current_audio_buf->sample_rate,
+		   x->x_pd_samplerate,
+		   g_async_queue_length (x->x_audio_queue)); 
+	}
+      
     }
 
   if (x->x_current_audio_buf != NULL) 
     { 
-      g_print ("stream sample rate %d, pd sample rate=%d\n",
-       	       x->x_current_audio_buf->sample_rate,
-       	       x->x_pd_samplerate); 
-
       //deinterleaving channels  
       while (n--)  
    	{ 
@@ -226,7 +275,6 @@ static void shmsrc_tilde_free(t_shmsrc_tilde *x)
   if (x->x_myvec)
     t_freebytes(x->x_myvec, sizeof(t_int *) * (x->x_num_outlets + 3));
   
-  resample_free(&x->x_updown);
 }
 
 
@@ -248,11 +296,6 @@ static void *shmsrc_tilde_new(t_symbol *s, t_floatarg num_outlets)
   x->x_reader = NULL;
   x->x_pd_samplerate = -1;
   x->x_current_audio_buf = NULL;
-  
-  resample_init(&x->x_updown);
-  x->x_updown.downsample = 1;
-  x->x_updown.upsample   = 1;
-
 
   sprintf (x->x_shmdata_prefix, "/tmp/pd_");
   sprintf (x->x_shmdata_name, "%s",s->s_name);

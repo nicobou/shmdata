@@ -180,6 +180,13 @@ AC_CHECK_HEADER(m_pd.h,
                 AC_MSG_WARN([Puredata header not found.]))
 AM_CONDITIONAL(PUREDATAFOUND, test "${PUREDATA}" = "y")
 
+if test "${PUREDATA}" = "y" ; then
+   #checking libsamplerate0-dev
+   PKG_CHECK_MODULES(LIBSAMPLERATE, samplerate, have_samplerate=true, have_samplerate=false)
+   if test "x${have_samplerate}" = "xfalse" ; then
+       AC_MSG_ERROR([building puredata external enabled, but missing package: libsamplerate0-dev])
+   fi
+fi
 
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.

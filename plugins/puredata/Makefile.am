@@ -5,14 +5,16 @@ plugindir = $(pddir)/extra
 AM_CFLAGS = \
     -I$(top_srcdir) \
     $(GST_CFLAGS) \
-    $(GIO_CFLAGS)
+    $(GIO_CFLAGS) \
+    $(LIBSAMPLERATE_CFLAGS)
 
 AM_LDFLAGS =  \
-    -module \
+    $(LIBSAMPLERATE_LIBS) \
     -avoid-version \
-    -shared \
     -export-dynamic \
-    -fPIC
+    -fPIC \
+    -module \
+    -shared 
 
 if HAVE_OSX
  AM_LDFLAGS += -shrext .pd_darwin
