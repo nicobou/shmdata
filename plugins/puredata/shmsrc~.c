@@ -37,13 +37,15 @@ static t_class *shmsrc_tilde_class;
 
 typedef struct _shmsrc_tilde_buf
 {
-  void *audio_data;
+  t_float *audio_data;
   void *shm_buf; //for freeing memory after being used
   int remaining_samples;
   int num_channels_to_output;
-  int sample_size;
+  //int sample_size;
   int num_unused_channels;
+  int num_channels_in_buf;
   int sample_rate;
+  gboolean free_audio_data;
 } t_shmsrc_tilde_buf;
 
 typedef struct _shmsrc_tilde
@@ -62,6 +64,15 @@ typedef struct _shmsrc_tilde
   t_float x_f;    	/* place to hold inlet's value if it's set by message */
   
 } t_shmsrc_tilde;
+
+
+static void shmsrc_tilde_audio_buffer_free(t_shmsrc_tilde_buf *buf)
+{
+  shmdata_any_reader_free (buf->shm_buf);
+   /* if (buf->free_audio_data) //because of a malloc when converting from 16 bits  */
+   /*   g_free (buf->audio_data);  */
+  g_free (buf);
+}
 
 void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
 	      void *shmbuf,
@@ -96,6 +107,8 @@ void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
    		     "channels", G_TYPE_INT, &channels,  
    		     "width", G_TYPE_INT, &width,  
    		     NULL); 
+
+  audio_buf->num_channels_in_buf = channels; 
   if (channels > x->x_num_outlets)
     audio_buf->num_channels_to_output = x->x_num_outlets;
  else if (channels < 0)
@@ -108,12 +121,34 @@ void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
     audio_buf->num_unused_channels = 0;
 
   audio_buf->sample_rate = samplerate;
-  audio_buf->sample_size = width;
+  //audio_buf->sample_size = width;
   audio_buf->remaining_samples = data_size / ((width/8) * channels);
-  audio_buf->audio_data = data;
   audio_buf->shm_buf = shmbuf;
   
   //printf ("rate %d, channels %d, width %d num sample=%d\n",samplerate, channels, width, data_size / ((width/8) *channels)); 
+
+  //converting to float
+  audio_buf->free_audio_data = FALSE;
+  audio_buf->audio_data = (t_float *)data;
+  if (width == 16)
+    {
+      audio_buf->free_audio_data = TRUE;
+      t_float *audio_converted =  g_malloc0 (sizeof (t_float) 
+					      * audio_buf->num_channels_in_buf 
+					      * audio_buf->remaining_samples);
+      audio_buf->audio_data = audio_converted;
+      int n = channels *  audio_buf->remaining_samples;
+      while (n--)
+	{
+	  *audio_converted++ = (t_float)(*(gint16 *)data * 3.051850e-05);
+	  data += sizeof(gint16); 
+	}
+    }
+  else if (width == 8)
+    {
+      post ("8 bit audio not supported yet");
+      return;
+    }
   
   g_async_queue_push (x->x_audio_queue, audio_buf);
    
@@ -132,6 +167,57 @@ static void shmsrc_tilde_reader_restart (t_shmsrc_tilde *x)
 }
 
 
+static void shmsrc_tilde_try_pop_audio_buf (t_shmsrc_tilde *x)
+{
+  x->x_current_audio_buf = g_async_queue_try_pop (x->x_audio_queue); //FIXME wrap this in a function and resample
+  if (x->x_current_audio_buf != NULL) 
+    { 
+      double src_ratio = (double) x->x_pd_samplerate 
+	/ (double)x->x_current_audio_buf->sample_rate;
+      //g_print ("%f\n",src_ratio);
+
+      if (src_ratio != 1) 
+	{ 
+	  SRC_DATA src_data ;  
+	  int error, terminate ;  
+	  int input_len = x->x_current_audio_buf->remaining_samples;  
+	      
+	  int output_len = floor (input_len * src_ratio);  
+	  //g_print ("%d, %d\n",output_len,input_len);
+	  src_data.data_in = x->x_current_audio_buf->audio_data ;  
+	  src_data.input_frames = input_len ;  
+	      
+	  src_data.src_ratio =  src_ratio;  
+	      
+	  t_float *output = g_malloc0 (sizeof (t_float) 
+				       * output_len 
+				       * x->x_current_audio_buf->num_channels_in_buf);  
+	  src_data.data_out = output ;  
+	  src_data.output_frames = output_len;  
+	      
+	  //SRC_ZERO_ORDER_HOLD SRC_LINEAR SRC_SINC_FASTEST    
+	  if ((error = src_simple (&src_data, SRC_SINC_FASTEST, x->x_current_audio_buf->num_channels_in_buf))) 
+	      printf ("\n\nLine %d : %s\n\n", __LINE__, src_strerror (error)) ;    
+	      
+	  terminate = (int) ceil ((src_ratio >= 1.0) ? src_ratio : 1.0 / src_ratio) ;   
+	      
+	  if (fabs (src_data.output_frames_gen - src_ratio * input_len) > 2 * terminate)   
+	    {	   
+	      printf ("\n\nLine %d : bad output data length %ld should be %d.\n", __LINE__,   
+		      src_data.output_frames_gen, (int) floor (src_ratio * input_len)) ;   
+	      printf ("\tsrc_ratio  : %.4f\n", src_ratio) ;   
+	      printf ("\tinput_len  : %d\n\toutput_len : %d\n\n", input_len, output_len) ;   
+	    } ;   
+	      
+	  if (x->x_current_audio_buf->free_audio_data)   
+	    g_free (x->x_current_audio_buf->audio_data);   
+	  x->x_current_audio_buf->free_audio_data = TRUE;   
+	  x->x_current_audio_buf->audio_data = output;   
+	  x->x_current_audio_buf->remaining_samples = output_len; 
+	}// src_ratio != 1 
+    }
+} 
+
 static t_int *shmsrc_tilde_perform(t_int *w)
 {
   t_shmsrc_tilde *x = (t_shmsrc_tilde*) (w[1]); 
@@ -142,57 +228,7 @@ static t_int *shmsrc_tilde_perform(t_int *w)
     out[i] = (t_float *)(w[3 + i]);  
   
   if (x->x_current_audio_buf == NULL)
-    {
-      x->x_current_audio_buf = g_async_queue_try_pop (x->x_audio_queue); //FIXME wrap this in a function and resample
-      if (x->x_current_audio_buf != NULL) 
-	{ 
-	  static float input [2048], output [2048] ;
-	  SRC_DATA src_data ;
-	  int input_len, output_len, error, terminate ;
-	  double src_ratio = 0.789;
-
-	  if (src_ratio >= 1.0)
-	    {
-	      output_len = 2048;
-	      input_len = (int) floor (2048 / src_ratio) ;
-	    }
-	  else
-	  {	
-	    input_len = 2048;
-	    output_len = (int) floor (2048 * src_ratio) ;
-	  } ;
-	
-	src_data.data_in = input ;
-	src_data.input_frames = input_len ;
-	
-	src_data.src_ratio =  src_ratio;
-	
-	src_data.data_out = output ;
-	src_data.output_frames = output_len;
-
-	if ((error = src_simple (&src_data, SRC_ZERO_ORDER_HOLD, 1))) //SRC_ZERO_ORDER_HOLD SRC_LINEAR SRC_SINC_FASTEST
-	  {
-	    printf ("\n\nLine %d : %s\n\n", __LINE__, src_strerror (error)) ;
-	    exit (1) ;
-	  };
-
-	terminate = (int) ceil ((src_ratio >= 1.0) ? src_ratio : 1.0 / src_ratio) ;
-
-	if (fabs (src_data.output_frames_gen - src_ratio * input_len) > 2 * terminate)
-	{	
-	  printf ("\n\nLine %d : bad output data length %ld should be %d.\n", __LINE__,
-		  src_data.output_frames_gen, (int) floor (src_ratio * input_len)) ;
-	  printf ("\tsrc_ratio  : %.4f\n", src_ratio) ;
-	  printf ("\tinput_len  : %d\n\toutput_len : %d\n\n", input_len, output_len) ;
-	} ;
-
-	  g_print ("stream sample rate %d, pd sample rate=%d queue size=%d\n",
-		   x->x_current_audio_buf->sample_rate,
-		   x->x_pd_samplerate,
-		   g_async_queue_length (x->x_audio_queue)); 
-	}
-      
-    }
+      shmsrc_tilde_try_pop_audio_buf (x);
 
   if (x->x_current_audio_buf != NULL) 
     { 
@@ -208,16 +244,8 @@ static t_int *shmsrc_tilde_perform(t_int *w)
 	      //give audio data 
 	      for (i=0; i < x->x_current_audio_buf->num_channels_to_output; i++) 
 		{ 
-		  if (x->x_current_audio_buf->sample_size == 32)
-		    {
-		      *(out[i]++) = (t_float) *(t_float *)x->x_current_audio_buf->audio_data;   
-		      x->x_current_audio_buf->audio_data += sizeof(t_float); 
-		    }
-		  else if (x->x_current_audio_buf->sample_size == 16)
-		    {
-		      *out[i]++ = (t_float)(*(gint16 *)x->x_current_audio_buf->audio_data * 3.051850e-05);
-		      x->x_current_audio_buf->audio_data += sizeof(gint16); 
-		    }
+		  *(out[i]++) =  *x->x_current_audio_buf->audio_data;   
+		  x->x_current_audio_buf->audio_data ++;
 		}  
 	      for (i=0; i < x->x_current_audio_buf->num_unused_channels; i++) 
 		x->x_current_audio_buf->audio_data ++; 
@@ -228,9 +256,8 @@ static t_int *shmsrc_tilde_perform(t_int *w)
 	      x->x_current_audio_buf->remaining_samples--;
 	      if (x->x_current_audio_buf->remaining_samples == 0)
 		{
-		  shmdata_any_reader_free (x->x_current_audio_buf->shm_buf);
-		  g_free (x->x_current_audio_buf);
-		  x->x_current_audio_buf = g_async_queue_try_pop (x->x_audio_queue); 
+		  shmsrc_tilde_audio_buffer_free(x->x_current_audio_buf);
+		  shmsrc_tilde_try_pop_audio_buf (x);
 		}
 	    }
 	} 
@@ -267,8 +294,7 @@ static void shmsrc_tilde_free(t_shmsrc_tilde *x)
   t_shmsrc_tilde_buf *buf = g_async_queue_try_pop (x->x_audio_queue); 
   while (buf != NULL)
     {
-      shmdata_any_reader_free (buf->shm_buf);
-      g_free (buf);
+      shmsrc_tilde_audio_buffer_free (buf);
       buf = g_async_queue_try_pop (x->x_audio_queue); 
     }
   g_async_queue_unref (x->x_audio_queue);
