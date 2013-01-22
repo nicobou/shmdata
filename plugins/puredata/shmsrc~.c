@@ -83,6 +83,17 @@ void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
 {
   t_shmsrc_tilde *x = (t_shmsrc_tilde *) user_data;
   
+  //do not save if dsp is off FIXME should be optionnal
+  if (!canvas_dspstate)
+    {
+      shmdata_any_reader_free (shmbuf);
+      return;
+    }
+  
+  
+
+  //g_print ("queue length %d\n", g_async_queue_length (x->x_audio_queue));
+
   /* printf ("data %p, data size %d, timestamp %llu, type descr %s\n",   */
   /* 	  data, data_size, timestamp, type_description);   */
   GstStructure *meta_data = gst_structure_from_string (type_description, NULL);
