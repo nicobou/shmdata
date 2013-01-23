@@ -157,16 +157,17 @@ void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
 	    old_factor * x->x_stream_sample_duration
 	    + (1 - old_factor) * (cur_date - x->x_stream_data_date) / audio_buf->remaining_samples;
 	  //g_print ("%f \n", x->x_stream_sample_duration);
-	  if (x->x_resample_impactor != 0)
-	    {
-	      x->x_stream_sample_duration =  x->x_stream_sample_duration 
-		+ x->x_stream_sample_duration * x->x_resample_impactor ;
-	      if (x->x_resample_impactor > 0)
-		x->x_resample_impactor -= 0.01; // decreasing impact factor
-	      else
-		x->x_resample_impactor += 0.01;
-	    }
+	  //g_print ("begin %f, %f\n", x->x_stream_sample_duration, x->x_resample_impactor);
+	  x->x_stream_sample_duration =  x->x_stream_sample_duration  
+	    + x->x_stream_sample_duration * x->x_resample_impactor ; 
+	  if (x->x_resample_impactor > 0.001) 
+	    x->x_resample_impactor -= 0.01; // decreasing impact factor 
+	  else  if (x->x_resample_impactor < -0.001) 
+	    x->x_resample_impactor += 0.01; 
+	  
+	  //g_print ("end %f, %f\n", x->x_stream_sample_duration, x->x_resample_impactor);
 	}
+      x->x_stream_sample_duration = ceil (x->x_stream_sample_duration);
       x->x_stream_data_date = cur_date;
     }
 
@@ -222,10 +223,17 @@ static void shmsrc_tilde_try_pop_audio_buf (t_shmsrc_tilde *x)
 	src_ratio = (double) x->x_pd_samplerate  
 	  / (double)x->x_current_audio_buf->sample_rate; 
        else 
-       	src_ratio =  x->x_stream_sample_duration / x->x_sample_duration; 
-      
-      g_print ("%f queue length %d\n",src_ratio, g_async_queue_length (x->x_audio_queue));
-
+	 src_ratio =  x->x_stream_sample_duration / x->x_sample_duration; 
+     
+      /* g_print ("%f queue length %d, stream sample dur %f, sample duration %f\n", */
+      /* 	       src_ratio,  */
+      /* 	       g_async_queue_length (x->x_audio_queue), */
+      /* 	       x->x_stream_sample_duration, */
+      /* 	       x->x_sample_duration); */
+      if (g_async_queue_length (x->x_audio_queue) > 0)
+	{
+	  x->x_resample_impactor = -0.02;
+	}
       if (src_ratio != 1) 
 	{ 
 	  SRC_DATA src_data ;  
@@ -326,8 +334,8 @@ static t_int *shmsrc_tilde_perform(t_int *w)
     } 
    else //no data to play 
     {
-      g_print ("zeros !!!!!!\n");
-      x->x_resample_impactor = -0.05;
+      //g_print ("zeros !!!!!!\n");
+      x->x_resample_impactor = 0.02;
       /* set output to zero */  
       while (n--)  
 	for (i = 0; i < x->x_num_outlets; i++)  
