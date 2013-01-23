@@ -26,7 +26,7 @@ shmdata is currently used in several metalab projects:
 * posturevision (http://code.sat.qc.ca/redmine/projects/kinectvision/wiki/)
 * scenic (http://code.sat.qc.ca/redmine/projects/scenic/wiki)
 
-License: LGPL.
+License: LGPL for the libraries, GLP for the puredata external
 
 Project URL: http://code.sat.qc.ca/redmine/projects/libshmdata
 
@@ -60,7 +60,7 @@ Authors
 -------
 Written by:
 
-* Nicolas Bouillot (initial author)
+* Nicolas Bouillot (main author)
 * Emmanuel Durand (contribution to OSG library and OSX port)
 * Alexandre Quessy (help with packaging)
 

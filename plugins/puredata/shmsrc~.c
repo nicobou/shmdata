@@ -59,6 +59,7 @@ typedef struct _shmsrc_tilde
   double x_sample_duration;
   double x_stream_data_date;
   double x_stream_sample_duration;
+  double x_resample_impactor;//in percent, will affect x_stream_sample_duration  
   int x_num_outlets;
   t_shmsrc_tilde_buf *x_current_audio_buf; 
   long x_pd_samplerate;/* samplerate we're running at */
@@ -156,6 +157,15 @@ void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
 	    old_factor * x->x_stream_sample_duration
 	    + (1 - old_factor) * (cur_date - x->x_stream_data_date) / audio_buf->remaining_samples;
 	  //g_print ("%f \n", x->x_stream_sample_duration);
+	  if (x->x_resample_impactor != 0)
+	    {
+	      x->x_stream_sample_duration =  x->x_stream_sample_duration 
+		+ x->x_stream_sample_duration * x->x_resample_impactor ;
+	      if (x->x_resample_impactor > 0)
+		x->x_resample_impactor -= 0.01; // decreasing impact factor
+	      else
+		x->x_resample_impactor += 0.01;
+	    }
 	}
       x->x_stream_data_date = cur_date;
     }
@@ -204,7 +214,7 @@ static void shmsrc_tilde_reader_restart (t_shmsrc_tilde *x)
 
 static void shmsrc_tilde_try_pop_audio_buf (t_shmsrc_tilde *x)
 {
-  x->x_current_audio_buf = g_async_queue_try_pop (x->x_audio_queue); //FIXME wrap this in a function and resample
+  x->x_current_audio_buf = g_async_queue_try_pop (x->x_audio_queue);
   if (x->x_current_audio_buf != NULL) 
     { 
       double src_ratio;
@@ -317,7 +327,7 @@ static t_int *shmsrc_tilde_perform(t_int *w)
    else //no data to play 
     {
       g_print ("zeros !!!!!!\n");
-      
+      x->x_resample_impactor = -0.05;
       /* set output to zero */  
       while (n--)  
 	for (i = 0; i < x->x_num_outlets; i++)  
@@ -376,6 +386,7 @@ static void *shmsrc_tilde_new(t_symbol *s, t_floatarg num_outlets)
   x->x_stream_data_date = -1;
   x->x_sample_duration = -1;
   x->x_stream_sample_duration = -1;
+  x->x_resample_impactor = 0;
   x->x_reader = NULL;
   x->x_pd_samplerate = -1;
   x->x_current_audio_buf = NULL;
