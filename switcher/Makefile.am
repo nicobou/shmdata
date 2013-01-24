@@ -31,6 +31,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gconf-video-sink.cpp \
     gconf-video-source.cpp \
     gst-element-cleaner.cpp \
+    gst-parse-to-bin-src.cpp \
     gst-utils.cpp \
     h264.cpp \
     http-sdp.cpp \
@@ -92,6 +93,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gconf-video-sink.h \
     gconf-video-source.h \
     gst-element-cleaner.h \
+    gst-parse-to-bin-src.h \
     gst-utils.h \
     h264.h \
     hash-table.h \

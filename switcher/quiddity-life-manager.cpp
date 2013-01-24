@@ -35,6 +35,7 @@
 #include "switcher/gconf-audio-source.h"
 #include "switcher/gconf-video-sink.h"
 #include "switcher/gconf-video-source.h"
+#include "switcher/gst-parse-to-bin-src.h"
 #include "switcher/h264.h"
 #include "switcher/http-sdp.h"
 #include "switcher/pulse-sink.h"
@@ -176,6 +177,8 @@ namespace switcher
       						      GconfVideoSink::doc_.get_json_root_node ());
     abstract_factory_.register_class<GconfVideoSource> (GconfVideoSource::doc_.get_class_name (),
       							GconfVideoSource::doc_.get_json_root_node ());
+    abstract_factory_.register_class<GstParseToBinSrc> (GstParseToBinSrc::doc_.get_class_name (),
+      							GstParseToBinSrc::doc_.get_json_root_node ());
     abstract_factory_.register_class<H264> (H264::doc_.get_class_name (), 
       					    H264::doc_.get_json_root_node ());
     abstract_factory_.register_class<HTTPSDP> (HTTPSDP::doc_.get_class_name (), 
