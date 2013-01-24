@@ -282,11 +282,11 @@ namespace switcher
     else
       pay = gst_element_factory_make ("rtpgstpay", NULL);
     
-    if (g_str_has_prefix (GST_ELEMENT_NAME (pay) ,"rtpvorbis"))//FIXME vorbis issue, using gstpay
-      {
-	gst_object_unref (pay);
-	pay = gst_element_factory_make ("rtpgstpay", NULL);
-      }
+    // if (g_str_has_prefix (GST_ELEMENT_NAME (pay) ,"rtpvorbis"))//FIXME vorbis issue, using gstpay
+    //   {
+    // 	gst_object_unref (pay);
+    // 	pay = gst_element_factory_make ("rtpgstpay", NULL);
+    //   }
 
     ShmdataReader *reader= (ShmdataReader *) g_object_get_data (G_OBJECT (typefind),"shmdata-reader");
     reader->add_element_to_cleaner (pay);
