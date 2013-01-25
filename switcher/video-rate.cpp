@@ -55,7 +55,7 @@ namespace switcher
     caller->set_sink_element (context->video_rate_bin_);
     gst_bin_add (GST_BIN (context->bin_), context->video_rate_bin_);
 
-    GstCaps *video_rate_caps = gst_caps_from_string ("video/x-raw-yuv, framerate=(fraction)10/1");
+    GstCaps *video_rate_caps = gst_caps_from_string ("video/x-raw-yuv, framerate=(fraction)30/1");
     //FIXME clean that 
     GstElement *capsfilter = gst_element_factory_make ("capsfilter",NULL);
     g_object_set (G_OBJECT (capsfilter), "caps", video_rate_caps,NULL);
