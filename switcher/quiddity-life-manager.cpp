@@ -44,6 +44,7 @@
 #include "switcher/soap-ctrl-server.h"
 #include "switcher/udpsink.h"
 #include "switcher/uridecodebin.h"
+#include "switcher/video-rate.h"
 #include "switcher/video-test-source.h"
 #include "switcher/vorbis.h"
 #include "switcher/xvimagesink.h"
@@ -195,6 +196,8 @@ namespace switcher
       					       UDPSink::doc_.get_json_root_node ());
     abstract_factory_.register_class<Uridecodebin> (Uridecodebin::doc_.get_class_name (), 
       						    Uridecodebin::doc_.get_json_root_node ());
+    abstract_factory_.register_class<VideoRate> (VideoRate::doc_.get_class_name (),
+						 VideoRate::doc_.get_json_root_node ());
     abstract_factory_.register_class<VideoTestSource> (VideoTestSource::doc_.get_class_name (),
       						       VideoTestSource::doc_.get_json_root_node ());
     abstract_factory_.register_class<Vorbis> (Vorbis::doc_.get_class_name (),
