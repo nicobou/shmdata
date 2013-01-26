@@ -32,9 +32,7 @@
 #include "switcher/deinterleave.h"
 #include "switcher/file-sdp.h"
 #include "switcher/gconf-audio-sink.h"
-#include "switcher/gconf-audio-source.h"
 #include "switcher/gconf-video-sink.h"
-#include "switcher/gconf-video-source.h"
 #include "switcher/gst-parse-to-bin-src.h"
 #include "switcher/h264.h"
 #include "switcher/http-sdp.h"
@@ -172,12 +170,8 @@ namespace switcher
 					       FileSDP::doc_.get_json_root_node ());
     abstract_factory_.register_class<GconfAudioSink> (GconfAudioSink::doc_.get_class_name (), 
       						      GconfAudioSink::doc_.get_json_root_node ());
-    abstract_factory_.register_class<GconfAudioSource> (GconfAudioSource::doc_.get_class_name (), 
-      							GconfAudioSource::doc_.get_json_root_node ());
     abstract_factory_.register_class<GconfVideoSink> (GconfVideoSink::doc_.get_class_name (), 
       						      GconfVideoSink::doc_.get_json_root_node ());
-    abstract_factory_.register_class<GconfVideoSource> (GconfVideoSource::doc_.get_class_name (),
-      							GconfVideoSource::doc_.get_json_root_node ());
     abstract_factory_.register_class<GstParseToBinSrc> (GstParseToBinSrc::doc_.get_class_name (),
       							GstParseToBinSrc::doc_.get_json_root_node ());
     abstract_factory_.register_class<H264> (H264::doc_.get_class_name (), 
