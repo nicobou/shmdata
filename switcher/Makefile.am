@@ -26,8 +26,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     decodebin2.cpp \
     deinterleave.cpp \
     file-sdp.cpp \
-    gconf-audio-sink.cpp \
-    gconf-video-sink.cpp \
     gst-element-cleaner.cpp \
     gst-parse-to-bin-src.cpp \
     gst-utils.cpp \
@@ -87,8 +85,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     decodebin2.h \
     deinterleave.h \
     file-sdp.h \
-    gconf-audio-sink.h \
-    gconf-video-sink.h \
     gst-element-cleaner.h \
     gst-parse-to-bin-src.h \
     gst-utils.h \
