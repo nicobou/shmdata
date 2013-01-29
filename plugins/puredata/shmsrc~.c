@@ -143,14 +143,14 @@ void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
   audio_buf->remaining_samples = data_size / ((width/8) * channels);
   audio_buf->shm_buf = shmbuf;
   
-  if (x->x_stream_data_date == -1)
+  if (x->x_stream_data_date == -1.0)
     x->x_stream_data_date = clock_getlogicaltime();
   else
     {
       double old_factor = 0.95;
       double cur_date = clock_getlogicaltime();
-      if (x->x_stream_sample_duration == -1)
-	x->x_stream_sample_duration = (cur_date - x->x_stream_data_date) / audio_buf->remaining_samples;
+      if (x->x_stream_sample_duration == -1.0)
+	  x->x_stream_sample_duration = (cur_date - x->x_stream_data_date) / audio_buf->remaining_samples;
       else
 	{
 	  x->x_stream_sample_duration = 
@@ -219,17 +219,19 @@ static void shmsrc_tilde_try_pop_audio_buf (t_shmsrc_tilde *x)
   if (x->x_current_audio_buf != NULL) 
     { 
       double src_ratio;
-      if (x->x_sample_duration == -1 || x->x_stream_sample_duration == -1)
+      if (x->x_sample_duration < 1.0  || x->x_stream_sample_duration < 1.0)
 	src_ratio = (double) x->x_pd_samplerate  
 	  / (double)x->x_current_audio_buf->sample_rate; 
        else 
 	 src_ratio =  x->x_stream_sample_duration / x->x_sample_duration; 
-     
-      /* g_print ("%f queue length %d, stream sample dur %f, sample duration %f\n", */
-      /* 	       src_ratio,  */
-      /* 	       g_async_queue_length (x->x_audio_queue), */
-      /* 	       x->x_stream_sample_duration, */
-      /* 	       x->x_sample_duration); */
+
+      //      g_print ("x->x_pd_samplerate %d x->x_current_audio_buf->sample_rate %d\n", x->x_pd_samplerate, x->x_current_audio_buf->sample_rate);
+      //g_print ("x->x_sample_duration %f x->x_stream_sample_duration %f\n", x->x_sample_duration, x->x_stream_sample_duration);
+        g_print ("%f queue length %d, stream sample dur %f, sample duration %f\n",  
+        	       src_ratio,   
+        	       g_async_queue_length (x->x_audio_queue),  
+        	       x->x_stream_sample_duration,  
+        	       x->x_sample_duration);  
       if (g_async_queue_length (x->x_audio_queue) > 0)
 	{
 	  x->x_resample_impactor = -0.02;
@@ -240,6 +242,7 @@ static void shmsrc_tilde_try_pop_audio_buf (t_shmsrc_tilde *x)
 	  int error, terminate ;  
 	  int input_len = x->x_current_audio_buf->remaining_samples;  
 	      
+	  //g_print ("input_len %d src_ratio %f\n", input_len, src_ratio);
 	  int output_len = floor (input_len * src_ratio);  
 	  //g_print ("%d, %d\n",output_len,input_len);
 	  src_data.data_in = x->x_current_audio_buf->audio_data ;  
@@ -247,6 +250,8 @@ static void shmsrc_tilde_try_pop_audio_buf (t_shmsrc_tilde *x)
 	      
 	  src_data.src_ratio =  src_ratio;  
 	      
+
+	  //g_print ("outputlen %d channels %d\n", output_len, x->x_current_audio_buf->num_channels_in_buf);
 	  t_float *output = g_malloc0 (sizeof (t_float) 
 				       * output_len 
 				       * x->x_current_audio_buf->num_channels_in_buf);  
@@ -286,7 +291,7 @@ static t_int *shmsrc_tilde_perform(t_int *w)
     out[i] = (t_float *)(w[3 + i]);  
   
   //tracking sample duration for clock correction
-  if (x->x_last_perform_date == -1)
+  if (x->x_last_perform_date == -1.0)
     x->x_last_perform_date = clock_getlogicaltime();
   else
     {
@@ -390,13 +395,13 @@ static void *shmsrc_tilde_new(t_symbol *s, t_floatarg num_outlets)
     x->x_num_outlets = num_outlets;
 
   x->x_f = 0;
-  x->x_last_perform_date = -1;
-  x->x_stream_data_date = -1;
-  x->x_sample_duration = -1;
-  x->x_stream_sample_duration = -1;
-  x->x_resample_impactor = 0;
+  x->x_last_perform_date = -1.0;
+  x->x_stream_data_date = -1.0;
+  x->x_sample_duration = -1.0;
+  x->x_stream_sample_duration = -1.0;
+  x->x_resample_impactor = 0.0;
   x->x_reader = NULL;
-  x->x_pd_samplerate = -1;
+  x->x_pd_samplerate = -1.0;
   x->x_current_audio_buf = NULL;
 
   sprintf (x->x_shmdata_prefix, "/tmp/pd_");
