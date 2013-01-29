@@ -34,6 +34,8 @@ namespace switcher
     add_element_to_cleaner (aacenc_);
     add_element_to_cleaner (aacbin_);
 
+    register_property (G_OBJECT (aacenc_),"bitrate","aac");
+
     //set the name before registering properties
     set_name (gst_element_get_name (aacenc_));
     set_sink_element (aacbin_);
