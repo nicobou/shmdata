@@ -193,8 +193,8 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
   reader->typefind_ = gst_element_factory_make ("typefind", NULL);
   g_signal_connect (reader->typefind_, "have-type", G_CALLBACK (shmdata_base_reader_on_type_found), reader);
 
-  if (!reader->do_absolute_)
-    reader->timereset_ = TRUE;
+  if (reader->do_absolute_)
+    reader->timereset_ = FALSE;
 
   if (!reader->source_)
     {
