@@ -30,7 +30,7 @@ namespace switcher
   {
     aacbin_ = gst_element_factory_make ("bin",NULL);
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
-    aacenc_ = gst_element_factory_make ("voaacenc",NULL);
+    aacenc_ = gst_element_factory_make ("ffenc_aac",NULL);
     add_element_to_cleaner (aacenc_);
     add_element_to_cleaner (aacbin_);
 
