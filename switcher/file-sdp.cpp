@@ -61,6 +61,8 @@ namespace switcher
 			    Method::make_arg_description ("url", 
 							  "the url to the sdp file",
 							  NULL));
+    //registering "latency"
+    register_property (G_OBJECT (sdpdemux_),"latency","sdpdemux");
     return true;
   }
   
