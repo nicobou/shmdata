@@ -22,7 +22,7 @@
 
 namespace switcher
 {
-  QuiddityDocumentation AAC::doc_ ("audio encoder", "voaacenc",
+  QuiddityDocumentation AAC::doc_ ("audio encoder", "aacenc",
 				   "AAC encoder (2 channels max)");
 
   bool
