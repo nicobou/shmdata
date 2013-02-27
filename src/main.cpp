@@ -29,6 +29,12 @@ static gboolean debug;
 static gboolean verbose;
 //static gchar **remaining_args = NULL;
 
+static gboolean listclasses;
+static gboolean classesdoc;
+static gchar *classdoc = NULL;
+static gchar *listpropbyclass = NULL;
+static gchar *listmethodsbyclass = NULL;
+
 static std::vector<switcher::QuiddityManager::ptr> container;
 
 static GOptionEntry entries[] =
@@ -38,6 +44,11 @@ static GOptionEntry entries[] =
     { "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet, "do not display any message", NULL },
     { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "display all messages, excluding debug", NULL },
     { "debug", 'd', 0, G_OPTION_ARG_NONE, &debug, "display all messages, including debug", NULL },
+    { "list-classes", 'C', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", NULL },
+    { "list-props-by-class", 'P', 0, G_OPTION_ARG_STRING, &listpropbyclass, "list properties of a class", NULL },
+    { "list-methods-by-class", 'M', 0, G_OPTION_ARG_STRING, &listmethodsbyclass, "list methods of a class", NULL },
+    { "classes-doc", NULL, 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", NULL },
+    { "class-doc", NULL, 0, G_OPTION_ARG_STRING, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
     { NULL }
   };
 
@@ -104,12 +115,60 @@ main (int argc,
       exit (1);
     } 
 
+  g_log_set_default_handler (log_handler, NULL);
+
+
+  //checking if this is printing info only
+  if (listclasses)
+    {
+      quiet=TRUE;
+      switcher::QuiddityManager::ptr manager 
+	= switcher::QuiddityManager::make_manager ("immpossible_name");  
+      std::vector<std::string> resultlist = manager->get_classes ();
+      for(uint i = 0; i < resultlist.size(); i++)
+	g_print ("%s\n",resultlist[i].c_str ());
+      return 0;
+    }
+  if (classesdoc)
+    {
+      quiet=TRUE;
+      switcher::QuiddityManager::ptr manager 
+	= switcher::QuiddityManager::make_manager ("immpossible_name");  
+      g_print ("%s\n", manager->get_classes_doc ().c_str ());
+      return 0;
+    }
+  if (classdoc != NULL)
+    {
+      quiet=TRUE;
+      switcher::QuiddityManager::ptr manager 
+	= switcher::QuiddityManager::make_manager ("immpossible_name");  
+      g_print ("%s\n", manager->get_class_doc (classdoc).c_str ());
+      return 0;
+    }
+  if (listpropbyclass != NULL)
+    {
+      quiet=TRUE;
+      switcher::QuiddityManager::ptr manager 
+   	= switcher::QuiddityManager::make_manager ("immpossible_name");  
+      g_print ("%s\n", manager->get_properties_description_by_class (listpropbyclass).c_str ());
+      return 0;
+    }
+  if (listmethodsbyclass != NULL)
+    {
+      quiet=TRUE;
+      switcher::QuiddityManager::ptr manager 
+   	= switcher::QuiddityManager::make_manager ("immpossible_name");  
+      g_print ("%s\n", manager->get_methods_description_by_class (listmethodsbyclass).c_str ());
+      return 0;
+    }
+
+  //running a switcher server  
+
   if (server_name == NULL)
     server_name = "default";
   if (port_number == NULL)
     port_number = "8080";
 
-  g_log_set_default_handler (log_handler, NULL);
 
   
   {

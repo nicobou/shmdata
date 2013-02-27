@@ -65,10 +65,11 @@
      std::string get_properties_description (std::string quiddity_name);
      std::string get_property_description (std::string quiddity_name, 
 					   std::string property_name);
-    //following "by_class" methods provide properties available after creation only
-    std::string get_properties_description_by_class (std::string class_name); 
-    std::string get_property_description_by_class (std::string class_name, 
-						   std::string property_name); 
+     //following "by_class" methods provide properties available after creation only, 
+     //avoiding possible properties created dynamically after some event occurence
+     std::string get_properties_description_by_class (std::string class_name); 
+     std::string get_property_description_by_class (std::string class_name, 
+						    std::string property_name); 
     //set & get
     bool set_property (std::string quiddity_name,
 			std::string property_name,

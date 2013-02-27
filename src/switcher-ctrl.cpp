@@ -53,7 +53,7 @@ static GOptionEntry entries[] =
     { "list-props-by-class", 'P', 0, G_OPTION_ARG_NONE, &listpropbyclass, "list properties of a class", NULL },
 
     { "list-methods", 'm', 0, G_OPTION_ARG_NONE, &listmethods, "list methods of a quiddity", NULL },
-    { "list-methods", 'M', 0, G_OPTION_ARG_NONE, &listmethodsbyclass, "list methods of a class", NULL },
+    { "list-methods-by-class", 'M', 0, G_OPTION_ARG_NONE, &listmethodsbyclass, "list methods of a class", NULL },
     { "set-prop", 's', 0, G_OPTION_ARG_NONE, &setprop, "set property value (-s quiddity_name prop_name val)", NULL },
     { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g quiddity_name prop_name)", NULL },
     { "invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod, "invoke method of a quiddity (-i quiddity_name method_name args...)", NULL },
