@@ -108,7 +108,7 @@ namespace switcher
     AbstractFactory< Quiddity, std::string, JSONBuilder::Node> abstract_factory_;
     StringMap< std::shared_ptr<Quiddity> > quiddities_;
     StringMap< std::string> quiddities_nick_names_;
-    void init_quiddity (std::shared_ptr<Quiddity> quiddity);
+    bool init_quiddity (std::shared_ptr<Quiddity> quiddity);
     void remove_shmdata_sockets ();
     JSONBuilder::ptr classes_doc_;
   };

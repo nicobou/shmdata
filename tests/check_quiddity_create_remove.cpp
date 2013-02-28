@@ -20,7 +20,7 @@
 #include "switcher/quiddity-manager.h"
 #include <vector>
 #include <string>
-
+#include <iostream>
 int
 main (int argc,
       char *argv[])
@@ -33,27 +33,28 @@ main (int argc,
   std::vector<std::string>::iterator iter;
   
   for (iter = classes.begin(); iter != classes.end (); ++iter)
-    {
-      std::string class_name (*iter);
+     {
+       std::string class_name (*iter);
 
-      std::string res = manager->create(class_name, class_name);
-      if (res.compare (class_name) != 0)
-	{
-	  g_printerr ("quiddity %s not created properly",iter->c_str ());
-	  success = false;
-	}
+       std::cout << class_name << std::endl; 
+       //std::string res = manager->create(class_name, class_name);
+  //     if (res.compare (class_name) != 0)
+  // 	{
+  // 	  g_printerr ("quiddity %s not created properly",iter->c_str ());
+  // 	  success = false;
+  // 	}
       
-      if (!manager->remove (class_name))
-	{
-	  g_printerr ("error while removing quiddity %s",iter->c_str ());
-	  success = false;
-	}
-    }
+  //     if (!manager->remove (class_name))
+  // 	{
+  // 	  g_printerr ("error while removing quiddity %s",iter->c_str ());
+  // 	  success = false;
+  // 	}
+     }
   
-  if (success)
+  //  if (success)
     return 0;
-  else
-    return 1;
+    //else
+    //return 1;
 }
 
 
