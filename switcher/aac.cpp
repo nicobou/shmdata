@@ -66,8 +66,13 @@ namespace switcher
     gst_bin_add (GST_BIN (context->bin_), context->aacbin_);
 
     //FIXME check for cleaning audioconvert
-    GstElement *audioconvert = gst_element_factory_make ("audioconvert",NULL);
-
+    GstElement *audioconvert;
+    if (!GstUtils::make_element ("audioconvert",&audioconvert))
+      {
+	g_warning ("audioconvert element is required for having aac encorder to work\n");
+	return;
+      }
+      
     gst_bin_add_many (GST_BIN (context->aacbin_),
 		      context->aacenc_,
 		      audioconvert,

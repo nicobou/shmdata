@@ -28,9 +28,11 @@ namespace switcher
   bool
   VideoRate::init ()
   {
-    video_rate_bin_ = gst_element_factory_make ("bin",NULL);
+    if (!GstUtils::make_element ("bin",&video_rate_bin_)
+	|| !GstUtils::make_element ("videorate",&video_rate_enc_))
+      return false;
+    
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
-    video_rate_enc_ = gst_element_factory_make ("videorate",NULL);
     add_element_to_cleaner (video_rate_enc_);
     add_element_to_cleaner (video_rate_bin_);
 
@@ -57,9 +59,11 @@ namespace switcher
 
     GstCaps *video_rate_caps = gst_caps_from_string ("video/x-raw-yuv, framerate=(fraction)30/1");
     //FIXME clean that 
-    GstElement *capsfilter = gst_element_factory_make ("capsfilter",NULL);
+    GstElement *capsfilter;
+    if (!GstUtils::make_element ("capsfilter",&capsfilter))
+      return;
+
     g_object_set (G_OBJECT (capsfilter), "caps", video_rate_caps,NULL);
-    
 
     gst_bin_add_many (GST_BIN (context->video_rate_bin_),
 		      context->video_rate_enc_,

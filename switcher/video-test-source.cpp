@@ -19,6 +19,7 @@
 
 #include "switcher/video-test-source.h"
 #include <gst/gst.h>
+#include "switcher/gst-utils.h"
 
 namespace switcher
 {
@@ -31,12 +32,11 @@ namespace switcher
     
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
 
-
-    videotestsrc_ = gst_element_factory_make ("videotestsrc",NULL);
+    if (!GstUtils::make_element ("videotestsrc",&videotestsrc_))
+      return false;
     g_object_set (G_OBJECT (videotestsrc_),
 		  "is-live", TRUE,
 		  NULL);
-    
     
     //set the name before registering properties
     set_name (gst_element_get_name (videotestsrc_));

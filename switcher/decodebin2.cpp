@@ -30,7 +30,8 @@ namespace switcher
   bool
   Decodebin2::init() 
   { 
-    decodebin2_ = gst_element_factory_make ("decodebin2", NULL);   
+    if (!GstUtils::make_element ("decodebin2",&decodebin2_))
+      return false;
     //set the name before registering properties
     set_name (gst_element_get_name (decodebin2_));
     add_element_to_cleaner (decodebin2_);

@@ -52,11 +52,13 @@ namespace switcher
   bool 
   RtpSession::init ()
   {
+    if (!GstUtils::make_element ("gstrtpbin", &rtpsession_))
+      return false;
+
     next_id_ = 79; //this value is arbitrary and can be changed
 
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
 
-    rtpsession_ = gst_element_factory_make ("gstrtpbin",NULL);
 
     g_signal_connect (G_OBJECT (rtpsession_), "on-bye-ssrc", 
 		      (GCallback) on_bye_ssrc, (gpointer) this);
@@ -280,12 +282,12 @@ namespace switcher
     if (list != NULL)  
       pay = gst_element_factory_create (GST_ELEMENT_FACTORY (list->data), NULL);
     else
-      pay = gst_element_factory_make ("rtpgstpay", NULL);
+      GstUtils::make_element ("rtpgstpay", &pay);
     
     // if (g_str_has_prefix (GST_ELEMENT_NAME (pay) ,"rtpvorbis"))//FIXME vorbis issue, using gstpay
     //   {
     // 	gst_object_unref (pay);
-    // 	pay = gst_element_factory_make ("rtpgstpay", NULL);
+    // 	      GstUtils::make_element ("rtpgstpay", &pay);
     //   }
 
     ShmdataReader *reader= (ShmdataReader *) g_object_get_data (G_OBJECT (typefind),"shmdata-reader");
@@ -351,7 +353,8 @@ namespace switcher
     
     // We also want to receive RTCP, request an RTCP sinkpad for given session and
     // link it to a funnel for future linking with network connections
-    GstElement *funnel = gst_element_factory_make ("funnel", NULL);
+    GstElement *funnel;
+    GstUtils::make_element ("funnel", &funnel);
     gst_bin_add (GST_BIN (context->bin_), funnel);
     //GstUtils::wait_state_changed (context->bin_);
     GstUtils::sync_state_with_parent (funnel);
@@ -379,8 +382,8 @@ namespace switcher
   {
     RtpSession *context = static_cast<RtpSession *>(rtpsession_instance);
     GstElement *funnel, *typefind;
-    funnel = gst_element_factory_make ("funnel", NULL);
-    typefind = gst_element_factory_make ("typefind", NULL);
+    GstUtils::make_element ("funnel",&funnel);
+    GstUtils::make_element ("typefind",&typefind);
     //give caller to typefind in order to register telement to remove
     g_object_set_data (G_OBJECT (typefind), "shmdata-reader", (gpointer)caller);
     g_signal_connect (typefind, "have-type", G_CALLBACK (RtpSession::make_data_stream_available), context);
@@ -542,7 +545,8 @@ namespace switcher
      //TODO rtcp receiving should be negociated 
      // GstElementCleaner::ptr funnel_cleaner = funnels_.lookup (shmdata_socket_path);
     //  GstElement *funnel = funnel_cleaner->get_labeled_element_from_cleaner ("funnel");
-    //  GstElement *udpsrc = gst_element_factory_make ("udpsrc", NULL);
+    //  GstElement *udpsrc;
+    //  GstUtils::make_element ("udpsrc", &udpsrc);
     //  dest->add_element_to_cleaner (udpsrc);
     //  g_object_set (G_OBJECT (udpsrc), "port", rtp_port + 5, NULL);
     //  gst_bin_add (GST_BIN (bin_), udpsrc);

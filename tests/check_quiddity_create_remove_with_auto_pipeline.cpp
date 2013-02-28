@@ -47,14 +47,13 @@ main (int argc,
       if (res.compare (class_name) != 0)
 	{
 	  g_printerr ("quiddity %s not created properly",iter->c_str ());
-	  success = false;
 	}
-      
-      if (!manager->remove (class_name))
-	{
-	  g_printerr ("error while removing quiddity %s",iter->c_str ());
-	  success = false;
-	}
+      else
+	if (!manager->remove (class_name))
+	  {
+	    g_printerr ("error while removing quiddity %s",iter->c_str ());
+	    success = false;
+	  }
     }
   
   if (success)

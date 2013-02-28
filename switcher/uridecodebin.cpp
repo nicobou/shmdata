@@ -30,9 +30,11 @@ namespace switcher
   bool
   Uridecodebin::init() 
   { 
+    if (!GstUtils::make_element ("uridecodebin",&uridecodebin_))
+      return false;
+
     main_pad_ = NULL;
     discard_next_uncomplete_buffer_ = false;
-    uridecodebin_ = gst_element_factory_make ("uridecodebin",NULL);
     rtpgstcaps_ = gst_caps_from_string ("application/x-rtp, media=(string)application");
 
     //set the name before registering properties
@@ -262,12 +264,14 @@ namespace switcher
 
     g_debug ("uridecodebin new pad name is %s\n",padname);
     
-    GstElement *identity = gst_element_factory_make ("identity",NULL);
+    GstElement *identity;
+    GstUtils::make_element ("identity", &identity);
     g_object_set (identity, 
      		  "sync", TRUE, 
      		  "single-segment", TRUE,
      		  NULL);
-    GstElement *funnel = gst_element_factory_make ("funnel",NULL);
+    GstElement *funnel;
+    GstUtils::make_element ("funnel", &funnel);
     
     
     gst_bin_add_many (GST_BIN (bin), identity, funnel, NULL);
@@ -378,7 +382,8 @@ namespace switcher
 	GstUtils::set_element_property_in_bin (object, "gstrtpbin", "do-lost", TRUE);
 
 	g_message ("custom rtp stream found");
-	GstElement *rtpgstdepay = gst_element_factory_make ("rtpgstdepay",NULL);
+	GstElement *rtpgstdepay;
+	GstUtils::make_element ("rtpgstdepay", &rtpgstdepay);
 
 	//adding a probe for discarding uncomplete packets
 	GstPad *depaysrcpad = gst_element_get_static_pad (rtpgstdepay, "src");

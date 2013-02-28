@@ -26,11 +26,12 @@ namespace switcher
   GstUtils::make_element (gchar *class_name, GstElement **target_element)
   {
     
-    if (*target_element != NULL)
-      {
-	g_warning ("cannot make element on a non NULL element (%s, %s)",
-		   class_name, GST_ELEMENT_NAME (*target_element));
-      }
+    // if (*target_element != NULL)
+    //   {
+    // 	g_warning ("cannot make element on a non NULL element (%s, %s)",
+    // 		   class_name, GST_ELEMENT_NAME (*target_element));
+    // 	return false;
+    //   }
 
 
     *target_element = gst_element_factory_make (class_name, NULL);

@@ -25,12 +25,11 @@ namespace switcher
 {
   AudioSource::AudioSource() 
   { 
-    audio_tee_ = gst_element_factory_make ("tee",NULL);
-    audioconvert_ = gst_element_factory_make ("audioconvert",NULL);
-    pitch_ = gst_element_factory_make ("pitch",NULL);
-    resample_ = gst_element_factory_make ("audioresample",NULL);
-
-    
+    if (!GstUtils::make_element ("tee", &audio_tee_)
+	|| !GstUtils::make_element ("audioconvert", &audioconvert_)
+	|| !GstUtils::make_element ("pitch", &pitch_)
+	|| !GstUtils::make_element ("audioresample", &resample_))
+      g_critical ("a mandatory gst element is missing for audio source");
     
     gst_bin_add_many (GST_BIN (bin_),
 		      audio_tee_,

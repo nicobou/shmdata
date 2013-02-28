@@ -29,8 +29,6 @@ namespace switcher
 						  TRUE,
 						  NULL);
 
-    //gst_element_factory_make ("pulsesink",NULL);
-    
     //set the name before registering properties
     set_name (gst_element_get_name (pulse_sink_));
     

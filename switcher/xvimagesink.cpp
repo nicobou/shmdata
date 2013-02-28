@@ -18,6 +18,7 @@
  */
 
 #include "switcher/xvimagesink.h"
+#include "switcher/gst-utils.h"
 
 namespace switcher
 {
@@ -29,8 +30,9 @@ namespace switcher
   bool
   Xvimagesink::init ()
   {
-    xvimagesink_ = gst_element_factory_make ("xvimagesink",NULL);
-    
+    if (!GstUtils::make_element ("xvimagesink", &xvimagesink_))
+      return false;
+
     //set the name before registering properties
     set_name (gst_element_get_name (xvimagesink_));
     g_object_set (G_OBJECT (xvimagesink_), "sync", FALSE, NULL);

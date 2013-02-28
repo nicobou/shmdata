@@ -190,7 +190,7 @@ namespace switcher
       // 		      GST_ELEMENT_NAME(GST_ELEMENT_PARENT (reader->sink_element_)),
       // 		      GST_IS_ELEMENT(GST_ELEMENT_PARENT (reader->sink_element_)));
 
-      reader->funnel_ = gst_element_factory_make ("funnel", NULL);
+      GstUtils::make_element ("funnel", &reader->funnel_);
       gst_bin_add (GST_BIN (reader->bin_), reader->funnel_);
       gst_element_link (reader->funnel_, reader->sink_element_);
       
