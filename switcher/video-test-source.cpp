@@ -34,6 +34,9 @@ namespace switcher
 
     if (!GstUtils::make_element ("videotestsrc",&videotestsrc_))
       return false;
+
+    add_element_to_cleaner (videotestsrc_);
+
     g_object_set (G_OBJECT (videotestsrc_),
 		  "is-live", TRUE,
 		  NULL);
