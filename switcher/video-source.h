@@ -27,7 +27,7 @@
 namespace switcher
 {
 
-  class VideoSource : public BaseSource
+  class VideoSource : public BaseSource, public GstElementCleaner
   {
   public:
     typedef std::shared_ptr<VideoSource> ptr;

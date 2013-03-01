@@ -33,7 +33,13 @@ namespace switcher
     if (!GstUtils::make_element ("videoflip",&videoflip_))
       g_warning ("VideoSource: videoflip element is mandatory\n");
     GstUtils::make_element ("ffmpegcolorspace",&colorspace_out_);
-    
+
+    add_element_to_cleaner (video_tee_);
+    add_element_to_cleaner (colorspace_in_);
+    add_element_to_cleaner (textoverlay_);
+    add_element_to_cleaner (videoflip_);
+    add_element_to_cleaner (colorspace_out_);
+
     gst_bin_add_many (GST_BIN (bin_),
      		      video_tee_,
 		      colorspace_in_,
