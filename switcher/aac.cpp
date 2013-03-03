@@ -28,19 +28,27 @@ namespace switcher
   bool
   AAC::init ()
   {
-    aacbin_ = gst_element_factory_make ("bin",NULL);
+    GstUtils::make_element ("bin", &aacbin_);
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
-    aacenc_ = gst_element_factory_make ("ffenc_aac",NULL);
-    add_element_to_cleaner (aacenc_);
-    add_element_to_cleaner (aacbin_);
-
-    register_property (G_OBJECT (aacenc_),"bitrate","aac");
-
-    //set the name before registering properties
-    set_name (gst_element_get_name (aacenc_));
-    set_sink_element (aacbin_);
-    set_on_first_data_hook (AAC::make_shmdata_writer,this);
-    return true;
+    
+    if (GstUtils::make_element ("ffenc_aac", &aacenc_))
+      {
+	add_element_to_cleaner (aacenc_);
+	//set the name before registering properties
+	set_name (gst_element_get_name (aacenc_));
+	register_property (G_OBJECT (aacenc_),"bitrate","aac");
+	set_on_first_data_hook (AAC::make_shmdata_writer,this);
+	add_element_to_cleaner (aacbin_);
+	set_sink_element (aacbin_);
+	return true;
+      }
+    else
+      {
+	set_name (gst_element_get_name (aacbin_));
+	set_sink_element (aacbin_);
+	add_element_to_cleaner (aacbin_);
+	return false;
+      }
   }
 
   QuiddityDocumentation 
@@ -58,8 +66,13 @@ namespace switcher
     gst_bin_add (GST_BIN (context->bin_), context->aacbin_);
 
     //FIXME check for cleaning audioconvert
-    GstElement *audioconvert = gst_element_factory_make ("audioconvert",NULL);
-
+    GstElement *audioconvert;
+    if (!GstUtils::make_element ("audioconvert",&audioconvert))
+      {
+	g_warning ("audioconvert element is required for having aac encorder to work\n");
+	return;
+      }
+      
     gst_bin_add_many (GST_BIN (context->aacbin_),
 		      context->aacenc_,
 		      audioconvert,

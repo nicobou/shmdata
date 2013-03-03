@@ -19,7 +19,7 @@
 
 #include "switcher/audio-test-source.h"
 #include <gst/gst.h>
-
+#include "switcher/gst-utils.h"
 namespace switcher
 {
 
@@ -29,7 +29,9 @@ namespace switcher
   bool
   AudioTestSource::init ()
   {
-    audiotestsrc_ = gst_element_factory_make ("audiotestsrc",NULL);
+    if (!GstUtils::make_element ("audiotestsrc",&audiotestsrc_))
+      return false;
+
     g_object_set (G_OBJECT (audiotestsrc_),
 		  "is-live", TRUE,
 		  "samplesperbuffer",64,

@@ -29,10 +29,12 @@ namespace switcher
   bool 
   UDPSink::init ()
   {
-    udpsink_bin_ = gst_element_factory_make ("bin",NULL);
+    if ( !GstUtils::make_element ("bin", &udpsink_bin_)
+	 || !GstUtils::make_element ("typefind", &typefind_)
+	 || !GstUtils::make_element ("multiudpsink", &udpsink_))
+      return false;
+    
     g_object_set (G_OBJECT (udpsink_bin_), "async-handling", TRUE, NULL);
-    typefind_ =  gst_element_factory_make ("typefind",NULL);
-    udpsink_ = gst_element_factory_make ("multiudpsink",NULL);
     ghost_sinkpad_ = NULL;
 
     //set the name before registering properties

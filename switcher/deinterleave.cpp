@@ -30,7 +30,8 @@ namespace switcher
   bool
   Deinterleave::init() 
   { 
-    deinterleave_ = gst_element_factory_make ("deinterleave", NULL);   
+    if (!GstUtils::make_element ("deinterleave",&deinterleave_))
+      return false;
     //set the name before registering properties
     set_name (gst_element_get_name (deinterleave_));
     add_element_to_cleaner (deinterleave_);

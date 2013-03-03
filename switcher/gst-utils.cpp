@@ -22,6 +22,32 @@
 namespace switcher
 {
 
+  bool
+  GstUtils::make_element (gchar *class_name, GstElement **target_element)
+  {
+    
+    // if (*target_element != NULL)
+    //   {
+    // 	g_warning ("cannot make element on a non NULL element (%s, %s)",
+    // 		   class_name, GST_ELEMENT_NAME (*target_element));
+    // 	return false;
+    //   }
+
+
+    *target_element = gst_element_factory_make (class_name, NULL);
+    if (*target_element == NULL)
+      {
+	g_warning ("gstreamer element class %s cannot be instanciated", class_name);
+	return false;
+      }
+    else
+      {
+	g_debug ("gstreamer element class %s instanciated (%s)", 
+		 class_name, GST_ELEMENT_NAME (*target_element));
+	return true;
+      }
+  }
+
   bool 
   GstUtils::link_static_to_request (GstElement *src,GstElement *sink)
   {

@@ -18,6 +18,7 @@
  */
 
 #include "switcher/aravis-genicam.h"
+#include "switcher/gst-utils.h"
 
 namespace switcher
 {
@@ -29,10 +30,9 @@ namespace switcher
   bool
   AravisGenicam::init ()
   {
-    aravissrc_ = gst_element_factory_make ("aravissrc",NULL);
-    if (aravissrc_ == NULL)
+    if (!GstUtils::make_element ("aravissrc", &aravissrc_))
       {
-	g_critical ("aravissrc not available, install aravis (http://git.gnome.org/browse/aravis/)");
+	g_warning ("aravissrc not available, install aravis (http://git.gnome.org/browse/aravis/)");
 	return false;
       }
     set_name (gst_element_get_name (aravissrc_));

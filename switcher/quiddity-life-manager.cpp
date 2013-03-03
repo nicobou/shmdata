@@ -240,16 +240,18 @@ namespace switcher
   }
 
 
-  void 
+  bool 
   QuiddityLifeManager::init_quiddity (Quiddity::ptr quiddity)
   {
-    	quiddity->set_life_manager (shared_from_this());
-	 if (!quiddity->init ())
-	   g_critical ("QuiddityLifeManager: intialization of %s (%s) return false",
-		       quiddity->get_name ().c_str (),
-		       quiddity->get_documentation ().get_class_name ().c_str ());
-	quiddities_.insert (quiddity->get_name(),quiddity);
-	quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
+    quiddity->set_life_manager (shared_from_this());
+    if (!quiddity->init ())
+      return false;
+    // g_critical ("QuiddityLifeManager: intialization of %s (%s) return false",
+    // 	       quiddity->get_name ().c_str (),
+    // 	       quiddity->get_documentation ().get_class_name ().c_str ());
+    quiddities_.insert (quiddity->get_name(),quiddity);
+    quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
+    return true;
   }
 
   std::string 
@@ -260,7 +262,11 @@ namespace switcher
     
      Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class);
      if (quiddity.get() != NULL)
-	 init_quiddity (quiddity);
+       if (!init_quiddity (quiddity))
+	 {
+	   g_warning ("initialization of %s failled",quiddity_class.c_str ());
+	   return "";
+	 }
      
      g_message ("(%s) quiddity %s created (%s)",
 		name_.c_str(), 
@@ -287,7 +293,13 @@ namespace switcher
 		   nick_name.c_str (),
 		   quiddity->get_name().c_str ());
 
-	init_quiddity (quiddity);
+	if (!init_quiddity (quiddity))
+	  {
+	    g_warning ("initialization of %s with name %s failled\n",
+		       quiddity_class.c_str (), nick_name.c_str ());
+	    
+	    return "";
+	  }
 
      g_message ("(%s) quiddity %s created (%s)",
 		name_.c_str(), 

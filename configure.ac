@@ -78,6 +78,24 @@ case "$host" in *-darwin* | *-macos10*)
   ;;
 esac
 
+# -- testing GStreamer SDK, if found, then building against --
+AM_CONDITIONAL(HAVE_GST_SDK, false)
+ # linux
+ AC_CHECK_FILE([/opt/gstreamer-sdk/lib/pkgconfig/gstreamer-0.10.pc], 
+                [AC_MSG_WARN([building against Linux GStreamer SDK.]) 
+                 AM_CONDITIONAL(HAVE_GST_SDK, true)
+                 PKG_CONFIG_PATH=/opt/gstreamer-sdk/lib/pkgconfig:$PKG_CONFIG_PATH
+                 export PKG_CONFIG_PATH],
+                [AC_MSG_WARN([Linux GStreamer SDK not found])])
+
+ # osx
+AC_CHECK_FILE([/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig], 
+              [AC_MSG_WARN([building against OSX GStreamer SDK.]) 
+               AM_CONDITIONAL(HAVE_GST_SDK, true)
+               PKG_CONFIG_PATH=/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig:$PKG_CONFIG_PATH
+               export PKG_CONFIG_PATH],
+              [AC_MSG_WARN([OSX GStreamer SDK not found])])
+
 dnl =======================================================================
 dnl Check for the required version of GStreamer core (and gst-plugins-base)
 dnl

@@ -115,6 +115,7 @@ namespace switcher
     gsize length;
     gchar *data;
     generator = json_generator_new ();
+    json_generator_set_pretty (generator, TRUE);
     json_generator_set_root (generator, root_node);
     data = json_generator_to_data (generator, &length);
     //g_print ("%*s\n", (int)length, data);

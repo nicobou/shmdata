@@ -29,9 +29,11 @@ namespace switcher
   bool
   FileSDP::init() 
   { 
+    if (!GstUtils::make_element ("filesrc", &filesrc_)
+	|| !GstUtils::make_element ("sdpdemux", &sdpdemux_))
+      return false;
+
     media_counter_ = 0;
-    filesrc_ = gst_element_factory_make ("filesrc", NULL);   
-    sdpdemux_ =  gst_element_factory_make ("sdpdemux", NULL);   
     //set the name before registering properties
     set_name (gst_element_get_name (filesrc_));
     add_element_to_cleaner (filesrc_);
@@ -89,7 +91,8 @@ namespace switcher
     g_debug ("httpsdp new pad name is %s",padname);
     g_debug ("httpsdp new caps %s",gst_caps_to_string (gst_pad_get_caps (pad)));
 
-    GstElement *identity = gst_element_factory_make ("identity",NULL);
+    GstElement *identity;
+    GstUtils::make_element ("identity", &identity);
     g_object_set (identity, "sync", TRUE, NULL);
 
     gst_bin_add (GST_BIN (context->bin_), identity);

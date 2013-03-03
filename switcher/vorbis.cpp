@@ -28,9 +28,9 @@ namespace switcher
   bool
   Vorbis::init ()
   {
-    vorbisbin_ = gst_element_factory_make ("bin",NULL);
+    GstUtils::make_element ("bin",&vorbisbin_);
+    GstUtils::make_element ("vorbisenc", &vorbisenc_);
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
-    vorbisenc_ = gst_element_factory_make ("vorbisenc",NULL);
     add_element_to_cleaner (vorbisenc_);
     add_element_to_cleaner (vorbisbin_);
 
@@ -56,7 +56,8 @@ namespace switcher
     gst_bin_add (GST_BIN (context->bin_), context->vorbisbin_);
 
     //FIXME check for cleaning audioconvert
-    GstElement *audioconvert = gst_element_factory_make ("audioconvert",NULL);
+    GstElement *audioconvert;
+    GstUtils::make_element ("audioconvert", &audioconvert);
 
     gst_bin_add_many (GST_BIN (context->vorbisbin_),
 		      context->vorbisenc_,

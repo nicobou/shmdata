@@ -29,8 +29,10 @@ namespace switcher
   bool
   H264::init ()
   {
-    h264bin_ = gst_element_factory_make ("bin",NULL);
-    h264enc_ = gst_element_factory_make ("x264enc",NULL);
+    if (!GstUtils::make_element ("bin", &h264bin_)
+	|| !GstUtils::make_element ("x264enc", &h264enc_))
+      return false;
+
     g_object_set (G_OBJECT (h264enc_), 
 		  "speed-preset",1, 
 		  "bitrate",10000,
@@ -63,7 +65,8 @@ namespace switcher
     caller->set_sink_element (context->h264bin_);
     gst_bin_add (GST_BIN (context->bin_), context->h264bin_);
 
-    GstElement *colorspace = gst_element_factory_make ("ffmpegcolorspace",NULL);
+    GstElement *colorspace;
+    GstUtils::make_element ("ffmpegcolorspace", &colorspace);
 
     gst_bin_add_many (GST_BIN (context->h264bin_),
 		      context->h264enc_,

@@ -68,9 +68,9 @@ namespace switcher
   {
     g_debug ("ShmdataWriter::plug (source element)");
     bin_ = bin;
-    tee_ = gst_element_factory_make ("tee", NULL);
-    queue_ = gst_element_factory_make ("queue", NULL); 
-    fakesink_ = gst_element_factory_make ("fakesink", NULL); 
+    GstUtils::make_element ("tee", &tee_);
+    GstUtils::make_element ("queue", &queue_);
+    GstUtils::make_element ("fakesink", &fakesink_);
     g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
 
     gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
@@ -90,9 +90,9 @@ namespace switcher
   ShmdataWriter::plug (GstElement *bin, GstPad *source_pad)
   {
     bin_ = bin;
-    tee_ = gst_element_factory_make ("tee", NULL);
-    queue_ = gst_element_factory_make ("queue", NULL); 
-    fakesink_ = gst_element_factory_make ("fakesink", NULL); 
+    GstUtils::make_element ("tee", &tee_);
+    GstUtils::make_element ("queue", &queue_);
+    GstUtils::make_element ("fakesink", &fakesink_);
     g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
     
     gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);

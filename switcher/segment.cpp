@@ -25,7 +25,8 @@ namespace switcher
 
   Segment::Segment()
   {
-    bin_ = gst_element_factory_make ("bin", NULL);
+    GstUtils::make_element ("bin", &bin_);
+    
     //g_object_set (G_OBJECT (bin_), "message-forward",TRUE, NULL);
 
     //registering set_runtime method

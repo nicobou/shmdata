@@ -22,13 +22,23 @@
 
 namespace switcher
 {
-  VideoSource::VideoSource () :
-    video_tee_ (gst_element_factory_make ("tee",NULL)),
-    colorspace_in_ (gst_element_factory_make ("ffmpegcolorspace",NULL)),
-    textoverlay_ (gst_element_factory_make ("textoverlay",NULL)),
-    videoflip_ (gst_element_factory_make ("videoflip",NULL)),
-    colorspace_out_ (gst_element_factory_make ("ffmpegcolorspace",NULL))
+  VideoSource::VideoSource () 
   {
+    if (!GstUtils::make_element ("tee",&video_tee_))
+      g_warning ("VideoSource: tee element is mandatory\n");
+    if (!GstUtils::make_element ("ffmpegcolorspace",&colorspace_in_))
+      g_warning ("VideoSource: ffmpegcolorspace element is mandatory\n");
+    if (!GstUtils::make_element ("textoverlay",&textoverlay_))
+      g_warning ("VideoSource: textoverlay element is mandatory\n");
+    if (!GstUtils::make_element ("videoflip",&videoflip_))
+      g_warning ("VideoSource: videoflip element is mandatory\n");
+    GstUtils::make_element ("ffmpegcolorspace",&colorspace_out_);
+
+    add_element_to_cleaner (video_tee_);
+    add_element_to_cleaner (colorspace_in_);
+    add_element_to_cleaner (textoverlay_);
+    add_element_to_cleaner (videoflip_);
+    add_element_to_cleaner (colorspace_out_);
 
     gst_bin_add_many (GST_BIN (bin_),
      		      video_tee_,

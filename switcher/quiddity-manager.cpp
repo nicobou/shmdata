@@ -199,6 +199,8 @@ namespace switcher
   void 
   QuiddityManager::auto_init (std::string quiddity_name)
   {
+    if (!life_manager_->exists (quiddity_name))
+      return;
     Quiddity::ptr quidd = life_manager_->get_quiddity (quiddity_name);
     QuiddityManagerWrapper::ptr wrapper = std::dynamic_pointer_cast<QuiddityManagerWrapper> (quidd);
     if (wrapper)
