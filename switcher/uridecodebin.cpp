@@ -260,8 +260,6 @@ namespace switcher
     else
       padname= gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
 
-      
-
     g_debug ("uridecodebin new pad name is %s\n",padname);
     
     GstElement *identity;
