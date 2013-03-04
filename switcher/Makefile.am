@@ -50,6 +50,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     soap-ctrl-server.cpp \
     udpsink.cpp \
     uridecodebin.cpp \
+    uris.cpp \
     video-rate.cpp \
     video-sink.cpp \
     video-source.cpp \
@@ -113,6 +114,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     string-map_spec.h \
     udpsink.h \
     uridecodebin.h \
+    uris.h \
     video-rate.h \
     video-sink.h \
     video-source.h \
