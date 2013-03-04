@@ -70,37 +70,42 @@ namespace switcher
   bool 
   Method::invoke(std::vector<std::string> args)
   {
-    if (args.size () != arg_types_.size())
+    if (args.size () != arg_types_.size() && arg_types_[0] != G_TYPE_NONE )
       {
-	g_error ("Method::invoke number of arguments does not correspond to the size of argument types");
+	g_warning ("Method::invoke number of arguments does not correspond to the size of argument types");
 	return false;
       }
 
     GValue params[arg_types_.size()];
-    for (gulong i=0; i < args.size(); i++)
+    for (gulong i=0; i < arg_types_.size(); i++)
       {
 	params[i] = G_VALUE_INIT;
 	
 	g_value_init (&params[i],arg_types_[i]);
 	
-	if ( !gst_value_deserialize (&params[i],args[i].c_str()))
-	  {
-	    g_error ("Method::invoke string not transformable into gvalue (argument: %s) ",
-			args[i].c_str());
-	    return false;
-	  }
+	if (arg_types_[i] != G_TYPE_NONE)
+	  if ( !gst_value_deserialize (&params[i],args[i].c_str()))
+	    {
+	      g_error ("Method::invoke string not transformable into gvalue (argument: %s) ",
+		       args[i].c_str());
+	      return false;
+	    }
       }
 
     GValue result_value = G_VALUE_INIT;
     gboolean result;
     g_value_init (&result_value, G_TYPE_BOOLEAN);
+    g_print ("coucou %d\n", arg_types_.size());
     g_closure_invoke (closure_, &result_value, arg_types_.size(), params, NULL); 
+    g_print ("coucou_fin\n");
+
     result = g_value_get_boolean (&result_value);
 
     //unset
     g_value_unset (&result_value);
     for (guint i=0; i < arg_types_.size(); i++)
 	g_value_unset (&params[i]);
+
 
     return result;
 
@@ -161,7 +166,7 @@ namespace switcher
      GType arg_type;
      va_list vl;
      va_start(vl, first_arg_type);
-     if (first_arg_type != G_TYPE_NONE)
+     //if (first_arg_type != G_TYPE_NONE)
        {
 	 res.push_back (first_arg_type);
 	 while (arg_type = va_arg( vl, GType))

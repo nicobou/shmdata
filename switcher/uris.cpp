@@ -35,6 +35,10 @@ namespace switcher
     if (!GstUtils::make_element ("bin", &group_->bin))
       return false;
 
+    //set the name before registering properties
+    set_name (gst_element_get_name (group_->bin));
+    add_element_to_cleaner (group_->bin);
+
     group_->commands = g_async_queue_new ();
     group_->numTasks = g_async_queue_new ();
     group_->masterpad = NULL;
@@ -49,6 +53,46 @@ namespace switcher
     g_debug ("group created\n");
     group_->state = GROUP_PAUSED;    
 
+    //registering add_uri
+    register_method("add_uri",
+		    (void *)&add_uri_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    (gpointer)this);
+    set_method_description ("add_uri", 
+			    "add an uri to the group", 
+			    Method::make_arg_description ("uri", 
+							  "the uri to add",
+							  NULL));
+
+    //registering play
+    register_method("play",
+		    (void *)&play_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
+		    (gpointer)this);
+    set_method_description ("play", 
+			    "play the stream(s)", 
+			    Method::make_arg_description ("none",
+							  NULL));
+
+    //registering pause
+    register_method("pause",
+		    (void *)&pause_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
+		    (gpointer)this);
+    set_method_description ("pause", 
+			    "pause the stream(s)", 
+			    Method::make_arg_description ("none",
+							  NULL));
+
+    //registering seek
+    register_method("seek",
+		    (void *)&seek_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
+		    (gpointer)this);
+    set_method_description ("seek", 
+			    "seek the stream(s)", 
+			    Method::make_arg_description ("none",
+							  NULL));
     return true;
   }
   
@@ -58,6 +102,84 @@ namespace switcher
     return doc_;
   }
 
+  gboolean
+  Uris::add_uri_wrapped (gpointer uri, gpointer user_data)
+  {
+    Uris *context = static_cast<Uris *>(user_data);
+    if (context->add_uri ((char *)uri))
+      return TRUE;
+    else
+      return FALSE;
+  }
+
+  bool 
+  Uris::add_uri (std::string uri)
+  {
+    g_debug ("add_uri %s", uri.c_str ());
+    group_add_uri (group_, uri.c_str ());
+    return true;
+  }
+  
+  gboolean
+  Uris::play_wrapped (gpointer user_data)
+  {
+    Uris *context = static_cast<Uris *>(user_data);
+      
+    if (context->play ())
+      return TRUE;
+    else
+      return FALSE;
+  }
+  
+  bool
+  Uris::play ()
+  {
+    g_debug ("play");
+    group_play (group_);
+    return true;
+  }
+  
+
+  gboolean
+  Uris::pause_wrapped (gpointer user_data)
+  {
+    Uris *context = static_cast<Uris *>(user_data);
+      
+    if (context->pause ())
+      return TRUE;
+    else
+      return FALSE;
+  }
+
+  bool
+  Uris::pause ()
+  {
+    g_debug ("pause");
+    group_pause (group_);
+    return true;
+  }
+  
+  gboolean
+  Uris::seek_wrapped (gpointer user_data)
+  {
+    Uris *context = static_cast<Uris *>(user_data);
+      
+    if (context->seek ())
+      return TRUE;
+    else
+      return FALSE;
+  }
+
+  bool
+  Uris::seek ()
+  {
+    g_debug ("seek");
+    group_seek (group_);
+    return true;
+  }
+  
+  
+  //************************* wrapping c code:
 
   void 
   Uris::group_add_uri (Group *group, const char *uri) 
@@ -245,16 +367,16 @@ namespace switcher
 	
     //   }
     // else
-      {
-	g_print ("not handled data type: %s\n",padname);
-	GstElement *fake = gst_element_factory_make ("fakesink", NULL);
-	gst_bin_add (GST_BIN (group->bin),fake);
-	if (!gst_element_sync_state_with_parent (fake))      
-	  g_warning ("pb syncing datastream state: %s\n",padname);
-	GstPad *fakepad = gst_element_get_static_pad (fake,"sink");
-	gst_pad_link (pad,fakepad);
-	gst_object_unref (fakepad);
-      }
+    {
+      g_print ("not handled data type: %s\n",padname);
+      GstElement *fake = gst_element_factory_make ("fakesink", NULL);
+      gst_bin_add (GST_BIN (group->bin),fake);
+      if (!gst_element_sync_state_with_parent (fake))      
+	g_warning ("pb syncing datastream state: %s\n",padname);
+      GstPad *fakepad = gst_element_get_static_pad (fake,"sink");
+      gst_pad_link (pad,fakepad);
+      gst_object_unref (fakepad);
+    }
     return;   
   }   
   
@@ -534,7 +656,7 @@ namespace switcher
     Sample *sample = (Sample *) key;
     g_debug ("group_block_datastream_wrapped_for_hash: called %p\n",sample->bin_srcpad);
     if (!gst_pad_is_blocked (sample->bin_srcpad))
-	group_do_block_datastream (sample);
+      group_do_block_datastream (sample);
     else
       {
 	g_warning ("group_block_datastream_wrapped_for_hash: WARNING not blocking unblocked pad\n");
@@ -633,16 +755,16 @@ namespace switcher
     
     gboolean ret;
     ret = TRUE;// gst_element_seek (sample->seek_element,  
-	  // 		    1.0,  
-	  // 		    GST_FORMAT_TIME,  
-	  // 		    GST_SEEK_FLAG_FLUSH 
-	  // 		    | GST_SEEK_FLAG_ACCURATE, 
-	  // 		    //| GST_SEEK_FLAG_SKIP 
-	  // 		    //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization 
-	  // 		    GST_SEEK_TYPE_SET,  
-	  // 		    310.0 * GST_SECOND,  
-	  // 		    GST_SEEK_TYPE_NONE,  
-	  // 		    GST_CLOCK_TIME_NONE);  
+    // 		    1.0,  
+    // 		    GST_FORMAT_TIME,  
+    // 		    GST_SEEK_FLAG_FLUSH 
+    // 		    | GST_SEEK_FLAG_ACCURATE, 
+    // 		    //| GST_SEEK_FLAG_SKIP 
+    // 		    //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization 
+    // 		    GST_SEEK_TYPE_SET,  
+    // 		    310.0 * GST_SECOND,  
+    // 		    GST_SEEK_TYPE_NONE,  
+    // 		    GST_CLOCK_TIME_NONE);  
     
     if (!ret)
       g_warning ("seek not handled\n");

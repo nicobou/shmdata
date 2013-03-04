@@ -41,12 +41,17 @@ namespace switcher
     static QuiddityDocumentation doc_;
 
   private: 
-    //wraping code:
+    static gboolean add_uri_wrapped (gpointer uri, gpointer user_data);
+    static gboolean play_wrapped (gpointer user_data);
+    static gboolean pause_wrapped (gpointer user_data);
+    static gboolean seek_wrapped (gpointer user_data);
+
+    //wraping c code:
     typedef enum GourpState_ {
       GROUP_TO_PLAYING = 0,
       GROUP_PLAYING = 1,
       GROUP_TO_PAUSED = 2,
-      GROUP_PAUSED =3
+      GROUP_PAUSED = 3
     } GroupState;
     typedef struct
     {
