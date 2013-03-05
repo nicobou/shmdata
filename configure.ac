@@ -131,6 +131,12 @@ PKG_CHECK_MODULES(GST, [
   ])
 ])
 
+PKG_CHECK_MODULES(GLIB, glib-2.0, have_glib=true, have_glib=false)
+if test "x${have_glib}" = "xfalse" ; then
+    AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
+fi
+
+
 PKG_CHECK_MODULES(SHMDATA, shmdata-0.6, have_shmdata=true, have_shmdata=false)
 if test "x${have_shmdata}" = "xfalse" ; then
     AC_MSG_ERROR([Missing libshmdata-0.6-dev])

@@ -1,4 +1,5 @@
 AM_CXXFLAGS = \
+    $(GLIB_CFLAGS) \
     $(GSOAP_CFLAGS) \
     $(GST_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
@@ -7,6 +8,7 @@ AM_CXXFLAGS = \
     -I$(top_srcdir)/switcher/webservices
 
 AM_LIBS = \
+    $(GLIB_LIBS) \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
     $(JSONGLIB_LIBS) \
@@ -62,6 +64,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     xvimagesink.cpp
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
+    $(GLIB_LIBS) \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
     $(JSONGLIB_LIBS) \
