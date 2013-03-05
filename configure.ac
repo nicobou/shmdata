@@ -155,9 +155,9 @@ fi
 
 AC_MSG_CHECKING([to see if compiler understands -std=c++0x])
 save_CXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CFLAGS -std=c++0x"
+CXXFLAGS="$CFLAGS $CXXFLAGS -std=c++0x"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
-  CXXFLAGS="$CFLAGS -std=c++0x"
+  CXXFLAGS="$CFLAGS $CXXFLAGS -std=c++0x"
   AC_MSG_RESULT([yes])
 ], [
   AC_MSG_RESULT([no])
