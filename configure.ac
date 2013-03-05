@@ -52,7 +52,7 @@ AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ], [
 
 case "$host" in *-darwin* | *-macos10*)
   LIBTOOL="glibtool"
-  CXXFLAGS+=" -D__Darwin"
+  CXXFLAGS+=" -D__Darwin -stdlib=libc++"
   CXX="clang++"
   LDFLAGS+=" -undefined dynamic_lookup -Wl,-headerpad_max_install_names"
   if test -d /opt/local ; then
@@ -155,9 +155,9 @@ fi
 
 AC_MSG_CHECKING([to see if compiler understands -std=c++0x])
 save_CXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CFLAGS -std=c++0x -stdlib=libc++"
+CXXFLAGS="$CFLAGS -std=c++0x"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
-  CXXFLAGS="$CFLAGS -std=c++0x -stdlib=libc++"
+  CXXFLAGS="$CFLAGS -std=c++0x"
   AC_MSG_RESULT([yes])
 ], [
   AC_MSG_RESULT([no])
