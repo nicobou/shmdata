@@ -212,7 +212,7 @@ void
 shmdata_any_reader_g_loop_thread (gpointer user_data)
 {
   shmdata_any_reader_t *context = (shmdata_any_reader_t *) user_data;
-  g_main_loop_run (context->loop_);
+  //g_main_loop_run (context->loop_);
 }
 
 void
