@@ -37,7 +37,7 @@ namespace switcher
       }
     set_name (gst_element_get_name (aravissrc_));
     
-    register_property (G_OBJECT (aravissrc_),"camera-name","aravissrc");
+    //register_property (G_OBJECT (aravissrc_),"camera-name","aravissrc");
 
     register_property (G_OBJECT (aravissrc_),"gain","aravissrc");
 
@@ -50,10 +50,40 @@ namespace switcher
     register_property (G_OBJECT (aravissrc_),"offset-x","aravissrc");
     register_property (G_OBJECT (aravissrc_),"offset-y","aravissrc");
 
-    set_raw_video_element (aravissrc_);
+
+    //registering add_data_stream
+    register_method("start",
+		    (void *)&start_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    (gpointer)this);
+    set_method_description ("start", 
+			    "start the stream from camera", 
+			    Method::make_arg_description ("name", 
+							  "the genicam camera name obtained with the command arv-tool-0.2 or 'default')",
+							  NULL));
     return true;
   }
   
+  gboolean
+  AravisGenicam::start_wrapped (gpointer name, 
+				gpointer user_data)
+  {
+    AravisGenicam *context = static_cast<AravisGenicam *>(user_data);
+  
+    if (context->start ((char *)name))
+      return TRUE;
+    else
+      return FALSE;
+  }
+
+  bool
+  AravisGenicam::start (std::string name)
+  {
+    g_debug ("Genicam using camera %s", name.c_str ());
+    g_object_set (G_OBJECT (aravissrc_),"camera-name", name.c_str (), NULL); 
+    set_raw_video_element (aravissrc_);
+    return true;
+  }
 
 
   QuiddityDocumentation 
