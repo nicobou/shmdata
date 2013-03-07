@@ -88,10 +88,12 @@ namespace switcher
 	return false;
 
     
-    gst_bin_add (GST_BIN (bin_), aravissrc_);
+    gst_bin_add_many (GST_BIN (bin_), aravissrc_, colorspace, NULL);
     gst_element_link (aravissrc_, colorspace);
     GstUtils::wait_state_changed (bin_);
     GstUtils::sync_state_with_parent (aravissrc_);
+    GstUtils::sync_state_with_parent (colorspace);
+    
 
     GstPad *srcpad = gst_element_get_static_pad (colorspace, "src");
     //creating a shmdata
