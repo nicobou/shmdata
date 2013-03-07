@@ -82,10 +82,30 @@ namespace switcher
     g_debug ("Genicam using camera %s", name.c_str ());
     if (g_strcmp0 (name.c_str (), "default") != 0 || g_strcmp0 (name.c_str (), "Default") != 0)
       g_object_set (G_OBJECT (aravissrc_),"camera-name", name.c_str (), NULL); 
+    
+    GstElement *colorspace;
+    if (!GstUtils::make_element ("ffmpegcolorspace", &colorspace))
+	return false;
 
+    
     gst_bin_add (GST_BIN (bin_), aravissrc_);
+    gst_element_link (aravissrc_, colorspace);
     GstUtils::wait_state_changed (bin_);
     GstUtils::sync_state_with_parent (aravissrc_);
+
+    GstPad *srcpad = gst_element_get_static_pad (colorspace, "src");
+    //creating a shmdata
+    ShmdataWriter::ptr connector;
+    connector.reset (new ShmdataWriter ());
+    std::string connector_name = make_file_name ("video");
+    connector->set_path (connector_name.c_str());
+    connector->plug (bin_, srcpad);
+    shmdata_writers_.insert (connector_name, connector);
+
+    g_message ("%s created a new shmdata writer (%s)", 
+     	       get_nick_name ().c_str(), 
+     	       connector_name.c_str ());
+
     return true;
   }
   
