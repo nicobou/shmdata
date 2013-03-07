@@ -23,6 +23,7 @@
 
 #include "switcher/base-source.h"
 #include "switcher/gst-element-cleaner.h"
+#include "switcher/string-map.h"
 #include <memory>
 
 namespace switcher
@@ -46,6 +47,7 @@ namespace switcher
     static gboolean seek_wrapped (gpointer unused, gpointer user_data);
 
   private: 
+    StringMap<int> media_counters_;
     //wraping c code:
     typedef enum GourpState_ {
       GROUP_TO_PLAYING = 0,
@@ -65,6 +67,7 @@ namespace switcher
       // and unlocking new command
       GAsyncQueue *numTasks; 
       GHashTable *padtoblock; 
+      gpointer user_data; //this
     } Group;
     typedef struct 
     {
@@ -110,6 +113,8 @@ namespace switcher
     static void group_do_seek_datastream (Sample *sample);
     static void group_do_group_seek (Group *group);
     static void group_queue_command_unlocked (Group *group, gpointer func, gpointer arg);
+    static gboolean event_probe_cb (GstPad *pad, GstEvent * event, gpointer data);
+    static gboolean group_eos_rewind (Group *group);
   };
 
 }  // end of namespace

@@ -52,6 +52,7 @@ namespace switcher
     //   g_warning ("create_group: pb sync bin state with parent\n"); 
     g_debug ("group created\n");
     group_->state = GROUP_PAUSED;    
+    group_->user_data = this;
 
     //registering add_uri
     register_method("add_uri",
@@ -250,9 +251,18 @@ namespace switcher
   Uris::uridecodebin_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data)   
   {   
     Group *group = (Group *) user_data;   
+    Uris *context = static_cast<Uris *>(group->user_data);
     
-    const gchar *padname= gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
-  
+    //const gchar *padname= gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
+        //detecting type of media
+    const gchar *padname;
+    if (0 == g_strcmp0 ("ANY", gst_caps_to_string (gst_pad_get_caps (pad))))
+      padname = "custom";
+    else
+      padname = gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
+    
+    g_debug ("padname:%s", padname);
+
     // if (g_str_has_prefix (padname, "audio/"))
     //   {
     //   //adding a task to wait for launching next command
@@ -312,71 +322,138 @@ namespace switcher
     // 	g_hash_table_insert (group->datastreams,sample,uri); //FIXME clean hash 
 	
     //   }
-    // else if (g_str_has_prefix (padname, "video/"))
-    //   {
+    // else 
+    if (g_str_has_prefix (padname, "video/"))
+       {
+	 group_add_task (NULL,NULL,group);  
+	 Sample *sample = g_new0 (Sample,1);  
+	 sample->group = group;  
+	 sample->timeshift = 0;
+	 
+     	GstElement *queue = gst_element_factory_make ("queue",NULL);  
+     	sample->seek_element = queue;  
 	
-    // 	group_add_task (NULL,NULL,group);  
-    // 	Sample *sample = g_new0 (Sample,1);  
-    // 	sample->group = group;  
-    // 	sample->timeshift = 0;
+     	/* add to the bin */     
+     	gst_bin_add (GST_BIN (group->bin), queue);     
 	
-    // 	GstElement *queue = gst_element_factory_make ("queue",NULL);  
-    // 	sample->seek_element = queue;  
+     	GstPad *queue_srcpad = gst_element_get_static_pad (queue, "src");   
 	
-    // 	/* add to the bin */     
-    // 	gst_bin_add (GST_BIN (group->bin), queue);     
+     	sample->bin_srcpad = gst_ghost_pad_new (NULL, queue_srcpad);     
+     	group_do_block_datastream (sample);
+     	//gst_pad_set_blocked_async (sample->bin_srcpad,TRUE,pad_blocked_cb,sample);     
+     	gst_object_unref (queue_srcpad);     
+     	gst_pad_set_active(sample->bin_srcpad,TRUE);     
+     	gst_element_add_pad (group->bin, sample->bin_srcpad);         
+     	if (group->masterpad == NULL)     
+     	  {     
+     	    g_print ("---------------- masterpad is %p\n",sample->bin_srcpad);     
+     	    group->masterpad = sample->bin_srcpad;     
+     	  }     
 	
-    // 	GstPad *queue_srcpad = gst_element_get_static_pad (queue, "src");   
-	
-    // 	sample->bin_srcpad = gst_ghost_pad_new (NULL, queue_srcpad);     
-    // 	group_do_block_datastream (sample);
-    // 	//gst_pad_set_blocked_async (sample->bin_srcpad,TRUE,pad_blocked_cb,sample);     
-    // 	gst_object_unref (queue_srcpad);     
-    // 	gst_pad_set_active(sample->bin_srcpad,TRUE);     
-    // 	gst_element_add_pad (group->bin, sample->bin_srcpad);         
-    // 	if (group->masterpad == NULL)     
-    // 	  {     
-    // 	    g_print ("---------------- masterpad is %p\n",sample->bin_srcpad);     
-    // 	    group->masterpad = sample->bin_srcpad;     
-    // 	  }     
-	
-    // 	//probing eos        
-    // 	gst_pad_add_event_probe (sample->bin_srcpad, (GCallback) event_probe_cb, (gpointer)sample);        
-    // 	/* gst_pad_add_buffer_probe (sample->bin_srcpad,   */
-    // 	/* 				(GCallback) buffer_probe_cb,   */
-    // 	/* 				(gpointer)sample);   */
+     	//probing eos        
+     	gst_pad_add_event_probe (sample->bin_srcpad, (GCallback) event_probe_cb, (gpointer)sample);        
+     	/* gst_pad_add_buffer_probe (sample->bin_srcpad,   */
+     	/* 				(GCallback) buffer_probe_cb,   */
+     	/* 				(gpointer)sample);   */
 	
 	
-    // 	GstPad *queue_sinkpad = gst_element_get_static_pad (queue, "sink");  
+     	GstPad *queue_sinkpad = gst_element_get_static_pad (queue, "sink");  
 	
-    // 	//linking newly created pad with the audioconvert_sinkpad -- FIXME should verify compatibility       
-    // 	gst_pad_link (pad, queue_sinkpad);     
-    // 	gst_object_unref (queue_sinkpad);  
+     	//linking newly created pad with the audioconvert_sinkpad -- FIXME should verify compatibility       
+     	gst_pad_link (pad, queue_sinkpad);     
+     	gst_object_unref (queue_sinkpad);  
 	
-    // 	if (!gst_element_sync_state_with_parent (queue))        
-    // 	  g_error ("pb syncing video datastream state\n");      
+     	if (!gst_element_sync_state_with_parent (queue))        
+     	  g_error ("pb syncing video datastream state\n");      
 	
-    // 	//assuming object is an uridecodebin and get the uri    
-    // 	gchar *uri;    
-    // 	g_object_get (object,"uri",&uri,NULL);    
-    // 	g_print ("new sample -- uri: %s\n",uri);    
-    // 	//adding sample to hash table   
-    // 	g_hash_table_insert (group->datastreams,sample,uri); //FIXME clean hash    
+     	//assuming object is an uridecodebin and get the uri    
+     	gchar *uri;    
+     	g_object_get (object,"uri",&uri,NULL);    
+     	g_print ("new sample -- uri: %s\n",uri);    
+     	//adding sample to hash table   
+     	g_hash_table_insert (group->datastreams,sample,uri); //FIXME clean hash    
+
+	//making a shmdata:
+	GstElement *identity;
+	GstUtils::make_element ("identity", &identity);
+	g_object_set (identity, 
+		      "sync", TRUE, 
+		      "single-segment", TRUE,
+		      NULL);
+	GstElement *funnel;
+	GstUtils::make_element ("funnel", &funnel);
 	
-    // 	group->videomixer = inputselector;  
+	g_print ("MEGA COUCOU 1\n");
 	
-    //   }
-    // else
-    {
-      g_print ("not handled data type: %s\n",padname);
-      GstElement *fake = gst_element_factory_make ("fakesink", NULL);
-      gst_bin_add (GST_BIN (group->bin),fake);
-      if (!gst_element_sync_state_with_parent (fake))      
-	g_warning ("pb syncing datastream state: %s\n",padname);
-      GstPad *fakepad = gst_element_get_static_pad (fake,"sink");
-      gst_pad_link (pad,fakepad);
-      gst_object_unref (fakepad);
-    }
+
+	gst_bin_add_many (GST_BIN (context->bin_), identity, funnel, NULL);
+	//GstUtils::link_static_to_request (pad, funnel);
+	gst_element_link (funnel, identity);
+	GstUtils::sync_state_with_parent (identity);
+	GstUtils::sync_state_with_parent (funnel);
+
+	g_print ("MEGA COUCOU 2\n");
+	
+	//giving a name to the stream
+	gchar **padname_splitted = g_strsplit_set (padname, "/",-1);
+	//counting 
+	int count = 0;
+	if (context->media_counters_.contains (std::string (padname_splitted[0])))
+	  {
+	    count = context->media_counters_. lookup (std::string (padname_splitted[0]));
+	    //g_print ("------------- count %d\n", count);
+	    count = count+1;
+	  }
+	context->media_counters_.replace (std::string (padname_splitted[0]), count);
+	
+	g_print ("MEGA COUCOU 3\n");
+	
+	gchar media_name[256];
+	g_sprintf (media_name,"%s_%d",padname_splitted[0],count);
+	g_debug ("uridecodebin: new media %s %d\n",media_name, count );
+	g_strfreev(padname_splitted);
+	
+	g_print ("MEGA COUCOU4\n");
+	
+	//creating a shmdata
+	ShmdataWriter::ptr connector;
+	connector.reset (new ShmdataWriter ());
+	std::string connector_name = context->make_file_name (media_name);
+	connector->set_path (connector_name.c_str());
+	GstCaps *caps = gst_pad_get_caps_reffed (pad);
+	
+	g_print ("MEGA COUCOU 5\n");
+	
+	connector->plug (context->bin_, identity, caps);
+	
+	g_print ("MEGA COUCOU 6\n");
+	
+	if (G_IS_OBJECT (caps))
+	  gst_object_unref (caps);
+	context->shmdata_writers_.insert (connector_name, connector);
+	
+	g_message ("%s created a new shmdata writer (%s)", 
+		   context->get_nick_name ().c_str(), 
+		   connector_name.c_str ());
+	
+	
+	//saving where to connect to the shmdata
+     	group->videomixer = funnel;  
+	
+	g_print ("MEGA COUCOU fin\n");
+	
+       }
+    else
+       {
+	 g_print ("not handled data type: %s\n",padname);
+	 GstElement *fake = gst_element_factory_make ("fakesink", NULL);
+	 gst_bin_add (GST_BIN (group->bin),fake);
+	 if (!gst_element_sync_state_with_parent (fake))      
+	   g_warning ("pb syncing datastream state: %s\n",padname);
+	 GstPad *fakepad = gst_element_get_static_pad (fake,"sink");
+	 gst_pad_link (pad,fakepad);
+	 gst_object_unref (fakepad);
+       }
     return;   
   }   
   
@@ -514,28 +591,24 @@ namespace switcher
     Sample *sample = (Sample *) key;
     Group *group = (Group *) user_data;
     
-
-    //FIXME link to something
-    // if (gst_pad_is_linked (sample->bin_srcpad))
-    // 	g_warning (".....................oups, already linked \n");
-
-    // GstPad *peerpad;
-    // peerpad = gst_element_get_compatible_pad (group->audiomixer,sample->bin_srcpad,NULL);
-    // if (!GST_IS_PAD (peerpad))
-    //   {
-    // 	//trying video
-    // 	if (!GST_IS_PAD (sample->bin_srcpad)) 
-    // 	    sample->bin_srcpad = gst_element_get_compatible_pad (group->videomixer,sample->bin_srcpad,NULL); 
-    // 	peerpad = gst_element_get_compatible_pad (group->videomixer,sample->bin_srcpad,NULL);
-    // }
+    if (gst_pad_is_linked (sample->bin_srcpad))
+      g_warning (".....................oups, already linked \n");
     
-    // if (GST_IS_PAD (peerpad))
-    //   {
-    // 	g_debug ("pad_link: %d \n",gst_pad_link (sample->bin_srcpad, peerpad));
-    // 	gst_object_unref (peerpad);
-    // 	if (!gst_pad_is_linked (sample->bin_srcpad))
-    // 	  g_print (".....................oups, link did not worked \n");
-    //   }
+    GstPad *peerpad;
+    //trying video
+    if (!GST_IS_PAD (sample->bin_srcpad)) 
+      sample->bin_srcpad = gst_element_get_compatible_pad (group->videomixer,sample->bin_srcpad,NULL); 
+    
+    //FIXME everybody goes to the same mixer...
+    peerpad = gst_element_get_compatible_pad (group->videomixer,sample->bin_srcpad,NULL);
+    
+    if (GST_IS_PAD (peerpad))
+      {
+     	g_debug ("pad_link: %d \n",gst_pad_link (sample->bin_srcpad, peerpad));
+     	gst_object_unref (peerpad);
+     	if (!gst_pad_is_linked (sample->bin_srcpad))
+     	  g_print (".....................oups, link did not worked \n");
+      }
   }
 
   void
@@ -806,4 +879,47 @@ namespace switcher
     g_async_queue_push_unlocked (group->commands,command);
     g_debug ("-- queuing (unlocked) command\n");
   }
+
+  gboolean
+  Uris::event_probe_cb (GstPad *pad, GstEvent * event, gpointer data)
+  {
+    Sample *sample = (Sample *)data;
+    if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) { 
+      //g_print ("EOS caught and disabled \n");
+      g_print ("-------------------------------------------------pad with EOS %s:%s, pointer:%p src: %p %s\n",
+	       GST_DEBUG_PAD_NAME (pad),pad,GST_EVENT_SRC(event), gst_element_get_name (GST_EVENT_SRC(event)));
+      if (sample->group->state != GROUP_PLAYING)
+	{
+	  g_print ("OMGOMGOMGOMGOMGOMGOMGOMGOMGOMGOMGOMGOMGOMGOMG %p\n",&(sample->group->state));
+	}
+      group_unlink_datastream ((gpointer)sample,NULL,NULL);   
+    
+    if (pad == sample->group->masterpad)  
+      {  
+	// this seems not working if play rate >1.0
+	g_print ("!!! masterpad\n");  
+	g_idle_add ((GSourceFunc) group_eos_rewind,   
+		    (gpointer)sample->group);   
+      } 
+    
+    return FALSE; 
+    }
+  //  g_print ("event received :%d\n",GST_EVENT_TYPE (event));
+    return TRUE;
+  }
+
+  gboolean
+  Uris::group_eos_rewind (Group *group)
+  {
+    g_print ("group_eos_rewind\n");
+    group->state = GROUP_TO_PAUSED; 
+    g_hash_table_foreach (group->datastreams,(GHFunc)group_add_task,group);
+    g_hash_table_foreach (group->datastreams,(GHFunc)group_add_task,group);
+    g_hash_table_foreach (group->datastreams,(GHFunc)group_block_datastream_wrapped_for_hash,NULL);
+    g_hash_table_foreach (group->datastreams,(GHFunc)group_seek_datastream,NULL);
+    group_play (group);	     
+    return FALSE;
+  }
+  
+
 }
