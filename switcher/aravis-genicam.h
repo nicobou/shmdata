@@ -23,13 +23,14 @@
 
 #include "switcher/video-source.h"
 #include "switcher/aravis-genicam.h"
+#include "switcher/gst-element-cleaner.h"
 #include <gst/gst.h>
 #include <memory>
 
 namespace switcher
 {
 
-  class AravisGenicam : public VideoSource
+  class AravisGenicam : public BaseSource, public GstElementCleaner
   {
   public:
     typedef std::shared_ptr<AravisGenicam> ptr;

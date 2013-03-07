@@ -80,13 +80,16 @@ namespace switcher
   AravisGenicam::start (std::string name)
   {
     g_debug ("Genicam using camera %s", name.c_str ());
-    if (g_strcmp0 (name.c_str (), "default") != 0)
+    if (g_strcmp0 (name.c_str (), "default") != 0 || g_strcmp0 (name.c_str (), "Default") != 0)
       g_object_set (G_OBJECT (aravissrc_),"camera-name", name.c_str (), NULL); 
-    set_raw_video_element (aravissrc_);
+
+    gst_bin_add (GST_BIN (bin_), aravissrc_);
+    GstUtils::wait_state_changed (bin_);
+    GstUtils::sync_state_with_parent (aravissrc_);
     return true;
   }
-
-
+  
+  
   QuiddityDocumentation 
   AravisGenicam::get_documentation ()
   {
