@@ -85,7 +85,7 @@ namespace switcher
     //registering clear
     register_method("clear",
 		    (void *)&clear_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_NONE),
+		    Method::make_arg_type_description (G_TYPE_NONE), //TODO use a type defined in the method class
 		    (gpointer)this);
     set_method_description ("clear", 
 			    "remove a client with destination host and port to the list of clients", 

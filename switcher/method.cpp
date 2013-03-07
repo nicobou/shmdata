@@ -44,23 +44,26 @@ namespace switcher
    * with args passed by pointers at the end (as references to base quiddities)  
    *
    */
-  void 
+  void //TODO make set_method returning a bool
   Method::set_method (void *method, std::vector<GType> arg_types, gpointer user_data)  
   {
+    if (arg_types.size () < 1)
+      {
+	g_warning ("Method::set_method is called with empty arg_types");
+	return;
+      }
     if (method == NULL)
       {
-	g_error ("Method::set_method is call with a NULL function");
+	g_warning ("Method::set_method is called with a NULL function");
 	return;
       }
     closure_ = g_cclosure_new (G_CALLBACK (method), user_data, Method::destroy_data);
     g_closure_set_marshal  (closure_,g_cclosure_marshal_generic);
-    
     arg_types_ = arg_types;
-
     num_of_value_args_ = arg_types_.size();
   }
 
-
+  //FIXME remove this method
   uint 
   Method::get_num_of_value_args()
   {
@@ -70,44 +73,45 @@ namespace switcher
   bool 
   Method::invoke(std::vector<std::string> args)
   {
-    if (args.size () != arg_types_.size())
+    if (args.size () != num_of_value_args_ && arg_types_[0] != G_TYPE_NONE)
       {
 	g_warning ("Method::invoke number of arguments does not correspond to the size of argument types");
 	return false;
       }
 
-    GValue params[arg_types_.size()];
-    for (gulong i=0; i < arg_types_.size(); i++)
+    GValue params[arg_types_.size ()];
+
+    //with args
+    if (arg_types_[0] != G_TYPE_NONE)
+      for (gulong i=0; i < num_of_value_args_; i++)
+	{
+	  params[i] = G_VALUE_INIT;
+	  g_value_init (&params[i],arg_types_[i]);
+	  if (!gst_value_deserialize (&params[i],args[i].c_str()))
+	    {
+	      g_error ("Method::invoke string not transformable into gvalue (argument: %s) ",
+		       args[i].c_str());
+	      return false;
+	    }
+	}
+    else
       {
-	params[i] = G_VALUE_INIT;
-	
-	g_value_init (&params[i],arg_types_[i]);
-	
-	if ( !gst_value_deserialize (&params[i],args[i].c_str()))
-	  {
-	    g_error ("Method::invoke string not transformable into gvalue (argument: %s) ",
-		     args[i].c_str());
-	    return false;
-	  }
+	params[0] = G_VALUE_INIT;
+	g_value_init (&params[0],G_TYPE_POINTER);
+	g_value_set_pointer (&params[0],&params[0]);
       }
-    
     GValue result_value = G_VALUE_INIT;
     gboolean result;
     g_value_init (&result_value, G_TYPE_BOOLEAN);
-    g_print ("coucou %d\n", arg_types_.size());
-    g_closure_invoke (closure_, &result_value, arg_types_.size(), params, NULL); 
-    g_print ("coucou_fin\n");
-
+    //g_print ("arg tipe size %d\n", arg_types_.size());
+    g_closure_invoke (closure_, &result_value, num_of_value_args_, params, NULL);
     result = g_value_get_boolean (&result_value);
-
+    
     //unset
     g_value_unset (&result_value);
-    for (guint i=0; i < arg_types_.size(); i++)
-	g_value_unset (&params[i]);
-
-
+    for (guint i=0; i < num_of_value_args_; i++)
+      g_value_unset (&params[i]);
     return result;
-
   } 
   
   void
@@ -165,12 +169,9 @@ namespace switcher
      GType arg_type;
      va_list vl;
      va_start(vl, first_arg_type);
-     if (first_arg_type != G_TYPE_NONE)
-       {
-	 res.push_back (first_arg_type);
-	 while (arg_type = va_arg( vl, GType))
-	   res.push_back (arg_type);
-       }
+     res.push_back (first_arg_type);
+     while (arg_type = va_arg( vl, GType))
+       res.push_back (arg_type);
      va_end(vl);
      return res;
    }
