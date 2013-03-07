@@ -40,12 +40,12 @@ namespace switcher
     QuiddityDocumentation get_documentation ();
     static QuiddityDocumentation doc_;
 
-  private: 
     static gboolean add_uri_wrapped (gpointer uri, gpointer user_data);
-    static gboolean play_wrapped (gpointer user_data);
-    static gboolean pause_wrapped (gpointer user_data);
-    static gboolean seek_wrapped (gpointer user_data);
+    static gboolean play_wrapped (gpointer unused, gpointer user_data);
+    static gboolean pause_wrapped (gpointer unused, gpointer user_data);
+    static gboolean seek_wrapped (gpointer unused, gpointer user_data);
 
+  private: 
     //wraping c code:
     typedef enum GourpState_ {
       GROUP_TO_PLAYING = 0,

@@ -46,7 +46,7 @@ namespace switcher
     //client management (wrapped for being invoked from the quiddity manager)
     static gboolean remove_client_wrapped (gpointer host, gint port, gpointer user_data);
     static gboolean add_client_wrapped (gpointer host, gint port, gpointer user_data);
-    static gboolean clear_wrapped (gpointer user_data);
+    static gboolean clear_wrapped (gpointer unused, gpointer user_data);
 
   private:
     GstElement *udpsink_;

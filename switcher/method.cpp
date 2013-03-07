@@ -97,9 +97,11 @@ namespace switcher
     else
       {
 	params[0] = G_VALUE_INIT;
-	g_value_init (&params[0],G_TYPE_POINTER);
-	g_value_set_pointer (&params[0],&params[0]);
+	g_value_init (&params[0],G_TYPE_STRING);
+	gst_value_deserialize (&params[0],"");
       }
+
+    
     GValue result_value = G_VALUE_INIT;
     gboolean result;
     g_value_init (&result_value, G_TYPE_BOOLEAN);

@@ -121,7 +121,7 @@ namespace switcher
   }
   
   gboolean
-  Uris::play_wrapped (gpointer user_data)
+  Uris::play_wrapped (gpointer unused, gpointer user_data)
   {
     Uris *context = static_cast<Uris *>(user_data);
       
@@ -141,7 +141,7 @@ namespace switcher
   
 
   gboolean
-  Uris::pause_wrapped (gpointer user_data)
+  Uris::pause_wrapped (gpointer unused, gpointer user_data)
   {
     Uris *context = static_cast<Uris *>(user_data);
       
@@ -160,7 +160,7 @@ namespace switcher
   }
   
   gboolean
-  Uris::seek_wrapped (gpointer user_data)
+  Uris::seek_wrapped (gpointer unused, gpointer user_data)
   {
     Uris *context = static_cast<Uris *>(user_data);
       
