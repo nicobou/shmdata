@@ -80,7 +80,8 @@ namespace switcher
   AravisGenicam::start (std::string name)
   {
     g_debug ("Genicam using camera %s", name.c_str ());
-    g_object_set (G_OBJECT (aravissrc_),"camera-name", name.c_str (), NULL); 
+    if (g_strcmp0 (name.c_str (), "default") != 0)
+      g_object_set (G_OBJECT (aravissrc_),"camera-name", name.c_str (), NULL); 
     set_raw_video_element (aravissrc_);
     return true;
   }
