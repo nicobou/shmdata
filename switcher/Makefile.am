@@ -1,4 +1,5 @@
 AM_CXXFLAGS = \
+    $(GLIB_CFLAGS) \
     $(GSOAP_CFLAGS) \
     $(GST_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
@@ -7,6 +8,7 @@ AM_CXXFLAGS = \
     -I$(top_srcdir)/switcher/webservices
 
 AM_LIBS = \
+    $(GLIB_LIBS) \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
     $(JSONGLIB_LIBS) \
@@ -50,6 +52,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     soap-ctrl-server.cpp \
     udpsink.cpp \
     uridecodebin.cpp \
+    uris.cpp \
     video-rate.cpp \
     video-sink.cpp \
     video-source.cpp \
@@ -61,6 +64,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     xvimagesink.cpp
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
+    $(GLIB_LIBS) \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
     $(JSONGLIB_LIBS) \
@@ -113,6 +117,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     string-map_spec.h \
     udpsink.h \
     uridecodebin.h \
+    uris.h \
     video-rate.h \
     video-sink.h \
     video-source.h \

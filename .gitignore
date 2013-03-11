@@ -1,9 +1,11 @@
 *.in
 *.la
 *.lo
+*.log
 *.o
 *.pc
 *.swp
+*.trs
 *~
 INSTALL
 Makefile
@@ -40,6 +42,7 @@ switcher/.libs/
 switcher/Makefile
 switcher/classes.cxx
 switcher/webservices
+test-driver
 tests/.deps/
 tests/.libs/
 tests/check_quiddity_create_remove

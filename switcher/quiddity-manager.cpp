@@ -287,6 +287,10 @@ namespace switcher
       {
 	gst_init (NULL,NULL);
 	mainloop_ = g_main_loop_new (NULL, FALSE);
+	GstRegistry *registry;
+	registry = gst_registry_get_default();
+	//TODO add option for scanning a path
+	gst_registry_scan_path (registry, "/usr/local/lib/gstreamer-0.10/");
 	thread_ = g_thread_new ("SwitcherMainLoop", GThreadFunc(main_loop_thread), this);
 	gmainloop_initialized_ = true;
       }

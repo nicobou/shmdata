@@ -52,7 +52,8 @@ AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ], [
 
 case "$host" in *-darwin* | *-macos10*)
   LIBTOOL="glibtool"
-  CXXFLAGS+=" -D__Darwin"
+  CXXFLAGS+=" -D__Darwin -stdlib=libc++"
+  CXX="clang++"
   LDFLAGS+=" -undefined dynamic_lookup -Wl,-headerpad_max_install_names"
   if test -d /opt/local ; then
     CXXFLAGS+=" -I/usr/local/include -I/opt/local/include"
@@ -131,6 +132,12 @@ PKG_CHECK_MODULES(GST, [
   ])
 ])
 
+PKG_CHECK_MODULES(GLIB, glib-2.0, have_glib=true, have_glib=false)
+if test "x${have_glib}" = "xfalse" ; then
+    AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
+fi
+
+
 PKG_CHECK_MODULES(SHMDATA, shmdata-0.6, have_shmdata=true, have_shmdata=false)
 if test "x${have_shmdata}" = "xfalse" ; then
     AC_MSG_ERROR([Missing libshmdata-0.6-dev])
@@ -148,9 +155,9 @@ fi
 
 AC_MSG_CHECKING([to see if compiler understands -std=c++0x])
 save_CXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CFLAGS -std=c++0x"
+CXXFLAGS="$CFLAGS $CXXFLAGS -std=c++0x"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
-  CXXFLAGS="$CFLAGS -std=c++0x"
+  CXXFLAGS="$CFLAGS $CXXFLAGS -std=c++0x"
   AC_MSG_RESULT([yes])
 ], [
   AC_MSG_RESULT([no])

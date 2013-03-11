@@ -40,6 +40,7 @@
 #include "switcher/soap-ctrl-server.h"
 #include "switcher/udpsink.h"
 #include "switcher/uridecodebin.h"
+#include "switcher/uris.h"
 #include "switcher/video-rate.h"
 #include "switcher/video-test-source.h"
 #include "switcher/vorbis.h"
@@ -184,6 +185,8 @@ namespace switcher
       					       UDPSink::doc_.get_json_root_node ());
     abstract_factory_.register_class<Uridecodebin> (Uridecodebin::doc_.get_class_name (), 
       						    Uridecodebin::doc_.get_json_root_node ());
+    abstract_factory_.register_class<Uris> (Uris::doc_.get_class_name (), 
+					    Uris::doc_.get_json_root_node ());
     abstract_factory_.register_class<VideoRate> (VideoRate::doc_.get_class_name (),
 						 VideoRate::doc_.get_json_root_node ());
     abstract_factory_.register_class<VideoTestSource> (VideoTestSource::doc_.get_class_name (),
@@ -449,7 +452,7 @@ namespace switcher
 
   bool 
   QuiddityLifeManager::invoke (std::string quiddity_name, 
-			       std::string function_name,
+			       std::string method_name,
 			       std::vector<std::string> args)
   {
     //g_debug ("QuiddityLifeManager::quiddity_invoke_method %s %s, arg size %d",quiddity_name.c_str(), function_name.c_str(), args.size ());
@@ -461,21 +464,15 @@ namespace switcher
       }
     Quiddity::ptr quiddity = get_quiddity (quiddity_name);
 
-    int num_val = quiddity->method_get_num_value_args(function_name);
-    
+    //FIXME implement and use "quiddity->has_method(method_name)" 
+    int num_val = quiddity->method_get_num_value_args(method_name);
     if (num_val == -1) 
       {
-	g_debug ("function %s not found, cannot invoke",function_name.c_str());
+	g_warning ("method %s not found, cannot invoke",method_name.c_str());
 	return false;
       }
 
-    if ((int)args.size () != num_val)
-      {
-	g_warning ("invoking %s/%s, number of arguments does not match",quiddity_name.c_str(),function_name.c_str());
-	return false;
-      }
-
-    return quiddity->invoke_method (function_name, args);
+    return quiddity->invoke_method (method_name, args);
   } 
 
   std::string
