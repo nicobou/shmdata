@@ -48,6 +48,7 @@ namespace switcher
 
   private: 
     StringMap<int> media_counters_;
+
     //wraping c code:
     typedef enum GourpState_ {
       GROUP_TO_PLAYING = 0,
@@ -57,7 +58,7 @@ namespace switcher
     } GroupState;
     typedef struct
     {
-      GstElement *bin, *audiomixer, *videomixer;
+      GstElement *bin/*, *audiomixer, *videomixer*/;
       GroupState state;
       GHashTable *datastreams; 
       GAsyncQueue *commands;
@@ -85,6 +86,7 @@ namespace switcher
       //shifting timestamps for video
       GstClockTime timeshift; 
       GstClockTime lastpause;
+      GstElement *element_to_link_with;
     } Sample;
     
     Group *group_;
