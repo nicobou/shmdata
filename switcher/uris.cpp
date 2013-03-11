@@ -49,7 +49,7 @@ namespace switcher
     gst_object_ref (group_->bin);   
     gst_bin_add (GST_BIN (bin_), group_->bin);   
     // if (!gst_element_sync_state_with_parent (group_->bin)) 
-    //   g_warning ("create_group: pb sync bin state with parent\n"); 
+    //   g_warning ("create_group: pb sync bin state with parent"); 
     g_debug ("group created");
     group_->state = GROUP_PAUSED;    
     group_->user_data = this;
@@ -304,12 +304,12 @@ namespace switcher
      	gst_object_unref (queue_sinkpad);  
 	
      	if (!gst_element_sync_state_with_parent (queue))        
-     	  g_error ("pb syncing video datastream state\n");      
+     	  g_error ("pb syncing video datastream state");      
 	
      	//assuming object is an uridecodebin and get the uri    
      	gchar *uri;    
      	g_object_get (object,"uri",&uri,NULL);    
-     	g_debug ("new sample from uri: %s\n",uri);    
+     	g_debug ("new sample from uri: %s",uri);    
      	//adding sample to hash table   
      	g_hash_table_insert (group->datastreams,sample,uri); //FIXME clean hash    
 
@@ -342,7 +342,7 @@ namespace switcher
 	
 	gchar media_name[256];
 	g_sprintf (media_name,"%s_%d",padname_splitted[0],count);
-	g_debug ("uridecodebin: new media %s %d\n",media_name, count );
+	g_debug ("uridecodebin: new media %s %d",media_name, count );
 	g_strfreev(padname_splitted);
 	
 	//creating a shmdata
@@ -368,11 +368,11 @@ namespace switcher
       }
     else
       {
-	g_debug ("not handled data type: %s\n",padname);
+	g_debug ("not handled data type: %s",padname);
 	GstElement *fake = gst_element_factory_make ("fakesink", NULL);
 	gst_bin_add (GST_BIN (group->bin),fake);
 	if (!gst_element_sync_state_with_parent (fake))      
-	  g_warning ("pb syncing datastream state: %s\n",padname);
+	  g_warning ("pb syncing datastream state: %s",padname);
 	GstPad *fakepad = gst_element_get_static_pad (fake,"sink");
 	gst_pad_link (pad,fakepad);
 	gst_object_unref (fakepad);
@@ -425,19 +425,19 @@ namespace switcher
     if (g_async_queue_length (group->numTasks) != 0 )
       {
 	if (NULL == g_async_queue_try_pop (group->numTasks))
-	  g_debug ("warning: queue not poped.........................\n ");
+	  g_debug ("warning: queue not poped......................... ");
       
 	if (g_async_queue_length (group->numTasks) == 0 ) 
 	  { 
 	    if (group->state == GROUP_TO_PLAYING) 
 	      {
 		group->state = GROUP_PLAYING;  
-		g_debug ("back to playing state %p\n", &(group->state));
+		g_debug ("back to playing state %p", &(group->state));
 	      }
 	    else if (group->state == GROUP_TO_PAUSED) 
 	      {
 		group->state = GROUP_PAUSED;
-		g_message ("back to plaused state\n");
+		g_message ("back to plaused state");
 	      }
 
 	    GroupCommand *command = (GroupCommand *)g_async_queue_try_pop (group->commands);
@@ -453,7 +453,7 @@ namespace switcher
       }  
     else 
       {
-	g_debug ("nothing to do for changing the state\n");
+	g_debug ("nothing to do for changing the state");
       }
   }
 
@@ -515,7 +515,7 @@ namespace switcher
     Group *group = (Group *) user_data;
     
     if (gst_pad_is_linked (sample->bin_srcpad))
-      g_warning (".....................oups, already linked \n");
+      g_warning (".....................oups, already linked ");
     
     GstPad *peerpad;
     //trying video
@@ -544,16 +544,16 @@ namespace switcher
     Sample *sample = (Sample *) key;
     Group *group = (Group *) user_data;
     
-    g_debug ("group_unblock_datastream %p\n",sample->bin_srcpad);
+    g_debug ("group_unblock_datastream %p",sample->bin_srcpad);
  
     if (!gst_pad_is_blocked (sample->bin_srcpad) || !gst_pad_is_linked (sample->bin_srcpad))
       {
-	g_warning ("OOPS - trying to unblock a not blocked pad %p\n",sample->bin_srcpad);
+	g_warning ("OOPS - trying to unblock a not blocked pad %p",sample->bin_srcpad);
 	return;
       }
     if (!gst_pad_set_blocked_async (sample->bin_srcpad,FALSE,(GstPadBlockCallback)pad_blocked_cb,sample))
       {
-	g_debug  ("play_source: pb unblocking %p\n",sample->bin_srcpad);
+	g_debug  ("play_source: pb unblocking %p",sample->bin_srcpad);
       }
     group_try_change_state (sample->group);
   }
@@ -576,14 +576,14 @@ namespace switcher
 	if (g_hash_table_remove (sample->group->padtoblock,sample->bin_srcpad))
 	  {
 	    group_unlink_datastream ((gpointer)sample,NULL,NULL);
-	    g_debug ("XXX pad_blocked_cb %p\n",pad);
+	    g_debug ("XXX pad_blocked_cb %p",pad);
 	    group_try_change_state (sample->group);
 	  }
 	else
-	  g_debug ("pad_blocked_cb: cannot remove from hash pad to block %p\n",sample->bin_srcpad);
+	  g_debug ("pad_blocked_cb: cannot remove from hash pad to block %p",sample->bin_srcpad);
       }
     else
-      g_debug ("xxx pad unblocked %p\n",pad);
+      g_debug ("xxx pad unblocked %p",pad);
   }
   
   void
@@ -598,7 +598,7 @@ namespace switcher
   {
     if (!GST_IS_PAD (pad))
       {
-	g_warning ("(unlink_pad): trying to unlink something not a pad\n");
+	g_warning ("(unlink_pad): trying to unlink something not a pad");
 	return;
       }
     
@@ -606,7 +606,7 @@ namespace switcher
     if (GST_IS_PAD (peerpad))
       {
 	GstElement *peerpadparent = gst_pad_get_parent_element (peerpad);  
-	g_debug ("unlink returns %d\n",gst_pad_unlink (pad, peerpad));  
+	g_debug ("unlink returns %d",gst_pad_unlink (pad, peerpad));  
 	// give back the pad     
 	gst_element_release_request_pad (peerpadparent, peerpad);  
 	gst_object_unref (peerpad);  
@@ -624,7 +624,7 @@ namespace switcher
   gboolean    
   Uris::group_pause (Group *group)   
   {   
-    g_debug ("try to pause, state is %d\n",group->state);
+    g_debug ("try to pause, state is %d",group->state);
     
     switch ( group->state ) {
     case GROUP_PAUSED:
@@ -633,10 +633,10 @@ namespace switcher
       //group_queue_command (group,&group_pause_wrapped_for_commands,NULL);
       break;
     case GROUP_PLAYING:
-      g_debug ("*** group pause\n");
+      g_debug ("*** group pause");
       group->state = GROUP_TO_PAUSED;
       g_hash_table_foreach (group->datastreams,(GHFunc)group_add_task,group);
-      g_debug ("task added\n");
+      g_debug ("task added");
       g_hash_table_foreach (group->datastreams,(GHFunc)group_block_datastream_wrapped_for_hash,NULL);
       break;
     case GROUP_TO_PLAYING:
@@ -653,12 +653,12 @@ namespace switcher
   Uris::group_block_datastream_wrapped_for_hash (gpointer key, gpointer value, gpointer user_data)
   {
     Sample *sample = (Sample *) key;
-    g_debug ("group_block_datastream_wrapped_for_hash: called %p\n",sample->bin_srcpad);
+    g_debug ("group_block_datastream_wrapped_for_hash: called %p",sample->bin_srcpad);
     if (!gst_pad_is_blocked (sample->bin_srcpad))
       group_do_block_datastream (sample);
     else
       {
-	g_warning ("group_block_datastream_wrapped_for_hash: WARNING not blocking unblocked pad\n");
+	g_warning ("group_block_datastream_wrapped_for_hash: WARNING not blocking unblocked pad");
 	group_try_change_state (sample->group);
       }
   }
@@ -694,7 +694,7 @@ namespace switcher
   gboolean
   Uris::group_seek (Group *group)
   {
-    g_debug ("trying to seek, state %d\n",group->state);
+    g_debug ("trying to seek, state %d",group->state);
     
     switch ( group->state ) {
     case GROUP_TO_PAUSED:
@@ -706,7 +706,7 @@ namespace switcher
       return FALSE;
       break;
     case GROUP_PAUSED:
-      g_debug ("group_seek: GROUP_TO_PAUSED\n");
+      g_debug ("group_seek: GROUP_TO_PAUSED");
       group->state = GROUP_TO_PAUSED; //using PAUSED state for seeking
       break;
     case GROUP_PLAYING:
@@ -719,7 +719,7 @@ namespace switcher
       return FALSE;
       break;
     default:
-      g_warning ("unhandled state when seeking\n");
+      g_warning ("unhandled state when seeking");
       break;
     }
     group_do_group_seek (group);
@@ -729,7 +729,7 @@ namespace switcher
   void
   Uris::group_do_seek_datastream (Sample *sample)
   {
-    g_debug ("--------------: going to seek for a sample\n");
+    g_debug ("--------------: going to seek for a sample");
     // GstQuery *query;
     // gboolean res;
     // query = gst_query_new_segment (GST_FORMAT_TIME);
@@ -739,7 +739,7 @@ namespace switcher
     // gint64 stop_value = -2.0;
     // if (res) {
     //   gst_query_parse_segment (query, &rate, NULL, &start_value, &stop_value);
-    //   g_print ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n", 
+    //   g_debug ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"", 
     // 	       rate,
     // 	       GST_TIME_ARGS (start_value),
     // 	       GST_TIME_ARGS (stop_value));
@@ -766,28 +766,28 @@ namespace switcher
     // 		    GST_CLOCK_TIME_NONE);  
     
     if (!ret)
-      g_warning ("seek not handled\n");
+      g_warning ("seek not handled");
     
     /* //if the seek is performed with an unlinked pad, but not blocked,  */
     /* //data will flow entirely before being linked, so blocking here  */
     /* //in that case (call this function when blocked  */
     /* if (!gst_pad_is_blocked (sample->bin_srcpad)) */
     /*   { */
-    /*     g_print ("going to seek a not blocked pad! and unlinked pad\n"); */
+    /*     g_debug ("going to seek a not blocked pad! and unlinked pad"); */
     /*   } */
     
     gst_element_get_state (sample->seek_element,  
 			   NULL,  
 			   NULL,  
 			   GST_CLOCK_TIME_NONE);  
-    g_debug ("--------------: seek done for a sample\n");
+    g_debug ("--------------: seek done for a sample");
     group_try_change_state (sample->group);
   }
 
   void
   Uris::group_do_group_seek (Group *group)
   {
-    g_debug ("*** group_seek\n");
+    g_debug ("*** group_seek");
     group_add_task (NULL,NULL,group);
     g_hash_table_foreach (group->datastreams,(GHFunc)group_add_task,group);
     //g_hash_table_foreach (group->datastreams,(GHFunc)group_add_task,group);//counting duplicated blocked signals
@@ -803,7 +803,7 @@ namespace switcher
     command->group = group;
     command->arg = arg;
     g_async_queue_push_unlocked (group->commands,command);
-    g_debug ("-- queuing (unlocked) command\n");
+    g_debug ("-- queuing (unlocked) command");
   }
 
   gboolean
@@ -811,7 +811,7 @@ namespace switcher
   {
     Sample *sample = (Sample *)data;
     if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) { 
-      //g_print ("EOS caught and disabled \n");
+      //g_debug ("EOS caught and disabled ");
       g_debug ("pad with EOS %s:%s, pointer:%p src: %p %s",
 	       GST_DEBUG_PAD_NAME (pad),pad,GST_EVENT_SRC(event), gst_element_get_name (GST_EVENT_SRC(event)));
       if (sample->group->state != GROUP_PLAYING)
@@ -830,7 +830,7 @@ namespace switcher
     
       return FALSE; 
     }
-    //  g_print ("event received :%d\n",GST_EVENT_TYPE (event));
+    //  g_debug ("event received :%d",GST_EVENT_TYPE (event));
     return TRUE;
   }
 
