@@ -33,13 +33,11 @@ namespace switcher
     
     gst_bin_add_many (GST_BIN (bin_),
 		      audio_tee_,
-		      //audio_queue_,
 		      audioconvert_,
 		      pitch_,
 		      resample_,
 		      NULL);
     gst_element_link_many (audio_tee_,
-			   //audio_queue_,
 			   audioconvert_,
 			   pitch_,
 			   resample_,
@@ -61,7 +59,7 @@ namespace switcher
     gst_element_link (rawaudio_, audio_tee_);
 
     GstCaps *audiocaps = gst_caps_new_simple ("audio/x-raw-float",
-					      "width", G_TYPE_INT, 16,
+					      "width", G_TYPE_INT, 32,
      					      NULL);
     
     //creating a connector for raw audio
