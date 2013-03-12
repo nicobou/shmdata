@@ -44,6 +44,36 @@ namespace switcher
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
     GstUtils::wait_state_changed (pipeline_);
 
+    //registering play
+    register_method("play",
+		    (void *)&play_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
+		    (gpointer)this);
+    set_method_description ("play", 
+			    "activate the runtime", 
+			    Method::make_arg_description ("none",
+							  NULL));
+
+    //registering pause
+    register_method("pause",
+		    (void *)&pause_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
+		    (gpointer)this);
+    set_method_description ("pause", 
+			    "pause the runtime", 
+			    Method::make_arg_description ("none",
+							  NULL));
+
+    //registering seek
+    register_method("seek",
+		    (void *)&seek_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
+		    (gpointer)this);
+    set_method_description ("seek", 
+			    "seek the runtime", 
+			    Method::make_arg_description ("position",
+							  "position in milliseconds",
+							  NULL));
     return true;
   }
   
@@ -54,6 +84,101 @@ namespace switcher
     gst_object_unref (GST_OBJECT (pipeline_));
     g_debug ("runtime deleted");
   }
+
+  gboolean
+  Runtime::play_wrapped (gpointer unused, gpointer user_data)
+  {
+    Runtime *context = static_cast<Runtime *>(user_data);
+      
+    if (context->play ())
+      return TRUE;
+    else
+      return FALSE;
+  }
+  
+  bool
+  Runtime::play ()
+  {
+    g_debug ("Runtime::play");
+    gst_element_set_state (pipeline_, GST_STATE_PLAYING);
+    return true;
+  }
+  
+
+  gboolean
+  Runtime::pause_wrapped (gpointer unused, gpointer user_data)
+  {
+    Runtime *context = static_cast<Runtime *>(user_data);
+      
+    if (context->pause ())
+      return TRUE;
+    else
+      return FALSE;
+  }
+
+  bool
+  Runtime::pause ()
+  {
+    g_debug ("Runtime::pause");
+    gst_element_set_state (pipeline_, GST_STATE_PAUSED);
+    return true;
+  }
+  
+  gboolean
+  Runtime::seek_wrapped (gdouble position, gpointer user_data)
+  {
+    Runtime *context = static_cast<Runtime *>(user_data);
+      
+    g_debug ("seek_wrapped %f", position);
+
+    if (context->seek (position))
+      return TRUE;
+    else
+      return FALSE;
+  }
+
+  bool
+  Runtime::seek (gdouble position)
+  {
+    g_debug ("Runtime::seek %f", position);
+    GstQuery *query;
+    gboolean res;
+    query = gst_query_new_segment (GST_FORMAT_TIME);
+    res = gst_element_query (pipeline_, query);
+    gdouble rate = -2.0;
+    gint64 start_value = -2.0;
+    gint64 stop_value = -2.0;
+    if (res) {
+      gst_query_parse_segment (query, &rate, NULL, &start_value, &stop_value);
+      g_debug ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n", 
+	       rate,
+	       GST_TIME_ARGS (start_value),
+	       GST_TIME_ARGS (stop_value));
+    }
+    else {
+      g_warning ("duration query failed...");
+    }
+    gst_query_unref (query);
+  
+    gboolean ret;
+    ret = gst_element_seek (pipeline_,  
+			    rate,  
+			    GST_FORMAT_TIME,  
+			    (GstSeekFlags)(GST_SEEK_FLAG_FLUSH | 
+					   GST_SEEK_FLAG_ACCURATE), 
+			    //| GST_SEEK_FLAG_SKIP 
+			    //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization 
+			    GST_SEEK_TYPE_SET,  
+			    position * GST_MSECOND,  
+			    GST_SEEK_TYPE_NONE,  
+			    GST_CLOCK_TIME_NONE);  
+    
+  if (!ret)
+    g_print ("seek not handled\n");
+
+    return true;
+  }
+
 
   GstElement * 
   Runtime::get_pipeline ()

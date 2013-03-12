@@ -37,11 +37,15 @@ namespace switcher
       typedef std::shared_ptr<Runtime> ptr;
       ~Runtime ();
       bool init ();
+      bool play ();
+      bool pause ();
+      bool seek (gdouble position);
       QuiddityDocumentation get_documentation ();
       static QuiddityDocumentation doc_;
-
       GstElement *get_pipeline ();
-	
+      static gboolean play_wrapped (gpointer unused, gpointer user_data);
+      static gboolean pause_wrapped (gpointer unused, gpointer user_data);
+      static gboolean seek_wrapped (gdouble position, gpointer user_data);
     private:
       GstElement *pipeline_;
       static gboolean bus_called (GstBus *bus, GstMessage *msg, gpointer data); 

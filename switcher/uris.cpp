@@ -60,40 +60,42 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    (gpointer)this);
     set_method_description ("add_uri", 
-			    "add an uri to the group", 
+			    "add an uri to the group (the group is looping at the end of the first uri added)", 
 			    Method::make_arg_description ("uri", 
 							  "the uri to add",
 							  NULL));
 
     //registering play
-    register_method("play",
+    register_method("start",
 		    (void *)&play_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
 		    (gpointer)this);
-    set_method_description ("play", 
-			    "play the stream(s)", 
+    set_method_description ("start", 
+			    "start the stream(s)", 
 			    Method::make_arg_description ("none",
 							  NULL));
 
-    //registering pause
-    register_method("pause",
-		    (void *)&pause_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    (gpointer)this);
-    set_method_description ("pause", 
-			    "pause the stream(s)", 
-			    Method::make_arg_description ("none",
-							  NULL));
+    //using play pause seek from runtime
+    // //registering pause
+    // register_method("pause",
+    // 		    (void *)&pause_wrapped, 
+    // 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
+    // 		    (gpointer)this);
+    // set_method_description ("pause", 
+    // 			    "pause the stream(s)", 
+    // 			    Method::make_arg_description ("none",
+    // 							  NULL));
 
-    //registering seek
-    register_method("seek",
-		    (void *)&seek_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    (gpointer)this);
-    set_method_description ("seek", 
-			    "seek the stream(s)", 
-			    Method::make_arg_description ("none",
-							  NULL));
+    // //registering seek
+    // register_method("seek",
+    // 		    (void *)&seek_wrapped, 
+    // 		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
+    // 		    (gpointer)this);
+    // set_method_description ("seek", 
+    // 			    "seek the stream(s)", 
+    // 			    Method::make_arg_description ("position",
+    // 							  "position in milliseconds",
+    // 							  NULL));
     return true;
   }
   
@@ -161,21 +163,23 @@ namespace switcher
   }
   
   gboolean
-  Uris::seek_wrapped (gpointer unused, gpointer user_data)
+  Uris::seek_wrapped (gdouble position, gpointer user_data)
   {
     Uris *context = static_cast<Uris *>(user_data);
       
-    if (context->seek ())
+    g_debug ("seek_wrapped %f", position);
+
+    if (context->seek (position))
       return TRUE;
     else
       return FALSE;
   }
 
   bool
-  Uris::seek ()
+  Uris::seek (gdouble position)
   {
-    g_debug ("seek");
-    group_seek (group_);
+    g_debug ("seek %f", position);
+    group_seek (group_, position);
     return true;
   }
   
@@ -272,12 +276,17 @@ namespace switcher
 	
      	GstElement *queue = gst_element_factory_make ("queue",NULL);  
      	sample->seek_element = queue;  
-	
+
      	/* add to the bin */     
-     	gst_bin_add (GST_BIN (group->bin), queue);     
-	
+     	gst_bin_add_many (GST_BIN (group->bin), 
+			  // continuous_stream,
+			  // identity, 
+			  queue,
+			  NULL);     
+	// gst_element_link (continuous_stream, identity);
+	// gst_element_link (identity, queue);
+
      	GstPad *queue_srcpad = gst_element_get_static_pad (queue, "src");   
-	
      	sample->bin_srcpad = gst_ghost_pad_new (NULL, queue_srcpad);     
      	group_do_block_datastream (sample);
      	//gst_pad_set_blocked_async (sample->bin_srcpad,TRUE,pad_blocked_cb,sample);     
@@ -305,7 +314,7 @@ namespace switcher
 	
      	if (!gst_element_sync_state_with_parent (queue))        
      	  g_error ("pb syncing video datastream state");      
-	
+
      	//assuming object is an uridecodebin and get the uri    
      	gchar *uri;    
      	g_object_get (object,"uri",&uri,NULL);    
@@ -314,19 +323,39 @@ namespace switcher
      	g_hash_table_insert (group->datastreams,sample,uri); //FIXME clean hash    
 
 	//making a shmdata:
+	// GstElement *identity;
+	// GstUtils::make_element ("identity", &identity);
+	// g_object_set (identity, 
+	// 	      "sync", TRUE, 
+	// 	      "single-segment", TRUE,
+	// 	      NULL);
+	GstElement *funnel;
+	GstUtils::make_element ("funnel", &funnel);
+	GstElement *continuous_stream;
+	if (g_str_has_prefix (padname, "video/"))
+	  {
+	    GstUtils::make_element ("videomixer2", &continuous_stream);
+	    //g_object_set (G_OBJECT (continuous_stream), "force-fps", 30, 1, NULL);
+	  }
+	else
+	  GstUtils::make_element ("identity", &continuous_stream);
 	GstElement *identity;
 	GstUtils::make_element ("identity", &identity);
 	g_object_set (identity, 
 		      "sync", TRUE, 
 		      "single-segment", TRUE,
 		      NULL);
-	GstElement *funnel;
-	GstUtils::make_element ("funnel", &funnel);
 
-	gst_bin_add_many (GST_BIN (context->bin_), identity, funnel, NULL);
-	//GstUtils::link_static_to_request (pad, funnel);
-	gst_element_link (funnel, identity);
+
+	gst_bin_add_many (GST_BIN (context->bin_), 
+			  continuous_stream,
+			  identity,
+			  funnel, 
+			  NULL);
+	gst_element_link (funnel, continuous_stream);
+	gst_element_link (continuous_stream, identity);
 	GstUtils::sync_state_with_parent (identity);
+	GstUtils::sync_state_with_parent (continuous_stream);
 	GstUtils::sync_state_with_parent (funnel);
 
 	//giving a name to the stream
@@ -583,7 +612,9 @@ namespace switcher
 	  g_debug ("pad_blocked_cb: cannot remove from hash pad to block %p",sample->bin_srcpad);
       }
     else
-      g_debug ("xxx pad unblocked %p",pad);
+      {
+	g_debug ("xxx pad unblocked %p",pad);
+      }
   }
   
   void
@@ -688,14 +719,16 @@ namespace switcher
   Uris::group_seek_wrapped_for_commands (gpointer user_data, gpointer user_data2)
   {
     Group *group = (Group *) user_data;
-    return group_seek (group);
+    return group_seek (group, group->seek_position);
   }
 
   gboolean
-  Uris::group_seek (Group *group)
+  Uris::group_seek (Group *group, gdouble position)
   {
     g_debug ("trying to seek, state %d",group->state);
     
+    group->seek_position = position;
+
     switch ( group->state ) {
     case GROUP_TO_PAUSED:
       group_queue_command (group, (gpointer)&group_seek_wrapped_for_commands, NULL);
@@ -753,17 +786,16 @@ namespace switcher
     //FIXME get a position for seeking
     
     gboolean ret;
-    ret = TRUE;// gst_element_seek (sample->seek_element,  
-    // 		    1.0,  
-    // 		    GST_FORMAT_TIME,  
-    // 		    GST_SEEK_FLAG_FLUSH 
-    // 		    | GST_SEEK_FLAG_ACCURATE, 
-    // 		    //| GST_SEEK_FLAG_SKIP 
-    // 		    //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization 
-    // 		    GST_SEEK_TYPE_SET,  
-    // 		    310.0 * GST_SECOND,  
-    // 		    GST_SEEK_TYPE_NONE,  
-    // 		    GST_CLOCK_TIME_NONE);  
+    ret = gst_element_seek (sample->seek_element,  
+			    (gdouble)1.0,  
+			    GST_FORMAT_TIME,  
+			    (GstSeekFlags)(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE), 
+			    //| GST_SEEK_FLAG_SKIP 
+			    //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization 
+			    GST_SEEK_TYPE_SET,  
+			    sample->group->seek_position * GST_SECOND,  
+			    GST_SEEK_TYPE_NONE,  
+			    GST_CLOCK_TIME_NONE);  
     
     if (!ret)
       g_warning ("seek not handled");
@@ -830,7 +862,7 @@ namespace switcher
     
       return FALSE; 
     }
-    //  g_debug ("event received :%d",GST_EVENT_TYPE (event));
+    g_debug ("event received :%d",GST_EVENT_TYPE (event));
     return TRUE;
   }
 

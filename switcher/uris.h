@@ -37,14 +37,14 @@ namespace switcher
     bool add_uri (std::string uri);
     bool play ();
     bool pause ();
-    bool seek ();
+    bool seek (gdouble position);
     QuiddityDocumentation get_documentation ();
     static QuiddityDocumentation doc_;
 
     static gboolean add_uri_wrapped (gpointer uri, gpointer user_data);
     static gboolean play_wrapped (gpointer unused, gpointer user_data);
     static gboolean pause_wrapped (gpointer unused, gpointer user_data);
-    static gboolean seek_wrapped (gpointer unused, gpointer user_data);
+    static gboolean seek_wrapped (gdouble position, gpointer user_data);
 
   private: 
     StringMap<int> media_counters_;
@@ -68,6 +68,7 @@ namespace switcher
       // and unlocking new command
       GAsyncQueue *numTasks; 
       GHashTable *padtoblock; 
+      double seek_position;
       gpointer user_data; //this
     } Group;
     typedef struct 
@@ -93,7 +94,7 @@ namespace switcher
     static void group_add_uri (Group *group, const char *uri);
     static gboolean group_play (Group *group);
     static gboolean group_pause (Group *group);
-    static gboolean group_seek (Group *group);
+    static gboolean group_seek (Group *group, gdouble position);
     static void uridecodebin_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
     static void uridecodebin_no_more_pads_cb (GstElement* object, gpointer user_data);
     static void uridecodebin_drained_cb (GstElement* object, gpointer user_data);
