@@ -150,7 +150,7 @@ namespace switcher
     gint64 stop_value = -2.0;
     if (res) {
       gst_query_parse_segment (query, &rate, NULL, &start_value, &stop_value);
-      g_debug ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n", 
+      g_debug ("rate = %f start = %" GST_TIME_FORMAT" stop = %" GST_TIME_FORMAT"\n", 
 	       rate,
 	       GST_TIME_ARGS (start_value),
 	       GST_TIME_ARGS (stop_value));
