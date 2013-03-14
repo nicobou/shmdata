@@ -47,7 +47,7 @@ namespace switcher
     GValue transformed_val = G_VALUE_INIT;
     g_value_init (&transformed_val, property_->value_type);
 
-    if ( !gst_value_deserialize (&transformed_val,value.c_str()))
+    if (!gst_value_deserialize (&transformed_val,value.c_str()))
       g_debug ("string not transformable into gvalue ");
     
     g_object_set_property (object_,

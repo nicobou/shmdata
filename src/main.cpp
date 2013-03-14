@@ -22,6 +22,8 @@
 #include <signal.h>
 #include <time.h>
 
+#include "switcher/gobject-wrapper.h"
+
 static gchar *server_name = NULL;
 static gchar *port_number = NULL;
 static gboolean quiet;
@@ -170,7 +172,7 @@ main (int argc,
     port_number = "8080";
 
 
-  
+
   {
     //using context in order to let excluse ownership of manager by the container,
     //allowing to properly call destructor when SIGINT
@@ -191,6 +193,11 @@ main (int argc,
      std::vector<std::string> arg;
      arg.push_back ("pipeline0");
      manager->auto_invoke ("set_runtime",arg);
+
+       switcher::GObjectWrapper *truc = new switcher::GObjectWrapper ();
+       delete truc;
+
+
   }
 
   //waiting for end of life

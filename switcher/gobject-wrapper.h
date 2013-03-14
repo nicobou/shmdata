@@ -42,21 +42,21 @@ namespace switcher
   private:
     struct _MyObject *my_object_;
 
-    static GType my_object_get_type (void); 
-    static void my_object_set_foo (struct _MyObject *obj, gint foo); 
-    static void my_object_set_bar (struct _MyObject *obj, gboolean bar); 
-    static void my_object_set_baz (struct _MyObject *obj, const gchar *baz); 
-    static void my_object_finalize (GObject *gobject); 
-    static void my_object_set_property (GObject *gobject, 
-     					guint prop_id, 
-     					const GValue *value, 
-     					GParamSpec *pspec); 
-    static void my_object_get_property (GObject *gobject, 
-     					guint prop_id, 
-     					GValue *value, 
-     					GParamSpec *pspec); 
-    static void my_object_class_init (struct _MyObjectClass *klass); 
-    static void my_object_init (struct _MyObject *self);
+    //    static GType my_object_get_type (void); 
+    /* static void my_object_set_foo (struct _MyObject *obj, gint foo);  */
+    /* static void my_object_set_bar (struct _MyObject *obj, gboolean bar);  */
+    /* static void my_object_set_baz (struct _MyObject *obj, const gchar *baz);  */
+    /* static void my_object_finalize (GObject *gobject);  */
+    /* static void my_object_set_property (GObject *gobject,  */
+    /*  					guint prop_id,  */
+    /*  					const GValue *value,  */
+    /*  					GParamSpec *pspec);  */
+    /* static void my_object_get_property (GObject *gobject,  */
+    /*  					guint prop_id,  */
+    /*  					GValue *value,  */
+    /*  					GParamSpec *pspec);  */
+    //static void my_object_class_init (struct _MyObjectClass *klass); 
+    //static void my_object_init (struct _MyObject *self);
   };
 
 }  // end of namespace

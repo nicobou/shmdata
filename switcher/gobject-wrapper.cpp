@@ -26,6 +26,9 @@
 namespace switcher
 {
 
+
+
+  //gobject
   typedef struct _MyObject {
     GObject parent_instance;
     gint foo;
@@ -41,41 +44,22 @@ namespace switcher
   enum { PROP_0, PROP_FOO, PROP_BAR, PROP_BAZ, N_PROPERTIES };
   static GParamSpec *properties[N_PROPERTIES] = { NULL, };
   G_DEFINE_TYPE (MyObject, my_object, G_TYPE_OBJECT);
-  
 
-  GObjectWrapper::GObjectWrapper ()
-  {
-    my_object_ = (MyObject *)g_object_new (my_object_get_type (), NULL);
-    GParamSpec *pspec;
-
-    pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (my_object_), "foo");
-
-    gint val;
-    g_object_get (my_object_, "foo", &val, NULL);
-    g_print ("foo: %d\n", val);
-    g_object_set (my_object_, "foo", 47, NULL);
-    g_object_get (my_object_, "foo", &val, NULL);
-    g_print ("foo: %d\n", val);
-  }
-  
-  GObjectWrapper::~GObjectWrapper ()
-  {
-    g_object_unref (my_object_);
-  }
-  
-  void
-  GObjectWrapper::my_object_set_foo (MyObject *obj,
-				     gint foo)
+  static void
+  my_object_set_foo (MyObject *obj,
+		     gint foo)
   {
     if (obj->foo != foo)
       {
 	obj->foo = foo;
-	g_object_notify_by_pspec (G_OBJECT (obj), properties[PROP_FOO]);
+	//g_object_notify_by_pspec (G_OBJECT (obj), properties[PROP_FOO]);
+	g_object_notify_by_pspec (G_OBJECT (obj), 
+				  g_object_class_find_property (G_OBJECT_GET_CLASS (obj), "coucou"));
       }
   }
   
-  void
-  GObjectWrapper::my_object_set_bar (MyObject *obj,
+  static void
+  my_object_set_bar (MyObject *obj,
 				     gboolean bar)
   {
     bar = !!bar;
@@ -86,8 +70,8 @@ namespace switcher
       }
   }
   
-  void
-  GObjectWrapper::my_object_set_baz (MyObject  *obj,
+  static void
+  my_object_set_baz (MyObject  *obj,
 				     const gchar *baz)
   {
     if (g_strcmp0 (obj->baz, baz) != 0)
@@ -98,95 +82,140 @@ namespace switcher
       }
   }
   
-  void
-  GObjectWrapper::my_object_finalize (GObject *gobject)
+  static void
+  my_object_finalize (GObject *gobject)
   {
     g_free (((MyObject *) gobject)->baz);
     G_OBJECT_CLASS (my_object_parent_class)->finalize (gobject);
   }
   
-  void
-  GObjectWrapper::my_object_set_property (GObject *gobject,
-					  guint prop_id,
-					  const GValue *value,
-					  GParamSpec *pspec)
+  static void
+  my_object_set_property (GObject *gobject,
+			  guint prop_id,
+			  const GValue *value,
+			  GParamSpec *pspec)
   {
-    MyObject *tobj = (MyObject *) gobject;
+    MyObject *myobj = (MyObject *) gobject;
     
     switch (prop_id)
       {
       case PROP_FOO:
-	my_object_set_foo (tobj, g_value_get_int (value));
+	my_object_set_foo (myobj, g_value_get_int (value));
 	break;
 	
       case PROP_BAR:
-	my_object_set_bar (tobj, g_value_get_boolean (value));
+	my_object_set_bar (myobj, g_value_get_boolean (value));
 	break;
 	
       case PROP_BAZ:
-	my_object_set_baz (tobj, g_value_get_string (value));
+	my_object_set_baz (myobj, g_value_get_string (value));
 	break;
-	
+
+      case 666:
+	my_object_set_foo (myobj, g_value_get_int (value));
+	break;
+
       default:
-	g_warning ("set_property: property not found");
+	g_warning ("set_property: property not found %d", prop_id);
       }
   }
   
-   void
-   GObjectWrapper::my_object_get_property (GObject *gobject,
-   					  guint prop_id,
-   					  GValue *value,
-   					  GParamSpec *pspec)
+   static void
+   my_object_get_property (GObject *gobject,
+			   guint prop_id,
+			   GValue *value,
+			   GParamSpec *pspec)
    {
-     MyObject *tobj = (MyObject *) gobject;
-    
+     MyObject *myobj = (MyObject *) gobject;
+     
      switch (prop_id)
        {
        case PROP_FOO:
-   	g_value_set_int (value, tobj->foo);
+	 g_value_set_int (value, myobj->foo);
    	break;
 	
        case PROP_BAR:
-   	g_value_set_boolean (value, tobj->bar);
+	 g_value_set_boolean (value, myobj->bar);
    	break;
 	
        case PROP_BAZ:
-   	g_value_set_string (value, tobj->baz);
+	 g_value_set_string (value, myobj->baz);
    	break;
-	
+
+	case 666:
+	 g_value_set_int (value, myobj->foo);
+   	break;
+
        default:
-   	g_warning ("get_property: property not found");
+	 g_warning ("get_property: property not found %d", prop_id);
        }
    }
 
-  void
-  GObjectWrapper::my_object_class_init (MyObjectClass *klass)
-  {
-    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-    
-    properties[PROP_FOO] = g_param_spec_int ("foo", "Foo", "Foo",
-					     -1, G_MAXINT,
-					     0,
-					     (GParamFlags)G_PARAM_READWRITE);
-    properties[PROP_BAR] = g_param_spec_boolean ("bar", "Bar", "Bar",
-						 FALSE,
-						 (GParamFlags)G_PARAM_READWRITE);
-    properties[PROP_BAZ] = g_param_spec_string ("baz", "Baz", "Baz",
-						NULL,
-						(GParamFlags)G_PARAM_READWRITE);
-    
-    gobject_class->set_property = my_object_set_property;
-    gobject_class->get_property = my_object_get_property;
-    gobject_class->finalize = my_object_finalize;
-    
-    g_object_class_install_properties (gobject_class, N_PROPERTIES, properties);
-  }
+ static void
+ my_object_class_init (MyObjectClass *klass)
+ {
+   GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
+   
+   // properties[PROP_FOO] = g_param_spec_int ("foo", "Foo", "Foo",
+   // 					    -1, G_MAXINT,
+   // 					    0,
+   // 					    (GParamFlags)G_PARAM_READWRITE);
+   // properties[PROP_BAR] = g_param_spec_boolean ("bar", "Bar", "Bar",
+   // 						FALSE,
+   // 						(GParamFlags)G_PARAM_READWRITE);
+   // properties[PROP_BAZ] = g_param_spec_string ("baz", "Baz", "Baz",
+   // 					       NULL,
+   // 					       (GParamFlags)G_PARAM_READWRITE);
+   
+   gobject_class->set_property = my_object_set_property;
+   gobject_class->get_property = my_object_get_property;
+   gobject_class->finalize = my_object_finalize;
+   
+   //   g_object_class_install_properties (gobject_class, N_PROPERTIES, properties);
+ }
   
-  void
-  GObjectWrapper::my_object_init (MyObject *self)
+  static void 
+  my_object_init (MyObject *self)
   {
     self->foo = 42;
     self->bar = TRUE;
     self->baz = g_strdup ("Hello");
   }
-}
+
+  // cpp class
+  GObjectWrapper::GObjectWrapper ()
+  {
+    my_object_ = (MyObject *)g_object_new (my_object_get_type (), NULL);
+    GParamSpec *pspec;
+
+    // pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (my_object_), "foo");
+
+    gint val;
+    // g_object_get (my_object_, "foo", &val, NULL);
+    // g_print ("foo: %d\n", val);
+    // g_object_set (my_object_, "foo", 47, NULL);
+    // g_object_get (my_object_, "foo", &val, NULL);
+    // g_print ("foo: %d\n", val);
+
+    GParamSpec *myparam = g_param_spec_int ("coucou", "hey", "truc",
+					     -1, G_MAXINT,
+					     0,
+					     (GParamFlags)G_PARAM_READWRITE);
+    g_object_class_install_property (G_OBJECT_GET_CLASS (my_object_),
+				     (guint)666,
+				     myparam);
+
+    g_object_get (my_object_, "coucou", &val, NULL);
+    g_print ("coucou: %d\n", val);
+    g_object_set (my_object_, "coucou", 666, NULL);
+    g_object_get (my_object_, "coucou", &val, NULL);
+    g_print ("coucou: %d\n", val);
+  }
+  
+  GObjectWrapper::~GObjectWrapper ()
+  {
+    g_object_unref (my_object_);
+  }
+
+
+ }
