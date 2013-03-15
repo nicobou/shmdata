@@ -194,9 +194,33 @@ main (int argc,
      arg.push_back ("pipeline0");
      manager->auto_invoke ("set_runtime",arg);
 
-       switcher::GObjectWrapper *truc = new switcher::GObjectWrapper ();
-       delete truc;
-
+       
+     GParamspec *heu1 = 
+       switcher::GObjectWrapper::make_int_property ("heuuu", 
+						    "ba heu c'est eux",
+						    0,
+						    10,
+						    1,
+						    (GParamFlags)G_PARAM_READWRITE,
+						    NULL,
+						    NULL);
+     
+     GParamspec *heu2 = 
+       switcher::GObjectWrapper::make_int_property ("heuuu", 
+						    "AAAAAAAAba heu c'est eux",
+						    0,
+						    10,
+						    1,
+						    (GParamFlags) G_PARAM_READWRITE,
+						    NULL,
+						    NULL);
+     
+     switcher::GObjectWrapper *truc = new switcher::GObjectWrapper ();
+     //IMPlEMENTER set et get methods dans gobjecxt_wrapper
+     
+     
+     delete truc;
+     
 
   }
 

@@ -22,7 +22,7 @@
 #define __SWITCHER_GOBJECT_WRAPPER_H__
 
 #include <memory>
-#include <vector>
+#include <map>
 #include <string>
 #include <glib-object.h>
 #include "switcher/gobject-custom-property.h"
@@ -39,30 +39,32 @@ namespace switcher
     GObjectWrapper ();
     ~GObjectWrapper ();
 
-    bool install_int_property (std::string nickname, 
-			       std::string description);
-  
+    // useg g_object_notify_by_pspec when changing the property 
+    // from inside your class
+    GObject *get_gobject ();
 
+    static 
+      GParamSpec *make_int_property (const gchar *nickname, 
+				     const gchar *description,
+				     gint min_value,
+				     gint max_value,
+				     gint default_value,
+				     GParamFlags read_write_flags,
+				     GObjectCustomProperty::set_method_pointer set_method,
+				     GObjectCustomProperty::get_method_pointer get_method);
+    
+    static
+      GParamSpec *make_string_property (const gchar *nickname, 
+					const gchar *description,
+					const gchar *default_value,
+					GParamFlags read_write_flags,
+					GObjectCustomProperty::set_method_pointer set_method,
+					GObjectCustomProperty::get_method_pointer get_method);
+      
   private:
     struct _MyObject *my_object_;
-    std::vector<GObjectCustomProperty::ptr> custom_properties_;
-    static int next_prop_id_;
-
-    //    static GType my_object_get_type (void); 
-    /* static void my_object_set_foo (struct _MyObject *obj, gint foo);  */
-    /* static void my_object_set_bar (struct _MyObject *obj, gboolean bar);  */
-    /* static void my_object_set_baz (struct _MyObject *obj, const gchar *baz);  */
-    /* static void my_object_finalize (GObject *gobject);  */
-    /* static void my_object_set_property (GObject *gobject,  */
-    /*  					guint prop_id,  */
-    /*  					const GValue *value,  */
-    /*  					GParamSpec *pspec);  */
-    /* static void my_object_get_property (GObject *gobject,  */
-    /*  					guint prop_id,  */
-    /*  					GValue *value,  */
-    /*  					GParamSpec *pspec);  */
-    //static void my_object_class_init (struct _MyObjectClass *klass); 
-    //static void my_object_init (struct _MyObject *self);
+    static std::map<guint, GObjectCustomProperty::ptr> custom_properties_;
+    static guint next_prop_id_;
   };
 
 }  // end of namespace

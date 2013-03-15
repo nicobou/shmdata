@@ -22,11 +22,11 @@
  */
 
 #include "switcher/gobject-wrapper.h"
+#include <glib/gprintf.h>
+
 
 namespace switcher
 {
-
-
 
   //gobject
   typedef struct _MyObject {
@@ -60,7 +60,7 @@ namespace switcher
   
   static void
   my_object_set_bar (MyObject *obj,
-				     gboolean bar)
+		     gboolean bar)
   {
     bar = !!bar;
     if (obj->bar != bar)
@@ -182,9 +182,10 @@ namespace switcher
     self->baz = g_strdup ("Hello");
   }
 
-  // ---------------------------------- CPP CLASS ---------------------------------------
-
-  int GObjectWrapper::next_prop_id_ = 79; 
+  // ---------------------------------- CPP CLASS ----------------------------
+  //property id 0 is not allowed, starting at 1 
+  guint GObjectWrapper::next_prop_id_ = 1; 
+  std::map<guint, GObjectCustomProperty::ptr> GObjectWrapper::custom_properties_;
 
   GObjectWrapper::GObjectWrapper ()
   {
@@ -193,39 +194,118 @@ namespace switcher
 
     // pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (my_object_), "foo");
 
-    gint val;
+    // gint val;
     // g_object_get (my_object_, "foo", &val, NULL);
     // g_print ("foo: %d\n", val);
     // g_object_set (my_object_, "foo", 47, NULL);
     // g_object_get (my_object_, "foo", &val, NULL);
     // g_print ("foo: %d\n", val);
 
-    GParamSpec *myparam = g_param_spec_int ("coucou", "hey", "truc",
-					     -1, G_MAXINT,
-					     0,
-					     (GParamFlags)G_PARAM_READWRITE);
-    g_object_class_install_property (G_OBJECT_GET_CLASS (my_object_),
-				     (guint)6,
-				     myparam);
+    // GParamSpec *myparam = g_param_spec_int ("coucou", "hey", "truc",
+    // 					     -1, G_MAXINT,
+    // 					     0,
+    // 					     (GParamFlags)G_PARAM_READWRITE);
+    // g_object_class_install_property (G_OBJECT_GET_CLASS (my_object_),
+    // 				     (guint)6,
+    // 				     myparam);
 
-    g_object_get (my_object_, "coucou", &val, NULL);
-    g_print ("coucou: %d\n", val);
-    g_object_set (my_object_, "coucou", 6, NULL);
-    g_object_get (my_object_, "coucou", &val, NULL);
-    g_print ("coucou: %d\n", val);
+    // g_object_get (my_object_, "coucou", &val, NULL);
+    // g_print ("coucou: %d\n", val);
+    // g_object_set (my_object_, "coucou", 6, NULL);
+    // g_object_get (my_object_, "coucou", &val, NULL);
+    // g_print ("coucou: %d\n", val);
   }
   
-  bool 
-  GObjectWrapper::install_int_property (std::string nickname, 
-					std::string description)
+  //TODO provide other make_..._property for other types
+  //set_method and get_method must be static
+  GParamSpec * 
+  GObjectWrapper::make_int_property (const gchar *nickname, 
+				     const gchar *description,
+				     gint min_value,
+				     gint max_value,
+				     gint default_value,
+				     GParamFlags read_write_flags,
+				     GObjectCustomProperty::set_method_pointer set_method,
+				     GObjectCustomProperty::get_method_pointer get_method)
   {
-    
-    
+    guint prop_id = next_prop_id_;
     next_prop_id_++;
+
+    gchar *name = g_strdup_printf ("customprop%d", prop_id);
+    g_debug ("custom property internal name %s\n", name);
+
+    GParamSpec *param = g_param_spec_int (name, 
+					  nickname, 
+					  description,
+					  min_value, 
+					  max_value,
+					  default_value,
+					  read_write_flags);
+    
+    GObjectCustomProperty::ptr property =  
+      GObjectCustomProperty::make_custom_property (nickname,
+						   description,
+						   param,
+						   set_method,
+						   get_method);
+    
+    custom_properties_[prop_id] = property;
+    
+    //TODO find a way to get CLASS without instanciating an unused object
+    MyObject *obj = (MyObject *)g_object_new (my_object_get_type (), NULL);
+    g_object_class_install_property (G_OBJECT_GET_CLASS (obj),
+				     prop_id,
+				     param);
+    g_object_unref (obj);
+    return param;
   }
   
+  //set_method and get_method must be static
+  GParamSpec * 
+  GObjectWrapper::make_string_property (const gchar *nickname, 
+					const gchar *description,
+					const gchar *default_value,
+					GParamFlags read_write_flags,
+					GObjectCustomProperty::set_method_pointer set_method,
+					GObjectCustomProperty::get_method_pointer get_method)
+  {
+    guint prop_id = next_prop_id_;
+    next_prop_id_++;
+    
+    gchar *name = g_strdup_printf ("customprop%d", prop_id);
+    g_debug ("custom property internal name %s", name);
+    
+    GParamSpec *param = g_param_spec_string (name,
+					     nickname,
+					     description,
+					     default_value,
+					     read_write_flags);
+
+  GObjectCustomProperty::ptr property =  
+    GObjectCustomProperty::make_custom_property (nickname,
+						 description,
+						 param,
+						 set_method,
+						 get_method);
+  
+  custom_properties_[prop_id] = property;
+  
+  //TODO find a way to get CLASS without instanciating an unused object
+  MyObject *obj = (MyObject *)g_object_new (my_object_get_type (), NULL);
+  g_object_class_install_property (G_OBJECT_GET_CLASS (obj),
+				   prop_id,
+				   param);
+  g_object_unref (obj);
+  return param;
+}
 
 
+  GObject *
+  GObjectWrapper::get_gobject ()
+  {
+    return G_OBJECT (my_object_);
+  }
+  
   GObjectWrapper::~GObjectWrapper ()
   {
     g_object_unref (my_object_);

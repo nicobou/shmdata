@@ -21,9 +21,46 @@
 
 namespace switcher
 {
-  
-  GObjectCustomProperty::~GObjectCustomProperty ()
+  GObjectCustomProperty::GObjectCustomProperty ()
   {
   }
 
+  
+  GObjectCustomProperty::~GObjectCustomProperty ()
+  {
+    if (nickname_ != NULL)
+      g_free (nickname_);
+    if (description_ != NULL)
+      g_free (description_);
+  }
+
+  GObjectCustomProperty::ptr
+  GObjectCustomProperty::make_custom_property (const char *nickname,
+					       const char *description,
+					       GParamSpec *param_spec,
+					       set_method_pointer set_method,
+					       get_method_pointer get_method)
+  {
+    GObjectCustomProperty::ptr custom_prop(new GObjectCustomProperty);
+    custom_prop->set_members (nickname,
+			      description,
+			      param_spec,
+			      set_method,
+			      get_method);
+    return custom_prop;
+  }
+  
+  void
+  GObjectCustomProperty::set_members (const char *nickname,
+				      const char *description,
+				      GParamSpec *param_spec,
+				      set_method_pointer set_method,
+				      get_method_pointer get_method)
+  {
+    nickname_ = g_strdup (nickname);
+    description_= g_strdup (description);
+    param_spec_ = param_spec;
+    set_method_ = set_method;
+    get_method_ = get_method;
+  }
 }

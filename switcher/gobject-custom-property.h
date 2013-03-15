@@ -22,6 +22,8 @@
 #define __SWITCHER_GOBJECT_CUSTOM_PROPERTY_H__
 
 #include <memory>
+#include <string>
+#include <glib-object.h>
 
 namespace switcher
 {
@@ -29,7 +31,29 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<GObjectCustomProperty> ptr;
+    typedef bool (*set_method_pointer) (GValue *val, void *user_data);
+    typedef bool (*get_method_pointer) (GValue *val, void *user_data);
     ~GObjectCustomProperty ();
+    
+    static GObjectCustomProperty::ptr 
+      make_custom_property (const char *nickname,
+			    const char *description,
+			    GParamSpec *param_spec,
+			    set_method_pointer set_method,
+			    get_method_pointer get_method);
+    
+  private:
+    GObjectCustomProperty ();
+    void set_members (const char *nickname,
+		      const char *description,
+		      GParamSpec *param_spec,
+		      set_method_pointer set_method,
+		      get_method_pointer get_method);
+    gchar *nickname_;
+    gchar *description_;
+    GParamSpec *param_spec_;
+    set_method_pointer set_method_;
+    get_method_pointer get_method_;
   };
 }  // end of namespace
 
