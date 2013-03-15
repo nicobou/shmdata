@@ -111,7 +111,7 @@ namespace switcher
 	my_object_set_baz (myobj, g_value_get_string (value));
 	break;
 
-      case 666:
+      case 6:
 	my_object_set_foo (myobj, g_value_get_int (value));
 	break;
 
@@ -142,7 +142,7 @@ namespace switcher
 	 g_value_set_string (value, myobj->baz);
    	break;
 
-	case 666:
+	case 6:
 	 g_value_set_int (value, myobj->foo);
    	break;
 
@@ -182,7 +182,10 @@ namespace switcher
     self->baz = g_strdup ("Hello");
   }
 
-  // cpp class
+  // ---------------------------------- CPP CLASS ---------------------------------------
+
+  int GObjectWrapper::next_prop_id_ = 79; 
+
   GObjectWrapper::GObjectWrapper ()
   {
     my_object_ = (MyObject *)g_object_new (my_object_get_type (), NULL);
@@ -202,16 +205,27 @@ namespace switcher
 					     0,
 					     (GParamFlags)G_PARAM_READWRITE);
     g_object_class_install_property (G_OBJECT_GET_CLASS (my_object_),
-				     (guint)666,
+				     (guint)6,
 				     myparam);
 
     g_object_get (my_object_, "coucou", &val, NULL);
     g_print ("coucou: %d\n", val);
-    g_object_set (my_object_, "coucou", 666, NULL);
+    g_object_set (my_object_, "coucou", 6, NULL);
     g_object_get (my_object_, "coucou", &val, NULL);
     g_print ("coucou: %d\n", val);
   }
   
+  bool 
+  GObjectWrapper::install_int_property (std::string nickname, 
+					std::string description)
+  {
+    
+    
+    next_prop_id_++;
+  }
+  
+
+
   GObjectWrapper::~GObjectWrapper ()
   {
     g_object_unref (my_object_);

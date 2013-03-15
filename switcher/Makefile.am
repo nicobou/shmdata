@@ -28,6 +28,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     decodebin2.cpp \
     deinterleave.cpp \
     file-sdp.cpp \
+    gobject-custom-property.cpp \
     gobject-wrapper.cpp \
     gst-element-cleaner.cpp \
     gst-parse-to-bin-src.cpp \
@@ -90,6 +91,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     decodebin2.h \
     deinterleave.h \
     file-sdp.h \
+    gobject-custom-property.h \
     gobject-wrapper.h \
     gst-element-cleaner.h \
     gst-parse-to-bin-src.h \

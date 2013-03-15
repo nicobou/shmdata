@@ -21,12 +21,11 @@
 #ifndef __SWITCHER_GOBJECT_WRAPPER_H__
 #define __SWITCHER_GOBJECT_WRAPPER_H__
 
-#include <gst/gst.h>
 #include <memory>
-#include <map>
+#include <vector>
 #include <string>
 #include <glib-object.h>
-#include "switcher/json-builder.h"
+#include "switcher/gobject-custom-property.h"
 
 namespace switcher
 {
@@ -39,8 +38,15 @@ namespace switcher
     typedef std::shared_ptr<GObjectWrapper> ptr;
     GObjectWrapper ();
     ~GObjectWrapper ();
+
+    bool install_int_property (std::string nickname, 
+			       std::string description);
+  
+
   private:
     struct _MyObject *my_object_;
+    std::vector<GObjectCustomProperty::ptr> custom_properties_;
+    static int next_prop_id_;
 
     //    static GType my_object_get_type (void); 
     /* static void my_object_set_foo (struct _MyObject *obj, gint foo);  */
