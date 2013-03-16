@@ -64,6 +64,8 @@ namespace switcher
 					GObjectCustomProperty::get_method_pointer get_method);
     //for the gobject class
     GObjectCustomProperty::set_method_pointer get_set_method_pointer (guint prop_id);
+    GObjectCustomProperty::get_method_pointer get_get_method_pointer (guint prop_id);
+
     void *get_user_data ();
 
   private:

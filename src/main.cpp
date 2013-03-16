@@ -61,6 +61,14 @@ static GOptionEntry entries[] =
     g_print ("mon set called with %d\n", g_value_get_int (value));
   }
 
+  static bool
+  mon_get_int (GValue *value,
+	       void *user_data)
+  {
+    g_value_set_int (value, 4);
+    g_print ("mon set called with %d\n", g_value_get_int (value));
+  }
+
 
 
 void
@@ -212,7 +220,7 @@ main (int argc,
 						    1,
 						    (GParamFlags)G_PARAM_READWRITE,
 						    &mon_set_int,
-						    NULL);
+						    &mon_get_int);
      
      GParamSpec *heu2 = 
        switcher::GObjectWrapper::make_int_property ("heuuu", 
@@ -222,14 +230,25 @@ main (int argc,
 						    1,
 						    (GParamFlags) G_PARAM_READWRITE,
 						    &mon_set_int,
-						    NULL);
+						    &mon_get_int);
      
      switcher::GObjectWrapper *truc = new switcher::GObjectWrapper ();
      
-     
-     
+     switcher::Property *proper = new switcher::Property ();
+     proper->set_gobject_pspec (truc->get_gobject (),
+				heu1);
+     proper->set ("3");
+     g_print ("get returned %s\n", proper->get ().c_str ());
+     delete proper;
+
+     switcher::Property *proper2 = new switcher::Property ();
+     proper2->set_gobject_pspec (truc->get_gobject (),
+				heu2);
+     proper2->set ("3");
+     g_print ("get returned %s\n", proper2->get ().c_str ());
+     delete proper2;
+
      delete truc;
-     
 
   }
 

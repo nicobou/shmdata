@@ -32,9 +32,9 @@ namespace switcher
   typedef struct _MyObject {
     GObject parent_instance;
     void *context;
-    gint foo;
-    gboolean bar;
-    gchar *baz;
+    // gint foo;
+    // gboolean bar;
+    // gchar *baz;
   } MyObject;
 
   typedef struct _MyObjectClass {
@@ -43,51 +43,51 @@ namespace switcher
 
   static GType my_object_get_type (void);
   //clean the two following lines
-  enum { PROP_0, PROP_FOO, PROP_BAR, PROP_BAZ, N_PROPERTIES };
-  static GParamSpec *properties[N_PROPERTIES] = { NULL, };
+  // enum { PROP_0, PROP_FOO, PROP_BAR, PROP_BAZ, N_PROPERTIES };
+  // static GParamSpec *properties[N_PROPERTIES] = { NULL, };
   G_DEFINE_TYPE (MyObject, my_object, G_TYPE_OBJECT);
 
-  static void
-  my_object_set_foo (MyObject *obj,
-		     gint foo)
-  {
-    if (obj->foo != foo)
-      {
-	obj->foo = foo;
-	//g_object_notify_by_pspec (G_OBJECT (obj), properties[PROP_FOO]);
-	g_object_notify_by_pspec (G_OBJECT (obj), 
-				  g_object_class_find_property (G_OBJECT_GET_CLASS (obj), "coucou"));
-      }
-  }
+  // static void
+  // my_object_set_foo (MyObject *obj,
+  // 		     gint foo)
+  // {
+  //   if (obj->foo != foo)
+  //     {
+  // 	obj->foo = foo;
+  // 	//g_object_notify_by_pspec (G_OBJECT (obj), properties[PROP_FOO]);
+  // 	g_object_notify_by_pspec (G_OBJECT (obj), 
+  // 				  g_object_class_find_property (G_OBJECT_GET_CLASS (obj), "coucou"));
+  //     }
+  // }
   
-  static void
-  my_object_set_bar (MyObject *obj,
-		     gboolean bar)
-  {
-    bar = !!bar;
-    if (obj->bar != bar)
-      {
-	obj->bar = bar;
-	g_object_notify_by_pspec (G_OBJECT (obj), properties[PROP_BAR]);
-      }
-  }
+  // static void
+  // my_object_set_bar (MyObject *obj,
+  // 		     gboolean bar)
+  // {
+  //   bar = !!bar;
+  //   if (obj->bar != bar)
+  //     {
+  // 	obj->bar = bar;
+  // 	g_object_notify_by_pspec (G_OBJECT (obj), properties[PROP_BAR]);
+  //     }
+  // }
   
-  static void
-  my_object_set_baz (MyObject  *obj,
-				     const gchar *baz)
-  {
-    if (g_strcmp0 (obj->baz, baz) != 0)
-      {
-	g_free (obj->baz);
-	obj->baz = g_strdup (baz);
-	g_object_notify_by_pspec (G_OBJECT (obj), properties[PROP_BAZ]);
-      }
-  }
+  // static void
+  // my_object_set_baz (MyObject  *obj,
+  // 				     const gchar *baz)
+  // {
+  //   if (g_strcmp0 (obj->baz, baz) != 0)
+  //     {
+  // 	g_free (obj->baz);
+  // 	obj->baz = g_strdup (baz);
+  // 	g_object_notify_by_pspec (G_OBJECT (obj), properties[PROP_BAZ]);
+  //     }
+  // }
   
   static void
   my_object_finalize (GObject *gobject)
   {
-    g_free (((MyObject *) gobject)->baz);
+    //g_free (((MyObject *) gobject)->baz);
     G_OBJECT_CLASS (my_object_parent_class)->finalize (gobject);
   }
   
@@ -135,27 +135,32 @@ namespace switcher
    {
      MyObject *myobj = (MyObject *) gobject;
      
-     switch (prop_id)
-       {
-       case PROP_FOO:
-	 g_value_set_int (value, myobj->foo);
-   	break;
+     GObjectWrapper *context = static_cast <GObjectWrapper *> (myobj->context);
+     //context->custom_properties_[prop_id]->invoke_set (value, context->user_data_);
+     //context->invoke_set(prop_id, value);
+     (*context->get_get_method_pointer (prop_id)) (value, context->get_user_data ());
+    
+     // switch (prop_id)
+     //   {
+     //   case PROP_FOO:
+     // 	 g_value_set_int (value, myobj->foo);
+     // 	break;
 	
-       case PROP_BAR:
-	 g_value_set_boolean (value, myobj->bar);
-   	break;
+     //   case PROP_BAR:
+     // 	 g_value_set_boolean (value, myobj->bar);
+     // 	break;
 	
-       case PROP_BAZ:
-	 g_value_set_string (value, myobj->baz);
-   	break;
+     //   case PROP_BAZ:
+     // 	 g_value_set_string (value, myobj->baz);
+     // 	break;
 
-	case 6:
-	 g_value_set_int (value, myobj->foo);
-   	break;
+     // 	case 6:
+     // 	 g_value_set_int (value, myobj->foo);
+     // 	break;
 
-       default:
-	 g_warning ("get_property: property not found %d", prop_id);
-       }
+     //   default:
+     // 	 g_warning ("get_property: property not found %d", prop_id);
+     //   }
    }
 
  static void
@@ -184,9 +189,9 @@ namespace switcher
   static void 
   my_object_init (MyObject *self)
   {
-    self->foo = 42;
-    self->bar = TRUE;
-    self->baz = g_strdup ("Hello");
+    // self->foo = 42;
+    // self->bar = TRUE;
+    // self->baz = g_strdup ("Hello");
   }
 
   // ---------------------------------- CPP CLASS ----------------------------
@@ -331,6 +336,12 @@ namespace switcher
   GObjectWrapper::get_set_method_pointer (guint prop_id)
   {
     return custom_properties_[prop_id]->set_method_;
+  }
+
+  GObjectCustomProperty::get_method_pointer
+  GObjectWrapper::get_get_method_pointer (guint prop_id)
+  {
+    return custom_properties_[prop_id]->get_method_;
   }
 
   void *
