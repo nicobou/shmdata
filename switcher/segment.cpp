@@ -23,6 +23,14 @@
 namespace switcher
 {
 
+  GParamSpec *Segment::json_writers_description_ =
+    switcher::GObjectWrapper::make_string_property ("shmdata-writers", 
+						    "json formated shmdata writers description",
+						    "",
+						    (GParamFlags) G_PARAM_READABLE,
+						    NULL,
+						    NULL);//HERE
+
   Segment::Segment()
   {
     shmdata_writers_description_.reset (new JSONBuilder());

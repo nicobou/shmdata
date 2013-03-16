@@ -27,6 +27,7 @@
 #include "switcher/shmdata-writer.h"
 #include "switcher/shmdata-reader.h"
 #include "switcher/json-builder.h"
+#include "switcher/gobject-wrapper.h"
 #include <memory>
 #include <vector>
 
@@ -64,6 +65,9 @@ namespace switcher
     JSONBuilder::ptr shmdata_readers_description_;
     void update_shmdata_writers_description ();
     void update_shmdata_readers_description ();
+    //shmdatas as param
+    static GParamSpec *json_writers_description_;
+    static GParamSpec *json_readers_description_;
   };
   
 }  // end of namespace
