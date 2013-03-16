@@ -31,6 +31,7 @@ namespace switcher
   //gobject
   typedef struct _MyObject {
     GObject parent_instance;
+    void *context;
     gint foo;
     gboolean bar;
     gchar *baz;
@@ -190,7 +191,8 @@ namespace switcher
   GObjectWrapper::GObjectWrapper ()
   {
     my_object_ = (MyObject *)g_object_new (my_object_get_type (), NULL);
-    GParamSpec *pspec;
+    my_object_-> context = this;
+    //GParamSpec *pspec;
 
     // pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (my_object_), "foo");
 
@@ -232,7 +234,7 @@ namespace switcher
     next_prop_id_++;
 
     gchar *name = g_strdup_printf ("customprop%d", prop_id);
-    g_debug ("custom property internal name %s\n", name);
+    g_debug ("custom property internal name %s", name);
 
     GParamSpec *param = g_param_spec_int (name, 
 					  nickname, 

@@ -195,7 +195,7 @@ main (int argc,
      manager->auto_invoke ("set_runtime",arg);
 
        
-     GParamspec *heu1 = 
+     GParamSpec *heu1 = 
        switcher::GObjectWrapper::make_int_property ("heuuu", 
 						    "ba heu c'est eux",
 						    0,
@@ -205,7 +205,7 @@ main (int argc,
 						    NULL,
 						    NULL);
      
-     GParamspec *heu2 = 
+     GParamSpec *heu2 = 
        switcher::GObjectWrapper::make_int_property ("heuuu", 
 						    "AAAAAAAAba heu c'est eux",
 						    0,
