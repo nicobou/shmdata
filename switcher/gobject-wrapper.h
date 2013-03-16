@@ -42,6 +42,8 @@ namespace switcher
     // useg g_object_notify_by_pspec when changing the property 
     // from inside your class
     GObject *get_gobject ();
+    //user data for set and get methods
+    void set_user_data (void *user_data);
 
     static 
       GParamSpec *make_int_property (const gchar *nickname, 
@@ -60,11 +62,15 @@ namespace switcher
 					GParamFlags read_write_flags,
 					GObjectCustomProperty::set_method_pointer set_method,
 					GObjectCustomProperty::get_method_pointer get_method);
-      
+    //for the gobject class
+    GObjectCustomProperty::set_method_pointer get_set_method_pointer (guint prop_id);
+    void *get_user_data ();
+
   private:
     struct _MyObject *my_object_;
     static std::map<guint, GObjectCustomProperty::ptr> custom_properties_;
     static guint next_prop_id_;
+    void *user_data_;
   };
 
 }  // end of namespace

@@ -63,4 +63,5 @@ namespace switcher
     set_method_ = set_method;
     get_method_ = get_method;
   }
+
 }

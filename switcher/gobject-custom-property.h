@@ -31,7 +31,7 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<GObjectCustomProperty> ptr;
-    typedef bool (*set_method_pointer) (GValue *val, void *user_data);
+    typedef bool (*set_method_pointer) (const GValue *val, void *user_data);
     typedef bool (*get_method_pointer) (GValue *val, void *user_data);
     ~GObjectCustomProperty ();
     
@@ -41,6 +41,9 @@ namespace switcher
 			    GParamSpec *param_spec,
 			    set_method_pointer set_method,
 			    get_method_pointer get_method);
+
+    set_method_pointer set_method_;
+    get_method_pointer get_method_;
     
   private:
     GObjectCustomProperty ();
@@ -52,8 +55,6 @@ namespace switcher
     gchar *nickname_;
     gchar *description_;
     GParamSpec *param_spec_;
-    set_method_pointer set_method_;
-    get_method_pointer get_method_;
   };
 }  // end of namespace
 

@@ -42,6 +42,7 @@ namespace switcher
   } MyObjectClass;
 
   static GType my_object_get_type (void);
+  //clean the two following lines
   enum { PROP_0, PROP_FOO, PROP_BAR, PROP_BAZ, N_PROPERTIES };
   static GParamSpec *properties[N_PROPERTIES] = { NULL, };
   G_DEFINE_TYPE (MyObject, my_object, G_TYPE_OBJECT);
@@ -97,28 +98,33 @@ namespace switcher
 			  GParamSpec *pspec)
   {
     MyObject *myobj = (MyObject *) gobject;
-    
-    switch (prop_id)
-      {
-      case PROP_FOO:
-	my_object_set_foo (myobj, g_value_get_int (value));
-	break;
-	
-      case PROP_BAR:
-	my_object_set_bar (myobj, g_value_get_boolean (value));
-	break;
-	
-      case PROP_BAZ:
-	my_object_set_baz (myobj, g_value_get_string (value));
-	break;
 
-      case 6:
-	my_object_set_foo (myobj, g_value_get_int (value));
-	break;
+    GObjectWrapper *context = static_cast <GObjectWrapper *> (myobj->context);
+    //context->custom_properties_[prop_id]->invoke_set (value, context->user_data_);
+    //context->invoke_set(prop_id, value);
+    (*context->get_set_method_pointer (prop_id)) (value, context->get_user_data ());
 
-      default:
-	g_warning ("set_property: property not found %d", prop_id);
-      }
+    // switch (prop_id)
+    //   {
+    //   case PROP_FOO:
+    // 	my_object_set_foo (myobj, g_value_get_int (value));
+    // 	break;
+	
+    //   case PROP_BAR:
+    // 	my_object_set_bar (myobj, g_value_get_boolean (value));
+    // 	break;
+	
+    //   case PROP_BAZ:
+    // 	my_object_set_baz (myobj, g_value_get_string (value));
+    // 	break;
+
+    //   case 6:
+    // 	my_object_set_foo (myobj, g_value_get_int (value));
+    // 	break;
+
+    //   default:
+    // 	g_warning ("set_property: property not found %d", prop_id);
+    //   }
   }
   
    static void
@@ -192,6 +198,7 @@ namespace switcher
   {
     my_object_ = (MyObject *)g_object_new (my_object_get_type (), NULL);
     my_object_-> context = this;
+    user_data_ = NULL;
     //GParamSpec *pspec;
 
     // pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (my_object_), "foo");
@@ -217,7 +224,13 @@ namespace switcher
     // g_object_get (my_object_, "coucou", &val, NULL);
     // g_print ("coucou: %d\n", val);
   }
-  
+
+  void
+  GObjectWrapper::set_user_data (void *user_data)
+  {
+    user_data_ = user_data;
+  }
+
   //TODO provide other make_..._property for other types
   //set_method and get_method must be static
   GParamSpec * 
@@ -244,6 +257,7 @@ namespace switcher
 					  default_value,
 					  read_write_flags);
     
+    //FIXME only methods seems to be required, so maybe move other args
     GObjectCustomProperty::ptr property =  
       GObjectCustomProperty::make_custom_property (nickname,
 						   description,
@@ -313,5 +327,16 @@ namespace switcher
     g_object_unref (my_object_);
   }
 
+  GObjectCustomProperty::set_method_pointer
+  GObjectWrapper::get_set_method_pointer (guint prop_id)
+  {
+    return custom_properties_[prop_id]->set_method_;
+  }
+
+  void *
+  GObjectWrapper::get_user_data ()
+  {
+    return user_data_;
+  }
 
  }

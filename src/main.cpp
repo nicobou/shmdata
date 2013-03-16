@@ -54,6 +54,15 @@ static GOptionEntry entries[] =
     { NULL }
   };
 
+  static bool
+  mon_set_int (const GValue *value,
+	       void *user_data)
+  {
+    g_print ("mon set called with %d\n", g_value_get_int (value));
+  }
+
+
+
 void
 leave (int sig)
 {
@@ -202,7 +211,7 @@ main (int argc,
 						    10,
 						    1,
 						    (GParamFlags)G_PARAM_READWRITE,
-						    NULL,
+						    &mon_set_int,
 						    NULL);
      
      GParamSpec *heu2 = 
@@ -212,11 +221,11 @@ main (int argc,
 						    10,
 						    1,
 						    (GParamFlags) G_PARAM_READWRITE,
-						    NULL,
+						    &mon_set_int,
 						    NULL);
      
      switcher::GObjectWrapper *truc = new switcher::GObjectWrapper ();
-     //IMPlEMENTER set et get methods dans gobjecxt_wrapper
+     
      
      
      delete truc;
