@@ -45,6 +45,8 @@ namespace switcher
     //user data for set and get methods
     void set_user_data (void *user_data);
 
+
+    //TODO see g_value_... for  implementation of other types
     static 
       GParamSpec *make_int_property (const gchar *nickname, 
 				     const gchar *description,
@@ -62,6 +64,17 @@ namespace switcher
 					GParamFlags read_write_flags,
 					GObjectCustomProperty::set_method_pointer set_method,
 					GObjectCustomProperty::get_method_pointer get_method);
+
+    static 
+      GParamSpec *make_boolean_property (const gchar *nickname, 
+					 const gchar *description,
+					 gboolean default_value,
+					 GParamFlags read_write_flags,
+					 GObjectCustomProperty::set_method_pointer set_method,
+					 GObjectCustomProperty::get_method_pointer get_method);
+
+
+
     //for the gobject class
     GObjectCustomProperty::set_method_pointer get_set_method_pointer (guint prop_id);
     GObjectCustomProperty::get_method_pointer get_get_method_pointer (guint prop_id);
