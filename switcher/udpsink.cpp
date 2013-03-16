@@ -41,14 +41,14 @@ namespace switcher
     set_name (gst_element_get_name (udpsink_));
     g_object_set (G_OBJECT (udpsink_), "sync", FALSE, NULL);
     
-    register_property (G_OBJECT (udpsink_),"blocksize","");
-    register_property (G_OBJECT (udpsink_),"bytes-served","");
-    register_property (G_OBJECT (udpsink_),"clients","");
-    register_property (G_OBJECT (udpsink_),"ttl","");
-    register_property (G_OBJECT (udpsink_),"ttl-mc","");
-    register_property (G_OBJECT (udpsink_),"loop","");
+    register_property (G_OBJECT (udpsink_),"blocksize","blocksize");
+    register_property (G_OBJECT (udpsink_),"bytes-served","bytes-served");
+    register_property (G_OBJECT (udpsink_),"clients","clients");
+    register_property (G_OBJECT (udpsink_),"ttl","ttl");
+    register_property (G_OBJECT (udpsink_),"ttl-mc","ttl-mc");
+    register_property (G_OBJECT (udpsink_),"loop","loop");
 
-    register_property (G_OBJECT (typefind_), "caps","");
+    register_property (G_OBJECT (typefind_), "caps","caps");
 
     // g_signal_connect (G_OBJECT (udpsink_), "client-added",  
     // 		      (GCallback)  on_client_added, (gpointer) this);

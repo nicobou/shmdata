@@ -64,7 +64,7 @@ namespace switcher
 							  "the url to the sdp file",
 							  NULL));
     //registering "latency"
-    register_property (G_OBJECT (sdpdemux_),"latency","sdpdemux");
+    register_property (G_OBJECT (sdpdemux_),"latency","latency");
     return true;
   }
   

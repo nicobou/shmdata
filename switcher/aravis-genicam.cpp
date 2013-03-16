@@ -39,16 +39,16 @@ namespace switcher
     
     //register_property (G_OBJECT (aravissrc_),"camera-name","aravissrc");
 
-    register_property (G_OBJECT (aravissrc_),"gain","aravissrc");
+    register_property (G_OBJECT (aravissrc_),"gain","gain");
 
-    register_property (G_OBJECT (aravissrc_),"gain-auto","aravissrc");
+    register_property (G_OBJECT (aravissrc_),"gain-auto","gain-auto");
 
-    register_property (G_OBJECT (aravissrc_),"exposure","aravissrc");
-    register_property (G_OBJECT (aravissrc_),"exposure-auto","aravissrc");
-    register_property (G_OBJECT (aravissrc_),"h-binning","aravissrc");
-    register_property (G_OBJECT (aravissrc_),"v-binning","aravissrc");
-    register_property (G_OBJECT (aravissrc_),"offset-x","aravissrc");
-    register_property (G_OBJECT (aravissrc_),"offset-y","aravissrc");
+    register_property (G_OBJECT (aravissrc_),"exposure","exposure");
+    register_property (G_OBJECT (aravissrc_),"exposure-auto","exposure-auto");
+    register_property (G_OBJECT (aravissrc_),"h-binning","h-binning");
+    register_property (G_OBJECT (aravissrc_),"v-binning","v-binning");
+    register_property (G_OBJECT (aravissrc_),"offset-x","offset-x");
+    register_property (G_OBJECT (aravissrc_),"offset-y","offset-y");
 
 
     //registering add_data_stream

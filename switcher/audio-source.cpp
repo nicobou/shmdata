@@ -43,9 +43,9 @@ namespace switcher
 			   resample_,
 			   NULL);
     
-    register_property (G_OBJECT (pitch_),"output-rate","pitch");
-    register_property (G_OBJECT (pitch_),"rate","pitch");
-    register_property (G_OBJECT (pitch_),"tempo","pitch");
+    register_property (G_OBJECT (pitch_),"output-rate","pitch-ouput-rate");
+    register_property (G_OBJECT (pitch_),"rate","pitch-rate");
+    register_property (G_OBJECT (pitch_),"tempo","pitch-tempo");
     register_property (G_OBJECT (pitch_),"pitch","pitch");
 
   }

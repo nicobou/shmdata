@@ -24,7 +24,7 @@ namespace switcher
 {
 
   QuiddityDocumentation Xvimagesink::doc_ ("video sink", "xvimagesink",
-						 "Video window with minimal features");
+					   "Video window with minimal features");
   
   
   bool
@@ -38,7 +38,7 @@ namespace switcher
     g_object_set (G_OBJECT (xvimagesink_), "sync", FALSE, NULL);
 
     //registering "sync"
-    //register_property (G_OBJECT (xvimagesink_),"sync","videosink");
+    //register_property (G_OBJECT (xvimagesink_),"sync","sync");
     
     set_sink_element (xvimagesink_);
 

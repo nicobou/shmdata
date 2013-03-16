@@ -41,9 +41,9 @@ namespace switcher
     add_element_to_cleaner (h264enc_);
     add_element_to_cleaner (h264bin_);
 
-    register_property (G_OBJECT (h264enc_),"speed-preset","x264enc");
-    register_property (G_OBJECT (h264enc_),"interlaced","x264enc");
-    register_property (G_OBJECT (h264enc_),"bitrate","x264enc");
+    register_property (G_OBJECT (h264enc_),"speed-preset","speed-preset");
+    register_property (G_OBJECT (h264enc_),"interlaced","interlaced");
+    register_property (G_OBJECT (h264enc_),"bitrate","bitrate");
 
     //set the name before registering properties
     set_name (gst_element_get_name (h264enc_));

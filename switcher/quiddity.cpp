@@ -66,33 +66,46 @@ namespace switcher
     return true;
   }
 
-  
-  bool
-  Quiddity::register_property (GObject *object, std::string object_property, std::string prefix)
+  bool 
+  Quiddity::register_property_by_pspec (GObject *object, 
+					GParamSpec *pspec, 
+					std::string name_to_give)
   {
-    GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), object_property.c_str());
-    if (pspec == NULL)
-      {
-	g_error ("property not found %s",object_property.c_str());
-	return false;
-      }
 
     Property::ptr prop (new Property ());
     prop->set_gobject_pspec (object, pspec);
 
-    std::string name ( prefix + "/" + object_property );
-    if (properties_.find( name ) == properties_.end())
+    //std::string name ( prefix + "/" + object_property );
+    if (properties_.find(name_to_give) == properties_.end())
       {
-	properties_[ name ] = prop; 
+	properties_[name_to_give] = prop; 
 	return true;
       }
     else 
       {
-	g_error ("registering name %s already exists",name.c_str());
+	g_warning ("registering name %s already exists",name_to_give.c_str());
 	return false;
       }
+    
   }
   
+  bool
+  Quiddity::register_property (GObject *object, 
+			       std::string gobject_property_name, 
+			       std::string name_to_give)
+  {
+    GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), gobject_property_name.c_str());
+    if (pspec == NULL)
+      {
+	g_error ("property not found %s", gobject_property_name.c_str());
+	return false;
+      }
+    
+    return register_property_by_pspec (object, pspec, name_to_give);
+  }
+  
+
+
   //return -1 if method not found
   //TODO implement get method and let the manager to call invoke, get_num_args etc...
   int 
