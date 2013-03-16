@@ -117,7 +117,7 @@ namespace switcher
     connector->plug (context->bin_, identity, caps);
     if (G_IS_OBJECT (caps))
       gst_object_unref (caps);
-    context->shmdata_writers_.insert (connector_name, connector);
+    context->register_shmdata_writer (connector);
     g_message ("%s created a new shmdata writer (%s)", 
 	       context->get_nick_name ().c_str(), 
 	       connector_name.c_str ());

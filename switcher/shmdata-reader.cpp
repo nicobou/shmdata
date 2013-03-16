@@ -86,6 +86,7 @@ namespace switcher
   ShmdataReader::set_path (const char *absolute_path)
   {
     path_ = absolute_path;
+    make_json_description ();
   }
 
   void 
@@ -206,4 +207,20 @@ namespace switcher
   {
     return caps_; 
   }
+
+  void
+  ShmdataReader::make_json_description ()
+  {
+    json_description_->reset ();
+    json_description_->begin_object ();
+    json_description_->add_string_member ("path", path_.c_str ());
+    json_description_->end_object ();
+  }
+
+  JSONBuilder::Node 
+  ShmdataReader::get_json_root_node ()
+  {
+    return json_description_->get_root ();
+  }
+
 }

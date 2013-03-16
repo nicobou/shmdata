@@ -26,6 +26,7 @@
 #include <vector>
 #include <shmdata/base-reader.h>
 #include <switcher/gst-element-cleaner.h>
+#include "switcher/json-builder.h"
 
 namespace switcher
 {
@@ -46,7 +47,9 @@ namespace switcher
     GstCaps *get_caps ();
     void start ();
     void stop ();
-
+    //get json doc:
+    JSONBuilder::Node get_json_root_node ();
+    
   private:
     on_first_data_hook connection_hook_;
     void *hook_user_data_;
@@ -61,6 +64,8 @@ namespace switcher
     //static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
     static void unlink_pad (GstPad * pad);
     static void on_have_type (shmdata_base_reader_t *base_reader, GstCaps *caps, void *user_data);
+    JSONBuilder::ptr json_description_;
+    void make_json_description ();
   };
   
 }  // end of namespace

@@ -26,6 +26,7 @@
 #include "switcher/string-map.h"
 #include "switcher/shmdata-writer.h"
 #include "switcher/shmdata-reader.h"
+#include "switcher/json-builder.h"
 #include <memory>
 #include <vector>
 
@@ -51,10 +52,18 @@ namespace switcher
     GstElement *get_bin ();
     GstElement *bin_;
     Runtime::ptr runtime_;
+    bool register_shmdata_writer (ShmdataWriter::ptr writer);
+    //TODO implement an unregister_shmdata_writer method
+    bool register_shmdata_reader (ShmdataReader::ptr reader);
+    bool unregister_shmdata_reader (std::string shmdata_path);
+      
+  private:
     StringMap<ShmdataWriter::ptr> shmdata_writers_;
     StringMap<ShmdataReader::ptr> shmdata_readers_;
-
-
+    JSONBuilder::ptr shmdata_writers_description_;
+    JSONBuilder::ptr shmdata_readers_description_;
+    void update_shmdata_writers_description ();
+    void update_shmdata_readers_description ();
   };
   
 }  // end of namespace

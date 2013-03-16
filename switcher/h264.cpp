@@ -90,7 +90,7 @@ namespace switcher
      std::string writer_name = context->make_file_name ("h264frames"); 
      h264frames_writer->set_path (writer_name.c_str());
      h264frames_writer->plug (context->bin_, context->h264enc_, h264caps);
-     context->shmdata_writers_.insert (writer_name, h264frames_writer);
+     context->register_shmdata_writer (h264frames_writer);
   }
 
 }

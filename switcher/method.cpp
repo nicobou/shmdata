@@ -22,7 +22,6 @@
  */
 
 #include "switcher/method.h"
-#include "switcher/json-builder.h"
 
 namespace switcher
 {

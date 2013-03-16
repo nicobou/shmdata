@@ -636,7 +636,7 @@ namespace switcher
     os_id << next_id_;
     next_id_++;
     internal_id_.insert (shmdata_socket_path, os_id.str());
-    shmdata_readers_.insert (shmdata_socket_path, reader);
+    register_shmdata_reader (reader);
 
     return true;
   }  
@@ -668,7 +668,7 @@ namespace switcher
     
     internal_shmdata_writers_.remove (make_file_name ("send_rtp_src_"+id));
     internal_shmdata_writers_.remove (make_file_name ("send_rtcp_src_"+id));
-    shmdata_readers_.remove (shmdata_socket_path);
+    unregister_shmdata_reader (shmdata_socket_path);
     internal_shmdata_readers_.remove (make_file_name ("recv_rtcp_sink_"+id));
     
     if(quiddity_managers_.contains (shmdata_socket_path))

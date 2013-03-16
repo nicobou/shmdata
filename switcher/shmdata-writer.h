@@ -24,7 +24,8 @@
 #include <memory>
 #include <string>
 #include <shmdata/base-writer.h>
-#include <switcher/gst-element-cleaner.h>
+#include "switcher/gst-element-cleaner.h"
+#include "switcher/json-builder.h"
 
 namespace switcher
 {
@@ -36,8 +37,13 @@ namespace switcher
     ShmdataWriter();
     ~ShmdataWriter();
     bool set_path (std::string name); //path will be fully specified
-    void plug (GstElement *bin, GstElement *source_element,GstCaps *caps);//caps does not need to be fully specified
+    std::string get_path ();
+    //caps does not need to be fully specified:
+    void plug (GstElement *bin, GstElement *source_element,GstCaps *caps);
     void plug (GstElement *bin, GstPad *source_pad);
+    //get json doc:
+    JSONBuilder::Node get_json_root_node ();
+
   private:
     std::string path_;
     shmdata_base_writer_t *writer_;
@@ -45,6 +51,8 @@ namespace switcher
     GstElement *tee_;
     GstElement *queue_;
     GstElement *fakesink_;
+    JSONBuilder::ptr json_description_;
+    void make_json_description ();
   };
   
 }  // end of namespace

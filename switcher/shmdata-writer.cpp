@@ -26,6 +26,8 @@ namespace switcher
   ShmdataWriter::ShmdataWriter() :
     writer_ (shmdata_base_writer_init ())
   {
+    path_ = "";
+    json_description_.reset (new JSONBuilder());
   }
 
   ShmdataWriter::~ShmdataWriter()
@@ -60,9 +62,16 @@ namespace switcher
     //setting the writer
     shmdata_base_writer_set_path (writer_,name.c_str());
     path_ = name;
+    make_json_description ();
     return true;
   }
-  
+ 
+  std::string 
+  ShmdataWriter::get_path ()
+  {
+    return path_;
+  }
+ 
   void 
   ShmdataWriter::plug (GstElement *bin, GstElement *source_element, GstCaps *caps)
   {
@@ -109,6 +118,21 @@ namespace switcher
     GstUtils::sync_state_with_parent (queue_);
     GstUtils::sync_state_with_parent (fakesink_);
     g_debug ("shmdata writer pad plugged (%s)",path_.c_str());
+  }
+
+  void
+  ShmdataWriter::make_json_description ()
+  {
+    json_description_->reset ();
+    json_description_->begin_object ();
+    json_description_->add_string_member ("path", path_.c_str ());
+    json_description_->end_object ();
+  }
+
+  JSONBuilder::Node 
+  ShmdataWriter::get_json_root_node ()
+  {
+    return json_description_->get_root ();
   }
 
 }

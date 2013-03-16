@@ -81,8 +81,7 @@ namespace switcher
      std::string writer_name = context->make_file_name ("vorbisframes"); 
      vorbisframes_writer->set_path (writer_name.c_str());
      vorbisframes_writer->plug (context->bin_, context->vorbisenc_, vorbiscaps);
-     context->shmdata_writers_.insert (writer_name, vorbisframes_writer);
-    
+     context->register_shmdata_writer (vorbisframes_writer);
   }
 
 }
