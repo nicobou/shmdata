@@ -83,7 +83,14 @@ namespace switcher
 		       std::string property_value);
     std::string get_property (std::string quiddity_name, 
 			      std::string property_name);
-     
+    bool subscribe_property (std::string quiddity_name,
+			     std::string property_name,
+			     Property::Callback cb, 
+			     void *user_data);
+    bool unsubscribe_property (std::string quiddity_name,
+			       std::string property_name,
+			       Property::Callback cb);
+
     //**** methods 
     //doc (json formatted)
     std::string get_methods_description (std::string quiddity_name); 

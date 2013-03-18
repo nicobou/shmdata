@@ -65,6 +65,12 @@ namespace switcher
     bool set_property (std::string name, 
 		       std::string value);
     std::string get_property (std::string name);
+    bool subscribe_property (std::string name,
+			     Property::Callback cb, 
+			     void *user_data);
+    bool unsubscribe_property (std::string name,
+			       Property::Callback cb);
+
     
     //methods
     std::string get_method_description (std::string method_name);

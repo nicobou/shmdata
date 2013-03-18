@@ -24,6 +24,8 @@
 
 #include "switcher/gobject-wrapper.h"
 
+static gchar *coucou = "coucou";
+
 static gchar *server_name = NULL;
 static gchar *port_number = NULL;
 static gboolean quiet;
@@ -53,23 +55,6 @@ static GOptionEntry entries[] =
     { "class-doc", NULL, 0, G_OPTION_ARG_STRING, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
     { NULL }
   };
-
-  static bool
-  mon_set_int (const GValue *value,
-	       void *user_data)
-  {
-    g_print ("mon set called with %d\n", g_value_get_int (value));
-  }
-
-  static bool
-  mon_get_int (GValue *value,
-	       void *user_data)
-  {
-    g_value_set_int (value, 4);
-    g_print ("mon set called with %d\n", g_value_get_int (value));
-  }
-
-
 
 void
 leave (int sig)
@@ -116,6 +101,23 @@ leave (int sig)
      break;
    }
  }
+
+void prop_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data)
+{
+  const gchar *prop_name = g_param_spec_get_name (pspec);
+
+  GValue val = G_VALUE_INIT;
+  g_value_init (&val, pspec->value_type);
+  
+  g_object_get_property (gobject,
+			 prop_name,
+			 &val);
+  
+  gchar *val_str = gst_value_serialize (&val);
+  g_print ("---------------- property callback: %s -- %s\n", (gchar *)user_data, val_str);
+  g_free (val_str);
+}
+
 
 int
 main (int argc,
@@ -211,45 +213,11 @@ main (int argc,
      arg.push_back ("pipeline0");
      manager->auto_invoke ("set_runtime",arg);
 
-       
-     GParamSpec *heu1 = 
-       switcher::GObjectWrapper::make_int_property ("heuuu", 
-						    "ba heu c'est eux",
-						    0,
-						    10,
-						    1,
-						    (GParamFlags)G_PARAM_READWRITE,
-						    &mon_set_int,
-						    &mon_get_int);
+     //testing property
+     manager->create ("videotestsrc","vid");
      
-     GParamSpec *heu2 = 
-       switcher::GObjectWrapper::make_int_property ("heuuu", 
-						    "AAAAAAAAba heu c'est eux",
-						    0,
-						    10,
-						    1,
-						    (GParamFlags) G_PARAM_READWRITE,
-						    &mon_set_int,
-						    &mon_get_int);
+     manager->subscribe_property ("vid", "pattern", prop_cb, coucou);
      
-     switcher::GObjectWrapper *truc = new switcher::GObjectWrapper ();
-     
-     switcher::Property *proper = new switcher::Property ();
-     proper->set_gobject_pspec (truc->get_gobject (),
-				heu1);
-     proper->set ("3");
-     g_print ("get returned %s\n", proper->get ().c_str ());
-     delete proper;
-
-     switcher::Property *proper2 = new switcher::Property ();
-     proper2->set_gobject_pspec (truc->get_gobject (),
-				heu2);
-     proper2->set ("3");
-     g_print ("get returned %s\n", proper2->get ().c_str ());
-     delete proper2;
-
-     delete truc;
-
   }
 
   //waiting for end of life

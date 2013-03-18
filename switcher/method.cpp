@@ -153,7 +153,7 @@ namespace switcher
   std::string
   Method::get_description ()
   {
-    return json_description_->get_string ();
+    return json_description_->get_string (true);
   }
 
   JSONBuilder::Node 

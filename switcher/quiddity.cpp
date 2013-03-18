@@ -186,7 +186,7 @@ namespace switcher
 	methods_description_->add_node_value (it->second->get_json_root_node ());
     methods_description_->end_array ();
     methods_description_->end_object ();
-    return methods_description_->get_string ();
+    return methods_description_->get_string (true);
   }
 
   std::string 
@@ -219,7 +219,7 @@ namespace switcher
     properties_description_->end_array ();
     properties_description_->end_object ();
     
-    return properties_description_->get_string ();
+    return properties_description_->get_string (true);
   }
 
   std::string 
@@ -251,6 +251,29 @@ namespace switcher
 
     Property::ptr prop = properties_[name];
     return prop->get ();
+  }
+
+  bool 
+  Quiddity::subscribe_property (std::string name, 
+				Property::Callback cb,
+				void *user_data)
+  {
+    if (properties_.find( name ) == properties_.end())
+      return false;
+
+    Property::ptr prop = properties_[name];
+    return prop->subscribe (cb, user_data);
+  }
+
+  bool 
+  Quiddity::unsubscribe_property (std::string name,
+				  Property::Callback cb)
+  {
+    if (properties_.find( name ) == properties_.end())
+      return false;
+
+    Property::ptr prop = properties_[name];
+    return prop->unsubscribe (cb);
   }
 
 

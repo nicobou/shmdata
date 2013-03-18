@@ -130,6 +130,29 @@ namespace switcher
 		       NULL);
   }
 
+  bool
+  QuiddityManager::subscribe_property (std::string quiddity_name,
+				       std::string property_name,
+				       Property::Callback cb, 
+				       void *user_data)
+  {
+    
+    return life_manager_->subscribe_property (quiddity_name,
+					      property_name,
+					      cb,
+					      user_data);
+  }
+
+  bool
+  QuiddityManager::unsubscribe_property (std::string quiddity_name,
+					 std::string property_name,
+					 Property::Callback cb)
+  {
+    return life_manager_->unsubscribe_property (quiddity_name,
+						property_name,
+						cb);
+  }
+
   bool 
   QuiddityManager::invoke (std::string quiddity_name, 
 			   std::string method_name,

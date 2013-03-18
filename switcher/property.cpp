@@ -55,6 +55,31 @@ namespace switcher
 			   &transformed_val);
   }
 
+  bool
+  Property::subscribe (Callback cb, void *user_data)
+  {
+    gchar *signal = g_strconcat ("notify::", property_->name, NULL);
+    if (subscribed_handlers_.find(cb) == subscribed_handlers_.end ())
+      {
+	subscribed_handlers_[cb] = g_signal_connect (object_, signal, G_CALLBACK (cb), user_data);	
+	return true;
+      }
+    else
+	return false;
+  }
+
+  bool
+  Property::unsubscribe (Callback cb)
+  {
+    if (subscribed_handlers_.find(cb) == subscribed_handlers_.end ())
+      return false;
+    else
+      {
+	g_signal_handler_disconnect (object_, subscribed_handlers_[cb]);
+	return true;
+      }
+  }
+
   std::string 
   Property::get ()
   {
@@ -74,7 +99,7 @@ namespace switcher
   std::string
   Property::get_description ()
   {
-    return json_description_->get_string();
+    return json_description_->get_string(true);
   }
 
   JSONBuilder::Node
@@ -383,11 +408,11 @@ namespace switcher
 	// 	 gst_value_get_fraction_numerator (&value),
 	// 	 gst_value_get_fraction_denominator (&value));
       } else if (GST_IS_PARAM_SPEC_MINI_OBJECT (property_)) {
-	g_error ("warning param spec mini object not handled ");
+	g_warning ("warning param spec mini object not handled ");
 	// g_debug ("%-23.23s MiniObject of type \"%s\"", "",
 	// 	 g_type_name (property_->value_type));
       } else {
-	g_error ("warning: unknown type");
+	g_warning ("warning: unknown type");
 	// g_debug ("%-23.23s Unknown type %ld \"%s\"", "", property_->value_type,
 	// 	 g_type_name (property_->value_type));
       }

@@ -195,7 +195,6 @@ namespace switcher
 
     shmdata_writers_description_->end_array ();
     shmdata_writers_description_->end_object ();
-    //g_print ("%s\n", shmdata_writers_description_->get_string ().c_str());
   }
 
   void
@@ -255,7 +254,8 @@ namespace switcher
                                           void *user_data)
   {
     Segment *context = static_cast<Segment *>(user_data);
-    g_value_set_string (value, context->shmdata_writers_description_->get_string ().c_str ());
+    //    g_print ("%s\n", context->shmdata_writers_description_->get_string (false).c_str ());
+    g_value_set_string (value, context->shmdata_writers_description_->get_string (false).c_str ());
     return TRUE;
   }
 
@@ -264,7 +264,7 @@ namespace switcher
                                           void *user_data)
   {
     Segment *context = static_cast<Segment *>(user_data);
-    g_value_set_string (value, context->shmdata_readers_description_->get_string ().c_str ());
+    g_value_set_string (value, context->shmdata_readers_description_->get_string (false).c_str ());
     return TRUE;
   }
 
