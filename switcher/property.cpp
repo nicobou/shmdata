@@ -80,6 +80,21 @@ namespace switcher
       }
   }
 
+  std::string
+  Property::parse_callback_args (GObject *gobject, GParamSpec *pspec)
+  {
+    const gchar *prop_name = g_param_spec_get_name (pspec);
+    GValue val = G_VALUE_INIT;
+    g_value_init (&val, pspec->value_type);
+    g_object_get_property (gobject,
+			   prop_name,
+			   &val);
+    gchar *val_str = gst_value_serialize (&val);
+    std::string res (val_str);
+    g_free (val_str);
+    return res;
+  }
+  
   std::string 
   Property::get ()
   {

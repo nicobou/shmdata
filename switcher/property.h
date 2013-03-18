@@ -43,8 +43,11 @@ namespace switcher
     std::string get ();
     bool subscribe (Callback cb, void *user_data);
     bool unsubscribe (Callback cb);
+    static std::string parse_callback_args (GObject * gobject, GParamSpec * pspec);
+
     std::string get_description ();
     JSONBuilder::Node get_json_root_node ();
+
     void print ();
 
   private:

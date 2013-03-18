@@ -22,7 +22,6 @@
 #include <signal.h>
 #include <time.h>
 
-#include "switcher/gobject-wrapper.h"
 
 static gchar *coucou = "coucou";
 
@@ -104,18 +103,10 @@ leave (int sig)
 
 void prop_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data)
 {
-  const gchar *prop_name = g_param_spec_get_name (pspec);
 
-  GValue val = G_VALUE_INIT;
-  g_value_init (&val, pspec->value_type);
-  
-  g_object_get_property (gobject,
-			 prop_name,
-			 &val);
-  
-  gchar *val_str = gst_value_serialize (&val);
-  g_print ("---------------- property callback: %s -- %s\n", (gchar *)user_data, val_str);
-  g_free (val_str);
+  g_print ("---------------- property callback: %s -- %s\n", 
+	   (gchar *)user_data, 
+	   switcher::Property::parse_callback_args (gobject, pspec).c_str ());
 }
 
 
