@@ -23,19 +23,43 @@
 namespace switcher
 {
 
-  GParamSpec *Segment::json_writers_description_ =
-    switcher::GObjectWrapper::make_string_property ("shmdata-writers", 
-						    "json formated shmdata writers description",
-						    "",
-						    (GParamFlags) G_PARAM_READABLE,
-						    NULL,
-						    NULL);//HERE
+  GParamSpec *Segment::json_writers_description_ = NULL;
+  GParamSpec *Segment::json_readers_description_ = NULL;
 
   Segment::Segment()
   {
+    gobject_.reset (new GObjectWrapper ());
+    gobject_->set_user_data (this);
     shmdata_writers_description_.reset (new JSONBuilder());
     shmdata_readers_description_.reset (new JSONBuilder());
+
+
+     //installing custom prop for json shmdata description
+     if (json_writers_description_ == NULL)
+       json_writers_description_ = 
+     	GObjectWrapper::make_string_property ("shmdata-writers", 
+     					      "json formated shmdata writers description",
+     					      "",
+     					      (GParamFlags) G_PARAM_READABLE,
+     					      NULL,
+     					      Segment::get_shmdata_writers_by_gvalue);
     
+     if (json_readers_description_ == NULL)
+       json_readers_description_ = 
+     	GObjectWrapper::make_string_property ("shmdata-readers", 
+     					      "json formated shmdata readers description",
+     					      "",
+     					      (GParamFlags) G_PARAM_READABLE,
+     					      NULL,
+     					      Segment::get_shmdata_readers_by_gvalue);
+
+     register_property_by_pspec (gobject_->get_gobject (), 
+				 json_writers_description_, 
+				 "shmdata-writers");
+     register_property_by_pspec (gobject_->get_gobject (), 
+				 json_readers_description_, 
+				 "shmdata-readers");
+
     GstUtils::make_element ("bin", &bin_);
     
     //g_object_set (G_OBJECT (bin_), "message-forward",TRUE, NULL);
@@ -55,6 +79,7 @@ namespace switcher
 
   Segment::~Segment()
   {
+
     g_debug ("Segment::~Segment begin");
     GstUtils::wait_state_changed (bin_);
     
@@ -225,5 +250,22 @@ namespace switcher
     return true;
   }
 
- 
+  bool
+  Segment::get_shmdata_writers_by_gvalue (GValue *value,
+                                          void *user_data)
+  {
+    Segment *context = static_cast<Segment *>(user_data);
+    g_value_set_string (value, context->shmdata_writers_description_->get_string ().c_str ());
+    return TRUE;
+  }
+
+  bool
+  Segment::get_shmdata_readers_by_gvalue (GValue *value,
+                                          void *user_data)
+  {
+    Segment *context = static_cast<Segment *>(user_data);
+    g_value_set_string (value, context->shmdata_readers_description_->get_string ().c_str ());
+    return TRUE;
+  }
+
 }

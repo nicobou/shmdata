@@ -43,12 +43,15 @@ namespace switcher
     // the segment is managing itself the presence/attachment with the runtime
     void set_runtime (Runtime::ptr runtime);
 
-    //TODO rename and register this function returning json
+    //FIXME remove the followong method:
     std::vector<std::string> get_src_connectors ();
 
     //wrappers for calls from base quiddity manager
     static void set_runtime_wrapped (gpointer runtime, gpointer context);
     
+    static bool get_shmdata_writers_by_gvalue (GValue *value, void *user_data);
+    static bool get_shmdata_readers_by_gvalue (GValue *value, void *user_data);
+
   protected:
     GstElement *get_bin ();
     GstElement *bin_;
@@ -66,6 +69,7 @@ namespace switcher
     void update_shmdata_writers_description ();
     void update_shmdata_readers_description ();
     //shmdatas as param
+    GObjectWrapper::ptr gobject_;
     static GParamSpec *json_writers_description_;
     static GParamSpec *json_readers_description_;
   };
