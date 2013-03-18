@@ -78,6 +78,16 @@
      std::string get_property (std::string quiddity_name, 
 			       std::string property_name);
      
+     //This is how to subscribe and get property values when changed:
+     /* static gchar *coucou = "coucou"; */
+     /* void prop_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data) */
+     /*   g_print ("---------------- property callback: %s -- %s\n",  */
+     /* 		(gchar *)user_data,  */
+     /* 		switcher::Property::parse_callback_args (gobject, pspec).c_str ()); */
+     /* //testing property */
+     /* manager->create ("videotestsrc","vid"); */
+     /* manager->subscribe_property ("vid", "pattern", prop_cb, coucou); */
+
      bool subscribe_property (std::string quiddity_name,
 			      std::string name,
 			      Property::Callback cb, 

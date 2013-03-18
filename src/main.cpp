@@ -23,8 +23,6 @@
 #include <time.h>
 
 
-static gchar *coucou = "coucou";
-
 static gchar *server_name = NULL;
 static gchar *port_number = NULL;
 static gboolean quiet;
@@ -101,14 +99,6 @@ leave (int sig)
    }
  }
 
-void prop_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data)
-{
-
-  g_print ("---------------- property callback: %s -- %s\n", 
-	   (gchar *)user_data, 
-	   switcher::Property::parse_callback_args (gobject, pspec).c_str ());
-}
-
 
 int
 main (int argc,
@@ -175,13 +165,10 @@ main (int argc,
     }
 
   //running a switcher server  
-
   if (server_name == NULL)
     server_name = "default";
   if (port_number == NULL)
     port_number = "8080";
-
-
 
   {
     //using context in order to let excluse ownership of manager by the container,
@@ -203,12 +190,6 @@ main (int argc,
      std::vector<std::string> arg;
      arg.push_back ("pipeline0");
      manager->auto_invoke ("set_runtime",arg);
-
-     //testing property
-     manager->create ("videotestsrc","vid");
-     
-     manager->subscribe_property ("vid", "pattern", prop_cb, coucou);
-     
   }
 
   //waiting for end of life
