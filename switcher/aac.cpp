@@ -36,7 +36,7 @@ namespace switcher
 	add_element_to_cleaner (aacenc_);
 	//set the name before registering properties
 	set_name (gst_element_get_name (aacenc_));
-	register_property (G_OBJECT (aacenc_),"bitrate","aac");
+	register_property (G_OBJECT (aacenc_),"bitrate","bitrate");
 	set_on_first_data_hook (AAC::make_shmdata_writer,this);
 	add_element_to_cleaner (aacbin_);
 	set_sink_element (aacbin_);
@@ -95,7 +95,7 @@ namespace switcher
      std::string writer_name = context->make_file_name ("aacframes"); 
      aacframes_writer->set_path (writer_name.c_str());
      aacframes_writer->plug (context->bin_, context->aacenc_, aaccaps);
-     context->shmdata_writers_.insert (writer_name, aacframes_writer);
+     context->register_shmdata_writer (aacframes_writer);
     
   }
 

@@ -34,14 +34,20 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<Property> ptr;
+    typedef void (*Callback) (GObject * gobject, GParamSpec * pspec, gpointer user_data);
     Property ();
 
     //this is when using an existing property
     void set_gobject_pspec (GObject *object, GParamSpec *pspec);
     void set (std::string value);
     std::string get ();
+    bool subscribe (Callback cb, void *user_data);
+    bool unsubscribe (Callback cb);
+    static std::string parse_callback_args (GObject * gobject, GParamSpec * pspec);
+
     std::string get_description ();
     JSONBuilder::Node get_json_root_node ();
+
     void print ();
 
   private:
@@ -49,6 +55,7 @@ namespace switcher
     GObject *object_;
     JSONBuilder::ptr json_description_;
     void make_description();
+    std::map<Callback, gulong> subscribed_handlers_;
   };
 
 }  // end of namespace

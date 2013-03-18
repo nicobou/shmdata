@@ -52,8 +52,8 @@ namespace switcher
     void add_string_member (const gchar *member_name, const gchar *string_value);
     void add_JsonNode_member (const gchar *member_name, Node JsonNode_value);
  
-    std::string get_string ();
-    static std::string get_string (Node root_node);
+    std::string get_string (bool pretty);
+    static std::string get_string (Node root_node, bool pretty);
     Node get_root ();// call node free when done if not used with add_node_value
     static void node_free (Node root_node);
   private:

@@ -71,13 +71,32 @@
      std::string get_property_description_by_class (std::string class_name, 
 						    std::string property_name); 
     //set & get
-    bool set_property (std::string quiddity_name,
+     bool set_property (std::string quiddity_name,
 			std::string property_name,
 			std::string property_value);
      
      std::string get_property (std::string quiddity_name, 
 			       std::string property_name);
+     
+     //This is how to subscribe and get property values when changed:
+     /* static gchar *coucou = "coucou"; */
+     /* void prop_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data) */
+     /*   g_print ("---------------- property callback: %s -- %s\n",  */
+     /* 		(gchar *)user_data,  */
+     /* 		switcher::Property::parse_callback_args (gobject, pspec).c_str ()); */
+     /* //testing property */
+     /* manager->create ("videotestsrc","vid"); */
+     /* manager->subscribe_property ("vid", "pattern", prop_cb, coucou); */
 
+     bool subscribe_property (std::string quiddity_name,
+			      std::string name,
+			      Property::Callback cb, 
+			      void *user_data);
+     bool unsubscribe_property (std::string quiddity_name,
+				std::string name,
+				Property::Callback cb);
+     
+     
      
      //**** methods 
      //doc (json formatted)

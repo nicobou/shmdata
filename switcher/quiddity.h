@@ -65,6 +65,12 @@ namespace switcher
     bool set_property (std::string name, 
 		       std::string value);
     std::string get_property (std::string name);
+    bool subscribe_property (std::string name,
+			     Property::Callback cb, 
+			     void *user_data);
+    bool unsubscribe_property (std::string name,
+			       Property::Callback cb);
+
     
     //methods
     std::string get_method_description (std::string method_name);
@@ -96,8 +102,11 @@ namespace switcher
 
     //property name will be <prefix>/<object_property>
     bool register_property (GObject *object, 
-			    std::string object_property, 
-			    std::string prefix);
+			    std::string gobject_property_name, 
+			    std::string name_to_give);
+    bool register_property_by_pspec (GObject *object, 
+				     GParamSpec *pspec, 
+				     std::string name_to_give);
     bool register_method (std::string method_name,
 			  void *method, 
 			  Method::args_types arg_types, 

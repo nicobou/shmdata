@@ -22,6 +22,7 @@
 #include <signal.h>
 #include <time.h>
 
+
 static gchar *server_name = NULL;
 static gchar *port_number = NULL;
 static gboolean quiet;
@@ -98,6 +99,7 @@ leave (int sig)
    }
  }
 
+
 int
 main (int argc,
       char *argv[])
@@ -163,14 +165,11 @@ main (int argc,
     }
 
   //running a switcher server  
-
   if (server_name == NULL)
     server_name = "default";
   if (port_number == NULL)
     port_number = "8080";
 
-
-  
   {
     //using context in order to let excluse ownership of manager by the container,
     //allowing to properly call destructor when SIGINT

@@ -70,7 +70,7 @@ namespace switcher
       }
     if (runtime_) // starting the reader if runtime is set
       reader_->start ();
-    shmdata_readers_.insert (shmdata_socket_path, reader_);
+    register_shmdata_reader (reader_);
     return true;
   }
 

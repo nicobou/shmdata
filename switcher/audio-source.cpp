@@ -43,9 +43,9 @@ namespace switcher
 			   resample_,
 			   NULL);
     
-    register_property (G_OBJECT (pitch_),"output-rate","pitch");
-    register_property (G_OBJECT (pitch_),"rate","pitch");
-    register_property (G_OBJECT (pitch_),"tempo","pitch");
+    register_property (G_OBJECT (pitch_),"output-rate","pitch-ouput-rate");
+    register_property (G_OBJECT (pitch_),"rate","pitch-rate");
+    register_property (G_OBJECT (pitch_),"tempo","pitch-tempo");
     register_property (G_OBJECT (pitch_),"pitch","pitch");
 
   }
@@ -68,7 +68,7 @@ namespace switcher
     std::string rawconnector_name = make_file_name ("rawaudio");
     rawaudio_connector->set_path (rawconnector_name.c_str());
     rawaudio_connector->plug (bin_, audio_tee_, audiocaps);
-    shmdata_writers_.insert (rawconnector_name, rawaudio_connector);
+    register_shmdata_writer (rawaudio_connector);
     
     //creating a connector for transformed audio
     ShmdataWriter::ptr audio_connector;
@@ -76,7 +76,7 @@ namespace switcher
     std::string connector_name = make_file_name ("audio");
     audio_connector->set_path (connector_name.c_str());
     audio_connector->plug (bin_, audio_tee_, audiocaps);
-    shmdata_writers_.insert (connector_name, audio_connector);
+    register_shmdata_writer (audio_connector);
     
     //gst_object_unref (audiocaps);
     gst_caps_unref(audiocaps);

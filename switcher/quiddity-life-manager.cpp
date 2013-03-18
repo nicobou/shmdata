@@ -221,7 +221,7 @@ namespace switcher
   std::string 
   QuiddityLifeManager::get_classes_doc ()
   {
-    return classes_doc_->get_string ();
+    return classes_doc_->get_string (true);
   }
   
   std::string 
@@ -230,7 +230,7 @@ namespace switcher
     if (abstract_factory_.key_exists (class_name))
       {
 	JSONBuilder::Node doc = abstract_factory_.get_class_documentation (class_name);
-	return JSONBuilder::get_string (doc);
+	return JSONBuilder::get_string (doc, true);
       }
     else
       return "{ \"error\":\"class not found\" }";
@@ -341,7 +341,7 @@ namespace switcher
     descr->end_array();
     descr->end_object ();
 
-    return descr->get_string();
+    return descr->get_string(true);
   }
 
   Quiddity::ptr 
@@ -437,6 +437,37 @@ namespace switcher
       }
     return (get_quiddity (quiddity_name))->set_property(property_name.c_str(),property_value.c_str());
   }
+
+  bool
+  QuiddityLifeManager::subscribe_property (std::string quiddity_name,
+					   std::string property_name,
+					   Property::Callback cb, 
+					   void *user_data)
+  {
+    if (!exists (quiddity_name))
+      {
+	g_warning ("quiddity %s not found, cannot subscribe to property",quiddity_name.c_str());
+	return false;
+      }
+    return (get_quiddity (quiddity_name))->subscribe_property(property_name.c_str(),
+							      cb,
+							      user_data);
+  }
+
+  bool
+  QuiddityLifeManager::unsubscribe_property (std::string quiddity_name,
+					     std::string property_name,
+					     Property::Callback cb)
+  {
+    if (!exists (quiddity_name))
+      {
+	g_warning ("quiddity %s not found, cannot unsubscribe to property",quiddity_name.c_str());
+	return false;
+      }
+    return (get_quiddity (quiddity_name))->unsubscribe_property(property_name.c_str(),
+								cb);
+  }
+
 
   std::string
   QuiddityLifeManager::get_property (std::string quiddity_name,

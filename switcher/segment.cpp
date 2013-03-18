@@ -23,8 +23,43 @@
 namespace switcher
 {
 
+  GParamSpec *Segment::json_writers_description_ = NULL;
+  GParamSpec *Segment::json_readers_description_ = NULL;
+
   Segment::Segment()
   {
+    gobject_.reset (new GObjectWrapper ());
+    gobject_->set_user_data (this);
+    shmdata_writers_description_.reset (new JSONBuilder());
+    shmdata_readers_description_.reset (new JSONBuilder());
+
+
+     //installing custom prop for json shmdata description
+     if (json_writers_description_ == NULL)
+       json_writers_description_ = 
+     	GObjectWrapper::make_string_property ("shmdata-writers", 
+     					      "json formated shmdata writers description",
+     					      "",
+     					      (GParamFlags) G_PARAM_READABLE,
+     					      NULL,
+     					      Segment::get_shmdata_writers_by_gvalue);
+    
+     if (json_readers_description_ == NULL)
+       json_readers_description_ = 
+     	GObjectWrapper::make_string_property ("shmdata-readers", 
+     					      "json formated shmdata readers description",
+     					      "",
+     					      (GParamFlags) G_PARAM_READABLE,
+     					      NULL,
+     					      Segment::get_shmdata_readers_by_gvalue);
+
+     register_property_by_pspec (gobject_->get_gobject (), 
+				 json_writers_description_, 
+				 "shmdata-writers");
+     register_property_by_pspec (gobject_->get_gobject (), 
+				 json_readers_description_, 
+				 "shmdata-readers");
+
     GstUtils::make_element ("bin", &bin_);
     
     //g_object_set (G_OBJECT (bin_), "message-forward",TRUE, NULL);
@@ -44,6 +79,7 @@ namespace switcher
 
   Segment::~Segment()
   {
+
     g_debug ("Segment::~Segment begin");
     GstUtils::wait_state_changed (bin_);
     
@@ -137,11 +173,99 @@ namespace switcher
     return bin_;
   }
 
+  //FIXME remove this get_src_connector
   std::vector<std::string> 
   Segment::get_src_connectors ()
   {
     return shmdata_writers_.get_keys ();
   }
 
- 
+  void
+  Segment::update_shmdata_writers_description ()
+  {
+    shmdata_writers_description_->reset();
+    shmdata_writers_description_->begin_object ();
+    shmdata_writers_description_->set_member_name ("shmdata_writers");
+    shmdata_writers_description_->begin_array ();
+
+    std::vector<ShmdataWriter::ptr> shmwriters = shmdata_writers_.get_values ();
+    std::vector<ShmdataWriter::ptr>::iterator it;
+    for (it = shmwriters.begin (); it != shmwriters.end (); it++)
+      shmdata_writers_description_->add_node_value ( (*it)->get_json_root_node ());
+
+    shmdata_writers_description_->end_array ();
+    shmdata_writers_description_->end_object ();
+  }
+
+  void
+  Segment::update_shmdata_readers_description ()
+  {
+    shmdata_readers_description_->reset();
+    shmdata_readers_description_->begin_object ();
+    shmdata_readers_description_->set_member_name ("shmdata_readers");
+    shmdata_readers_description_->begin_array ();
+
+    std::vector<ShmdataReader::ptr> shmreaders = shmdata_readers_.get_values ();
+    std::vector<ShmdataReader::ptr>::iterator it;
+    for (it = shmreaders.begin (); it != shmreaders.end (); it++)
+      shmdata_readers_description_->add_node_value ( (*it)->get_json_root_node ());
+
+    shmdata_readers_description_->end_array ();
+    shmdata_readers_description_->end_object ();
+  }
+
+  bool 
+  Segment::register_shmdata_writer (ShmdataWriter::ptr writer)
+  {
+    const gchar *name = writer->get_path ().c_str ();
+    if (g_strcmp0 (name, "") == 0)
+      {
+	g_warning ("Segment:: can not register shmdata writer with no path");
+	return false;
+      }
+    shmdata_writers_.insert (name, writer);
+    update_shmdata_writers_description ();
+    return true;
+  }
+  
+  bool Segment::register_shmdata_reader (ShmdataReader::ptr reader)
+  {
+    const gchar *name = reader->get_path ().c_str ();
+    if (g_strcmp0 (name, "") == 0)
+      {
+	g_warning ("Segment:: can not register shmdata reader with no path");
+	return false;
+      }
+    shmdata_readers_.insert (name, reader);
+    update_shmdata_readers_description ();
+    return true;
+    
+  }
+
+  bool Segment::unregister_shmdata_reader (std::string shmdata_path)
+  {
+    shmdata_readers_.remove (shmdata_path);
+    update_shmdata_readers_description ();
+    return true;
+  }
+
+  bool
+  Segment::get_shmdata_writers_by_gvalue (GValue *value,
+                                          void *user_data)
+  {
+    Segment *context = static_cast<Segment *>(user_data);
+    //    g_print ("%s\n", context->shmdata_writers_description_->get_string (false).c_str ());
+    g_value_set_string (value, context->shmdata_writers_description_->get_string (false).c_str ());
+    return TRUE;
+  }
+
+  bool
+  Segment::get_shmdata_readers_by_gvalue (GValue *value,
+                                          void *user_data)
+  {
+    Segment *context = static_cast<Segment *>(user_data);
+    g_value_set_string (value, context->shmdata_readers_description_->get_string (false).c_str ());
+    return TRUE;
+  }
+
 }

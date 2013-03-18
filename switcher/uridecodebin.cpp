@@ -315,7 +315,7 @@ namespace switcher
 
      if (G_IS_OBJECT (caps))
        gst_object_unref (caps);
-     shmdata_writers_.insert (connector_name, connector);
+     register_shmdata_writer (connector);
 
      g_message ("%s created a new shmdata writer (%s)", 
      	       get_nick_name ().c_str(), 

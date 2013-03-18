@@ -100,22 +100,25 @@ namespace switcher
   }
 
   std::string 
-  JSONBuilder::get_string ()
+  JSONBuilder::get_string (bool pretty)
   {
     JsonNode *node = json_builder_get_root (builder_);
-    std::string res = get_string (node);
+    std::string res = get_string (node, pretty);
     json_node_free (node);
     return res;
   }
   
   std::string 
-  JSONBuilder::get_string (Node root_node)
+  JSONBuilder::get_string (Node root_node, bool pretty)
   {
     JsonGenerator *generator;
     gsize length;
     gchar *data;
     generator = json_generator_new ();
-    json_generator_set_pretty (generator, TRUE);
+    if (pretty)
+      json_generator_set_pretty (generator, TRUE);
+    else
+      json_generator_set_pretty (generator, FALSE);
     json_generator_set_root (generator, root_node);
     data = json_generator_to_data (generator, &length);
     //g_print ("%*s\n", (int)length, data);

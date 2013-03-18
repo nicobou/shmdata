@@ -41,9 +41,9 @@ namespace switcher
     add_element_to_cleaner (h264enc_);
     add_element_to_cleaner (h264bin_);
 
-    register_property (G_OBJECT (h264enc_),"speed-preset","x264enc");
-    register_property (G_OBJECT (h264enc_),"interlaced","x264enc");
-    register_property (G_OBJECT (h264enc_),"bitrate","x264enc");
+    register_property (G_OBJECT (h264enc_),"speed-preset","speed-preset");
+    register_property (G_OBJECT (h264enc_),"interlaced","interlaced");
+    register_property (G_OBJECT (h264enc_),"bitrate","bitrate");
 
     //set the name before registering properties
     set_name (gst_element_get_name (h264enc_));
@@ -90,7 +90,7 @@ namespace switcher
      std::string writer_name = context->make_file_name ("h264frames"); 
      h264frames_writer->set_path (writer_name.c_str());
      h264frames_writer->plug (context->bin_, context->h264enc_, h264caps);
-     context->shmdata_writers_.insert (writer_name, h264frames_writer);
+     context->register_shmdata_writer (h264frames_writer);
   }
 
 }

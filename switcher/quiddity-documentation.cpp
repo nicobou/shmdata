@@ -64,7 +64,7 @@ namespace switcher
   QuiddityDocumentation::get_json_documentation () 
   {
     make_json_description ();
-    return json_description_->get_string ();;
+    return json_description_->get_string (true);;
   }
 
   JSONBuilder::Node 

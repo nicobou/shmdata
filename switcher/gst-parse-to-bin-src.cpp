@@ -91,7 +91,7 @@ namespace switcher
     std::string writer_name = make_file_name ("gstsrc"); //FIXME use caps name
     writer->set_path (writer_name.c_str());
     writer->plug (bin_, src_pad);
-    shmdata_writers_.insert (writer_name, writer);
+    register_shmdata_writer (writer);
     
     gst_object_unref (src_pad);
     
