@@ -27,6 +27,8 @@
 
 #include <string>
 #include <memory>
+#include <set>
+#include "switcher/property.h"
 
 namespace switcher
 {
@@ -47,9 +49,17 @@ namespace switcher
     //unsubscribe all already subscribed properties of a quid
     //bool unsubscribe (Quiddity::ptr quid);
 
+    static void property_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data);
+
   private:
     Callback user_callback_;
-    
+    typedef struct {
+      gchar *quiddity_name; 
+      gchar *property_name;
+      Callback user_callback;
+    } PropertyData;
+    typedef std::map < std::pair<std::string, std::string>, PropertyData *> PropDataMap;
+    PropDataMap prop_datas_;
   };
   
 } // end of namespace
