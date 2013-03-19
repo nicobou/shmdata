@@ -32,7 +32,8 @@ namespace switcher
     gobject_->set_user_data (this);
     shmdata_writers_description_.reset (new JSONBuilder());
     shmdata_readers_description_.reset (new JSONBuilder());
-
+    update_shmdata_writers_description ();
+    update_shmdata_readers_description ();
 
      //installing custom prop for json shmdata description
      if (json_writers_description_ == NULL)
@@ -75,6 +76,7 @@ namespace switcher
     arg_desc.push_back (quiddity_name); 
     if (!set_method_description ("set_runtime", "attach quiddity to a runtime ", arg_desc))
       g_error ("segment: cannot set method description for \"set_runtime\"");
+
   }
 
   Segment::~Segment()
@@ -190,9 +192,10 @@ namespace switcher
 
     std::vector<ShmdataWriter::ptr> shmwriters = shmdata_writers_.get_values ();
     std::vector<ShmdataWriter::ptr>::iterator it;
-    for (it = shmwriters.begin (); it != shmwriters.end (); it++)
-      shmdata_writers_description_->add_node_value ( (*it)->get_json_root_node ());
-
+    if (shmwriters.begin () != shmwriters.end ())
+      for (it = shmwriters.begin (); it != shmwriters.end (); it++)
+	shmdata_writers_description_->add_node_value ( (*it)->get_json_root_node ());
+    
     shmdata_writers_description_->end_array ();
     shmdata_writers_description_->end_object ();
   }
@@ -207,9 +210,10 @@ namespace switcher
 
     std::vector<ShmdataReader::ptr> shmreaders = shmdata_readers_.get_values ();
     std::vector<ShmdataReader::ptr>::iterator it;
-    for (it = shmreaders.begin (); it != shmreaders.end (); it++)
-      shmdata_readers_description_->add_node_value ( (*it)->get_json_root_node ());
-
+    if (shmreaders.begin () != shmreaders.end ())
+      for (it = shmreaders.begin (); it != shmreaders.end (); it++)
+	shmdata_readers_description_->add_node_value ( (*it)->get_json_root_node ());
+    
     shmdata_readers_description_->end_array ();
     shmdata_readers_description_->end_object ();
   }
@@ -254,8 +258,8 @@ namespace switcher
                                           void *user_data)
   {
     Segment *context = static_cast<Segment *>(user_data);
-    //    g_print ("%s\n", context->shmdata_writers_description_->get_string (false).c_str ());
-    g_value_set_string (value, context->shmdata_writers_description_->get_string (false).c_str ());
+    //g_print ("%s\n", context->shmdata_writers_description_->get_string (false).c_str ());
+    g_value_set_string (value, context->shmdata_writers_description_->get_string (true).c_str ());
     return TRUE;
   }
 
@@ -264,7 +268,8 @@ namespace switcher
                                           void *user_data)
   {
     Segment *context = static_cast<Segment *>(user_data);
-    g_value_set_string (value, context->shmdata_readers_description_->get_string (false).c_str ());
+    //g_print ("%s\n", context->shmdata_readers_description_->get_string (false).c_str ());
+    g_value_set_string (value, context->shmdata_readers_description_->get_string (true).c_str ());
     return TRUE;
   }
 
