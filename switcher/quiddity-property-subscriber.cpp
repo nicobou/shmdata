@@ -22,6 +22,7 @@
  */
 
 #include "switcher/quiddity-property-subscriber.h"
+#include "switcher/quiddity.h" 
 
 namespace switcher
 {
@@ -32,14 +33,15 @@ namespace switcher
     user_callback_ = cb;
   }
   bool 
-  QuiddityPropertySubscriber::subscribe (Quiddity quid, 
+  QuiddityPropertySubscriber::subscribe (Quiddity::ptr quid, 
 					 std::string property_name)
   {
+    
     return false;
   }
   
   bool 
-  QuiddityPropertySubscriber::unsubscribe (Quiddity quid, 
+  QuiddityPropertySubscriber::unsubscribe (Quiddity::ptr quid, 
 					   std::string property_name)
   {
     return false;

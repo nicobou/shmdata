@@ -37,7 +37,8 @@
 namespace switcher
 {
   class Quiddity;
-
+  class QuiddityPropertySubscriber;
+  
   class QuiddityLifeManager : public std::enable_shared_from_this<QuiddityLifeManager>
 //FIXME rename that into QuiddityManager_Impl or better 
   {
@@ -86,7 +87,9 @@ namespace switcher
 			      std::string property_name);
     //high level subscriber
     bool make_subscriber (std::string subscriber_name,
-			  QuiddityPropertySubscriber::Callback cb);
+			  void *(*)(std::string quiddity_name,
+				    std::string property_name,
+				    std::string value));
     bool remove_subscriber (std::string subscriber_name);
     bool subscribe_property (std::string subscriber_name,
 			     std::string quiddity_name,
@@ -128,7 +131,7 @@ namespace switcher
     AbstractFactory< Quiddity, std::string, JSONBuilder::Node> abstract_factory_;
     StringMap< std::shared_ptr<Quiddity> > quiddities_;
     StringMap< std::string > quiddities_nick_names_;
-    StringMap< QuiddityPropertySubscriber::ptr > property_subscribers_;
+    StringMap< std::shared_ptr <QuiddityPropertySubscriber> > property_subscribers_;
     bool init_quiddity (std::shared_ptr<Quiddity> quiddity);
     void remove_shmdata_sockets ();
     JSONBuilder::ptr classes_doc_;

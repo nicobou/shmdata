@@ -27,8 +27,6 @@
 
 #include <string>
 #include <memory>
-#include "switcher/quiddity.h" 
-
 
 namespace switcher
 {
@@ -47,7 +45,7 @@ namespace switcher
     bool unsubscribe (std::shared_ptr <Quiddity> quid, 
 		      std::string property_name);
     //unsubscribe all already subscribed properties of a quid
-    //bool unsubscribe (Quiddity quid);
+    //bool unsubscribe (Quiddity::ptr quid);
 
   private:
     Callback user_callback_;
