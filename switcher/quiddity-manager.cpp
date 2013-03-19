@@ -131,26 +131,26 @@ namespace switcher
   }
 
   bool
-  QuiddityManager::subscribe_property (std::string quiddity_name,
-				       std::string property_name,
-				       Property::Callback cb, 
-				       void *user_data)
+  QuiddityManager::subscribe_property_glib (std::string quiddity_name,
+					    std::string property_name,
+					    Property::Callback cb, 
+					    void *user_data)
   {
     
-    return life_manager_->subscribe_property (quiddity_name,
-					      property_name,
-					      cb,
-					      user_data);
+    return life_manager_->subscribe_property_glib (quiddity_name,
+						   property_name,
+						   cb,
+						   user_data);
   }
 
   bool
-  QuiddityManager::unsubscribe_property (std::string quiddity_name,
-					 std::string property_name,
-					 Property::Callback cb)
+  QuiddityManager::unsubscribe_property_glib (std::string quiddity_name,
+					      std::string property_name,
+					      Property::Callback cb)
   {
-    return life_manager_->unsubscribe_property (quiddity_name,
-						property_name,
-						cb);
+    return life_manager_->unsubscribe_property_glib (quiddity_name,
+						     property_name,
+						     cb);
   }
 
   bool 

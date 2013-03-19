@@ -77,6 +77,8 @@
      
      std::string get_property (std::string quiddity_name, 
 			       std::string property_name);
+
+     
      
      //This is how to subscribe and get property values when changed:
      /* static gchar *coucou = "coucou"; */
@@ -88,14 +90,13 @@
      /* manager->create ("videotestsrc","vid"); */
      /* manager->subscribe_property ("vid", "pattern", prop_cb, coucou); */
 
-     bool subscribe_property (std::string quiddity_name,
-			      std::string name,
-			      Property::Callback cb, 
-			      void *user_data);
-     bool unsubscribe_property (std::string quiddity_name,
-				std::string name,
-				Property::Callback cb);
-     
+     bool subscribe_property_glib (std::string quiddity_name,
+				   std::string name,
+				   Property::Callback cb, 
+				   void *user_data);
+     bool unsubscribe_property_glib (std::string quiddity_name,
+				     std::string name,
+				     Property::Callback cb);
      
      
      //**** methods 

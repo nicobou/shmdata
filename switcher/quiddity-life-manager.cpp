@@ -438,11 +438,74 @@ namespace switcher
     return (get_quiddity (quiddity_name))->set_property(property_name.c_str(),property_value.c_str());
   }
 
+ //high level subscriber
+  bool 
+  QuiddityLifeManager::make_subscriber (std::string subscriber_name,
+					QuiddityPropertySubscriber::Callback cb)
+  {
+    if (property_subscribers_.contains (subscriber_name))
+      {
+	g_warning ("QuiddityLifeManager, a subscriber named %s already exists\n",
+		   subscriber_name.c_str ());
+	return false;
+      }
+    
+    QuiddityPropertySubscriber::ptr subscriber;
+    subscriber.reset (new QuiddityPropertySubscriber());
+    subscriber->set_callback (cb);
+    property_subscribers_.insert (subscriber_name, subscriber);
+    return true; 
+  }
+
   bool
-  QuiddityLifeManager::subscribe_property (std::string quiddity_name,
-					   std::string property_name,
-					   Property::Callback cb, 
-					   void *user_data)
+  QuiddityLifeManager::remove_subscriber (std::string subscriber_name)
+  {
+    return property_subscribers_.remove (subscriber_name);
+  }
+  
+  bool 
+  QuiddityLifeManager::subscribe_property (std::string subscriber_name,
+					   std::string quiddity_name,
+					   std::string property_name)
+  {
+    if (!property_subscribers_.contains (subscriber_name))
+      {
+	g_warning ("QuiddityLifeManager, a subscriber named %s does not exists\n",
+		   subscriber_name.c_str ());
+	return false;
+      }
+    if (!exists (quiddity_name))
+      {
+	g_warning ("quiddity %s not found, cannot subscribe to property",quiddity_name.c_str());
+	return false;
+      }
+    return property_subscribers_.lookup(subscriber_name)->subscribe (get_quiddity (quiddity_name), property_name);
+  }
+  
+  bool 
+  QuiddityLifeManager::unsubscribe_property (std::string subscriber_name,
+					     std::string quiddity_name,
+					     std::string property_name)
+  {
+    if (!property_subscribers_.contains (subscriber_name))
+      {
+	g_warning ("QuiddityLifeManager, a subscriber named %s does not exists\n",
+		   subscriber_name.c_str ());
+	return false;
+      }
+    if (!exists (quiddity_name))
+      {
+	g_warning ("quiddity %s not found, cannot subscribe to property",quiddity_name.c_str());
+	return false;
+      }
+    return property_subscribers_.lookup(subscriber_name)->unsubscribe (get_quiddity (quiddity_name), property_name);
+  }
+
+  bool
+  QuiddityLifeManager::subscribe_property_glib (std::string quiddity_name,
+						std::string property_name,
+						Property::Callback cb, 
+						void *user_data)
   {
     if (!exists (quiddity_name))
       {
@@ -455,9 +518,9 @@ namespace switcher
   }
 
   bool
-  QuiddityLifeManager::unsubscribe_property (std::string quiddity_name,
-					     std::string property_name,
-					     Property::Callback cb)
+  QuiddityLifeManager::unsubscribe_property_glib (std::string quiddity_name,
+						  std::string property_name,
+						  Property::Callback cb)
   {
     if (!exists (quiddity_name))
       {
