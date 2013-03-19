@@ -296,6 +296,12 @@ namespace switcher
     return life_manager_->get_quiddities_description ();
   }
 
+  std::string 
+  QuiddityManager::get_quiddity_description (std::string quiddity_name)
+  {
+    return life_manager_->get_quiddity_description (quiddity_name);
+  }
+
  
   std::vector<std::string> 
   QuiddityManager::get_quiddities ()

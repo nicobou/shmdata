@@ -322,6 +322,7 @@ namespace switcher
   std::string 
   QuiddityLifeManager::get_quiddities_description ()
   {
+    //FIXME get json doc from the quiddity class and make an array of it 
     JSONBuilder::ptr descr (new JSONBuilder ());
     descr->reset ();
     descr->begin_object();
@@ -332,13 +333,29 @@ namespace switcher
       {
 	descr->begin_object();
 	std::shared_ptr<Quiddity> quid = get_quiddity (*it);
-	descr->add_string_member ("name", quid->get_name().c_str ());
+	descr->add_string_member ("name", quid->get_nick_name().c_str ());
 	descr->add_string_member ("class", quid->get_documentation().get_class_name().c_str ());
 	descr->end_object();
 
       }
 
     descr->end_array();
+    descr->end_object ();
+
+    return descr->get_string(true);
+  }
+
+  std::string 
+  QuiddityLifeManager::get_quiddity_description (std::string nick_name)
+  {
+    if (!quiddities_nick_names_.contains (nick_name))
+      return "{ \"error\":\"quiddity not found\"}";
+
+    JSONBuilder::ptr descr (new JSONBuilder ());
+    descr->reset ();
+    descr->begin_object();
+    descr->add_string_member ("name", nick_name.c_str ());
+    descr->add_string_member ("class", quiddities_.lookup(quiddities_nick_names_.lookup (nick_name))->get_documentation().get_class_name().c_str ());
     descr->end_object ();
 
     return descr->get_string(true);

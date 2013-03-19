@@ -317,6 +317,27 @@ controlService::get_classes_doc(std::string *result){
 }
 
 int
+controlService::get_quiddity_description(std::string quiddity_name, std::string *result){
+  using namespace switcher;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
+  QuiddityManager::ptr manager;
+  if (ctrl_server != NULL)
+    manager = ctrl_server->get_quiddity_manager ();
+    
+  if (ctrl_server == NULL || !(bool)manager)
+    {
+      char *s = (char*)soap_malloc(this, 1024);
+      g_error ("controlService::get_class_doc: cannot get manager from SoapCtrlServer (NULL)");
+      sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (NULL)</error>");
+      return soap_senderfault("error in get_class_doc", s);
+    }
+  
+  *result = manager->get_quiddity_description (quiddity_name);
+  
+  return SOAP_OK;
+}
+
+int
 controlService::get_quiddities_description (std::string *result){
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;

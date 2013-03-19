@@ -48,6 +48,9 @@ int switcher__get_factory_capabilities(std::vector<std::string> *result);
 //gsoap switcher service method-documentation: get available json doc *without* props and methods
 int switcher__get_classes_doc(std::string *result);
 
+//gsoap switcher service method-documentation: get available json doc *without* props and methods
+int switcher__get_quiddity_description(std::string quiddity_name, std::string *result);
+
 //gsoap switcher service method-documentation: get json formatted quiddities list with info
 int switcher__get_quiddities_description (std::string *result);
 

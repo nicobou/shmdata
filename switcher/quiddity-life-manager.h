@@ -53,6 +53,7 @@ namespace switcher
     //doc (json formatted)
     std::string get_classes_doc ();
     std::string get_class_doc (std::string class_name);
+    std::string get_quiddity_description (std::string quiddity_name);
     std::string get_quiddities_description ();
     bool class_exists (std::string class_name);
     bool exists (std::string quiddity_name);
