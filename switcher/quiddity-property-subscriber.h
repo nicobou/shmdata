@@ -33,15 +33,20 @@
 namespace switcher
 {
   class Quiddity;
-  
+  class QuiddityLifeManager;
+
   class QuiddityPropertySubscriber
   {
   public:
     typedef std::shared_ptr<QuiddityPropertySubscriber> ptr;
-    typedef void *(*Callback)(std::string quiddity_name,
-			      std::string property_name,
-			      std::string value);
+    typedef void (*Callback)(std::string quiddity_name,
+			     std::string property_name,
+			     std::string value,
+			     void *user_data);
+    ~QuiddityPropertySubscriber();
+
     void set_callback (Callback cb);
+    void set_user_data (void *user_data);
     bool subscribe (std::shared_ptr <Quiddity> quid, 
 		    std::string property_name);
     bool unsubscribe (std::shared_ptr <Quiddity> quid, 
@@ -50,13 +55,20 @@ namespace switcher
     //bool unsubscribe (Quiddity::ptr quid);
 
     static void property_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data);
+    
+    //life manager  initialization
+    void set_life_manager (std::shared_ptr<QuiddityLifeManager> life_manager);
 
   private:
     Callback user_callback_;
+    void *user_data_;
+    std::weak_ptr<QuiddityLifeManager> life_manager_;
+
     typedef struct {
       gchar *quiddity_name; 
       gchar *property_name;
       Callback user_callback;
+      void *user_data;
     } PropertyData;
     typedef std::map < std::pair<std::string, std::string>, PropertyData *> PropDataMap;
     PropDataMap prop_datas_;

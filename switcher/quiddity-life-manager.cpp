@@ -438,10 +438,11 @@ namespace switcher
     return (get_quiddity (quiddity_name))->set_property(property_name.c_str(),property_value.c_str());
   }
 
- //high level subscriber
+ //higher level subscriber
   bool 
   QuiddityLifeManager::make_subscriber (std::string subscriber_name,
-					QuiddityPropertySubscriber::Callback cb)
+					QuiddityPropertySubscriber::Callback cb,
+					void *user_data)
   {
     if (property_subscribers_.contains (subscriber_name))
       {
@@ -452,6 +453,8 @@ namespace switcher
     
     QuiddityPropertySubscriber::ptr subscriber;
     subscriber.reset (new QuiddityPropertySubscriber());
+    subscriber->set_life_manager (shared_from_this());
+    subscriber->set_user_data (user_data);
     subscriber->set_callback (cb);
     property_subscribers_.insert (subscriber_name, subscriber);
     return true; 
@@ -501,6 +504,32 @@ namespace switcher
     return property_subscribers_.lookup(subscriber_name)->unsubscribe (get_quiddity (quiddity_name), property_name);
   }
 
+  std::vector<std::string> 
+  QuiddityLifeManager::list_subscriber ()
+  {
+    return property_subscribers_.get_keys ();
+  }
+
+    std::vector<std::pair<std::string, std::string> > 
+    QuiddityLifeManager::list_subscribed_property (std::string subscriber_name)
+    {
+      std::vector<std::pair<std::string, std::string> > truc;
+      return truc;
+    }
+
+    std::string 
+    QuiddityLifeManager::list_subscriber_json ()
+    {
+      return "{\"what\":\"to do\"}";
+    }
+  
+    std::string 
+    QuiddityLifeManager::list_subscribed_property_json (std::string subscriber_name)
+    {
+      return "{\"what\":\"to do\"}";
+    }
+
+  //lower level subscriber
   bool
   QuiddityLifeManager::subscribe_property_glib (std::string quiddity_name,
 						std::string property_name,

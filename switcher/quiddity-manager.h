@@ -60,13 +60,13 @@
      bool remove (std::string quiddity_name);
 
 
-     //**** properties
+     //****************** properties ************************************************************
      //doc (json formatted)
      std::string get_properties_description (std::string quiddity_name);
      std::string get_property_description (std::string quiddity_name, 
 					   std::string property_name);
      //following "by_class" methods provide properties available after creation only, 
-     //avoiding possible properties created dynamically after some event occurence
+     //avoiding possible properties created dynamically
      std::string get_properties_description_by_class (std::string class_name); 
      std::string get_property_description_by_class (std::string class_name, 
 						    std::string property_name); 
@@ -78,8 +78,31 @@
      std::string get_property (std::string quiddity_name, 
 			       std::string property_name);
 
+     //property subscribtion
+     bool make_subscriber (std::string subscriber_name,
+			   void (*callback)(std::string quiddity_name,
+					    std::string property_name,
+					    std::string value,
+					    void *user_data),
+			   void *user_data);
+     bool remove_subscriber (std::string subscriber_name);
+     bool subscribe_property (std::string subscriber_name,
+			      std::string quiddity_name,
+			      std::string property_name);
+     bool unsubscribe_property (std::string subscriber_name,
+				std::string quiddity_name,
+				std::string property_name);
+     std::vector<std::string> 
+       list_subscriber ();
+     std::vector<std::pair<std::string, std::string> > 
+       list_subscribed_property (std::string subscriber_name);
+     std::string 
+       list_subscriber_json ();
+     std::string 
+       list_subscribed_property_json (std::string subscriber_name);
      
      
+     //LOWER LEVEL subscription
      //This is how to subscribe and get property values when changed:
      /* static gchar *coucou = "coucou"; */
      /* void prop_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data) */

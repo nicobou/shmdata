@@ -87,9 +87,11 @@ namespace switcher
 			      std::string property_name);
     //high level subscriber
     bool make_subscriber (std::string subscriber_name,
-			  void *(*)(std::string quiddity_name,
-				    std::string property_name,
-				    std::string value));
+			  void (*callback)(std::string quiddity_name,
+					   std::string property_name,
+					   std::string value,
+					   void *user_data),
+			  void *user_data);
     bool remove_subscriber (std::string subscriber_name);
     bool subscribe_property (std::string subscriber_name,
 			     std::string quiddity_name,
@@ -97,7 +99,15 @@ namespace switcher
     bool unsubscribe_property (std::string subscriber_name,
 			       std::string quiddity_name,
 			       std::string property_name);
-    
+    std::vector<std::string> 
+      list_subscriber ();
+    std::vector<std::pair<std::string, std::string> > 
+      list_subscribed_property (std::string subscriber_name);
+    std::string 
+      list_subscriber_json ();
+    std::string 
+      list_subscribed_property_json (std::string subscriber_name);
+
     //low level subscribe
     bool subscribe_property_glib (std::string quiddity_name,
 				  std::string property_name,
