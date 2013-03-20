@@ -32,19 +32,21 @@
 #include "switcher/string-map.h"
 #include "switcher/quiddity.h" 
 #include "switcher/json-builder.h"
+#include "switcher/quiddity-property-subscriber.h"
 
 namespace switcher
 {
   class Quiddity;
-
+  class QuiddityPropertySubscriber;
+  
   class QuiddityLifeManager : public std::enable_shared_from_this<QuiddityLifeManager>
 //FIXME rename that into QuiddityManager_Impl or better 
   {
   public:
     typedef std::shared_ptr< QuiddityLifeManager > ptr;
-    
-     static QuiddityLifeManager::ptr make_life_manager ();//will get name "default"
-     static QuiddityLifeManager::ptr make_life_manager (std::string name);
+    //will get name "default"
+    static QuiddityLifeManager::ptr make_life_manager ();
+    static QuiddityLifeManager::ptr make_life_manager (std::string name);
     
     //**** info about manager
     std::string get_name ();
@@ -84,13 +86,37 @@ namespace switcher
 		       std::string property_value);
     std::string get_property (std::string quiddity_name, 
 			      std::string property_name);
-    bool subscribe_property (std::string quiddity_name,
-			     std::string property_name,
-			     Property::Callback cb, 
-			     void *user_data);
-    bool unsubscribe_property (std::string quiddity_name,
-			       std::string property_name,
-			       Property::Callback cb);
+    //high level subscriber
+    bool make_subscriber (std::string subscriber_name,
+			  void (*callback)(std::string quiddity_name,
+					   std::string property_name,
+					   std::string value,
+					   void *user_data),
+			  void *user_data);
+    bool remove_subscriber (std::string subscriber_name);
+    bool subscribe_property (std::string subscriber_name,
+			     std::string quiddity_name,
+			     std::string property_name);
+    bool unsubscribe_property (std::string subscriber_name,
+			       std::string quiddity_name,
+			       std::string property_name);
+    std::vector<std::string> 
+      list_subscribers ();
+    std::vector<std::pair<std::string, std::string> > 
+      list_subscribed_properties (std::string subscriber_name);
+    std::string 
+      list_subscribers_json ();
+    std::string 
+      list_subscribed_properties_json (std::string subscriber_name);
+
+    //low level subscribe
+    bool subscribe_property_glib (std::string quiddity_name,
+				  std::string property_name,
+				  Property::Callback cb, 
+				  void *user_data);
+    bool unsubscribe_property_glib (std::string quiddity_name,
+				    std::string property_name,
+				    Property::Callback cb);
 
     //**** methods 
     //doc (json formatted)
@@ -115,7 +141,8 @@ namespace switcher
     void register_classes ();
     AbstractFactory< Quiddity, std::string, JSONBuilder::Node> abstract_factory_;
     StringMap< std::shared_ptr<Quiddity> > quiddities_;
-    StringMap< std::string> quiddities_nick_names_;
+    StringMap< std::string > quiddities_nick_names_;
+    StringMap< std::shared_ptr <QuiddityPropertySubscriber> > property_subscribers_;
     bool init_quiddity (std::shared_ptr<Quiddity> quiddity);
     void remove_shmdata_sockets ();
     JSONBuilder::ptr classes_doc_;

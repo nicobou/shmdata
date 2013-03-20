@@ -61,13 +61,13 @@
      bool remove (std::string quiddity_name);
 
 
-     //**** properties
+     //****************** properties ************************************************************
      //doc (json formatted)
      std::string get_properties_description (std::string quiddity_name);
      std::string get_property_description (std::string quiddity_name, 
 					   std::string property_name);
      //following "by_class" methods provide properties available after creation only, 
-     //avoiding possible properties created dynamically after some event occurence
+     //avoiding possible properties created dynamically
      std::string get_properties_description_by_class (std::string class_name); 
      std::string get_property_description_by_class (std::string class_name, 
 						    std::string property_name); 
@@ -78,7 +78,33 @@
      
      std::string get_property (std::string quiddity_name, 
 			       std::string property_name);
+
+     //property subscribtion
+     bool make_subscriber (std::string subscriber_name,
+			   void (*callback)(std::string quiddity_name,
+					    std::string property_name,
+					    std::string value,
+					    void *user_data),
+			   void *user_data);
+     bool remove_subscriber (std::string subscriber_name);
+     bool subscribe_property (std::string subscriber_name,
+			      std::string quiddity_name,
+			      std::string property_name);
+     bool unsubscribe_property (std::string subscriber_name,
+				std::string quiddity_name,
+				std::string property_name);
+     std::vector<std::string> 
+       list_subscribers ();
+     std::vector<std::pair<std::string, std::string> > 
+       list_subscribed_properties (std::string subscriber_name);
+     //json //FIXME implement or remove
+     std::string 
+       list_subscribers_json ();
+     std::string 
+       list_subscribed_properties_json (std::string subscriber_name);
      
+     
+     //LOWER LEVEL subscription
      //This is how to subscribe and get property values when changed:
      /* static gchar *coucou = "coucou"; */
      /* void prop_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data) */
@@ -89,14 +115,13 @@
      /* manager->create ("videotestsrc","vid"); */
      /* manager->subscribe_property ("vid", "pattern", prop_cb, coucou); */
 
-     bool subscribe_property (std::string quiddity_name,
-			      std::string name,
-			      Property::Callback cb, 
-			      void *user_data);
-     bool unsubscribe_property (std::string quiddity_name,
-				std::string name,
-				Property::Callback cb);
-     
+     bool subscribe_property_glib (std::string quiddity_name,
+				   std::string name,
+				   Property::Callback cb, 
+				   void *user_data);
+     bool unsubscribe_property_glib (std::string quiddity_name,
+				     std::string name,
+				     Property::Callback cb);
      
      
      //**** methods 

@@ -130,27 +130,86 @@ namespace switcher
 		       NULL);
   }
 
+
+  bool 
+  QuiddityManager::make_subscriber (std::string subscriber_name,
+				    void (*callback)(std::string quiddity_name,
+						     std::string property_name,
+						     std::string value,
+						     void *user_data),
+				    void *user_data)
+  {
+    return life_manager_->make_subscriber (subscriber_name, callback, user_data);
+  }
+
+    bool 
+QuiddityManager::remove_subscriber (std::string subscriber_name)
+    {
+      return life_manager_->remove_subscriber (subscriber_name);
+    }
+  
+  bool 
+  QuiddityManager::subscribe_property (std::string subscriber_name,
+				       std::string quiddity_name,
+				       std::string property_name)
+  {
+    return life_manager_->subscribe_property (subscriber_name, quiddity_name, property_name);
+  }
+  
+  bool 
+  QuiddityManager::unsubscribe_property (std::string subscriber_name,
+					 std::string quiddity_name,
+					 std::string property_name)
+  {
+    return life_manager_->unsubscribe_property (subscriber_name, quiddity_name, property_name);
+      }
+  
+  std::vector<std::string> 
+  QuiddityManager::list_subscribers ()
+  {
+    return life_manager_->list_subscribers ();
+  }
+  
+  std::vector<std::pair<std::string, std::string> > 
+  QuiddityManager::list_subscribed_properties (std::string subscriber_name)
+  {
+    return life_manager_->list_subscribed_properties (subscriber_name);
+  }
+  
+  std::string 
+  QuiddityManager::list_subscribers_json ()
+  {
+    return life_manager_->list_subscribers_json ();
+  }
+
+  std::string 
+  QuiddityManager::list_subscribed_properties_json (std::string subscriber_name)
+  {
+    return life_manager_->list_subscribed_properties_json (subscriber_name);
+  }
+  
+  //lower level subscription
   bool
-  QuiddityManager::subscribe_property (std::string quiddity_name,
-				       std::string property_name,
-				       Property::Callback cb, 
-				       void *user_data)
+  QuiddityManager::subscribe_property_glib (std::string quiddity_name,
+					    std::string property_name,
+					    Property::Callback cb, 
+					    void *user_data)
   {
     
-    return life_manager_->subscribe_property (quiddity_name,
-					      property_name,
-					      cb,
-					      user_data);
+    return life_manager_->subscribe_property_glib (quiddity_name,
+						   property_name,
+						   cb,
+						   user_data);
   }
 
   bool
-  QuiddityManager::unsubscribe_property (std::string quiddity_name,
-					 std::string property_name,
-					 Property::Callback cb)
+  QuiddityManager::unsubscribe_property_glib (std::string quiddity_name,
+					      std::string property_name,
+					      Property::Callback cb)
   {
-    return life_manager_->unsubscribe_property (quiddity_name,
-						property_name,
-						cb);
+    return life_manager_->unsubscribe_property_glib (quiddity_name,
+						     property_name,
+						     cb);
   }
 
   bool 

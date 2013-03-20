@@ -61,12 +61,12 @@ leave (int sig)
   exit (sig);
 }
 
- static void
- log_handler (const gchar *log_domain, 
+static void
+log_handler (const gchar *log_domain, 
  	     GLogLevelFlags log_level,
  	     const gchar *message,
  	     gpointer user_data)
- {
+{
    //OsgReader_impl *context = static_cast<OsgReader_impl*>(user_data);
     if (quiet)
       return;

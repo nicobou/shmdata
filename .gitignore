@@ -47,3 +47,4 @@ tests/.deps/
 tests/.libs/
 tests/check_quiddity_create_remove
 tests/check_quiddity_create_remove_with_auto_pipeline
+tests/check_property_subscriber
