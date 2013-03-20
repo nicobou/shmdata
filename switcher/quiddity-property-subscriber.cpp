@@ -140,4 +140,17 @@ namespace switcher
 	       property_name.c_str ());
     return false;
   }
+
+  std::vector<std::pair<std::string, std::string> > 
+  QuiddityPropertySubscriber::list_subscribed_properties ()
+  {
+    std::vector<std::pair<std::string, std::string> > res;
+    PropDataMap::iterator it;
+    for (it = prop_datas_.begin (); it != prop_datas_.end (); it++)
+      {
+	res.push_back (it->first);
+      }
+    return res;
+  }
+
 }

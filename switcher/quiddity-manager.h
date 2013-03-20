@@ -93,13 +93,14 @@
 				std::string quiddity_name,
 				std::string property_name);
      std::vector<std::string> 
-       list_subscriber ();
+       list_subscribers ();
      std::vector<std::pair<std::string, std::string> > 
-       list_subscribed_property (std::string subscriber_name);
+       list_subscribed_properties (std::string subscriber_name);
+     //json //FIXME implement or remove
      std::string 
-       list_subscriber_json ();
+       list_subscribers_json ();
      std::string 
-       list_subscribed_property_json (std::string subscriber_name);
+       list_subscribed_properties_json (std::string subscriber_name);
      
      
      //LOWER LEVEL subscription

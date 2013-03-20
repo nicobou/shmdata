@@ -505,28 +505,35 @@ namespace switcher
   }
 
   std::vector<std::string> 
-  QuiddityLifeManager::list_subscriber ()
+  QuiddityLifeManager::list_subscribers ()
   {
     return property_subscribers_.get_keys ();
   }
 
     std::vector<std::pair<std::string, std::string> > 
-    QuiddityLifeManager::list_subscribed_property (std::string subscriber_name)
+    QuiddityLifeManager::list_subscribed_properties (std::string subscriber_name)
     {
-      std::vector<std::pair<std::string, std::string> > truc;
-      return truc;
+      if (!property_subscribers_.contains (subscriber_name))
+	{
+	  g_warning ("QuiddityLifeManager, a subscriber named %s does not exists\n",
+		     subscriber_name.c_str ());
+	  std::vector<std::pair<std::string, std::string> > empty;
+	  return empty;
+	}
+      
+      return property_subscribers_.lookup(subscriber_name)->list_subscribed_properties ();
     }
 
     std::string 
-    QuiddityLifeManager::list_subscriber_json ()
+    QuiddityLifeManager::list_subscribers_json ()
     {
-      return "{\"what\":\"to do\"}";
+      return "{\"what\":\"to be implemented\"}";//FIXME (list_subscriber_json)
     }
   
     std::string 
-    QuiddityLifeManager::list_subscribed_property_json (std::string subscriber_name)
+    QuiddityLifeManager::list_subscribed_properties_json (std::string subscriber_name)
     {
-      return "{\"what\":\"to do\"}";
+      return "{\"what\":\"to be implemented\"}";//FIXME (list_subscribed_property_json)
     }
 
   //lower level subscriber

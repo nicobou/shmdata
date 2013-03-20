@@ -165,27 +165,27 @@ QuiddityManager::remove_subscriber (std::string subscriber_name)
       }
   
   std::vector<std::string> 
-  QuiddityManager::list_subscriber ()
+  QuiddityManager::list_subscribers ()
   {
-    return life_manager_->list_subscriber ();
+    return life_manager_->list_subscribers ();
   }
   
   std::vector<std::pair<std::string, std::string> > 
-  QuiddityManager::list_subscribed_property (std::string subscriber_name)
+  QuiddityManager::list_subscribed_properties (std::string subscriber_name)
   {
-    return life_manager_->list_subscribed_property (subscriber_name);
-      }
+    return life_manager_->list_subscribed_properties (subscriber_name);
+  }
   
   std::string 
-  QuiddityManager::list_subscriber_json ()
+  QuiddityManager::list_subscribers_json ()
   {
-    return life_manager_->list_subscriber_json ();
+    return life_manager_->list_subscribers_json ();
   }
 
   std::string 
-  QuiddityManager::list_subscribed_property_json (std::string subscriber_name)
+  QuiddityManager::list_subscribed_properties_json (std::string subscriber_name)
   {
-    return life_manager_->list_subscribed_property_json (subscriber_name);
+    return life_manager_->list_subscribed_properties_json (subscriber_name);
   }
   
   //lower level subscription
