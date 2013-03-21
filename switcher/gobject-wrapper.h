@@ -39,12 +39,10 @@ namespace switcher
     GObjectWrapper ();
     ~GObjectWrapper ();
 
-    // useg g_object_notify_by_pspec when changing the property 
-    // from inside your class
+    static void notify_property_changed (GObject *object, GParamSpec *pspec);
     GObject *get_gobject ();
     //user data for set and get methods
     void set_user_data (void *user_data);
-
 
     //TODO see g_value_... for  implementation of other types
     static 
