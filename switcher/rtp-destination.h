@@ -26,6 +26,7 @@
 #include "switcher/string-map.h"
 #include "switcher/shmdata-reader.h"
 #include "switcher/quiddity-manager.h"
+#include "switcher/json-builder.h"
 
 namespace switcher
 {
@@ -33,8 +34,10 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<RtpDestination> ptr;
+    RtpDestination ();
     ~RtpDestination ();
 
+    void set_name (std::string name);
     void set_host_name (std::string host_name);
     std::string get_host_name ();
     //the reader of the rtp stream sent
@@ -43,8 +46,11 @@ namespace switcher
 		     std::string port);
     bool remove_stream (std::string shmdata_stream_path);
     std::string get_sdp ();
-    
+    //get json doc:
+    JSONBuilder::Node get_json_root_node ();
+
   private:
+    std::string name_;
     std::string host_name_;
     StringMap<QuiddityManager::ptr> ports_; //maps port with rtp shmdata reader
     StringMap<std::string> source_streams_; //maps shmdata source stream with port
@@ -54,6 +60,8 @@ namespace switcher
 					   std::string server_host_name,
 					   std::string transport_proto,
 					   gint stream_number);
+    JSONBuilder::ptr json_description_;
+    void make_json_description ();
   };
 }  // end of namespace
 

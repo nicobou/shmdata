@@ -22,6 +22,10 @@
 
 namespace switcher
 {
+  RtpDestination::RtpDestination ()
+  {
+    json_description_.reset (new JSONBuilder());
+  }
   
   RtpDestination::~RtpDestination ()
   {
@@ -50,11 +54,18 @@ namespace switcher
   }
   
   void 
+  RtpDestination::set_name (std::string name)
+  {
+    name_ = name;
+    make_json_description ();
+  }
+
+  void 
   RtpDestination::set_host_name (std::string host_name)
   {
     host_name_ = host_name;
+    make_json_description ();
   }
-
   
   std::string
   RtpDestination::get_host_name ()
@@ -69,6 +80,7 @@ namespace switcher
   {
     ports_.insert (port, manager);
     source_streams_.insert (orig_shmdata_path, port);
+    make_json_description ();
     return true;
   }
 
@@ -84,6 +96,7 @@ namespace switcher
     std::string port = source_streams_.lookup (shmdata_stream_path);
     source_streams_.remove (shmdata_stream_path);
     ports_.remove (port);
+    make_json_description ();
     return true;
   }
   
@@ -252,6 +265,36 @@ RtpDestination::sdp_write_media_from_caps (GstSDPMessage *sdp_description,
     gst_sdp_media_free (smedia);
 
 }
+
+  void
+  RtpDestination::make_json_description ()
+  {
+    json_description_->reset ();
+    json_description_->begin_object ();
+    json_description_->add_string_member ("name", name_.c_str ());
+    json_description_->add_string_member ("host_name", host_name_.c_str ());
+    json_description_->set_member_name ("data_streams");
+    json_description_->begin_array ();
+    
+    std::map <std::string, std::string> sources = source_streams_.get_map ();
+    std::map <std::string, std::string>::iterator it;
+    if (sources.begin () != sources.end ())
+      for (it = sources.begin (); it != sources.end (); it ++)
+	{
+	  json_description_->begin_object ();
+	  json_description_->add_string_member ("path", it->first.c_str ());
+	  json_description_->add_string_member ("port", it->second.c_str ());
+	  json_description_->end_object ();
+	}
+    json_description_->end_array ();
+    json_description_->end_object ();
+  }
+
+  JSONBuilder::Node 
+  RtpDestination::get_json_root_node ()
+  {
+    return json_description_->get_root ();
+  }
 
 
 }

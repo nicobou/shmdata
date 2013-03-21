@@ -22,13 +22,17 @@
 #include <gst/sdp/gstsdpmessage.h>
 #include <glib/gstdio.h> //writing sdp file
 #include "switcher/gst-utils.h"
+#include "switcher/json-builder.h"
 
 namespace switcher
 {
   
   QuiddityDocumentation RtpSession::doc_ ("RTP session", "rtpsession",
-						"RTP session manager");
+					  "RTP session manager");
   
+  
+  GParamSpec *RtpSession::destination_description_json_ = NULL;
+
   RtpSession::~RtpSession ()
   {
     g_debug ("rtpsession deleting");
@@ -175,6 +179,21 @@ namespace switcher
     //set the name before registering properties
     set_name (gst_element_get_name (rtpsession_));
     
+    //registering destinations-json property
+    gobject_.reset (new GObjectWrapper ());
+    gobject_->set_user_data (this);
+    if (destination_description_json_ == NULL)
+       destination_description_json_ = 
+	 GObjectWrapper::make_string_property ("destinations-json", 
+					       "json formated description of destinations",
+					       "",
+					       (GParamFlags) G_PARAM_READABLE,
+					       NULL,
+					       RtpSession::get_destinations_json_by_gvalue);
+
+    register_property_by_pspec (gobject_->get_gobject (), 
+				destination_description_json_, 
+				"destinations-json");
     return true;
   }
   
@@ -424,6 +443,7 @@ namespace switcher
       }
     RtpDestination::ptr dest;
     dest.reset (new RtpDestination ());
+    dest->set_name (nick_name);
     dest->set_host_name (host_name);
     destinations_.insert (nick_name, dest);
     return true;
@@ -619,10 +639,13 @@ namespace switcher
   bool
   RtpSession::add_data_stream (std::string shmdata_socket_path)
   {
+    g_print ("coucou\n");
     ShmdataReader::ptr reader;
     reader.reset (new ShmdataReader ());
     reader->set_path (shmdata_socket_path.c_str());
     reader->set_bin (bin_);
+
+    g_print ("coucou2\n");
 
     reader->set_on_first_data_hook (attach_data_stream, this);
     if (runtime_) // starting the reader if runtime is set
@@ -631,12 +654,16 @@ namespace switcher
 	reader->start ();
       }
 
+    g_print ("coucou3\n");
+
     //saving info about this local stream
     std::ostringstream os_id;
     os_id << next_id_;
     next_id_++;
     internal_id_.insert (shmdata_socket_path, os_id.str());
     register_shmdata_reader (reader);
+
+    g_print ("coucou4\n");
 
     return true;
   }  
@@ -786,4 +813,33 @@ namespace switcher
     g_debug ("on_no_more_pad");
   }
 
+  bool
+  RtpSession::get_destinations_json_by_gvalue (GValue *value,
+					      void *user_data)
+  {
+    RtpSession *context = static_cast<RtpSession *>(user_data);
+    g_value_set_string (value, context->get_destinations_json ().c_str ());
+    return TRUE;
+  }
+
+  std::string 
+  RtpSession::get_destinations_json ()
+  {
+    JSONBuilder::ptr destinations_json (new JSONBuilder ());
+    destinations_json->reset();
+    destinations_json->begin_object ();
+    destinations_json->set_member_name ("destinations");
+    destinations_json->begin_array ();
+    
+     std::vector<RtpDestination::ptr> destinations = destinations_.get_values ();
+     std::vector<RtpDestination::ptr>::iterator it;
+     if (destinations.begin () != destinations.end ())
+       for (it = destinations.begin (); it != destinations.end (); it++)
+	 destinations_json->add_node_value ( (*it)->get_json_root_node ());
+    
+    destinations_json->end_array ();
+    destinations_json->end_object ();
+    
+    return destinations_json->get_string (true);
+  }
 }
