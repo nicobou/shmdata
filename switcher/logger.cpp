@@ -226,7 +226,6 @@ namespace switcher
   gchar *
   Logger::get_last_line ()
   {
-    g_print ("last line %s\n", last_line_);
     return last_line_;
   }
 
@@ -235,7 +234,6 @@ namespace switcher
 				   void *user_data)
   {
     Logger *context = static_cast<Logger *>(user_data);
-    g_print ("coucou\n");
     g_value_set_string (value, context->get_last_line ());
     return TRUE;
   }
