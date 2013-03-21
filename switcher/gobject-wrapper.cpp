@@ -230,6 +230,12 @@ namespace switcher
     // g_print ("coucou: %d\n", val);
   }
 
+  void 
+  GObjectWrapper::notify_property_changed (GObject *object, GParamSpec *pspec)
+  {
+    g_object_notify_by_pspec (object, pspec);
+  }
+
   void
   GObjectWrapper::set_user_data (void *user_data)
   {

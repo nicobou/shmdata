@@ -450,7 +450,6 @@ controlService::get_property_description_by_class (std::string class_name,
   if (ctrl_server != NULL)
     manager = ctrl_server->get_quiddity_manager ();
 
-  g_print ("coucou\n");
   *result = manager->get_property_description_by_class (class_name, property_name);
 
   return SOAP_OK;

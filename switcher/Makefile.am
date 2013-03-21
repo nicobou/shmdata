@@ -36,6 +36,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     h264.cpp \
     http-sdp.cpp \
     json-builder.cpp \
+    logger.cpp \
     method.cpp \
     property.cpp \
     pulse-sink.cpp \
@@ -102,6 +103,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     hash-table_spec.h \
     http-sdp.h \
     json-builder.h \
+    logger.h \
     method.h \
     property.h \
     pulse-sink.h \
