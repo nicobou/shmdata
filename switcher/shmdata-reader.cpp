@@ -25,6 +25,7 @@ namespace switcher
 
   ShmdataReader::ShmdataReader()
   {
+    json_description_.reset (new JSONBuilder ());
     reader_ = shmdata_base_reader_new ();
     bin_ = NULL;
     path_ = "";
