@@ -62,43 +62,18 @@ leave (int sig)
 }
 
 static void
-log_handler (const gchar *log_domain, 
- 	     GLogLevelFlags log_level,
- 	     const gchar *message,
- 	     gpointer user_data)
+quiet_log_handler (const gchar *log_domain, 
+		   GLogLevelFlags log_level,
+		   const gchar *message,
+		   gpointer user_data)
 {
-   //OsgReader_impl *context = static_cast<OsgReader_impl*>(user_data);
-    if (quiet)
-      return;
+}
 
-   switch (log_level) {
-   case G_LOG_LEVEL_ERROR:
-     g_print ("%s-error: %s\n",log_domain, message);
-     break;
-   case G_LOG_LEVEL_CRITICAL:
-     g_print ("%s-critical: %s\n",log_domain, message);
-     break;
-   case G_LOG_LEVEL_WARNING:
-     g_print ("%s-warning: %s\n",log_domain, message);
-     break;
-   case G_LOG_LEVEL_MESSAGE:
-     if (debug || verbose)
-       g_print ("%s-message: %s\n",log_domain, message);
-     break;
-   case G_LOG_LEVEL_INFO:
-     if (debug || verbose)
-       g_print ("%s-info: %s\n",log_domain, message);
-     break;
-   case G_LOG_LEVEL_DEBUG:
-     if (debug)
-       g_print ("%s-debug: %s\n",log_domain, message);
-     break;
-   default:
-     g_print ("%s-unknown-level: %s\n",log_domain,message);
-     break;
-   }
- }
-
+static void 
+logger_cb (std::string quiddity_name, std::string property_name, std::string value, void *user_data)
+{
+  g_print ("%s\n", value.c_str());
+}
 
 int
 main (int argc,
@@ -117,13 +92,12 @@ main (int argc,
       exit (1);
     } 
 
-  g_log_set_default_handler (log_handler, NULL);
 
 
   //checking if this is printing info only
   if (listclasses)
     {
-      quiet=TRUE;
+      g_log_set_default_handler (quiet_log_handler, NULL);
       switcher::QuiddityManager::ptr manager 
 	= switcher::QuiddityManager::make_manager ("immpossible_name");  
       std::vector<std::string> resultlist = manager->get_classes ();
@@ -133,7 +107,7 @@ main (int argc,
     }
   if (classesdoc)
     {
-      quiet=TRUE;
+      g_log_set_default_handler (quiet_log_handler, NULL);
       switcher::QuiddityManager::ptr manager 
 	= switcher::QuiddityManager::make_manager ("immpossible_name");  
       g_print ("%s\n", manager->get_classes_doc ().c_str ());
@@ -141,7 +115,7 @@ main (int argc,
     }
   if (classdoc != NULL)
     {
-      quiet=TRUE;
+      g_log_set_default_handler (quiet_log_handler, NULL);
       switcher::QuiddityManager::ptr manager 
 	= switcher::QuiddityManager::make_manager ("immpossible_name");  
       g_print ("%s\n", manager->get_class_doc (classdoc).c_str ());
@@ -149,7 +123,7 @@ main (int argc,
     }
   if (listpropbyclass != NULL)
     {
-      quiet=TRUE;
+      g_log_set_default_handler (quiet_log_handler, NULL);
       switcher::QuiddityManager::ptr manager 
    	= switcher::QuiddityManager::make_manager ("immpossible_name");  
       g_print ("%s\n", manager->get_properties_description_by_class (listpropbyclass).c_str ());
@@ -157,7 +131,7 @@ main (int argc,
     }
   if (listmethodsbyclass != NULL)
     {
-      quiet=TRUE;
+      g_log_set_default_handler (quiet_log_handler, NULL);
       switcher::QuiddityManager::ptr manager 
    	= switcher::QuiddityManager::make_manager ("immpossible_name");  
       g_print ("%s\n", manager->get_methods_description_by_class (listmethodsbyclass).c_str ());
@@ -177,6 +151,34 @@ main (int argc,
       = switcher::QuiddityManager::make_manager (server_name);  
 
      container.push_back (manager); // keep reference only in the container
+
+     //create logger managing switcher log domain
+     manager->create ("logger", "internal_logger");
+     //manage logs from shmdata
+     manager->invoke ("internal_logger", "install_log_handler", "shmdata", NULL);
+     //manage logs from GStreamer
+     manager->invoke ("internal_logger", "install_log_handler", "GStreamer", NULL);
+     //manage logs from Glib
+     manager->invoke ("internal_logger", "install_log_handler", "Glib", NULL);
+     //manage logs from Glib-GObject
+     manager->invoke ("internal_logger", "install_log_handler", "Glib-GObject", NULL);
+     if (quiet)
+       manager->set_property ("internal_logger", "mute", "true");
+     else
+       manager->set_property ("internal_logger", "mute", "false");
+     if (debug)
+       manager->set_property ("internal_logger", "debug", "true");
+     else
+       manager->set_property ("internal_logger", "debug", "false");
+     if (verbose)
+       manager->set_property ("internal_logger", "verbose", "true");
+     else
+       manager->set_property ("internal_logger", "verbose", "false");
+          
+     //subscribe to logs:
+     manager->make_subscriber ("log_sub", logger_cb, NULL);
+     manager->subscribe_property ("log_sub","internal_logger","last-line");
+     
      // Create a runtime (pipeline0)
      //std::string runtime = 
      manager->create ("runtime");

@@ -212,6 +212,36 @@ QuiddityManager::remove_subscriber (std::string subscriber_name)
 						     cb);
   }
 
+  
+  bool 
+  QuiddityManager::invoke (const gchar *quiddity_name, 
+			   ...)
+  {
+    std::vector<std::string> method_args;
+    
+    if (quiddity_name == NULL)
+      {
+	g_warning ("trying to invoke with a NULL quiddity name");
+	return false;
+      }
+    va_list vl;
+    va_start(vl, quiddity_name);
+    char *method_name = va_arg(vl, char *);
+    if (method_name == NULL)
+      {
+	g_warning ("trying to invoke with a NULL method name");
+	return false;
+      }
+    char *method_arg = va_arg(vl, char *);
+    while (method_arg != NULL)
+      {
+	method_args.push_back (method_arg);
+	method_arg = va_arg(vl, char *);
+      }
+    va_end(vl);
+    return invoke (quiddity_name, method_name, method_args);
+  }
+
   bool 
   QuiddityManager::invoke (std::string quiddity_name, 
 			   std::string method_name,
