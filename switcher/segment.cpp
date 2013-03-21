@@ -229,6 +229,7 @@ namespace switcher
       }
     shmdata_writers_.insert (name, writer);
     update_shmdata_writers_description ();
+    GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_writers_description_);
     return true;
   }
   
@@ -242,6 +243,8 @@ namespace switcher
       }
     shmdata_readers_.insert (name, reader);
     update_shmdata_readers_description ();
+    GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
+
     return true;
     
   }
@@ -250,6 +253,8 @@ namespace switcher
   {
     shmdata_readers_.remove (shmdata_path);
     update_shmdata_readers_description ();
+    GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
+
     return true;
   }
 
