@@ -137,8 +137,8 @@
     bool invoke (std::string quiddity_name, 
 		  std::string method_name,
 		  std::vector<std::string> args);  
-    bool invoke (const gchar *quiddity_name,
-		 ...);
+    bool invoke_va (const gchar *quiddity_name,
+		    ...);
      
      // will invoke the given method after quiddity creation, 
      //if method exists (only one method)

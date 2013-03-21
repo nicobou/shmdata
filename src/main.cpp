@@ -155,13 +155,13 @@ main (int argc,
      //create logger managing switcher log domain
      manager->create ("logger", "internal_logger");
      //manage logs from shmdata
-     manager->invoke ("internal_logger", "install_log_handler", "shmdata", NULL);
+     manager->invoke_va ("internal_logger", "install_log_handler", "shmdata", NULL);
      //manage logs from GStreamer
-     manager->invoke ("internal_logger", "install_log_handler", "GStreamer", NULL);
+     manager->invoke_va ("internal_logger", "install_log_handler", "GStreamer", NULL);
      //manage logs from Glib
-     manager->invoke ("internal_logger", "install_log_handler", "Glib", NULL);
+     manager->invoke_va ("internal_logger", "install_log_handler", "Glib", NULL);
      //manage logs from Glib-GObject
-     manager->invoke ("internal_logger", "install_log_handler", "Glib-GObject", NULL);
+     manager->invoke_va ("internal_logger", "install_log_handler", "Glib-GObject", NULL);
      if (quiet)
        manager->set_property ("internal_logger", "mute", "true");
      else

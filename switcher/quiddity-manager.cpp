@@ -214,8 +214,8 @@ QuiddityManager::remove_subscriber (std::string subscriber_name)
 
   
   bool 
-  QuiddityManager::invoke (const gchar *quiddity_name, 
-			   ...)
+  QuiddityManager::invoke_va (const gchar *quiddity_name, 
+			      ...)
   {
     std::vector<std::string> method_args;
     
