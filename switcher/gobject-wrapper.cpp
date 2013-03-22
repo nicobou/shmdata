@@ -270,10 +270,7 @@ namespace switcher
     
     //FIXME only methods seems to be required, so maybe move other args
     GObjectCustomProperty::ptr property =  
-      GObjectCustomProperty::make_custom_property (nickname,
-						   description,
-						   param,
-						   set_method,
+      GObjectCustomProperty::make_custom_property (set_method,
 						   get_method);
     
     custom_properties_[prop_id] = property;
@@ -309,10 +306,7 @@ namespace switcher
 					     read_write_flags);
 
   GObjectCustomProperty::ptr property =  
-    GObjectCustomProperty::make_custom_property (nickname,
-						 description,
-						 param,
-						 set_method,
+    GObjectCustomProperty::make_custom_property (set_method,
 						 get_method);
   
   custom_properties_[prop_id] = property;
@@ -349,10 +343,7 @@ namespace switcher
 					      read_write_flags);
 
     GObjectCustomProperty::ptr property =  
-      GObjectCustomProperty::make_custom_property (nickname,
-						   description,
-						   param,
-						   set_method,
+      GObjectCustomProperty::make_custom_property (set_method,
 						   get_method);
     
   custom_properties_[prop_id] = property;

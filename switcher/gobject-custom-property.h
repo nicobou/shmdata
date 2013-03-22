@@ -36,10 +36,7 @@ namespace switcher
     ~GObjectCustomProperty ();
     
     static GObjectCustomProperty::ptr 
-      make_custom_property (const char *nickname,
-			    const char *description,
-			    GParamSpec *param_spec,
-			    set_method_pointer set_method,
+      make_custom_property (set_method_pointer set_method,
 			    get_method_pointer get_method);
 
     set_method_pointer set_method_;
@@ -47,14 +44,8 @@ namespace switcher
     
   private:
     GObjectCustomProperty ();
-    void set_members (const char *nickname,
-		      const char *description,
-		      GParamSpec *param_spec,
-		      set_method_pointer set_method,
+    void set_members (set_method_pointer set_method,
 		      get_method_pointer get_method);
-    gchar *nickname_;
-    gchar *description_;
-    GParamSpec *param_spec_;
   };
 }  // end of namespace
 
