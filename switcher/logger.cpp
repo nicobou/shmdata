@@ -38,13 +38,26 @@ namespace switcher
       installed_ = true;
     
     set_name ("logger");
+    
+    custom_props_.reset (new CustomPropertyHelper ());
+    GParamSpec *test_string = custom_props_->make_string_property ("pouet", 
+								  "ah ba pouet",
+								  "coucou pouet",
+								   (GParamFlags)G_PARAM_READWRITE,
+								  test_set_string_method,
+								  test_get_string_method,
+								  this);
+
+    register_property_by_pspec (custom_props_->get_gobject (), 
+				test_string, 
+				"pouet");
 
     mute_ = false;
     debug_ = true;
     verbose_ = true;
     last_line_ = g_strdup ("");
     gobject_.reset (new GObjectWrapper ());
-    gobject_->set_user_data (this);
+    gobject_->set_default_user_data (this);
     last_line_prop_ = 
       GObjectWrapper::make_string_property ("last-line", 
 					    "last log line",
@@ -264,12 +277,14 @@ namespace switcher
   {
     Logger *context = static_cast<Logger *>(user_data);
     context->set_mute (g_value_get_boolean (val));
+    return true;
   }
     
   bool Logger::get_mute_by_gvalue (GValue *val, void *user_data)
   {
     Logger *context = static_cast<Logger *>(user_data);
     g_value_set_boolean (val, context->get_mute ());
+    return true;
   }
   
   gboolean 
@@ -291,6 +306,7 @@ namespace switcher
   {
     Logger *context = static_cast<Logger *>(user_data);
     context->set_debug (g_value_get_boolean (val));
+    return true;
   }
   
   bool 
@@ -298,6 +314,7 @@ namespace switcher
   {
     Logger *context = static_cast<Logger *>(user_data);
     g_value_set_boolean (val, context->get_debug ());
+    return true;
   }
   
   
@@ -321,6 +338,7 @@ namespace switcher
   {
     Logger *context = static_cast<Logger *>(user_data);
     context->set_verbose (g_value_get_boolean (val));
+    return true;
   }
   
   bool 
@@ -328,5 +346,24 @@ namespace switcher
   {
     Logger *context = static_cast<Logger *>(user_data);
     g_value_set_boolean (val, context->get_verbose ());
+    return true;
   }
+
+  void 
+  Logger::test_set_string_method(const gchar *value, void *user_data)
+  {
+    Logger *context = static_cast<Logger *> (user_data);
+    if (context->pouet_ != NULL)
+      g_free (context->pouet_);
+    context->pouet_ = g_strdup (value);
+  }
+  
+  gchar *
+  Logger::test_get_string_method(void *user_data)
+  {
+    Logger *context = static_cast<Logger *> (user_data);
+    return context->pouet_;
+  }
+
+
 }

@@ -25,6 +25,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     audio-test-source.cpp \
     base-sink.cpp \
     base-source.cpp \
+    custom-property-helper.cpp \
     decodebin2.cpp \
     deinterleave.cpp \
     file-sdp.cpp \
@@ -90,6 +91,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     base-source.h \
     creator.h \
     ctrl-webservice-definition.h \
+    custom-property-helper.h \
     decodebin2.h \
     deinterleave.h \
     file-sdp.h \

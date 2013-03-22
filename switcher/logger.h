@@ -23,6 +23,7 @@
 
 #include "switcher/quiddity.h"
 #include "switcher/gobject-wrapper.h"
+#include "switcher/custom-property-helper.h"
 #include <glib.h>
 
 namespace switcher
@@ -45,6 +46,10 @@ namespace switcher
     gboolean get_verbose ();
     void set_verbose (gboolean verbose);
 
+
+    static void test_set_string_method(const gchar *value, void *user_data);
+    static gchar *test_get_string_method(void *user_data);
+
     static gboolean install_log_handler_wrapped (gpointer log_domain, gpointer user_data);
     static gboolean remove_log_handler_wrapped (gpointer log_domain, gpointer user_data);
     static void log_handler (const gchar *log_domain, 
@@ -63,6 +68,8 @@ namespace switcher
     QuiddityDocumentation get_documentation ();
     static QuiddityDocumentation doc_;
 
+    gchar *pouet_;
+    
   private:
     void replace_last_line(gchar *next_line);
     static bool installed_;
@@ -73,12 +80,12 @@ namespace switcher
     StringMap <guint> handler_ids_;
     //custom property for "last_line" 
     //no need to make it static since logger is a singleton
+    CustomPropertyHelper::ptr custom_props_;
     GObjectWrapper::ptr gobject_;
     GParamSpec *last_line_prop_;
     GParamSpec *mute_prop_;
     GParamSpec *debug_prop_;
     GParamSpec *verbose_prop_;
-    
   };
   
 }  // end of namespace

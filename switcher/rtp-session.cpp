@@ -181,7 +181,7 @@ namespace switcher
     
     //registering destinations-json property
     gobject_.reset (new GObjectWrapper ());
-    gobject_->set_user_data (this);
+    gobject_->set_default_user_data (this);
     if (destination_description_json_ == NULL)
        destination_description_json_ = 
 	 GObjectWrapper::make_string_property ("destinations-json", 
