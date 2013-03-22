@@ -22,7 +22,6 @@
 #define __SWITCHER_LOGGER_H__
 
 #include "switcher/quiddity.h"
-#include "switcher/gobject-wrapper.h"
 #include "switcher/custom-property-helper.h"
 #include <glib.h>
 
@@ -38,17 +37,13 @@ namespace switcher
 
     gboolean install_log_handler (const gchar *log_domain);
     gboolean remove_log_handler (const gchar *log_domain);
-    gchar *get_last_line ();
-    gboolean get_mute ();
-    void set_mute (gboolean mute);
-    gboolean get_debug ();
-    void set_debug (gboolean debug);
-    gboolean get_verbose ();
-    void set_verbose (gboolean verbose);
-
-
-    static void test_set_string_method(const gchar *value, void *user_data);
-    static gchar *test_get_string_method(void *user_data);
+    static gchar *get_last_line (void *user_data);
+    static gboolean get_mute (void *user_data);
+    static void set_mute (gboolean mute, void *user_data);
+    static gboolean get_debug (void *user_data);
+    static void set_debug (gboolean debug, void *user_data);
+    static gboolean get_verbose (void *user_data);
+    static void set_verbose (gboolean verbose, void *user_data);
 
     static gboolean install_log_handler_wrapped (gpointer log_domain, gpointer user_data);
     static gboolean remove_log_handler_wrapped (gpointer log_domain, gpointer user_data);
@@ -56,20 +51,10 @@ namespace switcher
 			     GLogLevelFlags log_level,
 			     const gchar *message,
 			     gpointer user_data);
-    static bool get_last_line_by_gvalue (GValue *value, void *user_data);
-    
-    static bool set_mute_by_gvalue (const GValue *val, void *user_data);
-    static bool get_mute_by_gvalue (GValue *val, void *user_data);
-    static bool set_debug_by_gvalue (const GValue *val, void *user_data);
-    static bool get_debug_by_gvalue (GValue *val, void *user_data);
-    static bool set_verbose_by_gvalue (const GValue *val, void *user_data);
-    static bool get_verbose_by_gvalue (GValue *val, void *user_data);
 
     QuiddityDocumentation get_documentation ();
     static QuiddityDocumentation doc_;
 
-    gchar *pouet_;
-    
   private:
     void replace_last_line(gchar *next_line);
     static bool installed_;
@@ -78,10 +63,8 @@ namespace switcher
     bool debug_;
     bool verbose_;
     StringMap <guint> handler_ids_;
-    //custom property for "last_line" 
-    //no need to make it static since logger is a singleton
+    //custom properties 
     CustomPropertyHelper::ptr custom_props_;
-    GObjectWrapper::ptr gobject_;
     GParamSpec *last_line_prop_;
     GParamSpec *mute_prop_;
     GParamSpec *debug_prop_;

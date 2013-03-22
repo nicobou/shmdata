@@ -40,65 +40,57 @@ namespace switcher
     set_name ("logger");
     
     custom_props_.reset (new CustomPropertyHelper ());
-    GParamSpec *test_string = custom_props_->make_string_property ("pouet", 
-								  "ah ba pouet",
-								  "coucou pouet",
-								   (GParamFlags)G_PARAM_READWRITE,
-								  test_set_string_method,
-								  test_get_string_method,
-								  this);
-
-    register_property_by_pspec (custom_props_->get_gobject (), 
-				test_string, 
-				"pouet");
-
     mute_ = false;
     debug_ = true;
     verbose_ = true;
     last_line_ = g_strdup ("");
-    gobject_.reset (new GObjectWrapper ());
-    gobject_->set_default_user_data (this);
+
     last_line_prop_ = 
-      GObjectWrapper::make_string_property ("last-line", 
-					    "last log line",
-					    "",
-					    (GParamFlags) G_PARAM_READABLE,
-					    NULL,
-					    Logger::get_last_line_by_gvalue);
-    register_property_by_pspec (gobject_->get_gobject (), 
+      custom_props_->make_string_property ("last-line", 
+					   "last log line",
+					   "",
+					   (GParamFlags) G_PARAM_READABLE,
+					   NULL,
+					   Logger::get_last_line,
+					   this);
+    
+    register_property_by_pspec (custom_props_->get_gobject (), 
 				last_line_prop_, 
 				"last-line");
-
+    
     mute_prop_ = 
-      GObjectWrapper::make_boolean_property ("mute", 
-					     "mute log messages",
-					     FALSE,
-					     (GParamFlags) G_PARAM_READWRITE,
-					     Logger::set_mute_by_gvalue,
-					     Logger::get_mute_by_gvalue);
-    register_property_by_pspec (gobject_->get_gobject (), 
+      custom_props_->make_boolean_property ("mute", 
+					    "mute log messages",
+					    (gboolean)FALSE,
+					    (GParamFlags) G_PARAM_READWRITE,
+					    Logger::set_mute,
+					    Logger::get_mute,
+					    this);
+    register_property_by_pspec (custom_props_->get_gobject (), 
 				mute_prop_, 
 				"mute");
 
     debug_prop_ = 
-      GObjectWrapper::make_boolean_property ("debug", 
-					     "enable debug messages",
-					     TRUE,
-					     (GParamFlags) G_PARAM_READWRITE,
-					     Logger::set_debug_by_gvalue,
-					     Logger::get_debug_by_gvalue);
-    register_property_by_pspec (gobject_->get_gobject (), 
+      custom_props_->make_boolean_property ("debug", 
+					    "enable debug messages",
+					    (gboolean)TRUE,
+					    (GParamFlags) G_PARAM_READWRITE,
+					    Logger::set_debug,
+					    Logger::get_debug,
+					    this);
+    register_property_by_pspec (custom_props_->get_gobject (), 
 				debug_prop_, 
 				"debug");
 
     verbose_prop_ = 
-      GObjectWrapper::make_boolean_property ("verbose", 
-					     "enable log messages",
-					     TRUE,
-					     (GParamFlags) G_PARAM_READWRITE,
-					     Logger::set_verbose_by_gvalue,
-					     Logger::get_verbose_by_gvalue);
-    register_property_by_pspec (gobject_->get_gobject (), 
+      custom_props_->make_boolean_property ("verbose", 
+					    "enable log messages",
+					    TRUE,
+					    (GParamFlags) G_PARAM_READWRITE,
+					    Logger::set_verbose,
+					    Logger::get_verbose,
+					    this);
+    register_property_by_pspec (custom_props_->get_gobject (), 
 				verbose_prop_, 
 				"verbose");
     
@@ -232,24 +224,8 @@ namespace switcher
        break;
      }
 
-     GObjectWrapper::notify_property_changed (context->gobject_->get_gobject (),
-					      context->last_line_prop_);
+     context->custom_props_->notify_property_changed (context->last_line_prop_);
 }
-
-  gchar *
-  Logger::get_last_line ()
-  {
-    return last_line_;
-  }
-
-  bool
-  Logger::get_last_line_by_gvalue (GValue *value,
-				   void *user_data)
-  {
-    Logger *context = static_cast<Logger *>(user_data);
-    g_value_set_string (value, context->get_last_line ());
-    return TRUE;
-  }
 
 
   QuiddityDocumentation 
@@ -257,113 +233,55 @@ namespace switcher
   {
     return doc_;
   }
-  
-  gboolean 
-  Logger::get_mute ()
-  {
-    return mute_;
-  }
 
-  void 
-  Logger::set_mute (gboolean mute)
-  {
-    mute_ = mute;
-    GObjectWrapper::notify_property_changed (gobject_->get_gobject (),
-					     mute_prop_);
-  }
-  
-  bool
-  Logger::set_mute_by_gvalue (const GValue *val, void *user_data)
-  {
-    Logger *context = static_cast<Logger *>(user_data);
-    context->set_mute (g_value_get_boolean (val));
-    return true;
-  }
-    
-  bool Logger::get_mute_by_gvalue (GValue *val, void *user_data)
-  {
-    Logger *context = static_cast<Logger *>(user_data);
-    g_value_set_boolean (val, context->get_mute ());
-    return true;
-  }
-  
-  gboolean 
-  Logger::get_debug ()
-  {
-    return debug_;
-  }
-
-  void 
-  Logger::set_debug (gboolean debug)
-  {
-    debug_ = debug;
-    GObjectWrapper::notify_property_changed (gobject_->get_gobject (),
-					     debug_prop_);
-  }
-  
-  bool 
-  Logger::set_debug_by_gvalue (const GValue *val, void *user_data)
-  {
-    Logger *context = static_cast<Logger *>(user_data);
-    context->set_debug (g_value_get_boolean (val));
-    return true;
-  }
-  
-  bool 
-  Logger::get_debug_by_gvalue (GValue *val, void *user_data)
-  {
-    Logger *context = static_cast<Logger *>(user_data);
-    g_value_set_boolean (val, context->get_debug ());
-    return true;
-  }
-  
-  
-  gboolean 
-  Logger::get_verbose ()
-  {
-    return verbose_;
-  }
-
-  void 
-  Logger::set_verbose (gboolean verbose)
-  {
-    verbose_ = verbose;
-    GObjectWrapper::notify_property_changed (gobject_->get_gobject (),
-					     verbose_prop_);
-  }
-
-  
-  bool 
-  Logger::set_verbose_by_gvalue (const GValue *val, void *user_data)
-  {
-    Logger *context = static_cast<Logger *>(user_data);
-    context->set_verbose (g_value_get_boolean (val));
-    return true;
-  }
-  
-  bool 
-  Logger::get_verbose_by_gvalue (GValue *val, void *user_data)
-  {
-    Logger *context = static_cast<Logger *>(user_data);
-    g_value_set_boolean (val, context->get_verbose ());
-    return true;
-  }
-
-  void 
-  Logger::test_set_string_method(const gchar *value, void *user_data)
-  {
-    Logger *context = static_cast<Logger *> (user_data);
-    if (context->pouet_ != NULL)
-      g_free (context->pouet_);
-    context->pouet_ = g_strdup (value);
-  }
-  
   gchar *
-  Logger::test_get_string_method(void *user_data)
+  Logger::get_last_line (void *user_data)
   {
     Logger *context = static_cast<Logger *> (user_data);
-    return context->pouet_;
+    return context->last_line_;
   }
 
+  
+  gboolean 
+  Logger::get_mute (void *user_data)
+  {
+    Logger *context = static_cast<Logger *> (user_data);
+    return context->mute_;
+  }
 
+  void 
+  Logger::set_mute (gboolean mute, void *user_data)
+  {
+    Logger *context = static_cast<Logger *> (user_data);
+    context->mute_ = mute;
+  }
+  
+  gboolean 
+  Logger::get_debug (void *user_data)
+  {
+    Logger *context = static_cast<Logger *> (user_data);
+    return context->debug_;
+  }
+
+  void 
+  Logger::set_debug (gboolean debug, void *user_data)
+  {
+    Logger *context = static_cast<Logger *> (user_data);
+    context->debug_ = debug;
+  }
+  
+  gboolean 
+  Logger::get_verbose (void *user_data)
+  {
+    Logger *context = static_cast<Logger *> (user_data);
+    return context->verbose_;
+  }
+
+  void 
+  Logger::set_verbose (gboolean verbose, void *user_data)
+  {
+    Logger *context = static_cast<Logger *> (user_data);
+    context->verbose_ = verbose;
+  }
+  
 }

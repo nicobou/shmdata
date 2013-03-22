@@ -27,7 +27,7 @@
 #include "switcher/segment.h"
 #include "switcher/quiddity-manager.h"
 #include "switcher/rtp-destination.h"
-#include "switcher/gobject-wrapper.h"
+#include "switcher/custom-property-helper.h"
  
 namespace switcher
 {
@@ -49,15 +49,13 @@ namespace switcher
     //remote dest (using user defined "nick_name")
     bool add_destination (std::string dest_name,std::string host_name);
     bool remove_destination (std::string dest_name);
-    std::string get_destinations_json ();
+    static gchar *get_destinations_json (void *user_data);
 
     //sending
     bool add_udp_stream_to_dest (std::string shmdata_socket_path, std::string host, std::string port);
     bool remove_udp_dest (std::string shmdata_socket_path, std::string host, std::string port);
     bool write_sdp_file (std::string dest_name);
 
-    //custom property get function
-    static bool get_destinations_json_by_gvalue (GValue *value, void *user_data);
  
     //wrapper for registering the data_stream functions
     static gboolean add_data_stream_wrapped (gpointer shmdata_socket_path, 
@@ -89,9 +87,9 @@ namespace switcher
     guint next_id_;
 
     //custom properties:
-    GObjectWrapper::ptr gobject_;
-    static GParamSpec *destination_description_json_;
-
+    CustomPropertyHelper::ptr custom_props_; 
+    GParamSpec *destination_description_json_;
+    gchar *destinations_json_;
 
     //local streams
     StringMap <std::string> internal_id_; //maps shmdata path with internal id 

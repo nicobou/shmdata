@@ -30,9 +30,6 @@ namespace switcher
   QuiddityDocumentation RtpSession::doc_ ("RTP session", "rtpsession",
 					  "RTP session manager");
   
-  
-  GParamSpec *RtpSession::destination_description_json_ = NULL;
-
   RtpSession::~RtpSession ()
   {
     g_debug ("rtpsession deleting");
@@ -179,19 +176,16 @@ namespace switcher
     //set the name before registering properties
     set_name (gst_element_get_name (rtpsession_));
     
-    //registering destinations-json property
-    gobject_.reset (new GObjectWrapper ());
-    gobject_->set_default_user_data (this);
-    if (destination_description_json_ == NULL)
-       destination_description_json_ = 
-	 GObjectWrapper::make_string_property ("destinations-json", 
-					       "json formated description of destinations",
-					       "",
-					       (GParamFlags) G_PARAM_READABLE,
-					       NULL,
-					       RtpSession::get_destinations_json_by_gvalue);
+    custom_props_.reset (new CustomPropertyHelper ());
+    destination_description_json_ = custom_props_->make_string_property ("destinations-json", 
+									 "json formated description of destinations",
+									 "",
+									 (GParamFlags) G_PARAM_READABLE,
+									 NULL,
+									 RtpSession::get_destinations_json,
+									 this);
 
-    register_property_by_pspec (gobject_->get_gobject (), 
+    register_property_by_pspec (custom_props_->get_gobject (), 
 				destination_description_json_, 
 				"destinations-json");
     return true;
@@ -813,25 +807,20 @@ namespace switcher
     g_debug ("on_no_more_pad");
   }
 
-  bool
-  RtpSession::get_destinations_json_by_gvalue (GValue *value,
-					      void *user_data)
+  gchar *
+  RtpSession::get_destinations_json (void *user_data)
   {
-    RtpSession *context = static_cast<RtpSession *>(user_data);
-    g_value_set_string (value, context->get_destinations_json ().c_str ());
-    return TRUE;
-  }
+    RtpSession *context = static_cast<RtpSession *> (user_data);
 
-  std::string 
-  RtpSession::get_destinations_json ()
-  {
+    if (context->destinations_json_ != NULL)
+      g_free (context->destinations_json_);
     JSONBuilder::ptr destinations_json (new JSONBuilder ());
     destinations_json->reset();
     destinations_json->begin_object ();
     destinations_json->set_member_name ("destinations");
     destinations_json->begin_array ();
     
-     std::vector<RtpDestination::ptr> destinations = destinations_.get_values ();
+     std::vector<RtpDestination::ptr> destinations = context->destinations_.get_values ();
      std::vector<RtpDestination::ptr>::iterator it;
      if (destinations.begin () != destinations.end ())
        for (it = destinations.begin (); it != destinations.end (); it++)
@@ -839,7 +828,8 @@ namespace switcher
     
     destinations_json->end_array ();
     destinations_json->end_object ();
-    
-    return destinations_json->get_string (true);
+    context->destinations_json_ = g_strdup (destinations_json->get_string (true).c_str ());
+    return context->destinations_json_;
   }
+
 }
