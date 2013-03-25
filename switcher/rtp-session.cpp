@@ -120,7 +120,7 @@ namespace switcher
 		    (gpointer)this);
     set_method_description ("add_destination", 
 			    "add a destination (two destinations can share the same host name)", 
-			    Method::make_arg_description ("nick_name", 
+			    Method::make_arg_description ("name", 
 							  "a destination name (user defined)",
 							  "host_name",
 							  "the host name of the destination",
@@ -133,7 +133,7 @@ namespace switcher
 		    (gpointer)this);
     set_method_description ("remove_destination", 
 			    "remove a destination", 
-			    Method::make_arg_description ("nick_name", 
+			    Method::make_arg_description ("name", 
 							  "the destination name",
 							  NULL));
 
@@ -168,7 +168,7 @@ namespace switcher
 		    (gpointer)this);
     set_method_description ("write_sdp_file", 
 			    "print sdp for the given destination", 
-			    Method::make_arg_description ("nickname", 
+			    Method::make_arg_description ("name", 
 							  "the name of the destination",
 							  NULL));
    
