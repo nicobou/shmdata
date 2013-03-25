@@ -633,13 +633,10 @@ namespace switcher
   bool
   RtpSession::add_data_stream (std::string shmdata_socket_path)
   {
-    g_print ("coucou\n");
     ShmdataReader::ptr reader;
     reader.reset (new ShmdataReader ());
     reader->set_path (shmdata_socket_path.c_str());
     reader->set_bin (bin_);
-
-    g_print ("coucou2\n");
 
     reader->set_on_first_data_hook (attach_data_stream, this);
     if (runtime_) // starting the reader if runtime is set
@@ -648,16 +645,12 @@ namespace switcher
 	reader->start ();
       }
 
-    g_print ("coucou3\n");
-
     //saving info about this local stream
     std::ostringstream os_id;
     os_id << next_id_;
     next_id_++;
     internal_id_.insert (shmdata_socket_path, os_id.str());
     register_shmdata_reader (reader);
-
-    g_print ("coucou4\n");
 
     return true;
   }  
