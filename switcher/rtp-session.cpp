@@ -319,7 +319,7 @@ namespace switcher
     sinkpad = gst_element_get_request_pad (context->rtpsession_, "send_rtp_sink_%d");
     srcpad = gst_element_get_static_pad (pay, "src");
     if (gst_pad_link (srcpad, sinkpad) != GST_PAD_LINK_OK)
-      g_error ("RtpSession::make_data_stream_available: failed to link payloader to rtpbin");
+      g_warning ("RtpSession::make_data_stream_available: failed to link payloader to rtpbin");
     gst_object_unref (sinkpad);
     gst_object_unref (srcpad);
     
@@ -341,7 +341,7 @@ namespace switcher
     GstPad *rtp_src_pad = gst_element_get_static_pad (context->rtpsession_, rtp_src_pad_name);
 
     if (!GST_IS_PAD (rtp_src_pad)) 
-      g_error ("RtpSession: rtp_src_pad is not a pad"); 
+      g_warning ("RtpSession: rtp_src_pad is not a pad"); 
     ShmdataWriter::ptr rtp_writer;
     rtp_writer.reset (new ShmdataWriter ());
     std::string rtp_writer_name = context->make_file_name ("send_rtp_src_"+internal_session_id); 
@@ -375,7 +375,7 @@ namespace switcher
     gchar *rtcp_sink_pad_name = g_strconcat ("recv_rtcp_sink_", rtp_session_id,NULL); 
     GstPad *rtcp_sink_pad = gst_element_get_request_pad (context->rtpsession_, rtcp_sink_pad_name);
     if (gst_pad_link (funnel_src_pad, rtcp_sink_pad) != GST_PAD_LINK_OK)
-      g_error ("RtpSession::make_data_stream_available: Failed to link rtcpsrc to rtpbin");
+      g_warning ("RtpSession::make_data_stream_available: Failed to link rtcpsrc to rtpbin");
     gst_object_unref (funnel_src_pad);
     g_free (rtcp_sink_pad_name);
     //for cleaning of funnel
@@ -494,13 +494,13 @@ namespace switcher
 
     if (!internal_id_.contains (shmdata_socket_path))
       {
-	g_error ("RtpSession is not connected to %s",shmdata_socket_path.c_str ());
+	g_warning ("RtpSession is not connected to %s",shmdata_socket_path.c_str ());
 	return false;
       }
     
     if (!destinations_.contains (nick_name))
       {
-	g_error ("RtpSession does not contain a destination named %s",nick_name.c_str ());
+	g_warning ("RtpSession does not contain a destination named %s",nick_name.c_str ());
 	return false;
       }
 
@@ -509,7 +509,7 @@ namespace switcher
 
     if (rtp_port %2 !=0)
       {
-	g_error ("RtpSession rtp destination port %s must be even, not odd",port.c_str ());
+	g_warning ("RtpSession rtp destination port %s must be even, not odd",port.c_str ());
 	return false;
       }
     std::string id = internal_id_.lookup (shmdata_socket_path);
@@ -595,7 +595,7 @@ namespace switcher
 
     if (!internal_id_.contains (shmdata_socket_path))
       {
-	g_error ("RtpSession is not connected to %s",shmdata_socket_path.c_str ());
+	g_warning ("RtpSession is not connected to %s",shmdata_socket_path.c_str ());
 	return false;
       }
     
@@ -678,7 +678,7 @@ namespace switcher
   {
     if (!internal_id_.contains (shmdata_socket_path))
       {
-	g_error ("RtpSession::remove_data_stream: %s not present",shmdata_socket_path.c_str ());
+	g_warning ("RtpSession::remove_data_stream: %s not present",shmdata_socket_path.c_str ());
 	return false;
       }
 
@@ -701,7 +701,7 @@ namespace switcher
 
     if (!funnels_.contains (shmdata_socket_path))
       {
-	g_error ("RtpSession::remove_data_stream: no funnel");
+	g_warning ("RtpSession::remove_data_stream: no funnel");
 	return false;
       }
     funnels_.remove (shmdata_socket_path);
