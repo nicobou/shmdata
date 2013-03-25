@@ -58,6 +58,7 @@ namespace switcher
   private:
     void replace_last_line(gchar *next_line);
     static bool installed_;
+    bool i_am_the_one_;
     gchar *last_line_;
     bool mute_;
     bool debug_;

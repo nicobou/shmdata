@@ -29,14 +29,17 @@ namespace switcher
   bool
   Logger::init()
   {
+    i_am_the_one_ = false;
     if (installed_)
       {
 	g_warning ("Only one logger instance is possible, cannot create");
 	return false;
       }
     else
-      installed_ = true;
-    
+      {
+	installed_ = true;
+	i_am_the_one_ = true;
+      }
     set_name ("logger");
     
     custom_props_.reset (new CustomPropertyHelper ());
@@ -130,12 +133,15 @@ namespace switcher
 
   Logger::~Logger()
   {
-    std::map<std::string, guint> handlers = handler_ids_.get_map ();
-    std::map<std::string, guint>::iterator it;
-    for (it = handlers.begin (); it != handlers.end (); it++)
-	g_log_remove_handler (it->first.c_str (), it->second);
-
-    g_free (last_line_);
+    if (i_am_the_one_)
+      {
+	std::map<std::string, guint> handlers = handler_ids_.get_map ();
+	std::map<std::string, guint>::iterator it;
+	for (it = handlers.begin (); it != handlers.end (); it++)
+	  g_log_remove_handler (it->first.c_str (), it->second);
+	
+	g_free (last_line_);
+      }
   }
     
   
