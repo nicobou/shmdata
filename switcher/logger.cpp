@@ -141,6 +141,7 @@ namespace switcher
 	  g_log_remove_handler (it->first.c_str (), it->second);
 	
 	g_free (last_line_);
+	installed_ = false;
       }
   }
     

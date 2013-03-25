@@ -428,7 +428,7 @@ namespace switcher
       return "{\"error\":\"class not found\"}";
     std::string quid_name = create (class_name);
     if (g_strcmp0 (quid_name.c_str (), "") == 0)
-      return "{\"error\":\"class cannot be instanciated\"}";
+      return "{\"error\":\"cannot get property because the class cannot be instanciated\"}";
     std::string descr = get_properties_description (quid_name);
     remove (quid_name);
     return descr;
@@ -442,7 +442,7 @@ namespace switcher
       return "{\"error\":\"class not found\"}";
     std::string quid_name = create (class_name);
     if (g_strcmp0 (quid_name.c_str (), "") == 0)
-      return "{\"error\":\"class cannot be instanciated\"}";
+      return "{\"error\":\"cannot get property because the class cannot be instanciated\"}";
     std::string descr = get_property_description (quid_name, property_name);
     remove (quid_name);
     return descr;
