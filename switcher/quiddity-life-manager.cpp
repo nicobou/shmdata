@@ -30,6 +30,7 @@
 #include "switcher/audio-test-source.h"
 #include "switcher/decodebin2.h"
 #include "switcher/deinterleave.h"
+#include "switcher/fake-shmdata-writer.h"
 #include "switcher/file-sdp.h"
 #include "switcher/gst-parse-to-bin-src.h"
 #include "switcher/h264.h"
@@ -166,6 +167,8 @@ namespace switcher
 						  Decodebin2::doc_.get_json_root_node ());
     abstract_factory_.register_class<Deinterleave> (Deinterleave::doc_.get_class_name (), 
 						    Deinterleave::doc_.get_json_root_node ());
+    abstract_factory_.register_class<FakeShmdataWriter> (FakeShmdataWriter::doc_.get_class_name (), 
+							 FakeShmdataWriter::doc_.get_json_root_node ());
     abstract_factory_.register_class<FileSDP> (FileSDP::doc_.get_class_name (), 
 					       FileSDP::doc_.get_json_root_node ());
     abstract_factory_.register_class<GstParseToBinSrc> (GstParseToBinSrc::doc_.get_class_name (),

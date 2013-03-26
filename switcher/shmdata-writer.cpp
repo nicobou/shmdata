@@ -59,13 +59,19 @@ namespace switcher
 	  }
       }
     
+    return set_path_without_deleting (name);
+  }
+
+  bool 
+  ShmdataWriter::set_path_without_deleting (std::string name)
+  {
     //setting the writer
     shmdata_base_writer_set_path (writer_,name.c_str());
     path_ = name;
     make_json_description ();
     return true;
   }
- 
+
   std::string 
   ShmdataWriter::get_path ()
   {

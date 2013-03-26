@@ -36,7 +36,8 @@ namespace switcher
     typedef std::shared_ptr<ShmdataWriter> ptr;
     ShmdataWriter();
     ~ShmdataWriter();
-    bool set_path (std::string name); //path will be fully specified
+    bool set_path (std::string name); //path needs to be fully specified
+    bool set_path_without_deleting (std::string name); //path needs to be fully specified
     std::string get_path ();
     //caps does not need to be fully specified:
     void plug (GstElement *bin, GstElement *source_element,GstCaps *caps);

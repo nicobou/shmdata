@@ -28,6 +28,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     custom-property-helper.cpp \
     decodebin2.cpp \
     deinterleave.cpp \
+    fake-shmdata-writer.cpp \
     file-sdp.cpp \
     gobject-custom-property.cpp \
     gobject-wrapper.cpp \
@@ -94,6 +95,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     custom-property-helper.h \
     decodebin2.h \
     deinterleave.h \
+    fake-shmdata-writer.h \
     file-sdp.h \
     gobject-custom-property.h \
     gobject-wrapper.h \
