@@ -136,7 +136,7 @@ namespace switcher
       {
 	// i->first is your key
 	// i->second is it''s value
-	std::string string_caps = (iter->second)->get_property ("udpsend_rtp","/caps");
+	std::string string_caps = (iter->second)->get_property ("udpsend_rtp","caps");
 	GstCaps *caps = gst_caps_from_string (string_caps.c_str ());
 	if (caps != NULL)
 	  {
