@@ -49,7 +49,6 @@ struct shmdata_base_reader_
 void
 shmdata_base_reader_unlink_pad (GstPad * pad)
 {
-  g_print ("base_reader_unlink_pad\n");
   GstPad *peer;
   if ((peer = gst_pad_get_peer (pad))) {
     if (gst_pad_get_direction (pad) == GST_PAD_SRC)
@@ -68,7 +67,6 @@ shmdata_base_reader_unlink_pad (GstPad * pad)
 void
 shmdata_base_reader_clean_element (GstElement *element)
 {
-  g_print ("base_reader_clean element\n");
   if (element != NULL && GST_IS_ELEMENT (element))
     {
       GstIterator *pad_iter;
@@ -89,9 +87,6 @@ gboolean
 shmdata_base_reader_clean_source (gpointer user_data)
 {
   shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
-
-  g_print ("base_reader_clean source\n");
-
   g_debug ("shmdata_base_reader_clean_source");
 
   shmdata_base_reader_clean_element (context->typefind_);
@@ -134,8 +129,6 @@ shmdata_base_reader_on_type_found (GstElement* typefind,
 				   GstCaps *caps, 
 				   gpointer user_data)
 {
-  g_print ("base_reader_on_type_found\n");
-
   shmdata_base_reader_t * reader = (shmdata_base_reader_t *) user_data; 
   reader->caps_ = caps;
   if (reader->on_have_type_ != NULL)
@@ -148,8 +141,6 @@ shmdata_base_reader_on_type_found (GstElement* typefind,
 GstCaps *
 shmdata_base_reader_get_caps (shmdata_base_reader_t *reader)
 {
-  g_print ("base_reader_get_caps\n");
-
   return reader->caps_;
 }
 
@@ -188,8 +179,6 @@ shmdata_base_reader_reset_time (GstPad * pad,
 gboolean
 shmdata_base_reader_attach (shmdata_base_reader_t *reader)
 {
-  g_print ("base_reader_reader_attach\n");
-
   if (reader->attached_)
     return FALSE;
   
@@ -266,8 +255,6 @@ shmdata_base_reader_file_system_monitor_change (GFileMonitor *monitor,
 						GFileMonitorEvent type,
 						gpointer user_data)
 {
-  g_print ("base_reader_file_monitor_change\n");
-
   char *filename = g_file_get_path (file);
   shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
 
@@ -311,8 +298,6 @@ shmdata_base_reader_file_system_monitor_change (GFileMonitor *monitor,
 void
 shmdata_base_reader_detach (shmdata_base_reader_t * reader)
 {
-  g_print ("base_reader_reader_detach\n");
-
   if (reader != NULL)
     {
       reader->attached_ = FALSE;
@@ -323,8 +308,6 @@ shmdata_base_reader_detach (shmdata_base_reader_t * reader)
 gboolean
 shmdata_base_reader_recover_from_deserializer_error (shmdata_base_reader_t * reader)
 {
-  g_print ("base_reader_recover_error\n");
-
   shmdata_base_reader_detach (reader);
 
   shmdata_base_reader_attach (reader);
@@ -337,9 +320,6 @@ shmdata_base_reader_recover_from_deserializer_error (shmdata_base_reader_t * rea
 gboolean
 shmdata_base_reader_process_error (shmdata_base_reader_t * reader, GstMessage *msg)
 {
-  
-  g_print ("base_reader_proess_error\n");
-
   switch (GST_MESSAGE_TYPE (msg))
     {
     case GST_MESSAGE_ERROR:
@@ -347,7 +327,7 @@ shmdata_base_reader_process_error (shmdata_base_reader_t * reader, GstMessage *m
 	gchar *debug;
 	GError *error;
 	gst_message_parse_error (msg, &error, &debug);
-	g_print ("error::::: %s (%s)\n",error->message, GST_OBJECT_NAME (msg->src));
+	g_debug ("error: %s (%s)\n",error->message, GST_OBJECT_NAME (msg->src));
 	g_free (debug);
 	if (g_strcmp0
 	    (GST_ELEMENT_NAME (reader->source_),
@@ -392,9 +372,6 @@ GstBusSyncReply
 shmdata_base_reader_message_handler (GstBus * bus,
 				     GstMessage * msg, gpointer user_data)
 {
-    
-    g_print ("base_reader_message handler\n");
-
   /* if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_EOS) */
   /*   { */
   /*     g_print ("message %s from %s\n",GST_MESSAGE_TYPE_NAME(msg),GST_MESSAGE_SRC_NAME(msg)); */
@@ -414,8 +391,6 @@ shmdata_base_reader_message_handler (GstBus * bus,
 shmdata_base_reader_t *
 shmdata_base_reader_new ()
 {
-  g_print ("base_reader_new\n");
-
   shmdata_base_reader_t *reader =
     (shmdata_base_reader_t *) g_malloc0 (sizeof (shmdata_base_reader_t));
   reader->initialized_ = FALSE;
@@ -438,8 +413,6 @@ shmdata_base_reader_set_callback (shmdata_base_reader_t *reader,
 				  shmdata_base_reader_on_first_data cb,
 				  void *user_data)
 {
-  g_print ("base_reader_set_callback\n");
-
   reader->on_first_data_ = cb;
   reader->on_first_data_userData_ = user_data;
 }
@@ -449,8 +422,6 @@ shmdata_base_reader_set_on_have_type_callback (shmdata_base_reader_t *reader,
 					       shmdata_base_reader_on_have_type cb,
 					       void *user_data)
 {
-  g_print ("base_reader_set_on_have_type_callback\n");
-
   reader->on_have_type_ = cb;
   reader->on_have_type_userData_ = user_data;
 }
@@ -458,16 +429,12 @@ void
 shmdata_base_reader_install_sync_handler (shmdata_base_reader_t *reader,
 					  gboolean install)
 {
-  g_print ("base_reader_install_sync_handler\n");
-
   reader->install_sync_handler_ = install;
 }
 
 gboolean 
 shmdata_base_reader_set_bin (shmdata_base_reader_t * reader, GstElement *bin)
 {
-  g_print ("base_reader_set_bin\n");
-
   if (!GST_IS_BIN (bin))
     {
       g_warning ("base reader: not a bin");
@@ -481,9 +448,6 @@ shmdata_base_reader_set_bin (shmdata_base_reader_t * reader, GstElement *bin)
 gboolean 
 shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPath)
 {
-  
-  g_print ("base_reader_start\n");
-
   if (reader->install_sync_handler_)
     {
       g_debug ("installing an sync handler");
@@ -522,14 +486,13 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
   else
     g_debug ("monitoring %s", g_file_get_uri (reader->shmfile_));
 
-  //GFile *dir = g_file_get_parent (reader->shmfile_);
-  //g_debug ("trying to monitor directory %s",g_file_get_uri (dir));
+  GFile *dir = g_file_get_parent (reader->shmfile_);
+  g_debug ("trying to monitor directory %s",g_file_get_uri (dir));
   GError *error = NULL;
-  //reader->dirMonitor_ = g_file_monitor_directory (dir,
-  reader->dirMonitor_ = g_file_monitor_file (reader->shmfile_,
-					     G_FILE_MONITOR_NONE,
-					     NULL, &error);
-  //g_object_unref (dir);
+  reader->dirMonitor_ = g_file_monitor_directory (dir,
+						  G_FILE_MONITOR_NONE,
+						  NULL, &error);
+  g_object_unref (dir);
   g_debug ("enabling monitoring");
   if (reader->dirMonitor_ == NULL)
     {
@@ -555,8 +518,6 @@ shmdata_base_reader_init (const char *socketName,
 			  void (*on_first_data) (shmdata_base_reader_t *,
 						 void *), void *user_data)
 {
-  g_print ("base_reader_init\n");
-  
   shmdata_base_reader_t *reader =
     (shmdata_base_reader_t *) g_malloc0 (sizeof (shmdata_base_reader_t));
   reader->initialized_ = FALSE;
@@ -613,8 +574,6 @@ void
 shmdata_base_reader_set_sink (shmdata_base_reader_t * reader,
             			      GstElement * sink)
 {
-  g_print ("base_reader_set_sink\n");
-
   reader->sink_ = sink;
 }
 
@@ -622,8 +581,6 @@ void
 shmdata_base_reader_set_absolute_timestamp (shmdata_base_reader_t * reader,
                                             gboolean do_absolute)
 {
-  g_print ("base_reader_set_unlink_pad\n");
-
   reader->do_absolute_ = do_absolute;
 }
 
