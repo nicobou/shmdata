@@ -490,6 +490,12 @@ namespace switcher
   bool
   QuiddityLifeManager::remove_subscriber (std::string subscriber_name)
   {
+    if (!property_subscribers_.contains (subscriber_name))
+      {
+	g_warning ("QuiddityLifeManager, a subscriber named %s does not exists\n",
+		   subscriber_name.c_str ());
+	return false;
+      }
     return property_subscribers_.remove (subscriber_name);
   }
   

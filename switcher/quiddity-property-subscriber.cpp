@@ -38,17 +38,16 @@ namespace switcher
     PropDataMap::iterator it;
     for (it = prop_datas_.begin (); it != prop_datas_.end (); it++)
       {
-	Quiddity::ptr quid = life_manager->get_quiddity (it->second->quiddity_name);
+     	Quiddity::ptr quid = life_manager->get_quiddity (it->second->quiddity_name);
 	if ((bool)quid)
 	  {
 	    g_debug ("QuiddityPropertySubscriber: cleaning property not unsubscribed %s, %s",
-		     it->second->quiddity_name,
-		     it->second->property_name);
-	    quid->unsubscribe_property (it->second->property_name, property_cb);
-	    g_free (it->second->quiddity_name);
-	    g_free (it->second->property_name);
-	    prop_datas_.erase (it);
-	  }
+	    	     it->second->quiddity_name,
+    		     it->second->property_name);
+     	    quid->unsubscribe_property (it->second->property_name, property_cb);
+     	    g_free (it->second->quiddity_name);
+    	    g_free (it->second->property_name);
+     	  }
       }
   }
   

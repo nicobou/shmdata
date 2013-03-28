@@ -32,13 +32,13 @@ namespace switcher
 
   ShmdataWriter::~ShmdataWriter()
   {
-    g_debug ("ShmdataWriter: deleting %s", path_.c_str());
-
-    shmdata_base_writer_close (writer_);
-
+    g_debug ("ShmdataWriter: cleaning elements %s", path_.c_str());
     GstUtils::clean_element (tee_);
     GstUtils::clean_element (queue_);
     GstUtils::clean_element (fakesink_);
+   
+    g_debug ("ShmdataWriter: deleting %s", path_.c_str());
+    shmdata_base_writer_close (writer_);
 
     g_debug ("ShmdataWriter: %s deleted", path_.c_str());
   }

@@ -67,43 +67,48 @@ main (int argc,
       char *argv[])
 {
   success = false;
-  switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
   
-  manager->create ("runtime");
-  //setting auto_invoke for attaching to gst pipeline "pipeline0"
-  std::vector<std::string> arg;
-  arg.push_back ("pipeline0");
-  manager->auto_invoke ("set_runtime",arg);
-
-  manager->make_subscriber ("sub", mon_property_cb, (void *)user_string);
-  manager->create ("videotestsrc","vid");
-  manager->subscribe_property ("sub","vid","pattern");
-  manager->subscribe_property ("sub","vid","text");
-
-  std::vector<std::string> subscribers = manager->list_subscribers ();
-  if (subscribers.size () != 1 
-      || g_strcmp0 (subscribers.at(0).c_str (), "sub") != 0)
-    {
-      g_warning ("pb with list_subscribers");
-      return 1;
-    }
-
-  std::vector<std::pair<std::string, std::string> > properties = 
-    manager->list_subscribed_properties ("sub");
-  if(properties.size () != 2 
-     || g_strcmp0 (properties.at(0).first.c_str (),  "vid")
-     || g_strcmp0 (properties.at(0).second.c_str (), "pattern")
-     || g_strcmp0 (properties.at(1).first.c_str (),  "vid")
-     || g_strcmp0 (properties.at(1).second.c_str (), "text"))
-    {
-      g_warning ("pb with list_subscribed_properties");
-      return 1;
-    }
-
-  manager->set_property ("vid", "pattern", "1");
-
-  manager->unsubscribe_property ("sub", "vid", "pattern");
-  manager->remove_subscriber ("sub");
+  {
+    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
+    
+    manager->create ("runtime");
+    //setting auto_invoke for attaching to gst pipeline "pipeline0"
+    std::vector<std::string> arg;
+    arg.push_back ("pipeline0");
+    manager->auto_invoke ("set_runtime",arg);
+    
+    manager->make_subscriber ("sub", mon_property_cb, (void *)user_string);
+    manager->create ("videotestsrc","vid");
+ 
+    manager->subscribe_property ("sub","vid","pattern");
+    manager->subscribe_property ("sub","vid","text");
+    
+    std::vector<std::string> subscribers = manager->list_subscribers ();
+    if (subscribers.size () != 1 
+    	|| g_strcmp0 (subscribers.at(0).c_str (), "sub") != 0)
+      {
+    	g_warning ("pb with list_subscribers");
+    	return 1;
+      }
+    
+    std::vector<std::pair<std::string, std::string> > properties = 
+      manager->list_subscribed_properties ("sub");
+    if(properties.size () != 2 
+       || g_strcmp0 (properties.at(0).first.c_str (),  "vid")
+       || g_strcmp0 (properties.at(0).second.c_str (), "pattern")
+       || g_strcmp0 (properties.at(1).first.c_str (),  "vid")
+       || g_strcmp0 (properties.at(1).second.c_str (), "text"))
+      {
+    	g_warning ("pb with list_subscribed_properties");
+    	return 1;
+      }
+    
+    manager->set_property ("vid", "pattern", "1");
+    
+    manager->unsubscribe_property ("sub", "vid", "pattern");
+    manager->remove_subscriber ("sub");
+    manager->remove ("vid");
+  }
 
   if (success)
     return 0;

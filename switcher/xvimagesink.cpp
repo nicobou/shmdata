@@ -19,19 +19,27 @@
 
 #include "switcher/xvimagesink.h"
 #include "switcher/gst-utils.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 namespace switcher
 {
 
-  QuiddityDocumentation Xvimagesink::doc_ ("video sink", "xvimagesink",
+  QuiddityDocumentation Xvimagesink::doc_ ("video sink", "videosink",
 					   "Video window with minimal features");
   
   
   bool
   Xvimagesink::init ()
   {
+#ifdef HAVE_OSX
+    if (!GstUtils::make_element ("osxvideosink", &xvimagesink_))
+      return false;
+#else
     if (!GstUtils::make_element ("xvimagesink", &xvimagesink_))
       return false;
+#endif
 
     //set the name before registering properties
     set_name (gst_element_get_name (xvimagesink_));
