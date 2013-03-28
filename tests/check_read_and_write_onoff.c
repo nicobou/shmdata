@@ -76,10 +76,6 @@ on_data (shmdata_any_reader_t * reader,
       num_received_buf++;
 	
     }
-  else
-    {
-
-    }
   //free the data, can also be called later
   shmdata_any_reader_free (shmbuf);
 }

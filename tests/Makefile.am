@@ -12,7 +12,8 @@ LDADD = \
 check_PROGRAMS = \
     check_read_then_write \
     check_read_and_write_onoff \
-    check_write_read
+    check_write_read \
+    check_write_and_read_onoff
 
 TESTS = $(check_PROGRAMS)
 
@@ -24,3 +25,6 @@ check_read_then_write_SOURCES = \
 
 check_read_and_write_onoff_SOURCES = \
     check_read_and_write_onoff.c
+
+check_write_and_read_onoff_SOURCES = \
+    check_write_and_read_onoff.c
