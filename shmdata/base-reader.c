@@ -255,7 +255,6 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
 gboolean 
 shmdata_base_reader_poll_shmdata_path (void *user_data)
 {
-  g_debug ("coucou");
   if (user_data == NULL)
     {
       g_debug ("reader is null, stop polling");
@@ -273,7 +272,6 @@ shmdata_base_reader_poll_shmdata_path (void *user_data)
 	}
       shmdata_base_reader_attach (context);
     }
-  g_debug ("coucou fin");
   return TRUE;
 }
 
