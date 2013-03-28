@@ -246,13 +246,13 @@ shmdata_any_reader_start (shmdata_any_reader_t * context,
 
   shmdata_base_reader_start (context->reader_, socketName);
 
-  g_thread_init (NULL);
-  context->sharedDataThread_ =
-    g_thread_create ((GThreadFunc) shmdata_any_reader_g_loop_thread, context,
-		     FALSE, NULL);
-  
   if (context->run_gmainloop_)
-    g_main_loop_run (context->loop_);
+    {
+      g_thread_init (NULL);
+      context->sharedDataThread_ =
+	g_thread_create ((GThreadFunc) shmdata_any_reader_g_loop_thread, context,
+			 FALSE, NULL);
+    }
 }
 
 void

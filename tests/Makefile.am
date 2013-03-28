@@ -10,9 +10,17 @@ LDADD = \
 #    $(top_builddir)/gst/shm/
 
 check_PROGRAMS = \
+    check_read_then_write \
+    check_read_and_write_onoff \
     check_write_read
 
 TESTS = $(check_PROGRAMS)
 
-check_write_read_SOURCES = check_write_read.c
+check_write_read_SOURCES = \
+    check_write_read.c
 
+check_read_then_write_SOURCES = \
+    check_read_then_write.c
+
+check_read_and_write_onoff_SOURCES = \
+    check_read_and_write_onoff.c

@@ -327,7 +327,7 @@ shmdata_base_reader_process_error (shmdata_base_reader_t * reader, GstMessage *m
 	gchar *debug;
 	GError *error;
 	gst_message_parse_error (msg, &error, &debug);
-	g_debug ("error: %s (%s)\n",error->message, GST_OBJECT_NAME (msg->src));
+	g_debug ("error: %s (%s)",error->message, GST_OBJECT_NAME (msg->src));
 	g_free (debug);
 	if (g_strcmp0
 	    (GST_ELEMENT_NAME (reader->source_),
@@ -450,7 +450,7 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
 {
   if (reader->install_sync_handler_)
     {
-      g_debug ("installing an sync handler");
+      g_debug ("installing a sync handler");
       //looking for the bus, searching the top level
       GstElement *pipe = reader->bin_;
       
