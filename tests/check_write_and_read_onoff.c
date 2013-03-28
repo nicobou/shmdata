@@ -98,14 +98,13 @@ check_write_and_read_onoff ()
   shmdata_any_writer_start (writer); 
   
   
-  usleep (1000); 
-
    unsigned long long myclock = 0; 
    unsigned long long nsecPeriod = 30000000; 
    
    int num_on_off = 10; 
    while (num_on_off--) 
      { 
+       usleep (1000); 
        shmdata_any_reader_close (reader);
        reader = shmdata_any_reader_init (); 
        if (VERBOSE == yes) 
