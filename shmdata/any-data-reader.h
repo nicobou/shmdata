@@ -21,11 +21,19 @@ extern "C"
 {
 #endif
 
+  //FIXME remove that 
 #ifndef SHMDATA_ENABLE_DEBUG
 #define SHMDATA_ENABLE_DEBUG 1
 #endif
 #ifndef SHMDATA_DISABLE_DEBUG
 #define SHMDATA_DISABLE_DEBUG 0
+#endif
+
+#ifndef SHMDATA_TRUE
+#define SHMDATA_TRUE 1
+#endif
+#ifndef SHMDATA_FALSE
+#define SHMDATA_FALSE 0
 #endif
 
 #ifndef SHMDATA_ENABLE_ABSOLUTE_TIMESTAMP
@@ -61,10 +69,21 @@ extern "C"
    * Set function for reader debugging. Debugging is disabled by default.
    * 
    * @param reader is the reader that needs to be set
-   * @param debug is either SHMDATA_ENABLE_DEBUG or SHMDATA_DISABLE_DEBUG  
+   * @param debug is either SHMDATA_TRUE or SHMDATA_FALSE  
    */
   void shmdata_any_reader_set_debug (shmdata_any_reader_t *reader,
 				     int debug);
+
+  /** 
+   * Set function running or not the gmainloop from the shmdata. The shmdata -needs- a gmainloop, 
+   * accordingly set if to SHMDATA_FALSE only if you are running a gmainloop. Default behaviour 
+   * is to run the gmainloop internally. 
+   * 
+   * @param reader is the reader that needs to be set
+   * @param run is either SHMDATA_TRUE or SHMDATA_FALSE  
+   */
+  void shmdata_any_reader_run_gmainloop (shmdata_any_reader_t *reader,
+					 int run);
 
 
   /*! \fn void (*shmdata_any_reader_on_data)(shmdata_any_reader_t *,void *, void *, int, unsigned long long, const char *, void *);

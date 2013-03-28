@@ -31,6 +31,7 @@ struct shmdata_any_reader_
   GstElement *funnel_;
   GstElement *sink_;
   GMainLoop *loop_;
+  gboolean run_gmainloop_;
   GThread *sharedDataThread_;
   //timestamp
   gboolean do_absolute_;
@@ -177,6 +178,7 @@ shmdata_any_reader_init (const char *socketName)
   reader->type_ = NULL;
   reader->data_caps_ = NULL;
   reader->do_absolute_ = FALSE;
+  reader->run_gmainloop_ = TRUE;
 
   gst_init (NULL, NULL);
   reader->loop_ = g_main_loop_new (NULL, FALSE);
@@ -192,6 +194,12 @@ void
 shmdata_any_reader_set_debug (shmdata_any_reader_t * context, int debug)
 {
   context->debug_ = debug;
+}
+
+void
+shmdata_any_reader_run_gmainloop (shmdata_any_reader_t * context, int run)
+{
+  context->run_gmainloop_ = run;
 }
 
 void
@@ -212,7 +220,7 @@ void
 shmdata_any_reader_g_loop_thread (gpointer user_data)
 {
   shmdata_any_reader_t *context = (shmdata_any_reader_t *) user_data;
-  //g_main_loop_run (context->loop_);
+  g_main_loop_run (context->loop_);
 }
 
 void
@@ -242,8 +250,9 @@ shmdata_any_reader_start (shmdata_any_reader_t * context,
   context->sharedDataThread_ =
     g_thread_create ((GThreadFunc) shmdata_any_reader_g_loop_thread, context,
 		     FALSE, NULL);
-
-//    g_main_loop_run (context->loop_);
+  
+  if (context->run_gmainloop_)
+    g_main_loop_run (context->loop_);
 }
 
 void
