@@ -13,6 +13,9 @@
  */
 
 #include "shmdata/base-reader.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 struct shmdata_base_reader_
 {
@@ -246,6 +249,32 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
   gst_element_set_state (reader->source_,GST_STATE_TARGET(reader->bin_));
 
   return FALSE; //for g_idle_add
+}
+
+
+gboolean 
+shmdata_base_reader_poll_shmdata_path (void *user_data)
+{
+  g_debug ("coucou");
+  if (user_data == NULL)
+    {
+      g_debug ("reader is null, stop polling");
+      return FALSE;
+    }
+  shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
+  
+  if (g_file_test(context->socketName_, G_FILE_TEST_EXISTS) && !context->attached_)  
+    {
+      if (!context->initialized_)
+	{
+	  context->initialized_ = TRUE;
+	  context->on_first_data_ (context,
+				   context->on_first_data_userData_);
+	}
+      shmdata_base_reader_attach (context);
+    }
+  g_debug ("coucou fin");
+  return TRUE;
 }
 
 void
@@ -486,6 +515,12 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
   else
     g_debug ("monitoring %s", g_file_get_uri (reader->shmfile_));
 
+#ifdef HAVE_OSX
+  //directory monitoring is not working on osx, use polling :(
+  g_timeout_add (500,
+                 shmdata_base_reader_poll_shmdata_path,
+		 reader);
+#else
   GFile *dir = g_file_get_parent (reader->shmfile_);
   g_debug ("trying to monitor directory %s",g_file_get_uri (dir));
   GError *error = NULL;
@@ -504,6 +539,7 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
 		    "changed",
 		    G_CALLBACK (shmdata_base_reader_file_system_monitor_change), 
 		    reader);
+#endif
 
   g_debug ("shmdata reader started (%s)", g_file_get_uri (reader->shmfile_));
   return TRUE;
