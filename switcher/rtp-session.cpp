@@ -149,16 +149,15 @@ namespace switcher
 							  "port", "destination port",
 							  NULL));
 
-    //registering "remove_udp_dest"
-    register_method("remove_udp_dest",
-		    (void *)&remove_udp_dest_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,G_TYPE_STRING,NULL),
+    //registering "remove_udp_stream_to_dest"
+    register_method("remove_udp_stream_to_dest",
+		    (void *)&remove_udp_stream_to_dest_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,NULL),
 		    (gpointer)this);
-    set_method_description ("remove_udp_dest", 
+    set_method_description ("remove_udp_stream_to_dest", 
 			    "remove destination", 
 			    Method::make_arg_description ("socket", "local socket path of the shmdata",
 							  "host", "destination host",
-							  "port", "destination port",
 							  NULL));
 
     //registering "write_sdp_file"
@@ -504,9 +503,18 @@ namespace switcher
 	return false;
       }
 
+    if (g_strcmp0 (destinations_.lookup (nick_name)->get_port (shmdata_socket_path).c_str (),
+		   port.c_str ()) == 0) 
+      {
+	g_warning ("RtpSession: destination (%s) is already streaming shmdata (%s) to port %s",
+		   nick_name.c_str (),
+		   shmdata_socket_path.c_str (),
+		   port.c_str ());
+	return false;
+      }
     //TODO check port has not been set for this destination
     gint rtp_port = atoi(port.c_str());
-
+    
     if (rtp_port %2 !=0)
       {
 	g_warning ("RtpSession rtp destination port %s must be even, not odd",port.c_str ());
@@ -575,42 +583,54 @@ namespace switcher
 
   
   gboolean 
-  RtpSession::remove_udp_dest_wrapped (gpointer shmdata_socket_path, 
-				       gpointer host, 
-				       gpointer port,
+  RtpSession::remove_udp_stream_to_dest_wrapped (gpointer shmdata_socket_path, 
+				       gpointer dest_name, 
 				       gpointer user_data)
   {
     RtpSession *context = static_cast<RtpSession*>(user_data);
 
-    if (context->remove_udp_dest ((char *)shmdata_socket_path, (char *)host, (char *)port))
+    if (context->remove_udp_stream_to_dest ((char *)shmdata_socket_path, (char *)dest_name))
       return TRUE;
     else
       return FALSE;
   }
   
- bool
-  RtpSession::remove_udp_dest (std::string shmdata_socket_path, std::string host, std::string port)
+  bool
+  RtpSession::remove_udp_stream_to_dest (std::string shmdata_socket_path, std::string dest_name)
   {
-    
-
     if (!internal_id_.contains (shmdata_socket_path))
       {
 	g_warning ("RtpSession is not connected to %s",shmdata_socket_path.c_str ());
 	return false;
       }
     
+    RtpDestination::ptr dest = destinations_.lookup (dest_name);
+    if (!(bool) dest)
+      {
+	g_warning ("RtpSession::remove_udp_stream_to_dest, dest %s does not exist", dest_name.c_str ());
+	return false;
+      }
+    std::string port = dest->get_port (shmdata_socket_path);
+    dest->remove_stream (shmdata_socket_path);
+    
+    
     QuiddityManager::ptr manager = quiddity_managers_.lookup (shmdata_socket_path);
+    if (!(bool) manager)
+      {
+	g_warning ("RtpSession::remove_udp_stream_to_dest, shmdata %s is not managed by the session", shmdata_socket_path.c_str ());
+	return false;
+      }
     
     //rtp
     std::vector <std::string> arg;
-    arg.push_back (host);
+    arg.push_back (dest->get_host_name ());
     arg.push_back (port);
     manager->invoke ("udpsend_rtp","remove_client",arg);
     
     //rtcp
     arg.clear ();
     gint rtp_port = atoi(port.c_str());
-    arg.push_back (host);
+    arg.push_back (dest->get_host_name ());
     std::ostringstream rtcp_port;
     rtcp_port << rtp_port + 1;
     arg.push_back (rtcp_port.str());
@@ -674,31 +694,31 @@ namespace switcher
 	g_warning ("RtpSession::remove_data_stream: %s not present",shmdata_socket_path.c_str ());
 	return false;
       }
- 
+    if(quiddity_managers_.contains (shmdata_socket_path))
+      {
+     	quiddity_managers_.remove (shmdata_socket_path);
+      }
+    std::map<std::string, RtpDestination::ptr > dests = destinations_.get_map ();
+    std::map<std::string, RtpDestination::ptr >::iterator it;
+    for (it = dests.begin (); it != dests.end (); it++)
+      {
+	if (it->second->has_shmdata (shmdata_socket_path))
+	  it->second->remove_stream (shmdata_socket_path);
+      }
     std::string id = internal_id_.lookup (shmdata_socket_path);
     internal_id_.remove (shmdata_socket_path);
-    
     internal_shmdata_writers_.remove (make_file_name ("send_rtp_src_"+id));
     internal_shmdata_writers_.remove (make_file_name ("send_rtcp_src_"+id));
     unregister_shmdata_reader (shmdata_socket_path);
     internal_shmdata_readers_.remove (make_file_name ("recv_rtcp_sink_"+id));
-    
-    if(quiddity_managers_.contains (shmdata_socket_path))
-      {
-	quiddity_managers_.remove (shmdata_socket_path);
-      }
-    rtp_ids_.remove (shmdata_socket_path);
-
-
     if (!funnels_.contains (shmdata_socket_path))
       {
 	g_warning ("RtpSession::remove_data_stream: no funnel");
 	return false;
       }
     funnels_.remove (shmdata_socket_path);
-    
-    
-    g_debug ("data_stream removed");
+    rtp_ids_.remove (shmdata_socket_path);
+    g_debug ("data_stream %s removed", shmdata_socket_path.c_str ());
     return true;
   }
 

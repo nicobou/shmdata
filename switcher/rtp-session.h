@@ -47,13 +47,17 @@ namespace switcher
     bool remove_data_stream (std::string shmdata_socket_path);
     
     //remote dest (using user defined "nick_name")
-    bool add_destination (std::string dest_name,std::string host_name);
+    bool add_destination (std::string dest_name,
+			  std::string host_name);
     bool remove_destination (std::string dest_name);
     static gchar *get_destinations_json (void *user_data);
 
     //sending
-    bool add_udp_stream_to_dest (std::string shmdata_socket_path, std::string host, std::string port);
-    bool remove_udp_dest (std::string shmdata_socket_path, std::string host, std::string port);
+    bool add_udp_stream_to_dest (std::string shmdata_socket_path, 
+				 std::string dest_name, 
+				 std::string port);
+    bool remove_udp_stream_to_dest (std::string shmdata_socket_path, 
+				    std::string dest_name);
     bool write_sdp_file (std::string dest_name);
 
  
@@ -62,23 +66,22 @@ namespace switcher
 					     gpointer user_data);
     static gboolean remove_data_stream_wrapped (gpointer shmdata_socket_path, 
 						gpointer user_data);
-    static gboolean add_destination_wrapped (gpointer nick_name,
+    static gboolean add_destination_wrapped (gpointer desst_name,
 					     gpointer host_name,
 					     gpointer user_data);
     static gboolean remove_destination_wrapped (gpointer nick_name, 
      						gpointer user_data); 
     static gboolean add_udp_stream_to_dest_wrapped (gpointer shmdata_name, 
-					  gpointer host, 
-					  gpointer port, 
-					  gpointer user_data);
-    static gboolean remove_udp_dest_wrapped (gpointer shmdata_socket_path, 
-					     gpointer host, 
-					     gpointer port,
-					     gpointer user_data);
+						    gpointer dest_name, 
+						    gpointer port, 
+						    gpointer user_data);
+    static gboolean remove_udp_stream_to_dest_wrapped (gpointer shmdata_socket_path, 
+						       gpointer dest_name, 
+						       gpointer user_data);
     static gboolean write_sdp_file_wrapped (gpointer nick_name,
-				       gpointer user_data);
-
-    //will be call by shmdata reader
+					    gpointer user_data);
+    
+    //will be called by shmdata reader
     static void attach_data_stream(ShmdataReader *caller, void *rtpsession_instance); 
     
   private:

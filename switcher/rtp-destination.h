@@ -40,10 +40,13 @@ namespace switcher
     void set_name (std::string name);
     void set_host_name (std::string host_name);
     std::string get_host_name ();
+    std::string get_port (std::string shmndata_path);
     //the reader of the rtp stream sent
     bool add_stream (std::string orig_shmdata_path,
 		     QuiddityManager::ptr manager, 
 		     std::string port);
+    bool has_shmdata (std::string shmdata_path);
+    bool has_port (std::string port);
     bool remove_stream (std::string shmdata_stream_path);
     std::string get_sdp ();
     //get json doc:

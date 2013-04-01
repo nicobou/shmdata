@@ -73,6 +73,16 @@ namespace switcher
     return host_name_;
   }
 
+  std::string 
+  RtpDestination::get_port (std::string shmdata_path)
+  {
+    if (!source_streams_.contains (shmdata_path))
+      return "";
+
+    return source_streams_.lookup (shmdata_path);
+  }
+
+
   bool 
   RtpDestination::add_stream (std::string orig_shmdata_path,
 			      QuiddityManager::ptr manager, 
@@ -84,6 +94,18 @@ namespace switcher
     return true;
   }
 
+  bool
+  RtpDestination::has_shmdata (std::string shmdata_path)
+  {
+    return source_streams_.contains (shmdata_path);
+  }
+
+  bool
+  RtpDestination::has_port (std::string port)
+  {
+    return ports_.contains (port);
+  }
+  
   bool
   RtpDestination::remove_stream (std::string shmdata_stream_path)
   {
