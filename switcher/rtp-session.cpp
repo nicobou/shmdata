@@ -674,9 +674,7 @@ namespace switcher
 	g_warning ("RtpSession::remove_data_stream: %s not present",shmdata_socket_path.c_str ());
 	return false;
       }
-
-    
-
+ 
     std::string id = internal_id_.lookup (shmdata_socket_path);
     internal_id_.remove (shmdata_socket_path);
     
