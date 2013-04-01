@@ -34,6 +34,11 @@ namespace switcher
   {
     g_debug ("rtpsession deleting");
 
+    std::vector <std::string> paths = quiddity_managers_.get_keys ();
+    std::vector <std::string>::iterator it;
+    for (it = paths.begin (); it != paths.end (); it ++)
+	remove_data_stream (*it);
+
     //removing sdp files
     std::vector <std::string> destinations = destinations_.get_keys ();
     std::vector <std::string>::iterator iter;
@@ -43,6 +48,7 @@ namespace switcher
 	sdp_file.append(".sdp");
 	g_remove (sdp_file.c_str ());
       }
+
 
     //removing rtpsession
     GstUtils::clean_element (rtpsession_);
