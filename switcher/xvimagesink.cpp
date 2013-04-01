@@ -33,7 +33,7 @@ namespace switcher
   bool
   Xvimagesink::init ()
   {
-#ifdef HAVE_OSX
+#if HAVE_OSX
     if (!GstUtils::make_element ("osxvideosink", &xvimagesink_))
       return false;
 #else
