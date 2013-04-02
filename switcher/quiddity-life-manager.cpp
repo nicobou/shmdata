@@ -33,6 +33,7 @@
 #include "switcher/fake-shmdata-writer.h"
 #include "switcher/file-sdp.h"
 #include "switcher/gst-parse-to-bin-src.h"
+#include "switcher/gst-video-parse-to-bin-src.h"
 #include "switcher/h264.h"
 #include "switcher/http-sdp.h"
 #include "switcher/logger.h"
@@ -173,6 +174,8 @@ namespace switcher
 					       FileSDP::doc_.get_json_root_node ());
     abstract_factory_.register_class<GstParseToBinSrc> (GstParseToBinSrc::doc_.get_class_name (),
       							GstParseToBinSrc::doc_.get_json_root_node ());
+    abstract_factory_.register_class<GstVideoParseToBinSrc> (GstVideoParseToBinSrc::doc_.get_class_name (),
+							     GstVideoParseToBinSrc::doc_.get_json_root_node ());
     abstract_factory_.register_class<H264> (H264::doc_.get_class_name (), 
       					    H264::doc_.get_json_root_node ());
     abstract_factory_.register_class<HTTPSDP> (HTTPSDP::doc_.get_class_name (), 

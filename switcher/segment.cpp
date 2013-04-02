@@ -106,6 +106,7 @@ namespace switcher
 	  }
 	
 	GstUtils::clean_element (bin_);
+	
       }
     
     shmdata_readers_.clear ();
