@@ -90,7 +90,7 @@ namespace switcher
     //g_debug ("pad current caps: %s", gst_caps_to_string (gst_pad_get_caps (src_pad)));
     GstCaps * caps = gst_pad_get_caps (src_pad);
     gchar *string_caps = gst_caps_to_string (caps);
-    if (!g_str_has_prefix (string_caps,"video/"))
+    if (!g_str_has_prefix (string_caps,"video/") && !g_str_has_prefix (string_caps,"ANY"))
       {
 	g_warning ("description does not provide video (caps is %s)",string_caps);
 	g_free (string_caps);
