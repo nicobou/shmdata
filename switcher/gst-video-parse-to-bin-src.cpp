@@ -17,17 +17,17 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/gst-parse-to-bin-src.h"
+#include "switcher/gst-video-parse-to-bin-src.h"
 #include "switcher/gst-utils.h"
 
 namespace switcher
 {
 
-  QuiddityDocumentation GstParseToBinSrc::doc_ ("source", "gstsrc",
-						"GStreamer (src) pipeline description to a *single* shmdata");
+  QuiddityDocumentation GstVideoParseToBinSrc::doc_ ("source", "gstvideosrc",
+						     "GStreamer (src) video pipeline description to a *single* shmdata");
   
   QuiddityDocumentation 
-  GstParseToBinSrc::get_documentation ()
+  GstVideoParseToBinSrc::get_documentation ()
   {
     return doc_;
   }
@@ -35,7 +35,7 @@ namespace switcher
   
 
   bool 
-  GstParseToBinSrc::init ()
+  GstVideoParseToBinSrc::init ()
   {
     //using parent bin name
     set_name (gst_element_get_name (bin_));
@@ -50,16 +50,18 @@ namespace switcher
 			    Method::make_arg_description ("description", 
 							  "the description to instanciate",
 							  NULL));
+  
+
     return true;
   }
   
 
 
   gboolean
-  GstParseToBinSrc::to_shmdata_wrapped (gpointer descr, 
-					gpointer user_data)
+  GstVideoParseToBinSrc::to_shmdata_wrapped (gpointer descr, 
+					     gpointer user_data)
   {
-    GstParseToBinSrc *context = static_cast<GstParseToBinSrc *>(user_data);
+    GstVideoParseToBinSrc *context = static_cast<GstVideoParseToBinSrc *>(user_data);
   
     if (context->to_shmdata ((char *)descr))
       return TRUE;
@@ -68,15 +70,14 @@ namespace switcher
   }
 
   bool
-  GstParseToBinSrc::to_shmdata (std::string descr)
+  GstVideoParseToBinSrc::to_shmdata (std::string descr)
   {
     g_debug ("to_shmdata set GStreamer description %s", descr.c_str ());
     
     GError *error = NULL;
-    gst_parse_to_bin_src_ = gst_parse_bin_from_description (descr.c_str (),
-							    TRUE,
-							    &error);
-
+    gst_video_parse_to_bin_src_ = gst_parse_bin_from_description (descr.c_str (),
+								  TRUE,
+								  &error);
     if (error != NULL)
       {
 	g_warning ("%s",error->message);
@@ -84,19 +85,31 @@ namespace switcher
 	return false;
       }
     
-    GstPad *src_pad = gst_element_get_static_pad (gst_parse_to_bin_src_,"src");
-    
-    gst_bin_add (GST_BIN (bin_), gst_parse_to_bin_src_);
-    GstUtils::wait_state_changed (bin_);
-    GstUtils::sync_state_with_parent (gst_parse_to_bin_src_);
+    GstPad *src_pad = gst_element_get_static_pad (gst_video_parse_to_bin_src_,"src");
 
+    //g_debug ("pad current caps: %s", gst_caps_to_string (gst_pad_get_caps (src_pad)));
+    GstCaps * caps = gst_pad_get_caps (src_pad);
+    gchar *string_caps = gst_caps_to_string (caps);
+    if (!g_str_has_prefix (string_caps,"video/"))
+      {
+	g_warning ("description does not provide video (caps is %s)",string_caps);
+	g_free (string_caps);
+	return false;
+      }
+    g_free (string_caps);
+
+    gst_bin_add (GST_BIN (bin_), gst_video_parse_to_bin_src_);
+    GstUtils::wait_state_changed (bin_);
+    GstUtils::sync_state_with_parent (gst_video_parse_to_bin_src_);
+    
     //creating a connector for raw audio
     ShmdataWriter::ptr writer;
     writer.reset (new ShmdataWriter ());
-    std::string writer_name = make_file_name ("gstsrc"); //FIXME use caps name
+    std::string writer_name = make_file_name ("video");
     writer->set_path (writer_name.c_str());
     writer->plug (bin_, src_pad);
     register_shmdata_writer (writer);
+    
     gst_object_unref (src_pad);
     return true;
   }
