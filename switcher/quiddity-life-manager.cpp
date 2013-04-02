@@ -31,6 +31,7 @@
 #include "switcher/decodebin2.h"
 #include "switcher/deinterleave.h"
 #include "switcher/fake-shmdata-writer.h"
+#include "switcher/fakesink.h"
 #include "switcher/file-sdp.h"
 #include "switcher/gst-parse-to-bin-src.h"
 #include "switcher/gst-video-parse-to-bin-src.h"
@@ -170,6 +171,8 @@ namespace switcher
 						    Deinterleave::doc_.get_json_root_node ());
     abstract_factory_.register_class<FakeShmdataWriter> (FakeShmdataWriter::doc_.get_class_name (), 
 							 FakeShmdataWriter::doc_.get_json_root_node ());
+    abstract_factory_.register_class<FakeSink> (FakeSink::doc_.get_class_name (), 
+						FakeSink::doc_.get_json_root_node ());
     abstract_factory_.register_class<FileSDP> (FileSDP::doc_.get_class_name (), 
 					       FileSDP::doc_.get_json_root_node ());
     abstract_factory_.register_class<GstParseToBinSrc> (GstParseToBinSrc::doc_.get_class_name (),
