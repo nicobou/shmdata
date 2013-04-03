@@ -35,7 +35,8 @@ namespace switcher
 
     g_object_set (G_OBJECT (h264enc_), 
 		  "speed-preset",1, 
-		  "bitrate",10000,
+		  "bitrate",20000,
+                  "threads", 4,
 		  "sliced-threads", TRUE,
 		  NULL);
     add_element_to_cleaner (h264enc_);
