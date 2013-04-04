@@ -54,7 +54,7 @@ Build with the Puredata externals
 ---------------------------------
 Before building shmdata, install the puredata headers on Ubuntu::
 
-  $ sudo apt-get install puredata-dev 
+  $ sudo apt-get install puredata-dev libsamplerate0-dev
 
 Authors
 -------
