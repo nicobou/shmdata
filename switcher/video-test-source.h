@@ -31,7 +31,7 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<VideoTestSource> ptr;
-    
+    ~VideoTestSource ();
     bool init ();
     QuiddityDocumentation get_documentation ();
     static QuiddityDocumentation doc_;

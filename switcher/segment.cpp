@@ -81,16 +81,23 @@ namespace switcher
 
   Segment::~Segment()
   {
-
-    g_debug ("Segment::~Segment begin");
+    g_debug ("Segment::~Segment begin (%s)",get_nick_name().c_str ());
+    
+    g_debug ("Segment, bin state %s, target %s, num children %d ", 
+	     gst_element_state_get_name (GST_STATE (bin_)), 
+	     gst_element_state_get_name (GST_STATE_TARGET (bin_)), 
+	     GST_BIN_NUMCHILDREN(GST_BIN (bin_)));
+    
     GstUtils::wait_state_changed (bin_);
     
     if (GST_IS_ELEMENT (bin_))
       {
-	// g_debug ("Segment, bin state %s num children %d ", 
-	// 	  gst_element_state_get_name (GST_STATE (bin_)), 
-	// 	  GST_BIN_NUMCHILDREN(GST_BIN (bin_)));
-	
+	 g_debug ("Segment, bin state %s, target %s, num children %d ", 
+	 	  gst_element_state_get_name (GST_STATE (bin_)), 
+	 	  gst_element_state_get_name (GST_STATE_TARGET (bin_)), 
+	 	  GST_BIN_NUMCHILDREN(GST_BIN (bin_)));
+
+	 
 	if (GST_BIN_CHILDREN (bin_) > 0)
 	  {
 	    g_debug ("segment: some child elements have not been cleaned in %s",
@@ -104,15 +111,16 @@ namespace switcher
 		// gst_bin_remove (GST_BIN (bin_), GST_ELEMENT (child->data));
 	      }
 	  }
-	
+
+	g_debug ("~Segment: cleaning internal bin");
 	GstUtils::clean_element (bin_);
-	
       }
-    
+
+    g_debug ("Segment::~Segment shmdata cleaning");
     shmdata_readers_.clear ();
-    //g_debug ("Segment::~Segment shmdata readers cleared");
+    g_debug ("Segment::~Segment shmdata readers cleared");
     shmdata_writers_.clear ();
-    //g_debug ("Segment::~Segment shmdata writers cleared");
+    g_debug ("Segment::~Segment shmdata writers cleared");
  
 
    g_debug ("Segment::~Segment end");
@@ -167,6 +175,7 @@ namespace switcher
     GstUtils::sync_state_with_parent (bin_);
     GstUtils::wait_state_changed (bin_);
 
+    
     g_debug ("Segment::set_runtime (done)");
   }
   

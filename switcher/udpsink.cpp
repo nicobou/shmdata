@@ -33,7 +33,8 @@ namespace switcher
 	 || !GstUtils::make_element ("typefind", &typefind_)
 	 || !GstUtils::make_element ("multiudpsink", &udpsink_))
       return false;
-    
+
+  
     g_object_set (G_OBJECT (udpsink_bin_), "async-handling", TRUE, NULL);
     ghost_sinkpad_ = NULL;
 

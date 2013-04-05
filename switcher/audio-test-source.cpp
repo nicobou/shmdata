@@ -51,6 +51,10 @@ namespace switcher
     return true;
   }
 
+  AudioTestSource::~AudioTestSource()
+  {
+    GstUtils::clean_element (audiotestsrc_);
+  }
 
   QuiddityDocumentation 
   AudioTestSource::get_documentation ()

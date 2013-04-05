@@ -27,6 +27,12 @@ namespace switcher
   QuiddityDocumentation Uridecodebin::doc_ ("uri decoding", "uridecodebin", 
 						  "decode an URI of live stream(s) to shmdata(s)");
   
+  Uridecodebin::~Uridecodebin ()
+  {
+    gst_element_set_state (uridecodebin_,GST_STATE_NULL);
+    gst_element_get_state (uridecodebin_, NULL, NULL, GST_CLOCK_TIME_NONE);
+  }
+  
   bool
   Uridecodebin::init() 
   { 
@@ -39,7 +45,6 @@ namespace switcher
 
     //set the name before registering properties
     set_name (gst_element_get_name (uridecodebin_));
-    add_element_to_cleaner (uridecodebin_);
     
     g_signal_connect (G_OBJECT (uridecodebin_), 
 		      "pad-added", 

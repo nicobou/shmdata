@@ -22,16 +22,18 @@
 #define __SWITCHER_FAKESINK_H__
 
 #include "switcher/base-sink.h"
+#include "switcher/gst-element-cleaner.h"
 #include <gst/gst.h>
 #include <memory>
 
 namespace switcher
 {
 
-  class FakeSink : public BaseSink
+  class FakeSink : public BaseSink, public GstElementCleaner
   {
   public:
     typedef std::shared_ptr<FakeSink> ptr;
+    ~FakeSink ();
     bool init ();
     QuiddityDocumentation get_documentation ();
     static QuiddityDocumentation doc_;

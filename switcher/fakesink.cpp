@@ -26,6 +26,12 @@ namespace switcher
   QuiddityDocumentation FakeSink::doc_ ("fakesink sink", "fakesink",
 					"fakesink for testing purpose");
   
+
+  FakeSink::~FakeSink ()
+  {
+    g_debug ("~fakesink");
+    GstUtils::clean_element (fakesink_);
+  }
   
   bool
   FakeSink::init ()
@@ -45,7 +51,7 @@ namespace switcher
     register_property (G_OBJECT (fakesink_),"last-buffer","last-buffer");
     
     set_sink_element (fakesink_);
-
+    //add_element_to_cleaner (fakesink_);
     return true;
   }
   

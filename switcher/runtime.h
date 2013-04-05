@@ -31,7 +31,7 @@
 namespace switcher
 {
   
-  class Runtime : public Quiddity 
+  class Runtime : public Quiddity
     {
     public:
       typedef std::shared_ptr<Runtime> ptr;

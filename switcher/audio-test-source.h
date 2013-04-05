@@ -31,6 +31,7 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<AudioTestSource> ptr;
+    ~AudioTestSource ();
     bool init ();
     QuiddityDocumentation get_documentation ();
     static QuiddityDocumentation doc_;

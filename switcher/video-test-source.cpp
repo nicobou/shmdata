@@ -23,8 +23,13 @@
 
 namespace switcher
 {
-  QuiddityDocumentation VideoTestSource::doc_  ("video source", "videotestsrc",
+  QuiddityDocumentation VideoTestSource::doc_  ("video source", "videotestsrc",				
 						"Creates a test video stream");
+
+  VideoTestSource::~VideoTestSource()
+  {
+    //GstUtils::clean_element (videotestsrc_);
+  }
   
   bool
   VideoTestSource::init ()
@@ -35,9 +40,7 @@ namespace switcher
     if (!GstUtils::make_element ("videotestsrc",&videotestsrc_))
       return false;
 
-    add_element_to_cleaner (videotestsrc_);
-
-    g_object_set (G_OBJECT (videotestsrc_),
+   g_object_set (G_OBJECT (videotestsrc_),
 		  "is-live", TRUE,
 		  NULL);
     
@@ -57,7 +60,6 @@ namespace switcher
     register_property (G_OBJECT (videotestsrc_),"pattern","pattern");
     
     set_raw_video_element (videotestsrc_);
-
     return true;
   }
   

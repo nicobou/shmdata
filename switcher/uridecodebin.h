@@ -33,6 +33,7 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<Uridecodebin> ptr;
+    ~Uridecodebin();
     bool init ();
     bool to_shmdata (std::string uri);
     QuiddityDocumentation get_documentation ();

@@ -33,7 +33,6 @@ namespace switcher
   RtpSession::~RtpSession ()
   {
     g_debug ("rtpsession deleting");
-
     std::vector <std::string> paths = quiddity_managers_.get_keys ();
     std::vector <std::string>::iterator it;
     for (it = paths.begin (); it != paths.end (); it ++)
@@ -49,12 +48,18 @@ namespace switcher
 	g_remove (sdp_file.c_str ());
       }
 
-
+    if (GST_IS_BIN (gst_element_get_parent (rtpsession_)))
+      {
+	GstElement *parent = (GstElement *)gst_element_get_parent (rtpsession_);
+	g_debug ("%d, %d, %d, state return %d",GST_STATE(parent),GST_STATE_TARGET (parent), GST_STATE_PENDING (parent),GST_STATE_RETURN(parent));
+      }
+    
     //removing rtpsession
     GstUtils::clean_element (rtpsession_);
+    
     g_debug ("rtpsession deleted");
 
-  }
+    }
 
   bool 
   RtpSession::init ()
@@ -719,7 +724,7 @@ namespace switcher
     internal_shmdata_readers_.remove (make_file_name ("recv_rtcp_sink_"+id));
     if (!funnels_.contains (shmdata_socket_path))
       {
-	g_warning ("RtpSession::remove_data_stream: no funnel");
+	g_debug ("RtpSession::remove_data_stream: no funnel");
 	return false;
       }
     funnels_.remove (shmdata_socket_path);
