@@ -22,8 +22,11 @@ http://code.sat.qc.ca/redmine/projects/switcher
 Authors
 -------
 * Nicolas Bouillot
-* Alexandre Quessy
-* Emmanuel Durand
+
+Contributors
+------------
+* Alexandre Quessy (gsoap packaging)
+* Emmanuel Durand (bug fix & OSX packaging)
 
 See also
 --------
