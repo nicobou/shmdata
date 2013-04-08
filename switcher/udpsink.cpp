@@ -35,7 +35,7 @@ namespace switcher
       return false;
 
   
-    g_object_set (G_OBJECT (udpsink_bin_), "async-handling", TRUE, NULL);
+    //g_object_set (G_OBJECT (udpsink_bin_), "async-handling", TRUE, NULL);
     ghost_sinkpad_ = NULL;
 
     //set the name before registering properties

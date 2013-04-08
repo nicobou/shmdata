@@ -32,7 +32,7 @@ namespace switcher
 	|| !GstUtils::make_element ("videorate",&video_rate_enc_))
       return false;
     
-    g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
+    //    g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
     add_element_to_cleaner (video_rate_enc_);
     add_element_to_cleaner (video_rate_bin_);
 

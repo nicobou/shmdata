@@ -25,7 +25,7 @@
 namespace switcher
 {
   QuiddityDocumentation Uridecodebin::doc_ ("uri decoding", "uridecodebin", 
-						  "decode an URI of live stream(s) to shmdata(s)");
+					    "decode an URI of live stream(s) to shmdata(s)");
   
   Uridecodebin::~Uridecodebin ()
   {

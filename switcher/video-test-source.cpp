@@ -28,15 +28,12 @@ namespace switcher
 
   VideoTestSource::~VideoTestSource()
   {
-    //GstUtils::clean_element (videotestsrc_);
+    GstUtils::clean_element (videotestsrc_);
   }
   
   bool
   VideoTestSource::init ()
   {
-    
-    g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
-
     if (!GstUtils::make_element ("videotestsrc",&videotestsrc_))
       return false;
 

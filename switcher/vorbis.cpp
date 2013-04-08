@@ -30,7 +30,7 @@ namespace switcher
   {
     GstUtils::make_element ("bin",&vorbisbin_);
     GstUtils::make_element ("vorbisenc", &vorbisenc_);
-    g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
+    //g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
     add_element_to_cleaner (vorbisenc_);
     add_element_to_cleaner (vorbisbin_);
 

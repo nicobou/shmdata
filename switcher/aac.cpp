@@ -29,7 +29,7 @@ namespace switcher
   AAC::init ()
   {
     GstUtils::make_element ("bin", &aacbin_);
-    g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
+    //g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
     
     if (GstUtils::make_element ("ffenc_aac", &aacenc_))
       {

@@ -202,7 +202,7 @@ namespace switcher
     abstract_factory_.register_class<VideoRate> (VideoRate::doc_.get_class_name (),
 						 VideoRate::doc_.get_json_root_node ());
     abstract_factory_.register_class<VideoTestSource> (VideoTestSource::doc_.get_class_name (),
-      						       VideoTestSource::doc_.get_json_root_node ());
+       						       VideoTestSource::doc_.get_json_root_node ());
     abstract_factory_.register_class<Vorbis> (Vorbis::doc_.get_class_name (),
 					      Vorbis::doc_.get_json_root_node ());
     abstract_factory_.register_class<Xvimagesink> (Xvimagesink::doc_.get_class_name (),

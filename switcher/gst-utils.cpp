@@ -161,11 +161,11 @@ namespace switcher
 		 gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
 	       }
 
-	 while (GST_STATE (element) != GST_STATE_NULL)
-	   {
-	     //g_debug ("22");
-	     gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
-	   }
+	 // while (GST_STATE (element) != GST_STATE_NULL)
+	 //   {
+	 //     //g_debug ("22");
+	 //     gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
+	 //   }
 
 	 // g_debug ("CLEANING 2");
 
@@ -192,8 +192,8 @@ namespace switcher
     g_value_init (&val, G_TYPE_BOOLEAN);
     
     g_object_get_property (G_OBJECT (bin),
-			   "async-handling",
-			   &val);
+     			   "async-handling",
+     			   &val);
 
     if (g_value_get_boolean (&val) == FALSE)
       while (GST_STATE (bin) != GST_STATE_TARGET (bin))
