@@ -68,9 +68,7 @@ namespace switcher
       return false;
 
     next_id_ = 79; //this value is arbitrary and can be changed
-
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
-
 
     g_signal_connect (G_OBJECT (rtpsession_), "on-bye-ssrc", 
 		      (GCallback) on_bye_ssrc, (gpointer) this);

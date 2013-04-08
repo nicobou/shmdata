@@ -432,9 +432,10 @@ namespace switcher
 	// 	 gst_value_get_fraction_numerator (&value),
 	// 	 gst_value_get_fraction_denominator (&value));
       } else if (GST_IS_PARAM_SPEC_MINI_OBJECT (property_)) {
-	g_warning ("warning param spec mini object not handled ");
-	// g_debug ("%-23.23s MiniObject of type \"%s\"", "",
-	// 	 g_type_name (property_->value_type));
+	//g_warning ("warning param spec mini object not handled ");
+	//g_warning ("%-23.23s MiniObject of type \"%s\"", "",
+	//	   g_type_name (property_->value_type));
+	json_description_->add_string_member ("type",g_type_name (property_->value_type));
       } else {
 	g_warning ("warning: unknown type");
 	// g_debug ("%-23.23s Unknown type %ld \"%s\"", "", property_->value_type,

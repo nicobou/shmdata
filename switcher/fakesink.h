@@ -29,7 +29,7 @@
 namespace switcher
 {
 
-  class FakeSink : public BaseSink, public GstElementCleaner
+  class FakeSink : public BaseSink
   {
   public:
     typedef std::shared_ptr<FakeSink> ptr;

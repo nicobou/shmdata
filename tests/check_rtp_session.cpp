@@ -22,7 +22,10 @@
 #include <string>
 #include <unistd.h>  //sleep
 
-static bool success;
+static bool audio_success;
+static bool video_success;
+static bool do_continue;
+
 static char *user_string = "hello world";
 
 void 
@@ -32,48 +35,45 @@ mon_property_cb(std::string quiddity_name,
 		void *user_data)
 {
 
-  g_print ("%s, %s, %s\n", quiddity_name.c_str (), property_name.c_str (), value.c_str ());
-  success = true;
+  //g_print ("%s, %s, %s\n", quiddity_name.c_str (), property_name.c_str (), value.c_str ());
+  if (!audio_success && g_strcmp0 (quiddity_name.c_str (), "firstprobe") == 0)
+    {
+      g_message ("audio received !");
+      audio_success = true;
+      if (video_success)
+	  do_continue = false;
+    }
+  if (!video_success && g_strcmp0 (quiddity_name.c_str (), "secondprobe") == 0)
+    {
+      g_message ("video received !");
+      video_success = true;
+      if (audio_success)
+	  do_continue = false;
+    }
 }
 
-static void 
-logger_cb (std::string quiddity_name, std::string property_name, std::string value, void *user_data)
+void 
+stop_test ()
 {
-  g_print ("%s\n", value.c_str());
+  do_continue=false;
 }
-
 
 int
 main (int argc,
       char *argv[])
 {
-  success = false;
-  
+  audio_success = false;
+  video_success = false;
+  do_continue = true;
   {
     switcher::QuiddityManager::ptr manager = 
       switcher::QuiddityManager::make_manager("rtptest");  
     
     manager->create ("runtime", "runtime");
-
-    //create logger managing switcher log domain
-    manager->create ("logger", "internal_logger");
-    //manage logs from shmdata
-    manager->invoke_va ("internal_logger", "install_log_handler", "shmdata", NULL);
-    //manage logs from GStreamer
-    manager->invoke_va ("internal_logger", "install_log_handler", "GStreamer", NULL);
-     //manage logs from Glib
-     manager->invoke_va ("internal_logger", "install_log_handler", "Glib", NULL);
-     //manage logs from Glib-GObject
-     manager->invoke_va ("internal_logger", "install_log_handler", "Glib-GObject", NULL);
-     manager->set_property ("internal_logger", "mute", "false");
-     manager->set_property ("internal_logger", "debug", "true");
-     //subscribe to logs:
-     manager->make_subscriber ("log_sub", logger_cb, NULL);
-     manager->subscribe_property ("log_sub","internal_logger","last-line");
-     
+    
     manager->create ("SOAPcontrolServer", "soapserver");
     manager->invoke_va ("soapserver", "set_port", "8084", NULL);
-
+    
     //testing uncompressed data transmission
     manager->create ("audiotestsrc","a");
     manager->invoke_va ("a", "set_runtime", "runtime", NULL);
@@ -83,78 +83,74 @@ main (int argc,
     manager->invoke_va ("rtp", "set_runtime", "runtime", NULL);
     
     manager->invoke_va ("rtp",
-			"add_data_stream",
-			"/tmp/switcher_rtptest_a_audio",
-			NULL);
+      			"add_data_stream",
+      			"/tmp/switcher_rtptest_a_audio",
+      			NULL);
     manager->invoke_va ("rtp",
-			"add_data_stream",
-			"/tmp/switcher_rtptest_v_video",
-			NULL);
+      			"add_data_stream",
+      			"/tmp/switcher_rtptest_v_video",
+      			NULL);
     manager->invoke_va ("rtp",
-			"add_destination",
-			"local",
-			"localhost",
-			NULL);
+      			"add_destination",
+      			"local",
+      			"localhost",
+      			NULL);
     manager->invoke_va ("rtp",
-     			"add_udp_stream_to_dest",
-     			"/tmp/switcher_rtptest_a_audio",
-     			"local",
-     			"9066",
-     			NULL);
+       			"add_udp_stream_to_dest",
+       			"/tmp/switcher_rtptest_a_audio",
+       			"local",
+       			"9066",
+       			NULL);
     manager->invoke_va ("rtp",
-     			"add_udp_stream_to_dest",
-     			"/tmp/switcher_rtptest_v_video",
-     			"local",
-     			"9076",
-     			NULL);
+       			"add_udp_stream_to_dest",
+       			"/tmp/switcher_rtptest_v_video",
+       			"local",
+       			"9076",
+       			NULL);
     
-    //wait 2 sec for the session being created
-    usleep (2000000); 
+    //wait 4 sec for the session being created
+    usleep (4000000); 
 
     manager->create ("httpsdp", "uri");
     manager->invoke_va ("uri", "set_runtime", "runtime", NULL);
     manager->invoke_va ("uri",
-			"to_shmdata",
-     			"http://localhost:8084/sdp?rtpsession=rtp&destination=local",
+      			"to_shmdata",
+       			"http://localhost:8084/sdp?rtpsession=rtp&destination=local",
+       			NULL);
+    
+    //wait 2 sec for uri to get the stream 
+    usleep (2000000);
+
+    manager->create ("fakesink","firstprobe");
+    manager->invoke_va ("firstprobe", "set_runtime", "runtime", NULL);
+    manager->invoke_va ("firstprobe",
+			"connect",
+			"/tmp/switcher_rtptest_uri_application_0",
+			NULL);
+    
+    
+     manager->create ("fakesink","secondprobe");
+     manager->invoke_va ("secondprobe", "set_runtime", "runtime", NULL);
+     manager->invoke_va ("secondprobe",
+     			"connect",
+     			"/tmp/switcher_rtptest_uri_application_1",
      			NULL);
     
-   
-    usleep (2000000);
-    
-    // manager->create ("fakesink","firstprobe");
-    // manager->invoke_va ("firstprobe", "set_runtime", "runtime", NULL);
-
-    // manager->invoke_va ("firstprobe",
-    // 			"connect",
-    // 			"/tmp/switcher_rtptest_uri_application_0",
-    // 			NULL);
-    
-    // usleep (2000000);
-    
-    //  manager->create ("fakesink","secondprobe");
-    //  manager->invoke_va ("secondprobe", "set_runtime", "receiver_runtime", NULL);
-    //  manager->invoke_va ("secondprobe",
-    // 			 "connect",
-    // 			 "/tmp/switcher_rtptest_uri_application_1",
-    // 			 NULL);
      
-    //  manager->make_subscriber ("sub", mon_property_cb, (void *)user_string);
-    //  manager->subscribe_property ("sub","firstprobe","last-message");
-    //  manager->subscribe_property ("sub","secondprobe","last-message");
 
-    //  manager->unsubscribe_property ("sub","firstprobe","last-message");
-    //  manager->unsubscribe_property ("sub","secondprobe","last-message");
-   
-    //  usleep (2000000);
-    //manager->remove ("firstprobe");
-    g_print ("**************************************************************\n");
-    //manager->remove ("uri");
- 
+    manager->make_subscriber ("sub", mon_property_cb, (void *)user_string);
+    manager->subscribe_property ("sub","firstprobe","last-message");
+    manager->subscribe_property ("sub","secondprobe","last-message");
+    
+    g_timeout_add (2000, (GSourceFunc) stop_test, NULL);
+
+    while (do_continue)
+      {
+	usleep (100000);
+      }
   }
-
-  return 0;
-
-  if (success)
+ 
+  if (audio_success && video_success)
     return 0;
   else
     return 1;

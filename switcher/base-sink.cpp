@@ -22,6 +22,11 @@
 
 namespace switcher
 {
+  BaseSink::~BaseSink ()
+  {
+    g_debug ("~BaseSink");
+  }  
+  
   BaseSink::BaseSink () :
     connection_hook_ (NULL)
   {
@@ -46,7 +51,6 @@ namespace switcher
    gboolean
    BaseSink::connect_wrapped (gpointer connector_name, gpointer user_data)
   {
-    //std::string connector = static_cast<std::string>(connector_name);
     BaseSink *context = static_cast<BaseSink*>(user_data);
        
     if (context->connect ((char *)connector_name))

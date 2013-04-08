@@ -22,12 +22,13 @@
 #define __SWITCHER_VIDEO_SOURCE_H__
 
 #include "switcher/base-source.h"
+#include "switcher/gst-element-cleaner.h"
 #include <memory>
 
 namespace switcher
 {
 
-  class VideoSource : public BaseSource, public GstElementCleaner
+  class VideoSource : public BaseSource
   {
   public:
     typedef std::shared_ptr<VideoSource> ptr;
@@ -43,6 +44,7 @@ namespace switcher
 
   protected:
     //called in the derived class constructor
+    GstElementCleaner::ptr cleaner_;
     void set_raw_video_element (GstElement *elt);
     
   };

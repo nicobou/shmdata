@@ -34,6 +34,7 @@ namespace switcher
     typedef std::shared_ptr<BaseSink> ptr;
 
     BaseSink ();
+    ~BaseSink ();
 
     bool connect (std::string shmdata_socket_path);
     //wrapper for being called

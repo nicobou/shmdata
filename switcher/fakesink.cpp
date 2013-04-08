@@ -51,7 +51,6 @@ namespace switcher
     register_property (G_OBJECT (fakesink_),"last-buffer","last-buffer");
     
     set_sink_element (fakesink_);
-    //add_element_to_cleaner (fakesink_);
     return true;
   }
   

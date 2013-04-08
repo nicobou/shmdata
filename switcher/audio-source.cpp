@@ -19,6 +19,7 @@
 
 #include "switcher/audio-source.h"
 #include "switcher/gst-utils.h"
+#include "switcher/gst-element-cleaner.h"
 #include <memory>
 
 namespace switcher
@@ -30,6 +31,13 @@ namespace switcher
 	|| !GstUtils::make_element ("pitch", &pitch_)
 	|| !GstUtils::make_element ("audioresample", &resample_))
       g_critical ("a mandatory gst element is missing for audio source");
+
+    cleaner_.reset (new GstElementCleaner ());
+    cleaner_->add_element_to_cleaner (audio_tee_);
+    cleaner_->add_element_to_cleaner (audioconvert_);
+    cleaner_->add_element_to_cleaner (pitch_);
+    cleaner_->add_element_to_cleaner (resample_);
+    
     
     gst_bin_add_many (GST_BIN (bin_),
 		      audio_tee_,
@@ -54,14 +62,14 @@ namespace switcher
   AudioSource::set_raw_audio_element (GstElement *elt)
   {
     rawaudio_ = elt;
-    
+ 
     gst_bin_add (GST_BIN (bin_), rawaudio_);
     gst_element_link (rawaudio_, audio_tee_);
 
     GstCaps *audiocaps = gst_caps_new_simple ("audio/x-raw-float",
 					      "width", G_TYPE_INT, 32,
      					      NULL);
-    
+
     //creating a connector for raw audio
     ShmdataWriter::ptr rawaudio_connector;
     rawaudio_connector.reset (new ShmdataWriter ());

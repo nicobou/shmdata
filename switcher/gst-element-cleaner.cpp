@@ -25,6 +25,7 @@ namespace switcher
 
   GstElementCleaner::~GstElementCleaner ()
   {
+    g_debug ("~GstElementCleaner");
       std::vector<GstElement *>::iterator element;
       for (element = elements_to_remove_.begin(); element != elements_to_remove_.end (); element ++)
 	{

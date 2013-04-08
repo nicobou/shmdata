@@ -24,13 +24,13 @@
 #include <memory>
 #include <string>
 #include <shmdata/base-writer.h>
-#include "switcher/gst-element-cleaner.h"
+//#include "switcher/gst-element-cleaner.h"
 #include "switcher/json-builder.h"
 
 namespace switcher
 {
 
-  class ShmdataWriter : public GstElementCleaner
+  class ShmdataWriter
   {
   public:
     typedef std::shared_ptr<ShmdataWriter> ptr;
@@ -48,6 +48,7 @@ namespace switcher
   private:
     std::string path_;
     shmdata_base_writer_t *writer_;
+    //GstElementCleaner::ptr cleaner_;
     GstElement *bin_;
     GstElement *tee_;
     GstElement *queue_;

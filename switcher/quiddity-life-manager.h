@@ -47,6 +47,7 @@ namespace switcher
     //will get name "default"
     static QuiddityLifeManager::ptr make_life_manager ();
     static QuiddityLifeManager::ptr make_life_manager (std::string name);
+    ~QuiddityLifeManager();
     
     //**** info about manager
     std::string get_name ();

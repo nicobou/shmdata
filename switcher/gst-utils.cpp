@@ -140,40 +140,35 @@ namespace switcher
 	 //    {
 	 //      g_debug ("%d, %d, %d, state return %d",GST_STATE(element),GST_STATE_TARGET (element), GST_STATE_PENDING (element),GST_STATE_RETURN(element));
 	 //    }
-	 
+	
 	 GstIterator *pad_iter;
 	 pad_iter = gst_element_iterate_pads (element);
 	 gst_iterator_foreach (pad_iter, (GFunc) GstUtils::unlink_pad, element);
 	 gst_iterator_free (pad_iter);
+
 	 //g_debug ("CLEANING 1 %s",gst_element_get_name (element));
 	 
  	 // if (GST_IS_BIN (element))
 	 //   {
 	 //     g_debug ("%d, %d, %d, state return %d",GST_STATE(element),GST_STATE_TARGET (element), GST_STATE_PENDING (element),GST_STATE_RETURN(element));
 	 //   }
+
 	 GstState state = GST_STATE_TARGET (element);
 	 if (state != GST_STATE_NULL)
 	   if (GST_STATE_CHANGE_ASYNC == gst_element_set_state (element, GST_STATE_NULL))
 	     //	       while (state != GST_STATE (element))
 	     while (GST_STATE (element) != GST_STATE_NULL)
 	       {
-		 //g_debug ("11");
 		 gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
 	       }
 
 	 // while (GST_STATE (element) != GST_STATE_NULL)
 	 //   {
-	 //     //g_debug ("22");
 	 //     gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
 	 //   }
 
-	 // g_debug ("CLEANING 2");
-
 	 if (GST_IS_BIN (gst_element_get_parent (element)))
 	   gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element);
-
-	 //g_debug ("END CLEANING");
-	 
       }
     
   }

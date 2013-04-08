@@ -86,6 +86,12 @@ namespace switcher
     make_classes_doc ();
   }
 
+  QuiddityLifeManager::~QuiddityLifeManager()
+  {
+    g_debug ("~QuiddityLifeManager");
+  }
+  
+
   void
   QuiddityLifeManager::remove_shmdata_sockets ()
   {

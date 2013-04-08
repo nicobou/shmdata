@@ -43,6 +43,7 @@ namespace switcher
 
   protected:
     //called in the derived class constructor
+    GstElementCleaner::ptr cleaner_;
     void set_raw_audio_element (GstElement *elt);
   };
 

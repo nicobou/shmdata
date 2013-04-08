@@ -35,31 +35,31 @@ namespace switcher
     update_shmdata_writers_description ();
     update_shmdata_readers_description ();
 
-     //installing custom prop for json shmdata description
-     if (json_writers_description_ == NULL)
-       json_writers_description_ = 
-	 GObjectWrapper::make_string_property ("shmdata-writers", 
-					       "json formated shmdata writers description",
-					       "",
-					       (GParamFlags) G_PARAM_READABLE,
-					       NULL,
-					       Segment::get_shmdata_writers_by_gvalue);
+    //installing custom prop for json shmdata description
+    if (json_writers_description_ == NULL)
+      json_writers_description_ = 
+	GObjectWrapper::make_string_property ("shmdata-writers", 
+					      "json formated shmdata writers description",
+					      "",
+					      (GParamFlags) G_PARAM_READABLE,
+					      NULL,
+					      Segment::get_shmdata_writers_by_gvalue);
      
-     if (json_readers_description_ == NULL)
-       json_readers_description_ = 
-	 GObjectWrapper::make_string_property ("shmdata-readers", 
-					       "json formated shmdata readers description",
-					       "",
-					       (GParamFlags) G_PARAM_READABLE,
-					       NULL,
-					       Segment::get_shmdata_readers_by_gvalue);
+    if (json_readers_description_ == NULL)
+      json_readers_description_ = 
+	GObjectWrapper::make_string_property ("shmdata-readers", 
+					      "json formated shmdata readers description",
+					      "",
+					      (GParamFlags) G_PARAM_READABLE,
+					      NULL,
+					      Segment::get_shmdata_readers_by_gvalue);
 
-     register_property_by_pspec (gobject_->get_gobject (), 
-				 json_writers_description_, 
-				 "shmdata-writers");
-     register_property_by_pspec (gobject_->get_gobject (), 
-				 json_readers_description_, 
-				 "shmdata-readers");
+    register_property_by_pspec (gobject_->get_gobject (), 
+				json_writers_description_, 
+				"shmdata-writers");
+    register_property_by_pspec (gobject_->get_gobject (), 
+				json_readers_description_, 
+				"shmdata-readers");
 
     GstUtils::make_element ("bin", &bin_);
     g_object_set (G_OBJECT (bin_), "async-handling",TRUE, NULL);
@@ -84,23 +84,28 @@ namespace switcher
   Segment::~Segment()
   {
     g_debug ("Segment::~Segment begin (%s)",get_nick_name().c_str ());
-    
     g_debug ("Segment, bin state %s, target %s, num children %d ", 
 	     gst_element_state_get_name (GST_STATE (bin_)), 
 	     gst_element_state_get_name (GST_STATE_TARGET (bin_)), 
 	     GST_BIN_NUMCHILDREN(GST_BIN (bin_)));
     
-    
     GstUtils::wait_state_changed (bin_);
     
-      if (GST_IS_ELEMENT (bin_))
+    if (GST_IS_ELEMENT (bin_))
       {
-	 g_debug ("Segment, bin state %s, target %s, num children %d ", 
-	 	  gst_element_state_get_name (GST_STATE (bin_)), 
-	 	  gst_element_state_get_name (GST_STATE_TARGET (bin_)), 
-	 	  GST_BIN_NUMCHILDREN(GST_BIN (bin_)));
 
-	 
+	
+	g_debug ("Segment::~Segment shmdata cleaning");
+	shmdata_readers_.clear ();
+	g_debug ("Segment::~Segment shmdata readers cleared");
+	shmdata_writers_.clear ();
+	g_debug ("Segment::~Segment shmdata writers cleared");
+
+	g_debug ("Segment, bin state %s, target %s, num children %d ", 
+		 gst_element_state_get_name (GST_STATE (bin_)), 
+		 gst_element_state_get_name (GST_STATE_TARGET (bin_)), 
+		 GST_BIN_NUMCHILDREN(GST_BIN (bin_)));
+	
 	if (GST_BIN_CHILDREN (bin_) > 0)
 	  {
 	    g_debug ("segment: some child elements have not been cleaned in %s",
@@ -109,24 +114,13 @@ namespace switcher
 	    for (child = children; child != NULL; child = g_list_next (child)) 
 	      {
 		g_debug ("segment warning: child %s", GST_ELEMENT_NAME (GST_ELEMENT (child->data)));
-		// gst_element_set_state (GST_ELEMENT (child->data), GST_STATE_PLAYING);
-		// gst_element_set_state (GST_ELEMENT (child->data), GST_STATE_NULL);
-		// gst_bin_remove (GST_BIN (bin_), GST_ELEMENT (child->data));
+		//GstUtils::clean_element (GST_ELEMENT (child->data));
 	      }
 	  }
-	
 	g_debug ("~Segment: cleaning internal bin");
 	GstUtils::clean_element (bin_);
       }
-
-    g_debug ("Segment::~Segment shmdata cleaning");
-    shmdata_readers_.clear ();
-    g_debug ("Segment::~Segment shmdata readers cleared");
-    shmdata_writers_.clear ();
-    g_debug ("Segment::~Segment shmdata writers cleared");
- 
-
-   g_debug ("Segment::~Segment end");
+    g_debug ("Segment::~Segment end");
   }
   
   
@@ -153,9 +147,9 @@ namespace switcher
 	Quiddity::ptr quidd = life_manager->get_quiddity (runtime_name);
 	Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
 	if(runtime)
-	   context->set_runtime(runtime);
-	 else
-	   g_error ("Segment::set_runtime_wrapped Error: %s is not a runtime",runtime_name);
+	  context->set_runtime(runtime);
+	else
+	  g_error ("Segment::set_runtime_wrapped Error: %s is not a runtime",runtime_name);
       }
     //g_debug ("%s is attached to runtime %s",context->get_name().c_str(),runtime->get_name().c_str());
   }
