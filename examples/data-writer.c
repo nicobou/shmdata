@@ -52,22 +52,31 @@ main (int argc, char *argv[])
       exit(0);
     }
   shmdata_any_writer_set_debug (writer, SHMDATA_ENABLE_DEBUG);
-  shmdata_any_writer_set_data_type (writer, "application/helloworld_");
+  shmdata_any_writer_set_data_type (writer, "text/plain");
   shmdata_any_writer_start (writer);
 
   unsigned long long myclock = 0;
-  unsigned long long nsecPeriod = 30000000;
+  unsigned long long nsecPeriod = 300000000;
 
-  char hello[21] = "helloworldhelloworld";
+  char hello[11] = "hello world";
+  char olleh[11] = "dlrow olleh";
 
-  while (0 == 0)
+  while (1)
     {
       //data should be serialized if network is involved
-      shmdata_any_writer_push_data (writer,
-				    hello,
-				    sizeof (hello),
-				    myclock,
-				    &data_not_required_anymore, hello);
+      if ((myclock/2) % nsecPeriod == 0)
+	shmdata_any_writer_push_data (writer,
+				      hello,
+				      sizeof (hello),
+				      myclock,
+				      &data_not_required_anymore, hello);
+      else
+	shmdata_any_writer_push_data (writer,
+				      olleh,
+				      sizeof (olleh),
+				      myclock,
+				      &data_not_required_anymore, olleh);
+      
       usleep (nsecPeriod / 1000);
       myclock += nsecPeriod;
     }

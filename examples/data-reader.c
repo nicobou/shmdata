@@ -70,7 +70,7 @@ main (int argc, char *argv[])
   shmdata_any_reader_set_on_data_handler (reader, &on_data,
 					  (void *) my_user_data);
 //    shmdata_any_reader_set_data_type(reader, "video/x-raw-yuv, format=(fourcc)YUY2, framerate=(fraction)25/1, width=(int)924, height=(int)576, interlaced=(boolean)true, pixel-aspect-ratio=(fraction)1/1");
-  shmdata_any_reader_set_data_type (reader, "application/helloworld_");
+  shmdata_any_reader_set_data_type (reader, "text/plain");
   //shmdata_any_reader_set_absolute_timestamp (reader, SHMDATA_ENABLE_ABSOLUTE_TIMESTAMP);
   shmdata_any_reader_set_absolute_timestamp (reader, SHMDATA_DISABLE_ABSOLUTE_TIMESTAMP);
   shmdata_any_reader_start (reader, argv[1]);
