@@ -269,7 +269,7 @@ namespace switcher
   Quiddity::unsubscribe_property (std::string name,
 				  Property::Callback cb)
   {
-    if (properties_.find( name ) == properties_.end())
+    if (properties_.find (name) == properties_.end())
       return false;
 
     Property::ptr prop = properties_[name];

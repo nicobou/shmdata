@@ -572,13 +572,32 @@ namespace switcher
     std::string 
     QuiddityLifeManager::list_subscribers_json ()
     {
-      return "{\"what\":\"to be implemented\"}";//FIXME (list_subscriber_json)
+      return "{\"error\":\"to be implemented\"}";//FIXME (list_subscriber_json)
     }
   
     std::string 
     QuiddityLifeManager::list_subscribed_properties_json (std::string subscriber_name)
     {
-      return "{\"what\":\"to be implemented\"}";//FIXME (list_subscribed_property_json)
+      std::vector<std::pair<std::string, std::string> > subscribed_props =
+	list_subscribed_properties (subscriber_name);
+
+      JSONBuilder *doc = new JSONBuilder ();
+      doc->reset ();
+      doc->begin_object ();
+      doc->set_member_name ("subscribed properties");
+      doc->begin_array ();
+      for(std::vector<std::pair<std::string, std::string> >::iterator it = subscribed_props.begin(); 
+	  it != subscribed_props.end(); ++it) 
+	{
+	  doc->begin_object ();
+	  doc->add_string_member ("quiddity", it->first.c_str ());
+	  doc->add_string_member ("property", it->second.c_str ());
+	  doc->end_object ();
+	}
+      doc->end_array ();
+      doc->end_object ();
+      
+      return doc->get_string(true);
     }
 
   //lower level subscriber

@@ -46,15 +46,15 @@
      std::string get_name ();
      
 
-     //**** life manager
+     // life manager
      std::vector<std::string> get_classes (); //know which quiddities can be created
      std::vector<std::string> get_quiddities (); //know instances
-     //doc (json formatted) 
+     // doc (json formatted) 
      std::string get_classes_doc ();
      std::string get_class_doc (std::string class_name);
      std::string get_quiddity_description (std::string quiddity_name);
      std::string get_quiddities_description ();
-     //create & remove
+     // create & remove
      std::string create (std::string class_name); //returns the name
      std::string create (std::string class_name, 
 			 std::string nick_name); // &?= chars are not allowed in nicknames
