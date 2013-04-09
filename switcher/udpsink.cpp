@@ -19,9 +19,13 @@
 
 #include "switcher/udpsink.h"
 #include "switcher/gst-utils.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
-#include <sys/types.h>          /* See NOTES */
+#if HAVE_OSX
 #include <sys/socket.h>
+#endif
 
 namespace switcher
 {
@@ -45,7 +49,7 @@ namespace switcher
     set_name (gst_element_get_name (udpsink_));
     g_object_set (G_OBJECT (udpsink_), "sync", FALSE, NULL);
 
-    
+#if HAVE_OSX    
     // turnaround for OSX: create sender socket
     int sock;
     if ((sock = socket (AF_INET, SOCK_DGRAM, 0)) < 0)
@@ -53,7 +57,6 @@ namespace switcher
 	g_warning ("udp sink: cannot create socket");
 	return false;
       }
-
     guint bc_val = 1;
     if (setsockopt (sock, SOL_SOCKET, SO_BROADCAST, &bc_val,
             sizeof (bc_val)) < 0)
@@ -61,8 +64,9 @@ namespace switcher
 	g_warning ("udp sink: cannot set broadcast to socket");
 	return false;
       }
-
     g_object_set (G_OBJECT (udpsink_), "sockfd", sock, NULL);
+#endif
+
 
     register_property (G_OBJECT (udpsink_),"blocksize","blocksize");
     register_property (G_OBJECT (udpsink_),"bytes-served","bytes-served");
