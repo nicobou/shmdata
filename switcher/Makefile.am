@@ -56,6 +56,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     runtime.cpp \
     segment.cpp \
     shmdata-reader.cpp \
+    shmdata-to-file.cpp \
     shmdata-writer.cpp \
     soap-ctrl-server.cpp \
     udpsink.cpp \
@@ -127,6 +128,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     runtime.h \
     segment.h \
     shmdata-reader.h \
+    shmdata-to-file.h \
     shmdata-writer.h \
     soap-ctrl-server.h \
     string-map.h \

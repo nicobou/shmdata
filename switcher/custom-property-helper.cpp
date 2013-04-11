@@ -141,8 +141,13 @@ namespace switcher
 	gchar *val = ((get_string_method)user_method->get) (user_method->user_data);
 	g_value_set_string (value, val);
       }
+    else if (G_VALUE_TYPE(value) == G_TYPE_BOOLEAN)
+      {
+	gboolean val = ((get_boolean_method)user_method->get) (user_method->user_data);
+	g_value_set_boolean (value, val);
+      }
     else
-	g_warning ("CustomPropertyHelper: unknown type"); 
+      g_warning ("CustomPropertyHelper: unknown type"); 
     return TRUE;
   }
  
@@ -155,6 +160,11 @@ namespace switcher
       {
 	((set_string_method)user_method->set) (g_value_get_string (value), 
 					       user_method->user_data);
+      }
+    else if (G_VALUE_TYPE(value) == G_TYPE_BOOLEAN)
+      {
+	((set_boolean_method)user_method->set) (g_value_get_boolean (value), 
+						user_method->user_data);
       }
     else
       {
