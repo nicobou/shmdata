@@ -28,6 +28,7 @@ namespace switcher
   
   ShmdataToFile::~ShmdataToFile ()
   {
+    clean_recorders ();
   }
 
   bool 

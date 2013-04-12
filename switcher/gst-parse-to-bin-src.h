@@ -34,12 +34,18 @@ namespace switcher
     typedef std::shared_ptr<GstParseToBinSrc> ptr;
     bool init ();
     bool to_shmdata (std::string gst_pipeline_description);
+    bool to_shmdata_with_path (std::string gst_pipeline_description,
+			       std::string shmdata_path);
     QuiddityDocumentation get_documentation ();
     static QuiddityDocumentation doc_;
 
   private:
     GstElement *gst_parse_to_bin_src_;
-    static gboolean to_shmdata_wrapped (gpointer descr, gpointer user_data);
+    static gboolean to_shmdata_wrapped (gpointer descr, 
+					gpointer user_data);
+    static gboolean to_shmdata_with_path_wrapped (gpointer descr, 
+						  gpointer shmdata_path, 
+						  gpointer user_data);
   };
 
 }  // end of namespace

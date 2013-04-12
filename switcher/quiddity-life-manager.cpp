@@ -42,6 +42,7 @@
 #include "switcher/rtp-session.h"
 #include "switcher/runtime.h"
 #include "switcher/shmdata-to-file.h"
+#include "switcher/shmdata-from-gdp-file.h"
 #include "switcher/soap-ctrl-server.h"
 #include "switcher/udpsink.h"
 #include "switcher/uridecodebin.h"
@@ -198,6 +199,8 @@ namespace switcher
       						  RtpSession::doc_.get_json_root_node ());
     abstract_factory_.register_class<Runtime> (Runtime::doc_.get_class_name (), 
       					       Runtime::doc_.get_json_root_node ());
+    abstract_factory_.register_class<ShmdataFromGDPFile> (ShmdataFromGDPFile::doc_.get_class_name (), 
+							  ShmdataFromGDPFile::doc_.get_json_root_node ());
     abstract_factory_.register_class<ShmdataToFile> (ShmdataToFile::doc_.get_class_name (), 
 						     ShmdataToFile::doc_.get_json_root_node ());
     abstract_factory_.register_class<SoapCtrlServer> (SoapCtrlServer::doc_.get_class_name (), 

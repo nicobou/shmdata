@@ -265,6 +265,15 @@ namespace switcher
     return true;
   }
 
+  bool Segment::unregister_shmdata_writer (std::string shmdata_path)
+  {
+    shmdata_writers_.remove (shmdata_path);
+    update_shmdata_writers_description ();
+    GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_writers_description_);
+
+    return true;
+  }
+
   bool
   Segment::get_shmdata_writers_by_gvalue (GValue *value,
                                           void *user_data)

@@ -40,15 +40,26 @@ namespace switcher
     //using parent bin name
     set_name (gst_element_get_name (bin_));
 
-    //registering add_data_stream
+    //registering methods
     register_method("to_shmdata",
 		    (void *)&to_shmdata_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    (gpointer)this);
     set_method_description ("to_shmdata", 
 			    "make a bin from GStreamer description and make shmdata writer(s)", 
-			    Method::make_arg_description ("description", 
-							  "the description to instanciate",
+			    Method::make_arg_description ((char *)"description", 
+							  (char *)"the description to instanciate",
+							  NULL));
+    register_method("to_shmdata_with_path",
+		    (void *)&to_shmdata_with_path_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
+		    (gpointer)this);
+    set_method_description ("to_shmdata_with_path", 
+			    "make a bin from GStreamer description and make shmdata writer(s)", 
+			    Method::make_arg_description ((char *)"description", 
+							  (char *)"the description to instanciate",
+							  (char *)"shmdata_path", 
+							  (char *)"the path used for the shmdata",
 							  NULL));
     return true;
   }
@@ -67,11 +78,24 @@ namespace switcher
       return FALSE;
   }
 
-  bool
-  GstParseToBinSrc::to_shmdata (std::string descr)
+  gboolean
+  GstParseToBinSrc::to_shmdata_with_path_wrapped (gpointer descr, 
+						  gpointer shmdata_path,
+						  gpointer user_data)
   {
-    g_debug ("to_shmdata set GStreamer description %s", descr.c_str ());
+    GstParseToBinSrc *context = static_cast<GstParseToBinSrc *>(user_data);
     
+    if (context->to_shmdata_with_path ((char *)descr, (char *)shmdata_path))
+      return TRUE;
+    else
+      return FALSE;
+  }
+
+  bool
+  GstParseToBinSrc::to_shmdata_with_path (std::string descr,
+					  std::string shmdata_path)
+  {
+
     GError *error = NULL;
     gst_parse_to_bin_src_ = gst_parse_bin_from_description (descr.c_str (),
 							    TRUE,
@@ -93,12 +117,19 @@ namespace switcher
     //creating a connector for raw audio
     ShmdataWriter::ptr writer;
     writer.reset (new ShmdataWriter ());
-    std::string writer_name = make_file_name ("gstsrc"); //FIXME use caps name
-    writer->set_path (writer_name.c_str());
+    writer->set_path (shmdata_path.c_str());
     writer->plug (bin_, src_pad);
     register_shmdata_writer (writer);
     gst_object_unref (src_pad);
     return true;
+  }
+  
+  bool
+  GstParseToBinSrc::to_shmdata (std::string descr)
+  {
+    g_debug ("to_shmdata set GStreamer description %s", descr.c_str ());
+    std::string writer_name = make_file_name ("gstsrc"); //FIXME use caps name
+    return to_shmdata_with_path (descr, writer_name);
   }
 
 

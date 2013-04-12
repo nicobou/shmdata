@@ -55,6 +55,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     rtp-session.cpp \
     runtime.cpp \
     segment.cpp \
+    shmdata-from-gdp-file.cpp \
     shmdata-reader.cpp \
     shmdata-to-file.cpp \
     shmdata-writer.cpp \
@@ -127,6 +128,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     rtp-session.h \
     runtime.h \
     segment.h \
+    shmdata-from-gdp-file.h \
     shmdata-reader.h \
     shmdata-to-file.h \
     shmdata-writer.h \

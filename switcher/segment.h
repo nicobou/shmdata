@@ -57,7 +57,7 @@ namespace switcher
     GstElement *bin_;
     Runtime::ptr runtime_;
     bool register_shmdata_writer (ShmdataWriter::ptr writer);
-    //TODO bool unregister_shmdata_writer (std::string shmdata_path);
+    bool unregister_shmdata_writer (std::string shmdata_path);
     bool register_shmdata_reader (ShmdataReader::ptr reader);
     bool unregister_shmdata_reader (std::string shmdata_path);
       
