@@ -133,11 +133,14 @@ namespace switcher
   ShmdataFromGDPFile::set_playing (gboolean playing, void *user_data)
   {
     ShmdataFromGDPFile *context = static_cast<ShmdataFromGDPFile *> (user_data);
+
+    g_print ("coucoucoucouc +++++++++++++++++++++++++ \n");
     if (playing)
       context->make_players ();
     else
       context->clean_players ();
     context->playing_ = playing;
+    GObjectWrapper::notify_property_changed (context->custom_prop_->get_gobject (), context->playing_param_);
   }
   
   gboolean 
@@ -147,53 +150,6 @@ namespace switcher
     return context->playing_;
   }
 
-  // bool
-  // ShmdataFromGDPFile::make_player (std::string file_path)
-  // {
-    // g_debug ("make_player (%s) ", file_path.c_str ());
-
-    // if (!shmdata_names_.contains (file_path))
-    //   return false;
-    
-    // if (shmdata_names_.contains (file_path))
-    //   g_warning ("%s is already a player");
-
-    // GError *error = NULL;
-    // gchar *pipe = g_strdup_printf ("filesrc location=%s ! gdpdepay ! identity sync=true",
-    // 				   file_path.c_str());
-    // GstElement *player_bin = gst_parse_bin_from_description (pipe,
-    // 							     TRUE,
-    // 							     &error);
-    
-    // g_free (pipe);
-    // if (error != NULL)
-    //   {
-    // 	g_warning ("ShmdataFromGDPFile::make_players %s",error->message);
-    // 	g_error_free (error);
-    // 	return false;
-    //   }
-
-    // gst_bin_add (GST_BIN (bin_), player_bin);
-    // gdp_file_players_.insert(file_path, player_bin);
-
-    // //GstUtils::wait_state_changed (bin_);
-	 
-    // GstPad *srcpad = gst_element_get_static_pad (player_bin, "src");
-    // //adding a probe for handling loss messages from rtpbin
-    // gst_pad_add_event_probe (srcpad, (GCallback) event_probe_cb, this);   
-
-    // ShmdataWriter::ptr writer;
-    // writer.reset (new ShmdataWriter ());
-    // writer->set_path (shmdata_names_.lookup (file_path));
-    // writer->plug (bin_, srcpad);
-    // register_shmdata_writer (writer);
-    // gst_object_unref (srcpad);
-    // GstUtils::sync_state_with_parent (player_bin);
-    
-    // g_debug ("make_player done (%s) ", file_path.c_str ());
-  //   return true;
-  // }
-  
   bool
   ShmdataFromGDPFile::make_players ()
   {
@@ -230,21 +186,28 @@ namespace switcher
     manager_.reset ();
   }
 
-
-  gboolean
-  ShmdataFromGDPFile::event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data)
-  {
-    ShmdataFromGDPFile *context = static_cast<ShmdataFromGDPFile *>(user_data);
-    if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) { 
-      g_print ("EOS caught and disabled \n");
-      g_print ("----- pad with EOS %s:%s, src: %p %s\n",
-       	       GST_DEBUG_PAD_NAME (pad),GST_EVENT_SRC(event), gst_element_get_name (GST_EVENT_SRC(event)));
-      // g_idle_add ((GSourceFunc) rewind,   
-      // 		  (gpointer)context);   
-      return FALSE;
-    }  
-    return TRUE; 
-  }
+  //FIXME use signals in switcher for handling gstsrc's eos 
+  // void 
+  // ShmdataFromGDPFile::rewind (gpointer user_data)
+  // {
+  //   ShmdataFromGDPFile *context = static_cast<ShmdataFromGDPFile *>(user_data);
+  //   context->set_playing (FALSE, context);
+  // }
+    
+  // gboolean
+  // ShmdataFromGDPFile::event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data)
+  // {
+  //   ShmdataFromGDPFile *context = static_cast<ShmdataFromGDPFile *>(user_data);
+  //   if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) { 
+  //     g_print ("EOS caught and disabled \n");
+  //     g_print ("----- pad with EOS %s:%s, src: %p %s\n",
+  //      	       GST_DEBUG_PAD_NAME (pad),GST_EVENT_SRC(event), gst_element_get_name (GST_EVENT_SRC(event)));
+  //     g_idle_add ((GSourceFunc) ShmdataFromGDPFile::rewind,   
+  //      		  (gpointer)context);   
+  //     return FALSE;
+  //   }  
+  //   return TRUE; 
+  // }
 
 
 }

@@ -32,6 +32,8 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<GstParseToBinSrc> ptr;
+    ~GstParseToBinSrc ();
+
     bool init ();
     bool to_shmdata (std::string gst_pipeline_description);
     bool to_shmdata_with_path (std::string gst_pipeline_description,

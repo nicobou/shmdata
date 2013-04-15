@@ -47,7 +47,8 @@ namespace switcher
     
     static void set_playing (gboolean playing, void *user_data);
     static gboolean get_playing (void *user_data);
-
+    static void rewind (gpointer user_data);
+    
   private:
     //custom properties:
      CustomPropertyHelper::ptr custom_prop_;  

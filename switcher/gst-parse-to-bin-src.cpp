@@ -32,7 +32,10 @@ namespace switcher
     return doc_;
   }
   
-  
+  GstParseToBinSrc::~GstParseToBinSrc ()
+  {
+    GstUtils::clean_element (gst_parse_to_bin_src_);
+  }
 
   bool 
   GstParseToBinSrc::init ()
@@ -100,6 +103,7 @@ namespace switcher
     gst_parse_to_bin_src_ = gst_parse_bin_from_description (descr.c_str (),
 							    TRUE,
 							    &error);
+    g_object_set (G_OBJECT (gst_parse_to_bin_src_), "async-handling",TRUE, NULL);
 
     GstUtils::wait_state_changed (bin_);
 
@@ -111,8 +115,6 @@ namespace switcher
       }
     
     GstPad *src_pad = gst_element_get_static_pad (gst_parse_to_bin_src_,"src");
-
-    GstCaps *caps = gst_pad_get_caps (src_pad);
     gst_bin_add (GST_BIN (bin_), gst_parse_to_bin_src_);
 
      //make a shmwriter
