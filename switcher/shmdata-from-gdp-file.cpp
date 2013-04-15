@@ -210,9 +210,8 @@ namespace switcher
       {
 	manager_->create ("gstsrc", it->first.c_str ());
 	manager_->invoke_va (it->first.c_str (), "set_runtime", "single_runtime", NULL);
-	// gchar *pipe = g_strdup_printf ("filesrc location=%s ! gdpdepay ! identity sync=false",
-	// 			       it->first.c_str ());
-	gchar *pipe = g_strdup_printf ("audiotestsrc");
+	gchar *pipe = g_strdup_printf ("filesrc location=%s ! gdpdepay ! identity sync=true",
+	 			       it->first.c_str ());
 	g_debug ("ShmdataFromGDPFile::make_players %s", pipe); 
 	manager_->invoke_va (it->first.c_str (), 
 			     "to_shmdata_with_path", 

@@ -101,6 +101,8 @@ namespace switcher
 							    TRUE,
 							    &error);
 
+    GstUtils::wait_state_changed (bin_);
+
     if (error != NULL)
       {
 	g_warning ("%s",error->message);
@@ -109,19 +111,20 @@ namespace switcher
       }
     
     GstPad *src_pad = gst_element_get_static_pad (gst_parse_to_bin_src_,"src");
-    
-    gst_bin_add (GST_BIN (bin_), gst_parse_to_bin_src_);
-    GstUtils::wait_state_changed (bin_);
-    GstUtils::sync_state_with_parent (gst_parse_to_bin_src_);
 
-    //creating a connector for raw audio
-    ShmdataWriter::ptr writer;
-    writer.reset (new ShmdataWriter ());
-    writer->set_path (shmdata_path.c_str());
-    writer->plug (bin_, src_pad);
-    register_shmdata_writer (writer);
-    gst_object_unref (src_pad);
-    return true;
+    GstCaps *caps = gst_pad_get_caps (src_pad);
+    gst_bin_add (GST_BIN (bin_), gst_parse_to_bin_src_);
+
+     //make a shmwriter
+     ShmdataWriter::ptr writer;
+     writer.reset (new ShmdataWriter ());
+     writer->set_path (shmdata_path.c_str());
+     writer->plug (bin_, src_pad);
+     register_shmdata_writer (writer);
+     gst_object_unref (src_pad);
+
+     GstUtils::sync_state_with_parent (gst_parse_to_bin_src_);
+     return true;
   }
   
   bool
@@ -131,7 +134,5 @@ namespace switcher
     std::string writer_name = make_file_name ("gstsrc"); //FIXME use caps name
     return to_shmdata_with_path (descr, writer_name);
   }
-
-
 
 }

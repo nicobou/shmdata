@@ -208,7 +208,7 @@ namespace switcher
 	gst_message_parse_error (msg, &error, &debug);
 	g_free (debug);
 	g_debug ("Runtime::bus_sync_handler Error: %s from %s", error->message, GST_MESSAGE_SRC_NAME(msg));
-	GstUtils::clean_element (GST_ELEMENT (GST_MESSAGE_SRC (msg)));
+	//GstUtils::clean_element (GST_ELEMENT (GST_MESSAGE_SRC (msg)));
 	g_error_free (error);
 	return GST_BUS_DROP; 
       }
