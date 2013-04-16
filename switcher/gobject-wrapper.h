@@ -39,8 +39,10 @@ namespace switcher
     GObjectWrapper ();
     ~GObjectWrapper ();
 
-    static void notify_property_changed (GObject *object, GParamSpec *pspec);
     GObject *get_gobject ();
+
+    //---------- properties
+    static void notify_property_changed (GObject *object, GParamSpec *pspec);
     //user data for set and get methods
     void set_user_data (std::string nickname, void *user_data);
     void *get_user_data (std::string nickname);
@@ -73,14 +75,16 @@ namespace switcher
 					 GObjectCustomProperty::set_method_pointer set_method,
 					 GObjectCustomProperty::get_method_pointer get_method);
 
-
     //for the gobject class
     GObjectCustomProperty::set_method_pointer get_set_method_pointer (guint prop_id);
     GObjectCustomProperty::get_method_pointer get_get_method_pointer (guint prop_id);
 
+    
 
   private:
     struct _MyObject *my_object_;
+
+    //---------- properties
     static std::map<guint, GObjectCustomProperty::ptr> custom_properties_;
     static guint next_prop_id_;
     std::map<std::string, void *> user_datas_;
