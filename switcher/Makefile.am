@@ -59,7 +59,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     shmdata-reader.cpp \
     shmdata-to-file.cpp \
     shmdata-writer.cpp \
-    signal.cpp \
+    signal-string.cpp \
     soap-ctrl-server.cpp \
     udpsink.cpp \
     uridecodebin.cpp \
@@ -133,7 +133,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     shmdata-reader.h \
     shmdata-to-file.h \
     shmdata-writer.h \
-    signal.h \
+    signal-string.h \
     soap-ctrl-server.h \
     string-map.h \
     string-map_spec.h \

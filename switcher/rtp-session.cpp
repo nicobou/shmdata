@@ -67,11 +67,19 @@ namespace switcher
     if (!GstUtils::make_element ("gstrtpbin", &rtpsession_))
       return false;
 
+    
+
     next_id_ = 79; //this value is arbitrary and can be changed
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
 
+    //FIXME remove the following test
+    register_signal (G_OBJECT (rtpsession_), 
+		     "on-bye-ssrc",
+		     "on-bye-ssrc" );
+
     g_signal_connect (G_OBJECT (rtpsession_), "on-bye-ssrc", 
 		      (GCallback) on_bye_ssrc, (gpointer) this);
+    
     g_signal_connect (G_OBJECT (rtpsession_), "on_bye_timeout", 
 		      (GCallback) on_bye_timeout, (gpointer) this);
     g_signal_connect (G_OBJECT (rtpsession_), "on_new_ssrc", 

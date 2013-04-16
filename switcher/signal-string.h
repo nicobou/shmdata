@@ -18,36 +18,36 @@
  */
 
 
-#ifndef __SWITCHER_SIGNAL_H__
-#define __SWITCHER_SIGNAL_H__
+#ifndef __SWITCHER_SIGNAL_STRING_H__
+#define __SWITCHER_SIGNAL_STRING_H__
 
-#include <gst/gst.h>
-#include <memory>
-#include <map>
-#include <string>
-#include "switcher/json-builder.h"
+ #include <gst/gst.h>  
+ #include <memory>  
+ #include <map>  
+ #include <string>  
+#include "switcher/json-builder.h" 
 
-namespace switcher
-{
+namespace switcher 
+{ 
   
   class Signal
-  {
-  public:
-    typedef std::shared_ptr<Signal> ptr;
-    Signal ();
+  { 
+  public: 
+    typedef std::shared_ptr<Signal> ptr; 
+    Signal (); 
+    
+    bool set_gobject_signame (GObject *object, std::string signame);
 
-    bool connect ();
-    bool disconnect ();
-
-    std::string get_description ();
-    JSONBuilder::Node get_json_root_node ();
-
-  private:
-    GObject *object_;
-    JSONBuilder::ptr json_description_;
-    void make_description();
-  };
-
-}  // end of namespace
+    std::string get_description (); 
+    JSONBuilder::Node get_json_root_node (); 
+    
+  private: 
+    GObject *object_; 
+    guint id_;
+    JSONBuilder::ptr json_description_; 
+    void make_description(); 
+  }; 
+  
+}  // end of namespace 
 
 #endif // ifndef

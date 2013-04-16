@@ -32,6 +32,7 @@ namespace switcher
   {
     properties_description_.reset (new JSONBuilder());
     methods_description_.reset (new JSONBuilder());
+    signals_description_.reset (new JSONBuilder());
   }
   
   Quiddity::~Quiddity () { 
@@ -65,6 +66,32 @@ namespace switcher
     nick_name_ = nick_name;
     return true;
   }
+  
+  
+  bool 
+  Quiddity::register_signal (GObject *object, 
+			     std::string gobject_signal_name, 
+			     std::string name_to_give)
+  {
+
+    if (signals_.find(name_to_give) != signals_.end())
+      {
+	g_warning ("signals: registering name %s already exists",name_to_give.c_str());
+	return false;
+      }
+    
+    Signal::ptr signal (new Signal ());
+    if (!signal->set_gobject_signame (object, gobject_signal_name))
+      return false;
+    
+    signals_[name_to_give] = signal; 
+    g_debug ("signal %s registered with name %s", 
+      	     gobject_signal_name.c_str (),
+      	     name_to_give.c_str ());
+    return true;
+  }
+
+
 
   bool 
   Quiddity::register_property_by_pspec (GObject *object, 
@@ -75,7 +102,6 @@ namespace switcher
     Property::ptr prop (new Property ());
     prop->set_gobject_pspec (object, pspec);
 
-    //std::string name ( prefix + "/" + object_property );
     if (properties_.find(name_to_give) == properties_.end())
       {
 	properties_[name_to_give] = prop; 

@@ -32,6 +32,7 @@
 #include <gst/gst.h>
 #include "switcher/property.h"
 #include "switcher/method.h"
+#include "switcher/signal-string.h"
 #include "switcher/quiddity-documentation.h"
 #include "switcher/quiddity-life-manager.h"
 #include "switcher/json-builder.h"
@@ -93,6 +94,8 @@ namespace switcher
     JSONBuilder::ptr properties_description_;
     std::map<std::string, Method::ptr> methods_;
     JSONBuilder::ptr methods_description_;
+    std::map<std::string, Signal::ptr> signals_;
+    JSONBuilder::ptr signals_description_;
     std::string name_;
     std::string nick_name_;
  
@@ -100,13 +103,14 @@ namespace switcher
     //naming
     bool set_name (std::string name);
 
-    //property name will be <prefix>/<object_property>
+    //property
     bool register_property (GObject *object, 
 			    std::string gobject_property_name, 
 			    std::string name_to_give);
     bool register_property_by_pspec (GObject *object, 
 				     GParamSpec *pspec, 
 				     std::string name_to_give);
+    //method
     bool register_method (std::string method_name,
 			  void *method, 
 			  Method::args_types arg_types, 
@@ -114,6 +118,13 @@ namespace switcher
     bool set_method_description (std::string method_name,
 				 std::string short_description,
 				 Method::args_doc arg_description);
+
+    //signal
+    bool register_signal (GObject *object, 
+			  std::string gobject_signal_name, 
+			  std::string name_to_give);
+
+
     //use a consistent naming for shmdatas FIXME move that to segment
     std::string make_file_name (std::string suffix);
 
