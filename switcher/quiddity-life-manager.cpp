@@ -38,6 +38,7 @@
 #include "switcher/h264.h"
 #include "switcher/http-sdp.h"
 #include "switcher/logger.h"
+#include "switcher/osc-ctrl-server.h"
 #include "switcher/pulse-sink.h"
 #include "switcher/rtp-session.h"
 #include "switcher/runtime.h"
@@ -193,6 +194,8 @@ namespace switcher
       					       HTTPSDP::doc_.get_json_root_node ());
     abstract_factory_.register_class<Logger> (Logger::doc_.get_class_name (), 
       					       Logger::doc_.get_json_root_node ());
+    abstract_factory_.register_class<OscCtrlServer> (OscCtrlServer::doc_.get_class_name (), 
+						     OscCtrlServer::doc_.get_json_root_node ());
     abstract_factory_.register_class<PulseSink> (PulseSink::doc_.get_class_name (), 
       						 PulseSink::doc_.get_json_root_node ());
     abstract_factory_.register_class<RtpSession> (RtpSession::doc_.get_class_name (), 
