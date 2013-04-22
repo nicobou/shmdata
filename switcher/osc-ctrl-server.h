@@ -23,6 +23,7 @@
 
 #include "switcher/quiddity-manager-wrapper.h"
 #include "lo/lo.h"
+#include "switcher/string-map.h"
 #include <memory>
 
 namespace switcher
@@ -32,6 +33,7 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<OscCtrlServer> ptr;
+
     ~OscCtrlServer ();
     void set_port (std::string port);
     void start (); 
@@ -47,11 +49,19 @@ namespace switcher
 
   private:
     std::string port_;
+    StringMap< std::pair <std::string, std::string> > osc_subscribers_; //(host + port)
     lo_server_thread osc_thread_;
+    static void prop_cb (std::string subscriber_name, 
+			 std::string quiddity_name, 
+			 std::string property_name, 
+			 std::string value, 
+			 void *user_data);
     static int osc_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data);
     static void osc_error(int num, const char *msg, const char *path);
     static gchar *string_from_osc_arg (char types, lo_arg *data);
+    gchar *make_internal_subscriber_name (const gchar *name);
+    gchar *retrieve_subscriber_name (const gchar *internal_name);
   };
 
 }  // end of namespace

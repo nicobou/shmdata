@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <lo/lo.h>
+#include <utility> //std::make_pair (,)
 
 namespace switcher
 {
@@ -34,10 +35,10 @@ namespace switcher
   bool
   OscCtrlServer::init ()
   {
-    port_ = 5446;
+    osc_thread_ = NULL;
     srand(time(0));
     set_name (g_strdup_printf ("oscctrlserver%d",rand() % 1024));
-   
+    
     //registering set_port
     register_method("set_port",
      		    (void *)&set_port_wrapped, 
@@ -45,8 +46,8 @@ namespace switcher
      		    (gpointer)this);
     set_method_description ("set_port", 
 			    "set the port used by the osc server and start listening messages", 
-			    Method::make_arg_description ("port",
-							  "the port to bind",
+			    Method::make_arg_description ((char *)"port",
+							  (char *)"the port to bind",
 							  NULL));
     return true;
   }
@@ -54,6 +55,37 @@ namespace switcher
   OscCtrlServer::~OscCtrlServer ()
   {
     stop ();
+  }
+
+  void 
+  OscCtrlServer::prop_cb (std::string internal_subscriber_name, 
+			  std::string quiddity_name, 
+			  std::string property_name, 
+			  std::string value, 
+			  void *user_data)
+  {
+    OscCtrlServer *context = static_cast<OscCtrlServer*>(user_data);
+    
+    if (!context->osc_subscribers_.contains (internal_subscriber_name))
+      {
+	g_warning ("OscCtrlServer::prop_cb with unknow subscriber name");
+	return;
+      }
+    
+    std::pair <std::string, std::string> address = context->osc_subscribers_.lookup (internal_subscriber_name);
+
+    lo_address t = lo_address_new(address.first.c_str (),
+				  address.second.c_str ());
+       
+    gchar *subscriber_name = context->retrieve_subscriber_name (internal_subscriber_name.c_str ());
+    gchar *message = g_strdup_printf("/property/%s/%s/%s", 
+				     subscriber_name, 
+				     quiddity_name.c_str (), 
+				     property_name.c_str ());
+    lo_send(t, message, "s", value.c_str ());
+    g_free (subscriber_name);
+    g_free (message);
+    lo_address_free (t);
   }
 
   std::shared_ptr<QuiddityManager>
@@ -68,7 +100,24 @@ namespace switcher
     return doc_;
   }
   
-
+  gchar *
+  OscCtrlServer::make_internal_subscriber_name (const gchar *name)
+  {
+    return g_strdup_printf ("%s%s", get_name ().c_str (), name);
+  }
+  
+  gchar *
+  OscCtrlServer::retrieve_subscriber_name (const gchar *internal_name)
+  {
+    gchar *res;
+    gchar **split= g_strsplit (internal_name,
+			       get_name ().c_str (),
+			       2);
+    res = g_strdup (split[1]);
+    g_strfreev(split);
+    return res;
+  }
+  
   gboolean
   OscCtrlServer::set_port_wrapped (gpointer port, gpointer user_data)
   {
@@ -97,7 +146,9 @@ namespace switcher
   void
   OscCtrlServer::stop ()
   {
-    lo_server_thread_free(osc_thread_);
+    if (osc_thread_ != NULL)
+      lo_server_thread_free(osc_thread_);
+    osc_thread_ = NULL;
   }
 
 
@@ -108,7 +159,12 @@ namespace switcher
   {
     OscCtrlServer *context = static_cast<OscCtrlServer*>(user_data);
     std::shared_ptr<QuiddityManager> manager = context->get_quiddity_manager ();
-
+    if (!(bool) manager)
+      {
+	g_warning ("OscCtrlServer: cannot get quiddity manager");
+	return 0;
+      }
+    
     //create 
     if (g_str_has_prefix (path, "/c") || g_str_has_prefix (path, "/C"))
       {
@@ -186,7 +242,139 @@ namespace switcher
 	  g_warning ("OSCctl: wrong arg number for invoke");
 	return 0;
       }
-    
+
+    //add an osc subscriber
+    if (g_str_has_prefix (path, "/a") || g_str_has_prefix (path, "/A"))
+      {
+	if (argc == 3)
+	  {
+	    gchar *subscriber_name = string_from_osc_arg (types[0], argv[0]);
+	    gchar *host = string_from_osc_arg (types[1], argv[1]);
+	    gchar *port = string_from_osc_arg (types[2], argv[2]);
+	    gchar *internal_subscriber_name = context->make_internal_subscriber_name (subscriber_name);
+	    if (context->osc_subscribers_.contains (internal_subscriber_name))
+	      {
+		g_warning ("OscCtrlServer: a subscriber named %s is already registered", subscriber_name);
+		return 0;
+	      }
+	    if (host == NULL || port == NULL)
+	      {
+		g_warning ("OscCtrlServer: issue with host name or port");
+		return 0;
+	      }
+	    context->osc_subscribers_.insert (internal_subscriber_name, 
+					      std::make_pair (host, port));
+	    if (!manager->make_subscriber (internal_subscriber_name,
+					   OscCtrlServer::prop_cb,
+					   context))
+	      return 0;
+
+	    g_free (internal_subscriber_name); 
+	    g_free (subscriber_name); 
+	    g_free (host); 
+	    g_free (port); 
+	  }
+	else
+	  g_warning ("OSCctl: add subscriber needs 3 args (name, host, port)");
+	return 0;
+      }
+
+    //delete an osc subscriber
+    if (g_str_has_prefix (path, "/d") || g_str_has_prefix (path, "/D"))
+      {
+	if (argc == 1)
+	  {
+	    gchar *subscriber_name = string_from_osc_arg (types[0], argv[0]);
+	    gchar *internal_subscriber_name = context->make_internal_subscriber_name (subscriber_name);
+	    if (!context->osc_subscribers_.contains (internal_subscriber_name))
+	      {
+		g_warning ("OscCtrlServer: cannot delete non existing subscriber named %s", subscriber_name);
+		return 0;
+	      }
+	    manager->remove_subscriber (internal_subscriber_name);
+	    context->osc_subscribers_.remove (internal_subscriber_name);
+	    g_free (internal_subscriber_name); 
+	    g_free (subscriber_name); 
+	  }
+	else
+	  g_warning ("OSCctl: delete subscriber needs 1 args (name)");
+	return 0;
+      }
+
+    //subscribe to a property
+    if (g_str_has_prefix (path, "/g") || g_str_has_prefix (path, "/G"))
+      {
+	if (argc == 3)
+	  {
+	    gchar *subscriber_name = string_from_osc_arg (types[0], argv[0]);
+	    gchar *quiddity_name = string_from_osc_arg (types[1], argv[1]);
+	    gchar *property_name = string_from_osc_arg (types[2], argv[2]);
+	    gchar *internal_subscriber_name = context->make_internal_subscriber_name (subscriber_name);
+	    if (!context->osc_subscribers_.contains (internal_subscriber_name))
+	      {
+		g_warning ("OscCtrlServer: a subscriber named %s does not exist", subscriber_name);
+		return 0;
+	      }
+	    if (quiddity_name == NULL || property_name == NULL)
+	      {
+		g_warning ("OscCtrlServer: issue with quiddity name or property name");
+		return 0;
+	      }
+
+	    if (!manager->subscribe_property (internal_subscriber_name,
+					      quiddity_name,
+					      property_name))
+	      g_warning ("OscCtrlServer: pb subscribing to %s, %s",
+			 quiddity_name,
+			 property_name);
+
+	    g_free (internal_subscriber_name); 
+	    g_free (subscriber_name); 
+	    g_free (quiddity_name); 
+	    g_free (property_name); 
+	  }
+	else
+	  g_warning ("OSCctl: subscribe property needs 3 args (name, quiddity, property)");
+	return 0;
+      }
+
+    //unsubscribe to a property
+    if (g_str_has_prefix (path, "/u") || g_str_has_prefix (path, "/U"))
+      {
+	if (argc == 3)
+	  {
+	    gchar *subscriber_name = string_from_osc_arg (types[0], argv[0]);
+	    gchar *quiddity_name = string_from_osc_arg (types[1], argv[1]);
+	    gchar *property_name = string_from_osc_arg (types[2], argv[2]);
+	    gchar *internal_subscriber_name = context->make_internal_subscriber_name (subscriber_name);
+	    if (!context->osc_subscribers_.contains (internal_subscriber_name))
+	      {
+		g_warning ("OscCtrlServer: a subscriber named %s does not exist", subscriber_name);
+		return 0;
+	      }
+	    if (quiddity_name == NULL || property_name == NULL)
+	      {
+		g_warning ("OscCtrlServer: issue with quiddity name or property name");
+		return 0;
+	      }
+
+	    if (!manager->unsubscribe_property (internal_subscriber_name,
+						quiddity_name,
+						property_name))
+	      g_warning ("OscCtrlServer: pb unsubscribing to %s, %s",
+			 quiddity_name,
+			 property_name);
+
+	    g_free (internal_subscriber_name); 
+	    g_free (subscriber_name); 
+	    g_free (quiddity_name); 
+	    g_free (property_name); 
+	  }
+	else
+	  g_warning ("OSCctl: unsubscribe property needs 3 args (name, quiddity, property)");
+	return 0;
+      }
+
     return 0;
   }
  
