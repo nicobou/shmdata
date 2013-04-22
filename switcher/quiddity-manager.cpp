@@ -133,7 +133,8 @@ namespace switcher
 
   bool 
   QuiddityManager::make_subscriber (std::string subscriber_name,
-				    void (*callback)(std::string quiddity_name,
+				    void (*callback)(std::string subscriber_name,
+						     std::string quiddity_name,
 						     std::string property_name,
 						     std::string value,
 						     void *user_data),
@@ -205,11 +206,13 @@ QuiddityManager::remove_subscriber (std::string subscriber_name)
   bool
   QuiddityManager::unsubscribe_property_glib (std::string quiddity_name,
 					      std::string property_name,
-					      Property::Callback cb)
+					      Property::Callback cb, 
+					      void *user_data)
   {
     return life_manager_->unsubscribe_property_glib (quiddity_name,
 						     property_name,
-						     cb);
+						     cb, 
+						     user_data);
   }
 
   

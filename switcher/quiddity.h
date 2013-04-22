@@ -69,7 +69,8 @@ namespace switcher
 			     Property::Callback cb, 
 			     void *user_data);
     bool unsubscribe_property (std::string name,
-			       Property::Callback cb);
+			       Property::Callback cb,
+			       void *user_data);
 
     
     //methods
@@ -111,9 +112,9 @@ namespace switcher
 			  void *method, 
 			  Method::args_types arg_types, 
 			  gpointer user_data);
-    bool set_method_description (std::string method_name,
-				 std::string short_description,
-				 Method::args_doc arg_description);
+    bool set_method_description (const std::string method_name,
+				 const std::string short_description,
+				 const Method::args_doc arg_description);
     //use a consistent naming for shmdatas FIXME move that to segment
     std::string make_file_name (std::string suffix);
 
