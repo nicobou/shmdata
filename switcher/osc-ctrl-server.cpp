@@ -67,10 +67,7 @@ namespace switcher
     OscCtrlServer *context = static_cast<OscCtrlServer*>(user_data);
     
     if (!context->osc_subscribers_.contains (internal_subscriber_name))
-      {
-	g_warning ("OscCtrlServer::prop_cb with unknow subscriber name");
 	return;
-      }
     
     std::pair <std::string, std::string> address = context->osc_subscribers_.lookup (internal_subscriber_name);
 
