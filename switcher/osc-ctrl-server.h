@@ -18,42 +18,50 @@
  */
 
 
-#ifndef __SWITCHER_SOAP_CTRL_SERVER_H__
-#define __SWITCHER_SOAP_CTRL_SERVER_H__
+#ifndef __SWITCHER_OSC_CTRL_SERVER_H__
+#define __SWITCHER_OSC_CTRL_SERVER_H__
 
 #include "switcher/quiddity-manager-wrapper.h"
+#include "lo/lo.h"
+#include "switcher/string-map.h"
 #include <memory>
-
-#include "switcher/webservices/soapcontrolService.h"
 
 namespace switcher
 {
 
-  class SoapCtrlServer : public QuiddityManagerWrapper
+  class OscCtrlServer : public QuiddityManagerWrapper
   {
   public:
-    typedef std::shared_ptr<SoapCtrlServer> ptr;
-    ~SoapCtrlServer ();
-    void set_port (int port);//default port is 8080
+    typedef std::shared_ptr<OscCtrlServer> ptr;
+
+    ~OscCtrlServer ();
+    void set_port (std::string port);
     void start (); 
     void stop ();
-    //for invocation into soap handlers:
+    //for invocation into osc handlers:
     std::shared_ptr<QuiddityManager> get_quiddity_manager ();
     //wrappers
-    static gboolean set_port_wrapped (gint port, gpointer user_data);
-
+    static gboolean set_port_wrapped (gpointer port, gpointer user_data);
+    
     bool init ();
     QuiddityDocumentation get_documentation ();
     static QuiddityDocumentation doc_;
 
   private:
-    struct soap soap_;
-    int port_;
-    bool quit_server_thread_;
-    controlService *service_; 
-    GThread *thread_;
-    static gpointer server_thread (gpointer user_data);
-    static int http_get (struct soap *soap);
+    std::string port_;
+    StringMap< std::pair <std::string, std::string> > osc_subscribers_; //(host + port)
+    lo_server_thread osc_thread_;
+    static void prop_cb (std::string subscriber_name, 
+			 std::string quiddity_name, 
+			 std::string property_name, 
+			 std::string value, 
+			 void *user_data);
+    static int osc_handler(const char *path, const char *types, lo_arg **argv,
+			   int argc, void *data, void *user_data);
+    static void osc_error(int num, const char *msg, const char *path);
+    static gchar *string_from_osc_arg (char types, lo_arg *data);
+    gchar *make_internal_subscriber_name (const gchar *name);
+    gchar *retrieve_subscriber_name (const gchar *internal_name);
   };
 
 }  // end of namespace

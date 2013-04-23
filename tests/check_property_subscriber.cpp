@@ -25,7 +25,8 @@ static bool success;
 static char *user_string = "hello world";
 
 void 
-mon_property_cb(std::string quiddity_name, 
+mon_property_cb(std::string subscriber_name, 
+		std::string quiddity_name, 
 		std::string property_name, 
 		std::string value, 
 		void *user_data)

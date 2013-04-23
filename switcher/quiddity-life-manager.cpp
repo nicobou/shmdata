@@ -38,6 +38,7 @@
 #include "switcher/h264.h"
 #include "switcher/http-sdp.h"
 #include "switcher/logger.h"
+#include "switcher/osc-ctrl-server.h"
 #include "switcher/pulse-sink.h"
 #include "switcher/rtp-session.h"
 #include "switcher/runtime.h"
@@ -193,6 +194,8 @@ namespace switcher
       					       HTTPSDP::doc_.get_json_root_node ());
     abstract_factory_.register_class<Logger> (Logger::doc_.get_class_name (), 
       					       Logger::doc_.get_json_root_node ());
+    abstract_factory_.register_class<OscCtrlServer> (OscCtrlServer::doc_.get_class_name (), 
+						     OscCtrlServer::doc_.get_json_root_node ());
     abstract_factory_.register_class<PulseSink> (PulseSink::doc_.get_class_name (), 
       						 PulseSink::doc_.get_json_root_node ());
     abstract_factory_.register_class<RtpSession> (RtpSession::doc_.get_class_name (), 
@@ -499,6 +502,7 @@ namespace switcher
     QuiddityPropertySubscriber::ptr subscriber;
     subscriber.reset (new QuiddityPropertySubscriber());
     subscriber->set_life_manager (shared_from_this());
+    subscriber->set_name (subscriber_name.c_str ());
     subscriber->set_user_data (user_data);
     subscriber->set_callback (cb);
     property_subscribers_.insert (subscriber_name, subscriber);
@@ -626,7 +630,8 @@ namespace switcher
   bool
   QuiddityLifeManager::unsubscribe_property_glib (std::string quiddity_name,
 						  std::string property_name,
-						  Property::Callback cb)
+						  Property::Callback cb, 
+						  void *user_data)
   {
     if (!exists (quiddity_name))
       {
@@ -634,7 +639,8 @@ namespace switcher
 	return false;
       }
     return (get_quiddity (quiddity_name))->unsubscribe_property(property_name.c_str(),
-								cb);
+								cb,
+								user_data);
   }
 
 

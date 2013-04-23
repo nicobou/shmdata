@@ -34,7 +34,6 @@
 
  namespace switcher 
  { 
-
    class QuiddityManager : public std::enable_shared_from_this<QuiddityManager>
    { 
    public: 
@@ -81,7 +80,8 @@
 
      //property subscribtion
      bool make_subscriber (std::string subscriber_name,
-			   void (*callback)(std::string quiddity_name,
+			   void (*callback)(std::string subscriber_name,
+					    std::string quiddity_name,
 					    std::string property_name,
 					    std::string value,
 					    void *user_data),
@@ -121,7 +121,8 @@
 				   void *user_data);
      bool unsubscribe_property_glib (std::string quiddity_name,
 				     std::string name,
-				     Property::Callback cb);
+				     Property::Callback cb, 
+				     void *user_data); //the same called with subscribe
      
      
      //**** methods 

@@ -56,7 +56,7 @@ namespace switcher
 			    Method::make_arg_description ((char *)"filepath", 
 							  (char *)"file path to remove", 
 							  NULL));
-    
+
     //registering playing property
     playing_ = FALSE;
     custom_prop_.reset (new CustomPropertyHelper ());
@@ -134,7 +134,7 @@ namespace switcher
   {
     ShmdataFromGDPFile *context = static_cast<ShmdataFromGDPFile *> (user_data);
 
-    g_print ("coucoucoucouc +++++++++++++++++++++++++ \n");
+    //    g_print ("coucoucoucouc +++++++++++++++++++++++++ \n");
     if (playing)
       context->make_players ();
     else

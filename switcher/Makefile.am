@@ -3,6 +3,7 @@ AM_CXXFLAGS = \
     $(GSOAP_CFLAGS) \
     $(GST_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
+    $(LIBLO_CFLAGS) \
     $(SHMDATA_CFLAGS) \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir)/switcher/webservices
@@ -12,6 +13,7 @@ AM_LIBS = \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
     $(JSONGLIB_LIBS) \
+    $(LIBLO_LIBS) \
     $(SHMDATA_LIBS)
 
 lib_LTLIBRARIES = \
@@ -42,6 +44,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     json-builder.cpp \
     logger.cpp \
     method.cpp \
+    osc-ctrl-server.cpp \
     property.cpp \
     pulse-sink.cpp \
     quiddity-command.cpp \
@@ -79,6 +82,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
     $(JSONGLIB_LIBS) \
+    $(LIBLO_LIBS) \
     $(SHMDATA_LIBS) \
     -version-info $(LIBSWITCHER_SO_VERSION)
 
@@ -116,6 +120,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     json-builder.h \
     logger.h \
     method.h \
+    osc-ctrl-server.h \
     property.h \
     pulse-sink.h \
     quiddity-command.h \
