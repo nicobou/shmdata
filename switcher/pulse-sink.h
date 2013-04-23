@@ -34,6 +34,7 @@ namespace switcher
     typedef std::shared_ptr<PulseSink> ptr;
 
     bool init ();
+    ~PulseSink ();
     QuiddityDocumentation get_documentation ();
     static QuiddityDocumentation doc_;
 

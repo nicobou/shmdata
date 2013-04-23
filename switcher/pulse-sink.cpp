@@ -18,6 +18,7 @@
  */
 
 #include "switcher/pulse-sink.h"
+#include "switcher/gst-utils.h"
 
 namespace switcher
 {
@@ -35,7 +36,11 @@ namespace switcher
     set_sink_element (pulse_sink_);
     return true;
   }
-  
+
+  PulseSink::~PulseSink ()
+  {
+    GstUtils::clean_element (pulse_sink_);
+  }
 
   QuiddityDocumentation PulseSink::doc_ ("audio sink", "pulsesink",
 					 "Output sound to pulse server");

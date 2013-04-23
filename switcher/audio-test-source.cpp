@@ -34,7 +34,7 @@ namespace switcher
 
     g_object_set (G_OBJECT (audiotestsrc_),
 		  "is-live", TRUE,
-		  "samplesperbuffer",64,
+		  "samplesperbuffer",512,
 		  NULL);
 
 
