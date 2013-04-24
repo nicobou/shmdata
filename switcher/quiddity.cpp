@@ -69,11 +69,11 @@ namespace switcher
   
   
   bool 
-  Quiddity::register_signal (GObject *object, 
-			     std::string gobject_signal_name, 
-			     std::string name_to_give)
+  Quiddity::register_signal_gobject (GObject *object, 
+				     std::string gobject_signal_name, 
+				     std::string name_to_give)
   {
-
+    
     if (signals_.find(name_to_give) != signals_.end())
       {
 	g_warning ("signals: registering name %s already exists",name_to_give.c_str());

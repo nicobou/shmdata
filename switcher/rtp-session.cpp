@@ -73,9 +73,9 @@ namespace switcher
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
 
     //FIXME remove the following test
-    register_signal (G_OBJECT (rtpsession_), 
-		     "on-bye-ssrc",
-		     "on-bye-ssrc" );
+    register_signal_gobject (G_OBJECT (rtpsession_), 
+			     "on-bye-ssrc",
+			     "on-bye-ssrc" );
 
     g_signal_connect (G_OBJECT (rtpsession_), "on-bye-ssrc", 
 		      (GCallback) on_bye_ssrc, (gpointer) this);

@@ -151,5 +151,75 @@ namespace switcher
       g_slist_free (found_signals);
     }
   }
+
+ void
+  Signal::set_description (std::string method_name,
+			   std::string short_description,
+			   std::vector< std::pair<std::string,std::string> > arg_description)
+  {
+    json_description_->reset ();
+    json_description_->begin_object ();
+    json_description_->add_string_member ("name", method_name.c_str ());
+    json_description_->add_string_member ("description", short_description.c_str ());
+    json_description_->set_member_name ("arguments");
+    json_description_->begin_array ();
+    std::vector<std::pair<std::string,std::string> >::iterator it;
+    int j=0;
+    if (!arg_description.empty ())
+      for (it = arg_description.begin() ; it != arg_description.end(); it++ )
+	{
+	  json_description_->begin_object ();
+	  json_description_->add_string_member ("name",it->first.c_str ());
+	  json_description_->add_string_member ("description",it->second.c_str ());
+	  json_description_->add_string_member ("type",g_type_name (arg_types_[j])); 
+	  json_description_->end_object ();
+	}
+    json_description_->end_array ();
+    json_description_->end_object ();
+  }
+
+ std::vector<GType> 
+   Signal::make_arg_type_description (GType first_arg_type, ...)
+   {
+     std::vector<GType> res;
+     GType arg_type;
+     va_list vl;
+     va_start(vl, first_arg_type);
+     res.push_back (first_arg_type);
+     while (arg_type = va_arg( vl, GType))
+       res.push_back (arg_type);
+     va_end(vl);
+     return res;
+   }
+
+  std::vector<std::pair<std::string,std::string> > 
+  Signal::make_arg_description (char *first_arg_name, ...)
+  {
+    std::vector<std::pair<std::string,std::string> > res;
+    std::pair<std::string,std::string> arg_desc_pair;
+    va_list vl;
+    char *arg_name;
+    char *arg_desc;
+    va_start(vl, first_arg_name);
+    if (first_arg_name != "none" && (arg_desc = va_arg( vl, char *)))
+      {
+	std::pair<std::string,std::string> arg_pair;
+	arg_desc_pair.first = std::string (first_arg_name);
+	arg_desc_pair.second = std::string (arg_desc);
+	res.push_back (arg_desc_pair);
+      }
+    while ( (arg_name = va_arg( vl, char *)) && (arg_desc = va_arg( vl, char *)))
+      {
+	std::pair<std::string,std::string> arg_pair;
+	arg_desc_pair.first = std::string (arg_name);
+	arg_desc_pair.second = std::string (arg_desc);
+	res.push_back (arg_desc_pair);
+      }
+    
+    va_end(vl);
+    return res;
+  }
+  
+
 }
 
