@@ -102,12 +102,14 @@ $rm /tmp/pd_testshm ; padsp pd -oss switcher-1.pd
 
 register to switcher properties (get the logs)
 ----------------------------------------------
+$switcher -d --osc-port 7770
 $rm /tmp/pd_testshm ; padsp pd -oss switcher-2.pd
 
 play Big Buck Bunny from the web 
 --------------------------------
 audio in pd, video in an external window
 
+$switcher -d --osc-port 7770
 $/usr/bin/jackd -r -dalsa -dhw:1,0 -r44100 -p64 -n2 -Xseq
 $rm /tmp/pd_testshm ; pd -jack switcher-3.pd
 
