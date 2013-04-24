@@ -84,16 +84,33 @@ $cd ~/tmp
 $gcc data-writer.c -o datawriter `pkg-config --cflags --libs shmdata-any-0.6`
 
 
+writing code for a reader (libshmdata-any)
+------------------------------------------
+$sudo make install
+$cp examples/data-reader.c ~/tmp/
+$cd ~/tmp
+$gcc data-reader.c -o datareader `pkg-config --cflags --libs shmdata-any-0.6`
+
+
 switcher
 ========
 
 install
 -------
 
+  $ sudo apt-get install automake bison build-essential flex libtool
+  $ sudo apt-get install libglib2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libjson-glib-dev liblo-dev
+  $ ./autogen.sh
+  $ ./configure
+  $ make
+  $ sudo make install
+  $ sudo ldconfig
+
 help
 ----
 TODO 
 switcher -h
+
 
 create quiddity, invoke and remove quiddity
 -------------------------------------------
@@ -116,3 +133,6 @@ $rm /tmp/pd_testshm ; pd -jack switcher-3.pd
 stream to a location
 --------------------
 
+$switcher -d --osc-port 7770
+$/usr/bin/jackd -r -dalsa -dhw:1,0 -r44100 -p64 -n2 -Xseq
+$rm /tmp/pd_testshm ; pd -jack switcher-4.pd

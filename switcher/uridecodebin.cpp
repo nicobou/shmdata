@@ -96,8 +96,9 @@ namespace switcher
 
     g_object_set (G_OBJECT (uridecodebin_),  
        		  // "ring-buffer-max-size",(guint64)200000000, 
-       		  // "download",TRUE, 
-		  // "use-buffering",TRUE, 
+		  //"download",TRUE, 
+		  //"use-buffering",TRUE, 
+		  //"ring-buffer-max-size", 4294967295,
        		  "expose-all-streams", TRUE,
        		  "async-handling",TRUE, 
        		  //"buffer-duration",9223372036854775807, 

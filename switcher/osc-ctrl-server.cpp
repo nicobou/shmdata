@@ -233,7 +233,7 @@ namespace switcher
     //invoke 
     if (g_str_has_prefix (path, "/i") || g_str_has_prefix (path, "/I"))
       {
-	if (argc > 2)
+	if (argc >= 2)
 	  {
 	    gchar *quid_name = string_from_osc_arg (types[0], argv[0]);
 	    gchar *method_name = string_from_osc_arg (types[1], argv[1]);
