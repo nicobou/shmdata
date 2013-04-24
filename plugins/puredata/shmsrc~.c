@@ -81,6 +81,10 @@ static void shmsrc_tilde_audio_buffer_free(t_shmsrc_tilde_buf *buf)
   g_free (buf);
 }
 
+
+	    
+
+
 void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
 	      void *shmbuf,
 	      void *data,
@@ -96,10 +100,9 @@ void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
       shmdata_any_reader_free (shmbuf);
       return;
     }
-  
-  
 
-  //g_print ("queue length %d\n", g_async_queue_length (x->x_audio_queue));
+
+  //  g_print ("queue length %d\n", g_async_queue_length (x->x_audio_queue));
 
   /* printf ("data %p, data size %d, timestamp %llu, type descr %s\n",   */
   /* 	  data, data_size, timestamp, type_description);   */
@@ -141,31 +144,46 @@ void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
   audio_buf->sample_rate = samplerate;
   //audio_buf->sample_size = width;
   audio_buf->remaining_samples = data_size / ((width/8) * channels);
+  /* g_print ("data_size %d, width %d, channels %d, cur logicial date %f \n",   */
+  /*  	   data_size, width, channels, clock_getlogicaltime());  */
+  double audio_buf_sample_duration =  (1.0 / samplerate) * (32.*441000.); //see TIMEUNITPERSEC in m_sched.c
   audio_buf->shm_buf = shmbuf;
-  
+   
+
+  double cur_date = clock_getlogicaltime();
   if (x->x_stream_data_date == -1.0)
     x->x_stream_data_date = clock_getlogicaltime();
-  else
+  else 
     {
-      double old_factor = 0.95;
-      double cur_date = clock_getlogicaltime();
+      double old_factor = 0.999;//FIXME this must be a parameter
       if (x->x_stream_sample_duration == -1.0)
-	  x->x_stream_sample_duration = (cur_date - x->x_stream_data_date) / audio_buf->remaining_samples;
+	x->x_stream_sample_duration = audio_buf_sample_duration;
+	//x->x_stream_sample_duration = (cur_date - x->x_stream_data_date) / audio_buf->remaining_samples;
       else
 	{
-	  x->x_stream_sample_duration = 
-	    old_factor * x->x_stream_sample_duration
-	    + (1 - old_factor) * (cur_date - x->x_stream_data_date) / audio_buf->remaining_samples;
-	  //g_print ("%f \n", x->x_stream_sample_duration);
+	  double cur_stream_dur = (cur_date - x->x_stream_data_date) / audio_buf->remaining_samples;
+	  double max_deriv = 0.001;  //FIXME make this a param
+	  if (cur_stream_dur > audio_buf_sample_duration * (1.0 + max_deriv))
+	    cur_stream_dur = audio_buf_sample_duration * (1.0 + max_deriv);
+	  else if (cur_stream_dur < audio_buf_sample_duration * (1.0 - max_deriv))
+	    cur_stream_dur = audio_buf_sample_duration * (1.0 - max_deriv);
+
+	  x->x_stream_sample_duration = //audio_buf_sample_duration;
+	     old_factor * x->x_stream_sample_duration 
+	     + (1 - old_factor) * cur_stream_dur; 
+
 	  //g_print ("begin %f, %f\n", x->x_stream_sample_duration, x->x_resample_impactor);
 	  x->x_stream_sample_duration =  x->x_stream_sample_duration  
-	    + x->x_stream_sample_duration * x->x_resample_impactor ; 
-	  if (x->x_resample_impactor > 0.001) 
-	    x->x_resample_impactor -= 0.01; // decreasing impact factor 
-	  else  if (x->x_resample_impactor < -0.001) 
-	    x->x_resample_impactor += 0.01; 
-	  
-	  //g_print ("end %f, %f\n", x->x_stream_sample_duration, x->x_resample_impactor);
+	    + x->x_stream_sample_duration * x->x_resample_impactor ;
+	  if (x->x_resample_impactor > 0.001)  
+	    x->x_resample_impactor -= 0.01; // decreasing impact factor  
+	  else  if (x->x_resample_impactor < -0.001)  
+	    x->x_resample_impactor += 0.01;  
+
+	  g_print ("end %f, %f, audio_buf_sample_duration %f\n", 
+		   x->x_stream_sample_duration, 
+		   x->x_resample_impactor,
+		   audio_buf_sample_duration);
 	}
       x->x_stream_sample_duration = ceil (x->x_stream_sample_duration);
       x->x_stream_data_date = cur_date;
@@ -227,14 +245,14 @@ static void shmsrc_tilde_try_pop_audio_buf (t_shmsrc_tilde *x)
 
       //      g_print ("x->x_pd_samplerate %d x->x_current_audio_buf->sample_rate %d\n", x->x_pd_samplerate, x->x_current_audio_buf->sample_rate);
       //g_print ("x->x_sample_duration %f x->x_stream_sample_duration %f\n", x->x_sample_duration, x->x_stream_sample_duration);
-        g_print ("%f queue length %d, stream sample dur %f, sample duration %f\n",  
-        	       src_ratio,   
-        	       g_async_queue_length (x->x_audio_queue),  
-        	       x->x_stream_sample_duration,  
-        	       x->x_sample_duration);  
-      if (g_async_queue_length (x->x_audio_queue) > 0)
+      /* g_print ("%f queue length %d, stream sample dur %f, sample duration %f\n",    */
+      /* 	       src_ratio,     */
+      /* 	       g_async_queue_length (x->x_audio_queue),    */
+      /* 	       x->x_stream_sample_duration,    */
+      /* 	       x->x_sample_duration);    */
+      if (g_async_queue_length (x->x_audio_queue) > 1)
 	{
-	  x->x_resample_impactor = -0.02;
+	  x->x_resample_impactor = -0.01;
 	}
       if (src_ratio != 1) 
 	{ 
@@ -297,7 +315,6 @@ static t_int *shmsrc_tilde_perform(t_int *w)
     {
       double cur_date = clock_getlogicaltime();
       x->x_sample_duration = (cur_date - x->x_last_perform_date) / n;
-      //g_print ("%f \n", x->x_sample_duration);
       x->x_last_perform_date = cur_date;
     }
 
@@ -459,5 +476,4 @@ void shmsrc_tilde_setup(void)
   class_addmethod(shmsrc_tilde_class, (t_method)shmsrc_tilde_dsp, gensym("dsp"), 0);
   class_addmethod(shmsrc_tilde_class, (t_method)shmsrc_tilde_set_name, gensym("set_name"), A_DEFSYM, 0);
   class_addmethod(shmsrc_tilde_class, (t_method)shmsrc_tilde_set_prefix, gensym("set_prefix"), A_DEFSYM, 0);
-
 }
