@@ -180,10 +180,10 @@ void shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
 	  else  if (x->x_resample_impactor < -0.001)  
 	    x->x_resample_impactor += 0.01;  
 
-	  g_print ("end %f, %f, audio_buf_sample_duration %f\n", 
-		   x->x_stream_sample_duration, 
-		   x->x_resample_impactor,
-		   audio_buf_sample_duration);
+	  /* g_print ("end %f, %f, audio_buf_sample_duration %f\n",  */
+	  /* 	   x->x_stream_sample_duration,  */
+	  /* 	   x->x_resample_impactor, */
+	  /* 	   audio_buf_sample_duration); */
 	}
       x->x_stream_sample_duration = ceil (x->x_stream_sample_duration);
       x->x_stream_data_date = cur_date;
