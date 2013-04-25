@@ -61,7 +61,7 @@ $ gst-launch -v shmsrc is-live=true socket-path=/tmp/pd_testshm ! gdpdepay ! dec
 shmdata writer, jack and puredata
 ---------------------------------
 $/usr/bin/jackd -r -dalsa -dhw:1,0 -r44100 -p64 -n2 -Xseq
-$ rm /tmp/pd_testshm ; pd -jack -blocksize 64 1.pd
+$ rm /tmp/pd_testshm ; pd -jack -blocksize 64 shmdata-1.pd
 $ gst-launch -v shmsrc is-live=true socket-path=/tmp/pd_testshm ! gdpdepay ! decodebin2 ! jackaudiosink sync=false
 
 (pd blocksize must be equal or higher than jack blocksize)
@@ -69,7 +69,7 @@ $ gst-launch -v shmsrc is-live=true socket-path=/tmp/pd_testshm ! gdpdepay ! dec
 shmdata writer and reader
 -------------------------
 you can read your shmdata with shmsrc~
-$ rm /tmp/pd_testshm ; padsp pd  -blocksize 512 -oss 2.pd
+$ rm /tmp/pd_testshm ; padsp pd  -blocksize 512 -oss shmdata-2.pd
 
 shmdata path
 ------------
