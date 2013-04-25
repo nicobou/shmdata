@@ -1,6 +1,18 @@
 shmdata release notes
 ===================== 
 
+shmdata 0.8.0 (2012-04-25)
+---------------------------
+This is the first official release in the 0.8 stable series. It is identical to the 0.6.6 release. 
+
+New features:
+
+* see 0.6.6
+
+Bugs fixed:
+
+* see 0.6.6
+
 shmdata 0.6.6 (2012-04-25)
 ---------------------------
 This is an official release in the 0.6 stable series.
@@ -9,7 +21,7 @@ New features:
 
 * shmsrc~ and shmsink~ for multi-channel audio with puredata
 * more unit tests
-* option to run g_main_loop internaly or not (shmdata-any)
+* option to run g_main_loop internally or not (shmdata-any)
 * option to use absolute timestamp or not
 * port to osx
 * adding caps discovery for user
