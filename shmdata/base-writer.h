@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Nicolas Bouillot (http://www.nicolasbouillot.net)
+ * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -13,7 +13,7 @@
  */
 
 /** \addtogroup libshmdata
- * provides hot plugging between GStreamer pipelines via a shared memory.
+ * provides hot plugging between GStreamer bins via a shared memory.
  * compile with `pkg-config --cflags --libs shmdata-0.6`
  *  @{
  */
@@ -43,7 +43,7 @@ extern "C"
    * @brief  Writing to a shared memory from a GStreamer element or pad
    * 
    * The base writer provides a shared memory writer, allowing transmission 
-   * of data flows to other GStreamer pipelines. It supports hot connections 
+   * of data flows to other GStreamer bins. It supports hot connections 
    * and disconnections of multiple reader. A single writer is allowed for 
    * a given shared memory (socket path).
    *
@@ -53,11 +53,19 @@ extern "C"
   typedef struct shmdata_base_writer_ shmdata_base_writer_t;
 
   /** 
+   * \deprecated use shmdata_base_writer_new instead
    * Initialization function that creates the shared memory.
    * 
    * @return a writer instance
    */  
   shmdata_base_writer_t *shmdata_base_writer_init ();
+
+  /** 
+   * Initialization function that creates the shared memory.
+   * 
+   * @return a writer instance
+   */  
+  shmdata_base_writer_t *shmdata_base_writer_new ();
 
   /** 
    * Initialization function that set the file path for the shared memory.
@@ -74,30 +82,30 @@ extern "C"
   /** 
    * Initialization function that hot plug the shared memory writer to a GStreamer element.
    * 
-   * @param pipeline is the pipeline where the base writer will be added
+   * @param parent_bin is the bin where the base writer will be added
    * @param Element is the element which src pad will provide data to write
-   * This element is assumed to be added in the pipeline
+   * This element is assumed to be added in the bin
    * 
    */  
   void shmdata_base_writer_plug (shmdata_base_writer_t * writer,
-				 GstElement * pipeline,
-				 GstElement * Element);
+				 GstElement *parent_bin,
+				 GstElement *Element);
   
   /** 
    * Alternative to shmdata_base_writer_plug,
    * using a pad instead of an element. 
    * 
-   * @param pipeline is the pipeline where the base writer will be added
+   * @param parent_bin is the bin where the base writer will be added
    * @param srcPad is the src pad of the element  
    * 
    */
   void shmdata_base_writer_plug_pad (shmdata_base_writer_t * writer,
-				     GstElement *pipeline,
+				     GstElement *parent_bin,
 				     GstPad     *srcPad);
 
   /** 
    * Close the writer (freeing memory, removing internal GStreamer elements 
-   * from the pipeline and closing the shared memory socket). 
+   * from the bin and closing the shared memory socket). 
    * 
    * @param writer is the base writer to close. 
    */

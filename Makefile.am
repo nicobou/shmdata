@@ -6,7 +6,9 @@ AUTOMAKE_OPTIONS = foreign
 
 SUBDIRS = \
     shmdata \
+    gst \
     tests \
+    plugins \
     examples 
 
 EXTRA_DIST = \
@@ -18,14 +20,19 @@ DISTCLEANFILES = \
     doxymain.h \
     shmdata-@LIBSHMDATA_API_VERSION@.pc \
     shmdata-@LIBSHMDATA_API_VERSION@.tar.gz \
-    shmdata-any-@LIBSHMDATA_API_VERSION@.pc \
-    shmdata-osg-@LIBSHMDATA_API_VERSION@.pc
+    shmdata-any-@LIBSHMDATA_API_VERSION@.pc
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = \
     shmdata-@LIBSHMDATA_API_VERSION@.pc \
-    shmdata-any-@LIBSHMDATA_API_VERSION@.pc \
+    shmdata-any-@LIBSHMDATA_API_VERSION@.pc 
+
+if HAVE_OPENSCENEGRAPH
+pkgconfig_DATA += \
     shmdata-osg-@LIBSHMDATA_API_VERSION@.pc
+DISTCLEANFILES += \
+    shmdata-osg-@LIBSHMDATA_API_VERSION@.pc
+endif
 
 html-local: htmldoc
 htmldoc:

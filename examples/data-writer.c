@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Nicolas Bouillot (http://www.nicolasbouillot.net)
+ * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -11,10 +11,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
 
 #include <stdio.h>
 #include <string.h>
@@ -51,27 +47,36 @@ main (int argc, char *argv[])
   writer = shmdata_any_writer_init ();
   if (! shmdata_any_writer_set_path (writer, argv[1]))
     {
-      g_printerr ("**** The file %s exists, therefore a shmdata cannot be operated with this path.\n",argv[1]);
+      fprintf (stderr, "**** The file %s exists, therefore a shmdata cannot be operated with this path.\n", argv[1]);
       shmdata_any_writer_close (writer);
       exit(0);
     }
   shmdata_any_writer_set_debug (writer, SHMDATA_ENABLE_DEBUG);
-  shmdata_any_writer_set_data_type (writer, "application/helloworld_");
+  shmdata_any_writer_set_data_type (writer, "text/plain");
   shmdata_any_writer_start (writer);
 
   unsigned long long myclock = 0;
-  unsigned long long nsecPeriod = 30000000;
+  unsigned long long nsecPeriod = 300000000;
 
-  char hello[21] = "helloworldhelloworld";
+  char hello[11] = "hello world";
+  char olleh[11] = "dlrow olleh";
 
-  while (0 == 0)
+  while (1)
     {
       //data should be serialized if network is involved
-      shmdata_any_writer_push_data (writer,
-				    hello,
-				    sizeof (hello),
-				    myclock,
-				    &data_not_required_anymore, hello);
+      if ((myclock/2) % nsecPeriod == 0)
+	shmdata_any_writer_push_data (writer,
+				      hello,
+				      sizeof (hello),
+				      myclock,
+				      &data_not_required_anymore, hello);
+      else
+	shmdata_any_writer_push_data (writer,
+				      olleh,
+				      sizeof (olleh),
+				      myclock,
+				      &data_not_required_anymore, olleh);
+      
       usleep (nsecPeriod / 1000);
       myclock += nsecPeriod;
     }

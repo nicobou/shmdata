@@ -14,8 +14,8 @@
  */
 
 /**
- * @file Checks if it can send/receive ASCII data.
- * The main() function calls check_read_write() which starts a writer and a reader. When on_data is called, it checks if the string received matches what has been sent, and sets the value of the success variable accordingly.
+ * @file Checks if it can send/receive ASCII data when the reader is quitting and restarting multiple times.
+ * The main() function calls check_write_and_read_onoff() which starts a writer and a reader. When on_data is called, it checks if the string received matches what has been sent, and sets the value of the success variable accordingly.
  */
 
 #include "shmdata/any-data-reader.h"
@@ -35,11 +35,10 @@ typedef enum _bool
 
 // constants:
 static const Bool VERBOSE = yes;
-static const char message[21] = "helloworldhelloworld";
+static const char *message = "helloworldhelloworld";
 
 // variables:
-static Bool success = no;
-static Bool keep_going;
+static int num_received_buf = 0;
 
 // Function signatures:
 static void data_not_required_anymore (void *priv);
@@ -52,7 +51,7 @@ static int check_read_write ();
 static void 
 data_not_required_anymore (void *priv)
 {
-  //here you can free your buffer
+  // here you can free your buffer
 }
 
 void
@@ -74,68 +73,73 @@ on_data (shmdata_any_reader_t * reader,
     {
       if (VERBOSE == yes)
 	printf ("The two strings match! Success!\n");
-      success = yes;
+      num_received_buf++;
+	
     }
   //free the data, can also be called later
   shmdata_any_reader_free (shmbuf);
-  keep_going = no;
 }
 
 int
-check_read_write ()
+check_write_and_read_onoff ()
 {
   shmdata_any_reader_t *reader;
   shmdata_any_writer_t *writer;
 
   const char *my_user_data =
     "You can pass a pointer to the reader's data handler function.";
-  const char *SOCKET_PATH = "/tmp/shmdata-test-check-write-read";
+  const char *SOCKET_PATH = "/tmp/shmdata-test-check-read-and-write-onoff";
 
-  writer = shmdata_any_writer_init ();
-  if (VERBOSE == yes)
-    shmdata_any_writer_set_debug (writer, SHMDATA_ENABLE_DEBUG);
-  shmdata_any_writer_set_path (writer, SOCKET_PATH);
-  shmdata_any_writer_set_data_type (writer, "text/plain");
-  shmdata_any_writer_start (writer);
+  writer = shmdata_any_writer_init (); 
+  if (VERBOSE == yes) 
+    shmdata_any_writer_set_debug (writer, SHMDATA_TRUE); 
+  shmdata_any_writer_set_path (writer, SOCKET_PATH); 
+  shmdata_any_writer_set_data_type (writer, "text/plain"); 
+  shmdata_any_writer_start (writer); 
+  
+  
+   unsigned long long myclock = 0; 
+   unsigned long long nsecPeriod = 30000000; 
+   
+   int num_on_off = 10; 
+   while (num_on_off--) 
+     { 
+       usleep (1000); 
+       shmdata_any_reader_close (reader);
+       reader = shmdata_any_reader_init (); 
+       if (VERBOSE == yes) 
+	 shmdata_any_reader_set_debug (reader, SHMDATA_ENABLE_DEBUG); 
+       
+       shmdata_any_reader_set_on_data_handler (reader, &on_data, 
+					       (void *) my_user_data); 
+       shmdata_any_reader_set_data_type (reader, "text/plain"); 
+       shmdata_any_reader_start (reader, SOCKET_PATH); 
+       
+       shmdata_any_writer_push_data (writer,  
+				     message,  
+				     sizeof (message),  
+				     myclock, &data_not_required_anymore, message);  
+       //data should be serialized if network is involved 
+       // here it is not 
+       usleep (nsecPeriod / 1000); 
+       myclock += nsecPeriod;
+     } 
 
-  reader = shmdata_any_reader_init ();
-  if (VERBOSE == yes)
-    shmdata_any_reader_set_debug (reader, SHMDATA_ENABLE_DEBUG);
+   shmdata_any_writer_close (writer); 
+   shmdata_any_reader_close (reader); 
 
-  shmdata_any_reader_set_on_data_handler (reader, &on_data,
-					  (void *) my_user_data);
-  shmdata_any_reader_set_data_type (reader, "text/plain");
-  shmdata_any_reader_start (reader, SOCKET_PATH);
-
-  unsigned long long myclock = 0;
-  unsigned long long nsecPeriod = 30000000;
-
-  keep_going = yes;
-  shmdata_any_writer_push_data (writer,
-				message,
-				sizeof (message),
-				myclock, &data_not_required_anymore, message);
-  while (keep_going == yes)
-    {
-      //data should be serialized if network is involved
-      // here it is not
-      usleep (nsecPeriod / 1000);
-      myclock += nsecPeriod;
-    }
-
-  shmdata_any_writer_close (writer);
-  shmdata_any_reader_close (reader);
-
-  if (success == yes)
-    return 0;
-  else
-    return 1;
+   if (num_received_buf = num_on_off)   
+     {
+       return 0;   
+     }
+   else   
+     return 1;   
 }
 
 int
 main (int argc, char *argv)
 {
-  if (check_read_write () != 0)
+  if (check_write_and_read_onoff () != 0)
     return 1;
   return 0;
 }

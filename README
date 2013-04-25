@@ -9,8 +9,7 @@ shmdata
 =======
 Library to share flows of data frames between processes via shared memory. 
 shmdata can be compared to the JACK audio connection kit project or to the
-VideoJack project. shmdata, however, does not provide yet reader and 
-writer discovery. 
+VideoJack project. shmdata, however, does not provide a host server and require applications to link data streams using socket path (e.g. "/tmp/my_shmdata_stream"). 
 Note that shmdata readers and writers can hot connect/disconnect/reconnect/... 
 and that a shared memory supports a single writer with multiple readers.
 
@@ -22,13 +21,14 @@ Several libraries are provided:
 
 shmdata is currently used in several metalab projects:
 
-* scenic 
-* spinframework
-* posturevision
+* switcher (http://code.sat.qc.ca/redmine/projects/switcher/wiki)
+* spinframework (http://code.sat.qc.ca/redmine/projects/spinframework/wiki)
+* posturevision (http://code.sat.qc.ca/redmine/projects/kinectvision/wiki/)
+* scenic (http://code.sat.qc.ca/redmine/projects/scenic/wiki)
 
-License: LGPL.
+License: LGPL for the libraries, GLP for the puredata external
 
-Project URL: http://codered.sat.qc.ca/redmine/projects/libshmdata
+Project URL: http://code.sat.qc.ca/redmine/projects/libshmdata
 
 This is an outcome of the Scenic research project at the SAT[Metalab]. http://www.sat.qc.ca
 
@@ -38,26 +38,30 @@ Here is how to build and install it on Debian GNU/Linux or Ubuntu::
 
   $ sudo apt-get install automake bison build-essential flex libtool 
   $ sudo apt-get install libglib2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev
-  $ sudo apt-get install libclutter-1.0-dev libopenscenegraph-dev
   $ ./autogen.sh
   $ ./configure
   $ make
   $ sudo make install
   $ sudo ldconfig
 
-Build with the Point Cloud Library example
-------------------------------------------
-Here is how to build and install the PCL library headers on Ubuntu::
+Build the shmdata-osg library for use with openscenegraph
+---------------------------------------------------------
+Before building shmdata, install the openscenegraph headers on Ubuntu::
 
-  $ sudo add-apt-repository ppa:v-launchpad-jochen-sprickerhof-de/pcl
-  $ sudo apt-get update
-  $ sudo apt-get install libpcl-visualization-1.5-dev libvtk5-dev
+  $ sudo apt-get install libopenscenegraph-dev
+
+Build with the Puredata externals
+---------------------------------
+Before building shmdata, install the puredata headers on Ubuntu::
+
+  $ sudo apt-get install puredata-dev libsamplerate0-dev
 
 Authors
 -------
 Written by:
 
-* Nicolas Bouillot (initial author)
+* Nicolas Bouillot (main author)
+* Emmanuel Durand (contribution to OSG library and OSX port)
 * Alexandre Quessy (help with packaging)
 
 

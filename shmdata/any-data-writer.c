@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Nicolas Bouillot (http://www.nicolasbouillot.net)
+ * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -152,6 +152,26 @@ shmdata_any_writer_push_data (shmdata_any_writer_t * context,
   GstBuffer *buf;
   buf = gst_app_buffer_new (data, size, done_with_data, user_data);
   GST_BUFFER_TIMESTAMP (buf) = (GstClockTime) (timestamp);
+  gst_app_src_push_buffer (GST_APP_SRC (context->src_), buf);
+}
+
+void
+shmdata_any_writer_push_data_with_duration (shmdata_any_writer_t * context,
+					    void *data,
+					    int size,
+					    unsigned long long timestamp,
+					    unsigned long long duration,
+					    unsigned long long offset,
+					    unsigned long long offset_end,
+					    void (*done_with_data) (void *),
+					    void *user_data)
+{
+  GstBuffer *buf;
+  buf = gst_app_buffer_new (data, size, done_with_data, user_data);
+  GST_BUFFER_TIMESTAMP (buf) = (GstClockTime) (timestamp);
+  GST_BUFFER_DURATION (buf) = (GstClockTime) (duration);
+  GST_BUFFER_OFFSET (buf) = (GstClockTime) (offset);
+  GST_BUFFER_OFFSET_END (buf) = (GstClockTime) (offset_end);
   gst_app_src_push_buffer (GST_APP_SRC (context->src_), buf);
 }
 

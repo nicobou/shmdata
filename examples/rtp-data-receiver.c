@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Wim Taymans <wim.taymans@gmail.com>
- * Copyright (C) 2012 Nicolas Bouillot (http://www.nicolasbouillot.net)
+ * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -12,6 +12,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
+
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 #include <string.h>
 #include <math.h>
@@ -217,6 +221,12 @@ main (int argc, char *argv[])
 
   /* always init first */
   gst_init (&argc, &argv);
+#ifdef HAVE_CONFIG_H 
+  GstRegistry *registry; 
+  registry = gst_registry_get_default(); 
+  gst_registry_scan_path (registry, SHMDATA_SHM_GST_PLUGIN_BUILD_PATH); 
+  gst_registry_scan_path (registry, SHMDATA_GST_PLUGIN_PATH);
+#endif 
 
   /* the pipeline to hold everything */
   app.pipeline = gst_pipeline_new (NULL);

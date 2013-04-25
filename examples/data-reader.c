@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Nicolas Bouillot (http://www.nicolasbouillot.net)
+ * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -41,7 +41,8 @@ on_data (shmdata_any_reader_t * reader,
 	 void *data,
 	 int data_size,
 	 unsigned long long timestamp,
-	 const char *type_description, void *user_data)
+	 const char *type_description, 
+	 void *user_data)
 {
   printf ("data %p, data size %d, timestamp %llu, type descr %s\n",
 	  data, data_size, timestamp, type_description);
@@ -69,7 +70,9 @@ main (int argc, char *argv[])
   shmdata_any_reader_set_on_data_handler (reader, &on_data,
 					  (void *) my_user_data);
 //    shmdata_any_reader_set_data_type(reader, "video/x-raw-yuv, format=(fourcc)YUY2, framerate=(fraction)25/1, width=(int)924, height=(int)576, interlaced=(boolean)true, pixel-aspect-ratio=(fraction)1/1");
-  shmdata_any_reader_set_data_type (reader, "application/helloworld_");
+  shmdata_any_reader_set_data_type (reader, "text/plain");
+  //shmdata_any_reader_set_absolute_timestamp (reader, SHMDATA_ENABLE_ABSOLUTE_TIMESTAMP);
+  shmdata_any_reader_set_absolute_timestamp (reader, SHMDATA_DISABLE_ABSOLUTE_TIMESTAMP);
   shmdata_any_reader_start (reader, argv[1]);
 
   //shmdata_any_reader is non blocking

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Nicolas Bouillot (http://www.nicolasbouillot.net)
+ * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public License
@@ -31,7 +31,10 @@ struct shmdata_any_reader_
   GstElement *funnel_;
   GstElement *sink_;
   GMainLoop *loop_;
+  gboolean run_gmainloop_;
   GThread *sharedDataThread_;
+  //timestamp
+  gboolean do_absolute_;
   //debug
   int debug_;
   //user callback
@@ -174,6 +177,8 @@ shmdata_any_reader_init (const char *socketName)
   reader->on_data_user_data_ = NULL;
   reader->type_ = NULL;
   reader->data_caps_ = NULL;
+  reader->do_absolute_ = FALSE;
+  reader->run_gmainloop_ = TRUE;
 
   gst_init (NULL, NULL);
   reader->loop_ = g_main_loop_new (NULL, FALSE);
@@ -189,6 +194,12 @@ void
 shmdata_any_reader_set_debug (shmdata_any_reader_t * context, int debug)
 {
   context->debug_ = debug;
+}
+
+void
+shmdata_any_reader_run_gmainloop (shmdata_any_reader_t * context, int run)
+{
+  context->run_gmainloop_ = run;
 }
 
 void
@@ -217,17 +228,31 @@ shmdata_any_reader_start (shmdata_any_reader_t * context,
 			  const char *socketName)
 {
   //initializing lower layer library
-  context->reader_ = shmdata_base_reader_init (socketName,
-					       context->pipeline_,
-					       &shmdata_any_reader_on_first_video_data,
-					       context);
+//  context->reader_ = shmdata_base_reader_init (socketName,
+//					       context->pipeline_,
+//					       &shmdata_any_reader_on_first_video_data,
+//					       context);
 
-  g_thread_init (NULL);
-  context->sharedDataThread_ =
-    g_thread_create ((GThreadFunc) shmdata_any_reader_g_loop_thread, context,
-		     FALSE, NULL);
+  //FIXME: Move reader_new and configuration method function where it belongs
+  // and do not use do_absolute_ member in the any reader structure
+  context->reader_ = shmdata_base_reader_new ();
+  shmdata_base_reader_set_callback (context->reader_,
+                                    &shmdata_any_reader_on_first_video_data,
+                                    context);
+  shmdata_base_reader_set_bin (context->reader_,
+                               context->pipeline_);
 
-//    g_main_loop_run (context->loop_);
+  shmdata_base_reader_set_absolute_timestamp (context->reader_, context->do_absolute_);
+
+  shmdata_base_reader_start (context->reader_, socketName);
+
+  if (context->run_gmainloop_)
+    {
+      g_thread_init (NULL);
+      context->sharedDataThread_ =
+	g_thread_create ((GThreadFunc) shmdata_any_reader_g_loop_thread, context,
+			 FALSE, NULL);
+    }
 }
 
 void
@@ -239,19 +264,30 @@ shmdata_any_reader_set_data_type (shmdata_any_reader_t * reader,
 }
 
 void
+shmdata_any_reader_set_absolute_timestamp (shmdata_any_reader_t * reader,
+                                            int do_absolute)
+{
+    if (do_absolute != 0)
+        reader->do_absolute_ = TRUE;
+}
+
+void
 shmdata_any_reader_close (shmdata_any_reader_t * reader)
 {
-  if (reader->reader_)
-    shmdata_base_reader_close (reader->reader_);
-  else
-    g_warning ("trying to close a NULL (base-)reader");
-  if (reader->data_caps_ != NULL)
-    gst_caps_unref (reader->data_caps_);
-  if (reader->type_ != NULL)
-    g_free (reader->type_);
-  if (reader)
-    g_free (reader);
-  else
-    g_warning ("trying to close a NULL (base-)reader");
+  if (reader != NULL)
+    {
+      if (reader->reader_)
+	shmdata_base_reader_close (reader->reader_);
+      else
+	g_warning ("trying to close a NULL (base-)reader");
+      if (reader->data_caps_ != NULL)
+	gst_caps_unref (reader->data_caps_);
+      if (reader->type_ != NULL)
+	g_free (reader->type_);
+      if (reader)
+	g_free (reader);
+      else
+	g_warning ("trying to close a NULL (base-)reader");
+    }
 }
 
