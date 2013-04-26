@@ -21,8 +21,8 @@
  * The Runtime class
  */
 
-#include "switcher/runtime.h"
-#include "switcher/gst-utils.h"
+#include "runtime.h"
+#include "gst-utils.h"
 #include <shmdata/base-reader.h>
 
 namespace switcher

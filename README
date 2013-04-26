@@ -38,10 +38,6 @@ Sponsors
 This project is made possible thanks to the Society for Arts and Technologies. (SAT) http://www.sat.qc.ca/
 Thanks to the Ministère du Développement économique, de l'Innovation et de l'Exportation du Québec (MDEIE).
 
-Build Dependencies (Ubuntu LTS 12.04 Precise)
----------------------------------------------
-pkg-config libshmdata-0.6-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev gsoap libjson-glib-dev liblo-dev
-
 Quick build and installation (Ubuntu LTS 12.04 Precise)
 -------------------------------------------------------
 First, make sure you have shmdata installed.

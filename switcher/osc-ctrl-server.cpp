@@ -17,7 +17,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/osc-ctrl-server.h"
+#include "osc-ctrl-server.h"
 #include <ctime>    // For time()
 #include <cstdlib>  // For srand() and rand()
 

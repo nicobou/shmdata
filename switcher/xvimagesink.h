@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_XVIMAGESINK_H__
 #define __SWITCHER_XVIMAGESINK_H__
 
-#include "switcher/video-sink.h"
+#include "video-sink.h"
 #include <gst/gst.h>
 #include <memory>
 

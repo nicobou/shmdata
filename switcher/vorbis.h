@@ -21,8 +21,8 @@
 #ifndef __SWITCHER_VORBIS_H__
 #define __SWITCHER_VORBIS_H__
 
-#include "switcher/audio-sink.h"
-#include "switcher/gst-element-cleaner.h"
+#include "audio-sink.h"
+#include "gst-element-cleaner.h"
 #include <gst/gst.h>
 #include <memory>
 

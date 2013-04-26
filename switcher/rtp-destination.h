@@ -23,10 +23,10 @@
 
 #include <gst/sdp/gstsdpmessage.h>
 #include <gst/gst.h>
-#include "switcher/string-map.h"
-#include "switcher/shmdata-reader.h"
-#include "switcher/quiddity-manager.h"
-#include "switcher/json-builder.h"
+#include "string-map.h"
+#include "shmdata-reader.h"
+#include "quiddity-manager.h"
+#include "json-builder.h"
 
 namespace switcher
 {

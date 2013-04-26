@@ -22,7 +22,7 @@
 #define __SWITCHER_BASE_SOURCE_H__
 
 #include <memory>
-#include "switcher/segment.h"
+#include "segment.h"
 
 namespace switcher
 {

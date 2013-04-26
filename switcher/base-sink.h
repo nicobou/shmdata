@@ -21,8 +21,8 @@
 #ifndef __SWITCHER_BASE_SINK_H__
 #define __SWITCHER_BASE_SINK_H__
 
-#include "switcher/segment.h"
-#include "switcher/shmdata-reader.h"
+#include "segment.h"
+#include "shmdata-reader.h"
 #include <memory>
 
 namespace switcher

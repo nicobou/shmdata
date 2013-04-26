@@ -21,8 +21,8 @@
  * The Quiddity class
  */
 
-#include "switcher/quiddity.h"
-#include "switcher/quiddity-life-manager.h"
+#include "quiddity.h"
+#include "quiddity-life-manager.h"
 
 
 namespace switcher

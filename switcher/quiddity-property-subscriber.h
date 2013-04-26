@@ -29,7 +29,7 @@
 #include <memory>
 #include <map>
 #include <vector>
-#include "switcher/property.h"
+#include "property.h"
 
 namespace switcher
 {

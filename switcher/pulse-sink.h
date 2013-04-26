@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_PULSESINK_H__
 #define __SWITCHER_PULSESINK_H__
 
-#include "switcher/audio-sink.h"
+#include "audio-sink.h"
 #include <gst/gst.h>
 #include <memory>
 

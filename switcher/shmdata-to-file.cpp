@@ -17,9 +17,9 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/shmdata-to-file.h"
+#include "shmdata-to-file.h"
 #include <glib/gstdio.h> 
-#include "switcher/gst-utils.h"
+#include "gst-utils.h"
 
 namespace switcher
 {

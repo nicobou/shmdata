@@ -21,7 +21,7 @@
  * The Quiddity command class
  */
 
-#include "switcher/quiddity-command.h"
+#include "quiddity-command.h"
 
 namespace switcher
 {

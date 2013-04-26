@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_DECODEBIN2_H__
 #define __SWITCHER_DECODEBIN2_H__
 
-#include "switcher/base-sink.h"
+#include "base-sink.h"
 #include <memory>
 
 namespace switcher

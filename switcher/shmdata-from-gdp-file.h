@@ -23,9 +23,9 @@
 
 #include <gst/gst.h>
 #include <memory>
-#include "switcher/segment.h"
-#include "switcher/custom-property-helper.h"
-#include "switcher/quiddity-manager.h"
+#include "segment.h"
+#include "custom-property-helper.h"
+#include "quiddity-manager.h"
  
 namespace switcher
 {

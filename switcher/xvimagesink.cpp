@@ -17,8 +17,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/xvimagesink.h"
-#include "switcher/gst-utils.h"
+#include "xvimagesink.h"
+#include "gst-utils.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

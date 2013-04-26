@@ -17,8 +17,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/gst-video-parse-to-bin-src.h"
-#include "switcher/gst-utils.h"
+#include "gst-video-parse-to-bin-src.h"
+#include "gst-utils.h"
 
 namespace switcher
 {

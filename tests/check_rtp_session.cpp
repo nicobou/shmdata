@@ -109,8 +109,8 @@ main (int argc,
        			"9076",
        			NULL);
     
-    //wait 4 sec for the session being created
-    usleep (4000000); 
+    //wait 6 sec for the session being created
+    usleep (6000000); 
 
     manager->create ("httpsdp", "uri");
     manager->invoke_va ("uri", "set_runtime", "runtime", NULL);

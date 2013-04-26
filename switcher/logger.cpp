@@ -17,7 +17,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/logger.h"
+#include "logger.h"
 
 namespace switcher
 {

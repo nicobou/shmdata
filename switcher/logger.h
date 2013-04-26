@@ -21,8 +21,8 @@
 #ifndef __SWITCHER_LOGGER_H__
 #define __SWITCHER_LOGGER_H__
 
-#include "switcher/quiddity.h"
-#include "switcher/custom-property-helper.h"
+#include "quiddity.h"
+#include "custom-property-helper.h"
 #include <glib.h>
 
 namespace switcher

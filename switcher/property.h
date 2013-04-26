@@ -25,7 +25,7 @@
 #include <memory>
 #include <map>
 #include <string>
-#include "switcher/json-builder.h"
+#include "json-builder.h"
 
 namespace switcher
 {

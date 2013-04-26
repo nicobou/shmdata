@@ -17,7 +17,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/video-sink.h"
+#include "video-sink.h"
 
 namespace switcher
 {

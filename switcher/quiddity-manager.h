@@ -27,9 +27,9 @@
 #include <vector>
 #include <map>
 #include <string>
-#include "switcher/quiddity-life-manager.h"
-#include "switcher/quiddity-command.h"
-#include "switcher/quiddity-manager-wrapper.h"
+#include "quiddity-life-manager.h"
+#include "quiddity-command.h"
+#include "quiddity-manager-wrapper.h"
 #include <stdarg.h>
 
  namespace switcher 

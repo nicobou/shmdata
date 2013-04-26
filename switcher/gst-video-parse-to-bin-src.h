@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_GST_VIDEO_PARSE_TO_BIN_SRC_H__
 #define __SWITCHER_GST_VIDEO_PARSE_TO_BIN_SRC_H__
 
-#include "switcher/base-source.h"
+#include "base-source.h"
 #include <gst/gst.h>
 #include <memory>
 

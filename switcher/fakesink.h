@@ -21,8 +21,8 @@
 #ifndef __SWITCHER_FAKESINK_H__
 #define __SWITCHER_FAKESINK_H__
 
-#include "switcher/base-sink.h"
-#include "switcher/gst-element-cleaner.h"
+#include "base-sink.h"
+#include "gst-element-cleaner.h"
 #include <gst/gst.h>
 #include <memory>
 
