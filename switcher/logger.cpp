@@ -17,7 +17,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/logger.h"
+#include "logger.h"
 
 namespace switcher
 {
@@ -204,6 +204,8 @@ namespace switcher
     if (context->mute_)
       return;
     
+    gboolean update_last_line = TRUE;
+
      switch (log_level) {
      case G_LOG_LEVEL_ERROR:
        context->replace_last_line(g_strdup_printf ("%s-error: %s",log_domain, message));
@@ -216,22 +218,29 @@ namespace switcher
        break;
      case G_LOG_LEVEL_MESSAGE:
        if (context->debug_ || context->verbose_)
-     	  context->replace_last_line(g_strdup_printf ("%s-message: %s",log_domain, message));
+	   context->replace_last_line(g_strdup_printf ("%s-message: %s",log_domain, message));
+       else
+	 update_last_line = FALSE;
        break;
      case G_LOG_LEVEL_INFO:
        if (context->debug_ || context->verbose_)
-     	  context->replace_last_line(g_strdup_printf ("%s-info: %s",log_domain, message));
+	   context->replace_last_line(g_strdup_printf ("%s-info: %s",log_domain, message));
+       else
+	 update_last_line = FALSE;
        break;
      case G_LOG_LEVEL_DEBUG:
        if (context->debug_)
 	 context->replace_last_line(g_strdup_printf ("%s-debug: %s",log_domain, message));
+       else
+	 update_last_line = FALSE;
        break;
      default:
        context->replace_last_line(g_strdup_printf ("%s-unknown-level: %s",log_domain,message));
        break;
      }
 
-     context->custom_props_->notify_property_changed (context->last_line_prop_);
+     if (update_last_line)
+       context->custom_props_->notify_property_changed (context->last_line_prop_);
 }
 
 

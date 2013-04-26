@@ -21,7 +21,7 @@
  * Class wrapping gobject for custum properties
  */
 
-#include "switcher/gobject-wrapper.h"
+#include "gobject-wrapper.h"
 #include <glib/gprintf.h>
 
 

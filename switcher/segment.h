@@ -21,13 +21,13 @@
 #ifndef __SWITCHER_SEGMENT_H__
 #define __SWITCHER_SEGMENT_H__
 
-#include "switcher/quiddity.h"
-#include "switcher/runtime.h"
-#include "switcher/string-map.h"
-#include "switcher/shmdata-writer.h"
-#include "switcher/shmdata-reader.h"
-#include "switcher/json-builder.h"
-#include "switcher/gobject-wrapper.h"
+#include "quiddity.h"
+#include "runtime.h"
+#include "string-map.h"
+#include "shmdata-writer.h"
+#include "shmdata-reader.h"
+#include "json-builder.h"
+#include "gobject-wrapper.h"
 #include <memory>
 #include <vector>
 

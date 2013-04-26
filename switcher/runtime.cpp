@@ -21,8 +21,8 @@
  * The Runtime class
  */
 
-#include "switcher/runtime.h"
-#include "switcher/gst-utils.h"
+#include "runtime.h"
+#include "gst-utils.h"
 #include <shmdata/base-reader.h>
 
 namespace switcher
@@ -34,6 +34,7 @@ namespace switcher
   bool
   Runtime::init ()
   {
+    speed_ = 1.0;
     pipeline_ = gst_pipeline_new (NULL);
     set_name (gst_element_get_name (pipeline_));
     GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_)); 
@@ -49,9 +50,9 @@ namespace switcher
 		    (void *)&play_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
 		    (gpointer)this);
-    set_method_description ("play", 
-			    "activate the runtime", 
-			    Method::make_arg_description ("none",
+    set_method_description ((char *)"play", 
+			    (char *)"activate the runtime", 
+			    Method::make_arg_description ((char *)"none",
 							  NULL));
 
     //registering pause
@@ -59,21 +60,33 @@ namespace switcher
 		    (void *)&pause_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
 		    (gpointer)this);
-    set_method_description ("pause", 
-			    "pause the runtime", 
-			    Method::make_arg_description ("none",
+    set_method_description ((char *)"pause", 
+			    (char *)"pause the runtime", 
+			    Method::make_arg_description ((char *)"none",
 							  NULL));
 
-    //registering seek
+     //registering seek
     register_method("seek",
 		    (void *)&seek_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
 		    (gpointer)this);
-    set_method_description ("seek", 
-			    "seek the runtime", 
-			    Method::make_arg_description ("position",
-							  "position in milliseconds",
+    set_method_description ((char *)"seek", 
+			    (char *)"seek the runtime", 
+			    Method::make_arg_description ((char *)"position",
+							  (char *)"position in milliseconds",
 							  NULL));
+
+    //registering speed
+    register_method("speed",
+		    (void *)&speed_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
+		    (gpointer)this);
+    set_method_description ((char *)"speed", 
+			    (char *)"controle speed of runtime", 
+			    Method::make_arg_description ((char *)"speed",
+							  (char *)"1.0 is normal speed, 0.5 is half the speed and 2.0 is double speed",
+							  NULL));
+
     return true;
   }
   
@@ -141,28 +154,28 @@ namespace switcher
   Runtime::seek (gdouble position)
   {
     g_debug ("Runtime::seek %f", position);
-    GstQuery *query;
-    gboolean res;
-    query = gst_query_new_segment (GST_FORMAT_TIME);
-    res = gst_element_query (pipeline_, query);
-    gdouble rate = -2.0;
-    gint64 start_value = -2.0;
-    gint64 stop_value = -2.0;
-    if (res) {
-      gst_query_parse_segment (query, &rate, NULL, &start_value, &stop_value);
-      g_debug ("rate = %f start = %" GST_TIME_FORMAT" stop = %" GST_TIME_FORMAT"\n", 
-	       rate,
-	       GST_TIME_ARGS (start_value),
-	       GST_TIME_ARGS (stop_value));
-    }
-    else {
-      g_warning ("duration query failed...");
-    }
-    gst_query_unref (query);
+    // GstQuery *query;
+    // gboolean res;
+    // query = gst_query_new_segment (GST_FORMAT_TIME);
+    // res = gst_element_query (pipeline_, query);
+    // gdouble rate = -2.0;
+    // gint64 start_value = -2.0;
+    // gint64 stop_value = -2.0;
+    // if (res) {
+    //   gst_query_parse_segment (query, &rate, NULL, &start_value, &stop_value);
+    //   g_debug ("rate = %f start = %" GST_TIME_FORMAT" stop = %" GST_TIME_FORMAT"\n", 
+    // 	       rate,
+    // 	       GST_TIME_ARGS (start_value),
+    // 	       GST_TIME_ARGS (stop_value));
+    // }
+    // else {
+    //   g_warning ("duration query failed...");
+    // }
+    // gst_query_unref (query);
   
     gboolean ret;
     ret = gst_element_seek (pipeline_,  
-			    rate,  
+			    speed_,  
 			    GST_FORMAT_TIME,  
 			    (GstSeekFlags)(GST_SEEK_FLAG_FLUSH | 
 					   GST_SEEK_FLAG_ACCURATE), 
@@ -173,8 +186,85 @@ namespace switcher
 			    GST_SEEK_TYPE_NONE,  
 			    GST_CLOCK_TIME_NONE);  
     
-  if (!ret)
-    g_print ("seek not handled\n");
+  // if (!ret)
+  //   g_print ("seek not handled\n");
+
+    return true;
+  }
+
+
+
+  gboolean
+  Runtime::speed_wrapped (gdouble speed, gpointer user_data)
+  {
+    Runtime *context = static_cast<Runtime *>(user_data);
+      
+    g_debug ("speed_wrapped %f", speed);
+
+    if (context->speed (speed))
+      return TRUE;
+    else
+      return FALSE;
+  }
+
+  bool
+  Runtime::speed (gdouble speed)
+  {
+    g_debug ("Runtime::speed %f", speed);
+
+    speed_ = speed;
+    
+    GstQuery *query;
+    gboolean res;
+
+    // //query segment
+    // query = gst_query_new_segment (GST_FORMAT_TIME);
+    // res = gst_element_query (pipeline_, query);
+    // gdouble rate = -2.0;
+    // gint64 start_value = -2.0;
+    // gint64 stop_value = -2.0;
+    // if (res) {
+    //   gst_query_parse_segment (query, &rate, NULL, &start_value, &stop_value);
+    //   g_debug ("rate = %f start = %" GST_TIME_FORMAT" stop = %" GST_TIME_FORMAT"\n", 
+    // 	       rate,
+    // 	       GST_TIME_ARGS (start_value),
+    // 	       GST_TIME_ARGS (stop_value));
+    // }
+    // else {
+    //   g_warning ("duration query failed...");
+    // }
+    // gst_query_unref (query);
+
+    //query position
+    query = gst_query_new_position (GST_FORMAT_TIME);
+res = gst_element_query (pipeline_, query);
+    gint64 cur_pos;
+    if (res) {
+      gst_query_parse_position (query, 
+				NULL, 
+				&cur_pos);
+      
+      g_debug ("cur pos = %" GST_TIME_FORMAT"\n", 
+	       GST_TIME_ARGS (cur_pos));
+    }
+    else {
+      g_warning ("position query failed...");
+    }
+    gst_query_unref (query);
+  
+    gboolean ret;
+    ret = gst_element_seek (pipeline_,  
+			    speed,  
+			    GST_FORMAT_TIME,  
+			    (GstSeekFlags)(GST_SEEK_FLAG_FLUSH | 
+					   GST_SEEK_FLAG_ACCURATE), 
+			    GST_SEEK_TYPE_SET,  
+			    cur_pos,  
+			    GST_SEEK_TYPE_NONE,  
+			    GST_CLOCK_TIME_NONE);  
+    
+    // if (!ret)
+    //   g_print ("speed not handled\n");
 
     return true;
   }

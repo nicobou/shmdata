@@ -21,8 +21,8 @@
  * The Quiddity class
  */
 
-#include "switcher/quiddity.h"
-#include "switcher/quiddity-life-manager.h"
+#include "quiddity.h"
+#include "quiddity-life-manager.h"
 
 
 namespace switcher
@@ -187,9 +187,9 @@ namespace switcher
   }
 
   bool 
-  Quiddity::set_method_description (std::string method_name,
-				      std::string short_description,
-				      std::vector<std::pair<std::string,std::string> > arg_description)
+  Quiddity::set_method_description (const std::string method_name,
+				    const std::string short_description,
+				    const std::vector<std::pair<std::string,std::string> > arg_description)
   {
     if (methods_.find( method_name ) == methods_.end())
       {
@@ -293,13 +293,14 @@ namespace switcher
 
   bool 
   Quiddity::unsubscribe_property (std::string name,
-				  Property::Callback cb)
+				  Property::Callback cb,
+				  void *user_data)
   {
     if (properties_.find (name) == properties_.end())
       return false;
 
     Property::ptr prop = properties_[name];
-    return prop->unsubscribe (cb);
+    return prop->unsubscribe (cb, user_data);
   }
 
 

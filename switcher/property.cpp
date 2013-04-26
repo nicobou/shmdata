@@ -21,7 +21,7 @@
  * The Param class
  */
 
-#include "switcher/property.h"
+#include "property.h"
 
 namespace switcher
 {
@@ -58,24 +58,29 @@ namespace switcher
   bool
   Property::subscribe (Callback cb, void *user_data)
   {
+    std::pair <Callback, void *> subscribe_id = std::make_pair (cb, user_data);
     gchar *signal = g_strconcat ("notify::", property_->name, NULL);
-    if (subscribed_handlers_.find(cb) == subscribed_handlers_.end ())
+    if (subscribed_handlers_.find(subscribe_id) == subscribed_handlers_.end ())
       {
-	subscribed_handlers_[cb] = g_signal_connect (object_, signal, G_CALLBACK (cb), user_data);	
+	subscribed_handlers_[subscribe_id] = g_signal_connect (object_, signal, G_CALLBACK (cb), user_data);	
 	return true;
       }
     else
+      {
+	g_print ("coucou \n");
 	return false;
+      }
   }
 
   bool
-  Property::unsubscribe (Callback cb)
+  Property::unsubscribe (Callback cb, void *user_data)
   {
-    if (subscribed_handlers_.find(cb) == subscribed_handlers_.end ())
+    std::pair <Callback, void *> subscribe_id = std::make_pair (cb, user_data);
+    if (subscribed_handlers_.find(subscribe_id) == subscribed_handlers_.end ())
       return false;
     else
       {
-	g_signal_handler_disconnect (object_, subscribed_handlers_[cb]);
+	g_signal_handler_disconnect (object_, subscribed_handlers_[subscribe_id]);
 	return true;
       }
   }

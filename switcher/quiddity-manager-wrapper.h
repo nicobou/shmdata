@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_QUIDDITY_MANAGER_TRANSLATOR_H__
 #define __SWITCHER_QUIDDITY_MANAGER_TRANSLATOR_H__
 
-#include "switcher/quiddity-manager.h"
+#include "quiddity-manager.h"
 #include <memory>
 
 namespace switcher

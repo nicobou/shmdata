@@ -25,7 +25,7 @@
 #define __SWITCHER_RUNTIME_H__
 
 #include <gst/gst.h>
-#include "switcher/quiddity.h"
+#include "quiddity.h"
 #include <memory>
 
 namespace switcher
@@ -40,14 +40,18 @@ namespace switcher
       bool play ();
       bool pause ();
       bool seek (gdouble position);
+      bool speed (gdouble speed);
+
       QuiddityDocumentation get_documentation ();
       static QuiddityDocumentation doc_;
       GstElement *get_pipeline ();
       static gboolean play_wrapped (gpointer unused, gpointer user_data);
       static gboolean pause_wrapped (gpointer unused, gpointer user_data);
       static gboolean seek_wrapped (gdouble position, gpointer user_data);
+      static gboolean speed_wrapped (gdouble speed, gpointer user_data);
     private:
       GstElement *pipeline_;
+      guint64 speed_ ;
       static gboolean bus_called (GstBus *bus, GstMessage *msg, gpointer data); 
       static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
     };

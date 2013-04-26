@@ -18,13 +18,13 @@
  */
 
 
-#ifndef __SWITCHER_CTRL_SERVER_H__
-#define __SWITCHER_CTRL_SERVER_H__
+#ifndef __SWITCHER_SOAP_CTRL_SERVER_H__
+#define __SWITCHER_SOAP_CTRL_SERVER_H__
 
-#include "switcher/quiddity-manager-wrapper.h"
+#include "quiddity-manager-wrapper.h"
 #include <memory>
 
-#include "switcher/webservices/soapcontrolService.h"
+#include "webservices/soapcontrolService.h"
 
 namespace switcher
 {

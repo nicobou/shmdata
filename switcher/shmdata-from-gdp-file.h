@@ -23,9 +23,9 @@
 
 #include <gst/gst.h>
 #include <memory>
-#include "switcher/segment.h"
-#include "switcher/custom-property-helper.h"
-#include "switcher/quiddity-manager.h"
+#include "segment.h"
+#include "custom-property-helper.h"
+#include "quiddity-manager.h"
  
 namespace switcher
 {
@@ -44,7 +44,7 @@ namespace switcher
     bool add_file (std::string shmwriter_path,
 		   std::string file_path);
     bool remove_file (std::string shmwriter_path);
-    
+
     static void set_playing (gboolean playing, void *user_data);
     static gboolean get_playing (void *user_data);
     static void rewind (gpointer user_data);

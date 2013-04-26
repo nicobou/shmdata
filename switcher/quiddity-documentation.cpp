@@ -17,7 +17,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/quiddity-documentation.h"
+#include "quiddity-documentation.h"
 
 namespace switcher
 {

@@ -21,9 +21,9 @@
 #ifndef __SWITCHER_URIS_H__
 #define __SWITCHER_URIS_H__
 
-#include "switcher/base-source.h"
-#include "switcher/gst-element-cleaner.h"
-#include "switcher/string-map.h"
+#include "base-source.h"
+#include "gst-element-cleaner.h"
+#include "string-map.h"
 #include <memory>
 
 namespace switcher

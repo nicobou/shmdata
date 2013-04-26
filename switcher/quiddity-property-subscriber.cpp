@@ -21,9 +21,9 @@
  * The Quiddity property subscriber
  */
 
-#include "switcher/quiddity-property-subscriber.h"
-#include "switcher/quiddity.h" 
-#include "switcher/quiddity-life-manager.h"
+#include "quiddity-property-subscriber.h"
+#include "quiddity.h" 
+#include "quiddity-life-manager.h"
 
 namespace switcher
 {
@@ -41,10 +41,14 @@ namespace switcher
      	Quiddity::ptr quid = life_manager->get_quiddity (it->second->quiddity_name);
 	if ((bool)quid)
 	  {
-	    g_debug ("QuiddityPropertySubscriber: cleaning property not unsubscribed %s, %s",
+	    g_debug ("QuiddityPropertySubscriber: cleaning property not unsubscribed %s, %s, %s",
+	    	     it->second->name,
 	    	     it->second->quiddity_name,
     		     it->second->property_name);
-     	    quid->unsubscribe_property (it->second->property_name, property_cb);
+     	    quid->unsubscribe_property (it->second->property_name, 
+					property_cb,
+					it->second);
+     	    g_free (it->second->name);
      	    g_free (it->second->quiddity_name);
     	    g_free (it->second->property_name);
      	  }
@@ -61,7 +65,8 @@ namespace switcher
     // 	     prop->property_name,
     // 	     Property::parse_callback_args (gobject, pspec).c_str (),
     // 	     (gchar *)prop->user_data); 
-    prop->user_callback (prop->quiddity_name, 
+    prop->user_callback (prop->name,
+			 prop->quiddity_name, 
 			 prop->property_name,
 			 Property::parse_callback_args (gobject, pspec),
 			 (gchar *)prop->user_data); 
@@ -77,6 +82,12 @@ namespace switcher
   QuiddityPropertySubscriber::set_user_data (void *user_data)
   {
     user_data_ = user_data;
+  }
+
+  void
+  QuiddityPropertySubscriber::set_name (const gchar *name)
+  {
+    name_ = g_strdup (name);
   }
 
   void
@@ -106,6 +117,7 @@ namespace switcher
 	return false;
       }
     PropertyData *prop = new PropertyData ();
+    prop->name = g_strdup (name_.c_str ());
     prop->quiddity_name = g_strdup (quid->get_nick_name ().c_str ());
     prop->property_name = g_strdup (property_name.c_str ());
     prop->user_callback = user_callback_;
@@ -113,10 +125,13 @@ namespace switcher
     if (quid->subscribe_property(property_name.c_str(), property_cb, prop))
       {
 	prop_datas_[cur_pair] = prop;
-	return true;
+ 	return true;
       }
     else
-      return false;
+      {
+	g_warning ("QuiddityPropertySubscriber: cannot subscribe to property");
+	return false;
+      }
   }
   
   bool 
@@ -128,10 +143,12 @@ namespace switcher
     PropDataMap::iterator it = prop_datas_.find (cur_pair);
     if (it != prop_datas_.end ())
       {
+	quid->unsubscribe_property (property_name, 
+				    property_cb,
+				    it->second);
 	g_free (it->second->quiddity_name);
 	g_free (it->second->property_name);
 	prop_datas_.erase (cur_pair);
-	quid->unsubscribe_property (property_name, property_cb);
 	return true;
       }
     g_warning ("not unsubscribing a not registered property (%s %s)",

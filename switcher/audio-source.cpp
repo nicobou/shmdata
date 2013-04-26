@@ -17,9 +17,9 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/audio-source.h"
-#include "switcher/gst-utils.h"
-#include "switcher/gst-element-cleaner.h"
+#include "audio-source.h"
+#include "gst-utils.h"
+#include "gst-element-cleaner.h"
 #include <memory>
 
 namespace switcher

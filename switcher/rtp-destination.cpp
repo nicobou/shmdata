@@ -17,7 +17,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/rtp-destination.h"
+#include "rtp-destination.h"
 #include <sstream>
 
 namespace switcher

@@ -17,8 +17,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/uris.h"
-#include "switcher/gst-utils.h"
+#include "uris.h"
+#include "gst-utils.h"
 #include <glib/gprintf.h>
 #include <memory>
 

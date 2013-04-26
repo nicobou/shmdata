@@ -17,8 +17,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/gst-element-cleaner.h"
-#include "switcher/gst-utils.h"
+#include "gst-element-cleaner.h"
+#include "gst-utils.h"
 
 namespace switcher
 {

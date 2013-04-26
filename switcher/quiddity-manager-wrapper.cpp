@@ -17,7 +17,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/quiddity-manager-wrapper.h"
+#include "quiddity-manager-wrapper.h"
 
 namespace switcher
 {

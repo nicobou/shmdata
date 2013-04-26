@@ -17,12 +17,12 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/rtp-session.h"
+#include "rtp-session.h"
 #include <sstream>
 #include <gst/sdp/gstsdpmessage.h>
 #include <glib/gstdio.h> //writing sdp file
-#include "switcher/gst-utils.h"
-#include "switcher/json-builder.h"
+#include "gst-utils.h"
+#include "json-builder.h"
 
 namespace switcher
 {

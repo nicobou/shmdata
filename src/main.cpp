@@ -25,6 +25,7 @@
 
 static gchar *server_name = NULL;
 static gchar *port_number = NULL;
+static gchar *osc_port_number = NULL;
 static gboolean quiet;
 static gboolean debug;
 static gboolean verbose;
@@ -50,6 +51,7 @@ static GOptionEntry entries[] =
     { "list-methods-by-class", 'M', 0, G_OPTION_ARG_STRING, &listmethodsbyclass, "list methods of a class", NULL },
     { "classes-doc", NULL, 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", NULL },
     { "class-doc", NULL, 0, G_OPTION_ARG_STRING, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
+    { "osc-port", 'o', 0, G_OPTION_ARG_STRING, &osc_port_number, "osc port number (osc enabled only if set)", NULL },
     { NULL }
   };
 
@@ -70,7 +72,11 @@ quiet_log_handler (const gchar *log_domain,
 }
 
 static void 
-logger_cb (std::string quiddity_name, std::string property_name, std::string value, void *user_data)
+logger_cb (std::string subscriber_name, 
+	   std::string quiddity_name, 
+	   std::string property_name, 
+	   std::string value, 
+	   void *user_data)
 {
   g_print ("%s\n", value.c_str());
 }
@@ -187,6 +193,13 @@ main (int argc,
      std::vector<std::string> port_arg;
      port_arg.push_back (port_number);
      manager->invoke (soap_name, "set_port", port_arg);
+
+     // start osc if port number has been set
+     if (osc_port_number != NULL)
+       {
+	 std::string osc_name = manager->create ("OSCctl");
+	 manager->invoke_va (osc_name.c_str (), "set_port", osc_port_number, NULL);
+       }
 
      //setting auto_invoke for attaching to gst pipeline "pipeline0"
      std::vector<std::string> arg;

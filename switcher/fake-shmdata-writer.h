@@ -22,7 +22,7 @@
 #define __SWITCHER_FAKE_SHMDATA_WRITER_H__
 
 #include <memory>
-#include "switcher/base-source.h"
+#include "base-source.h"
 
 namespace switcher
 {

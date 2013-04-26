@@ -17,40 +17,41 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/quiddity-documentation.h"
-#include "switcher/quiddity-life-manager.h"
-#include "switcher/quiddity.h" 
+#include "quiddity-documentation.h"
+#include "quiddity-life-manager.h"
+#include "quiddity.h" 
 
 //removing shmdata 
 #include <gio/gio.h>
 
 //the base quiddities to manage (line sorted)
-#include "switcher/aac.h"
-#include "switcher/aravis-genicam.h"
-#include "switcher/audio-test-source.h"
-#include "switcher/decodebin2.h"
-#include "switcher/deinterleave.h"
-#include "switcher/fake-shmdata-writer.h"
-#include "switcher/fakesink.h"
-#include "switcher/file-sdp.h"
-#include "switcher/gst-parse-to-bin-src.h"
-#include "switcher/gst-video-parse-to-bin-src.h"
-#include "switcher/h264.h"
-#include "switcher/http-sdp.h"
-#include "switcher/logger.h"
-#include "switcher/pulse-sink.h"
-#include "switcher/rtp-session.h"
-#include "switcher/runtime.h"
-#include "switcher/shmdata-to-file.h"
-#include "switcher/shmdata-from-gdp-file.h"
-#include "switcher/soap-ctrl-server.h"
-#include "switcher/udpsink.h"
-#include "switcher/uridecodebin.h"
-#include "switcher/uris.h"
-#include "switcher/video-rate.h"
-#include "switcher/video-test-source.h"
-#include "switcher/vorbis.h"
-#include "switcher/xvimagesink.h"
+#include "aac.h"
+#include "aravis-genicam.h"
+#include "audio-test-source.h"
+#include "decodebin2.h"
+#include "deinterleave.h"
+#include "fake-shmdata-writer.h"
+#include "fakesink.h"
+#include "file-sdp.h"
+#include "gst-parse-to-bin-src.h"
+#include "gst-video-parse-to-bin-src.h"
+#include "h264.h"
+#include "http-sdp.h"
+#include "logger.h"
+#include "osc-ctrl-server.h"
+#include "pulse-sink.h"
+#include "rtp-session.h"
+#include "runtime.h"
+#include "shmdata-to-file.h"
+#include "shmdata-from-gdp-file.h"
+#include "soap-ctrl-server.h"
+#include "udpsink.h"
+#include "uridecodebin.h"
+#include "uris.h"
+#include "video-rate.h"
+#include "video-test-source.h"
+#include "vorbis.h"
+#include "xvimagesink.h"
 
 namespace switcher
 {
@@ -193,6 +194,8 @@ namespace switcher
       					       HTTPSDP::doc_.get_json_root_node ());
     abstract_factory_.register_class<Logger> (Logger::doc_.get_class_name (), 
       					       Logger::doc_.get_json_root_node ());
+    abstract_factory_.register_class<OscCtrlServer> (OscCtrlServer::doc_.get_class_name (), 
+						     OscCtrlServer::doc_.get_json_root_node ());
     abstract_factory_.register_class<PulseSink> (PulseSink::doc_.get_class_name (), 
       						 PulseSink::doc_.get_json_root_node ());
     abstract_factory_.register_class<RtpSession> (RtpSession::doc_.get_class_name (), 
@@ -499,6 +502,7 @@ namespace switcher
     QuiddityPropertySubscriber::ptr subscriber;
     subscriber.reset (new QuiddityPropertySubscriber());
     subscriber->set_life_manager (shared_from_this());
+    subscriber->set_name (subscriber_name.c_str ());
     subscriber->set_user_data (user_data);
     subscriber->set_callback (cb);
     property_subscribers_.insert (subscriber_name, subscriber);
@@ -626,7 +630,8 @@ namespace switcher
   bool
   QuiddityLifeManager::unsubscribe_property_glib (std::string quiddity_name,
 						  std::string property_name,
-						  Property::Callback cb)
+						  Property::Callback cb, 
+						  void *user_data)
   {
     if (!exists (quiddity_name))
       {
@@ -634,7 +639,8 @@ namespace switcher
 	return false;
       }
     return (get_quiddity (quiddity_name))->unsubscribe_property(property_name.c_str(),
-								cb);
+								cb,
+								user_data);
   }
 
 

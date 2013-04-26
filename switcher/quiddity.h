@@ -30,12 +30,13 @@
 #include <memory>
 #include <map>
 #include <gst/gst.h>
-#include "switcher/property.h"
-#include "switcher/method.h"
-#include "switcher/signal-string.h"
-#include "switcher/quiddity-documentation.h"
-#include "switcher/quiddity-life-manager.h"
-#include "switcher/json-builder.h"
+
+#include "property.h"
+#include "method.h"
+#include "signal-string.h"
+#include "quiddity-documentation.h"
+#include "quiddity-life-manager.h"
+#include "json-builder.h"
 
 namespace switcher
 {
@@ -70,7 +71,8 @@ namespace switcher
 			     Property::Callback cb, 
 			     void *user_data);
     bool unsubscribe_property (std::string name,
-			       Property::Callback cb);
+			       Property::Callback cb,
+			       void *user_data);
 
     
     //methods
@@ -115,6 +117,7 @@ namespace switcher
 			  void *method, 
 			  Method::args_types arg_types, 
 			  gpointer user_data);
+<<<<<<< HEAD
     bool set_method_description (std::string method_name,
 				 std::string short_description,
 				 Method::args_doc arg_description);
@@ -125,6 +128,11 @@ namespace switcher
 			  std::string name_to_give);
 
 
+=======
+    bool set_method_description (const std::string method_name,
+				 const std::string short_description,
+				 const Method::args_doc arg_description);
+>>>>>>> develop
     //use a consistent naming for shmdatas FIXME move that to segment
     std::string make_file_name (std::string suffix);
 

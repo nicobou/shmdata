@@ -25,7 +25,7 @@
 #include <memory>
 #include <map>
 #include <string>
-#include "switcher/json-builder.h"
+#include "json-builder.h"
 
 namespace switcher
 {
@@ -42,7 +42,7 @@ namespace switcher
     void set (std::string value);
     std::string get ();
     bool subscribe (Callback cb, void *user_data);
-    bool unsubscribe (Callback cb);
+    bool unsubscribe (Callback cb, void *user_data);
     static std::string parse_callback_args (GObject * gobject, GParamSpec * pspec);
 
     std::string get_description ();
@@ -55,7 +55,7 @@ namespace switcher
     GObject *object_;
     JSONBuilder::ptr json_description_;
     void make_description();
-    std::map<Callback, gulong> subscribed_handlers_;
+    std::map<std::pair<Callback, void *>, gulong> subscribed_handlers_;
   };
 
 }  // end of namespace

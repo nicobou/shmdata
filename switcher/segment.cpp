@@ -17,8 +17,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/segment.h"
-#include "switcher/gst-utils.h"
+#include "segment.h"
+#include "gst-utils.h"
 
 namespace switcher
 {
@@ -159,21 +159,17 @@ namespace switcher
   {
     runtime_ = runtime;
     gst_bin_add (GST_BIN (runtime_->get_pipeline ()),bin_);
-    
+
     //start the shmdata reader
     std::vector<ShmdataReader::ptr> shmreaders = shmdata_readers_.get_values ();
     std::vector<ShmdataReader::ptr>::iterator it;
     for (it = shmreaders.begin (); it != shmreaders.end (); it++)
-      {
       	(*it)->start ();
-      }
 
     //GstUtils::wait_state_changed (runtime_->get_pipeline ());
     GstUtils::sync_state_with_parent (bin_);
     GstUtils::wait_state_changed (bin_);
-
-    
-    g_debug ("Segment::set_runtime (done), %s", gst_element_state_get_name (GST_STATE (bin_)));
+    //g_debug ("Segment::set_runtime (done), %s", gst_element_state_get_name (GST_STATE (bin_)));
   }
   
   GstElement *

@@ -17,7 +17,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/gobject-custom-property.h"
+#include "gobject-custom-property.h"
 
 namespace switcher
 {

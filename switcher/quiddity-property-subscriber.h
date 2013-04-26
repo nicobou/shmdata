@@ -29,7 +29,7 @@
 #include <memory>
 #include <map>
 #include <vector>
-#include "switcher/property.h"
+#include "property.h"
 
 namespace switcher
 {
@@ -40,7 +40,8 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<QuiddityPropertySubscriber> ptr;
-    typedef void (*Callback)(std::string quiddity_name,
+    typedef void (*Callback)(std::string subscriber_name,
+			     std::string quiddity_name,
 			     std::string property_name,
 			     std::string value,
 			     void *user_data);
@@ -48,6 +49,7 @@ namespace switcher
 
     void set_callback (Callback cb);
     void set_user_data (void *user_data);
+    void set_name (const gchar *name);
     bool subscribe (std::shared_ptr <Quiddity> quid, 
 		    std::string property_name);
     bool unsubscribe (std::shared_ptr <Quiddity> quid, 
@@ -61,9 +63,11 @@ namespace switcher
   private:
     Callback user_callback_;
     void *user_data_;
+    std::string name_;
     std::weak_ptr<QuiddityLifeManager> life_manager_;
 
     typedef struct {
+      gchar *name;
       gchar *quiddity_name; 
       gchar *property_name;
       Callback user_callback;

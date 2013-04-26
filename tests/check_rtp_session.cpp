@@ -29,7 +29,8 @@ static bool do_continue;
 static char *user_string = "hello world";
 
 void 
-mon_property_cb(std::string quiddity_name, 
+mon_property_cb(std::string subscriber_name, 
+		std::string quiddity_name, 
 		std::string property_name, 
 		std::string value, 
 		void *user_data)
@@ -108,8 +109,8 @@ main (int argc,
        			"9076",
        			NULL);
     
-    //wait 4 sec for the session being created
-    usleep (4000000); 
+    //wait 6 sec for the session being created
+    usleep (6000000); 
 
     manager->create ("httpsdp", "uri");
     manager->invoke_va ("uri", "set_runtime", "runtime", NULL);

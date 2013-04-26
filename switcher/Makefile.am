@@ -3,6 +3,7 @@ AM_CXXFLAGS = \
     $(GSOAP_CFLAGS) \
     $(GST_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
+    $(LIBLO_CFLAGS) \
     $(SHMDATA_CFLAGS) \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir)/switcher/webservices
@@ -12,6 +13,7 @@ AM_LIBS = \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
     $(JSONGLIB_LIBS) \
+    $(LIBLO_LIBS) \
     $(SHMDATA_LIBS)
 
 lib_LTLIBRARIES = \
@@ -42,6 +44,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     json-builder.cpp \
     logger.cpp \
     method.cpp \
+    osc-ctrl-server.cpp \
     property.cpp \
     pulse-sink.cpp \
     quiddity-command.cpp \
@@ -79,6 +82,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
     $(JSONGLIB_LIBS) \
+    $(LIBLO_LIBS) \
     $(SHMDATA_LIBS) \
     -version-info $(LIBSWITCHER_SO_VERSION)
 
@@ -116,6 +120,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     json-builder.h \
     logger.h \
     method.h \
+    osc-ctrl-server.h \
     property.h \
     pulse-sink.h \
     quiddity-command.h \
@@ -155,9 +160,12 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
 #######       http://stackoverflow.com/questions/6340524/gsoap-linking-error
 
 BUILT_SOURCES = \
-    webservices/soapC.cpp \
-    webservices/soapcontrolProxy.cpp \
-    webservices/soapcontrolService.cpp
+    $(srcdir)/webservices/soapC.cpp \
+    $(srcdir)/webservices/soapcontrolProxy.cpp \
+    $(srcdir)/webservices/soapcontrolService.cpp
+
+EXTRA_DIST = \
+    $(srcdir)/webservices/*
 
 ####### On OSX, gsoap is not installed in /usr (if installed through MacPorts)
 if HAVE_OSX
@@ -166,17 +174,17 @@ else
 gsoap_INCLUDE = /usr/share/gsoap/import/
 endif
 
-webservices/soapC.cpp: ctrl-webservice-definition.h webservices
-	soapcpp2 -I $(gsoap_INCLUDE) -i -d webservices ctrl-webservice-definition.h
+$(srcdir)/webservices/soapC.cpp: $(srcdir)/ctrl-webservice-definition.h 
+	mkdir -p $(srcdir)/webservices
+	soapcpp2 -I $(gsoap_INCLUDE) -i -d $(srcdir)/webservices $(srcdir)/ctrl-webservice-definition.h
 
-webservices/soapcontrolProxy.cpp: ctrl-webservice-definition.h webservices
-	soapcpp2 -I $(gsoap_INCLUDE) -i -d webservices ctrl-webservice-definition.h
+$(srcdir)/webservices/soapcontrolProxy.cpp: $(srcdir)/ctrl-webservice-definition.h 
+	mkdir -p $(srcdir)/webservices
+	soapcpp2 -I $(gsoap_INCLUDE) -i -d $(srcdir)/webservices $(srcdir)/ctrl-webservice-definition.h
 
-webservices/soapcontrolService.cpp: ctrl-webservice-definition.h webservices
-	soapcpp2 -I $(gsoap_INCLUDE) -i  -d webservices ctrl-webservice-definition.h
-
-webservices:
-	mkdir -p webservices
+$(srcdir)/webservices/soapcontrolService.cpp: $(srcdir)/ctrl-webservice-definition.h 
+	mkdir -p $(srcdir)/webservices
+	soapcpp2 -I $(gsoap_INCLUDE) -i  -d $(srcdir)/webservices $(srcdir)/ctrl-webservice-definition.h
 
 ####### end webservice code generation 
 

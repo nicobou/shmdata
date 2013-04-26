@@ -25,7 +25,7 @@
 #include <map>
 #include <string>
 #include <glib-object.h>
-#include "switcher/gobject-custom-property.h"
+#include "gobject-custom-property.h"
 
 namespace switcher
 {

@@ -29,7 +29,7 @@
 #include <string>
 #include <map>
 #include <stdarg.h>
-#include "switcher/json-builder.h"
+#include "json-builder.h"
 
 namespace switcher
 {

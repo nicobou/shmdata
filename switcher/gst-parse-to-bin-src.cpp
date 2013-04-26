@@ -17,8 +17,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/gst-parse-to-bin-src.h"
-#include "switcher/gst-utils.h"
+#include "gst-parse-to-bin-src.h"
+#include "gst-utils.h"
 
 namespace switcher
 {
@@ -34,7 +34,8 @@ namespace switcher
   
   GstParseToBinSrc::~GstParseToBinSrc ()
   {
-    GstUtils::clean_element (gst_parse_to_bin_src_);
+    if (gst_parse_to_bin_src_ != NULL)
+      GstUtils::clean_element (gst_parse_to_bin_src_);
   }
 
   bool 
@@ -42,6 +43,7 @@ namespace switcher
   {
     //using parent bin name
     set_name (gst_element_get_name (bin_));
+    gst_parse_to_bin_src_ = NULL;
 
     //registering methods
     register_method("to_shmdata",

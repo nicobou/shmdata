@@ -28,11 +28,11 @@
 
 
 #include <memory>
-#include "switcher/abstract-factory.h" 
-#include "switcher/string-map.h"
-#include "switcher/quiddity.h" 
-#include "switcher/json-builder.h"
-#include "switcher/quiddity-property-subscriber.h"
+#include "abstract-factory.h" 
+#include "string-map.h"
+#include "quiddity.h" 
+#include "json-builder.h"
+#include "quiddity-property-subscriber.h"
 
 namespace switcher
 {
@@ -89,7 +89,8 @@ namespace switcher
 			      std::string property_name);
     //high level subscriber
     bool make_subscriber (std::string subscriber_name,
-			  void (*callback)(std::string quiddity_name,
+			  void (*callback)(std::string subscriber_name,
+					   std::string quiddity_name,
 					   std::string property_name,
 					   std::string value,
 					   void *user_data),
@@ -117,7 +118,8 @@ namespace switcher
 				  void *user_data);
     bool unsubscribe_property_glib (std::string quiddity_name,
 				    std::string property_name,
-				    Property::Callback cb);
+				    Property::Callback cb, 
+				    void *user_data);//the same as called with subscribe
 
     //**** methods 
     //doc (json formatted)
