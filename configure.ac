@@ -2,7 +2,7 @@ dnl required version of autoconf
 AC_PREREQ([2.53])
 
 dnl TODO: fill in your package name and package version here
-AC_INIT([switcher],[0.1.1])
+AC_INIT([switcher],[0.1.2])
 
 dnl required version of gstreamer and gst-plugins-base
 GST_REQUIRED=0.10.36
@@ -15,6 +15,9 @@ AM_INIT_AUTOMAKE([1.10])
 
 dnl enable mainainer mode by default
 dnl AM_MAINTAINER_MODE([enable])
+
+dnl sets host_* variables
+AC_CANONICAL_HOST
 
 # Define these substitions here to keep all version information in one place.
 # For information on how to properly maintain the library version information,
@@ -47,6 +50,53 @@ AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ], [
   AC_MSG_ERROR([You need to have pkg-config installed or set the PATH.])
 ])
 
+case "$host" in *-darwin* | *-macos10*)
+  LIBTOOL="glibtool"
+  CXXFLAGS+=" -D__Darwin -stdlib=libc++"
+  CXX="clang++"
+  LDFLAGS+=" -undefined dynamic_lookup -Wl,-headerpad_max_install_names"
+  if test -d /opt/local ; then
+    CXXFLAGS+=" -I/usr/local/include -I/opt/local/include"
+    #LDFLAGS+=" -L/usr/local/lib -L/opt/local/lib"
+  elif test -d /sw ; then
+    CXXFLAGS+=" -I/sw/include"
+    #LDFLAGS+=" -L/sw/lib"
+  fi
+  
+  AM_CONDITIONAL([HAVE_OSX], true)
+  AC_DEFINE(HAVE_OSX,[1],[Apple Mac OS X operating system detected])
+  
+  # OSX does not include /usr/local/lib/pkgconfig path, so we export it here
+  # (for everyone, just in case)
+  PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
+  export PKG_CONFIG_PATH
+  
+  LDFLAGS+=" -fPIC -L/usr/local/lib -L/usr/local/lib64"
+  ;;
+*)
+  AM_CONDITIONAL([HAVE_OSX], false)
+  AC_DEFINE(HAVE_OSX,[0],[Apple Mac OS X operating system not detected])
+  ;;
+esac
+
+# -- testing GStreamer SDK, if found, then building against --
+AM_CONDITIONAL(HAVE_GST_SDK, false)
+ # linux
+ AC_CHECK_FILE([/opt/gstreamer-sdk/lib/pkgconfig/gstreamer-0.10.pc], 
+                [AC_MSG_WARN([building against Linux GStreamer SDK.]) 
+                 AM_CONDITIONAL(HAVE_GST_SDK, true)
+                 PKG_CONFIG_PATH=/opt/gstreamer-sdk/lib/pkgconfig:$PKG_CONFIG_PATH
+                 export PKG_CONFIG_PATH],
+                [AC_MSG_WARN([Linux GStreamer SDK not found])])
+
+ # osx
+AC_CHECK_FILE([/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig], 
+              [AC_MSG_WARN([building against OSX GStreamer SDK.]) 
+               AM_CONDITIONAL(HAVE_GST_SDK, true)
+               PKG_CONFIG_PATH=/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig:$PKG_CONFIG_PATH
+               export PKG_CONFIG_PATH],
+              [AC_MSG_WARN([OSX GStreamer SDK not found])])
+
 dnl =======================================================================
 dnl Check for the required version of GStreamer core (and gst-plugins-base)
 dnl
@@ -58,6 +108,7 @@ PKG_CHECK_MODULES(GST, [
     gstreamer-0.10              >= $GST_REQUIRED
     gstreamer-base-0.10         >= $GST_REQUIRED
     gstreamer-controller-0.10   >= $GST_REQUIRED
+    gstreamer-sdp-0.10          >= $GST_REQUIRED
   ], [
     AC_SUBST(GST_CFLAGS)
     AC_SUBST(GST_LIBS)
@@ -68,6 +119,7 @@ PKG_CHECK_MODULES(GST, [
       gstreamer-0.10              >= $GST_REQUIRED
       gstreamer-base-0.10         >= $GST_REQUIRED
       gstreamer-controller-0.10   >= $GST_REQUIRED
+      gstreamer-sdp-0.10          >= $GST_REQUIRED
 
     Please make sure you have the necessary GStreamer-0.10
     development headers installed.
@@ -80,6 +132,44 @@ PKG_CHECK_MODULES(GST, [
   ])
 ])
 
+PKG_CHECK_MODULES(GLIB, glib-2.0, have_glib=true, have_glib=false)
+if test "x${have_glib}" = "xfalse" ; then
+    AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
+fi
+
+
+PKG_CHECK_MODULES(SHMDATA, shmdata-0.8, have_shmdata=true, have_shmdata=false)
+if test "x${have_shmdata}" = "xfalse" ; then
+    AC_MSG_ERROR([Missing libshmdata-0.8-dev])
+fi
+
+PKG_CHECK_MODULES(GSOAP, gsoap++, have_gsoap=true, have_gsoap=false)
+if test "x${have_gsoap}" = "xfalse" ; then
+    AC_MSG_ERROR([Missing gsoap package])
+fi
+
+PKG_CHECK_MODULES(LIBLO, liblo, have_liblo=true, have_liblo=false)
+if test "x${have_liblo}" = "xfalse" ; then
+    AC_MSG_ERROR([Missing liblo-dev package])
+fi
+
+PKG_CHECK_MODULES(JSONGLIB, json-glib-1.0, have_jsonglib=true, have_jsonglib=false)
+if test "x${have_jsonglib}" = "xfalse" ; then
+    AC_MSG_ERROR([Missing libjson-glib-dev package])
+fi
+
+AC_MSG_CHECKING([to see if compiler understands -std=c++0x])
+save_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CFLAGS $CXXFLAGS -std=c++0x"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  CXXFLAGS="$CFLAGS $CXXFLAGS -std=c++0x"
+  AC_MSG_RESULT([yes])
+], [
+  AC_MSG_RESULT([no])
+  AC_MSG_ERROR([compiler does not understand -std=c++0x])
+])
+
+
 dnl check if compiler understands -Wall (if yes, add -Wall to GST_CFLAGS)
 AC_MSG_CHECKING([to see if compiler understands -Wall])
 save_CFLAGS="$CFLAGS"
@@ -90,15 +180,25 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
 ], [
   AC_MSG_RESULT([no])
 ])
-                                                                                
+                                          
+AC_CHECK_PROGS([DOXYGEN], [doxygen])
+if test -z "$DOXYGEN";
+    then AC_MSG_WARN([Doxygen not found - continuing without Doxygen support])
+fi
+
+AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])
+                                      
 dnl =======================================================================
 dnl Finally, create Makefiles in all directories
 dnl =======================================================================
 
 AC_CONFIG_FILES([
 Makefile
-libswitcher/Makefile
+doxyfile
+src/Makefile
+switcher-${LIBSWITCHER_API_VERSION}.pc:switcher.pc.in
 switcher/Makefile
+tests/Makefile
 ])
 AC_OUTPUT
 

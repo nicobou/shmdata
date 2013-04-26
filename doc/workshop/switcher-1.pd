@@ -1,0 +1,37 @@
+#N canvas 852 178 894 718 10;
+#X floatatom 59 88 5 0 0 0 - - -;
+#X floatatom 166 93 5 0 0 0 - - -;
+#X obj 166 112 osc~ 302;
+#X obj 59 109 osc~ 299;
+#X text 53 28 write multichannel audio to a shmdata. Here the shmdata
+name is "testshm". The actual shmdata socket path is /tmp/pd_testshm.
+("/tmp/pd_" is used as prefix);
+#X text 53 12 SHMSINK~;
+#X text 163 178 number of channels;
+#X text 132 167 |;
+#X text 164 167 |;
+#X text 64 177 shmdata name;
+#X text 435 70 This makes your audio available for shmdata enabled
+softwares \, like switcher. (http://code.sat.qc.ca/redmine/projects/libshmdata)
+(http://code.sat.qc.ca/redmine/projects/switcher) In order to hear
+your multichannel audio in pulse (linux) \, type the following in a
+terminal:;
+#X msg 659 272 \; pd dsp 1;
+#X obj 60 150 shmsink~ testshm 2;
+#X obj 659 247 loadbang;
+#X text 436 164 gst-launch -v shmsrc is-live=true socket-path=/tmp/pd_testshm
+! gdpdepay ! decodebin2 ! pulsesink sync=false;
+#X obj 120 577 OSCtx;
+#X msg 127 452 connect localhost 7770;
+#X msg 276 492 /create pulsesink audio_out;
+#X msg 289 516 /invoke audio_out connect /tmp/pd_testshm;
+#X msg 306 552 /remove audio_out;
+#X connect 0 0 3 0;
+#X connect 1 0 2 0;
+#X connect 2 0 12 1;
+#X connect 3 0 12 0;
+#X connect 13 0 11 0;
+#X connect 16 0 15 0;
+#X connect 17 0 15 0;
+#X connect 18 0 15 0;
+#X connect 19 0 15 0;

@@ -1,0 +1,54 @@
+::
+                _ _       _
+   _____      _(_) |_ ___| |__   ___ _ __
+  / __\ \ /\ / / | __/ __| '_ \ / _ \ '__|
+  \__ \\ V  V /| | || (__| | | |  __/ |
+  |___/ \_/\_/ |_|\__\___|_| |_|\___|_|
+
+Switcher
+========
+Switcher for audio, video, data and network streams.
+
+Switcher is the successor of Scenic's milhouse utility. It provides basic video signal routing, switching and mixing features. It was created at the Society for Arts and Technology (SAT) to give to artists a powerful tool for telepresence in contexts of live arts and new media installations.
+
+License
+-------
+Switcher is released under the terms of the GNU GPL v3 or above.
+
+Project URL
+-----------
+http://code.sat.qc.ca/redmine/projects/switcher
+
+Author
+------
+* Nicolas Bouillot
+
+Contributors
+------------
+* Alexandre Quessy (gsoap packaging)
+* Emmanuel Durand (bug fix & OSX packaging)
+
+See also
+--------
+* shmdata: http://code.sat.qc.ca/redmine/projects/libshmdata
+* scenic: http://code.sat.qc.ca/redmine/projects/scenic
+
+Sponsors
+--------
+This project is made possible thanks to the Society for Arts and Technologies. (SAT) http://www.sat.qc.ca/
+Thanks to the Ministère du Développement économique, de l'Innovation et de l'Exportation du Québec (MDEIE).
+
+Quick build and installation (Ubuntu LTS 12.04 Precise)
+-------------------------------------------------------
+First, make sure you have shmdata installed.
+
+Once you have it, here is how to build and install switcher::
+
+  $ sudo apt-get install automake bison build-essential flex libtool
+  $ sudo apt-get install libglib2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libjson-glib-dev liblo-dev
+  $ ./autogen.sh
+  $ ./configure
+  $ make
+  $ sudo make install
+  $ sudo ldconfig
+
