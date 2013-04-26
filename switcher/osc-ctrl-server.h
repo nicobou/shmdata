@@ -21,9 +21,9 @@
 #ifndef __SWITCHER_OSC_CTRL_SERVER_H__
 #define __SWITCHER_OSC_CTRL_SERVER_H__
 
-#include "switcher/quiddity-manager-wrapper.h"
+#include "quiddity-manager-wrapper.h"
 #include "lo/lo.h"
-#include "switcher/string-map.h"
+#include "string-map.h"
 #include <memory>
 
 namespace switcher

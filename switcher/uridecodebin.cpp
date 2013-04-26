@@ -17,8 +17,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/uridecodebin.h"
-#include "switcher/gst-utils.h"
+#include "uridecodebin.h"
+#include "gst-utils.h"
 #include <glib/gprintf.h>
 #include <memory>
 

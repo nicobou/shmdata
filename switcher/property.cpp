@@ -21,7 +21,7 @@
  * The Param class
  */
 
-#include "switcher/property.h"
+#include "property.h"
 
 namespace switcher
 {

@@ -17,8 +17,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/h264.h"
-#include "switcher/gst-utils.h"
+#include "h264.h"
+#include "gst-utils.h"
 
 namespace switcher
 {

@@ -23,8 +23,8 @@
 
 #include <gst/gst.h>
 #include <memory>
-#include "switcher/segment.h"
-#include "switcher/custom-property-helper.h"
+#include "segment.h"
+#include "custom-property-helper.h"
  
 namespace switcher
 {

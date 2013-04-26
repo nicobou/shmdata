@@ -17,10 +17,10 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/soap-ctrl-server.h"
+#include "soap-ctrl-server.h"
 #include <ctime>    // For time()
 #include <cstdlib>  // For srand() and rand()
-#include "switcher/webservices/control.nsmap"
+#include "webservices/control.nsmap"
 
 namespace switcher
 {

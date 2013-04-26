@@ -24,7 +24,7 @@
 #include <vector>
 #include <gst/gst.h>
 #include <memory>
-#include <switcher/string-map.h>
+#include "string-map.h"
 
 namespace switcher
 {

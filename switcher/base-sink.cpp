@@ -17,7 +17,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/base-sink.h"
+#include "base-sink.h"
 #include <utility>
 
 namespace switcher

@@ -30,11 +30,11 @@
 #include <memory>
 #include <map>
 #include <gst/gst.h>
-#include "switcher/property.h"
-#include "switcher/method.h"
-#include "switcher/quiddity-documentation.h"
-#include "switcher/quiddity-life-manager.h"
-#include "switcher/json-builder.h"
+#include "property.h"
+#include "method.h"
+#include "quiddity-documentation.h"
+#include "quiddity-life-manager.h"
+#include "json-builder.h"
 
 namespace switcher
 {

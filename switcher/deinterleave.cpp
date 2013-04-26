@@ -17,9 +17,9 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/deinterleave.h"
-#include "switcher/gst-element-cleaner.h"
-#include "switcher/gst-utils.h"
+#include "deinterleave.h"
+#include "gst-element-cleaner.h"
+#include "gst-utils.h"
 #include <glib/gprintf.h>
 
 namespace switcher

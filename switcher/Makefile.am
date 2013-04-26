@@ -162,10 +162,8 @@ BUILT_SOURCES = \
     $(srcdir)/webservices/soapcontrolProxy.cpp \
     $(srcdir)/webservices/soapcontrolService.cpp
 
-# EXTRA_DIST = \
-#     webservices/soapC.cpp \
-#     webservices/soapcontrolProxy.cpp \
-#     webservices/soapcontrolService.cpp
+EXTRA_DIST = \
+    $(srcdir)/webservices/*
 
 ####### On OSX, gsoap is not installed in /usr (if installed through MacPorts)
 if HAVE_OSX

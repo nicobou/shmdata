@@ -21,8 +21,8 @@
 #ifndef __SWITCHER_VIDEO_SOURCE_H__
 #define __SWITCHER_VIDEO_SOURCE_H__
 
-#include "switcher/base-source.h"
-#include "switcher/gst-element-cleaner.h"
+#include "base-source.h"
+#include "gst-element-cleaner.h"
 #include <memory>
 
 namespace switcher

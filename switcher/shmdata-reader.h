@@ -25,8 +25,8 @@
 #include <string>
 #include <vector>
 #include <shmdata/base-reader.h>
-#include <switcher/gst-element-cleaner.h>
-#include "switcher/json-builder.h"
+#include "gst-element-cleaner.h"
+#include "json-builder.h"
 
 namespace switcher
 {

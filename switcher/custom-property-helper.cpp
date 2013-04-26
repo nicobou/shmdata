@@ -17,7 +17,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/custom-property-helper.h"
+#include "custom-property-helper.h"
 
 namespace switcher
 {

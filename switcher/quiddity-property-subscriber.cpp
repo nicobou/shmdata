@@ -21,9 +21,9 @@
  * The Quiddity property subscriber
  */
 
-#include "switcher/quiddity-property-subscriber.h"
-#include "switcher/quiddity.h" 
-#include "switcher/quiddity-life-manager.h"
+#include "quiddity-property-subscriber.h"
+#include "quiddity.h" 
+#include "quiddity-life-manager.h"
 
 namespace switcher
 {

@@ -21,8 +21,8 @@
 #ifndef __SWITCHER_H264_H__
 #define __SWITCHER_H264_H__
 
-#include "switcher/video-sink.h"
-#include "switcher/gst-element-cleaner.h"
+#include "video-sink.h"
+#include "gst-element-cleaner.h"
 #include <gst/gst.h>
 #include <memory>
 

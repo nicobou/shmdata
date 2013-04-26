@@ -17,9 +17,9 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/file-sdp.h"
+#include "file-sdp.h"
 #include <glib/gprintf.h>
-#include "switcher/gst-utils.h"
+#include "gst-utils.h"
 
 namespace switcher
 {

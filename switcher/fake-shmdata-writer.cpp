@@ -17,8 +17,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/fake-shmdata-writer.h"
-#include "switcher/gst-utils.h"
+#include "fake-shmdata-writer.h"
+#include "gst-utils.h"
 
 namespace switcher
 {

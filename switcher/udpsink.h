@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_UDPSINK_H__
 #define __SWITCHER_UDPSINK_H__
 
-#include "switcher/base-sink.h"
+#include "base-sink.h"
 #include <gst/gst.h>
 #include <memory>
 

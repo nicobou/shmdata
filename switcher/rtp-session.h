@@ -24,10 +24,10 @@
 #include <gst/gst.h>
 #include <gst/sdp/gstsdpmessage.h>
 #include <memory>
-#include "switcher/segment.h"
-#include "switcher/quiddity-manager.h"
-#include "switcher/rtp-destination.h"
-#include "switcher/custom-property-helper.h"
+#include "segment.h"
+#include "quiddity-manager.h"
+#include "rtp-destination.h"
+#include "custom-property-helper.h"
  
 namespace switcher
 {
