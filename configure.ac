@@ -138,9 +138,9 @@ if test "x${have_glib}" = "xfalse" ; then
 fi
 
 
-PKG_CHECK_MODULES(SHMDATA, shmdata-0.6, have_shmdata=true, have_shmdata=false)
+PKG_CHECK_MODULES(SHMDATA, shmdata-0.8, have_shmdata=true, have_shmdata=false)
 if test "x${have_shmdata}" = "xfalse" ; then
-    AC_MSG_ERROR([Missing libshmdata-0.6-dev])
+    AC_MSG_ERROR([Missing libshmdata-0.8-dev])
 fi
 
 PKG_CHECK_MODULES(GSOAP, gsoap++, have_gsoap=true, have_gsoap=false)
