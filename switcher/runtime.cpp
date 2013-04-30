@@ -298,6 +298,13 @@ res = gst_element_query (pipeline_, query);
 	gst_message_parse_error (msg, &error, &debug);
 	g_free (debug);
 	g_debug ("Runtime::bus_sync_handler Error: %s from %s", error->message, GST_MESSAGE_SRC_NAME(msg));
+	
+	gchar *quid_name = (gchar *) g_object_get_data (G_OBJECT (msg->src), "quiddity_name");
+	if (quid_name != NULL)
+	  {
+	    g_debug ("please remove me (%s)", quid_name);
+	  }
+
 	//GstUtils::clean_element (GST_ELEMENT (GST_MESSAGE_SRC (msg)));
 	g_error_free (error);
 	return GST_BUS_DROP; 
