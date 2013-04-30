@@ -28,11 +28,11 @@
 
 
 #include <memory>
-#include "switcher/abstract-factory.h" 
-#include "switcher/string-map.h"
-#include "switcher/quiddity.h" 
-#include "switcher/json-builder.h"
-#include "switcher/quiddity-property-subscriber.h"
+#include "abstract-factory.h" 
+#include "string-map.h"
+#include "quiddity.h" 
+#include "json-builder.h"
+#include "quiddity-property-subscriber.h"
 
 namespace switcher
 {

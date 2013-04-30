@@ -17,9 +17,9 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/audio-test-source.h"
+#include "audio-test-source.h"
 #include <gst/gst.h>
-#include "switcher/gst-utils.h"
+#include "gst-utils.h"
 namespace switcher
 {
 
@@ -34,7 +34,7 @@ namespace switcher
 
     g_object_set (G_OBJECT (audiotestsrc_),
 		  "is-live", TRUE,
-		  "samplesperbuffer",64,
+		  "samplesperbuffer",512,
 		  NULL);
 
 

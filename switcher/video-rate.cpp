@@ -17,8 +17,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/video-rate.h"
-#include "switcher/gst-utils.h"
+#include "video-rate.h"
+#include "gst-utils.h"
 
 namespace switcher
 {

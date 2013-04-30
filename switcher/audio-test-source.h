@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_AUDIO_TEST_SOURCE_H__
 #define __SWITCHER_AUDIO_TEST_SOURCE_H__
 
-#include "switcher/audio-source.h"
+#include "audio-source.h"
 #include <memory>
 
 namespace switcher

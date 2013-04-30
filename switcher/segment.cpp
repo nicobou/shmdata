@@ -17,8 +17,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/segment.h"
-#include "switcher/gst-utils.h"
+#include "segment.h"
+#include "gst-utils.h"
 
 namespace switcher
 {

@@ -17,7 +17,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/osc-ctrl-server.h"
+#include "osc-ctrl-server.h"
 #include <ctime>    // For time()
 #include <cstdlib>  // For srand() and rand()
 
@@ -67,10 +67,7 @@ namespace switcher
     OscCtrlServer *context = static_cast<OscCtrlServer*>(user_data);
     
     if (!context->osc_subscribers_.contains (internal_subscriber_name))
-      {
-	g_warning ("OscCtrlServer::prop_cb with unknow subscriber name");
 	return;
-      }
     
     std::pair <std::string, std::string> address = context->osc_subscribers_.lookup (internal_subscriber_name);
 
@@ -117,7 +114,21 @@ namespace switcher
     g_strfreev(split);
     return res;
   }
-  
+
+
+  //floor
+  gchar *
+  OscCtrlServer::string_float_to_string_int (const gchar *string_float)
+  {
+    gchar *res;
+    gchar **split= g_strsplit (string_float,
+			       ".",
+			       2);
+    res = g_strdup (split[0]);
+    g_strfreev(split);
+    return res;
+  }
+
   gboolean
   OscCtrlServer::set_port_wrapped (gpointer port, gpointer user_data)
   {
@@ -222,7 +233,7 @@ namespace switcher
     //invoke 
     if (g_str_has_prefix (path, "/i") || g_str_has_prefix (path, "/I"))
       {
-	if (argc > 2)
+	if (argc >= 2)
 	  {
 	    gchar *quid_name = string_from_osc_arg (types[0], argv[0]);
 	    gchar *method_name = string_from_osc_arg (types[1], argv[1]);
@@ -251,28 +262,32 @@ namespace switcher
 	    gchar *subscriber_name = string_from_osc_arg (types[0], argv[0]);
 	    gchar *host = string_from_osc_arg (types[1], argv[1]);
 	    gchar *port = string_from_osc_arg (types[2], argv[2]);
+	    gchar *port_int = string_float_to_string_int (port);	    
 	    gchar *internal_subscriber_name = context->make_internal_subscriber_name (subscriber_name);
 	    if (context->osc_subscribers_.contains (internal_subscriber_name))
 	      {
 		g_warning ("OscCtrlServer: a subscriber named %s is already registered", subscriber_name);
 		return 0;
 	      }
-	    if (host == NULL || port == NULL)
+	    if (host == NULL || port_int == NULL)
 	      {
 		g_warning ("OscCtrlServer: issue with host name or port");
 		return 0;
 	      }
 	    context->osc_subscribers_.insert (internal_subscriber_name, 
-					      std::make_pair (host, port));
+					      std::make_pair (host, port_int));
 	    if (!manager->make_subscriber (internal_subscriber_name,
 					   OscCtrlServer::prop_cb,
 					   context))
 	      return 0;
 
+	    g_debug ("subscriber %s, %s, %s", subscriber_name, host, port_int);
+
 	    g_free (internal_subscriber_name); 
 	    g_free (subscriber_name); 
 	    g_free (host); 
 	    g_free (port); 
+	    g_free (port_int);
 	  }
 	else
 	  g_warning ("OSCctl: add subscriber needs 3 args (name, host, port)");
@@ -382,15 +397,23 @@ namespace switcher
   OscCtrlServer::string_from_osc_arg (char type, lo_arg *data)
   {
     //lo_arg_host_endian ((lo_type) type, data);
-    char *res;// = g_strdup_printf ("videotestsrc");
+    gchar *res;// = g_strdup_printf ("videotestsrc");
 
+    gchar *tmp; 
      switch (type) {
      case LO_INT32:
        res = g_strdup_printf ("%d", data->i);
        break;
        
      case LO_FLOAT:
- 	res = g_strdup_printf ("%f", data->f);
+ 	tmp = g_strdup_printf ("%f", data->f);
+	if (g_str_has_suffix (tmp, ".000000")) // for pd
+	  {
+	    res = string_float_to_string_int (tmp);
+	    g_free (tmp);
+	  }
+	else
+	  res = tmp;
  	break;
 
      case LO_STRING:
@@ -410,7 +433,14 @@ namespace switcher
  	break;
     
      case LO_DOUBLE:
- 	res = g_strdup_printf ("%f", data->f);
+ 	tmp = g_strdup_printf ("%f", data->f);
+	if (g_str_has_suffix (tmp, ".000000")) // for pd
+	  {
+	    res = string_float_to_string_int (tmp);
+	    g_free (tmp);
+	  }
+	else
+	  res = tmp;
  	break;
     
      case LO_SYMBOL:

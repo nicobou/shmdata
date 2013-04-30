@@ -17,8 +17,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/aravis-genicam.h"
-#include "switcher/gst-utils.h"
+#include "aravis-genicam.h"
+#include "gst-utils.h"
 
 namespace switcher
 {

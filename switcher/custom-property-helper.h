@@ -21,8 +21,8 @@
 #define __SWITCHER_CUSTOM_PROPERTY_HELPER_H__
 
 #include <memory>
-#include "switcher/gobject-wrapper.h"
-#include "switcher/string-map.h"
+#include "gobject-wrapper.h"
+#include "string-map.h"
 
 namespace switcher
 {

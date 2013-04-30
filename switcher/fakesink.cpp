@@ -17,8 +17,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/fakesink.h"
-#include "switcher/gst-utils.h"
+#include "fakesink.h"
+#include "gst-utils.h"
 
 namespace switcher
 {

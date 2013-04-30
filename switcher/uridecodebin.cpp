@@ -17,8 +17,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/uridecodebin.h"
-#include "switcher/gst-utils.h"
+#include "uridecodebin.h"
+#include "gst-utils.h"
 #include <glib/gprintf.h>
 #include <memory>
 
@@ -96,8 +96,9 @@ namespace switcher
 
     g_object_set (G_OBJECT (uridecodebin_),  
        		  // "ring-buffer-max-size",(guint64)200000000, 
-       		  // "download",TRUE, 
-		  // "use-buffering",TRUE, 
+		  //"download",TRUE, 
+		  //"use-buffering",TRUE, 
+		  //"ring-buffer-max-size", 4294967295,
        		  "expose-all-streams", TRUE,
        		  "async-handling",TRUE, 
        		  //"buffer-duration",9223372036854775807, 

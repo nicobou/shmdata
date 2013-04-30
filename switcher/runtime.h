@@ -25,7 +25,7 @@
 #define __SWITCHER_RUNTIME_H__
 
 #include <gst/gst.h>
-#include "switcher/quiddity.h"
+#include "quiddity.h"
 #include <memory>
 
 namespace switcher

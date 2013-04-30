@@ -17,7 +17,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "switcher/base-source.h"
+#include "base-source.h"
 
 namespace switcher
 {
