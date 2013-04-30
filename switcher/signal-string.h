@@ -38,7 +38,8 @@ namespace switcher
     typedef std::vector<std::pair<std::string,std::string> > args_doc;
 
     Signal (); 
-    
+    ~Signal ();
+
     bool set_gobject_signame (GObject *object, 
 			      std::string gobject_signal_name);
 
@@ -64,6 +65,11 @@ namespace switcher
     gboolean is_action_;
     JSONBuilder::ptr json_description_; 
     void inspect_gobject_signal (); 
+    gulong hook_id_;
+    static gboolean on_signal_emitted (GSignalInvocationHint *ihint,
+				       guint n_param_values,
+				       const GValue *param_values,
+				       gpointer user_data);
   }; 
   
 }  // end of namespace 

@@ -31,6 +31,11 @@ namespace switcher
     json_description_.reset (new JSONBuilder());
   }
 
+  Signal::~Signal ()
+  {
+    g_signal_remove_emission_hook (id_, hook_id_);
+  }
+
   bool
   Signal::set_gobject_signame (GObject *object, 
 			       std::string gobject_signal_name)
@@ -52,6 +57,8 @@ namespace switcher
     object_ = object;
     id_ = id;
     inspect_gobject_signal ();
+    //HERE !
+    hook_id_ = g_signal_add_emission_hook (id_, 0, on_signal_emitted, this, NULL);
     return true;
   }
    
@@ -229,6 +236,16 @@ namespace switcher
     return res;
   }
   
-
+  gboolean
+  Signal::on_signal_emitted (GSignalInvocationHint *ihint,
+			     guint n_param_values,
+			     const GValue *param_values,
+			     gpointer user_data)
+  {
+    GObject *object = (GObject *)g_value_peek_pointer (&param_values[0]);
+    g_print ("n_value %d, object type %s \n", n_param_values, G_OBJECT_TYPE_NAME (object));
+    return TRUE; //keep the hook alive
+  }
+  
 }
 
