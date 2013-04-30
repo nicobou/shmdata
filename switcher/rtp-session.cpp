@@ -72,7 +72,7 @@ namespace switcher
     next_id_ = 79; //this value is arbitrary and can be changed
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
 
-    //FIXME remove the following test
+    //FIXME remove the following tests
     register_signal_gobject ("on-bye-ssrc",
 			     G_OBJECT (rtpsession_), 
 			     "on-bye-ssrc");
@@ -90,7 +90,7 @@ namespace switcher
     set_signal_description ("on-pad-added",
 			    "a pad has been added",
 			    Signal::make_arg_description("pad",
-							 "the poitner to the pad",
+							 "the pointer to the pad",
 							 NULL));
 
     g_signal_connect (G_OBJECT (rtpsession_), "on-bye-ssrc", 

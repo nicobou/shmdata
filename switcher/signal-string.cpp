@@ -167,6 +167,7 @@ namespace switcher
       json_description_->add_string_member ("type", "action");
     else
       json_description_->add_string_member ("type", "signal");
+    json_description_->add_string_member ("return type",g_type_name (return_type_));
     json_description_->set_member_name ("arguments");
     json_description_->begin_array ();
     std::vector<std::pair<std::string,std::string> >::iterator it;
