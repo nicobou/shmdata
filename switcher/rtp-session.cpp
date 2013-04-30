@@ -73,9 +73,25 @@ namespace switcher
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
 
     //FIXME remove the following test
-    register_signal (G_OBJECT (rtpsession_), 
-		     "on-bye-ssrc",
-		     "on-bye-ssrc" );
+    register_signal_gobject ("on-bye-ssrc",
+			     G_OBJECT (rtpsession_), 
+			     "on-bye-ssrc");
+    set_signal_description ("on-bye-ssrc",
+			    "a source is leaving",
+			    Signal::make_arg_description("session",
+							 "session id",
+							 "ssrc",
+							 "the source id",
+							 NULL));
+
+    register_signal_gobject ("on-pad-added",
+			     G_OBJECT (rtpsession_), 
+			     "pad-added");
+    set_signal_description ("on-pad-added",
+			    "a pad has been added",
+			    Signal::make_arg_description("pad",
+							 "the poitner to the pad",
+							 NULL));
 
     g_signal_connect (G_OBJECT (rtpsession_), "on-bye-ssrc", 
 		      (GCallback) on_bye_ssrc, (gpointer) this);

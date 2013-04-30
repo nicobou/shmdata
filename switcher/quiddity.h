@@ -123,11 +123,17 @@ namespace switcher
 				 const Method::args_doc arg_description);
 
     //signal
-    bool register_signal (GObject *object, 
-			  std::string gobject_signal_name, 
-			  std::string name_to_give);
+    bool register_signal_gobject (std::string signal_name, //the name to give
+				  GObject *object, 
+				  std::string gobject_signal_name);//the internal gobject signal name
 
-    //use a consistent naming for shmdatas FIXME move that to segment
+    bool set_signal_description (const std::string signal_name,
+				 const std::string short_description,
+				 const Signal::args_doc arg_description);
+    
+
+
+    //use a consistent naming for shmdatas FIXME move that to segment (or not?) 
     std::string make_file_name (std::string suffix);
 
     //used in order to dynamically create other quiddity, weak_ptr is used in order to 
