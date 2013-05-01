@@ -39,7 +39,7 @@ namespace switcher
     set_name (gst_element_get_name (pipeline_));
     GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_)); 
     gst_bus_add_watch (bus, bus_called, NULL);
-    gst_bus_set_sync_handler (bus, bus_sync_handler, NULL);  
+    gst_bus_set_sync_handler (bus, bus_sync_handler, this);  
     gst_object_unref (bus); 
     
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
@@ -269,6 +269,20 @@ res = gst_element_query (pipeline_, query);
     return true;
   }
 
+  gboolean
+  Runtime::remove_quid (gpointer user_data)
+  {
+    QuidRemoveArgs *context = static_cast<QuidRemoveArgs *>(user_data);
+    g_debug ("removing %s", context->name);
+    QuiddityLifeManager::ptr manager = context->self->life_manager_.lock ();
+    if ((bool) manager)
+	manager->remove (context->name);
+    else
+      g_warning ("Runtime::bus_sync_handler, life manager cannot be locked for quiddity removing");
+
+    delete context;
+    return FALSE; //do not remove again
+  }  
 
   GstElement * 
   Runtime::get_pipeline ()
@@ -282,6 +296,7 @@ res = gst_element_query (pipeline_, query);
   {
     shmdata_base_reader_t *reader = (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), 
 										 "shmdata_base_reader");
+    Runtime *context = static_cast<Runtime *>(user_data);
     if ( reader != NULL)
       {
 	if ( shmdata_base_reader_process_error (reader, msg)) 
@@ -298,6 +313,16 @@ res = gst_element_query (pipeline_, query);
 	gst_message_parse_error (msg, &error, &debug);
 	g_free (debug);
 	g_debug ("Runtime::bus_sync_handler Error: %s from %s", error->message, GST_MESSAGE_SRC_NAME(msg));
+	
+	gchar *quid_name = (gchar *) g_object_get_data (G_OBJECT (msg->src), "quiddity_name");
+	if (quid_name != NULL)
+	  {
+	    QuidRemoveArgs *args = new QuidRemoveArgs ();
+	    args->self = context;
+	    args->name = quid_name;
+	    g_idle_add ((GSourceFunc) remove_quid,   
+			(gpointer)args);   
+	  }
 	//GstUtils::clean_element (GST_ELEMENT (GST_MESSAGE_SRC (msg)));
 	g_error_free (error);
 	return GST_BUS_DROP; 

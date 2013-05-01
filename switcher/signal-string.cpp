@@ -18,10 +18,12 @@
  */
 
 /**
- * The Param class
+ * The Signal class that wraps gobject signals and add some documentation to it
  */
 
 #include "switcher/signal-string.h"
+#include "gst-utils.h"
+#include <algorithm>
 
 namespace switcher
 {
@@ -29,10 +31,17 @@ namespace switcher
   Signal::Signal ()
   {
     json_description_.reset (new JSONBuilder());
+    hook_id_ = 0;
+  }
+
+  Signal::~Signal ()
+  {
+    g_signal_remove_emission_hook (id_, hook_id_);
   }
 
   bool
-  Signal::set_gobject_signame (GObject *object, std::string signame)
+  Signal::set_gobject_signame (GObject *object, 
+			       std::string gobject_signal_name)
   {
     if (!G_IS_OBJECT (object))
       {
@@ -40,17 +49,19 @@ namespace switcher
 	return false;
       }
      
-    guint id = g_signal_lookup (signame.c_str (), 
+    guint id = g_signal_lookup (gobject_signal_name.c_str (), 
 				G_TYPE_FROM_CLASS (G_OBJECT_CLASS_TYPE(object)));
     if (id == 0)
       {
 	g_debug ("Signal: object does not have a signal named %s", 
-		 signame.c_str ());
+		 gobject_signal_name.c_str ());
 	return false;
       }
     object_ = object;
     id_ = id;
-    make_description ();
+    inspect_gobject_signal ();
+    //HERE !
+    hook_id_ = g_signal_add_emission_hook (id_, 0, on_signal_emitted, this, NULL);
     return true;
   }
    
@@ -68,7 +79,7 @@ namespace switcher
 
   //make json formated description 
   void
-  Signal::make_description ()
+  Signal::inspect_gobject_signal ()
   {
     /* Signals/Actions Block */
     guint *signals;
@@ -77,8 +88,7 @@ namespace switcher
     GSignalQuery *query = NULL;
     GType type;
     GSList *found_signals, *l;
-    
-    
+   
     // for (type = G_OBJECT_TYPE (element); type; type = g_type_parent (type)) {
     //   if (type == GST_TYPE_ELEMENT || type == GST_TYPE_OBJECT)
     // 	break;
@@ -94,9 +104,9 @@ namespace switcher
     // if ((k == 0 && !(query->signal_flags & G_SIGNAL_ACTION)) ||
     // 	(k == 1 && (query->signal_flags & G_SIGNAL_ACTION)))
     if (query->signal_flags & G_SIGNAL_ACTION)
-      g_print ("-action-\n");
+      is_action_ = TRUE;
     else
-      g_print ("-signal-\n");
+      is_action_ = FALSE;
     found_signals = g_slist_append (found_signals, query);
     // else
     //   g_free (query);
@@ -126,24 +136,26 @@ namespace switcher
       // indent = g_new0 (gchar, indent_len + 1);
       // memset (indent, ' ', indent_len);
        
-      g_print ("  \"%s\" :  %s user_function (%s* object",
-	       query->signal_name,
-	       g_type_name (query->return_type), g_type_name (type));
-       
+       // g_print ("  \"%s\" :  %s user_function (%s* object",
+       // 	       query->signal_name,
+       // 	       g_type_name (query->return_type), g_type_name (type));
+      return_type_ = query->return_type;
+
       for (j = 0; j < query->n_params; j++) {
-	if (G_TYPE_IS_FUNDAMENTAL (query->param_types[j])) {
-	  g_print (",\n%s arg%d",
-		   g_type_name (query->param_types[j]), j);
-	} else if (G_TYPE_IS_ENUM (query->param_types[j])) {
-	  g_print (",\n%s arg%d",
-		   g_type_name (query->param_types[j]), j);
-	} else {
-	  g_print (",\n%s* arg%d",
-		   g_type_name (query->param_types[j]), j);
-	}
+	// if (G_TYPE_IS_FUNDAMENTAL (query->param_types[j])) {
+	//   g_print (",\n%s arg%d",
+	// 	   g_type_name (query->param_types[j]), j);
+	// } else if (G_TYPE_IS_ENUM (query->param_types[j])) {
+	//   g_print (",\n%s arg%d",
+	// 	   g_type_name (query->param_types[j]), j);
+	// } else {
+	//   g_print (",\n%s* arg%d",
+	// 	   g_type_name (query->param_types[j]), j);
+	// }
+	arg_types_.push_back (query->param_types[j]);
       }
        
-      g_print ("\n");
+      //g_print ("\n");
     }
     
     if (found_signals) {
@@ -153,14 +165,19 @@ namespace switcher
   }
 
  void
-  Signal::set_description (std::string method_name,
+  Signal::set_description (std::string signal_name,
 			   std::string short_description,
 			   std::vector< std::pair<std::string,std::string> > arg_description)
   {
     json_description_->reset ();
     json_description_->begin_object ();
-    json_description_->add_string_member ("name", method_name.c_str ());
+    json_description_->add_string_member ("name", signal_name.c_str ());
     json_description_->add_string_member ("description", short_description.c_str ());
+    if (is_action_)
+      json_description_->add_string_member ("type", "action");
+    else
+      json_description_->add_string_member ("type", "signal");
+    json_description_->add_string_member ("return type",g_type_name (return_type_));
     json_description_->set_member_name ("arguments");
     json_description_->begin_array ();
     std::vector<std::pair<std::string,std::string> >::iterator it;
@@ -176,6 +193,8 @@ namespace switcher
 	}
     json_description_->end_array ();
     json_description_->end_object ();
+    
+    g_print ("%s\n",get_description ().c_str ());
   }
 
  std::vector<GType> 
@@ -220,6 +239,61 @@ namespace switcher
     return res;
   }
   
+  gboolean
+  Signal::on_signal_emitted (GSignalInvocationHint *ihint,
+			     guint n_param_values,
+			     const GValue *param_values,
+			     gpointer user_data)
+  {
+    Signal *context = static_cast<Signal *> (user_data);
+    GObject *object = (GObject *)g_value_peek_pointer (&param_values[0]);
+    if (object != context->object_)
+      return TRUE;
 
+    g_print ("!!! TODO invoke subscribed on_emitted_callbacks\n");
+
+    g_print ("signal name n_value %d, object type %s \n", n_param_values, G_OBJECT_TYPE_NAME (object));
+    int i;
+    for (i = 0; i < n_param_values; i++)
+      {
+	gchar *val_str = GstUtils::gvalue_serialize (&param_values[i]);
+	g_print ("%s - ", val_str);
+	g_free (val_str);
+      }
+    g_print ("\n");
+    return TRUE; //keep the hook alive
+  }
+
+  bool
+  Signal::subscribe (OnEmittedCallback cb, void *user_data)
+  {
+    std::pair <OnEmittedCallback, void *> cb_pair = std::make_pair (cb, user_data);
+    if(std::find(subscribed_on_emitted_callbacks_.begin(), 
+		 subscribed_on_emitted_callbacks_.end(), 
+		 cb_pair) != subscribed_on_emitted_callbacks_.end()) {
+      subscribed_on_emitted_callbacks_.push_back (cb_pair);
+      return true;
+    } 
+    else
+      return false;
+  }
+
+  bool
+  Signal::unsubscribe (OnEmittedCallback cb, void *user_data)
+  {
+    std::pair <OnEmittedCallback, void *> cb_pair = std::make_pair (cb, user_data);
+    std::vector<std::pair<OnEmittedCallback, void *> >::iterator it;
+    it = std::find(subscribed_on_emitted_callbacks_.begin(), 
+		   subscribed_on_emitted_callbacks_.end(), 
+		   cb_pair);
+    if(it != subscribed_on_emitted_callbacks_.end())
+      {
+	subscribed_on_emitted_callbacks_.erase (it);
+	return true;
+      } 
+    else
+      return false;
+  }
+  
 }
 

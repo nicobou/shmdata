@@ -36,18 +36,28 @@ namespace switcher
     typedef std::shared_ptr<Signal> ptr; 
     typedef std::vector<GType> args_types;
     typedef std::vector<std::pair<std::string,std::string> > args_doc;
-
-    Signal (); 
+    typedef void (*OnEmittedCallback) (std::vector<std::string> params, gpointer user_data);
     
-    bool set_gobject_signame (GObject *object, std::string signame);
+    Signal (); 
+    ~Signal ();
 
-    void set_description (std::string method_name,
+    bool set_gobject_signame (GObject *object, 
+			      std::string gobject_signal_name);
+    void set_description (std::string signal_name,
 			  std::string short_description,
 			  args_doc arg_description);
     std::string get_description (); 
+    
+    bool subscribe (OnEmittedCallback cb, void *user_data);
+    bool unsubscribe (OnEmittedCallback cb, void *user_data);
+
 
     //helper methods, use NULL sentinel
-    static args_types make_arg_type_description (GType arg_type, ...);//use G_TYPE_NONE if no arg
+    //do no describe the first gobject (first signal arg)
+    //use G_TYPE_NONE if no arg
+    static args_types make_arg_type_description (GType arg_type, ...);
+
+    //helper methods, use NULL sentinel
     static args_doc make_arg_description (char *first_arg_name, ...);
     JSONBuilder::Node get_json_root_node (); 
     
@@ -55,8 +65,16 @@ namespace switcher
     GObject *object_; 
     guint id_;
     args_types arg_types_; 
+    GType return_type_;
+    gboolean is_action_;
     JSONBuilder::ptr json_description_; 
-    void make_description(); 
+    void inspect_gobject_signal (); 
+    gulong hook_id_;
+    std::vector<std::pair<OnEmittedCallback, void *> > subscribed_on_emitted_callbacks_;
+    static gboolean on_signal_emitted (GSignalInvocationHint *ihint,
+				       guint n_param_values,
+				       const GValue *param_values,
+				       gpointer user_data);
   }; 
   
 }  // end of namespace 

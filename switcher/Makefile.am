@@ -53,6 +53,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     quiddity-manager-wrapper.cpp \
     quiddity-manager.cpp \
     quiddity-property-subscriber.cpp \
+    quiddity-signal-subscriber.cpp \
     quiddity.cpp \
     rtp-destination.cpp \
     rtp-session.cpp \
@@ -129,6 +130,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     quiddity-manager-wrapper.h \
     quiddity-manager.h \
     quiddity-property-subscriber.h \
+    quiddity-signal-subscriber.h \
     quiddity.h \
     rtp-destination.h \
     rtp-session.h \

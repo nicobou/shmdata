@@ -266,5 +266,18 @@ namespace switcher
 	  }
       }
   }
+
+  gchar *
+  GstUtils::gvalue_serialize (const GValue *val)
+  {
+    if (!G_IS_VALUE (val))
+      return NULL;
+    gchar *val_str;
+    if (G_VALUE_TYPE (val) == G_TYPE_STRING)
+      val_str = g_strdup (g_value_get_string (val));
+    else
+      val_str = gst_value_serialize (val);
+    return val_str;
+  }
   
 }

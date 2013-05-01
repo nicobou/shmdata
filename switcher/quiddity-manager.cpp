@@ -132,7 +132,7 @@ namespace switcher
 
 
   bool 
-  QuiddityManager::make_subscriber (std::string subscriber_name,
+  QuiddityManager::make_property_subscriber (std::string subscriber_name,
 				    void (*callback)(std::string subscriber_name,
 						     std::string quiddity_name,
 						     std::string property_name,
@@ -140,13 +140,13 @@ namespace switcher
 						     void *user_data),
 				    void *user_data)
   {
-    return life_manager_->make_subscriber (subscriber_name, callback, user_data);
+    return life_manager_->make_property_subscriber (subscriber_name, callback, user_data);
   }
 
     bool 
-QuiddityManager::remove_subscriber (std::string subscriber_name)
+QuiddityManager::remove_property_subscriber (std::string subscriber_name)
     {
-      return life_manager_->remove_subscriber (subscriber_name);
+      return life_manager_->remove_property_subscriber (subscriber_name);
     }
   
   bool 
@@ -166,9 +166,9 @@ QuiddityManager::remove_subscriber (std::string subscriber_name)
       }
   
   std::vector<std::string> 
-  QuiddityManager::list_subscribers ()
+  QuiddityManager::list_property_subscribers ()
   {
-    return life_manager_->list_subscribers ();
+    return life_manager_->list_property_subscribers ();
   }
   
   std::vector<std::pair<std::string, std::string> > 
@@ -178,9 +178,9 @@ QuiddityManager::remove_subscriber (std::string subscriber_name)
   }
   
   std::string 
-  QuiddityManager::list_subscribers_json ()
+  QuiddityManager::list_property_subscribers_json ()
   {
-    return life_manager_->list_subscribers_json ();
+    return life_manager_->list_property_subscribers_json ();
   }
 
   std::string 

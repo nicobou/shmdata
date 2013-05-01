@@ -41,7 +41,7 @@ namespace switcher
 					     const gchar *factory_name, 
 					     const gchar *property_name,
 					     gboolean property_value);
-
+    static gchar *gvalue_serialize (const GValue *val);// g_free after use
   };
 
 }  // end of namespace

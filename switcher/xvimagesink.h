@@ -33,11 +33,14 @@ namespace switcher
   public:
     typedef std::shared_ptr<Xvimagesink> ptr;
     bool init ();
+    Xvimagesink ();
+    ~Xvimagesink ();
     QuiddityDocumentation get_documentation ();
     static QuiddityDocumentation doc_;
 
   private:
     GstElement *xvimagesink_;
+    gchar *c_name_;
   };
 
 }  // end of namespace
