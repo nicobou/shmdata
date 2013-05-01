@@ -560,7 +560,7 @@ namespace switcher
   }
 
   std::vector<std::string> 
-  QuiddityLifeManager::list_subscribers ()
+  QuiddityLifeManager::list_property_subscribers ()
   {
     return property_subscribers_.get_keys ();
   }
@@ -580,9 +580,9 @@ namespace switcher
     }
 
     std::string 
-    QuiddityLifeManager::list_subscribers_json ()
+    QuiddityLifeManager::list_property_subscribers_json ()
     {
-      return "{\"error\":\"to be implemented\"}";//FIXME (list_subscriber_json)
+      return "{\"error\":\"to be implemented\"}";//FIXME (list_property_subscriber_json)
     }
   
     std::string 

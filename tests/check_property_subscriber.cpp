@@ -84,11 +84,11 @@ main (int argc,
     manager->subscribe_property ("sub","vid","pattern");
     manager->subscribe_property ("sub","vid","text");
     
-    std::vector<std::string> subscribers = manager->list_subscribers ();
+    std::vector<std::string> subscribers = manager->list_property_subscribers ();
     if (subscribers.size () != 1 
     	|| g_strcmp0 (subscribers.at(0).c_str (), "sub") != 0)
       {
-    	g_warning ("pb with list_subscribers");
+    	g_warning ("pb with list_property_subscribers");
     	return 1;
       }
     
