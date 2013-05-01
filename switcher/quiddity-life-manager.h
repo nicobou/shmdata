@@ -33,11 +33,13 @@
 #include "quiddity.h" 
 #include "json-builder.h"
 #include "quiddity-property-subscriber.h"
+#include "quiddity-signal-subscriber.h"
 
 namespace switcher
 {
   class Quiddity;
   class QuiddityPropertySubscriber;
+  class QuidditySignalSubscriber;
   
   class QuiddityLifeManager : public std::enable_shared_from_this<QuiddityLifeManager>
 //FIXME rename that into QuiddityManager_Impl or better 
@@ -135,6 +137,30 @@ namespace switcher
 		 std::string method_name,
 		 std::vector<std::string> args);  
 
+    //**** signals
+    //high level signal subscriber
+    bool make_signal_subscriber (std::string subscriber_name,
+				 void (*callback)(std::string subscriber_name,
+						  std::string quiddity_name,
+						  std::string property_name,
+						  std::vector<std::string> params,
+						  void *user_data),
+				 void *user_data);
+    bool remove_signal_subscriber (std::string subscriber_name);
+    bool subscribe_signal (std::string subscriber_name,
+			   std::string quiddity_name,
+			   std::string signal_name);
+    bool unsubscribe_signal (std::string subscriber_name,
+			     std::string quiddity_name,
+			     std::string signal_name);
+    std::vector<std::string> 
+      list_signal_subscribers ();
+    std::vector<std::pair<std::string, std::string> > 
+      list_subscribed_signals (std::string subscriber_name);
+    std::string 
+      list_signal_subscribers_json ();
+    std::string 
+      list_subscribed_signal_json (std::string subscriber_name);
 
   private:
     QuiddityLifeManager();//will get name "default"
