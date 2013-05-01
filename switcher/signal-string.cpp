@@ -23,6 +23,7 @@
 
 #include "switcher/signal-string.h"
 #include "gst-utils.h"
+#include <algorithm>
 
 namespace switcher
 {
@@ -249,6 +250,8 @@ namespace switcher
     if (object != context->object_)
       return TRUE;
 
+    g_print ("!!! TODO invoke subscribed on_emitted_callbacks\n");
+
     g_print ("signal name n_value %d, object type %s \n", n_param_values, G_OBJECT_TYPE_NAME (object));
     int i;
     for (i = 0; i < n_param_values; i++)
@@ -261,6 +264,36 @@ namespace switcher
     return TRUE; //keep the hook alive
   }
 
+  bool
+  Signal::subscribe (OnEmittedCallback cb, void *user_data)
+  {
+    std::pair <OnEmittedCallback, void *> cb_pair = std::make_pair (cb, user_data);
+    if(std::find(subscribed_on_emitted_callbacks_.begin(), 
+		 subscribed_on_emitted_callbacks_.end(), 
+		 cb_pair) != subscribed_on_emitted_callbacks_.end()) {
+      subscribed_on_emitted_callbacks_.push_back (cb_pair);
+      return true;
+    } 
+    else
+      return false;
+  }
+
+  bool
+  Signal::unsubscribe (OnEmittedCallback cb, void *user_data)
+  {
+    std::pair <OnEmittedCallback, void *> cb_pair = std::make_pair (cb, user_data);
+    std::vector<std::pair<OnEmittedCallback, void *> >::iterator it;
+    it = std::find(subscribed_on_emitted_callbacks_.begin(), 
+		   subscribed_on_emitted_callbacks_.end(), 
+		   cb_pair);
+    if(it != subscribed_on_emitted_callbacks_.end())
+      {
+	subscribed_on_emitted_callbacks_.erase (it);
+	return true;
+      } 
+    else
+      return false;
+  }
   
 }
 

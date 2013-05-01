@@ -315,6 +315,30 @@ namespace switcher
     return prop->unsubscribe (cb, user_data);
   }
 
+  bool 
+  Quiddity::subscribe_signal (std::string signal_name, 
+			      Signal::OnEmittedCallback cb,
+			      void *user_data)
+  {
+    if (signals_.find(signal_name) == signals_.end())
+      return false;
+
+    Signal::ptr sig = signals_[signal_name];
+    return sig->subscribe (cb, user_data);
+  }
+
+  bool 
+  Quiddity::unsubscribe_signal (std::string signal_name,
+				Signal::OnEmittedCallback cb,
+				void *user_data)
+  {
+    if (signals_.find (signal_name) == signals_.end())
+      return false;
+
+    Signal::ptr signal = signals_[signal_name];
+    return signal->unsubscribe (cb, user_data);
+  }
+
 
   std::string
   Quiddity::make_file_name (std::string suffix)

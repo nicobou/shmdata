@@ -48,6 +48,9 @@ namespace switcher
 			  args_doc arg_description);
     std::string get_description (); 
     
+    bool subscribe (OnEmittedCallback cb, void *user_data);
+    bool unsubscribe (OnEmittedCallback cb, void *user_data);
+
 
     //helper methods, use NULL sentinel
     //do no describe the first gobject (first signal arg)
@@ -67,6 +70,7 @@ namespace switcher
     JSONBuilder::ptr json_description_; 
     void inspect_gobject_signal (); 
     gulong hook_id_;
+    std::vector<std::pair<OnEmittedCallback, void *> > subscribed_on_emitted_callbacks_;
     static gboolean on_signal_emitted (GSignalInvocationHint *ihint,
 				       guint n_param_values,
 				       const GValue *param_values,

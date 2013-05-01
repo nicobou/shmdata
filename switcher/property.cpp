@@ -67,10 +67,7 @@ namespace switcher
 	return true;
       }
     else
-      {
-	g_print ("coucou \n");
 	return false;
-      }
   }
 
   bool
