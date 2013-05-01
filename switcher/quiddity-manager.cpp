@@ -132,7 +132,7 @@ namespace switcher
 
 
   bool 
-  QuiddityManager::make_subscriber (std::string subscriber_name,
+  QuiddityManager::make_property_subscriber (std::string subscriber_name,
 				    void (*callback)(std::string subscriber_name,
 						     std::string quiddity_name,
 						     std::string property_name,
@@ -140,13 +140,13 @@ namespace switcher
 						     void *user_data),
 				    void *user_data)
   {
-    return life_manager_->make_subscriber (subscriber_name, callback, user_data);
+    return life_manager_->make_property_subscriber (subscriber_name, callback, user_data);
   }
 
     bool 
-QuiddityManager::remove_subscriber (std::string subscriber_name)
+QuiddityManager::remove_property_subscriber (std::string subscriber_name)
     {
-      return life_manager_->remove_subscriber (subscriber_name);
+      return life_manager_->remove_property_subscriber (subscriber_name);
     }
   
   bool 

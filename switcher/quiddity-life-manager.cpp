@@ -488,7 +488,7 @@ namespace switcher
 
  //higher level subscriber
   bool 
-  QuiddityLifeManager::make_subscriber (std::string subscriber_name,
+  QuiddityLifeManager::make_property_subscriber (std::string subscriber_name,
 					QuiddityPropertySubscriber::Callback cb,
 					void *user_data)
   {
@@ -510,7 +510,7 @@ namespace switcher
   }
 
   bool
-  QuiddityLifeManager::remove_subscriber (std::string subscriber_name)
+  QuiddityLifeManager::remove_property_subscriber (std::string subscriber_name)
   {
     if (!property_subscribers_.contains (subscriber_name))
       {

@@ -139,7 +139,7 @@ main (int argc,
     
      
 
-    manager->make_subscriber ("sub", mon_property_cb, (void *)user_string);
+    manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);
     manager->subscribe_property ("sub","firstprobe","last-message");
     manager->subscribe_property ("sub","secondprobe","last-message");
     

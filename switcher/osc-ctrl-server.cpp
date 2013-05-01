@@ -276,7 +276,7 @@ namespace switcher
 	      }
 	    context->osc_subscribers_.insert (internal_subscriber_name, 
 					      std::make_pair (host, port_int));
-	    if (!manager->make_subscriber (internal_subscriber_name,
+	    if (!manager->make_property_subscriber (internal_subscriber_name,
 					   OscCtrlServer::prop_cb,
 					   context))
 	      return 0;
@@ -306,7 +306,7 @@ namespace switcher
 		g_warning ("OscCtrlServer: cannot delete non existing subscriber named %s", subscriber_name);
 		return 0;
 	      }
-	    manager->remove_subscriber (internal_subscriber_name);
+	    manager->remove_property_subscriber (internal_subscriber_name);
 	    context->osc_subscribers_.remove (internal_subscriber_name);
 	    g_free (internal_subscriber_name); 
 	    g_free (subscriber_name); 

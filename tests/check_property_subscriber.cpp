@@ -78,7 +78,7 @@ main (int argc,
     arg.push_back ("pipeline0");
     manager->auto_invoke ("set_runtime",arg);
     
-    manager->make_subscriber ("sub", mon_property_cb, (void *)user_string);
+    manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);
     manager->create ("videotestsrc","vid");
  
     manager->subscribe_property ("sub","vid","pattern");
@@ -107,7 +107,7 @@ main (int argc,
     manager->set_property ("vid", "pattern", "1");
     
     manager->unsubscribe_property ("sub", "vid", "pattern");
-    manager->remove_subscriber ("sub");
+    manager->remove_property_subscriber ("sub");
     manager->remove ("vid");
   }
 
