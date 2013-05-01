@@ -84,35 +84,46 @@ namespace switcher
 							 "the source id",
 							 NULL));
 
-    register_signal_gobject ("on-pad-added",
+    register_signal_gobject ("on-new-ssrc",
 			     G_OBJECT (rtpsession_), 
-			     "pad-added");
-    set_signal_description ("on-pad-added",
-			    "a pad has been added",
-			    Signal::make_arg_description("pad",
-							 "the pointer to the pad",
+			     "on-new-ssrc");
+    set_signal_description ("on-new-ssrc",
+			    "a source has been created",
+			    Signal::make_arg_description("session",
+							 "session id",
+							 "ssrc",
+							 "the source id",
 							 NULL));
+
+    register_signal_gobject ("on-pad-added",
+     			     G_OBJECT (rtpsession_), 
+     			     "pad-added");
+    set_signal_description ("on-pad-added",
+     			    "a pad has been added",
+     			    Signal::make_arg_description("pad",
+     							 "the pointer to the pad",
+     							 NULL));
 
     g_signal_connect (G_OBJECT (rtpsession_), "on-bye-ssrc", 
 		      (GCallback) on_bye_ssrc, (gpointer) this);
     
-    g_signal_connect (G_OBJECT (rtpsession_), "on_bye_timeout", 
+    g_signal_connect (G_OBJECT (rtpsession_), "on-bye-timeout", 
 		      (GCallback) on_bye_timeout, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_new_ssrc", 
+    g_signal_connect (G_OBJECT (rtpsession_), "on-new-ssrc", 
 		      (GCallback) on_new_ssrc, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_npt_stop", 
+    g_signal_connect (G_OBJECT (rtpsession_), "on-npt-stop", 
 		      (GCallback)  on_npt_stop, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_sender_timeout",  
+    g_signal_connect (G_OBJECT (rtpsession_), "on-sender-timeout",  
 		      (GCallback) on_sender_timeout, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_ssrc_active",  
+    g_signal_connect (G_OBJECT (rtpsession_), "on-ssrc-active",  
 		      (GCallback)  on_ssrc_active, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_ssrc_collision",  
+    g_signal_connect (G_OBJECT (rtpsession_), "on-ssrc-collision",  
 		      (GCallback) on_ssrc_collision, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_ssrc_sdes",  
+    g_signal_connect (G_OBJECT (rtpsession_), "on-ssrc-sdes",  
 		      (GCallback)  on_ssrc_sdes, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_ssrc_validated",  
+    g_signal_connect (G_OBJECT (rtpsession_), "on-ssrc-validated",  
 		      (GCallback) on_ssrc_validated, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_timeout",  
+    g_signal_connect (G_OBJECT (rtpsession_), "on-timeout",  
 		      (GCallback) on_timeout, (gpointer) this);
     g_signal_connect (G_OBJECT (rtpsession_), "pad-added",  
 		      (GCallback) on_pad_added, (gpointer) this);

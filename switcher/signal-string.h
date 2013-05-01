@@ -36,17 +36,18 @@ namespace switcher
     typedef std::shared_ptr<Signal> ptr; 
     typedef std::vector<GType> args_types;
     typedef std::vector<std::pair<std::string,std::string> > args_doc;
-
+    typedef void (*OnEmittedCallback) (std::vector<std::string> params, gpointer user_data);
+    
     Signal (); 
     ~Signal ();
 
     bool set_gobject_signame (GObject *object, 
 			      std::string gobject_signal_name);
-
-    void set_description (std::string method_name,
+    void set_description (std::string signal_name,
 			  std::string short_description,
 			  args_doc arg_description);
     std::string get_description (); 
+    
 
     //helper methods, use NULL sentinel
     //do no describe the first gobject (first signal arg)

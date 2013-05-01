@@ -83,7 +83,6 @@ namespace switcher
     Signal::ptr signal (new Signal ());
     if (!signal->set_gobject_signame (object, gobject_signal_name))
       return false;
-    
     signals_[signal_name] = signal; 
     g_debug ("signal %s registered with name %s", 
       	     gobject_signal_name.c_str (),

@@ -87,7 +87,7 @@ namespace switcher
 		       std::string property_value);
     std::string get_property (std::string quiddity_name, 
 			      std::string property_name);
-    //high level subscriber
+    //high level property subscriber
     bool make_subscriber (std::string subscriber_name,
 			  void (*callback)(std::string subscriber_name,
 					   std::string quiddity_name,

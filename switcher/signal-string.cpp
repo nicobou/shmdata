@@ -22,6 +22,7 @@
  */
 
 #include "switcher/signal-string.h"
+#include "gst-utils.h"
 
 namespace switcher
 {
@@ -29,6 +30,7 @@ namespace switcher
   Signal::Signal ()
   {
     json_description_.reset (new JSONBuilder());
+    hook_id_ = 0;
   }
 
   Signal::~Signal ()
@@ -242,10 +244,23 @@ namespace switcher
 			     const GValue *param_values,
 			     gpointer user_data)
   {
+    Signal *context = static_cast<Signal *> (user_data);
     GObject *object = (GObject *)g_value_peek_pointer (&param_values[0]);
-    g_print ("n_value %d, object type %s \n", n_param_values, G_OBJECT_TYPE_NAME (object));
+    if (object != context->object_)
+      return TRUE;
+
+    g_print ("signal name n_value %d, object type %s \n", n_param_values, G_OBJECT_TYPE_NAME (object));
+    int i;
+    for (i = 0; i < n_param_values; i++)
+      {
+	gchar *val_str = GstUtils::gvalue_serialize (&param_values[i]);
+	g_print ("%s - ", val_str);
+	g_free (val_str);
+      }
+    g_print ("\n");
     return TRUE; //keep the hook alive
   }
+
   
 }
 

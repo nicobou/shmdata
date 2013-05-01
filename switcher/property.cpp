@@ -22,6 +22,7 @@
  */
 
 #include "property.h"
+#include "gst-utils.h"
 
 namespace switcher
 {
@@ -114,12 +115,7 @@ namespace switcher
 			   property_->name,
 			   &val);
     
-    gchar *val_str;
-    if (property_->value_type == G_TYPE_STRING)
-      val_str = g_strdup (g_value_get_string (&val));
-    else
-      val_str = gst_value_serialize (&val);
-
+    gchar *val_str = GstUtils::gvalue_serialize (&val);
     std::string res (val_str);
     g_free (val_str);
     return res;
