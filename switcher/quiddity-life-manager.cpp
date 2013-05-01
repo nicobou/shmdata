@@ -730,6 +730,130 @@ namespace switcher
     return descr;
 
   }
+  //*** signals
+ //higher level subscriber
+  bool 
+  QuiddityLifeManager::make_signal_subscriber (std::string subscriber_name,
+					       QuidditySignalSubscriber::OnEmittedCallback cb,
+					       void *user_data)
+  {
+    if (signal_subscribers_.contains (subscriber_name))
+      {
+	g_warning ("QuiddityLifeManager, a subscriber named %s already exists\n",
+		   subscriber_name.c_str ());
+	return false;
+      }
+    
+    QuidditySignalSubscriber::ptr subscriber;
+    subscriber.reset (new QuidditySignalSubscriber());
+    subscriber->set_life_manager (shared_from_this());
+    subscriber->set_name (subscriber_name.c_str ());
+    subscriber->set_user_data (user_data);
+    subscriber->set_callback (cb);
+    signal_subscribers_.insert (subscriber_name, subscriber);
+    return true; 
+  }
+
+  bool
+  QuiddityLifeManager::remove_signal_subscriber (std::string subscriber_name)
+  {
+    if (!signal_subscribers_.contains (subscriber_name))
+      {
+	g_warning ("QuiddityLifeManager, a subscriber named %s does not exists\n",
+		   subscriber_name.c_str ());
+	return false;
+      }
+    return signal_subscribers_.remove (subscriber_name);
+  }
+  
+  bool 
+  QuiddityLifeManager::subscribe_signal (std::string subscriber_name,
+					 std::string quiddity_name,
+					 std::string signal_name)
+  {
+    if (!signal_subscribers_.contains (subscriber_name))
+      {
+	g_warning ("QuiddityLifeManager, a subscriber named %s does not exists\n",
+		   subscriber_name.c_str ());
+	return false;
+      }
+    if (!exists (quiddity_name))
+      {
+	g_warning ("quiddity %s not found, cannot subscribe to signal",quiddity_name.c_str());
+	return false;
+      }
+    return signal_subscribers_.lookup(subscriber_name)->subscribe (get_quiddity (quiddity_name), signal_name);
+  }
+  
+  bool 
+  QuiddityLifeManager::unsubscribe_signal (std::string subscriber_name,
+					     std::string quiddity_name,
+					     std::string signal_name)
+  {
+    if (!signal_subscribers_.contains (subscriber_name))
+      {
+	g_warning ("QuiddityLifeManager, a subscriber named %s does not exists\n",
+		   subscriber_name.c_str ());
+	return false;
+      }
+    if (!exists (quiddity_name))
+      {
+	g_warning ("quiddity %s not found, cannot subscribe to signal",quiddity_name.c_str());
+	return false;
+      }
+    return signal_subscribers_.lookup(subscriber_name)->unsubscribe (get_quiddity (quiddity_name), signal_name);
+  }
+
+  std::vector<std::string> 
+  QuiddityLifeManager::list_signal_subscribers ()
+  {
+    return signal_subscribers_.get_keys ();
+  }
+
+    std::vector<std::pair<std::string, std::string> > 
+    QuiddityLifeManager::list_subscribed_signals (std::string subscriber_name)
+    {
+      if (!signal_subscribers_.contains (subscriber_name))
+	{
+	  g_warning ("QuiddityLifeManager, a subscriber named %s does not exists\n",
+		     subscriber_name.c_str ());
+	  std::vector<std::pair<std::string, std::string> > empty;
+	  return empty;
+	}
+      
+      return signal_subscribers_.lookup(subscriber_name)->list_subscribed_signals ();
+    }
+
+    std::string 
+    QuiddityLifeManager::list_signal_subscribers_json ()
+    {
+      return "{\"error\":\"to be implemented\"}";//FIXME (list_signal_subscriber_json)
+    }
+  
+    std::string 
+    QuiddityLifeManager::list_subscribed_signals_json (std::string subscriber_name)
+    {
+      std::vector<std::pair<std::string, std::string> > subscribed_props =
+	list_subscribed_signals (subscriber_name);
+
+      JSONBuilder *doc = new JSONBuilder ();
+      doc->reset ();
+      doc->begin_object ();
+      doc->set_member_name ("subscribed signals");
+      doc->begin_array ();
+      for(std::vector<std::pair<std::string, std::string> >::iterator it = subscribed_props.begin(); 
+	  it != subscribed_props.end(); ++it) 
+	{
+	  doc->begin_object ();
+	  doc->add_string_member ("quiddity", it->first.c_str ());
+	  doc->add_string_member ("signal", it->second.c_str ());
+	  doc->end_object ();
+	}
+      doc->end_array ();
+      doc->end_object ();
+      
+      return doc->get_string(true);
+    }
 
   
 } // end of namespace

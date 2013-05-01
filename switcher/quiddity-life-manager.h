@@ -160,7 +160,7 @@ namespace switcher
     std::string 
       list_signal_subscribers_json ();
     std::string 
-      list_subscribed_signal_json (std::string subscriber_name);
+      list_subscribed_signals_json (std::string subscriber_name);
 
   private:
     QuiddityLifeManager();//will get name "default"
@@ -172,6 +172,7 @@ namespace switcher
     StringMap< std::shared_ptr<Quiddity> > quiddities_;
     StringMap< std::string > quiddities_nick_names_;
     StringMap< std::shared_ptr <QuiddityPropertySubscriber> > property_subscribers_;
+    StringMap< std::shared_ptr <QuidditySignalSubscriber> > signal_subscribers_;
     bool init_quiddity (std::shared_ptr<Quiddity> quiddity);
     void remove_shmdata_sockets ();
     JSONBuilder::ptr classes_doc_;
