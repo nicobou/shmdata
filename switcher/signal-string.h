@@ -36,7 +36,7 @@ namespace switcher
     typedef std::shared_ptr<Signal> ptr; 
     typedef std::vector<GType> args_types;
     typedef std::vector<std::pair<std::string,std::string> > args_doc;
-    typedef void (*OnEmittedCallback) (std::vector<std::string> params, gpointer user_data);
+    typedef void (*OnEmittedCallback) (std::vector<std::string> params, gpointer user_data);//FIXME params should be const
     
     Signal (); 
     ~Signal ();

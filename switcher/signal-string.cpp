@@ -250,17 +250,25 @@ namespace switcher
     if (object != context->object_)
       return TRUE;
 
-    g_print ("!!! TODO invoke subscribed on_emitted_callbacks\n");
+    std::vector<std::string> params;
+    //g_print ("!!! TODO invoke subscribed on_emitted_callbacks\n");
 
-    g_print ("signal name n_value %d, object type %s \n", n_param_values, G_OBJECT_TYPE_NAME (object));
+    //g_debug ("signal name n_value %d, object type %s", n_param_values, G_OBJECT_TYPE_NAME (object));
     int i;
     for (i = 0; i < n_param_values; i++)
       {
 	gchar *val_str = GstUtils::gvalue_serialize (&param_values[i]);
-	g_print ("%s - ", val_str);
+	params.push_back (val_str);
+	//g_print ("%s - ", val_str);
 	g_free (val_str);
       }
-    g_print ("\n");
+    std::vector<std::pair<OnEmittedCallback, void *> >::iterator it;
+    for (it = context->subscribed_on_emitted_callbacks_.begin ();
+	 it != context->subscribed_on_emitted_callbacks_.begin ();
+	 it++)
+	it->first (params, it->second);
+
+    //g_print ("\n");
     return TRUE; //keep the hook alive
   }
 

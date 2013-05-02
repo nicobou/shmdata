@@ -311,6 +311,65 @@ QuiddityManager::remove_property_subscriber (std::string subscriber_name)
 		       NULL);
   }
 
+  bool 
+  QuiddityManager::make_signal_subscriber (std::string subscriber_name,
+					   void (*callback)(std::string subscriber_name,
+							    std::string quiddity_name,
+							    std::string property_name,
+							    std::vector<std::string> params,
+							    void *user_data),
+					   void *user_data)
+  {
+    return life_manager_->make_signal_subscriber (subscriber_name, callback, user_data);
+  }
+
+    bool 
+QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
+    {
+      return life_manager_->remove_signal_subscriber (subscriber_name);
+    }
+  
+  bool 
+  QuiddityManager::subscribe_signal (std::string subscriber_name,
+				     std::string quiddity_name,
+				     std::string signal_name)
+  {
+    return life_manager_->subscribe_signal (subscriber_name, quiddity_name, signal_name);
+  }
+  
+  bool 
+  QuiddityManager::unsubscribe_signal (std::string subscriber_name,
+				       std::string quiddity_name,
+				       std::string signal_name)
+  {
+    return life_manager_->unsubscribe_signal (subscriber_name, quiddity_name, signal_name);
+      }
+  
+  std::vector<std::string> 
+  QuiddityManager::list_signal_subscribers ()
+  {
+    return life_manager_->list_signal_subscribers ();
+  }
+  
+  std::vector<std::pair<std::string, std::string> > 
+  QuiddityManager::list_subscribed_signals (std::string subscriber_name)
+  {
+    return life_manager_->list_subscribed_signals (subscriber_name);
+  }
+  
+  std::string 
+  QuiddityManager::list_signal_subscribers_json ()
+  {
+    return life_manager_->list_signal_subscribers_json ();
+  }
+
+  std::string 
+  QuiddityManager::list_subscribed_signals_json (std::string subscriber_name)
+  {
+    return life_manager_->list_subscribed_signals_json (subscriber_name);
+  }
+
+
   void 
   QuiddityManager::auto_init (std::string quiddity_name)
   {
