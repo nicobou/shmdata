@@ -97,7 +97,7 @@ namespace switcher
 
   bool 
   QuidditySignalSubscriber::subscribe (Quiddity::ptr quid, 
-					 std::string signal_name)
+				       std::string signal_name)
   {
     if (user_callback_ == NULL)
       {

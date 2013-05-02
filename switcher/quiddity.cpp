@@ -321,7 +321,11 @@ namespace switcher
 			      void *user_data)
   {
     if (signals_.find(signal_name) == signals_.end())
-      return false;
+      {
+	g_warning ("Quiddity::subscribe_signal, signal %s not found");
+	return false;
+      }
+
 
     Signal::ptr sig = signals_[signal_name];
     return sig->subscribe (cb, user_data);

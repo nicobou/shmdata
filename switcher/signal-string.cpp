@@ -251,7 +251,6 @@ namespace switcher
       return TRUE;
 
     std::vector<std::string> params;
-    //g_print ("!!! TODO invoke subscribed on_emitted_callbacks\n");
 
     //g_debug ("signal name n_value %d, object type %s", n_param_values, G_OBJECT_TYPE_NAME (object));
     int i;
@@ -263,8 +262,9 @@ namespace switcher
 	g_free (val_str);
       }
     std::vector<std::pair<OnEmittedCallback, void *> >::iterator it;
+    
     for (it = context->subscribed_on_emitted_callbacks_.begin ();
-	 it != context->subscribed_on_emitted_callbacks_.begin ();
+	 it != context->subscribed_on_emitted_callbacks_.end ();
 	 it++)
 	it->first (params, it->second);
 
@@ -276,14 +276,16 @@ namespace switcher
   Signal::subscribe (OnEmittedCallback cb, void *user_data)
   {
     std::pair <OnEmittedCallback, void *> cb_pair = std::make_pair (cb, user_data);
-    if(std::find(subscribed_on_emitted_callbacks_.begin(), 
-		 subscribed_on_emitted_callbacks_.end(), 
-		 cb_pair) != subscribed_on_emitted_callbacks_.end()) {
+    //FIXME do not save twice the same cb/user data for signals 
+    // if(std::find(subscribed_on_emitted_callbacks_.begin(), 
+    //  		 subscribed_on_emitted_callbacks_.end(), 
+    //  		 cb_pair) != subscribed_on_emitted_callbacks_.end()) 
+    {
       subscribed_on_emitted_callbacks_.push_back (cb_pair);
       return true;
     } 
-    else
-      return false;
+    // else
+    //   return false;
   }
 
   bool
