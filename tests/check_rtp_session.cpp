@@ -59,6 +59,25 @@ stop_test ()
   do_continue=false;
 }
 
+void 
+mon_signal_cb(std::string subscriber_name, 
+	      std::string quiddity_name, 
+	      std::string signal_name, 
+	      std::vector<std::string> params, 
+	      void *user_data)
+{
+
+  g_print ("sub:%s quid:%s, sig:%s params:",
+	   subscriber_name.c_str (),
+	   quiddity_name.c_str (),
+	   signal_name.c_str ());
+
+  std::vector<std::string>::iterator it;
+  for (it = params.begin (); it != params.end (); it++) 
+    g_print ("%s ",it->c_str ()); 
+  g_print ("\n");
+}
+
 int
 main (int argc,
       char *argv[])
@@ -83,6 +102,9 @@ main (int argc,
     manager->create ("rtpsession","rtp");
     manager->invoke_va ("rtp", "set_runtime", "runtime", NULL);
     
+    manager->make_signal_subscriber ("sig_sub", mon_signal_cb, (void *)user_string);
+    manager->subscribe_signal ("sig_sub","rtp","on-pad-added");
+
     manager->invoke_va ("rtp",
       			"add_data_stream",
       			"/tmp/switcher_rtptest_a_audio",
@@ -139,7 +161,7 @@ main (int argc,
     
      
 
-    manager->make_subscriber ("sub", mon_property_cb, (void *)user_string);
+    manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);
     manager->subscribe_property ("sub","firstprobe","last-message");
     manager->subscribe_property ("sub","secondprobe","last-message");
     

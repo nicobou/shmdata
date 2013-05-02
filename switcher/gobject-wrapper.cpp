@@ -185,6 +185,7 @@ namespace switcher
    gobject_class->get_property = my_object_get_property;
    gobject_class->finalize = my_object_finalize;
    
+   
    //   g_object_class_install_properties (gobject_class, N_PROPERTIES, properties);
  }
   

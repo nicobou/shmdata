@@ -53,6 +53,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     quiddity-manager-wrapper.cpp \
     quiddity-manager.cpp \
     quiddity-property-subscriber.cpp \
+    quiddity-signal-subscriber.cpp \
     quiddity.cpp \
     rtp-destination.cpp \
     rtp-session.cpp \
@@ -62,6 +63,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     shmdata-reader.cpp \
     shmdata-to-file.cpp \
     shmdata-writer.cpp \
+    signal-string.cpp \
     soap-ctrl-server.cpp \
     udpsink.cpp \
     uridecodebin.cpp \
@@ -128,6 +130,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     quiddity-manager-wrapper.h \
     quiddity-manager.h \
     quiddity-property-subscriber.h \
+    quiddity-signal-subscriber.h \
     quiddity.h \
     rtp-destination.h \
     rtp-session.h \
@@ -137,6 +140,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     shmdata-reader.h \
     shmdata-to-file.h \
     shmdata-writer.h \
+    signal-string.h \
     soap-ctrl-server.h \
     string-map.h \
     string-map_spec.h \

@@ -182,7 +182,7 @@ main (int argc,
        manager->set_property ("internal_logger", "verbose", "false");
           
      //subscribe to logs:
-     manager->make_subscriber ("log_sub", logger_cb, NULL);
+     manager->make_property_subscriber ("log_sub", logger_cb, NULL);
      manager->subscribe_property ("log_sub","internal_logger","last-line");
      
      // Create a runtime (pipeline0)

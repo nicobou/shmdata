@@ -79,14 +79,14 @@
 			       std::string property_name);
 
      //property subscribtion
-     bool make_subscriber (std::string subscriber_name,
+     bool make_property_subscriber (std::string subscriber_name,
 			   void (*callback)(std::string subscriber_name,
 					    std::string quiddity_name,
 					    std::string property_name,
 					    std::string value,
 					    void *user_data),
 			   void *user_data);
-     bool remove_subscriber (std::string subscriber_name);
+     bool remove_property_subscriber (std::string subscriber_name);
      bool subscribe_property (std::string subscriber_name,
 			      std::string quiddity_name,
 			      std::string property_name);
@@ -94,12 +94,12 @@
 				std::string quiddity_name,
 				std::string property_name);
      std::vector<std::string> 
-       list_subscribers ();
+       list_property_subscribers ();
      std::vector<std::pair<std::string, std::string> > 
        list_subscribed_properties (std::string subscriber_name);
      //json //FIXME implement or remove
      std::string 
-       list_subscribers_json ();
+       list_property_subscribers_json ();
      std::string 
        list_subscribed_properties_json (std::string subscriber_name);
      
@@ -145,6 +145,32 @@
      //if method exists (only one method)
      bool auto_invoke  (std::string method_name,
 			std::vector<std::string> args);  
+
+     //signals 
+     bool make_signal_subscriber (std::string subscriber_name,
+				  void (*callback)(std::string subscriber_name,
+						   std::string quiddity_name,
+						   std::string property_name,
+						   std::vector<std::string> params,
+						   void *user_data),
+				  void *user_data);
+     bool remove_signal_subscriber (std::string subscriber_name);
+     bool subscribe_signal (std::string subscriber_name,
+			    std::string quiddity_name,
+			    std::string signal_name);
+     bool unsubscribe_signal (std::string subscriber_name,
+			      std::string quiddity_name,
+			      std::string signal_name);
+     std::vector<std::string> 
+       list_signal_subscribers ();
+     std::vector<std::pair<std::string, std::string> > 
+       list_subscribed_signals (std::string subscriber_name);
+     //json //FIXME implement or remove
+     std::string 
+       list_signal_subscribers_json ();
+     std::string 
+       list_subscribed_signals_json (std::string subscriber_name);
+
 
    private: 
      QuiddityManager();//will get name "default"

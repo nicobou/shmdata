@@ -32,6 +32,7 @@ namespace switcher
   {
     properties_description_.reset (new JSONBuilder());
     methods_description_.reset (new JSONBuilder());
+    signals_description_.reset (new JSONBuilder());
   }
   
   Quiddity::~Quiddity () { 
@@ -65,6 +66,44 @@ namespace switcher
     nick_name_ = nick_name;
     return true;
   }
+  
+  
+  bool 
+  Quiddity::register_signal_gobject (std::string signal_name,
+				     GObject *object, 
+				     std::string gobject_signal_name)
+  {
+    
+    if (signals_.find(signal_name) != signals_.end())
+      {
+	g_warning ("signals: registering name %s already exists",signal_name.c_str());
+	return false;
+      }
+    
+    Signal::ptr signal (new Signal ());
+    if (!signal->set_gobject_signame (object, gobject_signal_name))
+      return false;
+    signals_[signal_name] = signal; 
+    g_debug ("signal %s registered with name %s", 
+      	     gobject_signal_name.c_str (),
+      	     signal_name.c_str ());
+    return true;
+  }
+
+  bool 
+  Quiddity::set_signal_description (const std::string signal_name,
+				    const std::string short_description,
+				    const std::vector<std::pair<std::string,std::string> > arg_description)
+  {
+    if (signals_.find( signal_name ) == signals_.end())
+      {
+	g_error ("cannot set description of a not existing signal");
+	return false;
+      }
+    signals_[signal_name]->set_description (signal_name, short_description, arg_description);
+    return true;
+  }
+
 
   bool 
   Quiddity::register_property_by_pspec (GObject *object, 
@@ -75,7 +114,6 @@ namespace switcher
     Property::ptr prop (new Property ());
     prop->set_gobject_pspec (object, pspec);
 
-    //std::string name ( prefix + "/" + object_property );
     if (properties_.find(name_to_give) == properties_.end())
       {
 	properties_[name_to_give] = prop; 
@@ -275,6 +313,34 @@ namespace switcher
 
     Property::ptr prop = properties_[name];
     return prop->unsubscribe (cb, user_data);
+  }
+
+  bool 
+  Quiddity::subscribe_signal (std::string signal_name, 
+			      Signal::OnEmittedCallback cb,
+			      void *user_data)
+  {
+    if (signals_.find(signal_name) == signals_.end())
+      {
+	g_warning ("Quiddity::subscribe_signal, signal %s not found");
+	return false;
+      }
+
+
+    Signal::ptr sig = signals_[signal_name];
+    return sig->subscribe (cb, user_data);
+  }
+
+  bool 
+  Quiddity::unsubscribe_signal (std::string signal_name,
+				Signal::OnEmittedCallback cb,
+				void *user_data)
+  {
+    if (signals_.find (signal_name) == signals_.end())
+      return false;
+
+    Signal::ptr signal = signals_[signal_name];
+    return signal->unsubscribe (cb, user_data);
   }
 
 

@@ -78,17 +78,17 @@ main (int argc,
     arg.push_back ("pipeline0");
     manager->auto_invoke ("set_runtime",arg);
     
-    manager->make_subscriber ("sub", mon_property_cb, (void *)user_string);
+    manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);
     manager->create ("videotestsrc","vid");
  
     manager->subscribe_property ("sub","vid","pattern");
     manager->subscribe_property ("sub","vid","text");
     
-    std::vector<std::string> subscribers = manager->list_subscribers ();
+    std::vector<std::string> subscribers = manager->list_property_subscribers ();
     if (subscribers.size () != 1 
     	|| g_strcmp0 (subscribers.at(0).c_str (), "sub") != 0)
       {
-    	g_warning ("pb with list_subscribers");
+    	g_warning ("pb with list_property_subscribers");
     	return 1;
       }
     
@@ -107,7 +107,7 @@ main (int argc,
     manager->set_property ("vid", "pattern", "1");
     
     manager->unsubscribe_property ("sub", "vid", "pattern");
-    manager->remove_subscriber ("sub");
+    manager->remove_property_subscriber ("sub");
     manager->remove ("vid");
   }
 

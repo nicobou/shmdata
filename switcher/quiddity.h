@@ -30,8 +30,10 @@
 #include <memory>
 #include <map>
 #include <gst/gst.h>
+
 #include "property.h"
 #include "method.h"
+#include "signal-string.h"
 #include "quiddity-documentation.h"
 #include "quiddity-life-manager.h"
 #include "json-builder.h"
@@ -71,7 +73,6 @@ namespace switcher
     bool unsubscribe_property (std::string name,
 			       Property::Callback cb,
 			       void *user_data);
-
     
     //methods
     std::string get_method_description (std::string method_name);
@@ -81,6 +82,17 @@ namespace switcher
     int method_get_num_value_args (std::string function_name); //returns -1 if method not found
     int method_get_num_pointer_args (std::string function_name); //returns -1 if method not found
     
+    //signals
+    /* std::string get_signal_description (std::string property_name); */
+    /* std::string get_signals_description (); */
+    bool subscribe_signal (std::string name,
+			   Signal::OnEmittedCallback cb, 
+			   void *user_data);
+    bool unsubscribe_signal (std::string name,
+			     Signal::OnEmittedCallback cb,
+			     void *user_data);
+    
+
     //shmdata socket names
     static std::string get_socket_name_prefix ();
     static std::string get_socket_dir ();
@@ -94,6 +106,8 @@ namespace switcher
     JSONBuilder::ptr properties_description_;
     std::map<std::string, Method::ptr> methods_;
     JSONBuilder::ptr methods_description_;
+    std::map<std::string, Signal::ptr> signals_;
+    JSONBuilder::ptr signals_description_;
     std::string name_;
     std::string nick_name_;
  
@@ -101,21 +115,35 @@ namespace switcher
     //naming
     bool set_name (std::string name);
 
-    //property name will be <prefix>/<object_property>
+    //property
     bool register_property (GObject *object, 
 			    std::string gobject_property_name, 
 			    std::string name_to_give);
     bool register_property_by_pspec (GObject *object, 
 				     GParamSpec *pspec, 
 				     std::string name_to_give);
+    //method
     bool register_method (std::string method_name,
 			  void *method, 
 			  Method::args_types arg_types, 
 			  gpointer user_data);
+
     bool set_method_description (const std::string method_name,
 				 const std::string short_description,
 				 const Method::args_doc arg_description);
-    //use a consistent naming for shmdatas FIXME move that to segment
+
+    //signal
+    bool register_signal_gobject (std::string signal_name, //the name to give
+				  GObject *object, 
+				  std::string gobject_signal_name);//the internal gobject signal name
+
+    bool set_signal_description (const std::string signal_name,
+				 const std::string short_description,
+				 const Signal::args_doc arg_description);
+    
+
+
+    //use a consistent naming for shmdatas FIXME move that to segment (or not?) 
     std::string make_file_name (std::string suffix);
 
     //used in order to dynamically create other quiddity, weak_ptr is used in order to 
