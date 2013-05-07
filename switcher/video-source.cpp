@@ -87,8 +87,8 @@ namespace switcher
     rawvideo_ = element;
     
     GstCaps *videocaps = gst_caps_new_simple ("video/x-raw-yuv",
-					      "format", GST_TYPE_FOURCC,
-					      GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y'),
+					      // "format", GST_TYPE_FOURCC,
+					      // GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y'),
 					      //"format", GST_TYPE_FOURCC,
 					      //  GST_MAKE_FOURCC ('I', '4', '2', '0'),
 					      //"framerate", GST_TYPE_FRACTION, 30, 1,
