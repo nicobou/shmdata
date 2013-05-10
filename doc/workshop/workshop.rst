@@ -26,15 +26,18 @@ Here is how to build and install it on Debian GNU/Linux or Ubuntu::
 Example with text
 -----------------
 
-write and read text a shmdata (/tmp/myshmdatatext)
+write and read text a shmdata (/tmp/myshmdatatext)::
+  
   $ cd examples/
   $ ./data_writer /tmp/myshmdatatext
 
-#in an other terminal
+in an other terminal::
+
   $ cd examples/
   $ ./data_reader /tmp/myshmdatatext
 
-one writer can feed multiple readers, open an other terminal:
+one writer can feed multiple readers, open an other terminal::
+
   $ cd examples/
   $ ./data_reader /tmp/myshmdatatext
 
@@ -42,10 +45,13 @@ ctrl-C the writer and relaunch, the reader dynamically reattach to it.
 
 shmdata are compatible with gstreamer
 -----------------------------------------
+::
+
   $ cd examples/
   $ ./data_writer /tmp/myshmdatatext
 
-in an other terminal:
+in an other terminal::
+
   $ gst-launch videotestsrc ! "video/x-raw-yuv, width=1024, height=800" ! textoverlay name=to ! xvimagesink shmsrc socket-path=/tmp/truc ! gdpdepay ! to.
 
 here the reader is not dynamically reconnecting because the gstreamer element shmsrc is not capable to reconnect.
@@ -53,6 +59,7 @@ here the reader is not dynamically reconnecting because the gstreamer element sh
 
 shmdata writer, pulseaudio and puredata
 ---------------------------------------
+::
 
 $ rm /tmp/pd_testshm ; padsp pd -oss 1.pd
 $ gst-launch -v shmsrc is-live=true socket-path=/tmp/pd_testshm ! gdpdepay ! decodebin2 ! pulsesink sync=false
@@ -60,6 +67,8 @@ $ gst-launch -v shmsrc is-live=true socket-path=/tmp/pd_testshm ! gdpdepay ! dec
 
 shmdata writer, jack and puredata
 ---------------------------------
+::
+
 $/usr/bin/jackd -r -dalsa -dhw:1,0 -r44100 -p64 -n2 -Xseq
 $ rm /tmp/pd_testshm ; pd -jack -blocksize 64 shmdata-1.pd
 $ gst-launch -v shmsrc is-live=true socket-path=/tmp/pd_testshm ! gdpdepay ! decodebin2 ! jackaudiosink sync=false
@@ -68,7 +77,7 @@ $ gst-launch -v shmsrc is-live=true socket-path=/tmp/pd_testshm ! gdpdepay ! dec
 
 shmdata writer and reader
 -------------------------
-you can read your shmdata with shmsrc~
+you can read your shmdata with shmsrc~::
 $ rm /tmp/pd_testshm ; padsp pd  -blocksize 512 -oss shmdata-2.pd
 
 shmdata path
@@ -78,6 +87,8 @@ TODO
 
 writing code for a writer (libshmdata-any)
 ------------------------------------------
+::
+
 $sudo make install
 $cp examples/data-writer.c ~/tmp/
 $cd ~/tmp
@@ -86,6 +97,8 @@ $gcc data-writer.c -o datawriter `pkg-config --cflags --libs shmdata-any-0.6`
 
 writing code for a reader (libshmdata-any)
 ------------------------------------------
+::
+
 $sudo make install
 $cp examples/data-reader.c ~/tmp/
 $cd ~/tmp
@@ -97,6 +110,7 @@ switcher
 
 install
 -------
+::
 
   $ sudo apt-get install automake bison build-essential flex libtool
   $ sudo apt-get install libglib2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libjson-glib-dev liblo-dev
@@ -106,25 +120,32 @@ install
   $ sudo make install
   $ sudo ldconfig
 
+
 help
 ----
-TODO 
-switcher -h
+
+::
+
+  switcher -h
 
 
 create quiddity, invoke and remove quiddity
 -------------------------------------------
+::
+
 $switcher -d --osc-port 7770
 $rm /tmp/pd_testshm ; padsp pd -oss switcher-1.pd
 
 register to switcher properties (get the logs)
 ----------------------------------------------
+::
+
 $switcher -d --osc-port 7770
 $rm /tmp/pd_testshm ; padsp pd -oss switcher-2.pd
 
 play Big Buck Bunny from the web 
 --------------------------------
-audio in pd, video in an external window
+audio in pd, video in an external window::
 
 $switcher -d --osc-port 7770
 $/usr/bin/jackd -r -dalsa -dhw:1,0 -r44100 -p64 -n2 -Xseq
@@ -132,6 +153,8 @@ $rm /tmp/pd_testshm ; pd -jack switcher-3.pd
 
 stream to a location
 --------------------
+
+::
 
 $switcher -d --osc-port 7770
 $/usr/bin/jackd -r -dalsa -dhw:1,0 -r44100 -p64 -n2 -Xseq
