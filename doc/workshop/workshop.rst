@@ -24,15 +24,18 @@ Example with text
 -----------------
 Objective: exchanging text between two applications
 
-write and read text a shmdata (/tmp/myshmdatatext)
+write and read text a shmdata (/tmp/myshmdatatext)::
+  
   $ cd examples/
   $ ./data_writer /tmp/myshmdatatext
 
-#in an other terminal
+in an other terminal::
+
   $ cd examples/
   $ ./data_reader /tmp/myshmdatatext
 
-one writer can feed multiple readers, open an other terminal:
+one writer can feed multiple readers, open an other terminal::
+
   $ cd examples/
   $ ./data_reader /tmp/myshmdatatext
 
@@ -45,7 +48,8 @@ Objective: use with GStreamer and gst-launch
   $ cd examples/
   $ ./data_writer /tmp/myshmdatatext
 
-in an other terminal:
+in an other terminal::
+
   $ gst-launch videotestsrc ! "video/x-raw-yuv, width=1024, height=800" ! textoverlay name=to ! xvimagesink shmsrc socket-path=/tmp/truc ! gdpdepay ! to.
 
 In this example the reader is not dynamically reconnecting because the gstreamer element shmsrc is not capable to reconnect.
@@ -111,6 +115,7 @@ Note: you need OSC PureData externals. Following examples uses OSCtx and OSCrx.
 $ sudo apt-get install automake bison build-essential flex libtool
 $ sudo apt-get install libglib2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libjson-glib-dev liblo-dev
 $ ./autogen.sh && ./configure && make && sudo make install && sudo ldconfig
+
 
 help
 ----
