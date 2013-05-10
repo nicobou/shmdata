@@ -59,7 +59,7 @@ $ gst-launch -v shmsrc is-live=true socket-path=/tmp/pd_testshm ! gdpdepay ! dec
 
 shmdata writer, jack and puredata
 ---------------------------------
-Objective: getting audio from puredata into a GStreamer pipeline and playing with jack (maybe not the best use of shmdata here ;)
+Objective: same as previous but playing playing through jack (ok, maybe not the best use of shmdata here ;)
 Know issue: pd blocksize must be equal or higher than jack blocksize
  
 $ /usr/bin/jackd -r -dalsa -dhw:1,0 -r44100 -p64 -n2 -Xseq
@@ -106,6 +106,7 @@ Note 2: quiddities will have signal in the next 2 weeks
 install
 -------
 Objective: install from sources
+Note: you need OSC PureData externals. Following examples uses OSCtx and OSCrx.
 
 $ sudo apt-get install automake bison build-essential flex libtool
 $ sudo apt-get install libglib2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libjson-glib-dev liblo-dev
@@ -122,13 +123,16 @@ $ switcher-ctrl -h
 create quiddity, invoke and remove quiddity
 -------------------------------------------
 Objective: first creating of a quiddity from puredata
+Note: shmdata path are of form </tmp/switcher_default_quiddityname_suffix, 
+where "default" is the name of the switcher server, "quiddityname" is the name you gave at create
+and suffix depends on the quiddity
 
 $ switcher -d --osc-port 7770
 $ rm /tmp/pd_testshm ; padsp pd -oss switcher-1.pd
 
 register to switcher properties (get the logs)
 ----------------------------------------------
-Objective: subscribe to a property 
+Objective: get notifid of internal changes (subscribe to a property and switcher logs) 
 
 switcher logger is a quiddity with a string property call "last-line"
 $ switcher -d --osc-port 7770
