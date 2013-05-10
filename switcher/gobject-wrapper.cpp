@@ -100,10 +100,10 @@ namespace switcher
     MyObject *myobj = (MyObject *) gobject;
 
     GObjectWrapper *context = static_cast <GObjectWrapper *> (myobj->context);
-    //context->custom_properties_[prop_id]->invoke_set (value, context->user_data_);
+    //context->custom_properties_[prop_id]->invoke_set (value, context->property_user_data_);
     //context->invoke_set(prop_id, value);
     (*context->get_set_method_pointer (prop_id)) (value, 
-						  context->get_user_data (g_param_spec_get_nick (pspec)));
+						  context->property_get_user_data (g_param_spec_get_nick (pspec)));
 
     // switch (prop_id)
     //   {
@@ -137,10 +137,10 @@ namespace switcher
      MyObject *myobj = (MyObject *) gobject;
      
      GObjectWrapper *context = static_cast <GObjectWrapper *> (myobj->context);
-     //context->custom_properties_[prop_id]->invoke_set (value, context->user_data_);
+     //context->custom_properties_[prop_id]->invoke_set (value, context->property_user_data_);
      //context->invoke_set(prop_id, value);
      (*context->get_get_method_pointer (prop_id)) (value, 
-						   context->get_user_data (g_param_spec_get_nick (pspec)));
+						   context->property_get_user_data (g_param_spec_get_nick (pspec)));
     
      // switch (prop_id)
      //   {
@@ -206,7 +206,7 @@ namespace switcher
   {
     my_object_ = (MyObject *)g_object_new (my_object_get_type (), NULL);
     my_object_-> context = this;
-    default_user_data_ = NULL;
+    property_default_user_data_ = NULL;
     //GParamSpec *pspec;
 
     // pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (my_object_), "foo");
@@ -240,10 +240,10 @@ namespace switcher
   }
 
   void
-  GObjectWrapper::set_user_data (std::string nickname,
+  GObjectWrapper::property_set_user_data (std::string nickname,
 				 void *user_data)
   {
-    user_datas_[nickname] = user_data;
+    property_user_datas_[nickname] = user_data;
   }
 
   //TODO provide other make_..._property for other types
@@ -386,16 +386,16 @@ namespace switcher
   }
 
   void *
-  GObjectWrapper::get_user_data (std::string nickname)
+  GObjectWrapper::property_get_user_data (std::string nickname)
   {
-    if (user_datas_.find (nickname) == user_datas_.end ())
-      return default_user_data_;
-    return user_datas_[nickname];
+    if (property_user_datas_.find (nickname) == property_user_datas_.end ())
+      return property_default_user_data_;
+    return property_user_datas_[nickname];
   }
 
   void 
-  GObjectWrapper::set_default_user_data (void *default_user_data)
+  GObjectWrapper::property_set_default_user_data (void *default_user_data)
   {
-    default_user_data_ = default_user_data;
+    property_default_user_data_ = default_user_data;
   }
  }

@@ -44,9 +44,11 @@ namespace switcher
     //---------- properties
     static void notify_property_changed (GObject *object, GParamSpec *pspec);
     //user data for set and get methods
-    void set_user_data (std::string nickname, void *user_data);
-    void *get_user_data (std::string nickname);
-    void set_default_user_data (void *default_user_data);
+    void property_set_user_data (std::string nickname, void *user_data);
+    void *property_get_user_data (std::string nickname);
+    void property_set_default_user_data (void *default_user_data);
+
+
 
     //TODO see g_value_... for  implementation of other types
     static 
@@ -87,8 +89,13 @@ namespace switcher
     //---------- properties
     static std::map<guint, GObjectCustomProperty::ptr> custom_properties_;
     static guint next_prop_id_;
-    std::map<std::string, void *> user_datas_;
-    void *default_user_data_;
+    std::map<std::string, void *> property_user_datas_;
+    void *property_default_user_data_;
+    //---------- signals
+    /* static std::map<guint, GObjectCustomSignal::ptr> custom_signals_;  */
+    /* static guint next_signal_id_;  */
+    /* std::map<std::string, void *> signal_user_datas_;  */
+    /* void *signal_default_user_data_;  */
   };
 
 }  // end of namespace

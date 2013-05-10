@@ -127,7 +127,7 @@ namespace switcher
     user_method->gobject = get_gobject ();
     user_method->pspec = pspec;
     user_methods_.push_back (user_method);
-    gobject_->set_user_data (nickname, user_method.get ());
+    gobject_->property_set_user_data (nickname, user_method.get ());
   }
 
   bool

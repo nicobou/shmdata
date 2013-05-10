@@ -194,7 +194,7 @@ namespace switcher
     json_description_->end_array ();
     json_description_->end_object ();
     
-    g_print ("%s\n",get_description ().c_str ());
+    //g_print ("%s\n",get_description ().c_str ());
   }
 
  std::vector<GType> 
