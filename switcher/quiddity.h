@@ -37,6 +37,7 @@
 #include "quiddity-documentation.h"
 #include "quiddity-life-manager.h"
 #include "json-builder.h"
+#include "gobject-wrapper.h"
 
 namespace switcher
 {
@@ -149,6 +150,9 @@ namespace switcher
     //used in order to dynamically create other quiddity, weak_ptr is used in order to 
     //avoid circular references to the life manager 
     std::weak_ptr<QuiddityLifeManager> life_manager_;
+
+    //gobject wrapper for custom signals and properties
+    GObjectWrapper::ptr gobject_;
   };
   
 } // end of namespace

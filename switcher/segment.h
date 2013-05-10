@@ -27,7 +27,6 @@
 #include "shmdata-writer.h"
 #include "shmdata-reader.h"
 #include "json-builder.h"
-#include "gobject-wrapper.h"
 #include <memory>
 #include <vector>
 
@@ -69,7 +68,6 @@ namespace switcher
     void update_shmdata_writers_description ();
     void update_shmdata_readers_description ();
     //shmdatas as param
-    GObjectWrapper::ptr gobject_;
     static GParamSpec *json_writers_description_;
     static GParamSpec *json_readers_description_;
   };
