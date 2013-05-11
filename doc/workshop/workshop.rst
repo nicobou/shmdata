@@ -16,7 +16,7 @@ Here is how to build and install it on Debian GNU/Linux or Ubuntu
 ::
 
   $ sudo apt-get install automake bison build-essential flex libtool 
-  $ sudo apt-get install libglib2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev
+  $ sudo apt-get install libglib2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev gstreamer-tools
   $ sudo apt-get install puredata-dev libsamplerate0-dev
   $ ./autogen.sh && ./configure && make && make check && sudo make install && sudo ldconfig
 
