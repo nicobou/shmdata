@@ -51,7 +51,7 @@ Objective: use with GStreamer and gst-launch
 in an other terminal
 ::
 
-  $ gst-launch videotestsrc ! "video/x-raw-yuv, width=1024, height=800" ! textoverlay name=to ! xvimagesink shmsrc socket-path=/tmp/truc ! gdpdepay ! to.
+  $ gst-launch videotestsrc ! "video/x-raw-yuv, width=1024, height=800" ! textoverlay name=to ! xvimagesink shmsrc socket-path=/tmp/myshmdatatext ! gdpdepay ! to.
 
 In this example the reader is not dynamically reconnecting because the gstreamer element shmsrc is not capable to reconnect.
 
