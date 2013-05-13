@@ -16,7 +16,7 @@ Here is how to build and install it on Debian GNU/Linux or Ubuntu
 ::
 
   $ sudo apt-get install automake bison build-essential flex libtool 
-  $ sudo apt-get install libglib2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev
+  $ sudo apt-get install libglib2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev gstreamer-tools
   $ sudo apt-get install puredata-dev libsamplerate0-dev
   $ ./autogen.sh && ./configure && make && make check && sudo make install && sudo ldconfig
 
@@ -51,7 +51,7 @@ Objective: use with GStreamer and gst-launch
 in an other terminal
 ::
 
-  $ gst-launch videotestsrc ! "video/x-raw-yuv, width=1024, height=800" ! textoverlay name=to ! xvimagesink shmsrc socket-path=/tmp/truc ! gdpdepay ! to.
+  $ gst-launch videotestsrc ! "video/x-raw-yuv, width=1024, height=800" ! textoverlay name=to ! xvimagesink shmsrc socket-path=/tmp/myshmdatatext ! gdpdepay ! to.
 
 In this example the reader is not dynamically reconnecting because the gstreamer element shmsrc is not capable to reconnect.
 
