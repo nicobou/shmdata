@@ -57,10 +57,23 @@ namespace switcher
 		 gobject_signal_name.c_str ());
 	return false;
       }
+
+    return set_gobject_sigid (object, id);
+  }
+
+  bool
+  Signal::set_gobject_sigid (GObject *object, 
+			     guint gobject_signal_id)
+  {
+    if (!G_IS_OBJECT (object))
+      {
+	g_debug ("Signal: object is not a gobject");
+	return false;
+      }
+ 
     object_ = object;
-    id_ = id;
+    id_ = gobject_signal_id;
     inspect_gobject_signal ();
-    //HERE !
     hook_id_ = g_signal_add_emission_hook (id_, 0, on_signal_emitted, this, NULL);
     return true;
   }
@@ -304,6 +317,11 @@ namespace switcher
     else
       return false;
   }
-  
+
+  void 
+  Signal::signal_emit (const gchar *used_string, va_list  var_args)
+  {
+    g_signal_emit_valist (object_, id_, 0, var_args);
+  }  
 }
 

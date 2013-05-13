@@ -91,6 +91,27 @@ namespace switcher
   }
 
   bool 
+  Quiddity::register_signal_gobject_by_id (std::string signal_name,
+					   GObject *object, 
+					   guint gobject_signal_id)
+  {
+    
+    if (signals_.find(signal_name) != signals_.end())
+      {
+	g_warning ("signals: registering name %s already exists",signal_name.c_str());
+	return false;
+      }
+    
+    Signal::ptr signal (new Signal ());
+    if (!signal->set_gobject_sigid (object, gobject_signal_id))
+      return false;
+    signals_[signal_name] = signal; 
+    g_debug ("signal %s registered", 
+	     signal_name.c_str ());
+    return true;
+  }
+
+  bool 
   Quiddity::set_signal_description (const std::string signal_name,
 				    const std::string short_description,
 				    const std::vector<std::pair<std::string,std::string> > arg_description)
@@ -341,6 +362,20 @@ namespace switcher
 
     Signal::ptr signal = signals_[signal_name];
     return signal->unsubscribe (cb, user_data);
+  }
+
+  void
+  Quiddity::signal_emit (const std::string signal_name, 
+			 ...)
+  {
+      if (signals_.find (signal_name) == signals_.end())
+	return;
+    Signal::ptr signal = signals_[signal_name];
+    va_list var_args;
+    va_start (var_args, signal_name);
+    signal->signal_emit (signal_name.c_str (), var_args); 
+    va_end (var_args);
+    
   }
 
 

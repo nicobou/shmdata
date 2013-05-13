@@ -134,13 +134,20 @@ namespace switcher
 				 const Method::args_doc arg_description);
 
     //signal
-    bool register_signal_gobject (std::string signal_name, //the name to give
+    bool register_signal_gobject (const std::string signal_name, //the name to give
 				  GObject *object, 
-				  std::string gobject_signal_name);//the internal gobject signal name
+				  const std::string gobject_signal_name);//the internal gobject signal name
 
+    bool register_signal_gobject_by_id (const std::string signal_name, //the name to give
+					GObject *object, 
+					guint gobject_signal_id);//the internal gobject signal id
+    
     bool set_signal_description (const std::string signal_name,
 				 const std::string short_description,
 				 const Signal::args_doc arg_description);
+    
+    void signal_emit (const std::string signal_name, 
+		      ...);
     
 
 

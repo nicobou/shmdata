@@ -43,6 +43,8 @@ namespace switcher
 
     bool set_gobject_signame (GObject *object, 
 			      std::string gobject_signal_name);
+    bool set_gobject_sigid (GObject *object, 
+			    guint gobject_signal_id);
     void set_description (std::string signal_name,
 			  std::string short_description,
 			  args_doc arg_description);
@@ -50,7 +52,8 @@ namespace switcher
     
     bool subscribe (OnEmittedCallback cb, void *user_data);
     bool unsubscribe (OnEmittedCallback cb, void *user_data);
-
+ 
+    void signal_emit (const gchar *used_string, va_list  var_args);
 
     //helper methods, use NULL sentinel
     //do no describe the first gobject (first signal arg)
