@@ -101,7 +101,6 @@ namespace switcher
 	g_warning ("signals: registering name %s already exists",signal_name.c_str());
 	return false;
       }
-    
     Signal::ptr signal (new Signal ());
     if (!signal->set_gobject_sigid (object, gobject_signal_id))
       return false;
@@ -373,9 +372,11 @@ namespace switcher
     Signal::ptr signal = signals_[signal_name];
     va_list var_args;
     va_start (var_args, signal_name);
+    // va_list va_cp;
+    // va_copy (va_cp, var_args);
+    // signal->signal_emit (signal_name.c_str (), va_cp); 
     signal->signal_emit (signal_name.c_str (), var_args); 
     va_end (var_args);
-    
   }
 
 
@@ -409,5 +410,10 @@ namespace switcher
   Quiddity::set_life_manager (QuiddityLifeManager::ptr life_manager)
   {
     life_manager_ = life_manager;
+  }
+
+  GObjectWrapper::ptr Quiddity::get_quiddity_internal_gobject ()
+  {
+    return gobject_;
   }
 }

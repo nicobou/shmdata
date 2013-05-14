@@ -148,8 +148,8 @@ namespace switcher
     
     void signal_emit (const std::string signal_name, 
 		      ...);
-    
 
+    GObjectWrapper::ptr get_quiddity_internal_gobject ();
 
     //use a consistent naming for shmdatas FIXME move that to segment (or not?) 
     std::string make_file_name (std::string suffix);

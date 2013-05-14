@@ -103,7 +103,8 @@ main (int argc,
     manager->invoke_va ("rtp", "set_runtime", "runtime", NULL);
     
     manager->make_signal_subscriber ("sig_sub", mon_signal_cb, (void *)user_string);
-    manager->subscribe_signal ("sig_sub","rtp","on-pad-added");
+    //manager->subscribe_signal ("sig_sub","rtp","on-pad-added");
+    manager->subscribe_signal ("sig_sub","rtp","truc");
 
     manager->invoke_va ("rtp",
       			"add_data_stream",

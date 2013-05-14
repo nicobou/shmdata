@@ -237,25 +237,21 @@ namespace switcher
     next_signal_num_++;
     gchar *name = g_strdup_printf ("custom_signal_%d", sig_id);
 
-   //TODO find a way to get CLASS without instanciating an unused object
-    MyObject *obj = (MyObject *)g_object_new (my_object_get_type (), NULL);
-    guint signal_id =
-      g_signal_newv (name,
-		     G_TYPE_FROM_CLASS (G_OBJECT_GET_CLASS (obj)),
-		     G_SIGNAL_RUN_LAST,
-		     0,
-		     NULL, //GSignalAccumulator
-		     NULL, //gpointer accu_data
-		     NULL, //GSignalCMarshaller
-		     return_type,
-		     n_params,
-		     param_types);
-    g_object_unref (obj);
+    //TODO find a way to get CLASS without instanciating an unused object
+     MyObject *obj = (MyObject *)g_object_new (my_object_get_type (), NULL);
+     guint signal_id =
+       g_signal_newv (name,
+    		     G_TYPE_FROM_CLASS (G_OBJECT_GET_CLASS (obj)),
+    		     G_SIGNAL_RUN_LAST,
+    		     0,
+    		     NULL, //GSignalAccumulator
+    		     NULL, //gpointer accu_data
+    		     NULL, //GSignalCMarshaller
+    		     return_type,
+    		     n_params,
+    		     param_types);
+     g_object_unref (obj);
     
-    // GObjectCustomSignal::ptr signal =  
-    //   GObjectCustomSignal::make_custom_signal ();
-    // custom_signals_[signal_id] = signal;
-
     return signal_id;
   }
 

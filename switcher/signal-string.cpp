@@ -207,7 +207,7 @@ namespace switcher
     json_description_->end_array ();
     json_description_->end_object ();
     
-    //g_print ("%s\n",get_description ().c_str ());
+    g_print ("%s\n",get_description ().c_str ());
   }
 
  std::vector<GType> 
@@ -258,31 +258,31 @@ namespace switcher
 			     const GValue *param_values,
 			     gpointer user_data)
   {
-    Signal *context = static_cast<Signal *> (user_data);
-    GObject *object = (GObject *)g_value_peek_pointer (&param_values[0]);
-    if (object != context->object_)
-      return TRUE;
+     Signal *context = static_cast<Signal *> (user_data);
+     GObject *object = (GObject *)g_value_peek_pointer (&param_values[0]);
+     if (object != context->object_)
+       return TRUE;
 
-    std::vector<std::string> params;
+     std::vector<std::string> params;
 
-    //g_debug ("signal name n_value %d, object type %s", n_param_values, G_OBJECT_TYPE_NAME (object));
-    int i;
-    for (i = 0; i < n_param_values; i++)
-      {
-	gchar *val_str = GstUtils::gvalue_serialize (&param_values[i]);
-	params.push_back (val_str);
-	//g_print ("%s - ", val_str);
-	g_free (val_str);
-      }
-    std::vector<std::pair<OnEmittedCallback, void *> >::iterator it;
-    
-    for (it = context->subscribed_on_emitted_callbacks_.begin ();
-	 it != context->subscribed_on_emitted_callbacks_.end ();
-	 it++)
-	it->first (params, it->second);
-
-    //g_print ("\n");
-    return TRUE; //keep the hook alive
+     g_debug ("signal name n_value %d, object type %s\n", n_param_values, G_OBJECT_TYPE_NAME (object));
+     int i;
+     for (i = 1; i < n_param_values; i++) //we do not deserialize the gobject
+       {
+	 gchar *val_str = GstUtils::gvalue_serialize (&param_values[i]);
+	 if (val_str == NULL)//gst-streamer connt serialize this
+	   val_str = g_strdup ("NULL");
+	 params.push_back (val_str);
+	 g_free (val_str);
+       }
+     std::vector<std::pair<OnEmittedCallback, void *> >::iterator it;
+     
+     for (it = context->subscribed_on_emitted_callbacks_.begin ();
+	  it != context->subscribed_on_emitted_callbacks_.end ();
+	  it++)
+       it->first (params, it->second);
+     
+     return TRUE; //keep the hook alive
   }
 
   bool
@@ -319,9 +319,8 @@ namespace switcher
   }
 
   void 
-  Signal::signal_emit (const gchar *used_string, va_list  var_args)
+  Signal::signal_emit (const gchar *unused_string, va_list  var_args)
   {
     g_signal_emit_valist (object_, id_, 0, var_args);
   }  
 }
-
