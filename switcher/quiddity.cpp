@@ -386,9 +386,9 @@ namespace switcher
   Quiddity::make_file_name (std::string suffix)
   {
     std::string connector_name;
-    QuiddityManager_Impl::ptr life_manager = life_manager_.lock ();
-    if ( (bool)life_manager)
-      connector_name.append ("/tmp/switcher_"+life_manager->get_name ()+"_"+nick_name_+"_"+suffix);
+    QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
+    if ( (bool)manager)
+      connector_name.append ("/tmp/switcher_"+manager->get_name ()+"_"+nick_name_+"_"+suffix);
     else
       connector_name.append ("/tmp/switcher__"+nick_name_+"_"+ suffix); 
 
@@ -409,9 +409,9 @@ namespace switcher
 
 
   void
-  Quiddity::set_life_manager (QuiddityManager_Impl::ptr life_manager)
+  Quiddity::set_manager_impl (QuiddityManager_Impl::ptr manager_impl)
   {
-    life_manager_ = life_manager;
+    manager_impl_ = manager_impl;
   }
 
   GObjectWrapper::ptr Quiddity::get_quiddity_internal_gobject ()

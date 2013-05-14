@@ -98,8 +98,8 @@ namespace switcher
     static std::string get_socket_name_prefix ();
     static std::string get_socket_dir ();
 
-    //life manager  initialization
-    void set_life_manager (std::shared_ptr<QuiddityManager_Impl> life_manager);
+    //manager_impl  initialization
+    void set_manager_impl (std::shared_ptr<QuiddityManager_Impl> manager_impl);
 
   private:
     //properties are registered by derived class
@@ -155,8 +155,8 @@ namespace switcher
     std::string make_file_name (std::string suffix);
 
     //used in order to dynamically create other quiddity, weak_ptr is used in order to 
-    //avoid circular references to the life manager 
-    std::weak_ptr<QuiddityManager_Impl> life_manager_;
+    //avoid circular references to the manager_impl 
+    std::weak_ptr<QuiddityManager_Impl> manager_impl_;
 
     //gobject wrapper for custom signals and properties
     GObjectWrapper::ptr gobject_;

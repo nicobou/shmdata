@@ -45,7 +45,7 @@ namespace switcher
   {
     init_gmainloop ();
     init_command_sync ();
-    life_manager_ = QuiddityManager_Impl::make_manager ();
+    manager_impl_ = QuiddityManager_Impl::make_manager ();
   }
 
   QuiddityManager::QuiddityManager(std::string name) :
@@ -53,7 +53,7 @@ namespace switcher
   {
     init_gmainloop ();
     init_command_sync ();
-    life_manager_ = QuiddityManager_Impl::make_manager (name);
+    manager_impl_ = QuiddityManager_Impl::make_manager (name);
   }
 
   QuiddityManager::~QuiddityManager()
@@ -140,13 +140,13 @@ namespace switcher
 						     void *user_data),
 				    void *user_data)
   {
-    return life_manager_->make_property_subscriber (subscriber_name, callback, user_data);
+    return manager_impl_->make_property_subscriber (subscriber_name, callback, user_data);
   }
 
     bool 
 QuiddityManager::remove_property_subscriber (std::string subscriber_name)
     {
-      return life_manager_->remove_property_subscriber (subscriber_name);
+      return manager_impl_->remove_property_subscriber (subscriber_name);
     }
   
   bool 
@@ -154,7 +154,7 @@ QuiddityManager::remove_property_subscriber (std::string subscriber_name)
 				       std::string quiddity_name,
 				       std::string property_name)
   {
-    return life_manager_->subscribe_property (subscriber_name, quiddity_name, property_name);
+    return manager_impl_->subscribe_property (subscriber_name, quiddity_name, property_name);
   }
   
   bool 
@@ -162,31 +162,31 @@ QuiddityManager::remove_property_subscriber (std::string subscriber_name)
 					 std::string quiddity_name,
 					 std::string property_name)
   {
-    return life_manager_->unsubscribe_property (subscriber_name, quiddity_name, property_name);
+    return manager_impl_->unsubscribe_property (subscriber_name, quiddity_name, property_name);
       }
   
   std::vector<std::string> 
   QuiddityManager::list_property_subscribers ()
   {
-    return life_manager_->list_property_subscribers ();
+    return manager_impl_->list_property_subscribers ();
   }
   
   std::vector<std::pair<std::string, std::string> > 
   QuiddityManager::list_subscribed_properties (std::string subscriber_name)
   {
-    return life_manager_->list_subscribed_properties (subscriber_name);
+    return manager_impl_->list_subscribed_properties (subscriber_name);
   }
   
   std::string 
   QuiddityManager::list_property_subscribers_json ()
   {
-    return life_manager_->list_property_subscribers_json ();
+    return manager_impl_->list_property_subscribers_json ();
   }
 
   std::string 
   QuiddityManager::list_subscribed_properties_json (std::string subscriber_name)
   {
-    return life_manager_->list_subscribed_properties_json (subscriber_name);
+    return manager_impl_->list_subscribed_properties_json (subscriber_name);
   }
   
   //lower level subscription
@@ -197,7 +197,7 @@ QuiddityManager::remove_property_subscriber (std::string subscriber_name)
 					    void *user_data)
   {
     
-    return life_manager_->subscribe_property_glib (quiddity_name,
+    return manager_impl_->subscribe_property_glib (quiddity_name,
 						   property_name,
 						   cb,
 						   user_data);
@@ -209,7 +209,7 @@ QuiddityManager::remove_property_subscriber (std::string subscriber_name)
 					      Property::Callback cb, 
 					      void *user_data)
   {
-    return life_manager_->unsubscribe_property_glib (quiddity_name,
+    return manager_impl_->unsubscribe_property_glib (quiddity_name,
 						     property_name,
 						     cb, 
 						     user_data);
@@ -320,13 +320,13 @@ QuiddityManager::remove_property_subscriber (std::string subscriber_name)
 							    void *user_data),
 					   void *user_data)
   {
-    return life_manager_->make_signal_subscriber (subscriber_name, callback, user_data);
+    return manager_impl_->make_signal_subscriber (subscriber_name, callback, user_data);
   }
 
     bool 
 QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     {
-      return life_manager_->remove_signal_subscriber (subscriber_name);
+      return manager_impl_->remove_signal_subscriber (subscriber_name);
     }
   
   bool 
@@ -334,7 +334,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 				     std::string quiddity_name,
 				     std::string signal_name)
   {
-    return life_manager_->subscribe_signal (subscriber_name, quiddity_name, signal_name);
+    return manager_impl_->subscribe_signal (subscriber_name, quiddity_name, signal_name);
   }
   
   bool 
@@ -342,40 +342,40 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 				       std::string quiddity_name,
 				       std::string signal_name)
   {
-    return life_manager_->unsubscribe_signal (subscriber_name, quiddity_name, signal_name);
+    return manager_impl_->unsubscribe_signal (subscriber_name, quiddity_name, signal_name);
       }
   
   std::vector<std::string> 
   QuiddityManager::list_signal_subscribers ()
   {
-    return life_manager_->list_signal_subscribers ();
+    return manager_impl_->list_signal_subscribers ();
   }
   
   std::vector<std::pair<std::string, std::string> > 
   QuiddityManager::list_subscribed_signals (std::string subscriber_name)
   {
-    return life_manager_->list_subscribed_signals (subscriber_name);
+    return manager_impl_->list_subscribed_signals (subscriber_name);
   }
   
   std::string 
   QuiddityManager::list_signal_subscribers_json ()
   {
-    return life_manager_->list_signal_subscribers_json ();
+    return manager_impl_->list_signal_subscribers_json ();
   }
 
   std::string 
   QuiddityManager::list_subscribed_signals_json (std::string subscriber_name)
   {
-    return life_manager_->list_subscribed_signals_json (subscriber_name);
+    return manager_impl_->list_subscribed_signals_json (subscriber_name);
   }
 
 
   void 
   QuiddityManager::auto_init (std::string quiddity_name)
   {
-    if (!life_manager_->exists (quiddity_name))
+    if (!manager_impl_->exists (quiddity_name))
       return;
-    Quiddity::ptr quidd = life_manager_->get_quiddity (quiddity_name);
+    Quiddity::ptr quidd = manager_impl_->get_quiddity (quiddity_name);
     QuiddityManagerWrapper::ptr wrapper = std::dynamic_pointer_cast<QuiddityManagerWrapper> (quidd);
     if (wrapper)
       wrapper->set_quiddity_manager (shared_from_this());
@@ -424,40 +424,40 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   std::vector<std::string> 
   QuiddityManager::get_classes ()
   {
-    return life_manager_->get_classes ();
+    return manager_impl_->get_classes ();
   }
 
   std::string 
   QuiddityManager::get_classes_doc ()
   {
-    return life_manager_->get_classes_doc ();
+    return manager_impl_->get_classes_doc ();
   }
 
   
   std::string 
   QuiddityManager::get_class_doc (std::string class_name)
   {
-    return life_manager_->get_class_doc (class_name);
+    return manager_impl_->get_class_doc (class_name);
   }
 
   //FIXME make this a command (or not)
   std::string 
   QuiddityManager::get_quiddities_description ()
   {
-    return life_manager_->get_quiddities_description ();
+    return manager_impl_->get_quiddities_description ();
   }
 
   std::string 
   QuiddityManager::get_quiddity_description (std::string quiddity_name)
   {
-    return life_manager_->get_quiddity_description (quiddity_name);
+    return manager_impl_->get_quiddity_description (quiddity_name);
   }
 
  
   std::vector<std::string> 
   QuiddityManager::get_quiddities ()
   {
-    return life_manager_->get_instances ();
+    return manager_impl_->get_instances ();
   }
   
   void
@@ -545,52 +545,52 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	//TODO
 	break;
       case QuiddityCommand::create:
-	context->command_.result_.push_back (context->life_manager_->create (context->command_.args_[0]));
+	context->command_.result_.push_back (context->manager_impl_->create (context->command_.args_[0]));
 	break;
       case QuiddityCommand::create_nick_named:
-	context->command_.result_.push_back (context->life_manager_->create (context->command_.args_[0], context->command_.args_[1]));
+	context->command_.result_.push_back (context->manager_impl_->create (context->command_.args_[0], context->command_.args_[1]));
 	break;
       case QuiddityCommand::remove:
-	if (context->life_manager_->remove (context->command_.args_[0]))
+	if (context->manager_impl_->remove (context->command_.args_[0]))
 	  context->command_.result_.push_back ("true");
 	else
 	  context->command_.result_.push_back ("false");
 	break;
       case QuiddityCommand::get_properties_description:
-	context->command_.result_.push_back (context->life_manager_->get_properties_description (context->command_.args_[0]));
+	context->command_.result_.push_back (context->manager_impl_->get_properties_description (context->command_.args_[0]));
 	break;
       case QuiddityCommand::get_property_description:
-	context->command_.result_.push_back (context->life_manager_->get_property_description (context->command_.args_[0], context->command_.args_[1]));
+	context->command_.result_.push_back (context->manager_impl_->get_property_description (context->command_.args_[0], context->command_.args_[1]));
 	break;
       case QuiddityCommand::get_properties_description_by_class:
-	context->command_.result_.push_back (context->life_manager_->get_properties_description_by_class (context->command_.args_[0]));
+	context->command_.result_.push_back (context->manager_impl_->get_properties_description_by_class (context->command_.args_[0]));
 	break;
       case QuiddityCommand::get_property_description_by_class:
-	context->command_.result_.push_back (context->life_manager_->get_property_description_by_class (context->command_.args_[0], context->command_.args_[1]));
+	context->command_.result_.push_back (context->manager_impl_->get_property_description_by_class (context->command_.args_[0], context->command_.args_[1]));
 	break;
       case QuiddityCommand::set_property:
-	if (context->life_manager_->set_property (context->command_.args_[0], context->command_.args_[1], context->command_.args_[2]))
+	if (context->manager_impl_->set_property (context->command_.args_[0], context->command_.args_[1], context->command_.args_[2]))
 	  context->command_.result_.push_back ("true");
 	else
 	  context->command_.result_.push_back ("false");
 	break;
       case QuiddityCommand::get_property:
-	context->command_.result_.push_back (context->life_manager_->get_property (context->command_.args_[0], context->command_.args_[1]));
+	context->command_.result_.push_back (context->manager_impl_->get_property (context->command_.args_[0], context->command_.args_[1]));
 	break;
       case QuiddityCommand::get_methods_description:
-	context->command_.result_.push_back (context->life_manager_->get_methods_description (context->command_.args_[0]));
+	context->command_.result_.push_back (context->manager_impl_->get_methods_description (context->command_.args_[0]));
 	break;
       case QuiddityCommand::get_method_description:
-	context->command_.result_.push_back (context->life_manager_->get_method_description (context->command_.args_[0], context->command_.args_[1]));
+	context->command_.result_.push_back (context->manager_impl_->get_method_description (context->command_.args_[0], context->command_.args_[1]));
 	break;
       case QuiddityCommand::get_methods_description_by_class:
-	context->command_.result_.push_back (context->life_manager_->get_methods_description_by_class (context->command_.args_[0]));
+	context->command_.result_.push_back (context->manager_impl_->get_methods_description_by_class (context->command_.args_[0]));
 	break;
       case QuiddityCommand::get_method_description_by_class:
-	context->command_.result_.push_back (context->life_manager_->get_method_description_by_class (context->command_.args_[0], context->command_.args_[1]));
+	context->command_.result_.push_back (context->manager_impl_->get_method_description_by_class (context->command_.args_[0], context->command_.args_[1]));
 	break;
       case QuiddityCommand::invoke:
-	if (context->life_manager_->invoke (context->command_.args_[0], context->command_.args_[1], context->command_.vector_arg_))
+	if (context->manager_impl_->invoke (context->command_.args_[0], context->command_.args_[1], context->command_.vector_arg_))
 	  context->command_.result_.push_back ("true");
 	else
 	  context->command_.result_.push_back ("false");

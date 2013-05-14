@@ -141,10 +141,10 @@ namespace switcher
 	return;
       }
     
-    QuiddityManager_Impl::ptr life_manager = context->life_manager_.lock ();
-    if ( (bool)life_manager)
+    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
+    if ( (bool)manager)
       {
-	Quiddity::ptr quidd = life_manager->get_quiddity (runtime_name);
+	Quiddity::ptr quidd = manager->get_quiddity (runtime_name);
 	Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
 	if(runtime)
 	  context->set_runtime(runtime);

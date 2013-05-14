@@ -173,7 +173,7 @@
    private: 
      QuiddityManager();//will get name "default"
      QuiddityManager(std::string name); 
-     QuiddityManager_Impl::ptr life_manager_; //may be shared with others for automatic quiddity creation 
+     QuiddityManager_Impl::ptr manager_impl_; //may be shared with others for automatic quiddity creation 
      std::string name_;
 
      //auto invoke and init

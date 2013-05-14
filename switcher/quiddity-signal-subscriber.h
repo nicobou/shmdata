@@ -57,14 +57,14 @@ namespace switcher
     std::vector<std::pair<std::string, std::string> > list_subscribed_signals ();
     static void signal_cb (std::vector<std::string> params, gpointer user_data);
         
-    //life manager  initialization
-    void set_life_manager (std::shared_ptr<QuiddityManager_Impl> life_manager);
+    //manager_impl initialization
+    void set_manager_impl (std::shared_ptr<QuiddityManager_Impl> manager_impl);
 
   private:
     OnEmittedCallback user_callback_;
     void *user_data_;
     std::string name_;
-    std::weak_ptr<QuiddityManager_Impl> life_manager_;
+    std::weak_ptr<QuiddityManager_Impl> manager_impl_;
 
     typedef struct {
       gchar *name;

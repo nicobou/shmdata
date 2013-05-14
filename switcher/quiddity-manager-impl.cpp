@@ -273,7 +273,7 @@ namespace switcher
   bool 
   QuiddityManager_Impl::init_quiddity (Quiddity::ptr quiddity)
   {
-    quiddity->set_life_manager (shared_from_this());
+    quiddity->set_manager_impl (shared_from_this());
     if (!quiddity->init ())
       return false;
     // g_critical ("QuiddityManager_Impl: intialization of %s (%s) return false",
@@ -501,7 +501,7 @@ namespace switcher
     
     QuiddityPropertySubscriber::ptr subscriber;
     subscriber.reset (new QuiddityPropertySubscriber());
-    subscriber->set_life_manager (shared_from_this());
+    subscriber->set_manager_impl (shared_from_this());
     subscriber->set_name (subscriber_name.c_str ());
     subscriber->set_user_data (user_data);
     subscriber->set_callback (cb);
@@ -746,7 +746,7 @@ namespace switcher
     
     QuidditySignalSubscriber::ptr subscriber;
     subscriber.reset (new QuidditySignalSubscriber());
-    subscriber->set_life_manager (shared_from_this());
+    subscriber->set_manager_impl (shared_from_this());
     subscriber->set_name (subscriber_name.c_str ());
     subscriber->set_user_data (user_data);
     subscriber->set_callback (cb);
