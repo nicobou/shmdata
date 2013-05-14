@@ -34,7 +34,7 @@
 namespace switcher
 {
   class Quiddity;
-  class QuiddityLifeManager;
+  class QuiddityManager_Impl;
 
   class QuiddityPropertySubscriber
   {
@@ -58,13 +58,13 @@ namespace switcher
     static void property_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data);
     
     //life manager  initialization
-    void set_life_manager (std::shared_ptr<QuiddityLifeManager> life_manager);
+    void set_life_manager (std::shared_ptr<QuiddityManager_Impl> life_manager);
 
   private:
     Callback user_callback_;
     void *user_data_;
     std::string name_;
-    std::weak_ptr<QuiddityLifeManager> life_manager_;
+    std::weak_ptr<QuiddityManager_Impl> life_manager_;
 
     typedef struct {
       gchar *name;

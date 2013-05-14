@@ -18,13 +18,13 @@
  */
 
 /**
- * The QuiddityLifeManager class wraps abstract factory for creating instace by name (birth) 
+ * The QuiddityManagerImpl class wraps abstract factory for creating instace by name (birth) 
  * It wraps StringMap for managing instances (subsistence). 
  * Object destruction is managed through the use of std::shared_ptr
  */
 
-#ifndef __SWITCHER_QUIDDITY_LIFE_MANAGER_H__
-#define __SWITCHER_QUIDDITY_LIFE_MANAGER_H__
+#ifndef __SWITCHER_QUIDDITY_MANAGER_IMPL_H__
+#define __SWITCHER_QUIDDITY_MANAGER_IMPL_H__
 
 
 #include <memory>
@@ -41,15 +41,15 @@ namespace switcher
   class QuiddityPropertySubscriber;
   class QuidditySignalSubscriber;
   
-  class QuiddityLifeManager : public std::enable_shared_from_this<QuiddityLifeManager>
+  class QuiddityManager_Impl : public std::enable_shared_from_this<QuiddityManager_Impl>
 //FIXME rename that into QuiddityManager_Impl or better 
   {
   public:
-    typedef std::shared_ptr< QuiddityLifeManager > ptr;
+    typedef std::shared_ptr< QuiddityManager_Impl > ptr;
     //will get name "default"
-    static QuiddityLifeManager::ptr make_life_manager ();
-    static QuiddityLifeManager::ptr make_life_manager (std::string name);
-    ~QuiddityLifeManager();
+    static QuiddityManager_Impl::ptr make_manager ();
+    static QuiddityManager_Impl::ptr make_manager (std::string name);
+    ~QuiddityManager_Impl();
     
     //**** info about manager
     std::string get_name ();
@@ -63,7 +63,6 @@ namespace switcher
     bool class_exists (std::string class_name);
     bool exists (std::string quiddity_name);
 
-    //**** life
     //creation
     std::string create (std::string quiddity_class);
     std::string create (std::string quiddity_class, 
@@ -163,8 +162,8 @@ namespace switcher
       list_subscribed_signals_json (std::string subscriber_name);
 
   private:
-    QuiddityLifeManager();//will get name "default"
-    QuiddityLifeManager(std::string);
+    QuiddityManager_Impl();//will get name "default"
+    QuiddityManager_Impl(std::string);
     void make_classes_doc ();
     std::string name_;
     void register_classes ();

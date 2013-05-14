@@ -30,7 +30,7 @@ namespace switcher
 
   QuidditySignalSubscriber::~QuidditySignalSubscriber()
   {
-    QuiddityLifeManager::ptr life_manager = life_manager_.lock ();
+    QuiddityManager_Impl::ptr life_manager = life_manager_.lock ();
     if (!(bool)life_manager)
       return;
 
@@ -72,7 +72,7 @@ namespace switcher
   }
 
   void 
-  QuidditySignalSubscriber::set_life_manager (QuiddityLifeManager::ptr life_manager)
+  QuidditySignalSubscriber::set_life_manager (QuiddityManager_Impl::ptr life_manager)
   {
     life_manager_ = life_manager;
   }

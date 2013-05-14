@@ -274,7 +274,7 @@ res = gst_element_query (pipeline_, query);
   {
     QuidRemoveArgs *context = static_cast<QuidRemoveArgs *>(user_data);
     g_debug ("removing %s", context->name);
-    QuiddityLifeManager::ptr manager = context->self->life_manager_.lock ();
+    QuiddityManager_Impl::ptr manager = context->self->life_manager_.lock ();
     if ((bool) manager)
 	manager->remove (context->name);
     else

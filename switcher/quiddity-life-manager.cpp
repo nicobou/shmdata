@@ -57,21 +57,21 @@ namespace switcher
 {
 
 
-  QuiddityLifeManager::ptr 
-  QuiddityLifeManager::make_life_manager ()
+  QuiddityManager_Impl::ptr 
+  QuiddityManager_Impl::make_manager ()
   {
-    QuiddityLifeManager::ptr manager(new QuiddityLifeManager);
+    QuiddityManager_Impl::ptr manager(new QuiddityManager_Impl);
     return manager;
   }
   
-  QuiddityLifeManager::ptr 
-  QuiddityLifeManager::make_life_manager (std::string name)
+  QuiddityManager_Impl::ptr 
+  QuiddityManager_Impl::make_manager (std::string name)
   {
-    QuiddityLifeManager::ptr manager(new QuiddityLifeManager(name));
+    QuiddityManager_Impl::ptr manager(new QuiddityManager_Impl(name));
     return manager;
   }
 
-  QuiddityLifeManager::QuiddityLifeManager() :
+  QuiddityManager_Impl::QuiddityManager_Impl() :
     name_ ("default")
   {
     remove_shmdata_sockets ();
@@ -80,7 +80,7 @@ namespace switcher
     make_classes_doc ();
   }
   
-  QuiddityLifeManager::QuiddityLifeManager(std::string name) :
+  QuiddityManager_Impl::QuiddityManager_Impl(std::string name) :
     name_ (name)
   {
     remove_shmdata_sockets ();
@@ -89,14 +89,14 @@ namespace switcher
     make_classes_doc ();
   }
 
-  QuiddityLifeManager::~QuiddityLifeManager()
+  QuiddityManager_Impl::~QuiddityManager_Impl()
   {
-    g_debug ("~QuiddityLifeManager");
+    g_debug ("~QuiddityManager_Impl");
   }
   
 
   void
-  QuiddityLifeManager::remove_shmdata_sockets ()
+  QuiddityManager_Impl::remove_shmdata_sockets ()
   {
     
     GFile *shmdata_dir = g_file_new_for_commandline_arg (Quiddity::get_socket_dir().c_str ());
@@ -150,7 +150,7 @@ namespace switcher
     error = NULL;
     res = g_file_enumerator_close (enumerator, NULL, &error);
     if (res != TRUE)
-      g_debug ("QuiddityLifeManager: file enumerator not properly closed");
+      g_debug ("QuiddityManager_Impl: file enumerator not properly closed");
     if (error != NULL)
       g_debug ("error not NULL");
     
@@ -159,13 +159,13 @@ namespace switcher
   }
   
   std::string
-  QuiddityLifeManager::get_name ()
+  QuiddityManager_Impl::get_name ()
   {
     return name_; 
   }
   
   void
-  QuiddityLifeManager::register_classes ()
+  QuiddityManager_Impl::register_classes ()
   {
     //registering quiddities
     abstract_factory_.register_class<AAC> (AAC::doc_.get_class_name (), 
@@ -225,14 +225,14 @@ namespace switcher
   }
 
   std::vector<std::string> 
-  QuiddityLifeManager::get_classes ()
+  QuiddityManager_Impl::get_classes ()
   {
     //return abstract_factory_.get_classes_documentation ();
     return abstract_factory_.get_keys ();
   }
 
   void
-  QuiddityLifeManager::make_classes_doc ()
+  QuiddityManager_Impl::make_classes_doc ()
   {
     std::vector<JSONBuilder::Node> docs = abstract_factory_.get_classes_documentation ();
     classes_doc_->reset ();
@@ -246,13 +246,13 @@ namespace switcher
   }
 
   std::string 
-  QuiddityLifeManager::get_classes_doc ()
+  QuiddityManager_Impl::get_classes_doc ()
   {
     return classes_doc_->get_string (true);
   }
   
   std::string 
-  QuiddityLifeManager::get_class_doc (std::string class_name)
+  QuiddityManager_Impl::get_class_doc (std::string class_name)
   {
     if (abstract_factory_.key_exists (class_name))
       {
@@ -264,19 +264,19 @@ namespace switcher
   }
 
   bool 
-  QuiddityLifeManager::class_exists (std::string class_name)
+  QuiddityManager_Impl::class_exists (std::string class_name)
   {
     return abstract_factory_.key_exists (class_name);
   }
 
 
   bool 
-  QuiddityLifeManager::init_quiddity (Quiddity::ptr quiddity)
+  QuiddityManager_Impl::init_quiddity (Quiddity::ptr quiddity)
   {
     quiddity->set_life_manager (shared_from_this());
     if (!quiddity->init ())
       return false;
-    // g_critical ("QuiddityLifeManager: intialization of %s (%s) return false",
+    // g_critical ("QuiddityManager_Impl: intialization of %s (%s) return false",
     // 	       quiddity->get_name ().c_str (),
     // 	       quiddity->get_documentation ().get_class_name ().c_str ());
     quiddities_.insert (quiddity->get_name(),quiddity);
@@ -285,7 +285,7 @@ namespace switcher
   }
 
   std::string 
-  QuiddityLifeManager::create (std::string quiddity_class)
+  QuiddityManager_Impl::create (std::string quiddity_class)
   {
      if(!class_exists (quiddity_class))
       return "";
@@ -307,7 +307,7 @@ namespace switcher
   }
 
   std::string 
-  QuiddityLifeManager::create (std::string quiddity_class, std::string nick_name)
+  QuiddityManager_Impl::create (std::string quiddity_class, std::string nick_name)
   {
     if(!class_exists (quiddity_class))
       return "";
@@ -319,7 +319,7 @@ namespace switcher
 	if (!nick_name.empty () && !quiddities_nick_names_.contains (nick_name))
 	  quiddity->set_nick_name (nick_name);
 	else
-	  g_warning ("QuiddityLifeManager::create: nick name %s not valid, using %s",
+	  g_warning ("QuiddityManager_Impl::create: nick name %s not valid, using %s",
 		   nick_name.c_str (),
 		   quiddity->get_name().c_str ());
 
@@ -341,13 +341,13 @@ namespace switcher
   }
 
   std::vector<std::string> 
-  QuiddityLifeManager::get_instances ()
+  QuiddityManager_Impl::get_instances ()
   {
     return quiddities_nick_names_.get_keys();
   }
 
   std::string 
-  QuiddityLifeManager::get_quiddities_description ()
+  QuiddityManager_Impl::get_quiddities_description ()
   {
     //FIXME get json doc from the quiddity class and make an array of it 
     JSONBuilder::ptr descr (new JSONBuilder ());
@@ -373,7 +373,7 @@ namespace switcher
   }
 
   std::string 
-  QuiddityLifeManager::get_quiddity_description (std::string nick_name)
+  QuiddityManager_Impl::get_quiddity_description (std::string nick_name)
   {
     if (!quiddities_nick_names_.contains (nick_name))
       return "{ \"error\":\"quiddity not found\"}";
@@ -389,7 +389,7 @@ namespace switcher
   }
 
   Quiddity::ptr 
-  QuiddityLifeManager::get_quiddity (std::string quiddity_name)
+  QuiddityManager_Impl::get_quiddity (std::string quiddity_name)
   {
      if (!exists (quiddity_name))
       {
@@ -401,13 +401,13 @@ namespace switcher
   }
 
   bool 
-  QuiddityLifeManager::exists (std::string quiddity_name)
+  QuiddityManager_Impl::exists (std::string quiddity_name)
   {
     return quiddities_nick_names_.contains (quiddity_name);
   }
 
   bool 
-  QuiddityLifeManager::remove (std::string quiddity_name)
+  QuiddityManager_Impl::remove (std::string quiddity_name)
   {
     if (exists (quiddity_name))
       quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
@@ -422,7 +422,7 @@ namespace switcher
   }
 
   std::string 
-  QuiddityLifeManager::get_properties_description (std::string quiddity_name)
+  QuiddityManager_Impl::get_properties_description (std::string quiddity_name)
   {
 
     if (!exists (quiddity_name))
@@ -434,7 +434,7 @@ namespace switcher
   }
 
   std::string 
-  QuiddityLifeManager::get_property_description (std::string quiddity_name, std::string property_name)
+  QuiddityManager_Impl::get_property_description (std::string quiddity_name, std::string property_name)
   {
 
     if (!exists (quiddity_name))
@@ -446,7 +446,7 @@ namespace switcher
   }
 
   std::string 
-  QuiddityLifeManager::get_properties_description_by_class (std::string class_name)
+  QuiddityManager_Impl::get_properties_description_by_class (std::string class_name)
   {
     if (!class_exists (class_name))
       return "{\"error\":\"class not found\"}";
@@ -459,7 +459,7 @@ namespace switcher
   }
   
   std::string
-  QuiddityLifeManager::get_property_description_by_class (std::string class_name, 
+  QuiddityManager_Impl::get_property_description_by_class (std::string class_name, 
 							  std::string property_name)
   {
     if (!class_exists (class_name))
@@ -474,7 +474,7 @@ namespace switcher
 
 
   bool
-  QuiddityLifeManager::set_property (std::string quiddity_name,
+  QuiddityManager_Impl::set_property (std::string quiddity_name,
 				 std::string property_name,
 				 std::string property_value)
   {
@@ -488,13 +488,13 @@ namespace switcher
 
  //higher level subscriber
   bool 
-  QuiddityLifeManager::make_property_subscriber (std::string subscriber_name,
+  QuiddityManager_Impl::make_property_subscriber (std::string subscriber_name,
 					QuiddityPropertySubscriber::Callback cb,
 					void *user_data)
   {
     if (property_subscribers_.contains (subscriber_name))
       {
-	g_warning ("QuiddityLifeManager, a subscriber named %s already exists\n",
+	g_warning ("QuiddityManager_Impl, a subscriber named %s already exists\n",
 		   subscriber_name.c_str ());
 	return false;
       }
@@ -510,11 +510,11 @@ namespace switcher
   }
 
   bool
-  QuiddityLifeManager::remove_property_subscriber (std::string subscriber_name)
+  QuiddityManager_Impl::remove_property_subscriber (std::string subscriber_name)
   {
     if (!property_subscribers_.contains (subscriber_name))
       {
-	g_warning ("QuiddityLifeManager, a subscriber named %s does not exists\n",
+	g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
 		   subscriber_name.c_str ());
 	return false;
       }
@@ -522,13 +522,13 @@ namespace switcher
   }
   
   bool 
-  QuiddityLifeManager::subscribe_property (std::string subscriber_name,
+  QuiddityManager_Impl::subscribe_property (std::string subscriber_name,
 					   std::string quiddity_name,
 					   std::string property_name)
   {
     if (!property_subscribers_.contains (subscriber_name))
       {
-	g_warning ("QuiddityLifeManager, a subscriber named %s does not exists\n",
+	g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
 		   subscriber_name.c_str ());
 	return false;
       }
@@ -541,13 +541,13 @@ namespace switcher
   }
   
   bool 
-  QuiddityLifeManager::unsubscribe_property (std::string subscriber_name,
+  QuiddityManager_Impl::unsubscribe_property (std::string subscriber_name,
 					     std::string quiddity_name,
 					     std::string property_name)
   {
     if (!property_subscribers_.contains (subscriber_name))
       {
-	g_warning ("QuiddityLifeManager, a subscriber named %s does not exists\n",
+	g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
 		   subscriber_name.c_str ());
 	return false;
       }
@@ -560,17 +560,17 @@ namespace switcher
   }
 
   std::vector<std::string> 
-  QuiddityLifeManager::list_property_subscribers ()
+  QuiddityManager_Impl::list_property_subscribers ()
   {
     return property_subscribers_.get_keys ();
   }
 
     std::vector<std::pair<std::string, std::string> > 
-    QuiddityLifeManager::list_subscribed_properties (std::string subscriber_name)
+    QuiddityManager_Impl::list_subscribed_properties (std::string subscriber_name)
     {
       if (!property_subscribers_.contains (subscriber_name))
 	{
-	  g_warning ("QuiddityLifeManager, a subscriber named %s does not exists\n",
+	  g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
 		     subscriber_name.c_str ());
 	  std::vector<std::pair<std::string, std::string> > empty;
 	  return empty;
@@ -580,13 +580,13 @@ namespace switcher
     }
 
     std::string 
-    QuiddityLifeManager::list_property_subscribers_json ()
+    QuiddityManager_Impl::list_property_subscribers_json ()
     {
       return "{\"error\":\"to be implemented\"}";//FIXME (list_property_subscriber_json)
     }
   
     std::string 
-    QuiddityLifeManager::list_subscribed_properties_json (std::string subscriber_name)
+    QuiddityManager_Impl::list_subscribed_properties_json (std::string subscriber_name)
     {
       std::vector<std::pair<std::string, std::string> > subscribed_props =
 	list_subscribed_properties (subscriber_name);
@@ -612,7 +612,7 @@ namespace switcher
 
   //lower level subscriber
   bool
-  QuiddityLifeManager::subscribe_property_glib (std::string quiddity_name,
+  QuiddityManager_Impl::subscribe_property_glib (std::string quiddity_name,
 						std::string property_name,
 						Property::Callback cb, 
 						void *user_data)
@@ -628,7 +628,7 @@ namespace switcher
   }
 
   bool
-  QuiddityLifeManager::unsubscribe_property_glib (std::string quiddity_name,
+  QuiddityManager_Impl::unsubscribe_property_glib (std::string quiddity_name,
 						  std::string property_name,
 						  Property::Callback cb, 
 						  void *user_data)
@@ -645,7 +645,7 @@ namespace switcher
 
 
   std::string
-  QuiddityLifeManager::get_property (std::string quiddity_name,
+  QuiddityManager_Impl::get_property (std::string quiddity_name,
 				 std::string property_name)
   {
     if (!exists (quiddity_name))
@@ -657,11 +657,11 @@ namespace switcher
   }
 
   bool 
-  QuiddityLifeManager::invoke (std::string quiddity_name, 
+  QuiddityManager_Impl::invoke (std::string quiddity_name, 
 			       std::string method_name,
 			       std::vector<std::string> args)
   {
-    //g_debug ("QuiddityLifeManager::quiddity_invoke_method %s %s, arg size %d",quiddity_name.c_str(), function_name.c_str(), args.size ());
+    //g_debug ("QuiddityManager_Impl::quiddity_invoke_method %s %s, arg size %d",quiddity_name.c_str(), function_name.c_str(), args.size ());
     
     if (!exists (quiddity_name))
       {
@@ -682,7 +682,7 @@ namespace switcher
   } 
 
   std::string
-  QuiddityLifeManager::get_methods_description (std::string quiddity_name)
+  QuiddityManager_Impl::get_methods_description (std::string quiddity_name)
   {
     if (!exists (quiddity_name))
       {
@@ -695,7 +695,7 @@ namespace switcher
 
 
   std::string
-  QuiddityLifeManager::get_method_description (std::string quiddity_name, std::string method_name)
+  QuiddityManager_Impl::get_method_description (std::string quiddity_name, std::string method_name)
   {
     if (!exists (quiddity_name))
       {
@@ -707,7 +707,7 @@ namespace switcher
   }
 
   std::string
-  QuiddityLifeManager::get_methods_description_by_class (std::string class_name)
+  QuiddityManager_Impl::get_methods_description_by_class (std::string class_name)
   {
     if (!class_exists (class_name))
       return "{\"error\":\"class not found\"}";
@@ -719,7 +719,7 @@ namespace switcher
   }
 
   std::string
-  QuiddityLifeManager::get_method_description_by_class (std::string class_name, 
+  QuiddityManager_Impl::get_method_description_by_class (std::string class_name, 
 							std::string method_name)
   {
     if (!class_exists (class_name))
@@ -733,13 +733,13 @@ namespace switcher
   //*** signals
  //higher level subscriber
   bool 
-  QuiddityLifeManager::make_signal_subscriber (std::string subscriber_name,
+  QuiddityManager_Impl::make_signal_subscriber (std::string subscriber_name,
 					       QuidditySignalSubscriber::OnEmittedCallback cb,
 					       void *user_data)
   {
     if (signal_subscribers_.contains (subscriber_name))
       {
-	g_warning ("QuiddityLifeManager, a subscriber named %s already exists\n",
+	g_warning ("QuiddityManager_Impl, a subscriber named %s already exists\n",
 		   subscriber_name.c_str ());
 	return false;
       }
@@ -755,11 +755,11 @@ namespace switcher
   }
 
   bool
-  QuiddityLifeManager::remove_signal_subscriber (std::string subscriber_name)
+  QuiddityManager_Impl::remove_signal_subscriber (std::string subscriber_name)
   {
     if (!signal_subscribers_.contains (subscriber_name))
       {
-	g_warning ("QuiddityLifeManager, a subscriber named %s does not exists\n",
+	g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
 		   subscriber_name.c_str ());
 	return false;
       }
@@ -767,13 +767,13 @@ namespace switcher
   }
   
   bool 
-  QuiddityLifeManager::subscribe_signal (std::string subscriber_name,
+  QuiddityManager_Impl::subscribe_signal (std::string subscriber_name,
 					 std::string quiddity_name,
 					 std::string signal_name)
   {
     if (!signal_subscribers_.contains (subscriber_name))
       {
-	g_warning ("QuiddityLifeManager, a subscriber named %s does not exists\n",
+	g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
 		   subscriber_name.c_str ());
 	return false;
       }
@@ -786,13 +786,13 @@ namespace switcher
   }
   
   bool 
-  QuiddityLifeManager::unsubscribe_signal (std::string subscriber_name,
+  QuiddityManager_Impl::unsubscribe_signal (std::string subscriber_name,
 					     std::string quiddity_name,
 					     std::string signal_name)
   {
     if (!signal_subscribers_.contains (subscriber_name))
       {
-	g_warning ("QuiddityLifeManager, a subscriber named %s does not exists\n",
+	g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
 		   subscriber_name.c_str ());
 	return false;
       }
@@ -805,17 +805,17 @@ namespace switcher
   }
 
   std::vector<std::string> 
-  QuiddityLifeManager::list_signal_subscribers ()
+  QuiddityManager_Impl::list_signal_subscribers ()
   {
     return signal_subscribers_.get_keys ();
   }
 
     std::vector<std::pair<std::string, std::string> > 
-    QuiddityLifeManager::list_subscribed_signals (std::string subscriber_name)
+    QuiddityManager_Impl::list_subscribed_signals (std::string subscriber_name)
     {
       if (!signal_subscribers_.contains (subscriber_name))
 	{
-	  g_warning ("QuiddityLifeManager, a subscriber named %s does not exists\n",
+	  g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
 		     subscriber_name.c_str ());
 	  std::vector<std::pair<std::string, std::string> > empty;
 	  return empty;
@@ -825,13 +825,13 @@ namespace switcher
     }
 
     std::string 
-    QuiddityLifeManager::list_signal_subscribers_json ()
+    QuiddityManager_Impl::list_signal_subscribers_json ()
     {
       return "{\"error\":\"to be implemented\"}";//FIXME (list_signal_subscriber_json)
     }
   
     std::string 
-    QuiddityLifeManager::list_subscribed_signals_json (std::string subscriber_name)
+    QuiddityManager_Impl::list_subscribed_signals_json (std::string subscriber_name)
     {
       std::vector<std::pair<std::string, std::string> > subscribed_props =
 	list_subscribed_signals (subscriber_name);

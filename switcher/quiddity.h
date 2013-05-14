@@ -41,7 +41,7 @@
 
 namespace switcher
 {
-  class QuiddityLifeManager;
+  class QuiddityManager_Impl;
  
   class Quiddity
   {
@@ -99,7 +99,7 @@ namespace switcher
     static std::string get_socket_dir ();
 
     //life manager  initialization
-    void set_life_manager (std::shared_ptr<QuiddityLifeManager> life_manager);
+    void set_life_manager (std::shared_ptr<QuiddityManager_Impl> life_manager);
 
   private:
     //properties are registered by derived class
@@ -156,7 +156,7 @@ namespace switcher
 
     //used in order to dynamically create other quiddity, weak_ptr is used in order to 
     //avoid circular references to the life manager 
-    std::weak_ptr<QuiddityLifeManager> life_manager_;
+    std::weak_ptr<QuiddityManager_Impl> life_manager_;
 
     //gobject wrapper for custom signals and properties
     GObjectWrapper::ptr gobject_;

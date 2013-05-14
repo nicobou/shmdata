@@ -44,8 +44,6 @@
      ~QuiddityManager(); 
      std::string get_name ();
      
-
-     // life manager
      std::vector<std::string> get_classes (); //know which quiddities can be created
      std::vector<std::string> get_quiddities (); //know instances
      // doc (json formatted) 
@@ -175,7 +173,7 @@
    private: 
      QuiddityManager();//will get name "default"
      QuiddityManager(std::string name); 
-     QuiddityLifeManager::ptr life_manager_; //may be shared with others for automatic quiddity creation 
+     QuiddityManager_Impl::ptr life_manager_; //may be shared with others for automatic quiddity creation 
      std::string name_;
 
      //auto invoke and init

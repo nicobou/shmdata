@@ -45,7 +45,7 @@ namespace switcher
   {
     init_gmainloop ();
     init_command_sync ();
-    life_manager_ = QuiddityLifeManager::make_life_manager ();
+    life_manager_ = QuiddityManager_Impl::make_manager ();
   }
 
   QuiddityManager::QuiddityManager(std::string name) :
@@ -53,7 +53,7 @@ namespace switcher
   {
     init_gmainloop ();
     init_command_sync ();
-    life_manager_ = QuiddityLifeManager::make_life_manager (name);
+    life_manager_ = QuiddityManager_Impl::make_manager (name);
   }
 
   QuiddityManager::~QuiddityManager()

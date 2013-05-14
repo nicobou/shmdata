@@ -141,7 +141,7 @@ namespace switcher
 	return;
       }
     
-    QuiddityLifeManager::ptr life_manager = context->life_manager_.lock ();
+    QuiddityManager_Impl::ptr life_manager = context->life_manager_.lock ();
     if ( (bool)life_manager)
       {
 	Quiddity::ptr quidd = life_manager->get_quiddity (runtime_name);
