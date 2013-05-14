@@ -49,9 +49,9 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     pulse-sink.cpp \
     quiddity-command.cpp \
     quiddity-documentation.cpp \
-    quiddity-life-manager.cpp \
     quiddity-manager-wrapper.cpp \
     quiddity-manager.cpp \
+    quiddity-manager-impl.cpp \
     quiddity-property-subscriber.cpp \
     quiddity-signal-subscriber.cpp \
     quiddity.cpp \
@@ -126,9 +126,9 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     pulse-sink.h \
     quiddity-command.h \
     quiddity-documentation.h \
-    quiddity-life-manager.h \
     quiddity-manager-wrapper.h \
     quiddity-manager.h \
+    quiddity-manager-impl.h \
     quiddity-property-subscriber.h \
     quiddity-signal-subscriber.h \
     quiddity.h \

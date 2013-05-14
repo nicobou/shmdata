@@ -27,7 +27,7 @@
 #include <vector>
 #include <map>
 #include <string>
-#include "quiddity-life-manager.h"
+#include "quiddity-manager-impl.h"
 #include "quiddity-command.h"
 #include "quiddity-manager-wrapper.h"
 #include <stdarg.h>

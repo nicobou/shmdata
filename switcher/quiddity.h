@@ -35,7 +35,7 @@
 #include "method.h"
 #include "signal-string.h"
 #include "quiddity-documentation.h"
-#include "quiddity-life-manager.h"
+#include "quiddity-manager-impl.h"
 #include "json-builder.h"
 #include "gobject-wrapper.h"
 

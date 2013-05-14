@@ -18,11 +18,11 @@
  */
 
 /**
- * the Abstract Life Manager class
+ * the Abstract factory class
  */
 
-// no includes here since this file is included from abstract-life-manager.h
-// this separation is done in order to make abstract-life-manager.h easier to read 
+// no includes here since this file is included from abstract-factory.h
+// this separation is done in order to make abstract-factory.h easier to read 
 // when using it  
 
 namespace switcher 

@@ -18,7 +18,7 @@
  */
 
 #include "quiddity-documentation.h"
-#include "quiddity-life-manager.h"
+#include "quiddity-manager-impl.h"
 #include "quiddity.h" 
 
 //removing shmdata 

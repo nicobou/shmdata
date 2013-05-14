@@ -22,7 +22,7 @@
  */
 
 #include "quiddity.h"
-#include "quiddity-life-manager.h"
+#include "quiddity-manager-impl.h"
 
 
 namespace switcher
