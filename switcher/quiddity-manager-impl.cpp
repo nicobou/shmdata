@@ -74,6 +74,8 @@ namespace switcher
   QuiddityManager_Impl::QuiddityManager_Impl() :
     name_ ("default")
   {
+    creation_hook_ = NULL;
+    removal_hook_ = NULL;
     remove_shmdata_sockets ();
     register_classes ();
     classes_doc_.reset (new JSONBuilder ());
@@ -83,6 +85,8 @@ namespace switcher
   QuiddityManager_Impl::QuiddityManager_Impl(std::string name) :
     name_ (name)
   {
+    creation_hook_ = NULL;
+    removal_hook_ = NULL;
     remove_shmdata_sockets ();
     register_classes ();
     classes_doc_.reset (new JSONBuilder ());
@@ -281,6 +285,10 @@ namespace switcher
     // 	       quiddity->get_documentation ().get_class_name ().c_str ());
     quiddities_.insert (quiddity->get_name(),quiddity);
     quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
+    
+    if (creation_hook_ != NULL)
+      (*creation_hook_) (quiddity->get_nick_name ());
+
     return true;
   }
 
@@ -855,5 +863,22 @@ namespace switcher
       return doc->get_string(true);
     }
 
+  bool 
+  QuiddityManager_Impl::set_created_hook (quiddity_created_hook hook)
+  {
+    if (creation_hook_ != NULL)
+      return false;
+    creation_hook_ = hook;
+    return true;
+  }
+  
+  bool 
+  QuiddityManager_Impl::set_removed_hook (quiddity_removed_hook hook)
+  {
+    if (removal_hook_ != NULL)
+      return false;
+    removal_hook_ = hook;
+    return true;
+  }
   
 } // end of namespace
