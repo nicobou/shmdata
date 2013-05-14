@@ -340,9 +340,11 @@ namespace switcher
 			      Signal::OnEmittedCallback cb,
 			      void *user_data)
   {
+
+    g_print ("glouglgou \n");
     if (signals_.find(signal_name) == signals_.end())
       {
-	g_warning ("Quiddity::subscribe_signal, signal %s not found");
+	g_warning ("Quiddity::subscribe_signal, signal %s not found", signal_name.c_str ());
 	return false;
       }
 
