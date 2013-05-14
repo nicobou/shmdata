@@ -28,6 +28,7 @@
 #include "aac.h"
 #include "aravis-genicam.h"
 #include "audio-test-source.h"
+#include "create-remove-spy.h"
 #include "decodebin2.h"
 #include "deinterleave.h"
 #include "fake-shmdata-writer.h"
@@ -76,6 +77,8 @@ namespace switcher
   {
     creation_hook_ = NULL;
     removal_hook_ = NULL;
+    creation_hook_user_data_ = NULL;
+    removal_hook_user_data_ = NULL;
     remove_shmdata_sockets ();
     register_classes ();
     classes_doc_.reset (new JSONBuilder ());
@@ -87,6 +90,8 @@ namespace switcher
   {
     creation_hook_ = NULL;
     removal_hook_ = NULL;
+    creation_hook_user_data_ = NULL;
+    removal_hook_user_data_ = NULL;
     remove_shmdata_sockets ();
     register_classes ();
     classes_doc_.reset (new JSONBuilder ());
@@ -178,6 +183,8 @@ namespace switcher
       						       AudioTestSource::doc_.get_json_root_node ());
     abstract_factory_.register_class<AravisGenicam> (AravisGenicam::doc_.get_class_name (), 
       						     AravisGenicam::doc_.get_json_root_node ());
+    abstract_factory_.register_class<CreateRemoveSpy> (CreateRemoveSpy::doc_.get_class_name (), 
+						       CreateRemoveSpy::doc_.get_json_root_node ());
     abstract_factory_.register_class<Decodebin2> (Decodebin2::doc_.get_class_name (), 
 						  Decodebin2::doc_.get_json_root_node ());
     abstract_factory_.register_class<Deinterleave> (Deinterleave::doc_.get_class_name (), 
@@ -287,7 +294,7 @@ namespace switcher
     quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
     
     if (creation_hook_ != NULL)
-      (*creation_hook_) (quiddity->get_nick_name ());
+      (*creation_hook_) (quiddity->get_nick_name (), creation_hook_user_data_);
 
     return true;
   }
@@ -423,6 +430,8 @@ namespace switcher
     if (quiddities_nick_names_.remove (quiddity_name))
       {  
         g_message ("(%s) quiddity removed (%s)",name_.c_str(), quiddity_name.c_str());
+	if (removal_hook_ != NULL)
+	  (*removal_hook_) (quiddity_name.c_str (), removal_hook_user_data_);
 	return true;
       }
     g_warning ("(%s) quiddity %s not found for removing",name_.c_str(), quiddity_name.c_str());
@@ -864,20 +873,24 @@ namespace switcher
     }
 
   bool 
-  QuiddityManager_Impl::set_created_hook (quiddity_created_hook hook)
+  QuiddityManager_Impl::set_created_hook (quiddity_created_hook hook, 
+					  void *user_data)
   {
     if (creation_hook_ != NULL)
       return false;
     creation_hook_ = hook;
+    creation_hook_user_data_ = user_data;
     return true;
   }
   
   bool 
-  QuiddityManager_Impl::set_removed_hook (quiddity_removed_hook hook)
+  QuiddityManager_Impl::set_removed_hook (quiddity_removed_hook hook,
+					  void *user_data)
   {
     if (removal_hook_ != NULL)
       return false;
     removal_hook_ = hook;
+    removal_hook_user_data_ = user_data;
     return true;
   }
   

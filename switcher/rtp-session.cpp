@@ -112,6 +112,7 @@ namespace switcher
 					    1,
 					    types);    
     
+    //FIXME the following should be static
     GObjectWrapper::ptr gobject = get_quiddity_internal_gobject ();
     register_signal_gobject_by_id ("truc",
 				   gobject->get_gobject (), 

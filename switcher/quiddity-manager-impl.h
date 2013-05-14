@@ -45,8 +45,8 @@ namespace switcher
     {
     public:
       typedef std::shared_ptr< QuiddityManager_Impl > ptr;
-      typedef void (*quiddity_created_hook) (std::string nick_name);
-      typedef void (*quiddity_removed_hook) (std::string nick_name);
+      typedef void (*quiddity_created_hook) (std::string nick_name, void *user_data);
+      typedef void (*quiddity_removed_hook) (std::string nick_name, void *user_data);
 
       //will get name "default"
       static QuiddityManager_Impl::ptr make_manager ();
@@ -75,8 +75,8 @@ namespace switcher
       // only one hook is allowed now, 
       // it is used by the quiddity manager-spy-create-remove
       // for converting creating removal into signals
-      bool set_created_hook (quiddity_created_hook hook);
-      bool set_removed_hook (quiddity_removed_hook hook);
+      bool set_created_hook (quiddity_created_hook hook, void *user_data);
+      bool set_removed_hook (quiddity_removed_hook hook, void *user_data);
 
       //**** properties
       //doc (json formatted)
@@ -182,7 +182,8 @@ namespace switcher
       JSONBuilder::ptr classes_doc_;
       quiddity_created_hook creation_hook_;
       quiddity_removed_hook removal_hook_;
-
+      void *creation_hook_user_data_;
+      void *removal_hook_user_data_;
     };
 
 } // end of namespace

@@ -28,6 +28,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     base-sink.cpp \
     base-source.cpp \
     custom-property-helper.cpp \
+    create-remove-spy.cpp \
     decodebin2.cpp \
     deinterleave.cpp \
     fake-shmdata-writer.cpp \
@@ -100,6 +101,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     audio-test-source.h \
     base-sink.h \
     base-source.h \
+    create-remove-spy.h \
     creator.h \
     ctrl-webservice-definition.h \
     custom-property-helper.h \
