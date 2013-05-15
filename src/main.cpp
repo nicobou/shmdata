@@ -81,6 +81,16 @@ logger_cb (std::string subscriber_name,
   g_print ("%s\n", value.c_str());
 }
 
+void 
+quiddity_created_removed_cb (std::string subscriber_name, 
+			     std::string quiddity_name, 
+			     std::string signal_name, 
+			     std::vector<std::string> params, 
+			     void *user_data)
+{
+  g_message ("%s: %s", signal_name.c_str (), params[0].c_str ());
+}
+
 int
 main (int argc,
       char *argv[])
@@ -97,8 +107,6 @@ main (int argc,
       g_print ("option parsing failed: %s\n", error->message);
       exit (1);
     } 
-
-
 
   //checking if this is printing info only
   if (listclasses)
@@ -185,9 +193,15 @@ main (int argc,
      manager->make_property_subscriber ("log_sub", logger_cb, NULL);
      manager->subscribe_property ("log_sub","internal_logger","last-line");
      
-     // Create a runtime (pipeline0)
+      // Create a runtime (pipeline0)
      //std::string runtime = 
      manager->create ("runtime");
+
+    //make on-quiddity-created and on-quiddity-removed signals
+     manager->create ("create_remove_spy", "create_remove_spy");
+     manager->make_signal_subscriber ("create_remove_subscriber", quiddity_created_removed_cb, NULL);
+     manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-created");
+     manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-removed");
 
      std::string soap_name = manager->create ("SOAPcontrolServer", "soapserver");
      std::vector<std::string> port_arg;

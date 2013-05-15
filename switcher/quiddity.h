@@ -84,8 +84,8 @@ namespace switcher
     int method_get_num_pointer_args (std::string function_name); //returns -1 if method not found
     
     //signals
-    /* std::string get_signal_description (std::string property_name); */
     /* std::string get_signals_description (); */
+    /* std::string get_signal_description (std::string signal_name); */
     bool subscribe_signal (std::string name,
 			   Signal::OnEmittedCallback cb, 
 			   void *user_data);
@@ -138,10 +138,15 @@ namespace switcher
 				  GObject *object, 
 				  const std::string gobject_signal_name);//the internal gobject signal name
 
+    //FIXME remove that and "get_quiddity_internal_gobject ()"
     bool register_signal_gobject_by_id (const std::string signal_name, //the name to give
 					GObject *object, 
 					guint gobject_signal_id);//the internal gobject signal id
-    
+    bool make_custom_signal (const std::string signal_name, //the name to give
+			     GType return_type,
+			     guint n_params, //number of params
+			     GType *param_types);
+
     bool set_signal_description (const std::string signal_name,
 				 const std::string short_description,
 				 const Signal::args_doc arg_description);

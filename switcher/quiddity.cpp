@@ -30,6 +30,8 @@ namespace switcher
 
   Quiddity::Quiddity ()
   {
+    gobject_.reset (new GObjectWrapper ());
+    gobject_->property_set_default_user_data (this);
     properties_description_.reset (new JSONBuilder());
     methods_description_.reset (new JSONBuilder());
     signals_description_.reset (new JSONBuilder());
@@ -95,12 +97,12 @@ namespace switcher
 					   GObject *object, 
 					   guint gobject_signal_id)
   {
-    
     if (signals_.find(signal_name) != signals_.end())
       {
 	g_warning ("signals: registering name %s already exists",signal_name.c_str());
 	return false;
       }
+
     Signal::ptr signal (new Signal ());
     if (!signal->set_gobject_sigid (object, gobject_signal_id))
       return false;
@@ -109,6 +111,36 @@ namespace switcher
 	     signal_name.c_str ());
     return true;
   }
+
+  bool 
+  Quiddity::make_custom_signal (const std::string signal_name, //the name to give
+				GType return_type,
+				guint n_params, //number of params
+				GType *param_types)
+  {
+    if (signals_.find(signal_name) != signals_.end())
+      {
+	g_warning ("signals: name %s already exists, cannot create a new signal",signal_name.c_str());
+	return false;
+      }
+    guint id = GObjectWrapper::make_signal (return_type,
+					    n_params,
+					    param_types); 
+
+    if (id == 0)
+      {
+	g_warning ("custom signal %s not created because of a type issue");
+      }
+
+    Signal::ptr signal (new Signal ());
+    if (!signal->set_gobject_sigid (gobject_->get_gobject (), id))
+      return false;
+    signals_[signal_name] = signal; 
+    g_debug ("signal %s registered", 
+	     signal_name.c_str ());
+    return true;
+  }
+
 
   bool 
   Quiddity::set_signal_description (const std::string signal_name,
@@ -340,15 +372,11 @@ namespace switcher
 			      Signal::OnEmittedCallback cb,
 			      void *user_data)
   {
-
-    g_print ("glouglgou \n");
     if (signals_.find(signal_name) == signals_.end())
       {
 	g_warning ("Quiddity::subscribe_signal, signal %s not found", signal_name.c_str ());
 	return false;
       }
-
-
     Signal::ptr sig = signals_[signal_name];
     return sig->subscribe (cb, user_data);
   }

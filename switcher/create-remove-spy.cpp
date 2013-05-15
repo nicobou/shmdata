@@ -30,47 +30,50 @@ namespace switcher
   bool
   CreateRemoveSpy::init ()
   {
-    // QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
-    // if ((bool) manager)
-    //   {
-    //    	if (!manager->set_created_hook (CreateRemoveSpy::on_created, this))
-    //    	  return false;
-    //    	if (!manager->set_removed_hook (CreateRemoveSpy::on_removed, this))
-    //    	  return false;
-    //   }
-    // else
-    //   return false;
-
-    //   set_name ("spy");
-    //  //we got the hook, so make signals of it
-    //    GType types[1];
-    //    types[0] = G_TYPE_STRING;
-    //    guint id_created = GObjectWrapper::make_signal (G_TYPE_NONE,
-    //    						    1,
-    //    						    types);    
-    //     guint id_removed = GObjectWrapper::make_signal (G_TYPE_NONE,
-    //     						    1,
-    //     						    types);    
+    QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
+    if ((bool) manager)
+      {
+	if (!manager->set_created_hook (CreateRemoveSpy::on_created, this))
+	  return false;
+	if (!manager->set_removed_hook (CreateRemoveSpy::on_removed, this))
+	  return false;
+      }
+    else
+      return false;
     
-    //    GObjectWrapper::ptr gobject = get_quiddity_internal_gobject ();
-    //    register_signal_gobject_by_id ("on-quiddity-created",
-    // 				      gobject->get_gobject (), 
-    // 				      id_created);
-      // set_signal_description ("on-quiddity-created",
-      // 			    "a quiddity has been created",
-      // 			    Signal::make_arg_description("nick_name",
-      // 							 "the quiddity nick name",
-      // 							 NULL));
-     // register_signal_gobject_by_id ("on-quiddity-removed",
-     // 				   gobject->get_gobject (), 
-     // 				   id_removed);
-     // set_signal_description ("on-quiddity-removed",
-     // 			    "a quiddity has been removed",
-     // 			    Signal::make_arg_description("nick_name",
-     // 							 "the quiddity nick name",
-     // 							 NULL));
+    //we got the hook, so make signals of it
+    GType types[1];
+    types[0] = G_TYPE_STRING;
+    guint id_created = GObjectWrapper::make_signal (G_TYPE_NONE,
+						    1,
+						    types);    
+    guint id_removed = GObjectWrapper::make_signal (G_TYPE_NONE,
+     						    1,
+     						    types);    
+    
+    GObjectWrapper::ptr gobject = get_quiddity_internal_gobject ();
+    register_signal_gobject_by_id ("on-quiddity-created",
+				   gobject->get_gobject (), 
+				   id_created);
 
-      return true;
+    set_signal_description ("on-quiddity-created",
+       			    "a quiddity has been created",
+       			    Signal::make_arg_description("nick_name",
+       							 "the quiddity nick name",
+       							 NULL));
+
+     register_signal_gobject_by_id ("on-quiddity-removed",
+       				   gobject->get_gobject (), 
+       				   id_removed);
+     set_signal_description ("on-quiddity-removed",
+       			    "a quiddity has been removed",
+       			    Signal::make_arg_description("nick_name",
+       							 "the quiddity nick name",
+       							 NULL));
+
+     set_name ("manager-spy"); // supposed to be a singleton with the use of "set_..._hook ()"
+
+    return true;
   }
   
   CreateRemoveSpy::~CreateRemoveSpy ()

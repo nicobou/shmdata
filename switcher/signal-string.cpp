@@ -207,7 +207,7 @@ namespace switcher
     json_description_->end_array ();
     json_description_->end_object ();
     
-    g_print ("%s\n",get_description ().c_str ());
+    //g_print ("%s\n",get_description ().c_str ());
   }
 
  std::vector<GType> 
@@ -264,8 +264,7 @@ namespace switcher
        return TRUE;
 
      std::vector<std::string> params;
-
-     g_debug ("signal name n_value %d, object type %s\n", n_param_values, G_OBJECT_TYPE_NAME (object));
+     // g_debug ("signal name n_value %d, object type %s\n", n_param_values, G_OBJECT_TYPE_NAME (object));
      int i;
      for (i = 1; i < n_param_values; i++) //we do not deserialize the gobject
        {

@@ -54,12 +54,6 @@ mon_property_cb(std::string subscriber_name,
 }
 
 void 
-stop_test ()
-{
-  do_continue=false;
-}
-
-void 
 mon_signal_cb(std::string subscriber_name, 
 	      std::string quiddity_name, 
 	      std::string signal_name, 
@@ -90,7 +84,6 @@ main (int argc,
       switcher::QuiddityManager::make_manager("rtptest");  
     
     manager->create ("runtime", "runtime");
-    
     manager->create ("SOAPcontrolServer", "soapserver");
     manager->invoke_va ("soapserver", "set_port", "8084", NULL);
     
@@ -102,10 +95,6 @@ main (int argc,
     manager->create ("rtpsession","rtp");
     manager->invoke_va ("rtp", "set_runtime", "runtime", NULL);
     
-    manager->make_signal_subscriber ("sig_sub", mon_signal_cb, (void *)user_string);
-    manager->subscribe_signal ("sig_sub","rtp","on-pad-added");
-    manager->subscribe_signal ("sig_sub","rtp","truc");
-
     manager->invoke_va ("rtp",
       			"add_data_stream",
       			"/tmp/switcher_rtptest_a_audio",
@@ -142,8 +131,8 @@ main (int argc,
        			"http://localhost:8084/sdp?rtpsession=rtp&destination=local",
        			NULL);
     
-    //wait 2 sec for uri to get the stream 
-    usleep (2000000);
+    //wait 4 sec for uri to get the stream 
+    usleep (4000000);
 
     manager->create ("fakesink","firstprobe");
     manager->invoke_va ("firstprobe", "set_runtime", "runtime", NULL);
@@ -166,8 +155,6 @@ main (int argc,
     manager->subscribe_property ("sub","firstprobe","last-message");
     manager->subscribe_property ("sub","secondprobe","last-message");
     
-    g_timeout_add (2000, (GSourceFunc) stop_test, NULL);
-
     while (do_continue)
       {
 	usleep (100000);

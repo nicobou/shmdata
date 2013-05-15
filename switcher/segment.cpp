@@ -28,8 +28,6 @@ namespace switcher
 
   Segment::Segment()
   {
-    gobject_.reset (new GObjectWrapper ());
-    gobject_->property_set_default_user_data (this);
     shmdata_writers_description_.reset (new JSONBuilder());
     shmdata_readers_description_.reset (new JSONBuilder());
     update_shmdata_writers_description ();

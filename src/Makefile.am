@@ -11,6 +11,7 @@ switcher_CXXFLAGS = \
     $(GST_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
     $(SHMDATA_CFLAGS) \
+    -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir) 
 
 switcher_LDFLAGS = \

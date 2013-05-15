@@ -104,7 +104,7 @@ namespace switcher
   void
   QuiddityManager_Impl::remove_shmdata_sockets ()
   {
-    
+   
     GFile *shmdata_dir = g_file_new_for_commandline_arg (Quiddity::get_socket_dir().c_str ());
 
     gchar *shmdata_prefix = g_strconcat (Quiddity::get_socket_name_prefix ().c_str (), 
@@ -310,11 +310,6 @@ namespace switcher
 	   return "";
 	 }
      
-     g_message ("(%s) quiddity %s created (%s)",
-		name_.c_str(), 
-		quiddity->get_nick_name ().c_str (), 
-		quiddity->get_name ().c_str ());
-
      return quiddity->get_nick_name ();
   }
 
@@ -342,12 +337,6 @@ namespace switcher
 	    
 	    return "";
 	  }
-
-     g_message ("(%s) quiddity %s created (%s)",
-		name_.c_str(), 
-		quiddity->get_nick_name ().c_str (), 
-		quiddity->get_name ().c_str ());
-
       }
     return quiddity->get_nick_name ();
   }
@@ -426,7 +415,6 @@ namespace switcher
     
     if (quiddities_nick_names_.remove (quiddity_name))
       {  
-        g_message ("(%s) quiddity removed (%s)",name_.c_str(), quiddity_name.c_str());
 	if (removal_hook_ != NULL)
 	  (*removal_hook_) (quiddity_name.c_str (), removal_hook_user_data_);
 	return true;
@@ -679,7 +667,7 @@ namespace switcher
     
     if (!exists (quiddity_name))
       {
-	g_warning ("quiddity %s not found, cannot invoke",quiddity_name.c_str());
+	g_debug ("quiddity %s not found, cannot invoke",quiddity_name.c_str());
 	return false;
       }
     Quiddity::ptr quiddity = get_quiddity (quiddity_name);
@@ -688,7 +676,7 @@ namespace switcher
     int num_val = quiddity->method_get_num_value_args(method_name);
     if (num_val == -1) 
       {
-	g_warning ("method %s not found, cannot invoke",method_name.c_str());
+	g_debug ("method %s not found, cannot invoke",method_name.c_str());
 	return false;
       }
 
