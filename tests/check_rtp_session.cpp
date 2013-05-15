@@ -42,14 +42,14 @@ mon_property_cb(std::string subscriber_name,
       g_message ("audio received !");
       audio_success = true;
       if (video_success)
-	  do_continue = false;
+	do_continue = false;
     }
   if (!video_success && g_strcmp0 (quiddity_name.c_str (), "secondprobe") == 0)
     {
       g_message ("video received !");
       video_success = true;
       if (audio_success)
-	  do_continue = false;
+	do_continue = false;
     }
 }
 
@@ -83,17 +83,19 @@ main (int argc,
     switcher::QuiddityManager::ptr manager = 
       switcher::QuiddityManager::make_manager("rtptest");  
     
-    manager->create ("runtime", "runtime");
     manager->create ("SOAPcontrolServer", "soapserver");
     manager->invoke_va ("soapserver", "set_port", "8084", NULL);
     
     //testing uncompressed data transmission
+    manager->create ("runtime", "av_runtime");
     manager->create ("audiotestsrc","a");
-    manager->invoke_va ("a", "set_runtime", "runtime", NULL);
+    manager->invoke_va ("a", "set_runtime", "av_runtime", NULL);
     manager->create ("videotestsrc","v");
-    manager->invoke_va ("v", "set_runtime", "runtime", NULL);
+    manager->invoke_va ("v", "set_runtime", "av_runtime", NULL);
+
+    manager->create ("runtime", "rtp_runtime");
     manager->create ("rtpsession","rtp");
-    manager->invoke_va ("rtp", "set_runtime", "runtime", NULL);
+    manager->invoke_va ("rtp", "set_runtime", "rtp_runtime", NULL);
     
     manager->invoke_va ("rtp",
       			"add_data_stream",
@@ -114,6 +116,7 @@ main (int argc,
        			"local",
        			"9066",
        			NULL);
+    usleep (1000000);//FIXME this should not be necessary
     manager->invoke_va ("rtp",
        			"add_udp_stream_to_dest",
        			"/tmp/switcher_rtptest_v_video",
@@ -121,44 +124,40 @@ main (int argc,
        			"9076",
        			NULL);
     
-    //wait 6 sec for the session being created
-    usleep (6000000); 
+    //wait 2 sec for the session being created
+    usleep (2000000); 
 
+
+    manager->create ("runtime", "receiver_runtime");
     manager->create ("httpsdp", "uri");
-    manager->invoke_va ("uri", "set_runtime", "runtime", NULL);
+    manager->invoke_va ("uri", "set_runtime", "receiver_runtime", NULL);
     manager->invoke_va ("uri",
-      			"to_shmdata",
-       			"http://localhost:8084/sdp?rtpsession=rtp&destination=local",
-       			NULL);
-    
-    //wait 4 sec for uri to get the stream 
-    usleep (4000000);
-
-    manager->create ("fakesink","firstprobe");
-    manager->invoke_va ("firstprobe", "set_runtime", "runtime", NULL);
-    manager->invoke_va ("firstprobe",
-			"connect",
-			"/tmp/switcher_rtptest_uri_application_0",
+       			"to_shmdata",
+			"http://localhost:8084/sdp?rtpsession=rtp&destination=local",
 			NULL);
-    
-    
-     manager->create ("fakesink","secondprobe");
-     manager->invoke_va ("secondprobe", "set_runtime", "runtime", NULL);
-     manager->invoke_va ("secondprobe",
-     			"connect",
-     			"/tmp/switcher_rtptest_uri_application_1",
-     			NULL);
-    
      
 
+    manager->create ("runtime", "probe_runtime");
+    manager->create ("fakesink","firstprobe");
+    manager->invoke_va ("firstprobe", "set_runtime", "probe_runtime", NULL);
+    manager->invoke_va ("firstprobe",
+     			"connect",
+     			"/tmp/switcher_rtptest_uri_application_0",
+     			NULL);
+
+    manager->create ("fakesink","secondprobe");
+    manager->invoke_va ("secondprobe", "set_runtime", "probe_runtime", NULL);
+    manager->invoke_va ("secondprobe",
+      			"connect",
+      			"/tmp/switcher_rtptest_uri_application_1",
+      			NULL);
+    
     manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);
     manager->subscribe_property ("sub","firstprobe","last-message");
     manager->subscribe_property ("sub","secondprobe","last-message");
     
     while (do_continue)
-      {
-	usleep (100000);
-      }
+      usleep (100000);
   }
  
   if (audio_success && video_success)

@@ -24,7 +24,7 @@
 //removing shmdata 
 #include <gio/gio.h>
 
-//the base quiddities to manage (line sorted)
+//the quiddities to manage (line sorted)
 #include "aac.h"
 #include "aravis-genicam.h"
 #include "audio-test-source.h"
@@ -96,11 +96,8 @@ namespace switcher
   }
 
   QuiddityManager_Impl::~QuiddityManager_Impl()
-  {
-    g_debug ("~QuiddityManager_Impl");
-  }
+  {}
   
-
   void
   QuiddityManager_Impl::remove_shmdata_sockets ()
   {

@@ -92,10 +92,8 @@ namespace switcher
   
   Runtime::~Runtime ()
   {
-    g_debug ("deleting runtime");
     gst_element_set_state (pipeline_, GST_STATE_NULL);
     gst_object_unref (GST_OBJECT (pipeline_));
-    g_debug ("runtime deleted");
   }
 
   gboolean

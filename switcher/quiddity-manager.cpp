@@ -61,7 +61,7 @@ namespace switcher
     clear_command_sync ();
     //FIXME count instances and do quit main loop
     //g_main_loop_quit (mainloop_);
-    g_debug ("base quiddity manager destructed %s",name_.c_str ());
+    g_message ("bye !");
   }
 
   std::string

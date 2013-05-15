@@ -38,9 +38,8 @@ namespace switcher
     signals_description_.reset (new JSONBuilder());
   }
   
-  Quiddity::~Quiddity () { 
-    g_debug ("call: Quiddity destructor for %s",get_name().c_str());
-  }
+  Quiddity::~Quiddity () 
+  {}
 
   std::string
   Quiddity::get_name()
