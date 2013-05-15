@@ -329,8 +329,8 @@ namespace switcher
 
 	if (!init_quiddity (quiddity))
 	  {
-	    g_warning ("initialization of %s with name %s failled\n",
-		       quiddity_class.c_str (), nick_name.c_str ());
+	    g_debug ("initialization of %s with name %s failled\n",
+		     quiddity_class.c_str (), nick_name.c_str ());
 	    
 	    return "";
 	  }

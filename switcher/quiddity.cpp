@@ -76,15 +76,16 @@ namespace switcher
 				     std::string gobject_signal_name)
   {
     std::pair <std::string,std::string> sig_pair = std::make_pair (get_documentation().get_class_name (),
-								   signal_name);
-
+    								   signal_name);
+    
     if (signals_.find(sig_pair) != signals_.end())
       {
-	g_warning ("signals: registering name %s already exists",signal_name.c_str());
-	return false;
+    	g_warning ("signals: registering name %s already exists",signal_name.c_str());
+    	return false;
       }
     
-    Signal::ptr signal (new Signal ());
+    Signal::ptr signal;
+    signal.reset (new Signal ());
     if (!signal->set_gobject_signame (object, gobject_signal_name))
       return false;
     signals_[sig_pair] = signal; 
@@ -127,24 +128,24 @@ namespace switcher
 								   signal_name);
     if (signals_.find(sig_pair) != signals_.end())
       {
-	g_warning ("signals: name %s already exists, cannot create a new signal",signal_name.c_str());
-	return false;
+    	g_warning ("signals: name %s already exists, cannot create a new signal",signal_name.c_str());
+    	return false;
       }
     guint id = GObjectWrapper::make_signal (return_type,
-					    n_params,
-					    param_types); 
+    					    n_params,
+    					    param_types); 
 
     if (id == 0)
       {
-	g_warning ("custom signal %s not created because of a type issue");
+    	g_warning ("custom signal %s not created because of a type issue");
       }
 
     Signal::ptr signal (new Signal ());
     if (!signal->set_gobject_sigid (gobject_->get_gobject (), id))
-      return false;
+        return false;
     signals_[sig_pair] = signal; 
     g_debug ("signal %s registered", 
-	     signal_name.c_str ());
+     	     signal_name.c_str ());
     return true;
   }
 

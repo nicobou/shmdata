@@ -33,10 +33,10 @@ namespace switcher
     QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
     if ((bool) manager)
       {
-	if (!manager->set_created_hook (CreateRemoveSpy::on_created, this))
-	  return false;
-	if (!manager->set_removed_hook (CreateRemoveSpy::on_removed, this))
-	  return false;
+    	if (!manager->set_created_hook (CreateRemoveSpy::on_created, this))
+    	  return false;
+    	if (!manager->set_removed_hook (CreateRemoveSpy::on_removed, this))
+    	  return false;
       }
     else
       return false;
@@ -44,15 +44,15 @@ namespace switcher
     //we got the hook, so make signals of it
     GType types[] = {G_TYPE_STRING};
     make_custom_signal ("on-quiddity-created", 
-			G_TYPE_NONE,
-			1,
-			types);
+    			G_TYPE_NONE,
+    			1,
+    			types);
 
     make_custom_signal ("on-quiddity-removed", 
-			G_TYPE_NONE,
-			1,
-			types);
-
+    			G_TYPE_NONE,
+    			1,
+    			types);
+    
      set_name ("manager-spy"); // supposed to be a singleton with the use of "set_..._hook ()"
 
     return true;

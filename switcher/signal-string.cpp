@@ -21,7 +21,7 @@
  * The Signal class that wraps gobject signals and add some documentation to it
  */
 
-#include "switcher/signal-string.h"
+#include "signal-string.h"
 #include "gst-utils.h"
 #include <algorithm>
 
@@ -65,16 +65,25 @@ namespace switcher
   Signal::set_gobject_sigid (GObject *object, 
 			     guint gobject_signal_id)
   {
+    g_print ("coucou\n");
     if (!G_IS_OBJECT (object))
       {
-	g_debug ("Signal: object is not a gobject");
-	return false;
+    	g_debug ("Signal: object is not a gobject");
+    	return false;
       }
+    g_print ("coucou1\n");
  
     object_ = object;
     id_ = gobject_signal_id;
+
+    g_print ("coucou2\n");
+
     inspect_gobject_signal ();
+
+    g_print ("coucou3\n");
     hook_id_ = g_signal_add_emission_hook (id_, 0, on_signal_emitted, this, NULL);
+    g_print ("coucou4\n");
+
     return true;
   }
    
@@ -94,13 +103,15 @@ namespace switcher
   void
   Signal::inspect_gobject_signal ()
   {
+    g_print ("hehe1\n");
     /* Signals/Actions Block */
     guint *signals;
     guint nsignals;
     gint i = 0, j, k;
     GSignalQuery *query = NULL;
     GType type;
-    GSList *found_signals, *l;
+    GSList *found_signals = g_slist_alloc ();
+    GSList *l;
    
     // for (type = G_OBJECT_TYPE (element); type; type = g_type_parent (type)) {
     //   if (type == GST_TYPE_ELEMENT || type == GST_TYPE_OBJECT)
@@ -111,15 +122,22 @@ namespace switcher
 
     // signals = g_signal_list_ids (type, &nsignals);
     // for (i = 0; i < nsignals; i++) {
+
+    g_print ("hehe2\n");
+
     query = g_new0 (GSignalQuery, 1);
     g_signal_query (id_, query);
     
+    g_print ("hehe3\n");
+
     // if ((k == 0 && !(query->signal_flags & G_SIGNAL_ACTION)) ||
     // 	(k == 1 && (query->signal_flags & G_SIGNAL_ACTION)))
     if (query->signal_flags & G_SIGNAL_ACTION)
       is_action_ = TRUE;
     else
       is_action_ = FALSE;
+
+    g_print ("hehe33\n");
     found_signals = g_slist_append (found_signals, query);
     // else
     //   g_free (query);
@@ -138,6 +156,8 @@ namespace switcher
     //   continue;
     // }
 
+    g_print ("hehe4\n");
+
     for (l = found_signals; l; l = l->next) {
       // gchar *indent;
       // int indent_len;
@@ -153,6 +173,8 @@ namespace switcher
        // 	       query->signal_name,
        // 	       g_type_name (query->return_type), g_type_name (type));
       return_type_ = query->return_type;
+
+    g_print ("hehe5\n");
 
       for (j = 0; j < query->n_params; j++) {
 	// if (G_TYPE_IS_FUNDAMENTAL (query->param_types[j])) {
@@ -171,10 +193,15 @@ namespace switcher
       //g_print ("\n");
     }
     
+    g_print ("hehe6\n");
+
     if (found_signals) {
       g_slist_foreach (found_signals, (GFunc) g_free, NULL);
       g_slist_free (found_signals);
     }
+
+    g_print ("hehe fin\n");
+
   }
 
  void
