@@ -77,6 +77,7 @@ namespace switcher
       // for converting creating removal into signals
       bool set_created_hook (quiddity_created_hook hook, void *user_data);
       bool set_removed_hook (quiddity_removed_hook hook, void *user_data);
+      void reset_create_remove_hooks ();
 
       //**** properties
       //doc (json formatted)

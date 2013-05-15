@@ -75,10 +75,7 @@ namespace switcher
   QuiddityManager_Impl::QuiddityManager_Impl() :
     name_ ("default")
   {
-    creation_hook_ = NULL;
-    removal_hook_ = NULL;
-    creation_hook_user_data_ = NULL;
-    removal_hook_user_data_ = NULL;
+    reset_create_remove_hooks ();
     remove_shmdata_sockets ();
     register_classes ();
     classes_doc_.reset (new JSONBuilder ());
@@ -892,6 +889,15 @@ namespace switcher
     removal_hook_ = hook;
     removal_hook_user_data_ = user_data;
     return true;
+  }
+  
+  void 
+  QuiddityManager_Impl::reset_create_remove_hooks ()
+  {
+    creation_hook_ = NULL;
+    removal_hook_ = NULL;
+    creation_hook_user_data_ = NULL;
+    removal_hook_user_data_ = NULL;
   }
   
 } // end of namespace
