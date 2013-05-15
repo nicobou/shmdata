@@ -37,7 +37,7 @@ namespace switcher
     *target_element = gst_element_factory_make (class_name, NULL);
     if (*target_element == NULL)
       {
-	g_warning ("gstreamer element class %s cannot be instanciated", class_name);
+	g_debug ("gstreamer element class %s cannot be instanciated", class_name);
 	return false;
       }
     else

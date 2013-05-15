@@ -303,7 +303,7 @@ namespace switcher
      if (quiddity.get() != NULL)
        if (!init_quiddity (quiddity))
 	 {
-	   g_warning ("initialization of %s failled",quiddity_class.c_str ());
+	   g_debug ("initialization of %s failled",quiddity_class.c_str ());
 	   return "";
 	 }
      
