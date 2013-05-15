@@ -27,6 +27,7 @@
 
 namespace switcher
 {
+  std::map<std::pair <std::string,std::string>, Signal::ptr> Quiddity::signals_;
 
   Quiddity::Quiddity ()
   {
@@ -75,8 +76,10 @@ namespace switcher
 				     GObject *object, 
 				     std::string gobject_signal_name)
   {
-    
-    if (signals_.find(signal_name) != signals_.end())
+    std::pair <std::string,std::string> sig_pair = std::make_pair (get_documentation().get_class_name (),
+								   signal_name);
+
+    if (signals_.find(sig_pair) != signals_.end())
       {
 	g_warning ("signals: registering name %s already exists",signal_name.c_str());
 	return false;
@@ -85,32 +88,35 @@ namespace switcher
     Signal::ptr signal (new Signal ());
     if (!signal->set_gobject_signame (object, gobject_signal_name))
       return false;
-    signals_[signal_name] = signal; 
+    signals_[sig_pair] = signal; 
     g_debug ("signal %s registered with name %s", 
       	     gobject_signal_name.c_str (),
       	     signal_name.c_str ());
     return true;
   }
 
-  bool 
-  Quiddity::register_signal_gobject_by_id (std::string signal_name,
-					   GObject *object, 
-					   guint gobject_signal_id)
-  {
-    if (signals_.find(signal_name) != signals_.end())
-      {
-	g_warning ("signals: registering name %s already exists",signal_name.c_str());
-	return false;
-      }
+  // bool 
+  // Quiddity::register_signal_gobject_by_id (std::string signal_name,
+  // 					   GObject *object, 
+  // 					   guint gobject_signal_id)
+  // {
+  //   std::pair <std::string,std::string> sig_pair = std::make_pair (get_documentation().get_class_name (),
+  // 								   signal_name);
+    
+  //   if (signals_.find(sig_pair) != signals_.end())
+  //     {
+  // 	g_warning ("signals: registering name %s already exists",signal_name.c_str());
+  // 	return false;
+  //     }
 
-    Signal::ptr signal (new Signal ());
-    if (!signal->set_gobject_sigid (object, gobject_signal_id))
-      return false;
-    signals_[signal_name] = signal; 
-    g_debug ("signal %s registered", 
-	     signal_name.c_str ());
-    return true;
-  }
+  //   Signal::ptr signal (new Signal ());
+  //   if (!signal->set_gobject_sigid (object, gobject_signal_id))
+  //     return false;
+  //   signals_[sig_pair] = signal; 
+  //   g_debug ("signal %s registered", 
+  // 	     signal_name.c_str ());
+  //   return true;
+  // }
 
   bool 
   Quiddity::make_custom_signal (const std::string signal_name, //the name to give
@@ -118,7 +124,9 @@ namespace switcher
 				guint n_params, //number of params
 				GType *param_types)
   {
-    if (signals_.find(signal_name) != signals_.end())
+    std::pair <std::string,std::string> sig_pair = std::make_pair (get_documentation().get_class_name (),
+								   signal_name);
+    if (signals_.find(sig_pair) != signals_.end())
       {
 	g_warning ("signals: name %s already exists, cannot create a new signal",signal_name.c_str());
 	return false;
@@ -135,7 +143,7 @@ namespace switcher
     Signal::ptr signal (new Signal ());
     if (!signal->set_gobject_sigid (gobject_->get_gobject (), id))
       return false;
-    signals_[signal_name] = signal; 
+    signals_[sig_pair] = signal; 
     g_debug ("signal %s registered", 
 	     signal_name.c_str ());
     return true;
@@ -147,12 +155,15 @@ namespace switcher
 				    const std::string short_description,
 				    const std::vector<std::pair<std::string,std::string> > arg_description)
   {
-    if (signals_.find( signal_name ) == signals_.end())
+
+    std::pair <std::string,std::string> sig_pair = std::make_pair (get_documentation().get_class_name (),
+								   signal_name);
+    if (signals_.find(sig_pair) == signals_.end())
       {
 	g_error ("cannot set description of a not existing signal");
 	return false;
       }
-    signals_[signal_name]->set_description (signal_name, short_description, arg_description);
+    signals_[sig_pair]->set_description (signal_name, short_description, arg_description);
     return true;
   }
 
@@ -372,12 +383,15 @@ namespace switcher
 			      Signal::OnEmittedCallback cb,
 			      void *user_data)
   {
-    if (signals_.find(signal_name) == signals_.end())
+    std::pair <std::string,std::string> sig_pair = std::make_pair (get_documentation().get_class_name (),
+								   signal_name);
+    
+    if (signals_.find(sig_pair) == signals_.end())
       {
 	g_warning ("Quiddity::subscribe_signal, signal %s not found", signal_name.c_str ());
 	return false;
       }
-    Signal::ptr sig = signals_[signal_name];
+    Signal::ptr sig = signals_[sig_pair];
     return sig->subscribe (cb, user_data);
   }
 
@@ -386,10 +400,13 @@ namespace switcher
 				Signal::OnEmittedCallback cb,
 				void *user_data)
   {
-    if (signals_.find (signal_name) == signals_.end())
+    std::pair <std::string,std::string> sig_pair = std::make_pair (get_documentation().get_class_name (),
+								   signal_name);
+
+    if (signals_.find (sig_pair) == signals_.end())
       return false;
 
-    Signal::ptr signal = signals_[signal_name];
+    Signal::ptr signal = signals_[sig_pair];
     return signal->unsubscribe (cb, user_data);
   }
 
@@ -397,9 +414,12 @@ namespace switcher
   Quiddity::signal_emit (const std::string signal_name, 
 			 ...)
   {
-      if (signals_.find (signal_name) == signals_.end())
+    std::pair <std::string,std::string> sig_pair = std::make_pair (get_documentation().get_class_name (),
+								   signal_name);
+    
+    if (signals_.find (sig_pair) == signals_.end())
 	return;
-    Signal::ptr signal = signals_[signal_name];
+    Signal::ptr signal = signals_[sig_pair];
     va_list var_args;
     va_start (var_args, signal_name);
     // va_list va_cp;
@@ -442,8 +462,4 @@ namespace switcher
     manager_impl_ = manager_impl;
   }
 
-  GObjectWrapper::ptr Quiddity::get_quiddity_internal_gobject ()
-  {
-    return gobject_;
-  }
 }

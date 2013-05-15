@@ -42,34 +42,16 @@ namespace switcher
       return false;
     
     //we got the hook, so make signals of it
-    GType types[1];
-    types[0] = G_TYPE_STRING;
-    guint id_created = GObjectWrapper::make_signal (G_TYPE_NONE,
-						    1,
-						    types);    
-    guint id_removed = GObjectWrapper::make_signal (G_TYPE_NONE,
-     						    1,
-     						    types);    
-    
-    GObjectWrapper::ptr gobject = get_quiddity_internal_gobject ();
-    register_signal_gobject_by_id ("on-quiddity-created",
-				   gobject->get_gobject (), 
-				   id_created);
+    GType types[] = {G_TYPE_STRING};
+    make_custom_signal ("on-quiddity-created", 
+			G_TYPE_NONE,
+			1,
+			types);
 
-    set_signal_description ("on-quiddity-created",
-       			    "a quiddity has been created",
-       			    Signal::make_arg_description("nick_name",
-       							 "the quiddity nick name",
-       							 NULL));
-
-     register_signal_gobject_by_id ("on-quiddity-removed",
-       				   gobject->get_gobject (), 
-       				   id_removed);
-     set_signal_description ("on-quiddity-removed",
-       			    "a quiddity has been removed",
-       			    Signal::make_arg_description("nick_name",
-       							 "the quiddity nick name",
-       							 NULL));
+    make_custom_signal ("on-quiddity-removed", 
+			G_TYPE_NONE,
+			1,
+			types);
 
      set_name ("manager-spy"); // supposed to be a singleton with the use of "set_..._hook ()"
 

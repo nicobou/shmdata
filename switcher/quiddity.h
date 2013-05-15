@@ -107,7 +107,9 @@ namespace switcher
     JSONBuilder::ptr properties_description_;
     std::map<std::string, Method::ptr> methods_;
     JSONBuilder::ptr methods_description_;
-    std::map<std::string, Signal::ptr> signals_;
+    //pair is <class_name, signal_name>
+    //this map is static in order to avoid re-creation of the same signal for each quiddity instance 
+    static std::map<std::pair <std::string,std::string>, Signal::ptr> signals_;
     JSONBuilder::ptr signals_description_;
     std::string name_;
     std::string nick_name_;
@@ -138,24 +140,18 @@ namespace switcher
 				  GObject *object, 
 				  const std::string gobject_signal_name);//the internal gobject signal name
 
-    //FIXME remove that and "get_quiddity_internal_gobject ()"
-    bool register_signal_gobject_by_id (const std::string signal_name, //the name to give
-					GObject *object, 
-					guint gobject_signal_id);//the internal gobject signal id
     bool make_custom_signal (const std::string signal_name, //the name to give
 			     GType return_type,
 			     guint n_params, //number of params
 			     GType *param_types);
-
+    
     bool set_signal_description (const std::string signal_name,
 				 const std::string short_description,
 				 const Signal::args_doc arg_description);
     
     void signal_emit (const std::string signal_name, 
 		      ...);
-
-    GObjectWrapper::ptr get_quiddity_internal_gobject ();
-
+    
     //use a consistent naming for shmdatas FIXME move that to segment (or not?) 
     std::string make_file_name (std::string suffix);
 

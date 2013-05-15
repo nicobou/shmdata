@@ -67,61 +67,8 @@ namespace switcher
     if (!GstUtils::make_element ("gstrtpbin", &rtpsession_))
       return false;
 
-    
-
     next_id_ = 79; //this value is arbitrary and can be changed
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
-
-    // //FIXME remove the following tests
-    //  register_signal_gobject ("on-bye-ssrc",
-    //  			     G_OBJECT (rtpsession_), 
-    //  			     "on-bye-ssrc");
-    //  set_signal_description ("on-bye-ssrc",
-    //  			    "a source is leaving",
-    //  			    Signal::make_arg_description("session",
-    //  							 "session id",
-    //  							 "ssrc",
-    //  							 "the source id",
-    //  							 NULL));
-
-    //  register_signal_gobject ("on-new-ssrc",
-    //  			     G_OBJECT (rtpsession_), 
-    //  			     "on-new-ssrc");
-    //  set_signal_description ("on-new-ssrc",
-    //  			    "a source has been created",
-    //  			    Signal::make_arg_description("session",
-    //  							 "session id",
-    //  							 "ssrc",
-    //  							 "the source id",
-    //  							 NULL));
-
-    //  register_signal_gobject ("on-pad-added",
-    // 			      G_OBJECT (rtpsession_), 
-    // 			      "pad-added");
-    //  set_signal_description ("on-pad-added",
-    // 			     "a pad has been added",
-    // 			     Signal::make_arg_description("pad",
-    // 							  "the pointer to the pad",
-    // 							  NULL));
-    
-
-    //copy the on-pad-added signal FIXME remove that test
-    GType types[1];
-    types[0] = G_TYPE_STRING;
-    guint id = GObjectWrapper::make_signal (G_TYPE_NONE,
-					    1,
-					    types);    
-    
-    //FIXME the following should be static
-    GObjectWrapper::ptr gobject = get_quiddity_internal_gobject ();
-    register_signal_gobject_by_id ("truc",
-				   gobject->get_gobject (), 
-				   id);
-    set_signal_description ("truc",
-			    "a pad has been added",
-			    Signal::make_arg_description("pad",
-							 "the pointer to the pad",
-							 NULL));
     
     g_signal_connect (G_OBJECT (rtpsession_), "on-bye-ssrc", 
 		      (GCallback) on_bye_ssrc, (gpointer) this);
