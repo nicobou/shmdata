@@ -84,8 +84,8 @@ namespace switcher
     int method_get_num_pointer_args (std::string function_name); //returns -1 if method not found
     
     //signals
-    /* std::string get_signals_description (); */
-    /* std::string get_signal_description (std::string signal_name); */
+    std::string get_signals_description (); 
+    std::string get_signal_description (std::string signal_name); 
     bool subscribe_signal (std::string name,
 			   Signal::OnEmittedCallback cb, 
 			   void *user_data);

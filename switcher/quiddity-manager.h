@@ -123,7 +123,7 @@
 				     void *user_data); //the same called with subscribe
      
      
-     //**** methods 
+     //*********************** methods 
      //doc (json formatted)
      std::string get_methods_description (std::string quiddity_name);
      std::string get_method_description (std::string quiddity_name, 
@@ -132,19 +132,29 @@
     std::string get_methods_description_by_class (std::string class_name); 
     std::string get_method_description_by_class (std::string class_name, 
 						 std::string method_name);
-     //invoke
+    //invoke
     bool invoke (std::string quiddity_name, 
-		  std::string method_name,
-		  std::vector<std::string> args);  
+		 std::string method_name,
+		 std::vector<std::string> args);  
     bool invoke_va (const gchar *quiddity_name,
 		    ...);
-     
+    
      // will invoke the given method after quiddity creation, 
      //if method exists (only one method)
      bool auto_invoke  (std::string method_name,
 			std::vector<std::string> args);  
 
-     //signals 
+     //************************ signals 
+     //doc (json formatted)
+     std::string get_signals_description (std::string quiddity_name);
+     std::string get_signal_description (std::string quiddity_name, 
+					 std::string signal_name);
+     //following "by_class" methods provide properties available after creation only, 
+     //avoiding possible properties created dynamically
+     std::string get_signals_description_by_class (std::string class_name); 
+     std::string get_signal_description_by_class (std::string class_name, 
+						  std::string signal_name); 
+
      bool make_signal_subscriber (std::string subscriber_name,
 				  void (*callback)(std::string subscriber_name,
 						   std::string quiddity_name,
@@ -168,8 +178,7 @@
        list_signal_subscribers_json ();
      std::string 
        list_subscribed_signals_json (std::string subscriber_name);
-
-
+     
    private: 
      QuiddityManager();//will get name "default"
      QuiddityManager(std::string name); 

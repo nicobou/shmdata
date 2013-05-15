@@ -429,6 +429,41 @@ namespace switcher
     va_end (var_args);
   }
 
+  std::string 
+  Quiddity::get_signals_description ()
+  {
+    // properties_description_->reset();
+    // properties_description_->begin_object ();
+    // properties_description_->set_member_name ("properties");
+    // properties_description_->begin_array ();
+
+    // for(std::map<std::string, Property::ptr>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
+    //   {
+    // 	properties_description_->begin_object ();
+    // 	properties_description_->add_string_member ("name",it->first.c_str ());
+    // 	JsonNode *root_node = it->second->get_json_root_node ();
+    // 	properties_description_->add_JsonNode_member ("description", root_node);
+    // 	properties_description_->end_object ();
+    //   }
+
+    // properties_description_->end_array ();
+    // properties_description_->end_object ();
+    
+    //return properties_description_->get_string (true);
+    return "{ \"what\" : \"to be implemented\"}}";
+  }
+
+  std::string 
+  Quiddity::get_signal_description (std::string signal_name)
+  {
+    // if (properties_.find( name ) == properties_.end())
+    //   return "";
+    
+    // Property::ptr prop = properties_[name];
+    // return prop->get_description ();
+    return "{\"what\": \"to be implemented\"}";
+  }
+
 
   std::string
   Quiddity::make_file_name (std::string suffix)

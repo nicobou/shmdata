@@ -130,8 +130,6 @@ namespace switcher
 	descend = g_file_get_child (shmdata_dir, g_file_info_get_name (info));
 	//g_assert (descend != NULL);
 	relative_path = g_file_get_relative_path (shmdata_dir, descend);
-
-	
 	
 	error = NULL;
 	
@@ -729,7 +727,59 @@ namespace switcher
     return descr;
 
   }
+
   //*** signals
+  std::string 
+  QuiddityManager_Impl::get_signals_description (std::string quiddity_name)
+  {
+
+    if (!exists (quiddity_name))
+      {
+	g_warning ("quiddity %s not found, cannot get signals description",quiddity_name.c_str());
+	return "";
+      }
+    return (get_quiddity (quiddity_name))->get_signals_description ();
+  }
+
+  std::string 
+  QuiddityManager_Impl::get_signal_description (std::string quiddity_name, std::string signal_name)
+  {
+
+    if (!exists (quiddity_name))
+      {
+	g_warning ("quiddity %s not found, cannot get signal description",quiddity_name.c_str());
+	return "";
+      }
+    return (get_quiddity (quiddity_name))->get_signal_description (signal_name);
+  }
+
+  std::string 
+  QuiddityManager_Impl::get_signals_description_by_class (std::string class_name)
+  {
+    if (!class_exists (class_name))
+      return "{\"error\":\"class not found\"}";
+    std::string quid_name = create (class_name);
+    if (g_strcmp0 (quid_name.c_str (), "") == 0)
+      return "{\"error\":\"cannot get signal description because the class cannot be instanciated\"}";
+    std::string descr = get_signals_description (quid_name);
+    remove (quid_name);
+    return descr;
+  }
+  
+  std::string
+  QuiddityManager_Impl::get_signal_description_by_class (std::string class_name, 
+							 std::string signal_name)
+  {
+    if (!class_exists (class_name))
+      return "{\"error\":\"class not found\"}";
+    std::string quid_name = create (class_name);
+    if (g_strcmp0 (quid_name.c_str (), "") == 0)
+      return "{\"error\":\"cannot get signal because the class cannot be instanciated\"}";
+    std::string descr = get_signal_description (quid_name, signal_name);
+    remove (quid_name);
+    return descr;
+  }
+
  //higher level subscriber
   bool 
   QuiddityManager_Impl::make_signal_subscriber (std::string subscriber_name,
@@ -832,7 +882,7 @@ namespace switcher
     std::string 
     QuiddityManager_Impl::list_subscribed_signals_json (std::string subscriber_name)
     {
-      std::vector<std::pair<std::string, std::string> > subscribed_props =
+      std::vector<std::pair<std::string, std::string> > subscribed_sigs =
 	list_subscribed_signals (subscriber_name);
 
       JSONBuilder *doc = new JSONBuilder ();
@@ -840,8 +890,8 @@ namespace switcher
       doc->begin_object ();
       doc->set_member_name ("subscribed signals");
       doc->begin_array ();
-      for(std::vector<std::pair<std::string, std::string> >::iterator it = subscribed_props.begin(); 
-	  it != subscribed_props.end(); ++it) 
+      for(std::vector<std::pair<std::string, std::string> >::iterator it = subscribed_sigs.begin(); 
+	  it != subscribed_sigs.end(); ++it) 
 	{
 	  doc->begin_object ();
 	  doc->add_string_member ("quiddity", it->first.c_str ());

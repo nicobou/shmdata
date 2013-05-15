@@ -48,8 +48,7 @@ namespace switcher
       typedef void (*quiddity_created_hook) (std::string nick_name, void *user_data);
       typedef void (*quiddity_removed_hook) (std::string nick_name, void *user_data);
 
-      //will get name "default"
-      static QuiddityManager_Impl::ptr make_manager ();
+      static QuiddityManager_Impl::ptr make_manager ();//will get name "default"
       static QuiddityManager_Impl::ptr make_manager (std::string name);
       ~QuiddityManager_Impl();
     
@@ -94,6 +93,7 @@ namespace switcher
 			 std::string property_value);
       std::string get_property (std::string quiddity_name, 
 				std::string property_name);
+
       //high level property subscriber
       bool make_property_subscriber (std::string subscriber_name,
 				     void (*callback)(std::string subscriber_name,
@@ -109,6 +109,7 @@ namespace switcher
       bool unsubscribe_property (std::string subscriber_name,
 				 std::string quiddity_name,
 				 std::string property_name);
+      //signal utils
       std::vector<std::string> 
 	list_property_subscribers ();
       std::vector<std::pair<std::string, std::string> > 
@@ -143,6 +144,15 @@ namespace switcher
 		   std::vector<std::string> args);  
 
       //**** signals
+      //doc (json formatted)
+      std::string get_signals_description (std::string quiddity_name);
+      std::string get_signal_description (std::string quiddity_name, 
+					  std::string signal_name);
+      //following "by_class" methods provide properties available after creation only, 
+      //avoiding possible properties created dynamically
+      std::string get_signals_description_by_class (std::string class_name); 
+      std::string get_signal_description_by_class (std::string class_name, 
+						   std::string signal_name); 
       //high level signal subscriber
       bool make_signal_subscriber (std::string subscriber_name,
 				   void (*callback)(std::string subscriber_name,

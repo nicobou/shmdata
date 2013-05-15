@@ -310,6 +310,7 @@ QuiddityManager::remove_property_subscriber (std::string subscriber_name)
 		       NULL);
   }
 
+
   bool 
   QuiddityManager::make_signal_subscriber (std::string subscriber_name,
 					   void (*callback)(std::string subscriber_name,
@@ -368,6 +369,31 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     return manager_impl_->list_subscribed_signals_json (subscriber_name);
   }
 
+  std::string
+  QuiddityManager::get_signals_description (std::string quiddity_name)
+  {
+    return manager_impl_->get_signals_description (quiddity_name);
+  }
+
+  std::string
+  QuiddityManager::get_signal_description (std::string quiddity_name, 
+					   std::string signal_name)
+  {
+    return manager_impl_->get_signal_description (quiddity_name, signal_name);
+  }
+
+  std::string
+  QuiddityManager::get_signals_description_by_class (std::string class_name)
+  {
+    return manager_impl_->get_signals_description_by_class (class_name);
+  }
+
+  std::string
+  QuiddityManager::get_signal_description_by_class (std::string class_name, 
+						    std::string signal_name)
+  {
+    return manager_impl_->get_signal_description_by_class (class_name, signal_name);
+  }
 
   void 
   QuiddityManager::auto_init (std::string quiddity_name)
