@@ -47,14 +47,23 @@ namespace switcher
     			G_TYPE_NONE,
     			1,
     			types);
-
+    
+    set_signal_description ("on-quiddity-created",
+			    "a quiddity has been created",
+			    Signal::make_arg_description("quiddity_name",
+							 "the quiddity name",
+							 NULL));
     make_custom_signal ("on-quiddity-removed", 
     			G_TYPE_NONE,
     			1,
     			types);
-    
-     set_name ("manager-spy"); // supposed to be a singleton with the use of "set_..._hook ()"
+    set_signal_description ("on-quiddity-removed",
+			    "a quiddity has been removed",
+			    Signal::make_arg_description("quiddity_name",
+							 "the quiddity name",
+							 NULL));
 
+    set_name ("manager-spy"); // supposed to be a singleton with the use of "set_..._hook ()"
     return true;
   }
   

@@ -310,13 +310,13 @@ namespace switcher
 
     for(std::map<std::string, Property::ptr>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
       {
-	properties_description_->begin_object ();
-	properties_description_->add_string_member ("name",it->first.c_str ());
-	JsonNode *root_node = it->second->get_json_root_node ();
-	properties_description_->add_JsonNode_member ("description", root_node);
-	properties_description_->end_object ();
+     	properties_description_->begin_object ();
+     	properties_description_->add_string_member ("name",it->first.c_str ());
+     	JsonNode *root_node = it->second->get_json_root_node ();
+     	properties_description_->add_JsonNode_member ("description", root_node);
+     	properties_description_->end_object ();
       }
-
+    
     properties_description_->end_array ();
     properties_description_->end_object ();
     
@@ -432,36 +432,49 @@ namespace switcher
   std::string 
   Quiddity::get_signals_description ()
   {
-    // properties_description_->reset();
-    // properties_description_->begin_object ();
-    // properties_description_->set_member_name ("properties");
-    // properties_description_->begin_array ();
 
-    // for(std::map<std::string, Property::ptr>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
-    //   {
-    // 	properties_description_->begin_object ();
-    // 	properties_description_->add_string_member ("name",it->first.c_str ());
-    // 	JsonNode *root_node = it->second->get_json_root_node ();
-    // 	properties_description_->add_JsonNode_member ("description", root_node);
-    // 	properties_description_->end_object ();
-    //   }
+    std::string class_name = get_documentation().get_class_name ();
 
-    // properties_description_->end_array ();
-    // properties_description_->end_object ();
+    signals_description_->reset();
+    signals_description_->begin_object ();
+    signals_description_->set_member_name ("signals");
+    signals_description_->begin_array ();
     
-    //return properties_description_->get_string (true);
-    return "{ \"what\" : \"to be implemented\"}}";
+    for(std::map<std::pair <std::string, std::string>, Signal::ptr>::iterator it = signals_.begin(); 
+     	it != signals_.end(); 
+     	++it) 
+      {
+	if (g_strcmp0 (it->first.first.c_str (), 
+		       class_name.c_str ()) == 0)
+	  {
+	    signals_description_->begin_object ();
+	    signals_description_->add_string_member ("name",it->first.second.c_str ());
+	    JsonNode *root_node = it->second->get_json_root_node ();
+	    if (root_node != NULL)
+	      signals_description_->add_JsonNode_member ("description", root_node);
+	    else
+	      signals_description_->add_string_member ("description","missing description");
+	    signals_description_->end_object ();
+	  }
+      }
+    
+    signals_description_->end_array ();
+    signals_description_->end_object ();
+    
+    return signals_description_->get_string (true);
   }
 
   std::string 
   Quiddity::get_signal_description (std::string signal_name)
   {
-    // if (properties_.find( name ) == properties_.end())
-    //   return "";
+    std::pair <std::string, std::string> sig_pair = make_pair (get_documentation().get_class_name (),
+							       signal_name);
     
-    // Property::ptr prop = properties_[name];
-    // return prop->get_description ();
-    return "{\"what\": \"to be implemented\"}";
+    if (signals_.find(sig_pair) == signals_.end())
+      return "";
+    
+    Signal::ptr sig = signals_[sig_pair];
+    return sig->get_description ();
   }
 
 
