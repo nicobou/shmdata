@@ -23,7 +23,8 @@ namespace switcher
 {
 
   bool
-  GstUtils::make_element (gchar *class_name, GstElement **target_element)
+  GstUtils::make_element (const gchar *class_name, 
+			  GstElement **target_element)
   {
     
     // if (*target_element != NULL)

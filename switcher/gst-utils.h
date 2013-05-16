@@ -29,9 +29,12 @@ namespace switcher
   class GstUtils
   {
   public:
-    static bool make_element (gchar *class_name, GstElement **target_element);
-    static bool link_static_to_request (GstElement *src,GstElement *sink);
-    static bool link_static_to_request (GstPad *srcpad,GstElement *sink);
+    static bool make_element (const gchar *class_name, 
+			      GstElement **target_element);
+    static bool link_static_to_request (GstElement *src,
+					GstElement *sink);
+    static bool link_static_to_request (GstPad *srcpad,
+					GstElement *sink);
     static bool check_pad_link_return (GstPadLinkReturn res);
     static void unlink_pad (GstPad * pad);
     static void clean_element (GstElement *element);

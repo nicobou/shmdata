@@ -38,7 +38,6 @@ namespace switcher
     
     QuiddityDocumentation get_documentation ();
     static QuiddityDocumentation doc_;
-
   };
   
 }  // end of namespace

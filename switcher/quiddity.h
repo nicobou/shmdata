@@ -110,7 +110,7 @@ namespace switcher
     //pair is <class_name, signal_name>
     //this map is static in order to avoid re-creation of the same signal for each quiddity instance 
     static std::map<std::pair <std::string,std::string>, guint> signals_ids_;
-    std::map<std::string, Signal::ptr> temp_sigs_;
+    std::map<std::string, Signal::ptr> signals_;
     JSONBuilder::ptr signals_description_;
     std::string name_;
     std::string nick_name_;
@@ -145,11 +145,18 @@ namespace switcher
 			     GType return_type,
 			     guint n_params, //number of params
 			     GType *param_types);
-    
+
     bool set_signal_description (const std::string signal_name,
 				 const std::string short_description,
 				 const Signal::args_doc arg_description);
-    
+
+    //following method allows for creation of signals in abstract class like segment
+    bool make_custom_signal (const std::string class_name, //quiddity class name that is making the signal
+			     const std::string signal_name, //the name to give
+			     GType return_type,
+			     guint n_params, //number of params
+			     GType *param_types);
+
     void signal_emit (const std::string signal_name, 
 		      ...);
     

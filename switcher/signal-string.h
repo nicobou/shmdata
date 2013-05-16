@@ -61,7 +61,7 @@ namespace switcher
     static args_types make_arg_type_description (GType arg_type, ...);
 
     //helper methods, use NULL sentinel
-    static args_doc make_arg_description (char *first_arg_name, ...);
+    static args_doc make_arg_description (const gchar *first_arg_name, ...);
     JSONBuilder::Node get_json_root_node (); 
     
   private: 

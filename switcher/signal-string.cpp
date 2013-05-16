@@ -164,7 +164,7 @@ namespace switcher
    }
 
   std::vector<std::pair<std::string,std::string> > 
-  Signal::make_arg_description (char *first_arg_name, ...)
+  Signal::make_arg_description (const gchar *first_arg_name, ...)
   {
     std::vector<std::pair<std::string,std::string> > res;
     std::pair<std::string,std::string> arg_desc_pair;

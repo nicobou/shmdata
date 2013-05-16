@@ -61,9 +61,6 @@ namespace switcher
 
     GstUtils::make_element ("bin", &bin_);
     g_object_set (G_OBJECT (bin_), "async-handling",TRUE, NULL);
-    
-    
-    //g_object_set (G_OBJECT (bin_), "message-forward",TRUE, NULL);
 
     //registering set_runtime method
     std::vector<GType> set_runtime_arg_types;
@@ -77,6 +74,35 @@ namespace switcher
     if (!set_method_description ("set_runtime", "attach quiddity to a runtime ", arg_desc))
       g_error ("segment: cannot set method description for \"set_runtime\"");
 
+     GType types[] = {G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING};
+     make_custom_signal ("segment",
+			 "on-new-shmdata-writer", 
+			 G_TYPE_NONE,
+			 3,
+			 types);
+     set_signal_description ("on-new-shmdata-writer",
+			     "a new shmdata writer has been created",
+			     Signal::make_arg_description("quiddity_name",
+							  "the quiddity name",
+							  "path",
+							  "the shmdata path",
+							  "json_doc",
+							  "the writer json documentation",
+							  NULL));
+     make_custom_signal ("segment",
+			 "on-new-shmdata-reader", 
+			 G_TYPE_NONE,
+			 3,
+			 types);
+     set_signal_description ("on-new-shmdata-reader",
+			     "a new shmdata reader has been created",
+			     Signal::make_arg_description("quiddity_name",
+							  "the quiddity name",
+							  "path",
+							  "the shmdata path",
+							  "json_doc",
+							  "the writer json documentation",
+							  NULL));
   }
 
   Segment::~Segment()
@@ -231,6 +257,10 @@ namespace switcher
     shmdata_writers_.insert (name, writer);
     update_shmdata_writers_description ();
     GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_writers_description_);
+    signal_emit ("on-new-shmdata-writer", 
+		 get_nick_name ().c_str (), 
+		 writer->get_path ().c_str (),
+		 (JSONBuilder::get_string (writer->get_json_root_node (), true)).c_str ());
     return true;
   }
   
@@ -245,7 +275,10 @@ namespace switcher
     shmdata_readers_.insert (name, reader);
     update_shmdata_readers_description ();
     GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
-
+    signal_emit ("on-new-shmdata-reader", 
+		 get_nick_name ().c_str (), 
+		 reader->get_path ().c_str (),
+		 JSONBuilder::get_string (reader->get_json_root_node (), true).c_str ());
     return true;
     
   }
