@@ -109,7 +109,8 @@ namespace switcher
     JSONBuilder::ptr methods_description_;
     //pair is <class_name, signal_name>
     //this map is static in order to avoid re-creation of the same signal for each quiddity instance 
-    static std::map<std::pair <std::string,std::string>, Signal::ptr> signals_;
+    static std::map<std::pair <std::string,std::string>, guint> signals_ids_;
+    std::map<std::string, Signal::ptr> temp_sigs_;
     JSONBuilder::ptr signals_description_;
     std::string name_;
     std::string nick_name_;

@@ -196,28 +196,12 @@ main (int argc,
       // Create a runtime (pipeline0)
      //std::string runtime = 
      manager->create ("runtime");
-
-
      
     //make on-quiddity-created and on-quiddity-removed signals
      manager->create ("create_remove_spy", "create_remove_spy");
      manager->make_signal_subscriber ("create_remove_subscriber", quiddity_created_removed_cb, NULL);
      manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-created");
      manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-removed");
-
-     g_print ("get_signals_description\n %s\n\n", 
-      	      manager->get_signals_description ("create_remove_spy").c_str ());
-     g_print ("get_signal_description\n %s\n\n", 
-       	      manager->get_signal_description ("create_remove_spy",
-      					       "on-quiddity-created").c_str ());
-
-     g_print ("get_signals_description_by_class\n %s\n\n", 
-      	      manager->get_signals_description_by_class ("create_remove_spy").c_str ());
-     // g_print ("get_signal_description_by_class\n %s\n\n", 
-     // 	      manager->get_signal_description_by_class ("create_remove_spy",
-     // 							"on-quiddity-created").c_str ());
-     
-
 
      std::string soap_name = manager->create ("SOAPcontrolServer", "soapserver");
      std::vector<std::string> port_arg;
