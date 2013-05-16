@@ -211,8 +211,8 @@ main (int argc,
        	      manager->get_signal_description ("create_remove_spy",
       					       "on-quiddity-created").c_str ());
 
-     // g_print ("get_signals_description_by_class\n %s\n\n", 
-     // 	      manager->get_signals_description_by_class ("create_remove_spy").c_str ());
+     g_print ("get_signals_description_by_class\n %s\n\n", 
+      	      manager->get_signals_description_by_class ("create_remove_spy").c_str ());
      // g_print ("get_signal_description_by_class\n %s\n\n", 
      // 	      manager->get_signal_description_by_class ("create_remove_spy",
      // 							"on-quiddity-created").c_str ());
