@@ -412,10 +412,8 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
       wrapper->set_quiddity_manager (shared_from_this());
     
     if (!auto_invoke_method_name_.empty ())
-      {
-	//TODO this should test if the method exists 
-	invoke (quidd->get_nick_name (), auto_invoke_method_name_,auto_invoke_args_);
-      }
+	if (quidd->has_method (auto_invoke_method_name_))
+	  invoke (quidd->get_nick_name (), auto_invoke_method_name_,auto_invoke_args_);
   }
   
   std::string
