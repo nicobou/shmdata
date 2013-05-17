@@ -69,7 +69,6 @@ static GOptionEntry entries[] =
 
 int main(int argc, char **argv)
 { 
-
   //command line options
   GError *error = NULL;
   GOptionContext *context;
@@ -80,7 +79,6 @@ int main(int argc, char **argv)
       g_print ("option parsing failed: %s\n", error->message);
       exit (1);
     } 
-  
   
   if (server == NULL)
     {

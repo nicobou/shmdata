@@ -45,6 +45,7 @@
 #include "runtime.h"
 #include "shmdata-to-file.h"
 #include "shmdata-from-gdp-file.h"
+#include "soap-ctrl-client.h"
 #include "soap-ctrl-server.h"
 #include "udpsink.h"
 #include "uridecodebin.h"
@@ -209,6 +210,8 @@ namespace switcher
 							  ShmdataFromGDPFile::doc_.get_json_root_node ());
     abstract_factory_.register_class<ShmdataToFile> (ShmdataToFile::doc_.get_class_name (), 
 						     ShmdataToFile::doc_.get_json_root_node ());
+    abstract_factory_.register_class<SoapCtrlClient> (SoapCtrlClient::doc_.get_class_name (), 
+     						      SoapCtrlClient::doc_.get_json_root_node ());
     abstract_factory_.register_class<SoapCtrlServer> (SoapCtrlServer::doc_.get_class_name (), 
      						      SoapCtrlServer::doc_.get_json_root_node ());
     abstract_factory_.register_class<UDPSink> (UDPSink::doc_.get_class_name (), 

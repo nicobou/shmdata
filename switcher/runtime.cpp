@@ -52,7 +52,7 @@ namespace switcher
 		    (gpointer)this);
     set_method_description ((char *)"play", 
 			    (char *)"activate the runtime", 
-			    Method::make_arg_description ((char *)"none",
+			    Method::make_arg_description ("none",
 							  NULL));
 
     //registering pause
