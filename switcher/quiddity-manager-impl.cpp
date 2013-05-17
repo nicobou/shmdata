@@ -345,7 +345,6 @@ namespace switcher
   std::string 
   QuiddityManager_Impl::get_quiddities_description ()
   {
-    //FIXME get json doc from the quiddity class and make an array of it 
     JSONBuilder::ptr descr (new JSONBuilder ());
     descr->reset ();
     descr->begin_object();
@@ -653,10 +652,24 @@ namespace switcher
     return (get_quiddity (quiddity_name))->get_property(property_name.c_str());
   }
 
+  bool
+  QuiddityManager_Impl::has_method (std::string quiddity_name, 
+				    std::string method_name)
+  {
+      if (!exists (quiddity_name))
+      {
+	g_debug ("quiddity %s not found",quiddity_name.c_str());
+	return false;
+      }
+      Quiddity::ptr quiddity = get_quiddity (quiddity_name);
+      
+      return quiddity->has_method (method_name);
+  }
+
   bool 
   QuiddityManager_Impl::invoke (std::string quiddity_name, 
-			       std::string method_name,
-			       std::vector<std::string> args)
+				std::string method_name,
+				std::vector<std::string> args)
   {
     //g_debug ("QuiddityManager_Impl::quiddity_invoke_method %s %s, arg size %d",quiddity_name.c_str(), function_name.c_str(), args.size ());
     
@@ -667,9 +680,7 @@ namespace switcher
       }
     Quiddity::ptr quiddity = get_quiddity (quiddity_name);
 
-    //FIXME implement and use "quiddity->has_method(method_name)" 
-    int num_val = quiddity->method_get_num_value_args(method_name);
-    if (num_val == -1) 
+    if (!quiddity->has_method (method_name)) 
       {
 	g_debug ("method %s not found, cannot invoke",method_name.c_str());
 	return false;

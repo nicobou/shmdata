@@ -36,6 +36,22 @@ namespace switcher
     properties_description_.reset (new JSONBuilder());
     methods_description_.reset (new JSONBuilder());
     signals_description_.reset (new JSONBuilder());
+    
+     // GType types[] = {G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING};
+     // make_custom_signal ("quiddity",
+     // 			 "on-new-signal-registered", 
+     // 			 G_TYPE_NONE,
+     // 			 3,
+     // 			 types);
+     // set_signal_description ("on-new-signal-registered",
+     // 			     "a new signal has been registered and documented",
+     // 			     Signal::make_arg_description("quiddity_name",
+     // 							  "the quiddity name",
+     // 							  "signal_name",
+     // 							  "the signal name",
+     // 							  "json_doc",
+     // 							  "the json-formated signal documentation",
+     // 							  NULL));
   }
   
   Quiddity::~Quiddity () 
@@ -156,6 +172,11 @@ namespace switcher
 	return false;
       }
     signals_[signal_name]->set_description (signal_name, short_description, arg_description);
+
+    // signal_emit ("on-new-signal-registered", 
+    // 		 get_nick_name ().c_str (), 
+    // 		 signal_name.c_str (),
+    // 		 (JSONBuilder::get_string (signals_[signal_name]->get_json_root_node (), true)).c_str ());
     return true;
   }
 
@@ -196,23 +217,29 @@ namespace switcher
     
     return register_property_by_pspec (object, pspec, name_to_give);
   }
-  
-
 
   //return -1 if method not found
   //TODO implement get method and let the manager to call invoke, get_num_args etc...
   int 
-  Quiddity::method_get_num_value_args (std::string function_name)
+  Quiddity::method_get_num_value_args (std::string method_name)
   {
-    if (methods_.find( function_name ) == methods_.end())
+    if (methods_.find(method_name ) == methods_.end())
       {
-	g_debug ("Quiddity::method_get_num_value_args error: method %s not found",function_name.c_str());
+	g_debug ("Quiddity::method_get_num_value_args error: method %s not found", method_name.c_str());
 	return -1;
       }
     else 
-      return (int)methods_[function_name]->get_num_of_value_args(); 
+      return (int)methods_[method_name]->get_num_of_value_args(); 
   }
 
+   bool 
+   Quiddity::has_method (const std::string method_name)
+   {
+       if (methods_.find(method_name) == methods_.end())
+	 return false;
+       return true;
+   }
+  
   bool 
   Quiddity::invoke_method (std::string function_name, 
 			   std::vector<std::string> args)

@@ -142,6 +142,9 @@ namespace switcher
       bool invoke (std::string quiddity_name, 
 		   std::string method_name,
 		   std::vector<std::string> args);  
+      
+      bool has_method (std::string quiddity_name, 
+		       std::string method_name);
 
       //**** signals
       //doc (json formatted)
@@ -168,6 +171,7 @@ namespace switcher
       bool unsubscribe_signal (std::string subscriber_name,
 			       std::string quiddity_name,
 			       std::string signal_name);
+
       std::vector<std::string> 
 	list_signal_subscribers ();
       std::vector<std::pair<std::string, std::string> > 

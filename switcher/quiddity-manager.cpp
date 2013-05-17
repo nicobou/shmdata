@@ -310,6 +310,12 @@ QuiddityManager::remove_property_subscriber (std::string subscriber_name)
 		       NULL);
   }
 
+  bool
+  QuiddityManager::has_method (const std::string quiddity_name,
+			       const std::string method_name)
+  {
+    return manager_impl_->has_method (quiddity_name, method_name);
+  }
 
   bool 
   QuiddityManager::make_signal_subscriber (std::string subscriber_name,
