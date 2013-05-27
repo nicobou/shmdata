@@ -23,8 +23,6 @@
 namespace switcher
 {
 
-  bool QuiddityManager::gmainloop_initialized_ = false;
-
   QuiddityManager::ptr 
   QuiddityManager::make_manager ()
   {
@@ -43,7 +41,6 @@ namespace switcher
   QuiddityManager::QuiddityManager() :
     name_ ("default")
   {
-    init_gmainloop ();
     init_command_sync ();
     manager_impl_ = QuiddityManager_Impl::make_manager ();
   }
@@ -51,7 +48,6 @@ namespace switcher
   QuiddityManager::QuiddityManager(std::string name) :
     name_ (name)
   {
-    init_gmainloop ();
     init_command_sync ();
     manager_impl_ = QuiddityManager_Impl::make_manager (name);
   }
@@ -59,8 +55,6 @@ namespace switcher
   QuiddityManager::~QuiddityManager()
   {
     clear_command_sync ();
-    //FIXME count instances and do quit main loop
-    //g_main_loop_quit (mainloop_);
   }
 
   std::string
@@ -489,30 +483,6 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     return manager_impl_->get_instances ();
   }
   
-  void
-  QuiddityManager::init_gmainloop ()
-  {
-    if (!gmainloop_initialized_)
-      {
-	gst_init (NULL,NULL);
-	mainloop_ = g_main_loop_new (NULL, FALSE);
-	GstRegistry *registry;
-	registry = gst_registry_get_default();
-	//TODO add option for scanning a path
-	gst_registry_scan_path (registry, "/usr/local/lib/gstreamer-0.10/");
-	thread_ = g_thread_new ("SwitcherMainLoop", GThreadFunc(main_loop_thread), this);
-	gmainloop_initialized_ = true;
-      }
-  }
-  
-  gpointer
-  QuiddityManager::main_loop_thread (gpointer user_data)
-  {
-    QuiddityManager *context = static_cast<QuiddityManager*>(user_data);
-    g_main_loop_run (context->mainloop_);
-    return NULL;
-  }
-
   void
   QuiddityManager::init_command_sync ()
   {

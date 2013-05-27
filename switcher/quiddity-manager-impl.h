@@ -199,6 +199,13 @@ namespace switcher
       quiddity_removed_hook removal_hook_;
       void *creation_hook_user_data_;
       void *removal_hook_user_data_;
+
+      //gmainloop 
+      GThread *thread_; //runing the main loop 
+      GMainLoop *mainloop_; 
+      void init_gmainloop (); 
+      static gpointer main_loop_thread (gpointer user_data); 
+
     };
 
 } // end of namespace

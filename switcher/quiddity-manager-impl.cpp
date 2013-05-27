@@ -76,6 +76,7 @@ namespace switcher
   QuiddityManager_Impl::QuiddityManager_Impl() :
     name_ ("default")
   {
+    init_gmainloop ();
     reset_create_remove_hooks ();
     remove_shmdata_sockets ();
     register_classes ();
@@ -86,6 +87,7 @@ namespace switcher
   QuiddityManager_Impl::QuiddityManager_Impl(std::string name) :
     name_ (name)
   {
+    init_gmainloop ();
     creation_hook_ = NULL;
     removal_hook_ = NULL;
     creation_hook_user_data_ = NULL;
@@ -948,5 +950,32 @@ namespace switcher
     creation_hook_user_data_ = NULL;
     removal_hook_user_data_ = NULL;
   }
+
+
+  void
+  QuiddityManager_Impl::init_gmainloop ()
+  {
+    if (! gst_is_initialized ())
+      gst_init (NULL,NULL);
+    
+    //g_print ("--- 1 -- %p", g_main_context_default ());
+    // GMainContext *main_context = g_main_context_new ();
+    // mainloop_ = g_main_loop_new (main_context, FALSE);
+    mainloop_ = g_main_loop_new (NULL, FALSE);
+    GstRegistry *registry;
+    registry = gst_registry_get_default();
+    //TODO add option for scanning a path
+    gst_registry_scan_path (registry, "/usr/local/lib/gstreamer-0.10/");
+    thread_ = g_thread_new ("SwitcherMainLoop", GThreadFunc(main_loop_thread), this);
+  }
+  
+  gpointer
+  QuiddityManager_Impl::main_loop_thread (gpointer user_data)
+  {
+    QuiddityManager_Impl *context = static_cast<QuiddityManager_Impl*>(user_data);
+    g_main_loop_run (context->mainloop_);
+    return NULL;
+  }
+  
   
 } // end of namespace

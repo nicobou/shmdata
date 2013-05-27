@@ -195,13 +195,6 @@ namespace switcher
       std::string auto_invoke_method_name_;
       std::vector<std::string> auto_invoke_args_;
 
-      //gmainloop
-      static bool gmainloop_initialized_;
-      GThread *thread_; //runing the main loop
-      GMainLoop *mainloop_;
-      void init_gmainloop ();
-      static gpointer main_loop_thread (gpointer user_data);
-
       //running commands in the gmain_loop context
       static gpointer gmainloop_run (gpointer user_data);//thread for the loop
       void invoke_in_gmainloop();
