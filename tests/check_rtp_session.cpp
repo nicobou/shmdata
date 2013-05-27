@@ -126,8 +126,8 @@ main (int argc,
        			"9076",
        			NULL);
     
-    //wait 2 sec for the session being created
-    usleep (2000000); 
+    //wait 4 sec for the session being created
+    usleep (4000000); 
 
 
     manager->create ("runtime", "receiver_runtime");
@@ -138,7 +138,7 @@ main (int argc,
 			"http://localhost:8084/sdp?rtpsession=rtp&destination=local",
 			NULL);
     
-    usleep (1000000);//FIXME this should not be necessary
+    usleep (2000000);//FIXME this should not be necessary
 
     manager->create ("runtime", "probe_runtime");
     manager->create ("fakesink","firstprobe");
