@@ -36,124 +36,115 @@ namespace switcher
     switcher_control_ = new controlProxy (SOAP_IO_KEEPALIVE | SOAP_XML_INDENT);
     switcher_control_->soap_endpoint = "http://localhost:8090";
 
-    // std::vector<std::string> resultlist;
-    // switcher_control->get_factory_capabilities(&resultlist);
-    // for(uint i = 0; i < resultlist.size(); i++)
-    //   std::cout << "coucou" << resultlist[i] << std::endl;
-
-    // std::string name;
-    // switcher_control->create_quiddity ("videotestsrc", &name);
-    // std::cout << "hehe" << name << std::endl;
-
-    //registering some methods
-    register_method("create",
-		    (void *)&create_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("create", 
-			    "create a quiddity", 
-			    Method::make_arg_description ("class_name",
-							  "the class of the quiddity to create",
-							  "quiddity_name",
-							  "the name to give",
-							  NULL));
+     //registering some methods
+     register_method("create",
+     		    (void *)&create_wrapped, 
+     		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
+     		    (gpointer)this);
+     set_method_description ("create", 
+     			    "create a quiddity", 
+     			    Method::make_arg_description ("class_name",
+     							  "the class of the quiddity to create",
+     							  "quiddity_name",
+     							  "the name to give",
+     							  NULL));
     
-    register_method("remove",
-		    (void *)&remove_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("remove", 
-			    "remove a quiddity", 
-			    Method::make_arg_description ("quiddity_name",
-							  "name of quiddity to remove",
-							  NULL));
+     register_method("remove",
+     		    (void *)&remove_wrapped, 
+     		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+     		    (gpointer)this);
+     set_method_description ("remove", 
+     			    "remove a quiddity", 
+     			    Method::make_arg_description ("quiddity_name",
+     							  "name of quiddity to remove",
+     							  NULL));
+     
+     register_method("set_property",
+		     (void *)&set_property_wrapped, 
+		     Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, NULL),
+		     (gpointer)this);
+     set_method_description ("set_property", 
+			     "set a quiddity property", 
+			     Method::make_arg_description ("quiddity_name",
+							   "name of quiddity to remove",
+							   "property_name",
+							   "name of the property",
+							   "property_value",
+							   "value to set",
+							   NULL));
+     
+      register_method("invoke1",
+      		    (void *)&invoke1_wrapped, 
+      		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, NULL),
+      		    (gpointer)this);
+      set_method_description ("invoke1", 
+      			    "invoke a method with one argument", 
+      			    Method::make_arg_description ("quiddity_name",
+      							  "name of quiddity to remove",
+     							  "method_name",
+     							  "name of the method",
+     							  "arg1",
+     							  "first argument",
+     							  NULL));
 
-    register_method("set_property",
-		    (void *)&set_property_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("set_property", 
-			    "set a quiddity property", 
-			    Method::make_arg_description ("quiddity_name",
-							  "name of quiddity to remove",
-							  "property_name",
-							  "name of the property",
-							  "property_value",
-							  "value to set",
-							  NULL));
-    
-    register_method("invoke1",
-		    (void *)&invoke1_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("invoke1", 
-			    "invoke a method with one argument", 
-			    Method::make_arg_description ("quiddity_name",
-							  "name of quiddity to remove",
-							  "method_name",
-							  "name of the method",
-							  "arg1",
-							  "first argument",
-							  NULL));
+     register_method("invoke2",
+     		    (void *)&invoke2_wrapped, 
+     		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, 
+     						       G_TYPE_STRING, G_TYPE_STRING, NULL),
+     		    (gpointer)this);
+     set_method_description ("invoke2", 
+     			    "invoke a method with two arguments", 
+     			    Method::make_arg_description ("quiddity_name",
+     							  "name of quiddity to remove",
+     							  "method_name",
+     							  "name of the method",
+     							  "arg1",
+     							  "first argument",
+     							  "arg2",
+     							  "second argument",
+     							  NULL));
 
-    register_method("invoke2",
-		    (void *)&invoke2_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, 
-						       G_TYPE_STRING, G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("invoke2", 
-			    "invoke a method with two arguments", 
-			    Method::make_arg_description ("quiddity_name",
-							  "name of quiddity to remove",
-							  "method_name",
-							  "name of the method",
-							  "arg1",
-							  "first argument",
-							  "arg2",
-							  "second argument",
-							  NULL));
-
-    register_method("invoke3",
-		    (void *)&invoke3_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, 
-						       G_TYPE_STRING, G_TYPE_STRING, 
-						       G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("invoke3", 
-			    "invoke a method with three arguments", 
-			    Method::make_arg_description ("quiddity_name",
-							  "name of quiddity to remove",
-							  "method_name",
-							  "name of the method",
-							  "arg1",
-							  "first argument",
-							  "arg2",
-							  "second argument",
-							  "arg3",
-							  "third argument",
-							  NULL));
-
-    register_method("invoke4",
-		    (void *)&invoke4_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, 
-						       G_TYPE_STRING, G_TYPE_STRING, 
-						       G_TYPE_STRING, G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("invoke4", 
-			    "invoke a method with four arguments", 
-			    Method::make_arg_description ("quiddity_name",
-							  "name of quiddity to remove",
-							  "method_name",
-							  "name of the method",
-							  "arg1",
-							  "first argument",
-							  "arg2",
-							  "second argument",
-							  "arg3",
-							  "third argument",
-							  NULL));
-    
-    return true;
+     register_method("invoke3",
+		     (void *)&invoke3_wrapped, 
+		     Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, 
+							G_TYPE_STRING, G_TYPE_STRING, 
+							G_TYPE_STRING, NULL),
+		     (gpointer)this);
+     set_method_description ("invoke3", 
+			     "invoke a method with three arguments", 
+			     Method::make_arg_description ("quiddity_name",
+							   "name of quiddity to remove",
+							   "method_name",
+							   "name of the method",
+							   "arg1",
+							   "first argument",
+							   "arg2",
+							   "second argument",
+							   "arg3",
+							   "third argument",
+							   NULL));
+     
+     register_method("invoke4",
+		     (void *)&invoke4_wrapped, 
+		     Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, 
+							G_TYPE_STRING, G_TYPE_STRING, 
+							G_TYPE_STRING, G_TYPE_STRING, NULL),
+		     (gpointer)this);
+     set_method_description ("invoke4", 
+			     "invoke a method with four arguments", 
+			     Method::make_arg_description ("quiddity_name",
+							   "name of quiddity to remove",
+							   "method_name",
+							   "name of the method",
+							   "arg1",
+							   "first argument",
+							   "arg2",
+     							  "second argument",
+							   "arg3",
+							   "third argument",
+							   NULL));
+     
+     return true;
   }
 
   SoapCtrlClient::~SoapCtrlClient()

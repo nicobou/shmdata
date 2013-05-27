@@ -37,10 +37,30 @@ namespace switcher
     speed_ = 1.0;
     pipeline_ = gst_pipeline_new (NULL);
     set_name (gst_element_get_name (pipeline_));
-    GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_)); 
-    gst_bus_add_watch (bus, bus_called, NULL);
-    gst_bus_set_sync_handler (bus, bus_sync_handler, this);  
-    gst_object_unref (bus); 
+    
+    source_funcs_ = {
+      source_prepare,
+      source_check,
+      source_dispatch,
+      source_finalize
+    };
+    source_ = g_source_new (&source_funcs_, sizeof (GstBusSource));
+
+    ((GstBusSource*)source_)->bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_));
+    g_source_set_callback(source_, (GSourceFunc)bus_called, NULL, NULL);
+
+    GMainContext *g_main_context = get_g_main_context ();
+    if (g_main_context == NULL)
+      return FALSE;
+    g_source_attach(source_, g_main_context);
+    gst_bus_set_sync_handler (((GstBusSource*)source_)->bus, bus_sync_handler, this); 
+    g_source_unref (source_);
+
+    // GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_)); 
+    // gst_bus_add_watch (bus, bus_called, NULL);
+    
+    // gst_bus_set_sync_handler (bus, bus_sync_handler, this);  
+    // gst_object_unref (bus); 
     
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
     GstUtils::wait_state_changed (pipeline_);
@@ -92,6 +112,7 @@ namespace switcher
   
   Runtime::~Runtime ()
   {
+    g_source_destroy (source_);
     gst_element_set_state (pipeline_, GST_STATE_NULL);
     gst_object_unref (GST_OBJECT (pipeline_));
   }
@@ -318,8 +339,11 @@ res = gst_element_query (pipeline_, query);
 	    QuidRemoveArgs *args = new QuidRemoveArgs ();
 	    args->self = context;
 	    args->name = quid_name;
-	    g_idle_add ((GSourceFunc) remove_quid,   
-			(gpointer)args);   
+	    GstUtils::g_idle_add_full_with_context (context->get_g_main_context (),
+						    G_PRIORITY_DEFAULT_IDLE,
+						    (GSourceFunc) remove_quid,   
+						    (gpointer)args,
+						    NULL);   
 	  }
 	//GstUtils::clean_element (GST_ELEMENT (GST_MESSAGE_SRC (msg)));
 	g_error_free (error);
@@ -331,10 +355,9 @@ res = gst_element_query (pipeline_, query);
 
   gboolean
   Runtime::bus_called (GstBus *bus,
-		     GstMessage *msg,
-		     gpointer data)
+		       GstMessage *msg,
+		       gpointer data)
   {
-    
     switch (GST_MESSAGE_TYPE (msg)) {
     case GST_MESSAGE_EOS:
       g_debug ("bus_call End of stream, name: %s",
@@ -381,6 +404,52 @@ res = gst_element_query (pipeline_, query);
     return doc_;
   }
   
+  gboolean 
+  Runtime::source_prepare(GSource *source, gint *timeout)
+  {
+    GstBusSource *bsrc = (GstBusSource *)source;
+    
+    *timeout = 0;
+    return gst_bus_have_pending (bsrc->bus);
+  }
   
+  gboolean 
+  Runtime::source_check(GSource *source)
+  {
+    GstBusSource *bsrc = (GstBusSource *)source;
+    return gst_bus_have_pending (bsrc->bus);
+  }
+
+
+  gboolean 
+  Runtime::source_dispatch(GSource *source, GSourceFunc callback,
+			   gpointer user_data)
+  {
+    GstBusFunc   handler = (GstBusFunc) callback;
+    GstBusSource *bsrc = (GstBusSource *) source;
+    gboolean     result = FALSE;
+    
+    if (handler)
+      {
+        GstMessage *message = gst_bus_pop (bsrc->bus);
+        if (message)
+	  {
+            result = handler(bsrc->bus, message, user_data);
+            gst_message_unref (message);
+	  }
+      }
+    
+    return result;
+  }
+  
+  void 
+  Runtime::source_finalize (GSource * source)
+  {
+    GstBusSource *bsrc = (GstBusSource *)source;
+    gst_object_unref (bsrc->bus);
+    bsrc->bus = NULL;
+  }
+  
+
 }
 

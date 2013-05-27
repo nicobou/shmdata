@@ -45,6 +45,11 @@ namespace switcher
 					     const gchar *property_name,
 					     gboolean property_value);
     static gchar *gvalue_serialize (const GValue *val);// g_free after use
+    static guint g_idle_add_full_with_context (GMainContext *context,
+					       gint priority, //in case of doubt use G_PRIORITY_DEFAULT_IDLE
+					       GSourceFunc function,
+					       gpointer data,
+					       GDestroyNotify notify);
   };
 
 }  // end of namespace

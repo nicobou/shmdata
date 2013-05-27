@@ -207,29 +207,29 @@ namespace switcher
     abstract_factory_.register_class<RtpSession> (RtpSession::doc_.get_class_name (), 
       						  RtpSession::doc_.get_json_root_node ());
     abstract_factory_.register_class<Runtime> (Runtime::doc_.get_class_name (), 
-      					       Runtime::doc_.get_json_root_node ());
+       					       Runtime::doc_.get_json_root_node ());
     abstract_factory_.register_class<ShmdataFromGDPFile> (ShmdataFromGDPFile::doc_.get_class_name (), 
-							  ShmdataFromGDPFile::doc_.get_json_root_node ());
+      							  ShmdataFromGDPFile::doc_.get_json_root_node ());
     abstract_factory_.register_class<ShmdataToFile> (ShmdataToFile::doc_.get_class_name (), 
-						     ShmdataToFile::doc_.get_json_root_node ());
+      						     ShmdataToFile::doc_.get_json_root_node ());
     abstract_factory_.register_class<SoapCtrlClient> (SoapCtrlClient::doc_.get_class_name (), 
-     						      SoapCtrlClient::doc_.get_json_root_node ());
+      						      SoapCtrlClient::doc_.get_json_root_node ());
     abstract_factory_.register_class<SoapCtrlServer> (SoapCtrlServer::doc_.get_class_name (), 
-     						      SoapCtrlServer::doc_.get_json_root_node ());
+      						      SoapCtrlServer::doc_.get_json_root_node ());
     abstract_factory_.register_class<UDPSink> (UDPSink::doc_.get_class_name (), 
-      					       UDPSink::doc_.get_json_root_node ());
+       					       UDPSink::doc_.get_json_root_node ());
     abstract_factory_.register_class<Uridecodebin> (Uridecodebin::doc_.get_class_name (), 
-      						    Uridecodebin::doc_.get_json_root_node ());
+       						    Uridecodebin::doc_.get_json_root_node ());
     abstract_factory_.register_class<Uris> (Uris::doc_.get_class_name (), 
-					    Uris::doc_.get_json_root_node ());
+     					    Uris::doc_.get_json_root_node ());
     abstract_factory_.register_class<VideoRate> (VideoRate::doc_.get_class_name (),
-						 VideoRate::doc_.get_json_root_node ());
+     						 VideoRate::doc_.get_json_root_node ());
     abstract_factory_.register_class<VideoTestSource> (VideoTestSource::doc_.get_class_name (),
-       						       VideoTestSource::doc_.get_json_root_node ());
+						       VideoTestSource::doc_.get_json_root_node ());
     abstract_factory_.register_class<Vorbis> (Vorbis::doc_.get_class_name (),
-					      Vorbis::doc_.get_json_root_node ());
+     					      Vorbis::doc_.get_json_root_node ());
     abstract_factory_.register_class<Xvimagesink> (Xvimagesink::doc_.get_class_name (),
-      						   Xvimagesink::doc_.get_json_root_node ());
+       						   Xvimagesink::doc_.get_json_root_node ());
   }
 
   std::vector<std::string> 
@@ -959,9 +959,9 @@ namespace switcher
       gst_init (NULL,NULL);
     
     //g_print ("--- 1 -- %p", g_main_context_default ());
-    // GMainContext *main_context = g_main_context_new ();
-    // mainloop_ = g_main_loop_new (main_context, FALSE);
-    mainloop_ = g_main_loop_new (NULL, FALSE);
+    main_context_ = g_main_context_new ();
+    mainloop_ = g_main_loop_new (main_context_, FALSE);
+    //mainloop_ = g_main_loop_new (NULL, FALSE);
     GstRegistry *registry;
     registry = gst_registry_get_default();
     //TODO add option for scanning a path
@@ -977,5 +977,10 @@ namespace switcher
     return NULL;
   }
   
+  GMainContext *
+  QuiddityManager_Impl::get_g_main_context ()
+  {
+    return main_context_;
+  } 
   
 } // end of namespace

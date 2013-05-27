@@ -170,6 +170,9 @@ namespace switcher
 
     //gobject wrapper for custom signals and properties
     GObjectWrapper::ptr gobject_;
+    
+    //g_main_context
+    GMainContext *get_g_main_context ();
   };
   
 } // end of namespace

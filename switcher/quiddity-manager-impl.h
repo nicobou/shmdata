@@ -181,6 +181,10 @@ namespace switcher
       std::string 
 	list_subscribed_signals_json (std::string subscriber_name);
 
+      //mainloop
+      GMainContext * get_g_main_context();
+
+
     private:
       QuiddityManager_Impl();//will get name "default"
       QuiddityManager_Impl(std::string);
@@ -201,7 +205,8 @@ namespace switcher
       void *removal_hook_user_data_;
 
       //gmainloop 
-      GThread *thread_; //runing the main loop 
+      GThread *thread_; //this runs the main loop 
+      GMainContext *main_context_;
       GMainLoop *mainloop_; 
       void init_gmainloop (); 
       static gpointer main_loop_thread (gpointer user_data); 

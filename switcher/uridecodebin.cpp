@@ -234,8 +234,11 @@ namespace switcher
       if (pad == context->main_pad_)
 	{
 	  //g_print ("main pad !@! \n");
-	  g_idle_add ((GSourceFunc) rewind,   
-	  	    (gpointer)context);   
+	  GstUtils::g_idle_add_full_with_context (context->get_g_main_context (),
+						  G_PRIORITY_DEFAULT_IDLE,
+						  (GSourceFunc) rewind,   
+						  (gpointer)context,
+						  NULL);   
 	}
       return FALSE;
     }  

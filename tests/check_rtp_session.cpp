@@ -101,10 +101,12 @@ main (int argc,
       			"add_data_stream",
       			"/tmp/switcher_rtptest_a_audio",
       			NULL);
+    
     manager->invoke_va ("rtp",
       			"add_data_stream",
       			"/tmp/switcher_rtptest_v_video",
       			NULL);
+    usleep (1000000);//FIXME this should not be necessary
     manager->invoke_va ("rtp",
       			"add_destination",
       			"local",
@@ -135,7 +137,8 @@ main (int argc,
        			"to_shmdata",
 			"http://localhost:8084/sdp?rtpsession=rtp&destination=local",
 			NULL);
-     
+    
+    usleep (1000000);//FIXME this should not be necessary
 
     manager->create ("runtime", "probe_runtime");
     manager->create ("fakesink","firstprobe");
@@ -151,6 +154,7 @@ main (int argc,
       			"connect",
       			"/tmp/switcher_rtptest_uri_application_1",
       			NULL);
+    
     
     manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);
     manager->subscribe_property ("sub","firstprobe","last-message");

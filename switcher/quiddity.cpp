@@ -516,4 +516,14 @@ namespace switcher
     manager_impl_ = manager_impl;
   }
 
+  GMainContext *
+  Quiddity::get_g_main_context ()
+  {
+    QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
+    if ((bool) manager)
+      return manager->get_g_main_context ();
+    return NULL;
+  }
+
+
 }
