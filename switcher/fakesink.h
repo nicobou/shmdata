@@ -23,6 +23,7 @@
 
 #include "base-sink.h"
 #include "gst-element-cleaner.h"
+#include "custom-property-helper.h"
 #include <gst/gst.h>
 #include <memory>
 
@@ -40,6 +41,19 @@ namespace switcher
 
   private:
     GstElement *fakesink_;
+    gsize num_bytes_since_last_update_;
+    guint update_byterate_id_; 
+    gint byte_rate_;
+    static void on_handoff_cb (GstElement* object,
+			       GstBuffer* buf,
+			       GstPad* pad,
+			       gpointer user_data);
+    static gboolean update_byte_rate (gpointer user_data); 
+    static gint get_byte_rate (void *user_data);
+    //byte rate property 
+    CustomPropertyHelper::ptr byte_rate_prop_;
+    GParamSpec *byte_rate_spec_;
+
   };
 
 }  // end of namespace

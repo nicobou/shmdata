@@ -50,7 +50,11 @@ namespace switcher
 					       GSourceFunc function,
 					       gpointer data,
 					       GDestroyNotify notify);
-  };
+    static guint g_timeout_add_to_context(guint interval, 
+					  GSourceFunc function,
+					  gpointer data, 
+					  GMainContext *context);
+      };
 
 }  // end of namespace
 

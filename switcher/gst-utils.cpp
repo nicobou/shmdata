@@ -306,4 +306,21 @@ namespace switcher
     return id;
   }
   
+  guint 
+  GstUtils::g_timeout_add_to_context(guint interval, 
+			   GSourceFunc function,
+			   gpointer data, 
+			   GMainContext *context) 
+  {
+    GSource *source;
+    guint id;
+    
+    g_return_val_if_fail(function != NULL, 0);
+    source = g_timeout_source_new(interval);
+    g_source_set_callback(source, function, data, NULL);
+    id = g_source_attach(source, context);
+    g_source_unref(source);
+    
+    return id;
+  }
 }
