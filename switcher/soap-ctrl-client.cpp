@@ -30,13 +30,27 @@ namespace switcher
   bool
   SoapCtrlClient::init()
   {
+    
     srand(time(0));
     set_name (g_strdup_printf ("ctrlclient%d",rand() % 1024));
 
     switcher_control_ = new controlProxy (SOAP_IO_KEEPALIVE | SOAP_XML_INDENT);
-    switcher_control_->soap_endpoint = "http://localhost:8090";
+    url_ = NULL;
+    switcher_control_->soap_endpoint = url_;
 
      //registering some methods
+
+     //registering some methods
+     register_method("set_remote_url",
+     		    (void *)&set_remote_url_wrapped, 
+     		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+     		    (gpointer)this);
+     set_method_description ("set_remote_url", 
+     			    "set remote url to control (for instance http://localhost:8080)", 
+     			    Method::make_arg_description ("url",
+     							  "SOAP url",
+							  NULL));
+
      register_method("create",
      		    (void *)&create_wrapped, 
      		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
@@ -48,7 +62,8 @@ namespace switcher
      							  "quiddity_name",
      							  "the name to give",
      							  NULL));
-    
+
+  
      register_method("remove",
      		    (void *)&remove_wrapped, 
      		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
@@ -149,6 +164,8 @@ namespace switcher
 
   SoapCtrlClient::~SoapCtrlClient()
   {
+    if (url_ != NULL)
+      g_free (url_);
     if (switcher_control_ != NULL)
       delete switcher_control_;
   }
@@ -161,11 +178,38 @@ namespace switcher
   }
 
   gboolean
+  SoapCtrlClient::set_remote_url_wrapped (gpointer url,
+					  gpointer user_data)
+  {
+    SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
+    if (context->url_ != NULL)
+      g_free (context->url_);
+
+    context->url_ = g_strdup ((char *)url);
+    context->switcher_control_->soap_endpoint = context->url_;
+    
+    std::vector<std::string> resultlist;
+    context->switcher_control_->get_quiddity_names(&resultlist);
+    
+    if (context->switcher_control_->error)
+      {
+	g_warning ("SoapCtrlClient::set_remote_url, url not valid or not responding");
+	g_free (context->url_);
+	context->url_ = NULL;
+	return FALSE;
+      }
+    return TRUE;
+  }
+
+
+  gboolean
   SoapCtrlClient::create_wrapped (gpointer class_name,
 				  gpointer quiddity_name,
 				  gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
+    if (context->url_ == NULL)
+      return FALSE;
     std::string name;
     context->switcher_control_->create_named_quiddity ((const char *)class_name, 
 						      (const char *)quiddity_name,
@@ -183,6 +227,8 @@ namespace switcher
 				  gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
+    if (context->url_ == NULL)
+      return FALSE;
     context->switcher_control_->delete_quiddity ((gchar *)quiddity_name);
     if (context->switcher_control_->error)
       return FALSE;
@@ -197,7 +243,8 @@ namespace switcher
 					gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
-    
+    if (context->url_ == NULL)
+      return FALSE;
     context->switcher_control_->send_set_property ((gchar *)quiddity_name, 
 						   (gchar *)property_name, 
 						   (gchar *)value);
@@ -217,6 +264,8 @@ namespace switcher
 				   gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
+    if (context->url_ == NULL)
+      return FALSE;
 
     std::vector<std::string> args;
     args.push_back ((char *) arg1);
@@ -238,6 +287,8 @@ namespace switcher
 				   gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
+    if (context->url_ == NULL)
+      return FALSE;
     
     std::vector<std::string> args;
     args.push_back ((char *) arg1);
@@ -261,6 +312,8 @@ namespace switcher
 				   gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
+    if (context->url_ == NULL)
+      return FALSE;
     
     std::vector<std::string> args;
     args.push_back ((char *) arg1);
@@ -286,6 +339,8 @@ namespace switcher
 				   gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
+    if (context->url_ == NULL)
+      return FALSE;
     
     std::vector<std::string> args;
     args.push_back ((char *) arg1);

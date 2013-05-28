@@ -42,6 +42,9 @@ namespace switcher
 
   private:
     controlProxy *switcher_control_;
+    gchar *url_;
+    static gboolean set_remote_url_wrapped (gpointer url,
+					    gpointer user_data);
     static gboolean create_wrapped (gpointer class_name,
 				    gpointer quiddity_name,
 				    gpointer user_data);

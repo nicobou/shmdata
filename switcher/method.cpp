@@ -178,7 +178,7 @@ namespace switcher
    }
 
   std::vector<std::pair<std::string,std::string> > 
-  Method::make_arg_description (char *first_arg_name, ...)
+  Method::make_arg_description (const char *first_arg_name, ...)
   {
     std::vector<std::pair<std::string,std::string> > res;
     std::pair<std::string,std::string> arg_desc_pair;
