@@ -73,20 +73,20 @@ namespace switcher
     return manager;
   }
 
-  QuiddityManager_Impl::QuiddityManager_Impl() :
-    name_ ("default")
+  QuiddityManager_Impl::QuiddityManager_Impl() 
   {
-    init_gmainloop ();
-    reset_create_remove_hooks ();
-    remove_shmdata_sockets ();
-    register_classes ();
-    classes_doc_.reset (new JSONBuilder ());
-    make_classes_doc ();
+    init ("default");
   }
   
-  QuiddityManager_Impl::QuiddityManager_Impl(std::string name) :
-    name_ (name)
+  QuiddityManager_Impl::QuiddityManager_Impl(std::string name) 
   {
+    init (name);
+  }
+
+  void
+  QuiddityManager_Impl::init (std::string name)
+  {
+    name_ = name;
     init_gmainloop ();
     creation_hook_ = NULL;
     removal_hook_ = NULL;
@@ -97,9 +97,10 @@ namespace switcher
     classes_doc_.reset (new JSONBuilder ());
     make_classes_doc ();
   }
-
+  
   QuiddityManager_Impl::~QuiddityManager_Impl()
-  {}
+  {
+  }
   
   void
   QuiddityManager_Impl::remove_shmdata_sockets ()
@@ -296,6 +297,24 @@ namespace switcher
     return true;
   }
 
+  //for use of the "get description by class" methods 
+  std::string 
+  QuiddityManager_Impl::create_without_hook (std::string quiddity_class)
+  {
+    if(!class_exists (quiddity_class))
+      return "";
+    
+    Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class);
+    if (quiddity.get() != NULL)
+      {
+	if (!quiddity->init ())
+	  "{\"error\":\"cannot init quiddity class\"}";
+	quiddities_.insert (quiddity->get_name(),quiddity);
+	quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
+      }
+    return quiddity->get_nick_name ();
+  }
+
   std::string 
   QuiddityManager_Impl::create (std::string quiddity_class)
   {
@@ -406,6 +425,20 @@ namespace switcher
     return quiddities_nick_names_.contains (quiddity_name);
   }
 
+  //for use of "get description by class" methods only
+  bool 
+  QuiddityManager_Impl::remove_without_hook (std::string quiddity_name)
+  {
+    if (exists (quiddity_name))
+      quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
+    
+    if (quiddities_nick_names_.remove (quiddity_name))
+	return true;
+
+    g_warning ("(%s) quiddity %s not found for removing",name_.c_str(), quiddity_name.c_str());
+    return false; 
+  }
+
   bool 
   QuiddityManager_Impl::remove (std::string quiddity_name)
   {
@@ -451,11 +484,11 @@ namespace switcher
   {
     if (!class_exists (class_name))
       return "{\"error\":\"class not found\"}";
-    std::string quid_name = create (class_name);
+    std::string quid_name = create_without_hook (class_name);
     if (g_strcmp0 (quid_name.c_str (), "") == 0)
       return "{\"error\":\"cannot get property because the class cannot be instanciated\"}";
     std::string descr = get_properties_description (quid_name);
-    remove (quid_name);
+    remove_without_hook (quid_name);
     return descr;
   }
   
@@ -465,19 +498,19 @@ namespace switcher
   {
     if (!class_exists (class_name))
       return "{\"error\":\"class not found\"}";
-    std::string quid_name = create (class_name);
+    std::string quid_name = create_without_hook (class_name);
     if (g_strcmp0 (quid_name.c_str (), "") == 0)
       return "{\"error\":\"cannot get property because the class cannot be instanciated\"}";
     std::string descr = get_property_description (quid_name, property_name);
-    remove (quid_name);
+    remove_without_hook (quid_name);
     return descr;
   }
 
 
   bool
   QuiddityManager_Impl::set_property (std::string quiddity_name,
-				 std::string property_name,
-				 std::string property_value)
+				      std::string property_name,
+				      std::string property_value)
   {
     if (!exists (quiddity_name))
       {
@@ -724,9 +757,9 @@ namespace switcher
   {
     if (!class_exists (class_name))
       return "{\"error\":\"class not found\"}";
-    std::string quid_name = create (class_name);
+    std::string quid_name = create_without_hook (class_name);
     std::string descr = get_methods_description (quid_name);
-    remove (quid_name);
+    remove_without_hook (quid_name);
     return descr;
 
   }
@@ -737,9 +770,9 @@ namespace switcher
   {
     if (!class_exists (class_name))
       return "{\"error\":\"class not found\"}";
-    std::string quid_name = create (class_name);
+    std::string quid_name = create_without_hook (class_name);
     std::string descr = get_method_description (quid_name, method_name);
-    remove (quid_name);
+    remove_without_hook (quid_name);
     return descr;
 
   }
@@ -774,11 +807,11 @@ namespace switcher
   {
     if (!class_exists (class_name))
       return "{\"error\":\"class not found\"}";
-    std::string quid_name = create (class_name);
+    std::string quid_name = create_without_hook (class_name);
     if (g_strcmp0 (quid_name.c_str (), "") == 0)
       return "{\"error\":\"cannot get signal description because the class cannot be instanciated\"}";
     std::string descr = get_signals_description (quid_name);
-    remove (quid_name);
+    remove_without_hook (quid_name);
     return descr;
   }
   
@@ -788,11 +821,11 @@ namespace switcher
   {
     if (!class_exists (class_name))
       return "{\"error\":\"class not found\"}";
-    std::string quid_name = create (class_name);
+    std::string quid_name = create_without_hook (class_name);
     if (g_strcmp0 (quid_name.c_str (), "") == 0)
       return "{\"error\":\"cannot get signal because the class cannot be instanciated\"}";
     std::string descr = get_signal_description (quid_name, signal_name);
-    remove (quid_name);
+    remove_without_hook (quid_name);
     return descr;
   }
 

@@ -40,7 +40,7 @@ namespace switcher
   class Quiddity;
   class QuiddityPropertySubscriber;
   class QuidditySignalSubscriber;
-  
+
   class QuiddityManager_Impl : public std::enable_shared_from_this<QuiddityManager_Impl>
     {
     public:
@@ -186,6 +186,7 @@ namespace switcher
 
 
     private:
+      void init (std::string name);
       QuiddityManager_Impl();//will get name "default"
       QuiddityManager_Impl(std::string);
       void make_classes_doc ();
@@ -203,6 +204,9 @@ namespace switcher
       quiddity_removed_hook removal_hook_;
       void *creation_hook_user_data_;
       void *removal_hook_user_data_;
+      //for use of "get description by class" methods only:
+      std::string create_without_hook (std::string quiddity_class);
+      bool remove_without_hook (std::string quiddity_name);
 
       //gmainloop 
       GThread *thread_; //this runs the main loop 
