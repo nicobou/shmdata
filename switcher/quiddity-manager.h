@@ -96,7 +96,7 @@ namespace switcher
 	list_property_subscribers ();
       std::vector<std::pair<std::string, std::string> > 
 	list_subscribed_properties (std::string subscriber_name);
-      //json //FIXME implement or remove
+      //json //FIXME implement
       std::string 
 	list_property_subscribers_json ();
       std::string 
@@ -195,9 +195,9 @@ namespace switcher
       std::string auto_invoke_method_name_;
       std::vector<std::string> auto_invoke_args_;
 
-      //running commands in the gmain_loop context
-      static gpointer gmainloop_run (gpointer user_data);//thread for the loop
-      void invoke_in_gmainloop();
+      //running commands in a thread
+      static gboolean execute_command (gpointer user_data);//thread for the loop
+      void invoke_in_gmainloop ();
       QuiddityCommand command_;
       GCond *exec_cond_; //sync current thread and gmainloop
       GMutex *exec_mutex_; //sync current thread and gmainloop

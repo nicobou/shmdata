@@ -308,9 +308,9 @@ namespace switcher
   
   guint 
   GstUtils::g_timeout_add_to_context(guint interval, 
-			   GSourceFunc function,
-			   gpointer data, 
-			   GMainContext *context) 
+				     GSourceFunc function,
+				     gpointer data, 
+				     GMainContext *context) 
   {
     GSource *source;
     guint id;

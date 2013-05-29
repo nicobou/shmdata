@@ -39,22 +39,78 @@ namespace switcher
     
     enum command 
     {
-      get_classes, 
+      get_classes,  
       get_quiddities, 
+      get_classes_doc,
+      get_class_doc, 
+      get_quiddity_description,
+      get_quiddities_description, 
+
       create, 
       create_nick_named,
       remove,
+
+
       get_properties_description,
       get_property_description,
       get_properties_description_by_class,
       get_property_description_by_class,
       set_property,
       get_property,
+
+      make_property_subscriber,
+      remove_property_subscriber,
+      subscribe_property,
+      unsubscribe_property,
+      list_property_subscribers,
+      list_subscribed_properties,
+      list_property_subscribers_json,
+      list_subscribed_properties_json,
+
       get_methods_description,
       get_method_description,
       get_methods_description_by_class,
       get_method_description_by_class,
-      invoke
+      invoke,
+     /* bool auto_invoke  (std::string method_name, */
+     /* 			 std::vector<std::string> args);   */
+
+      /* //doc (json formatted) */
+      /* std::string get_signals_description (std::string quiddity_name); */
+      /* std::string get_signal_description (std::string quiddity_name,  */
+      /* 					  std::string signal_name); */
+      /* //following "by_class" methods provide properties available after creation only,  */
+      /* //avoiding possible properties created dynamically */
+      /* std::string get_signals_description_by_class (std::string class_name);  */
+      /* std::string get_signal_description_by_class (std::string class_name,  */
+      /* 						   std::string signal_name);  */
+    
+      /* bool make_signal_subscriber (std::string subscriber_name, */
+      /* 				   void (*callback)(std::string subscriber_name, */
+      /* 						    std::string quiddity_name, */
+      /* 						    std::string signal_name, */
+      /* 						    std::vector<std::string> params, */
+      /* 						    void *user_data), */
+      /* 				   void *user_data); */
+      /* bool remove_signal_subscriber (std::string subscriber_name); */
+      /* bool subscribe_signal (std::string subscriber_name, */
+      /* 			     std::string quiddity_name, */
+      /* 			     std::string signal_name); */
+      /* bool unsubscribe_signal (std::string subscriber_name, */
+      /* 			       std::string quiddity_name, */
+      /* 			       std::string signal_name); */
+
+      
+      /* std::vector<std::string>  */
+      /* 	list_signal_subscribers (); */
+      /* std::vector<std::pair<std::string, std::string> >  */
+      /* 	list_subscribed_signals (std::string subscriber_name); */
+      /* //json //FIXME implement or remove */
+      /* std::string  */
+      /* 	list_signal_subscribers_json (); */
+      /* std::string  */
+      /* 	list_subscribed_signals_json (std::string subscriber_name); */
+   
     };
     command name_;
     std::vector<std::string> args_;
