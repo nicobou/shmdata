@@ -26,6 +26,50 @@
 namespace switcher
 {
 
+  const std::map<int, const char *> QuiddityCommand::command_names_ = {
+    {auto_invoke,"auto_invoke"},
+    {create, "create"},
+    {create_nick_named,"create_nick_named"},
+    {get_class_doc, "get_class_doc"},
+    {get_classes,  "get_classes"},
+    {get_classes_doc,"get_classes_doc"},
+    {get_method_description,"get_method_description"},
+    {get_method_description_by_class,"get_method_description_by_class"},
+    {get_methods_description,"get_methods_description"},
+    {get_methods_description_by_class,"get_methods_description_by_class"},
+    {get_properties_description,"get_properties_description"},
+    {get_properties_description_by_class,"get_properties_description_by_class"},
+    {get_property,"get_property"},
+    {get_property_description,"get_property_description"},
+    {get_property_description_by_class,"get_property_description_by_class"},
+    {get_quiddities, "get_quiddities"},
+    {get_quiddities_description, "get_quiddities_description"},
+    {get_quiddity_description,"get_quiddity_description"},
+    {get_signal_description,"get_signal_description"},
+    {get_signal_description_by_class,	"get_signal_description_by_class"},		       
+    {get_signals_description,"get_signals_description"},
+    {get_signals_description_by_class,"get_signals_description_by_class"},
+    {has_method,"has_method"},
+    {invoke,"invoke"},
+    {list_property_subscribers,"list_property_subscribers"},
+    {list_property_subscribers_json,"list_property_subscribers_json"},
+    {list_signal_subscribers,"list_signal_subscribers"},
+    {list_signal_subscribers_json,"list_signal_subscribers_json"},
+    {list_subscribed_properties,"list_subscribed_properties"},
+    {list_subscribed_properties_json,"list_subscribed_properties_json"},
+    {list_subscribed_signals,"list_subscribed_signals"},
+    {list_subscribed_signals_json,"list_subscribed_signals_json"},
+    {make_property_subscriber,"make_property_subscriber"},
+    {make_signal_subscriber, "make_signal_subscriber"},
+    {remove,"remove"},
+    {remove_property_subscriber,"remove_property_subscriber"},
+    {remove_signal_subscriber,"remove_signal_subscriber"},
+    {set_property,"set_property"},
+    {subscribe_property,"subscribe_property"},
+    {subscribe_signal,"subscribe_signal"},
+    {unsubscribe_property,"unsubscribe_property"},
+    {unsubscribe_signal,"unsubscribe_signal"}};
+
   void
   QuiddityCommand::clear()
   {
@@ -53,4 +97,48 @@ namespace switcher
     vector_arg_ = vector_arg;
   } 
 
+  QuiddityCommand::QuiddityCommand ()
+  {
+    json_builder_.reset (new JSONBuilder ());
+  }
+  
+  JSONBuilder::Node
+  QuiddityCommand::get_json_root_node ()
+  {
+    json_builder_->reset ();
+    json_builder_->begin_object ();
+    json_builder_->add_string_member ("command", command_names_.at (name_));
+    json_builder_->set_member_name ("arguments");
+    json_builder_->begin_array ();    
+    for (auto& it: args_) 
+      {
+	json_builder_->begin_object ();
+      	json_builder_->add_string_member ("value", it.c_str ());
+	json_builder_->end_object ();
+      }
+    json_builder_->end_array ();    
+    
+    json_builder_->set_member_name ("vector argument");
+    json_builder_->begin_array ();
+    for (auto& it: vector_arg_)
+      {
+	json_builder_->begin_object ();
+      	json_builder_->add_string_member ("value", it.c_str ());
+	json_builder_->end_object ();
+      }
+    json_builder_->end_array ();
+
+    json_builder_->set_member_name ("results");
+    json_builder_->begin_array ();
+    for (auto& it: result_)
+      {
+      	json_builder_->begin_object ();
+	json_builder_->add_string_member ("value", it.c_str ());
+	json_builder_->end_object ();
+      }
+    json_builder_->end_array ();
+    
+    json_builder_->end_object ();
+    return json_builder_->get_root ();
+  }
 }

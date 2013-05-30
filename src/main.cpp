@@ -219,14 +219,17 @@ main (int argc,
      std::vector<std::string> arg;
      arg.push_back ("pipeline0");
      manager->auto_invoke ("set_runtime",arg);
+     
+     manager->save_command_history ("truc");
   }
+
 
   //waiting for end of life
   timespec delay;
   delay.tv_sec = 1;
   delay.tv_nsec = 0;
   while (1)
-    nanosleep(&delay, NULL);
+      nanosleep(&delay, NULL);
   
   return 0;
 }

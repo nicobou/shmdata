@@ -44,6 +44,7 @@ namespace switcher
       static QuiddityManager::ptr make_manager (std::string name);
       ~QuiddityManager(); 
       std::string get_name ();
+      bool save_command_history (const char *file_path);
      
       std::vector<std::string> get_classes (); //know which quiddities can be created
       std::vector<std::string> get_quiddities (); //know instances
@@ -195,18 +196,23 @@ namespace switcher
       std::string auto_invoke_method_name_;
       std::vector<std::string> auto_invoke_args_;
 
-      //running commands in a thread
-      static gboolean execute_command (gpointer user_data);//thread for the loop
-      void invoke_in_gmainloop ();
-      QuiddityCommand command_;
-      GCond *exec_cond_; //sync current thread and gmainloop
-      GMutex *exec_mutex_; //sync current thread and gmainloop
+      //running commands in sequence 
+      QuiddityCommand::ptr command_;
+      void command_lock ();
+      void command_unlock ();
+      GMutex *seq_mutex_; 
+      std::string seq_invoke (QuiddityCommand::command command, ...);
       void init_command_sync(); 
       void clear_command_sync(); 
 
-      //ensure sequential invokation
-      GMutex *seq_mutex_; 
-      std::string seq_invoke (QuiddityCommand::command command, ...);
+      //invokation in gmainloop
+      GCond *exec_cond_; //sync current thread and gmainloop
+      GMutex *exec_mutex_; //sync current thread and gmainloop
+      static gboolean execute_command (gpointer user_data);//gmainloop source callback
+      void invoke_in_gmainloop ();
+
+      //history
+      std::vector<QuiddityCommand::ptr> command_history_;
     }; 
 
 } // end of namespace 

@@ -27,7 +27,9 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <memory>
+#include "json-builder.h"
 
 namespace switcher
 {
@@ -36,66 +38,69 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<QuiddityCommand> ptr;
-    
+
     enum command 
     {
-      get_classes,  
-      get_quiddities, 
-      get_classes_doc,
-      get_class_doc, 
-      get_quiddity_description,
-      get_quiddities_description, 
-
+      auto_invoke = 0,
       create, 
       create_nick_named,
-      remove,
-
-
-      get_properties_description,
-      get_property_description,
-      get_properties_description_by_class,
-      get_property_description_by_class,
-      set_property,
-      get_property,
-
-      make_property_subscriber,
-      remove_property_subscriber,
-      subscribe_property,
-      unsubscribe_property,
-      list_property_subscribers,
-      list_subscribed_properties,
-      list_property_subscribers_json,
-      list_subscribed_properties_json,
-
-      get_methods_description,
+      get_class_doc, 
+      get_classes,  
+      get_classes_doc,
       get_method_description,
-      get_methods_description_by_class,
       get_method_description_by_class,
-      invoke,
-      auto_invoke,
-
-      get_signals_description,
+      get_methods_description,
+      get_methods_description_by_class,
+      get_properties_description,
+      get_properties_description_by_class,
+      get_property,
+      get_property_description,
+      get_property_description_by_class,
+      get_quiddities, 
+      get_quiddities_description, 
+      get_quiddity_description,
       get_signal_description,
-      get_signals_description_by_class,
       get_signal_description_by_class,							       
-      make_signal_subscriber,										       
-      remove_signal_subscriber,
-      subscribe_signal,
-      unsubscribe_signal,
+      get_signals_description,
+      get_signals_description_by_class,
+      has_method,
+      invoke,
+      list_property_subscribers,
+      list_property_subscribers_json,
       list_signal_subscribers,
-      list_subscribed_signals,
       list_signal_subscribers_json,
+      list_subscribed_properties,
+      list_subscribed_properties_json,
+      list_subscribed_signals,
       list_subscribed_signals_json,
+      make_property_subscriber,
+      make_signal_subscriber,										       
+      remove,
+      remove_property_subscriber,
+      remove_signal_subscriber,
+      set_property,
+      subscribe_property,
+      subscribe_signal,
+      unsubscribe_property,
+      unsubscribe_signal
     };
+
+    QuiddityCommand ();
     command name_;
     std::vector<std::string> args_;
     std::vector<std::string> vector_arg_;
     std::vector<std::string> result_;
- 
+    
     void clear();
     void set_name (command name);
     void add_arg (std::string arg);
     void set_vector_arg (std::vector<std::string> vector_arg);
+    
+    JSONBuilder::Node get_json_root_node ();
+
+  private:
+    JSONBuilder::ptr json_builder_;
+    static const std::map<int, const char *> command_names_;
   };
   
 } // end of namespace
