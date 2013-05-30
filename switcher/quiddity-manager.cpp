@@ -239,7 +239,6 @@ namespace switcher
     command_.result_.push_back(res);
     g_mutex_unlock (seq_mutex_);
     return res;
-    //return manager_impl_->list_property_subscribers_json ();
   }
 
   std::string 
@@ -336,8 +335,16 @@ namespace switcher
   QuiddityManager::auto_invoke (std::string method_name,
 				std::vector<std::string> args)
   {
+    g_mutex_lock (seq_mutex_);
+    command_.clear();
+    command_.set_name (QuiddityCommand::auto_invoke);
+    command_.add_arg (method_name);
+    command_.set_vector_arg (args);
     auto_invoke_method_name_ = method_name;
     auto_invoke_args_ = args;
+    command_.result_.push_back ("true");
+    g_mutex_unlock (seq_mutex_);
+   
     return true;
   }
 
@@ -392,13 +399,34 @@ namespace switcher
 							    void *user_data),
 					   void *user_data)
   {
-    return manager_impl_->make_signal_subscriber (subscriber_name, callback, user_data);
+    g_mutex_lock (seq_mutex_);
+    command_.clear();
+    command_.set_name (QuiddityCommand::make_signal_subscriber);
+    command_.add_arg (subscriber_name);
+     bool res = manager_impl_->make_signal_subscriber (subscriber_name, callback, user_data);
+     if (res)
+       command_.result_.push_back("true");
+     else
+       command_.result_.push_back("false");
+     g_mutex_unlock (seq_mutex_);
+
+     return res;
   }
 
     bool 
 QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     {
-      return manager_impl_->remove_signal_subscriber (subscriber_name);
+      g_mutex_lock (seq_mutex_);
+      command_.clear();
+      command_.set_name (QuiddityCommand::remove_signal_subscriber);
+      command_.add_arg (subscriber_name);
+      bool res = manager_impl_->remove_signal_subscriber (subscriber_name);
+      if (res)
+	command_.result_.push_back("true");
+      else
+	command_.result_.push_back("false");
+      g_mutex_unlock (seq_mutex_);
+      return res;
     }
   
   bool 
@@ -406,7 +434,20 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 				     std::string quiddity_name,
 				     std::string signal_name)
   {
-    return manager_impl_->subscribe_signal (subscriber_name, quiddity_name, signal_name);
+    g_mutex_lock (seq_mutex_);
+    command_.clear();
+    command_.set_name (QuiddityCommand::subscribe_signal);
+    command_.add_arg (subscriber_name);
+    command_.add_arg (quiddity_name);
+    command_.add_arg (signal_name);
+ 
+    bool res = manager_impl_->subscribe_signal (subscriber_name, quiddity_name, signal_name);
+    if (res)
+      command_.result_.push_back("true");
+    else
+      command_.result_.push_back("false");
+    g_mutex_unlock (seq_mutex_);
+    return res;
   }
   
   bool 
@@ -414,57 +455,126 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 				       std::string quiddity_name,
 				       std::string signal_name)
   {
-    return manager_impl_->unsubscribe_signal (subscriber_name, quiddity_name, signal_name);
-      }
+    g_mutex_lock (seq_mutex_);
+    command_.clear();
+    command_.set_name (QuiddityCommand::unsubscribe_signal);
+    command_.add_arg (subscriber_name);
+    command_.add_arg (quiddity_name);
+    command_.add_arg (signal_name);
+    bool res = manager_impl_->unsubscribe_signal (subscriber_name, quiddity_name, signal_name);
+    if (res)
+      command_.result_.push_back("true");
+    else
+      command_.result_.push_back("false");
+    g_mutex_unlock (seq_mutex_);
+    return res;
+  }
   
   std::vector<std::string> 
   QuiddityManager::list_signal_subscribers ()
   {
-    return manager_impl_->list_signal_subscribers ();
+    g_mutex_lock (seq_mutex_);
+    command_.clear();
+    command_.set_name (QuiddityCommand::list_signal_subscribers);
+    std::vector<std::string> res = manager_impl_->list_signal_subscribers ();
+    command_.result_ = res;
+    g_mutex_unlock (seq_mutex_);
+    return res;
   }
   
   std::vector<std::pair<std::string, std::string> > 
   QuiddityManager::list_subscribed_signals (std::string subscriber_name)
   {
-    return manager_impl_->list_subscribed_signals (subscriber_name);
+    g_mutex_lock (seq_mutex_);
+    command_.clear();
+    command_.set_name (QuiddityCommand::list_subscribed_signals);
+    std::vector<std::pair<std::string, std::string> > res = manager_impl_->list_subscribed_signals (subscriber_name);
+    //FIXME no result...
+    g_mutex_unlock (seq_mutex_);
+    return res;
   }
   
   std::string 
   QuiddityManager::list_signal_subscribers_json ()
   {
-    return manager_impl_->list_signal_subscribers_json ();
+    g_mutex_lock (seq_mutex_);
+    command_.clear();
+    command_.set_name (QuiddityCommand::list_signal_subscribers_json);
+    std::string res = manager_impl_->list_signal_subscribers_json ();
+    command_.result_.push_back(res);
+    g_mutex_unlock (seq_mutex_);
+    return res;
   }
 
   std::string 
   QuiddityManager::list_subscribed_signals_json (std::string subscriber_name)
   {
-    return manager_impl_->list_subscribed_signals_json (subscriber_name);
+    g_mutex_lock (seq_mutex_);
+    command_.clear();
+    command_.set_name (QuiddityCommand::list_subscribed_signals_json);
+    command_.add_arg (subscriber_name);
+    std::string res = manager_impl_->list_subscribed_signals_json (subscriber_name);
+    command_.result_.push_back(res);
+    g_mutex_unlock (seq_mutex_);
+    return res;
   }
 
   std::string
   QuiddityManager::get_signals_description (std::string quiddity_name)
   {
-    return manager_impl_->get_signals_description (quiddity_name);
+    g_mutex_lock (seq_mutex_);
+    command_.clear();
+    command_.set_name (QuiddityCommand::get_signals_description);
+    command_.add_arg (quiddity_name);
+    std::string res = manager_impl_->get_signals_description (quiddity_name);
+    command_.result_.push_back(res);
+    g_mutex_unlock (seq_mutex_);
+    return res;
   }
 
   std::string
   QuiddityManager::get_signal_description (std::string quiddity_name, 
 					   std::string signal_name)
-  {
-    return manager_impl_->get_signal_description (quiddity_name, signal_name);
+  { 
+    g_mutex_lock (seq_mutex_);
+    command_.clear();
+    command_.set_name (QuiddityCommand::get_signal_description);
+    command_.add_arg (quiddity_name);
+    command_.add_arg (signal_name);
+    std::string res = manager_impl_->get_signal_description (quiddity_name,
+							     signal_name);
+    command_.result_.push_back(res);
+    g_mutex_unlock (seq_mutex_);
+    return res;
   }
 
   std::string
   QuiddityManager::get_signals_description_by_class (std::string class_name)
   {
-    return manager_impl_->get_signals_description_by_class (class_name);
+    g_mutex_lock (seq_mutex_);
+    command_.clear();
+    command_.set_name (QuiddityCommand::get_signals_description_by_class);
+    command_.add_arg (class_name);
+    std::string res = manager_impl_->get_signals_description_by_class (class_name);
+    command_.result_.push_back(res);
+    g_mutex_unlock (seq_mutex_);
+    return res;
   }
 
   std::string
   QuiddityManager::get_signal_description_by_class (std::string class_name, 
 						    std::string signal_name)
   {
-    return manager_impl_->get_signal_description_by_class (class_name, signal_name);
+    g_mutex_lock (seq_mutex_);
+    command_.clear();
+    command_.set_name (QuiddityCommand::get_signal_description_by_class);
+    command_.add_arg (class_name);
+    command_.add_arg (signal_name);
+    std::string res = manager_impl_->get_signal_description_by_class (class_name,
+								      signal_name);
+    command_.result_.push_back(res);
+    g_mutex_unlock (seq_mutex_);
+    return res;
   }
 
   void 

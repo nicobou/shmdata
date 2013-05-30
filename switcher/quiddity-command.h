@@ -72,45 +72,20 @@ namespace switcher
       get_methods_description_by_class,
       get_method_description_by_class,
       invoke,
-     /* bool auto_invoke  (std::string method_name, */
-     /* 			 std::vector<std::string> args);   */
+      auto_invoke,
 
-      /* //doc (json formatted) */
-      /* std::string get_signals_description (std::string quiddity_name); */
-      /* std::string get_signal_description (std::string quiddity_name,  */
-      /* 					  std::string signal_name); */
-      /* //following "by_class" methods provide properties available after creation only,  */
-      /* //avoiding possible properties created dynamically */
-      /* std::string get_signals_description_by_class (std::string class_name);  */
-      /* std::string get_signal_description_by_class (std::string class_name,  */
-      /* 						   std::string signal_name);  */
-    
-      /* bool make_signal_subscriber (std::string subscriber_name, */
-      /* 				   void (*callback)(std::string subscriber_name, */
-      /* 						    std::string quiddity_name, */
-      /* 						    std::string signal_name, */
-      /* 						    std::vector<std::string> params, */
-      /* 						    void *user_data), */
-      /* 				   void *user_data); */
-      /* bool remove_signal_subscriber (std::string subscriber_name); */
-      /* bool subscribe_signal (std::string subscriber_name, */
-      /* 			     std::string quiddity_name, */
-      /* 			     std::string signal_name); */
-      /* bool unsubscribe_signal (std::string subscriber_name, */
-      /* 			       std::string quiddity_name, */
-      /* 			       std::string signal_name); */
-
-      
-      /* std::vector<std::string>  */
-      /* 	list_signal_subscribers (); */
-      /* std::vector<std::pair<std::string, std::string> >  */
-      /* 	list_subscribed_signals (std::string subscriber_name); */
-      /* //json //FIXME implement or remove */
-      /* std::string  */
-      /* 	list_signal_subscribers_json (); */
-      /* std::string  */
-      /* 	list_subscribed_signals_json (std::string subscriber_name); */
-   
+      get_signals_description,
+      get_signal_description,
+      get_signals_description_by_class,
+      get_signal_description_by_class,							       
+      make_signal_subscriber,										       
+      remove_signal_subscriber,
+      subscribe_signal,
+      unsubscribe_signal,
+      list_signal_subscribers,
+      list_subscribed_signals,
+      list_signal_subscribers_json,
+      list_subscribed_signals_json,
     };
     command name_;
     std::vector<std::string> args_;
