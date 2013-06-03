@@ -38,29 +38,30 @@ namespace switcher
     pipeline_ = gst_pipeline_new (NULL);
     set_name (gst_element_get_name (pipeline_));
     
-    source_funcs_ = {
-      source_prepare,
-      source_check,
-      source_dispatch,
-      source_finalize
-    };
-    source_ = g_source_new (&source_funcs_, sizeof (GstBusSource));
+     source_funcs_ = {
+       source_prepare,
+       source_check,
+       source_dispatch,
+       source_finalize
+     };
+     source_ = g_source_new (&source_funcs_, sizeof (GstBusSource));
 
-    ((GstBusSource*)source_)->bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_));
-    g_source_set_callback(source_, (GSourceFunc)bus_called, NULL, NULL);
+     ((GstBusSource*)source_)->bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_));
+     g_source_set_callback(source_, (GSourceFunc)bus_called, NULL, NULL);
 
-    GMainContext *g_main_context = get_g_main_context ();
-    if (g_main_context == NULL)
-      return FALSE;
-    g_source_attach(source_, g_main_context);
-    gst_bus_set_sync_handler (((GstBusSource*)source_)->bus, bus_sync_handler, this); 
-    g_source_unref (source_);
+     GMainContext *g_main_context = get_g_main_context ();
+     if (g_main_context == NULL)
+       return FALSE;
+     g_source_attach(source_, g_main_context);
+     gst_bus_set_sync_handler (((GstBusSource*)source_)->bus, bus_sync_handler, this); 
+     g_source_unref (source_);
+     ((GstBusSource*)source_)->inited = FALSE;
 
-    // GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_)); 
-    // gst_bus_add_watch (bus, bus_called, NULL);
+     // GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_)); 
+     // gst_bus_add_watch (bus, bus_called, NULL);
     
-    // gst_bus_set_sync_handler (bus, bus_sync_handler, this);  
-    // gst_object_unref (bus); 
+     // gst_bus_set_sync_handler (bus, bus_sync_handler, this);  
+     // gst_object_unref (bus); 
     
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
     GstUtils::wait_state_changed (pipeline_);
@@ -205,8 +206,8 @@ namespace switcher
 			    GST_SEEK_TYPE_NONE,  
 			    GST_CLOCK_TIME_NONE);  
     
-  // if (!ret)
-  //   g_print ("seek not handled\n");
+    if (!ret)
+     g_debug ("seek not handled\n");
 
     return true;
   }
@@ -282,8 +283,8 @@ res = gst_element_query (pipeline_, query);
 			    GST_SEEK_TYPE_NONE,  
 			    GST_CLOCK_TIME_NONE);  
     
-    // if (!ret)
-    //   g_print ("speed not handled\n");
+    if (!ret)
+      g_debug ("speed not handled\n");
 
     return true;
   }
@@ -408,8 +409,7 @@ res = gst_element_query (pipeline_, query);
   Runtime::source_prepare(GSource *source, gint *timeout)
   {
     GstBusSource *bsrc = (GstBusSource *)source;
-    
-    *timeout = 0;
+    *timeout = -1;
     return gst_bus_have_pending (bsrc->bus);
   }
   

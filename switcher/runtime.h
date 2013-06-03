@@ -64,6 +64,8 @@ namespace switcher
       {
 	GSource source;
 	GstBus *bus;
+	gboolean inited;
+
       } GstBusSource;
       static gboolean source_prepare(GSource *source, 
 				     gint *timeout);
