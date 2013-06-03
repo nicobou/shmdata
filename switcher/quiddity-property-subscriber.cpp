@@ -157,6 +157,20 @@ namespace switcher
     return false;
   }
 
+  bool 
+  QuiddityPropertySubscriber::unsubscribe (Quiddity::ptr quid)
+  {
+    std::string quid_name = quid->get_nick_name ();
+    for (auto& it: prop_datas_)
+      if (it.first.first == quid_name)
+	{
+	  g_free (it.second->quiddity_name);
+	  g_free (it.second->property_name);
+	  prop_datas_.erase (it.first);
+	}
+    return true;
+  }
+  
   std::vector<std::pair<std::string, std::string> > 
   QuiddityPropertySubscriber::list_subscribed_properties ()
   {

@@ -103,12 +103,20 @@ main (int argc,
     	g_warning ("pb with list_subscribed_properties");
     	return 1;
       }
-    
+
     manager->set_property ("vid", "pattern", "1");
     
     manager->unsubscribe_property ("sub", "vid", "pattern");
     manager->remove_property_subscriber ("sub");
     manager->remove ("vid");
+
+    properties = manager->list_subscribed_properties ("sub");
+    if(properties.size () != 0)
+      {
+    	g_warning ("pb with automatic unsubscribe at quiddity removal");
+    	return 1;
+      }
+
   }
 
   if (success)

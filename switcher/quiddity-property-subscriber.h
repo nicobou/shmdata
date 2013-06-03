@@ -54,6 +54,7 @@ namespace switcher
 		    std::string property_name);
     bool unsubscribe (std::shared_ptr <Quiddity> quid, 
 		      std::string property_name);
+    bool unsubscribe (std::shared_ptr <Quiddity> quid);
     std::vector<std::pair<std::string, std::string> > list_subscribed_properties ();
     static void property_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data);
     

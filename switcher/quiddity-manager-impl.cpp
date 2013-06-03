@@ -430,7 +430,11 @@ namespace switcher
   QuiddityManager_Impl::remove_without_hook (std::string quiddity_name)
   {
     if (exists (quiddity_name))
-      quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
+      {
+	for (auto &it : property_subscribers_.get_map ())
+	  it.second->unsubscribe (get_quiddity (quiddity_name));
+	quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
+      }
     
     if (quiddities_nick_names_.remove (quiddity_name))
 	return true;
@@ -443,7 +447,11 @@ namespace switcher
   QuiddityManager_Impl::remove (std::string quiddity_name)
   {
     if (exists (quiddity_name))
-      quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
+      {
+	for (auto &it : property_subscribers_.get_map ())
+	  it.second->unsubscribe (get_quiddity (quiddity_name));
+	quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
+      }
     
     if (quiddities_nick_names_.remove (quiddity_name))
       {  
@@ -576,8 +584,8 @@ namespace switcher
   
   bool 
   QuiddityManager_Impl::unsubscribe_property (std::string subscriber_name,
-					     std::string quiddity_name,
-					     std::string property_name)
+					      std::string quiddity_name,
+					      std::string property_name)
   {
     if (!property_subscribers_.contains (subscriber_name))
       {
@@ -592,7 +600,7 @@ namespace switcher
       }
     return property_subscribers_.lookup(subscriber_name)->unsubscribe (get_quiddity (quiddity_name), property_name);
   }
-
+  
   std::vector<std::string> 
   QuiddityManager_Impl::list_property_subscribers ()
   {
