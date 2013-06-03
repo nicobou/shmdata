@@ -83,7 +83,7 @@ namespace switcher
   FakeSink::update_byte_rate (gpointer user_data) 
   {
     FakeSink *context = static_cast <FakeSink *> (user_data);
-    if (context == NULL) //auto cleanup
+    if (! G_IS_OBJECT (context->fakesink_)) //auto cleanup
       return FALSE;
     context->byte_rate_ = context->num_bytes_since_last_update_;
     context->num_bytes_since_last_update_ = 0;
