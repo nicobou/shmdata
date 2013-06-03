@@ -59,7 +59,8 @@ namespace switcher
     bool unregister_shmdata_writer (std::string shmdata_path);
     bool register_shmdata_reader (ShmdataReader::ptr reader);
     bool unregister_shmdata_reader (std::string shmdata_path);
-      
+    bool clear_shmdatas ();
+
   private:
     StringMap<ShmdataWriter::ptr> shmdata_writers_;
     StringMap<ShmdataReader::ptr> shmdata_readers_;

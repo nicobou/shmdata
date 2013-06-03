@@ -288,7 +288,6 @@ namespace switcher
     shmdata_readers_.remove (shmdata_path);
     update_shmdata_readers_description ();
     GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
-
     return true;
   }
 
@@ -298,6 +297,26 @@ namespace switcher
     update_shmdata_writers_description ();
     GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_writers_description_);
 
+    return true;
+  }
+
+  bool Segment::clear_shmdatas ()
+  {
+    unsigned int size = shmdata_writers_.size ();
+    shmdata_writers_.clear ();
+    if (size != 0)
+      {
+	update_shmdata_writers_description ();
+	GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_writers_description_);
+      }
+
+    size = shmdata_readers_.size ();
+    shmdata_readers_.clear ();
+    if (size != 0)
+      {
+	update_shmdata_readers_description ();
+	GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
+      }
     return true;
   }
 

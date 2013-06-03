@@ -29,8 +29,7 @@ namespace switcher
   
   Uridecodebin::~Uridecodebin ()
   {
-    gst_element_set_state (uridecodebin_,GST_STATE_NULL);
-    gst_element_get_state (uridecodebin_, NULL, NULL, GST_CLOCK_TIME_NONE);
+    destroy_uridecodebin ();
   }
   
   bool
@@ -39,12 +38,37 @@ namespace switcher
     if (!GstUtils::make_element ("uridecodebin",&uridecodebin_))
       return false;
 
-    main_pad_ = NULL;
-    discard_next_uncomplete_buffer_ = false;
-    rtpgstcaps_ = gst_caps_from_string ("application/x-rtp, media=(string)application");
+    init_uridecodebin ();
 
     //set the name before registering properties
     set_name (gst_element_get_name (uridecodebin_));
+    
+   
+    //registering add_data_stream
+    register_method("to_shmdata",
+		    (void *)&to_shmdata_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    (gpointer)this);
+    set_method_description ("to_shmdata", 
+			    "decode streams from an uri and write them to shmdatas", 
+			    Method::make_arg_description ("uri", 
+							  "the uri to decode",
+							  NULL));
+    return true;
+  }
+  
+  QuiddityDocumentation 
+  Uridecodebin::get_documentation ()
+  {
+    return doc_;
+  }
+
+  void 
+  Uridecodebin::init_uridecodebin ()
+  {
+    main_pad_ = NULL;
+    discard_next_uncomplete_buffer_ = false;
+    rtpgstcaps_ = gst_caps_from_string ("application/x-rtp, media=(string)application");
     
     g_signal_connect (G_OBJECT (uridecodebin_), 
 		      "pad-added", 
@@ -103,25 +127,16 @@ namespace switcher
        		  "async-handling",TRUE, 
        		  //"buffer-duration",9223372036854775807, 
        		  NULL); 
-    
-   
-    //registering add_data_stream
-    register_method("to_shmdata",
-		    (void *)&to_shmdata_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("to_shmdata", 
-			    "decode streams from an uri and write them to shmdatas", 
-			    Method::make_arg_description ("uri", 
-							  "the uri to decode",
-							  NULL));
-    return true;
   }
-  
-  QuiddityDocumentation 
-  Uridecodebin::get_documentation ()
+
+  void 
+  Uridecodebin::destroy_uridecodebin ()
   {
-    return doc_;
+    if (G_IS_OBJECT (uridecodebin_))
+      {
+	gst_element_set_state (uridecodebin_,GST_STATE_NULL);
+	gst_element_get_state (uridecodebin_, NULL, NULL, GST_CLOCK_TIME_NONE);
+      }
   }
 
   void 
@@ -438,6 +453,9 @@ namespace switcher
   bool
   Uridecodebin::to_shmdata (std::string uri)
   {
+    destroy_uridecodebin ();
+    clear_shmdatas ();
+    init_uridecodebin ();
     g_debug ("to_shmdata set uri %s", uri.c_str ());
     g_object_set (G_OBJECT (uridecodebin_), "uri", uri.c_str (), NULL); 
 

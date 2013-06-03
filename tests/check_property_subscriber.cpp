@@ -117,7 +117,6 @@ main (int argc,
       }
 
     manager->remove_property_subscriber ("sub");
-
   }
 
   if (success)
