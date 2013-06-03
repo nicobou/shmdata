@@ -156,6 +156,20 @@ namespace switcher
     return false;
   }
 
+  bool 
+  QuidditySignalSubscriber::unsubscribe (Quiddity::ptr quid)
+  {
+    std::string quid_name = quid->get_nick_name ();
+    for (auto& it: signal_datas_)
+      if (it.first.first == quid_name)
+	{
+	  g_free (it.second->quiddity_name);
+	  g_free (it.second->signal_name);
+	  signal_datas_.erase (it.first);
+	}
+    return true;
+  }
+
   std::vector<std::pair<std::string, std::string> > 
   QuidditySignalSubscriber::list_subscribed_signals ()
   {

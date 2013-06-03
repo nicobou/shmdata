@@ -433,6 +433,8 @@ namespace switcher
       {
 	for (auto &it : property_subscribers_.get_map ())
 	  it.second->unsubscribe (get_quiddity (quiddity_name));
+	for (auto &it : signal_subscribers_.get_map ())
+	  it.second->unsubscribe (get_quiddity (quiddity_name));
 	quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
       }
     
@@ -449,6 +451,8 @@ namespace switcher
     if (exists (quiddity_name))
       {
 	for (auto &it : property_subscribers_.get_map ())
+	  it.second->unsubscribe (get_quiddity (quiddity_name));
+	for (auto &it : signal_subscribers_.get_map ())
 	  it.second->unsubscribe (get_quiddity (quiddity_name));
 	quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
       }
@@ -999,7 +1003,6 @@ namespace switcher
     if (! gst_is_initialized ())
       gst_init (NULL,NULL);
     
-    //g_print ("--- 1 -- %p", g_main_context_default ());
     main_context_ = g_main_context_new ();
     mainloop_ = g_main_loop_new (main_context_, FALSE);
     //mainloop_ = g_main_loop_new (NULL, FALSE);

@@ -54,6 +54,8 @@ namespace switcher
 		    std::string signal_name);
     bool unsubscribe (std::shared_ptr <Quiddity> quid, 
 		      std::string signal_name);
+    bool unsubscribe (std::shared_ptr <Quiddity> quid);
+    
     std::vector<std::pair<std::string, std::string> > list_subscribed_signals ();
     static void signal_cb (std::vector<std::string> params, gpointer user_data);
         
