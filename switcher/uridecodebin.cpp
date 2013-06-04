@@ -38,8 +38,6 @@ namespace switcher
     if (!GstUtils::make_element ("uridecodebin",&uridecodebin_))
       return false;
 
-    init_uridecodebin ();
-
     //set the name before registering properties
     set_name (gst_element_get_name (uridecodebin_));
     
@@ -66,6 +64,12 @@ namespace switcher
   void 
   Uridecodebin::init_uridecodebin ()
   {
+    if (!GstUtils::make_element ("uridecodebin",&uridecodebin_))
+      {
+	g_warning (" Uridecodebin::init_uridecodebin, cannot create uridecodebin");
+	return;
+      }
+    
     main_pad_ = NULL;
     discard_next_uncomplete_buffer_ = false;
     rtpgstcaps_ = gst_caps_from_string ("application/x-rtp, media=(string)application");
