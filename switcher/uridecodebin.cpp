@@ -41,6 +41,7 @@ namespace switcher
     //set the name before registering properties
     set_name (gst_element_get_name (uridecodebin_));
     
+    destroy_uridecodebin ();
    
     //registering add_data_stream
     register_method("to_shmdata",
@@ -70,6 +71,7 @@ namespace switcher
 	return;
       }
     
+    media_counters_.clear ();
     main_pad_ = NULL;
     discard_next_uncomplete_buffer_ = false;
     rtpgstcaps_ = gst_caps_from_string ("application/x-rtp, media=(string)application");
@@ -136,11 +138,13 @@ namespace switcher
   void 
   Uridecodebin::destroy_uridecodebin ()
   {
-    if (G_IS_OBJECT (uridecodebin_))
-      {
-	gst_element_set_state (uridecodebin_,GST_STATE_NULL);
-	gst_element_get_state (uridecodebin_, NULL, NULL, GST_CLOCK_TIME_NONE);
-      }
+    GstUtils::clean_element (uridecodebin_);
+    // if (G_IS_OBJECT (uridecodebin_))
+    //   {
+    // 	gst_element_set_state (uridecodebin_,GST_STATE_NULL);
+    // 	gst_element_get_state (uridecodebin_, NULL, NULL, GST_CLOCK_TIME_NONE);
+    // 	gst_object_unref (uridecodebin_);
+    //   }
   }
 
   void 
@@ -460,7 +464,7 @@ namespace switcher
     destroy_uridecodebin ();
     clear_shmdatas ();
     init_uridecodebin ();
-    g_debug ("to_shmdata set uri %s", uri.c_str ());
+    g_debug ("------------------------- to_shmdata set uri %s", uri.c_str ());
     g_object_set (G_OBJECT (uridecodebin_), "uri", uri.c_str (), NULL); 
 
     gst_bin_add (GST_BIN (bin_), uridecodebin_);
