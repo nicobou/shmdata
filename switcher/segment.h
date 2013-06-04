@@ -42,9 +42,6 @@ namespace switcher
     // the segment is managing itself the presence/attachment with the runtime
     void set_runtime (Runtime::ptr runtime);
 
-    //FIXME remove the followong method:
-    std::vector<std::string> get_src_connectors ();
-
     //wrappers for calls from base quiddity manager
     static void set_runtime_wrapped (gpointer runtime, gpointer context);
     

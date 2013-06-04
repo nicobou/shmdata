@@ -202,13 +202,6 @@ namespace switcher
     return bin_;
   }
 
-  //FIXME remove this get_src_connector
-  std::vector<std::string> 
-  Segment::get_src_connectors ()
-  {
-    return shmdata_writers_.get_keys ();
-  }
-
   void
   Segment::update_shmdata_writers_description ()
   {
