@@ -182,6 +182,7 @@ namespace switcher
 	 reader.reset (new ShmdataReader ());
 	 reader->set_path (it->first.c_str());
 	 reader->set_bin (bin_);
+	 reader->set_g_main_context (get_g_main_context ());
 	 reader->set_sink_element (recorder_bin);
 	
 	 GstUtils::wait_state_changed (bin_);

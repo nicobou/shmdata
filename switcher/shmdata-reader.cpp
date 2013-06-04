@@ -42,23 +42,6 @@ namespace switcher
       g_debug ("ShmdataReader: %s deleted ", path_.c_str());
   }
 
-  // GstBusSyncReply 
-  // ShmdataReader::bus_sync_handler (GstBus * bus,
-  // 				   GstMessage * msg, gpointer user_data) 
-  // {
-  //   shmdata_base_reader_t *reader = (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), 
-  // 										 "shmdata_base_reader");
-  //   if ( reader != NULL)
-  //     {
-  // 	if ( shmdata_base_reader_process_error (reader, msg)) 
-  // 	  return GST_BUS_DROP; 
-  // 	else 
-  // 	  return GST_BUS_PASS; 
-  //     }
-    
-  //   return GST_BUS_PASS; 
-  // }
-  
   void
   ShmdataReader::unlink_pad (GstPad * pad)
   {
@@ -97,6 +80,13 @@ namespace switcher
   }
 
   void 
+  ShmdataReader::set_g_main_context (GMainContext *context)
+  {
+    g_main_context_ = context;
+  }
+
+
+  void 
   ShmdataReader::set_sink_element (GstElement *sink_element)
   {   
     sink_element_ = sink_element;
@@ -110,6 +100,7 @@ namespace switcher
     shmdata_base_reader_close (reader_);
     GstUtils::clean_element (funnel_);
     reader_ = shmdata_base_reader_new ();
+    shmdata_base_reader_set_g_main_context (reader_, g_main_context_);
     shmdata_base_reader_set_on_have_type_callback (reader_, ShmdataReader::on_have_type, this);
     
     if (path_ == "" ||  bin_ == NULL)
@@ -138,7 +129,6 @@ namespace switcher
     // 	return;
     //   }
 
-    
     shmdata_base_reader_set_callback (reader_, ShmdataReader::on_first_data, this);
     shmdata_base_reader_install_sync_handler (reader_, FALSE);
     shmdata_base_reader_set_bin (reader_, bin_);

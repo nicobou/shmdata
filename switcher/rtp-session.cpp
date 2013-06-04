@@ -666,6 +666,7 @@ namespace switcher
     ShmdataReader::ptr reader;
     reader.reset (new ShmdataReader ());
     reader->set_path (shmdata_socket_path.c_str());
+    reader->set_g_main_context (get_g_main_context ());
     reader->set_bin (bin_);
 
     reader->set_on_first_data_hook (attach_data_stream, this);
