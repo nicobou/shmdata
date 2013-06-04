@@ -30,6 +30,9 @@ namespace switcher
   Uridecodebin::~Uridecodebin ()
   {
     destroy_uridecodebin ();
+    QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
+    if ((bool) manager)
+	manager->remove_without_hook (runtime_name_);
   }
   
   bool
@@ -462,7 +465,22 @@ namespace switcher
   Uridecodebin::to_shmdata (std::string uri)
   {
     destroy_uridecodebin ();
-    clear_shmdatas ();
+    QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
+    if ((bool) manager)
+      {
+	manager->remove_without_hook (runtime_name_);
+	runtime_name_ = manager->create_without_hook ("runtime");
+	Quiddity::ptr quidd = manager->get_quiddity (runtime_name_);
+	Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
+	if(runtime)
+	  set_runtime(runtime);
+	else
+	  g_warning ("Uridecodebin::to_shmdata: unable to use a custom runtime");
+      }
+    else
+      return false;
+    
+    reset_bin ();
     init_uridecodebin ();
     g_debug ("------------------------- to_shmdata set uri %s", uri.c_str ());
     g_object_set (G_OBJECT (uridecodebin_), "uri", uri.c_str (), NULL); 

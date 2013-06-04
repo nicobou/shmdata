@@ -41,8 +41,6 @@ namespace switcher
       return false;
 #endif
 
-    
-
     //set the name before registering properties
     set_name (gst_element_get_name (xvimagesink_));
     g_object_set (G_OBJECT (xvimagesink_), "sync", FALSE, NULL);
@@ -68,6 +66,7 @@ namespace switcher
   {
     if (c_name_ != NULL)
       g_free (c_name_);
+    GstUtils::clean_element (xvimagesink_);
   }
 
   QuiddityDocumentation 

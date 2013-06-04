@@ -57,8 +57,11 @@ namespace switcher
     bool register_shmdata_reader (ShmdataReader::ptr reader);
     bool unregister_shmdata_reader (std::string shmdata_path);
     bool clear_shmdatas ();
+    bool reset_bin ();
 
   private:
+    void make_bin ();
+    void clean_bin ();
     StringMap<ShmdataWriter::ptr> shmdata_writers_;
     StringMap<ShmdataReader::ptr> shmdata_readers_;
     JSONBuilder::ptr shmdata_writers_description_;

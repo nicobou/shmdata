@@ -185,6 +185,11 @@ namespace switcher
       GMainContext * get_g_main_context();
 
 
+      //for use of "get description by class" 
+      //and from quiddity that creates other quiddity in the same manager
+      std::string create_without_hook (std::string quiddity_class);
+      bool remove_without_hook (std::string quiddity_name);
+
     private:
       void init (std::string name);
       QuiddityManager_Impl();//will get name "default"
@@ -204,9 +209,6 @@ namespace switcher
       quiddity_removed_hook removal_hook_;
       void *creation_hook_user_data_;
       void *removal_hook_user_data_;
-      //for use of "get description by class" methods only:
-      std::string create_without_hook (std::string quiddity_class);
-      bool remove_without_hook (std::string quiddity_name);
 
       //gmainloop 
       GThread *thread_; //this runs the main loop 

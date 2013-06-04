@@ -307,6 +307,7 @@ namespace switcher
     Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class);
     if (quiddity.get() != NULL)
       {
+	quiddity->set_manager_impl (shared_from_this());
 	if (!quiddity->init ())
 	  "{\"error\":\"cannot init quiddity class\"}";
 	quiddities_.insert (quiddity->get_name(),quiddity);

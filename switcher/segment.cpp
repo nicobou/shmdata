@@ -59,8 +59,7 @@ namespace switcher
 				json_readers_description_, 
 				"shmdata-readers");
 
-    GstUtils::make_element ("bin", &bin_);
-    g_object_set (G_OBJECT (bin_), "async-handling",TRUE, NULL);
+    make_bin();
 
     //registering set_runtime method
     std::vector<GType> set_runtime_arg_types;
@@ -108,6 +107,21 @@ namespace switcher
   Segment::~Segment()
   {
     g_debug ("Segment::~Segment begin (%s)",get_nick_name().c_str ());
+    clean_bin ();
+    g_debug ("Segment::~Segment end");
+  }
+  
+  void 
+  Segment::make_bin ()
+  {
+    GstUtils::make_element ("bin", &bin_);
+    g_object_set (G_OBJECT (bin_), "async-handling",TRUE, NULL);
+
+  }
+  
+  void
+  Segment::clean_bin()
+  {
     g_debug ("Segment, bin state %s, target %s, num children %d ", 
 	     gst_element_state_get_name (GST_STATE (bin_)), 
 	     gst_element_state_get_name (GST_STATE_TARGET (bin_)), 
@@ -117,13 +131,9 @@ namespace switcher
     
     if (GST_IS_ELEMENT (bin_))
       {
-
-	
-	g_debug ("Segment::~Segment shmdata cleaning");
-	shmdata_readers_.clear ();
-	g_debug ("Segment::~Segment shmdata readers cleared");
-	shmdata_writers_.clear ();
-	g_debug ("Segment::~Segment shmdata writers cleared");
+	// shmdata_readers_.clear ();
+	// shmdata_writers_.clear ();
+	clear_shmdatas ();
 
 	g_debug ("Segment, bin state %s, target %s, num children %d ", 
 		 gst_element_state_get_name (GST_STATE (bin_)), 
@@ -144,10 +154,8 @@ namespace switcher
 	g_debug ("~Segment: cleaning internal bin");
 	GstUtils::clean_element (bin_);
       }
-    g_debug ("Segment::~Segment end");
   }
-  
-  
+
   void 
   Segment::set_runtime_wrapped (gpointer arg, gpointer user_data)
   {
@@ -181,6 +189,12 @@ namespace switcher
   void
   Segment::set_runtime (Runtime::ptr runtime)
   {
+    if (runtime_ != NULL)
+      {
+	clean_bin ();
+	make_bin ();
+      }
+
     runtime_ = runtime;
     gst_bin_add (GST_BIN (runtime_->get_pipeline ()),bin_);
 
@@ -329,6 +343,15 @@ namespace switcher
     Segment *context = static_cast<Segment *>(user_data);
     g_value_set_string (value, context->shmdata_readers_description_->get_string (true).c_str ());
     return TRUE;
+  }
+
+  bool 
+  Segment::reset_bin ()
+  {
+    // clean_bin ();
+    // make_bin ();
+    if ((bool)runtime_)
+      set_runtime (runtime_);
   }
 
 }
