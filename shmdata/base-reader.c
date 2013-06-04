@@ -46,6 +46,7 @@ struct shmdata_base_reader_
   gboolean do_absolute_;
   gboolean timereset_;
   GstClockTime timeshift_;
+  GMainContext *g_main_context_;
 };
 
 //FIXME this should be part of the library
@@ -293,6 +294,7 @@ shmdata_base_reader_file_system_monitor_change (GFileMonitor *monitor,
     case G_FILE_MONITOR_EVENT_CREATED:
       if (g_file_equal (file, context->shmfile_))
 	{
+	  g_debug ("************* shmdata_base_reader_file_system_monitor_change: file changed");
 	  if (!context->initialized_)
 	    {
 	      context->initialized_ = TRUE;
@@ -348,7 +350,8 @@ shmdata_base_reader_recover_from_deserializer_error (shmdata_base_reader_t * rea
 }
 
 gboolean
-shmdata_base_reader_process_error (shmdata_base_reader_t * reader, GstMessage *msg)
+shmdata_base_reader_process_error (shmdata_base_reader_t * reader, 
+				   GstMessage *msg)
 {
   switch (GST_MESSAGE_TYPE (msg))
     {
@@ -385,7 +388,16 @@ shmdata_base_reader_process_error (shmdata_base_reader_t * reader, GstMessage *m
 		gst_bin_remove (GST_BIN (reader->bin_), reader->source_);
 	      }
 
-	    g_idle_add ((GSourceFunc)shmdata_base_reader_recover_from_deserializer_error, (gpointer)reader);
+	    //g_idle_add ((GSourceFunc)shmdata_base_reader_recover_from_deserializer_error, (gpointer)reader);
+	    GSource *source = g_idle_source_new ();
+	    g_source_set_priority (source, G_PRIORITY_DEFAULT_IDLE);
+	    g_source_set_callback (source, 
+				   (GSourceFunc)shmdata_base_reader_recover_from_deserializer_error, 
+				   (gpointer)reader, 
+				   NULL);
+	    g_source_attach (source, reader->g_main_context_);
+	    g_source_unref (source);
+
 	    g_error_free (error);
 	    return TRUE; 
 	  }
@@ -434,6 +446,7 @@ shmdata_base_reader_new ()
   reader->do_absolute_ = FALSE;
   reader->timereset_ = TRUE;
   reader->timeshift_ = 0;
+  reader->g_main_context_ = NULL;
   return reader;
 }
 
@@ -516,14 +529,31 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
   else
     g_debug ("monitoring %s", g_file_get_uri (reader->shmfile_));
 
-#ifdef HAVE_OSX
+  //#ifdef HAVE_OSX
+#if 1 
   //directory monitoring is not working on osx, use polling :(
-  g_timeout_add (500,
-                 shmdata_base_reader_poll_shmdata_path,
-		 reader);
+  /* g_timeout_add (500, */
+  /*                shmdata_base_reader_poll_shmdata_path, */
+  /* 		 reader); */
+  GSource *source;
+  source = g_timeout_source_new(500);
+  g_source_set_callback(source, shmdata_base_reader_poll_shmdata_path, reader, NULL);
+  g_source_attach(source, reader->g_main_context_);
+  g_source_unref(source);
 #else
+  //FIXME fix monitoring with custom gmaincontext... find how to use "g_main_context_push_thread_default"... 
+  if (reader->g_main_context_ != NULL)
+    {
+      g_debug ("+++++++++++++++++++++ shmdata_base_reader_start: set a custom maincontext");
+      g_main_context_push_thread_default (reader->g_main_context_);
+    }
+
   GFile *dir = g_file_get_parent (reader->shmfile_);
   g_debug ("trying to monitor directory %s",g_file_get_uri (dir));
+  
+  if (!g_file_supports_thread_contexts(dir))
+    g_debug ("++++++++++++++++++++ does not support thread_context");
+  
   GError *error = NULL;
   reader->dirMonitor_ = g_file_monitor_directory (dir,
 						  G_FILE_MONITOR_NONE,
@@ -540,6 +570,9 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
 		    "changed",
 		    G_CALLBACK (shmdata_base_reader_file_system_monitor_change), 
 		    reader);
+  if (reader->g_main_context_ != NULL)
+    g_main_context_pop_thread_default (reader->g_main_context_);
+
 #endif
 
   g_debug ("shmdata reader started (%s)", g_file_get_uri (reader->shmfile_));
@@ -638,5 +671,10 @@ shmdata_base_reader_close (shmdata_base_reader_t * reader)
     }
 }
 
-
+gboolean 
+shmdata_base_reader_set_g_main_context (shmdata_base_reader_t *reader, 
+					GMainContext *context)
+{
+  reader->g_main_context_ = context;
+}
 
