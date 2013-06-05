@@ -23,7 +23,7 @@
 namespace switcher
 {
 
-  QuiddityDocumentation GstVideoParseToBinSrc::doc_ ("source", "gstvideosrc",
+  QuiddityDocumentation GstVideoParseToBinSrc::doc_ ("video source", "gstvideosrc",
 						     "GStreamer (src) video pipeline description to a *single* shmdata");
   
   QuiddityDocumentation 
@@ -32,13 +32,18 @@ namespace switcher
     return doc_;
   }
   
-  
+  GstVideoParseToBinSrc::~GstVideoParseToBinSrc ()
+  {
+    if (GST_IS_ELEMENT (gst_video_parse_to_bin_src_))
+      GstUtils::clean_element (gst_video_parse_to_bin_src_);
+  }
 
   bool 
   GstVideoParseToBinSrc::init ()
   {
     //using parent bin name
     set_name (gst_element_get_name (bin_));
+    gst_video_parse_to_bin_src_ = NULL;
 
     //registering add_data_stream
     register_method("to_shmdata",
@@ -50,8 +55,6 @@ namespace switcher
 			    Method::make_arg_description ("description", 
 							  "the description to instanciate",
 							  NULL));
-  
-
     return true;
   }
   

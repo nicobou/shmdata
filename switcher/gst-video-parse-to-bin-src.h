@@ -32,6 +32,7 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<GstVideoParseToBinSrc> ptr;
+    ~GstVideoParseToBinSrc ();
     bool init ();
     bool to_shmdata (std::string gst_pipeline_description);
     QuiddityDocumentation get_documentation ();
