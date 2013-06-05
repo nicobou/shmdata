@@ -329,7 +329,6 @@ namespace switcher
 	   g_debug ("initialization of %s failled",quiddity_class.c_str ());
 	   return "";
 	 }
-     
      return quiddity->get_nick_name ();
   }
 
@@ -430,42 +429,37 @@ namespace switcher
   bool 
   QuiddityManager_Impl::remove_without_hook (std::string quiddity_name)
   {
-    if (exists (quiddity_name))
+    if (!exists (quiddity_name))
       {
-	for (auto &it : property_subscribers_.get_map ())
-	  it.second->unsubscribe (get_quiddity (quiddity_name));
-	for (auto &it : signal_subscribers_.get_map ())
-	  it.second->unsubscribe (get_quiddity (quiddity_name));
-	quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
+	g_warning ("(%s) quiddity %s not found for removing",name_.c_str(), quiddity_name.c_str());
+	return false; 
       }
-    
-    if (quiddities_nick_names_.remove (quiddity_name))
-	return true;
-
-    g_warning ("(%s) quiddity %s not found for removing",name_.c_str(), quiddity_name.c_str());
-    return false; 
+    for (auto &it : property_subscribers_.get_map ())
+      it.second->unsubscribe (get_quiddity (quiddity_name));
+    for (auto &it : signal_subscribers_.get_map ())
+      it.second->unsubscribe (get_quiddity (quiddity_name));
+    quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
+    quiddities_nick_names_.remove (quiddity_name);
+    return true;
   }
 
   bool 
   QuiddityManager_Impl::remove (std::string quiddity_name)
   {
-    if (exists (quiddity_name))
+    if (!exists (quiddity_name))
       {
-	for (auto &it : property_subscribers_.get_map ())
-	  it.second->unsubscribe (get_quiddity (quiddity_name));
-	for (auto &it : signal_subscribers_.get_map ())
-	  it.second->unsubscribe (get_quiddity (quiddity_name));
-	quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
+	g_warning ("(%s) quiddity %s not found for removing",name_.c_str(), quiddity_name.c_str());
+	return false; 
       }
-    
-    if (quiddities_nick_names_.remove (quiddity_name))
-      {  
-	if (removal_hook_ != NULL)
-	  (*removal_hook_) (quiddity_name.c_str (), removal_hook_user_data_);
-	return true;
-      }
-    g_warning ("(%s) quiddity %s not found for removing",name_.c_str(), quiddity_name.c_str());
-    return false; 
+    for (auto &it : property_subscribers_.get_map ())
+      it.second->unsubscribe (get_quiddity (quiddity_name));
+    for (auto &it : signal_subscribers_.get_map ())
+      it.second->unsubscribe (get_quiddity (quiddity_name));
+    quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
+    quiddities_nick_names_.remove (quiddity_name);
+    if (removal_hook_ != NULL)
+      (*removal_hook_) (quiddity_name.c_str (), removal_hook_user_data_);
+    return true;
   }
 
   std::string 
