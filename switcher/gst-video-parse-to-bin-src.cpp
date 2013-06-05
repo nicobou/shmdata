@@ -101,16 +101,19 @@ namespace switcher
       }
     g_free (string_caps);
 
-    gst_bin_add (GST_BIN (bin_), gst_video_parse_to_bin_src_);
-    GstUtils::wait_state_changed (bin_);
-    GstUtils::sync_state_with_parent (gst_video_parse_to_bin_src_);
     
     //creating a connector for raw audio
     ShmdataWriter::ptr writer;
     writer.reset (new ShmdataWriter ());
     std::string writer_name = make_file_name ("video");
     writer->set_path (writer_name.c_str());
+
+    gst_bin_add (GST_BIN (bin_), gst_video_parse_to_bin_src_);
     writer->plug (bin_, src_pad);
+
+    GstUtils::wait_state_changed (bin_);
+    GstUtils::sync_state_with_parent (gst_video_parse_to_bin_src_);
+
     register_shmdata_writer (writer);
     
     gst_object_unref (src_pad);
