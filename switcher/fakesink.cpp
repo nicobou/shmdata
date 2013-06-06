@@ -32,7 +32,8 @@ namespace switcher
     
     GSource *source = g_main_context_find_source_by_id (get_g_main_context (),
 							update_byterate_id_);
-    g_source_destroy (source);
+    if (source != NULL)
+      g_source_destroy (source);
     g_debug ("~fakesink");
     GstUtils::clean_element (fakesink_);
   }

@@ -42,6 +42,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gst-utils.cpp \
     h264.cpp \
     http-sdp.cpp \
+    http-sdp-dec.cpp \
     json-builder.cpp \
     logger.cpp \
     method.cpp \
@@ -121,6 +122,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     hash-table.h \
     hash-table_spec.h \
     http-sdp.h \
+    http-sdp-dec.h \
     json-builder.h \
     logger.h \
     method.h \

@@ -38,6 +38,7 @@
 #include "gst-video-parse-to-bin-src.h"
 #include "h264.h"
 #include "http-sdp.h"
+#include "http-sdp-dec.h"
 #include "logger.h"
 #include "osc-ctrl-server.h"
 #include "pulse-sink.h"
@@ -57,7 +58,6 @@
 
 namespace switcher
 {
-
 
   QuiddityManager_Impl::ptr 
   QuiddityManager_Impl::make_manager ()
@@ -199,6 +199,8 @@ namespace switcher
       					    H264::doc_.get_json_root_node ());
     abstract_factory_.register_class<HTTPSDP> (HTTPSDP::doc_.get_class_name (), 
       					       HTTPSDP::doc_.get_json_root_node ());
+    abstract_factory_.register_class<HTTPSDPDec> (HTTPSDPDec::doc_.get_class_name (), 
+      					       HTTPSDPDec::doc_.get_json_root_node ());
     abstract_factory_.register_class<Logger> (Logger::doc_.get_class_name (), 
       					       Logger::doc_.get_json_root_node ());
     abstract_factory_.register_class<OscCtrlServer> (OscCtrlServer::doc_.get_class_name (), 

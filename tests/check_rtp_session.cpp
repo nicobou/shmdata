@@ -131,7 +131,7 @@ main (int argc,
 
 
     manager->create ("runtime", "receiver_runtime");
-    manager->create ("httpsdp", "uri");
+    manager->create ("httpsdpdec", "uri");
     manager->invoke_va ("uri", "set_runtime", "receiver_runtime", NULL);
     manager->invoke_va ("uri",
        			"to_shmdata",
@@ -145,14 +145,14 @@ main (int argc,
     manager->invoke_va ("firstprobe", "set_runtime", "probe_runtime", NULL);
     manager->invoke_va ("firstprobe",
      			"connect",
-     			"/tmp/switcher_rtptest_uri_application_0",
+     			"/tmp/switcher_rtptest_uri_audio_0",
      			NULL);
 
     manager->create ("fakesink","secondprobe");
     manager->invoke_va ("secondprobe", "set_runtime", "probe_runtime", NULL);
     manager->invoke_va ("secondprobe",
       			"connect",
-      			"/tmp/switcher_rtptest_uri_application_1",
+      			"/tmp/switcher_rtptest_uri_video_0",
       			NULL);
     
     
