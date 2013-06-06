@@ -106,6 +106,12 @@ main (int argc,
       			"add_data_stream",
       			"/tmp/switcher_rtptest_v_video",
       			NULL);
+
+    // manager->invoke_va ("rtp",
+    //   			"add_data_stream",
+    //   			"/tmp/ares-sm",
+    //   			NULL);
+
     usleep (1000000);//FIXME this should not be necessary
     manager->invoke_va ("rtp",
       			"add_destination",
@@ -125,6 +131,14 @@ main (int argc,
        			"local",
        			"9076",
        			NULL);
+    usleep (1000000);//FIXME this should not be necessary
+
+    // manager->invoke_va ("rtp",
+    //    			"add_udp_stream_to_dest",
+    //    			"/tmp/ares-sm",
+    //    			"local",
+    //    			"9086",
+    //    			NULL);
     
     //wait 4 sec for the session being created
     usleep (4000000); 

@@ -112,7 +112,7 @@ namespace switcher
 			       GstCaps *caps, 
 			       gpointer user_data)
   {
-    g_warning ("HTTPSDPDec unknown type: %s (%s)\n", gst_caps_to_string (caps), gst_element_get_name (bin));
+    g_print ("+++++ HTTPSDPDec unknown type: %s (%s)\n", gst_caps_to_string (caps), gst_element_get_name (bin));
   }
 
   int 
@@ -122,7 +122,7 @@ namespace switcher
 				    GstElementFactory *factory, 
 				    gpointer user_data)
   {
-    g_debug ("httpsdpdec autoplug select %s, (factory %s)",  gst_caps_to_string (caps), GST_OBJECT_NAME (factory));
+    //g_print ("\n --- httpsdpdec autoplug select %s, (factory %s)\n\n",  gst_caps_to_string (caps), GST_OBJECT_NAME (factory));
     //     typedef enum {
     //   GST_AUTOPLUG_SELECT_TRY,
     //   GST_AUTOPLUG_SELECT_EXPOSE,
@@ -130,7 +130,27 @@ namespace switcher
     // } GstAutoplugSelectResult;
 
     if (g_strcmp0 (GST_OBJECT_NAME (factory), "rtpgstdepay") == 0)
-      return 1; //expose
+      {
+	int return_val = 1;
+	const GValue *val = gst_structure_get_value (gst_caps_get_structure(gst_pad_get_caps (pad),0),
+						     "caps");
+	
+	//g_print ("uwuweuweu %s\n", g_value_get_string (val));
+	gsize taille = 256;
+	guchar *string_caps = g_base64_decode (g_value_get_string (val),
+					       &taille);
+
+	gchar *string_caps_char = g_strdup_printf ("%s", string_caps); 
+	//g_print ("******************* %s\n",string_caps );
+
+	if (g_str_has_prefix (string_caps_char, "audio/") 
+	    || g_str_has_prefix (string_caps_char, "video/") )
+	  return_val = 0;
+
+	g_free (string_caps_char);
+	g_free (string_caps);
+	return return_val; //expose
+      }
     return 0; //try
   }
 
@@ -358,6 +378,11 @@ namespace switcher
 		      "pad-added", 
 		      (GCallback) HTTPSDPDec::decodebin_pad_added_cb,
 		      (gpointer) context);
+    g_signal_connect (G_OBJECT (decodebin),  
+     		      "autoplug-select",  
+     		      (GCallback) HTTPSDPDec::autoplug_select_cb ,  
+     		      (gpointer) context);      
+
     GstUtils::sync_state_with_parent (decodebin);
     context->decodebins_.push_back (decodebin); 
   }   
