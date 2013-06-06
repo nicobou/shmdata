@@ -29,6 +29,10 @@ namespace switcher
   
   FakeSink::~FakeSink ()
   {
+    
+    GSource *source = g_main_context_find_source_by_id (get_g_main_context (),
+							update_byterate_id_);
+    g_source_destroy (source);
     g_debug ("~fakesink");
     GstUtils::clean_element (fakesink_);
   }
@@ -83,8 +87,6 @@ namespace switcher
   FakeSink::update_byte_rate (gpointer user_data) 
   {
     FakeSink *context = static_cast <FakeSink *> (user_data);
-    if (! G_IS_OBJECT (context->fakesink_)) //auto cleanup
-      return FALSE;
     context->byte_rate_ = context->num_bytes_since_last_update_;
     context->num_bytes_since_last_update_ = 0;
     context->byte_rate_prop_->notify_property_changed (context->byte_rate_spec_);
