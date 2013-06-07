@@ -265,9 +265,9 @@ namespace switcher
     update_shmdata_writers_description ();
     GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_writers_description_);
     signal_emit ("on-new-shmdata-writer", 
-		 get_nick_name ().c_str (), 
-		 writer->get_path ().c_str (),
-		 (JSONBuilder::get_string (writer->get_json_root_node (), true)).c_str ());
+      		 get_nick_name ().c_str (), 
+      		 writer->get_path ().c_str (),
+      		 (JSONBuilder::get_string (writer->get_json_root_node (), true)).c_str ());
     return true;
   }
   

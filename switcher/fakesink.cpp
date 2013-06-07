@@ -36,6 +36,7 @@ namespace switcher
       g_source_destroy (source);
     g_debug ("~fakesink");
     GstUtils::clean_element (fakesink_);
+    g_free (string_caps_);
   }
   
   bool
@@ -44,6 +45,8 @@ namespace switcher
     if (!GstUtils::make_element ("fakesink", &fakesink_))
       return false;
 
+    string_caps_ = g_strdup ("unknown");
+    set_string_caps_ = true;
     num_bytes_since_last_update_ = 0;
 
     //set the name before registering properties
@@ -58,9 +61,9 @@ namespace switcher
     //registering some properties 
     register_property (G_OBJECT (fakesink_),"last-message","last-message");
     
-    byte_rate_prop_.reset (new CustomPropertyHelper ());
+    props_.reset (new CustomPropertyHelper ());
     byte_rate_spec_ = 
-      byte_rate_prop_->make_int_property ("byte-rate", 
+      props_->make_int_property ("byte-rate", 
      					  "the byte rate (updated each second)",
      					  0,
      					  G_MAXINT,
@@ -70,16 +73,30 @@ namespace switcher
      					  FakeSink::get_byte_rate,
      					  this);
     
-    register_property_by_pspec (byte_rate_prop_->get_gobject (), 
+    register_property_by_pspec (props_->get_gobject (), 
      				byte_rate_spec_, 
      				"byte-rate");
     
-    
+     
     update_byterate_id_ = GstUtils::g_timeout_add_to_context (1000, 
      							      update_byte_rate, 
      							      this,
      							      get_g_main_context ());
     
+    caps_spec_ = 
+      props_->make_string_property ("caps", 
+				    "caps of the attached shmdata",
+				    "unknown",
+				    (GParamFlags) G_PARAM_READABLE,
+				    NULL,
+				    FakeSink::get_caps,
+				    this);
+    
+    register_property_by_pspec (props_->get_gobject (), 
+     				caps_spec_, 
+     				"caps");
+    
+
     set_sink_element (fakesink_);
     return true;
   }
@@ -90,7 +107,7 @@ namespace switcher
     FakeSink *context = static_cast <FakeSink *> (user_data);
     context->byte_rate_ = context->num_bytes_since_last_update_;
     context->num_bytes_since_last_update_ = 0;
-    context->byte_rate_prop_->notify_property_changed (context->byte_rate_spec_);
+    context->props_->notify_property_changed (context->byte_rate_spec_);
     return TRUE;
   }
 
@@ -101,6 +118,16 @@ namespace switcher
 			   gpointer user_data)
   {
     FakeSink *context = static_cast <FakeSink *> (user_data);
+
+    if (context->set_string_caps_)
+      {
+	context->set_string_caps_ = false; 
+	GstCaps *caps = gst_pad_get_negotiated_caps (pad);
+	g_free (context->string_caps_);
+	context->string_caps_ = gst_caps_to_string (caps);
+	context->props_->notify_property_changed (context->caps_spec_);
+	gst_caps_unref (caps);
+      }
     context->num_bytes_since_last_update_ += GST_BUFFER_SIZE (buf);
   }
 
@@ -109,6 +136,13 @@ namespace switcher
   {
     FakeSink *context = static_cast<FakeSink *> (user_data);
     return context->byte_rate_;
+  }
+
+  gchar *
+  FakeSink::get_caps (void *user_data)
+  {
+    FakeSink *context = static_cast<FakeSink *> (user_data);
+    return context->string_caps_;
   }
 
   

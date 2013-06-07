@@ -44,15 +44,19 @@ namespace switcher
     gsize num_bytes_since_last_update_;
     guint update_byterate_id_; 
     gint byte_rate_;
+    gchar *string_caps_;
+    gboolean set_string_caps_;
     static void on_handoff_cb (GstElement* object,
 			       GstBuffer* buf,
 			       GstPad* pad,
 			       gpointer user_data);
     static gboolean update_byte_rate (gpointer user_data); 
     static gint get_byte_rate (void *user_data);
+    static gchar * get_caps (void *user_data);
     //byte rate property 
-    CustomPropertyHelper::ptr byte_rate_prop_;
+    CustomPropertyHelper::ptr props_;
     GParamSpec *byte_rate_spec_;
+    GParamSpec *caps_spec_;
 
   };
 

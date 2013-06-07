@@ -192,13 +192,13 @@ namespace switcher
 	 register_shmdata_reader (reader);
 	
       }
-
+    return true;
   }
 
   bool
   ShmdataToFile::clean_recorders ()
   {
-    
+   
     std::map <std::string, GstElement *> recorders = shmdata_recorders_.get_map ();
     std::map <std::string, GstElement *>::iterator it;
     for (it = recorders.begin (); it != recorders.end (); it++)
@@ -207,5 +207,6 @@ namespace switcher
 	unregister_shmdata_reader (it->first);
       }
     shmdata_recorders_.clear ();
+    return true;
   }
 }

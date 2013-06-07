@@ -35,6 +35,9 @@ mon_property_cb(std::string subscriber_name,
 		std::string value, 
 		void *user_data)
 {
+  
+  if (g_strcmp0 (property_name.c_str (), "caps") == 0)
+    g_print ("-- %s\n",value.c_str ());
 
   //g_print ("%s, %s, %s\n", quiddity_name.c_str (), property_name.c_str (), value.c_str ());
   if (!audio_success && g_strcmp0 (quiddity_name.c_str (), "firstprobe") == 0)
@@ -153,9 +156,15 @@ main (int argc,
 			NULL);
     
     usleep (2000000);//FIXME this should not be necessary
+    
+    manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);
+
 
     manager->create ("runtime", "probe_runtime");
     manager->create ("fakesink","firstprobe");
+    
+    manager->subscribe_property ("sub","firstprobe","caps");
+    manager->subscribe_property ("sub","firstprobe","last-message");
     manager->invoke_va ("firstprobe", "set_runtime", "probe_runtime", NULL);
     manager->invoke_va ("firstprobe",
      			"connect",
@@ -163,6 +172,8 @@ main (int argc,
      			NULL);
 
     manager->create ("fakesink","secondprobe");
+    manager->subscribe_property ("sub","secondprobe","last-message");
+    manager->subscribe_property ("sub","secondprobe","caps");
     manager->invoke_va ("secondprobe", "set_runtime", "probe_runtime", NULL);
     manager->invoke_va ("secondprobe",
       			"connect",
@@ -170,9 +181,6 @@ main (int argc,
       			NULL);
     
     
-    manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);
-    manager->subscribe_property ("sub","firstprobe","last-message");
-    manager->subscribe_property ("sub","secondprobe","last-message");
     
     while (do_continue)
       usleep (100000);
