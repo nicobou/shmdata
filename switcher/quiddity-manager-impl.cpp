@@ -694,7 +694,7 @@ namespace switcher
     if (!exists (quiddity_name))
       {
 	g_warning ("quiddity %s not found, cannot get property",quiddity_name.c_str());
-	return "error, quiddity not found";
+	return "{\"error\":\"quiddity not found\"}";
       }
     return (get_quiddity (quiddity_name))->get_property(property_name.c_str());
   }
@@ -742,7 +742,7 @@ namespace switcher
     if (!exists (quiddity_name))
       {
 	g_warning ("quiddity %s not found, cannot get description of methods",quiddity_name.c_str());
-	return "error, quiddity not found";
+	return "{\"error\":\"quiddity not found\"}";
       }
      
     return (get_quiddity (quiddity_name))->get_methods_description ();
@@ -755,7 +755,7 @@ namespace switcher
     if (!exists (quiddity_name))
       {
 	g_warning ("quiddity %s not found, cannot get description of methods",quiddity_name.c_str());
-	return "error, quiddity not found";
+	return "{\"error\":\"quiddity not found\"}";
       }
      
     return (get_quiddity (quiddity_name))->get_method_description (method_name);
