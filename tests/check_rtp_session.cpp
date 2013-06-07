@@ -37,17 +37,17 @@ mon_property_cb(std::string subscriber_name,
 {
   
   if (g_strcmp0 (property_name.c_str (), "caps") == 0)
-    g_print ("-- %s\n",value.c_str ());
+    g_print ("-caps- %s\n",value.c_str ());
 
   //g_print ("%s, %s, %s\n", quiddity_name.c_str (), property_name.c_str (), value.c_str ());
-  if (!audio_success && g_strcmp0 (quiddity_name.c_str (), "firstprobe") == 0)
+  if (!audio_success && g_strcmp0 (quiddity_name.c_str (), "audioprobe") == 0)
     {
       g_message ("audio received !");
       audio_success = true;
       if (video_success)
 	do_continue = false;
     }
-  if (!video_success && g_strcmp0 (quiddity_name.c_str (), "secondprobe") == 0)
+  if (!video_success && g_strcmp0 (quiddity_name.c_str (), "videoprobe") == 0)
     {
       g_message ("video received !");
       video_success = true;
@@ -161,21 +161,21 @@ main (int argc,
 
 
     manager->create ("runtime", "probe_runtime");
-    manager->create ("fakesink","firstprobe");
+    manager->create ("fakesink","audioprobe");
     
-    manager->subscribe_property ("sub","firstprobe","caps");
-    manager->subscribe_property ("sub","firstprobe","last-message");
-    manager->invoke_va ("firstprobe", "set_runtime", "probe_runtime", NULL);
-    manager->invoke_va ("firstprobe",
+    manager->subscribe_property ("sub","audioprobe","caps");
+    manager->subscribe_property ("sub","audioprobe","last-message");
+    manager->invoke_va ("audioprobe", "set_runtime", "probe_runtime", NULL);
+    manager->invoke_va ("audioprobe",
      			"connect",
      			"/tmp/switcher_rtptest_uri_audio_0",
      			NULL);
 
-    manager->create ("fakesink","secondprobe");
-    manager->subscribe_property ("sub","secondprobe","last-message");
-    manager->subscribe_property ("sub","secondprobe","caps");
-    manager->invoke_va ("secondprobe", "set_runtime", "probe_runtime", NULL);
-    manager->invoke_va ("secondprobe",
+    manager->create ("fakesink","videoprobe");
+    manager->subscribe_property ("sub","videoprobe","last-message");
+    manager->subscribe_property ("sub","videoprobe","caps");
+    manager->invoke_va ("videoprobe", "set_runtime", "probe_runtime", NULL);
+    manager->invoke_va ("videoprobe",
       			"connect",
       			"/tmp/switcher_rtptest_uri_video_0",
       			NULL);
