@@ -23,8 +23,8 @@
 #include <time.h>
 
 
-static gchar *server_name = NULL;
-static gchar *port_number = NULL;
+static const gchar *server_name = NULL;
+static const gchar *port_number = NULL;
 static gchar *osc_port_number = NULL;
 static gboolean quiet;
 static gboolean debug;
@@ -219,8 +219,7 @@ main (int argc,
      std::vector<std::string> arg;
      arg.push_back ("pipeline0");
      manager->auto_invoke ("set_runtime",arg);
-     
-     manager->save_command_history ("truc");
+    
   }
 
 

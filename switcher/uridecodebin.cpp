@@ -92,7 +92,6 @@ namespace switcher
 		      (GCallback) Uridecodebin::source_setup_cb ,  
 		      (gpointer) this);      
 
-
     // g_signal_connect (G_OBJECT (uridecodebin_),  
     // 		      "pad-removed",  
     // 		      (GCallback) Uridecodebin::pad_removed_cb ,  
@@ -490,6 +489,4 @@ namespace switcher
     GstUtils::sync_state_with_parent (uridecodebin_);
     return true;
   }
-
-
 }

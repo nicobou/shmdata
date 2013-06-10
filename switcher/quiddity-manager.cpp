@@ -20,6 +20,7 @@
 #include "quiddity-manager.h"
 #include "quiddity.h" 
 #include "gst-utils.h"
+#include <string.h>
 
 namespace switcher
 {
@@ -84,21 +85,60 @@ namespace switcher
   bool
   QuiddityManager::save_command_history (const char *file_path)
   {
+    
+    GFile *file = g_file_new_for_commandline_arg (file_path);
+ 
+    GError *error = NULL;
+    GFileOutputStream *file_stream = g_file_replace (file,
+						    NULL,
+						    TRUE, //make backup
+						    G_FILE_CREATE_NONE ,
+						    NULL,
+						    &error);
+    if (error != NULL)
+      {
+	g_warning ("%s",error->message);
+	g_error_free (error);
+	return false;
+      }
+
     JSONBuilder::ptr builder;
     builder.reset (new JSONBuilder ());
     builder->reset ();
     builder->begin_object ();
     builder->set_member_name ("history");
     builder->begin_array ();
-    int i = 0;
+
     for (auto &it: command_history_)
       builder->add_node_value (it->get_json_root_node ());
     builder->end_array ();
     builder->end_object ();
     
-    //FIXME HERE !! actually write the file
-    //g_print ("%s",builder->get_string(true).c_str ());
-    return true;
+    const gchar *history = builder->get_string(true).c_str ();
+    g_output_stream_write ((GOutputStream *)file_stream,
+			   history,
+			   sizeof (gchar) * strlen (history),
+			   NULL,
+			   &error);
+    if (error != NULL)
+      {
+	g_warning ("%s",error->message);
+	g_error_free (error);
+	return false;
+      }
+     
+    g_output_stream_close ((GOutputStream *)file_stream,
+					   NULL,
+					   &error);
+     if (error != NULL)
+      {
+	g_warning ("%s",error->message);
+	g_error_free (error);
+	return false;
+      }
+
+     g_object_unref(file_stream);
+     return true;
   }
 
   //----------- API -----------------------------
