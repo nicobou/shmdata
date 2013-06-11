@@ -181,11 +181,11 @@ namespace switcher
     return TRUE;
   }
 
-  void
+  bool
   CustomPropertyHelper::notify_property_changed (GParamSpec *pspec)
   {
-    GObjectWrapper::notify_property_changed (gobject_->get_gobject (),
-					     pspec);
+    return GObjectWrapper::notify_property_changed (gobject_->get_gobject (),
+						    pspec);
   }
 
 }

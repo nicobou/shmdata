@@ -43,7 +43,7 @@ namespace switcher
     GObject *get_gobject ();
 
     //---------- properties
-    static void notify_property_changed (GObject *object, GParamSpec *pspec);
+    static bool notify_property_changed (GObject *object, GParamSpec *pspec);
     //user data for set and get methods
     void property_set_user_data (std::string nickname, void *user_data);
     void *property_get_user_data (std::string nickname);

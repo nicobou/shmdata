@@ -42,7 +42,8 @@ namespace switcher
   private:
     GstElement *fakesink_;
     gsize num_bytes_since_last_update_;
-    guint update_byterate_id_; 
+    //guint update_byterate_id_; 
+    GSource *update_byterate_source_;
     gint byte_rate_;
     gchar *string_caps_;
     gboolean set_string_caps_;

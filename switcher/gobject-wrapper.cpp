@@ -101,10 +101,13 @@ namespace switcher
     
   }
 
-  void 
+  bool 
   GObjectWrapper::notify_property_changed (GObject *object, GParamSpec *pspec)
   {
+    if (!G_IS_OBJECT (object))
+      return false;
     g_object_notify_by_pspec (object, pspec);
+    return true;
   }
 
   void

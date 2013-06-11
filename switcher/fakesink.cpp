@@ -29,12 +29,8 @@ namespace switcher
   
   FakeSink::~FakeSink ()
   {
-    
-    GSource *source = g_main_context_find_source_by_id (get_g_main_context (),
-							update_byterate_id_);
-    if (source != NULL)
-      g_source_destroy (source);
-    g_debug ("~fakesink");
+    if (update_byterate_source_ != NULL)
+	g_source_destroy (update_byterate_source_);
     GstUtils::clean_element (fakesink_);
     g_free (string_caps_);
   }
@@ -78,10 +74,13 @@ namespace switcher
      				"byte-rate");
     
      
-    update_byterate_id_ = GstUtils::g_timeout_add_to_context (1000, 
-     							      update_byte_rate, 
-     							      this,
-     							      get_g_main_context ());
+    guint update_byterate_id = GstUtils::g_timeout_add_to_context (1000, 
+								   update_byte_rate, 
+								   this,
+								   get_g_main_context ());
+    
+    update_byterate_source_ = g_main_context_find_source_by_id (get_g_main_context (),
+								update_byterate_id);;
     
     caps_spec_ = 
       props_->make_string_property ("caps", 
