@@ -308,15 +308,12 @@ shmdata_base_writer_set_path (shmdata_base_writer_t * writer,
   if (g_file_query_exists (shmfile, NULL))
     {
       g_object_unref (shmfile);
-      g_critical ("file %s exists, could be a writer or a file to delete",
+      g_debug ("file %s exists, could be a writer or a file to delete",
 		  socket_path);
-      g_object_unref (shmfile);
       return FALSE; 
     }
-    g_object_unref (shmfile);
-
-    writer->socket_path_ = g_strdup (socket_path);;
-  
+  g_object_unref (shmfile);
+  writer->socket_path_ = g_strdup (socket_path);;
   return TRUE;
 }
 
