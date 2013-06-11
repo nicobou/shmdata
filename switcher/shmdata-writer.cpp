@@ -28,42 +28,21 @@ namespace switcher
   {
     path_ = "";
     json_description_.reset (new JSONBuilder());
-    //writer_caps_ = NULL;
-    //on_caps_cb_ = NULL;
+    tee_ = NULL;
+    queue_ = NULL;
+    fakesink_ = NULL;
   }
 
   ShmdataWriter::~ShmdataWriter()
   {
-    // if (writer_caps_ != NULL)
-    //   gst_object_unref (writer_caps_);
-
-    g_debug ("ShmdataWriter: cleaning elements %s", path_.c_str());
+    //g_debug ("ShmdataWriter: cleaning elements %s", path_.c_str());
     GstUtils::clean_element (tee_);
     GstUtils::clean_element (queue_);
     GstUtils::clean_element (fakesink_);
-   
-    g_debug ("ShmdataWriter: deleting %s", path_.c_str());
+    // g_debug ("ShmdataWriter: deleting %s", path_.c_str());
     shmdata_base_writer_close (writer_);
-
     g_debug ("ShmdataWriter: %s deleted", path_.c_str());
   }
-  
-
-  // void 
-  // ShmdataWriter::on_handoff_cb (GstElement* object,
-  // 				GstBuffer* buf,
-  // 				GstPad* pad,
-  // 				gpointer user_data)
-  // {
-  //   ShmdataWriter *context = static_cast <ShmdataWriter *> (user_data);
-
-  //   if (context->writer_caps_ == NULL)
-  //     {
-  // 	context->writer_caps_ =  gst_pad_get_negotiated_caps (pad);
-  // 	context->make_json_description ();
-  //     }
-  // }
-  
 
   //WARNING if the file exist it will be deleted
   bool 
@@ -90,6 +69,7 @@ namespace switcher
     //setting the writer
     shmdata_base_writer_set_path (writer_,name.c_str());
     path_ = name;
+    make_json_description ();
     return true;
   }
 
@@ -108,9 +88,6 @@ namespace switcher
     GstUtils::make_element ("queue", &queue_);
     GstUtils::make_element ("fakesink", &fakesink_);
     g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
-    // g_object_set (G_OBJECT(fakesink_),"signal-handoffs",TRUE,NULL);
-    // g_signal_connect(fakesink_, "handoff", (GCallback)ShmdataWriter::on_handoff_cb, this);
-    
     gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
 
     shmdata_base_writer_plug (writer_, bin, tee_);
@@ -121,7 +98,6 @@ namespace switcher
     GstUtils::sync_state_with_parent (tee_);
     GstUtils::sync_state_with_parent (queue_);
     GstUtils::sync_state_with_parent (fakesink_);
-    make_json_description ();
     g_debug ("shmdata writer plugged (%s)",path_.c_str());
   }
 
@@ -133,9 +109,7 @@ namespace switcher
     GstUtils::make_element ("queue", &queue_);
     GstUtils::make_element ("fakesink", &fakesink_);
     g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
-    // g_object_set (G_OBJECT(fakesink_),"signal-handoffs",TRUE,NULL);
-    // g_signal_connect(fakesink_, "handoff", (GCallback)on_handoff_cb, this);
-    
+ 
     gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
     
     shmdata_base_writer_plug (writer_, bin, tee_);
@@ -150,7 +124,6 @@ namespace switcher
     GstUtils::sync_state_with_parent (tee_);
     GstUtils::sync_state_with_parent (queue_);
     GstUtils::sync_state_with_parent (fakesink_);
-    make_json_description ();
     g_debug ("shmdata writer pad plugged (%s)",path_.c_str());
   }
 
