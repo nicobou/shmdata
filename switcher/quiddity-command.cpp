@@ -50,6 +50,7 @@ namespace switcher
     {get_signals_description,"get_signals_description"},
     {get_signals_description_by_class,"get_signals_description_by_class"},
     {has_method,"has_method"},
+    {invalid_command,"invalid_command"},
     {invoke,"invoke"},
     {list_property_subscribers,"list_property_subscribers"},
     {list_property_subscribers_json,"list_property_subscribers_json"},
@@ -141,4 +142,21 @@ namespace switcher
     json_builder_->end_object ();
     return json_builder_->get_root ();
   }
+
+  QuiddityCommand::command 
+  QuiddityCommand::get_id_from_string (const char *com)
+  {
+    std::map<int, const char *>::const_iterator it;
+    for (it = command_names_.begin(); it != command_names_.end(); ++it)
+      if (g_strcmp0 (it->second, com) == 0)
+	return (QuiddityCommand::command)it->first;
+    return invalid_command;
+  }
+
+  const char * 
+  QuiddityCommand::get_from_string_id (QuiddityCommand::command id)
+  {
+    return command_names_.at (id);
+  }
+
 }

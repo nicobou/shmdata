@@ -39,13 +39,38 @@ namespace switcher
     { 
     public: 
       typedef std::shared_ptr<QuiddityManager> ptr; 
+      typedef std::vector<QuiddityCommand::ptr> CommandHistory; 
+      typedef void (*PropCallback)(std::string subscriber_name,
+			       std::string quiddity_name,
+			       std::string property_name,
+			       std::string value,
+			       void *user_data);
+      typedef void (*SignalCallback)(std::string subscriber_name,
+				     std::string quiddity_name,
+				     std::string property_name,
+				     std::vector<std::string> params,
+				     void *user_data);
 
       static QuiddityManager::ptr make_manager ();//will get name "default"
       static QuiddityManager::ptr make_manager (std::string name);
       ~QuiddityManager(); 
       std::string get_name ();
+      void reboot ();
+
+      //history save and load
       bool save_command_history (const char *file_path);
-     
+      CommandHistory get_command_history_from_file (const char *file_path);
+      std::vector<std::string> get_property_subscribers_names (QuiddityManager::CommandHistory histo);
+      std::vector<std::string> get_signal_subscribers_names (QuiddityManager::CommandHistory histo);
+      void play_command_history (QuiddityManager::CommandHistory histo,
+				 std::map<std::string, 
+				 std::pair<QuiddityManager::PropCallback, 
+				 void *> > *prop_cb_data,
+				 std::map<std::string, 
+				 std::pair<QuiddityManager::SignalCallback, 
+				 void *> > *sig_cb_data);
+
+      //inspect
       std::vector<std::string> get_classes (); //know which quiddities can be created
       std::vector<std::string> get_quiddities (); //know instances
       // doc (json formatted) 
@@ -80,11 +105,7 @@ namespace switcher
 
       //property subscribtion
       bool make_property_subscriber (std::string subscriber_name,
-				     void (*callback)(std::string subscriber_name,
-						      std::string quiddity_name,
-						      std::string property_name,
-						      std::string value,
-						      void *user_data),
+				     QuiddityManager::PropCallback callback,
 				     void *user_data);
       bool remove_property_subscriber (std::string subscriber_name);
       bool subscribe_property (std::string subscriber_name,
@@ -160,11 +181,12 @@ namespace switcher
 						   std::string signal_name); 
     
       bool make_signal_subscriber (std::string subscriber_name,
-				   void (*callback)(std::string subscriber_name,
-						    std::string quiddity_name,
-						    std::string signal_name,
-						    std::vector<std::string> params,
-						    void *user_data),
+				   /* void (*callback)(std::string subscriber_name, */
+				   /* 		    std::string quiddity_name, */
+				   /* 		    std::string signal_name, */
+				   /* 		    std::vector<std::string> params, */
+				   /* 		    void *user_data) */
+				   QuiddityManager::SignalCallback callback,
 				   void *user_data);
       bool remove_signal_subscriber (std::string subscriber_name);
       bool subscribe_signal (std::string subscriber_name,
@@ -212,7 +234,8 @@ namespace switcher
       void invoke_in_gmainloop ();
 
       //history
-      std::vector<QuiddityCommand::ptr> command_history_;
+      //std::vector<QuiddityCommand::ptr> 
+      CommandHistory command_history_;
     }; 
 
 } // end of namespace 

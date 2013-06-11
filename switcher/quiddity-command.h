@@ -41,6 +41,7 @@ namespace switcher
 
     enum command 
     {
+      invalid_command = -1,
       auto_invoke = 0,
       create, 
       create_nick_named,
@@ -86,16 +87,21 @@ namespace switcher
     };
 
     QuiddityCommand ();
-    command name_;
+
+    command name_;//FIXME refactor into id_
+    //FIXME make following members private:
     std::vector<std::string> args_;
     std::vector<std::string> vector_arg_;
     std::vector<std::string> result_;
-    
+    std::vector<std::string> expected_result_;
+     
     void clear();
-    void set_name (command name);
+    void set_name (command id); //FIXME refactor into set_id
     void add_arg (std::string arg);
     void set_vector_arg (std::vector<std::string> vector_arg);
-    
+    static command get_id_from_string (const char *com);
+    static const char *get_from_string_id (QuiddityCommand::command id);
+
     JSONBuilder::Node get_json_root_node ();
 
   private:

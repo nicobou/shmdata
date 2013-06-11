@@ -64,7 +64,12 @@ namespace switcher
     return name_;
   }
 
-
+  void 
+  QuiddityManager::reboot ()
+  {
+    manager_impl_->reboot ();
+  }
+  
   void 
   QuiddityManager::command_lock ()
   {
@@ -81,6 +86,151 @@ namespace switcher
     g_mutex_unlock(seq_mutex_);
   }
 
+  void
+  QuiddityManager::play_command_history (QuiddityManager::CommandHistory histo,
+					 std::map<std::string, 
+						  std::pair<QuiddityManager::PropCallback, 
+							    void *> > *prop_cb_data,
+					 std::map<std::string, 
+						  std::pair<QuiddityManager::SignalCallback, 
+							    void *> > *sig_cb_data)
+  {
+    for (auto &it: histo)
+      {
+	command_lock ();
+	command_ = it;
+	invoke_in_gmainloop ();
+	//TODO test result consistency
+	command_unlock ();
+      }
+  }
+  
+  std::vector <std::string> 
+  QuiddityManager::get_property_subscribers_names (QuiddityManager::CommandHistory histo)
+  {
+    std::vector<std::string> res;
+    for (auto &it: histo)
+      if (it->name_ == QuiddityCommand::make_property_subscriber)
+	res.push_back (it->args_[0]);
+    return res; 
+  }
+
+  std::vector <std::string> 
+  QuiddityManager::get_signal_subscribers_names (QuiddityManager::CommandHistory histo)
+  {
+    std::vector<std::string> res;
+    for (auto &it: histo)
+      if (it->name_ == QuiddityCommand::make_signal_subscriber)
+	res.push_back (it->args_[0]);
+    return res; 
+  }
+
+  QuiddityManager::CommandHistory 
+  QuiddityManager::get_command_history_from_file (const char *file_path)
+  {
+
+    std::vector<QuiddityCommand::ptr> res;
+    JsonParser *parser = json_parser_new ();
+    GError *error = NULL;
+    json_parser_load_from_file (parser,
+				file_path,
+				&error);
+    if (error != NULL)
+      {
+	g_warning ("%s",error->message);
+	g_object_unref(parser);
+	g_error_free (error);
+	return res;
+      }
+    
+    JsonNode *root_node = json_parser_get_root (parser);
+    JsonReader *reader = json_reader_new (root_node);
+    if (!json_reader_read_member (reader, "history"))
+      {
+	g_object_unref(reader);
+	g_object_unref(parser);
+	g_debug ("QuiddityManager::replay_command_history, no \"history\" member found");
+	return res;
+      }
+
+    gint num_elements = json_reader_count_elements (reader);
+    int i;
+    for (i = 0; i < num_elements; i++)
+      {
+	json_reader_read_element (reader, i);
+	int j;
+	int num_elements;
+	
+	QuiddityCommand::ptr command;
+	command.reset (new QuiddityCommand ());
+
+	//command
+	json_reader_read_member (reader, "command");
+	//g_print ("command: %s\n", json_reader_get_string_value (reader));
+	command->set_name (QuiddityCommand::get_id_from_string(json_reader_get_string_value (reader)));
+	json_reader_end_member (reader);
+	//---
+	
+	//arguments
+	json_reader_read_member (reader, "arguments");
+	num_elements = json_reader_count_elements (reader);
+	for (j = 0; j< num_elements; j ++)
+	  {
+	    json_reader_read_element (reader, j);
+	    json_reader_read_member (reader, "value");
+	    //g_print ("arg: %s\n", json_reader_get_string_value (reader));
+	    command->add_arg (json_reader_get_string_value (reader));
+	    json_reader_end_member (reader);
+	    json_reader_end_element (reader);
+	  }
+	json_reader_end_member (reader);
+	//---
+
+	//vector arguments
+	json_reader_read_member (reader, "vector argument");
+	num_elements = json_reader_count_elements (reader);
+	std::vector <std::string> string_vect_arg;
+	for (j = 0; j< num_elements; j ++)
+	  {
+	    json_reader_read_element (reader, j);
+	    json_reader_read_member (reader, "value");
+	    //g_print ("vector arg: %s\n", json_reader_get_string_value (reader));
+	    string_vect_arg.push_back (json_reader_get_string_value (reader));
+	    json_reader_end_member (reader);
+	    json_reader_end_element (reader);
+	  }
+	json_reader_end_member (reader);
+	command->set_vector_arg (string_vect_arg);
+	//---
+
+	//vector arguments
+	json_reader_read_member (reader, "results");
+	num_elements = json_reader_count_elements (reader);
+	std::vector <std::string> expected_result;
+	for (j = 0; j< num_elements; j ++)
+	  {
+	    json_reader_read_element (reader, j);
+	    json_reader_read_member (reader, "value");
+	    //g_print ("results arg: %s\n", json_reader_get_string_value (reader));
+	    expected_result.push_back (json_reader_get_string_value (reader));
+	    json_reader_end_member (reader);
+	    json_reader_end_element (reader);
+	  }
+	json_reader_end_member (reader);
+	command->expected_result_ = expected_result;
+	//---
+
+	json_reader_end_element (reader);
+	//g_print ("-----------------------\n");
+	res.push_back (command);
+      }
+    json_reader_end_element (reader);
+
+    
+    g_object_unref(reader);
+    g_object_unref(parser);
+    return res;
+  }
 
   bool
   QuiddityManager::save_command_history (const char *file_path)
@@ -205,12 +355,8 @@ namespace switcher
 
   bool 
   QuiddityManager::make_property_subscriber (std::string subscriber_name,
-				    void (*callback)(std::string subscriber_name,
-						     std::string quiddity_name,
-						     std::string property_name,
-						     std::string value,
-						     void *user_data),
-				    void *user_data)
+					     QuiddityManager::PropCallback callback,
+					     void *user_data)
   {
      command_lock ();
      command_->set_name (QuiddityCommand::make_property_subscriber);
@@ -470,19 +616,15 @@ namespace switcher
 
   bool 
   QuiddityManager::make_signal_subscriber (std::string subscriber_name,
-					   void (*callback)(std::string subscriber_name,
-							    std::string quiddity_name,
-							    std::string property_name,
-							    std::vector<std::string> params,
-							    void *user_data),
+					   QuiddityManager::SignalCallback callback,
 					   void *user_data)
   {
     command_lock ();
     command_->set_name (QuiddityCommand::make_signal_subscriber);
     command_->add_arg (subscriber_name);
-     bool res = manager_impl_->make_signal_subscriber (subscriber_name, callback, user_data);
-     if (res)
-       command_->result_.push_back("true");
+    bool res = manager_impl_->make_signal_subscriber (subscriber_name, callback, user_data);
+    if (res)
+      command_->result_.push_back("true");
      else
        command_->result_.push_back("false");
      command_unlock ();
@@ -876,7 +1018,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	  context->command_->result_.push_back ("false");
 	break;
       default:
-	g_error("unknown command");
+	g_warning("unknown command, cannot launch %s", QuiddityCommand::get_from_string_id(context->command_->name_));
       }
     g_cond_signal (context->exec_cond_);
     g_mutex_unlock (context->exec_mutex_);

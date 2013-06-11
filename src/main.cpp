@@ -18,6 +18,7 @@
  */
 
 #include "switcher/quiddity-manager.h"
+#include <vector>
 #include <iostream>
 #include <signal.h>
 #include <time.h>
@@ -220,6 +221,28 @@ main (int argc,
      arg.push_back ("pipeline0");
      manager->auto_invoke ("set_runtime",arg);
     
+     // g_print ("---- histo testing ------ \n");
+     // manager->save_command_history ("trup.switcher");
+
+     // manager->reboot ();
+     // g_print ("reboot done \n");
+     
+     // switcher::QuiddityManager::CommandHistory histo = 
+     //   manager->get_command_history_from_file ("trup.switcher");
+
+     // std::vector <std::string> prop_subscriber_names = 
+     //   manager->get_property_subscribers_names (histo);
+     
+     // for (auto &it: prop_subscriber_names)
+     //   g_print ("prop sub %s\n", it.c_str ());
+     
+     // std::vector <std::string> signal_subscriber_names = 
+     // 	 manager->get_signal_subscribers_names (histo);
+
+     // for (auto &it: signal_subscriber_names)
+     //   g_print ("signal sub %s\n", it.c_str ());
+
+     // manager->play_command_history (histo, NULL, NULL); 
   }
 
 

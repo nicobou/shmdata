@@ -97,11 +97,22 @@ namespace switcher
     classes_doc_.reset (new JSONBuilder ());
     make_classes_doc ();
   }
-  
+
   QuiddityManager_Impl::~QuiddityManager_Impl()
   {
   }
-  
+
+  void 
+  QuiddityManager_Impl::reboot ()
+  {
+    quiddities_.clear ();
+    quiddities_nick_names_.clear ();
+    property_subscribers_.clear ();
+    signal_subscribers_.clear ();
+    remove_shmdata_sockets ();
+    reset_create_remove_hooks ();
+  }
+
   void
   QuiddityManager_Impl::remove_shmdata_sockets ()
   {

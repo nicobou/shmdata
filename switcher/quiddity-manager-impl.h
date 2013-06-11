@@ -50,6 +50,7 @@ namespace switcher
 
       static QuiddityManager_Impl::ptr make_manager ();//will get name "default"
       static QuiddityManager_Impl::ptr make_manager (std::string name);
+      void reboot ();
       ~QuiddityManager_Impl();
     
       //**** info about manager
@@ -63,7 +64,6 @@ namespace switcher
       std::string get_quiddities_description ();
       bool class_exists (std::string class_name);
       bool exists (std::string quiddity_name);
-
       
       //**** creation/remove/get
       std::string create (std::string quiddity_class);
@@ -77,7 +77,7 @@ namespace switcher
       bool set_created_hook (quiddity_created_hook hook, void *user_data);
       bool set_removed_hook (quiddity_removed_hook hook, void *user_data);
       void reset_create_remove_hooks ();
-
+      
       //**** properties
       //doc (json formatted)
       std::string get_properties_description (std::string quiddity_name);
