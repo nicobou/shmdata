@@ -30,12 +30,13 @@ namespace switcher
   bool
   SoapCtrlServer::init ()
   {
+    thread_ = NULL;
     port_ = 8080;
     soap_init(&soap_);
     //release port
     soap_.connect_flags = SO_LINGER; 
     soap_.accept_flags = SO_LINGER;
-    
+    soap_.accept_timeout =  100 * -1000; //100ms
     soap_.fget = SoapCtrlServer::http_get;
     
     srand(time(0));
@@ -165,8 +166,8 @@ namespace switcher
     soap_.user = (void *)this;//manager_.get ();//FIXME this should use the shared pointer, maybe giving this insteead of the manager
     quit_server_thread_ = false;
     service_ = new controlService (soap_);
-    SOAP_SOCKET m = service_->bind(NULL, port_, 100 /* BACKLOG */);
-    if (!soap_valid_socket(m))
+    socket_ = service_->bind(NULL, port_, 100 /* BACKLOG */);
+    if (!soap_valid_socket(socket_))
 	service_->soap_print_fault(stderr);
     thread_ = g_thread_new ("SoapCtrlServer", GThreadFunc(server_thread), this);
   }
@@ -184,7 +185,14 @@ namespace switcher
   SoapCtrlServer::stop ()
   {
     quit_server_thread_ = true;
-    //g_thread_join (thread_);
+    if (thread_ != NULL)
+      g_thread_join (thread_);
+    thread_ = NULL;
+    soap_closesocket (socket_);
+    soap_destroy(service_);
+    soap_end(service_);
+    soap_done(service_);
+    delete service_;
   }
   
   gpointer
@@ -206,21 +214,23 @@ namespace switcher
 	  { if (context->service_->errnum)
 	      context->service_->soap_print_fault(stderr);
 	    else
-	      g_error("SOAP server timed out");	/* should really wait for threads to terminate, but 24hr timeout should be enough ... */
-	    break;
+	      {
+		//g_debug ("SOAP server timed out");
+	      }
 	  }
-	// g_debug ("client request %d accepted on socket %d, client IP is %d.%d.%d.%d", 
-	// 	    i, s, 
-	// 	    (int)(context->service_->ip>>24)&0xFF, 
-	// 	    (int)(context->service_->ip>>16)&0xFF, 
-	// 	    (int)(context->service_->ip>>8)&0xFF, 
-	// 	    (int)context->service_->ip&0xFF);
-	controlService *tcontrol = context->service_->copy();
-	tcontrol->serve();
-	delete tcontrol;
+	else
+	  {
+	    // g_debug ("client request %d accepted on socket %d, client IP is %d.%d.%d.%d", 
+	    // 	    i, s, 
+	    // 	    (int)(context->service_->ip>>24)&0xFF, 
+	    // 	    (int)(context->service_->ip>>16)&0xFF, 
+	    // 	    (int)(context->service_->ip>>8)&0xFF, 
+	    // 	    (int)context->service_->ip&0xFF);
+	    controlService *tcontrol = context->service_->copy();
+	    tcontrol->serve();
+	    delete tcontrol;
+	  }
       }
-    if (context->service_)
-      delete context->service_;
     return NULL;
   }
 
