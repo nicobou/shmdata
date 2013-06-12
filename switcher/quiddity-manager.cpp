@@ -21,6 +21,7 @@
 #include "quiddity.h" 
 #include "gst-utils.h"
 #include <string.h>
+#include <iostream> //to remove
 
 namespace switcher
 {
@@ -67,7 +68,12 @@ namespace switcher
   void 
   QuiddityManager::reboot ()
   {
-    manager_impl_->reboot ();
+    {
+      QuiddityManager_Impl::ptr manager;
+      manager_impl_.swap (manager);
+   }
+    command_history_.clear ();
+    manager_impl_ = QuiddityManager_Impl::make_manager (name_);
   }
   
   void 
@@ -88,20 +94,46 @@ namespace switcher
 
   void
   QuiddityManager::play_command_history (QuiddityManager::CommandHistory histo,
-					 std::map<std::string, 
-						  std::pair<QuiddityManager::PropCallback, 
-							    void *> > *prop_cb_data,
-					 std::map<std::string, 
-						  std::pair<QuiddityManager::SignalCallback, 
-							    void *> > *sig_cb_data)
+					 QuiddityManager::PropCallbackMap *prop_cb_data,
+					 QuiddityManager::SignalCallbackMap *sig_cb_data)
   {
     for (auto &it: histo)
       {
-	command_lock ();
-	command_ = it;
-	invoke_in_gmainloop ();
-	//TODO test result consistency
-	command_unlock ();
+	//g_print ("%s \n", QuiddityCommand::get_from_string_id (it->name_));
+	if (it->name_ == QuiddityCommand::make_property_subscriber)
+	  {
+	    if (prop_cb_data != NULL)
+	      {
+		QuiddityManager::PropCallbackMap::iterator prop_it = prop_cb_data->find (it->args_[0]);
+		if (prop_it != prop_cb_data->end ())
+		  make_property_subscriber (it->args_[0], prop_it->second.first, prop_it->second.second);
+		//g_print ("coucou prop***************\n");
+	      }
+	  }
+	else if (it->name_ == QuiddityCommand::make_signal_subscriber)
+	  {
+	    if (sig_cb_data != NULL)
+	      {
+		QuiddityManager::SignalCallbackMap::iterator sig_it = sig_cb_data->find (it->args_[0]);
+		if (sig_it != sig_cb_data->end ())
+		  make_signal_subscriber (it->args_[0], sig_it->second.first, sig_it->second.second);
+		//g_print ("coucou signal ***************\n");
+	      }
+	  }
+	else
+	  {
+	    command_lock ();
+	    command_ = it;
+	    
+	    //g_print ("main loop %s \n", QuiddityCommand::get_from_string_id (it->name_));
+	    
+	    invoke_in_gmainloop ();
+	    //TODO test result consistency
+	    command_unlock ();
+	    if (command_->name_ == QuiddityCommand::create 
+		|| command_->name_ == QuiddityCommand::create_nick_named)
+	      auto_init (command_->result_[0]);
+	  }
       }
   }
   
@@ -391,19 +423,28 @@ namespace switcher
 				       std::string quiddity_name,
 				       std::string property_name)
   {
-    command_lock ();
-    command_->set_name (QuiddityCommand::subscribe_property);
-    command_->add_arg (subscriber_name);
-    command_->add_arg (quiddity_name);
-    command_->add_arg (property_name);
+    std::string res = seq_invoke (QuiddityCommand::subscribe_property,
+				  subscriber_name.c_str (),
+				  quiddity_name.c_str (),
+				  property_name.c_str (),
+				  NULL);
+    if (g_strcmp0 (res.c_str (), "true") == 0)
+      return true;
+    return false;
+
+    // command_lock ();
+    // command_->set_name (QuiddityCommand::subscribe_property);
+    // command_->add_arg (subscriber_name);
+    // command_->add_arg (quiddity_name);
+    // command_->add_arg (property_name);
  
-    bool res = manager_impl_->subscribe_property (subscriber_name, quiddity_name, property_name);
-    if (res)
-      command_->result_.push_back("true");
-    else
-      command_->result_.push_back("false");
-    command_unlock ();
-    return res;
+    // bool res = manager_impl_->subscribe_property (subscriber_name, quiddity_name, property_name);
+    // if (res)
+    //   command_->result_.push_back("true");
+    // else
+    //   command_->result_.push_back("false");
+    // command_unlock ();
+    // return res;
   }
   
   bool 
@@ -411,18 +452,26 @@ namespace switcher
 					 std::string quiddity_name,
 					 std::string property_name)
   {
-    command_lock ();
-    command_->set_name (QuiddityCommand::unsubscribe_property);
-    command_->add_arg (subscriber_name);
-    command_->add_arg (quiddity_name);
-    command_->add_arg (property_name);
-     bool res = manager_impl_->unsubscribe_property (subscriber_name, quiddity_name, property_name);
-    if (res)
-      command_->result_.push_back("true");
-    else
-      command_->result_.push_back("false");
-    command_unlock ();
-    return res;
+    std::string res = seq_invoke (QuiddityCommand::unsubscribe_property,
+				  subscriber_name.c_str (),
+				  quiddity_name.c_str (),
+				  property_name.c_str (),
+				  NULL);
+    if (g_strcmp0 (res.c_str (), "true") == 0)
+      return true;
+    return false;
+    // command_lock ();
+    // command_->set_name (QuiddityCommand::unsubscribe_property);
+    // command_->add_arg (subscriber_name);
+    // command_->add_arg (quiddity_name);
+    // command_->add_arg (property_name);
+    //  bool res = manager_impl_->unsubscribe_property (subscriber_name, quiddity_name, property_name);
+    // if (res)
+    //   command_->result_.push_back("true");
+    // else
+    //   command_->result_.push_back("false");
+    // command_unlock ();
+    // return res;
   }
   
   std::vector<std::string> 
@@ -550,16 +599,14 @@ namespace switcher
   QuiddityManager::auto_invoke (std::string method_name,
 				std::vector<std::string> args)
   {
-    command_lock ();
-    command_->set_name (QuiddityCommand::auto_invoke);
-    command_->add_arg (method_name);
-    command_->set_vector_arg (args);
-    auto_invoke_method_name_ = method_name;
-    auto_invoke_args_ = args;
-    command_->result_.push_back ("true");
-    command_unlock ();
-   
-    return true;
+     command_lock ();
+     command_->set_name (QuiddityCommand::auto_invoke);
+     command_->add_arg (method_name);
+     command_->set_vector_arg (args);
+     invoke_in_gmainloop ();
+     command_->result_.push_back ("true");
+     command_unlock ();
+     return true;
   }
 
   std::string
@@ -652,19 +699,14 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 				     std::string quiddity_name,
 				     std::string signal_name)
   {
-    command_lock ();
-    command_->set_name (QuiddityCommand::subscribe_signal);
-    command_->add_arg (subscriber_name);
-    command_->add_arg (quiddity_name);
-    command_->add_arg (signal_name);
- 
-    bool res = manager_impl_->subscribe_signal (subscriber_name, quiddity_name, signal_name);
-    if (res)
-      command_->result_.push_back("true");
-    else
-      command_->result_.push_back("false");
-    command_unlock ();
-    return res;
+    std::string res = seq_invoke (QuiddityCommand::subscribe_signal,
+				  subscriber_name.c_str (),
+				  quiddity_name.c_str (),
+				  signal_name.c_str (),
+				  NULL);
+    if (g_strcmp0 (res.c_str (), "true") == 0)
+      return true;
+    return false;
   }
   
   bool 
@@ -672,18 +714,30 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 				       std::string quiddity_name,
 				       std::string signal_name)
   {
-    command_lock ();
-    command_->set_name (QuiddityCommand::unsubscribe_signal);
-    command_->add_arg (subscriber_name);
-    command_->add_arg (quiddity_name);
-    command_->add_arg (signal_name);
-    bool res = manager_impl_->unsubscribe_signal (subscriber_name, quiddity_name, signal_name);
-    if (res)
-      command_->result_.push_back("true");
-    else
-      command_->result_.push_back("false");
-    command_unlock ();
-    return res;
+    std::string res = seq_invoke (QuiddityCommand::unsubscribe_signal,
+				  subscriber_name.c_str (),
+				  quiddity_name.c_str (),
+				  signal_name.c_str (),
+				  NULL);
+    if (g_strcmp0 (res.c_str (), "true") == 0)
+      return true;
+    return false;
+ 
+
+    // command_lock ();
+    // command_->set_name (QuiddityCommand::unsubscribe_signal);
+    // command_->add_arg (subscriber_name);
+    // command_->add_arg (quiddity_name);
+    // command_->add_arg (signal_name);
+
+    // bool res = manager_impl_->unsubscribe_signal (subscriber_name, quiddity_name, signal_name);
+    //  if (res)
+    //    command_->result_.push_back("true");
+    //  else
+    //    command_->result_.push_back("false");
+    
+    // command_unlock ();
+    // return res;
   }
   
   std::vector<std::string> 
@@ -867,7 +921,6 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   {
     return seq_invoke (QuiddityCommand::get_quiddities_description,
 		       NULL);
-    //    return manager_impl_->get_quiddities_description ();
   }
 
   std::string 
@@ -876,7 +929,6 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     return seq_invoke (QuiddityCommand::get_quiddity_description,
 		       quiddity_name.c_str (),
 		       NULL);
-    //return manager_impl_->get_quiddity_description (quiddity_name);
   }
 
  
@@ -968,9 +1020,11 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	break;
       case QuiddityCommand::create:
 	context->command_->result_.push_back (context->manager_impl_->create (context->command_->args_[0]));
+	//context->auto_init (context->command_->result_[0]);
 	break;
       case QuiddityCommand::create_nick_named:
 	context->command_->result_.push_back (context->manager_impl_->create (context->command_->args_[0], context->command_->args_[1]));
+	//context->auto_init (context->command_->result_[0]);
 	break;
       case QuiddityCommand::remove:
 	if (context->manager_impl_->remove (context->command_->args_[0]))
@@ -1009,16 +1063,57 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	context->command_->result_.push_back (context->manager_impl_->get_methods_description_by_class (context->command_->args_[0]));
 	break;
       case QuiddityCommand::get_method_description_by_class:
-	context->command_->result_.push_back (context->manager_impl_->get_method_description_by_class (context->command_->args_[0], context->command_->args_[1]));
+	context->command_->result_.push_back (context->manager_impl_->get_method_description_by_class (context->command_->args_[0], 
+												       context->command_->args_[1]));
 	break;
       case QuiddityCommand::invoke:
-	if (context->manager_impl_->invoke (context->command_->args_[0], context->command_->args_[1], context->command_->vector_arg_))
+	if (context->manager_impl_->invoke (context->command_->args_[0], 
+					    context->command_->args_[1], 
+					    context->command_->vector_arg_))
 	  context->command_->result_.push_back ("true");
 	else
 	  context->command_->result_.push_back ("false");
 	break;
+      case QuiddityCommand::subscribe_signal:
+	if (context->manager_impl_->subscribe_signal (context->command_->args_[0], 
+						      context->command_->args_[1], 
+						      context->command_->args_[2]))
+	  context->command_->result_.push_back ("true");
+	else
+	  context->command_->result_.push_back ("false");
+	break;
+      case QuiddityCommand::unsubscribe_signal:
+	if (context->manager_impl_->unsubscribe_signal (context->command_->args_[0], 
+							context->command_->args_[1], 
+							context->command_->args_[2]))
+	  context->command_->result_.push_back ("true");
+	else
+	  context->command_->result_.push_back ("false");
+	break;
+      case QuiddityCommand::subscribe_property:
+	if (context->manager_impl_->subscribe_property (context->command_->args_[0], 
+							context->command_->args_[1], 
+							context->command_->args_[2]))
+	  context->command_->result_.push_back ("true");
+	else
+	  context->command_->result_.push_back ("false");
+	break;
+      case QuiddityCommand::unsubscribe_property:
+	if (context->manager_impl_->unsubscribe_property (context->command_->args_[0], 
+							  context->command_->args_[1], 
+							  context->command_->args_[2]))
+	  context->command_->result_.push_back ("true");
+	else
+	  context->command_->result_.push_back ("false");
+	break;
+      case QuiddityCommand::auto_invoke:
+	context->auto_invoke_method_name_ = context->command_->args_[0];
+	context->auto_invoke_args_ = context->command_->vector_arg_;
+	context->command_->result_.push_back ("true");
+	break;
       default:
-	g_warning("unknown command, cannot launch %s", QuiddityCommand::get_from_string_id(context->command_->name_));
+	g_print ("** unknown command, cannot launch %s\n", 
+		 QuiddityCommand::get_from_string_id(context->command_->name_));
       }
     g_cond_signal (context->exec_cond_);
     g_mutex_unlock (context->exec_mutex_);

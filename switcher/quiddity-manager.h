@@ -50,6 +50,12 @@ namespace switcher
 				     std::string property_name,
 				     std::vector<std::string> params,
 				     void *user_data);
+      typedef std::map<std::string, 
+	std::pair<QuiddityManager::PropCallback, 
+	void *> > PropCallbackMap;
+      typedef std::map<std::string, 
+	std::pair<QuiddityManager::SignalCallback, 
+	void *> > SignalCallbackMap;
 
       static QuiddityManager::ptr make_manager ();//will get name "default"
       static QuiddityManager::ptr make_manager (std::string name);
@@ -63,12 +69,8 @@ namespace switcher
       std::vector<std::string> get_property_subscribers_names (QuiddityManager::CommandHistory histo);
       std::vector<std::string> get_signal_subscribers_names (QuiddityManager::CommandHistory histo);
       void play_command_history (QuiddityManager::CommandHistory histo,
-				 std::map<std::string, 
-				 std::pair<QuiddityManager::PropCallback, 
-				 void *> > *prop_cb_data,
-				 std::map<std::string, 
-				 std::pair<QuiddityManager::SignalCallback, 
-				 void *> > *sig_cb_data);
+				 QuiddityManager::PropCallbackMap *prop_cb_data,
+				 QuiddityManager::SignalCallbackMap *sig_cb_data);
 
       //inspect
       std::vector<std::string> get_classes (); //know which quiddities can be created

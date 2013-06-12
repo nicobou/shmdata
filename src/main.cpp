@@ -196,7 +196,7 @@ main (int argc,
      
       // Create a runtime (pipeline0)
      //std::string runtime = 
-     manager->create ("runtime");
+     manager->create ("runtime","pipeline0");
      
     //make on-quiddity-created and on-quiddity-removed signals
      manager->create ("create_remove_spy", "create_remove_spy");
@@ -221,29 +221,39 @@ main (int argc,
      arg.push_back ("pipeline0");
      manager->auto_invoke ("set_runtime",arg);
     
-     // g_print ("---- histo testing ------ \n");
-     // manager->save_command_history ("trup.switcher");
+      // //g_print ("---- histo testing ------ \n");
+      // manager->save_command_history ("trup.switcher");
 
-     // manager->reboot ();
-     // g_print ("reboot done \n");
+      // manager->reboot ();
+
+      // // g_print ("--- %s\n",manager->get_quiddities_description ().c_str ());
+      // // // g_print ("reboot done \n");
+      // // manager->create ("SOAPcontrolServer", "soapserver");
+      // // manager->invoke ("soapserver", "set_port", port_arg);
+
      
-     // switcher::QuiddityManager::CommandHistory histo = 
-     //   manager->get_command_history_from_file ("trup.switcher");
+      // switcher::QuiddityManager::CommandHistory histo = 
+      //   manager->get_command_history_from_file ("trup.switcher");
 
-     // std::vector <std::string> prop_subscriber_names = 
-     //   manager->get_property_subscribers_names (histo);
+      // // // std::vector <std::string> prop_subscriber_names = 
+      // // //   manager->get_property_subscribers_names (histo);
      
-     // for (auto &it: prop_subscriber_names)
-     //   g_print ("prop sub %s\n", it.c_str ());
+      // // // // for (auto &it: prop_subscriber_names)
+      // // // //   g_print ("prop sub %s\n", it.c_str ());
      
-     // std::vector <std::string> signal_subscriber_names = 
-     // 	 manager->get_signal_subscribers_names (histo);
+      // // // std::vector <std::string> signal_subscriber_names = 
+      // // //   manager->get_signal_subscribers_names (histo);
 
-     // for (auto &it: signal_subscriber_names)
-     //   g_print ("signal sub %s\n", it.c_str ());
-
-     // manager->play_command_history (histo, NULL, NULL); 
-  }
+      // // // for (auto &it: signal_subscriber_names)
+      // // //   g_print ("signal sub %s\n", it.c_str ());
+     
+      // switcher::QuiddityManager::PropCallbackMap prop_cb_data;
+      // prop_cb_data ["log_sub"] = std::make_pair (logger_cb, (void *)NULL);
+      // switcher::QuiddityManager::SignalCallbackMap sig_cb_data;
+      // sig_cb_data["create_remove_subscriber"] = std::make_pair (quiddity_created_removed_cb, (void *)NULL);
+      // manager->play_command_history (histo, &prop_cb_data, &sig_cb_data); 
+      // //g_print ("--- %s\n",manager->get_quiddities_description ().c_str ());
+ }
 
 
   //waiting for end of life

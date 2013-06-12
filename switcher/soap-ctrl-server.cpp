@@ -189,9 +189,9 @@ namespace switcher
       g_thread_join (thread_);
     thread_ = NULL;
     soap_closesocket (socket_);
-    soap_destroy(service_);
-    soap_end(service_);
-    soap_done(service_);
+    soap_destroy(&soap_);
+    soap_end(&soap_);
+    soap_done(&soap_);
     delete service_;
   }
   
@@ -227,6 +227,8 @@ namespace switcher
 	    // 	    (int)(context->service_->ip>>8)&0xFF, 
 	    // 	    (int)context->service_->ip&0xFF);
 	    controlService *tcontrol = context->service_->copy();
+	    if (context->service_->errnum)
+	      context->service_->soap_print_fault(stderr);
 	    tcontrol->serve();
 	    delete tcontrol;
 	  }

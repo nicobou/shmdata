@@ -50,7 +50,7 @@ namespace switcher
 
       static QuiddityManager_Impl::ptr make_manager ();//will get name "default"
       static QuiddityManager_Impl::ptr make_manager (std::string name);
-      void reboot ();
+      //void reboot ();
       ~QuiddityManager_Impl();
     
       //**** info about manager

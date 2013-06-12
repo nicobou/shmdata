@@ -100,18 +100,22 @@ namespace switcher
 
   QuiddityManager_Impl::~QuiddityManager_Impl()
   {
+    //g_print ("quit !\n");
+    g_main_loop_quit (mainloop_);
+    g_main_context_unref (main_context_);
+    
   }
 
-  void 
-  QuiddityManager_Impl::reboot ()
-  {
-    quiddities_.clear ();
-    quiddities_nick_names_.clear ();
-    property_subscribers_.clear ();
-    signal_subscribers_.clear ();
-    remove_shmdata_sockets ();
-    reset_create_remove_hooks ();
-  }
+  // void 
+  // QuiddityManager_Impl::reboot ()
+  // {
+  //   quiddities_.clear ();
+  //   quiddities_nick_names_.clear ();
+  //   property_subscribers_.clear ();
+  //   signal_subscribers_.clear ();
+  //   remove_shmdata_sockets ();
+  //   reset_create_remove_hooks ();
+  // }
 
   void
   QuiddityManager_Impl::remove_shmdata_sockets ()
