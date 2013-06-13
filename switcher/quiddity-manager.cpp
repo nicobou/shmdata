@@ -52,7 +52,8 @@ namespace switcher
   {
     init_command_sync ();
     manager_impl_ = QuiddityManager_Impl::make_manager (name);
-  }
+    reset_command_history (false);
+ }
 
   QuiddityManager::~QuiddityManager()
   {
@@ -72,8 +73,24 @@ namespace switcher
       QuiddityManager_Impl::ptr manager;
       manager_impl_.swap (manager);
    }
-    command_history_.clear ();
+    reset_command_history (false);
     manager_impl_ = QuiddityManager_Impl::make_manager (name_);
+  }
+
+  void
+  QuiddityManager::reset_command_history (bool remove_created_quiddities)
+  {
+    if (remove_created_quiddities)
+      {
+	for (auto &it: command_history_)
+	  {
+	    if (g_str_has_prefix (QuiddityCommand::get_string_from_id (it->name_),
+				  "create"))
+		remove (it->result_[0]);
+	  }
+      }
+    history_begin_time_ = g_get_monotonic_time ();
+    command_history_.clear ();
   }
   
   void 
@@ -81,6 +98,8 @@ namespace switcher
   {
     g_mutex_lock (seq_mutex_);
     command_.reset (new QuiddityCommand ());
+    gint64 cur_time = g_get_monotonic_time ();
+    command_->time_ = cur_time - history_begin_time_;
   }
 
   void 
@@ -97,9 +116,10 @@ namespace switcher
 					 QuiddityManager::PropCallbackMap *prop_cb_data,
 					 QuiddityManager::SignalCallbackMap *sig_cb_data)
   {
+
+    
     for (auto &it: histo)
       {
-	//g_print ("%s \n", QuiddityCommand::get_from_string_id (it->name_));
 	if (it->name_ == QuiddityCommand::make_property_subscriber)
 	  {
 	    if (prop_cb_data != NULL)
@@ -107,7 +127,6 @@ namespace switcher
 		QuiddityManager::PropCallbackMap::iterator prop_it = prop_cb_data->find (it->args_[0]);
 		if (prop_it != prop_cb_data->end ())
 		  make_property_subscriber (it->args_[0], prop_it->second.first, prop_it->second.second);
-		//g_print ("coucou prop***************\n");
 	      }
 	  }
 	else if (it->name_ == QuiddityCommand::make_signal_subscriber)
@@ -117,15 +136,12 @@ namespace switcher
 		QuiddityManager::SignalCallbackMap::iterator sig_it = sig_cb_data->find (it->args_[0]);
 		if (sig_it != sig_cb_data->end ())
 		  make_signal_subscriber (it->args_[0], sig_it->second.first, sig_it->second.second);
-		//g_print ("coucou signal ***************\n");
 	      }
 	  }
 	else
 	  {
 	    command_lock ();
 	    command_ = it;
-	    
-	    //g_print ("main loop %s \n", QuiddityCommand::get_from_string_id (it->name_));
 	    
 	    invoke_in_gmainloop ();
 	    //TODO test result consistency
@@ -190,75 +206,10 @@ namespace switcher
     for (i = 0; i < num_elements; i++)
       {
 	json_reader_read_element (reader, i);
-	int j;
-	int num_elements;
-	
-	QuiddityCommand::ptr command;
-	command.reset (new QuiddityCommand ());
-
-	//command
-	json_reader_read_member (reader, "command");
-	//g_print ("command: %s\n", json_reader_get_string_value (reader));
-	command->set_name (QuiddityCommand::get_id_from_string(json_reader_get_string_value (reader)));
-	json_reader_end_member (reader);
-	//---
-	
-	//arguments
-	json_reader_read_member (reader, "arguments");
-	num_elements = json_reader_count_elements (reader);
-	for (j = 0; j< num_elements; j ++)
-	  {
-	    json_reader_read_element (reader, j);
-	    json_reader_read_member (reader, "value");
-	    //g_print ("arg: %s\n", json_reader_get_string_value (reader));
-	    command->add_arg (json_reader_get_string_value (reader));
-	    json_reader_end_member (reader);
-	    json_reader_end_element (reader);
-	  }
-	json_reader_end_member (reader);
-	//---
-
-	//vector arguments
-	json_reader_read_member (reader, "vector argument");
-	num_elements = json_reader_count_elements (reader);
-	std::vector <std::string> string_vect_arg;
-	for (j = 0; j< num_elements; j ++)
-	  {
-	    json_reader_read_element (reader, j);
-	    json_reader_read_member (reader, "value");
-	    //g_print ("vector arg: %s\n", json_reader_get_string_value (reader));
-	    string_vect_arg.push_back (json_reader_get_string_value (reader));
-	    json_reader_end_member (reader);
-	    json_reader_end_element (reader);
-	  }
-	json_reader_end_member (reader);
-	command->set_vector_arg (string_vect_arg);
-	//---
-
-	//vector arguments
-	json_reader_read_member (reader, "results");
-	num_elements = json_reader_count_elements (reader);
-	std::vector <std::string> expected_result;
-	for (j = 0; j< num_elements; j ++)
-	  {
-	    json_reader_read_element (reader, j);
-	    json_reader_read_member (reader, "value");
-	    //g_print ("results arg: %s\n", json_reader_get_string_value (reader));
-	    expected_result.push_back (json_reader_get_string_value (reader));
-	    json_reader_end_member (reader);
-	    json_reader_end_element (reader);
-	  }
-	json_reader_end_member (reader);
-	command->expected_result_ = expected_result;
-	//---
-
-	json_reader_end_element (reader);
-	//g_print ("-----------------------\n");
-	res.push_back (command);
+	res.push_back (QuiddityCommand::parse_command_from_json_reader (reader));
       }
     json_reader_end_element (reader);
-
-    
+   
     g_object_unref(reader);
     g_object_unref(parser);
     return res;
@@ -292,16 +243,18 @@ namespace switcher
     builder->begin_array ();
 
     for (auto &it: command_history_)
-      builder->add_node_value (it->get_json_root_node ());
+	builder->add_node_value (it->get_json_root_node ());
     builder->end_array ();
     builder->end_object ();
     
-    const gchar *history = builder->get_string(true).c_str ();
+    gchar *history = g_strdup (builder->get_string(true).c_str ());
+
     g_output_stream_write ((GOutputStream *)file_stream,
 			   history,
 			   sizeof (gchar) * strlen (history),
 			   NULL,
 			   &error);
+    g_free (history);
     if (error != NULL)
       {
 	g_warning ("%s",error->message);
@@ -595,20 +548,6 @@ namespace switcher
       return false;
   } 
   
-  bool
-  QuiddityManager::auto_invoke (std::string method_name,
-				std::vector<std::string> args)
-  {
-     command_lock ();
-     command_->set_name (QuiddityCommand::auto_invoke);
-     command_->add_arg (method_name);
-     command_->set_vector_arg (args);
-     invoke_in_gmainloop ();
-     command_->result_.push_back ("true");
-     command_unlock ();
-     return true;
-  }
-
   std::string
   QuiddityManager::get_methods_description (std::string quiddity_name)
   {
@@ -842,16 +781,14 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   void 
   QuiddityManager::auto_init (std::string quiddity_name)
   {
+
     if (!manager_impl_->exists (quiddity_name))
       return;
     Quiddity::ptr quidd = manager_impl_->get_quiddity (quiddity_name);
     QuiddityManagerWrapper::ptr wrapper = std::dynamic_pointer_cast<QuiddityManagerWrapper> (quidd);
     if (wrapper)
       wrapper->set_quiddity_manager (shared_from_this());
-    
-    if (!auto_invoke_method_name_.empty ())
-	if (quidd->has_method (auto_invoke_method_name_))
-	  invoke (quidd->get_nick_name (), auto_invoke_method_name_,auto_invoke_args_);
+   
   }
   
   std::string
@@ -867,7 +804,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   std::string
   QuiddityManager::create (std::string quiddity_class, std::string nick_name)
   {
-    std::string res= seq_invoke (QuiddityCommand::create_nick_named, 
+    std::string res = seq_invoke (QuiddityCommand::create_nick_named, 
 				 quiddity_class.c_str(), 
 				 nick_name.c_str(), 
 				 NULL);
@@ -1020,11 +957,9 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	break;
       case QuiddityCommand::create:
 	context->command_->result_.push_back (context->manager_impl_->create (context->command_->args_[0]));
-	//context->auto_init (context->command_->result_[0]);
 	break;
       case QuiddityCommand::create_nick_named:
 	context->command_->result_.push_back (context->manager_impl_->create (context->command_->args_[0], context->command_->args_[1]));
-	//context->auto_init (context->command_->result_[0]);
 	break;
       case QuiddityCommand::remove:
 	if (context->manager_impl_->remove (context->command_->args_[0]))
@@ -1106,14 +1041,9 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	else
 	  context->command_->result_.push_back ("false");
 	break;
-      case QuiddityCommand::auto_invoke:
-	context->auto_invoke_method_name_ = context->command_->args_[0];
-	context->auto_invoke_args_ = context->command_->vector_arg_;
-	context->command_->result_.push_back ("true");
-	break;
       default:
-	g_print ("** unknown command, cannot launch %s\n", 
-		 QuiddityCommand::get_from_string_id(context->command_->name_));
+	g_debug ("** unknown command, cannot launch %s\n", 
+		 QuiddityCommand::get_string_from_id(context->command_->name_));
       }
     g_cond_signal (context->exec_cond_);
     g_mutex_unlock (context->exec_mutex_);

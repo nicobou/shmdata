@@ -257,8 +257,27 @@ namespace switcher
   }
 
   void 
-  Signal::signal_emit (const gchar *unused_string, va_list  var_args)
+  Signal::signal_emit (/*GMainContext *context,*/ const gchar *unused_string, va_list  var_args)
   {
     g_signal_emit_valist (object_, id_, 0, var_args);
+    // EmitArgs *args = new EmitArgs;
+    // args->object_ = object_;
+    // args->id_ = id_;
+    // va_copy (args->var_args_, var_args);
+    // GstUtils::g_idle_add_full_with_context (context, 
+    // 					    G_PRIORITY_DEFAULT_IDLE,
+    // 					    GSourceFunc (signal_emit_in_main_loop),
+    // 					    (gpointer)args,
+    // 					    NULL);
   }  
+  
+  // gboolean 
+  // Signal::signal_emit_in_main_loop (gpointer user_data)
+  // {
+  //   EmitArgs *args = static_cast <EmitArgs *> (user_data);
+  //   //args->object_;args->id_;args->var_args_;
+  //   g_signal_emit_valist (args->object_, args->id_, 0, args->var_args_);
+  //   delete args;
+  //   return FALSE;
+  // }
 }

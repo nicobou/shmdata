@@ -428,16 +428,15 @@ namespace switcher
   Quiddity::signal_emit (const std::string signal_name, 
 			 ...)
   {
-   
     if (signals_.find (signal_name) == signals_.end())
 	return;
     Signal::ptr signal = signals_[signal_name];
     va_list var_args;
     va_start (var_args, signal_name);
-    // va_list va_cp;
-    // va_copy (va_cp, var_args);
-    // signal->signal_emit (signal_name.c_str (), va_cp); 
-    signal->signal_emit (signal_name.c_str (), var_args); 
+     // va_list va_cp;
+     // va_copy (va_cp, var_args);
+     // signal->signal_emit (get_g_main_context (), signal_name.c_str (), va_cp); 
+    signal->signal_emit (/*get_g_main_context (), */signal_name.c_str (), var_args); 
     va_end (var_args);
   }
 

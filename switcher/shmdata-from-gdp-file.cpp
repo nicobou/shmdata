@@ -134,7 +134,6 @@ namespace switcher
   {
     ShmdataFromGDPFile *context = static_cast<ShmdataFromGDPFile *> (user_data);
 
-    //    g_print ("coucoucoucouc +++++++++++++++++++++++++ \n");
     if (playing)
       context->make_players ();
     else

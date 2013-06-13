@@ -53,7 +53,8 @@ namespace switcher
     bool subscribe (OnEmittedCallback cb, void *user_data);
     bool unsubscribe (OnEmittedCallback cb, void *user_data);
  
-    void signal_emit (const gchar *used_string, va_list  var_args);
+    void signal_emit (const gchar *used_string, 
+		      va_list  var_args);
 
     //helper methods, use NULL sentinel
     //do no describe the first gobject (first signal arg)
@@ -78,6 +79,13 @@ namespace switcher
 				       guint n_param_values,
 				       const GValue *param_values,
 				       gpointer user_data);
+
+    /* static gboolean signal_emit_in_main_loop (gpointer user_data); */
+    /* typedef struct { */
+    /*   GObject *object_; */
+    /*   guint id_; */
+    /*   va_list var_args_; */
+    /* } EmitArgs; */
   }; 
   
 }  // end of namespace 

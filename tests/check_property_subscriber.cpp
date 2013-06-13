@@ -23,6 +23,29 @@
 
 static bool success;
 static char *user_string = "hello world";
+static switcher::QuiddityManager::ptr manager;
+
+gpointer
+set_runtime_invoker (gpointer name)
+{
+  if (manager->has_method ((char *)name, "set_runtime"))
+    manager->invoke_va ((char *)name, "set_runtime", "pipeline0", NULL);
+  g_free (name);
+  return NULL;
+}
+
+void 
+quiddity_created_removed_cb (std::string subscriber_name, 
+			     std::string quiddity_name, 
+			     std::string signal_name, 
+			     std::vector<std::string> params, 
+			     void *user_data)
+{
+  g_thread_create (set_runtime_invoker, 
+		   g_strdup (params[0].c_str ()),
+		   FALSE,
+		   NULL);
+}
 
 void 
 mon_property_cb(std::string subscriber_name, 
@@ -70,13 +93,12 @@ main (int argc,
   success = false;
   
   {
-    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
-    
+    manager = switcher::QuiddityManager::make_manager("test_manager");  
+    manager->create ("create_remove_spy", "create_remove_spy");
+    manager->make_signal_subscriber ("create_remove_subscriber", quiddity_created_removed_cb, NULL);
+    manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-created");
+
     manager->create ("runtime");
-    //setting auto_invoke for attaching to gst pipeline "pipeline0"
-    std::vector<std::string> arg;
-    arg.push_back ("pipeline0");
-    manager->auto_invoke ("set_runtime",arg);
     
     manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);
     manager->create ("videotestsrc","vid");
@@ -119,6 +141,12 @@ main (int argc,
     manager->remove_property_subscriber ("sub");
   }
 
+  //cleanning manager
+  {
+    switcher::QuiddityManager::ptr empty;
+    manager.swap (empty);
+  }
+ 
   if (success)
     return 0;
   else

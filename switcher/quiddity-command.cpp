@@ -101,44 +101,34 @@ namespace switcher
   QuiddityCommand::QuiddityCommand ()
   {
     json_builder_.reset (new JSONBuilder ());
+    time_ = -1;
   }
   
+  
+
   JSONBuilder::Node
   QuiddityCommand::get_json_root_node ()
   {
     json_builder_->reset ();
     json_builder_->begin_object ();
     json_builder_->add_string_member ("command", command_names_.at (name_));
+    json_builder_->add_int_member ("calling time", (gint)time_);
     json_builder_->set_member_name ("arguments");
     json_builder_->begin_array ();    
     for (auto& it: args_) 
-      {
-	json_builder_->begin_object ();
-      	json_builder_->add_string_member ("value", it.c_str ());
-	json_builder_->end_object ();
-      }
+      json_builder_->add_string_value (it.c_str ());
     json_builder_->end_array ();    
     
     json_builder_->set_member_name ("vector argument");
     json_builder_->begin_array ();
     for (auto& it: vector_arg_)
-      {
-	json_builder_->begin_object ();
-      	json_builder_->add_string_member ("value", it.c_str ());
-	json_builder_->end_object ();
-      }
+      json_builder_->add_string_value (it.c_str ());
     json_builder_->end_array ();
-
     json_builder_->set_member_name ("results");
     json_builder_->begin_array ();
     for (auto& it: result_)
-      {
-      	json_builder_->begin_object ();
-	json_builder_->add_string_member ("value", it.c_str ());
-	json_builder_->end_object ();
-      }
+      json_builder_->add_string_value (it.c_str ());
     json_builder_->end_array ();
-    
     json_builder_->end_object ();
     return json_builder_->get_root ();
   }
@@ -154,9 +144,73 @@ namespace switcher
   }
 
   const char * 
-  QuiddityCommand::get_from_string_id (QuiddityCommand::command id)
+  QuiddityCommand::get_string_from_id (QuiddityCommand::command id)
   {
     return command_names_.at (id);
+  }
+
+  QuiddityCommand::ptr
+  QuiddityCommand::parse_command_from_json_reader (JsonReader *reader)
+  {
+    int j;
+    int num_elements;
+    
+    QuiddityCommand::ptr command (new QuiddityCommand ());
+    
+    //command
+    json_reader_read_member (reader, "command");
+    command->set_name (QuiddityCommand::get_id_from_string(json_reader_get_string_value (reader)));
+    json_reader_end_member (reader);
+    //---
+
+    //invokation time
+    json_reader_read_member (reader, "calling time");
+    command->time_ = json_reader_get_int_value (reader);
+    json_reader_end_member (reader);
+    //---
+    
+    //arguments
+    json_reader_read_member (reader, "arguments");
+    num_elements = json_reader_count_elements (reader);
+    for (j = 0; j< num_elements; j ++)
+      {
+	json_reader_read_element (reader, j);
+	command->add_arg (json_reader_get_string_value (reader));
+	json_reader_end_element (reader);
+      }
+    json_reader_end_member (reader);
+    //---
+
+    //vector arguments
+    json_reader_read_member (reader, "vector argument");
+    num_elements = json_reader_count_elements (reader);
+    std::vector <std::string> string_vect_arg;
+    for (j = 0; j< num_elements; j ++)
+      {
+	json_reader_read_element (reader, j);
+	string_vect_arg.push_back (json_reader_get_string_value (reader));
+	json_reader_end_element (reader);
+      }
+    json_reader_end_member (reader);
+    command->set_vector_arg (string_vect_arg);
+    //---
+
+    //results
+    json_reader_read_member (reader, "results");
+    num_elements = json_reader_count_elements (reader);
+    std::vector <std::string> expected_result;
+    for (j = 0; j< num_elements; j ++)
+      {
+	json_reader_read_element (reader, j);
+	expected_result.push_back (json_reader_get_string_value (reader));
+	json_reader_end_element (reader);
+      }
+    json_reader_end_member (reader);
+    command->expected_result_ = expected_result;
+    //---
+
+    json_reader_end_element (reader);
+    return command;
   }
 
 }

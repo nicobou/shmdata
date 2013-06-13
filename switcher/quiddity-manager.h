@@ -63,7 +63,7 @@ namespace switcher
       std::string get_name ();
       void reboot ();
 
-      //history save and load
+      //command history
       bool save_command_history (const char *file_path);
       CommandHistory get_command_history_from_file (const char *file_path);
       std::vector<std::string> get_property_subscribers_names (QuiddityManager::CommandHistory histo);
@@ -71,6 +71,7 @@ namespace switcher
       void play_command_history (QuiddityManager::CommandHistory histo,
 				 QuiddityManager::PropCallbackMap *prop_cb_data,
 				 QuiddityManager::SignalCallbackMap *sig_cb_data);
+      void reset_command_history (bool remove_created_quiddities);//FIXME maybe implement undo and remove this  arg
 
       //inspect
       std::vector<std::string> get_classes (); //know which quiddities can be created
@@ -166,10 +167,6 @@ namespace switcher
     
       bool has_method (const std::string quiddity_name,
 		       const std::string method_name);
-      // will invoke the given method after quiddity creation, 
-      //if method exists (only one method)
-      bool auto_invoke  (std::string method_name,
-			 std::vector<std::string> args);  
     
       //************************ signals 
       //doc (json formatted)
@@ -217,8 +214,6 @@ namespace switcher
 
       //auto invoke and init
       void auto_init (std::string quiddity_name);
-      std::string auto_invoke_method_name_;
-      std::vector<std::string> auto_invoke_args_;
 
       //running commands in sequence 
       QuiddityCommand::ptr command_;
@@ -236,8 +231,8 @@ namespace switcher
       void invoke_in_gmainloop ();
 
       //history
-      //std::vector<QuiddityCommand::ptr> 
       CommandHistory command_history_;
+      gint64 history_begin_time_; //monotonic time, in microseconds
     }; 
 
 } // end of namespace 

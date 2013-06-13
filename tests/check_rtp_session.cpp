@@ -36,8 +36,8 @@ mon_property_cb(std::string subscriber_name,
 		void *user_data)
 {
   
-  if (g_strcmp0 (property_name.c_str (), "caps") == 0)
-    g_print ("-caps- %s\n",value.c_str ());
+  // if (g_strcmp0 (property_name.c_str (), "caps") == 0)
+  //   g_print ("-caps- %s\n",value.c_str ());
 
   //g_print ("%s, %s, %s\n", quiddity_name.c_str (), property_name.c_str (), value.c_str ());
   if (!audio_success && g_strcmp0 (quiddity_name.c_str (), "audioprobe") == 0)
@@ -54,25 +54,6 @@ mon_property_cb(std::string subscriber_name,
       if (audio_success)
 	do_continue = false;
     }
-}
-
-void 
-mon_signal_cb(std::string subscriber_name, 
-	      std::string quiddity_name, 
-	      std::string signal_name, 
-	      std::vector<std::string> params, 
-	      void *user_data)
-{
-
-  g_print ("sub:%s quid:%s, sig:%s params:",
-	   subscriber_name.c_str (),
-	   quiddity_name.c_str (),
-	   signal_name.c_str ());
-
-  std::vector<std::string>::iterator it;
-  for (it = params.begin (); it != params.end (); it++) 
-    g_print ("%s ",it->c_str ()); 
-  g_print ("\n");
 }
 
 int

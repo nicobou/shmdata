@@ -112,7 +112,7 @@ namespace switcher
 			       GstCaps *caps, 
 			       gpointer user_data)
   {
-    g_print ("+++++ HTTPSDPDec unknown type: %s (%s)\n", gst_caps_to_string (caps), gst_element_get_name (bin));
+    g_debug ("HTTPSDPDec unknown type: %s (%s)\n", gst_caps_to_string (caps), gst_element_get_name (bin));
   }
 
   int 
@@ -135,13 +135,11 @@ namespace switcher
 	const GValue *val = gst_structure_get_value (gst_caps_get_structure(gst_pad_get_caps (pad),0),
 						     "caps");
 	
-	//g_print ("uwuweuweu %s\n", g_value_get_string (val));
 	gsize taille = 256;
 	guchar *string_caps = g_base64_decode (g_value_get_string (val),
 					       &taille);
 
 	gchar *string_caps_char = g_strdup_printf ("%s", string_caps); 
-	//g_print ("******************* %s\n",string_caps );
 
 	if (g_str_has_prefix (string_caps_char, "audio/") 
 	    || g_str_has_prefix (string_caps_char, "video/") )

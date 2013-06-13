@@ -100,22 +100,10 @@ namespace switcher
 
   QuiddityManager_Impl::~QuiddityManager_Impl()
   {
-    //g_print ("quit !\n");
     g_main_loop_quit (mainloop_);
     g_main_context_unref (main_context_);
     
   }
-
-  // void 
-  // QuiddityManager_Impl::reboot ()
-  // {
-  //   quiddities_.clear ();
-  //   quiddities_nick_names_.clear ();
-  //   property_subscribers_.clear ();
-  //   signal_subscribers_.clear ();
-  //   remove_shmdata_sockets ();
-  //   reset_create_remove_hooks ();
-  // }
 
   void
   QuiddityManager_Impl::remove_shmdata_sockets ()
@@ -362,7 +350,7 @@ namespace switcher
 	if (!nick_name.empty () && !quiddities_nick_names_.contains (nick_name))
 	  quiddity->set_nick_name (nick_name);
 	else
-	  g_warning ("QuiddityManager_Impl::create: nick name %s not valid, using %s",
+	  g_debug ("QuiddityManager_Impl::create: nick name %s not valid, using %s",
 		   nick_name.c_str (),
 		   quiddity->get_name().c_str ());
 

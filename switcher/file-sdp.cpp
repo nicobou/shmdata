@@ -77,7 +77,6 @@ namespace switcher
   void 
   FileSDP::no_more_pads_cb (GstElement* object, gpointer user_data)   
   {   
-    //g_print ("no more pad");
     //FileSDP *context = static_cast<FileSDP *>(user_data);
   }
 
