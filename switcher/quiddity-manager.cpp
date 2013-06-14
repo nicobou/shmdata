@@ -781,14 +781,12 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   void 
   QuiddityManager::auto_init (std::string quiddity_name)
   {
-
     if (!manager_impl_->exists (quiddity_name))
       return;
     Quiddity::ptr quidd = manager_impl_->get_quiddity (quiddity_name);
     QuiddityManagerWrapper::ptr wrapper = std::dynamic_pointer_cast<QuiddityManagerWrapper> (quidd);
     if (wrapper)
       wrapper->set_quiddity_manager (shared_from_this());
-   
   }
   
   std::string
@@ -797,7 +795,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     std::string res = seq_invoke (QuiddityCommand::create, 
 				  quiddity_class.c_str(),
 				  NULL);
-    auto_init (res);
+    //auto_init (res);
     return res;
   }
 
@@ -808,7 +806,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 				 quiddity_class.c_str(), 
 				 nick_name.c_str(), 
 				 NULL);
-    auto_init (res);
+    //auto_init (res);
     return res;
   }
 
@@ -913,6 +911,9 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     va_end(vl);
     invoke_in_gmainloop ();
     res = command_->result_[0];
+    if (command_->name_ == QuiddityCommand::create 
+	|| command_->name_ == QuiddityCommand::create_nick_named)
+      auto_init (command_->result_[0]);
     command_unlock ();
     return res;
   }

@@ -105,13 +105,11 @@ quiddity_created_removed_cb (std::string subscriber_name,
 			     void *user_data)
 {
   g_message ("%s: %s", signal_name.c_str (), params[0].c_str ());
-  g_thread_create (set_runtime_invoker, 
-		   g_strdup (params[0].c_str ()),
-		   FALSE,
-		   NULL);
-  
-  // if (!is_loading && manager->has_method (quiddity_name, "set_runtime"))
-  //     manager->invoke_va (quiddity_name.c_str (), "set_runtime", "pipeline0", NULL);
+  if (g_strcmp0 (signal_name.c_str (), "on-quiddity-created") == 0)
+    g_thread_create (set_runtime_invoker, 
+		     g_strdup (params[0].c_str ()),
+		     FALSE,
+		     NULL);
 }
 
 int
@@ -231,45 +229,46 @@ main (int argc,
 	 manager->invoke_va (osc_name.c_str (), "set_port", osc_port_number, NULL);
        }
 
-     // manager->reset_command_history (false);
+     manager->reset_command_history (false);
 
-     //  manager->create ("videotestsrc", "vid");
-     //  manager->create("videosink","win");
-     //  manager->invoke_va ("win",
-     //  			 "connect",
-     //  			 "/tmp/switcher_default_vid_video",
-     //  			 NULL);
+     // manager->create ("videotestsrc", "vid");
+     // manager->create("videosink","win");
+     // manager->invoke_va ("win",
+     //   			 "connect",
+     //   			 "/tmp/switcher_default_vid_video",
+     //   			 NULL);
      
+     // //  g_print ("---- histo testing ------ \n");
+     // manager->save_command_history ("trup.switcher");
      
-     //  g_print ("---- histo testing ------ \n");
-     //  manager->save_command_history ("trup.switcher");
+     // manager->reset_command_history(true);
      
-     //  manager->reset_command_history(true);
+     // //manager->reboot ();
+
+     // g_print ("---- reset done ----\n");
+     // g_print ("--- %s\n",manager->get_quiddities_description ().c_str ());
      
-     //  g_print ("---- reset done ----\n");
-     //  g_print ("--- %s\n",manager->get_quiddities_description ().c_str ());
+     // switcher::QuiddityManager::CommandHistory histo = 
+     //   manager->get_command_history_from_file ("trup.switcher");
      
-     //  switcher::QuiddityManager::CommandHistory histo = 
-     //    manager->get_command_history_from_file ("trup.switcher");
+     // // std::vector <std::string> prop_subscriber_names = 
+     // //   manager->get_property_subscribers_names (histo);
      
-     //    // std::vector <std::string> prop_subscriber_names = 
-     //    //   manager->get_property_subscribers_names (histo);
+     // //    // for (auto &it: prop_subscriber_names)
+     // //    //   g_print ("prop sub %s\n", it.c_str ());
      
-     //    // for (auto &it: prop_subscriber_names)
-     //    //   g_print ("prop sub %s\n", it.c_str ());
+     // //    // std::vector <std::string> signal_subscriber_names = 
+     // //    //   manager->get_signal_subscribers_names (histo);
      
-     //    // std::vector <std::string> signal_subscriber_names = 
-     //    //   manager->get_signal_subscribers_names (histo);
+     // //    // for (auto &it: signal_subscriber_names)
+     // //    //   g_print ("signal sub %s\n", it.c_str ());
      
-     //    // for (auto &it: signal_subscriber_names)
-     //    //   g_print ("signal sub %s\n", it.c_str ());
-     
-     //     switcher::QuiddityManager::PropCallbackMap prop_cb_data;
-     //     prop_cb_data ["log_sub"] = std::make_pair (logger_cb, (void *)NULL);
-     //     switcher::QuiddityManager::SignalCallbackMap sig_cb_data;
-     //     sig_cb_data["create_remove_subscriber"] = std::make_pair (quiddity_created_removed_cb, (void *)NULL);
-     //     manager->play_command_history (histo, &prop_cb_data, &sig_cb_data); 
-     //     g_print ("--fin-- %s\n",manager->get_quiddities_description ().c_str ());
+     //      switcher::QuiddityManager::PropCallbackMap prop_cb_data;
+     //      prop_cb_data ["log_sub"] = std::make_pair (logger_cb, (void *)NULL);
+     //      switcher::QuiddityManager::SignalCallbackMap sig_cb_data;
+     //      sig_cb_data["create_remove_subscriber"] = std::make_pair (quiddity_created_removed_cb, (void *)NULL);
+     //      manager->play_command_history (histo, &prop_cb_data, &sig_cb_data); 
+     //      g_print ("--fin-- %s\n",manager->get_quiddities_description ().c_str ());
   
   
   //waiting for end of life

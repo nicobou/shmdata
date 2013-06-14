@@ -125,3 +125,33 @@ int switcher__invoke_method (std::string quiddity_name,
 			     std::string method_name,
 			     std::vector<std::string> args,
 			     bool *result);
+
+//gsoap switcher service signal-documentation: get a json formated description of signals   
+int switcher__get_signals_description (std::string quiddity_name,
+				       std::string *result);
+
+//gsoap switcher service signal-documentation: get a json formated description of the signal
+int switcher__get_signal_description (std::string quiddity_name,
+				      std::string signal_name,
+				      std::string *result);
+
+//gsoap switcher service signal-documentation: get a json formated description of signals   
+int switcher__get_signals_description_by_class (std::string class_name,
+						std::string *result);
+
+//gsoap switcher service documentation: save history   
+int switcher__save (std::string file_name,
+		    std::string *result);
+
+//gsoap switcher service documentation: save history   
+int switcher__load (std::string file_name,
+		    std::string *result);
+
+//gsoap switcher service documentation: save history   
+int switcher__run (std::string file_name,
+		   std::string *result);
+
+//gsoap switcher service signal-documentation: get a json formated description of the signal   
+int switcher__get_signal_description_by_class (std::string class_name,
+					       std::string signal_name,
+					       std::string *result);
