@@ -101,7 +101,8 @@ AM_CONDITIONAL(HAVE_GST_SDK, false)
                 [AC_MSG_WARN([building against Linux GStreamer SDK.]) 
                  AM_CONDITIONAL(HAVE_GST_SDK, true)
                  PKG_CONFIG_PATH=/opt/gstreamer-sdk/lib/pkgconfig:$PKG_CONFIG_PATH
-                 export PKG_CONFIG_PATH],
+                 export PKG_CONFIG_PATH
+                 SHMDATA_GST_PLUGIN_PATH=/opt/gstreamer-sdk/lib],
                 [AC_MSG_WARN([Linux GStreamer SDK not found])])
 
  # osx
@@ -109,7 +110,8 @@ AC_CHECK_FILE([/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig],
               [AC_MSG_WARN([building against OSX GStreamer SDK.]) 
                AM_CONDITIONAL(HAVE_GST_SDK, true)
                PKG_CONFIG_PATH=/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig:$PKG_CONFIG_PATH
-               export PKG_CONFIG_PATH],
+               export PKG_CONFIG_PATH
+               SHMDATA_GST_PLUGIN_PATH=/Library/Frameworks/GStreamer.framework/Libraries/gstreamer-0.10],
               [AC_MSG_WARN([OSX GStreamer SDK not found])])
 
 # --define where to install gstreamer elements built -- 
@@ -117,7 +119,10 @@ if test "x${prefix}" = "x$HOME"; then
   SHMDATA_GST_PLUGIN_PATH="\$(HOME)/.gstreamer-0.10/plugins"
   FLAT_SHMDATA_GST_PLUGIN_PATH=\"$HOME/.gstreamer-0.10/plugins\"
 else
-  SHMDATA_GST_PLUGIN_PATH="\$(libdir)/gstreamer-0.10"
+  if test "x${SHMDATA_GST_PLUGIN_PATH}" = "x" ; then
+    SHMDATA_GST_PLUGIN_PATH="\$(libdir)/gstreamer-0.10"
+  fi
+
   dnl set install paths.
   if test "x$prefix" = "xNONE" ; then
     prefix="/usr/local"
@@ -129,6 +134,9 @@ else
   LIBDIR=`eval echo $LIBDIR`
   FLAT_SHMDATA_GST_PLUGIN_PATH=\"$LIBDIR/gstreamer-0.10\"
 fi
+
+[echo "SHMDATA_GST_PLUGIN_PATH: ${SHMDATA_GST_PLUGIN_PATH}"]
+
 AC_SUBST(SHMDATA_GST_PLUGIN_PATH)
 AC_DEFINE_UNQUOTED([SHMDATA_GST_PLUGIN_PATH],[$FLAT_SHMDATA_GST_PLUGIN_PATH],
                    [GStreamer plugin path for element built])
