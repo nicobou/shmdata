@@ -116,8 +116,6 @@ namespace switcher
 					 QuiddityManager::PropCallbackMap *prop_cb_data,
 					 QuiddityManager::SignalCallbackMap *sig_cb_data)
   {
-
-    
     for (auto &it: histo)
       {
 	if (it->name_ == QuiddityCommand::make_property_subscriber)

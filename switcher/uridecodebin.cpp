@@ -56,6 +56,47 @@ namespace switcher
 			    Method::make_arg_description ("uri", 
 							  "the uri to decode",
 							  NULL));
+    //registering play
+    register_method("play",
+		    (void *)&play_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
+		    (gpointer)this);
+    set_method_description ((char *)"play", 
+			    (char *)"activate the runtime", 
+			    Method::make_arg_description ("none",
+							  NULL));
+
+    //registering pause
+    register_method("pause",
+		    (void *)&pause_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
+		    (gpointer)this);
+    set_method_description ((char *)"pause", 
+			    (char *)"pause the runtime", 
+			    Method::make_arg_description ((char *)"none",
+							  NULL));
+
+     //registering seek
+    register_method("seek",
+		    (void *)&seek_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
+		    (gpointer)this);
+    set_method_description ((char *)"seek", 
+			    (char *)"seek the runtime", 
+			    Method::make_arg_description ((char *)"position",
+							  (char *)"position in milliseconds",
+							  NULL));
+
+    //registering speed
+    register_method("speed",
+		    (void *)&speed_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
+		    (gpointer)this);
+    set_method_description ((char *)"speed", 
+			    (char *)"controle speed of runtime", 
+			    Method::make_arg_description ((char *)"speed",
+							  (char *)"1.0 is normal speed, 0.5 is half the speed and 2.0 is double speed",
+							  NULL));
     return true;
   }
   
@@ -489,4 +530,65 @@ namespace switcher
     GstUtils::sync_state_with_parent (uridecodebin_);
     return true;
   }
+
+  gboolean
+  Uridecodebin::play_wrapped (gpointer unused, gpointer user_data)
+  {
+    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
+    if (! (bool) manager)
+      return FALSE;
+    Quiddity::ptr quidd = manager->get_quiddity (context->runtime_name_);
+    Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
+    if(!runtime)
+      return FALSE;
+    runtime->play ();
+    return TRUE;
+  }
+  
+  gboolean
+  Uridecodebin::pause_wrapped (gpointer unused, gpointer user_data)
+  {
+    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
+    if (! (bool) manager)
+      return FALSE;
+    Quiddity::ptr quidd = manager->get_quiddity (context->runtime_name_);
+    Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
+    if(!runtime)
+      return FALSE;
+    runtime->pause ();
+    return TRUE;
+  }
+
+  gboolean
+  Uridecodebin::seek_wrapped (gdouble position, gpointer user_data)
+  {
+    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
+    if (! (bool) manager)
+      return FALSE;
+    Quiddity::ptr quidd = manager->get_quiddity (context->runtime_name_);
+    Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
+    if(!runtime)
+      return FALSE;
+    runtime->seek (position);
+    return TRUE;
+  }
+
+  gboolean
+  Uridecodebin::speed_wrapped (gdouble speed, gpointer user_data)
+  {
+    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
+    if (! (bool) manager)
+      return FALSE;
+    Quiddity::ptr quidd = manager->get_quiddity (context->runtime_name_);
+    Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
+    if(!runtime)
+      return FALSE;
+    runtime->speed (speed);
+    return TRUE;
+  }
+
 }
