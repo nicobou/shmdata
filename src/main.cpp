@@ -26,6 +26,7 @@
 
 static const gchar *server_name = NULL;
 static const gchar *port_number = NULL;
+static const gchar *load_file = NULL;
 static gchar *osc_port_number = NULL;
 static gboolean quiet;
 static gboolean debug;
@@ -47,6 +48,7 @@ static GOptionEntry entries[] =
   {
     { "server-name", 's', 0, G_OPTION_ARG_STRING, &server_name, "server name (default is \"default\")", NULL },
     { "port-number", 'p', 0, G_OPTION_ARG_STRING, &port_number, "port number the server will bind (default is 8080)", NULL },
+    { "load", 'l', 0, G_OPTION_ARG_STRING, &load_file, "load state from history file (-l filename)", NULL },
     { "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet, "do not display any message", NULL },
     { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "display all messages, excluding debug", NULL },
     { "debug", 'd', 0, G_OPTION_ARG_NONE, &debug, "display all messages, including debug", NULL },
@@ -105,11 +107,12 @@ quiddity_created_removed_cb (std::string subscriber_name,
 			     void *user_data)
 {
   g_message ("%s: %s", signal_name.c_str (), params[0].c_str ());
-  if (g_strcmp0 (signal_name.c_str (), "on-quiddity-created") == 0)
+  if (g_strcmp0 (signal_name.c_str (), "on-quiddity-created") == 0
+      && is_loading == FALSE)
     g_thread_create (set_runtime_invoker, 
-		     g_strdup (params[0].c_str ()),
-		     FALSE,
-		     NULL);
+   		     g_strdup (params[0].c_str ()),
+   		     FALSE,
+   		     NULL);
 }
 
 int
@@ -230,6 +233,26 @@ main (int argc,
        }
 
      manager->reset_command_history (false);
+
+     if (load_file != NULL)
+       {
+	 is_loading= TRUE;
+	 switcher::QuiddityManager::CommandHistory histo = 
+	   manager->get_command_history_from_file (load_file);
+	 std::vector <std::string> prop_subscriber_names = 
+	   manager->get_property_subscribers_names (histo);
+	 if (!prop_subscriber_names.empty ())
+	   g_warning ("creation of property subscriber not handled when loading file %s", load_file);
+	 
+	 std::vector <std::string> signal_subscriber_names = 
+	   manager->get_signal_subscribers_names (histo);
+	 if (!signal_subscriber_names.empty ())
+	   g_warning ("creation of signal subscriber not handled when loading file %s", load_file);
+
+	 manager->play_command_history (histo, NULL, NULL); 
+	 is_loading= FALSE;
+
+       }
 
      // manager->create ("videotestsrc", "vid");
      // manager->create("videosink","win");
