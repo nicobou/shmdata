@@ -1,11 +1,11 @@
-#N canvas 521 260 783 799 10;
+#N canvas 674 334 783 799 10;
 #X msg 577 48 \; pd dsp 1;
 #X obj 577 23 loadbang;
 #X obj 42 734 OSCtx;
 #X msg 41 60 connect localhost 7770;
 #X msg 210 360 /add_property_subscriber mylistener localhost 9080;
-#X msg 254 700 /delete_property_subscriber mylistener;
-#X msg 254 659 /unsubscribe_property_notification mylistener internal_logger
+#X msg 258 740 /delete_property_subscriber mylistener;
+#X msg 258 699 /unsubscribe_property_notification mylistener internal_logger
 last-line;
 #X msg 222 433 /get_property_notification mylistener internal_logger
 last-line;
@@ -25,14 +25,16 @@ last-line;
 #X text 341 375 <subscriber_name> <host> <port>;
 #X text 295 464 <subscriber_name> <quiddity_name> <property name>;
 #X text 199 314 3 - create a subscriber;
-#X text 225 408 4 - subscribe to some properties;
 #X obj 327 170 loadbang;
 #X msg 126 197 /set truc freq 300;
-#X text 225 540 5 - change property for being notifies;
-#X msg 230 587 /set truc freq \$1;
-#X obj 233 563 hsl 128 15 0 1400 0 0 empty empty empty -2 -8 0 10 -262144
--1 -1 5400 1;
-#X text 255 638 6 - unsubscribe/delete;
+#X msg 234 627 /set truc freq \$1;
+#X obj 237 603 hsl 128 15 0 1400 0 0 empty empty empty -2 -8 0 10 -262144
+-1 -1 0 1;
+#X msg 243 540 /get truc freq osc.udp://localhost:9080;
+#X text 225 408 4 - subscribe to some properties/get a property;
+#X text 233 524 5 - get the property without subscriber;
+#X text 229 580 6 - change property for being notifies;
+#X text 259 678 7 - unsubscribe/delete;
 #X connect 1 0 0 0;
 #X connect 3 0 2 0;
 #X connect 4 0 2 0;
@@ -49,7 +51,9 @@ last-line;
 #X connect 17 0 13 0;
 #X connect 17 0 13 1;
 #X connect 18 0 2 0;
-#X connect 25 0 14 0;
-#X connect 25 0 15 0;
+#X connect 24 0 14 0;
+#X connect 24 0 15 0;
+#X connect 25 0 2 0;
+#X connect 26 0 2 0;
+#X connect 27 0 26 0;
 #X connect 28 0 2 0;
-#X connect 29 0 28 0;
