@@ -106,7 +106,7 @@ extern "C"
    * @param user_data is the user data for the callback
    * 
    */
-  void shmdata_base_reader_set_callback (shmdata_base_reader_t * reader, 
+  void shmdata_base_reader_set_callback (shmdata_base_reader_t *reader, 
 					 shmdata_base_reader_on_first_data cb,
 					 void *user_data);
 
@@ -140,8 +140,8 @@ extern "C"
    * your sync_handler:  
    @code
    //write the sync handler
-    GstBusSyncReply my_handler (GstBus * bus,
-                                GstMessage * msg, gpointer user_data) {
+    GstBusSyncReply my_handler (GstBus *bus,
+                                GstMessage *msg, gpointer user_data) {
       shmdata_base_reader_t *reader = (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), 
                                                                                    "shmdata_base_reader");
       if ( reader != NULL)
@@ -160,7 +160,8 @@ extern "C"
    
    @endcode
    */
-  void shmdata_base_reader_install_sync_handler (shmdata_base_reader_t * reader, gboolean install);
+  void shmdata_base_reader_install_sync_handler (shmdata_base_reader_t *reader, 
+						 gboolean install);
 
 
   /** 
@@ -169,16 +170,25 @@ extern "C"
    * 
    * @param bin is the bin where the base writer will be added. if This bin should already be added to a pipeline. 
    */
-  gboolean shmdata_base_reader_set_bin (shmdata_base_reader_t * reader, GstElement *bin);
-  
+  gboolean shmdata_base_reader_set_bin (shmdata_base_reader_t *reader, 
+					GstElement *bin);
 
+  /** 
+   * Configuration function that set the GMainContext in which the reader will be. 
+   * 
+   * @param context is the GMainContext. 
+   */
+  gboolean shmdata_base_reader_set_g_main_context (shmdata_base_reader_t *reader, 
+						   GMainContext *context);
+  
   /** 
    * Starting the reader. The reader will monitor the file socketPath. When created by a 
    * writer, the reader will open the socket and will forward the stream. 
    * 
    * @param socketPath is the file name of the shared memory
    */
-  gboolean shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPath);
+  gboolean shmdata_base_reader_start (shmdata_base_reader_t *reader, 
+				      const char *socketPath);
 
 
   /** 
@@ -191,10 +201,8 @@ extern "C"
    * reader.
    *
    */
-
-
-  void shmdata_base_reader_set_sink (shmdata_base_reader_t * reader,
-				                     GstElement * sink);
+  void shmdata_base_reader_set_sink (shmdata_base_reader_t *reader,
+				     GstElement *sink);
 
 
   /** 
@@ -204,7 +212,7 @@ extern "C"
    * @param reader is the base reader to inform
    * @param do_absolute use absolute timestamp if != 0
    */
-  void shmdata_base_reader_set_absolute_timestamp (shmdata_base_reader_t * reader,
+  void shmdata_base_reader_set_absolute_timestamp (shmdata_base_reader_t *reader,
                                                    gboolean do_absolute);
 
 
@@ -224,7 +232,8 @@ extern "C"
    * See shmdata_base_reader_install_sync_handler for more details. 
    */ 
 
-  gboolean shmdata_base_reader_process_error (shmdata_base_reader_t * reader, GstMessage *msg);
+  gboolean shmdata_base_reader_process_error (shmdata_base_reader_t *reader, 
+					      GstMessage *msg);
 
 
   /** 
@@ -233,7 +242,7 @@ extern "C"
    * 
    * @param reader is the base reader to close
    */
-  void shmdata_base_reader_close (shmdata_base_reader_t * reader);
+  void shmdata_base_reader_close (shmdata_base_reader_t *reader);
 
 #ifdef __cplusplus
 }
