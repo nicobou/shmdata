@@ -1,13 +1,14 @@
 shmdata release notes
 ===================== 
 
-shmdata 0.8.0 (2012-06-19)
+shmdata 0.8.3 (2012-06-19)
 ---------------------------
 This is the second official release in the 0.8 stable series. 
 
 New features:
 
 * base reader supports custom GMainContext
+* gst elements are installed on the gstreamer sdk folder on osx
 
 Bugs fixed:
 
