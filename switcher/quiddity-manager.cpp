@@ -888,7 +888,11 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   void
   QuiddityManager::clear_command_sync ()
   {
-    //FIXME may get the mutex before exiting 
+    g_mutex_lock (seq_mutex_);
+    g_mutex_unlock(seq_mutex_);
+    g_mutex_clear (seq_mutex_);
+    g_mutex_clear (exec_mutex_);
+    g_cond_clear (exec_cond_);
   }
 
   //works for char * args only. Use NULL sentinel
