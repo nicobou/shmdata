@@ -1,3 +1,18 @@
-switcher 1.1.2 (2013-04-26)
+switcher 0.2.0 (2013-04-26)
+---------------------------
+
+This is the first official release in the 0.2 stable series. 
+
+New features:
+
+* signals
+* save/load command history
+* soap client
+
+Bugs fixed:
+
+* too many to listed here
+
+switcher 0.1.2 (2013-04-26)
 ---------------------------
 This is the first developer snapshot of switcher.
