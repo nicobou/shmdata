@@ -23,7 +23,7 @@
 
 #include "quiddity-property-subscriber.h"
 #include "quiddity.h" 
-#include "quiddity-life-manager.h"
+#include "quiddity-manager-impl.h"
 
 namespace switcher
 {
@@ -31,14 +31,14 @@ namespace switcher
   QuiddityPropertySubscriber::~QuiddityPropertySubscriber()
   {
 
-    QuiddityLifeManager::ptr life_manager = life_manager_.lock ();
-    if (!(bool)life_manager)
+    QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
+    if (!(bool)manager)
       return;
 
     PropDataMap::iterator it;
     for (it = prop_datas_.begin (); it != prop_datas_.end (); it++)
       {
-     	Quiddity::ptr quid = life_manager->get_quiddity (it->second->quiddity_name);
+     	Quiddity::ptr quid = manager->get_quiddity (it->second->quiddity_name);
 	if ((bool)quid)
 	  {
 	    g_debug ("QuiddityPropertySubscriber: cleaning property not unsubscribed %s, %s, %s",
@@ -73,9 +73,9 @@ namespace switcher
   }
 
   void 
-  QuiddityPropertySubscriber::set_life_manager (QuiddityLifeManager::ptr life_manager)
+  QuiddityPropertySubscriber::set_manager_impl (QuiddityManager_Impl::ptr manager_impl)
   {
-    life_manager_ = life_manager;
+    manager_impl_ = manager_impl;
   }
   
   void
@@ -157,6 +157,20 @@ namespace switcher
     return false;
   }
 
+  bool 
+  QuiddityPropertySubscriber::unsubscribe (Quiddity::ptr quid)
+  {
+    std::string quid_name = quid->get_nick_name ();
+    for (auto& it: prop_datas_)
+      if (it.first.first == quid_name)
+	{
+	  g_free (it.second->quiddity_name);
+	  g_free (it.second->property_name);
+	  prop_datas_.erase (it.first);
+	}
+    return true;
+  }
+  
   std::vector<std::pair<std::string, std::string> > 
   QuiddityPropertySubscriber::list_subscribed_properties ()
   {

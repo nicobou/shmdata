@@ -55,7 +55,7 @@ namespace switcher
 
     //helper methods, use NULL sentinel
     static args_types make_arg_type_description (GType arg_type, ...);//use G_TYPE_NONE if no arg
-    static args_doc make_arg_description (char *first_arg_name, ...);
+    static args_doc make_arg_description (const char *first_arg_name, ...);
     
     //Building complex json descriptions incuding this
     JSONBuilder::Node get_json_root_node ();

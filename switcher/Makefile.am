@@ -28,6 +28,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     base-sink.cpp \
     base-source.cpp \
     custom-property-helper.cpp \
+    create-remove-spy.cpp \
     decodebin2.cpp \
     deinterleave.cpp \
     fake-shmdata-writer.cpp \
@@ -41,6 +42,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gst-utils.cpp \
     h264.cpp \
     http-sdp.cpp \
+    http-sdp-dec.cpp \
     json-builder.cpp \
     logger.cpp \
     method.cpp \
@@ -49,10 +51,11 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     pulse-sink.cpp \
     quiddity-command.cpp \
     quiddity-documentation.cpp \
-    quiddity-life-manager.cpp \
     quiddity-manager-wrapper.cpp \
     quiddity-manager.cpp \
+    quiddity-manager-impl.cpp \
     quiddity-property-subscriber.cpp \
+    quiddity-signal-subscriber.cpp \
     quiddity.cpp \
     rtp-destination.cpp \
     rtp-session.cpp \
@@ -62,6 +65,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     shmdata-reader.cpp \
     shmdata-to-file.cpp \
     shmdata-writer.cpp \
+    signal-string.cpp \
+    soap-ctrl-client.cpp \
     soap-ctrl-server.cpp \
     udpsink.cpp \
     uridecodebin.cpp \
@@ -98,6 +103,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     audio-test-source.h \
     base-sink.h \
     base-source.h \
+    create-remove-spy.h \
     creator.h \
     ctrl-webservice-definition.h \
     custom-property-helper.h \
@@ -116,6 +122,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     hash-table.h \
     hash-table_spec.h \
     http-sdp.h \
+    http-sdp-dec.h \
     json-builder.h \
     logger.h \
     method.h \
@@ -124,10 +131,11 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     pulse-sink.h \
     quiddity-command.h \
     quiddity-documentation.h \
-    quiddity-life-manager.h \
     quiddity-manager-wrapper.h \
     quiddity-manager.h \
+    quiddity-manager-impl.h \
     quiddity-property-subscriber.h \
+    quiddity-signal-subscriber.h \
     quiddity.h \
     rtp-destination.h \
     rtp-session.h \
@@ -137,6 +145,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     shmdata-reader.h \
     shmdata-to-file.h \
     shmdata-writer.h \
+    signal-string.h \
+    soap-ctrl-client.h \
     soap-ctrl-server.h \
     string-map.h \
     string-map_spec.h \

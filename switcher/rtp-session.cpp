@@ -69,26 +69,27 @@ namespace switcher
 
     next_id_ = 79; //this value is arbitrary and can be changed
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
-
+    
     g_signal_connect (G_OBJECT (rtpsession_), "on-bye-ssrc", 
 		      (GCallback) on_bye_ssrc, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_bye_timeout", 
+    
+    g_signal_connect (G_OBJECT (rtpsession_), "on-bye-timeout", 
 		      (GCallback) on_bye_timeout, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_new_ssrc", 
+    g_signal_connect (G_OBJECT (rtpsession_), "on-new-ssrc", 
 		      (GCallback) on_new_ssrc, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_npt_stop", 
+    g_signal_connect (G_OBJECT (rtpsession_), "on-npt-stop", 
 		      (GCallback)  on_npt_stop, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_sender_timeout",  
+    g_signal_connect (G_OBJECT (rtpsession_), "on-sender-timeout",  
 		      (GCallback) on_sender_timeout, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_ssrc_active",  
+    g_signal_connect (G_OBJECT (rtpsession_), "on-ssrc-active",  
 		      (GCallback)  on_ssrc_active, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_ssrc_collision",  
+    g_signal_connect (G_OBJECT (rtpsession_), "on-ssrc-collision",  
 		      (GCallback) on_ssrc_collision, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_ssrc_sdes",  
+    g_signal_connect (G_OBJECT (rtpsession_), "on-ssrc-sdes",  
 		      (GCallback)  on_ssrc_sdes, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_ssrc_validated",  
+    g_signal_connect (G_OBJECT (rtpsession_), "on-ssrc-validated",  
 		      (GCallback) on_ssrc_validated, (gpointer) this);
-    g_signal_connect (G_OBJECT (rtpsession_), "on_timeout",  
+    g_signal_connect (G_OBJECT (rtpsession_), "on-timeout",  
 		      (GCallback) on_timeout, (gpointer) this);
     g_signal_connect (G_OBJECT (rtpsession_), "pad-added",  
 		      (GCallback) on_pad_added, (gpointer) this);
@@ -665,6 +666,7 @@ namespace switcher
     ShmdataReader::ptr reader;
     reader.reset (new ShmdataReader ());
     reader->set_path (shmdata_socket_path.c_str());
+    reader->set_g_main_context (get_g_main_context ());
     reader->set_bin (bin_);
 
     reader->set_on_first_data_hook (attach_data_stream, this);
@@ -804,10 +806,12 @@ namespace switcher
   void
   RtpSession::on_pad_added (GstElement *gstelement, GstPad *new_pad, gpointer user_data) 
   {
+    RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug ("on_pad_added, name: %s, direction: %d", 
 	     gst_pad_get_name(new_pad),
 	     gst_pad_get_direction (new_pad));
-    // RtpSession *context = static_cast<RtpSession *>(user_data);
+    //gchar *bidule = g_strdup ("bidule");
+    context->signal_emit ("truc", "bidule");
   }
 
   void

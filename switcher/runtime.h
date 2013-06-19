@@ -50,10 +50,32 @@ namespace switcher
       static gboolean seek_wrapped (gdouble position, gpointer user_data);
       static gboolean speed_wrapped (gdouble speed, gpointer user_data);
     private:
+     typedef struct {
+       Runtime *self;
+       gchar *name;
+     } QuidRemoveArgs;
       GstElement *pipeline_;
       guint64 speed_ ;
       static gboolean bus_called (GstBus *bus, GstMessage *msg, gpointer data); 
       static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
+      static gboolean remove_quid (gpointer user_data);
+      //GstBus is a specific context:
+      typedef struct
+      {
+	GSource source;
+	GstBus *bus;
+	gboolean inited;
+
+      } GstBusSource;
+      static gboolean source_prepare(GSource *source, 
+				     gint *timeout);
+      static gboolean source_check(GSource *source);
+      static gboolean source_dispatch(GSource *source, 
+				      GSourceFunc callback,
+				      gpointer user_data);
+      static void source_finalize (GSource * source);
+      GSourceFuncs source_funcs_;
+      GSource *source_;
     };
 
   

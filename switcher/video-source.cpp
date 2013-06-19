@@ -56,28 +56,28 @@ namespace switcher
      			   colorspace_out_,
      			   NULL);
     
-     //registering selected properties
-     register_property (G_OBJECT (videoflip_),"method","flip-method");
-     register_property (G_OBJECT (textoverlay_),"text","text");
-     register_property (G_OBJECT (textoverlay_),"auto-resize","auto-resize-text");
-     // register_property (G_OBJECT (textoverlay_),"shaded-background","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"halignment","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"valignment","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"xpad","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"ypad","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"deltax","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"deltay","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"xpos","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"ypos","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"wrap-mode","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"font-desc","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"silent","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"line-alignment","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"wait-text","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"vertical-render","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"color","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"shadow","textoverlay");
-     // register_property (G_OBJECT (textoverlay_),"outline-color","textoverlay");
+    //registering selected properties
+    register_property (G_OBJECT (videoflip_),"method","flip-method");
+    register_property (G_OBJECT (textoverlay_),"text","text");
+    register_property (G_OBJECT (textoverlay_),"auto-resize","auto-resize-text");
+    // register_property (G_OBJECT (textoverlay_),"shaded-background","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"halignment","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"valignment","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"xpad","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"ypad","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"deltax","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"deltay","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"xpos","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"ypos","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"wrap-mode","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"font-desc","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"silent","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"line-alignment","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"wait-text","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"vertical-render","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"color","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"shadow","textoverlay");
+    // register_property (G_OBJECT (textoverlay_),"outline-color","textoverlay");
   }
 
   void
@@ -88,7 +88,7 @@ namespace switcher
     
     GstCaps *videocaps = gst_caps_new_simple ("video/x-raw-yuv",
 					      // "format", GST_TYPE_FOURCC,
-					      // GST_MAKE_FOURCC ('A', 'Y', 'U', 'V'),
+					      // GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y'),
 					      //"format", GST_TYPE_FOURCC,
 					      //  GST_MAKE_FOURCC ('I', '4', '2', '0'),
 					      //"framerate", GST_TYPE_FRACTION, 30, 1,
@@ -96,7 +96,7 @@ namespace switcher
 					      //  "width", G_TYPE_INT, 640, 
 					      //  "height", G_TYPE_INT, 480,
 					      NULL);
-
+    
     gst_bin_add (GST_BIN (bin_), rawvideo_);
     gst_element_link (rawvideo_, video_tee_);
     

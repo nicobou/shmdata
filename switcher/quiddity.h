@@ -30,15 +30,18 @@
 #include <memory>
 #include <map>
 #include <gst/gst.h>
+
 #include "property.h"
 #include "method.h"
+#include "signal-string.h"
 #include "quiddity-documentation.h"
-#include "quiddity-life-manager.h"
+#include "quiddity-manager-impl.h"
 #include "json-builder.h"
+#include "gobject-wrapper.h"
 
 namespace switcher
 {
-  class QuiddityLifeManager;
+  class QuiddityManager_Impl;
  
   class Quiddity
   {
@@ -71,7 +74,6 @@ namespace switcher
     bool unsubscribe_property (std::string name,
 			       Property::Callback cb,
 			       void *user_data);
-
     
     //methods
     std::string get_method_description (std::string method_name);
@@ -80,13 +82,25 @@ namespace switcher
 			std::vector<std::string> args);
     int method_get_num_value_args (std::string function_name); //returns -1 if method not found
     int method_get_num_pointer_args (std::string function_name); //returns -1 if method not found
+    bool has_method (const std::string method_name);
+
+    //signals
+    std::string get_signals_description (); 
+    std::string get_signal_description (std::string signal_name); 
+    bool subscribe_signal (std::string name,
+			   Signal::OnEmittedCallback cb, 
+			   void *user_data);
+    bool unsubscribe_signal (std::string name,
+			     Signal::OnEmittedCallback cb,
+			     void *user_data);
     
+
     //shmdata socket names
     static std::string get_socket_name_prefix ();
     static std::string get_socket_dir ();
 
-    //life manager  initialization
-    void set_life_manager (std::shared_ptr<QuiddityLifeManager> life_manager);
+    //manager_impl  initialization
+    void set_manager_impl (std::shared_ptr<QuiddityManager_Impl> manager_impl);
 
   private:
     //properties are registered by derived class
@@ -94,6 +108,11 @@ namespace switcher
     JSONBuilder::ptr properties_description_;
     std::map<std::string, Method::ptr> methods_;
     JSONBuilder::ptr methods_description_;
+    //pair is <class_name, signal_name>
+    //this map is static in order to avoid re-creation of the same signal for each quiddity instance 
+    static std::map<std::pair <std::string,std::string>, guint> signals_ids_;
+    std::map<std::string, Signal::ptr> signals_;
+    JSONBuilder::ptr signals_description_;
     std::string name_;
     std::string nick_name_;
  
@@ -101,26 +120,59 @@ namespace switcher
     //naming
     bool set_name (std::string name);
 
-    //property name will be <prefix>/<object_property>
+    //property
     bool register_property (GObject *object, 
 			    std::string gobject_property_name, 
 			    std::string name_to_give);
     bool register_property_by_pspec (GObject *object, 
 				     GParamSpec *pspec, 
 				     std::string name_to_give);
+    //method
     bool register_method (std::string method_name,
 			  void *method, 
 			  Method::args_types arg_types, 
 			  gpointer user_data);
+
     bool set_method_description (const std::string method_name,
 				 const std::string short_description,
 				 const Method::args_doc arg_description);
-    //use a consistent naming for shmdatas FIXME move that to segment
+
+    //signal
+    bool register_signal_gobject (const std::string signal_name, //the name to give
+				  GObject *object, 
+				  const std::string gobject_signal_name);//the internal gobject signal name
+
+    bool make_custom_signal (const std::string signal_name, //the name to give
+			     GType return_type,
+			     guint n_params, //number of params
+			     GType *param_types);
+
+    bool set_signal_description (const std::string signal_name,
+				 const std::string short_description,
+				 const Signal::args_doc arg_description);
+
+    //following method allows for creation of signals in abstract class like segment
+    bool make_custom_signal (const std::string class_name, //quiddity class name that is making the signal
+			     const std::string signal_name, //the name to give
+			     GType return_type,
+			     guint n_params, //number of params
+			     GType *param_types);
+
+    void signal_emit (const std::string signal_name, 
+		      ...);
+    
+    //use a consistent naming for shmdatas FIXME move that to segment (or not?) 
     std::string make_file_name (std::string suffix);
 
     //used in order to dynamically create other quiddity, weak_ptr is used in order to 
-    //avoid circular references to the life manager 
-    std::weak_ptr<QuiddityLifeManager> life_manager_;
+    //avoid circular references to the manager_impl 
+    std::weak_ptr<QuiddityManager_Impl> manager_impl_;
+
+    //gobject wrapper for custom signals and properties
+    GObjectWrapper::ptr gobject_;
+    
+    //g_main_context
+    GMainContext *get_g_main_context ();
   };
   
 } // end of namespace

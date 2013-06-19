@@ -472,10 +472,11 @@ namespace switcher
 	    GroupCommand *command = (GroupCommand *)g_async_queue_try_pop (group->commands);
 	    //launching the command with the higher priority 
 	    if (command != NULL)
-	      g_idle_add_full (G_PRIORITY_DEFAULT,
-			       &group_launch_command,
-			       (gpointer)command,
-			       NULL);
+	      GstUtils::g_idle_add_full_with_context (((Uris *)group->user_data)->get_g_main_context (),
+						      G_PRIORITY_DEFAULT,
+						      &group_launch_command,
+						      (gpointer)command,
+						      NULL);
 	    g_debug ("queue size %d",g_async_queue_length (group->numTasks));
 	    g_debug ("** new command launched");
 	  } 
@@ -856,8 +857,13 @@ namespace switcher
 	{  
 	  // this seems not working if play rate >1.0
 	  g_debug ("EOS on master pad, looping");  
-	  g_idle_add ((GSourceFunc) group_eos_rewind,   
-		      (gpointer)sample->group);   
+	  // g_idle_add ((GSourceFunc) group_eos_rewind,   
+	  // 	      (gpointer)sample->group);   
+	  GstUtils::g_idle_add_full_with_context (((Uris *)sample->group->user_data)->get_g_main_context (),
+						  G_PRIORITY_DEFAULT,
+						  (GSourceFunc) group_eos_rewind,
+						  (gpointer)sample->group,
+						  NULL);
 	} 
     
       return FALSE; 

@@ -148,16 +148,11 @@ namespace switcher
     gst_sdp_message_add_attribute (sdp_description, "type", "broadcast");
     gst_sdp_message_add_attribute (sdp_description, "control", "*");
 
- 
-    //    GstCaps *media_caps = gst_caps_from_string ("application/x-rtp, media=(string)video, clock-rate=(int)90000, encoding-name=(string)H264, ssrc=(uint)3978370044, payload=(int)96, clock-base=(uint)3851066683, seqnum-base=(uint)14240");
-
     gint index = 0;
     std::map<std::string, QuiddityManager::ptr> medias = ports_.get_map ();
     std::map<std::string, QuiddityManager::ptr>::iterator iter;
     for(iter = medias.begin () ; iter != medias.end(); ++iter)
       {
-	// i->first is your key
-	// i->second is it''s value
 	std::string string_caps = (iter->second)->get_property ("udpsend_rtp","caps");
 	GstCaps *caps = gst_caps_from_string (string_caps.c_str ());
 	if (caps != NULL)

@@ -78,7 +78,6 @@ namespace switcher
   void 
   HTTPSDP::no_more_pads_cb (GstElement* object, gpointer user_data)   
   {   
-    //g_print ("no more pad");
     //HTTPSDP *context = static_cast<HTTPSDP *>(user_data);
   }
 

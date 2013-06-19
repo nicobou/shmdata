@@ -35,9 +35,9 @@ main (int argc,
   for (iter = classes.begin(); iter != classes.end (); ++iter)
      {
        std::string class_name (*iter);
-
-       std::cout << class_name << std::endl; 
+       //std::cout << class_name << std::endl; 
        std::string res = manager->create(class_name, class_name);
+       //std::cout << res << std::endl;
        if (res.compare (class_name) != 0)
    	{
    	  g_printerr ("quiddity %s cannot be created\n",iter->c_str ());

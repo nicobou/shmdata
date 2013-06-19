@@ -32,9 +32,6 @@ namespace switcher
   typedef struct _MyObject {
     GObject parent_instance;
     void *context;
-    // gint foo;
-    // gboolean bar;
-    // gchar *baz;
   } MyObject;
 
   typedef struct _MyObjectClass {
@@ -42,52 +39,11 @@ namespace switcher
   } MyObjectClass;
 
   static GType my_object_get_type (void);
-  //clean the two following lines
-  // enum { PROP_0, PROP_FOO, PROP_BAR, PROP_BAZ, N_PROPERTIES };
-  // static GParamSpec *properties[N_PROPERTIES] = { NULL, };
   G_DEFINE_TYPE (MyObject, my_object, G_TYPE_OBJECT);
 
-  // static void
-  // my_object_set_foo (MyObject *obj,
-  // 		     gint foo)
-  // {
-  //   if (obj->foo != foo)
-  //     {
-  // 	obj->foo = foo;
-  // 	//g_object_notify_by_pspec (G_OBJECT (obj), properties[PROP_FOO]);
-  // 	g_object_notify_by_pspec (G_OBJECT (obj), 
-  // 				  g_object_class_find_property (G_OBJECT_GET_CLASS (obj), "coucou"));
-  //     }
-  // }
-  
-  // static void
-  // my_object_set_bar (MyObject *obj,
-  // 		     gboolean bar)
-  // {
-  //   bar = !!bar;
-  //   if (obj->bar != bar)
-  //     {
-  // 	obj->bar = bar;
-  // 	g_object_notify_by_pspec (G_OBJECT (obj), properties[PROP_BAR]);
-  //     }
-  // }
-  
-  // static void
-  // my_object_set_baz (MyObject  *obj,
-  // 				     const gchar *baz)
-  // {
-  //   if (g_strcmp0 (obj->baz, baz) != 0)
-  //     {
-  // 	g_free (obj->baz);
-  // 	obj->baz = g_strdup (baz);
-  // 	g_object_notify_by_pspec (G_OBJECT (obj), properties[PROP_BAZ]);
-  //     }
-  // }
-  
   static void
   my_object_finalize (GObject *gobject)
   {
-    //g_free (((MyObject *) gobject)->baz);
     G_OBJECT_CLASS (my_object_parent_class)->finalize (gobject);
   }
   
@@ -98,34 +54,9 @@ namespace switcher
 			  GParamSpec *pspec)
   {
     MyObject *myobj = (MyObject *) gobject;
-
     GObjectWrapper *context = static_cast <GObjectWrapper *> (myobj->context);
-    //context->custom_properties_[prop_id]->invoke_set (value, context->user_data_);
-    //context->invoke_set(prop_id, value);
     (*context->get_set_method_pointer (prop_id)) (value, 
-						  context->get_user_data (g_param_spec_get_nick (pspec)));
-
-    // switch (prop_id)
-    //   {
-    //   case PROP_FOO:
-    // 	my_object_set_foo (myobj, g_value_get_int (value));
-    // 	break;
-	
-    //   case PROP_BAR:
-    // 	my_object_set_bar (myobj, g_value_get_boolean (value));
-    // 	break;
-	
-    //   case PROP_BAZ:
-    // 	my_object_set_baz (myobj, g_value_get_string (value));
-    // 	break;
-
-    //   case 6:
-    // 	my_object_set_foo (myobj, g_value_get_int (value));
-    // 	break;
-
-    //   default:
-    // 	g_warning ("set_property: property not found %d", prop_id);
-    //   }
+						  context->property_get_user_data (g_param_spec_get_nick (pspec)));
   }
   
    static void
@@ -135,114 +66,55 @@ namespace switcher
 			   GParamSpec *pspec)
    {
      MyObject *myobj = (MyObject *) gobject;
-     
      GObjectWrapper *context = static_cast <GObjectWrapper *> (myobj->context);
-     //context->custom_properties_[prop_id]->invoke_set (value, context->user_data_);
-     //context->invoke_set(prop_id, value);
      (*context->get_get_method_pointer (prop_id)) (value, 
-						   context->get_user_data (g_param_spec_get_nick (pspec)));
-    
-     // switch (prop_id)
-     //   {
-     //   case PROP_FOO:
-     // 	 g_value_set_int (value, myobj->foo);
-     // 	break;
-	
-     //   case PROP_BAR:
-     // 	 g_value_set_boolean (value, myobj->bar);
-     // 	break;
-	
-     //   case PROP_BAZ:
-     // 	 g_value_set_string (value, myobj->baz);
-     // 	break;
-
-     // 	case 6:
-     // 	 g_value_set_int (value, myobj->foo);
-     // 	break;
-
-     //   default:
-     // 	 g_warning ("get_property: property not found %d", prop_id);
-     //   }
+						   context->property_get_user_data (g_param_spec_get_nick (pspec)));
    }
 
  static void
  my_object_class_init (MyObjectClass *klass)
  {
    GObjectClass *gobject_class = G_OBJECT_CLASS (klass);
-   
-   // properties[PROP_FOO] = g_param_spec_int ("foo", "Foo", "Foo",
-   // 					    -1, G_MAXINT,
-   // 					    0,
-   // 					    (GParamFlags)G_PARAM_READWRITE);
-   // properties[PROP_BAR] = g_param_spec_boolean ("bar", "Bar", "Bar",
-   // 						FALSE,
-   // 						(GParamFlags)G_PARAM_READWRITE);
-   // properties[PROP_BAZ] = g_param_spec_string ("baz", "Baz", "Baz",
-   // 					       NULL,
-   // 					       (GParamFlags)G_PARAM_READWRITE);
-   
    gobject_class->set_property = my_object_set_property;
    gobject_class->get_property = my_object_get_property;
    gobject_class->finalize = my_object_finalize;
-   
-   //   g_object_class_install_properties (gobject_class, N_PROPERTIES, properties);
  }
   
   static void 
   my_object_init (MyObject *self)
-  {
-    // self->foo = 42;
-    // self->bar = TRUE;
-    // self->baz = g_strdup ("Hello");
-  }
+  {}
 
   // ---------------------------------- CPP CLASS ----------------------------
   //property id 0 is not allowed, starting at 1 
   guint GObjectWrapper::next_prop_id_ = 1; 
   std::map<guint, GObjectCustomProperty::ptr> GObjectWrapper::custom_properties_;
 
+  //signals
+  guint GObjectWrapper::next_signal_num_ = 1; 
+  //std::map<guint, GObjectCustomSignal::ptr> GObjectWrapper::custom_signals_;
+
   GObjectWrapper::GObjectWrapper ()
   {
     my_object_ = (MyObject *)g_object_new (my_object_get_type (), NULL);
     my_object_-> context = this;
-    default_user_data_ = NULL;
-    //GParamSpec *pspec;
-
-    // pspec = g_object_class_find_property (G_OBJECT_GET_CLASS (my_object_), "foo");
-
-    // gint val;
-    // g_object_get (my_object_, "foo", &val, NULL);
-    // g_print ("foo: %d\n", val);
-    // g_object_set (my_object_, "foo", 47, NULL);
-    // g_object_get (my_object_, "foo", &val, NULL);
-    // g_print ("foo: %d\n", val);
-
-    // GParamSpec *myparam = g_param_spec_int ("coucou", "hey", "truc",
-    // 					     -1, G_MAXINT,
-    // 					     0,
-    // 					     (GParamFlags)G_PARAM_READWRITE);
-    // g_object_class_install_property (G_OBJECT_GET_CLASS (my_object_),
-    // 				     (guint)6,
-    // 				     myparam);
-
-    // g_object_get (my_object_, "coucou", &val, NULL);
-    // g_print ("coucou: %d\n", val);
-    // g_object_set (my_object_, "coucou", 6, NULL);
-    // g_object_get (my_object_, "coucou", &val, NULL);
-    // g_print ("coucou: %d\n", val);
+    property_default_user_data_ = NULL;
+    
   }
 
-  void 
+  bool 
   GObjectWrapper::notify_property_changed (GObject *object, GParamSpec *pspec)
   {
+    if (!G_IS_OBJECT (object))
+      return false;
     g_object_notify_by_pspec (object, pspec);
+    return true;
   }
 
   void
-  GObjectWrapper::set_user_data (std::string nickname,
+  GObjectWrapper::property_set_user_data (std::string nickname,
 				 void *user_data)
   {
-    user_datas_[nickname] = user_data;
+    property_user_datas_[nickname] = user_data;
   }
 
   //TODO provide other make_..._property for other types
@@ -271,7 +143,6 @@ namespace switcher
 					  default_value,
 					  read_write_flags);
     
-    //FIXME only methods seems to be required, so maybe move other args
     GObjectCustomProperty::ptr property =  
       GObjectCustomProperty::make_custom_property (set_method,
 						   get_method);
@@ -349,18 +220,76 @@ namespace switcher
       GObjectCustomProperty::make_custom_property (set_method,
 						   get_method);
     
-  custom_properties_[prop_id] = property;
+    custom_properties_[prop_id] = property;
   
-  //TODO find a way to get CLASS without instanciating an unused object
-  MyObject *obj = (MyObject *)g_object_new (my_object_get_type (), NULL);
-  g_object_class_install_property (G_OBJECT_GET_CLASS (obj),
-				   prop_id,
-				   param);
-  g_object_unref (obj);
-  return param;
-}
+    //TODO find a way to get CLASS without instanciating an unused object
+    MyObject *obj = (MyObject *)g_object_new (my_object_get_type (), NULL);
+    g_object_class_install_property (G_OBJECT_GET_CLASS (obj),
+				     prop_id,
+				     param);
+    g_object_unref (obj);
+    return param;
+  }
 
+  guint
+  GObjectWrapper::make_signal (GType return_type,
+			       guint n_params,
+			       GType *param_types)
+  {
+    guint sig_id = next_signal_num_;
+    next_signal_num_++;
+    gchar *name = g_strdup_printf ("custom_signal_%d", sig_id);
 
+    //TODO find a way to get CLASS without instanciating an unused object
+     MyObject *obj = (MyObject *)g_object_new (my_object_get_type (), NULL);
+     guint signal_id =
+       g_signal_newv (name,
+    		     G_TYPE_FROM_CLASS (G_OBJECT_GET_CLASS (obj)),
+    		     G_SIGNAL_RUN_LAST,
+    		     0,
+    		     NULL, //GSignalAccumulator
+    		     NULL, //gpointer accu_data
+    		     NULL, //GSignalCMarshaller
+    		     return_type,
+    		     n_params,
+    		     param_types);
+     g_object_unref (obj);
+    
+    return signal_id;
+  }
+
+  guint
+  GObjectWrapper::make_signal_action (GClosure *class_closure,
+				      GType return_type,
+				      guint n_params,
+				      GType *param_types)
+  {
+    guint sig_id = next_signal_num_;
+    next_signal_num_++;
+    gchar *name = g_strdup_printf ("custom_signal_%d", sig_id);
+
+   //TODO find a way to get CLASS without instanciating an unused object
+    MyObject *obj = (MyObject *)g_object_new (my_object_get_type (), NULL);
+    guint signal_id =
+      g_signal_newv (name,
+		     G_TYPE_FROM_CLASS (G_OBJECT_GET_CLASS (obj)),
+		     (GSignalFlags)(G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION),
+		     class_closure,
+		     NULL, //GSignalAccumulator
+		     NULL, //gpointer accu_data
+		     NULL, //GSignalCMarshaller
+		     return_type,
+		     n_params,
+		     param_types);
+    g_object_unref (obj);
+    
+    // GObjectCustomSignal::ptr signal =  
+    //   GObjectCustomSignal::make_custom_signal ();
+    
+    // custom_signals_[signal_id] = signal;
+    return signal_id;
+  }
+  
   GObject *
   GObjectWrapper::get_gobject ()
   {
@@ -385,16 +314,16 @@ namespace switcher
   }
 
   void *
-  GObjectWrapper::get_user_data (std::string nickname)
+  GObjectWrapper::property_get_user_data (std::string nickname)
   {
-    if (user_datas_.find (nickname) == user_datas_.end ())
-      return default_user_data_;
-    return user_datas_[nickname];
+    if (property_user_datas_.find (nickname) == property_user_datas_.end ())
+      return property_default_user_data_;
+    return property_user_datas_[nickname];
   }
 
   void 
-  GObjectWrapper::set_default_user_data (void *default_user_data)
+  GObjectWrapper::property_set_default_user_data (void *default_user_data)
   {
-    default_user_data_ = default_user_data;
+    property_default_user_data_ = default_user_data;
   }
  }

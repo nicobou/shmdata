@@ -25,17 +25,18 @@
 namespace switcher
 {
   QuiddityDocumentation SoapCtrlServer::doc_ ("control", "SOAPcontrolServer",
-					  "SOAPcontrolServer allows for managing switcher through SOAP webservices");
+					      "getting switcher controled through SOAP webservices");
     
   bool
   SoapCtrlServer::init ()
   {
+    thread_ = NULL;
     port_ = 8080;
     soap_init(&soap_);
     //release port
     soap_.connect_flags = SO_LINGER; 
     soap_.accept_flags = SO_LINGER;
-    
+    soap_.accept_timeout =  100 * -1000; //100ms
     soap_.fget = SoapCtrlServer::http_get;
     
     srand(time(0));
@@ -165,8 +166,8 @@ namespace switcher
     soap_.user = (void *)this;//manager_.get ();//FIXME this should use the shared pointer, maybe giving this insteead of the manager
     quit_server_thread_ = false;
     service_ = new controlService (soap_);
-    SOAP_SOCKET m = service_->bind(NULL, port_, 100 /* BACKLOG */);
-    if (!soap_valid_socket(m))
+    socket_ = service_->bind(NULL, port_, 100 /* BACKLOG */);
+    if (!soap_valid_socket(socket_))
 	service_->soap_print_fault(stderr);
     thread_ = g_thread_new ("SoapCtrlServer", GThreadFunc(server_thread), this);
   }
@@ -184,7 +185,14 @@ namespace switcher
   SoapCtrlServer::stop ()
   {
     quit_server_thread_ = true;
-    //g_thread_join (thread_);
+    if (thread_ != NULL)
+      g_thread_join (thread_);
+    thread_ = NULL;
+    soap_closesocket (socket_);
+    soap_destroy(&soap_);
+    soap_end(&soap_);
+    soap_done(&soap_);
+    delete service_;
   }
   
   gpointer
@@ -206,21 +214,25 @@ namespace switcher
 	  { if (context->service_->errnum)
 	      context->service_->soap_print_fault(stderr);
 	    else
-	      g_error("SOAP server timed out");	/* should really wait for threads to terminate, but 24hr timeout should be enough ... */
-	    break;
+	      {
+		//g_debug ("SOAP server timed out");
+	      }
 	  }
-	// g_debug ("client request %d accepted on socket %d, client IP is %d.%d.%d.%d", 
-	// 	    i, s, 
-	// 	    (int)(context->service_->ip>>24)&0xFF, 
-	// 	    (int)(context->service_->ip>>16)&0xFF, 
-	// 	    (int)(context->service_->ip>>8)&0xFF, 
-	// 	    (int)context->service_->ip&0xFF);
-	controlService *tcontrol = context->service_->copy();
-	tcontrol->serve();
-	delete tcontrol;
+	else
+	  {
+	    // g_debug ("client request %d accepted on socket %d, client IP is %d.%d.%d.%d", 
+	    // 	    i, s, 
+	    // 	    (int)(context->service_->ip>>24)&0xFF, 
+	    // 	    (int)(context->service_->ip>>16)&0xFF, 
+	    // 	    (int)(context->service_->ip>>8)&0xFF, 
+	    // 	    (int)context->service_->ip&0xFF);
+	    controlService *tcontrol = context->service_->copy();
+	    if (context->service_->errnum)
+	      context->service_->soap_print_fault(stderr);
+	    tcontrol->serve();
+	    delete tcontrol;
+	  }
       }
-    if (context->service_)
-      delete context->service_;
     return NULL;
   }
 
@@ -651,4 +663,134 @@ controlService::get_method_description_by_class (std::string class_name,
   *result = manager->get_method_description_by_class (class_name, method_name);
   return SOAP_OK;
 }
+
+int
+controlService::get_signals_description (std::string quiddity_name,
+					 std::string *result)
+{
+  using namespace switcher;
+
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
+  QuiddityManager::ptr manager;
+  if (ctrl_server != NULL)
+    manager = ctrl_server->get_quiddity_manager ();
+
+  *result = manager->get_signals_description (quiddity_name);
+  return SOAP_OK;
+}
+
+int
+controlService::get_signal_description (std::string quiddity_name,
+					std::string signal_name,
+					std::string *result)
+{
+  using namespace switcher;
+
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
+  QuiddityManager::ptr manager;
+  if (ctrl_server != NULL)
+    manager = ctrl_server->get_quiddity_manager ();
+
+  *result = manager->get_signal_description (quiddity_name, signal_name);
+  return SOAP_OK;
+}
+
+int
+controlService::get_signals_description_by_class (std::string class_name,
+						  std::string *result)
+{
+  using namespace switcher;
+
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
+  QuiddityManager::ptr manager;
+  if (ctrl_server != NULL)
+    manager = ctrl_server->get_quiddity_manager ();
+
+  *result = manager->get_signals_description_by_class (class_name);
+  return SOAP_OK;
+}
+
+int
+controlService::get_signal_description_by_class (std::string class_name,
+						 std::string signal_name,
+						 std::string *result)
+{
+  using namespace switcher;
+
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
+  QuiddityManager::ptr manager;
+  if (ctrl_server != NULL)
+    manager = ctrl_server->get_quiddity_manager ();
+
+  *result = manager->get_signal_description_by_class (class_name, signal_name);
+  return SOAP_OK;
+}
+
+
+int
+controlService::save (std::string file_name,
+		      std::string *result)
+{
+  using namespace switcher;
+
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
+  QuiddityManager::ptr manager;
+  if (ctrl_server != NULL)
+    manager = ctrl_server->get_quiddity_manager ();
+
+  if (manager->save_command_history (file_name.c_str ()))
+    *result = "true";
+  else
+    *result = "false";
+  return SOAP_OK;
+}
+
+int
+controlService::load (std::string file_name,
+		      std::string *result)
+{
+  using namespace switcher;
+
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
+  QuiddityManager::ptr manager;
+  if (ctrl_server != NULL)
+    manager = ctrl_server->get_quiddity_manager ();
+
+  manager->reset_command_history(true);
+
+  switcher::QuiddityManager::CommandHistory histo = 
+    manager->get_command_history_from_file (file_name.c_str ());
+   if (histo.empty ())
+    {
+      *result = "false";
+      return SOAP_OK;
+    }
+  manager->play_command_history (histo, NULL, NULL); 
+  *result = "true";
+  return SOAP_OK;
+}
+
+int
+controlService::run (std::string file_name,
+		     std::string *result)
+{
+  using namespace switcher;
+
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
+  QuiddityManager::ptr manager;
+  if (ctrl_server != NULL)
+    manager = ctrl_server->get_quiddity_manager ();
+
+  switcher::QuiddityManager::CommandHistory histo = 
+    manager->get_command_history_from_file (file_name.c_str ());
+   if (histo.empty ())
+    {
+      *result = "false";
+      return SOAP_OK;
+    }
+  manager->play_command_history (histo, NULL, NULL); 
+  *result = "true";
+  return SOAP_OK;
+}
+
 

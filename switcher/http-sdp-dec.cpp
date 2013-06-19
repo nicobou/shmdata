@@ -17,34 +17,38 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "uridecodebin.h"
+#include "http-sdp-dec.h"
 #include "gst-utils.h"
 #include <glib/gprintf.h>
 #include <memory>
 
 namespace switcher
 {
-  QuiddityDocumentation Uridecodebin::doc_ ("uri decoding", "uridecodebin", 
-					    "decode an URI of live stream(s) to shmdata(s)");
+  QuiddityDocumentation HTTPSDPDec::doc_ ("http sdp decoding", "httpsdpdec", 
+					    "decode an sdp-described stream deliver through http and make shmdatas");
   
-  Uridecodebin::~Uridecodebin ()
+  HTTPSDPDec::~HTTPSDPDec ()
   {
-    destroy_uridecodebin ();
+    destroy_httpsdpdec ();
     QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
-    if ((bool) manager && g_strcmp0 ("",runtime_name_.c_str ()) != 0)
-     	manager->remove_without_hook (runtime_name_);
+     if ((bool) manager && g_strcmp0 ("",runtime_name_.c_str ()) != 0)
+      	manager->remove_without_hook (runtime_name_);
   }
   
   bool
-  Uridecodebin::init() 
+  HTTPSDPDec::init() 
   { 
-    if (!GstUtils::make_element ("uridecodebin",&uridecodebin_))
+    GstElement *decodebin;
+    if (!GstUtils::make_element ("souphttpsrc", &souphttpsrc_)
+	|| !GstUtils::make_element ("sdpdemux", &sdpdemux_)
+	|| !GstUtils::make_element ("decodebin2", &decodebin))
       return false;
-
-    //set the name before registering properties
-    set_name (gst_element_get_name (uridecodebin_));
     
-    destroy_uridecodebin ();
+    decodebins_.push_back (decodebin);
+    //set the name before registering properties
+    set_name (gst_element_get_name (souphttpsrc_));
+    
+    destroy_httpsdpdec ();
    
     //registering add_data_stream
     register_method("to_shmdata",
@@ -52,168 +56,73 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    (gpointer)this);
     set_method_description ("to_shmdata", 
-			    "decode streams from an uri and write them to shmdatas", 
+			    "decode streams from an sdp file delivered through http and write them to shmdatas", 
 			    Method::make_arg_description ("uri", 
 							  "the uri to decode",
-							  NULL));
-    //registering play
-    register_method("play",
-		    (void *)&play_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    (gpointer)this);
-    set_method_description ((char *)"play", 
-			    (char *)"activate the runtime", 
-			    Method::make_arg_description ("none",
-							  NULL));
-
-    //registering pause
-    register_method("pause",
-		    (void *)&pause_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    (gpointer)this);
-    set_method_description ((char *)"pause", 
-			    (char *)"pause the runtime", 
-			    Method::make_arg_description ((char *)"none",
-							  NULL));
-
-     //registering seek
-    register_method("seek",
-		    (void *)&seek_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-		    (gpointer)this);
-    set_method_description ((char *)"seek", 
-			    (char *)"seek the runtime", 
-			    Method::make_arg_description ((char *)"position",
-							  (char *)"position in milliseconds",
-							  NULL));
-
-    //registering speed
-    register_method("speed",
-		    (void *)&speed_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-		    (gpointer)this);
-    set_method_description ((char *)"speed", 
-			    (char *)"controle speed of runtime", 
-			    Method::make_arg_description ((char *)"speed",
-							  (char *)"1.0 is normal speed, 0.5 is half the speed and 2.0 is double speed",
 							  NULL));
     return true;
   }
   
   QuiddityDocumentation 
-  Uridecodebin::get_documentation ()
+  HTTPSDPDec::get_documentation ()
   {
     return doc_;
   }
 
   void 
-  Uridecodebin::init_uridecodebin ()
+  HTTPSDPDec::init_httpsdpdec ()
   {
-    if (!GstUtils::make_element ("uridecodebin",&uridecodebin_))
+    if (!GstUtils::make_element ("souphttpsrc", &souphttpsrc_)
+	|| !GstUtils::make_element ("sdpdemux", &sdpdemux_))
       {
-	g_warning (" Uridecodebin::init_uridecodebin, cannot create uridecodebin");
+	g_warning (" HTTPSDPDec::init_httpsdpdec, cannot create httpsdpdec elements");
 	return;
       }
-    
+
     media_counters_.clear ();
     main_pad_ = NULL;
     discard_next_uncomplete_buffer_ = false;
     rtpgstcaps_ = gst_caps_from_string ("application/x-rtp, media=(string)application");
-    
-    g_signal_connect (G_OBJECT (uridecodebin_), 
+
+    g_signal_connect (G_OBJECT (sdpdemux_), 
 		      "pad-added", 
-		      (GCallback) Uridecodebin::uridecodebin_pad_added_cb,
+		      (GCallback) HTTPSDPDec::httpsdpdec_pad_added_cb,
 		      (gpointer) this);
-    g_signal_connect (G_OBJECT (uridecodebin_),  
+    g_signal_connect (G_OBJECT (sdpdemux_),  
 		      "no-more-pads",  
-		      (GCallback) Uridecodebin::no_more_pads_cb ,  
+		      (GCallback) HTTPSDPDec::no_more_pads_cb ,  
 		      (gpointer) this);      
-    g_signal_connect (G_OBJECT (uridecodebin_),  
-		      "source-setup",  
-		      (GCallback) Uridecodebin::source_setup_cb ,  
-		      (gpointer) this);      
-
-    // g_signal_connect (G_OBJECT (uridecodebin_),  
-    // 		      "pad-removed",  
-    // 		      (GCallback) Uridecodebin::pad_removed_cb ,  
-    // 		      (gpointer) this);      
-    g_signal_connect (G_OBJECT (uridecodebin_),  
-     		      "unknown-type",  
-     		      (GCallback) Uridecodebin::unknown_type_cb ,  
-     		      (gpointer) this);      
-    // g_signal_connect (G_OBJECT (uridecodebin_),  
-    // 		      "autoplug-continue",  
-    // 		      (GCallback) Uridecodebin::autoplug_continue_cb ,  
-    // 		      (gpointer) this);      
-     // g_signal_connect (G_OBJECT (uridecodebin_),  
-     // 		      "autoplug-factory",  
-     // 		      (GCallback) Uridecodebin::autoplug_factory_cb ,  
-     // 		      (gpointer) this);      
-     // g_signal_connect (G_OBJECT (uridecodebin_),  
-     // 		      "autoplug-sort",  
-     // 		      (GCallback) Uridecodebin::autoplug_sort_cb ,  
-     // 		      (gpointer) this);      
-     g_signal_connect (G_OBJECT (uridecodebin_),  
-     		      "autoplug-select",  
-     		      (GCallback) Uridecodebin::autoplug_select_cb ,  
-     		      (gpointer) this);      
-    // g_signal_connect (G_OBJECT (uridecodebin_),  
-    // 		      "drained",  
-    // 		      (GCallback) Uridecodebin::drained_cb ,  
-    // 		      (gpointer) this);      
-
-    // g_signal_connect (G_OBJECT (uridecodebin_),  
-    //  		    "drained",  
-    //  		    (GCallback) uridecodebin_drained_cb ,  
-    //  		    (gpointer) this);      
-
-    g_object_set (G_OBJECT (uridecodebin_),  
-       		  // "ring-buffer-max-size",(guint64)200000000, 
-		  //"download",TRUE, 
-		  //"use-buffering",TRUE, 
-		  //"ring-buffer-max-size", 4294967295,
-       		  "expose-all-streams", TRUE,
-       		  "async-handling",TRUE, 
-       		  //"buffer-duration",9223372036854775807, 
-       		  NULL); 
   }
 
   void 
-  Uridecodebin::destroy_uridecodebin ()
+  HTTPSDPDec::destroy_httpsdpdec ()
   {
-    GstUtils::clean_element (uridecodebin_);
-    // if (G_IS_OBJECT (uridecodebin_))
-    //   {
-    // 	gst_element_set_state (uridecodebin_,GST_STATE_NULL);
-    // 	gst_element_get_state (uridecodebin_, NULL, NULL, GST_CLOCK_TIME_NONE);
-    // 	gst_object_unref (uridecodebin_);
-    //   }
+    GstUtils::clean_element (souphttpsrc_);
+    GstUtils::clean_element (sdpdemux_);
   }
 
   void 
-  Uridecodebin::no_more_pads_cb (GstElement* object, gpointer user_data)   
+  HTTPSDPDec::no_more_pads_cb (GstElement* object, gpointer user_data)   
   {   
-    //g_print ("---- no more pad\n");
-    // Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   }
 
   void 
-  Uridecodebin::unknown_type_cb (GstElement *bin, 
-				 GstPad *pad, 
-				 GstCaps *caps, 
-				 gpointer user_data)
+  HTTPSDPDec::unknown_type_cb (GstElement *bin, 
+			       GstPad *pad, 
+			       GstCaps *caps, 
+			       gpointer user_data)
   {
-    g_error ("Uridecodebin unknown type: %s (%s)\n", gst_caps_to_string (caps), gst_element_get_name (bin));
+    g_debug ("HTTPSDPDec unknown type: %s (%s)\n", gst_caps_to_string (caps), gst_element_get_name (bin));
   }
 
   int 
-  Uridecodebin::autoplug_select_cb (GstElement *bin, 
+  HTTPSDPDec::autoplug_select_cb (GstElement *bin, 
 				    GstPad *pad, 
 				    GstCaps *caps, 
 				    GstElementFactory *factory, 
 				    gpointer user_data)
   {
-    g_debug ("uridecodebin autoplug select %s, (factory %s)",  gst_caps_to_string (caps), GST_OBJECT_NAME (factory));
+    //g_print ("\n --- httpsdpdec autoplug select %s, (factory %s)\n\n",  gst_caps_to_string (caps), GST_OBJECT_NAME (factory));
     //     typedef enum {
     //   GST_AUTOPLUG_SELECT_TRY,
     //   GST_AUTOPLUG_SELECT_EXPOSE,
@@ -221,12 +130,30 @@ namespace switcher
     // } GstAutoplugSelectResult;
 
     if (g_strcmp0 (GST_OBJECT_NAME (factory), "rtpgstdepay") == 0)
-      return 1; //expose
+      {
+	int return_val = 1;
+	const GValue *val = gst_structure_get_value (gst_caps_get_structure(gst_pad_get_caps (pad),0),
+						     "caps");
+	
+	gsize taille = 256;
+	guchar *string_caps = g_base64_decode (g_value_get_string (val),
+					       &taille);
+
+	gchar *string_caps_char = g_strdup_printf ("%s", string_caps); 
+
+	if (g_str_has_prefix (string_caps_char, "audio/") 
+	    || g_str_has_prefix (string_caps_char, "video/") )
+	  return_val = 0;
+
+	g_free (string_caps_char);
+	g_free (string_caps);
+	return return_val; //expose
+      }
     return 0; //try
   }
 
   // GValueArray*
-  // Uridecodebin::autoplug_factory_cb (GstElement *bin,
+  // HTTPSDPDec::autoplug_factory_cb (GstElement *bin,
   // 				     GstPad          *pad,
   // 				     GstCaps         *caps,
   // 				     gpointer         user_data)
@@ -236,7 +163,7 @@ namespace switcher
   // }
 
   // GValueArray *
-  // Uridecodebin::autoplug_sort_cb (GstElement *bin,
+  // HTTPSDPDec::autoplug_sort_cb (GstElement *bin,
   // 				  GstPad *pad,
   // 				  GstCaps *caps,
   // 				  GValueArray *factories,
@@ -247,9 +174,9 @@ namespace switcher
   // }
   
   gboolean
-  Uridecodebin::rewind (gpointer user_data)
+  HTTPSDPDec::rewind (gpointer user_data)
   {
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+    HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
 
     GstQuery *query;
     gboolean res;
@@ -289,9 +216,9 @@ namespace switcher
   }
 
   gboolean
-  Uridecodebin::event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data)
+  HTTPSDPDec::event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data)
   {
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+    HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
     if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) { 
       //g_print ("EOS caught and disabled \n");
       // g_print ("----- pad with EOS %s:%s, src: %p %s\n",
@@ -324,10 +251,8 @@ namespace switcher
 
 
   void
-  Uridecodebin::pad_to_shmdata_writer (GstElement *bin, GstPad *pad)
+  HTTPSDPDec::pad_to_shmdata_writer (GstElement *bin, GstPad *pad)
   {
-    //g_print ("---- (%s)\n", gst_caps_to_string (gst_pad_get_caps (pad)));
-
     //detecting type of media
     const gchar *padname;
     if (0 == g_strcmp0 ("ANY", gst_caps_to_string (gst_pad_get_caps (pad))))
@@ -335,7 +260,7 @@ namespace switcher
     else
       padname= gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
 
-    g_debug ("uridecodebin new pad name is %s\n",padname);
+    g_debug ("httpsdpdec new pad name is %s\n",padname);
     
     GstElement *identity;
     GstUtils::make_element ("identity", &identity);
@@ -345,7 +270,6 @@ namespace switcher
      		  NULL);
     GstElement *funnel;
     GstUtils::make_element ("funnel", &funnel);
-    
     
     gst_bin_add_many (GST_BIN (bin), identity, funnel, NULL);
     GstUtils::link_static_to_request (pad, funnel);
@@ -376,7 +300,7 @@ namespace switcher
 
      gchar media_name[256];
      g_sprintf (media_name,"%s_%d",padname_splitted[0],count);
-     g_debug ("uridecodebin: new media %s %d\n",media_name, count );
+     g_debug ("httpsdpdec: new media %s %d\n",media_name, count );
      g_strfreev(padname_splitted);
 
      //creating a shmdata
@@ -399,9 +323,9 @@ namespace switcher
 
 
   gboolean 
-  Uridecodebin::gstrtpdepay_buffer_probe_cb (GstPad * pad, GstMiniObject * mini_obj, gpointer user_data)
+  HTTPSDPDec::gstrtpdepay_buffer_probe_cb (GstPad * pad, GstMiniObject * mini_obj, gpointer user_data)
   {
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+    HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
     
     /* if (GST_IS_BUFFER (mini_obj)) */
     /*   { */
@@ -421,9 +345,9 @@ namespace switcher
   }
   
   gboolean
-  Uridecodebin::gstrtpdepay_event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data)
+  HTTPSDPDec::gstrtpdepay_event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data)
   {
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+    HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
 
     if (GST_EVENT_TYPE (event) == GST_EVENT_CUSTOM_DOWNSTREAM) 
       {
@@ -439,16 +363,34 @@ namespace switcher
   
 
   void 
-  Uridecodebin::uridecodebin_pad_added_cb (GstElement* object, GstPad *pad, gpointer user_data)   
+  HTTPSDPDec::httpsdpdec_pad_added_cb (GstElement* object, GstPad *pad, gpointer user_data)   
   {   
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-   
+    HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
 
-    // g_print ("------------- caps 1 %s \n-------------- caps 2 %s\n",
-    // 	     gst_caps_to_string (context->gstrtpcaps_), 
-    // 	     gst_caps_to_string (gst_pad_get_caps (pad)));
-   
-    if (gst_caps_can_intersect (context->rtpgstcaps_,
+    GstElement *decodebin;
+    GstUtils::make_element ("decodebin2", &decodebin);
+    gst_bin_add (GST_BIN (context->bin_), decodebin);
+    GstPad *sinkpad = gst_element_get_static_pad (decodebin, "sink");
+    GstUtils::check_pad_link_return (gst_pad_link (pad, sinkpad));
+    g_signal_connect (G_OBJECT (decodebin), 
+		      "pad-added", 
+		      (GCallback) HTTPSDPDec::decodebin_pad_added_cb,
+		      (gpointer) context);
+    g_signal_connect (G_OBJECT (decodebin),  
+     		      "autoplug-select",  
+     		      (GCallback) HTTPSDPDec::autoplug_select_cb ,  
+     		      (gpointer) context);      
+
+    GstUtils::sync_state_with_parent (decodebin);
+    context->decodebins_.push_back (decodebin); 
+  }   
+
+  void 
+  HTTPSDPDec::decodebin_pad_added_cb (GstElement* object, GstPad *pad, gpointer user_data)   
+  {   
+    HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
+
+        if (gst_caps_can_intersect (context->rtpgstcaps_,
 				gst_pad_get_caps (pad)))
       {
 	//asking rtpbin to send an event when a packet is lost (do-lost property)
@@ -461,39 +403,41 @@ namespace switcher
 	//adding a probe for discarding uncomplete packets
 	GstPad *depaysrcpad = gst_element_get_static_pad (rtpgstdepay, "src");
 	gst_pad_add_buffer_probe (depaysrcpad,
-				  G_CALLBACK (Uridecodebin::gstrtpdepay_buffer_probe_cb),
+				  G_CALLBACK (HTTPSDPDec::gstrtpdepay_buffer_probe_cb),
 				  context);
 	gst_object_unref (depaysrcpad);
 
 	gst_bin_add (GST_BIN (context->bin_), rtpgstdepay);
 	GstPad *sinkpad = gst_element_get_static_pad (rtpgstdepay, "sink");
 	//adding a probe for handling loss messages from rtpbin
-	gst_pad_add_event_probe (sinkpad, (GCallback) Uridecodebin::gstrtpdepay_event_probe_cb, context);   
+	gst_pad_add_event_probe (sinkpad, (GCallback) HTTPSDPDec::gstrtpdepay_event_probe_cb, context);   
 
 	GstUtils::check_pad_link_return (gst_pad_link (pad, sinkpad));
 	gst_object_unref (sinkpad);
 	GstPad *srcpad = gst_element_get_static_pad (rtpgstdepay, "src");
 	GstUtils::sync_state_with_parent (rtpgstdepay);
 	gst_element_get_state (rtpgstdepay, NULL, NULL, GST_CLOCK_TIME_NONE);
+
 	context->pad_to_shmdata_writer (context->bin_, srcpad);
-	//gst_object_unref (srcpad);
+	gst_object_unref (srcpad);
+	return;
       }
-    else
-      context->pad_to_shmdata_writer (context->bin_, pad);
-  }   
+    
+    context->pad_to_shmdata_writer (context->bin_, pad);
+  }
 
   void 
-  Uridecodebin::source_setup_cb (GstElement *uridecodebin, GstElement *source, gpointer user_data)
+  HTTPSDPDec::source_setup_cb (GstElement *httpsdpdec, GstElement *source, gpointer user_data)
   {
-    //Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+    //HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
     g_debug ("source %s %s\n",  GST_ELEMENT_NAME(source), G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (source)));
   }
 
   gboolean
-  Uridecodebin::to_shmdata_wrapped (gpointer uri, 
+  HTTPSDPDec::to_shmdata_wrapped (gpointer uri, 
 				    gpointer user_data)
   {
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+    HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
   
     if (context->to_shmdata ((char *)uri))
       return TRUE;
@@ -502,93 +446,43 @@ namespace switcher
   }
 
   bool
-  Uridecodebin::to_shmdata (std::string uri)
+  HTTPSDPDec::to_shmdata (std::string uri)
   {
-    destroy_uridecodebin ();
+    destroy_httpsdpdec ();
     QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
     if ((bool) manager)
       {
-	manager->remove_without_hook (runtime_name_);
+	if (g_strcmp0 ("",runtime_name_.c_str ()) != 0)
+	  manager->remove_without_hook (runtime_name_);
 	runtime_name_ = manager->create_without_hook ("runtime");
 	Quiddity::ptr quidd = manager->get_quiddity (runtime_name_);
 	Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
 	if(runtime)
 	  set_runtime(runtime);
 	else
-	  g_warning ("Uridecodebin::to_shmdata: unable to use a custom runtime");
+	  g_warning ("HTTPSDPDec::to_shmdata: unable to use a custom runtime");
       }
     else
       return false;
     
     reset_bin ();
-    init_uridecodebin ();
+    init_httpsdpdec ();
     g_debug ("------------------------- to_shmdata set uri %s", uri.c_str ());
-    g_object_set (G_OBJECT (uridecodebin_), "uri", uri.c_str (), NULL); 
 
-    gst_bin_add (GST_BIN (bin_), uridecodebin_);
+    g_object_set (G_OBJECT (souphttpsrc_), "location", uri.c_str (), NULL); 
+
+    gst_bin_add_many (GST_BIN (bin_), 
+		      souphttpsrc_, 
+		      sdpdemux_,
+		      NULL);
+    
+    gst_element_link (souphttpsrc_, sdpdemux_);
+
     GstUtils::wait_state_changed (bin_);
-    GstUtils::sync_state_with_parent (uridecodebin_);
+    GstUtils::sync_state_with_parent (souphttpsrc_);
+    GstUtils::sync_state_with_parent (sdpdemux_);
     return true;
   }
 
-  gboolean
-  Uridecodebin::play_wrapped (gpointer unused, gpointer user_data)
-  {
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
-    if (! (bool) manager)
-      return FALSE;
-    Quiddity::ptr quidd = manager->get_quiddity (context->runtime_name_);
-    Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
-    if(!runtime)
-      return FALSE;
-    runtime->play ();
-    return TRUE;
-  }
-  
-  gboolean
-  Uridecodebin::pause_wrapped (gpointer unused, gpointer user_data)
-  {
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
-    if (! (bool) manager)
-      return FALSE;
-    Quiddity::ptr quidd = manager->get_quiddity (context->runtime_name_);
-    Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
-    if(!runtime)
-      return FALSE;
-    runtime->pause ();
-    return TRUE;
-  }
-
-  gboolean
-  Uridecodebin::seek_wrapped (gdouble position, gpointer user_data)
-  {
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
-    if (! (bool) manager)
-      return FALSE;
-    Quiddity::ptr quidd = manager->get_quiddity (context->runtime_name_);
-    Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
-    if(!runtime)
-      return FALSE;
-    runtime->seek (position);
-    return TRUE;
-  }
-
-  gboolean
-  Uridecodebin::speed_wrapped (gdouble speed, gpointer user_data)
-  {
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
-    if (! (bool) manager)
-      return FALSE;
-    Quiddity::ptr quidd = manager->get_quiddity (context->runtime_name_);
-    Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
-    if(!runtime)
-      return FALSE;
-    runtime->speed (speed);
-    return TRUE;
-  }
 
 }

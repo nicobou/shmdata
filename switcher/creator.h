@@ -18,7 +18,7 @@
  */
 
 /**
- * the Abstract Life Manager class
+ * the Abstract creator class
  */
 
 #ifndef __SWITCHER_CREATOR_H__

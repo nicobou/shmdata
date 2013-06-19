@@ -2,7 +2,7 @@ dnl required version of autoconf
 AC_PREREQ([2.53])
 
 dnl TODO: fill in your package name and package version here
-AC_INIT([switcher],[0.1.2])
+AC_INIT([switcher],[0.2.0])
 
 dnl required version of gstreamer and gst-plugins-base
 GST_REQUIRED=0.10.36
@@ -33,7 +33,7 @@ AC_CANONICAL_HOST
 AC_SUBST([LIBSWITCHER_SO_VERSION], [0:0:0])
 
 # The version of the API. Should be major.minor and not change until not backward-compatible
-AC_SUBST([LIBSWITCHER_API_VERSION], [0.1])
+AC_SUBST([LIBSWITCHER_API_VERSION], [0.2])
 
 dnl check for tools (compiler etc.)
 AC_PROG_CXX

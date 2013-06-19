@@ -28,8 +28,6 @@ namespace switcher
 
   Segment::Segment()
   {
-    gobject_.reset (new GObjectWrapper ());
-    gobject_->set_default_user_data (this);
     shmdata_writers_description_.reset (new JSONBuilder());
     shmdata_readers_description_.reset (new JSONBuilder());
     update_shmdata_writers_description ();
@@ -61,11 +59,7 @@ namespace switcher
 				json_readers_description_, 
 				"shmdata-readers");
 
-    GstUtils::make_element ("bin", &bin_);
-    g_object_set (G_OBJECT (bin_), "async-handling",TRUE, NULL);
-    
-    
-    //g_object_set (G_OBJECT (bin_), "message-forward",TRUE, NULL);
+    make_bin();
 
     //registering set_runtime method
     std::vector<GType> set_runtime_arg_types;
@@ -79,11 +73,55 @@ namespace switcher
     if (!set_method_description ("set_runtime", "attach quiddity to a runtime ", arg_desc))
       g_error ("segment: cannot set method description for \"set_runtime\"");
 
+     GType types[] = {G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING};
+     make_custom_signal ("segment",
+			 "on-new-shmdata-writer", 
+			 G_TYPE_NONE,
+			 3,
+			 types);
+     set_signal_description ("on-new-shmdata-writer",
+			     "a new shmdata writer has been created",
+			     Signal::make_arg_description("quiddity_name",
+							  "the quiddity name",
+							  "path",
+							  "the shmdata path",
+							  "json_doc",
+							  "the writer json documentation",
+							  NULL));
+     make_custom_signal ("segment",
+			 "on-new-shmdata-reader", 
+			 G_TYPE_NONE,
+			 3,
+			 types);
+     set_signal_description ("on-new-shmdata-reader",
+			     "a new shmdata reader has been created",
+			     Signal::make_arg_description("quiddity_name",
+							  "the quiddity name",
+							  "path",
+							  "the shmdata path",
+							  "json_doc",
+							  "the writer json documentation",
+							  NULL));
   }
 
   Segment::~Segment()
   {
     g_debug ("Segment::~Segment begin (%s)",get_nick_name().c_str ());
+    clean_bin ();
+    g_debug ("Segment::~Segment end");
+  }
+  
+  void 
+  Segment::make_bin ()
+  {
+    GstUtils::make_element ("bin", &bin_);
+    g_object_set (G_OBJECT (bin_), "async-handling",TRUE, NULL);
+
+  }
+  
+  void
+  Segment::clean_bin()
+  {
     g_debug ("Segment, bin state %s, target %s, num children %d ", 
 	     gst_element_state_get_name (GST_STATE (bin_)), 
 	     gst_element_state_get_name (GST_STATE_TARGET (bin_)), 
@@ -93,13 +131,9 @@ namespace switcher
     
     if (GST_IS_ELEMENT (bin_))
       {
-
-	
-	g_debug ("Segment::~Segment shmdata cleaning");
-	shmdata_readers_.clear ();
-	g_debug ("Segment::~Segment shmdata readers cleared");
-	shmdata_writers_.clear ();
-	g_debug ("Segment::~Segment shmdata writers cleared");
+	// shmdata_readers_.clear ();
+	// shmdata_writers_.clear ();
+	clear_shmdatas ();
 
 	g_debug ("Segment, bin state %s, target %s, num children %d ", 
 		 gst_element_state_get_name (GST_STATE (bin_)), 
@@ -120,10 +154,8 @@ namespace switcher
 	g_debug ("~Segment: cleaning internal bin");
 	GstUtils::clean_element (bin_);
       }
-    g_debug ("Segment::~Segment end");
   }
-  
-  
+
   void 
   Segment::set_runtime_wrapped (gpointer arg, gpointer user_data)
   {
@@ -141,10 +173,10 @@ namespace switcher
 	return;
       }
     
-    QuiddityLifeManager::ptr life_manager = context->life_manager_.lock ();
-    if ( (bool)life_manager)
+    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
+    if ( (bool)manager)
       {
-	Quiddity::ptr quidd = life_manager->get_quiddity (runtime_name);
+	Quiddity::ptr quidd = manager->get_quiddity (runtime_name);
 	Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
 	if(runtime)
 	  context->set_runtime(runtime);
@@ -157,6 +189,12 @@ namespace switcher
   void
   Segment::set_runtime (Runtime::ptr runtime)
   {
+    if (runtime_ != NULL)
+      {
+	clean_bin ();
+	make_bin ();
+      }
+
     runtime_ = runtime;
     gst_bin_add (GST_BIN (runtime_->get_pipeline ()),bin_);
 
@@ -176,13 +214,6 @@ namespace switcher
   Segment::get_bin()
   {
     return bin_;
-  }
-
-  //FIXME remove this get_src_connector
-  std::vector<std::string> 
-  Segment::get_src_connectors ()
-  {
-    return shmdata_writers_.get_keys ();
   }
 
   void
@@ -233,6 +264,10 @@ namespace switcher
     shmdata_writers_.insert (name, writer);
     update_shmdata_writers_description ();
     GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_writers_description_);
+    signal_emit ("on-new-shmdata-writer", 
+      		 get_nick_name ().c_str (), 
+      		 writer->get_path ().c_str (),
+      		 (JSONBuilder::get_string (writer->get_json_root_node (), true)).c_str ());
     return true;
   }
   
@@ -247,7 +282,10 @@ namespace switcher
     shmdata_readers_.insert (name, reader);
     update_shmdata_readers_description ();
     GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
-
+    signal_emit ("on-new-shmdata-reader", 
+		 get_nick_name ().c_str (), 
+		 reader->get_path ().c_str (),
+		 JSONBuilder::get_string (reader->get_json_root_node (), true).c_str ());
     return true;
     
   }
@@ -257,7 +295,6 @@ namespace switcher
     shmdata_readers_.remove (shmdata_path);
     update_shmdata_readers_description ();
     GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
-
     return true;
   }
 
@@ -267,6 +304,26 @@ namespace switcher
     update_shmdata_writers_description ();
     GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_writers_description_);
 
+    return true;
+  }
+
+  bool Segment::clear_shmdatas ()
+  {
+    unsigned int size = shmdata_writers_.size ();
+    shmdata_writers_.clear ();
+    if (size != 0)
+      {
+	update_shmdata_writers_description ();
+	GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_writers_description_);
+      }
+
+    size = shmdata_readers_.size ();
+    shmdata_readers_.clear ();
+    if (size != 0)
+      {
+	update_shmdata_readers_description ();
+	GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
+      }
     return true;
   }
 
@@ -286,6 +343,15 @@ namespace switcher
     Segment *context = static_cast<Segment *>(user_data);
     g_value_set_string (value, context->shmdata_readers_description_->get_string (true).c_str ());
     return TRUE;
+  }
+
+  bool 
+  Segment::reset_bin ()
+  {
+    // clean_bin ();
+    // make_bin ();
+    if ((bool)runtime_)
+      set_runtime (runtime_);
   }
 
 }

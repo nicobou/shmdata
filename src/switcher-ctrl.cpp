@@ -24,6 +24,9 @@
 
 //options
 static gchar *server = NULL;
+static gboolean save;
+static gboolean load;
+static gboolean run;
 static gboolean createquiddity;
 static gboolean deletequiddity;
 static gboolean listclasses;
@@ -36,6 +39,8 @@ static gboolean listprop;
 static gboolean listpropbyclass;
 static gboolean listmethods;
 static gboolean listmethodsbyclass;
+static gboolean listsignals;
+static gboolean listsignalsbyclass;
 static gboolean setprop;
 static gboolean getprop;
 static gboolean invokemethod;
@@ -46,15 +51,19 @@ static gchar **remaining_args = NULL;
 static GOptionEntry entries[] =
   {
     { "server", 'S', 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:8080)", NULL },
+    { "save", NULL, 0, G_OPTION_ARG_NONE, &save, "save history to file (--save filename)", NULL },
+    //FIXME enable that with signal and property notification blocked during load { "load", NULL, 0, G_OPTION_ARG_NONE, &load, "load state from history file (--load filename)", NULL },
+    { "run", NULL, 0, G_OPTION_ARG_NONE, &run, "run history to file (--run filename)", NULL },
     { "create-quiddity", 'C', 0, G_OPTION_ARG_NONE, &createquiddity, "create a quiddity instance (-C quiddity_class [optional nick name])", NULL },
     { "delete-quiddity", 'D', 0, G_OPTION_ARG_NONE, &deletequiddity, "delete a quiddity instance by its name", NULL },
     { "list-classes", 'c', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", NULL },
     { "list-quiddities", 'e', 0, G_OPTION_ARG_NONE, &listquiddities, "list quiddity instances", NULL },
     { "list-props", 'p', 0, G_OPTION_ARG_NONE, &listprop, "list properties of a quiddity", NULL },
     { "list-props-by-class", 'P', 0, G_OPTION_ARG_NONE, &listpropbyclass, "list properties of a class", NULL },
-
     { "list-methods", 'm', 0, G_OPTION_ARG_NONE, &listmethods, "list methods of a quiddity", NULL },
     { "list-methods-by-class", 'M', 0, G_OPTION_ARG_NONE, &listmethodsbyclass, "list methods of a class", NULL },
+    { "list-signals", 'l', 0, G_OPTION_ARG_NONE, &listsignals, "list signals of a quiddity", NULL },
+    { "list-signals-by-class", 'L', 0, G_OPTION_ARG_NONE, &listsignalsbyclass, "list signals of a class", NULL },
     { "set-prop", 's', 0, G_OPTION_ARG_NONE, &setprop, "set property value (-s quiddity_name prop_name val)", NULL },
     { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g quiddity_name prop_name)", NULL },
     { "invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod, "invoke method of a quiddity (-i quiddity_name method_name args...)", NULL },
@@ -69,7 +78,6 @@ static GOptionEntry entries[] =
 
 int main(int argc, char **argv)
 { 
-
   //command line options
   GError *error = NULL;
   GOptionContext *context;
@@ -77,17 +85,19 @@ int main(int argc, char **argv)
   g_option_context_add_main_entries (context, entries, NULL);
   if (!g_option_context_parse (context, &argc, &argv, &error))
     {
-      g_print ("option parsing failed: %s\n", error->message);
+      g_printerr ("option parsing failed: %s\n", error->message);
       exit (1);
     } 
-  
   
   if (server == NULL)
     {
       server = "http://localhost:8080";
     }
-
-  if (! (listclasses 
+  
+  if (! (save
+	 ^ load
+	 ^ run
+	 ^ listclasses 
 	 ^ classesdoc
 	 ^ classdoc
 	 ^ listquiddities 
@@ -101,6 +111,8 @@ int main(int argc, char **argv)
 	 ^ deletequiddity
 	 ^ listmethods
 	 ^ listmethodsbyclass
+	 ^ listsignals
+	 ^ listsignalsbyclass
 	 ^ invokemethod))
     {
       g_printerr ("I am very sorry for the inconvenience, but I am able to process only one command at a time. \n");
@@ -110,7 +122,40 @@ int main(int argc, char **argv)
   controlProxy switcher_control(SOAP_IO_KEEPALIVE | SOAP_XML_INDENT);
   switcher_control.soap_endpoint = server;
   
-  if (listclasses)
+  if (save)
+    {
+      std::string result;
+      if (remaining_args[0] == NULL)
+	{
+	  g_printerr ("file name missing\n");
+	  return false;
+	}
+      switcher_control.save (remaining_args[0],&result);
+      std::cout << result << std::endl;
+    }
+  else if (load)
+    {
+      std::string result;
+      if (remaining_args[0] == NULL)
+	{
+	  g_printerr ("file name missing\n");
+	  return false;
+	}
+      switcher_control.load (remaining_args[0],&result);
+      std::cout << result << std::endl;
+    }
+  else if (run)
+    {
+      std::string result;
+      if (remaining_args[0] == NULL)
+	{
+	  g_printerr ("file name missing\n");
+	  return false;
+	}
+      switcher_control.run (remaining_args[0],&result);
+      std::cout << result << std::endl;
+    }
+  else if (listclasses)
     {
       std::vector<std::string> resultlist;
       switcher_control.get_factory_capabilities(&resultlist);
@@ -244,6 +289,38 @@ int main(int argc, char **argv)
 	}
 
       switcher_control.delete_quiddity (remaining_args[0]);
+    }
+  else if (listsignals)
+    {
+      if (remaining_args[0] == NULL )
+	{
+	  g_printerr ("missing quiddity name for list signals\n");
+	  return false;
+	}
+      std::string resultlist;
+      if (remaining_args[1] == NULL)
+	switcher_control.get_signals_description(remaining_args[0], &resultlist);
+      else
+	switcher_control.get_signal_description(remaining_args[0], remaining_args[1], &resultlist);
+      std::cout << resultlist << std::endl;
+    }
+  else if (listsignalsbyclass)
+    {
+      if (remaining_args[0] == NULL )
+	{
+	  g_printerr ("missing quiddity name for list signals\n");
+	  return false;
+	}
+      
+      std::string resultlist;
+      if (remaining_args[1] == NULL)
+	switcher_control.get_signals_description_by_class (remaining_args[0], 
+							   &resultlist);
+      else
+	switcher_control.get_signal_description_by_class (remaining_args[0], 
+							  remaining_args[1], 
+							  &resultlist);
+      std::cout << resultlist << std::endl;
     }
   else if (listmethods)
     {

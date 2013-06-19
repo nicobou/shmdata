@@ -41,6 +41,7 @@ namespace switcher
     ~ShmdataReader ();
     void set_path (const char *absolute_path);
     void set_bin (GstElement *bin);
+    void set_g_main_context (GMainContext *context);
     void set_sink_element (GstElement *sink_element);
     void set_on_first_data_hook (on_first_data_hook cb, void *user_data);
     std::string get_path ();
@@ -59,6 +60,7 @@ namespace switcher
     GstElement *bin_;
     GstElement *sink_element_;
     GstElement *funnel_;
+    GMainContext *g_main_context_;
     std::vector<GstElement *> elements_to_remove_;
     static void on_first_data (shmdata_base_reader_t *context, void *user_data);
     //static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);

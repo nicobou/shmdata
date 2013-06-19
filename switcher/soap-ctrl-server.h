@@ -51,6 +51,7 @@ namespace switcher
     int port_;
     bool quit_server_thread_;
     controlService *service_; 
+    SOAP_SOCKET socket_;
     GThread *thread_;
     static gpointer server_thread (gpointer user_data);
     static int http_get (struct soap *soap);

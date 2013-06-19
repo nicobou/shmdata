@@ -49,7 +49,7 @@ namespace switcher
     } UserMethod;
 
     CustomPropertyHelper ();
-    void notify_property_changed (GParamSpec *pspec);
+    bool notify_property_changed (GParamSpec *pspec);
     GObject *get_gobject ();
     GParamSpec *
       make_string_property (const gchar *nickname, 

@@ -29,9 +29,12 @@ namespace switcher
   class GstUtils
   {
   public:
-    static bool make_element (gchar *class_name, GstElement **target_element);
-    static bool link_static_to_request (GstElement *src,GstElement *sink);
-    static bool link_static_to_request (GstPad *srcpad,GstElement *sink);
+    static bool make_element (const gchar *class_name, 
+			      GstElement **target_element);
+    static bool link_static_to_request (GstElement *src,
+					GstElement *sink);
+    static bool link_static_to_request (GstPad *srcpad,
+					GstElement *sink);
     static bool check_pad_link_return (GstPadLinkReturn res);
     static void unlink_pad (GstPad * pad);
     static void clean_element (GstElement *element);
@@ -41,8 +44,17 @@ namespace switcher
 					     const gchar *factory_name, 
 					     const gchar *property_name,
 					     gboolean property_value);
-
-  };
+    static gchar *gvalue_serialize (const GValue *val);// g_free after use
+    static guint g_idle_add_full_with_context (GMainContext *context,
+					       gint priority, //in case of doubt use G_PRIORITY_DEFAULT_IDLE
+					       GSourceFunc function,
+					       gpointer data,
+					       GDestroyNotify notify);
+    static guint g_timeout_add_to_context(guint interval, 
+					  GSourceFunc function,
+					  gpointer data, 
+					  GMainContext *context);
+      };
 
 }  // end of namespace
 

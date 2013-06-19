@@ -66,6 +66,12 @@ namespace switcher
   {
     json_builder_add_string_value (builder_, string_value);
   }
+
+  void 
+  JSONBuilder::add_double_value (gdouble double_value)
+  {
+    json_builder_add_double_value (builder_, double_value);
+  }
   
   void 
   JSONBuilder::end_array ()
@@ -84,6 +90,20 @@ namespace switcher
   {
     json_builder_set_member_name (builder_, member_name);
     json_builder_add_string_value (builder_, string_value);
+  }
+
+  void 
+  JSONBuilder::add_double_member (const gchar *member_name, gdouble double_value)
+  {
+    json_builder_set_member_name (builder_, member_name);
+    json_builder_add_double_value (builder_, double_value);
+  }
+
+  void 
+  JSONBuilder::add_int_member (const gchar *member_name, gint int_value)
+  {
+    json_builder_set_member_name (builder_, member_name);
+    json_builder_add_int_value (builder_, int_value);
   }
   
   void 
@@ -121,7 +141,6 @@ namespace switcher
       json_generator_set_pretty (generator, FALSE);
     json_generator_set_root (generator, root_node);
     data = json_generator_to_data (generator, &length);
-    //g_print ("%*s\n", (int)length, data);
     std::string description (data);
     g_free (data);
     g_object_unref (generator);

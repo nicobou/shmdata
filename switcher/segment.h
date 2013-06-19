@@ -27,7 +27,6 @@
 #include "shmdata-writer.h"
 #include "shmdata-reader.h"
 #include "json-builder.h"
-#include "gobject-wrapper.h"
 #include <memory>
 #include <vector>
 
@@ -43,9 +42,6 @@ namespace switcher
     // the segment is managing itself the presence/attachment with the runtime
     void set_runtime (Runtime::ptr runtime);
 
-    //FIXME remove the followong method:
-    std::vector<std::string> get_src_connectors ();
-
     //wrappers for calls from base quiddity manager
     static void set_runtime_wrapped (gpointer runtime, gpointer context);
     
@@ -60,8 +56,12 @@ namespace switcher
     bool unregister_shmdata_writer (std::string shmdata_path);
     bool register_shmdata_reader (ShmdataReader::ptr reader);
     bool unregister_shmdata_reader (std::string shmdata_path);
-      
+    bool clear_shmdatas ();
+    bool reset_bin ();
+
   private:
+    void make_bin ();
+    void clean_bin ();
     StringMap<ShmdataWriter::ptr> shmdata_writers_;
     StringMap<ShmdataReader::ptr> shmdata_readers_;
     JSONBuilder::ptr shmdata_writers_description_;
@@ -69,7 +69,6 @@ namespace switcher
     void update_shmdata_writers_description ();
     void update_shmdata_readers_description ();
     //shmdatas as param
-    GObjectWrapper::ptr gobject_;
     static GParamSpec *json_writers_description_;
     static GParamSpec *json_readers_description_;
   };

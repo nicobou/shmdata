@@ -127,7 +127,7 @@ namespace switcher
     user_method->gobject = get_gobject ();
     user_method->pspec = pspec;
     user_methods_.push_back (user_method);
-    gobject_->set_user_data (nickname, user_method.get ());
+    gobject_->property_set_user_data (nickname, user_method.get ());
   }
 
   bool
@@ -145,6 +145,11 @@ namespace switcher
       {
 	gboolean val = ((get_boolean_method)user_method->get) (user_method->user_data);
 	g_value_set_boolean (value, val);
+      }
+    else if (G_VALUE_TYPE(value) == G_TYPE_INT)
+      {
+	gint val = ((get_int_method)user_method->get) (user_method->user_data);
+	g_value_set_int (value, val);
       }
     else
       g_warning ("CustomPropertyHelper: unknown type"); 
@@ -176,11 +181,11 @@ namespace switcher
     return TRUE;
   }
 
-  void
+  bool
   CustomPropertyHelper::notify_property_changed (GParamSpec *pspec)
   {
-    GObjectWrapper::notify_property_changed (gobject_->get_gobject (),
-					     pspec);
+    return GObjectWrapper::notify_property_changed (gobject_->get_gobject (),
+						    pspec);
   }
 
 }

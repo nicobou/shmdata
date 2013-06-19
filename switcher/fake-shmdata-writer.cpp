@@ -31,7 +31,6 @@ namespace switcher
   FakeShmdataWriter::init ()
   {
     set_name (gst_element_get_name (bin_));
-    
 
     //registering add_data_stream
     register_method("add_shmdata_path",

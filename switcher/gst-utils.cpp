@@ -23,7 +23,8 @@ namespace switcher
 {
 
   bool
-  GstUtils::make_element (gchar *class_name, GstElement **target_element)
+  GstUtils::make_element (const gchar *class_name, 
+			  GstElement **target_element)
   {
     
     // if (*target_element != NULL)
@@ -37,7 +38,7 @@ namespace switcher
     *target_element = gst_element_factory_make (class_name, NULL);
     if (*target_element == NULL)
       {
-	g_warning ("gstreamer element class %s cannot be instanciated", class_name);
+	g_debug ("gstreamer element class %s cannot be instanciated", class_name);
 	return false;
       }
     else
@@ -266,5 +267,60 @@ namespace switcher
 	  }
       }
   }
+
+  gchar *
+  GstUtils::gvalue_serialize (const GValue *val)
+  {
+    if (!G_IS_VALUE (val))
+      return NULL;
+    gchar *val_str;
+    if (G_VALUE_TYPE (val) == G_TYPE_STRING)
+      val_str = g_strdup (g_value_get_string (val));
+    else
+      val_str = gst_value_serialize (val);
+    return val_str;
+  }
+
+  guint
+  GstUtils::g_idle_add_full_with_context (GMainContext *context,
+					  gint priority,
+					  GSourceFunc function,
+					  gpointer data,
+					  GDestroyNotify notify)
+  {
+    GSource *source;
+    guint id;
+
+    if (function == NULL)
+      return 0;
+    
+    source = g_idle_source_new ();
+    
+    if (priority != G_PRIORITY_DEFAULT_IDLE)
+      g_source_set_priority (source, priority);
+    
+    g_source_set_callback (source, function, data, notify);
+    id = g_source_attach (source, context);
+    g_source_unref (source);
+    
+    return id;
+  }
   
+  guint 
+  GstUtils::g_timeout_add_to_context(guint interval, 
+				     GSourceFunc function,
+				     gpointer data, 
+				     GMainContext *context) 
+  {
+    GSource *source;
+    guint id;
+    
+    g_return_val_if_fail(function != NULL, 0);
+    source = g_timeout_source_new(interval);
+    g_source_set_callback(source, function, data, NULL);
+    id = g_source_attach(source, context);
+    g_source_unref(source);
+    
+    return id;
+  }
 }

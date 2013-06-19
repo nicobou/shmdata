@@ -64,6 +64,7 @@ namespace switcher
   {
     g_debug ("BaseSink::connect");
     reader_->set_path (shmdata_socket_path.c_str());
+    reader_->set_g_main_context (get_g_main_context ());
     reader_->set_bin (bin_);
     if (sink_element_ !=NULL)
       reader_->set_sink_element (sink_element_);

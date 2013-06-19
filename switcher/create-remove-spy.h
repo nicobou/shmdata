@@ -18,31 +18,31 @@
  */
 
 
-#ifndef __SWITCHER_GST_VIDEO_PARSE_TO_BIN_SRC_H__
-#define __SWITCHER_GST_VIDEO_PARSE_TO_BIN_SRC_H__
+#ifndef __SWITCHER_CREATE_REMOVE_SPY_H__
+#define __SWITCHER_CREATE_REMOVE_SPY_H__
 
-#include "base-source.h"
-#include <gst/gst.h>
+#include "quiddity.h"
 #include <memory>
 
 namespace switcher
 {
 
-  class GstVideoParseToBinSrc : public BaseSource
+  class CreateRemoveSpy : public Quiddity
   {
   public:
-    typedef std::shared_ptr<GstVideoParseToBinSrc> ptr;
-    ~GstVideoParseToBinSrc ();
+    typedef std::shared_ptr<CreateRemoveSpy> ptr;
     bool init ();
-    bool to_shmdata (std::string gst_pipeline_description);
+    ~CreateRemoveSpy ();
+    static void on_created (std::string quiddity_nick_name, void *user_data);
+    static void on_removed (std::string quiddity_nick_name, void *user_data);
+    
     QuiddityDocumentation get_documentation ();
     static QuiddityDocumentation doc_;
 
   private:
-    GstElement *gst_video_parse_to_bin_src_;
-    static gboolean to_shmdata_wrapped (gpointer descr, gpointer user_data);
+    bool i_am_the_one_;
   };
-
+  
 }  // end of namespace
 
 #endif // ifndef

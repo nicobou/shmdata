@@ -182,6 +182,7 @@ namespace switcher
 	 reader.reset (new ShmdataReader ());
 	 reader->set_path (it->first.c_str());
 	 reader->set_bin (bin_);
+	 reader->set_g_main_context (get_g_main_context ());
 	 reader->set_sink_element (recorder_bin);
 	
 	 GstUtils::wait_state_changed (bin_);
@@ -191,13 +192,13 @@ namespace switcher
 	 register_shmdata_reader (reader);
 	
       }
-
+    return true;
   }
 
   bool
   ShmdataToFile::clean_recorders ()
   {
-    
+   
     std::map <std::string, GstElement *> recorders = shmdata_recorders_.get_map ();
     std::map <std::string, GstElement *>::iterator it;
     for (it = recorders.begin (); it != recorders.end (); it++)
@@ -206,5 +207,6 @@ namespace switcher
 	unregister_shmdata_reader (it->first);
       }
     shmdata_recorders_.clear ();
+    return true;
   }
 }

@@ -18,13 +18,15 @@
  */
 
 #include "switcher/quiddity-manager.h"
+#include <vector>
 #include <iostream>
 #include <signal.h>
 #include <time.h>
 
 
-static gchar *server_name = NULL;
-static gchar *port_number = NULL;
+static const gchar *server_name = NULL;
+static const gchar *port_number = NULL;
+static const gchar *load_file = NULL;
 static gchar *osc_port_number = NULL;
 static gboolean quiet;
 static gboolean debug;
@@ -37,12 +39,16 @@ static gchar *classdoc = NULL;
 static gchar *listpropbyclass = NULL;
 static gchar *listmethodsbyclass = NULL;
 
-static std::vector<switcher::QuiddityManager::ptr> container;
+static gboolean is_loading = FALSE;
+
+//static std::vector<switcher::QuiddityManager::ptr> container;
+static switcher::QuiddityManager::ptr manager;
 
 static GOptionEntry entries[] =
   {
     { "server-name", 's', 0, G_OPTION_ARG_STRING, &server_name, "server name (default is \"default\")", NULL },
     { "port-number", 'p', 0, G_OPTION_ARG_STRING, &port_number, "port number the server will bind (default is 8080)", NULL },
+    { "load", 'l', 0, G_OPTION_ARG_STRING, &load_file, "load state from history file (-l filename)", NULL },
     { "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet, "do not display any message", NULL },
     { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "display all messages, excluding debug", NULL },
     { "debug", 'd', 0, G_OPTION_ARG_NONE, &debug, "display all messages, including debug", NULL },
@@ -59,7 +65,10 @@ void
 leave (int sig)
 {
   //removing reference to manager in order to delete it
-  container.clear ();
+  {
+    switcher::QuiddityManager::ptr empty;
+    manager.swap (empty);
+  }
   exit (sig);
 }
 
@@ -81,6 +90,31 @@ logger_cb (std::string subscriber_name,
   g_print ("%s\n", value.c_str());
 }
 
+gpointer
+set_runtime_invoker (gpointer name)
+{
+  if (manager->has_method ((char *)name, "set_runtime"))
+      manager->invoke_va ((char *)name, "set_runtime", "pipeline0", NULL);
+  g_free (name);
+  return NULL;
+}
+
+void 
+quiddity_created_removed_cb (std::string subscriber_name, 
+			     std::string quiddity_name, 
+			     std::string signal_name, 
+			     std::vector<std::string> params, 
+			     void *user_data)
+{
+  g_message ("%s: %s", signal_name.c_str (), params[0].c_str ());
+  if (g_strcmp0 (signal_name.c_str (), "on-quiddity-created") == 0
+      && is_loading == FALSE)
+    g_thread_create (set_runtime_invoker, 
+   		     g_strdup (params[0].c_str ()),
+   		     FALSE,
+   		     NULL);
+}
+
 int
 main (int argc,
       char *argv[])
@@ -94,18 +128,15 @@ main (int argc,
   g_option_context_add_main_entries (context, entries, NULL);
   if (!g_option_context_parse (context, &argc, &argv, &error))
     {
-      g_print ("option parsing failed: %s\n", error->message);
+      g_printerr ("option parsing failed: %s\n", error->message);
       exit (1);
     } 
-
-
 
   //checking if this is printing info only
   if (listclasses)
     {
       g_log_set_default_handler (quiet_log_handler, NULL);
-      switcher::QuiddityManager::ptr manager 
-	= switcher::QuiddityManager::make_manager ("immpossible_name");  
+      manager = switcher::QuiddityManager::make_manager ("immpossible_name");  
       std::vector<std::string> resultlist = manager->get_classes ();
       for(uint i = 0; i < resultlist.size(); i++)
 	g_print ("%s\n",resultlist[i].c_str ());
@@ -150,14 +181,8 @@ main (int argc,
   if (port_number == NULL)
     port_number = "8080";
 
-  {
-    //using context in order to let excluse ownership of manager by the container,
-    //allowing to properly call destructor when SIGINT
-    switcher::QuiddityManager::ptr manager 
-      = switcher::QuiddityManager::make_manager (server_name);  
-
-     container.push_back (manager); // keep reference only in the container
-
+  manager = switcher::QuiddityManager::make_manager (server_name);  
+  
      //create logger managing switcher log domain
      manager->create ("logger", "internal_logger");
      //manage logs from shmdata
@@ -182,12 +207,18 @@ main (int argc,
        manager->set_property ("internal_logger", "verbose", "false");
           
      //subscribe to logs:
-     manager->make_subscriber ("log_sub", logger_cb, NULL);
+     manager->make_property_subscriber ("log_sub", logger_cb, NULL);
      manager->subscribe_property ("log_sub","internal_logger","last-line");
      
-     // Create a runtime (pipeline0)
+      // Create a runtime (pipeline0)
      //std::string runtime = 
-     manager->create ("runtime");
+     manager->create ("runtime","pipeline0");
+     
+    //make on-quiddity-created and on-quiddity-removed signals
+     manager->create ("create_remove_spy", "create_remove_spy");
+     manager->make_signal_subscriber ("create_remove_subscriber", quiddity_created_removed_cb, NULL);
+     manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-created");
+     manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-removed");
 
      std::string soap_name = manager->create ("SOAPcontrolServer", "soapserver");
      std::vector<std::string> port_arg;
@@ -201,18 +232,74 @@ main (int argc,
 	 manager->invoke_va (osc_name.c_str (), "set_port", osc_port_number, NULL);
        }
 
-     //setting auto_invoke for attaching to gst pipeline "pipeline0"
-     std::vector<std::string> arg;
-     arg.push_back ("pipeline0");
-     manager->auto_invoke ("set_runtime",arg);
-  }
+     manager->reset_command_history (false);
 
+     if (load_file != NULL)
+       {
+	 is_loading= TRUE;
+	 switcher::QuiddityManager::CommandHistory histo = 
+	   manager->get_command_history_from_file (load_file);
+	 std::vector <std::string> prop_subscriber_names = 
+	   manager->get_property_subscribers_names (histo);
+	 if (!prop_subscriber_names.empty ())
+	   g_warning ("creation of property subscriber not handled when loading file %s", load_file);
+	 
+	 std::vector <std::string> signal_subscriber_names = 
+	   manager->get_signal_subscribers_names (histo);
+	 if (!signal_subscriber_names.empty ())
+	   g_warning ("creation of signal subscriber not handled when loading file %s", load_file);
+
+	 manager->play_command_history (histo, NULL, NULL); 
+	 is_loading= FALSE;
+
+       }
+
+     // manager->create ("videotestsrc", "vid");
+     // manager->create("videosink","win");
+     // manager->invoke_va ("win",
+     //   			 "connect",
+     //   			 "/tmp/switcher_default_vid_video",
+     //   			 NULL);
+     
+     // //  g_print ("---- histo testing ------ \n");
+     // manager->save_command_history ("trup.switcher");
+     
+     // manager->reset_command_history(true);
+     
+     // //manager->reboot ();
+
+     // g_print ("---- reset done ----\n");
+     // g_print ("--- %s\n",manager->get_quiddities_description ().c_str ());
+     
+     // switcher::QuiddityManager::CommandHistory histo = 
+     //   manager->get_command_history_from_file ("trup.switcher");
+     
+     // // std::vector <std::string> prop_subscriber_names = 
+     // //   manager->get_property_subscribers_names (histo);
+     
+     // //    // for (auto &it: prop_subscriber_names)
+     // //    //   g_print ("prop sub %s\n", it.c_str ());
+     
+     // //    // std::vector <std::string> signal_subscriber_names = 
+     // //    //   manager->get_signal_subscribers_names (histo);
+     
+     // //    // for (auto &it: signal_subscriber_names)
+     // //    //   g_print ("signal sub %s\n", it.c_str ());
+     
+     //      switcher::QuiddityManager::PropCallbackMap prop_cb_data;
+     //      prop_cb_data ["log_sub"] = std::make_pair (logger_cb, (void *)NULL);
+     //      switcher::QuiddityManager::SignalCallbackMap sig_cb_data;
+     //      sig_cb_data["create_remove_subscriber"] = std::make_pair (quiddity_created_removed_cb, (void *)NULL);
+     //      manager->play_command_history (histo, &prop_cb_data, &sig_cb_data); 
+     //      g_print ("--fin-- %s\n",manager->get_quiddities_description ().c_str ());
+  
+  
   //waiting for end of life
   timespec delay;
   delay.tv_sec = 1;
   delay.tv_nsec = 0;
   while (1)
-    nanosleep(&delay, NULL);
+      nanosleep(&delay, NULL);
   
   return 0;
 }

@@ -45,6 +45,10 @@ namespace switcher
     set_name (gst_element_get_name (xvimagesink_));
     g_object_set (G_OBJECT (xvimagesink_), "sync", FALSE, NULL);
 
+    c_name_ = g_strdup (get_nick_name ().c_str ());
+    g_object_set_data (G_OBJECT (xvimagesink_), 
+		       "quiddity_name",
+		       (gpointer)c_name_);
     //registering "sync"
     //register_property (G_OBJECT (xvimagesink_),"sync","sync");
     
@@ -53,7 +57,17 @@ namespace switcher
     return true;
   }
   
+  Xvimagesink::Xvimagesink ()
+  {
+    c_name_ = NULL;
+  }
 
+  Xvimagesink::~Xvimagesink ()
+  {
+    if (c_name_ != NULL)
+      g_free (c_name_);
+    GstUtils::clean_element (xvimagesink_);
+  }
 
   QuiddityDocumentation 
   Xvimagesink::get_documentation ()

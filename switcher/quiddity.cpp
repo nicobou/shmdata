@@ -22,21 +22,40 @@
  */
 
 #include "quiddity.h"
-#include "quiddity-life-manager.h"
+#include "quiddity-manager-impl.h"
 
 
 namespace switcher
 {
+  std::map<std::pair <std::string,std::string>, guint> Quiddity::signals_ids_;
 
   Quiddity::Quiddity ()
   {
+    gobject_.reset (new GObjectWrapper ());
+    gobject_->property_set_default_user_data (this);
     properties_description_.reset (new JSONBuilder());
     methods_description_.reset (new JSONBuilder());
+    signals_description_.reset (new JSONBuilder());
+    
+     // GType types[] = {G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING};
+     // make_custom_signal ("quiddity",
+     // 			 "on-new-signal-registered", 
+     // 			 G_TYPE_NONE,
+     // 			 3,
+     // 			 types);
+     // set_signal_description ("on-new-signal-registered",
+     // 			     "a new signal has been registered and documented",
+     // 			     Signal::make_arg_description("quiddity_name",
+     // 							  "the quiddity name",
+     // 							  "signal_name",
+     // 							  "the signal name",
+     // 							  "json_doc",
+     // 							  "the json-formated signal documentation",
+     // 							  NULL));
   }
   
-  Quiddity::~Quiddity () { 
-    g_debug ("call: Quiddity destructor for %s",get_name().c_str());
-  }
+  Quiddity::~Quiddity () 
+  {}
 
   std::string
   Quiddity::get_name()
@@ -65,6 +84,102 @@ namespace switcher
     nick_name_ = nick_name;
     return true;
   }
+  
+  
+  bool 
+  Quiddity::register_signal_gobject (std::string signal_name,
+				     GObject *object, 
+				     std::string gobject_signal_name)
+  {
+    if (signals_.find(signal_name) != signals_.end())
+      {
+	g_warning ("signals: a signal named %s has already been registered for this class",signal_name.c_str());
+	return false;
+      }
+    
+    Signal::ptr signal;
+    signal.reset (new Signal ());
+    if (!signal->set_gobject_signame (object, gobject_signal_name))
+      return false;
+    signals_[signal_name] = signal; 
+    g_debug ("signal %s registered with name %s", 
+      	     gobject_signal_name.c_str (),
+      	     signal_name.c_str ());
+    return true;
+  }
+
+  bool 
+  Quiddity::make_custom_signal (const std::string signal_name, //the name to give
+				GType return_type,
+				guint n_params, //number of params
+				GType *param_types)
+  {
+    return make_custom_signal (get_documentation().get_class_name (),
+			       signal_name,
+			       return_type,
+			       n_params,
+			       param_types);
+  }
+
+  bool 
+  Quiddity::make_custom_signal (const std::string class_name,
+				const std::string signal_name, //the name to give
+				GType return_type,
+				guint n_params, //number of params
+				GType *param_types)
+  {
+    if (signals_.find(signal_name) != signals_.end())
+      {
+	g_warning ("signals: a signal named %s has already been registered for this class",signal_name.c_str());
+	return false;
+      }
+    
+    std::pair <std::string,std::string> sig_pair = std::make_pair (class_name,
+								   signal_name);
+    if (signals_ids_.find(sig_pair) == signals_ids_.end())
+      {
+	guint id = GObjectWrapper::make_signal (return_type,
+						n_params,
+						param_types); 
+	if (id == 0)
+	  {
+	    g_warning ("custom signal %s not created because of a type issue",
+		       signal_name.c_str ());
+	    return false;
+	  }
+	signals_ids_[sig_pair] = id;
+      }
+
+    Signal::ptr signal (new Signal ());
+    if (!signal->set_gobject_sigid (gobject_->get_gobject (), signals_ids_[sig_pair]))
+        return false;
+    signals_[signal_name] = signal; 
+    g_debug ("signal %s registered", 
+     	     signal_name.c_str ());
+    return true;
+  }
+
+
+  bool 
+  Quiddity::set_signal_description (const std::string signal_name,
+				    const std::string short_description,
+				    const std::vector<std::pair<std::string,std::string> > arg_description)
+  {
+
+    if (signals_.find(signal_name) == signals_.end())
+      {
+	g_error ("cannot set description of a not existing signal");
+	return false;
+      }
+    signals_[signal_name]->set_description (signal_name, short_description, arg_description);
+
+    // signal_emit ("on-new-signal-registered", 
+    // 		 get_nick_name ().c_str (), 
+    // 		 signal_name.c_str (),
+    // 		 (JSONBuilder::get_string (signals_[signal_name]->get_json_root_node (), true)).c_str ());
+    return true;
+  }
+
 
   bool 
   Quiddity::register_property_by_pspec (GObject *object, 
@@ -75,7 +190,6 @@ namespace switcher
     Property::ptr prop (new Property ());
     prop->set_gobject_pspec (object, pspec);
 
-    //std::string name ( prefix + "/" + object_property );
     if (properties_.find(name_to_give) == properties_.end())
       {
 	properties_[name_to_give] = prop; 
@@ -103,23 +217,29 @@ namespace switcher
     
     return register_property_by_pspec (object, pspec, name_to_give);
   }
-  
-
 
   //return -1 if method not found
   //TODO implement get method and let the manager to call invoke, get_num_args etc...
   int 
-  Quiddity::method_get_num_value_args (std::string function_name)
+  Quiddity::method_get_num_value_args (std::string method_name)
   {
-    if (methods_.find( function_name ) == methods_.end())
+    if (methods_.find(method_name ) == methods_.end())
       {
-	g_debug ("Quiddity::method_get_num_value_args error: method %s not found",function_name.c_str());
+	g_debug ("Quiddity::method_get_num_value_args error: method %s not found", method_name.c_str());
 	return -1;
       }
     else 
-      return (int)methods_[function_name]->get_num_of_value_args(); 
+      return (int)methods_[method_name]->get_num_of_value_args(); 
   }
 
+   bool 
+   Quiddity::has_method (const std::string method_name)
+   {
+       if (methods_.find(method_name) == methods_.end())
+	 return false;
+       return true;
+   }
+  
   bool 
   Quiddity::invoke_method (std::string function_name, 
 			   std::vector<std::string> args)
@@ -209,13 +329,13 @@ namespace switcher
 
     for(std::map<std::string, Property::ptr>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
       {
-	properties_description_->begin_object ();
-	properties_description_->add_string_member ("name",it->first.c_str ());
-	JsonNode *root_node = it->second->get_json_root_node ();
-	properties_description_->add_JsonNode_member ("description", root_node);
-	properties_description_->end_object ();
+     	properties_description_->begin_object ();
+     	properties_description_->add_string_member ("name",it->first.c_str ());
+     	JsonNode *root_node = it->second->get_json_root_node ();
+     	properties_description_->add_JsonNode_member ("description", root_node);
+     	properties_description_->end_object ();
       }
-
+    
     properties_description_->end_array ();
     properties_description_->end_object ();
     
@@ -277,14 +397,99 @@ namespace switcher
     return prop->unsubscribe (cb, user_data);
   }
 
+  bool 
+  Quiddity::subscribe_signal (std::string signal_name, 
+			      Signal::OnEmittedCallback cb,
+			      void *user_data)
+  {
+
+    if (signals_.find(signal_name) == signals_.end())
+      {
+	g_warning ("Quiddity::subscribe_signal, signal %s not found", signal_name.c_str ());
+	return false;
+      }
+    Signal::ptr sig = signals_[signal_name];
+    return sig->subscribe (cb, user_data);
+  }
+
+  bool 
+  Quiddity::unsubscribe_signal (std::string signal_name,
+				Signal::OnEmittedCallback cb,
+				void *user_data)
+  {
+    if (signals_.find (signal_name) == signals_.end())
+      return false;
+
+    Signal::ptr signal = signals_[signal_name];
+    return signal->unsubscribe (cb, user_data);
+  }
+
+  void
+  Quiddity::signal_emit (const std::string signal_name, 
+			 ...)
+  {
+    if (signals_.find (signal_name) == signals_.end())
+	return;
+    Signal::ptr signal = signals_[signal_name];
+    va_list var_args;
+    va_start (var_args, signal_name);
+     // va_list va_cp;
+     // va_copy (va_cp, var_args);
+     // signal->signal_emit (get_g_main_context (), signal_name.c_str (), va_cp); 
+    signal->signal_emit (/*get_g_main_context (), */signal_name.c_str (), var_args); 
+    va_end (var_args);
+  }
+
+  std::string 
+  Quiddity::get_signals_description ()
+  {
+
+    std::string class_name = get_documentation().get_class_name ();
+
+    signals_description_->reset();
+    signals_description_->begin_object ();
+    signals_description_->set_member_name ("signals");
+    signals_description_->begin_array ();
+    
+    for(std::map<std::string, Signal::ptr>::iterator it = signals_.begin(); 
+     	it != signals_.end(); 
+     	++it) 
+      {
+	signals_description_->begin_object ();
+	signals_description_->add_string_member ("name",it->first.c_str ());
+	JsonNode *root_node = it->second->get_json_root_node ();
+	if (root_node != NULL)
+	  signals_description_->add_JsonNode_member ("description", root_node);
+	else
+	  signals_description_->add_string_member ("description","missing description");
+	signals_description_->end_object ();
+      }
+    
+    signals_description_->end_array ();
+    signals_description_->end_object ();
+    
+    return signals_description_->get_string (true);
+  }
+
+  std::string 
+  Quiddity::get_signal_description (std::string signal_name)
+  {
+    
+    if (signals_.find(signal_name) == signals_.end())
+      return "";
+    
+    Signal::ptr sig = signals_[signal_name];
+    return sig->get_description ();
+  }
+
 
   std::string
   Quiddity::make_file_name (std::string suffix)
   {
     std::string connector_name;
-    QuiddityLifeManager::ptr life_manager = life_manager_.lock ();
-    if ( (bool)life_manager)
-      connector_name.append ("/tmp/switcher_"+life_manager->get_name ()+"_"+nick_name_+"_"+suffix);
+    QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
+    if ( (bool)manager)
+      connector_name.append ("/tmp/switcher_"+manager->get_name ()+"_"+nick_name_+"_"+suffix);
     else
       connector_name.append ("/tmp/switcher__"+nick_name_+"_"+ suffix); 
 
@@ -305,8 +510,19 @@ namespace switcher
 
 
   void
-  Quiddity::set_life_manager (QuiddityLifeManager::ptr life_manager)
+  Quiddity::set_manager_impl (QuiddityManager_Impl::ptr manager_impl)
   {
-    life_manager_ = life_manager;
+    manager_impl_ = manager_impl;
   }
+
+  GMainContext *
+  Quiddity::get_g_main_context ()
+  {
+    QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
+    if ((bool) manager)
+      return manager->get_g_main_context ();
+    return NULL;
+  }
+
+
 }

@@ -28,21 +28,22 @@ namespace switcher
   {
     path_ = "";
     json_description_.reset (new JSONBuilder());
+    tee_ = NULL;
+    queue_ = NULL;
+    fakesink_ = NULL;
   }
 
   ShmdataWriter::~ShmdataWriter()
   {
-    g_debug ("ShmdataWriter: cleaning elements %s", path_.c_str());
+    //g_debug ("ShmdataWriter: cleaning elements %s", path_.c_str());
     GstUtils::clean_element (tee_);
     GstUtils::clean_element (queue_);
     GstUtils::clean_element (fakesink_);
-   
-    g_debug ("ShmdataWriter: deleting %s", path_.c_str());
+    // g_debug ("ShmdataWriter: deleting %s", path_.c_str());
     shmdata_base_writer_close (writer_);
-
     g_debug ("ShmdataWriter: %s deleted", path_.c_str());
   }
-  
+
   //WARNING if the file exist it will be deleted
   bool 
   ShmdataWriter::set_path (std::string name)
@@ -87,7 +88,6 @@ namespace switcher
     GstUtils::make_element ("queue", &queue_);
     GstUtils::make_element ("fakesink", &fakesink_);
     g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
-
     gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
 
     shmdata_base_writer_plug (writer_, bin, tee_);
@@ -109,7 +109,7 @@ namespace switcher
     GstUtils::make_element ("queue", &queue_);
     GstUtils::make_element ("fakesink", &fakesink_);
     g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
-    
+ 
     gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
     
     shmdata_base_writer_plug (writer_, bin, tee_);
@@ -117,6 +117,7 @@ namespace switcher
     GstPad *sinkpad = gst_element_get_static_pad (tee_, "sink");
     if (gst_pad_link (source_pad, sinkpad) != GST_PAD_LINK_OK)
       g_error ("ShmdataWriter: failed to link with tee");
+
     gst_object_unref (sinkpad);
     gst_element_link_many (tee_, queue_, fakesink_,NULL);
     

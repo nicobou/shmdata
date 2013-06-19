@@ -18,8 +18,8 @@
  */
 
 
-#ifndef __SWITCHER_URIDECODEBIN_H__
-#define __SWITCHER_URIDECODEBIN_H__
+#ifndef __SWITCHER_HTTP_SDP_DEC_H__
+#define __SWITCHER_HTTP_SDP_DEC_H__
 
 #include "base-source.h"
 #include "gst-element-cleaner.h"
@@ -29,30 +29,33 @@
 namespace switcher
 {
 
-  class Uridecodebin : public BaseSource, public GstElementCleaner
+  class HTTPSDPDec : public BaseSource, public GstElementCleaner
   {
   public:
-    typedef std::shared_ptr<Uridecodebin> ptr;
-    ~Uridecodebin();
+    typedef std::shared_ptr<HTTPSDPDec> ptr;
+    ~HTTPSDPDec();
     bool init ();
     bool to_shmdata (std::string uri);
     QuiddityDocumentation get_documentation ();
     static QuiddityDocumentation doc_;
 
   private: 
-   GstElement *uridecodebin_;
+   GstElement *souphttpsrc_;
+   GstElement *sdpdemux_;
+   std::vector<GstElement *> decodebins_;
    StringMap<int> media_counters_;
    GstPad *main_pad_;
    GstCaps *rtpgstcaps_;
    bool discard_next_uncomplete_buffer_;
    std::string runtime_name_;
-   void init_uridecodebin ();
-   void destroy_uridecodebin ();
+   void init_httpsdpdec ();
+   void destroy_httpsdpdec ();
 
-   static void uridecodebin_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
+   static void decodebin_pad_added_cb (GstElement* object, GstPad *pad, gpointer user_data);
+   static void httpsdpdec_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
    static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);
    static void no_more_pads_cb (GstElement* object, gpointer user_data);
-   static void source_setup_cb (GstElement *uridecodebin, GstElement *source, gpointer user_data);
+   static void source_setup_cb (GstElement *httpsdpdec, GstElement *source, gpointer user_data);
    static gboolean event_probe_cb (GstPad *pad, GstEvent * event, gpointer data);
    static gboolean rewind (gpointer user_data);
    static void unknown_type_cb (GstElement *bin, GstPad *pad, GstCaps *caps, gpointer user_data);
@@ -61,21 +64,6 @@ namespace switcher
    static gboolean gstrtpdepay_buffer_probe_cb (GstPad * pad, GstMiniObject * mini_obj, gpointer user_data);
    static gboolean gstrtpdepay_event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data);
    void pad_to_shmdata_writer (GstElement *bin, GstPad *pad);
-
-   static gboolean play_wrapped (gpointer unused, gpointer user_data);
-   static gboolean pause_wrapped (gpointer unused, gpointer user_data);
-   static gboolean seek_wrapped (gdouble position, gpointer user_data);
-   static gboolean speed_wrapped (gdouble speed, gpointer user_data);
-   
-   /* static GValueArray *autoplug_sort_cb (GstElement *bin, */
-   /* 					 GstPad *pad, */
-   /* 					 GstCaps *caps, */
-   /* 					 GValueArray *factories, */
-   /* 					 gpointer user_data); */
-   /* static GValueArray *autoplug_factory_cb (GstElement *bin, */
-   /* 					    GstPad *pad, */
-   /* 					    GstCaps *caps, */
-   /* 					    gpointer user_data); */
   };
 
 }  // end of namespace

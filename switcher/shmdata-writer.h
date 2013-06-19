@@ -42,6 +42,7 @@ namespace switcher
     //caps does not need to be fully specified:
     void plug (GstElement *bin, GstElement *source_element,GstCaps *caps);
     void plug (GstElement *bin, GstPad *source_pad);
+
     //get json doc:
     JSONBuilder::Node get_json_root_node ();
 
@@ -49,12 +50,17 @@ namespace switcher
     std::string path_;
     shmdata_base_writer_t *writer_;
     //GstElementCleaner::ptr cleaner_;
+    //GstCaps *writer_caps_;
     GstElement *bin_;
     GstElement *tee_;
     GstElement *queue_;
     GstElement *fakesink_;
     JSONBuilder::ptr json_description_;
     void make_json_description ();
+    /* static void on_handoff_cb (GstElement* object, */
+    /* 				GstBuffer* buf, */
+    /* 				GstPad* pad, */
+    /* 				gpointer user_data); */
   };
   
 }  // end of namespace

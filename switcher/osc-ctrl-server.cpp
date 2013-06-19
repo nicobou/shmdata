@@ -276,7 +276,7 @@ namespace switcher
 	      }
 	    context->osc_subscribers_.insert (internal_subscriber_name, 
 					      std::make_pair (host, port_int));
-	    if (!manager->make_subscriber (internal_subscriber_name,
+	    if (!manager->make_property_subscriber (internal_subscriber_name,
 					   OscCtrlServer::prop_cb,
 					   context))
 	      return 0;
@@ -306,7 +306,7 @@ namespace switcher
 		g_warning ("OscCtrlServer: cannot delete non existing subscriber named %s", subscriber_name);
 		return 0;
 	      }
-	    manager->remove_subscriber (internal_subscriber_name);
+	    manager->remove_property_subscriber (internal_subscriber_name);
 	    context->osc_subscribers_.remove (internal_subscriber_name);
 	    g_free (internal_subscriber_name); 
 	    g_free (subscriber_name); 
@@ -317,7 +317,47 @@ namespace switcher
       }
 
     //subscribe to a property
-    if (g_str_has_prefix (path, "/g") || g_str_has_prefix (path, "/G"))
+    if (g_strcmp0 (path, "/get") == 0)
+      {
+	if (argc == 3)
+	  {
+	    gchar *quiddity_name = string_from_osc_arg (types[0], argv[0]);
+	    gchar *property_name = string_from_osc_arg (types[1], argv[1]);
+	    gchar *response_url = string_from_osc_arg (types[2], argv[2]);
+
+	    if (quiddity_name == NULL || property_name == NULL || response_url == NULL)
+	      {
+		g_warning ("OscCtrlServer: issue with quiddity name or property name or response url");
+		return 0;
+	      }
+
+	    std::string value = manager->get_property (quiddity_name,
+						       property_name);
+	    lo_address response_lo_address = lo_address_new_from_url(response_url);
+
+	    if (response_lo_address != NULL && !lo_address_errno (response_lo_address))
+	      {
+		gchar *message = g_strdup_printf("/%s/%s", 
+						 quiddity_name, 
+						 property_name);
+		lo_send(response_lo_address, message, "s", value.c_str ());
+		lo_address_free (response_lo_address); 
+		g_free (message);
+	      }
+	    else
+	      g_debug ("url osc error in get");
+	    
+	    g_free (quiddity_name); 
+	    g_free (property_name); 
+	    g_free (response_url);
+	  }
+	else
+	  g_warning ("OSCctl: subscribe property needs 3 args (name, quiddity, property)");
+	return 0;
+      }
+
+    //subscribe to a property
+    if (g_str_has_prefix (path, "/get_property_") || g_str_has_prefix (path, "/G"))
       {
 	if (argc == 3)
 	  {
@@ -390,6 +430,7 @@ namespace switcher
 	return 0;
       }
 
+    g_debug ("unknown osc path %s", path);
     return 0;
   }
  
@@ -397,7 +438,7 @@ namespace switcher
   OscCtrlServer::string_from_osc_arg (char type, lo_arg *data)
   {
     //lo_arg_host_endian ((lo_type) type, data);
-    gchar *res;// = g_strdup_printf ("videotestsrc");
+    gchar *res = NULL;// = g_strdup_printf ("videotestsrc");
 
     gchar *tmp; 
      switch (type) {

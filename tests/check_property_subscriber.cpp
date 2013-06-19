@@ -23,6 +23,29 @@
 
 static bool success;
 static char *user_string = "hello world";
+static switcher::QuiddityManager::ptr manager;
+
+gpointer
+set_runtime_invoker (gpointer name)
+{
+  if (manager->has_method ((char *)name, "set_runtime"))
+    manager->invoke_va ((char *)name, "set_runtime", "pipeline0", NULL);
+  g_free (name);
+  return NULL;
+}
+
+void 
+quiddity_created_removed_cb (std::string subscriber_name, 
+			     std::string quiddity_name, 
+			     std::string signal_name, 
+			     std::vector<std::string> params, 
+			     void *user_data)
+{
+  g_thread_create (set_runtime_invoker, 
+		   g_strdup (params[0].c_str ()),
+		   FALSE,
+		   NULL);
+}
 
 void 
 mon_property_cb(std::string subscriber_name, 
@@ -70,25 +93,24 @@ main (int argc,
   success = false;
   
   {
-    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
-    
+    manager = switcher::QuiddityManager::make_manager("test_manager");  
+    manager->create ("create_remove_spy", "create_remove_spy");
+    manager->make_signal_subscriber ("create_remove_subscriber", quiddity_created_removed_cb, NULL);
+    manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-created");
+
     manager->create ("runtime");
-    //setting auto_invoke for attaching to gst pipeline "pipeline0"
-    std::vector<std::string> arg;
-    arg.push_back ("pipeline0");
-    manager->auto_invoke ("set_runtime",arg);
     
-    manager->make_subscriber ("sub", mon_property_cb, (void *)user_string);
+    manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);
     manager->create ("videotestsrc","vid");
  
     manager->subscribe_property ("sub","vid","pattern");
     manager->subscribe_property ("sub","vid","text");
     
-    std::vector<std::string> subscribers = manager->list_subscribers ();
+    std::vector<std::string> subscribers = manager->list_property_subscribers ();
     if (subscribers.size () != 1 
     	|| g_strcmp0 (subscribers.at(0).c_str (), "sub") != 0)
       {
-    	g_warning ("pb with list_subscribers");
+    	g_warning ("pb with list_property_subscribers");
     	return 1;
       }
     
@@ -103,14 +125,28 @@ main (int argc,
     	g_warning ("pb with list_subscribed_properties");
     	return 1;
       }
-    
+
     manager->set_property ("vid", "pattern", "1");
     
     manager->unsubscribe_property ("sub", "vid", "pattern");
-    manager->remove_subscriber ("sub");
     manager->remove ("vid");
+
+    properties = manager->list_subscribed_properties ("sub");
+    if(properties.size () != 0)
+      {
+    	g_warning ("pb with automatic unsubscribe at quiddity removal");
+    	return 1;
+      }
+
+    manager->remove_property_subscriber ("sub");
   }
 
+  //cleanning manager
+  {
+    switcher::QuiddityManager::ptr empty;
+    manager.swap (empty);
+  }
+ 
   if (success)
     return 0;
   else
