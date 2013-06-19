@@ -38,6 +38,9 @@ namespace switcher
     
     QuiddityDocumentation get_documentation ();
     static QuiddityDocumentation doc_;
+
+  private:
+    bool i_am_the_one_;
   };
   
 }  // end of namespace

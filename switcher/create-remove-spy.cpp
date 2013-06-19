@@ -41,6 +41,8 @@ namespace switcher
     else
       return false;
     
+    i_am_the_one_ = true;
+
     //we got the hook, so make signals of it
     GType types[] = {G_TYPE_STRING};
     make_custom_signal ("on-quiddity-created", 
@@ -69,9 +71,12 @@ namespace switcher
   
   CreateRemoveSpy::~CreateRemoveSpy ()
   {
-    QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
-    if ((bool) manager)
-      manager->reset_create_remove_hooks ();
+    if (i_am_the_one_)
+      {
+	QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
+	if ((bool) manager)
+	  manager->reset_create_remove_hooks ();
+      }
   }
   
   void 
