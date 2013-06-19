@@ -113,9 +113,10 @@ namespace switcher
   
   Runtime::~Runtime ()
   {
-    g_source_destroy (source_);
-    gst_element_set_state (pipeline_, GST_STATE_NULL);
-    gst_object_unref (GST_OBJECT (pipeline_));
+     gst_element_set_state (pipeline_, GST_STATE_NULL);
+     gst_object_unref (GST_OBJECT (pipeline_));
+     if (!g_source_is_destroyed (source_))
+       g_source_destroy (source_);
   }
 
   gboolean
