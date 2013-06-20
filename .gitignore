@@ -33,6 +33,7 @@ install-sh
 libtool
 ltmain.sh
 missing
+plugins/.deps/
 src/.deps/
 src/.libs/
 src/switcher
