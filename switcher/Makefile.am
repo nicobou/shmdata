@@ -168,12 +168,15 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
 #######       http://stackoverflow.com/questions/6340524/gsoap-linking-error
 
 BUILT_SOURCES = \
-    $(srcdir)/webservices/soapC.cpp \
-    $(srcdir)/webservices/soapcontrolProxy.cpp \
-    $(srcdir)/webservices/soapcontrolService.cpp
+    webservices/soapC.cpp \
+    webservices/soapcontrolProxy.cpp \
+    webservices/soapcontrolService.cpp
 
-EXTRA_DIST = \
-    $(srcdir)/webservices/*
+CLEANFILES = \
+    webservices/*
+
+DISTCLEANFILES = \
+    webservices/*
 
 ####### On OSX, gsoap is not installed in /usr (if installed through MacPorts)
 if HAVE_OSX
@@ -182,21 +185,14 @@ else
 gsoap_INCLUDE = /usr/share/gsoap/import/
 endif
 
-$(srcdir)/webservices/soapC.cpp: $(srcdir)/ctrl-webservice-definition.h 
-	mkdir -p $(srcdir)/webservices
-	soapcpp2 -I $(gsoap_INCLUDE) -i -d $(srcdir)/webservices $(srcdir)/ctrl-webservice-definition.h
+webservices/soapC.cpp: Makefile
+	mkdir -p webservices
+	soapcpp2 -I $(gsoap_INCLUDE) -i -d webservices $(srcdir)/ctrl-webservice-definition.h
 
-$(srcdir)/webservices/soapcontrolProxy.cpp: $(srcdir)/ctrl-webservice-definition.h 
-	mkdir -p $(srcdir)/webservices
-	soapcpp2 -I $(gsoap_INCLUDE) -i -d $(srcdir)/webservices $(srcdir)/ctrl-webservice-definition.h
+$(srcdir)/webservices/soapcontrolProxy.cpp: Makefile
+	mkdir -p webservices
+	soapcpp2 -I $(gsoap_INCLUDE) -i -d webservices $(srcdir)/ctrl-webservice-definition.h
 
-$(srcdir)/webservices/soapcontrolService.cpp: $(srcdir)/ctrl-webservice-definition.h 
-	mkdir -p $(srcdir)/webservices
-	soapcpp2 -I $(gsoap_INCLUDE) -i  -d $(srcdir)/webservices $(srcdir)/ctrl-webservice-definition.h
-
-####### end webservice code generation 
-
-# cleaning generated files for webservices
-clean-local:
-	-rm -f webservices/*
-
+$(srcdir)/webservices/soapcontrolService.cpp: Makefile
+	mkdir -p webservices
+	soapcpp2 -I $(gsoap_INCLUDE) -i  -d webservices $(srcdir)/ctrl-webservice-definition.h
