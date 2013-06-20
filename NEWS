@@ -1,4 +1,16 @@
-switcher 0.2.0 (2013-04-26)
+switcher 0.2.0 (2013-06-20)
+---------------------------
+This is an official release in the 0.2 stable series. 
+
+New features:
+
+* none
+
+Bugs fixed:
+
+* gsoap packaging
+
+switcher 0.2.0 (2013-06-19)
 ---------------------------
 
 This is the first official release in the 0.2 stable series. 
