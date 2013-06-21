@@ -12,9 +12,11 @@ Makefile
 aclocal.m4
 autom4te.cache/output.0
 autom4te.cache/output.1
+autom4te.cache/output.2
 autom4te.cache/requests
 autom4te.cache/traces.0
 autom4te.cache/traces.1
+autom4te.cache/traces.2
 compile
 config.guess
 config.h
@@ -52,3 +54,5 @@ tests/check_quiddity_create_remove_with_auto_pipeline
 tests/check_property_subscriber
 tests/check_rtp_session
 tests/check_signal_subscriber
+xcode/switcher.xcodeproj/xcuserdata
+xcode/switcher.xcodeproj/project.xcworkspace/xcuserdata
