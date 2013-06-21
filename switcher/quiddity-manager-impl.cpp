@@ -159,7 +159,7 @@ namespace switcher
      module = g_module_open (filename, G_MODULE_BIND_LAZY);
      if (!module)
        {
- 	g_print ("11 %s\n", g_module_error ());
+ 	g_warning ("11 %s\n", g_module_error ());
  	// g_set_error (error, FOO_ERROR, FOO_ERROR_BLAH,
  	// 	     "%s", g_module_error ());
  	return;
@@ -167,7 +167,7 @@ namespace switcher
 
      if (!g_module_symbol (module, "create", (gpointer *)&create_plugin))
        {
-       	 g_print ("22 %s", g_module_error ());
+       	 g_warning ("22 %s", g_module_error ());
        	 // g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
        	 //              "%s: %s", filename, g_module_error ());
        	 if (!g_module_close (module))
@@ -177,7 +177,7 @@ namespace switcher
      
         if (create_plugin == NULL)
       {
-  	g_print ("333 %s", g_module_error ());
+  	g_warning ("333 %s", g_module_error ());
         // g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
         //              "symbol create is NULL");
         if (!g_module_close (module))
@@ -187,7 +187,7 @@ namespace switcher
 
 	if (!g_module_symbol (module, "destroy", (gpointer *)&destroy_plugin))
 	  {
-	    g_print ("%s", g_module_error ());
+	    g_warning ("%s", g_module_error ());
 	    // g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
 	    //              "%s: %s", filename, g_module_error ());
 	    if (!g_module_close (module))
@@ -197,7 +197,7 @@ namespace switcher
 	
 	if (destroy_plugin == NULL)
 	  {
-	    g_print ("%s", g_module_error ());
+	    g_warning ("%s", g_module_error ());
 	    // g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
 	    //              "symbol destroy is NULL");
 	    if (!g_module_close (module))
@@ -211,6 +211,8 @@ namespace switcher
 	// use the class
 	plugin_quid->init ();
 	
+	QuiddityDocumentation doc = plugin_quid->get_documentation ();
+	g_print ("plugin doc ::: \n%s\n", doc.get_json_documentation ().c_str ());
 	// destroy the class
 	destroy_plugin(plugin_quid);
 	
