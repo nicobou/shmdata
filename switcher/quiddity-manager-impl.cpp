@@ -17,6 +17,10 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
+//#include <dlfcn.h> //dlopen remove me
+#include <gmodule.h>
+
 #include "quiddity-documentation.h"
 #include "quiddity-manager-impl.h"
 #include "quiddity.h" 
@@ -96,8 +100,131 @@ namespace switcher
     register_classes ();
     classes_doc_.reset (new JSONBuilder ());
     make_classes_doc ();
-  }
 
+
+    // ************* using dlopen ***********************************************
+    // using std::cout;
+    //  using std::cerr;
+     
+    //  // load the triangle library
+    //  void* myplugin = dlopen("/home/nico/src/switcher/plugins/.libs/libmyplugin.so", RTLD_LAZY);
+    //  if (!myplugin) {
+    //    cerr << "Cannot load library: " << dlerror() << '\n';
+    //    return;
+    //  }
+
+    // // reset errors
+    // dlerror();
+    
+    // // load the symbols
+    // switcher::Quiddity::ptr truc;
+    // switcher::create_t *create_myplugin = (create_t*) dlsym(myplugin, "create");
+    // const char* dlsym_error = dlerror();
+    // if (dlsym_error) {
+    //     cerr << "Cannot load symbol create: " << dlsym_error << '\n';
+    //     return;
+    // }
+    
+    // switcher::destroy_t *destroy_myplugin = (destroy_t*) dlsym(myplugin, "destroy");
+    // dlsym_error = dlerror();
+    // if (dlsym_error) {
+    //     cerr << "Cannot load symbol destroy: " << dlsym_error << '\n';
+    //     return;
+    // }
+
+    // // create an instance of the class
+    // Quiddity * plugin_quid = create_myplugin ();
+
+    // // use the class
+    // plugin_quid->init ();
+
+    // // destroy the class
+    // destroy_myplugin(plugin_quid);
+
+    // // unload the triangle library
+    // dlclose(myplugin);
+    // ************** end using dlopn
+
+    if (!g_module_supported ())
+      {
+	g_print ("g_module not supported !!!! \n"); 
+	return;
+      }
+    
+    create_t *create_plugin;
+    destroy_t *destroy_plugin;
+    GModule *module;
+    
+     gchar *filename =  g_strdup ("/home/nico/src/switcher/plugins/.libs/libmyplugin.so");
+     module = g_module_open (filename, G_MODULE_BIND_LAZY);
+     if (!module)
+       {
+ 	g_print ("11 %s\n", g_module_error ());
+ 	// g_set_error (error, FOO_ERROR, FOO_ERROR_BLAH,
+ 	// 	     "%s", g_module_error ());
+ 	return;
+       }
+
+     if (!g_module_symbol (module, "create", (gpointer *)&create_plugin))
+       {
+       	 g_print ("22 %s", g_module_error ());
+       	 // g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
+       	 //              "%s: %s", filename, g_module_error ());
+       	 if (!g_module_close (module))
+       	   g_warning ("%s: %s", filename, g_module_error ());
+       	 return;
+       }
+     
+        if (create_plugin == NULL)
+      {
+  	g_print ("333 %s", g_module_error ());
+        // g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
+        //              "symbol create is NULL");
+        if (!g_module_close (module))
+          g_warning ("%s: %s", filename, g_module_error ());
+        return;
+      }
+
+	if (!g_module_symbol (module, "destroy", (gpointer *)&destroy_plugin))
+	  {
+	    g_print ("%s", g_module_error ());
+	    // g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
+	    //              "%s: %s", filename, g_module_error ());
+	    if (!g_module_close (module))
+	      g_warning ("%s: %s", filename, g_module_error ());
+	    return;
+	  }
+	
+	if (destroy_plugin == NULL)
+	  {
+	    g_print ("%s", g_module_error ());
+	    // g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
+	    //              "symbol destroy is NULL");
+	    if (!g_module_close (module))
+	      g_warning ("%s: %s", filename, g_module_error ());
+	    return;
+	  }
+	
+	// create an instance of the class
+	Quiddity * plugin_quid = create_plugin ();
+	
+	// use the class
+	plugin_quid->init ();
+	
+	// destroy the class
+	destroy_plugin(plugin_quid);
+	
+	
+	if (!g_module_close (module))
+	  {
+	    g_warning ("%s: %s", filename, g_module_error ());
+	    return;
+	  }
+	
+	g_print ("module closed\n");
+	
+  }
+  
   QuiddityManager_Impl::~QuiddityManager_Impl()
   {
     g_main_loop_quit (mainloop_);

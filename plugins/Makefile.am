@@ -2,20 +2,18 @@ AM_CXXFLAGS = \
     $(GLIB_CFLAGS) \
     $(GST_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
-    $(SHMDATA_CFLAGS) \
+    $(GMODULE_CFLAGS) \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir) 
 
 AM_LIBS = \
     $(GLIB_LIBS) \
     $(GST_LIBS) \
+    $(GMODULE_CFLAGS) \
     $(JSONGLIB_LIBS) \
     $(SHMDATA_LIBS) \
     -avoid-version \
-    -export-dynamic \
-    -fPIC \
     -module \
-    -shared \
     $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
 
 pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins

@@ -174,12 +174,13 @@ namespace switcher
     //g_main_context
     GMainContext *get_g_main_context ();
   };
-  
-// the types of the class factories for quiddity pluggins
-typedef Quiddity* create_t ();
-typedef void destroy_t(Quiddity *);
 
-  
+
 } // end of namespace
+
+  // the types of the class factories for quiddity pluggins
+typedef switcher::Quiddity *create_t ();
+typedef void destroy_t (switcher::Quiddity *);
+    
 
 #endif // ifndef

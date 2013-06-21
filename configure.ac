@@ -137,6 +137,11 @@ if test "x${have_glib}" = "xfalse" ; then
     AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
 fi
 
+PKG_CHECK_MODULES(GMODULE, gmodule-2.0, have_gmodule=true, have_gmodule=false)
+if test "x${have_gmodule}" = "xfalse" ; then
+    AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
+fi
+
 
 PKG_CHECK_MODULES(SHMDATA, shmdata-0.8, have_shmdata=true, have_shmdata=false)
 if test "x${have_shmdata}" = "xfalse" ; then

@@ -27,6 +27,7 @@ namespace switcher
   bool
   MyPlugin::init ()
   {
+    g_print ("coucou from plugin\n");
     return true;
   }
 
