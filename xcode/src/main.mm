@@ -136,13 +136,17 @@ main (int argc,
       char *argv[])
 {
   (void) signal (SIGINT, leave);
+ 
+  char* myargs[] = {argv[0], "-p", "8080"};
+  char** override_argv = myargs;
+  int override_argc = 3;
 
   //command line options
   GError *error = NULL;
   GOptionContext *context;
   context = g_option_context_new ("- switcher server");
   g_option_context_add_main_entries (context, entries, NULL);
-  if (!g_option_context_parse (context, &argc, &argv, &error))
+  if (!g_option_context_parse (context, &override_argc, &override_argv, &error))
     {
       g_printerr ("option parsing failed: %s\n", error->message);
       exit (1);

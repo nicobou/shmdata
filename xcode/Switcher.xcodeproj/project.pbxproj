@@ -24,6 +24,7 @@
 		1C0C33361774D304001DFF69 /* GStreamer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C0C32CD1774B622001DFF69 /* GStreamer.framework */; };
 		1C0C333A1774D38D001DFF69 /* switcher-ctrl in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1C0C332A1774D2BF001DFF69 /* switcher-ctrl */; };
 		1C0C334A1774DA01001DFF69 /* liblo.7.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1C0C33481774D910001DFF69 /* liblo.7.dylib */; };
+		1C4D1C591774EFE50023D33E /* libgstshm.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1C4D1C581774EFD10023D33E /* libgstshm.so */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,6 +44,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				1C4D1C591774EFE50023D33E /* libgstshm.so in CopyFiles */,
 				1C0C32DB1774C33A001DFF69 /* libshmdata-0.8.4.dylib in CopyFiles */,
 				1C0C33251774C909001DFF69 /* libswitcher-0.2.0.dylib in CopyFiles */,
 				1C0C334A1774DA01001DFF69 /* liblo.7.dylib in CopyFiles */,
@@ -81,6 +83,7 @@
 		1C0C33231774C8FD001DFF69 /* libswitcher-0.2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libswitcher-0.2.0.dylib"; path = "../../../../../../usr/local/lib/libswitcher-0.2.0.dylib"; sourceTree = "<group>"; };
 		1C0C332A1774D2BF001DFF69 /* switcher-ctrl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "switcher-ctrl"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C0C33481774D910001DFF69 /* liblo.7.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = liblo.7.dylib; path = ../../../../../../opt/local/lib/liblo.7.dylib; sourceTree = "<group>"; };
+		1C4D1C581774EFD10023D33E /* libgstshm.so */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.bundle"; name = libgstshm.so; path = "../../../../../Library/Frameworks/GStreamer.framework/Versions/0.10/lib/gstreamer-0.10/libgstshm.so"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,6 +132,7 @@
 		1C0C32AF1774B608001DFF69 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1C4D1C581774EFD10023D33E /* libgstshm.so */,
 				1C0C33481774D910001DFF69 /* liblo.7.dylib */,
 				1C0C33231774C8FD001DFF69 /* libswitcher-0.2.0.dylib */,
 				1C0C32CF1774B634001DFF69 /* libshmdata-0.8.4.dylib */,
