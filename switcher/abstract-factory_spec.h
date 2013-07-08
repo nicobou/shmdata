@@ -39,6 +39,22 @@ namespace switcher
   }
 
   template <typename T, typename Key, typename Doc>
+    void 
+    AbstractFactory<T,  Key, Doc>::register_class_with_custom_factory (Key Id, 
+								       Doc doc,
+								       T * (*custom_create) (),
+								       void (*custom_destroy) (T *))
+  {
+    CustomDerivedCreator<T> *creator = new CustomDerivedCreator<T>();
+    creator->custom_create_ = custom_create;
+    Creator<T>* Fn = (Creator<T>*)creator; 
+    constructor_map_[Id] = Fn; 
+    destructor_map_[Id] = custom_destroy;
+    constructor_names_.push_back (Id); 
+    classes_documentation_[Id] = doc; 
+  }
+
+  template <typename T, typename Key, typename Doc>
     std::vector<Key> 
     AbstractFactory<T, Key, Doc>::get_keys ()
   {
@@ -82,13 +98,18 @@ namespace switcher
   template <typename T, typename Key, typename Doc>
     std::shared_ptr<T> 
     AbstractFactory<T, Key, Doc>::create(Key Id)
-  {
-    std::shared_ptr<T> pointer;
-	
-    if ( constructor_map_.find(Id) != constructor_map_.end() ) 
-      pointer.reset (constructor_map_[Id]->Create());
-	
-    return pointer;
+    {
+
+      std::shared_ptr<T> pointer;
+      if (constructor_map_.find(Id) != constructor_map_.end() ) 
+	{
+	  if (destructor_map_.find(Id) != destructor_map_.end())
+	    pointer.reset (constructor_map_[Id]->Create(), destructor_map_[Id]);
+	  else
+	    pointer.reset (constructor_map_[Id]->Create());
+	}
+
+      return pointer;
   }
 
 

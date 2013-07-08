@@ -45,6 +45,10 @@ namespace switcher
     g_print ("delete from plugin\n");
     delete quiddity;
   }
+
+  extern "C" QuiddityDocumentation get_documentation () {
+    return MyPlugin::doc_;
+  }
   
 }  // end of namespace
 

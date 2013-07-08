@@ -47,6 +47,17 @@ namespace switcher
       return new T;
     }
   };
+
+  template <class T>
+    class CustomDerivedCreator : public Creator<T>
+  {
+  public:
+    T* Create()
+    {
+      return (*custom_create_) ();
+    }
+    T * (*custom_create_) ();
+  };
   
 } // end of namespace
  

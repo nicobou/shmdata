@@ -181,6 +181,6 @@ namespace switcher
   // the types of the class factories for quiddity pluggins
 typedef switcher::Quiddity *create_t ();
 typedef void destroy_t (switcher::Quiddity *);
-    
+typedef switcher::QuiddityDocumentation get_documentation_t ();
 
 #endif // ifndef

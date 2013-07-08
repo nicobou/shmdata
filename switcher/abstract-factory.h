@@ -37,6 +37,10 @@ namespace switcher
   {
   public:
     template <class U> void register_class (Key Id, Doc doc);
+    void register_class_with_custom_factory (Key Id, 
+					     Doc doc,
+					     T * (*custom_create) (),
+					     void (*custom_destroy) (T *));
     std::vector<Key> get_keys ();
     std::vector<Doc> get_classes_documentation ();
     Doc get_class_documentation (Key Id);
@@ -46,6 +50,7 @@ namespace switcher
 
   private:
     std::map<Key, Creator<T>*> constructor_map_;
+    std::map<Key, void (*) (T *)> destructor_map_;
     std::map<Key, Doc> classes_documentation_;
     std::vector<Key> constructor_names_;
   };

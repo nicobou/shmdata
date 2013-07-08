@@ -153,29 +153,30 @@ namespace switcher
     
     create_t *create_plugin;
     destroy_t *destroy_plugin;
+    get_documentation_t *get_documentation_plugin;
     GModule *module;
     
-     gchar *filename =  g_strdup ("/home/nico/src/switcher/plugins/.libs/libmyplugin.so");
-     module = g_module_open (filename, G_MODULE_BIND_LAZY);
-     if (!module)
-       {
+    gchar *filename =  g_strdup ("/home/nico/src/switcher/plugins/.libs/libmyplugin.so");
+    module = g_module_open (filename, G_MODULE_BIND_LAZY);
+    if (!module)
+      {
  	g_warning ("11 %s\n", g_module_error ());
  	// g_set_error (error, FOO_ERROR, FOO_ERROR_BLAH,
  	// 	     "%s", g_module_error ());
  	return;
-       }
+      }
 
-     if (!g_module_symbol (module, "create", (gpointer *)&create_plugin))
-       {
-       	 g_warning ("22 %s", g_module_error ());
-       	 // g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
-       	 //              "%s: %s", filename, g_module_error ());
-       	 if (!g_module_close (module))
-       	   g_warning ("%s: %s", filename, g_module_error ());
-       	 return;
-       }
+    if (!g_module_symbol (module, "create", (gpointer *)&create_plugin))
+      {
+	g_warning ("22 %s", g_module_error ());
+	// g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
+	//              "%s: %s", filename, g_module_error ());
+	if (!g_module_close (module))
+	  g_warning ("%s: %s", filename, g_module_error ());
+	return;
+      }
      
-        if (create_plugin == NULL)
+    if (create_plugin == NULL)
       {
   	g_warning ("333 %s", g_module_error ());
         // g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
@@ -185,50 +186,72 @@ namespace switcher
         return;
       }
 
-	if (!g_module_symbol (module, "destroy", (gpointer *)&destroy_plugin))
-	  {
-	    g_warning ("%s", g_module_error ());
-	    // g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
-	    //              "%s: %s", filename, g_module_error ());
-	    if (!g_module_close (module))
-	      g_warning ("%s: %s", filename, g_module_error ());
-	    return;
-	  }
-	
-	if (destroy_plugin == NULL)
-	  {
-	    g_warning ("%s", g_module_error ());
-	    // g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
-	    //              "symbol destroy is NULL");
-	    if (!g_module_close (module))
-	      g_warning ("%s: %s", filename, g_module_error ());
-	    return;
-	  }
-	
-	{
-	  
-	  // create an instance of the class
-	  //Quiddity * plugin_quid = create_plugin ();
-	  std::shared_ptr<Quiddity> plugin_quid (create_plugin (), destroy_plugin);
-	  
-	  // use the class
-	  plugin_quid->init ();
-	  
-	  QuiddityDocumentation doc = plugin_quid->get_documentation ();
-	  g_print ("plugin doc ::: \n%s\n", doc.get_json_documentation ().c_str ());
-	  // // destroy the class
-	  // destroy_plugin(plugin_quid);
-	  
-	}
-	  
+    if (!g_module_symbol (module, "destroy", (gpointer *)&destroy_plugin))
+      {
+	g_warning ("%s", g_module_error ());
+	// g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
+	//              "%s: %s", filename, g_module_error ());
 	if (!g_module_close (module))
-	  {
-	    g_warning ("%s: %s", filename, g_module_error ());
-	    return;
-	  }
+	  g_warning ("%s: %s", filename, g_module_error ());
+	return;
+      }
 	
-	g_print ("module closed\n");
+    if (destroy_plugin == NULL)
+      {
+	g_warning ("%s", g_module_error ());
+	// g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
+	//              "symbol destroy is NULL");
+	if (!g_module_close (module))
+	  g_warning ("%s: %s", filename, g_module_error ());
+	return;
+      }
+
+    if (!g_module_symbol (module, "get_documentation", (gpointer *)&get_documentation_plugin))
+      {
+	g_warning ("fefefe %s", g_module_error ());
+	// g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
+	//              "%s: %s", filename, g_module_error ());
+	if (!g_module_close (module))
+	  g_warning ("%s: %s", filename, g_module_error ());
+	return;
+      }
+     
+    if (get_documentation_plugin == NULL)
+      {
+  	g_warning ("fefefe333 %s", g_module_error ());
+        // g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
+        //              "symbol create is NULL");
+        if (!g_module_close (module))
+          g_warning ("%s: %s", filename, g_module_error ());
+        return;
+      }
+
+    
+     QuiddityDocumentation doc = get_documentation_plugin ();
+     g_print ("static plugin doc ::: \n%s\n", doc.get_json_documentation ().c_str ());
+
+     abstract_factory_.register_class_with_custom_factory (doc.get_class_name (),
+							   doc.get_json_root_node (),
+							   create_plugin,
+							   destroy_plugin);
+    //  {
+    //    // create an instance of the class
+    //    std::shared_ptr<Quiddity> plugin_quid (create_plugin (), destroy_plugin);
+	  
+    //    // use the class
+    //    //plugin_quid->init ();
+	  
+    //    QuiddityDocumentation doc = plugin_quid->get_documentation ();
+    //    g_print ("plugin doc ::: \n%s\n", doc.get_json_documentation ().c_str ());
+    //  }
 	
+    // if (!g_module_close (module))
+    //   {
+    // 	g_warning ("%s: %s", filename, g_module_error ());
+    // 	return;
+    //   }
+	
+    // g_print ("module closed\n");
   }
   
   QuiddityManager_Impl::~QuiddityManager_Impl()
