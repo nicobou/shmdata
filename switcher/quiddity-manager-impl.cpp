@@ -205,18 +205,22 @@ namespace switcher
 	    return;
 	  }
 	
-	// create an instance of the class
-	Quiddity * plugin_quid = create_plugin ();
-	
-	// use the class
-	plugin_quid->init ();
-	
-	QuiddityDocumentation doc = plugin_quid->get_documentation ();
-	g_print ("plugin doc ::: \n%s\n", doc.get_json_documentation ().c_str ());
-	// destroy the class
-	destroy_plugin(plugin_quid);
-	
-	
+	{
+	  
+	  // create an instance of the class
+	  //Quiddity * plugin_quid = create_plugin ();
+	  std::shared_ptr<Quiddity> plugin_quid (create_plugin (), destroy_plugin);
+	  
+	  // use the class
+	  plugin_quid->init ();
+	  
+	  QuiddityDocumentation doc = plugin_quid->get_documentation ();
+	  g_print ("plugin doc ::: \n%s\n", doc.get_json_documentation ().c_str ());
+	  // // destroy the class
+	  // destroy_plugin(plugin_quid);
+	  
+	}
+	  
 	if (!g_module_close (module))
 	  {
 	    g_warning ("%s: %s", filename, g_module_error ());

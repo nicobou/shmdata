@@ -42,6 +42,7 @@ namespace switcher
   }
   
   extern "C" void destroy(Quiddity *quiddity) {
+    g_print ("delete from plugin\n");
     delete quiddity;
   }
   
