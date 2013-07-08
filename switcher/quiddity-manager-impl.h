@@ -209,14 +209,19 @@ namespace switcher
       quiddity_removed_hook removal_hook_;
       void *creation_hook_user_data_;
       void *removal_hook_user_data_;
-
+      //plugins
+      void load_module (const char *filename);
+      void close_module (const char *class_name);
+      StringMap<GModule *> g_modules_;
+      void scan_directory_for_modules (const char *directory_path);
+      
       //gmainloop 
       GThread *thread_; //this runs the main loop 
       GMainContext *main_context_;
       GMainLoop *mainloop_; 
       void init_gmainloop (); 
       static gpointer main_loop_thread (gpointer user_data); 
-
+      
     };
 
 } // end of namespace

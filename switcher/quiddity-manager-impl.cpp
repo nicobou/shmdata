@@ -101,164 +101,17 @@ namespace switcher
     classes_doc_.reset (new JSONBuilder ());
     make_classes_doc ();
 
-
-    // ************* using dlopen ***********************************************
-    // using std::cout;
-    //  using std::cerr;
-     
-    //  // load the triangle library
-    //  void* myplugin = dlopen("/home/nico/src/switcher/plugins/.libs/libmyplugin.so", RTLD_LAZY);
-    //  if (!myplugin) {
-    //    cerr << "Cannot load library: " << dlerror() << '\n';
-    //    return;
-    //  }
-
-    // // reset errors
-    // dlerror();
-    
-    // // load the symbols
-    // switcher::Quiddity::ptr truc;
-    // switcher::create_t *create_myplugin = (create_t*) dlsym(myplugin, "create");
-    // const char* dlsym_error = dlerror();
-    // if (dlsym_error) {
-    //     cerr << "Cannot load symbol create: " << dlsym_error << '\n';
-    //     return;
-    // }
-    
-    // switcher::destroy_t *destroy_myplugin = (destroy_t*) dlsym(myplugin, "destroy");
-    // dlsym_error = dlerror();
-    // if (dlsym_error) {
-    //     cerr << "Cannot load symbol destroy: " << dlsym_error << '\n';
-    //     return;
-    // }
-
-    // // create an instance of the class
-    // Quiddity * plugin_quid = create_myplugin ();
-
-    // // use the class
-    // plugin_quid->init ();
-
-    // // destroy the class
-    // destroy_myplugin(plugin_quid);
-
-    // // unload the triangle library
-    // dlclose(myplugin);
-    // ************** end using dlopn
-
-    if (!g_module_supported ())
-      {
-	g_print ("g_module not supported !!!! \n"); 
-	return;
-      }
-    
-    create_t *create_plugin;
-    destroy_t *destroy_plugin;
-    get_documentation_t *get_documentation_plugin;
-    GModule *module;
-    
-    gchar *filename =  g_strdup ("/home/nico/src/switcher/plugins/.libs/libmyplugin.so");
-    module = g_module_open (filename, G_MODULE_BIND_LAZY);
-    if (!module)
-      {
- 	g_warning ("11 %s\n", g_module_error ());
- 	// g_set_error (error, FOO_ERROR, FOO_ERROR_BLAH,
- 	// 	     "%s", g_module_error ());
- 	return;
-      }
-
-    if (!g_module_symbol (module, "create", (gpointer *)&create_plugin))
-      {
-	g_warning ("22 %s", g_module_error ());
-	// g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
-	//              "%s: %s", filename, g_module_error ());
-	if (!g_module_close (module))
-	  g_warning ("%s: %s", filename, g_module_error ());
-	return;
-      }
-     
-    if (create_plugin == NULL)
-      {
-  	g_warning ("333 %s", g_module_error ());
-        // g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
-        //              "symbol create is NULL");
-        if (!g_module_close (module))
-          g_warning ("%s: %s", filename, g_module_error ());
-        return;
-      }
-
-    if (!g_module_symbol (module, "destroy", (gpointer *)&destroy_plugin))
-      {
-	g_warning ("%s", g_module_error ());
-	// g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
-	//              "%s: %s", filename, g_module_error ());
-	if (!g_module_close (module))
-	  g_warning ("%s: %s", filename, g_module_error ());
-	return;
-      }
-	
-    if (destroy_plugin == NULL)
-      {
-	g_warning ("%s", g_module_error ());
-	// g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
-	//              "symbol destroy is NULL");
-	if (!g_module_close (module))
-	  g_warning ("%s: %s", filename, g_module_error ());
-	return;
-      }
-
-    if (!g_module_symbol (module, "get_documentation", (gpointer *)&get_documentation_plugin))
-      {
-	g_warning ("fefefe %s", g_module_error ());
-	// g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
-	//              "%s: %s", filename, g_module_error ());
-	if (!g_module_close (module))
-	  g_warning ("%s: %s", filename, g_module_error ());
-	return;
-      }
-     
-    if (get_documentation_plugin == NULL)
-      {
-  	g_warning ("fefefe333 %s", g_module_error ());
-        // g_set_error (error, SAY_ERROR, SAY_ERROR_OPEN,
-        //              "symbol create is NULL");
-        if (!g_module_close (module))
-          g_warning ("%s: %s", filename, g_module_error ());
-        return;
-      }
-
-    
-     QuiddityDocumentation doc = get_documentation_plugin ();
-     g_print ("static plugin doc ::: \n%s\n", doc.get_json_documentation ().c_str ());
-
-     abstract_factory_.register_class_with_custom_factory (doc.get_class_name (),
-							   doc.get_json_root_node (),
-							   create_plugin,
-							   destroy_plugin);
-    //  {
-    //    // create an instance of the class
-    //    std::shared_ptr<Quiddity> plugin_quid (create_plugin (), destroy_plugin);
-	  
-    //    // use the class
-    //    //plugin_quid->init ();
-	  
-    //    QuiddityDocumentation doc = plugin_quid->get_documentation ();
-    //    g_print ("plugin doc ::: \n%s\n", doc.get_json_documentation ().c_str ());
-    //  }
-	
-    // if (!g_module_close (module))
-    //   {
-    // 	g_warning ("%s: %s", filename, g_module_error ());
-    // 	return;
-    //   }
-	
-    // g_print ("module closed\n");
+    //load_module ("/home/nico/src/switcher/plugins/.libs/libmyplugin.so");
+    scan_directory_for_modules ("/home/nico/src/switcher/plugins/.libs/");
   }
   
   QuiddityManager_Impl::~QuiddityManager_Impl()
   {
     g_main_loop_quit (mainloop_);
     g_main_context_unref (main_context_);
-    
+
+    for (auto& it: g_modules_.get_keys ()) 
+      close_module (it.c_str ());
   }
 
   void
@@ -1183,4 +1036,172 @@ namespace switcher
     return main_context_;
   } 
   
+   void 
+   QuiddityManager_Impl::load_module (const char *filename)
+   {
+     if (!g_module_supported ())
+       {
+	 g_debug ("g_module not supported !, cannot load %s \n", filename); 
+	 return;
+       }
+    
+    create_t *create_plugin;
+    destroy_t *destroy_plugin;
+    get_documentation_t *get_documentation_plugin;
+    GModule *module;
+    
+    module = g_module_open (filename, G_MODULE_BIND_LAZY);
+
+    if (!module)
+      {
+ 	g_debug ("when loading %s: %s", 
+		 filename,
+		 g_module_error ());
+ 	return;
+      }
+
+    if (!g_module_symbol (module, "create", (gpointer *)&create_plugin))
+      {
+	g_debug ("%s: %s", 
+		 filename,
+		 g_module_error ());
+	if (!g_module_close (module))
+	  g_debug ("when closing %s: %s", filename, g_module_error ());
+	return;
+      }
+     
+    if (create_plugin == NULL)
+      {
+  	g_debug ("%s: %s", 
+		 filename,
+		 g_module_error ());
+        if (!g_module_close (module))
+          g_debug ("%s: %s", 
+		   filename, 
+		   g_module_error ());
+        return;
+      }
+
+    if (!g_module_symbol (module, "destroy", (gpointer *)&destroy_plugin))
+      {
+	g_debug ("%s: %s", 
+		 filename,
+		 g_module_error ());
+	if (!g_module_close (module))
+	  g_debug ("%s: %s", 
+		   filename, 
+		   g_module_error ());
+	return;
+      }
+	
+    if (destroy_plugin == NULL)
+      {
+	g_debug ("%s: %s", 
+		 filename,
+		 g_module_error ());
+	if (!g_module_close (module))
+	  g_debug ("%s: %s", 
+		   filename, 
+		   g_module_error ());
+	return;
+      }
+
+    if (!g_module_symbol (module, "get_documentation", (gpointer *)&get_documentation_plugin))
+      {
+	g_debug ("%s: %s", 
+		 filename,
+		 g_module_error ());
+	if (!g_module_close (module))
+	  g_debug ("%s: %s", 
+		   filename, 
+		   g_module_error ());
+	return;
+      }
+     
+    if (get_documentation_plugin == NULL)
+      {
+  	g_debug ("%s: %s", 
+		 filename, 
+		 g_module_error ());
+        if (!g_module_close (module))
+          g_debug ("%s: %s", 
+		   filename, 
+		   g_module_error ());
+        return;
+      }
+    
+     QuiddityDocumentation doc = get_documentation_plugin ();
+     g_print ("static plugin doc ::: \n%s\n", doc.get_json_documentation ().c_str ());
+
+     //close the old one if exists
+     if (g_modules_.contains (doc.get_class_name ()))
+       {
+	 g_debug ("closing old module for reloading (class: %s)",
+		  doc.get_class_name ().c_str ());
+	 close_module (doc.get_class_name ().c_str ());
+       }
+       
+     abstract_factory_.register_class_with_custom_factory (doc.get_class_name (),
+							   doc.get_json_root_node (),
+							   create_plugin,
+							   destroy_plugin);
+     g_modules_.insert (doc.get_class_name (), module);
+     
+   }
+
+  void
+  QuiddityManager_Impl::close_module (const char *class_name)
+  {
+    if (g_modules_.contains (class_name))
+      if (!g_module_close (g_modules_.lookup (class_name)))
+	g_warning ("%s: %s", class_name, g_module_error ());
+  }
+
+  void 
+  QuiddityManager_Impl::scan_directory_for_modules (const char *directory_path)
+  {
+      
+    GFile *dir = g_file_new_for_commandline_arg (directory_path);
+
+    gboolean res;
+    GError *error;
+    GFileEnumerator *enumerator;
+    GFileInfo *info;
+    GFile *descend;
+    char *absolute_path;
+    
+    error = NULL;
+    enumerator =
+      g_file_enumerate_children (dir, "*",
+				 G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, 
+				 NULL,
+				 &error);
+    if (! enumerator)
+      return;
+    error = NULL;
+    info = g_file_enumerator_next_file (enumerator, NULL, &error);
+    while ((info) && (!error))
+      {
+	descend = g_file_get_child (dir, g_file_info_get_name (info));
+	absolute_path = g_file_get_path (descend);//g_file_get_relative_path (dir, descend);
+	//trying to load the module 
+	g_debug ("trying to load module %s\n", absolute_path);
+	if (g_str_has_suffix (absolute_path, ".so"))
+	  {
+	    g_debug ("trying to load module %s\n", absolute_path);
+	    load_module (absolute_path);
+	  }
+	g_free (absolute_path);
+	g_object_unref (descend);
+	info = g_file_enumerator_next_file (enumerator, NULL, &error);
+      }
+    error = NULL;
+    res = g_file_enumerator_close (enumerator, NULL, &error);
+    if (res != TRUE)
+      g_debug ("scanning dir: file enumerator not properly closed");
+    if (error != NULL)
+      g_debug ("scanning dir: error not NULL");
+    g_object_unref (dir);
+  }
+
 } // end of namespace
