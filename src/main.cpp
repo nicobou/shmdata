@@ -17,6 +17,11 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+
 #include "switcher/quiddity-manager.h"
 #include <vector>
 #include <iostream>
@@ -93,7 +98,7 @@ gpointer
 set_runtime_invoker (gpointer name)
 {
   if (manager->has_method ((char *)name, "set_runtime"))
-      manager->invoke_va ((char *)name, "set_runtime", "pipeline0", NULL);
+    manager->invoke_va ((char *)name, "set_runtime", "pipeline0", NULL);
   g_free (name);
   return NULL;
 }
@@ -181,123 +186,135 @@ main (int argc,
     port_number = "8080";
 
   manager = switcher::QuiddityManager::make_manager (server_name);  
+
+  //loading plugins from default location //FIXME add an option
+#ifdef HAVE_CONFIG_H
+  gchar *usr_plugin_dir = g_strdup_printf ("/usr/%s-%s/plugins",PACKAGE_NAME,LIBSWITCHER_API_VERSION);
+  manager->scan_directory_for_modules (usr_plugin_dir);
+  g_free (usr_plugin_dir);
   
-     //create logger managing switcher log domain
-     manager->create ("logger", "internal_logger");
-     //manage logs from shmdata
-     manager->invoke_va ("internal_logger", "install_log_handler", "shmdata", NULL);
-     //manage logs from GStreamer
-     manager->invoke_va ("internal_logger", "install_log_handler", "GStreamer", NULL);
-     //manage logs from Glib
-     manager->invoke_va ("internal_logger", "install_log_handler", "Glib", NULL);
-     //manage logs from Glib-GObject
-     manager->invoke_va ("internal_logger", "install_log_handler", "Glib-GObject", NULL);
-     if (quiet)
-       manager->set_property ("internal_logger", "mute", "true");
-     else
-       manager->set_property ("internal_logger", "mute", "false");
-     if (debug)
-       manager->set_property ("internal_logger", "debug", "true");
-     else
-       manager->set_property ("internal_logger", "debug", "false");
-     if (verbose)
-       manager->set_property ("internal_logger", "verbose", "true");
-     else
-       manager->set_property ("internal_logger", "verbose", "false");
-          
-     //subscribe to logs:
-     manager->make_property_subscriber ("log_sub", logger_cb, NULL);
-     manager->subscribe_property ("log_sub","internal_logger","last-line");
-     
-      // Create a runtime (pipeline0)
-     //std::string runtime = 
-     manager->create ("runtime","pipeline0");
-     
-    //make on-quiddity-created and on-quiddity-removed signals
-     manager->create ("create_remove_spy", "create_remove_spy");
-     manager->make_signal_subscriber ("create_remove_subscriber", quiddity_created_removed_cb, NULL);
-     manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-created");
-     manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-removed");
+  gchar *usr_local_plugin_dir = g_strdup_printf ("/usr/local/%s-%s/plugins",PACKAGE_NAME,LIBSWITCHER_API_VERSION);
+  manager->scan_directory_for_modules (usr_local_plugin_dir);
+  g_free (usr_local_plugin_dir);
+#else
+  g_warning ("plugins from default location not loaded (config.h missing)");
+#endif
 
-     std::string soap_name = manager->create ("SOAPcontrolServer", "soapserver");
-     std::vector<std::string> port_arg;
-     port_arg.push_back (port_number);
-     manager->invoke (soap_name, "set_port", port_arg);
+  //create logger managing switcher log domain
+  manager->create ("logger", "internal_logger");
+  //manage logs from shmdata
+  manager->invoke_va ("internal_logger", "install_log_handler", "shmdata", NULL);
+  //manage logs from GStreamer
+  manager->invoke_va ("internal_logger", "install_log_handler", "GStreamer", NULL);
+  //manage logs from Glib
+  manager->invoke_va ("internal_logger", "install_log_handler", "Glib", NULL);
+  //manage logs from Glib-GObject
+  manager->invoke_va ("internal_logger", "install_log_handler", "Glib-GObject", NULL);
+  if (quiet)
+    manager->set_property ("internal_logger", "mute", "true");
+  else
+    manager->set_property ("internal_logger", "mute", "false");
+  if (debug)
+    manager->set_property ("internal_logger", "debug", "true");
+  else
+    manager->set_property ("internal_logger", "debug", "false");
+  if (verbose)
+    manager->set_property ("internal_logger", "verbose", "true");
+  else
+    manager->set_property ("internal_logger", "verbose", "false");
+  
+  //subscribe to logs:
+  manager->make_property_subscriber ("log_sub", logger_cb, NULL);
+  manager->subscribe_property ("log_sub","internal_logger","last-line");
+  
+  // Create a runtime (pipeline0)
+  //std::string runtime = 
+  manager->create ("runtime","pipeline0");
+  
+  //make on-quiddity-created and on-quiddity-removed signals
+  manager->create ("create_remove_spy", "create_remove_spy");
+  manager->make_signal_subscriber ("create_remove_subscriber", quiddity_created_removed_cb, NULL);
+  manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-created");
+  manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-removed");
+  
+  std::string soap_name = manager->create ("SOAPcontrolServer", "soapserver");
+  std::vector<std::string> port_arg;
+  port_arg.push_back (port_number);
+  manager->invoke (soap_name, "set_port", port_arg);
+  
+  // start osc if port number has been set
+  if (osc_port_number != NULL)
+    {
+      std::string osc_name = manager->create ("OSCctl");
+      manager->invoke_va (osc_name.c_str (), "set_port", osc_port_number, NULL);
+    }
+  
+  manager->reset_command_history (false);
+  
+  if (load_file != NULL)
+    {
+      is_loading= TRUE;
+      switcher::QuiddityManager::CommandHistory histo = 
+   	manager->get_command_history_from_file (load_file);
+      std::vector <std::string> prop_subscriber_names = 
+   	manager->get_property_subscribers_names (histo);
+      if (!prop_subscriber_names.empty ())
+   	g_warning ("creation of property subscriber not handled when loading file %s", load_file);
+      
+      std::vector <std::string> signal_subscriber_names = 
+   	manager->get_signal_subscribers_names (histo);
+      if (!signal_subscriber_names.empty ())
+   	g_warning ("creation of signal subscriber not handled when loading file %s", load_file);
+      
+      manager->play_command_history (histo, NULL, NULL); 
+      is_loading= FALSE;
+    }
+  
+  // manager->create ("videotestsrc", "vid");
+  // manager->create("videosink","win");
+  // manager->invoke_va ("win",
+  //   			 "connect",
+  //   			 "/tmp/switcher_default_vid_video",
+  //   			 NULL);
+     
+  // //  g_print ("---- histo testing ------ \n");
+  // manager->save_command_history ("trup.switcher");
+     
+  // manager->reset_command_history(true);
+     
+  // //manager->reboot ();
 
-     // start osc if port number has been set
-     if (osc_port_number != NULL)
-       {
-	 std::string osc_name = manager->create ("OSCctl");
-	 manager->invoke_va (osc_name.c_str (), "set_port", osc_port_number, NULL);
-       }
+  // g_print ("---- reset done ----\n");
+  // g_print ("--- %s\n",manager->get_quiddities_description ().c_str ());
+     
+  // switcher::QuiddityManager::CommandHistory histo = 
+  //   manager->get_command_history_from_file ("trup.switcher");
+     
+  // // std::vector <std::string> prop_subscriber_names = 
+  // //   manager->get_property_subscribers_names (histo);
+     
+  // //    // for (auto &it: prop_subscriber_names)
+  // //    //   g_print ("prop sub %s\n", it.c_str ());
+     
+  // //    // std::vector <std::string> signal_subscriber_names = 
+  // //    //   manager->get_signal_subscribers_names (histo);
+     
+  // //    // for (auto &it: signal_subscriber_names)
+  // //    //   g_print ("signal sub %s\n", it.c_str ());
+     
+  //      switcher::QuiddityManager::PropCallbackMap prop_cb_data;
+  //      prop_cb_data ["log_sub"] = std::make_pair (logger_cb, (void *)NULL);
+  //      switcher::QuiddityManager::SignalCallbackMap sig_cb_data;
+  //      sig_cb_data["create_remove_subscriber"] = std::make_pair (quiddity_created_removed_cb, (void *)NULL);
+  //      manager->play_command_history (histo, &prop_cb_data, &sig_cb_data); 
+  //      g_print ("--fin-- %s\n",manager->get_quiddities_description ().c_str ());
 
-     manager->reset_command_history (false);
-
-     if (load_file != NULL)
-       {
-	 is_loading= TRUE;
-	 switcher::QuiddityManager::CommandHistory histo = 
-	   manager->get_command_history_from_file (load_file);
-	 std::vector <std::string> prop_subscriber_names = 
-	   manager->get_property_subscribers_names (histo);
-	 if (!prop_subscriber_names.empty ())
-	   g_warning ("creation of property subscriber not handled when loading file %s", load_file);
-	 
-	 std::vector <std::string> signal_subscriber_names = 
-	   manager->get_signal_subscribers_names (histo);
-	 if (!signal_subscriber_names.empty ())
-	   g_warning ("creation of signal subscriber not handled when loading file %s", load_file);
-
-	 manager->play_command_history (histo, NULL, NULL); 
-	 is_loading= FALSE;
-
-       }
-
-     // manager->create ("videotestsrc", "vid");
-     // manager->create("videosink","win");
-     // manager->invoke_va ("win",
-     //   			 "connect",
-     //   			 "/tmp/switcher_default_vid_video",
-     //   			 NULL);
-     
-     // //  g_print ("---- histo testing ------ \n");
-     // manager->save_command_history ("trup.switcher");
-     
-     // manager->reset_command_history(true);
-     
-     // //manager->reboot ();
-
-     // g_print ("---- reset done ----\n");
-     // g_print ("--- %s\n",manager->get_quiddities_description ().c_str ());
-     
-     // switcher::QuiddityManager::CommandHistory histo = 
-     //   manager->get_command_history_from_file ("trup.switcher");
-     
-     // // std::vector <std::string> prop_subscriber_names = 
-     // //   manager->get_property_subscribers_names (histo);
-     
-     // //    // for (auto &it: prop_subscriber_names)
-     // //    //   g_print ("prop sub %s\n", it.c_str ());
-     
-     // //    // std::vector <std::string> signal_subscriber_names = 
-     // //    //   manager->get_signal_subscribers_names (histo);
-     
-     // //    // for (auto &it: signal_subscriber_names)
-     // //    //   g_print ("signal sub %s\n", it.c_str ());
-     
-     //      switcher::QuiddityManager::PropCallbackMap prop_cb_data;
-     //      prop_cb_data ["log_sub"] = std::make_pair (logger_cb, (void *)NULL);
-     //      switcher::QuiddityManager::SignalCallbackMap sig_cb_data;
-     //      sig_cb_data["create_remove_subscriber"] = std::make_pair (quiddity_created_removed_cb, (void *)NULL);
-     //      manager->play_command_history (histo, &prop_cb_data, &sig_cb_data); 
-     //      g_print ("--fin-- %s\n",manager->get_quiddities_description ().c_str ());
-
-   //waiting for end of life
+  //waiting for end of life
   timespec delay;
   delay.tv_sec = 1;
   delay.tv_nsec = 0;
   while (1)
-      nanosleep(&delay, NULL);
+    nanosleep(&delay, NULL);
   
   return 0;
 }

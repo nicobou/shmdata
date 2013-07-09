@@ -17,10 +17,6 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <gmodule.h>
 
 #include "quiddity-documentation.h"
@@ -102,17 +98,7 @@ namespace switcher
     register_classes ();
     classes_doc_.reset (new JSONBuilder ());
     make_classes_doc ();
-#ifdef HAVE_CONFIG_H
-    gchar *usr_plugin_dir = g_strdup_printf ("/usr/%s-%s/plugins",PACKAGE_NAME,LIBSWITCHER_API_VERSION);
-    scan_directory_for_modules (usr_plugin_dir);
-    g_free (usr_plugin_dir);
-    
-    gchar *usr_local_plugin_dir = g_strdup_printf ("/usr/local/%s-%s/plugins",PACKAGE_NAME,LIBSWITCHER_API_VERSION);
-    scan_directory_for_modules (usr_local_plugin_dir);
-    g_free (usr_local_plugin_dir);
-#else
-    g_warning ("plugins not loaded (switcher version missing)");
-#endif
+
   }
   
   QuiddityManager_Impl::~QuiddityManager_Impl()
@@ -1141,7 +1127,6 @@ namespace switcher
       }
     
      QuiddityDocumentation doc = get_documentation_plugin ();
-     g_print ("static plugin doc ::: \n%s\n", doc.get_json_documentation ().c_str ());
 
      //close the old one if exists
      if (g_modules_.contains (doc.get_class_name ()))
@@ -1156,7 +1141,6 @@ namespace switcher
 							   create_plugin,
 							   destroy_plugin);
      g_modules_.insert (doc.get_class_name (), module);
-     
    }
 
   void
@@ -1165,21 +1149,19 @@ namespace switcher
     if (g_modules_.contains (class_name))
       if (!g_module_close (g_modules_.lookup (class_name)))
 	g_warning ("%s: %s", class_name, g_module_error ());
+    g_modules_.remove (class_name);
   }
 
-  void 
+  bool 
   QuiddityManager_Impl::scan_directory_for_modules (const char *directory_path)
   {
-      
     GFile *dir = g_file_new_for_commandline_arg (directory_path);
-
     gboolean res;
     GError *error;
     GFileEnumerator *enumerator;
     GFileInfo *info;
     GFile *descend;
     char *absolute_path;
-    
     error = NULL;
     enumerator =
       g_file_enumerate_children (dir, "*",
@@ -1187,7 +1169,7 @@ namespace switcher
 				 NULL,
 				 &error);
     if (! enumerator)
-      return;
+      return false;;
     error = NULL;
     info = g_file_enumerator_next_file (enumerator, NULL, &error);
     while ((info) && (!error))
@@ -1212,6 +1194,11 @@ namespace switcher
     if (error != NULL)
       g_debug ("scanning dir: error not NULL");
     g_object_unref (dir);
+
+    classes_doc_.reset (new JSONBuilder ());
+    make_classes_doc ();
+        
+    return true;
   }
 
 } // end of namespace

@@ -53,6 +53,9 @@ namespace switcher
       //void reboot ();
       ~QuiddityManager_Impl();
     
+      //plugins
+      bool scan_directory_for_modules (const char *directory_path);
+
       //**** info about manager
       std::string get_name ();
       std::vector<std::string> get_classes ();//vector of class names
@@ -181,9 +184,9 @@ namespace switcher
       std::string 
 	list_subscribed_signals_json (std::string subscriber_name);
 
+
       //mainloop
       GMainContext * get_g_main_context();
-
 
       //for use of "get description by class" 
       //and from quiddity that creates other quiddity in the same manager
@@ -213,7 +216,6 @@ namespace switcher
       void load_module (const char *filename);
       void close_module (const char *class_name);
       StringMap<GModule *> g_modules_;
-      void scan_directory_for_modules (const char *directory_path);
       
       //gmainloop 
       GThread *thread_; //this runs the main loop 
@@ -223,7 +225,7 @@ namespace switcher
       static gpointer main_loop_thread (gpointer user_data); 
       
     };
-
+  
 } // end of namespace
 
 

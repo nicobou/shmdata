@@ -31,7 +31,7 @@ namespace switcher
 
   public:
     QuiddityDocumentation (std::string category, std::string class_name, std::string description);
-   
+    
     std::string get_category () const;
     std::string get_class_name () const;
     std::string get_description () const;

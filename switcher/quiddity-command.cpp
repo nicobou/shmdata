@@ -65,6 +65,7 @@ namespace switcher
     {remove,"remove"},
     {remove_property_subscriber,"remove_property_subscriber"},
     {remove_signal_subscriber,"remove_signal_subscriber"},
+    {scan_directory_for_modules,"scan_directory_for_modules"},
     {set_property,"set_property"},
     {subscribe_property,"subscribe_property"},
     {subscribe_signal,"subscribe_signal"},

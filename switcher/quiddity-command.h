@@ -77,6 +77,7 @@ namespace switcher
       remove,
       remove_property_subscriber,
       remove_signal_subscriber,
+      scan_directory_for_modules,
       set_property,
       subscribe_property,
       subscribe_signal,

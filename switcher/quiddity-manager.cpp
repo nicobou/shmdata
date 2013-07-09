@@ -793,9 +793,21 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     std::string res = seq_invoke (QuiddityCommand::create, 
 				  quiddity_class.c_str(),
 				  NULL);
-    //auto_init (res);
     return res;
   }
+
+  bool
+  QuiddityManager::scan_directory_for_modules (std::string directory)
+  {
+    std::string res = seq_invoke (QuiddityCommand::scan_directory_for_modules, 
+				  directory.c_str(),
+				  NULL);
+    if (res == "true")
+      return true;
+    else
+      return false;
+  }
+
 
   std::string
   QuiddityManager::create (std::string quiddity_class, std::string nick_name)
@@ -1020,6 +1032,12 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	if (context->manager_impl_->unsubscribe_signal (context->command_->args_[0], 
 							context->command_->args_[1], 
 							context->command_->args_[2]))
+	  context->command_->result_.push_back ("true");
+	else
+	  context->command_->result_.push_back ("false");
+	break;
+      case QuiddityCommand::scan_directory_for_modules:
+	if (context->manager_impl_->scan_directory_for_modules (context->command_->args_[0].c_str ()))
 	  context->command_->result_.push_back ("true");
 	else
 	  context->command_->result_.push_back ("false");
