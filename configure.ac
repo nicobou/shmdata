@@ -34,6 +34,7 @@ AC_SUBST([LIBSWITCHER_SO_VERSION], [0:0:0])
 
 # The version of the API. Should be major.minor and not change until not backward-compatible
 AC_SUBST([LIBSWITCHER_API_VERSION], [0.2])
+AC_DEFINE(LIBSWITCHER_API_VERSION, ["0.2"], [API version])
 
 dnl check for tools (compiler etc.)
 AC_PROG_CXX

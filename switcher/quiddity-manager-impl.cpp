@@ -17,8 +17,10 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
-//#include <dlfcn.h> //dlopen remove me
 #include <gmodule.h>
 
 #include "quiddity-documentation.h"
@@ -100,9 +102,17 @@ namespace switcher
     register_classes ();
     classes_doc_.reset (new JSONBuilder ());
     make_classes_doc ();
-
-    //load_module ("/home/nico/src/switcher/plugins/.libs/libmyplugin.so");
-    scan_directory_for_modules ("/home/nico/src/switcher/plugins/.libs/");
+#ifdef HAVE_CONFIG_H
+    gchar *usr_plugin_dir = g_strdup_printf ("/usr/%s-%s/plugins",PACKAGE_NAME,LIBSWITCHER_API_VERSION);
+    scan_directory_for_modules (usr_plugin_dir);
+    g_free (usr_plugin_dir);
+    
+    gchar *usr_local_plugin_dir = g_strdup_printf ("/usr/local/%s-%s/plugins",PACKAGE_NAME,LIBSWITCHER_API_VERSION);
+    scan_directory_for_modules (usr_local_plugin_dir);
+    g_free (usr_local_plugin_dir);
+#else
+    g_warning ("plugins not loaded (switcher version missing)");
+#endif
   }
   
   QuiddityManager_Impl::~QuiddityManager_Impl()
