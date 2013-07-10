@@ -11,7 +11,7 @@
 		1C0C32BB1774B608001DFF69 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 1C0C32B91774B608001DFF69 /* InfoPlist.strings */; };
 		1C0C32BD1774B608001DFF69 /* main.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1C0C32BC1774B608001DFF69 /* main.mm */; };
 		1C0C32C11774B608001DFF69 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 1C0C32BF1774B608001DFF69 /* Credits.rtf */; };
-		1C0C32C41774B608001DFF69 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 1C0C32C31774B608001DFF69 /* AppDelegate.m */; };
+		1C0C32C41774B608001DFF69 /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 1C0C32C31774B608001DFF69 /* AppDelegate.mm */; };
 		1C0C32C71774B608001DFF69 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 1C0C32C51774B608001DFF69 /* MainMenu.xib */; };
 		1C0C32CE1774B622001DFF69 /* GStreamer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C0C32CD1774B622001DFF69 /* GStreamer.framework */; };
 		1C0C32D21774B634001DFF69 /* libshmdata-0.8.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C0C32CF1774B634001DFF69 /* libshmdata-0.8.4.dylib */; };
@@ -24,6 +24,8 @@
 		1C0C33361774D304001DFF69 /* GStreamer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C0C32CD1774B622001DFF69 /* GStreamer.framework */; };
 		1C0C333A1774D38D001DFF69 /* switcher-ctrl in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1C0C332A1774D2BF001DFF69 /* switcher-ctrl */; };
 		1C0C334A1774DA01001DFF69 /* liblo.7.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1C0C33481774D910001DFF69 /* liblo.7.dylib */; };
+		1C4D1C591774EFE50023D33E /* libgstshm.so in CopyFiles */ = {isa = PBXBuildFile; fileRef = 1C4D1C581774EFD10023D33E /* libgstshm.so */; };
+		1C8FFAA31786273B002E4F01 /* switcher_logo.icns in Resources */ = {isa = PBXBuildFile; fileRef = 1C8FFAA21786273B002E4F01 /* switcher_logo.icns */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,6 +45,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				1C4D1C591774EFE50023D33E /* libgstshm.so in CopyFiles */,
 				1C0C32DB1774C33A001DFF69 /* libshmdata-0.8.4.dylib in CopyFiles */,
 				1C0C33251774C909001DFF69 /* libswitcher-0.2.0.dylib in CopyFiles */,
 				1C0C334A1774DA01001DFF69 /* liblo.7.dylib in CopyFiles */,
@@ -73,7 +76,7 @@
 		1C0C32BE1774B608001DFF69 /* Switcher-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "Switcher-Prefix.pch"; path = "src/Switcher-Prefix.pch"; sourceTree = SOURCE_ROOT; };
 		1C0C32C01774B608001DFF69 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
 		1C0C32C21774B608001DFF69 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = src/AppDelegate.h; sourceTree = "<group>"; };
-		1C0C32C31774B608001DFF69 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = src/AppDelegate.m; sourceTree = "<group>"; };
+		1C0C32C31774B608001DFF69 /* AppDelegate.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = src/AppDelegate.mm; sourceTree = "<group>"; };
 		1C0C32C61774B608001DFF69 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		1C0C32CD1774B622001DFF69 /* GStreamer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GStreamer.framework; path = ../../../../../../Library/Frameworks/GStreamer.framework; sourceTree = "<group>"; };
 		1C0C32CF1774B634001DFF69 /* libshmdata-0.8.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libshmdata-0.8.4.dylib"; path = "../../../../../../usr/local/lib/libshmdata-0.8.4.dylib"; sourceTree = "<group>"; };
@@ -81,6 +84,8 @@
 		1C0C33231774C8FD001DFF69 /* libswitcher-0.2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libswitcher-0.2.0.dylib"; path = "../../../../../../usr/local/lib/libswitcher-0.2.0.dylib"; sourceTree = "<group>"; };
 		1C0C332A1774D2BF001DFF69 /* switcher-ctrl */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "switcher-ctrl"; sourceTree = BUILT_PRODUCTS_DIR; };
 		1C0C33481774D910001DFF69 /* liblo.7.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = liblo.7.dylib; path = ../../../../../../opt/local/lib/liblo.7.dylib; sourceTree = "<group>"; };
+		1C4D1C581774EFD10023D33E /* libgstshm.so */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.bundle"; name = libgstshm.so; path = "../../../../../Library/Frameworks/GStreamer.framework/Versions/0.10/lib/gstreamer-0.10/libgstshm.so"; sourceTree = "<group>"; };
+		1C8FFAA21786273B002E4F01 /* switcher_logo.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = switcher_logo.icns; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,6 +116,7 @@
 		1C0C32A41774B608001DFF69 = {
 			isa = PBXGroup;
 			children = (
+				1C8FFAA21786273B002E4F01 /* switcher_logo.icns */,
 				1C0C32E01774C43A001DFF69 /* src */,
 				1C0C32AF1774B608001DFF69 /* Frameworks */,
 				1C0C32AE1774B608001DFF69 /* Products */,
@@ -129,6 +135,7 @@
 		1C0C32AF1774B608001DFF69 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1C4D1C581774EFD10023D33E /* libgstshm.so */,
 				1C0C33481774D910001DFF69 /* liblo.7.dylib */,
 				1C0C33231774C8FD001DFF69 /* libswitcher-0.2.0.dylib */,
 				1C0C32CF1774B634001DFF69 /* libshmdata-0.8.4.dylib */,
@@ -167,7 +174,7 @@
 			children = (
 				1C0C32B71774B608001DFF69 /* Supporting Files */,
 				1C0C32C21774B608001DFF69 /* AppDelegate.h */,
-				1C0C32C31774B608001DFF69 /* AppDelegate.m */,
+				1C0C32C31774B608001DFF69 /* AppDelegate.mm */,
 				1C0C32C51774B608001DFF69 /* MainMenu.xib */,
 				1C0C32DC1774C420001DFF69 /* switcher-ctrl.cpp */,
 			);
@@ -249,6 +256,7 @@
 				1C0C32BB1774B608001DFF69 /* InfoPlist.strings in Resources */,
 				1C0C32C11774B608001DFF69 /* Credits.rtf in Resources */,
 				1C0C32C71774B608001DFF69 /* MainMenu.xib in Resources */,
+				1C8FFAA31786273B002E4F01 /* switcher_logo.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -276,7 +284,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1C0C32BD1774B608001DFF69 /* main.mm in Sources */,
-				1C0C32C41774B608001DFF69 /* AppDelegate.m in Sources */,
+				1C0C32C41774B608001DFF69 /* AppDelegate.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
