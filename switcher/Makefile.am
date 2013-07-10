@@ -45,6 +45,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     h264.cpp \
     http-sdp.cpp \
     http-sdp-dec.cpp \
+    jack-audio-source.cpp \
     json-builder.cpp \
     logger.cpp \
     method.cpp \
@@ -126,6 +127,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     hash-table_spec.h \
     http-sdp.h \
     http-sdp-dec.h \
+    jack-audio-source.h \
     json-builder.h \
     logger.h \
     method.h \

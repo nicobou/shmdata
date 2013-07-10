@@ -55,7 +55,6 @@ namespace switcher
     register_property (G_OBJECT (pitch_),"rate","pitch-rate");
     register_property (G_OBJECT (pitch_),"tempo","pitch-tempo");
     register_property (G_OBJECT (pitch_),"pitch","pitch");
-
   }
 
   void 
