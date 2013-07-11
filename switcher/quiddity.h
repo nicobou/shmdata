@@ -174,7 +174,8 @@ namespace switcher
     //g_main_context
     GMainContext *get_g_main_context ();
   };
-  
+
+
 } // end of namespace
 
 #endif // ifndef

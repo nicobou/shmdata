@@ -63,7 +63,7 @@ namespace switcher
       std::string get_name ();
       void reboot ();
 
-      //command history
+      //*************** command history ***********************************************************
       bool save_command_history (const char *file_path);
       CommandHistory get_command_history_from_file (const char *file_path);
       std::vector<std::string> get_property_subscribers_names (QuiddityManager::CommandHistory histo);
@@ -73,7 +73,10 @@ namespace switcher
 				 QuiddityManager::SignalCallbackMap *sig_cb_data);
       void reset_command_history (bool remove_created_quiddities);//FIXME maybe implement undo and remove this  arg
 
-      //inspect
+      //************** plugins *******************************************************************
+      bool scan_directory_for_plugins (std::string directory);
+
+      //***************** inspect ****************************************************************
       std::vector<std::string> get_classes (); //know which quiddities can be created
       std::vector<std::string> get_quiddities (); //know instances
       // doc (json formatted) 

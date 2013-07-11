@@ -17,40 +17,48 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __SWITCHER_QUIDDITY_DOCUMENTATION_H__
-#define __SWITCHER_QUIDDITY_DOCUMENTATION_H__
 
-#include <string>
+#ifndef __SWITCHER_PLUGIN_H__
+#define __SWITCHER_PLUGIN_H__
+
+#include <memory>
+#include <gmodule.h>
 #include "json-builder.h"
 
 namespace switcher
 {
 
-  class QuiddityDocumentation 
+  class Quiddity;
+  class QuiddityDocumentation;
+
+  // the types of the class factories for quiddity pluggins
+  typedef switcher::Quiddity *create_t ();
+  typedef void destroy_t (switcher::Quiddity *);
+  typedef switcher::QuiddityDocumentation get_documentation_t ();
+  
+  
+  class PluginLoader
   {
-
   public:
-    QuiddityDocumentation (std::string category, std::string class_name, std::string description);
-    
-    std::string get_category () const;
-    std::string get_class_name () const;
-    std::string get_description () const;
-    void set_category (std::string category);
-    void set_class_name (std::string class_name);
-    void set_description (std::string description);
+    typedef std::shared_ptr<PluginLoader> ptr;
+    PluginLoader();
+    ~PluginLoader();
 
-    std::string get_json_documentation ();
+    bool load (const char *filename);
+    bool close ();
+    std::string get_class_name (); 
     JSONBuilder::Node get_json_root_node ();
-    
-  private:
-    std::string category_;
-    std::string class_name_;
-    std::string description_;
-    JSONBuilder::ptr json_description_;
-    void make_json_description ();
-  };
 
-} // end of namespace
+    create_t *create_;
+    destroy_t *destroy_;
+
+  private:
+    GModule *module_;
+    get_documentation_t *get_documentation_; 
+    JSONBuilder::Node json_doc_;
+    std::string class_name_;
+  };
+  
+}  // end of namespace
 
 #endif // ifndef
-

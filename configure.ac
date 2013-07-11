@@ -34,6 +34,7 @@ AC_SUBST([LIBSWITCHER_SO_VERSION], [0:0:0])
 
 # The version of the API. Should be major.minor and not change until not backward-compatible
 AC_SUBST([LIBSWITCHER_API_VERSION], [0.2])
+AC_DEFINE(LIBSWITCHER_API_VERSION, ["0.2"], [API version])
 
 dnl check for tools (compiler etc.)
 AC_PROG_CXX
@@ -137,6 +138,11 @@ if test "x${have_glib}" = "xfalse" ; then
     AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
 fi
 
+PKG_CHECK_MODULES(GMODULE, gmodule-2.0, have_gmodule=true, have_gmodule=false)
+if test "x${have_gmodule}" = "xfalse" ; then
+    AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
+fi
+
 
 PKG_CHECK_MODULES(SHMDATA, shmdata-0.8, have_shmdata=true, have_shmdata=false)
 if test "x${have_shmdata}" = "xfalse" ; then
@@ -199,6 +205,7 @@ src/Makefile
 switcher-${LIBSWITCHER_API_VERSION}.pc:switcher.pc.in
 switcher/Makefile
 tests/Makefile
+plugins/Makefile
 ])
 AC_OUTPUT
 

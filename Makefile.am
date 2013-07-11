@@ -1,5 +1,6 @@
 SUBDIRS= \
     switcher \
+    plugins \
     src \
     tests
 

@@ -37,7 +37,7 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr< JSONBuilder > ptr;
-    typedef JsonNode * Node;
+    typedef JsonNode *Node;
     JSONBuilder ();
     ~JSONBuilder ();
 

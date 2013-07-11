@@ -2,6 +2,7 @@ AM_CXXFLAGS = \
     $(GLIB_CFLAGS) \
     $(GSOAP_CFLAGS) \
     $(GST_CFLAGS) \
+    $(GMODULE_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
     $(LIBLO_CFLAGS) \
     $(SHMDATA_CFLAGS) \
@@ -12,6 +13,7 @@ AM_LIBS = \
     $(GLIB_LIBS) \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
+    $(GMODULE_LIBS) \
     $(JSONGLIB_LIBS) \
     $(LIBLO_LIBS) \
     $(SHMDATA_LIBS)
@@ -48,6 +50,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     logger.cpp \
     method.cpp \
     osc-ctrl-server.cpp \
+    plugin-loader.cpp \
     property.cpp \
     pulse-sink.cpp \
     quiddity-command.cpp \
@@ -86,6 +89,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
     $(GLIB_LIBS) \
     $(GSOAP_LIBS) \
     $(GST_LIBS) \
+    $(GMODULE_LIBS) \
     $(JSONGLIB_LIBS) \
     $(LIBLO_LIBS) \
     $(SHMDATA_LIBS) \
@@ -129,6 +133,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     logger.h \
     method.h \
     osc-ctrl-server.h \
+    plugin-loader.h \
     property.h \
     pulse-sink.h \
     quiddity-command.h \

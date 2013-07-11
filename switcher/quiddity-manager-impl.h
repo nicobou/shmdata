@@ -34,6 +34,7 @@
 #include "json-builder.h"
 #include "quiddity-property-subscriber.h"
 #include "quiddity-signal-subscriber.h"
+#include "plugin-loader.h"
 
 namespace switcher
 {
@@ -53,6 +54,9 @@ namespace switcher
       //void reboot ();
       ~QuiddityManager_Impl();
     
+      //plugins
+      bool scan_directory_for_plugins (const char *directory_path);
+
       //**** info about manager
       std::string get_name ();
       std::vector<std::string> get_classes ();//vector of class names
@@ -181,9 +185,9 @@ namespace switcher
       std::string 
 	list_subscribed_signals_json (std::string subscriber_name);
 
+
       //mainloop
       GMainContext * get_g_main_context();
-
 
       //for use of "get description by class" 
       //and from quiddity that creates other quiddity in the same manager
@@ -210,17 +214,19 @@ namespace switcher
       void *creation_hook_user_data_;
       void *removal_hook_user_data_;
 
+      //plugins
+      bool load_plugin (const char *filename);
+      void close_plugin (const std::string class_name);
+      StringMap<PluginLoader::ptr> plugins_;
+      
       //gmainloop 
       GThread *thread_; //this runs the main loop 
       GMainContext *main_context_;
       GMainLoop *mainloop_; 
       void init_gmainloop (); 
       static gpointer main_loop_thread (gpointer user_data); 
-
     };
-
+  
 } // end of namespace
-
-
 
 #endif // ifndef

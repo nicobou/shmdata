@@ -17,6 +17,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//#include <gmodule.h>
+
 #include "quiddity-documentation.h"
 #include "quiddity-manager-impl.h"
 #include "quiddity.h" 
@@ -97,13 +99,13 @@ namespace switcher
     register_classes ();
     classes_doc_.reset (new JSONBuilder ());
     make_classes_doc ();
-  }
 
+  }
+  
   QuiddityManager_Impl::~QuiddityManager_Impl()
   {
     g_main_loop_quit (mainloop_);
     g_main_context_unref (main_context_);
-    
   }
 
   void
@@ -317,7 +319,7 @@ namespace switcher
       {
 	quiddity->set_manager_impl (shared_from_this());
 	if (!quiddity->init ())
-	  "{\"error\":\"cannot init quiddity class\"}";
+	  return "{\"error\":\"cannot init quiddity class\"}";
 	quiddities_.insert (quiddity->get_name(),quiddity);
 	quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
       }
@@ -1030,4 +1032,87 @@ namespace switcher
     return main_context_;
   } 
   
+   bool 
+   QuiddityManager_Impl::load_plugin (const char *filename)
+   {
+
+     PluginLoader::ptr plugin (new PluginLoader ());
+     
+     if (!plugin->load (filename))
+       return false;
+     
+     std::string class_name = plugin->get_class_name ();
+
+     //close the old one if exists
+     if (plugins_.contains (class_name))
+       {
+	 g_debug ("closing old plugin for reloading (class: %s)",
+		  class_name.c_str ());
+	 close_plugin (class_name);
+       }
+     
+     abstract_factory_.register_class_with_custom_factory (class_name,
+     							   plugin->get_json_root_node (),
+     							   plugin->create_,
+     							   plugin->destroy_);
+     plugins_.insert (class_name, plugin);
+     return true;
+   }
+
+  void
+  QuiddityManager_Impl::close_plugin (const std::string class_name)
+  {
+    abstract_factory_.unregister_class (class_name);
+    plugins_.remove (class_name);
+  }
+
+  bool 
+  QuiddityManager_Impl::scan_directory_for_plugins (const char *directory_path)
+  {
+    GFile *dir = g_file_new_for_commandline_arg (directory_path);
+    gboolean res;
+    GError *error;
+    GFileEnumerator *enumerator;
+    GFileInfo *info;
+    GFile *descend;
+    char *absolute_path;
+    error = NULL;
+    enumerator =
+      g_file_enumerate_children (dir, "*",
+				 G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, 
+				 NULL,
+				 &error);
+    if (! enumerator)
+      return false;;
+    error = NULL;
+    info = g_file_enumerator_next_file (enumerator, NULL, &error);
+    while ((info) && (!error))
+      {
+	descend = g_file_get_child (dir, g_file_info_get_name (info));
+	absolute_path = g_file_get_path (descend);//g_file_get_relative_path (dir, descend);
+	//trying to load the module 
+	g_debug ("trying to load module %s\n", absolute_path);
+	if (g_str_has_suffix (absolute_path, ".so"))
+	  {
+	    g_debug ("trying to load module %s\n", absolute_path);
+	    load_plugin (absolute_path);
+	  }
+	g_free (absolute_path);
+	g_object_unref (descend);
+	info = g_file_enumerator_next_file (enumerator, NULL, &error);
+      }
+    error = NULL;
+    res = g_file_enumerator_close (enumerator, NULL, &error);
+    if (res != TRUE)
+      g_debug ("scanning dir: file enumerator not properly closed");
+    if (error != NULL)
+      g_debug ("scanning dir: error not NULL");
+    g_object_unref (dir);
+
+    classes_doc_.reset (new JSONBuilder ());
+    make_classes_doc ();
+        
+    return true;
+  }
+
 } // end of namespace

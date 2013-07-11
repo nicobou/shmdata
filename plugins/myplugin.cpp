@@ -17,48 +17,25 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/**
- * the Abstract creator class
- */
+#include "myplugin.h"
 
-#ifndef __SWITCHER_CREATOR_H__
-#define __SWITCHER_CREATOR_H__
-
-#include <vector>
-
-namespace switcher 
+namespace switcher
 {
+  QuiddityDocumentation MyPlugin::doc_  ("test", "myplugin",				
+					 "Creates a quiddity from a plugin");
 
-  template <class T>
-    class Creator
-    {
-    public:
-      virtual ~Creator(){}
-      virtual T* Create() = 0;
-    };
+  bool
+  MyPlugin::init ()
+  {
+    //g_print ("coucou from plugin\n");
+    return true;
+  }
+
+  QuiddityDocumentation 
+  MyPlugin::get_documentation ()
+  {
+    return doc_;
+  }
   
 
-  template <class T>
-    class DerivedCreator : public Creator<T>
-  {
-  public:
-    T* Create()
-    {
-      return new T;
-    }
-  };
-
-  template <class T>
-    class CustomDerivedCreator : public Creator<T>
-  {
-  public:
-    T* Create()
-    {
-      return (*custom_create_) ();
-    }
-    T * (*custom_create_) ();
-  };
-  
-} // end of namespace
- 
-#endif // ifndef
+}

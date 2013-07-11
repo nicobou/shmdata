@@ -34,7 +34,9 @@ namespace switcher
 
   JSONBuilder::~JSONBuilder ()
   {
-    g_object_unref (builder_);
+    //g_print ("------- unref %s\n\n",get_string (false).c_str ());
+    //if (builder_ != NULL && G_IS_OBJECT (builder_))//FIXME
+      //g_object_unref (builder_);
   }
 
   void
