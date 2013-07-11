@@ -41,6 +41,7 @@ namespace switcher
 					     Doc doc,
 					     T * (*custom_create) (),
 					     void (*custom_destroy) (T *));
+    bool unregister_class (Key Id);
     std::vector<Key> get_keys ();
     std::vector<Doc> get_classes_documentation ();
     Doc get_class_documentation (Key Id);
@@ -52,7 +53,6 @@ namespace switcher
     std::map<Key, Creator<T>*> constructor_map_;
     std::map<Key, void (*) (T *)> destructor_map_;
     std::map<Key, Doc> classes_documentation_;
-    std::vector<Key> constructor_names_;
   };
   
   

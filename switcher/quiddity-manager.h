@@ -74,7 +74,7 @@ namespace switcher
       void reset_command_history (bool remove_created_quiddities);//FIXME maybe implement undo and remove this  arg
 
       //************** plugins *******************************************************************
-      bool scan_directory_for_modules (std::string directory);
+      bool scan_directory_for_plugins (std::string directory);
 
       //***************** inspect ****************************************************************
       std::vector<std::string> get_classes (); //know which quiddities can be created

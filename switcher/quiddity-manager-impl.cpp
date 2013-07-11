@@ -17,7 +17,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <gmodule.h>
+//#include <gmodule.h>
 
 #include "quiddity-documentation.h"
 #include "quiddity-manager-impl.h"
@@ -106,9 +106,6 @@ namespace switcher
   {
     g_main_loop_quit (mainloop_);
     g_main_context_unref (main_context_);
-
-    for (auto& it: g_modules_.get_keys ()) 
-      close_module (it.c_str ());
   }
 
   void
@@ -322,7 +319,7 @@ namespace switcher
       {
 	quiddity->set_manager_impl (shared_from_this());
 	if (!quiddity->init ())
-	  "{\"error\":\"cannot init quiddity class\"}";
+	  return "{\"error\":\"cannot init quiddity class\"}";
 	quiddities_.insert (quiddity->get_name(),quiddity);
 	quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
       }
@@ -1035,128 +1032,42 @@ namespace switcher
     return main_context_;
   } 
   
-   void 
-   QuiddityManager_Impl::load_module (const char *filename)
+   bool 
+   QuiddityManager_Impl::load_plugin (const char *filename)
    {
-     if (!g_module_supported ())
-       {
-	 g_debug ("g_module not supported !, cannot load %s \n", filename); 
-	 return;
-       }
-    
-    create_t *create_plugin;
-    destroy_t *destroy_plugin;
-    get_documentation_t *get_documentation_plugin;
-    GModule *module;
-    
-    module = g_module_open (filename, G_MODULE_BIND_LAZY);
 
-    if (!module)
-      {
- 	g_debug ("when loading %s: %s", 
-		 filename,
-		 g_module_error ());
- 	return;
-      }
-
-    if (!g_module_symbol (module, "create", (gpointer *)&create_plugin))
-      {
-	g_debug ("%s: %s", 
-		 filename,
-		 g_module_error ());
-	if (!g_module_close (module))
-	  g_debug ("when closing %s: %s", filename, g_module_error ());
-	return;
-      }
+     PluginLoader::ptr plugin (new PluginLoader ());
      
-    if (create_plugin == NULL)
-      {
-  	g_debug ("%s: %s", 
-		 filename,
-		 g_module_error ());
-        if (!g_module_close (module))
-          g_debug ("%s: %s", 
-		   filename, 
-		   g_module_error ());
-        return;
-      }
-
-    if (!g_module_symbol (module, "destroy", (gpointer *)&destroy_plugin))
-      {
-	g_debug ("%s: %s", 
-		 filename,
-		 g_module_error ());
-	if (!g_module_close (module))
-	  g_debug ("%s: %s", 
-		   filename, 
-		   g_module_error ());
-	return;
-      }
-	
-    if (destroy_plugin == NULL)
-      {
-	g_debug ("%s: %s", 
-		 filename,
-		 g_module_error ());
-	if (!g_module_close (module))
-	  g_debug ("%s: %s", 
-		   filename, 
-		   g_module_error ());
-	return;
-      }
-
-    if (!g_module_symbol (module, "get_documentation", (gpointer *)&get_documentation_plugin))
-      {
-	g_debug ("%s: %s", 
-		 filename,
-		 g_module_error ());
-	if (!g_module_close (module))
-	  g_debug ("%s: %s", 
-		   filename, 
-		   g_module_error ());
-	return;
-      }
+     if (!plugin->load (filename))
+       return false;
      
-    if (get_documentation_plugin == NULL)
-      {
-  	g_debug ("%s: %s", 
-		 filename, 
-		 g_module_error ());
-        if (!g_module_close (module))
-          g_debug ("%s: %s", 
-		   filename, 
-		   g_module_error ());
-        return;
-      }
-    
-     QuiddityDocumentation doc = get_documentation_plugin ();
+     std::string class_name = plugin->get_class_name ();
 
      //close the old one if exists
-     if (g_modules_.contains (doc.get_class_name ()))
+     if (plugins_.contains (class_name))
        {
-	 g_debug ("closing old module for reloading (class: %s)",
-		  doc.get_class_name ().c_str ());
-	 close_module (doc.get_class_name ().c_str ());
+	 g_debug ("closing old plugin for reloading (class: %s)",
+		  class_name.c_str ());
+	 close_plugin (class_name);
        }
-       
-     abstract_factory_.register_class_with_custom_factory (doc.get_class_name (),
-							   doc.get_json_root_node (),
-							   create_plugin,
-							   destroy_plugin);
-     g_modules_.insert (doc.get_class_name (), module);
+     
+     abstract_factory_.register_class_with_custom_factory (class_name,
+     							   plugin->get_json_root_node (),
+     							   plugin->create_,
+     							   plugin->destroy_);
+     plugins_.insert (class_name, plugin);
+     return true;
    }
 
   void
-  QuiddityManager_Impl::close_module (const char *class_name)
+  QuiddityManager_Impl::close_plugin (const std::string class_name)
   {
-    if (g_modules_.contains (class_name))
-      if (!g_module_close (g_modules_.lookup (class_name)))
-	g_warning ("%s: %s", class_name, g_module_error ());
-    g_modules_.remove (class_name);
+    abstract_factory_.unregister_class (class_name);
+    plugins_.remove (class_name);
   }
 
   bool 
-  QuiddityManager_Impl::scan_directory_for_modules (const char *directory_path)
+  QuiddityManager_Impl::scan_directory_for_plugins (const char *directory_path)
   {
     GFile *dir = g_file_new_for_commandline_arg (directory_path);
     gboolean res;
@@ -1184,7 +1095,7 @@ namespace switcher
 	if (g_str_has_suffix (absolute_path, ".so"))
 	  {
 	    g_debug ("trying to load module %s\n", absolute_path);
-	    load_module (absolute_path);
+	    load_plugin (absolute_path);
 	  }
 	g_free (absolute_path);
 	g_object_unref (descend);

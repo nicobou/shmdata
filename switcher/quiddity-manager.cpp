@@ -797,9 +797,9 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   }
 
   bool
-  QuiddityManager::scan_directory_for_modules (std::string directory)
+  QuiddityManager::scan_directory_for_plugins (std::string directory)
   {
-    std::string res = seq_invoke (QuiddityCommand::scan_directory_for_modules, 
+    std::string res = seq_invoke (QuiddityCommand::scan_directory_for_plugins, 
 				  directory.c_str(),
 				  NULL);
     if (res == "true")
@@ -1036,8 +1036,8 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	else
 	  context->command_->result_.push_back ("false");
 	break;
-      case QuiddityCommand::scan_directory_for_modules:
-	if (context->manager_impl_->scan_directory_for_modules (context->command_->args_[0].c_str ()))
+      case QuiddityCommand::scan_directory_for_plugins:
+	if (context->manager_impl_->scan_directory_for_plugins (context->command_->args_[0].c_str ()))
 	  context->command_->result_.push_back ("true");
 	else
 	  context->command_->result_.push_back ("false");

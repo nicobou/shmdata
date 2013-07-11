@@ -50,6 +50,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     logger.cpp \
     method.cpp \
     osc-ctrl-server.cpp \
+    plugin-loader.cpp \
     property.cpp \
     pulse-sink.cpp \
     quiddity-command.cpp \
@@ -132,6 +133,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     logger.h \
     method.h \
     osc-ctrl-server.h \
+    plugin-loader.h \
     property.h \
     pulse-sink.h \
     quiddity-command.h \

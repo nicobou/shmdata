@@ -34,7 +34,6 @@ namespace switcher
   {
     Creator<T>* Fn = (Creator<T>*)new DerivedCreator<U>();
     constructor_map_[Id] = Fn;
-    constructor_names_.push_back (Id);
     classes_documentation_[Id] = doc;
   }
 
@@ -50,7 +49,6 @@ namespace switcher
     Creator<T>* Fn = (Creator<T>*)creator; 
     constructor_map_[Id] = Fn; 
     destructor_map_[Id] = custom_destroy;
-    constructor_names_.push_back (Id); 
     classes_documentation_[Id] = doc; 
   }
 
@@ -58,7 +56,14 @@ namespace switcher
     std::vector<Key> 
     AbstractFactory<T, Key, Doc>::get_keys ()
   {
-    return constructor_names_;
+    std::vector<Key> constructor_names;
+
+    for (auto &it: constructor_map_)
+      {
+	constructor_names.push_back (it.first); 
+      }
+
+    return constructor_names;
   }
 
   template <typename T, typename Key, typename Doc>
@@ -93,6 +98,20 @@ namespace switcher
     AbstractFactory<T, Key, Doc>::key_exists(Key Id)
     {
       return ( constructor_map_.find(Id) != constructor_map_.end() );
+    }
+
+  template <typename T, typename Key, typename Doc>
+    bool 
+    AbstractFactory<T, Key, Doc>::unregister_class (Key Id)
+    {
+      if (constructor_map_.find(Id) == constructor_map_.end() )
+	return false;
+      else
+	delete (constructor_map_.find(Id))->second;
+      
+      constructor_map_.erase (Id);
+      destructor_map_.erase (Id);
+      classes_documentation_.erase (Id);
     }
 
   template <typename T, typename Key, typename Doc>
