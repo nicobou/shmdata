@@ -42,6 +42,7 @@ static gboolean classesdoc;
 static gchar *classdoc = NULL;
 static gchar *listpropbyclass = NULL;
 static gchar *listmethodsbyclass = NULL;
+static gchar *extraplugindir = NULL;
 
 static gboolean is_loading = FALSE;
 
@@ -62,6 +63,7 @@ static GOptionEntry entries[] =
     { "classes-doc", NULL, 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", NULL },
     { "class-doc", NULL, 0, G_OPTION_ARG_STRING, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
     { "osc-port", 'o', 0, G_OPTION_ARG_STRING, &osc_port_number, "osc port number (osc enabled only if set)", NULL },
+    { "extra-plugin-dir", NULL, 0, G_OPTION_ARG_STRING, &extraplugindir, "directory where to find additional plugins", NULL },
     { NULL }
   };
 
@@ -199,6 +201,9 @@ main (int argc,
 #else
   g_warning ("plugins from default location not loaded (config.h missing)");
 #endif
+
+  if (extraplugindir != NULL)
+    manager->scan_directory_for_plugins (extraplugindir);
 
   //create logger managing switcher log domain
   manager->create ("logger", "internal_logger");
