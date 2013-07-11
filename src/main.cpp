@@ -138,7 +138,7 @@ main (int argc,
       exit (1);
     } 
 
-  //checking if this is printing info only
+  //checking if this is printing info only //FIXME this does not get plugins
   if (listclasses)
     {
       g_log_set_default_handler (quiet_log_handler, NULL);

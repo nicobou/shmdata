@@ -18,6 +18,8 @@
  */
 
 #include "myplugin.h"
+#include <cstdlib>  // For srand() and rand()
+#include <ctime>    // For time()
 
 namespace switcher
 {
@@ -27,6 +29,30 @@ namespace switcher
   bool
   MyPlugin::init ()
   {
+    custom_props_.reset (new CustomPropertyHelper ());
+    
+    myprop_ = false;
+    
+    g_print ("coucou1");
+    myprop_prop_ = 
+      custom_props_->make_boolean_property ("myprop", 
+					    "myprop is a boolean property",
+					    (gboolean)FALSE,
+					    (GParamFlags) G_PARAM_READWRITE,
+					    MyPlugin::set_myprop,
+     					    MyPlugin::get_myprop,
+					    this);
+
+    g_print ("coucou2");
+    register_property_by_pspec (custom_props_->get_gobject (), 
+     				myprop_prop_, 
+     				"myprop");
+    g_print ("coucou3");
+
+
+    srand(time(0));
+    set_name (g_strdup_printf ("myplugin%d",rand() % 1024));
+    
     //g_print ("coucou from plugin\n");
     return true;
   }
@@ -37,5 +63,19 @@ namespace switcher
     return doc_;
   }
   
+  gboolean 
+  MyPlugin::get_myprop (void *user_data)
+  {
+    MyPlugin *context = static_cast<MyPlugin *> (user_data);
+    return context->myprop_;
+  }
+
+  void 
+  MyPlugin::set_myprop (gboolean myprop, void *user_data)
+  {
+    MyPlugin *context = static_cast<MyPlugin *> (user_data);
+    context->myprop_ = myprop;
+  }
+
 
 }

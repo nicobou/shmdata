@@ -22,6 +22,7 @@
 #define __SWITCHER_MY_PLUGIN_H__
 
 #include "switcher/quiddity.h"
+#include "switcher/custom-property-helper.h"
 #include <memory>
 
 namespace switcher
@@ -32,8 +33,15 @@ namespace switcher
     typedef std::shared_ptr<MyPlugin> ptr;
     bool init ();
     QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
+    static gboolean get_myprop (void *user_data);
+    static void set_myprop (gboolean myprop, void *user_data);
     
+    static QuiddityDocumentation doc_;
+
+  private:
+    CustomPropertyHelper::ptr custom_props_;
+    bool myprop_;
+    GParamSpec *myprop_prop_;
   };
   
   // the class factories
