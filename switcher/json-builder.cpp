@@ -34,9 +34,8 @@ namespace switcher
 
   JSONBuilder::~JSONBuilder ()
   {
-    //g_print ("------- unref %s\n\n",get_string (false).c_str ());
-    //if (builder_ != NULL && G_IS_OBJECT (builder_))//FIXME
-      //g_object_unref (builder_);
+    if (builder_ != NULL && G_IS_OBJECT (builder_))
+      g_object_unref (builder_);
   }
 
   void
@@ -111,7 +110,7 @@ namespace switcher
   void 
   JSONBuilder::add_node_value (Node node_value)
   {
-    json_builder_add_value (builder_, node_value);
+    json_builder_add_value (builder_, json_node_copy (node_value));
   }
   
   void 
