@@ -121,6 +121,7 @@ quiddity_created_removed_cb (std::string subscriber_name,
    		     NULL);
 }
 
+
 int
 main (int argc,
       char *argv[])
@@ -137,49 +138,6 @@ main (int argc,
       g_printerr ("option parsing failed: %s\n", error->message);
       exit (1);
     } 
-
-  //checking if this is printing info only //FIXME this does not get plugins
-  if (listclasses)
-    {
-      g_log_set_default_handler (quiet_log_handler, NULL);
-      manager = switcher::QuiddityManager::make_manager ("immpossible_name");  
-      std::vector<std::string> resultlist = manager->get_classes ();
-      for(uint i = 0; i < resultlist.size(); i++)
-	g_print ("%s\n",resultlist[i].c_str ());
-      return 0;
-    }
-  if (classesdoc)
-    {
-      g_log_set_default_handler (quiet_log_handler, NULL);
-      switcher::QuiddityManager::ptr manager 
-	= switcher::QuiddityManager::make_manager ("immpossible_name");  
-      g_print ("%s\n", manager->get_classes_doc ().c_str ());
-      return 0;
-    }
-  if (classdoc != NULL)
-    {
-      g_log_set_default_handler (quiet_log_handler, NULL);
-      switcher::QuiddityManager::ptr manager 
-	= switcher::QuiddityManager::make_manager ("immpossible_name");  
-      g_print ("%s\n", manager->get_class_doc (classdoc).c_str ());
-      return 0;
-    }
-  if (listpropbyclass != NULL)
-    {
-      g_log_set_default_handler (quiet_log_handler, NULL);
-      switcher::QuiddityManager::ptr manager 
-   	= switcher::QuiddityManager::make_manager ("immpossible_name");  
-      g_print ("%s\n", manager->get_properties_description_by_class (listpropbyclass).c_str ());
-      return 0;
-    }
-  if (listmethodsbyclass != NULL)
-    {
-      g_log_set_default_handler (quiet_log_handler, NULL);
-      switcher::QuiddityManager::ptr manager 
-   	= switcher::QuiddityManager::make_manager ("immpossible_name");  
-      g_print ("%s\n", manager->get_methods_description_by_class (listmethodsbyclass).c_str ());
-      return 0;
-    }
 
   //running a switcher server  
   if (server_name == NULL)
@@ -204,6 +162,40 @@ main (int argc,
 
   if (extraplugindir != NULL)
     manager->scan_directory_for_plugins (extraplugindir);
+
+  //checking if this is printing info only
+  if (listclasses)
+    {
+      g_log_set_default_handler (quiet_log_handler, NULL);
+      std::vector<std::string> resultlist = manager->get_classes ();
+      for(uint i = 0; i < resultlist.size(); i++)
+	g_print ("%s\n",resultlist[i].c_str ());
+      return 0;
+    }
+  if (classesdoc)
+    {
+      g_log_set_default_handler (quiet_log_handler, NULL);
+      g_print ("%s\n", manager->get_classes_doc ().c_str ());
+      return 0;
+    }
+  if (classdoc != NULL)
+    {
+      g_log_set_default_handler (quiet_log_handler, NULL);
+      g_print ("%s\n", manager->get_class_doc (classdoc).c_str ());
+      return 0;
+    }
+  if (listpropbyclass != NULL)
+    {
+      g_log_set_default_handler (quiet_log_handler, NULL);
+      g_print ("%s\n", manager->get_properties_description_by_class (listpropbyclass).c_str ());
+      return 0;
+    }
+  if (listmethodsbyclass != NULL)
+    {
+      g_log_set_default_handler (quiet_log_handler, NULL);
+      g_print ("%s\n", manager->get_methods_description_by_class (listmethodsbyclass).c_str ());
+      return 0;
+    }
 
   //create logger managing switcher log domain
   manager->create ("logger", "internal_logger");
