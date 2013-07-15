@@ -28,8 +28,9 @@ static switcher::QuiddityManager::ptr manager;
 gpointer
 set_runtime_invoker (gpointer name)
 {
-  if (manager->has_method ((char *)name, "set_runtime"))
-    manager->invoke_va ((char *)name, "set_runtime", "pipeline0", NULL);
+  switcher::QuiddityManager::ptr mymanager = manager;
+  if ((bool)mymanager && mymanager->has_method ((char *)name, "set_runtime"))
+    mymanager->invoke_va ((char *)name, "set_runtime", "pipeline0", NULL);
   g_free (name);
   return NULL;
 }
