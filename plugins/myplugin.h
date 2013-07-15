@@ -40,20 +40,8 @@ namespace switcher
     GParamSpec *myprop_prop_;
   };
   
-  // the class factories
-  extern "C" Quiddity *create () {
-    return new MyPlugin;
-  }
-  
-  extern "C" void destroy(Quiddity *quiddity) {
-    //g_print ("delete from plugin\n");
-    delete quiddity;
-  }
+  SWITCHER_DECLARE_PLUGIN(MyPlugin);
 
-  extern "C" QuiddityDocumentation get_documentation () {
-    return MyPlugin::doc_;
-  }
-  
 }  // end of namespace
 
 #endif // ifndef

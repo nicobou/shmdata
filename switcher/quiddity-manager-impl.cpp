@@ -179,68 +179,68 @@ namespace switcher
   QuiddityManager_Impl::register_classes ()
   {
     //registering quiddities
-    abstract_factory_.register_class<AAC> (AAC::doc_.get_class_name (), 
-					   AAC::doc_.get_json_root_node ());
-    abstract_factory_.register_class<AudioTestSource> (AudioTestSource::doc_.get_class_name (), 
-      						       AudioTestSource::doc_.get_json_root_node ());
-    abstract_factory_.register_class<AravisGenicam> (AravisGenicam::doc_.get_class_name (), 
-      						     AravisGenicam::doc_.get_json_root_node ());
-    abstract_factory_.register_class<CreateRemoveSpy> (CreateRemoveSpy::doc_.get_class_name (), 
-						       CreateRemoveSpy::doc_.get_json_root_node ());
-    abstract_factory_.register_class<Decodebin2> (Decodebin2::doc_.get_class_name (), 
-						  Decodebin2::doc_.get_json_root_node ());
-    abstract_factory_.register_class<Deinterleave> (Deinterleave::doc_.get_class_name (), 
-						    Deinterleave::doc_.get_json_root_node ());
-    abstract_factory_.register_class<FakeShmdataWriter> (FakeShmdataWriter::doc_.get_class_name (), 
-							 FakeShmdataWriter::doc_.get_json_root_node ());
-    abstract_factory_.register_class<FakeSink> (FakeSink::doc_.get_class_name (), 
-						FakeSink::doc_.get_json_root_node ());
-    abstract_factory_.register_class<FileSDP> (FileSDP::doc_.get_class_name (), 
-					       FileSDP::doc_.get_json_root_node ());
-    abstract_factory_.register_class<GstParseToBinSrc> (GstParseToBinSrc::doc_.get_class_name (),
-      							GstParseToBinSrc::doc_.get_json_root_node ());
-    abstract_factory_.register_class<GstVideoParseToBinSrc> (GstVideoParseToBinSrc::doc_.get_class_name (),
-							     GstVideoParseToBinSrc::doc_.get_json_root_node ());
-    abstract_factory_.register_class<H264> (H264::doc_.get_class_name (), 
-      					    H264::doc_.get_json_root_node ());
-    abstract_factory_.register_class<HTTPSDP> (HTTPSDP::doc_.get_class_name (), 
-      					       HTTPSDP::doc_.get_json_root_node ());
-    abstract_factory_.register_class<HTTPSDPDec> (HTTPSDPDec::doc_.get_class_name (), 
-      					       HTTPSDPDec::doc_.get_json_root_node ());
-    abstract_factory_.register_class<JackAudioSource> (JackAudioSource::doc_.get_class_name (), 
-						       JackAudioSource::doc_.get_json_root_node ());
-    abstract_factory_.register_class<Logger> (Logger::doc_.get_class_name (), 
-      					       Logger::doc_.get_json_root_node ());
-    abstract_factory_.register_class<OscCtrlServer> (OscCtrlServer::doc_.get_class_name (), 
-						     OscCtrlServer::doc_.get_json_root_node ());
-    abstract_factory_.register_class<PulseSink> (PulseSink::doc_.get_class_name (), 
-      						 PulseSink::doc_.get_json_root_node ());
-    abstract_factory_.register_class<RtpSession> (RtpSession::doc_.get_class_name (), 
-      						  RtpSession::doc_.get_json_root_node ());
-    abstract_factory_.register_class<Runtime> (Runtime::doc_.get_class_name (), 
-       					       Runtime::doc_.get_json_root_node ());
-    abstract_factory_.register_class<ShmdataFromGDPFile> (ShmdataFromGDPFile::doc_.get_class_name (), 
-      							  ShmdataFromGDPFile::doc_.get_json_root_node ());
-    abstract_factory_.register_class<ShmdataToFile> (ShmdataToFile::doc_.get_class_name (), 
-      						     ShmdataToFile::doc_.get_json_root_node ());
-    abstract_factory_.register_class<SoapCtrlClient> (SoapCtrlClient::doc_.get_class_name (), 
-      						      SoapCtrlClient::doc_.get_json_root_node ());
-    abstract_factory_.register_class<SoapCtrlServer> (SoapCtrlServer::doc_.get_class_name (), 
-      						      SoapCtrlServer::doc_.get_json_root_node ());
-    abstract_factory_.register_class<UDPSink> (UDPSink::doc_.get_class_name (), 
-       					       UDPSink::doc_.get_json_root_node ());
-    abstract_factory_.register_class<Uridecodebin> (Uridecodebin::doc_.get_class_name (), 
-       						    Uridecodebin::doc_.get_json_root_node ());
-    abstract_factory_.register_class<Uris> (Uris::doc_.get_class_name (), 
-     					    Uris::doc_.get_json_root_node ());
-    abstract_factory_.register_class<VideoRate> (VideoRate::doc_.get_class_name (),
-     						 VideoRate::doc_.get_json_root_node ());
-    abstract_factory_.register_class<VideoTestSource> (VideoTestSource::doc_.get_class_name (),
-						       VideoTestSource::doc_.get_json_root_node ());
-    abstract_factory_.register_class<Vorbis> (Vorbis::doc_.get_class_name (),
-     					      Vorbis::doc_.get_json_root_node ());
-    abstract_factory_.register_class<Xvimagesink> (Xvimagesink::doc_.get_class_name (),
-       						   Xvimagesink::doc_.get_json_root_node ());
+    abstract_factory_.register_class<AAC> (AAC::switcher_doc_.get_class_name (), 
+					   AAC::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<AudioTestSource> (AudioTestSource::switcher_doc_.get_class_name (), 
+      						       AudioTestSource::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<AravisGenicam> (AravisGenicam::switcher_doc_.get_class_name (), 
+      						     AravisGenicam::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<CreateRemoveSpy> (CreateRemoveSpy::switcher_doc_.get_class_name (), 
+						       CreateRemoveSpy::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<Decodebin2> (Decodebin2::switcher_doc_.get_class_name (), 
+						  Decodebin2::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<Deinterleave> (Deinterleave::switcher_doc_.get_class_name (), 
+						    Deinterleave::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<FakeShmdataWriter> (FakeShmdataWriter::switcher_doc_.get_class_name (), 
+							 FakeShmdataWriter::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<FakeSink> (FakeSink::switcher_doc_.get_class_name (), 
+						FakeSink::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<FileSDP> (FileSDP::switcher_doc_.get_class_name (), 
+					       FileSDP::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<GstParseToBinSrc> (GstParseToBinSrc::switcher_doc_.get_class_name (),
+      							GstParseToBinSrc::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<GstVideoParseToBinSrc> (GstVideoParseToBinSrc::switcher_doc_.get_class_name (),
+							     GstVideoParseToBinSrc::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<H264> (H264::switcher_doc_.get_class_name (), 
+      					    H264::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<HTTPSDP> (HTTPSDP::switcher_doc_.get_class_name (), 
+      					       HTTPSDP::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<HTTPSDPDec> (HTTPSDPDec::switcher_doc_.get_class_name (), 
+      					       HTTPSDPDec::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<JackAudioSource> (JackAudioSource::switcher_doc_.get_class_name (), 
+						       JackAudioSource::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<Logger> (Logger::switcher_doc_.get_class_name (), 
+      					       Logger::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<OscCtrlServer> (OscCtrlServer::switcher_doc_.get_class_name (), 
+						     OscCtrlServer::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<PulseSink> (PulseSink::switcher_doc_.get_class_name (), 
+      						 PulseSink::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<RtpSession> (RtpSession::switcher_doc_.get_class_name (), 
+      						  RtpSession::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<Runtime> (Runtime::switcher_doc_.get_class_name (), 
+       					       Runtime::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<ShmdataFromGDPFile> (ShmdataFromGDPFile::switcher_doc_.get_class_name (), 
+      							  ShmdataFromGDPFile::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<ShmdataToFile> (ShmdataToFile::switcher_doc_.get_class_name (), 
+      						     ShmdataToFile::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<SoapCtrlClient> (SoapCtrlClient::switcher_doc_.get_class_name (), 
+      						      SoapCtrlClient::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<SoapCtrlServer> (SoapCtrlServer::switcher_doc_.get_class_name (), 
+      						      SoapCtrlServer::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<UDPSink> (UDPSink::switcher_doc_.get_class_name (), 
+       					       UDPSink::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<Uridecodebin> (Uridecodebin::switcher_doc_.get_class_name (), 
+       						    Uridecodebin::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<Uris> (Uris::switcher_doc_.get_class_name (), 
+     					    Uris::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<VideoRate> (VideoRate::switcher_doc_.get_class_name (),
+     						 VideoRate::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<VideoTestSource> (VideoTestSource::switcher_doc_.get_class_name (),
+						       VideoTestSource::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<Vorbis> (Vorbis::switcher_doc_.get_class_name (),
+     					      Vorbis::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<Xvimagesink> (Xvimagesink::switcher_doc_.get_class_name (),
+       						   Xvimagesink::switcher_doc_.get_json_root_node ());
   }
 
   std::vector<std::string> 
