@@ -32,6 +32,7 @@ static const gchar *server_name = NULL;
 static const gchar *port_number = NULL;
 static const gchar *load_file = NULL;
 static gchar *osc_port_number = NULL;
+static gboolean display_version;
 static gboolean quiet;
 static gboolean debug;
 static gboolean verbose;
@@ -51,6 +52,7 @@ static switcher::QuiddityManager::ptr manager;
 
 static GOptionEntry entries[] =
   {
+    { "version", NULL, 0, G_OPTION_ARG_NONE, &display_version, "display switcher version number", NULL },
     { "server-name", 's', 0, G_OPTION_ARG_STRING, &server_name, "server name (default is \"default\")", NULL },
     { "port-number", 'p', 0, G_OPTION_ARG_STRING, &port_number, "port number the server will bind (default is 8080)", NULL },
     { "load", 'l', 0, G_OPTION_ARG_STRING, &load_file, "load state from history file (-l filename)", NULL },
@@ -138,6 +140,16 @@ main (int argc,
       g_printerr ("option parsing failed: %s\n", error->message);
       exit (1);
     } 
+
+  if (display_version)
+    {
+#ifdef HAVE_CONFIG_H
+      g_print ("%s\n", VERSION);
+#else
+      g_print ("unknown\n");
+#endif
+      return 0;
+    }
 
   //running a switcher server  
   if (server_name == NULL)
