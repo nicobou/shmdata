@@ -225,6 +225,9 @@ namespace switcher
       }
     std::string res = destinations_.lookup (dest_name)->get_sdp();
     
+    if (res == "")
+      return false;
+
     std::string sdp_file = make_file_name (dest_name);
     sdp_file.append(".sdp");
 
@@ -544,9 +547,9 @@ namespace switcher
 	arg.push_back (make_file_name ("send_rtp_src_"+id));
 	manager->invoke ("udpsend_rtp","connect",arg);
 
-	 arg.clear ();
-	 arg.push_back (make_file_name ("send_rtcp_src_"+id));
-	 manager->invoke ("udpsend_rtcp","connect",arg);
+	arg.clear ();
+	arg.push_back (make_file_name ("send_rtcp_src_"+id));
+	manager->invoke ("udpsend_rtcp","connect",arg);
       }
 
     QuiddityManager::ptr manager = quiddity_managers_.lookup (shmdata_socket_path);
@@ -570,18 +573,17 @@ namespace switcher
 
      //TODO rtcp receiving should be negociated 
      // GstElementCleaner::ptr funnel_cleaner = funnels_.lookup (shmdata_socket_path);
-    //  GstElement *funnel = funnel_cleaner->get_labeled_element_from_cleaner ("funnel");
-    //  GstElement *udpsrc;
-    //  GstUtils::make_element ("udpsrc", &udpsrc);
-    //  dest->add_element_to_cleaner (udpsrc);
-    //  g_object_set (G_OBJECT (udpsrc), "port", rtp_port + 5, NULL);
-    //  gst_bin_add (GST_BIN (bin_), udpsrc);
-    //  GstUtils::sync_state_with_parent (udpsrc);
-    //  if (!gst_element_link (udpsrc, funnel))
-    //    g_debug ("udpsrc and funnel link failled in rtp-session");
+     //  GstElement *funnel = funnel_cleaner->get_labeled_element_from_cleaner ("funnel");
+     //  GstElement *udpsrc;
+     //  GstUtils::make_element ("udpsrc", &udpsrc);
+     //  dest->add_element_to_cleaner (udpsrc);
+     //  g_object_set (G_OBJECT (udpsrc), "port", rtp_port + 5, NULL);
+     //  gst_bin_add (GST_BIN (bin_), udpsrc);
+     //  GstUtils::sync_state_with_parent (udpsrc);
+     //  if (!gst_element_link (udpsrc, funnel))
+     //    g_debug ("udpsrc and funnel link failled in rtp-session");
 
      g_debug ("RtpSession::add_udp_stream_to_dest (done)");
-
      return true;
   }
 

@@ -154,9 +154,10 @@ namespace switcher
     for(iter = medias.begin () ; iter != medias.end(); ++iter)
       {
 	std::string string_caps = (iter->second)->get_property ("udpsend_rtp","caps");
-	GstCaps *caps = gst_caps_from_string (string_caps.c_str ());
-	if (caps != NULL)
+	if (g_strcmp0 (string_caps.c_str (), "NULL") != 0)
 	  {
+	    GstCaps *caps = gst_caps_from_string (string_caps.c_str ());
+
 	    gint port = atoi(iter->first.c_str());
 
 	    sdp_write_media_from_caps (sdp_description, 
@@ -166,8 +167,16 @@ namespace switcher
 				       "udp",
 				       index);
 	    index ++;
+	    gst_caps_unref (caps);
 	  }
+	else
+	  g_warning ("generating sdp file, empty media description %s", string_caps.c_str ());
+
       }
+
+    //return nothing if nothing is ready
+    if (index == 0)
+      return "";
 
     std::string res (gst_sdp_message_as_text (sdp_description));
     gst_sdp_message_free (sdp_description);

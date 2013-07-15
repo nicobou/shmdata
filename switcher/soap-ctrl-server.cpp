@@ -103,8 +103,6 @@ namespace switcher
        g_strfreev(query_vars);
        g_strfreev(query);
        
-       //QuiddityManager *manager = (QuiddityManager *) soap->user;       
-
        SoapCtrlServer *ctrl_server = (SoapCtrlServer *) soap->user;
        QuiddityManager::ptr manager;
        if (ctrl_server != NULL)
