@@ -45,8 +45,6 @@ static gchar *listpropbyclass = NULL;
 static gchar *listmethodsbyclass = NULL;
 static gchar *extraplugindir = NULL;
 
-static gboolean is_loading = FALSE;
-
 //static std::vector<switcher::QuiddityManager::ptr> container;
 static switcher::QuiddityManager::ptr manager;
 
@@ -116,8 +114,7 @@ quiddity_created_removed_cb (std::string subscriber_name,
 			     void *user_data)
 {
   g_message ("%s: %s", signal_name.c_str (), params[0].c_str ());
-  if (g_strcmp0 (signal_name.c_str (), "on-quiddity-created") == 0
-      && is_loading == FALSE)
+  if (g_strcmp0 (signal_name.c_str (), "on-quiddity-created") == 0)
     g_thread_create (set_runtime_invoker, 
    		     g_strdup (params[0].c_str ()),
    		     FALSE,
@@ -265,7 +262,6 @@ main (int argc,
   
   if (load_file != NULL)
     {
-      is_loading= TRUE;
       switcher::QuiddityManager::CommandHistory histo = 
    	manager->get_command_history_from_file (load_file);
       std::vector <std::string> prop_subscriber_names = 
@@ -279,7 +275,6 @@ main (int argc,
    	g_warning ("creation of signal subscriber not handled when loading file %s", load_file);
       
       manager->play_command_history (histo, NULL, NULL, true); 
-      is_loading= FALSE;
     }
   
   // manager->create ("videotestsrc", "vid");
