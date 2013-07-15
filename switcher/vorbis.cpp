@@ -22,8 +22,10 @@
 
 namespace switcher
 {
-  QuiddityDocumentation Vorbis::doc_ ("audio encoder", "vorbis",
-				      "Vorbis encoder (up to 255 interleaved channels)");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Vorbis,
+				       "audio encoder", 
+				       "vorbis",
+				       "Vorbis encoder (up to 255 interleaved channels)");
   
   bool
   Vorbis::init ()
@@ -41,12 +43,6 @@ namespace switcher
     return true;
   }
 
-  QuiddityDocumentation 
-  Vorbis::get_documentation ()
-  {
-    return doc_;
-  }
-  
   void 
   Vorbis::make_shmdata_writer(ShmdataReader *caller, void *vorbisbin_instance)
   {

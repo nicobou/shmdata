@@ -31,11 +31,8 @@ namespace switcher
   class FileSDP : public BaseSource, public GstElementCleaner
   {
   public:
-    typedef std::shared_ptr<FileSDP> ptr;
-    bool init ();
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FileSDP);
     bool to_shmdata (std::string uri);
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
   private: 
    GstElement *filesrc_;

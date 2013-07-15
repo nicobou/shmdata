@@ -30,14 +30,10 @@ namespace switcher
   
   class MyPlugin : public Quiddity {
   public:
-    typedef std::shared_ptr<MyPlugin> ptr;
-    bool init ();
-    QuiddityDocumentation get_documentation ();
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(MyPlugin);
     static gboolean get_myprop (void *user_data);
     static void set_myprop (gboolean myprop, void *user_data);
     
-    static QuiddityDocumentation doc_;
-
   private:
     CustomPropertyHelper::ptr custom_props_;
     bool myprop_;

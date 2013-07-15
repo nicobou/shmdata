@@ -27,9 +27,10 @@
 
 namespace switcher
 {
-
-  QuiddityDocumentation Runtime::doc_ ("runtime", "runtime",
-					     "Complete pipeline container and scheduler");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Runtime,
+				       "runtime", 
+				       "runtime",
+				       "Complete pipeline container and scheduler");
 
   bool
   Runtime::init ()
@@ -398,12 +399,6 @@ res = gst_element_query (pipeline_, query);
       break;
     }
     return TRUE;
-  }
-
-  QuiddityDocumentation 
-  Runtime::get_documentation ()
-  {
-    return doc_;
   }
   
   gboolean 

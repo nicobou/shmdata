@@ -24,8 +24,10 @@
 
 namespace switcher
 {
-  QuiddityDocumentation SoapCtrlServer::doc_ ("control", "SOAPcontrolServer",
-					      "getting switcher controled through SOAP webservices");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SoapCtrlServer,
+				       "control", 
+				       "SOAPcontrolServer",
+				       "getting switcher controled through SOAP webservices");
     
   bool
   SoapCtrlServer::init ()
@@ -136,14 +138,6 @@ namespace switcher
      }
    return 404;
  }
-
-
-  QuiddityDocumentation 
-  SoapCtrlServer::get_documentation ()
-  {
-    return doc_;
-  }
-  
 
   gboolean
   SoapCtrlServer::set_port_wrapped (gint port, gpointer user_data)

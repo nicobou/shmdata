@@ -32,14 +32,11 @@ namespace switcher
   class Uris : public BaseSource, public GstElementCleaner
   {
   public:
-    typedef std::shared_ptr<Uris> ptr;
-    bool init ();
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Uris);
     bool add_uri (std::string uri);
     bool play ();
     bool pause ();
     bool seek (gdouble position);
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
     static gboolean add_uri_wrapped (gpointer uri, gpointer user_data);
     static gboolean play_wrapped (gpointer unused, gpointer user_data);

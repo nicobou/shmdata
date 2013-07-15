@@ -23,8 +23,10 @@
 
 namespace switcher
 {
-  QuiddityDocumentation VideoTestSource::doc_  ("video source", "videotestsrc",				
-						"Creates a test video stream");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
+				       "video source", 
+				       "videotestsrc",				
+				       "Creates a test video stream");
 
   VideoTestSource::~VideoTestSource()
   {
@@ -58,13 +60,6 @@ namespace switcher
     
     set_raw_video_element (videotestsrc_);
     return true;
-  }
-  
-  
-  QuiddityDocumentation 
-  VideoTestSource::get_documentation ()
-  {
-    return doc_;
   }
   
 }

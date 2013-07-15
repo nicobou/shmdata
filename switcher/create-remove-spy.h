@@ -30,15 +30,11 @@ namespace switcher
   class CreateRemoveSpy : public Quiddity
   {
   public:
-    typedef std::shared_ptr<CreateRemoveSpy> ptr;
-    bool init ();
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(CreateRemoveSpy);
     ~CreateRemoveSpy ();
     static void on_created (std::string quiddity_nick_name, void *user_data);
     static void on_removed (std::string quiddity_nick_name, void *user_data);
     
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
-
   private:
     bool i_am_the_one_;
   };

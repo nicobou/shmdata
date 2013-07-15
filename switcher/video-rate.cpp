@@ -22,8 +22,10 @@
 
 namespace switcher
 {
-  QuiddityDocumentation VideoRate::doc_ ("rate", "videorate",
-					 "Adjusts video frame rate (video/x-raw-yuv)");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoRate,
+				       "rate", 
+				       "videorate",
+				       "Adjusts video frame rate (video/x-raw-yuv)");
   
   bool
   VideoRate::init ()
@@ -43,12 +45,6 @@ namespace switcher
     return true;
   }
 
-  QuiddityDocumentation 
-  VideoRate::get_documentation ()
-  {
-    return doc_;
-  }
-  
   void 
   VideoRate::make_shmdata_writer(ShmdataReader *caller, void *video_rate_bin_instance)
   {

@@ -35,12 +35,8 @@ namespace switcher
   class RtpSession : public Segment
   {
   public:
-    typedef std::shared_ptr<RtpSession> ptr;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(RtpSession);
     ~RtpSession ();
-
-    bool init ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
     //local streams
     bool add_data_stream (std::string shmdata_socket_path);

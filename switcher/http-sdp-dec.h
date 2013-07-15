@@ -32,12 +32,9 @@ namespace switcher
   class HTTPSDPDec : public BaseSource, public GstElementCleaner
   {
   public:
-    typedef std::shared_ptr<HTTPSDPDec> ptr;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);
     ~HTTPSDPDec();
-    bool init ();
     bool to_shmdata (std::string uri);
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
   private: 
    GstElement *souphttpsrc_;

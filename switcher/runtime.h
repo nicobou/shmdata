@@ -34,16 +34,13 @@ namespace switcher
   class Runtime : public Quiddity
     {
     public:
-      typedef std::shared_ptr<Runtime> ptr;
+      SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Runtime);
       ~Runtime ();
-      bool init ();
       bool play ();
       bool pause ();
       bool seek (gdouble position);
       bool speed (gdouble speed);
 
-      QuiddityDocumentation get_documentation ();
-      static QuiddityDocumentation doc_;
       GstElement *get_pipeline ();
       static gboolean play_wrapped (gpointer unused, gpointer user_data);
       static gboolean pause_wrapped (gpointer unused, gpointer user_data);

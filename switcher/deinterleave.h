@@ -30,10 +30,7 @@ namespace switcher
   class Deinterleave : public BaseSink, public GstElementCleaner
   {
   public:
-    typedef std::shared_ptr<Deinterleave> ptr;
-    bool init ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Deinterleave);
 
   private: 
    GstElement *deinterleave_;

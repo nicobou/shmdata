@@ -33,12 +33,8 @@ namespace switcher
   class ShmdataFromGDPFile : public Quiddity
   {
   public:
-    typedef std::shared_ptr<ShmdataFromGDPFile> ptr;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataFromGDPFile);
     ~ShmdataFromGDPFile ();
-
-    bool init ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
     //local streams
     bool add_file (std::string shmwriter_path,

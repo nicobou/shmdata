@@ -25,11 +25,11 @@
 
 namespace switcher
 {
-
-  QuiddityDocumentation Xvimagesink::doc_ ("video sink", "videosink",
-					   "Video window with minimal features");
-  
-  
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Xvimagesink, 
+				       "video sink", 
+				       "videosink",
+				       "Video window with minimal features");
+    
   bool
   Xvimagesink::init ()
   {
@@ -67,12 +67,6 @@ namespace switcher
     if (c_name_ != NULL)
       g_free (c_name_);
     GstUtils::clean_element (xvimagesink_);
-  }
-
-  QuiddityDocumentation 
-  Xvimagesink::get_documentation ()
-  {
-    return doc_;
   }
   
 }

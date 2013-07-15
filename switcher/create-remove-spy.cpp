@@ -23,8 +23,10 @@
 namespace switcher
 {
 
-  QuiddityDocumentation CreateRemoveSpy::doc_  ("spy", "create_remove_spy",				
-						"spy manager for quidity creation and removal and convert into signals");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(CreateRemoveSpy,
+				       "spy", 
+				       "create_remove_spy",				
+				       "spy manager for quidity creation and removal and convert into signals");
 
 
   bool
@@ -91,12 +93,6 @@ namespace switcher
   {
     CreateRemoveSpy *context = static_cast<CreateRemoveSpy *> (user_data);
     context->signal_emit ("on-quiddity-removed", quiddity_nick_name.c_str ());
-  }
-
-  QuiddityDocumentation 
-  CreateRemoveSpy::get_documentation ()
-  {
-    return doc_;
   }
   
 }

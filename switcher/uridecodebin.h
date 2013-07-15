@@ -32,12 +32,9 @@ namespace switcher
   class Uridecodebin : public BaseSource, public GstElementCleaner
   {
   public:
-    typedef std::shared_ptr<Uridecodebin> ptr;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Uridecodebin);
     ~Uridecodebin();
-    bool init ();
     bool to_shmdata (std::string uri);
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
   private: 
    GstElement *uridecodebin_;

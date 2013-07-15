@@ -22,8 +22,10 @@
 
 namespace switcher
 {
-  QuiddityDocumentation AAC::doc_ ("audio encoder", "aacenc",
-				   "AAC encoder (2 channels max)");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AAC, 
+				       "audio encoder", 
+				       "aacenc",
+				       "AAC encoder (2 channels max)");
 
   bool
   AAC::init ()
@@ -51,11 +53,6 @@ namespace switcher
       }
   }
 
-  QuiddityDocumentation 
-  AAC::get_documentation ()
-  {
-    return doc_;
-  }
   
   void 
   AAC::make_shmdata_writer(ShmdataReader *caller, void *aacbin_instance)

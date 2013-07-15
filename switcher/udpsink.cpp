@@ -29,9 +29,10 @@
 
 namespace switcher
 {
-
-  QuiddityDocumentation UDPSink::doc_ ("udp sink", "udpsink",
-					     "send data stream with udp");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(UDPSink,
+				       "udp sink", 
+				       "udpsink",
+				       "send data stream with udp");
 
   bool 
   UDPSink::init ()
@@ -178,12 +179,6 @@ namespace switcher
     gst_object_unref (sink_pad);
   }
 
-  QuiddityDocumentation 
-  UDPSink::get_documentation ()
-  {
-    return doc_;
-  }
-  
   void 
   UDPSink::on_client_added (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data)
   {

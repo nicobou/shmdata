@@ -24,8 +24,10 @@
 
 namespace switcher
 {
-  QuiddityDocumentation Deinterleave::doc_ ("demuxer", "deinterleave", 
-					     "connect to an audio shmdata and split channels to multiple shmdata(s)");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Deinterleave,
+				       "demuxer", 
+				       "deinterleave", 
+				       "connect to an audio shmdata and split channels to multiple shmdata(s)");
   
   bool
   Deinterleave::init() 
@@ -48,12 +50,6 @@ namespace switcher
 		      (gpointer) this);
   
    return true;
-  }
-  
-  QuiddityDocumentation 
-  Deinterleave::get_documentation ()
-  {
-    return doc_;
   }
 
   void

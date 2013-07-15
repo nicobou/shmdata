@@ -23,8 +23,10 @@
 namespace switcher
 {
 
-  QuiddityDocumentation FakeSink::doc_ ("fakesink sink", "fakesink",
-					"fakesink for testing purpose");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FakeSink,
+				       "fakesink sink", 
+				       "fakesink",
+				       "fakesink for testing purpose");
 
   
   FakeSink::~FakeSink ()
@@ -142,13 +144,6 @@ namespace switcher
   {
     FakeSink *context = static_cast<FakeSink *> (user_data);
     return context->string_caps_;
-  }
-
-  
-  QuiddityDocumentation 
-  FakeSink::get_documentation ()
-  {
-    return doc_;
   }
   
 }

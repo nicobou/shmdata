@@ -30,10 +30,7 @@ namespace switcher
   class Decodebin2 : public BaseSink, public GstElementCleaner
   {
   public:
-    typedef std::shared_ptr<Decodebin2> ptr;
-    bool init ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Decodebin2);
 
   private: 
    GstElement *decodebin2_;

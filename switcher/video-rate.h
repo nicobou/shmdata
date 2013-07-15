@@ -31,10 +31,7 @@ namespace switcher
   class VideoRate : public BaseSink, public GstElementCleaner
   {
   public:
-    typedef std::shared_ptr<VideoRate> ptr;
-    bool init ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VideoRate);
 
     static void make_shmdata_writer(ShmdataReader *caller, void *vorbis_instance);
 

@@ -22,9 +22,10 @@
 #include "gst-utils.h"
 namespace switcher
 {
-
-  QuiddityDocumentation JackAudioSource::doc_ ("audio source", "jackaudiosrc", 
-					       "get audio from jack");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackAudioSource,
+				       "audio source", 
+				       "jackaudiosrc", 
+				       "get audio from jack");
   
   bool
   JackAudioSource::init ()
@@ -54,12 +55,6 @@ namespace switcher
   JackAudioSource::~JackAudioSource()
   {
     GstUtils::clean_element (jackaudiosrc_);
-  }
-
-  QuiddityDocumentation 
-  JackAudioSource::get_documentation ()
-  {
-    return doc_;
   }
   
 }

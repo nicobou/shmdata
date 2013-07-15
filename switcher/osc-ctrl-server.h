@@ -32,7 +32,7 @@ namespace switcher
   class OscCtrlServer : public QuiddityManagerWrapper
   {
   public:
-    typedef std::shared_ptr<OscCtrlServer> ptr;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(OscCtrlServer);
 
     ~OscCtrlServer ();
     void set_port (std::string port);
@@ -43,10 +43,6 @@ namespace switcher
     //wrappers
     static gboolean set_port_wrapped (gpointer port, gpointer user_data);
     
-    bool init ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
-
   private:
     std::string port_;
     StringMap< std::pair <std::string, std::string> > osc_subscribers_; //(host + port)

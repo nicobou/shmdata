@@ -31,12 +31,8 @@ namespace switcher
   class UDPSink : public BaseSink
   {
   public:
-    typedef std::shared_ptr<UDPSink> ptr;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(UDPSink);
     ~UDPSink ();
-
-    bool init ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
     //client management
     bool remove_client (gchar *host, gint port);

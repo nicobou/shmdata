@@ -24,8 +24,10 @@
 
 namespace switcher
 {
-  QuiddityDocumentation Decodebin2::doc_ ("automatic decoding", "decodebin2", 
-					     "connect to a shmdata, decode it and write decoded frames to shmdata(s)");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Decodebin2,
+				       "automatic decoding", 
+				       "decodebin2", 
+				       "connect to a shmdata, decode it and write decoded frames to shmdata(s)");
   
   bool
   Decodebin2::init() 
@@ -48,12 +50,6 @@ namespace switcher
 		      (gpointer) this);
   
    return true;
-  }
-  
-  QuiddityDocumentation 
-  Decodebin2::get_documentation ()
-  {
-    return doc_;
   }
 
   void

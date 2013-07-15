@@ -32,12 +32,8 @@ namespace switcher
   class ShmdataToFile : public Segment
   {
   public:
-    typedef std::shared_ptr<ShmdataToFile> ptr;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToFile);
     ~ShmdataToFile ();
-
-    bool init ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
     //local streams
     bool add_shmdata (std::string shmdata_socket_path,

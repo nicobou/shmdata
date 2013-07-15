@@ -31,12 +31,8 @@ namespace switcher
   class PulseSink : public AudioSink
   {
   public:
-    typedef std::shared_ptr<PulseSink> ptr;
-
-    bool init ();
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSink);
     ~PulseSink ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
   private:
     GstElement *pulse_sink_;

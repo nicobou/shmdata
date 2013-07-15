@@ -23,7 +23,9 @@
 
 namespace switcher
 {
-  QuiddityDocumentation FileSDP::doc_ ("sdp decoding", "filesdp", 
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FileSDP,
+				       "sdp decoding", 
+				       "filesdp", 
 				       "get raw stream from sdp file");
   
   bool
@@ -66,12 +68,6 @@ namespace switcher
     //registering "latency"
     register_property (G_OBJECT (sdpdemux_),"latency","latency");
     return true;
-  }
-  
-  QuiddityDocumentation 
-  FileSDP::get_documentation ()
-  {
-    return doc_;
   }
 
   void 

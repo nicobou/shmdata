@@ -31,15 +31,12 @@ namespace switcher
   class GstParseToBinSrc : public BaseSource
   {
   public:
-    typedef std::shared_ptr<GstParseToBinSrc> ptr;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstParseToBinSrc);
     ~GstParseToBinSrc ();
 
-    bool init ();
     bool to_shmdata (std::string gst_pipeline_description);
     bool to_shmdata_with_path (std::string gst_pipeline_description,
 			       std::string shmdata_path);
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
   private:
     GstElement *gst_parse_to_bin_src_;

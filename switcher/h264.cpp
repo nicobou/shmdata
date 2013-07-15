@@ -23,8 +23,10 @@
 namespace switcher
 {
 
-  QuiddityDocumentation H264::doc_ ("video encoder", "x264enc",
-				    "H264 encoder");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(H264,
+				       "video encoder", 
+				       "x264enc",
+				       "H264 encoder");
   
   bool
   H264::init ()
@@ -50,12 +52,6 @@ namespace switcher
     set_name (gst_element_get_name (h264enc_));
     set_on_first_data_hook (H264::make_shmdata_writer,this);
     return true;
-  }
-
-  QuiddityDocumentation 
-  H264::get_documentation ()
-  {
-    return doc_;
   }
   
   void 

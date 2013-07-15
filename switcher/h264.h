@@ -32,12 +32,7 @@ namespace switcher
   class H264 : public VideoSink, public GstElementCleaner
   {
   public:
-    typedef std::shared_ptr<H264> ptr;
-
-    bool init ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
-    
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(H264);
     static void make_shmdata_writer(ShmdataReader *caller, void *h264_instance);
 
   private:

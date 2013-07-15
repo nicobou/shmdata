@@ -33,11 +33,8 @@ namespace switcher
   class FakeSink : public BaseSink
   {
   public:
-    typedef std::shared_ptr<FakeSink> ptr;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeSink);
     ~FakeSink ();
-    bool init ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
   private:
     GstElement *fakesink_;

@@ -29,8 +29,10 @@
 
 namespace switcher
 {
-  QuiddityDocumentation OscCtrlServer::doc_ ("control", "OSCctl",
-					     "OSCcontrolServer allows for managing switcher through OSC");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscCtrlServer,
+				       "control", 
+				       "OSCctl",
+				       "OSCcontrolServer allows for managing switcher through OSC");
     
   bool
   OscCtrlServer::init ()
@@ -89,12 +91,6 @@ namespace switcher
   OscCtrlServer::get_quiddity_manager ()
   {
     return manager_.lock ();
-  }
-
-  QuiddityDocumentation 
-  OscCtrlServer::get_documentation ()
-  {
-    return doc_;
   }
   
   gchar *

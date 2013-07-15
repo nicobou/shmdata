@@ -30,11 +30,8 @@ namespace switcher
   class JackAudioSource : public AudioSource
   {
   public:
-    typedef std::shared_ptr<JackAudioSource> ptr;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JackAudioSource);
     ~JackAudioSource ();
-    bool init ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
   private: 
    GstElement *jackaudiosrc_;

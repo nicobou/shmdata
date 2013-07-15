@@ -23,8 +23,11 @@
 
 namespace switcher
 {
-  QuiddityDocumentation MyPlugin::doc_  ("test", "myplugin",				
-					 "Creates a quiddity from a plugin");
+
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(MyPlugin,
+				       "test", 
+				       "myplugin",				
+				       "Creates a quiddity from a plugin");
 
   bool
   MyPlugin::init ()
@@ -55,12 +58,6 @@ namespace switcher
     
     //g_print ("coucou from plugin\n");
     return true;
-  }
-
-  QuiddityDocumentation 
-  MyPlugin::get_documentation ()
-  {
-    return doc_;
   }
   
   gboolean 

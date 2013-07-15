@@ -23,8 +23,10 @@
 namespace switcher
 {
 
-  QuiddityDocumentation FakeShmdataWriter::doc_ ("fake source", "fakeshmsrc",
-						 "fake existing shmdata writer");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FakeShmdataWriter,
+				       "fake source", 
+				       "fakeshmsrc",
+				       "fake existing shmdata writer");
   
   
   bool
@@ -70,13 +72,6 @@ namespace switcher
      	       get_nick_name ().c_str(), 
      	       name.c_str ());
     return true;
-  }
-  
-  
-  QuiddityDocumentation 
-  FakeShmdataWriter::get_documentation ()
-  {
-    return doc_;
   }
   
 }

@@ -31,13 +31,8 @@ namespace switcher
   class SoapCtrlClient : public Quiddity
   {
   public:
-    typedef std::shared_ptr<SoapCtrlClient> ptr;
-    bool init ();
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SoapCtrlClient);
     ~SoapCtrlClient ();
-
-
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
 
   private:

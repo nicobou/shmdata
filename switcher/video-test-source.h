@@ -30,12 +30,9 @@ namespace switcher
   class VideoTestSource : public VideoSource
   {
   public:
-    typedef std::shared_ptr<VideoTestSource> ptr;
-    ~VideoTestSource ();
-    bool init ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
-    
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VideoTestSource);
+    ~VideoTestSource();
+
   private:
     GstElement *videotestsrc_;
   };

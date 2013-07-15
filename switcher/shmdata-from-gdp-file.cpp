@@ -22,8 +22,10 @@
 
 namespace switcher
 {
-  QuiddityDocumentation ShmdataFromGDPFile::doc_ ("file source", "shmfromfile",
-						  "play gdp file(s) to shmdata");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataFromGDPFile,
+				       "file source", 
+				       "shmfromfile",
+				       "play gdp file(s) to shmdata");
   
   ShmdataFromGDPFile::~ShmdataFromGDPFile ()
   {
@@ -74,12 +76,6 @@ namespace switcher
     //set the name before registering properties
     set_name (g_strdup_printf ("gdpfilesrc%s", g_param_spec_get_name(playing_param_)));//FIXME implement and use make_name () in quiddity class, should be used for gsoap also
     return true;
-  }
-  
-  QuiddityDocumentation 
-  ShmdataFromGDPFile::get_documentation ()
-  {
-    return doc_;
   }
 
   gboolean

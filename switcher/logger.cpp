@@ -23,8 +23,10 @@ namespace switcher
 {
 
   bool Logger::installed_ = false;
-  
-  QuiddityDocumentation Logger::doc_  ("log", "logger",
+
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Logger,
+				       "log", 
+				       "logger",
 				       "manage switcher logs and other glib log domains.");
   bool
   Logger::init()
@@ -242,13 +244,6 @@ namespace switcher
      if (update_last_line)
        context->custom_props_->notify_property_changed (context->last_line_prop_);
 }
-
-
-  QuiddityDocumentation 
-  Logger::get_documentation ()
-  {
-    return doc_;
-  }
 
   gchar *
   Logger::get_last_line (void *user_data)

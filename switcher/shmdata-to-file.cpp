@@ -23,8 +23,10 @@
 
 namespace switcher
 {
-  QuiddityDocumentation ShmdataToFile::doc_ ("file sink", "shmtofile",
-					     "record shmdata(s) to file(s)");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToFile,
+				       "file sink", 
+				       "shmtofile",
+				       "record shmdata(s) to file(s)");
   
   ShmdataToFile::~ShmdataToFile ()
   {
@@ -75,12 +77,6 @@ namespace switcher
     //set the name before registering properties
     set_name (gst_element_get_name (bin_));
     return true;
-  }
-  
-  QuiddityDocumentation 
-  ShmdataToFile::get_documentation ()
-  {
-    return doc_;
   }
 
   gboolean

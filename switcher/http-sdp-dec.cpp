@@ -24,8 +24,10 @@
 
 namespace switcher
 {
-  QuiddityDocumentation HTTPSDPDec::doc_ ("http sdp decoding", "httpsdpdec", 
-					    "decode an sdp-described stream deliver through http and make shmdatas");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(HTTPSDPDec,
+				       "http sdp decoding", 
+				       "httpsdpdec", 
+				       "decode an sdp-described stream deliver through http and make shmdatas");
   
   HTTPSDPDec::~HTTPSDPDec ()
   {
@@ -61,12 +63,6 @@ namespace switcher
 							  "the uri to decode",
 							  NULL));
     return true;
-  }
-  
-  QuiddityDocumentation 
-  HTTPSDPDec::get_documentation ()
-  {
-    return doc_;
   }
 
   void 

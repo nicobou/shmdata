@@ -24,8 +24,10 @@
 
 namespace switcher
 {
-  QuiddityDocumentation Uris::doc_ ("uri decoding", "uris", 
-				    "play/pause/seek/loop/synchronize multiple uris");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uris,
+				       "uri decoding", 
+				       "uris", 
+				       "play/pause/seek/loop/synchronize multiple uris");
   
   bool
   Uris::init() 
@@ -99,12 +101,6 @@ namespace switcher
     return true;
   }
   
-  QuiddityDocumentation 
-  Uris::get_documentation ()
-  {
-    return doc_;
-  }
-
   gboolean
   Uris::add_uri_wrapped (gpointer uri, gpointer user_data)
   {

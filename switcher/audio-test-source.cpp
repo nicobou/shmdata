@@ -23,8 +23,10 @@
 namespace switcher
 {
 
-  QuiddityDocumentation AudioTestSource::doc_ ("audio source", "audiotestsrc", 
-						     "Creates audio test signals");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
+				       "audio source", 
+				       "audiotestsrc", 
+				       "Creates audio test signals");
   
   bool
   AudioTestSource::init ()
@@ -54,12 +56,6 @@ namespace switcher
   AudioTestSource::~AudioTestSource()
   {
     GstUtils::clean_element (audiotestsrc_);
-  }
-
-  QuiddityDocumentation 
-  AudioTestSource::get_documentation ()
-  {
-    return doc_;
   }
   
 }

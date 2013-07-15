@@ -31,12 +31,9 @@ namespace switcher
   class Xvimagesink : public VideoSink
   {
   public:
-    typedef std::shared_ptr<Xvimagesink> ptr;
-    bool init ();
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Xvimagesink);
     Xvimagesink ();
     ~Xvimagesink ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
   private:
     GstElement *xvimagesink_;

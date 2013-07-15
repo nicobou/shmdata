@@ -23,8 +23,10 @@
 
 namespace switcher
 {
-  QuiddityDocumentation HTTPSDP::doc_ ("sdp decoding", "httpsdp", 
-					     "get raw stream from sdp file distributed with http");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(HTTPSDP,
+				       "sdp decoding", 
+				       "httpsdp", 
+				       "get raw stream from sdp file distributed with http");
   
   bool
   HTTPSDP::init() 
@@ -67,12 +69,6 @@ namespace switcher
     register_property (G_OBJECT (sdpdemux_),"latency","latency");
 
     return true;
-  }
-  
-  QuiddityDocumentation 
-  HTTPSDP::get_documentation ()
-  {
-    return doc_;
   }
 
   void 

@@ -175,6 +175,15 @@ namespace switcher
     GMainContext *get_g_main_context ();
   };
 
+#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(cpp_quiddity_class, category, user_quiddity_class, description) \
+  QuiddityDocumentation cpp_quiddity_class::doc_ (category, user_quiddity_class, description);               \
+  QuiddityDocumentation cpp_quiddity_class::get_documentation () {return doc_;}
+
+#define SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(cpp_quiddity_class)	\
+  typedef std::shared_ptr<cpp_quiddity_class> ptr;			\
+  bool init ();								\
+  QuiddityDocumentation get_documentation ();				\
+  static QuiddityDocumentation doc_;
 
 } // end of namespace
 

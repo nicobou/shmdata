@@ -30,11 +30,8 @@ namespace switcher
   class FakeShmdataWriter : public BaseSource
   {
   public:
-    typedef std::shared_ptr<FakeShmdataWriter> ptr;
-    bool init ();
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeShmdataWriter);
     bool add_shmdata_path (std::string name);
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
   private:
     static gboolean add_shmdata_path_wrapped (gpointer name, gpointer user_data);

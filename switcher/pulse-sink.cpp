@@ -23,32 +23,28 @@
 namespace switcher
 {
 
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSink,
+				       "audio sink", 
+				       "pulsesink",
+				       "Output sound to pulse server");
+
   bool 
   PulseSink::init ()
   {
     pulse_sink_ = gst_parse_bin_from_description ("audioconvert ! pulsesink sync=false",
 						  TRUE,
 						  NULL);
-
+    
     //set the name before registering properties
     set_name (gst_element_get_name (pulse_sink_));
     
     set_sink_element (pulse_sink_);
     return true;
   }
-
+  
   PulseSink::~PulseSink ()
   {
     GstUtils::clean_element (pulse_sink_);
   }
 
-  QuiddityDocumentation PulseSink::doc_ ("audio sink", "pulsesink",
-					 "Output sound to pulse server");
-
-  QuiddityDocumentation 
-  PulseSink::get_documentation ()
-  {
-    return doc_;
-  }
-  
 }

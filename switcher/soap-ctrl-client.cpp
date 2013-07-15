@@ -23,9 +23,10 @@
 
 namespace switcher
 {
-
-  QuiddityDocumentation SoapCtrlClient::doc_ ("control", "SOAPcontrolClient",
-					      "controling a switcher instance through SOAP webservices");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SoapCtrlClient,
+				       "control", 
+				       "SOAPcontrolClient",
+				       "controling a switcher instance through SOAP webservices");
 
   bool
   SoapCtrlClient::init()
@@ -168,13 +169,6 @@ namespace switcher
       g_free (url_);
     if (switcher_control_ != NULL)
       delete switcher_control_;
-  }
-    
-
-  QuiddityDocumentation 
-  SoapCtrlClient::get_documentation ()
-  {
-    return doc_;
   }
 
   gboolean

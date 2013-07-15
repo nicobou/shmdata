@@ -32,7 +32,7 @@ namespace switcher
   class SoapCtrlServer : public QuiddityManagerWrapper
   {
   public:
-    typedef std::shared_ptr<SoapCtrlServer> ptr;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SoapCtrlServer);
     ~SoapCtrlServer ();
     void set_port (int port);//default port is 8080
     void start (); 
@@ -41,10 +41,6 @@ namespace switcher
     std::shared_ptr<QuiddityManager> get_quiddity_manager ();
     //wrappers
     static gboolean set_port_wrapped (gint port, gpointer user_data);
-
-    bool init ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
   private:
     struct soap soap_;

@@ -24,8 +24,10 @@
 
 namespace switcher
 {
-  QuiddityDocumentation Uridecodebin::doc_ ("uri decoding", "uridecodebin", 
-					    "decode an URI of live stream(s) to shmdata(s)");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
+				       "uri decoding", 
+				       "uridecodebin", 
+				       "decode an URI of live stream(s) to shmdata(s)");
   
   Uridecodebin::~Uridecodebin ()
   {
@@ -100,12 +102,6 @@ namespace switcher
     return true;
   }
   
-  QuiddityDocumentation 
-  Uridecodebin::get_documentation ()
-  {
-    return doc_;
-  }
-
   void 
   Uridecodebin::init_uridecodebin ()
   {

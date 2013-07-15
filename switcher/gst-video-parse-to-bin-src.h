@@ -31,12 +31,9 @@ namespace switcher
   class GstVideoParseToBinSrc : public BaseSource
   {
   public:
-    typedef std::shared_ptr<GstVideoParseToBinSrc> ptr;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstVideoParseToBinSrc);
     ~GstVideoParseToBinSrc ();
-    bool init ();
     bool to_shmdata (std::string gst_pipeline_description);
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
   private:
     GstElement *gst_video_parse_to_bin_src_;

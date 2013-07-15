@@ -30,11 +30,8 @@ namespace switcher
   class AudioTestSource : public AudioSource
   {
   public:
-    typedef std::shared_ptr<AudioTestSource> ptr;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AudioTestSource);
     ~AudioTestSource ();
-    bool init ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
   private: 
    GstElement *audiotestsrc_;

@@ -31,8 +31,7 @@ namespace switcher
   class Logger : public Quiddity
   {
   public:
-    typedef std::shared_ptr<Logger> ptr;
-    bool init ();
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Logger);
     ~Logger ();
 
     gboolean install_log_handler (const gchar *log_domain);
@@ -51,9 +50,6 @@ namespace switcher
 			     GLogLevelFlags log_level,
 			     const gchar *message,
 			     gpointer user_data);
-
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
   private:
     void replace_last_line(gchar *next_line);

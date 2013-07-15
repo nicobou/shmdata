@@ -23,9 +23,10 @@
 namespace switcher
 {
 
-  QuiddityDocumentation AravisGenicam::doc_ ("video source", "genicam",
-						   "Genicam video source using the Aravis library");
-  
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AravisGenicam,
+				       "video source", 
+				       "genicam",
+				       "Genicam video source using the Aravis library");
   
   bool
   AravisGenicam::init ()
@@ -110,12 +111,5 @@ namespace switcher
 
     return true;
   }
-  
-  
-  QuiddityDocumentation 
-  AravisGenicam::get_documentation ()
-  {
-    return doc_;
-  }
-  
+
 }

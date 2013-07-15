@@ -22,15 +22,10 @@
 
 namespace switcher
 {
-
-  QuiddityDocumentation GstVideoParseToBinSrc::doc_ ("video source", "gstvideosrc",
-						     "GStreamer (src) video pipeline description to a *single* shmdata");
-  
-  QuiddityDocumentation 
-  GstVideoParseToBinSrc::get_documentation ()
-  {
-    return doc_;
-  }
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoParseToBinSrc,
+				       "video source", 
+				       "gstvideosrc",
+				       "GStreamer (src) video pipeline description to a *single* shmdata");
   
   GstVideoParseToBinSrc::~GstVideoParseToBinSrc ()
   {

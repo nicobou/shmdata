@@ -26,9 +26,10 @@
 
 namespace switcher
 {
-  
-  QuiddityDocumentation RtpSession::doc_ ("RTP session", "rtpsession",
-					  "RTP session manager");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RtpSession,
+				       "RTP session", 
+				       "rtpsession",
+				       "RTP session manager");
   
   RtpSession::~RtpSession ()
   {
@@ -236,13 +237,6 @@ namespace switcher
       return false;
     
     return true;
-  }
-
-
-  QuiddityDocumentation 
-  RtpSession::get_documentation ()
-  {
-    return doc_;
   }
 
   //function used as a filter for selecting the appropriate rtp payloader
