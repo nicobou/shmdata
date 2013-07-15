@@ -586,6 +586,7 @@ namespace switcher
 			       const std::string method_name)
   {
     command_lock ();
+    g_printerr ("-------------- %s - %s \n", quiddity_name.c_str (), method_name.c_str ());
     command_->set_name (QuiddityCommand::has_method);
     command_->add_arg (quiddity_name);
     command_->add_arg (method_name);
