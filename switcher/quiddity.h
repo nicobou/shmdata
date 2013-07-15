@@ -176,7 +176,7 @@ namespace switcher
   };
 
 #define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(cpp_quiddity_class, category, user_quiddity_class, description) \
-  QuiddityDocumentation cpp_quiddity_class::switcher_doc_ (category, user_quiddity_class, description);               \
+  QuiddityDocumentation cpp_quiddity_class::switcher_doc_ (category, user_quiddity_class, description);      \
   QuiddityDocumentation cpp_quiddity_class::get_documentation () {return switcher_doc_;}
 
 #define SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(cpp_quiddity_class)	\
@@ -193,7 +193,7 @@ namespace switcher
     delete quiddity;						\
   }								\
   extern "C" QuiddityDocumentation get_documentation () {	\
-    return cpp_quiddity_class::switcher_doc_;					\
+    return cpp_quiddity_class::switcher_doc_;			\
   }
 
 } // end of namespace
