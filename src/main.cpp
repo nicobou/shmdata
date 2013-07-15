@@ -101,8 +101,9 @@ logger_cb (std::string subscriber_name,
 gpointer
 set_runtime_invoker (gpointer name)
 {
-  if (manager->has_method ((char *)name, "set_runtime"))
-    manager->invoke_va ((char *)name, "set_runtime", "pipeline0", NULL);
+  switcher::QuiddityManager::ptr mymanager = manager;
+  if ((bool)mymanager && mymanager->has_method ((char *)name, "set_runtime"))
+    mymanager->invoke_va ((char *)name, "set_runtime", "pipeline0", NULL);
   g_free (name);
   return NULL;
 }
@@ -258,6 +259,8 @@ main (int argc,
       manager->invoke_va (osc_name.c_str (), "set_port", osc_port_number, NULL);
     }
   
+
+  
   manager->reset_command_history (false);
   
   if (load_file != NULL)
@@ -275,7 +278,7 @@ main (int argc,
       if (!signal_subscriber_names.empty ())
    	g_warning ("creation of signal subscriber not handled when loading file %s", load_file);
       
-      manager->play_command_history (histo, NULL, NULL); 
+      manager->play_command_history (histo, NULL, NULL, true); 
       is_loading= FALSE;
     }
   

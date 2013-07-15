@@ -114,8 +114,13 @@ namespace switcher
   void
   QuiddityManager::play_command_history (QuiddityManager::CommandHistory histo,
 					 QuiddityManager::PropCallbackMap *prop_cb_data,
-					 QuiddityManager::SignalCallbackMap *sig_cb_data)
+					 QuiddityManager::SignalCallbackMap *sig_cb_data,
+					 bool mute_existing_signal_subscriber)
   {
+
+    if (mute_existing_signal_subscriber)
+      manager_impl_->mute_signal_subscribers (true);
+
     for (auto &it: histo)
       {
 	if (it->name_ == QuiddityCommand::make_property_subscriber)
@@ -141,6 +146,7 @@ namespace switcher
 	    command_lock ();
 	    command_ = it;
 	    
+	    g_debug ("running command %s", QuiddityCommand::get_string_from_id (command_->name_));
 	    invoke_in_gmainloop ();
 	    //TODO test result consistency
 	    command_unlock ();
@@ -149,6 +155,10 @@ namespace switcher
 	      auto_init (command_->result_[0]);
 	  }
       }
+
+    if (mute_existing_signal_subscriber)
+      manager_impl_->mute_signal_subscribers (false);
+    
   }
   
   std::vector <std::string> 
@@ -816,7 +826,6 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 				 quiddity_class.c_str(), 
 				 nick_name.c_str(), 
 				 NULL);
-    //auto_init (res);
     return res;
   }
 

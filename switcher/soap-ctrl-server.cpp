@@ -759,7 +759,7 @@ controlService::load (std::string file_name,
       *result = "false";
       return SOAP_OK;
     }
-  manager->play_command_history (histo, NULL, NULL); 
+   manager->play_command_history (histo, NULL, NULL, true); 
   *result = "true";
   return SOAP_OK;
 }
@@ -782,8 +782,8 @@ controlService::run (std::string file_name,
       *result = "false";
       return SOAP_OK;
     }
-  manager->play_command_history (histo, NULL, NULL); 
-  *result = "true";
+   manager->play_command_history (histo, NULL, NULL, true); 
+   *result = "true";
   return SOAP_OK;
 }
 

@@ -70,7 +70,8 @@ namespace switcher
       std::vector<std::string> get_signal_subscribers_names (QuiddityManager::CommandHistory histo);
       void play_command_history (QuiddityManager::CommandHistory histo,
 				 QuiddityManager::PropCallbackMap *prop_cb_data,
-				 QuiddityManager::SignalCallbackMap *sig_cb_data);
+				 QuiddityManager::SignalCallbackMap *sig_cb_data,
+				 bool mute_user_signal_subscribers);
       void reset_command_history (bool remove_created_quiddities);//FIXME maybe implement undo and remove this  arg
 
       //************** plugins *******************************************************************

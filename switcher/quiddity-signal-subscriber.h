@@ -45,7 +45,10 @@ namespace switcher
 				      std::string signal_name,
 				      std::vector<std::string> params,
 				      void *user_data);
+    QuidditySignalSubscriber();
     ~QuidditySignalSubscriber();
+
+    void mute (bool muted);
 
     void set_callback (OnEmittedCallback cb);
     void set_user_data (void *user_data);
@@ -63,12 +66,14 @@ namespace switcher
     void set_manager_impl (std::shared_ptr<QuiddityManager_Impl> manager_impl);
 
   private:
+    bool muted_;
     OnEmittedCallback user_callback_;
     void *user_data_;
     std::string name_;
     std::weak_ptr<QuiddityManager_Impl> manager_impl_;
 
     typedef struct {
+      QuidditySignalSubscriber *subscriber;
       gchar *name;
       gchar *quiddity_name; 
       gchar *signal_name;

@@ -28,6 +28,11 @@
 namespace switcher
 {
 
+  QuidditySignalSubscriber::QuidditySignalSubscriber()
+  {
+    muted_ = false;
+  }
+
   QuidditySignalSubscriber::~QuidditySignalSubscriber()
   {
     QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
@@ -53,7 +58,14 @@ namespace switcher
      	  }
       }
   }
+
+  void
+  QuidditySignalSubscriber::mute (bool muted)
+  {
+    muted_ = muted;
+  }
   
+
   void 
   QuidditySignalSubscriber::signal_cb (std::vector <std::string> params, gpointer user_data)
   {
@@ -64,11 +76,12 @@ namespace switcher
     // 	     signal->signal_name,
     // 	     Signal::parse_callback_args (gobject, pspec).c_str (),
     // 	     (gchar *)signal->user_data); 
-    signal->user_callback (signal->name,
-			   signal->quiddity_name, 
-			   signal->signal_name,
-			   params,
-			   (gchar *)signal->user_data); 
+    if (!signal->subscriber->muted_)
+      signal->user_callback (signal->name,
+			     signal->quiddity_name, 
+			     signal->signal_name,
+			     params,
+			     (gchar *)signal->user_data); 
   }
 
   void 
@@ -116,6 +129,7 @@ namespace switcher
 	return false;
       }
     SignalData *signal = new SignalData ();
+    signal->subscriber = this;
     signal->name = g_strdup (name_.c_str ());
     signal->quiddity_name = g_strdup (quid->get_nick_name ().c_str ());
     signal->signal_name = g_strdup (signal_name.c_str ());

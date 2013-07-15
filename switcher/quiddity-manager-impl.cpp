@@ -347,17 +347,22 @@ namespace switcher
   {
     if(!class_exists (quiddity_class))
       return "";
-
+    
+    if (quiddities_nick_names_.contains (nick_name))
+      return "";
+    
     Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class);
 
     if (quiddity.get() != NULL)
       {
-	if (!nick_name.empty () && !quiddities_nick_names_.contains (nick_name))
+	if (!nick_name.empty ())
 	  quiddity->set_nick_name (nick_name);
 	else
-	  g_debug ("QuiddityManager_Impl::create: nick name %s not valid, using %s",
-		   nick_name.c_str (),
-		   quiddity->get_name().c_str ());
+	  {
+	    g_debug ("QuiddityManager_Impl::create: nick name \"%s\" not valid",
+		     nick_name.c_str ());
+	    return "";
+	  }
 
 	if (!init_quiddity (quiddity))
 	  {
@@ -847,6 +852,14 @@ namespace switcher
   }
 
  //higher level subscriber
+
+  void
+  QuiddityManager_Impl::mute_signal_subscribers (bool muted)
+  {
+    for (auto &it : signal_subscribers_.get_map ())
+      it.second->mute (muted);
+  }
+
   bool 
   QuiddityManager_Impl::make_signal_subscriber (std::string subscriber_name,
 					       QuidditySignalSubscriber::OnEmittedCallback cb,

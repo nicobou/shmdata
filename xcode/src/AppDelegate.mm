@@ -317,7 +317,7 @@ int start (int argc, char *argv[])
 	 if (!signal_subscriber_names.empty ())
 	   g_warning ("creation of signal subscriber not handled when loading file %s", load_file);
 
-	 manager->play_command_history (histo, NULL, NULL); 
+	 manager->play_command_history (histo, NULL, NULL, true); 
 	 is_loading= FALSE;
 
        }

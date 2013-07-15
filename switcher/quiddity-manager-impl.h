@@ -113,7 +113,7 @@ namespace switcher
       bool unsubscribe_property (std::string subscriber_name,
 				 std::string quiddity_name,
 				 std::string property_name);
-      //signal utils
+      //property subscribers info
       std::vector<std::string> 
 	list_property_subscribers ();
       std::vector<std::pair<std::string, std::string> > 
@@ -176,6 +176,8 @@ namespace switcher
 			       std::string quiddity_name,
 			       std::string signal_name);
 
+      void mute_signal_subscribers (bool muted);
+      
       std::vector<std::string> 
 	list_signal_subscribers ();
       std::vector<std::pair<std::string, std::string> > 
