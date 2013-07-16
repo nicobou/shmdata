@@ -42,12 +42,30 @@ namespace switcher
   { 
     if (!GstUtils::make_element ("uridecodebin",&uridecodebin_))
       return false;
+    
 
     //set the name before registering properties
     set_name (gst_element_get_name (uridecodebin_));
-    
+
+    on_error_command_ = NULL;
+  
     destroy_uridecodebin ();
-   
+
+    //loop property
+    custom_props_.reset (new CustomPropertyHelper ());
+    loop_ = false;
+    loop_prop_ = 
+      custom_props_->make_boolean_property ("loop", 
+					    "loop media",
+					    (gboolean)FALSE,
+					    (GParamFlags) G_PARAM_READWRITE,
+					    Uridecodebin::set_loop,
+					    Uridecodebin::get_loop,
+					    this);
+    register_property_by_pspec (custom_props_->get_gobject (), 
+				loop_prop_, 
+				"loop");
+    
     //registering add_data_stream
     register_method("to_shmdata",
 		    (void *)&to_shmdata_wrapped, 
@@ -178,13 +196,19 @@ namespace switcher
   Uridecodebin::destroy_uridecodebin ()
   {
     GstUtils::clean_element (uridecodebin_);
-    // if (G_IS_OBJECT (uridecodebin_))
-    //   {
-    // 	gst_element_set_state (uridecodebin_,GST_STATE_NULL);
-    // 	gst_element_get_state (uridecodebin_, NULL, NULL, GST_CLOCK_TIME_NONE);
-    // 	gst_object_unref (uridecodebin_);
-    //   }
+    clean_on_error_command ();
   }
+
+  void 
+  Uridecodebin::clean_on_error_command ()
+  {
+    if (on_error_command_ != NULL)
+      {
+	delete on_error_command_;
+	on_error_command_ = NULL;
+      }
+  }
+
 
   void 
   Uridecodebin::no_more_pads_cb (GstElement* object, gpointer user_data)   
@@ -199,7 +223,7 @@ namespace switcher
 				 GstCaps *caps, 
 				 gpointer user_data)
   {
-    g_error ("Uridecodebin unknown type: %s (%s)\n", gst_caps_to_string (caps), gst_element_get_name (bin));
+    g_warning ("Uridecodebin unknown type: %s (%s)\n", gst_caps_to_string (caps), gst_element_get_name (bin));
   }
 
   int 
@@ -243,7 +267,7 @@ namespace switcher
   // }
   
   gboolean
-  Uridecodebin::rewind (gpointer user_data)
+  Uridecodebin::process_eos (gpointer user_data)
   {
     Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
 
@@ -251,7 +275,7 @@ namespace switcher
     gboolean res;
     query = gst_query_new_segment (GST_FORMAT_TIME);
     res = gst_element_query (context->runtime_->get_pipeline (), query);
-    gdouble rate = -2.0;
+    gdouble rate = 1.0;
     gint64 start_value = -2.0;
     gint64 stop_value = -2.0;
     if (res) {
@@ -265,7 +289,10 @@ namespace switcher
       g_debug ("duration query failed...");
     }
     gst_query_unref (query);
-    
+   
+    if (!context->loop_)
+      context->pause_wrapped (NULL,user_data);
+ 
     gboolean ret;
     ret = gst_element_seek (GST_ELEMENT (gst_pad_get_parent (context->main_pad_)),
 			    rate,  
@@ -289,16 +316,14 @@ namespace switcher
   {
     Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
     if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) { 
-      //g_print ("EOS caught and disabled \n");
       // g_print ("----- pad with EOS %s:%s, src: %p %s\n",
       // 	       GST_DEBUG_PAD_NAME (pad),GST_EVENT_SRC(event), gst_element_get_name (GST_EVENT_SRC(event)));
 
       if (pad == context->main_pad_)
 	{
-	  //g_print ("main pad !@! \n");
 	  GstUtils::g_idle_add_full_with_context (context->get_g_main_context (),
 						  G_PRIORITY_DEFAULT_IDLE,
-						  (GSourceFunc) rewind,   
+						  (GSourceFunc) process_eos,   
 						  (gpointer)context,
 						  NULL);   
 	}
@@ -311,10 +336,8 @@ namespace switcher
       {
 	return FALSE;
       }
-    
+  
     //g_print ("event probed (%s)\n", GST_EVENT_TYPE_NAME(event));
-    
-
     return TRUE; 
   }
 
@@ -481,8 +504,37 @@ namespace switcher
   void 
   Uridecodebin::source_setup_cb (GstElement *uridecodebin, GstElement *source, gpointer user_data)
   {
-    //Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-    g_debug ("source %s %s\n",  GST_ELEMENT_NAME(source), G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (source)));
+    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
+    g_debug ("uridecodebin source element is %s %s\n",  
+	     GST_ELEMENT_NAME(source), 
+	     G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (source)));
+
+    //get the uri
+    GValue val = G_VALUE_INIT;
+    g_value_init (&val, G_TYPE_STRING);
+    
+    g_object_get_property (G_OBJECT (uridecodebin),
+			   "uri",
+			   &val);
+    
+    gchar *val_str = GstUtils::gvalue_serialize (&val);
+
+    //building the command
+    context->clean_on_error_command ();
+    context->on_error_command_ = new QuiddityCommand ();
+    context->on_error_command_->id_ = QuiddityCommand::invoke;
+    context->on_error_command_->time_ = 1000; // 1 second
+    context->on_error_command_->add_arg (context->get_nick_name ());
+    context->on_error_command_->add_arg ("to_shmdata");
+    std::vector<std::string> vect_arg;
+    vect_arg.push_back (val_str);
+    context->on_error_command_->set_vector_arg (vect_arg);
+
+    g_object_set_data (G_OBJECT (source), 
+     		       "on-error-command",
+     		       (gpointer)context->on_error_command_);
+    
+    g_free (val_str);
   }
 
   gboolean
@@ -518,6 +570,7 @@ namespace switcher
     
     reset_bin ();
     init_uridecodebin ();
+        
     g_debug ("------------------------- to_shmdata set uri %s", uri.c_str ());
     g_object_set (G_OBJECT (uridecodebin_), "uri", uri.c_str (), NULL); 
 
@@ -585,6 +638,20 @@ namespace switcher
       return FALSE;
     runtime->speed (speed);
     return TRUE;
+  }
+
+  void 
+  Uridecodebin::set_loop (gboolean loop, void *user_data)
+  {
+    Uridecodebin *context = static_cast<Uridecodebin *> (user_data);
+    context->loop_ = loop;
+  }
+
+  gboolean 
+  Uridecodebin::get_loop (void *user_data)
+  {
+    Uridecodebin *context = static_cast<Uridecodebin *> (user_data);
+    return context->loop_;
   }
 
 }

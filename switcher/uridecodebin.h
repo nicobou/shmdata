@@ -25,6 +25,7 @@
 #include "gst-element-cleaner.h"
 #include "string-map.h"
 #include <memory>
+#include "custom-property-helper.h"
 
 namespace switcher
 {
@@ -36,6 +37,9 @@ namespace switcher
     ~Uridecodebin();
     bool to_shmdata (std::string uri);
 
+    static gboolean get_loop (void *user_data);
+    static void set_loop (gboolean mute, void *user_data);
+
   private: 
    GstElement *uridecodebin_;
    StringMap<int> media_counters_;
@@ -45,13 +49,20 @@ namespace switcher
    std::string runtime_name_;
    void init_uridecodebin ();
    void destroy_uridecodebin ();
+   QuiddityCommand *on_error_command_; //for the runtime error handler
+   void clean_on_error_command ();
+
+   //custom properties 
+   CustomPropertyHelper::ptr custom_props_;
+   GParamSpec *loop_prop_;
+   bool loop_;
 
    static void uridecodebin_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
    static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);
    static void no_more_pads_cb (GstElement* object, gpointer user_data);
    static void source_setup_cb (GstElement *uridecodebin, GstElement *source, gpointer user_data);
    static gboolean event_probe_cb (GstPad *pad, GstEvent * event, gpointer data);
-   static gboolean rewind (gpointer user_data);
+   static gboolean process_eos (gpointer user_data);
    static void unknown_type_cb (GstElement *bin, GstPad *pad, GstCaps *caps, gpointer user_data);
    static int autoplug_select_cb (GstElement *bin, GstPad *pad, GstCaps *caps, GstElementFactory *factory, gpointer user_data);
    //filtering uncomplete custum buffers
