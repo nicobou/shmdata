@@ -84,7 +84,7 @@ namespace switcher
   QuiddityCommand::set_name (command name)
   {
     clear ();
-    name_ = name;
+    id_ = name;
   } 
   
   void 
@@ -112,7 +112,7 @@ namespace switcher
   {
     json_builder_->reset ();
     json_builder_->begin_object ();
-    json_builder_->add_string_member ("command", command_names_.at (name_));
+    json_builder_->add_string_member ("command", command_names_.at (id_));
     json_builder_->add_int_member ("calling time", (gint)time_);
     json_builder_->set_member_name ("arguments");
     json_builder_->begin_array ();    

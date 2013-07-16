@@ -84,7 +84,7 @@ namespace switcher
       {
 	for (auto &it: command_history_)
 	  {
-	    if (g_str_has_prefix (QuiddityCommand::get_string_from_id (it->name_),
+	    if (g_str_has_prefix (QuiddityCommand::get_string_from_id (it->id_),
 				  "create"))
 		remove (it->result_[0]);
 	  }
@@ -123,7 +123,7 @@ namespace switcher
 
     for (auto &it: histo)
       {
-	if (it->name_ == QuiddityCommand::make_property_subscriber)
+	if (it->id_ == QuiddityCommand::make_property_subscriber)
 	  {
 	    if (prop_cb_data != NULL)
 	      {
@@ -132,7 +132,7 @@ namespace switcher
 		  make_property_subscriber (it->args_[0], prop_it->second.first, prop_it->second.second);
 	      }
 	  }
-	else if (it->name_ == QuiddityCommand::make_signal_subscriber)
+	else if (it->id_ == QuiddityCommand::make_signal_subscriber)
 	  {
 	    if (sig_cb_data != NULL)
 	      {
@@ -146,12 +146,12 @@ namespace switcher
 	    command_lock ();
 	    command_ = it;
 	    
-	    g_debug ("running command %s", QuiddityCommand::get_string_from_id (command_->name_));
+	    g_debug ("running command %s", QuiddityCommand::get_string_from_id (command_->id_));
 	    invoke_in_gmainloop ();
 	    //TODO test result consistency
 	    command_unlock ();
-	    if (command_->name_ == QuiddityCommand::create 
-		|| command_->name_ == QuiddityCommand::create_nick_named)
+	    if (command_->id_ == QuiddityCommand::create 
+		|| command_->id_ == QuiddityCommand::create_nick_named)
 	      auto_init (command_->result_[0]);
 	  }
       }
@@ -166,7 +166,7 @@ namespace switcher
   {
     std::vector<std::string> res;
     for (auto &it: histo)
-      if (it->name_ == QuiddityCommand::make_property_subscriber)
+      if (it->id_ == QuiddityCommand::make_property_subscriber)
 	res.push_back (it->args_[0]);
     return res; 
   }
@@ -176,7 +176,7 @@ namespace switcher
   {
     std::vector<std::string> res;
     for (auto &it: histo)
-      if (it->name_ == QuiddityCommand::make_signal_subscriber)
+      if (it->id_ == QuiddityCommand::make_signal_subscriber)
 	res.push_back (it->args_[0]);
     return res; 
   }
@@ -930,8 +930,8 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     va_end(vl);
     invoke_in_gmainloop ();
     res = command_->result_[0];
-    if (command_->name_ == QuiddityCommand::create 
-	|| command_->name_ == QuiddityCommand::create_nick_named)
+    if (command_->id_ == QuiddityCommand::create 
+	|| command_->id_ == QuiddityCommand::create_nick_named)
       auto_init (command_->result_[0]);
     command_unlock ();
     return res;
@@ -955,7 +955,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 
     
     g_mutex_lock (context->exec_mutex_);
-    switch (context->command_->name_)
+    switch (context->command_->id_)
       {
       case QuiddityCommand::get_classes:
 	context->command_->result_ = context->manager_impl_->get_classes ();
@@ -1069,7 +1069,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	break;
       default:
 	g_debug ("** unknown command, cannot launch %s\n", 
-		 QuiddityCommand::get_string_from_id(context->command_->name_));
+		 QuiddityCommand::get_string_from_id(context->command_->id_));
       }
     g_cond_signal (context->exec_cond_);
     g_mutex_unlock (context->exec_mutex_);

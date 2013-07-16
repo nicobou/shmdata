@@ -86,7 +86,7 @@ namespace switcher
     };
 
     QuiddityCommand ();
-    command name_;//FIXME refactor into id_
+    command id_;
     std::vector<std::string> args_;
     std::vector<std::string> vector_arg_;
     std::vector<std::string> result_;
