@@ -24,6 +24,7 @@
 #include "runtime.h"
 #include "gst-utils.h"
 #include <shmdata/base-reader.h>
+#include "quiddity-command.h"
 
 namespace switcher
 {
@@ -292,18 +293,32 @@ res = gst_element_query (pipeline_, query);
   }
 
   gboolean
-  Runtime::remove_quid (gpointer user_data)
+  Runtime::run_command (gpointer user_data)
   {
-    QuidRemoveArgs *context = static_cast<QuidRemoveArgs *>(user_data);
-    g_debug ("removing %s", context->name);
+    QuidCommandArg *context = static_cast<QuidCommandArg *>(user_data);
     QuiddityManager_Impl::ptr manager = context->self->manager_impl_.lock ();
-    if ((bool) manager)
-	manager->remove (context->name);
+    if ((bool) manager && context->command != NULL)
+      {
+	switch (context->command->id_)
+	  {
+	  case QuiddityCommand::remove:
+	    manager->remove (context->command->args_[0]);
+	    break;
+	  case QuiddityCommand::invoke:
+	    manager->invoke (context->command->args_[0], 
+					    context->command->args_[1], 
+					    context->command->vector_arg_);
+	    break;
+	  default:
+	    g_debug ("on-error-command: %s not implemented (sorry)\n", 
+		     QuiddityCommand::get_string_from_id(context->command->id_));
+	  }
+      }
     else
-      g_warning ("Runtime::bus_sync_handler, manager_impl cannot be locked for quiddity removing");
-
+      g_warning ("Runtime::bus_sync_handler, cannot run command");
+    
     delete context;
-    return FALSE; //do not remove again
+    return FALSE; //do not repeat run_command
   }  
 
   GstElement * 
@@ -336,18 +351,28 @@ res = gst_element_query (pipeline_, query);
 	g_free (debug);
 	g_debug ("Runtime::bus_sync_handler Error: %s from %s", error->message, GST_MESSAGE_SRC_NAME(msg));
 	
-	gchar *quid_name = (gchar *) g_object_get_data (G_OBJECT (msg->src), "quiddity_name");
-	if (quid_name != NULL)
+	QuiddityCommand *command = (QuiddityCommand *) g_object_get_data (G_OBJECT (msg->src), 
+									  "on-error-command");
+	if (command != NULL)
 	  {
-	    QuidRemoveArgs *args = new QuidRemoveArgs ();
+	    g_debug ("error contains data (on-error-command) ");
+	    QuidCommandArg *args = new QuidCommandArg ();
 	    args->self = context;
-	    args->name = quid_name;
-	    GstUtils::g_idle_add_full_with_context (context->get_g_main_context (),
-						    G_PRIORITY_DEFAULT_IDLE,
-						    (GSourceFunc) remove_quid,   
-						    (gpointer)args,
-						    NULL);   
+	    args->command = command;
+	    if (command->time_ > 1)
+	      GstUtils::g_timeout_add_to_context ((guint) command->time_,
+						  (GSourceFunc)run_command,
+						  args,
+						  context->get_g_main_context ());   
+	    else
+	      GstUtils::g_idle_add_full_with_context (context->get_g_main_context (),
+						      G_PRIORITY_DEFAULT_IDLE,
+						      (GSourceFunc) run_command,   
+						      (gpointer)args,
+						      NULL);   
+
 	  }
+
 	g_error_free (error);
 	return GST_BUS_DROP; 
       }

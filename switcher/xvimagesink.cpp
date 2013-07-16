@@ -19,6 +19,7 @@
 
 #include "xvimagesink.h"
 #include "gst-utils.h"
+#include "quiddity-command.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -45,12 +46,13 @@ namespace switcher
     set_name (gst_element_get_name (xvimagesink_));
     g_object_set (G_OBJECT (xvimagesink_), "sync", FALSE, NULL);
 
-    c_name_ = g_strdup (get_nick_name ().c_str ());
+    on_error_command_ = new QuiddityCommand ();
+    on_error_command_->id_ = QuiddityCommand::remove;
+    on_error_command_->add_arg (get_nick_name ());
+
     g_object_set_data (G_OBJECT (xvimagesink_), 
-		       "quiddity_name",
-		       (gpointer)c_name_);
-    //registering "sync"
-    //register_property (G_OBJECT (xvimagesink_),"sync","sync");
+     		       "on-error-command",
+     		       (gpointer)on_error_command_);
     
     set_sink_element (xvimagesink_);
 
@@ -59,14 +61,14 @@ namespace switcher
   
   Xvimagesink::Xvimagesink ()
   {
-    c_name_ = NULL;
   }
 
   Xvimagesink::~Xvimagesink ()
   {
-    if (c_name_ != NULL)
-      g_free (c_name_);
     GstUtils::clean_element (xvimagesink_);
+    if (on_error_command_ != NULL)
+      delete on_error_command_;
+    
   }
   
 }

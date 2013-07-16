@@ -1077,4 +1077,4 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     return FALSE; //remove from gmainloop
   }
   
-  }
+}

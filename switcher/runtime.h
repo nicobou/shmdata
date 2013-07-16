@@ -26,6 +26,7 @@
 
 #include <gst/gst.h>
 #include "quiddity.h"
+#include "quiddity-command.h"
 #include <memory>
 
 namespace switcher
@@ -49,13 +50,14 @@ namespace switcher
     private:
      typedef struct {
        Runtime *self;
-       gchar *name;
-     } QuidRemoveArgs;
+       QuiddityCommand *command;
+     } QuidCommandArg;
+
       GstElement *pipeline_;
       guint64 speed_ ;
       static gboolean bus_called (GstBus *bus, GstMessage *msg, gpointer data); 
       static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
-      static gboolean remove_quid (gpointer user_data);
+      static gboolean run_command (gpointer user_data);
       //GstBus is a specific context:
       typedef struct
       {

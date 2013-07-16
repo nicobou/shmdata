@@ -91,12 +91,6 @@ main (int argc,
       			"/tmp/switcher_rtptest_v_video",
       			NULL);
 
-    // manager->invoke_va ("rtp",
-    //   			"add_data_stream",
-    //   			"/tmp/ares-sm",
-    //   			NULL);
-
-    usleep (1000000);//FIXME this should not be necessary
     manager->invoke_va ("rtp",
       			"add_destination",
       			"local",
@@ -108,26 +102,13 @@ main (int argc,
        			"local",
        			"9066",
        			NULL);
-    usleep (1000000);//FIXME this should not be necessary
     manager->invoke_va ("rtp",
        			"add_udp_stream_to_dest",
        			"/tmp/switcher_rtptest_v_video",
        			"local",
        			"9076",
        			NULL);
-    usleep (1000000);//FIXME this should not be necessary
-
-    // manager->invoke_va ("rtp",
-    //    			"add_udp_stream_to_dest",
-    //    			"/tmp/ares-sm",
-    //    			"local",
-    //    			"9086",
-    //    			NULL);
     
-    //wait 4 sec for the session being created
-    usleep (4000000); 
-
-
     manager->create ("runtime", "receiver_runtime");
     manager->create ("httpsdpdec", "uri");
     manager->invoke_va ("uri", "set_runtime", "receiver_runtime", NULL);
@@ -135,8 +116,6 @@ main (int argc,
        			"to_shmdata",
 			"http://localhost:8084/sdp?rtpsession=rtp&destination=local",
 			NULL);
-    
-    usleep (2000000);//FIXME this should not be necessary
     
     manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);
 
@@ -160,8 +139,6 @@ main (int argc,
       			"connect",
       			"/tmp/switcher_rtptest_uri_video_0",
       			NULL);
-    
-    
     
     while (do_continue)
       usleep (100000);

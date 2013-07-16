@@ -170,13 +170,12 @@ namespace switcher
 	    gst_caps_unref (caps);
 	  }
 	else
-	  g_warning ("generating sdp file, empty media description %s", string_caps.c_str ());
+	  {
+	    g_debug ("generating sdp file, empty media description %s (returning empty file)", string_caps.c_str ());
+	    return "";
+	  }
 
       }
-
-    //return nothing if nothing is ready
-    if (index == 0)
-      return "";
 
     std::string res (gst_sdp_message_as_text (sdp_description));
     gst_sdp_message_free (sdp_description);

@@ -25,6 +25,7 @@
 #include "gst-element-cleaner.h"
 #include "string-map.h"
 #include <memory>
+#include "quiddity-command.h"
 
 namespace switcher
 {
@@ -47,6 +48,8 @@ namespace switcher
    std::string runtime_name_;
    void init_httpsdpdec ();
    void destroy_httpsdpdec ();
+   QuiddityCommand *on_error_command_; //for the runtime error handler
+   void clean_on_error_command ();
 
    static void decodebin_pad_added_cb (GstElement* object, GstPad *pad, gpointer user_data);
    static void httpsdpdec_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);

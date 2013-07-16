@@ -45,13 +45,14 @@ namespace switcher
 	|| !GstUtils::make_element ("sdpdemux", &sdpdemux_)
 	|| !GstUtils::make_element ("decodebin2", &decodebin))
       return false;
+
+    on_error_command_ = NULL;
     
     decodebins_.push_back (decodebin);
     //set the name before registering properties
     set_name (gst_element_get_name (souphttpsrc_));
-    
     destroy_httpsdpdec ();
-   
+    
     //registering add_data_stream
     register_method("to_shmdata",
 		    (void *)&to_shmdata_wrapped, 
@@ -77,6 +78,7 @@ namespace switcher
 
     media_counters_.clear ();
     main_pad_ = NULL;
+    
     discard_next_uncomplete_buffer_ = false;
     rtpgstcaps_ = gst_caps_from_string ("application/x-rtp, media=(string)application");
 
@@ -95,6 +97,17 @@ namespace switcher
   {
     GstUtils::clean_element (souphttpsrc_);
     GstUtils::clean_element (sdpdemux_);
+    clean_on_error_command ();
+  }
+
+  void 
+  HTTPSDPDec::clean_on_error_command ()
+  {
+    if (on_error_command_ != NULL)
+      {
+	delete on_error_command_;
+	on_error_command_ = NULL;
+      }
   }
 
   void 
@@ -238,10 +251,7 @@ namespace switcher
       {
 	return FALSE;
       }
-    
     //g_print ("event probed (%s)\n", GST_EVENT_TYPE_NAME(event));
-    
-
     return TRUE; 
   }
 
@@ -322,14 +332,12 @@ namespace switcher
   HTTPSDPDec::gstrtpdepay_buffer_probe_cb (GstPad * pad, GstMiniObject * mini_obj, gpointer user_data)
   {
     HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
-    
     /* if (GST_IS_BUFFER (mini_obj)) */
     /*   { */
     /*     GstBuffer *buffer = GST_BUFFER_CAST (mini_obj); */
     /*     g_print ("data size %d \n", */
     /* 	       GST_BUFFER_SIZE (buffer)); */
     /*   } */
-    
     if (context->discard_next_uncomplete_buffer_ == true)
       {
 	g_debug ("discarding uncomplete custom frame due to a network loss");
@@ -460,10 +468,26 @@ namespace switcher
       }
     else
       return false;
-    
+
     reset_bin ();
     init_httpsdpdec ();
-    g_debug ("------------------------- to_shmdata set uri %s", uri.c_str ());
+    
+    clean_on_error_command ();
+
+    on_error_command_ = new QuiddityCommand ();
+    on_error_command_->id_ = QuiddityCommand::invoke;
+    on_error_command_->time_ = 1000; // 1 second
+    on_error_command_->add_arg (get_nick_name ());
+    on_error_command_->add_arg ("to_shmdata");
+    std::vector<std::string> vect_arg;
+    vect_arg.push_back (uri);
+    on_error_command_->set_vector_arg (vect_arg);
+
+    g_object_set_data (G_OBJECT (sdpdemux_), 
+     		       "on-error-command",
+     		       (gpointer)on_error_command_);
+    
+    g_debug ("httpsdpdec: to_shmdata set uri %s", uri.c_str ());
 
     g_object_set (G_OBJECT (souphttpsrc_), "location", uri.c_str (), NULL); 
 

@@ -37,7 +37,7 @@ namespace switcher
 
   private:
     GstElement *xvimagesink_;
-    gchar *c_name_;
+    QuiddityCommand *on_error_command_; //for the runtime error handler
   };
 
 }  // end of namespace
