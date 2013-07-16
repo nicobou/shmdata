@@ -93,7 +93,7 @@ namespace switcher
     std::vector<std::string> expected_result_;
     gint64 time_;////monotonic time, in microseconds 
     void clear();
-    void set_name (command id); //FIXME refactor into set_id
+    void set_id (command id); 
     void add_arg (std::string arg);
     void set_vector_arg (std::vector<std::string> vector_arg);
     static command get_id_from_string (const char *com);

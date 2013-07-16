@@ -81,10 +81,10 @@ namespace switcher
   }
 
   void 
-  QuiddityCommand::set_name (command name)
+  QuiddityCommand::set_id (command id)
   {
     clear ();
-    id_ = name;
+    id_ = id;
   } 
   
   void 
@@ -160,7 +160,7 @@ namespace switcher
     
     //command
     json_reader_read_member (reader, "command");
-    command->set_name (QuiddityCommand::get_id_from_string(json_reader_get_string_value (reader)));
+    command->set_id (QuiddityCommand::get_id_from_string(json_reader_get_string_value (reader)));
     json_reader_end_member (reader);
     //---
 
