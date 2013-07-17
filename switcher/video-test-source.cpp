@@ -24,9 +24,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
+				       "Video Test",
 				       "video source", 
+				       "Creates a test video stream",
+				       "GPL",
 				       "videotestsrc",				
-				       "Creates a test video stream");
+				       "Nicolas Bouillot");
 
   VideoTestSource::~VideoTestSource()
   {

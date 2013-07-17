@@ -25,9 +25,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uris,
-				       "uri decoding", 
+				       "Uri Player",
+				       "uri source", 
+				       "play/pause/seek/loop/synchronize multiple uris",
+				       "GPL",
 				       "uris", 
-				       "play/pause/seek/loop/synchronize multiple uris");
+				       "Nicolas Bouillot");
   
   bool
   Uris::init() 

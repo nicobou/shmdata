@@ -23,9 +23,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoRate,
-				       "rate", 
+				       "Video Rate",
+				       "video converter", 
+				       "Adjusts video frame rate (video/x-raw-yuv)",
+				       "GPL",
 				       "videorate",
-				       "Adjusts video frame rate (video/x-raw-yuv)");
+				       "Nicolas Bouillot");
   
   bool
   VideoRate::init ()

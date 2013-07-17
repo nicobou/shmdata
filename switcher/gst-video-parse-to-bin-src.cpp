@@ -23,9 +23,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoParseToBinSrc,
+				       "GStreamer Video Pipeline",
 				       "video source", 
+				       "GStreamer (src) video pipeline description to a *single* shmdata",
+				       "GPL",
 				       "gstvideosrc",
-				       "GStreamer (src) video pipeline description to a *single* shmdata");
+				       "Nicolas Bouillot");
   
   GstVideoParseToBinSrc::~GstVideoParseToBinSrc ()
   {

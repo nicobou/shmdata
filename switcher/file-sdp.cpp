@@ -24,9 +24,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FileSDP,
-				       "sdp decoding", 
+				       "File SDP Receiver",
+				       "network", 
+				       "get raw stream from sdp file",
+				       "GPL",
 				       "filesdp", 
-				       "get raw stream from sdp file");
+				       "Nicolas Bouillot");
   
   bool
   FileSDP::init() 

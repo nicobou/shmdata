@@ -29,9 +29,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Runtime,
+				       "Gstreamer Pipeline",
 				       "runtime", 
+				       "Complete pipeline container and scheduler",
+				       "GPL",
 				       "runtime",
-				       "Complete pipeline container and scheduler");
+				       "Nicolas Bouillot");
 
   bool
   Runtime::init ()

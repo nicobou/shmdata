@@ -23,9 +23,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AAC, 
+				       "AAC encoder",
 				       "audio encoder", 
+				       "AAC encoder (2 channels max)",
+      				       "GPL",
 				       "aacenc",
-				       "AAC encoder (2 channels max)");
+				       "Nicolas Bouillot");
 
   bool
   AAC::init ()

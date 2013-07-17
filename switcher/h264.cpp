@@ -24,9 +24,12 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(H264,
+				       "H264 Encoder",
 				       "video encoder", 
+				       "H264 encoder",
+				       "GPL",
 				       "x264enc",
-				       "H264 encoder");
+				       "Nicolas Bouillot");
   
   bool
   H264::init ()

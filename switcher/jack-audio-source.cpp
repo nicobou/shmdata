@@ -23,9 +23,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackAudioSource,
+				       "Jack Audio",
 				       "audio source", 
+				       "get audio from jack",
+				       "GPL",
 				       "jackaudiosrc", 
-				       "get audio from jack");
+				       "Nicolas Bouillot");
   
   bool
   JackAudioSource::init ()

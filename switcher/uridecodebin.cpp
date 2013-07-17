@@ -25,9 +25,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
-				       "uri decoding", 
+				       "URI Player",
+				       "uri source", 
+				       "decode an URI and writes to shmdata(s)",
+				       "GPL",
 				       "uridecodebin", 
-				       "decode an URI of live stream(s) to shmdata(s)");
+				       "Nicolas Bouillot");
   
   Uridecodebin::~Uridecodebin ()
   {

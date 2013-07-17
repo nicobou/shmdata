@@ -24,9 +24,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToFile,
+				       "Shmdata Recorder",
 				       "file sink", 
+				       "record shmdata(s) to file(s)",
+				       "GPL",
 				       "shmtofile",
-				       "record shmdata(s) to file(s)");
+				       "Nicolas Bouillot");
   
   ShmdataToFile::~ShmdataToFile ()
   {

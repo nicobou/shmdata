@@ -27,10 +27,13 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Xvimagesink, 
+				       "Video Display",
 				       "video sink", 
+				       "Video window with minimal features",
+				       "GPL",
 				       "videosink",
-				       "Video window with minimal features");
-    
+				       "Nicolas Bouillot");
+  
   bool
   Xvimagesink::init ()
   {

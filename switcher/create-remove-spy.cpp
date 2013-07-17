@@ -24,9 +24,12 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(CreateRemoveSpy,
+				       "Quiddity Creation Inspector",
 				       "spy", 
+				       "spy manager for quidity creation and removal and convert into signals",
+				       "GPL",
 				       "create_remove_spy",				
-				       "spy manager for quidity creation and removal and convert into signals");
+				       "Nicolas Bouillot");
 
 
   bool

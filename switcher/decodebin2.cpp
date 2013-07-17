@@ -25,9 +25,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Decodebin2,
-				       "automatic decoding", 
+				       "Shmdata Decoder",
 				       "decodebin2", 
-				       "connect to a shmdata, decode it and write decoded frames to shmdata(s)");
+				       "connect to a shmdata, decode it and write decoded frames to shmdata(s)",
+				       "GPL",
+				       "decoder", 
+				       "Nicolas Bouillot");
   
   bool
   Decodebin2::init() 

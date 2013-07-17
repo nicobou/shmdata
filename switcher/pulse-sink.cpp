@@ -24,9 +24,12 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSink,
+				       "PulseAudio Display",
 				       "audio sink", 
+				       "Output sound to pulse server",
+				       "GPL",
 				       "pulsesink",
-				       "Output sound to pulse server");
+				       "Nicolas Bouillot");
 
   bool 
   PulseSink::init ()

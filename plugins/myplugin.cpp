@@ -25,9 +25,12 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(MyPlugin,
+				       "My Plugin",
 				       "test", 
+				       "Creates a quiddity from a plugin",
+				       "GPL",
 				       "myplugin",				
-				       "Creates a quiddity from a plugin");
+				       "Nicolas Bouillot");
 
   bool
   MyPlugin::init ()

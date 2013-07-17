@@ -24,9 +24,12 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FakeSink,
+				       "Shmdata Inspector",
 				       "fakesink sink", 
+				       "fakesink for testing purpose",
+				       "GPL",
 				       "fakesink",
-				       "fakesink for testing purpose");
+				       "Nicolas Bouillot");
 
   
   FakeSink::~FakeSink ()

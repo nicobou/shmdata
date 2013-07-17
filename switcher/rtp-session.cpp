@@ -27,9 +27,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RtpSession,
-				       "RTP session", 
+				       "RTP Session", 
+				       "network",
+				       "RTP session manager",
+				       "GPL",
 				       "rtpsession",
-				       "RTP session manager");
+				       "Nicolas Bouillot");
   
   RtpSession::~RtpSession ()
   {

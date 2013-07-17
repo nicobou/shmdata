@@ -24,9 +24,12 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstParseToBinSrc,
-				       "source", 
+				       "GStreamer Pipeline",
 				       "gstsrc",
-				       "GStreamer (src) pipeline description to a *single* shmdata");
+				       "GStreamer (src) pipeline description to a *single* shmdata",
+				       "GPL",
+				       "source", 
+				       "Nicolas Bouillot");
   
   GstParseToBinSrc::~GstParseToBinSrc ()
   {

@@ -24,9 +24,12 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
+				       "Audio Test",
 				       "audio source", 
+				       "Creates audio test signals",
+				       "GPL",
 				       "audiotestsrc", 
-				       "Creates audio test signals");
+				       "Nicolas Bouillot");
   
   bool
   AudioTestSource::init ()

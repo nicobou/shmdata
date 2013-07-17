@@ -24,9 +24,12 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AravisGenicam,
+				       "GenICam Camera",
 				       "video source", 
+				       "Genicam video source using the Aravis library",
+				       "GPL",
 				       "genicam",
-				       "Genicam video source using the Aravis library");
+				       "Nicolas Bouillot");
   
   bool
   AravisGenicam::init ()

@@ -25,9 +25,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Deinterleave,
-				       "demuxer", 
+				       "Deinterleave",
+				       "video converter", 
+				       "connect to an audio shmdata and split channels to multiple shmdata(s)",
+				       "GPL",
 				       "deinterleave", 
-				       "connect to an audio shmdata and split channels to multiple shmdata(s)");
+				       "Nicolas Bouillot");
   
   bool
   Deinterleave::init() 

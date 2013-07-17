@@ -24,9 +24,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(HTTPSDP,
-				       "sdp decoding", 
+				       "HTTP/SDP Receiver",
+				       "network", 
+				       "get raw stream from sdp file distributed with http",
+				       "GPL",
 				       "httpsdp", 
-				       "get raw stream from sdp file distributed with http");
+				       "Nicolas Bouillot");
   
   bool
   HTTPSDP::init() 

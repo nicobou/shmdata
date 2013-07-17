@@ -30,9 +30,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(UDPSink,
+				       "UDP Sender",
 				       "udp sink", 
+				       "send data stream with udp",
+				       "GPL",
 				       "udpsink",
-				       "send data stream with udp");
+				       "Nicolas Bouillot");
 
   bool 
   UDPSink::init ()

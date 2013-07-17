@@ -23,9 +23,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Vorbis,
+				       "Vorbis Encoder",
 				       "audio encoder", 
+				       "Vorbis encoder (up to 255 interleaved channels)",
+				       "GPL",
 				       "vorbis",
-				       "Vorbis encoder (up to 255 interleaved channels)");
+				       "Nicolas Bouillot");
   
   bool
   Vorbis::init ()

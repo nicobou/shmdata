@@ -25,9 +25,12 @@ namespace switcher
   bool Logger::installed_ = false;
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Logger,
+				       "Switcher Logger",
 				       "log", 
+				       "manage switcher logs and other glib log domains.",
+				       "GPL",
 				       "logger",
-				       "manage switcher logs and other glib log domains.");
+				       "Nicolas Bouillot");
   bool
   Logger::init()
   {

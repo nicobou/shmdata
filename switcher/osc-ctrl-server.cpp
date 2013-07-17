@@ -30,9 +30,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscCtrlServer,
-				       "control", 
+				       "Switcher OSC Controler",
+				       "control server", 
+				       "OSCcontrolServer allows for managing switcher through OSC",
+				       "GPL",
 				       "OSCctl",
-				       "OSCcontrolServer allows for managing switcher through OSC");
+				       "Nicolas Bouillot");
     
   bool
   OscCtrlServer::init ()
