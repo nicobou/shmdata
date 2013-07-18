@@ -40,6 +40,9 @@ namespace switcher
     static gboolean get_loop (void *user_data);
     static void set_loop (gboolean mute, void *user_data);
 
+    static gboolean get_playing (void *user_data);
+    static void set_playing (gboolean playing, void *user_data);
+
   private: 
    GstElement *uridecodebin_;
    StringMap<int> media_counters_;
@@ -56,6 +59,8 @@ namespace switcher
    CustomPropertyHelper::ptr custom_props_;
    GParamSpec *loop_prop_;
    bool loop_;
+   GParamSpec *playing_prop_;
+   bool playing_;
 
    static void uridecodebin_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
    static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);

@@ -168,7 +168,7 @@ namespace switcher
 
     if (signals_.find(signal_name) == signals_.end())
       {
-	g_error ("cannot set description of a not existing signal");
+	g_warning ("cannot set description of a not existing signal");
 	return false;
       }
     signals_[signal_name]->set_description (signal_name, short_description, arg_description);

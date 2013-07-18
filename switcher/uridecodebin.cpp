@@ -25,7 +25,7 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
-				       "URI Player",
+				       "Media Player (URI)",
 				       "uri source", 
 				       "decode an URI and writes to shmdata(s)",
 				       "GPL",
@@ -68,7 +68,21 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				loop_prop_, 
 				"loop");
-    
+
+    playing_ = false;
+    playing_prop_ = 
+      custom_props_->make_boolean_property ("playing", 
+					    "playing state",
+					    (gboolean)FALSE,
+					    (GParamFlags) G_PARAM_READABLE,
+					    NULL,
+					    Uridecodebin::get_playing,
+					    this);
+    register_property_by_pspec (custom_props_->get_gobject (), 
+				playing_prop_, 
+				"playing");
+        
+
     //registering add_data_stream
     register_method("to_shmdata",
 		    (void *)&to_shmdata_wrapped, 
@@ -120,6 +134,19 @@ namespace switcher
 			    Method::make_arg_description ((char *)"speed",
 							  (char *)"1.0 is normal speed, 0.5 is half the speed and 2.0 is double speed",
 							  NULL));
+
+
+    //signaling end of stream
+    //FIXME do that
+    // make_custom_signal ("on-end-of-stream", 
+    // 			G_TYPE_NONE,
+    // 			0,
+    // 			NULL);
+    
+    // set_signal_description ("on-end-of-stream",
+    //  			    "the streamed finished",
+    //  			    Signal::make_arg_description("none"));
+    
     return true;
   }
   
@@ -397,7 +424,7 @@ namespace switcher
      media_counters_.replace (std::string (padname_splitted[0]), count);
 
      gchar media_name[256];
-     g_sprintf (media_name,"%s_%d",padname_splitted[0],count);
+     g_sprintf (media_name,"%s-%d",padname_splitted[0],count);
      g_debug ("uridecodebin: new media %s %d\n",media_name, count );
      g_strfreev(padname_splitted);
 
@@ -595,6 +622,7 @@ namespace switcher
     if(!runtime)
       return FALSE;
     runtime->play ();
+    context->custom_props_->notify_property_changed (context->playing_prop_);
     return TRUE;
   }
   
@@ -610,6 +638,7 @@ namespace switcher
     if(!runtime)
       return FALSE;
     runtime->pause ();
+    context->custom_props_->notify_property_changed (context->playing_prop_);
     return TRUE;
   }
 
@@ -655,6 +684,13 @@ namespace switcher
   {
     Uridecodebin *context = static_cast<Uridecodebin *> (user_data);
     return context->loop_;
+  }
+
+  gboolean 
+  Uridecodebin::get_playing (void *user_data)
+  {
+    Uridecodebin *context = static_cast<Uridecodebin *> (user_data);
+    return context->playing_;
   }
 
 }
