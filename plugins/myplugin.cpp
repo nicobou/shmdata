@@ -39,7 +39,6 @@ namespace switcher
     
     myprop_ = false;
     
-    g_print ("coucou1");
     myprop_prop_ = 
       custom_props_->make_boolean_property ("myprop", 
 					    "myprop is a boolean property",
@@ -49,13 +48,10 @@ namespace switcher
      					    MyPlugin::get_myprop,
 					    this);
 
-    g_print ("coucou2");
     register_property_by_pspec (custom_props_->get_gobject (), 
      				myprop_prop_, 
      				"myprop",
 				"My Property");
-    g_print ("coucou3");
-
 
     srand(time(0));
     set_name (g_strdup_printf ("myplugin%d",rand() % 1024));
