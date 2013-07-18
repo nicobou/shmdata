@@ -24,6 +24,7 @@
 #include <gst/gst.h>  
 #include <memory>  
 #include <vector>  
+#include <tuple>
 #include <string>  
 #include "json-builder.h" 
 
@@ -35,7 +36,8 @@ namespace switcher
   public: 
     typedef std::shared_ptr<Signal> ptr; 
     typedef std::vector<GType> args_types;
-    typedef std::vector<std::pair<std::string,std::string> > args_doc;
+    //long name, name, description
+    typedef std::vector<std::tuple<std::string,std::string,std::string> > args_doc;
     typedef void (*OnEmittedCallback) (std::vector<std::string> params, gpointer user_data);//FIXME params should be const
     
     Signal (); 
@@ -45,7 +47,8 @@ namespace switcher
 			      std::string gobject_signal_name);
     bool set_gobject_sigid (GObject *object, 
 			    guint gobject_signal_id);
-    void set_description (std::string signal_name,
+    void set_description (std::string long_name,
+			  std::string signal_name,
 			  std::string short_description,
 			  args_doc arg_description);
     std::string get_description (); 

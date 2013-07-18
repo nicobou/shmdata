@@ -147,7 +147,8 @@ namespace switcher
 			     guint n_params, //number of params
 			     GType *param_types);
 
-    bool set_signal_description (const std::string signal_name,
+    bool set_signal_description (const std::string long_name,
+				 const std::string signal_name,
 				 const std::string short_description,
 				 const Signal::args_doc arg_description);
 

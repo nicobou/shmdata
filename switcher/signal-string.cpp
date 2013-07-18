@@ -96,11 +96,11 @@ namespace switcher
   Signal::inspect_gobject_signal ()
   {
     /* Signals/Actions Block */
-    guint *signals;
-    guint nsignals;
-    gint i = 0, j, k;
+    //guint *signals;
+    //guint nsignals;
+    guint j;
     GSignalQuery *query = NULL;
-    GType type;
+    //GType type;
     
     query = g_new0 (GSignalQuery, 1);
     g_signal_query (id_, query);
@@ -119,29 +119,32 @@ namespace switcher
   }
   
  void
-  Signal::set_description (std::string signal_name,
-			   std::string short_description,
-			   std::vector< std::pair<std::string,std::string> > arg_description)
+ Signal::set_description (std::string long_name,
+			  std::string signal_name,
+			  std::string short_description,
+			  args_doc arg_description)
   {
     json_description_->reset ();
     json_description_->begin_object ();
+    json_description_->add_string_member ("long name", long_name.c_str ());
     json_description_->add_string_member ("name", signal_name.c_str ());
     json_description_->add_string_member ("description", short_description.c_str ());
     if (is_action_)
       json_description_->add_string_member ("type", "action");
     else
       json_description_->add_string_member ("type", "signal");
-    json_description_->add_string_member ("return type",g_type_name (return_type_));
+    json_description_->add_string_member ("return type", g_type_name (return_type_));
     json_description_->set_member_name ("arguments");
     json_description_->begin_array ();
-    std::vector<std::pair<std::string,std::string> >::iterator it;
+    args_doc::iterator it;
     int j=0;
     if (!arg_description.empty ())
       for (it = arg_description.begin() ; it != arg_description.end(); it++ )
 	{
 	  json_description_->begin_object ();
-	  json_description_->add_string_member ("name",it->first.c_str ());
-	  json_description_->add_string_member ("description",it->second.c_str ());
+	  json_description_->add_string_member ("long name", std::get<0>(*it).c_str ());
+	  json_description_->add_string_member ("name",std::get<1>(*it).c_str ());
+	  json_description_->add_string_member ("description",std::get<2>(*it).c_str ());
 	  json_description_->add_string_member ("type",g_type_name (arg_types_[j])); 
 	  json_description_->end_object ();
 	}
@@ -157,36 +160,46 @@ namespace switcher
      va_list vl;
      va_start(vl, first_arg_type);
      res.push_back (first_arg_type);
-     while (arg_type = va_arg( vl, GType))
+     while ( (arg_type = va_arg( vl, GType)) )
        res.push_back (arg_type);
      va_end(vl);
      return res;
    }
 
-  std::vector<std::pair<std::string,std::string> > 
-  Signal::make_arg_description (const gchar *first_arg_name, ...)
+  Signal::args_doc
+  Signal::make_arg_description (const gchar *first_arg_long_name, ...)
   {
-    std::vector<std::pair<std::string,std::string> > res;
-    std::pair<std::string,std::string> arg_desc_pair;
+    args_doc res;
+    //std::tuple<std::string,std::string,std::string> arg_desc_tuple;
     va_list vl;
+    char *arg_long_name;
     char *arg_name;
     char *arg_desc;
-    va_start(vl, first_arg_name);
-    if (first_arg_name != "none" && (arg_desc = va_arg( vl, char *)))
+    va_start(vl, first_arg_long_name);
+    if (g_strcmp0 (first_arg_long_name, "none") != 0 
+	&& (arg_name = va_arg(vl, char *)) 
+	&& (arg_desc = va_arg(vl, char *)))
       {
-	std::pair<std::string,std::string> arg_pair;
-	arg_desc_pair.first = std::string (first_arg_name);
-	arg_desc_pair.second = std::string (arg_desc);
-	res.push_back (arg_desc_pair);
+	// std::pair<std::string,std::string> arg_pair;
+	// arg_desc_tuple.first = std::string (first_arg_name);
+	// arg_desc_tuple.second = std::string (arg_desc);
+	//res.push_back (arg_desc_pair);
+	res.push_back (std::make_tuple (first_arg_long_name, 
+					arg_name,
+					arg_desc));
       }
-    while ( (arg_name = va_arg( vl, char *)) && (arg_desc = va_arg( vl, char *)))
+    while ((arg_long_name = va_arg( vl, char *))
+	   && (arg_name = va_arg( vl, char *)) 
+	   && (arg_desc = va_arg( vl, char *)))
       {
-	std::pair<std::string,std::string> arg_pair;
-	arg_desc_pair.first = std::string (arg_name);
-	arg_desc_pair.second = std::string (arg_desc);
-	res.push_back (arg_desc_pair);
+	res.push_back (std::make_tuple (arg_long_name, 
+					arg_name,
+					arg_desc));
+	// std::pair<std::string,std::string> arg_pair;
+	// arg_desc_pair.first = std::string (arg_name);
+	// arg_desc_pair.second = std::string (arg_desc);
+	// res.push_back (arg_desc_pair);
       }
-    
     va_end(vl);
     return res;
   }

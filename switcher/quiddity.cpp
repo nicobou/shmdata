@@ -161,9 +161,10 @@ namespace switcher
 
 
   bool 
-  Quiddity::set_signal_description (const std::string signal_name,
+  Quiddity::set_signal_description (const std::string long_name,
+				    const std::string signal_name,
 				    const std::string short_description,
-				    const std::vector<std::pair<std::string,std::string> > arg_description)
+				    const Signal::args_doc arg_description)
   {
 
     if (signals_.find(signal_name) == signals_.end())
@@ -171,7 +172,7 @@ namespace switcher
 	g_warning ("cannot set description of a not existing signal");
 	return false;
       }
-    signals_[signal_name]->set_description (signal_name, short_description, arg_description);
+    signals_[signal_name]->set_description (long_name, signal_name, short_description, arg_description);
 
     // signal_emit ("on-new-signal-registered", 
     // 		 get_nick_name ().c_str (), 
