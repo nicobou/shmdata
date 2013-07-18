@@ -63,7 +63,7 @@ namespace switcher
 
     make_bin();
 
-    //registering set_runtime method
+    //registering set_runtime method FIXME use new method registering method
     std::vector<GType> set_runtime_arg_types;
     set_runtime_arg_types.push_back (G_TYPE_STRING);
     register_method("set_runtime",(void *)&Segment::set_runtime_wrapped, set_runtime_arg_types,(gpointer)this);
@@ -191,7 +191,7 @@ namespace switcher
 	if(runtime)
 	  context->set_runtime(runtime);
 	else
-	  g_error ("Segment::set_runtime_wrapped Error: %s is not a runtime",runtime_name);
+	  g_warning ("Segment::set_runtime_wrapped Error: %s is not a runtime",runtime_name);
       }
     //g_debug ("%s is attached to runtime %s",context->get_name().c_str(),runtime->get_name().c_str());
   }
