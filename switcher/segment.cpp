@@ -54,10 +54,12 @@ namespace switcher
 
     register_property_by_pspec (gobject_->get_gobject (), 
 				json_writers_description_, 
-				"shmdata-writers");
+				"shmdata-writers",
+				"Shmdata Writers");
     register_property_by_pspec (gobject_->get_gobject (), 
 				json_readers_description_, 
-				"shmdata-readers");
+				"shmdata-readers",
+				"Shmdata Readers");
 
     make_bin();
 

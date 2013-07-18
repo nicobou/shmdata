@@ -67,7 +67,8 @@ namespace switcher
 					    this);
     register_property_by_pspec (custom_props_->get_gobject (), 
 				loop_prop_, 
-				"loop");
+				"loop",
+				"Looping");
 
     playing_ = false;
     playing_prop_ = 
@@ -80,7 +81,8 @@ namespace switcher
 					    this);
     register_property_by_pspec (custom_props_->get_gobject (), 
 				playing_prop_, 
-				"playing");
+				"playing",
+				"Playing");
         
 
     //registering add_data_stream

@@ -30,13 +30,17 @@ namespace switcher
   Property::Property ()
   {
     json_description_.reset (new JSONBuilder());
+    long_name_ = "undefined_long_name";
   }
 
   void
-  Property::set_gobject_pspec (GObject *object, GParamSpec *pspec)
+  Property::set_gobject_pspec (GObject *object, 
+			       GParamSpec *pspec,
+			       std::string long_name)
   {
     property_ = pspec;
     object_ = object;
+    long_name_ = long_name;
     make_description ();
   }
 
@@ -145,8 +149,12 @@ namespace switcher
     json_description_->reset ();
     json_description_->begin_object ();
 
+    //long name 
+    json_description_->add_string_member ("long name", long_name_.c_str ());
+
+
     //nickname 
-    json_description_->add_string_member ("nickname", g_param_spec_get_nick (property_));
+    //json_description_->add_string_member ("nickname", g_param_spec_get_nick (property_));
 
     // short description
     json_description_->add_string_member ("short description", g_param_spec_get_blurb (property_));

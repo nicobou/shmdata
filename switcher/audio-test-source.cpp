@@ -47,10 +47,10 @@ namespace switcher
     set_name (gst_element_get_name (audiotestsrc_));
     
     //registering 
-    register_property (G_OBJECT (audiotestsrc_),"samplesperbuffer","samplesperbuffer");
-    register_property (G_OBJECT (audiotestsrc_),"wave","wave");
-    register_property (G_OBJECT (audiotestsrc_),"freq","freq");
-    register_property (G_OBJECT (audiotestsrc_),"volume","volume");
+    register_property (G_OBJECT (audiotestsrc_),"volume","volume", "Volume");
+    register_property (G_OBJECT (audiotestsrc_),"freq","freq", "Frequency");
+    register_property (G_OBJECT (audiotestsrc_),"samplesperbuffer","samplesperbuffer", "Samples Per Buffer");
+    register_property (G_OBJECT (audiotestsrc_),"wave","wave", "Signal Form");
 
     set_raw_audio_element (audiotestsrc_);
     return true;

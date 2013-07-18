@@ -185,11 +185,12 @@ namespace switcher
   bool 
   Quiddity::register_property_by_pspec (GObject *object, 
 					GParamSpec *pspec, 
-					std::string name_to_give)
+					std::string name_to_give,
+					std::string long_name)
   {
 
     Property::ptr prop (new Property ());
-    prop->set_gobject_pspec (object, pspec);
+    prop->set_gobject_pspec (object, pspec, long_name);
 
     if (properties_.find(name_to_give) == properties_.end())
       {
@@ -207,7 +208,8 @@ namespace switcher
   bool
   Quiddity::register_property (GObject *object, 
 			       std::string gobject_property_name, 
-			       std::string name_to_give)
+			       std::string name_to_give,
+			       std::string long_name)
   {
     GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), gobject_property_name.c_str());
     if (pspec == NULL)
@@ -216,7 +218,7 @@ namespace switcher
 	return false;
       }
     
-    return register_property_by_pspec (object, pspec, name_to_give);
+    return register_property_by_pspec (object, pspec, name_to_give, long_name);
   }
 
   //return -1 if method not found

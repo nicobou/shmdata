@@ -68,7 +68,7 @@ main (int argc,
       switcher::QuiddityManager::make_manager("rtptest");  
     
     manager->create ("SOAPcontrolServer", "soapserver");
-    manager->invoke_va ("soapserver", "set_port", "8084", NULL);
+    manager->invoke_va ("soapserver", "set_port", "38084", NULL);
     
     //testing uncompressed data transmission
     manager->create ("runtime", "av_runtime");
@@ -114,7 +114,7 @@ main (int argc,
     manager->invoke_va ("uri", "set_runtime", "receiver_runtime", NULL);
     manager->invoke_va ("uri",
        			"to_shmdata",
-			"http://localhost:8084/sdp?rtpsession=rtp&destination=local",
+			"http://localhost:38084/sdp?rtpsession=rtp&destination=local",
 			NULL);
     
     manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);

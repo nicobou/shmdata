@@ -57,9 +57,9 @@ namespace switcher
      			   NULL);
     
     //registering selected properties
-    register_property (G_OBJECT (videoflip_),"method","flip-method");
-    register_property (G_OBJECT (textoverlay_),"text","text");
-    register_property (G_OBJECT (textoverlay_),"auto-resize","auto-resize-text");
+    register_property (G_OBJECT (videoflip_),"method","flip-method", "Orientation");
+    register_property (G_OBJECT (textoverlay_),"text","text", "Overlaid Text");
+    register_property (G_OBJECT (textoverlay_),"auto-resize","auto-resize-text", "Auto-resize Text");
     // register_property (G_OBJECT (textoverlay_),"shaded-background","textoverlay");
     // register_property (G_OBJECT (textoverlay_),"halignment","textoverlay");
     // register_property (G_OBJECT (textoverlay_),"valignment","textoverlay");

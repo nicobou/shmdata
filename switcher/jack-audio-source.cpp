@@ -45,12 +45,6 @@ namespace switcher
     //set the name before registering properties
     set_name (gst_element_get_name (jackaudiosrc_));
     
-    //registering 
-    // register_property (G_OBJECT (jackaudiosrc_),"samplesperbuffer","samplesperbuffer");
-    // register_property (G_OBJECT (jackaudiosrc_),"wave","wave");
-    // register_property (G_OBJECT (jackaudiosrc_),"freq","freq");
-    // register_property (G_OBJECT (jackaudiosrc_),"volume","volume");
-
     set_raw_audio_element (jackaudiosrc_);
     return true;
   }

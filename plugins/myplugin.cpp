@@ -52,7 +52,8 @@ namespace switcher
     g_print ("coucou2");
     register_property_by_pspec (custom_props_->get_gobject (), 
      				myprop_prop_, 
-     				"myprop");
+     				"myprop",
+				"My Property");
     g_print ("coucou3");
 
 

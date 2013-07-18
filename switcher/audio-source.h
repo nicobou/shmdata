@@ -38,7 +38,7 @@ namespace switcher
     GstElement *audio_tee_;
     //GstElement *audio_queue_;
     GstElement *audioconvert_;   
-    GstElement *pitch_;
+    //GstElement *pitch_;
     GstElement *resample_;
 
   protected:

@@ -38,9 +38,12 @@ namespace switcher
     Property ();
 
     //this is when using an existing property
-    void set_gobject_pspec (GObject *object, GParamSpec *pspec);
+    void set_gobject_pspec (GObject *object, GParamSpec *pspec, std::string long_name);
+
+    void set_long_name (std::string long_name);
     void set (std::string value);
     std::string get ();
+
     bool subscribe (Callback cb, void *user_data);
     bool unsubscribe (Callback cb, void *user_data);
     static std::string parse_callback_args (GObject * gobject, GParamSpec * pspec);
@@ -51,6 +54,7 @@ namespace switcher
     void print ();
 
   private:
+    std::string long_name_;
     GParamSpec *property_;
     GObject *object_;
     JSONBuilder::ptr json_description_;

@@ -59,7 +59,7 @@ namespace switcher
     // }
 
     //registering "pattern"
-    register_property (G_OBJECT (videotestsrc_),"pattern","pattern");
+    register_property (G_OBJECT (videotestsrc_),"pattern","pattern", "Video Pattern");
     
     set_raw_video_element (videotestsrc_);
     return true;

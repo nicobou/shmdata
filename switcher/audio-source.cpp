@@ -28,33 +28,33 @@ namespace switcher
   { 
     if (!GstUtils::make_element ("tee", &audio_tee_)
 	|| !GstUtils::make_element ("audioconvert", &audioconvert_)
-	|| !GstUtils::make_element ("pitch", &pitch_)
+	// || !GstUtils::make_element ("pitch", &pitch_)
 	|| !GstUtils::make_element ("audioresample", &resample_))
       g_critical ("a mandatory gst element is missing for audio source");
 
     cleaner_.reset (new GstElementCleaner ());
     cleaner_->add_element_to_cleaner (audio_tee_);
     cleaner_->add_element_to_cleaner (audioconvert_);
-    cleaner_->add_element_to_cleaner (pitch_);
+    // cleaner_->add_element_to_cleaner (pitch_);
     cleaner_->add_element_to_cleaner (resample_);
     
     
     gst_bin_add_many (GST_BIN (bin_),
 		      audio_tee_,
 		      audioconvert_,
-		      pitch_,
+		      //pitch_,
 		      resample_,
 		      NULL);
     gst_element_link_many (audio_tee_,
 			   audioconvert_,
-			   pitch_,
+			   //pitch_,
 			   resample_,
 			   NULL);
     
-    register_property (G_OBJECT (pitch_),"output-rate","pitch-ouput-rate");
-    register_property (G_OBJECT (pitch_),"rate","pitch-rate");
-    register_property (G_OBJECT (pitch_),"tempo","pitch-tempo");
-    register_property (G_OBJECT (pitch_),"pitch","pitch");
+    // register_property (G_OBJECT (pitch_),"output-rate","pitch-ouput-rate");
+    // register_property (G_OBJECT (pitch_),"rate","pitch-rate");
+    // register_property (G_OBJECT (pitch_),"tempo","pitch-tempo");
+    // register_property (G_OBJECT (pitch_),"pitch","pitch");
   }
 
   void 

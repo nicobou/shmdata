@@ -123,10 +123,12 @@ namespace switcher
     //property
     bool register_property (GObject *object, 
 			    std::string gobject_property_name, 
-			    std::string name_to_give);
+			    std::string name_to_give,
+			    std::string long_name);
     bool register_property_by_pspec (GObject *object, 
 				     GParamSpec *pspec, 
-				     std::string name_to_give);
+				     std::string name_to_give,
+				     std::string long_name);
     //method
     bool register_method (std::string method_name,
 			  void *method, 

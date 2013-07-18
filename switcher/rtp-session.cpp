@@ -200,7 +200,8 @@ namespace switcher
 
     register_property_by_pspec (custom_props_->get_gobject (), 
 				destination_description_json_, 
-				"destinations-json");
+				"destinations-json",
+				"Destinations");
     return true;
   }
   
