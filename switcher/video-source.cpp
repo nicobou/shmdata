@@ -24,6 +24,24 @@ namespace switcher
 {
   VideoSource::VideoSource () 
   {
+    //this is necessary in order to get info by class but actual elements are built 
+    //latter when actually required  
+    //make_elements ();
+    video_tee_ = NULL;
+    colorspace_in_= NULL;
+    textoverlay_ = NULL;
+    videoflip_ = NULL;
+    colorspace_out_ = NULL;
+  }
+
+  VideoSource::~VideoSource () 
+  {
+    clean_elements ();
+  }
+
+  void 
+  VideoSource::make_elements ()
+  {
     if (!GstUtils::make_element ("tee",&video_tee_))
       g_warning ("VideoSource: tee element is mandatory\n");
     if (!GstUtils::make_element ("ffmpegcolorspace",&colorspace_in_))
@@ -35,11 +53,11 @@ namespace switcher
     GstUtils::make_element ("ffmpegcolorspace",&colorspace_out_);
 
     cleaner_.reset (new GstElementCleaner ());
-    cleaner_->add_element_to_cleaner (video_tee_);
-    cleaner_->add_element_to_cleaner (colorspace_in_);
-    cleaner_->add_element_to_cleaner (textoverlay_);
-    cleaner_->add_element_to_cleaner (videoflip_);
-    cleaner_->add_element_to_cleaner (colorspace_out_);
+    // cleaner_->add_element_to_cleaner (video_tee_);
+    // cleaner_->add_element_to_cleaner (colorspace_in_);
+    // cleaner_->add_element_to_cleaner (textoverlay_);
+    // cleaner_->add_element_to_cleaner (videoflip_);
+    // cleaner_->add_element_to_cleaner (colorspace_out_);
 
     gst_bin_add_many (GST_BIN (bin_),
      		      video_tee_,
@@ -80,9 +98,22 @@ namespace switcher
     // register_property (G_OBJECT (textoverlay_),"outline-color","textoverlay");
   }
 
+  void 
+  VideoSource::clean_elements ()
+  {
+    GstUtils::clean_element(video_tee_);
+    GstUtils::clean_element(colorspace_in_);
+    GstUtils::clean_element(textoverlay_);
+    GstUtils::clean_element(videoflip_);
+    GstUtils::clean_element(colorspace_out_);
+  }
+
   void
   VideoSource::set_raw_video_element (GstElement *element)
   {
+    reset_bin ();
+    clean_elements ();
+    make_elements ();
 
     rawvideo_ = element;
     
@@ -117,6 +148,14 @@ namespace switcher
     register_shmdata_writer (video_connector);
 
     g_debug ("VideoSource::set_raw_video_element (done)");
+
+    GstUtils::wait_state_changed (bin_);
+    GstUtils::sync_state_with_parent (rawvideo_);
+    GstUtils::sync_state_with_parent (video_tee_);
+    GstUtils::sync_state_with_parent (colorspace_in_);
+    GstUtils::sync_state_with_parent (textoverlay_);
+    GstUtils::sync_state_with_parent (videoflip_);
+    GstUtils::sync_state_with_parent (colorspace_out_);
 
     //gst_object_unref (videocaps);
   }

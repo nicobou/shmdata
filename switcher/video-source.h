@@ -32,8 +32,8 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<VideoSource> ptr;
-    VideoSource();
-
+    VideoSource ();
+    ~VideoSource ();
   private:
     GstElement *rawvideo_;
     GstElement *video_tee_;
@@ -46,6 +46,8 @@ namespace switcher
     //called in the derived class constructor
     GstElementCleaner::ptr cleaner_;
     void set_raw_video_element (GstElement *elt);
+    void clean_elements ();
+    void make_elements ();
     
   };
 

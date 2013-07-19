@@ -360,8 +360,10 @@ namespace switcher
   {
     // clean_bin ();
     // make_bin ();
-    if ((bool)runtime_)
-      set_runtime (runtime_);
-  }
+    if (!(bool)runtime_)
+      return false;
+    set_runtime (runtime_);
+    return true;
+ }
 
 }

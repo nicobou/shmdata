@@ -25,6 +25,7 @@
 #include "switcher/custom-property-helper.h"
 #include <memory>
 
+
 namespace switcher
 {
   
@@ -34,10 +35,14 @@ namespace switcher
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(V4L2Src);
   
     bool capture (gboolean capture);
-    
+    static bool is_v4l_device (const char *file);
+   
+    static bool inspect_file_device (const char *file_path);
+
   private:
     GstElement *v4l2src_;
     static gboolean capture_wrapped (gboolean capture, gpointer user_data);
+    static std::string pixel_format_to_string (unsigned pf_id);
   };
   
   

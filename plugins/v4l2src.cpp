@@ -22,6 +22,12 @@
 #include <cstdlib>  // For srand() and rand()
 #include <ctime>    // For time()
 
+#include <linux/videodev2.h>
+// #include <libv4l2.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <string.h>
+
 namespace switcher
 {
 
@@ -32,6 +38,80 @@ namespace switcher
 				       "GPL",
 				       "v4l2src",				
 				       "Nicolas Bouillot");
+
+  std::string
+  V4L2Src::pixel_format_to_string (unsigned pf_id)
+  {
+    std::string pixfmt;
+    pixfmt += (char)(pf_id & 0xff);
+    pixfmt += (char)((pf_id >> 8) & 0xff);
+    pixfmt += (char)((pf_id >> 16) & 0xff);
+    pixfmt += (char)((pf_id >> 24) & 0xff);
+    return pixfmt;
+  }
+
+  bool
+  V4L2Src::inspect_file_device (const char *file_path)
+  {
+    g_print ("\n----------- inspecting %s\n", file_path);
+    struct v4l2_capability vcap;
+    int fd = open(file_path, O_RDWR);
+    ioctl(fd, VIDIOC_QUERYCAP, &vcap);
+    g_print ("-------------------------- card %s bus %s driver %s\n", 
+	     (char *)vcap.card,
+	     (char *)vcap.bus_info,
+	     (char *)vcap.driver);
+
+    //pixel format
+    v4l2_fmtdesc fmt;
+    memset(&fmt, 0, sizeof(fmt));
+    fmt.index = 0;
+    fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    while (ioctl(fd, VIDIOC_ENUM_FMT, &fmt) >= 0)
+      {
+	g_print ("******** pixel format  %s - %s\n", 
+		 pixel_format_to_string(fmt.pixelformat).c_str (), 
+		 (const char *)fmt.description);
+	fmt.index ++;
+      }
+
+    //void void GeneralTab::updateFrameSize()
+    v4l2_frmsizeenum frmsize;
+    memset(&frmsize, 0, sizeof(frmsize));
+    frmsize.pixel_format = fmt.pixelformat;
+    frmsize.index = 0;
+
+    while (ioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frmsize) >= 0 && frmsize.type == V4L2_FRMSIZE_TYPE_DISCRETE)
+      {
+	g_print ("++++++++++++++++ %d, %d \n", 
+		 frmsize.discrete.width,
+		 frmsize.discrete.height);
+	frmsize.index++;
+      }
+    
+    if (frmsize.type != V4L2_FRMSIZE_TYPE_DISCRETE)
+      {
+	g_print ("width %u %u (%u) --- height %u %u (%u)\n",
+		 frmsize.stepwise.min_width,
+		 frmsize.stepwise.max_width,
+		 frmsize.stepwise.step_width,
+		 frmsize.stepwise.min_height,
+		 frmsize.stepwise.max_height,
+		 frmsize.stepwise.step_height);
+      }
+    
+    v4l2_standard std;
+    memset(&std, 0, sizeof(std));
+    std.index = 0;
+
+    while (ioctl(fd, VIDIOC_ENUMSTD, &std) >= 0)
+      {
+	g_print ("TV standard %s\n", (char *)std.name);
+	std.index++;
+      }
+    close(fd);
+    
+  }
 
   bool
   V4L2Src::init ()
@@ -61,25 +141,26 @@ namespace switcher
 			    Method::make_arg_description ("capturing", 
 							  "true for starting the capture, false for stoping",
 							  NULL));
-    
-    //capture (true);
+
+    inspect_file_device ("/dev/video0");
+    inspect_file_device ("/dev/video1");
+    inspect_file_device ("/dev/video2");
+    inspect_file_device ("/dev/video3");
+    inspect_file_device ("/dev/video63");
     
     return true;
   }
 
+  
   bool 
   V4L2Src::capture (gboolean capture)
   {
-    g_print ("coucou1\n");
     if (!capture)
       return false;
     g_print ("coucou2\n");
     
     set_raw_video_element (v4l2src_);
-
-    GstUtils::sync_state_with_parent (bin_);
-    GstUtils::wait_state_changed (bin_);
-    g_print ("coucou3\n");
+   
     return true;
   }
 
