@@ -33,6 +33,8 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(V4L2Src);
+
+    ~V4L2Src ();
   
     bool capture (gboolean capture);
     static bool is_v4l_device (const char *file);
@@ -41,8 +43,13 @@ namespace switcher
 
   private:
     GstElement *v4l2src_;
-    static gboolean capture_wrapped (gboolean capture, gpointer user_data);
+    static gboolean capture_wrapped (gboolean capture, 
+				     gpointer user_data);
     static std::string pixel_format_to_string (unsigned pf_id);
+    static bool inspect_frame_rate (const char *file_path,
+			     unsigned pixel_format,
+			     unsigned width,
+			     unsigned height);
   };
   
   

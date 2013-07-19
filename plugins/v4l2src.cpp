@@ -23,7 +23,6 @@
 #include <ctime>    // For time()
 
 #include <linux/videodev2.h>
-// #include <libv4l2.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <string.h>
@@ -39,79 +38,6 @@ namespace switcher
 				       "v4l2src",				
 				       "Nicolas Bouillot");
 
-  std::string
-  V4L2Src::pixel_format_to_string (unsigned pf_id)
-  {
-    std::string pixfmt;
-    pixfmt += (char)(pf_id & 0xff);
-    pixfmt += (char)((pf_id >> 8) & 0xff);
-    pixfmt += (char)((pf_id >> 16) & 0xff);
-    pixfmt += (char)((pf_id >> 24) & 0xff);
-    return pixfmt;
-  }
-
-  bool
-  V4L2Src::inspect_file_device (const char *file_path)
-  {
-    g_print ("\n----------- inspecting %s\n", file_path);
-    struct v4l2_capability vcap;
-    int fd = open(file_path, O_RDWR);
-    ioctl(fd, VIDIOC_QUERYCAP, &vcap);
-    g_print ("-------------------------- card %s bus %s driver %s\n", 
-	     (char *)vcap.card,
-	     (char *)vcap.bus_info,
-	     (char *)vcap.driver);
-
-    //pixel format
-    v4l2_fmtdesc fmt;
-    memset(&fmt, 0, sizeof(fmt));
-    fmt.index = 0;
-    fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    while (ioctl(fd, VIDIOC_ENUM_FMT, &fmt) >= 0)
-      {
-	g_print ("******** pixel format  %s - %s\n", 
-		 pixel_format_to_string(fmt.pixelformat).c_str (), 
-		 (const char *)fmt.description);
-	fmt.index ++;
-      }
-
-    //void void GeneralTab::updateFrameSize()
-    v4l2_frmsizeenum frmsize;
-    memset(&frmsize, 0, sizeof(frmsize));
-    frmsize.pixel_format = fmt.pixelformat;
-    frmsize.index = 0;
-
-    while (ioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frmsize) >= 0 && frmsize.type == V4L2_FRMSIZE_TYPE_DISCRETE)
-      {
-	g_print ("++++++++++++++++ %d, %d \n", 
-		 frmsize.discrete.width,
-		 frmsize.discrete.height);
-	frmsize.index++;
-      }
-    
-    if (frmsize.type != V4L2_FRMSIZE_TYPE_DISCRETE)
-      {
-	g_print ("width %u %u (%u) --- height %u %u (%u)\n",
-		 frmsize.stepwise.min_width,
-		 frmsize.stepwise.max_width,
-		 frmsize.stepwise.step_width,
-		 frmsize.stepwise.min_height,
-		 frmsize.stepwise.max_height,
-		 frmsize.stepwise.step_height);
-      }
-    
-    v4l2_standard std;
-    memset(&std, 0, sizeof(std));
-    std.index = 0;
-
-    while (ioctl(fd, VIDIOC_ENUMSTD, &std) >= 0)
-      {
-	g_print ("TV standard %s\n", (char *)std.name);
-	std.index++;
-      }
-    close(fd);
-    
-  }
 
   bool
   V4L2Src::init ()
@@ -124,12 +50,12 @@ namespace switcher
     set_name (gst_element_get_name (v4l2src_));
 
     //registering "pattern"
-    register_property (G_OBJECT (v4l2src_),"device","device", "Path To The Device");
+    //register_property (G_OBJECT (v4l2src_),"device","device", "Path To The Device");
     register_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
     register_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
     register_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
     register_property (G_OBJECT (v4l2src_),"hue","hue", "Hue");
-    register_property (G_OBJECT (v4l2src_),"norm","norm", "Video Standard");
+    //register_property (G_OBJECT (v4l2src_),"norm","norm", "Video Standard");
 
     //registering capture
     register_method("capture",
@@ -150,6 +76,147 @@ namespace switcher
     
     return true;
   }
+
+  V4L2Src::~V4L2Src ()
+  {
+  }
+
+  std::string
+  V4L2Src::pixel_format_to_string (unsigned pf_id)
+  {
+    std::string pixfmt;
+    pixfmt += (char)(pf_id & 0xff);
+    pixfmt += (char)((pf_id >> 8) & 0xff);
+    pixfmt += (char)((pf_id >> 16) & 0xff);
+    pixfmt += (char)((pf_id >> 24) & 0xff);
+    return pixfmt;
+  }
+
+  bool
+  V4L2Src::inspect_file_device (const char *file_path)
+  {
+    g_print ("\n----------- inspecting %s\n", file_path);
+
+     int fd = open(file_path, O_RDWR);
+
+      struct v4l2_capability vcap;
+      ioctl(fd, VIDIOC_QUERYCAP, &vcap);
+     g_print ("-------------------------- card %s bus %s driver %s\n", 
+     	     (char *)vcap.card,
+     	     (char *)vcap.bus_info,
+     	     (char *)vcap.driver);
+
+     //pixel format
+     v4l2_fmtdesc fmt;
+     unsigned default_pixel_format = 0;
+     memset(&fmt, 0, sizeof(fmt));
+     fmt.index = 0;
+     fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+     while (ioctl(fd, VIDIOC_ENUM_FMT, &fmt) >= 0)
+       {
+     	if (default_pixel_format == 0 && fmt.pixelformat != 0)
+     	  default_pixel_format = fmt.pixelformat;  
+     	g_print ("******** pixel format  %s - %s\n", 
+     		 pixel_format_to_string(fmt.pixelformat).c_str (), 
+     		 (const char *)fmt.description);
+     	fmt.index ++;
+       }
+
+     if (default_pixel_format == 0)
+       {
+	 g_print ("no default pixel format found for %s, returning\n",
+		  file_path);
+	 return false;
+       }
+     v4l2_frmsizeenum frmsize;
+     memset(&frmsize, 0, sizeof(frmsize));
+     frmsize.pixel_format = default_pixel_format;
+     frmsize.index = 0;
+     unsigned default_width = 0;
+     unsigned default_height = 0;
+     while (ioctl(fd, VIDIOC_ENUM_FRAMESIZES, &frmsize) >= 0 && frmsize.type == V4L2_FRMSIZE_TYPE_DISCRETE)
+       {
+     	if (frmsize.index == 0)
+     	  {
+     	    default_width = frmsize.discrete.width;
+     	    default_height = frmsize.discrete.height;
+     	  }
+     	g_print ("++++++++++++++++ %d, %d \n", 
+     		 frmsize.discrete.width,
+     		 frmsize.discrete.height);
+     	frmsize.index++;
+       }
+    
+     if (frmsize.type != V4L2_FRMSIZE_TYPE_DISCRETE)
+       {
+     	g_print ("width %u %u (%u) --- height %u %u (%u)\n",
+     		 frmsize.stepwise.min_width,
+     		 frmsize.stepwise.max_width,
+     		 frmsize.stepwise.step_width,
+     		 frmsize.stepwise.min_height,
+     		 frmsize.stepwise.max_height,
+     		 frmsize.stepwise.step_height);
+     	default_width = 1024;//frmsize.stepwise.max_width ;
+     	default_height = 1024;//frmsize.stepwise.max_height;
+       }
+    
+     v4l2_standard std;
+     memset(&std, 0, sizeof(std));
+     std.index = 0;
+
+     while (ioctl(fd, VIDIOC_ENUMSTD, &std) >= 0)
+       {
+     	g_print ("TV standard %s\n", (char *)std.name);
+     	std.index++;
+       }
+
+     v4l2_frmivalenum frmival;
+     memset(&frmival, 0, sizeof(frmival));
+     frmival.pixel_format = default_pixel_format;
+     frmival.width = default_width;
+     frmival.height = default_height;
+     frmival.index = 0;
+     
+     g_print ("frame interval for default pixel format and default frame size:\n");
+     
+     while (ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frmival) >= 0 && frmival.type == V4L2_FRMIVAL_TYPE_DISCRETE)
+       {	
+	 if (frmival.type == V4L2_FRMIVAL_TYPE_DISCRETE)
+	   {
+	     g_print ("       %u/%u \n", 
+		      frmival.discrete.numerator,
+		      frmival.discrete.denominator);
+	   }
+	 else
+	   g_print ("not a discret format\n");
+	 frmival.index++; 
+       }
+     
+     if(frmival.type != V4L2_FRMIVAL_TYPE_DISCRETE)
+       {
+	 g_print ("frametime (s) for rate min %u/%u\nrate max %u/%u\n time step %u/%u\n",
+		  frmival.stepwise.min.numerator,
+		  frmival.stepwise.min.denominator,
+		  frmival.stepwise.max.numerator,
+		  frmival.stepwise.max.denominator,
+		  frmival.stepwise.step.numerator,
+		  frmival.stepwise.step.denominator);
+       }
+  
+     close(fd);
+     
+     return true;
+}
+
+  bool
+  V4L2Src::inspect_frame_rate (const char *file_path,
+			       unsigned pixel_format,
+			       unsigned width,
+			       unsigned height)
+  {
+    return false;
+  }
+
 
   
   bool 
