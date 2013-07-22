@@ -186,6 +186,7 @@ namespace switcher
     char *arg_name;
     char *arg_desc;
     va_start(vl, first_arg_name);
+
     if (first_arg_name != "none" && (arg_desc = va_arg( vl, char *)))
       {
 	std::pair<std::string,std::string> arg_pair;
@@ -193,6 +194,12 @@ namespace switcher
 	arg_desc_pair.second = std::string (arg_desc);
 	res.push_back (arg_desc_pair);
       }
+    else
+      {
+	va_end(vl);
+	return res;
+      }
+
     while ( (arg_name = va_arg( vl, char *)) && (arg_desc = va_arg( vl, char *)))
       {
 	std::pair<std::string,std::string> arg_pair;
@@ -200,7 +207,7 @@ namespace switcher
 	arg_desc_pair.second = std::string (arg_desc);
 	res.push_back (arg_desc_pair);
       }
-    
+
     va_end(vl);
     return res;
   }
