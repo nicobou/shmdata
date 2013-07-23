@@ -42,23 +42,35 @@ namespace switcher
   V4L2Src::init ()
   {
 
-    if (!GstUtils::make_element ("v4l2src",&v4l2src_))
+    if (!make_elements ())
       return false;
-    
+
     //set the name before registering properties
     set_name (gst_element_get_name (v4l2src_));
 
     capture_devices_description_ = NULL;
 
-
-    //registering "pattern"
+    //registering some properties
     register_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
     register_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
     register_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
     register_property (G_OBJECT (v4l2src_),"hue","hue", "Hue");
 
+
     register_method("capture",
 		    (void *)&capture_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING, 
+						       NULL),
+		    (gpointer)this);
+    set_method_description ("capture", 
+			    "start capturing", 
+			    Method::make_arg_description ("device_file_path",
+							  "Device File Path or NONE",
+ 							  NULL));
+
+
+    register_method("capture_full",
+		    (void *)&capture_full_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, 
 						       G_TYPE_STRING, 
 						       G_TYPE_STRING, 
@@ -67,10 +79,10 @@ namespace switcher
 						       G_TYPE_STRING, 
 						       NULL),
 		    (gpointer)this);
-    set_method_description ("capture", 
+    set_method_description ("capture_full", 
 			    "start capturing", 
 			    Method::make_arg_description ("device_file_path",
-							  "device file path (such as /dev/video0) or NONE",
+							  "Device File Path or NONE",
 							  "width",
 							  "Width od NONE",
 							  "height",
@@ -82,6 +94,7 @@ namespace switcher
 							  "tv_standard",
 							  "TV standard or NONE",
 							  NULL));
+
     
     
     //device inspector
@@ -104,8 +117,45 @@ namespace switcher
 
   V4L2Src::~V4L2Src ()
   {
-        if (capture_devices_description_ != NULL)
-	  g_free (capture_devices_description_);
+    if (capture_devices_description_ != NULL)
+      g_free (capture_devices_description_);
+    clean_elements ();
+    
+  }
+
+  bool
+  V4L2Src::make_elements ()
+  {
+    clean_elements ();
+
+    if (!GstUtils::make_element ("v4l2src",&v4l2src_))
+      return false;
+    if (!GstUtils::make_element ("capsfilter",&capsfilter_))
+      return false;
+    if (!GstUtils::make_element ("bin",&v4l2_bin_))
+      return false;
+    
+    gst_bin_add_many (GST_BIN (v4l2_bin_),
+		      v4l2src_,
+		      capsfilter_,
+		      NULL);
+
+    gst_element_link (v4l2src_, capsfilter_);
+
+    GstPad *src_pad = gst_element_get_static_pad (capsfilter_, "src");
+    GstPad *ghost_srcpad = gst_ghost_pad_new (NULL, src_pad);
+    gst_pad_set_active(ghost_srcpad,TRUE);
+    gst_element_add_pad (v4l2_bin_, ghost_srcpad); 
+    gst_object_unref (src_pad);
+    return true;
+  }
+
+  void
+  V4L2Src::clean_elements ()
+  {
+    GstUtils::clean_element (v4l2src_);
+    //GstUtils::clean_element (capsfilter_);//FIXME
+    GstUtils::clean_element (v4l2_bin_);
   }
 
   std::string
@@ -140,10 +190,10 @@ namespace switcher
      description.bus_info_ = (char *)vcap.bus_info;
      description.driver_ = (char *)vcap.driver;
      
-      g_print ("-------------------------- card %s bus %s driver %s\n", 
-      	      (char *)vcap.card,
-      	      (char *)vcap.bus_info,
-      	      (char *)vcap.driver);
+     // g_print ("-------------------------- card %s bus %s driver %s\n", 
+     //  	      (char *)vcap.card,
+     //  	      (char *)vcap.bus_info,
+     //  	      (char *)vcap.driver);
      
      //pixel format
      v4l2_fmtdesc fmt;
@@ -157,9 +207,9 @@ namespace switcher
      	  {
 	    if (default_pixel_format == 0) 
 	    default_pixel_format = fmt.pixelformat;  
-	     g_print ("******** pixel format  %s - %s\n", 
-	     	     pixel_format_to_string(fmt.pixelformat).c_str (), 
-	     	     (const char *)fmt.description);
+	     // g_print ("******** pixel format  %s - %s\n", 
+	     // 	     pixel_format_to_string(fmt.pixelformat).c_str (), 
+	     // 	     (const char *)fmt.description);
 	    description.pixel_formats_.push_back (std::make_pair (pixel_format_to_string(fmt.pixelformat),
 						      (const char *)fmt.description));
 	  }
@@ -362,62 +412,91 @@ namespace switcher
 			       unsigned width,
 			       unsigned height)
   {
-    g_debug ("TODO");
+    g_debug ("  V4L2Src::inspect_frame_rate: TODO");
     return false;
   }
 
 
   
   bool 
-  V4L2Src::capture (const char *device_file_path, 
-		    const char *width,
-		    const char *height,
-		    const char *framerate_numerator,
-		    const char *framerate_denominator,
-		    const char *tv_standard)
+  V4L2Src::capture_full (const char *device_file_path, 
+			 const char *width,
+			 const char *height,
+			 const char *framerate_numerator,
+			 const char *framerate_denominator,
+			 const char *tv_standard)
   {
+    make_elements ();
 
-    //FIXME do reset
     if (g_strcmp0 (device_file_path, "NONE") != 0)
       if (capture_devices_.find (device_file_path) != capture_devices_.end ())	
-	g_object_set (G_OBJECT (v4l2src_), "device", device_file_path, NULL);
+     	g_object_set (G_OBJECT (v4l2src_), "device", device_file_path, NULL);
       else
-	{
-	  g_warning ("V4L2Src: device %s is not a detected as a v4l2 device", device_file_path);
-	  return false;
-	}
+     	{
+     	  g_warning ("V4L2Src: device %s is not a detected as a v4l2 device, cannot use", device_file_path);
+     	  return false;
+     	}
     
     if (g_strcmp0 (tv_standard, "NONE") != 0)
       g_object_set (G_OBJECT (v4l2src_), "norm", tv_standard, NULL);
+    
+    std::string caps;
+    caps = "video/x-raw-yuv";
+    if ((g_strcmp0 (width, "NONE") != 0)
+     	&& (g_strcmp0 (height, "NONE") != 0))
+      caps = caps + ", width=(int)"+ width + ", height=(int)" + height;
+    
+    if ((g_strcmp0 (framerate_numerator, "NONE") != 0)
+     	&& (g_strcmp0 (framerate_denominator, "NONE") != 0))
+      caps = caps + ", framerate=(fraction)" + framerate_numerator + "/" + framerate_denominator;
+    
+    //g_print ("v4l2 -- forcing caps %s", caps.c_str ());
+    GstCaps *usercaps = gst_caps_from_string (caps.c_str ());
+    g_object_set (G_OBJECT (capsfilter_), 
+		  "caps",
+		  usercaps,
+		  NULL);
+    gst_caps_unref (usercaps);
 
-    // char *pixel_format = "video/x-raw-yuv";
-    
-    // char *width = "";
-    // if (g_strcmp0 (width, "NONE") != 0)
-    //   width = g_strdu
-    
-    set_raw_video_element (v4l2src_);
+    set_raw_video_element (v4l2_bin_);
     
     return true;
   }
   
   gboolean 
+  V4L2Src::capture_full_wrapped (gpointer device_file_path, 
+				 gpointer width,
+				 gpointer height,
+				 gpointer framerate_numerator,
+				 gpointer framerate_denominator, 
+				 gpointer tv_standard,
+				 gpointer user_data)
+  {
+    V4L2Src *context = static_cast<V4L2Src *>(user_data);
+    
+    if (context->capture_full ((const char *)device_file_path, 
+			       (const char *)width,
+			       (const char *)height,
+			       (const char *)framerate_numerator,
+			       (const char *)framerate_denominator,
+			       (const char *)tv_standard))
+      return TRUE;
+    else
+      return FALSE;
+  }
+
+  gboolean 
   V4L2Src::capture_wrapped (gpointer device_file_path, 
-			    gpointer width,
-			    gpointer height,
-			    gpointer framerate_numerator,
-			    gpointer framerate_denominator, 
-			    gpointer tv_standard,
 			    gpointer user_data)
   {
     V4L2Src *context = static_cast<V4L2Src *>(user_data);
     
-    if (context->capture ((const char *)device_file_path, 
-			  (const char *)width,
-			  (const char *)height,
-			  (const char *)framerate_numerator,
-			  (const char *)framerate_denominator,
-			  (const char *)tv_standard))
+    if (context->capture_full ((const char *)device_file_path, 
+			       "NONE",
+			       "NONE",
+			       "NONE",
+			       "NONE",
+			       "NONE"))
       return TRUE;
     else
       return FALSE;

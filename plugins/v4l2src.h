@@ -33,16 +33,15 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(V4L2Src);
-
     ~V4L2Src ();
   
     //use "NONE" for used arguments
-    bool capture (const char *device_file_path, 
-		  const char *width,
-		  const char *height,
-		  const char *framerate_numerator,
-		  const char *framerate_denominator,
-		  const char *tv_standard);
+    bool capture_full (const char *device_file_path, 
+		       const char *width,
+		       const char *height,
+		       const char *framerate_numerator,
+		       const char *framerate_denominator,
+		       const char *tv_standard);
     
     static bool is_v4l_device (const char *file);
    
@@ -51,20 +50,29 @@ namespace switcher
 
   private:
     GstElement *v4l2src_;
+    GstElement *v4l2_bin_;
+    GstElement *capsfilter_;
+
+    bool make_elements ();
+    void clean_elements ();
+    static gboolean capture_full_wrapped (gpointer device_file_path, 
+					  gpointer width,
+					  gpointer height,
+					  gpointer framerate_numerator,
+					  gpointer framerate_denominator,
+					  gpointer tv_standard,
+					  gpointer user_data);
+
     static gboolean capture_wrapped (gpointer device_file_path, 
-				     gpointer width,
-				     gpointer height,
-				     gpointer framerate_numerator,
-				     gpointer framerate_denominator,
-				     gpointer tv_standard,
 				     gpointer user_data);
+    
     static std::string pixel_format_to_string (unsigned pf_id);
     static bool inspect_frame_rate (const char *file_path,
-			     unsigned pixel_format,
-			     unsigned width,
-			     unsigned height);
+				    unsigned pixel_format,
+				    unsigned width,
+				    unsigned height);
     static gchar *get_capture_devices_json (void *user_data);
-
+    
     //custom properties:
     CustomPropertyHelper::ptr custom_props_; 
     GParamSpec *capture_devices_description_spec_;//json formated
@@ -96,7 +104,6 @@ namespace switcher
 
     std::map <std::string, CaptureDescription> capture_devices_; //indexed by device_file_path
   };
-  
   
   SWITCHER_DECLARE_PLUGIN(V4L2Src);
 

@@ -50,7 +50,7 @@ namespace switcher
   }
 
   void 
-  VideoSource::make_elements ()
+  VideoSource::make_elements () //FIXME rename that
   {
     if (!GstUtils::make_element ("tee",&video_tee_))
       g_warning ("VideoSource: tee element is mandatory\n");
@@ -109,7 +109,7 @@ namespace switcher
   }
 
   void 
-  VideoSource::clean_elements ()
+  VideoSource::clean_elements () //FIXME rename that
   {
     GstUtils::clean_element(video_tee_);
     // GstUtils::clean_element(colorspace_in_);

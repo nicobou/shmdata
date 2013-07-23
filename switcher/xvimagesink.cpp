@@ -40,6 +40,14 @@ namespace switcher
 #if HAVE_OSX
     if (!GstUtils::make_element ("osxvideosink", &xvimagesink_))
       return false;
+    g_object_set (G_OBJECT (xvimagesink_),
+		  "force-aspect-ratio", "true",
+		  NULL);
+    register_property (G_OBJECT (xvimagesink_),
+		       "force-aspect-ratio",
+		       "force-aspect-ratio", 
+		       "Force Aspect Ratio");
+    
 #else
     if (!GstUtils::make_element ("xvimagesink", &xvimagesink_))
       return false;
