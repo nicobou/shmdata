@@ -24,19 +24,29 @@ namespace switcher
 {
   VideoSource::VideoSource () 
   {
-    //this is necessary in order to get info by class but actual elements are built 
-    //latter when actually required  
-    //make_elements ();
+
     video_tee_ = NULL;
-    colorspace_in_= NULL;
-    textoverlay_ = NULL;
-    videoflip_ = NULL;
-    colorspace_out_ = NULL;
+    // colorspace_in_= NULL;
+    // textoverlay_ = NULL;
+    // videoflip_ = NULL;
+    // colorspace_out_ = NULL;
+    videocaps_ = gst_caps_new_simple ("video/x-raw-yuv",
+				      // "format", GST_TYPE_FOURCC,
+				      // GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y'),
+				      // "format", GST_TYPE_FOURCC,
+				      // GST_MAKE_FOURCC ('I', '4', '2', '0'),
+				      //"framerate", GST_TYPE_FRACTION, 30, 1,
+				      // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1, 
+				      //  "width", G_TYPE_INT, 640, 
+				      //  "height", G_TYPE_INT, 480,
+				      NULL);
+    
   }
 
   VideoSource::~VideoSource () 
   {
     clean_elements ();
+    gst_caps_unref (videocaps_);
   }
 
   void 
@@ -44,40 +54,40 @@ namespace switcher
   {
     if (!GstUtils::make_element ("tee",&video_tee_))
       g_warning ("VideoSource: tee element is mandatory\n");
-    if (!GstUtils::make_element ("ffmpegcolorspace",&colorspace_in_))
-      g_warning ("VideoSource: ffmpegcolorspace element is mandatory\n");
-    if (!GstUtils::make_element ("textoverlay",&textoverlay_))
-      g_warning ("VideoSource: textoverlay element is mandatory\n");
-    if (!GstUtils::make_element ("videoflip",&videoflip_))
-      g_warning ("VideoSource: videoflip element is mandatory\n");
-    GstUtils::make_element ("ffmpegcolorspace",&colorspace_out_);
+    // if (!GstUtils::make_element ("ffmpegcolorspace",&colorspace_in_))
+    //   g_warning ("VideoSource: ffmpegcolorspace element is mandatory\n");
+    // if (!GstUtils::make_element ("textoverlay",&textoverlay_))
+    //   g_warning ("VideoSource: textoverlay element is mandatory\n");
+    // if (!GstUtils::make_element ("videoflip",&videoflip_))
+    //   g_warning ("VideoSource: videoflip element is mandatory\n");
+    // GstUtils::make_element ("ffmpegcolorspace",&colorspace_out_);
 
-    cleaner_.reset (new GstElementCleaner ());
+    // cleaner_.reset (new GstElementCleaner ());
     // cleaner_->add_element_to_cleaner (video_tee_);
     // cleaner_->add_element_to_cleaner (colorspace_in_);
     // cleaner_->add_element_to_cleaner (textoverlay_);
     // cleaner_->add_element_to_cleaner (videoflip_);
     // cleaner_->add_element_to_cleaner (colorspace_out_);
 
-    gst_bin_add_many (GST_BIN (bin_),
-     		      video_tee_,
-		      colorspace_in_,
-     		      textoverlay_,
-     		      videoflip_,
-     		      colorspace_out_,
-     		      NULL);
-    
-    gst_element_link_many (video_tee_,
-			   colorspace_in_,
-     			   textoverlay_,
-     			   videoflip_,
-     			   colorspace_out_,
-     			   NULL);
+     gst_bin_add_many (GST_BIN (bin_),
+      		      video_tee_,
+     		      //colorspace_in_,
+      		      //textoverlay_,
+      		      //videoflip_,
+      		      //colorspace_out_,
+      		      NULL);
+
+    // gst_element_link_many (video_tee_,
+    //  			   // colorspace_in_,
+    //   			   // textoverlay_,
+    //   			   // videoflip_,
+    //   			   colorspace_out_,
+    //   			   NULL);
     
     //registering selected properties
-    register_property (G_OBJECT (videoflip_),"method","flip-method", "Orientation");
-    register_property (G_OBJECT (textoverlay_),"text","text", "Overlaid Text");
-    register_property (G_OBJECT (textoverlay_),"auto-resize","auto-resize-text", "Auto-resize Text");
+    // register_property (G_OBJECT (videoflip_),"method","flip-method", "Orientation");
+    // register_property (G_OBJECT (textoverlay_),"text","text", "Overlaid Text");
+    // register_property (G_OBJECT (textoverlay_),"auto-resize","auto-resize-text", "Auto-resize Text");
     // register_property (G_OBJECT (textoverlay_),"shaded-background","textoverlay");
     // register_property (G_OBJECT (textoverlay_),"halignment","textoverlay");
     // register_property (G_OBJECT (textoverlay_),"valignment","textoverlay");
@@ -102,10 +112,10 @@ namespace switcher
   VideoSource::clean_elements ()
   {
     GstUtils::clean_element(video_tee_);
-    GstUtils::clean_element(colorspace_in_);
-    GstUtils::clean_element(textoverlay_);
-    GstUtils::clean_element(videoflip_);
-    GstUtils::clean_element(colorspace_out_);
+    // GstUtils::clean_element(colorspace_in_);
+    // GstUtils::clean_element(textoverlay_);
+    // GstUtils::clean_element(videoflip_);
+    // GstUtils::clean_element(colorspace_out_);
   }
 
   void
@@ -117,47 +127,36 @@ namespace switcher
 
     rawvideo_ = element;
     
-    GstCaps *videocaps = gst_caps_new_simple ("video/x-raw-yuv",
-					      // "format", GST_TYPE_FOURCC,
-					      // GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y'),
-					      //"format", GST_TYPE_FOURCC,
-					      //  GST_MAKE_FOURCC ('I', '4', '2', '0'),
-					      //"framerate", GST_TYPE_FRACTION, 30, 1,
-					      // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1, 
-					      //  "width", G_TYPE_INT, 640, 
-					      //  "height", G_TYPE_INT, 480,
-					      NULL);
-    
     gst_bin_add (GST_BIN (bin_), rawvideo_);
     gst_element_link (rawvideo_, video_tee_);
     
     //creating a connector for the raw video
     ShmdataWriter::ptr rawvideo_connector;
     rawvideo_connector.reset (new ShmdataWriter ());
-    std::string rawconnector_name = make_file_name ("rawvideo"); 
+    std::string rawconnector_name = make_file_name ("video"); 
     rawvideo_connector->set_path (rawconnector_name.c_str());
-    rawvideo_connector->plug (bin_, video_tee_, videocaps);
+    rawvideo_connector->plug (bin_, video_tee_, videocaps_);
     register_shmdata_writer (rawvideo_connector);
     
-    //creating a connector for the transformed video
-    ShmdataWriter::ptr video_connector;
-    video_connector.reset (new ShmdataWriter ());
-    std::string connector_name = make_file_name ("video"); 
-    video_connector->set_path (connector_name.c_str());
-    video_connector->plug (bin_, colorspace_out_, videocaps);
-    register_shmdata_writer (video_connector);
+    // //creating a connector for the transformed video
+    // ShmdataWriter::ptr video_connector;
+    // video_connector.reset (new ShmdataWriter ());
+    // std::string connector_name = make_file_name ("transformed-video"); 
+    // video_connector->set_path (connector_name.c_str());
+    // video_connector->plug (bin_, colorspace_out_, videocaps_);
+    // //video_connector->plug (bin_, video_tee_, videocaps);
+    // register_shmdata_writer (video_connector);
 
-    g_debug ("VideoSource::set_raw_video_element (done)");
+    // g_debug ("VideoSource::set_raw_video_element (done)");
 
     GstUtils::wait_state_changed (bin_);
     GstUtils::sync_state_with_parent (rawvideo_);
     GstUtils::sync_state_with_parent (video_tee_);
-    GstUtils::sync_state_with_parent (colorspace_in_);
-    GstUtils::sync_state_with_parent (textoverlay_);
-    GstUtils::sync_state_with_parent (videoflip_);
-    GstUtils::sync_state_with_parent (colorspace_out_);
+    //GstUtils::sync_state_with_parent (colorspace_in_);
+    //GstUtils::sync_state_with_parent (textoverlay_);
+    //GstUtils::sync_state_with_parent (videoflip_);
+    //GstUtils::sync_state_with_parent (colorspace_out_);
 
-    //gst_object_unref (videocaps);
   }
 
 }
