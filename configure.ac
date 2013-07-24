@@ -213,6 +213,8 @@ switcher-${LIBSWITCHER_API_VERSION}.pc:switcher.pc.in
 switcher/Makefile
 tests/Makefile
 plugins/Makefile
+plugins/example/Makefile
+plugins/v4l2/Makefile
 ])
 AC_OUTPUT
 

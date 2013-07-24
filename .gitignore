@@ -37,6 +37,10 @@ ltmain.sh
 missing
 plugins/.deps/
 plugins/.libs/
+plugins/example/.deps/
+plugins/example/.libs/
+plugins/v4l2/.deps/
+plugins/v4l2/.libs/
 src/.deps/
 src/.libs/
 src/switcher
@@ -50,10 +54,10 @@ switcher/webservices
 test-driver
 tests/.deps/
 tests/.libs/
+tests/check_property_subscriber
 tests/check_quiddity_create_remove
 tests/check_quiddity_create_remove_with_auto_pipeline
-tests/check_property_subscriber
 tests/check_rtp_session
 tests/check_signal_subscriber
-xcode/switcher.xcodeproj/xcuserdata
 xcode/switcher.xcodeproj/project.xcworkspace/xcuserdata
+xcode/switcher.xcodeproj/xcuserdata
