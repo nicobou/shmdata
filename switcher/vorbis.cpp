@@ -68,6 +68,7 @@ namespace switcher
     
     GstUtils::sync_state_with_parent (context->vorbisbin_);
 
+    //FIXME try to release ghost sinkpad
     GstPad *sink_pad = gst_element_get_static_pad (audioconvert, "sink");
     GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
     gst_pad_set_active(ghost_sinkpad,TRUE);

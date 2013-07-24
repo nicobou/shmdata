@@ -164,6 +164,13 @@ if test "x${have_jsonglib}" = "xfalse" ; then
     AC_MSG_ERROR([Missing libjson-glib-dev package])
 fi
 
+# Check for 
+AC_CHECK_HEADER(linux/videodev2.h,
+                V4L2BUILD=true,
+                AC_MSG_WARN([v4l2 capture plugin will not be built (missing videodev2.h from package linux-libc-dev)]))
+AM_CONDITIONAL(V4L2BUILD, test "${V4L2BUILD}" = "true")
+
+
 AC_MSG_CHECKING([to see if compiler understands -std=c++0x])
 save_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$CFLAGS $CXXFLAGS -std=c++0x"
@@ -209,3 +216,11 @@ plugins/Makefile
 ])
 AC_OUTPUT
 
+[echo ""]
+[echo ""]
+[echo "======================================="]
+[echo "Configuration"]
+[echo ""]
+[echo "V4L2 capture plugin?       ${V4L2BUILD}"]
+[echo ""]
+[echo "======================================="]

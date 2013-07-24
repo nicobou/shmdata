@@ -20,8 +20,7 @@ AM_LIBS = \
 pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
 plugins_LTLIBRARIES = \
-    libmyplugin.la \
-    libv4l2src.la
+    libmyplugin.la 
 
 #libmyplugin info
 libmyplugin_la_SOURCES = \
@@ -33,7 +32,9 @@ libmyplugin_la_include_HEADERS = \
 libmyplugin_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
-#libv4l2src info
+if V4L2BUILD
+plugins_LTLIBRARIES += \
+    libv4l2src.la
 libv4l2src_la_SOURCES = \
     v4l2src.cpp
 
@@ -42,4 +43,4 @@ libv4l2src_la_include_HEADERS = \
 
 libv4l2src_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
-
+endif

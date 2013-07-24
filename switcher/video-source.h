@@ -32,15 +32,18 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<VideoSource> ptr;
-    VideoSource();
-
+    VideoSource ();
+    ~VideoSource ();
   private:
     GstElement *rawvideo_;
     GstElement *video_tee_;
-    GstElement *colorspace_in_;
-    GstElement *textoverlay_;
-    GstElement *videoflip_;
-    GstElement *colorspace_out_;
+    /* GstElement *colorspace_in_; */
+    /* GstElement *textoverlay_; */
+    /* GstElement *videoflip_; */
+    /* GstElement *colorspace_out_; */
+    GstCaps *videocaps_;
+    void clean_elements ();
+    void make_elements ();
 
   protected:
     //called in the derived class constructor
