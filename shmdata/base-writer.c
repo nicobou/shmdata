@@ -268,7 +268,7 @@ shmdata_base_writer_make_shm_branch (shmdata_base_writer_t * writer,
     }
 
   g_object_set (G_OBJECT (writer->shmsink_), "socket-path", socketPath, NULL);
-  g_object_set (G_OBJECT (writer->shmsink_), "shm-size", 94967295, NULL);
+  g_object_set (G_OBJECT (writer->shmsink_), "shm-size", 4294967295, NULL);
   g_object_set (G_OBJECT (writer->shmsink_), "sync", FALSE, NULL);
   g_object_set (G_OBJECT (writer->shmsink_), "wait-for-connection", FALSE,
 		NULL);
