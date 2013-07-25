@@ -112,6 +112,7 @@ namespace switcher
   VideoSource::clean_elements () //FIXME rename that
   {
     GstUtils::clean_element(video_tee_);
+    unregister_shmdata_writer (make_file_name ("video"));
     // GstUtils::clean_element(colorspace_in_);
     // GstUtils::clean_element(textoverlay_);
     // GstUtils::clean_element(videoflip_);

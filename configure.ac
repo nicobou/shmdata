@@ -215,6 +215,7 @@ tests/Makefile
 plugins/Makefile
 plugins/example/Makefile
 plugins/v4l2/Makefile
+plugins/avcodecs/Makefile
 ])
 AC_OUTPUT
 

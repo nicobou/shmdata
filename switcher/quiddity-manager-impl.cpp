@@ -27,7 +27,6 @@
 #include <gio/gio.h>
 
 //the quiddities to manage (line sorted)
-#include "aac.h"
 #include "aravis-genicam.h"
 #include "audio-test-source.h"
 #include "create-remove-spy.h"
@@ -179,8 +178,6 @@ namespace switcher
   QuiddityManager_Impl::register_classes ()
   {
     //registering quiddities
-    abstract_factory_.register_class<AAC> (AAC::switcher_doc_.get_class_name (), 
-					   AAC::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<AudioTestSource> (AudioTestSource::switcher_doc_.get_class_name (), 
       						       AudioTestSource::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<AravisGenicam> (AravisGenicam::switcher_doc_.get_class_name (), 
