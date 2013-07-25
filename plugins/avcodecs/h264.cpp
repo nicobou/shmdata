@@ -18,7 +18,7 @@
  */
 
 #include "h264.h"
-#include "gst-utils.h"
+#include "switcher/gst-utils.h"
 
 namespace switcher
 {

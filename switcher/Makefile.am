@@ -41,7 +41,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gst-parse-to-bin-src.cpp \
     gst-video-parse-to-bin-src.cpp \
     gst-utils.cpp \
-    h264.cpp \
     http-sdp.cpp \
     http-sdp-dec.cpp \
     jack-audio-source.cpp \
@@ -121,7 +120,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gst-parse-to-bin-src.h \
     gst-video-parse-to-bin-src.h \
     gst-utils.h \
-    h264.h \
     hash-table.h \
     hash-table_spec.h \
     http-sdp.h \

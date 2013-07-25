@@ -37,7 +37,6 @@
 #include "file-sdp.h"
 #include "gst-parse-to-bin-src.h"
 #include "gst-video-parse-to-bin-src.h"
-#include "h264.h"
 #include "http-sdp.h"
 #include "http-sdp-dec.h"
 #include "jack-audio-source.h"
@@ -198,8 +197,6 @@ namespace switcher
       							GstParseToBinSrc::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<GstVideoParseToBinSrc> (GstVideoParseToBinSrc::switcher_doc_.get_class_name (),
 							     GstVideoParseToBinSrc::switcher_doc_.get_json_root_node ());
-    abstract_factory_.register_class<H264> (H264::switcher_doc_.get_class_name (), 
-      					    H264::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<HTTPSDP> (HTTPSDP::switcher_doc_.get_class_name (), 
       					       HTTPSDP::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<HTTPSDPDec> (HTTPSDPDec::switcher_doc_.get_class_name (), 
