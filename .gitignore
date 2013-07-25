@@ -41,6 +41,8 @@ plugins/avcodecs/.deps/
 plugins/avcodecs/.libs/
 plugins/example/.deps/
 plugins/example/.libs/
+plugins/osc/.deps/
+plugins/osc/.libs/
 plugins/v4l2/.deps/
 plugins/v4l2/.libs/
 src/.deps/

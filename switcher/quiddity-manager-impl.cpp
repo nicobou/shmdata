@@ -41,7 +41,6 @@
 #include "http-sdp-dec.h"
 #include "jack-audio-source.h"
 #include "logger.h"
-#include "osc-ctrl-server.h"
 #include "pulse-sink.h"
 #include "rtp-session.h"
 #include "runtime.h"
@@ -205,8 +204,6 @@ namespace switcher
 						       JackAudioSource::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<Logger> (Logger::switcher_doc_.get_class_name (), 
       					       Logger::switcher_doc_.get_json_root_node ());
-    abstract_factory_.register_class<OscCtrlServer> (OscCtrlServer::switcher_doc_.get_class_name (), 
-						     OscCtrlServer::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<PulseSink> (PulseSink::switcher_doc_.get_class_name (), 
       						 PulseSink::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<RtpSession> (RtpSession::switcher_doc_.get_class_name (), 

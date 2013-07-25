@@ -21,9 +21,9 @@
 #ifndef __SWITCHER_OSC_CTRL_SERVER_H__
 #define __SWITCHER_OSC_CTRL_SERVER_H__
 
-#include "quiddity-manager-wrapper.h"
+#include "switcher/quiddity-manager-wrapper.h"
 #include "lo/lo.h"
-#include "string-map.h"
+#include "switcher/string-map.h"
 #include <memory>
 
 namespace switcher
@@ -60,6 +60,8 @@ namespace switcher
     gchar *make_internal_subscriber_name (const gchar *name);
     gchar *retrieve_subscriber_name (const gchar *internal_name);
   };
+
+  SWITCHER_DECLARE_PLUGIN(OscCtrlServer);
 
 }  // end of namespace
 

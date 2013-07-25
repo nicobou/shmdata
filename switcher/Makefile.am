@@ -47,7 +47,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     json-builder.cpp \
     logger.cpp \
     method.cpp \
-    osc-ctrl-server.cpp \
     plugin-loader.cpp \
     property.cpp \
     pulse-sink.cpp \
@@ -128,7 +127,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     json-builder.h \
     logger.h \
     method.h \
-    osc-ctrl-server.h \
     plugin-loader.h \
     property.h \
     pulse-sink.h \

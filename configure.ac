@@ -98,6 +98,10 @@ AC_CHECK_FILE([/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig],
                export PKG_CONFIG_PATH],
               [AC_MSG_WARN([OSX GStreamer SDK not found])])
 
+
+# switcher building
+SWITCHERBUILD=true
+
 dnl =======================================================================
 dnl Check for the required version of GStreamer core (and gst-plugins-base)
 dnl
@@ -156,8 +160,13 @@ fi
 
 PKG_CHECK_MODULES(LIBLO, liblo, have_liblo=true, have_liblo=false)
 if test "x${have_liblo}" = "xfalse" ; then
-    AC_MSG_ERROR([Missing liblo-dev package])
+    OSCBUILD=false
+    SWITCHERBUILD=false
+    AC_MSG_WARN([Missing liblo-dev package, switcher will not be built])
+else
+    OSCBUILD=true
 fi
+AM_CONDITIONAL(OSCBUILD, test "${OSCBUILD}" = "true")
 
 PKG_CHECK_MODULES(JSONGLIB, json-glib-1.0, have_jsonglib=true, have_jsonglib=false)
 if test "x${have_jsonglib}" = "xfalse" ; then
@@ -200,7 +209,11 @@ if test -z "$DOXYGEN";
 fi
 
 AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])
-                                      
+
+AM_CONDITIONAL(SWITCHERBUILD, test "${OSCBUILD}" = "true")
+                                 
+
+     
 dnl =======================================================================
 dnl Finally, create Makefiles in all directories
 dnl =======================================================================
@@ -216,14 +229,21 @@ plugins/Makefile
 plugins/example/Makefile
 plugins/v4l2/Makefile
 plugins/avcodecs/Makefile
+plugins/osc/Makefile
 ])
 AC_OUTPUT
 
 [echo ""]
 [echo ""]
 [echo "======================================="]
-[echo "Configuration"]
 [echo ""]
+[echo "libswitcher will be built"]
+[echo ""]
+[echo "Plugin Configuration:"]
 [echo "V4L2 capture plugin?       ${V4L2BUILD}"]
+[echo ""]
+[echo "Switcher Configuration (need all following plugins):"]
+[echo "OSC controler plugin?      ${OSCBUILD}"]
+[echo "switcher?                  ${SWITCHERBUILD}"]
 [echo ""]
 [echo "======================================="]
