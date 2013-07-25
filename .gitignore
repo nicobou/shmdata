@@ -37,6 +37,8 @@ ltmain.sh
 missing
 plugins/.deps/
 plugins/.libs/
+plugins/avcodecs/.deps/
+plugins/avcodecs/.libs/
 plugins/example/.deps/
 plugins/example/.libs/
 plugins/v4l2/.deps/
