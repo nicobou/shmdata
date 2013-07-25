@@ -46,7 +46,12 @@ namespace switcher
     bool add_destination (std::string dest_name,
 			  std::string host_name);
     bool remove_destination (std::string dest_name);
+
+    //destination property
     static gchar *get_destinations_json (void *user_data);
+    //MTU property
+    static void set_mtu_at_add_data_stream (const gint value, void *user_data);
+    static gint get_mtu_at_add_data_stream (void *user_data);
 
     //sending
     bool add_udp_stream_to_dest (std::string shmdata_socket_path, 
@@ -89,6 +94,8 @@ namespace switcher
     CustomPropertyHelper::ptr custom_props_; 
     GParamSpec *destination_description_json_;
     gchar *destinations_json_;
+    GParamSpec *mtu_at_add_data_stream_spec_;
+    gint mtu_at_add_data_stream_;
 
     //local streams
     StringMap <std::string> internal_id_; //maps shmdata path with internal id 
@@ -96,6 +103,7 @@ namespace switcher
     StringMap <QuiddityManager::ptr> quiddity_managers_;
     StringMap <GstElementCleaner::ptr> funnels_; //maps internal id with funnel cleaner
 
+    StringMap<GstElement *>rtp_udp_sinks_;
     StringMap<ShmdataWriter::ptr> internal_shmdata_writers_;
     StringMap<ShmdataReader::ptr> internal_shmdata_readers_;
 
@@ -123,9 +131,6 @@ namespace switcher
     static void on_pad_added (GstElement *gstelement, GstPad *new_pad, gpointer user_data);
     static void on_pad_removed (GstElement *gstelement, GstPad *new_pad, gpointer user_data);
     static void on_no_more_pad (GstElement *gstelement, gpointer user_data);
-    
-    static gboolean data_probe (GstPad * pad,GstMiniObject * mini_obj, gpointer user_data);
-
 
   };
 }  // end of namespace

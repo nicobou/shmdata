@@ -171,6 +171,11 @@ namespace switcher
 	((set_boolean_method)user_method->set) (g_value_get_boolean (value), 
 						user_method->user_data);
       }
+    else if (G_VALUE_TYPE(value) == G_TYPE_INT)
+      {
+	((set_int_method)user_method->set) (g_value_get_int (value), 
+					    user_method->user_data);
+      }
     else
       {
 	g_warning ("CustomPropertyHelper: unknown type"); 

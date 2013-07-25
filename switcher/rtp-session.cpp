@@ -62,7 +62,6 @@ namespace switcher
     GstUtils::clean_element (rtpsession_);
     
     g_debug ("rtpsession deleted");
-
     }
 
   bool 
@@ -71,7 +70,9 @@ namespace switcher
     if (!GstUtils::make_element ("gstrtpbin", &rtpsession_))
       return false;
 
+    mtu_at_add_data_stream_ = 1400;
     next_id_ = 79; //this value is arbitrary and can be changed
+
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
     
     g_signal_connect (G_OBJECT (rtpsession_), "on-bye-ssrc", 
@@ -184,7 +185,6 @@ namespace switcher
 			    Method::make_arg_description ("name", 
 							  "the name of the destination",
 							  NULL));
-   
 
     //set the name before registering properties
     set_name (gst_element_get_name (rtpsession_));
@@ -202,6 +202,21 @@ namespace switcher
 				destination_description_json_, 
 				"destinations-json",
 				"Destinations");
+
+    mtu_at_add_data_stream_spec_ = custom_props_->make_int_property ("mtu-at-add-data-stream", 
+								     "MTU that will be set during add_data_stream invokation",
+								     0,
+								     15000,
+								     1400,
+								     (GParamFlags) G_PARAM_READWRITE,
+								     RtpSession::set_mtu_at_add_data_stream,
+								     RtpSession::get_mtu_at_add_data_stream,
+								     this);
+    
+    register_property_by_pspec (custom_props_->get_gobject (), 
+				mtu_at_add_data_stream_spec_, 
+				"mtu-at-add-data-stream",
+				"MTU At Add Data Stream");
     return true;
   }
   
@@ -291,6 +306,7 @@ namespace switcher
   {
     RtpSession *context = static_cast<RtpSession *>(user_data);
 
+
     g_debug ("RtpSession::make_data_stream_available");
 
     GstUtils::wait_state_changed (context->bin_);
@@ -305,14 +321,9 @@ namespace switcher
     if (list != NULL)  
       pay = gst_element_factory_create (GST_ELEMENT_FACTORY (list->data), NULL);
     else
-      GstUtils::make_element ("rtpgstpay", &pay);
-    
-    // if (g_str_has_prefix (GST_ELEMENT_NAME (pay) ,"rtpvorbis"))//FIXME vorbis issue, using gstpay
-    //   {
-    // 	gst_object_unref (pay);
-    // 	      GstUtils::make_element ("rtpgstpay", &pay);
-    //   }
+	GstUtils::make_element ("rtpgstpay", &pay);
 
+    
     ShmdataReader *reader= (ShmdataReader *) g_object_get_data (G_OBJECT (typefind),"shmdata-reader");
     reader->add_element_to_cleaner (pay);
         
@@ -323,6 +334,8 @@ namespace switcher
     gst_element_link (typefind, pay);
     //GstUtils::wait_state_changed (context->bin_);
     GstUtils::sync_state_with_parent (pay);
+
+    g_object_set (G_OBJECT (pay), "mtu", (guint)context->mtu_at_add_data_stream_, NULL);
     
     /* now link all to the rtpbin, start by getting an RTP sinkpad for session "%d" */
     GstPad *srcpad, *sinkpad;
@@ -344,7 +357,7 @@ namespace switcher
     
     g_free (rtp_sink_pad_name);
     g_strfreev (rtp_session_array);
-
+    
     // rtp src pad (is a static pad since created after the request of rtp sink pad)
     gchar *rtp_src_pad_name = g_strconcat ("send_rtp_src_", rtp_session_id, NULL); 
     g_debug ("RtpSession: request rtp src pad and create a corresponding shmwriter %s",rtp_src_pad_name);
@@ -352,54 +365,71 @@ namespace switcher
 
     if (!GST_IS_PAD (rtp_src_pad)) 
       g_warning ("RtpSession: rtp_src_pad is not a pad"); 
-    ShmdataWriter::ptr rtp_writer;
-    rtp_writer.reset (new ShmdataWriter ());
-    std::string rtp_writer_name = context->make_file_name ("send_rtp_src_"+internal_session_id); 
-    rtp_writer->set_path (rtp_writer_name.c_str ());
-    //GstUtils::wait_state_changed (context->bin_);
-    rtp_writer->plug (context->bin_, rtp_src_pad);
-    context->internal_shmdata_writers_.insert (rtp_writer_name, rtp_writer);
-    g_free (rtp_src_pad_name);
 
-    //rtcp src pad
-    gchar *rtcp_src_pad_name = g_strconcat ("send_rtcp_src_", rtp_session_id,NULL); 
-    g_debug ("RtpSession: request rtcp src pad %s",rtcp_src_pad_name);
-    GstPad *rtcp_src_pad = gst_element_get_request_pad (context->rtpsession_, rtcp_src_pad_name);
-    ShmdataWriter::ptr rtcp_writer;
-    rtcp_writer.reset (new ShmdataWriter ());
-    std::string rtcp_writer_name = context->make_file_name ("send_rtcp_src_"+internal_session_id); 
-    rtcp_writer->set_path (rtcp_writer_name.c_str());
-    //GstUtils::wait_state_changed (context->bin_);
-    rtcp_writer->plug (context->bin_, rtcp_src_pad);
-    context->internal_shmdata_writers_.insert (rtcp_writer_name, rtcp_writer);
-    g_free (rtcp_src_pad_name);
+    // testing
+    // GstElement *myfake;
+    // //GstUtils::make_element ("fakesink", &myfake);
+    // GstUtils::make_element ("multiudpsink", &myfake);
+    // g_object_set (G_OBJECT (myfake), "sync", FALSE, NULL);
     
-    // We also want to receive RTCP, request an RTCP sinkpad for given session and
-    // link it to a funnel for future linking with network connections
-    GstElement *funnel;
-    GstUtils::make_element ("funnel", &funnel);
-    gst_bin_add (GST_BIN (context->bin_), funnel);
-    //GstUtils::wait_state_changed (context->bin_);
-    GstUtils::sync_state_with_parent (funnel);
-    GstPad *funnel_src_pad = gst_element_get_static_pad (funnel, "src");
-    gchar *rtcp_sink_pad_name = g_strconcat ("recv_rtcp_sink_", rtp_session_id,NULL); 
-    GstPad *rtcp_sink_pad = gst_element_get_request_pad (context->rtpsession_, rtcp_sink_pad_name);
-    if (gst_pad_link (funnel_src_pad, rtcp_sink_pad) != GST_PAD_LINK_OK)
-      g_warning ("RtpSession::make_data_stream_available: Failed to link rtcpsrc to rtpbin");
-    gst_object_unref (funnel_src_pad);
-    g_free (rtcp_sink_pad_name);
-    //for cleaning of funnel
-    GstElementCleaner::ptr funnel_cleaning;
-    funnel_cleaning.reset (new GstElementCleaner ());
-    funnel_cleaning->add_element_to_cleaner (funnel);
-    //saving funnel for being retried
-    funnel_cleaning->add_labeled_element_to_cleaner ("funnel",funnel);
-    context->funnels_.insert (reader->get_path (),funnel_cleaning);
-    g_free (rtp_session_id);
+    // gst_bin_add_many (GST_BIN (context->bin_), myfake, NULL);
+    // GstPad *fakepad = gst_element_get_static_pad (myfake, "sink");
+    // if (gst_pad_link (rtp_src_pad, fakepad) != GST_PAD_LINK_OK)
+    //   g_debug ("RtpSession::make_data_stream_available linking with multiudpsink failled");
+    // GstUtils::sync_state_with_parent (myfake);
+    
+    // g_signal_emit_by_name (myfake, "add", "localhost", "8044", NULL);
+    // //g_signal_emit_by_name (myfake, "add", "localhost", "9040", NULL);
+    
+    //end testing
+    
+     ShmdataWriter::ptr rtp_writer;
+     rtp_writer.reset (new ShmdataWriter ());
+     std::string rtp_writer_name = context->make_file_name ("send_rtp_src_"+internal_session_id); 
+     rtp_writer->set_path (rtp_writer_name.c_str ());
+     rtp_writer->plug (context->bin_, rtp_src_pad);
+     context->internal_shmdata_writers_.insert (rtp_writer_name, rtp_writer);
+     g_free (rtp_src_pad_name);
 
+     //rtcp src pad
+     gchar *rtcp_src_pad_name = g_strconcat ("send_rtcp_src_", rtp_session_id,NULL); 
+     g_debug ("RtpSession: request rtcp src pad %s",rtcp_src_pad_name);
+     GstPad *rtcp_src_pad = gst_element_get_request_pad (context->rtpsession_, rtcp_src_pad_name);
+     ShmdataWriter::ptr rtcp_writer;
+     rtcp_writer.reset (new ShmdataWriter ());
+     std::string rtcp_writer_name = context->make_file_name ("send_rtcp_src_"+internal_session_id); 
+     rtcp_writer->set_path (rtcp_writer_name.c_str());
+     //GstUtils::wait_state_changed (context->bin_);
+     rtcp_writer->plug (context->bin_, rtcp_src_pad);
+     context->internal_shmdata_writers_.insert (rtcp_writer_name, rtcp_writer);
+     g_free (rtcp_src_pad_name);
+    
+     // We also want to receive RTCP, request an RTCP sinkpad for given session and
+     // link it to a funnel for future linking with network connections
+     GstElement *funnel;
+     GstUtils::make_element ("funnel", &funnel);
+     gst_bin_add (GST_BIN (context->bin_), funnel);
+     //GstUtils::wait_state_changed (context->bin_);
+     GstUtils::sync_state_with_parent (funnel);
+     GstPad *funnel_src_pad = gst_element_get_static_pad (funnel, "src");
+     gchar *rtcp_sink_pad_name = g_strconcat ("recv_rtcp_sink_", rtp_session_id,NULL); 
+     GstPad *rtcp_sink_pad = gst_element_get_request_pad (context->rtpsession_, rtcp_sink_pad_name);
+     if (gst_pad_link (funnel_src_pad, rtcp_sink_pad) != GST_PAD_LINK_OK)
+       g_warning ("RtpSession::make_data_stream_available: Failed to link rtcpsrc to rtpbin");
+     gst_object_unref (funnel_src_pad);
+     g_free (rtcp_sink_pad_name);
+     //for cleaning of funnel
+     GstElementCleaner::ptr funnel_cleaning;
+     funnel_cleaning.reset (new GstElementCleaner ());
+     funnel_cleaning->add_element_to_cleaner (funnel);
+     //saving funnel for being retried
+     funnel_cleaning->add_labeled_element_to_cleaner ("funnel",funnel);
+     context->funnels_.insert (reader->get_path (),funnel_cleaning);
+     g_free (rtp_session_id);
+    
     g_debug ("RtpSession::make_data_stream_available (done)");
   }
-
+  
   void 
   RtpSession::attach_data_stream(ShmdataReader *caller, void *rtpsession_instance)
   {
@@ -854,6 +884,19 @@ namespace switcher
     destinations_json->end_object ();
     context->destinations_json_ = g_strdup (destinations_json->get_string (true).c_str ());
     return context->destinations_json_;
+  }
+
+  void 
+  RtpSession::set_mtu_at_add_data_stream (const gint value, void *user_data)
+  {
+    RtpSession *context = static_cast<RtpSession *> (user_data);
+    context->mtu_at_add_data_stream_ = value;
+  }
+   
+  gint RtpSession::get_mtu_at_add_data_stream (void *user_data)
+  {
+    RtpSession *context = static_cast<RtpSession *> (user_data);
+    return context->mtu_at_add_data_stream_;
   }
 
 }
