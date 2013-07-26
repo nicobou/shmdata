@@ -157,6 +157,33 @@ main (int argc,
 
   manager = switcher::QuiddityManager::make_manager (server_name);  
 
+  //create logger managing switcher log domain
+  manager->create ("logger", "internal_logger");
+  //manage logs from shmdata
+  manager->invoke_va ("internal_logger", "install_log_handler", "shmdata", NULL);
+  //manage logs from GStreamer
+  manager->invoke_va ("internal_logger", "install_log_handler", "GStreamer", NULL);
+  //manage logs from Glib
+  manager->invoke_va ("internal_logger", "install_log_handler", "Glib", NULL);
+  //manage logs from Glib-GObject
+  manager->invoke_va ("internal_logger", "install_log_handler", "Glib-GObject", NULL);
+  if (quiet)
+    manager->set_property ("internal_logger", "mute", "true");
+  else
+    manager->set_property ("internal_logger", "mute", "false");
+  if (debug)
+    manager->set_property ("internal_logger", "debug", "true");
+  else
+    manager->set_property ("internal_logger", "debug", "false");
+  if (verbose)
+    manager->set_property ("internal_logger", "verbose", "true");
+  else
+    manager->set_property ("internal_logger", "verbose", "false");
+  
+  //subscribe to logs:
+  manager->make_property_subscriber ("log_sub", logger_cb, NULL);
+  manager->subscribe_property ("log_sub","internal_logger","last-line");
+
   //loading plugins from default location //FIXME add an option
 #ifdef HAVE_CONFIG_H
   gchar *usr_plugin_dir = g_strdup_printf ("/usr/%s-%s/plugins",PACKAGE_NAME,LIBSWITCHER_API_VERSION);
@@ -207,33 +234,6 @@ main (int argc,
       return 0;
     }
 
-  //create logger managing switcher log domain
-  manager->create ("logger", "internal_logger");
-  //manage logs from shmdata
-  manager->invoke_va ("internal_logger", "install_log_handler", "shmdata", NULL);
-  //manage logs from GStreamer
-  manager->invoke_va ("internal_logger", "install_log_handler", "GStreamer", NULL);
-  //manage logs from Glib
-  manager->invoke_va ("internal_logger", "install_log_handler", "Glib", NULL);
-  //manage logs from Glib-GObject
-  manager->invoke_va ("internal_logger", "install_log_handler", "Glib-GObject", NULL);
-  if (quiet)
-    manager->set_property ("internal_logger", "mute", "true");
-  else
-    manager->set_property ("internal_logger", "mute", "false");
-  if (debug)
-    manager->set_property ("internal_logger", "debug", "true");
-  else
-    manager->set_property ("internal_logger", "debug", "false");
-  if (verbose)
-    manager->set_property ("internal_logger", "verbose", "true");
-  else
-    manager->set_property ("internal_logger", "verbose", "false");
-  
-  //subscribe to logs:
-  manager->make_property_subscriber ("log_sub", logger_cb, NULL);
-  manager->subscribe_property ("log_sub","internal_logger","last-line");
-  
   // Create a runtime (pipeline0)
   //std::string runtime = 
   manager->create ("runtime","pipeline0");

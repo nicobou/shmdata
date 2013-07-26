@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_SOAP_CTRL_SERVER_H__
 #define __SWITCHER_SOAP_CTRL_SERVER_H__
 
-#include "quiddity-manager-wrapper.h"
+#include "switcher/quiddity-manager-wrapper.h"
 #include <memory>
 
 #include "webservices/soapcontrolService.h"
@@ -52,6 +52,8 @@ namespace switcher
     static gpointer server_thread (gpointer user_data);
     static int http_get (struct soap *soap);
   };
+
+  SWITCHER_DECLARE_PLUGIN(SoapCtrlServer);
 
 }  // end of namespace
 

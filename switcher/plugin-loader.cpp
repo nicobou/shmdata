@@ -33,7 +33,6 @@ namespace switcher
   
   PluginLoader::~PluginLoader()
   {
-    //g_print ("*** closing module\n"); 
     if (module_ != NULL)
       g_module_close (module_);
   }
@@ -47,7 +46,7 @@ namespace switcher
 	return false;
       }
     close ();
-    
+
     module_ = g_module_open (filename, G_MODULE_BIND_LAZY);
 
     if (!module_)

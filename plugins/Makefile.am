@@ -11,3 +11,8 @@ if OSCBUILD
 SUBDIRS += \
     osc
 endif
+
+if GSOAPBUILD
+SUBDIRS += \
+    gsoap
+endif

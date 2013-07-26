@@ -19,8 +19,8 @@
 
 #include <string.h>
 #include <glib.h> 
-#include "switcher/webservices/soapcontrolProxy.h"
-#include "switcher/webservices/control.nsmap"
+#include "webservices/soapcontrolProxy.h"
+#include "webservices/control.nsmap"
 
 //options
 static gchar *server = NULL;

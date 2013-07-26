@@ -1,21 +1,16 @@
 AM_CXXFLAGS = \
     $(GLIB_CFLAGS) \
-    $(GSOAP_CFLAGS) \
     $(GST_CFLAGS) \
     $(GMODULE_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
-    $(LIBLO_CFLAGS) \
     $(SHMDATA_CFLAGS) \
-    -DG_LOG_DOMAIN=\"switcher\" \
-    -I$(top_srcdir)/switcher/webservices
+    -DG_LOG_DOMAIN=\"switcher\" 
 
 AM_LIBS = \
     $(GLIB_LIBS) \
-    $(GSOAP_LIBS) \
     $(GST_LIBS) \
     $(GMODULE_LIBS) \
     $(JSONGLIB_LIBS) \
-    $(LIBLO_LIBS) \
     $(SHMDATA_LIBS)
 
 lib_LTLIBRARIES = \
@@ -67,8 +62,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     shmdata-to-file.cpp \
     shmdata-writer.cpp \
     signal-string.cpp \
-    soap-ctrl-client.cpp \
-    soap-ctrl-server.cpp \
     udpsink.cpp \
     uridecodebin.cpp \
     uris.cpp \
@@ -77,18 +70,13 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     video-source.cpp \
     video-test-source.cpp \
     vorbis.cpp \
-    webservices/soapC.cpp \
-    webservices/soapcontrolProxy.cpp \
-    webservices/soapcontrolService.cpp \
     xvimagesink.cpp
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
     $(GLIB_LIBS) \
-    $(GSOAP_LIBS) \
     $(GST_LIBS) \
     $(GMODULE_LIBS) \
     $(JSONGLIB_LIBS) \
-    $(LIBLO_LIBS) \
     $(SHMDATA_LIBS) \
     -version-info $(LIBSWITCHER_SO_VERSION)
 
@@ -106,7 +94,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     base-source.h \
     create-remove-spy.h \
     creator.h \
-    ctrl-webservice-definition.h \
     custom-property-helper.h \
     decodebin2.h \
     deinterleave.h \
@@ -147,8 +134,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     shmdata-to-file.h \
     shmdata-writer.h \
     signal-string.h \
-    soap-ctrl-client.h \
-    soap-ctrl-server.h \
     string-map.h \
     string-map_spec.h \
     udpsink.h \
@@ -160,40 +145,3 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     video-test-source.h \
     vorbis.h \
     xvimagesink.h
-
-####### webservice code generation into the "webservices" directory
-####### note: soapcpp2 -q <namespace> -d <directory-where-goes-generated-cpp>
-####### note: webservices/stdsoap2.cpp comes from gsoap sources and 
-#######       is required here for linking. Maybe a better solution exists
-#######       but did not find anything else. See:
-#######       http://stackoverflow.com/questions/6340524/gsoap-linking-error
-
-BUILT_SOURCES = \
-    webservices/soapC.cpp \
-    webservices/soapcontrolProxy.cpp \
-    webservices/soapcontrolService.cpp
-
-CLEANFILES = \
-    webservices/*
-
-DISTCLEANFILES = \
-    webservices/*
-
-####### On OSX, gsoap is not installed in /usr (if installed through MacPorts)
-if HAVE_OSX
-gsoap_INCLUDE = /opt/local/share/gsoap/import/
-else
-gsoap_INCLUDE = /usr/share/gsoap/import/
-endif
-
-webservices/soapC.cpp: Makefile
-	mkdir -p webservices
-	soapcpp2 -I $(gsoap_INCLUDE) -i -d webservices $(srcdir)/ctrl-webservice-definition.h
-
-$(srcdir)/webservices/soapcontrolProxy.cpp: Makefile
-	mkdir -p webservices
-	soapcpp2 -I $(gsoap_INCLUDE) -i -d webservices $(srcdir)/ctrl-webservice-definition.h
-
-$(srcdir)/webservices/soapcontrolService.cpp: Makefile
-	mkdir -p webservices
-	soapcpp2 -I $(gsoap_INCLUDE) -i  -d webservices $(srcdir)/ctrl-webservice-definition.h

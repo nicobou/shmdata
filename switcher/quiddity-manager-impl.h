@@ -197,6 +197,11 @@ namespace switcher
       bool remove_without_hook (std::string quiddity_name);
 
     private:
+      //plugins
+      bool load_plugin (const char *filename);
+      void close_plugin (const std::string class_name);
+      StringMap<PluginLoader::ptr> plugins_;
+
       void init (std::string name);
       QuiddityManager_Impl();//will get name "default"
       QuiddityManager_Impl(std::string);
@@ -216,10 +221,6 @@ namespace switcher
       void *creation_hook_user_data_;
       void *removal_hook_user_data_;
 
-      //plugins
-      bool load_plugin (const char *filename);
-      void close_plugin (const std::string class_name);
-      StringMap<PluginLoader::ptr> plugins_;
       
       //gmainloop 
       GThread *thread_; //this runs the main loop 

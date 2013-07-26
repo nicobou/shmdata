@@ -1,7 +1,7 @@
 dnl required version of autoconf
 AC_PREREQ([2.53])
 
-dnl TODO: fill in your package name and package version here
+dnl package name and package version
 AC_INIT([switcher],[0.2.3])
 
 dnl required version of gstreamer and gst-plugins-base
@@ -155,8 +155,13 @@ fi
 
 PKG_CHECK_MODULES(GSOAP, gsoap++, have_gsoap=true, have_gsoap=false)
 if test "x${have_gsoap}" = "xfalse" ; then
-    AC_MSG_ERROR([Missing gsoap package])
+    GSOAPBUILD=false
+    AC_MSG_WARN([Missing gsoap package])
+else
+    GSOAPBUILD=true
+    AC_CONFIG_FILES([plugins/gsoap/Makefile])
 fi
+AM_CONDITIONAL(GSOAPBUILD, test "${GSOAPBUILD}" = "true")
 
 PKG_CHECK_MODULES(LIBLO, liblo, have_liblo=true, have_liblo=false)
 if test "x${have_liblo}" = "xfalse" ; then
@@ -165,6 +170,7 @@ if test "x${have_liblo}" = "xfalse" ; then
     AC_MSG_WARN([Missing liblo-dev package, switcher will not be built])
 else
     OSCBUILD=true
+    AC_CONFIG_FILES([plugins/osc/Makefile])
 fi
 AM_CONDITIONAL(OSCBUILD, test "${OSCBUILD}" = "true")
 
@@ -178,7 +184,9 @@ AC_CHECK_HEADER(linux/videodev2.h,
                 V4L2BUILD=true,
                 AC_MSG_WARN([v4l2 capture plugin will not be built (missing videodev2.h from package linux-libc-dev)]))
 AM_CONDITIONAL(V4L2BUILD, test "${V4L2BUILD}" = "true")
-
+if test "x${V4L2BUILD}" = "xtrue";
+  then AC_CONFIG_FILES([plugins/v4l2/Makefile])
+fi
 
 AC_MSG_CHECKING([to see if compiler understands -std=c++0x])
 save_CXXFLAGS="$CXXFLAGS"
@@ -210,10 +218,19 @@ fi
 
 AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])
 
-AM_CONDITIONAL(SWITCHERBUILD, test "${OSCBUILD}" = "true")
-                                 
-
-     
+dnl testing if switcher can be built and add it to CONFIG_FILES if building
+SWITCHERBUILD=true
+if test "${OSCBUILD}" = "false"; 
+  then SWITCHERBUILD=false
+fi
+if test "${SOAPBUILD}" = "false";
+  then SWITCHERBUILD=false
+fi
+if test "${SWITCHERBUILD}" = "true";
+  then AC_CONFIG_FILES([src/Makefile])
+fi
+AM_CONDITIONAL(SWITCHERBUILD, test "${SWITCHERBUILD}" = "true")
+                            
 dnl =======================================================================
 dnl Finally, create Makefiles in all directories
 dnl =======================================================================
@@ -221,29 +238,35 @@ dnl =======================================================================
 AC_CONFIG_FILES([
 Makefile
 doxyfile
-src/Makefile
 switcher-${LIBSWITCHER_API_VERSION}.pc:switcher.pc.in
 switcher/Makefile
 tests/Makefile
 plugins/Makefile
 plugins/example/Makefile
-plugins/v4l2/Makefile
 plugins/avcodecs/Makefile
-plugins/osc/Makefile
 ])
 AC_OUTPUT
 
 [echo ""]
+[echo "-----------------------------------"]
 [echo ""]
-[echo "======================================="]
+[echo "OPTIONAL PLUGINS"]
 [echo ""]
-[echo "libswitcher will be built"]
+[echo "V4L2 capture plugin?        ${V4L2BUILD}"]
 [echo ""]
-[echo "Plugin Configuration:"]
-[echo "V4L2 capture plugin?       ${V4L2BUILD}"]
+[echo "-----------------------------------"]
 [echo ""]
-[echo "Switcher Configuration (need all following plugins):"]
-[echo "OSC controler plugin?      ${OSCBUILD}"]
-[echo "switcher?                  ${SWITCHERBUILD}"]
+[echo "SWITCHER REQUIRED PLUGINS"]
 [echo ""]
-[echo "======================================="]
+[echo "OSC controler plugin?       ${OSCBUILD}"]
+[echo "GSOAP controler plugin?     ${GSOAPBUILD}"]
+[echo ""]
+[echo "-----------------------------------"]
+[echo ""]
+[echo "SWITCHER BUILD STATUS"]
+[echo ""]
+[echo "libswitcher?                true"]
+[echo "switcher?                   ${SWITCHERBUILD}"]
+[echo ""]
+[echo "-----------------------------------"]
+[echo ""]

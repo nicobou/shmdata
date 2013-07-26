@@ -17,6 +17,7 @@ AM_LIBS = \
     -module \
     $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
 
+
 pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
 plugins_LTLIBRARIES = \
@@ -31,3 +32,6 @@ libosc_la_include_HEADERS = \
 
 libosc_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
+
+libosc_la_LDFLAGS = \
+    $(LIBLO_LIBS) 

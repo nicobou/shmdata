@@ -46,8 +46,6 @@
 #include "runtime.h"
 #include "shmdata-to-file.h"
 #include "shmdata-from-gdp-file.h"
-#include "soap-ctrl-client.h"
-#include "soap-ctrl-server.h"
 #include "udpsink.h"
 #include "uridecodebin.h"
 #include "uris.h"
@@ -214,10 +212,6 @@ namespace switcher
       							  ShmdataFromGDPFile::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<ShmdataToFile> (ShmdataToFile::switcher_doc_.get_class_name (), 
       						     ShmdataToFile::switcher_doc_.get_json_root_node ());
-    abstract_factory_.register_class<SoapCtrlClient> (SoapCtrlClient::switcher_doc_.get_class_name (), 
-      						      SoapCtrlClient::switcher_doc_.get_json_root_node ());
-    abstract_factory_.register_class<SoapCtrlServer> (SoapCtrlServer::switcher_doc_.get_class_name (), 
-      						      SoapCtrlServer::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<UDPSink> (UDPSink::switcher_doc_.get_class_name (), 
        					       UDPSink::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<Uridecodebin> (Uridecodebin::switcher_doc_.get_class_name (), 
@@ -1095,10 +1089,9 @@ namespace switcher
 	descend = g_file_get_child (dir, g_file_info_get_name (info));
 	absolute_path = g_file_get_path (descend);//g_file_get_relative_path (dir, descend);
 	//trying to load the module 
-	g_debug ("trying to load module %s\n", absolute_path);
 	if (g_str_has_suffix (absolute_path, ".so"))
 	  {
-	    g_debug ("trying to load module %s\n", absolute_path);
+	    g_debug ("trying to load module %s", absolute_path);
 	    load_plugin (absolute_path);
 	  }
 	g_free (absolute_path);

@@ -17,6 +17,10 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include "switcher/quiddity-manager.h"
 #include <vector>
 #include <string>
@@ -35,11 +39,11 @@ mon_property_cb(std::string subscriber_name,
 		std::string value, 
 		void *user_data)
 {
-  
   // if (g_strcmp0 (property_name.c_str (), "caps") == 0)
   //   g_print ("-caps- %s\n",value.c_str ());
 
   //g_print ("%s, %s, %s\n", quiddity_name.c_str (), property_name.c_str (), value.c_str ());
+
   if (!audio_success && g_strcmp0 (quiddity_name.c_str (), "audioprobe") == 0)
     {
       g_message ("audio received !");
@@ -66,6 +70,14 @@ main (int argc,
   {
     switcher::QuiddityManager::ptr manager = 
       switcher::QuiddityManager::make_manager("rtptest");  
+
+#ifdef HAVE_CONFIG_H
+    gchar *usr_plugin_dir = g_strdup_printf ("../plugins/gsoap/%s", LT_OBJDIR);
+    manager->scan_directory_for_plugins (usr_plugin_dir);
+    g_free (usr_plugin_dir);
+#else
+    return 1;
+#endif
     
     manager->create ("SOAPcontrolServer", "soapserver");
     manager->invoke_va ("soapserver", "set_port", "38084", NULL);

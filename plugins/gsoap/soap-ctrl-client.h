@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_SOAP_CTRL_CLIENT_H__
 #define __SWITCHER_SOAP_CTRL_CLIENT_H__
 
-#include "quiddity.h"
+#include "switcher/quiddity.h"
 #include "webservices/soapcontrolProxy.h"
 //#include "webservices/control.nsmap"
 
@@ -73,6 +73,8 @@ namespace switcher
 				     gpointer user_data);
 
   };
+
+  SWITCHER_DECLARE_PLUGIN(SoapCtrlClient);
   
 }  // end of namespace
 

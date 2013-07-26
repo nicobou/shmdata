@@ -54,7 +54,9 @@ switcher/.deps/
 switcher/.libs/
 switcher/Makefile
 switcher/classes.cxx
-switcher/webservices
+plugins/gsoap/webservices
+plugins/gsoap/.deps
+plugins/gsoap/.libs
 test-driver
 tests/.deps/
 tests/.libs/
