@@ -188,6 +188,16 @@ if test "x${V4L2BUILD}" = "xtrue";
   then AC_CONFIG_FILES([plugins/v4l2/Makefile])
 fi
 
+PKG_CHECK_MODULES(GTK, gtk+-2.0, have_gtk=true, have_gtk=false)
+if test "x${have_gtk}" = "xfalse" ; then
+    GTKBUILD=false
+    AC_MSG_WARN([Missing libgtk2.0-dev package, gtk fullscreen video will not be built])
+else
+    GTKBUILD=true
+    AC_CONFIG_FILES([plugins/gtk/Makefile])
+fi
+AM_CONDITIONAL(GTKBUILD, test "${GTKBUILD}" = "true")
+
 AC_MSG_CHECKING([to see if compiler understands -std=c++0x])
 save_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$CFLAGS $CXXFLAGS -std=c++0x"
@@ -253,6 +263,7 @@ AC_OUTPUT
 [echo "OPTIONAL PLUGINS"]
 [echo ""]
 [echo "V4L2 capture plugin?        ${V4L2BUILD}"]
+[echo "GTK fullscreen video?       ${GTKBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]

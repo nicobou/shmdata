@@ -16,3 +16,8 @@ if GSOAPBUILD
 SUBDIRS += \
     gsoap
 endif
+
+if GTKBUILD
+SUBDIRS += \
+    gtk
+endif
