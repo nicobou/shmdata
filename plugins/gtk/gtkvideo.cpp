@@ -85,6 +85,13 @@ namespace switcher
 				"fullscreen",
 				"Fullscreen");
 
+    g_object_set (G_OBJECT (xvimagesink_),
+		  "force-aspect-ratio", TRUE,
+		  "draw-borders", TRUE,
+		  NULL);
+
+    
+    
     blank_cursor_ = gdk_cursor_new(GDK_BLANK_CURSOR);
     return true;
   }
@@ -206,6 +213,11 @@ namespace switcher
   {
     GTKVideo *context = static_cast <GTKVideo *> (user_data);
    
+   // GstCaps *caps = caller->get_caps ();
+    // g_print ("CAPS CAPS CAPS %s\n",
+    // 	     gst_caps_to_string (caps));
+
+
      context->main_window_ = gtk_window_new (GTK_WINDOW_TOPLEVEL);
      g_signal_connect (G_OBJECT (context->main_window_), 
 		       "delete-event", G_CALLBACK (delete_event_cb), context);
@@ -240,7 +252,7 @@ namespace switcher
   
   gboolean 
   GTKVideo::get_fullscreen (void *user_data)
-  {
+  {d
     GTKVideo *context = static_cast<GTKVideo *> (user_data);
     return context->is_fullscreen_;
   }
@@ -256,6 +268,7 @@ namespace switcher
 	  {
 	    gdk_window_set_cursor(GDK_WINDOW(context->video_window_->window), context->blank_cursor_);
 	    gtk_window_fullscreen(GTK_WINDOW(context->main_window_));
+	    //gtk_widget_set_size_request (context->video_window_,1920,1080);
 	  }
 	context->is_fullscreen_ = TRUE;
       }
