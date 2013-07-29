@@ -99,8 +99,6 @@ AC_CHECK_FILE([/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig],
               [AC_MSG_WARN([OSX GStreamer SDK not found])])
 
 
-# switcher building
-SWITCHERBUILD=true
 
 dnl =======================================================================
 dnl Check for the required version of GStreamer core (and gst-plugins-base)
@@ -155,24 +153,23 @@ fi
 
 PKG_CHECK_MODULES(GSOAP, gsoap++, have_gsoap=true, have_gsoap=false)
 if test "x${have_gsoap}" = "xfalse" ; then
-    GSOAPBUILD=false
+    GSOAPBUILD=disabled
     AC_MSG_WARN([Missing gsoap package])
 else
-    GSOAPBUILD=true
+    GSOAPBUILD=enabled
     AC_CONFIG_FILES([plugins/gsoap/Makefile])
 fi
-AM_CONDITIONAL(GSOAPBUILD, test "${GSOAPBUILD}" = "true")
+AM_CONDITIONAL(GSOAPBUILD, test "${GSOAPBUILD}" = "enabled")
 
 PKG_CHECK_MODULES(LIBLO, liblo, have_liblo=true, have_liblo=false)
 if test "x${have_liblo}" = "xfalse" ; then
-    OSCBUILD=false
-    SWITCHERBUILD=false
+    OSCBUILD=disabled
     AC_MSG_WARN([Missing liblo-dev package, switcher will not be built])
 else
-    OSCBUILD=true
+    OSCBUILD=enabled
     AC_CONFIG_FILES([plugins/osc/Makefile])
 fi
-AM_CONDITIONAL(OSCBUILD, test "${OSCBUILD}" = "true")
+AM_CONDITIONAL(OSCBUILD, test "${OSCBUILD}" = "enabled")
 
 PKG_CHECK_MODULES(JSONGLIB, json-glib-1.0, have_jsonglib=true, have_jsonglib=false)
 if test "x${have_jsonglib}" = "xfalse" ; then
@@ -181,22 +178,24 @@ fi
 
 # Check for 
 AC_CHECK_HEADER(linux/videodev2.h,
-                V4L2BUILD=true,
+                V4L2BUILD=enabled,
                 AC_MSG_WARN([v4l2 capture plugin will not be built (missing videodev2.h from package linux-libc-dev)]))
-AM_CONDITIONAL(V4L2BUILD, test "${V4L2BUILD}" = "true")
-if test "x${V4L2BUILD}" = "xtrue";
+AM_CONDITIONAL(V4L2BUILD, test "${V4L2BUILD}" = "enabled")
+if test "x${V4L2BUILD}" = "xenabled";
   then AC_CONFIG_FILES([plugins/v4l2/Makefile])
+else
+  V4L2BUILD=disabled
 fi
 
 PKG_CHECK_MODULES(GTK, gtk+-2.0, have_gtk=true, have_gtk=false)
 if test "x${have_gtk}" = "xfalse" ; then
-    GTKBUILD=false
+    GTKBUILD=disabled
     AC_MSG_WARN([Missing libgtk2.0-dev package, gtk fullscreen video will not be built])
 else
-    GTKBUILD=true
+    GTKBUILD=enabled
     AC_CONFIG_FILES([plugins/gtk/Makefile])
 fi
-AM_CONDITIONAL(GTKBUILD, test "${GTKBUILD}" = "true")
+AM_CONDITIONAL(GTKBUILD, test "${GTKBUILD}" = "enabled")
 
 AC_MSG_CHECKING([to see if compiler understands -std=c++0x])
 save_CXXFLAGS="$CXXFLAGS"
@@ -229,17 +228,17 @@ fi
 AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])
 
 dnl testing if switcher can be built and add it to CONFIG_FILES if building
-SWITCHERBUILD=true
-if test "${OSCBUILD}" = "false"; 
-  then SWITCHERBUILD=false
+SWITCHERBUILD=enabled
+if test "${OSCBUILD}" = "disabled"; 
+  then SWITCHERBUILD=disabled
 fi
-if test "${SOAPBUILD}" = "false";
-  then SWITCHERBUILD=false
+if test "${SOAPBUILD}" = "disabled";
+  then SWITCHERBUILD=disabled
 fi
-if test "${SWITCHERBUILD}" = "true";
+if test "${SWITCHERBUILD}" = "enabled";
   then AC_CONFIG_FILES([src/Makefile])
 fi
-AM_CONDITIONAL(SWITCHERBUILD, test "${SWITCHERBUILD}" = "true")
+AM_CONDITIONAL(SWITCHERBUILD, test "${SWITCHERBUILD}" = "enabled")
                             
 dnl =======================================================================
 dnl Finally, create Makefiles in all directories
@@ -262,22 +261,22 @@ AC_OUTPUT
 [echo ""]
 [echo "OPTIONAL PLUGINS"]
 [echo ""]
-[echo "V4L2 capture plugin?        ${V4L2BUILD}"]
-[echo "GTK fullscreen video?       ${GTKBUILD}"]
+[echo "V4L2 capture plugin        ${V4L2BUILD}"]
+[echo "GTK fullscreen video       ${GTKBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]
 [echo "SWITCHER REQUIRED PLUGINS"]
 [echo ""]
-[echo "OSC controler plugin?       ${OSCBUILD}"]
-[echo "GSOAP controler plugin?     ${GSOAPBUILD}"]
+[echo "OSC controler plugin       ${OSCBUILD}"]
+[echo "GSOAP controler plugin     ${GSOAPBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]
 [echo "SWITCHER BUILD STATUS"]
 [echo ""]
-[echo "libswitcher?                true"]
-[echo "switcher?                   ${SWITCHERBUILD}"]
+[echo "libswitcher                enabled"]
+[echo "switcher                   ${SWITCHERBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]
