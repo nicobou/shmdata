@@ -41,6 +41,11 @@ plugins/avcodecs/.deps/
 plugins/avcodecs/.libs/
 plugins/example/.deps/
 plugins/example/.libs/
+plugins/gsoap/.deps
+plugins/gsoap/.libs
+plugins/gsoap/webservices
+plugins/gtk/.deps/
+plugins/gtk/.libs/
 plugins/osc/.deps/
 plugins/osc/.libs/
 plugins/v4l2/.deps/
@@ -54,9 +59,6 @@ switcher/.deps/
 switcher/.libs/
 switcher/Makefile
 switcher/classes.cxx
-plugins/gsoap/webservices
-plugins/gsoap/.deps
-plugins/gsoap/.libs
 test-driver
 tests/.deps/
 tests/.libs/

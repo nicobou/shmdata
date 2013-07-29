@@ -25,6 +25,7 @@
 #include "gst-utils.h"
 #include <shmdata/base-reader.h>
 #include "quiddity-command.h"
+#include <gst/interfaces/xoverlay.h>
 
 namespace switcher
 {
@@ -378,6 +379,14 @@ res = gst_element_query (pipeline_, query);
 
 	g_error_free (error);
 	return GST_BUS_DROP; 
+      }
+
+    if (gst_structure_has_name (msg->structure, "prepare-xwindow-id"))
+      {
+	guintptr *window_handle = (guintptr *)g_object_get_data (G_OBJECT (msg->src), 
+								  "window-handle");
+	if (window_handle != NULL)
+	  gst_x_overlay_set_window_handle (GST_X_OVERLAY (msg->src), *window_handle);
       }
     
     return GST_BUS_PASS; 
