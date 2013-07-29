@@ -22,7 +22,18 @@
 #define __SWITCHER_GTK_VIDEO_H__
 
 #include "switcher/video-sink.h"
+#include "switcher/custom-property-helper.h"
 #include <memory>
+
+#include <gtk/gtk.h>
+#include <gdk/gdk.h>
+#if defined (GDK_WINDOWING_X11)
+#include <gdk/gdkx.h>
+#elif defined (GDK_WINDOWING_WIN32)
+#include <gdk/gdkwin32.h>
+#elif defined (GDK_WINDOWING_QUARTZ)
+#include <gdk/gdkquartzwindow.h>
+#endif
 
 namespace switcher
 {
@@ -33,10 +44,29 @@ namespace switcher
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GTKVideo);
     GTKVideo ();
     ~GTKVideo ();
-
+    void toggle_fullscreen();
+    
   private:
+    static guint instances_counter_;
+    GtkWidget *main_window_;  
+    GtkWidget *video_window_; 
     GstElement *xvimagesink_;
+    guintptr window_handle_;
     QuiddityCommand *on_error_command_; //for the runtime error handler
+    GdkCursor *blank_cursor_;
+
+    CustomPropertyHelper::ptr custom_props_;
+    GParamSpec *fullscreen_prop_spec_;
+    gboolean is_fullscreen_;
+
+    static void create_ui (ShmdataReader *caller, void *user_data);
+    static gboolean expose_cb (GtkWidget *widget, GdkEventExpose *event, void *user_data);
+    static void realize_cb (GtkWidget *widget, void *user_data);
+    static void delete_event_cb (GtkWidget *widget, GdkEvent *event, void *user_data);
+    static gpointer gtk_main_loop_thread (gpointer user_data);
+    static gboolean key_pressed_cb(GtkWidget *widget, GdkEventKey *event, gpointer data);
+    static gboolean get_fullscreen (void *user_data);
+    static void set_fullscreen (gboolean fullscreen, void *user_data);
   };
 
   SWITCHER_DECLARE_PLUGIN(GTKVideo);

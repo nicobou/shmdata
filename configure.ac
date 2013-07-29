@@ -112,6 +112,7 @@ PKG_CHECK_MODULES(GST, [
     gstreamer-base-0.10         >= $GST_REQUIRED
     gstreamer-controller-0.10   >= $GST_REQUIRED
     gstreamer-sdp-0.10          >= $GST_REQUIRED
+    gstreamer-interfaces-0.10   >= $GST_REQUIRED
   ], [
     AC_SUBST(GST_CFLAGS)
     AC_SUBST(GST_LIBS)
@@ -123,6 +124,7 @@ PKG_CHECK_MODULES(GST, [
       gstreamer-base-0.10         >= $GST_REQUIRED
       gstreamer-controller-0.10   >= $GST_REQUIRED
       gstreamer-sdp-0.10          >= $GST_REQUIRED
+      gstreamer-interfaces-0.10   >= $GST_REQUIRED
 
     Please make sure you have the necessary GStreamer-0.10
     development headers installed.

@@ -34,3 +34,6 @@ libgtkvideo_la_include_HEADERS = \
 libgtkvideo_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
+libgtkvideo_la_LDFLAGS = \
+    $(GTK_LIBS) \
+    $(GST_LIBS)
