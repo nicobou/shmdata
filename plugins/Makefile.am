@@ -21,3 +21,8 @@ if GTKBUILD
 SUBDIRS += \
     gtk
 endif
+
+if PULSEBUILD
+SUBDIRS += \
+    pulse
+endif
