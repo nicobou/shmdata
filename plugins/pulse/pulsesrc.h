@@ -23,6 +23,7 @@
 #define __SWITCHER_PULSE_SRC_H__
 
 #include "switcher/quiddity.h"
+#include <pulse/pulseaudio.h>
 
 namespace switcher
 {
@@ -32,6 +33,9 @@ namespace switcher
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSrc);
 
+  private:
+    static void context_state_callback(pa_context *c, void *userdata);
+    static void get_source_info_callback(pa_context *c, const pa_source_info *i, int is_last, void *userdata);
   };
 
   SWITCHER_DECLARE_PLUGIN(PulseSrc);
