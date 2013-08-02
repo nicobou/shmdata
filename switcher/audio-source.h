@@ -38,14 +38,12 @@ namespace switcher
   private:
     GstElement *rawaudio_;
     GstElement *audio_tee_;
-    //GstElement *audio_queue_;
     GstElement *audioconvert_;   
-    //GstElement *pitch_;
     GstElement *resample_;
+    void clean_audio_elements ();
+    void make_audio_elements ();
 
   protected:
-    //called in the derived class constructor
-    GstElementCleaner::ptr cleaner_;
     void set_raw_audio_element (GstElement *elt);
   };
 

@@ -22,6 +22,7 @@
  */
 
 #include "pulsesrc.h"
+#include "switcher/gst-utils.h"
 
 namespace switcher
 {
@@ -36,144 +37,226 @@ namespace switcher
   bool
   PulseSrc::init ()
   {
-    set_name ("coucou");
-    pa_context *context = NULL;
-    pa_mainloop_api *mainloop_api = NULL;
-    pa_proplist *proplist = NULL;
-    char *server = NULL;
+    if (!make_elements ())
+      return false;
+    //set the name before registering properties
+    set_name (gst_element_get_name (pulsesrc_));
 
-    proplist = pa_proplist_new();
+    pa_context_ = NULL;
+    server_ = NULL;
+
+    pa_glib_mainloop_ = pa_glib_mainloop_new(get_g_main_context ());
     
-    pa_mainloop *pulse_main_loop = NULL;
-    if (!(m = pa_mainloop_new())) {
-      g_debug ("pa_mainloop_new() failed.");
+    pa_mainloop_api_ = pa_glib_mainloop_get_api(pa_glib_mainloop_);
+    
+    if (!(pa_context_ = pa_context_new(pa_mainloop_api_, NULL))) {
+      g_debug ("PulseSrc:: pa_context_new() failed.");
       return false;
     }
     
-    mainloop_api = pa_mainloop_get_api(pulse_main_loop);
-    if (!(context = pa_context_new_with_proplist(mainloop_api, NULL, proplist))) {
-      g_debug ("pa_context_new() failed.");
+    pa_context_set_state_callback(pa_context_, pa_context_state_callback, this);
+
+    if (pa_context_connect(pa_context_, server_, (pa_context_flags_t)0, NULL) < 0) {
+      g_debug ("pa_context_connect() failed: %s", pa_strerror(pa_context_errno(pa_context_)));
       return false;
     }
 
-    pa_context_set_state_callback(context, context_state_callback, pulse_main_loop);
-    if (pa_context_connect(context, server, (pa_context_flags_t)0, NULL) < 0) {
-      g_debug ("pa_context_connect() failed: %s", pa_strerror(pa_context_errno(context)));
-    return false;
-    }
+
+    capture_devices_description_ = NULL;
+    register_method("capture",
+		    (void *)&capture_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_NONE, 
+						       NULL),
+		    (gpointer)this);
+    set_method_description ("capture", 
+			    "start capturing from default device", 
+			    Method::make_arg_description ("none",
+ 							  NULL));
+
+
+    register_method("capture_device",
+		    (void *)&capture_device_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING, 
+						       NULL),
+		    (gpointer)this);
+    set_method_description ("capture_device", 
+			    "start capturing from selected device", 
+			    Method::make_arg_description ("pulse_name_device",
+							  "Pulse Audio Device Name",
+							  NULL));
+
+
+    custom_props_.reset (new CustomPropertyHelper ());
+    capture_devices_description_spec_ = custom_props_->make_string_property ("capture-devices-json", 
+									     "Description of capture devices (json formated)",
+									     "",
+									     (GParamFlags) G_PARAM_READABLE,
+									     NULL,
+									     PulseSrc::get_capture_devices_json,
+									     this);
+    
+    register_property_by_pspec (custom_props_->get_gobject (), 
+				capture_devices_description_spec_, 
+				"capture-devices-json",
+				"Capture Devices");
     return true;
   }
 
+  PulseSrc::~PulseSrc ()
+  {
+    pa_context_disconnect (pa_context_);
+    //pa_mainloop_api_->quit (pa_mainloop_api_, 0);
+    pa_glib_mainloop_free(pa_glib_mainloop_);
 
-  void 
-  PulseSrc::context_state_callback(pa_context *c, void *user_data) {
-
-    pulse_audio_main_loop = ()user_data;
-
-    g_debug ("heheheheh 1");
-    pa_context_state_t state;
-    state = pa_context_get_state(c);
-    if (state == PA_CONTEXT_TERMINATED)
-      pa_operation_unref(pa_context_get_source_info_list(c, get_source_info_callback, NULL));
-    else
-      pa_mainloop_iterate(pa_ml, 1, NULL);
+    if (capture_devices_description_ != NULL)
+      g_free (capture_devices_description_);
+    clean_elements ();
+  }
 
 
-    g_debug ("heheheheh 2");
+  bool
+  PulseSrc::make_elements ()
+  {
+    clean_elements ();
+
+    if (!GstUtils::make_element ("pulsesrc",&pulsesrc_))
+      return false;
+    if (!GstUtils::make_element ("capsfilter",&capsfilter_))
+      return false;
+    if (!GstUtils::make_element ("bin",&pulsesrc_bin_))
+      return false;
     
+    gst_bin_add_many (GST_BIN (pulsesrc_bin_),
+		      pulsesrc_,
+		      capsfilter_,
+		      NULL);
+
+    gst_element_link (pulsesrc_, capsfilter_);
+
+    GstPad *src_pad = gst_element_get_static_pad (capsfilter_, "src");
+    GstPad *ghost_srcpad = gst_ghost_pad_new (NULL, src_pad);
+    gst_pad_set_active(ghost_srcpad,TRUE);
+    gst_element_add_pad (pulsesrc_bin_, ghost_srcpad); 
+    gst_object_unref (src_pad);
+    return true;
+  }
+
+  void
+  PulseSrc::clean_elements ()
+  {
+    GstUtils::clean_element (pulsesrc_);
+    //GstUtils::clean_element (capsfilter_);//FIXME
+    GstUtils::clean_element (pulsesrc_bin_);
   }
 
   void 
-  PulseSrc::get_source_info_callback(pa_context *c, const pa_source_info *i, int is_last, void *userdata) {
+  PulseSrc::pa_context_state_callback(pa_context *pulse_context, void *user_data) {
+    
+    PulseSrc *context = static_cast <PulseSrc *> (user_data);
+    
+    switch (pa_context_get_state(pulse_context)) {
+    case PA_CONTEXT_CONNECTING:
+      //g_print ("PA_CONTEXT_CONNECTING\n");
+      break;
+    case PA_CONTEXT_AUTHORIZING:
+      //g_print ("PA_CONTEXT_AUTHORIZING\n");
+      break;
+    case PA_CONTEXT_SETTING_NAME:
+      //g_print ("PA_CONTEXT_SETTING_NAME\n");
+      break;
+    case PA_CONTEXT_READY: 
+      //g_print ("PA_CONTEXT_READY\n");
+      pa_operation_unref(pa_context_get_source_info_list(pulse_context,
+							 get_source_info_callback, 
+							 NULL));
+      
+      pa_context_set_subscribe_callback (pulse_context,
+					 on_pa_event_callback,
+					 NULL); 	
+      
+      pa_operation_unref(pa_context_subscribe (pulse_context,
+					       (pa_subscription_mask_t) (PA_SUBSCRIPTION_MASK_SINK|
+									 PA_SUBSCRIPTION_MASK_SOURCE|
+									 PA_SUBSCRIPTION_MASK_SINK_INPUT|
+									 PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT|
+									 PA_SUBSCRIPTION_MASK_MODULE|
+									 PA_SUBSCRIPTION_MASK_CLIENT|
+									 PA_SUBSCRIPTION_MASK_SAMPLE_CACHE|
+									 PA_SUBSCRIPTION_MASK_SERVER|
+									 PA_SUBSCRIPTION_MASK_CARD),
+					       NULL, //pa_context_success_cb_t cb,
+					       NULL) //void *userdata);
+			 );
+      
+      break;
+    case PA_CONTEXT_TERMINATED:
+      g_debug ("PulseSrc: PA_CONTEXT_TERMINATED\n");
+      pa_context_unref(context->pa_context_);
+      context->pa_context_ = NULL;
+      break;
+    case PA_CONTEXT_FAILED:
+      //g_print ("PA_CONTEXT_FAILED\n");
+      break;
+    default:
+      g_debug ("PulseSrc Context error: %s\n",pa_strerror(pa_context_errno(pulse_context)));
+    }
 
-    // static const char *state_table[] = {
-    //   [1+PA_SOURCE_INVALID_STATE] = "n/a",
-    //   [1+PA_SOURCE_RUNNING] = "RUNNING",
-    //   [1+PA_SOURCE_IDLE] = "IDLE",
-    //   [1+PA_SOURCE_SUSPENDED] = "SUSPENDED"
-    // };
-    
-    char
-      s[PA_SAMPLE_SPEC_SNPRINT_MAX],
-      cv[PA_CVOLUME_SNPRINT_MAX],
-      cvdb[PA_SW_CVOLUME_SNPRINT_DB_MAX],
-      v[PA_VOLUME_SNPRINT_MAX],
-      vdb[PA_SW_VOLUME_SNPRINT_DB_MAX],
-      cm[PA_CHANNEL_MAP_SNPRINT_MAX],
-      f[PA_FORMAT_INFO_SNPRINT_MAX];
-    char *pl;
-    
+  }
+
+  void 
+  PulseSrc::get_source_info_callback(pa_context *pulse_context, const pa_source_info *i, int is_last, void *userdata) {
+
     if (is_last < 0) {
-      g_debug ("Failed to get source information: %s", pa_strerror(pa_context_errno(c)));
+      g_debug ("Failed to get source information: %s", pa_strerror(pa_context_errno(pulse_context)));
       return;
     }
     
     if (is_last) {
-      g_debug ("nico should complete action :(");
-      //complete_action();
+      pa_operation *operation = pa_context_drain(pulse_context, NULL, NULL);
+      if (operation)
+        pa_operation_unref(operation);
       return;
     }
     
+    //HERE make json
+    printf(":: source :: \n");
     
-    printf("\n");
-    
-    // printf("%u\t%s\t%s\t%s\t%s\n",
-    // 	     i->index,
-    // 	     i->name,
-    // 	     pa_strnull(i->driver),
-    // 	     pa_sample_spec_snprint(s, sizeof(s), &i->sample_spec),
-    // 	     state_table[1+i->state]);
-    printf("SHORT %u\t%s\t%s\t%s\t ?nico? \n",
-	   i->index,
-	   i->name,
-	   i->driver,//pa_strnull(i->driver),
-	   pa_sample_spec_snprint(s, sizeof(s), &i->sample_spec)//,
-	   //state_table[1+i->state]
-	   );
-    
-    printf("Source #%u\n"
-	   //"\tState: %s\n"
-	   "\tName: %s\n"
-	   "\tDescription: %s\n"
-	   "\tDriver: %s\n"
-	   "\tSample Specification: %s\n"
-	   "\tChannel Map: %s\n"
-	   "\tOwner Module: %u\n"
-	   "\tMute: %s\n"
-	   "\tVolume: %s%s%s\n"
-	   "\t        balance %0.2f\n"
-	   "\tBase Volume: %s%s%s\n"
-	   "\tMonitor of Sink: %s\n"
-	   "\tLatency: %0.0f usec, configured %0.0f usec\n"
-	   "\tFlags: %s%s%s%s%s%s\n"
-	   "\tProperties:\n\t\t%s\n",
-           i->index,
-           //state_table[1+i->state],
-           i->name,
-           i->description,//pa_strnull(i->description),
-           i->driver,//pa_strnull(i->driver),
-           pa_sample_spec_snprint(s, sizeof(s), &i->sample_spec),
-           pa_channel_map_snprint(cm, sizeof(cm), &i->channel_map),
-           i->owner_module,
-           i->mute,//pa_yes_no(i->mute),
-           pa_cvolume_snprint(cv, sizeof(cv), &i->volume),
-           i->flags & PA_SOURCE_DECIBEL_VOLUME ? "\n\t        " : "",
-           i->flags & PA_SOURCE_DECIBEL_VOLUME ? pa_sw_cvolume_snprint_dB(cvdb, sizeof(cvdb), &i->volume) : "",
-           pa_cvolume_get_balance(&i->volume, &i->channel_map),
-           pa_volume_snprint(v, sizeof(v), i->base_volume),
-           i->flags & PA_SOURCE_DECIBEL_VOLUME ? "\n\t             " : "",
-           i->flags & PA_SOURCE_DECIBEL_VOLUME ? pa_sw_volume_snprint_dB(vdb, sizeof(vdb), i->base_volume) : "",
-           i->monitor_of_sink_name ? i->monitor_of_sink_name : "n/a",
-           (double) i->latency, (double) i->configured_latency,
-           i->flags & PA_SOURCE_HARDWARE ? "HARDWARE " : "",
-           i->flags & PA_SOURCE_NETWORK ? "NETWORK " : "",
-           i->flags & PA_SOURCE_HW_MUTE_CTRL ? "HW_MUTE_CTRL " : "",
-           i->flags & PA_SOURCE_HW_VOLUME_CTRL ? "HW_VOLUME_CTRL " : "",
-           i->flags & PA_SOURCE_DECIBEL_VOLUME ? "DECIBEL_VOLUME " : "",
-           i->flags & PA_SOURCE_LATENCY ? "LATENCY " : "",
-           pl = pa_proplist_to_string_sep(i->proplist, "\n\t\t"));
+    switch (i->state) {
+    case PA_SOURCE_INIT:
+      g_print ("state: INIT \n");
+      break;
+    case PA_SOURCE_UNLINKED:
+      g_print ("state: UNLINKED \n");
+      break;
+    case PA_SOURCE_INVALID_STATE:
+      g_print ("state: n/a \n");
+      break;
+    case PA_SOURCE_RUNNING:
+      g_print ("state: RUNNING \n");
+      break;
+    case PA_SOURCE_IDLE:
+      g_print ("state: IDLE \n");
+      break;
+    case PA_SOURCE_SUSPENDED:
+      g_print ("state: SUSPENDED \n");
+      break;
+    }
 
-    pa_xfree(pl);
+
+    g_print ("\tName: %s\n"
+	     "\tDescription: %s\n"
+	     "\t format: %s\n"
+	     "\t rate: %u\n"
+	     "\t channels: %u\n",
+	     //"\tChannel Map: %s\n",
+	     i->name,
+	     i->description,//warning this can be NULL
+	     pa_sample_format_to_string (i->sample_spec.format),
+	     i->sample_spec.rate,
+	     i->sample_spec.channels//,
+	     //pa_channel_map_snprint(cm, sizeof(cm), &i->channel_map)
+	     );
+    
 
     if (i->ports) {
         pa_source_port_info **p;
@@ -187,15 +270,94 @@ namespace switcher
         printf("\tActive Port: %s\n",
                i->active_port->name);
 
-    if (i->formats) {
-        uint8_t j;
-
-        printf("\tFormats:\n");
-        for (j = 0; j < i->n_formats; j++)
-            printf("\t\t%s\n", pa_format_info_snprint(f, sizeof(f), i->formats[j]));
-    }
-
+    // if (i->formats) {
+    //   uint8_t j;
+    
+    //   printf("\tFormats:\n");
+    //   for (j = 0; j < i->n_formats; j++)
+    // 	printf("\t\t%s\n", pa_format_info_snprint(f, sizeof(f), i->formats[j]));
+    // }
   }
+
+  void 
+    PulseSrc::on_pa_event_callback (pa_context *c, 
+				    pa_subscription_event_type_t t,
+				    uint32_t idx, 
+				    void *userdata)
+  {
+    if ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SOURCE) {
+      if ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_NEW) {
+	pa_operation_unref(pa_context_get_source_info_list(c, get_source_info_callback, NULL));
+	return;
+      }
+    }
+    
+    if ((t & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) == PA_SUBSCRIPTION_EVENT_SOURCE) {
+      if ((t & PA_SUBSCRIPTION_EVENT_TYPE_MASK) == PA_SUBSCRIPTION_EVENT_REMOVE) {
+	pa_operation_unref(pa_context_get_source_info_list(c, get_source_info_callback, NULL));
+	return;
+      }
+    }
+  }
+
+  gchar *
+  PulseSrc::get_capture_devices_json (void *user_data)
+  {
+    PulseSrc *context = static_cast<PulseSrc *> (user_data);
+    if (context->capture_devices_description_ != NULL)
+      g_free (context->capture_devices_description_);
+
+    
+
+    //context->capture_devices_description_ = g_strdup (builder->get_string (true).c_str ());
+    context->capture_devices_description_ = g_strdup ("{error: \"todo\"}");
+    return context->capture_devices_description_;
+  }
+
+  gboolean 
+  PulseSrc::capture_wrapped (gpointer device_file_path, 
+			    gpointer user_data)
+  {
+    PulseSrc *context = static_cast<PulseSrc *>(user_data);
+    
+    if (context->capture_device ("NONE"))
+      return TRUE;
+    else
+      return FALSE;
+  }
+
+    gboolean 
+    PulseSrc::capture_device_wrapped (gpointer pulse_device_name,
+				      gpointer user_data)
+  {
+    PulseSrc *context = static_cast<PulseSrc *>(user_data);
+    
+    if (context->capture_device ((const char *)pulse_device_name))
+      return TRUE;
+    else
+      return FALSE;
+  }
+
+  bool 
+  PulseSrc::capture_device (const char *pulse_device_name)
+  {
+    make_elements ();
+
+    if (g_strcmp0 (pulse_device_name, "NONE") != 0)
+      if (capture_devices_.find (pulse_device_name) != capture_devices_.end ())	
+     	g_object_set (G_OBJECT (pulsesrc_), "device", pulse_device_name, NULL);
+      else
+     	{
+     	  g_warning ("PulseSrc: device %s has not been detected by pulse audio, cannot use", pulse_device_name);
+     	  return false;
+     	}
+    
+    set_raw_audio_element (pulsesrc_bin_);
+   
+    return true;
+  }
+
 }//end of PulseSrc class
-
-
+  
+  
+  

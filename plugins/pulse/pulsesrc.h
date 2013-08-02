@@ -22,20 +22,54 @@
 #ifndef __SWITCHER_PULSE_SRC_H__
 #define __SWITCHER_PULSE_SRC_H__
 
-#include "switcher/quiddity.h"
+#include "switcher/audio-source.h"
 #include <pulse/pulseaudio.h>
+#include <pulse/glib-mainloop.h>
+#include "switcher/custom-property-helper.h"
 
 namespace switcher
 {
 
-  class PulseSrc : public Quiddity
+  class PulseSrc : public AudioSource
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSrc);
+    ~PulseSrc ();
 
   private:
-    static void context_state_callback(pa_context *c, void *userdata);
+    GstElement *pulsesrc_;
+    GstElement *capsfilter_;
+    GstElement *pulsesrc_bin_;
+    bool make_elements ();
+    void clean_elements ();
+    static gchar *get_capture_devices_json (void *user_data);
+    static gboolean capture_wrapped (gpointer device_file_path, 
+			      gpointer user_data);
+    static gboolean capture_device_wrapped (gpointer pulse_device_name,
+					    gpointer user_data);
+    bool capture_device (const char *pulse_device_name);
+
+    //custom property:
+    CustomPropertyHelper::ptr custom_props_; 
+    GParamSpec *capture_devices_description_spec_;//json formated
+    gchar *capture_devices_description_;//json formated
+
+    //pulse_audio
+    pa_glib_mainloop *pa_glib_mainloop_;
+    pa_mainloop_api *pa_mainloop_api_;
+    pa_context *pa_context_;
+    char *server_;
+
+    static void pa_context_state_callback(pa_context *c, void *userdata);
     static void get_source_info_callback(pa_context *c, const pa_source_info *i, int is_last, void *userdata);
+    static void on_pa_event_callback(pa_context *c, 
+				     pa_subscription_event_type_t t,
+				     uint32_t idx, 
+				     void *userdata);
+
+    std::map <std::string, std::string> capture_devices_; //indexed by pulse_device_name
+
+
   };
 
   SWITCHER_DECLARE_PLUGIN(PulseSrc);

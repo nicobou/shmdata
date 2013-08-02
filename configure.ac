@@ -173,7 +173,7 @@ else
 fi
 AM_CONDITIONAL(OSCBUILD, test "${OSCBUILD}" = "enabled")
 
-PKG_CHECK_MODULES(PULSE, libpulse, have_libpulse=true, have_libpulse=false)
+PKG_CHECK_MODULES(PULSE, libpulse-mainloop-glib, have_libpulse=true, have_libpulse=false)
 if test "x${have_libpulse}" = "xfalse" ; then
     PULSEBUILD=disabled
     AC_MSG_WARN([Missing libpulse-dev])
