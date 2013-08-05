@@ -48,6 +48,8 @@ namespace switcher
     static gboolean capture_device_wrapped (gpointer pulse_device_name,
 					    gpointer user_data);
     bool capture_device (const char *pulse_device_name);
+    void make_device_description (pa_context *pulse_context);
+    void make_json_description ();
 
     //custom property:
     CustomPropertyHelper::ptr custom_props_; 
@@ -67,7 +69,18 @@ namespace switcher
 				     uint32_t idx, 
 				     void *userdata);
 
-    std::map <std::string, std::string> capture_devices_; //indexed by pulse_device_name
+    typedef struct {
+      std::string name_;
+      std::string description_;
+      std::string state_;
+      std::string sample_format_;
+      std::string sample_rate_;
+      std::string channels_;
+      std::vector <std::pair <std::string/*port*/,std::string /*description*/> > ports_;
+      std::string active_port_;
+    } DeviceDescription;
+
+    std::map <std::string, DeviceDescription> capture_devices_; //indexed by pulse_device_name
 
 
   };
