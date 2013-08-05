@@ -424,9 +424,8 @@ namespace switcher
      	  g_warning ("PulseSrc: device %s has not been detected by pulse audio, cannot use", pulse_device_name);
      	  return false;
      	}
-    
+
     set_raw_audio_element (pulsesrc_bin_);
-   
     return true;
   }
 
