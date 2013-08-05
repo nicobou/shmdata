@@ -21,6 +21,7 @@ AM_LIBS = \
 pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
 plugins_LTLIBRARIES = \
+    libpulsesink.la \
     libpulsesrc.la
 
 libpulsesrc_la_SOURCES = \
@@ -33,4 +34,17 @@ libpulsesrc_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
 libpulsesrc_la_LDFLAGS = \
+    $(PULSE_LIBS) 
+
+
+libpulsesink_la_SOURCES = \
+    pulsesink.cpp
+
+libpulsesink_la_include_HEADERS = \
+    pulsesink.h
+
+libpulsesink_la_includedir = \
+    $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
+
+libpulsesink_la_LDFLAGS = \
     $(PULSE_LIBS) 

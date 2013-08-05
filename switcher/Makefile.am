@@ -44,7 +44,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     method.cpp \
     plugin-loader.cpp \
     property.cpp \
-    pulse-sink.cpp \
     quiddity-command.cpp \
     quiddity-documentation.cpp \
     quiddity-manager-wrapper.cpp \
@@ -116,7 +115,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     method.h \
     plugin-loader.h \
     property.h \
-    pulse-sink.h \
     quiddity-command.h \
     quiddity-documentation.h \
     quiddity-manager-wrapper.h \
