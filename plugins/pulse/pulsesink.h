@@ -43,11 +43,6 @@ namespace switcher
     bool make_elements ();
     void clean_elements ();
     static gchar *get_devices_json (void *user_data);
-    static gboolean play_wrapped (gpointer device_file_path, 
-			      gpointer user_data);
-    static gboolean play_device_wrapped (gpointer pulse_device_name,
-					    gpointer user_data);
-    bool play_device (const char *pulse_device_name);
     void make_device_description (pa_context *pulse_context);
     void make_json_description ();
 

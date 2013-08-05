@@ -64,29 +64,6 @@ namespace switcher
     
     devices_description_ = NULL;
 
-    register_method("play",
-		    (void *)&play_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_NONE, 
-						       NULL),
-		    (gpointer)this);
-    set_method_description ("play", 
-			    "start playing to default device", 
-			    Method::make_arg_description ("none",
- 							  NULL));
-
-
-    register_method("play_device",
-		    (void *)&play_device_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_STRING, 
-						       NULL),
-		    (gpointer)this);
-    set_method_description ("play_device", 
-			    "start playing with selected device", 
-			    Method::make_arg_description ("pulse_name_device",
-							  "Pulse Audio Device Name",
-							  NULL));
-
-
     custom_props_.reset (new CustomPropertyHelper ());
     devices_description_spec_ = custom_props_->make_string_property ("devices-json", 
 								     "Description of audio devices (json formated)",
@@ -134,6 +111,8 @@ namespace switcher
     gst_pad_set_active(ghost_sinkpad,TRUE);
     gst_element_add_pad (pulsesink_bin_, ghost_sinkpad); 
     gst_object_unref (sink_pad);
+
+    set_sink_element (pulsesink_bin_);
     return true;
   }
 
@@ -373,49 +352,6 @@ namespace switcher
       context->devices_description_ = g_strdup ("{ \"devices\" : [] }");
 
     return context->devices_description_;
-  }
-
-  gboolean 
-  PulseSink::play_wrapped (gpointer device_file_path, 
-			    gpointer user_data)
-  {
-    PulseSink *context = static_cast<PulseSink *>(user_data);
-    
-    if (context->play_device ("NONE"))
-      return TRUE;
-    else
-      return FALSE;
-  }
-
-    gboolean 
-    PulseSink::play_device_wrapped (gpointer pulse_device_name,
-				      gpointer user_data)
-  {
-    PulseSink *context = static_cast<PulseSink *>(user_data);
-    
-    if (context->play_device ((const char *)pulse_device_name))
-      return TRUE;
-    else
-      return FALSE;
-  }
-
-  bool 
-  PulseSink::play_device (const char *pulse_device_name)
-  {
-    make_elements ();
-
-    if (g_strcmp0 (pulse_device_name, "NONE") != 0)
-      if (devices_.find (pulse_device_name) != devices_.end ())	
-     	g_object_set (G_OBJECT (pulsesink_), "device", pulse_device_name, NULL);
-      else
-     	{
-     	  g_warning ("PulseSink: device %s has not been detected by pulse audio, cannot use", 
-		     pulse_device_name);
-     	  return false;
-     	}
-
-    set_sink_element (pulsesink_bin_);
-    return true;
   }
 
 }//end of PulseSink class
