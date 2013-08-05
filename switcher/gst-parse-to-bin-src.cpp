@@ -29,7 +29,7 @@ namespace switcher
 				       "GStreamer Pipeline",
 				       "gstsrc",
 				       "GStreamer (src) pipeline description to a *single* shmdata",
-				       "GPL",
+				       "LGPL",
 				       "source", 
 				       "Nicolas Bouillot");
   

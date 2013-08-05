@@ -29,7 +29,7 @@ namespace switcher
 				       "GenICam Camera",
 				       "video source", 
 				       "Genicam video source using the Aravis library",
-				       "GPL",
+				       "LGPL",
 				       "genicam",
 				       "Nicolas Bouillot");
   

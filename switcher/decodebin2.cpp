@@ -30,7 +30,7 @@ namespace switcher
 				       "Shmdata Decoder",
 				       "decodebin2", 
 				       "connect to a shmdata, decode it and write decoded frames to shmdata(s)",
-				       "GPL",
+				       "LGPL",
 				       "decoder", 
 				       "Nicolas Bouillot");
   

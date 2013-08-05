@@ -35,7 +35,7 @@ namespace switcher
 				       "UDP Sender",
 				       "udp sink", 
 				       "send data stream with udp",
-				       "GPL",
+				       "LGPL",
 				       "udpsink",
 				       "Nicolas Bouillot");
 

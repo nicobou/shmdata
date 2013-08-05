@@ -29,7 +29,7 @@ namespace switcher
 				       "HTTP/SDP Receiver",
 				       "network", 
 				       "get raw stream from sdp file distributed with http",
-				       "GPL",
+				       "LGPL",
 				       "httpsdp", 
 				       "Nicolas Bouillot");
   

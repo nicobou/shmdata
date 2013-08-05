@@ -28,7 +28,7 @@ namespace switcher
 				       "Vorbis Encoder",
 				       "audio encoder", 
 				       "Vorbis encoder (up to 255 interleaved channels)",
-				       "GPL",
+				       "LGPL",
 				       "vorbis",
 				       "Nicolas Bouillot");
   

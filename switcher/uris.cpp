@@ -30,7 +30,7 @@ namespace switcher
 				       "Uri Player",
 				       "uri source", 
 				       "play/pause/seek/loop/synchronize multiple uris",
-				       "GPL",
+				       "LGPL",
 				       "uris", 
 				       "Nicolas Bouillot");
   

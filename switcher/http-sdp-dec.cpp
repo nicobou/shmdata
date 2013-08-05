@@ -30,7 +30,7 @@ namespace switcher
 				       "HTTP/SDP Decoder",
 				       "network", 
 				       "decode an sdp-described stream deliver through http and make shmdatas",
-				       "GPL",
+				       "LGPL",
 				       "httpsdpdec", 
 				       "Nicolas Bouillot");
   

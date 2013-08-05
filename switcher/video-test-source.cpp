@@ -29,7 +29,7 @@ namespace switcher
 				       "Video Test",
 				       "video source", 
 				       "Creates a test video stream",
-				       "GPL",
+				       "LGPL",
 				       "videotestsrc",				
 				       "Nicolas Bouillot");
 

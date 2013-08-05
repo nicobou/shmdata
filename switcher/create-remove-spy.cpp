@@ -29,7 +29,7 @@ namespace switcher
 				       "Quiddity Creation Inspector",
 				       "spy", 
 				       "spy manager for quidity creation and removal and convert into signals",
-				       "GPL",
+				       "LGPL",
 				       "create_remove_spy",				
 				       "Nicolas Bouillot");
 

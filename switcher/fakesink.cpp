@@ -29,7 +29,7 @@ namespace switcher
 				       "Shmdata Inspector",
 				       "fakesink sink", 
 				       "fakesink for testing purpose",
-				       "GPL",
+				       "LGPL",
 				       "fakesink",
 				       "Nicolas Bouillot");
 

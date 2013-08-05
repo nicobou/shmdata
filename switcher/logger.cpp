@@ -30,7 +30,7 @@ namespace switcher
 				       "Switcher Logger",
 				       "log", 
 				       "manage switcher logs and other glib log domains.",
-				       "GPL",
+				       "LGPL",
 				       "logger",
 				       "Nicolas Bouillot");
   bool

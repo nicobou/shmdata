@@ -30,7 +30,7 @@ namespace switcher
 				       "Deinterleave",
 				       "video converter", 
 				       "connect to an audio shmdata and split channels to multiple shmdata(s)",
-				       "GPL",
+				       "LGPL",
 				       "deinterleave", 
 				       "Nicolas Bouillot");
   

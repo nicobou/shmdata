@@ -29,7 +29,7 @@ namespace switcher
 				       "Audio Test",
 				       "audio source", 
 				       "Creates audio test signals",
-				       "GPL",
+				       "LGPL",
 				       "audiotestsrc", 
 				       "Nicolas Bouillot");
   

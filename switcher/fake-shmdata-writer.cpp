@@ -29,7 +29,7 @@ namespace switcher
 				       "Shmdata Adder",
 				       "fake source", 
 				       "add an external shmdata",
-				       "GPL",
+				       "LGPL",
 				       "fakeshmsrc",
 				       "Nicolas Bouillot");
   

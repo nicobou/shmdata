@@ -29,7 +29,7 @@ namespace switcher
 				       "Shmdata Recorder",
 				       "file sink", 
 				       "record shmdata(s) to file(s)",
-				       "GPL",
+				       "LGPL",
 				       "shmtofile",
 				       "Nicolas Bouillot");
   
