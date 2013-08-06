@@ -61,6 +61,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     shmdata-to-file.cpp \
     shmdata-writer.cpp \
     signal-string.cpp \
+    string-memory.cpp \
     udpsink.cpp \
     uridecodebin.cpp \
     uris.cpp \
@@ -134,6 +135,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     signal-string.h \
     string-map.h \
     string-map_spec.h \
+    string-memory.h \
     udpsink.h \
     uridecodebin.h \
     uris.h \
