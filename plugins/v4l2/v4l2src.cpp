@@ -50,13 +50,6 @@ namespace switcher
 
     capture_devices_description_ = NULL;
 
-    //registering some properties FIXME unregister property and register property in make_element 
-    register_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
-    register_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
-    register_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
-    register_property (G_OBJECT (v4l2src_),"hue","hue", "Hue");
-
-
     register_method("capture",
 		    (void *)&capture_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, 
@@ -84,7 +77,7 @@ namespace switcher
 			    Method::make_arg_description ("device_file_path",
 							  "Device File Path or NONE",
 							  "width",
-							  "Width od NONE",
+							  "Width or NONE",
 							  "height",
 							  "Height or NONE"
 							  "framerate_numerator",
@@ -100,7 +93,7 @@ namespace switcher
     //device inspector
     check_folder_for_v4l2_devices ("/dev");
     custom_props_.reset (new CustomPropertyHelper ());
-    capture_devices_description_spec_ = custom_props_->make_string_property ("capture-devices-json", 
+    capture_devices_description_spec_ = custom_props_->make_string_property ("devices-json", 
 									      "Description of capture devices (json formated)",
 									      "",
 									      (GParamFlags) G_PARAM_READABLE,
@@ -110,7 +103,7 @@ namespace switcher
 
     register_property_by_pspec (custom_props_->get_gobject (), 
 				capture_devices_description_spec_, 
-				"capture-devices-json",
+				"devices-json",
 				"Capture Devices");
     return true;
   }
@@ -134,6 +127,17 @@ namespace switcher
       return false;
     if (!GstUtils::make_element ("bin",&v4l2_bin_))
       return false;
+
+    //registering some properties FIXME unregister property and register property in make_element 
+    unregister_property ("brightness");
+    unregister_property ("contrast");
+    unregister_property ("saturation");
+    unregister_property ("hue");
+    register_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
+    register_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
+    register_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
+    register_property (G_OBJECT (v4l2src_),"hue","hue", "Hue");
+
     
     gst_bin_add_many (GST_BIN (v4l2_bin_),
 		      v4l2src_,

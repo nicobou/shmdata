@@ -118,16 +118,16 @@ namespace switcher
     if (!GstUtils::make_element ("bin",&pulsesink_bin_))
       return false;
 
-    unregister_property ("device");
     unregister_property ("volume");
     unregister_property ("mute");
-    register_property (G_OBJECT (pulsesink_),"device","device", "Audio Device");
     register_property (G_OBJECT (pulsesink_),"volume","volume", "Volume");
     register_property (G_OBJECT (pulsesink_),"mute","mute", "Mute");
 
 
     if (g_strcmp0 (device_name_, "default") != 0)
       g_object_set (G_OBJECT (pulsesink_), "device", device_name_, NULL);
+
+    g_object_set (G_OBJECT (pulsesink_), "client", get_nick_name ().c_str (), NULL);
 
     gst_bin_add_many (GST_BIN (pulsesink_bin_),
       		      pulsesink_,

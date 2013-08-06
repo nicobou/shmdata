@@ -41,7 +41,6 @@ namespace switcher
     GstElement *capsfilter_;
     GstElement *pulsesrc_bin_;
     bool make_elements ();
-    void clean_elements ();
     static gchar *get_capture_devices_json (void *user_data);
     static gboolean capture_wrapped (gpointer device_file_path, 
 			      gpointer user_data);

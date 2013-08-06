@@ -88,7 +88,7 @@ namespace switcher
 
 
     custom_props_.reset (new CustomPropertyHelper ());
-    capture_devices_description_spec_ = custom_props_->make_string_property ("capture-devices-json", 
+    capture_devices_description_spec_ = custom_props_->make_string_property ("devices-json", 
 									     "Description of capture devices (json formated)",
 									     "",
 									     (GParamFlags) G_PARAM_READABLE,
@@ -98,7 +98,7 @@ namespace switcher
     
     register_property_by_pspec (custom_props_->get_gobject (), 
 				capture_devices_description_spec_, 
-				"capture-devices-json",
+				"devices-json",
 				"Capture Devices");
     return true;
   }
@@ -111,15 +111,12 @@ namespace switcher
 
     if (capture_devices_description_ != NULL)
       g_free (capture_devices_description_);
-    clean_elements ();
   }
 
 
   bool
   PulseSrc::make_elements ()
   {
-    clean_elements ();
-
     if (!GstUtils::make_element ("pulsesrc",&pulsesrc_))
       return false;
     if (!GstUtils::make_element ("capsfilter",&capsfilter_))
@@ -127,6 +124,13 @@ namespace switcher
     if (!GstUtils::make_element ("bin",&pulsesrc_bin_))
       return false;
 
+    unregister_property ("volume");
+    unregister_property ("mute");
+    register_property (G_OBJECT (pulsesrc_),"volume","volume", "Volume");
+    register_property (G_OBJECT (pulsesrc_),"mute","mute", "Mute");
+
+    g_object_set (G_OBJECT (pulsesrc_), "client", get_nick_name ().c_str (), NULL);
+    
     gst_bin_add_many (GST_BIN (pulsesrc_bin_),
 		      pulsesrc_,
 		      capsfilter_,
@@ -141,15 +145,6 @@ namespace switcher
     gst_object_unref (src_pad);
 
     return true;
-  }
-
-  void
-  PulseSrc::clean_elements ()
-  {
-    //FIXME 
-    //GstUtils::clean_element (pulsesrc_);
-    //GstUtils::clean_element (capsfilter_);
-    //GstUtils::clean_element (pulsesrc_bin_);
   }
 
   void 
