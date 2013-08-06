@@ -32,7 +32,7 @@ namespace switcher
 				       "Video Display",
 				       "video sink", 
 				       "Video window with minimal features",
-				       "GPL",
+				       "LGPL",
 				       "videosink",
 				       "Nicolas Bouillot");
   

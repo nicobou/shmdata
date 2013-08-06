@@ -28,7 +28,7 @@ namespace switcher
 				       "GStreamer Video Pipeline",
 				       "video source", 
 				       "GStreamer (src) video pipeline description to a *single* shmdata",
-				       "GPL",
+				       "LGPL",
 				       "gstvideosrc",
 				       "Nicolas Bouillot");
   

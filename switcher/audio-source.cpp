@@ -21,47 +21,53 @@
 
 #include "audio-source.h"
 #include "gst-utils.h"
-#include "gst-element-cleaner.h"
 #include <memory>
 
 namespace switcher
 {
   AudioSource::AudioSource() 
   { 
-    if (!GstUtils::make_element ("tee", &audio_tee_)
-	|| !GstUtils::make_element ("audioconvert", &audioconvert_)
-	// || !GstUtils::make_element ("pitch", &pitch_)
-	|| !GstUtils::make_element ("audioresample", &resample_))
-      g_critical ("a mandatory gst element is missing for audio source");
+    make_audio_elements ();
+  }
 
-    cleaner_.reset (new GstElementCleaner ());
-    cleaner_->add_element_to_cleaner (audio_tee_);
-    cleaner_->add_element_to_cleaner (audioconvert_);
-    // cleaner_->add_element_to_cleaner (pitch_);
-    cleaner_->add_element_to_cleaner (resample_);
-    
-    
+  void 
+  AudioSource::clean_audio_elements ()
+  {
+    //FIXME
+    // GstUtils::clean_element(audio_tee_);
+    // GstUtils::clean_element(audioconvert_);
+    // GstUtils::clean_element(resample_);
+    unregister_shmdata_writer (make_file_name ("audio"));
+  }
+
+  void 
+  AudioSource::make_audio_elements ()
+  {
+   if (!GstUtils::make_element ("tee", &audio_tee_)
+	|| !GstUtils::make_element ("audioconvert", &audioconvert_)
+	|| !GstUtils::make_element ("audioresample", &resample_))
+      g_debug ("a mandatory gst element is missing for audio source");
+
+
     gst_bin_add_many (GST_BIN (bin_),
 		      audio_tee_,
 		      audioconvert_,
-		      //pitch_,
 		      resample_,
 		      NULL);
     gst_element_link_many (audio_tee_,
 			   audioconvert_,
-			   //pitch_,
 			   resample_,
 			   NULL);
-    
-    // register_property (G_OBJECT (pitch_),"output-rate","pitch-ouput-rate");
-    // register_property (G_OBJECT (pitch_),"rate","pitch-rate");
-    // register_property (G_OBJECT (pitch_),"tempo","pitch-tempo");
-    // register_property (G_OBJECT (pitch_),"pitch","pitch");
   }
+
 
   void 
   AudioSource::set_raw_audio_element (GstElement *elt)
   {
+    reset_bin ();
+    clean_audio_elements ();
+    make_audio_elements ();
+    
     rawaudio_ = elt;
  
     gst_bin_add (GST_BIN (bin_), rawaudio_);
@@ -74,21 +80,18 @@ namespace switcher
     //creating a connector for raw audio
     ShmdataWriter::ptr rawaudio_connector;
     rawaudio_connector.reset (new ShmdataWriter ());
-    std::string rawconnector_name = make_file_name ("rawaudio");
+    std::string rawconnector_name = make_file_name ("audio");
     rawaudio_connector->set_path (rawconnector_name.c_str());
     rawaudio_connector->plug (bin_, audio_tee_, audiocaps);
     register_shmdata_writer (rawaudio_connector);
     
-    //creating a connector for transformed audio
-    ShmdataWriter::ptr audio_connector;
-    audio_connector.reset (new ShmdataWriter ());
-    std::string connector_name = make_file_name ("audio");
-    audio_connector->set_path (connector_name.c_str());
-    audio_connector->plug (bin_, audio_tee_, audiocaps);
-    register_shmdata_writer (audio_connector);
-    
-    //gst_object_unref (audiocaps);
     gst_caps_unref(audiocaps);
+
+    GstUtils::wait_state_changed (bin_);
+    GstUtils::sync_state_with_parent (rawaudio_);
+    GstUtils::sync_state_with_parent (audio_tee_);
+    GstUtils::sync_state_with_parent (audioconvert_);
+    GstUtils::sync_state_with_parent (resample_);
   }
 
 }

@@ -29,7 +29,7 @@ namespace switcher
 				       "File SDP Receiver",
 				       "network", 
 				       "get raw stream from sdp file",
-				       "GPL",
+				       "LGPL",
 				       "filesdp", 
 				       "Nicolas Bouillot");
   

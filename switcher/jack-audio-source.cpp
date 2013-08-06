@@ -28,7 +28,7 @@ namespace switcher
 				       "Jack Audio",
 				       "audio source", 
 				       "get audio from jack",
-				       "GPL",
+				       "LGPL",
 				       "jackaudiosrc", 
 				       "Nicolas Bouillot");
   

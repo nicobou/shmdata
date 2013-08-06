@@ -173,6 +173,16 @@ else
 fi
 AM_CONDITIONAL(OSCBUILD, test "${OSCBUILD}" = "enabled")
 
+PKG_CHECK_MODULES(PULSE, libpulse-mainloop-glib, have_libpulse=true, have_libpulse=false)
+if test "x${have_libpulse}" = "xfalse" ; then
+    PULSEBUILD=disabled
+    AC_MSG_WARN([Missing libpulse-dev])
+else
+    PULSEBUILD=enabled
+    AC_CONFIG_FILES([plugins/pulse/Makefile])
+fi
+AM_CONDITIONAL(PULSEBUILD, test "${PULSEBUILD}" = "enabled")
+
 PKG_CHECK_MODULES(JSONGLIB, json-glib-1.0, have_jsonglib=true, have_jsonglib=false)
 if test "x${have_jsonglib}" = "xfalse" ; then
     AC_MSG_ERROR([Missing libjson-glib-dev package])
@@ -263,8 +273,9 @@ AC_OUTPUT
 [echo ""]
 [echo "OPTIONAL PLUGINS"]
 [echo ""]
-[echo "V4L2 capture plugin        ${V4L2BUILD}"]
+[echo "V4L2 capture               ${V4L2BUILD}"]
 [echo "GTK fullscreen video       ${GTKBUILD}"]
+[echo "Pulse audio                ${PULSEBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]

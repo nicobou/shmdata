@@ -35,7 +35,7 @@ namespace switcher
 				       "Gstreamer Pipeline",
 				       "runtime", 
 				       "Complete pipeline container and scheduler",
-				       "GPL",
+				       "LGPL",
 				       "runtime",
 				       "Nicolas Bouillot");
 

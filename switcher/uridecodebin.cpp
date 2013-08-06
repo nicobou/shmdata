@@ -30,7 +30,7 @@ namespace switcher
 				       "Media Player (URI)",
 				       "uri source", 
 				       "decode an URI and writes to shmdata(s)",
-				       "GPL",
+				       "LGPL",
 				       "uridecodebin", 
 				       "Nicolas Bouillot");
   

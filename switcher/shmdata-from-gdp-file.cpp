@@ -28,7 +28,7 @@ namespace switcher
 				       "Shmdata File Player",
 				       "file source", 
 				       "play file(s) recorded with shmdatatofile",
-				       "GPL",
+				       "LGPL",
 				       "shmfromfile",
 				       "Nicolas Bouillot");
   

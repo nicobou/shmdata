@@ -50,7 +50,7 @@ namespace switcher
 
     capture_devices_description_ = NULL;
 
-    //registering some properties
+    //registering some properties FIXME unregister property and register property in make_element 
     register_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
     register_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
     register_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");

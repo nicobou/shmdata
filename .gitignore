@@ -48,6 +48,8 @@ plugins/gtk/.deps/
 plugins/gtk/.libs/
 plugins/osc/.deps/
 plugins/osc/.libs/
+plugins/pulse/.deps/
+plugins/pulse/.libs/
 plugins/v4l2/.deps/
 plugins/v4l2/.libs/
 src/.deps/

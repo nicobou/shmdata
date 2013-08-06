@@ -20,6 +20,7 @@
  */
 
 #include "base-sink.h"
+#include "gst-utils.h"
 #include <utility>
 
 namespace switcher
@@ -33,21 +34,20 @@ namespace switcher
     connection_hook_ (NULL)
   {
     
-    reader_.reset (new ShmdataReader ());
     sink_element_ = NULL;
-    
-    //registering connect
-    std::vector<GType> connect_arg_types;
-    connect_arg_types.push_back (G_TYPE_STRING);
-    register_method("connect",(void *)&BaseSink::connect_wrapped, connect_arg_types,(gpointer)this);
-    std::vector<std::pair<std::string,std::string> > arg_desc;
-    std::pair<std::string,std::string> socket;
-    socket.first = "socket";
-    socket.second = "socket path of the shmdata to connect to";
-    arg_desc.push_back (socket); 
-    if (!set_method_description ("connect", "connect the sink to a shmdata socket", arg_desc))
-      g_warning ("base sink: cannot set method description for \"connect\"");
+    shmdata_path_ = "";
 
+    //registering connect
+    register_method("connect",
+		    (void *)&connect_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING, 
+						       NULL),
+		    (gpointer)this);
+    set_method_description ("connect", 
+			    "connect the sink to a shmdata socket", 
+			    Method::make_arg_description ("socket",
+							  "shmdata socket path to connect with",
+ 							  NULL));
   }
 
    gboolean
@@ -64,10 +64,16 @@ namespace switcher
   bool
   BaseSink::connect (std::string shmdata_socket_path)
   {
-    g_debug ("BaseSink::connect");
+    //FIXME implement a on-shmdata-reset callback be to implemented by child classes and call it here 
+    unregister_shmdata_reader (shmdata_socket_path);
+
+    ShmdataReader::ptr reader_;
+    reader_.reset (new ShmdataReader ());
     reader_->set_path (shmdata_socket_path.c_str());
+    shmdata_path_= shmdata_socket_path;
     reader_->set_g_main_context (get_g_main_context ());
     reader_->set_bin (bin_);
+
     if (sink_element_ !=NULL)
       reader_->set_sink_element (sink_element_);
     if (connection_hook_ != NULL) 
@@ -78,14 +84,24 @@ namespace switcher
     if (runtime_) // starting the reader if runtime is set
       reader_->start ();
     register_shmdata_reader (reader_);
+
     return true;
   }
 
   void
   BaseSink::set_sink_element (GstElement *sink)
   {
+    if (sink_element_ != NULL && sink_element_ != sink)
+      GstUtils::clean_element (sink_element_);
     //sink element will be added to bin_ by the shmdata reader when appropriate
     sink_element_ = sink;
+
+    if (g_strcmp0 (shmdata_path_.c_str (), "") != 0)
+      {
+	g_debug ("-------- -- -- - - - -reseting basse sink shmdata reader");
+	connect (shmdata_path_);
+      }
+   
   }
 
   void 

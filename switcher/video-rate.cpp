@@ -28,7 +28,7 @@ namespace switcher
 				       "Video Rate",
 				       "video converter", 
 				       "Adjusts video frame rate (video/x-raw-yuv)",
-				       "GPL",
+				       "LGPL",
 				       "videorate",
 				       "Nicolas Bouillot");
   

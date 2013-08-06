@@ -32,7 +32,7 @@ namespace switcher
 				       "RTP Session", 
 				       "network",
 				       "RTP session manager",
-				       "GPL",
+				       "LGPL",
 				       "rtpsession",
 				       "Nicolas Bouillot");
   
