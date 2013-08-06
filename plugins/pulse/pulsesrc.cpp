@@ -139,6 +139,7 @@ namespace switcher
     gst_pad_set_active(ghost_srcpad,TRUE);
     gst_element_add_pad (pulsesrc_bin_, ghost_srcpad); 
     gst_object_unref (src_pad);
+
     return true;
   }
 

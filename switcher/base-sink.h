@@ -50,7 +50,7 @@ namespace switcher
     ShmdataReader::on_first_data_hook connection_hook_;
     void *hook_user_data_;
     GstElement *sink_element_;
-    ShmdataReader::ptr reader_;
+    std::string shmdata_path_;
   };
 
 }  // end of namespace

@@ -38,10 +38,9 @@ namespace switcher
 
   private:
     GstElement *pulsesink_;
-    GstElement *capsfilter_;
+    GstElement *audioconvert_;
     GstElement *pulsesink_bin_;
     bool make_elements ();
-    void clean_elements ();
     static gchar *get_devices_json (void *user_data);
     void make_device_description (pa_context *pulse_context);
     void make_json_description ();
@@ -50,6 +49,8 @@ namespace switcher
     CustomPropertyHelper::ptr custom_props_; 
     GParamSpec *devices_description_spec_;//json formated
     gchar *devices_description_;//json formated
+    GParamSpec *device_name_spec_;//json formated
+    gchar *device_name_;//json formated
 
     //pulse_audio
     pa_glib_mainloop *pa_glib_mainloop_;
@@ -63,7 +64,9 @@ namespace switcher
 				     pa_subscription_event_type_t t,
 				     uint32_t idx, 
 				     void *userdata);
-
+    static gchar *get_device_name (void *user_data);
+    static void set_device_name (const gchar *value, 
+				 void *user_data);
     typedef struct {
       std::string name_;
       std::string description_;
@@ -76,7 +79,6 @@ namespace switcher
     } DeviceDescription;
 
     std::map <std::string, DeviceDescription> devices_; //indexed by pulse_device_name
-
 
   };
 
