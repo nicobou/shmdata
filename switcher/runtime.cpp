@@ -312,12 +312,12 @@ res = gst_element_query (pipeline_, query);
 	    break;
 	  case QuiddityCommand::invoke:
 	    manager->invoke (context->command->args_[0], 
-					    context->command->args_[1], 
-					    context->command->vector_arg_);
+			     context->command->args_[1], 
+			     context->command->vector_arg_);
 	    break;
 	  default:
 	    g_debug ("on-error-command: %s not implemented (sorry)\n", 
-		     QuiddityCommand::get_string_from_id(context->command->id_));
+	 	     QuiddityCommand::get_string_from_id(context->command->id_));
 	  }
       }
     else
@@ -359,6 +359,11 @@ res = gst_element_query (pipeline_, query);
 	
 	QuiddityCommand *command = (QuiddityCommand *) g_object_get_data (G_OBJECT (msg->src), 
 									  "on-error-command");
+	//removing command in order to get it invoked once
+	g_object_set_data (G_OBJECT (msg->src), 
+			   "on-error-command",
+			   (gpointer)NULL);
+
 	if (command != NULL)
 	  {
 	    g_debug ("error contains data (on-error-command) ");

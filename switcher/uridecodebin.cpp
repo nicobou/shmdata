@@ -605,7 +605,7 @@ namespace switcher
     reset_bin ();
     init_uridecodebin ();
         
-    g_debug ("------------------------- to_shmdata set uri %s", uri.c_str ());
+    g_debug ("to_shmdata set uri %s", uri.c_str ());
     g_object_set (G_OBJECT (uridecodebin_), "uri", uri.c_str (), NULL); 
 
     gst_bin_add (GST_BIN (bin_), uridecodebin_);
