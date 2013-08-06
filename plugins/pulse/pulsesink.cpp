@@ -43,9 +43,6 @@ namespace switcher
       return false;
     set_name (gst_element_get_name (pulsesink_));
 
-    // register_property (G_OBJECT (pulsesink_),"device","device", "Audio Device");
-    // register_property (G_OBJECT (pulsesink_),"volume","volume", "Volume");
-    // register_property (G_OBJECT (pulsesink_),"mute","mute", "Mute");
     g_object_set (G_OBJECT (pulsesink_),"client", get_nick_name ().c_str (), NULL);
 
     pa_context_ = NULL;
@@ -104,10 +101,8 @@ namespace switcher
     pa_context_disconnect (pa_context_);
     //pa_mainloop_api_->quit (pa_mainloop_api_, 0);
     pa_glib_mainloop_free(pa_glib_mainloop_);
-    
     if (devices_description_ != NULL)
       g_free (devices_description_);
-
     g_free (device_name_);
   }
 
@@ -122,6 +117,14 @@ namespace switcher
       return false;
     if (!GstUtils::make_element ("bin",&pulsesink_bin_))
       return false;
+
+    unregister_property ("device");
+    unregister_property ("volume");
+    unregister_property ("mute");
+    register_property (G_OBJECT (pulsesink_),"device","device", "Audio Device");
+    register_property (G_OBJECT (pulsesink_),"volume","volume", "Volume");
+    register_property (G_OBJECT (pulsesink_),"mute","mute", "Mute");
+
 
     if (g_strcmp0 (device_name_, "default") != 0)
       g_object_set (G_OBJECT (pulsesink_), "device", device_name_, NULL);

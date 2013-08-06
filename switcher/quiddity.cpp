@@ -204,8 +204,22 @@ namespace switcher
 	g_warning ("registering name %s already exists",name_to_give.c_str());
 	return false;
       }
-    
   }
+
+
+  bool 
+  Quiddity::unregister_property (std::string name)
+  {
+    if (properties_.find(name) != properties_.end())
+      {
+	properties_.erase (name); 
+	return true;
+      }
+    else 
+      return false;
+  }
+
+
   
   bool
   Quiddity::register_property (GObject *object, 

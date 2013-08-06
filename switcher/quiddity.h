@@ -127,6 +127,7 @@ namespace switcher
 			    std::string gobject_property_name, 
 			    std::string name_to_give,
 			    std::string long_name);
+    bool unregister_property (std::string name);
     bool register_property_by_pspec (GObject *object, 
 				     GParamSpec *pspec, 
 				     std::string name_to_give,

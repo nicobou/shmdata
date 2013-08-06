@@ -143,8 +143,6 @@ namespace switcher
     
     if (GST_IS_ELEMENT (bin_))
       {
-	// shmdata_readers_.clear ();
-	// shmdata_writers_.clear ();
 	clear_shmdatas ();
 
 	g_debug ("Segment, bin state %s, target %s, num children %d ", 
