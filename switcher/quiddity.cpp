@@ -116,19 +116,19 @@ namespace switcher
 				guint n_params, //number of params
 				GType *param_types)
   {
-    return make_custom_signal (get_documentation().get_class_name (),
-			       signal_name,
-			       return_type,
-			       n_params,
-			       param_types);
+    return make_custom_signal_with_class_name (get_documentation().get_class_name (),
+					       signal_name,
+					       return_type,
+					       n_params,
+					       param_types);
   }
 
   bool 
-  Quiddity::make_custom_signal (const std::string class_name,
-				const std::string signal_name, //the name to give
-				GType return_type,
-				guint n_params, //number of params
-				GType *param_types)
+  Quiddity::make_custom_signal_with_class_name (const std::string class_name,
+						const std::string signal_name, //the name to give
+						GType return_type,
+						guint n_params, //number of params
+						GType *param_types)
   {
     if (signals_.find(signal_name) != signals_.end())
       {
@@ -160,7 +160,6 @@ namespace switcher
      	     signal_name.c_str ());
     return true;
   }
-
 
   bool 
   Quiddity::set_signal_description (const std::string long_name,
@@ -206,7 +205,77 @@ namespace switcher
       }
   }
 
+  bool 
+  Quiddity::register_custom_method_with_class_name (const std::string class_name,
+						    const std::string method_name, //the name to give
+						    GType return_type,
+						    guint n_params, //number of params
+						    GType *param_types)
+  {
+    if (custom_methods_.find(method_name) != custom_methods_.end())
+      {
+	g_warning ("signals: a signal named %s has already been registered for this class",method_name.c_str());
+	return false;
+      }
+    
+    std::pair <std::string,std::string> sig_pair = std::make_pair (class_name,
+								   method_name);
+    //using signal ids in order to avoid id conflicts between signal and methods
+    if (signals_ids_.find(sig_pair) == signals_ids_.end())
+      {
+	guint id = GObjectWrapper::make_signal (//_action (GClosure *class_closure,
+						       return_type,
+						       n_params,
+						       param_types); 
+	if (id == 0)
+	  {
+	    g_warning ("custom signal %s not created because of a type issue",
+		       method_name.c_str ());
+	    return false;
+	  }
+	signals_ids_[sig_pair] = id;
+      }
 
+    Signal::ptr signal (new Signal ());
+    if (!signal->set_gobject_sigid (gobject_->get_gobject (), signals_ids_[sig_pair]))
+        return false;
+    custom_methods_[method_name] = signal; 
+    g_debug ("signal %s registered", 
+     	     method_name.c_str ());
+    return true;
+  }
+
+  bool 
+  Quiddity::register_custom_method (const std::string method_name, //the name to give
+				    GType return_type,
+				    guint n_params, //number of params
+				    GType *param_types)
+  {
+
+    return register_custom_method_with_class_name (get_documentation().get_class_name (),
+						   method_name,
+						   return_type,
+						   n_params,
+						   param_types);
+  }
+
+
+  bool 
+  Quiddity::set_custom_method_description (const std::string long_name,
+					   const std::string signal_name,
+					   const std::string short_description,
+					   const Signal::args_doc arg_description)
+  {
+        if (custom_methods_.find(signal_name) == custom_methods_.end())
+      {
+	g_warning ("cannot set description of a not existing method");
+	return false;
+      }
+    custom_methods_[signal_name]->set_description (long_name, signal_name, short_description, arg_description);
+    return true; 
+  }
+  
+  
   bool 
   Quiddity::unregister_property (std::string name)
   {
@@ -259,18 +328,27 @@ namespace switcher
        return true;
    }
   
-  bool 
-  Quiddity::invoke_method (std::string function_name, 
-			   std::vector<std::string> args)
+  bool
+  Quiddity::invoke_method (const std::string function_name,
+			   std::string **return_value,
+			   const std::vector<std::string> args)
   {
     if (methods_.find( function_name ) == methods_.end())
       {
-	g_error ("Quiddity::invoke_method error: method %s not found",function_name.c_str());
+	g_debug ("Quiddity::invoke_method error: method %s not found",function_name.c_str());
 	return false;
       }
     else 
       {
-	return methods_[function_name]->invoke (args); 
+	GValue res = methods_[function_name]->invoke (args);
+	if (return_value != NULL)
+	  {
+	    gchar *res_val = gst_value_serialize (&res);
+	    *return_value = new std::string (res_val);
+	    g_free (res_val);
+	  }
+	g_value_unset (&res);
+	return true;
       }
  }
   
@@ -294,7 +372,7 @@ namespace switcher
       }
     else 
       {
-	g_error ("registering name %s already exists",method_name.c_str());
+	g_debug ("registering name %s already exists",method_name.c_str());
 	return false;
       }
   }

@@ -80,8 +80,9 @@ namespace switcher
     //methods
     std::string get_method_description (std::string method_name);
     std::string get_methods_description ();
-    bool invoke_method (std::string function_name,
-			std::vector<std::string> args);
+    bool invoke_method (const std::string function_name,
+			std::string **return_value, 
+			const std::vector<std::string> args);
     int method_get_num_value_args (std::string function_name); //returns -1 if method not found
     int method_get_num_pointer_args (std::string function_name); //returns -1 if method not found
     bool has_method (const std::string method_name);
@@ -114,6 +115,7 @@ namespace switcher
     //this map is static in order to avoid re-creation of the same signal for each quiddity instance 
     static std::map<std::pair <std::string,std::string>, guint> signals_ids_;
     std::map<std::string, Signal::ptr> signals_;
+    std::map<std::string, Signal::ptr> custom_methods_;
     JSONBuilder::ptr signals_description_;
     std::string name_;
     std::string nick_name_;
@@ -142,7 +144,23 @@ namespace switcher
 				 const std::string short_description,
 				 const Method::args_doc arg_description);
 
-    //signal
+    //allows for creation of signals in a parent class
+    bool register_custom_method_with_class_name (const std::string class_name,
+						 const std::string method_name, //the name to give
+						 GType return_type,
+						 guint n_params, //number of params
+						 GType *param_types);
+    bool register_custom_method (const std::string method_name, //the name to give
+				 GType return_type,
+				 guint n_params, //number of params
+				 GType *param_types);
+
+    bool set_custom_method_description (const std::string long_name,
+					const std::string signal_name,
+					const std::string short_description,
+					const Signal::args_doc arg_description);
+
+    //signals
     bool register_signal_gobject (const std::string signal_name, //the name to give
 				  GObject *object, 
 				  const std::string gobject_signal_name);//the internal gobject signal name
@@ -157,12 +175,12 @@ namespace switcher
 				 const std::string short_description,
 				 const Signal::args_doc arg_description);
 
-    //following method allows for creation of signals in abstract class like segment
-    bool make_custom_signal (const std::string class_name, //quiddity class name that is making the signal
-			     const std::string signal_name, //the name to give
-			     GType return_type,
-			     guint n_params, //number of params
-			     GType *param_types);
+    //allows for creation of signals in a parent class (like segment)
+    bool make_custom_signal_with_class_name (const std::string class_name, //quiddity class name that is making the signal
+					     const std::string signal_name, //the name to give
+					     GType return_type,
+					     guint n_params, //number of params
+					     GType *param_types);
 
     void signal_emit (const std::string signal_name, 
 		      ...);

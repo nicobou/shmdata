@@ -58,7 +58,7 @@ namespace switcher
     srand(time(0));
     set_name (g_strdup_printf ("myplugin%d",rand() % 1024));
     
-    //g_print ("coucou from plugin\n");
+    //g_print ("hello from plugin\n");
     return true;
   }
   

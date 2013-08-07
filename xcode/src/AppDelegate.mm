@@ -150,7 +150,10 @@ gpointer
 set_runtime_invoker (gpointer name)
 {
   if (manager->has_method ((char *)name, "set_runtime"))
-      manager->invoke_va ((char *)name, "set_runtime", "pipeline0", NULL);
+      {
+	std::string result;
+	manager->invoke_va ((char *)name, "set_runtime", &result, "pipeline0", NULL);
+      }
   g_free (name);
   return NULL;
 }
@@ -249,13 +252,14 @@ int start (int argc, char *argv[])
      //create logger managing switcher log domain
      manager->create ("logger", "internal_logger");
      //manage logs from shmdata
-     manager->invoke_va ("internal_logger", "install_log_handler", "shmdata", NULL);
+     std::string result;
+     manager->invoke_va ("internal_logger", "install_log_handler", &result, "shmdata", NULL);
      //manage logs from GStreamer
-     manager->invoke_va ("internal_logger", "install_log_handler", "GStreamer", NULL);
+     manager->invoke_va ("internal_logger", "install_log_handler", &result, "GStreamer", NULL);
      //manage logs from Glib
-     manager->invoke_va ("internal_logger", "install_log_handler", "Glib", NULL);
+     manager->invoke_va ("internal_logger", "install_log_handler", &result, "Glib", NULL);
      //manage logs from Glib-GObject
-     manager->invoke_va ("internal_logger", "install_log_handler", "Glib-GObject", NULL);
+     manager->invoke_va ("internal_logger", "install_log_handler", &result, "Glib-GObject", NULL);
     
     /*
      if (quiet)
@@ -297,7 +301,8 @@ int start (int argc, char *argv[])
      if (osc_port_number != NULL)
        {
 	 std::string osc_name = manager->create ("OSCctl");
-	 manager->invoke_va (osc_name.c_str (), "set_port", osc_port_number, NULL);
+         std::string result
+	 manager->invoke_va (osc_name.c_str (), "set_port", &result, osc_port_number, NULL);
        }
 
      manager->reset_command_history (false);

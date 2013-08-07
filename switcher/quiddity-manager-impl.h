@@ -145,9 +145,10 @@ namespace switcher
       std::string get_method_description_by_class (std::string class_name, 
 						   std::string method_name);
       //invoke
-      bool invoke (std::string quiddity_name, 
-		   std::string method_name,
-		   std::vector<std::string> args);  
+      bool invoke (const std::string quiddity_name, 
+		   const std::string method_name,
+		   std::string **return_value,
+		   const std::vector<std::string> args);  
       
       bool has_method (std::string quiddity_name, 
 		       std::string method_name);

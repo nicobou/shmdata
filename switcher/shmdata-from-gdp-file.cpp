@@ -159,25 +159,36 @@ namespace switcher
 	g_debug ("creating manager");
 	manager_ = QuiddityManager::make_manager ("manager_"+get_name());
 	manager_->create ("runtime","single_runtime");//only one runtime for all
-	manager_->invoke_va("single_runtime", "pause", NULL);
+	manager_->invoke_va("single_runtime", 
+			    "pause", 
+			    NULL, 
+			    NULL);
       }
     std::map <std::string, std::string> shmdatas = shmdata_names_.get_map ();
     std::map <std::string, std::string>::iterator it;
     for (it = shmdatas.begin (); it != shmdatas.end (); it++)
       {
 	manager_->create ("gstsrc", it->first.c_str ());
-	manager_->invoke_va (it->first.c_str (), "set_runtime", "single_runtime", NULL);
+	manager_->invoke_va (it->first.c_str (), 
+			     "set_runtime", 
+			     NULL, 
+			     "single_runtime", 
+			     NULL);
 	gchar *pipe = g_strdup_printf ("filesrc location=%s ! gdpdepay ! identity sync=true",
 	 			       it->first.c_str ());
 	g_debug ("ShmdataFromGDPFile::make_players %s", pipe); 
-	manager_->invoke_va (it->first.c_str (), 
+	manager_->invoke_va (it->first.c_str (),
 			     "to_shmdata_with_path", 
+			     NULL,
 			     pipe, 
 	 		     it->second.c_str (), 
 	 		     NULL);
 	g_free (pipe);
       }
-    manager_->invoke_va("single_runtime", "play", NULL);
+    manager_->invoke_va("single_runtime", 
+			"play", 
+			NULL, 
+			NULL);
     return true;
   }
 
@@ -185,6 +196,7 @@ namespace switcher
   ShmdataFromGDPFile::clean_players ()
   {
     manager_.reset ();
+    return true;
   }
 
   //FIXME use signals in switcher for handling gstsrc's eos 

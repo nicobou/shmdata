@@ -136,14 +136,14 @@ namespace switcher
      
       //LOWER LEVEL subscription
       //This is how to subscribe and get property values when changed:
-      /* static gchar *coucou = "coucou"; */
+      /* static gchar *hello = "hello"; */
       /* void prop_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data) */
       /*   g_print ("---------------- property callback: %s -- %s\n",  */
       /* 		(gchar *)user_data,  */
       /* 		switcher::Property::parse_callback_args (gobject, pspec).c_str ()); */
       /* //testing property */
       /* manager->create ("videotestsrc","vid"); */
-      /* manager->subscribe_property ("vid", "pattern", prop_cb, coucou); */
+      /* manager->subscribe_property ("vid", "pattern", prop_cb, hello); */
 
       bool subscribe_property_glib (std::string quiddity_name,
 				    std::string name,
@@ -165,12 +165,15 @@ namespace switcher
       std::string get_method_description_by_class (std::string class_name, 
 						   std::string method_name);
       //invoke
-      bool invoke (std::string quiddity_name, 
-		   std::string method_name,
-		   std::vector<std::string> args);  
+      bool invoke (const std::string quiddity_name, 
+		   const std::string method_name,
+		   std::string **return_value,
+		   const std::vector<std::string> args);  
       bool invoke_va (const gchar *quiddity_name,
+		      const gchar *method_name,
+		      std::string **return_value,
 		      ...);
-    
+      
       bool has_method (const std::string quiddity_name,
 		       const std::string method_name);
     

@@ -45,10 +45,15 @@ namespace switcher
       
     Method ();
     ~Method ();
-    void set_method (void *method, 
+    bool set_method (void *method,
+		     GType return_type,
 		     args_types arg_types, 
 		     gpointer user_data);
-    bool invoke (std::vector<std::string> args);
+    //fixme remove the following, we want a return type
+    bool set_method (void *method, 
+		     args_types arg_types, 
+		     gpointer user_data);
+    GValue invoke (std::vector<std::string> args);
     uint get_num_of_value_args();
     void set_description (std::string method_name,
 			   std::string short_description,
@@ -64,6 +69,7 @@ namespace switcher
 
   private:
     GClosure *closure_;
+    GType return_type_;
     args_types arg_types_; 
     uint num_of_value_args_;
     JSONBuilder::ptr json_description_;

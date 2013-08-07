@@ -32,7 +32,7 @@ static bool audio_success;
 static bool video_success;
 static bool do_continue;
 
-static char *user_string = "hello world";
+static const char *user_string = "hello world";
 
 void 
 mon_property_cb(std::string subscriber_name, 
@@ -82,52 +82,66 @@ main (int argc,
 #endif
     
     manager->create ("SOAPcontrolServer", "soapserver");
-    manager->invoke_va ("soapserver", "set_port", "38084", NULL);
+
+    manager->invoke_va ("soapserver", 
+			"set_port", 
+			NULL, 
+			"38084", 
+			NULL);
     
     //testing uncompressed data transmission
     manager->create ("runtime", "av_runtime");
     manager->create ("audiotestsrc","a");
-    manager->invoke_va ("a", "set_runtime", "av_runtime", NULL);
+    manager->invoke_va ("a", "set_runtime", NULL, "av_runtime", NULL);
     manager->create ("videotestsrc","v");
-    manager->invoke_va ("v", "set_runtime", "av_runtime", NULL);
+    manager->invoke_va ("v", "set_runtime", NULL, "av_runtime", NULL);
 
     manager->create ("runtime", "rtp_runtime");
     manager->create ("rtpsession","rtp");
-    manager->invoke_va ("rtp", "set_runtime", "rtp_runtime", NULL);
+    manager->invoke_va ("rtp", "set_runtime", NULL, "rtp_runtime", NULL);
     
-    manager->invoke_va ("rtp",
+    manager->invoke_va ("rtp", 
       			"add_data_stream",
+			NULL,
       			"/tmp/switcher_rtptest_a_audio",
       			NULL);
     
-    manager->invoke_va ("rtp",
+    manager->invoke_va ("rtp", 
       			"add_data_stream",
+			NULL,
       			"/tmp/switcher_rtptest_v_video",
       			NULL);
 
-    manager->invoke_va ("rtp",
+    manager->invoke_va ("rtp", 
       			"add_destination",
+			NULL,
       			"local",
       			"localhost",
       			NULL);
-    manager->invoke_va ("rtp",
+    manager->invoke_va ("rtp", 
        			"add_udp_stream_to_dest",
+			NULL,
        			"/tmp/switcher_rtptest_a_audio",
        			"local",
        			"9066",
        			NULL);
     manager->invoke_va ("rtp",
        			"add_udp_stream_to_dest",
+			NULL,
        			"/tmp/switcher_rtptest_v_video",
        			"local",
        			"9076",
        			NULL);
-    
+
     manager->create ("runtime", "receiver_runtime");
     manager->create ("httpsdpdec", "uri");
-    manager->invoke_va ("uri", "set_runtime", "receiver_runtime", NULL);
-    manager->invoke_va ("uri",
+    manager->invoke_va ("uri", 
+			"set_runtime", 
+			NULL, 
+			"receiver_runtime", NULL);
+    manager->invoke_va ("uri", 
        			"to_shmdata",
+			NULL,
 			"http://localhost:38084/sdp?rtpsession=rtp&destination=local",
 			NULL);
     
@@ -139,18 +153,28 @@ main (int argc,
     
     manager->subscribe_property ("sub","audioprobe","caps");
     manager->subscribe_property ("sub","audioprobe","last-message");
-    manager->invoke_va ("audioprobe", "set_runtime", "probe_runtime", NULL);
+    manager->invoke_va ("audioprobe", 
+			"set_runtime", 
+			NULL,
+			"probe_runtime", 
+			NULL);
     manager->invoke_va ("audioprobe",
-     			"connect",
+			"connect",
+     			NULL,
      			"/tmp/switcher_rtptest_uri_audio_0",
      			NULL);
 
     manager->create ("fakesink","videoprobe");
     manager->subscribe_property ("sub","videoprobe","last-message");
     manager->subscribe_property ("sub","videoprobe","caps");
-    manager->invoke_va ("videoprobe", "set_runtime", "probe_runtime", NULL);
+    manager->invoke_va ("videoprobe", 
+			"set_runtime", 
+			NULL, 
+			"probe_runtime", 
+			NULL);
     manager->invoke_va ("videoprobe",
       			"connect",
+			NULL,
       			"/tmp/switcher_rtptest_uri_video_0",
       			NULL);
     

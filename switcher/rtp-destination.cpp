@@ -41,7 +41,7 @@ namespace switcher
 	std::vector <std::string> arg;
 	arg.push_back (host_name_);
 	arg.push_back (iter->first);
-	manager->invoke ("udpsend_rtp","remove_client",arg);
+	manager->invoke ("udpsend_rtp", "remove_client", NULL ,arg);
 
 	//cleaning rtcp
 	arg.clear ();
@@ -49,7 +49,7 @@ namespace switcher
 	std::ostringstream rtcp_port;
 	rtcp_port << atoi(iter->first.c_str()); + 1;
 	arg.push_back (rtcp_port.str());
-	manager->invoke ("udpsend_rtp","remove_client",arg);
+	manager->invoke ("udpsend_rtp", "remove_client", NULL, arg);
 
 	//TODO remove connection to funnel
       }

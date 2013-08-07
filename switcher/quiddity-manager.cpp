@@ -509,7 +509,9 @@ namespace switcher
 
   
   bool 
-  QuiddityManager::invoke_va (const gchar *quiddity_name, 
+  QuiddityManager::invoke_va (const gchar *quiddity_name,
+			      const gchar *method_name,
+			      std::string **return_value,
 			      ...)
   {
     std::vector<std::string> method_args;
@@ -519,14 +521,14 @@ namespace switcher
 	g_warning ("trying to invoke with a NULL quiddity name");
 	return false;
       }
-    va_list vl;
-    va_start(vl, quiddity_name);
-    char *method_name = va_arg(vl, char *);
     if (method_name == NULL)
       {
 	g_warning ("trying to invoke with a NULL method name");
 	return false;
       }
+
+    va_list vl;
+    va_start(vl, return_value);
     char *method_arg = va_arg(vl, char *);
     while (method_arg != NULL)
       {
@@ -534,28 +536,27 @@ namespace switcher
 	method_arg = va_arg(vl, char *);
       }
     va_end(vl);
-    return invoke (quiddity_name, method_name, method_args);
+    return invoke (quiddity_name, method_name, return_value, method_args);
   }
 
   bool 
-  QuiddityManager::invoke (std::string quiddity_name, 
-			   std::string method_name,
-			   std::vector<std::string> args)
+  QuiddityManager::invoke (const std::string quiddity_name, 
+			   const std::string method_name,
+			   std::string **return_value,
+			   const std::vector<std::string> args)
   {
-    std::string res;
+    //std::string res;
     command_lock ();
     command_->set_id (QuiddityCommand::invoke);
     command_->add_arg (quiddity_name);
     command_->add_arg (method_name);
     command_->set_vector_arg (args);
     invoke_in_gmainloop  ();
-    res = command_->result_[0];
+    if (return_value != NULL)
+      *return_value = new std::string (command_->result_[0]);
+    bool res = command_->success_;
     command_unlock ();
-    
-    if (res == "true")
-      return true;
-    else 
-      return false;
+    return res;
   } 
   
   std::string
@@ -1024,12 +1025,19 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 												       context->command_->args_[1]));
 	break;
       case QuiddityCommand::invoke:
-	if (context->manager_impl_->invoke (context->command_->args_[0], 
-					    context->command_->args_[1], 
-					    context->command_->vector_arg_))
-	  context->command_->result_.push_back ("true");
-	else
-	  context->command_->result_.push_back ("false");
+	{
+	  std::string *result;
+	  if (context->manager_impl_->invoke (context->command_->args_[0],
+					      context->command_->args_[1], 
+					      &result,
+					      context->command_->vector_arg_))
+	    context->command_->success_ = true; //result_.push_back ("true");
+	  else
+	    context->command_->success_ = false; //result_.push_back ("false");
+
+	  context->command_->result_.push_back (*result);
+	  delete result;
+	}
 	break;
       case QuiddityCommand::subscribe_signal:
 	if (context->manager_impl_->subscribe_signal (context->command_->args_[0], 

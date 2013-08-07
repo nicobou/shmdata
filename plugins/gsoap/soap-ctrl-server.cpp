@@ -116,7 +116,7 @@ namespace switcher
 
        std::vector<std::string> arg;
        arg.push_back (destination_name);
-       if (!manager->invoke (rtpsession_name,"write_sdp_file",arg))
+       if (!manager->invoke (rtpsession_name, "write_sdp_file", NULL, arg))
 	   return 404;
        
        //sending file to client
@@ -583,7 +583,8 @@ controlService::invoke_method (std::string quiddity_name,
   QuiddityManager::ptr manager;
   if (ctrl_server != NULL)
     manager = ctrl_server->get_quiddity_manager ();
-  *result = manager->invoke (quiddity_name, method_name, args);
+  std::string *invocation_result;
+  *result = manager->invoke (quiddity_name, method_name, &invocation_result, args);
 
   if (*result)
     return SOAP_OK;

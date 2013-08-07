@@ -246,7 +246,7 @@ namespace switcher
 		args.push_back (val);
 		g_free (val);
 	      }
-	    manager->invoke (quid_name, method_name, args);
+	    manager->invoke (quid_name, method_name, NULL, args);
 	    g_free (quid_name); 
 	    g_free (method_name); 
 	  }

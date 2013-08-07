@@ -41,28 +41,37 @@ namespace switcher
       g_closure_unref (closure_);
   }
 
-  /*
-   * the first elements of arg_type should be args passed by value, 
-   * with args passed by pointers at the end (as references to base quiddities)  
-   *
-   */
-  void //TODO make set_method returning a bool
-  Method::set_method (void *method, std::vector<GType> arg_types, gpointer user_data)  
+
+  bool
+  Method::set_method (void *method, 
+		      GType return_type,
+		      std::vector<GType> arg_types, 
+		      gpointer user_data)  
   {
     if (arg_types.size () < 1)
       {
-	g_warning ("Method::set_method is called with empty arg_types");
-	return;
+	g_debug ("Method::set_method is called with empty arg_types");
+	return false;
       }
     if (method == NULL)
       {
-	g_warning ("Method::set_method is called with a NULL function");
-	return;
+	g_debug ("Method::set_method is called with a NULL function");
+	return false;
       }
     closure_ = g_cclosure_new (G_CALLBACK (method), user_data, Method::destroy_data);
     g_closure_set_marshal  (closure_,g_cclosure_marshal_generic);
+    return_type_ =  return_type;
     arg_types_ = arg_types;
     num_of_value_args_ = arg_types_.size();
+
+    return true;
+  }
+
+  //FIXME remove the following
+  bool
+  Method::set_method (void *method, std::vector<GType> arg_types, gpointer user_data)  
+  {
+    return set_method (method, G_TYPE_BOOLEAN, arg_types, user_data);
   }
 
   //FIXME remove this method
@@ -72,13 +81,18 @@ namespace switcher
     return num_of_value_args_;
   }
   
-  bool 
+
+  //FIXME should be commented and not used (using signal action instead)
+  GValue 
   Method::invoke(std::vector<std::string> args)
   {
+        
+    GValue result_value = G_VALUE_INIT;
+
     if (args.size () != num_of_value_args_ && arg_types_[0] != G_TYPE_NONE)
       {
 	g_warning ("Method::invoke number of arguments does not correspond to the size of argument types");
-	return false;
+	return result_value;
       }
 
     GValue params[arg_types_.size ()];
@@ -93,7 +107,7 @@ namespace switcher
 	    {
 	      g_error ("Method::invoke string not transformable into gvalue (argument: %s) ",
 		       args[i].c_str());
-	      return false;
+	      return result_value;
 	    }
 	}
     else
@@ -103,19 +117,19 @@ namespace switcher
 	gst_value_deserialize (&params[0],"");
       }
 
-    
-    GValue result_value = G_VALUE_INIT;
-    gboolean result;
-    g_value_init (&result_value, G_TYPE_BOOLEAN);
+    //gboolean result;
+    g_value_init (&result_value, return_type_);
     //g_print ("arg tipe size %d\n", arg_types_.size());
     g_closure_invoke (closure_, &result_value, num_of_value_args_, params, NULL);
-    result = g_value_get_boolean (&result_value);
+    
+    //result = g_value_get_boolean (&result_value);
     
     //unset
-    g_value_unset (&result_value);
+    //g_value_unset (&result_value);
     for (guint i=0; i < num_of_value_args_; i++)
       g_value_unset (&params[i]);
-    return result;
+    //return result;
+    return result_value; 
   } 
   
   void

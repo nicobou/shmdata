@@ -101,7 +101,12 @@ set_runtime_invoker (gpointer name)
 {
   switcher::QuiddityManager::ptr mymanager = manager;
   if ((bool)mymanager && mymanager->has_method ((char *)name, "set_runtime"))
-    mymanager->invoke_va ((char *)name, "set_runtime", "pipeline0", NULL);
+    {
+      mymanager->invoke_va ((char *)name, 
+			    "set_runtime", 
+			    NULL, 
+			    "pipeline0", NULL);
+    }
   g_free (name);
   return NULL;
 }
@@ -160,13 +165,14 @@ main (int argc,
   //create logger managing switcher log domain
   manager->create ("logger", "internal_logger");
   //manage logs from shmdata
-  manager->invoke_va ("internal_logger", "install_log_handler", "shmdata", NULL);
+  manager->invoke_va ("internal_logger", "install_log_handler", NULL, "shmdata", NULL);
   //manage logs from GStreamer
-  manager->invoke_va ("internal_logger", "install_log_handler", "GStreamer", NULL);
+  manager->invoke_va ("internal_logger", "install_log_handler", NULL, "GStreamer", NULL);
   //manage logs from Glib
-  manager->invoke_va ("internal_logger", "install_log_handler", "Glib", NULL);
+  manager->invoke_va ("internal_logger", "install_log_handler", NULL, "Glib", NULL);
   //manage logs from Glib-GObject
-  manager->invoke_va ("internal_logger", "install_log_handler", "Glib-GObject", NULL);
+  manager->invoke_va ("internal_logger", "install_log_handler", NULL, "Glib-GObject", NULL);
+  
   if (quiet)
     manager->set_property ("internal_logger", "mute", "true");
   else
@@ -247,13 +253,15 @@ main (int argc,
   std::string soap_name = manager->create ("SOAPcontrolServer", "soapserver");
   std::vector<std::string> port_arg;
   port_arg.push_back (port_number);
-  manager->invoke (soap_name, "set_port", port_arg);
+  std::string *result;
+  manager->invoke (soap_name, "set_port", &result, port_arg);
+  g_print ("-------------- %s ----------\n", result->c_str ());
   
   // start osc if port number has been set
   if (osc_port_number != NULL)
     {
       std::string osc_name = manager->create ("OSCctl");
-      manager->invoke_va (osc_name.c_str (), "set_port", osc_port_number, NULL);
+      manager->invoke_va (osc_name.c_str (), "set_port", NULL, osc_port_number, NULL);
     }
   
 
@@ -281,6 +289,7 @@ main (int argc,
   // manager->create("videosink","win");
   // manager->invoke_va ("win",
   //   			 "connect",
+  //                     NULL,
   //   			 "/tmp/switcher_default_vid_video",
   //   			 NULL);
      

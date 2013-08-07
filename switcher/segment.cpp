@@ -78,11 +78,11 @@ namespace switcher
       g_error ("segment: cannot set method description for \"set_runtime\"");
 
      GType types[] = {G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING};
-     make_custom_signal ("segment",
-			 "on-new-shmdata-writer", 
-			 G_TYPE_NONE,
-			 3,
-			 types);
+     make_custom_signal_with_class_name ("segment",
+					 "on-new-shmdata-writer", 
+					 G_TYPE_NONE,
+					 3,
+					 types);
      set_signal_description ("On New Shmdata Writer",
 			     "on-new-shmdata-writer",
 			     "a new shmdata writer has been created",
@@ -96,11 +96,11 @@ namespace switcher
 							  "json_doc",
 							  "the writer json documentation",
 							  NULL));
-     make_custom_signal ("segment",
-			 "on-new-shmdata-reader", 
-			 G_TYPE_NONE,
-			 3,
-			 types);
+     make_custom_signal_with_class_name ("segment",
+					 "on-new-shmdata-reader", 
+					 G_TYPE_NONE,
+					 3,
+					 types);
      set_signal_description ("On New Shmdata Reader",
 			     "on-new-shmdata-reader",
 			     "a new shmdata reader has been created",

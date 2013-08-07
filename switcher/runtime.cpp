@@ -311,9 +311,12 @@ res = gst_element_query (pipeline_, query);
 	    manager->remove (context->command->args_[0]);
 	    break;
 	  case QuiddityCommand::invoke:
-	    manager->invoke (context->command->args_[0], 
-			     context->command->args_[1], 
-			     context->command->vector_arg_);
+	    {
+	      manager->invoke (context->command->args_[0], 
+			       context->command->args_[1], 
+			       NULL, //do not care of return value
+			       context->command->vector_arg_);
+	    }
 	    break;
 	  default:
 	    g_debug ("on-error-command: %s not implemented (sorry)\n", 

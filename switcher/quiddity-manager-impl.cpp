@@ -714,9 +714,10 @@ namespace switcher
   }
 
   bool 
-  QuiddityManager_Impl::invoke (std::string quiddity_name, 
-				std::string method_name,
-				std::vector<std::string> args)
+  QuiddityManager_Impl::invoke (const std::string quiddity_name, 
+				const std::string method_name,
+				std::string **return_value,
+				const std::vector<std::string> args)
   {
     //g_debug ("QuiddityManager_Impl::quiddity_invoke_method %s %s, arg size %d",quiddity_name.c_str(), function_name.c_str(), args.size ());
     
@@ -733,7 +734,8 @@ namespace switcher
 	return false;
       }
 
-    return quiddity->invoke_method (method_name, args);
+    bool res = quiddity->invoke_method (method_name, return_value, args);
+    return res;
   } 
 
   std::string

@@ -576,16 +576,16 @@ namespace switcher
 	manager->create ("udpsink","udpsend_rtp");
 	manager->create ("udpsink","udpsend_rtcp");
 	arg.push_back ("single_runtime");
-	manager->invoke ("udpsend_rtp","set_runtime",arg);
-	manager->invoke ("udpsend_rtcp","set_runtime",arg);
+	manager->invoke ("udpsend_rtp", "set_runtime", NULL, arg);
+	manager->invoke ("udpsend_rtcp", "set_runtime", NULL, arg);
 	
 	arg.clear ();
 	arg.push_back (make_file_name ("send_rtp_src_"+id));
-	manager->invoke ("udpsend_rtp","connect",arg);
+	manager->invoke ("udpsend_rtp", "connect", NULL, arg);
 
 	arg.clear ();
 	arg.push_back (make_file_name ("send_rtcp_src_"+id));
-	manager->invoke ("udpsend_rtcp","connect",arg);
+	manager->invoke ("udpsend_rtcp", "connect", NULL, arg);
       }
 
     QuiddityManager::ptr manager = quiddity_managers_.lookup (shmdata_socket_path);
@@ -597,7 +597,7 @@ namespace switcher
     std::vector <std::string> arg;
     arg.push_back (dest->get_host_name ());
     arg.push_back (port);
-    manager->invoke ("udpsend_rtp","add_client",arg);
+    manager->invoke ("udpsend_rtp","add_client", NULL, arg);
 
      //rtcp stream (sending)
      arg.clear ();
@@ -605,7 +605,7 @@ namespace switcher
      std::ostringstream rtcp_port;
      rtcp_port << rtp_port + 1;
      arg.push_back (rtcp_port.str());
-     manager->invoke ("udpsend_rtcp","add_client",arg);
+     manager->invoke ("udpsend_rtcp", "add_client", NULL, arg);
 
      //TODO rtcp receiving should be negociated 
      // GstElementCleaner::ptr funnel_cleaner = funnels_.lookup (shmdata_socket_path);
@@ -663,11 +663,12 @@ namespace switcher
 	return false;
       }
     
+
     //rtp
     std::vector <std::string> arg;
     arg.push_back (dest->get_host_name ());
     arg.push_back (port);
-    manager->invoke ("udpsend_rtp","remove_client",arg);
+    manager->invoke ("udpsend_rtp", "remove_client", NULL, arg);
     
     //rtcp
     arg.clear ();
@@ -676,7 +677,7 @@ namespace switcher
     std::ostringstream rtcp_port;
     rtcp_port << rtp_port + 1;
     arg.push_back (rtcp_port.str());
-    manager->invoke ("udpsend_rtp","remove_client",arg);
+    manager->invoke ("udpsend_rtp", "remove_client", NULL, arg);
     
     return true;
   }
