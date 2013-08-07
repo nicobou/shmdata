@@ -32,13 +32,18 @@ namespace switcher
   class MyPlugin : public Quiddity {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(MyPlugin);
-    static gboolean get_myprop (void *user_data);
-    static void set_myprop (gboolean myprop, void *user_data);
-    
+    ~MyPlugin ();
+
   private:
     CustomPropertyHelper::ptr custom_props_;
     bool myprop_;
     GParamSpec *myprop_prop_;
+
+    static gboolean get_myprop (void *user_data);
+    static void set_myprop (gboolean myprop, void *user_data);
+    static gchar *my_custom_method (const gchar *first_arg, void *user_data);
+    gchar *hello_;
+
   };
   
   SWITCHER_DECLARE_PLUGIN(MyPlugin);

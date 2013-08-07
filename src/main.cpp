@@ -255,7 +255,7 @@ main (int argc,
   port_arg.push_back (port_number);
   std::string *result;
   manager->invoke (soap_name, "set_port", &result, port_arg);
-  g_print ("-------------- %s ----------\n", result->c_str ());
+  //g_print ("-------------- %s ----------\n", result->c_str ());
   
   // start osc if port number has been set
   if (osc_port_number != NULL)
@@ -263,8 +263,6 @@ main (int argc,
       std::string osc_name = manager->create ("OSCctl");
       manager->invoke_va (osc_name.c_str (), "set_port", NULL, osc_port_number, NULL);
     }
-  
-
   
   manager->reset_command_history (false);
   

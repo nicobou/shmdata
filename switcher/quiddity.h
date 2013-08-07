@@ -115,7 +115,6 @@ namespace switcher
     //this map is static in order to avoid re-creation of the same signal for each quiddity instance 
     static std::map<std::pair <std::string,std::string>, guint> signals_ids_;
     std::map<std::string, Signal::ptr> signals_;
-    std::map<std::string, Signal::ptr> custom_methods_;
     JSONBuilder::ptr signals_description_;
     std::string name_;
     std::string nick_name_;
@@ -147,18 +146,17 @@ namespace switcher
     //allows for creation of signals in a parent class
     bool register_custom_method_with_class_name (const std::string class_name,
 						 const std::string method_name, //the name to give
+						 void *method,
 						 GType return_type,
 						 guint n_params, //number of params
-						 GType *param_types);
+						 GType *param_types,
+						 void *user_data);
     bool register_custom_method (const std::string method_name, //the name to give
+				 void *method,
 				 GType return_type,
 				 guint n_params, //number of params
-				 GType *param_types);
-
-    bool set_custom_method_description (const std::string long_name,
-					const std::string signal_name,
-					const std::string short_description,
-					const Signal::args_doc arg_description);
+				 GType *param_types,
+				 void *user_data);
 
     //signals
     bool register_signal_gobject (const std::string signal_name, //the name to give

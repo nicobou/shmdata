@@ -208,22 +208,35 @@ namespace switcher
   bool 
   Quiddity::register_custom_method_with_class_name (const std::string class_name,
 						    const std::string method_name, //the name to give
+						    void *method,
 						    GType return_type,
 						    guint n_params, //number of params
-						    GType *param_types)
+						    GType *param_types,
+						    void *user_data)
   {
-    if (custom_methods_.find(method_name) != custom_methods_.end())
+    if (signals_.find(method_name) != signals_.end())
       {
-	g_warning ("signals: a signal named %s has already been registered for this class",method_name.c_str());
+	g_warning ("a custom method named %s has already been registered for this class",
+		   method_name.c_str());
 	return false;
       }
-    
+    if (method == NULL)
+      {
+	g_warning ("cannot register a NULL method (for %s)", method_name.c_str());
+	return false;
+      }
+      
     std::pair <std::string,std::string> sig_pair = std::make_pair (class_name,
 								   method_name);
+    GClosure *closure;
+
     //using signal ids in order to avoid id conflicts between signal and methods
     if (signals_ids_.find(sig_pair) == signals_ids_.end())
       {
-	guint id = GObjectWrapper::make_signal (//_action (GClosure *class_closure,
+	closure = g_cclosure_new (G_CALLBACK (method), user_data, NULL/*destroy data*/);
+	g_closure_set_marshal  (closure, g_cclosure_marshal_generic);
+
+	guint id = GObjectWrapper::make_signal_action (closure,
 						       return_type,
 						       n_params,
 						       param_types); 
@@ -239,7 +252,7 @@ namespace switcher
     Signal::ptr signal (new Signal ());
     if (!signal->set_gobject_sigid (gobject_->get_gobject (), signals_ids_[sig_pair]))
         return false;
-    custom_methods_[method_name] = signal; 
+    signals_[method_name] = signal; 
     g_debug ("signal %s registered", 
      	     method_name.c_str ());
     return true;
@@ -247,35 +260,23 @@ namespace switcher
 
   bool 
   Quiddity::register_custom_method (const std::string method_name, //the name to give
+				    void *method,
 				    GType return_type,
 				    guint n_params, //number of params
-				    GType *param_types)
+				    GType *param_types,
+				    void *user_data)
   {
 
     return register_custom_method_with_class_name (get_documentation().get_class_name (),
 						   method_name,
+						   method,
 						   return_type,
 						   n_params,
-						   param_types);
+						   param_types,
+						   user_data);
   }
 
-
-  bool 
-  Quiddity::set_custom_method_description (const std::string long_name,
-					   const std::string signal_name,
-					   const std::string short_description,
-					   const Signal::args_doc arg_description)
-  {
-        if (custom_methods_.find(signal_name) == custom_methods_.end())
-      {
-	g_warning ("cannot set description of a not existing method");
-	return false;
-      }
-    custom_methods_[signal_name]->set_description (long_name, signal_name, short_description, arg_description);
-    return true; 
-  }
-  
-  
+ 
   bool 
   Quiddity::unregister_property (std::string name)
   {

@@ -38,28 +38,48 @@ namespace switcher
   MyPlugin::init ()
   {
     custom_props_.reset (new CustomPropertyHelper ());
-    
+
+    hello_ = g_strdup ("hello");
     myprop_ = false;
-    
     myprop_prop_ = 
-      custom_props_->make_boolean_property ("myprop", 
-					    "myprop is a boolean property",
-					    (gboolean)FALSE,
-					    (GParamFlags) G_PARAM_READWRITE,
+      custom_props_->make_boolean_property ("myprop", //name 
+					    "myprop is a boolean property", //description
+					    (gboolean)FALSE, //default value
+					    (GParamFlags) G_PARAM_READWRITE,  
 					    MyPlugin::set_myprop,
      					    MyPlugin::get_myprop,
 					    this);
-
     register_property_by_pspec (custom_props_->get_gobject (), 
      				myprop_prop_, 
      				"myprop",
-				"My Property");
+				"My Property"); //long name
+
+
+    GType types[] = {G_TYPE_STRING};
+    register_custom_method ("test-method",
+			    (void *)MyPlugin::my_custom_method, //FIXME should not be void * but specific type
+			    G_TYPE_STRING,
+			    1,
+			    types,
+			    this);
+    set_signal_description ("Test Method",
+			    "test-method",
+			    "this a test method ",
+			    Signal::make_arg_description("First Argument (string)",
+							 "first_arg",
+							 "the first argument description",
+							 NULL));
 
     srand(time(0));
     set_name (g_strdup_printf ("myplugin%d",rand() % 1024));
     
-    //g_print ("hello from plugin\n");
+    g_debug ("hello from plugin");
     return true;
+  }
+  
+  MyPlugin::~MyPlugin ()
+  {
+    g_free (hello_);
   }
   
   gboolean 
@@ -74,7 +94,18 @@ namespace switcher
   {
     MyPlugin *context = static_cast<MyPlugin *> (user_data);
     context->myprop_ = myprop;
+    GObjectWrapper::notify_property_changed (context->gobject_->get_gobject (), 
+					     context->myprop_prop_);
   }
 
+
+  gchar *
+  MyPlugin::my_custom_method (const gchar *first_arg, void *user_data)
+  {
+    MyPlugin *context = static_cast<MyPlugin *> (user_data);
+    g_free (context->hello_);
+    g_strdup_printf ("hello %s",first_arg);
+    return context->hello_;
+  }
 
 }
