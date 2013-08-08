@@ -414,7 +414,7 @@ namespace switcher
   {
      if (!exists (quiddity_name))
       {
-	g_critical ("quiddity %s not found, cannot provide ptr",quiddity_name.c_str());
+	g_debug ("quiddity %s not found, cannot provide ptr",quiddity_name.c_str());
 	Quiddity::ptr empty_quiddity_ptr;
 	return empty_quiddity_ptr;
       }
@@ -724,6 +724,7 @@ namespace switcher
     if (!exists (quiddity_name))
       {
 	g_debug ("quiddity %s not found, cannot invoke",quiddity_name.c_str());
+	*return_value = new std::string ("");
 	return false;
       }
     Quiddity::ptr quiddity = get_quiddity (quiddity_name);
@@ -737,6 +738,7 @@ namespace switcher
     if (!quiddity->has_method (method_name)) 
       {
 	g_debug ("method %s not found, cannot invoke",method_name.c_str());
+	*return_value = new std::string ("");
 	return false;
       }
 
