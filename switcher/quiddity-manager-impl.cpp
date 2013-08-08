@@ -728,6 +728,12 @@ namespace switcher
       }
     Quiddity::ptr quiddity = get_quiddity (quiddity_name);
 
+    if (g_strcmp0 (method_name.c_str (), "hello_world") == 0)
+      {
+	bool res = quiddity->emit_action (method_name, return_value, args);
+	return res;
+      }
+    
     if (!quiddity->has_method (method_name)) 
       {
 	g_debug ("method %s not found, cannot invoke",method_name.c_str());

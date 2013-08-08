@@ -87,9 +87,6 @@ namespace switcher
     int method_get_num_pointer_args (std::string function_name); //returns -1 if method not found
     bool has_method (const std::string method_name);
 
-    bool invoke_action (const std::string signal_name,
-			std::string **return_value,
-			const std::vector<std::string> args);
     //signals
     std::string get_signals_description (); 
     std::string get_signal_description (std::string signal_name); 
@@ -99,6 +96,9 @@ namespace switcher
     bool unsubscribe_signal (std::string name,
 			     Signal::OnEmittedCallback cb,
 			     void *user_data);
+    bool emit_action (const std::string signal_name,
+			std::string **return_value,
+			const std::vector<std::string> args);
     
 
     //shmdata socket names
@@ -146,21 +146,6 @@ namespace switcher
 				 const std::string short_description,
 				 const Method::args_doc arg_description);
 
-    //allows for creation of signals in a parent class
-    bool register_custom_method_with_class_name (const std::string class_name,
-						 const std::string method_name, //the name to give
-						 void *method,
-						 GType return_type,
-						 guint n_params, //number of params
-						 GType *param_types,
-						 void *user_data);
-    bool register_custom_method (const std::string method_name, //the name to give
-				 void *method,
-				 GType return_type,
-				 guint n_params, //number of params
-				 GType *param_types,
-				 void *user_data);
-
     //signals
     bool register_signal_gobject (const std::string signal_name, //the name to give
 				  GObject *object, 
@@ -175,6 +160,22 @@ namespace switcher
 				 const std::string signal_name,
 				 const std::string short_description,
 				 const Signal::args_doc arg_description);
+
+    //allows for creation of signals in a parent class
+    bool register_signal_action_with_class_name (const std::string class_name,
+						 const std::string method_name, //the name to give
+						 void *method,
+						 GType return_type,
+						 guint n_params, //number of params
+						 GType *param_types,
+						 void *user_data);
+    bool register_signal_action (const std::string method_name, //the name to give
+				 void *method,
+				 GType return_type,
+				 guint n_params, //number of params
+				 GType *param_types,
+				 void *user_data);
+
 
     //allows for creation of signals in a parent class (like segment)
     bool make_custom_signal_with_class_name (const std::string class_name, //quiddity class name that is making the signal

@@ -56,18 +56,18 @@ namespace switcher
 
 
     GType types[] = {G_TYPE_STRING};
-    register_custom_method ("test-method",
-			    (void *)MyPlugin::my_custom_method, //FIXME should not be void * but specific type
+    register_signal_action ("hello_world",
+			    (void *)MyPlugin::my_signal_action, 
 			    G_TYPE_STRING,
 			    1,
 			    types,
 			    this);
-    set_signal_description ("Test Method",
-			    "test-method",
-			    "this a test method ",
-			    Signal::make_arg_description("First Argument (string)",
-							 "first_arg",
-							 "the first argument description",
+    set_signal_description ("Hello World",
+			    "hello_world",
+			    "a hello world test method ",
+			    Signal::make_arg_description("Who To Say Hello To",
+							 "who",
+							 "string that will be repeated with hello",
 							 NULL));
 
     srand(time(0));
@@ -100,11 +100,13 @@ namespace switcher
 
 
   gchar *
-  MyPlugin::my_custom_method (const gchar *first_arg, void *user_data)
+  MyPlugin::my_signal_action (void *, gchar *first_arg, void *user_data)
   {
     MyPlugin *context = static_cast<MyPlugin *> (user_data);
+
+    g_debug ("hello world from myplugin");
     g_free (context->hello_);
-    g_strdup_printf ("hello %s",first_arg);
+    context->hello_ = g_strdup_printf ("hello %s",first_arg);
     return context->hello_;
   }
 

@@ -206,7 +206,7 @@ namespace switcher
   }
 
   bool 
-  Quiddity::register_custom_method_with_class_name (const std::string class_name,
+  Quiddity::register_signal_action_with_class_name (const std::string class_name,
 						    const std::string method_name, //the name to give
 						    void *method,
 						    GType return_type,
@@ -259,7 +259,7 @@ namespace switcher
   }
 
   bool 
-  Quiddity::register_custom_method (const std::string method_name, //the name to give
+  Quiddity::register_signal_action (const std::string method_name, //the name to give
 				    void *method,
 				    GType return_type,
 				    guint n_params, //number of params
@@ -267,7 +267,7 @@ namespace switcher
 				    void *user_data)
   {
 
-    return register_custom_method_with_class_name (get_documentation().get_class_name (),
+    return register_signal_action_with_class_name (get_documentation().get_class_name (),
 						   method_name,
 						   method,
 						   return_type,
@@ -354,10 +354,10 @@ namespace switcher
       }
  }
   
-  bool //FIXME rename that
-  Quiddity::invoke_action (const std::string signal_name,
-			   std::string **return_value,
-			   const std::vector<std::string> args)
+  bool 
+  Quiddity::emit_action (const std::string signal_name,
+			 std::string **return_value,
+			 const std::vector<std::string> args)
   {
     if (signals_.find(signal_name) == signals_.end())
       {
@@ -370,15 +370,17 @@ namespace switcher
 	GValue res = signals_[signal_name]->invoke (args);
 	if (return_value != NULL)
 	  {
-	    gchar *res_val = gst_value_serialize (&res);
+	    gchar *res_val;
+	    if (G_VALUE_HOLDS_STRING(&res))
+	      res_val = g_strdup (g_value_get_string (&res));
+	    else
+	      res_val = gst_value_serialize (&res);
+
 	    *return_value = new std::string (res_val);
 	    g_free (res_val);
 	  }
 	g_value_unset (&res);
 	return true;
-	// if (return_value != NULL)
-	//   *return_value = new std::string ("ERROR_TODO");
-	// return true;
       }
   }
   

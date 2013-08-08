@@ -319,35 +319,28 @@ namespace switcher
       param_size = arg_types_.size () + 1;
 
     GValue params[param_size]; //1 is instance and return value
-    
-    g_print ("coucou1\n");
-    g_value_init (&params[0], G_TYPE_OBJECT);
-    g_print ("coucou1-1\n");
+  
+    params[0] = G_VALUE_INIT;
+    g_value_init (&params[0], G_OBJECT_TYPE (object_));
     g_value_set_object (&params[0], object_);
-    g_print ("coucou 2\n");
 
     //with args
     if (arg_types_[0] != G_TYPE_NONE)
-      for (gsize i = 1; i < arg_types_.size () + 1; i++)
+      for (gsize i = 0; i < arg_types_.size (); i++)
 	{
-	  params[i] = G_VALUE_INIT;
-	  g_value_init (&params[i],arg_types_[i]);
-	  if (!gst_value_deserialize (&params[i],args[i].c_str()))
+	  params[i + 1] = G_VALUE_INIT;
+	  g_value_init (&params[i + 1],arg_types_[i]);
+	  
+	  if (!gst_value_deserialize (&params[i + 1],args[i].c_str()))
 	    {
 	      g_warning ("Signal::invoke string not transformable into gvalue (argument: %s) ",
 			 args[i].c_str());
 	      return result_value;
 	    }
 	}
-    // else //should not be necessary
-    //   {
-    // 	params[1] = G_VALUE_INIT;
-    // 	g_value_init (&params[1],G_TYPE_STRING);
-    // 	gst_value_deserialize (&params[0],"");
-    //   }
-
+    
     g_value_init (&result_value, return_type_);
-
+    
     g_signal_emitv (params,
 		    id_,
 		    0,
