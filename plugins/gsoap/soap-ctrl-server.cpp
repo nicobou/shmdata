@@ -112,7 +112,7 @@ namespace switcher
 	 manager = ctrl_server->get_quiddity_manager ();
 
        if (!(bool) manager)
-	 return 404;//FIXME find better for that
+	 return 404;
 
        std::vector<std::string> arg;
        arg.push_back (destination_name);
