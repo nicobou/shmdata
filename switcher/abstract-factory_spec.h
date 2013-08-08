@@ -114,6 +114,7 @@ namespace switcher
       constructor_map_.erase (Id);
       destructor_map_.erase (Id);
       classes_documentation_.erase (Id);
+      return true;
     }
 
   template <typename T, typename Key, typename Doc>

@@ -370,15 +370,12 @@ int main(int argc, char **argv)
 	  i++;
       }
       
-      bool result;
+      std::string result;
       switcher_control.invoke_method (remaining_args[0],
 				      remaining_args[1],
 				      args,
 				      &result);
-      if (result) 
-	g_print ("invocation returned true\n");
-      else 
-	g_print  ("invocation returned false\n");
+      g_print ("%s\n", result.c_str ());
     }
 
   if (switcher_control.error)

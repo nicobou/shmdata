@@ -219,7 +219,7 @@ namespace switcher
 
      std::vector<std::string> params;
      // g_debug ("signal name n_value %d, object type %s\n", n_param_values, G_OBJECT_TYPE_NAME (object));
-     int i;
+     guint i;
      for (i = 1; i < n_param_values; i++) //we do not deserialize the gobject
        {
 	 gchar *val_str = GstUtils::gvalue_serialize (&param_values[i]);
@@ -295,4 +295,65 @@ namespace switcher
   //   delete args;
   //   return FALSE;
   // }
+
+  GValue 
+  Signal::invoke (std::vector<std::string> args)
+  {
+    
+    GValue result_value = G_VALUE_INIT;
+
+    if (!is_action_)
+      {
+	g_warning ("Signal::invoke cannot invoke if the signal is not an action");
+	return result_value;
+      }
+
+    if (args.size () != arg_types_.size () && arg_types_[0] != G_TYPE_NONE)
+      {
+	g_warning ("Signal::invoke number of arguments does not correspond to the size of argument types");
+	return result_value;
+      }
+
+    gsize param_size = 1;
+    if (arg_types_[0] != G_TYPE_NONE)
+      param_size = arg_types_.size () + 1;
+
+    GValue params[param_size]; //1 is instance and return value
+    
+    g_print ("coucou1\n");
+    g_value_init (&params[0], G_TYPE_OBJECT);
+    g_print ("coucou1-1\n");
+    g_value_set_object (&params[0], object_);
+    g_print ("coucou 2\n");
+
+    //with args
+    if (arg_types_[0] != G_TYPE_NONE)
+      for (gsize i = 1; i < arg_types_.size () + 1; i++)
+	{
+	  params[i] = G_VALUE_INIT;
+	  g_value_init (&params[i],arg_types_[i]);
+	  if (!gst_value_deserialize (&params[i],args[i].c_str()))
+	    {
+	      g_warning ("Signal::invoke string not transformable into gvalue (argument: %s) ",
+			 args[i].c_str());
+	      return result_value;
+	    }
+	}
+    // else //should not be necessary
+    //   {
+    // 	params[1] = G_VALUE_INIT;
+    // 	g_value_init (&params[1],G_TYPE_STRING);
+    // 	gst_value_deserialize (&params[0],"");
+    //   }
+
+    g_value_init (&result_value, return_type_);
+
+    g_signal_emitv (params,
+		    id_,
+		    0,
+		    &result_value);
+
+    for (gsize i = 0; i < param_size ; i++)
+      g_value_unset (&params[i]);
+  } 
 }

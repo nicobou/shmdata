@@ -57,15 +57,17 @@ namespace switcher
     
     bool subscribe (OnEmittedCallback cb, void *user_data);
     bool unsubscribe (OnEmittedCallback cb, void *user_data);
- 
-    void signal_emit (const gchar *used_string, 
+    
+    void signal_emit (const gchar *unused_string, 
 		      va_list  var_args);
 
+  GValue invoke (std::vector<std::string> args);
+    
     //helper methods, use NULL sentinel
-    //do no describe the first gobject (first signal arg)
+    //do not describe the first gobject (first signal arg)
     //use G_TYPE_NONE if no arg
     static args_types make_arg_type_description (GType arg_type, ...);
-
+    
     //helper methods, use NULL sentinel
     static args_doc make_arg_description (const gchar *first_arg_name, ...);
     JSONBuilder::Node get_json_root_node (); 

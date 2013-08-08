@@ -575,7 +575,7 @@ int
 controlService::invoke_method (std::string quiddity_name,
 			       std::string method_name,
 			       std::vector<std::string> args,
-			       bool *result)
+			       std::string *result)
 {
   using namespace switcher;
 
@@ -584,10 +584,11 @@ controlService::invoke_method (std::string quiddity_name,
   if (ctrl_server != NULL)
     manager = ctrl_server->get_quiddity_manager ();
   std::string *invocation_result;
-  *result = manager->invoke (quiddity_name, method_name, &invocation_result, args);
-
-  if (*result)
-    return SOAP_OK;
+  if (manager->invoke (quiddity_name, method_name, &invocation_result, args))
+    {
+      *result = *invocation_result;
+      return SOAP_OK;
+    }
   else
     {
       char *s = (char*)soap_malloc(this, 1024);

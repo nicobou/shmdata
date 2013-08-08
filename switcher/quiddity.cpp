@@ -330,18 +330,19 @@ namespace switcher
    }
   
   bool
-  Quiddity::invoke_method (const std::string function_name,
+  Quiddity::invoke_method (const std::string method_name,
 			   std::string **return_value,
 			   const std::vector<std::string> args)
   {
-    if (methods_.find( function_name ) == methods_.end())
+    if (methods_.find(method_name) == methods_.end())
       {
-	g_debug ("Quiddity::invoke_method error: method %s not found",function_name.c_str());
+	g_debug ("Quiddity::invoke_method error: method %s not found",
+		 method_name.c_str());
 	return false;
       }
     else 
       {
-	GValue res = methods_[function_name]->invoke (args);
+	GValue res = methods_[method_name]->invoke (args);
 	if (return_value != NULL)
 	  {
 	    gchar *res_val = gst_value_serialize (&res);
@@ -353,7 +354,34 @@ namespace switcher
       }
  }
   
-
+  bool //FIXME rename that
+  Quiddity::invoke_action (const std::string signal_name,
+			   std::string **return_value,
+			   const std::vector<std::string> args)
+  {
+    if (signals_.find(signal_name) == signals_.end())
+      {
+	g_debug ("Quiddity::invoke_signal error: %s not found",
+		 signal_name.c_str());
+	return false;
+      }
+    else 
+      {
+	GValue res = signals_[signal_name]->invoke (args);
+	if (return_value != NULL)
+	  {
+	    gchar *res_val = gst_value_serialize (&res);
+	    *return_value = new std::string (res_val);
+	    g_free (res_val);
+	  }
+	g_value_unset (&res);
+	return true;
+	// if (return_value != NULL)
+	//   *return_value = new std::string ("ERROR_TODO");
+	// return true;
+      }
+  }
+  
   bool
   Quiddity::register_method (std::string method_name, void *method, std::vector<GType> arg_types, gpointer user_data)
   {

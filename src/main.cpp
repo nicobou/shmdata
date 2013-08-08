@@ -43,6 +43,7 @@ static gboolean classesdoc;
 static gchar *classdoc = NULL;
 static gchar *listpropbyclass = NULL;
 static gchar *listmethodsbyclass = NULL;
+static gchar *listsignalsbyclass = NULL;
 static gchar *extraplugindir = NULL;
 
 //static std::vector<switcher::QuiddityManager::ptr> container;
@@ -51,7 +52,7 @@ static switcher::QuiddityManager::ptr manager;
 static GOptionEntry entries[] =
   {
     { "version", NULL, 0, G_OPTION_ARG_NONE, &display_version, "display switcher version number", NULL },
-    { "server-name", 's', 0, G_OPTION_ARG_STRING, &server_name, "server name (default is \"default\")", NULL },
+    { "server-name", 'n', 0, G_OPTION_ARG_STRING, &server_name, "server name (default is \"default\")", NULL },
     { "port-number", 'p', 0, G_OPTION_ARG_STRING, &port_number, "port number the server will bind (default is 8080)", NULL },
     { "load", 'l', 0, G_OPTION_ARG_STRING, &load_file, "load state from history file (-l filename)", NULL },
     { "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet, "do not display any message", NULL },
@@ -60,6 +61,7 @@ static GOptionEntry entries[] =
     { "list-classes", 'C', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", NULL },
     { "list-props-by-class", 'P', 0, G_OPTION_ARG_STRING, &listpropbyclass, "list properties of a class", NULL },
     { "list-methods-by-class", 'M', 0, G_OPTION_ARG_STRING, &listmethodsbyclass, "list methods of a class", NULL },
+    { "list-signals-by-class", 'S', 0, G_OPTION_ARG_STRING, &listsignalsbyclass, "list signals of a class", NULL },
     { "classes-doc", NULL, 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", NULL },
     { "class-doc", NULL, 0, G_OPTION_ARG_STRING, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
     { "osc-port", 'o', 0, G_OPTION_ARG_STRING, &osc_port_number, "osc port number (osc enabled only if set)", NULL },
@@ -237,6 +239,12 @@ main (int argc,
     {
       g_log_set_default_handler (quiet_log_handler, NULL);
       g_print ("%s\n", manager->get_methods_description_by_class (listmethodsbyclass).c_str ());
+      return 0;
+    }
+  if (listsignalsbyclass != NULL)
+    {
+      g_log_set_default_handler (quiet_log_handler, NULL);
+      g_print ("%s\n", manager->get_signals_description_by_class (listsignalsbyclass).c_str ());
       return 0;
     }
 

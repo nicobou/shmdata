@@ -266,13 +266,11 @@ namespace switcher
 
     std::vector<std::string> args;
     args.push_back ((char *) arg1);
-    bool result;
+    std::string result;
     context->switcher_control_->invoke_method ((gchar *)quiddity_name,
 					       (gchar *)method_name,
 					       args,
 					       &result);
-    if (!result)
-      return FALSE;
     return TRUE;
   }
 
@@ -290,13 +288,11 @@ namespace switcher
     std::vector<std::string> args;
     args.push_back ((char *) arg1);
     args.push_back ((char *) arg2);
-    bool result;
+    std::string result;
     context->switcher_control_->invoke_method ((gchar *)quiddity_name,
 					       (gchar *)method_name,
 					       args,
 					       &result);
-    if (!result)
-      return FALSE;
     return TRUE;
   }
 
@@ -316,13 +312,11 @@ namespace switcher
     args.push_back ((char *) arg1);
     args.push_back ((char *) arg2);
     args.push_back ((char *) arg3);
-    bool result;
+    std::string result;
     context->switcher_control_->invoke_method ((gchar *)quiddity_name,
 					       (gchar *)method_name,
 					       args,
 					       &result);
-    if (!result)
-      return FALSE;
     return TRUE;
   }
 
@@ -344,13 +338,11 @@ namespace switcher
     args.push_back ((char *) arg2);
     args.push_back ((char *) arg3);
     args.push_back ((char *) arg4);
-    bool result;
+    std::string result;
     context->switcher_control_->invoke_method ((gchar *)quiddity_name,
 					       (gchar *)method_name,
 					       args,
 					       &result);
-    if (!result)
-      return FALSE;
     return TRUE;
   }
 }

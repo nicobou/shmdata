@@ -124,7 +124,7 @@ int switcher__get_method_description_by_class (std::string class_name,
 int switcher__invoke_method (std::string quiddity_name,
 			     std::string method_name,
 			     std::vector<std::string> args,
-			     bool *result);
+			     std::string *result);
 
 //gsoap switcher service signal-documentation: get a json formated description of signals   
 int switcher__get_signals_description (std::string quiddity_name,

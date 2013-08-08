@@ -87,6 +87,9 @@ namespace switcher
     int method_get_num_pointer_args (std::string function_name); //returns -1 if method not found
     bool has_method (const std::string method_name);
 
+    bool invoke_action (const std::string signal_name,
+			std::string **return_value,
+			const std::vector<std::string> args);
     //signals
     std::string get_signals_description (); 
     std::string get_signal_description (std::string signal_name); 
