@@ -41,30 +41,34 @@ namespace switcher
   bool 
   ShmdataToFile::init ()
   {
-    //registering add_shmdata
-    register_method("add_shmdata",
-		    (void *)&add_shmdata_wrapped, 
+    publish_method ("Add Shmdata",
+		    "add_shmdata", 
+		    "add a shmdata to record", 
+		    "success or fail",
+		    Method::make_arg_description ("Shmdata Path",
+						  "shmpath", 
+						  "shmdata socket path to record",
+						  "File Path"
+						  "filepath",
+						  "file location",
+						  NULL),
+		    (Method::method_ptr) &add_shmdata_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("add_shmdata", 
-			    "add a shmdata to record", 
-			    Method::make_arg_description ((char *)"shmpath", 
-							  (char *)"shmdata socket path to record",
-							  (char *)"filepath",
-							  (char *)"file location",
-							  NULL));
-
-    //registering remove_shmdata
-    register_method("remove_shmdata", 
-		    (void *)&remove_shmdata_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ((char *)"remove_shmdata", 
-			    (char *)"remove a shmdata from the recorder", 
-			    Method::make_arg_description ((char *)"shmpath", 
-							  (char *)"shmdata socket path to remove", 
-							  NULL));
+		    this);
     
+    publish_method ("Remove Shmdata",
+		    "remove_shmdata", 
+		    "remove a shmdata from the recorder", 
+		    "success or fail",
+		    Method::make_arg_description ("Shmdata Path",
+						  "shmpath", 
+						  "shmdata socket path to remove", 
+						  NULL),
+		    (Method::method_ptr) &remove_shmdata_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    this);
+    
+ 
     //registering recording property
     recording_ = FALSE;
     custom_prop_.reset (new CustomPropertyHelper ());

@@ -124,6 +124,7 @@ namespace switcher
  Signal::set_description (std::string long_name,
 			  std::string signal_name,
 			  std::string short_description,
+			  std::string return_description,
 			  args_doc arg_description)
   {
     json_description_->reset ();
@@ -131,11 +132,13 @@ namespace switcher
     json_description_->add_string_member ("long name", long_name.c_str ());
     json_description_->add_string_member ("name", signal_name.c_str ());
     json_description_->add_string_member ("description", short_description.c_str ());
+    
     if (is_action_)
       json_description_->add_string_member ("type", "action");
     else
       json_description_->add_string_member ("type", "signal");
     json_description_->add_string_member ("return type", g_type_name (return_type_));
+    json_description_->add_string_member ("return description", return_description.c_str ());
     json_description_->set_member_name ("arguments");
     json_description_->begin_array ();
     args_doc::iterator it;
@@ -172,7 +175,6 @@ namespace switcher
   Signal::make_arg_description (const gchar *first_arg_long_name, ...)
   {
     args_doc res;
-    //std::tuple<std::string,std::string,std::string> arg_desc_tuple;
     va_list vl;
     char *arg_long_name;
     char *arg_name;
@@ -182,10 +184,6 @@ namespace switcher
 	&& (arg_name = va_arg(vl, char *)) 
 	&& (arg_desc = va_arg(vl, char *)))
       {
-	// std::pair<std::string,std::string> arg_pair;
-	// arg_desc_tuple.first = std::string (first_arg_name);
-	// arg_desc_tuple.second = std::string (arg_desc);
-	//res.push_back (arg_desc_pair);
 	res.push_back (std::make_tuple (first_arg_long_name, 
 					arg_name,
 					arg_desc));
@@ -197,10 +195,6 @@ namespace switcher
 	res.push_back (std::make_tuple (arg_long_name, 
 					arg_name,
 					arg_desc));
-	// std::pair<std::string,std::string> arg_pair;
-	// arg_desc_pair.first = std::string (arg_name);
-	// arg_desc_pair.second = std::string (arg_desc);
-	// res.push_back (arg_desc_pair);
       }
     va_end(vl);
     return res;
@@ -297,7 +291,7 @@ namespace switcher
   // }
 
   GValue 
-  Signal::invoke (std::vector<std::string> args)
+  Signal::action_emit (std::vector<std::string> args)
   {
     
     GValue result_value = G_VALUE_INIT;

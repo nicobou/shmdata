@@ -46,27 +46,34 @@ namespace switcher
     set_name (gst_element_get_name (bin_));
     gst_parse_to_bin_src_ = NULL;
 
-    //registering methods
-    register_method("to_shmdata",
-		    (void *)&to_shmdata_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("to_shmdata", 
-			    "make a bin from GStreamer description and make shmdata writer(s)", 
-			    Method::make_arg_description ((char *)"description", 
-							  (char *)"the description to instanciate",
-							  NULL));
-    register_method("to_shmdata_with_path",
-		    (void *)&to_shmdata_with_path_wrapped, 
+
+    publish_method ("GST To Shmdata (With Path)",
+		    "to_shmdata_with_path", 
+		    "make a bin from GStreamer description and make shmdata writer(s)", 
+		    "success or fail",
+		    Method::make_arg_description ("GStreamer Pipeline"
+						  "gst_pipeline", 
+						  "the GStreamer pipeline with no sink to instanciate",
+						  "Shmdata Path",
+						  "shmdata_path", 
+						  "the path used for the shmdata",
+						  NULL),
+		    (Method::method_ptr) &to_shmdata_with_path_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("to_shmdata_with_path", 
-			    "make a bin from GStreamer description and make shmdata writer(s)", 
-			    Method::make_arg_description ((char *)"description", 
-							  (char *)"the description to instanciate",
-							  (char *)"shmdata_path", 
-							  (char *)"the path used for the shmdata",
-							  NULL));
+		    this);
+
+
+    publish_method ("GST To Shmdata",
+		    "to_shmdata", 
+		    "make a bin from GStreamer description and make shmdata writer(s)", 
+		    "success or fail",
+		    Method::make_arg_description ("GStreamer Pipeline"
+						  "gst_pipeline", 
+						  "the GStreamer pipeline with no sink to instanciate",
+						  NULL),
+		    (Method::method_ptr) &to_shmdata_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    this);
     return true;
   }
   

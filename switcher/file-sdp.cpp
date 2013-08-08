@@ -60,17 +60,19 @@ namespace switcher
     // 		      (GCallback) FileSDP::pad_removed_cb ,  
     // 		      (gpointer) this);      
    
-    //registering add_data_stream
-    register_method("to_shmdata",
-		    (void *)&to_shmdata_wrapped, 
+
+    publish_method ("To Shmdata",
+		    "to_shmdata", 
+		    "get raw streams from an sdp description distributed over http and write them to shmdatas", 
+		    "success or fail",
+		    Method::make_arg_description ("SDP File URL",
+						  "url", 
+						  "The sdp file path (such as file:///home/me/file.sdp)",
+						  NULL),
+		    (Method::method_ptr)&to_shmdata_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("to_shmdata", 
-			    "get raw streams from an sdp description distributed over http and write them to shmdatas", 
-			    Method::make_arg_description ("url", 
-							  "the url to the sdp file",
-							  NULL));
-    //registering "latency"
+		    this);
+    
     register_property (G_OBJECT (sdpdemux_),"latency","latency", "Latency");
     return true;
   }

@@ -165,6 +165,7 @@ namespace switcher
   Quiddity::set_signal_description (const std::string long_name,
 				    const std::string signal_name,
 				    const std::string short_description,
+				    const std::string return_description,
 				    const Signal::args_doc arg_description)
   {
 
@@ -173,7 +174,11 @@ namespace switcher
 	g_warning ("cannot set description of a not existing signal");
 	return false;
       }
-    signals_[signal_name]->set_description (long_name, signal_name, short_description, arg_description);
+    signals_[signal_name]->set_description (long_name, 
+					    signal_name, 
+					    short_description, 
+					    return_description, 
+					    arg_description);
 
     // signal_emit ("on-new-signal-registered", 
     // 		 get_nick_name ().c_str (), 
@@ -367,7 +372,7 @@ namespace switcher
       }
     else 
       {
-	GValue res = signals_[signal_name]->invoke (args);
+	GValue res = signals_[signal_name]->action_emit (args);
 	if (return_value != NULL)
 	  {
 	    gchar *res_val;
@@ -384,6 +389,7 @@ namespace switcher
       }
   }
   
+
   bool
   Quiddity::register_method (std::string method_name, void *method, std::vector<GType> arg_types, gpointer user_data)
   {
@@ -409,16 +415,22 @@ namespace switcher
   }
 
   bool 
-  Quiddity::set_method_description (const std::string method_name,
+  Quiddity::set_method_description (const std::string long_name,
+				    const std::string method_name,
 				    const std::string short_description,
-				    const std::vector<std::pair<std::string,std::string> > arg_description)
+				    const std::string return_description,
+				    const Method::args_doc arg_description)
   {
     if (methods_.find( method_name ) == methods_.end())
       {
 	g_error ("cannot set description of a not existing method");
 	return false;
       }
-    methods_[method_name]->set_description (method_name, short_description, arg_description);
+    methods_[method_name]->set_description (long_name, 
+					    method_name, 
+					    short_description, 
+					    return_description,
+					    arg_description);
     return true;
   }
 
@@ -652,5 +664,30 @@ namespace switcher
     return NULL;
   }
 
+  //methods
+  bool 
+  Quiddity::publish_method (const std::string long_name,
+			    const std::string method_name,
+			    const std::string short_description,
+			    const std::string return_description,
+			    const Method::args_doc arg_description,
+			    Method::method_ptr method, 
+			    Method::args_types arg_types, 
+			    gpointer user_data)
+  {
+    if (!register_method (method_name,
+			  method, 
+			  arg_types, 
+			  user_data))
+      return false;
 
+    if (!set_method_description (long_name,
+				 method_name,
+				 short_description,
+				 return_description,
+				 arg_description))
+      return false;
+    return true;
+  }
+  
 }

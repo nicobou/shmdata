@@ -116,28 +116,29 @@ namespace switcher
 					    this));
     
     
-    //registering install
-    register_method("install_log_handler",
-		    (void *)&install_log_handler_wrapped, 
+    publish_method ("Install Log Handler",
+		    "install_log_handler", 
+		    "make the logger managing the log domain", 
+		    "success or fail",
+		    Method::make_arg_description ("log domain", 
+						  "the glib log domain (e.g. shmdata, Glib or GStreamer)",
+						  NULL),
+		    (Method::method_ptr) &install_log_handler_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("install_log_handler", 
-			    "make the logger managing the log domain", 
-			    Method::make_arg_description ("log domain", 
-							  "the glib log domain (e.g. shmdata, Glib or GStreamer)",
-							  NULL));
+		    this);
 
-    //registering remove
-    register_method("remove_log_handler",
-		    (void *)&remove_log_handler_wrapped, 
+
+    publish_method ("Remove Log Handler",
+		    "remove_log_handler", 
+		    "make the logger stop managing the log domain", 
+		    "success or fail",
+		    Method::make_arg_description ("Log Domain",
+						  "log domain", 
+						  "the glib log domain (e.g. shmdata, Glib or GStreamer)",
+						  NULL),
+		    (Method::method_ptr) &remove_log_handler_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("remove_log_handler", 
-			    "make the logger stop managing the log domain", 
-			    Method::make_arg_description ("log domain", 
-							  "the glib log domain (e.g. shmdata, Glib or GStreamer)",
-							  NULL));
-
+		    this);
 
     return true;
   }

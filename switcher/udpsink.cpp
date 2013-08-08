@@ -88,42 +88,45 @@ namespace switcher
     // g_signal_connect (G_OBJECT (udpsink_), "client-removed",  
     // 		      (GCallback)  on_client_removed, (gpointer) this);
     
-    //registering add_client
-    register_method("add_client",
-     		    (void *)&add_client_wrapped, 
+    publish_method ("Add Client",
+		    "add_client", 
+		    "add a client with destination host and port to the list of clients", 
+		    "success or fail",
+		    Method::make_arg_description ("Host", 
+						  "host", 
+						  "the hostname/IP address of the client to add",
+						  "Port",
+						  "port",
+						  "the port of the client to add",
+						  NULL),
+		    (Method::method_ptr) &add_client_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, NULL),
-     		    (gpointer)this);
-    set_method_description ("add_client", 
-			    "add a client with destination host and port to the list of clients", 
-			    Method::make_arg_description ("host", 
-							  "the hostname/IP address of the client to add",
-							  "port",
-							  "the port of the client to add",
-							  NULL));
-    
-    //registering remove_client
-    register_method("remove_client",
-		    (void *)&remove_client_wrapped, 
+     		    this);
+   
+    publish_method ("Remove Client",
+		    "remove_client", 
+		    "remove a client with destination host and port to the list of clients", 
+		    "success or fail",
+		    Method::make_arg_description ("Host",
+						  "host",
+						  "the hostname/IP address of the client to remove",
+						  "Port",
+						  "port",
+						  "the port of the client to remove",
+						  NULL),
+		    (Method::method_ptr) &remove_client_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, NULL),
-     		    (gpointer)this);
-    set_method_description ("remove_client", 
-			    "remove a client with destination host and port to the list of clients", 
-			    Method::make_arg_description ("host",
-							  "the hostname/IP address of the client to remove",
-							  "port",
-							  "the port of the client to remove",
-							  NULL));
-      
+     		    this);
 
-    //registering clear
-    register_method("clear",
-		    (void *)&clear_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_NONE, NULL), //TODO use a type defined in the method class
-		    (gpointer)this);
-    set_method_description ("clear", 
-			    "remove a client with destination host and port to the list of clients", 
-			    Method::make_arg_description ("none",NULL));
      
+    publish_method ("Clear",
+		    "clear", 
+		    "remove a client with destination host and port to the list of clients", 
+		    "success or fail",
+		    Method::make_arg_description ("none",NULL),
+		    (Method::method_ptr) &clear_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_NONE, NULL), 
+		    this);
       
     //registering sink element
     set_on_first_data_hook (UDPSink::add_elements_to_bin,this);

@@ -38,16 +38,17 @@ namespace switcher
     shmdata_path_ = "";
 
     //registering connect
-    register_method("connect",
-		    (void *)&connect_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_STRING, 
-						       NULL),
-		    (gpointer)this);
-    set_method_description ("connect", 
-			    "connect the sink to a shmdata socket", 
-			    Method::make_arg_description ("socket",
-							  "shmdata socket path to connect with",
- 							  NULL));
+    publish_method ("Connect",
+		    "connect",
+		    "connect the sink to a shmdata socket", 
+		    "success or fail",
+		    Method::make_arg_description ("Shmdata Path",
+						  "socket",
+						  "shmdata socket path to connect with",
+						  NULL),
+		    (Method::method_ptr)&connect_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    this);
   }
 
    gboolean

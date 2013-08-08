@@ -74,49 +74,51 @@ namespace switcher
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
     GstUtils::wait_state_changed (pipeline_);
 
-    //registering play
-    register_method("play",
-		    (void *)&play_wrapped, 
+    publish_method ("Play",
+		    "play", 
+		    "activate the runtime", 
+		    "success or fail",
+		    Method::make_arg_description ("none",
+						  NULL),
+		    (Method::method_ptr) &play_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    (gpointer)this);
-    set_method_description ((char *)"play", 
-			    (char *)"activate the runtime", 
-			    Method::make_arg_description ("none",
-							  NULL));
+		    this);
 
-    //registering pause
-    register_method("pause",
-		    (void *)&pause_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    (gpointer)this);
-    set_method_description ((char *)"pause", 
-			    (char *)"pause the runtime", 
-			    Method::make_arg_description ((char *)"none",
-							  NULL));
-
-     //registering seek
-    register_method("seek",
-		    (void *)&seek_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-		    (gpointer)this);
-    set_method_description ((char *)"seek", 
-			    (char *)"seek the runtime", 
-			    Method::make_arg_description ((char *)"position",
-							  (char *)"position in milliseconds",
-							  NULL));
-
-    //registering speed
-    register_method("speed",
-		    (void *)&speed_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-		    (gpointer)this);
-    set_method_description ((char *)"speed", 
-			    (char *)"controle speed of runtime", 
-			    Method::make_arg_description ((char *)"speed",
-							  (char *)"1.0 is normal speed, 0.5 is half the speed and 2.0 is double speed",
-							  NULL));
-
-    return true;
+   publish_method ("Pause",
+		   "pause", 
+		   "pause the runtime", 
+		   "success or fail",
+		   Method::make_arg_description ("none",
+						 NULL),
+		   (Method::method_ptr) &pause_wrapped, 
+		   Method::make_arg_type_description (G_TYPE_NONE, NULL),
+		   this);
+   
+   publish_method ("Seek",
+		   "seek", 
+		   "seek the runtime", 
+		   "success or fail",
+		   Method::make_arg_description ("Position",
+						 "position",
+						 "position in milliseconds",
+						 NULL),
+		   (Method::method_ptr) &seek_wrapped, 
+		   Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
+		   this);
+ 
+   publish_method ("Speed",
+		   "speed", 
+		   "controle speed of runtime", 
+		   "success or fail",
+		   Method::make_arg_description ("Speed",
+						 "speed",
+						 "1.0 is normal speed, 0.5 is half the speed and 2.0 is double speed",
+						 NULL),
+		   (Method::method_ptr) &speed_wrapped, 
+		   Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
+		   this);
+   
+  return true;
   }
   
   Runtime::~Runtime ()

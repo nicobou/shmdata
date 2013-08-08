@@ -65,55 +65,57 @@ namespace switcher
 
     make_bin();
 
-    //registering set_runtime method FIXME use new method registering method
-    std::vector<GType> set_runtime_arg_types;
-    set_runtime_arg_types.push_back (G_TYPE_STRING);
-    register_method("set_runtime",(void *)&Segment::set_runtime_wrapped, set_runtime_arg_types,(gpointer)this);
-    std::vector<std::pair<std::string,std::string> > arg_desc;
-    std::pair<std::string,std::string> quiddity_name;
-    quiddity_name.first = "runtime_name";
-    quiddity_name.second = "the name of the runtime to attach with (e.g. \"pipeline0\")";
-    arg_desc.push_back (quiddity_name); 
-    if (!set_method_description ("set_runtime", "attach quiddity to a runtime ", arg_desc))
-      g_error ("segment: cannot set method description for \"set_runtime\"");
+    publish_method ("Set Runtime", 
+		    "set_runtime",
+		    "attach a quiddity/segment to a runtime",
+		    "success or fail",
+		    Method::make_arg_description ("Runtime Name",
+						  "runtime_name",
+						  "the name of the runtime to attach with (e.g. \"pipeline0\")",
+						  NULL),
+		    (Method::method_ptr) &set_runtime_wrapped, 
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL), 
+		    this);
 
-     GType types[] = {G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING};
-     make_custom_signal_with_class_name ("segment",
-					 "on-new-shmdata-writer", 
-					 G_TYPE_NONE,
-					 3,
-					 types);
-     set_signal_description ("On New Shmdata Writer",
-			     "on-new-shmdata-writer",
-			     "a new shmdata writer has been created",
-			     Signal::make_arg_description("Quiddity Name",
-							  "quiddity_name",
-							  "the quiddity name",
-							  "Path",
-							  "path",
-							  "the shmdata path",
-							  "JSON Documentation",
-							  "json_doc",
-							  "the writer json documentation",
-							  NULL));
-     make_custom_signal_with_class_name ("segment",
-					 "on-new-shmdata-reader", 
-					 G_TYPE_NONE,
-					 3,
-					 types);
-     set_signal_description ("On New Shmdata Reader",
-			     "on-new-shmdata-reader",
-			     "a new shmdata reader has been created",
-			     Signal::make_arg_description("Quiddity Name",
-							  "quiddity_name",
-							  "the quiddity name",
-							  "Path",
-							  "path",
-							  "the shmdata path",
-							  "JSON Documentation",
-							  "json_doc",
-							  "the writer json documentation",
-							  NULL));
+
+    //FIXME
+     // GType types[] = {G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING};
+     // make_custom_signal_with_class_name ("segment",
+     // 					 "on-new-shmdata-writer", 
+     // 					 G_TYPE_NONE,
+     // 					 3,
+     // 					 types);
+     // set_signal_description ("On New Shmdata Writer",
+     // 			     "on-new-shmdata-writer",
+     // 			     "a new shmdata writer has been created",
+     // 			     Signal::make_arg_description("Quiddity Name",
+     // 							  "quiddity_name",
+     // 							  "the quiddity name",
+     // 							  "Path",
+     // 							  "path",
+     // 							  "the shmdata path",
+     // 							  "JSON Documentation",
+     // 							  "json_doc",
+     // 							  "the writer json documentation",
+     // 							  NULL));
+     // make_custom_signal_with_class_name ("segment",
+     // 					 "on-new-shmdata-reader", 
+     // 					 G_TYPE_NONE,
+     // 					 3,
+     // 					 types);
+     // set_signal_description ("On New Shmdata Reader",
+     // 			     "on-new-shmdata-reader",
+     // 			     "a new shmdata reader has been created",
+     // 			     Signal::make_arg_description("Quiddity Name",
+     // 							  "quiddity_name",
+     // 							  "the quiddity name",
+     // 							  "Path",
+     // 							  "path",
+     // 							  "the shmdata path",
+     // 							  "JSON Documentation",
+     // 							  "json_doc",
+     // 							  "the writer json documentation",
+     // 							  NULL));
   }
 
   Segment::~Segment()

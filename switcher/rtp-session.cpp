@@ -108,86 +108,93 @@ namespace switcher
     gst_bin_add (GST_BIN (bin_), rtpsession_);
     GstUtils::sync_state_with_parent (rtpsession_);
 
-    //registering add_data_stream
-    register_method("add_data_stream",
-		    (void *)&add_data_stream_wrapped, 
+    publish_method ("Add Data Stream",
+		    "add_data_stream", 
+		    "add a data stream to the RTP session (sending)", 
+		    "succes or fail",
+		    Method::make_arg_description ("Shmdata Path",
+						  "socket", 
+						  "shmdata socket path to add to the session",
+						  NULL),
+		    (Method::method_ptr) &add_data_stream_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("add_data_stream", 
-			    "add a data stream to the RTP session (sending)", 
-			    Method::make_arg_description ("socket", 
-							  "shmdata socket path to add to the session",
-							  NULL));
+		    this);
 
-    //registering remove_data_stream
-    register_method("remove_data_stream", 
-		    (void *)&remove_data_stream_wrapped, 
+    publish_method ("Remove Data Stream",
+		    "remove_data_stream", 
+		    "remove a data stream from the RTP session (sending)", 
+		    "success or fail",
+		    Method::make_arg_description ("Shmdata Path",
+						  "socket", 
+						  "shmdata socket path to remove from the session", 
+						  NULL),
+		    (Method::method_ptr) &remove_data_stream_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("remove_data_stream", 
-			    "remove a data stream from the RTP session (sending)", 
-			    Method::make_arg_description ("socket", 
-							  "shmdata socket path to remove from the session", 
-							  NULL));
-    
-    //registering add_dest
-    register_method("add_destination", 
-		    (void *)&add_destination_wrapped, 
+		    this);
+
+    publish_method ("Add Destination",
+		    "add_destination", 
+		    "add a destination (two destinations can share the same host name)", 
+		    "success or fail",
+		    Method::make_arg_description ("Name",
+						  "name", 
+						  "a destination name (user defined)",
+						  "Host Name or IP",
+						  "host_name",
+						  "the host name of the destination",
+						  NULL),
+		    (Method::method_ptr) &add_destination_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("add_destination", 
-			    "add a destination (two destinations can share the same host name)", 
-			    Method::make_arg_description ("name", 
-							  "a destination name (user defined)",
-							  "host_name",
-							  "the host name of the destination",
-							  NULL));
-
-    //registering remove_dest
-    register_method("remove_destination", 
-		    (void *)&remove_destination_wrapped, 
+		    this);
+    
+    publish_method ("Remove Destination",
+		    "remove_destination", 
+		    "remove a destination",
+		    "success or fail",
+		    Method::make_arg_description ("Name",
+						  "name", 
+						  "the destination name",
+						  NULL),
+		    (Method::method_ptr) &remove_destination_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("remove_destination", 
-			    "remove a destination", 
-			    Method::make_arg_description ("name", 
-							  "the destination name",
-							  NULL));
+		    this);
 
-    //registering "add_udp_stream_to_dest"
-    register_method("add_udp_stream_to_dest",
-		    (void *)&add_udp_stream_to_dest_wrapped, 
+
+    publish_method ("Add UDP Stream",
+		    "add_udp_stream_to_dest", 
+		    "stream RTP to a port with udp", 
+		    "success or fail",
+		    Method::make_arg_description ("Shmdata Path", "socket", "local socket path of the shmdata",
+						  "Destination", "dest", "name of the destination",
+						  "Port", "port", "destination port",
+						  NULL),
+		    (Method::method_ptr) &add_udp_stream_to_dest_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,G_TYPE_STRING,NULL),
-		    (gpointer)this);
-    set_method_description ("add_udp_stream_to_dest", 
-			    "stream RTP to a port with udp", 
-			    Method::make_arg_description ("socket", "local socket path of the shmdata",
-							  "dest", "name of the destination",
-							  "port", "destination port",
-							  NULL));
-
-    //registering "remove_udp_stream_to_dest"
-    register_method("remove_udp_stream_to_dest",
-		    (void *)&remove_udp_stream_to_dest_wrapped, 
+		    this);
+    
+    publish_method ("Remove UDP Stream",
+		   "remove_udp_stream_to_dest", 
+		    "remove destination", 
+		    "succes or fail",
+		    Method::make_arg_description ("Shmdata Path", "socket", "local socket path of the shmdata",
+						  "Destination", "dest_name", "destination name",
+						  NULL),
+      		    (Method::method_ptr) &remove_udp_stream_to_dest_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,NULL),
-		    (gpointer)this);
-    set_method_description ("remove_udp_stream_to_dest", 
-			    "remove destination", 
-			    Method::make_arg_description ("socket", "local socket path of the shmdata",
-							  "host", "destination host",
-							  NULL));
-
-    //registering "write_sdp_file"
-    register_method("write_sdp_file",
-		    (void *)&write_sdp_file_wrapped, 
+		    this);
+    
+    publish_method ("Write SDP File",
+		    "write_sdp_file", 
+		    "print sdp for the given destination", 
+		    "success or fail",
+		    Method::make_arg_description ("Destination",
+						  "name", 
+						  "the name of the destination",
+						  NULL),
+		    (Method::method_ptr) &write_sdp_file_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING,NULL),
-		    (gpointer)this);
-    set_method_description ("write_sdp_file", 
-			    "print sdp for the given destination", 
-			    Method::make_arg_description ("name", 
-							  "the name of the destination",
-							  NULL));
-
+		    this);
+    
     //set the name before registering properties
     set_name (gst_element_get_name (rtpsession_));
     

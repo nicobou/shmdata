@@ -40,31 +40,36 @@ namespace switcher
   bool 
   ShmdataFromGDPFile::init ()
   {
-    //registering add_file
-    register_method("add_file",
-		    (void *)&add_file_wrapped, 
+
+    publish_method ("Add File",
+		    "add_file", 
+		    "add a file to play", 
+		    "success or fail",
+		    Method::make_arg_description ("File Path",
+						  "filepath", 
+						  "file location",
+						  "Shmdata Path",
+						  "shmpath",
+						  "shmdata socket path to create",
+						  NULL),
+		    (Method::method_ptr) &add_file_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("add_file", 
-			    "add a file to play", 
-			    Method::make_arg_description ((char *)"filepath", 
-							  (char *)"file location",
-							  (char *)"shmpath",
-							  (char *)"shmdata socket path",
-							  NULL));
-
-    //registering remove_file
-    register_method("remove_file", 
-		    (void *)&remove_file_wrapped, 
+		    this);
+    
+    publish_method ("Remove File",
+		    "remove_file", 
+		    "remove the file from the player", 
+		    "success or fail",
+		    Method::make_arg_description ("File Path",
+						  "filepath", 
+						  "file path to remove", 
+						  NULL),
+		    (Method::method_ptr) &remove_file_wrapped, 
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ((char *)"remove_file", 
-			    (char *)"remove the file from the player", 
-			    Method::make_arg_description ((char *)"filepath", 
-							  (char *)"file path to remove", 
-							  NULL));
-
-    //registering playing property
+		    this);
+    
+    
+//registering playing property
     playing_ = FALSE;
     custom_prop_.reset (new CustomPropertyHelper ());
     playing_param_ = custom_prop_->make_boolean_property ("playing", 
