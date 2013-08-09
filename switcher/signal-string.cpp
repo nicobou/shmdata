@@ -183,21 +183,57 @@ namespace switcher
     if (g_strcmp0 (first_arg_long_name, "none") != 0 
 	&& (arg_name = va_arg(vl, char *)) 
 	&& (arg_desc = va_arg(vl, char *)))
+      res.push_back (std::make_tuple (first_arg_long_name, 
+				      arg_name,
+				      arg_desc));
+    
+    gboolean parsing = true;
+    do
       {
-	res.push_back (std::make_tuple (first_arg_long_name, 
-					arg_name,
-					arg_desc));
+	arg_long_name = va_arg( vl, char *);
+	if (arg_long_name != NULL)
+	  {
+	    arg_name = va_arg( vl, char *); 
+	    arg_desc = va_arg( vl, char *);
+	
+	    if (arg_name != NULL && arg_desc != NULL)
+	      res.push_back (std::make_tuple (arg_long_name, 
+					      arg_name,
+					      arg_desc));
+	    else
+	      parsing=false;
+	  }
+	else
+	  parsing=false;
       }
-    while ((arg_long_name = va_arg( vl, char *))
-	   && (arg_name = va_arg( vl, char *)) 
-	   && (arg_desc = va_arg( vl, char *)))
-      {
-	res.push_back (std::make_tuple (arg_long_name, 
-					arg_name,
-					arg_desc));
-      }
+    while (parsing);
+    
     va_end(vl);
     return res;
+    // args_doc res;
+    // va_list vl;
+    // char *arg_long_name;
+    // char *arg_name;
+    // char *arg_desc;
+    // va_start(vl, first_arg_long_name);
+    // if (g_strcmp0 (first_arg_long_name, "none") != 0 
+    // 	&& (arg_name = va_arg(vl, char *)) 
+    // 	&& (arg_desc = va_arg(vl, char *)))
+    //   {
+    // 	res.push_back (std::make_tuple (first_arg_long_name, 
+    // 					arg_name,
+    // 					arg_desc));
+    //   }
+    // while ((arg_long_name = va_arg( vl, char *))
+    // 	   && (arg_name = va_arg( vl, char *)) 
+    // 	   && (arg_desc = va_arg( vl, char *)))
+    //   {
+    // 	res.push_back (std::make_tuple (arg_long_name, 
+    // 					arg_name,
+    // 					arg_desc));
+    //   }
+    // va_end(vl);
+    // return res;
   }
   
   gboolean

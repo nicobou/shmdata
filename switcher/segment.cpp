@@ -74,6 +74,7 @@ namespace switcher
 						  "the name of the runtime to attach with (e.g. \"pipeline0\")",
 						  NULL),
 		    (Method::method_ptr) &set_runtime_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL), 
 		    this);
 
@@ -176,12 +177,12 @@ namespace switcher
     
     if (runtime_name == NULL) 
       {
-	g_error ("Segment::set_runtime_wrapped Error: runtime_name is NULL");
+	g_debug ("Segment::set_runtime_wrapped Error: runtime_name is NULL");
 	return;
       }
     if (context == NULL) 
       {
-	g_error ("Segment::set_runtime_wrapped Error: segment is NULL");
+	g_debug ("Segment::set_runtime_wrapped Error: segment is NULL");
 	return;
       }
     

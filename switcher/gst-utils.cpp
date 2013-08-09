@@ -92,25 +92,25 @@ namespace switcher
 	switch ( res )
 	  {
 	  case GST_PAD_LINK_WRONG_HIERARCHY:
-	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_HIERARCHY");
+	    g_debug ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_HIERARCHY");
 	    break;
 	  case GST_PAD_LINK_WAS_LINKED:
-	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_WAS_LINKED");
+	    g_debug ("GstUtils::check_pad_link_return - GST_PAD_LINK_WAS_LINKED");
 	    break;
 	  case GST_PAD_LINK_WRONG_DIRECTION:
-	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_DIRECTION");
+	    g_debug ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_DIRECTION");
 	    break;
 	  case GST_PAD_LINK_NOFORMAT:
-	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_NOFORMAT");
+	    g_debug ("GstUtils::check_pad_link_return - GST_PAD_LINK_NOFORMAT");
 	    break;
 	  case GST_PAD_LINK_NOSCHED:
-	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_NOSCHED");
+	    g_debug ("GstUtils::check_pad_link_return - GST_PAD_LINK_NOSCHED");
 	    break;
 	  case GST_PAD_LINK_REFUSED:
-	    g_error ("GstUtils::check_pad_link_return - GST_PAD_LINK_REFUSED");
+	    g_debug ("GstUtils::check_pad_link_return - GST_PAD_LINK_REFUSED");
 	    break;
 	  default:
-	    g_error ("GstUtils::check_pad_link_return - UNKNOWN ERROR");
+	    g_debug ("GstUtils::check_pad_link_return - UNKNOWN ERROR");
 	  }
 	return false;
       }

@@ -57,24 +57,20 @@ namespace switcher
     publish_signal ("On Quiddity Created",
 		    "on-quiddity-created",
 		    "a quiddity has been created",
-		    "n/a",
 		    Signal::make_arg_description ("Quiddity Name",
 						  "quiddity_name",
 						  "the quiddity name",
 						  NULL),
-		    G_TYPE_NONE,
 		    1,
 		    string_type);
 
     publish_signal ("On Quiddity Removed",
 		    "on-quiddity-removed",
 		    "a quiddity has been removed",
-		    "n/a",
 		    Signal::make_arg_description("Quiddity Name",
 						 "quiddity_name",
 						 "the quiddity name",
 						 NULL),
-		    G_TYPE_NONE,
 		    1,
 		    string_type);
 

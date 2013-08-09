@@ -41,6 +41,7 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<Method> ptr;
+    typedef GType return_type;
     typedef std::vector<GType> args_types;
     typedef std::vector<std::tuple<std::string,std::string,std::string> > args_doc;
     typedef void * method_ptr;
@@ -48,11 +49,7 @@ namespace switcher
     Method ();
     ~Method ();
     bool set_method (method_ptr method,
-		     GType return_type,
-		     args_types arg_types, 
-		     gpointer user_data);
-    //fixme remove the following, we want a return type
-    bool set_method (method_ptr method, 
+		     return_type return_type,
 		     args_types arg_types, 
 		     gpointer user_data);
     GValue invoke (std::vector<std::string> args);

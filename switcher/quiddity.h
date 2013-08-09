@@ -125,6 +125,7 @@ namespace switcher
     //method
     bool register_method (std::string method_name,
 			  Method::method_ptr method, 
+			  Method::return_type return_type,
 			  Method::args_types arg_types, 
 			  gpointer user_data);
     
@@ -139,10 +140,13 @@ namespace switcher
 				  GObject *object, 
 				  const std::string gobject_signal_name);//the internal gobject signal name
     
-    bool make_custom_signal (const std::string signal_name, //the name to give
-			     GType return_type,
-			     guint n_params, //number of params
-			     GType *param_types);
+
+    //allows for creation of signals in a parent class (like segment)
+    bool make_custom_signal_with_class_name (const std::string class_name, //quiddity class name that is making the signal
+					     const std::string signal_name, //the name to give
+					     GType return_type,
+					     guint n_params, //number of params
+					     GType *param_types);
     
     bool set_signal_description (const std::string long_name,
 				 const std::string signal_name,
@@ -166,16 +170,7 @@ namespace switcher
 				 guint n_params, //number of params
 				 GType *param_types,
 				 void *user_data);
-    
-    
-    //allows for creation of signals in a parent class (like segment)
-    bool make_custom_signal_with_class_name (const std::string class_name, //quiddity class name that is making the signal
-					     const std::string signal_name, //the name to give
-					     GType return_type,
-					     guint n_params, //number of params
-					     GType *param_types);
-    
-    
+   
   protected:
     //naming
     bool set_name (std::string name);
@@ -198,17 +193,24 @@ namespace switcher
 			 const std::string return_description,
 			 const Method::args_doc arg_description,
 			 Method::method_ptr method, 
+			 Method::return_type return_type,
 			 Method::args_types arg_types, 
 			 gpointer user_data);
     //signals 
     bool publish_signal (const std::string long_name,
 			 const std::string signal_name,
 			 const std::string short_description,
-			 const std::string return_description,
 			 const Signal::args_doc arg_description,
-			 GType return_type,
 			 guint number_of_params, 
 			 GType *param_types);
+
+    bool publish_signal_with_class_name (const std::string class_name,
+					 const std::string long_name,
+					 const std::string signal_name,
+					 const std::string short_description,
+					 const Signal::args_doc arg_description,
+					 guint number_of_params, 
+					 GType *param_types);
 
     void signal_emit (const std::string signal_name, 
 		      ...);

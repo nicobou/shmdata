@@ -61,10 +61,12 @@ namespace switcher
 		    "capture",
 		    "start capturing from camera",
 		    "success or fail",
-		    Method::make_arg_description ("name", 
+		    Method::make_arg_description ("Name",
+						  "name", 
 						  "the genicam camera name obtained with the command arv-tool-0.2 or 'default')",
 						  NULL),
 		    (Method::method_ptr)&start_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL), 
 		    this);
     

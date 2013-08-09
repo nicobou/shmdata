@@ -44,8 +44,8 @@ namespace switcher
 
   bool
   Method::set_method (method_ptr method, 
-		      GType return_type,
-		      std::vector<GType> arg_types, 
+		      return_type return_type,
+		      args_types arg_types, 
 		      gpointer user_data)  
   {
     if (arg_types.size () < 1)
@@ -67,12 +67,6 @@ namespace switcher
     return true;
   }
 
-  //FIXME remove the following
-  bool
-  Method::set_method (method_ptr method, std::vector<GType> arg_types, gpointer user_data)  
-  {
-    return set_method (method, G_TYPE_BOOLEAN, arg_types, user_data);
-  }
 
   //FIXME remove this method
   uint 
@@ -200,6 +194,8 @@ namespace switcher
      return res;
    }
 
+
+  //FIXME, make this more robust to user missing strings
   Method::args_doc
   Method::make_arg_description (const char *first_arg_long_name, ...)
   {
@@ -212,52 +208,31 @@ namespace switcher
     if (g_strcmp0 (first_arg_long_name, "none") != 0 
 	&& (arg_name = va_arg(vl, char *)) 
 	&& (arg_desc = va_arg(vl, char *)))
+      res.push_back (std::make_tuple (first_arg_long_name, 
+				      arg_name,
+				      arg_desc));
+    gboolean parsing = true;
+    do
       {
-	res.push_back (std::make_tuple (first_arg_long_name, 
-					arg_name,
-					arg_desc));
+	arg_long_name = va_arg( vl, char *);
+	
+	if (arg_long_name != NULL)
+	  {
+	    arg_name = va_arg( vl, char *); 
+	    arg_desc = va_arg( vl, char *);
+	    if (arg_name != NULL && arg_desc != NULL)
+	      res.push_back (std::make_tuple (arg_long_name, 
+					      arg_name,
+					      arg_desc));
+	    else
+	      parsing = false;
+	  }
+	else
+	  parsing = false;
       }
-    while ((arg_long_name = va_arg( vl, char *))
-	   && (arg_name = va_arg( vl, char *)) 
-	   && (arg_desc = va_arg( vl, char *)))
-      {
-	res.push_back (std::make_tuple (arg_long_name, 
-					arg_name,
-					arg_desc));
-      }
+    while (parsing);
     va_end(vl);
     return res;
-
-    // arg_doc res;
-    // std::pair<std::string,std::string> arg_desc_pair;
-    // va_list vl;
-    // char *arg_name;
-    // char *arg_desc;
-    // va_start(vl, first_arg_name);
-
-    // if (first_arg_name != "none" && (arg_desc = va_arg( vl, char *)))
-    //   {
-    // 	std::pair<std::string,std::string> arg_pair;
-    // 	arg_desc_pair.first = std::string (first_arg_name);
-    // 	arg_desc_pair.second = std::string (arg_desc);
-    // 	res.push_back (arg_desc_pair);
-    //   }
-    // else
-    //   {
-    // 	va_end(vl);
-    // 	return res;
-    //   }
-
-    // while ( (arg_name = va_arg( vl, char *)) && (arg_desc = va_arg( vl, char *)))
-    //   {
-    // 	std::pair<std::string,std::string> arg_pair;
-    // 	arg_desc_pair.first = std::string (arg_name);
-    // 	arg_desc_pair.second = std::string (arg_desc);
-    // 	res.push_back (arg_desc_pair);
-    //   }
-
-    // va_end(vl);
-    // return res;
   }
 
 }

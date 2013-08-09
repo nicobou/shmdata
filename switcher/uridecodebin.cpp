@@ -86,60 +86,57 @@ namespace switcher
 				"playing",
 				"Playing");
         
-
-    //registering add_data_stream
-    register_method("to_shmdata",
-		    (void *)&to_shmdata_wrapped, 
+    publish_method ("Set URI",
+		    "to_shmdata", 
+		    "decode streams from an uri and write them to shmdatas", 
+		    "success or fail",
+		    Method::make_arg_description ("URI",
+						  "uri", 
+						  "the uri to decode",
+						  NULL),
+		    (Method::method_ptr) &to_shmdata_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("to_shmdata", 
-			    "decode streams from an uri and write them to shmdatas", 
-			    Method::make_arg_description ("uri", 
-							  "the uri to decode",
-							  NULL));
-    //registering play
-    register_method("play",
-		    (void *)&play_wrapped, 
+		    this);
+    
+    publish_method ("Pause",
+		    "pause", 
+		    "pause the player", 
+		    "success or fail",
+		    Method::make_arg_description ("none",
+						  NULL),
+		    (Method::method_ptr) &pause_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    (gpointer)this);
-    set_method_description ((char *)"play", 
-			    (char *)"activate the runtime", 
-			    Method::make_arg_description ("none",
-							  NULL));
-
-    //registering pause
-    register_method("pause",
-		    (void *)&pause_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    (gpointer)this);
-    set_method_description ((char *)"pause", 
-			    (char *)"pause the runtime", 
-			    Method::make_arg_description ((char *)"none",
-							  NULL));
-
-     //registering seek
-    register_method("seek",
-		    (void *)&seek_wrapped, 
+		    this);
+    
+    publish_method ("Seek",
+		    "seek", 
+		    "seek the player", 
+		    "success or fail",
+		    Method::make_arg_description ("Position",
+						  "position",
+						  "position in milliseconds",
+						  NULL),
+		    (Method::method_ptr) &seek_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-		    (gpointer)this);
-    set_method_description ((char *)"seek", 
-			    (char *)"seek the runtime", 
-			    Method::make_arg_description ((char *)"position",
-							  (char *)"position in milliseconds",
-							  NULL));
-
-    //registering speed
-    register_method("speed",
-		    (void *)&speed_wrapped, 
+		    this);
+    
+    publish_method ("Speed",
+		    "speed", 
+		    "Player speed", 
+		    "success or fail",
+		    Method::make_arg_description ("Speed",
+						  "speed",
+						  "1.0 is normal speed, 0.5 is half the speed and 2.0 is double speed",
+						  NULL),
+		    (Method::method_ptr) &speed_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-		    (gpointer)this);
-    set_method_description ((char *)"speed", 
-			    (char *)"controle speed of runtime", 
-			    Method::make_arg_description ((char *)"speed",
-							  (char *)"1.0 is normal speed, 0.5 is half the speed and 2.0 is double speed",
-							  NULL));
-
-
+		    this);
+    
+    
     //signaling end of stream
     //FIXME do that
     // make_custom_signal ("on-end-of-stream", 

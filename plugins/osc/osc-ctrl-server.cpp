@@ -46,16 +46,18 @@ namespace switcher
     srand(time(0));
     set_name (g_strdup_printf ("oscctrlserver%d",rand() % 1024));
     
-    //registering set_port
-    register_method("set_port",
-     		    (void *)&set_port_wrapped, 
+    publish_method ("Set Port",
+		    "set_port", 
+		    "set the port used by the osc server and start listening messages", 
+		    "success or fail",
+		    Method::make_arg_description ("Port",
+						  "port",
+						  "the port to bind",
+						  NULL),
+		    (Method::method_ptr) &set_port_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-     		    (gpointer)this);
-    set_method_description ("set_port", 
-			    "set the port used by the osc server and start listening messages", 
-			    Method::make_arg_description ((char *)"port",
-							  (char *)"the port to bind",
-							  NULL));
+     		    this);
     return true;
   }
 

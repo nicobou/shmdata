@@ -142,10 +142,10 @@ namespace switcher
 	
 	if (g_str_has_prefix (relative_path, shmdata_prefix))
 	  {
-	    g_warning ("deleting previous shmdata socket (%s)", g_file_get_path (descend));
+	    g_debug ("deleting previous shmdata socket (%s)", g_file_get_path (descend));
 	    res = g_file_delete (descend, NULL, &error);
 	    if(res != TRUE)
-	      g_warning ("socket cannot be deleted");
+	      g_warning ("previous switcher file \"%s\" cannot be deleted", g_file_get_path (descend));
 	  }
 	
 	g_object_unref (descend);

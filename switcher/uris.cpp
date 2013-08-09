@@ -61,27 +61,31 @@ namespace switcher
     group_->state = GROUP_PAUSED;    
     group_->user_data = this;
 
-    //registering add_uri
-    register_method("add_uri",
-		    (void *)&add_uri_wrapped, 
+    publish_method ("Add URI",
+		    "add_uri", 
+		    "add an uri to the group (the group is looping at the end of the first uri added)", 
+		    "success or fail",
+		    Method::make_arg_description ("URI",
+						  "uri", 
+						  "the uri to add",
+						  NULL),
+		    (Method::method_ptr) &add_uri_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("add_uri", 
-			    "add an uri to the group (the group is looping at the end of the first uri added)", 
-			    Method::make_arg_description ("uri", 
-							  "the uri to add",
-							  NULL));
+		    this);
+    
 
-    //registering play
-    register_method("start",
-		    (void *)&play_wrapped, 
+    publish_method ("Start",
+		    "start", 
+		    "start the stream(s)", 
+		    "success or fail",
+		    Method::make_arg_description ("none",
+						  NULL),
+		    (Method::method_ptr) &play_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    (gpointer)this);
-    set_method_description ("start", 
-			    "start the stream(s)", 
-			    Method::make_arg_description ("none",
-							  NULL));
-
+		    this);
+    
     //using play pause seek from runtime
     // //registering pause
     // register_method("pause",
@@ -314,7 +318,7 @@ namespace switcher
      	gst_object_unref (queue_sinkpad);  
 	
      	if (!gst_element_sync_state_with_parent (queue))        
-     	  g_error ("pb syncing video datastream state");      
+     	  g_debug ("pb syncing video datastream state");      
 
      	//assuming object is an uridecodebin and get the uri    
      	gchar *uri;    

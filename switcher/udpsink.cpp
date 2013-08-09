@@ -100,6 +100,7 @@ namespace switcher
 						  "the port of the client to add",
 						  NULL),
 		    (Method::method_ptr) &add_client_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, NULL),
      		    this);
    
@@ -115,6 +116,7 @@ namespace switcher
 						  "the port of the client to remove",
 						  NULL),
 		    (Method::method_ptr) &remove_client_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, NULL),
      		    this);
 
@@ -125,6 +127,7 @@ namespace switcher
 		    "success or fail",
 		    Method::make_arg_description ("none",NULL),
 		    (Method::method_ptr) &clear_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL), 
 		    this);
       

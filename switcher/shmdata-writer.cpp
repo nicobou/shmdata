@@ -57,7 +57,7 @@ namespace switcher
 	g_debug ("ShmdataWriter::set_path warning: file %s exists and will be deleted.",name.c_str());
 	if (! g_file_delete (shmfile, NULL, NULL)) 
 	  {
-	    g_error ("ShmdataWriter::set_path error: file %s is already existing and cannot be trashed.",name.c_str());
+	    g_debug ("ShmdataWriter::set_path error: file %s is already existing and cannot be trashed.",name.c_str());
 	    return false;
 	  }
       }
@@ -123,7 +123,7 @@ namespace switcher
     
     GstPad *sinkpad = gst_element_get_static_pad (tee_, "sink");
     if (gst_pad_link (source_pad, sinkpad) != GST_PAD_LINK_OK)
-      g_error ("ShmdataWriter: failed to link with tee");
+      g_debug ("ShmdataWriter: failed to link with tee");
     
     gst_object_unref (sinkpad);
     gst_element_link_many (tee_, queue_, fakesink_,NULL);

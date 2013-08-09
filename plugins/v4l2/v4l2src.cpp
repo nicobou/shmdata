@@ -50,20 +50,45 @@ namespace switcher
 
     capture_devices_description_ = NULL;
 
-    register_method("capture",
-		    (void *)&capture_wrapped, 
+    publish_method ("Capture",
+		    "capture", 
+		    "start capturing", 
+		    "success or fail",
+		    Method::make_arg_description ("Device",
+						  "device_file_path",
+						  "Device File Path or NONE",
+						  NULL),
+		    (Method::method_ptr) &capture_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, 
 						       NULL),
-		    (gpointer)this);
-    set_method_description ("capture", 
-			    "start capturing", 
-			    Method::make_arg_description ("device_file_path",
-							  "Device File Path or NONE",
- 							  NULL));
+		    this);
 
-
-    register_method("capture_full",
-		    (void *)&capture_full_wrapped, 
+    publish_method ("Capture Full",
+		    "capture_full", 
+		    "start capturing", 
+		    "success or fail",
+		    Method::make_arg_description ("Device",
+						  "device_file_path",
+						  "Device File Path or NONE",
+						  "Width",
+						  "width",
+						  "or NONE",
+						  "Height",
+						  "height",
+						  "or NONE"
+						  "Framerate Numerator",
+						  "framerate_numerator",
+						  "or NONE"
+						  "Framerate Denominator",
+						  "framerate_denominator",
+						  "or NONE",
+						  "TV standard",
+						  "tv_standard",
+						  "or NONE",
+						  NULL),
+		    (Method::method_ptr) &capture_full_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, 
 						       G_TYPE_STRING, 
 						       G_TYPE_STRING, 
@@ -71,25 +96,8 @@ namespace switcher
 						       G_TYPE_STRING,
 						       G_TYPE_STRING, 
 						       NULL),
-		    (gpointer)this);
-    set_method_description ("capture_full", 
-			    "start capturing", 
-			    Method::make_arg_description ("device_file_path",
-							  "Device File Path or NONE",
-							  "width",
-							  "Width or NONE",
-							  "height",
-							  "Height or NONE"
-							  "framerate_numerator",
-							  "Framerate Numerator"
-							  "framerate_denominator",
-							  "Framerate Denominator",
-							  "tv_standard",
-							  "TV standard or NONE",
-							  NULL));
+		    this);
 
-    
-    
     //device inspector
     check_folder_for_v4l2_devices ("/dev");
     custom_props_.reset (new CustomPropertyHelper ());

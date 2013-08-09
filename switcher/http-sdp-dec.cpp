@@ -67,6 +67,7 @@ namespace switcher
 						  "the url to the sdp file",
 						  NULL),
 		    (Method::method_ptr) &to_shmdata_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
     return true;

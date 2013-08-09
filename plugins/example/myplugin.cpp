@@ -54,21 +54,18 @@ namespace switcher
      				"myprop",
 				"My Property"); //long name
 
-
-    GType types[] = {G_TYPE_STRING};
-    register_signal_action ("hello_world",
-			    (void *)MyPlugin::my_signal_action, 
-			    G_TYPE_STRING,
-			    1,
-			    types,
-			    this);
-    set_signal_description ("Hello World",
-			    "hello_world",
-			    "a hello world test method ",
-			    Signal::make_arg_description("Who To Say Hello To",
-							 "who",
-							 "string that will be repeated with hello",
-							 NULL));
+    publish_method ("Hello World",
+		    "hello-world",
+		    "say hello and repeat first argument",
+		    "the hello answer",
+		    Method::make_arg_description ("Text To Repeat",
+						  "text", 
+						  "string",
+						  NULL),
+  		    (Method::method_ptr) &my_hello_world_method, 
+		    G_TYPE_STRING,
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    this);
 
     srand(time(0));
     set_name (g_strdup_printf ("myplugin%d",rand() % 1024));
@@ -100,10 +97,10 @@ namespace switcher
 
 
   gchar *
-  MyPlugin::my_signal_action (void *, gchar *first_arg, void *user_data)
+  MyPlugin::my_hello_world_method (gchar *first_arg, void *user_data)
   {
     MyPlugin *context = static_cast<MyPlugin *> (user_data);
-
+    
     g_debug ("hello world from myplugin");
     g_free (context->hello_);
     context->hello_ = g_strdup_printf ("hello %s",first_arg);

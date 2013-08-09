@@ -120,10 +120,12 @@ namespace switcher
 		    "install_log_handler", 
 		    "make the logger managing the log domain", 
 		    "success or fail",
-		    Method::make_arg_description ("log domain", 
+		    Method::make_arg_description ("LogDomain",
+						  "log domain", 
 						  "the glib log domain (e.g. shmdata, Glib or GStreamer)",
 						  NULL),
 		    (Method::method_ptr) &install_log_handler_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 
@@ -137,6 +139,7 @@ namespace switcher
 						  "the glib log domain (e.g. shmdata, Glib or GStreamer)",
 						  NULL),
 		    (Method::method_ptr) &remove_log_handler_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 

@@ -54,6 +54,7 @@ namespace switcher
 						  "the GStreamer pipeline with no sink to instanciate",
 						  NULL),
 		    (Method::method_ptr) &to_shmdata_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 

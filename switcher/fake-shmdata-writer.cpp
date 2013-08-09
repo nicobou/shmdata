@@ -48,6 +48,7 @@ namespace switcher
 						  "a shmdata writer path",
 						  NULL),
 		    (Method::method_ptr) &add_shmdata_path_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
     return true;

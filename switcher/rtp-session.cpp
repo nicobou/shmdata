@@ -117,6 +117,7 @@ namespace switcher
 						  "shmdata socket path to add to the session",
 						  NULL),
 		    (Method::method_ptr) &add_data_stream_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 
@@ -129,6 +130,7 @@ namespace switcher
 						  "shmdata socket path to remove from the session", 
 						  NULL),
 		    (Method::method_ptr) &remove_data_stream_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 
@@ -144,6 +146,7 @@ namespace switcher
 						  "the host name of the destination",
 						  NULL),
 		    (Method::method_ptr) &add_destination_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
 		    this);
     
@@ -156,6 +159,7 @@ namespace switcher
 						  "the destination name",
 						  NULL),
 		    (Method::method_ptr) &remove_destination_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 
@@ -169,6 +173,7 @@ namespace switcher
 						  "Port", "port", "destination port",
 						  NULL),
 		    (Method::method_ptr) &add_udp_stream_to_dest_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,G_TYPE_STRING,NULL),
 		    this);
     
@@ -180,6 +185,7 @@ namespace switcher
 						  "Destination", "dest_name", "destination name",
 						  NULL),
       		    (Method::method_ptr) &remove_udp_stream_to_dest_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,NULL),
 		    this);
     
@@ -192,6 +198,7 @@ namespace switcher
 						  "the name of the destination",
 						  NULL),
 		    (Method::method_ptr) &write_sdp_file_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING,NULL),
 		    this);
     

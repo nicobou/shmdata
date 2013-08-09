@@ -53,6 +53,7 @@ namespace switcher
 						  "file location",
 						  NULL),
 		    (Method::method_ptr) &add_shmdata_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
 		    this);
     
@@ -65,6 +66,7 @@ namespace switcher
 						  "shmdata socket path to remove", 
 						  NULL),
 		    (Method::method_ptr) &remove_shmdata_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
     

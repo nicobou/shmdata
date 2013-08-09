@@ -27,10 +27,10 @@ namespace switcher
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstParseToBinSrc,
 				       "GStreamer Pipeline",
-				       "gstsrc",
+				       "source",
 				       "GStreamer (src) pipeline description to a *single* shmdata",
 				       "LGPL",
-				       "source", 
+				       "gstsrc", 
 				       "Nicolas Bouillot");
   
   GstParseToBinSrc::~GstParseToBinSrc ()
@@ -47,34 +47,38 @@ namespace switcher
     gst_parse_to_bin_src_ = NULL;
 
 
-    publish_method ("GST To Shmdata (With Path)",
-		    "to_shmdata_with_path", 
-		    "make a bin from GStreamer description and make shmdata writer(s)", 
-		    "success or fail",
-		    Method::make_arg_description ("GStreamer Pipeline"
-						  "gst_pipeline", 
-						  "the GStreamer pipeline with no sink to instanciate",
-						  "Shmdata Path",
-						  "shmdata_path", 
-						  "the path used for the shmdata",
-						  NULL),
-		    (Method::method_ptr) &to_shmdata_with_path_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
-		    this);
-
-
-    publish_method ("GST To Shmdata",
-		    "to_shmdata", 
-		    "make a bin from GStreamer description and make shmdata writer(s)", 
-		    "success or fail",
-		    Method::make_arg_description ("GStreamer Pipeline"
-						  "gst_pipeline", 
-						  "the GStreamer pipeline with no sink to instanciate",
-						  NULL),
-		    (Method::method_ptr) &to_shmdata_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    this);
-    return true;
+    if (!publish_method ("GST To Shmdata (With Path)",
+			 "to_shmdata_with_path", 
+			 "make a bin from GStreamer description and make shmdata writer(s)", 
+			 "success or fail",
+			 Method::make_arg_description ("GStreamer Pipeline",
+						       "gst_pipeline", 
+						       "the GStreamer pipeline with no sink to instanciate",
+						       "Shmdata Path",
+						       "shmdata_path", 
+						       "the path used for the shmdata",
+						       NULL),
+			 (Method::method_ptr) &to_shmdata_with_path_wrapped, 
+			 G_TYPE_BOOLEAN,
+			 Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
+			 this))
+      return false;	
+    
+    if (!publish_method ("GST To Shmdata",
+      			 "to_shmdata", 
+      			 "make a bin from GStreamer description and make shmdata writer(s)", 
+      			 "success or fail",
+      			 Method::make_arg_description ("GStreamer Pipeline",
+      						       "gst_pipeline", 
+      						       "the GStreamer pipeline with no sink to instanciate",
+      						       NULL),
+      			 (Method::method_ptr) &to_shmdata_wrapped, 
+      			 G_TYPE_BOOLEAN,
+      			 Method::make_arg_type_description (G_TYPE_STRING, NULL),
+      			 this))
+      return false;
+    
+     return true;
   }
   
 

@@ -47,6 +47,7 @@ namespace switcher
 						  "shmdata socket path to connect with",
 						  NULL),
 		    (Method::method_ptr)&connect_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
   }

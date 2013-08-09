@@ -81,6 +81,7 @@ namespace switcher
 		    Method::make_arg_description ("none",
 						  NULL),
 		    (Method::method_ptr) &play_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
 		    this);
 
@@ -91,6 +92,7 @@ namespace switcher
 		   Method::make_arg_description ("none",
 						 NULL),
 		   (Method::method_ptr) &pause_wrapped, 
+		    G_TYPE_BOOLEAN,
 		   Method::make_arg_type_description (G_TYPE_NONE, NULL),
 		   this);
    
@@ -103,6 +105,7 @@ namespace switcher
 						 "position in milliseconds",
 						 NULL),
 		   (Method::method_ptr) &seek_wrapped, 
+		    G_TYPE_BOOLEAN,
 		   Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
 		   this);
  
@@ -115,6 +118,7 @@ namespace switcher
 						 "1.0 is normal speed, 0.5 is half the speed and 2.0 is double speed",
 						 NULL),
 		   (Method::method_ptr) &speed_wrapped, 
+		    G_TYPE_BOOLEAN,
 		   Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
 		   this);
    
@@ -423,7 +427,7 @@ res = gst_element_query (pipeline_, query);
       
       gst_message_parse_error (msg, &error, &debug);
       g_free (debug);
-      g_error ("bus_call Error: %s from %s", error->message, GST_MESSAGE_SRC_NAME(msg));
+      g_debug ("bus_call Error: %s from %s", error->message, GST_MESSAGE_SRC_NAME(msg));
       g_error_free (error);
       return FALSE;
 
