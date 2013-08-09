@@ -17,7 +17,8 @@ AM_LIBS = \
     $(SHMDATA_LIBS) \
     -avoid-version \
     -module \
-    $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
+    -L$(top_builddir)/switcher/.libs \
+    -lswitcher-@LIBSWITCHER_API_VERSION@
 
 pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 

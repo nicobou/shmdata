@@ -46,6 +46,7 @@ dnl required version of libtool
 LT_PREREQ([2.2.6])
 LT_INIT
 
+
 dnl error out if we can't find pkg-config
 AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ], [
   AC_MSG_ERROR([You need to have pkg-config installed or set the PATH.])

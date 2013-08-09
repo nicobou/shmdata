@@ -1097,7 +1097,7 @@ namespace switcher
 	//trying to load the module 
 	if (g_str_has_suffix (absolute_path, ".so"))
 	  {
-	    g_debug ("trying to load module %s", absolute_path);
+	    g_debug ("loading module %s", absolute_path);
 	    load_plugin (absolute_path);
 	  }
 	g_free (absolute_path);

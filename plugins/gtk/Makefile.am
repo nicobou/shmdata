@@ -1,24 +1,3 @@
-AM_CXXFLAGS = \
-    $(GLIB_CFLAGS) \
-    $(GMODULE_CFLAGS) \
-    $(GST_CFLAGS) \
-    $(GTK_CFLAGS) \
-    $(JSONGLIB_CFLAGS) \
-    $(SHMDATA_CFLAGS) \
-    -DG_LOG_DOMAIN=\"switcher\" \
-    -I$(top_srcdir) 
-
-AM_LIBS = \
-    $(GLIB_LIBS) \
-    $(GST_LIBS) \
-    $(GMODULE_CFLAGS) \
-    $(GTK_LIBS) \
-    $(JSONGLIB_LIBS) \
-    $(SHMDATA_LIBS) \
-    -avoid-version \
-    -module \
-    $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
-
 pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
 plugins_LTLIBRARIES = \
@@ -36,4 +15,22 @@ libgtkvideo_la_includedir = \
 
 libgtkvideo_la_LDFLAGS = \
     $(GTK_LIBS) \
-    $(GST_LIBS)
+    $(GLIB_LIBS) \
+    $(GST_LIBS) \
+    $(GMODULE_LIBS) \
+    $(JSONGLIB_LIBS) \
+    $(SHMDATA_LIBS) \
+    -avoid-version \
+    -module \
+    -L$(top_builddir)/switcher/.libs \
+    -lswitcher-@LIBSWITCHER_API_VERSION@
+
+libgtkvideo_la_CXXFLAGS = \
+    $(GTK_CFLAGS) \
+    $(GLIB_CFLAGS) \
+    $(GMODULE_CFLAGS) \
+    $(GST_CFLAGS) \
+    $(JSONGLIB_CFLAGS) \
+    $(SHMDATA_CFLAGS) \
+    -DG_LOG_DOMAIN=\"switcher\" \
+    -I$(top_srcdir) 
