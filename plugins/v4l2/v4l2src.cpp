@@ -56,7 +56,7 @@ namespace switcher
 		    "success or fail",
 		    Method::make_arg_description ("Device",
 						  "device_file_path",
-						  "Device File Path or NONE",
+						  "or NONE",
 						  NULL),
 		    (Method::method_ptr) &capture_wrapped, 
 		    G_TYPE_BOOLEAN,
@@ -76,10 +76,10 @@ namespace switcher
 						  "or NONE",
 						  "Height",
 						  "height",
-						  "or NONE"
+						  "or NONE",
 						  "Framerate Numerator",
 						  "framerate_numerator",
-						  "or NONE"
+						  "or NONE",
 						  "Framerate Denominator",
 						  "framerate_denominator",
 						  "or NONE",
@@ -165,9 +165,9 @@ namespace switcher
   void
   V4L2Src::clean_elements ()
   {
-    GstUtils::clean_element (v4l2src_);
+    //GstUtils::clean_element (v4l2src_);
     //GstUtils::clean_element (capsfilter_);//FIXME
-    GstUtils::clean_element (v4l2_bin_);
+    //GstUtils::clean_element (v4l2_bin_);
   }
 
   std::string
