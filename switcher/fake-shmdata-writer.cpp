@@ -39,16 +39,18 @@ namespace switcher
   {
     set_name (gst_element_get_name (bin_));
 
-    //registering add_data_stream
-    register_method("add_shmdata_path",
-		    (void *)&add_shmdata_path_wrapped, 
+    publish_method ("Add External Shmdata",
+		    "add_shmdata_path",
+		    "add an existing shmdata writer path",
+		    "success or fail",
+		    Method::make_arg_description ("Shmdata Path",
+						  "name", 
+						  "a shmdata writer path",
+						  NULL),
+		    (Method::method_ptr) &add_shmdata_path_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("add_shmdata_path", 
-			    "add an existing shmdata writer path", 
-			    Method::make_arg_description ("name", 
-							  "the shmdata writer path",
-							  NULL));
+		    this);
     return true;
   }
   

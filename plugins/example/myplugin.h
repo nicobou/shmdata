@@ -41,7 +41,7 @@ namespace switcher
 
     static gboolean get_myprop (void *user_data);
     static void set_myprop (gboolean myprop, void *user_data);
-    static gchar *my_signal_action (void *, gchar *first_arg, void *user_data);
+    static gchar *my_hello_world_method (gchar *first_arg, void *user_data);
     gchar *hello_;
   };
   

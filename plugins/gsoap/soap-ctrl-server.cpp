@@ -46,17 +46,20 @@ namespace switcher
     
     srand(time(0));
     set_name (g_strdup_printf ("ctrlserver%d",rand() % 1024));
-   
-    //registering set_port
-    register_method("set_port",
-     		    (void *)&set_port_wrapped, 
+
+    publish_method ("Set Port",
+		    "set_port", 
+		    "set the port used by the soap server", 
+		    "success or fail",
+		    Method::make_arg_description ("Port",
+						  "port",
+						  "the port to bind",
+						  NULL),
+		    (Method::method_ptr) &set_port_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_INT, NULL),
-     		    (gpointer)this);
-    set_method_description ("set_port", 
-			    "select the port used by the soap server", 
-			    Method::make_arg_description ("port",
-							  "the port to bind",
-							  NULL));
+     		    this);
+   
     return true;
   }
 
@@ -292,7 +295,7 @@ controlService::get_factory_capabilities(std::vector<std::string> *result){//FIX
   if (ctrl_server == NULL || !(bool)manager)
     {
       char *s = (char*)soap_malloc(this, 1024);
-      g_error ("controlService::get_factory_capabilities: cannot get manager from SoapCtrlServer (NULL)");
+      g_debug ("controlService::get_factory_capabilities: cannot get manager from SoapCtrlServer (NULL)");
       sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (NULL)</error>");
       return soap_senderfault("error in get_factory_capabilities", s);
     }
@@ -313,7 +316,7 @@ controlService::get_classes_doc(std::string *result){
   if (ctrl_server == NULL || !(bool)manager)
     {
       char *s = (char*)soap_malloc(this, 1024);
-      g_error ("controlService::get_classes_doc: cannot get manager from SoapCtrlServer (NULL)");
+      g_debug ("controlService::get_classes_doc: cannot get manager from SoapCtrlServer (NULL)");
       sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (NULL)</error>");
       return soap_senderfault("error in get_classes_doc", s);
     }
@@ -334,7 +337,7 @@ controlService::get_quiddity_description(std::string quiddity_name, std::string 
   if (ctrl_server == NULL || !(bool)manager)
     {
       char *s = (char*)soap_malloc(this, 1024);
-      g_error ("controlService::get_class_doc: cannot get manager from SoapCtrlServer (NULL)");
+      g_debug ("controlService::get_class_doc: cannot get manager from SoapCtrlServer (NULL)");
       sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (NULL)</error>");
       return soap_senderfault("error in get_class_doc", s);
     }
@@ -355,7 +358,7 @@ controlService::get_quiddities_description (std::string *result){
   if (ctrl_server == NULL || !(bool)manager)
     {
       char *s = (char*)soap_malloc(this, 1024);
-      g_error ("controlService::get_quiddities_description: cannot get manager from SoapCtrlServer (NULL)");
+      g_debug ("controlService::get_quiddities_description: cannot get manager from SoapCtrlServer (NULL)");
       sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_quiddities_description: cannot get manager (NULL)</error>");
       return soap_senderfault("error in get_classes_doc", s);
     }
@@ -376,7 +379,7 @@ controlService::get_class_doc(std::string class_name, std::string *result){
   if (ctrl_server == NULL || !(bool)manager)
     {
       char *s = (char*)soap_malloc(this, 1024);
-      g_error ("controlService::get_class_doc: cannot get manager from SoapCtrlServer (NULL)");
+      g_debug ("controlService::get_class_doc: cannot get manager from SoapCtrlServer (NULL)");
       sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (NULL)</error>");
       return soap_senderfault("error in get_class_doc", s);
     }

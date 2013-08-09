@@ -52,6 +52,7 @@ namespace switcher
     void set_description (std::string long_name,
 			  std::string signal_name,
 			  std::string short_description,
+			  std::string return_description,
 			  args_doc arg_description);
     std::string get_description (); 
     
@@ -61,7 +62,7 @@ namespace switcher
     void signal_emit (const gchar *unused_string, 
 		      va_list  var_args);
 
-  GValue invoke (std::vector<std::string> args);
+    GValue action_emit (std::vector<std::string> args);
     
     //helper methods, use NULL sentinel
     //do not describe the first gobject (first signal arg)

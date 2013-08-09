@@ -64,27 +64,32 @@ namespace switcher
     
     capture_devices_description_ = NULL;
 
-    register_method("capture",
-		    (void *)&capture_wrapped, 
+    publish_method ("Capture",
+		    "capture", 
+		    "start capturing from default device", 
+		    "success or fail",
+		    Method::make_arg_description ("none",
+						  NULL),
+		    (Method::method_ptr) &capture_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_NONE, 
 						       NULL),
-		    (gpointer)this);
-    set_method_description ("capture", 
-			    "start capturing from default device", 
-			    Method::make_arg_description ("none",
- 							  NULL));
+		    this);
+    
 
 
-    register_method("capture_device",
-		    (void *)&capture_device_wrapped, 
+    publish_method ("Capture Device",
+		    "capture_device", 
+		    "start capturing from selected device", 
+		    "success or fail",
+		    Method::make_arg_description ("pulse_name_device",
+						  "Pulse Audio Device Name",
+						  NULL),
+		    (Method::method_ptr) &capture_device_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, 
 						       NULL),
-		    (gpointer)this);
-    set_method_description ("capture_device", 
-			    "start capturing from selected device", 
-			    Method::make_arg_description ("pulse_name_device",
-							  "Pulse Audio Device Name",
-							  NULL));
+		    this);
 
 
     custom_props_.reset (new CustomPropertyHelper ());

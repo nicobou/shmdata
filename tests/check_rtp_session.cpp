@@ -133,6 +133,8 @@ main (int argc,
        			"9076",
        			NULL);
 
+    usleep (1000000);
+
     manager->create ("runtime", "receiver_runtime");
     manager->create ("httpsdpdec", "uri");
     manager->invoke_va ("uri", 

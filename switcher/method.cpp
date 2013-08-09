@@ -43,9 +43,9 @@ namespace switcher
 
 
   bool
-  Method::set_method (void *method, 
-		      GType return_type,
-		      std::vector<GType> arg_types, 
+  Method::set_method (method_ptr method, 
+		      return_type return_type,
+		      args_types arg_types, 
 		      gpointer user_data)  
   {
     if (arg_types.size () < 1)
@@ -67,12 +67,6 @@ namespace switcher
     return true;
   }
 
-  //FIXME remove the following
-  bool
-  Method::set_method (void *method, std::vector<GType> arg_types, gpointer user_data)  
-  {
-    return set_method (method, G_TYPE_BOOLEAN, arg_types, user_data);
-  }
 
   //FIXME remove this method
   uint 
@@ -141,24 +135,30 @@ namespace switcher
   
 
   void
-  Method::set_description (std::string method_name,
+  Method::set_description (std::string long_name,
+			   std::string method_name,
 			   std::string short_description,
-			   std::vector< std::pair<std::string,std::string> > arg_description)
+			   std::string return_description,
+			   args_doc arg_description)
   {
     json_description_->reset ();
     json_description_->begin_object ();
+    json_description_->add_string_member ("long name", long_name.c_str ());
     json_description_->add_string_member ("name", method_name.c_str ());
     json_description_->add_string_member ("description", short_description.c_str ());
+    json_description_->add_string_member ("return type", g_type_name (return_type_));
+    json_description_->add_string_member ("return description", return_description.c_str ());
     json_description_->set_member_name ("arguments");
     json_description_->begin_array ();
-    std::vector<std::pair<std::string,std::string> >::iterator it;
+    args_doc::iterator it;
     int j=0;
     if (!arg_description.empty ())
       for (it = arg_description.begin() ; it != arg_description.end(); it++ )
 	{
 	  json_description_->begin_object ();
-	  json_description_->add_string_member ("name",it->first.c_str ());
-	  json_description_->add_string_member ("description",it->second.c_str ());
+	  json_description_->add_string_member ("long name", std::get<0>(*it).c_str ());
+	  json_description_->add_string_member ("name",std::get<1>(*it).c_str ());
+	  json_description_->add_string_member ("description",std::get<2>(*it).c_str ());
 	  json_description_->add_string_member ("type",g_type_name (arg_types_[j])); 
 	  json_description_->end_object ();
 	}
@@ -188,45 +188,51 @@ namespace switcher
      va_list vl;
      va_start(vl, first_arg_type);
      res.push_back (first_arg_type);
-     while (arg_type = va_arg( vl, GType))
+     while ( (arg_type = va_arg(vl, GType)))
        res.push_back (arg_type);
      va_end(vl);
      return res;
    }
 
-  std::vector<std::pair<std::string,std::string> > 
-  Method::make_arg_description (const char *first_arg_name, ...)
+
+  //FIXME, make this more robust to user missing strings
+  Method::args_doc
+  Method::make_arg_description (const char *first_arg_long_name, ...)
   {
-    std::vector<std::pair<std::string,std::string> > res;
-    std::pair<std::string,std::string> arg_desc_pair;
+    args_doc res;
     va_list vl;
+    char *arg_long_name;
     char *arg_name;
     char *arg_desc;
-    va_start(vl, first_arg_name);
-
-    if (first_arg_name != "none" && (arg_desc = va_arg( vl, char *)))
+    va_start(vl, first_arg_long_name);
+    if (g_strcmp0 (first_arg_long_name, "none") != 0 
+	&& (arg_name = va_arg(vl, char *)) 
+	&& (arg_desc = va_arg(vl, char *)))
+      res.push_back (std::make_tuple (first_arg_long_name, 
+				      arg_name,
+				      arg_desc));
+    gboolean parsing = true;
+    do
       {
-	std::pair<std::string,std::string> arg_pair;
-	arg_desc_pair.first = std::string (first_arg_name);
-	arg_desc_pair.second = std::string (arg_desc);
-	res.push_back (arg_desc_pair);
+	arg_long_name = va_arg( vl, char *);
+	
+	if (arg_long_name != NULL)
+	  {
+	    arg_name = va_arg( vl, char *); 
+	    arg_desc = va_arg( vl, char *);
+	    if (arg_name != NULL && arg_desc != NULL)
+	      res.push_back (std::make_tuple (arg_long_name, 
+					      arg_name,
+					      arg_desc));
+	    else
+	      parsing = false;
+	  }
+	else
+	  parsing = false;
       }
-    else
-      {
-	va_end(vl);
-	return res;
-      }
-
-    while ( (arg_name = va_arg( vl, char *)) && (arg_desc = va_arg( vl, char *)))
-      {
-	std::pair<std::string,std::string> arg_pair;
-	arg_desc_pair.first = std::string (arg_name);
-	arg_desc_pair.second = std::string (arg_desc);
-	res.push_back (arg_desc_pair);
-      }
-
+    while (parsing);
     va_end(vl);
     return res;
   }
-  
+
 }

@@ -25,7 +25,7 @@
 
 #include "quiddity.h"
 #include "quiddity-manager-impl.h"
-
+#include "gst-utils.h"
 
 namespace switcher
 {
@@ -110,17 +110,56 @@ namespace switcher
     return true;
   }
 
+
   bool 
-  Quiddity::make_custom_signal (const std::string signal_name, //the name to give
-				GType return_type,
-				guint n_params, //number of params
-				GType *param_types)
+  Quiddity::publish_signal (const std::string long_name,
+			    const std::string signal_name,
+			    const std::string short_description,
+			    const Signal::args_doc arg_description,
+			    guint number_of_params, 
+			    GType *param_types)
   {
-    return make_custom_signal_with_class_name (get_documentation().get_class_name (),
-					       signal_name,
-					       return_type,
-					       n_params,
-					       param_types);
+    if (!make_custom_signal_with_class_name (get_documentation().get_class_name (),
+					     signal_name,
+					     G_TYPE_NONE,
+					     number_of_params,
+					     param_types))
+      return false;
+    
+    if (!set_signal_description (long_name,
+				 signal_name,
+				 short_description,
+				 "n/a",
+				 arg_description))
+      return false;
+    
+    return true;  
+  }
+
+  bool 
+  Quiddity::publish_signal_with_class_name (const std::string class_name,
+					    const std::string long_name,
+					    const std::string signal_name,
+					    const std::string short_description,
+					    const Signal::args_doc arg_description,
+					    guint number_of_params, 
+					    GType *param_types)
+  {
+    if (!make_custom_signal_with_class_name (class_name,
+					     signal_name,
+					     G_TYPE_NONE,
+					     number_of_params,
+					     param_types))
+      return false;
+    
+    if (!set_signal_description (long_name,
+				 signal_name,
+				 short_description,
+				 "n/a",
+				 arg_description))
+      return false;
+    
+    return true;  
   }
 
   bool 
@@ -165,6 +204,7 @@ namespace switcher
   Quiddity::set_signal_description (const std::string long_name,
 				    const std::string signal_name,
 				    const std::string short_description,
+				    const std::string return_description,
 				    const Signal::args_doc arg_description)
   {
 
@@ -173,7 +213,11 @@ namespace switcher
 	g_warning ("cannot set description of a not existing signal");
 	return false;
       }
-    signals_[signal_name]->set_description (long_name, signal_name, short_description, arg_description);
+    signals_[signal_name]->set_description (long_name, 
+					    signal_name, 
+					    short_description, 
+					    return_description, 
+					    arg_description);
 
     // signal_emit ("on-new-signal-registered", 
     // 		 get_nick_name ().c_str (), 
@@ -300,7 +344,7 @@ namespace switcher
     GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), gobject_property_name.c_str());
     if (pspec == NULL)
       {
-	g_error ("property not found %s", gobject_property_name.c_str());
+	g_debug ("property not found %s", gobject_property_name.c_str());
 	return false;
       }
     
@@ -345,7 +389,7 @@ namespace switcher
 	GValue res = methods_[method_name]->invoke (args);
 	if (return_value != NULL)
 	  {
-	    gchar *res_val = gst_value_serialize (&res);
+	    gchar *res_val = GstUtils::gvalue_serialize (&res);
 	    *return_value = new std::string (res_val);
 	    g_free (res_val);
 	  }
@@ -367,14 +411,15 @@ namespace switcher
       }
     else 
       {
-	GValue res = signals_[signal_name]->invoke (args);
+	GValue res = signals_[signal_name]->action_emit (args);
 	if (return_value != NULL)
 	  {
-	    gchar *res_val;
-	    if (G_VALUE_HOLDS_STRING(&res))
-	      res_val = g_strdup (g_value_get_string (&res));
-	    else
-	      res_val = gst_value_serialize (&res);
+	    gchar *res_val = GstUtils::gvalue_serialize (&res);
+	    //gchar *res_val;
+	    // if (G_VALUE_HOLDS_STRING(&res))
+	    //   res_val = g_strdup (g_value_get_string (&res));
+	    // else
+	    //   res_val = gst_value_serialize (&res);
 
 	    *return_value = new std::string (res_val);
 	    g_free (res_val);
@@ -384,41 +429,49 @@ namespace switcher
       }
   }
   
+
   bool
-  Quiddity::register_method (std::string method_name, void *method, std::vector<GType> arg_types, gpointer user_data)
+  Quiddity::register_method (std::string method_name, 
+			     Method::method_ptr method, 
+			     Method::return_type return_type,
+			     Method::args_types arg_types, 
+			     gpointer user_data)
   {
     if (method == NULL)
       {
-	g_error ("fail registering %s (method is NULL)",method_name.c_str());
+	g_debug ("fail registering %s (method is NULL)",method_name.c_str());
 	return false;
       }
     
     Method::ptr meth (new Method ());
-    meth->set_method (method, arg_types, user_data);
+    meth->set_method (method, return_type, arg_types, user_data);
 
-    if (methods_.find( method_name ) == methods_.end())
-      {
-	methods_[method_name] = meth;
-	return true;
-      }
-    else 
+    if (methods_.find( method_name ) != methods_.end())
       {
 	g_debug ("registering name %s already exists",method_name.c_str());
 	return false;
       }
+    methods_[method_name] = meth;
+    return true;
   }
 
   bool 
-  Quiddity::set_method_description (const std::string method_name,
+  Quiddity::set_method_description (const std::string long_name,
+				    const std::string method_name,
 				    const std::string short_description,
-				    const std::vector<std::pair<std::string,std::string> > arg_description)
+				    const std::string return_description,
+				    const Method::args_doc arg_description)
   {
     if (methods_.find( method_name ) == methods_.end())
       {
-	g_error ("cannot set description of a not existing method");
+	g_debug ("cannot set description of a not existing method");
 	return false;
       }
-    methods_[method_name]->set_description (method_name, short_description, arg_description);
+    methods_[method_name]->set_description (long_name, 
+					    method_name, 
+					    short_description, 
+					    return_description,
+					    arg_description);
     return true;
   }
 
@@ -652,5 +705,32 @@ namespace switcher
     return NULL;
   }
 
+  //methods
+  bool 
+  Quiddity::publish_method (const std::string long_name,
+			    const std::string method_name,
+			    const std::string short_description,
+			    const std::string return_description,
+			    const Method::args_doc arg_description,
+			    Method::method_ptr method, 
+			    Method::return_type return_type,
+			    Method::args_types arg_types, 
+			    gpointer user_data)
+  {
+    if (!register_method (method_name,
+			  method, 
+			  return_type,
+			  arg_types, 
+			  user_data))
+      return false;
 
+    if (!set_method_description (long_name,
+				 method_name,
+				 short_description,
+				 return_description,
+				 arg_description))
+      return false;
+    return true;
+  }
+  
 }

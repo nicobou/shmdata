@@ -32,6 +32,7 @@
 #include <map>
 #include <stdarg.h>
 #include "json-builder.h"
+#include <tuple>
 
 namespace switcher
 {
@@ -40,29 +41,29 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<Method> ptr;
+    typedef GType return_type;
     typedef std::vector<GType> args_types;
-    typedef std::vector<std::pair<std::string,std::string> > args_doc;
-      
+    typedef std::vector<std::tuple<std::string,std::string,std::string> > args_doc;
+    typedef void * method_ptr;
+
     Method ();
     ~Method ();
-    bool set_method (void *method,
-		     GType return_type,
-		     args_types arg_types, 
-		     gpointer user_data);
-    //fixme remove the following, we want a return type
-    bool set_method (void *method, 
+    bool set_method (method_ptr method,
+		     return_type return_type,
 		     args_types arg_types, 
 		     gpointer user_data);
     GValue invoke (std::vector<std::string> args);
     uint get_num_of_value_args();
-    void set_description (std::string method_name,
-			   std::string short_description,
-			   args_doc arg_description);
+    void set_description (std::string long_name,
+			  std::string method_name,
+			  std::string short_description,
+			  std::string return_description,
+			  args_doc arg_description);
     std::string get_description (); //json formated description
 
     //helper methods, use NULL sentinel
     static args_types make_arg_type_description (GType arg_type, ...);//use G_TYPE_NONE if no arg
-    static args_doc make_arg_description (const char *first_arg_name, ...);
+    static args_doc make_arg_description (const char *first_arg_long_name, ...);
     
     //Building complex json descriptions incuding this
     JSONBuilder::Node get_json_root_node ();

@@ -98,13 +98,15 @@ namespace switcher
     g_object_get_property (gobject,
 			   prop_name,
 			   &val);
-    gchar *val_str;
-    if (pspec->value_type == G_TYPE_STRING)
-      val_str = g_strdup (g_value_get_string (&val));
-    else
-      val_str = gst_value_serialize (&val);
+    gchar *val_str = GstUtils::gvalue_serialize (&val);
+    //gchar *val_str;
+    // if (pspec->value_type == G_TYPE_STRING)
+    //   val_str = g_strdup (g_value_get_string (&val));
+    // else
+    //   val_str = gst_value_serialize (&val);
     std::string res (val_str);
     g_free (val_str);
+    g_value_unset (&val);
     return res;
   }
   
@@ -140,11 +142,11 @@ namespace switcher
   void
   Property::make_description ()
   {
-    guint i;
+    // guint i;
     gboolean readable;
-    gboolean first_flag;
+    // gboolean first_flag;
     GValue value = G_VALUE_INIT;
-    GObject *element = object_; 
+    // GObject *element = object_; 
     readable = FALSE;
     g_value_init (&value, property_->value_type);
    
@@ -368,7 +370,7 @@ namespace switcher
 	
 	/* g_type_class_unref (ec); */
       } else if (G_IS_PARAM_SPEC_FLAGS (property_)) {
-	g_error ("warning: param spec flags not handled");
+	g_debug ("warning: param spec flags not handled");
 	// GParamSpecFlags *pflags = G_PARAM_SPEC_FLAGS (property_);
 	// GFlagsValue *vals;
 	// gchar *cur;
@@ -392,21 +394,21 @@ namespace switcher
 
 	// g_free (cur);
       } else if (G_IS_PARAM_SPEC_OBJECT (property_)) {
-	g_error ("warning: param spec object not handled");
+	g_debug ("warning: param spec object not handled");
 	// g_debug ("%-23.23s Object of type \"%s\"", "",
 	// 	 g_type_name (property_->value_type));
       } else if (G_IS_PARAM_SPEC_BOXED (property_)) {
-	g_error ("warning: param spec boxed not handled");
+	g_debug ("warning: param spec boxed not handled");
 	// g_debug ("%-23.23s Boxed pointer of type \"%s\"", "",
 	// 	 g_type_name (property_->value_type));
       } else if (G_IS_PARAM_SPEC_POINTER (property_)) {
-	g_error ("warning: param spec pointer not handled");
+	g_debug ("warning: param spec pointer not handled");
 	// if (property_->value_type != G_TYPE_POINTER) {
 	//   g_debug ("%-23.23s Pointer of type \"%s\".", "",
 	// 	   g_type_name (property_->value_type));
       } else if (property_->value_type == G_TYPE_VALUE_ARRAY) {
-	GParamSpecValueArray *pvarray = G_PARAM_SPEC_VALUE_ARRAY (property_);
-	g_error ("warning: array not handled");
+	//GParamSpecValueArray *pvarray = G_PARAM_SPEC_VALUE_ARRAY (property_);
+	g_debug ("warning: array not handled");
 	// if (pvarray->element_spec) {
 	//   g_debug ("%-23.23s Array of GValues of type \"%s\"", "",
 	// 	   g_type_name (pvarray->element_spec->value_type));
@@ -635,7 +637,7 @@ namespace switcher
 	j++;
       }
 
-      g_debug ("%v-23.23s Enum \"%s\" Default: %d, \"%s\"", "",
+      g_debug ("Enum \"%s\" Default: %d, \"%s\"", 
 	       g_type_name (G_VALUE_TYPE (&value)), enum_value, value_nick);
 
       j = 0;

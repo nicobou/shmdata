@@ -142,10 +142,10 @@ namespace switcher
 	
 	if (g_str_has_prefix (relative_path, shmdata_prefix))
 	  {
-	    g_warning ("deleting previous shmdata socket (%s)", g_file_get_path (descend));
+	    g_debug ("deleting previous shmdata socket (%s)", g_file_get_path (descend));
 	    res = g_file_delete (descend, NULL, &error);
 	    if(res != TRUE)
-	      g_warning ("socket cannot be deleted");
+	      g_warning ("previous switcher file \"%s\" cannot be deleted", g_file_get_path (descend));
 	  }
 	
 	g_object_unref (descend);
@@ -729,12 +729,6 @@ namespace switcher
       }
     Quiddity::ptr quiddity = get_quiddity (quiddity_name);
 
-    if (g_strcmp0 (method_name.c_str (), "hello_world") == 0)
-      {
-	bool res = quiddity->emit_action (method_name, return_value, args);
-	return res;
-      }
-    
     if (!quiddity->has_method (method_name)) 
       {
 	g_debug ("method %s not found, cannot invoke",method_name.c_str());

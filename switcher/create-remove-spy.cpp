@@ -51,30 +51,28 @@ namespace switcher
     i_am_the_one_ = true;
 
     //we got the hook, so make signals of it
-    GType types[] = {G_TYPE_STRING};
-    make_custom_signal ("on-quiddity-created", 
-    			G_TYPE_NONE,
-    			1,
-    			types);
-    
-    set_signal_description ("On Quiddity Created",
-			    "on-quiddity-created",
-			    "a quiddity has been created",
-			    Signal::make_arg_description("Quiddity Name",
-							 "quiddity_name",
-							 "the quiddity name",
-							 NULL));
-    make_custom_signal ("on-quiddity-removed", 
-    			G_TYPE_NONE,
-    			1,
-    			types);
-    set_signal_description ("On Quiddity Removed",
-			    "on-quiddity-removed",
-			    "a quiddity has been removed",
-			    Signal::make_arg_description("Quiddity Name",
-							 "quiddity_name",
-							 "the quiddity name",
-							 NULL));
+    GType string_type[] = {G_TYPE_STRING};
+
+
+    publish_signal ("On Quiddity Created",
+		    "on-quiddity-created",
+		    "a quiddity has been created",
+		    Signal::make_arg_description ("Quiddity Name",
+						  "quiddity_name",
+						  "the quiddity name",
+						  NULL),
+		    1,
+		    string_type);
+
+    publish_signal ("On Quiddity Removed",
+		    "on-quiddity-removed",
+		    "a quiddity has been removed",
+		    Signal::make_arg_description("Quiddity Name",
+						 "quiddity_name",
+						 "the quiddity name",
+						 NULL),
+		    1,
+		    string_type);
 
     set_name ("manager-spy"); // supposed to be a singleton with the use of "set_..._hook ()"
     return true;
