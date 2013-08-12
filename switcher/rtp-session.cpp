@@ -119,6 +119,8 @@ namespace switcher
 		    (Method::method_ptr) &add_data_stream_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    true,
+		    true,
 		    this);
 
     publish_method ("Remove Data Stream",
@@ -132,6 +134,8 @@ namespace switcher
 		    (Method::method_ptr) &remove_data_stream_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    true,
+		    true,
 		    this);
 
     publish_method ("Add Destination",
@@ -148,6 +152,8 @@ namespace switcher
 		    (Method::method_ptr) &add_destination_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
+		    true,
+		    true,
 		    this);
     
     publish_method ("Remove Destination",
@@ -161,6 +167,8 @@ namespace switcher
 		    (Method::method_ptr) &remove_destination_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    true,
+		    true,
 		    this);
 
 
@@ -175,6 +183,8 @@ namespace switcher
 		    (Method::method_ptr) &add_udp_stream_to_dest_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,G_TYPE_STRING,NULL),
+		    true,
+		    true,
 		    this);
     
     publish_method ("Remove UDP Stream",
@@ -187,6 +197,8 @@ namespace switcher
       		    (Method::method_ptr) &remove_udp_stream_to_dest_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,NULL),
+		    true,
+		    true,
 		    this);
     
     publish_method ("Write SDP File",
@@ -200,6 +212,8 @@ namespace switcher
 		    (Method::method_ptr) &write_sdp_file_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING,NULL),
+		    true,
+		    true,
 		    this);
     
     //set the name before registering properties

@@ -135,6 +135,8 @@ namespace switcher
 		    (Method::method_ptr) &install_log_handler_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    true,
+		    true,
 		    this);
 
 
@@ -149,6 +151,8 @@ namespace switcher
 		    (Method::method_ptr) &remove_log_handler_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    true,
+		    true,
 		    this);
 
     return true;

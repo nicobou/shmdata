@@ -50,6 +50,8 @@ namespace switcher
 		    (Method::method_ptr) &add_shmdata_path_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    true,
+		    true,
 		    this);
     return true;
   }

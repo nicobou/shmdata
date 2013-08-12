@@ -49,6 +49,8 @@ namespace switcher
 		    (Method::method_ptr)&connect_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    true,
+		    true,
 		    this);
   }
 

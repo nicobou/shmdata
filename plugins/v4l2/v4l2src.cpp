@@ -62,6 +62,8 @@ namespace switcher
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, 
 						       NULL),
+		    true,
+		    true,
 		    this);
 
     publish_method ("Capture Full",
@@ -96,6 +98,8 @@ namespace switcher
 						       G_TYPE_STRING,
 						       G_TYPE_STRING, 
 						       NULL),
+		    true,
+		    true,
 		    this);
 
     //device inspector

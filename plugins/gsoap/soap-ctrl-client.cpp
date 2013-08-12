@@ -54,6 +54,8 @@ namespace switcher
 		    (Method::method_ptr) &set_remote_url_wrapped, 
 		    G_TYPE_BOOLEAN,
      		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    true,
+		    true,
      		    this);
 
 
@@ -71,6 +73,8 @@ namespace switcher
 		    (Method::method_ptr) &create_wrapped, 
 		    G_TYPE_BOOLEAN,
      		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
+		    false,
+		    true,
      		    this);
 
   
@@ -85,6 +89,8 @@ namespace switcher
 		    (Method::method_ptr) &remove_wrapped, 
 		    G_TYPE_BOOLEAN,
      		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    false,
+		    true,
      		    this);
  
      
@@ -105,6 +111,8 @@ namespace switcher
 		    (Method::method_ptr) &set_property_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, NULL),
+		    false,
+		    true,
 		    this);
 
 
@@ -125,6 +133,8 @@ namespace switcher
 		    (Method::method_ptr) &invoke1_wrapped, 
 		    G_TYPE_BOOLEAN,
       		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, NULL),
+		    false,
+		    true,
       		    this); 
 
 
@@ -149,6 +159,8 @@ namespace switcher
 		    G_TYPE_BOOLEAN,
      		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, 
      						       G_TYPE_STRING, G_TYPE_STRING, NULL),
+		    false,
+		    true,
      		    this);
 
 
@@ -177,6 +189,8 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, 
 						       G_TYPE_STRING, G_TYPE_STRING, 
 						       G_TYPE_STRING, NULL),
+		    false,
+		    true,
 		    this);
 
     publish_method ("Invoke 4",
@@ -207,6 +221,8 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, 
 						       G_TYPE_STRING, G_TYPE_STRING, 
 						       G_TYPE_STRING, G_TYPE_STRING, NULL),
+		    false,
+		    true,
 		    this);
     return true;
   }

@@ -58,7 +58,9 @@ namespace switcher
 			  std::string method_name,
 			  std::string short_description,
 			  std::string return_description,
-			  args_doc arg_description);
+			  args_doc arg_description,
+			  bool is_configuration,
+			  bool is_control);
     std::string get_description (); //json formated description
 
     //helper methods, use NULL sentinel
@@ -74,7 +76,8 @@ namespace switcher
     args_types arg_types_; 
     uint num_of_value_args_;
     JSONBuilder::ptr json_description_;
-
+    bool is_configuration_;
+    bool is_control_;
     static void destroy_data (gpointer  data,
 			      GClosure *closure);
     

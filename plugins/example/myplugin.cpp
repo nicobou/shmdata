@@ -20,8 +20,6 @@
  */
 
 #include "myplugin.h"
-#include <cstdlib>  // For srand() and rand()
-#include <ctime>    // For time()
 
 namespace switcher
 {
@@ -67,11 +65,10 @@ namespace switcher
   		    (Method::method_ptr) &my_hello_world_method, 
 		    G_TYPE_STRING,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    true,
+		    true,
 		    this);
 
-    srand(time(0));
-    set_name (g_strdup_printf ("myplugin%d",rand() % 1024));
-    
     g_debug ("hello from plugin");
     return true;
   }
