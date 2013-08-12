@@ -204,7 +204,6 @@ namespace switcher
       bool load_plugin (const char *filename);
       void close_plugin (const std::string class_name);
       StringMap<PluginLoader::ptr> plugins_;
-
       void init (std::string name);
       QuiddityManager_Impl();//will get name "default"
       QuiddityManager_Impl(std::string);
@@ -223,8 +222,9 @@ namespace switcher
       quiddity_removed_hook removal_hook_;
       void *creation_hook_user_data_;
       void *removal_hook_user_data_;
+      guint quiddity_created_counter_; 
+      void give_name_if_unnamed (std::shared_ptr <Quiddity> quiddity);
 
-      
       //gmainloop 
       GThread *thread_; //this runs the main loop 
       GMainContext *main_context_;

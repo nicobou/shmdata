@@ -39,21 +39,21 @@ namespace switcher
     methods_description_.reset (new JSONBuilder());
     signals_description_.reset (new JSONBuilder());
     
-     // GType types[] = {G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING};
-     // make_custom_signal ("quiddity",
-     // 			 "on-new-signal-registered", 
-     // 			 G_TYPE_NONE,
-     // 			 3,
-     // 			 types);
-     // set_signal_description ("on-new-signal-registered",
-     // 			     "a new signal has been registered and documented",
-     // 			     Signal::make_arg_description("quiddity_name",
-     // 							  "the quiddity name",
-     // 							  "signal_name",
-     // 							  "the signal name",
-     // 							  "json_doc",
-     // 							  "the json-formated signal documentation",
-     // 							  NULL));
+    // GType types[] = {G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING};
+    // make_custom_signal ("quiddity",
+    // 			 "on-new-signal-registered", 
+    // 			 G_TYPE_NONE,
+    // 			 3,
+    // 			 types);
+    // set_signal_description ("on-new-signal-registered",
+    // 			     "a new signal has been registered and documented",
+    // 			     Signal::make_arg_description("quiddity_name",
+    // 							  "the quiddity name",
+    // 							  "signal_name",
+    // 							  "the signal name",
+    // 							  "json_doc",
+    // 							  "the json-formated signal documentation",
+    // 							  NULL));
   }
   
   Quiddity::~Quiddity () 
@@ -193,7 +193,7 @@ namespace switcher
 
     Signal::ptr signal (new Signal ());
     if (!signal->set_gobject_sigid (gobject_->get_gobject (), signals_ids_[sig_pair]))
-        return false;
+      return false;
     signals_[signal_name] = signal; 
     g_debug ("signal %s registered", 
      	     signal_name.c_str ());
@@ -295,7 +295,7 @@ namespace switcher
 
     Signal::ptr signal (new Signal ());
     if (!signal->set_gobject_sigid (gobject_->get_gobject (), signals_ids_[sig_pair]))
-        return false;
+      return false;
     signals_[method_name] = signal; 
     g_debug ("signal %s registered", 
      	     method_name.c_str ());
@@ -365,13 +365,13 @@ namespace switcher
       return (int)methods_[method_name]->get_num_of_value_args(); 
   }
 
-   bool 
-   Quiddity::has_method (const std::string method_name)
-   {
-       if (methods_.find(method_name) == methods_.end())
-	 return false;
-       return true;
-   }
+  bool 
+  Quiddity::has_method (const std::string method_name)
+  {
+    if (methods_.find(method_name) == methods_.end())
+      return false;
+    return true;
+  }
   
   bool
   Quiddity::invoke_method (const std::string method_name,
@@ -396,7 +396,7 @@ namespace switcher
 	g_value_unset (&res);
 	return true;
       }
- }
+  }
   
   bool 
   Quiddity::emit_action (const std::string signal_name,
@@ -484,7 +484,7 @@ namespace switcher
     methods_description_->set_member_name ("methods");
     methods_description_->begin_array ();
     for(std::map<std::string, Method::ptr>::iterator it = methods_.begin(); it != methods_.end(); ++it) 
-	methods_description_->add_node_value (it->second->get_json_root_node ());
+      methods_description_->add_node_value (it->second->get_json_root_node ());
     methods_description_->end_array ();
     methods_description_->end_object ();
     return methods_description_->get_string (true);
@@ -610,13 +610,13 @@ namespace switcher
 			 ...)
   {
     if (signals_.find (signal_name) == signals_.end())
-	return;
+      return;
     Signal::ptr signal = signals_[signal_name];
     va_list var_args;
     va_start (var_args, signal_name);
-     // va_list va_cp;
-     // va_copy (va_cp, var_args);
-     // signal->signal_emit (get_g_main_context (), signal_name.c_str (), va_cp); 
+    // va_list va_cp;
+    // va_copy (va_cp, var_args);
+    // signal->signal_emit (get_g_main_context (), signal_name.c_str (), va_cp); 
     signal->signal_emit (/*get_g_main_context (), */signal_name.c_str (), var_args); 
     va_end (var_args);
   }

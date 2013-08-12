@@ -96,7 +96,7 @@ namespace switcher
     register_classes ();
     classes_doc_.reset (new JSONBuilder ());
     make_classes_doc ();
-
+    quiddity_created_counter_ = 0;
   }
   
   QuiddityManager_Impl::~QuiddityManager_Impl()
@@ -276,15 +276,30 @@ namespace switcher
   }
 
 
+  void 
+  QuiddityManager_Impl::give_name_if_unnamed (Quiddity::ptr quiddity)
+  {
+    //if no name was given, give one, should eventually be the prefered way
+    if (g_strcmp0 (quiddity->get_name().c_str (), "") == 0)
+      {
+	gchar *name = g_strdup_printf ("%s%u",
+				       quiddity->get_documentation ().get_class_name ().c_str (),
+				       quiddity_created_counter_);
+	quiddity->set_name (name);
+	g_free (name);
+      }
+    quiddity_created_counter_++;
+  }
+
   bool 
   QuiddityManager_Impl::init_quiddity (Quiddity::ptr quiddity)
   {
     quiddity->set_manager_impl (shared_from_this());
     if (!quiddity->init ())
       return false;
-    // g_critical ("QuiddityManager_Impl: intialization of %s (%s) return false",
-    // 	       quiddity->get_name ().c_str (),
-    // 	       quiddity->get_documentation ().get_class_name ().c_str ());
+
+    give_name_if_unnamed (quiddity);
+
     quiddities_.insert (quiddity->get_name(),quiddity);
     quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
     
@@ -307,6 +322,8 @@ namespace switcher
 	quiddity->set_manager_impl (shared_from_this());
 	if (!quiddity->init ())
 	  return "{\"error\":\"cannot init quiddity class\"}";
+
+	give_name_if_unnamed (quiddity);
 	quiddities_.insert (quiddity->get_name(),quiddity);
 	quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
       }

@@ -34,7 +34,6 @@ namespace switcher
   bool
   StringMemory::init()
   {
-    set_name ("string-memory");
     
     return true;
   }

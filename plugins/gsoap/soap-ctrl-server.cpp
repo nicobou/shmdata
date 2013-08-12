@@ -18,8 +18,6 @@
  */
 
 #include "soap-ctrl-server.h"
-#include <ctime>    // For time()
-#include <cstdlib>  // For srand() and rand()
 #include "webservices/control.nsmap"
 
 namespace switcher
@@ -44,9 +42,6 @@ namespace switcher
     soap_.accept_timeout =  100 * -1000; //100ms
     soap_.fget = SoapCtrlServer::http_get;
     
-    srand(time(0));
-    set_name (g_strdup_printf ("ctrlserver%d",rand() % 1024));
-
     publish_method ("Set Port",
 		    "set_port", 
 		    "set the port used by the soap server", 

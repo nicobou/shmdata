@@ -63,6 +63,7 @@ namespace switcher
     std::string get_name ();
     std::string get_nick_name ();
     bool set_nick_name (std::string nick_name);
+    bool set_name (std::string name);
 
     //properties
     std::string get_property_description (std::string property_name);
@@ -172,9 +173,6 @@ namespace switcher
 				 void *user_data);
    
   protected:
-    //naming
-    bool set_name (std::string name);
-
     //property
     bool register_property (GObject *object, 
 			    std::string gobject_property_name, 
