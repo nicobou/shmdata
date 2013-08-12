@@ -84,7 +84,9 @@ namespace switcher
     register_property_by_pspec (custom_prop_->get_gobject (), 
      				playing_param_, 
      				"playing",
-				"Playing");
+				"Playing",
+				true,
+				true);
     
     //set the name before registering properties
     set_name (g_strdup_printf ("gdpfilesrc%s", g_param_spec_get_name(playing_param_)));//FIXME implement and use make_name () in quiddity class, should be used for gsoap also

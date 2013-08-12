@@ -86,28 +86,6 @@ namespace switcher
     //   			   colorspace_out_,
     //   			   NULL);
     
-    //registering selected properties
-    // register_property (G_OBJECT (videoflip_),"method","flip-method", "Orientation");
-    // register_property (G_OBJECT (textoverlay_),"text","text", "Overlaid Text");
-    // register_property (G_OBJECT (textoverlay_),"auto-resize","auto-resize-text", "Auto-resize Text");
-    // register_property (G_OBJECT (textoverlay_),"shaded-background","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"halignment","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"valignment","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"xpad","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"ypad","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"deltax","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"deltay","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"xpos","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"ypos","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"wrap-mode","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"font-desc","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"silent","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"line-alignment","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"wait-text","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"vertical-render","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"color","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"shadow","textoverlay");
-    // register_property (G_OBJECT (textoverlay_),"outline-color","textoverlay");
   }
 
   void 

@@ -70,7 +70,9 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				loop_prop_, 
 				"loop",
-				"Looping");
+				"Looping",
+				true,
+				true);
 
     playing_ = false;
     playing_prop_ = 
@@ -84,7 +86,9 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				playing_prop_, 
 				"playing",
-				"Playing");
+				"Playing",
+				true,
+				true);
         
     publish_method ("Set URI",
 		    "to_shmdata", 

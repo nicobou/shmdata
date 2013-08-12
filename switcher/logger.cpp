@@ -67,7 +67,9 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				last_line_prop_, 
 				"last-line",
-				"Last Line");
+				"Last Line",
+				false,
+				true);
     
     mute_prop_ = 
       custom_props_->make_boolean_property ("mute", 
@@ -80,7 +82,9 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				mute_prop_, 
 				"mute",
-				"Mute");
+				"Mute",
+				true,
+				true);
 
     debug_prop_ = 
       custom_props_->make_boolean_property ("debug", 
@@ -93,7 +97,9 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				debug_prop_, 
 				"debug",
-				"Debug");
+				"Debug",
+				true,
+				true);
 
     verbose_prop_ = 
       custom_props_->make_boolean_property ("verbose", 
@@ -106,7 +112,9 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				verbose_prop_, 
 				"verbose",
-				"Verbose");
+				"Verbose",
+				true,
+				true);
     
     //handler must be installed after custom property creation 
     handler_ids_.insert ("switcher",

@@ -50,16 +50,15 @@ namespace switcher
     g_object_set (G_OBJECT (xvimagesink_),
 		  "force-aspect-ratio", TRUE,
 		  "draw-borders", TRUE,
+		  "sync", FALSE, 
 		  NULL);
     register_property (G_OBJECT (xvimagesink_),
 		       "force-aspect-ratio",
 		       "force-aspect-ratio", 
-		       "Force Aspect Ratio");
+		       "Force Aspect Ratio",
+		       true,
+		       true);
     
-    //set the name before registering properties
-    set_name (gst_element_get_name (xvimagesink_));
-    g_object_set (G_OBJECT (xvimagesink_), "sync", FALSE, NULL);
-
     on_error_command_ = new QuiddityCommand ();
     on_error_command_->id_ = QuiddityCommand::remove;
     on_error_command_->add_arg (get_nick_name ());

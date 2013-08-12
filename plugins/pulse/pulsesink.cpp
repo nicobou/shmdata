@@ -79,7 +79,9 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
      				devices_description_spec_, 
      				"devices-json",
-     				"Devices Description");
+     				"Devices Description",
+				true,
+				true);
     
     device_name_spec_ = custom_props_->make_string_property ("device-name", 
 							     "Device pulse name",
@@ -92,7 +94,9 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				device_name_spec_, 
 				"device-name",
-				"Device Name");
+				"Device Name",
+				false,
+				true);
     return true;
   }
   
@@ -120,8 +124,8 @@ namespace switcher
 
     unregister_property ("volume");
     unregister_property ("mute");
-    register_property (G_OBJECT (pulsesink_),"volume","volume", "Volume");
-    register_property (G_OBJECT (pulsesink_),"mute","mute", "Mute");
+    register_property (G_OBJECT (pulsesink_),"volume","volume", "Volume", true, true);
+    register_property (G_OBJECT (pulsesink_),"mute","mute", "Mute", true, true);
 
 
     if (g_strcmp0 (device_name_, "default") != 0)

@@ -177,12 +177,18 @@ namespace switcher
     bool register_property (GObject *object, 
 			    std::string gobject_property_name, 
 			    std::string name_to_give,
-			    std::string long_name);
+			    std::string long_name,
+			    bool is_configuration,
+			    bool is_control);
     bool unregister_property (std::string name);
     bool register_property_by_pspec (GObject *object, 
 				     GParamSpec *pspec, 
 				     std::string name_to_give,
-				     std::string long_name);
+				     std::string long_name,
+				     bool is_configuration,
+				     bool is_control);
+    void set_is_configuration (bool is_configuration);
+    void set_is_control (bool is_control);
 
     //methods
     bool publish_method (const std::string long_name,

@@ -41,7 +41,7 @@ namespace switcher
 	add_element_to_cleaner (aacenc_);
 	//set the name before registering properties
 	set_name (gst_element_get_name (aacenc_));
-	register_property (G_OBJECT (aacenc_),"bitrate","bitrate", "Bitrate (bps)");
+	register_property (G_OBJECT (aacenc_),"bitrate","bitrate", "Bitrate (bps)", true, true);
 	set_on_first_data_hook (AAC::make_shmdata_writer,this);
 	add_element_to_cleaner (aacbin_);
 	set_sink_element (aacbin_);

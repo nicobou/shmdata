@@ -74,14 +74,14 @@ namespace switcher
 #endif
 
 
-    register_property (G_OBJECT (udpsink_),"blocksize","blocksize", "Blocksize");
-    register_property (G_OBJECT (udpsink_),"bytes-served","bytes-served", "Bytes Served");
-    register_property (G_OBJECT (udpsink_),"clients","clients", "Clients");
-    register_property (G_OBJECT (udpsink_),"ttl","ttl", "TTL");
-    register_property (G_OBJECT (udpsink_),"ttl-mc","ttl-mc", "TTL-MC");
-    register_property (G_OBJECT (udpsink_),"loop","loop", "Loop");
+    register_property (G_OBJECT (udpsink_),"blocksize","blocksize", "Blocksize", true, true);
+    register_property (G_OBJECT (udpsink_),"bytes-served","bytes-served", "Bytes Served", false, true);
+    register_property (G_OBJECT (udpsink_),"clients","clients", "Clients", false, true);
+    register_property (G_OBJECT (udpsink_),"ttl","ttl", "TTL", true, true);
+    register_property (G_OBJECT (udpsink_),"ttl-mc","ttl-mc", "TTL-MC", true, true);
+    register_property (G_OBJECT (udpsink_),"loop","loop", "Loop", true, true);
 
-    register_property (G_OBJECT (typefind_), "caps","caps", "Capabilities");
+    register_property (G_OBJECT (typefind_), "caps","caps", "Capabilities", false, true);
 
     // g_signal_connect (G_OBJECT (udpsink_), "client-added",  
     // 		      (GCallback)  on_client_added, (gpointer) this);

@@ -217,7 +217,9 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				destination_description_json_, 
 				"destinations-json",
-				"Destinations");
+				"Destinations",
+				true,
+				true);
 
     mtu_at_add_data_stream_spec_ = custom_props_->make_int_property ("mtu-at-add-data-stream", 
 								     "MTU that will be set during add_data_stream invokation",
@@ -232,7 +234,9 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				mtu_at_add_data_stream_spec_, 
 				"mtu-at-add-data-stream",
-				"MTU At Add Data Stream");
+				"MTU At Add Data Stream",
+				true,
+				true);
     return true;
   }
   

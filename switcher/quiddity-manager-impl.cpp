@@ -791,7 +791,6 @@ namespace switcher
     std::string descr = get_methods_description (quid_name);
     remove_without_hook (quid_name);
     return descr;
-
   }
 
   std::string

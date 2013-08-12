@@ -57,11 +57,15 @@ namespace switcher
     register_property_by_pspec (gobject_->get_gobject (), 
 				json_writers_description_, 
 				"shmdata-writers",
-				"Shmdata Writers");
+				"Shmdata Writers",
+				false,
+				true);
     register_property_by_pspec (gobject_->get_gobject (), 
 				json_readers_description_, 
 				"shmdata-readers",
-				"Shmdata Readers");
+				"Shmdata Readers",
+				false,
+				true);
 
     make_bin();
 

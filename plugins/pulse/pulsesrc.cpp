@@ -105,7 +105,9 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				capture_devices_description_spec_, 
 				"devices-json",
-				"Capture Devices");
+				"Capture Devices",
+				true,
+				true);
     return true;
   }
 
@@ -132,8 +134,8 @@ namespace switcher
 
     unregister_property ("volume");
     unregister_property ("mute");
-    register_property (G_OBJECT (pulsesrc_),"volume","volume", "Volume");
-    register_property (G_OBJECT (pulsesrc_),"mute","mute", "Mute");
+    register_property (G_OBJECT (pulsesrc_),"volume","volume", "Volume", true, true);
+    register_property (G_OBJECT (pulsesrc_),"mute","mute", "Mute", true, true);
 
     g_object_set (G_OBJECT (pulsesrc_), "client", get_nick_name ().c_str (), NULL);
     
