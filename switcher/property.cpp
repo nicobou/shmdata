@@ -165,6 +165,11 @@ namespace switcher
     
     // name
     //json_description_->add_string_member ("internal name", g_param_spec_get_name (property_));
+
+    if (property_->flags & G_PARAM_WRITABLE) 
+      json_description_->add_string_member ("writable", "true");
+    else
+      json_description_->add_string_member ("writable", "false");
     
     json_description_->set_member_name ("type description");
     json_description_->begin_object ();
