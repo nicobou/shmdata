@@ -26,3 +26,8 @@ if PULSEBUILD
 SUBDIRS += \
     pulse
 endif
+
+if PORTMIDIBUILD
+SUBDIRS += \
+    portmidi
+endif

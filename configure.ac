@@ -148,12 +148,13 @@ if test "x${have_gmodule}" = "xfalse" ; then
     AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
 fi
 
-
+#shmdata
 PKG_CHECK_MODULES(SHMDATA, shmdata-0.8, have_shmdata=true, have_shmdata=false)
 if test "x${have_shmdata}" = "xfalse" ; then
     AC_MSG_ERROR([Missing libshmdata-0.8-dev])
 fi
 
+#gsoap
 PKG_CHECK_MODULES(GSOAP, gsoap++, have_gsoap=true, have_gsoap=false)
 if test "x${have_gsoap}" = "xfalse" ; then
     GSOAPBUILD=disabled
@@ -164,6 +165,7 @@ else
 fi
 AM_CONDITIONAL(GSOAPBUILD, test "${GSOAPBUILD}" = "enabled")
 
+#liblo
 PKG_CHECK_MODULES(LIBLO, liblo, have_liblo=true, have_liblo=false)
 if test "x${have_liblo}" = "xfalse" ; then
     OSCBUILD=disabled
@@ -173,6 +175,34 @@ else
     AC_CONFIG_FILES([plugins/osc/Makefile])
 fi
 AM_CONDITIONAL(OSCBUILD, test "${OSCBUILD}" = "enabled")
+
+# portmidi
+PORTMIDIBUILD=enabled
+AC_CHECK_HEADERS([portmidi.h porttime.h], have_portmidi_headers=true, have_portmidi_headers=false)
+if test "x${have_portmidi_headers}" = "xfalse" ; then
+   PORTMIDIBUILD=disabled
+   AC_MSG_WARN([missing portmidi headers, install libportmidi-dev])
+fi
+AC_CHECK_LIB([portmidi],[Pm_Initialize], have_portmidi=true, have_portmidi=false)
+if test "x${have_portmidi}" = "xfalse" ; then
+   PORTMIDIBUILD=disabled
+   AC_MSG_WARN([missing portmidi library, install libportmidi-dev])
+fi
+AC_CHECK_LIB([porttime],[Pt_Time], have_porttime=true, have_porttime=false)
+if test "x${have_porttime}" = "xfalse" ; then
+   PORTMIDIBUILD=disabled
+   AC_MSG_WARN([missing porttime library, install libportmidi-dev])
+fi
+AM_CONDITIONAL(PORTMIDIBUILD, test "${PORTMIDIBUILD}" = "enabled")
+
+if test "${PORTMIDIBUILD}" = "enabled"; then
+    AC_CONFIG_FILES([plugins/portmidi/Makefile])
+  PORTMIDI_CFLAGS="-DPMALSA"
+  AC_SUBST([PORTMIDI_CFLAGS], "$PORTMIDI_CFLAGS")
+  PORTMIDI_LIBS="-lportmidi -lporttime -lpthread -lm"
+  AC_SUBST([PORTMIDI_LIBS], "$PORTMIDI_LIBS")
+fi
+
 
 PKG_CHECK_MODULES(PULSE, libpulse-mainloop-glib, have_libpulse=true, have_libpulse=false)
 if test "x${have_libpulse}" = "xfalse" ; then
@@ -277,6 +307,7 @@ AC_OUTPUT
 [echo "V4L2 capture               ${V4L2BUILD}"]
 [echo "GTK fullscreen video       ${GTKBUILD}"]
 [echo "Pulse audio                ${PULSEBUILD}"]
+[echo "PortMidi                   ${PORTMIDIBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]

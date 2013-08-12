@@ -12,6 +12,12 @@
 /* Apple Mac OS X operating system not detected */
 #undef HAVE_OSX
 
+/* Define to 1 if you have the <portmidi.h> header file. */
+#undef HAVE_PORTMIDI_H
+
+/* Define to 1 if you have the <porttime.h> header file. */
+#undef HAVE_PORTTIME_H
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
