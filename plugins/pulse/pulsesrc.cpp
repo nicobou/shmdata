@@ -401,7 +401,7 @@ namespace switcher
   {
     PulseSrc *context = static_cast<PulseSrc *>(user_data);
     
-    if (context->capture_device ("NONE"))
+    if (context->capture_device ("default"))
       return TRUE;
     else
       return FALSE;
@@ -424,7 +424,7 @@ namespace switcher
   {
     make_elements ();
 
-    if (g_strcmp0 (pulse_device_name, "NONE") != 0)
+    if (g_strcmp0 (pulse_device_name, "default") != 0)
       if (capture_devices_.find (pulse_device_name) != capture_devices_.end ())	
      	g_object_set (G_OBJECT (pulsesrc_), "device", pulse_device_name, NULL);
       else

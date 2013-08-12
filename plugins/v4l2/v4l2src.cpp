@@ -56,7 +56,7 @@ namespace switcher
 		    "success or fail",
 		    Method::make_arg_description ("Device",
 						  "device_file_path",
-						  "or NONE",
+						  "or default",
 						  NULL),
 		    (Method::method_ptr) &capture_wrapped, 
 		    G_TYPE_BOOLEAN,
@@ -72,22 +72,22 @@ namespace switcher
 		    "success or fail",
 		    Method::make_arg_description ("Device",
 						  "device_file_path",
-						  "Device File Path or NONE",
+						  "Device File Path or default",
 						  "Width",
 						  "width",
-						  "or NONE",
+						  "or default",
 						  "Height",
 						  "height",
-						  "or NONE",
+						  "or default",
 						  "Framerate Numerator",
 						  "framerate_numerator",
-						  "or NONE",
+						  "or default",
 						  "Framerate Denominator",
 						  "framerate_denominator",
-						  "or NONE",
+						  "or default",
 						  "TV standard",
 						  "tv_standard",
-						  "or NONE",
+						  "or default",
 						  NULL),
 		    (Method::method_ptr) &capture_full_wrapped, 
 		    G_TYPE_BOOLEAN,
@@ -446,7 +446,7 @@ namespace switcher
   {
     make_elements ();
 
-    if (g_strcmp0 (device_file_path, "NONE") != 0)
+    if (g_strcmp0 (device_file_path, "default") != 0)
       if (capture_devices_.find (device_file_path) != capture_devices_.end ())	
      	g_object_set (G_OBJECT (v4l2src_), "device", device_file_path, NULL);
       else
@@ -455,17 +455,17 @@ namespace switcher
      	  return false;
      	}
     
-    if (g_strcmp0 (tv_standard, "NONE") != 0)
+    if (g_strcmp0 (tv_standard, "default") != 0)
       g_object_set (G_OBJECT (v4l2src_), "norm", tv_standard, NULL);
     
     std::string caps;
     caps = "video/x-raw-yuv";
-    if ((g_strcmp0 (width, "NONE") != 0)
-     	&& (g_strcmp0 (height, "NONE") != 0))
+    if ((g_strcmp0 (width, "default") != 0)
+     	&& (g_strcmp0 (height, "default") != 0))
       caps = caps + ", width=(int)"+ width + ", height=(int)" + height;
     
-    if ((g_strcmp0 (framerate_numerator, "NONE") != 0)
-     	&& (g_strcmp0 (framerate_denominator, "NONE") != 0))
+    if ((g_strcmp0 (framerate_numerator, "default") != 0)
+     	&& (g_strcmp0 (framerate_denominator, "default") != 0))
       caps = caps + ", framerate=(fraction)" + framerate_numerator + "/" + framerate_denominator;
     
     //g_print ("v4l2 -- forcing caps %s", caps.c_str ());
@@ -510,11 +510,11 @@ namespace switcher
     V4L2Src *context = static_cast<V4L2Src *>(user_data);
     
     if (context->capture_full ((const char *)device_file_path, 
-			       "NONE",
-			       "NONE",
-			       "NONE",
-			       "NONE",
-			       "NONE"))
+			       "default",
+			       "default",
+			       "default",
+			       "default",
+			       "default"))
       return TRUE;
     else
       return FALSE;
@@ -560,7 +560,7 @@ namespace switcher
 
 	builder->set_member_name ("tv standards list");
 	builder->begin_array ();
-	builder->add_string_value ("NONE");
+	builder->add_string_value ("default");
 	for (auto& tv_standards_it: it.second.tv_standards_)
 	    builder->add_string_value (tv_standards_it.c_str ());
 	builder->end_array ();
