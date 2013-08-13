@@ -26,9 +26,9 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FakeShmdataWriter,
-				       "Shmdata Adder",
+				       "Shmdata From Software",
 				       "fake source", 
-				       "add an external shmdata",
+				       "add a shmdata from an other software",
 				       "LGPL",
 				       "fakeshmsrc",
 				       "Nicolas Bouillot");
