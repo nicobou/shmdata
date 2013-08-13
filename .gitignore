@@ -64,6 +64,7 @@ switcher/classes.cxx
 test-driver
 tests/.deps/
 tests/.libs/
+tests/check_description_by_class
 tests/check_property_subscriber
 tests/check_quiddity_create_remove
 tests/check_quiddity_create_remove_with_auto_pipeline
