@@ -55,8 +55,8 @@ namespace switcher
 		       "samplesperbuffer",
 		       "samplesperbuffer", 
 		       "Samples Per Buffer", 
-		       true, 
-		       true);
+		       false, 
+		       false);
     register_property (G_OBJECT (audiotestsrc_),"wave","wave", "Signal Form", true, true);
 
     set_raw_audio_element (audiotestsrc_);
