@@ -54,19 +54,19 @@ namespace switcher
 				true, //is a configuration parameter 
 				true); //is a control parameter
 
-    publish_method ("Hello World",
-		    "hello-world",
-		    "say hello and repeat first argument",
-		    "the hello answer",
-		    Method::make_arg_description ("Text To Repeat",
-						  "text", 
-						  "string",
+    publish_method ("Hello World", //long name
+		    "hello-world", //name
+		    "say hello and repeat first argument", //description
+		    "the hello answer", //return description
+		    Method::make_arg_description ("Text To Repeat", //first arg long name
+						  "text", //fisrt arg name
+						  "string", //first arg type
 						  NULL),
-  		    (Method::method_ptr) &my_hello_world_method, 
-		    G_TYPE_STRING,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    true,
-		    true,
+  		    (Method::method_ptr) &my_hello_world_method, //method
+		    G_TYPE_STRING, //return type
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL), //arg type specification
+		    true, //is a configuration method
+		    true, // is a control method
 		    this);
 
     g_debug ("hello from plugin");

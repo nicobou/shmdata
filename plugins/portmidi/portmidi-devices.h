@@ -48,19 +48,18 @@ namespace switcher
     //input
     int get_default_input_device_id();
     bool open_input_device(int id);
-    void close_input_device(int id);
-    bool is_queue_empty(int id);
+    bool close_input_device(int id);
+    //bool is_queue_empty(int id);
     std::vector<unsigned char> poll(int id);
     
     //ouput
     int get_default_output_device_id();
     bool open_output_device(int id);
-    void close_output_device(int id);
-    bool send_message_to_output(int id, unsigned char status, unsigned char data1, unsigned char data2);
+    bool close_output_device(int id);
+    //bool send_message_to_output(int id, unsigned char status, unsigned char data1, unsigned char data2);
     
     /** Prints the list of MIDI source devices. */
     static gchar *make_devices_description (void *user_data);
-    bool is_open(int id);
     
   private:    
     class PortMidiScheduler //singleton
@@ -89,12 +88,17 @@ namespace switcher
     
     static PortMidiScheduler *scheduler_;
     static uint num_of_streams_;
-    std::map<uint, PmStream *> streams_;
+    std::map<uint, PmStream *> input_streams_;
+    std::map<uint, PmStream *> output_streams_;
     
     CustomPropertyHelper::ptr custom_props_;
     gchar *devices_description_;
     GParamSpec *devices_description_spec_;
-
+    
+    static bool open_input_device_wrapped (int id, gpointer user_data);
+    static bool open_output_device_wrapped (int id, gpointer user_data);
+    static bool close_input_device_wrapped (int id, gpointer user_data);
+    static bool close_output_device_wrapped (int id, gpointer user_data);
   };
   
   SWITCHER_DECLARE_PLUGIN(PortMidi);

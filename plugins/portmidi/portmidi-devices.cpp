@@ -62,129 +62,177 @@ namespace switcher
 				true,
 				true);
     
+    publish_method ("Open Input Device",
+		    "open_input",
+		    "open input device",
+		    "success or fail",
+		    Method::make_arg_description ("PortMidi Identifier",
+						  "id", 
+						  "PortMidi device id",
+						  NULL),
+  		    (Method::method_ptr) &open_input_device_wrapped, 
+		    G_TYPE_BOOLEAN,
+		    Method::make_arg_type_description (G_TYPE_INT, NULL),
+		    true,
+		    true,
+		    this);
 
     return true;
   }
   
   PortMidi::~PortMidi ()
   {
+    for (auto &it: input_streams_)
+      close_input_device (it.first);
+    
+    for (auto &it: output_streams_)
+      close_output_device (it.first);
+    
     if (num_of_streams_ == 0)
       delete scheduler_;
   }
   
   int 
-  PortMidi::get_default_output_device_id()
+  PortMidi::get_default_output_device_id ()
   {
     return Pm_GetDefaultOutputDeviceID();
   }
   
   int 
-  PortMidi::get_default_input_device_id()
+  PortMidi::get_default_input_device_id ()
   {
     return Pm_GetDefaultInputDeviceID();
   }
   
   bool
-  PortMidi::open_input_device(int id)
+  PortMidi::open_input_device (int id)
   {
-    //FIXME check this is not already openned
+    if (input_streams_.find(id) != input_streams_.end())
+      {
+	g_debug ("input device (id %d), already openned, cannot open", id);
+	return false;
+      }
     PmStream *stream = scheduler_->add_input_stream (id);
    
     if (stream == NULL)
       return false;
     num_of_streams_++;
-    streams_[id] = stream;
+    input_streams_[id] = stream;
     return true;
   }
-  
-  bool
-  PortMidi::open_output_device(int id)
+
+  bool 
+  PortMidi::open_input_device_wrapped (int id, gpointer user_data)
   {
-    //FIXME check this is not already openned
+    PortMidi *context = static_cast <PortMidi *> (user_data);
+    return context->open_input_device (id);
+  }
+
+ 
+  bool
+  PortMidi::open_output_device (int id)
+  {
+    if (output_streams_.find(id) != output_streams_.end())
+      {
+	g_debug ("output device (id %d), already openned, cannot open", id);
+	return false;
+      }
     PmStream *stream = scheduler_->add_output_stream (id);
     if (stream == NULL)
       return false;      
 
     num_of_streams_++;
-    streams_[id] = stream;
+    output_streams_[id] = stream;
     return true;
   }
   
-  
   bool 
-  PortMidi::is_open(int id)
+  PortMidi::open_output_device_wrapped (int id, gpointer user_data)
   {
-    //checking if the current instance has openned the device
-    if (streams_.find(id) == streams_.end())
-      return false;
-    else
-      return true;
+    PortMidi *context = static_cast <PortMidi *> (user_data);
+    return context->open_output_device (id);
   }
   
-  void
+  bool
   PortMidi::close_input_device (int id)
   {
-    std::map<uint, PmStream *>::iterator it = streams_.find(id);
-    if (it == streams_.end())
-      return;
+    std::map<uint, PmStream *>::iterator it = input_streams_.find(id);
+    if (it == input_streams_.end())
+      return false;
     
     if (scheduler_->remove_input_stream (it->second))
       num_of_streams_--;
+    input_streams_.erase (id);
+    return true;
+  }
+
+  bool 
+  PortMidi::close_input_device_wrapped (int id, gpointer user_data)
+  {
+    PortMidi *context = static_cast <PortMidi *> (user_data);
+    return context->close_input_device (id);
   }
   
-  void
+  bool
   PortMidi::close_output_device (int id)
   {
-    std::map<uint, PmStream *>::iterator it = streams_.find(id);
-    if (it == streams_.end())
-      return;
+    std::map<uint, PmStream *>::iterator it = output_streams_.find(id);
+    if (it == output_streams_.end())
+      return false;
     
     if (scheduler_->remove_output_stream (it->second))
       num_of_streams_--;
+    output_streams_.erase (id);
+    return true;
   }
-  
-  bool 
-    PortMidi::is_queue_empty (int id)
-    {
-      std::map<uint, PmStream *>::iterator it = streams_.find (id);
-      if (it == streams_.end())
-	{
-	  g_debug ("queue is actually not empty but the id is not managed by this instance");
-	  return false;
-	}
-      return scheduler_->is_queue_empty (it->second);
-    }
-    
-    bool
-    PortMidi::send_message_to_output (int id, unsigned char status, unsigned char data1, unsigned char data2)
-    {
-      std::map<uint, PmStream *>::iterator it = streams_.find(id);
-      if ( it == streams_.end())
-	{
-	  return false;
-	}
-      return scheduler_->push_message (it->second, status,data1, data2);
-    }
 
-    // return empty vector if not accessible or <status> <data1> <data2> id success
-    std::vector<unsigned char> 
-    PortMidi::poll (int id)
-    {
-      std::vector<unsigned char> message;
+
+  bool 
+  PortMidi::close_output_device_wrapped (int id, gpointer user_data)
+  {
+    PortMidi *context = static_cast <PortMidi *> (user_data);
+    return context->close_output_device (id);
+  }
+
+  
+  // bool 
+  //   PortMidi::is_queue_empty (int id)
+  //   {
+  //     if (streams_.find (id) == streams_.end())
+  // 	{
+  // 	  g_debug ("queue is actually not empty but the id is not managed by this instance");
+  // 	  return false;
+  // 	}
+  //     return scheduler_->is_queue_empty (it->second);
+  //   }
+    
+    // bool
+    // PortMidi::send_message_to_output (int id, unsigned char status, unsigned char data1, unsigned char data2)
+    // {
+    //   if (streams_.find(id) == streams_.end())
+    // 	  return false;
+    //   return scheduler_->push_message (it->second, status,data1, data2);
+    // }
+
+    // // return empty vector if not accessible or <status> <data1> <data2> id success
+    // std::vector<unsigned char> 
+    // PortMidi::poll (int id)
+    // {
+    //   std::vector<unsigned char> message;
       
-      std::map<uint, PmStream *>::iterator it = streams_.find(id);
-      if ( it == streams_.end())
-	{
-	  g_debug ("the queue is not accessible");
-	  return message;
-	}
-      PmEvent event = scheduler_->poll (it->second);
-      message.push_back ((unsigned char)Pm_MessageStatus(event.message));
-      message.push_back ((unsigned char)Pm_MessageData1(event.message));
-      message.push_back ((unsigned char)Pm_MessageData2(event.message));
+    //   std::map<uint, PmStream *>::iterator it = streams_.find(id);
+    //   if ( it == streams_.end())
+    // 	{
+    // 	  g_debug ("the queue is not accessible");
+    // 	  return message;
+    // 	}
+    //   PmEvent event = scheduler_->poll (it->second);
+    //   message.push_back ((unsigned char)Pm_MessageStatus(event.message));
+    //   message.push_back ((unsigned char)Pm_MessageData1(event.message));
+    //   message.push_back ((unsigned char)Pm_MessageData2(event.message));
       
-      return message;
-    } 
+    //   return message;
+    // } 
 
 
 
@@ -334,11 +382,14 @@ namespace switcher
     }
 
     bool 
-    PortMidi::PortMidiScheduler::push_message(PmStream *stream, unsigned char status, unsigned char data1, unsigned char data2)
+    PortMidi::PortMidiScheduler::push_message (PmStream *stream, 
+					       unsigned char status, 
+					       unsigned char data1, 
+					       unsigned char data2)
     {
       PmEvent message_to_push;
       message_to_push.message = Pm_Message(status,data1,data2);
-      message_to_push.timestamp=0; //use urrent time
+      message_to_push.timestamp=0; //use current time
       
       output_queues_[stream]->push (message_to_push);
       return true;
@@ -380,8 +431,7 @@ namespace switcher
 		PmError rslt = (PmError)Pm_Read(itr->first, &buffer, 1);
 		if (rslt == pmBufferOverflow) 
 		  continue;
-		//assert(rslt == 1);
-		
+	
 		/* the data might be the end of a sysex message that
 		   has timed out, in which case we must ignore it.
 		   It's a continuation of a sysex message if status
@@ -391,15 +441,10 @@ namespace switcher
 		  continue; /* ignore this data */
 		}
 		
- 		// std::cout 
-		//   << "midi_scheduler msg: " 
-		//   << " status= "  
-		//   << Pm_MessageStatus(buffer.message) 
-		//   << ", data 1= "
-		//   << Pm_MessageData1(buffer.message)
-		//   << ", data 2= "
-		//   << Pm_MessageData2(buffer.message)
-		//   << std::endl;
+		g_print ("midi input msg: %u %u %u\n",
+			 Pm_MessageStatus(buffer.message),
+			 Pm_MessageData1(buffer.message),
+			 Pm_MessageData2(buffer.message));
 		  
 		itr->second->push(buffer);
 
@@ -438,19 +483,13 @@ namespace switcher
             	  context->thru_sysex_in_progress_ = false;
 	    }
 	    
-	     // std::cout 
-	     //   << "midi_scheduler msg write: " 
-	     //   << " status= "  
-	     //   << Pm_MessageStatus(next->message) 
-	     //   << ", data 1= "
-	     //   << Pm_MessageData1(next->message)
-	     //   << ", data 2= "
-	     //   << Pm_MessageData2(next->message)
-	     //   << std::endl;
+	    g_print ("midi input msg: %u %u %u\n",
+		     Pm_MessageStatus(next->message),
+		     Pm_MessageData1(next->message),
+		     Pm_MessageData2(next->message));
 	    
+	    Pm_Write(itr->first, next, 1);
 	    
-	     Pm_Write(itr->first, next, 1);
-
 	    itr->second->pop();
 	    
 	    /* inspect message to update app_sysex_in_progress */
@@ -471,7 +510,5 @@ namespace switcher
 	}
     
     }
-    
-
 
 }
