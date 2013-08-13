@@ -31,6 +31,8 @@
 
 #include "switcher/quiddity.h"
 #include "switcher/custom-property-helper.h"
+#include "shmdata/any-data-writer.h"
+
 #include <memory>
 #include <queue>
 #include <portmidi.h>
@@ -79,7 +81,6 @@ namespace switcher
     private:
       std::map<PmStream *,std::queue<PmEvent> *> input_queues_;
       std::map<PmStream *,std::queue<PmEvent> *> output_queues_;
-      bool process_midi_exit_flag_;
       bool portmidi_initialized_;
       bool app_sysex_in_progress_;
       bool thru_sysex_in_progress_;
@@ -89,6 +90,7 @@ namespace switcher
     static PortMidiScheduler *scheduler_;
     static uint num_of_streams_;
     std::map<uint, PmStream *> input_streams_;
+    shmdata_any_writer_t *shmdata_writer_;
     std::map<uint, PmStream *> output_streams_;
     
     CustomPropertyHelper::ptr custom_props_;

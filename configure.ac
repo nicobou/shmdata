@@ -154,6 +154,11 @@ if test "x${have_shmdata}" = "xfalse" ; then
     AC_MSG_ERROR([Missing libshmdata-0.8-dev])
 fi
 
+PKG_CHECK_MODULES(SHMDATA_ANY, shmdata-any-0.8, have_shmdata_any=true, have_shmdata_any=false)
+if test "x${have_shmdata_any}" = "xfalse" ; then
+    AC_MSG_ERROR([Missing libshmdata-0.8-dev])
+fi
+
 #gsoap
 PKG_CHECK_MODULES(GSOAP, gsoap++, have_gsoap=true, have_gsoap=false)
 if test "x${have_gsoap}" = "xfalse" ; then

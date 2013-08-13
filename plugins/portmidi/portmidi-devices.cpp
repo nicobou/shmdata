@@ -77,17 +77,78 @@ namespace switcher
 		    true,
 		    this);
 
+    publish_method ("Open Output Device",
+		    "open_output",
+		    "open output device",
+		    "success or fail",
+		    Method::make_arg_description ("PortMidi Identifier",
+						  "id", 
+						  "PortMidi device id",
+						  NULL),
+  		    (Method::method_ptr) &open_output_device_wrapped, 
+		    G_TYPE_BOOLEAN,
+		    Method::make_arg_type_description (G_TYPE_INT, NULL),
+		    true,
+		    true,
+		    this);
+
+    publish_method ("Close Input Device",
+		    "close_input",
+		    "close input device",
+		    "success or fail",
+		    Method::make_arg_description ("PortMidi Identifier",
+						  "id", 
+						  "PortMidi device id",
+						  NULL),
+  		    (Method::method_ptr) &close_input_device_wrapped, 
+		    G_TYPE_BOOLEAN,
+		    Method::make_arg_type_description (G_TYPE_INT, NULL),
+		    true,
+		    true,
+		    this);
+
+    publish_method ("Close Output Device",
+		    "close_output",
+		    "close output device",
+		    "success or fail",
+		    Method::make_arg_description ("PortMidi Identifier",
+						  "id", 
+						  "PortMidi device id",
+						  NULL),
+  		    (Method::method_ptr) &close_output_device_wrapped, 
+		    G_TYPE_BOOLEAN,
+		    Method::make_arg_type_description (G_TYPE_INT, NULL),
+		    true,
+		    true,
+		    this);
+
+
+    shmdata_writer_ = shmdata_any_writer_init ();
+    
+    if (! shmdata_any_writer_set_path (shmdata_writer_, "/tmp/midi_truc"))
+    {
+      g_debug ("**** The file exists, therefore a shmdata cannot be operated with this path.\n");
+      shmdata_any_writer_close (shmdata_writer_);
+      return false;
+    }
+    shmdata_any_writer_set_debug (shmdata_writer_, SHMDATA_ENABLE_DEBUG);
+    shmdata_any_writer_set_data_type (shmdata_writer_, "audio/midi");
+    shmdata_any_writer_start (shmdata_writer_);
+
     return true;
   }
   
   PortMidi::~PortMidi ()
   {
+
     for (auto &it: input_streams_)
-      close_input_device (it.first);
-    
+	close_input_device (it.first);
+
     for (auto &it: output_streams_)
       close_output_device (it.first);
-    
+
+    shmdata_any_writer_close (shmdata_writer_);
+
     if (num_of_streams_ == 0)
       delete scheduler_;
   }
@@ -109,7 +170,7 @@ namespace switcher
   {
     if (input_streams_.find(id) != input_streams_.end())
       {
-	g_debug ("input device (id %d), already openned, cannot open", id);
+	g_debug ("input device (id %d), already opened, cannot open", id);
 	return false;
       }
     PmStream *stream = scheduler_->add_input_stream (id);
@@ -118,6 +179,7 @@ namespace switcher
       return false;
     num_of_streams_++;
     input_streams_[id] = stream;
+    g_message ("Midi input device opened (id %d)", id);
     return true;
   }
 
@@ -143,6 +205,7 @@ namespace switcher
 
     num_of_streams_++;
     output_streams_[id] = stream;
+    g_message ("Midi output device opened (id %d)", id);
     return true;
   }
   
@@ -163,6 +226,8 @@ namespace switcher
     if (scheduler_->remove_input_stream (it->second))
       num_of_streams_--;
     input_streams_.erase (id);
+    
+    g_message ("Midi input device closed (id %d)", id);
     return true;
   }
 
@@ -183,6 +248,7 @@ namespace switcher
     if (scheduler_->remove_output_stream (it->second))
       num_of_streams_--;
     output_streams_.erase (id);
+    g_message ("Midi input device closed (id %d)", id);
     return true;
   }
 
@@ -193,48 +259,6 @@ namespace switcher
     PortMidi *context = static_cast <PortMidi *> (user_data);
     return context->close_output_device (id);
   }
-
-  
-  // bool 
-  //   PortMidi::is_queue_empty (int id)
-  //   {
-  //     if (streams_.find (id) == streams_.end())
-  // 	{
-  // 	  g_debug ("queue is actually not empty but the id is not managed by this instance");
-  // 	  return false;
-  // 	}
-  //     return scheduler_->is_queue_empty (it->second);
-  //   }
-    
-    // bool
-    // PortMidi::send_message_to_output (int id, unsigned char status, unsigned char data1, unsigned char data2)
-    // {
-    //   if (streams_.find(id) == streams_.end())
-    // 	  return false;
-    //   return scheduler_->push_message (it->second, status,data1, data2);
-    // }
-
-    // // return empty vector if not accessible or <status> <data1> <data2> id success
-    // std::vector<unsigned char> 
-    // PortMidi::poll (int id)
-    // {
-    //   std::vector<unsigned char> message;
-      
-    //   std::map<uint, PmStream *>::iterator it = streams_.find(id);
-    //   if ( it == streams_.end())
-    // 	{
-    // 	  g_debug ("the queue is not accessible");
-    // 	  return message;
-    // 	}
-    //   PmEvent event = scheduler_->poll (it->second);
-    //   message.push_back ((unsigned char)Pm_MessageStatus(event.message));
-    //   message.push_back ((unsigned char)Pm_MessageData1(event.message));
-    //   message.push_back ((unsigned char)Pm_MessageData2(event.message));
-      
-    //   return message;
-    // } 
-
-
 
   gchar * 
   PortMidi::make_devices_description (void *user_data)
@@ -275,15 +299,13 @@ namespace switcher
 
 
   //#################################### SCHEDULER
-    PortMidi::PortMidiScheduler::PortMidiScheduler() :  
-      process_midi_exit_flag_ (false),
+    PortMidi::PortMidiScheduler::PortMidiScheduler () :  
       app_sysex_in_progress_ (false),
       thru_sysex_in_progress_ (false)
     {
-      
       portmidi_initialized_ = false;
       /* always start the timer before you start midi */
-      Pt_Start(1, &process_midi, this); /* start a timer with millisecond accuracy */
+      Pt_Start(1, &process_midi, this); /* start a timer with 1 millisecond accuracy */
       /* the timer will call our function, process_midi() every millisecond */
       Pm_Initialize();
       portmidi_initialized_ = true;
@@ -291,29 +313,15 @@ namespace switcher
     }
 
     
-    PortMidi::PortMidiScheduler::~PortMidiScheduler()
+    PortMidi::PortMidiScheduler::~PortMidiScheduler ()
     {
-      
-      /* the timer thread could be in the middle of accessing PortMidi stuff */
-      /* to detect that it is done, we first clear process_midi_exit_flag and
-	 then wait for the timer thread to set it
-      */
-      process_midi_exit_flag_ = false;
       portmidi_initialized_ = false;
-      /* busy wait for flag from timer thread that it is done */
-      while (!process_midi_exit_flag_) ;
-      /* at this point, midi thread is inactive and we need to shut down
-       * the midi input and output
-       */
       Pt_Stop(); /* stop the timer */
       Pm_Terminate();
-
     }
 
-
-
     PmStream *
-    PortMidi::PortMidiScheduler::add_input_stream(int id)
+    PortMidi::PortMidiScheduler::add_input_stream (int id)
     {
 
       PmStream *midi_in;
@@ -335,9 +343,8 @@ namespace switcher
     }
 
     PmStream *
-    PortMidi::PortMidiScheduler::add_output_stream(int id)
+    PortMidi::PortMidiScheduler::add_output_stream (int id)
     {
-      
       PmStream *midi_out;
       if (pmNoError != Pm_OpenOutput(&midi_out, 
 				     id, 
@@ -354,7 +361,7 @@ namespace switcher
     }
 
     PmEvent 
-    PortMidi::PortMidiScheduler::poll(PmStream *stream)
+    PortMidi::PortMidiScheduler::poll (PmStream *stream)
     {
       PmEvent message = input_queues_[stream]->front();
       input_queues_[stream]->pop();
@@ -362,20 +369,20 @@ namespace switcher
     }
 
     bool 
-    PortMidi::PortMidiScheduler::is_queue_empty(PmStream *stream)
+    PortMidi::PortMidiScheduler::is_queue_empty (PmStream *stream)
     {
       return input_queues_[stream]->empty();
     }
 
     bool
-    PortMidi::PortMidiScheduler::remove_input_stream(PmStream *stream)
+    PortMidi::PortMidiScheduler::remove_input_stream (PmStream *stream)
     {
       input_queues_.erase(stream);
       return true;
     }
 
     bool
-    PortMidi::PortMidiScheduler::remove_output_stream(PmStream *stream)
+    PortMidi::PortMidiScheduler::remove_output_stream (PmStream *stream)
     {
       output_queues_.erase(stream);
       return true;
@@ -402,7 +409,7 @@ namespace switcher
        Sysex messages from either source block messages from the other.
     */
     void 
-    PortMidi::PortMidiScheduler::process_midi(PtTimestamp timestamp, void *user_data)
+    PortMidi::PortMidiScheduler::process_midi (PtTimestamp timestamp, void *user_data)
     {
 
       PortMidiScheduler *context = static_cast<PortMidiScheduler *>(user_data);
@@ -410,13 +417,8 @@ namespace switcher
       PmError result;
       PmEvent buffer; /* just one message at a time */
 
-
-      /* do nothing until initialization completes */
-      if (!context->portmidi_initialized_) {
-	/* this flag signals that no more midi processing will be done */
-	context->process_midi_exit_flag_ = true;
-	return;
-      }
+      if (!context->portmidi_initialized_) 
+	  return;
       
       std::map<PmStream *,std::queue<PmEvent> *>::iterator itr;
       
@@ -441,7 +443,15 @@ namespace switcher
 		  continue; /* ignore this data */
 		}
 		
-		g_print ("midi input msg: %u %u %u\n",
+		// shmdata_any_writer_push_data (context->shmdata_writer_,
+		//  			      buffer.message,
+		//  			      sizeof (buffer.message),
+		//  			      buffer.timestamp * 1000000, //converting millisec to nanosec
+		//  			      NULL, 
+		// 			      NULL);
+
+		g_print ("midi input msg from %d: %u %u %u \n",
+			 itr->first,
 			 Pm_MessageStatus(buffer.message),
 			 Pm_MessageData1(buffer.message),
 			 Pm_MessageData2(buffer.message));
@@ -483,7 +493,7 @@ namespace switcher
             	  context->thru_sysex_in_progress_ = false;
 	    }
 	    
-	    g_print ("midi input msg: %u %u %u\n",
+	    g_print ("midi output msg: %u %u %u\n",
 		     Pm_MessageStatus(next->message),
 		     Pm_MessageData1(next->message),
 		     Pm_MessageData2(next->message));
@@ -505,10 +515,7 @@ namespace switcher
 		 (((buffer.message >> 24) & 0xFF) == MIDI_EOX))) {
 	      context->app_sysex_in_progress_ = false;
 	    }
-	    
 	  }
 	}
-    
     }
-
 }
