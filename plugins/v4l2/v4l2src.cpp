@@ -104,14 +104,16 @@ namespace switcher
 
     //device inspector
     check_folder_for_v4l2_devices ("/dev");
+    
     custom_props_.reset (new CustomPropertyHelper ());
     capture_devices_description_spec_ = custom_props_->make_string_property ("devices-json", 
-									      "Description of capture devices (json formated)",
-									      "",
-									      (GParamFlags) G_PARAM_READABLE,
-									      NULL,
-									      V4L2Src::get_capture_devices_json,
-									      this);
+									     "Description of capture devices (json formated)",
+									     get_capture_devices_json (this),
+									     (GParamFlags) G_PARAM_READABLE,
+									     NULL,
+									     V4L2Src::get_capture_devices_json,
+									     this);
+    
 
     register_property_by_pspec (custom_props_->get_gobject (), 
 				capture_devices_description_spec_, 
