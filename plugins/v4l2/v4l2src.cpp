@@ -32,7 +32,7 @@ namespace switcher
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(V4L2Src,
 				       "Video Capture (with v4l2)",
-				       "video capture source", 
+				       "video source", 
 				       "Discover and use v4l2 supported capture cards and cameras",
 				       "GPL",
 				       "v4l2src",				
