@@ -1,3 +1,6 @@
+SUBDIRS= \
+    tests
+
 pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
 plugins_LTLIBRARIES = \
