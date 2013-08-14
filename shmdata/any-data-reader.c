@@ -105,6 +105,7 @@ shmdata_any_reader_on_new_buffer_from_source (GstElement * elt,
 	  || gst_caps_is_always_compatible (me->data_caps_,
 					    GST_BUFFER_CAPS (buf)))
 	{
+	  gchar *caps_string = gst_caps_to_string (GST_BUFFER_CAPS (buf)); 
 	  me->on_data_ (me,
 			(void *) buf,
 			(void *) GST_BUFFER_DATA (buf),
@@ -112,8 +113,9 @@ shmdata_any_reader_on_new_buffer_from_source (GstElement * elt,
 			(unsigned long long)
 			GST_TIME_AS_NSECONDS (GST_BUFFER_TIMESTAMP (buf)),
 			(const char *)
-			gst_caps_to_string (GST_BUFFER_CAPS (buf)),
+			caps_string,
 			(void *) me->on_data_user_data_);
+	  g_free (caps_string);
 	}
       else
 	{
