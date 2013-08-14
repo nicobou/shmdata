@@ -124,7 +124,6 @@ shmdata_any_reader_on_new_buffer_from_source (GstElement * elt,
 	     gst_caps_to_string (GST_BUFFER_CAPS (buf)));
 
 	}
-
     }
 
   /* if (buf) */
@@ -287,7 +286,12 @@ shmdata_any_reader_close (shmdata_any_reader_t * reader)
       if (reader)
 	g_free (reader);
       else
-	g_warning ("trying to close a NULL (base-)reader");
+	g_debug ("trying to close a NULL (base-)reader");
     }
 }
 
+void
+shmdata_any_reader_clean_before_exiting ()
+{
+  gst_deinit ();
+}

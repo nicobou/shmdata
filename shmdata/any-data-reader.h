@@ -164,6 +164,18 @@ extern "C"
    */
   void shmdata_any_reader_close (shmdata_any_reader_t *reader);
 
+  /** 
+   * Clean up any resources created 
+   *
+   * This is actually wrapping gst_deinit(). It is normally not needed to call this 
+   * function in a normal application as the resources will automatically be freed 
+   * when the program terminates. This function is therefore mostly used by testsuites
+   * and other memory profiling tools. After this call GStreamer (including this method) 
+   * should not be used anymore. Close the reader. 
+   */
+
+  void shmdata_any_reader_clean_before_exiting ();
+
 #ifdef __cplusplus
 }
 #endif				/* extern "C" */

@@ -521,7 +521,9 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
   
   if (g_file_query_exists (reader->shmfile_, NULL))
     {
-      g_debug ("existing shmdata, attaching (%s)", g_file_get_uri (reader->shmfile_));
+      gchar *uri = g_file_get_uri (reader->shmfile_);
+      g_debug ("existing shmdata, attaching (%s)", uri);
+      g_free (uri);
       reader->initialized_ = TRUE;
       reader->on_first_data_ (reader, reader->on_first_data_userData_);
       shmdata_base_reader_attach (reader);
@@ -574,8 +576,9 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
     g_main_context_pop_thread_default (reader->g_main_context_);
 
 #endif
-
-  g_debug ("shmdata reader started (%s)", g_file_get_uri (reader->shmfile_));
+  gchar *uri = g_file_get_uri (reader->shmfile_);
+  g_debug ("shmdata reader started (%s)", uri);
+  g_free (uri);
   return TRUE;
   
 }
@@ -585,8 +588,8 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
 shmdata_base_reader_t *
 shmdata_base_reader_init (const char *socketName,
 			  GstElement *bin,
-			  void (*on_first_data) (shmdata_base_reader_t *,
-						 void *), void *user_data)
+			  void (*on_first_data) (shmdata_base_reader_t *, void *), 
+			  void *user_data)
 {
   shmdata_base_reader_t *reader =
     (shmdata_base_reader_t *) g_malloc0 (sizeof (shmdata_base_reader_t));

@@ -101,7 +101,8 @@ check_write_and_read_onoff ()
    unsigned long long myclock = 0; 
    unsigned long long nsecPeriod = 30000000; 
    
-   int num_on_off = 10; 
+   //int num_on_off = 10; 
+   int num_on_off = 1; 
    while (num_on_off--) 
      { 
        usleep (1000); 
@@ -128,10 +129,10 @@ check_write_and_read_onoff ()
    shmdata_any_writer_close (writer); 
    shmdata_any_reader_close (reader); 
 
-   if (num_received_buf = num_on_off)   
-     {
-       return 0;   
-     }
+   shmdata_any_reader_clean_before_exiting ();
+
+  if (num_received_buf = num_on_off)   
+     return 0;   
    else   
      return 1;   
 }
