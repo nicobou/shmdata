@@ -143,11 +143,11 @@ shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
   audio_buf->sample_rate = samplerate;
   //audio_buf->sample_size = width;
   audio_buf->remaining_samples = data_size / ((width/8) * channels);
-  g_print ("data_size %d, width %d, channels %d, cur logicial date %f \n",
-    	   data_size, 
-	   width, 
-	   channels, 
-	   clock_getlogicaltime());  
+  /* g_print ("data_size %d, width %d, channels %d, cur logicial date %f \n", */
+  /*   	   data_size,  */
+  /* 	   width,  */
+  /* 	   channels,  */
+  /* 	   clock_getlogicaltime());   */
   double audio_buf_sample_duration =  (1.0 / samplerate) * (32.*441000.); //see TIMEUNITPERSEC in m_sched.c
   audio_buf->shm_buf = shmbuf;
 
@@ -219,14 +219,11 @@ shmsrc_tilde_reader_restart (t_shmsrc_tilde *x)
 static void 
 shmsrc_tilde_try_pop_audio_buf (t_shmsrc_tilde *x)
 {
-  g_print ("length %d\n", g_async_queue_length (x->x_audio_queue));
+  //g_print ("length %d\n", g_async_queue_length (x->x_audio_queue));
   x->x_current_audio_buf = g_async_queue_try_pop (x->x_audio_queue);
 
   if (x->x_current_audio_buf == NULL)
-    {
-      g_print ("caca\n");
       return;
-    }
   
   double src_ratio;
   if (x->x_sample_duration < 1.0  || x->x_stream_sample_duration < 1.0)
@@ -243,7 +240,7 @@ shmsrc_tilde_try_pop_audio_buf (t_shmsrc_tilde *x)
   /* 	   x->x_stream_sample_duration,      */
   /* 	   x->x_sample_duration);      */
   
-  if (src_ratio == 1)
+  if (src_ratio == 1 )
     return;
   
   SRC_DATA src_data ;  
@@ -252,6 +249,10 @@ shmsrc_tilde_try_pop_audio_buf (t_shmsrc_tilde *x)
   
   //g_print ("input_len %d src_ratio %f\n", input_len, src_ratio);
   int output_len = floor (input_len * src_ratio);  
+  
+  if (output_len == 0)
+    return;
+  
   //g_print ("%d, %d\n",output_len,input_len);
   src_data.data_in = x->x_current_audio_buf->audio_data ;  
   src_data.input_frames = input_len ;  
@@ -312,6 +313,7 @@ shmsrc_tilde_perform(t_int *w)
 
   if (x->x_current_audio_buf != NULL) 
     { 
+      t_float *temp_audio_buf_ptr = x->x_current_audio_buf->audio_data;
       //deinterleaving channels  
       while (n--)  
    	{ 
@@ -321,7 +323,6 @@ shmsrc_tilde_perform(t_int *w)
 	      *(out[i]++) = 0.;
 	  else
 	    {
-	      t_float *temp_audio_buf_ptr = x->x_current_audio_buf->audio_data;
 	      //give audio data 
 	      for (i = 0; i < x->x_current_audio_buf->num_channels_to_output; i++) 
 		{ 
@@ -346,7 +347,7 @@ shmsrc_tilde_perform(t_int *w)
     } 
   else //no data to play 
     {
-      g_print ("zeros !!!!!!\n");
+      //g_print ("zeros !!!!!!\n");
       /* set output to zero */  
       while (n--)  
 	for (i = 0; i < x->x_num_outlets; i++)  
