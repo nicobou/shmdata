@@ -47,6 +47,7 @@ plugins/gsoap/.libs
 plugins/gsoap/webservices
 plugins/gtk/.deps/
 plugins/gtk/.libs/
+plugins/gtk/check_gtk_video
 plugins/osc/.deps/
 plugins/osc/.libs/
 plugins/pulse/.deps/
