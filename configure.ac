@@ -265,7 +265,6 @@ switcher/Makefile
 tests/Makefile
 plugins/Makefile
 plugins/example/Makefile
-plugins/example/tests/Makefile
 plugins/avcodecs/Makefile
 ])
 AC_OUTPUT
