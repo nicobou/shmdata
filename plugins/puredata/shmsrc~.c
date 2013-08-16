@@ -32,8 +32,6 @@
 #pragma warning( disable : 4305 )
 #endif
 
-/* ------------------------ shmsrc~ ----------------------------- */
-
 /* tilde object to take absolute value. */
 
 static t_class *shmsrc_tilde_class;
@@ -41,6 +39,7 @@ static t_class *shmsrc_tilde_class;
 typedef struct _shmsrc_tilde_buf
 {
   t_float *audio_data;
+  t_float *current_pos;
   void *shm_buf; //for freeing memory after being used
   int remaining_samples;
   int num_channels_to_output;
@@ -143,11 +142,14 @@ shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
   audio_buf->sample_rate = samplerate;
   //audio_buf->sample_size = width;
   audio_buf->remaining_samples = data_size / ((width/8) * channels);
-  /* g_print ("data_size %d, width %d, channels %d, cur logicial date %f \n", */
-  /*   	   data_size,  */
-  /* 	   width,  */
-  /* 	   channels,  */
-  /* 	   clock_getlogicaltime());   */
+  /* g_print ("data_size %d, width %d, channels %d, samplerate %d, remaining  samples %d, cur logicial date %f \n",   */
+  /* 	   data_size,    */
+  /* 	   width,    */
+  /* 	   channels,    */
+  /* 	   samplerate,  */
+  /* 	   audio_buf->remaining_samples, */
+  /* 	   clock_getlogicaltime());     */
+   //g_print ("on data queue size %d\n", g_async_queue_length (x->x_audio_queue));
   double audio_buf_sample_duration =  (1.0 / samplerate) * (32.*441000.); //see TIMEUNITPERSEC in m_sched.c
   audio_buf->shm_buf = shmbuf;
 
@@ -182,11 +184,13 @@ shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
   audio_buf->audio_data = (t_float *)data;
   if (width == 16)
     {
+      //g_print ("converting\n");
       audio_buf->free_audio_data = TRUE;
       t_float *audio_converted =  g_malloc0 (sizeof (t_float) 
 					     * audio_buf->num_channels_in_buf 
 					     * audio_buf->remaining_samples);
       audio_buf->audio_data = audio_converted;
+      
       int n = channels *  audio_buf->remaining_samples;
       while (n--)
 	{
@@ -201,6 +205,7 @@ shmsrc_tilde_on_data (shmdata_any_reader_t *reader,
       return;
     }
   
+  audio_buf->current_pos = audio_buf->audio_data;
   g_async_queue_push (x->x_audio_queue, audio_buf);
 }
 
@@ -247,7 +252,6 @@ shmsrc_tilde_try_pop_audio_buf (t_shmsrc_tilde *x)
   int error, terminate ;  
   int input_len = x->x_current_audio_buf->remaining_samples;  
   
-  //g_print ("input_len %d src_ratio %f\n", input_len, src_ratio);
   int output_len = floor (input_len * src_ratio);  
   
   if (output_len == 0)
@@ -313,25 +317,25 @@ shmsrc_tilde_perform(t_int *w)
 
   if (x->x_current_audio_buf != NULL) 
     { 
-      t_float *temp_audio_buf_ptr = x->x_current_audio_buf->audio_data;
       //deinterleaving channels  
       while (n--)  
    	{ 
-	  //if case the audio buf ended during the loop
+	  //if audio buf ended during the loop
 	  if (x->x_current_audio_buf == NULL)
-	    for (i = 0; i < x->x_num_outlets; i++)  
-	      *(out[i]++) = 0.;
+	    {
+	      for (i = 0; i < x->x_num_outlets; i++)  
+		*(out[i]++) = 0.;
+	    }
 	  else
 	    {
 	      //give audio data 
 	      for (i = 0; i < x->x_current_audio_buf->num_channels_to_output; i++) 
 		{ 
-		  *(out[i]) =  *temp_audio_buf_ptr;   
-		  out[i]++;
-		  temp_audio_buf_ptr++;
+		  *(out[i]++) =  *(x->x_current_audio_buf->current_pos);   
+		  x->x_current_audio_buf->current_pos++;
 		}  
 	      for (i=0; i < x->x_current_audio_buf->num_unused_channels; i++) 
-		temp_audio_buf_ptr ++; 
+		  x->x_current_audio_buf->current_pos++;
 	      //give zero when not enough audio for all outlets 
 	      for (i=x->x_current_audio_buf->num_channels_to_output; i < x->x_num_outlets; i++)  
 		*(out[i]++) = 0.;    
