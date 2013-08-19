@@ -106,4 +106,15 @@ namespace switcher
     return context->hello_;
   }
 
+  bool
+  MyPlugin::start ()
+  {
+    return true;
+  }
+
+  bool
+  MyPlugin::stop ()
+  {
+    return true;
+  }
 }
