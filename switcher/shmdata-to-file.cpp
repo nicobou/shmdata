@@ -84,9 +84,7 @@ namespace switcher
     register_property_by_pspec (custom_prop_->get_gobject (), 
      				recording_param_, 
      				"recording",
-				"Recording",
-				true,
-				true);
+				"Recording");
 
     //set the name before registering properties
     set_name (gst_element_get_name (bin_));

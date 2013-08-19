@@ -85,9 +85,7 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				fullscreen_prop_spec_, 
 				"fullscreen",
-				"Fullscreen",
-				true,
-				true);
+				"Fullscreen");
 
     g_object_set (G_OBJECT (xvimagesink_),
 		  "force-aspect-ratio", TRUE,

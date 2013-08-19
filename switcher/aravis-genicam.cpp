@@ -45,16 +45,16 @@ namespace switcher
     
     //register_property (G_OBJECT (aravissrc_),"camera-name","aravissrc");
 
-    register_property (G_OBJECT (aravissrc_),"gain","gain", "Gain", false, true);
+    register_property (G_OBJECT (aravissrc_),"gain","gain", "Gain");
 
-    register_property (G_OBJECT (aravissrc_),"gain-auto","gain-auto", "Gain Auto", false, true);
+    register_property (G_OBJECT (aravissrc_),"gain-auto","gain-auto", "Gain Auto");
 
-    register_property (G_OBJECT (aravissrc_),"exposure","exposure", "Exposure", false, true);
-    register_property (G_OBJECT (aravissrc_),"exposure-auto","exposure-auto", "Exposure Auto", false, true);
-    register_property (G_OBJECT (aravissrc_),"h-binning","h-binning", "H-binning", false, true);
-    register_property (G_OBJECT (aravissrc_),"v-binning","v-binning", "V-binning", false, true);
-    register_property (G_OBJECT (aravissrc_),"offset-x","offset-x", "Offset-x", false, true);
-    register_property (G_OBJECT (aravissrc_),"offset-y","offset-y", "Offset-y", false, true);
+    register_property (G_OBJECT (aravissrc_),"exposure","exposure", "Exposure");
+    register_property (G_OBJECT (aravissrc_),"exposure-auto","exposure-auto", "Exposure Auto");
+    register_property (G_OBJECT (aravissrc_),"h-binning","h-binning", "H-binning");
+    register_property (G_OBJECT (aravissrc_),"v-binning","v-binning", "V-binning");
+    register_property (G_OBJECT (aravissrc_),"offset-x","offset-x", "Offset-x");
+    register_property (G_OBJECT (aravissrc_),"offset-y","offset-y", "Offset-y");
 
 
     publish_method ("Capture",

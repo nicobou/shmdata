@@ -50,9 +50,7 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
      				myprop_prop_, 
      				"myprop",
-				"My Property", //long name
-				true, //is a configuration parameter 
-				true); //is a control parameter
+				"My Property"); //long name
 
     publish_method ("Hello World",
 		    "hello-world",

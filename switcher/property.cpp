@@ -33,8 +33,6 @@ namespace switcher
   {
     json_description_.reset (new JSONBuilder());
     long_name_ = "undefined_long_name";
-    is_configuration_ = false;
-    is_control_ = false;
   }
 
   void
@@ -167,17 +165,6 @@ namespace switcher
     
     // name
     //json_description_->add_string_member ("internal name", g_param_spec_get_name (property_));
-
-    if (is_configuration_)
-      json_description_->add_string_member ("is configuration", "true");
-    else
-      json_description_->add_string_member ("is configuration", "false");
-
-    if (is_control_)
-      json_description_->add_string_member ("is control", "true");
-    else
-      json_description_->add_string_member ("is control", "false");
-
 
     if (property_->flags & G_PARAM_WRITABLE) 
       json_description_->add_string_member ("writable", "true");
@@ -738,19 +725,6 @@ namespace switcher
       g_debug ("");
 
     g_value_reset (&value);
-  }
-
-  void 
-  Property::set_is_configuration (bool is_configuration)
-  {
-    is_configuration_ = is_configuration;
-    make_description ();
-  }
-  
-  void Property::set_is_control (bool is_control)
-  {
-    is_control_ = is_control;
-    make_description ();
   }
 
 }

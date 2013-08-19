@@ -64,9 +64,7 @@ namespace switcher
     register_property (G_OBJECT (videotestsrc_),
 		       "pattern",
 		       "pattern", 
-		       "Video Pattern",
-		       true,
-		       true);
+		       "Video Pattern");
     
     set_raw_video_element (videotestsrc_);
     return true;

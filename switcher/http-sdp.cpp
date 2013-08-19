@@ -74,7 +74,7 @@ namespace switcher
 		    this);
 
     //registering "latency"
-    register_property (G_OBJECT (sdpdemux_),"latency","latency", "Latency", true, true);
+    register_property (G_OBJECT (sdpdemux_),"latency","latency", "Latency");
 
     return true;
   }

@@ -62,7 +62,7 @@ namespace switcher
     g_signal_connect(fakesink_, "handoff", (GCallback)on_handoff_cb, this);
 
     //registering some properties 
-    register_property (G_OBJECT (fakesink_),"last-message","last-message", "Last Message", false, true);
+    register_property (G_OBJECT (fakesink_),"last-message","last-message", "Last Message");
     
     props_.reset (new CustomPropertyHelper ());
     byte_rate_spec_ = 
@@ -79,9 +79,7 @@ namespace switcher
     register_property_by_pspec (props_->get_gobject (), 
      				byte_rate_spec_, 
      				"byte-rate",
-				"Byte Rate (Bps)",
-				false, 
-				true);
+				"Byte Rate (Bps)");
     
      
     guint update_byterate_id = GstUtils::g_timeout_add_to_context (1000, 
@@ -104,9 +102,7 @@ namespace switcher
     register_property_by_pspec (props_->get_gobject (), 
      				caps_spec_, 
      				"caps",
-				"Capabilities",
-				false, 
-				true);
+				"Capabilities");
     
     set_sink_element (fakesink_);
     return true;

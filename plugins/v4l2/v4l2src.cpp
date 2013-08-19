@@ -114,9 +114,7 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				capture_devices_description_spec_, 
 				"devices-json",
-				"Capture Devices",
-				true,
-				true);
+				"Capture Devices");
     return true;
   }
 
@@ -145,10 +143,10 @@ namespace switcher
     unregister_property ("contrast");
     unregister_property ("saturation");
     unregister_property ("hue");
-    register_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness", false, true);
-    register_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast", false, true);
-    register_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation", false, true);
-    register_property (G_OBJECT (v4l2src_),"hue","hue", "Hue", false, true);
+    register_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
+    register_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
+    register_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
+    register_property (G_OBJECT (v4l2src_),"hue","hue", "Hue");
 
     
     gst_bin_add_many (GST_BIN (v4l2_bin_),
