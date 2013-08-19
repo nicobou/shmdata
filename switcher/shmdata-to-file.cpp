@@ -55,8 +55,6 @@ namespace switcher
 		    (Method::method_ptr) &add_shmdata_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
-		    true, 
-		    true,
 		    this);
     
     publish_method ("Remove Shmdata",
@@ -70,8 +68,6 @@ namespace switcher
 		    (Method::method_ptr) &remove_shmdata_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    true,
-		    true,
 		    this);
     
  

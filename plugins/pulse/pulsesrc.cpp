@@ -74,8 +74,6 @@ namespace switcher
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_NONE, 
 						       NULL),
-		    true,
-		    true,
 		    this);
     
 
@@ -92,8 +90,6 @@ namespace switcher
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, 
 						       NULL),
-		    true,
-		    true,
 		    this);
 
 

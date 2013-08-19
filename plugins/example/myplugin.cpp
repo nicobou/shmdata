@@ -65,8 +65,6 @@ namespace switcher
   		    (Method::method_ptr) &my_hello_world_method, 
 		    G_TYPE_STRING,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    true,
-		    true,
 		    this);
 
     g_debug ("hello from plugin");

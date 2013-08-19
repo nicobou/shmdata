@@ -102,8 +102,6 @@ namespace switcher
 		    (Method::method_ptr) &add_client_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, NULL),
-		    true,
-		    true,
      		    this);
    
     publish_method ("Remove Client",
@@ -120,8 +118,6 @@ namespace switcher
 		    (Method::method_ptr) &remove_client_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, NULL),
-		    true,
-		    true,
      		    this);
 
      
@@ -133,8 +129,6 @@ namespace switcher
 		    (Method::method_ptr) &clear_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL), 
-		    true, 
-		    true,
 		    this);
       
     //registering sink element

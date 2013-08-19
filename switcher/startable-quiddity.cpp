@@ -35,8 +35,6 @@ namespace switcher
 		    (Method::method_ptr) &start_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    true,
-		    true,
 		    this);
 
     publish_method ("Stop",
@@ -48,8 +46,6 @@ namespace switcher
 		    (Method::method_ptr) &stop_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    true,
-		    true,
 		    this);
 
   }

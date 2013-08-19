@@ -101,8 +101,6 @@ namespace switcher
 		    (Method::method_ptr) &to_shmdata_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    true,
-		    true,
 		    this);
     
     publish_method ("Pause",
@@ -114,8 +112,6 @@ namespace switcher
 		    (Method::method_ptr) &pause_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    true,
-		    true,
 		    this);
     
     publish_method ("Seek",
@@ -129,8 +125,6 @@ namespace switcher
 		    (Method::method_ptr) &seek_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-		    true,
-		    true,
 		    this);
     
     publish_method ("Speed",
@@ -144,8 +138,6 @@ namespace switcher
 		    (Method::method_ptr) &speed_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-		    true,
-		    true,
 		    this);
     
     
