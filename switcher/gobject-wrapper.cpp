@@ -173,18 +173,17 @@ namespace switcher
     next_prop_id_++;
     
     gchar *name = g_strdup_printf ("customprop%d", prop_id);
-    g_debug ("custom property internal name %s", name);
     
     GParamSpec *param = g_param_spec_string (name,
 					     nickname,
 					     description,
 					     default_value,
 					     read_write_flags);
-
-  GObjectCustomProperty::ptr property =  
-    GObjectCustomProperty::make_custom_property (set_method,
-						 get_method);
-  
+    
+    GObjectCustomProperty::ptr property =  
+      GObjectCustomProperty::make_custom_property (set_method,
+						   get_method);
+    
   custom_properties_[prop_id] = property;
   
   //TODO find a way to get CLASS without instanciating an unused object
@@ -196,7 +195,63 @@ namespace switcher
   return param;
 }
 
+  GParamSpec *
+  GObjectWrapper::make_string_map_property (const gchar *nickname, 
+					    const gchar *description,
+					    const gchar *default_value, //mak key
+					    std::map <std::string, std::string> string_map,
+					    GParamFlags read_write_flags,
+					    GObjectCustomProperty::set_method_pointer set_method,
+					    GObjectCustomProperty::get_method_pointer get_method)
+  {
+    guint prop_id = next_prop_id_;
+    next_prop_id_++;
+    gchar *name = g_strdup_printf ("customprop%d", prop_id);
+    
+    GEnumValue string_map_enum [string_map.size () + 1];
+    gint gint_default_value = 0;
+    gint i = 0;
+    for (auto &it : string_map)
+      {
+	string_map_enum [i].value = i;
+	string_map_enum [i].value_name = g_strdup (it.first.c_str ());
+	string_map_enum [i].value_nick = g_strdup (it.second.c_str ());
+	if (g_strcmp0 (it.first.c_str (), default_value) == 0)
+	  gint_default_value = i;
+	i ++;
+      }
+    string_map_enum [i].value = i;
+    string_map_enum [i].value_name = NULL;
+    string_map_enum [i].value_nick = NULL;
 
+    //registering the type with the name calculated previously
+    GType gtype = g_enum_register_static (name, string_map_enum);
+    
+    //FIXME free string_map_enum
+
+    GParamSpec *param = g_param_spec_enum (name,
+					   nickname,
+					   description, 
+					   gtype,
+					   gint_default_value,  
+					   (GParamFlags) (read_write_flags // | G_PARAM_STATIC_STRINGS
+							  ));
+
+    GObjectCustomProperty::ptr property =  
+      GObjectCustomProperty::make_custom_property (set_method,
+						   get_method);
+    
+    custom_properties_[prop_id] = property;
+    
+    //TODO find a way to get CLASS without instanciating an unused object
+    MyObject *obj = (MyObject *)g_object_new (my_object_get_type (), NULL);
+    g_object_class_install_property (G_OBJECT_GET_CLASS (obj),
+				     prop_id,
+				     param);
+    g_object_unref (obj);
+    return param;
+  }
+  
   //set_method and get_method must be static
   GParamSpec * 
   GObjectWrapper::make_boolean_property (const gchar *nickname, 

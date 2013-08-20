@@ -27,6 +27,7 @@
 #include <fcntl.h>
 #include <string.h>
 
+
 namespace switcher
 {
 
@@ -38,6 +39,7 @@ namespace switcher
 				       "v4l2src",				
 				       "Nicolas Bouillot");
 
+  
   bool
   V4L2Src::init ()
   {
@@ -110,11 +112,35 @@ namespace switcher
 									     V4L2Src::get_capture_devices_json,
 									     this);
     
+      
+      register_property_by_pspec (custom_props_->get_gobject (), 
+				  capture_devices_description_spec_, 
+				  "devices-json",
+				  "Capture Devices");
+      
+      {
+	std::map <std::string, std::string> montruc;
+	montruc ["bidule"] = "heheh";
+	montruc ["machine"] = "sdfsd fdfdfd";
+	
+	capture_devices_spec_ = custom_props_->make_string_map_property ("devices", 
+									 "string map of capture devices",
+									 "/dev/video0", //map key
+									 montruc,
+									 (GParamFlags) G_PARAM_READWRITE,
+									 V4L2Src::set_camera,
+									 V4L2Src::get_camera,
+									 this);
+      }
+      g_print ("name:::: %s\n", g_param_spec_get_name (capture_devices_spec_));
+      g_print ("nick:::: %s\n", g_param_spec_get_nick (capture_devices_spec_));
+      g_print ("blurb:::: %s\n", g_param_spec_get_blurb (capture_devices_spec_));
+      
+      register_property_by_pspec (custom_props_->get_gobject (), 
+       				capture_devices_spec_, 
+       				"devices",
+       				"Capture Devices");
 
-    register_property_by_pspec (custom_props_->get_gobject (), 
-				capture_devices_description_spec_, 
-				"devices-json",
-				"Capture Devices");
     return true;
   }
 
@@ -443,13 +469,15 @@ namespace switcher
     make_elements ();
 
     if (g_strcmp0 (device_file_path, "default") != 0)
-      if (capture_devices_.find (device_file_path) != capture_devices_.end ())	
-     	g_object_set (G_OBJECT (v4l2src_), "device", device_file_path, NULL);
-      else
-     	{
-     	  g_warning ("V4L2Src: device %s is not a detected as a v4l2 device, cannot use", device_file_path);
-     	  return false;
-     	}
+      {
+	if (capture_devices_.find (device_file_path) != capture_devices_.end ())	
+	  g_object_set (G_OBJECT (v4l2src_), "device", device_file_path, NULL);
+	else
+	  {
+	    g_warning ("V4L2Src: device %s is not a detected as a v4l2 device, cannot use", device_file_path);
+	    return false;
+	  }
+      }
     
     if (g_strcmp0 (tv_standard, "default") != 0)
       g_object_set (G_OBJECT (v4l2src_), "norm", tv_standard, NULL);
@@ -595,4 +623,15 @@ namespace switcher
   }
 
 
+  void 
+  V4L2Src::set_camera (const gint value, void *user_data)
+  {
+    g_print ("%d\n", value);
+  }
+  
+  gint 
+  V4L2Src::get_camera (void *user_data)
+  {
+    return 0;
+  }
 }

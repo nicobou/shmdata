@@ -115,6 +115,34 @@ namespace switcher
   }
 
 
+  GParamSpec *
+  CustomPropertyHelper::make_string_map_property (const gchar *nickname, 
+						   const gchar *description,
+						   const gchar *default_value,
+						   std::map <std::string, std::string> string_map,
+						   GParamFlags read_write_flags,
+						   set_string_map_method set_method,
+						   get_string_map_method get_method,
+						   void *user_data)
+  {
+    
+    GParamSpec *pspec = GObjectWrapper::make_string_map_property (nickname, 
+								  description,
+								  default_value,
+								  string_map,
+								  read_write_flags,
+								  set_by_gvalue,
+								  get_by_gvalue);
+
+    make_user_method (nickname,
+		      pspec,
+		      (void (*) (void))set_method,
+		      (void (*) (void))get_method,
+		      user_data);
+    return pspec; 
+  }
+
+
   void
   CustomPropertyHelper::make_user_method (const gchar *nickname,
 					  GParamSpec *pspec,

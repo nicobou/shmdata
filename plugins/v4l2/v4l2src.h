@@ -77,6 +77,7 @@ namespace switcher
     CustomPropertyHelper::ptr custom_props_; 
     GParamSpec *capture_devices_description_spec_;//json formated
     gchar *capture_devices_description_;//json formated
+    GParamSpec *capture_devices_spec_;
     
 
     typedef struct {
@@ -103,6 +104,10 @@ namespace switcher
     } CaptureDescription;
 
     std::map <std::string, CaptureDescription> capture_devices_; //indexed by device_file_path
+
+    static void set_camera (const gint value, void *user_data);
+    static gint get_camera (void *user_data);
+
   };
   
   SWITCHER_DECLARE_PLUGIN(V4L2Src);

@@ -79,7 +79,16 @@ namespace switcher
 			     GParamFlags read_write_flags,
 			     GObjectCustomProperty::set_method_pointer set_method,
 			     GObjectCustomProperty::get_method_pointer get_method);
-    
+
+    static GParamSpec *
+      make_string_map_property (const gchar *nickname, 
+				const gchar *description,
+				const gchar *default_value, //mak key
+				std::map <std::string, std::string> string_map,
+				GParamFlags read_write_flags,
+				GObjectCustomProperty::set_method_pointer set_method,
+				GObjectCustomProperty::get_method_pointer get_method);
+      
     //signal    
     static guint 
       make_signal (GType return_type,

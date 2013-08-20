@@ -361,16 +361,16 @@ namespace switcher
 
 	json_description_->set_member_name ("values");
 	json_description_->begin_array ();
-	while (values[j].value_name) {
-	  json_description_->begin_object ();
-	  json_description_->add_string_member ("name",values[j].value_name);
-	  json_description_->add_string_member ("nick",values[j].value_nick);
-	  gchar *values_value = g_strdup_printf ("%d",values[j].value);
-	  json_description_->add_string_member ("value",values_value);
-	  g_free (values_value);
-	  json_description_->end_object ();
-	  j++;
-	}
+	 while (values[j].value_name) {
+	   json_description_->begin_object ();
+	   json_description_->add_string_member ("name",values[j].value_name);
+	   json_description_->add_string_member ("nick",values[j].value_nick);
+	   gchar *values_value = g_strdup_printf ("%d",values[j].value);
+	   json_description_->add_string_member ("value",values_value);
+	   g_free (values_value);
+	   json_description_->end_object ();
+	   j++;
+	 }
 	json_description_->end_array ();
 	
 	/* g_type_class_unref (ec); */

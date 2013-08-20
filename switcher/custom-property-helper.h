@@ -41,6 +41,9 @@ namespace switcher
     typedef gboolean (*get_boolean_method)(void *user_data);
     typedef void (*set_int_method)(const gint value, void *user_data);
     typedef gint (*get_int_method)(void *user_data);
+    typedef void (*set_string_map_method)(const gint value, void *user_data);
+    typedef gint (*get_string_map_method)(void *user_data);
+
 
     typedef struct {
       void (*set) (void);
@@ -81,6 +84,17 @@ namespace switcher
 			 set_int_method set_method,
 			 get_int_method get_method,
 			 void *user_data);
+
+    
+    GParamSpec *
+      make_string_map_property (const gchar *nickname, 
+				const gchar *description,
+				const gchar *default_value, //map key
+				std::map <std::string, std::string> string_map,
+				GParamFlags read_write_flags,
+				set_string_map_method set_method,
+				get_string_map_method get_method,
+				void *user_data);
 
     static bool get_by_gvalue (GValue *value, void *user_data);
     static bool set_by_gvalue (const GValue *val, void *user_data);
