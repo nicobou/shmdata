@@ -29,7 +29,7 @@
 namespace switcher
 {
 
-  class StartableQuiddity : public Quiddity
+  class StartableQuiddity
   {
   public:
     typedef std::shared_ptr<StartableQuiddity> ptr;
@@ -38,10 +38,11 @@ namespace switcher
   protected:
     virtual bool start () = 0;
     virtual bool stop () = 0;
+    void init_startable (Quiddity *quiddity);
 
   private:
-    static bool start_wrapped (gpointer user_data);
-    static bool stop_wrapped (gpointer user_data);
+    static gboolean start_wrapped (gpointer unused, gpointer user_data);
+    static gboolean stop_wrapped (gpointer unused, gpointer user_data);
   };
 
 }  // end of namespace

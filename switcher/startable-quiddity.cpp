@@ -26,42 +26,51 @@ namespace switcher
 
   StartableQuiddity::StartableQuiddity ()
   {
-    publish_method ("Start",
-		    "start", 
-		    "start processing", 
-		    "success or fail",
-		    Method::make_arg_description ("none",
-						  NULL),
-		    (Method::method_ptr) &start_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    this);
-
-    publish_method ("Stop",
-		    "stop", 
-		    "stop processing", 
-		    "success or fail",
-		    Method::make_arg_description ("none",
-						  NULL),
-		    (Method::method_ptr) &stop_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    this);
 
   }
 
-  bool 
-  StartableQuiddity::start_wrapped (gpointer user_data)
+  void
+  StartableQuiddity::init_startable (Quiddity *quid)
   {
-    StartableQuiddity *context= static_cast <StartableQuiddity *>(user_data);
-    return context->start ();
+    quid->publish_method ("Start",
+     			  "start", 
+     			  "start processing", 
+     			  "success or fail",
+     			  Method::make_arg_description ("none",
+     							NULL),
+     			  (Method::method_ptr) &StartableQuiddity::start_wrapped, 
+     			  G_TYPE_BOOLEAN,
+     			  Method::make_arg_type_description (G_TYPE_NONE, NULL),
+     			  this);
+     quid->publish_method ("Stop",
+			   "stop", 
+			   "stop processing", 
+			   "success or fail",
+			   Method::make_arg_description ("none",
+							 NULL),
+			   (Method::method_ptr) &StartableQuiddity::stop_wrapped, 
+			   G_TYPE_BOOLEAN,
+			   Method::make_arg_type_description (G_TYPE_NONE, NULL),
+			   this);
   }
+  
+   gboolean 
+   StartableQuiddity::start_wrapped (gpointer unused, gpointer user_data)
+   {
+     StartableQuiddity *context= static_cast <StartableQuiddity *>(user_data);
 
-  bool 
-  StartableQuiddity::stop_wrapped (gpointer user_data)
-  { 
-    StartableQuiddity *context= static_cast <StartableQuiddity *>(user_data);
-    return context->stop ();
-  }
+     if (!context->start ())
+       return FALSE;
+     return TRUE;
+   }
+
+   gboolean 
+   StartableQuiddity::stop_wrapped (gpointer unused, gpointer user_data)
+   { 
+     StartableQuiddity *context= static_cast <StartableQuiddity *>(user_data);
+     if (!context->stop ())
+       return FALSE;
+     return TRUE;
+   }
 }//end of class
 

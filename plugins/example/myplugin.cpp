@@ -35,6 +35,8 @@ namespace switcher
   bool
   MyPlugin::init ()
   {
+    init_startable (this);
+
     custom_props_.reset (new CustomPropertyHelper ());
 
     hello_ = g_strdup ("hello");
@@ -105,12 +107,14 @@ namespace switcher
   bool
   MyPlugin::start ()
   {
+    g_debug ("start from my plugin");
     return true;
   }
 
   bool
   MyPlugin::stop ()
   {
+    g_debug ("stop from my plugin");
     return true;
   }
 }

@@ -44,7 +44,7 @@ namespace switcher
     if (!GstUtils::make_element ("videotestsrc",&videotestsrc_))
       return false;
 
-   g_object_set (G_OBJECT (videotestsrc_),
+    g_object_set (G_OBJECT (videotestsrc_),
 		  "is-live", TRUE,
 		  NULL);
     

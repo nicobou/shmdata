@@ -59,11 +59,11 @@ namespace switcher
 	return false;
       }
     closure_ = g_cclosure_new (G_CALLBACK (method), user_data, Method::destroy_data);
-    g_closure_set_marshal  (closure_,g_cclosure_marshal_generic);
+    g_closure_set_marshal  (closure_, g_cclosure_marshal_generic);
     return_type_ =  return_type;
     arg_types_ = arg_types;
     num_of_value_args_ = arg_types_.size();
-
+    
     return true;
   }
 

@@ -44,9 +44,13 @@
 namespace switcher
 {
   class QuiddityManager_Impl;
- 
+
+
   class Quiddity
   {
+    
+    friend class StartableQuiddity;
+    
   public:
     typedef std::shared_ptr<Quiddity> ptr;
     
