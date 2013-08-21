@@ -45,7 +45,6 @@ namespace switcher
     long_name_ = long_name;
     make_description ();
   }
-
   
   void 
   Property::set (std::string value)
@@ -129,6 +128,7 @@ namespace switcher
   std::string
   Property::get_description ()
   {
+    make_description ();
     return json_description_->get_string(true);
   }
 

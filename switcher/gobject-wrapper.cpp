@@ -196,13 +196,13 @@ namespace switcher
 }
 
   GParamSpec *
-  GObjectWrapper::make_string_map_property (const gchar *nickname, 
-					    const gchar *description,
-					    const gint default_value, 
-					    const GEnumValue *string_map_enum,
-					    GParamFlags read_write_flags,
-					    GObjectCustomProperty::set_method_pointer set_method,
-					    GObjectCustomProperty::get_method_pointer get_method)
+  GObjectWrapper::make_enum_property (const gchar *nickname, 
+				      const gchar *description,
+				      const gint default_value, 
+				      const GEnumValue *custom_enum,
+				      GParamFlags read_write_flags,
+				      GObjectCustomProperty::set_method_pointer set_method,
+				      GObjectCustomProperty::get_method_pointer get_method)
   {
     guint prop_id = next_prop_id_;
     next_prop_id_++;
@@ -225,7 +225,7 @@ namespace switcher
     //   string_map_enum [i].value_nick = NULL;
 
     //registering the type with the name calculated previously
-    GType gtype = g_enum_register_static (name, string_map_enum);
+    GType gtype = g_enum_register_static (name, custom_enum);
       
     
      GParamSpec *param = g_param_spec_enum (name,

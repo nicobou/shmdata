@@ -81,14 +81,14 @@ namespace switcher
 			     GObjectCustomProperty::get_method_pointer get_method);
 
     static GParamSpec *
-      make_string_map_property (const gchar *nickname, 
-				const gchar *description,
-				const gint default_value,
-				const GEnumValue *string_map_enum,
-				GParamFlags read_write_flags,
-				GObjectCustomProperty::set_method_pointer set_method,
-				GObjectCustomProperty::get_method_pointer get_method);
-      
+      make_enum_property (const gchar *nickname, 
+			  const gchar *description,
+			  const gint default_value,
+			  const GEnumValue *custom_enum, //*must* be static
+			  GParamFlags read_write_flags,
+			  GObjectCustomProperty::set_method_pointer set_method,
+			  GObjectCustomProperty::get_method_pointer get_method);
+    
     //signal    
     static guint 
       make_signal (GType return_type,
