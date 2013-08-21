@@ -115,6 +115,34 @@ namespace switcher
   }
 
 
+  GParamSpec *
+  CustomPropertyHelper::make_enum_property (const gchar *nickname, 
+					    const gchar *description,
+					    const gint default_value,
+					    const GEnumValue *custom_enum,
+					    GParamFlags read_write_flags,
+					    set_enum_method set_method,
+					    get_enum_method get_method,
+					    void *user_data)
+  {
+    
+    GParamSpec *pspec = GObjectWrapper::make_enum_property (nickname, 
+								  description,
+								  default_value,
+								  custom_enum,
+								  read_write_flags,
+								  set_by_gvalue,
+								  get_by_gvalue);
+
+    make_user_method (nickname,
+		      pspec,
+		      (void (*) (void))set_method,
+		      (void (*) (void))get_method,
+		      user_data);
+    return pspec; 
+  }
+
+
   void
   CustomPropertyHelper::make_user_method (const gchar *nickname,
 					  GParamSpec *pspec,
@@ -153,8 +181,13 @@ namespace switcher
 	gint val = ((get_int_method)user_method->get) (user_method->user_data);
 	g_value_set_int (value, val);
       }
+    else if (G_TYPE_IS_ENUM (G_VALUE_TYPE(value)))
+      {
+	gint val = ((get_enum_method)user_method->get) (user_method->user_data);
+	g_value_set_enum (value, val);
+      }
     else
-      g_warning ("CustomPropertyHelper: unknown type"); 
+      g_debug ("CustomPropertyHelper: unknown type"); 
     return TRUE;
   }
  
@@ -178,9 +211,14 @@ namespace switcher
 	((set_int_method)user_method->set) (g_value_get_int (value), 
 					    user_method->user_data);
       }
+    else if (G_TYPE_IS_ENUM (G_VALUE_TYPE(value)))
+      {
+	((set_enum_method)user_method->set) (g_value_get_enum (value), 
+	 				     user_method->user_data);
+      }
     else
       {
-	g_warning ("CustomPropertyHelper: unknown type"); 
+	g_debug ("CustomPropertyHelper: %s is unhandled type", g_type_name (G_VALUE_TYPE(value))); 
 	return FALSE;
       }
     GObjectWrapper::notify_property_changed (user_method->gobject,

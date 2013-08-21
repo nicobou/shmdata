@@ -23,7 +23,7 @@
 #ifndef __SWITCHER_STARTABLE_QUIDDITY_H__
 #define __SWITCHER_STARTABLE_QUIDDITY_H__
 
-#include "quiddity.h"
+#include <glib.h>
 #include <memory>
 
 namespace switcher
@@ -35,10 +35,10 @@ namespace switcher
     typedef std::shared_ptr<StartableQuiddity> ptr;
     StartableQuiddity ();
 
-  protected:
     virtual bool start () = 0;
     virtual bool stop () = 0;
-    void init_startable (Quiddity *quiddity);
+    void init_startable (void *quiddity);//FIXME should called quiddity-manager-impl 
+    //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
 
   private:
     static gboolean start_wrapped (gpointer unused, gpointer user_data);
