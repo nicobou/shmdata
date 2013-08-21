@@ -666,6 +666,16 @@ namespace switcher
     gst_caps_unref (usercaps);
     
     set_raw_video_element (v4l2_bin_);
+
+    unregister_property ("resolution");
+    unregister_property ("width");
+    unregister_property ("height");
+    unregister_property ("tv_standard");
+    register_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
+    register_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
+    register_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
+    register_property (G_OBJECT (v4l2src_),"hue","hue", "Hue");
+
     return true;
   }
   
@@ -673,6 +683,12 @@ namespace switcher
   V4L2Src::stop ()
   {
     clean_elements ();
+    update_device_specific_properties (device_);
+    unregister_property ("brightness");
+    unregister_property ("contrast");
+    unregister_property ("saturation");
+    unregister_property ("hue");
+
     return true;
   }
 
