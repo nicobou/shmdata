@@ -22,7 +22,7 @@
 #define __SWITCHER_V4L2SRC_H__
 
 #include "switcher/video-source.h"
-//#include "switcher/startable-quiddity.h"
+#include "switcher/startable-quiddity.h"
 #include "switcher/custom-property-helper.h"
 #include <memory>
 
@@ -30,12 +30,16 @@
 namespace switcher
 {
  
-  class V4L2Src : public VideoSource 
+  class V4L2Src : public VideoSource, StartableQuiddity 
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(V4L2Src);
     ~V4L2Src ();
   
+
+    bool start ();
+    bool stop ();
+
     //use "NONE" for used arguments
     /* bool capture_full (const char *device_file_path,  */
     /* 		       const char *width, */
@@ -126,8 +130,8 @@ namespace switcher
     //width height for the currently selected device
     GParamSpec *width_spec_;
     GParamSpec *height_spec_;
-    guint width_;
-    guint height_;
+    gint width_;
+    gint height_;
     static void set_width (const gint value, void *user_data);
     static gint get_width (void *user_data);
     static void set_height (const gint value, void *user_data);

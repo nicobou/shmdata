@@ -20,6 +20,7 @@
  */
 
 #include "startable-quiddity.h"
+#include "quiddity.h"
 
 namespace switcher
 {
@@ -30,11 +31,12 @@ namespace switcher
   }
 
   void
-  StartableQuiddity::init_startable (Quiddity *quid)
+  StartableQuiddity::init_startable (void *quiddity)
   {
+    Quiddity *quid = static_cast <Quiddity *> (quiddity);
     quid->publish_method ("Start",
      			  "start", 
-     			  "start processing", 
+     			  "start", 
      			  "success or fail",
      			  Method::make_arg_description ("none",
      							NULL),
@@ -44,7 +46,7 @@ namespace switcher
      			  this);
      quid->publish_method ("Stop",
 			   "stop", 
-			   "stop processing", 
+			   "stop", 
 			   "success or fail",
 			   Method::make_arg_description ("none",
 							 NULL),

@@ -295,6 +295,7 @@ namespace switcher
   QuiddityManager_Impl::init_quiddity (Quiddity::ptr quiddity)
   {
     quiddity->set_manager_impl (shared_from_this());
+
     if (!quiddity->init ())
       return false;
 

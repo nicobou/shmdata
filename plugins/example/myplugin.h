@@ -22,6 +22,7 @@
 #ifndef __SWITCHER_MY_PLUGIN_H__
 #define __SWITCHER_MY_PLUGIN_H__
 
+#include "switcher/quiddity.h"
 #include "switcher/startable-quiddity.h"
 #include "switcher/custom-property-helper.h"
 #include <memory>

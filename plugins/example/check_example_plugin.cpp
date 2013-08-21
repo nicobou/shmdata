@@ -57,12 +57,17 @@ main (int argc,
 
     //testing hello-world method
     std::string *res;
-    if (!manager->invoke_va ("test", "hello-world", &res, "test", NULL))
+    if (!manager->invoke_va ("test", "hello-world", &res, "Nico", NULL))
       success = false;
-    if (g_strcmp0 (res->c_str (), "hello test") != 0)
+    if (g_strcmp0 (res->c_str (), "hello Nico") != 0)
       success = false;
     delete res;
 
+    if (!manager->invoke_va ("test", "start", NULL, NULL))
+      success = false;
+    if (!manager->invoke_va ("test", "stop", NULL, NULL))
+      success = false;
+    
     //removing the quiddity
     if (!manager->remove ("test"))
       success = false;

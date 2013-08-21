@@ -48,6 +48,8 @@ namespace switcher
     if (!make_elements ())
       return false;
 
+    init_startable (this);
+    
     capture_devices_description_ = NULL;
     device_ = 0; //default is zero
 
@@ -182,6 +184,7 @@ namespace switcher
   V4L2Src::update_discrete_resolution (CaptureDescription cap_descr)
   {
     unregister_property ("resolution");
+    resolution_ = -1;
     if (!cap_descr.frame_size_discrete_.empty ())
       {
      	gint i = 0;
@@ -208,7 +211,7 @@ namespace switcher
 								 V4L2Src::set_resolution,
 								 V4L2Src::get_resolution,
 								 this); 
-	
+	resolution_ = 0;
      	register_property_by_pspec (custom_props_->get_gobject (), 
      				    resolutions_spec_, 
      				    "resolution",
@@ -223,6 +226,8 @@ namespace switcher
   {
     unregister_property ("width");
     unregister_property ("height");
+    width_ = -1;
+    height_ = -1;
     if (cap_descr.frame_size_stepwise_max_width_ > 0)
       {
 	if (width_spec_ == NULL)
@@ -237,6 +242,7 @@ namespace switcher
 					      V4L2Src::get_width,
 					      this); 
 	
+	width_ = cap_descr.frame_size_stepwise_max_width_;	
      	register_property_by_pspec (custom_props_->get_gobject (), 
      				    width_spec_, 
      				    "width",
@@ -254,6 +260,7 @@ namespace switcher
 					      V4L2Src::get_height,
 					      this); 
 	
+	height_ = cap_descr.frame_size_stepwise_max_height_;
      	register_property_by_pspec (custom_props_->get_gobject (), 
      				    height_spec_, 
      				    "height",
@@ -267,6 +274,7 @@ namespace switcher
   V4L2Src::update_tv_standard (CaptureDescription cap_descr)
   {
     unregister_property ("tv_standard");
+    tv_standard_ = -1;
     if (cap_descr.tv_standards_.size () > 1)
       {
      	gint i = 0;
@@ -292,6 +300,7 @@ namespace switcher
 								  V4L2Src::get_tv_standard,
 								  this); 
 	
+	tv_standard_ = 0;
      	register_property_by_pspec (custom_props_->get_gobject (), 
      				    tv_standards_spec_, 
      				    "tv_standard",
@@ -349,6 +358,7 @@ namespace switcher
   void
   V4L2Src::clean_elements ()
   {
+    reset_bin ();
     //GstUtils::clean_element (v4l2src_);
     //GstUtils::clean_element (capsfilter_);//FIXME
     //GstUtils::clean_element (v4l2_bin_);
@@ -600,6 +610,70 @@ namespace switcher
     //FIXME, framerate can change according to pixel_format and resolution
     g_debug ("  V4L2Src::inspect_frame_rate: TODO");
     return false;
+  }
+
+
+  bool
+  V4L2Src::start ()
+  {
+    if (capture_devices_.empty ())
+      {
+	g_debug ("V4L2Src:: no capture device available for starting capture");
+	return false;
+      }
+
+    make_elements ();
+
+    g_object_set (G_OBJECT (v4l2src_), 
+		  "device", capture_devices_.at (device_).file_device_.c_str (), 
+		  NULL);
+    
+    if (tv_standard_ > 0) //0 is none
+      g_object_set (G_OBJECT (v4l2src_), 
+		    "norm", capture_devices_.at (device_).tv_standards_.at (tv_standard_).c_str (), 
+		    NULL);
+    
+    std::string caps;
+    caps = "video/x-raw-yuv";
+    if (width_ > 0)
+      {
+	gchar *width = g_strdup_printf ("%d",width_);
+	gchar *height = g_strdup_printf ("%d",height_);
+	caps = caps + ", width=(int)"+ width + ", height=(int)" + height;
+	g_free (width);
+	g_free (height);
+      }
+    else if (resolution_ > -1)
+      {
+	caps = 
+	  caps + ", width=(int)" 
+	  + capture_devices_.at (device_).frame_size_discrete_.at (resolution_).first.c_str () 
+	  + ", height=(int)" 
+	  + capture_devices_.at (device_).frame_size_discrete_.at (resolution_).second.c_str ();
+      }
+      
+    
+  //FIXME   if ((g_strcmp0 (framerate_numerator, "default") != 0)
+  //    	&& (g_strcmp0 (framerate_denominator, "default") != 0))
+  //     caps = caps + ", framerate=(fraction)" + framerate_numerator + "/" + framerate_denominator;
+    
+  //   //g_print ("v4l2 -- forcing caps %s", caps.c_str ());
+    GstCaps *usercaps = gst_caps_from_string (caps.c_str ());
+    g_object_set (G_OBJECT (capsfilter_), 
+   		  "caps",
+   		  usercaps,
+   		  NULL);
+    gst_caps_unref (usercaps);
+    
+    set_raw_video_element (v4l2_bin_);
+    return true;
+  }
+  
+  bool
+  V4L2Src::stop ()
+  {
+    clean_elements ();
+    return true;
   }
 
 
