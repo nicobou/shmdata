@@ -83,8 +83,8 @@ namespace switcher
     static GParamSpec *
       make_string_map_property (const gchar *nickname, 
 				const gchar *description,
-				const gchar *default_value, //mak key
-				std::map <std::string, std::string> string_map,
+				const gint default_value,
+				const GEnumValue *string_map_enum,
 				GParamFlags read_write_flags,
 				GObjectCustomProperty::set_method_pointer set_method,
 				GObjectCustomProperty::get_method_pointer get_method);

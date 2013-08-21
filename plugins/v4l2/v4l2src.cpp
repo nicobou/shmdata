@@ -104,37 +104,43 @@ namespace switcher
     check_folder_for_v4l2_devices ("/dev");
     
     custom_props_.reset (new CustomPropertyHelper ());
-    capture_devices_description_spec_ = custom_props_->make_string_property ("devices-json", 
-									     "Description of capture devices (json formated)",
-									     get_capture_devices_json (this),
-									     (GParamFlags) G_PARAM_READABLE,
-									     NULL,
-									     V4L2Src::get_capture_devices_json,
-									     this);
-    
+    capture_devices_description_spec_ = 
+      custom_props_->make_string_property ("devices-json", 
+					   "Description of capture devices (json formated)",
+					   get_capture_devices_json (this),
+					   (GParamFlags) G_PARAM_READABLE,
+					   NULL,
+					   V4L2Src::get_capture_devices_json,
+					   this);
       
       register_property_by_pspec (custom_props_->get_gobject (), 
 				  capture_devices_description_spec_, 
 				  "devices-json",
 				  "Capture Devices");
       
-      {
-	std::map <std::string, std::string> montruc;
-	montruc ["bidule"] = "heheh";
-	montruc ["machine"] = "sdfsd fdfdfd";
-	
-	capture_devices_spec_ = custom_props_->make_string_map_property ("devices", 
-									 "string map of capture devices",
-									 "/dev/video0", //map key
-									 montruc,
-									 (GParamFlags) G_PARAM_READWRITE,
-									 V4L2Src::set_camera,
-									 V4L2Src::get_camera,
-									 this);
-      }
-      g_print ("name:::: %s\n", g_param_spec_get_name (capture_devices_spec_));
-      g_print ("nick:::: %s\n", g_param_spec_get_nick (capture_devices_spec_));
-      g_print ("blurb:::: %s\n", g_param_spec_get_blurb (capture_devices_spec_));
+      static GEnumValue string_map_enum [1024];
+      gint i = 0;
+      for (auto &it : capture_devices_)
+	{
+	  string_map_enum [i].value = i + 1;
+	  string_map_enum [i].value_name = g_strdup (it.second.card_.c_str ());
+	  string_map_enum [i].value_nick = g_strdup (it.second.file_device_.c_str ());
+	  i ++;
+	}
+      string_map_enum [i].value = 0;
+      string_map_enum [i].value_name = NULL;
+      string_map_enum [i].value_nick = NULL;
+      
+      
+      capture_devices_spec_ = 
+	  custom_props_->make_string_map_property ("devices", 
+						   "string map of capture devices",
+						   1, 
+						   string_map_enum,
+						   (GParamFlags) G_PARAM_READWRITE,
+						   V4L2Src::set_camera,
+						   V4L2Src::get_camera,
+						   this);
       
       register_property_by_pspec (custom_props_->get_gobject (), 
        				capture_devices_spec_, 
@@ -632,6 +638,6 @@ namespace switcher
   gint 
   V4L2Src::get_camera (void *user_data)
   {
-    return 0;
+    return 1;
   }
 }

@@ -198,8 +198,8 @@ namespace switcher
   GParamSpec *
   GObjectWrapper::make_string_map_property (const gchar *nickname, 
 					    const gchar *description,
-					    const gchar *default_value, //mak key
-					    std::map <std::string, std::string> string_map,
+					    const gint default_value, 
+					    const GEnumValue *string_map_enum,
 					    GParamFlags read_write_flags,
 					    GObjectCustomProperty::set_method_pointer set_method,
 					    GObjectCustomProperty::get_method_pointer get_method)
@@ -208,34 +208,41 @@ namespace switcher
     next_prop_id_++;
     gchar *name = g_strdup_printf ("customprop%d", prop_id);
     
-    GEnumValue string_map_enum [string_map.size () + 1];
-    gint gint_default_value = 0;
-    gint i = 0;
-    for (auto &it : string_map)
-      {
-	string_map_enum [i].value = i;
-	string_map_enum [i].value_name = g_strdup (it.first.c_str ());
-	string_map_enum [i].value_nick = g_strdup (it.second.c_str ());
-	if (g_strcmp0 (it.first.c_str (), default_value) == 0)
-	  gint_default_value = i;
-	i ++;
-      }
-    string_map_enum [i].value = i;
-    string_map_enum [i].value_name = NULL;
-    string_map_enum [i].value_nick = NULL;
+    //  static GEnumValue string_map_enum [1024];
+    //   gint gint_default_value = 0;
+    //   gint i = 0;
+    //   for (auto &it : string_map)
+    //     {
+    //    	string_map_enum [i].value = i + 1;
+    //    	string_map_enum [i].value_name = g_strdup (it.first.c_str ());
+    //    	string_map_enum [i].value_nick = g_strdup (it.second.c_str ());
+    //    	if (g_strcmp0 (it.first.c_str (), default_value) == 0)
+    //    	  gint_default_value = i + 1 ;
+    //    	i ++;
+    //     }
+    //   string_map_enum [i].value = 0;
+    //   string_map_enum [i].value_name = NULL;
+    //   string_map_enum [i].value_nick = NULL;
 
     //registering the type with the name calculated previously
     GType gtype = g_enum_register_static (name, string_map_enum);
+      
     
-    //FIXME free string_map_enum
+     GParamSpec *param = g_param_spec_enum (name,
+     					   nickname,
+     					   description, 
+     					   gtype,
+     					   default_value,  
+     					   (GParamFlags) (read_write_flags // | G_PARAM_STATIC_STRINGS
+     							  ));
 
-    GParamSpec *param = g_param_spec_enum (name,
-					   nickname,
-					   description, 
-					   gtype,
-					   gint_default_value,  
-					   (GParamFlags) (read_write_flags // | G_PARAM_STATIC_STRINGS
-							  ));
+    // GParamSpec *param = g_param_spec_boxed (name,
+    // 					    nickname,
+    // 					    description,
+    // 					    G_TYPE_HASH_TABLE,
+    // 					    (GParamFlags) read_write_flags);
+
+    
 
     GObjectCustomProperty::ptr property =  
       GObjectCustomProperty::make_custom_property (set_method,

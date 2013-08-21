@@ -42,7 +42,7 @@ namespace switcher
     typedef void (*set_int_method)(const gint value, void *user_data);
     typedef gint (*get_int_method)(void *user_data);
     typedef void (*set_string_map_method)(const gint value, void *user_data);
-    typedef gint (*get_string_map_method)(void *user_data);
+    typedef gint(*get_string_map_method)(void *user_data);
 
 
     typedef struct {
@@ -89,8 +89,8 @@ namespace switcher
     GParamSpec *
       make_string_map_property (const gchar *nickname, 
 				const gchar *description,
-				const gchar *default_value, //map key
-				std::map <std::string, std::string> string_map,
+				const gint default_value, //map key
+				const GEnumValue *string_map_enum,
 				GParamFlags read_write_flags,
 				set_string_map_method set_method,
 				get_string_map_method get_method,
