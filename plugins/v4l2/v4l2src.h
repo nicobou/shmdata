@@ -113,8 +113,8 @@ namespace switcher
     gchar *capture_devices_description_;//json formated
     
     //device enum and select
-    static GParamSpec *devices_enum_spec_;
-    static GEnumValue devices_enum_ [128];
+    GParamSpec *devices_enum_spec_;
+    GEnumValue devices_enum_ [128];
     gint device_;
     static void set_camera (const gint value, void *user_data);
     static gint get_camera (void *user_data);

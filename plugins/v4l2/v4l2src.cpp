@@ -39,8 +39,6 @@ namespace switcher
 				       "v4l2src",				
 				       "Nicolas Bouillot");
   
-  GEnumValue V4L2Src::devices_enum_[128];
-  GParamSpec *V4L2Src::devices_enum_spec_ = NULL;
   bool
   V4L2Src::init ()
   {
@@ -121,19 +119,15 @@ namespace switcher
 				  "Capture Devices");
       
         
-      if (devices_enum_spec_ == NULL)
-	{
-	  devices_enum_spec_ = 
-	    custom_props_->make_enum_property ("device", 
-					       "string map of capture devices",
-					       device_, 
-					       devices_enum_,
-					       (GParamFlags) G_PARAM_READWRITE,
-					       V4L2Src::set_camera,
+      devices_enum_spec_ = 
+	custom_props_->make_enum_property ("device", 
+					   "string map of capture devices",
+					   device_, 
+					   devices_enum_,
+					   (GParamFlags) G_PARAM_READWRITE,
+					   V4L2Src::set_camera,
 					       V4L2Src::get_camera,
-					       this);
-	}
-      
+					   this);
 
       register_property_by_pspec (custom_props_->get_gobject (), 
 				  devices_enum_spec_, 
