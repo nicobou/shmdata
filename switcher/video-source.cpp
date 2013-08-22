@@ -47,7 +47,7 @@ namespace switcher
 
   VideoSource::~VideoSource () 
   {
-    clean_elements ();
+    clean_video_source_elements ();
     gst_caps_unref (videocaps_);
   }
 
@@ -89,9 +89,9 @@ namespace switcher
   }
 
   void 
-  VideoSource::clean_elements () //FIXME rename that
+  VideoSource::clean_video_source_elements () 
   {
-    GstUtils::clean_element(video_tee_);
+    //GstUtils::clean_element(video_tee_);
     unregister_shmdata_writer (make_file_name ("video"));
     // GstUtils::clean_element(colorspace_in_);
     // GstUtils::clean_element(textoverlay_);
@@ -103,7 +103,7 @@ namespace switcher
   VideoSource::set_raw_video_element (GstElement *element)
   {
     reset_bin ();
-    clean_elements ();
+    clean_video_source_elements ();
     make_elements ();
 
     rawvideo_ = element;

@@ -44,7 +44,7 @@ namespace switcher
     /* GstElement *videoflip_; */
     /* GstElement *colorspace_out_; */
     GstCaps *videocaps_;
-    void clean_elements ();
+    void clean_video_source_elements ();
     void make_elements ();
 
   protected:

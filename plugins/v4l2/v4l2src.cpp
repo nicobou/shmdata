@@ -329,17 +329,6 @@ namespace switcher
     if (!GstUtils::make_element ("bin",&v4l2_bin_))
       return false;
 
-    //registering some properties FIXME unregister property and register property in make_element 
-    // unregister_property ("brightness");
-    // unregister_property ("contrast");
-    // unregister_property ("saturation");
-    // unregister_property ("hue");
-    // register_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
-    // register_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
-    // register_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
-    // register_property (G_OBJECT (v4l2src_),"hue","hue", "Hue");
-
-    
     gst_bin_add_many (GST_BIN (v4l2_bin_),
 		      v4l2src_,
 		      capsfilter_,
@@ -359,9 +348,6 @@ namespace switcher
   V4L2Src::clean_elements ()
   {
     reset_bin ();
-    //GstUtils::clean_element (v4l2src_);
-    //GstUtils::clean_element (capsfilter_);//FIXME
-    //GstUtils::clean_element (v4l2_bin_);
   }
 
   std::string
@@ -671,6 +657,7 @@ namespace switcher
     unregister_property ("width");
     unregister_property ("height");
     unregister_property ("tv_standard");
+    unregister_property ("device");
     register_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
     register_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
     register_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
@@ -683,6 +670,10 @@ namespace switcher
   V4L2Src::stop ()
   {
     clean_elements ();
+    register_property_by_pspec (custom_props_->get_gobject (), 
+				devices_enum_spec_, 
+				"device",
+				"Capture Device");
     update_device_specific_properties (device_);
     unregister_property ("brightness");
     unregister_property ("contrast");
