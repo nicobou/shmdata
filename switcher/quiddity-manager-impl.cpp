@@ -380,6 +380,32 @@ namespace switcher
     return quiddity->get_nick_name ();
   }
 
+  bool 
+  QuiddityManager_Impl::rename (std::string nick_name, 
+				std::string new_nick_name)
+  {
+    if (!quiddities_nick_names_.contains (nick_name))
+      {
+	g_debug ("cannot rename because no quiddity is nick named %s",
+		 nick_name.c_str ());
+	return false;
+      }
+    
+    if (quiddities_nick_names_.contains (new_nick_name))
+      {
+	g_debug ("cannot rename because %s is already taken",
+		 new_nick_name.c_str ());
+	return false;
+      }
+       
+    Quiddity::ptr temp = get_quiddity (nick_name);
+    temp->set_nick_name (new_nick_name);
+    quiddities_nick_names_.insert (new_nick_name, temp->get_name());
+    quiddities_nick_names_.remove (nick_name);
+    return true;
+  }
+
+
   std::vector<std::string> 
   QuiddityManager_Impl::get_instances ()
   {
