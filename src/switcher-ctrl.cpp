@@ -28,6 +28,7 @@ static gboolean save;
 static gboolean load;
 static gboolean run;
 static gboolean createquiddity;
+static gboolean renamequiddity;
 static gboolean deletequiddity;
 static gboolean listclasses;
 static gboolean classesdoc;
@@ -56,6 +57,7 @@ static GOptionEntry entries[] =
     //FIXME make this working { "run", NULL, 0, G_OPTION_ARG_NONE, &run, "run history to file (--run filename)", NULL },
     { "create-quiddity", 'C', 0, G_OPTION_ARG_NONE, &createquiddity, "create a quiddity instance (-C quiddity_class [optional nick name])", NULL },
     { "delete-quiddity", 'D', 0, G_OPTION_ARG_NONE, &deletequiddity, "delete a quiddity instance by its name", NULL },
+    { "rename", 'r', 0, G_OPTION_ARG_NONE, &renamequiddity, "rename a quiddity (-r nick name new_nick_name)", NULL },
     { "list-classes", 'c', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", NULL },
     { "list-quiddities", 'e', 0, G_OPTION_ARG_NONE, &listquiddities, "list quiddity instances", NULL },
     { "list-props", 'p', 0, G_OPTION_ARG_NONE, &listprop, "list properties of a quiddity", NULL },
@@ -94,7 +96,8 @@ int main(int argc, char **argv)
       server = "http://localhost:8080";
     }
   
-  if (! (save
+  if (! (renamequiddity
+	 ^ save
 	 ^ load
 	 ^ run
 	 ^ listclasses 
@@ -122,7 +125,24 @@ int main(int argc, char **argv)
   controlProxy switcher_control(SOAP_IO_KEEPALIVE | SOAP_XML_INDENT);
   switcher_control.soap_endpoint = server;
   
-  if (save)
+  if (renamequiddity)
+    {
+      if (remaining_args[0] == NULL )
+	{
+	  g_printerr ("missing nick name\n");
+	  return false;
+	}
+      std::string res;
+      if (remaining_args[1] == NULL)
+	{
+	  g_printerr ("missing new nick name\n");
+	  return false;
+	}
+      
+      switcher_control.rename_quiddity (remaining_args[0], remaining_args[1], &res);
+      std::cout << res << std::endl;
+    }
+  else if (save)
     {
       std::string result;
       if (remaining_args[0] == NULL)
