@@ -348,7 +348,8 @@ namespace switcher
   }
 
   std::string 
-  QuiddityManager_Impl::create (std::string quiddity_class, std::string nick_name)
+  QuiddityManager_Impl::create (std::string quiddity_class, 
+				std::string nick_name)
   {
     if(!class_exists (quiddity_class))
       return "";
@@ -371,7 +372,7 @@ namespace switcher
 
 	if (!init_quiddity (quiddity))
 	  {
-	    g_debug ("initialization of %s with name %s failled\n",
+	    g_debug ("initialization of %s with name %s failled",
 		     quiddity_class.c_str (), nick_name.c_str ());
 	    
 	    return "";

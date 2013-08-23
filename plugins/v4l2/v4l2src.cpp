@@ -103,6 +103,12 @@ namespace switcher
     check_folder_for_v4l2_devices ("/dev");
     update_capture_device ();
     
+    if (capture_devices_.empty ())
+      {
+	g_debug ("no video 4 linux device detected");
+	return false;
+      }
+
     custom_props_.reset (new CustomPropertyHelper ());
     capture_devices_description_spec_ = 
       custom_props_->make_string_property ("devices-json", 

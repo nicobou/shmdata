@@ -513,8 +513,7 @@ controlService::create_quiddity (std::string quiddity_class,
    else 
      { 
        char *s = (char*)soap_malloc(this, 1024);
-       sprintf(s, "%s is not an available class", quiddity_class.c_str());
-       sprintf(s, "<error xmlns=\"http://tempuri.org/\">%s is not an available class</error>", quiddity_class.c_str());
+       sprintf(s, "%s cannot be created, see switcher logs", quiddity_class.c_str());
        return soap_senderfault("Quiddity creation error", s);
      }
   return SOAP_OK;
@@ -541,8 +540,7 @@ controlService::create_named_quiddity (std::string quiddity_class,
    else 
      { 
        char *s = (char*)soap_malloc(this, 1024);
-       sprintf(s, "%s is not an available class", quiddity_class.c_str());
-       sprintf(s, "<error xmlns=\"http://tempuri.org/\">%s is not an available class</error>", quiddity_class.c_str());
+       sprintf(s, "%s cannot be created, see switcher logs", quiddity_class.c_str());
        return soap_senderfault("Quiddity creation error", s);
      }
   return SOAP_OK;
