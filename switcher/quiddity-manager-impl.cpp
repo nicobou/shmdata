@@ -42,6 +42,7 @@
 #include "http-sdp.h"
 #include "http-sdp-dec.h"
 #include "jack-audio-source.h"
+#include "jack-sink.h"
 #include "logger.h"
 #include "rtp-session.h"
 #include "runtime.h"
@@ -202,6 +203,8 @@ namespace switcher
       					       HTTPSDPDec::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<JackAudioSource> (JackAudioSource::switcher_doc_.get_class_name (), 
 						       JackAudioSource::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<JackSink> (JackSink::switcher_doc_.get_class_name (), 
+						JackSink::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<Logger> (Logger::switcher_doc_.get_class_name (), 
       					       Logger::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<RtpSession> (RtpSession::switcher_doc_.get_class_name (), 
