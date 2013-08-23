@@ -51,54 +51,6 @@ namespace switcher
     capture_devices_description_ = NULL;
     device_ = 0; //default is zero
 
-    // publish_method ("Capture",
-    // 		    "capture", 
-    // 		    "start capturing", 
-    // 		    "success or fail",
-    // 		    Method::make_arg_description ("Device",
-    // 						  "device_file_path",
-    // 						  "or default",
-    // 						  NULL),
-    // 		    (Method::method_ptr) &capture_wrapped, 
-    // 		    G_TYPE_BOOLEAN,
-    // 		    Method::make_arg_type_description (G_TYPE_STRING, 
-    // 						       NULL),
-    // 		    this);
-
-    // publish_method ("Capture Full",
-    // 		    "capture_full", 
-    // 		    "start capturing", 
-    // 		    "success or fail",
-    // 		    Method::make_arg_description ("Device",
-    // 						  "device_file_path",
-    // 						  "Device File Path or default",
-    // 						  "Width",
-    // 						  "width",
-    // 						  "or default",
-    // 						  "Height",
-    // 						  "height",
-    // 						  "or default",
-    // 						  "Framerate Numerator",
-    // 						  "framerate_numerator",
-    // 						  "or default",
-    // 						  "Framerate Denominator",
-    // 						  "framerate_denominator",
-    // 						  "or default",
-    // 						  "TV standard",
-    // 						  "tv_standard",
-    // 						  "or default",
-    // 						  NULL),
-    // 		    (Method::method_ptr) &capture_full_wrapped, 
-    // 		    G_TYPE_BOOLEAN,
-    // 		    Method::make_arg_type_description (G_TYPE_STRING, 
-    // 						       G_TYPE_STRING, 
-    // 						       G_TYPE_STRING, 
-    // 						       G_TYPE_STRING, 
-    // 						       G_TYPE_STRING,
-    // 						       G_TYPE_STRING, 
-    // 						       NULL),
-    // 		    this);
-
     //device inspector
     check_folder_for_v4l2_devices ("/dev");
     update_capture_device ();
@@ -145,6 +97,9 @@ namespace switcher
       width_spec_ = NULL;
       height_spec_ = NULL;
       tv_standards_spec_ = NULL; 
+      framerate_spec_ = NULL;
+      framerate_numerator_spec_ = NULL;
+      framerate_denominator_spec_ = NULL;
 
       update_device_specific_properties (device_);
       return true;
@@ -178,6 +133,8 @@ namespace switcher
     update_discrete_resolution (cap_descr);
     update_width_height (cap_descr);
     update_tv_standard (cap_descr);
+    update_discrete_framerate (cap_descr);
+    update_framerate_numerator_denominator (cap_descr);
   }
 
   void
@@ -222,6 +179,48 @@ namespace switcher
   }
 
   void
+  V4L2Src::update_discrete_framerate (CaptureDescription cap_descr)
+  {
+    unregister_property ("framerate");
+    framerate_ = -1;
+    if (!cap_descr.frame_size_discrete_.empty ())
+      {
+     	gint i = 0;
+     	for (auto &it : cap_descr.frame_interval_discrete_)
+	  {
+	    framerates_enum_ [i].value = i;
+	    //FIXME free previous here
+	    //inversing enumerator and denominator because gst wants framerate while v4l2 gives frame interval 
+	    framerates_enum_ [i].value_name = g_strdup_printf ("%s/%s", 
+							       it.second.c_str (),
+							       it.first.c_str ());
+	    framerates_enum_ [i].value_nick = framerates_enum_ [i].value_name; 
+	    i ++;
+	  }
+     	framerates_enum_ [i].value = 0;
+     	framerates_enum_ [i].value_name = NULL;
+     	framerates_enum_ [i].value_nick = NULL;
+	
+	if (framerate_spec_ == NULL)
+	  framerate_spec_ = custom_props_->make_enum_property ("framerate", 
+								 "framerate of selected capture devices",
+								 0, 
+								 framerates_enum_,
+								 (GParamFlags) G_PARAM_READWRITE,
+								 V4L2Src::set_framerate,
+								 V4L2Src::get_framerate,
+								 this); 
+	framerate_ = 0;
+     	register_property_by_pspec (custom_props_->get_gobject (), 
+     				    framerate_spec_, 
+     				    "framerate",
+     				    "Framerate");
+	
+      }
+
+  }
+
+  void
   V4L2Src::update_width_height (CaptureDescription cap_descr)
   {
     unregister_property ("width");
@@ -230,6 +229,7 @@ namespace switcher
     height_ = -1;
     if (cap_descr.frame_size_stepwise_max_width_ > 0)
       {
+	width_ = cap_descr.frame_size_stepwise_max_width_;	
 	if (width_spec_ == NULL)
 	  width_spec_ = 
 	    custom_props_->make_int_property ("width", 
@@ -242,11 +242,12 @@ namespace switcher
 					      V4L2Src::get_width,
 					      this); 
 	
-	width_ = cap_descr.frame_size_stepwise_max_width_;	
      	register_property_by_pspec (custom_props_->get_gobject (), 
      				    width_spec_, 
      				    "width",
      				    "Width");
+
+	height_ = cap_descr.frame_size_stepwise_max_height_;
 
 	if (height_spec_ == NULL)
 	  height_spec_ = 
@@ -260,11 +261,60 @@ namespace switcher
 					      V4L2Src::get_height,
 					      this); 
 	
-	height_ = cap_descr.frame_size_stepwise_max_height_;
      	register_property_by_pspec (custom_props_->get_gobject (), 
      				    height_spec_, 
      				    "height",
      				    "Height");
+	
+      }
+
+  }
+
+  void
+  V4L2Src::update_framerate_numerator_denominator (CaptureDescription cap_descr)
+  {
+    unregister_property ("framerate_numerator");
+    unregister_property ("framerate_denominator");
+    framerate_numerator_ = -1;
+    framerate_denominator_ = -1;
+    if (cap_descr.frame_interval_stepwise_max_numerator_ > 0)
+      {
+
+	framerate_numerator_ = 60;	
+	
+	if (framerate_numerator_spec_ == NULL)
+	  framerate_numerator_spec_ = 
+	    custom_props_->make_int_property ("framerate_numerator", 
+					      "framerate numerator of selected capture devices",
+					      1, //FIXME do actually use values
+					      60,
+					      60,
+					      (GParamFlags) G_PARAM_READWRITE,
+					      V4L2Src::set_framerate_numerator,
+					      V4L2Src::get_framerate_numerator,
+					      this); 
+     	register_property_by_pspec (custom_props_->get_gobject (), 
+     				    framerate_numerator_spec_, 
+     				    "framerate_numerator",
+     				    "Framerate Numerator");
+
+	framerate_denominator_ = 1;
+	if (framerate_denominator_spec_ == NULL)
+	  framerate_denominator_spec_ = 
+	    custom_props_->make_int_property ("framerate_denominator", 
+					      "Framerate denominator of selected capture devices",
+					      1,
+					      1,
+					      1,
+					      (GParamFlags) G_PARAM_READWRITE,
+					      V4L2Src::set_framerate_denominator,
+					      V4L2Src::get_framerate_denominator,
+					      this); 
+	
+     	register_property_by_pspec (custom_props_->get_gobject (), 
+     				    framerate_denominator_spec_, 
+     				    "framerate_denominator",
+     				    "Framerate Denominator");
 	
       }
 
@@ -507,25 +557,22 @@ namespace switcher
 	 // 	  frmival.stepwise.max.denominator,
 	 // 	  frmival.stepwise.step.numerator,
 	 // 	  frmival.stepwise.step.denominator);
-	 char *stepwise_max_numerator = g_strdup_printf ("%u",frmival.stepwise.max.numerator);
-	 char *stepwise_max_denominator = g_strdup_printf ("%u",frmival.stepwise.max.denominator);
-	 description.frame_interval_stepwise_max_numerator_ = stepwise_max_numerator;
-	 description.frame_interval_stepwise_max_denominator_ = stepwise_max_denominator;
-	 g_free (stepwise_max_numerator);
-	 g_free (stepwise_max_denominator);
-	 char *stepwise_min_numerator = g_strdup_printf ("%u",frmival.stepwise.min.numerator);
-	 char *stepwise_min_denominator = g_strdup_printf ("%u",frmival.stepwise.min.denominator);
-	 description.frame_interval_stepwise_min_numerator_ = stepwise_min_numerator;
-	 description.frame_interval_stepwise_min_denominator_ = stepwise_min_denominator;
-	 g_free (stepwise_min_numerator);
-	 g_free (stepwise_min_denominator);
-	 char *stepwise_step_numerator = g_strdup_printf ("%u",frmival.stepwise.step.numerator);
-	 char *stepwise_step_denominator = g_strdup_printf ("%u",frmival.stepwise.step.denominator);
-	 description.frame_interval_stepwise_step_numerator_ = stepwise_step_numerator;
-	 description.frame_interval_stepwise_step_denominator_ = stepwise_step_denominator;
-	 g_free (stepwise_step_numerator);
-	 g_free (stepwise_step_denominator);
 
+	 description.frame_interval_stepwise_max_numerator_ = frmival.stepwise.max.numerator;
+	 description.frame_interval_stepwise_max_denominator_ = frmival.stepwise.max.denominator;
+	 description.frame_interval_stepwise_min_numerator_ = frmival.stepwise.max.numerator;
+	 description.frame_interval_stepwise_min_denominator_ = frmival.stepwise.max.denominator;
+	 description.frame_interval_stepwise_step_numerator_ = frmival.stepwise.step.numerator;
+	 description.frame_interval_stepwise_step_denominator_ = frmival.stepwise.step.denominator;
+       }
+     else
+       {
+	 description.frame_interval_stepwise_max_numerator_ = -1;
+	 description.frame_interval_stepwise_max_denominator_ = -1;
+	 description.frame_interval_stepwise_min_numerator_ = -1;
+	 description.frame_interval_stepwise_min_denominator_ = -1;
+	 description.frame_interval_stepwise_step_numerator_ = -1;
+	 description.frame_interval_stepwise_step_denominator_ = -1;
        }
      close(fd);
 
@@ -637,13 +684,28 @@ namespace switcher
 	  + ", height=(int)" 
 	  + capture_devices_.at (device_).frame_size_discrete_.at (resolution_).second.c_str ();
       }
-      
+
+    if (framerate_ > 0)
+      {
+	caps = 
+	  caps + ", framerate=(fraction)" 
+	  + capture_devices_.at (device_).frame_interval_discrete_.at (framerate_).second.c_str () 
+	  + "/" 
+	  + capture_devices_.at (device_).frame_interval_discrete_.at (framerate_).first.c_str () ;
+      }
+    else if (framerate_numerator_ > -1)
+      {
+	gchar *numerator = g_strdup_printf ("%d",framerate_numerator_);
+	gchar *denominator = g_strdup_printf ("%d",framerate_denominator_);
+	caps = 
+	  caps + ", framerate=(fraction)" 
+	  + numerator 
+	  + "/" 
+	  + denominator ;
+	g_free (numerator);
+	g_free (denominator);
+      }
     
-  //FIXME   if ((g_strcmp0 (framerate_numerator, "default") != 0)
-  //    	&& (g_strcmp0 (framerate_denominator, "default") != 0))
-  //     caps = caps + ", framerate=(fraction)" + framerate_numerator + "/" + framerate_denominator;
-    
-  //   //g_print ("v4l2 -- forcing caps %s", caps.c_str ());
     GstCaps *usercaps = gst_caps_from_string (caps.c_str ());
     g_object_set (G_OBJECT (capsfilter_), 
    		  "caps",
@@ -683,93 +745,7 @@ namespace switcher
     return true;
   }
 
-
-  // bool 
-  // V4L2Src::capture_full (const char *device_file_path, 
-  // 			 const char *width,
-  // 			 const char *height,
-  // 			 const char *framerate_numerator,
-  // 			 const char *framerate_denominator,
-  // 			 const char *tv_standard)
-  // {
-  //   make_elements ();
-
-  //   if (g_strcmp0 (device_file_path, "default") != 0)
-  //     {
-  // 	if (capture_devices_.find (device_file_path) != capture_devices_.end ())	
-  // 	  g_object_set (G_OBJECT (v4l2src_), "device", device_file_path, NULL);
-  // 	else
-  // 	  {
-  // 	    g_warning ("V4L2Src: device %s is not a detected as a v4l2 device, cannot use", device_file_path);
-  // 	    return false;
-  // 	  }
-  //     }
-    
-  //   if (g_strcmp0 (tv_standard, "default") != 0)
-  //     g_object_set (G_OBJECT (v4l2src_), "norm", tv_standard, NULL);
-    
-  //   std::string caps;
-  //   caps = "video/x-raw-yuv";
-  //   if ((g_strcmp0 (width, "default") != 0)
-  //    	&& (g_strcmp0 (height, "default") != 0))
-  //     caps = caps + ", width=(int)"+ width + ", height=(int)" + height;
-    
-  //   if ((g_strcmp0 (framerate_numerator, "default") != 0)
-  //    	&& (g_strcmp0 (framerate_denominator, "default") != 0))
-  //     caps = caps + ", framerate=(fraction)" + framerate_numerator + "/" + framerate_denominator;
-    
-  //   //g_print ("v4l2 -- forcing caps %s", caps.c_str ());
-  //   GstCaps *usercaps = gst_caps_from_string (caps.c_str ());
-  //   g_object_set (G_OBJECT (capsfilter_), 
-  // 		  "caps",
-  // 		  usercaps,
-  // 		  NULL);
-  //   gst_caps_unref (usercaps);
-
-  //   set_raw_video_element (v4l2_bin_);
-    
-  //   return true;
-  // }
-  
-  // gboolean 
-  // V4L2Src::capture_full_wrapped (gpointer device_file_path, 
-  // 				 gpointer width,
-  // 				 gpointer height,
-  // 				 gpointer framerate_numerator,
-  // 				 gpointer framerate_denominator, 
-  // 				 gpointer tv_standard,
-  // 				 gpointer user_data)
-  // {
-  //   V4L2Src *context = static_cast<V4L2Src *>(user_data);
-    
-  //   if (context->capture_full ((const char *)device_file_path, 
-  // 			       (const char *)width,
-  // 			       (const char *)height,
-  // 			       (const char *)framerate_numerator,
-  // 			       (const char *)framerate_denominator,
-  // 			       (const char *)tv_standard))
-  //     return TRUE;
-  //   else
-  //     return FALSE;
-  // }
-
-  // gboolean 
-  // V4L2Src::capture_wrapped (gpointer device_file_path, 
-  // 			    gpointer user_data)
-  // {
-  //   V4L2Src *context = static_cast<V4L2Src *>(user_data);
-    
-  //   if (context->capture_full ((const char *)device_file_path, 
-  // 			       "default",
-  // 			       "default",
-  // 			       "default",
-  // 			       "default",
-  // 			       "default"))
-  //     return TRUE;
-  //   else
-  //     return FALSE;
-  // }
-
+ 
   gchar *
   V4L2Src::get_capture_devices_json (void *user_data)
   {
@@ -835,19 +811,31 @@ namespace switcher
 	   }
 	 builder->end_array ();
 
-	 builder->add_string_member ("stepwise max numerator", 
-	 			    it.frame_interval_stepwise_max_numerator_.c_str());
-	 builder->add_string_member ("stepwise max denominator", 
-	 			    it.frame_interval_stepwise_max_denominator_.c_str());
-	 builder->add_string_member ("stepwise min numerator", 
-	 			    it.frame_interval_stepwise_min_numerator_.c_str());
-	 builder->add_string_member ("stepwise min denominator", 
-	 			    it.frame_interval_stepwise_min_denominator_.c_str());
-	 builder->add_string_member ("stepwise step numerator", 
-	 			    it.frame_interval_stepwise_step_numerator_.c_str());
-	 builder->add_string_member ("stepwise step denominator", 
-	 			    it.frame_interval_stepwise_step_denominator_.c_str());
-	
+	 char *stepwise_max_numerator = g_strdup_printf ("%d",it.frame_interval_stepwise_max_numerator_);
+	 char *stepwise_min_numerator = g_strdup_printf ("%d",it.frame_interval_stepwise_min_numerator_);
+	 char *stepwise_step_numerator = g_strdup_printf ("%d",it.frame_interval_stepwise_step_numerator_);
+	 char *stepwise_max_denominator = g_strdup_printf ("%d",it.frame_interval_stepwise_max_denominator_);
+	 char *stepwise_min_denominator = g_strdup_printf ("%d",it.frame_interval_stepwise_min_denominator_);
+	 char *stepwise_step_denominator = g_strdup_printf ("%d",it.frame_interval_stepwise_step_denominator_);
+	 
+	 builder->add_string_member ("stepwise max frame interval numerator", 
+				     stepwise_max_numerator);
+	 builder->add_string_member ("stepwise max frame interval denominator", 
+				     stepwise_max_denominator);
+	 builder->add_string_member ("stepwise min frame interval numerator", 
+				     stepwise_min_numerator);
+	 builder->add_string_member ("stepwise min frame interval denominator", 
+				     stepwise_min_denominator);
+	 builder->add_string_member ("stepwise step frame interval numerator", 
+				     stepwise_step_numerator);
+	 builder->add_string_member ("stepwise step frame interval denominator", 
+				     stepwise_step_denominator);
+	 g_free (stepwise_max_numerator);
+	 g_free (stepwise_min_numerator);
+	 g_free (stepwise_step_numerator);
+	 g_free (stepwise_max_denominator);
+	 g_free (stepwise_min_denominator);
+	 g_free (stepwise_step_denominator);
 	builder->end_object ();
       }
 
@@ -929,5 +917,46 @@ namespace switcher
     return context->tv_standard_;
   }
 
+  void 
+  V4L2Src::set_framerate (const gint value, void *user_data)
+  {
+    V4L2Src *context = static_cast <V4L2Src *> (user_data);
+    context->framerate_ = value;
+  }
+  
+  gint 
+  V4L2Src::get_framerate (void *user_data)
+  {
+    V4L2Src *context = static_cast <V4L2Src *> (user_data);
+    return context->framerate_;
+  }
+
+  void 
+  V4L2Src::set_framerate_numerator (const gint value, void *user_data)
+  {
+    V4L2Src *context = static_cast <V4L2Src *> (user_data);
+    context->framerate_numerator_ = value;
+  }
+  
+  gint 
+  V4L2Src::get_framerate_numerator (void *user_data)
+  {
+    V4L2Src *context = static_cast <V4L2Src *> (user_data);
+    return context->framerate_numerator_;
+  }
+
+  void 
+  V4L2Src::set_framerate_denominator (const gint value, void *user_data)
+  {
+    V4L2Src *context = static_cast <V4L2Src *> (user_data);
+    context->framerate_denominator_ = value;
+  }
+  
+  gint 
+  V4L2Src::get_framerate_denominator (void *user_data)
+  {
+    V4L2Src *context = static_cast <V4L2Src *> (user_data);
+    return context->framerate_denominator_;
+  }
 
 }

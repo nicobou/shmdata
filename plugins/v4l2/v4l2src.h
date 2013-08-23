@@ -73,12 +73,12 @@ namespace switcher
       gint frame_size_stepwise_step_height_;
       std::vector <std::string> tv_standards_;
       std::vector <std::pair <std::string/*numerator*/,std::string /*denominator*/> > frame_interval_discrete_;
-      std::string frame_interval_stepwise_min_numerator_;
-      std::string frame_interval_stepwise_min_denominator_;
-      std::string frame_interval_stepwise_max_numerator_;
-      std::string frame_interval_stepwise_max_denominator_;
-      std::string frame_interval_stepwise_step_numerator_;
-      std::string frame_interval_stepwise_step_denominator_;
+      gint frame_interval_stepwise_min_numerator_;
+      gint frame_interval_stepwise_min_denominator_;
+      gint frame_interval_stepwise_max_numerator_;
+      gint frame_interval_stepwise_max_denominator_;
+      gint frame_interval_stepwise_step_numerator_;
+      gint frame_interval_stepwise_step_denominator_;
     } CaptureDescription;
 
     bool make_elements ();
@@ -88,6 +88,8 @@ namespace switcher
     void update_discrete_resolution (CaptureDescription descr);
     void update_width_height (CaptureDescription descr);
     void update_tv_standard (CaptureDescription descr);
+    void update_discrete_framerate (CaptureDescription cap_descr);
+    void update_framerate_numerator_denominator (CaptureDescription cap_descr);
 
     /* static gboolean capture_full_wrapped (gpointer device_file_path,  */
     /* 					  gpointer width, */
@@ -145,6 +147,23 @@ namespace switcher
     static void set_tv_standard (const gint value, void *user_data);
     static gint get_tv_standard (void *user_data);
 
+    //framerate enum and select for the currently selected device,
+    //this is updated when selecting an other device
+    GParamSpec *framerate_spec_; 
+    GEnumValue framerates_enum_ [128];
+    gint framerate_;
+    static void set_framerate (const gint value, void *user_data);
+    static gint get_framerate (void *user_data);
+
+    //width height for the currently selected device
+    GParamSpec *framerate_numerator_spec_;
+    GParamSpec *framerate_denominator_spec_;
+    gint framerate_numerator_;
+    gint framerate_denominator_;
+    static void set_framerate_numerator (const gint value, void *user_data);
+    static gint get_framerate_numerator (void *user_data);
+    static void set_framerate_denominator (const gint value, void *user_data);
+    static gint get_framerate_denominator (void *user_data);
 
     std::vector <CaptureDescription> capture_devices_; //FIXME should be static
 
