@@ -361,8 +361,8 @@ namespace switcher
   bool 
   Segment::reset_bin ()
   {
-    // clean_bin ();
-    // make_bin ();
+    clean_bin ();
+    make_bin ();
     if (!(bool)runtime_)
       return false;
     set_runtime (runtime_);
