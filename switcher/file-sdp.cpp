@@ -72,11 +72,9 @@ namespace switcher
 		    (Method::method_ptr)&to_shmdata_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    true,
-		    false,
 		    this);
     
-    register_property (G_OBJECT (sdpdemux_),"latency","latency", "Latency", true, true);
+    register_property (G_OBJECT (sdpdemux_),"latency","latency", "Latency");
     return true;
   }
 

@@ -49,15 +49,13 @@ namespace switcher
 		    "to_shmdata", 
 		    "make  shmdata writer(s) from a GStreamer video pipeline", 
 		    "success or fail",
-		    Method::make_arg_description ("GStreamer Pipeline"
+		    Method::make_arg_description ("GStreamer Pipeline",
 						  "gst_pipeline", 
 						  "the GStreamer pipeline with no sink to instanciate",
 						  NULL),
 		    (Method::method_ptr) &to_shmdata_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    true,
-		    false,
 		    this);
 
     return true;

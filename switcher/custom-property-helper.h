@@ -41,6 +41,9 @@ namespace switcher
     typedef gboolean (*get_boolean_method)(void *user_data);
     typedef void (*set_int_method)(const gint value, void *user_data);
     typedef gint (*get_int_method)(void *user_data);
+    typedef void (*set_enum_method)(const gint value, void *user_data);
+    typedef gint(*get_enum_method)(void *user_data);
+
 
     typedef struct {
       void (*set) (void);
@@ -82,6 +85,17 @@ namespace switcher
 			 get_int_method get_method,
 			 void *user_data);
 
+    
+    GParamSpec *
+      make_enum_property (const gchar *nickname, 
+			  const gchar *description,
+			  const gint default_value, //map key
+			  const GEnumValue *string_map_enum,
+			  GParamFlags read_write_flags,
+			  set_enum_method set_method,
+			  get_enum_method get_method,
+			  void *user_data);
+    
     static bool get_by_gvalue (GValue *value, void *user_data);
     static bool set_by_gvalue (const GValue *val, void *user_data);
     

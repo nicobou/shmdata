@@ -77,6 +77,7 @@ namespace switcher
 			  std::string nick_name);
       bool remove (std::string quiddity_name);
       std::shared_ptr<Quiddity> get_quiddity (std::string quiddity_name);
+      bool rename (std::string nick_name, std::string new_nick_name);
       // only one hook is allowed now, 
       // it is used by the quiddity manager-spy-create-remove
       // for converting creating removal into signals

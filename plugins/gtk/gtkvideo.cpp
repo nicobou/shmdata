@@ -72,7 +72,7 @@ namespace switcher
     if (instances_counter_ == 0)
       g_thread_new ("GTKMainLoopThread", GThreadFunc(gtk_main_loop_thread), this);
     instances_counter_++;
-    
+        
     custom_props_.reset (new CustomPropertyHelper ());
     fullscreen_prop_spec_ = 
       custom_props_->make_boolean_property ("fullscreen", 
@@ -85,9 +85,7 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				fullscreen_prop_spec_, 
 				"fullscreen",
-				"Fullscreen",
-				true,
-				true);
+				"Fullscreen");
 
     g_object_set (G_OBJECT (xvimagesink_),
 		  "force-aspect-ratio", TRUE,
@@ -146,12 +144,6 @@ namespace switcher
 
   GTKVideo::~GTKVideo ()
   {
-    GstUtils::clean_element (xvimagesink_);
-    if (on_error_command_ != NULL)
-      delete on_error_command_;
-    instances_counter_ --;
-
-    
 
     //should destroy child widgets too
     if (main_window_ != NULL)
@@ -164,6 +156,11 @@ namespace switcher
 	g_debug ("GTKVideo::~GTKVideo invoking gtk_main_quit");
 	gtk_main_quit ();
       }
+
+    // GstUtils::clean_element (xvimagesink_);
+    if (on_error_command_ != NULL)
+      delete on_error_command_;
+    instances_counter_ --;
     
   }
   
@@ -189,7 +186,6 @@ namespace switcher
      g_object_set_data (G_OBJECT (context->xvimagesink_), 
 			"window-handle",
 			(gpointer)&context->window_handle_);
-
   }
   
 

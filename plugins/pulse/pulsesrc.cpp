@@ -74,8 +74,6 @@ namespace switcher
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_NONE, 
 						       NULL),
-		    true,
-		    true,
 		    this);
     
 
@@ -92,8 +90,6 @@ namespace switcher
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, 
 						       NULL),
-		    true,
-		    true,
 		    this);
 
 
@@ -109,9 +105,7 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				capture_devices_description_spec_, 
 				"devices-json",
-				"Capture Devices",
-				true,
-				true);
+				"Capture Devices");
     return true;
   }
 
@@ -138,8 +132,8 @@ namespace switcher
 
     unregister_property ("volume");
     unregister_property ("mute");
-    register_property (G_OBJECT (pulsesrc_),"volume","volume", "Volume", true, true);
-    register_property (G_OBJECT (pulsesrc_),"mute","mute", "Mute", true, true);
+    register_property (G_OBJECT (pulsesrc_),"volume","volume", "Volume");
+    register_property (G_OBJECT (pulsesrc_),"mute","mute", "Mute");
 
     g_object_set (G_OBJECT (pulsesrc_), "client", get_nick_name ().c_str (), NULL);
     
@@ -401,7 +395,7 @@ namespace switcher
   {
     PulseSrc *context = static_cast<PulseSrc *>(user_data);
     
-    if (context->capture_device ("NONE"))
+    if (context->capture_device ("default"))
       return TRUE;
     else
       return FALSE;
@@ -424,7 +418,7 @@ namespace switcher
   {
     make_elements ();
 
-    if (g_strcmp0 (pulse_device_name, "NONE") != 0)
+    if (g_strcmp0 (pulse_device_name, "default") != 0)
       if (capture_devices_.find (pulse_device_name) != capture_devices_.end ())	
      	g_object_set (G_OBJECT (pulsesrc_), "device", pulse_device_name, NULL);
       else

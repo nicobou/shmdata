@@ -295,6 +295,7 @@ namespace switcher
   QuiddityManager_Impl::init_quiddity (Quiddity::ptr quiddity)
   {
     quiddity->set_manager_impl (shared_from_this());
+
     if (!quiddity->init ())
       return false;
 
@@ -347,7 +348,8 @@ namespace switcher
   }
 
   std::string 
-  QuiddityManager_Impl::create (std::string quiddity_class, std::string nick_name)
+  QuiddityManager_Impl::create (std::string quiddity_class, 
+				std::string nick_name)
   {
     if(!class_exists (quiddity_class))
       return "";
@@ -370,7 +372,7 @@ namespace switcher
 
 	if (!init_quiddity (quiddity))
 	  {
-	    g_debug ("initialization of %s with name %s failled\n",
+	    g_debug ("initialization of %s with name %s failled",
 		     quiddity_class.c_str (), nick_name.c_str ());
 	    
 	    return "";
@@ -378,6 +380,32 @@ namespace switcher
       }
     return quiddity->get_nick_name ();
   }
+
+  bool 
+  QuiddityManager_Impl::rename (std::string nick_name, 
+				std::string new_nick_name)
+  {
+    if (!quiddities_nick_names_.contains (nick_name))
+      {
+	g_debug ("cannot rename because no quiddity is nick named %s",
+		 nick_name.c_str ());
+	return false;
+      }
+    
+    if (quiddities_nick_names_.contains (new_nick_name))
+      {
+	g_debug ("cannot rename because %s is already taken",
+		 new_nick_name.c_str ());
+	return false;
+      }
+       
+    Quiddity::ptr temp = get_quiddity (nick_name);
+    temp->set_nick_name (new_nick_name);
+    quiddities_nick_names_.insert (new_nick_name, temp->get_name());
+    quiddities_nick_names_.remove (nick_name);
+    return true;
+  }
+
 
   std::vector<std::string> 
   QuiddityManager_Impl::get_instances ()

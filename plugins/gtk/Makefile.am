@@ -34,3 +34,35 @@ libgtkvideo_la_CXXFLAGS = \
     $(SHMDATA_CFLAGS) \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir) 
+
+
+####test
+AM_CFLAGS = \
+    -I$(top_srcdir)
+
+AM_CXXFLAGS =  \
+    $(GTK_CFLAGS) \
+    $(GLIB_CFLAGS) \
+    $(GSOAP_CFLAGS) \
+    $(GST_CFLAGS) \
+    $(JSONGLIB_CFLAGS) \
+    $(SHMDATA_CFLAGS) \
+    -I$(top_srcdir) 
+
+AM_LDFLAGS = \
+    $(GTK_LIBS) \
+    $(GLIB_LIBS) \
+    $(GSOAP_LIBS) \
+    $(GST_LIBS) \
+    $(JSONGLIB_LIBS) \
+    $(SHMDATA_LIBS) \
+    $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
+
+check_PROGRAMS = \
+    check_gtk_video
+
+check_gtk_video_SOURCES = \
+    check_gtk_video.cpp
+
+TESTS = $(check_PROGRAMS)
+

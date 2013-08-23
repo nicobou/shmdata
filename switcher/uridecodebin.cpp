@@ -70,9 +70,7 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				loop_prop_, 
 				"loop",
-				"Looping",
-				true,
-				true);
+				"Looping");
 
     playing_ = false;
     playing_prop_ = 
@@ -86,9 +84,7 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				playing_prop_, 
 				"playing",
-				"Playing",
-				true,
-				true);
+				"Playing");
         
     publish_method ("Set URI",
 		    "to_shmdata", 
@@ -101,8 +97,6 @@ namespace switcher
 		    (Method::method_ptr) &to_shmdata_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    true,
-		    true,
 		    this);
     
     publish_method ("Pause",
@@ -114,8 +108,6 @@ namespace switcher
 		    (Method::method_ptr) &pause_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    true,
-		    true,
 		    this);
     
     publish_method ("Seek",
@@ -129,8 +121,6 @@ namespace switcher
 		    (Method::method_ptr) &seek_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-		    true,
-		    true,
 		    this);
     
     publish_method ("Speed",
@@ -144,8 +134,6 @@ namespace switcher
 		    (Method::method_ptr) &speed_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-		    true,
-		    true,
 		    this);
     
     

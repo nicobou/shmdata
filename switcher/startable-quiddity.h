@@ -1,9 +1,9 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher-myplugin.
+ * This file is part of libswitcher.
  *
- * switcher-myplugin is free software; you can redistribute it and/or
+ * libswitcher is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2 of the License, or (at your option) any later version.
@@ -19,37 +19,31 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_MY_PLUGIN_H__
-#define __SWITCHER_MY_PLUGIN_H__
 
-#include "switcher/quiddity.h"
-#include "switcher/startable-quiddity.h"
-#include "switcher/custom-property-helper.h"
+#ifndef __SWITCHER_STARTABLE_QUIDDITY_H__
+#define __SWITCHER_STARTABLE_QUIDDITY_H__
+
+#include <glib.h>
 #include <memory>
 
 namespace switcher
 {
-  
-  class MyPlugin : public Quiddity, public StartableQuiddity {
+
+  class StartableQuiddity
+  {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(MyPlugin);
-    ~MyPlugin ();
+    typedef std::shared_ptr<StartableQuiddity> ptr;
+    StartableQuiddity ();
 
-    bool start ();
-    bool stop ();
-    
+    virtual bool start () = 0;
+    virtual bool stop () = 0;
+    void init_startable (void *quiddity);//FIXME should called quiddity-manager-impl 
+    //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
+
   private:
-    CustomPropertyHelper::ptr custom_props_;
-    bool myprop_;
-    GParamSpec *myprop_prop_;
-
-    static gboolean get_myprop (void *user_data);
-    static void set_myprop (gboolean myprop, void *user_data);
-    static gchar *my_hello_world_method (gchar *first_arg, void *user_data);
-    gchar *hello_;
+    static gboolean start_wrapped (gpointer unused, gpointer user_data);
+    static gboolean stop_wrapped (gpointer unused, gpointer user_data);
   };
-  
-  SWITCHER_DECLARE_PLUGIN(MyPlugin);
 
 }  // end of namespace
 

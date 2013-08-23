@@ -26,9 +26,9 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FakeShmdataWriter,
-				       "Shmdata Adder",
+				       "Shmdata From Software",
 				       "fake source", 
-				       "add an external shmdata",
+				       "add a shmdata from an other software",
 				       "LGPL",
 				       "fakeshmsrc",
 				       "Nicolas Bouillot");
@@ -50,8 +50,6 @@ namespace switcher
 		    (Method::method_ptr) &add_shmdata_path_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    true,
-		    true,
 		    this);
     return true;
   }

@@ -33,8 +33,6 @@ namespace switcher
     closure_ (NULL)
   {
     json_description_.reset (new JSONBuilder());
-    is_configuration_ = false;
-    is_control_ = false;
   }
 
   Method::~Method ()
@@ -61,11 +59,11 @@ namespace switcher
 	return false;
       }
     closure_ = g_cclosure_new (G_CALLBACK (method), user_data, Method::destroy_data);
-    g_closure_set_marshal  (closure_,g_cclosure_marshal_generic);
+    g_closure_set_marshal  (closure_, g_cclosure_marshal_generic);
     return_type_ =  return_type;
     arg_types_ = arg_types;
     num_of_value_args_ = arg_types_.size();
-
+    
     return true;
   }
 
@@ -141,12 +139,8 @@ namespace switcher
 			   std::string method_name,
 			   std::string short_description,
 			   std::string return_description,
-			   args_doc arg_description,
-			   bool is_configuration,
-			   bool is_control)
+			   args_doc arg_description)
   {
-    is_configuration_ = is_configuration;
-    is_control_ = is_control;
 
     json_description_->reset ();
     json_description_->begin_object ();
@@ -155,16 +149,6 @@ namespace switcher
     json_description_->add_string_member ("description", short_description.c_str ());
     json_description_->add_string_member ("return type", g_type_name (return_type_));
     json_description_->add_string_member ("return description", return_description.c_str ());
-    
-    if (is_configuration_)
-      json_description_->add_string_member ("is configuration", "true");
-    else
-      json_description_->add_string_member ("is configuration", "false");
-    
-    if (is_control_)
-      json_description_->add_string_member ("is control", "true");
-    else
-      json_description_->add_string_member ("is control", "false");
     
     json_description_->set_member_name ("arguments");
     json_description_->begin_array ();

@@ -61,6 +61,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     shmdata-to-file.cpp \
     shmdata-writer.cpp \
     signal-string.cpp \
+    startable-quiddity.cpp \
     string-memory.cpp \
     udpsink.cpp \
     uridecodebin.cpp \
@@ -133,6 +134,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     shmdata-to-file.h \
     shmdata-writer.h \
     signal-string.h \
+    startable-quiddity.h \
     string-map.h \
     string-map_spec.h \
     string-memory.h \

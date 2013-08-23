@@ -231,14 +231,10 @@ namespace switcher
   Quiddity::register_property_by_pspec (GObject *object, 
 					GParamSpec *pspec, 
 					std::string name_to_give,
-					std::string long_name,
-					bool is_configuration,
-					bool is_control)
+					std::string long_name)
   {
     Property::ptr prop (new Property ());
     prop->set_gobject_pspec (object, pspec, long_name);
-    prop->set_is_configuration (is_configuration);
-    prop->set_is_control (is_control);
 
     if (properties_.find(name_to_give) == properties_.end())
       {
@@ -342,9 +338,7 @@ namespace switcher
   Quiddity::register_property (GObject *object, 
 			       std::string gobject_property_name, 
 			       std::string name_to_give,
-			       std::string long_name,
-			       bool is_configuration,
-			       bool is_control)
+			       std::string long_name)
   {
     GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), gobject_property_name.c_str());
     if (pspec == NULL)
@@ -353,7 +347,7 @@ namespace switcher
 	return false;
       }
     
-    return register_property_by_pspec (object, pspec, name_to_give, long_name, is_configuration, is_control);
+    return register_property_by_pspec (object, pspec, name_to_give, long_name);
   }
 
   
@@ -467,9 +461,7 @@ namespace switcher
 				    const std::string method_name,
 				    const std::string short_description,
 				    const std::string return_description,
-				    const Method::args_doc arg_description,
-				    bool is_configuration,
-				    bool is_control)
+				    const Method::args_doc arg_description)
   {
     if (methods_.find( method_name ) == methods_.end())
       {
@@ -480,9 +472,7 @@ namespace switcher
 					    method_name, 
 					    short_description, 
 					    return_description,
-					    arg_description,
-					    is_configuration,
-					    is_control);
+					    arg_description);
     return true;
   }
 
@@ -726,8 +716,6 @@ namespace switcher
 			    Method::method_ptr method, 
 			    Method::return_type return_type,
 			    Method::args_types arg_types, 
-			    bool is_configuration,
-			    bool is_control,
 			    gpointer user_data)
   {
     if (!register_method (method_name,
@@ -741,9 +729,7 @@ namespace switcher
 				 method_name,
 				 short_description,
 				 return_description,
-				 arg_description,
-				 is_configuration,
-				 is_control))
+				 arg_description))
       return false;
     return true;
   }
