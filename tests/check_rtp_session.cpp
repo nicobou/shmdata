@@ -97,6 +97,7 @@ main (int argc,
    
     manager->create ("videotestsrc","v");
     manager->invoke_va ("v", "set_runtime", NULL, "av_runtime", NULL);
+    manager->invoke_va ("v", "start", NULL, NULL, NULL);
 
     manager->create ("runtime", "rtp_runtime");
     manager->create ("rtpsession","rtp");

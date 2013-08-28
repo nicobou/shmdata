@@ -30,7 +30,8 @@
 namespace switcher
 {
   
-  class MyPlugin : public Quiddity, public StartableQuiddity {
+  class MyPlugin : public Quiddity, public StartableQuiddity 
+  {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(MyPlugin);
     ~MyPlugin ();

@@ -26,18 +26,21 @@
 #include "base-source.h"
 #include "gst-element-cleaner.h"
 #include "string-map.h"
+#include "startable-quiddity.h"
 #include <memory>
 #include "custom-property-helper.h"
 
 namespace switcher
 {
 
-  class Uridecodebin : public BaseSource, public GstElementCleaner
+  class Uridecodebin : public BaseSource, public GstElementCleaner, public StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Uridecodebin);
     ~Uridecodebin();
-    bool to_shmdata (std::string uri);
+
+    bool start ();
+    bool stop ();
 
     static gboolean get_loop (void *user_data);
     static void set_loop (gboolean mute, void *user_data);
@@ -57,12 +60,20 @@ namespace switcher
    QuiddityCommand *on_error_command_; //for the runtime error handler
    void clean_on_error_command ();
 
+   
    //custom properties 
    CustomPropertyHelper::ptr custom_props_;
    GParamSpec *loop_prop_;
    bool loop_;
    GParamSpec *playing_prop_;
    bool playing_;
+
+   GParamSpec *uri_spec_;
+   gchar *uri_;
+   static void set_uri (const gchar *value, void *user_data);
+   static gchar *get_uri (void *user_data);
+   bool to_shmdata ();
+
 
    static void uridecodebin_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
    static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);

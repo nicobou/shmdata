@@ -44,13 +44,12 @@ namespace switcher
     if (!GstUtils::make_element ("videotestsrc",&videotestsrc_))
       return false;
 
+    init_startable (this);
+
     g_object_set (G_OBJECT (videotestsrc_),
 		  "is-live", TRUE,
 		  NULL);
     
-    //set the name before registering properties
-    set_name (gst_element_get_name (videotestsrc_));
-
     // //This register all the properties
     // guint numproperty;
     // GParamSpec **property = g_object_class_list_properties (G_OBJECT_GET_CLASS(videotestsrc_), &numproperty);
@@ -66,7 +65,20 @@ namespace switcher
 		       "pattern", 
 		       "Video Pattern");
     
+    //set_raw_video_element (videotestsrc_);
+    return true;
+  }
+
+  bool 
+  VideoTestSource::start ()
+  {
     set_raw_video_element (videotestsrc_);
+    return true;
+  }
+
+  bool 
+  VideoTestSource::stop ()
+  {
     return true;
   }
   

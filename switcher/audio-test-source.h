@@ -30,7 +30,7 @@
 namespace switcher
 {
 
-  class AudioTestSource : public AudioSource
+  class AudioTestSource : public AudioSource, public StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AudioTestSource);

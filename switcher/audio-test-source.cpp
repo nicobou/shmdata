@@ -39,6 +39,8 @@ namespace switcher
     if (!GstUtils::make_element ("audiotestsrc",&audiotestsrc_))
       return false;
 
+    init_startable (this);
+
     g_object_set (G_OBJECT (audiotestsrc_),
 		  "is-live", TRUE,
 		  "samplesperbuffer",512,
@@ -52,7 +54,7 @@ namespace switcher
 		       "samplesperbuffer", 
 		       "Samples Per Buffer");
     register_property (G_OBJECT (audiotestsrc_),"wave", "wave", "Signal Form");
-    set_raw_audio_element (audiotestsrc_);
+
     return true;
   }
 
@@ -71,7 +73,7 @@ namespace switcher
   bool 
   AudioTestSource::stop ()
   {
-    
     return true;
   }
+
 }
