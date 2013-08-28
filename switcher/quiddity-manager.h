@@ -43,10 +43,10 @@ namespace switcher
       typedef std::shared_ptr<QuiddityManager> ptr; 
       typedef std::vector<QuiddityCommand::ptr> CommandHistory; 
       typedef void (*PropCallback)(std::string subscriber_name,
-			       std::string quiddity_name,
-			       std::string property_name,
-			       std::string value,
-			       void *user_data);
+				   std::string quiddity_name,
+				   std::string property_name,
+				   std::string value,
+				   void *user_data);
       typedef void (*SignalCallback)(std::string subscriber_name,
 				     std::string quiddity_name,
 				     std::string property_name,

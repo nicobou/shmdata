@@ -20,6 +20,7 @@
  */
 
 #include "switcher/quiddity-manager.h"
+#include "switcher/quiddity-basic-test.h"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -29,28 +30,15 @@ main (int argc,
 {
   bool success = true;
   switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
-  
   std::vector<std::string> classes = manager->get_classes ();
   
-  std::vector<std::string>::iterator iter;
-  
-  for (iter = classes.begin(); iter != classes.end (); ++iter)
-     {
-       std::string class_name (*iter);
-       //std::cout << class_name << std::endl; 
-       std::string res = manager->create(class_name, class_name);
-       //std::cout << res << std::endl;
-       if (res.compare (class_name) != 0)
-   	{
-   	  g_printerr ("quiddity %s cannot be created\n",iter->c_str ());
-   	}
-       else
-	 if (!manager->remove (class_name))
-	   {
-	     g_printerr ("error while removing quiddity %s\n",iter->c_str ());
-	     success = false;
-	   }
-     }
+  for (auto &it: classes)
+    {  
+      //std::cout << class_name << std::endl; 
+      if (!switcher::QuiddityBasicTest::test_create (manager, it))
+	success = false;
+      //std::cout << res << std::endl;
+    }
   
   if (success)
     return 0;

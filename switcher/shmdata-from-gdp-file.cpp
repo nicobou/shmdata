@@ -26,7 +26,7 @@ namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataFromGDPFile,
 				       "Shmdata File Player",
-				       "file source", 
+				       "shmdata file player", 
 				       "play file(s) recorded with shmdatatofile",
 				       "LGPL",
 				       "shmfromfile",

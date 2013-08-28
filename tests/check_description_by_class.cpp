@@ -20,6 +20,7 @@
  */
 
 #include "switcher/quiddity-manager.h"
+#include "switcher/quiddity-basic-test.h"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -28,26 +29,15 @@ main (int argc,
       char *argv[])
 {
   bool success = true;
-  switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("check_description_manager");  
+  switcher::QuiddityManager::ptr manager = 
+    switcher::QuiddityManager::make_manager("check_description_manager");  
   
   std::vector<std::string> classes = manager->get_classes ();
   
-  std::vector<std::string>::iterator iter;
-  
   for (auto &it : classes)
-    {
-      //std::cout << "---------------------" << it << std::endl; 
-      std::string props = manager->get_properties_description_by_class (it);
-      //std::cout << "---- property passed" << std::endl; 
-      //std::cout << props << std::endl;
-      std::string methods = manager->get_methods_description_by_class (it);
-      //std::cout << "---- method passed" << std::endl; 
-      //std::cout << methods << std::endl;
-      std::string signals = manager->get_signals_description_by_class (it);
-      //std::cout << "---- signals passed" << std::endl; 
-      //std::cout << signals << std::endl;
-    }
-    
+    if (!switcher::QuiddityBasicTest::test_description_by_class (manager, it))
+      success = false;
+  
   if (success)
     return 0;
   else

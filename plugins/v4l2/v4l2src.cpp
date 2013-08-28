@@ -42,7 +42,6 @@ namespace switcher
   bool
   V4L2Src::init ()
   {
-
     if (!make_elements ())
       return false;
 
@@ -79,12 +78,12 @@ namespace switcher
         
       devices_enum_spec_ = 
 	custom_props_->make_enum_property ("device", 
-					   "string map of capture devices",
+					   "Enumeration of v4l2 capture devices",
 					   device_, 
 					   devices_enum_,
 					   (GParamFlags) G_PARAM_READWRITE,
 					   V4L2Src::set_camera,
-					       V4L2Src::get_camera,
+					   V4L2Src::get_camera,
 					   this);
 
       register_property_by_pspec (custom_props_->get_gobject (), 

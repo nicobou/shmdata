@@ -35,6 +35,7 @@ namespace switcher
   
   GstParseToBinSrc::~GstParseToBinSrc ()
   {
+    g_free (gst_launch_pipeline_);
     if (gst_parse_to_bin_src_ != NULL)
       GstUtils::clean_element (gst_parse_to_bin_src_);
   }
@@ -42,79 +43,33 @@ namespace switcher
   bool 
   GstParseToBinSrc::init ()
   {
-    //using parent bin name
-    set_name (gst_element_get_name (bin_));
     gst_parse_to_bin_src_ = NULL;
 
-
-    if (!publish_method ("GST To Shmdata (With Path)",
-			 "to_shmdata_with_path", 
-			 "make a bin from GStreamer description and make shmdata writer(s)", 
-			 "success or fail",
-			 Method::make_arg_description ("GStreamer Pipeline",
-						       "gst_pipeline", 
-						       "the GStreamer pipeline with no sink to instanciate",
-						       "Shmdata Path",
-						       "shmdata_path", 
-						       "the path used for the shmdata",
-						       NULL),
-			 (Method::method_ptr) &to_shmdata_with_path_wrapped, 
-			 G_TYPE_BOOLEAN,
-			 Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
-			 this))
-      return false;	
-    
-    if (!publish_method ("GST To Shmdata",
-      			 "to_shmdata", 
-      			 "make a bin from GStreamer description and make shmdata writer(s)", 
-      			 "success or fail",
-      			 Method::make_arg_description ("GStreamer Pipeline",
-      						       "gst_pipeline", 
-      						       "the GStreamer pipeline with no sink to instanciate",
-      						       NULL),
-      			 (Method::method_ptr) &to_shmdata_wrapped, 
-      			 G_TYPE_BOOLEAN,
-      			 Method::make_arg_type_description (G_TYPE_STRING, NULL),
-      			 this))
-      return false;
+    init_startable (this);
+    gst_launch_pipeline_ = g_strdup ("");
+    custom_props_.reset (new CustomPropertyHelper ());
+    gst_launch_pipeline_spec_ = 
+      custom_props_->make_string_property ("gst-pipeline", 
+					   "GStreamer Launch Source Pipeline",
+					   "",
+					   (GParamFlags) G_PARAM_READWRITE,
+					   GstParseToBinSrc::set_gst_launch_pipeline,
+					   GstParseToBinSrc::get_gst_launch_pipeline,
+					   this);
+    register_property_by_pspec (custom_props_->get_gobject (), 
+				gst_launch_pipeline_spec_, 
+				"gst-pipeline",
+				"GStreamer Pipeline");
     
      return true;
   }
   
-
-
-  gboolean
-  GstParseToBinSrc::to_shmdata_wrapped (gpointer descr, 
-					gpointer user_data)
-  {
-    GstParseToBinSrc *context = static_cast<GstParseToBinSrc *>(user_data);
-  
-    if (context->to_shmdata ((char *)descr))
-      return TRUE;
-    else
-      return FALSE;
-  }
-
-  gboolean
-  GstParseToBinSrc::to_shmdata_with_path_wrapped (gpointer descr, 
-						  gpointer shmdata_path,
-						  gpointer user_data)
-  {
-    GstParseToBinSrc *context = static_cast<GstParseToBinSrc *>(user_data);
-    
-    if (context->to_shmdata_with_path ((char *)descr, (char *)shmdata_path))
-      return TRUE;
-    else
-      return FALSE;
-  }
-
   bool
-  GstParseToBinSrc::to_shmdata_with_path (std::string descr,
-					  std::string shmdata_path)
+  GstParseToBinSrc::to_shmdata ()
   {
 
     GError *error = NULL;
-    gst_parse_to_bin_src_ = gst_parse_bin_from_description (descr.c_str (),
+    gst_parse_to_bin_src_ = gst_parse_bin_from_description (gst_launch_pipeline_,
 							    TRUE,
 							    &error);
     g_object_set (G_OBJECT (gst_parse_to_bin_src_), "async-handling",TRUE, NULL);
@@ -134,21 +89,52 @@ namespace switcher
      //make a shmwriter
      ShmdataWriter::ptr writer;
      writer.reset (new ShmdataWriter ());
-     writer->set_path (shmdata_path.c_str());
+     writer->set_path (make_file_name ("gstsrc").c_str ());//FIXME use caps name
      writer->plug (bin_, src_pad);
      register_shmdata_writer (writer);
      gst_object_unref (src_pad);
-
      GstUtils::sync_state_with_parent (gst_parse_to_bin_src_);
      return true;
   }
   
-  bool
-  GstParseToBinSrc::to_shmdata (std::string descr)
+  void 
+  GstParseToBinSrc::set_gst_launch_pipeline (const gchar *value, void *user_data)
   {
-    g_debug ("to_shmdata set GStreamer description %s", descr.c_str ());
-    std::string writer_name = make_file_name ("gstsrc"); //FIXME use caps name
-    return to_shmdata_with_path (descr, writer_name);
+    GstParseToBinSrc *context = static_cast <GstParseToBinSrc *> (user_data);
+    g_free (context->gst_launch_pipeline_);
+    context->gst_launch_pipeline_ = g_strdup (value);
+    context->custom_props_->notify_property_changed (context->gst_launch_pipeline_spec_);
+   }
+  
+  gchar *
+  GstParseToBinSrc::get_gst_launch_pipeline (void *user_data)
+  {
+    GstParseToBinSrc *context = static_cast <GstParseToBinSrc *> (user_data);
+    return context->gst_launch_pipeline_;
   }
+
+  
+  bool 
+  GstParseToBinSrc::start ()
+  {
+    stop ();
+    if (! to_shmdata ())
+      return false;
+    unregister_property ("gst-pipeline");
+    return true;
+  }
+  
+  bool 
+  GstParseToBinSrc::stop ()
+  {
+    reset_bin ();
+    unregister_shmdata_writer (make_file_name ("video"));
+    register_property_by_pspec (custom_props_->get_gobject (), 
+				gst_launch_pipeline_spec_, 
+				"gst-pipeline",
+				"GStreamer Pipeline");
+    return true;
+  }
+
 
 }

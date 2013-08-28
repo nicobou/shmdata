@@ -57,7 +57,11 @@ namespace switcher
     if (GST_IS_BIN (gst_element_get_parent (rtpsession_)))
       {
 	GstElement *parent = (GstElement *)gst_element_get_parent (rtpsession_);
-	g_debug ("%d, %d, %d, state return %d",GST_STATE(parent),GST_STATE_TARGET (parent), GST_STATE_PENDING (parent),GST_STATE_RETURN(parent));
+	g_debug ("%d, %d, %d, state return %d",
+		 GST_STATE(parent),
+		 GST_STATE_TARGET (parent), 
+		 GST_STATE_PENDING (parent),
+		 GST_STATE_RETURN(parent));
       }
     
     //removing rtpsession

@@ -33,10 +33,6 @@ namespace switcher
   void 
   AudioSource::clean_audio_elements ()
   {
-    //FIXME
-    // GstUtils::clean_element(audio_tee_);
-    // GstUtils::clean_element(audioconvert_);
-    // GstUtils::clean_element(resample_);
     unregister_shmdata_writer (make_file_name ("audio"));
   }
 

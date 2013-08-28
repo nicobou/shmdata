@@ -20,6 +20,7 @@
  */
 
 #include "switcher/quiddity-manager.h"
+#include "switcher/quiddity-basic-test.h"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -43,6 +44,9 @@ main (int argc,
 #else
     return 1;
 #endif
+
+    if (!switcher::QuiddityBasicTest::test_full (manager, "gtkvideosink"))
+      return 1;
 
        // g_print ("sdfdf\n");
        // //creating a gst pipeline

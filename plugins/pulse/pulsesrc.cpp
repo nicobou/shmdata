@@ -39,22 +39,24 @@ namespace switcher
   {
     if (!make_elements ())
       return false;
-    //set the name before registering properties
-    set_name (gst_element_get_name (pulsesrc_));
+
+    init_startable (this);
+    device_ = 0; //default is zero
+    devices_enum_spec_ = NULL;
 
     pa_context_ = NULL;
     server_ = NULL;
 
-    pa_glib_mainloop_ = pa_glib_mainloop_new(get_g_main_context ());
+    pa_glib_mainloop_ = pa_glib_mainloop_new (get_g_main_context ());
     
-    pa_mainloop_api_ = pa_glib_mainloop_get_api(pa_glib_mainloop_);
+    pa_mainloop_api_ = pa_glib_mainloop_get_api (pa_glib_mainloop_);
     
-    if (!(pa_context_ = pa_context_new(pa_mainloop_api_, NULL))) {
+    if (!(pa_context_ = pa_context_new (pa_mainloop_api_, NULL))) {
       g_debug ("PulseSrc:: pa_context_new() failed.");
       return false;
     }
     
-    pa_context_set_state_callback(pa_context_, pa_context_state_callback, this);
+    pa_context_set_state_callback (pa_context_, pa_context_state_callback, this);
     
     if (pa_context_connect(pa_context_, server_, (pa_context_flags_t)0, NULL) < 0) {
       g_debug ("pa_context_connect() failed: %s", pa_strerror(pa_context_errno(pa_context_)));
@@ -63,35 +65,6 @@ namespace switcher
     
     
     capture_devices_description_ = NULL;
-
-    publish_method ("Capture",
-		    "capture", 
-		    "start capturing from default device", 
-		    "success or fail",
-		    Method::make_arg_description ("none",
-						  NULL),
-		    (Method::method_ptr) &capture_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_NONE, 
-						       NULL),
-		    this);
-    
-
-
-    publish_method ("Capture Device",
-		    "capture_device", 
-		    "start capturing from selected device", 
-		    "success or fail",
-		    Method::make_arg_description ("Pulse Audio Device Name",
-						  "pulse_name_device",
-						  "Pulse Audio Device Name",
-						  NULL),
-		    (Method::method_ptr) &capture_device_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, 
-						       NULL),
-		    this);
-
 
     custom_props_.reset (new CustomPropertyHelper ());
     capture_devices_description_spec_ = custom_props_->make_string_property ("devices-json", 
@@ -222,13 +195,13 @@ namespace switcher
     for (auto &it: capture_devices_)
       {
 	builder->begin_object ();
-	builder->add_string_member ("long name", it.second.description_.c_str());
-	builder->add_string_member ("name", it.second.name_.c_str());
-	builder->add_string_member ("state", it.second.state_.c_str());
-	builder->add_string_member ("sample format", it.second.sample_format_.c_str());
-	builder->add_string_member ("sample rate", it.second.sample_rate_.c_str());
-	builder->add_string_member ("channels", it.second.channels_.c_str());
-	builder->add_string_member ("active port", it.second.active_port_.c_str());
+	builder->add_string_member ("long name", it.description_.c_str());
+	builder->add_string_member ("name", it.name_.c_str());
+	builder->add_string_member ("state", it.state_.c_str());
+	builder->add_string_member ("sample format", it.sample_format_.c_str());
+	builder->add_string_member ("sample rate", it.sample_rate_.c_str());
+	builder->add_string_member ("channels", it.channels_.c_str());
+	builder->add_string_member ("active port", it.active_port_.c_str());
 	builder->end_object ();
       }
     
@@ -256,6 +229,22 @@ namespace switcher
       if (operation)
         pa_operation_unref(operation);
       
+      //registering enum for devices
+      context->update_capture_device ();
+      context->devices_enum_spec_ = 
+	context->custom_props_->make_enum_property ("device", 
+						    "Enumeration of Pulse capture devices",
+						    context->device_, 
+						    context->devices_enum_,
+						    (GParamFlags) G_PARAM_READWRITE,
+						    PulseSrc::set_device,
+						    PulseSrc::get_device,
+						    context);
+      context->register_property_by_pspec (context->custom_props_->get_gobject (), 
+					   context->devices_enum_spec_, 
+					   "device",
+					   "Capture Device");
+
       context->make_json_description ();
       return;
     }
@@ -334,7 +323,7 @@ namespace switcher
     else
       description.active_port_ = "n/a";
 
-    context->capture_devices_[description.name_] = description;
+    context->capture_devices_.push_back (description);
 
     // if (i->formats) {
     //   uint8_t j;
@@ -389,47 +378,52 @@ namespace switcher
     return context->capture_devices_description_;
   }
 
-  gboolean 
-  PulseSrc::capture_wrapped (gpointer device_file_path, 
-			    gpointer user_data)
-  {
-    PulseSrc *context = static_cast<PulseSrc *>(user_data);
-    
-    if (context->capture_device ("default"))
-      return TRUE;
-    else
-      return FALSE;
-  }
-
-    gboolean 
-    PulseSrc::capture_device_wrapped (gpointer pulse_device_name,
-				      gpointer user_data)
-  {
-    PulseSrc *context = static_cast<PulseSrc *>(user_data);
-    
-    if (context->capture_device ((const char *)pulse_device_name))
-      return TRUE;
-    else
-      return FALSE;
-  }
-
   bool 
-  PulseSrc::capture_device (const char *pulse_device_name)
+  PulseSrc::capture_device ()
   {
     make_elements ();
 
-    if (g_strcmp0 (pulse_device_name, "default") != 0)
-      if (capture_devices_.find (pulse_device_name) != capture_devices_.end ())	
-     	g_object_set (G_OBJECT (pulsesrc_), "device", pulse_device_name, NULL);
-      else
-     	{
-     	  g_warning ("PulseSrc: device %s has not been detected by pulse audio, cannot use", pulse_device_name);
-     	  return false;
-     	}
-
+    g_object_set (G_OBJECT (pulsesrc_), 
+		  "device", capture_devices_.at (device_).name_.c_str (), 
+		  NULL);
+    
     set_raw_audio_element (pulsesrc_bin_);
     return true;
   }
+
+  void
+  PulseSrc::update_capture_device ()
+  {
+    gint i = 0;
+    for (auto &it : capture_devices_)
+	{
+	  devices_enum_ [i].value = i;
+	  //FIXME previous free here
+	  devices_enum_ [i].value_name = g_strdup (it.name_.c_str ());
+	  devices_enum_ [i].value_nick = g_strdup (it.description_.c_str ());
+	  i ++;
+	}
+      devices_enum_ [i].value = 0;
+      devices_enum_ [i].value_name = NULL;
+      devices_enum_ [i].value_nick = NULL;
+  }
+
+  bool 
+  PulseSrc::start ()
+  {
+    if (capture_devices_description_ == NULL)
+      return false;
+    return capture_device ();
+  }
+  
+  bool PulseSrc::stop ()
+  {
+    if (capture_devices_description_ == NULL)
+      return false;
+    reset_bin ();
+    return true;
+  }
+
 
 }//end of PulseSrc class
   

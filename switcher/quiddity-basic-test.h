@@ -19,40 +19,26 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifndef __SWITCHER_QUIDDITY_BASIC_TEST_H__
+#define __SWITCHER_QUIDDITY_BASIC_TEST_H__
 
-#ifndef __SWITCHER_GST_VIDEO_PARSE_TO_BIN_SRC_H__
-#define __SWITCHER_GST_VIDEO_PARSE_TO_BIN_SRC_H__
 
-#include "base-source.h"
-#include "startable-quiddity.h"
-#include "custom-property-helper.h"
-#include <gst/gst.h>
-#include <memory>
-
-namespace switcher
+namespace switcher 
 {
-
-  class GstVideoParseToBinSrc : public BaseSource, StartableQuiddity
+  
+  class QuiddityBasicTest
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstVideoParseToBinSrc);
-    ~GstVideoParseToBinSrc ();
-    
-    bool start ();
-    bool stop ();
-    
-  private:
-    GstElement *gst_video_parse_to_bin_src_;
-
-    CustomPropertyHelper::ptr custom_props_; 
-    GParamSpec *gst_launch_pipeline_spec_;
-    gchar *gst_launch_pipeline_;
-
-    static void set_gst_launch_pipeline (const gchar *value, void *user_data);
-    static gchar *get_gst_launch_pipeline (void *user_data);
-    bool to_shmdata ();
+    static bool test_full (QuiddityManager::ptr manager, 
+			   std::string quiddity_class_name);
+    static bool test_create (QuiddityManager::ptr manager, 
+			     std::string quiddity_class_name);
+    static bool test_description_by_class (QuiddityManager::ptr manager, 
+					   std::string quiddity_class_name);
+    static bool test_startable (QuiddityManager::ptr manager, 
+				std::string quiddity_class_name);
   };
-
-}  // end of namespace
+  
+}
 
 #endif // ifndef

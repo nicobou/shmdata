@@ -72,5 +72,6 @@ tests/check_quiddity_create_remove
 tests/check_quiddity_create_remove_with_auto_pipeline
 tests/check_rtp_session
 tests/check_signal_subscriber
+tests/check_startable
 xcode/switcher.xcodeproj/project.xcworkspace/xcuserdata
 xcode/switcher.xcodeproj/xcuserdata

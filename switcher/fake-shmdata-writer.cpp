@@ -37,35 +37,26 @@ namespace switcher
   bool
   FakeShmdataWriter::init ()
   {
-    set_name (gst_element_get_name (bin_));
+    init_startable (this);
 
-    publish_method ("Add External Shmdata",
-		    "add_shmdata_path",
-		    "add an existing shmdata writer path",
-		    "success or fail",
-		    Method::make_arg_description ("Shmdata Path",
-						  "name", 
-						  "a shmdata writer path",
-						  NULL),
-		    (Method::method_ptr) &add_shmdata_path_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    this);
+    shmdata_path_ = g_strdup ("");
+    custom_props_.reset (new CustomPropertyHelper ());
+    shmdata_path_spec_ = 
+      custom_props_->make_string_property ("shmdata-path", 
+					   "Path Of The Shmdata The Include",
+					   "",
+					   (GParamFlags) G_PARAM_READWRITE,
+					   FakeShmdataWriter::set_shmdata_path,
+					   FakeShmdataWriter::get_shmdata_path,
+					   this);
+    register_property_by_pspec (custom_props_->get_gobject (), 
+				shmdata_path_spec_, 
+				"shmdata-path",
+				"Shmdata Path");
+
     return true;
   }
   
-  gboolean
-  FakeShmdataWriter::add_shmdata_path_wrapped (gpointer name, 
-						 gpointer user_data)
-  {
-    FakeShmdataWriter *context = static_cast<FakeShmdataWriter *>(user_data);
-  
-    if (context->add_shmdata_path ((char *)name))
-      return TRUE;
-    else
-      return FALSE;
-  }
-
   bool
   FakeShmdataWriter::add_shmdata_path (std::string name)
   {
@@ -81,4 +72,57 @@ namespace switcher
     return true;
   }
   
+  void 
+  FakeShmdataWriter::set_shmdata_path (const gchar *value, void *user_data)
+  {
+    FakeShmdataWriter *context = static_cast <FakeShmdataWriter *> (user_data);
+    g_free (context->shmdata_path_);
+    
+    context->shmdata_path_ = g_strdup (value);
+    context->custom_props_->notify_property_changed (context->shmdata_path_spec_);
+  }
+  
+  gchar *
+  FakeShmdataWriter::get_shmdata_path (void *user_data)
+  {
+    FakeShmdataWriter *context = static_cast <FakeShmdataWriter *> (user_data);
+    return context->shmdata_path_;
+  }
+
+  FakeShmdataWriter::~FakeShmdataWriter ()
+  {
+    g_free (shmdata_path_);
+  }
+
+  bool 
+  FakeShmdataWriter::start ()
+  {
+    stop ();
+    unregister_property ("shmdata-path");
+    if (g_strcmp0 (shmdata_path_, "") == 0)
+      return false;
+    
+    //creating a shmdata
+    ShmdataWriter::ptr connector;
+    connector.reset (new ShmdataWriter ());
+    connector->set_path_without_deleting (shmdata_path_);
+    register_shmdata_writer (connector);
+
+    g_message ("%s created a new shmdata writer (%s)", 
+     	       get_nick_name ().c_str(), 
+     	       shmdata_path_);
+ 
+    return true;
+  }
+
+  bool 
+  FakeShmdataWriter::stop ()
+  {
+    bool res = unregister_shmdata_writer (shmdata_path_);
+    register_property_by_pspec (custom_props_->get_gobject (), 
+				shmdata_path_spec_, 
+				"shmdata-path",
+				"Shmdata Path");
+    return res;
+  }
 }
