@@ -22,19 +22,23 @@
 #ifndef __SWITCHER_PULSE_SRC_H__
 #define __SWITCHER_PULSE_SRC_H__
 
-#include "switcher/audio-source.h"
 #include <pulse/pulseaudio.h>
 #include <pulse/glib-mainloop.h>
+#include "switcher/audio-source.h"
 #include "switcher/custom-property-helper.h"
+#include "switcher/startable-quiddity.h"
 
 namespace switcher
 {
 
-  class PulseSrc : public AudioSource
+  class PulseSrc : public AudioSource, public StartableQuiddity 
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSrc);
     ~PulseSrc ();
+    
+    bool start ();
+    bool stop ();
 
   private:
     GstElement *pulsesrc_;
@@ -42,11 +46,10 @@ namespace switcher
     GstElement *pulsesrc_bin_;
     bool make_elements ();
     static gchar *get_capture_devices_json (void *user_data);
-    static gboolean capture_wrapped (gpointer device_file_path, 
-			      gpointer user_data);
-    static gboolean capture_device_wrapped (gpointer pulse_device_name,
-					    gpointer user_data);
-    bool capture_device (const char *pulse_device_name);
+
+    bool capture_device ();
+    void update_capture_device ();
+
     void make_device_description (pa_context *pulse_context);
     void make_json_description ();
 
@@ -54,6 +57,13 @@ namespace switcher
     CustomPropertyHelper::ptr custom_props_; 
     GParamSpec *capture_devices_description_spec_;//json formated
     gchar *capture_devices_description_;//json formated
+
+    //device enum and select
+    GParamSpec *devices_enum_spec_;
+    GEnumValue devices_enum_ [128];
+    gint device_;
+    static void set_device (const gint value, void *user_data);
+    static gint get_device (void *user_data);
 
     //pulse_audio
     pa_glib_mainloop *pa_glib_mainloop_;
@@ -79,7 +89,7 @@ namespace switcher
       std::string active_port_;
     } DeviceDescription;
 
-    std::map <std::string, DeviceDescription> capture_devices_; //indexed by pulse_device_name
+    std::vector <DeviceDescription> capture_devices_; 
 
 
   };

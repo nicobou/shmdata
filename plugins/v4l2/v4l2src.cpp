@@ -78,7 +78,7 @@ namespace switcher
         
       devices_enum_spec_ = 
 	custom_props_->make_enum_property ("device", 
-					   "string map of capture devices",
+					   "Enumeration of v4l2 capture devices",
 					   device_, 
 					   devices_enum_,
 					   (GParamFlags) G_PARAM_READWRITE,

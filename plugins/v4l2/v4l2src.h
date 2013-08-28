@@ -30,7 +30,7 @@
 namespace switcher
 {
  
-  class V4L2Src : public VideoSource, StartableQuiddity 
+  class V4L2Src : public VideoSource, public StartableQuiddity 
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(V4L2Src);
