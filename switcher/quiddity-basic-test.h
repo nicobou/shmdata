@@ -19,35 +19,22 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/quiddity-manager.h"
-#include "switcher/quiddity-basic-test.h"
-#include <vector>
-#include <string>
-#include <iostream>
-int
-main (int argc,
-      char *argv[])
+#ifndef __SWITCHER_QUIDDITY_BASIC_TEST_H__
+#define __SWITCHER_QUIDDITY_BASIC_TEST_H__
+
+
+namespace switcher 
 {
-  bool success = true;
-  switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
   
-  std::vector<std::string> classes = manager->get_classes ();
+  class QuiddityBasicTest
+  {
+  public:
+    static bool test_full (std::string quiddity_class_name);
+    static bool test_create (std::string quiddity_class_name);
+    static bool test_startable (std::string quiddity_class_name);
+    static bool test_description (std::string quiddity_class_name);
+  };
   
-  std::vector<std::string>::iterator iter;
-  
-  for (iter = classes.begin(); iter != classes.end (); ++iter)
-    {
-      //std::cout << class_name << std::endl; 
-      if (!switcher::QuiddityBasicTest::test_create (*iter))
-	success = false;
-      //std::cout << res << std::endl;
-     }
-  
-  if (success)
-    return 0;
-  else
-    return 1;
 }
 
-
-
+#endif // ifndef
