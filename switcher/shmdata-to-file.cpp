@@ -27,7 +27,7 @@ namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToFile,
 				       "Shmdata Recorder",
-				       "file sink", 
+				       "file recorder", 
 				       "record shmdata(s) to file(s)",
 				       "LGPL",
 				       "shmtofile",

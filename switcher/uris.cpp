@@ -28,7 +28,7 @@ namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uris,
 				       "Uri Player",
-				       "uri source", 
+				       "experimental uri player", 
 				       "play/pause/seek/loop/synchronize multiple uris",
 				       "LGPL",
 				       "uris", 

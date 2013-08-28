@@ -27,7 +27,7 @@ namespace switcher
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AravisGenicam,
 				       "GenICam Camera",
-				       "video source", 
+				       "genicam video", 
 				       "Genicam video source using the Aravis library",
 				       "LGPL",
 				       "genicam",

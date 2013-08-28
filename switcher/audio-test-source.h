@@ -24,6 +24,7 @@
 #define __SWITCHER_AUDIO_TEST_SOURCE_H__
 
 #include "audio-source.h"
+#include "startable-quiddity.h"
 #include <memory>
 
 namespace switcher
@@ -35,6 +36,9 @@ namespace switcher
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AudioTestSource);
     ~AudioTestSource ();
 
+    bool start ();
+    bool stop ();
+    
   private: 
    GstElement *audiotestsrc_;
   };

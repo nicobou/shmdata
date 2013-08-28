@@ -36,7 +36,6 @@ namespace switcher
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(V4L2Src);
     ~V4L2Src ();
   
-
     bool start ();
     bool stop ();
 
