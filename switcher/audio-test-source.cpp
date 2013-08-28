@@ -73,6 +73,7 @@ namespace switcher
   bool 
   AudioTestSource::stop ()
   {
+    reset_bin ();
     return true;
   }
 

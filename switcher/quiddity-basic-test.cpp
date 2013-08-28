@@ -84,6 +84,39 @@ namespace switcher
   QuiddityBasicTest::test_startable (QuiddityManager::ptr manager, 
 				     std::string quiddity_class_name)
   {
+    g_print ("---- startable test for %s\n", quiddity_class_name.c_str ());
+
+    std::string name = manager->create(quiddity_class_name, quiddity_class_name);
+    if (name.compare (quiddity_class_name) != 0)
+      {
+	g_warning ("quiddity %s cannot be created (startable not actualy tested)", 
+		   quiddity_class_name.c_str ());
+	return true; //true because some quiddity may not be crated because of a missing resource 
+      }
+    
+    if (manager->has_method (name, "start"))
+      {
+	std::string *start_return_value;
+	manager->invoke_va (name.c_str (), "start", &start_return_value, NULL);
+	g_print ("started\n");
+	std::string *stop_return_value;
+	manager->invoke_va (name.c_str (), "stop", &stop_return_value, NULL);
+	g_print ("stoped\n");
+	std::string *restart_return_value;
+	manager->invoke_va (name.c_str (), "start", &restart_return_value, NULL);
+	g_print ("restarted\n");
+	delete start_return_value;
+	delete stop_return_value;
+	delete restart_return_value;
+      }
+
+    if (!manager->remove (name))
+      {
+	g_warning ("error while removing quiddity %s (startable test)", 
+		   quiddity_class_name.c_str ());
+	return false;
+      }
+
     return true;
   }
   
