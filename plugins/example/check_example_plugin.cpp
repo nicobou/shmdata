@@ -20,6 +20,7 @@
  */
 
 #include "switcher/quiddity-manager.h"
+#include "switcher/quiddity-basic-test.h"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -44,6 +45,9 @@ main (int argc,
 #else
     return 1;
 #endif
+
+    if (!switcher::QuiddityBasicTest::test_full (manager, "myplugin"))
+      success = false;
 
     //creating a "myplugin" quiddity
     if (g_strcmp0 (manager->create("myplugin", "test").c_str (), "test") != 0)

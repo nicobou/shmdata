@@ -30,18 +30,15 @@ main (int argc,
 {
   bool success = true;
   switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
-  
   std::vector<std::string> classes = manager->get_classes ();
   
-  std::vector<std::string>::iterator iter;
-  
-  for (iter = classes.begin(); iter != classes.end (); ++iter)
-    {
+  for (auto &it: classes)
+    {  
       //std::cout << class_name << std::endl; 
-      if (!switcher::QuiddityBasicTest::test_create (*iter))
+      if (!switcher::QuiddityBasicTest::test_create (manager, it))
 	success = false;
       //std::cout << res << std::endl;
-     }
+    }
   
   if (success)
     return 0;

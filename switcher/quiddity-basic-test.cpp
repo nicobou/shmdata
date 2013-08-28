@@ -25,18 +25,24 @@
 namespace switcher
 {
   bool 
-  QuiddityBasicTest::test_full (std::string quiddity_class_name)
+  QuiddityBasicTest::test_full (QuiddityManager::ptr manager, 
+				std::string quiddity_class_name)
   {
-    test_create (quiddity_class_name);
-    test_startable (quiddity_class_name);
-    test_description (quiddity_class_name);
+    if (!test_create (manager, quiddity_class_name))
+      return false;
+    if (!test_description_by_class (manager, quiddity_class_name))
+      return false;
+    if (!test_startable (manager, quiddity_class_name))
+      return false;
     return true;
   }
 
   bool 
-  QuiddityBasicTest::test_create (std::string quiddity_class_name)
+  QuiddityBasicTest::test_create (QuiddityManager::ptr manager, 
+				  std::string quiddity_class_name)
   {
-    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");
+    
+    //g_print ("%s\n", quiddity_class_name.c_str ());
     
     //testing with a nick name
     std::string res_with_nick = manager->create(quiddity_class_name, quiddity_class_name);
@@ -75,16 +81,21 @@ namespace switcher
   }
 
   bool 
-  QuiddityBasicTest::test_startable (std::string quiddity_class_name)
+  QuiddityBasicTest::test_startable (QuiddityManager::ptr manager, 
+				     std::string quiddity_class_name)
   {
     return true;
-
   }
   
   bool 
-  QuiddityBasicTest::test_description (std::string quiddity_class_name)
+  QuiddityBasicTest::test_description_by_class (QuiddityManager::ptr manager, 
+						std::string quiddity_class_name)
   {
-
+    //by class
+    std::string props = manager->get_properties_description_by_class (quiddity_class_name);
+    std::string methods = manager->get_methods_description_by_class (quiddity_class_name);
+    std::string signals = manager->get_signals_description_by_class (quiddity_class_name);
+    
     return true;
   }
 }

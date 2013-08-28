@@ -29,10 +29,14 @@ namespace switcher
   class QuiddityBasicTest
   {
   public:
-    static bool test_full (std::string quiddity_class_name);
-    static bool test_create (std::string quiddity_class_name);
-    static bool test_startable (std::string quiddity_class_name);
-    static bool test_description (std::string quiddity_class_name);
+    static bool test_full (QuiddityManager::ptr manager, 
+			   std::string quiddity_class_name);
+    static bool test_create (QuiddityManager::ptr manager, 
+			     std::string quiddity_class_name);
+    static bool test_description_by_class (QuiddityManager::ptr manager, 
+					   std::string quiddity_class_name);
+    static bool test_startable (QuiddityManager::ptr manager, 
+				std::string quiddity_class_name);
   };
   
 }
