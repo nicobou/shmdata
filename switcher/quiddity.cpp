@@ -248,6 +248,18 @@ namespace switcher
       }
   }
 
+  Property::ptr
+  Quiddity::get_property_ptr (std::string property_name)
+  {
+    Property::ptr res;
+    if (properties_.find(property_name) == properties_.end())
+	g_debug ("Quiddity::get_property_ptr %s not found", property_name.c_str ());
+    else 
+      res = properties_[property_name];
+   
+    return res;
+  }
+
   bool 
   Quiddity::register_signal_action_with_class_name (const std::string class_name,
 						    const std::string method_name, //the name to give

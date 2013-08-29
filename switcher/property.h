@@ -41,8 +41,9 @@ namespace switcher
 
     //this is when using an existing property
     void set_gobject_pspec (GObject *object, GParamSpec *pspec, std::string long_name);
-
+    
     void set_long_name (std::string long_name);
+   
 
     void set (std::string value);
     std::string get ();
@@ -55,6 +56,10 @@ namespace switcher
     JSONBuilder::Node get_json_root_node ();
 
     void print ();
+
+    //getter
+    std::string get_long_name ();
+    std::string get_short_description ();
 
   private:
     std::string long_name_;

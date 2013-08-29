@@ -20,7 +20,9 @@
  */
 
 #include "string-dictionary.h"
+#include "property.h"
 #include <string.h>
+#include <iostream>
 
 namespace switcher
 {
@@ -69,32 +71,32 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 
-    // publish_method ("Save To A File",
-    // 		    "save",
-    // 		    "save dictionary to a file",
-    // 		    "success or failure",
-    // 		    Method::make_arg_description ("File path",
-    // 						  "path", 
-    // 						  "string",
-    // 						  NULL),
-    // 		    (Method::method_ptr) &save, 
-    // 		    G_TYPE_BOOLEAN,
-    // 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-    // 		    this);
-
-    // publish_method ("Load From File",
-    // 		    "load",
-    // 		    "Load dictionary from a file",
-    // 		    "success or failure",
-    // 		    Method::make_arg_description ("File path",
-    // 						  "path", 
-    // 						  "string",
-    // 						  NULL),
-    // 		    (Method::method_ptr) &load, 
-    // 		    G_TYPE_BOOLEAN,
-    // 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-    // 		    this);
-
+    publish_method ("Save To A File",
+     		    "save",
+     		    "save dictionary to a file",
+     		    "success or failure",
+     		    Method::make_arg_description ("File path",
+     						  "path", 
+     						  "string",
+     						  NULL),
+     		    (Method::method_ptr) &save, 
+     		    G_TYPE_BOOLEAN,
+     		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+     		    this);
+    
+    publish_method ("Load From File",
+     		    "load",
+     		    "Load dictionary from a file",
+     		    "success or failure",
+     		    Method::make_arg_description ("File path",
+     						  "path", 
+     						  "string",
+     						  NULL),
+     		    (Method::method_ptr) &load, 
+     		    G_TYPE_BOOLEAN,
+     		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+     		    this);
+  
     return true;
   }
 
@@ -104,9 +106,9 @@ namespace switcher
     
 
   gboolean
-  StringDictionary::create_entry (gchar *entry_name, 
-				  gchar *entry_description, 
-				  gchar *long_name,
+  StringDictionary::create_entry (const gchar *entry_name, 
+				  const gchar *entry_description, 
+				  const gchar *long_name,
 				  void *user_data)
   {
     StringDictionary *context = static_cast<StringDictionary *> (user_data);
@@ -138,11 +140,12 @@ namespace switcher
 					 context->prop_specs_[entry_name], 
 					 entry_name,
 					 long_name);
+
     return TRUE;
   }
 
   gboolean
-  StringDictionary::remove_entry (gchar *entry_name, void *user_data)
+  StringDictionary::remove_entry (const gchar *entry_name, void *user_data)
   {
     StringDictionary *context = static_cast<StringDictionary *> (user_data);
     if (context->dico_.find (entry_name) == context->dico_.end ())
@@ -197,17 +200,23 @@ namespace switcher
     JSONBuilder::ptr builder;
     builder.reset (new JSONBuilder ());
     builder->reset ();
-    builder->begin_object ();
-    builder->set_member_name ("dictionary");
+    //builder->begin_object ();
+    //builder->set_member_name ("dictionary");
     builder->begin_array ();
 
     for (auto &it: dico_)
       {
-	
+	builder->begin_object ();
+	Property::ptr prop = get_property_ptr (it.first);
+	builder->add_string_member ("name", it.first.c_str ());
+	builder->add_string_member ("description", prop->get_short_description ().c_str ());
+	builder->add_string_member ("long name", prop->get_long_name ().c_str ());	
+	builder->add_string_member ("value", it.second);
+	builder->end_object ();
       }
 
     builder->end_array ();
-    builder->end_object ();
+    //builder->end_object ();
     
     gchar *dico_json = g_strdup (builder->get_string(true).c_str ());
 
@@ -249,7 +258,66 @@ namespace switcher
   gboolean 
   StringDictionary::load_file (const gchar *file_path)
   {
+    JsonParser *parser = json_parser_new ();
+    GError *error = NULL;
+    json_parser_load_from_file (parser,
+				file_path,
+				&error);
+    if (error != NULL)
+      {
+	g_warning ("%s",error->message);
+	g_object_unref(parser);
+	g_error_free (error);
+	return false;
+      }
     
+    JsonNode *root_node = json_parser_get_root (parser);
+    JsonReader *reader = json_reader_new (root_node);
+    
+    if (!json_reader_is_array (reader))
+      {
+	g_debug ("malformed dictionary file");
+	return false;
+      }
+
+    gint num_elements = json_reader_count_elements (reader);
+    int i;
+    for (i = 0; i < num_elements; i++)
+      {
+	json_reader_read_element (reader, i);
+
+	json_reader_read_member (reader, "name");
+	const gchar *name = json_reader_get_string_value (reader);
+	json_reader_end_member (reader);
+
+	json_reader_read_member (reader, "description");
+	const gchar *description = json_reader_get_string_value (reader);
+	json_reader_end_member (reader);
+
+	json_reader_read_member (reader, "long name");
+	const gchar *long_name = json_reader_get_string_value (reader);
+	json_reader_end_member (reader);
+
+	json_reader_read_member (reader, "value");
+	const gchar *value = json_reader_get_string_value (reader);
+	json_reader_end_member (reader);
+
+	json_reader_end_element (reader);
+	// g_print ("%s, %s, %s, %s\n",
+	// 	 name, 
+	// 	 description, 
+	// 	 long_name, 
+	// 	 value);
+	if (create_entry (name, description, long_name, this))
+	  {
+	    g_free (dico_[name]);
+	    dico_[name] = g_strdup (value);
+	  }
+      }
+   
+    g_object_unref(reader);
+    g_object_unref(parser);
+
     return TRUE;
   }
 

@@ -188,6 +188,8 @@ namespace switcher
 				     std::string name_to_give,
 				     std::string long_name);
 
+    Property::ptr get_property_ptr (std::string property_name);
+
     //methods
     bool publish_method (const std::string long_name,
 			 const std::string method_name,

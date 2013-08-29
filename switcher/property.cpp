@@ -472,14 +472,14 @@ namespace switcher
   Property::print()
   {
     
-    guint i;
+    //guint i;
     gboolean readable;
-    gboolean first_flag;
+    //gboolean first_flag;
     
 
     GValue value = G_VALUE_INIT;
         
-    GObject *element = object_; 
+    //GObject *element = object_; 
 	
     readable = FALSE;
 	
@@ -647,7 +647,6 @@ namespace switcher
 
 	j = 0;
 	while (values[j].value_name) {
-	  g_debug ("");
 	  // if (_name)
 	  //   g_debug ("%s", _name);
 	  g_debug ("%-23.23s    (%d): %-16s - %s", "",
@@ -721,10 +720,20 @@ namespace switcher
     }
     if (!readable)
       g_debug (" Write only");
-    else
-      g_debug ("");
 
     g_value_reset (&value);
+  }
+
+  std::string
+  Property::get_short_description ()
+  {
+    return g_param_spec_get_blurb (property_);
+  }
+
+  std::string
+  Property::get_long_name ()
+  {
+    return long_name_;
   }
 
 }

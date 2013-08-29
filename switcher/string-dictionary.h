@@ -52,11 +52,11 @@ namespace switcher
 			       void *user_data);
 
     //methods
-    static gboolean create_entry (gchar *entry_name, 
-				  gchar *description, 
-				  gchar *long_name,
+    static gboolean create_entry (const gchar *entry_name, 
+				  const gchar *description, 
+				  const gchar *long_name,
 				  void *user_data);
-    static gboolean remove_entry (gchar *entry_name, 
+    static gboolean remove_entry (const gchar *entry_name, 
 				  void *user_data);
     static gboolean save (gchar *file_path, 
 			  void *user_data);
