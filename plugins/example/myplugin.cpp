@@ -54,13 +54,13 @@ namespace switcher
      				"myprop",
 				"My Property"); //long name
 
-    publish_method ("Hello World",
-		    "hello-world",
-		    "say hello and repeat first argument",
-		    "the hello answer",
-		    Method::make_arg_description ("Text To Repeat",
-						  "text", 
-						  "string",
+    publish_method ("Hello World", //long name
+		    "hello-world", //name
+		    "say hello and repeat first argument", //description
+		    "the hello answer", //return description
+		    Method::make_arg_description ("Text To Repeat", //first arg long name
+						  "text", //fisrt arg name
+						  "string", //first arg type
 						  NULL),
   		    (Method::method_ptr) &my_hello_world_method, 
 		    G_TYPE_STRING,
