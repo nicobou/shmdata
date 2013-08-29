@@ -52,7 +52,7 @@
 #include "udpsink.h"
 #include "uridecodebin.h"
 #include "uris.h"
-#include "string-memory.h"
+#include "string-dictionary.h"
 #include "video-rate.h"
 #include "video-test-source.h"
 #include "vorbis.h"
@@ -218,8 +218,8 @@ namespace switcher
       							  ShmdataFromGDPFile::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<ShmdataToFile> (ShmdataToFile::switcher_doc_.get_class_name (), 
       						     ShmdataToFile::switcher_doc_.get_json_root_node ());
-    abstract_factory_.register_class<StringMemory> (StringMemory::switcher_doc_.get_class_name (), 
-						    StringMemory::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<StringDictionary> (StringDictionary::switcher_doc_.get_class_name (), 
+							StringDictionary::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<UDPSink> (UDPSink::switcher_doc_.get_class_name (), 
        					       UDPSink::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<Uridecodebin> (Uridecodebin::switcher_doc_.get_class_name (), 

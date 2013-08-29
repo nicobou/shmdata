@@ -552,7 +552,7 @@ namespace switcher
     command_->add_arg (method_name);
     command_->set_vector_arg (args);
     invoke_in_gmainloop  ();
-    if (return_value != NULL)
+    if (return_value != NULL && !command_->result_.empty ())
       *return_value = new std::string (command_->result_[0]);
     bool res = command_->success_;
     command_unlock ();
@@ -1051,11 +1051,13 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 					      context->command_->args_[1], 
 					      &result,
 					      context->command_->vector_arg_))
-	    context->command_->success_ = true; //result_.push_back ("true");
+	    {
+	      context->command_->success_ = true; //result_.push_back ("true");
+	      context->command_->result_.push_back (*result);
+	    }
 	  else
 	    context->command_->success_ = false; //result_.push_back ("false");
 
-	  context->command_->result_.push_back (*result);
 	  delete result;
 	}
 	break;

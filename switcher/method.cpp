@@ -75,18 +75,16 @@ namespace switcher
     return num_of_value_args_;
   }
   
-
-  //FIXME should be commented and not used (using signal action instead)
-  GValue 
-  Method::invoke(std::vector<std::string> args)
+  bool 
+  Method::invoke(std::vector<std::string> args, GValue *result_value)
   {
         
-    GValue result_value = G_VALUE_INIT;
+    //GValue result_value = G_VALUE_INIT;
 
     if (args.size () != num_of_value_args_ && arg_types_[0] != G_TYPE_NONE)
       {
 	g_warning ("Method::invoke number of arguments does not correspond to the size of argument types");
-	return result_value;
+	return false;
       }
 
     GValue params[arg_types_.size ()];
@@ -101,7 +99,7 @@ namespace switcher
 	    {
 	      g_error ("Method::invoke string not transformable into gvalue (argument: %s) ",
 		       args[i].c_str());
-	      return result_value;
+	      return false;
 	    }
 	}
     else
@@ -111,19 +109,12 @@ namespace switcher
 	gst_value_deserialize (&params[0],"");
       }
 
-    //gboolean result;
-    g_value_init (&result_value, return_type_);
-    //g_print ("arg tipe size %d\n", arg_types_.size());
-    g_closure_invoke (closure_, &result_value, num_of_value_args_, params, NULL);
+    g_value_init (result_value, return_type_);
+    g_closure_invoke (closure_, result_value, num_of_value_args_, params, NULL);
     
-    //result = g_value_get_boolean (&result_value);
-    
-    //unset
-    //g_value_unset (&result_value);
     for (guint i=0; i < num_of_value_args_; i++)
       g_value_unset (&params[i]);
-    //return result;
-    return result_value; 
+    return true; 
   } 
   
   void

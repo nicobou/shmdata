@@ -387,7 +387,14 @@ namespace switcher
       }
     else 
       {
-	GValue res = methods_[method_name]->invoke (args);
+	GValue res = G_VALUE_INIT;
+	if (!methods_[method_name]->invoke (args, &res))
+	  {
+	    g_debug ("invokation of %s failled (missing argments ?)",
+		     method_name.c_str ());
+	    return false;
+	  }
+
 	if (return_value != NULL)
 	  {
 	    gchar *res_val = GstUtils::gvalue_serialize (&res);

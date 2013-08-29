@@ -19,9 +19,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
-
-
 #ifndef __SWITCHER_METHOD_H__
 #define __SWITCHER_METHOD_H__
 
@@ -52,7 +49,7 @@ namespace switcher
 		     return_type return_type,
 		     args_types arg_types, 
 		     gpointer user_data);
-    GValue invoke (std::vector<std::string> args);
+    bool invoke (std::vector<std::string> args, GValue *return_value);
     uint get_num_of_value_args();
     void set_description (std::string long_name,
 			  std::string method_name,
