@@ -29,21 +29,20 @@
 #define MIDI_EOX 0xf7
 #endif
 
-#include "switcher/quiddity.h"
-#include "switcher/custom-property-helper.h"
-#include "shmdata/any-data-writer.h"
-
+#include <map>
 #include <memory>
 #include <queue>
 #include <portmidi.h>
 #include <porttime.h>
+#include <glib.h>
 
 namespace switcher
 {
   
-  class PortMidi : public Quiddity {
+  class PortMidi
+  {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidi);
+    PortMidi ();
     ~PortMidi ();
 
    
@@ -87,24 +86,14 @@ namespace switcher
       static void process_midi(PtTimestamp timestamp, void *userData);
     };
     
-    static PortMidiScheduler *scheduler_;
-    static uint num_of_streams_;
-    std::map<uint, PmStream *> input_streams_;
-    shmdata_any_writer_t *shmdata_writer_;
-    std::map<uint, PmStream *> output_streams_;
-    
-    CustomPropertyHelper::ptr custom_props_;
     gchar *devices_description_;
-    GParamSpec *devices_description_spec_;
+    static PortMidiScheduler *scheduler_;
+    static guint num_of_streams_;
+    std::map<guint, PmStream *> input_streams_;
+    std::map<guint, PmStream *> output_streams_;
     
-    static bool open_input_device_wrapped (int id, gpointer user_data);
-    static bool open_output_device_wrapped (int id, gpointer user_data);
-    static bool close_input_device_wrapped (int id, gpointer user_data);
-    static bool close_output_device_wrapped (int id, gpointer user_data);
   };
-  
-  SWITCHER_DECLARE_PLUGIN(PortMidi);
-  
+ 
 }  // end of namespace
 
 #endif // ifndef

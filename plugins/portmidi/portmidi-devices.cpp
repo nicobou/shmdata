@@ -20,122 +20,22 @@
  */
 
 #include "portmidi-devices.h"
+#include "switcher/json-builder.h"
+#include <glib/gprintf.h>
 
 namespace switcher
 {
 
   PortMidi::PortMidiScheduler *PortMidi::scheduler_ = NULL;
-  uint PortMidi::num_of_streams_ = 0;
+  guint PortMidi::num_of_streams_ = 0;
 
-
-  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidi,
-				       "Midi (PortMidi)",
-				       "midi source sink", 
-				       "midi from/to shmdata",
-				       "LGPL",
-				       "portmidi",				
-				       "Nicolas Bouillot");
-
-  bool
-  PortMidi::init ()
+  PortMidi::PortMidi ()
   {
     if (scheduler_ == NULL)
       scheduler_ = new PortMidiScheduler();
 
     devices_description_ = NULL;
     make_devices_description (this);
-
-    custom_props_.reset (new CustomPropertyHelper ());
-    devices_description_spec_ = 
-      custom_props_->make_string_property ("devices-json", 
-					   "Description of Midi devices (json formated)",
-					   devices_description_,
-					   (GParamFlags) G_PARAM_READABLE,
-					   NULL,
-					   PortMidi::make_devices_description,
-					   this);
-    
-    register_property_by_pspec (custom_props_->get_gobject (), 
-				devices_description_spec_, 
-				"devices-json",
-				"Capture Devices",
-				true,
-				true);
-    
-    publish_method ("Open Input Device",
-		    "open_input",
-		    "open input device",
-		    "success or fail",
-		    Method::make_arg_description ("PortMidi Identifier",
-						  "id", 
-						  "PortMidi device id",
-						  NULL),
-  		    (Method::method_ptr) &open_input_device_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_INT, NULL),
-		    true,
-		    true,
-		    this);
-
-    publish_method ("Open Output Device",
-		    "open_output",
-		    "open output device",
-		    "success or fail",
-		    Method::make_arg_description ("PortMidi Identifier",
-						  "id", 
-						  "PortMidi device id",
-						  NULL),
-  		    (Method::method_ptr) &open_output_device_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_INT, NULL),
-		    true,
-		    true,
-		    this);
-
-    publish_method ("Close Input Device",
-		    "close_input",
-		    "close input device",
-		    "success or fail",
-		    Method::make_arg_description ("PortMidi Identifier",
-						  "id", 
-						  "PortMidi device id",
-						  NULL),
-  		    (Method::method_ptr) &close_input_device_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_INT, NULL),
-		    true,
-		    true,
-		    this);
-
-    publish_method ("Close Output Device",
-		    "close_output",
-		    "close output device",
-		    "success or fail",
-		    Method::make_arg_description ("PortMidi Identifier",
-						  "id", 
-						  "PortMidi device id",
-						  NULL),
-  		    (Method::method_ptr) &close_output_device_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_INT, NULL),
-		    true,
-		    true,
-		    this);
-
-
-    shmdata_writer_ = shmdata_any_writer_init ();
-    
-    if (! shmdata_any_writer_set_path (shmdata_writer_, "/tmp/midi_truc"))
-    {
-      g_debug ("**** The file exists, therefore a shmdata cannot be operated with this path.\n");
-      shmdata_any_writer_close (shmdata_writer_);
-      return false;
-    }
-    shmdata_any_writer_set_debug (shmdata_writer_, SHMDATA_ENABLE_DEBUG);
-    shmdata_any_writer_set_data_type (shmdata_writer_, "audio/midi");
-    shmdata_any_writer_start (shmdata_writer_);
-
-    return true;
   }
   
   PortMidi::~PortMidi ()
@@ -146,8 +46,6 @@ namespace switcher
 
     for (auto &it: output_streams_)
       close_output_device (it.first);
-
-    shmdata_any_writer_close (shmdata_writer_);
 
     if (num_of_streams_ == 0)
       delete scheduler_;
@@ -183,14 +81,6 @@ namespace switcher
     return true;
   }
 
-  bool 
-  PortMidi::open_input_device_wrapped (int id, gpointer user_data)
-  {
-    PortMidi *context = static_cast <PortMidi *> (user_data);
-    return context->open_input_device (id);
-  }
-
- 
   bool
   PortMidi::open_output_device (int id)
   {
@@ -209,17 +99,10 @@ namespace switcher
     return true;
   }
   
-  bool 
-  PortMidi::open_output_device_wrapped (int id, gpointer user_data)
-  {
-    PortMidi *context = static_cast <PortMidi *> (user_data);
-    return context->open_output_device (id);
-  }
-  
   bool
   PortMidi::close_input_device (int id)
   {
-    std::map<uint, PmStream *>::iterator it = input_streams_.find(id);
+    std::map<guint, PmStream *>::iterator it = input_streams_.find(id);
     if (it == input_streams_.end())
       return false;
     
@@ -231,17 +114,11 @@ namespace switcher
     return true;
   }
 
-  bool 
-  PortMidi::close_input_device_wrapped (int id, gpointer user_data)
-  {
-    PortMidi *context = static_cast <PortMidi *> (user_data);
-    return context->close_input_device (id);
-  }
-  
+ 
   bool
   PortMidi::close_output_device (int id)
   {
-    std::map<uint, PmStream *>::iterator it = output_streams_.find(id);
+    std::map<guint, PmStream *>::iterator it = output_streams_.find(id);
     if (it == output_streams_.end())
       return false;
     
@@ -250,14 +127,6 @@ namespace switcher
     output_streams_.erase (id);
     g_message ("Midi input device closed (id %d)", id);
     return true;
-  }
-
-
-  bool 
-  PortMidi::close_output_device_wrapped (int id, gpointer user_data)
-  {
-    PortMidi *context = static_cast <PortMidi *> (user_data);
-    return context->close_output_device (id);
   }
 
   gchar * 
@@ -443,13 +312,6 @@ namespace switcher
 		  continue; /* ignore this data */
 		}
 		
-		// shmdata_any_writer_push_data (context->shmdata_writer_,
-		//  			      buffer.message,
-		//  			      sizeof (buffer.message),
-		//  			      buffer.timestamp * 1000000, //converting millisec to nanosec
-		//  			      NULL, 
-		// 			      NULL);
-
 		g_print ("midi input msg from %d: %u %u %u \n",
 			 itr->first,
 			 Pm_MessageStatus(buffer.message),
