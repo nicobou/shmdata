@@ -240,6 +240,7 @@ namespace switcher
   {
     GstUtils::clean_element (uridecodebin_);
     clean_on_error_command ();
+    clear_shmdatas ();
   }
 
   void 
@@ -334,7 +335,10 @@ namespace switcher
     gst_query_unref (query);
    
     if (!context->loop_)
-      context->pause_wrapped (NULL,user_data);
+      {
+	context->stop ();
+	return FALSE;
+      }
  
     gboolean ret;
     ret = gst_element_seek (GST_ELEMENT (gst_pad_get_parent (context->main_pad_)),

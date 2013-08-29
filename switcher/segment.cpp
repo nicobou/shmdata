@@ -316,7 +316,6 @@ namespace switcher
     shmdata_writers_.remove (shmdata_path);
     update_shmdata_writers_description ();
     GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_writers_description_);
-
     return true;
   }
 
