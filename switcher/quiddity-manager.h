@@ -43,10 +43,10 @@ namespace switcher
       typedef std::shared_ptr<QuiddityManager> ptr; 
       typedef std::vector<QuiddityCommand::ptr> CommandHistory; 
       typedef void (*PropCallback)(std::string subscriber_name,
-			       std::string quiddity_name,
-			       std::string property_name,
-			       std::string value,
-			       void *user_data);
+				   std::string quiddity_name,
+				   std::string property_name,
+				   std::string value,
+				   void *user_data);
       typedef void (*SignalCallback)(std::string subscriber_name,
 				     std::string quiddity_name,
 				     std::string property_name,
@@ -87,12 +87,12 @@ namespace switcher
       std::string get_class_doc (std::string class_name);
       std::string get_quiddity_description (std::string quiddity_name);
       std::string get_quiddities_description ();
-      // create & remove
+      // create/remove/rename
       std::string create (std::string class_name); //returns the name
       std::string create (std::string class_name, 
 			  std::string nick_name); // &?= chars are not allowed in nicknames
       bool remove (std::string quiddity_name);
-
+      bool rename (std::string nick_name, std::string new_nick_name);
 
       //****************** properties ************************************************************
       //doc (json formatted)

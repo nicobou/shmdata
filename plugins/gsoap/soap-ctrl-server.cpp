@@ -53,8 +53,6 @@ namespace switcher
 		    (Method::method_ptr) &set_port_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_INT, NULL),
-		    true,
-		    false,
      		    this);
    
     return true;
@@ -515,8 +513,7 @@ controlService::create_quiddity (std::string quiddity_class,
    else 
      { 
        char *s = (char*)soap_malloc(this, 1024);
-       sprintf(s, "%s is not an available class", quiddity_class.c_str());
-       sprintf(s, "<error xmlns=\"http://tempuri.org/\">%s is not an available class</error>", quiddity_class.c_str());
+       sprintf(s, "%s cannot be created, see switcher logs", quiddity_class.c_str());
        return soap_senderfault("Quiddity creation error", s);
      }
   return SOAP_OK;
@@ -543,10 +540,28 @@ controlService::create_named_quiddity (std::string quiddity_class,
    else 
      { 
        char *s = (char*)soap_malloc(this, 1024);
-       sprintf(s, "%s is not an available class", quiddity_class.c_str());
-       sprintf(s, "<error xmlns=\"http://tempuri.org/\">%s is not an available class</error>", quiddity_class.c_str());
+       sprintf(s, "%s cannot be created, see switcher logs", quiddity_class.c_str());
        return soap_senderfault("Quiddity creation error", s);
      }
+  return SOAP_OK;
+}
+
+int
+controlService::rename_quiddity (std::string nick_name, 
+				 std::string new_nick_name,
+				 std::string *result)
+{
+  using namespace switcher;
+
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
+  QuiddityManager::ptr manager;
+  if (ctrl_server != NULL)
+    manager = ctrl_server->get_quiddity_manager ();
+
+  if (manager->rename (nick_name, new_nick_name))
+    *result = "true"; 
+   else 
+     *result = "false";
   return SOAP_OK;
 }
 

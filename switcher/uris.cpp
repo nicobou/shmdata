@@ -28,7 +28,7 @@ namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uris,
 				       "Uri Player",
-				       "uri source", 
+				       "experimental uri player", 
 				       "play/pause/seek/loop/synchronize multiple uris",
 				       "LGPL",
 				       "uris", 
@@ -72,8 +72,6 @@ namespace switcher
 		    (Method::method_ptr) &add_uri_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    true,
-		    false,
 		    this);
     
 
@@ -86,8 +84,6 @@ namespace switcher
 		    (Method::method_ptr) &play_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    false,
-		    true,
 		    this);
     
     //using play pause seek from runtime

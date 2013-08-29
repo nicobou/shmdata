@@ -23,17 +23,22 @@
 #define __SWITCHER_MY_PLUGIN_H__
 
 #include "switcher/quiddity.h"
+#include "switcher/startable-quiddity.h"
 #include "switcher/custom-property-helper.h"
 #include <memory>
 
 namespace switcher
 {
   
-  class MyPlugin : public Quiddity {
+  class MyPlugin : public Quiddity, public StartableQuiddity 
+  {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(MyPlugin);
     ~MyPlugin ();
 
+    bool start ();
+    bool stop ();
+    
   private:
     CustomPropertyHelper::ptr custom_props_;
     bool myprop_;

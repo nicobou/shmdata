@@ -33,8 +33,6 @@ namespace switcher
     closure_ (NULL)
   {
     json_description_.reset (new JSONBuilder());
-    is_configuration_ = false;
-    is_control_ = false;
   }
 
   Method::~Method ()
@@ -61,11 +59,11 @@ namespace switcher
 	return false;
       }
     closure_ = g_cclosure_new (G_CALLBACK (method), user_data, Method::destroy_data);
-    g_closure_set_marshal  (closure_,g_cclosure_marshal_generic);
+    g_closure_set_marshal  (closure_, g_cclosure_marshal_generic);
     return_type_ =  return_type;
     arg_types_ = arg_types;
     num_of_value_args_ = arg_types_.size();
-
+    
     return true;
   }
 
@@ -77,18 +75,16 @@ namespace switcher
     return num_of_value_args_;
   }
   
-
-  //FIXME should be commented and not used (using signal action instead)
-  GValue 
-  Method::invoke(std::vector<std::string> args)
+  bool 
+  Method::invoke(std::vector<std::string> args, GValue *result_value)
   {
         
-    GValue result_value = G_VALUE_INIT;
+    //GValue result_value = G_VALUE_INIT;
 
     if (args.size () != num_of_value_args_ && arg_types_[0] != G_TYPE_NONE)
       {
 	g_warning ("Method::invoke number of arguments does not correspond to the size of argument types");
-	return result_value;
+	return false;
       }
 
     GValue params[arg_types_.size ()];
@@ -103,7 +99,7 @@ namespace switcher
 	    {
 	      g_error ("Method::invoke string not transformable into gvalue (argument: %s) ",
 		       args[i].c_str());
-	      return result_value;
+	      return false;
 	    }
 	}
     else
@@ -113,19 +109,12 @@ namespace switcher
 	gst_value_deserialize (&params[0],"");
       }
 
-    //gboolean result;
-    g_value_init (&result_value, return_type_);
-    //g_print ("arg tipe size %d\n", arg_types_.size());
-    g_closure_invoke (closure_, &result_value, num_of_value_args_, params, NULL);
+    g_value_init (result_value, return_type_);
+    g_closure_invoke (closure_, result_value, num_of_value_args_, params, NULL);
     
-    //result = g_value_get_boolean (&result_value);
-    
-    //unset
-    //g_value_unset (&result_value);
     for (guint i=0; i < num_of_value_args_; i++)
       g_value_unset (&params[i]);
-    //return result;
-    return result_value; 
+    return true; 
   } 
   
   void
@@ -141,12 +130,8 @@ namespace switcher
 			   std::string method_name,
 			   std::string short_description,
 			   std::string return_description,
-			   args_doc arg_description,
-			   bool is_configuration,
-			   bool is_control)
+			   args_doc arg_description)
   {
-    is_configuration_ = is_configuration;
-    is_control_ = is_control;
 
     json_description_->reset ();
     json_description_->begin_object ();
@@ -155,16 +140,6 @@ namespace switcher
     json_description_->add_string_member ("description", short_description.c_str ());
     json_description_->add_string_member ("return type", g_type_name (return_type_));
     json_description_->add_string_member ("return description", return_description.c_str ());
-    
-    if (is_configuration_)
-      json_description_->add_string_member ("is configuration", "true");
-    else
-      json_description_->add_string_member ("is configuration", "false");
-    
-    if (is_control_)
-      json_description_->add_string_member ("is control", "true");
-    else
-      json_description_->add_string_member ("is control", "false");
     
     json_description_->set_member_name ("arguments");
     json_description_->begin_array ();

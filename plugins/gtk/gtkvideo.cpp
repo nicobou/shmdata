@@ -72,7 +72,7 @@ namespace switcher
     if (instances_counter_ == 0)
       g_thread_new ("GTKMainLoopThread", GThreadFunc(gtk_main_loop_thread), this);
     instances_counter_++;
-    
+        
     custom_props_.reset (new CustomPropertyHelper ());
     fullscreen_prop_spec_ = 
       custom_props_->make_boolean_property ("fullscreen", 
@@ -85,9 +85,7 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				fullscreen_prop_spec_, 
 				"fullscreen",
-				"Fullscreen",
-				true,
-				true);
+				"Fullscreen");
 
     g_object_set (G_OBJECT (xvimagesink_),
 		  "force-aspect-ratio", TRUE,
@@ -146,25 +144,23 @@ namespace switcher
 
   GTKVideo::~GTKVideo ()
   {
-    GstUtils::clean_element (xvimagesink_);
-    if (on_error_command_ != NULL)
-      delete on_error_command_;
-    instances_counter_ --;
-
+    reset_bin ();
     
-
-    //should destroy child widgets too
+    // should destroy child widgets too
     if (main_window_ != NULL)
       gtk_widget_destroy (main_window_);
     
     gdk_cursor_destroy (blank_cursor_);
-
+    
     if (instances_counter_ == 0)
       {
-	g_debug ("GTKVideo::~GTKVideo invoking gtk_main_quit");
-	gtk_main_quit ();
+     	g_debug ("GTKVideo::~GTKVideo invoking gtk_main_quit");
+     	gtk_main_quit ();
       }
     
+     if (on_error_command_ != NULL)
+       delete on_error_command_;
+     instances_counter_ --;
   }
   
   void 
@@ -189,7 +185,6 @@ namespace switcher
      g_object_set_data (G_OBJECT (context->xvimagesink_), 
 			"window-handle",
 			(gpointer)&context->window_handle_);
-
   }
   
 
@@ -217,33 +212,28 @@ namespace switcher
   {
     GTKVideo *context = static_cast <GTKVideo *> (user_data);
    
-   // GstCaps *caps = caller->get_caps ();
-    // g_print ("CAPS CAPS CAPS %s\n",
-    // 	     gst_caps_to_string (caps));
-
-
-     context->main_window_ = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-     g_signal_connect (G_OBJECT (context->main_window_), 
-		       "delete-event", G_CALLBACK (delete_event_cb), context);
-   
-     context->video_window_ = gtk_drawing_area_new ();
-     gtk_widget_set_double_buffered (context->video_window_, FALSE);
-     g_signal_connect (context->video_window_, "realize", G_CALLBACK (realize_cb), context);
-     g_signal_connect (context->video_window_, "expose_event", G_CALLBACK (expose_cb), context);
-   
-     gtk_container_add (GTK_CONTAINER (context->main_window_), context->video_window_);
-     gtk_window_set_default_size (GTK_WINDOW (context->main_window_), 640, 480);
-
-     gtk_widget_set_events(context->main_window_, GDK_KEY_PRESS_MASK);
-     g_signal_connect(G_OBJECT(context->main_window_), "key-press-event",
-		      G_CALLBACK(GTKVideo::key_pressed_cb), context);
-     
-     gtk_widget_show_all (context->main_window_);
-
-     context->set_fullscreen (context->is_fullscreen_, context);
-
+    
+    context->main_window_ = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+    g_signal_connect (G_OBJECT (context->main_window_), 
+		      "delete-event", G_CALLBACK (delete_event_cb), context);
+    
+    context->video_window_ = gtk_drawing_area_new ();
+    gtk_widget_set_double_buffered (context->video_window_, FALSE);
+    g_signal_connect (context->video_window_, "realize", G_CALLBACK (realize_cb), context);
+    g_signal_connect (context->video_window_, "expose_event", G_CALLBACK (expose_cb), context);
+    
+    gtk_container_add (GTK_CONTAINER (context->main_window_), context->video_window_);
+    gtk_window_set_default_size (GTK_WINDOW (context->main_window_), 640, 480);
+    
+    gtk_widget_set_events(context->main_window_, GDK_KEY_PRESS_MASK);
+    g_signal_connect(G_OBJECT(context->main_window_), "key-press-event",
+		     G_CALLBACK(GTKVideo::key_pressed_cb), context);
+    
+    gtk_widget_show_all (context->main_window_);
+    
+    context->set_fullscreen (context->is_fullscreen_, context);
   }
- 
+  
 
   void 
   GTKVideo::toggle_fullscreen()

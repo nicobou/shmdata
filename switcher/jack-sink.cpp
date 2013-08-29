@@ -19,40 +19,45 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
-#ifndef __SWITCHER_GST_VIDEO_PARSE_TO_BIN_SRC_H__
-#define __SWITCHER_GST_VIDEO_PARSE_TO_BIN_SRC_H__
-
-#include "base-source.h"
-#include "startable-quiddity.h"
-#include "custom-property-helper.h"
-#include <gst/gst.h>
-#include <memory>
+#include "jack-sink.h"
+#include "gst-utils.h"
+#include "quiddity-command.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 
 namespace switcher
 {
-
-  class GstVideoParseToBinSrc : public BaseSource, StartableQuiddity
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackSink, 
+				       "Audio Display (with Jack Audio)",
+				       "audio sink", 
+				       "Audio display with minimal features",
+				       "LGPL",
+				       "jacksink",
+				       "Nicolas Bouillot");
+  
+  bool
+  JackSink::init ()
   {
-  public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstVideoParseToBinSrc);
-    ~GstVideoParseToBinSrc ();
+    GError *error = NULL;
+    jacksink_ = gst_parse_bin_from_description ("audioconvert ! jackaudiosink sync=false",
+						TRUE,
+						&error);
+    g_object_set (G_OBJECT (jacksink_), "async-handling",TRUE, NULL);
+
+    if (error != NULL)
+      {
+	g_warning ("%s",error->message);
+	g_error_free (error);
+	return false;
+      }
     
-    bool start ();
-    bool stop ();
-    
-  private:
-    GstElement *gst_video_parse_to_bin_src_;
-
-    CustomPropertyHelper::ptr custom_props_; 
-    GParamSpec *gst_launch_pipeline_spec_;
-    gchar *gst_launch_pipeline_;
-
-    static void set_gst_launch_pipeline (const gchar *value, void *user_data);
-    static gchar *get_gst_launch_pipeline (void *user_data);
-    bool to_shmdata ();
-  };
-
-}  // end of namespace
-
-#endif // ifndef
+    set_sink_element (jacksink_);
+    return true;
+  }
+  
+  JackSink::JackSink ()
+  {
+  }
+ 
+}

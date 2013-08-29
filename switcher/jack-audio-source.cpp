@@ -26,7 +26,7 @@ namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackAudioSource,
 				       "Jack Audio",
-				       "audio source", 
+				       "test", 
 				       "get audio from jack",
 				       "LGPL",
 				       "jackaudiosrc", 

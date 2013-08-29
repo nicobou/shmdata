@@ -57,15 +57,11 @@ namespace switcher
     register_property_by_pspec (gobject_->get_gobject (), 
 				json_writers_description_, 
 				"shmdata-writers",
-				"Shmdata Writers",
-				false,
-				true);
+				"Shmdata Writers");
     register_property_by_pspec (gobject_->get_gobject (), 
 				json_readers_description_, 
 				"shmdata-readers",
-				"Shmdata Readers",
-				false,
-				true);
+				"Shmdata Readers");
 
     make_bin();
 
@@ -80,8 +76,6 @@ namespace switcher
 		    (Method::method_ptr) &set_runtime_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL), 
-		    true,
-		    true,
 		    this);
 
 
@@ -322,7 +316,6 @@ namespace switcher
     shmdata_writers_.remove (shmdata_path);
     update_shmdata_writers_description ();
     GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_writers_description_);
-
     return true;
   }
 
@@ -367,8 +360,8 @@ namespace switcher
   bool 
   Segment::reset_bin ()
   {
-    // clean_bin ();
-    // make_bin ();
+    clean_bin ();
+    make_bin ();
     if (!(bool)runtime_)
       return false;
     set_runtime (runtime_);

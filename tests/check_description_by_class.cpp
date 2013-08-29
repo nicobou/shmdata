@@ -19,30 +19,30 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
-#ifndef __SWITCHER_VIDEO_TEST_SOURCE_H__
-#define __SWITCHER_VIDEO_TEST_SOURCE_H__
-
-#include "video-source.h"
-#include "startable-quiddity.h"
-#include <memory>
-
-namespace switcher
+#include "switcher/quiddity-manager.h"
+#include "switcher/quiddity-basic-test.h"
+#include <vector>
+#include <string>
+#include <iostream>
+int
+main (int argc,
+      char *argv[])
 {
+  bool success = true;
+  switcher::QuiddityManager::ptr manager = 
+    switcher::QuiddityManager::make_manager("check_description_manager");  
+  
+  std::vector<std::string> classes = manager->get_classes ();
+  
+  for (auto &it : classes)
+    if (!switcher::QuiddityBasicTest::test_description_by_class (manager, it))
+      success = false;
+  
+  if (success)
+    return 0;
+  else
+    return 1;
+}
 
-  class VideoTestSource : public VideoSource, public StartableQuiddity
-  {
-  public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VideoTestSource);
-    ~VideoTestSource();
 
-    bool start ();
-    bool stop ();
 
-  private:
-    GstElement *videotestsrc_;
-  };
-
-}  // end of namespace
-
-#endif // ifndef

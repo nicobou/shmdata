@@ -36,6 +36,7 @@ namespace switcher
   
   Uridecodebin::~Uridecodebin ()
   {
+    g_free (uri_);
     destroy_uridecodebin ();
     QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
     if ((bool) manager && g_strcmp0 ("",runtime_name_.c_str ()) != 0)
@@ -48,16 +49,28 @@ namespace switcher
     if (!GstUtils::make_element ("uridecodebin",&uridecodebin_))
       return false;
     
-
-    //set the name before registering properties
-    set_name (gst_element_get_name (uridecodebin_));
-
+    init_startable (this);
+    uri_ = g_strdup ("");
     on_error_command_ = NULL;
-  
     destroy_uridecodebin ();
-
-    //loop property
+    
+    
     custom_props_.reset (new CustomPropertyHelper ());
+    //uri_
+    uri_ = g_strdup ("");
+    uri_spec_ = 
+      custom_props_->make_string_property ("uri", 
+					   "URI To Be Redirected Into Shmdata(s)",
+					   "",
+					   (GParamFlags) G_PARAM_READWRITE,
+					   Uridecodebin::set_uri,
+					   Uridecodebin::get_uri,
+					   this);
+    register_property_by_pspec (custom_props_->get_gobject (), 
+				uri_spec_, 
+				"uri",
+				"URI");
+    //loop property
     loop_ = false;
     loop_prop_ = 
       custom_props_->make_boolean_property ("loop", 
@@ -70,9 +83,7 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				loop_prop_, 
 				"loop",
-				"Looping",
-				true,
-				true);
+				"Looping");
 
     playing_ = false;
     playing_prop_ = 
@@ -86,24 +97,20 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
 				playing_prop_, 
 				"playing",
-				"Playing",
-				true,
-				true);
+				"Playing");
         
-    publish_method ("Set URI",
-		    "to_shmdata", 
-		    "decode streams from an uri and write them to shmdatas", 
-		    "success or fail",
-		    Method::make_arg_description ("URI",
-						  "uri", 
-						  "the uri to decode",
-						  NULL),
-		    (Method::method_ptr) &to_shmdata_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    true,
-		    true,
-		    this);
+    // publish_method ("Set URI",
+    // 		    "to_shmdata", 
+    // 		    "decode streams from an uri and write them to shmdatas", 
+    // 		    "success or fail",
+    // 		    Method::make_arg_description ("URI",
+    // 						  "uri", 
+    // 						  "the uri to decode",
+    // 						  NULL),
+    // 		    (Method::method_ptr) &to_shmdata_wrapped, 
+    // 		    G_TYPE_BOOLEAN,
+    // 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+    // 		    this);
     
     publish_method ("Pause",
 		    "pause", 
@@ -114,8 +121,6 @@ namespace switcher
 		    (Method::method_ptr) &pause_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    true,
-		    true,
 		    this);
     
     publish_method ("Seek",
@@ -129,8 +134,6 @@ namespace switcher
 		    (Method::method_ptr) &seek_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-		    true,
-		    true,
 		    this);
     
     publish_method ("Speed",
@@ -144,10 +147,7 @@ namespace switcher
 		    (Method::method_ptr) &speed_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-		    true,
-		    true,
 		    this);
-    
     
     //signaling end of stream
     //FIXME do that
@@ -240,6 +240,7 @@ namespace switcher
   {
     GstUtils::clean_element (uridecodebin_);
     clean_on_error_command ();
+    clear_shmdatas ();
   }
 
   void 
@@ -334,7 +335,10 @@ namespace switcher
     gst_query_unref (query);
    
     if (!context->loop_)
-      context->pause_wrapped (NULL,user_data);
+      {
+	context->stop ();
+	return FALSE;
+      }
  
     gboolean ret;
     ret = gst_element_seek (GST_ELEMENT (gst_pad_get_parent (context->main_pad_)),
@@ -580,20 +584,8 @@ namespace switcher
     g_free (val_str);
   }
 
-  gboolean
-  Uridecodebin::to_shmdata_wrapped (gpointer uri, 
-				    gpointer user_data)
-  {
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-  
-    if (context->to_shmdata ((char *)uri))
-      return TRUE;
-    else
-      return FALSE;
-  }
-
   bool
-  Uridecodebin::to_shmdata (std::string uri)
+  Uridecodebin::to_shmdata ()
   {
     destroy_uridecodebin ();
     QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
@@ -614,8 +606,8 @@ namespace switcher
     reset_bin ();
     init_uridecodebin ();
         
-    g_debug ("to_shmdata set uri %s", uri.c_str ());
-    g_object_set (G_OBJECT (uridecodebin_), "uri", uri.c_str (), NULL); 
+    g_debug ("to_shmdata set uri %s", uri_);
+    g_object_set (G_OBJECT (uridecodebin_), "uri", uri_, NULL); 
 
     gst_bin_add (GST_BIN (bin_), uridecodebin_);
     GstUtils::wait_state_changed (bin_);
@@ -704,6 +696,37 @@ namespace switcher
   {
     Uridecodebin *context = static_cast<Uridecodebin *> (user_data);
     return context->playing_;
+  }
+
+  void 
+  Uridecodebin::set_uri (const gchar *value, void *user_data)
+  {
+    Uridecodebin *context = static_cast <Uridecodebin *> (user_data);
+    g_free (context->uri_);
+    context->uri_ = g_strdup (value);
+    context->custom_props_->notify_property_changed (context->uri_spec_);
+  }
+
+  gchar *
+  Uridecodebin::get_uri (void *user_data)
+  {
+    Uridecodebin *context = static_cast <Uridecodebin *> (user_data);
+    return context->uri_;
+  }
+  
+  bool 
+  Uridecodebin::start ()
+  {
+    if (! to_shmdata ())
+      return false;
+    return true;
+  }
+  
+  bool 
+  Uridecodebin::stop ()
+  {
+    destroy_uridecodebin ();
+    return true;
   }
 
 }

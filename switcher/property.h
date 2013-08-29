@@ -41,10 +41,9 @@ namespace switcher
 
     //this is when using an existing property
     void set_gobject_pspec (GObject *object, GParamSpec *pspec, std::string long_name);
-
+    
     void set_long_name (std::string long_name);
-    void set_is_configuration (bool is_configuration);
-    void set_is_control (bool is_control);
+   
 
     void set (std::string value);
     std::string get ();
@@ -58,6 +57,10 @@ namespace switcher
 
     void print ();
 
+    //getter
+    std::string get_long_name ();
+    std::string get_short_description ();
+
   private:
     std::string long_name_;
     GParamSpec *property_;
@@ -65,8 +68,6 @@ namespace switcher
     JSONBuilder::ptr json_description_;
     void make_description();
     std::map<std::pair<Callback, void *>, gulong> subscribed_handlers_;
-    bool is_configuration_;
-    bool is_control_;
   };
 
 }  // end of namespace

@@ -42,6 +42,8 @@
 #include "http-sdp.h"
 #include "http-sdp-dec.h"
 #include "jack-audio-source.h"
+#include "jack-sink.h"
+#include "jpegenc.h"
 #include "logger.h"
 #include "rtp-session.h"
 #include "runtime.h"
@@ -50,7 +52,7 @@
 #include "udpsink.h"
 #include "uridecodebin.h"
 #include "uris.h"
-#include "string-memory.h"
+#include "string-dictionary.h"
 #include "video-rate.h"
 #include "video-test-source.h"
 #include "vorbis.h"
@@ -202,6 +204,10 @@ namespace switcher
       					       HTTPSDPDec::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<JackAudioSource> (JackAudioSource::switcher_doc_.get_class_name (), 
 						       JackAudioSource::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<JackSink> (JackSink::switcher_doc_.get_class_name (), 
+						JackSink::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<JpegEnc> (JpegEnc::switcher_doc_.get_class_name (), 
+					       JpegEnc::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<Logger> (Logger::switcher_doc_.get_class_name (), 
       					       Logger::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<RtpSession> (RtpSession::switcher_doc_.get_class_name (), 
@@ -212,8 +218,8 @@ namespace switcher
       							  ShmdataFromGDPFile::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<ShmdataToFile> (ShmdataToFile::switcher_doc_.get_class_name (), 
       						     ShmdataToFile::switcher_doc_.get_json_root_node ());
-    abstract_factory_.register_class<StringMemory> (StringMemory::switcher_doc_.get_class_name (), 
-						    StringMemory::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<StringDictionary> (StringDictionary::switcher_doc_.get_class_name (), 
+							StringDictionary::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<UDPSink> (UDPSink::switcher_doc_.get_class_name (), 
        					       UDPSink::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<Uridecodebin> (Uridecodebin::switcher_doc_.get_class_name (), 
@@ -295,6 +301,7 @@ namespace switcher
   QuiddityManager_Impl::init_quiddity (Quiddity::ptr quiddity)
   {
     quiddity->set_manager_impl (shared_from_this());
+
     if (!quiddity->init ())
       return false;
 
@@ -347,7 +354,8 @@ namespace switcher
   }
 
   std::string 
-  QuiddityManager_Impl::create (std::string quiddity_class, std::string nick_name)
+  QuiddityManager_Impl::create (std::string quiddity_class, 
+				std::string nick_name)
   {
     if(!class_exists (quiddity_class))
       return "";
@@ -370,7 +378,7 @@ namespace switcher
 
 	if (!init_quiddity (quiddity))
 	  {
-	    g_debug ("initialization of %s with name %s failled\n",
+	    g_debug ("initialization of %s with name %s failled",
 		     quiddity_class.c_str (), nick_name.c_str ());
 	    
 	    return "";
@@ -378,6 +386,32 @@ namespace switcher
       }
     return quiddity->get_nick_name ();
   }
+
+  bool 
+  QuiddityManager_Impl::rename (std::string nick_name, 
+				std::string new_nick_name)
+  {
+    if (!quiddities_nick_names_.contains (nick_name))
+      {
+	g_debug ("cannot rename because no quiddity is nick named %s",
+		 nick_name.c_str ());
+	return false;
+      }
+    
+    if (quiddities_nick_names_.contains (new_nick_name))
+      {
+	g_debug ("cannot rename because %s is already taken",
+		 new_nick_name.c_str ());
+	return false;
+      }
+       
+    Quiddity::ptr temp = get_quiddity (nick_name);
+    temp->set_nick_name (new_nick_name);
+    quiddities_nick_names_.insert (new_nick_name, temp->get_name());
+    quiddities_nick_names_.remove (nick_name);
+    return true;
+  }
+
 
   std::vector<std::string> 
   QuiddityManager_Impl::get_instances ()

@@ -93,8 +93,11 @@ main (int argc,
     manager->create ("runtime", "av_runtime");
     manager->create ("audiotestsrc","a");
     manager->invoke_va ("a", "set_runtime", NULL, "av_runtime", NULL);
+    manager->invoke_va ("a", "start", NULL, NULL, NULL);
+   
     manager->create ("videotestsrc","v");
     manager->invoke_va ("v", "set_runtime", NULL, "av_runtime", NULL);
+    manager->invoke_va ("v", "start", NULL, NULL, NULL);
 
     manager->create ("runtime", "rtp_runtime");
     manager->create ("rtpsession","rtp");

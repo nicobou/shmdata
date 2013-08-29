@@ -33,10 +33,6 @@ namespace switcher
   void 
   AudioSource::clean_audio_elements ()
   {
-    //FIXME
-    // GstUtils::clean_element(audio_tee_);
-    // GstUtils::clean_element(audioconvert_);
-    // GstUtils::clean_element(resample_);
     unregister_shmdata_writer (make_file_name ("audio"));
   }
 
@@ -73,8 +69,8 @@ namespace switcher
     gst_bin_add (GST_BIN (bin_), rawaudio_);
     gst_element_link (rawaudio_, audio_tee_);
 
-    GstCaps *audiocaps = gst_caps_new_simple ("audio/x-raw-float",
-					      "width", G_TYPE_INT, 32,
+    GstCaps *audiocaps = gst_caps_new_simple ("audio/x-raw-int",
+					      "width", G_TYPE_INT, 16,
      					      NULL);
 
     //creating a connector for raw audio

@@ -27,7 +27,7 @@ namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToFile,
 				       "Shmdata Recorder",
-				       "file sink", 
+				       "file recorder", 
 				       "record shmdata(s) to file(s)",
 				       "LGPL",
 				       "shmtofile",
@@ -55,8 +55,6 @@ namespace switcher
 		    (Method::method_ptr) &add_shmdata_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
-		    true, 
-		    true,
 		    this);
     
     publish_method ("Remove Shmdata",
@@ -70,8 +68,6 @@ namespace switcher
 		    (Method::method_ptr) &remove_shmdata_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    true,
-		    true,
 		    this);
     
  
@@ -88,9 +84,7 @@ namespace switcher
     register_property_by_pspec (custom_prop_->get_gobject (), 
      				recording_param_, 
      				"recording",
-				"Recording",
-				true,
-				true);
+				"Recording");
 
     //set the name before registering properties
     set_name (gst_element_get_name (bin_));

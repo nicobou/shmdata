@@ -32,7 +32,7 @@ switcher_ctrl_CXXFLAGS = \
     $(GSOAP_CFLAGS) \
     $(GST_CFLAGS) \
     -I$(top_srcdir) \
-    -I$(top_srcdir)/plugins/gsoap/
+    -I$(top_builddir)/plugins/gsoap/
 
 switcher_ctrl_LDFLAGS = \
     $(GLIB_LIBS) \

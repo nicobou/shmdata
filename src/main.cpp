@@ -264,6 +264,7 @@ main (int argc,
   std::string *result;
   manager->invoke (soap_name, "set_port", &result, port_arg);
   //g_print ("-------------- %s ----------\n", result->c_str ());
+
   
   // start osc if port number has been set
   if (osc_port_number != NULL)

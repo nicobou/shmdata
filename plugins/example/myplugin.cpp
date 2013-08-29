@@ -35,6 +35,8 @@ namespace switcher
   bool
   MyPlugin::init ()
   {
+    init_startable (this);
+
     custom_props_.reset (new CustomPropertyHelper ());
 
     hello_ = g_strdup ("hello");
@@ -50,9 +52,7 @@ namespace switcher
     register_property_by_pspec (custom_props_->get_gobject (), 
      				myprop_prop_, 
      				"myprop",
-				"My Property", //long name
-				true, //is a configuration parameter 
-				true); //is a control parameter
+				"My Property"); //long name
 
     publish_method ("Hello World", //long name
 		    "hello-world", //name
@@ -62,11 +62,9 @@ namespace switcher
 						  "text", //fisrt arg name
 						  "string", //first arg type
 						  NULL),
-  		    (Method::method_ptr) &my_hello_world_method, //method
-		    G_TYPE_STRING, //return type
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL), //arg type specification
-		    true, //is a configuration method
-		    true, // is a control method
+  		    (Method::method_ptr) &my_hello_world_method, 
+		    G_TYPE_STRING,
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 
     g_debug ("hello from plugin");
@@ -106,4 +104,17 @@ namespace switcher
     return context->hello_;
   }
 
+  bool
+  MyPlugin::start ()
+  {
+    g_debug ("start from my plugin");
+    return true;
+  }
+
+  bool
+  MyPlugin::stop ()
+  {
+    g_debug ("stop from my plugin");
+    return true;
+  }
 }

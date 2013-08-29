@@ -25,19 +25,32 @@
 
 #include <memory>
 #include "base-source.h"
+#include "startable-quiddity.h"
+#include "custom-property-helper.h"
 
 namespace switcher
 {
 
-  class FakeShmdataWriter : public BaseSource
+  class FakeShmdataWriter : public BaseSource, StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeShmdataWriter);
+    ~FakeShmdataWriter ();
     bool add_shmdata_path (std::string name);
+
+    bool start ();
+    bool stop ();
 
   private:
     static gboolean add_shmdata_path_wrapped (gpointer name, gpointer user_data);
 
+    //custom properties:
+    CustomPropertyHelper::ptr custom_props_; 
+    GParamSpec *shmdata_path_spec_;
+    gchar *shmdata_path_;
+
+    static void set_shmdata_path (const gchar *value, void *user_data);
+    static gchar *get_shmdata_path (void *user_data);
   };
 
 }  // end of namespace

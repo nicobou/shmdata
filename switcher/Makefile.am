@@ -39,11 +39,14 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     http-sdp.cpp \
     http-sdp-dec.cpp \
     jack-audio-source.cpp \
+    jack-sink.cpp \
+    jpegenc.cpp \
     json-builder.cpp \
     logger.cpp \
     method.cpp \
     plugin-loader.cpp \
     property.cpp \
+    quiddity-basic-test.cpp \
     quiddity-command.cpp \
     quiddity-documentation.cpp \
     quiddity-manager-wrapper.cpp \
@@ -61,7 +64,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     shmdata-to-file.cpp \
     shmdata-writer.cpp \
     signal-string.cpp \
-    string-memory.cpp \
+    startable-quiddity.cpp \
+    string-dictionary.cpp \
     udpsink.cpp \
     uridecodebin.cpp \
     uris.cpp \
@@ -111,11 +115,14 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     http-sdp.h \
     http-sdp-dec.h \
     jack-audio-source.h \
+    jack-sink.h \
+    jpegenc.h \
     json-builder.h \
     logger.h \
     method.h \
     plugin-loader.h \
     property.h \
+    quiddity-basic-test.h \
     quiddity-command.h \
     quiddity-documentation.h \
     quiddity-manager-wrapper.h \
@@ -133,9 +140,10 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     shmdata-to-file.h \
     shmdata-writer.h \
     signal-string.h \
+    startable-quiddity.h \
     string-map.h \
     string-map_spec.h \
-    string-memory.h \
+    string-dictionary.h \
     udpsink.h \
     uridecodebin.h \
     uris.h \

@@ -44,9 +44,13 @@
 namespace switcher
 {
   class QuiddityManager_Impl;
- 
+
+
   class Quiddity
   {
+    
+    friend class StartableQuiddity;
+    
   public:
     typedef std::shared_ptr<Quiddity> ptr;
     
@@ -134,9 +138,7 @@ namespace switcher
 				 const std::string method_name,
 				 const std::string short_description,
 				 const std::string return_description,
-				 const Method::args_doc arg_description,
-				 bool is_configuration,
-				 bool is_control);
+				 const Method::args_doc arg_description);
     
     //signals
     bool register_signal_gobject (const std::string signal_name, //the name to give
@@ -179,18 +181,14 @@ namespace switcher
     bool register_property (GObject *object, 
 			    std::string gobject_property_name, 
 			    std::string name_to_give,
-			    std::string long_name,
-			    bool is_configuration,
-			    bool is_control);
+			    std::string long_name);
     bool unregister_property (std::string name);
     bool register_property_by_pspec (GObject *object, 
 				     GParamSpec *pspec, 
 				     std::string name_to_give,
-				     std::string long_name,
-				     bool is_configuration,
-				     bool is_control);
-    void set_is_configuration (bool is_configuration);
-    void set_is_control (bool is_control);
+				     std::string long_name);
+
+    Property::ptr get_property_ptr (std::string property_name);
 
     //methods
     bool publish_method (const std::string long_name,
@@ -201,8 +199,6 @@ namespace switcher
 			 Method::method_ptr method, 
 			 Method::return_type return_type,
 			 Method::args_types arg_types, 
-			 bool is_configuration,
-			 bool is_control,
 			 gpointer user_data);
     //signals 
     bool publish_signal (const std::string long_name,

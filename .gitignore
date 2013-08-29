@@ -41,11 +41,13 @@ plugins/avcodecs/.deps/
 plugins/avcodecs/.libs/
 plugins/example/.deps/
 plugins/example/.libs/
+plugins/example/check_example_plugin
 plugins/gsoap/.deps
 plugins/gsoap/.libs
 plugins/gsoap/webservices
 plugins/gtk/.deps/
 plugins/gtk/.libs/
+plugins/gtk/check_gtk_video
 plugins/osc/.deps/
 plugins/osc/.libs/
 plugins/portmidi/.deps/
@@ -66,10 +68,12 @@ switcher/classes.cxx
 test-driver
 tests/.deps/
 tests/.libs/
+tests/check_description_by_class
 tests/check_property_subscriber
 tests/check_quiddity_create_remove
 tests/check_quiddity_create_remove_with_auto_pipeline
 tests/check_rtp_session
 tests/check_signal_subscriber
+tests/check_startable
 xcode/switcher.xcodeproj/project.xcworkspace/xcuserdata
 xcode/switcher.xcodeproj/xcuserdata

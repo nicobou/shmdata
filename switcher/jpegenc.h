@@ -19,27 +19,28 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "string-memory.h"
+#ifndef __SWITCHER_JPEG_ENC_H__
+#define __SWITCHER_JPEG_ENC_H__
+
+#include "switcher/video-sink.h"
+#include "switcher/gst-element-cleaner.h"
+#include <gst/gst.h>
+#include <memory>
 
 namespace switcher
 {
 
-  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(StringMemory,
-				       "String Key/Value Memory",
-				       "memory", 
-				       "Manage a memory of structured string values",
-				       "LGPL",
-				       "string-memory",
-				       "Nicolas Bouillot");
-  bool
-  StringMemory::init()
+  class JpegEnc : public VideoSink, public GstElementCleaner
   {
-    
-    return true;
-  }
+  public:
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JpegEnc);
+    static void make_shmdata_writer(ShmdataReader *caller, void *jpegenc_instance);
 
-  StringMemory::~StringMemory()
-  {
-  }
-    
-}
+  private:
+    GstElement *jpegencbin_;
+    GstElement *jpegencenc_;
+  };
+
+}  // end of namespace
+
+#endif // ifndef

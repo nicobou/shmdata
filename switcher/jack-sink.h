@@ -20,21 +20,26 @@
  */
 
 
-#ifndef __SWITCHER_STRING_MEMORY_H__
-#define __SWITCHER_STRING_MEMORY_H__
+#ifndef __SWITCHER_JACK_SINK_H__
+#define __SWITCHER_JACK_SINK_H__
 
-#include "quiddity.h"
+#include "audio-sink.h"
+#include <gst/gst.h>
+#include <memory>
 
 namespace switcher
 {
-  class StringMemory : public Quiddity
+
+  class JackSink : public AudioSink
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(StringMemory);
-    ~StringMemory ();
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JackSink);
+    JackSink ();
 
+  private:
+    GstElement *jacksink_;
   };
-  
+
 }  // end of namespace
 
 #endif // ifndef

@@ -26,7 +26,7 @@ namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataFromGDPFile,
 				       "Shmdata File Player",
-				       "file source", 
+				       "shmdata file player", 
 				       "play file(s) recorded with shmdatatofile",
 				       "LGPL",
 				       "shmfromfile",
@@ -55,8 +55,6 @@ namespace switcher
 		    (Method::method_ptr) &add_file_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
-		    true,
-		    true,
 		    this);
     
     publish_method ("Remove File",
@@ -70,8 +68,6 @@ namespace switcher
 		    (Method::method_ptr) &remove_file_wrapped, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    true,
-		    true,
 		    this);
     
     
@@ -88,9 +84,7 @@ namespace switcher
     register_property_by_pspec (custom_prop_->get_gobject (), 
      				playing_param_, 
      				"playing",
-				"Playing",
-				true,
-				true);
+				"Playing");
     
     //set the name before registering properties
     set_name (g_strdup_printf ("gdpfilesrc%s", g_param_spec_get_name(playing_param_)));//FIXME implement and use make_name () in quiddity class, should be used for gsoap also

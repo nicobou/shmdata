@@ -20,37 +20,29 @@
  */
 
 
-#ifndef __SWITCHER_GST_VIDEO_PARSE_TO_BIN_SRC_H__
-#define __SWITCHER_GST_VIDEO_PARSE_TO_BIN_SRC_H__
+#ifndef __SWITCHER_STARTABLE_QUIDDITY_H__
+#define __SWITCHER_STARTABLE_QUIDDITY_H__
 
-#include "base-source.h"
-#include "startable-quiddity.h"
-#include "custom-property-helper.h"
-#include <gst/gst.h>
+#include <glib.h>
 #include <memory>
 
 namespace switcher
 {
 
-  class GstVideoParseToBinSrc : public BaseSource, StartableQuiddity
+  class StartableQuiddity
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstVideoParseToBinSrc);
-    ~GstVideoParseToBinSrc ();
-    
-    bool start ();
-    bool stop ();
-    
+    typedef std::shared_ptr<StartableQuiddity> ptr;
+    StartableQuiddity ();
+
+    virtual bool start () = 0;
+    virtual bool stop () = 0;
+    void init_startable (void *quiddity);//FIXME should called quiddity-manager-impl 
+    //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
+
   private:
-    GstElement *gst_video_parse_to_bin_src_;
-
-    CustomPropertyHelper::ptr custom_props_; 
-    GParamSpec *gst_launch_pipeline_spec_;
-    gchar *gst_launch_pipeline_;
-
-    static void set_gst_launch_pipeline (const gchar *value, void *user_data);
-    static gchar *get_gst_launch_pipeline (void *user_data);
-    bool to_shmdata ();
+    static gboolean start_wrapped (gpointer unused, gpointer user_data);
+    static gboolean stop_wrapped (gpointer unused, gpointer user_data);
   };
 
 }  // end of namespace

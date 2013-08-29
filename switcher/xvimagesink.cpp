@@ -55,9 +55,7 @@ namespace switcher
     register_property (G_OBJECT (xvimagesink_),
 		       "force-aspect-ratio",
 		       "force-aspect-ratio", 
-		       "Force Aspect Ratio",
-		       true,
-		       true);
+		       "Force Aspect Ratio");
     
     on_error_command_ = new QuiddityCommand ();
     on_error_command_->id_ = QuiddityCommand::remove;
