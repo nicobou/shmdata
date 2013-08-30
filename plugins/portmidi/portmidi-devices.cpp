@@ -43,13 +43,14 @@ namespace switcher
   {
 
     for (auto &it: input_streams_)
-	close_input_device (it.first);
-
+      close_input_device (it.first);
+    
     for (auto &it: output_streams_)
       close_output_device (it.first);
-
-    if (num_of_streams_ == 0)
-      delete scheduler_;
+    
+    //FIXME
+    // if (num_of_streams_ == 0)
+    //   delete scheduler_;
   }
   
   int 
