@@ -115,3 +115,31 @@ libportmidisink_la_CXXFLAGS = \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir) 
 
+### plugin unit test
+AM_CFLAGS = \
+    -I$(top_srcdir)
+
+AM_CXXFLAGS =  \
+    $(GLIB_CFLAGS) \
+    $(GSOAP_CFLAGS) \
+    $(GST_CFLAGS) \
+    $(JSONGLIB_CFLAGS) \
+    $(SHMDATA_CFLAGS) \
+    -I$(top_srcdir) 
+
+AM_LDFLAGS = \
+    $(GLIB_LIBS) \
+    $(GSOAP_LIBS) \
+    $(GST_LIBS) \
+    $(JSONGLIB_LIBS) \
+    $(SHMDATA_LIBS) \
+    $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
+
+
+check_PROGRAMS = \
+    check_midi_plugins
+
+check_midi_plugins_SOURCES = \
+    check_midi_plugins.cpp
+
+TESTS = $(check_PROGRAMS)

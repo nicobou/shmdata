@@ -52,6 +52,7 @@ plugins/osc/.deps/
 plugins/osc/.libs/
 plugins/portmidi/.deps/
 plugins/portmidi/.libs/
+plugins/portmidi/check_midi_plugins
 plugins/pulse/.deps/
 plugins/pulse/.libs/
 plugins/v4l2/.deps/
