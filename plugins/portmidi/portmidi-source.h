@@ -24,24 +24,42 @@
 
 #include "portmidi-devices.h"
 #include "switcher/quiddity.h"
+#include "switcher/startable-quiddity.h"
 #include "switcher/custom-property-helper.h"
 #include "shmdata/any-data-writer.h"
 
 namespace switcher
 {
   
-  class PortMidiSource : public Quiddity, PortMidi
+  class PortMidiSource : public Quiddity, public StartableQuiddity, public PortMidi
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSource);
     ~PortMidiSource ();
+
+    bool start ();
+    bool stop ();
     
   private:
-    shmdata_any_writer_t *shmdata_writer_;
+    //shmdata_any_writer_t *shmdata_writer_;
     
+    //properties
     CustomPropertyHelper::ptr custom_props_;
-    gchar *devices_description_;
     GParamSpec *devices_description_spec_;
+
+    //device selection
+    GParamSpec *devices_enum_spec_;
+    gint device_;
+    static void set_device (const gint value, void *user_data);
+    static gint get_device (void *user_data);
+
+    //raw midi value
+    //4 bytes, as PmMessage decribed in portmidi.h
+    GParamSpec *midi_value_spec_;
+    gint midi_value_;
+    static gint get_midi_value (void *user_data);
+    
+    static void on_pm_event (PmEvent *event, void *user_data);
     
   };
   

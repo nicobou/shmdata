@@ -35,6 +35,7 @@
 #include <portmidi.h>
 #include <porttime.h>
 #include <glib.h>
+#include <glib-object.h>
 
 namespace switcher
 {
@@ -42,13 +43,19 @@ namespace switcher
   class PortMidi
   {
   public:
+    typedef void (*on_pm_event_method) (PmEvent *midi_event, void *user_data);
     PortMidi ();
     ~PortMidi ();
-
    
+  protected:
+    //info
+    static gchar *get_devices_description_json (gpointer user_data);
+    GEnumValue input_devices_enum_[128];
+    GEnumValue output_devices_enum_[128];
+
     //input
     int get_default_input_device_id();
-    bool open_input_device(int id);
+    bool open_input_device(int id, on_pm_event_method method, void *user_data);
     bool close_input_device(int id);
     //bool is_queue_empty(int id);
     std::vector<unsigned char> poll(int id);
@@ -59,34 +66,38 @@ namespace switcher
     bool close_output_device(int id);
     //bool send_message_to_output(int id, unsigned char status, unsigned char data1, unsigned char data2);
     
+  private:    
     /** Prints the list of MIDI source devices. */
     static gchar *make_devices_description (void *user_data);
-    
-  private:    
+
+    void update_device_enum ();
+
+    gchar *devices_description_;
+
+    //internal midi scheduler
     class PortMidiScheduler //singleton
     {
     public:
       PortMidiScheduler();
       ~PortMidiScheduler();
-      PmStream *add_input_stream(int id);
+      PmStream *add_input_stream(int id, on_pm_event_method method, void *user_data);
       bool remove_input_stream(PmStream *stream);
-      PmEvent poll(PmStream *stream);
-      bool is_queue_empty(PmStream *stream);
+      //PmEvent poll(PmStream *stream);
+      //bool is_queue_empty(PmStream *stream);
       
       PmStream *add_output_stream(int id);
       bool remove_output_stream(PmStream *stream);
       bool push_message(PmStream *stream, unsigned char status, unsigned char data1, unsigned char data2);
       
     private:
-      std::map<PmStream *,std::queue<PmEvent> *> input_queues_;
-      std::map<PmStream *,std::queue<PmEvent> *> output_queues_;
+      std::map<PmStream *, std::pair<on_pm_event_method, void *> > input_callbacks_;
+      std::map<PmStream *, std::queue<PmEvent> *> output_queues_;
       bool portmidi_initialized_;
       bool app_sysex_in_progress_;
       bool thru_sysex_in_progress_;
       static void process_midi(PtTimestamp timestamp, void *userData);
     };
-    
-    gchar *devices_description_;
+
     static PortMidiScheduler *scheduler_;
     static guint num_of_streams_;
     std::map<guint, PmStream *> input_streams_;

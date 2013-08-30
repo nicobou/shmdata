@@ -115,7 +115,7 @@ namespace switcher
     
     //device enum and select
     GParamSpec *devices_enum_spec_;
-    GEnumValue devices_enum_ [128];
+    GEnumValue devices_enum_[128];
     gint device_;
     static void set_camera (const gint value, void *user_data);
     static gint get_camera (void *user_data);

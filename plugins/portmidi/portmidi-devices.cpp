@@ -36,6 +36,7 @@ namespace switcher
 
     devices_description_ = NULL;
     make_devices_description (this);
+    update_device_enum ();
   }
   
   PortMidi::~PortMidi ()
@@ -64,14 +65,14 @@ namespace switcher
   }
   
   bool
-  PortMidi::open_input_device (int id)
+  PortMidi::open_input_device (int id, on_pm_event_method method, void *user_data)
   {
     if (input_streams_.find(id) != input_streams_.end())
       {
 	g_debug ("input device (id %d), already opened, cannot open", id);
 	return false;
       }
-    PmStream *stream = scheduler_->add_input_stream (id);
+    PmStream *stream = scheduler_->add_input_stream (id, method, user_data);
    
     if (stream == NULL)
       return false;
@@ -162,6 +163,7 @@ namespace switcher
     builder->end_array ();
     builder->end_object ();
     context->devices_description_ = g_strdup (builder->get_string (true).c_str ());
+
     return context->devices_description_;
   }
 
@@ -178,7 +180,6 @@ namespace switcher
       /* the timer will call our function, process_midi() every millisecond */
       Pm_Initialize();
       portmidi_initialized_ = true;
-
     }
 
     
@@ -190,7 +191,7 @@ namespace switcher
     }
 
     PmStream *
-    PortMidi::PortMidiScheduler::add_input_stream (int id)
+    PortMidi::PortMidiScheduler::add_input_stream (int id, on_pm_event_method method, void *user_data)
     {
 
       PmStream *midi_in;
@@ -206,7 +207,7 @@ namespace switcher
       */
       Pm_SetFilter(midi_in, PM_FILT_ACTIVE | PM_FILT_CLOCK);
 
-      input_queues_[midi_in] = new std::queue<PmEvent>();      
+      input_callbacks_[midi_in] = std::make_pair (method, user_data);      
      
       return midi_in;
     }
@@ -229,30 +230,32 @@ namespace switcher
       return midi_out;
     }
 
-    PmEvent 
-    PortMidi::PortMidiScheduler::poll (PmStream *stream)
-    {
-      PmEvent message = input_queues_[stream]->front();
-      input_queues_[stream]->pop();
-      return message;
-    }
+    // PmEvent 
+    // PortMidi::PortMidiScheduler::poll (PmStream *stream)
+    // {
+    //   PmEvent message = input_queues_[stream]->front();
+    //   input_queues_[stream]->pop();
+    //   return message;
+    // }
 
-    bool 
-    PortMidi::PortMidiScheduler::is_queue_empty (PmStream *stream)
-    {
-      return input_queues_[stream]->empty();
-    }
+    // bool 
+    // PortMidi::PortMidiScheduler::is_queue_empty (PmStream *stream)
+    // {
+    //   return input_queues_[stream]->empty();
+    // }
 
     bool
     PortMidi::PortMidiScheduler::remove_input_stream (PmStream *stream)
     {
-      input_queues_.erase(stream);
+      Pm_Close (stream);
+      input_callbacks_.erase(stream);
       return true;
     }
 
     bool
     PortMidi::PortMidiScheduler::remove_output_stream (PmStream *stream)
     {
+      Pm_Close (stream);
       output_queues_.erase(stream);
       return true;
     }
@@ -289,17 +292,15 @@ namespace switcher
       if (!context->portmidi_initialized_) 
 	  return;
       
-      std::map<PmStream *,std::queue<PmEvent> *>::iterator itr;
-      
-      for(itr = context->input_queues_.begin(); itr != context->input_queues_.end(); ++itr)
+      for(auto &itr: context->input_callbacks_)
 	{
 	  /* see if there is any midi input to process */
 	  if (!context->app_sysex_in_progress_) {
 	    do {
-	      result = Pm_Poll(itr->first);
+	      result = Pm_Poll(itr.first);
 	      if (result) {
 		int status;
-		PmError rslt = (PmError)Pm_Read(itr->first, &buffer, 1);
+		PmError rslt = (PmError)Pm_Read(itr.first, &buffer, 1);
 		if (rslt == pmBufferOverflow) 
 		  continue;
 	
@@ -312,13 +313,14 @@ namespace switcher
 		  continue; /* ignore this data */
 		}
 		
-		g_print ("midi input msg from %d: %u %u %u \n",
-			 itr->first,
-			 Pm_MessageStatus(buffer.message),
-			 Pm_MessageData1(buffer.message),
-			 Pm_MessageData2(buffer.message));
-		  
-		itr->second->push(buffer);
+		
+		// g_print ("midi input msg from %u %u %u \n",
+		// 	 Pm_MessageStatus(buffer.message),
+		// 	 Pm_MessageData1(buffer.message),
+		// 	 Pm_MessageData2(buffer.message));
+
+		//invoking the callback
+		itr.second.first (&buffer, itr.second.second);
 
 		/* sysex processing */
 		if (status == MIDI_SYSEX) context->thru_sysex_in_progress_ = true;
@@ -339,12 +341,12 @@ namespace switcher
 	}//end of "for input_streams_"
 
 
-    for(itr = context->output_queues_.begin(); itr != context->output_queues_.end(); ++itr)
+      for(auto &itr: context->output_queues_)
 	{
 	  /* see if there is application midi data to process */
-	  while (!itr->second->empty()) {
+	  while (!itr.second->empty()) {
 	    /* see if it is time to output the next message */
-	    PmEvent *next = &(itr->second->front());//(PmEvent *) Pm_QueuePeek(out_queue);
+	    PmEvent *next = &(itr.second->front());//(PmEvent *) Pm_QueuePeek(out_queue);
 	    //assert(next); /* must be non-null because queue is not empty */
 	    /* time to send a message, first make sure it's not blocked */
 	    int status = Pm_MessageStatus(next->message);
@@ -360,9 +362,9 @@ namespace switcher
 		     Pm_MessageData1(next->message),
 		     Pm_MessageData2(next->message));
 	    
-	    Pm_Write(itr->first, next, 1);
+	    Pm_Write(itr.first, next, 1);
 	    
-	    itr->second->pop();
+	    itr.second->pop();
 	    
 	    /* inspect message to update app_sysex_in_progress */
 	    if (status == MIDI_SYSEX) context->app_sysex_in_progress_ = true;
@@ -380,4 +382,48 @@ namespace switcher
 	  }
 	}
     }
+
+  gchar *
+  PortMidi::get_devices_description_json (gpointer user_data)
+  {
+    PortMidi *context = static_cast <PortMidi *> (user_data);
+    return context->devices_description_;
+  }
+
+  void 
+  PortMidi::update_device_enum ()
+  {
+    int i;
+    int input_i = 0;
+    int output_i = 0;
+    for (i = 0; i < Pm_CountDevices(); i++) {
+      const PmDeviceInfo *listinfo = Pm_GetDeviceInfo(i);
+
+      if (listinfo->input)
+	{
+	  input_devices_enum_ [input_i].value = i;
+	  //FIXME free
+	  input_devices_enum_ [input_i].value_nick = g_strdup_printf ("%s (%s)",
+								      listinfo->name,
+								      listinfo->interf);
+	  input_devices_enum_ [input_i].value_name = input_devices_enum_ [input_i].value_nick;
+	  input_i ++;
+	}
+      else
+	{
+	  output_devices_enum_ [output_i].value = i;
+	  //FIXME free
+	  output_devices_enum_ [output_i].value_nick = g_strdup (listinfo->name);
+	  output_devices_enum_ [output_i].value_name = g_strdup_printf ("%d",i);
+	  output_i ++;
+	}
+    }
+    input_devices_enum_[input_i].value = 0;
+    input_devices_enum_[input_i].value_name = NULL;
+    input_devices_enum_[input_i].value_nick = NULL;
+    output_devices_enum_[output_i].value = 0;
+    output_devices_enum_[output_i].value_name = NULL;
+    output_devices_enum_[output_i].value_nick = NULL;
+  }
+
 }

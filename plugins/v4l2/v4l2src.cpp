@@ -116,9 +116,9 @@ namespace switcher
 	  devices_enum_ [i].value_nick = g_strdup (it.file_device_.c_str ());
 	  i ++;
 	}
-      devices_enum_ [i].value = 0;
-      devices_enum_ [i].value_name = NULL;
-      devices_enum_ [i].value_nick = NULL;
+      devices_enum_[i].value = 0;
+      devices_enum_[i].value_name = NULL;
+      devices_enum_[i].value_nick = NULL;
   }
 
 

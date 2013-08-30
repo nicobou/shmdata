@@ -40,6 +40,9 @@ plugins_LTLIBRARIES = \
     libportmidisink.la
 
 #libportmidisrc info
+portmidi-source.cpp : \
+    libportmididev.la
+
 libportmidisrc_la_SOURCES = \
     portmidi-source.cpp
 
@@ -75,6 +78,9 @@ libportmidisrc_la_CXXFLAGS = \
     -I$(top_srcdir) 
 
 #libportmidisink info
+portmidi-sink.cpp : \
+    libportmididev.la
+
 libportmidisink_la_SOURCES = \
     portmidi-sink.cpp
 
