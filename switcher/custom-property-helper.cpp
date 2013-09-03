@@ -46,12 +46,12 @@ namespace switcher
   {
 
     GParamSpec *pspec = GObjectWrapper::make_string_property (nickname, 
-						 description,
-						 default_value,
-						 read_write_flags,
-						 set_by_gvalue,
-						 get_by_gvalue);
-
+							      description,
+							      default_value,
+							      read_write_flags,
+							      set_by_gvalue,
+							      get_by_gvalue);
+    
     make_user_method (nickname,
 		      pspec,
 		      (void (*) (void))set_method,
@@ -127,13 +127,13 @@ namespace switcher
   {
     
     GParamSpec *pspec = GObjectWrapper::make_enum_property (nickname, 
-								  description,
-								  default_value,
-								  custom_enum,
-								  read_write_flags,
-								  set_by_gvalue,
-								  get_by_gvalue);
-
+							    description,
+							    default_value,
+							    custom_enum,
+							    read_write_flags,
+							    set_by_gvalue,
+							    get_by_gvalue);
+    
     make_user_method (nickname,
 		      pspec,
 		      (void (*) (void))set_method,
@@ -233,4 +233,9 @@ namespace switcher
 						    pspec);
   }
 
+  bool
+  CustomPropertyHelper::is_property_nickname_taken (std::string nickname)
+  {
+    return gobject_->is_property_nickname_taken (nickname);
+  }
 }

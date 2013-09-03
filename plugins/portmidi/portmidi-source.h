@@ -59,6 +59,22 @@ namespace switcher
     gint midi_value_;
     static gint get_midi_value (void *user_data);
     
+    //midi properties
+    static gboolean make_property_method (gchar *long_name, void *user_data);
+    static gboolean remove_property_method (gchar *long_name, void *user_data);
+    gboolean make_property_for_next_midi_event_;
+    std::string next_property_name_;
+    typedef struct {
+      PortMidiSource *port_midi_source_;
+      std::string property_long_name_;
+    } MidiPropertyContext;
+    std::map <std::string, GParamSpec *> prop_specs_;
+    std::map <std::string, MidiPropertyContext> midi_property_contexts_;//this is persistent to the quiddity
+    std::map <std::pair <guint,guint>, std::string> midi_channels_;
+    std::map <std::string, guint> midi_values_; 
+    static gint get_midi_property_value (void *user_data);
+    std::map <std::string, GParamSpec *> unused_props_specs_; //using property name instead of long name
+
     static void on_pm_event (PmEvent *event, void *user_data);
     
   };

@@ -114,7 +114,7 @@ namespace switcher
 
   void
   GObjectWrapper::property_set_user_data (std::string nickname,
-				 void *user_data)
+					  void *user_data)
   {
     property_user_datas_[nickname] = user_data;
   }
@@ -235,12 +235,6 @@ namespace switcher
      					   default_value,  
      					   (GParamFlags) (read_write_flags // | G_PARAM_STATIC_STRINGS
      							  ));
-
-    // GParamSpec *param = g_param_spec_boxed (name,
-    // 					    nickname,
-    // 					    description,
-    // 					    G_TYPE_HASH_TABLE,
-    // 					    (GParamFlags) read_write_flags);
 
     
 
@@ -389,5 +383,11 @@ namespace switcher
   GObjectWrapper::property_set_default_user_data (void *default_user_data)
   {
     property_default_user_data_ = default_user_data;
+  }
+
+  bool 
+  GObjectWrapper::is_property_nickname_taken (std::string nickname)
+  {
+    return property_user_datas_.find (nickname) != property_user_datas_.end ();
   }
  }

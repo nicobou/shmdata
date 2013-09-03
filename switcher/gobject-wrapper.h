@@ -50,6 +50,7 @@ namespace switcher
     void property_set_user_data (std::string nickname, void *user_data);
     void *property_get_user_data (std::string nickname);
     void property_set_default_user_data (void *default_user_data);
+    bool is_property_nickname_taken (std::string nickname);
 
 
 

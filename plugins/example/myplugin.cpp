@@ -60,7 +60,7 @@ namespace switcher
 		    "the hello answer", //return description
 		    Method::make_arg_description ("Text To Repeat", //first arg long name
 						  "text", //fisrt arg name
-						  "string", //first arg type
+						  "string", //first arg description
 						  NULL),
   		    (Method::method_ptr) &my_hello_world_method, 
 		    G_TYPE_STRING,

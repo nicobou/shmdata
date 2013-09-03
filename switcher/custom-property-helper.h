@@ -54,6 +54,8 @@ namespace switcher
     } UserMethod;
 
     CustomPropertyHelper ();
+
+    bool is_property_nickname_taken (std::string nickname);
     bool notify_property_changed (GParamSpec *pspec);
     GObject *get_gobject ();
     GParamSpec *
