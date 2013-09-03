@@ -35,7 +35,7 @@ set_runtime_invoker (gpointer name)
       mymanager->invoke_va ((char *)name, 
 			    "set_runtime", 
 			    NULL, 
-			    "pipeline0", 
+			    "single_runtime", 
 			    NULL);
     }
   g_free (name);
@@ -63,7 +63,7 @@ main (int argc,
   bool success = true;
   manager = switcher::QuiddityManager::make_manager("test_manager");  
   
-  manager->create ("runtime");
+  manager->create ("runtime", "single_runtime");
   manager->create ("create_remove_spy", "create_remove_spy");
   manager->make_signal_subscriber ("create_remove_subscriber", quiddity_created_removed_cb, NULL);
   manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-created");

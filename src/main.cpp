@@ -107,7 +107,7 @@ set_runtime_invoker (gpointer name)
       mymanager->invoke_va ((char *)name, 
 			    "set_runtime", 
 			    NULL, 
-			    "pipeline0", NULL);
+			    "single_runtime", NULL);
     }
   g_free (name);
   return NULL;
@@ -250,7 +250,7 @@ main (int argc,
 
   // Create a runtime (pipeline0)
   //std::string runtime = 
-  manager->create ("runtime","pipeline0");
+  manager->create ("runtime","single_runtime");
   
   //make on-quiddity-created and on-quiddity-removed signals
   manager->create ("create_remove_spy", "create_remove_spy");

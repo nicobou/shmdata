@@ -50,7 +50,7 @@ namespace switcher
   {
     
     friend class StartableQuiddity;
-    
+
   public:
     typedef std::shared_ptr<Quiddity> ptr;
     

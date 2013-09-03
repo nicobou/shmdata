@@ -302,10 +302,10 @@ namespace switcher
   {
     quiddity->set_manager_impl (shared_from_this());
 
+    give_name_if_unnamed (quiddity);
+
     if (!quiddity->init ())
       return false;
-
-    give_name_if_unnamed (quiddity);
 
     quiddities_.insert (quiddity->get_name(),quiddity);
     quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
@@ -327,10 +327,11 @@ namespace switcher
     if (quiddity.get() != NULL)
       {
 	quiddity->set_manager_impl (shared_from_this());
+	give_name_if_unnamed (quiddity);
+	
 	if (!quiddity->init ())
 	  return "{\"error\":\"cannot init quiddity class\"}";
 
-	give_name_if_unnamed (quiddity);
 	quiddities_.insert (quiddity->get_name(),quiddity);
 	quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
       }

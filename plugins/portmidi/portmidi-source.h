@@ -41,7 +41,7 @@ namespace switcher
     bool stop ();
     
   private:
-    //shmdata_any_writer_t *shmdata_writer_;
+    shmdata_any_writer_t *shmdata_writer_;
     
     //properties
     CustomPropertyHelper::ptr custom_props_;
@@ -53,12 +53,6 @@ namespace switcher
     static void set_device (const gint value, void *user_data);
     static gint get_device (void *user_data);
 
-    //raw midi value
-    //4 bytes, as PmMessage decribed in portmidi.h
-    GParamSpec *midi_value_spec_;
-    gint midi_value_;
-    static gint get_midi_value (void *user_data);
-    
     //midi properties
     static gboolean make_property_method (gchar *long_name, void *user_data);
     static gboolean remove_property_method (gchar *long_name, void *user_data);

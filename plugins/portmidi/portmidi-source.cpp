@@ -77,19 +77,6 @@ namespace switcher
 				"device",
 				"Capture Device");
     
-    midi_value_spec_ =
-      custom_props_->make_int_property ("raw-midi-value", 
-					"the raw midi value (4 bytes)",
-					0,
-					G_MAXINT,
-					0,
-					(GParamFlags) G_PARAM_READABLE,
-					NULL,
-					get_midi_value,
-					this);
-      
-
-    
     publish_method ("Make MIDI property", //long name
 		    "make_midi_property", //name
 		    "Wait for a MIDI event and make a property for this channel", //description
@@ -116,24 +103,24 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 
-    // shmdata_writer_ = shmdata_any_writer_init ();
+    shmdata_writer_ = shmdata_any_writer_init ();
     
-    // if (! shmdata_any_writer_set_path (shmdata_writer_, "/tmp/midi_truc"))
-    // {
-    //   g_debug ("**** The file exists, therefore a shmdata cannot be operated with this path.\n");
-    //   shmdata_any_writer_close (shmdata_writer_);
-    //   return false;
-    // }
-    // shmdata_any_writer_set_debug (shmdata_writer_, SHMDATA_ENABLE_DEBUG);
-    // shmdata_any_writer_set_data_type (shmdata_writer_, "audio/midi");
-    // shmdata_any_writer_start (shmdata_writer_);
-
+    if (! shmdata_any_writer_set_path (shmdata_writer_, make_file_name ("midi").c_str ()))
+      {
+	g_debug ("**** The file exists, therefore a shmdata cannot be operated with this path.\n");
+	shmdata_any_writer_close (shmdata_writer_);
+	return false;
+      }
+    shmdata_any_writer_set_debug (shmdata_writer_, SHMDATA_ENABLE_DEBUG);
+    shmdata_any_writer_set_data_type (shmdata_writer_, "audio/midi");
+    shmdata_any_writer_start (shmdata_writer_);
+    
     return true;
   }
   
   PortMidiSource::~PortMidiSource ()
   {
-    //shmdata_any_writer_close (shmdata_writer_);
+    shmdata_any_writer_close (shmdata_writer_);
   }
   
   bool  
@@ -144,10 +131,6 @@ namespace switcher
 		      on_pm_event,
 		      this);
 
-    register_property_by_pspec (custom_props_->get_gobject (), 
-				midi_value_spec_, 
-				"raw-midi-value",
-				"Raw Midi Value (4 bytes)");
     return true;
   }
   
@@ -155,7 +138,6 @@ namespace switcher
   PortMidiSource::stop ()
   {
     close_input_device (device_);
-    unregister_property ("raw-midi-value");
     register_property_by_pspec (custom_props_->get_gobject (), 
 				devices_enum_spec_, 
 				"device",
@@ -182,9 +164,13 @@ namespace switcher
   {
     PortMidiSource *context = static_cast<PortMidiSource *> (user_data);
     
-    context->midi_value_ = event->message;
-    context->custom_props_->notify_property_changed (context->midi_value_spec_);
-
+    shmdata_any_writer_push_data (context->shmdata_writer_,
+				  event,
+				  sizeof (event),
+				  0,
+				  NULL, 
+				  NULL);
+    
     guint status = Pm_MessageStatus(event->message);
     guint data1 = Pm_MessageData1(event->message);
     guint data2 = Pm_MessageData2(event->message);
@@ -253,13 +239,6 @@ namespace switcher
       }
   }
   
-  gint
-  PortMidiSource::get_midi_value (void *user_data)
-  {
-    PortMidiSource *context = static_cast<PortMidiSource *> (user_data);
-    return context->midi_value_;
-  }
-
   gboolean
   PortMidiSource::make_property_method (gchar *long_name, void *user_data)
   {
