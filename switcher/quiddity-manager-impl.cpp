@@ -45,6 +45,7 @@
 #include "jack-sink.h"
 #include "jpegenc.h"
 #include "logger.h"
+#include "property-mapper.h"
 #include "rtp-session.h"
 #include "runtime.h"
 #include "shmdata-to-file.h"
@@ -210,6 +211,8 @@ namespace switcher
 					       JpegEnc::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<Logger> (Logger::switcher_doc_.get_class_name (), 
       					       Logger::switcher_doc_.get_json_root_node ());
+    abstract_factory_.register_class<PropertyMapper> (PropertyMapper::switcher_doc_.get_class_name (), 
+						      PropertyMapper::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<RtpSession> (RtpSession::switcher_doc_.get_class_name (), 
       						  RtpSession::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<Runtime> (Runtime::switcher_doc_.get_class_name (), 

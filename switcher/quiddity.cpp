@@ -564,6 +564,14 @@ namespace switcher
     return true;
   }
 
+  bool 
+  Quiddity::has_property (std::string name)
+  {
+    if (properties_.find(name) == properties_.end())
+      return false;
+    return true;
+  }
+
   std::string 
   Quiddity::get_property (std::string name)
   {

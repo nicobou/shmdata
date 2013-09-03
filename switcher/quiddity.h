@@ -81,7 +81,8 @@ namespace switcher
     bool unsubscribe_property (std::string name,
 			       Property::Callback cb,
 			       void *user_data);
-    
+    bool has_property (std::string property_name);
+
     //methods
     std::string get_method_description (std::string method_name);
     std::string get_methods_description ();
