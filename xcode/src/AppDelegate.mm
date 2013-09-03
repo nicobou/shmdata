@@ -152,7 +152,7 @@ set_runtime_invoker (gpointer name)
   if (manager->has_method ((char *)name, "set_runtime"))
       {
 	std::string result;
-	manager->invoke_va ((char *)name, "set_runtime", &result, "pipeline0", NULL);
+	manager->invoke_va ((char *)name, "set_runtime", &result, "single_runtime", NULL);
       }
   g_free (name);
   return NULL;
@@ -282,9 +282,9 @@ int start (int argc, char *argv[])
      manager->make_property_subscriber ("log_sub", logger_cb, NULL);
      manager->subscribe_property ("log_sub","internal_logger","last-line");
      
-      // Create a runtime (pipeline0)
+     // Create a runtime (named "single_runtime")
      //std::string runtime = 
-     manager->create ("runtime","pipeline0");
+     manager->create ("runtime","single_runtime");
      
     //make on-quiddity-created and on-quiddity-removed signals
      manager->create ("create_remove_spy", "create_remove_spy");

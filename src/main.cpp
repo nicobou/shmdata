@@ -248,7 +248,7 @@ main (int argc,
       return 0;
     }
 
-  // Create a runtime (pipeline0)
+  // Create a runtime (named "single_runtime")
   //std::string runtime = 
   manager->create ("runtime","single_runtime");
   

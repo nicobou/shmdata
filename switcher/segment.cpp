@@ -71,7 +71,7 @@ namespace switcher
 		    "success or fail",
 		    Method::make_arg_description ("Runtime Name",
 						  "runtime_name",
-						  "the name of the runtime to attach with (e.g. \"pipeline0\")",
+						  "the name of the runtime quiddity to attach with",
 						  NULL),
 		    (Method::method_ptr) &set_runtime_wrapped, 
 		    G_TYPE_BOOLEAN,

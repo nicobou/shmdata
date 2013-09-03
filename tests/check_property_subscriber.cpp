@@ -33,7 +33,7 @@ set_runtime_invoker (gpointer name)
   switcher::QuiddityManager::ptr mymanager = manager;
   if ((bool)mymanager && mymanager->has_method ((char *)name, "set_runtime"))
     {
-      mymanager->invoke_va ((char *)name, "set_runtime", NULL, "pipeline0", NULL);
+      mymanager->invoke_va ((char *)name, "set_runtime", NULL, "single_runtime", NULL);
     }
   g_free (name);
   return NULL;
@@ -103,7 +103,7 @@ main (int argc,
     manager->make_signal_subscriber ("create_remove_subscriber", quiddity_created_removed_cb, NULL);
     manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-created");
 
-    manager->create ("runtime");
+    manager->create ("runtime", "single_runtime");
     
     manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);
     manager->create ("videotestsrc","vid");
