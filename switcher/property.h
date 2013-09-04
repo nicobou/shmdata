@@ -41,16 +41,16 @@ namespace switcher
 
     //this is when using an existing property
     void set_gobject_pspec (GObject *object, GParamSpec *pspec, std::string long_name);
-    
     void set_long_name (std::string long_name);
-   
-
     void set (std::string value);
     std::string get ();
 
     bool subscribe (Callback cb, void *user_data);
     bool unsubscribe (Callback cb, void *user_data);
     static std::string parse_callback_args (GObject * gobject, GParamSpec * pspec);
+
+    GObject *get_gobject ();
+    GParamSpec *get_paramspec ();
 
     std::string get_description ();
     JSONBuilder::Node get_json_root_node ();

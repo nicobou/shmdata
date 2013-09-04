@@ -736,4 +736,15 @@ namespace switcher
     return long_name_;
   }
 
+  GObject *
+  Property::get_gobject ()
+  {
+    return object_;
+  }
+  
+  GParamSpec *
+  Property::get_paramspec ()
+  {
+    return property_;
+  }
 }

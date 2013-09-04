@@ -35,8 +35,6 @@ namespace switcher
   bool
   PropertyMapper::init()
   {
-    init_startable (this);
-    
     publish_method ("Set Source Property", //long name
 		    "set-source-property", //name
 		    "set the master property", //description
@@ -77,19 +75,6 @@ namespace switcher
     
   }
 
-  bool 
-  PropertyMapper::start ()
-  {
-    return true;
-  }
-
-  bool 
-  PropertyMapper::stop ()
-  {
-    return true;
-  }
-
-
   gboolean
   PropertyMapper::set_source_property_method (gchar *quiddity_name, 
 					      gchar *property_name, 
@@ -128,32 +113,60 @@ namespace switcher
   {
     PropertyMapper *context = static_cast <PropertyMapper *>(user_data);
     
-    g_print ("new val\n");
     GValue val = G_VALUE_INIT;
     const gchar *prop_name = g_param_spec_get_name (pspec);
     Quiddity::ptr quid = context->sink_quiddity_.lock ();
     
     switch (pspec->value_type) {
     case G_TYPE_INT:
-      g_value_init (&val, pspec->value_type);
-      g_object_get_property (gobject,
-			     prop_name,
-			     &val);
-      g_print ("type int: %s\n", GstUtils::gvalue_serialize (&val));
-      
-      if ((bool) quid 
-	  && quid->has_property (context->sink_property_name_))
-	{
-	  quid->set_property (context->sink_property_name_, GstUtils::gvalue_serialize (&val)); 
-	}
-      
+      {
+	g_value_init (&val, pspec->value_type);
+	g_object_get_property (gobject,
+			       prop_name,
+			       &val);
+	
+	gint orig_val = g_value_get_int (&val);
+	
+	//g_print ("type int: %s\n", GstUtils::gvalue_serialize (&val));
+	
+	 // if ((bool) quid 
+	 // 	  && quid->has_property (context->sink_property_name_))
+	 // 	{
+	 // 	  quid->set_property (context->sink_property_name_, GstUtils::gvalue_serialize (&val)); 
+	 // 	}
+	
+	if (!(bool) quid)
+	  {
+	    g_debug ("property mapper: quiddity not available");
+	    return;
+	  }
+	
+	Property::ptr prop = quid->get_property_ptr (context->sink_property_name_);
+	
+	if (!(bool)prop)
+	  {
+	    g_debug ("property mapper: prop %s is not available",
+		     context->sink_property_name_.c_str ());
+	    return;
+	  }
+	
+	//FIXME do not trnsform into string 
+	g_print ("coucou %d\n", orig_val);
+	gchar *val = g_strdup_printf ("%d",orig_val);
+	prop->set (val);
+	g_free (val);
+	// g_object_set (prop->get_gobject (),
+	//   	      context->sink_property_name_.c_str (), 
+	//   	      10000,
+	//   	      NULL); 
+      }
       break;
     default:
       g_debug ("property mapper callback: type %s unknown\n",
 	       g_type_name (pspec->value_type));
     }
   }
-
+  
   gboolean
   PropertyMapper::set_sink_property_method (gchar *quiddity_name, 
 					    gchar *property_name, 

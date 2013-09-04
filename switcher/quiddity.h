@@ -68,6 +68,7 @@ namespace switcher
     std::string get_nick_name ();
     bool set_nick_name (std::string nick_name);
     bool set_name (std::string name);
+    
 
     //properties
     std::string get_property_description (std::string property_name);
@@ -82,6 +83,7 @@ namespace switcher
 			       Property::Callback cb,
 			       void *user_data);
     bool has_property (std::string property_name);
+    Property::ptr get_property_ptr (std::string property_name);
 
     //methods
     std::string get_method_description (std::string method_name);
@@ -105,7 +107,7 @@ namespace switcher
     bool emit_action (const std::string signal_name,
 			std::string **return_value,
 			const std::vector<std::string> args);
-    
+   
 
     //shmdata socket names
     static std::string get_socket_name_prefix ();
@@ -188,8 +190,6 @@ namespace switcher
 				     GParamSpec *pspec, 
 				     std::string name_to_give,
 				     std::string long_name);
-
-    Property::ptr get_property_ptr (std::string property_name);
 
     //methods
     bool publish_method (const std::string long_name,

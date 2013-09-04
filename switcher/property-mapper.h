@@ -24,20 +24,16 @@
 #define __SWITCHER_PROPERTY_MAPPER_H__
 
 #include "quiddity.h"
-#include "startable-quiddity.h"
 
 namespace switcher
 {
 
-  class PropertyMapper : public Quiddity, public StartableQuiddity
+  class PropertyMapper : public Quiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PropertyMapper);
     ~PropertyMapper ();
 
-    bool start ();
-    bool stop ();
-    
   private:
     static gboolean set_source_property_method (gchar *quiddity_name, 
 						gchar *property_name, 
