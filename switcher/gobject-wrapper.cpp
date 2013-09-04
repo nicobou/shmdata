@@ -119,7 +119,6 @@ namespace switcher
     property_user_datas_[nickname] = user_data;
   }
 
-  //TODO provide other make_..._property for other types
   //set_method and get_method must be static
   GParamSpec * 
   GObjectWrapper::make_int_property (const gchar *nickname, 
@@ -144,6 +143,45 @@ namespace switcher
 					  max_value,
 					  default_value,
 					  read_write_flags);
+    
+    GObjectCustomProperty::ptr property =  
+      GObjectCustomProperty::make_custom_property (set_method,
+						   get_method);
+    
+    custom_properties_[prop_id] = property;
+    
+    //TODO find a way to get CLASS without instanciating an unused object
+    MyObject *obj = (MyObject *)g_object_new (my_object_get_type (), NULL);
+    g_object_class_install_property (G_OBJECT_GET_CLASS (obj),
+				     prop_id,
+				     param);
+    g_object_unref (obj);
+    return param;
+  }
+
+  GParamSpec * 
+  GObjectWrapper::make_double_property (const gchar *nickname, 
+					const gchar *description,
+					gdouble min_value,
+					gdouble max_value,
+					gdouble default_value,
+					GParamFlags read_write_flags,
+					GObjectCustomProperty::set_method_pointer set_method,
+					GObjectCustomProperty::get_method_pointer get_method)
+  {
+    guint prop_id = next_prop_id_;
+    next_prop_id_++;
+
+    gchar *name = g_strdup_printf ("customprop%d", prop_id);
+    g_debug ("custom property internal name %s", name);
+
+    GParamSpec *param = g_param_spec_double (name, 
+					     nickname, 
+					     description,
+					     min_value, 
+					     max_value,
+					     default_value,
+					     read_write_flags);
     
     GObjectCustomProperty::ptr property =  
       GObjectCustomProperty::make_custom_property (set_method,

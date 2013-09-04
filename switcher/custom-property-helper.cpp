@@ -114,6 +114,35 @@ namespace switcher
     return pspec; 
   }
 
+  GParamSpec *
+  CustomPropertyHelper::make_double_property (const gchar *nickname, 
+					   const gchar *description,
+					   gdouble min_value,
+					   gdouble max_value,
+					   gdouble default_value,
+					   GParamFlags read_write_flags,
+					   set_double_method set_method,
+					   get_double_method get_method,
+					   void *user_data)
+  {
+    
+    GParamSpec *pspec = GObjectWrapper::make_double_property (nickname, 
+							      description,
+							      min_value,
+							      max_value,
+							      default_value,
+							      read_write_flags,
+							      set_by_gvalue,
+							      get_by_gvalue);
+    
+    make_user_method (nickname,
+		      pspec,
+		      (void (*) (void))set_method,
+		      (void (*) (void))get_method,
+		      user_data);
+    return pspec; 
+  }
+
 
   GParamSpec *
   CustomPropertyHelper::make_enum_property (const gchar *nickname, 
@@ -186,6 +215,11 @@ namespace switcher
 	gint val = ((get_enum_method)user_method->get) (user_method->user_data);
 	g_value_set_enum (value, val);
       }
+    else if (G_VALUE_TYPE(value) == G_TYPE_DOUBLE)
+      {
+	gdouble val = ((get_double_method)user_method->get) (user_method->user_data);
+	g_value_set_double (value, val);
+      }
     else
       g_debug ("CustomPropertyHelper: unknown type"); 
     return TRUE;
@@ -215,6 +249,11 @@ namespace switcher
       {
 	((set_enum_method)user_method->set) (g_value_get_enum (value), 
 	 				     user_method->user_data);
+      }
+    else if (G_VALUE_TYPE(value) == G_TYPE_DOUBLE)
+      {
+	((set_double_method)user_method->set) (g_value_get_double (value), 
+					       user_method->user_data);
       }
     else
       {

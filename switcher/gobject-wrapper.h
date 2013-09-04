@@ -89,7 +89,17 @@ namespace switcher
 			  GParamFlags read_write_flags,
 			  GObjectCustomProperty::set_method_pointer set_method,
 			  GObjectCustomProperty::get_method_pointer get_method);
-    
+
+    static GParamSpec * 
+      make_double_property (const gchar *nickname, 
+			    const gchar *description,
+			    gdouble min_value,
+			    gdouble max_value,
+			    gdouble default_value,
+			    GParamFlags read_write_flags,
+			    GObjectCustomProperty::set_method_pointer set_method,
+			    GObjectCustomProperty::get_method_pointer get_method);
+      
     //signal    
     static guint 
       make_signal (GType return_type,

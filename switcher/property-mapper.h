@@ -24,6 +24,7 @@
 #define __SWITCHER_PROPERTY_MAPPER_H__
 
 #include "quiddity.h"
+#include "custom-property-helper.h"
 
 namespace switcher
 {
@@ -36,6 +37,7 @@ namespace switcher
 
   private:
     void make_numerical_source_properties ();
+    void make_numerical_sink_properties ();
     static gboolean set_source_property_method (gchar *quiddity_name, 
 						gchar *property_name, 
 						void *user_data);
@@ -48,13 +50,14 @@ namespace switcher
     std::weak_ptr <Quiddity> sink_quiddity_;
     std::string sink_property_name_;
 
-    //cliping method
+    //clip values (and scale accordingly)
+    CustomPropertyHelper::ptr custom_props_;
     GParamSpec *sink_min_spec_;
     GParamSpec *sink_max_spec_;
     GParamSpec *source_min_spec_;
     GParamSpec *source_max_spec_;
 
-    static void set_double_value (gdouble *value, void *user_data);
+    static void set_double_value (gdouble value, void *user_data);
     static gdouble get_double_value (void *user_data);
     double sink_min_;
     double sink_max_;

@@ -67,7 +67,8 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
 		    this);
 
-    
+    custom_props_.reset (new CustomPropertyHelper ());
+
     
     return true;
   }
@@ -133,38 +134,75 @@ namespace switcher
   void
   PropertyMapper::make_numerical_source_properties ()
   {
-    // unregister_property ("source-min");
-    // source_min_spec_ =
-    //   custom_props_->make_double_property ("source-min", 
-    // 					   "the minimum value considered",
-    // 					   source_min_,
-    // 					   source_max,
-    // 					   source_min_,
-    // 					   (GParamFlags) G_PARAM_READWRITE,
-    // 					   set_double_value,
-    // 					   get_double_value,
-    // 					   &source_min_);
+    unregister_property ("source-min");
+    source_min_spec_ =
+      custom_props_->make_double_property ("source-min", 
+     					   "the minimum value considered",
+     					   source_min_,
+     					   source_max_,
+     					   source_min_,
+     					   (GParamFlags) G_PARAM_READWRITE,
+     					   set_double_value,
+     					   get_double_value,
+     					   &source_min_);
     
-    // register_property_by_pspec (custom_props_->get_gobject (), 
-    // 				source_min_spec_, 
-    // 				"source-min",
-    // 				"Source Property Minimum");
+    register_property_by_pspec (custom_props_->get_gobject (), 
+     				source_min_spec_, 
+     				"source-min",
+     				"Source Property Minimum");
+    
+    unregister_property ("source-max");
+    source_max_spec_ =
+      custom_props_->make_double_property ("source-max", 
+     					   "the maximum value considered",
+     					   source_min_,
+     					   source_max_,
+     					   source_max_,
+     					   (GParamFlags) G_PARAM_READWRITE,
+     					   set_double_value,
+     					   get_double_value,
+     					   &source_max_);
+    register_property_by_pspec (custom_props_->get_gobject (), 
+     				source_max_spec_, 
+     				"source-max",
+     				"Source Property Maximum");
+  }
 
-    // unregister_property ("source-max");
-    // source_max_spec_ =
-    //   custom_props_->make_double_property ("source-max", 
-    // 					   "the maximum value considered",
-    // 					   source_min_,
-    // 					   source_max,
-    // 					   source_max_,
-    // 					   (GParamFlags) G_PARAM_READWRITE,
-    // 					   set_double_value,
-    // 					   get_double_value,
-    // 					   &source_min_);
-    // register_property_by_pspec (custom_props_->get_gobject (), 
-    // 				source_max_spec_, 
-    // 				"source-max",
-    // 				"Source Property Maximum");
+  void
+  PropertyMapper::make_numerical_sink_properties ()
+  {
+    unregister_property ("sink-min");
+    sink_min_spec_ =
+      custom_props_->make_double_property ("sink-min", 
+     					   "the minimum value considered",
+     					   sink_min_,
+     					   sink_max_,
+     					   sink_min_,
+     					   (GParamFlags) G_PARAM_READWRITE,
+     					   set_double_value,
+     					   get_double_value,
+     					   &sink_min_);
+    
+    register_property_by_pspec (custom_props_->get_gobject (), 
+     				sink_min_spec_, 
+     				"sink-min",
+     				"Sink Property Minimum");
+    
+    unregister_property ("sink-max");
+    sink_max_spec_ =
+      custom_props_->make_double_property ("sink-max", 
+     					   "the maximum value considered",
+     					   sink_min_,
+     					   sink_max_,
+     					   sink_max_,
+     					   (GParamFlags) G_PARAM_READWRITE,
+     					   set_double_value,
+     					   get_double_value,
+     					   &sink_max_);
+    register_property_by_pspec (custom_props_->get_gobject (), 
+     				sink_max_spec_, 
+     				"sink-max",
+     				"Sink Property Maximum");
   }
 
   void 
@@ -185,7 +223,19 @@ namespace switcher
 			       &val);
 	
 	gint orig_val = g_value_get_int (&val);
-	g_value_set_int (&val, orig_val);
+	if (orig_val < context->source_min_)
+	  orig_val = context->source_min_;
+	if (orig_val > context->source_max_)
+	  orig_val = context->source_max_;
+	
+	//FIXME only if sink_max is defined
+	gdouble transformed_val =  
+	  ((gdouble)orig_val - context->source_min_) * (context->sink_max_ - context->sink_min_) 
+	  / (context->source_max_ - context->source_min_)
+	  + context->sink_min_;
+
+	g_print ("%f\n", transformed_val);
+	  g_value_set_int (&val, transformed_val);
       }
       break;
     default:
@@ -234,13 +284,34 @@ namespace switcher
     context->sink_quiddity_ = quid;
     context->sink_property_name_ = property_name;
 
+    GParamSpec *pspec = quid->get_property_ptr (property_name)->get_paramspec ();
+    switch (pspec->value_type) {
+    case G_TYPE_INT:
+      {
+	GParamSpecInt *pint = G_PARAM_SPEC_INT (pspec);
+	context->sink_min_ = pint->minimum;
+	context->sink_max_ = pint->maximum;
+	context->make_numerical_sink_properties ();
+      }
+      break;
+    case G_TYPE_DOUBLE:
+      {
+	GParamSpecDouble *pdouble = G_PARAM_SPEC_DOUBLE (pspec);
+	context->sink_min_ = pdouble->minimum;
+	context->sink_max_ = pdouble->maximum;
+	context->make_numerical_sink_properties ();
+      }
+      break;
+    default:
+      g_debug ("type not handled (%s)", g_type_name (pspec->value_type));
+    }
     return TRUE;
   }
 
   void 
-  PropertyMapper::set_double_value (gdouble *value, void *user_data)
+  PropertyMapper::set_double_value (gdouble value, void *user_data)
   {
-     *(gdouble *)user_data = *value;
+    *(gdouble *)user_data = value;
   }
   
   gdouble 
