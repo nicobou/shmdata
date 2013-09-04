@@ -234,8 +234,8 @@ namespace switcher
 	  / (context->source_max_ - context->source_min_)
 	  + context->sink_min_;
 
-	g_print ("%f\n", transformed_val);
-	  g_value_set_int (&val, transformed_val);
+	//g_print ("%f\n", transformed_val);
+	g_value_set_int (&val, transformed_val);
       }
       break;
     default:
