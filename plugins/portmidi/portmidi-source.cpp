@@ -45,6 +45,9 @@ namespace switcher
 
     init_startable (this);
     make_property_for_next_midi_event_ = FALSE;
+    last_status_ = -1;
+    last_data1_ = -1;
+    last_data2_ = -1;
 
     custom_props_.reset (new CustomPropertyHelper ());
     devices_description_spec_ = 
@@ -77,15 +80,40 @@ namespace switcher
 				"device",
 				"Capture Device");
     
-    publish_method ("Make MIDI property", //long name
-		    "make_midi_property", //name
+
+     midi_value_spec_ =
+      custom_props_->make_int_property ("last-midi-value", 
+					"the last midi value",
+					0,
+					127,
+					0,
+					(GParamFlags) G_PARAM_READABLE,
+					NULL,
+					get_midi_value,
+					this);
+
+    publish_method ("Next MIDI Event To Property", //long name
+		    "next_midi_event_to_property", //name
 		    "Wait for a MIDI event and make a property for this channel", //description
 		    "success or fail", //return description
 		    Method::make_arg_description ("Property Long Name", //first arg long name
 						  "property_long_name", //fisrt arg name
 						  "string", //first arg description 
 						  NULL),
-  		    (Method::method_ptr) &make_property_method, 
+  		    (Method::method_ptr) &next_midi_event_to_property_method, 
+		    G_TYPE_BOOLEAN,
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    this);
+
+    publish_method ("Last MIDI Event To Property", //long name
+		    "last_midi_event_to_property", //name
+		    "Wait for a MIDI event and make a property for this channel", //description
+		    "success or fail", //return description
+		    Method::make_arg_description ("Property Long Name", //first arg long name
+						  "property_long_name", //fisrt arg name
+						  "string", //first arg description 
+						  NULL),
+  		    (Method::method_ptr) &last_midi_event_to_property_method, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
@@ -130,7 +158,10 @@ namespace switcher
     open_input_device(device_,
 		      on_pm_event,
 		      this);
-
+    register_property_by_pspec (custom_props_->get_gobject (), 
+				midi_value_spec_, 
+				"last-midi-value",
+				"Last Midi Value");
     return true;
   }
   
@@ -138,6 +169,7 @@ namespace switcher
   PortMidiSource::stop ()
   {
     close_input_device (device_);
+    unregister_property ("last-midi-value");
     register_property_by_pspec (custom_props_->get_gobject (), 
 				devices_enum_spec_, 
 				"device",
@@ -170,10 +202,16 @@ namespace switcher
 				  0,
 				  NULL, 
 				  NULL);
+
     
     guint status = Pm_MessageStatus(event->message);
     guint data1 = Pm_MessageData1(event->message);
     guint data2 = Pm_MessageData2(event->message);
+    
+    context->last_status_ = (gint) status;
+    context->last_data1_ = (gint) data1;
+    context->last_data2_ = (gint) data2;
+    context->custom_props_->notify_property_changed (context->midi_value_spec_);
 
     // g_print ("from port midi  %u %u %u \n",
     //  	     status,
@@ -191,66 +229,32 @@ namespace switcher
     
     //making property if needed
     if (context->make_property_for_next_midi_event_)
-      {
-	if (context->midi_channels_.find (std::make_pair (status, data1)) != context->midi_channels_.end ())
-	  {
-	    g_debug ("Midi Channels %u %u is already a property (is currently named %s)",
-		     status,
-		     data1,
-		     context->midi_channels_.find (std::make_pair (status, data1))->second.c_str ());
-	    return;
-	  }
-	context->midi_channels_[std::make_pair (status, data1)] = context->next_property_name_;
-	gchar *prop_name = g_strdup_printf ("%u_%u",
-					    status,
-					    data1);
-	context->midi_values_ [context->next_property_name_] = data2;
-
-	if (context->unused_props_specs_.find (prop_name) == context->unused_props_specs_.end ())
-	  {
-	    MidiPropertyContext midi_property_context;
-	    midi_property_context.port_midi_source_ = context;
-	    midi_property_context.property_long_name_ = context->next_property_name_;
-	    context->midi_property_contexts_[context->next_property_name_] = midi_property_context;
-	    
-	    context->prop_specs_[context->next_property_name_] = 
-	      context->custom_props_->make_int_property (prop_name, 
-							 "midi value",
-							 0,
-							 127,
-							 0,
-							 (GParamFlags) G_PARAM_READABLE,
-							 NULL,
-							 get_midi_property_value,
-							 &context->midi_property_contexts_[context->next_property_name_]);
-	  }
-	else
-	  {
-	    context->prop_specs_[context->next_property_name_] = context->unused_props_specs_[prop_name];
-	    context->unused_props_specs_.erase (prop_name);
-	  }
-	
-	context->register_property_by_pspec (context->custom_props_->get_gobject (), 
-					     context->prop_specs_[context->next_property_name_], 
-					     prop_name,
-					     context->next_property_name_.c_str ());
-	g_free (prop_name);
+      if (context->make_property (context->next_property_name_))
 	context->make_property_for_next_midi_event_ = FALSE;
-      }
   }
   
   gboolean
-  PortMidiSource::make_property_method (gchar *long_name, void *user_data)
+  PortMidiSource::next_midi_event_to_property_method (gchar *long_name, void *user_data)
   {
-     PortMidiSource *context = static_cast<PortMidiSource *> (user_data);
-     context->make_property_for_next_midi_event_ = TRUE;  
-     context->next_property_name_ = long_name;
+    PortMidiSource *context = static_cast<PortMidiSource *> (user_data);
+    context->make_property_for_next_midi_event_ = TRUE;  
+    context->next_property_name_ = long_name;
      
-     timespec delay;
-     delay.tv_sec = 0;
-     delay.tv_nsec = 1000000; //1ms
-     while (context->make_property_for_next_midi_event_)
-       nanosleep(&delay, NULL);
+    timespec delay;
+    delay.tv_sec = 0;
+    delay.tv_nsec = 1000000; //1ms
+    while (context->make_property_for_next_midi_event_)
+      nanosleep(&delay, NULL);
+    return TRUE;
+  }
+
+  gboolean
+  PortMidiSource::last_midi_event_to_property_method (gchar *long_name, void *user_data)
+  {
+    PortMidiSource *context = static_cast<PortMidiSource *> (user_data);
+    if (!context->make_property (long_name))
+      return FALSE;
+
     return TRUE;
   }
 
@@ -293,4 +297,73 @@ namespace switcher
     g_free (prop_name);
     return TRUE;
   }
+
+  bool
+  PortMidiSource::make_property (std::string property_long_name)
+  {
+    if (last_status_ == -1 || last_data1_ == -1)
+      {
+	g_debug("portmidisource cannot make a property without midi event");
+	return false;
+      }
+
+    if (midi_channels_.find (std::make_pair (last_status_, last_data1_)) 
+	!= midi_channels_.end ())
+      {
+	g_debug ("Midi Channels %u %u is already a property (is currently named %s)",
+		 last_status_,
+		 last_data1_,
+		 midi_channels_.find (std::make_pair (last_status_, last_data1_))->second.c_str ());
+	return false;
+      }
+    
+    midi_channels_[std::make_pair (last_status_, last_data1_)] = property_long_name;
+    gchar *prop_name = g_strdup_printf ("%u_%u",
+					last_status_,
+					last_data1_);
+    midi_values_ [property_long_name] = last_data2_;
+    
+    if (unused_props_specs_.find (prop_name) == unused_props_specs_.end ())
+      {
+	MidiPropertyContext midi_property_context;
+	midi_property_context.port_midi_source_ = this;
+	midi_property_context.property_long_name_ = property_long_name;
+	midi_property_contexts_[property_long_name] = midi_property_context;
+	
+	prop_specs_[property_long_name] = 
+	  custom_props_->make_int_property (prop_name, 
+					    "midi value",
+					    0,
+					    127,
+					    0,
+					    (GParamFlags) G_PARAM_READABLE,
+					    NULL,
+					    get_midi_property_value,
+					    &midi_property_contexts_[property_long_name]);
+      }
+    else
+      {
+	prop_specs_[property_long_name] = unused_props_specs_[prop_name];
+	unused_props_specs_.erase (prop_name);
+      }
+    
+    register_property_by_pspec (custom_props_->get_gobject (), 
+				prop_specs_[property_long_name], 
+				prop_name,
+				property_long_name.c_str ());
+    g_free (prop_name);
+    
+    
+    return true;
+  }
+
+
+  gint
+  PortMidiSource::get_midi_value (void *user_data)
+  {
+    PortMidiSource *context = static_cast<PortMidiSource *> (user_data);
+    return context->last_data2_;
+  }
+
+
 }

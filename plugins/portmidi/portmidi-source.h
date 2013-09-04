@@ -42,10 +42,14 @@ namespace switcher
     
   private:
     shmdata_any_writer_t *shmdata_writer_;
-    
+    gint last_status_;
+    gint last_data1_;
+    gint last_data2_;
     //properties
     CustomPropertyHelper::ptr custom_props_;
     GParamSpec *devices_description_spec_;
+
+    bool make_property (std::string property_long_name);
 
     //device selection
     GParamSpec *devices_enum_spec_;
@@ -53,8 +57,13 @@ namespace switcher
     static void set_device (const gint value, void *user_data);
     static gint get_device (void *user_data);
 
+    //last midi value property
+    GParamSpec *midi_value_spec_;
+    static gint get_midi_value (void *user_data);
+
     //midi properties
-    static gboolean make_property_method (gchar *long_name, void *user_data);
+    static gboolean next_midi_event_to_property_method (gchar *long_name, void *user_data);
+    static gboolean last_midi_event_to_property_method (gchar *long_name, void *user_data);
     static gboolean remove_property_method (gchar *long_name, void *user_data);
     gboolean make_property_for_next_midi_event_;
     std::string next_property_name_;

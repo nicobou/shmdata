@@ -127,6 +127,7 @@ namespace switcher
 	
 	gint orig_val = g_value_get_int (&val);
 	
+	orig_val *= 10;
 	//g_print ("type int: %s\n", GstUtils::gvalue_serialize (&val));
 	
 	 // if ((bool) quid 
@@ -151,7 +152,7 @@ namespace switcher
 	  }
 	
 	//FIXME do not trnsform into string 
-	g_print ("coucou %d\n", orig_val);
+	//g_print ("coucou %d\n", orig_val);
 	gchar *val = g_strdup_printf ("%d",orig_val);
 	prop->set (val);
 	g_free (val);
