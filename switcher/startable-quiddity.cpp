@@ -35,6 +35,7 @@ namespace switcher
   {
     Quiddity *quid = static_cast <Quiddity *> (quiddity);
 
+    started_ = false;
     custom_props_.reset (new CustomPropertyHelper ());
     started_prop_ = 
       custom_props_->make_boolean_property ("started", 
