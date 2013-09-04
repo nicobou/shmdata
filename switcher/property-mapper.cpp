@@ -67,6 +67,8 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
 		    this);
 
+    
+    
     return true;
   }
 
@@ -104,9 +106,66 @@ namespace switcher
 				  context))
       return FALSE;
 
+    GParamSpec *pspec = quid->get_property_ptr (property_name)->get_paramspec ();
+    switch (pspec->value_type) {
+    case G_TYPE_INT:
+      {
+	GParamSpecInt *pint = G_PARAM_SPEC_INT (pspec);
+	context->source_min_ = pint->minimum;
+	context->source_max_ = pint->maximum;
+	context->make_numerical_source_properties ();
+      }
+      break;
+    case G_TYPE_DOUBLE:
+      {
+	GParamSpecDouble *pdouble = G_PARAM_SPEC_DOUBLE (pspec);
+	context->source_min_ = pdouble->minimum;
+	context->source_max_ = pdouble->maximum;
+	context->make_numerical_source_properties ();
+      }
+      break;
+    default:
+      g_debug ("type not handled (%s)", g_type_name (pspec->value_type));
+    }
     return TRUE;
   }
 
+  void
+  PropertyMapper::make_numerical_source_properties ()
+  {
+    // unregister_property ("source-min");
+    // source_min_spec_ =
+    //   custom_props_->make_double_property ("source-min", 
+    // 					   "the minimum value considered",
+    // 					   source_min_,
+    // 					   source_max,
+    // 					   source_min_,
+    // 					   (GParamFlags) G_PARAM_READWRITE,
+    // 					   set_double_value,
+    // 					   get_double_value,
+    // 					   &source_min_);
+    
+    // register_property_by_pspec (custom_props_->get_gobject (), 
+    // 				source_min_spec_, 
+    // 				"source-min",
+    // 				"Source Property Minimum");
+
+    // unregister_property ("source-max");
+    // source_max_spec_ =
+    //   custom_props_->make_double_property ("source-max", 
+    // 					   "the maximum value considered",
+    // 					   source_min_,
+    // 					   source_max,
+    // 					   source_max_,
+    // 					   (GParamFlags) G_PARAM_READWRITE,
+    // 					   set_double_value,
+    // 					   get_double_value,
+    // 					   &source_min_);
+    // register_property_by_pspec (custom_props_->get_gobject (), 
+    // 				source_max_spec_, 
+    // 				"source-max",
+    // 				"Source Property Maximum");
+  }
 
   void 
   PropertyMapper::property_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data)
@@ -126,46 +185,18 @@ namespace switcher
 			       &val);
 	
 	gint orig_val = g_value_get_int (&val);
-	
-	orig_val *= 10;
-	//g_print ("type int: %s\n", GstUtils::gvalue_serialize (&val));
-	
-	 // if ((bool) quid 
-	 // 	  && quid->has_property (context->sink_property_name_))
-	 // 	{
-	 // 	  quid->set_property (context->sink_property_name_, GstUtils::gvalue_serialize (&val)); 
-	 // 	}
-	
-	if (!(bool) quid)
-	  {
-	    g_debug ("property mapper: quiddity not available");
-	    return;
-	  }
-	
-	Property::ptr prop = quid->get_property_ptr (context->sink_property_name_);
-	
-	if (!(bool)prop)
-	  {
-	    g_debug ("property mapper: prop %s is not available",
-		     context->sink_property_name_.c_str ());
-	    return;
-	  }
-	
-	//FIXME do not trnsform into string 
-	//g_print ("coucou %d\n", orig_val);
-	gchar *val = g_strdup_printf ("%d",orig_val);
-	prop->set (val);
-	g_free (val);
-	// g_object_set (prop->get_gobject (),
-	//   	      context->sink_property_name_.c_str (), 
-	//   	      10000,
-	//   	      NULL); 
+	g_value_set_int (&val, orig_val);
       }
       break;
     default:
       g_debug ("property mapper callback: type %s unknown\n",
 	       g_type_name (pspec->value_type));
     }
+
+    if ((bool) quid 
+	&& quid->has_property (context->sink_property_name_))
+	quid->set_property (context->sink_property_name_, GstUtils::gvalue_serialize (&val)); 
+
   }
   
   gboolean
@@ -206,5 +237,15 @@ namespace switcher
     return TRUE;
   }
 
+  void 
+  PropertyMapper::set_double_value (gdouble *value, void *user_data)
+  {
+     *(gdouble *)user_data = *value;
+  }
   
+  gdouble 
+  PropertyMapper::get_double_value (void *user_data)
+  {
+    return *(gdouble *)user_data;
+  }
 }
