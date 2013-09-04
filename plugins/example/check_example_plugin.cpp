@@ -67,11 +67,6 @@ main (int argc,
       success = false;
     delete res;
 
-    if (!manager->invoke_va ("test", "start", NULL, NULL))
-      success = false;
-    if (!manager->invoke_va ("test", "stop", NULL, NULL))
-      success = false;
-    
     //removing the quiddity
     if (!manager->remove ("test"))
       success = false;

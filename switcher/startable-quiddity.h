@@ -25,6 +25,7 @@
 
 #include <glib.h>
 #include <memory>
+#include "custom-property-helper.h"
 
 namespace switcher
 {
@@ -41,9 +42,13 @@ namespace switcher
     //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
 
   private:
-    static gboolean start_wrapped (gpointer unused, gpointer user_data);
-    static gboolean stop_wrapped (gpointer unused, gpointer user_data);
-  };
+    static gboolean get_started (void *user_data);
+    static void set_started (gboolean started, void *user_data);
+
+    bool started_;
+    GParamSpec *started_prop_;//FIXME should be static
+    CustomPropertyHelper::ptr custom_props_;
+ };
 
 }  // end of namespace
 
