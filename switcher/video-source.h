@@ -39,19 +39,15 @@ namespace switcher
   private:
     GstElement *rawvideo_;
     GstElement *video_tee_;
-    /* GstElement *colorspace_in_; */
-    /* GstElement *textoverlay_; */
-    /* GstElement *videoflip_; */
-    /* GstElement *colorspace_out_; */
     GstCaps *videocaps_;
-    void clean_video_source_elements ();
     void make_elements ();
-
+    std::string shmdata_path_;
+ 
   protected:
     //called in the derived class constructor
     GstElementCleaner::ptr cleaner_;
     void set_raw_video_element (GstElement *elt);
-    
+    void unset_raw_video_element ();
   };
 
 }  // end of namespace

@@ -42,6 +42,7 @@ namespace switcher
     bool stop ();
 
   private:
+    bool clean ();
     static gboolean add_shmdata_path_wrapped (gpointer name, gpointer user_data);
 
     //custom properties:

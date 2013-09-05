@@ -52,7 +52,7 @@
 #include "shmdata-from-gdp-file.h"
 #include "udpsink.h"
 #include "uridecodebin.h"
-#include "uris.h"
+//#include "uris.h"
 #include "string-dictionary.h"
 #include "video-rate.h"
 #include "video-test-source.h"
@@ -226,11 +226,11 @@ namespace switcher
     abstract_factory_.register_class<UDPSink> (UDPSink::switcher_doc_.get_class_name (), 
        					       UDPSink::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<Uridecodebin> (Uridecodebin::switcher_doc_.get_class_name (), 
-       						    Uridecodebin::switcher_doc_.get_json_root_node ());
-    abstract_factory_.register_class<Uris> (Uris::switcher_doc_.get_class_name (), 
-     					    Uris::switcher_doc_.get_json_root_node ());
+						    Uridecodebin::switcher_doc_.get_json_root_node ());
+    // abstract_factory_.register_class<Uris> (Uris::switcher_doc_.get_class_name (), 
+    //  					    Uris::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<VideoRate> (VideoRate::switcher_doc_.get_class_name (),
-     						 VideoRate::switcher_doc_.get_json_root_node ());
+      						 VideoRate::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<VideoTestSource> (VideoTestSource::switcher_doc_.get_class_name (),
 						       VideoTestSource::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<Vorbis> (Vorbis::switcher_doc_.get_class_name (),
@@ -488,7 +488,7 @@ namespace switcher
   {
     if (!exists (quiddity_name))
       {
-	g_warning ("(%s) quiddity %s not found for removing",name_.c_str(), quiddity_name.c_str());
+	g_debug ("(%s) quiddity %s not found for removing",name_.c_str(), quiddity_name.c_str());
 	return false; 
       }
     for (auto &it : property_subscribers_.get_map ())

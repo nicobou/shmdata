@@ -42,7 +42,6 @@ namespace switcher
 
   VideoSource::~VideoSource () 
   {
-    clean_video_source_elements ();
     gst_caps_unref (videocaps_);
   }
 
@@ -58,36 +57,34 @@ namespace switcher
 
   }
 
-  void 
-  VideoSource::clean_video_source_elements () 
-  {
-    unregister_shmdata_writer (make_file_name ("video"));
-  }
 
   void
   VideoSource::set_raw_video_element (GstElement *element)
   {
-    reset_bin ();
-    clean_video_source_elements ();
+    unset_raw_video_element ();
     make_elements ();
-
     rawvideo_ = element;
     
     gst_bin_add (GST_BIN (bin_), rawvideo_);
     gst_element_link (rawvideo_, video_tee_);
     
     //creating a connector for the raw video
-    ShmdataWriter::ptr rawvideo_connector;
-    rawvideo_connector.reset (new ShmdataWriter ());
-    std::string rawconnector_name = make_file_name ("video"); 
-    rawvideo_connector->set_path (rawconnector_name.c_str());
-    rawvideo_connector->plug (bin_, video_tee_, videocaps_);
-    register_shmdata_writer (rawvideo_connector);
-    
+    ShmdataWriter::ptr shmdata_writer;
+    shmdata_writer.reset (new ShmdataWriter ());
+    shmdata_path_ = make_file_name ("video"); 
+    shmdata_writer->set_path (shmdata_path_.c_str());
+    shmdata_writer->plug (bin_, video_tee_, videocaps_);
+    register_shmdata_writer (shmdata_writer);
     GstUtils::wait_state_changed (bin_);
     GstUtils::sync_state_with_parent (rawvideo_);
     GstUtils::sync_state_with_parent (video_tee_);
-
+  }
+  
+  void 
+  VideoSource::unset_raw_video_element ()
+  {
+    unregister_shmdata_writer (shmdata_path_);
+    reset_bin ();
   }
 
 }

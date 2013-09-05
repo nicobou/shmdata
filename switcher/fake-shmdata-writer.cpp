@@ -39,7 +39,7 @@ namespace switcher
   {
     init_startable (this);
 
-    shmdata_path_ = g_strdup ("");
+    shmdata_path_ = g_strdup ("none");
     custom_props_.reset (new CustomPropertyHelper ());
     shmdata_path_spec_ = 
       custom_props_->make_string_property ("shmdata-path", 
@@ -94,10 +94,16 @@ namespace switcher
     g_free (shmdata_path_);
   }
 
+  bool
+  FakeShmdataWriter::clean ()
+  {
+    return unregister_shmdata_writer (shmdata_path_);
+  }
+
   bool 
   FakeShmdataWriter::start ()
   {
-    stop ();
+    clean ();
     unregister_property ("shmdata-path");
     if (g_strcmp0 (shmdata_path_, "") == 0)
       return false;
@@ -118,11 +124,11 @@ namespace switcher
   bool 
   FakeShmdataWriter::stop ()
   {
-    bool res = unregister_shmdata_writer (shmdata_path_);
+    clean ();
     register_property_by_pspec (custom_props_->get_gobject (), 
 				shmdata_path_spec_, 
 				"shmdata-path",
 				"Shmdata Path");
-    return res;
+    return true;
   }
 }

@@ -38,9 +38,10 @@ namespace switcher
   {
     g_free (uri_);
     destroy_uridecodebin ();
-    QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
-    if ((bool) manager && g_strcmp0 ("",runtime_name_.c_str ()) != 0)
-     	manager->remove_without_hook (runtime_name_);
+    //FIXME
+    // QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
+    // if ((bool) manager && !runtime_name_.empty ())
+    //   manager->remove_without_hook (runtime_name_);
   }
   
   bool

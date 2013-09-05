@@ -42,6 +42,7 @@ namespace switcher
     bool stop ();
     
   private:
+    bool clean ();
     GstElement *gst_video_parse_to_bin_src_;
 
     CustomPropertyHelper::ptr custom_props_; 

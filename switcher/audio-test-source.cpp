@@ -40,9 +40,7 @@ namespace switcher
     init_startable (this);
 
     audiotestsrc_ = NULL;
-    make_audiotestsrc ();
-    
-    return true;
+    return make_audiotestsrc ();
   }
   
   bool 
@@ -67,6 +65,8 @@ namespace switcher
 	GstUtils::apply_property_value (G_OBJECT (audiotestsrc_), G_OBJECT (audiotest), "freq");
 	GstUtils::apply_property_value (G_OBJECT (audiotestsrc_), G_OBJECT (audiotest), "samplesperbuffer");
 	GstUtils::apply_property_value (G_OBJECT (audiotestsrc_), G_OBJECT (audiotest), "wave");
+
+	GstUtils::clean_element (audiotestsrc_);
       }
     else
       g_object_set (G_OBJECT (audiotest),

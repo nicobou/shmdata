@@ -21,6 +21,9 @@
 
 #include "property-mapper.h"
 #include "gst-utils.h"
+#include <math.h>
+
+#define PI 3.14159265
 
 namespace switcher
 {
@@ -69,7 +72,12 @@ namespace switcher
 
     custom_props_.reset (new CustomPropertyHelper ());
 
-    
+
+    // double  result;
+    // result = (1 + sin (3*PI/2 ))/2;
+    // g_print ("The sine is %f.\n", result );
+    // result = (1 + sin (5*PI/2 ))/2;
+    // g_print ("The sine is %f.\n", result );
     return true;
   }
 

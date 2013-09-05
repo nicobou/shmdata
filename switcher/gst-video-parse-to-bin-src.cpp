@@ -74,7 +74,7 @@ namespace switcher
 								  &error);
     if (error != NULL)
       {
-	g_warning ("%s",error->message);
+	g_debug ("%s",error->message);
 	g_error_free (error);
 	return false;
       }
@@ -86,7 +86,7 @@ namespace switcher
     gchar *string_caps = gst_caps_to_string (caps);
     if (!g_str_has_prefix (string_caps,"video/") && !g_str_has_prefix (string_caps,"ANY"))
       {
-	g_warning ("description does not provide video (caps is %s)",string_caps);
+	g_debug ("description does not provide video (caps is %s)",string_caps);
 	g_free (string_caps);
 	return false;
       }
@@ -126,11 +126,17 @@ namespace switcher
     return context->gst_launch_pipeline_;
   }
 
+  bool 
+  GstVideoParseToBinSrc::clean ()
+  {
+    reset_bin ();
+    return unregister_shmdata_writer (make_file_name ("video"));
+  }
   
   bool 
   GstVideoParseToBinSrc::start ()
   {
-    stop ();
+    clean ();
     if (! to_shmdata ())
       return false;
     unregister_property ("gst-pipeline");
@@ -140,8 +146,8 @@ namespace switcher
   bool 
   GstVideoParseToBinSrc::stop ()
   {
-    reset_bin ();
-    unregister_shmdata_writer (make_file_name ("video"));
+    clean ();
+    unregister_property ("gst-pipeline");
     register_property_by_pspec (custom_props_->get_gobject (), 
 				gst_launch_pipeline_spec_, 
 				"gst-pipeline",

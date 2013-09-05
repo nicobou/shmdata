@@ -72,16 +72,17 @@ namespace switcher
     gst_parse_to_bin_src_ = gst_parse_bin_from_description (gst_launch_pipeline_,
 							    TRUE,
 							    &error);
-    g_object_set (G_OBJECT (gst_parse_to_bin_src_), "async-handling",TRUE, NULL);
-
-    GstUtils::wait_state_changed (bin_);
 
     if (error != NULL)
       {
-	g_warning ("%s",error->message);
+	g_debug ("%s",error->message);
 	g_error_free (error);
+	gst_parse_to_bin_src_ = NULL;
 	return false;
       }
+
+    g_object_set (G_OBJECT (gst_parse_to_bin_src_), "async-handling",TRUE, NULL);
+    GstUtils::wait_state_changed (bin_);
     
     GstPad *src_pad = gst_element_get_static_pad (gst_parse_to_bin_src_,"src");
     gst_bin_add (GST_BIN (bin_), gst_parse_to_bin_src_);
@@ -113,11 +114,17 @@ namespace switcher
     return context->gst_launch_pipeline_;
   }
 
-  
+  bool 
+  GstParseToBinSrc::clean ()
+  {
+    reset_bin ();
+    return unregister_shmdata_writer (make_file_name ("video"));
+  }
+
   bool 
   GstParseToBinSrc::start ()
   {
-    stop ();
+    clean ();
     if (! to_shmdata ())
       return false;
     unregister_property ("gst-pipeline");
@@ -127,8 +134,8 @@ namespace switcher
   bool 
   GstParseToBinSrc::stop ()
   {
-    reset_bin ();
-    unregister_shmdata_writer (make_file_name ("video"));
+    clean ();
+    unregister_property ("gst-pipeline");
     register_property_by_pspec (custom_props_->get_gobject (), 
 				gst_launch_pipeline_spec_, 
 				"gst-pipeline",

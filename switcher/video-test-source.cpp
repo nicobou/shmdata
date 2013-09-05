@@ -41,23 +41,34 @@ namespace switcher
   bool
   VideoTestSource::init ()
   {
-    if (!GstUtils::make_element ("videotestsrc",&videotestsrc_))
-      return false;
-
     init_startable (this);
+    videotestsrc_ = NULL;
+    return make_videotestsrc ();    
+  }
 
-    g_object_set (G_OBJECT (videotestsrc_),
+  bool 
+  VideoTestSource::make_videotestsrc ()
+  {
+
+    unregister_property ("pattern");
+
+    GstElement *videotest;
+    if (!GstUtils::make_element ("videotestsrc",&videotest))
+      return false;
+    
+    g_object_set (G_OBJECT (videotest),
 		  "is-live", TRUE,
 		  NULL);
     
-    // //This register all the properties
-    // guint numproperty;
-    // GParamSpec **property = g_object_class_list_properties (G_OBJECT_GET_CLASS(videotestsrc_), &numproperty);
-    // for (guint i = 0; i < numproperty; i++) {
-    //   register_property (G_OBJECT (videotestsrc_),property[i]);
-    //   //Property *prop = new Property (G_OBJECT (videotestsrc_),property[i]);
-    //   //prop->print();
-    // }
+    if (videotestsrc_ != NULL)
+      {
+	GstUtils::apply_property_value (G_OBJECT (videotestsrc_), G_OBJECT (videotest), "pattern");
+	
+	GstUtils::clean_element (videotestsrc_);
+      }
+      
+
+    videotestsrc_ = videotest;
 
     //registering "pattern"
     register_property (G_OBJECT (videotestsrc_),
@@ -79,6 +90,8 @@ namespace switcher
   bool 
   VideoTestSource::stop ()
   {
+    make_videotestsrc ();
+    unset_raw_video_element ();
     return true;
   }
   

@@ -41,6 +41,7 @@ namespace switcher
 
   private:
     GstElement *videotestsrc_;
+    bool make_videotestsrc ();
   };
 
 }  // end of namespace

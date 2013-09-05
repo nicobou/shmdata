@@ -36,15 +36,13 @@ namespace switcher
   VideoRate::init ()
   {
     if (!GstUtils::make_element ("bin",&video_rate_bin_)
-	|| !GstUtils::make_element ("videorate",&video_rate_enc_))
+     	|| !GstUtils::make_element ("videorate",&video_rate_enc_))
       return false;
     
     //    g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
     add_element_to_cleaner (video_rate_enc_);
     add_element_to_cleaner (video_rate_bin_);
 
-    //set the name before registering properties
-    set_name (gst_element_get_name (video_rate_enc_));
     set_sink_element (video_rate_bin_);
     set_on_first_data_hook (VideoRate::make_shmdata_writer,this);
     return true;
