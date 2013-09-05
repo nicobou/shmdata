@@ -31,12 +31,6 @@ namespace switcher
   }
 
   void 
-  AudioSource::clean_audio_elements ()
-  {
-    unregister_shmdata_writer (make_file_name ("audio"));
-  }
-
-  void 
   AudioSource::make_audio_elements ()
   {
    if (!GstUtils::make_element ("tee", &audio_tee_)
@@ -60,10 +54,8 @@ namespace switcher
   void 
   AudioSource::set_raw_audio_element (GstElement *elt)
   {
-    reset_bin ();
-    clean_audio_elements ();
+    unset_raw_audio_element ();
     make_audio_elements ();
-    
     rawaudio_ = elt;
  
     gst_bin_add (GST_BIN (bin_), rawaudio_);
@@ -74,12 +66,12 @@ namespace switcher
      					      NULL);
 
     //creating a connector for raw audio
-    ShmdataWriter::ptr rawaudio_connector;
-    rawaudio_connector.reset (new ShmdataWriter ());
-    std::string rawconnector_name = make_file_name ("audio");
-    rawaudio_connector->set_path (rawconnector_name.c_str());
-    rawaudio_connector->plug (bin_, audio_tee_, audiocaps);
-    register_shmdata_writer (rawaudio_connector);
+    ShmdataWriter::ptr shmdata_writer;
+    shmdata_writer.reset (new ShmdataWriter ());
+    shmdata_path_ = make_file_name ("audio");
+    shmdata_writer->set_path (shmdata_path_.c_str());
+    shmdata_writer->plug (bin_, audio_tee_, audiocaps);
+    register_shmdata_writer (shmdata_writer);
     
     gst_caps_unref(audiocaps);
 
@@ -89,5 +81,13 @@ namespace switcher
     GstUtils::sync_state_with_parent (audioconvert_);
     GstUtils::sync_state_with_parent (resample_);
   }
+
+  void 
+  AudioSource::unset_raw_audio_element ()
+  {
+    unregister_shmdata_writer (shmdata_path_);
+    reset_bin ();
+  }
+
 
 }

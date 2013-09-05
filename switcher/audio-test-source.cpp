@@ -36,24 +36,62 @@ namespace switcher
   bool
   AudioTestSource::init ()
   {
-    if (!GstUtils::make_element ("audiotestsrc",&audiotestsrc_))
-      return false;
 
     init_startable (this);
 
-    g_object_set (G_OBJECT (audiotestsrc_),
+    audiotestsrc_ = NULL;
+    make_audiotestsrc ();
+    
+    return true;
+  }
+  
+  bool 
+  AudioTestSource::make_audiotestsrc ()
+  {
+    unregister_property ("volume");
+    unregister_property ("freq");
+    unregister_property ("samplesperbuffer");
+    unregister_property ("wave");
+
+    GstElement *audiotest;
+    if (!GstUtils::make_element ("audiotestsrc",&audiotest))
+      return false;
+
+    g_object_set (G_OBJECT (audiotest),
 		  "is-live", TRUE,
-		  "samplesperbuffer",512,
 		  NULL);
 
+    if (audiotestsrc_ != NULL)
+      {
+	GstUtils::apply_property_value (G_OBJECT (audiotestsrc_), G_OBJECT (audiotest), "volume");
+	GstUtils::apply_property_value (G_OBJECT (audiotestsrc_), G_OBJECT (audiotest), "freq");
+	GstUtils::apply_property_value (G_OBJECT (audiotestsrc_), G_OBJECT (audiotest), "samplesperbuffer");
+	GstUtils::apply_property_value (G_OBJECT (audiotestsrc_), G_OBJECT (audiotest), "wave");
+      }
+    else
+      g_object_set (G_OBJECT (audiotest),
+		    "samplesperbuffer", 512,
+		    NULL);
+
+    audiotestsrc_ = audiotest;
+
     //registering 
-    register_property (G_OBJECT (audiotestsrc_),"volume","volume", "Volume");
-    register_property (G_OBJECT (audiotestsrc_),"freq","freq", "Frequency");
+    register_property (G_OBJECT (audiotestsrc_),
+		       "volume",
+		       "volume", 
+		       "Volume");
+    register_property (G_OBJECT (audiotestsrc_),
+		       "freq",
+		       "freq", 
+		       "Frequency");
     register_property (G_OBJECT (audiotestsrc_),
 		       "samplesperbuffer",
 		       "samplesperbuffer", 
 		       "Samples Per Buffer");
-    register_property (G_OBJECT (audiotestsrc_),"wave", "wave", "Signal Form");
+    register_property (G_OBJECT (audiotestsrc_),
+		       "wave", 
+		       "wave", 
+		       "Signal Form");
 
     return true;
   }
@@ -73,7 +111,8 @@ namespace switcher
   bool 
   AudioTestSource::stop ()
   {
-    reset_bin ();
+    make_audiotestsrc ();
+    unset_raw_audio_element ();
     return true;
   }
 

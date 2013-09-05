@@ -56,7 +56,10 @@ namespace switcher
 					  GSourceFunc function,
 					  gpointer data, 
 					  GMainContext *context);
-      };
+    static  bool apply_property_value (GObject *g_object_master, 
+				       GObject *g_object_slave,
+				       const char *property_name);
+  };
 
 }  // end of namespace
 

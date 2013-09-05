@@ -203,7 +203,7 @@ namespace switcher
 	  gst_element_get_state (bin, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
 	}
     g_debug ("GstUtils::wait_state_changed (done)");
-
+    g_value_unset (&val);
     return;
   }
 
@@ -325,4 +325,52 @@ namespace switcher
     
     return id;
   }
+
+
+  bool 
+  GstUtils::apply_property_value (GObject *g_object_master, 
+				  GObject *g_object_slave,
+				  const char *property_name)
+  {
+    if (g_object_master == NULL || g_object_slave == NULL)
+      return false;
+
+    GParamSpec *pspec_master = 
+      g_object_class_find_property (G_OBJECT_CLASS (G_OBJECT_GET_CLASS (g_object_master)),
+				    property_name);
+    if (pspec_master == NULL)
+      {
+	g_debug ("property %s not found for master ", property_name);
+	return false;
+      }
+
+    GParamSpec *pspec_slave = 
+      g_object_class_find_property (G_OBJECT_CLASS (G_OBJECT_GET_CLASS (g_object_slave)),
+				    property_name);
+    if (pspec_slave == NULL)
+      {
+	g_debug ("property %s, not found for slave", property_name);
+	  return false;
+      }
+    
+    if (pspec_master->value_type != pspec_slave->value_type)
+      {
+	g_debug ("master and slave properties has different type, canont apply");
+	return false;
+      }
+    
+    GValue val = G_VALUE_INIT;
+    g_value_init (&val, pspec_master->value_type);
+    
+    g_object_get_property (g_object_master,
+			   property_name,
+			   &val);
+    
+    g_object_set_property (g_object_slave,
+			   property_name,
+			   &val);
+    g_value_unset (&val);
+    return true;
+  }
+
 }

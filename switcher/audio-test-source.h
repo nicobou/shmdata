@@ -41,6 +41,7 @@ namespace switcher
     
   private: 
    GstElement *audiotestsrc_;
+   bool make_audiotestsrc ();
   };
 
 }  // end of namespace

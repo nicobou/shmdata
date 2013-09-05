@@ -40,11 +40,12 @@ namespace switcher
     GstElement *audio_tee_;
     GstElement *audioconvert_;   
     GstElement *resample_;
-    void clean_audio_elements ();
     void make_audio_elements ();
+    std::string shmdata_path_;
 
   protected:
     void set_raw_audio_element (GstElement *elt);
+    void unset_raw_audio_element ();
   };
 
 }  // end of namespace
