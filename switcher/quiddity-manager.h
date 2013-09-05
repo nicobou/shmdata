@@ -112,6 +112,9 @@ namespace switcher
       std::string get_property (std::string quiddity_name, 
 				std::string property_name);
 
+      bool has_property (const std::string quiddity_name,
+			 const std::string property_name);
+
       //property subscribtion
       bool make_property_subscriber (std::string subscriber_name,
 				     QuiddityManager::PropCallback callback,

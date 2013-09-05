@@ -598,6 +598,7 @@ namespace switcher
   QuiddityManager::has_method (const std::string quiddity_name,
 			       const std::string method_name)
   {
+    //FIXME do not have this 
     command_lock ();
     command_->set_id (QuiddityCommand::has_method);
     command_->add_arg (quiddity_name);
@@ -609,6 +610,13 @@ namespace switcher
       command_->result_.push_back("false");
     command_unlock ();
     return res;
+  }
+
+  bool
+  QuiddityManager::has_property (const std::string quiddity_name,
+				 const std::string property_name)
+  {
+    return manager_impl_->has_property (quiddity_name, property_name);
   }
 
   bool 

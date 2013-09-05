@@ -755,6 +755,20 @@ namespace switcher
   }
 
   bool
+  QuiddityManager_Impl::has_property (std::string quiddity_name, 
+				      std::string property_name)
+  {
+      if (!exists (quiddity_name))
+      {
+	g_debug ("quiddity %s not found",quiddity_name.c_str());
+	return false;
+      }
+      Quiddity::ptr quiddity = get_quiddity (quiddity_name);
+      
+      return quiddity->has_property (property_name);
+  }
+
+  bool
   QuiddityManager_Impl::has_method (std::string quiddity_name, 
 				    std::string method_name)
   {
