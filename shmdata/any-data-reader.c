@@ -119,7 +119,7 @@ shmdata_any_reader_on_new_buffer_from_source (GstElement * elt,
 	}
       else
 	{
-	  g_warning
+	  g_debug
 	    ("incompatible data frame retrieved, data %p, data size %d, timestamp %llu, caps %s",
 	     GST_BUFFER_DATA (buf), GST_BUFFER_SIZE (buf),
 	     GST_TIME_AS_MSECONDS (GST_BUFFER_TIMESTAMP (buf)),
@@ -280,7 +280,7 @@ shmdata_any_reader_close (shmdata_any_reader_t * reader)
       if (reader->reader_)
 	shmdata_base_reader_close (reader->reader_);
       else
-	g_warning ("trying to close a NULL (base-)reader");
+	g_debug ("trying to close a NULL (base-)reader");
       if (reader->data_caps_ != NULL)
 	gst_caps_unref (reader->data_caps_);
       if (reader->type_ != NULL)
