@@ -50,7 +50,7 @@ main (int argc,
       success = false;
     
   }//end of scope is releasing the manager
-
+  
   if (success)
     return 0;
   else

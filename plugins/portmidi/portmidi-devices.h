@@ -99,7 +99,7 @@ namespace switcher
     };
 
     static PortMidiScheduler *scheduler_;
-    static guint num_of_streams_;
+    static guint instance_counter_;
     std::map<guint, PmStream *> input_streams_;
     std::map<guint, PmStream *> output_streams_;
     

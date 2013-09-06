@@ -27,7 +27,7 @@ namespace switcher
 {
 
   PortMidi::PortMidiScheduler *PortMidi::scheduler_ = NULL;
-  guint PortMidi::num_of_streams_ = 0;
+  guint PortMidi::instance_counter_ = 0;
 
   PortMidi::PortMidi ()
   {
@@ -37,20 +37,25 @@ namespace switcher
     devices_description_ = NULL;
     make_devices_description (this);
     update_device_enum ();
+    instance_counter_ ++;
   }
   
   PortMidi::~PortMidi ()
   {
-
-    for (auto &it: input_streams_)
-      close_input_device (it.first);
+    instance_counter_ --;
+    if (!input_streams_.empty ())
+      for (auto &it: input_streams_)
+	close_input_device (it.first);
     
-    for (auto &it: output_streams_)
-      close_output_device (it.first);
+    if (!output_streams_.empty ())
+      for (auto &it: output_streams_)
+	close_output_device (it.first);
     
-    //FIXME
-    // if (num_of_streams_ == 0)
-    //   delete scheduler_;
+    if (instance_counter_ == 0)
+      {
+	delete scheduler_;
+	scheduler_ = NULL;
+      }
   }
   
   int 
@@ -77,7 +82,6 @@ namespace switcher
    
     if (stream == NULL)
       return false;
-    num_of_streams_++;
     input_streams_[id] = stream;
     g_message ("Midi input device opened (id %d)", id);
     return true;
@@ -94,8 +98,6 @@ namespace switcher
     PmStream *stream = scheduler_->add_output_stream (id);
     if (stream == NULL)
       return false;      
-
-    num_of_streams_++;
     output_streams_[id] = stream;
     g_message ("Midi output device opened (id %d)", id);
     return true;
@@ -108,8 +110,7 @@ namespace switcher
     if (it == input_streams_.end())
       return false;
     
-    if (scheduler_->remove_input_stream (it->second))
-      num_of_streams_--;
+    scheduler_->remove_input_stream (it->second);
     input_streams_.erase (id);
     
     g_message ("Midi input device closed (id %d)", id);
@@ -124,8 +125,7 @@ namespace switcher
     if (it == output_streams_.end())
       return false;
     
-    if (scheduler_->remove_output_stream (it->second))
-      num_of_streams_--;
+    scheduler_->remove_output_stream (it->second);
     output_streams_.erase (id);
     g_message ("Midi input device closed (id %d)", id);
     return true;
