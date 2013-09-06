@@ -26,7 +26,7 @@
 #include "switcher/quiddity.h"
 #include "switcher/startable-quiddity.h"
 #include "switcher/custom-property-helper.h"
-#include "shmdata/any-data-writer.h"
+#include <shmdata/any-data-writer.h>
 
 namespace switcher
 {

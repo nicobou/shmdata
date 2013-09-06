@@ -104,6 +104,16 @@ namespace switcher
   }
   
   bool
+  PortMidi::push_midi_message (int id, unsigned char status, unsigned char data1, unsigned char data2)
+  {
+    if (output_streams_.count (id) == 0)
+      return false;
+    scheduler_->push_message (output_streams_[id], status, data1, data2);
+    return true;
+  }
+
+
+  bool
   PortMidi::close_input_device (int id)
   {
     std::map<guint, PmStream *>::iterator it = input_streams_.find(id);
@@ -230,20 +240,6 @@ namespace switcher
 
       return midi_out;
     }
-
-    // PmEvent 
-    // PortMidi::PortMidiScheduler::poll (PmStream *stream)
-    // {
-    //   PmEvent message = input_queues_[stream]->front();
-    //   input_queues_[stream]->pop();
-    //   return message;
-    // }
-
-    // bool 
-    // PortMidi::PortMidiScheduler::is_queue_empty (PmStream *stream)
-    // {
-    //   return input_queues_[stream]->empty();
-    // }
 
     bool
     PortMidi::PortMidiScheduler::remove_input_stream (PmStream *stream)

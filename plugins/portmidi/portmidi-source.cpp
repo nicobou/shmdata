@@ -213,10 +213,10 @@ namespace switcher
     context->last_data2_ = (gint) data2;
     context->custom_props_->notify_property_changed (context->midi_value_spec_);
 
-    // g_print ("from port midi  %u %u %u \n",
-    //  	     status,
-    //  	     data1,
-    //  	     data2);
+    g_print ("to shm:  %u %u %u \n",
+      	     status,
+      	     data1,
+      	     data2);
 
     //updating property if needed
     if (context->midi_channels_.find (std::make_pair (status, data1)) != context->midi_channels_.end ())

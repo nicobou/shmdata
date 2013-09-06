@@ -64,7 +64,7 @@ namespace switcher
     int get_default_output_device_id();
     bool open_output_device(int id);
     bool close_output_device(int id);
-    //bool send_message_to_output(int id, unsigned char status, unsigned char data1, unsigned char data2);
+    bool push_midi_message (int id, unsigned char status, unsigned char data1, unsigned char data2);
     
   private:    
     /** Prints the list of MIDI source devices. */
@@ -82,8 +82,6 @@ namespace switcher
       ~PortMidiScheduler();
       PmStream *add_input_stream(int id, on_pm_event_method method, void *user_data);
       bool remove_input_stream(PmStream *stream);
-      //PmEvent poll(PmStream *stream);
-      //bool is_queue_empty(PmStream *stream);
       
       PmStream *add_output_stream(int id);
       bool remove_output_stream(PmStream *stream);
