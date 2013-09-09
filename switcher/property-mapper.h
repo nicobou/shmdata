@@ -47,7 +47,11 @@ namespace switcher
     static gboolean set_sink_property_method (gchar *quiddity_name, 
 					      gchar *property_name, 
 					      void *user_data);
+    std::weak_ptr <Quiddity> source_quiddity_;
+    std::string source_property_name_;
+
     std::weak_ptr <Quiddity> sink_quiddity_;
+    GParamSpec *sink_quiddity_pspec_;
     std::string sink_property_name_;
 
     //clip values (and scale accordingly)
@@ -57,6 +61,7 @@ namespace switcher
     GParamSpec *source_min_spec_;
     GParamSpec *source_max_spec_;
 
+    void unsubscribe_source_property ();
     static void set_double_value (gdouble value, void *user_data);
     static gdouble get_double_value (void *user_data);
     double sink_min_;

@@ -23,8 +23,8 @@
 #include "gst-utils.h"
 #include <math.h>
 
-#define PI 3.14159265
-
+//#define PI 3.14159265
+  
 namespace switcher
 {
 
@@ -38,6 +38,11 @@ namespace switcher
   bool
   PropertyMapper::init()
   {
+    sink_min_spec_ = NULL;
+    sink_max_spec_ = NULL;
+    source_min_spec_ = NULL;
+    source_max_spec_ = NULL;
+    
     publish_method ("Set Source Property", //long name
 		    "set-source-property", //name
 		    "set the master property", //description
@@ -83,9 +88,18 @@ namespace switcher
 
   PropertyMapper::~PropertyMapper ()
   {
-    
+    unsubscribe_source_property ();
   }
 
+
+  void 
+  PropertyMapper::unsubscribe_source_property ()
+  {
+    Quiddity::ptr source_quid = source_quiddity_.lock ();
+    if ((bool) source_quid)
+      source_quid->unsubscribe_property (source_property_name_, property_cb, this);
+  }
+  
   gboolean
   PropertyMapper::set_source_property_method (gchar *quiddity_name, 
 					      gchar *property_name, 
@@ -114,6 +128,11 @@ namespace switcher
 				  property_cb, 
 				  context))
       return FALSE;
+
+    //unsubscribing previously registered property
+    context->unsubscribe_source_property ();
+    context->source_quiddity_ = quid;
+    context->source_property_name_ = property_name;
 
     GParamSpec *pspec = quid->get_property_ptr (property_name)->get_paramspec ();
     switch (pspec->value_type) {
@@ -218,39 +237,68 @@ namespace switcher
   {
     PropertyMapper *context = static_cast <PropertyMapper *>(user_data);
     
-    GValue val = G_VALUE_INIT;
-    const gchar *prop_name = g_param_spec_get_name (pspec);
+    //return if not property to update
     Quiddity::ptr quid = context->sink_quiddity_.lock ();
+    if (! (bool) quid)
+      return;
+
+    GValue val = G_VALUE_INIT; //FIXME unref
+    const gchar *prop_name = g_param_spec_get_name (pspec);
+    gdouble new_value = 0; 
+    g_value_init (&val, pspec->value_type);
+    g_object_get_property (gobject,
+			   prop_name,
+			   &val);
     
+    //getting new value
     switch (pspec->value_type) {
     case G_TYPE_INT:
       {
-	g_value_init (&val, pspec->value_type);
-	g_object_get_property (gobject,
-			       prop_name,
-			       &val);
-	
 	gint orig_val = g_value_get_int (&val);
 	if (orig_val < context->source_min_)
 	  orig_val = context->source_min_;
 	if (orig_val > context->source_max_)
 	  orig_val = context->source_max_;
-	
-	//FIXME only if sink_max is defined
-	gdouble transformed_val =  
-	  ((gdouble)orig_val - context->source_min_) * (context->sink_max_ - context->sink_min_) 
-	  / (context->source_max_ - context->source_min_)
-	  + context->sink_min_;
 
-	//g_print ("%f\n", transformed_val);
-	g_value_set_int (&val, transformed_val);
+	new_value = (gdouble) orig_val;
       }
       break;
     default:
-      g_debug ("property mapper callback: type %s unknown\n",
-	       g_type_name (pspec->value_type));
+      {
+	g_debug ("property mapper callback: type %s not handled\n",
+		 g_type_name (pspec->value_type));
+	return;
+      }
     }
+      
+    //transforming the value
+    gdouble transformed_val =  
+      ((gdouble)new_value - context->source_min_) * (context->sink_max_ - context->sink_min_) 
+      / (context->source_max_ - context->source_min_)
+      + context->sink_min_;
 
+    // GValue val_to_apply = G_VALUE_INIT; 
+    // g_value_init (&val_to_apply, context->sink_quiddity_pspec_->value_type);
+    
+    
+    // switch (context->sink_quiddity_pspec_->value_type) {
+    // case G_TYPE_INT:
+    //   {
+    // 	g_value_set_int (&val, transformed_val);
+
+    //   }
+    //   break;
+    // default:
+    //   {
+    // 	g_debug ("property mapper callback: type %s not handled\n",
+    // 	       g_type_name (pspec->value_type));
+    // 	return;
+    //   }
+    // }
+
+    //g_print ("%f\n", transformed_val);
+    g_value_set_int (&val, transformed_val);
+    
     if ((bool) quid 
 	&& quid->has_property (context->sink_property_name_))
 	quid->set_property (context->sink_property_name_, GstUtils::gvalue_serialize (&val)); 
@@ -289,9 +337,6 @@ namespace switcher
 	return FALSE;
       }
     
-    context->sink_quiddity_ = quid;
-    context->sink_property_name_ = property_name;
-
     GParamSpec *pspec = quid->get_property_ptr (property_name)->get_paramspec ();
     switch (pspec->value_type) {
     case G_TYPE_INT:
@@ -311,8 +356,15 @@ namespace switcher
       }
       break;
     default:
-      g_debug ("type not handled (%s)", g_type_name (pspec->value_type));
+      {
+	g_debug ("type not handled (%s)", g_type_name (pspec->value_type));
+	return FALSE;
+      }
     }
+
+    context->sink_quiddity_ = quid;
+    context->sink_property_name_ = property_name;
+    context->sink_quiddity_pspec_ = quid->get_property_ptr (property_name)->get_paramspec ();
     return TRUE;
   }
 
