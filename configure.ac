@@ -181,6 +181,18 @@ else
 fi
 AM_CONDITIONAL(OSCBUILD, test "${OSCBUILD}" = "enabled")
 
+# python
+PKG_CHECK_MODULES(PYTHON, python, have_python=true, have_python=false)
+if test "x${have_python}" = "xfalse" ; then
+    PYTHONBUILD=disabled
+    AC_MSG_WARN([Missing python-dev package])
+    AC_DEFINE(HAVE_PYTHON,[0],[python-dev not detected])
+else
+    PYTHONBUILD=enabled
+    AC_DEFINE(HAVE_PYTHON,[1],[python-dev detected])
+fi
+AM_CONDITIONAL(PYTHONBUILD, test "${PYTHONBUILD}" = "enabled")
+
 # portmidi
 PORTMIDIBUILD=enabled
 AC_CHECK_HEADERS([portmidi.h porttime.h], have_portmidi_headers=true, have_portmidi_headers=false)
@@ -209,6 +221,8 @@ if test "${PORTMIDIBUILD}" = "enabled"; then
 fi
 
 
+
+#pulse
 PKG_CHECK_MODULES(PULSE, libpulse-mainloop-glib, have_libpulse=true, have_libpulse=false)
 if test "x${have_libpulse}" = "xfalse" ; then
     PULSEBUILD=disabled
@@ -224,7 +238,7 @@ if test "x${have_jsonglib}" = "xfalse" ; then
     AC_MSG_ERROR([Missing libjson-glib-dev package])
 fi
 
-# Check for 
+# check for v4l2 
 AC_CHECK_HEADER(linux/videodev2.h,
                 V4L2BUILD=enabled,
                 AC_MSG_WARN([v4l2 capture plugin will not be built (missing videodev2.h from package linux-libc-dev)]))
@@ -235,6 +249,7 @@ else
   V4L2BUILD=disabled
 fi
 
+# check for gtk
 PKG_CHECK_MODULES(GTK, gtk+-2.0, have_gtk=true, have_gtk=false)
 if test "x${have_gtk}" = "xfalse" ; then
     GTKBUILD=disabled
@@ -244,6 +259,7 @@ else
     AC_CONFIG_FILES([plugins/gtk/Makefile])
 fi
 AM_CONDITIONAL(GTKBUILD, test "${GTKBUILD}" = "enabled")
+
 
 AC_MSG_CHECKING([to see if compiler understands -std=c++0x])
 save_CXXFLAGS="$CXXFLAGS"
@@ -320,6 +336,12 @@ AC_OUTPUT
 [echo ""]
 [echo "OSC controler plugin       ${OSCBUILD}"]
 [echo "GSOAP controler plugin     ${GSOAPBUILD}"]
+[echo ""]
+[echo "-----------------------------------"]
+[echo ""]
+[echo "SWITCHER OPTIONAL FEATURE"]
+[echo ""]
+[echo "python                     ${PYTHONBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]

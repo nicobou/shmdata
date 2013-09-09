@@ -18,6 +18,9 @@
 /* Define to 1 if you have the <porttime.h> header file. */
 #undef HAVE_PORTTIME_H
 
+/* python-dev detected */
+#undef HAVE_PYTHON
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 

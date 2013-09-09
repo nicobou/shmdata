@@ -3,6 +3,7 @@ AM_CXXFLAGS = \
     $(GST_CFLAGS) \
     $(GMODULE_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
+    $(PYTHON_CFLAGS) \
     $(SHMDATA_CFLAGS) \
     -DG_LOG_DOMAIN=\"switcher\" 
 
@@ -11,6 +12,7 @@ AM_LIBS = \
     $(GST_LIBS) \
     $(GMODULE_LIBS) \
     $(JSONGLIB_LIBS) \
+    $(PYTHON_LIBS) \
     $(SHMDATA_LIBS)
 
 lib_LTLIBRARIES = \
@@ -82,6 +84,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
     $(GST_LIBS) \
     $(GMODULE_LIBS) \
     $(JSONGLIB_LIBS) \
+    $(PYTHON_LIBS) \
     $(SHMDATA_LIBS) \
     -version-info $(LIBSWITCHER_SO_VERSION)
 

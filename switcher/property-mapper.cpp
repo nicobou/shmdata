@@ -23,8 +23,15 @@
 #include "gst-utils.h"
 #include <math.h>
 
-//#define PI 3.14159265
-  
+//for python
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#ifdef HAVE_PYTHON
+#include <Python.h> 
+#endif
+   
+#endif
+
 namespace switcher
 {
 
@@ -76,6 +83,29 @@ namespace switcher
 		    this);
 
     custom_props_.reset (new CustomPropertyHelper ());
+
+#ifdef HAVE_PYTHON
+     // Py_Initialize();
+     // // PyRun_SimpleString("from time import time,ctime\n"
+     // // 		       "print 'Today is',ctime(time())\n");
+     // PyObject *numpy_name = PyString_FromString("numpy");
+     // PyObject *numpy = PyImport_Import(numpy_name);
+     // Py_DECREF(numpy_name);
+     // if (numpy != NULL) 
+     //   g_print ("got numpy !\n");
+     // else
+     //   g_print ("no numpy\n");
+     
+     // PyObject *numpey_name = PyString_FromString("numpey");
+     // PyObject *numpey = PyImport_Import(numpey_name);
+     // Py_DECREF(numpey_name);
+     // if (numpey != NULL) 
+     //   g_print ("got numpey !\n");
+     // else
+     //   g_print ("no numpey..\n");
+       
+     //   Py_Finalize();
+#endif
    
     return true;
   }
