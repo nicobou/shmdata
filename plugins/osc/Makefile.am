@@ -1,19 +1,19 @@
 pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
 plugins_LTLIBRARIES = \
-    libosc.la 
+    libosc-ctrl-server.la 
 
-#libosc info
-libosc_la_SOURCES = \
+#libosc_ctrl_server (control from osc)
+libosc_ctrl_server_la_SOURCES = \
     osc-ctrl-server.cpp
 
-libosc_la_include_HEADERS = \
+libosc_ctrl_server_la_include_HEADERS = \
     osc-ctrl-server.h
 
-libosc_la_includedir = \
+libosc_ctrl_server_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
-libosc_la_LDFLAGS = \
+libosc_ctrl_server_la_LDFLAGS = \
     $(LIBLO_LIBS) \
     $(GLIB_LIBS) \
     $(GST_LIBS) \
@@ -25,7 +25,7 @@ libosc_la_LDFLAGS = \
     -L$(top_builddir)/switcher/.libs \
     -lswitcher-@LIBSWITCHER_API_VERSION@
 
-libosc_la_CXXFLAGS = \
+libosc_ctrl_server_la_CXXFLAGS = \
     $(LIBLO_CFLAGS) \
     $(GLIB_CFLAGS) \
     $(GMODULE_CFLAGS) \
@@ -34,3 +34,5 @@ libosc_la_CXXFLAGS = \
     $(SHMDATA_CFLAGS) \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir) 
+
+
