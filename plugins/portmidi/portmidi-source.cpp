@@ -324,7 +324,7 @@ namespace switcher
       }
     
     midi_channels_[std::make_pair (last_status_, last_data1_)] = property_long_name;
-    gchar *prop_name = g_strdup_printf ("%u_%u",
+    gchar *prop_name = g_strdup_printf ("%u-%u",
 					last_status_,
 					last_data1_);
     midi_values_ [property_long_name] = last_data2_;
