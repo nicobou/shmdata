@@ -294,7 +294,7 @@ namespace switcher
 	  }
       }
     
-    gchar *prop_name = g_strdup_printf ("%u_%u", midi_channel.first, midi_channel.second);
+    gchar *prop_name = g_strdup_printf ("%u-%u", midi_channel.first, midi_channel.second);
     context->unregister_property (prop_name);
     context->unused_props_specs_[prop_name] = context->prop_specs_[long_name];
     context->prop_specs_.erase (long_name);
