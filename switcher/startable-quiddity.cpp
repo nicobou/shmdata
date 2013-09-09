@@ -65,10 +65,15 @@ namespace switcher
   {
     StartableQuiddity *context = static_cast<StartableQuiddity *> (user_data);
     if (started)
-      context->started_ = context->start ();
+      {
+	if (context->start ())
+	  context->started_ = true;
+      }
     else
-      context->started_ = context->stop ();
-
+      {
+	if (context->stop ())
+	  context->started_ = false;
+      }
     context->custom_props_->notify_property_changed (context->started_prop_);
   }
   
