@@ -109,20 +109,20 @@ namespace switcher
   {
     PortMidiSink *context = static_cast <PortMidiSink *> (user_data);
 
-    printf ("data %p, data size %d, timestamp %llu, type descr %s\n",
-     	    data, data_size, timestamp, type_description);
-    
-    // push_midi_message (context->device_, 
-    // 		       Pm_MessageStatus(data), 
-    // 		       Pm_MessageData1(data),
-    // 		       Pm_MessageData2(data));
-    
+    // printf ("data %p, data size %d, timestamp %llu, type descr %s\n",
+    //  	    data, data_size, timestamp, type_description);
+
     PmEvent *event = (PmEvent *)data;
     
-    g_print ("from shm: %u %u %u \n",
-	     Pm_MessageStatus(event->message),
-	     Pm_MessageData1(event->message),
-	     Pm_MessageData2(event->message));
+    context->push_midi_message (context->device_, 
+				Pm_MessageStatus(event->message),
+				Pm_MessageData1(event->message),
+				Pm_MessageData2(event->message));
+    
+    // g_print ("from shm: %u %u %u \n",
+    // 	     Pm_MessageStatus(event->message),
+    // 	     Pm_MessageData1(event->message),
+    // 	     Pm_MessageData2(event->message));
 
     //free the data, can also be called later
     shmdata_any_reader_free (shmbuf);

@@ -196,12 +196,17 @@ namespace switcher
   {
     PortMidiSource *context = static_cast<PortMidiSource *> (user_data);
     
+
+
+    PmEvent *tmp_event = (PmEvent *)g_malloc (sizeof (PmEvent));
+    tmp_event->message = event->message;
+    tmp_event->timestamp = event->timestamp;
     shmdata_any_writer_push_data (context->shmdata_writer_,
-				  event,
-				  sizeof (event),
-				  0,
-				  NULL, 
-				  NULL);
+				  tmp_event,
+				  sizeof (PmEvent),
+				  (unsigned long long)tmp_event->timestamp * 1000000,//timestamp is in ms
+				  g_free, 
+				  tmp_event);
 
     
     guint status = Pm_MessageStatus(event->message);
@@ -213,10 +218,11 @@ namespace switcher
     context->last_data2_ = (gint) data2;
     context->custom_props_->notify_property_changed (context->midi_value_spec_);
 
-    g_print ("to shm:  %u %u %u \n",
-      	     status,
-      	     data1,
-      	     data2);
+    // g_print ("to shm:  %u %u %u event ts %d tmp_event_ts %d\n",
+    //   	     status,
+    //   	     data1,
+    //   	     data2,
+    // 	     event->timestamp);
 
     //updating property if needed
     if (context->midi_channels_.find (std::make_pair (status, data1)) != context->midi_channels_.end ())

@@ -354,10 +354,10 @@ namespace switcher
             	  context->thru_sysex_in_progress_ = false;
 	    }
 	    
-	    g_print ("midi output msg: %u %u %u\n",
-		     Pm_MessageStatus(next->message),
-		     Pm_MessageData1(next->message),
-		     Pm_MessageData2(next->message));
+	    // g_print ("midi output msg: %u %u %u\n",
+	    // 	     Pm_MessageStatus(next->message),
+	    // 	     Pm_MessageData1(next->message),
+	    // 	     Pm_MessageData2(next->message));
 	    
 	    Pm_Write(itr.first, next, 1);
 	    
