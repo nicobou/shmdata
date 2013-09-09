@@ -68,7 +68,8 @@ namespace switcher
     double sink_max_;
     double source_min_;
     double source_max_;
-  };
+    
+    };
   
 }  // end of namespace
 

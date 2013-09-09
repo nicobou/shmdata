@@ -76,13 +76,7 @@ namespace switcher
 		    this);
 
     custom_props_.reset (new CustomPropertyHelper ());
-
-
-    // double  result;
-    // result = (1 + sin (3*PI/2 ))/2;
-    // g_print ("The sine is %f.\n", result );
-    // result = (1 + sin (5*PI/2 ))/2;
-    // g_print ("The sine is %f.\n", result );
+   
     return true;
   }
 
@@ -242,7 +236,7 @@ namespace switcher
     if (! (bool) quid)
       return;
 
-    GValue val = G_VALUE_INIT; //FIXME unref
+    GValue val = G_VALUE_INIT; 
     const gchar *prop_name = g_param_spec_get_name (pspec);
     gdouble new_value = 0; 
     g_value_init (&val, pspec->value_type);
@@ -255,54 +249,59 @@ namespace switcher
     case G_TYPE_INT:
       {
 	gint orig_val = g_value_get_int (&val);
-	if (orig_val < context->source_min_)
-	  orig_val = context->source_min_;
-	if (orig_val > context->source_max_)
-	  orig_val = context->source_max_;
-
+	//ignoring value out of range
+	if (orig_val < context->source_min_ || orig_val > context->source_max_)
+	  {
+	    g_value_unset (&val);
+	    return;
+	  }
+	new_value = (gdouble) orig_val;
+      }
+      break;
+    case G_TYPE_DOUBLE:
+      {
+	gdouble orig_val = g_value_get_double (&val);
+	//ignoring value out of range
+	if (orig_val < context->source_min_ || orig_val > context->source_max_)
+	  {
+	    g_value_unset (&val);
+	    return;
+	  }
 	new_value = (gdouble) orig_val;
       }
       break;
     default:
       {
-	g_debug ("property mapper callback: type %s not handled\n",
+	g_debug ("property mapper callback: type %s not handled (yet)\n",
 		 g_type_name (pspec->value_type));
 	return;
       }
     }
-      
-    //transforming the value
+    g_value_unset (&val);
+
+    //scaling and transforming the value into a gdouble value 
     gdouble transformed_val =  
       ((gdouble)new_value - context->source_min_) * (context->sink_max_ - context->sink_min_) 
       / (context->source_max_ - context->source_min_)
       + context->sink_min_;
-
-    // GValue val_to_apply = G_VALUE_INIT; 
-    // g_value_init (&val_to_apply, context->sink_quiddity_pspec_->value_type);
     
-    
-    // switch (context->sink_quiddity_pspec_->value_type) {
-    // case G_TYPE_INT:
-    //   {
-    // 	g_value_set_int (&val, transformed_val);
+    GValue val_gdouble = G_VALUE_INIT; 
+    g_value_init (&val_gdouble, G_TYPE_DOUBLE);
+    g_value_set_double (&val_gdouble, transformed_val);
+      
+   //applying to sink property
+    GValue val_to_apply = G_VALUE_INIT; 
+    g_value_init (&val_to_apply, context->sink_quiddity_pspec_->value_type);
 
-    //   }
-    //   break;
-    // default:
-    //   {
-    // 	g_debug ("property mapper callback: type %s not handled\n",
-    // 	       g_type_name (pspec->value_type));
-    // 	return;
-    //   }
-    // }
+    g_value_transform (&val_gdouble, &val_to_apply);
 
-    //g_print ("%f\n", transformed_val);
-    g_value_set_int (&val, transformed_val);
-    
-    if ((bool) quid 
-	&& quid->has_property (context->sink_property_name_))
-	quid->set_property (context->sink_property_name_, GstUtils::gvalue_serialize (&val)); 
+    // g_print ("%f, %s\n", g_value_get_double(&val_gdouble), 
+    // 	     GstUtils::gvalue_serialize (&val_to_apply));
+    if ((bool) quid && quid->has_property (context->sink_property_name_))
+      quid->set_property (context->sink_property_name_, GstUtils::gvalue_serialize (&val_to_apply)); 
 
+    g_value_unset (&val_gdouble);
+    g_value_unset (&val_to_apply);
   }
   
   gboolean
@@ -379,4 +378,5 @@ namespace switcher
   {
     return *(gdouble *)user_data;
   }
+
 }
