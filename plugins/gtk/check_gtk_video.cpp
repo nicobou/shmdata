@@ -45,49 +45,55 @@ main (int argc,
     return 1;
 #endif
 
-    if (!switcher::QuiddityBasicTest::test_full (manager, "gtkvideosink"))
-      return 1;
+    // if (!switcher::QuiddityBasicTest::test_full (manager, "gtkvideosink"))
+    //   return 1;
 
-       // g_print ("sdfdf\n");
-       // //creating a gst pipeline
-       // if (g_strcmp0 (manager->create("runtime", "testruntime").c_str (), "testruntime") != 0)
-       //   return 1;
+        // g_print ("sdfdf\n");
+        // //creating a gst pipeline
+        // if (g_strcmp0 (manager->create("runtime", "testruntime").c_str (), "testruntime") != 0)
+        //   return 1;
         
-       // g_print ("sdfdf\n");
-       // //creating a "myplugin" quiddity
-       // if (g_strcmp0 (manager->create("gtkvideosink", "win").c_str (), "win") != 0)
-       //   return 1;
-       // g_print ("sdfdf\n");
+        // g_print ("sdfdf\n");
+        // //creating a "myplugin" quiddity
+        // if (g_strcmp0 (manager->create("gtkvideosink", "win").c_str (), "win") != 0)
+        //   return 1;
+        // g_print ("sdfdf\n");
 
-       // if (!manager->invoke_va ("win", "set_runtime", NULL, "testruntime", NULL))
-       //   return 1;
-       // g_print ("sdfdf 00\n");
+        // if (!manager->invoke_va ("win", "set_runtime", NULL, "testruntime", NULL))
+        //   return 1;
+        // g_print ("sdfdf 00\n");
 
-       // //usleep (1000000);
+        // //usleep (1000000);
 
 
-       //  //creating a video source quiddity
-       //  if (g_strcmp0 (manager->create("videotestsrc", "vid").c_str (), "vid") != 0)
-       //    return 1;
+        //  //creating a video source quiddity
+        //  if (g_strcmp0 (manager->create("videotestsrc", "vid").c_str (), "vid") != 0)
+        //    return 1;
 
-       //  g_print ("sdfdf 99\n");
-       //  if (!manager->invoke_va ("vid", "set_runtime", NULL, "testruntime", NULL))
-       //  	 return 1;
+        //  g_print ("sdfdf 99\n");
+        //  if (!manager->invoke_va ("vid", "set_runtime", NULL, "testruntime", NULL))
+        //  	 return 1;
+
+        //  g_print ("sdfdf 99\n");
+        //  if (!manager->set_property ("vid", "started", "true"))
+        //  	 return 1;
        
-       //   g_print ("sdfdf 76\n");
-       //   //connecting 
-       //   if (!manager->invoke_va ("win", "connect", NULL, "/tmp/switcher_gtktest_vid_video", NULL))
-       //     return 1;
-       //   g_print ("sdfdf\n");
+        //   g_print ("sdfdf 76\n");
+        //   //connecting 
+        //   if (!manager->invoke_va ("win", "connect", NULL, "/tmp/switcher_gtktest_vid_video", NULL))
+        //     return 1;
+        //   g_print ("sdfdf\n");
 
-       //   //removing quiddities
-       //   if (!manager->remove ("win"))
-       //     return 1;
+        // usleep (10000000);
 
-       //   g_print ("sdfdf 77 \n");
-       //   if (!manager->remove ("vid"))
-       //     return 1;
-       //   g_print ("sdfdf fin\n");
+        //   //removing quiddities
+        //   if (!manager->remove ("win"))
+        //     return 1;
+
+        //   g_print ("sdfdf 77 \n");
+        //   if (!manager->remove ("vid"))
+        //     return 1;
+        //   g_print ("sdfdf fin\n");
 
   }//end of scope is releasing the manager
 

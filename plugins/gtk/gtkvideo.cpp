@@ -64,7 +64,7 @@ namespace switcher
     
     set_sink_element (xvimagesink_);
 
-    set_on_first_data_hook (GTKVideo::create_ui,this);
+    //set_on_first_data_hook (GTKVideo::create_ui,this);
 
     main_window_ = NULL;  
     video_window_ = NULL; 
@@ -92,9 +92,10 @@ namespace switcher
 		  "draw-borders", TRUE,
 		  NULL);
 
-    
-    
+       
     blank_cursor_ = gdk_cursor_new(GDK_BLANK_CURSOR);
+
+    create_ui (NULL, this);
     return true;
   }
   
@@ -152,20 +153,23 @@ namespace switcher
     
     gdk_cursor_destroy (blank_cursor_);
     
+    instances_counter_ --;
     if (instances_counter_ == 0)
       {
-     	g_debug ("GTKVideo::~GTKVideo invoking gtk_main_quit");
-     	gtk_main_quit ();
+      	g_debug ("GTKVideo::~GTKVideo invoking gtk_main_quit");
+      	gtk_main_quit ();
       }
     
      if (on_error_command_ != NULL)
        delete on_error_command_;
-     instances_counter_ --;
   }
   
   void 
   GTKVideo::realize_cb (GtkWidget *widget, void *user_data) {
 
+     // gdk_threads_enter ();
+     // GdkDisplay *display =  gdk_display_get_default ();
+     // gdk_display_sync (display);
      GTKVideo *context = static_cast <GTKVideo *> (user_data);
      GdkWindow *window = gtk_widget_get_window (widget);
     
@@ -180,6 +184,7 @@ namespace switcher
  #elif defined (GDK_WINDOWING_X11)
      context->window_handle_ = GDK_WINDOW_XID (window);
  #endif
+     //gdk_threads_leave ();
 
      //Pass it to xvimagesink, which implements XOverlay. Will be done in at bus call
      g_object_set_data (G_OBJECT (context->xvimagesink_), 
