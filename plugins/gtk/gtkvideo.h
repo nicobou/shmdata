@@ -63,7 +63,7 @@ namespace switcher
     GMutex *wait_window_mutex_;
     GMutex *destroy_window_mutex_;
 
-    static void create_ui (ShmdataReader *caller, void *user_data);
+    static void create_ui (void *user_data);
     static gboolean expose_cb (GtkWidget *widget, GdkEventExpose *event, void *user_data);
     static void realize_cb (GtkWidget *widget, void *user_data);
     static void delete_event_cb (GtkWidget *widget, GdkEvent *event, void *user_data);
@@ -78,7 +78,6 @@ namespace switcher
 				      GdkEvent  *event,
 				      gpointer   user_data);
     
-    static gpointer realize_thread (gpointer user_data);
     void on_shmdata_connect (std::string shmdata_sochet_path);
   };
 
