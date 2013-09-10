@@ -66,8 +66,8 @@ namespace switcher
   bool
   BaseSink::connect (std::string shmdata_socket_path)
   {
-    //FIXME implement a on-shmdata-reset callback be to implemented by child classes and call it here 
     unregister_shmdata_reader (shmdata_socket_path);
+    on_shmdata_connect (shmdata_socket_path);
 
     ShmdataReader::ptr reader_;
     reader_.reset (new ShmdataReader ());

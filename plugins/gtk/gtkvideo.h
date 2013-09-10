@@ -60,6 +60,9 @@ namespace switcher
     GParamSpec *fullscreen_prop_spec_;
     gboolean is_fullscreen_;
 
+    GMutex *wait_window_mutex_;
+    GMutex *destroy_window_mutex_;
+
     static void create_ui (ShmdataReader *caller, void *user_data);
     static gboolean expose_cb (GtkWidget *widget, GdkEventExpose *event, void *user_data);
     static void realize_cb (GtkWidget *widget, void *user_data);
@@ -68,6 +71,15 @@ namespace switcher
     static gboolean key_pressed_cb(GtkWidget *widget, GdkEventKey *event, gpointer data);
     static gboolean get_fullscreen (void *user_data);
     static void set_fullscreen (gboolean fullscreen, void *user_data);
+    static gboolean on_window_state_event (GtkWidget *widget,
+					   GdkEvent  *event,
+					   gpointer   user_data);
+    static gboolean on_destroy_event (GtkWidget *widget,
+				      GdkEvent  *event,
+				      gpointer   user_data);
+    
+    static gpointer realize_thread (gpointer user_data);
+    void on_shmdata_connect (std::string shmdata_sochet_path);
   };
 
   SWITCHER_DECLARE_PLUGIN(GTKVideo);

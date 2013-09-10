@@ -249,7 +249,7 @@ else
   V4L2BUILD=disabled
 fi
 
-# check for gtk
+# check for gtk (compatible with gstreamer sdk)
 PKG_CHECK_MODULES(GTK, gtk+-2.0, have_gtk=true, have_gtk=false)
 if test "x${have_gtk}" = "xfalse" ; then
     GTKBUILD=disabled

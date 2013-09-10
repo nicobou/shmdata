@@ -25,6 +25,7 @@
 #include <gst/gst.h>
 #include <gdk/gdkkeysyms.h>
 #include <gdk/gdkcursor.h>
+#include <unistd.h>  //sleep
 
 namespace switcher
 {
@@ -41,6 +42,7 @@ namespace switcher
   bool
   GTKVideo::init ()
   {
+
     if (!GstUtils::make_element ("xvimagesink", &xvimagesink_))
       return false;
     
@@ -49,6 +51,10 @@ namespace switcher
 	g_debug ("GTKVideo::init, cannot init gtk");
 	return false;
       }
+    //g_print ("INIT !! \n");
+    
+    wait_window_mutex_ = g_mutex_new ();
+    destroy_window_mutex_ = g_mutex_new ();
 
     //set the name before registering properties
     set_name (gst_element_get_name (xvimagesink_));
@@ -92,10 +98,10 @@ namespace switcher
 		  "draw-borders", TRUE,
 		  NULL);
 
-       
     blank_cursor_ = gdk_cursor_new(GDK_BLANK_CURSOR);
 
     create_ui (NULL, this);
+    //g_mutex_lock (wait_window_mutex_);
     return true;
   }
   
@@ -103,6 +109,7 @@ namespace switcher
   GTKVideo::gtk_main_loop_thread (gpointer user_data)
   {
     g_debug ("GTKVideo::gtk_main_loop_thread starting");
+    //g_print ("GTKVideo::gtk_main_loop_thread starting\n");
     gtk_main ();
     return NULL;
   }
@@ -145,51 +152,96 @@ namespace switcher
 
   GTKVideo::~GTKVideo ()
   {
-    reset_bin ();
+    //g_print ("~GTKVIDEO\n");
     
-    // should destroy child widgets too
-    if (main_window_ != NULL)
-      gtk_widget_destroy (main_window_);
+     reset_bin ();
     
-    gdk_cursor_destroy (blank_cursor_);
+     //  // should destroy child widgets too
+     gdk_cursor_destroy (blank_cursor_);
     
-    instances_counter_ --;
-    if (instances_counter_ == 0)
-      {
-      	g_debug ("GTKVideo::~GTKVideo invoking gtk_main_quit");
-      	gtk_main_quit ();
-      }
+     if (main_window_ != NULL)
+       gtk_widget_destroy (main_window_);
+    
+       
+     // g_mutex_lock (destroy_window_mutex_);
+    
+    
+     // instances_counter_ --;
+     // if (instances_counter_ == 0)
+     //   {
+     // 	g_debug ("GTKVideo::~GTKVideo invoking gtk_main_quit");
+     // 	gtk_main_quit ();
+     //   }
     
      if (on_error_command_ != NULL)
        delete on_error_command_;
   }
-  
-  void 
-  GTKVideo::realize_cb (GtkWidget *widget, void *user_data) {
 
-     // gdk_threads_enter ();
-     // GdkDisplay *display =  gdk_display_get_default ();
-     // gdk_display_sync (display);
-     GTKVideo *context = static_cast <GTKVideo *> (user_data);
-     GdkWindow *window = gtk_widget_get_window (widget);
+  gpointer
+  GTKVideo::realize_thread (gpointer user_data)
+  {
+    GTKVideo *context = static_cast <GTKVideo *> (user_data);
     
-     if (!gdk_window_ensure_native (window))
-       g_debug ("Couldn't create native window needed for GstXOverlay!");
+    GdkWindow *window = gtk_widget_get_window (context->video_window_);//gtk_widget_get_window (widget);
     
-     /* Retrieve window handler from GDK */
- #if defined (GDK_WINDOWING_WIN32)
+    if (!gdk_window_ensure_native (window))
+      g_debug ("Couldn't create native window needed for GstXOverlay!");
+    
+    /* Retrieve window handler from GDK */
+#if defined (GDK_WINDOWING_WIN32)
      context->window_handle_ = (guintptr)GDK_WINDOW_HWND (window);
  #elif defined (GDK_WINDOWING_QUARTZ)
      context->window_handle_ = gdk_quartz_window_get_nsview (window);
  #elif defined (GDK_WINDOWING_X11)
      context->window_handle_ = GDK_WINDOW_XID (window);
  #endif
-     //gdk_threads_leave ();
 
      //Pass it to xvimagesink, which implements XOverlay. Will be done in at bus call
      g_object_set_data (G_OBJECT (context->xvimagesink_), 
 			"window-handle",
 			(gpointer)&context->window_handle_);
+
+     gdk_threads_leave ();
+    g_mutex_unlock (context->wait_window_mutex_);
+
+    return NULL;
+  }
+  
+  void 
+  GTKVideo::realize_cb (GtkWidget *widget, void *user_data) 
+  {
+    GTKVideo *context = static_cast <GTKVideo *> (user_data);
+    //g_print ("realized debut \n");
+
+
+     GdkWindow *window = gtk_widget_get_window (widget);
+    
+     if (!gdk_window_ensure_native (window))
+       g_debug ("Couldn't create native window needed for GstXOverlay!");
+
+    
+     /* Retrieve window handler from GDK */
+ #if defined (GDK_WINDOWING_WIN32)
+      context->window_handle_ = (guintptr)GDK_WINDOW_HWND (window);
+  #elif defined (GDK_WINDOWING_QUARTZ)
+      context->window_handle_ = gdk_quartz_window_get_nsview (window);
+  #elif defined (GDK_WINDOWING_X11)
+      context->window_handle_ = GDK_WINDOW_XID (window);
+  #endif
+
+     // gdk_threads_enter ();
+     // GdkDisplay *display =  gdk_display_get_default ();
+     // gdk_display_sync (display);
+
+      //Pass it to xvimagesink, which implements XOverlay. Will be done in at bus call
+      g_object_set_data (G_OBJECT (context->xvimagesink_), 
+     			"window-handle",
+     			(gpointer)&context->window_handle_);
+
+      // gdk_threads_leave ();
+    g_mutex_unlock (context->wait_window_mutex_);
+
+    //g_print ("realized fin \n");
   }
   
 
@@ -209,6 +261,30 @@ namespace switcher
   gboolean 
   GTKVideo::expose_cb (GtkWidget *widget, GdkEventExpose *event, void *user_data) 
   {
+//     GTKVideo *context = static_cast <GTKVideo *> (user_data);
+//     g_print ("expose_event debut\n");
+
+//     GdkWindow *window = gtk_widget_get_window (widget);
+    
+//     if (!gdk_window_ensure_native (window))
+//       g_debug ("Couldn't create native window needed for GstXOverlay!");
+    
+//     /* Retrieve window handler from GDK */
+// #if defined (GDK_WINDOWING_WIN32)
+//      context->window_handle_ = (guintptr)GDK_WINDOW_HWND (window);
+//  #elif defined (GDK_WINDOWING_QUARTZ)
+//      context->window_handle_ = gdk_quartz_window_get_nsview (window);
+//  #elif defined (GDK_WINDOWING_X11)
+//      context->window_handle_ = GDK_WINDOW_XID (window);
+//  #endif
+
+//      //Pass it to xvimagesink, which implements XOverlay. Will be done in at bus call
+//      g_object_set_data (G_OBJECT (context->xvimagesink_), 
+// 			"window-handle",
+// 			(gpointer)&context->window_handle_);
+
+//     g_mutex_unlock (context->wait_window_mutex_);
+//     g_print ("expose_event fin\n");
     return FALSE;
   }
 
@@ -217,26 +293,41 @@ namespace switcher
   {
     GTKVideo *context = static_cast <GTKVideo *> (user_data);
    
-    
+    //g_print ("create_ui debut \n");
+    g_mutex_lock (context->wait_window_mutex_);
+   
     context->main_window_ = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     g_signal_connect (G_OBJECT (context->main_window_), 
-		      "delete-event", G_CALLBACK (delete_event_cb), context);
+     		      "delete-event", G_CALLBACK (delete_event_cb), context);
     
     context->video_window_ = gtk_drawing_area_new ();
     gtk_widget_set_double_buffered (context->video_window_, FALSE);
     g_signal_connect (context->video_window_, "realize", G_CALLBACK (realize_cb), context);
     g_signal_connect (context->video_window_, "expose_event", G_CALLBACK (expose_cb), context);
-    
+    //g_signal_connect (context->main_window_, "expose_event", G_CALLBACK (expose_cb), context);
+    g_signal_connect (context->video_window_, "window-state-event", G_CALLBACK (on_window_state_event), context);
+
     gtk_container_add (GTK_CONTAINER (context->main_window_), context->video_window_);
     gtk_window_set_default_size (GTK_WINDOW (context->main_window_), 640, 480);
     
-    gtk_widget_set_events(context->main_window_, GDK_KEY_PRESS_MASK);
-    g_signal_connect(G_OBJECT(context->main_window_), "key-press-event",
-		     G_CALLBACK(GTKVideo::key_pressed_cb), context);
+    gtk_widget_set_events (context->main_window_, GDK_KEY_PRESS_MASK | GDK_STRUCTURE_MASK);
+    g_signal_connect(G_OBJECT(context->main_window_), 
+		     "key-press-event",
+     		     G_CALLBACK(GTKVideo::key_pressed_cb), 
+		     context);
+    g_signal_connect (G_OBJECT(context->main_window_), 
+		      "destroy-event", 
+		      G_CALLBACK (GTKVideo::on_destroy_event), 
+		      context);
     
-    gtk_widget_show_all (context->main_window_);
-    
-    context->set_fullscreen (context->is_fullscreen_, context);
+    //gdk_threads_enter ();
+    //GdkDisplay *display =  gdk_display_get_default ();
+    //gdk_display_sync (display);
+    //g_print ("avant show all\n");
+    //gtk_widget_show_all (context->main_window_);
+    //g_print ("apres show all\n");
+    //gdk_threads_leave ();
+    //g_print ("create_ui fin \n");
   }
   
 
@@ -283,4 +374,33 @@ namespace switcher
     context->custom_props_->notify_property_changed (context->fullscreen_prop_spec_);
   }
 
+  gboolean 
+  GTKVideo::on_window_state_event (GtkWidget *widget,
+				   GdkEvent  *event,
+				   gpointer   user_data)
+  {
+    //g_print ("on_window_state_event\n");
+    return FALSE;
+  }
+
+  gboolean 
+  GTKVideo::on_destroy_event (GtkWidget *widget,
+			      GdkEvent  *event,
+			      gpointer   user_data)
+  {
+    GTKVideo *context = static_cast <GTKVideo *> (user_data);
+    
+    //g_print ("window destroyed \n");
+    return FALSE;
+  }
+
+
+  void 
+  GTKVideo::on_shmdata_connect (std::string shmdata_sochet_path) 
+  {
+    //g_print ("GTKVideo::on_shmdata_connect");
+    gtk_widget_show_all (main_window_);
+    g_mutex_lock (wait_window_mutex_);
+  }
+  
 }
