@@ -28,7 +28,7 @@ namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(HTTPSDPDec,
 				       "HTTP/SDP Decoder",
-				       "network", 
+				       "network source", 
 				       "decode an sdp-described stream deliver through http and make shmdatas",
 				       "LGPL",
 				       "httpsdpdec", 
