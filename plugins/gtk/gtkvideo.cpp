@@ -193,10 +193,10 @@ namespace switcher
     // GdkDisplay *display =  gdk_display_get_default ();
     // gdk_display_sync (display);
 
-     // g_object_set_data (G_OBJECT (context->xvimagesink_), 
-     // 		       "window-handle",
-     // 		       (gpointer)&context->window_handle_);
-      
+    g_object_set_data (G_OBJECT (context->xvimagesink_), 
+      		       "window-handle",
+      		       (gpointer)&context->window_handle_);
+    
     //gdk_threads_leave ();
     g_mutex_unlock (context->wait_window_mutex_);
   }
