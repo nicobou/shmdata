@@ -47,6 +47,9 @@ namespace switcher
     bool make_elements ();
     static gchar *get_capture_devices_json (void *user_data);
 
+    GCond *devices_cond_;
+    GMutex *devices_mutex_;
+
     bool capture_device ();
     void update_capture_device ();
 
