@@ -88,6 +88,7 @@ namespace switcher
       bool push_message(PmStream *stream, unsigned char status, unsigned char data1, unsigned char data2);
       
     private:
+      GMutex *streams_mutex_;
       std::map<PmStream *, std::pair<on_pm_event_method, void *> > input_callbacks_;
       std::map<PmStream *, std::queue<PmEvent> *> output_queues_;
       bool portmidi_initialized_;

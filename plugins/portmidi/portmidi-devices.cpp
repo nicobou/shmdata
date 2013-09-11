@@ -33,7 +33,6 @@ namespace switcher
   {
     if (scheduler_ == NULL)
       scheduler_ = new PortMidiScheduler();
-
     devices_description_ = NULL;
     make_devices_description (this);
     update_device_enum ();
@@ -78,8 +77,8 @@ namespace switcher
 	g_debug ("input device (id %d), already opened, cannot open", id);
 	return false;
       }
+
     PmStream *stream = scheduler_->add_input_stream (id, method, user_data);
-   
     if (stream == NULL)
       return false;
     input_streams_[id] = stream;
@@ -90,14 +89,16 @@ namespace switcher
   bool
   PortMidi::open_output_device (int id)
   {
+
     if (output_streams_.find(id) != output_streams_.end())
       {
 	g_debug ("output device (id %d), already openned, cannot open", id);
 	return false;
       }
+    
     PmStream *stream = scheduler_->add_output_stream (id);
     if (stream == NULL)
-      return false;      
+      return false;
     output_streams_[id] = stream;
     g_message ("Midi output device opened (id %d)", id);
     return true;
@@ -122,7 +123,6 @@ namespace switcher
     
     scheduler_->remove_input_stream (it->second);
     input_streams_.erase (id);
-    
     g_message ("Midi input device closed (id %d)", id);
     return true;
   }
@@ -134,7 +134,7 @@ namespace switcher
     std::map<guint, PmStream *>::iterator it = output_streams_.find(id);
     if (it == output_streams_.end())
       return false;
-    
+
     scheduler_->remove_output_stream (it->second);
     output_streams_.erase (id);
     g_message ("Midi input device closed (id %d)", id);
@@ -185,6 +185,7 @@ namespace switcher
       app_sysex_in_progress_ (false),
       thru_sysex_in_progress_ (false)
     {
+      streams_mutex_ = g_mutex_new ();
       portmidi_initialized_ = false;
       /* always start the timer before you start midi */
       Pt_Start(1, &process_midi, this); /* start a timer with 1 millisecond accuracy */
@@ -199,6 +200,7 @@ namespace switcher
       portmidi_initialized_ = false;
       Pt_Stop(); /* stop the timer */
       Pm_Terminate();
+      g_mutex_free (streams_mutex_);
     }
 
     PmStream *
@@ -218,7 +220,9 @@ namespace switcher
       */
       Pm_SetFilter(midi_in, PM_FILT_ACTIVE | PM_FILT_CLOCK);
 
+      g_mutex_lock (streams_mutex_);
       input_callbacks_[midi_in] = std::make_pair (method, user_data);      
+      g_mutex_unlock (streams_mutex_);
      
       return midi_in;
     }
@@ -235,8 +239,9 @@ namespace switcher
 				     NULL, /* time info */
 				     0))
 	return NULL;
-
+      g_mutex_lock (streams_mutex_);
       output_queues_[midi_out] = new std::queue<PmEvent>();      
+      g_mutex_unlock (streams_mutex_);
 
       return midi_out;
     }
@@ -245,7 +250,9 @@ namespace switcher
     PortMidi::PortMidiScheduler::remove_input_stream (PmStream *stream)
     {
       Pm_Close (stream);
+      g_mutex_lock (streams_mutex_);
       input_callbacks_.erase(stream);
+      g_mutex_unlock (streams_mutex_);
       return true;
     }
 
@@ -253,7 +260,9 @@ namespace switcher
     PortMidi::PortMidiScheduler::remove_output_stream (PmStream *stream)
     {
       Pm_Close (stream);
+      g_mutex_lock (streams_mutex_);
       output_queues_.erase(stream);
+      g_mutex_unlock (streams_mutex_);
       return true;
     }
 
@@ -288,7 +297,8 @@ namespace switcher
 
       if (!context->portmidi_initialized_) 
 	  return;
-      
+
+      g_mutex_lock (context->streams_mutex_);
       for(auto &itr: context->input_callbacks_)
 	{
 	  /* see if there is any midi input to process */
@@ -378,6 +388,9 @@ namespace switcher
 	    }
 	  }
 	}
+
+      g_mutex_unlock (context->streams_mutex_);
+
     }
 
   gchar *
