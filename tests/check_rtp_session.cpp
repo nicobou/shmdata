@@ -166,7 +166,7 @@ main (int argc,
     manager->invoke_va ("audioprobe",
 			"connect",
      			NULL,
-     			"/tmp/switcher_rtptest_uri_audio_0",
+     			"/tmp/switcher_rtptest_uri_audio-0",
      			NULL);
 
     manager->create ("fakesink","videoprobe");
@@ -180,7 +180,7 @@ main (int argc,
     manager->invoke_va ("videoprobe",
       			"connect",
 			NULL,
-      			"/tmp/switcher_rtptest_uri_video_0",
+      			"/tmp/switcher_rtptest_uri_video-0",
       			NULL);
     
     while (do_continue)
