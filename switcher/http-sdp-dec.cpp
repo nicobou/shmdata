@@ -312,7 +312,7 @@ namespace switcher
      media_counters_.replace (std::string (padname_splitted[0]), count);
 
      gchar media_name[256];
-     g_sprintf (media_name,"%s_%d",padname_splitted[0],count);
+     g_sprintf (media_name,"%s-%d",padname_splitted[0],count);
      g_debug ("httpsdpdec: new media %s %d\n",media_name, count );
      g_strfreev(padname_splitted);
 
