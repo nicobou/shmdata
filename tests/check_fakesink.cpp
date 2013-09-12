@@ -51,6 +51,7 @@ main (int argc,
     switcher::QuiddityManager::ptr manager = 
       switcher::QuiddityManager::make_manager("check_fakesink");  
     
+    manager->scan_directory_for_plugins ("/usr/local/switcher-0.2/plugins");
     
     manager->make_property_subscriber ("sub", property_cb, NULL);
 
@@ -58,32 +59,30 @@ main (int argc,
 
     manager->create ("audiotestsrc", "audio");
     manager->invoke_va ("audio","set_runtime", NULL, "runtime", NULL);
-    manager->set_property ("audio", "started", "true");
     manager->subscribe_property ("sub","audio","shmdata-writers");
-    
+    manager->set_property ("audio", "started", "true");
     manager->create ("fakesink", "vu");
     manager->invoke_va ("vu","set_runtime", NULL, "runtime", NULL);
     manager->subscribe_property ("sub", "vu", "byte-rate");
     manager->invoke_va ("vu", "connect", NULL, "/tmp/switcher_check_fakesink_audio_audio", NULL);
-    
-    // manager->set_property ("audio", "started", "false");
-    // manager->set_property ("audio", "started", "true");
-
-    usleep (5000000);
-    
-    g_print ("vu removing\n");
-    
+    // g_print ("connected\n"); 
+    // usleep (2000000);
+    manager->set_property ("audio", "started", "false");
+    //g_print ("stoped\n"); 
     manager->remove ("vu");
-    g_print ("vu removed");
-    
-    
-
+    //usleep (2000000);
+    manager->set_property ("audio", "started", "true");
+    //g_print ("started\n"); 
+    //g_print ("vu removing\n");
+    // manager->remove ("vu");
+    // g_print ("vu removed");
     manager->create ("fakesink", "vu");
     manager->invoke_va ("vu","set_runtime", NULL, "runtime", NULL);
     manager->subscribe_property ("sub", "vu", "byte-rate");
     manager->invoke_va ("vu", "connect", NULL, "/tmp/switcher_check_fakesink_audio_audio", NULL);
-    
-    usleep (5000000);
+    // usleep (5000000);
+    // g_print ("last remove\n");
+    manager->remove ("vu");
 
 
   }// releasing manager
