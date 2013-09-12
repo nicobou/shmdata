@@ -37,7 +37,7 @@ namespace switcher
   FakeSink::~FakeSink ()
   {
     if (update_byterate_source_ != NULL)
-	g_source_destroy (update_byterate_source_);
+      g_source_destroy (update_byterate_source_);
     GstUtils::clean_element (fakesink_);
     g_free (string_caps_);
   }

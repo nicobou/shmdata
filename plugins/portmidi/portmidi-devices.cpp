@@ -186,6 +186,9 @@ namespace switcher
       thru_sysex_in_progress_ (false)
     {
       streams_mutex_ = g_mutex_new ();
+      finalize_mutex_ = g_mutex_new ();
+      finalizing_ = FALSE;
+
       portmidi_initialized_ = false;
       /* always start the timer before you start midi */
       Pt_Start(1, &process_midi, this); /* start a timer with 1 millisecond accuracy */
@@ -198,9 +201,13 @@ namespace switcher
     PortMidi::PortMidiScheduler::~PortMidiScheduler ()
     {
       portmidi_initialized_ = false;
+      finalizing_ = TRUE;
+      g_mutex_lock (finalize_mutex_);
       Pt_Stop(); /* stop the timer */
       Pm_Terminate();
+      g_mutex_unlock (finalize_mutex_);
       g_mutex_free (streams_mutex_);
+      g_mutex_free (finalize_mutex_);
     }
 
     PmStream *
@@ -249,20 +256,20 @@ namespace switcher
     bool
     PortMidi::PortMidiScheduler::remove_input_stream (PmStream *stream)
     {
-      Pm_Close (stream);
       g_mutex_lock (streams_mutex_);
       input_callbacks_.erase(stream);
       g_mutex_unlock (streams_mutex_);
+      Pm_Close (stream);
       return true;
     }
 
     bool
     PortMidi::PortMidiScheduler::remove_output_stream (PmStream *stream)
     {
-      Pm_Close (stream);
       g_mutex_lock (streams_mutex_);
       output_queues_.erase(stream);
       g_mutex_unlock (streams_mutex_);
+      Pm_Close (stream);
       return true;
     }
 
@@ -295,8 +302,13 @@ namespace switcher
       PmError result;
       PmEvent buffer; /* just one message at a time */
 
+      if (context->finalizing_)
+	return;
+      
       if (!context->portmidi_initialized_) 
 	  return;
+
+      g_mutex_lock (context->finalize_mutex_);
 
       g_mutex_lock (context->streams_mutex_);
       for(auto &itr: context->input_callbacks_)
@@ -388,8 +400,8 @@ namespace switcher
 	    }
 	  }
 	}
-
       g_mutex_unlock (context->streams_mutex_);
+      g_mutex_unlock (context->finalize_mutex_);
 
     }
 

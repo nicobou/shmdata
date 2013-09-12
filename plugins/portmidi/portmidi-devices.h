@@ -89,6 +89,8 @@ namespace switcher
       
     private:
       GMutex *streams_mutex_;
+      GMutex *finalize_mutex_;
+      gboolean finalizing_;
       std::map<PmStream *, std::pair<on_pm_event_method, void *> > input_callbacks_;
       std::map<PmStream *, std::queue<PmEvent> *> output_queues_;
       bool portmidi_initialized_;
