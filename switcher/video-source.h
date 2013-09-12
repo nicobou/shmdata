@@ -51,11 +51,9 @@ namespace switcher
     virtual bool on_stop () {return true;};
     virtual bool make_video_source (GstElement **new_element) = 0;
  
-  protected:
+    //protected:
     //called in the derived class constructor
     GstElementCleaner::ptr cleaner_;
-    void set_raw_video_element (GstElement *elt);
-    void unset_raw_video_element ();
   };
 
 }  // end of namespace

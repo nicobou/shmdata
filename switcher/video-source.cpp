@@ -51,43 +51,12 @@ namespace switcher
   {
     if (!GstUtils::make_element ("tee",&video_tee_))
       g_warning ("VideoSource: tee element is mandatory\n");
-
-     gst_bin_add_many (GST_BIN (bin_),
+    gst_bin_add_many (GST_BIN (bin_),
       		      video_tee_,
       		      NULL);
-
-  }
-
-  void
-  VideoSource::set_raw_video_element (GstElement *element)
-  {
-    unset_raw_video_element ();
-    make_tee ();
-    rawvideo_ = element;
-    
-    gst_bin_add (GST_BIN (bin_), rawvideo_);
-    gst_element_link (rawvideo_, video_tee_);
-    
-    //creating a connector for the raw video
-    ShmdataWriter::ptr shmdata_writer;
-    shmdata_writer.reset (new ShmdataWriter ());
-    shmdata_path_ = make_file_name ("video"); 
-    shmdata_writer->set_path (shmdata_path_.c_str());
-    shmdata_writer->plug (bin_, video_tee_, videocaps_);
-    register_shmdata_writer (shmdata_writer);
-    GstUtils::wait_state_changed (bin_);
-    GstUtils::sync_state_with_parent (rawvideo_);
-    GstUtils::sync_state_with_parent (video_tee_);
   }
   
-  void 
-  VideoSource::unset_raw_video_element ()
-  {
-    unregister_shmdata_writer (shmdata_path_);
-    reset_bin ();
-  }
-
-  
+ 
   bool 
   VideoSource::start ()
   {
@@ -97,22 +66,33 @@ namespace switcher
 	g_debug ("cannot make video source");
 	return false;
       }
-    set_raw_video_element (rawvideo_);
+    
+    unregister_shmdata_writer (shmdata_path_);
+    reset_bin ();
+    make_tee ();
+    
+    gst_bin_add (GST_BIN (bin_), rawvideo_);
+    gst_element_link (rawvideo_, video_tee_);
+    
+    ShmdataWriter::ptr shmdata_writer;
+    shmdata_writer.reset (new ShmdataWriter ());
+    shmdata_path_ = make_file_name ("video"); 
+    shmdata_writer->set_path (shmdata_path_.c_str());
+    shmdata_writer->plug (bin_, video_tee_, videocaps_);
+    register_shmdata_writer (shmdata_writer);
+    GstUtils::wait_state_changed (bin_);
+    GstUtils::sync_state_with_parent (rawvideo_);
+    GstUtils::sync_state_with_parent (video_tee_);
+ 
     return on_start ();
   }
   
   bool 
   VideoSource::stop ()
   {
-    // rawvideo_ = NULL;
-    // if (!make_video_source (&rawvideo_))
-    //   {
-    // 	g_debug ("cannot make video source");
-    // 	return false;
-    //   }
     bool res = on_stop ();
-
-    unset_raw_video_element ();
+    unregister_shmdata_writer (shmdata_path_);
+    reset_bin ();
     return res;
   }
   
