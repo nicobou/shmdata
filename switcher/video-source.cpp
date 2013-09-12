@@ -38,6 +38,7 @@ namespace switcher
 				      //  "height", G_TYPE_INT, 480,
 				      NULL);
     
+    init_startable (this);
   }
 
   VideoSource::~VideoSource () 
@@ -46,7 +47,7 @@ namespace switcher
   }
 
   void 
-  VideoSource::make_elements () //FIXME rename that
+  VideoSource::make_tee () 
   {
     if (!GstUtils::make_element ("tee",&video_tee_))
       g_warning ("VideoSource: tee element is mandatory\n");
@@ -57,12 +58,11 @@ namespace switcher
 
   }
 
-
   void
   VideoSource::set_raw_video_element (GstElement *element)
   {
     unset_raw_video_element ();
-    make_elements ();
+    make_tee ();
     rawvideo_ = element;
     
     gst_bin_add (GST_BIN (bin_), rawvideo_);
@@ -86,5 +86,35 @@ namespace switcher
     unregister_shmdata_writer (shmdata_path_);
     reset_bin ();
   }
+
+  
+  bool 
+  VideoSource::start ()
+  {
+    rawvideo_ = NULL;
+    if (!make_video_source (&rawvideo_))
+      {
+	g_debug ("cannot make video source");
+	return false;
+      }
+    set_raw_video_element (rawvideo_);
+    return on_start ();
+  }
+  
+  bool 
+  VideoSource::stop ()
+  {
+    // rawvideo_ = NULL;
+    // if (!make_video_source (&rawvideo_))
+    //   {
+    // 	g_debug ("cannot make video source");
+    // 	return false;
+    //   }
+    bool res = on_stop ();
+
+    unset_raw_video_element ();
+    return res;
+  }
+  
 
 }

@@ -41,13 +41,20 @@ namespace switcher
   bool
   VideoTestSource::init ()
   {
-    init_startable (this);
     videotestsrc_ = NULL;
-    return make_videotestsrc ();    
+    bool made = make_video_source (&videotestsrc_);    
+    if (!made)
+      return false;
+    
+    //"pattern" property available atfer initialization 
+    register_property (G_OBJECT (videotestsrc_),
+		       "pattern",
+		       "pattern", 
+		       "Video Pattern");
   }
 
-  bool 
-  VideoTestSource::make_videotestsrc ()
+  bool
+  VideoTestSource::make_video_source (GstElement **new_element)
   {
 
     unregister_property ("pattern");
@@ -67,31 +74,34 @@ namespace switcher
 	GstUtils::clean_element (videotestsrc_);
       }
       
-
     videotestsrc_ = videotest;
+    *new_element = videotestsrc_;
 
-    //registering "pattern"
+    return true;
+  }
+
+  bool 
+  VideoTestSource::on_start ()
+  {
     register_property (G_OBJECT (videotestsrc_),
 		       "pattern",
 		       "pattern", 
 		       "Video Pattern");
+    return true;
+  }
+  
+  bool 
+  VideoTestSource::on_stop ()
+  {
+    //need a new element for property setting 
+    bool made = make_video_source (&videotestsrc_);    
+    if (!made)
+      return false;
     
-    //set_raw_video_element (videotestsrc_);
-    return true;
-  }
-
-  bool 
-  VideoTestSource::start ()
-  {
-    set_raw_video_element (videotestsrc_);
-    return true;
-  }
-
-  bool 
-  VideoTestSource::stop ()
-  {
-    make_videotestsrc ();
-    unset_raw_video_element ();
+    register_property (G_OBJECT (videotestsrc_),
+		       "pattern",
+		       "pattern", 
+		       "Video Pattern");
     return true;
   }
   

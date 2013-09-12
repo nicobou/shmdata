@@ -24,24 +24,23 @@
 #define __SWITCHER_VIDEO_TEST_SOURCE_H__
 
 #include "video-source.h"
-#include "startable-quiddity.h"
 #include <memory>
 
 namespace switcher
 {
 
-  class VideoTestSource : public VideoSource, public StartableQuiddity
+  class VideoTestSource : public VideoSource
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VideoTestSource);
     ~VideoTestSource();
 
-    bool start ();
-    bool stop ();
-
   private:
     GstElement *videotestsrc_;
-    bool make_videotestsrc ();
+    bool make_video_source (GstElement **new_element);
+    bool on_start (); 
+    bool on_stop (); 
+
   };
 
 }  // end of namespace

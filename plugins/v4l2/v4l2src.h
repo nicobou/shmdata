@@ -22,7 +22,6 @@
 #define __SWITCHER_V4L2SRC_H__
 
 #include "switcher/video-source.h"
-#include "switcher/startable-quiddity.h"
 #include "switcher/custom-property-helper.h"
 #include <memory>
 
@@ -30,15 +29,12 @@
 namespace switcher
 {
  
-  class V4L2Src : public VideoSource, public StartableQuiddity 
+  class V4L2Src : public VideoSource
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(V4L2Src);
     ~V4L2Src ();
   
-    bool start ();
-    bool stop ();
-
     //use "NONE" for used arguments
     /* bool capture_full (const char *device_file_path,  */
     /* 		       const char *width, */
@@ -53,6 +49,10 @@ namespace switcher
     bool check_folder_for_v4l2_devices (const char *dir_path);
 
   private:
+    bool on_start ();
+    bool on_stop ();
+    bool make_video_source (GstElement **new_element);
+    
     GstElement *v4l2src_;
     GstElement *v4l2_bin_;
     GstElement *capsfilter_;

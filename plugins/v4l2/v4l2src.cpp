@@ -45,8 +45,6 @@ namespace switcher
     if (!make_elements ())
       return false;
 
-    init_startable (this);
-    
     capture_devices_description_ = NULL;
     device_ = 0; //default is zero
 
@@ -646,79 +644,15 @@ namespace switcher
 
 
   bool
-  V4L2Src::start ()
+  V4L2Src::on_start ()
   {
-    if (capture_devices_.empty ())
-      {
-	g_debug ("V4L2Src:: no capture device available for starting capture");
-	return false;
-      }
-
-    make_elements ();
-
-    g_object_set (G_OBJECT (v4l2src_), 
-		  "device", capture_devices_.at (device_).file_device_.c_str (), 
-		  NULL);
-    
-    if (tv_standard_ > 0) //0 is none
-      g_object_set (G_OBJECT (v4l2src_), 
-		    "norm", capture_devices_.at (device_).tv_standards_.at (tv_standard_).c_str (), 
-		    NULL);
-    
-    std::string caps;
-    caps = "video/x-raw-yuv";
-    if (width_ > 0)
-      {
-	gchar *width = g_strdup_printf ("%d",width_);
-	gchar *height = g_strdup_printf ("%d",height_);
-	caps = caps + ", width=(int)"+ width + ", height=(int)" + height;
-	g_free (width);
-	g_free (height);
-      }
-    else if (resolution_ > -1)
-      {
-	caps = 
-	  caps + ", width=(int)" 
-	  + capture_devices_.at (device_).frame_size_discrete_.at (resolution_).first.c_str () 
-	  + ", height=(int)" 
-	  + capture_devices_.at (device_).frame_size_discrete_.at (resolution_).second.c_str ();
-      }
-
-    if (framerate_ > 0)
-      {
-	caps = 
-	  caps + ", framerate=(fraction)" 
-	  + capture_devices_.at (device_).frame_interval_discrete_.at (framerate_).second.c_str () 
-	  + "/" 
-	  + capture_devices_.at (device_).frame_interval_discrete_.at (framerate_).first.c_str () ;
-      }
-    else if (framerate_numerator_ > -1)
-      {
-	gchar *numerator = g_strdup_printf ("%d",framerate_numerator_);
-	gchar *denominator = g_strdup_printf ("%d",framerate_denominator_);
-	caps = 
-	  caps + ", framerate=(fraction)" 
-	  + numerator 
-	  + "/" 
-	  + denominator ;
-	g_free (numerator);
-	g_free (denominator);
-      }
-    
-    GstCaps *usercaps = gst_caps_from_string (caps.c_str ());
-    g_object_set (G_OBJECT (capsfilter_), 
-   		  "caps",
-   		  usercaps,
-   		  NULL);
-    gst_caps_unref (usercaps);
-    
-    set_raw_video_element (v4l2_bin_);
-
+  
     unregister_property ("resolution");
     unregister_property ("width");
     unregister_property ("height");
     unregister_property ("tv_standard");
     unregister_property ("device");
+    unregister_property ("framerate");
     register_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
     register_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
     register_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
@@ -728,7 +662,7 @@ namespace switcher
   }
   
   bool
-  V4L2Src::stop ()
+  V4L2Src::on_stop ()
   {
     clean_elements ();
     register_property_by_pspec (custom_props_->get_gobject (), 
@@ -956,6 +890,77 @@ namespace switcher
   {
     V4L2Src *context = static_cast <V4L2Src *> (user_data);
     return context->framerate_denominator_;
+  }
+
+  bool 
+  V4L2Src::make_video_source (GstElement **new_element)
+  {
+    if (capture_devices_.empty ())
+      {
+	g_debug ("V4L2Src:: no capture device available for starting capture");
+	return false;
+      }
+
+    make_elements ();
+
+    g_object_set (G_OBJECT (v4l2src_), 
+		  "device", capture_devices_.at (device_).file_device_.c_str (), 
+		  NULL);
+    
+    if (tv_standard_ > 0) //0 is none
+      g_object_set (G_OBJECT (v4l2src_), 
+		    "norm", capture_devices_.at (device_).tv_standards_.at (tv_standard_).c_str (), 
+		    NULL);
+    
+    std::string caps;
+    caps = "video/x-raw-yuv";
+    if (width_ > 0)
+      {
+	gchar *width = g_strdup_printf ("%d",width_);
+	gchar *height = g_strdup_printf ("%d",height_);
+	caps = caps + ", width=(int)"+ width + ", height=(int)" + height;
+	g_free (width);
+	g_free (height);
+      }
+    else if (resolution_ > -1)
+      {
+	caps = 
+	  caps + ", width=(int)" 
+	  + capture_devices_.at (device_).frame_size_discrete_.at (resolution_).first.c_str () 
+	  + ", height=(int)" 
+	  + capture_devices_.at (device_).frame_size_discrete_.at (resolution_).second.c_str ();
+      }
+
+    if (framerate_ > 0)
+      {
+	caps = 
+	  caps + ", framerate=(fraction)" 
+	  + capture_devices_.at (device_).frame_interval_discrete_.at (framerate_).second.c_str () 
+	  + "/" 
+	  + capture_devices_.at (device_).frame_interval_discrete_.at (framerate_).first.c_str () ;
+      }
+    else if (framerate_numerator_ > -1)
+      {
+	gchar *numerator = g_strdup_printf ("%d",framerate_numerator_);
+	gchar *denominator = g_strdup_printf ("%d",framerate_denominator_);
+	caps = 
+	  caps + ", framerate=(fraction)" 
+	  + numerator 
+	  + "/" 
+	  + denominator ;
+	g_free (numerator);
+	g_free (denominator);
+      }
+    
+    GstCaps *usercaps = gst_caps_from_string (caps.c_str ());
+    g_object_set (G_OBJECT (capsfilter_), 
+   		  "caps",
+   		  usercaps,
+   		  NULL);
+    gst_caps_unref (usercaps);
+
+    *new_element = v4l2_bin_;
+    return true;
   }
 
 }

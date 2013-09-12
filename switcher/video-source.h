@@ -25,23 +25,31 @@
 
 #include "base-source.h"
 #include "gst-element-cleaner.h"
+#include "startable-quiddity.h"
 #include <memory>
 
 namespace switcher
 {
 
-  class VideoSource : public BaseSource
+  class VideoSource : public BaseSource, public StartableQuiddity 
   {
   public:
     typedef std::shared_ptr<VideoSource> ptr;
     VideoSource ();
     ~VideoSource ();
+
+    bool start ();
+    bool stop ();
+
   private:
     GstElement *rawvideo_;
     GstElement *video_tee_;
     GstCaps *videocaps_;
-    void make_elements ();
+    void make_tee ();
     std::string shmdata_path_;
+    virtual bool on_start () {return true;};
+    virtual bool on_stop () {return true;};
+    virtual bool make_video_source (GstElement **new_element) = 0;
  
   protected:
     //called in the derived class constructor
