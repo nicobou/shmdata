@@ -32,11 +32,11 @@ property_cb(std::string subscriber_name,
 	    std::string value, 
 	    void *user_data)
 {
-  g_print ("%s %s %s %s\n",
-	   subscriber_name.c_str (), 
-	   quiddity_name.c_str (), 
-	   property_name.c_str (), 
-	   value.c_str ());
+  // g_print ("%s %s %s %s\n",
+  // 	   subscriber_name.c_str (), 
+  // 	   quiddity_name.c_str (), 
+  // 	   property_name.c_str (), 
+  // 	   value.c_str ());
 }
 
 

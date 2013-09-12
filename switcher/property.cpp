@@ -66,13 +66,15 @@ namespace switcher
   {
     std::pair <Callback, void *> subscribe_id = std::make_pair (cb, user_data);
     gchar *signal = g_strconcat ("notify::", property_->name, NULL);
-    if (subscribed_handlers_.find(subscribe_id) == subscribed_handlers_.end ())
+    if (subscribed_handlers_.find(subscribe_id) != subscribed_handlers_.end ())
       {
-	subscribed_handlers_[subscribe_id] = g_signal_connect (object_, signal, G_CALLBACK (cb), user_data);	
-	return true;
+	g_debug ("cannot subscribe callback/user_data");
+	return false;
       }
-    else
-      return false;
+    
+    subscribed_handlers_[subscribe_id] = g_signal_connect (object_, signal, G_CALLBACK (cb), user_data);
+    return true;
+
   }
 
   bool
@@ -81,11 +83,10 @@ namespace switcher
     std::pair <Callback, void *> subscribe_id = std::make_pair (cb, user_data);
     if (subscribed_handlers_.find(subscribe_id) == subscribed_handlers_.end ())
       return false;
-    else
-      {
-	g_signal_handler_disconnect (object_, subscribed_handlers_[subscribe_id]);
-	return true;
-      }
+    
+    g_signal_handler_disconnect (object_, subscribed_handlers_[subscribe_id]);
+    subscribed_handlers_.erase (subscribe_id);
+    return true;
   }
 
   std::string

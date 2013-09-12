@@ -588,7 +588,10 @@ namespace switcher
 				void *user_data)
   {
     if (properties_.find( name ) == properties_.end())
-      return false;
+      {
+	g_debug ("property not found (%s)", name.c_str ());
+	return false;
+      }
 
     Property::ptr prop = properties_[name];
     return prop->subscribe (cb, user_data);
