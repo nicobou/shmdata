@@ -36,6 +36,9 @@ namespace switcher
   
   FakeSink::~FakeSink ()
   {
+    
+    reset_bin ();
+
     if (update_byterate_source_ != NULL)
       g_source_destroy (update_byterate_source_);
     GstUtils::clean_element (fakesink_);
