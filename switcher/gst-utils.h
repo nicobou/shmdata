@@ -59,6 +59,10 @@ namespace switcher
     static  bool apply_property_value (GObject *g_object_master, 
 				       GObject *g_object_slave,
 				       const char *property_name);
+
+    static void element_factory_list_to_g_enum (GEnumValue *target_enum,
+						GstElementFactoryListType type,
+						GstRank minrank);
   };
 
 }  // end of namespace

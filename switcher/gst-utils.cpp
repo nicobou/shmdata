@@ -334,6 +334,9 @@ namespace switcher
   {
     if (g_object_master == NULL || g_object_slave == NULL)
       return false;
+    
+    if (!G_IS_OBJECT (g_object_master) || !G_IS_OBJECT (g_object_slave))
+      return false;
 
     GParamSpec *pspec_master = 
       g_object_class_find_property (G_OBJECT_CLASS (G_OBJECT_GET_CLASS (g_object_master)),
@@ -371,6 +374,35 @@ namespace switcher
 			   &val);
     g_value_unset (&val);
     return true;
+  }
+
+
+  void
+  GstUtils::element_factory_list_to_g_enum (GEnumValue *target_enum,
+					    GstElementFactoryListType type,
+					    GstRank minrank)
+  {
+     GList *element_list = gst_element_factory_list_get_elements (type, minrank);
+     GList *iter = element_list;
+     target_enum[0].value = 0;
+     target_enum[0].value_name = g_strdup ("None");
+     target_enum[0].value_nick = target_enum[0].value_name;
+     gint i = 1;
+     while (iter != NULL)
+       {
+     	target_enum[i].value = i;
+     	//FIXME this is leaking
+     	target_enum[i].value_name = g_strdup (gst_element_factory_get_longname ((GstElementFactory *)iter->data));
+     	target_enum[i].value_nick = g_strdup (gst_plugin_feature_get_name ((GstPluginFeature *)iter->data));
+     	iter = g_list_next (iter);
+     	i ++;
+       }
+     target_enum[i].value = 0;
+     target_enum[i].value_name = NULL;
+     target_enum[i].value_nick = NULL;
+     
+     gst_plugin_feature_list_free (element_list);
+    
   }
 
 }

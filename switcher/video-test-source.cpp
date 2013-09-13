@@ -51,6 +51,7 @@ namespace switcher
 		       "pattern",
 		       "pattern", 
 		       "Video Pattern");
+    return true;
   }
 
   bool
