@@ -30,6 +30,7 @@
 
 static bool audio_success;
 static bool video_success;
+static bool jpeg_success;
 static bool do_continue;
 
 static const char *user_string = "hello world";
@@ -50,14 +51,22 @@ mon_property_cb(std::string subscriber_name,
     {
       g_message ("audio received !");
       audio_success = true;
-      if (video_success)
+      if (video_success && jpeg_success)
 	do_continue = false;
     }
   if (!video_success && g_strcmp0 (quiddity_name.c_str (), "videoprobe") == 0)
     {
       g_message ("video received !");
       video_success = true;
-      if (audio_success)
+      if (audio_success && jpeg_success)
+	do_continue = false;
+    }
+
+  if (!jpeg_success && g_strcmp0 (quiddity_name.c_str (), "jpegprobe") == 0)
+    {
+      g_message ("jpeg received !");
+      jpeg_success = true;
+      if (audio_success && video_success)
 	do_continue = false;
     }
 }
@@ -68,6 +77,7 @@ main (int argc,
 {
   audio_success = false;
   video_success = false;
+  jpeg_success = false;
   do_continue = true;
   {
     switcher::QuiddityManager::ptr manager = 
@@ -97,6 +107,9 @@ main (int argc,
    
     manager->create ("videotestsrc","v");
     manager->invoke_va ("v", "set_runtime", NULL, "av_runtime", NULL);
+
+    manager->set_property ("v", "codec", "jpegenc");
+    
     manager->set_property ("v", "started", "true");
 
     manager->create ("runtime", "rtp_runtime");
@@ -116,6 +129,12 @@ main (int argc,
       			NULL);
 
     manager->invoke_va ("rtp", 
+      			"add_data_stream",
+			NULL,
+      			"/tmp/switcher_rtptest_v_encoded-video",
+      			NULL);
+
+    manager->invoke_va ("rtp", 
       			"add_destination",
 			NULL,
       			"local",
@@ -132,6 +151,14 @@ main (int argc,
        			"add_udp_stream_to_dest",
 			NULL,
        			"/tmp/switcher_rtptest_v_video",
+       			"local",
+       			"9076",
+       			NULL);
+
+    manager->invoke_va ("rtp",
+       			"add_udp_stream_to_dest",
+			NULL,
+       			"/tmp/switcher_rtptest_v_encoded-video",
        			"local",
        			"9076",
        			NULL);
@@ -181,6 +208,20 @@ main (int argc,
       			"connect",
 			NULL,
       			"/tmp/switcher_rtptest_uri_video-0",
+      			NULL);
+
+    manager->create ("fakesink","jpegprobe");
+    manager->subscribe_property ("sub","jpegprobe","last-message");
+    manager->subscribe_property ("sub","jpegprobe","caps");
+    manager->invoke_va ("jpegprobe", 
+			"set_runtime", 
+			NULL, 
+			"probe_runtime", 
+			NULL);
+    manager->invoke_va ("jpegprobe",
+      			"connect",
+			NULL,
+      			"/tmp/switcher_rtptest_uri_video-1",
       			NULL);
     
     while (do_continue)
