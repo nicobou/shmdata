@@ -79,14 +79,31 @@ namespace switcher
     
     return true;
   }
+  
+  void 
+  on_started_cb(std::string subscriber_name, 
+		std::string quiddity_name, 
+		std::string property_name, 
+		std::string value, 
+		void *user_data)
+  {
+    // g_print ("on_started_cb: %s, %s, %s, %s\n",
+    // 	     subscriber_name.c_str (), 
+    // 	     quiddity_name.c_str (), 
+    // 	     property_name.c_str (), 
+    // 	     value.c_str ());
+    return;
+  }
+
 
   bool 
   QuiddityBasicTest::test_startable (QuiddityManager::ptr manager, 
 				     std::string quiddity_class_name)
   {
     //g_print ("---- startable test for %s\n", quiddity_class_name.c_str ());
-     std::string name = manager->create(quiddity_class_name, quiddity_class_name);
-      if (name.compare (quiddity_class_name) != 0)
+
+    std::string name = manager->create(quiddity_class_name, quiddity_class_name);
+    if (name.compare (quiddity_class_name) != 0)
         {
       	g_warning ("quiddity %s cannot be created (startable not actualy tested)", 
       		   quiddity_class_name.c_str ());
@@ -95,6 +112,8 @@ namespace switcher
     
       if (manager->has_property (name, "started"))
         {
+	  manager->make_property_subscriber ("sub", on_started_cb, NULL);
+	  manager->subscribe_property ("sub", name, "started");
 	  //g_print ("has a started property\n");
 	  manager->set_property (name, "started", "true");
 	  //g_print ("started\n");
@@ -102,6 +121,8 @@ namespace switcher
 	   //g_print ("stoped\n");
 	   manager->set_property (name, "started", "true");
 	   //g_print ("restarted\n");
+	   manager->unsubscribe_property ("sub", name, "started");
+	   manager->remove_property_subscriber ("sub");
 	}
 
      if (!manager->remove (name))
