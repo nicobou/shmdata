@@ -46,7 +46,7 @@ namespace switcher
     GstElement *pulsesrc_bin_;
     bool make_elements ();
     static gchar *get_capture_devices_json (void *user_data);
-
+    static gboolean async_get_pulse_devices (void *user_data);
     GCond *devices_cond_;
     GMutex *devices_mutex_;
 

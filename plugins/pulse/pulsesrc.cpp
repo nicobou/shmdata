@@ -44,30 +44,20 @@ namespace switcher
     device_ = 0; //default is zero
     devices_enum_spec_ = NULL;
     
-    // devices_cond_ = g_cond_new ();
-    // devices_mutex_ = g_mutex_new ();
-    // g_mutex_lock (devices_mutex_);
+    devices_cond_ = g_cond_new ();
+    devices_mutex_ = g_mutex_new ();
+
+    g_mutex_lock (devices_mutex_);
 
     pa_context_ = NULL;
     server_ = NULL;
 
-    pa_glib_mainloop_ = pa_glib_mainloop_new (get_g_main_context ());
-    
-    pa_mainloop_api_ = pa_glib_mainloop_get_api (pa_glib_mainloop_);
-    
-    if (!(pa_context_ = pa_context_new (pa_mainloop_api_, NULL))) {
-      g_debug ("PulseSrc:: pa_context_new() failed.");
-      return false;
-    }
-    
-    pa_context_set_state_callback (pa_context_, pa_context_state_callback, this);
-    
-    if (pa_context_connect(pa_context_, server_, (pa_context_flags_t)0, NULL) < 0) {
-      g_debug ("pa_context_connect() failed: %s", pa_strerror(pa_context_errno(pa_context_)));
-      return false;
-    }
-    
-    
+    GstUtils::g_idle_add_full_with_context (get_g_main_context (),
+					    G_PRIORITY_DEFAULT_IDLE,
+					    async_get_pulse_devices,
+					    this,
+					    NULL);
+
     capture_devices_description_ = NULL;
 
     custom_props_.reset (new CustomPropertyHelper ());
@@ -85,10 +75,33 @@ namespace switcher
 				"Capture Devices");
 
     //waiting for devices to be updated 
-    // g_cond_wait (devices_cond_, devices_mutex_);
-    // g_mutex_unlock (devices_mutex_);
-
+    g_cond_wait (devices_cond_, devices_mutex_);
+    g_mutex_unlock (devices_mutex_);
     return true;
+  }
+
+  gboolean
+  PulseSrc::async_get_pulse_devices (void *user_data)
+  {
+    PulseSrc *context = static_cast <PulseSrc *> (user_data);
+
+    context->pa_glib_mainloop_ = pa_glib_mainloop_new (context->get_g_main_context ());
+   
+    context->pa_mainloop_api_ = pa_glib_mainloop_get_api (context->pa_glib_mainloop_);
+    
+    if (!(context->pa_context_ = pa_context_new (context->pa_mainloop_api_, NULL))) {
+      g_debug ("PulseSrc:: pa_context_new() failed.");
+      return FALSE;//FIXME init should fail 
+    }
+    
+    pa_context_set_state_callback (context->pa_context_, pa_context_state_callback, context);
+    
+    if (pa_context_connect(context->pa_context_, context->server_, (pa_context_flags_t)0, NULL) < 0) {
+      g_debug ("pa_context_connect() failed: %s", pa_strerror(pa_context_errno(context->pa_context_)));
+      return FALSE;//FIXME init should fail
+    }
+    
+    return FALSE;
   }
 
   PulseSrc::~PulseSrc ()
@@ -100,8 +113,8 @@ namespace switcher
     if (capture_devices_description_ != NULL)
       g_free (capture_devices_description_);
     
-    // g_mutex_free (devices_mutex_);
-    // g_cond_free (devices_cond_);
+     g_mutex_free (devices_mutex_);
+     g_cond_free (devices_cond_);
   }
 
 
@@ -260,9 +273,9 @@ namespace switcher
       context->make_json_description ();
       
       //signal init we are done
-      // g_mutex_lock (context->devices_mutex_);
-      // g_cond_signal (context->devices_cond_);
-      // g_mutex_unlock (context->devices_mutex_);
+      g_mutex_lock (context->devices_mutex_);
+      g_cond_signal (context->devices_cond_);
+      g_mutex_unlock (context->devices_mutex_);
       return;
     }
     
