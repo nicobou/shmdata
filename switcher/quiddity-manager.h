@@ -245,7 +245,7 @@ namespace switcher
       /* GMutex *execution_to_do_mutex_; //sync current thread and gmainloop  */
       GAsyncQueue *command_queue_;
       static gboolean execute_command (gpointer user_data);//gmainloop source callback
-      void invoke_in_gmainloop ();
+      void invoke_in_thread ();
 
       //history
       CommandHistory command_history_;

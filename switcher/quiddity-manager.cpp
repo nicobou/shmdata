@@ -149,7 +149,7 @@ namespace switcher
 	    command_ = it;
 	    
 	    g_debug ("running command %s", QuiddityCommand::get_string_from_id (command_->id_));
-	    invoke_in_gmainloop ();
+	    invoke_in_thread ();
 	    //TODO test result consistency
 	    command_unlock ();
 	    if (command_->id_ == QuiddityCommand::create 
@@ -551,7 +551,7 @@ namespace switcher
     command_->add_arg (quiddity_name);
     command_->add_arg (method_name);
     command_->set_vector_arg (args);
-    invoke_in_gmainloop  ();
+    invoke_in_thread  ();
     if (return_value != NULL && !command_->result_.empty ())
       *return_value = new std::string (command_->result_[0]);
     bool res = command_->success_;
@@ -873,7 +873,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     std::vector<std::string> res;
     command_lock ();
     command_->set_id (QuiddityCommand::get_classes);
-    invoke_in_gmainloop  ();
+    invoke_in_thread  ();
     res = command_->result_;
     command_unlock ();
     return res;
@@ -917,7 +917,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     std::vector<std::string> res;
     command_lock ();
     command_->set_id (QuiddityCommand::get_quiddities);
-    invoke_in_gmainloop  ();
+    invoke_in_thread  ();
     res = command_->result_;
     command_unlock ();
     return res;
@@ -938,22 +938,33 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   {
     QuiddityManager *context = static_cast <QuiddityManager *> (user_data);
 
-    while (true)
+    gboolean loop = TRUE;
+    while (loop)
       {
 	 g_async_queue_pop (context->command_queue_);
-	 context->execute_command (context);
+	 if (context->command_->id_ != QuiddityCommand::quit)
+	   context->execute_command (context);
+	 else
+	   loop = FALSE;
 	 g_mutex_lock (context->execution_done_mutex_);
 	 g_cond_signal (context->execution_done_cond_);
 	 g_mutex_unlock (context->execution_done_mutex_);
       }
-        
     return NULL;
   }
 
   void
   QuiddityManager::clear_command_sync ()
   {
-    //FIXME clean mutex and cond
+    command_lock ();
+    command_->set_id (QuiddityCommand::quit);
+    invoke_in_thread ();
+
+     g_mutex_free (execution_done_mutex_);
+     g_cond_free (execution_done_cond_);
+     g_async_queue_unref (command_queue_);
+    command_unlock ();
+    g_mutex_free (seq_mutex_);
   }
 
   //works for char * args only. Use NULL sentinel
@@ -972,7 +983,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	command_arg = va_arg( vl, char *);
       }
     va_end(vl);
-    invoke_in_gmainloop ();
+    invoke_in_thread ();
     res = command_->result_[0];
     if (command_->id_ == QuiddityCommand::create 
 	|| command_->id_ == QuiddityCommand::create_nick_named)
@@ -982,7 +993,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   }
 
   void
-  QuiddityManager::invoke_in_gmainloop ()
+  QuiddityManager::invoke_in_thread ()
   {
     g_mutex_lock (execution_done_mutex_);
     g_async_queue_push (command_queue_, command_.get ());

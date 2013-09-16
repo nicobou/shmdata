@@ -64,6 +64,7 @@ namespace switcher
     {list_subscribed_signals_json,"list_subscribed_signals_json"},
     {make_property_subscriber,"make_property_subscriber"},
     {make_signal_subscriber, "make_signal_subscriber"},
+    {quit, "quit"},
     {remove,"remove"},
     {remove_property_subscriber,"remove_property_subscriber"},
     {remove_signal_subscriber,"remove_signal_subscriber"},
