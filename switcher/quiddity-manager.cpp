@@ -926,9 +926,28 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   void
   QuiddityManager::init_command_sync ()
   {
-    exec_cond_ = g_cond_new ();
-    exec_mutex_ = g_mutex_new ();
+    execution_done_cond_ = g_cond_new ();
+    execution_done_mutex_ = g_mutex_new ();
+    command_queue_ = g_async_queue_new (); //FIXME release that
     seq_mutex_ = g_mutex_new ();
+    invocation_thread_ = g_thread_new ("invocation_thread", GThreadFunc(invocation_thread), this);
+  }
+
+  gpointer
+  QuiddityManager::invocation_thread (gpointer user_data)
+  {
+    QuiddityManager *context = static_cast <QuiddityManager *> (user_data);
+
+    while (true)
+      {
+	 g_async_queue_pop (context->command_queue_);
+	 context->execute_command (context);
+	 g_mutex_lock (context->execution_done_mutex_);
+	 g_cond_signal (context->execution_done_cond_);
+	 g_mutex_unlock (context->execution_done_mutex_);
+      }
+        
+    return NULL;
   }
 
   void
@@ -965,21 +984,17 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   void
   QuiddityManager::invoke_in_gmainloop ()
   {
-    GstUtils::g_idle_add_full_with_context (manager_impl_->get_g_main_context(),
-					    G_PRIORITY_DEFAULT_IDLE,
-					    GSourceFunc (execute_command),
-					    this,
-					    NULL);
-    g_cond_wait (exec_cond_, exec_mutex_);
+    g_mutex_lock (execution_done_mutex_);
+    g_async_queue_push (command_queue_, command_.get ());
+    g_cond_wait (execution_done_cond_, execution_done_mutex_);
+    g_mutex_unlock (execution_done_mutex_);
   }
 
   gboolean
   QuiddityManager::execute_command (gpointer user_data)
   {
     QuiddityManager *context = static_cast<QuiddityManager *>(user_data);
-
-    
-    g_mutex_lock (context->exec_mutex_);
+   
     switch (context->command_->id_)
       {
       case QuiddityCommand::get_classes:
@@ -1111,8 +1126,6 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	g_debug ("** unknown command, cannot launch %s\n", 
 		 QuiddityCommand::get_string_from_id(context->command_->id_));
       }
-    g_cond_signal (context->exec_cond_);
-    g_mutex_unlock (context->exec_mutex_);
 
     return FALSE; //remove from gmainloop
   }

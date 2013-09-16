@@ -235,10 +235,15 @@ namespace switcher
       std::string seq_invoke (QuiddityCommand::command command, ...);
       void init_command_sync(); 
       void clear_command_sync(); 
+      GThread *invocation_thread_;
+      static gpointer invocation_thread (gpointer user_data);
 
       //invokation in gmainloop
-      GCond *exec_cond_; //sync current thread and gmainloop
-      GMutex *exec_mutex_; //sync current thread and gmainloop
+      GCond *execution_done_cond_; //sync current thread and gmainloop  
+      GMutex *execution_done_mutex_; //sync current thread and gmainloop  
+      /* GCond *execution_to_do_cond_; //sync current thread and gmainloop  */
+      /* GMutex *execution_to_do_mutex_; //sync current thread and gmainloop  */
+      GAsyncQueue *command_queue_;
       static gboolean execute_command (gpointer user_data);//gmainloop source callback
       void invoke_in_gmainloop ();
 
