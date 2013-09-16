@@ -46,11 +46,13 @@ namespace switcher
      					      GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER, 
      					      GST_RANK_SECONDARY);
 
+     codec_ = 0; //None
+
      custom_props_.reset (new CustomPropertyHelper ());
      primary_codec_spec_ = 
        custom_props_->make_enum_property ("codec_short_list", 
 					  "Codec Short List",
-					  0, 
+					  codec_, 
 					  primary_codec_,
 					  (GParamFlags) G_PARAM_READWRITE,
 					  VideoSource::set_codec,
@@ -65,7 +67,7 @@ namespace switcher
      secondary_codec_spec_ = 
        custom_props_->make_enum_property ("codec_long_list", 
 					  "Codec Long List",
-					  0, 
+					  codec_, 
 					  secondary_codec_,
 					  (GParamFlags) G_PARAM_READWRITE,
 					  VideoSource::set_codec,
