@@ -214,8 +214,6 @@ namespace switcher
   GTKVideo::realize_cb (GtkWidget *widget, void *user_data) 
   {
     GTKVideo *context = static_cast <GTKVideo *> (user_data);
-    g_print ("realized debut \n");
-
 
     GdkWindow *window = gtk_widget_get_window (widget);
     
