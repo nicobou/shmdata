@@ -61,7 +61,10 @@ namespace switcher
     gboolean is_fullscreen_;
 
     GMutex *wait_window_mutex_;
-    GMutex *destroy_window_mutex_;
+    GCond *wait_window_cond_;
+
+    GMutex *window_destruction_mutex_;
+    GCond *window_destruction_cond_;
 
     static void create_ui (void *user_data);
     static gboolean expose_cb (GtkWidget *widget, GdkEventExpose *event, void *user_data);
@@ -78,6 +81,10 @@ namespace switcher
 				      GdkEvent  *event,
 				      gpointer   user_data);
     
+    static void window_destroyed (gpointer data);
+    static gboolean destroy_window (gpointer data);
+
+    //implementation of parent
     void on_shmdata_connect (std::string shmdata_sochet_path);
   };
 
