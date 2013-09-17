@@ -74,6 +74,8 @@ main (int argc,
     if (!manager->invoke_va ("win", "connect", NULL, "/tmp/switcher_gtktest_vid_video", NULL))
       return 1;
 
+    //usleep (10000000);
+
     //removing quiddities
     if (!manager->remove ("win"))
       return 1;

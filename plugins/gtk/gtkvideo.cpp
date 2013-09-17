@@ -250,11 +250,15 @@ namespace switcher
   GTKVideo::delete_event_cb (GtkWidget *widget, GdkEvent *event, void *user_data) 
   {
     GTKVideo *context = static_cast <GTKVideo *> (user_data);
-    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
-    if ((bool) manager)
-      manager->remove (context->get_nick_name ());
-    else
-      g_debug ("GTKVideo::delete_event_cb cannot remove quiddity");
+    
+    context->reset_bin ();
+    gtk_widget_destroy (context->main_window_);
+    context->main_window_ = NULL;
+     QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
+     if ((bool) manager)
+       manager->remove (context->get_nick_name ());
+     else
+       g_debug ("GTKVideo::delete_event_cb cannot remove quiddity");
   }
   
   gboolean 
