@@ -61,7 +61,7 @@ namespace switcher
     gboolean is_fullscreen_;
 
     GMutex *wait_window_mutex_;
-    GMutex *destroy_window_mutex_;
+    GCond *wait_window_cond_;
 
     static void create_ui (void *user_data);
     static gboolean expose_cb (GtkWidget *widget, GdkEventExpose *event, void *user_data);
