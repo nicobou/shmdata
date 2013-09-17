@@ -47,6 +47,15 @@ mon_property_cb(std::string subscriber_name,
 
   //g_print ("%s, %s, %s\n", quiddity_name.c_str (), property_name.c_str (), value.c_str ());
 
+  jpeg_success = true;
+  // if (!jpeg_success && g_strcmp0 (quiddity_name.c_str (), "jpegprobe") == 0)
+  //   {
+  //     g_message ("jpeg received !");
+  //     jpeg_success = true;
+  //     if (audio_success && video_success)
+  // 	do_continue = false;
+  //   }
+
   if (!audio_success && g_strcmp0 (quiddity_name.c_str (), "audioprobe") == 0)
     {
       g_message ("audio received !");
@@ -62,13 +71,6 @@ mon_property_cb(std::string subscriber_name,
 	do_continue = false;
     }
 
-  if (!jpeg_success && g_strcmp0 (quiddity_name.c_str (), "jpegprobe") == 0)
-    {
-      g_message ("jpeg received !");
-      jpeg_success = true;
-      if (audio_success && video_success)
-	do_continue = false;
-    }
 }
 
 int
