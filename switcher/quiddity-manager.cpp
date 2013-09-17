@@ -110,6 +110,16 @@ namespace switcher
     //command has been invoked with the return value
     //save the command
     command_history_.push_back (command_);
+
+    // JSONBuilder::ptr builder;
+    // builder.reset (new JSONBuilder ());
+    // builder->reset ();
+    // builder->begin_object ();
+    // builder->set_member_name ("command");
+    // builder->add_node_value (command_->get_json_root_node ());
+    // builder->end_object ();
+    // g_print ("%s\n", builder->get_string(true).c_str ());
+
     g_mutex_unlock(seq_mutex_);
   }
 
