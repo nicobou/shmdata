@@ -51,11 +51,6 @@ main (int argc,
     //creating a "myplugin" quiddity
     if (g_strcmp0 (manager->create("gtkvideosink", "win").c_str (), "win") != 0)
       return 1;
-     
-
-
-
-
 
 
     //creating a gst pipeline
@@ -79,14 +74,13 @@ main (int argc,
     if (!manager->invoke_va ("win", "connect", NULL, "/tmp/switcher_gtktest_vid_video", NULL))
       return 1;
 
-    usleep (2000000);
-
     //removing quiddities
     if (!manager->remove ("win"))
       return 1;
 
     if (!manager->remove ("vid"))
       return 1;
+
   }//end of scope is releasing the manager
 
   return 0;//success
