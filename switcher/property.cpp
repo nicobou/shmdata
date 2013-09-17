@@ -49,7 +49,7 @@ namespace switcher
   void 
   Property::set (std::string value)
   {
-
+    
     GValue transformed_val = G_VALUE_INIT;
     g_value_init (&transformed_val, property_->value_type);
 

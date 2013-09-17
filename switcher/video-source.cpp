@@ -27,11 +27,15 @@ namespace switcher
   VideoSource::VideoSource () 
   {
     video_tee_ = NULL;
+    codec_ = 0; //None
+    codec_element_ = NULL;
+    color_space_codec_element_  = NULL;
+    queue_codec_element_ = NULL;
     videocaps_ = gst_caps_new_simple ("video/x-raw-yuv",
-				       // "format", GST_TYPE_FOURCC,
-				       // GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y'),
-				       // "format", GST_TYPE_FOURCC,
-				       // GST_MAKE_FOURCC ('I', '4', '2', '0'),
+				      // "format", GST_TYPE_FOURCC,
+				      // GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y'),
+				      // "format", GST_TYPE_FOURCC,
+				      // GST_MAKE_FOURCC ('I', '4', '2', '0'),
 				      //"framerate", GST_TYPE_FRACTION, 30, 1,
 				      // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1, 
 				      //  "width", G_TYPE_INT, 640, 
@@ -46,7 +50,6 @@ namespace switcher
      					      GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER, 
      					      GST_RANK_SECONDARY);
 
-     codec_ = 0; //None
 
      custom_props_.reset (new CustomPropertyHelper ());
      primary_codec_spec_ = 
@@ -61,8 +64,8 @@ namespace switcher
      
      register_property_by_pspec (custom_props_->get_gobject (), 
 				 primary_codec_spec_, 
-				 "codec",
-				 "Video Codec");
+				 "codec_short_list",
+				 "Video Codecs (Short List)");
 
      secondary_codec_spec_ = 
        custom_props_->make_enum_property ("codec_long_list", 
@@ -99,7 +102,7 @@ namespace switcher
 
   void 
   VideoSource::print_list (gpointer data,
-				  gpointer user_data) 
+			   gpointer user_data) 
   {
     //g_print ("%s\n", g_type_name (gst_element_factory_get_element_type (GST_ELEMENT_FACTORY (data))));
     // g_print ("long name: %s name %s description:%s\n", 
@@ -196,16 +199,19 @@ namespace switcher
   bool
   VideoSource::remake_codec_elements ()
   {
+    
+    //return false;
+    
     if (codec_ == 0)
       return false;
 
     for (auto &it: codec_properties_)
       unregister_property (it);
-    
+
     GstElement *tmp_codec_element = codec_element_;
     GstElement *tmp_color_space_codec_element = color_space_codec_element_;
     GstElement *tmp_queue_codec_element = queue_codec_element_;
- 
+
     //TODO queue property ? 
 
     if (!GstUtils::make_element (secondary_codec_[codec_].value_nick, &codec_element_) 
@@ -213,14 +219,13 @@ namespace switcher
      	|| !GstUtils::make_element ("queue", &queue_codec_element_))
       return false;
     
-    
-    
     //copy property value and register codec properties
     for (auto &it: codec_properties_)
       {
 	GstUtils::apply_property_value (G_OBJECT (tmp_codec_element),
 					G_OBJECT (codec_element_),
 					it.c_str ());
+
 	register_property (G_OBJECT (codec_element_),
 			   it,
 			   it, 
@@ -230,7 +235,7 @@ namespace switcher
     GstUtils::clean_element (tmp_codec_element);
     GstUtils::clean_element (tmp_color_space_codec_element);
     GstUtils::clean_element (tmp_queue_codec_element);
-    
+
     return true;
   }
 
@@ -264,19 +269,19 @@ namespace switcher
     
     if (codec_long_list)
       {
-	context->unregister_property ("codec");
+	context->unregister_property ("codec_short_list");
 	context->register_property_by_pspec (context->custom_props_->get_gobject (), 
 					     context->secondary_codec_spec_, 
-					     "codec",
-					     "Video Codec");
+					     "codec_long_list",
+					     "Video Codecs (Long List");
       }
     else
       {
-	context->unregister_property ("codec");
+	context->unregister_property ("codec_long_list");
 	context->register_property_by_pspec (context->custom_props_->get_gobject (), 
 					     context->primary_codec_spec_, 
-					     "codec",
-					     "Video Codec");
+					     "codec_short_list",
+					     "Video Codecs (Short List)");
       }
     //reset codec value
     set_codec (0, context);

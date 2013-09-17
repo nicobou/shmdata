@@ -131,8 +131,11 @@ namespace switcher
     json_builder_->end_array ();
     json_builder_->set_member_name ("results");
     json_builder_->begin_array ();
-    for (auto& it: result_)
-      json_builder_->add_string_value (it.c_str ());
+    if (result_.empty ())
+      json_builder_->add_string_value ("");
+    else
+      for (auto& it: result_)
+	json_builder_->add_string_value (it.c_str ());
     json_builder_->end_array ();
     json_builder_->end_object ();
     return json_builder_->get_root ();

@@ -102,6 +102,7 @@ namespace switcher
     command_.reset (new QuiddityCommand ());
     gint64 cur_time = g_get_monotonic_time ();
     command_->time_ = cur_time - history_begin_time_;
+
   }
 
   void 
@@ -111,14 +112,14 @@ namespace switcher
     //save the command
     command_history_.push_back (command_);
 
-    // JSONBuilder::ptr builder;
-    // builder.reset (new JSONBuilder ());
-    // builder->reset ();
-    // builder->begin_object ();
-    // builder->set_member_name ("command");
-    // builder->add_node_value (command_->get_json_root_node ());
-    // builder->end_object ();
-    // g_print ("%s\n", builder->get_string(true).c_str ());
+     // JSONBuilder::ptr builder;
+     // builder.reset (new JSONBuilder ());
+     // builder->reset ();
+     // builder->begin_object ();
+     // builder->set_member_name ("command");
+     // builder->add_node_value (command_->get_json_root_node ());
+     // builder->end_object ();
+     // g_print ("%s\n", builder->get_string(true).c_str ());
 
     g_mutex_unlock(seq_mutex_);
   }
@@ -993,12 +994,23 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	command_arg = va_arg( vl, char *);
       }
     va_end(vl);
+
+    // JSONBuilder::ptr builder;
+    // builder.reset (new JSONBuilder ());
+    // builder->reset ();
+    // builder->begin_object ();
+    // builder->set_member_name ("command");
+    // builder->add_node_value (command_->get_json_root_node ());
+    // builder->end_object ();
+    // g_print ("%s\n", builder->get_string(true).c_str ());
+    
     invoke_in_thread ();
     res = command_->result_[0];
     if (command_->id_ == QuiddityCommand::create 
 	|| command_->id_ == QuiddityCommand::create_nick_named)
       auto_init (command_->result_[0]);
     command_unlock ();
+
     return res;
   }
 
