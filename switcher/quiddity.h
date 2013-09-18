@@ -40,6 +40,7 @@
 #include "quiddity-manager-impl.h"
 #include "json-builder.h"
 #include "gobject-wrapper.h"
+#include "string-map.h"
 
 namespace switcher
 {
@@ -118,9 +119,9 @@ namespace switcher
 
   private:
     //properties are registered by derived class
-    std::map<std::string, Property::ptr> properties_;
-    std::map<std::string, Property::ptr> disabled_properties_;
+    StringMap<Property::ptr> properties_;
     JSONBuilder::ptr properties_description_;
+
     std::map<std::string, Method::ptr> methods_;
     JSONBuilder::ptr methods_description_;
     //pair is <class_name, signal_name>
@@ -186,15 +187,13 @@ namespace switcher
 			    std::string gobject_property_name, 
 			    std::string name_to_give,
 			    std::string long_name);
-    bool uninstall_property (std::string name);
     bool install_property_by_pspec (GObject *object, 
 				     GParamSpec *pspec, 
 				     std::string name_to_give,
 				     std::string long_name);
-    /* bool is_enabled (); */
-    /* bool enable_property (std::string name); */
-    /* bool disable_property (std::string name); */
-    /* bool enable_property (std::string name, bool enable); */
+    bool uninstall_property (std::string name);
+
+    
 
     //methods
     bool install_method (const std::string long_name,

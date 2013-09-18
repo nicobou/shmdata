@@ -233,30 +233,28 @@ namespace switcher
 					std::string name_to_give,
 					std::string long_name)
   {
-    Property::ptr prop (new Property ());
-    prop->set_gobject_pspec (object, pspec, long_name);
-
-    if (properties_.find(name_to_give) == properties_.end())
+    if (properties_.contains (name_to_give)) 
       {
-	properties_[name_to_give] = prop; 
-	return true;
-      }
-    else 
-      {
-	g_warning ("registering name %s already exists",name_to_give.c_str());
+	g_debug ("registering name %s already exists",
+		 name_to_give.c_str());
 	return false;
       }
+    
+    Property::ptr prop (new Property ());
+    prop->set_gobject_pspec (object, pspec, long_name);
+    
+    properties_.insert (name_to_give, prop); 
+    return true;
   }
 
   Property::ptr
   Quiddity::get_property_ptr (std::string property_name)
   {
     Property::ptr res;
-    if (properties_.find(property_name) == properties_.end())
-	g_debug ("Quiddity::get_property_ptr %s not found", property_name.c_str ());
-    else 
-      res = properties_[property_name];
-   
+    if (!properties_.contains (property_name))
+      g_debug ("Quiddity::get_property_ptr %s not found", property_name.c_str ());
+      
+    res = properties_.lookup_full (property_name);
     return res;
   }
 
@@ -335,31 +333,8 @@ namespace switcher
   bool 
   Quiddity::uninstall_property (std::string name)
   {
-    if (properties_.find(name) == properties_.end())
-      return false;
-    
-    properties_.erase (name); 
-    return true;
+    return properties_.remove (name); 
   }
-
-  // bool 
-  // Quiddity::enable_property (std::string name)
-  // {
-  //   if (disabled_properties_.find(name) == disabled_properties_.end())
-  //     {
-  // 	return false;
-  //     }
-  //     properties
-
-  //     {
-  // 	properties_.erase (name); 
-  // 	return true;
-  //     }
-  //   else 
-  //     return false;
-  // }
-
-
   
   bool
   Quiddity::install_property (GObject *object, 
@@ -543,11 +518,12 @@ namespace switcher
     properties_description_->set_member_name ("properties");
     properties_description_->begin_array ();
 
-    for(std::map<std::string, Property::ptr>::iterator it = properties_.begin(); it != properties_.end(); ++it) 
+    std::map <std::string, Property::ptr> props = properties_.get_map ();
+    for(auto &it: props) 
       {
      	properties_description_->begin_object ();
-     	properties_description_->add_string_member ("name",it->first.c_str ());
-     	JsonNode *root_node = it->second->get_json_root_node ();
+     	properties_description_->add_string_member ("name",it.first.c_str ());
+     	JsonNode *root_node = it.second->get_json_root_node ();
      	properties_description_->add_JsonNode_member ("description", root_node);
      	properties_description_->end_object ();
       }
@@ -561,20 +537,20 @@ namespace switcher
   std::string 
   Quiddity::get_property_description (std::string name)
   {
-    if (properties_.find( name ) == properties_.end())
-      return "";
+    if (!properties_.is_enabled (name))
+      return "{ \"error\" : \"property not found\" }";
     
-    Property::ptr prop = properties_[name];
+    Property::ptr prop = properties_.lookup (name);
     return prop->get_description ();
   }
 
   bool 
   Quiddity::set_property (std::string name, std::string value)
   {
-    if (properties_.find( name ) == properties_.end())
+    if (!properties_.is_enabled (name))
       return false;
 
-    Property::ptr prop = properties_[name];
+    Property::ptr prop = properties_.lookup (name);
     prop->set (value);
     return true;
   }
@@ -582,7 +558,7 @@ namespace switcher
   bool 
   Quiddity::has_property (std::string name)
   {
-    if (properties_.find(name) == properties_.end())
+    if (!properties_.is_enabled (name))
       return false;
     return true;
   }
@@ -590,10 +566,10 @@ namespace switcher
   std::string 
   Quiddity::get_property (std::string name)
   {
-    if (properties_.find( name ) == properties_.end())
-      return "property not found";
+    if (!properties_.is_enabled (name))
+      return "{ \"error\" : \"property not found\" }";
 
-    Property::ptr prop = properties_[name];
+    Property::ptr prop = properties_.lookup (name);
     return prop->get ();
   }
 
@@ -602,13 +578,13 @@ namespace switcher
 				Property::Callback cb,
 				void *user_data)
   {
-    if (properties_.find( name ) == properties_.end())
+    if (!properties_.contains (name))
       {
 	g_debug ("property not found (%s)", name.c_str ());
 	return false;
       }
 
-    Property::ptr prop = properties_[name];
+    Property::ptr prop = properties_.lookup_full (name);
     return prop->subscribe (cb, user_data);
   }
 
@@ -617,10 +593,10 @@ namespace switcher
 				  Property::Callback cb,
 				  void *user_data)
   {
-    if (properties_.find (name) == properties_.end())
+    if (!properties_.contains (name))
       return false;
-
-    Property::ptr prop = properties_[name];
+    
+    Property::ptr prop = properties_.lookup_full (name);
     return prop->unsubscribe (cb, user_data);
   }
 

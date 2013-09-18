@@ -40,19 +40,39 @@ namespace switcher
     public:
       typedef std::shared_ptr< StringMap<T> > ptr;
 
-      bool insert (const std::string key, T value);
+      bool insert (const std::string key, T value);//enabled by default
       bool replace (const std::string key, T value);
       bool remove (const std::string key);
-      bool contains (const std::string key);
-      unsigned int size ();
-      T lookup (const std::string key);
+      bool contains (const std::string key); //enabled and disabled
+      bool is_enabled (const std::string key);
+      bool is_disabled (const std::string key);
+      bool enable (std::string key);
+      bool disable (std::string key);
+      bool set_enabled (std::string key, bool enable);
+
+      unsigned int size (); //total
+      unsigned int size_enabled ();
+      unsigned int size_disabled ();
+
+      T lookup (const std::string key); //only enabled are returned
+      T lookup_full (const std::string key); //enabled and disabled are returned
+
       std::vector<std::string> get_keys ();
+      std::vector<std::string> get_disabled_keys ();
+
       std::vector<T> get_values ();
+      std::vector<T> get_disabled_values ();
+
       std::map<std::string, T> get_map ();
+      std::map<std::string, T> get_disabled_map ();
+
       void clear ();
+      void clear_enabled ();
+      void clear_disabled ();
       
     private:
       std::map<std::string, T> map_;
+      std::map<std::string, T> map_disabled_;
     };
 
 } // end of namespace

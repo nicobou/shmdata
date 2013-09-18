@@ -47,6 +47,11 @@ namespace switcher
     StringMap<T>::replace (const std::string key, 
 			   T value)
     {
+      if (is_disabled (key))
+	{
+	  map_disabled_[key] = value;
+	  return true;
+	}
       map_[key]=value;
       return true;
     }
@@ -56,35 +61,133 @@ namespace switcher
     bool 
     StringMap<T>::remove (const std::string key)
     {
-      typename std::map<std::string, T>::iterator  it= map_.find(key);
-      if( it == map_.end() ) 
-	return false;
-      map_.erase (key);
-      return true;
+      if (is_enabled (key))
+	{
+	  map_.erase (key);
+	  return true;
+	}
+      if (is_disabled (key))
+	{
+	  map_disabled_.erase (key);
+	  return true;
+	}
+      return false;
     }
   
   template <typename T>
     bool 
     StringMap<T>::contains (const std::string key)
     {
-      if (map_.count(key) == 0)
+      if (map_.count (key) == 0 && map_disabled_.count (key) == 0)
 	return false;
-      else
-	return true;
+      return true;
     }
+
+  template <typename T>
+    bool 
+    StringMap<T>::is_enabled (const std::string key)
+    {
+      if (map_.count (key) == 0)
+	return false;
+      return true;
+    }
+
+  template <typename T>
+    bool 
+    StringMap<T>::is_disabled (const std::string key)
+    {
+      if (map_disabled_.count (key) == 0)
+	return false;
+      return true;
+    }
+ 
+  template <typename T>
+    bool 
+    StringMap<T>::enable (const std::string key)
+    {
+      if (is_enabled (key))
+	return true;
+
+      if (!is_disabled (key))
+	return false;
+      
+      typename std::map<std::string, T>::iterator  it;
+      it = map_disabled_.find (key);
+      map_[it->first] = it->second;
+      map_disabled_.erase (it);
+      return true;
+    }
+
+  template <typename T>
+    bool 
+    StringMap<T>::disable (const std::string key)
+    {
+      if (is_disabled (key))
+	return true;
+      
+      if (!is_enabled (key))
+	return false;
+      
+      typename std::map<std::string, T>::iterator  it;
+      it = map_.find (key);
+      map_disabled_[it->first] = it->second;
+      map_.erase (it);
+      return true;
+    }
+
+  template <typename T>
+    bool 
+    StringMap<T>::set_enabled (const std::string key, bool enabling)
+    {
+      if (enabling)
+	return enable (key);
+      return disable (key);
+    }
+  
   
   template <typename T>
     unsigned int 
     StringMap<T>::size ()
     {
-      return map_.size();
+      return map_.size () + map_disabled_.size ();
+    }
+
+  template <typename T>
+    unsigned int 
+    StringMap<T>::size_enabled ()
+    {
+      return map_.size ();
+    }
+
+  template <typename T>
+    unsigned int 
+    StringMap<T>::size_disabled ()
+    {
+      return map_disabled_.size ();
     }
 
   template <typename T>
     void 
     StringMap<T>::clear ()
     {
-      map_.clear();
+      map_.clear ();
+      map_disabled_.clear ();
+      return;
+    }
+
+  template <typename T>
+    void 
+    StringMap<T>::clear_enabled ()
+    {
+      map_.clear ();
+      return;
+    }
+
+  template <typename T>
+    void 
+    StringMap<T>::clear_disabled ()
+    {
+      map_disabled_.clear ();
       return;
     }
 
@@ -92,11 +195,16 @@ namespace switcher
     T 
     StringMap<T>::lookup (const std::string key)
     {
-      typename std::map<std::string, T>::iterator  it= map_.find(key);
-      /* if( it == map_.end() )  */
-      /* 	return NULL; */
-      
-      return it->second;
+      return map_.find(key)->second;
+    }
+
+  template <typename T>
+    T 
+    StringMap<T>::lookup_full (const std::string key)
+    {
+      if (is_enabled (key))
+	return map_.find(key)->second;
+      return map_disabled_.find (key)->second;
     }
   
   template <typename T>
@@ -104,9 +212,23 @@ namespace switcher
     StringMap<T>::get_keys ()
     {
       std::vector<std::string> keys;
-
+      
       typename std::map<std::string, T>::iterator it;
       for (it = map_.begin(); it != map_.end(); ++it)
+	{
+	  keys.push_back (it->first);
+	}
+      return keys;
+    }
+
+  template <typename T>
+    std::vector<std::string> 
+    StringMap<T>::get_disabled_keys ()
+    {
+      std::vector<std::string> keys;
+      
+      typename std::map<std::string, T>::iterator it;
+      for (it = map_disabled_.begin(); it != map_disabled_.end(); ++it)
 	{
 	  keys.push_back (it->first);
 	}
@@ -129,10 +251,32 @@ namespace switcher
      } 
 
   template <typename T> 
+    typename std::vector<T>  
+    StringMap<T>::get_disabled_values () 
+    { 
+      typename std::vector<T> values; 
+      
+      typename std::map<std::string, T>::iterator  it; 
+      for (it = map_disabled_.begin(); it != map_disabled_.end(); it++) 
+   	{ 
+   	  values.push_back (it->second); 
+   	} 
+      
+      return values; 
+     } 
+
+  template <typename T> 
     typename std::map<std::string, T>  
     StringMap<T>::get_map () 
     { 
       return map_; 
+    } 
+
+  template <typename T> 
+    typename std::map<std::string, T>  
+    StringMap<T>::get_disabled_map () 
+    { 
+      return map_disabled_; 
      } 
     
 }
