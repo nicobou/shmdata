@@ -53,7 +53,7 @@ namespace switcher
 
      custom_props_.reset (new CustomPropertyHelper ());
      primary_codec_spec_ = 
-       custom_props_->make_enum_property ("codec_short_list", 
+       custom_props_->make_enum_property ("codec", 
 					  "Codec Short List",
 					  codec_, 
 					  primary_codec_,
@@ -64,11 +64,11 @@ namespace switcher
      
      install_property_by_pspec (custom_props_->get_gobject (), 
 				 primary_codec_spec_, 
-				 "codec_short_list",
+				 "codec",
 				 "Video Codecs (Short List)");
 
      secondary_codec_spec_ = 
-       custom_props_->make_enum_property ("codec_long_list", 
+       custom_props_->make_enum_property ("codec", 
 					  "Codec Long List",
 					  codec_, 
 					  secondary_codec_,
@@ -269,18 +269,18 @@ namespace switcher
     
     if (codec_long_list)
       {
-	context->uninstall_property ("codec_short_list");
+	context->uninstall_property ("codec");
 	context->install_property_by_pspec (context->custom_props_->get_gobject (), 
 					     context->secondary_codec_spec_, 
-					     "codec_long_list",
+					     "codec",
 					     "Video Codecs (Long List");
       }
     else
       {
-	context->uninstall_property ("codec_long_list");
+	context->uninstall_property ("codec");
 	context->install_property_by_pspec (context->custom_props_->get_gobject (), 
 					     context->primary_codec_spec_, 
-					     "codec_short_list",
+					     "codec",
 					     "Video Codecs (Short List)");
       }
     //reset codec value
