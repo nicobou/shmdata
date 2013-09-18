@@ -429,8 +429,8 @@ namespace switcher
 	{
 	  devices_enum_ [i].value = i;
 	  //FIXME previous free here
-	  devices_enum_ [i].value_name = g_strdup (it.name_.c_str ());
-	  devices_enum_ [i].value_nick = g_strdup (it.description_.c_str ());
+	  devices_enum_ [i].value_name = g_strdup (it.description_.c_str ());
+	  devices_enum_ [i].value_nick = g_strdup (it.name_.c_str ());
 	  i ++;
 	}
       devices_enum_ [i].value = 0;
