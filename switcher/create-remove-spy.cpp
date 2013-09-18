@@ -52,8 +52,6 @@ namespace switcher
 
     //we got the hook, so make signals of it
     GType string_type[] = {G_TYPE_STRING};
-
-
     install_signal ("On Quiddity Created",
 		    "on-quiddity-created",
 		    "a quiddity has been created",

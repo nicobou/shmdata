@@ -47,13 +47,27 @@ namespace switcher
     // 			 types);
     // set_signal_description ("on-new-signal-registered",
     // 			     "a new signal has been registered and documented",
-    // 			     Signal::make_arg_description("quiddity_name",
+    // 			     Signal::make_arg_description("Quiddity Name ",
+    //                                                     "quiddity_name",
     // 							  "the quiddity name",
+    // 							  "Signal Name",
     // 							  "signal_name",
     // 							  "the signal name",
+    // 							  "JSON Documentation",
     // 							  "json_doc",
     // 							  "the json-formated signal documentation",
     // 							  NULL));
+
+    // GType arg_type[] = {G_TYPE_STRING};
+    // install_signal ("On Interface Changed",
+    // 		       "on-interface-changed",
+    //  		    "Quiddity properties and/or methods has changed",
+    //  		    Signal::make_arg_description("Quiddity Name",
+    //  						 "quiddity_name",
+    //  						 "the quiddity name",
+    //  						 NULL),
+    //  		    1, 
+    //  		    arg_type);
   }
   
   Quiddity::~Quiddity () 
