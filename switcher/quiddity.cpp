@@ -342,19 +342,22 @@ namespace switcher
     return true;
   }
 
-  bool 
-  Quiddity::enable_property (std::string name)
-  {
-    if (disabled_properties_.find(name) == disabled_properties_.end())
+  // bool 
+  // Quiddity::enable_property (std::string name)
+  // {
+  //   if (disabled_properties_.find(name) == disabled_properties_.end())
+  //     {
+  // 	return false;
+  //     }
+  //     properties
 
-
-      {
-	properties_.erase (name); 
-	return true;
-      }
-    else 
-      return false;
-  }
+  //     {
+  // 	properties_.erase (name); 
+  // 	return true;
+  //     }
+  //   else 
+  //     return false;
+  // }
 
 
   

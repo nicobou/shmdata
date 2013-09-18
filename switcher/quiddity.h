@@ -191,10 +191,10 @@ namespace switcher
 				     GParamSpec *pspec, 
 				     std::string name_to_give,
 				     std::string long_name);
-    
-    bool enable_property (std::string name);
-    bool disable_property (std::string name);
-    bool enable_property (std::string name, bool enable);
+    /* bool is_enabled (); */
+    /* bool enable_property (std::string name); */
+    /* bool disable_property (std::string name); */
+    /* bool enable_property (std::string name, bool enable); */
 
     //methods
     bool install_method (const std::string long_name,
