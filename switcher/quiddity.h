@@ -118,17 +118,21 @@ namespace switcher
     void set_manager_impl (std::shared_ptr<QuiddityManager_Impl> manager_impl);
 
   private:
-    //properties are registered by derived class
+    //properties
     StringMap<Property::ptr> properties_;
     JSONBuilder::ptr properties_description_;
 
-    std::map<std::string, Method::ptr> methods_;
+    //methods
+    StringMap<Method::ptr> methods_;
     JSONBuilder::ptr methods_description_;
+
     //pair is <class_name, signal_name>
     //this map is static in order to avoid re-creation of the same signal for each quiddity instance 
     static std::map<std::pair <std::string,std::string>, guint> signals_ids_;
     std::map<std::string, Signal::ptr> signals_;
     JSONBuilder::ptr signals_description_;
+
+    //naming
     std::string name_;
     std::string nick_name_;
 

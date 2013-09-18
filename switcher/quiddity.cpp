@@ -359,19 +359,19 @@ namespace switcher
   int 
   Quiddity::method_get_num_value_args (std::string method_name)
   {
-    if (methods_.find(method_name ) == methods_.end())
+    if (!methods_.is_enabled (method_name))
       {
 	g_debug ("Quiddity::method_get_num_value_args error: method %s not found", method_name.c_str());
 	return -1;
       }
-    else 
-      return (int)methods_[method_name]->get_num_of_value_args(); 
+
+    return (int)methods_.lookup (method_name)->get_num_of_value_args(); 
   }
 
   bool 
   Quiddity::has_method (const std::string method_name)
   {
-    if (methods_.find(method_name) == methods_.end())
+    if (!methods_.is_enabled (method_name))
       return false;
     return true;
   }
@@ -381,7 +381,7 @@ namespace switcher
 			   std::string **return_value,
 			   const std::vector<std::string> args)
   {
-    if (methods_.find(method_name) == methods_.end())
+    if (!methods_.is_enabled (method_name))
       {
 	g_debug ("Quiddity::invoke_method error: method %s not found",
 		 method_name.c_str());
@@ -390,7 +390,7 @@ namespace switcher
     else 
       {
 	GValue res = G_VALUE_INIT;
-	if (!methods_[method_name]->invoke (args, &res))
+	if (!methods_.lookup (method_name)->invoke (args, &res))
 	  {
 	    g_debug ("invokation of %s failled (missing argments ?)",
 		     method_name.c_str ());
@@ -456,12 +456,12 @@ namespace switcher
     Method::ptr meth (new Method ());
     meth->set_method (method, return_type, arg_types, user_data);
 
-    if (methods_.find( method_name ) != methods_.end())
+    if (methods_.contains (method_name))
       {
 	g_debug ("registering name %s already exists",method_name.c_str());
 	return false;
       }
-    methods_[method_name] = meth;
+    methods_.insert (method_name, meth);
     return true;
   }
 
@@ -472,16 +472,16 @@ namespace switcher
 				    const std::string return_description,
 				    const Method::args_doc arg_description)
   {
-    if (methods_.find( method_name ) == methods_.end())
+    if (!methods_.contains (method_name))
       {
 	g_debug ("cannot set description of a not existing method");
 	return false;
       }
-    methods_[method_name]->set_description (long_name, 
-					    method_name, 
-					    short_description, 
-					    return_description,
-					    arg_description);
+    methods_.lookup_full (method_name)->set_description (long_name, 
+							 method_name, 
+							 short_description, 
+							 return_description,
+							 arg_description);
     return true;
   }
 
@@ -493,8 +493,10 @@ namespace switcher
     methods_description_->begin_object ();
     methods_description_->set_member_name ("methods");
     methods_description_->begin_array ();
-    for(std::map<std::string, Method::ptr>::iterator it = methods_.begin(); it != methods_.end(); ++it) 
-      methods_description_->add_node_value (it->second->get_json_root_node ());
+
+    std::map<std::string, Method::ptr> meths = methods_.get_map ();
+    for(auto &it: meths) 
+      methods_description_->add_node_value (it.second->get_json_root_node ());
     methods_description_->end_array ();
     methods_description_->end_object ();
     return methods_description_->get_string (true);
@@ -503,10 +505,10 @@ namespace switcher
   std::string 
   Quiddity::get_method_description (std::string method_name)
   {
-    if (methods_.find( method_name ) == methods_.end())
-      return "";
+    if (!methods_.is_enabled (method_name))
+      return "{ \"error\" : \" method not found\"}";
     
-    Method::ptr meth = methods_[method_name];
+    Method::ptr meth = methods_.lookup (method_name);
     return meth->get_description ();
   }
 

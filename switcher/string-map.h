@@ -42,7 +42,7 @@ namespace switcher
 
       bool insert (const std::string key, T value);//enabled by default
       bool replace (const std::string key, T value);
-      bool remove (const std::string key);
+      bool remove (const std::string key);//search in enabled and disabled
       bool contains (const std::string key); //enabled and disabled
       bool is_enabled (const std::string key);
       bool is_disabled (const std::string key);
