@@ -184,7 +184,11 @@ namespace switcher
     if (!make_new_shmdatas ())
       return false;
 
-    return on_start ();
+    if (!on_start ())
+      return false;
+    
+    disable_property ("codec");
+    return true;
   }
   
   bool 
@@ -193,6 +197,7 @@ namespace switcher
     bool res = on_stop ();
     clear_shmdatas ();
     reset_bin ();
+    enable_property ("codec");
     return res;
   }
 
