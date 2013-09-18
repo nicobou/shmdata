@@ -47,7 +47,7 @@ namespace switcher
       return false;
     
     //"pattern" property available atfer initialization 
-    register_property (G_OBJECT (videotestsrc_),
+    install_property (G_OBJECT (videotestsrc_),
 		       "pattern",
 		       "pattern", 
 		       "Video Pattern");
@@ -58,7 +58,7 @@ namespace switcher
   VideoTestSource::make_video_source (GstElement **new_element)
   {
 
-    unregister_property ("pattern");
+    uninstall_property ("pattern");
 
     GstElement *videotest;
     if (!GstUtils::make_element ("videotestsrc",&videotest))
@@ -84,7 +84,7 @@ namespace switcher
   bool 
   VideoTestSource::on_start ()
   {
-    register_property (G_OBJECT (videotestsrc_),
+    install_property (G_OBJECT (videotestsrc_),
 		       "pattern",
 		       "pattern", 
 		       "Video Pattern");
@@ -99,7 +99,7 @@ namespace switcher
     if (!made)
       return false;
     
-    register_property (G_OBJECT (videotestsrc_),
+    install_property (G_OBJECT (videotestsrc_),
 		       "pattern",
 		       "pattern", 
 		       "Video Pattern");

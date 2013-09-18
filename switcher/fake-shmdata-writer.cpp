@@ -49,7 +49,7 @@ namespace switcher
 					   FakeShmdataWriter::set_shmdata_path,
 					   FakeShmdataWriter::get_shmdata_path,
 					   this);
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				shmdata_path_spec_, 
 				"shmdata-path",
 				"Shmdata Path");
@@ -104,7 +104,7 @@ namespace switcher
   FakeShmdataWriter::start ()
   {
     clean ();
-    unregister_property ("shmdata-path");
+    uninstall_property ("shmdata-path");
     if (g_strcmp0 (shmdata_path_, "") == 0)
       return false;
     
@@ -125,7 +125,7 @@ namespace switcher
   FakeShmdataWriter::stop ()
   {
     clean ();
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				shmdata_path_spec_, 
 				"shmdata-path",
 				"Shmdata Path");

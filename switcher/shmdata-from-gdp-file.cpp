@@ -41,7 +41,7 @@ namespace switcher
   ShmdataFromGDPFile::init ()
   {
 
-    publish_method ("Add File",
+    install_method ("Add File",
 		    "add_file", 
 		    "add a file to play", 
 		    "success or fail",
@@ -57,7 +57,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
 		    this);
     
-    publish_method ("Remove File",
+    install_method ("Remove File",
 		    "remove_file", 
 		    "remove the file from the player", 
 		    "success or fail",
@@ -81,7 +81,7 @@ namespace switcher
 							  ShmdataFromGDPFile::set_playing,
 							  ShmdataFromGDPFile::get_playing,
 							  this);
-    register_property_by_pspec (custom_prop_->get_gobject (), 
+    install_property_by_pspec (custom_prop_->get_gobject (), 
      				playing_param_, 
      				"playing",
 				"Playing");

@@ -74,21 +74,21 @@ namespace switcher
 #endif
 
 
-    register_property (G_OBJECT (udpsink_),"blocksize","blocksize", "Blocksize");
-    register_property (G_OBJECT (udpsink_),"bytes-served","bytes-served", "Bytes Served");
-    register_property (G_OBJECT (udpsink_),"clients","clients", "Clients");
-    register_property (G_OBJECT (udpsink_),"ttl","ttl", "TTL");
-    register_property (G_OBJECT (udpsink_),"ttl-mc","ttl-mc", "TTL-MC");
-    register_property (G_OBJECT (udpsink_),"loop","loop", "Loop");
+    install_property (G_OBJECT (udpsink_),"blocksize","blocksize", "Blocksize");
+    install_property (G_OBJECT (udpsink_),"bytes-served","bytes-served", "Bytes Served");
+    install_property (G_OBJECT (udpsink_),"clients","clients", "Clients");
+    install_property (G_OBJECT (udpsink_),"ttl","ttl", "TTL");
+    install_property (G_OBJECT (udpsink_),"ttl-mc","ttl-mc", "TTL-MC");
+    install_property (G_OBJECT (udpsink_),"loop","loop", "Loop");
 
-    register_property (G_OBJECT (typefind_), "caps","caps", "Capabilities");
+    install_property (G_OBJECT (typefind_), "caps","caps", "Capabilities");
 
     // g_signal_connect (G_OBJECT (udpsink_), "client-added",  
     // 		      (GCallback)  on_client_added, (gpointer) this);
     // g_signal_connect (G_OBJECT (udpsink_), "client-removed",  
     // 		      (GCallback)  on_client_removed, (gpointer) this);
     
-    publish_method ("Add Client",
+    install_method ("Add Client",
 		    "add_client", 
 		    "add a client with destination host and port to the list of clients", 
 		    "success or fail",
@@ -104,7 +104,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, NULL),
      		    this);
    
-    publish_method ("Remove Client",
+    install_method ("Remove Client",
 		    "remove_client", 
 		    "remove a client with destination host and port to the list of clients", 
 		    "success or fail",
@@ -121,7 +121,7 @@ namespace switcher
      		    this);
 
      
-    publish_method ("Clear",
+    install_method ("Clear",
 		    "clear", 
 		    "remove a client with destination host and port to the list of clients", 
 		    "success or fail",

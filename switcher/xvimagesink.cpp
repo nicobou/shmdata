@@ -52,7 +52,7 @@ namespace switcher
 		  "draw-borders", TRUE,
 		  "sync", FALSE, 
 		  NULL);
-    register_property (G_OBJECT (xvimagesink_),
+    install_property (G_OBJECT (xvimagesink_),
 		       "force-aspect-ratio",
 		       "force-aspect-ratio", 
 		       "Force Aspect Ratio");

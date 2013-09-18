@@ -88,7 +88,7 @@ namespace switcher
 					    GTKVideo::set_fullscreen,
 					    GTKVideo::get_fullscreen,
 					    this);
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				fullscreen_prop_spec_, 
 				"fullscreen",
 				"Fullscreen");

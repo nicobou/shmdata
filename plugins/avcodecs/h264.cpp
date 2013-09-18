@@ -47,9 +47,9 @@ namespace switcher
     add_element_to_cleaner (h264enc_);
     add_element_to_cleaner (h264bin_);
 
-    register_property (G_OBJECT (h264enc_),"speed-preset","speed-preset", "Speed Preset");
-    register_property (G_OBJECT (h264enc_),"interlaced","interlaced", "Optimize For Interlaced Video");
-    register_property (G_OBJECT (h264enc_),"bitrate","bitrate", "Bitrate (kbps)");
+    install_property (G_OBJECT (h264enc_),"speed-preset","speed-preset", "Speed Preset");
+    install_property (G_OBJECT (h264enc_),"interlaced","interlaced", "Optimize For Interlaced Video");
+    install_property (G_OBJECT (h264enc_),"bitrate","bitrate", "Bitrate (kbps)");
 
     set_on_first_data_hook (H264::make_shmdata_writer,this);
     return true;

@@ -54,7 +54,7 @@ namespace switcher
     GType string_type[] = {G_TYPE_STRING};
 
 
-    publish_signal ("On Quiddity Created",
+    install_signal ("On Quiddity Created",
 		    "on-quiddity-created",
 		    "a quiddity has been created",
 		    Signal::make_arg_description ("Quiddity Name",
@@ -64,7 +64,7 @@ namespace switcher
 		    1,
 		    string_type);
 
-    publish_signal ("On Quiddity Removed",
+    install_signal ("On Quiddity Removed",
 		    "on-quiddity-removed",
 		    "a quiddity has been removed",
 		    Signal::make_arg_description("Quiddity Name",

@@ -59,7 +59,7 @@ namespace switcher
 					   get_devices_description_json,
 					   (PortMidi *)this);
     
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				devices_description_spec_, 
 				"devices-json",
 				"Capture Devices");
@@ -75,7 +75,7 @@ namespace switcher
 					 PortMidiSource::get_device,
 					 this);
 
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				devices_enum_spec_, 
 				"device",
 				"Capture Device");
@@ -92,7 +92,7 @@ namespace switcher
 					get_midi_value,
 					this);
 
-    publish_method ("Next MIDI Event To Property", //long name
+    install_method ("Next MIDI Event To Property", //long name
 		    "next_midi_event_to_property", //name
 		    "Wait for a MIDI event and make a property for this channel", //description
 		    "success or fail", //return description
@@ -105,7 +105,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 
-    publish_method ("Last MIDI Event To Property", //long name
+    install_method ("Last MIDI Event To Property", //long name
 		    "last_midi_event_to_property", //name
 		    "Wait for a MIDI event and make a property for this channel", //description
 		    "success or fail", //return description
@@ -118,7 +118,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 
-    publish_method ("Remove Midi Property", //long name
+    install_method ("Remove Midi Property", //long name
 		    "remove_midi_property", //name
 		    "remove a property made with Make Property", //description
 		    "success or fail", //return description
@@ -154,11 +154,11 @@ namespace switcher
   bool  
   PortMidiSource::start ()
   {
-    unregister_property ("device");
+    uninstall_property ("device");
     open_input_device(device_,
 		      on_pm_event,
 		      this);
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				midi_value_spec_, 
 				"last-midi-value",
 				"Last Midi Value");
@@ -169,8 +169,8 @@ namespace switcher
   PortMidiSource::stop ()
   {
     close_input_device (device_);
-    unregister_property ("last-midi-value");
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    uninstall_property ("last-midi-value");
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				devices_enum_spec_, 
 				"device",
 				"Capture Device");
@@ -295,7 +295,7 @@ namespace switcher
       }
     
     gchar *prop_name = g_strdup_printf ("%u-%u", midi_channel.first, midi_channel.second);
-    context->unregister_property (prop_name);
+    context->uninstall_property (prop_name);
     context->unused_props_specs_[prop_name] = context->prop_specs_[long_name];
     context->prop_specs_.erase (long_name);
     context->midi_channels_.erase (midi_channel);
@@ -353,7 +353,7 @@ namespace switcher
 	unused_props_specs_.erase (prop_name);
       }
     
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				prop_specs_[property_long_name], 
 				prop_name,
 				property_long_name.c_str ());

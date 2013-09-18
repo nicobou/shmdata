@@ -43,8 +43,8 @@ namespace switcher
     add_element_to_cleaner (jpegencenc_);
     add_element_to_cleaner (jpegencbin_);
 
-    register_property (G_OBJECT (jpegencenc_),"quality","quality", "Quality");
-    register_property (G_OBJECT (jpegencenc_),"idct-method","idct-method", "IDCT Algorithm");
+    install_property (G_OBJECT (jpegencenc_),"quality","quality", "Quality");
+    install_property (G_OBJECT (jpegencenc_),"idct-method","idct-method", "IDCT Algorithm");
 
     set_on_first_data_hook (JpegEnc::make_shmdata_writer,this);
     return true;

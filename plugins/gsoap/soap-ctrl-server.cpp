@@ -42,7 +42,7 @@ namespace switcher
     soap_.accept_timeout =  100 * -1000; //100ms
     soap_.fget = SoapCtrlServer::http_get;
     
-    publish_method ("Set Port",
+    install_method ("Set Port",
 		    "set_port", 
 		    "set the port used by the soap server", 
 		    "success or fail",

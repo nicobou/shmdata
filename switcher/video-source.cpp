@@ -62,7 +62,7 @@ namespace switcher
 					  VideoSource::get_codec,
 					  this);
      
-     register_property_by_pspec (custom_props_->get_gobject (), 
+     install_property_by_pspec (custom_props_->get_gobject (), 
 				 primary_codec_spec_, 
 				 "codec_short_list",
 				 "Video Codecs (Short List)");
@@ -86,7 +86,7 @@ namespace switcher
 					      VideoSource::set_codec_long_list,
 					      VideoSource::get_codec_long_list,
 					      this);
-      register_property_by_pspec (custom_props_->get_gobject (), 
+      install_property_by_pspec (custom_props_->get_gobject (), 
 				  codec_long_list_spec_, 
 				  "more_codecs",
 				  "More Codecs");
@@ -206,7 +206,7 @@ namespace switcher
       return false;
 
     for (auto &it: codec_properties_)
-      unregister_property (it);
+      uninstall_property (it);
 
     GstElement *tmp_codec_element = codec_element_;
     GstElement *tmp_color_space_codec_element = color_space_codec_element_;
@@ -226,7 +226,7 @@ namespace switcher
 					G_OBJECT (codec_element_),
 					it.c_str ());
 
-	register_property (G_OBJECT (codec_element_),
+	install_property (G_OBJECT (codec_element_),
 			   it,
 			   it, 
 			   it);
@@ -269,16 +269,16 @@ namespace switcher
     
     if (codec_long_list)
       {
-	context->unregister_property ("codec_short_list");
-	context->register_property_by_pspec (context->custom_props_->get_gobject (), 
+	context->uninstall_property ("codec_short_list");
+	context->install_property_by_pspec (context->custom_props_->get_gobject (), 
 					     context->secondary_codec_spec_, 
 					     "codec_long_list",
 					     "Video Codecs (Long List");
       }
     else
       {
-	context->unregister_property ("codec_long_list");
-	context->register_property_by_pspec (context->custom_props_->get_gobject (), 
+	context->uninstall_property ("codec_long_list");
+	context->install_property_by_pspec (context->custom_props_->get_gobject (), 
 					     context->primary_codec_spec_, 
 					     "codec_short_list",
 					     "Video Codecs (Short List)");

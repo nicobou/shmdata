@@ -45,7 +45,7 @@ namespace switcher
 					    StartableQuiddity::set_started,
 					    StartableQuiddity::get_started,
 					    this);
-    quid->register_property_by_pspec (custom_props_->get_gobject (), 
+    quid->install_property_by_pspec (custom_props_->get_gobject (), 
 				      started_prop_, 
 				      "started",
 				      "Started");

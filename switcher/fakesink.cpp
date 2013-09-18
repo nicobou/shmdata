@@ -67,7 +67,7 @@ namespace switcher
     g_signal_connect(fakesink_, "handoff", (GCallback)on_handoff_cb, this);
 
     //registering some properties 
-    register_property (G_OBJECT (fakesink_),"last-message","last-message", "Last Message");
+    install_property (G_OBJECT (fakesink_),"last-message","last-message", "Last Message");
     
     props_.reset (new CustomPropertyHelper ());
     byte_rate_spec_ = 
@@ -81,7 +81,7 @@ namespace switcher
      					  FakeSink::get_byte_rate,
      					  this);
     
-    register_property_by_pspec (props_->get_gobject (), 
+    install_property_by_pspec (props_->get_gobject (), 
      				byte_rate_spec_, 
      				"byte-rate",
 				"Byte Rate (Bps)");
@@ -104,7 +104,7 @@ namespace switcher
 				    FakeSink::get_caps,
 				    this);
     
-    register_property_by_pspec (props_->get_gobject (), 
+    install_property_by_pspec (props_->get_gobject (), 
      				caps_spec_, 
      				"caps",
 				"Capabilities");

@@ -58,7 +58,7 @@ namespace switcher
     set_name (gst_element_get_name (souphttpsrc_));
     destroy_httpsdpdec ();
  
-    publish_method ("To Shmdata",
+    install_method ("To Shmdata",
 		    "to_shmdata", 
 		    "get raw streams from an sdp description distributed over http and write them to shmdatas", 
 		    "success or fail",

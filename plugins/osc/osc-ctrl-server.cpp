@@ -46,7 +46,7 @@ namespace switcher
     srand(time(0));
     set_name (g_strdup_printf ("oscctrlserver%d",rand() % 1024));
     
-    publish_method ("Set Port",
+    install_method ("Set Port",
 		    "set_port", 
 		    "set the port used by the osc server and start listening messages", 
 		    "success or fail",

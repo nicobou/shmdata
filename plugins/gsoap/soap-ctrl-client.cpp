@@ -43,7 +43,7 @@ namespace switcher
     switcher_control_->soap_endpoint = url_;
 
 
-    publish_method ("Set Remote Switcher",
+    install_method ("Set Remote Switcher",
 		    "set_remote_url", 
 		    "set remote url to control (for instance http://localhost:8080)", 
 		    "success or fail",
@@ -57,7 +57,7 @@ namespace switcher
      		    this);
 
 
-    publish_method ("Create",
+    install_method ("Create",
 		    "create", 
 		    "create a quiddity", 
 		    "success or fail",
@@ -74,7 +74,7 @@ namespace switcher
      		    this);
 
   
-    publish_method ("Remove",
+    install_method ("Remove",
 		    "remove", 
 		    "remove a quiddity", 
 		    "success or fail",
@@ -88,7 +88,7 @@ namespace switcher
      		    this);
  
      
-    publish_method ("Set Property",
+    install_method ("Set Property",
 		    "set_property", 
 		    "set a quiddity property", 
 		    "success or fail",
@@ -108,7 +108,7 @@ namespace switcher
 		    this);
 
 
-    publish_method ("Invoke 1",
+    install_method ("Invoke 1",
 		    "invoke1", 
 		    "invoke a method with one argument", 
 		    "success or fail",
@@ -128,7 +128,7 @@ namespace switcher
       		    this); 
 
 
-    publish_method ("Invoke 2",
+    install_method ("Invoke 2",
 		    "invoke2", 
 		    "invoke a method with two arguments", 
 		    "success or fail",
@@ -152,7 +152,7 @@ namespace switcher
      		    this);
 
 
-    publish_method ("Invoke 3",
+    install_method ("Invoke 3",
 		    "invoke3", 
 		    "invoke a method with three arguments", 
 		    "success or fail",
@@ -179,7 +179,7 @@ namespace switcher
 						       G_TYPE_STRING, NULL),
 		    this);
 
-    publish_method ("Invoke 4",
+    install_method ("Invoke 4",
 		    "invoke4", 
 		    "invoke a method with four arguments", 
 		    "success or fail",

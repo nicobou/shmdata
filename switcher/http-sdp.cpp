@@ -60,7 +60,7 @@ namespace switcher
     // 		      (GCallback) HTTPSDP::pad_removed_cb ,  
     // 		      (gpointer) this);      
    
-    publish_method ("To Shmdata",
+    install_method ("To Shmdata",
 		    "to_shmdata", 
 		    "get raw streams from an sdp description distributed over http and write them to shmdatas", 
 		    "success or fail",
@@ -74,7 +74,7 @@ namespace switcher
 		    this);
 
     //registering "latency"
-    register_property (G_OBJECT (sdpdemux_),"latency","latency", "Latency");
+    install_property (G_OBJECT (sdpdemux_),"latency","latency", "Latency");
 
     return true;
   }

@@ -41,7 +41,7 @@ namespace switcher
   bool 
   ShmdataToFile::init ()
   {
-    publish_method ("Add Shmdata",
+    install_method ("Add Shmdata",
 		    "add_shmdata", 
 		    "add a shmdata to record", 
 		    "success or fail",
@@ -57,7 +57,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
 		    this);
     
-    publish_method ("Remove Shmdata",
+    install_method ("Remove Shmdata",
 		    "remove_shmdata", 
 		    "remove a shmdata from the recorder", 
 		    "success or fail",
@@ -81,7 +81,7 @@ namespace switcher
 							    ShmdataToFile::set_recording,
 							    ShmdataToFile::get_recording,
 							    this);
-    register_property_by_pspec (custom_prop_->get_gobject (), 
+    install_property_by_pspec (custom_prop_->get_gobject (), 
      				recording_param_, 
      				"recording",
 				"Recording");

@@ -49,12 +49,12 @@ namespace switcher
 					    MyPlugin::set_myprop,
      					    MyPlugin::get_myprop,
 					    this);
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
      				myprop_prop_, 
      				"myprop",
 				"My Property"); //long name
 
-    publish_method ("Hello World", //long name
+    install_method ("Hello World", //long name
 		    "hello-world", //name
 		    "say hello and repeat first argument", //description
 		    "the hello answer", //return description

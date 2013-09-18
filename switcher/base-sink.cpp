@@ -38,7 +38,7 @@ namespace switcher
     shmdata_path_ = "";
 
     //registering connect
-    publish_method ("Connect",
+    install_method ("Connect",
 		    "connect",
 		    "connect the sink to a shmdata socket", 
 		    "success or fail",

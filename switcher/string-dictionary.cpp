@@ -39,7 +39,7 @@ namespace switcher
   {
     custom_props_.reset (new CustomPropertyHelper ());
 
-    publish_method ("Create A New Entry",
+    install_method ("Create A New Entry",
 		    "new-entry",
 		    "create a new dictionary entry accessible through a property sharing the same name",
 		    "success or failure",
@@ -58,7 +58,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, NULL),
 		    this);
 
-    publish_method ("Remove An Entry",
+    install_method ("Remove An Entry",
 		    "remove-entry",
 		    "remove the entry and its property",
 		    "success or failure",
@@ -71,7 +71,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 
-    publish_method ("Save To A File",
+    install_method ("Save To A File",
      		    "save",
      		    "save dictionary to a file",
      		    "success or failure",
@@ -84,7 +84,7 @@ namespace switcher
      		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
      		    this);
     
-    publish_method ("Load From File",
+    install_method ("Load From File",
      		    "load",
      		    "Load dictionary from a file",
      		    "success or failure",
@@ -136,7 +136,7 @@ namespace switcher
 						    StringDictionary::string_getter,
 						      prop_context.get ()); 
     
-    context->register_property_by_pspec (context->custom_props_->get_gobject (), 
+    context->install_property_by_pspec (context->custom_props_->get_gobject (), 
 					 context->prop_specs_[entry_name], 
 					 entry_name,
 					 long_name);
@@ -154,7 +154,7 @@ namespace switcher
 	return FALSE;
       }
     
-    context->unregister_property (entry_name);
+    context->uninstall_property (entry_name);
     context->dico_.erase (entry_name);
     context->prop_specs_.erase (entry_name);
     context->set_get_contexts_.erase (entry_name);

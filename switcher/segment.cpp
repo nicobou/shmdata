@@ -54,18 +54,18 @@ namespace switcher
 					      NULL,
 					      Segment::get_shmdata_readers_by_gvalue);
 
-    register_property_by_pspec (gobject_->get_gobject (), 
+    install_property_by_pspec (gobject_->get_gobject (), 
 				json_writers_description_, 
 				"shmdata-writers",
 				"Shmdata Writers");
-    register_property_by_pspec (gobject_->get_gobject (), 
+    install_property_by_pspec (gobject_->get_gobject (), 
 				json_readers_description_, 
 				"shmdata-readers",
 				"Shmdata Readers");
 
     make_bin();
 
-    publish_method ("Set Runtime", 
+    install_method ("Set Runtime", 
 		    "set_runtime",
 		    "attach a quiddity/segment to a runtime",
 		    "success or fail",

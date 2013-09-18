@@ -112,7 +112,7 @@ namespace switcher
     gst_bin_add (GST_BIN (bin_), rtpsession_);
     GstUtils::sync_state_with_parent (rtpsession_);
 
-    publish_method ("Add Data Stream",
+    install_method ("Add Data Stream",
 		    "add_data_stream", 
 		    "add a data stream to the RTP session (sending)", 
 		    "succes or fail",
@@ -125,7 +125,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 
-    publish_method ("Remove Data Stream",
+    install_method ("Remove Data Stream",
 		    "remove_data_stream", 
 		    "remove a data stream from the RTP session (sending)", 
 		    "success or fail",
@@ -138,7 +138,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 
-    publish_method ("Add Destination",
+    install_method ("Add Destination",
 		    "add_destination", 
 		    "add a destination (two destinations can share the same host name)", 
 		    "success or fail",
@@ -154,7 +154,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
 		    this);
     
-    publish_method ("Remove Destination",
+    install_method ("Remove Destination",
 		    "remove_destination", 
 		    "remove a destination",
 		    "success or fail",
@@ -168,7 +168,7 @@ namespace switcher
 		    this);
 
 
-    publish_method ("Add UDP Stream",
+    install_method ("Add UDP Stream",
 		    "add_udp_stream_to_dest", 
 		    "stream RTP to a port with udp", 
 		    "success or fail",
@@ -181,7 +181,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,G_TYPE_STRING,NULL),
 		    this);
     
-    publish_method ("Remove UDP Stream",
+    install_method ("Remove UDP Stream",
 		   "remove_udp_stream_to_dest", 
 		    "remove destination", 
 		    "succes or fail",
@@ -193,7 +193,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,NULL),
 		    this);
     
-    publish_method ("Write SDP File",
+    install_method ("Write SDP File",
 		    "write_sdp_file", 
 		    "print sdp for the given destination", 
 		    "success or fail",
@@ -218,7 +218,7 @@ namespace switcher
 									 RtpSession::get_destinations_json,
 									 this);
 
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				destination_description_json_, 
 				"destinations-json",
 				"Destinations");
@@ -233,7 +233,7 @@ namespace switcher
 								     RtpSession::get_mtu_at_add_data_stream,
 								     this);
     
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				mtu_at_add_data_stream_spec_, 
 				"mtu-at-add-data-stream",
 				"MTU At Add Data Stream");

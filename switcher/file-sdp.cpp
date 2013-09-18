@@ -61,7 +61,7 @@ namespace switcher
     // 		      (gpointer) this);      
    
 
-    publish_method ("To Shmdata",
+    install_method ("To Shmdata",
 		    "to_shmdata", 
 		    "get raw streams from an sdp description distributed over http and write them to shmdatas", 
 		    "success or fail",
@@ -74,7 +74,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
     
-    register_property (G_OBJECT (sdpdemux_),"latency","latency", "Latency");
+    install_property (G_OBJECT (sdpdemux_),"latency","latency", "Latency");
     return true;
   }
 

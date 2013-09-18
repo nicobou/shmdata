@@ -61,7 +61,7 @@ namespace switcher
     group_->state = GROUP_PAUSED;    
     group_->user_data = this;
 
-    publish_method ("Add URI",
+    install_method ("Add URI",
 		    "add_uri", 
 		    "add an uri to the group (the group is looping at the end of the first uri added)", 
 		    "success or fail",
@@ -75,7 +75,7 @@ namespace switcher
 		    this);
     
 
-    publish_method ("Start",
+    install_method ("Start",
 		    "start", 
 		    "start the stream(s)", 
 		    "success or fail",

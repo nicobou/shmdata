@@ -46,10 +46,10 @@ namespace switcher
   bool 
   AudioTestSource::make_audiotestsrc ()
   {
-    unregister_property ("volume");
-    unregister_property ("freq");
-    unregister_property ("samplesperbuffer");
-    unregister_property ("wave");
+    uninstall_property ("volume");
+    uninstall_property ("freq");
+    uninstall_property ("samplesperbuffer");
+    uninstall_property ("wave");
 
     GstElement *audiotest;
     if (!GstUtils::make_element ("audiotestsrc",&audiotest))
@@ -76,19 +76,19 @@ namespace switcher
     audiotestsrc_ = audiotest;
 
     //registering 
-    register_property (G_OBJECT (audiotestsrc_),
+    install_property (G_OBJECT (audiotestsrc_),
 		       "volume",
 		       "volume", 
 		       "Volume");
-    register_property (G_OBJECT (audiotestsrc_),
+    install_property (G_OBJECT (audiotestsrc_),
 		       "freq",
 		       "freq", 
 		       "Frequency");
-    register_property (G_OBJECT (audiotestsrc_),
+    install_property (G_OBJECT (audiotestsrc_),
 		       "samplesperbuffer",
 		       "samplesperbuffer", 
 		       "Samples Per Buffer");
-    register_property (G_OBJECT (audiotestsrc_),
+    install_property (G_OBJECT (audiotestsrc_),
 		       "wave", 
 		       "wave", 
 		       "Signal Form");

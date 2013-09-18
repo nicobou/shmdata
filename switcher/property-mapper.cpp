@@ -50,7 +50,7 @@ namespace switcher
     source_min_spec_ = NULL;
     source_max_spec_ = NULL;
     
-    publish_method ("Set Source Property", //long name
+    install_method ("Set Source Property", //long name
 		    "set-source-property", //name
 		    "set the master property", //description
 		    "success of fail", //return description
@@ -66,7 +66,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
 		    this);
 
-    publish_method ("Set Sink Property", //long name
+    install_method ("Set Sink Property", //long name
 		    "set-sink-property", //name
 		    "set the slave property", //description
 		    "success of fail", //return description
@@ -185,7 +185,7 @@ namespace switcher
   void
   PropertyMapper::make_numerical_source_properties ()
   {
-    unregister_property ("source-min");
+    uninstall_property ("source-min");
     source_min_spec_ =
       custom_props_->make_double_property ("source-min", 
      					   "the minimum value considered",
@@ -197,12 +197,12 @@ namespace switcher
      					   get_double_value,
      					   &source_min_);
     
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
      				source_min_spec_, 
      				"source-min",
      				"Source Property Minimum");
     
-    unregister_property ("source-max");
+    uninstall_property ("source-max");
     source_max_spec_ =
       custom_props_->make_double_property ("source-max", 
      					   "the maximum value considered",
@@ -213,7 +213,7 @@ namespace switcher
      					   set_double_value,
      					   get_double_value,
      					   &source_max_);
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
      				source_max_spec_, 
      				"source-max",
      				"Source Property Maximum");
@@ -222,7 +222,7 @@ namespace switcher
   void
   PropertyMapper::make_numerical_sink_properties ()
   {
-    unregister_property ("sink-min");
+    uninstall_property ("sink-min");
     sink_min_spec_ =
       custom_props_->make_double_property ("sink-min", 
      					   "the minimum value considered",
@@ -234,12 +234,12 @@ namespace switcher
      					   get_double_value,
      					   &sink_min_);
     
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
      				sink_min_spec_, 
      				"sink-min",
      				"Sink Property Minimum");
     
-    unregister_property ("sink-max");
+    uninstall_property ("sink-max");
     sink_max_spec_ =
       custom_props_->make_double_property ("sink-max", 
      					   "the maximum value considered",
@@ -250,7 +250,7 @@ namespace switcher
      					   set_double_value,
      					   get_double_value,
      					   &sink_max_);
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
      				sink_max_spec_, 
      				"sink-max",
      				"Sink Property Maximum");

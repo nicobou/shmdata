@@ -56,7 +56,7 @@ namespace switcher
 					   GstParseToBinSrc::set_gst_launch_pipeline,
 					   GstParseToBinSrc::get_gst_launch_pipeline,
 					   this);
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				gst_launch_pipeline_spec_, 
 				"gst-pipeline",
 				"GStreamer Pipeline");
@@ -127,7 +127,7 @@ namespace switcher
     clean ();
     if (! to_shmdata ())
       return false;
-    unregister_property ("gst-pipeline");
+    uninstall_property ("gst-pipeline");
     return true;
   }
   
@@ -135,8 +135,8 @@ namespace switcher
   GstParseToBinSrc::stop ()
   {
     clean ();
-    unregister_property ("gst-pipeline");
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    uninstall_property ("gst-pipeline");
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				gst_launch_pipeline_spec_, 
 				"gst-pipeline",
 				"GStreamer Pipeline");

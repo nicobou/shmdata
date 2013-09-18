@@ -112,7 +112,7 @@ namespace switcher
 
 
   bool 
-  Quiddity::publish_signal (const std::string long_name,
+  Quiddity::install_signal (const std::string long_name,
 			    const std::string signal_name,
 			    const std::string short_description,
 			    const Signal::args_doc arg_description,
@@ -137,7 +137,7 @@ namespace switcher
   }
 
   bool 
-  Quiddity::publish_signal_with_class_name (const std::string class_name,
+  Quiddity::install_signal_with_class_name (const std::string class_name,
 					    const std::string long_name,
 					    const std::string signal_name,
 					    const std::string short_description,
@@ -228,7 +228,7 @@ namespace switcher
 
 
   bool 
-  Quiddity::register_property_by_pspec (GObject *object, 
+  Quiddity::install_property_by_pspec (GObject *object, 
 					GParamSpec *pspec, 
 					std::string name_to_give,
 					std::string long_name)
@@ -333,9 +333,21 @@ namespace switcher
 
  
   bool 
-  Quiddity::unregister_property (std::string name)
+  Quiddity::uninstall_property (std::string name)
   {
-    if (properties_.find(name) != properties_.end())
+    if (properties_.find(name) == properties_.end())
+      return false;
+    
+    properties_.erase (name); 
+    return true;
+  }
+
+  bool 
+  Quiddity::enable_property (std::string name)
+  {
+    if (disabled_properties_.find(name) == disabled_properties_.end())
+
+
       {
 	properties_.erase (name); 
 	return true;
@@ -347,7 +359,7 @@ namespace switcher
 
   
   bool
-  Quiddity::register_property (GObject *object, 
+  Quiddity::install_property (GObject *object, 
 			       std::string gobject_property_name, 
 			       std::string name_to_give,
 			       std::string long_name)
@@ -359,7 +371,7 @@ namespace switcher
 	return false;
       }
     
-    return register_property_by_pspec (object, pspec, name_to_give, long_name);
+    return install_property_by_pspec (object, pspec, name_to_give, long_name);
   }
 
   
@@ -738,7 +750,7 @@ namespace switcher
 
   //methods
   bool 
-  Quiddity::publish_method (const std::string long_name,
+  Quiddity::install_method (const std::string long_name,
 			    const std::string method_name,
 			    const std::string short_description,
 			    const std::string return_description,

@@ -64,7 +64,7 @@ namespace switcher
 					   Logger::get_last_line,
 					   this);
     
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				last_line_prop_, 
 				"last-line",
 				"Last Line");
@@ -77,7 +77,7 @@ namespace switcher
 					    Logger::set_mute,
 					    Logger::get_mute,
 					    this);
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				mute_prop_, 
 				"mute",
 				"Mute");
@@ -90,7 +90,7 @@ namespace switcher
 					    Logger::set_debug,
 					    Logger::get_debug,
 					    this);
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				debug_prop_, 
 				"debug",
 				"Debug");
@@ -103,7 +103,7 @@ namespace switcher
 					    Logger::set_verbose,
 					    Logger::get_verbose,
 					    this);
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				verbose_prop_, 
 				"verbose",
 				"Verbose");
@@ -116,7 +116,7 @@ namespace switcher
 					    this));
     
     
-    publish_method ("Install Log Handler",
+    install_method ("Install Log Handler",
 		    "install_log_handler", 
 		    "make the logger managing the log domain", 
 		    "success or fail",
@@ -130,7 +130,7 @@ namespace switcher
 		    this);
 
 
-    publish_method ("Remove Log Handler",
+    install_method ("Remove Log Handler",
 		    "remove_log_handler", 
 		    "make the logger stop managing the log domain", 
 		    "success or fail",

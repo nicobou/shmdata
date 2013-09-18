@@ -45,7 +45,7 @@ namespace switcher
 					   get_devices_description_json,
 					   (PortMidi *)this);
     
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				devices_description_spec_, 
 				"devices-json",
 				"Capture Devices");
@@ -60,7 +60,7 @@ namespace switcher
 					 PortMidiSink::set_device,
 					 PortMidiSink::get_device,
 					 this);
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				devices_enum_spec_, 
 				"device",
 				"Capture Device");
@@ -76,7 +76,7 @@ namespace switcher
 					   PortMidiSink::get_shmdata_path,
 					   this);
     
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				shmdata_path_spec_, 
 				"shmdata-path",
 				"Shmdata Path");
@@ -146,7 +146,7 @@ namespace switcher
   bool  
   PortMidiSink::start ()
   {
-    unregister_property ("device");
+    uninstall_property ("device");
     open_output_device (device_);
     gint stat = 165;
     gint data1 = 1;
@@ -159,7 +159,7 @@ namespace switcher
   PortMidiSink::stop ()
   {
     close_output_device (device_);
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
      				devices_enum_spec_, 
      				"device",
      				"Capture Device");

@@ -74,7 +74,7 @@ namespace switcher
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
     GstUtils::wait_state_changed (pipeline_);
 
-    publish_method ("Play",
+    install_method ("Play",
 		    "play", 
 		    "activate the runtime", 
 		    "success or fail",
@@ -85,7 +85,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
 		    this);
 
-   publish_method ("Pause",
+   install_method ("Pause",
 		   "pause", 
 		   "pause the runtime", 
 		   "success or fail",
@@ -96,7 +96,7 @@ namespace switcher
 		   Method::make_arg_type_description (G_TYPE_NONE, NULL),
 		   this);
    
-   publish_method ("Seek",
+   install_method ("Seek",
 		   "seek", 
 		   "seek the runtime", 
 		   "success or fail",
@@ -109,7 +109,7 @@ namespace switcher
 		   Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
 		   this);
  
-   publish_method ("Speed",
+   install_method ("Speed",
 		   "speed", 
 		   "controle speed of runtime", 
 		   "success or fail",

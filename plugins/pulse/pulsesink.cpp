@@ -76,7 +76,7 @@ namespace switcher
       								     PulseSink::get_devices_json,
      								     this);
     
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
      				devices_description_spec_, 
      				"devices-json",
      				"Devices Description");
@@ -89,7 +89,7 @@ namespace switcher
 							     PulseSink::get_device_name,
 							     this);
     
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				device_name_spec_, 
 				"device-name",
 				"Device Name");
@@ -118,10 +118,10 @@ namespace switcher
     if (!GstUtils::make_element ("bin",&pulsesink_bin_))
       return false;
 
-    unregister_property ("volume");
-    unregister_property ("mute");
-    register_property (G_OBJECT (pulsesink_),"volume","volume", "Volume");
-    register_property (G_OBJECT (pulsesink_),"mute","mute", "Mute");
+    uninstall_property ("volume");
+    uninstall_property ("mute");
+    install_property (G_OBJECT (pulsesink_),"volume","volume", "Volume");
+    install_property (G_OBJECT (pulsesink_),"mute","mute", "Mute");
 
 
     if (g_strcmp0 (device_name_, "default") != 0)

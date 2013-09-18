@@ -69,7 +69,7 @@ namespace switcher
 									     PulseSrc::get_capture_devices_json,
 									     this);
     
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				capture_devices_description_spec_, 
 				"devices-json",
 				"Capture Devices");
@@ -128,10 +128,10 @@ namespace switcher
     if (!GstUtils::make_element ("bin",&pulsesrc_bin_))
       return false;
 
-    unregister_property ("volume");
-    unregister_property ("mute");
-    register_property (G_OBJECT (pulsesrc_),"volume","volume", "Volume");
-    register_property (G_OBJECT (pulsesrc_),"mute","mute", "Mute");
+    uninstall_property ("volume");
+    uninstall_property ("mute");
+    install_property (G_OBJECT (pulsesrc_),"volume","volume", "Volume");
+    install_property (G_OBJECT (pulsesrc_),"mute","mute", "Mute");
 
     g_object_set (G_OBJECT (pulsesrc_), "client", get_nick_name ().c_str (), NULL);
     
@@ -265,7 +265,7 @@ namespace switcher
 						    PulseSrc::set_device,
 						    PulseSrc::get_device,
 						    context);
-      context->register_property_by_pspec (context->custom_props_->get_gobject (), 
+      context->install_property_by_pspec (context->custom_props_->get_gobject (), 
 					   context->devices_enum_spec_, 
 					   "device",
 					   "Capture Device");

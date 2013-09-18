@@ -67,7 +67,7 @@ namespace switcher
 					   Uridecodebin::set_uri,
 					   Uridecodebin::get_uri,
 					   this);
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				uri_spec_, 
 				"uri",
 				"URI");
@@ -81,7 +81,7 @@ namespace switcher
 					    Uridecodebin::set_loop,
 					    Uridecodebin::get_loop,
 					    this);
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				loop_prop_, 
 				"loop",
 				"Looping");
@@ -95,12 +95,12 @@ namespace switcher
 					    NULL,
 					    Uridecodebin::get_playing,
 					    this);
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				playing_prop_, 
 				"playing",
 				"Playing");
         
-    // publish_method ("Set URI",
+    // install_method ("Set URI",
     // 		    "to_shmdata", 
     // 		    "decode streams from an uri and write them to shmdatas", 
     // 		    "success or fail",
@@ -113,7 +113,7 @@ namespace switcher
     // 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
     // 		    this);
     
-    publish_method ("Pause",
+    install_method ("Pause",
 		    "pause", 
 		    "pause the player", 
 		    "success or fail",
@@ -124,7 +124,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
 		    this);
     
-    publish_method ("Seek",
+    install_method ("Seek",
 		    "seek", 
 		    "seek the player", 
 		    "success or fail",
@@ -137,7 +137,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
 		    this);
     
-    publish_method ("Speed",
+    install_method ("Speed",
 		    "speed", 
 		    "Player speed", 
 		    "success or fail",

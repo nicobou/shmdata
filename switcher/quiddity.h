@@ -119,6 +119,7 @@ namespace switcher
   private:
     //properties are registered by derived class
     std::map<std::string, Property::ptr> properties_;
+    std::map<std::string, Property::ptr> disabled_properties_;
     JSONBuilder::ptr properties_description_;
     std::map<std::string, Method::ptr> methods_;
     JSONBuilder::ptr methods_description_;
@@ -181,18 +182,22 @@ namespace switcher
    
   protected:
     //property
-    bool register_property (GObject *object, 
+    bool install_property (GObject *object, 
 			    std::string gobject_property_name, 
 			    std::string name_to_give,
 			    std::string long_name);
-    bool unregister_property (std::string name);
-    bool register_property_by_pspec (GObject *object, 
+    bool uninstall_property (std::string name);
+    bool install_property_by_pspec (GObject *object, 
 				     GParamSpec *pspec, 
 				     std::string name_to_give,
 				     std::string long_name);
+    
+    bool enable_property (std::string name);
+    bool disable_property (std::string name);
+    bool enable_property (std::string name, bool enable);
 
     //methods
-    bool publish_method (const std::string long_name,
+    bool install_method (const std::string long_name,
 			 const std::string method_name,
 			 const std::string short_description,
 			 const std::string return_description,
@@ -202,14 +207,14 @@ namespace switcher
 			 Method::args_types arg_types, 
 			 gpointer user_data);
     //signals 
-    bool publish_signal (const std::string long_name,
+    bool install_signal (const std::string long_name,
 			 const std::string signal_name,
 			 const std::string short_description,
 			 const Signal::args_doc arg_description,
 			 guint number_of_params, 
 			 GType *param_types);
 
-    bool publish_signal_with_class_name (const std::string class_name,
+    bool install_signal_with_class_name (const std::string class_name,
 					 const std::string long_name,
 					 const std::string signal_name,
 					 const std::string short_description,

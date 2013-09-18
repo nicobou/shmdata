@@ -68,7 +68,7 @@ namespace switcher
 					   V4L2Src::get_capture_devices_json,
 					   this);
       
-      register_property_by_pspec (custom_props_->get_gobject (), 
+      install_property_by_pspec (custom_props_->get_gobject (), 
 				  capture_devices_description_spec_, 
 				  "devices-json",
 				  "Capture Devices");
@@ -84,7 +84,7 @@ namespace switcher
 					   V4L2Src::get_camera,
 					   this);
 
-      register_property_by_pspec (custom_props_->get_gobject (), 
+      install_property_by_pspec (custom_props_->get_gobject (), 
 				  devices_enum_spec_, 
 				  "device",
 				  "Capture Device");
@@ -137,7 +137,7 @@ namespace switcher
   void
   V4L2Src::update_discrete_resolution (CaptureDescription cap_descr)
   {
-    unregister_property ("resolution");
+    uninstall_property ("resolution");
     resolution_ = -1;
     if (!cap_descr.frame_size_discrete_.empty ())
       {
@@ -166,7 +166,7 @@ namespace switcher
 								 V4L2Src::get_resolution,
 								 this); 
 	resolution_ = 0;
-     	register_property_by_pspec (custom_props_->get_gobject (), 
+     	install_property_by_pspec (custom_props_->get_gobject (), 
      				    resolutions_spec_, 
      				    "resolution",
      				    "Resolution");
@@ -178,7 +178,7 @@ namespace switcher
   void
   V4L2Src::update_discrete_framerate (CaptureDescription cap_descr)
   {
-    unregister_property ("framerate");
+    uninstall_property ("framerate");
     framerate_ = -1;
     if (!cap_descr.frame_size_discrete_.empty ())
       {
@@ -208,7 +208,7 @@ namespace switcher
 								 V4L2Src::get_framerate,
 								 this); 
 	framerate_ = 0;
-     	register_property_by_pspec (custom_props_->get_gobject (), 
+     	install_property_by_pspec (custom_props_->get_gobject (), 
      				    framerate_spec_, 
      				    "framerate",
      				    "Framerate");
@@ -220,8 +220,8 @@ namespace switcher
   void
   V4L2Src::update_width_height (CaptureDescription cap_descr)
   {
-    unregister_property ("width");
-    unregister_property ("height");
+    uninstall_property ("width");
+    uninstall_property ("height");
     width_ = -1;
     height_ = -1;
     if (cap_descr.frame_size_stepwise_max_width_ > 0)
@@ -239,7 +239,7 @@ namespace switcher
 					      V4L2Src::get_width,
 					      this); 
 	
-     	register_property_by_pspec (custom_props_->get_gobject (), 
+     	install_property_by_pspec (custom_props_->get_gobject (), 
      				    width_spec_, 
      				    "width",
      				    "Width");
@@ -258,7 +258,7 @@ namespace switcher
 					      V4L2Src::get_height,
 					      this); 
 	
-     	register_property_by_pspec (custom_props_->get_gobject (), 
+     	install_property_by_pspec (custom_props_->get_gobject (), 
      				    height_spec_, 
      				    "height",
      				    "Height");
@@ -270,8 +270,8 @@ namespace switcher
   void
   V4L2Src::update_framerate_numerator_denominator (CaptureDescription cap_descr)
   {
-    unregister_property ("framerate_numerator");
-    unregister_property ("framerate_denominator");
+    uninstall_property ("framerate_numerator");
+    uninstall_property ("framerate_denominator");
     framerate_numerator_ = -1;
     framerate_denominator_ = -1;
     if (cap_descr.frame_interval_stepwise_max_numerator_ > 0)
@@ -290,7 +290,7 @@ namespace switcher
 					      V4L2Src::set_framerate_numerator,
 					      V4L2Src::get_framerate_numerator,
 					      this); 
-     	register_property_by_pspec (custom_props_->get_gobject (), 
+     	install_property_by_pspec (custom_props_->get_gobject (), 
      				    framerate_numerator_spec_, 
      				    "framerate_numerator",
      				    "Framerate Numerator");
@@ -308,7 +308,7 @@ namespace switcher
 					      V4L2Src::get_framerate_denominator,
 					      this); 
 	
-     	register_property_by_pspec (custom_props_->get_gobject (), 
+     	install_property_by_pspec (custom_props_->get_gobject (), 
      				    framerate_denominator_spec_, 
      				    "framerate_denominator",
      				    "Framerate Denominator");
@@ -320,7 +320,7 @@ namespace switcher
   void
   V4L2Src::update_tv_standard (CaptureDescription cap_descr)
   {
-    unregister_property ("tv_standard");
+    uninstall_property ("tv_standard");
     tv_standard_ = -1;
     if (cap_descr.tv_standards_.size () > 1)
       {
@@ -348,7 +348,7 @@ namespace switcher
 								  this); 
 	
 	tv_standard_ = 0;
-     	register_property_by_pspec (custom_props_->get_gobject (), 
+     	install_property_by_pspec (custom_props_->get_gobject (), 
      				    tv_standards_spec_, 
      				    "tv_standard",
      				    "TV Standard");
@@ -647,16 +647,16 @@ namespace switcher
   V4L2Src::on_start ()
   {
   
-    unregister_property ("resolution");
-    unregister_property ("width");
-    unregister_property ("height");
-    unregister_property ("tv_standard");
-    unregister_property ("device");
-    unregister_property ("framerate");
-    register_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
-    register_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
-    register_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
-    register_property (G_OBJECT (v4l2src_),"hue","hue", "Hue");
+    uninstall_property ("resolution");
+    uninstall_property ("width");
+    uninstall_property ("height");
+    uninstall_property ("tv_standard");
+    uninstall_property ("device");
+    uninstall_property ("framerate");
+    install_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
+    install_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
+    install_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
+    install_property (G_OBJECT (v4l2src_),"hue","hue", "Hue");
 
     return true;
   }
@@ -665,15 +665,15 @@ namespace switcher
   V4L2Src::on_stop ()
   {
     clean_elements ();
-    register_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				devices_enum_spec_, 
 				"device",
 				"Capture Device");
     update_device_specific_properties (device_);
-    unregister_property ("brightness");
-    unregister_property ("contrast");
-    unregister_property ("saturation");
-    unregister_property ("hue");
+    uninstall_property ("brightness");
+    uninstall_property ("contrast");
+    uninstall_property ("saturation");
+    uninstall_property ("hue");
 
     return true;
   }
