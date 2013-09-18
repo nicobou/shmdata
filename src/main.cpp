@@ -134,6 +134,8 @@ main (int argc,
       char *argv[])
 {
   (void) signal (SIGINT, leave);
+  (void) signal (SIGABRT, leave);
+  (void) signal (SIGQUIT, leave);
 
   //command line options
   GError *error = NULL;
