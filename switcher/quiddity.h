@@ -186,6 +186,7 @@ namespace switcher
 				 void *user_data);
    
   protected:
+
     //property
     //enabled by default during installation
     bool install_property (GObject *object, 
@@ -234,6 +235,9 @@ namespace switcher
 
     void signal_emit (const std::string signal_name, 
 		      ...);
+
+    //custom signals
+    void emit_on_interface_changed (); //in order to tell properties/methods has changed
     
     //use a consistent naming for shmdatas FIXME move that to segment (or not?) 
     std::string make_file_name (std::string suffix);

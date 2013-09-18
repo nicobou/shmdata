@@ -189,6 +189,7 @@ namespace switcher
     
     disable_property ("codec");
     disable_property ("more_codecs");
+    emit_on_interface_changed ();
     return true;
   }
   
@@ -200,6 +201,7 @@ namespace switcher
     reset_bin ();
     enable_property ("codec");
     enable_property ("mode_codecs");
+    emit_on_interface_changed ();
     return res;
   }
 

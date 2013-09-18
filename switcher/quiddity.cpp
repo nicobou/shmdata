@@ -58,16 +58,17 @@ namespace switcher
     // 							  "the json-formated signal documentation",
     // 							  NULL));
 
-    // GType arg_type[] = {G_TYPE_STRING};
-    // install_signal ("On Interface Changed",
-    // 		       "on-interface-changed",
-    //  		    "Quiddity properties and/or methods has changed",
-    //  		    Signal::make_arg_description("Quiddity Name",
-    //  						 "quiddity_name",
-    //  						 "the quiddity name",
-    //  						 NULL),
-    //  		    1, 
-    //  		    arg_type);
+    GType arg_type[] = {G_TYPE_STRING};
+    install_signal_with_class_name ("Quiddity",
+				    "On Interface Changed",
+				    "on-interface-changed",
+				    "Quiddity properties and/or methods has changed",
+				    Signal::make_arg_description("Quiddity Name",
+								 "quiddity_name",
+								 "the quiddity name",
+								 NULL),
+				    1, 
+				    arg_type);
   }
   
   Quiddity::~Quiddity () 
@@ -185,7 +186,7 @@ namespace switcher
   {
     if (signals_.find(signal_name) != signals_.end())
       {
-	g_warning ("signals: a signal named %s has already been registered for this class",signal_name.c_str());
+	//g_debug ("signals: a signal named %s has already been registered for this class",signal_name.c_str());
 	return false;
       }
     
@@ -801,4 +802,9 @@ namespace switcher
     return methods_.disable (name); 
   }
 
+  void 
+  Quiddity::emit_on_interface_changed ()
+  {
+    signal_emit ("on-interfaced-changed", get_nick_name ().c_str ());
+  }
 }
