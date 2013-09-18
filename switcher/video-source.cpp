@@ -188,6 +188,7 @@ namespace switcher
       return false;
     
     disable_property ("codec");
+    disable_property ("more_codecs");
     return true;
   }
   
@@ -198,6 +199,7 @@ namespace switcher
     clear_shmdatas ();
     reset_bin ();
     enable_property ("codec");
+    enable_property ("mode_codecs");
     return res;
   }
 
@@ -278,7 +280,7 @@ namespace switcher
 	context->install_property_by_pspec (context->custom_props_->get_gobject (), 
 					     context->secondary_codec_spec_, 
 					     "codec",
-					     "Video Codecs (Long List");
+					     "Video Codecs (Long List)");
       }
     else
       {
