@@ -335,6 +335,18 @@ namespace switcher
   {
     return properties_.remove (name); 
   }
+
+  bool 
+  Quiddity::enable_property (std::string name)
+  {
+    return properties_.enable (name); 
+  }
+
+  bool 
+  Quiddity::disable_property (std::string name)
+  {
+    return properties_.disable (name); 
+  }
   
   bool
   Quiddity::install_property (GObject *object, 
@@ -757,4 +769,22 @@ namespace switcher
     return true;
   }
   
+  bool 
+  Quiddity::uninstall_method (std::string name)
+  {
+    return methods_.remove (name); 
+  }
+  
+  bool 
+  Quiddity::enable_method (std::string name)
+  {
+    return methods_.enable (name); 
+  }
+
+  bool 
+  Quiddity::disable_method (std::string name)
+  {
+    return methods_.disable (name); 
+  }
+
 }
