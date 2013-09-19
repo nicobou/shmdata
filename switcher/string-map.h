@@ -50,6 +50,10 @@ namespace switcher
       bool disable (std::string key);
       bool set_enabled (std::string key, bool enable);
 
+      void clear ();
+      void clear_enabled ();
+      void clear_disabled ();
+
       unsigned int size (); //total
       unsigned int size_enabled ();
       unsigned int size_disabled ();
@@ -59,17 +63,11 @@ namespace switcher
 
       std::vector<std::string> get_keys ();
       std::vector<std::string> get_disabled_keys ();
-
       std::vector<T> get_values ();
       std::vector<T> get_disabled_values ();
-
       std::map<std::string, T> get_map ();
       std::map<std::string, T> get_disabled_map ();
 
-      void clear ();
-      void clear_enabled ();
-      void clear_disabled ();
-      
     private:
       std::map<std::string, T> map_;
       std::map<std::string, T> map_disabled_;

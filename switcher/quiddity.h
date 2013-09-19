@@ -186,9 +186,7 @@ namespace switcher
 				 void *user_data);
    
   protected:
-
     //property
-    //enabled by default during installation
     bool install_property (GObject *object, 
 			    std::string gobject_property_name, 
 			    std::string name_to_give,
@@ -198,10 +196,10 @@ namespace switcher
 				     std::string name_to_give,
 				     std::string long_name);
     bool uninstall_property (std::string name);
+    //properties are enabled by default during installation
     bool disable_property (std::string name);
     bool enable_property (std::string name);
     
-
     //methods
     bool install_method (const std::string long_name,
 			 const std::string method_name,
@@ -216,7 +214,7 @@ namespace switcher
     bool uninstall_method (std::string name);
     bool disable_method (std::string name); 
     bool enable_method (std::string name); 
-    
+
     //signals 
     bool install_signal (const std::string long_name,
 			 const std::string signal_name,
