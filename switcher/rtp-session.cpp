@@ -209,6 +209,7 @@ namespace switcher
     //set the name before registering properties
     set_name (gst_element_get_name (rtpsession_));
     
+    destinations_json_ = NULL;
     custom_props_.reset (new CustomPropertyHelper ());
     destination_description_json_ = custom_props_->make_string_property ("destinations-json", 
 									 "json formated description of destinations",
@@ -889,21 +890,23 @@ namespace switcher
 
     if (context->destinations_json_ != NULL)
       g_free (context->destinations_json_);
+
     JSONBuilder::ptr destinations_json (new JSONBuilder ());
     destinations_json->reset();
     destinations_json->begin_object ();
     destinations_json->set_member_name ("destinations");
     destinations_json->begin_array ();
-    
+
      std::vector<RtpDestination::ptr> destinations = context->destinations_.get_values ();
      std::vector<RtpDestination::ptr>::iterator it;
      if (destinations.begin () != destinations.end ())
        for (it = destinations.begin (); it != destinations.end (); it++)
 	 destinations_json->add_node_value ( (*it)->get_json_root_node ());
-    
+
     destinations_json->end_array ();
     destinations_json->end_object ();
-    context->destinations_json_ = g_strdup (destinations_json->get_string (true).c_str ());
+    context->destinations_json_ = g_strdup ("");//g_strdup (destinations_json->get_string (true).c_str ());
+    
     return context->destinations_json_;
   }
 

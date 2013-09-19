@@ -157,5 +157,5 @@ namespace switcher
     FakeSink *context = static_cast<FakeSink *> (user_data);
     return context->string_caps_;
   }
-  
+ 
 }

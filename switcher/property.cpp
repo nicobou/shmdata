@@ -150,13 +150,16 @@ namespace switcher
     // GObject *element = object_; 
     readable = FALSE;
     g_value_init (&value, property_->value_type);
-   
+    
+    g_object_get_property (object_,
+			   property_->name,
+			   &value);
+
     json_description_->reset ();
     json_description_->begin_object ();
 
     //long name 
     json_description_->add_string_member ("long name", long_name_.c_str ());
-
 
     //nickname 
     //json_description_->add_string_member ("nickname", g_param_spec_get_nick (property_));
