@@ -110,7 +110,7 @@ main (int argc,
     manager->create ("videotestsrc","v");
     manager->invoke_va ("v", "set_runtime", NULL, "av_runtime", NULL);
 
-    manager->set_property ("v", "codec", "jpegenc");
+    //manager->set_property ("v", "codec", "jpegenc");
     
     manager->set_property ("v", "started", "true");
 
@@ -212,19 +212,19 @@ main (int argc,
       			"/tmp/switcher_rtptest_uri_video-0",
       			NULL);
 
-    manager->create ("fakesink","jpegprobe");
-    manager->subscribe_property ("sub","jpegprobe","last-message");
-    manager->subscribe_property ("sub","jpegprobe","caps");
-    manager->invoke_va ("jpegprobe", 
-			"set_runtime", 
-			NULL, 
-			"probe_runtime", 
-			NULL);
-    manager->invoke_va ("jpegprobe",
-      			"connect",
-			NULL,
-      			"/tmp/switcher_rtptest_uri_video-1",
-      			NULL);
+    // manager->create ("fakesink","jpegprobe");
+    // manager->subscribe_property ("sub","jpegprobe","last-message");
+    // manager->subscribe_property ("sub","jpegprobe","caps");
+    // manager->invoke_va ("jpegprobe", 
+    // 			"set_runtime", 
+    // 			NULL, 
+    // 			"probe_runtime", 
+    // 			NULL);
+    // manager->invoke_va ("jpegprobe",
+    //   			"connect",
+    // 			NULL,
+    //   			"/tmp/switcher_rtptest_uri_video-1",
+    //   			NULL);
     
     while (do_continue)
       usleep (100000);

@@ -39,35 +39,62 @@ namespace switcher
     methods_description_.reset (new JSONBuilder());
     signals_description_.reset (new JSONBuilder());
     
-    // GType types[] = {G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING};
-    // make_custom_signal ("quiddity",
-    // 			 "on-new-signal-registered", 
-    // 			 G_TYPE_NONE,
-    // 			 3,
-    // 			 types);
-    // set_signal_description ("on-new-signal-registered",
-    // 			     "a new signal has been registered and documented",
-    // 			     Signal::make_arg_description("Quiddity Name ",
-    //                                                     "quiddity_name",
-    // 							  "the quiddity name",
-    // 							  "Signal Name",
-    // 							  "signal_name",
-    // 							  "the signal name",
-    // 							  "JSON Documentation",
-    // 							  "json_doc",
-    // 							  "the json-formated signal documentation",
-    // 							  NULL));
 
-    GType arg_type[] = {G_TYPE_STRING};
+    GType arg_type[] = {G_TYPE_STRING, G_TYPE_STRING};
     install_signal_with_class_name ("Quiddity",
-				    "On Interface Changed",
-				    "on-interface-changed",
+				    "On New Property",
+				    "on-new-property",
 				    "Quiddity properties and/or methods has changed",
 				    Signal::make_arg_description("Quiddity Name",
 								 "quiddity_name",
 								 "the quiddity name",
+								 "Property Name",
+								 "property_name",
+								 "the property name",
 								 NULL),
-				    1, 
+				    2, 
+				    arg_type);
+
+    install_signal_with_class_name ("Quiddity",
+				    "On Property Removed",
+				    "on-property-removed",
+				    "Quiddity properties and/or methods has changed",
+				    Signal::make_arg_description("Quiddity Name",
+								 "quiddity_name",
+								 "the quiddity name",
+								 "Property Name",
+								 "property_name",
+								 "the property name",
+								 NULL),
+				    2, 
+				    arg_type);
+
+    install_signal_with_class_name ("Quiddity",
+				    "On New Method",
+				    "on-new-method",
+				    "Quiddity properties and/or methods has changed",
+				    Signal::make_arg_description("Quiddity Name",
+								 "quiddity_name",
+								 "the quiddity name",
+								 "Method Name",
+								 "method_name",
+								 "the method name",
+								 NULL),
+				    2, 
+				    arg_type);
+
+    install_signal_with_class_name ("Quiddity",
+				    "On Method Removed",
+				    "on-method-removed",
+				    "Quiddity properties and/or methods has changed",
+				    Signal::make_arg_description("Quiddity Name",
+								 "quiddity_name",
+								 "the quiddity name",
+								 "Method Name",
+								 "method_name",
+								 "the method name",
+								 NULL),
+				    2, 
 				    arg_type);
   }
   
@@ -259,6 +286,7 @@ namespace switcher
     prop->set_gobject_pspec (object, pspec, long_name);
     
     properties_.insert (name_to_give, prop); 
+    signal_emit ("on-new-property", get_nick_name ().c_str (), name_to_give.c_str ());
     return true;
   }
 
@@ -348,7 +376,11 @@ namespace switcher
   bool 
   Quiddity::uninstall_property (std::string name)
   {
-    return properties_.remove (name); 
+    if (!properties_.remove (name))
+      return false;
+    
+    signal_emit ("on-property-removed", get_nick_name ().c_str (), name.c_str ());
+    return true; 
   }
 
   bool 
@@ -781,13 +813,18 @@ namespace switcher
 				 return_description,
 				 arg_description))
       return false;
+    signal_emit ("on-new-method", get_nick_name ().c_str (), method_name.c_str ());
     return true;
   }
   
   bool 
   Quiddity::uninstall_method (std::string name)
   {
-    return methods_.remove (name); 
+    if (!methods_.remove (name))
+      return false;
+
+    signal_emit ("on-new-method", get_nick_name ().c_str (), name.c_str ());
+    return true; 
   }
   
   bool 
@@ -802,9 +839,4 @@ namespace switcher
     return methods_.disable (name); 
   }
 
-  void 
-  Quiddity::emit_on_interface_changed ()
-  {
-    signal_emit ("on-interfaced-changed", get_nick_name ().c_str ());
-  }
 }

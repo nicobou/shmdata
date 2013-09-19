@@ -34,7 +34,7 @@ quiddity_created_removed_cb (std::string subscriber_name,
 			     std::vector<std::string> params, 
 			     void *user_data)
 {
-  // g_message ("%s: %s", signal_name.c_str (), params[0].c_str ());
+  //g_message ("%s: %s", signal_name.c_str (), params[0].c_str ());
   signal_counter ++;
 }
 
@@ -59,6 +59,14 @@ main (int argc,
     manager->create ("videotestsrc","vid2");
     manager->create ("fakesink", "fake2");
 
+    // manager->create ("videotestsrc", "vid");
+    // manager->subscribe_signal ("signal_subscriber","vid","on-new-property");
+    // manager->subscribe_signal ("signal_subscriber","vid","on-property-removed");
+    // manager->subscribe_signal ("signal_subscriber","vid","on-new-method");
+    // manager->subscribe_signal ("signal_subscriber","vid","on-method-removed");
+    // manager->set_property ("vid", "codec", "2");
+    // manager->set_property ("vid", "started", "true");
+    
     
     std::vector<std::string> subscribers = manager->list_signal_subscribers ();
     if (subscribers.size () != 1 
