@@ -56,7 +56,7 @@ namespace switcher
     string_caps_ = g_strdup ("unknown");
     set_string_caps_ = true;
     num_bytes_since_last_update_ = 0;
-
+    
     //set the name before registering properties
     set_name (gst_element_get_name (fakesink_));
     g_object_set (G_OBJECT (fakesink_), 
@@ -69,13 +69,14 @@ namespace switcher
     //registering some properties 
     install_property (G_OBJECT (fakesink_),"last-message","last-message", "Last Message");
     
+    byte_rate_ = 0;
     props_.reset (new CustomPropertyHelper ());
     byte_rate_spec_ = 
       props_->make_int_property ("byte-rate", 
      					  "the byte rate (updated each second)",
      					  0,
      					  G_MAXINT,
-     					  0,
+     					  byte_rate_,
      					  (GParamFlags) G_PARAM_READABLE,
      					  NULL,
      					  FakeSink::get_byte_rate,
