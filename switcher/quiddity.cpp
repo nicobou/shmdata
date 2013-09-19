@@ -386,13 +386,21 @@ namespace switcher
   bool 
   Quiddity::enable_property (std::string name)
   {
-    return properties_.enable (name); 
+    if (!properties_.enable (name))
+      return false;
+    
+    signal_emit ("on-property-removed", get_nick_name ().c_str (), name.c_str ());
+    return true; 
   }
 
   bool 
   Quiddity::disable_property (std::string name)
   {
-    return properties_.disable (name); 
+  if (!properties_.disable (name))
+      return false;
+  
+  signal_emit ("on-property-removed", get_nick_name ().c_str (), name.c_str ());
+  return true; 
   }
   
   bool
@@ -830,13 +838,21 @@ namespace switcher
   bool 
   Quiddity::enable_method (std::string name)
   {
-    return methods_.enable (name); 
+    if (!methods_.enable (name))
+      return false;
+
+    signal_emit ("on-new-method", get_nick_name ().c_str (), name.c_str ());
+    return true; 
   }
 
   bool 
   Quiddity::disable_method (std::string name)
   {
-    return methods_.disable (name); 
+    if (!methods_.disable (name))
+      return false;
+
+    signal_emit ("on-new-method", get_nick_name ().c_str (), name.c_str ());
+    return true; 
   }
 
 }

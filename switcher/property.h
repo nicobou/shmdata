@@ -28,11 +28,12 @@
 #include <map>
 #include <string>
 #include "json-builder.h"
+#include "categorizable.h"
 
 namespace switcher
 {
   
-  class Property
+  class Property : Categorizable
   {
   public:
     typedef std::shared_ptr<Property> ptr;

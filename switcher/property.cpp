@@ -462,7 +462,11 @@ namespace switcher
       }
       break;
     }
-   
+
+
+    json_description_->add_string_member ("category", get_category ().c_str ());
+    json_description_->add_int_member    ("position weight", get_position_weight ());
+  
     json_description_->end_object ();//type decription
 
     g_value_reset (&value);

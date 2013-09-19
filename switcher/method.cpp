@@ -33,6 +33,7 @@ namespace switcher
     closure_ (NULL)
   {
     json_description_.reset (new JSONBuilder());
+    
   }
 
   Method::~Method ()
@@ -132,21 +133,31 @@ namespace switcher
 			   std::string return_description,
 			   args_doc arg_description)
   {
+    long_name_ = long_name;
+    method_name_ = method_name;
+    short_description_ = short_description;
+    return_description_ = return_description;
+    arg_description_ = arg_description;
+  }
 
+
+  void 
+  Method::make_description()
+    {
     json_description_->reset ();
     json_description_->begin_object ();
-    json_description_->add_string_member ("long name", long_name.c_str ());
-    json_description_->add_string_member ("name", method_name.c_str ());
-    json_description_->add_string_member ("description", short_description.c_str ());
+    json_description_->add_string_member ("long name", long_name_.c_str ());
+    json_description_->add_string_member ("name", method_name_.c_str ());
+    json_description_->add_string_member ("description", short_description_.c_str ());
     json_description_->add_string_member ("return type", g_type_name (return_type_));
-    json_description_->add_string_member ("return description", return_description.c_str ());
+    json_description_->add_string_member ("return description", return_description_.c_str ());
     
     json_description_->set_member_name ("arguments");
     json_description_->begin_array ();
     args_doc::iterator it;
     int j=0;
-    if (!arg_description.empty ())
-      for (it = arg_description.begin() ; it != arg_description.end(); it++ )
+    if (!arg_description_.empty ())
+      for (it = arg_description_.begin() ; it != arg_description_.end(); it++ )
 	{
 	  json_description_->begin_object ();
 	  json_description_->add_string_member ("long name", std::get<0>(*it).c_str ());
@@ -156,19 +167,24 @@ namespace switcher
 	  json_description_->end_object ();
 	}
     json_description_->end_array ();
+    json_description_->add_string_member ("category", get_category ().c_str ());
+    json_description_->add_int_member    ("position weight", get_position_weight ());
     json_description_->end_object ();
-  }
+     
+    }
 
   //json formated description
   std::string
   Method::get_description ()
   {
+    make_description ();
     return json_description_->get_string (true);
   }
 
   JSONBuilder::Node 
   Method::get_json_root_node ()
   {
+    make_description ();
     return json_description_->get_root ();
   }
 

@@ -25,6 +25,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     audio-test-source.cpp \
     base-sink.cpp \
     base-source.cpp \
+    categorizable.cpp \
     custom-property-helper.cpp \
     create-remove-spy.cpp \
     decodebin2.cpp \
@@ -100,6 +101,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     audio-test-source.h \
     base-sink.h \
     base-source.h \
+    categorizable.h \
     create-remove-spy.h \
     creator.h \
     custom-property-helper.h \

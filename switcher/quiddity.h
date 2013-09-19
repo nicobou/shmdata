@@ -149,6 +149,9 @@ namespace switcher
 				 const std::string return_description,
 				 const Method::args_doc arg_description);
     
+    //category and positions
+    
+
     //signals
     bool register_signal_gobject (const std::string signal_name, //the name to give
 				  GObject *object, 

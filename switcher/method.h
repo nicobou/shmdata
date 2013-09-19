@@ -28,13 +28,14 @@
 #include <string>
 #include <map>
 #include <stdarg.h>
-#include "json-builder.h"
 #include <tuple>
+#include "json-builder.h"
+#include "categorizable.h"
 
 namespace switcher
 {
   
-  class Method
+  class Method : Categorizable
   {
   public:
     typedef std::shared_ptr<Method> ptr;
@@ -66,6 +67,11 @@ namespace switcher
     JSONBuilder::Node get_json_root_node ();
 
   private:
+    std::string long_name_;
+    std::string method_name_;
+    std::string short_description_;
+    std::string return_description_;
+    args_doc arg_description_;
     GClosure *closure_;
     GType return_type_;
     args_types arg_types_; 
@@ -73,7 +79,7 @@ namespace switcher
     JSONBuilder::ptr json_description_;
     static void destroy_data (gpointer  data,
 			      GClosure *closure);
-    
+    void make_description ();
   };
 
 }  // end of namespace
