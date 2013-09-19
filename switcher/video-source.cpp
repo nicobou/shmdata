@@ -199,7 +199,7 @@ namespace switcher
     clear_shmdatas ();
     reset_bin ();
     enable_property ("codec");
-    enable_property ("mode_codecs");
+    enable_property ("more_codecs");
     return res;
   }
 
