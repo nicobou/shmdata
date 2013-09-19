@@ -26,6 +26,7 @@
 #include "quiddity.h"
 #include "quiddity-manager-impl.h"
 #include "gst-utils.h"
+#include <list>
 
 namespace switcher
 {
@@ -39,6 +40,7 @@ namespace switcher
     methods_description_.reset (new JSONBuilder());
     signals_description_.reset (new JSONBuilder());
     
+    position_weight_counter_ = 0;
 
     GType arg_type[] = {G_TYPE_STRING, G_TYPE_STRING};
     install_signal_with_class_name ("Quiddity",
@@ -284,7 +286,9 @@ namespace switcher
     
     Property::ptr prop (new Property ());
     prop->set_gobject_pspec (object, pspec, long_name);
-    
+
+    prop->set_position_weight (position_weight_counter_);
+    position_weight_counter_ += 20;
     properties_.insert (name_to_give, prop); 
     signal_emit ("on-new-property", get_nick_name ().c_str (), name_to_give.c_str ());
     return true;
@@ -293,12 +297,19 @@ namespace switcher
   Property::ptr
   Quiddity::get_property_ptr (std::string property_name)
   {
-    Property::ptr res;
     if (!properties_.contains (property_name))
       g_debug ("Quiddity::get_property_ptr %s not found", property_name.c_str ());
       
-    res = properties_.lookup_full (property_name);
-    return res;
+    return properties_.lookup_full (property_name);
+  }
+
+  Method::ptr
+  Quiddity::get_method_ptr (std::string method_name)
+  {
+    if (!methods_.contains (method_name))
+      g_debug ("Quiddity::get_method_ptr %s not found", method_name.c_str ());
+    
+    return methods_.lookup_full (method_name);
   }
 
   bool 
@@ -405,11 +416,12 @@ namespace switcher
   
   bool
   Quiddity::install_property (GObject *object, 
-			       std::string gobject_property_name, 
+			      std::string gobject_property_name, 
 			       std::string name_to_give,
-			       std::string long_name)
+			      std::string long_name)
   {
-    GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), gobject_property_name.c_str());
+    GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), 
+						      gobject_property_name.c_str());
     if (pspec == NULL)
       {
 	g_debug ("property not found %s", gobject_property_name.c_str());
@@ -528,6 +540,10 @@ namespace switcher
 	g_debug ("registering name %s already exists",method_name.c_str());
 	return false;
       }
+
+    meth->set_position_weight (position_weight_counter_);
+    position_weight_counter_ += 20;
+
     methods_.insert (method_name, meth);
     return true;
   }
@@ -579,6 +595,7 @@ namespace switcher
     return meth->get_description ();
   }
 
+
   std::string 
   Quiddity::get_properties_description ()
   {
@@ -590,11 +607,11 @@ namespace switcher
     std::map <std::string, Property::ptr> props = properties_.get_map ();
     for(auto &it: props) 
       {
-     	properties_description_->begin_object ();
-     	properties_description_->add_string_member ("name",it.first.c_str ());
-     	JsonNode *root_node = it.second->get_json_root_node ();
-     	properties_description_->add_JsonNode_member ("description", root_node);
-     	properties_description_->end_object ();
+      	properties_description_->begin_object ();
+      	properties_description_->add_string_member ("name",it.first.c_str ());
+      	JsonNode *root_node = it.second->get_json_root_node ();
+      	properties_description_->add_JsonNode_member ("description", root_node);
+      	properties_description_->end_object ();
       }
     
     properties_description_->end_array ();
@@ -821,6 +838,7 @@ namespace switcher
 				 return_description,
 				 arg_description))
       return false;
+    
     signal_emit ("on-new-method", get_nick_name ().c_str (), method_name.c_str ());
     return true;
   }

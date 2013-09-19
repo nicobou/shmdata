@@ -33,7 +33,7 @@
 namespace switcher
 {
   
-  class Property : Categorizable
+  class Property : public Categorizable
   {
   public:
     typedef std::shared_ptr<Property> ptr;

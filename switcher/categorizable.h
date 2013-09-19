@@ -24,6 +24,7 @@
 #define __SWITCHER_CATEGORIZABLE_H__
 
 #include <string>
+#include <memory>
 
 namespace switcher
 {
@@ -31,8 +32,10 @@ namespace switcher
   class Categorizable
   {
   public:
+    typedef std::shared_ptr<Categorizable> ptr;
+
     Categorizable ();
-    //default category is none
+    //default category is ""
     void set_category (std::string category_name);
     //default position weight is 0
     void set_position_weight (int position_weight);

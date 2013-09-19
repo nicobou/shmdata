@@ -20,12 +20,13 @@
  */
 
 #include "categorizable.h"
+#include "gst/gst.h"
 
 namespace switcher
 {
   Categorizable::Categorizable ()
   {
-    category_ = "none";
+    category_ = "";
     position_weight_ = 0;
   }
   

@@ -167,10 +167,10 @@ namespace switcher
 	  json_description_->end_object ();
 	}
     json_description_->end_array ();
-    json_description_->add_string_member ("category", get_category ().c_str ());
+    json_description_->add_string_member ("position category", get_category ().c_str ());
     json_description_->add_int_member    ("position weight", get_position_weight ());
     json_description_->end_object ();
-     
+  
     }
 
   //json formated description

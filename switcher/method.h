@@ -35,7 +35,7 @@
 namespace switcher
 {
   
-  class Method : Categorizable
+  class Method : public Categorizable
   {
   public:
     typedef std::shared_ptr<Method> ptr;

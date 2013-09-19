@@ -95,6 +95,7 @@ namespace switcher
     int method_get_num_value_args (std::string function_name); //returns -1 if method not found
     int method_get_num_pointer_args (std::string function_name); //returns -1 if method not found
     bool has_method (const std::string method_name);
+    Method::ptr get_method_ptr (std::string method_name);
 
     //signals
     std::string get_signals_description (); 
@@ -121,10 +122,13 @@ namespace switcher
     //properties
     StringMap<Property::ptr> properties_;
     JSONBuilder::ptr properties_description_;
-
+    
     //methods
     StringMap<Method::ptr> methods_;
     JSONBuilder::ptr methods_description_;
+
+    //position weight
+    gint position_weight_counter_;
 
     //pair is <class_name, signal_name>
     //this map is static in order to avoid re-creation of the same signal for each quiddity instance 
@@ -150,7 +154,10 @@ namespace switcher
 				 const Method::args_doc arg_description);
     
     //category and positions
-    
+    bool put_method_in_category (std::string method, std::string category);
+    bool set_method_position_weight (std::string method, int position_weight);
+    bool put_property_in_category (std::string property, std::string category);
+    bool set_property_position_weight (std::string property, int position_weight);
 
     //signals
     bool register_signal_gobject (const std::string signal_name, //the name to give
