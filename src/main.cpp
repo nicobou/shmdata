@@ -136,6 +136,7 @@ main (int argc,
   (void) signal (SIGINT, leave);
   (void) signal (SIGABRT, leave);
   (void) signal (SIGQUIT, leave);
+  (void) signal (SIGTERM, leave);
 
   //command line options
   GError *error = NULL;
