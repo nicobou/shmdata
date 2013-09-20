@@ -43,12 +43,12 @@ namespace switcher
   {
     instance_counter_ --;
     if (!input_streams_.empty ())
-      for (auto &it: input_streams_)
-	close_input_device (it.first);
+      while (input_streams_.begin () != input_streams_.end ())
+	close_input_device (input_streams_.begin ()->first);
     
     if (!output_streams_.empty ())
-      for (auto &it: output_streams_)
-	close_output_device (it.first);
+      while (output_streams_.begin () != output_streams_.end ())
+	close_output_device (output_streams_.begin ()->first);
     
     if (instance_counter_ == 0)
       {
