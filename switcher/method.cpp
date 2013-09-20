@@ -149,6 +149,8 @@ namespace switcher
     json_description_->add_string_member ("long name", long_name_.c_str ());
     json_description_->add_string_member ("name", method_name_.c_str ());
     json_description_->add_string_member ("description", short_description_.c_str ());
+    json_description_->add_string_member ("position category", get_category ().c_str ());
+    json_description_->add_int_member    ("position weight", get_position_weight ());
     json_description_->add_string_member ("return type", g_type_name (return_type_));
     json_description_->add_string_member ("return description", return_description_.c_str ());
     
@@ -167,8 +169,6 @@ namespace switcher
 	  json_description_->end_object ();
 	}
     json_description_->end_array ();
-    json_description_->add_string_member ("position category", get_category ().c_str ());
-    json_description_->add_int_member    ("position weight", get_position_weight ());
     json_description_->end_object ();
   
     }

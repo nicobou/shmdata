@@ -53,4 +53,18 @@ namespace switcher
   {
     return position_weight_;
   }
+
+  bool
+  Categorizable::compare_ptr (Categorizable::ptr first, 
+			      Categorizable::ptr second)
+  {
+    return first->position_weight_ < second->position_weight_;
+  }
+
+  bool
+  Categorizable::compare (Categorizable first, 
+			  Categorizable second)
+  {
+    return first.position_weight_ < second.position_weight_;
+  }
 }

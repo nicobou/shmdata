@@ -37,15 +37,30 @@ namespace switcher
 
   void
   Property::set_gobject_pspec (GObject *object, 
-			       GParamSpec *pspec,
-			       std::string long_name)
+			       GParamSpec *pspec)
   {
     property_ = pspec;
     object_ = object;
-    long_name_ = long_name;
-    make_description ();
   }
   
+  void
+  Property::set_long_name (std::string long_name)
+  {
+    long_name_ = long_name;
+  }
+
+  void
+  Property::set_name (std::string name)
+  {
+    name_ = name;
+  }
+  
+  std::string
+  Property::get_name ()
+  {
+    return name_;
+  }
+
   void 
   Property::set (std::string value)
   {
@@ -162,12 +177,18 @@ namespace switcher
     //long name 
     json_description_->add_string_member ("long name", long_name_.c_str ());
 
+    //name
+    json_description_->add_string_member ("name", name_.c_str ());
+
     //nickname 
     //json_description_->add_string_member ("nickname", g_param_spec_get_nick (property_));
 
     // short description
     json_description_->add_string_member ("short description", g_param_spec_get_blurb (property_));
     
+    json_description_->add_string_member ("position category", get_category ().c_str ());
+    json_description_->add_int_member    ("position weight", get_position_weight ());
+
     // name
     //json_description_->add_string_member ("internal name", g_param_spec_get_name (property_));
 
@@ -465,9 +486,6 @@ namespace switcher
     }
 
 
-    json_description_->add_string_member ("position category", get_category ().c_str ());
-    json_description_->add_int_member    ("position weight", get_position_weight ());
-  
     json_description_->end_object ();//type decription
 
     g_value_reset (&value);

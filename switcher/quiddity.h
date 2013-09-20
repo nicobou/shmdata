@@ -129,6 +129,7 @@ namespace switcher
 
     //position weight
     gint position_weight_counter_;
+    bool compare_properties (std::string first, std::string second);
 
     //pair is <class_name, signal_name>
     //this map is static in order to avoid re-creation of the same signal for each quiddity instance 

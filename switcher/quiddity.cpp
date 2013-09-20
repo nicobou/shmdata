@@ -27,6 +27,7 @@
 #include "quiddity-manager-impl.h"
 #include "gst-utils.h"
 #include <list>
+#include <algorithm> 
 
 namespace switcher
 {
@@ -285,10 +286,12 @@ namespace switcher
       }
     
     Property::ptr prop (new Property ());
-    prop->set_gobject_pspec (object, pspec, long_name);
-
+    prop->set_gobject_pspec (object, pspec);
+    prop->set_long_name (long_name);
+    prop->set_name (name_to_give);
     prop->set_position_weight (position_weight_counter_);
     position_weight_counter_ += 20;
+    
     properties_.insert (name_to_give, prop); 
     signal_emit ("on-new-property", get_nick_name ().c_str (), name_to_give.c_str ());
     return true;
@@ -576,10 +579,12 @@ namespace switcher
     methods_description_->begin_object ();
     methods_description_->set_member_name ("methods");
     methods_description_->begin_array ();
-
-    std::map<std::string, Method::ptr> meths = methods_.get_map ();
-    for(auto &it: meths) 
-      methods_description_->add_node_value (it.second->get_json_root_node ());
+    std::vector <Method::ptr> methods = methods_.get_values ();
+    std::sort (methods.begin (),
+	       methods.end (),
+	       Categorizable::compare_ptr);
+    for (auto &it: methods)
+      methods_description_->add_node_value (it->get_json_root_node ());
     methods_description_->end_array ();
     methods_description_->end_object ();
     return methods_description_->get_string (true);
@@ -603,17 +608,13 @@ namespace switcher
     properties_description_->begin_object ();
     properties_description_->set_member_name ("properties");
     properties_description_->begin_array ();
-
-    std::map <std::string, Property::ptr> props = properties_.get_map ();
-    for(auto &it: props) 
-      {
-      	properties_description_->begin_object ();
-      	properties_description_->add_string_member ("name",it.first.c_str ());
-      	JsonNode *root_node = it.second->get_json_root_node ();
-      	properties_description_->add_JsonNode_member ("description", root_node);
-      	properties_description_->end_object ();
-      }
     
+    std::vector <Property::ptr> properties = properties_.get_values ();
+    std::sort (properties.begin (),
+	       properties.end (),
+	       Categorizable::compare_ptr);
+    for (auto &it: properties)
+      properties_description_->add_node_value (it->get_json_root_node ());
     properties_description_->end_array ();
     properties_description_->end_object ();
     

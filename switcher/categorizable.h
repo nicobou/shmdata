@@ -42,6 +42,14 @@ namespace switcher
 
     std::string get_category ();
     int get_position_weight ();
+
+    static bool compare_ptr (Categorizable::ptr first, 
+			     Categorizable::ptr second);
+
+    static bool compare (Categorizable first, 
+			 Categorizable second);
+
+
   private:
     std::string category_;
     int position_weight_;
