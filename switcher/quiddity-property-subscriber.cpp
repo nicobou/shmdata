@@ -29,7 +29,12 @@
 
 namespace switcher
 {
+  QuiddityPropertySubscriber::QuiddityPropertySubscriber()
+  {
+    muted_ = false;
+  }
 
+  
   QuiddityPropertySubscriber::~QuiddityPropertySubscriber()
   {
 
@@ -56,6 +61,12 @@ namespace switcher
      	  }
       }
   }
+
+  void
+  QuiddityPropertySubscriber::mute (bool muted)
+  {
+    muted_ = muted;
+  }
   
   void 
   QuiddityPropertySubscriber::property_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data)
@@ -67,11 +78,12 @@ namespace switcher
     // 	     prop->property_name,
     // 	     Property::parse_callback_args (gobject, pspec).c_str (),
     // 	     (gchar *)prop->user_data); 
-    prop->user_callback (prop->name,
-			 prop->quiddity_name, 
-			 prop->property_name,
-			 Property::parse_callback_args (gobject, pspec),
-			 (gchar *)prop->user_data); 
+    if (!prop->property_subscriber->muted_)
+      prop->user_callback (prop->name,
+			   prop->quiddity_name, 
+			   prop->property_name,
+			   Property::parse_callback_args (gobject, pspec),
+			   (gchar *)prop->user_data); 
   }
 
   void 
@@ -119,6 +131,7 @@ namespace switcher
 	return false;
       }
     PropertyData *prop = new PropertyData ();
+    prop->property_subscriber = this;
     prop->name = g_strdup (name_.c_str ());
     prop->quiddity_name = g_strdup (quid->get_nick_name ().c_str ());
     prop->property_name = g_strdup (property_name.c_str ());

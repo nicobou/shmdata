@@ -929,6 +929,13 @@ namespace switcher
       it.second->mute (muted);
   }
 
+  void
+  QuiddityManager_Impl::mute_property_subscribers (bool muted)
+  {
+    for (auto &it : property_subscribers_.get_map ())
+      it.second->mute (muted);
+  }
+
   bool 
   QuiddityManager_Impl::make_signal_subscriber (std::string subscriber_name,
 					       QuidditySignalSubscriber::OnEmittedCallback cb,

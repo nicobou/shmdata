@@ -47,7 +47,10 @@ namespace switcher
 			     std::string property_name,
 			     std::string value,
 			     void *user_data);
+    QuiddityPropertySubscriber();
     ~QuiddityPropertySubscriber();
+
+    void mute (bool muted);
 
     void set_callback (Callback cb);
     void set_user_data (void *user_data);
@@ -68,8 +71,10 @@ namespace switcher
     void *user_data_;
     std::string name_;
     std::weak_ptr<QuiddityManager_Impl> manager_impl_;
+    bool muted_;
 
     typedef struct {
+      QuiddityPropertySubscriber *property_subscriber;
       gchar *name;
       gchar *quiddity_name; 
       gchar *property_name;

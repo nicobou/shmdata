@@ -128,11 +128,14 @@ namespace switcher
   QuiddityManager::play_command_history (QuiddityManager::CommandHistory histo,
 					 QuiddityManager::PropCallbackMap *prop_cb_data,
 					 QuiddityManager::SignalCallbackMap *sig_cb_data,
-					 bool mute_existing_signal_subscriber)
+					 bool mute_existing_subscribers)
   {
 
-    if (mute_existing_signal_subscriber)
-      manager_impl_->mute_signal_subscribers (true);
+    if (mute_existing_subscribers)
+      {
+	manager_impl_->mute_property_subscribers (true);
+	manager_impl_->mute_signal_subscribers (true);
+      }
 
     for (auto &it: histo)
       {
@@ -169,8 +172,11 @@ namespace switcher
 	  }
       }
 
-    if (mute_existing_signal_subscriber)
-      manager_impl_->mute_signal_subscribers (false);
+    if (mute_existing_subscribers)
+      {
+	manager_impl_->mute_signal_subscribers (false);
+	manager_impl_->mute_property_subscribers (false);
+      }
     
   }
   

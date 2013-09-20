@@ -184,6 +184,7 @@ namespace switcher
 			       std::string signal_name);
 
       void mute_signal_subscribers (bool muted);
+      void mute_property_subscribers (bool muted);
       
       std::vector<std::string> 
 	list_signal_subscribers ();
