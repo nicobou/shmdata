@@ -403,7 +403,7 @@ namespace switcher
     if (!properties_.enable (name))
       return false;
     
-    signal_emit ("on-property-removed", get_nick_name ().c_str (), name.c_str ());
+    signal_emit ("on-new-property", get_nick_name ().c_str (), name.c_str ());
     return true; 
   }
 
