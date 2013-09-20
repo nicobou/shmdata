@@ -58,8 +58,6 @@ namespace switcher
   VideoTestSource::make_video_source (GstElement **new_element)
   {
 
-    uninstall_property ("pattern");
-
     GstElement *videotest;
     if (!GstUtils::make_element ("videotestsrc",&videotest))
       return false;
@@ -74,7 +72,7 @@ namespace switcher
 	
 	GstUtils::clean_element (videotestsrc_);
       }
-      
+     
     videotestsrc_ = videotest;
     *new_element = videotestsrc_;
 
@@ -84,10 +82,10 @@ namespace switcher
   bool 
   VideoTestSource::on_start ()
   {
-    install_property (G_OBJECT (videotestsrc_),
-		       "pattern",
-		       "pattern", 
-		       "Video Pattern");
+    reinstall_property (G_OBJECT (videotestsrc_),
+			"pattern",
+			"pattern", 
+			"Video Pattern");
     return true;
   }
   
@@ -99,7 +97,7 @@ namespace switcher
     if (!made)
       return false;
     
-    install_property (G_OBJECT (videotestsrc_),
+    reinstall_property (G_OBJECT (videotestsrc_),
 		       "pattern",
 		       "pattern", 
 		       "Video Pattern");

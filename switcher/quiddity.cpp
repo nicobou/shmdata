@@ -43,11 +43,11 @@ namespace switcher
     
     position_weight_counter_ = 0;
 
-    GType arg_type[] = {G_TYPE_STRING, G_TYPE_STRING};
+    GType arg_type[] = {G_TYPE_STRING};
     install_signal_with_class_name ("Quiddity",
 				    "On New Property",
-				    "on-new-property",
-				    "Quiddity properties and/or methods has changed",
+				    "on-property-added",
+				    "A new property has been installed",
 				    Signal::make_arg_description("Quiddity Name",
 								 "quiddity_name",
 								 "the quiddity name",
@@ -55,13 +55,13 @@ namespace switcher
 								 "property_name",
 								 "the property name",
 								 NULL),
-				    2, 
+				    1, 
 				    arg_type);
 
     install_signal_with_class_name ("Quiddity",
 				    "On Property Removed",
 				    "on-property-removed",
-				    "Quiddity properties and/or methods has changed",
+				    "A properties has been uninstalled",
 				    Signal::make_arg_description("Quiddity Name",
 								 "quiddity_name",
 								 "the quiddity name",
@@ -69,13 +69,27 @@ namespace switcher
 								 "property_name",
 								 "the property name",
 								 NULL),
-				    2, 
+				    1, 
+				    arg_type);
+
+    install_signal_with_class_name ("Quiddity",
+				    "On Property reinstalled",
+				    "on-property-reinstalled",
+				    "A property has been reinstalled",
+				    Signal::make_arg_description("Quiddity Name",
+								 "quiddity_name",
+								 "the quiddity name",
+								 "Property Name",
+								 "property_name",
+								 "the property name",
+								 NULL),
+				    1, 
 				    arg_type);
 
     install_signal_with_class_name ("Quiddity",
 				    "On New Method",
-				    "on-new-method",
-				    "Quiddity properties and/or methods has changed",
+				    "on-method-added",
+				    "A new method has been installed",
 				    Signal::make_arg_description("Quiddity Name",
 								 "quiddity_name",
 								 "the quiddity name",
@@ -83,13 +97,13 @@ namespace switcher
 								 "method_name",
 								 "the method name",
 								 NULL),
-				    2, 
+				    1, 
 				    arg_type);
 
     install_signal_with_class_name ("Quiddity",
 				    "On Method Removed",
 				    "on-method-removed",
-				    "Quiddity properties and/or methods has changed",
+				    "A method has been uninstalled",
 				    Signal::make_arg_description("Quiddity Name",
 								 "quiddity_name",
 								 "the quiddity name",
@@ -97,8 +111,9 @@ namespace switcher
 								 "method_name",
 								 "the method name",
 								 NULL),
-				    2, 
+				    1, 
 				    arg_type);
+
   }
   
   Quiddity::~Quiddity () 
@@ -271,13 +286,14 @@ namespace switcher
     return true;
   }
 
-
-  bool 
-  Quiddity::install_property_by_pspec (GObject *object, 
-					GParamSpec *pspec, 
-					std::string name_to_give,
-					std::string long_name)
+  bool
+  Quiddity::register_property (GObject *object, 
+			       GParamSpec *pspec, 
+			       std::string name_to_give,
+			       std::string long_name,
+			       std::string signal_to_emit)
   {
+    
     if (properties_.contains (name_to_give)) 
       {
 	g_debug ("registering name %s already exists",
@@ -293,8 +309,19 @@ namespace switcher
     position_weight_counter_ += 20;
     
     properties_.insert (name_to_give, prop); 
-    signal_emit ("on-new-property", get_nick_name ().c_str (), name_to_give.c_str ());
+    //g_print ("--- emit %s\n", signal_to_emit.c_str ());
+    signal_emit (signal_to_emit.c_str (), get_nick_name ().c_str (), name_to_give.c_str ());
     return true;
+  }
+  
+
+  bool 
+  Quiddity::install_property_by_pspec (GObject *object, 
+					GParamSpec *pspec, 
+					std::string name_to_give,
+					std::string long_name)
+  {
+    return register_property (object, pspec,name_to_give, long_name, "on-property-added");
   }
 
   Property::ptr
@@ -403,7 +430,7 @@ namespace switcher
     if (!properties_.enable (name))
       return false;
     
-    signal_emit ("on-new-property", get_nick_name ().c_str (), name.c_str ());
+    signal_emit ("on-property-added", get_nick_name ().c_str (), name.c_str ());
     return true; 
   }
 
@@ -420,7 +447,7 @@ namespace switcher
   bool
   Quiddity::install_property (GObject *object, 
 			      std::string gobject_property_name, 
-			       std::string name_to_give,
+			      std::string name_to_give,
 			      std::string long_name)
   {
     GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), 
@@ -434,7 +461,27 @@ namespace switcher
     return install_property_by_pspec (object, pspec, name_to_give, long_name);
   }
 
-  
+
+  bool
+  Quiddity::reinstall_property (GObject *object, 
+				std::string gobject_property_name, 
+				std::string name,
+				std::string long_name)
+  {
+    GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), 
+						      gobject_property_name.c_str());
+    if (pspec == NULL)
+      {
+	g_debug ("property not found %s", gobject_property_name.c_str());
+	return false;
+      }
+
+    if (!properties_.remove (name))
+      return false;
+
+    //g_print ("invoke reinstall property\n");
+    return register_property (object, pspec, name, long_name, "on-property-reinstalled");
+  }
 
   //return -1 if method not found
   //TODO implement get method and let the manager to call invoke, get_num_args etc...
@@ -840,7 +887,7 @@ namespace switcher
 				 arg_description))
       return false;
     
-    signal_emit ("on-new-method", get_nick_name ().c_str (), method_name.c_str ());
+    signal_emit ("on-method-added", get_nick_name ().c_str (), method_name.c_str ());
     return true;
   }
   
@@ -850,7 +897,7 @@ namespace switcher
     if (!methods_.remove (name))
       return false;
 
-    signal_emit ("on-new-method", get_nick_name ().c_str (), name.c_str ());
+    signal_emit ("on-method-removed", get_nick_name ().c_str (), name.c_str ());
     return true; 
   }
   
@@ -860,7 +907,7 @@ namespace switcher
     if (!methods_.enable (name))
       return false;
 
-    signal_emit ("on-new-method", get_nick_name ().c_str (), name.c_str ());
+    signal_emit ("on-method-added", get_nick_name ().c_str (), name.c_str ());
     return true; 
   }
 
@@ -870,7 +917,7 @@ namespace switcher
     if (!methods_.disable (name))
       return false;
 
-    signal_emit ("on-new-method", get_nick_name ().c_str (), name.c_str ());
+    signal_emit ("on-method-removed", get_nick_name ().c_str (), name.c_str ());
     return true; 
   }
 

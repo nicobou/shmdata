@@ -141,6 +141,12 @@ namespace switcher
     std::string name_;
     std::string nick_name_;
 
+    bool register_property (GObject *object, 
+			    GParamSpec *pspec, 
+			    std::string name_to_give,
+			    std::string long_name,
+			    std::string signal_to_emit);
+
     //method
     bool register_method (std::string method_name,
 			  Method::method_ptr method, 
@@ -202,6 +208,11 @@ namespace switcher
 			    std::string gobject_property_name, 
 			    std::string name_to_give,
 			    std::string long_name);
+    bool reinstall_property (GObject *replacement_object, 
+			     std::string gobject_property_name, 
+			     std::string name,
+			     std::string long_name);
+    
     bool install_property_by_pspec (GObject *object, 
 				     GParamSpec *pspec, 
 				     std::string name_to_give,
@@ -210,7 +221,7 @@ namespace switcher
     //properties are enabled by default during installation
     bool disable_property (std::string name);
     bool enable_property (std::string name);
-    
+
     //methods
     bool install_method (const std::string long_name,
 			 const std::string method_name,
