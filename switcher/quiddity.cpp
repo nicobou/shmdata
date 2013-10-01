@@ -310,7 +310,7 @@ namespace switcher
     
     properties_.insert (name_to_give, prop); 
     //g_print ("--- emit %s\n", signal_to_emit.c_str ());
-    signal_emit (signal_to_emit.c_str (), get_nick_name ().c_str (), name_to_give.c_str ());
+    signal_emit (signal_to_emit.c_str (), name_to_give.c_str ());
     return true;
   }
   
@@ -420,7 +420,7 @@ namespace switcher
     if (!properties_.remove (name))
       return false;
     
-    signal_emit ("on-property-removed", get_nick_name ().c_str (), name.c_str ());
+    signal_emit ("on-property-removed", name.c_str ());
     return true; 
   }
 
@@ -430,7 +430,7 @@ namespace switcher
     if (!properties_.enable (name))
       return false;
     
-    signal_emit ("on-property-added", get_nick_name ().c_str (), name.c_str ());
+    signal_emit ("on-property-added", name.c_str ());
     return true; 
   }
 
@@ -440,7 +440,7 @@ namespace switcher
   if (!properties_.disable (name))
       return false;
   
-  signal_emit ("on-property-removed", get_nick_name ().c_str (), name.c_str ());
+  signal_emit ("on-property-removed", name.c_str ());
   return true; 
   }
   
@@ -887,7 +887,7 @@ namespace switcher
 				 arg_description))
       return false;
     
-    signal_emit ("on-method-added", get_nick_name ().c_str (), method_name.c_str ());
+    signal_emit ("on-method-added", method_name.c_str ());
     return true;
   }
   
@@ -897,7 +897,7 @@ namespace switcher
     if (!methods_.remove (name))
       return false;
 
-    signal_emit ("on-method-removed", get_nick_name ().c_str (), name.c_str ());
+    signal_emit ("on-method-removed",  name.c_str ());
     return true; 
   }
   
@@ -907,7 +907,7 @@ namespace switcher
     if (!methods_.enable (name))
       return false;
 
-    signal_emit ("on-method-added", get_nick_name ().c_str (), name.c_str ());
+    signal_emit ("on-method-added", name.c_str ());
     return true; 
   }
 
@@ -917,7 +917,7 @@ namespace switcher
     if (!methods_.disable (name))
       return false;
 
-    signal_emit ("on-method-removed", get_nick_name ().c_str (), name.c_str ());
+    signal_emit ("on-method-removed", name.c_str ());
     return true; 
   }
 
