@@ -905,7 +905,7 @@ namespace switcher
 
     destinations_json->end_array ();
     destinations_json->end_object ();
-    context->destinations_json_ = g_strdup ("");//g_strdup (destinations_json->get_string (true).c_str ());
+    context->destinations_json_ = g_strdup (destinations_json->get_string (true).c_str ());
     
     return context->destinations_json_;
   }
