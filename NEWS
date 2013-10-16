@@ -1,6 +1,34 @@
 shmdata release notes
 ===================== 
 
+shmdata 0.8.? (2013-??-??)
+---------------------------
+This is the second official release in the 0.8 stable series. 
+
+New features:
+
+*
+
+Bugs fixed:
+
+*
+
+shmdata 0.8.6 (2013-10-16)
+---------------------------
+This is the second official release in the 0.8 stable series. 
+
+New features:
+
+* There are no new features, this is a bugfix release
+
+Bugs fixed:
+
+* shmsrc~ cleaning properly resampled data
+* Leaks in base-reader
+* Leak affecting each buffer on base reader
+* Error on Pd DSP on/off
+* GLitching shmsrc~
+
 shmdata 0.8.3 (2012-06-19)
 ---------------------------
 This is the second official release in the 0.8 stable series. 
