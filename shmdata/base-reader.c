@@ -142,7 +142,9 @@ shmdata_base_reader_on_type_found (GstElement* typefind,
     reader->on_have_type_ (reader,
 			   reader->caps_,
 			   reader->on_have_type_userData_);
-  g_debug ("new caps for base reader: %s",gst_caps_to_string (reader->caps_));
+  gchar *caps_string = gst_caps_to_string (reader->caps_);
+  g_debug ("new caps for base reader: %s", caps_string);
+  g_free (caps_string);
 }
 
 GstCaps *
@@ -153,7 +155,8 @@ shmdata_base_reader_get_caps (shmdata_base_reader_t *reader)
 
 gboolean
 shmdata_base_reader_reset_time (GstPad * pad,
-				GstMiniObject * mini_obj, gpointer user_data)
+				GstMiniObject * mini_obj, 
+				gpointer user_data)
 {
 
   shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
@@ -521,13 +524,19 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
   
   if (g_file_query_exists (reader->shmfile_, NULL))
     {
-      g_debug ("existing shmdata, attaching (%s)", g_file_get_uri (reader->shmfile_));
+      gchar *uri = g_file_get_uri (reader->shmfile_);
+      g_debug ("existing shmdata, attaching (%s)", uri);
+      g_free (uri);
       reader->initialized_ = TRUE;
       reader->on_first_data_ (reader, reader->on_first_data_userData_);
       shmdata_base_reader_attach (reader);
     }
   else
-    g_debug ("monitoring %s", g_file_get_uri (reader->shmfile_));
+    {
+      gchar *uri = g_file_get_uri (reader->shmfile_);
+      g_debug ("monitoring %s", uri);
+      g_free (uri);
+    }
 
   //#ifdef HAVE_OSX
 #if 1 
@@ -574,8 +583,9 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
     g_main_context_pop_thread_default (reader->g_main_context_);
 
 #endif
-
-  g_debug ("shmdata reader started (%s)", g_file_get_uri (reader->shmfile_));
+  gchar *uri = g_file_get_uri (reader->shmfile_);
+  g_debug ("shmdata reader started (%s)", uri);
+  g_free (uri);
   return TRUE;
   
 }
@@ -585,8 +595,8 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
 shmdata_base_reader_t *
 shmdata_base_reader_init (const char *socketName,
 			  GstElement *bin,
-			  void (*on_first_data) (shmdata_base_reader_t *,
-						 void *), void *user_data)
+			  void (*on_first_data) (shmdata_base_reader_t *, void *), 
+			  void *user_data)
 {
   shmdata_base_reader_t *reader =
     (shmdata_base_reader_t *) g_malloc0 (sizeof (shmdata_base_reader_t));

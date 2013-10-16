@@ -105,6 +105,7 @@ shmdata_any_reader_on_new_buffer_from_source (GstElement * elt,
 	  || gst_caps_is_always_compatible (me->data_caps_,
 					    GST_BUFFER_CAPS (buf)))
 	{
+	  gchar *caps_string = gst_caps_to_string (GST_BUFFER_CAPS (buf)); 
 	  me->on_data_ (me,
 			(void *) buf,
 			(void *) GST_BUFFER_DATA (buf),
@@ -112,19 +113,19 @@ shmdata_any_reader_on_new_buffer_from_source (GstElement * elt,
 			(unsigned long long)
 			GST_TIME_AS_NSECONDS (GST_BUFFER_TIMESTAMP (buf)),
 			(const char *)
-			gst_caps_to_string (GST_BUFFER_CAPS (buf)),
+			caps_string,
 			(void *) me->on_data_user_data_);
+	  g_free (caps_string);
 	}
       else
 	{
-	  g_warning
+	  g_debug
 	    ("incompatible data frame retrieved, data %p, data size %d, timestamp %llu, caps %s",
 	     GST_BUFFER_DATA (buf), GST_BUFFER_SIZE (buf),
 	     GST_TIME_AS_MSECONDS (GST_BUFFER_TIMESTAMP (buf)),
 	     gst_caps_to_string (GST_BUFFER_CAPS (buf)));
 
 	}
-
     }
 
   /* if (buf) */
@@ -279,7 +280,7 @@ shmdata_any_reader_close (shmdata_any_reader_t * reader)
       if (reader->reader_)
 	shmdata_base_reader_close (reader->reader_);
       else
-	g_warning ("trying to close a NULL (base-)reader");
+	g_debug ("trying to close a NULL (base-)reader");
       if (reader->data_caps_ != NULL)
 	gst_caps_unref (reader->data_caps_);
       if (reader->type_ != NULL)
@@ -287,7 +288,12 @@ shmdata_any_reader_close (shmdata_any_reader_t * reader)
       if (reader)
 	g_free (reader);
       else
-	g_warning ("trying to close a NULL (base-)reader");
+	g_debug ("trying to close a NULL (base-)reader");
     }
 }
 
+void
+shmdata_any_reader_clean_before_exiting ()
+{
+  gst_deinit ();
+}
