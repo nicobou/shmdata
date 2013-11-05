@@ -531,16 +531,22 @@ namespace switcher
 			      std::string **return_value,
 			      ...)
   {
+
+    command_lock ();
     std::vector<std::string> method_args;
+    command_->set_id (QuiddityCommand::invoke);
     
+    //g_print ("------ invoke_va\n");
     if (quiddity_name == NULL)
       {
 	g_warning ("trying to invoke with a NULL quiddity name");
+	command_unlock ();
 	return false;
       }
     if (method_name == NULL)
       {
 	g_warning ("trying to invoke with a NULL method name");
+	command_unlock ();
 	return false;
       }
 
@@ -553,7 +559,17 @@ namespace switcher
 	method_arg = va_arg(vl, char *);
       }
     va_end(vl);
-    return invoke (quiddity_name, method_name, return_value, method_args);
+    
+    command_->add_arg (quiddity_name);
+    command_->add_arg (method_name);
+    command_->set_vector_arg (method_args);
+    invoke_in_thread  ();
+    if (return_value != NULL && !command_->result_.empty ())
+      *return_value = new std::string (command_->result_[0]);
+    bool res = command_->success_;
+
+    command_unlock ();
+    return res;
   }
 
   bool 
@@ -1023,10 +1039,20 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   void
   QuiddityManager::invoke_in_thread ()
   {
+    //g_print ("-- avant --\n");
+    JSONBuilder::ptr builder;
+    builder.reset (new JSONBuilder ());
+    builder->reset ();
+    builder->begin_object ();
+    builder->set_member_name ("command");
+    builder->add_node_value (command_->get_json_root_node ());
+    builder->end_object ();
+    //g_print ("%s\n", builder->get_string(true).c_str ());
     g_mutex_lock (execution_done_mutex_);
     g_async_queue_push (command_queue_, command_.get ());
     g_cond_wait (execution_done_cond_, execution_done_mutex_);
     g_mutex_unlock (execution_done_mutex_);
+    //g_print ("-- apres --\n");
   }
 
   gboolean

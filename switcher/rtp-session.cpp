@@ -715,26 +715,42 @@ namespace switcher
   bool
   RtpSession::add_data_stream (std::string shmdata_socket_path)
   {
+    //g_print ("add_data stream --- debut\n");
     ShmdataReader::ptr reader;
     reader.reset (new ShmdataReader ());
     reader->set_path (shmdata_socket_path.c_str());
     reader->set_g_main_context (get_g_main_context ());
     reader->set_bin (bin_);
-
+    
+    //g_print ("add_data stream --- 1\n");
     reader->set_on_first_data_hook (attach_data_stream, this);
+
+    //g_print ("add_data stream --- 2\n");
+
     if (runtime_) // starting the reader if runtime is set
       {
-	GstUtils::wait_state_changed (bin_);
+	//g_print ("add_data stream --- 3\n");
+
+	//GstUtils::wait_state_changed (bin_);
+	//g_print ("add_data stream --- 4\n");
 	reader->start ();
+	//g_print ("add_data stream --- 5\n");
       }
+
+    //g_print ("add_data stream --- 6\n");
 
     //saving info about this local stream
     std::ostringstream os_id;
     os_id << next_id_;
     next_id_++;
     internal_id_.insert (shmdata_socket_path, os_id.str());
+    //g_print ("add_data stream --- 7\n");
+
     register_shmdata_reader (reader);
 
+    //g_print ("add_data stream --- 8\n");
+
+    //g_print ("add_data stream --- fin\n");
     return true;
   }  
 
