@@ -464,7 +464,7 @@ namespace switcher
     gst_bin_add_many (GST_BIN (context->bin_), funnel, typefind, NULL);
     gst_element_link (funnel, typefind);
     
-    GstUtils::wait_state_changed (context->bin_);
+    //GstUtils::wait_state_changed (context->bin_);
     GstUtils::sync_state_with_parent (funnel);
     GstUtils::sync_state_with_parent (typefind);
     caller->set_sink_element (funnel);
