@@ -250,7 +250,7 @@ namespace switcher
 	 update_last_line = FALSE;
        break;
      default:
-       context->replace_last_line(g_strdup_printf ("%s-unknown-level: %s",log_domain,message));
+       context->replace_last_line(g_strdup_printf ("%s-unknown-level: %s",log_domain, message));
        break;
      }
 
