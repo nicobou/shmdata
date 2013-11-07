@@ -154,7 +154,10 @@ namespace switcher
   const char * 
   QuiddityCommand::get_string_from_id (QuiddityCommand::command id)
   {
-    return command_names_.at (id);
+    std::map<int, const char *>::const_iterator it = command_names_.find (id);
+    if (it == command_names_.end ())
+      return command_names_.at (QuiddityCommand::invalid_command);
+    return it->second;
   }
 
   QuiddityCommand::ptr
