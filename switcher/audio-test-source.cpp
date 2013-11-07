@@ -84,10 +84,10 @@ namespace switcher
 		       "freq",
 		       "freq", 
 		       "Frequency");
-    install_property (G_OBJECT (audiotestsrc_),
-		       "samplesperbuffer",
-		       "samplesperbuffer", 
-		       "Samples Per Buffer");
+    // install_property (G_OBJECT (audiotestsrc_),
+    // 		       "samplesperbuffer",
+    // 		       "samplesperbuffer", 
+    // 		       "Samples Per Buffer");
     install_property (G_OBJECT (audiotestsrc_),
 		       "wave", 
 		       "wave", 
