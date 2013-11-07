@@ -39,9 +39,10 @@ namespace switcher
     set_name (g_strdup_printf ("ctrlclient%d",rand() % 1024));
 
     switcher_control_ = new controlProxy (SOAP_IO_KEEPALIVE | SOAP_XML_INDENT);
+    switcher_control_->send_timeout = 4; // 4 seconds
+    switcher_control_->recv_timeout = 4; // 4 seconds
     url_ = NULL;
     switcher_control_->soap_endpoint = url_;
-
 
     install_method ("Set Remote Switcher",
 		    "set_remote_url", 
