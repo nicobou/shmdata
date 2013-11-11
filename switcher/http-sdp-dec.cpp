@@ -505,7 +505,7 @@ namespace switcher
     
     gst_element_link (souphttpsrc_, sdpdemux_);
 
-    GstUtils::wait_state_changed (bin_);
+    //GstUtils::wait_state_changed (bin_);
     GstUtils::sync_state_with_parent (souphttpsrc_);
     GstUtils::sync_state_with_parent (sdpdemux_);
     return true;
