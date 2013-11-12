@@ -266,9 +266,9 @@ main (int argc,
   port_arg.push_back (port_number);
   std::string *result;
   manager->invoke (soap_name, "set_port", &result, port_arg);
-  //g_print ("-------------- %s ----------\n", result->c_str ());
+  if (g_strcmp0 ("false", result->c_str ()) == 0 && osc_port_number == NULL)
+    return 0;
 
-  
   // start osc if port number has been set
   if (osc_port_number != NULL)
     {

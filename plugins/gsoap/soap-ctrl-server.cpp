@@ -142,27 +142,35 @@ namespace switcher
   SoapCtrlServer::set_port_wrapped (gint port, gpointer user_data)
   {
     SoapCtrlServer *context = static_cast<SoapCtrlServer*>(user_data);
-    context->set_port (port);
-    return TRUE;
+    if (context->set_port (port))
+      return TRUE;
+    else
+      return FALSE;
   }
 
-  void 
+  bool 
   SoapCtrlServer::set_port (int port)
   {
     port_ = port;
-    start ();
+    return start ();
   }
 
-  void 
+  bool 
   SoapCtrlServer::start ()
   {
-    soap_.user = (void *)this;//manager_.get ();//FIXME this should use the shared pointer, maybe giving this insteead of the manager
+    soap_.user = (void *)this;
     quit_server_thread_ = false;
     service_ = new controlService (soap_);
-    socket_ = service_->bind(NULL, port_, 100 /* BACKLOG */);
-    if (!soap_valid_socket(socket_))
-	service_->soap_print_fault(stderr);
-    thread_ = g_thread_new ("SoapCtrlServer", GThreadFunc(server_thread), this);
+    socket_ = service_->bind (NULL, port_, 100 /* BACKLOG */);
+    if (!soap_valid_socket (socket_))
+      {
+	service_->soap_print_fault (stderr);
+	delete service_;
+	return false;
+      }
+    else
+      thread_ = g_thread_new ("SoapCtrlServer", GThreadFunc(server_thread), this);
+    return true;
   }
 
 
@@ -174,7 +182,7 @@ namespace switcher
   //   return TRUE;
   // }
 
-  void
+  bool
   SoapCtrlServer::stop ()
   {
     quit_server_thread_ = true;
@@ -186,6 +194,7 @@ namespace switcher
     soap_end(&soap_);
     soap_done(&soap_);
     delete service_;
+    return true;
   }
   
   gpointer
@@ -204,8 +213,9 @@ namespace switcher
       { 
 	SOAP_SOCKET s = context->service_->accept();
 	if (!soap_valid_socket(s))
-	  { if (context->service_->errnum)
-	      context->service_->soap_print_fault(stderr);
+	  { 
+	    if (context->service_->errnum)
+	      context->service_->soap_print_fault (stderr);
 	    else
 	      {
 		//g_debug ("SOAP server timed out");

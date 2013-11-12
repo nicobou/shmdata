@@ -34,9 +34,9 @@ namespace switcher
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SoapCtrlServer);
     ~SoapCtrlServer ();
-    void set_port (int port);//default port is 8080
-    void start (); 
-    void stop ();
+    bool set_port (int port);//default port is 8080
+    bool start (); 
+    bool stop ();
     //for invocation into soap handlers:
     std::shared_ptr<QuiddityManager> get_quiddity_manager ();
     //wrappers
