@@ -23,6 +23,7 @@
 
 #include "base-source.h"
 #include "gst-element-cleaner.h"
+#include "custom-property-helper.h"
 #include "string-map.h"
 #include <memory>
 
@@ -38,6 +39,8 @@ namespace switcher
     bool to_shmdata (std::string uri);
     QuiddityDocumentation get_documentation ();
     static QuiddityDocumentation doc_;
+    static gboolean get_loop (void *user_data);
+    static void set_loop (gboolean mute, void *user_data);
 
   private: 
    GstElement *uridecodebin_;
@@ -66,6 +69,12 @@ namespace switcher
    static gboolean pause_wrapped (gpointer unused, gpointer user_data);
    static gboolean seek_wrapped (gdouble position, gpointer user_data);
    static gboolean speed_wrapped (gdouble speed, gpointer user_data);
+
+   //custom properties 
+   CustomPropertyHelper::ptr custom_props_;
+   GParamSpec *loop_prop_;
+   bool loop_;
+
    
    /* static GValueArray *autoplug_sort_cb (GstElement *bin, */
    /* 					 GstPad *pad, */

@@ -97,6 +97,23 @@ namespace switcher
 			    Method::make_arg_description ((char *)"speed",
 							  (char *)"1.0 is normal speed, 0.5 is half the speed and 2.0 is double speed",
 							  NULL));
+
+    custom_props_.reset (new CustomPropertyHelper ());
+    //loop property
+    loop_ = false;
+    loop_prop_ =
+      custom_props_->make_boolean_property ("loop",
+                                            "loop media",
+                                            (gboolean)FALSE,
+                                            (GParamFlags) G_PARAM_READWRITE,
+                                            Uridecodebin::set_loop,
+                                            Uridecodebin::get_loop,
+                                            this);
+    register_property_by_pspec (custom_props_->get_gobject (),
+				loop_prop_,
+				"loop");
+
+
     return true;
   }
   
@@ -176,6 +193,21 @@ namespace switcher
        		  "async-handling",TRUE, 
        		  //"buffer-duration",9223372036854775807, 
        		  NULL); 
+  }
+
+
+  void 
+  Uridecodebin::set_loop (gboolean loop, void *user_data)
+  {
+    Uridecodebin *context = static_cast<Uridecodebin *> (user_data);
+    context->loop_ = loop;
+  }
+
+  gboolean 
+  Uridecodebin::get_loop (void *user_data)
+  {
+    Uridecodebin *context = static_cast<Uridecodebin *> (user_data);
+    return context->loop_;
   }
 
   void 
@@ -270,6 +302,12 @@ namespace switcher
     }
     gst_query_unref (query);
     
+    if (!context->loop_)
+      {
+	context->destroy_uridecodebin ();
+        return FALSE;
+      }
+
     gboolean ret;
     ret = gst_element_seek (GST_ELEMENT (gst_pad_get_parent (context->main_pad_)),
 			    rate,  
