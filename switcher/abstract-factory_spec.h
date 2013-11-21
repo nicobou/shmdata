@@ -73,25 +73,20 @@ namespace switcher
     AbstractFactory<T, Key, Doc>::get_classes_documentation ()
   {
     std::vector<Doc> tmp;
-    typename std::map<Key, Doc>::iterator i = classes_documentation_.begin();
-    while (i != classes_documentation_.end())
-      {
-	tmp.push_back ((*i).second);
-	++i;
-      }
-    return tmp;
+     typename std::map<Key, Doc>::iterator i = classes_documentation_.begin(); 
+     while (i != classes_documentation_.end()) 
+       { 
+	 tmp.push_back ((*i).second);  
+	 ++i; 
+       } 
+     return tmp;
   }
-
+  
   template <typename T, typename Key, typename Doc>
     Doc 
     AbstractFactory<T, Key, Doc>::get_class_documentation (Key id)
   {
-    typename std::map<Key, Doc>::iterator iter = classes_documentation_.find(id); 
-    if (iter == classes_documentation_.end())
-      {
-	Doc doc;
-	return doc;
-      }
+    typename std::map<Key, Doc>::iterator iter = classes_documentation_.find(id);
     return iter->second;
   }
     

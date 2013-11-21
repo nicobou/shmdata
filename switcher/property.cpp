@@ -160,11 +160,10 @@ namespace switcher
   Property::make_description ()
   {
     // guint i;
-    gboolean readable;
+    //gboolean readable = FALSE;
     // gboolean first_flag;
     GValue value = G_VALUE_INIT;
     // GObject *element = object_; 
-    readable = FALSE;
     g_value_init (&value, property_->value_type);
     
     g_object_get_property (object_,

@@ -67,7 +67,7 @@ namespace switcher
   }
     
   void 
-  Decodebin2::no_more_pads_cb (GstElement* object, gpointer user_data)   
+  Decodebin2::no_more_pads_cb (GstElement* /*object*/, gpointer /*user_data*/)   
   {   
     //g_print ("no more pad");
     //Decodebin2 *context = static_cast<Decodebin2 *>(user_data);
@@ -75,7 +75,7 @@ namespace switcher
 
 
   void 
-  Decodebin2::pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data)   
+  Decodebin2::pad_added_cb (GstElement* /*object*/, GstPad* pad, gpointer user_data)   
   {   
     Decodebin2 *context = static_cast<Decodebin2 *>(user_data);
     

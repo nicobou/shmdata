@@ -24,13 +24,12 @@
 #include <math.h>
 
 //for python
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#ifdef HAVE_PYTHON
-#include <Python.h> 
-#endif
-   
-#endif
+// #ifdef HAVE_CONFIG_H
+// #include "config.h"
+// #ifdef HAVE_PYTHON
+// #include <Python.h> 
+// #endif
+// #endif
 
 namespace switcher
 {

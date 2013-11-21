@@ -125,7 +125,7 @@ namespace switcher
   }
 
   void 
-  FakeSink::on_handoff_cb (GstElement* object,
+  FakeSink::on_handoff_cb (GstElement* /*object*/,
 			   GstBuffer* buf,
 			   GstPad* pad,
 			   gpointer user_data)

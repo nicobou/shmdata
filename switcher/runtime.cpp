@@ -134,7 +134,8 @@ namespace switcher
   }
 
   gboolean
-  Runtime::play_wrapped (gpointer unused, gpointer user_data)
+  Runtime::play_wrapped (gpointer, 
+			 gpointer user_data)
   {
     Runtime *context = static_cast<Runtime *>(user_data);
       
@@ -154,7 +155,8 @@ namespace switcher
   
 
   gboolean
-  Runtime::pause_wrapped (gpointer unused, gpointer user_data)
+  Runtime::pause_wrapped (gpointer, 
+			  gpointer user_data)
   {
     Runtime *context = static_cast<Runtime *>(user_data);
       
@@ -343,8 +345,9 @@ res = gst_element_query (pipeline_, query);
   }
 
   GstBusSyncReply 
-  Runtime::bus_sync_handler (GstBus * bus,
-			     GstMessage * msg, gpointer user_data) 
+  Runtime::bus_sync_handler (GstBus */*bus*/,
+			     GstMessage *msg, 
+			     gpointer user_data) 
   {
     shmdata_base_reader_t *reader = (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), 
 										 "shmdata_base_reader");
@@ -409,9 +412,9 @@ res = gst_element_query (pipeline_, query);
   }
 
   gboolean
-  Runtime::bus_called (GstBus *bus,
+  Runtime::bus_called (GstBus */*bus*/,
 		       GstMessage *msg,
-		       gpointer data)
+		       gpointer /*user_data*/)
   {
     switch (GST_MESSAGE_TYPE (msg)) {
     case GST_MESSAGE_EOS:

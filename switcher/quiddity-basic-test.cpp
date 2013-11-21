@@ -81,11 +81,11 @@ namespace switcher
   }
   
   void 
-  on_started_cb(std::string subscriber_name, 
-		std::string quiddity_name, 
-		std::string property_name, 
-		std::string value, 
-		void *user_data)
+  on_started_cb(std::string /*subscriber_name*/, 
+		std::string /*quiddity_name*/, 
+		std::string /*property_name*/, 
+		std::string /*value*/, 
+		void */*user_data*/)
   {
     // g_print ("on_started_cb: %s, %s, %s, %s\n",
     // 	     subscriber_name.c_str (), 

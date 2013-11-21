@@ -67,7 +67,7 @@ namespace switcher
   }
     
   void 
-  Deinterleave::no_more_pads_cb (GstElement* object, gpointer user_data)   
+  Deinterleave::no_more_pads_cb (GstElement* /*0object*/, gpointer /*user_data*/)   
   {   
     //g_print ("no more pad");
     //Deinterleave *context = static_cast<Deinterleave *>(user_data);
@@ -75,7 +75,7 @@ namespace switcher
 
 
   void 
-  Deinterleave::pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data)   
+  Deinterleave::pad_added_cb (GstElement* /*object*/, GstPad* pad, gpointer user_data)   
   {   
     Deinterleave *context = static_cast<Deinterleave *>(user_data);
     

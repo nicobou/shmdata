@@ -260,12 +260,12 @@ else
 fi
 AM_CONDITIONAL(GTKBUILD, test "${GTKBUILD}" = "enabled")
 
+dnl Use the C++ compiler for the compile tests
+AC_LANG(C++)
 
 AC_MSG_CHECKING([to see if compiler understands -std=c++0x])
-save_CXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CFLAGS $CXXFLAGS -std=c++0x"
+CXXFLAGS="$CXXFLAGS -std=c++0x"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
-  CXXFLAGS="$CFLAGS $CXXFLAGS -std=c++0x"
   AC_MSG_RESULT([yes])
 ], [
   AC_MSG_RESULT([no])
@@ -273,16 +273,49 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
 ])
 
 
-dnl check if compiler understands -Wall (if yes, add -Wall to GST_CFLAGS)
+dnl check if compiler understands -Wall (if yes, add -Wall to CFLAGS)
 AC_MSG_CHECKING([to see if compiler understands -Wall])
-save_CFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS -Wall"
+saved_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -Wall"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
-  GST_CFLAGS="$GST_CFLAGS -Wall"
   AC_MSG_RESULT([yes])
 ], [
+  CXXFLAGS="$saved_CXXFLAGS"
   AC_MSG_RESULT([no])
 ])
+                                          
+dnl check if compiler understands -Wextra (if yes, add -Wextra to CFLAGS)
+AC_MSG_CHECKING([to see if compiler understands -Wextra])
+saved_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -Wextra"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  AC_MSG_RESULT([yes])
+], [
+  CXXFLAGS="$saved_CXXFLAGS"
+  AC_MSG_RESULT([no])
+])
+                                          
+dnl check if compiler understands -Weffc++ (if yes, add -Weffc++ to CFLAGS)
+dnl AC_MSG_CHECKING([to see if compiler understands -Weffc++])
+dnl saved_CXXFLAGS="$CXXFLAGS"
+dnl CXXFLAGS="$CXXFLAGS -Weffc++"
+dnl AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+dnl   AC_MSG_RESULT([yes])
+dnl ], [
+dnl   CXXFLAGS="$saved_CXXFLAGS"
+dnl   AC_MSG_RESULT([no])
+dnl ])
+
+dnl check if compiler understands -Werror (if yes, add -Werror to CFLAGS)
+dnl AC_MSG_CHECKING([to see if compiler understands -Werror])
+dnl saved_CXXFLAGS="$CXXFLAGS"
+dnl CXXFLAGS="$CXXFLAGS -Werror"
+dnl AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+dnl   AC_MSG_RESULT([yes])
+dnl ], [
+dnl   CXXFLAGS="$saved_CXXFLAGS"
+dnl   AC_MSG_RESULT([no])
+dnl ])
                                           
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test -z "$DOXYGEN";

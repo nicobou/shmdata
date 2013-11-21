@@ -83,7 +83,7 @@ namespace switcher
  }
   
   static void 
-  my_object_init (MyObject *self)
+  my_object_init (MyObject */*self*/)
   {}
 
   // ---------------------------------- CPP CLASS ----------------------------

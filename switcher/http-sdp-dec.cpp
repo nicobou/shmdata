@@ -118,25 +118,25 @@ namespace switcher
   }
 
   void 
-  HTTPSDPDec::no_more_pads_cb (GstElement* object, gpointer user_data)   
+  HTTPSDPDec::no_more_pads_cb (GstElement */*object*/, gpointer /*user_data*/)   
   {   
   }
 
   void 
   HTTPSDPDec::unknown_type_cb (GstElement *bin, 
-			       GstPad *pad, 
+			       GstPad */*pad*/, 
 			       GstCaps *caps, 
-			       gpointer user_data)
+			       gpointer /*user_data*/)
   {
     g_debug ("HTTPSDPDec unknown type: %s (%s)\n", gst_caps_to_string (caps), gst_element_get_name (bin));
   }
 
   int 
-  HTTPSDPDec::autoplug_select_cb (GstElement *bin, 
-				    GstPad *pad, 
-				    GstCaps *caps, 
-				    GstElementFactory *factory, 
-				    gpointer user_data)
+  HTTPSDPDec::autoplug_select_cb (GstElement */*bin*/, 
+				  GstPad *pad, 
+				  GstCaps */*caps*/, 
+				  GstElementFactory *factory, 
+				  gpointer /*user_data*/)
   {
     //g_print ("\n --- httpsdpdec autoplug select %s, (factory %s)\n\n",  gst_caps_to_string (caps), GST_OBJECT_NAME (factory));
     //     typedef enum {
@@ -336,7 +336,9 @@ namespace switcher
 
 
   gboolean 
-  HTTPSDPDec::gstrtpdepay_buffer_probe_cb (GstPad * pad, GstMiniObject * mini_obj, gpointer user_data)
+  HTTPSDPDec::gstrtpdepay_buffer_probe_cb (GstPad */*pad*/, 
+					   GstMiniObject */*mini_obj*/, 
+					   gpointer user_data)
   {
     HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
     /* if (GST_IS_BUFFER (mini_obj)) */
@@ -356,7 +358,9 @@ namespace switcher
   }
   
   gboolean
-  HTTPSDPDec::gstrtpdepay_event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data)
+  HTTPSDPDec::gstrtpdepay_event_probe_cb (GstPad */*pad*/,
+					  GstEvent *event, 
+					  gpointer user_data)
   {
     HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
 
@@ -374,7 +378,9 @@ namespace switcher
   
 
   void 
-  HTTPSDPDec::httpsdpdec_pad_added_cb (GstElement* object, GstPad *pad, gpointer user_data)   
+  HTTPSDPDec::httpsdpdec_pad_added_cb (GstElement */*object*/, 
+				       GstPad *pad, 
+				       gpointer user_data)   
   {   
     HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
 
@@ -438,7 +444,9 @@ namespace switcher
   }
 
   void 
-  HTTPSDPDec::source_setup_cb (GstElement *httpsdpdec, GstElement *source, gpointer user_data)
+  HTTPSDPDec::source_setup_cb (GstElement */*httpsdpdec*/, 
+			       GstElement *source, 
+			       gpointer /*user_data*/)
   {
     //HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
     g_debug ("source %s %s\n",  GST_ELEMENT_NAME(source), G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (source)));

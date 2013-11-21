@@ -80,14 +80,14 @@ namespace switcher
   }
 
   void 
-  HTTPSDP::no_more_pads_cb (GstElement* object, gpointer user_data)   
+  HTTPSDP::no_more_pads_cb (GstElement* /*object*/, gpointer /*user_data*/)   
   {   
     //HTTPSDP *context = static_cast<HTTPSDP *>(user_data);
   }
 
 
   void 
-  HTTPSDP::pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data)   
+  HTTPSDP::pad_added_cb (GstElement */*object*/, GstPad *pad, gpointer user_data)   
   {   
     HTTPSDP *context = static_cast<HTTPSDP *>(user_data);
     

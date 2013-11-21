@@ -119,8 +119,8 @@ namespace switcher
   } 
   
   void
-  Method::destroy_data (gpointer  data,
-			GClosure *closure)
+  Method::destroy_data (gpointer  /*data*/,
+			GClosure */*closure*/)
   {
     //g_debug ("Method::destroy data");
   }

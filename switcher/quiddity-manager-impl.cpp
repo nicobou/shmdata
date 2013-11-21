@@ -270,12 +270,9 @@ namespace switcher
   QuiddityManager_Impl::get_class_doc (std::string class_name)
   {
     if (abstract_factory_.key_exists (class_name))
-      {
-	JSONBuilder::Node doc = abstract_factory_.get_class_documentation (class_name);
-	return JSONBuilder::get_string (doc, true);
-      }
-    else
-      return "{ \"error\":\"class not found\" }";
+      return JSONBuilder::get_string (abstract_factory_.get_class_documentation (class_name), true);
+
+    return "{ \"error\":\"class not found\" }";
   }
 
   bool 
