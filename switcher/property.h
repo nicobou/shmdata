@@ -39,6 +39,9 @@ namespace switcher
     typedef std::shared_ptr<Property> ptr;
     typedef void (*Callback) (GObject * gobject, GParamSpec * pspec, gpointer user_data);
     Property ();
+    ~Property ();
+    Property (const Property &source);
+    Property& operator= (const Property &source);
 
     //this is when using an existing property
     void set_gobject_pspec (GObject *object, GParamSpec *pspec);
@@ -65,12 +68,13 @@ namespace switcher
     std::string get_short_description ();
 
   private:
+    void make_description();
+    void copy_property(const Property &source);
     std::string long_name_;
     std::string name_;
     GParamSpec *property_;
     GObject *object_;
     JSONBuilder::ptr json_description_;
-    void make_description();
     std::map<std::pair<Callback, void *>, gulong> subscribed_handlers_;
   };
 

@@ -296,26 +296,24 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
 ])
                                           
 dnl check if compiler understands -Weffc++ (if yes, add -Weffc++ to CFLAGS)
-dnl AC_MSG_CHECKING([to see if compiler understands -Weffc++])
-dnl saved_CXXFLAGS="$CXXFLAGS"
-dnl CXXFLAGS="$CXXFLAGS -Weffc++"
-dnl AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
-dnl   AC_MSG_RESULT([yes])
-dnl ], [
-dnl   CXXFLAGS="$saved_CXXFLAGS"
-dnl   AC_MSG_RESULT([no])
-dnl ])
+AC_MSG_CHECKING([to see if compiler understands -Weffc++])
+saved_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -Weffc++"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  AC_MSG_RESULT([yes])
+], [
+  CXXFLAGS="$saved_CXXFLAGS"
+  AC_MSG_RESULT([no])
+])
 
 dnl check if compiler understands -Werror (if yes, add -Werror to CFLAGS)
-dnl AC_MSG_CHECKING([to see if compiler understands -Werror])
-dnl saved_CXXFLAGS="$CXXFLAGS"
-dnl CXXFLAGS="$CXXFLAGS -Werror"
-dnl AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
-dnl   AC_MSG_RESULT([yes])
-dnl ], [
-dnl   CXXFLAGS="$saved_CXXFLAGS"
-dnl   AC_MSG_RESULT([no])
-dnl ])
+AC_MSG_CHECKING([to see if compiler understands -Werror])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  AC_MSG_RESULT([yes])
+  AC_SUBST([WERROR], "-Werror")
+], [
+  AC_MSG_RESULT([no])
+])
                                           
 AC_CHECK_PROGS([DOXYGEN], [doxygen])
 if test -z "$DOXYGEN";

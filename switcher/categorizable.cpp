@@ -29,6 +29,9 @@ namespace switcher
     category_ = "";
     position_weight_ = 0;
   }
+
+  Categorizable::~Categorizable ()
+  {}
   
   void 
   Categorizable::set_category (std::string category_name)

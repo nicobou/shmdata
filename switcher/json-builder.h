@@ -42,6 +42,8 @@ namespace switcher
     typedef JsonNode *Node;
     JSONBuilder ();
     ~JSONBuilder ();
+    JSONBuilder (const JSONBuilder &source);
+    JSONBuilder& operator= (const JSONBuilder &source);
 
     void reset();
     void begin_object ();

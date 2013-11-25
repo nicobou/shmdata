@@ -40,6 +40,21 @@ namespace switcher
       g_object_unref (builder_);
   }
 
+  JSONBuilder::JSONBuilder (const JSONBuilder &source)
+  {
+    g_object_ref (builder_);
+    builder_ = source.builder_;
+  }
+
+  JSONBuilder& 
+  JSONBuilder::operator= (const JSONBuilder &source)
+  {
+    if (source.builder_ != NULL)
+      g_object_ref (source.builder_);
+    builder_ = source.builder_;
+    return *this;
+  }
+
   void
   JSONBuilder::reset()
   {

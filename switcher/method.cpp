@@ -42,6 +42,36 @@ namespace switcher
       g_closure_unref (closure_);
   }
 
+  Method::Method (const Method &source)
+  {
+    copy_method (source);
+  }
+
+  Method&
+  Method::operator= (const Method &source)
+  {
+    copy_method (source);
+    return *this;
+  }
+
+  void 
+  Method::copy_method(const Method &source)
+  {
+    long_name_ = source.long_name_;
+    method_name_ = source.method_name_;
+    short_description_ = source.short_description_;
+    return_description_ = source.return_description_;
+    arg_description_ = source.arg_description_;
+    if (closure_ != NULL)
+      {
+	g_closure_ref (source.closure_);
+	closure_ = source.closure_;
+      }
+    return_type_ = source.return_type_;
+    arg_types_ = source.arg_types_; 
+    num_of_value_args_ = source.num_of_value_args_;
+    json_description_ = source.json_description_;
+  }
 
   bool
   Method::set_method (method_ptr method, 

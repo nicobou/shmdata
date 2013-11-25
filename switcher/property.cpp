@@ -29,16 +29,60 @@
 namespace switcher
 {
 
-  Property::Property ()
+  Property::Property () :
+    long_name_ ("undefined_long_name"),
+    name_ ("undefined_name"),
+    property_ (NULL),
+    object_ (NULL)
   {
     json_description_.reset (new JSONBuilder());
-    long_name_ = "undefined_long_name";
+  }
+
+  Property::~Property ()
+  {
+    g_param_spec_ref (property_);
+    g_object_unref (object_);
+  }
+  
+  Property::Property (const Property &source)
+  {
+    copy_property (source);
+  }
+
+  Property& 
+  Property::operator= (const Property &source)
+  {
+    copy_property (source);
+    return *this;
+  }
+  
+  void
+  Property::copy_property(const Property &source)
+  {
+    long_name_ = source.long_name_;
+    name_ = source.name_;
+    json_description_ = source.json_description_;
+    subscribed_handlers_ = source.subscribed_handlers_;
+    property_ = NULL;
+    object_ = NULL;
+    if (source.property_ != NULL)
+      {
+	g_param_spec_ref (source.property_);
+	property_ = source.property_;
+      }
+    if (source.object_ != NULL)
+      {
+	g_object_ref (source.object_);   
+	object_ = source.object_;
+      }
   }
 
   void
   Property::set_gobject_pspec (GObject *object, 
 			       GParamSpec *pspec)
   {
+    g_param_spec_ref (pspec);
+    g_object_ref (object);
     property_ = pspec;
     object_ = object;
   }

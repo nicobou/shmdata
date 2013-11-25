@@ -46,6 +46,9 @@ namespace switcher
 
     Method ();
     ~Method ();
+    Method (const Method &source);
+    Method& operator= (const Method &source);
+
     bool set_method (method_ptr method,
 		     return_type return_type,
 		     args_types arg_types, 
@@ -67,6 +70,10 @@ namespace switcher
     JSONBuilder::Node get_json_root_node ();
 
   private:
+    static void destroy_data (gpointer  data,
+			      GClosure *closure);
+    void make_description ();
+    void copy_method (const Method &source);
     std::string long_name_;
     std::string method_name_;
     std::string short_description_;
@@ -77,9 +84,6 @@ namespace switcher
     args_types arg_types_; 
     uint num_of_value_args_;
     JSONBuilder::ptr json_description_;
-    static void destroy_data (gpointer  data,
-			      GClosure *closure);
-    void make_description ();
   };
 
 }  // end of namespace

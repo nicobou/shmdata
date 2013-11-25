@@ -35,6 +35,7 @@ namespace switcher
     typedef std::shared_ptr<Categorizable> ptr;
 
     Categorizable ();
+    virtual ~Categorizable ();
     //default category is ""
     void set_category (std::string category_name);
     //default position weight is 0
