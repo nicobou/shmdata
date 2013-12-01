@@ -31,8 +31,8 @@
 #endif
 
 int
-main (int argc,
-      char *argv[])
+main (int /*argc*/,
+      char */*argv*/[])
 {
   {
     switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("gtktest");  

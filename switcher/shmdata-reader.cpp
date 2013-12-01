@@ -152,7 +152,7 @@ namespace switcher
 
 
   void 
-  ShmdataReader::on_have_type (shmdata_base_reader_t *base_reader, 
+  ShmdataReader::on_have_type (shmdata_base_reader_t *, 
 			       GstCaps *caps, 
 			       void *user_data)
   {

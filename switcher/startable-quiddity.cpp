@@ -26,9 +26,10 @@ namespace switcher
 {
 
   StartableQuiddity::StartableQuiddity ()
-  {
+  {}
 
-  }
+  StartableQuiddity::~StartableQuiddity ()
+  {}
 
   void
   StartableQuiddity::init_startable (void *quiddity)

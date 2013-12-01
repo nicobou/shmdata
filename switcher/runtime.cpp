@@ -46,12 +46,17 @@ namespace switcher
     pipeline_ = gst_pipeline_new (NULL);
     set_name (gst_element_get_name (pipeline_));
     
-     source_funcs_ = {
-       source_prepare,
-       source_check,
-       source_dispatch,
-       source_finalize
-     };
+     // source_funcs_ = {
+     //   source_prepare,
+     //   source_check,
+     //   source_dispatch,
+     //   source_finalize
+     // };
+    source_funcs_.prepare = source_prepare;
+    source_funcs_.check = source_check;
+    source_funcs_.dispatch = source_dispatch;
+    source_funcs_.finalize = source_finalize;
+
      source_ = g_source_new (&source_funcs_, sizeof (GstBusSource));
 
      ((GstBusSource*)source_)->bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_));

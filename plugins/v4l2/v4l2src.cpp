@@ -632,10 +632,10 @@ namespace switcher
   }
 
   bool
-  V4L2Src::inspect_frame_rate (const char *file_path,
-			       unsigned pixel_format,
-			       unsigned width,
-			       unsigned height)
+  V4L2Src::inspect_frame_rate (const char */*file_path*/,
+			       unsigned /*pixel_format*/,
+			       unsigned /*width*/,
+			       unsigned /*height*/)
   {
     //FIXME, framerate can change according to pixel_format and resolution
     g_debug ("  V4L2Src::inspect_frame_rate: TODO");

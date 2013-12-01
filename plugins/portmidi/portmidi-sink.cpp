@@ -99,12 +99,12 @@ namespace switcher
   }
   
   void
-  PortMidiSink::on_shmreader_data (shmdata_any_reader_t * reader,
+  PortMidiSink::on_shmreader_data (shmdata_any_reader_t */*reader*/,
 				   void *shmbuf,
 				   void *data,
-				   int data_size,
-				   unsigned long long timestamp,
-				   const char *type_description, 
+				   int /*data_size*/,
+				   unsigned long long /*timestamp*/,
+				   const char */*type_description*/, 
 				   void *user_data)
   {
     PortMidiSink *context = static_cast <PortMidiSink *> (user_data);

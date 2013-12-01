@@ -256,7 +256,8 @@ namespace switcher
 
 
   void 
-  Uridecodebin::no_more_pads_cb (GstElement* object, gpointer user_data)   
+  Uridecodebin::no_more_pads_cb (GstElement */*object*/, 
+				 gpointer /*user_data*/)   
   {   
     //g_print ("---- no more pad\n");
     // Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
@@ -264,19 +265,19 @@ namespace switcher
 
   void 
   Uridecodebin::unknown_type_cb (GstElement *bin, 
-				 GstPad *pad, 
+				 GstPad */*pad*/, 
 				 GstCaps *caps, 
-				 gpointer user_data)
+				 gpointer /*user_data*/)
   {
     g_warning ("Uridecodebin unknown type: %s (%s)\n", gst_caps_to_string (caps), gst_element_get_name (bin));
   }
 
   int 
-  Uridecodebin::autoplug_select_cb (GstElement *bin, 
-				    GstPad *pad, 
+  Uridecodebin::autoplug_select_cb (GstElement */*bin*/, 
+				    GstPad */*pad*/, 
 				    GstCaps *caps, 
 				    GstElementFactory *factory, 
-				    gpointer user_data)
+				    gpointer /*user_data*/)
   {
     g_debug ("uridecodebin autoplug select %s, (factory %s)",  gst_caps_to_string (caps), GST_OBJECT_NAME (factory));
     //     typedef enum {
@@ -466,7 +467,9 @@ namespace switcher
 
 
   gboolean 
-  Uridecodebin::gstrtpdepay_buffer_probe_cb (GstPad * pad, GstMiniObject * mini_obj, gpointer user_data)
+  Uridecodebin::gstrtpdepay_buffer_probe_cb (GstPad */*pad*/, 
+					     GstMiniObject */*mini_obj*/, 
+					     gpointer user_data)
   {
     Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
     
@@ -488,7 +491,9 @@ namespace switcher
   }
   
   gboolean
-  Uridecodebin::gstrtpdepay_event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data)
+  Uridecodebin::gstrtpdepay_event_probe_cb (GstPad */*pad*/, 
+					    GstEvent *event, 
+					    gpointer user_data)
   {
     Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
 
@@ -617,7 +622,8 @@ namespace switcher
   }
 
   gboolean
-  Uridecodebin::play_wrapped (gpointer unused, gpointer user_data)
+  Uridecodebin::play_wrapped (gpointer /*unused*/, 
+			      gpointer user_data)
   {
     Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
     QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
@@ -633,7 +639,8 @@ namespace switcher
   }
   
   gboolean
-  Uridecodebin::pause_wrapped (gpointer unused, gpointer user_data)
+  Uridecodebin::pause_wrapped (gpointer /*unused*/, 
+			       gpointer user_data)
   {
     Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
     QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();

@@ -38,6 +38,8 @@ namespace switcher
     typedef std::shared_ptr<ShmdataWriter> ptr;
     ShmdataWriter();
     ~ShmdataWriter();
+    ShmdataWriter (const ShmdataWriter &) = delete;
+    ShmdataWriter &operator= (const ShmdataWriter &) = delete;
     bool set_path (std::string name); //path needs to be fully specified
     bool set_path_without_deleting (std::string name); //path needs to be fully specified
     std::string get_path ();

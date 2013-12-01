@@ -49,11 +49,11 @@ static gchar **remaining_args = NULL;
 
 //FIXME the list-something should actually give lists, and json formated should be given without one-char option
 
-static GOptionEntry entries[] =
+static GOptionEntry entries[22] =
   {
     { "server", 'S', 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:8080)", NULL },
-    { "save", NULL, 0, G_OPTION_ARG_NONE, &save, "save history to file (--save filename)", NULL },
-    { "load", NULL, 0, G_OPTION_ARG_NONE, &load, "load state from history file (--load filename)", NULL },
+    { "save", 'w', 0, G_OPTION_ARG_NONE, &save, "save history to file (--save filename)", NULL },
+    { "load", 'x', 0, G_OPTION_ARG_NONE, &load, "load state from history file (--load filename)", NULL },
     //FIXME make this working { "run", NULL, 0, G_OPTION_ARG_NONE, &run, "run history to file (--run filename)", NULL },
     { "create-quiddity", 'C', 0, G_OPTION_ARG_NONE, &createquiddity, "create a quiddity instance (-C quiddity_class [optional nick name])", NULL },
     { "delete-quiddity", 'D', 0, G_OPTION_ARG_NONE, &deletequiddity, "delete a quiddity instance by its name", NULL },
@@ -69,12 +69,11 @@ static GOptionEntry entries[] =
     { "set-prop", 's', 0, G_OPTION_ARG_NONE, &setprop, "set property value (-s quiddity_name prop_name val)", NULL },
     { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g quiddity_name prop_name)", NULL },
     { "invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod, "invoke method of a quiddity (-i quiddity_name method_name args...)", NULL },
+    { "classes-doc", 'K', 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", NULL },
+    { "class-doc", 'k', 0, G_OPTION_ARG_NONE, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
+    { "quiddities-descr", 'Q', 0, G_OPTION_ARG_NONE, &quidditiesdescr, "print instanciated quiddities, JSON-formated", NULL },
+    { "quiddity-descr", 'q', 0, G_OPTION_ARG_NONE, &quidditydescr, "print quiddity documentation, JSON-formated (--class-doc class_name)", NULL },
     {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &remaining_args, "remaining arguments", NULL},
-    { "classes-doc", NULL, 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", NULL },
-    { "class-doc", NULL, 0, G_OPTION_ARG_NONE, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
-    { "quiddity-descr", NULL, 0, G_OPTION_ARG_NONE, &quidditydescr, "print quiddity documentation, JSON-formated (--class-doc class_name)", NULL },
-    { "quiddities-descr", NULL, 0, G_OPTION_ARG_NONE, &quidditiesdescr, "print instanciated quiddities, JSON-formated", NULL },
-    { NULL }
 };
 
 
@@ -92,9 +91,7 @@ int main(int argc, char **argv)
     } 
   
   if (server == NULL)
-    {
-      server = "http://localhost:8080";
-    }
+    server = g_strdup ("http://localhost:8080");
   
   if (! (renamequiddity
 	 ^ save
@@ -400,7 +397,7 @@ int main(int argc, char **argv)
 
   if (switcher_control.error)
     switcher_control.soap_stream_fault(std::cerr);
-
-    return 0;
+  
+  return 0;
 }
 

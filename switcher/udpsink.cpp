@@ -191,14 +191,20 @@ namespace switcher
   }
 
   void 
-  UDPSink::on_client_added (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data)
+  UDPSink::on_client_added (GstElement */*multiudpsink*/, 
+			    gchar */*host*/, 
+			    gint /*port*/, 
+			    gpointer /*user_data*/)
   {
     //UDPSink *context = static_cast<UDPSink *>(user_data);
     g_debug ("UDPSink::on_client_added");
   }
 
   void 
-  UDPSink::on_client_removed (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data)
+  UDPSink::on_client_removed (GstElement */*multiudpsink*/, 
+			      gchar */*host*/, 
+			      gint /*port*/, 
+			      gpointer /*user_data*/)
   {
     //UDPSink *context = static_cast<UDPSink *>(user_data);
     g_debug ("UDPSink::on_client_removed");
@@ -243,7 +249,7 @@ namespace switcher
   }
 
   gboolean
-  UDPSink::clear_wrapped (gpointer unused, gpointer user_data)
+  UDPSink::clear_wrapped (gpointer /*unused*/, gpointer user_data)
   {
     //std::string connector = static_cast<std::string>(connector_name);
     UDPSink *context = static_cast<UDPSink*>(user_data);

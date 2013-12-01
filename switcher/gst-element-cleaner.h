@@ -35,7 +35,7 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<GstElementCleaner> ptr;
-    ~GstElementCleaner ();
+    virtual ~GstElementCleaner ();
     void add_element_to_cleaner (GstElement *element);
     void add_labeled_element_to_cleaner (std::string label, GstElement *element);
     GstElement *get_labeled_element_from_cleaner (std::string label);

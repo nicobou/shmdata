@@ -47,9 +47,10 @@ namespace switcher
 				      std::string signal_name,
 				      std::vector<std::string> params,
 				      void *user_data);
-    QuidditySignalSubscriber();
-    ~QuidditySignalSubscriber();
-
+    QuidditySignalSubscriber ();
+    ~QuidditySignalSubscriber ();
+    QuidditySignalSubscriber (const QuidditySignalSubscriber &) = delete;
+    QuidditySignalSubscriber &operator= (const QuidditySignalSubscriber &) = delete;
     void mute (bool muted);
 
     void set_callback (OnEmittedCallback cb);

@@ -237,7 +237,7 @@ namespace switcher
   }
   
   gboolean
-  Signal::on_signal_emitted (GSignalInvocationHint *ihint,
+  Signal::on_signal_emitted (GSignalInvocationHint *,
 			     guint n_param_values,
 			     const GValue *param_values,
 			     gpointer user_data)
@@ -302,7 +302,7 @@ namespace switcher
   }
 
   void 
-  Signal::signal_emit (/*GMainContext *context,*/ const gchar *unused_string, va_list  var_args)
+  Signal::signal_emit (/*GMainContext *context,*/ const gchar */*unused_string*/, va_list  var_args)
   {
     g_signal_emit_valist (object_, id_, 0, var_args);
     // EmitArgs *args = new EmitArgs;
@@ -378,5 +378,6 @@ namespace switcher
 
     for (gsize i = 0; i < param_size ; i++)
       g_value_unset (&params[i]);
+    return result_value;
   } 
 }

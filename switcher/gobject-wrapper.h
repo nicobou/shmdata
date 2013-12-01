@@ -41,6 +41,8 @@ namespace switcher
     typedef std::shared_ptr<GObjectWrapper> ptr;
     GObjectWrapper ();
     ~GObjectWrapper ();
+    GObjectWrapper (const GObjectWrapper &) = delete;
+    GObjectWrapper &operator= (const GObjectWrapper &) = delete;
 
     GObject *get_gobject ();
 

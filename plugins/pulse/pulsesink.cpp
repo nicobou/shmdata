@@ -348,7 +348,7 @@ namespace switcher
   void 
     PulseSink::on_pa_event_callback (pa_context *pulse_context, 
 				    pa_subscription_event_type_t pulse_event_type,
-				    uint32_t index, 
+				     uint32_t /*index*/, 
 				    void *user_data)
   {
     PulseSink *context = static_cast<PulseSink *> (user_data);

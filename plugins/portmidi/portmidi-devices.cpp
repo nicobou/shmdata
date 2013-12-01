@@ -294,7 +294,8 @@ namespace switcher
        Sysex messages from either source block messages from the other.
     */
     void 
-    PortMidi::PortMidiScheduler::process_midi (PtTimestamp timestamp, void *user_data)
+    PortMidi::PortMidiScheduler::process_midi (PtTimestamp /*timestamp*/, 
+					       void *user_data)
     {
 
       PortMidiScheduler *context = static_cast<PortMidiScheduler *>(user_data);

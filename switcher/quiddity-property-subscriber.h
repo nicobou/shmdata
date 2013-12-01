@@ -49,7 +49,8 @@ namespace switcher
 			     void *user_data);
     QuiddityPropertySubscriber();
     ~QuiddityPropertySubscriber();
-
+    QuiddityPropertySubscriber (const QuiddityPropertySubscriber &) = delete;
+    QuiddityPropertySubscriber & operator= (const QuiddityPropertySubscriber &) = delete;
     void mute (bool muted);
 
     void set_callback (Callback cb);

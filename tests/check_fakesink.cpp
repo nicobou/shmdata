@@ -26,11 +26,11 @@
 #include <unistd.h>  //sleep
 
 void 
-property_cb(std::string subscriber_name, 
-	    std::string quiddity_name, 
-	    std::string property_name, 
-	    std::string value, 
-	    void *user_data)
+property_cb(std::string /*subscriber_name*/, 
+	    std::string /*quiddity_name*/, 
+	    std::string /*property_name*/, 
+	    std::string /*value*/, 
+	    void */*user_data*/)
 {
   // g_print ("%s %s %s %s\n",
   // 	   subscriber_name.c_str (), 
@@ -42,12 +42,11 @@ property_cb(std::string subscriber_name,
 
 
 int
-main (int argc,
-      char *argv[])
+main (int /*argc*/,
+      char */*argv*/[])
 {
 
   {
-    bool success = true;
     switcher::QuiddityManager::ptr manager = 
       switcher::QuiddityManager::make_manager("check_fakesink");  
     

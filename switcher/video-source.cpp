@@ -24,9 +24,10 @@
 
 namespace switcher
 {
-  VideoSource::VideoSource () 
+  VideoSource::VideoSource () :
+    rawvideo_ (NULL),
+    video_tee_ (NULL)
   {
-    video_tee_ = NULL;
     codec_ = 0; //None
     codec_element_ = NULL;
     color_space_codec_element_  = NULL;
@@ -101,8 +102,8 @@ namespace switcher
   }
 
   void 
-  VideoSource::print_list (gpointer data,
-			   gpointer user_data) 
+  VideoSource::print_list (gpointer /*data*/,
+			   gpointer /*user_data*/) 
   {
     //g_print ("%s\n", g_type_name (gst_element_factory_get_element_type (GST_ELEMENT_FACTORY (data))));
     // g_print ("long name: %s name %s description:%s\n", 

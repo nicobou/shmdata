@@ -168,8 +168,12 @@ namespace switcher
 
   /* catch any osc incoming messages. */
   int 
-  OscCtrlServer::osc_handler(const char *path, const char *types, lo_arg **argv,
-			     int argc, void *data, void *user_data)
+  OscCtrlServer::osc_handler(const char *path, 
+			     const char *types, 
+			     lo_arg **argv,
+			     int argc, 
+			     void */*data*/, 
+			     void *user_data)
   {
     OscCtrlServer *context = static_cast<OscCtrlServer*>(user_data);
     std::shared_ptr<QuiddityManager> manager = context->get_quiddity_manager ();

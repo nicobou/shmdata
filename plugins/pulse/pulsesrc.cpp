@@ -374,7 +374,7 @@ namespace switcher
   void 
     PulseSrc::on_pa_event_callback (pa_context *pulse_context, 
 				    pa_subscription_event_type_t pulse_event_type,
-				    uint32_t index, 
+				    uint32_t /*index*/, 
 				    void *user_data)
   {
     PulseSrc *context = static_cast<PulseSrc *> (user_data);

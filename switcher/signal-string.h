@@ -44,6 +44,8 @@ namespace switcher
     
     Signal (); 
     ~Signal ();
+    Signal (const Signal &) = delete;
+    Signal &operator=(const Signal &) = delete;
 
     bool set_gobject_signame (GObject *object, 
 			      std::string gobject_signal_name);

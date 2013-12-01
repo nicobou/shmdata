@@ -107,7 +107,7 @@ namespace switcher
   }
   
   gpointer
-  GTKVideo::gtk_main_loop_thread (gpointer user_data)
+  GTKVideo::gtk_main_loop_thread (gpointer /*user_data*/)
   {
     g_debug ("GTKVideo::gtk_main_loop_thread starting");
     gtk_main ();
@@ -116,7 +116,9 @@ namespace switcher
 
 
   gboolean 
-  GTKVideo::key_pressed_cb(GtkWidget *widget, GdkEventKey *event, gpointer data)
+  GTKVideo::key_pressed_cb(GtkWidget */*widget*/, 
+			   GdkEventKey *event, 
+			   gpointer data)
   {
     GTKVideo *context = static_cast<GTKVideo *>(data);
     QuiddityManager_Impl::ptr manager;
@@ -247,7 +249,9 @@ namespace switcher
   
   /* This function is called when the main window is closed */
   void 
-  GTKVideo::delete_event_cb (GtkWidget *widget, GdkEvent *event, void *user_data) 
+  GTKVideo::delete_event_cb (GtkWidget */*widget*/, 
+			     GdkEvent */*event*/, 
+			     void *user_data) 
   {
     GTKVideo *context = static_cast <GTKVideo *> (user_data);
     
@@ -262,7 +266,9 @@ namespace switcher
   }
   
   gboolean 
-  GTKVideo::expose_cb (GtkWidget *widget, GdkEventExpose *event, void *user_data) 
+  GTKVideo::expose_cb (GtkWidget */*widget*/, 
+		       GdkEventExpose */*event*/, 
+		       void */*user_data*/) 
   {
     return FALSE;
   }
@@ -331,26 +337,26 @@ namespace switcher
   }
 
   gboolean 
-  GTKVideo::on_window_state_event (GtkWidget *widget,
-				   GdkEvent  *event,
-				   gpointer   user_data)
+  GTKVideo::on_window_state_event (GtkWidget */*widget*/,
+				   GdkEvent  */*event*/,
+				   gpointer   /*user_data*/)
   {
     g_print ("on_window_state_event\n");
     return FALSE;
   }
 
   gboolean 
-  GTKVideo::on_destroy_event (GtkWidget *widget,
-			      GdkEvent  *event,
-			      gpointer   user_data)
+  GTKVideo::on_destroy_event (GtkWidget */*widget*/,
+			      GdkEvent  */*event*/,
+			      gpointer   /*user_data*/)
   {
-    GTKVideo *context = static_cast <GTKVideo *> (user_data);
+    //GTKVideo *context = static_cast <GTKVideo *> (user_data);
     //g_print ("window destroyed \n");
     return FALSE;
   }
 
   void 
-  GTKVideo::on_shmdata_connect (std::string shmdata_sochet_path) 
+  GTKVideo::on_shmdata_connect (std::string /*shmdata_sochet_path*/) 
   {
     g_mutex_lock (wait_window_mutex_);
 

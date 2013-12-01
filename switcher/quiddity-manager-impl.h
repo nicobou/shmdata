@@ -54,8 +54,10 @@ namespace switcher
       static QuiddityManager_Impl::ptr make_manager ();//will get name "default"
       static QuiddityManager_Impl::ptr make_manager (std::string name);
       //void reboot ();
-      ~QuiddityManager_Impl();
-    
+      virtual ~QuiddityManager_Impl();
+      QuiddityManager_Impl (const QuiddityManager_Impl &) = delete;
+      QuiddityManager_Impl &operator= (const QuiddityManager_Impl &) = delete;
+
       //plugins
       bool scan_directory_for_plugins (const char *directory_path);
 

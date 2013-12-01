@@ -37,7 +37,8 @@ namespace switcher
     typedef std::shared_ptr<VideoSource> ptr;
     VideoSource ();
     ~VideoSource ();
-
+    VideoSource (const VideoSource &) = delete;
+    VideoSource &operator= (const VideoSource&) = delete;
     bool start ();
     bool stop ();
 
@@ -45,13 +46,15 @@ namespace switcher
     virtual bool on_start () {return true;};
     virtual bool on_stop () {return true;};
     virtual bool make_video_source (GstElement **new_element) = 0;
+
     GstElement *rawvideo_;
     GstElement *video_tee_;
     GstCaps *videocaps_;
+    std::string shmdata_path_;
+
     bool make_new_shmdatas ();
     bool remake_codec_elements ();
     void make_codec_properties ();
-    std::string shmdata_path_;
 
     //custom properties:
     CustomPropertyHelper::ptr custom_props_; 
@@ -62,8 +65,10 @@ namespace switcher
     GParamSpec *secondary_codec_spec_;
     GEnumValue secondary_codec_[128];
     gint codec_;
+
     static void set_codec (const gint value, void *user_data);
     static gint get_codec (void *user_data);
+
     //short or long codec list
     GParamSpec *codec_long_list_spec_;
     static gboolean get_codec_long_list (void *user_data);

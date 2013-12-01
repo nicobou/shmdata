@@ -41,6 +41,9 @@ namespace switcher
     typedef std::shared_ptr<Segment> ptr;
     Segment ();
     ~Segment ();
+    Segment (const Segment &) = delete;
+    Segment &operator= (const Segment&) = delete;
+ 
     // the segment is managing itself the presence/attachment with the runtime
     void set_runtime (Runtime::ptr runtime);
 

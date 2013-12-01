@@ -56,6 +56,8 @@ namespace switcher
     typedef std::shared_ptr<Quiddity> ptr;
     
     Quiddity ();
+    Quiddity (const Quiddity &) = delete;
+    Quiddity &operator= (const Quiddity &) = delete;
     virtual ~Quiddity ();
     
     //class documentation

@@ -49,9 +49,9 @@ static gchar *extraplugindir = NULL;
 //static std::vector<switcher::QuiddityManager::ptr> container;
 static switcher::QuiddityManager::ptr manager;
 
-static GOptionEntry entries[] =
+static GOptionEntry entries[15] =
   {
-    { "version", NULL, 0, G_OPTION_ARG_NONE, &display_version, "display switcher version number", NULL },
+    { "version", 'V', 0, G_OPTION_ARG_NONE, &display_version, "display switcher version number", NULL },
     { "server-name", 'n', 0, G_OPTION_ARG_STRING, &server_name, "server name (default is \"default\")", NULL },
     { "port-number", 'p', 0, G_OPTION_ARG_STRING, &port_number, "port number the server will bind (default is 8080)", NULL },
     { "load", 'l', 0, G_OPTION_ARG_STRING, &load_file, "load state from history file (-l filename)", NULL },
@@ -62,11 +62,10 @@ static GOptionEntry entries[] =
     { "list-props-by-class", 'P', 0, G_OPTION_ARG_STRING, &listpropbyclass, "list properties of a class", NULL },
     { "list-methods-by-class", 'M', 0, G_OPTION_ARG_STRING, &listmethodsbyclass, "list methods of a class", NULL },
     { "list-signals-by-class", 'S', 0, G_OPTION_ARG_STRING, &listsignalsbyclass, "list signals of a class", NULL },
-    { "classes-doc", NULL, 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", NULL },
-    { "class-doc", NULL, 0, G_OPTION_ARG_STRING, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
+    { "classes-doc", 'K', 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", NULL },
+    { "class-doc", 'k', 0, G_OPTION_ARG_STRING, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
     { "osc-port", 'o', 0, G_OPTION_ARG_STRING, &osc_port_number, "osc port number (osc enabled only if set)", NULL },
-    { "extra-plugin-dir", NULL, 0, G_OPTION_ARG_STRING, &extraplugindir, "directory where to find additional plugins", NULL },
-    { NULL }
+    { "extra-plugin-dir", 'P', 0, G_OPTION_ARG_STRING, &extraplugindir, "directory where to find additional plugins", NULL }
   };
 
 void
@@ -81,19 +80,19 @@ leave (int sig)
 }
 
 static void
-quiet_log_handler (const gchar *log_domain, 
-		   GLogLevelFlags log_level,
-		   const gchar *message,
-		   gpointer user_data)
+quiet_log_handler (const gchar */*log_domain*/, 
+		   GLogLevelFlags /*log_level*/,
+		   const gchar */*message*/,
+		   gpointer /*user_data*/)
 {
 }
 
 static void 
-logger_cb (std::string subscriber_name, 
-	   std::string quiddity_name, 
-	   std::string property_name, 
+logger_cb (std::string /*subscriber_name*/, 
+	   std::string /*quiddity_name*/, 
+	   std::string /*property_name*/, 
 	   std::string value, 
-	   void *user_data)
+	   void */*user_data*/)
 {
   g_print ("%s\n", value.c_str());
 }
@@ -114,11 +113,11 @@ set_runtime_invoker (gpointer name)
 }
 
 void 
-quiddity_created_removed_cb (std::string subscriber_name, 
-			     std::string quiddity_name, 
+quiddity_created_removed_cb (std::string /*subscriber_name*/, 
+			     std::string /*quiddity_name*/, 
 			     std::string signal_name, 
 			     std::vector<std::string> params, 
-			     void *user_data)
+			     void */*user_data*/)
 {
   g_message ("%s: %s", signal_name.c_str (), params[0].c_str ());
   if (g_strcmp0 (signal_name.c_str (), "on-quiddity-created") == 0)

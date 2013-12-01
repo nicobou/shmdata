@@ -5,6 +5,7 @@ AM_CXXFLAGS = \
     $(GST_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
     $(SHMDATA_CFLAGS) \
+    $(W_NO_ERROR_UNUSED_PARAMETER) \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir) 
 

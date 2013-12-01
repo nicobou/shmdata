@@ -283,7 +283,7 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
   CXXFLAGS="$saved_CXXFLAGS"
   AC_MSG_RESULT([no])
 ])
-                                          
+
 dnl check if compiler understands -Wextra (if yes, add -Wextra to CFLAGS)
 AC_MSG_CHECKING([to see if compiler understands -Wextra])
 saved_CXXFLAGS="$CXXFLAGS"
@@ -294,11 +294,11 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
   CXXFLAGS="$saved_CXXFLAGS"
   AC_MSG_RESULT([no])
 ])
-                                          
+          
 dnl check if compiler understands -Weffc++ (if yes, add -Weffc++ to CFLAGS)
 AC_MSG_CHECKING([to see if compiler understands -Weffc++])
 saved_CXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CXXFLAGS -Weffc++"
+CXXFLAGS="$CXXFLAGS -Weffc++ -Wno-error=effc++"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
   AC_MSG_RESULT([yes])
 ], [
@@ -306,12 +306,17 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
   AC_MSG_RESULT([no])
 ])
 
-dnl check if compiler understands -Werror (if yes, add -Werror to CFLAGS)
+dnl check if compiler understands -Werror (if yes, add it to CFLAGS)
+dnl -Wno-error=unused-parameter is required for gsoap generated code compiling
 AC_MSG_CHECKING([to see if compiler understands -Werror])
+saved_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -Werror -Wno-error=unused-parameter"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  CXXFLAGS="$saved_CXXFLAGS -Werror"
+  AC_SUBST([W_NO_ERROR_UNUSED_PARAMETER], "-Wno-error=unused-parameter")
   AC_MSG_RESULT([yes])
-  AC_SUBST([WERROR], "-Werror")
 ], [
+  CXXFLAGS="$saved_CXXFLAGS"
   AC_MSG_RESULT([no])
 ])
                                           

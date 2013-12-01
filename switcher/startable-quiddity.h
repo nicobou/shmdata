@@ -35,7 +35,9 @@ namespace switcher
   public:
     typedef std::shared_ptr<StartableQuiddity> ptr;
     StartableQuiddity ();
-
+    virtual ~StartableQuiddity ();
+    StartableQuiddity (const StartableQuiddity&) = delete;
+    StartableQuiddity & operator= (const StartableQuiddity&) = delete;
     virtual bool start () = 0;
     virtual bool stop () = 0;
     void init_startable (void *quiddity);//FIXME should called quiddity-manager-impl 

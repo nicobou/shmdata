@@ -129,7 +129,8 @@ namespace switcher
   }
   
   gboolean
-  Uris::play_wrapped (gpointer unused, gpointer user_data)
+  Uris::play_wrapped (gpointer /*unused*/, 
+		      gpointer user_data)
   {
     Uris *context = static_cast<Uris *>(user_data);
       
@@ -149,7 +150,8 @@ namespace switcher
   
 
   gboolean
-  Uris::pause_wrapped (gpointer unused, gpointer user_data)
+  Uris::pause_wrapped (gpointer /*unused*/, 
+		       gpointer user_data)
   {
     Uris *context = static_cast<Uris *>(user_data);
       
@@ -416,7 +418,8 @@ namespace switcher
   
   
   void 
-  Uris::uridecodebin_no_more_pads_cb (GstElement* object, gpointer user_data)   
+  Uris::uridecodebin_no_more_pads_cb (GstElement */*object*/, 
+				      gpointer user_data)   
   {   
     Group *group = (Group *) user_data;   
     g_debug ("** no more pads");
@@ -424,14 +427,17 @@ namespace switcher
   }
  
   void 
-  Uris::uridecodebin_drained_cb (GstElement* object, gpointer user_data)   
+  Uris::uridecodebin_drained_cb (GstElement */*object*/, 
+				 gpointer /*user_data*/)   
   {   
     //Group *group = (Group *) user_data;   
     g_debug ("drained");
   }
 
   void
-  Uris::group_add_task (gpointer key, gpointer value, gpointer user_data)
+  Uris::group_add_task (gpointer /*key*/, 
+			gpointer /*value*/, 
+			gpointer user_data)
   {
     Group *group = (Group *) user_data;
     g_async_queue_push (group->numTasks,group);
@@ -544,10 +550,12 @@ namespace switcher
   }   
 
   void
-  Uris::group_link_datastream (gpointer key, gpointer value, gpointer user_data)
+  Uris::group_link_datastream (gpointer key, 
+			       gpointer /*value*/, 
+			       gpointer /*user_data*/)
   {
     Sample *sample = (Sample *) key;
-    Group *group = (Group *) user_data;
+    //Group *group = (Group *) user_data;
     
     if (gst_pad_is_linked (sample->bin_srcpad))
       g_warning (".....................oups, already linked ");
@@ -574,10 +582,12 @@ namespace switcher
   }
 
   void
-  Uris::group_unblock_datastream (gpointer key, gpointer value, gpointer user_data)
+  Uris::group_unblock_datastream (gpointer key, 
+				  gpointer /*value*/, 
+				  gpointer /*user_data*/)
   {
     Sample *sample = (Sample *) key;
-    Group *group = (Group *) user_data;
+    //Group *group = (Group *) user_data;
     
     g_debug ("group_unblock_datastream %p",sample->bin_srcpad);
  
@@ -594,7 +604,8 @@ namespace switcher
   }
 
   gboolean
-  Uris::group_play_wrapped_for_commands (gpointer user_data, gpointer user_data2)
+  Uris::group_play_wrapped_for_commands (gpointer user_data, 
+					 gpointer /*user_data2*/)
   {
     Group *group = (Group *) user_data;
     return group_play (group);
@@ -624,7 +635,9 @@ namespace switcher
   }
   
   void
-  Uris::group_unlink_datastream (gpointer key, gpointer value, gpointer user_data)
+  Uris::group_unlink_datastream (gpointer key, 
+				 gpointer /*value*/, 
+				 gpointer /*user_data*/)
   {
     Sample *sample = (Sample *) key;
     unlink_pad (sample->bin_srcpad);
@@ -652,7 +665,8 @@ namespace switcher
   }
   
   gboolean
-  Uris::group_pause_wrapped_for_commands (gpointer user_data, gpointer user_data2)
+  Uris::group_pause_wrapped_for_commands (gpointer user_data, 
+					  gpointer /*user_data2*/)
   {
     Group *group = (Group *) user_data;
     return group_pause (group);
@@ -687,7 +701,9 @@ namespace switcher
   }
   
   void
-  Uris::group_block_datastream_wrapped_for_hash (gpointer key, gpointer value, gpointer user_data)
+  Uris::group_block_datastream_wrapped_for_hash (gpointer key, 
+						 gpointer /*value*/, 
+						 gpointer /*user_data*/)
   {
     Sample *sample = (Sample *) key;
     g_debug ("group_block_datastream_wrapped_for_hash: called %p",sample->bin_srcpad);
@@ -714,7 +730,9 @@ namespace switcher
   
 
   void 
-  Uris::group_seek_datastream (gpointer key, gpointer value, gpointer user_data)
+  Uris::group_seek_datastream (gpointer key, 
+			       gpointer /*value*/, 
+			       gpointer /*user_data*/)
   {
     Sample *sample = (Sample *) key;
     group_do_seek_datastream (sample);
@@ -722,7 +740,8 @@ namespace switcher
   }
   
   gboolean
-  Uris::group_seek_wrapped_for_commands (gpointer user_data, gpointer user_data2)
+  Uris::group_seek_wrapped_for_commands (gpointer user_data, 
+					 gpointer /*user_data2*/)
   {
     Group *group = (Group *) user_data;
     return group_seek (group, group->seek_position);

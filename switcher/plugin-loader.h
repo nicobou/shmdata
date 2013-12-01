@@ -43,8 +43,10 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<PluginLoader> ptr;
-    PluginLoader();
-    ~PluginLoader();
+    PluginLoader ();
+    ~PluginLoader ();
+    PluginLoader (const PluginLoader &) = delete;
+    PluginLoader &operator= (const PluginLoader &) = delete;
 
     bool load (const char *filename);
     bool close ();

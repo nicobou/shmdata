@@ -36,11 +36,11 @@ static bool do_continue;
 static const char *user_string = "hello world";
 
 void 
-mon_property_cb(std::string subscriber_name, 
+mon_property_cb(std::string /*subscriber_name*/, 
 		std::string quiddity_name, 
-		std::string property_name, 
-		std::string value, 
-		void *user_data)
+		std::string /*property_name*/, 
+		std::string /*value*/, 
+		void */*user_data*/)
 {
   // if (g_strcmp0 (property_name.c_str (), "caps") == 0)
   //   g_print ("-caps- %s\n",value.c_str ());
@@ -74,8 +74,8 @@ mon_property_cb(std::string subscriber_name,
 }
 
 int
-main (int argc,
-      char *argv[])
+main (int /*argc*/,
+      char */*argv*/[])
 {
   audio_success = false;
   video_success = false;

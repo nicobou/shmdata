@@ -24,23 +24,22 @@
 #include <string>
 
 static bool success;
-static const char *user_string = "hello world";
 static int signal_counter = 0;
 
 void 
-quiddity_created_removed_cb (std::string subscriber_name, 
-			     std::string quiddity_name, 
+quiddity_created_removed_cb (std::string /*subscriber_name*/, 
+			     std::string /*quiddity_name*/, 
 			     std::string signal_name, 
 			     std::vector<std::string> params, 
-			     void *user_data)
+			     void */*user_data*/)
 {
   g_message ("%s: %s", signal_name.c_str (), params[0].c_str ());
   signal_counter ++;
 }
 
 int
-main (int argc,
-      char *argv[])
+main (int /*argc*/,
+      char */*argv*/[])
 {
   success = false;
   

@@ -43,11 +43,11 @@ set_runtime_invoker (gpointer name)
 }
 
 void 
-quiddity_created_removed_cb (std::string subscriber_name, 
-			     std::string quiddity_name, 
-			     std::string signal_name, 
+quiddity_created_removed_cb (std::string /*subscriber_name*/, 
+			     std::string /*quiddity_name*/, 
+			     std::string /*signal_name*/, 
 			     std::vector<std::string> params, 
-			     void *user_data)
+			     void */*user_data*/)
 {
   g_thread_create (set_runtime_invoker, 
 		   g_strdup (params[0].c_str ()),
@@ -57,8 +57,8 @@ quiddity_created_removed_cb (std::string subscriber_name,
 
 
 int
-main (int argc,
-      char *argv[])
+main (int /*argc*/,
+      char */*argv*/[])
 {
   bool success = true;
   manager = switcher::QuiddityManager::make_manager("test_manager");  
