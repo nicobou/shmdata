@@ -22,7 +22,6 @@
 #include "uris.h"
 #include "gst-utils.h"
 #include <glib/gprintf.h>
-#include <memory>
 
 namespace switcher
 {
@@ -367,15 +366,14 @@ namespace switcher
 
 	//giving a name to the stream
 	gchar **padname_splitted = g_strsplit_set (padname, "/",-1);
+
 	//counting 
 	int count = 0;
-	if (context->media_counters_.contains (std::string (padname_splitted[0])))
-	  {
-	    count = context->media_counters_. lookup (std::string (padname_splitted[0]));
-	    count = count+1;
-	  }
-	context->media_counters_.replace (std::string (padname_splitted[0]), count);
-	
+	auto it = context->media_counters_.find (padname_splitted[0]);
+	if (context->media_counters_.end () != it)
+	  count = it->second + 1;
+	context->media_counters_[padname_splitted[0]] = count;
+ 
 	gchar media_name[256];
 	g_sprintf (media_name,"%s_%d",padname_splitted[0],count);
 	g_debug ("uridecodebin: new media %s %d",media_name, count );

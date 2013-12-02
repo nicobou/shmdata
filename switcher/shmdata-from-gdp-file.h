@@ -24,11 +24,11 @@
 #define __SWITCHER_SHMDATA_FROM_GDP_FILE_H__
 
 #include <gst/gst.h>
-#include <memory>
 #include "segment.h"
 #include "custom-property-helper.h"
 #include "quiddity-manager.h"
- 
+#include <unordered_map>
+
 namespace switcher
 {
 
@@ -55,7 +55,7 @@ namespace switcher
     
      bool make_players ();
      bool clean_players ();
-     StringMap <std::string> shmdata_names_;
+     std::unordered_map <std::string, std::string> shmdata_names_;
      QuiddityManager::ptr manager_;
 
      static gboolean event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data);

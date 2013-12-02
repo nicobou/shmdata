@@ -25,10 +25,9 @@
 
 #include "base-source.h"
 #include "gst-element-cleaner.h"
-#include "string-map.h"
 #include "startable-quiddity.h"
-#include <memory>
 #include "custom-property-helper.h"
+#include <unordered_map>
 
 namespace switcher
 {
@@ -50,7 +49,7 @@ namespace switcher
 
   private: 
    GstElement *uridecodebin_;
-   StringMap<int> media_counters_;
+   std::unordered_map<std::string, int> media_counters_;
    GstPad *main_pad_;
    GstCaps *rtpgstcaps_;
    bool discard_next_uncomplete_buffer_;

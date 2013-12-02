@@ -108,13 +108,14 @@ namespace switcher
     ShmdataToFile::add_shmdata (std::string shmdata_socket_path, 
 				std::string file_location)
   {
-    if (file_names_.contains (shmdata_socket_path))
+    if (file_names_.find (shmdata_socket_path) != file_names_.end ())
       {
-	g_warning ("ShmdataToFile::add_shmdata: %s is already added", shmdata_socket_path.c_str());
+	g_warning ("ShmdataToFile::add_shmdata: %s is already added", 
+		   shmdata_socket_path.c_str());
 	return false;
       }
 
-    file_names_.insert(shmdata_socket_path, file_location);
+    file_names_[shmdata_socket_path] = file_location;
     
      if (recording_ && runtime_) // starting the reader if runtime is set
        {
@@ -165,40 +166,37 @@ namespace switcher
   bool
   ShmdataToFile::make_recorders ()
   {
-    std::map <std::string, std::string> files = file_names_.get_map ();
-    std::map <std::string, std::string>::iterator it;
-    for (it = files.begin (); it != files.end (); it++)
+    for (auto &it :file_names_)
       {
 	//FIXME check file
-	 GError *error = NULL;
-	 gchar *pipe = g_strdup_printf ("gdppay ! filesink location=%s",it->second.c_str());
-	 GstElement *recorder_bin = gst_parse_bin_from_description (pipe,
-								    TRUE,
-								    &error);
-	 g_free (pipe);
-	 if (error != NULL)
-	   {
-	     g_warning ("%s",error->message);
-	     g_error_free (error);
-	     return false;
-	   }
+	GError *error = NULL;
+	gchar *pipe = g_strdup_printf ("gdppay ! filesink location=%s",
+				       it.second.c_str());
+	GstElement *recorder_bin = gst_parse_bin_from_description (pipe,
+								   TRUE,
+								   &error);
+	g_free (pipe);
+	if (error != NULL)
+	  {
+	    g_warning ("%s",error->message);
+	    g_error_free (error);
+	    return false;
+	  }
 	 gst_bin_add (GST_BIN (bin_), recorder_bin);
 	 GstUtils::wait_state_changed (bin_);
 	 GstUtils::sync_state_with_parent (recorder_bin);
-
+	 
 	 ShmdataReader::ptr reader;
 	 reader.reset (new ShmdataReader ());
-	 reader->set_path (it->first.c_str());
+	 reader->set_path (it.first.c_str());
 	 reader->set_bin (bin_);
 	 reader->set_g_main_context (get_g_main_context ());
 	 reader->set_sink_element (recorder_bin);
-	
+	 
 	 GstUtils::wait_state_changed (bin_);
 	 reader->start ();
-	 shmdata_recorders_.insert(it->first, recorder_bin);
-	  
+	 shmdata_recorders_[it.first] = recorder_bin;
 	 register_shmdata_reader (reader);
-	
       }
     return true;
   }
@@ -207,12 +205,10 @@ namespace switcher
   ShmdataToFile::clean_recorders ()
   {
    
-    std::map <std::string, GstElement *> recorders = shmdata_recorders_.get_map ();
-    std::map <std::string, GstElement *>::iterator it;
-    for (it = recorders.begin (); it != recorders.end (); it++)
+    for (auto &it : shmdata_recorders_)
       {
-	GstUtils::clean_element (it->second);
-	unregister_shmdata_reader (it->first);
+	GstUtils::clean_element (it.second);
+	unregister_shmdata_reader (it.first);
       }
     shmdata_recorders_.clear ();
     return true;

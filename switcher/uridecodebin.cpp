@@ -434,14 +434,11 @@ namespace switcher
      gchar **padname_splitted = g_strsplit_set (padname, "/",-1);
      //counting 
      int count = 0;
-     if (media_counters_.contains (std::string (padname_splitted[0])))
-       {
-	 count = media_counters_. lookup (std::string (padname_splitted[0]));
-	 //g_print ("------------- count %d\n", count);
-	 count = count+1;
-       }
-     media_counters_.replace (std::string (padname_splitted[0]), count);
-
+     auto it = media_counters_.find (padname_splitted[0]);
+     if (media_counters_.end () != it)
+       count = it->second + 1;
+     media_counters_[padname_splitted[0]] = count;
+	 
      gchar media_name[256];
      g_sprintf (media_name,"%s-%d",padname_splitted[0],count);
      g_debug ("uridecodebin: new media %s %d\n",media_name, count );

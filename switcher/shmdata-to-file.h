@@ -24,9 +24,9 @@
 #define __SWITCHER_SHMDATA_TO_FILE_H__
 
 #include <gst/gst.h>
-#include <memory>
 #include "segment.h"
 #include "custom-property-helper.h"
+#include <unordered_map>
  
 namespace switcher
 {
@@ -53,8 +53,8 @@ namespace switcher
 
      bool make_recorders ();
      bool clean_recorders ();
-     StringMap <std::string> file_names_;
-     StringMap <GstElement *> shmdata_recorders_;
+     std::unordered_map <std::string, std::string> file_names_;
+     std::unordered_map <std::string, GstElement *> shmdata_recorders_;
 
      //wrapper for registering the data_stream functions
      static gboolean add_shmdata_wrapped (gpointer shmdata_socket_path, 

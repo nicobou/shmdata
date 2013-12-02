@@ -25,12 +25,10 @@
 
 #include "base-source.h"
 #include "gst-element-cleaner.h"
-#include "string-map.h"
-#include <memory>
+#include <unordered_map>
 
 namespace switcher
 {
-
   class Uris : public BaseSource, public GstElementCleaner
   {
   public:
@@ -46,7 +44,7 @@ namespace switcher
     static gboolean seek_wrapped (gdouble position, gpointer user_data);
 
   private: 
-    StringMap<int> media_counters_;
+    std::unordered_map<std::string, int> media_counters_;
 
     //wraping c code:
     typedef enum GourpState_ {

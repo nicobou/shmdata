@@ -25,12 +25,11 @@
 
 #include "quiddity.h"
 #include "runtime.h"
-#include "string-map.h"
 #include "shmdata-writer.h"
 #include "shmdata-reader.h"
 #include "json-builder.h"
-#include <memory>
 #include <vector>
+#include <unordered_map>
 
 namespace switcher
 {
@@ -67,8 +66,8 @@ namespace switcher
   private:
     void make_bin ();
     void clean_bin ();
-    StringMap<ShmdataWriter::ptr> shmdata_writers_;
-    StringMap<ShmdataReader::ptr> shmdata_readers_;
+    std::unordered_map <std::string, ShmdataWriter::ptr> shmdata_writers_;
+    std::unordered_map <std::string, ShmdataReader::ptr> shmdata_readers_;
     JSONBuilder::ptr shmdata_writers_description_;
     JSONBuilder::ptr shmdata_readers_description_;
     void update_shmdata_writers_description ();

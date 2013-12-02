@@ -108,13 +108,13 @@ namespace switcher
   ShmdataFromGDPFile::add_file (std::string file_path, 
 				std::string shmdata_path	)
   {
-    if (shmdata_names_.contains (file_path))
+    if (shmdata_names_.find (file_path) != shmdata_names_.end ())
       {
 	g_warning ("ShmdataFromGDPFile::add_file: %s is already added", file_path.c_str());
 	return false;
       }
     
-    shmdata_names_.insert(file_path, shmdata_path);
+    shmdata_names_[file_path] = shmdata_path;
     return true;
   }  
 
@@ -132,9 +132,9 @@ namespace switcher
   bool
   ShmdataFromGDPFile::remove_file (std::string file_path)
   {
-    if (!shmdata_names_.contains (file_path))
+    if (shmdata_names_.find (file_path) != shmdata_names_.end ())
       return false;
-    shmdata_names_.remove (file_path);
+    shmdata_names_.erase (file_path);
     return true;
   }
 
@@ -171,24 +171,22 @@ namespace switcher
 			    NULL, 
 			    NULL);
       }
-    std::map <std::string, std::string> shmdatas = shmdata_names_.get_map ();
-    std::map <std::string, std::string>::iterator it;
-    for (it = shmdatas.begin (); it != shmdatas.end (); it++)
+    for (auto &it : shmdata_names_)
       {
-	manager_->create ("gstsrc", it->first.c_str ());
-	manager_->invoke_va (it->first.c_str (), 
+	manager_->create ("gstsrc", it.first.c_str ());
+	manager_->invoke_va (it.first.c_str (), 
 			     "set_runtime", 
 			     NULL, 
 			     "single_runtime", 
 			     NULL);
 	gchar *pipe = g_strdup_printf ("filesrc location=%s ! gdpdepay ! identity sync=true",
-	 			       it->first.c_str ());
+	 			       it.first.c_str ());
 	g_debug ("ShmdataFromGDPFile::make_players %s", pipe); 
-	manager_->invoke_va (it->first.c_str (),
+	manager_->invoke_va (it.first.c_str (),
 			     "to_shmdata_with_path", 
 			     NULL,
 			     pipe, 
-	 		     it->second.c_str (), 
+	 		     it.second.c_str (), 
 	 		     NULL);
 	g_free (pipe);
       }
