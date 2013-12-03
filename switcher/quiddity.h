@@ -30,6 +30,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <unordered_map>
 #include <map>
 #include <gst/gst.h>
 
@@ -40,7 +41,6 @@
 #include "quiddity-manager-impl.h"
 #include "json-builder.h"
 #include "gobject-wrapper.h"
-#include "string-map.h"
 
 namespace switcher
 {
@@ -122,11 +122,14 @@ namespace switcher
 
   private:
     //properties
-    StringMap<Property::ptr> properties_;
+    std::unordered_map <std::string, Property::ptr> properties_;
+    std::unordered_map <std::string, Property::ptr> disabled_properties_;
     JSONBuilder::ptr properties_description_;
     
     //methods
-    StringMap<Method::ptr> methods_;
+    std::unordered_map <std::string, Method::ptr> methods_;
+    std::unordered_map <std::string, Method::ptr> disabled_methods_;
+    bool method_is_registered (std::string method_name);
     JSONBuilder::ptr methods_description_;
 
     //position weight
@@ -136,7 +139,7 @@ namespace switcher
     //pair is <class_name, signal_name>
     //this map is static in order to avoid re-creation of the same signal for each quiddity instance 
     static std::map<std::pair <std::string,std::string>, guint> signals_ids_;
-    std::map<std::string, Signal::ptr> signals_;
+    std::unordered_map<std::string, Signal::ptr> signals_;
     JSONBuilder::ptr signals_description_;
 
     //naming

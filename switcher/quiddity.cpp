@@ -293,14 +293,13 @@ namespace switcher
 			       std::string long_name,
 			       std::string signal_to_emit)
   {
-    
-    if (properties_.contains (name_to_give)) 
+    auto it = properties_.find (name_to_give);
+    if (properties_.end () == it)
       {
 	g_debug ("registering name %s already exists",
 		 name_to_give.c_str());
 	return false;
       }
-    
     Property::ptr prop (new Property ());
     prop->set_gobject_pspec (object, pspec);
     prop->set_long_name (long_name);
@@ -308,7 +307,7 @@ namespace switcher
     prop->set_position_weight (position_weight_counter_);
     position_weight_counter_ += 20;
     
-    properties_.insert (name_to_give, prop); 
+    properties_[name_to_give] = prop; 
     //g_print ("--- emit %s\n", signal_to_emit.c_str ());
     signal_emit (signal_to_emit.c_str (), name_to_give.c_str ());
     return true;
@@ -321,25 +320,34 @@ namespace switcher
 					std::string name_to_give,
 					std::string long_name)
   {
-    return register_property (object, pspec,name_to_give, long_name, "on-property-added");
+    return register_property (object, 
+			      pspec,
+			      name_to_give, 
+			      long_name, 
+			      "on-property-added");
   }
 
   Property::ptr
   Quiddity::get_property_ptr (std::string property_name)
   {
-    if (!properties_.contains (property_name))
-      g_debug ("Quiddity::get_property_ptr %s not found", property_name.c_str ());
-      
-    return properties_.lookup_full (property_name);
+    auto it = properties_.find (property_name);
+    if (properties_.end () != it)
+      return it->second;
+    g_debug ("Quiddity::get_property_ptr %s not found", 
+	     property_name.c_str ());
+    Property::ptr result;
+    return result;
   }
 
   Method::ptr
   Quiddity::get_method_ptr (std::string method_name)
   {
-    if (!methods_.contains (method_name))
-      g_debug ("Quiddity::get_method_ptr %s not found", method_name.c_str ());
-    
-    return methods_.lookup_full (method_name);
+    auto it = methods_.find (method_name);
+    if (methods_.end () != it)
+      return it->second;
+    Method::ptr result;
+    g_debug ("Quiddity::get_method_ptr %s not found", method_name.c_str ());
+    return result;
   }
 
   bool 
@@ -415,33 +423,38 @@ namespace switcher
 
  
   bool 
-  Quiddity::uninstall_property (std::string name)
+  Quiddity::uninstall_property (std::string property_name)
   {
-    if (!properties_.remove (name))
+    auto it = properties_.find (property_name);
+    if (properties_.end () == it)
       return false;
-    
-    signal_emit ("on-property-removed", name.c_str ());
+    properties_.erase (it);
+    signal_emit ("on-property-removed", property_name.c_str ());
     return true; 
   }
 
   bool 
-  Quiddity::enable_property (std::string name)
+  Quiddity::enable_property (std::string property_name)
   {
-    if (!properties_.enable (name))
+    auto it = disabled_properties_.find (property_name);
+    if (disabled_properties_.end () == it)
       return false;
-    
-    signal_emit ("on-property-added", name.c_str ());
+    properties_[property_name] = it->second;
+    disabled_properties_.erase (it);
+    signal_emit ("on-property-added", property_name.c_str ());
     return true; 
   }
 
   bool 
-  Quiddity::disable_property (std::string name)
+  Quiddity::disable_property (std::string property_name)
   {
-  if (!properties_.disable (name))
+    auto it = properties_.find (property_name);
+    if (properties_.end () == it)
       return false;
-  
-  signal_emit ("on-property-removed", name.c_str ());
-  return true; 
+    disabled_properties_[property_name] = it->second;
+    properties_.erase (it);
+    signal_emit ("on-property-removed", property_name.c_str ());
+    return true; 
   }
   
   bool
@@ -468,18 +481,19 @@ namespace switcher
 				std::string name,
 				std::string long_name)
   {
-    GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), 
-						      gobject_property_name.c_str());
+    auto it = properties_.find (name);
+    if (properties_.end () == it)
+      return false;
+    properties_.erase (it);
+
+    GParamSpec *pspec = 
+      g_object_class_find_property (G_OBJECT_GET_CLASS(object), 
+				    gobject_property_name.c_str());
     if (pspec == NULL)
       {
 	g_debug ("property not found %s", gobject_property_name.c_str());
 	return false;
       }
-
-    if (!properties_.remove (name))
-      return false;
-
-    //g_print ("invoke reinstall property\n");
     return register_property (object, pspec, name, long_name, "on-property-reinstalled");
   }
 
@@ -488,21 +502,19 @@ namespace switcher
   int 
   Quiddity::method_get_num_value_args (std::string method_name)
   {
-    if (!methods_.is_enabled (method_name))
-      {
-	g_debug ("Quiddity::method_get_num_value_args error: method %s not found", method_name.c_str());
-	return -1;
-      }
-
-    return (int)methods_.lookup (method_name)->get_num_of_value_args(); 
+    auto it = methods_.find (method_name);
+    if (methods_.end () != it)
+      return (int)it->second->get_num_of_value_args(); 
+    
+    g_debug ("Quiddity::method_get_num_value_args error: method %s not found", 
+	     method_name.c_str());
+    return -1;
   }
 
   bool 
   Quiddity::has_method (const std::string method_name)
   {
-    if (!methods_.is_enabled (method_name))
-      return false;
-    return true;
+    return (methods_.end () != methods_.find (method_name)); 
   }
   
   bool
@@ -510,31 +522,30 @@ namespace switcher
 			   std::string **return_value,
 			   const std::vector<std::string> args)
   {
-    if (!methods_.is_enabled (method_name))
+    auto it = methods_.find (method_name);
+    if (methods_.end () == it)
       {
-	g_debug ("Quiddity::invoke_method error: method %s not found",
+	g_print ("Quiddity::invoke_method error: method %s not found",
 		 method_name.c_str());
 	return false;
       }
-    else 
-      {
-	GValue res = G_VALUE_INIT;
-	if (!methods_.lookup (method_name)->invoke (args, &res))
-	  {
-	    g_debug ("invokation of %s failled (missing argments ?)",
-		     method_name.c_str ());
-	    return false;
-	  }
 
-	if (return_value != NULL)
-	  {
-	    gchar *res_val = GstUtils::gvalue_serialize (&res);
-	    *return_value = new std::string (res_val);
-	    g_free (res_val);
-	  }
-	g_value_unset (&res);
-	return true;
+    GValue res = G_VALUE_INIT;
+    if (false == it->second->invoke (args, &res))
+      {
+	g_print ("invokation of %s failled (missing argments ?)",
+		 method_name.c_str ());
+	return false;
       }
+    
+    if (return_value != NULL)
+      {
+	gchar *res_val = GstUtils::gvalue_serialize (&res);
+	*return_value = new std::string (res_val);
+	g_free (res_val);
+      }
+    g_value_unset (&res);
+    return true;
   }
   
   bool 
@@ -569,6 +580,13 @@ namespace switcher
   }
   
 
+  bool 
+  Quiddity::method_is_registered (std::string method_name)
+  {
+    return (methods_.end () != methods_.find (method_name)
+	    || disabled_methods_.end () != disabled_methods_.find (method_name));
+  }
+
   bool
   Quiddity::register_method (std::string method_name, 
 			     Method::method_ptr method, 
@@ -582,19 +600,20 @@ namespace switcher
 	return false;
       }
     
-    Method::ptr meth (new Method ());
-    meth->set_method (method, return_type, arg_types, user_data);
-
-    if (methods_.contains (method_name))
+    if (method_is_registered (method_name))
       {
-	g_debug ("registering name %s already exists",method_name.c_str());
+	g_debug ("registering name %s already exists",
+		 method_name.c_str());
 	return false;
       }
+
+    Method::ptr meth (new Method ());
+    meth->set_method (method, return_type, arg_types, user_data);
 
     meth->set_position_weight (position_weight_counter_);
     position_weight_counter_ += 20;
 
-    methods_.insert (method_name, meth);
+    methods_[method_name] = meth;
     return true;
   }
 
@@ -605,16 +624,21 @@ namespace switcher
 				    const std::string return_description,
 				    const Method::args_doc arg_description)
   {
-    if (!methods_.contains (method_name))
+    if (method_is_registered (method_name))
       {
 	g_debug ("cannot set description of a not existing method");
 	return false;
       }
-    methods_.lookup_full (method_name)->set_description (long_name, 
-							 method_name, 
-							 short_description, 
-							 return_description,
-							 arg_description);
+    
+    auto it = methods_.find (method_name);
+    if (methods_.end () == it)
+      it = disabled_methods_.find (method_name);
+
+    it->second->set_description (long_name, 
+				 method_name, 
+				 short_description, 
+				 return_description,
+				 arg_description);
     return true;
   }
 
@@ -626,7 +650,9 @@ namespace switcher
     methods_description_->begin_object ();
     methods_description_->set_member_name ("methods");
     methods_description_->begin_array ();
-    std::vector <Method::ptr> methods = methods_.get_values ();
+    std::vector <Method::ptr> methods;
+    for (auto &it: methods_)
+      methods.push_back (it.second);
     std::sort (methods.begin (),
 	       methods.end (),
 	       Categorizable::compare_ptr);
@@ -640,11 +666,10 @@ namespace switcher
   std::string 
   Quiddity::get_method_description (std::string method_name)
   {
-    if (!methods_.is_enabled (method_name))
+    auto it = methods_.find (method_name);
+    if (methods_.end () == it)
       return "{ \"error\" : \" method not found\"}";
-    
-    Method::ptr meth = methods_.lookup (method_name);
-    return meth->get_description ();
+    return it->second->get_description ();
   }
 
 
@@ -655,8 +680,9 @@ namespace switcher
     properties_description_->begin_object ();
     properties_description_->set_member_name ("properties");
     properties_description_->begin_array ();
-    
-    std::vector <Property::ptr> properties = properties_.get_values ();
+    std::vector <Property::ptr> properties;
+    for (auto &it: properties_)
+      properties.push_back (it.second);
     std::sort (properties.begin (),
 	       properties.end (),
 	       Categorizable::compare_ptr);
@@ -669,69 +695,63 @@ namespace switcher
   }
 
   std::string 
-  Quiddity::get_property_description (std::string name)
+  Quiddity::get_property_description (std::string property_name)
   {
-    if (!properties_.is_enabled (name))
+    auto it = properties_.find (property_name);
+    if (properties_.end () == it)
       return "{ \"error\" : \"property not found\" }";
-    
-    Property::ptr prop = properties_.lookup (name);
-    return prop->get_description ();
+    return it->second->get_description ();
   }
 
   bool 
-  Quiddity::set_property (std::string name, std::string value)
+  Quiddity::set_property (std::string property_name, std::string value)
   {
-    if (!properties_.is_enabled (name))
+    auto it = properties_.find (property_name);
+    if (properties_.end () == it)
       return false;
-
-    Property::ptr prop = properties_.lookup (name);
-    prop->set (value);
+    it->second->set (value);
     return true;
   }
 
   bool 
-  Quiddity::has_property (std::string name)
+  Quiddity::has_property (std::string property_name)
   {
-    if (!properties_.is_enabled (name))
-      return false;
-    return true;
+    return (properties_.end () != properties_.find (property_name));
   }
 
   std::string 
-  Quiddity::get_property (std::string name)
+  Quiddity::get_property (std::string property_name)
   {
-    if (!properties_.is_enabled (name))
+    auto it = properties_.find (property_name);
+    if (properties_.end () == it)
       return "{ \"error\" : \"property not found\" }";
-
-    Property::ptr prop = properties_.lookup (name);
-    return prop->get ();
+    return it->second->get ();
   }
 
   bool 
-  Quiddity::subscribe_property (std::string name, 
+  Quiddity::subscribe_property (std::string property_name, 
 				Property::Callback cb,
 				void *user_data)
   {
-    if (!properties_.contains (name))
+    auto it = properties_.find (property_name);
+    if (properties_.end () == it)
       {
-	g_debug ("property not found (%s)", name.c_str ());
+	g_debug ("property not found (%s)", property_name.c_str ());
 	return false;
       }
-
-    Property::ptr prop = properties_.lookup_full (name);
-    return prop->subscribe (cb, user_data);
+    return it->second->subscribe (cb, user_data);
   }
 
   bool 
-  Quiddity::unsubscribe_property (std::string name,
+  Quiddity::unsubscribe_property (std::string property_name,
 				  Property::Callback cb,
 				  void *user_data)
   {
-    if (!properties_.contains (name))
+    auto it = properties_.find (property_name);
+    if (properties_.end () == it)
       return false;
-    
-    Property::ptr prop = properties_.lookup_full (name);
-    return prop->unsubscribe (cb, user_data);
+    it->second->unsubscribe (cb, user_data);
+    return true;
   }
 
   bool 
@@ -788,13 +808,11 @@ namespace switcher
     signals_description_->set_member_name ("signals");
     signals_description_->begin_array ();
     
-    for(std::map<std::string, Signal::ptr>::iterator it = signals_.begin(); 
-     	it != signals_.end(); 
-     	++it) 
+    for(auto &it :signals_) 
       {
 	signals_description_->begin_object ();
-	signals_description_->add_string_member ("name",it->first.c_str ());
-	JsonNode *root_node = it->second->get_json_root_node ();
+	signals_description_->add_string_member ("name",it.first.c_str ());
+	JsonNode *root_node = it.second->get_json_root_node ();
 	if (root_node != NULL)
 	  signals_description_->add_JsonNode_member ("description", root_node);
 	else
@@ -892,32 +910,37 @@ namespace switcher
   }
   
   bool 
-  Quiddity::uninstall_method (std::string name)
+  Quiddity::uninstall_method (std::string method_name)
   {
-    if (!methods_.remove (name))
+    auto it = methods_.find (method_name);
+    if (methods_.end () == it)
       return false;
-
-    signal_emit ("on-method-removed",  name.c_str ());
+    methods_.erase (it);
+    signal_emit ("on-method-removed", method_name.c_str ());
     return true; 
   }
   
   bool 
-  Quiddity::enable_method (std::string name)
+  Quiddity::enable_method (std::string method_name)
   {
-    if (!methods_.enable (name))
+    auto it = disabled_methods_.find (method_name);
+    if (disabled_methods_.end () == it)
       return false;
-
-    signal_emit ("on-method-added", name.c_str ());
+    methods_[method_name] = it->second;
+    disabled_methods_.erase (it);    
+    signal_emit ("on-method-added", method_name.c_str ());
     return true; 
   }
 
   bool 
-  Quiddity::disable_method (std::string name)
+  Quiddity::disable_method (std::string method_name)
   {
-    if (!methods_.disable (name))
+    auto it = methods_.find (method_name);
+    if (methods_.end () == it)
       return false;
-
-    signal_emit ("on-method-removed", name.c_str ());
+    disabled_methods_[method_name] = it->second;
+    methods_.erase (it);
+    signal_emit ("on-method-removed", method_name.c_str ());
     return true; 
   }
 
