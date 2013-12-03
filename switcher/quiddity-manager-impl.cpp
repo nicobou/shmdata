@@ -307,8 +307,8 @@ namespace switcher
     if (!quiddity->init ())
       return false;
 
-    quiddities_.insert (quiddity->get_name(),quiddity);
-    quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
+    quiddities_[quiddity->get_name()] = quiddity;
+    quiddities_nick_names_[quiddity->get_nick_name ()] = quiddity->get_name();
     
     if (creation_hook_ != NULL)
       (*creation_hook_) (quiddity->get_nick_name (), creation_hook_user_data_);
@@ -332,8 +332,8 @@ namespace switcher
 	if (!quiddity->init ())
 	  return "{\"error\":\"cannot init quiddity class\"}";
 
-	quiddities_.insert (quiddity->get_name(),quiddity);
-	quiddities_nick_names_.insert (quiddity->get_nick_name (),quiddity->get_name());
+	quiddities_[quiddity->get_name()] = quiddity;
+	quiddities_nick_names_ [quiddity->get_nick_name ()] = quiddity->get_name();
       }
     return quiddity->get_nick_name ();
   }
@@ -361,7 +361,8 @@ namespace switcher
     if(!class_exists (quiddity_class))
       return "";
     
-    if (quiddities_nick_names_.contains (nick_name))
+    auto it = quiddities_nick_names_.find (nick_name);
+    if (quiddities_nick_names_.end () != it)
       return "";
     
     Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class);
@@ -392,14 +393,16 @@ namespace switcher
   QuiddityManager_Impl::rename (std::string nick_name, 
 				std::string new_nick_name)
   {
-    if (!quiddities_nick_names_.contains (nick_name))
+    auto it = quiddities_nick_names_.find (nick_name);
+    if (quiddities_nick_names_.end () != it)
       {
 	g_debug ("cannot rename because no quiddity is nick named %s",
 		 nick_name.c_str ());
 	return false;
       }
     
-    if (quiddities_nick_names_.contains (new_nick_name))
+    it = quiddities_nick_names_.find (new_nick_name);
+    if (quiddities_nick_names_.end () != it)
       {
 	g_debug ("cannot rename because %s is already taken",
 		 new_nick_name.c_str ());
@@ -408,8 +411,8 @@ namespace switcher
        
     Quiddity::ptr temp = get_quiddity (nick_name);
     temp->set_nick_name (new_nick_name);
-    quiddities_nick_names_.insert (new_nick_name, temp->get_name());
-    quiddities_nick_names_.remove (nick_name);
+    quiddities_nick_names_[new_nick_name] = temp->get_name();
+    quiddities_nick_names_.erase (nick_name);
     return true;
   }
 
@@ -417,9 +420,12 @@ namespace switcher
   std::vector<std::string> 
   QuiddityManager_Impl::get_instances ()
   {
-    return quiddities_nick_names_.get_keys();
+    std::vector<std::string> res;
+    for (auto &it : quiddities_nick_names_)
+      res.push_back (it.first);
+    return res;
   }
-
+  
   std::string 
   QuiddityManager_Impl::get_quiddities_description ()
   {
@@ -453,7 +459,8 @@ namespace switcher
   std::string 
   QuiddityManager_Impl::get_quiddity_description (std::string nick_name)
   {
-    if (!quiddities_nick_names_.contains (nick_name))
+    auto it = quiddities_nick_names_.find (nick_name);
+    if (quiddities_nick_names_.end () == it)
       return "{ \"error\":\"quiddity not found\"}";
 
     JSONBuilder::ptr descr (new JSONBuilder ());
@@ -461,12 +468,12 @@ namespace switcher
     descr->begin_object();
     descr->add_string_member ("name", nick_name.c_str ());
     //FIXME should use json node
-    descr->add_string_member ("class", quiddities_.lookup(quiddities_nick_names_.lookup (nick_name))->get_documentation ().get_class_name ().c_str ());
-    descr->add_string_member ("category", quiddities_.lookup(quiddities_nick_names_.lookup (nick_name))->get_documentation ().get_category ().c_str ());
-    descr->add_string_member ("long name", quiddities_.lookup(quiddities_nick_names_.lookup (nick_name))->get_documentation ().get_long_name ().c_str ());
-    descr->add_string_member ("description", quiddities_.lookup(quiddities_nick_names_.lookup (nick_name))->get_documentation().get_description().c_str ());
-    descr->add_string_member ("license", quiddities_.lookup(quiddities_nick_names_.lookup (nick_name))->get_documentation ().get_license ().c_str ()); 
-    descr->add_string_member ("author", quiddities_.lookup(quiddities_nick_names_.lookup (nick_name))->get_documentation ().get_author ().c_str ());
+    descr->add_string_member ("class", quiddities_[quiddities_nick_names_[nick_name]]->get_documentation ().get_class_name ().c_str ());
+    descr->add_string_member ("category", quiddities_[quiddities_nick_names_[nick_name]]->get_documentation ().get_category ().c_str ());
+    descr->add_string_member ("long name", quiddities_[quiddities_nick_names_[nick_name]]->get_documentation ().get_long_name ().c_str ());
+    descr->add_string_member ("description", quiddities_[quiddities_nick_names_[nick_name]]->get_documentation().get_description().c_str ());
+    descr->add_string_member ("license", quiddities_[quiddities_nick_names_[nick_name]]->get_documentation ().get_license ().c_str ()); 
+    descr->add_string_member ("author", quiddities_[quiddities_nick_names_[nick_name]]->get_documentation ().get_author ().c_str ());
     descr->end_object ();
     return descr->get_string(true);
   }
@@ -480,13 +487,13 @@ namespace switcher
 	Quiddity::ptr empty_quiddity_ptr;
 	return empty_quiddity_ptr;
       }
-    return quiddities_.lookup (quiddities_nick_names_.lookup (quiddity_name));
+    return quiddities_[quiddities_nick_names_[quiddity_name]];
   }
 
   bool 
   QuiddityManager_Impl::exists (std::string quiddity_name)
   {
-    return quiddities_nick_names_.contains (quiddity_name);
+    return (quiddities_nick_names_.end () != quiddities_nick_names_.find  (quiddity_name));
   }
 
   //for use of "get description by class" methods only
@@ -498,12 +505,12 @@ namespace switcher
 	g_debug ("(%s) quiddity %s not found for removing",name_.c_str(), quiddity_name.c_str());
 	return false; 
       }
-    for (auto &it : property_subscribers_.get_map ())
+    for (auto &it : property_subscribers_)
       it.second->unsubscribe (get_quiddity (quiddity_name));
-    for (auto &it : signal_subscribers_.get_map ())
+    for (auto &it : signal_subscribers_)
       it.second->unsubscribe (get_quiddity (quiddity_name));
-    quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
-    quiddities_nick_names_.remove (quiddity_name);
+    quiddities_.erase (quiddities_nick_names_[quiddity_name]);
+    quiddities_nick_names_.erase (quiddity_name);
     return true;
   }
 
@@ -515,12 +522,12 @@ namespace switcher
 	g_warning ("(%s) quiddity %s not found for removing",name_.c_str(), quiddity_name.c_str());
 	return false; 
       }
-    for (auto &it : property_subscribers_.get_map ())
+    for (auto &it : property_subscribers_)
       it.second->unsubscribe (get_quiddity (quiddity_name));
-    for (auto &it : signal_subscribers_.get_map ())
+    for (auto &it : signal_subscribers_)
       it.second->unsubscribe (get_quiddity (quiddity_name));
-    quiddities_.remove (quiddities_nick_names_.lookup (quiddity_name));
-    quiddities_nick_names_.remove (quiddity_name);
+    quiddities_.erase (quiddities_nick_names_[quiddity_name]);
+    quiddities_nick_names_.erase (quiddity_name);
     if (removal_hook_ != NULL)
       (*removal_hook_) (quiddity_name.c_str (), removal_hook_user_data_);
     return true;
@@ -597,7 +604,7 @@ namespace switcher
 					QuiddityPropertySubscriber::Callback cb,
 					void *user_data)
   {
-    if (property_subscribers_.contains (subscriber_name))
+    if (property_subscribers_.end () != property_subscribers_.find (subscriber_name))
       {
 	g_warning ("QuiddityManager_Impl, a subscriber named %s already exists\n",
 		   subscriber_name.c_str ());
@@ -610,20 +617,22 @@ namespace switcher
     subscriber->set_name (subscriber_name.c_str ());
     subscriber->set_user_data (user_data);
     subscriber->set_callback (cb);
-    property_subscribers_.insert (subscriber_name, subscriber);
+    property_subscribers_[subscriber_name] = subscriber;
     return true; 
   }
 
   bool
   QuiddityManager_Impl::remove_property_subscriber (std::string subscriber_name)
   {
-    if (!property_subscribers_.contains (subscriber_name))
+    auto it = property_subscribers_.find (subscriber_name);
+    if (property_subscribers_.end () == it)
       {
 	g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
 		   subscriber_name.c_str ());
 	return false;
       }
-    return property_subscribers_.remove (subscriber_name);
+    property_subscribers_.erase (it);
+    return true;
   }
   
   bool 
@@ -631,7 +640,8 @@ namespace switcher
 					   std::string quiddity_name,
 					   std::string property_name)
   {
-    if (!property_subscribers_.contains (subscriber_name))
+    auto it = property_subscribers_.find (subscriber_name);
+    if (property_subscribers_.end () == it)
       {
 	g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
 		   subscriber_name.c_str ());
@@ -642,7 +652,7 @@ namespace switcher
 	g_warning ("quiddity %s not found, cannot subscribe to property",quiddity_name.c_str());
 	return false;
       }
-    return property_subscribers_.lookup(subscriber_name)->subscribe (get_quiddity (quiddity_name), property_name);
+    return property_subscribers_[subscriber_name]->subscribe (get_quiddity (quiddity_name), property_name);
   }
   
   bool 
@@ -650,7 +660,8 @@ namespace switcher
 					      std::string quiddity_name,
 					      std::string property_name)
   {
-    if (!property_subscribers_.contains (subscriber_name))
+    auto it = property_subscribers_.find (subscriber_name);
+    if (property_subscribers_.end () == it)
       {
 	g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
 		   subscriber_name.c_str ());
@@ -661,27 +672,30 @@ namespace switcher
 	g_warning ("quiddity %s not found, cannot subscribe to property",quiddity_name.c_str());
 	return false;
       }
-    return property_subscribers_.lookup(subscriber_name)->unsubscribe (get_quiddity (quiddity_name), property_name);
+    return property_subscribers_[subscriber_name]->unsubscribe (get_quiddity (quiddity_name), property_name);
   }
   
   std::vector<std::string> 
   QuiddityManager_Impl::list_property_subscribers ()
   {
-    return property_subscribers_.get_keys ();
+    std::vector<std::string> res;
+    for (auto &it : property_subscribers_)
+      res.push_back (it.first);
+     return res;
   }
 
     std::vector<std::pair<std::string, std::string> > 
     QuiddityManager_Impl::list_subscribed_properties (std::string subscriber_name)
     {
-      if (!property_subscribers_.contains (subscriber_name))
+      auto it = property_subscribers_.find (subscriber_name);
+      if (property_subscribers_.end () == it)
 	{
 	  g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
 		     subscriber_name.c_str ());
 	  std::vector<std::pair<std::string, std::string> > empty;
 	  return empty;
 	}
-      
-      return property_subscribers_.lookup(subscriber_name)->list_subscribed_properties ();
+      return property_subscribers_[subscriber_name]->list_subscribed_properties ();
     }
 
     std::string 
@@ -693,20 +707,18 @@ namespace switcher
     std::string 
     QuiddityManager_Impl::list_subscribed_properties_json (std::string subscriber_name)
     {
-      std::vector<std::pair<std::string, std::string> > subscribed_props =
-	list_subscribed_properties (subscriber_name);
+      auto subscribed_props = list_subscribed_properties (subscriber_name);
 
       JSONBuilder *doc = new JSONBuilder ();
       doc->reset ();
       doc->begin_object ();
       doc->set_member_name ("subscribed properties");
       doc->begin_array ();
-      for(std::vector<std::pair<std::string, std::string> >::iterator it = subscribed_props.begin(); 
-	  it != subscribed_props.end(); ++it) 
+      for(auto &it : subscribed_props) 
 	{
 	  doc->begin_object ();
-	  doc->add_string_member ("quiddity", it->first.c_str ());
-	  doc->add_string_member ("property", it->second.c_str ());
+	  doc->add_string_member ("quiddity", it.first.c_str ());
+	  doc->add_string_member ("property", it.second.c_str ());
 	  doc->end_object ();
 	}
       doc->end_array ();
@@ -922,14 +934,14 @@ namespace switcher
   void
   QuiddityManager_Impl::mute_signal_subscribers (bool muted)
   {
-    for (auto &it : signal_subscribers_.get_map ())
+    for (auto &it : signal_subscribers_)
       it.second->mute (muted);
   }
 
   void
   QuiddityManager_Impl::mute_property_subscribers (bool muted)
   {
-    for (auto &it : property_subscribers_.get_map ())
+    for (auto &it : property_subscribers_)
       it.second->mute (muted);
   }
 
@@ -938,7 +950,8 @@ namespace switcher
 					       QuidditySignalSubscriber::OnEmittedCallback cb,
 					       void *user_data)
   {
-    if (signal_subscribers_.contains (subscriber_name))
+    auto it = signal_subscribers_.find (subscriber_name);
+    if (signal_subscribers_.end () != it)
       {
 	g_warning ("QuiddityManager_Impl, a subscriber named %s already exists\n",
 		   subscriber_name.c_str ());
@@ -951,20 +964,22 @@ namespace switcher
     subscriber->set_name (subscriber_name.c_str ());
     subscriber->set_user_data (user_data);
     subscriber->set_callback (cb);
-    signal_subscribers_.insert (subscriber_name, subscriber);
+    signal_subscribers_[subscriber_name] = subscriber;
     return true; 
   }
 
   bool
   QuiddityManager_Impl::remove_signal_subscriber (std::string subscriber_name)
   {
-    if (!signal_subscribers_.contains (subscriber_name))
+    auto it = signal_subscribers_.find (subscriber_name);
+    if (signal_subscribers_.end () == it)
       {
 	g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
 		   subscriber_name.c_str ());
 	return false;
       }
-    return signal_subscribers_.remove (subscriber_name);
+    signal_subscribers_.erase (it);
+    return true;
   }
   
   bool 
@@ -972,7 +987,8 @@ namespace switcher
 					 std::string quiddity_name,
 					 std::string signal_name)
   {
-    if (!signal_subscribers_.contains (subscriber_name))
+    auto it = signal_subscribers_.find (subscriber_name);
+    if (signal_subscribers_.end () == it)
       {
 	g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
 		   subscriber_name.c_str ());
@@ -983,7 +999,7 @@ namespace switcher
 	g_warning ("quiddity %s not found, cannot subscribe to signal",quiddity_name.c_str());
 	return false;
       }
-    return signal_subscribers_.lookup(subscriber_name)->subscribe (get_quiddity (quiddity_name), signal_name);
+    return signal_subscribers_[subscriber_name]->subscribe (get_quiddity (quiddity_name), signal_name);
   }
   
   bool 
@@ -991,7 +1007,8 @@ namespace switcher
 					     std::string quiddity_name,
 					     std::string signal_name)
   {
-    if (!signal_subscribers_.contains (subscriber_name))
+    auto it = signal_subscribers_.find (subscriber_name);
+    if (signal_subscribers_.end () == it)
       {
 	g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
 		   subscriber_name.c_str ());
@@ -1002,27 +1019,31 @@ namespace switcher
 	g_warning ("quiddity %s not found, cannot subscribe to signal",quiddity_name.c_str());
 	return false;
       }
-    return signal_subscribers_.lookup(subscriber_name)->unsubscribe (get_quiddity (quiddity_name), signal_name);
+    return signal_subscribers_[subscriber_name]->unsubscribe (get_quiddity (quiddity_name), signal_name);
   }
 
   std::vector<std::string> 
   QuiddityManager_Impl::list_signal_subscribers ()
   {
-    return signal_subscribers_.get_keys ();
+    std::vector<std::string> res;
+    for (auto &it : signal_subscribers_)
+      res.push_back (it.first);
+    return res;
   }
 
     std::vector<std::pair<std::string, std::string> > 
     QuiddityManager_Impl::list_subscribed_signals (std::string subscriber_name)
     {
-      if (!signal_subscribers_.contains (subscriber_name))
-	{
-	  g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
-		     subscriber_name.c_str ());
-	  std::vector<std::pair<std::string, std::string> > empty;
-	  return empty;
-	}
+    auto it = signal_subscribers_.find (subscriber_name);
+    if (signal_subscribers_.end () == it)
+      {
+	g_warning ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
+		   subscriber_name.c_str ());
+	std::vector<std::pair<std::string, std::string> > empty;
+	return empty;
+      }
       
-      return signal_subscribers_.lookup(subscriber_name)->list_subscribed_signals ();
+      return signal_subscribers_[subscriber_name]->list_subscribed_signals ();
     }
 
     std::string 
@@ -1034,20 +1055,18 @@ namespace switcher
     std::string 
     QuiddityManager_Impl::list_subscribed_signals_json (std::string subscriber_name)
     {
-      std::vector<std::pair<std::string, std::string> > subscribed_sigs =
-	list_subscribed_signals (subscriber_name);
+      auto subscribed_sigs = list_subscribed_signals (subscriber_name);
 
       JSONBuilder *doc = new JSONBuilder ();
       doc->reset ();
       doc->begin_object ();
       doc->set_member_name ("subscribed signals");
       doc->begin_array ();
-      for(std::vector<std::pair<std::string, std::string> >::iterator it = subscribed_sigs.begin(); 
-	  it != subscribed_sigs.end(); ++it) 
+      for(auto &it : subscribed_sigs) 
 	{
 	  doc->begin_object ();
-	  doc->add_string_member ("quiddity", it->first.c_str ());
-	  doc->add_string_member ("signal", it->second.c_str ());
+	  doc->add_string_member ("quiddity", it.first.c_str ());
+	  doc->add_string_member ("signal", it.second.c_str ());
 	  doc->end_object ();
 	}
       doc->end_array ();
@@ -1130,7 +1149,8 @@ namespace switcher
      std::string class_name = plugin->get_class_name ();
 
      //close the old one if exists
-     if (plugins_.contains (class_name))
+     auto it = plugins_.find (class_name);
+     if (plugins_.end () != it)
        {
 	 g_debug ("closing old plugin for reloading (class: %s)",
 		  class_name.c_str ());
@@ -1141,7 +1161,7 @@ namespace switcher
      							   plugin->get_json_root_node (),
      							   plugin->create_,
      							   plugin->destroy_);
-     plugins_.insert (class_name, plugin);
+     plugins_[class_name] = plugin;
      return true;
    }
 
@@ -1149,7 +1169,7 @@ namespace switcher
   QuiddityManager_Impl::close_plugin (const std::string class_name)
   {
     abstract_factory_.unregister_class (class_name);
-    plugins_.remove (class_name);
+    plugins_.erase (class_name);
   }
 
   bool 

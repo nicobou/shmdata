@@ -39,17 +39,20 @@ namespace switcher
   RtpSession::~RtpSession ()
   {
     g_debug ("rtpsession deleting");
-    std::vector <std::string> paths = quiddity_managers_.get_keys ();
-    std::vector <std::string>::iterator it;
-    for (it = paths.begin (); it != paths.end (); it ++)
-	remove_data_stream (*it);
+    
+    std::vector <std::string> paths;
+    for (auto &it : quiddity_managers_)
+      paths.push_back (it.first);
+    for (auto &it : paths)
+	remove_data_stream (it);
 
     //removing sdp files
-    std::vector <std::string> destinations = destinations_.get_keys ();
-    std::vector <std::string>::iterator iter;
-    for (iter = destinations.begin (); iter != destinations.end (); iter++)
+    std::vector <std::string> destinations;
+    for (auto &it : destinations_)
+      destinations.push_back (it.first);
+    for (auto &it :destinations)
       {
-	std::string sdp_file = make_file_name (*iter);
+	std::string sdp_file = make_file_name (it);
 	sdp_file.append(".sdp");
 	g_remove (sdp_file.c_str ());
       }
@@ -257,13 +260,14 @@ namespace switcher
   bool
   RtpSession::write_sdp_file (std::string dest_name)
   {
-    if (!destinations_.contains (dest_name))
+    auto it = destinations_.find (dest_name);
+    if (destinations_.end () == it)
       {
 	g_warning ("RtpSession: destination named %s does not exists, cannot print sdp ",
 		   dest_name.c_str ());
 	return false;
       }
-    std::string res = destinations_.lookup (dest_name)->get_sdp();
+    std::string res = it->second->get_sdp();
     
     if (res == "")
       return false;
@@ -372,9 +376,9 @@ namespace switcher
     gchar **rtp_session_array = g_strsplit_set (rtp_sink_pad_name, "_",0);
     
     gchar *rtp_session_id = g_strdup(rtp_session_array[3]);
-    context->rtp_ids_.insert (reader->get_path (), rtp_session_id);
+    context->rtp_ids_[reader->get_path ()] = rtp_session_id;
     //using internal session id for this local stream
-    std::string internal_session_id (context->internal_id_.lookup (reader->get_path ()));
+    std::string internal_session_id (context->internal_id_[reader->get_path ()]);
     
     g_free (rtp_sink_pad_name);
     g_strfreev (rtp_session_array);
@@ -409,7 +413,7 @@ namespace switcher
      std::string rtp_writer_name = context->make_file_name ("send_rtp_src_"+internal_session_id); 
      rtp_writer->set_path (rtp_writer_name.c_str ());
      rtp_writer->plug (context->bin_, rtp_src_pad);
-     context->internal_shmdata_writers_.insert (rtp_writer_name, rtp_writer);
+     context->internal_shmdata_writers_[rtp_writer_name] = rtp_writer;
      g_free (rtp_src_pad_name);
 
      //rtcp src pad
@@ -422,7 +426,7 @@ namespace switcher
      rtcp_writer->set_path (rtcp_writer_name.c_str());
      //GstUtils::wait_state_changed (context->bin_);
      rtcp_writer->plug (context->bin_, rtcp_src_pad);
-     context->internal_shmdata_writers_.insert (rtcp_writer_name, rtcp_writer);
+     context->internal_shmdata_writers_[rtcp_writer_name] = rtcp_writer;
      g_free (rtcp_src_pad_name);
     
      // We also want to receive RTCP, request an RTCP sinkpad for given session and
@@ -445,7 +449,7 @@ namespace switcher
      funnel_cleaning->add_element_to_cleaner (funnel);
      //saving funnel for being retried
      funnel_cleaning->add_labeled_element_to_cleaner ("funnel",funnel);
-     context->funnels_.insert (reader->get_path (),funnel_cleaning);
+     context->funnels_[reader->get_path ()] = funnel_cleaning;
      g_free (rtp_session_id);
     
     g_debug ("RtpSession::make_data_stream_available (done)");
@@ -490,7 +494,7 @@ namespace switcher
   bool 
   RtpSession::add_destination (std::string nick_name,std::string host_name)
   {
-    if (destinations_.contains (nick_name))
+    if (destinations_.end () != destinations_.find (nick_name))
       {
 	g_warning ("RtpSession: a destination named %s already exists, cannot add",
 		   nick_name.c_str ());
@@ -500,7 +504,7 @@ namespace switcher
     dest.reset (new RtpDestination ());
     dest->set_name (nick_name);
     dest->set_host_name (host_name);
-    destinations_.insert (nick_name, dest);
+    destinations_[nick_name] = dest;
     return true;
   }
 
@@ -519,18 +523,16 @@ namespace switcher
   bool 
   RtpSession::remove_destination (std::string nick_name)
   {
-    if (!destinations_.contains (nick_name))
+    auto it = destinations_.find (nick_name);
+    if (destinations_.end () == it)
       {
 	g_warning ("RtpSession: destination named %s does not exists, cannot remove",
 		   nick_name.c_str ());
 	return false;
       }
-    destinations_.remove (nick_name);
+    destinations_.erase (it);
     return true;
   }
-
-
-
 
   gboolean
   RtpSession::add_udp_stream_to_dest_wrapped (gpointer shmdata_name, 
@@ -551,21 +553,19 @@ namespace switcher
   RtpSession::add_udp_stream_to_dest (std::string shmdata_socket_path, std::string nick_name, std::string port)
   {
     g_debug ("RtpSession::add_udp_stream_to_dest");
-
-
-    if (!internal_id_.contains (shmdata_socket_path))
+    auto id_it = internal_id_.find (shmdata_socket_path);
+    if (internal_id_.end () == id_it)
       {
 	g_warning ("RtpSession is not connected to %s",shmdata_socket_path.c_str ());
 	return false;
       }
-    
-    if (!destinations_.contains (nick_name))
+    auto destination_it = destinations_.find (nick_name);
+    if (destinations_.end () == destination_it)
       {
 	g_warning ("RtpSession does not contain a destination named %s",nick_name.c_str ());
 	return false;
       }
-
-    if (g_strcmp0 (destinations_.lookup (nick_name)->get_port (shmdata_socket_path).c_str (),
+    if (g_strcmp0 (destination_it->second->get_port (shmdata_socket_path).c_str (),
 		   port.c_str ()) == 0) 
       {
 	g_warning ("RtpSession: destination (%s) is already streaming shmdata (%s) to port %s",
@@ -582,13 +582,13 @@ namespace switcher
 	g_warning ("RtpSession rtp destination port %s must be even, not odd",port.c_str ());
 	return false;
       }
-    std::string id = internal_id_.lookup (shmdata_socket_path);
-
-    if (!quiddity_managers_.contains (shmdata_socket_path))
+    std::string id = id_it->second;
+    auto manager_it = quiddity_managers_.find (shmdata_socket_path);
+    if (quiddity_managers_.end () == manager_it)
       {
 	//creating an internal quiddity manager 
 	QuiddityManager::ptr manager = QuiddityManager::make_manager ("manager_"+get_name()+"_"+id);
-	quiddity_managers_.insert (shmdata_socket_path, manager);
+	quiddity_managers_[shmdata_socket_path] = manager;
 	manager->create ("runtime","single_runtime");//only one runtime for all
 
 	std::vector <std::string> arg;
@@ -605,29 +605,27 @@ namespace switcher
 	arg.clear ();
 	arg.push_back (make_file_name ("send_rtcp_src_"+id));
 	manager->invoke ("udpsend_rtcp", "connect", NULL, arg);
+	//update manager_it with the new one
+	manager_it = quiddity_managers_.find (shmdata_socket_path);
       }
-
-    QuiddityManager::ptr manager = quiddity_managers_.lookup (shmdata_socket_path);
+    QuiddityManager::ptr manager = manager_it->second;
 
     //rtp stream (sending)
-    RtpDestination::ptr dest = destinations_.lookup (nick_name);
-    
+    RtpDestination::ptr dest = destinations_[nick_name];
     dest->add_stream (shmdata_socket_path,manager,port);
     std::vector <std::string> arg;
     arg.push_back (dest->get_host_name ());
     arg.push_back (port);
     manager->invoke ("udpsend_rtp","add_client", NULL, arg);
-
-     //rtcp stream (sending)
-     arg.clear ();
-     arg.push_back (dest->get_host_name ());
-     std::ostringstream rtcp_port;
-     rtcp_port << rtp_port + 1;
-     arg.push_back (rtcp_port.str());
+    //rtcp stream (sending)
+    arg.clear ();
+    arg.push_back (dest->get_host_name ());
+    std::ostringstream rtcp_port;
+    rtcp_port << rtp_port + 1;
+    arg.push_back (rtcp_port.str());
      manager->invoke ("udpsend_rtcp", "add_client", NULL, arg);
-
      //TODO rtcp receiving should be negociated 
-     // GstElementCleaner::ptr funnel_cleaner = funnels_.lookup (shmdata_socket_path);
+     // GstElementCleaner::ptr funnel_cleaner = funnels_[shmdata_socket_path];
      //  GstElement *funnel = funnel_cleaner->get_labeled_element_from_cleaner ("funnel");
      //  GstElement *udpsrc;
      //  GstUtils::make_element ("udpsrc", &udpsrc);
@@ -637,7 +635,6 @@ namespace switcher
      //  GstUtils::sync_state_with_parent (udpsrc);
      //  if (!gst_element_link (udpsrc, funnel))
      //    g_debug ("udpsrc and funnel link failled in rtp-session");
-
      g_debug ("RtpSession::add_udp_stream_to_dest (done)");
      return true;
   }
@@ -659,13 +656,13 @@ namespace switcher
   bool
   RtpSession::remove_udp_stream_to_dest (std::string shmdata_socket_path, std::string dest_name)
   {
-    if (!internal_id_.contains (shmdata_socket_path))
+    if (internal_id_.end () == internal_id_.find (shmdata_socket_path))
       {
 	g_warning ("RtpSession is not connected to %s",shmdata_socket_path.c_str ());
 	return false;
       }
     
-    RtpDestination::ptr dest = destinations_.lookup (dest_name);
+    RtpDestination::ptr dest = destinations_[dest_name];
     if (!(bool) dest)
       {
 	g_warning ("RtpSession::remove_udp_stream_to_dest, dest %s does not exist", dest_name.c_str ());
@@ -675,7 +672,7 @@ namespace switcher
     dest->remove_stream (shmdata_socket_path);
     
     
-    QuiddityManager::ptr manager = quiddity_managers_.lookup (shmdata_socket_path);
+    QuiddityManager::ptr manager = quiddity_managers_[shmdata_socket_path];
     if (!(bool) manager)
       {
 	g_warning ("RtpSession::remove_udp_stream_to_dest, shmdata %s is not managed by the session", shmdata_socket_path.c_str ());
@@ -743,7 +740,7 @@ namespace switcher
     std::ostringstream os_id;
     os_id << next_id_;
     next_id_++;
-    internal_id_.insert (shmdata_socket_path, os_id.str());
+    internal_id_[shmdata_socket_path] = os_id.str();
     //g_print ("add_data stream --- 7\n");
 
     register_shmdata_reader (reader);
@@ -768,35 +765,32 @@ namespace switcher
   bool
   RtpSession::remove_data_stream (std::string shmdata_socket_path)
   {
-    if (!internal_id_.contains (shmdata_socket_path))
+    auto it = internal_id_.find (shmdata_socket_path);
+    if (internal_id_.end () == it)
       {
 	g_warning ("RtpSession::remove_data_stream: %s not present",shmdata_socket_path.c_str ());
 	return false;
       }
-    if(quiddity_managers_.contains (shmdata_socket_path))
+    quiddity_managers_.erase (shmdata_socket_path);
+    for (auto &it : destinations_)
       {
-     	quiddity_managers_.remove (shmdata_socket_path);
+	if (it.second->has_shmdata (shmdata_socket_path))
+	  it.second->remove_stream (shmdata_socket_path);
       }
-    std::map<std::string, RtpDestination::ptr > dests = destinations_.get_map ();
-    std::map<std::string, RtpDestination::ptr >::iterator it;
-    for (it = dests.begin (); it != dests.end (); it++)
-      {
-	if (it->second->has_shmdata (shmdata_socket_path))
-	  it->second->remove_stream (shmdata_socket_path);
-      }
-    std::string id = internal_id_.lookup (shmdata_socket_path);
-    internal_id_.remove (shmdata_socket_path);
-    internal_shmdata_writers_.remove (make_file_name ("send_rtp_src_"+id));
-    internal_shmdata_writers_.remove (make_file_name ("send_rtcp_src_"+id));
+    std::string id = it->second;
+    internal_id_.erase (it);
+    internal_shmdata_writers_.erase (make_file_name ("send_rtp_src_"+id));
+    internal_shmdata_writers_.erase (make_file_name ("send_rtcp_src_"+id));
     unregister_shmdata_reader (shmdata_socket_path);
-    internal_shmdata_readers_.remove (make_file_name ("recv_rtcp_sink_"+id));
-    if (!funnels_.contains (shmdata_socket_path))
+    internal_shmdata_readers_.erase (make_file_name ("recv_rtcp_sink_"+id));
+    auto funnel_it = funnels_.find (shmdata_socket_path);
+    if (funnels_.end () == funnel_it)
       {
 	g_debug ("RtpSession::remove_data_stream: no funnel");
 	return false;
       }
-    funnels_.remove (shmdata_socket_path);
-    rtp_ids_.remove (shmdata_socket_path);
+    funnels_.erase (funnel_it);
+    rtp_ids_.erase (shmdata_socket_path);
     g_debug ("data_stream %s removed", shmdata_socket_path.c_str ());
     return true;
   }
@@ -947,17 +941,11 @@ namespace switcher
     destinations_json->begin_object ();
     destinations_json->set_member_name ("destinations");
     destinations_json->begin_array ();
-
-     std::vector<RtpDestination::ptr> destinations = context->destinations_.get_values ();
-     std::vector<RtpDestination::ptr>::iterator it;
-     if (destinations.begin () != destinations.end ())
-       for (it = destinations.begin (); it != destinations.end (); it++)
-	 destinations_json->add_node_value ( (*it)->get_json_root_node ());
-
+    for (auto &it : context->destinations_)
+      destinations_json->add_node_value ( it.second->get_json_root_node ());
     destinations_json->end_array ();
     destinations_json->end_object ();
     context->destinations_json_ = g_strdup (destinations_json->get_string (true).c_str ());
-    
     return context->destinations_json_;
   }
 

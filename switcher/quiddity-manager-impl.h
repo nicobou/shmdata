@@ -19,19 +19,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-/**
- * The QuiddityManagerImpl class wraps abstract factory for creating instace by name (birth) 
- * It wraps StringMap for managing instances (subsistence). 
- * Object destruction is managed through the use of std::shared_ptr
- */
-
 #ifndef __SWITCHER_QUIDDITY_MANAGER_IMPL_H__
 #define __SWITCHER_QUIDDITY_MANAGER_IMPL_H__
 
-
 #include <memory>
+#include <unordered_map>
 #include "abstract-factory.h" 
-#include "string-map.h"
 #include "quiddity.h" 
 #include "json-builder.h"
 #include "quiddity-property-subscriber.h"
@@ -210,7 +203,7 @@ namespace switcher
       //plugins
       bool load_plugin (const char *filename);
       void close_plugin (const std::string class_name);
-      StringMap<PluginLoader::ptr> plugins_;
+      std::unordered_map<std::string, PluginLoader::ptr> plugins_;
       void init (std::string name);
       QuiddityManager_Impl();//will get name "default"
       QuiddityManager_Impl(std::string);
@@ -218,10 +211,10 @@ namespace switcher
       std::string name_;
       void register_classes ();
       AbstractFactory< Quiddity, std::string, JSONBuilder::Node> abstract_factory_;
-      StringMap< std::shared_ptr<Quiddity> > quiddities_;
-      StringMap< std::string > quiddities_nick_names_;
-      StringMap< std::shared_ptr <QuiddityPropertySubscriber> > property_subscribers_;
-      StringMap< std::shared_ptr <QuidditySignalSubscriber> > signal_subscribers_;
+      std::unordered_map <std::string, std::shared_ptr<Quiddity> > quiddities_;
+      std::unordered_map <std::string, std::string > quiddities_nick_names_;
+      std::unordered_map <std::string, std::shared_ptr <QuiddityPropertySubscriber> > property_subscribers_;
+      std::unordered_map <std::string, std::shared_ptr <QuidditySignalSubscriber> > signal_subscribers_;
       bool init_quiddity (std::shared_ptr<Quiddity> quiddity);
       void remove_shmdata_sockets ();
       JSONBuilder::ptr classes_doc_;

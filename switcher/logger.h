@@ -23,9 +23,10 @@
 #ifndef __SWITCHER_LOGGER_H__
 #define __SWITCHER_LOGGER_H__
 
+#include <glib.h>
+#include <unordered_map>
 #include "quiddity.h"
 #include "custom-property-helper.h"
-#include <glib.h>
 
 namespace switcher
 {
@@ -61,7 +62,7 @@ namespace switcher
     bool mute_;
     bool debug_;
     bool verbose_;
-    StringMap <guint> handler_ids_;
+    std::unordered_map <std::string, guint> handler_ids_;
     //custom properties 
     CustomPropertyHelper::ptr custom_props_;
     GParamSpec *last_line_prop_;

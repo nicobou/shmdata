@@ -23,12 +23,13 @@
 #ifndef __SWITCHER_RTPDESTINATION_H__
 #define __SWITCHER_RTPDESTINATION_H__
 
-#include <gst/sdp/gstsdpmessage.h>
-#include <gst/gst.h>
-#include "string-map.h"
 #include "shmdata-reader.h"
 #include "quiddity-manager.h"
 #include "json-builder.h"
+#include <gst/sdp/gstsdpmessage.h>
+#include <gst/gst.h>
+#include <map>
+#include <string>
 
 namespace switcher
 {
@@ -57,8 +58,8 @@ namespace switcher
   private:
     std::string name_;
     std::string host_name_;
-    StringMap<QuiddityManager::ptr> ports_; //maps port with rtp shmdata reader
-    StringMap<std::string> source_streams_; //maps shmdata source stream with port
+    std::map<std::string, QuiddityManager::ptr> ports_; //maps port with rtp shmdata reader
+    std::map<std::string, std::string> source_streams_; //maps shmdata source stream with port
     static void sdp_write_media_from_caps (GstSDPMessage *sdp_description, 
 					   GstCaps *media_caps,
 					   gint dest_port,

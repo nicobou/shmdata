@@ -109,11 +109,10 @@ namespace switcher
 				"Verbose");
     
     //handler must be installed after custom property creation 
-    handler_ids_.insert ("switcher",
-			 g_log_set_handler ("switcher", 
-					    G_LOG_LEVEL_MASK, 
-					    log_handler, 
-					    this));
+    handler_ids_["switcher"] = g_log_set_handler ("switcher", 
+						  G_LOG_LEVEL_MASK, 
+						  log_handler, 
+						  this);
     
     
     install_method ("Install Log Handler",
@@ -150,11 +149,8 @@ namespace switcher
   {
     if (i_am_the_one_)
       {
-	std::map<std::string, guint> handlers = handler_ids_.get_map ();
-	std::map<std::string, guint>::iterator it;
-	for (it = handlers.begin (); it != handlers.end (); it++)
-	  g_log_remove_handler (it->first.c_str (), it->second);
-	
+	for (auto &it : handler_ids_)
+	  g_log_remove_handler (it.first.c_str (), it.second);
 	g_free (last_line_);
 	installed_ = false;
       }
@@ -179,24 +175,25 @@ namespace switcher
   gboolean
   Logger::install_log_handler (const gchar *log_domain)
   {
-    if (handler_ids_.contains (log_domain))
+    auto it = handler_ids_.find (log_domain);
+    if (handler_ids_.end () != it)
       return FALSE;
 
-    handler_ids_.insert (log_domain,
-			 g_log_set_handler (log_domain, 
-					    G_LOG_LEVEL_MASK, 
-					    log_handler, 
-					    this));
+    handler_ids_[log_domain] = g_log_set_handler (log_domain, 
+						  G_LOG_LEVEL_MASK, 
+						  log_handler, 
+						  this);
     return TRUE;
   }
 
   gboolean
   Logger::remove_log_handler (const gchar *log_domain)
   {
-    if (!handler_ids_.contains (log_domain))
+    auto it = handler_ids_.find (log_domain);
+    if (handler_ids_.end () == it)
       return FALSE;
 
-    g_log_remove_handler (log_domain, handler_ids_.lookup(log_domain));
+    g_log_remove_handler (log_domain, handler_ids_[log_domain]);
     return TRUE;
   }
   

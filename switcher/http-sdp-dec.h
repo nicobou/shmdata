@@ -25,9 +25,10 @@
 
 #include "base-source.h"
 #include "gst-element-cleaner.h"
-#include "string-map.h"
-#include <memory>
 #include "quiddity-command.h"
+#include <memory>
+#include <map>
+#include <string>
 
 namespace switcher
 {
@@ -43,7 +44,7 @@ namespace switcher
    GstElement *souphttpsrc_;
    GstElement *sdpdemux_;
    std::vector<GstElement *> decodebins_;
-   StringMap<int> media_counters_;
+   std::map<std::string, int> media_counters_;
    GstPad *main_pad_;
    GstCaps *rtpgstcaps_;
    bool discard_next_uncomplete_buffer_;

@@ -23,17 +23,18 @@
 #ifndef __SWITCHER_RTPSESSION_H__
 #define __SWITCHER_RTPSESSION_H__
 
-#include <gst/gst.h>
-#include <gst/sdp/gstsdpmessage.h>
-#include <memory>
 #include "segment.h"
 #include "quiddity-manager.h"
 #include "rtp-destination.h"
 #include "custom-property-helper.h"
+#include <gst/gst.h>
+#include <gst/sdp/gstsdpmessage.h>
+#include <memory>
+#include <map>
+#include <string>
  
 namespace switcher
 {
-
   class RtpSession : public Segment
   {
   public:
@@ -100,17 +101,17 @@ namespace switcher
     gint mtu_at_add_data_stream_;
 
     //local streams
-    StringMap <std::string> internal_id_; //maps shmdata path with internal id 
-    StringMap <std::string> rtp_ids_; //maps shmdata path with rtp id
-    StringMap <QuiddityManager::ptr> quiddity_managers_;
-    StringMap <GstElementCleaner::ptr> funnels_; //maps internal id with funnel cleaner
+    std::map<std::string, std::string> internal_id_; //maps shmdata path with internal id 
+    std::map<std::string, std::string> rtp_ids_; //maps shmdata path with rtp id
+    std::map<std::string, QuiddityManager::ptr> quiddity_managers_;
+    std::map<std::string, GstElementCleaner::ptr> funnels_; //maps internal id with funnel cleaner
 
-    StringMap<GstElement *>rtp_udp_sinks_;
-    StringMap<ShmdataWriter::ptr> internal_shmdata_writers_;
-    StringMap<ShmdataReader::ptr> internal_shmdata_readers_;
+    //std::map<std::string, GstElement *>rtp_udp_sinks_;
+    std::map<std::string, ShmdataWriter::ptr> internal_shmdata_writers_;
+    std::map<std::string, ShmdataReader::ptr> internal_shmdata_readers_;
 
     //destinations
-    StringMap <RtpDestination::ptr> destinations_;
+    std::map<std::string, RtpDestination::ptr> destinations_;
 
     static void make_data_stream_available (GstElement* typefind, 
 					    guint probability, 

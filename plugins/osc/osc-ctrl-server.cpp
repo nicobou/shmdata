@@ -75,10 +75,11 @@ namespace switcher
   {
     OscCtrlServer *context = static_cast<OscCtrlServer*>(user_data);
     
-    if (!context->osc_subscribers_.contains (internal_subscriber_name))
-	return;
+    auto it = context->osc_subscribers_.find (internal_subscriber_name);
+    if (context->osc_subscribers_.end () == it)
+      return;
     
-    std::pair <std::string, std::string> address = context->osc_subscribers_.lookup (internal_subscriber_name);
+    std::pair <std::string, std::string> address = context->osc_subscribers_[internal_subscriber_name];
 
     lo_address t = lo_address_new(address.first.c_str (),
 				  address.second.c_str ());
@@ -271,7 +272,7 @@ namespace switcher
 	    gchar *port = string_from_osc_arg (types[2], argv[2]);
 	    gchar *port_int = string_float_to_string_int (port);	    
 	    gchar *internal_subscriber_name = context->make_internal_subscriber_name (subscriber_name);
-	    if (context->osc_subscribers_.contains (internal_subscriber_name))
+	    if (context->osc_subscribers_.end () == context->osc_subscribers_.find (internal_subscriber_name))
 	      {
 		g_warning ("OscCtrlServer: a subscriber named %s is already registered", subscriber_name);
 		return 0;
@@ -281,8 +282,7 @@ namespace switcher
 		g_warning ("OscCtrlServer: issue with host name or port");
 		return 0;
 	      }
-	    context->osc_subscribers_.insert (internal_subscriber_name, 
-					      std::make_pair (host, port_int));
+	    context->osc_subscribers_[internal_subscriber_name] = std::make_pair (host, port_int);
 	    if (!manager->make_property_subscriber (internal_subscriber_name,
 					   OscCtrlServer::prop_cb,
 					   context))
@@ -308,13 +308,14 @@ namespace switcher
 	  {
 	    gchar *subscriber_name = string_from_osc_arg (types[0], argv[0]);
 	    gchar *internal_subscriber_name = context->make_internal_subscriber_name (subscriber_name);
-	    if (!context->osc_subscribers_.contains (internal_subscriber_name))
+	    auto it = context->osc_subscribers_.find (internal_subscriber_name);
+	    if (context->osc_subscribers_.end () == it)
 	      {
 		g_warning ("OscCtrlServer: cannot delete non existing subscriber named %s", subscriber_name);
 		return 0;
 	      }
 	    manager->remove_property_subscriber (internal_subscriber_name);
-	    context->osc_subscribers_.remove (internal_subscriber_name);
+	    context->osc_subscribers_.erase (it);
 	    g_free (internal_subscriber_name); 
 	    g_free (subscriber_name); 
 	  }
@@ -372,7 +373,7 @@ namespace switcher
 	    gchar *quiddity_name = string_from_osc_arg (types[1], argv[1]);
 	    gchar *property_name = string_from_osc_arg (types[2], argv[2]);
 	    gchar *internal_subscriber_name = context->make_internal_subscriber_name (subscriber_name);
-	    if (!context->osc_subscribers_.contains (internal_subscriber_name))
+	    if (context->osc_subscribers_.end () == context->osc_subscribers_.find (internal_subscriber_name))
 	      {
 		g_warning ("OscCtrlServer: a subscriber named %s does not exist", subscriber_name);
 		return 0;
@@ -409,7 +410,7 @@ namespace switcher
 	    gchar *quiddity_name = string_from_osc_arg (types[1], argv[1]);
 	    gchar *property_name = string_from_osc_arg (types[2], argv[2]);
 	    gchar *internal_subscriber_name = context->make_internal_subscriber_name (subscriber_name);
-	    if (!context->osc_subscribers_.contains (internal_subscriber_name))
+	    if (context->osc_subscribers_.end () == context->osc_subscribers_.find (internal_subscriber_name))
 	      {
 		g_warning ("OscCtrlServer: a subscriber named %s does not exist", subscriber_name);
 		return 0;

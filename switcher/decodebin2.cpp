@@ -92,12 +92,11 @@ namespace switcher
     //preparing pad name
     gchar **padname_splitted = g_strsplit_set (padname, "/",-1);
     int count = 0;
-    if (context->media_counters_.contains (std::string (padname_splitted[0])))
-       {
-	 count = context->media_counters_.lookup (std::string (padname_splitted[0]));
-	 count = count+1;
-       }
-    context->media_counters_.replace (std::string (padname_splitted[0]), count);
+    auto it = context->media_counters_.find (std::string (padname_splitted[0]));
+    if (context->media_counters_.end () != it)
+	count = ++(it->second);
+    else
+      context->media_counters_[std::string (padname_splitted[0])] = count;
 
     gchar media_name[256];
     g_sprintf (media_name,"%s_%d",padname_splitted[0],count);

@@ -110,124 +110,134 @@ main (int /*argc*/,
     manager->create ("videotestsrc","v");
     manager->invoke_va ("v", "set_runtime", NULL, "av_runtime", NULL);
 
-    //manager->set_property ("v", "codec", "jpegenc");
+    // manager->set_property ("v", "codec", "jpegenc");
     
     manager->set_property ("v", "started", "true");
 
-    manager->create ("runtime", "rtp_runtime");
-    manager->create ("rtpsession","rtp");
-    manager->invoke_va ("rtp", "set_runtime", NULL, "rtp_runtime", NULL);
+     manager->create ("runtime", "rtp_runtime");
+     manager->create ("rtpsession","rtp");
+     manager->invoke_va ("rtp", "set_runtime", NULL, "rtp_runtime", NULL);
     
-    manager->invoke_va ("rtp", 
-      			"add_data_stream",
-			NULL,
-      			"/tmp/switcher_rtptest_a_audio",
-      			NULL);
-    
-    manager->invoke_va ("rtp", 
-      			"add_data_stream",
-			NULL,
-      			"/tmp/switcher_rtptest_v_video",
-      			NULL);
-
-    manager->invoke_va ("rtp", 
-      			"add_data_stream",
-			NULL,
-      			"/tmp/switcher_rtptest_v_encoded-video",
-      			NULL);
-
-    manager->invoke_va ("rtp", 
-      			"add_destination",
-			NULL,
-      			"local",
-      			"localhost",
-      			NULL);
-    manager->invoke_va ("rtp", 
-       			"add_udp_stream_to_dest",
-			NULL,
+     manager->invoke_va ("rtp", 
+       			"add_data_stream",
+     			NULL,
        			"/tmp/switcher_rtptest_a_audio",
-       			"local",
-       			"9066",
        			NULL);
-    manager->invoke_va ("rtp",
-       			"add_udp_stream_to_dest",
-			NULL,
+    
+     manager->invoke_va ("rtp", 
+       			"add_data_stream",
+     			NULL,
        			"/tmp/switcher_rtptest_v_video",
-       			"local",
-       			"9076",
        			NULL);
 
-    manager->invoke_va ("rtp",
-       			"add_udp_stream_to_dest",
-			NULL,
-       			"/tmp/switcher_rtptest_v_encoded-video",
+      manager->invoke_va ("rtp", 
+        			"add_data_stream",
+      			NULL,
+        			"/tmp/switcher_rtptest_v_encoded-video",
+        			NULL);
+
+     manager->invoke_va ("rtp", 
+       			"add_destination",
+     			NULL,
        			"local",
-       			"9076",
+       			"localhost",
        			NULL);
+     manager->invoke_va ("rtp", 
+        			"add_udp_stream_to_dest",
+     			NULL,
+        			"/tmp/switcher_rtptest_a_audio",
+        			"local",
+        			"9066",
+        			NULL);
+     manager->invoke_va ("rtp",
+        			"add_udp_stream_to_dest",
+     			NULL,
+        			"/tmp/switcher_rtptest_v_video",
+        			"local",
+        			"9076",
+        			NULL);
 
-    usleep (1000000);
+     // manager->invoke_va ("rtp",
+     //    			"add_udp_stream_to_dest",
+     // 			NULL,
+     //    			"/tmp/switcher_rtptest_v_encoded-video",
+     //    			"local",
+     //    			"9076",
+     //    			NULL);
 
-    manager->create ("runtime", "receiver_runtime");
-    manager->create ("httpsdpdec", "uri");
-    manager->invoke_va ("uri", 
-			"set_runtime", 
-			NULL, 
-			"receiver_runtime", NULL);
-    manager->invoke_va ("uri", 
-       			"to_shmdata",
-			NULL,
-			"http://localhost:38084/sdp?rtpsession=rtp&destination=local",
-			NULL);
+     usleep (1000000);
+
+     manager->create ("runtime", "receiver_runtime");
+     manager->create ("httpsdpdec", "uri");
+     manager->invoke_va ("uri", 
+     			"set_runtime", 
+     			NULL, 
+     			"receiver_runtime", NULL);
+     manager->invoke_va ("uri", 
+        			"to_shmdata",
+     			NULL,
+     			"http://localhost:38084/sdp?rtpsession=rtp&destination=local",
+     			NULL);
     
     manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);
 
 
-    manager->create ("runtime", "probe_runtime");
-    manager->create ("fakesink","audioprobe");
+     manager->create ("runtime", "probe_runtime");
+     manager->create ("fakesink","audioprobe");
     
-    manager->subscribe_property ("sub","audioprobe","caps");
-    manager->subscribe_property ("sub","audioprobe","last-message");
-    manager->invoke_va ("audioprobe", 
-			"set_runtime", 
-			NULL,
-			"probe_runtime", 
-			NULL);
-    manager->invoke_va ("audioprobe",
-			"connect",
+     manager->subscribe_property ("sub","audioprobe","caps");
+     manager->subscribe_property ("sub","audioprobe","last-message");
+     manager->invoke_va ("audioprobe", 
+     			"set_runtime", 
      			NULL,
-     			"/tmp/switcher_rtptest_uri_audio-0",
+     			"probe_runtime", 
      			NULL);
-
-    manager->create ("fakesink","videoprobe");
-    manager->subscribe_property ("sub","videoprobe","last-message");
-    manager->subscribe_property ("sub","videoprobe","caps");
-    manager->invoke_va ("videoprobe", 
-			"set_runtime", 
-			NULL, 
-			"probe_runtime", 
-			NULL);
-    manager->invoke_va ("videoprobe",
-      			"connect",
-			NULL,
-      			"/tmp/switcher_rtptest_uri_video-0",
+     manager->invoke_va ("audioprobe",
+     			"connect",
+      			NULL,
+      			"/tmp/switcher_rtptest_uri_audio-0",
       			NULL);
 
-    // manager->create ("fakesink","jpegprobe");
-    // manager->subscribe_property ("sub","jpegprobe","last-message");
-    // manager->subscribe_property ("sub","jpegprobe","caps");
-    // manager->invoke_va ("jpegprobe", 
-    // 			"set_runtime", 
-    // 			NULL, 
-    // 			"probe_runtime", 
-    // 			NULL);
-    // manager->invoke_va ("jpegprobe",
-    //   			"connect",
-    // 			NULL,
-    //   			"/tmp/switcher_rtptest_uri_video-1",
-    //   			NULL);
-    
-    while (do_continue)
-      usleep (100000);
+     manager->create ("fakesink","videoprobe");
+     manager->subscribe_property ("sub","videoprobe","last-message");
+     manager->subscribe_property ("sub","videoprobe","caps");
+     manager->invoke_va ("videoprobe", 
+     			"set_runtime", 
+     			NULL, 
+     			"probe_runtime", 
+     			NULL);
+     manager->invoke_va ("videoprobe",
+       			"connect",
+     			NULL,
+       			"/tmp/switcher_rtptest_uri_video-0",
+       			NULL);
+
+      // manager->create ("fakesink","jpegprobe");
+      // manager->subscribe_property ("sub","jpegprobe","last-message");
+      // manager->subscribe_property ("sub","jpegprobe","caps");
+      // manager->invoke_va ("jpegprobe", 
+      // 			"set_runtime", 
+      // 			NULL, 
+      // 			"probe_runtime", 
+      // 			NULL);
+      // manager->invoke_va ("jpegprobe",
+      //   			"connect",
+      // 			NULL,
+      //   			"/tmp/switcher_rtptest_uri_video-1",
+      //   			NULL);
+     
+     //wait 3 seconds
+     uint count = 3;
+     while (do_continue)
+       {
+	 if (count == 0)
+	   do_continue = false;
+	 else
+	   {
+	     --count;
+	     usleep (1000000);
+	   }
+       }
   }
  
   if (audio_success && video_success)

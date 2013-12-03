@@ -148,8 +148,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     shmdata-writer.h \
     signal-string.h \
     startable-quiddity.h \
-    string-map.h \
-    string-map_spec.h \
     string-dictionary.h \
     udpsink.h \
     uridecodebin.h \

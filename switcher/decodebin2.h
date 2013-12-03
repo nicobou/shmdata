@@ -25,6 +25,7 @@
 
 #include "base-sink.h"
 #include <memory>
+#include <map>
 
 namespace switcher
 {
@@ -36,7 +37,7 @@ namespace switcher
 
   private: 
    GstElement *decodebin2_;
-   StringMap<int> media_counters_;
+   std::map<std::string, int> media_counters_;
    static void make_decodebin2_active (ShmdataReader *caller, void *decodebin2_instance);
    static void pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
    static void no_more_pads_cb (GstElement* object, gpointer user_data);

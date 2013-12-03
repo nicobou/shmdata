@@ -23,28 +23,27 @@
 #ifndef __SWITCHER_GST_ELEMENT_CLEANER_H__
 #define __SWITCHER_GST_ELEMENT_CLEANER_H__
 
-#include <vector>
 #include <gst/gst.h>
 #include <memory>
-#include "string-map.h"
+#include <vector>
+#include <map>
+#include <string>
 
 namespace switcher
 {
-  
   class GstElementCleaner
   {
   public:
     typedef std::shared_ptr<GstElementCleaner> ptr;
     virtual ~GstElementCleaner ();
     void add_element_to_cleaner (GstElement *element);
-    void add_labeled_element_to_cleaner (std::string label, GstElement *element);
-    GstElement *get_labeled_element_from_cleaner (std::string label);
+    void add_labeled_element_to_cleaner (const std::string &new_label, GstElement *element);
+    GstElement *get_labeled_element_from_cleaner (const std::string &new_label);
 
   private:
     std::vector<GstElement *> elements_to_remove_;
-    StringMap<GstElement *> labeled_elements_;
+    std::map<std::string, GstElement *> labeled_elements_;
   };
-  
 }  // end of namespace
 
 #endif // ifndef

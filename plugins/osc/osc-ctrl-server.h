@@ -24,8 +24,9 @@
 
 #include "switcher/quiddity-manager-wrapper.h"
 #include "lo/lo.h"
-#include "switcher/string-map.h"
 #include <memory>
+#include <map>
+#include <string>
 
 namespace switcher
 {
@@ -46,7 +47,7 @@ namespace switcher
     
   private:
     std::string port_;
-    StringMap< std::pair <std::string, std::string> > osc_subscribers_; //(host + port)
+    std::map<std::string, std::pair <std::string, std::string> > osc_subscribers_; //(host + port)
     lo_server_thread osc_thread_;
     static void prop_cb (std::string subscriber_name, 
 			 std::string quiddity_name, 
