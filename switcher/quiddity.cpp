@@ -294,7 +294,7 @@ namespace switcher
 			       std::string signal_to_emit)
   {
     auto it = properties_.find (name_to_give);
-    if (properties_.end () == it)
+    if (properties_.end () != it)
       {
 	g_debug ("registering name %s already exists",
 		 name_to_give.c_str());
@@ -308,7 +308,6 @@ namespace switcher
     position_weight_counter_ += 20;
     
     properties_[name_to_give] = prop; 
-    //g_print ("--- emit %s\n", signal_to_emit.c_str ());
     signal_emit (signal_to_emit.c_str (), name_to_give.c_str ());
     return true;
   }
@@ -525,7 +524,7 @@ namespace switcher
     auto it = methods_.find (method_name);
     if (methods_.end () == it)
       {
-	g_print ("Quiddity::invoke_method error: method %s not found",
+	g_debug ("Quiddity::invoke_method error: method %s not found",
 		 method_name.c_str());
 	return false;
       }
@@ -533,7 +532,7 @@ namespace switcher
     GValue res = G_VALUE_INIT;
     if (false == it->second->invoke (args, &res))
       {
-	g_print ("invokation of %s failled (missing argments ?)",
+	g_debug ("invokation of %s failled (missing argments ?)",
 		 method_name.c_str ());
 	return false;
       }
@@ -708,7 +707,11 @@ namespace switcher
   {
     auto it = properties_.find (property_name);
     if (properties_.end () == it)
-      return false;
+      {
+	g_debug ("cannot set non existing property (%s)", 
+		 property_name.c_str ());
+	return false;
+      }
     it->second->set (value);
     return true;
   }
