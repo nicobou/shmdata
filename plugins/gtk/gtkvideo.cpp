@@ -25,7 +25,7 @@
 #include <gst/gst.h>
 #include <gdk/gdkkeysyms.h>
 #include <gdk/gdkcursor.h>
-#include <unistd.h>  //sleep
+//#include <unistd.h>  //sleep
 
 namespace switcher
 {
@@ -42,44 +42,28 @@ namespace switcher
   bool
   GTKVideo::init ()
   {
-
     if (!GstUtils::make_element ("xvimagesink", &xvimagesink_))
       return false;
-    
     if (!gtk_init_check (NULL, NULL))
       {
 	g_debug ("GTKVideo::init, cannot init gtk");
 	return false;
       }
-    
-    wait_window_mutex_ = g_mutex_new ();
-    wait_window_cond_ = g_cond_new ();
-
-    window_destruction_mutex_ = g_mutex_new ();
-    window_destruction_cond_ = g_cond_new ();
-
     //set the name before registering properties
     set_name (gst_element_get_name (xvimagesink_));
     g_object_set (G_OBJECT (xvimagesink_), "sync", FALSE, NULL);
-
-    on_error_command_ = new QuiddityCommand ();
+    //on_error_command_ = new QuiddityCommand ();
     on_error_command_->id_ = QuiddityCommand::remove;
     on_error_command_->add_arg (get_nick_name ());
-
     g_object_set_data (G_OBJECT (xvimagesink_), 
      		       "on-error-command",
      		       (gpointer)on_error_command_);
-    
     set_sink_element (xvimagesink_);
-
-    main_window_ = NULL;  
-    video_window_ = NULL; 
-    is_fullscreen_ = FALSE;
+    //is_fullscreen_ = FALSE;
     if (instances_counter_ == 0)
       g_thread_new ("GTKMainLoopThread", GThreadFunc(gtk_main_loop_thread), this);
     instances_counter_++;
-        
-    custom_props_.reset (new CustomPropertyHelper ());
+    //custom_props_.reset (new CustomPropertyHelper ());
     fullscreen_prop_spec_ = 
       custom_props_->make_boolean_property ("fullscreen", 
 					    "Enable/Disable Fullscreen",
@@ -92,20 +76,32 @@ namespace switcher
 				fullscreen_prop_spec_, 
 				"fullscreen",
 				"Fullscreen");
-
     g_object_set (G_OBJECT (xvimagesink_),
 		  "force-aspect-ratio", TRUE,
 		  "draw-borders", TRUE,
 		  NULL);
-
-    blank_cursor_ = NULL;
-    main_window_ = NULL;
-
+    //blank_cursor_ = NULL;
     gtk_idle_add ((GtkFunction)create_ui,
 		  this);
     return true;
   }
   
+  GTKVideo::GTKVideo () :
+    main_window_ (NULL),
+    video_window_ (NULL),
+    xvimagesink_ (NULL),
+    window_handle_ (0),
+    on_error_command_ (new QuiddityCommand ()),
+    blank_cursor_ (NULL),
+    custom_props_ (new CustomPropertyHelper ()),
+    fullscreen_prop_spec_ (NULL),
+    is_fullscreen_ (FALSE),
+    wait_window_mutex_ (g_mutex_new ()),
+    wait_window_cond_ (g_cond_new ()),
+    window_destruction_mutex_ (g_mutex_new ()),
+    window_destruction_cond_ (g_cond_new ())
+  {}
+
   gpointer
   GTKVideo::gtk_main_loop_thread (gpointer /*user_data*/)
   {
@@ -148,12 +144,6 @@ namespace switcher
     return TRUE;
   }
 
-  GTKVideo::GTKVideo ()
-  {
-  }
-
-
-  
    void  
    GTKVideo::window_destroyed (gpointer user_data)
    {
@@ -216,16 +206,16 @@ namespace switcher
   GTKVideo::realize_cb (GtkWidget *widget, void *user_data) 
   {
     GTKVideo *context = static_cast <GTKVideo *> (user_data);
-
     GdkWindow *window = gtk_widget_get_window (widget);
     
     if (!gdk_window_ensure_native (window))
       g_debug ("Couldn't create native window needed for GstXOverlay!");
 
-     gdk_threads_enter ();
-     GdkDisplay *display =  gdk_display_get_default ();
-     gdk_display_sync (display);
-    
+    gdk_threads_enter ();
+    GdkDisplay *display =  gdk_display_get_default ();
+    gdk_display_sync (display);
+    //gdk_error_trap_pop ();  
+
      /* Retrieve window handler from GDK */
  #if defined (GDK_WINDOWING_WIN32)
      context->window_handle_ = (guintptr)GDK_WINDOW_HWND (window);
@@ -238,13 +228,12 @@ namespace switcher
 
      g_object_set_data (G_OBJECT (context->xvimagesink_), 
        		       "window-handle",
-       		       (gpointer)&context->window_handle_);
-
+			(gpointer)&context->window_handle_);
+     
      gdk_threads_leave ();
-
-    g_mutex_lock (context->wait_window_mutex_);
-    g_cond_signal (context->wait_window_cond_);
-    g_mutex_unlock (context->wait_window_mutex_);
+     g_mutex_lock (context->wait_window_mutex_);
+     g_cond_signal (context->wait_window_cond_);
+     g_mutex_unlock (context->wait_window_mutex_);
   }
   
   /* This function is called when the main window is closed */
@@ -258,11 +247,11 @@ namespace switcher
     context->reset_bin ();
     gtk_widget_destroy (context->main_window_);
     context->main_window_ = NULL;
-     QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
-     if ((bool) manager)
-       manager->remove (context->get_nick_name ());
-     else
-       g_debug ("GTKVideo::delete_event_cb cannot remove quiddity");
+    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
+    if ((bool) manager)
+      manager->remove (context->get_nick_name ());
+    else
+      g_debug ("GTKVideo::delete_event_cb cannot remove quiddity");
   }
   
   gboolean 
@@ -277,9 +266,6 @@ namespace switcher
   GTKVideo::create_ui (void *user_data) 
   {
     GTKVideo *context = static_cast <GTKVideo *> (user_data);
-   
-    //g_print ("create_ui debut \n");
-   
     context->main_window_ = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     g_signal_connect (G_OBJECT (context->main_window_), 
      		      "delete-event", G_CALLBACK (delete_event_cb), context);
@@ -341,7 +327,6 @@ namespace switcher
 				   GdkEvent  */*event*/,
 				   gpointer   /*user_data*/)
   {
-    g_print ("on_window_state_event\n");
     return FALSE;
   }
 
@@ -351,7 +336,6 @@ namespace switcher
 			      gpointer   /*user_data*/)
   {
     //GTKVideo *context = static_cast <GTKVideo *> (user_data);
-    //g_print ("window destroyed \n");
     return FALSE;
   }
 
@@ -380,7 +364,6 @@ namespace switcher
     
     g_cond_wait (wait_window_cond_, wait_window_mutex_);
     g_mutex_unlock (wait_window_mutex_);
-
     set_fullscreen (is_fullscreen_, this);
   }
   

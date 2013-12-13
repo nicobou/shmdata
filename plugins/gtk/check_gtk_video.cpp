@@ -31,12 +31,11 @@
 #endif
 
 int
-main (int /*argc*/,
-      char */*argv*/[])
+main ()
 {
   {
     switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("gtktest");  
-
+    
 #ifdef HAVE_CONFIG_H
     gchar *usr_plugin_dir = g_strdup_printf ("./%s", LT_OBJDIR);
     manager->scan_directory_for_plugins (usr_plugin_dir);
@@ -49,19 +48,21 @@ main (int /*argc*/,
       return 1;
 
     //creating a "myplugin" quiddity
-    if (g_strcmp0 (manager->create("gtkvideosink", "win").c_str (), "win") != 0)
-      return 1;
-
-
+    if (manager->create("gtkvideosink", "win").compare ("win") != 0)
+      {
+	//cannot create gtk window, stoping the test
+	return 0;
+      }
+    
     //creating a gst pipeline
-    if (g_strcmp0 (manager->create("runtime", "testruntime").c_str (), "testruntime") != 0)
+    if (manager->create("runtime", "testruntime").compare ("testruntime") != 0)
       return 1;
 	 
     if (!manager->invoke_va ("win", "set_runtime", NULL, "testruntime", NULL))
       return 1;
 
     //creating a video source quiddity
-    if (g_strcmp0 (manager->create("videotestsrc", "vid").c_str (), "vid") != 0)
+    if (manager->create("videotestsrc", "vid").compare ("vid") != 0)
       return 1;
 	 
     if (!manager->invoke_va ("vid", "set_runtime", NULL, "testruntime", NULL))
