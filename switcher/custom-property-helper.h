@@ -23,8 +23,8 @@
 #define __SWITCHER_CUSTOM_PROPERTY_HELPER_H__
 
 #include <memory>
+#include <vector>
 #include "gobject-wrapper.h"
-#include "string-map.h"
 
 namespace switcher
 {
