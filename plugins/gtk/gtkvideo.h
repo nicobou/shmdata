@@ -38,7 +38,6 @@
 
 namespace switcher
 {
-
   class GTKVideo : public VideoSink
   {
   public:
@@ -60,11 +59,11 @@ namespace switcher
     GParamSpec *fullscreen_prop_spec_;
     gboolean is_fullscreen_;
 
-    GMutex *wait_window_mutex_;
-    GCond *wait_window_cond_;
+    GMutex wait_window_mutex_;
+    GCond wait_window_cond_;
 
-    GMutex *window_destruction_mutex_;
-    GCond *window_destruction_cond_;
+    GMutex window_destruction_mutex_;
+    GCond window_destruction_cond_;
 
     static void create_ui (void *user_data);
     static gboolean expose_cb (GtkWidget *widget, GdkEventExpose *event, void *user_data);

@@ -156,7 +156,7 @@ namespace switcher
 		 gst_element_state_get_name (GST_STATE_TARGET (bin_)), 
 		 GST_BIN_NUMCHILDREN(GST_BIN (bin_)));
 	
-	if (GST_BIN_CHILDREN (bin_) > 0)
+	if (g_list_length (GST_BIN_CHILDREN (bin_)) > 0)
 	  {
 	    g_debug ("segment: some child elements have not been cleaned in %s",
 		     get_nick_name ().c_str ());

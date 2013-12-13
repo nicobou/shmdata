@@ -142,7 +142,7 @@ namespace switcher
     shmdata_any_writer_set_debug (shmdata_writer_, SHMDATA_ENABLE_DEBUG);
     shmdata_any_writer_set_data_type (shmdata_writer_, "audio/midi");
     shmdata_any_writer_start (shmdata_writer_);
-    
+  
     return true;
   }
   

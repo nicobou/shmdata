@@ -43,11 +43,8 @@ namespace switcher
     init_startable (this);
     device_ = 0; //default is zero
     devices_enum_spec_ = NULL;
-    
-    devices_cond_ = g_cond_new ();
-    devices_mutex_ = g_mutex_new ();
 
-    g_mutex_lock (devices_mutex_);
+    g_mutex_lock (&devices_mutex_);
 
     pa_context_ = NULL;
     server_ = NULL;
@@ -75,8 +72,8 @@ namespace switcher
 				"Capture Devices");
 
     //waiting for devices to be updated 
-    g_cond_wait (devices_cond_, devices_mutex_);
-    g_mutex_unlock (devices_mutex_);
+    g_cond_wait (&devices_cond_, &devices_mutex_);
+    g_mutex_unlock (&devices_mutex_);
     return true;
   }
 
@@ -112,9 +109,6 @@ namespace switcher
     
     if (capture_devices_description_ != NULL)
       g_free (capture_devices_description_);
-    
-     g_mutex_free (devices_mutex_);
-     g_cond_free (devices_cond_);
   }
 
 
@@ -273,9 +267,9 @@ namespace switcher
       context->make_json_description ();
       
       //signal init we are done
-      g_mutex_lock (context->devices_mutex_);
-      g_cond_signal (context->devices_cond_);
-      g_mutex_unlock (context->devices_mutex_);
+      g_mutex_lock (&context->devices_mutex_);
+      g_cond_signal (&context->devices_cond_);
+      g_mutex_unlock (&context->devices_mutex_);
       return;
     }
     

@@ -477,9 +477,9 @@ namespace switcher
 	// if (property_->value_type != G_TYPE_POINTER) {
 	//   g_debug ("%-23.23s Pointer of type \"%s\".", "",
 	// 	   g_type_name (property_->value_type));
-      } else if (property_->value_type == G_TYPE_VALUE_ARRAY) {
+	// } else if (property_->value_type == G_TYPE_VALUE_ARRAY) {
 	//GParamSpecValueArray *pvarray = G_PARAM_SPEC_VALUE_ARRAY (property_);
-	g_debug ("warning: array not handled");
+        // g_debug ("warning: array not handled");
 	// if (pvarray->element_spec) {
 	//   g_debug ("%-23.23s Array of GValues of type \"%s\"", "",
 	// 	   g_type_name (pvarray->element_spec->value_type));
@@ -752,15 +752,15 @@ namespace switcher
 	} else {
 	  g_debug ("%-23.23s Pointer.", "");
 	}
-      } else if (property_->value_type == G_TYPE_VALUE_ARRAY) {
-	GParamSpecValueArray *pvarray = G_PARAM_SPEC_VALUE_ARRAY (property_);
+      // } else if (property_->value_type == G_TYPE_VALUE_ARRAY) {
+      // 	GParamSpecValueArray *pvarray = G_PARAM_SPEC_VALUE_ARRAY (property_);
 
-	if (pvarray->element_spec) {
-	  g_debug ("%-23.23s Array of GValues of type \"%s\"", "",
-		   g_type_name (pvarray->element_spec->value_type));
-	} else {
-	  g_debug ("%-23.23s Array of GValues", "");
-	}
+      // 	if (pvarray->element_spec) {
+      // 	  g_debug ("%-23.23s Array of GValues of type \"%s\"", "",
+      // 		   g_type_name (pvarray->element_spec->value_type));
+      // 	} else {
+      // 	  g_debug ("%-23.23s Array of GValues", "");
+      // 	}
       } else if (GST_IS_PARAM_SPEC_FRACTION (property_)) {
 	GstParamSpecFraction *pfraction = GST_PARAM_SPEC_FRACTION (property_);
 

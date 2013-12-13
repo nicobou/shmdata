@@ -43,7 +43,7 @@ namespace switcher
 	arg.clear ();
 	arg.push_back (host_name_);
 	std::ostringstream rtcp_port;
-	rtcp_port << atoi(it.first.c_str()); + 1;
+	rtcp_port << atoi(it.first.c_str()) + 1;
 	arg.push_back (rtcp_port.str());
 	manager->invoke ("udpsend_rtp", "remove_client", NULL, arg);
 	//TODO remove connection to funnel

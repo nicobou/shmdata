@@ -46,10 +46,9 @@ quiddity_created_removed_cb (std::string /*subscriber_name*/,
 			     std::vector<std::string> params, 
 			     void */*user_data*/)
 {
-  g_thread_create (set_runtime_invoker, 
-		   g_strdup (params[0].c_str ()),
-		   FALSE,
-		   NULL);
+  g_thread_new ("Runtime Invoker",
+		GThreadFunc(set_runtime_invoker), 
+		g_strdup (params[0].c_str ()));
 }
 
 void 

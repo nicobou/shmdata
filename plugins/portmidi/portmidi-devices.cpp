@@ -185,8 +185,6 @@ namespace switcher
       app_sysex_in_progress_ (false),
       thru_sysex_in_progress_ (false)
     {
-      streams_mutex_ = g_mutex_new ();
-      finalize_mutex_ = g_mutex_new ();
       finalizing_ = FALSE;
 
       portmidi_initialized_ = false;
@@ -202,12 +200,10 @@ namespace switcher
     {
       portmidi_initialized_ = false;
       finalizing_ = TRUE;
-      g_mutex_lock (finalize_mutex_);
+      g_mutex_lock (&finalize_mutex_);
       Pt_Stop(); /* stop the timer */
       Pm_Terminate();
-      g_mutex_unlock (finalize_mutex_);
-      g_mutex_free (streams_mutex_);
-      g_mutex_free (finalize_mutex_);
+      g_mutex_unlock (&finalize_mutex_);
     }
 
     PmStream *
@@ -227,9 +223,9 @@ namespace switcher
       */
       Pm_SetFilter(midi_in, PM_FILT_ACTIVE | PM_FILT_CLOCK);
 
-      g_mutex_lock (streams_mutex_);
+      g_mutex_lock (&streams_mutex_);
       input_callbacks_[midi_in] = std::make_pair (method, user_data);      
-      g_mutex_unlock (streams_mutex_);
+      g_mutex_unlock (&streams_mutex_);
      
       return midi_in;
     }
@@ -246,9 +242,9 @@ namespace switcher
 				     NULL, /* time info */
 				     0))
 	return NULL;
-      g_mutex_lock (streams_mutex_);
+      g_mutex_lock (&streams_mutex_);
       output_queues_[midi_out] = new std::queue<PmEvent>();      
-      g_mutex_unlock (streams_mutex_);
+      g_mutex_unlock (&streams_mutex_);
 
       return midi_out;
     }
@@ -256,9 +252,9 @@ namespace switcher
     bool
     PortMidi::PortMidiScheduler::remove_input_stream (PmStream *stream)
     {
-      g_mutex_lock (streams_mutex_);
+      g_mutex_lock (&streams_mutex_);
       input_callbacks_.erase(stream);
-      g_mutex_unlock (streams_mutex_);
+      g_mutex_unlock (&streams_mutex_);
       Pm_Close (stream);
       return true;
     }
@@ -266,9 +262,9 @@ namespace switcher
     bool
     PortMidi::PortMidiScheduler::remove_output_stream (PmStream *stream)
     {
-      g_mutex_lock (streams_mutex_);
+      g_mutex_lock (&streams_mutex_);
       output_queues_.erase(stream);
-      g_mutex_unlock (streams_mutex_);
+      g_mutex_unlock (&streams_mutex_);
       Pm_Close (stream);
       return true;
     }
@@ -309,9 +305,9 @@ namespace switcher
       if (!context->portmidi_initialized_) 
 	  return;
 
-      g_mutex_lock (context->finalize_mutex_);
+      g_mutex_lock (&context->finalize_mutex_);
 
-      g_mutex_lock (context->streams_mutex_);
+      g_mutex_lock (&context->streams_mutex_);
       for(auto &itr: context->input_callbacks_)
 	{
 	  /* see if there is any midi input to process */
@@ -401,8 +397,8 @@ namespace switcher
 	    }
 	  }
 	}
-      g_mutex_unlock (context->streams_mutex_);
-      g_mutex_unlock (context->finalize_mutex_);
+      g_mutex_unlock (&context->streams_mutex_);
+      g_mutex_unlock (&context->finalize_mutex_);
 
     }
 

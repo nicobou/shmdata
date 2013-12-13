@@ -121,10 +121,9 @@ quiddity_created_removed_cb (std::string /*subscriber_name*/,
 {
   g_message ("%s: %s", signal_name.c_str (), params[0].c_str ());
   if (g_strcmp0 (signal_name.c_str (), "on-quiddity-created") == 0)
-    g_thread_create (set_runtime_invoker, 
-   		     g_strdup (params[0].c_str ()),
-   		     FALSE,
-   		     NULL);
+    g_thread_new ("set_runtime_invoker",
+		  GThreadFunc (set_runtime_invoker), 
+		  g_strdup (params[0].c_str ()));
 }
 
 

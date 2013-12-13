@@ -30,8 +30,7 @@
 #endif
 
 int
-main (int /*argc*/,
-      char */*argv*/[])
+main ()
 {
   bool success = true;
 

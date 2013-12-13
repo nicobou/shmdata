@@ -237,7 +237,7 @@ namespace switcher
     if (!GST_IS_BIN (bin))
       return;
 
-    if (GST_BIN_CHILDREN (GST_BIN (bin)) > 0)
+    if (g_list_length (GST_BIN_CHILDREN (GST_BIN (bin))) > 0)
       {
 	GList *child = NULL, *children = GST_BIN_CHILDREN (GST_BIN (bin));
 	for (child = children; child != NULL; child = g_list_next (child)) 

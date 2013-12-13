@@ -231,7 +231,7 @@ namespace switcher
       QuiddityCommand::ptr command_;
       void command_lock ();
       void command_unlock ();
-      GMutex *seq_mutex_; 
+      GMutex seq_mutex_; 
       std::string seq_invoke (QuiddityCommand::command command, ...);
       void init_command_sync(); 
       void clear_command_sync(); 
@@ -239,8 +239,8 @@ namespace switcher
       static gpointer invocation_thread (gpointer user_data);
 
       //invokation in gmainloop
-      GCond *execution_done_cond_; //sync current thread and gmainloop  
-      GMutex *execution_done_mutex_; //sync current thread and gmainloop  
+      GCond execution_done_cond_; //sync current thread and gmainloop  
+      GMutex execution_done_mutex_; //sync current thread and gmainloop  
       /* GCond *execution_to_do_cond_; //sync current thread and gmainloop  */
       /* GMutex *execution_to_do_mutex_; //sync current thread and gmainloop  */
       GAsyncQueue *command_queue_;

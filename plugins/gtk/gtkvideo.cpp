@@ -95,11 +95,7 @@ namespace switcher
     blank_cursor_ (NULL),
     custom_props_ (new CustomPropertyHelper ()),
     fullscreen_prop_spec_ (NULL),
-    is_fullscreen_ (FALSE),
-    wait_window_mutex_ (g_mutex_new ()),
-    wait_window_cond_ (g_cond_new ()),
-    window_destruction_mutex_ (g_mutex_new ()),
-    window_destruction_cond_ (g_cond_new ())
+    is_fullscreen_ (FALSE)
   {}
 
   gpointer
@@ -148,9 +144,9 @@ namespace switcher
    GTKVideo::window_destroyed (gpointer user_data)
    {
      GTKVideo *context = static_cast <GTKVideo *> (user_data);
-     g_mutex_lock (context->window_destruction_mutex_);
-     g_cond_signal (context->window_destruction_cond_);
-     g_mutex_unlock (context->window_destruction_mutex_);
+     g_mutex_lock (&context->window_destruction_mutex_);
+     g_cond_signal (&context->window_destruction_cond_);
+     g_mutex_unlock (&context->window_destruction_mutex_);
    }
 
    gboolean  
@@ -170,14 +166,14 @@ namespace switcher
     //destroy child widgets too
      if (main_window_ != NULL && GTK_IS_WIDGET (main_window_))
        {
-	  g_mutex_lock (window_destruction_mutex_);
+	  g_mutex_lock (&window_destruction_mutex_);
 	 
 	  g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
 	  		  destroy_window, 
 	  		  this,
 	  		  window_destroyed);
-	  g_cond_wait (window_destruction_cond_, window_destruction_mutex_);
-	  g_mutex_unlock (window_destruction_mutex_);
+	  g_cond_wait (&window_destruction_cond_, &window_destruction_mutex_);
+	  g_mutex_unlock (&window_destruction_mutex_);
        }
 
 
@@ -194,11 +190,6 @@ namespace switcher
     
      if (on_error_command_ != NULL)
        delete on_error_command_;
-
-    g_cond_free (wait_window_cond_);
-    g_mutex_free (wait_window_mutex_);
-    g_cond_free (window_destruction_cond_);
-    g_mutex_free (window_destruction_mutex_);
   }
 
   
@@ -231,9 +222,9 @@ namespace switcher
 			(gpointer)&context->window_handle_);
      
      gdk_threads_leave ();
-     g_mutex_lock (context->wait_window_mutex_);
-     g_cond_signal (context->wait_window_cond_);
-     g_mutex_unlock (context->wait_window_mutex_);
+     g_mutex_lock (&context->wait_window_mutex_);
+     g_cond_signal (&context->wait_window_cond_);
+     g_mutex_unlock (&context->wait_window_mutex_);
   }
   
   /* This function is called when the main window is closed */
@@ -342,7 +333,7 @@ namespace switcher
   void 
   GTKVideo::on_shmdata_connect (std::string /*shmdata_sochet_path*/) 
   {
-    g_mutex_lock (wait_window_mutex_);
+    g_mutex_lock (&wait_window_mutex_);
 
     gtk_window_set_default_size (GTK_WINDOW (main_window_), 640, 480);
     
@@ -362,8 +353,8 @@ namespace switcher
     gtk_idle_add ((GtkFunction)gtk_widget_show_all,
 		  main_window_);
     
-    g_cond_wait (wait_window_cond_, wait_window_mutex_);
-    g_mutex_unlock (wait_window_mutex_);
+    g_cond_wait (&wait_window_cond_, &wait_window_mutex_);
+    g_mutex_unlock (&wait_window_mutex_);
     set_fullscreen (is_fullscreen_, this);
   }
   

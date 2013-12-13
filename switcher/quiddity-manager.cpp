@@ -98,7 +98,7 @@ namespace switcher
   void 
   QuiddityManager::command_lock ()
   {
-    g_mutex_lock (seq_mutex_);
+    g_mutex_lock (&seq_mutex_);
     command_.reset (new QuiddityCommand ());
     gint64 cur_time = g_get_monotonic_time ();
     command_->time_ = cur_time - history_begin_time_;
@@ -121,7 +121,7 @@ namespace switcher
      // builder->end_object ();
      // g_print ("%s\n", builder->get_string(true).c_str ());
 
-    g_mutex_unlock(seq_mutex_);
+    g_mutex_unlock(&seq_mutex_);
   }
 
   void
@@ -959,10 +959,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   void
   QuiddityManager::init_command_sync ()
   {
-    execution_done_cond_ = g_cond_new ();
-    execution_done_mutex_ = g_mutex_new ();
     command_queue_ = g_async_queue_new (); //FIXME release that
-    seq_mutex_ = g_mutex_new ();
     invocation_thread_ = g_thread_new ("invocation_thread", GThreadFunc(invocation_thread), this);
   }
 
@@ -979,9 +976,9 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	   context->execute_command (context);
 	 else
 	   loop = FALSE;
-	 g_mutex_lock (context->execution_done_mutex_);
-	 g_cond_signal (context->execution_done_cond_);
-	 g_mutex_unlock (context->execution_done_mutex_);
+	 g_mutex_lock (&context->execution_done_mutex_);
+	 g_cond_signal (&context->execution_done_cond_);
+	 g_mutex_unlock (&context->execution_done_mutex_);
       }
     return NULL;
   }
@@ -992,12 +989,8 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     command_lock ();
     command_->set_id (QuiddityCommand::quit);
     invoke_in_thread ();
-
-     g_mutex_free (execution_done_mutex_);
-     g_cond_free (execution_done_cond_);
-     g_async_queue_unref (command_queue_);
+    g_async_queue_unref (command_queue_);
     command_unlock ();
-    g_mutex_free (seq_mutex_);
   }
 
   //works for char * args only. Use NULL sentinel
@@ -1048,10 +1041,10 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     builder->add_node_value (command_->get_json_root_node ());
     builder->end_object ();
     //g_print ("%s\n", builder->get_string(true).c_str ());
-    g_mutex_lock (execution_done_mutex_);
+    g_mutex_lock (&execution_done_mutex_);
     g_async_queue_push (command_queue_, command_.get ());
-    g_cond_wait (execution_done_cond_, execution_done_mutex_);
-    g_mutex_unlock (execution_done_mutex_);
+    g_cond_wait (&execution_done_cond_, &execution_done_mutex_);
+    g_mutex_unlock (&execution_done_mutex_);
 
     //FIXME remove that
     timespec delay;
