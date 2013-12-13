@@ -44,7 +44,7 @@ main ()
 #else
     return 1;
 #endif
-
+    
     if (!switcher::QuiddityBasicTest::test_full (manager, "midisrc"))
       success = false;
 

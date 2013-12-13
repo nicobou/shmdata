@@ -623,12 +623,6 @@ namespace switcher
 				    const std::string return_description,
 				    const Method::args_doc arg_description)
   {
-    if (method_is_registered (method_name))
-      {
-	g_debug ("cannot set description of a not existing method");
-	return false;
-      }
-    
     auto it = methods_.find (method_name);
     if (methods_.end () == it)
       it = disabled_methods_.find (method_name);
