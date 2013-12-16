@@ -62,6 +62,9 @@ namespace switcher
       static QuiddityManager::ptr make_manager ();//will get name "default"
       static QuiddityManager::ptr make_manager (std::string name);
       ~QuiddityManager(); 
+      QuiddityManager *operator=(const QuiddityManager &) = delete;
+      QuiddityManager (const QuiddityManager &) = delete;
+
       std::string get_name ();
       void reboot ();
 
@@ -219,37 +222,35 @@ namespace switcher
 	list_subscribed_signals_json (std::string subscriber_name);
     
     private: 
-      QuiddityManager();//will get name "default"
-      QuiddityManager(std::string name); 
       QuiddityManager_Impl::ptr manager_impl_; //may be shared with others for automatic quiddity creation 
       std::string name_;
-
-      //auto invoke and init
-      void auto_init (std::string quiddity_name);
-
       //running commands in sequence 
       QuiddityCommand::ptr command_;
-      void command_lock ();
-      void command_unlock ();
       GMutex seq_mutex_; 
-      std::string seq_invoke (QuiddityCommand::command command, ...);
-      void init_command_sync(); 
-      void clear_command_sync(); 
       GThread *invocation_thread_;
-      static gpointer invocation_thread (gpointer user_data);
-
       //invokation in gmainloop
       GCond execution_done_cond_; //sync current thread and gmainloop  
       GMutex execution_done_mutex_; //sync current thread and gmainloop  
       /* GCond *execution_to_do_cond_; //sync current thread and gmainloop  */
       /* GMutex *execution_to_do_mutex_; //sync current thread and gmainloop  */
       GAsyncQueue *command_queue_;
-      static gboolean execute_command (gpointer user_data);//gmainloop source callback
-      void invoke_in_thread ();
-
       //history
       CommandHistory command_history_;
       gint64 history_begin_time_; //monotonic time, in microseconds
+
+
+      QuiddityManager();//will get name "default"
+      QuiddityManager(std::string name); 
+      //auto invoke and init
+      void auto_init (std::string quiddity_name);
+      void command_lock ();
+      void command_unlock ();
+      std::string seq_invoke (QuiddityCommand::command command, ...);
+      void init_command_sync(); 
+      void clear_command_sync(); 
+      static gpointer invocation_thread (gpointer user_data);
+      static gboolean execute_command (gpointer user_data);//gmainloop source callback
+      void invoke_in_thread ();
     }; 
 
 } // end of namespace 

@@ -43,10 +43,18 @@ namespace switcher
   }
 
   QuiddityManager::QuiddityManager() :
-    name_ ("default")
+    manager_impl_ (QuiddityManager_Impl::make_manager ()),
+    name_ ("default"),
+    command_ (),
+    seq_mutex_ (),
+    invocation_thread_ (NULL),
+    execution_done_cond_ (),
+    execution_done_mutex_ (),
+    command_queue_ (NULL),
+    command_history_ (),
+    history_begin_time_ (0)
   {
     init_command_sync ();
-    manager_impl_ = QuiddityManager_Impl::make_manager ();
   }
 
   QuiddityManager::QuiddityManager(std::string name) :
