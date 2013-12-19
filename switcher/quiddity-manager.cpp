@@ -47,27 +47,34 @@ namespace switcher
     name_ ("default"),
     command_ (),
     seq_mutex_ (),
-    invocation_thread_ (NULL),
+    command_queue_ (g_async_queue_new ()),
+    invocation_thread_ (std::thread (&QuiddityManager::invocation_thread, this)),
     execution_done_cond_ (),
     execution_done_mutex_ (),
-    command_queue_ (NULL),
     command_history_ (),
     history_begin_time_ (0)
   {
-    init_command_sync ();
   }
 
   QuiddityManager::QuiddityManager(std::string name) :
-    name_ (name)
+    manager_impl_ (QuiddityManager_Impl::make_manager (name)),
+    name_ (name),
+    command_ (),
+    seq_mutex_ (),
+    command_queue_ (g_async_queue_new ()),
+    invocation_thread_ (std::thread (&QuiddityManager::invocation_thread, this)),
+    execution_done_cond_ (),
+    execution_done_mutex_ (),
+    command_history_ (),
+    history_begin_time_ (0)
   {
-    init_command_sync ();
-    manager_impl_ = QuiddityManager_Impl::make_manager (name);
     reset_command_history (false);
- }
+  }
 
   QuiddityManager::~QuiddityManager()
   {
     clear_command_sync ();
+    invocation_thread_.join ();
   }
 
   std::string
@@ -106,7 +113,7 @@ namespace switcher
   void 
   QuiddityManager::command_lock ()
   {
-    g_mutex_lock (&seq_mutex_);
+    seq_mutex_.lock ();
     command_.reset (new QuiddityCommand ());
     gint64 cur_time = g_get_monotonic_time ();
     command_->time_ = cur_time - history_begin_time_;
@@ -129,7 +136,7 @@ namespace switcher
      // builder->end_object ();
      // g_print ("%s\n", builder->get_string(true).c_str ());
 
-    g_mutex_unlock(&seq_mutex_);
+    seq_mutex_.unlock ();
   }
 
   void
@@ -967,28 +974,26 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   void
   QuiddityManager::init_command_sync ()
   {
-    command_queue_ = g_async_queue_new (); //FIXME release that
-    invocation_thread_ = g_thread_new ("invocation_thread", GThreadFunc(invocation_thread), this);
+    //command_queue_ = g_async_queue_new (); //FIXME release that
+    //invocation_thread_ (&invocation_thread, this);
+//invocation_thread_ = g_thread_new ("invocation_thread", GThreadFunc(invocation_thread), this);
   }
 
-  gpointer
-  QuiddityManager::invocation_thread (gpointer user_data)
+  void
+  QuiddityManager::invocation_thread ()
   {
-    QuiddityManager *context = static_cast <QuiddityManager *> (user_data);
-
-    gboolean loop = TRUE;
+    bool loop = true;
     while (loop)
       {
-	 g_async_queue_pop (context->command_queue_);
-	 if (context->command_->id_ != QuiddityCommand::quit)
-	   context->execute_command (context);
+	 g_async_queue_pop (command_queue_);
+	 if (command_->id_ != QuiddityCommand::quit)
+	   execute_command (this);
 	 else
-	   loop = FALSE;
-	 g_mutex_lock (&context->execution_done_mutex_);
-	 g_cond_signal (&context->execution_done_cond_);
-	 g_mutex_unlock (&context->execution_done_mutex_);
+	   loop = false;
+	 g_mutex_lock (&execution_done_mutex_);
+	 g_cond_signal (&execution_done_cond_);
+	 g_mutex_unlock (&execution_done_mutex_);
       }
-    return NULL;
   }
 
   void

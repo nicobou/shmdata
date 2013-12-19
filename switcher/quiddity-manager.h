@@ -29,6 +29,8 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <mutex>
+#include <thread>
 #include "quiddity-manager-impl.h"
 #include "quiddity-command.h"
 #include "quiddity-manager-wrapper.h"
@@ -226,14 +228,12 @@ namespace switcher
       std::string name_;
       //running commands in sequence 
       QuiddityCommand::ptr command_;
-      GMutex seq_mutex_; 
-      GThread *invocation_thread_;
+      std::mutex seq_mutex_;
+      GAsyncQueue *command_queue_;
+      std::thread invocation_thread_;
       //invokation in gmainloop
       GCond execution_done_cond_; //sync current thread and gmainloop  
       GMutex execution_done_mutex_; //sync current thread and gmainloop  
-      /* GCond *execution_to_do_cond_; //sync current thread and gmainloop  */
-      /* GMutex *execution_to_do_mutex_; //sync current thread and gmainloop  */
-      GAsyncQueue *command_queue_;
       //history
       CommandHistory command_history_;
       gint64 history_begin_time_; //monotonic time, in microseconds
@@ -248,7 +248,7 @@ namespace switcher
       std::string seq_invoke (QuiddityCommand::command command, ...);
       void init_command_sync(); 
       void clear_command_sync(); 
-      static gpointer invocation_thread (gpointer user_data);
+      void invocation_thread ();
       static gboolean execute_command (gpointer user_data);//gmainloop source callback
       void invoke_in_thread ();
     }; 
