@@ -33,8 +33,12 @@ libgtkvideo_la_CXXFLAGS = \
     $(JSONGLIB_CFLAGS) \
     $(SHMDATA_CFLAGS) \
     -DG_LOG_DOMAIN=\"switcher\" \
-    -I$(top_srcdir) 
+    -I$(top_srcdir)
 
+if HAVE_OSX
+libgtkvideo_la_CXXFLAGS += \
+    -ObjC++
+endif
 
 ####test
 AM_CFLAGS = \

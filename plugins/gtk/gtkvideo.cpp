@@ -90,7 +90,11 @@ namespace switcher
     main_window_ (NULL),
     video_window_ (NULL),
     xvimagesink_ (NULL),
+#if HAVE_OSX
+    window_handle_ (NULL),
+#else
     window_handle_ (0),
+#endif
     on_error_command_ (new QuiddityCommand ()),
     blank_cursor_ (NULL),
     custom_props_ (new CustomPropertyHelper ()),

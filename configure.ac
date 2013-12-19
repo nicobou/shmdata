@@ -310,9 +310,9 @@ dnl check if compiler understands -Werror (if yes, add it to CFLAGS)
 dnl -Wno-error=unused-parameter is required for gsoap generated code compiling
 AC_MSG_CHECKING([to see if compiler understands -Werror])
 saved_CXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CXXFLAGS -Werror -Wno-error=unused-parameter"
+CXXFLAGS="$CXXFLAGS -Werror -Wno-error=unused-parameter -Wno-error=return-type-c-linkage"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
-  CXXFLAGS="$saved_CXXFLAGS -Werror"
+  CXXFLAGS="$saved_CXXFLAGS -Werror -Wno-error=return-type-c-linkage -Wno-error=unused-parameter"
   AC_SUBST([W_NO_ERROR_UNUSED_PARAMETER], "-Wno-error=unused-parameter")
   AC_MSG_RESULT([yes])
 ], [

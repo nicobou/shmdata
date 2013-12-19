@@ -26,6 +26,10 @@
 #include "switcher/custom-property-helper.h"
 #include <memory>
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 #include <gtk/gtk.h>
 #include <gdk/gdk.h>
 #if defined (GDK_WINDOWING_X11)
@@ -33,7 +37,7 @@
 #elif defined (GDK_WINDOWING_WIN32)
 #include <gdk/gdkwin32.h>
 #elif defined (GDK_WINDOWING_QUARTZ)
-#include <gdk/gdkquartzwindow.h>
+#include <gdk/gdkquartz.h>
 #endif
 
 namespace switcher
@@ -51,7 +55,11 @@ namespace switcher
     GtkWidget *main_window_;  
     GtkWidget *video_window_; 
     GstElement *xvimagesink_;
+#if HAVE_OSX
+    NSView * window_handle_;
+#else
     guintptr window_handle_;
+#endif
     QuiddityCommand *on_error_command_; //for the runtime error handler
     GdkCursor *blank_cursor_;
 
