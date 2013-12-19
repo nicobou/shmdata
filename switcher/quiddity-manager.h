@@ -30,6 +30,7 @@
 #include <map>
 #include <string>
 #include <mutex>
+#include <condition_variable>
 #include <thread>
 #include "quiddity-manager-impl.h"
 #include "quiddity-command.h"
@@ -232,8 +233,8 @@ namespace switcher
       GAsyncQueue *command_queue_;
       std::thread invocation_thread_;
       //invokation in gmainloop
-      GCond execution_done_cond_; //sync current thread and gmainloop  
-      GMutex execution_done_mutex_; //sync current thread and gmainloop  
+      std::condition_variable execution_done_cond_; //sync current thread and gmainloop  
+      std::mutex execution_done_mutex_; //sync current thread and gmainloop  
       //history
       CommandHistory command_history_;
       gint64 history_begin_time_; //monotonic time, in microseconds

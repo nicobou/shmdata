@@ -990,9 +990,10 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	   execute_command (this);
 	 else
 	   loop = false;
-	 g_mutex_lock (&execution_done_mutex_);
-	 g_cond_signal (&execution_done_cond_);
-	 g_mutex_unlock (&execution_done_mutex_);
+	 {
+	   std::unique_lock <std::mutex> lock (execution_done_mutex_);
+	   execution_done_cond_.notify_all ();
+	 }
       }
   }
 
@@ -1054,11 +1055,11 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     builder->add_node_value (command_->get_json_root_node ());
     builder->end_object ();
     //g_print ("%s\n", builder->get_string(true).c_str ());
-    g_mutex_lock (&execution_done_mutex_);
-    g_async_queue_push (command_queue_, command_.get ());
-    g_cond_wait (&execution_done_cond_, &execution_done_mutex_);
-    g_mutex_unlock (&execution_done_mutex_);
-
+    {
+      std::unique_lock <std::mutex> lock (execution_done_mutex_);
+      g_async_queue_push (command_queue_, command_.get ());
+      execution_done_cond_.wait (lock);
+    }
     //FIXME remove that
     timespec delay;
     delay.tv_sec = 0;
