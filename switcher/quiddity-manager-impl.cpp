@@ -1197,7 +1197,7 @@ namespace switcher
 	descend = g_file_get_child (dir, g_file_info_get_name (info));
 	absolute_path = g_file_get_path (descend);//g_file_get_relative_path (dir, descend);
 	//trying to load the module 
-	if (g_str_has_suffix (absolute_path, ".so"))
+	if (g_str_has_suffix (absolute_path, ".so") || g_str_has_suffix (absolute_path, ".dylib"))
 	  {
 	    g_debug ("loading module %s", absolute_path);
 	    load_plugin (absolute_path);
