@@ -309,7 +309,7 @@ namespace switcher
   extern "C" void destroy(Quiddity *quiddity) {			\
     delete quiddity;						\
   }								\
-  extern "C" QuiddityDocumentation get_documentation () {	\
+  extern "C" QuiddityDocumentation get_documentation () {	                \
     return cpp_quiddity_class::switcher_doc_;			\
   }
 

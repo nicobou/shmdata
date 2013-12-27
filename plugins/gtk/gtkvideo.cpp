@@ -27,6 +27,10 @@
 #include <gdk/gdkcursor.h>
 //#include <unistd.h>  //sleep
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GTKVideo, 
@@ -43,8 +47,13 @@ namespace switcher
   bool
   GTKVideo::init ()
   {
+#if HAVE_OSX
     if (!GstUtils::make_element ("osxvideosink", &xvimagesink_))
       return false;
+ #else
+    if (!GstUtils::make_element ("xvimagesink", &xvimagesink_))
+      return false;
+#endif
     //set the name before registering properties
     set_name (gst_element_get_name (xvimagesink_));
     g_object_set (G_OBJECT (xvimagesink_), "sync", FALSE, NULL);
@@ -111,7 +120,6 @@ namespace switcher
       }
     g_debug ("GTKVideo::gtk_main_loop_thread starting");
     gtk_main ();
-    g_print ("LEAVING GTK THREAD\n");
   }
 
 
@@ -168,7 +176,7 @@ namespace switcher
   GTKVideo::~GTKVideo ()
   {
     reset_bin ();
-    gtk_idle_remove_by_data (this);
+    g_idle_remove_by_data (this);
     //destroy child widgets too
      if (main_window_ != NULL && GTK_IS_WIDGET (main_window_))
        {
@@ -220,13 +228,10 @@ namespace switcher
      context->window_handle_ = GDK_WINDOW_XID (window);
  #endif
 
-     g_print ("SEY+TTING WINDOW HANDLE\n");
      g_object_set_data (G_OBJECT (context->xvimagesink_), 
        		       "window-handle",
 			(gpointer)&context->window_handle_);
      
-     g_print ("END END SEY+TTING WINDOW HANDLE\n");
-
      gdk_threads_leave ();
      std::unique_lock<std::mutex> lock (context->wait_window_mutex_);
      context->wait_window_cond_.notify_all ();
@@ -262,7 +267,6 @@ namespace switcher
   GTKVideo::create_ui (void *user_data) 
   {
     GTKVideo *context = static_cast <GTKVideo *> (user_data);
-    g_print ("CREATE_UI");
     context->main_window_ = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     g_signal_connect (G_OBJECT (context->main_window_), 
      		      "delete-event", G_CALLBACK (delete_event_cb), context);
@@ -340,7 +344,6 @@ namespace switcher
   void 
     GTKVideo::on_shmdata_connect (std::string /*shmdata_sochet_path*/) 
   {
-    g_print ("HEHEHEHEHEHEHEHE\n");
     std::unique_lock<std::mutex> lock (wait_window_mutex_);
     
     gtk_window_set_default_size (GTK_WINDOW (main_window_), 640, 480);
