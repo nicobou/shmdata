@@ -25,6 +25,9 @@
 #include "switcher/video-sink.h"
 #include "switcher/custom-property-helper.h"
 #include <memory>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -52,6 +55,7 @@ namespace switcher
     
   private:
     static guint instances_counter_;
+    static std::thread gtk_main_thread_;
     GtkWidget *main_window_;  
     GtkWidget *video_window_; 
     GstElement *xvimagesink_;
@@ -67,17 +71,18 @@ namespace switcher
     GParamSpec *fullscreen_prop_spec_;
     gboolean is_fullscreen_;
 
-    GMutex wait_window_mutex_;
-    GCond wait_window_cond_;
+    std::mutex wait_window_mutex_;
+    std::condition_variable wait_window_cond_;
 
-    GMutex window_destruction_mutex_;
-    GCond window_destruction_cond_;
+    std::mutex window_destruction_mutex_;
+    std::condition_variable window_destruction_cond_;
 
-    static void create_ui (void *user_data);
+    static gboolean create_ui (void *user_data);
+    static gboolean show_all (void *user_data);
     static gboolean expose_cb (GtkWidget *widget, GdkEventExpose *event, void *user_data);
     static void realize_cb (GtkWidget *widget, void *user_data);
     static void delete_event_cb (GtkWidget *widget, GdkEvent *event, void *user_data);
-    static gpointer gtk_main_loop_thread (gpointer user_data);
+    static void gtk_main_loop_thread ();
     static gboolean key_pressed_cb(GtkWidget *widget, GdkEventKey *event, gpointer data);
     static gboolean get_fullscreen (void *user_data);
     static void set_fullscreen (gboolean fullscreen, void *user_data);

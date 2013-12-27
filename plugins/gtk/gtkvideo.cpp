@@ -45,11 +45,6 @@ namespace switcher
   {
     if (!GstUtils::make_element ("osxvideosink", &xvimagesink_))
       return false;
-    if (!gtk_init_check (NULL, NULL))
-      {
-	g_debug ("GTKVideo::init, cannot init gtk");
-	return false;
-      }
     //set the name before registering properties
     set_name (gst_element_get_name (xvimagesink_));
     g_object_set (G_OBJECT (xvimagesink_), "sync", FALSE, NULL);
@@ -61,10 +56,11 @@ namespace switcher
      		       (gpointer)on_error_command_);
     set_sink_element (xvimagesink_);
     is_fullscreen_ = FALSE;
+
     if (instances_counter_ == 0)
       {
-	gtk_main_thread_ = std::thread (&GTKVideo::gtk_main_loop_thread);
-	gtk_main_thread_.detach ();
+    	gtk_main_thread_ = std::thread (&GTKVideo::gtk_main_loop_thread);
+    	gtk_main_thread_.detach ();
       }
     instances_counter_++;
     //custom_props_.reset (new CustomPropertyHelper ());
@@ -109,8 +105,13 @@ namespace switcher
   void
   GTKVideo::gtk_main_loop_thread ()
   {
+    if (!gtk_init_check (NULL, NULL))
+      {
+    	g_debug ("GTKVideo::init, cannot init gtk");
+      }
     g_debug ("GTKVideo::gtk_main_loop_thread starting");
     gtk_main ();
+    g_print ("LEAVING GTK THREAD\n");
   }
 
 
@@ -160,21 +161,23 @@ namespace switcher
   {
     GTKVideo *context = static_cast <GTKVideo *> (user_data);
     gtk_widget_destroy (GTK_WIDGET(context->main_window_));
+    window_destroyed (context);
     return  G_SOURCE_REMOVE;
   }
 
   GTKVideo::~GTKVideo ()
   {
     reset_bin ();
-        
+    gtk_idle_remove_by_data (this);
     //destroy child widgets too
      if (main_window_ != NULL && GTK_IS_WIDGET (main_window_))
        {
 	 std::unique_lock<std::mutex> lock (window_destruction_mutex_);
-	 g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
-	  		  destroy_window, 
-	  		  this,
-	  		  window_destroyed);
+	 // g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
+	 //   		  destroy_window, 
+	 //   		  this,
+	 //   		  window_destroyed);
+	 gtk_idle_add (destroy_window, this);
 	 window_destruction_cond_.wait (lock);
        }
 
@@ -182,14 +185,13 @@ namespace switcher
     if (blank_cursor_ != NULL)
       gdk_cursor_destroy (blank_cursor_);
 
-    //FIXME
     // instances_counter_ --;
-     // if (instances_counter_ == 0)
-     //   {
-     // 	 g_debug ("GTKVideo::~GTKVideo invoking gtk_main_quit");
-     // 	 gtk_main_quit ();
-     //   }
-    
+    // if (instances_counter_ == 0)
+    //   {
+    // 	g_debug ("GTKVideo::~GTKVideo invoking gtk_main_quit");
+    // 	gtk_main_quit ();
+    //   }
+   
     if (on_error_command_ != NULL)
       delete on_error_command_;
   }
@@ -218,11 +220,13 @@ namespace switcher
      context->window_handle_ = GDK_WINDOW_XID (window);
  #endif
 
-
+     g_print ("SEY+TTING WINDOW HANDLE\n");
      g_object_set_data (G_OBJECT (context->xvimagesink_), 
        		       "window-handle",
 			(gpointer)&context->window_handle_);
      
+     g_print ("END END SEY+TTING WINDOW HANDLE\n");
+
      gdk_threads_leave ();
      std::unique_lock<std::mutex> lock (context->wait_window_mutex_);
      context->wait_window_cond_.notify_all ();
@@ -254,10 +258,11 @@ namespace switcher
     return FALSE;
   }
 
-  void 
+  gboolean 
   GTKVideo::create_ui (void *user_data) 
   {
     GTKVideo *context = static_cast <GTKVideo *> (user_data);
+    g_print ("CREATE_UI");
     context->main_window_ = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     g_signal_connect (G_OBJECT (context->main_window_), 
      		      "delete-event", G_CALLBACK (delete_event_cb), context);
@@ -270,6 +275,7 @@ namespace switcher
     // 		      G_CALLBACK (expose_cb), 
     // 		      context);
     gtk_container_add (GTK_CONTAINER (context->main_window_), context->video_window_);
+    return FALSE;
   }
 
   void 
@@ -332,30 +338,37 @@ namespace switcher
   }
 
   void 
-  GTKVideo::on_shmdata_connect (std::string /*shmdata_sochet_path*/) 
+    GTKVideo::on_shmdata_connect (std::string /*shmdata_sochet_path*/) 
   {
+    g_print ("HEHEHEHEHEHEHEHE\n");
     std::unique_lock<std::mutex> lock (wait_window_mutex_);
-
+    
     gtk_window_set_default_size (GTK_WINDOW (main_window_), 640, 480);
     
     blank_cursor_ = gdk_cursor_new(GDK_BLANK_CURSOR);
-
+    
     gtk_widget_set_events (main_window_, GDK_KEY_PRESS_MASK );
     g_signal_connect(G_OBJECT(main_window_), 
-       		     "key-press-event",
-		     G_CALLBACK(GTKVideo::key_pressed_cb), 
-       		     this);
-
+      "key-press-event",
+      G_CALLBACK(GTKVideo::key_pressed_cb), 
+      this);
+    
     // g_signal_connect (main_window_, 
     // 		      "window-state-event", 
     // 		      G_CALLBACK (on_window_state_event), 
     // 		      this);
     
-    gtk_idle_add ((GtkFunction)gtk_widget_show_all,
-		  main_window_);
+    gtk_idle_add ((GtkFunction)show_all,
+      main_window_);
     
     wait_window_cond_.wait (lock);
     set_fullscreen (is_fullscreen_, this);
   }
   
+  gboolean 
+  GTKVideo::show_all (void *user_data)
+  {
+    gtk_widget_show_all ((GtkWidget *)user_data);
+    return FALSE;
+  }
 }
