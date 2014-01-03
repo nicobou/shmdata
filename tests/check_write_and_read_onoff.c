@@ -83,8 +83,8 @@ on_data (shmdata_any_reader_t * reader,
 int
 check_write_and_read_onoff ()
 {
-  shmdata_any_reader_t *reader;
-  shmdata_any_writer_t *writer;
+  shmdata_any_reader_t *reader = NULL;
+  shmdata_any_writer_t *writer = NULL;
 
   const char *my_user_data =
     "You can pass a pointer to the reader's data handler function.";
