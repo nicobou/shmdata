@@ -42,22 +42,21 @@ namespace switcher
     if (!(bool)manager)
       return;
 
-    PropDataMap::iterator it;
-    for (it = prop_datas_.begin (); it != prop_datas_.end (); it++)
+    for (auto &it : prop_datas_)
       {
-     	Quiddity::ptr quid = manager->get_quiddity (it->second->quiddity_name);
-	if ((bool)quid)
-	  {
-	    g_debug ("QuiddityPropertySubscriber: cleaning property not unsubscribed %s, %s, %s",
-	    	     it->second->name,
-	    	     it->second->quiddity_name,
-    		     it->second->property_name);
-     	    quid->unsubscribe_property (it->second->property_name, 
-					property_cb,
-					it->second);
-     	    g_free (it->second->name);
-     	    g_free (it->second->quiddity_name);
-    	    g_free (it->second->property_name);
+     	Quiddity::ptr quid = manager->get_quiddity (it.second->quiddity_name);
+    	if ((bool)quid)
+    	  {
+    	    g_debug ("QuiddityPropertySubscriber: cleaning property not unsubscribed %s, %s, %s",
+    	    	     it.second->name,
+    	    	     it.second->quiddity_name,
+    		     it.second->property_name);
+     	    quid->unsubscribe_property (it.second->property_name, 
+    	    				property_cb,
+    	    				it.second);
+     	    g_free (it.second->name);
+     	    g_free (it.second->quiddity_name);
+    	    g_free (it.second->property_name);
      	  }
       }
   }
@@ -153,8 +152,8 @@ namespace switcher
   QuiddityPropertySubscriber::unsubscribe (Quiddity::ptr quid, 
 					   std::string property_name)
   {
-    std::pair<std::string, std::string> cur_pair;
-    cur_pair = std::make_pair (quid->get_nick_name (), property_name);
+    //std::pair<std::string, std::string> cur_pair;
+    auto cur_pair = std::make_pair (quid->get_nick_name (), property_name);
     PropDataMap::iterator it = prop_datas_.find (cur_pair);
     if (it != prop_datas_.end ())
       {
@@ -175,26 +174,26 @@ namespace switcher
   bool 
   QuiddityPropertySubscriber::unsubscribe (Quiddity::ptr quid)
   {
-    std::string quid_name = quid->get_nick_name ();
+    auto quid_name = quid->get_nick_name ();
+    std::vector <std::pair<std::string, std::string>> entries_to_remove;
     for (auto& it: prop_datas_)
       if (it.first.first == quid_name)
 	{
 	  g_free (it.second->quiddity_name);
 	  g_free (it.second->property_name);
-	  prop_datas_.erase (it.first);
+	  entries_to_remove.push_back (it.first);
 	}
+    for (auto &it : entries_to_remove)
+	prop_datas_.erase (it);
     return true;
   }
   
-  std::vector<std::pair<std::string, std::string> > 
+  std::vector<std::pair<std::string, std::string>> 
   QuiddityPropertySubscriber::list_subscribed_properties ()
   {
-    std::vector<std::pair<std::string, std::string> > res;
-    PropDataMap::iterator it;
-    for (it = prop_datas_.begin (); it != prop_datas_.end (); it++)
-      {
-	res.push_back (it->first);
-      }
+      std::vector<std::pair<std::string, std::string>>  res;
+    for (auto &it : prop_datas_)
+      res.push_back (it.first);
     return res;
   }
 
