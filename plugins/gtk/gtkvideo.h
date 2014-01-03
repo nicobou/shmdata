@@ -58,6 +58,8 @@ namespace switcher
     static std::thread gtk_main_thread_;
     GtkWidget *main_window_;  
     GtkWidget *video_window_; 
+    GstElement *sink_bin_;
+    GstElement *ffmpegcolorspace_;
     GstElement *xvimagesink_;
 #if HAVE_OSX
     NSView * window_handle_;

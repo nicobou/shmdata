@@ -47,6 +47,10 @@ namespace switcher
   bool
   GTKVideo::init ()
   {
+    if (!GstUtils::make_element ("bin",&sink_bin_))
+      return false;
+    if (!GstUtils::make_element ("ffmpegcolorspace", &ffmpegcolorspace_))
+      return false;
 #if HAVE_OSX
     if (!GstUtils::make_element ("osxvideosink", &xvimagesink_))
       return false;
@@ -54,8 +58,19 @@ namespace switcher
     if (!GstUtils::make_element ("xvimagesink", &xvimagesink_))
       return false;
 #endif
-    //set the name before registering properties
-    set_name (gst_element_get_name (xvimagesink_));
+    gst_bin_add_many (GST_BIN (sink_bin_),
+		      ffmpegcolorspace_,
+		      xvimagesink_,
+		      NULL);
+    gst_element_link (ffmpegcolorspace_, xvimagesink_);
+
+    GstPad *sink_pad = gst_element_get_static_pad (ffmpegcolorspace_, 
+						   "sink");
+    GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
+    gst_pad_set_active(ghost_sinkpad, TRUE);
+    gst_element_add_pad (sink_bin_, ghost_sinkpad); 
+    gst_object_unref (sink_pad);
+    
     g_object_set (G_OBJECT (xvimagesink_), "sync", FALSE, NULL);
     //on_error_command_ = new QuiddityCommand ();
     on_error_command_->id_ = QuiddityCommand::remove;
@@ -63,7 +78,7 @@ namespace switcher
     g_object_set_data (G_OBJECT (xvimagesink_), 
      		       "on-error-command",
      		       (gpointer)on_error_command_);
-    set_sink_element (xvimagesink_);
+    set_sink_element (sink_bin_);
     is_fullscreen_ = FALSE;
 
     if (instances_counter_ == 0)
@@ -89,7 +104,6 @@ namespace switcher
     		  "force-aspect-ratio", TRUE,
     		  "draw-borders", TRUE,
     		  NULL);
-    //blank_cursor_ = NULL;
     gtk_idle_add ((GtkFunction)create_ui,
     		  this);
     return true;
@@ -98,6 +112,8 @@ namespace switcher
   GTKVideo::GTKVideo () :
     main_window_ (NULL),
     video_window_ (NULL),
+    sink_bin_ (NULL),
+    ffmpegcolorspace_ (NULL),
     xvimagesink_ (NULL),
 #if HAVE_OSX
     window_handle_ (NULL),
@@ -170,7 +186,7 @@ namespace switcher
     GTKVideo *context = static_cast <GTKVideo *> (user_data);
     gtk_widget_destroy (GTK_WIDGET(context->main_window_));
     window_destroyed (context);
-    return  G_SOURCE_REMOVE;
+    return  FALSE;
   }
 
   GTKVideo::~GTKVideo ()
@@ -362,16 +378,19 @@ namespace switcher
     // 		      this);
     
     gtk_idle_add ((GtkFunction)show_all,
-      main_window_);
+		  main_window_);
     
     wait_window_cond_.wait (lock);
     set_fullscreen (is_fullscreen_, this);
+    g_print ("fin on_shmdata_connect\n");
+
   }
   
   gboolean 
   GTKVideo::show_all (void *user_data)
   {
     gtk_widget_show_all ((GtkWidget *)user_data);
+    g_print ("fin show_all\n");
     return FALSE;
   }
 }

@@ -38,6 +38,8 @@ namespace switcher
     ~Xvimagesink ();
 
   private:
+    GstElement *sink_bin_;
+    GstElement *ffmpegcolorspace_;
     GstElement *xvimagesink_;
     QuiddityCommand *on_error_command_; //for the runtime error handler
   };
