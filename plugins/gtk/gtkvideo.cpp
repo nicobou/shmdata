@@ -382,15 +382,12 @@ namespace switcher
     
     wait_window_cond_.wait (lock);
     set_fullscreen (is_fullscreen_, this);
-    g_print ("fin on_shmdata_connect\n");
-
   }
   
   gboolean 
   GTKVideo::show_all (void *user_data)
   {
     gtk_widget_show_all ((GtkWidget *)user_data);
-    g_print ("fin show_all\n");
     return FALSE;
   }
 }
