@@ -39,6 +39,10 @@ namespace switcher
   bool
   Xvimagesink::init ()
   {
+    if (!GstUtils::make_element ("bin",&sink_bin_))
+      return false;
+    if (!GstUtils::make_element ("ffmpegcolorspace", &ffmpegcolorspace_))
+      return false;
 #if HAVE_OSX
     if (!GstUtils::make_element ("osxvideosink", &xvimagesink_))
       return false;
@@ -46,12 +50,26 @@ namespace switcher
     if (!GstUtils::make_element ("xvimagesink", &xvimagesink_))
       return false;
 #endif
+   
+    gst_bin_add_many (GST_BIN (sink_bin_),
+		      ffmpegcolorspace_,
+		      xvimagesink_,
+		      NULL);
+    gst_element_link (ffmpegcolorspace_, xvimagesink_);
 
     g_object_set (G_OBJECT (xvimagesink_),
-		  "force-aspect-ratio", TRUE,
 		  "draw-borders", TRUE,
+		  "force-aspect-ratio", TRUE,
 		  "sync", FALSE, 
 		  NULL);
+
+    GstPad *sink_pad = gst_element_get_static_pad (ffmpegcolorspace_, 
+						  "sink");
+    GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
+    gst_pad_set_active(ghost_sinkpad, TRUE);
+    gst_element_add_pad (sink_bin_, ghost_sinkpad); 
+    gst_object_unref (sink_pad);
+
     install_property (G_OBJECT (xvimagesink_),
 		       "force-aspect-ratio",
 		       "force-aspect-ratio", 
@@ -65,7 +83,7 @@ namespace switcher
      		       "on-error-command",
      		       (gpointer)on_error_command_);
     
-    set_sink_element (xvimagesink_);
+    set_sink_element (sink_bin_);
 
     return true;
   }
