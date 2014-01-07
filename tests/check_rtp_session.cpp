@@ -39,10 +39,10 @@ mon_property_cb(std::string /*subscriber_name*/,
 		std::string value, 
 		void */*user_data*/)
 {
-  if (g_strcmp0 (property_name.c_str (), "caps") == 0)
-    g_print ("-caps- %s\n",value.c_str ());
+  // if (g_strcmp0 (property_name.c_str (), "caps") == 0)
+  //   g_print ("-caps- %s\n",value.c_str ());
 
-  g_print ("%s, %s, %s\n", quiddity_name.c_str (), property_name.c_str (), value.c_str ());
+  // g_print ("%s, %s, %s\n", quiddity_name.c_str (), property_name.c_str (), value.c_str ());
 
   if (!audio_success && g_strcmp0 (quiddity_name.c_str (), "audioprobe") == 0)
     {
