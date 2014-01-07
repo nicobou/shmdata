@@ -39,7 +39,10 @@ namespace switcher
   bool
   Xvimagesink::init ()
   {
+
     if (!GstUtils::make_element ("bin",&sink_bin_))
+      return false;
+    if (!GstUtils::make_element ("queue",&queue_))
       return false;
     if (!GstUtils::make_element ("ffmpegcolorspace", &ffmpegcolorspace_))
       return false;
@@ -52,10 +55,11 @@ namespace switcher
 #endif
    
     gst_bin_add_many (GST_BIN (sink_bin_),
+		      queue_,
 		      ffmpegcolorspace_,
 		      xvimagesink_,
 		      NULL);
-    gst_element_link (ffmpegcolorspace_, xvimagesink_);
+    gst_element_link_many (queue_, ffmpegcolorspace_, xvimagesink_, NULL);
 
     g_object_set (G_OBJECT (xvimagesink_),
 		  "draw-borders", TRUE,
@@ -63,17 +67,17 @@ namespace switcher
 		  "sync", FALSE, 
 		  NULL);
 
-    GstPad *sink_pad = gst_element_get_static_pad (ffmpegcolorspace_, 
-						  "sink");
+    GstPad *sink_pad = gst_element_get_static_pad (queue_, 
+						   "sink");
     GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
     gst_pad_set_active(ghost_sinkpad, TRUE);
     gst_element_add_pad (sink_bin_, ghost_sinkpad); 
     gst_object_unref (sink_pad);
 
-    install_property (G_OBJECT (xvimagesink_),
-		       "force-aspect-ratio",
-		       "force-aspect-ratio", 
-		       "Force Aspect Ratio");
+    // install_property (G_OBJECT (xvimagesink_),
+    // 		       "force-aspect-ratio",
+    // 		       "force-aspect-ratio", 
+    // 		       "Force Aspect Ratio");
     
     on_error_command_ = new QuiddityCommand ();
     on_error_command_->id_ = QuiddityCommand::remove;

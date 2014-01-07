@@ -39,6 +39,7 @@ namespace switcher
 
   private:
     GstElement *sink_bin_;
+    GstElement *queue_;
     GstElement *ffmpegcolorspace_;
     GstElement *xvimagesink_;
     QuiddityCommand *on_error_command_; //for the runtime error handler

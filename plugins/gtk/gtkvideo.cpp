@@ -49,6 +49,8 @@ namespace switcher
   {
     if (!GstUtils::make_element ("bin",&sink_bin_))
       return false;
+    if (!GstUtils::make_element ("queue",&queue_))
+      return false;
     if (!GstUtils::make_element ("ffmpegcolorspace", &ffmpegcolorspace_))
       return false;
 #if HAVE_OSX
@@ -59,12 +61,16 @@ namespace switcher
       return false;
 #endif
     gst_bin_add_many (GST_BIN (sink_bin_),
+		      queue_,
 		      ffmpegcolorspace_,
 		      xvimagesink_,
 		      NULL);
-    gst_element_link (ffmpegcolorspace_, xvimagesink_);
+    gst_element_link_many (queue_, 
+			   ffmpegcolorspace_, 
+			   xvimagesink_,
+			   NULL);
 
-    GstPad *sink_pad = gst_element_get_static_pad (ffmpegcolorspace_, 
+    GstPad *sink_pad = gst_element_get_static_pad (queue_, 
 						   "sink");
     GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
     gst_pad_set_active(ghost_sinkpad, TRUE);
@@ -113,6 +119,7 @@ namespace switcher
     main_window_ (NULL),
     video_window_ (NULL),
     sink_bin_ (NULL),
+    queue_ (NULL),
     ffmpegcolorspace_ (NULL),
     xvimagesink_ (NULL),
 #if HAVE_OSX

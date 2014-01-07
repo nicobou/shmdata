@@ -59,6 +59,7 @@ namespace switcher
     GtkWidget *main_window_;  
     GtkWidget *video_window_; 
     GstElement *sink_bin_;
+    GstElement *queue_;
     GstElement *ffmpegcolorspace_;
     GstElement *xvimagesink_;
 #if HAVE_OSX
