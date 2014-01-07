@@ -30,56 +30,42 @@
 
 static bool audio_success;
 static bool video_success;
-static bool jpeg_success;
 static bool do_continue;
-
-static const char *user_string = "hello world";
 
 void 
 mon_property_cb(std::string /*subscriber_name*/, 
 		std::string quiddity_name, 
-		std::string /*property_name*/, 
-		std::string /*value*/, 
+		std::string property_name, 
+		std::string value, 
 		void */*user_data*/)
 {
-  // if (g_strcmp0 (property_name.c_str (), "caps") == 0)
-  //   g_print ("-caps- %s\n",value.c_str ());
+  if (g_strcmp0 (property_name.c_str (), "caps") == 0)
+    g_print ("-caps- %s\n",value.c_str ());
 
-  //g_print ("%s, %s, %s\n", quiddity_name.c_str (), property_name.c_str (), value.c_str ());
-
-  jpeg_success = true;
-  // if (!jpeg_success && g_strcmp0 (quiddity_name.c_str (), "jpegprobe") == 0)
-  //   {
-  //     g_message ("jpeg received !");
-  //     jpeg_success = true;
-  //     if (audio_success && video_success)
-  // 	do_continue = false;
-  //   }
+  g_print ("%s, %s, %s\n", quiddity_name.c_str (), property_name.c_str (), value.c_str ());
 
   if (!audio_success && g_strcmp0 (quiddity_name.c_str (), "audioprobe") == 0)
     {
       g_message ("audio received !");
       audio_success = true;
-      if (video_success && jpeg_success)
+      if (video_success)
 	do_continue = false;
     }
   if (!video_success && g_strcmp0 (quiddity_name.c_str (), "videoprobe") == 0)
     {
       g_message ("video received !");
       video_success = true;
-      if (audio_success && jpeg_success)
+      if (audio_success)
 	do_continue = false;
     }
 
 }
 
 int
-main (int /*argc*/,
-      char */*argv*/[])
+main ()
 {
   audio_success = false;
   video_success = false;
-  jpeg_success = false;
   do_continue = true;
   {
     switcher::QuiddityManager::ptr manager = 
@@ -109,9 +95,6 @@ main (int /*argc*/,
    
     manager->create ("videotestsrc","v");
     manager->invoke_va ("v", "set_runtime", NULL, "av_runtime", NULL);
-
-    // manager->set_property ("v", "codec", "jpegenc");
-    
     manager->set_property ("v", "started", "true");
 
      manager->create ("runtime", "rtp_runtime");
@@ -125,79 +108,72 @@ main (int /*argc*/,
        			NULL);
     
      manager->invoke_va ("rtp", 
-       			"add_data_stream",
-     			NULL,
-       			"/tmp/switcher_rtptest_v_video",
-       			NULL);
-
-      manager->invoke_va ("rtp", 
-        			"add_data_stream",
-      			NULL,
-        			"/tmp/switcher_rtptest_v_encoded-video",
-        			NULL);
-
+			 "add_data_stream",
+			 NULL,
+			 "/tmp/switcher_rtptest_v_video",
+			 NULL);
+     
      manager->invoke_va ("rtp", 
-       			"add_destination",
-     			NULL,
-       			"local",
-       			"localhost",
-       			NULL);
+			 "add_data_stream",
+			 NULL,
+			 "/tmp/switcher_rtptest_v_encoded-video",
+			 NULL);
+     
      manager->invoke_va ("rtp", 
-        			"add_udp_stream_to_dest",
-     			NULL,
-        			"/tmp/switcher_rtptest_a_audio",
-        			"local",
-        			"9066",
-        			NULL);
+			 "add_destination",
+			 NULL,
+			 "local",
+			 "127.0.0.1",
+			 NULL);
+     manager->invoke_va ("rtp", 
+      			 "add_udp_stream_to_dest",
+      			 NULL,
+      			 "/tmp/switcher_rtptest_a_audio",
+      			 "local",
+      			 "9066",
+      			 NULL);
      manager->invoke_va ("rtp",
-        			"add_udp_stream_to_dest",
-     			NULL,
-        			"/tmp/switcher_rtptest_v_video",
-        			"local",
-        			"9076",
-        			NULL);
-
-     // manager->invoke_va ("rtp",
-     //    			"add_udp_stream_to_dest",
-     // 			NULL,
-     //    			"/tmp/switcher_rtptest_v_encoded-video",
-     //    			"local",
-     //    			"9076",
-     //    			NULL);
-
+			 "add_udp_stream_to_dest",
+			 NULL,
+			 "/tmp/switcher_rtptest_v_video",
+			 "local",
+			 "9076",
+			 NULL);
+     
      usleep (1000000);
 
      manager->create ("runtime", "receiver_runtime");
      manager->create ("httpsdpdec", "uri");
      manager->invoke_va ("uri", 
-     			"set_runtime", 
-     			NULL, 
-     			"receiver_runtime", NULL);
+      			 "set_runtime", 
+     			 NULL, 
+     			 "receiver_runtime", 
+     			 NULL);
      manager->invoke_va ("uri", 
-        			"to_shmdata",
-     			NULL,
-     			"http://localhost:38084/sdp?rtpsession=rtp&destination=local",
-     			NULL);
-    
-    manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);
-
-
+     			 "to_shmdata",
+     			 NULL,
+     			 "http://127.0.0.1:38084/sdp?rtpsession=rtp&destination=local",
+     			 NULL);
+     
+     manager->make_property_subscriber ("sub", mon_property_cb, NULL);
+     
+     
      manager->create ("runtime", "probe_runtime");
      manager->create ("fakesink","audioprobe");
-    
+     
      manager->subscribe_property ("sub","audioprobe","caps");
      manager->subscribe_property ("sub","audioprobe","last-message");
      manager->invoke_va ("audioprobe", 
-     			"set_runtime", 
-     			NULL,
-     			"probe_runtime", 
-     			NULL);
+     			 "set_runtime", 
+     			 NULL,
+     			 "probe_runtime", 
+     			 NULL);
      manager->invoke_va ("audioprobe",
-     			"connect",
-      			NULL,
-      			"/tmp/switcher_rtptest_uri_audio-0",
-      			NULL);
-
+     			 "connect",
+     			 NULL,
+     			 "/tmp/switcher_rtptest_uri_audio-0",
+     			 NULL);
+     
      manager->create ("fakesink","videoprobe");
      manager->subscribe_property ("sub","videoprobe","last-message");
      manager->subscribe_property ("sub","videoprobe","caps");
@@ -212,20 +188,6 @@ main (int /*argc*/,
        			"/tmp/switcher_rtptest_uri_video-0",
        			NULL);
 
-      // manager->create ("fakesink","jpegprobe");
-      // manager->subscribe_property ("sub","jpegprobe","last-message");
-      // manager->subscribe_property ("sub","jpegprobe","caps");
-      // manager->invoke_va ("jpegprobe", 
-      // 			"set_runtime", 
-      // 			NULL, 
-      // 			"probe_runtime", 
-      // 			NULL);
-      // manager->invoke_va ("jpegprobe",
-      //   			"connect",
-      // 			NULL,
-      //   			"/tmp/switcher_rtptest_uri_video-1",
-      //   			NULL);
-     
      //wait 3 seconds
      uint count = 3;
      while (do_continue)
