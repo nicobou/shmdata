@@ -44,7 +44,7 @@ namespace switcher
   {
     if (!g_module_supported ())
       {
-	g_debug ("g_module not supported !, cannot load %s \n", filename); 
+	g_debug ("g_module not supported !, cannot load %s", filename); 
 	return false;
       }
     close ();
@@ -131,6 +131,7 @@ namespace switcher
 	g_debug ("closing module: %s", g_module_error ());
 	return false;
       }
+    module_ = NULL;
     return true;
   }
   

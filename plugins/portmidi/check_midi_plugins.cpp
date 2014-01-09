@@ -45,6 +45,16 @@ main ()
     return 1;
 #endif
     
+    if (manager->create ("midisrc","src").compare ("src") == 0)
+      manager->remove ("src");
+    else
+      success = false;
+    
+    if (manager->create ("midisrc","sink").compare ("sink") == 0)
+      manager->remove ("sink");
+    else
+      success = false;
+
     if (!switcher::QuiddityBasicTest::test_full (manager, "midisrc"))
       success = false;
 

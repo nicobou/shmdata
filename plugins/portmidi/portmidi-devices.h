@@ -36,6 +36,7 @@
 #include <porttime.h>
 #include <glib.h>
 #include <glib-object.h>
+#include <mutex>
 
 namespace switcher
 {
@@ -46,6 +47,8 @@ namespace switcher
     typedef void (*on_pm_event_method) (PmEvent *midi_event, void *user_data);
     PortMidi ();
     ~PortMidi ();
+    PortMidi (const PortMidi &) = delete;
+    PortMidi &operator= (const PortMidi &) = delete;
    
   protected:
     //info
@@ -67,12 +70,13 @@ namespace switcher
     bool push_midi_message (int id, unsigned char status, unsigned char data1, unsigned char data2);
     
   private:    
+    gchar *devices_description_;
+    std::map<guint, PmStream *> input_streams_;
+    std::map<guint, PmStream *> output_streams_;
+
     /** Prints the list of MIDI source devices. */
     static gchar *make_devices_description (void *user_data);
-
     void update_device_enum ();
-
-    gchar *devices_description_;
 
     //internal midi scheduler
     class PortMidiScheduler //singleton
@@ -88,22 +92,20 @@ namespace switcher
       bool push_message(PmStream *stream, unsigned char status, unsigned char data1, unsigned char data2);
       
     private:
-      GMutex streams_mutex_;
-      static GMutex finalize_mutex_;
+      std::mutex streams_mutex_;
+      std::mutex finalize_mutex_;
       gboolean finalizing_;
       std::map<PmStream *, std::pair<on_pm_event_method, void *> > input_callbacks_;
       std::map<PmStream *, std::queue<PmEvent> *> output_queues_;
       bool portmidi_initialized_;
       bool app_sysex_in_progress_;
       bool thru_sysex_in_progress_;
-      static void process_midi(PtTimestamp timestamp, void *userData);
-    };
+      
+      static void process_midi (PtTimestamp timestamp, void *userData);
+    };//end of PortMidiScheduler
 
     static PortMidiScheduler *scheduler_;
     static guint instance_counter_;
-    std::map<guint, PmStream *> input_streams_;
-    std::map<guint, PmStream *> output_streams_;
-    
   };
  
 }  // end of namespace
