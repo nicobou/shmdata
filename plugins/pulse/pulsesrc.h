@@ -27,6 +27,8 @@
 #include "switcher/audio-source.h"
 #include "switcher/custom-property-helper.h"
 #include "switcher/startable-quiddity.h"
+#include <mutex>
+#include <condition_variable>
 
 namespace switcher
 {
@@ -35,8 +37,11 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSrc);
+    PulseSrc ();
     ~PulseSrc ();
-    
+    PulseSrc (const PulseSrc&) = delete;
+    PulseSrc &operator= (const PulseSrc &) = delete;
+
     bool start ();
     bool stop ();
 
@@ -44,43 +49,21 @@ namespace switcher
     GstElement *pulsesrc_;
     GstElement *capsfilter_;
     GstElement *pulsesrc_bin_;
-    bool make_elements ();
-    static gchar *get_capture_devices_json (void *user_data);
-    static gboolean async_get_pulse_devices (void *user_data);
-    GCond devices_cond_;
-    GMutex devices_mutex_;
-
-    bool capture_device ();
-    void update_capture_device ();
-
-    void make_device_description (pa_context *pulse_context);
-    void make_json_description ();
-
+    std::mutex devices_mutex_;
+    std::condition_variable devices_cond_;
     //custom property:
     CustomPropertyHelper::ptr custom_props_; 
     GParamSpec *capture_devices_description_spec_;//json formated
     gchar *capture_devices_description_;//json formated
-
-    //device enum and select
+    //device enum members
     GParamSpec *devices_enum_spec_;
     GEnumValue devices_enum_ [128];
     gint device_;
-    static void set_device (const gint value, void *user_data);
-    static gint get_device (void *user_data);
-
     //pulse_audio
     pa_glib_mainloop *pa_glib_mainloop_;
     pa_mainloop_api *pa_mainloop_api_;
     pa_context *pa_context_;
     char *server_;
-
-    static void pa_context_state_callback(pa_context *c, void *userdata);
-    static void get_source_info_callback(pa_context *c, const pa_source_info *i, int is_last, void *userdata);
-    static void on_pa_event_callback(pa_context *c, 
-				     pa_subscription_event_type_t t,
-				     uint32_t idx, 
-				     void *userdata);
-
     typedef struct {
       std::string name_;
       std::string description_;
@@ -93,6 +76,28 @@ namespace switcher
     } DeviceDescription;
 
     std::vector <DeviceDescription> capture_devices_; 
+
+    bool make_elements ();
+    static gchar *get_capture_devices_json (void *user_data);
+    static gboolean async_get_pulse_devices (void *user_data);
+    
+    bool capture_device ();
+    void update_capture_device ();
+
+    void make_device_description (pa_context *pulse_context);
+    void make_json_description ();
+
+    //device enum and select
+    static void set_device (const gint value, void *user_data);
+    static gint get_device (void *user_data);
+
+    static void pa_context_state_callback(pa_context *c, void *userdata);
+    static void get_source_info_callback(pa_context *c, const pa_source_info *i, int is_last, void *userdata);
+    static void on_pa_event_callback(pa_context *c, 
+				     pa_subscription_event_type_t t,
+				     uint32_t idx, 
+				     void *userdata);
+
 
 
   };

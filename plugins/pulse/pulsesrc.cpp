@@ -34,6 +34,25 @@ namespace switcher
 				       "pulsesrc",
 				       "Nicolas Bouillot");
     
+  PulseSrc::PulseSrc () :
+    pulsesrc_ (NULL),
+    capsfilter_ (NULL),
+    pulsesrc_bin_ (NULL),
+    devices_mutex_ (),
+    devices_cond_ (),
+    custom_props_ (), 
+    capture_devices_description_spec_ (NULL),
+    capture_devices_description_ (NULL),
+    devices_enum_spec_ (NULL),
+    devices_enum_ (),
+    device_ (0),
+    pa_glib_mainloop_ (NULL),
+    pa_mainloop_api_ (NULL),
+    pa_context_ (NULL),
+    server_ (NULL),
+    capture_devices_ ()
+  {}
+
   bool
   PulseSrc::init ()
   {
@@ -41,14 +60,7 @@ namespace switcher
       return false;
 
     init_startable (this);
-    device_ = 0; //default is zero
-    devices_enum_spec_ = NULL;
-
-    g_mutex_lock (&devices_mutex_);
-
-    pa_context_ = NULL;
-    server_ = NULL;
-
+    std::unique_lock<std::mutex> lock (devices_mutex_); 
     GstUtils::g_idle_add_full_with_context (get_g_main_context (),
 					    G_PRIORITY_DEFAULT_IDLE,
 					    async_get_pulse_devices,
@@ -72,8 +84,7 @@ namespace switcher
 				"Capture Devices");
 
     //waiting for devices to be updated 
-    g_cond_wait (&devices_cond_, &devices_mutex_);
-    g_mutex_unlock (&devices_mutex_);
+    devices_cond_.wait (lock);
     return true;
   }
 
@@ -105,8 +116,7 @@ namespace switcher
   {
     pa_context_disconnect (pa_context_);
     //pa_mainloop_api_->quit (pa_mainloop_api_, 0);
-    pa_glib_mainloop_free(pa_glib_mainloop_);
-    
+    //pa_glib_mainloop_free(pa_glib_mainloop_);
     if (capture_devices_description_ != NULL)
       g_free (capture_devices_description_);
   }
@@ -267,9 +277,8 @@ namespace switcher
       context->make_json_description ();
       
       //signal init we are done
-      g_mutex_lock (&context->devices_mutex_);
-      g_cond_signal (&context->devices_cond_);
-      g_mutex_unlock (&context->devices_mutex_);
+      std::unique_lock<std::mutex> lock (context->devices_mutex_);
+      context->devices_cond_.notify_all ();
       return;
     }
     

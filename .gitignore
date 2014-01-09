@@ -55,6 +55,7 @@ plugins/portmidi/.libs/
 plugins/portmidi/check_midi_plugins
 plugins/pulse/.deps/
 plugins/pulse/.libs/
+plugins/pulse/check_pulsesrc
 plugins/v4l2/.deps/
 plugins/v4l2/.libs/
 src/.deps/
