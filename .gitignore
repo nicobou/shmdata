@@ -50,6 +50,7 @@ plugins/gtk/.libs/
 plugins/gtk/check_gtk_video
 plugins/osc/.deps/
 plugins/osc/.libs/
+plugins/osc/check_osc
 plugins/portmidi/.deps/
 plugins/portmidi/.libs/
 plugins/portmidi/check_midi_plugins
