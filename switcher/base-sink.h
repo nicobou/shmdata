@@ -34,10 +34,10 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<BaseSink> ptr;
-
     BaseSink ();
     ~BaseSink ();
-
+    BaseSink (const BaseSink &) = delete;
+    BaseSink &operator= (const BaseSink &) = delete;
     bool connect (std::string shmdata_socket_path);
     //wrapper for being called
     static gboolean connect_wrapped (gpointer shmdata_socket_path, gpointer user_data);

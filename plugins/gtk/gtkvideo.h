@@ -51,6 +51,8 @@ namespace switcher
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GTKVideo);
     GTKVideo ();
     ~GTKVideo ();
+    GTKVideo (const GTKVideo &) = delete;
+    GTKVideo &operator= (const GTKVideo &) = delete;
     void toggle_fullscreen();
     
   private:
@@ -81,21 +83,15 @@ namespace switcher
     std::condition_variable window_destruction_cond_;
 
     static gboolean create_ui (void *user_data);
-    static gboolean show_all (void *user_data);
-    static gboolean expose_cb (GtkWidget *widget, GdkEventExpose *event, void *user_data);
     static void realize_cb (GtkWidget *widget, void *user_data);
     static void delete_event_cb (GtkWidget *widget, GdkEvent *event, void *user_data);
     static void gtk_main_loop_thread ();
     static gboolean key_pressed_cb(GtkWidget *widget, GdkEventKey *event, gpointer data);
     static gboolean get_fullscreen (void *user_data);
     static void set_fullscreen (gboolean fullscreen, void *user_data);
-    static gboolean on_window_state_event (GtkWidget *widget,
-					   GdkEvent  *event,
-					   gpointer   user_data);
     static gboolean on_destroy_event (GtkWidget *widget,
 				      GdkEvent  *event,
 				      gpointer   user_data);
-    
     static void window_destroyed (gpointer data);
     static gboolean destroy_window (gpointer data);
 

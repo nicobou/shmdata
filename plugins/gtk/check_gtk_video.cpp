@@ -44,9 +44,6 @@ main ()
     return 1;
 #endif
 
-    if (!switcher::QuiddityBasicTest::test_full (manager, "gtkvideosink"))
-      return 1;
-
     //creating a "myplugin" quiddity
     if (manager->create("gtkvideosink", "win").compare ("win") != 0)
       {
@@ -71,6 +68,8 @@ main ()
     if (!manager->set_property ("vid", "started", "true"))
       return 1;
 	 
+    //usleep (1000000);
+
     //connecting 
     if (!manager->invoke_va ("win", "connect", NULL, "/tmp/switcher_gtktest_vid_video", NULL))
       return 1;
@@ -82,6 +81,9 @@ main ()
       return 1;
 
     if (!manager->remove ("vid"))
+      return 1;
+
+    if (!switcher::QuiddityBasicTest::test_full (manager, "gtkvideosink"))
       return 1;
 
   }//end of scope is releasing the manager
