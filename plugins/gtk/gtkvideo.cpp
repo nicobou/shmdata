@@ -277,9 +277,13 @@ namespace switcher
     context->main_window_ = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     g_signal_connect (G_OBJECT (context->main_window_), 
      		      "delete-event", G_CALLBACK (delete_event_cb), context);
-    
     context->video_window_ = gtk_drawing_area_new ();
     gtk_widget_set_double_buffered (context->video_window_, FALSE);
+    GdkColor color;
+    gdk_color_parse ("black", &color);
+    gtk_widget_modify_bg(context->video_window_, 
+     			 GTK_STATE_NORMAL, 
+     			 &color);
     g_signal_connect (context->video_window_, "realize", G_CALLBACK (realize_cb), context);
     gtk_container_add (GTK_CONTAINER (context->main_window_), context->video_window_);
     gtk_window_set_default_size (GTK_WINDOW (context->main_window_), 640, 480);
