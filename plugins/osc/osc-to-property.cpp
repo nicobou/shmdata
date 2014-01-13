@@ -123,7 +123,7 @@ namespace switcher
 			     void */*data*/, 
 			     void *user_data)
   {
-    OscToProperty *context = static_cast<OscToProperty*>(user_data);
+    //OscToProperty *context = static_cast<OscToProperty*>(user_data);
     g_debug ("unknown osc path %s", path);
     return 0;
   }
