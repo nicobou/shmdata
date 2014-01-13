@@ -54,7 +54,7 @@ AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ], [
 
 case "$host" in *-darwin* | *-macos10*)
   LIBTOOL="glibtool"
-  CXXFLAGS+=" -D__Darwin -stdlib=libc++"
+  CXXFLAGS+=" -D__Darwin -stdlib=libc++ -Qunused-arguments"
   CXX="clang++"
   LDFLAGS+=" -undefined dynamic_lookup -Wl,-headerpad_max_install_names"
   if test -d /opt/local ; then
