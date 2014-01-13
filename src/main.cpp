@@ -271,7 +271,10 @@ main (int argc,
   if (osc_port_number != NULL)
     {
       std::string osc_name = manager->create ("OSCctl");
-      manager->invoke_va (osc_name.c_str (), "set_port", NULL, osc_port_number, NULL);
+      if (osc_name.compare ("") == 0)
+	g_warning ("osc plugin not found");
+      else
+	manager->invoke_va (osc_name.c_str (), "set_port", NULL, osc_port_number, NULL);
     }
   
   manager->reset_command_history (false);
