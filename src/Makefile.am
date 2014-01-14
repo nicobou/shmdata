@@ -40,7 +40,6 @@ switcher_ctrl_LDFLAGS = \
     $(GST_LIBS) \
     $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la \
     $(top_builddir)/plugins/gsoap/soapC.o \
-    $(top_builddir)/plugins/gsoap/soapcontrolProxy.o \
-    $(top_builddir)/plugins/gsoap/soap-ctrl-client.o
+    $(top_builddir)/plugins/gsoap/soapcontrolProxy.o
 
 

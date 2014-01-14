@@ -27,21 +27,6 @@
 
 //gsoap switcher schema namespace:	urn:control
 
-//gsoap switcher service method-documentation: add Sums two values
-int switcher__add(double a, double b, double *result);
-
-//gsoap switcher service method-documentation: sub Subtracts two values
-int switcher__sub(double a, double b, double *result);
-
-//gsoap switcher service method-documentation: mul Multiplies two values
-int switcher__mul(double a, double b, double *result);
-
-//gsoap switcher service method-documentation: div Divides two values
-int switcher__div(double a, double b, double *result);
-
-//gsoap switcher service method-documentation: pow Raises a to b
-int switcher__pow(double a, double b, double *result);
-
 //gsoap switcher service method-documentation: get available names 
 int switcher__get_factory_capabilities(std::vector<std::string> *result);
 

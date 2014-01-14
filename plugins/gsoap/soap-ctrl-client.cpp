@@ -18,8 +18,7 @@
  */
 
 #include "soap-ctrl-client.h"
-#include <ctime>    // For time()
-#include <cstdlib>  // For srand() and rand()
+#include "webservices/control.nsmap"
 
 namespace switcher
 {
@@ -31,13 +30,16 @@ namespace switcher
 				       "SOAPcontrolClient",
 				       "Nicolas Bouillot");
 
+  SoapCtrlClient::SoapCtrlClient () :
+    switcher_control_ (NULL),
+    url_ (NULL)
+  {
+    std::cout << "coucou" << std::endl;
+  }
+
   bool
   SoapCtrlClient::init()
   {
-    
-    srand(time(0));
-    set_name (g_strdup_printf ("ctrlclient%d",rand() % 1024));
-
     switcher_control_ = new controlProxy (SOAP_IO_KEEPALIVE | SOAP_XML_INDENT);
     switcher_control_->send_timeout = 4; // 4 seconds
     switcher_control_->recv_timeout = 4; // 4 seconds
@@ -52,11 +54,23 @@ namespace switcher
 						  "url",
 						  "SOAP url",
 						  NULL),
-		    (Method::method_ptr) &set_remote_url_wrapped, 
+		    (Method::method_ptr) &set_remote_url, 
 		    G_TYPE_BOOLEAN,
      		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
      		    this);
 
+    // install_method ("Set Remote Switcher URL And Retry Until Success",
+    // 		    "set_remote_url_retry", 
+    // 		    "set remote url to control (for instance http://localhost:8080)", 
+    // 		    "success or fail of the first try, then listen to retryed",
+    // 		    Method::make_arg_description ("URL",
+    // 						  "url",
+    // 						  "SOAP url",
+    // 						  NULL),
+    // 		    (Method::method_ptr) &set_remote_url_retry, 
+    // 		    G_TYPE_BOOLEAN,
+    //  		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+    //  		    this);
 
     install_method ("Create",
 		    "create", 
@@ -69,7 +83,7 @@ namespace switcher
 						  "quiddity_name",
 						  "the name to give",
 						  NULL),
-		    (Method::method_ptr) &create_wrapped, 
+		    (Method::method_ptr) &create, 
 		    G_TYPE_BOOLEAN,
      		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
      		    this);
@@ -83,7 +97,7 @@ namespace switcher
 						  "quiddity_name",
 						  "name of quiddity to remove",
 						  NULL),
-		    (Method::method_ptr) &remove_wrapped, 
+		    (Method::method_ptr) &remove, 
 		    G_TYPE_BOOLEAN,
      		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
      		    this);
@@ -103,7 +117,7 @@ namespace switcher
 						  "property_value",
 						  "value to set",
 						  NULL),
-		    (Method::method_ptr) &set_property_wrapped, 
+		    (Method::method_ptr) &set_property, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, NULL),
 		    this);
@@ -123,7 +137,7 @@ namespace switcher
 						  "arg1",
 						  "first argument",
 						  NULL),
-		    (Method::method_ptr) &invoke1_wrapped, 
+		    (Method::method_ptr) &invoke1, 
 		    G_TYPE_BOOLEAN,
       		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, NULL),
       		    this); 
@@ -146,7 +160,7 @@ namespace switcher
 						  "arg2",
 						  "second argument",
 						  NULL),
-		    (Method::method_ptr) &invoke2_wrapped, 
+		    (Method::method_ptr) &invoke2, 
 		    G_TYPE_BOOLEAN,
      		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, 
      						       G_TYPE_STRING, G_TYPE_STRING, NULL),
@@ -173,7 +187,7 @@ namespace switcher
 						  "arg3",
 						  "third argument",
 						  NULL),
-		    (Method::method_ptr) &invoke3_wrapped, 
+		    (Method::method_ptr) &invoke3, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, 
 						       G_TYPE_STRING, G_TYPE_STRING, 
@@ -203,7 +217,7 @@ namespace switcher
 						  "arg4",
 						  "fourth argument",
 						  NULL),
-		    (Method::method_ptr) &invoke4_wrapped, 
+		    (Method::method_ptr) &invoke4, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, 
 						       G_TYPE_STRING, G_TYPE_STRING, 
@@ -221,7 +235,7 @@ namespace switcher
   }
 
   gboolean
-  SoapCtrlClient::set_remote_url_wrapped (gpointer url,
+  SoapCtrlClient::set_remote_url (gpointer url,
 					  gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
@@ -246,7 +260,7 @@ namespace switcher
 
 
   gboolean
-  SoapCtrlClient::create_wrapped (gpointer class_name,
+  SoapCtrlClient::create (gpointer class_name,
 				  gpointer quiddity_name,
 				  gpointer user_data)
   {
@@ -266,7 +280,7 @@ namespace switcher
   }
 
   gboolean
-  SoapCtrlClient::remove_wrapped (gpointer quiddity_name,
+  SoapCtrlClient::remove (gpointer quiddity_name,
 				  gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
@@ -280,7 +294,7 @@ namespace switcher
 
 
   gboolean
-  SoapCtrlClient::set_property_wrapped (gpointer quiddity_name,
+  SoapCtrlClient::set_property (gpointer quiddity_name,
 					gpointer property_name,
 					gpointer value,
 					gpointer user_data)
@@ -301,7 +315,7 @@ namespace switcher
   }
 
   gboolean
-  SoapCtrlClient::invoke1_wrapped (gpointer quiddity_name,
+  SoapCtrlClient::invoke1 (gpointer quiddity_name,
 				   gpointer method_name,
 				   gpointer arg1,
 				   gpointer user_data)
@@ -321,7 +335,7 @@ namespace switcher
   }
 
   gboolean
-  SoapCtrlClient::invoke2_wrapped (gpointer quiddity_name,
+  SoapCtrlClient::invoke2 (gpointer quiddity_name,
 				   gpointer method_name,
 				   gpointer arg1,
 				   gpointer arg2,
@@ -343,7 +357,7 @@ namespace switcher
   }
 
   gboolean
-  SoapCtrlClient::invoke3_wrapped (gpointer quiddity_name,
+  SoapCtrlClient::invoke3 (gpointer quiddity_name,
 				   gpointer method_name,
 				   gpointer arg1,
 				   gpointer arg2,
@@ -367,7 +381,7 @@ namespace switcher
   }
 
   gboolean
-  SoapCtrlClient::invoke4_wrapped (gpointer quiddity_name,
+  SoapCtrlClient::invoke4 (gpointer quiddity_name,
 				   gpointer method_name,
 				   gpointer arg1,
 				   gpointer arg2,

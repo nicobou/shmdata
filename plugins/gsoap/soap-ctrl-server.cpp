@@ -246,49 +246,6 @@ namespace switcher
  * below is the implementation of the service *
  **********************************************/
 
-int 
-controlService::add(double a, double b, double *result)
-{ *result = a + b;
-  return SOAP_OK;
-} 
-
-int 
-controlService::sub(double a, double b, double *result)
-{ *result = a - b;
-  return SOAP_OK;
-} 
-
-int 
-controlService::mul(double a, double b, double *result)
-{ *result = a * b;
-  return SOAP_OK;
-} 
-
-int 
-controlService::div(double a, double b, double *result)
-{ if (b)
-    *result = a / b;
-  else
-    { char *s = (char*)soap_malloc(this, 1024);
-      sprintf(s, "<error xmlns=\"http://tempuri.org/\">Can't divide %f by %f</error>", a, b);
-      return soap_senderfault("Division by zero", s);
-    }
-  return SOAP_OK;
-} 
-
-int 
-controlService::pow(double a, double b, double *result)
-{ *result = ::pow(a, b);
-  if (soap_errno == EDOM)	/* soap_errno is like errno, but compatible with Win32 */
-    { char *s = (char*)soap_malloc(this, 1024);
-      sprintf(s, "Can't take the power of %f to %f", a, b);
-      sprintf(s, "<error xmlns=\"http://tempuri.org/\">Can't take power of %f to %f</error>", a, b);
-      return soap_senderfault("Power function domain error", s);
-    }
-  return SOAP_OK;
-}
-
-
 int
 controlService::get_factory_capabilities(std::vector<std::string> *result){//FIXME rename that to get_classes
   using namespace switcher;

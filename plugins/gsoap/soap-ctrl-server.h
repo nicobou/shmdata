@@ -23,7 +23,6 @@
 
 #include "switcher/quiddity-manager-wrapper.h"
 #include <memory>
-
 #include "webservices/soapcontrolService.h"
 
 namespace switcher

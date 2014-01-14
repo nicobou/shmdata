@@ -48,8 +48,7 @@ libsoapserver_la_LDFLAGS = \
 libsoapclient_la_SOURCES = \
     soap-ctrl-client.cpp \
     webservices/soapC.cpp \
-    webservices/soapcontrolProxy.cpp \
-    webservices/soapcontrolService.cpp 
+    webservices/soapcontrolProxy.cpp 
 
 libsoapclient_la_include_HEADERS = \
     soap-ctrl-client.h
@@ -58,8 +57,7 @@ libsoapclient_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
 libsoapclient_la_LDFLAGS = \
-    $(GSOAP_LIBS)
-
+    $(GSOAP_LIBS) 
 
 ####### webservice code generation into the "webservices" directory
 ####### note: soapcpp2 -q <namespace> -d <directory-where-goes-generated-cpp>
@@ -97,3 +95,32 @@ $(srcdir)/webservices/soapcontrolProxy.cpp: Makefile
 $(srcdir)/webservices/soapcontrolService.cpp: Makefile
 	mkdir -p webservices
 	soapcpp2 -I $(gsoap_INCLUDE) -i  -d webservices $(srcdir)/ctrl-webservice-definition.h
+
+
+## unit tests
+AM_CFLAGS = \
+    -I$(top_srcdir)
+
+AM_CXXFLAGS =  \
+    $(GLIB_CFLAGS) \
+    $(GSOAP_CFLAGS) \
+    $(GST_CFLAGS) \
+    $(JSONGLIB_CFLAGS) \
+    $(SHMDATA_CFLAGS) \
+    -I$(top_srcdir) 
+
+AM_LDFLAGS = \
+    $(GLIB_LIBS) \
+    $(GSOAP_LIBS) \
+    $(GST_LIBS) \
+    $(JSONGLIB_LIBS) \
+    $(SHMDATA_LIBS) \
+    $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
+
+check_PROGRAMS = \
+    check_gsoap_control
+
+check_example_plugin_SOURCES = \
+    check_gsoap_control.cpp
+
+TESTS = $(check_PROGRAMS)
