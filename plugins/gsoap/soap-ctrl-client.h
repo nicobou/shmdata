@@ -39,8 +39,14 @@ namespace switcher
   private:
     controlProxy *switcher_control_;
     gchar *url_;
+    GSource *try_connect_g_source_;
+    void reset_endpoint ();
     static gboolean set_remote_url (gpointer url,
 					    gpointer user_data);
+    static gboolean set_remote_url_retry (gpointer url,
+					  gpointer user_data);
+    static gboolean try_connect (gpointer user_data);
+
     static gboolean create (gpointer class_name,
 				    gpointer quiddity_name,
 				    gpointer user_data);

@@ -19,6 +19,7 @@
 
 #include "soap-ctrl-client.h"
 #include "webservices/control.nsmap"
+#include "switcher/gst-utils.h"
 
 namespace switcher
 {
@@ -32,10 +33,9 @@ namespace switcher
 
   SoapCtrlClient::SoapCtrlClient () :
     switcher_control_ (NULL),
-    url_ (NULL)
-  {
-    std::cout << "coucou" << std::endl;
-  }
+    url_ (NULL),
+    try_connect_g_source_ (NULL)
+  {}
 
   bool
   SoapCtrlClient::init()
@@ -59,19 +59,34 @@ namespace switcher
      		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
      		    this);
 
-    // install_method ("Set Remote Switcher URL And Retry Until Success",
-    // 		    "set_remote_url_retry", 
-    // 		    "set remote url to control (for instance http://localhost:8080)", 
-    // 		    "success or fail of the first try, then listen to retryed",
-    // 		    Method::make_arg_description ("URL",
-    // 						  "url",
-    // 						  "SOAP url",
-    // 						  NULL),
-    // 		    (Method::method_ptr) &set_remote_url_retry, 
-    // 		    G_TYPE_BOOLEAN,
-    //  		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-    //  		    this);
+    install_method ("Set Remote Switcher URL And Retry Until Success",
+     		    "set_remote_url_retry", 
+     		    "connect remote url to control until success, each try being notified with the on_connection_tried", 
+     		    "periodic try has been instanciated",
+     		    Method::make_arg_description ("URL",
+     						  "url",
+     						  "SOAP url",
+     						  NULL),
+     		    (Method::method_ptr) &set_remote_url_retry, 
+     		    G_TYPE_BOOLEAN,
+      		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+      		    this);
 
+    GType connection_tried_type[] = {G_TYPE_STRING, G_TYPE_BOOLEAN};
+    install_signal ("On Connection Tried",
+		    "on-connection-tried",
+		    "a connection has been tried",
+		    Signal::make_arg_description ("URL",
+						  "url",
+						  "the remote switcher URL (SOAP control server)",
+						  "Connected",
+						  "connected",
+						  "connection succeed", 
+						  NULL),
+		    2,
+		    connection_tried_type);
+
+    
     install_method ("Create",
 		    "create", 
 		    "create a quiddity", 
@@ -228,20 +243,29 @@ namespace switcher
 
   SoapCtrlClient::~SoapCtrlClient()
   {
-    if (url_ != NULL)
-      g_free (url_);
+    reset_endpoint ();
     if (switcher_control_ != NULL)
       delete switcher_control_;
   }
 
+  void
+  SoapCtrlClient::reset_endpoint ()
+  {
+    if (url_ != NULL)
+      g_free (url_);
+    if (try_connect_g_source_ != NULL)
+      {
+	g_source_destroy (try_connect_g_source_);
+	try_connect_g_source_ = NULL;
+      }
+  }
+  
   gboolean
   SoapCtrlClient::set_remote_url (gpointer url,
-					  gpointer user_data)
+				  gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
-    if (context->url_ != NULL)
-      g_free (context->url_);
-
+    context->reset_endpoint ();
     context->url_ = g_strdup ((char *)url);
     context->switcher_control_->soap_endpoint = context->url_;
     
@@ -258,19 +282,59 @@ namespace switcher
     return TRUE;
   }
 
+  gboolean
+  SoapCtrlClient::set_remote_url_retry (gpointer url,
+					gpointer user_data)
+  {
+    SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
+    context->reset_endpoint ();
+    context->url_ = g_strdup ((char *)url);
+    context->switcher_control_->soap_endpoint = context->url_;
+    if (TRUE == context->try_connect (context))
+      {
+	guint id = GstUtils::g_timeout_add_to_context (1000,
+						       try_connect, 
+						       context,
+						       context->get_g_main_context ());
+	context->try_connect_g_source_ = g_main_context_find_source_by_id (context->get_g_main_context (),
+									   id);
+      }
+    return TRUE;
+  }
+
+  gboolean
+  SoapCtrlClient::try_connect (gpointer user_data)
+  {
+    SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
+    if (context->url_ == NULL)
+      return FALSE;
+    
+    std::vector<std::string> resultlist;
+    context->switcher_control_->get_quiddity_names (&resultlist);
+    
+    if (context->switcher_control_->error)
+      {
+	g_debug ("SoapCtrlClient::try_connect (%s) failled, will retry",
+		 context->url_);
+	context->signal_emit ("on-connection-tried", context->url_, FALSE);
+	return TRUE;
+      }
+    context->signal_emit ("on-connection-tried", context->url_, TRUE);
+    return FALSE;
+  }
 
   gboolean
   SoapCtrlClient::create (gpointer class_name,
-				  gpointer quiddity_name,
-				  gpointer user_data)
+			  gpointer quiddity_name,
+			  gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
     if (context->url_ == NULL)
       return FALSE;
     std::string name;
     context->switcher_control_->create_named_quiddity ((const char *)class_name, 
-						      (const char *)quiddity_name,
-						      &name);
+						       (const char *)quiddity_name,
+						       &name);
     if (g_strcmp0 ((gchar *)quiddity_name, name.c_str ()) != 0)
       {
 	context->switcher_control_->delete_quiddity (name.c_str ());
@@ -281,7 +345,7 @@ namespace switcher
 
   gboolean
   SoapCtrlClient::remove (gpointer quiddity_name,
-				  gpointer user_data)
+			  gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
     if (context->url_ == NULL)
@@ -295,9 +359,9 @@ namespace switcher
 
   gboolean
   SoapCtrlClient::set_property (gpointer quiddity_name,
-					gpointer property_name,
-					gpointer value,
-					gpointer user_data)
+				gpointer property_name,
+				gpointer value,
+				gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
     if (context->url_ == NULL)
@@ -316,9 +380,9 @@ namespace switcher
 
   gboolean
   SoapCtrlClient::invoke1 (gpointer quiddity_name,
-				   gpointer method_name,
-				   gpointer arg1,
-				   gpointer user_data)
+			   gpointer method_name,
+			   gpointer arg1,
+			   gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
     if (context->url_ == NULL)
@@ -336,10 +400,10 @@ namespace switcher
 
   gboolean
   SoapCtrlClient::invoke2 (gpointer quiddity_name,
-				   gpointer method_name,
-				   gpointer arg1,
-				   gpointer arg2,
-				   gpointer user_data)
+			   gpointer method_name,
+			   gpointer arg1,
+			   gpointer arg2,
+			   gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
     if (context->url_ == NULL)
@@ -358,11 +422,11 @@ namespace switcher
 
   gboolean
   SoapCtrlClient::invoke3 (gpointer quiddity_name,
-				   gpointer method_name,
-				   gpointer arg1,
-				   gpointer arg2,
-				   gpointer arg3,
-				   gpointer user_data)
+			   gpointer method_name,
+			   gpointer arg1,
+			   gpointer arg2,
+			   gpointer arg3,
+			   gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
     if (context->url_ == NULL)
@@ -382,12 +446,12 @@ namespace switcher
 
   gboolean
   SoapCtrlClient::invoke4 (gpointer quiddity_name,
-				   gpointer method_name,
-				   gpointer arg1,
-				   gpointer arg2,
-				   gpointer arg3,
-				   gpointer arg4,
-				   gpointer user_data)
+			   gpointer method_name,
+			   gpointer arg1,
+			   gpointer arg2,
+			   gpointer arg3,
+			   gpointer arg4,
+			   gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
     if (context->url_ == NULL)

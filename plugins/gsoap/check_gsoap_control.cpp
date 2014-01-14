@@ -21,18 +21,31 @@
 
 #include "switcher/quiddity-manager.h"
 #include "switcher/quiddity-basic-test.h"
-// #include <vector>
-// #include <string>
-// #include <iostream>
+#include <unistd.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
+static bool success = false;
+
+void 
+quiddity_created_removed_cb (std::string /*subscriber_name*/, 
+			     std::string /*quiddity_name*/, 
+			     std::string /*signal_name*/, 
+			     std::vector<std::string> params, 
+			     void */*user_data*/)
+{
+  //g_message ("%s: %s %s", signal_name.c_str (), params[0].c_str (), params[1].c_str ());
+  if (params[1].compare ("true"))
+    success = true;
+}
+
+
+
 int
 main ()
 {
-   bool success = true;
    {
      switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
      
@@ -44,14 +57,23 @@ main ()
      return 1;
 #endif
       
-      
-      
       if (!switcher::QuiddityBasicTest::test_full (manager, "SOAPcontrolClient"))
 	success = false;
       
       if (!switcher::QuiddityBasicTest::test_full (manager, "SOAPcontrolServer"))
 	success = false;
+
+      manager->create ("SOAPcontrolClient", "soapclient");
+      manager->make_signal_subscriber ("signal_subscriber", quiddity_created_removed_cb, manager.get ());
+      manager->subscribe_signal ("signal_subscriber","soapclient","on-connection-tried");
+      manager->invoke_va ("soapclient", "set_remote_url_retry", NULL, "http://localhost:38084", NULL);
       
+      manager->create ("SOAPcontrolServer", "soapserver");
+      manager->invoke_va ("soapserver", "set_port", NULL, "38084", NULL);
+
+      //soapclient is waiting 1 sec between retries
+      usleep (1100000);
+
    }//end of scope is releasing the manager
 
    if (success)
