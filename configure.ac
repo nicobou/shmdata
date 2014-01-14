@@ -259,6 +259,11 @@ else
     AC_CONFIG_FILES([plugins/gtk/Makefile])
 fi
 AM_CONDITIONAL(GTKBUILD, test "${GTKBUILD}" = "enabled")
+if test "${GTKBUILD}" = "enabled"; then
+    AC_DEFINE(HAVE_GTK, [1], [GTK detected])
+else
+    AC_DEFINE(HAVE_GTK, [0], [GTK not detected])
+fi
 
 dnl Use the C++ compiler for the compile tests
 AC_LANG(C++)
@@ -310,10 +315,24 @@ dnl check if compiler understands -Werror (if yes, add it to CFLAGS)
 dnl -Wno-error=unused-parameter is required for gsoap generated code compiling
 AC_MSG_CHECKING([to see if compiler understands -Werror])
 saved_CXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CXXFLAGS -Werror -Wno-error=unused-parameter -Wno-error=return-type-c-linkage"
+CXXFLAGS="$CXXFLAGS -Werror -Wno-error=unused-parameter"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
-  CXXFLAGS="$saved_CXXFLAGS -Werror -Wno-error=return-type-c-linkage -Wno-error=unused-parameter"
+  CXXFLAGS="$saved_CXXFLAGS -Werror -Wno-error=unused-parameter"
   AC_SUBST([W_NO_ERROR_UNUSED_PARAMETER], "-Wno-error=unused-parameter")
+  AC_MSG_RESULT([yes])
+], [
+  CXXFLAGS="$saved_CXXFLAGS"
+  AC_MSG_RESULT([no])
+])
+
+dnl clang++
+dnl check if compiler understands -Wno-error=return-type-c-linkage (if yes, add it to CFLAGS)
+dnl -Wno-error=unused-parameter is required for gsoap generated code compiling
+AC_MSG_CHECKING([to see if compiler understands -Wno-error=return-type-c-linkage])
+saved_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -Wno-error=return-type-c-linkage"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  CXXFLAGS="$saved_CXXFLAGS -Wno-error=return-type-c-linkage"
   AC_MSG_RESULT([yes])
 ], [
   CXXFLAGS="$saved_CXXFLAGS"
@@ -388,3 +407,4 @@ AC_OUTPUT
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]
+

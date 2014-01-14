@@ -27,6 +27,9 @@
 #include <iostream>
 #include <signal.h>
 #include <time.h>
+#ifdef HAVE_GTK
+#include <gtk/gtk.h>
+#endif
 
 static const gchar *server_name = NULL;
 static const gchar *port_number = NULL;
@@ -76,6 +79,9 @@ leave (int sig)
     switcher::QuiddityManager::ptr empty;
     manager.swap (empty);
   }
+#ifdef HAVE_GTK
+  gtk_main_quit ();
+#endif
   exit (sig);
 }
 
@@ -335,6 +341,16 @@ main (int argc,
   //      sig_cb_data["create_remove_subscriber"] = std::make_pair (quiddity_created_removed_cb, (void *)NULL);
   //      manager->play_command_history (histo, &prop_cb_data, &sig_cb_data); 
   //      g_print ("--fin-- %s\n",manager->get_quiddities_description ().c_str ());
+
+#ifdef HAVE_GTK
+  if (!gtk_init_check (NULL, NULL))
+    std::cerr << "cannot init gtk in main" << std::endl;
+  else
+    {
+      g_debug ("using gtk main loop in main");
+      gtk_main ();
+    }
+#endif
 
   //waiting for end of life
   timespec delay;
