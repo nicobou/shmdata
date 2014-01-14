@@ -58,6 +58,7 @@ namespace switcher
   private:
     static guint instances_counter_;
     static std::thread gtk_main_thread_;
+    GdkDisplay *display_;
     GtkWidget *main_window_;  
     GtkWidget *video_window_; 
     GstElement *sink_bin_;

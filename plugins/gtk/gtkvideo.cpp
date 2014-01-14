@@ -112,10 +112,13 @@ namespace switcher
     gtk_idle_add ((GtkFunction)create_ui,
     		  this);
     wait_window_cond_.wait (lock);
+    if (NULL == display_)
+      return false;
     return true;
   }
   
   GTKVideo::GTKVideo () :
+    display_ (NULL),
     main_window_ (NULL),
     video_window_ (NULL),
     sink_bin_ (NULL),
@@ -235,8 +238,7 @@ namespace switcher
       g_debug ("Couldn't create native window needed for GstXOverlay!");
 
     gdk_threads_enter ();
-    GdkDisplay *display =  gdk_display_get_default ();
-    gdk_display_sync (display);
+    gdk_display_sync (context->display_);
     //gdk_error_trap_pop ();  
 
     /* Retrieve window handler from GDK */
@@ -274,6 +276,15 @@ namespace switcher
   GTKVideo::create_ui (void *user_data) 
   {
     GTKVideo *context = static_cast <GTKVideo *> (user_data);
+    context->display_ =  gdk_display_get_default ();
+    if (NULL == context->display_)
+      {
+	g_debug ("gtkvideo: no default display, cannot create window");
+	std::unique_lock<std::mutex> lock (context->wait_window_mutex_);
+	context->wait_window_cond_.notify_all ();
+	return FALSE;
+      }
+
     context->main_window_ = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     g_signal_connect (G_OBJECT (context->main_window_), 
      		      "delete-event", G_CALLBACK (delete_event_cb), context);
