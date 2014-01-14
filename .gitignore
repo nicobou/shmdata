@@ -44,6 +44,7 @@ plugins/example/.libs/
 plugins/example/check_example_plugin
 plugins/gsoap/.deps
 plugins/gsoap/.libs
+plugins/gsoap/check_gsoap_control
 plugins/gsoap/webservices
 plugins/gtk/.deps/
 plugins/gtk/.libs/
