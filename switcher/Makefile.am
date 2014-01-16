@@ -5,7 +5,8 @@ AM_CXXFLAGS = \
     $(JSONGLIB_CFLAGS) \
     $(PYTHON_CFLAGS) \
     $(SHMDATA_CFLAGS) \
-    -DG_LOG_DOMAIN=\"switcher\" 
+    -DG_LOG_DOMAIN=\"switcher\" \
+    -I$(top_srcdir) 
 
 AM_LIBS = \
     $(GLIB_LIBS) \

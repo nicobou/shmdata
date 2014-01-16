@@ -63,6 +63,7 @@ libportmidisrc_la_LDFLAGS = \
     -avoid-version \
     -module \
     -L$(top_builddir)/switcher/.libs \
+    -L$(top_builddir)/plugins/portmidi/.libs \
     -lswitcher-@LIBSWITCHER_API_VERSION@ \
     $(top_builddir)/plugins/portmidi/libportmididev.la
 
@@ -101,6 +102,7 @@ libportmidisink_la_LDFLAGS = \
     -avoid-version \
     -module \
     -L$(top_builddir)/switcher/.libs \
+    -L$(top_builddir)/plugins/portmidi/.libs \
     -lswitcher-@LIBSWITCHER_API_VERSION@ \
     $(top_builddir)/plugins/portmidi/libportmididev.la
 
