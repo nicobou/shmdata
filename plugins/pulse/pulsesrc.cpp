@@ -87,7 +87,10 @@ namespace switcher
     //waiting for devices to be updated 
     devices_cond_.wait (lock);
     if (!connected_to_pulse_)
-      return false;
+      {
+	g_print ("NOT CONNECTED TO PULSE\n");
+	return false;
+      }
     return true;
   }
 
@@ -95,23 +98,18 @@ namespace switcher
   PulseSrc::async_get_pulse_devices (void *user_data)
   {
     PulseSrc *context = static_cast <PulseSrc *> (user_data);
-
     context->pa_glib_mainloop_ = pa_glib_mainloop_new (context->get_g_main_context ());
-   
     context->pa_mainloop_api_ = pa_glib_mainloop_get_api (context->pa_glib_mainloop_);
-    
     if (!(context->pa_context_ = pa_context_new (context->pa_mainloop_api_, NULL))) {
       g_debug ("PulseSrc:: pa_context_new() failed.");
-      return FALSE;//FIXME init should fail 
+      return FALSE;
     }
-    
     pa_context_set_state_callback (context->pa_context_, pa_context_state_callback, context);
-    
     if (pa_context_connect(context->pa_context_, context->server_, (pa_context_flags_t)0, NULL) < 0) {
       g_debug ("pa_context_connect() failed: %s", pa_strerror(pa_context_errno(context->pa_context_)));
-      return FALSE;//FIXME init should fail
+      return FALSE;
     }
-    
+    context->connected_to_pulse_ = true;
     return FALSE;
   }
 

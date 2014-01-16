@@ -4,7 +4,6 @@ plugins_LTLIBRARIES = \
     libpulsesink.la \
     libpulsesrc.la
 
-
 ### SRC
 libpulsesrc_la_SOURCES = \
     pulsesrc.cpp
