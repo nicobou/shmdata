@@ -120,7 +120,7 @@ AM_LDFLAGS = \
 check_PROGRAMS = \
     check_gsoap_control
 
-check_example_plugin_SOURCES = \
+check_gsoap_control_SOURCES = \
     check_gsoap_control.cpp
 
 TESTS = $(check_PROGRAMS)
