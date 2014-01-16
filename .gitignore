@@ -1,10 +1,12 @@
 *.gz
 *.la
 *.lo
+*.log
 *.o
 *.old
 *.pc
 *.swp
+*.trs
 */.deps/
 */.libs/
 *~
@@ -12,6 +14,7 @@ Makefile
 Makefile.in
 aclocal.m4
 autom4te.cache/
+compile
 config.guess
 config.h
 config.h.in
@@ -43,6 +46,7 @@ missing
 plugins/puredata/.deps/
 plugins/puredata/.libs/
 stamp-h1
+test-driver
 tests/check_read_and_write_onoff
 tests/check_read_then_write
 tests/check_write_and_read_onoff

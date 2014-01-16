@@ -1,6 +1,18 @@
 shmdata release notes
 ===================== 
 
+shmdata 0.8.8 (2014-01-16)
+---------------------------
+This is an official release in the 0.8 stable series. 
+
+New features:
+
+* There are no new features, this is a bugfix release
+
+Bugs fixed:
+
+* Make check on OSX
+
 shmdata 0.8.6 (2013-10-16)
 ---------------------------
 This is the second official release in the 0.8 stable series. 
