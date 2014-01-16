@@ -1,52 +1,15 @@
 pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
-lib_LTLIBRARIES = \
-    libportmididev.la
-
-#libportmididev info
-libportmididev_la_SOURCES = \
-    portmidi-devices.cpp
-
-libportmididev_la_include_HEADERS = \
-    portmidi-devices.h
-
-libportmididev_la_includedir = \
-    $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
-
-libportmididev_la_LDFLAGS = \
-    $(PORTMIDI_LIBS) \
-    $(GLIB_LIBS) \
-    $(GST_LIBS) \
-    $(GMODULE_LIBS) \
-    $(JSONGLIB_LIBS) \
-    $(SHMDATA_LIBS) \
-    $(SHMDATA_ANY_LIBS) \
-    -L$(top_builddir)/switcher/.libs \
-    -lswitcher-@LIBSWITCHER_API_VERSION@
-
-libportmididev_la_CXXFLAGS = \
-    $(PORTMIDI_CFLAGS) \
-    $(GLIB_CFLAGS) \
-    $(GMODULE_CFLAGS) \
-    $(GST_CFLAGS) \
-    $(JSONGLIB_CFLAGS) \
-    $(SHMDATA_CFLAGS) \
-    $(SHMDATA_ANY_CFLAGS) \
-    -DG_LOG_DOMAIN=\"switcher\" \
-    -I$(top_srcdir) 
-
 plugins_LTLIBRARIES = \
     libportmidisrc.la \
     libportmidisink.la
 
-#libportmidisrc info
-portmidi-source.cpp : \
-    libportmididev.la
-
 libportmidisrc_la_SOURCES = \
+    portmidi-devices.cpp \
     portmidi-source.cpp
 
 libportmidisrc_la_include_HEADERS = \
+    portmidi-devices.h \
     portmidi-source.h
 
 libportmidisrc_la_includedir = \
@@ -63,9 +26,7 @@ libportmidisrc_la_LDFLAGS = \
     -avoid-version \
     -module \
     -L$(top_builddir)/switcher/.libs \
-    -L$(top_builddir)/plugins/portmidi/.libs \
-    -lswitcher-@LIBSWITCHER_API_VERSION@ \
-    $(top_builddir)/plugins/portmidi/libportmididev.la
+    -lswitcher-@LIBSWITCHER_API_VERSION@ 
 
 libportmidisrc_la_CXXFLAGS = \
     $(PORTMIDI_CFLAGS) \
@@ -78,14 +39,12 @@ libportmidisrc_la_CXXFLAGS = \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir) 
 
-#libportmidisink info
-portmidi-sink.cpp : \
-    libportmididev.la
-
 libportmidisink_la_SOURCES = \
+    portmidi-devices.cpp \
     portmidi-sink.cpp
 
 libportmidisink_la_include_HEADERS = \
+    portmidi-devices.h \
     portmidi-sink.h
 
 libportmidisink_la_includedir = \
@@ -102,9 +61,7 @@ libportmidisink_la_LDFLAGS = \
     -avoid-version \
     -module \
     -L$(top_builddir)/switcher/.libs \
-    -L$(top_builddir)/plugins/portmidi/.libs \
-    -lswitcher-@LIBSWITCHER_API_VERSION@ \
-    $(top_builddir)/plugins/portmidi/libportmididev.la
+    -lswitcher-@LIBSWITCHER_API_VERSION@
 
 libportmidisink_la_CXXFLAGS = \
     $(PORTMIDI_CFLAGS) \
@@ -135,7 +92,6 @@ AM_LDFLAGS = \
     $(GST_LIBS) \
     $(JSONGLIB_LIBS) \
     $(SHMDATA_LIBS) \
-    $(top_builddir)/plugins/portmidi/libportmididev.la \
     $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
 
 check_PROGRAMS = \
