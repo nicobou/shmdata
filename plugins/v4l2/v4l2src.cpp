@@ -653,10 +653,10 @@ namespace switcher
     uninstall_property ("tv_standard");
     uninstall_property ("device");
     uninstall_property ("framerate");
-    install_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
-    install_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
-    install_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
-    install_property (G_OBJECT (v4l2src_),"hue","hue", "Hue");
+    // install_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
+    // install_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
+    // install_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
+    // install_property (G_OBJECT (v4l2src_),"hue","hue", "Hue");
 
     return true;
   }
@@ -670,10 +670,10 @@ namespace switcher
 				"device",
 				"Capture Device");
     update_device_specific_properties (device_);
-    uninstall_property ("brightness");
-    uninstall_property ("contrast");
-    uninstall_property ("saturation");
-    uninstall_property ("hue");
+    // uninstall_property ("brightness");
+    // uninstall_property ("contrast");
+    // uninstall_property ("saturation");
+    // uninstall_property ("hue");
 
     return true;
   }
