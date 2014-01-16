@@ -45,12 +45,10 @@ main ()
     return 1;
 #endif
     
-    if (manager->create ("pulsesrc","src").compare ("src") == 0)
-      manager->remove ("src");
-    else
-      success = false;
-    
     if (!switcher::QuiddityBasicTest::test_full (manager, "pulsesrc"))
+      success = false;
+
+    if (!switcher::QuiddityBasicTest::test_full (manager, "pulsesink"))
       success = false;
 
   }//end of scope is releasing the manager

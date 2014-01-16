@@ -49,6 +49,7 @@ namespace switcher
     GstElement *pulsesrc_;
     GstElement *capsfilter_;
     GstElement *pulsesrc_bin_;
+    bool connected_to_pulse_;
     std::mutex devices_mutex_;
     std::condition_variable devices_cond_;
     //custom property:

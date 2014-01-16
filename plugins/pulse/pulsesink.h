@@ -34,12 +34,14 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSink);
+    PulseSink ();
     ~PulseSink ();
 
   private:
     GstElement *pulsesink_;
     GstElement *audioconvert_;
     GstElement *pulsesink_bin_;
+    bool connected_to_pulse_;
     bool make_elements ();
     static gchar *get_devices_json (void *user_data);
     void make_device_description (pa_context *pulse_context);

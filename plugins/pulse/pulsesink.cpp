@@ -34,6 +34,23 @@ namespace switcher
 				       "pulsesink",
 				       "Nicolas Bouillot");
     
+  PulseSink::PulseSink () :
+    pulsesink_ (NULL),
+    audioconvert_ (NULL),
+    pulsesink_bin_ (NULL),
+    connected_to_pulse_ (false),
+    custom_props_ (new CustomPropertyHelper ()), 
+    devices_description_spec_ (NULL),
+    devices_description_ (NULL),
+    device_name_spec_ (NULL),
+    device_name_ (NULL),
+    pa_glib_mainloop_ (NULL),
+    pa_mainloop_api_ (NULL),
+    pa_context_ (NULL),
+    server_ (NULL),
+    devices_ ()
+  {}
+
   bool
   PulseSink::init ()
   {
@@ -64,10 +81,8 @@ namespace switcher
       return false;
     }
     
-    
-    devices_description_ = NULL;
-
-    custom_props_.reset (new CustomPropertyHelper ());
+    connected_to_pulse_ = true;
+   
     devices_description_spec_ = custom_props_->make_string_property ("devices-json", 
       								     "Description of audio devices (json formated)",
       								     "default",
@@ -98,9 +113,12 @@ namespace switcher
   
   PulseSink::~PulseSink ()
   {
-    pa_context_disconnect (pa_context_);
-    //pa_mainloop_api_->quit (pa_mainloop_api_, 0);
-    pa_glib_mainloop_free(pa_glib_mainloop_);
+    if (connected_to_pulse_)
+      {
+	pa_context_disconnect (pa_context_);
+	//pa_mainloop_api_->quit (pa_mainloop_api_, 0);
+	pa_glib_mainloop_free(pa_glib_mainloop_);
+      }
     if (devices_description_ != NULL)
       g_free (devices_description_);
     g_free (device_name_);

@@ -38,6 +38,7 @@ namespace switcher
     pulsesrc_ (NULL),
     capsfilter_ (NULL),
     pulsesrc_bin_ (NULL),
+    connected_to_pulse_ (false),
     devices_mutex_ (),
     devices_cond_ (),
     custom_props_ (), 
@@ -85,6 +86,8 @@ namespace switcher
 
     //waiting for devices to be updated 
     devices_cond_.wait (lock);
+    if (!connected_to_pulse_)
+      return false;
     return true;
   }
 
@@ -114,7 +117,8 @@ namespace switcher
 
   PulseSrc::~PulseSrc ()
   {
-    pa_context_disconnect (pa_context_);
+    if (connected_to_pulse_)
+      pa_context_disconnect (pa_context_);
     //pa_mainloop_api_->quit (pa_mainloop_api_, 0);
     //pa_glib_mainloop_free(pa_glib_mainloop_);
     if (capture_devices_description_ != NULL)
