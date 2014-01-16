@@ -87,8 +87,13 @@ namespace switcher
 
     if (instances_counter_ == 0)
       {
-    	gtk_main_thread_ = std::thread (&GTKVideo::gtk_main_loop_thread);
-    	gtk_main_thread_.detach ();
+	if (0 == gtk_main_level ()) 
+	  {
+	    gtk_main_thread_ = std::thread (&GTKVideo::gtk_main_loop_thread);
+	    gtk_main_thread_.detach ();
+	  }
+	else 
+	  g_debug ("gtkvideosink: GTK main loop detected, using it");
       }
     instances_counter_++;
     //custom_props_.reset (new CustomPropertyHelper ());

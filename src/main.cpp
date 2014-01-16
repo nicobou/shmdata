@@ -346,10 +346,7 @@ main (int argc,
   if (!gtk_init_check (NULL, NULL))
     std::cerr << "cannot init gtk in main" << std::endl;
   else
-    {
-      g_debug ("using gtk main loop in main");
       gtk_main ();
-    }
 #endif
 
   //waiting for end of life
