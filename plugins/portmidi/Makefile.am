@@ -135,7 +135,6 @@ AM_LDFLAGS = \
     $(SHMDATA_LIBS) \
     $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
 
-
 check_PROGRAMS = \
     check_midi_plugins
 

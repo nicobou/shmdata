@@ -58,11 +58,13 @@ case "$host" in *-darwin* | *-macos10*)
   CXX="clang++"
   LDFLAGS+=" -undefined dynamic_lookup -Wl,-headerpad_max_install_names"
   if test -d /opt/local ; then
+    CPPFLAGS+=" -I/usr/local/include -I/opt/local/include"
     CXXFLAGS+=" -I/usr/local/include -I/opt/local/include"
-    #LDFLAGS+=" -L/usr/local/lib -L/opt/local/lib"
+    LDFLAGS+=" -L/usr/local/lib -L/opt/local/lib"
   elif test -d /sw ; then
+    CPPFLAGS+=" -I/sw/include"
     CXXFLAGS+=" -I/sw/include"
-    #LDFLAGS+=" -L/sw/lib"
+    LDFLAGS+=" -L/sw/lib"
   fi
   
   AM_CONDITIONAL([HAVE_OSX], true)
@@ -205,18 +207,19 @@ if test "x${have_portmidi}" = "xfalse" ; then
    PORTMIDIBUILD=disabled
    AC_MSG_WARN([missing portmidi library, install libportmidi-dev])
 fi
-AC_CHECK_LIB([porttime],[Pt_Time], have_porttime=true, have_porttime=false)
-if test "x${have_porttime}" = "xfalse" ; then
-   PORTMIDIBUILD=disabled
-   AC_MSG_WARN([missing porttime library, install libportmidi-dev])
-fi
+dnl AC_CHECK_LIB([porttime],[Pt_Time], have_porttime=true, have_porttime=false)
+dnl if test "x${have_porttime}" = "xfalse" ; then
+dnl    PORTMIDIBUILD=disabled
+dnl    AC_MSG_WARN([missing porttime library, install libportmidi-dev])
+dnl fi
 AM_CONDITIONAL(PORTMIDIBUILD, test "${PORTMIDIBUILD}" = "enabled")
 
 if test "${PORTMIDIBUILD}" = "enabled"; then
     AC_CONFIG_FILES([plugins/portmidi/Makefile])
   PORTMIDI_CFLAGS="-DPMALSA"
   AC_SUBST([PORTMIDI_CFLAGS], "$PORTMIDI_CFLAGS")
-  PORTMIDI_LIBS="-lportmidi -lporttime -lpthread -lm"
+  dnl PORTMIDI_LIBS="-lportmidi -lporttime -lpthread -lm"
+  PORTMIDI_LIBS="-lportmidi -lpthread -lm"
   AC_SUBST([PORTMIDI_LIBS], "$PORTMIDI_LIBS")
 fi
 
