@@ -116,7 +116,6 @@ namespace switcher
     QuiddityDocumentation doc = get_documentation_ ();
     class_name_ = doc.get_class_name ();
     json_doc_ = doc.get_json_root_node ();
-
     return true;
   }
   

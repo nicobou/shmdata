@@ -133,6 +133,7 @@ AM_LDFLAGS = \
     $(GST_LIBS) \
     $(JSONGLIB_LIBS) \
     $(SHMDATA_LIBS) \
+    $(top_builddir)/plugins/portmidi/libportmididev.la \
     $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
 
 check_PROGRAMS = \
