@@ -357,7 +357,7 @@ namespace switcher
     /* add capture and payloading to the pipeline and link */
     gst_bin_add_many (GST_BIN (context->bin_), pay, NULL);
     gst_element_link (typefind, pay);
-    //GstUtils::wait_state_changed (context->bin_);
+    GstUtils::wait_state_changed (context->bin_);
     GstUtils::sync_state_with_parent (pay);
 
     g_object_set (G_OBJECT (pay), "mtu", (guint)context->mtu_at_add_data_stream_, NULL);
@@ -424,7 +424,7 @@ namespace switcher
      rtcp_writer.reset (new ShmdataWriter ());
      std::string rtcp_writer_name = context->make_file_name ("send_rtcp_src_"+internal_session_id); 
      rtcp_writer->set_path (rtcp_writer_name.c_str());
-     //GstUtils::wait_state_changed (context->bin_);
+     GstUtils::wait_state_changed (context->bin_);
      rtcp_writer->plug (context->bin_, rtcp_src_pad);
      context->internal_shmdata_writers_[rtcp_writer_name] = rtcp_writer;
      g_free (rtcp_src_pad_name);
@@ -434,7 +434,7 @@ namespace switcher
      GstElement *funnel;
      GstUtils::make_element ("funnel", &funnel);
      gst_bin_add (GST_BIN (context->bin_), funnel);
-     //GstUtils::wait_state_changed (context->bin_);
+     GstUtils::wait_state_changed (context->bin_);
      GstUtils::sync_state_with_parent (funnel);
      GstPad *funnel_src_pad = gst_element_get_static_pad (funnel, "src");
      gchar *rtcp_sink_pad_name = g_strconcat ("recv_rtcp_sink_", rtp_session_id,NULL); 
@@ -468,7 +468,7 @@ namespace switcher
     gst_bin_add_many (GST_BIN (context->bin_), funnel, typefind, NULL);
     gst_element_link (funnel, typefind);
     
-    //GstUtils::wait_state_changed (context->bin_);
+    GstUtils::wait_state_changed (context->bin_);
     GstUtils::sync_state_with_parent (funnel);
     GstUtils::sync_state_with_parent (typefind);
     caller->set_sink_element (funnel);

@@ -20,6 +20,7 @@
  */
 
 #include "gst-utils.h"
+#include <unistd.h>  //sleep
 
 namespace switcher
 {
@@ -180,6 +181,10 @@ namespace switcher
   void
   GstUtils::wait_state_changed (GstElement *bin)
   {
+    //FIXME
+    usleep (10000);
+    return;
+
     if (!GST_IS_BIN (bin))
       {
 	g_warning ("GstUtils::wait_state_changed not a bin");

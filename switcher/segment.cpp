@@ -217,7 +217,7 @@ namespace switcher
     for (auto &it : shmdata_readers_)
       it.second->start ();
 
-    //GstUtils::wait_state_changed (runtime_->get_pipeline ());
+    GstUtils::wait_state_changed (runtime_->get_pipeline ());
     GstUtils::sync_state_with_parent (bin_);
     GstUtils::wait_state_changed (bin_);
     //g_debug ("Segment::set_runtime (done), %s", gst_element_state_get_name (GST_STATE (bin_)));
