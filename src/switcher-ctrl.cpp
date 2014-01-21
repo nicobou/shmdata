@@ -17,41 +17,68 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
+#include <string>
 #include <glib.h> 
 #include "webservices/soapcontrolProxy.h"
 #include "webservices/control.nsmap"
 
 //options
 static gchar *server = NULL;
-static gboolean save;
-static gboolean load;
-static gboolean run;
-static gboolean createquiddity;
-static gboolean renamequiddity;
-static gboolean deletequiddity;
-static gboolean listclasses;
-static gboolean classesdoc;
-static gboolean classdoc;
-static gboolean listquiddities;
-static gboolean quidditydescr;
-static gboolean quidditiesdescr;
-static gboolean listprop;
-static gboolean listpropbyclass;
-static gboolean listmethods;
-static gboolean listmethodsbyclass;
-static gboolean listsignals;
-static gboolean listsignalsbyclass;
-static gboolean setprop;
-static gboolean getprop;
-static gboolean invokemethod;
+static gboolean save = FALSE;
+static gboolean load = FALSE;
+static gboolean run = FALSE;
+static gboolean createquiddity = FALSE;
+static gboolean renamequiddity = FALSE;
+static gboolean deletequiddity = FALSE;
+static gboolean listclasses = FALSE;
+static gboolean classesdoc = FALSE;
+static gboolean classdoc = FALSE;
+static gboolean listquiddities = FALSE;
+static gboolean quidditydescr = FALSE;
+static gboolean quidditiesdescr = FALSE;
+static gboolean listprop = FALSE;
+static gboolean listpropbyclass = FALSE;
+static gboolean listmethods = FALSE;
+static gboolean listmethodsbyclass = FALSE;
+static gboolean listsignals = FALSE;
+static gboolean listsignalsbyclass = FALSE;
+static gboolean setprop = FALSE;
+static gboolean getprop = FALSE;
+static gboolean invokemethod = FALSE;
 static gchar **remaining_args = NULL;
 
 //FIXME the list-something should actually give lists, and json formated should be given without one-char option
 
-static GOptionEntry entries[22] =
+// static GOptionEntry entries[22] =
+//   {
+//     { "server", 'S', 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:8080)", NULL },
+//     { "save", 'w', 0, G_OPTION_ARG_NONE, &save, "save history to file (--save filename)", NULL },
+//     { "load", 'x', 0, G_OPTION_ARG_NONE, &load, "load state from history file (--load filename)", NULL },
+//     //FIXME make this working { "run", NULL, 0, G_OPTION_ARG_NONE, &run, "run history to file (--run filename)", NULL },
+//     { "create-quiddity", 'C', 0, G_OPTION_ARG_NONE, &createquiddity, "create a quiddity instance (-C quiddity_class [optional nick name])", NULL },
+//     { "delete-quiddity", 'D', 0, G_OPTION_ARG_NONE, &deletequiddity, "delete a quiddity instance by its name", NULL },
+//     { "rename", 'r', 0, G_OPTION_ARG_NONE, &renamequiddity, "rename a quiddity (-r nick name new_nick_name)", NULL },
+//     { "list-classes", 'c', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", NULL },
+//     { "list-quiddities", 'e', 0, G_OPTION_ARG_NONE, &listquiddities, "list quiddity instances", NULL },
+//     { "list-props", 'p', 0, G_OPTION_ARG_NONE, &listprop, "list properties of a quiddity", NULL },
+//     { "list-props-by-class", 'P', 0, G_OPTION_ARG_NONE, &listpropbyclass, "list properties of a class", NULL },
+//     { "list-methods", 'm', 0, G_OPTION_ARG_NONE, &listmethods, "list methods of a quiddity", NULL },
+//     { "list-methods-by-class", 'M', 0, G_OPTION_ARG_NONE, &listmethodsbyclass, "list methods of a class", NULL },
+//     { "list-signals", 'l', 0, G_OPTION_ARG_NONE, &listsignals, "list signals of a quiddity", NULL },
+//     { "list-signals-by-class", 'L', 0, G_OPTION_ARG_NONE, &listsignalsbyclass, "list signals of a class", NULL },
+//     { "set-prop", 's', 0, G_OPTION_ARG_NONE, &setprop, "set property value (-s quiddity_name prop_name val)", NULL },
+//     { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g quiddity_name prop_name)", NULL },
+//     { "invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod, "invoke method of a quiddity (-i quiddity_name method_name args...)", NULL },
+//     { "classes-doc", 'K', 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", NULL },
+//     { "class-doc", 'k', 0, G_OPTION_ARG_NONE, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
+//     { "quiddities-descr", 'Q', 0, G_OPTION_ARG_NONE, &quidditiesdescr, "print instanciated quiddities, JSON-formated", NULL },
+//     { "quiddity-descr", 'q', 0, G_OPTION_ARG_NONE, &quidditydescr, "print quiddity documentation, JSON-formated (--class-doc class_name)", NULL },
+//     {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &remaining_args, "remaining arguments", NULL},
+//   };
+
+static GOptionEntry entries[23] =
   {
-    { "server", 'S', 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:8080)", NULL },
+    { "server", 0, 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:8080)", NULL },
     { "save", 'w', 0, G_OPTION_ARG_NONE, &save, "save history to file (--save filename)", NULL },
     { "load", 'x', 0, G_OPTION_ARG_NONE, &load, "load state from history file (--load filename)", NULL },
     //FIXME make this working { "run", NULL, 0, G_OPTION_ARG_NONE, &run, "run history to file (--run filename)", NULL },
@@ -74,22 +101,22 @@ static GOptionEntry entries[22] =
     { "quiddities-descr", 'Q', 0, G_OPTION_ARG_NONE, &quidditiesdescr, "print instanciated quiddities, JSON-formated", NULL },
     { "quiddity-descr", 'q', 0, G_OPTION_ARG_NONE, &quidditydescr, "print quiddity documentation, JSON-formated (--class-doc class_name)", NULL },
     {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &remaining_args, "remaining arguments", NULL},
-};
+    {NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL}
+  };
 
 
-int main(int argc, char **argv)
+int main(int argc, char *argv [])
 { 
   //command line options
   GError *error = NULL;
-  GOptionContext *context;
-  context = g_option_context_new ("- switcher control via webservice");
+  GOptionContext *context = g_option_context_new (" switcher control via webservice");
   g_option_context_add_main_entries (context, entries, NULL);
   if (!g_option_context_parse (context, &argc, &argv, &error))
     {
       g_printerr ("option parsing failed: %s\n", error->message);
       exit (1);
     } 
-  
+
   if (server == NULL)
     server = g_strdup ("http://localhost:8080");
   

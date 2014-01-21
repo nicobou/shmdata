@@ -40,15 +40,11 @@ switcher_ctrl_SOURCES = \
 switcher_ctrl_CXXFLAGS = \
     $(GLIB_CFLAGS) \
     $(GSOAP_CFLAGS) \
-    $(GST_CFLAGS) \
     -I$(top_srcdir) \
     -I$(top_builddir)/plugins/gsoap/
 
 switcher_ctrl_LDFLAGS = \
     $(GLIB_LIBS) \
     $(GSOAP_LIBS) \
-    $(GST_LIBS) \
-    $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la \
     $(top_builddir)/plugins/gsoap/soapC.o \
     $(top_builddir)/plugins/gsoap/soapcontrolProxy.o
-
