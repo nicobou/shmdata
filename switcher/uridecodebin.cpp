@@ -572,12 +572,12 @@ namespace switcher
     //building the command
     context->clean_on_error_command ();
     context->on_error_command_ = new QuiddityCommand ();
-    context->on_error_command_->id_ = QuiddityCommand::invoke;
+    context->on_error_command_->id_ = QuiddityCommand::set_property;
     context->on_error_command_->time_ = 1000; // 1 second
     context->on_error_command_->add_arg (context->get_nick_name ());
-    context->on_error_command_->add_arg ("to_shmdata");
+    context->on_error_command_->add_arg ("started");
     std::vector<std::string> vect_arg;
-    vect_arg.push_back (val_str);
+    vect_arg.push_back ("false");
     context->on_error_command_->set_vector_arg (vect_arg);
 
     g_object_set_data (G_OBJECT (source), 

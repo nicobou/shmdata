@@ -331,8 +331,16 @@ res = gst_element_query (pipeline_, query);
 			       context->command->vector_arg_);
 	    }
 	    break;
+	  case QuiddityCommand::set_property:
+	    {
+	      manager->set_property (context->command->args_[0], 
+				     context->command->args_[1], 
+				     context->command->vector_arg_[0]);
+	    }
+	    break;
+
 	  default:
-	    g_debug ("on-error-command: %s not implemented (sorry)\n", 
+	    g_debug ("on-error-command: %s not implemented\n", 
 	 	     QuiddityCommand::get_string_from_id(context->command->id_));
 	  }
       }
