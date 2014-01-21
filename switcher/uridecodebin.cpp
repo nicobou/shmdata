@@ -38,27 +38,35 @@ namespace switcher
   {
     g_free (uri_);
     destroy_uridecodebin ();
-    //FIXME
-    // QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
-    // if ((bool) manager && !runtime_name_.empty ())
-    //   manager->remove_without_hook (runtime_name_);
+     //FIXME
+     QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
+     if ((bool) manager && !runtime_name_.empty ())
+       manager->remove_without_hook (runtime_name_);
   }
+
+  Uridecodebin::Uridecodebin () :
+    uridecodebin_ (NULL),
+    media_counters_ (),
+    main_pad_ (NULL),
+    rtpgstcaps_ (NULL),
+    discard_next_uncomplete_buffer_ (false),
+    runtime_name_ (),
+    on_error_command_ (NULL),
+    custom_props_ (new CustomPropertyHelper ()),
+    loop_prop_ (NULL),
+    loop_ (false),
+    playing_prop_ (NULL),
+    playing_ (false),
+    uri_spec_ (NULL),
+    uri_ (g_strdup ("")) 
+  {}
   
   bool
   Uridecodebin::init() 
   { 
     if (!GstUtils::make_element ("uridecodebin",&uridecodebin_))
       return false;
-    
     init_startable (this);
-    uri_ = g_strdup ("");
-    on_error_command_ = NULL;
-    destroy_uridecodebin ();
-    
-    
-    custom_props_.reset (new CustomPropertyHelper ());
-    //uri_
-    uri_ = g_strdup ("");
     uri_spec_ = 
       custom_props_->make_string_property ("uri", 
 					   "URI To Be Redirected Into Shmdata(s)",
@@ -72,7 +80,6 @@ namespace switcher
 				"uri",
 				"URI");
     //loop property
-    loop_ = false;
     loop_prop_ = 
       custom_props_->make_boolean_property ("loop", 
 					    "loop media",
@@ -175,7 +182,7 @@ namespace switcher
     
     media_counters_.clear ();
     main_pad_ = NULL;
-    discard_next_uncomplete_buffer_ = false;
+    //discard_next_uncomplete_buffer_ = false;
     rtpgstcaps_ = gst_caps_from_string ("application/x-rtp, media=(string)application");
     
     g_signal_connect (G_OBJECT (uridecodebin_), 

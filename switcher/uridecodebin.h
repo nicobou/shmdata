@@ -36,6 +36,7 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Uridecodebin);
+    Uridecodebin();
     ~Uridecodebin();
 
     bool start ();
