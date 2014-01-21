@@ -56,7 +56,7 @@ namespace switcher
     loop_prop_ (NULL),
     loop_ (false),
     playing_prop_ (NULL),
-    playing_ (false),
+    playing_ (true),
     uri_spec_ (NULL),
     uri_ (g_strdup ("")) 
   {}
@@ -93,44 +93,19 @@ namespace switcher
 				"loop",
 				"Looping");
 
-    playing_ = false;
     playing_prop_ = 
-      custom_props_->make_boolean_property ("playing", 
+      custom_props_->make_boolean_property ("play", 
 					    "playing state",
 					    (gboolean)FALSE,
-					    (GParamFlags) G_PARAM_READABLE,
-					    NULL,
+					    (GParamFlags) G_PARAM_READWRITE,
+					    Uridecodebin::set_playing,
 					    Uridecodebin::get_playing,
 					    this);
     install_property_by_pspec (custom_props_->get_gobject (), 
-				playing_prop_, 
-				"playing",
-				"Playing");
-        
-    // install_method ("Set URI",
-    // 		    "to_shmdata", 
-    // 		    "decode streams from an uri and write them to shmdatas", 
-    // 		    "success or fail",
-    // 		    Method::make_arg_description ("URI",
-    // 						  "uri", 
-    // 						  "the uri to decode",
-    // 						  NULL),
-    // 		    (Method::method_ptr) &to_shmdata_wrapped, 
-    // 		    G_TYPE_BOOLEAN,
-    // 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-    // 		    this);
-    
-    install_method ("Pause",
-		    "pause", 
-		    "pause the player", 
-		    "success or fail",
-		    Method::make_arg_description ("none",
-						  NULL),
-		    (Method::method_ptr) &pause_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    this);
-    
+			       playing_prop_, 
+			       "play",
+			       "Play");
+
     install_method ("Seek",
 		    "seek", 
 		    "seek the player", 
@@ -605,7 +580,11 @@ namespace switcher
 	runtime_name_ = manager->create_without_hook ("runtime");
 	Quiddity::ptr quidd = manager->get_quiddity (runtime_name_);
 	Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
-	if(runtime)
+	if (playing_)
+	  runtime->play();
+	else
+	  runtime->pause ();
+	if((bool)runtime)
 	  set_runtime(runtime);
 	else
 	  g_warning ("Uridecodebin::to_shmdata: unable to use a custom runtime");
@@ -625,40 +604,42 @@ namespace switcher
     return true;
   }
 
-  gboolean
-  Uridecodebin::play_wrapped (gpointer /*unused*/, 
-			      gpointer user_data)
+  bool
+  Uridecodebin::play (bool playing)
   {
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
+    if (playing == playing_)
+      return true;
+    QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
     if (! (bool) manager)
-      return FALSE;
-    Quiddity::ptr quidd = manager->get_quiddity (context->runtime_name_);
+      return false;
+    Quiddity::ptr quidd = manager->get_quiddity (runtime_name_);
     Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
     if(!runtime)
-      return FALSE;
-    runtime->play ();
-    context->custom_props_->notify_property_changed (context->playing_prop_);
-    return TRUE;
+      {
+	playing_ = playing;
+	custom_props_->notify_property_changed (playing_prop_);
+	return false;
+      }
+    if (playing)
+      if (runtime->play ())
+	playing_ = true;
+      else
+	{
+	  playing_ = false;
+	  return false;
+	}
+    else
+      if (runtime->pause ())
+	playing_ = false;
+      else
+	{
+	  playing_ = true;
+	  return false;
+	}
+    custom_props_->notify_property_changed (playing_prop_);
+    return true;
   }
   
-  gboolean
-  Uridecodebin::pause_wrapped (gpointer /*unused*/, 
-			       gpointer user_data)
-  {
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
-    if (! (bool) manager)
-      return FALSE;
-    Quiddity::ptr quidd = manager->get_quiddity (context->runtime_name_);
-    Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
-    if(!runtime)
-      return FALSE;
-    runtime->pause ();
-    context->custom_props_->notify_property_changed (context->playing_prop_);
-    return TRUE;
-  }
-
   gboolean
   Uridecodebin::seek_wrapped (gdouble position, gpointer user_data)
   {
@@ -703,6 +684,16 @@ namespace switcher
     return context->loop_;
   }
 
+  void 
+  Uridecodebin::set_playing (gboolean playing, void *user_data)
+  {
+    Uridecodebin *context = static_cast<Uridecodebin *> (user_data);
+    if (playing)
+      context->play (true);
+    else
+      context->play (false);
+  }
+
   gboolean 
   Uridecodebin::get_playing (void *user_data)
   {
@@ -731,6 +722,7 @@ namespace switcher
   {
     if (! to_shmdata ())
       return false;
+    
     return true;
   }
   

@@ -25,6 +25,11 @@
 namespace switcher
 {
 
+  GstElementCleaner::GstElementCleaner () :
+    elements_to_remove_ (),
+    labeled_elements_ ()
+  {}
+
   GstElementCleaner::~GstElementCleaner ()
   {
     g_debug ("~GstElementCleaner");

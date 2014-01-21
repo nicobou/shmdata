@@ -38,6 +38,8 @@ namespace switcher
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Uridecodebin);
     Uridecodebin();
     ~Uridecodebin();
+    Uridecodebin (const Uridecodebin &) = delete;
+    Uridecodebin &operator= (const Uridecodebin &) = delete;
 
     bool start ();
     bool stop ();
@@ -73,8 +75,7 @@ namespace switcher
    static void set_uri (const gchar *value, void *user_data);
    static gchar *get_uri (void *user_data);
    bool to_shmdata ();
-
-
+   bool play (bool playing);
    static void uridecodebin_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
    static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);
    static void no_more_pads_cb (GstElement* object, gpointer user_data);
@@ -88,8 +89,6 @@ namespace switcher
    static gboolean gstrtpdepay_event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data);
    void pad_to_shmdata_writer (GstElement *bin, GstPad *pad);
 
-   static gboolean play_wrapped (gpointer unused, gpointer user_data);
-   static gboolean pause_wrapped (gpointer unused, gpointer user_data);
    static gboolean seek_wrapped (gdouble position, gpointer user_data);
    static gboolean speed_wrapped (gdouble speed, gpointer user_data);
    
