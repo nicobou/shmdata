@@ -444,7 +444,6 @@ namespace switcher
      	       connector_name.c_str ());
   }
 
-
   gboolean 
   Uridecodebin::gstrtpdepay_buffer_probe_cb (GstPad */*pad*/, 
 					     GstMiniObject */*mini_obj*/, 

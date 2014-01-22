@@ -39,29 +39,24 @@ namespace switcher
 				       "runtime",
 				       "Nicolas Bouillot");
 
+  Runtime::Runtime () :
+    pipeline_ (gst_pipeline_new (NULL)),
+    speed_ (1.0),
+    position_tracking_source_ (NULL),
+    source_funcs_ (),
+    source_ (NULL)
+  {}
+
   bool
   Runtime::init ()
   {
-    speed_ = 1.0;
-    pipeline_ = gst_pipeline_new (NULL);
-    set_name (gst_element_get_name (pipeline_));
-    
-     // source_funcs_ = {
-     //   source_prepare,
-     //   source_check,
-     //   source_dispatch,
-     //   source_finalize
-     // };
     source_funcs_.prepare = source_prepare;
     source_funcs_.check = source_check;
     source_funcs_.dispatch = source_dispatch;
     source_funcs_.finalize = source_finalize;
-
-     source_ = g_source_new (&source_funcs_, sizeof (GstBusSource));
-
+    source_ = g_source_new (&source_funcs_, sizeof (GstBusSource));
      ((GstBusSource*)source_)->bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_));
      g_source_set_callback(source_, (GSourceFunc)bus_called, NULL, NULL);
-
      GMainContext *g_main_context = get_g_main_context ();
      if (g_main_context == NULL)
        return FALSE;
@@ -70,12 +65,6 @@ namespace switcher
      g_source_unref (source_);
      ((GstBusSource*)source_)->inited = FALSE;
 
-     // GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_)); 
-     // gst_bus_add_watch (bus, bus_called, NULL);
-    
-     // gst_bus_set_sync_handler (bus, bus_sync_handler, this);  
-     // gst_object_unref (bus); 
-    
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
     GstUtils::wait_state_changed (pipeline_);
 
@@ -132,6 +121,9 @@ namespace switcher
   
   Runtime::~Runtime ()
   {
+    if (position_tracking_source_ != NULL)
+       g_source_destroy (position_tracking_source_);
+
      gst_element_set_state (pipeline_, GST_STATE_NULL);
      gst_object_unref (GST_OBJECT (pipeline_));
      if (!g_source_is_destroyed (source_))
@@ -155,6 +147,12 @@ namespace switcher
   {
     g_debug ("Runtime::play");
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
+    guint position_tracking_id = GstUtils::g_timeout_add_to_context (200, 
+								     (GSourceFunc) cb_print_position, 
+								     this,
+								     get_g_main_context ());
+    position_tracking_source_ = g_main_context_find_source_by_id (get_g_main_context (),
+								  position_tracking_id);
     return true;
   }
   
@@ -234,8 +232,6 @@ namespace switcher
     return true;
   }
 
-
-
   gboolean
   Runtime::speed_wrapped (gdouble speed, gpointer user_data)
   {
@@ -258,24 +254,6 @@ namespace switcher
     
     GstQuery *query;
     gboolean res;
-
-    // //query segment
-    // query = gst_query_new_segment (GST_FORMAT_TIME);
-    // res = gst_element_query (pipeline_, query);
-    // gdouble rate = -2.0;
-    // gint64 start_value = -2.0;
-    // gint64 stop_value = -2.0;
-    // if (res) {
-    //   gst_query_parse_segment (query, &rate, NULL, &start_value, &stop_value);
-    //   g_debug ("rate = %f start = %" GST_TIME_FORMAT" stop = %" GST_TIME_FORMAT"\n", 
-    // 	       rate,
-    // 	       GST_TIME_ARGS (start_value),
-    // 	       GST_TIME_ARGS (stop_value));
-    // }
-    // else {
-    //   g_warning ("duration query failed...");
-    // }
-    // gst_query_unref (query);
 
     //query position
     query = gst_query_new_position (GST_FORMAT_TIME);
@@ -311,6 +289,23 @@ res = gst_element_query (pipeline_, query);
     return true;
   }
 
+  gboolean
+  Runtime::cb_print_position (gpointer user_data)
+  {
+    // Runtime *context = static_cast<Runtime *>(user_data);
+    // GstFormat fmt = GST_FORMAT_TIME;
+    // gint64 pos, len;
+    
+    // if (gst_element_query_position (context->pipeline_, &fmt, &pos)
+    // 	&& gst_element_query_duration (context->pipeline_, &fmt, &len)) {
+    //   g_print ("Time: %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r",
+    // 	       GST_TIME_ARGS (pos), GST_TIME_ARGS (len));
+    // }
+    
+    /* call me again */
+    return TRUE;
+  }
+  
   gboolean
   Runtime::run_command (gpointer user_data)
   {
@@ -357,6 +352,39 @@ res = gst_element_query (pipeline_, query);
     return pipeline_;
   }
 
+  void
+  Runtime::print_one_tag (const GstTagList * list, const gchar * tag, gpointer user_data)
+  {
+    // int i, num;
+    
+    // num = gst_tag_list_get_tag_size (list, tag);
+    // for (i = 0; i < num; ++i) {
+    //   const GValue *val;
+      
+    //   /* Note: when looking for specific tags, use the g_tag_list_get_xyz() API,
+    //    * we only use the GValue approach here because it is more generic */
+    //   val = gst_tag_list_get_value_index (list, tag, i);
+    //   if (G_VALUE_HOLDS_STRING (val)) {
+    // 	g_print ("\t%20s : %s\n", tag, g_value_get_string (val));
+    //   } else if (G_VALUE_HOLDS_UINT (val)) {
+    // 	g_print ("\t%20s : %u\n", tag, g_value_get_uint (val));
+    //   } else if (G_VALUE_HOLDS_DOUBLE (val)) {
+    // 	g_print ("\t%20s : %g\n", tag, g_value_get_double (val));
+    //   } else if (G_VALUE_HOLDS_BOOLEAN (val)) {
+    // 	g_print ("\t%20s : %s\n", tag,
+    // 		 (g_value_get_boolean (val)) ? "true" : "false");
+    //   } else if (GST_VALUE_HOLDS_BUFFER (val)) {
+    // 	g_print ("\t%20s : buffer of size %u\n", tag,
+    // 		 GST_BUFFER_SIZE (gst_value_get_buffer (val)));
+    //   } else if (GST_VALUE_HOLDS_DATE (val)) {
+    // 	g_print ("\t%20s : date (year=%u,...)\n", tag,
+    // 		 g_date_get_year (gst_value_get_date (val)));
+    //   } else {
+    // 	g_print ("\t%20s : tag of type '%s'\n", tag, G_VALUE_TYPE_NAME (val));
+    //   }
+    // }
+  }
+  
   GstBusSyncReply 
   Runtime::bus_sync_handler (GstBus */*bus*/,
 			     GstMessage *msg, 
@@ -420,7 +448,16 @@ res = gst_element_query (pipeline_, query);
 	if (window_handle != NULL)
 	  gst_x_overlay_set_window_handle (GST_X_OVERLAY (msg->src), *window_handle);
       }
-    
+
+    if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_TAG)
+      {
+	GstTagList *tags = NULL;
+	gst_message_parse_tag (msg, &tags);
+	g_print ("Got tags from element %s:\n", GST_OBJECT_NAME (msg->src));
+	gst_tag_list_foreach (tags, print_one_tag, NULL);
+	g_print ("\n");
+	gst_tag_list_free (tags);
+      }
     return GST_BUS_PASS; 
   }
 

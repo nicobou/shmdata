@@ -94,7 +94,7 @@ namespace switcher
 								   get_g_main_context ());
     
     update_byterate_source_ = g_main_context_find_source_by_id (get_g_main_context (),
-								update_byterate_id);;
+								update_byterate_id);
     
     caps_spec_ = 
       props_->make_string_property ("caps", 

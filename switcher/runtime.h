@@ -38,7 +38,10 @@ namespace switcher
     {
     public:
       SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Runtime);
+      Runtime ();
       ~Runtime ();
+      Runtime (const Runtime &) = delete;
+      Runtime &operator= (const Runtime &) = delete;
       bool play ();
       bool pause ();
       bool seek (gdouble position);
@@ -49,6 +52,7 @@ namespace switcher
       static gboolean pause_wrapped (gpointer unused, gpointer user_data);
       static gboolean seek_wrapped (gdouble position, gpointer user_data);
       static gboolean speed_wrapped (gdouble speed, gpointer user_data);
+
     private:
      typedef struct {
        Runtime *self;
@@ -56,7 +60,8 @@ namespace switcher
      } QuidCommandArg;
 
       GstElement *pipeline_;
-      guint64 speed_ ;
+      guint64 speed_;
+      GSource *position_tracking_source_;
       static gboolean bus_called (GstBus *bus, GstMessage *msg, gpointer data); 
       static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
       static gboolean run_command (gpointer user_data);
@@ -77,9 +82,11 @@ namespace switcher
       static void source_finalize (GSource * source);
       GSourceFuncs source_funcs_;
       GSource *source_;
+      static void print_one_tag (const GstTagList *list, 
+				 const gchar *tag, 
+				 gpointer user_data);
+      static gboolean cb_print_position (gpointer user_data);
     };
-
-  
 } // end of namespace
 
 #endif // ifndef
