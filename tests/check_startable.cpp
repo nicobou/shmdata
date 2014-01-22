@@ -25,8 +25,7 @@
 #include <string>
 #include <iostream>
 int
-main (int /*argc*/,
-      char */*argv*/[])
+main ()
 {
   bool success = true;
   switcher::QuiddityManager::ptr manager = 

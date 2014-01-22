@@ -51,6 +51,7 @@ namespace switcher
   {
     
     friend class StartableQuiddity;
+    friend class Runtime;
 
   public:
     typedef std::shared_ptr<Quiddity> ptr;

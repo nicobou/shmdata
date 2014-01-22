@@ -47,9 +47,6 @@ namespace switcher
     static gboolean get_loop (void *user_data);
     static void set_loop (gboolean mute, void *user_data);
 
-    static gboolean get_playing (void *user_data);
-    static void set_playing (gboolean playing, void *user_data);
-
   private: 
    GstElement *uridecodebin_;
    std::unordered_map<std::string, int> media_counters_;
@@ -61,7 +58,6 @@ namespace switcher
    void destroy_uridecodebin ();
    QuiddityCommand *on_error_command_; //for the runtime error handler
    void clean_on_error_command ();
-
    
    //custom properties 
    CustomPropertyHelper::ptr custom_props_;
@@ -75,7 +71,6 @@ namespace switcher
    static void set_uri (const gchar *value, void *user_data);
    static gchar *get_uri (void *user_data);
    bool to_shmdata ();
-   bool play (bool playing);
    static void uridecodebin_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
    static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);
    static void no_more_pads_cb (GstElement* object, gpointer user_data);
@@ -88,10 +83,6 @@ namespace switcher
    static gboolean gstrtpdepay_buffer_probe_cb (GstPad * pad, GstMiniObject * mini_obj, gpointer user_data);
    static gboolean gstrtpdepay_event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data);
    void pad_to_shmdata_writer (GstElement *bin, GstPad *pad);
-
-   static gboolean seek_wrapped (gdouble position, gpointer user_data);
-   static gboolean speed_wrapped (gdouble speed, gpointer user_data);
-   
    /* static GValueArray *autoplug_sort_cb (GstElement *bin, */
    /* 					 GstPad *pad, */
    /* 					 GstCaps *caps, */

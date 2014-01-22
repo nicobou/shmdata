@@ -44,47 +44,37 @@ main ()
     return 1;
 #endif
 
-    //creating a "myplugin" quiddity
-    if (manager->create("gtkvideosink", "win").compare ("win") != 0)
-      {
-	//cannot create gtk window, stoping the test
-	return 0;
-      }
+     //creating a "myplugin" quiddity
+     if (manager->create("gtkvideosink", "win").compare ("win") != 0)
+       {
+     	//cannot create gtk window, stoping the test
+     	return 0;
+       }
     
-    //creating a gst pipeline
-    if (manager->create("runtime", "testruntime").compare ("testruntime") != 0)
-      return 1;
+     //creating a video source quiddity
+     if (manager->create("videotestsrc", "vid").compare ("vid") != 0)
+       return 1;
 	 
-    if (!manager->invoke_va ("win", "set_runtime", NULL, "testruntime", NULL))
-      return 1;
+     if (!manager->set_property ("vid", "started", "true"))
+       return 1;
+     
+     //usleep (1000000);
+     
+     //connecting 
+     if (!manager->invoke_va ("win", "connect", NULL, "/tmp/switcher_gtktest_vid_video", NULL))
+       return 1;
 
-    //creating a video source quiddity
-    if (manager->create("videotestsrc", "vid").compare ("vid") != 0)
-      return 1;
-	 
-    if (!manager->invoke_va ("vid", "set_runtime", NULL, "testruntime", NULL))
-      return 1;
-	 
-    if (!manager->set_property ("vid", "started", "true"))
-      return 1;
-	 
-    //usleep (1000000);
+     //usleep (10000000);
 
-    //connecting 
-    if (!manager->invoke_va ("win", "connect", NULL, "/tmp/switcher_gtktest_vid_video", NULL))
-      return 1;
+     //removing quiddities
+     if (!manager->remove ("win"))
+       return 1;
 
-    //usleep (10000000);
+     if (!manager->remove ("vid"))
+       return 1;
 
-    //removing quiddities
-    if (!manager->remove ("win"))
-      return 1;
-
-    if (!manager->remove ("vid"))
-      return 1;
-
-    if (!switcher::QuiddityBasicTest::test_full (manager, "gtkvideosink"))
-      return 1;
+     if (!switcher::QuiddityBasicTest::test_full (manager, "gtkvideosink"))
+       return 1;
 
   }//end of scope is releasing the manager
 

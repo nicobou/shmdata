@@ -83,7 +83,7 @@ namespace switcher
 	g_debug ("BaseSink::connect set on_first_data_hook ");
 	reader_->set_on_first_data_hook (connection_hook_, hook_user_data_);
       }
-    if (runtime_) // starting the reader if runtime is set
+    //if (runtime_) // starting the reader if runtime is set
       reader_->start ();
     register_shmdata_reader (reader_);
 

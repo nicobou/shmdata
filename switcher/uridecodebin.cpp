@@ -23,6 +23,7 @@
 #include "gst-utils.h"
 #include <glib/gprintf.h>
 #include <memory>
+#include "quiddity-command.h"
 
 namespace switcher
 {
@@ -38,10 +39,6 @@ namespace switcher
   {
     g_free (uri_);
     destroy_uridecodebin ();
-     //FIXME
-     QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
-     if ((bool) manager && !runtime_name_.empty ())
-       manager->remove_without_hook (runtime_name_);
   }
 
   Uridecodebin::Uridecodebin () :
@@ -50,7 +47,6 @@ namespace switcher
     main_pad_ (NULL),
     rtpgstcaps_ (NULL),
     discard_next_uncomplete_buffer_ (false),
-    runtime_name_ (),
     on_error_command_ (NULL),
     custom_props_ (new CustomPropertyHelper ()),
     loop_prop_ (NULL),
@@ -93,45 +89,6 @@ namespace switcher
 				"loop",
 				"Looping");
 
-    playing_prop_ = 
-      custom_props_->make_boolean_property ("play", 
-					    "playing state",
-					    (gboolean)FALSE,
-					    (GParamFlags) G_PARAM_READWRITE,
-					    Uridecodebin::set_playing,
-					    Uridecodebin::get_playing,
-					    this);
-    install_property_by_pspec (custom_props_->get_gobject (), 
-			       playing_prop_, 
-			       "play",
-			       "Play");
-
-    install_method ("Seek",
-		    "seek", 
-		    "seek the player", 
-		    "success or fail",
-		    Method::make_arg_description ("Position",
-						  "position",
-						  "position in milliseconds",
-						  NULL),
-		    (Method::method_ptr) &seek_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-		    this);
-    
-    install_method ("Speed",
-		    "speed", 
-		    "Player speed", 
-		    "success or fail",
-		    Method::make_arg_description ("Speed",
-						  "speed",
-						  "1.0 is normal speed, 0.5 is half the speed and 2.0 is double speed",
-						  NULL),
-		    (Method::method_ptr) &speed_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-		    this);
-    
     //signaling end of stream
     //FIXME do that
     // make_custom_signal ("on-end-of-stream", 
@@ -302,7 +259,7 @@ namespace switcher
     GstQuery *query;
     gboolean res;
     query = gst_query_new_segment (GST_FORMAT_TIME);
-    res = gst_element_query (context->runtime_->get_pipeline (), query);
+    res = gst_element_query (context->get_pipeline (), query);
     gdouble rate = 1.0;
     gint64 start_value = -2.0;
     gint64 stop_value = -2.0;
@@ -572,24 +529,6 @@ namespace switcher
   Uridecodebin::to_shmdata ()
   {
     destroy_uridecodebin ();
-    QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
-    if ((bool) manager)
-      {
-	manager->remove_without_hook (runtime_name_);
-	runtime_name_ = manager->create_without_hook ("runtime");
-	Quiddity::ptr quidd = manager->get_quiddity (runtime_name_);
-	Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
-	if (playing_)
-	  runtime->play();
-	else
-	  runtime->pause ();
-	if((bool)runtime)
-	  set_runtime(runtime);
-	else
-	  g_warning ("Uridecodebin::to_shmdata: unable to use a custom runtime");
-      }
-    else
-      return false;
     
     reset_bin ();
     init_uridecodebin ();
@@ -601,72 +540,6 @@ namespace switcher
     GstUtils::wait_state_changed (bin_);
     GstUtils::sync_state_with_parent (uridecodebin_);
     return true;
-  }
-
-  bool
-  Uridecodebin::play (bool playing)
-  {
-    if (playing == playing_)
-      return true;
-    QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
-    if (! (bool) manager)
-      return false;
-    Quiddity::ptr quidd = manager->get_quiddity (runtime_name_);
-    Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
-    if(!runtime)
-      {
-	playing_ = playing;
-	custom_props_->notify_property_changed (playing_prop_);
-	return false;
-      }
-    if (playing)
-      if (runtime->play ())
-	playing_ = true;
-      else
-	{
-	  playing_ = false;
-	  return false;
-	}
-    else
-      if (runtime->pause ())
-	playing_ = false;
-      else
-	{
-	  playing_ = true;
-	  return false;
-	}
-    custom_props_->notify_property_changed (playing_prop_);
-    return true;
-  }
-  
-  gboolean
-  Uridecodebin::seek_wrapped (gdouble position, gpointer user_data)
-  {
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
-    if (! (bool) manager)
-      return FALSE;
-    Quiddity::ptr quidd = manager->get_quiddity (context->runtime_name_);
-    Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
-    if(!runtime)
-      return FALSE;
-    runtime->seek (position);
-    return TRUE;
-  }
-
-  gboolean
-  Uridecodebin::speed_wrapped (gdouble speed, gpointer user_data)
-  {
-    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
-    if (! (bool) manager)
-      return FALSE;
-    Quiddity::ptr quidd = manager->get_quiddity (context->runtime_name_);
-    Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
-    if(!runtime)
-      return FALSE;
-    runtime->speed (speed);
-    return TRUE;
   }
 
   void 
@@ -681,23 +554,6 @@ namespace switcher
   {
     Uridecodebin *context = static_cast<Uridecodebin *> (user_data);
     return context->loop_;
-  }
-
-  void 
-  Uridecodebin::set_playing (gboolean playing, void *user_data)
-  {
-    Uridecodebin *context = static_cast<Uridecodebin *> (user_data);
-    if (playing)
-      context->play (true);
-    else
-      context->play (false);
-  }
-
-  gboolean 
-  Uridecodebin::get_playing (void *user_data)
-  {
-    Uridecodebin *context = static_cast<Uridecodebin *> (user_data);
-    return context->playing_;
   }
 
   void 

@@ -38,12 +38,14 @@ namespace switcher
     virtual ~StartableQuiddity ();
     StartableQuiddity (const StartableQuiddity&) = delete;
     StartableQuiddity & operator= (const StartableQuiddity&) = delete;
-    virtual bool start () = 0;
-    virtual bool stop () = 0;
+
+  protected:
     void init_startable (void *quiddity);//FIXME should called quiddity-manager-impl 
     //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
 
   private:
+    virtual bool start () = 0;
+    virtual bool stop () = 0;
     static gboolean get_started (void *user_data);
     static void set_started (gboolean started, void *user_data);
 

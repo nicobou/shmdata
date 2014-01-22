@@ -88,18 +88,13 @@ main ()
 			NULL);
     
     //testing uncompressed data transmission
-    manager->create ("runtime", "av_runtime");
     manager->create ("audiotestsrc","a");
-    manager->invoke_va ("a", "set_runtime", NULL, "av_runtime", NULL);
     manager->set_property ("a", "started", "true");
    
     manager->create ("videotestsrc","v");
-    manager->invoke_va ("v", "set_runtime", NULL, "av_runtime", NULL);
     manager->set_property ("v", "started", "true");
 
-     manager->create ("runtime", "rtp_runtime");
      manager->create ("rtpsession","rtp");
-     manager->invoke_va ("rtp", "set_runtime", NULL, "rtp_runtime", NULL);
     
      manager->invoke_va ("rtp", 
        			"add_data_stream",
@@ -142,46 +137,24 @@ main ()
      
      usleep (1000000);
 
-     manager->create ("runtime", "receiver_runtime");
      manager->create ("httpsdpdec", "uri");
-     manager->invoke_va ("uri", 
-      			 "set_runtime", 
-     			 NULL, 
-     			 "receiver_runtime", 
-     			 NULL);
      manager->invoke_va ("uri", 
      			 "to_shmdata",
      			 NULL,
      			 "http://127.0.0.1:38084/sdp?rtpsession=rtp&destination=local",
      			 NULL);
-     
      manager->make_property_subscriber ("sub", mon_property_cb, NULL);
-     
-     
-     manager->create ("runtime", "probe_runtime");
      manager->create ("fakesink","audioprobe");
-     
      manager->subscribe_property ("sub","audioprobe","caps");
      manager->subscribe_property ("sub","audioprobe","last-message");
-     manager->invoke_va ("audioprobe", 
-     			 "set_runtime", 
-     			 NULL,
-     			 "probe_runtime", 
-     			 NULL);
      manager->invoke_va ("audioprobe",
      			 "connect",
      			 NULL,
      			 "/tmp/switcher_rtptest_uri_audio-0",
      			 NULL);
-     
      manager->create ("fakesink","videoprobe");
      manager->subscribe_property ("sub","videoprobe","last-message");
      manager->subscribe_property ("sub","videoprobe","caps");
-     manager->invoke_va ("videoprobe", 
-     			"set_runtime", 
-     			NULL, 
-     			"probe_runtime", 
-     			NULL);
      manager->invoke_va ("videoprobe",
        			"connect",
      			NULL,
@@ -207,6 +180,3 @@ main ()
   else
     return 1;
 }
-
-
-

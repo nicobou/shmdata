@@ -37,9 +37,9 @@ namespace switcher
   HTTPSDPDec::~HTTPSDPDec ()
   {
     destroy_httpsdpdec ();
-    QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
-     if ((bool) manager && g_strcmp0 ("",runtime_name_.c_str ()) != 0)
-      	manager->remove_without_hook (runtime_name_);
+    // QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
+    //  if ((bool) manager && g_strcmp0 ("",runtime_name_.c_str ()) != 0)
+    //   	manager->remove_without_hook (runtime_name_);
   }
   
   bool
@@ -197,7 +197,7 @@ namespace switcher
     GstQuery *query;
     gboolean res;
     query = gst_query_new_segment (GST_FORMAT_TIME);
-    res = gst_element_query (context->runtime_->get_pipeline (), query);
+    res = gst_element_query (context->get_pipeline (), query);
     gdouble rate = -2.0;
     gint64 start_value = -2.0;
     gint64 stop_value = -2.0;
@@ -465,21 +465,21 @@ namespace switcher
   HTTPSDPDec::to_shmdata (std::string uri)
   {
     destroy_httpsdpdec ();
-    QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
-    if ((bool) manager)
-      {
-	if (g_strcmp0 ("",runtime_name_.c_str ()) != 0)
-	  manager->remove_without_hook (runtime_name_);
-	runtime_name_ = manager->create_without_hook ("runtime");
-	Quiddity::ptr quidd = manager->get_quiddity (runtime_name_);
-	Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
-	if(runtime)
-	  set_runtime(runtime);
-	else
-	  g_warning ("HTTPSDPDec::to_shmdata: unable to use a custom runtime");
-      }
-    else
-      return false;
+    // QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
+    // if ((bool) manager)
+    //   {
+    // 	if (g_strcmp0 ("",runtime_name_.c_str ()) != 0)
+    // 	  manager->remove_without_hook (runtime_name_);
+    // 	runtime_name_ = manager->create_without_hook ("runtime");
+    // 	Quiddity::ptr quidd = manager->get_quiddity (runtime_name_);
+    // 	Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
+    // 	if(runtime)
+    // 	  set_runtime(runtime);
+    // 	else
+    // 	  g_warning ("HTTPSDPDec::to_shmdata: unable to use a custom runtime");
+    //   }
+    // else
+    //   return false;
 
     reset_bin ();
     init_httpsdpdec ();

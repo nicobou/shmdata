@@ -27,52 +27,59 @@
 #define __SWITCHER_RUNTIME_H__
 
 #include <gst/gst.h>
-#include "quiddity.h"
-#include "quiddity-command.h"
+/* #include "quiddity.h" */
+/* #include "quiddity-command.h" */
 #include <memory>
 
 namespace switcher
 {
-  
-  class Runtime : public Quiddity
+  class Quiddity;
+  class QuiddityCommand;
+
+  class Runtime
     {
     public:
-      SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Runtime);
       Runtime ();
-      ~Runtime ();
+      virtual ~Runtime ();
       Runtime (const Runtime &) = delete;
       Runtime &operator= (const Runtime &) = delete;
-      bool play ();
-      bool pause ();
-      bool seek (gdouble position);
-      bool speed (gdouble speed);
 
+    protected:
+      void init_runtime (Quiddity &quiddity);//FIXME should called quiddity-manager-impl 
+      //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
       GstElement *get_pipeline ();
-      static gboolean play_wrapped (gpointer unused, gpointer user_data);
-      static gboolean pause_wrapped (gpointer unused, gpointer user_data);
-      static gboolean seek_wrapped (gdouble position, gpointer user_data);
-      static gboolean speed_wrapped (gdouble speed, gpointer user_data);
 
     private:
      typedef struct {
        Runtime *self;
        QuiddityCommand *command;
      } QuidCommandArg;
-
-      GstElement *pipeline_;
-      guint64 speed_;
-      GSource *position_tracking_source_;
-      static gboolean bus_called (GstBus *bus, GstMessage *msg, gpointer data); 
-      static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
-      static gboolean run_command (gpointer user_data);
       //GstBus is a specific context:
       typedef struct
       {
 	GSource source;
 	GstBus *bus;
 	gboolean inited;
-
       } GstBusSource;
+
+      GstElement *pipeline_;
+      gdouble speed_;//was gunint64 ???
+      GSource *position_tracking_source_;
+      GSourceFuncs source_funcs_;
+      GSource *source_;
+      Quiddity *quid_;
+
+      bool play ();
+      bool pause ();
+      bool seek (gdouble position);
+      bool speed (gdouble speed);
+      static gboolean play_wrapped (gpointer unused, gpointer user_data);
+      static gboolean pause_wrapped (gpointer unused, gpointer user_data);
+      static gboolean seek_wrapped (gdouble position, gpointer user_data);
+      static gboolean speed_wrapped (gdouble speed, gpointer user_data);
+      static gboolean bus_called (GstBus *bus, GstMessage *msg, gpointer data); 
+      static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
+      static gboolean run_command (gpointer user_data);
       static gboolean source_prepare(GSource *source, 
 				     gint *timeout);
       static gboolean source_check(GSource *source);
@@ -80,8 +87,6 @@ namespace switcher
 				      GSourceFunc callback,
 				      gpointer user_data);
       static void source_finalize (GSource * source);
-      GSourceFuncs source_funcs_;
-      GSource *source_;
       static void print_one_tag (const GstTagList *list, 
 				 const gchar *tag, 
 				 gpointer user_data);

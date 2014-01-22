@@ -27,29 +27,6 @@ static bool success;
 static const char *user_string = "hello world";
 static switcher::QuiddityManager::ptr manager;
 
-gpointer
-set_runtime_invoker (gpointer name)
-{
-  switcher::QuiddityManager::ptr mymanager = manager;
-  if ((bool)mymanager && mymanager->has_method ((char *)name, "set_runtime"))
-    {
-      mymanager->invoke_va ((char *)name, "set_runtime", NULL, "single_runtime", NULL);
-    }
-  g_free (name);
-  return NULL;
-}
-
-void 
-quiddity_created_removed_cb (std::string /*subscriber_name*/, 
-			     std::string /*quiddity_name*/, 
-			     std::string /*signal_name*/, 
-			     std::vector<std::string> params, 
-			     void */*user_data*/)
-{
-  g_thread_new ("Runtime Invoker",
-		GThreadFunc(set_runtime_invoker), 
-		g_strdup (params[0].c_str ()));
-}
 
 void 
 mon_property_cb(std::string /*subscriber_name*/, 
@@ -91,23 +68,16 @@ mon_property_cb(std::string /*subscriber_name*/,
 
 
 int
-main (int /*argc*/,
-      char */*argv*/[])
+main ()
 {
   success = false;
   
   {
     manager = switcher::QuiddityManager::make_manager("test_manager");  
-    manager->create ("create_remove_spy", "create_remove_spy");
-    manager->make_signal_subscriber ("create_remove_subscriber", quiddity_created_removed_cb, NULL);
-    manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-created");
 
-    manager->create ("runtime", "single_runtime");
-    
     manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);
     manager->create ("videotestsrc","vid");
- 
-    manager->subscribe_property ("sub","vid","pattern");
+     manager->subscribe_property ("sub","vid","pattern");
     
     std::vector<std::string> subscribers = manager->list_property_subscribers ();
     if (subscribers.size () != 1 

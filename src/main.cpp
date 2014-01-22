@@ -103,35 +103,6 @@ logger_cb (std::string /*subscriber_name*/,
   g_print ("%s\n", value.c_str());
 }
 
-gpointer
-set_runtime_invoker (gpointer name)
-{
-  switcher::QuiddityManager::ptr mymanager = manager;
-  if ((bool)mymanager && mymanager->has_method ((char *)name, "set_runtime"))
-    {
-      mymanager->invoke_va ((char *)name, 
-			    "set_runtime", 
-			    NULL, 
-			    "single_runtime", NULL);
-    }
-  g_free (name);
-  return NULL;
-}
-
-void 
-quiddity_created_removed_cb (std::string /*subscriber_name*/, 
-			     std::string /*quiddity_name*/, 
-			     std::string signal_name, 
-			     std::vector<std::string> params, 
-			     void */*user_data*/)
-{
-  g_message ("%s: %s", signal_name.c_str (), params[0].c_str ());
-  if (g_strcmp0 (signal_name.c_str (), "on-quiddity-created") == 0)
-    g_thread_new ("set_runtime_invoker",
-		  GThreadFunc (set_runtime_invoker), 
-		  g_strdup (params[0].c_str ()));
-}
-
 
 int
 main (int argc,
@@ -254,16 +225,6 @@ main (int argc,
       g_print ("%s\n", manager->get_signals_description_by_class (listsignalsbyclass).c_str ());
       return 0;
     }
-
-  // Create a runtime (named "single_runtime")
-  //std::string runtime = 
-  manager->create ("runtime","single_runtime");
-  
-  //make on-quiddity-created and on-quiddity-removed signals
-  manager->create ("create_remove_spy", "create_remove_spy");
-  manager->make_signal_subscriber ("create_remove_subscriber", quiddity_created_removed_cb, NULL);
-  manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-created");
-  manager->subscribe_signal ("create_remove_subscriber","create_remove_spy","on-quiddity-removed");
   
   std::string soap_name = manager->create ("SOAPcontrolServer", "soapserver");
   std::vector<std::string> port_arg;

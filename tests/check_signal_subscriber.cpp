@@ -38,15 +38,13 @@ quiddity_created_removed_cb (std::string /*subscriber_name*/,
 }
 
 int
-main (int /*argc*/,
-      char */*argv*/[])
+main ()
 {
   success = false;
   
   {
     switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("testing_signals");  
 
-    manager->create ("runtime", "signal_subscriber_runtime");
     //make on-quiddity-created and on-quiddity-removed signals
     manager->create ("create_remove_spy", "create_remove_spy");
     manager->make_signal_subscriber ("signal_subscriber", quiddity_created_removed_cb, manager.get ());

@@ -24,6 +24,8 @@
  */
 
 #include "runtime.h"
+#include "quiddity.h" 
+#include "quiddity-command.h" 
 #include "gst-utils.h"
 #include <shmdata/base-reader.h>
 #include "quiddity-command.h"
@@ -31,92 +33,86 @@
 
 namespace switcher
 {
-  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Runtime,
-				       "Gstreamer Pipeline",
-				       "runtime", 
-				       "Complete pipeline container and scheduler",
-				       "LGPL",
-				       "runtime",
-				       "Nicolas Bouillot");
 
   Runtime::Runtime () :
     pipeline_ (gst_pipeline_new (NULL)),
     speed_ (1.0),
     position_tracking_source_ (NULL),
     source_funcs_ (),
-    source_ (NULL)
-  {}
-
-  bool
-  Runtime::init ()
+    source_ (NULL),
+    quid_ (NULL)
   {
+  }
+
+  void
+  Runtime::init_runtime (Quiddity &quiddity)
+  {
+    quid_ = &quiddity;
     source_funcs_.prepare = source_prepare;
     source_funcs_.check = source_check;
     source_funcs_.dispatch = source_dispatch;
     source_funcs_.finalize = source_finalize;
     source_ = g_source_new (&source_funcs_, sizeof (GstBusSource));
-     ((GstBusSource*)source_)->bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_));
-     g_source_set_callback(source_, (GSourceFunc)bus_called, NULL, NULL);
-     GMainContext *g_main_context = get_g_main_context ();
-     if (g_main_context == NULL)
-       return FALSE;
-     g_source_attach(source_, g_main_context);
-     gst_bus_set_sync_handler (((GstBusSource*)source_)->bus, bus_sync_handler, this); 
-     g_source_unref (source_);
-     ((GstBusSource*)source_)->inited = FALSE;
-
+    ((GstBusSource*)source_)->bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_));
+    g_source_set_callback(source_, (GSourceFunc)bus_called, NULL, NULL);
+    if (NULL == quid_->get_g_main_context ())
+      g_warning ("%s: g_main_context is NULL",
+     		 __FUNCTION__);
+    g_source_attach(source_, quid_->get_g_main_context ());
+    gst_bus_set_sync_handler (((GstBusSource*)source_)->bus, bus_sync_handler, this); 
+    g_source_unref (source_);
+    ((GstBusSource*)source_)->inited = FALSE;
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
     GstUtils::wait_state_changed (pipeline_);
 
-    install_method ("Play",
-		    "play", 
-		    "activate the runtime", 
-		    "success or fail",
-		    Method::make_arg_description ("none",
-						  NULL),
-		    (Method::method_ptr) &play_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    this);
-
-   install_method ("Pause",
-		   "pause", 
-		   "pause the runtime", 
-		   "success or fail",
-		   Method::make_arg_description ("none",
-						 NULL),
-		   (Method::method_ptr) &pause_wrapped, 
-		    G_TYPE_BOOLEAN,
-		   Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		   this);
-   
-   install_method ("Seek",
-		   "seek", 
-		   "seek the runtime", 
-		   "success or fail",
-		   Method::make_arg_description ("Position",
-						 "position",
-						 "position in milliseconds",
-						 NULL),
-		   (Method::method_ptr) &seek_wrapped, 
-		    G_TYPE_BOOLEAN,
-		   Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-		   this);
- 
-   install_method ("Speed",
-		   "speed", 
-		   "controle speed of runtime", 
-		   "success or fail",
-		   Method::make_arg_description ("Speed",
-						 "speed",
-						 "1.0 is normal speed, 0.5 is half the speed and 2.0 is double speed",
-						 NULL),
-		   (Method::method_ptr) &speed_wrapped, 
-		    G_TYPE_BOOLEAN,
-		   Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-		   this);
-   
-  return true;
+    quid_->install_method ("Play",
+			      "play", 
+			      "activate the runtime", 
+			      "success or fail",
+			      Method::make_arg_description ("none",
+							    NULL),
+			      (Method::method_ptr) &play_wrapped, 
+			      G_TYPE_BOOLEAN,
+			      Method::make_arg_type_description (G_TYPE_NONE, NULL),
+			      this);
+    
+    quid_->install_method ("Pause",
+			      "pause", 
+			      "pause the runtime", 
+			      "success or fail",
+			      Method::make_arg_description ("none",
+							    NULL),
+			      (Method::method_ptr) &pause_wrapped, 
+			      G_TYPE_BOOLEAN,
+			      Method::make_arg_type_description (G_TYPE_NONE, NULL),
+			      this);
+    
+    quid_->install_method ("Seek",
+			      "seek", 
+			      "seek the runtime", 
+			      "success or fail",
+			      Method::make_arg_description ("Position",
+							    "position",
+							    "position in milliseconds",
+							    NULL),
+			      (Method::method_ptr) &seek_wrapped, 
+			      G_TYPE_BOOLEAN,
+			      Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
+			      this);
+    
+    quid_->install_method ("Speed",
+			      "speed", 
+			      "controle speed of runtime", 
+			      "success or fail",
+			      Method::make_arg_description ("Speed",
+							    "speed",
+							    "1.0 is normal speed, 0.5 is half the speed and 2.0 is double speed",
+							    NULL),
+			      (Method::method_ptr) &speed_wrapped, 
+			      G_TYPE_BOOLEAN,
+			      Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
+			      this);
+    
   }
   
   Runtime::~Runtime ()
@@ -147,12 +143,15 @@ namespace switcher
   {
     g_debug ("Runtime::play");
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
-    guint position_tracking_id = GstUtils::g_timeout_add_to_context (200, 
-								     (GSourceFunc) cb_print_position, 
-								     this,
-								     get_g_main_context ());
-    position_tracking_source_ = g_main_context_find_source_by_id (get_g_main_context (),
-								  position_tracking_id);
+    if (NULL != quid_->get_g_main_context ())
+      {
+	guint position_tracking_id = GstUtils::g_timeout_add_to_context (200, 
+									 (GSourceFunc) cb_print_position, 
+									 this,
+									 quid_->get_g_main_context ());
+	position_tracking_source_ = g_main_context_find_source_by_id (quid_->get_g_main_context (),
+								      position_tracking_id);
+      }
     return true;
   }
   
@@ -290,7 +289,7 @@ res = gst_element_query (pipeline_, query);
   }
 
   gboolean
-  Runtime::cb_print_position (gpointer user_data)
+  Runtime::cb_print_position (gpointer /*user_data*/)
   {
     // Runtime *context = static_cast<Runtime *>(user_data);
     // GstFormat fmt = GST_FORMAT_TIME;
@@ -310,7 +309,7 @@ res = gst_element_query (pipeline_, query);
   Runtime::run_command (gpointer user_data)
   {
     QuidCommandArg *context = static_cast<QuidCommandArg *>(user_data);
-    QuiddityManager_Impl::ptr manager = context->self->manager_impl_.lock ();
+    QuiddityManager_Impl::ptr manager = context->self->quid_->manager_impl_.lock ();
     if ((bool) manager && context->command != NULL)
       {
 	switch (context->command->id_)
@@ -427,9 +426,9 @@ res = gst_element_query (pipeline_, query);
 	      GstUtils::g_timeout_add_to_context ((guint) command->time_,
 						  (GSourceFunc)run_command,
 						  args,
-						  context->get_g_main_context ());   
+						  context->quid_->get_g_main_context ());   
 	    else
-	      GstUtils::g_idle_add_full_with_context (context->get_g_main_context (),
+	      GstUtils::g_idle_add_full_with_context (context->quid_->get_g_main_context (),
 						      G_PRIORITY_DEFAULT_IDLE,
 						      (GSourceFunc) run_command,   
 						      (gpointer)args,
@@ -453,9 +452,9 @@ res = gst_element_query (pipeline_, query);
       {
 	GstTagList *tags = NULL;
 	gst_message_parse_tag (msg, &tags);
-	g_print ("Got tags from element %s:\n", GST_OBJECT_NAME (msg->src));
-	gst_tag_list_foreach (tags, print_one_tag, NULL);
-	g_print ("\n");
+	// g_print ("Got tags from element %s:\n", GST_OBJECT_NAME (msg->src));
+	// gst_tag_list_foreach (tags, print_one_tag, NULL);
+	// g_print ("\n");
 	gst_tag_list_free (tags);
       }
     return GST_BUS_PASS; 

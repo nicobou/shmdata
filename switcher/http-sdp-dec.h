@@ -48,7 +48,7 @@ namespace switcher
    GstPad *main_pad_;
    GstCaps *rtpgstcaps_;
    bool discard_next_uncomplete_buffer_;
-   std::string runtime_name_;
+   //std::string runtime_name_;
    void init_httpsdpdec ();
    void destroy_httpsdpdec ();
    QuiddityCommand *on_error_command_; //for the runtime error handler

@@ -30,11 +30,11 @@ namespace switcher
 
   Segment::Segment() :
     bin_ (NULL),
-    runtime_ (NULL),
+    shmdata_writers_ (),
+    shmdata_readers_ (),
     shmdata_writers_description_ (new JSONBuilder()),
     shmdata_readers_description_ (new JSONBuilder())
   {
-
     update_shmdata_writers_description ();
     update_shmdata_readers_description ();
 
@@ -66,23 +66,12 @@ namespace switcher
 				"shmdata-readers",
 				"Shmdata Readers");
 
+
+    //runtime
+    init_runtime (*this);
     make_bin();
 
-    install_method ("Set Runtime", 
-		    "set_runtime",
-		    "attach a quiddity/segment to a runtime",
-		    "success or fail",
-		    Method::make_arg_description ("Runtime Name",
-						  "runtime_name",
-						  "the name of the runtime quiddity to attach with",
-						  NULL),
-		    (Method::method_ptr) &set_runtime_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL), 
-		    this);
-
-
-    //FIXME
+        //FIXME
      // GType types[] = {G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING};
      // make_custom_signal_with_class_name ("segment",
      // 					 "on-new-shmdata-writer", 
@@ -134,7 +123,10 @@ namespace switcher
   {
     GstUtils::make_element ("bin", &bin_);
     g_object_set (G_OBJECT (bin_), "async-handling",TRUE, NULL);
-
+    gst_bin_add (GST_BIN (get_pipeline ()), bin_);
+    GstUtils::wait_state_changed (get_pipeline ());
+    GstUtils::sync_state_with_parent (bin_);
+    GstUtils::wait_state_changed (bin_);
   }
   
   void
@@ -172,57 +164,7 @@ namespace switcher
       }
   }
 
-  void 
-  Segment::set_runtime_wrapped (gpointer arg, gpointer user_data)
-  {
-    gchar *runtime_name = (gchar *)arg;
-    Segment *context = static_cast<Segment*>(user_data);
-    
-    if (runtime_name == NULL) 
-      {
-	g_debug ("Segment::set_runtime_wrapped Error: runtime_name is NULL");
-	return;
-      }
-    if (context == NULL) 
-      {
-	g_debug ("Segment::set_runtime_wrapped Error: segment is NULL");
-	return;
-      }
-    
-    QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
-    if ( (bool)manager)
-      {
-	Quiddity::ptr quidd = manager->get_quiddity (runtime_name);
-	Runtime::ptr runtime = std::dynamic_pointer_cast<Runtime> (quidd);
-	if(runtime)
-	  context->set_runtime(runtime);
-	else
-	  g_warning ("Segment::set_runtime_wrapped Error: %s is not a runtime",runtime_name);
-      }
-    //g_debug ("%s is attached to runtime %s",context->get_name().c_str(),runtime->get_name().c_str());
-  }
-  
-  void
-  Segment::set_runtime (Runtime::ptr runtime)
-  {
-    if (runtime_ != NULL)
-      {
-	clean_bin ();
-	make_bin ();
-      }
-
-    runtime_ = runtime;
-    gst_bin_add (GST_BIN (runtime_->get_pipeline ()),bin_);
-
-    for (auto &it : shmdata_readers_)
-      it.second->start ();
-
-    GstUtils::wait_state_changed (runtime_->get_pipeline ());
-    GstUtils::sync_state_with_parent (bin_);
-    GstUtils::wait_state_changed (bin_);
-    //g_debug ("Segment::set_runtime (done), %s", gst_element_state_get_name (GST_STATE (bin_)));
-  }
-  
+ 
   GstElement *
   Segment::get_bin()
   {
@@ -352,9 +294,6 @@ namespace switcher
   {
     clean_bin ();
     make_bin ();
-    if (!(bool)runtime_)
-      return false;
-    set_runtime (runtime_);
     return true;
  }
 

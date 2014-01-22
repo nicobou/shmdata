@@ -54,14 +54,10 @@ main (int /*argc*/,
     
     manager->make_property_subscriber ("sub", property_cb, NULL);
 
-    manager->create ("runtime", "runtime");
-
     manager->create ("audiotestsrc", "audio");
-    manager->invoke_va ("audio","set_runtime", NULL, "runtime", NULL);
     manager->subscribe_property ("sub","audio","shmdata-writers");
     manager->set_property ("audio", "started", "true");
     manager->create ("fakesink", "vu");
-    manager->invoke_va ("vu","set_runtime", NULL, "runtime", NULL);
     manager->subscribe_property ("sub", "vu", "byte-rate");
     manager->invoke_va ("vu", "connect", NULL, "/tmp/switcher_check_fakesink_audio_audio", NULL);
     // g_print ("connected\n"); 
@@ -76,14 +72,11 @@ main (int /*argc*/,
     // manager->remove ("vu");
     // g_print ("vu removed");
     manager->create ("fakesink", "vu");
-    manager->invoke_va ("vu","set_runtime", NULL, "runtime", NULL);
     manager->subscribe_property ("sub", "vu", "byte-rate");
     manager->invoke_va ("vu", "connect", NULL, "/tmp/switcher_check_fakesink_audio_audio", NULL);
     // usleep (5000000);
     // g_print ("last remove\n");
     manager->remove ("vu");
-
-
   }// releasing manager
 
   //success

@@ -589,14 +589,14 @@ namespace switcher
 	//creating an internal quiddity manager 
 	QuiddityManager::ptr manager = QuiddityManager::make_manager ("manager_"+get_name()+"_"+id);
 	quiddity_managers_[shmdata_socket_path] = manager;
-	manager->create ("runtime","single_runtime");//only one runtime for all
+	//manager->create ("runtime","single_runtime");//only one runtime for all
 
 	std::vector <std::string> arg;
 	manager->create ("udpsink","udpsend_rtp");
 	manager->create ("udpsink","udpsend_rtcp");
-	arg.push_back ("single_runtime");
-	manager->invoke ("udpsend_rtp", "set_runtime", NULL, arg);
-	manager->invoke ("udpsend_rtcp", "set_runtime", NULL, arg);
+	// arg.push_back ("single_runtime");
+	// manager->invoke ("udpsend_rtp", "set_runtime", NULL, arg);
+	// manager->invoke ("udpsend_rtcp", "set_runtime", NULL, arg);
 	
 	arg.clear ();
 	arg.push_back (make_file_name ("send_rtp_src_"+id));
@@ -724,7 +724,7 @@ namespace switcher
 
     //g_print ("add_data stream --- 2\n");
 
-    if (runtime_) // starting the reader if runtime is set
+    //if (runtime_) // starting the reader if runtime is set
       {
 	//g_print ("add_data stream --- 3\n");
 

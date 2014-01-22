@@ -33,29 +33,18 @@
 
 namespace switcher
 {
-
-  class Segment : public Quiddity
+  class Segment : public Quiddity, public Runtime
   {
   public:
     typedef std::shared_ptr<Segment> ptr;
     Segment ();
-    ~Segment ();
+    virtual ~Segment ();
     Segment (const Segment &) = delete;
     Segment &operator= (const Segment&) = delete;
  
-    // the segment is managing itself the presence/attachment with the runtime
-    void set_runtime (Runtime::ptr runtime);
-
-    //wrappers for calls from base quiddity manager
-    static void set_runtime_wrapped (gpointer runtime, gpointer context);
-    
-    static bool get_shmdata_writers_by_gvalue (GValue *value, void *user_data);
-    static bool get_shmdata_readers_by_gvalue (GValue *value, void *user_data);
-
   protected:
     GstElement *get_bin ();
-    GstElement *bin_;
-    Runtime::ptr runtime_;
+    GstElement *bin_; //FIXME shuld be private
     bool register_shmdata_writer (ShmdataWriter::ptr writer);
     bool unregister_shmdata_writer (std::string shmdata_path);
     bool register_shmdata_reader (ShmdataReader::ptr reader);
@@ -64,17 +53,21 @@ namespace switcher
     bool reset_bin ();
 
   private:
-    void make_bin ();
-    void clean_bin ();
     std::unordered_map <std::string, ShmdataWriter::ptr> shmdata_writers_;
     std::unordered_map <std::string, ShmdataReader::ptr> shmdata_readers_;
     JSONBuilder::ptr shmdata_writers_description_;
     JSONBuilder::ptr shmdata_readers_description_;
-    void update_shmdata_writers_description ();
-    void update_shmdata_readers_description ();
     //shmdatas as param
     static GParamSpec *json_writers_description_;
     static GParamSpec *json_readers_description_;
+
+    void make_bin ();
+    void clean_bin ();
+    void update_shmdata_writers_description ();
+    void update_shmdata_readers_description ();
+    static bool get_shmdata_writers_by_gvalue (GValue *value, void *user_data);
+    static bool get_shmdata_readers_by_gvalue (GValue *value, void *user_data);
+
   };
   
 }  // end of namespace
