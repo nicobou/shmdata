@@ -32,9 +32,12 @@ namespace switcher
 				       "LGPL",
 				       "genicam",
 				       "Nicolas Bouillot");
-  
+  AravisGenicam::AravisGenicam () :
+    aravissrc_ (NULL)
+  {}
+
   bool
-  AravisGenicam::init ()
+  AravisGenicam::init_segment ()
   {
     if (!GstUtils::make_element ("aravissrc", &aravissrc_))
       {

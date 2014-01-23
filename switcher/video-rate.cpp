@@ -31,9 +31,13 @@ namespace switcher
 				       "LGPL",
 				       "videorate",
 				       "Nicolas Bouillot");
-  
+  VideoRate::VideoRate () :
+    video_rate_bin_ (NULL),
+    video_rate_enc_ (NULL)
+  {}
+
   bool
-  VideoRate::init ()
+  VideoRate::init_segment ()
   {
     if (!GstUtils::make_element ("bin",&video_rate_bin_)
      	|| !GstUtils::make_element ("videorate",&video_rate_enc_))

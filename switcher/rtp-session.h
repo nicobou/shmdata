@@ -39,7 +39,10 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(RtpSession);
+    RtpSession ();
     ~RtpSession ();
+    RtpSession (const RtpSession &) = delete;
+    RtpSession &operator= (const RtpSession &) = delete;
 
     //local streams
     bool add_data_stream (std::string shmdata_socket_path);
@@ -112,6 +115,8 @@ namespace switcher
 
     //destinations
     std::map<std::string, RtpDestination::ptr> destinations_;
+
+    bool init_segment ();
 
     static void make_data_stream_available (GstElement* typefind, 
 					    guint probability, 

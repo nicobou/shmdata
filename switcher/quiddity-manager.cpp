@@ -29,32 +29,14 @@ namespace switcher
 {
 
   QuiddityManager::ptr 
-  QuiddityManager::make_manager ()
-  {
-    QuiddityManager::ptr manager(new QuiddityManager);
-    return manager;
-  }
-  
-  QuiddityManager::ptr 
   QuiddityManager::make_manager (std::string name)
   {
+    if (! gst_is_initialized ())
+      gst_init (NULL,NULL);
     QuiddityManager::ptr manager(new QuiddityManager(name));
     return manager;
   }
 
-  QuiddityManager::QuiddityManager() :
-    manager_impl_ (QuiddityManager_Impl::make_manager ()),
-    name_ ("default"),
-    command_ (),
-    seq_mutex_ (),
-    command_queue_ (g_async_queue_new ()),
-    invocation_thread_ (std::thread (&QuiddityManager::invocation_thread, this)),
-    execution_done_cond_ (),
-    execution_done_mutex_ (),
-    command_history_ (),
-    history_begin_time_ (0)
-  {
-  }
 
   QuiddityManager::QuiddityManager(std::string name) :
     manager_impl_ (QuiddityManager_Impl::make_manager (name)),

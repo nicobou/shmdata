@@ -35,21 +35,23 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeShmdataWriter);
+    FakeShmdataWriter ();
     ~FakeShmdataWriter ();
-    bool add_shmdata_path (std::string name);
+    FakeShmdataWriter (const FakeShmdataWriter &) = delete;
+    FakeShmdataWriter &operator= (const FakeShmdataWriter &) = delete;
 
+    bool add_shmdata_path (std::string name);
     bool start ();
     bool stop ();
 
   private:
-    bool clean ();
-    static gboolean add_shmdata_path_wrapped (gpointer name, gpointer user_data);
-
     //custom properties:
     CustomPropertyHelper::ptr custom_props_; 
     GParamSpec *shmdata_path_spec_;
     gchar *shmdata_path_;
-
+    bool clean ();
+    bool init_segment ();
+    static gboolean add_shmdata_path_wrapped (gpointer name, gpointer user_data);
     static void set_shmdata_path (const gchar *value, void *user_data);
     static gchar *get_shmdata_path (void *user_data);
   };

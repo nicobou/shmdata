@@ -60,6 +60,7 @@ namespace switcher
     pa_context *pa_context_;
     char *server_;
 
+    bool init_segment ();
     static void pa_context_state_callback(pa_context *c, void *userdata);
     static void get_sink_info_callback(pa_context *c, const pa_sink_info *i, int is_last, void *userdata);
     static void on_pa_event_callback(pa_context *c, 

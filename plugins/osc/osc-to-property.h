@@ -33,11 +33,11 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(OscToProperty);
-
     OscToProperty ();
     ~OscToProperty ();
     OscToProperty (const OscToProperty &) = delete;
     OscToProperty &operator=  (const OscToProperty &) = delete;
+    bool init ();
 
     void set_port (std::string port);
 
@@ -54,8 +54,6 @@ namespace switcher
     static void osc_error(int num, const char *msg, const char *path);
     static gchar *string_from_osc_arg (char types, lo_arg *data);
     static gchar *string_float_to_string_int (const gchar *string_float);
-
-
   };
 
   SWITCHER_DECLARE_PLUGIN(OscToProperty);

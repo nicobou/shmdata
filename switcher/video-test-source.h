@@ -33,14 +33,17 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VideoTestSource);
-    ~VideoTestSource();
+    VideoTestSource ();
+    ~VideoTestSource ();
+    VideoTestSource (const VideoTestSource &) = delete;
+    VideoTestSource &operator= (const VideoTestSource &) = delete;
 
   private:
     GstElement *videotestsrc_;
     bool make_video_source (GstElement **new_element);
     bool on_start (); 
     bool on_stop (); 
-
+    bool init_segment ();
   };
 
 }  // end of namespace

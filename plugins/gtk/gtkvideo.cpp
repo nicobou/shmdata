@@ -44,7 +44,7 @@ namespace switcher
   std::thread GTKVideo::gtk_main_thread_ {};
 
   bool
-  GTKVideo::init ()
+  GTKVideo::init_segment ()
   {
     if (!GstUtils::make_element ("bin",&sink_bin_))
       return false;

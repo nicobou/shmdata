@@ -45,8 +45,8 @@ namespace switcher
       typedef void (*quiddity_removed_hook) (std::string nick_name, void *user_data);
 
       static QuiddityManager_Impl::ptr make_manager ();//will get name "default"
-      static QuiddityManager_Impl::ptr make_manager (std::string name);
-      //void reboot ();
+      static QuiddityManager_Impl::ptr make_manager (const std::string &name);
+      QuiddityManager_Impl () = delete;
       virtual ~QuiddityManager_Impl();
       QuiddityManager_Impl (const QuiddityManager_Impl &) = delete;
       QuiddityManager_Impl &operator= (const QuiddityManager_Impl &) = delete;
@@ -204,9 +204,7 @@ namespace switcher
       bool load_plugin (const char *filename);
       void close_plugin (const std::string class_name);
       std::unordered_map<std::string, PluginLoader::ptr> plugins_;
-      void init (std::string name);
-      QuiddityManager_Impl();//will get name "default"
-      QuiddityManager_Impl(std::string);
+      QuiddityManager_Impl (const std::string &);
       void make_classes_doc ();
       std::string name_;
       void register_classes ();

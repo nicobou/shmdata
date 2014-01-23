@@ -39,14 +39,41 @@ namespace switcher
 				       "v4l2src",				
 				       "Nicolas Bouillot");
   
+  V4L2Src::V4L2Src () :
+    v4l2src_ (NULL),
+    v4l2_bin_ (NULL),
+    capsfilter_ (NULL),
+    custom_props_ (new CustomPropertyHelper ()), 
+    capture_devices_description_spec_ (NULL),
+    capture_devices_description_ (NULL),
+    devices_enum_spec_ (NULL),
+    devices_enum_ (),
+    device_ (0),
+    resolutions_spec_ (NULL), 
+    resolutions_enum_ (),
+    resolution_ (0),
+    width_spec_ (NULL),
+    height_spec_ (NULL),
+    width_ (0),
+    height_ (0),
+    tv_standards_spec_ (NULL), 
+    tv_standards_enum_ (),
+    tv_standard_ (0),
+    framerate_spec_ (NULL), 
+    framerates_enum_ (),
+    framerate_ (0),
+    framerate_numerator_spec_ (NULL),
+    framerate_denominator_spec_ (NULL),
+    framerate_numerator_ (0),
+    framerate_denominator_ (1),
+    capture_devices_ ()
+  {}
+
   bool
-  V4L2Src::init ()
+  V4L2Src::init_segment ()
   {
     if (!make_elements ())
       return false;
-
-    capture_devices_description_ = NULL;
-    device_ = 0; //default is zero
 
     //device inspector
     check_folder_for_v4l2_devices ("/dev");
@@ -57,8 +84,6 @@ namespace switcher
 	g_debug ("no video 4 linux device detected");
 	return false;
       }
-
-    custom_props_.reset (new CustomPropertyHelper ());
     capture_devices_description_spec_ = 
       custom_props_->make_string_property ("devices-json", 
 					   "Description of capture devices (json formated)",
@@ -88,15 +113,6 @@ namespace switcher
 				  devices_enum_spec_, 
 				  "device",
 				  "Capture Device");
-
-      //will be registered when necessary
-      resolutions_spec_ = NULL;
-      width_spec_ = NULL;
-      height_spec_ = NULL;
-      tv_standards_spec_ = NULL; 
-      framerate_spec_ = NULL;
-      framerate_numerator_spec_ = NULL;
-      framerate_denominator_spec_ = NULL;
 
       update_device_specific_properties (device_);
       return true;

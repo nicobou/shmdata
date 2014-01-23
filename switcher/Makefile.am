@@ -73,7 +73,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     string-dictionary.cpp \
     udpsink.cpp \
     uridecodebin.cpp \
-    uris.cpp \
     video-rate.cpp \
     video-sink.cpp \
     video-source.cpp \
@@ -152,7 +151,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     string-dictionary.h \
     udpsink.h \
     uridecodebin.h \
-    uris.h \
     video-rate.h \
     video-sink.h \
     video-source.h \

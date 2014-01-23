@@ -34,7 +34,10 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(UDPSink);
+    UDPSink ();
     ~UDPSink ();
+    UDPSink (const UDPSink &) = delete;
+    UDPSink &operator= (const UDPSink &) = delete;
 
     //client management
     bool remove_client (gchar *host, gint port);
@@ -54,6 +57,7 @@ namespace switcher
     static void on_client_added (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data);
     static void on_client_removed (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data);
     static void add_elements_to_bin (ShmdataReader *caller, void *udpbin_instance);
+    bool init_segment ();
   };
 
 }  // end of namespace

@@ -34,13 +34,16 @@ namespace switcher
 				       "decoder", 
 				       "Nicolas Bouillot");
   
+  Decodebin2::Decodebin2 () :
+    decodebin2_ (NULL),
+    media_counters_ ()
+  {}
+
   bool
-  Decodebin2::init() 
+  Decodebin2::init_segment () 
   { 
     if (!GstUtils::make_element ("decodebin2",&decodebin2_))
       return false;
-    //set the name before registering properties
-    set_name (gst_element_get_name (decodebin2_));
     add_element_to_cleaner (decodebin2_);
     set_sink_element (decodebin2_);
     set_on_first_data_hook (Decodebin2::make_decodebin2_active,this);

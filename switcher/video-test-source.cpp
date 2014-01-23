@@ -33,13 +33,17 @@ namespace switcher
 				       "videotestsrc",				
 				       "Nicolas Bouillot");
 
+  VideoTestSource::VideoTestSource() :
+    videotestsrc_ (NULL)
+  {}
+ 
   VideoTestSource::~VideoTestSource()
   {
     GstUtils::clean_element (videotestsrc_);
   }
   
   bool
-  VideoTestSource::init ()
+  VideoTestSource::init_segment ()
   {
     videotestsrc_ = NULL;
     bool made = make_video_source (&videotestsrc_);    

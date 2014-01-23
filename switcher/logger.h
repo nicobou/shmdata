@@ -35,7 +35,11 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Logger);
+    Logger ();
     ~Logger ();
+    Logger (const Logger &) = delete;
+    Logger &operator= (const Logger &) = delete;
+    bool init ();
 
     gboolean install_log_handler (const gchar *log_domain);
     gboolean remove_log_handler (const gchar *log_domain);

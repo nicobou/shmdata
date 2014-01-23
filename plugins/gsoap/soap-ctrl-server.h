@@ -32,7 +32,12 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SoapCtrlServer);
+    SoapCtrlServer ();
     ~SoapCtrlServer ();
+    SoapCtrlServer (const SoapCtrlServer &) = delete;
+    SoapCtrlServer &operator= (const SoapCtrlServer &) = delete;
+    bool init ();
+
     bool set_port (int port);//default port is 8080
     bool start (); 
     bool stop ();

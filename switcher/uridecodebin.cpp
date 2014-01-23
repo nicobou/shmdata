@@ -58,7 +58,7 @@ namespace switcher
   {}
   
   bool
-  Uridecodebin::init() 
+  Uridecodebin::init_segment () 
   { 
     if (!GstUtils::make_element ("uridecodebin",&uridecodebin_))
       return false;

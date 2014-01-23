@@ -31,16 +31,17 @@ namespace switcher
 				       "LGPL",
 				       "myplugin",				
 				       "Nicolas Bouillot");
+  MyPlugin::MyPlugin () :
+    custom_props_ (new CustomPropertyHelper ()),
+    myprop_ (false),
+    myprop_prop_ (NULL),
+    hello_ (g_strdup ("hello"))
+  {}
 
   bool
   MyPlugin::init ()
   {
     init_startable (this);
-
-    custom_props_.reset (new CustomPropertyHelper ());
-
-    hello_ = g_strdup ("hello");
-    myprop_ = false;
     myprop_prop_ = 
       custom_props_->make_boolean_property ("myprop", //name 
 					    "myprop is a boolean property", //description

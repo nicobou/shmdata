@@ -32,17 +32,19 @@ namespace switcher
 				       "LGPL",
 				       "httpsdp", 
 				       "Nicolas Bouillot");
+  HTTPSDP::HTTPSDP () :
+    souphttpsrc_ (NULL),
+    sdpdemux_ (NULL),
+    media_counter_ (0)
+  {}
   
   bool
-  HTTPSDP::init() 
+  HTTPSDP::init_segment () 
   { 
     if (!GstUtils::make_element ("souphttpsrc", &souphttpsrc_)
 	|| !GstUtils::make_element ("sdpdemux", &sdpdemux_))
       return false;
 
-    media_counter_ = 0;
-    //set the name before registering properties
-    set_name (gst_element_get_name (souphttpsrc_));
     add_element_to_cleaner (souphttpsrc_);
     add_element_to_cleaner (sdpdemux_);
     
@@ -54,12 +56,10 @@ namespace switcher
 		      "no-more-pads",  
 		      (GCallback) HTTPSDP::no_more_pads_cb ,  
 		      (gpointer) this);    
-
     // g_signal_connect (G_OBJECT (sdpdemux_),  
     // 		      "pad-removed",  
     // 		      (GCallback) HTTPSDP::pad_removed_cb ,  
     // 		      (gpointer) this);      
-   
     install_method ("To Shmdata",
 		    "to_shmdata", 
 		    "get raw streams from an sdp description distributed over http and write them to shmdatas", 
@@ -72,10 +72,8 @@ namespace switcher
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
-
     //registering "latency"
     install_property (G_OBJECT (sdpdemux_),"latency","latency", "Latency");
-
     return true;
   }
 

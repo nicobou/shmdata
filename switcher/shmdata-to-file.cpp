@@ -33,13 +33,21 @@ namespace switcher
 				       "shmtofile",
 				       "Nicolas Bouillot");
   
+  ShmdataToFile::ShmdataToFile () :
+    custom_prop_ (new CustomPropertyHelper ()),  
+    recording_param_ (NULL), 
+    recording_ (FALSE), 
+    file_names_ (),
+    shmdata_recorders_ ()
+  {}
+
   ShmdataToFile::~ShmdataToFile ()
   {
     clean_recorders ();
   }
 
   bool 
-  ShmdataToFile::init ()
+  ShmdataToFile::init_segment ()
   {
     install_method ("Add Shmdata",
 		    "add_shmdata", 
@@ -72,8 +80,6 @@ namespace switcher
     
  
     //registering recording property
-    recording_ = FALSE;
-    custom_prop_.reset (new CustomPropertyHelper ());
     recording_param_ = custom_prop_->make_boolean_property ("recording", 
 							    "start/stop recording",
 							    FALSE,
@@ -85,9 +91,6 @@ namespace switcher
      				recording_param_, 
      				"recording",
 				"Recording");
-
-    //set the name before registering properties
-    set_name (gst_element_get_name (bin_));
     return true;
   }
 

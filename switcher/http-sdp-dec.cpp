@@ -34,6 +34,17 @@ namespace switcher
 				       "httpsdpdec", 
 				       "Nicolas Bouillot");
   
+  HTTPSDPDec::HTTPSDPDec () :
+    souphttpsrc_ (NULL),
+    sdpdemux_ (NULL),
+    decodebins_ (),
+    media_counters_ (),
+    main_pad_ (NULL),
+    rtpgstcaps_ (NULL),
+    discard_next_uncomplete_buffer_ (false),
+    on_error_command_ (NULL)
+  {}
+
   HTTPSDPDec::~HTTPSDPDec ()
   {
     destroy_httpsdpdec ();
@@ -43,19 +54,15 @@ namespace switcher
   }
   
   bool
-  HTTPSDPDec::init() 
+  HTTPSDPDec::init_segment () 
   { 
-    GstElement *decodebin;
+    GstElement *decodebin = NULL;
     if (!GstUtils::make_element ("souphttpsrc", &souphttpsrc_)
 	|| !GstUtils::make_element ("sdpdemux", &sdpdemux_)
 	|| !GstUtils::make_element ("decodebin2", &decodebin))
       return false;
 
-    on_error_command_ = NULL;
-    
     decodebins_.push_back (decodebin);
-    //set the name before registering properties
-    set_name (gst_element_get_name (souphttpsrc_));
     destroy_httpsdpdec ();
  
     install_method ("To Shmdata",

@@ -33,6 +33,13 @@ namespace switcher
 				       "gstsrc", 
 				       "Nicolas Bouillot");
   
+  GstParseToBinSrc::GstParseToBinSrc () :
+    gst_parse_to_bin_src_ (NULL),
+    custom_props_ (new CustomPropertyHelper ()),
+    gst_launch_pipeline_spec_ (NULL),
+    gst_launch_pipeline_ (g_strdup (""))
+  {}
+
   GstParseToBinSrc::~GstParseToBinSrc ()
   {
     g_free (gst_launch_pipeline_);
@@ -41,13 +48,9 @@ namespace switcher
   }
 
   bool 
-  GstParseToBinSrc::init ()
+  GstParseToBinSrc::init_segment ()
   {
-    gst_parse_to_bin_src_ = NULL;
-
     init_startable (this);
-    gst_launch_pipeline_ = g_strdup ("");
-    custom_props_.reset (new CustomPropertyHelper ());
     gst_launch_pipeline_spec_ = 
       custom_props_->make_string_property ("gst-pipeline", 
 					   "GStreamer Launch Source Pipeline",

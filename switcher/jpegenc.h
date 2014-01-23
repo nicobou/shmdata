@@ -35,10 +35,14 @@ namespace switcher
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JpegEnc);
     static void make_shmdata_writer(ShmdataReader *caller, void *jpegenc_instance);
+    JpegEnc ();
+    JpegEnc (const JpegEnc &) = delete;
+    JpegEnc &operator= (const JpegEnc &) = delete;
 
   private:
     GstElement *jpegencbin_;
     GstElement *jpegencenc_;
+    bool init_segment ();
   };
 
 }  // end of namespace

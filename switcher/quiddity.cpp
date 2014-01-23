@@ -33,15 +33,22 @@ namespace switcher
 {
   std::map<std::pair <std::string,std::string>, guint> Quiddity::signals_ids_;
 
-  Quiddity::Quiddity ()
+  Quiddity::Quiddity () :
+    properties_ (),
+    disabled_properties_ (),
+    properties_description_ (new JSONBuilder()),
+    methods_ (),
+    disabled_methods_ (),
+    methods_description_ (new JSONBuilder()),
+    position_weight_counter_ (0),
+    signals_ (),
+    signals_description_ (new JSONBuilder()),
+    name_ (),
+    nick_name_ (),
+    manager_impl_ (),
+    gobject_ (new GObjectWrapper ())
   {
-    gobject_.reset (new GObjectWrapper ());
     gobject_->property_set_default_user_data (this);
-    properties_description_.reset (new JSONBuilder());
-    methods_description_.reset (new JSONBuilder());
-    signals_description_.reset (new JSONBuilder());
-    
-    position_weight_counter_ = 0;
 
     GType arg_type[] = {G_TYPE_STRING};
     install_signal_with_class_name ("Quiddity",
@@ -873,6 +880,7 @@ namespace switcher
     QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
     if ((bool) manager)
       return manager->get_g_main_context ();
+    g_print ("from -%s-: returning NULL\n", __FUNCTION__);
     return NULL;
   }
 

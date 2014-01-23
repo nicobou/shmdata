@@ -33,8 +33,11 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(V4L2Src);
+    V4L2Src ();
     ~V4L2Src ();
-  
+    V4L2Src (const V4L2Src &) = delete;
+    V4L2Src &operator= (const V4L2Src &) = delete;
+    
     //use "NONE" for used arguments
     /* bool capture_full (const char *device_file_path,  */
     /* 		       const char *width, */
@@ -166,7 +169,7 @@ namespace switcher
 
     std::vector <CaptureDescription> capture_devices_; //FIXME should be static
 
-
+    bool init_segment ();
   };
   
   SWITCHER_DECLARE_PLUGIN(V4L2Src);

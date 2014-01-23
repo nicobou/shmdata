@@ -37,7 +37,7 @@ namespace switcher
 				       "Nicolas Bouillot");
   
   bool
-  JackSink::init ()
+  JackSink::init_segment ()
   {
     GError *error = NULL;
     jacksink_ = gst_parse_bin_from_description ("audioconvert ! jackaudiosink sync=false",
@@ -56,8 +56,8 @@ namespace switcher
     return true;
   }
   
-  JackSink::JackSink ()
-  {
-  }
+  JackSink::JackSink () :
+    jacksink_ (NULL)
+  {}
  
 }

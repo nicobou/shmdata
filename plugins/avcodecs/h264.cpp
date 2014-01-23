@@ -30,9 +30,13 @@ namespace switcher
 				       "GPL",
 				       "x264enc",
 				       "Nicolas Bouillot");
-  
+  H264::H264 () :
+    h264bin_ (NULL),
+    h264enc_ (NULL)
+  {}
+
   bool
-  H264::init ()
+  H264::init_segment ()
   {
     if (!GstUtils::make_element ("bin", &h264bin_)
 	|| !GstUtils::make_element ("x264enc", &h264enc_))

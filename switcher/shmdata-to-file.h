@@ -35,7 +35,10 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToFile);
+    ShmdataToFile ();
     ~ShmdataToFile ();
+    ShmdataToFile (const ShmdataToFile &);
+    ShmdataToFile &operator= (const ShmdataToFile &);
 
     //local streams
     bool add_shmdata (std::string shmdata_socket_path,
@@ -51,6 +54,7 @@ namespace switcher
      GParamSpec *recording_param_; 
      gboolean recording_; 
 
+     bool init_segment ();
      bool make_recorders ();
      bool clean_recorders ();
      std::unordered_map <std::string, std::string> file_names_;

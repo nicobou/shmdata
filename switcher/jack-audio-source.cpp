@@ -32,8 +32,12 @@ namespace switcher
 				       "jackaudiosrc", 
 				       "Nicolas Bouillot");
   
+  JackAudioSource::JackAudioSource() :
+    jackaudiosrc_ (NULL)
+  {}
+
   bool
-  JackAudioSource::init ()
+  JackAudioSource::init_segment ()
   {
     if (!GstUtils::make_element ("jackaudiosrc",&jackaudiosrc_))
       return false;
@@ -42,7 +46,6 @@ namespace switcher
     // 		  "is-live", TRUE,
     // 		  "samplesperbuffer",512,
     // 		  NULL);
-
 
     //set the name before registering properties
     set_name (gst_element_get_name (jackaudiosrc_));

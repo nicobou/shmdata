@@ -32,12 +32,16 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AAC);
+    AAC ();
+    AAC (const AAC &) = delete;
+    AAC &operator= (const AAC &) = delete;
 
     static void make_shmdata_writer(ShmdataReader *caller, void *aac_instance);
 
   private:
     GstElement *aacbin_;
     GstElement *aacenc_;
+    bool init_segment ();
   };
 
   SWITCHER_DECLARE_PLUGIN(AAC);

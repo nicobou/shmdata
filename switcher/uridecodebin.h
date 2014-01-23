@@ -68,6 +68,9 @@ namespace switcher
 
    GParamSpec *uri_spec_;
    gchar *uri_;
+
+   bool init_segment ();
+
    static void set_uri (const gchar *value, void *user_data);
    static gchar *get_uri (void *user_data);
    bool to_shmdata ();

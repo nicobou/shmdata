@@ -33,7 +33,11 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(StringDictionary);
+    StringDictionary ();
     ~StringDictionary ();
+    StringDictionary (const StringDictionary  &) = delete;
+    StringDictionary &operator= (const StringDictionary  &) = delete;
+    bool init ();
 
   private:
     std::map <std::string, gchar *> dico_;

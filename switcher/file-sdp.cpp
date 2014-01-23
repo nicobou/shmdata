@@ -32,17 +32,19 @@ namespace switcher
 				       "LGPL",
 				       "filesdp", 
 				       "Nicolas Bouillot");
-  
+  FileSDP::FileSDP () :
+    filesrc_ (NULL),
+    sdpdemux_ (NULL),
+    media_counter_ (0)
+  {}
+
   bool
-  FileSDP::init() 
+  FileSDP::init_segment () 
   { 
     if (!GstUtils::make_element ("filesrc", &filesrc_)
 	|| !GstUtils::make_element ("sdpdemux", &sdpdemux_))
       return false;
 
-    media_counter_ = 0;
-    //set the name before registering properties
-    set_name (gst_element_get_name (filesrc_));
     add_element_to_cleaner (filesrc_);
     add_element_to_cleaner (sdpdemux_);
     

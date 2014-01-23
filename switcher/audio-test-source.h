@@ -34,7 +34,10 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AudioTestSource);
+    AudioTestSource ();
     ~AudioTestSource ();
+    AudioTestSource (const AudioTestSource &) = delete;
+    AudioTestSource &operator= (const AudioTestSource &) = delete;
 
     bool start ();
     bool stop ();
@@ -42,6 +45,7 @@ namespace switcher
   private: 
    GstElement *audiotestsrc_;
    bool make_audiotestsrc ();
+   bool init_segment ();
   };
 
 }  // end of namespace

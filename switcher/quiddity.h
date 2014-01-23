@@ -55,7 +55,6 @@ namespace switcher
 
   public:
     typedef std::shared_ptr<Quiddity> ptr;
-    
     Quiddity ();
     Quiddity (const Quiddity &) = delete;
     Quiddity &operator= (const Quiddity &) = delete;
@@ -72,7 +71,6 @@ namespace switcher
     std::string get_nick_name ();
     bool set_nick_name (std::string nick_name);
     bool set_name (std::string name);
-    
 
     //properties
     std::string get_property_description (std::string property_name);
@@ -113,7 +111,6 @@ namespace switcher
 			std::string **return_value,
 			const std::vector<std::string> args);
    
-
     //shmdata socket names
     static std::string get_socket_name_prefix ();
     static std::string get_socket_dir ();
@@ -299,7 +296,6 @@ namespace switcher
   
 #define SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(cpp_quiddity_class)	\
   typedef std::shared_ptr<cpp_quiddity_class> ptr;			\
-  bool init ();								\
   QuiddityDocumentation get_documentation ();				\
   static QuiddityDocumentation switcher_doc_;
 

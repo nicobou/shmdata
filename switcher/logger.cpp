@@ -33,10 +33,23 @@ namespace switcher
 				       "LGPL",
 				       "logger",
 				       "Nicolas Bouillot");
+  Logger::Logger () :
+    i_am_the_one_ (false),
+    last_line_ (g_strdup ("")),
+    mute_ (false),
+    debug_ (true),
+    verbose_ (true),
+    handler_ids_ (),
+    custom_props_ (new CustomPropertyHelper ()),
+    last_line_prop_ (NULL),
+    mute_prop_ (NULL),
+    debug_prop_ (NULL),
+    verbose_prop_ (NULL)
+  {}
+  
   bool
   Logger::init()
   {
-    i_am_the_one_ = false;
     if (installed_)
       {
 	g_warning ("Only one logger instance is possible, cannot create");
@@ -49,12 +62,6 @@ namespace switcher
       }
     set_name ("logger");
     
-    custom_props_.reset (new CustomPropertyHelper ());
-    mute_ = false;
-    debug_ = true;
-    verbose_ = true;
-    last_line_ = g_strdup ("");
-
     last_line_prop_ = 
       custom_props_->make_string_property ("last-line", 
 					   "last log line",

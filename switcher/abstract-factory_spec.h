@@ -140,6 +140,13 @@ namespace switcher
 	++i;
       }
   }
+
+  template <typename T, typename Key, typename Doc>
+    AbstractFactory<T, Key, Doc>::AbstractFactory() :
+     constructor_map_ (),
+     destructor_map_ (),
+     classes_documentation_ ()
+   {}
  
 } // end of namespace
 

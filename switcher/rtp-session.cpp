@@ -35,6 +35,23 @@ namespace switcher
 				       "LGPL",
 				       "rtpsession",
 				       "Nicolas Bouillot");
+
+  RtpSession::RtpSession () :
+    rtpsession_ (NULL),
+    next_id_ (79), //this value is arbitrary and can be changed
+    custom_props_ (new CustomPropertyHelper ()), 
+    destination_description_json_ (NULL),
+    destinations_json_ (NULL),
+    mtu_at_add_data_stream_spec_ (NULL),
+    mtu_at_add_data_stream_ (1400),
+    internal_id_ (),
+    rtp_ids_ (),
+    quiddity_managers_ (),
+    funnels_ (),
+    internal_shmdata_writers_ (),
+    internal_shmdata_readers_ (),
+    destinations_ ()
+  {}
   
   RtpSession::~RtpSession ()
   {
@@ -74,19 +91,15 @@ namespace switcher
     }
 
   bool 
-  RtpSession::init ()
+  RtpSession::init_segment ()
   {
     if (!GstUtils::make_element ("gstrtpbin", &rtpsession_))
       return false;
-
-    mtu_at_add_data_stream_ = 1400;
-    next_id_ = 79; //this value is arbitrary and can be changed
 
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
     
     g_signal_connect (G_OBJECT (rtpsession_), "on-bye-ssrc", 
 		      (GCallback) on_bye_ssrc, (gpointer) this);
-    
     g_signal_connect (G_OBJECT (rtpsession_), "on-bye-timeout", 
 		      (GCallback) on_bye_timeout, (gpointer) this);
     g_signal_connect (G_OBJECT (rtpsession_), "on-new-ssrc", 
@@ -209,11 +222,6 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING,NULL),
 		    this);
     
-    //set the name before registering properties
-    set_name (gst_element_get_name (rtpsession_));
-    
-    destinations_json_ = NULL;
-    custom_props_.reset (new CustomPropertyHelper ());
     destination_description_json_ = custom_props_->make_string_property ("destinations-json", 
 									 "json formated description of destinations",
 									 "",

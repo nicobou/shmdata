@@ -30,12 +30,20 @@ namespace switcher
 				       "LGPL",
 				       "midisink",				
 				       "Nicolas Bouillot");
+  PortMidiSink::PortMidiSink () :
+    reader_ (shmdata_any_reader_init ()),
+    custom_props_ (new CustomPropertyHelper ()),
+    devices_description_spec_ (NULL),
+    shmdata_path_spec_ (NULL),
+    shmdata_path_ (g_strdup ("")),
+    devices_enum_spec_ (NULL),
+    device_ (0)
+  {}
 
   bool
   PortMidiSink::init ()
   {
     init_startable (this);
-    custom_props_.reset (new CustomPropertyHelper ());
     devices_description_spec_ = 
       custom_props_->make_string_property ("devices-json", 
 					   "Description of capture devices (json formated)",
@@ -65,8 +73,6 @@ namespace switcher
 				"device",
 				"Capture Device");
 
-
-    shmdata_path_ = g_strdup ("");
     shmdata_path_spec_ = 
       custom_props_->make_string_property ("shmdata-path", 
 					   "path of the shmdata to connect with",
@@ -81,7 +87,6 @@ namespace switcher
 				"shmdata-path",
 				"Shmdata Path");
 
-    reader_ = shmdata_any_reader_init ();
     shmdata_any_reader_set_debug (reader_, SHMDATA_ENABLE_DEBUG);
     shmdata_any_reader_set_on_data_handler (reader_, 
 					    &on_shmreader_data,

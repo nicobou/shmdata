@@ -39,6 +39,9 @@ namespace switcher
   {
   public:
     template <class U> void register_class (Key Id, Doc doc);
+    AbstractFactory();
+    ~AbstractFactory();
+   
     void register_class_with_custom_factory (Key Id, 
 					     Doc doc,
 					     T * (*custom_create) (),
@@ -49,7 +52,6 @@ namespace switcher
     Doc get_class_documentation (Key Id);
     std::shared_ptr<T> create(Key Id);
     bool key_exists (Key Id);
-    ~AbstractFactory();
 
   private:
     std::map<Key, Creator<T>*> constructor_map_;

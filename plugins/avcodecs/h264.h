@@ -33,11 +33,16 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(H264);
+    H264 ();
+    H264 (const H264 &) = delete;
+    H264 &operator= (const H264 &) = delete;
+
     static void make_shmdata_writer(ShmdataReader *caller, void *h264_instance);
 
   private:
     GstElement *h264bin_;
     GstElement *h264enc_;
+    bool init_segment ();
   };
 
   SWITCHER_DECLARE_PLUGIN(H264);

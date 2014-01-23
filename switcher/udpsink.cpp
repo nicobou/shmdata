@@ -38,9 +38,15 @@ namespace switcher
 				       "LGPL",
 				       "udpsink",
 				       "Nicolas Bouillot");
+  UDPSink::UDPSink () :
+    udpsink_ (NULL),
+    udpsink_bin_ (NULL),
+    typefind_ (NULL),
+    ghost_sinkpad_ (NULL)
+  {}
 
   bool 
-  UDPSink::init ()
+  UDPSink::init_segment ()
   {
     if ( !GstUtils::make_element ("bin", &udpsink_bin_)
 	 || !GstUtils::make_element ("typefind", &typefind_)

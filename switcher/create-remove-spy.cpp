@@ -33,6 +33,9 @@ namespace switcher
 				       "create_remove_spy",				
 				       "Nicolas Bouillot");
 
+  CreateRemoveSpy::CreateRemoveSpy() :
+    i_am_the_one_ (false)
+  {}
 
   bool
   CreateRemoveSpy::init ()

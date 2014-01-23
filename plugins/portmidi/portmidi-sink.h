@@ -37,14 +37,16 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSink);
+    PortMidiSink ();
     ~PortMidiSink ();
-   
+    PortMidiSink (const PortMidiSink &) = delete;
+    PortMidiSink &operator= (const PortMidiSink &) = delete;
+    bool init (); 
     bool start ();
     bool stop ();
 
   private:
     shmdata_any_reader_t *reader_;
-
     CustomPropertyHelper::ptr custom_props_;
     GParamSpec *devices_description_spec_;
     GParamSpec *shmdata_path_spec_;
@@ -52,6 +54,7 @@ namespace switcher
     //device selection
     GParamSpec *devices_enum_spec_;
     gint device_;
+
     static void set_device (const gint value, void *user_data);
     static gint get_device (void *user_data);
 

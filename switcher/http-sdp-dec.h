@@ -37,7 +37,11 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);
-    ~HTTPSDPDec();
+    HTTPSDPDec ();
+    ~HTTPSDPDec ();
+    HTTPSDPDec (const HTTPSDPDec &) = delete;
+    HTTPSDPDec &operator= (const HTTPSDPDec &) = delete;
+
     bool to_shmdata (std::string uri);
 
   private: 
@@ -53,7 +57,7 @@ namespace switcher
    void destroy_httpsdpdec ();
    QuiddityCommand *on_error_command_; //for the runtime error handler
    void clean_on_error_command ();
-
+   bool init_segment ();
    static void decodebin_pad_added_cb (GstElement* object, GstPad *pad, gpointer user_data);
    static void httpsdpdec_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
    static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);

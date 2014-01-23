@@ -36,8 +36,24 @@ namespace switcher
 				       "videosink",
 				       "Nicolas Bouillot");
   
+
+  Xvimagesink::Xvimagesink () :
+    sink_bin_ (NULL),
+    queue_ (NULL),
+    ffmpegcolorspace_ (NULL),
+    xvimagesink_ (NULL)
+  {}
+
+  Xvimagesink::~Xvimagesink ()
+  {
+    GstUtils::clean_element (xvimagesink_);
+    if (on_error_command_ != NULL)
+      delete on_error_command_;
+    
+  }
+
   bool
-  Xvimagesink::init ()
+  Xvimagesink::init_segment ()
   {
 
     if (!GstUtils::make_element ("bin",&sink_bin_))
@@ -91,17 +107,5 @@ namespace switcher
 
     return true;
   }
-  
-  Xvimagesink::Xvimagesink ()
-  {
-  }
-
-  Xvimagesink::~Xvimagesink ()
-  {
-    GstUtils::clean_element (xvimagesink_);
-    if (on_error_command_ != NULL)
-      delete on_error_command_;
-    
-  }
-  
+ 
 }

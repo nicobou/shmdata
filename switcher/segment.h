@@ -41,10 +41,12 @@ namespace switcher
     virtual ~Segment ();
     Segment (const Segment &) = delete;
     Segment &operator= (const Segment&) = delete;
- 
+    virtual bool init_segment () = 0;
+    bool init ();
+
   protected:
     GstElement *get_bin ();
-    GstElement *bin_; //FIXME shuld be private
+    GstElement *bin_; //FIXME should be private
     bool register_shmdata_writer (ShmdataWriter::ptr writer);
     bool unregister_shmdata_writer (std::string shmdata_path);
     bool register_shmdata_reader (ShmdataReader::ptr reader);
@@ -67,9 +69,7 @@ namespace switcher
     void update_shmdata_readers_description ();
     static bool get_shmdata_writers_by_gvalue (GValue *value, void *user_data);
     static bool get_shmdata_readers_by_gvalue (GValue *value, void *user_data);
-
   };
-  
 }  // end of namespace
 
 #endif // ifndef

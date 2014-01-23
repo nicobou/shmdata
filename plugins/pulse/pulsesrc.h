@@ -88,6 +88,8 @@ namespace switcher
     void make_device_description (pa_context *pulse_context);
     void make_json_description ();
 
+    bool init_segment ();
+
     //device enum and select
     static void set_device (const gint value, void *user_data);
     static gint get_device (void *user_data);

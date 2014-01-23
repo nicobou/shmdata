@@ -35,8 +35,12 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(OscCtrlServer);
-
+    OscCtrlServer ();
     ~OscCtrlServer ();
+    OscCtrlServer (const OscCtrlServer&) = delete;
+    OscCtrlServer &operator= (const OscCtrlServer&) = delete;
+    bool init ();
+
     void set_port (std::string port);
     void start (); 
     void stop ();

@@ -36,6 +36,8 @@ namespace switcher
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Xvimagesink);
     Xvimagesink ();
     ~Xvimagesink ();
+    Xvimagesink (const Xvimagesink &) = delete;
+    Xvimagesink &operator= (const Xvimagesink &) = delete;
 
   private:
     GstElement *sink_bin_;
@@ -43,6 +45,7 @@ namespace switcher
     GstElement *ffmpegcolorspace_;
     GstElement *xvimagesink_;
     QuiddityCommand *on_error_command_; //for the runtime error handler
+    bool init_segment ();
   };
 
 }  // end of namespace

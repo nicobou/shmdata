@@ -52,7 +52,7 @@ namespace switcher
   {}
 
   bool
-  PulseSink::init ()
+  PulseSink::init_segment ()
   {
     device_name_ = g_strdup ("default");
 

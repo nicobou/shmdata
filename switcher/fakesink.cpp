@@ -33,7 +33,18 @@ namespace switcher
 				       "fakesink",
 				       "Nicolas Bouillot");
 
-  
+  FakeSink::FakeSink () :
+    fakesink_ (NULL),
+    num_bytes_since_last_update_ (0),
+    update_byterate_source_ (NULL),
+    byte_rate_ (0),
+    string_caps_ (g_strdup ("unknown")),
+    set_string_caps_ (true),
+    props_ (new CustomPropertyHelper ()),
+    byte_rate_spec_ (NULL),
+    caps_spec_ (NULL)
+    {} 
+ 
   FakeSink::~FakeSink ()
   {
      if (update_byterate_source_ != NULL)
@@ -48,17 +59,11 @@ namespace switcher
   }
   
   bool
-  FakeSink::init ()
+  FakeSink::init_segment ()
   {
     if (!GstUtils::make_element ("fakesink", &fakesink_))
       return false;
 
-    string_caps_ = g_strdup ("unknown");
-    set_string_caps_ = true;
-    num_bytes_since_last_update_ = 0;
-    
-    //set the name before registering properties
-    set_name (gst_element_get_name (fakesink_));
     g_object_set (G_OBJECT (fakesink_), 
 		  "sync", FALSE, 
 		  "signal-handoffs", TRUE,
@@ -69,8 +74,6 @@ namespace switcher
     //registering some properties 
     install_property (G_OBJECT (fakesink_),"last-message","last-message", "Last Message");
     
-    byte_rate_ = 0;
-    props_.reset (new CustomPropertyHelper ());
     byte_rate_spec_ = 
       props_->make_int_property ("byte-rate", 
      					  "the byte rate (updated each second)",

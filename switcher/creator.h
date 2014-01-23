@@ -59,7 +59,11 @@ namespace switcher
       return (*custom_create_) ();
     }
     T * (*custom_create_) ();
-  };
+    
+    CustomDerivedCreator () :
+       custom_create_ ()
+    {}
+};
   
 } // end of namespace
  

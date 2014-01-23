@@ -38,7 +38,12 @@ namespace switcher
 				       "LGPL",
 				       "OSCctl",
 				       "Nicolas Bouillot");
-    
+  OscCtrlServer::OscCtrlServer () :
+    port_ (),
+    osc_subscribers_ (),
+    osc_thread_ (NULL)
+  {}
+
   bool
   OscCtrlServer::init ()
   {

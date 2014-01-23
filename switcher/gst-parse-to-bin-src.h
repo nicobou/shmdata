@@ -36,24 +36,24 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstParseToBinSrc);
+    GstParseToBinSrc ();
     ~GstParseToBinSrc ();
+    GstParseToBinSrc (const GstParseToBinSrc &) = delete;
+    GstParseToBinSrc &operator= (const GstParseToBinSrc &) = delete;
 
     bool start ();
     bool stop ();
 
   private:
-    bool clean ();
     GstElement *gst_parse_to_bin_src_;
-
     CustomPropertyHelper::ptr custom_props_; 
     GParamSpec *gst_launch_pipeline_spec_;
     gchar *gst_launch_pipeline_;
-
+    bool clean ();
+    bool to_shmdata ();
+    bool init_segment ();
     static void set_gst_launch_pipeline (const gchar *value, void *user_data);
     static gchar *get_gst_launch_pipeline (void *user_data);
-
-    bool to_shmdata ();
-    
   };
 
 }  // end of namespace

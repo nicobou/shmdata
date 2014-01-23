@@ -41,14 +41,27 @@ namespace switcher
 				       "LGPL",
 				       "property-mapper",
 				       "Nicolas Bouillot");
+
+  PropertyMapper::PropertyMapper () :
+    source_quiddity_ (),
+    source_property_name_ (),
+    sink_quiddity_ (),
+    sink_quiddity_pspec_ (NULL),
+    sink_property_name_ (),
+    custom_props_ (new CustomPropertyHelper ()),
+    sink_min_spec_ (NULL),
+    sink_max_spec_ (NULL),
+    source_min_spec_ (NULL),
+    source_max_spec_ (NULL),
+    sink_min_ (0),
+    sink_max_ (0),
+    source_min_ (0),
+    source_max_ (0)
+  {}
+
   bool
   PropertyMapper::init()
   {
-    sink_min_spec_ = NULL;
-    sink_max_spec_ = NULL;
-    source_min_spec_ = NULL;
-    source_max_spec_ = NULL;
-    
     install_method ("Set Source Property", //long name
 		    "set-source-property", //name
 		    "set the master property", //description
@@ -81,7 +94,6 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
 		    this);
 
-    custom_props_.reset (new CustomPropertyHelper ());
 
 #ifdef HAVE_PYTHON
      // Py_Initialize();

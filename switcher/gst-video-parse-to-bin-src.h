@@ -36,11 +36,14 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstVideoParseToBinSrc);
+    GstVideoParseToBinSrc ();
     ~GstVideoParseToBinSrc ();
-    
+    GstVideoParseToBinSrc (const GstVideoParseToBinSrc &) = delete;
+    GstVideoParseToBinSrc &operator= (const GstVideoParseToBinSrc &) = delete;
+
     bool start ();
     bool stop ();
-    
+   
   private:
     bool clean ();
     GstElement *gst_video_parse_to_bin_src_;
@@ -52,6 +55,7 @@ namespace switcher
     static void set_gst_launch_pipeline (const gchar *value, void *user_data);
     static gchar *get_gst_launch_pipeline (void *user_data);
     bool to_shmdata ();
+    bool init_segment ();
   };
 
 }  // end of namespace

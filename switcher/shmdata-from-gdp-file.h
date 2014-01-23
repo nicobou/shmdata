@@ -36,7 +36,11 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataFromGDPFile);
+    ShmdataFromGDPFile ();
     ~ShmdataFromGDPFile ();
+    ShmdataFromGDPFile (const ShmdataFromGDPFile &) = delete;
+    ShmdataFromGDPFile &operator= (const ShmdataFromGDPFile &) = delete;
+    bool init ();
 
     //local streams
     bool add_file (std::string shmwriter_path,

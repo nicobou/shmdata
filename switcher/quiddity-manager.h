@@ -62,7 +62,6 @@ namespace switcher
 	std::pair<QuiddityManager::SignalCallback, 
 	void *> > SignalCallbackMap;
 
-      static QuiddityManager::ptr make_manager ();//will get name "default"
       static QuiddityManager::ptr make_manager (std::string name);
       ~QuiddityManager(); 
       QuiddityManager *operator=(const QuiddityManager &) = delete;
@@ -240,7 +239,7 @@ namespace switcher
       gint64 history_begin_time_; //monotonic time, in microseconds
 
 
-      QuiddityManager();//will get name "default"
+      QuiddityManager() = delete;
       QuiddityManager(std::string name); 
       //auto invoke and init
       void auto_init (std::string quiddity_name);

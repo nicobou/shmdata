@@ -29,9 +29,13 @@ namespace switcher
       				       "GPL",
 				       "aacenc",
 				       "Nicolas Bouillot");
+  AAC::AAC () :
+    aacbin_ (NULL),
+    aacenc_ (NULL)
+  {}
 
   bool
-  AAC::init ()
+  AAC::init_segment ()
   {
     GstUtils::make_element ("bin", &aacbin_);
     //g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);

@@ -34,12 +34,15 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VideoRate);
-
+    VideoRate ();
+    VideoRate (const VideoRate &) = delete;
+    VideoRate &operator= (const VideoRate &) = delete;
     static void make_shmdata_writer(ShmdataReader *caller, void *vorbis_instance);
 
   private:
     GstElement *video_rate_bin_;
     GstElement *video_rate_enc_;
+    bool init_segment ();
   };
 
 }  // end of namespace

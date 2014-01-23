@@ -33,9 +33,14 @@ namespace switcher
 				       "fakeshmsrc",
 				       "Nicolas Bouillot");
   
-  
+  FakeShmdataWriter::FakeShmdataWriter () :
+    custom_props_ (new CustomPropertyHelper ()),
+    shmdata_path_spec_ (NULL),
+    shmdata_path_ (g_strdup ("none"))
+  {}
+
   bool
-  FakeShmdataWriter::init ()
+  FakeShmdataWriter::init_segment ()
   {
     init_startable (this);
 

@@ -33,10 +33,14 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JackAudioSource);
+    JackAudioSource ();
     ~JackAudioSource ();
+    JackAudioSource (const JackAudioSource&) = delete;
+    JackAudioSource &operator= (const JackAudioSource&) = delete;
 
   private: 
    GstElement *jackaudiosrc_;
+   bool init_segment ();
   };
 
 }  // end of namespace

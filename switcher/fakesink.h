@@ -36,7 +36,10 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeSink);
+    FakeSink ();
     ~FakeSink ();
+    FakeSink (const FakeSink &) = delete;
+    FakeSink &operator= (const FakeSink &) = delete;
 
   private:
     GstElement *fakesink_;
@@ -56,7 +59,7 @@ namespace switcher
     CustomPropertyHelper::ptr props_;
     GParamSpec *byte_rate_spec_;
     GParamSpec *caps_spec_;
-
+    bool init_segment ();
   };
 
 }  // end of namespace

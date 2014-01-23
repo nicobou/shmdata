@@ -35,9 +35,13 @@ namespace switcher
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JackSink);
     JackSink ();
+    JackSink (const JackSink &) = delete;
+    JackSink &operator= (const JackSink &) = delete;
 
   private:
     GstElement *jacksink_;
+    bool init_segment ();
+
   };
 
 }  // end of namespace

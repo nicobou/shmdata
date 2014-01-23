@@ -35,12 +35,21 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSource);
+    PortMidiSource ();
     ~PortMidiSource ();
+    PortMidiSource (const PortMidiSource &) = delete;
+    PortMidiSource &operator= (const PortMidiSource &) = delete;
+    bool init ();
 
     bool start ();
     bool stop ();
     
   private:
+    typedef struct {
+      PortMidiSource *port_midi_source_;
+      std::string property_long_name_;
+    } MidiPropertyContext;
+
     shmdata_any_writer_t *shmdata_writer_;
     gint last_status_;
     gint last_data1_;
@@ -48,38 +57,29 @@ namespace switcher
     //properties
     CustomPropertyHelper::ptr custom_props_;
     GParamSpec *devices_description_spec_;
-
-    bool make_property (std::string property_long_name);
-
     //device selection
     GParamSpec *devices_enum_spec_;
     gint device_;
-    static void set_device (const gint value, void *user_data);
-    static gint get_device (void *user_data);
-
     //last midi value property
     GParamSpec *midi_value_spec_;
-    static gint get_midi_value (void *user_data);
-
-    //midi properties
-    static gboolean next_midi_event_to_property_method (gchar *long_name, void *user_data);
-    static gboolean last_midi_event_to_property_method (gchar *long_name, void *user_data);
-    static gboolean remove_property_method (gchar *long_name, void *user_data);
     gboolean make_property_for_next_midi_event_;
     std::string next_property_name_;
-    typedef struct {
-      PortMidiSource *port_midi_source_;
-      std::string property_long_name_;
-    } MidiPropertyContext;
     std::map <std::string, GParamSpec *> prop_specs_;
     std::map <std::string, MidiPropertyContext> midi_property_contexts_;//this is persistent to the quiddity
     std::map <std::pair <guint,guint>, std::string> midi_channels_;
     std::map <std::string, guint> midi_values_; 
-    static gint get_midi_property_value (void *user_data);
     std::map <std::string, GParamSpec *> unused_props_specs_; //using property name instead of long name
 
+    bool make_property (std::string property_long_name);
+    static void set_device (const gint value, void *user_data);
+    static gint get_device (void *user_data);
+    static gint get_midi_value (void *user_data);
+    //midi properties
+    static gboolean next_midi_event_to_property_method (gchar *long_name, void *user_data);
+    static gboolean last_midi_event_to_property_method (gchar *long_name, void *user_data);
+    static gboolean remove_property_method (gchar *long_name, void *user_data);
+    static gint get_midi_property_value (void *user_data);
     static void on_pm_event (PmEvent *event, void *user_data);
-    
   };
   
   SWITCHER_DECLARE_PLUGIN(PortMidiSource);

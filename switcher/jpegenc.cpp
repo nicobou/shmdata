@@ -32,9 +32,13 @@ namespace switcher
 				       "LGPL",
 				       "jpegenc",
 				       "Nicolas Bouillot");
-  
+  JpegEnc::JpegEnc () :
+    jpegencbin_ (NULL),
+    jpegencenc_ (NULL)
+  {}
+ 
   bool
-  JpegEnc::init ()
+  JpegEnc::init_segment ()
   {
     if (!GstUtils::make_element ("bin", &jpegencbin_)
 	|| !GstUtils::make_element ("jpegenc", &jpegencenc_))

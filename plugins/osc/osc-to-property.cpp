@@ -117,11 +117,11 @@ namespace switcher
   /* catch any osc incoming messages. */
   int 
   OscToProperty::osc_handler(const char *path, 
-			     const char *types, 
-			     lo_arg **argv,
-			     int argc, 
+			     const char */*types*/, 
+			     lo_arg **/*argv*/,
+			     int /*argc*/, 
 			     void */*data*/, 
-			     void *user_data)
+			     void */*user_data*/)
   {
     //OscToProperty *context = static_cast<OscToProperty*>(user_data);
     g_debug ("unknown osc path %s", path);

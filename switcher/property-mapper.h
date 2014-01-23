@@ -33,20 +33,13 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PropertyMapper);
+    PropertyMapper ();
     ~PropertyMapper ();
-
+    PropertyMapper (const PropertyMapper &);
+    PropertyMapper &operator= (const PropertyMapper &);
+    bool init ();
+    
   private:
-    void make_numerical_source_properties ();
-    void make_numerical_sink_properties ();
-    static gboolean set_source_property_method (gchar *quiddity_name, 
-						gchar *property_name, 
-						void *user_data);
-    static void property_cb (GObject *gobject, 
-			     GParamSpec *pspec, 
-			     gpointer user_data);
-    static gboolean set_sink_property_method (gchar *quiddity_name, 
-					      gchar *property_name, 
-					      void *user_data);
     std::weak_ptr <Quiddity> source_quiddity_;
     std::string source_property_name_;
 
@@ -61,16 +54,26 @@ namespace switcher
     GParamSpec *source_min_spec_;
     GParamSpec *source_max_spec_;
 
-    void unsubscribe_source_property ();
-    static void set_double_value (gdouble value, void *user_data);
-    static gdouble get_double_value (void *user_data);
     double sink_min_;
     double sink_max_;
     double source_min_;
     double source_max_;
-    
+
+    void make_numerical_source_properties ();
+    void make_numerical_sink_properties ();
+    static gboolean set_source_property_method (gchar *quiddity_name, 
+						gchar *property_name, 
+						void *user_data);
+    static void property_cb (GObject *gobject, 
+			     GParamSpec *pspec, 
+			     gpointer user_data);
+    static gboolean set_sink_property_method (gchar *quiddity_name, 
+					      gchar *property_name, 
+					      void *user_data);
+    void unsubscribe_source_property ();
+    static void set_double_value (gdouble value, void *user_data);
+    static gdouble get_double_value (void *user_data);
     };
-  
 }  // end of namespace
 
 #endif // ifndef

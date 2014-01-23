@@ -34,10 +34,14 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Decodebin2);
+    Decodebin2 ();
+    Decodebin2 (const Decodebin2 &) = delete;
+    Decodebin2 &operator= (const Decodebin2 &) = delete;
 
   private: 
    GstElement *decodebin2_;
    std::map<std::string, int> media_counters_;
+   bool init_segment ();
    static void make_decodebin2_active (ShmdataReader *caller, void *decodebin2_instance);
    static void pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
    static void no_more_pads_cb (GstElement* object, gpointer user_data);

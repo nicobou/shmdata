@@ -34,7 +34,11 @@ namespace switcher
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(MyPlugin);
+    MyPlugin ();
     ~MyPlugin ();
+    MyPlugin (const MyPlugin &) = delete;
+    MyPlugin &operator= (const MyPlugin &) = delete;
+    bool init ();
 
     bool start ();
     bool stop ();
@@ -43,11 +47,11 @@ namespace switcher
     CustomPropertyHelper::ptr custom_props_;
     bool myprop_;
     GParamSpec *myprop_prop_;
+    gchar *hello_;
 
     static gboolean get_myprop (void *user_data);
     static void set_myprop (gboolean myprop, void *user_data);
     static gchar *my_hello_world_method (gchar *first_arg, void *user_data);
-    gchar *hello_;
   };
   
   SWITCHER_DECLARE_PLUGIN(MyPlugin);

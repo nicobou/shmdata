@@ -35,10 +35,14 @@ namespace switcher
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Vorbis);
     static void make_shmdata_writer(ShmdataReader *caller, void *vorbis_instance);
+    Vorbis ();
+    Vorbis (const Vorbis &) = delete;
+    Vorbis &operator= (const Vorbis &) = delete;
 
   private:
     GstElement *vorbisbin_;
     GstElement *vorbisenc_;
+    bool init_segment ();
   };
 
 }  // end of namespace

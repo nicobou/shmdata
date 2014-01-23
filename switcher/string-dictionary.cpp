@@ -34,11 +34,19 @@ namespace switcher
 				       "LGPL",
 				       "dico",
 				       "Nicolas Bouillot");
+  StringDictionary::StringDictionary() :
+    dico_ (),
+    set_get_contexts_ (),
+    custom_props_ (new CustomPropertyHelper ()),
+    prop_specs_ ()
+  {}
+
+  StringDictionary::~StringDictionary()
+  {}
+    
   bool
   StringDictionary::init()
   {
-    custom_props_.reset (new CustomPropertyHelper ());
-
     install_method ("Create A New Entry",
 		    "new-entry",
 		    "create a new dictionary entry accessible through a property sharing the same name",
@@ -99,11 +107,6 @@ namespace switcher
   
     return true;
   }
-
-  StringDictionary::~StringDictionary()
-  {
-  }
-    
 
   gboolean
   StringDictionary::create_entry (const gchar *entry_name, 

@@ -33,13 +33,14 @@ namespace switcher
 				       "audiotestsrc", 
 				       "Nicolas Bouillot");
   
+  AudioTestSource::AudioTestSource () :
+    audiotestsrc_ (NULL)
+  {}
+  
   bool
-  AudioTestSource::init ()
+  AudioTestSource::init_segment ()
   {
-
     init_startable (this);
-
-    audiotestsrc_ = NULL;
     return make_audiotestsrc ();
   }
   

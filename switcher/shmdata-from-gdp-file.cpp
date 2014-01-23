@@ -32,6 +32,14 @@ namespace switcher
 				       "shmfromfile",
 				       "Nicolas Bouillot");
   
+  ShmdataFromGDPFile::ShmdataFromGDPFile () :
+    custom_prop_ (new CustomPropertyHelper ()),  
+    playing_param_ (), 
+    playing_ (FALSE), 
+    shmdata_names_ (),
+    manager_ ()
+  {}
+
   ShmdataFromGDPFile::~ShmdataFromGDPFile ()
   {
     clean_players ();
@@ -40,7 +48,6 @@ namespace switcher
   bool 
   ShmdataFromGDPFile::init ()
   {
-
     install_method ("Add File",
 		    "add_file", 
 		    "add a file to play", 
@@ -71,9 +78,7 @@ namespace switcher
 		    this);
     
     
-//registering playing property
-    playing_ = FALSE;
-    custom_prop_.reset (new CustomPropertyHelper ());
+    //registering playing property
     playing_param_ = custom_prop_->make_boolean_property ("playing", 
 							  "start/stop playing",
 							  FALSE,
@@ -85,9 +90,6 @@ namespace switcher
      				playing_param_, 
      				"playing",
 				"Playing");
-    
-    //set the name before registering properties
-    set_name (g_strdup_printf ("gdpfilesrc%s", g_param_spec_get_name(playing_param_)));//FIXME implement and use make_name () in quiddity class, should be used for gsoap also
     return true;
   }
 
@@ -165,20 +167,11 @@ namespace switcher
       {
 	g_debug ("creating manager");
 	manager_ = QuiddityManager::make_manager ("manager_"+get_name());
-	manager_->create ("runtime","single_runtime");//only one runtime for all
-	manager_->invoke_va("single_runtime", 
-			    "pause", 
-			    NULL, 
-			    NULL);
+	//FIXME pause runtime
       }
     for (auto &it : shmdata_names_)
       {
 	manager_->create ("gstsrc", it.first.c_str ());
-	manager_->invoke_va (it.first.c_str (), 
-			     "set_runtime", 
-			     NULL, 
-			     "single_runtime", 
-			     NULL);
 	gchar *pipe = g_strdup_printf ("filesrc location=%s ! gdpdepay ! identity sync=true",
 	 			       it.first.c_str ());
 	g_debug ("ShmdataFromGDPFile::make_players %s", pipe); 

@@ -31,9 +31,13 @@ namespace switcher
 				       "LGPL",
 				       "vorbis",
 				       "Nicolas Bouillot");
-  
+  Vorbis::Vorbis () :
+    vorbisbin_ (NULL),
+    vorbisenc_ (NULL)
+  {}
+
   bool
-  Vorbis::init ()
+  Vorbis::init_segment ()
   {
     GstUtils::make_element ("bin",&vorbisbin_);
     GstUtils::make_element ("vorbisenc", &vorbisenc_);

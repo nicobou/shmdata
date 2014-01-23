@@ -65,43 +65,41 @@ namespace switcher
   QuiddityManager_Impl::ptr 
   QuiddityManager_Impl::make_manager ()
   {
-    QuiddityManager_Impl::ptr manager(new QuiddityManager_Impl);
+    QuiddityManager_Impl::ptr manager(new QuiddityManager_Impl("default"));
     return manager;
   }
   
   QuiddityManager_Impl::ptr 
-  QuiddityManager_Impl::make_manager (std::string name)
+  QuiddityManager_Impl::make_manager (const std::string &name)
   {
     QuiddityManager_Impl::ptr manager(new QuiddityManager_Impl(name));
     return manager;
   }
 
-  QuiddityManager_Impl::QuiddityManager_Impl() 
+  QuiddityManager_Impl::QuiddityManager_Impl(const std::string &name) :
+      plugins_ (),
+      name_ (name),
+      abstract_factory_ (),
+      quiddities_ (),
+      quiddities_nick_names_ (),
+      property_subscribers_ (),
+      signal_subscribers_ (),
+      classes_doc_ (new JSONBuilder ()),
+      creation_hook_ (NULL),
+      removal_hook_ (NULL),
+      creation_hook_user_data_ (NULL),
+      removal_hook_user_data_ (NULL),
+      quiddity_created_counter_ (0), 
+      thread_ (NULL),
+      main_context_ (NULL),
+      mainloop_ (NULL) 
   {
-    init ("default");
-  }
-  
-  QuiddityManager_Impl::QuiddityManager_Impl(std::string name) 
-  {
-    init (name);
-  }
-
-  void
-  QuiddityManager_Impl::init (std::string name)
-  {
-    name_ = name;
     init_gmainloop ();
-    creation_hook_ = NULL;
-    removal_hook_ = NULL;
-    creation_hook_user_data_ = NULL;
-    removal_hook_user_data_ = NULL;
     remove_shmdata_sockets ();
     register_classes ();
-    classes_doc_.reset (new JSONBuilder ());
     make_classes_doc ();
-    quiddity_created_counter_ = 0;
   }
-  
+
   QuiddityManager_Impl::~QuiddityManager_Impl()
   {
     g_main_loop_quit (mainloop_);

@@ -33,6 +33,31 @@ namespace switcher
 				       "midisrc",
 				       "Nicolas Bouillot");
 
+  PortMidiSource::PortMidiSource () :
+    shmdata_writer_ (shmdata_any_writer_init ()),
+    last_status_ (-1),
+    last_data1_ (-1),
+    last_data2_ (-1),
+    custom_props_ (new CustomPropertyHelper ()),
+    devices_description_spec_ (NULL),
+    devices_enum_spec_ (NULL),
+    device_ (0),
+    midi_value_spec_ (NULL),
+    make_property_for_next_midi_event_ (FALSE),
+    next_property_name_ (),
+    prop_specs_ (),
+    midi_property_contexts_ (),
+    midi_channels_ (),
+    midi_values_ (), 
+    unused_props_specs_ ()
+  {}
+
+  PortMidiSource::~PortMidiSource ()
+  {
+    shmdata_any_writer_close (shmdata_writer_);
+  }
+  
+  
   bool
   PortMidiSource::init ()
   {
@@ -42,14 +67,7 @@ namespace switcher
 	g_debug ("no MIDI capture device detected");
 	return false;
       }
-
     init_startable (this);
-    make_property_for_next_midi_event_ = FALSE;
-    last_status_ = -1;
-    last_data1_ = -1;
-    last_data2_ = -1;
-
-    custom_props_.reset (new CustomPropertyHelper ());
     devices_description_spec_ = 
       custom_props_->make_string_property ("devices-json", 
 					   "Description of capture devices (json formated)",
@@ -131,8 +149,6 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 
-    shmdata_writer_ = shmdata_any_writer_init ();
-    
     if (! shmdata_any_writer_set_path (shmdata_writer_, make_file_name ("midi").c_str ()))
       {
 	g_debug ("**** The file exists, therefore a shmdata cannot be operated with this path.\n");
@@ -144,11 +160,6 @@ namespace switcher
     shmdata_any_writer_start (shmdata_writer_);
   
     return true;
-  }
-  
-  PortMidiSource::~PortMidiSource ()
-  {
-    shmdata_any_writer_close (shmdata_writer_);
   }
   
   bool  

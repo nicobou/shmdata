@@ -83,6 +83,7 @@ namespace switcher
     std::mutex window_destruction_mutex_;
     std::condition_variable window_destruction_cond_;
 
+    bool init_segment ();
     static gboolean create_ui (void *user_data);
     static void realize_cb (GtkWidget *widget, void *user_data);
     static void delete_event_cb (GtkWidget *widget, GdkEvent *event, void *user_data);

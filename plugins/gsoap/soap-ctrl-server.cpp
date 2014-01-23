@@ -30,11 +30,18 @@ namespace switcher
 				       "SOAPcontrolServer",
 				       "Nicolas Bouillot");
     
+  SoapCtrlServer::SoapCtrlServer () :
+    soap_ (),
+    port_ (8080),
+    quit_server_thread_ (false),
+    service_ (NULL), 
+    socket_ (),
+    thread_ (NULL)
+  {}
+
   bool
   SoapCtrlServer::init ()
   {
-    thread_ = NULL;
-    port_ = 8080;
     soap_init(&soap_);
     //release port
     soap_.connect_flags = SO_LINGER; 

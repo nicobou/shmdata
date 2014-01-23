@@ -46,7 +46,7 @@ namespace switcher
   public:
     typedef void (*on_pm_event_method) (PmEvent *midi_event, void *user_data);
     PortMidi ();
-    ~PortMidi ();
+    virtual ~PortMidi ();
     PortMidi (const PortMidi &) = delete;
     PortMidi &operator= (const PortMidi &) = delete;
    

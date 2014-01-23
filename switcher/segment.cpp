@@ -58,57 +58,62 @@ namespace switcher
 					      Segment::get_shmdata_readers_by_gvalue);
 
     install_property_by_pspec (gobject_->get_gobject (), 
-				json_writers_description_, 
-				"shmdata-writers",
-				"Shmdata Writers");
+			       json_writers_description_, 
+			       "shmdata-writers",
+			       "Shmdata Writers");
     install_property_by_pspec (gobject_->get_gobject (), 
-				json_readers_description_, 
-				"shmdata-readers",
-				"Shmdata Readers");
-
-
-    //runtime
-    init_runtime (*this);
+			       json_readers_description_, 
+			       "shmdata-readers",
+			       "Shmdata Readers");
+ 
     make_bin();
 
-        //FIXME
-     // GType types[] = {G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING};
-     // make_custom_signal_with_class_name ("segment",
-     // 					 "on-new-shmdata-writer", 
-     // 					 G_TYPE_NONE,
-     // 					 3,
-     // 					 types);
-     // set_signal_description ("On New Shmdata Writer",
-     // 			     "on-new-shmdata-writer",
-     // 			     "a new shmdata writer has been created",
-     // 			     Signal::make_arg_description("Quiddity Name",
-     // 							  "quiddity_name",
-     // 							  "the quiddity name",
-     // 							  "Path",
-     // 							  "path",
-     // 							  "the shmdata path",
-     // 							  "JSON Documentation",
-     // 							  "json_doc",
-     // 							  "the writer json documentation",
-     // 							  NULL));
-     // make_custom_signal_with_class_name ("segment",
-     // 					 "on-new-shmdata-reader", 
-     // 					 G_TYPE_NONE,
-     // 					 3,
-     // 					 types);
-     // set_signal_description ("On New Shmdata Reader",
-     // 			     "on-new-shmdata-reader",
-     // 			     "a new shmdata reader has been created",
-     // 			     Signal::make_arg_description("Quiddity Name",
-     // 							  "quiddity_name",
-     // 							  "the quiddity name",
-     // 							  "Path",
-     // 							  "path",
-     // 							  "the shmdata path",
-     // 							  "JSON Documentation",
-     // 							  "json_doc",
-     // 							  "the writer json documentation",
-     // 							  NULL));
+    //FIXME
+    // GType types[] = {G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING};
+    // make_custom_signal_with_class_name ("segment",
+    // 					 "on-new-shmdata-writer", 
+    // 					 G_TYPE_NONE,
+    // 					 3,
+    // 					 types);
+    // set_signal_description ("On New Shmdata Writer",
+    // 			     "on-new-shmdata-writer",
+    // 			     "a new shmdata writer has been created",
+    // 			     Signal::make_arg_description("Quiddity Name",
+    // 							  "quiddity_name",
+    // 							  "the quiddity name",
+    // 							  "Path",
+    // 							  "path",
+    // 							  "the shmdata path",
+    // 							  "JSON Documentation",
+    // 							  "json_doc",
+    // 							  "the writer json documentation",
+    // 							  NULL));
+    // make_custom_signal_with_class_name ("segment",
+    // 					 "on-new-shmdata-reader", 
+    // 					 G_TYPE_NONE,
+    // 					 3,
+    // 					 types);
+    // set_signal_description ("On New Shmdata Reader",
+    // 			     "on-new-shmdata-reader",
+    // 			     "a new shmdata reader has been created",
+    // 			     Signal::make_arg_description("Quiddity Name",
+    // 							  "quiddity_name",
+    // 							  "the quiddity name",
+    // 							  "Path",
+    // 							  "path",
+    // 							  "the shmdata path",
+    // 							  "JSON Documentation",
+    // 							  "json_doc",
+    // 							  "the writer json documentation",
+    // 							  NULL));
+  }
+
+  bool
+  Segment::init ()
+  {
+    //runtime
+    init_runtime (*this);
+    return init_segment ();
   }
 
   Segment::~Segment()
