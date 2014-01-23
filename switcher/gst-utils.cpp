@@ -181,9 +181,9 @@ namespace switcher
   void
   GstUtils::wait_state_changed (GstElement *bin)
   {
-    //FIXME
-    usleep (10000);
-    return;
+    // //FIXME
+    // usleep (10000);
+    // return;
 
     if (!GST_IS_BIN (bin))
       {
