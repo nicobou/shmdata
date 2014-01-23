@@ -63,6 +63,7 @@ namespace switcher
     if (!GstUtils::make_element ("uridecodebin",&uridecodebin_))
       return false;
     init_startable (this);
+    install_play_pause ();
     uri_spec_ = 
       custom_props_->make_string_property ("uri", 
 					   "URI To Be Redirected Into Shmdata(s)",
@@ -75,7 +76,6 @@ namespace switcher
 				uri_spec_, 
 				"uri",
 				"URI");
-    //loop property
     loop_prop_ = 
       custom_props_->make_boolean_property ("loop", 
 					    "loop media",
@@ -88,18 +88,6 @@ namespace switcher
 				loop_prop_, 
 				"loop",
 				"Looping");
-
-    //signaling end of stream
-    //FIXME do that
-    // make_custom_signal ("on-end-of-stream", 
-    // 			G_TYPE_NONE,
-    // 			0,
-    // 			NULL);
-    
-    // set_signal_description ("on-end-of-stream",
-    //  			    "the streamed finished",
-    //  			    Signal::make_arg_description("none"));
-    
     return true;
   }
   
@@ -129,7 +117,6 @@ namespace switcher
 		      "source-setup",  
 		      (GCallback) Uridecodebin::source_setup_cb ,  
 		      (gpointer) this);      
-
     // g_signal_connect (G_OBJECT (uridecodebin_),  
     // 		      "pad-removed",  
     // 		      (GCallback) Uridecodebin::pad_removed_cb ,  

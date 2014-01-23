@@ -26,9 +26,9 @@
 #include "runtime.h"
 #include "quiddity.h" 
 #include "quiddity-command.h" 
+#include "custom-property-helper.h"
 #include "gst-utils.h"
 #include <shmdata/base-reader.h>
-#include "quiddity-command.h"
 #include <gst/interfaces/xoverlay.h>
 
 namespace switcher
@@ -40,9 +40,11 @@ namespace switcher
     position_tracking_source_ (NULL),
     source_funcs_ (),
     source_ (NULL),
-    quid_ (NULL)
-  {
-  }
+    quid_ (NULL),
+    custom_props_ (new CustomPropertyHelper ()),
+    play_pause_spec_ (NULL),
+    play_ (true)
+  {}
 
   void
   Runtime::init_runtime (Quiddity &quiddity)
@@ -64,55 +66,57 @@ namespace switcher
     ((GstBusSource*)source_)->inited = FALSE;
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
     GstUtils::wait_state_changed (pipeline_);
+    play_pause_spec_ = 
+      custom_props_->make_boolean_property ("play", 
+					    "play",
+					    (gboolean)TRUE,
+					    (GParamFlags) G_PARAM_READWRITE,
+					    Runtime::set_play,
+					    Runtime::get_play,
+					    this);
+  }
 
-    quid_->install_method ("Play",
-			      "play", 
-			      "activate the runtime", 
-			      "success or fail",
-			      Method::make_arg_description ("none",
-							    NULL),
-			      (Method::method_ptr) &play_wrapped, 
-			      G_TYPE_BOOLEAN,
-			      Method::make_arg_type_description (G_TYPE_NONE, NULL),
-			      this);
-    
-    quid_->install_method ("Pause",
-			      "pause", 
-			      "pause the runtime", 
-			      "success or fail",
-			      Method::make_arg_description ("none",
-							    NULL),
-			      (Method::method_ptr) &pause_wrapped, 
-			      G_TYPE_BOOLEAN,
-			      Method::make_arg_type_description (G_TYPE_NONE, NULL),
-			      this);
-    
+  void
+  Runtime::install_play_pause ()
+  {
+    quid_->install_property_by_pspec (custom_props_->get_gobject (), 
+				      play_pause_spec_, 
+				      "play",
+				      "Play");
+  }
+  
+  void 
+  Runtime::install_seek ()
+  {
     quid_->install_method ("Seek",
-			      "seek", 
-			      "seek the runtime", 
-			      "success or fail",
-			      Method::make_arg_description ("Position",
-							    "position",
-							    "position in milliseconds",
-							    NULL),
-			      (Method::method_ptr) &seek_wrapped, 
-			      G_TYPE_BOOLEAN,
-			      Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-			      this);
-    
+			   "seek", 
+			   "seek the runtime", 
+			   "success or fail",
+			   Method::make_arg_description ("Position",
+							 "position",
+							 "position in milliseconds",
+							 NULL),
+			   (Method::method_ptr) &seek_wrapped, 
+			   G_TYPE_BOOLEAN,
+			   Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
+			   this);
+  }
+  
+  void
+  Runtime::install_speed ()
+  {
     quid_->install_method ("Speed",
-			      "speed", 
-			      "controle speed of runtime", 
-			      "success or fail",
-			      Method::make_arg_description ("Speed",
-							    "speed",
-							    "1.0 is normal speed, 0.5 is half the speed and 2.0 is double speed",
-							    NULL),
-			      (Method::method_ptr) &speed_wrapped, 
-			      G_TYPE_BOOLEAN,
-			      Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-			      this);
-    
+			   "speed", 
+			   "controle speed of runtime", 
+			   "success or fail",
+			   Method::make_arg_description ("Speed",
+							 "speed",
+							 "1.0 is normal speed, 0.5 is half the speed and 2.0 is double speed",
+							 NULL),
+			   (Method::method_ptr) &speed_wrapped, 
+			   G_TYPE_BOOLEAN,
+			   Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
+			   this);
   }
   
   Runtime::~Runtime ()
@@ -126,56 +130,42 @@ namespace switcher
        g_source_destroy (source_);
   }
 
-  gboolean
-  Runtime::play_wrapped (gpointer, 
-			 gpointer user_data)
+
+  void 
+  Runtime::set_play (gboolean play, void *user_data)
   {
-    Runtime *context = static_cast<Runtime *>(user_data);
-      
-    if (context->play ())
-      return TRUE;
-    else
-      return FALSE;
-  }
-  
-  bool
-  Runtime::play ()
-  {
-    g_debug ("Runtime::play");
-    gst_element_set_state (pipeline_, GST_STATE_PLAYING);
-    if (NULL != quid_->get_g_main_context ())
+    Runtime *context = static_cast<Runtime *> (user_data);
+    context->play_ = play;
+    if (TRUE == play)
       {
-	guint position_tracking_id = GstUtils::g_timeout_add_to_context (200, 
-									 (GSourceFunc) cb_print_position, 
-									 this,
-									 quid_->get_g_main_context ());
-	position_tracking_source_ = g_main_context_find_source_by_id (quid_->get_g_main_context (),
-								      position_tracking_id);
+	gst_element_set_state (context->pipeline_, 
+			       GST_STATE_PLAYING);
+	if (NULL == context->position_tracking_source_
+	    && NULL != context->quid_->get_g_main_context ())
+	  {
+	    guint position_tracking_id = 
+	      GstUtils::g_timeout_add_to_context (200, 
+						  (GSourceFunc) cb_print_position, 
+						  context,
+						  context->quid_->get_g_main_context ());
+	    context->position_tracking_source_ = 
+	      g_main_context_find_source_by_id (context->quid_->get_g_main_context (),
+						position_tracking_id);
+	  }
       }
-    return true;
-  }
-  
-
-  gboolean
-  Runtime::pause_wrapped (gpointer, 
-			  gpointer user_data)
-  {
-    Runtime *context = static_cast<Runtime *>(user_data);
-      
-    if (context->pause ())
-      return TRUE;
     else
-      return FALSE;
+      gst_element_set_state (context->pipeline_, 
+			     GST_STATE_PAUSED);
   }
 
-  bool
-  Runtime::pause ()
+  gboolean 
+  Runtime::get_play (void *user_data)
   {
-    g_debug ("Runtime::pause");
-    gst_element_set_state (pipeline_, GST_STATE_PAUSED);
-    return true;
+    Runtime *context = static_cast<Runtime *> (user_data);
+    return context->play_;
   }
-  
+
+
   gboolean
   Runtime::seek_wrapped (gdouble position, gpointer user_data)
   {

@@ -35,6 +35,7 @@ namespace switcher
 {
   class Quiddity;
   class QuiddityCommand;
+  class CustomPropertyHelper;
 
   class Runtime
     {
@@ -48,7 +49,10 @@ namespace switcher
       void init_runtime (Quiddity &quiddity);//FIXME should called quiddity-manager-impl 
       //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
       GstElement *get_pipeline ();
-
+      void install_play_pause ();
+      void install_seek ();
+      void install_speed ();
+      
     private:
      typedef struct {
        Runtime *self;
@@ -68,13 +72,15 @@ namespace switcher
       GSourceFuncs source_funcs_;
       GSource *source_;
       Quiddity *quid_;
+      std::shared_ptr<CustomPropertyHelper> custom_props_;
+      GParamSpec *play_pause_spec_;
+      bool play_;
 
-      bool play ();
-      bool pause ();
       bool seek (gdouble position);
       bool speed (gdouble speed);
-      static gboolean play_wrapped (gpointer unused, gpointer user_data);
-      static gboolean pause_wrapped (gpointer unused, gpointer user_data);
+      static void set_play (gboolean play, void *user_data);
+      static gboolean get_play (void *user_data);
+
       static gboolean seek_wrapped (gdouble position, gpointer user_data);
       static gboolean speed_wrapped (gdouble speed, gpointer user_data);
       static gboolean bus_called (GstBus *bus, GstMessage *msg, gpointer data); 
