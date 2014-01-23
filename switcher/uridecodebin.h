@@ -25,14 +25,13 @@
 
 #include "base-source.h"
 #include "gst-element-cleaner.h"
-#include "startable-quiddity.h"
 #include "custom-property-helper.h"
 #include <unordered_map>
 
 namespace switcher
 {
 
-  class Uridecodebin : public BaseSource, public GstElementCleaner, public StartableQuiddity
+  class Uridecodebin : public BaseSource, public GstElementCleaner
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Uridecodebin);
@@ -41,11 +40,6 @@ namespace switcher
     Uridecodebin (const Uridecodebin &) = delete;
     Uridecodebin &operator= (const Uridecodebin &) = delete;
 
-    bool start ();
-    bool stop ();
-
-    static gboolean get_loop (void *user_data);
-    static void set_loop (gboolean mute, void *user_data);
 
   private: 
    GstElement *uridecodebin_;
@@ -53,7 +47,7 @@ namespace switcher
    GstPad *main_pad_;
    GstCaps *rtpgstcaps_;
    bool discard_next_uncomplete_buffer_;
-   std::string runtime_name_;
+   //   std::string runtime_name_;
    void init_uridecodebin ();
    void destroy_uridecodebin ();
    QuiddityCommand *on_error_command_; //for the runtime error handler
@@ -70,7 +64,8 @@ namespace switcher
    gchar *uri_;
 
    bool init_segment ();
-
+   static gboolean get_loop (void *user_data);
+   static void set_loop (gboolean mute, void *user_data);
    static void set_uri (const gchar *value, void *user_data);
    static gchar *get_uri (void *user_data);
    bool to_shmdata ();
@@ -96,7 +91,6 @@ namespace switcher
    /* 					    GstCaps *caps, */
    /* 					    gpointer user_data); */
   };
-
 }  // end of namespace
 
 #endif // ifndef

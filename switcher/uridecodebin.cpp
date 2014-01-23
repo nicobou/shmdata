@@ -62,8 +62,8 @@ namespace switcher
   { 
     if (!GstUtils::make_element ("uridecodebin",&uridecodebin_))
       return false;
-    init_startable (this);
     install_play_pause ();
+    //install_seek ();
     uri_spec_ = 
       custom_props_->make_string_property ("uri", 
 					   "URI To Be Redirected Into Shmdata(s)",
@@ -242,7 +242,6 @@ namespace switcher
   Uridecodebin::process_eos (gpointer user_data)
   {
     Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-
     GstQuery *query;
     gboolean res;
     query = gst_query_new_segment (GST_FORMAT_TIME);
@@ -264,25 +263,22 @@ namespace switcher
    
     if (!context->loop_)
       {
-	context->stop ();
-	return FALSE;
+	context->play (FALSE);
       }
- 
-    gboolean ret;
+
+    gboolean ret = FALSE;
     ret = gst_element_seek (GST_ELEMENT (gst_pad_get_parent (context->main_pad_)),
-			    rate,  
-			    GST_FORMAT_TIME,  
-			    (GstSeekFlags) (GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE), 
-			    //| GST_SEEK_FLAG_SKIP 
-			    //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization 
-			    GST_SEEK_TYPE_SET,  
-			    0.0 * GST_SECOND,  
-			    GST_SEEK_TYPE_NONE,  
-			    GST_CLOCK_TIME_NONE);  
+     			    rate,  
+     			    GST_FORMAT_TIME,  
+     			    (GstSeekFlags) (GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE), 
+     			    //| GST_SEEK_FLAG_SKIP 
+     			    //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization 
+     			    GST_SEEK_TYPE_SET,  
+     			    0.0 * GST_SECOND,  
+     			    GST_SEEK_TYPE_NONE,  
+     			    GST_CLOCK_TIME_NONE);  
     if (!ret)
       g_warning ("looping error\n");
-   
-    g_debug ("finish looping");
     return FALSE;
   }
 
@@ -292,8 +288,8 @@ namespace switcher
     Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
     if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) { 
       // g_print ("----- pad with EOS %s:%s, src: %p %s\n",
-      // 	       GST_DEBUG_PAD_NAME (pad),GST_EVENT_SRC(event), gst_element_get_name (GST_EVENT_SRC(event)));
-
+      //  	       GST_DEBUG_PAD_NAME (pad),GST_EVENT_SRC(event), gst_element_get_name (GST_EVENT_SRC(event)));
+      
       if (pad == context->main_pad_)
 	{
 	  GstUtils::g_idle_add_full_with_context (context->get_g_main_context (),
@@ -354,6 +350,7 @@ namespace switcher
      if (main_pad_ == NULL)
        main_pad_ = srcpad;//saving first pad for looping
      gst_pad_add_event_probe (srcpad, (GCallback) event_probe_cb, this);   
+     g_print ("PROBING -------\n");
      gst_object_unref (srcpad);
 
      //giving a name to the stream
@@ -516,13 +513,10 @@ namespace switcher
   Uridecodebin::to_shmdata ()
   {
     destroy_uridecodebin ();
-    
     reset_bin ();
     init_uridecodebin ();
-        
     g_debug ("to_shmdata set uri %s", uri_);
     g_object_set (G_OBJECT (uridecodebin_), "uri", uri_, NULL); 
-
     gst_bin_add (GST_BIN (bin_), uridecodebin_);
     GstUtils::wait_state_changed (bin_);
     GstUtils::sync_state_with_parent (uridecodebin_);
@@ -549,6 +543,8 @@ namespace switcher
     Uridecodebin *context = static_cast <Uridecodebin *> (user_data);
     g_free (context->uri_);
     context->uri_ = g_strdup (value);
+    context->to_shmdata ();
+    context->query_position_and_length ();
     context->custom_props_->notify_property_changed (context->uri_spec_);
   }
 
@@ -558,21 +554,4 @@ namespace switcher
     Uridecodebin *context = static_cast <Uridecodebin *> (user_data);
     return context->uri_;
   }
-  
-  bool 
-  Uridecodebin::start ()
-  {
-    if (! to_shmdata ())
-      return false;
-    
-    return true;
-  }
-  
-  bool 
-  Uridecodebin::stop ()
-  {
-    destroy_uridecodebin ();
-    return true;
-  }
-
 }

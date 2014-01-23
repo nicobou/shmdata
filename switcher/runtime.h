@@ -27,8 +27,6 @@
 #define __SWITCHER_RUNTIME_H__
 
 #include <gst/gst.h>
-/* #include "quiddity.h" */
-/* #include "quiddity-command.h" */
 #include <memory>
 
 namespace switcher
@@ -52,7 +50,10 @@ namespace switcher
       void install_play_pause ();
       void install_seek ();
       void install_speed ();
-      
+      void play (gboolean);
+      bool seek (gdouble position_in_ms);
+      void query_position_and_length ();
+
     private:
      typedef struct {
        Runtime *self;
@@ -75,13 +76,15 @@ namespace switcher
       std::shared_ptr<CustomPropertyHelper> custom_props_;
       GParamSpec *play_pause_spec_;
       bool play_;
+      GParamSpec *seek_spec_;
+      gdouble seek_;
+      gint64 length_;
 
-      bool seek (gdouble position);
       bool speed (gdouble speed);
-      static void set_play (gboolean play, void *user_data);
       static gboolean get_play (void *user_data);
-
-      static gboolean seek_wrapped (gdouble position, gpointer user_data);
+      static void set_play (gboolean play, void *user_data);
+      static gdouble get_seek (void *user_data);
+      static void set_seek (gdouble position, void *user_data);
       static gboolean speed_wrapped (gdouble speed, gpointer user_data);
       static gboolean bus_called (GstBus *bus, GstMessage *msg, gpointer data); 
       static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
@@ -96,7 +99,7 @@ namespace switcher
       static void print_one_tag (const GstTagList *list, 
 				 const gchar *tag, 
 				 gpointer user_data);
-      static gboolean cb_print_position (gpointer user_data);
+      static gboolean query_position (gpointer user_data);
     };
 } // end of namespace
 

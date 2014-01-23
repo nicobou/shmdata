@@ -43,7 +43,10 @@ namespace switcher
     quid_ (NULL),
     custom_props_ (new CustomPropertyHelper ()),
     play_pause_spec_ (NULL),
-    play_ (true)
+    play_ (true),
+    seek_spec_ (NULL),
+    seek_ (0.0),
+    length_ (0)
   {}
 
   void
@@ -74,6 +77,17 @@ namespace switcher
 					    Runtime::set_play,
 					    Runtime::get_play,
 					    this);
+    seek_spec_ = 
+      custom_props_->make_double_property ("seek", 
+					   "seek (in percent)",
+					   0.0,
+					   1.0,
+					   0.0,
+					   (GParamFlags) G_PARAM_READWRITE,
+					   Runtime::set_seek,
+					   Runtime::get_seek,
+					   this);
+
   }
 
   void
@@ -88,18 +102,10 @@ namespace switcher
   void 
   Runtime::install_seek ()
   {
-    quid_->install_method ("Seek",
-			   "seek", 
-			   "seek the runtime", 
-			   "success or fail",
-			   Method::make_arg_description ("Position",
-							 "position",
-							 "position in milliseconds",
-							 NULL),
-			   (Method::method_ptr) &seek_wrapped, 
-			   G_TYPE_BOOLEAN,
-			   Method::make_arg_type_description (G_TYPE_DOUBLE, NULL),
-			   this);
+    quid_->install_property_by_pspec (custom_props_->get_gobject (), 
+				      seek_spec_, 
+				      "seek",
+				      "Seek");
   }
   
   void
@@ -132,30 +138,38 @@ namespace switcher
 
 
   void 
+  Runtime::play (gboolean play)
+  {
+    if (play_ == play)
+      return;
+    play_ = play;
+    if (NULL == position_tracking_source_
+	&& NULL != quid_->get_g_main_context ())
+      {
+	guint position_tracking_id = 
+	  GstUtils::g_timeout_add_to_context (200, 
+					      (GSourceFunc) query_position, 
+					      this,
+					      quid_->get_g_main_context ());
+	position_tracking_source_ = 
+	  g_main_context_find_source_by_id (quid_->get_g_main_context (),
+					    position_tracking_id);
+      }
+    
+    if (TRUE == play)
+      gst_element_set_state (pipeline_, 
+			     GST_STATE_PLAYING);
+    else
+      gst_element_set_state (pipeline_, 
+			     GST_STATE_PAUSED);
+    custom_props_->notify_property_changed (play_pause_spec_);
+  }
+
+  void 
   Runtime::set_play (gboolean play, void *user_data)
   {
     Runtime *context = static_cast<Runtime *> (user_data);
-    context->play_ = play;
-    if (TRUE == play)
-      {
-	gst_element_set_state (context->pipeline_, 
-			       GST_STATE_PLAYING);
-	if (NULL == context->position_tracking_source_
-	    && NULL != context->quid_->get_g_main_context ())
-	  {
-	    guint position_tracking_id = 
-	      GstUtils::g_timeout_add_to_context (200, 
-						  (GSourceFunc) cb_print_position, 
-						  context,
-						  context->quid_->get_g_main_context ());
-	    context->position_tracking_source_ = 
-	      g_main_context_find_source_by_id (context->quid_->get_g_main_context (),
-						position_tracking_id);
-	  }
-      }
-    else
-      gst_element_set_state (context->pipeline_, 
-			     GST_STATE_PAUSED);
+    context->play (play);
   }
 
   gboolean 
@@ -165,60 +179,39 @@ namespace switcher
     return context->play_;
   }
 
-
-  gboolean
-  Runtime::seek_wrapped (gdouble position, gpointer user_data)
-  {
-    Runtime *context = static_cast<Runtime *>(user_data);
-      
-    g_debug ("seek_wrapped %f", position);
-
-    if (context->seek (position))
-      return TRUE;
-    else
-      return FALSE;
-  }
-
   bool
   Runtime::seek (gdouble position)
   {
-    g_debug ("Runtime::seek %f", position);
-    // GstQuery *query;
-    // gboolean res;
-    // query = gst_query_new_segment (GST_FORMAT_TIME);
-    // res = gst_element_query (pipeline_, query);
-    // gdouble rate = -2.0;
-    // gint64 start_value = -2.0;
-    // gint64 stop_value = -2.0;
-    // if (res) {
-    //   gst_query_parse_segment (query, &rate, NULL, &start_value, &stop_value);
-    //   g_debug ("rate = %f start = %" GST_TIME_FORMAT" stop = %" GST_TIME_FORMAT"\n", 
-    // 	       rate,
-    // 	       GST_TIME_ARGS (start_value),
-    // 	       GST_TIME_ARGS (stop_value));
-    // }
-    // else {
-    //   g_warning ("duration query failed...");
-    // }
-    // gst_query_unref (query);
-  
-    gboolean ret;
+    gboolean ret = FALSE;
     ret = gst_element_seek (pipeline_,  
 			    speed_,  
 			    GST_FORMAT_TIME,  
-			    (GstSeekFlags)(GST_SEEK_FLAG_FLUSH | 
+			    (GstSeekFlags)(//GST_SEEK_FLAG_FLUSH | 
 					   GST_SEEK_FLAG_ACCURATE), 
 			    //| GST_SEEK_FLAG_SKIP 
 			    //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization 
 			    GST_SEEK_TYPE_SET,  
-			    position * GST_MSECOND,  
+			    position * length_ * GST_MSECOND,
 			    GST_SEEK_TYPE_NONE,  
 			    GST_CLOCK_TIME_NONE);  
-    
-    if (!ret)
-     g_debug ("seek not handled\n");
 
+    custom_props_->notify_property_changed (seek_spec_);
+    if (!ret)
+      g_debug ("seek not handled\n");
     return true;
+  }
+  
+  gdouble 
+  Runtime::get_seek (void *user_data)
+  {
+    Runtime *context = static_cast<Runtime *> (user_data);
+    return context->seek_;
+  }
+  void 
+  Runtime::set_seek (gdouble position, void *user_data)
+  {
+    Runtime *context = static_cast<Runtime *> (user_data);
+    context->seek (position);
   }
 
   gboolean
@@ -278,19 +271,26 @@ res = gst_element_query (pipeline_, query);
     return true;
   }
 
-  gboolean
-  Runtime::cb_print_position (gpointer /*user_data*/)
+  void
+  Runtime::query_position_and_length ()
   {
-    // Runtime *context = static_cast<Runtime *>(user_data);
-    // GstFormat fmt = GST_FORMAT_TIME;
-    // gint64 pos, len;
+    GstFormat fmt = GST_FORMAT_TIME;
+    gint64 pos;
     
-    // if (gst_element_query_position (context->pipeline_, &fmt, &pos)
-    // 	&& gst_element_query_duration (context->pipeline_, &fmt, &len)) {
-    //   g_print ("Time: %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r",
-    // 	       GST_TIME_ARGS (pos), GST_TIME_ARGS (len));
-    // }
+    if (gst_element_query_position (pipeline_, &fmt, &pos)
+     	&& gst_element_query_duration (pipeline_, &fmt, &length_)) 
+      {
+	 // g_print ("Time: %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r",
+	 // 	 GST_TIME_ARGS (pos), GST_TIME_ARGS (length_));
+      }
     
+  }
+  
+  gboolean
+  Runtime::query_position (gpointer user_data)
+  {
+    Runtime *context = static_cast<Runtime *>(user_data);
+    context->query_position_and_length ();
     /* call me again */
     return TRUE;
   }
@@ -430,14 +430,15 @@ res = gst_element_query (pipeline_, query);
 	return GST_BUS_DROP; 
       }
 
-    if (gst_structure_has_name (msg->structure, "prepare-xwindow-id"))
-      {
-	guintptr *window_handle = (guintptr *)g_object_get_data (G_OBJECT (msg->src), 
-								  "window-handle");
-	if (window_handle != NULL)
-	  gst_x_overlay_set_window_handle (GST_X_OVERLAY (msg->src), *window_handle);
-      }
-
+    if (NULL != msg->structure)
+      if (gst_structure_has_name (msg->structure, "prepare-xwindow-id"))
+	{
+	  guintptr *window_handle = (guintptr *)g_object_get_data (G_OBJECT (msg->src), 
+								   "window-handle");
+	  if (window_handle != NULL)
+	    gst_x_overlay_set_window_handle (GST_X_OVERLAY (msg->src), *window_handle);
+	}
+    
     if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_TAG)
       {
 	GstTagList *tags = NULL;
