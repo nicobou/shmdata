@@ -24,12 +24,13 @@
 #define __SWITCHER_JACK_AUDIO_SOURCE_H__
 
 #include "audio-source.h"
+#include "switcher/startable-quiddity.h"
 #include <memory>
 
 namespace switcher
 {
 
-  class JackAudioSource : public AudioSource
+  class JackAudioSource : public AudioSource, public StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JackAudioSource);
@@ -38,9 +39,16 @@ namespace switcher
     JackAudioSource (const JackAudioSource&) = delete;
     JackAudioSource &operator= (const JackAudioSource&) = delete;
 
+    bool start ();
+    bool stop ();
+
   private: 
    GstElement *jackaudiosrc_;
+   GstElement *audioconvert_;
+   GstElement *capsfilter_;
+   GstElement *jackaudiosrc_bin_;
    bool init_segment ();
+   bool make_elements ();
   };
 
 }  // end of namespace

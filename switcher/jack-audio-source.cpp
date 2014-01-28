@@ -33,30 +33,82 @@ namespace switcher
 				       "Nicolas Bouillot");
   
   JackAudioSource::JackAudioSource() :
-    jackaudiosrc_ (NULL)
+    jackaudiosrc_ (NULL),
+    audioconvert_ (NULL),
+    capsfilter_ (NULL),
+    jackaudiosrc_bin_ (NULL)
   {}
 
   bool
   JackAudioSource::init_segment ()
   {
-    if (!GstUtils::make_element ("jackaudiosrc",&jackaudiosrc_))
+    if (false == make_elements ())
       return false;
+    init_startable (this);
 
     // g_object_set (G_OBJECT (jackaudiosrc_),
     // 		  "is-live", TRUE,
     // 		  "samplesperbuffer",512,
     // 		  NULL);
 
-    //set the name before registering properties
-    set_name (gst_element_get_name (jackaudiosrc_));
-    
-    set_raw_audio_element (jackaudiosrc_);
     return true;
   }
 
   JackAudioSource::~JackAudioSource()
+  {}
+  
+  bool 
+  JackAudioSource::start ()
   {
-    GstUtils::clean_element (jackaudiosrc_);
+    make_elements ();
+    set_raw_audio_element (jackaudiosrc_bin_);
+    return true;
   }
   
+  bool 
+  JackAudioSource::stop ()
+  {
+    reset_bin ();
+    return true;
+  }
+
+  bool
+  JackAudioSource::make_elements ()
+  {
+    if (!GstUtils::make_element ("jackaudiosrc",&jackaudiosrc_))
+      return false;
+    if (!GstUtils::make_element ("audioconvert",&audioconvert_))
+      return false;
+    if (!GstUtils::make_element ("capsfilter",&capsfilter_))
+      return false;
+    if (!GstUtils::make_element ("bin",&jackaudiosrc_bin_))
+      return false;
+
+    GstCaps *caps = gst_caps_new_simple ("audio/x-raw-int",
+					 "width", G_TYPE_INT, 16,
+					 NULL);
+    g_object_set (G_OBJECT (capsfilter_), "caps", caps,NULL);
+    gst_caps_unref(caps);
+
+    gst_bin_add_many (GST_BIN (jackaudiosrc_bin_),
+		      jackaudiosrc_,
+		      audioconvert_,
+		      capsfilter_,
+		      NULL);
+
+    gst_element_link_many (jackaudiosrc_,
+			   audioconvert_,
+			   capsfilter_,
+			   NULL);
+
+    GstPad *src_pad = gst_element_get_static_pad (capsfilter_, "src");
+    GstPad *ghost_srcpad = gst_ghost_pad_new (NULL, src_pad);
+    gst_pad_set_active(ghost_srcpad,TRUE);
+    gst_element_add_pad (jackaudiosrc_bin_, ghost_srcpad); 
+    gst_object_unref (src_pad);
+
+    return true;
+  }
+
+
 }

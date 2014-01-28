@@ -89,5 +89,4 @@ namespace switcher
     reset_bin ();
   }
 
-
 }
