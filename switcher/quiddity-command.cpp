@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 /**
@@ -62,9 +64,12 @@ namespace switcher
     {list_subscribed_signals_json,"list_subscribed_signals_json"},
     {make_property_subscriber,"make_property_subscriber"},
     {make_signal_subscriber, "make_signal_subscriber"},
+    {quit, "quit"},
     {remove,"remove"},
     {remove_property_subscriber,"remove_property_subscriber"},
     {remove_signal_subscriber,"remove_signal_subscriber"},
+    {rename,"rename"},
+    {scan_directory_for_plugins,"scan_directory_for_plugins"},
     {set_property,"set_property"},
     {subscribe_property,"subscribe_property"},
     {subscribe_signal,"subscribe_signal"},
@@ -80,10 +85,10 @@ namespace switcher
   }
 
   void 
-  QuiddityCommand::set_name (command name)
+  QuiddityCommand::set_id (command id)
   {
     clear ();
-    name_ = name;
+    id_ = id;
   } 
   
   void 
@@ -111,7 +116,7 @@ namespace switcher
   {
     json_builder_->reset ();
     json_builder_->begin_object ();
-    json_builder_->add_string_member ("command", command_names_.at (name_));
+    json_builder_->add_string_member ("command", command_names_.at (id_));
     json_builder_->add_int_member ("calling time", (gint)time_);
     json_builder_->set_member_name ("arguments");
     json_builder_->begin_array ();    
@@ -126,8 +131,11 @@ namespace switcher
     json_builder_->end_array ();
     json_builder_->set_member_name ("results");
     json_builder_->begin_array ();
-    for (auto& it: result_)
-      json_builder_->add_string_value (it.c_str ());
+    if (result_.empty ())
+      json_builder_->add_string_value ("");
+    else
+      for (auto& it: result_)
+	json_builder_->add_string_value (it.c_str ());
     json_builder_->end_array ();
     json_builder_->end_object ();
     return json_builder_->get_root ();
@@ -146,7 +154,10 @@ namespace switcher
   const char * 
   QuiddityCommand::get_string_from_id (QuiddityCommand::command id)
   {
-    return command_names_.at (id);
+    std::map<int, const char *>::const_iterator it = command_names_.find (id);
+    if (it == command_names_.end ())
+      return command_names_.at (QuiddityCommand::invalid_command);
+    return it->second;
   }
 
   QuiddityCommand::ptr
@@ -159,7 +170,7 @@ namespace switcher
     
     //command
     json_reader_read_member (reader, "command");
-    command->set_name (QuiddityCommand::get_id_from_string(json_reader_get_string_value (reader)));
+    command->set_id (QuiddityCommand::get_id_from_string(json_reader_get_string_value (reader)));
     json_reader_end_member (reader);
     //---
 

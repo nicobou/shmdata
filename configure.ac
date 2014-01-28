@@ -1,8 +1,8 @@
 dnl required version of autoconf
 AC_PREREQ([2.53])
 
-dnl TODO: fill in your package name and package version here
-AC_INIT([switcher],[0.2.4])
+dnl package name and package version
+AC_INIT([switcher],[0.4.0])
 
 dnl required version of gstreamer and gst-plugins-base
 GST_REQUIRED=0.10.36
@@ -30,10 +30,11 @@ AC_CANONICAL_HOST
 #  * current: Increment when the interface changes. (and set revision to 0)
 #  * revision: Increment when the implementation changes, but not the interface.
 #  * age: Backward-compatible with how many interface numbers.
-AC_SUBST([LIBSWITCHER_SO_VERSION], [0:0:0])
+AC_SUBST([LIBSWITCHER_SO_VERSION], [1:0:0])
 
 # The version of the API. Should be major.minor and not change until not backward-compatible
-AC_SUBST([LIBSWITCHER_API_VERSION], [0.2])
+AC_SUBST([LIBSWITCHER_API_VERSION], [0.4])
+AC_DEFINE(LIBSWITCHER_API_VERSION, ["0.4"], [API version])
 
 dnl check for tools (compiler etc.)
 AC_PROG_CXX
@@ -45,6 +46,7 @@ dnl required version of libtool
 LT_PREREQ([2.2.6])
 LT_INIT
 
+
 dnl error out if we can't find pkg-config
 AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ], [
   AC_MSG_ERROR([You need to have pkg-config installed or set the PATH.])
@@ -52,15 +54,17 @@ AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ], [
 
 case "$host" in *-darwin* | *-macos10*)
   LIBTOOL="glibtool"
-  CXXFLAGS+=" -D__Darwin -stdlib=libc++"
+  CXXFLAGS+=" -D__Darwin -stdlib=libc++ -Qunused-arguments"
   CXX="clang++"
   LDFLAGS+=" -undefined dynamic_lookup -Wl,-headerpad_max_install_names"
   if test -d /opt/local ; then
+    CPPFLAGS+=" -I/usr/local/include -I/opt/local/include"
     CXXFLAGS+=" -I/usr/local/include -I/opt/local/include"
-    #LDFLAGS+=" -L/usr/local/lib -L/opt/local/lib"
+    LDFLAGS+=" -L/usr/local/lib -L/opt/local/lib"
   elif test -d /sw ; then
+    CPPFLAGS+=" -I/sw/include"
     CXXFLAGS+=" -I/sw/include"
-    #LDFLAGS+=" -L/sw/lib"
+    LDFLAGS+=" -L/sw/lib"
   fi
   
   AM_CONDITIONAL([HAVE_OSX], true)
@@ -97,18 +101,18 @@ AC_CHECK_FILE([/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig],
                export PKG_CONFIG_PATH],
               [AC_MSG_WARN([OSX GStreamer SDK not found])])
 
-dnl =======================================================================
+
 dnl Check for the required version of GStreamer core (and gst-plugins-base)
 dnl
 dnl This will export GST_CFLAGS and GST_LIBS variables for use in Makefile.am
 dnl
-dnl =======================================================================
 
 PKG_CHECK_MODULES(GST, [
     gstreamer-0.10              >= $GST_REQUIRED
     gstreamer-base-0.10         >= $GST_REQUIRED
     gstreamer-controller-0.10   >= $GST_REQUIRED
     gstreamer-sdp-0.10          >= $GST_REQUIRED
+    gstreamer-interfaces-0.10   >= $GST_REQUIRED
   ], [
     AC_SUBST(GST_CFLAGS)
     AC_SUBST(GST_LIBS)
@@ -120,6 +124,7 @@ PKG_CHECK_MODULES(GST, [
       gstreamer-base-0.10         >= $GST_REQUIRED
       gstreamer-controller-0.10   >= $GST_REQUIRED
       gstreamer-sdp-0.10          >= $GST_REQUIRED
+      gstreamer-interfaces-0.10   >= $GST_REQUIRED
 
     Please make sure you have the necessary GStreamer-0.10
     development headers installed.
@@ -137,32 +142,135 @@ if test "x${have_glib}" = "xfalse" ; then
     AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
 fi
 
+PKG_CHECK_MODULES(GMODULE, gmodule-2.0, have_gmodule=true, have_gmodule=false)
+if test "x${have_gmodule}" = "xfalse" ; then
+    AC_MSG_ERROR([missing package:  libglib2.0-dev  ])
+fi
 
+#shmdata
 PKG_CHECK_MODULES(SHMDATA, shmdata-0.8, have_shmdata=true, have_shmdata=false)
 if test "x${have_shmdata}" = "xfalse" ; then
     AC_MSG_ERROR([Missing libshmdata-0.8-dev])
 fi
 
-PKG_CHECK_MODULES(GSOAP, gsoap++, have_gsoap=true, have_gsoap=false)
-if test "x${have_gsoap}" = "xfalse" ; then
-    AC_MSG_ERROR([Missing gsoap package])
+PKG_CHECK_MODULES(SHMDATA_ANY, shmdata-any-0.8, have_shmdata_any=true, have_shmdata_any=false)
+if test "x${have_shmdata_any}" = "xfalse" ; then
+    AC_MSG_ERROR([Missing libshmdata-0.8-dev])
 fi
 
+#gsoap
+PKG_CHECK_MODULES(GSOAP, gsoap++, have_gsoap=true, have_gsoap=false)
+if test "x${have_gsoap}" = "xfalse" ; then
+    GSOAPBUILD=disabled
+    AC_MSG_WARN([Missing gsoap package])
+else
+    GSOAPBUILD=enabled
+    AC_CONFIG_FILES([plugins/gsoap/Makefile])
+fi
+AM_CONDITIONAL(GSOAPBUILD, test "${GSOAPBUILD}" = "enabled")
+
+#liblo
 PKG_CHECK_MODULES(LIBLO, liblo, have_liblo=true, have_liblo=false)
 if test "x${have_liblo}" = "xfalse" ; then
-    AC_MSG_ERROR([Missing liblo-dev package])
+    OSCBUILD=disabled
+    AC_MSG_WARN([Missing liblo-dev package, switcher will not be built])
+else
+    OSCBUILD=enabled
+    AC_CONFIG_FILES([plugins/osc/Makefile])
 fi
+AM_CONDITIONAL(OSCBUILD, test "${OSCBUILD}" = "enabled")
+
+# python
+PKG_CHECK_MODULES(PYTHON, python, have_python=true, have_python=false)
+if test "x${have_python}" = "xfalse" ; then
+    PYTHONBUILD=disabled
+    AC_MSG_WARN([Missing python-dev package])
+    AC_DEFINE(HAVE_PYTHON,[0],[python-dev not detected])
+else
+    PYTHONBUILD=enabled
+    AC_DEFINE(HAVE_PYTHON,[1],[python-dev detected])
+fi
+AM_CONDITIONAL(PYTHONBUILD, test "${PYTHONBUILD}" = "enabled")
+
+# portmidi
+PORTMIDIBUILD=enabled
+AC_CHECK_HEADERS([portmidi.h porttime.h], have_portmidi_headers=true, have_portmidi_headers=false)
+if test "x${have_portmidi_headers}" = "xfalse" ; then
+   PORTMIDIBUILD=disabled
+   AC_MSG_WARN([missing portmidi headers, install libportmidi-dev])
+fi
+AC_CHECK_LIB([portmidi],[Pm_Initialize], have_portmidi=true, have_portmidi=false)
+if test "x${have_portmidi}" = "xfalse" ; then
+   PORTMIDIBUILD=disabled
+   AC_MSG_WARN([missing portmidi library, install libportmidi-dev])
+fi
+dnl AC_CHECK_LIB([porttime],[Pt_Time], have_porttime=true, have_porttime=false)
+dnl if test "x${have_porttime}" = "xfalse" ; then
+dnl    PORTMIDIBUILD=disabled
+dnl    AC_MSG_WARN([missing porttime library, install libportmidi-dev])
+dnl fi
+AM_CONDITIONAL(PORTMIDIBUILD, test "${PORTMIDIBUILD}" = "enabled")
+
+if test "${PORTMIDIBUILD}" = "enabled"; then
+    AC_CONFIG_FILES([plugins/portmidi/Makefile])
+  PORTMIDI_CFLAGS="-DPMALSA"
+  AC_SUBST([PORTMIDI_CFLAGS], "$PORTMIDI_CFLAGS")
+  dnl PORTMIDI_LIBS="-lportmidi -lporttime -lpthread -lm"
+  PORTMIDI_LIBS="-lportmidi -lpthread -lm"
+  AC_SUBST([PORTMIDI_LIBS], "$PORTMIDI_LIBS")
+fi
+
+
+
+#pulse
+PKG_CHECK_MODULES(PULSE, libpulse-mainloop-glib, have_libpulse=true, have_libpulse=false)
+if test "x${have_libpulse}" = "xfalse" ; then
+    PULSEBUILD=disabled
+    AC_MSG_WARN([Missing libpulse-dev])
+else
+    PULSEBUILD=enabled
+    AC_CONFIG_FILES([plugins/pulse/Makefile])
+fi
+AM_CONDITIONAL(PULSEBUILD, test "${PULSEBUILD}" = "enabled")
 
 PKG_CHECK_MODULES(JSONGLIB, json-glib-1.0, have_jsonglib=true, have_jsonglib=false)
 if test "x${have_jsonglib}" = "xfalse" ; then
     AC_MSG_ERROR([Missing libjson-glib-dev package])
 fi
 
+# check for v4l2 
+AC_CHECK_HEADER(linux/videodev2.h,
+                V4L2BUILD=enabled,
+                AC_MSG_WARN([v4l2 capture plugin will not be built (missing videodev2.h from package linux-libc-dev)]))
+AM_CONDITIONAL(V4L2BUILD, test "${V4L2BUILD}" = "enabled")
+if test "x${V4L2BUILD}" = "xenabled";
+  then AC_CONFIG_FILES([plugins/v4l2/Makefile])
+else
+  V4L2BUILD=disabled
+fi
+
+# check for gtk (compatible with gstreamer sdk)
+PKG_CHECK_MODULES(GTK, gtk+-2.0, have_gtk=true, have_gtk=false)
+if test "x${have_gtk}" = "xfalse" ; then
+    GTKBUILD=disabled
+    AC_MSG_WARN([Missing libgtk2.0-dev package, gtk fullscreen video will not be built])
+else
+    GTKBUILD=enabled
+    AC_CONFIG_FILES([plugins/gtk/Makefile])
+fi
+AM_CONDITIONAL(GTKBUILD, test "${GTKBUILD}" = "enabled")
+if test "${GTKBUILD}" = "enabled"; then
+    AC_DEFINE(HAVE_GTK, [1], [GTK detected])
+else
+    AC_DEFINE(HAVE_GTK, [0], [GTK not detected])
+fi
+
+dnl Use the C++ compiler for the compile tests
+AC_LANG(C++)
+
 AC_MSG_CHECKING([to see if compiler understands -std=c++0x])
-save_CXXFLAGS="$CXXFLAGS"
-CXXFLAGS="$CFLAGS $CXXFLAGS -std=c++0x"
+CXXFLAGS="$CXXFLAGS -std=c++0x"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
-  CXXFLAGS="$CFLAGS $CXXFLAGS -std=c++0x"
   AC_MSG_RESULT([yes])
 ], [
   AC_MSG_RESULT([no])
@@ -170,14 +278,64 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
 ])
 
 
-dnl check if compiler understands -Wall (if yes, add -Wall to GST_CFLAGS)
+dnl check if compiler understands -Wall (if yes, add -Wall to CFLAGS)
 AC_MSG_CHECKING([to see if compiler understands -Wall])
-save_CFLAGS="$CFLAGS"
-CFLAGS="$CFLAGS -Wall"
+saved_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -Wall"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
-  GST_CFLAGS="$GST_CFLAGS -Wall"
   AC_MSG_RESULT([yes])
 ], [
+  CXXFLAGS="$saved_CXXFLAGS"
+  AC_MSG_RESULT([no])
+])
+
+dnl check if compiler understands -Wextra (if yes, add -Wextra to CFLAGS)
+AC_MSG_CHECKING([to see if compiler understands -Wextra])
+saved_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -Wextra"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  AC_MSG_RESULT([yes])
+], [
+  CXXFLAGS="$saved_CXXFLAGS"
+  AC_MSG_RESULT([no])
+])
+          
+dnl check if compiler understands -Weffc++ (if yes, add -Weffc++ to CFLAGS)
+AC_MSG_CHECKING([to see if compiler understands -Weffc++])
+saved_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -Weffc++ -Wno-error=effc++"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  AC_MSG_RESULT([yes])
+], [
+  CXXFLAGS="$saved_CXXFLAGS"
+  AC_MSG_RESULT([no])
+])
+
+dnl check if compiler understands -Werror (if yes, add it to CFLAGS)
+dnl -Wno-error=unused-parameter is required for gsoap generated code compiling
+AC_MSG_CHECKING([to see if compiler understands -Werror])
+saved_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -Werror -Wno-error=unused-parameter"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  CXXFLAGS="$saved_CXXFLAGS -Werror -Wno-error=unused-parameter"
+  AC_SUBST([W_NO_ERROR_UNUSED_PARAMETER], "-Wno-error=unused-parameter")
+  AC_MSG_RESULT([yes])
+], [
+  CXXFLAGS="$saved_CXXFLAGS"
+  AC_MSG_RESULT([no])
+])
+
+dnl clang++
+dnl check if compiler understands -Wno-error=return-type-c-linkage (if yes, add it to CFLAGS)
+dnl -Wno-error=unused-parameter is required for gsoap generated code compiling
+AC_MSG_CHECKING([to see if compiler understands -Wno-error=return-type-c-linkage])
+saved_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -Wno-error=return-type-c-linkage"
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
+  CXXFLAGS="$saved_CXXFLAGS -Wno-error=return-type-c-linkage"
+  AC_MSG_RESULT([yes])
+], [
+  CXXFLAGS="$saved_CXXFLAGS"
   AC_MSG_RESULT([no])
 ])
                                           
@@ -187,18 +345,65 @@ if test -z "$DOXYGEN";
 fi
 
 AM_CONDITIONAL([HAVE_DOXYGEN], [test -n "$DOXYGEN"])
-                                      
-dnl =======================================================================
+
+dnl testing if switcher can be built and add it to CONFIG_FILES if building
+SWITCHERBUILD=enabled
+if test "${OSCBUILD}" = "disabled"; 
+  then SWITCHERBUILD=disabled
+fi
+if test "${SOAPBUILD}" = "disabled";
+  then SWITCHERBUILD=disabled
+fi
+if test "${SWITCHERBUILD}" = "enabled";
+  then AC_CONFIG_FILES([src/Makefile])
+fi
+AM_CONDITIONAL(SWITCHERBUILD, test "${SWITCHERBUILD}" = "enabled")
+                            
+
 dnl Finally, create Makefiles in all directories
-dnl =======================================================================
 
 AC_CONFIG_FILES([
 Makefile
 doxyfile
-src/Makefile
 switcher-${LIBSWITCHER_API_VERSION}.pc:switcher.pc.in
 switcher/Makefile
 tests/Makefile
+plugins/Makefile
+plugins/example/Makefile
+plugins/avcodecs/Makefile
 ])
 AC_OUTPUT
+
+[echo ""]
+[echo "-----------------------------------"]
+[echo ""]
+[echo "OPTIONAL PLUGINS"]
+[echo ""]
+[echo "V4L2 capture               ${V4L2BUILD}"]
+[echo "GTK fullscreen video       ${GTKBUILD}"]
+[echo "Pulse audio                ${PULSEBUILD}"]
+[echo "PortMidi                   ${PORTMIDIBUILD}"]
+[echo ""]
+[echo "-----------------------------------"]
+[echo ""]
+[echo "SWITCHER REQUIRED PLUGINS"]
+[echo ""]
+[echo "OSC controler plugin       ${OSCBUILD}"]
+[echo "GSOAP controler plugin     ${GSOAPBUILD}"]
+[echo ""]
+[echo "-----------------------------------"]
+[echo ""]
+[echo "SWITCHER OPTIONAL FEATURE"]
+[echo ""]
+[echo "python                     ${PYTHONBUILD}"]
+[echo ""]
+[echo "-----------------------------------"]
+[echo ""]
+[echo "SWITCHER BUILD STATUS"]
+[echo ""]
+[echo "libswitcher                enabled"]
+[echo "switcher                   ${SWITCHERBUILD}"]
+[echo ""]
+[echo "-----------------------------------"]
+[echo ""]
 

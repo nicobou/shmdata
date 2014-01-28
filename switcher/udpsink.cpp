@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 #include "udpsink.h"
@@ -29,12 +31,22 @@
 
 namespace switcher
 {
-
-  QuiddityDocumentation UDPSink::doc_ ("udp sink", "udpsink",
-					     "send data stream with udp");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(UDPSink,
+				       "UDP Sender",
+				       "udp sink", 
+				       "send data stream with udp",
+				       "LGPL",
+				       "udpsink",
+				       "Nicolas Bouillot");
+  UDPSink::UDPSink () :
+    udpsink_ (NULL),
+    udpsink_bin_ (NULL),
+    typefind_ (NULL),
+    ghost_sinkpad_ (NULL)
+  {}
 
   bool 
-  UDPSink::init ()
+  UDPSink::init_segment ()
   {
     if ( !GstUtils::make_element ("bin", &udpsink_bin_)
 	 || !GstUtils::make_element ("typefind", &typefind_)
@@ -68,56 +80,62 @@ namespace switcher
 #endif
 
 
-    register_property (G_OBJECT (udpsink_),"blocksize","blocksize");
-    register_property (G_OBJECT (udpsink_),"bytes-served","bytes-served");
-    register_property (G_OBJECT (udpsink_),"clients","clients");
-    register_property (G_OBJECT (udpsink_),"ttl","ttl");
-    register_property (G_OBJECT (udpsink_),"ttl-mc","ttl-mc");
-    register_property (G_OBJECT (udpsink_),"loop","loop");
+    install_property (G_OBJECT (udpsink_),"blocksize","blocksize", "Blocksize");
+    install_property (G_OBJECT (udpsink_),"bytes-served","bytes-served", "Bytes Served");
+    install_property (G_OBJECT (udpsink_),"clients","clients", "Clients");
+    install_property (G_OBJECT (udpsink_),"ttl","ttl", "TTL");
+    install_property (G_OBJECT (udpsink_),"ttl-mc","ttl-mc", "TTL-MC");
+    install_property (G_OBJECT (udpsink_),"loop","loop", "Loop");
 
-    register_property (G_OBJECT (typefind_), "caps","caps");
+    install_property (G_OBJECT (typefind_), "caps","caps", "Capabilities");
 
     // g_signal_connect (G_OBJECT (udpsink_), "client-added",  
     // 		      (GCallback)  on_client_added, (gpointer) this);
     // g_signal_connect (G_OBJECT (udpsink_), "client-removed",  
     // 		      (GCallback)  on_client_removed, (gpointer) this);
     
-    //registering add_client
-    register_method("add_client",
-     		    (void *)&add_client_wrapped, 
+    install_method ("Add Client",
+		    "add_client", 
+		    "add a client with destination host and port to the list of clients", 
+		    "success or fail",
+		    Method::make_arg_description ("Host", 
+						  "host", 
+						  "the hostname/IP address of the client to add",
+						  "Port",
+						  "port",
+						  "the port of the client to add",
+						  NULL),
+		    (Method::method_ptr) &add_client_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, NULL),
-     		    (gpointer)this);
-    set_method_description ("add_client", 
-			    "add a client with destination host and port to the list of clients", 
-			    Method::make_arg_description ("host", 
-							  "the hostname/IP address of the client to add",
-							  "port",
-							  "the port of the client to add",
-							  NULL));
-    
-    //registering remove_client
-    register_method("remove_client",
-		    (void *)&remove_client_wrapped, 
+     		    this);
+   
+    install_method ("Remove Client",
+		    "remove_client", 
+		    "remove a client with destination host and port to the list of clients", 
+		    "success or fail",
+		    Method::make_arg_description ("Host",
+						  "host",
+						  "the hostname/IP address of the client to remove",
+						  "Port",
+						  "port",
+						  "the port of the client to remove",
+						  NULL),
+		    (Method::method_ptr) &remove_client_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, NULL),
-     		    (gpointer)this);
-    set_method_description ("remove_client", 
-			    "remove a client with destination host and port to the list of clients", 
-			    Method::make_arg_description ("host",
-							  "the hostname/IP address of the client to remove",
-							  "port",
-							  "the port of the client to remove",
-							  NULL));
-      
+     		    this);
 
-    //registering clear
-    register_method("clear",
-		    (void *)&clear_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_NONE, NULL), //TODO use a type defined in the method class
-		    (gpointer)this);
-    set_method_description ("clear", 
-			    "remove a client with destination host and port to the list of clients", 
-			    Method::make_arg_description ("none",NULL));
      
+    install_method ("Clear",
+		    "clear", 
+		    "remove a client with destination host and port to the list of clients", 
+		    "success or fail",
+		    Method::make_arg_description ("none",NULL),
+		    (Method::method_ptr) &clear_wrapped, 
+		    G_TYPE_BOOLEAN,
+		    Method::make_arg_type_description (G_TYPE_NONE, NULL), 
+		    this);
       
     //registering sink element
     set_on_first_data_hook (UDPSink::add_elements_to_bin,this);
@@ -178,21 +196,21 @@ namespace switcher
     gst_object_unref (sink_pad);
   }
 
-  QuiddityDocumentation 
-  UDPSink::get_documentation ()
-  {
-    return doc_;
-  }
-  
   void 
-  UDPSink::on_client_added (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data)
+  UDPSink::on_client_added (GstElement */*multiudpsink*/, 
+			    gchar */*host*/, 
+			    gint /*port*/, 
+			    gpointer /*user_data*/)
   {
     //UDPSink *context = static_cast<UDPSink *>(user_data);
     g_debug ("UDPSink::on_client_added");
   }
 
   void 
-  UDPSink::on_client_removed (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data)
+  UDPSink::on_client_removed (GstElement */*multiudpsink*/, 
+			      gchar */*host*/, 
+			      gint /*port*/, 
+			      gpointer /*user_data*/)
   {
     //UDPSink *context = static_cast<UDPSink *>(user_data);
     g_debug ("UDPSink::on_client_removed");
@@ -237,7 +255,7 @@ namespace switcher
   }
 
   gboolean
-  UDPSink::clear_wrapped (gpointer unused, gpointer user_data)
+  UDPSink::clear_wrapped (gpointer /*unused*/, gpointer user_data)
   {
     //std::string connector = static_cast<std::string>(connector_name);
     UDPSink *context = static_cast<UDPSink*>(user_data);

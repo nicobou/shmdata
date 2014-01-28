@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 /**
@@ -74,9 +76,12 @@ namespace switcher
       list_subscribed_signals_json,
       make_property_subscriber,
       make_signal_subscriber,										       
+      quit,
       remove,
       remove_property_subscriber,
       remove_signal_subscriber,
+      rename,
+      scan_directory_for_plugins,
       set_property,
       subscribe_property,
       subscribe_signal,
@@ -85,14 +90,15 @@ namespace switcher
     };
 
     QuiddityCommand ();
-    command name_;//FIXME refactor into id_
+    command id_;
     std::vector<std::string> args_;
     std::vector<std::string> vector_arg_;
     std::vector<std::string> result_;
     std::vector<std::string> expected_result_;
+    bool success_;
     gint64 time_;////monotonic time, in microseconds 
     void clear();
-    void set_name (command id); //FIXME refactor into set_id
+    void set_id (command id); 
     void add_arg (std::string arg);
     void set_vector_arg (std::vector<std::string> vector_arg);
     static command get_id_from_string (const char *com);

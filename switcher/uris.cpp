@@ -1,31 +1,37 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 #include "uris.h"
 #include "gst-utils.h"
 #include <glib/gprintf.h>
-#include <memory>
 
 namespace switcher
 {
-  QuiddityDocumentation Uris::doc_ ("uri decoding", "uris", 
-				    "play/pause/seek/loop/synchronize multiple uris");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uris,
+				       "Uri Player",
+				       "experimental uri player", 
+				       "play/pause/seek/loop/synchronize multiple uris",
+				       "LGPL",
+				       "uris", 
+				       "Nicolas Bouillot");
   
   bool
   Uris::init() 
@@ -54,27 +60,31 @@ namespace switcher
     group_->state = GROUP_PAUSED;    
     group_->user_data = this;
 
-    //registering add_uri
-    register_method("add_uri",
-		    (void *)&add_uri_wrapped, 
+    install_method ("Add URI",
+		    "add_uri", 
+		    "add an uri to the group (the group is looping at the end of the first uri added)", 
+		    "success or fail",
+		    Method::make_arg_description ("URI",
+						  "uri", 
+						  "the uri to add",
+						  NULL),
+		    (Method::method_ptr) &add_uri_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("add_uri", 
-			    "add an uri to the group (the group is looping at the end of the first uri added)", 
-			    Method::make_arg_description ("uri", 
-							  "the uri to add",
-							  NULL));
+		    this);
+    
 
-    //registering play
-    register_method("start",
-		    (void *)&play_wrapped, 
+    install_method ("Start",
+		    "start", 
+		    "start the stream(s)", 
+		    "success or fail",
+		    Method::make_arg_description ("none",
+						  NULL),
+		    (Method::method_ptr) &play_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    (gpointer)this);
-    set_method_description ("start", 
-			    "start the stream(s)", 
-			    Method::make_arg_description ("none",
-							  NULL));
-
+		    this);
+    
     //using play pause seek from runtime
     // //registering pause
     // register_method("pause",
@@ -99,12 +109,6 @@ namespace switcher
     return true;
   }
   
-  QuiddityDocumentation 
-  Uris::get_documentation ()
-  {
-    return doc_;
-  }
-
   gboolean
   Uris::add_uri_wrapped (gpointer uri, gpointer user_data)
   {
@@ -124,7 +128,8 @@ namespace switcher
   }
   
   gboolean
-  Uris::play_wrapped (gpointer unused, gpointer user_data)
+  Uris::play_wrapped (gpointer /*unused*/, 
+		      gpointer user_data)
   {
     Uris *context = static_cast<Uris *>(user_data);
       
@@ -144,7 +149,8 @@ namespace switcher
   
 
   gboolean
-  Uris::pause_wrapped (gpointer unused, gpointer user_data)
+  Uris::pause_wrapped (gpointer /*unused*/, 
+		       gpointer user_data)
   {
     Uris *context = static_cast<Uris *>(user_data);
       
@@ -313,7 +319,7 @@ namespace switcher
      	gst_object_unref (queue_sinkpad);  
 	
      	if (!gst_element_sync_state_with_parent (queue))        
-     	  g_error ("pb syncing video datastream state");      
+     	  g_debug ("pb syncing video datastream state");      
 
      	//assuming object is an uridecodebin and get the uri    
      	gchar *uri;    
@@ -360,15 +366,14 @@ namespace switcher
 
 	//giving a name to the stream
 	gchar **padname_splitted = g_strsplit_set (padname, "/",-1);
+
 	//counting 
 	int count = 0;
-	if (context->media_counters_.contains (std::string (padname_splitted[0])))
-	  {
-	    count = context->media_counters_. lookup (std::string (padname_splitted[0]));
-	    count = count+1;
-	  }
-	context->media_counters_.replace (std::string (padname_splitted[0]), count);
-	
+	auto it = context->media_counters_.find (padname_splitted[0]);
+	if (context->media_counters_.end () != it)
+	  count = it->second + 1;
+	context->media_counters_[padname_splitted[0]] = count;
+ 
 	gchar media_name[256];
 	g_sprintf (media_name,"%s_%d",padname_splitted[0],count);
 	g_debug ("uridecodebin: new media %s %d",media_name, count );
@@ -411,7 +416,8 @@ namespace switcher
   
   
   void 
-  Uris::uridecodebin_no_more_pads_cb (GstElement* object, gpointer user_data)   
+  Uris::uridecodebin_no_more_pads_cb (GstElement */*object*/, 
+				      gpointer user_data)   
   {   
     Group *group = (Group *) user_data;   
     g_debug ("** no more pads");
@@ -419,14 +425,17 @@ namespace switcher
   }
  
   void 
-  Uris::uridecodebin_drained_cb (GstElement* object, gpointer user_data)   
+  Uris::uridecodebin_drained_cb (GstElement */*object*/, 
+				 gpointer /*user_data*/)   
   {   
     //Group *group = (Group *) user_data;   
     g_debug ("drained");
   }
 
   void
-  Uris::group_add_task (gpointer key, gpointer value, gpointer user_data)
+  Uris::group_add_task (gpointer /*key*/, 
+			gpointer /*value*/, 
+			gpointer user_data)
   {
     Group *group = (Group *) user_data;
     g_async_queue_push (group->numTasks,group);
@@ -539,10 +548,12 @@ namespace switcher
   }   
 
   void
-  Uris::group_link_datastream (gpointer key, gpointer value, gpointer user_data)
+  Uris::group_link_datastream (gpointer key, 
+			       gpointer /*value*/, 
+			       gpointer /*user_data*/)
   {
     Sample *sample = (Sample *) key;
-    Group *group = (Group *) user_data;
+    //Group *group = (Group *) user_data;
     
     if (gst_pad_is_linked (sample->bin_srcpad))
       g_warning (".....................oups, already linked ");
@@ -569,10 +580,12 @@ namespace switcher
   }
 
   void
-  Uris::group_unblock_datastream (gpointer key, gpointer value, gpointer user_data)
+  Uris::group_unblock_datastream (gpointer key, 
+				  gpointer /*value*/, 
+				  gpointer /*user_data*/)
   {
     Sample *sample = (Sample *) key;
-    Group *group = (Group *) user_data;
+    //Group *group = (Group *) user_data;
     
     g_debug ("group_unblock_datastream %p",sample->bin_srcpad);
  
@@ -589,7 +602,8 @@ namespace switcher
   }
 
   gboolean
-  Uris::group_play_wrapped_for_commands (gpointer user_data, gpointer user_data2)
+  Uris::group_play_wrapped_for_commands (gpointer user_data, 
+					 gpointer /*user_data2*/)
   {
     Group *group = (Group *) user_data;
     return group_play (group);
@@ -619,7 +633,9 @@ namespace switcher
   }
   
   void
-  Uris::group_unlink_datastream (gpointer key, gpointer value, gpointer user_data)
+  Uris::group_unlink_datastream (gpointer key, 
+				 gpointer /*value*/, 
+				 gpointer /*user_data*/)
   {
     Sample *sample = (Sample *) key;
     unlink_pad (sample->bin_srcpad);
@@ -647,7 +663,8 @@ namespace switcher
   }
   
   gboolean
-  Uris::group_pause_wrapped_for_commands (gpointer user_data, gpointer user_data2)
+  Uris::group_pause_wrapped_for_commands (gpointer user_data, 
+					  gpointer /*user_data2*/)
   {
     Group *group = (Group *) user_data;
     return group_pause (group);
@@ -682,7 +699,9 @@ namespace switcher
   }
   
   void
-  Uris::group_block_datastream_wrapped_for_hash (gpointer key, gpointer value, gpointer user_data)
+  Uris::group_block_datastream_wrapped_for_hash (gpointer key, 
+						 gpointer /*value*/, 
+						 gpointer /*user_data*/)
   {
     Sample *sample = (Sample *) key;
     g_debug ("group_block_datastream_wrapped_for_hash: called %p",sample->bin_srcpad);
@@ -709,7 +728,9 @@ namespace switcher
   
 
   void 
-  Uris::group_seek_datastream (gpointer key, gpointer value, gpointer user_data)
+  Uris::group_seek_datastream (gpointer key, 
+			       gpointer /*value*/, 
+			       gpointer /*user_data*/)
   {
     Sample *sample = (Sample *) key;
     group_do_seek_datastream (sample);
@@ -717,7 +738,8 @@ namespace switcher
   }
   
   gboolean
-  Uris::group_seek_wrapped_for_commands (gpointer user_data, gpointer user_data2)
+  Uris::group_seek_wrapped_for_commands (gpointer user_data, 
+					 gpointer /*user_data2*/)
   {
     Group *group = (Group *) user_data;
     return group_seek (group, group->seek_position);

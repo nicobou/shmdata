@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 #include "deinterleave.h"
@@ -24,11 +26,20 @@
 
 namespace switcher
 {
-  QuiddityDocumentation Deinterleave::doc_ ("demuxer", "deinterleave", 
-					     "connect to an audio shmdata and split channels to multiple shmdata(s)");
-  
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Deinterleave,
+				       "Deinterleave",
+				       "video converter", 
+				       "connect to an audio shmdata and split channels to multiple shmdata(s)",
+				       "LGPL",
+				       "deinterleave", 
+				       "Nicolas Bouillot");
+  Deinterleave::Deinterleave () :
+    deinterleave_ (NULL),
+    media_counters_ ()
+  {}
+
   bool
-  Deinterleave::init() 
+  Deinterleave::init_segment () 
   { 
     if (!GstUtils::make_element ("deinterleave",&deinterleave_))
       return false;
@@ -49,12 +60,6 @@ namespace switcher
   
    return true;
   }
-  
-  QuiddityDocumentation 
-  Deinterleave::get_documentation ()
-  {
-    return doc_;
-  }
 
   void
   Deinterleave::make_deinterleave_active (ShmdataReader *caller, void *deinterleave_instance)
@@ -66,7 +71,7 @@ namespace switcher
   }
     
   void 
-  Deinterleave::no_more_pads_cb (GstElement* object, gpointer user_data)   
+  Deinterleave::no_more_pads_cb (GstElement* /*0object*/, gpointer /*user_data*/)   
   {   
     //g_print ("no more pad");
     //Deinterleave *context = static_cast<Deinterleave *>(user_data);
@@ -74,7 +79,7 @@ namespace switcher
 
 
   void 
-  Deinterleave::pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data)   
+  Deinterleave::pad_added_cb (GstElement* /*object*/, GstPad* pad, gpointer user_data)   
   {   
     Deinterleave *context = static_cast<Deinterleave *>(user_data);
     
@@ -84,13 +89,11 @@ namespace switcher
     //preparing pad name
     gchar **padname_splitted = g_strsplit_set (padname, "/",-1);
     int count = 0;
-    if (context->media_counters_.contains (std::string (padname_splitted[0])))
-       {
-	 count = context->media_counters_.lookup (std::string (padname_splitted[0]));
-	 count = count+1;
-       }
-    context->media_counters_.replace (std::string (padname_splitted[0]), count);
-
+    auto it = context->media_counters_.find (std::string (padname_splitted[0]));
+    if (context->media_counters_.end () != it)
+	count = ++(it->second);
+    else
+      context->media_counters_[std::string (padname_splitted[0])] = count;
     gchar media_name[256];
     g_sprintf (media_name,"%s_%d",padname_splitted[0],count);
     g_debug ("deinterleave: new media %s %d\n",media_name, count );

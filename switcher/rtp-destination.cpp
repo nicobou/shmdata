@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 #include "rtp-destination.h"
@@ -29,26 +31,21 @@ namespace switcher
   
   RtpDestination::~RtpDestination ()
   {
-    std::map<std::string, QuiddityManager::ptr> streams_to_clean = ports_.get_map ();
-    std::map<std::string, QuiddityManager::ptr>::iterator iter;
-    for (iter = streams_to_clean.begin (); iter != streams_to_clean.end (); iter ++)
+    for (auto &it : ports_)
       {
-	QuiddityManager::ptr manager = iter->second;
-
+	QuiddityManager::ptr manager = it.second;
 	//cleaning rtp
 	std::vector <std::string> arg;
 	arg.push_back (host_name_);
-	arg.push_back (iter->first);
-	manager->invoke ("udpsend_rtp","remove_client",arg);
-
+	arg.push_back (it.first);
+	manager->invoke ("udpsend_rtp", "remove_client", NULL ,arg);
 	//cleaning rtcp
 	arg.clear ();
 	arg.push_back (host_name_);
 	std::ostringstream rtcp_port;
-	rtcp_port << atoi(iter->first.c_str()); + 1;
+	rtcp_port << atoi(it.first.c_str()) + 1;
 	arg.push_back (rtcp_port.str());
-	manager->invoke ("udpsend_rtp","remove_client",arg);
-
+	manager->invoke ("udpsend_rtp", "remove_client", NULL, arg);
 	//TODO remove connection to funnel
       }
   }
@@ -76,10 +73,10 @@ namespace switcher
   std::string 
   RtpDestination::get_port (std::string shmdata_path)
   {
-    if (!source_streams_.contains (shmdata_path))
+    auto it = source_streams_.find (shmdata_path);
+    if (source_streams_.end () == it)
       return "";
-
-    return source_streams_.lookup (shmdata_path);
+    return it->second;
   }
 
 
@@ -88,8 +85,8 @@ namespace switcher
 			      QuiddityManager::ptr manager, 
 			      std::string port)
   {
-    ports_.insert (port, manager);
-    source_streams_.insert (orig_shmdata_path, port);
+    ports_[port] = manager;
+    source_streams_[orig_shmdata_path] = port;
     make_json_description ();
     return true;
   }
@@ -97,27 +94,27 @@ namespace switcher
   bool
   RtpDestination::has_shmdata (std::string shmdata_path)
   {
-    return source_streams_.contains (shmdata_path);
+    return (source_streams_.end () != source_streams_.find (shmdata_path));
   }
 
   bool
   RtpDestination::has_port (std::string port)
   {
-    return ports_.contains (port);
+    return (ports_.end () != ports_.find (port));
   }
   
   bool
   RtpDestination::remove_stream (std::string shmdata_stream_path)
   {
-    if (!source_streams_.contains (shmdata_stream_path))
+    auto it = source_streams_.find (shmdata_stream_path);
+    if (source_streams_.end () == it)
       {
 	g_warning ("RtpDestination: stream not found, cannot remove %s", 
 		   shmdata_stream_path.c_str ());
 	return false;
       }
-    std::string port = source_streams_.lookup (shmdata_stream_path);
-    source_streams_.remove (shmdata_stream_path);
-    ports_.remove (port);
+    ports_.erase (it->second);
+    source_streams_.erase (it);
     make_json_description ();
     return true;
   }
@@ -149,15 +146,14 @@ namespace switcher
     gst_sdp_message_add_attribute (sdp_description, "control", "*");
 
     gint index = 0;
-    std::map<std::string, QuiddityManager::ptr> medias = ports_.get_map ();
-    std::map<std::string, QuiddityManager::ptr>::iterator iter;
-    for(iter = medias.begin () ; iter != medias.end(); ++iter)
+    for(auto &it : ports_)
       {
-	std::string string_caps = (iter->second)->get_property ("udpsend_rtp","caps");
-	GstCaps *caps = gst_caps_from_string (string_caps.c_str ());
-	if (caps != NULL)
+	std::string string_caps = (it.second)->get_property ("udpsend_rtp","caps");
+	if (g_strcmp0 (string_caps.c_str (), "NULL") != 0)
 	  {
-	    gint port = atoi(iter->first.c_str());
+	    GstCaps *caps = gst_caps_from_string (string_caps.c_str ());
+
+	    gint port = atoi(it.first.c_str());
 
 	    sdp_write_media_from_caps (sdp_description, 
 				       caps,
@@ -166,7 +162,14 @@ namespace switcher
 				       "udp",
 				       index);
 	    index ++;
+	    gst_caps_unref (caps);
 	  }
+	else
+	  {
+	    g_debug ("generating sdp file, empty media description %s (returning empty file)", string_caps.c_str ());
+	    return "";
+	  }
+
       }
 
     std::string res (gst_sdp_message_as_text (sdp_description));
@@ -292,17 +295,13 @@ RtpDestination::sdp_write_media_from_caps (GstSDPMessage *sdp_description,
     json_description_->add_string_member ("host_name", host_name_.c_str ());
     json_description_->set_member_name ("data_streams");
     json_description_->begin_array ();
-    
-    std::map <std::string, std::string> sources = source_streams_.get_map ();
-    std::map <std::string, std::string>::iterator it;
-    if (sources.begin () != sources.end ())
-      for (it = sources.begin (); it != sources.end (); it ++)
-	{
-	  json_description_->begin_object ();
-	  json_description_->add_string_member ("path", it->first.c_str ());
-	  json_description_->add_string_member ("port", it->second.c_str ());
-	  json_description_->end_object ();
-	}
+    for (auto &it : source_streams_)
+      {
+	json_description_->begin_object ();
+	json_description_->add_string_member ("path", it.first.c_str ());
+	json_description_->add_string_member ("port", it.second.c_str ());
+	json_description_->end_object ();
+      }
     json_description_->end_array ();
     json_description_->end_object ();
   }

@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 
@@ -23,23 +25,18 @@
 
 #include "base-source.h"
 #include "gst-element-cleaner.h"
-#include "string-map.h"
-#include <memory>
+#include <unordered_map>
 
 namespace switcher
 {
-
   class Uris : public BaseSource, public GstElementCleaner
   {
   public:
-    typedef std::shared_ptr<Uris> ptr;
-    bool init ();
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Uris);
     bool add_uri (std::string uri);
     bool play ();
     bool pause ();
     bool seek (gdouble position);
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
     static gboolean add_uri_wrapped (gpointer uri, gpointer user_data);
     static gboolean play_wrapped (gpointer unused, gpointer user_data);
@@ -47,7 +44,7 @@ namespace switcher
     static gboolean seek_wrapped (gdouble position, gpointer user_data);
 
   private: 
-    StringMap<int> media_counters_;
+    std::unordered_map<std::string, int> media_counters_;
 
     //wraping c code:
     typedef enum GourpState_ {

@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 /**
@@ -34,15 +36,36 @@ namespace switcher
   {
     Creator<T>* Fn = (Creator<T>*)new DerivedCreator<U>();
     constructor_map_[Id] = Fn;
-    constructor_names_.push_back (Id);
     classes_documentation_[Id] = doc;
+  }
+
+  template <typename T, typename Key, typename Doc>
+    void 
+    AbstractFactory<T,  Key, Doc>::register_class_with_custom_factory (Key Id, 
+								       Doc doc,
+								       T * (*custom_create) (),
+								       void (*custom_destroy) (T *))
+  {
+    CustomDerivedCreator<T> *creator = new CustomDerivedCreator<T>();
+    creator->custom_create_ = custom_create;
+    Creator<T>* Fn = (Creator<T>*)creator; 
+    constructor_map_[Id] = Fn; 
+    destructor_map_[Id] = custom_destroy;
+    classes_documentation_[Id] = doc; 
   }
 
   template <typename T, typename Key, typename Doc>
     std::vector<Key> 
     AbstractFactory<T, Key, Doc>::get_keys ()
   {
-    return constructor_names_;
+    std::vector<Key> constructor_names;
+
+    for (auto &it: constructor_map_)
+      {
+	constructor_names.push_back (it.first); 
+      }
+
+    return constructor_names;
   }
 
   template <typename T, typename Key, typename Doc>
@@ -50,25 +73,20 @@ namespace switcher
     AbstractFactory<T, Key, Doc>::get_classes_documentation ()
   {
     std::vector<Doc> tmp;
-    typename std::map<Key, Doc>::iterator i = classes_documentation_.begin();
-    while (i != classes_documentation_.end())
-      {
-	tmp.push_back ((*i).second);
-	++i;
-      }
-    return tmp;
+     typename std::map<Key, Doc>::iterator i = classes_documentation_.begin(); 
+     while (i != classes_documentation_.end()) 
+       { 
+	 tmp.push_back ((*i).second);  
+	 ++i; 
+       } 
+     return tmp;
   }
-
+  
   template <typename T, typename Key, typename Doc>
     Doc 
     AbstractFactory<T, Key, Doc>::get_class_documentation (Key id)
   {
-    typename std::map<Key, Doc>::iterator iter = classes_documentation_.find(id); 
-    if (iter == classes_documentation_.end())
-      {
-	Doc doc;
-	return doc;
-      }
+    typename std::map<Key, Doc>::iterator iter = classes_documentation_.find(id);
     return iter->second;
   }
     
@@ -80,15 +98,35 @@ namespace switcher
     }
 
   template <typename T, typename Key, typename Doc>
+    bool 
+    AbstractFactory<T, Key, Doc>::unregister_class (Key Id)
+    {
+      if (constructor_map_.find(Id) == constructor_map_.end() )
+	return false;
+      else
+	delete (constructor_map_.find(Id))->second;
+      
+      constructor_map_.erase (Id);
+      destructor_map_.erase (Id);
+      classes_documentation_.erase (Id);
+      return true;
+    }
+
+  template <typename T, typename Key, typename Doc>
     std::shared_ptr<T> 
     AbstractFactory<T, Key, Doc>::create(Key Id)
-  {
-    std::shared_ptr<T> pointer;
-	
-    if ( constructor_map_.find(Id) != constructor_map_.end() ) 
-      pointer.reset (constructor_map_[Id]->Create());
-	
-    return pointer;
+    {
+
+      std::shared_ptr<T> pointer;
+      if (constructor_map_.find(Id) != constructor_map_.end() ) 
+	{
+	  if (destructor_map_.find(Id) != destructor_map_.end())
+	    pointer.reset (constructor_map_[Id]->Create(), destructor_map_[Id]);
+	  else
+	    pointer.reset (constructor_map_[Id]->Create());
+	}
+
+      return pointer;
   }
 
 
@@ -102,6 +140,13 @@ namespace switcher
 	++i;
       }
   }
+
+  template <typename T, typename Key, typename Doc>
+    AbstractFactory<T, Key, Doc>::AbstractFactory() :
+     constructor_map_ (),
+     destructor_map_ (),
+     classes_documentation_ ()
+   {}
  
 } // end of namespace
 

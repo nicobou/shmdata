@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 /**
@@ -37,17 +39,24 @@ namespace switcher
   {
   public:
     template <class U> void register_class (Key Id, Doc doc);
+    AbstractFactory();
+    ~AbstractFactory();
+   
+    void register_class_with_custom_factory (Key Id, 
+					     Doc doc,
+					     T * (*custom_create) (),
+					     void (*custom_destroy) (T *));
+    bool unregister_class (Key Id);
     std::vector<Key> get_keys ();
     std::vector<Doc> get_classes_documentation ();
     Doc get_class_documentation (Key Id);
     std::shared_ptr<T> create(Key Id);
     bool key_exists (Key Id);
-    ~AbstractFactory();
 
   private:
     std::map<Key, Creator<T>*> constructor_map_;
+    std::map<Key, void (*) (T *)> destructor_map_;
     std::map<Key, Doc> classes_documentation_;
-    std::vector<Key> constructor_names_;
   };
   
   

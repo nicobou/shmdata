@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 /**
@@ -45,7 +47,11 @@ namespace switcher
 				      std::string signal_name,
 				      std::vector<std::string> params,
 				      void *user_data);
-    ~QuidditySignalSubscriber();
+    QuidditySignalSubscriber ();
+    ~QuidditySignalSubscriber ();
+    QuidditySignalSubscriber (const QuidditySignalSubscriber &) = delete;
+    QuidditySignalSubscriber &operator= (const QuidditySignalSubscriber &) = delete;
+    void mute (bool muted);
 
     void set_callback (OnEmittedCallback cb);
     void set_user_data (void *user_data);
@@ -63,12 +69,14 @@ namespace switcher
     void set_manager_impl (std::shared_ptr<QuiddityManager_Impl> manager_impl);
 
   private:
+    bool muted_;
     OnEmittedCallback user_callback_;
     void *user_data_;
     std::string name_;
     std::weak_ptr<QuiddityManager_Impl> manager_impl_;
 
     typedef struct {
+      QuidditySignalSubscriber *subscriber;
       gchar *name;
       gchar *quiddity_name; 
       gchar *signal_name;

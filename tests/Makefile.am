@@ -18,17 +18,19 @@ AM_LDFLAGS = \
     $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
 
 check_PROGRAMS = \
+    check_description_by_class \
+    check_fakesink \
     check_quiddity_create_remove \
-    check_quiddity_create_remove_with_auto_pipeline \
     check_property_subscriber \
     check_rtp_session \
-    check_signal_subscriber
+    check_signal_subscriber \
+    check_startable
+
+check_description_by_class_SOURCES = \
+    check_description_by_class.cpp
 
 check_quiddity_create_remove_SOURCES = \
     check_quiddity_create_remove.cpp
-
-check_quiddity_create_remove_with_auto_pipeline_SOURCES = \
-    check_quiddity_create_remove_with_auto_pipeline.cpp
 
 check_property_subscriber_SOURCES = \
     check_property_subscriber.cpp
@@ -38,5 +40,11 @@ check_rtp_session_SOURCES = \
 
 check_signal_subscriber_SOURCES = \
     check_signal_subscriber.cpp
+
+check_startable_SOURCES = \
+    check_startable.cpp
+
+check_fakesink_SOURCES = \
+    check_fakesink.cpp
 
 TESTS = $(check_PROGRAMS)

@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 #include "video-test-source.h"
@@ -23,48 +25,87 @@
 
 namespace switcher
 {
-  QuiddityDocumentation VideoTestSource::doc_  ("video source", "videotestsrc",				
-						"Creates a test video stream");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
+				       "Video Test",
+				       "video source", 
+				       "Creates a test video stream",
+				       "LGPL",
+				       "videotestsrc",				
+				       "Nicolas Bouillot");
 
+  VideoTestSource::VideoTestSource() :
+    videotestsrc_ (NULL)
+  {}
+ 
   VideoTestSource::~VideoTestSource()
   {
     GstUtils::clean_element (videotestsrc_);
   }
   
   bool
-  VideoTestSource::init ()
+  VideoTestSource::init_segment ()
   {
-    if (!GstUtils::make_element ("videotestsrc",&videotestsrc_))
+    videotestsrc_ = NULL;
+    bool made = make_video_source (&videotestsrc_);    
+    if (!made)
       return false;
+    
+    //"pattern" property available atfer initialization 
+    install_property (G_OBJECT (videotestsrc_),
+		       "pattern",
+		       "pattern", 
+		       "Video Pattern");
+    return true;
+  }
 
-   g_object_set (G_OBJECT (videotestsrc_),
+  bool
+  VideoTestSource::make_video_source (GstElement **new_element)
+  {
+
+    GstElement *videotest;
+    if (!GstUtils::make_element ("videotestsrc",&videotest))
+      return false;
+    
+    g_object_set (G_OBJECT (videotest),
 		  "is-live", TRUE,
 		  NULL);
     
-    //set the name before registering properties
-    set_name (gst_element_get_name (videotestsrc_));
+    if (videotestsrc_ != NULL)
+      {
+	GstUtils::apply_property_value (G_OBJECT (videotestsrc_), G_OBJECT (videotest), "pattern");
+	
+	GstUtils::clean_element (videotestsrc_);
+      }
+     
+    videotestsrc_ = videotest;
+    *new_element = videotestsrc_;
 
-    // //This register all the properties
-    // guint numproperty;
-    // GParamSpec **property = g_object_class_list_properties (G_OBJECT_GET_CLASS(videotestsrc_), &numproperty);
-    // for (guint i = 0; i < numproperty; i++) {
-    //   register_property (G_OBJECT (videotestsrc_),property[i]);
-    //   //Property *prop = new Property (G_OBJECT (videotestsrc_),property[i]);
-    //   //prop->print();
-    // }
+    return true;
+  }
 
-    //registering "pattern"
-    register_property (G_OBJECT (videotestsrc_),"pattern","pattern");
-    
-    set_raw_video_element (videotestsrc_);
+  bool 
+  VideoTestSource::on_start ()
+  {
+    reinstall_property (G_OBJECT (videotestsrc_),
+			"pattern",
+			"pattern", 
+			"Video Pattern");
     return true;
   }
   
-  
-  QuiddityDocumentation 
-  VideoTestSource::get_documentation ()
+  bool 
+  VideoTestSource::on_stop ()
   {
-    return doc_;
+    //need a new element for property setting 
+    bool made = make_video_source (&videotestsrc_);    
+    if (!made)
+      return false;
+    
+    reinstall_property (G_OBJECT (videotestsrc_),
+		       "pattern",
+		       "pattern", 
+		       "Video Pattern");
+    return true;
   }
   
 }

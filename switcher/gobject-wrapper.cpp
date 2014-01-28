@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 /**
@@ -81,7 +83,7 @@ namespace switcher
  }
   
   static void 
-  my_object_init (MyObject *self)
+  my_object_init (MyObject */*self*/)
   {}
 
   // ---------------------------------- CPP CLASS ----------------------------
@@ -112,12 +114,11 @@ namespace switcher
 
   void
   GObjectWrapper::property_set_user_data (std::string nickname,
-				 void *user_data)
+					  void *user_data)
   {
     property_user_datas_[nickname] = user_data;
   }
 
-  //TODO provide other make_..._property for other types
   //set_method and get_method must be static
   GParamSpec * 
   GObjectWrapper::make_int_property (const gchar *nickname, 
@@ -157,6 +158,45 @@ namespace switcher
     g_object_unref (obj);
     return param;
   }
+
+  GParamSpec * 
+  GObjectWrapper::make_double_property (const gchar *nickname, 
+					const gchar *description,
+					gdouble min_value,
+					gdouble max_value,
+					gdouble default_value,
+					GParamFlags read_write_flags,
+					GObjectCustomProperty::set_method_pointer set_method,
+					GObjectCustomProperty::get_method_pointer get_method)
+  {
+    guint prop_id = next_prop_id_;
+    next_prop_id_++;
+
+    gchar *name = g_strdup_printf ("customprop%d", prop_id);
+    g_debug ("custom property internal name %s", name);
+
+    GParamSpec *param = g_param_spec_double (name, 
+					     nickname, 
+					     description,
+					     min_value, 
+					     max_value,
+					     default_value,
+					     read_write_flags);
+    
+    GObjectCustomProperty::ptr property =  
+      GObjectCustomProperty::make_custom_property (set_method,
+						   get_method);
+    
+    custom_properties_[prop_id] = property;
+    
+    //TODO find a way to get CLASS without instanciating an unused object
+    MyObject *obj = (MyObject *)g_object_new (my_object_get_type (), NULL);
+    g_object_class_install_property (G_OBJECT_GET_CLASS (obj),
+				     prop_id,
+				     param);
+    g_object_unref (obj);
+    return param;
+  }
   
   //set_method and get_method must be static
   GParamSpec * 
@@ -171,18 +211,17 @@ namespace switcher
     next_prop_id_++;
     
     gchar *name = g_strdup_printf ("customprop%d", prop_id);
-    g_debug ("custom property internal name %s", name);
     
     GParamSpec *param = g_param_spec_string (name,
 					     nickname,
 					     description,
 					     default_value,
 					     read_write_flags);
-
-  GObjectCustomProperty::ptr property =  
-    GObjectCustomProperty::make_custom_property (set_method,
-						 get_method);
-  
+    
+    GObjectCustomProperty::ptr property =  
+      GObjectCustomProperty::make_custom_property (set_method,
+						   get_method);
+    
   custom_properties_[prop_id] = property;
   
   //TODO find a way to get CLASS without instanciating an unused object
@@ -194,7 +233,64 @@ namespace switcher
   return param;
 }
 
+  GParamSpec *
+  GObjectWrapper::make_enum_property (const gchar *nickname, 
+				      const gchar *description,
+				      const gint default_value, 
+				      const GEnumValue *custom_enum,
+				      GParamFlags read_write_flags,
+				      GObjectCustomProperty::set_method_pointer set_method,
+				      GObjectCustomProperty::get_method_pointer get_method)
+  {
+    guint prop_id = next_prop_id_;
+    next_prop_id_++;
+    gchar *name = g_strdup_printf ("customprop%d", prop_id);
+    
+    //  static GEnumValue string_map_enum [1024];
+    //   gint gint_default_value = 0;
+    //   gint i = 0;
+    //   for (auto &it : string_map)
+    //     {
+    //    	string_map_enum [i].value = i + 1;
+    //    	string_map_enum [i].value_name = g_strdup (it.first.c_str ());
+    //    	string_map_enum [i].value_nick = g_strdup (it.second.c_str ());
+    //    	if (g_strcmp0 (it.first.c_str (), default_value) == 0)
+    //    	  gint_default_value = i + 1 ;
+    //    	i ++;
+    //     }
+    //   string_map_enum [i].value = 0;
+    //   string_map_enum [i].value_name = NULL;
+    //   string_map_enum [i].value_nick = NULL;
 
+    //registering the type with the name calculated previously
+    GType gtype = g_enum_register_static (name, custom_enum);
+      
+    
+     GParamSpec *param = g_param_spec_enum (name,
+     					   nickname,
+     					   description, 
+     					   gtype,
+     					   default_value,  
+     					   (GParamFlags) (read_write_flags // | G_PARAM_STATIC_STRINGS
+     							  ));
+
+    
+
+    GObjectCustomProperty::ptr property =  
+      GObjectCustomProperty::make_custom_property (set_method,
+						   get_method);
+    
+    custom_properties_[prop_id] = property;
+    
+    //TODO find a way to get CLASS without instanciating an unused object
+    MyObject *obj = (MyObject *)g_object_new (my_object_get_type (), NULL);
+    g_object_class_install_property (G_OBJECT_GET_CLASS (obj),
+				     prop_id,
+				     param);
+    g_object_unref (obj);
+    return param;
+  }
+  
   //set_method and get_method must be static
   GParamSpec * 
   GObjectWrapper::make_boolean_property (const gchar *nickname, 
@@ -325,5 +421,11 @@ namespace switcher
   GObjectWrapper::property_set_default_user_data (void *default_user_data)
   {
     property_default_user_data_ = default_user_data;
+  }
+
+  bool 
+  GObjectWrapper::is_property_nickname_taken (std::string nickname)
+  {
+    return property_user_datas_.find (nickname) != property_user_datas_.end ();
   }
  }

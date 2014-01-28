@@ -1,21 +1,24 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
+
 
 /**
  * The Method class
@@ -30,6 +33,7 @@ namespace switcher
     closure_ (NULL)
   {
     json_description_.reset (new JSONBuilder());
+    
   }
 
   Method::~Method ()
@@ -38,29 +42,62 @@ namespace switcher
       g_closure_unref (closure_);
   }
 
-  /*
-   * the first elements of arg_type should be args passed by value, 
-   * with args passed by pointers at the end (as references to base quiddities)  
-   *
-   */
-  void //TODO make set_method returning a bool
-  Method::set_method (void *method, std::vector<GType> arg_types, gpointer user_data)  
+  Method::Method (const Method &source)
+  {
+    copy_method (source);
+  }
+
+  Method&
+  Method::operator= (const Method &source)
+  {
+    copy_method (source);
+    return *this;
+  }
+
+  void 
+  Method::copy_method(const Method &source)
+  {
+    long_name_ = source.long_name_;
+    method_name_ = source.method_name_;
+    short_description_ = source.short_description_;
+    return_description_ = source.return_description_;
+    arg_description_ = source.arg_description_;
+    if (closure_ != NULL)
+      {
+	g_closure_ref (source.closure_);
+	closure_ = source.closure_;
+      }
+    return_type_ = source.return_type_;
+    arg_types_ = source.arg_types_; 
+    num_of_value_args_ = source.num_of_value_args_;
+    json_description_ = source.json_description_;
+  }
+
+  bool
+  Method::set_method (method_ptr method, 
+		      return_type return_type,
+		      args_types arg_types, 
+		      gpointer user_data)  
   {
     if (arg_types.size () < 1)
       {
-	g_warning ("Method::set_method is called with empty arg_types");
-	return;
+	g_debug ("Method::set_method is called with empty arg_types");
+	return false;
       }
     if (method == NULL)
       {
-	g_warning ("Method::set_method is called with a NULL function");
-	return;
+	g_debug ("Method::set_method is called with a NULL function");
+	return false;
       }
     closure_ = g_cclosure_new (G_CALLBACK (method), user_data, Method::destroy_data);
-    g_closure_set_marshal  (closure_,g_cclosure_marshal_generic);
+    g_closure_set_marshal  (closure_, g_cclosure_marshal_generic);
+    return_type_ =  return_type;
     arg_types_ = arg_types;
     num_of_value_args_ = arg_types_.size();
+    
+    return true;
   }
+
 
   //FIXME remove this method
   uint 
@@ -70,8 +107,11 @@ namespace switcher
   }
   
   bool 
-  Method::invoke(std::vector<std::string> args)
+  Method::invoke(std::vector<std::string> args, GValue *result_value)
   {
+        
+    //GValue result_value = G_VALUE_INIT;
+
     if (args.size () != num_of_value_args_ && arg_types_[0] != G_TYPE_NONE)
       {
 	g_warning ("Method::invoke number of arguments does not correspond to the size of argument types");
@@ -100,65 +140,81 @@ namespace switcher
 	gst_value_deserialize (&params[0],"");
       }
 
+    g_value_init (result_value, return_type_);
+    g_closure_invoke (closure_, result_value, num_of_value_args_, params, NULL);
     
-    GValue result_value = G_VALUE_INIT;
-    gboolean result;
-    g_value_init (&result_value, G_TYPE_BOOLEAN);
-    //g_print ("arg tipe size %d\n", arg_types_.size());
-    g_closure_invoke (closure_, &result_value, num_of_value_args_, params, NULL);
-    result = g_value_get_boolean (&result_value);
-    
-    //unset
-    g_value_unset (&result_value);
     for (guint i=0; i < num_of_value_args_; i++)
       g_value_unset (&params[i]);
-    return result;
+    return true; 
   } 
   
   void
-  Method::destroy_data (gpointer  data,
-			GClosure *closure)
+  Method::destroy_data (gpointer  /*data*/,
+			GClosure */*closure*/)
   {
     //g_debug ("Method::destroy data");
   }
   
 
   void
-  Method::set_description (std::string method_name,
+  Method::set_description (std::string long_name,
+			   std::string method_name,
 			   std::string short_description,
-			   std::vector< std::pair<std::string,std::string> > arg_description)
+			   std::string return_description,
+			   args_doc arg_description)
   {
+    long_name_ = long_name;
+    method_name_ = method_name;
+    short_description_ = short_description;
+    return_description_ = return_description;
+    arg_description_ = arg_description;
+  }
+
+
+  void 
+  Method::make_description()
+    {
     json_description_->reset ();
     json_description_->begin_object ();
-    json_description_->add_string_member ("name", method_name.c_str ());
-    json_description_->add_string_member ("description", short_description.c_str ());
+    json_description_->add_string_member ("long name", long_name_.c_str ());
+    json_description_->add_string_member ("name", method_name_.c_str ());
+    json_description_->add_string_member ("description", short_description_.c_str ());
+    json_description_->add_string_member ("position category", get_category ().c_str ());
+    json_description_->add_int_member    ("position weight", get_position_weight ());
+    json_description_->add_string_member ("return type", g_type_name (return_type_));
+    json_description_->add_string_member ("return description", return_description_.c_str ());
+    
     json_description_->set_member_name ("arguments");
     json_description_->begin_array ();
-    std::vector<std::pair<std::string,std::string> >::iterator it;
+    args_doc::iterator it;
     int j=0;
-    if (!arg_description.empty ())
-      for (it = arg_description.begin() ; it != arg_description.end(); it++ )
+    if (!arg_description_.empty ())
+      for (it = arg_description_.begin() ; it != arg_description_.end(); it++ )
 	{
 	  json_description_->begin_object ();
-	  json_description_->add_string_member ("name",it->first.c_str ());
-	  json_description_->add_string_member ("description",it->second.c_str ());
+	  json_description_->add_string_member ("long name", std::get<0>(*it).c_str ());
+	  json_description_->add_string_member ("name",std::get<1>(*it).c_str ());
+	  json_description_->add_string_member ("description",std::get<2>(*it).c_str ());
 	  json_description_->add_string_member ("type",g_type_name (arg_types_[j])); 
 	  json_description_->end_object ();
 	}
     json_description_->end_array ();
     json_description_->end_object ();
-  }
+  
+    }
 
   //json formated description
   std::string
   Method::get_description ()
   {
+    make_description ();
     return json_description_->get_string (true);
   }
 
   JSONBuilder::Node 
   Method::get_json_root_node ()
   {
+    make_description ();
     return json_description_->get_root ();
   }
 
@@ -171,38 +227,51 @@ namespace switcher
      va_list vl;
      va_start(vl, first_arg_type);
      res.push_back (first_arg_type);
-     while (arg_type = va_arg( vl, GType))
+     while ( (arg_type = va_arg(vl, GType)))
        res.push_back (arg_type);
      va_end(vl);
      return res;
    }
 
-  std::vector<std::pair<std::string,std::string> > 
-  Method::make_arg_description (const char *first_arg_name, ...)
+
+  //FIXME, make this more robust to user missing strings
+  Method::args_doc
+  Method::make_arg_description (const char *first_arg_long_name, ...)
   {
-    std::vector<std::pair<std::string,std::string> > res;
-    std::pair<std::string,std::string> arg_desc_pair;
+    args_doc res;
     va_list vl;
+    char *arg_long_name;
     char *arg_name;
     char *arg_desc;
-    va_start(vl, first_arg_name);
-    if (first_arg_name != "none" && (arg_desc = va_arg( vl, char *)))
+    va_start(vl, first_arg_long_name);
+    if (g_strcmp0 (first_arg_long_name, "none") != 0 
+	&& (arg_name = va_arg(vl, char *)) 
+	&& (arg_desc = va_arg(vl, char *)))
+      res.push_back (std::make_tuple (first_arg_long_name, 
+				      arg_name,
+				      arg_desc));
+    gboolean parsing = true;
+    do
       {
-	std::pair<std::string,std::string> arg_pair;
-	arg_desc_pair.first = std::string (first_arg_name);
-	arg_desc_pair.second = std::string (arg_desc);
-	res.push_back (arg_desc_pair);
+	arg_long_name = va_arg( vl, char *);
+	
+	if (arg_long_name != NULL)
+	  {
+	    arg_name = va_arg( vl, char *); 
+	    arg_desc = va_arg( vl, char *);
+	    if (arg_name != NULL && arg_desc != NULL)
+	      res.push_back (std::make_tuple (arg_long_name, 
+					      arg_name,
+					      arg_desc));
+	    else
+	      parsing = false;
+	  }
+	else
+	  parsing = false;
       }
-    while ( (arg_name = va_arg( vl, char *)) && (arg_desc = va_arg( vl, char *)))
-      {
-	std::pair<std::string,std::string> arg_pair;
-	arg_desc_pair.first = std::string (arg_name);
-	arg_desc_pair.second = std::string (arg_desc);
-	res.push_back (arg_desc_pair);
-      }
-    
+    while (parsing);
     va_end(vl);
     return res;
   }
-  
+
 }

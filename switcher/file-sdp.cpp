@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 #include "file-sdp.h"
@@ -23,19 +25,26 @@
 
 namespace switcher
 {
-  QuiddityDocumentation FileSDP::doc_ ("sdp decoding", "filesdp", 
-				       "get raw stream from sdp file");
-  
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FileSDP,
+				       "File SDP Receiver",
+				       "network", 
+				       "get raw stream from sdp file",
+				       "LGPL",
+				       "filesdp", 
+				       "Nicolas Bouillot");
+  FileSDP::FileSDP () :
+    filesrc_ (NULL),
+    sdpdemux_ (NULL),
+    media_counter_ (0)
+  {}
+
   bool
-  FileSDP::init() 
+  FileSDP::init_segment () 
   { 
     if (!GstUtils::make_element ("filesrc", &filesrc_)
 	|| !GstUtils::make_element ("sdpdemux", &sdpdemux_))
       return false;
 
-    media_counter_ = 0;
-    //set the name before registering properties
-    set_name (gst_element_get_name (filesrc_));
     add_element_to_cleaner (filesrc_);
     add_element_to_cleaner (sdpdemux_);
     
@@ -53,36 +62,33 @@ namespace switcher
     // 		      (GCallback) FileSDP::pad_removed_cb ,  
     // 		      (gpointer) this);      
    
-    //registering add_data_stream
-    register_method("to_shmdata",
-		    (void *)&to_shmdata_wrapped, 
+
+    install_method ("To Shmdata",
+		    "to_shmdata", 
+		    "get raw streams from an sdp description distributed over http and write them to shmdatas", 
+		    "success or fail",
+		    Method::make_arg_description ("SDP File URL",
+						  "url", 
+						  "The sdp file path (such as file:///home/me/file.sdp)",
+						  NULL),
+		    (Method::method_ptr)&to_shmdata_wrapped, 
+		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("to_shmdata", 
-			    "get raw streams from an sdp description distributed over http and write them to shmdatas", 
-			    Method::make_arg_description ("url", 
-							  "the url to the sdp file",
-							  NULL));
-    //registering "latency"
-    register_property (G_OBJECT (sdpdemux_),"latency","latency");
+		    this);
+    
+    install_property (G_OBJECT (sdpdemux_),"latency","latency", "Latency");
     return true;
-  }
-  
-  QuiddityDocumentation 
-  FileSDP::get_documentation ()
-  {
-    return doc_;
   }
 
   void 
-  FileSDP::no_more_pads_cb (GstElement* object, gpointer user_data)   
+  FileSDP::no_more_pads_cb (GstElement* /*object*/, gpointer /*user_data*/)   
   {   
     //FileSDP *context = static_cast<FileSDP *>(user_data);
   }
 
 
   void 
-  FileSDP::pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data)   
+  FileSDP::pad_added_cb (GstElement* /*object*/, GstPad* pad, gpointer user_data)   
   {   
     FileSDP *context = static_cast<FileSDP *>(user_data);
     

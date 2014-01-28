@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 /**
@@ -27,6 +29,9 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <mutex>
+#include <condition_variable>
+#include <thread>
 #include "quiddity-manager-impl.h"
 #include "quiddity-command.h"
 #include "quiddity-manager-wrapper.h"
@@ -41,10 +46,10 @@ namespace switcher
       typedef std::shared_ptr<QuiddityManager> ptr; 
       typedef std::vector<QuiddityCommand::ptr> CommandHistory; 
       typedef void (*PropCallback)(std::string subscriber_name,
-			       std::string quiddity_name,
-			       std::string property_name,
-			       std::string value,
-			       void *user_data);
+				   std::string quiddity_name,
+				   std::string property_name,
+				   std::string value,
+				   void *user_data);
       typedef void (*SignalCallback)(std::string subscriber_name,
 				     std::string quiddity_name,
 				     std::string property_name,
@@ -57,23 +62,29 @@ namespace switcher
 	std::pair<QuiddityManager::SignalCallback, 
 	void *> > SignalCallbackMap;
 
-      static QuiddityManager::ptr make_manager ();//will get name "default"
       static QuiddityManager::ptr make_manager (std::string name);
       ~QuiddityManager(); 
+      QuiddityManager *operator=(const QuiddityManager &) = delete;
+      QuiddityManager (const QuiddityManager &) = delete;
+
       std::string get_name ();
       void reboot ();
 
-      //command history
+      //*************** command history ***********************************************************
       bool save_command_history (const char *file_path);
       CommandHistory get_command_history_from_file (const char *file_path);
       std::vector<std::string> get_property_subscribers_names (QuiddityManager::CommandHistory histo);
       std::vector<std::string> get_signal_subscribers_names (QuiddityManager::CommandHistory histo);
       void play_command_history (QuiddityManager::CommandHistory histo,
 				 QuiddityManager::PropCallbackMap *prop_cb_data,
-				 QuiddityManager::SignalCallbackMap *sig_cb_data);
+				 QuiddityManager::SignalCallbackMap *sig_cb_data,
+				 bool mute_property_and_signal_subscribers);
       void reset_command_history (bool remove_created_quiddities);//FIXME maybe implement undo and remove this  arg
 
-      //inspect
+      //************** plugins *******************************************************************
+      bool scan_directory_for_plugins (std::string directory);
+
+      //***************** inspect ****************************************************************
       std::vector<std::string> get_classes (); //know which quiddities can be created
       std::vector<std::string> get_quiddities (); //know instances
       // doc (json formatted) 
@@ -81,12 +92,12 @@ namespace switcher
       std::string get_class_doc (std::string class_name);
       std::string get_quiddity_description (std::string quiddity_name);
       std::string get_quiddities_description ();
-      // create & remove
+      // create/remove/rename
       std::string create (std::string class_name); //returns the name
       std::string create (std::string class_name, 
 			  std::string nick_name); // &?= chars are not allowed in nicknames
       bool remove (std::string quiddity_name);
-
+      bool rename (std::string nick_name, std::string new_nick_name);
 
       //****************** properties ************************************************************
       //doc (json formatted)
@@ -105,6 +116,9 @@ namespace switcher
      
       std::string get_property (std::string quiddity_name, 
 				std::string property_name);
+
+      bool has_property (const std::string quiddity_name,
+			 const std::string property_name);
 
       //property subscribtion
       bool make_property_subscriber (std::string subscriber_name,
@@ -130,14 +144,14 @@ namespace switcher
      
       //LOWER LEVEL subscription
       //This is how to subscribe and get property values when changed:
-      /* static gchar *coucou = "coucou"; */
+      /* static gchar *hello = "hello"; */
       /* void prop_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data) */
       /*   g_print ("---------------- property callback: %s -- %s\n",  */
       /* 		(gchar *)user_data,  */
       /* 		switcher::Property::parse_callback_args (gobject, pspec).c_str ()); */
       /* //testing property */
       /* manager->create ("videotestsrc","vid"); */
-      /* manager->subscribe_property ("vid", "pattern", prop_cb, coucou); */
+      /* manager->subscribe_property ("vid", "pattern", prop_cb, hello); */
 
       bool subscribe_property_glib (std::string quiddity_name,
 				    std::string name,
@@ -159,12 +173,15 @@ namespace switcher
       std::string get_method_description_by_class (std::string class_name, 
 						   std::string method_name);
       //invoke
-      bool invoke (std::string quiddity_name, 
-		   std::string method_name,
-		   std::vector<std::string> args);  
+      bool invoke (const std::string quiddity_name, 
+		   const std::string method_name,
+		   std::string **return_value,
+		   const std::vector<std::string> args);  
       bool invoke_va (const gchar *quiddity_name,
+		      const gchar *method_name,
+		      std::string **return_value,
 		      ...);
-    
+      
       bool has_method (const std::string quiddity_name,
 		       const std::string method_name);
     
@@ -207,32 +224,33 @@ namespace switcher
 	list_subscribed_signals_json (std::string subscriber_name);
     
     private: 
-      QuiddityManager();//will get name "default"
-      QuiddityManager(std::string name); 
       QuiddityManager_Impl::ptr manager_impl_; //may be shared with others for automatic quiddity creation 
       std::string name_;
-
-      //auto invoke and init
-      void auto_init (std::string quiddity_name);
-
       //running commands in sequence 
       QuiddityCommand::ptr command_;
-      void command_lock ();
-      void command_unlock ();
-      GMutex *seq_mutex_; 
-      std::string seq_invoke (QuiddityCommand::command command, ...);
-      void init_command_sync(); 
-      void clear_command_sync(); 
-
+      std::mutex seq_mutex_;
+      GAsyncQueue *command_queue_;
+      std::thread invocation_thread_;
       //invokation in gmainloop
-      GCond *exec_cond_; //sync current thread and gmainloop
-      GMutex *exec_mutex_; //sync current thread and gmainloop
-      static gboolean execute_command (gpointer user_data);//gmainloop source callback
-      void invoke_in_gmainloop ();
-
+      std::condition_variable execution_done_cond_; //sync current thread and gmainloop  
+      std::mutex execution_done_mutex_; //sync current thread and gmainloop  
       //history
       CommandHistory command_history_;
       gint64 history_begin_time_; //monotonic time, in microseconds
+
+
+      QuiddityManager() = delete;
+      QuiddityManager(std::string name); 
+      //auto invoke and init
+      void auto_init (std::string quiddity_name);
+      void command_lock ();
+      void command_unlock ();
+      std::string seq_invoke (QuiddityCommand::command command, ...);
+      void init_command_sync(); 
+      void clear_command_sync(); 
+      void invocation_thread ();
+      static gboolean execute_command (gpointer user_data);//gmainloop source callback
+      void invoke_in_thread ();
     }; 
 
 } // end of namespace 

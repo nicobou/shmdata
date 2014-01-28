@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 
@@ -39,6 +41,8 @@ namespace switcher
     typedef std::shared_ptr<GObjectWrapper> ptr;
     GObjectWrapper ();
     ~GObjectWrapper ();
+    GObjectWrapper (const GObjectWrapper &) = delete;
+    GObjectWrapper &operator= (const GObjectWrapper &) = delete;
 
     GObject *get_gobject ();
 
@@ -48,6 +52,7 @@ namespace switcher
     void property_set_user_data (std::string nickname, void *user_data);
     void *property_get_user_data (std::string nickname);
     void property_set_default_user_data (void *default_user_data);
+    bool is_property_nickname_taken (std::string nickname);
 
 
 
@@ -77,7 +82,26 @@ namespace switcher
 			     GParamFlags read_write_flags,
 			     GObjectCustomProperty::set_method_pointer set_method,
 			     GObjectCustomProperty::get_method_pointer get_method);
-    
+
+    static GParamSpec *
+      make_enum_property (const gchar *nickname, 
+			  const gchar *description,
+			  const gint default_value,
+			  const GEnumValue *custom_enum, //*must* be static
+			  GParamFlags read_write_flags,
+			  GObjectCustomProperty::set_method_pointer set_method,
+			  GObjectCustomProperty::get_method_pointer get_method);
+
+    static GParamSpec * 
+      make_double_property (const gchar *nickname, 
+			    const gchar *description,
+			    gdouble min_value,
+			    gdouble max_value,
+			    gdouble default_value,
+			    GParamFlags read_write_flags,
+			    GObjectCustomProperty::set_method_pointer set_method,
+			    GObjectCustomProperty::get_method_pointer get_method);
+      
     //signal    
     static guint 
       make_signal (GType return_type,

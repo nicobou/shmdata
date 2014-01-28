@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 
@@ -22,9 +24,9 @@
 #define __SWITCHER_SHMDATA_TO_FILE_H__
 
 #include <gst/gst.h>
-#include <memory>
 #include "segment.h"
 #include "custom-property-helper.h"
+#include <unordered_map>
  
 namespace switcher
 {
@@ -32,12 +34,11 @@ namespace switcher
   class ShmdataToFile : public Segment
   {
   public:
-    typedef std::shared_ptr<ShmdataToFile> ptr;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToFile);
+    ShmdataToFile ();
     ~ShmdataToFile ();
-
-    bool init ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
+    ShmdataToFile (const ShmdataToFile &);
+    ShmdataToFile &operator= (const ShmdataToFile &);
 
     //local streams
     bool add_shmdata (std::string shmdata_socket_path,
@@ -53,10 +54,11 @@ namespace switcher
      GParamSpec *recording_param_; 
      gboolean recording_; 
 
+     bool init_segment ();
      bool make_recorders ();
      bool clean_recorders ();
-     StringMap <std::string> file_names_;
-     StringMap <GstElement *> shmdata_recorders_;
+     std::unordered_map <std::string, std::string> file_names_;
+     std::unordered_map <std::string, GstElement *> shmdata_recorders_;
 
      //wrapper for registering the data_stream functions
      static gboolean add_shmdata_wrapped (gpointer shmdata_socket_path, 

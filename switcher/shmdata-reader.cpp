@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 #include "shmdata-reader.h"
@@ -38,7 +40,7 @@ namespace switcher
   {
       g_debug ("ShmdataReader: deleting %s", path_.c_str());
       shmdata_base_reader_close (reader_);
-      GstUtils::clean_element (funnel_);
+      //GstUtils::clean_element (funnel_);
       g_debug ("ShmdataReader: %s deleted ", path_.c_str());
   }
 
@@ -97,17 +99,23 @@ namespace switcher
   {
     g_debug ("shmdata-reader::start");
 
+    //g_print ("reader start\n");
     shmdata_base_reader_close (reader_);
+    //g_print ("reader start 1\n");
     GstUtils::clean_element (funnel_);
+    //g_print ("reader start 2\n");
     reader_ = shmdata_base_reader_new ();
+    //g_print ("reader start 3\n");
     shmdata_base_reader_set_g_main_context (reader_, g_main_context_);
     shmdata_base_reader_set_on_have_type_callback (reader_, ShmdataReader::on_have_type, this);
+    //g_print ("reader start 4\n");
     
     if (path_ == "" ||  bin_ == NULL)
       {
 	g_warning ("cannot start the shmdata reader: name or bin or sink element has not bin set");
 	return;
       }
+    //g_print ("reader start 5\n");
     
     // //looking for the bus, searching the top level pipeline
     // GstElement *pipe = bin_;
@@ -129,17 +137,22 @@ namespace switcher
     // 	return;
     //   }
 
+    //g_print ("reader start 6\n");
     shmdata_base_reader_set_callback (reader_, ShmdataReader::on_first_data, this);
+    //g_print ("reader start 7\n");
     shmdata_base_reader_install_sync_handler (reader_, FALSE);
+    //g_print ("reader start 8\n");
     shmdata_base_reader_set_bin (reader_, bin_);
+    //g_print ("reader start 9\n");
     shmdata_base_reader_start (reader_, path_.c_str());
+    //g_print ("reader start -- fin\n");
 
     g_debug ("shmdata-reader::start done");
   }
 
 
   void 
-  ShmdataReader::on_have_type (shmdata_base_reader_t *base_reader, 
+  ShmdataReader::on_have_type (shmdata_base_reader_t *, 
 			       GstCaps *caps, 
 			       void *user_data)
   {

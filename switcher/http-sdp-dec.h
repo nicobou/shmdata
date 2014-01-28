@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 
@@ -23,8 +25,10 @@
 
 #include "base-source.h"
 #include "gst-element-cleaner.h"
-#include "string-map.h"
+#include "quiddity-command.h"
 #include <memory>
+#include <map>
+#include <string>
 
 namespace switcher
 {
@@ -32,25 +36,28 @@ namespace switcher
   class HTTPSDPDec : public BaseSource, public GstElementCleaner
   {
   public:
-    typedef std::shared_ptr<HTTPSDPDec> ptr;
-    ~HTTPSDPDec();
-    bool init ();
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);
+    HTTPSDPDec ();
+    ~HTTPSDPDec ();
+    HTTPSDPDec (const HTTPSDPDec &) = delete;
+    HTTPSDPDec &operator= (const HTTPSDPDec &) = delete;
+
     bool to_shmdata (std::string uri);
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
 
   private: 
    GstElement *souphttpsrc_;
    GstElement *sdpdemux_;
    std::vector<GstElement *> decodebins_;
-   StringMap<int> media_counters_;
+   std::map<std::string, int> media_counters_;
    GstPad *main_pad_;
    GstCaps *rtpgstcaps_;
    bool discard_next_uncomplete_buffer_;
-   std::string runtime_name_;
+   //std::string runtime_name_;
    void init_httpsdpdec ();
    void destroy_httpsdpdec ();
-
+   QuiddityCommand *on_error_command_; //for the runtime error handler
+   void clean_on_error_command ();
+   bool init_segment ();
    static void decodebin_pad_added_cb (GstElement* object, GstPad *pad, gpointer user_data);
    static void httpsdpdec_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
    static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);

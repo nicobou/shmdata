@@ -7,6 +7,6 @@ Name: switcher
 Description: Switcher for audio, video, data and network streams
 URL: @PACKAGE_URL@
 Version: @PACKAGE_VERSION@
-Requires.private: gstreamer-0.10 >= 0.10, gsoap, json-glib-1.0
-Libs: -L${libdir} -lswitcher-@LIBSWITCHER_API_VERSION@
-Cflags: -I${includedir}/switcher-@LIBSWITCHER_API_VERSION@
+Requires.private: gstreamer-0.10 >= 0.10, json-glib-1.0, glib-2.0, gmodule-2.0, shmdata-0.8
+Libs: -L${libdir} -lswitcher-@LIBSWITCHER_API_VERSION@ 
+Cflags: -std=c++0x -I${includedir}/switcher-@LIBSWITCHER_API_VERSION@

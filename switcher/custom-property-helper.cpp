@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 #include "custom-property-helper.h"
@@ -44,12 +46,12 @@ namespace switcher
   {
 
     GParamSpec *pspec = GObjectWrapper::make_string_property (nickname, 
-						 description,
-						 default_value,
-						 read_write_flags,
-						 set_by_gvalue,
-						 get_by_gvalue);
-
+							      description,
+							      default_value,
+							      read_write_flags,
+							      set_by_gvalue,
+							      get_by_gvalue);
+    
     make_user_method (nickname,
 		      pspec,
 		      (void (*) (void))set_method,
@@ -112,6 +114,63 @@ namespace switcher
     return pspec; 
   }
 
+  GParamSpec *
+  CustomPropertyHelper::make_double_property (const gchar *nickname, 
+					   const gchar *description,
+					   gdouble min_value,
+					   gdouble max_value,
+					   gdouble default_value,
+					   GParamFlags read_write_flags,
+					   set_double_method set_method,
+					   get_double_method get_method,
+					   void *user_data)
+  {
+    
+    GParamSpec *pspec = GObjectWrapper::make_double_property (nickname, 
+							      description,
+							      min_value,
+							      max_value,
+							      default_value,
+							      read_write_flags,
+							      set_by_gvalue,
+							      get_by_gvalue);
+    
+    make_user_method (nickname,
+		      pspec,
+		      (void (*) (void))set_method,
+		      (void (*) (void))get_method,
+		      user_data);
+    return pspec; 
+  }
+
+
+  GParamSpec *
+  CustomPropertyHelper::make_enum_property (const gchar *nickname, 
+					    const gchar *description,
+					    const gint default_value,
+					    const GEnumValue *custom_enum,
+					    GParamFlags read_write_flags,
+					    set_enum_method set_method,
+					    get_enum_method get_method,
+					    void *user_data)
+  {
+    
+    GParamSpec *pspec = GObjectWrapper::make_enum_property (nickname, 
+							    description,
+							    default_value,
+							    custom_enum,
+							    read_write_flags,
+							    set_by_gvalue,
+							    get_by_gvalue);
+    
+    make_user_method (nickname,
+		      pspec,
+		      (void (*) (void))set_method,
+		      (void (*) (void))get_method,
+		      user_data);
+    return pspec; 
+  }
+
 
   void
   CustomPropertyHelper::make_user_method (const gchar *nickname,
@@ -151,8 +210,18 @@ namespace switcher
 	gint val = ((get_int_method)user_method->get) (user_method->user_data);
 	g_value_set_int (value, val);
       }
+    else if (G_TYPE_IS_ENUM (G_VALUE_TYPE(value)))
+      {
+	gint val = ((get_enum_method)user_method->get) (user_method->user_data);
+	g_value_set_enum (value, val);
+      }
+    else if (G_VALUE_TYPE(value) == G_TYPE_DOUBLE)
+      {
+	gdouble val = ((get_double_method)user_method->get) (user_method->user_data);
+	g_value_set_double (value, val);
+      }
     else
-      g_warning ("CustomPropertyHelper: unknown type"); 
+      g_debug ("CustomPropertyHelper: unknown type"); 
     return TRUE;
   }
  
@@ -171,9 +240,24 @@ namespace switcher
 	((set_boolean_method)user_method->set) (g_value_get_boolean (value), 
 						user_method->user_data);
       }
+    else if (G_VALUE_TYPE(value) == G_TYPE_INT)
+      {
+	((set_int_method)user_method->set) (g_value_get_int (value), 
+					    user_method->user_data);
+      }
+    else if (G_TYPE_IS_ENUM (G_VALUE_TYPE(value)))
+      {
+	((set_enum_method)user_method->set) (g_value_get_enum (value), 
+	 				     user_method->user_data);
+      }
+    else if (G_VALUE_TYPE(value) == G_TYPE_DOUBLE)
+      {
+	((set_double_method)user_method->set) (g_value_get_double (value), 
+					       user_method->user_data);
+      }
     else
       {
-	g_warning ("CustomPropertyHelper: unknown type"); 
+	g_debug ("CustomPropertyHelper: %s is unhandled type", g_type_name (G_VALUE_TYPE(value))); 
 	return FALSE;
       }
     GObjectWrapper::notify_property_changed (user_method->gobject,
@@ -188,4 +272,9 @@ namespace switcher
 						    pspec);
   }
 
+  bool
+  CustomPropertyHelper::is_property_nickname_taken (std::string nickname)
+  {
+    return gobject_->is_property_nickname_taken (nickname);
+  }
 }

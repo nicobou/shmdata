@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 /**
@@ -34,7 +36,23 @@ namespace switcher
 
   JSONBuilder::~JSONBuilder ()
   {
-    g_object_unref (builder_);
+    if (builder_ != NULL && G_IS_OBJECT (builder_))
+      g_object_unref (builder_);
+  }
+
+  JSONBuilder::JSONBuilder (const JSONBuilder &source)
+  {
+    g_object_ref (builder_);
+    builder_ = source.builder_;
+  }
+
+  JSONBuilder& 
+  JSONBuilder::operator= (const JSONBuilder &source)
+  {
+    if (source.builder_ != NULL)
+      g_object_ref (source.builder_);
+    builder_ = source.builder_;
+    return *this;
   }
 
   void
@@ -109,7 +127,7 @@ namespace switcher
   void 
   JSONBuilder::add_node_value (Node node_value)
   {
-    json_builder_add_value (builder_, node_value);
+    json_builder_add_value (builder_, json_node_copy (node_value));
   }
   
   void 

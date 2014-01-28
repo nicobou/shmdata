@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 /**
@@ -96,11 +98,11 @@ namespace switcher
   Signal::inspect_gobject_signal ()
   {
     /* Signals/Actions Block */
-    guint *signals;
-    guint nsignals;
-    gint i = 0, j, k;
+    //guint *signals;
+    //guint nsignals;
+    guint j;
     GSignalQuery *query = NULL;
-    GType type;
+    //GType type;
     
     query = g_new0 (GSignalQuery, 1);
     g_signal_query (id_, query);
@@ -119,29 +121,35 @@ namespace switcher
   }
   
  void
-  Signal::set_description (std::string signal_name,
-			   std::string short_description,
-			   std::vector< std::pair<std::string,std::string> > arg_description)
+ Signal::set_description (std::string long_name,
+			  std::string signal_name,
+			  std::string short_description,
+			  std::string return_description,
+			  args_doc arg_description)
   {
     json_description_->reset ();
     json_description_->begin_object ();
+    json_description_->add_string_member ("long name", long_name.c_str ());
     json_description_->add_string_member ("name", signal_name.c_str ());
     json_description_->add_string_member ("description", short_description.c_str ());
+    
     if (is_action_)
       json_description_->add_string_member ("type", "action");
     else
       json_description_->add_string_member ("type", "signal");
-    json_description_->add_string_member ("return type",g_type_name (return_type_));
+    json_description_->add_string_member ("return type", g_type_name (return_type_));
+    json_description_->add_string_member ("return description", return_description.c_str ());
     json_description_->set_member_name ("arguments");
     json_description_->begin_array ();
-    std::vector<std::pair<std::string,std::string> >::iterator it;
+    args_doc::iterator it;
     int j=0;
     if (!arg_description.empty ())
       for (it = arg_description.begin() ; it != arg_description.end(); it++ )
 	{
 	  json_description_->begin_object ();
-	  json_description_->add_string_member ("name",it->first.c_str ());
-	  json_description_->add_string_member ("description",it->second.c_str ());
+	  json_description_->add_string_member ("long name", std::get<0>(*it).c_str ());
+	  json_description_->add_string_member ("name",std::get<1>(*it).c_str ());
+	  json_description_->add_string_member ("description",std::get<2>(*it).c_str ());
 	  json_description_->add_string_member ("type",g_type_name (arg_types_[j])); 
 	  json_description_->end_object ();
 	}
@@ -157,42 +165,79 @@ namespace switcher
      va_list vl;
      va_start(vl, first_arg_type);
      res.push_back (first_arg_type);
-     while (arg_type = va_arg( vl, GType))
+     while ( (arg_type = va_arg( vl, GType)) )
        res.push_back (arg_type);
      va_end(vl);
      return res;
    }
 
-  std::vector<std::pair<std::string,std::string> > 
-  Signal::make_arg_description (const gchar *first_arg_name, ...)
+  Signal::args_doc
+  Signal::make_arg_description (const gchar *first_arg_long_name, ...)
   {
-    std::vector<std::pair<std::string,std::string> > res;
-    std::pair<std::string,std::string> arg_desc_pair;
+    args_doc res;
     va_list vl;
+    char *arg_long_name;
     char *arg_name;
     char *arg_desc;
-    va_start(vl, first_arg_name);
-    if (first_arg_name != "none" && (arg_desc = va_arg( vl, char *)))
+    va_start(vl, first_arg_long_name);
+    if (g_strcmp0 (first_arg_long_name, "none") != 0 
+	&& (arg_name = va_arg(vl, char *)) 
+	&& (arg_desc = va_arg(vl, char *)))
+      res.push_back (std::make_tuple (first_arg_long_name, 
+				      arg_name,
+				      arg_desc));
+    
+    gboolean parsing = true;
+    do
       {
-	std::pair<std::string,std::string> arg_pair;
-	arg_desc_pair.first = std::string (first_arg_name);
-	arg_desc_pair.second = std::string (arg_desc);
-	res.push_back (arg_desc_pair);
+	arg_long_name = va_arg( vl, char *);
+	if (arg_long_name != NULL)
+	  {
+	    arg_name = va_arg( vl, char *); 
+	    arg_desc = va_arg( vl, char *);
+	
+	    if (arg_name != NULL && arg_desc != NULL)
+	      res.push_back (std::make_tuple (arg_long_name, 
+					      arg_name,
+					      arg_desc));
+	    else
+	      parsing=false;
+	  }
+	else
+	  parsing=false;
       }
-    while ( (arg_name = va_arg( vl, char *)) && (arg_desc = va_arg( vl, char *)))
-      {
-	std::pair<std::string,std::string> arg_pair;
-	arg_desc_pair.first = std::string (arg_name);
-	arg_desc_pair.second = std::string (arg_desc);
-	res.push_back (arg_desc_pair);
-      }
+    while (parsing);
     
     va_end(vl);
     return res;
+    // args_doc res;
+    // va_list vl;
+    // char *arg_long_name;
+    // char *arg_name;
+    // char *arg_desc;
+    // va_start(vl, first_arg_long_name);
+    // if (g_strcmp0 (first_arg_long_name, "none") != 0 
+    // 	&& (arg_name = va_arg(vl, char *)) 
+    // 	&& (arg_desc = va_arg(vl, char *)))
+    //   {
+    // 	res.push_back (std::make_tuple (first_arg_long_name, 
+    // 					arg_name,
+    // 					arg_desc));
+    //   }
+    // while ((arg_long_name = va_arg( vl, char *))
+    // 	   && (arg_name = va_arg( vl, char *)) 
+    // 	   && (arg_desc = va_arg( vl, char *)))
+    //   {
+    // 	res.push_back (std::make_tuple (arg_long_name, 
+    // 					arg_name,
+    // 					arg_desc));
+    //   }
+    // va_end(vl);
+    // return res;
   }
   
   gboolean
-  Signal::on_signal_emitted (GSignalInvocationHint *ihint,
+  Signal::on_signal_emitted (GSignalInvocationHint *,
 			     guint n_param_values,
 			     const GValue *param_values,
 			     gpointer user_data)
@@ -204,7 +249,7 @@ namespace switcher
 
      std::vector<std::string> params;
      // g_debug ("signal name n_value %d, object type %s\n", n_param_values, G_OBJECT_TYPE_NAME (object));
-     int i;
+     guint i;
      for (i = 1; i < n_param_values; i++) //we do not deserialize the gobject
        {
 	 gchar *val_str = GstUtils::gvalue_serialize (&param_values[i]);
@@ -257,7 +302,7 @@ namespace switcher
   }
 
   void 
-  Signal::signal_emit (/*GMainContext *context,*/ const gchar *unused_string, va_list  var_args)
+  Signal::signal_emit (/*GMainContext *context,*/ const gchar */*unused_string*/, va_list  var_args)
   {
     g_signal_emit_valist (object_, id_, 0, var_args);
     // EmitArgs *args = new EmitArgs;
@@ -280,4 +325,59 @@ namespace switcher
   //   delete args;
   //   return FALSE;
   // }
+
+  GValue 
+  Signal::action_emit (std::vector<std::string> args)
+  {
+    
+    GValue result_value = G_VALUE_INIT;
+
+    if (!is_action_)
+      {
+	g_warning ("Signal::invoke cannot invoke if the signal is not an action");
+	return result_value;
+      }
+
+    if (args.size () != arg_types_.size () && arg_types_[0] != G_TYPE_NONE)
+      {
+	g_warning ("Signal::invoke number of arguments does not correspond to the size of argument types");
+	return result_value;
+      }
+
+    gsize param_size = 1;
+    if (arg_types_[0] != G_TYPE_NONE)
+      param_size = arg_types_.size () + 1;
+
+    GValue params[param_size]; //1 is instance and return value
+  
+    params[0] = G_VALUE_INIT;
+    g_value_init (&params[0], G_OBJECT_TYPE (object_));
+    g_value_set_object (&params[0], object_);
+
+    //with args
+    if (arg_types_[0] != G_TYPE_NONE)
+      for (gsize i = 0; i < arg_types_.size (); i++)
+	{
+	  params[i + 1] = G_VALUE_INIT;
+	  g_value_init (&params[i + 1],arg_types_[i]);
+	  
+	  if (!gst_value_deserialize (&params[i + 1],args[i].c_str()))
+	    {
+	      g_warning ("Signal::invoke string not transformable into gvalue (argument: %s) ",
+			 args[i].c_str());
+	      return result_value;
+	    }
+	}
+    
+    g_value_init (&result_value, return_type_);
+    
+    g_signal_emitv (params,
+		    id_,
+		    0,
+		    &result_value);
+
+    for (gsize i = 0; i < param_size ; i++)
+      g_value_unset (&params[i]);
+    return result_value;
+  } 
 }

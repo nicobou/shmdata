@@ -1,28 +1,30 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 #ifndef __SWITCHER_CUSTOM_PROPERTY_HELPER_H__
 #define __SWITCHER_CUSTOM_PROPERTY_HELPER_H__
 
 #include <memory>
+#include <vector>
 #include "gobject-wrapper.h"
-#include "string-map.h"
 
 namespace switcher
 {
@@ -39,6 +41,11 @@ namespace switcher
     typedef gboolean (*get_boolean_method)(void *user_data);
     typedef void (*set_int_method)(const gint value, void *user_data);
     typedef gint (*get_int_method)(void *user_data);
+    typedef void (*set_double_method)(const gdouble value, void *user_data);
+    typedef gdouble (*get_double_method)(void *user_data);
+    typedef void (*set_enum_method)(const gint value, void *user_data);
+    typedef gint(*get_enum_method)(void *user_data);
+
 
     typedef struct {
       void (*set) (void);
@@ -49,6 +56,10 @@ namespace switcher
     } UserMethod;
 
     CustomPropertyHelper ();
+    CustomPropertyHelper (const CustomPropertyHelper &) = delete;
+    CustomPropertyHelper &operator= (const CustomPropertyHelper &) = delete;
+
+    bool is_property_nickname_taken (std::string nickname);
     bool notify_property_changed (GParamSpec *pspec);
     GObject *get_gobject ();
     GParamSpec *
@@ -80,6 +91,27 @@ namespace switcher
 			 get_int_method get_method,
 			 void *user_data);
 
+    GParamSpec *
+      make_double_property (const gchar *nickname, 
+			    const gchar *description,
+			    gdouble min_value,
+			    gdouble max_value,
+			    gdouble default_value,
+			    GParamFlags read_write_flags,
+			    set_double_method set_method,
+			    get_double_method get_method,
+			    void *user_data);
+    
+    GParamSpec *
+      make_enum_property (const gchar *nickname, 
+			  const gchar *description,
+			  const gint default_value, //map key
+			  const GEnumValue *string_map_enum,
+			  GParamFlags read_write_flags,
+			  set_enum_method set_method,
+			  get_enum_method get_method,
+			  void *user_data);
+    
     static bool get_by_gvalue (GValue *value, void *user_data);
     static bool set_by_gvalue (const GValue *val, void *user_data);
     

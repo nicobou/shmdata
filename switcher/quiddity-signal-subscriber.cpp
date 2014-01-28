@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 /**
@@ -27,6 +29,11 @@
 
 namespace switcher
 {
+
+  QuidditySignalSubscriber::QuidditySignalSubscriber()
+  {
+    muted_ = false;
+  }
 
   QuidditySignalSubscriber::~QuidditySignalSubscriber()
   {
@@ -53,7 +60,14 @@ namespace switcher
      	  }
       }
   }
+
+  void
+  QuidditySignalSubscriber::mute (bool muted)
+  {
+    muted_ = muted;
+  }
   
+
   void 
   QuidditySignalSubscriber::signal_cb (std::vector <std::string> params, gpointer user_data)
   {
@@ -64,11 +78,12 @@ namespace switcher
     // 	     signal->signal_name,
     // 	     Signal::parse_callback_args (gobject, pspec).c_str (),
     // 	     (gchar *)signal->user_data); 
-    signal->user_callback (signal->name,
-			   signal->quiddity_name, 
-			   signal->signal_name,
-			   params,
-			   (gchar *)signal->user_data); 
+    if (!signal->subscriber->muted_)
+      signal->user_callback (signal->name,
+			     signal->quiddity_name, 
+			     signal->signal_name,
+			     params,
+			     (gchar *)signal->user_data); 
   }
 
   void 
@@ -116,6 +131,7 @@ namespace switcher
 	return false;
       }
     SignalData *signal = new SignalData ();
+    signal->subscriber = this;
     signal->name = g_strdup (name_.c_str ());
     signal->quiddity_name = g_strdup (quid->get_nick_name ().c_str ());
     signal->signal_name = g_strdup (signal_name.c_str ());
@@ -160,13 +176,16 @@ namespace switcher
   QuidditySignalSubscriber::unsubscribe (Quiddity::ptr quid)
   {
     std::string quid_name = quid->get_nick_name ();
+    std::vector <std::pair<std::string, std::string> > keys_to_remove;
     for (auto& it: signal_datas_)
       if (it.first.first == quid_name)
-	{
-	  g_free (it.second->quiddity_name);
-	  g_free (it.second->signal_name);
-	  signal_datas_.erase (it.first);
-	}
+     	{
+     	  g_free (it.second->quiddity_name);
+     	  g_free (it.second->signal_name);
+     	  keys_to_remove.push_back (it.first);
+     	}
+    for (auto &it: keys_to_remove)
+      signal_datas_.erase (it);
     return true;
   }
 

@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 #include "shmdata-writer.h"
@@ -55,7 +57,7 @@ namespace switcher
 	g_debug ("ShmdataWriter::set_path warning: file %s exists and will be deleted.",name.c_str());
 	if (! g_file_delete (shmfile, NULL, NULL)) 
 	  {
-	    g_error ("ShmdataWriter::set_path error: file %s is already existing and cannot be trashed.",name.c_str());
+	    g_debug ("ShmdataWriter::set_path error: file %s is already existing and cannot be trashed.",name.c_str());
 	    return false;
 	  }
       }
@@ -108,25 +110,31 @@ namespace switcher
     GstUtils::make_element ("tee", &tee_);
     GstUtils::make_element ("queue", &queue_);
     GstUtils::make_element ("fakesink", &fakesink_);
-    g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
- 
-    gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
+    g_object_set (G_OBJECT(fakesink_),"sync", FALSE,NULL);
+    g_object_set (G_OBJECT(fakesink_),"silent", TRUE,NULL);
     
+    gst_bin_add_many (GST_BIN (bin), 
+     		      tee_, 
+     		      queue_, 
+     		      fakesink_,
+     		      NULL);
+
     shmdata_base_writer_plug (writer_, bin, tee_);
     
     GstPad *sinkpad = gst_element_get_static_pad (tee_, "sink");
     if (gst_pad_link (source_pad, sinkpad) != GST_PAD_LINK_OK)
-      g_error ("ShmdataWriter: failed to link with tee");
-
+      g_debug ("ShmdataWriter: failed to link with tee");
+    
     gst_object_unref (sinkpad);
     gst_element_link_many (tee_, queue_, fakesink_,NULL);
-    
+
     GstUtils::sync_state_with_parent (tee_);
     GstUtils::sync_state_with_parent (queue_);
     GstUtils::sync_state_with_parent (fakesink_);
+    
     g_debug ("shmdata writer pad plugged (%s)",path_.c_str());
   }
-
+  
   void
   ShmdataWriter::make_json_description ()
   {

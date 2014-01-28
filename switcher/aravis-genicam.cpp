@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 #include "aravis-genicam.h"
@@ -23,12 +25,19 @@
 namespace switcher
 {
 
-  QuiddityDocumentation AravisGenicam::doc_ ("video source", "genicam",
-						   "Genicam video source using the Aravis library");
-  
-  
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AravisGenicam,
+				       "GenICam Camera",
+				       "genicam video", 
+				       "Genicam video source using the Aravis library",
+				       "LGPL",
+				       "genicam",
+				       "Nicolas Bouillot");
+  AravisGenicam::AravisGenicam () :
+    aravissrc_ (NULL)
+  {}
+
   bool
-  AravisGenicam::init ()
+  AravisGenicam::init_segment ()
   {
     if (!GstUtils::make_element ("aravissrc", &aravissrc_))
       {
@@ -37,30 +46,33 @@ namespace switcher
       }
     set_name (gst_element_get_name (aravissrc_));
     
-    //register_property (G_OBJECT (aravissrc_),"camera-name","aravissrc");
+    //install_property (G_OBJECT (aravissrc_),"camera-name","aravissrc");
 
-    register_property (G_OBJECT (aravissrc_),"gain","gain");
+    install_property (G_OBJECT (aravissrc_),"gain","gain", "Gain");
 
-    register_property (G_OBJECT (aravissrc_),"gain-auto","gain-auto");
+    install_property (G_OBJECT (aravissrc_),"gain-auto","gain-auto", "Gain Auto");
 
-    register_property (G_OBJECT (aravissrc_),"exposure","exposure");
-    register_property (G_OBJECT (aravissrc_),"exposure-auto","exposure-auto");
-    register_property (G_OBJECT (aravissrc_),"h-binning","h-binning");
-    register_property (G_OBJECT (aravissrc_),"v-binning","v-binning");
-    register_property (G_OBJECT (aravissrc_),"offset-x","offset-x");
-    register_property (G_OBJECT (aravissrc_),"offset-y","offset-y");
+    install_property (G_OBJECT (aravissrc_),"exposure","exposure", "Exposure");
+    install_property (G_OBJECT (aravissrc_),"exposure-auto","exposure-auto", "Exposure Auto");
+    install_property (G_OBJECT (aravissrc_),"h-binning","h-binning", "H-binning");
+    install_property (G_OBJECT (aravissrc_),"v-binning","v-binning", "V-binning");
+    install_property (G_OBJECT (aravissrc_),"offset-x","offset-x", "Offset-x");
+    install_property (G_OBJECT (aravissrc_),"offset-y","offset-y", "Offset-y");
 
 
-    //registering add_data_stream
-    register_method("start",
-		    (void *)&start_wrapped, 
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    (gpointer)this);
-    set_method_description ("start", 
-			    "start the stream from camera", 
-			    Method::make_arg_description ("name", 
-							  "the genicam camera name obtained with the command arv-tool-0.2 or 'default')",
-							  NULL));
+    install_method ("Capture",
+		    "capture",
+		    "start capturing from camera",
+		    "success or fail",
+		    Method::make_arg_description ("Name",
+						  "name", 
+						  "the genicam camera name obtained with the command arv-tool-0.2 or 'default')",
+						  NULL),
+		    (Method::method_ptr)&start_wrapped, 
+		    G_TYPE_BOOLEAN,
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL), 
+		    this);
+    
     return true;
   }
   
@@ -110,12 +122,5 @@ namespace switcher
 
     return true;
   }
-  
-  
-  QuiddityDocumentation 
-  AravisGenicam::get_documentation ()
-  {
-    return doc_;
-  }
-  
+
 }

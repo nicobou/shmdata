@@ -1,46 +1,48 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 
 #ifndef __SWITCHER_RTPSESSION_H__
 #define __SWITCHER_RTPSESSION_H__
 
-#include <gst/gst.h>
-#include <gst/sdp/gstsdpmessage.h>
-#include <memory>
 #include "segment.h"
 #include "quiddity-manager.h"
 #include "rtp-destination.h"
 #include "custom-property-helper.h"
+#include <gst/gst.h>
+#include <gst/sdp/gstsdpmessage.h>
+#include <memory>
+#include <map>
+#include <string>
  
 namespace switcher
 {
-
   class RtpSession : public Segment
   {
   public:
-    typedef std::shared_ptr<RtpSession> ptr;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(RtpSession);
+    RtpSession ();
     ~RtpSession ();
-
-    bool init ();
-    QuiddityDocumentation get_documentation ();
-    static QuiddityDocumentation doc_;
+    RtpSession (const RtpSession &) = delete;
+    RtpSession &operator= (const RtpSession &) = delete;
 
     //local streams
     bool add_data_stream (std::string shmdata_socket_path);
@@ -50,7 +52,12 @@ namespace switcher
     bool add_destination (std::string dest_name,
 			  std::string host_name);
     bool remove_destination (std::string dest_name);
+
+    //destination property
     static gchar *get_destinations_json (void *user_data);
+    //MTU property
+    static void set_mtu_at_add_data_stream (const gint value, void *user_data);
+    static gint get_mtu_at_add_data_stream (void *user_data);
 
     //sending
     bool add_udp_stream_to_dest (std::string shmdata_socket_path, 
@@ -93,18 +100,23 @@ namespace switcher
     CustomPropertyHelper::ptr custom_props_; 
     GParamSpec *destination_description_json_;
     gchar *destinations_json_;
+    GParamSpec *mtu_at_add_data_stream_spec_;
+    gint mtu_at_add_data_stream_;
 
     //local streams
-    StringMap <std::string> internal_id_; //maps shmdata path with internal id 
-    StringMap <std::string> rtp_ids_; //maps shmdata path with rtp id
-    StringMap <QuiddityManager::ptr> quiddity_managers_;
-    StringMap <GstElementCleaner::ptr> funnels_; //maps internal id with funnel cleaner
+    std::map<std::string, std::string> internal_id_; //maps shmdata path with internal id 
+    std::map<std::string, std::string> rtp_ids_; //maps shmdata path with rtp id
+    std::map<std::string, QuiddityManager::ptr> quiddity_managers_;
+    std::map<std::string, GstElementCleaner::ptr> funnels_; //maps internal id with funnel cleaner
 
-    StringMap<ShmdataWriter::ptr> internal_shmdata_writers_;
-    StringMap<ShmdataReader::ptr> internal_shmdata_readers_;
+    //std::map<std::string, GstElement *>rtp_udp_sinks_;
+    std::map<std::string, ShmdataWriter::ptr> internal_shmdata_writers_;
+    std::map<std::string, ShmdataReader::ptr> internal_shmdata_readers_;
 
     //destinations
-    StringMap <RtpDestination::ptr> destinations_;
+    std::map<std::string, RtpDestination::ptr> destinations_;
+
+    bool init_segment ();
 
     static void make_data_stream_available (GstElement* typefind, 
 					    guint probability, 
@@ -127,9 +139,6 @@ namespace switcher
     static void on_pad_added (GstElement *gstelement, GstPad *new_pad, gpointer user_data);
     static void on_pad_removed (GstElement *gstelement, GstPad *new_pad, gpointer user_data);
     static void on_no_more_pad (GstElement *gstelement, gpointer user_data);
-    
-    static gboolean data_probe (GstPad * pad,GstMiniObject * mini_obj, gpointer user_data);
-
 
   };
 }  // end of namespace

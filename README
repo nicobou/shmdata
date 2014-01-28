@@ -13,25 +13,31 @@ Switcher is the successor of Scenic's milhouse utility. It provides basic video 
 
 License
 -------
-Switcher is released under the terms of the GNU GPL v3 or above.
+switcher is released under the terms of the GNU GPL v3 or above.
+libswitcher is released under the terms of the GNU LGPL v2 or above.
+switcher plugins licenses are per plugin, see plugin folders
 
+In addition, the developers of the switcher hereby grants permission for non-GPL compatible GStreamer plugins to be used and distributed together with switcher. This permission is above and beyond the permissions granted by the GPL license by which switcher is covered. If you modify this code, you may extend this exception to your version of the code, but you are not obligated to do so. If you do not wish to do so, delete this exception statement from your version.
+ 
 Project URL
 -----------
 http://code.sat.qc.ca/redmine/projects/switcher
 
-Author
-------
+Switcher/libswitcher Author 
+---------------------------
 * Nicolas Bouillot
 
-Contributors
-------------
-* Alexandre Quessy (gsoap packaging)
+Switcher Contributors
+---------------------
+* Alexandre Quessy (help with initial gsoap packaging)
 * Emmanuel Durand (bug fix & OSX packaging)
+* Mike Wozniewski (OSX xcode project)
 
 See also
 --------
 * shmdata: http://code.sat.qc.ca/redmine/projects/libshmdata
-* scenic: http://code.sat.qc.ca/redmine/projects/scenic
+* scenic2: http://code.sat.qc.ca/redmine/projects/scenic2
+* node-switcher http://code.sat.qc.ca/redmine/projects/node-switcher
 
 Sponsors
 --------
@@ -45,7 +51,7 @@ First, make sure you have shmdata installed.
 Once you have it, here is how to build and install switcher::
 
   $ sudo apt-get install automake bison build-essential flex libtool
-  $ sudo apt-get install libglib2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libjson-glib-dev liblo-dev libcgsi-gsoap-dev
+  $ sudo apt-get install libglib2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libjson-glib-dev liblo-dev libcgsi-gsoap-dev linux-libc-dev libgtk2.0-dev libpulse-dev libportmidi-dev python-dev
   $ ./autogen.sh
   $ ./configure
   $ make

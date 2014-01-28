@@ -1,7 +1,12 @@
 SUBDIRS= \
     switcher \
-    src \
+    plugins \
     tests
+
+if SWITCHERBUILD
+SUBDIRS += \
+    src
+endif
 
 EXTRA_DIST=autogen.sh
 

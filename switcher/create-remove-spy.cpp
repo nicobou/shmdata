@@ -1,20 +1,22 @@
 /*
  * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
- * This file is part of switcher.
+ * This file is part of libswitcher.
  *
- * switcher is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
  *
- * switcher is distributed in the hope that it will be useful,
+ * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
  */
 
 #include "create-remove-spy.h"
@@ -23,9 +25,17 @@
 namespace switcher
 {
 
-  QuiddityDocumentation CreateRemoveSpy::doc_  ("spy", "create_remove_spy",				
-						"spy manager for quidity creation and removal and convert into signals");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(CreateRemoveSpy,
+				       "Quiddity Creation Inspector",
+				       "spy", 
+				       "spy manager for quidity creation and removal and convert into signals",
+				       "LGPL",
+				       "create_remove_spy",				
+				       "Nicolas Bouillot");
 
+  CreateRemoveSpy::CreateRemoveSpy() :
+    i_am_the_one_ (false)
+  {}
 
   bool
   CreateRemoveSpy::init ()
@@ -44,26 +54,26 @@ namespace switcher
     i_am_the_one_ = true;
 
     //we got the hook, so make signals of it
-    GType types[] = {G_TYPE_STRING};
-    make_custom_signal ("on-quiddity-created", 
-    			G_TYPE_NONE,
-    			1,
-    			types);
-    
-    set_signal_description ("on-quiddity-created",
-			    "a quiddity has been created",
-			    Signal::make_arg_description("quiddity_name",
-							 "the quiddity name",
-							 NULL));
-    make_custom_signal ("on-quiddity-removed", 
-    			G_TYPE_NONE,
-    			1,
-    			types);
-    set_signal_description ("on-quiddity-removed",
-			    "a quiddity has been removed",
-			    Signal::make_arg_description("quiddity_name",
-							 "the quiddity name",
-							 NULL));
+    GType string_type[] = {G_TYPE_STRING};
+    install_signal ("On Quiddity Created",
+		    "on-quiddity-created",
+		    "a quiddity has been created",
+		    Signal::make_arg_description ("Quiddity Name",
+						  "quiddity_name",
+						  "the quiddity name",
+						  NULL),
+		    1,
+		    string_type);
+
+    install_signal ("On Quiddity Removed",
+		    "on-quiddity-removed",
+		    "a quiddity has been removed",
+		    Signal::make_arg_description("Quiddity Name",
+						 "quiddity_name",
+						 "the quiddity name",
+						 NULL),
+		    1,
+		    string_type);
 
     set_name ("manager-spy"); // supposed to be a singleton with the use of "set_..._hook ()"
     return true;
@@ -91,12 +101,6 @@ namespace switcher
   {
     CreateRemoveSpy *context = static_cast<CreateRemoveSpy *> (user_data);
     context->signal_emit ("on-quiddity-removed", quiddity_nick_name.c_str ());
-  }
-
-  QuiddityDocumentation 
-  CreateRemoveSpy::get_documentation ()
-  {
-    return doc_;
   }
   
 }
