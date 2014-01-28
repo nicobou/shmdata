@@ -314,7 +314,12 @@ namespace switcher
     if (media_counters_.end () != it)
 	count = ++(it->second);
     else
-      media_counters_[std::string (padname_splitted[0])] = count;
+      {
+	std::string media_type ("unknown");
+	if (NULL != padname_splitted[0])
+	  media_type = padname_splitted[0];
+	media_counters_[media_type] = count;
+      }
      gchar media_name[256];
      g_sprintf (media_name,"%s-%d",padname_splitted[0],count);
      g_debug ("httpsdpdec: new media %s %d\n",media_name, count );
