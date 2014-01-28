@@ -1,4 +1,27 @@
-switcher 0.2.0 (2013-06-20)
+switcher 0.4.0 (2014-01-28)
+---------------------------
+This is an official release in the 0.4 stable series. 
+
+New features:
+
+* many video encoders are available with video-sources 
+* dynamic presence of properties
+* property mapper
+* supporting plugins
+* gtk video sink with fullscreen
+* portmidi plugins
+* pulse plugins
+* v4l2 plugins
+* dictionnary
+* osc controler
+* several internal features for developing quiddities
+* no need to invoke set_runtime anymore
+
+Bugs fixed:
+
+* too many for being listed here
+
+switcher 0.2.2 (2013-06-20)
 ---------------------------
 This is an official release in the 0.2 stable series. 
 
