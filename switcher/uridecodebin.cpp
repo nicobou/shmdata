@@ -341,7 +341,7 @@ namespace switcher
     GstUtils::link_static_to_request (pad, funnel);
     gst_element_link (funnel, identity);
 
-     GstUtils::wait_state_changed (bin);
+    //GstUtils::wait_state_changed (bin);
      GstUtils::sync_state_with_parent (identity);
      GstUtils::sync_state_with_parent (funnel);
     
@@ -518,7 +518,7 @@ namespace switcher
     g_debug ("to_shmdata set uri %s", uri_);
     g_object_set (G_OBJECT (uridecodebin_), "uri", uri_, NULL); 
     gst_bin_add (GST_BIN (bin_), uridecodebin_);
-    GstUtils::wait_state_changed (bin_);
+    //GstUtils::wait_state_changed (bin_);
     GstUtils::sync_state_with_parent (uridecodebin_);
     return true;
   }

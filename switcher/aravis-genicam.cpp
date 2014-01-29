@@ -102,7 +102,7 @@ namespace switcher
     
     gst_bin_add_many (GST_BIN (bin_), aravissrc_, colorspace, NULL);
     gst_element_link (aravissrc_, colorspace);
-    GstUtils::wait_state_changed (bin_);
+    //GstUtils::wait_state_changed (bin_);
     GstUtils::sync_state_with_parent (aravissrc_);
     GstUtils::sync_state_with_parent (colorspace);
     

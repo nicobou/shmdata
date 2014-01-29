@@ -75,7 +75,7 @@ namespace switcher
     
     gst_caps_unref(audiocaps);
 
-    GstUtils::wait_state_changed (bin_);
+    //GstUtils::wait_state_changed (bin_);
     GstUtils::sync_state_with_parent (rawaudio_);
     GstUtils::sync_state_with_parent (audio_tee_);
     GstUtils::sync_state_with_parent (audioconvert_);

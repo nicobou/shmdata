@@ -85,7 +85,7 @@ namespace switcher
       }
 
     g_object_set (G_OBJECT (gst_parse_to_bin_src_), "async-handling",TRUE, NULL);
-    GstUtils::wait_state_changed (bin_);
+    //GstUtils::wait_state_changed (bin_);
     
     GstPad *src_pad = gst_element_get_static_pad (gst_parse_to_bin_src_,"src");
     gst_bin_add (GST_BIN (bin_), gst_parse_to_bin_src_);

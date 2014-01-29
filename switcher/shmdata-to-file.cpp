@@ -186,7 +186,7 @@ namespace switcher
 	    return false;
 	  }
 	 gst_bin_add (GST_BIN (bin_), recorder_bin);
-	 GstUtils::wait_state_changed (bin_);
+	 //GstUtils::wait_state_changed (bin_);
 	 GstUtils::sync_state_with_parent (recorder_bin);
 	 
 	 ShmdataReader::ptr reader;
@@ -196,7 +196,7 @@ namespace switcher
 	 reader->set_g_main_context (get_g_main_context ());
 	 reader->set_sink_element (recorder_bin);
 	 
-	 GstUtils::wait_state_changed (bin_);
+	 //GstUtils::wait_state_changed (bin_);
 	 reader->start ();
 	 shmdata_recorders_[it.first] = recorder_bin;
 	 register_shmdata_reader (reader);

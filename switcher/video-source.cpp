@@ -137,7 +137,6 @@ namespace switcher
     shmdata_writer->plug (bin_, video_tee_, videocaps_);
     register_shmdata_writer (shmdata_writer);
     
-    GstUtils::wait_state_changed (bin_);
     GstUtils::sync_state_with_parent (rawvideo_);
     GstUtils::sync_state_with_parent (video_tee_);
 

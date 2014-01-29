@@ -342,8 +342,8 @@ namespace switcher
 
     g_debug ("RtpSession::make_data_stream_available");
 
-    GstUtils::wait_state_changed (context->bin_);
-    GstUtils::wait_state_changed (context->rtpsession_);
+    // GstUtils::wait_state_changed (context->bin_);
+    // GstUtils::wait_state_changed (context->rtpsession_);
     
     GstElement *pay;
     GList *list = gst_registry_feature_filter (gst_registry_get_default (),
@@ -365,7 +365,7 @@ namespace switcher
     /* add capture and payloading to the pipeline and link */
     gst_bin_add_many (GST_BIN (context->bin_), pay, NULL);
     gst_element_link (typefind, pay);
-    GstUtils::wait_state_changed (context->bin_);
+    // GstUtils::wait_state_changed (context->bin_);
     GstUtils::sync_state_with_parent (pay);
 
     g_object_set (G_OBJECT (pay), "mtu", (guint)context->mtu_at_add_data_stream_, NULL);
@@ -432,7 +432,7 @@ namespace switcher
      rtcp_writer.reset (new ShmdataWriter ());
      std::string rtcp_writer_name = context->make_file_name ("send_rtcp_src_"+internal_session_id); 
      rtcp_writer->set_path (rtcp_writer_name.c_str());
-     GstUtils::wait_state_changed (context->bin_);
+     //GstUtils::wait_state_changed (context->bin_);
      rtcp_writer->plug (context->bin_, rtcp_src_pad);
      context->internal_shmdata_writers_[rtcp_writer_name] = rtcp_writer;
      g_free (rtcp_src_pad_name);
@@ -442,7 +442,7 @@ namespace switcher
      GstElement *funnel;
      GstUtils::make_element ("funnel", &funnel);
      gst_bin_add (GST_BIN (context->bin_), funnel);
-     GstUtils::wait_state_changed (context->bin_);
+     //GstUtils::wait_state_changed (context->bin_);
      GstUtils::sync_state_with_parent (funnel);
      GstPad *funnel_src_pad = gst_element_get_static_pad (funnel, "src");
      gchar *rtcp_sink_pad_name = g_strconcat ("recv_rtcp_sink_", rtp_session_id,NULL); 
@@ -476,7 +476,7 @@ namespace switcher
     gst_bin_add_many (GST_BIN (context->bin_), funnel, typefind, NULL);
     gst_element_link (funnel, typefind);
     
-    GstUtils::wait_state_changed (context->bin_);
+    //GstUtils::wait_state_changed (context->bin_);
     GstUtils::sync_state_with_parent (funnel);
     GstUtils::sync_state_with_parent (typefind);
     caller->set_sink_element (funnel);
@@ -560,6 +560,7 @@ namespace switcher
   bool
   RtpSession::add_udp_stream_to_dest (std::string shmdata_socket_path, std::string nick_name, std::string port)
   {
+    //g_print ("%s debut\n", __FUNCTION__);
     g_debug ("RtpSession::add_udp_stream_to_dest");
     auto id_it = internal_id_.find (shmdata_socket_path);
     if (internal_id_.end () == id_it)
@@ -644,6 +645,7 @@ namespace switcher
      //  if (!gst_element_link (udpsrc, funnel))
      //    g_debug ("udpsrc and funnel link failled in rtp-session");
      g_debug ("RtpSession::add_udp_stream_to_dest (done)");
+     //g_print ("%s fin\n", __FUNCTION__);
      return true;
   }
 
@@ -720,42 +722,22 @@ namespace switcher
   bool
   RtpSession::add_data_stream (std::string shmdata_socket_path)
   {
-    //g_print ("add_data stream --- debut\n");
     ShmdataReader::ptr reader;
+    //g_print ("%s debut\n", __FUNCTION__);
     reader.reset (new ShmdataReader ());
     reader->set_path (shmdata_socket_path.c_str());
     reader->set_g_main_context (get_g_main_context ());
     reader->set_bin (bin_);
-    
-    //g_print ("add_data stream --- 1\n");
     reader->set_on_first_data_hook (attach_data_stream, this);
-
-    //g_print ("add_data stream --- 2\n");
-
-    //if (runtime_) // starting the reader if runtime is set
-      {
-	//g_print ("add_data stream --- 3\n");
-
-	//GstUtils::wait_state_changed (bin_);
-	//g_print ("add_data stream --- 4\n");
-	reader->start ();
-	//g_print ("add_data stream --- 5\n");
-      }
-
-    //g_print ("add_data stream --- 6\n");
-
+    //GstUtils::wait_state_changed (bin_);
+    reader->start ();
     //saving info about this local stream
     std::ostringstream os_id;
     os_id << next_id_;
     next_id_++;
     internal_id_[shmdata_socket_path] = os_id.str();
-    //g_print ("add_data stream --- 7\n");
-
     register_shmdata_reader (reader);
-
-    //g_print ("add_data stream --- 8\n");
-
-    //g_print ("add_data stream --- fin\n");
+    //g_print ("%s fin\n", __FUNCTION__);
     return true;
   }  
 
@@ -763,7 +745,6 @@ namespace switcher
   RtpSession::remove_data_stream_wrapped (gpointer connector_name, gpointer user_data)
   {
     RtpSession *context = static_cast<RtpSession*>(user_data);
-       
     if (context->remove_data_stream ((char *)connector_name))
       return TRUE;
     else
@@ -773,6 +754,7 @@ namespace switcher
   bool
   RtpSession::remove_data_stream (std::string shmdata_socket_path)
   {
+    //g_print ("%s debut\n", __FUNCTION__);
     auto it = internal_id_.find (shmdata_socket_path);
     if (internal_id_.end () == it)
       {

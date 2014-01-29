@@ -68,7 +68,7 @@ namespace switcher
     g_source_unref (source_);
     ((GstBusSource*)source_)->inited = FALSE;
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
-    GstUtils::wait_state_changed (pipeline_);
+    //GstUtils::wait_state_changed (pipeline_);
     play_pause_spec_ = 
       custom_props_->make_boolean_property ("play", 
 					    "play",
