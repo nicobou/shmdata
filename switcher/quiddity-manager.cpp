@@ -1130,19 +1130,23 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	break;
       case QuiddityCommand::invoke:
 	{
-	  std::string *result;
+	  std::string *result = NULL;
 	  if (context->manager_impl_->invoke (context->command_->args_[0],
 					      context->command_->args_[1], 
 					      &result,
 					      context->command_->vector_arg_))
 	    {
 	      context->command_->success_ = true; //result_.push_back ("true");
-	      context->command_->result_.push_back (*result);
+	      if (NULL == result)
+		context->command_->result_.push_back ("error");
+	      else
+		context->command_->result_.push_back (*result);
 	    }
 	  else
 	    context->command_->success_ = false; //result_.push_back ("false");
 
-	  delete result;
+	  if (NULL != result)
+	    delete result;
 	}
 	break;
       case QuiddityCommand::subscribe_signal:

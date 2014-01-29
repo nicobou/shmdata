@@ -128,7 +128,7 @@ namespace switcher
 	  g_value_init (&params[i],arg_types_[i]);
 	  if (!gst_value_deserialize (&params[i],args[i].c_str()))
 	    {
-	      g_error ("Method::invoke string not transformable into gvalue (argument: %s) ",
+	      g_warning ("Method::invoke string not transformable into gvalue (argument: %s) ",
 		       args[i].c_str());
 	      return false;
 	    }
