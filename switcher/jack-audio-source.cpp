@@ -26,7 +26,7 @@ namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackAudioSource,
 				       "Jack Audio",
-				       "test", 
+				       "audio source", 
 				       "get audio from jack",
 				       "LGPL",
 				       "jackaudiosrc", 
@@ -36,7 +36,10 @@ namespace switcher
     jackaudiosrc_ (NULL),
     audioconvert_ (NULL),
     capsfilter_ (NULL),
-    jackaudiosrc_bin_ (NULL)
+    jackaudiosrc_bin_ (NULL),
+    custom_props_ (new CustomPropertyHelper ()),
+    num_channels_spec_ (NULL),
+    num_channels_(2)
   {}
 
   bool
@@ -46,6 +49,20 @@ namespace switcher
       return false;
     init_startable (this);
 
+    num_channels_spec_ = 
+      custom_props_->make_int_property ("channels", 
+					"number of channels",
+					1, 
+					64, 
+					num_channels_, 
+					(GParamFlags) G_PARAM_READWRITE,
+					JackAudioSource::set_num_channels,
+					JackAudioSource::get_num_channels,
+					this); 
+    install_property_by_pspec (custom_props_->get_gobject (), 
+			       num_channels_spec_, 
+			       "channels",
+			       "Channels");
     // g_object_set (G_OBJECT (jackaudiosrc_),
     // 		  "is-live", TRUE,
     // 		  "samplesperbuffer",512,
@@ -62,12 +79,14 @@ namespace switcher
   {
     make_elements ();
     set_raw_audio_element (jackaudiosrc_bin_);
+    disable_property ("channels");
     return true;
   }
   
   bool 
   JackAudioSource::stop ()
   {
+    enable_property ("channels");
     reset_bin ();
     return true;
   }
@@ -86,6 +105,7 @@ namespace switcher
 
     GstCaps *caps = gst_caps_new_simple ("audio/x-raw-int",
 					 "width", G_TYPE_INT, 16,
+					 "channels", G_TYPE_INT, num_channels_,
 					 NULL);
     g_object_set (G_OBJECT (capsfilter_), "caps", caps,NULL);
     gst_caps_unref(caps);
@@ -110,5 +130,20 @@ namespace switcher
     return true;
   }
 
+   void 
+   JackAudioSource::set_num_channels (const gint value, void *user_data)
+   {
+     JackAudioSource *context = static_cast <JackAudioSource *> (user_data);
+     context->num_channels_ = value;
+     GObjectWrapper::notify_property_changed (context->gobject_->get_gobject (),
+					      context->num_channels_spec_);
+   }
+   
+  gint 
+  JackAudioSource::get_num_channels (void *user_data)
+  {
+    JackAudioSource *context = static_cast <JackAudioSource *> (user_data);
+    return context->num_channels_;
+  }
 
 }

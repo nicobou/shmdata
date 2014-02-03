@@ -25,6 +25,7 @@
 
 #include "audio-source.h"
 #include "switcher/startable-quiddity.h"
+#include "switcher/custom-property-helper.h"
 #include <memory>
 
 namespace switcher
@@ -47,8 +48,14 @@ namespace switcher
    GstElement *audioconvert_;
    GstElement *capsfilter_;
    GstElement *jackaudiosrc_bin_;
+   CustomPropertyHelper::ptr custom_props_; 
+   GParamSpec *num_channels_spec_;
+   uint num_channels_;
    bool init_segment ();
    bool make_elements ();
+
+   static void set_num_channels (const gint value, void *user_data);
+   static gint get_num_channels (void *user_data);
   };
 
 }  // end of namespace
