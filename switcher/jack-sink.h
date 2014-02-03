@@ -23,25 +23,34 @@
 #ifndef __SWITCHER_JACK_SINK_H__
 #define __SWITCHER_JACK_SINK_H__
 
-#include "audio-sink.h"
-#include <gst/gst.h>
+#include "switcher/audio-sink.h"
+#include "switcher/startable-quiddity.h"
 #include <memory>
 
 namespace switcher
 {
 
-  class JackSink : public AudioSink
+  class JackSink : public AudioSink, public StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JackSink);
     JackSink ();
+    ~JackSink ();
     JackSink (const JackSink &) = delete;
     JackSink &operator= (const JackSink &) = delete;
 
+    bool start ();
+    bool stop ();
+
   private:
     GstElement *jacksink_;
+    CustomPropertyHelper::ptr custom_props_; 
+    GParamSpec *client_name_spec_;
+    gchar *client_name_;
     bool init_segment ();
-
+    bool make_elements ();
+    static void set_client_name (const gchar *value, void *user_data);
+    static gchar *get_client_name (void *user_data);
   };
 
 }  // end of namespace

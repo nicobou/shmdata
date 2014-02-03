@@ -23,7 +23,7 @@
 #ifndef __SWITCHER_JACK_AUDIO_SOURCE_H__
 #define __SWITCHER_JACK_AUDIO_SOURCE_H__
 
-#include "audio-source.h"
+#include "switcher/audio-source.h"
 #include "switcher/startable-quiddity.h"
 #include "switcher/custom-property-helper.h"
 #include <memory>
@@ -51,11 +51,15 @@ namespace switcher
    CustomPropertyHelper::ptr custom_props_; 
    GParamSpec *num_channels_spec_;
    uint num_channels_;
+   GParamSpec *client_name_spec_;
+   gchar *client_name_;
    bool init_segment ();
    bool make_elements ();
 
    static void set_num_channels (const gint value, void *user_data);
    static gint get_num_channels (void *user_data);
+   static void set_client_name (const gchar *value, void *user_data);
+   static gchar *get_client_name (void *user_data);
   };
 
 }  // end of namespace

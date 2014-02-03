@@ -29,7 +29,7 @@ namespace switcher
 				       "audio source", 
 				       "get audio from jack",
 				       "LGPL",
-				       "jackaudiosrc", 
+				       "jacksrc", 
 				       "Nicolas Bouillot");
   
   JackAudioSource::JackAudioSource() :
@@ -39,7 +39,9 @@ namespace switcher
     jackaudiosrc_bin_ (NULL),
     custom_props_ (new CustomPropertyHelper ()),
     num_channels_spec_ (NULL),
-    num_channels_(2)
+    num_channels_(2),
+    client_name_spec_ (NULL),
+    client_name_ (g_strdup ("switcher"))
   {}
 
   bool
@@ -63,6 +65,20 @@ namespace switcher
 			       num_channels_spec_, 
 			       "channels",
 			       "Channels");
+    
+    client_name_spec_ =
+      custom_props_->make_string_property ("jack-client-name", 
+					   "the jack client name",
+					   "switcher",
+					   (GParamFlags) G_PARAM_READWRITE,
+					   JackAudioSource::set_client_name,
+					   JackAudioSource::get_client_name,
+					   this);
+    install_property_by_pspec (custom_props_->get_gobject (), 
+			       client_name_spec_, 
+			       "client-name",
+			       "Client Name");
+    
     // g_object_set (G_OBJECT (jackaudiosrc_),
     // 		  "is-live", TRUE,
     // 		  "samplesperbuffer",512,
@@ -72,7 +88,10 @@ namespace switcher
   }
 
   JackAudioSource::~JackAudioSource()
-  {}
+  {
+    if (NULL != client_name_)
+      g_free (client_name_);
+  }
   
   bool 
   JackAudioSource::start ()
@@ -80,6 +99,7 @@ namespace switcher
     make_elements ();
     set_raw_audio_element (jackaudiosrc_bin_);
     disable_property ("channels");
+    disable_property ("client-name");
     return true;
   }
   
@@ -87,6 +107,7 @@ namespace switcher
   JackAudioSource::stop ()
   {
     enable_property ("channels");
+    enable_property ("client-name");
     reset_bin ();
     return true;
   }
@@ -107,8 +128,14 @@ namespace switcher
 					 "width", G_TYPE_INT, 16,
 					 "channels", G_TYPE_INT, num_channels_,
 					 NULL);
-    g_object_set (G_OBJECT (capsfilter_), "caps", caps,NULL);
+    g_object_set (G_OBJECT (capsfilter_), 
+		  "caps", caps,
+		  NULL);
     gst_caps_unref(caps);
+
+    g_object_set (G_OBJECT (jackaudiosrc_), 
+		  "client-name", client_name_,
+		  NULL);
 
     gst_bin_add_many (GST_BIN (jackaudiosrc_bin_),
 		      jackaudiosrc_,
@@ -144,6 +171,23 @@ namespace switcher
   {
     JackAudioSource *context = static_cast <JackAudioSource *> (user_data);
     return context->num_channels_;
+  }
+
+  void 
+  JackAudioSource::set_client_name (const gchar *value, void *user_data)
+  {
+    JackAudioSource *context = static_cast <JackAudioSource *> (user_data);
+    if (NULL != context->client_name_)
+      g_free (context->client_name_);
+    context->client_name_ = g_strdup(value);
+    context->custom_props_->notify_property_changed (context->client_name_spec_);
+   }
+  
+  gchar *
+  JackAudioSource::get_client_name (void *user_data)
+  {
+    JackAudioSource *context = static_cast <JackAudioSource *> (user_data);
+    return context->client_name_;
   }
 
 }

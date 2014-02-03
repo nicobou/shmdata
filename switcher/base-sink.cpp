@@ -99,10 +99,7 @@ namespace switcher
     sink_element_ = sink;
 
     if (g_strcmp0 (shmdata_path_.c_str (), "") != 0)
-      {
-	g_debug ("-------- -- -- - - - -reseting basse sink shmdata reader");
 	connect (shmdata_path_);
-      }
    
   }
 
