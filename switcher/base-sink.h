@@ -47,11 +47,11 @@ namespace switcher
     void set_on_first_data_hook (ShmdataReader::on_first_data_hook cb, void *user_data);
 
   private:
-    virtual void on_shmdata_connect (std::string /* shmdata_sochet_path */) {};
     ShmdataReader::on_first_data_hook connection_hook_;
     void *hook_user_data_;
     GstElement *sink_element_;
     std::string shmdata_path_;
+    virtual void on_shmdata_connect (std::string /* shmdata_sochet_path */) {};
   };
 
 }  // end of namespace

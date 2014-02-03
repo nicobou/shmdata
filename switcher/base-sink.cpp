@@ -31,12 +31,11 @@ namespace switcher
   }  
   
   BaseSink::BaseSink () :
-    connection_hook_ (NULL)
+    connection_hook_ (NULL),
+    hook_user_data_ (NULL),
+    sink_element_ (),
+    shmdata_path_ ("")
   {
-    
-    sink_element_ = NULL;
-    shmdata_path_ = "";
-
     //registering connect
     install_method ("Connect",
 		    "connect",
@@ -51,7 +50,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
   }
-
+  
    gboolean
    BaseSink::connect_wrapped (gpointer connector_name, gpointer user_data)
   {
@@ -83,10 +82,8 @@ namespace switcher
 	g_debug ("BaseSink::connect set on_first_data_hook ");
 	reader_->set_on_first_data_hook (connection_hook_, hook_user_data_);
       }
-    //if (runtime_) // starting the reader if runtime is set
-      reader_->start ();
+    reader_->start ();
     register_shmdata_reader (reader_);
-
     return true;
   }
 
@@ -97,12 +94,11 @@ namespace switcher
       GstUtils::clean_element (sink_element_);
     //sink element will be added to bin_ by the shmdata reader when appropriate
     sink_element_ = sink;
-
+    
     if (g_strcmp0 (shmdata_path_.c_str (), "") != 0)
-	connect (shmdata_path_);
-   
+      connect (shmdata_path_);
   }
-
+  
   void 
   BaseSink::set_on_first_data_hook (ShmdataReader::on_first_data_hook cb, void *user_data)
   {

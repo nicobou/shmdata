@@ -662,7 +662,6 @@ namespace switcher
   bool
   V4L2Src::on_start ()
   {
-  
     uninstall_property ("resolution");
     uninstall_property ("width");
     uninstall_property ("height");

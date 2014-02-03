@@ -40,7 +40,6 @@ namespace switcher
   {
       g_debug ("ShmdataReader: deleting %s", path_.c_str());
       shmdata_base_reader_close (reader_);
-      //GstUtils::clean_element (funnel_);
       g_debug ("ShmdataReader: %s deleted ", path_.c_str());
   }
 
