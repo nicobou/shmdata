@@ -19,6 +19,13 @@
 
 #include "soap-ctrl-server.h"
 #include "webservices/control.nsmap"
+//hacking gsoap bug for ubuntu 13.10
+#ifdef WITH_IPV6
+#define SOAPBINDTO "::"
+#else
+# define SOAPBINDTO NULL
+#endif
+
 
 namespace switcher
 {
@@ -168,11 +175,12 @@ namespace switcher
     soap_.user = (void *)this;
     quit_server_thread_ = false;
     service_ = new controlService (soap_);
-    socket_ = service_->bind (NULL, port_, 100 /* BACKLOG */);
+    socket_ = service_->bind (SOAPBINDTO, port_, 100 /* BACKLOG */);
     if (!soap_valid_socket (socket_))
       {
 	service_->soap_print_fault (stderr);
 	delete service_;
+	service_ = NULL;
 	return false;
       }
     else
@@ -200,7 +208,8 @@ namespace switcher
     soap_destroy(&soap_);
     soap_end(&soap_);
     soap_done(&soap_);
-    delete service_;
+    if (NULL != service_)
+      delete service_;
     return true;
   }
   
