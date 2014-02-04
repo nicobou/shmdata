@@ -132,7 +132,6 @@ namespace switcher
     //static std::map<guint, GObjectCustomSignal::ptr> custom_signals_;  
     static guint next_signal_num_; //this is only for generation of unique signal names  
     std::map<std::string, void *> signal_user_datas_;  
-    void *signal_default_user_data_;  
   };
 
 }  // end of namespace

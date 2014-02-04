@@ -36,8 +36,9 @@
 namespace switcher
 {
  
-  struct QuiddityCommand
+  class QuiddityCommand
   {
+  public:
     typedef std::shared_ptr<QuiddityCommand> ptr;
     enum command 
     {

@@ -117,7 +117,6 @@ namespace switcher
     
   private:
     GObjectWrapper::ptr gobject_;
-    void *user_data_;
     std::vector< std::shared_ptr<UserMethod> > user_methods_;
     void make_user_method (const gchar *nickname,
 			   GParamSpec *pspec,

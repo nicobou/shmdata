@@ -241,7 +241,7 @@ namespace switcher
     //query position
     query = gst_query_new_position (GST_FORMAT_TIME);
 res = gst_element_query (pipeline_, query);
-    gint64 cur_pos;
+    gint64 cur_pos = 0;
     if (res) {
       gst_query_parse_position (query, 
 				NULL, 
