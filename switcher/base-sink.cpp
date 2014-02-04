@@ -49,8 +49,30 @@ namespace switcher
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
+  
+    //registering disconnect
+    install_method ("Disconnect",
+		    "disconnect",
+		    "disconnect the sink from the shmdata socket", 
+		    "success or fail",
+		    Method::make_arg_description ("none",
+						  NULL),
+		    (Method::method_ptr)&disconnect, 
+		    G_TYPE_BOOLEAN,
+		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
+		    this);
   }
   
+  gboolean
+  BaseSink::disconnect (gpointer /*unused*/, gpointer user_data)
+  {
+    //std::string connector = static_cast<std::string>(connector_name);
+    BaseSink *context = static_cast<BaseSink*>(user_data);
+    context->clear_shmdatas ();
+    context->on_shmdata_disconnect ();
+    return FALSE;
+  }
+
    gboolean
    BaseSink::connect_wrapped (gpointer connector_name, gpointer user_data)
   {

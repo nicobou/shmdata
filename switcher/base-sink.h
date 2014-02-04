@@ -38,9 +38,6 @@ namespace switcher
     ~BaseSink ();
     BaseSink (const BaseSink &) = delete;
     BaseSink &operator= (const BaseSink &) = delete;
-    bool connect (std::string shmdata_socket_path);
-    //wrapper for being called
-    static gboolean connect_wrapped (gpointer shmdata_socket_path, gpointer user_data);
     
   protected:
     void set_sink_element (GstElement *sink);
@@ -51,7 +48,12 @@ namespace switcher
     void *hook_user_data_;
     GstElement *sink_element_;
     std::string shmdata_path_;
+    bool connect (std::string shmdata_socket_path);
+    //wrapper for being called
+    static gboolean connect_wrapped (gpointer shmdata_socket_path, gpointer user_data);
+    static gboolean disconnect (gpointer , gpointer user_data);
     virtual void on_shmdata_connect (std::string /* shmdata_sochet_path */) {};
+    virtual void on_shmdata_disconnect () {};
   };
 
 }  // end of namespace
