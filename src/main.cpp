@@ -68,7 +68,7 @@ static GOptionEntry entries[15] =
     { "classes-doc", 'K', 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", NULL },
     { "class-doc", 'k', 0, G_OPTION_ARG_STRING, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
     { "osc-port", 'o', 0, G_OPTION_ARG_STRING, &osc_port_number, "osc port number (osc enabled only if set)", NULL },
-    { "extra-plugin-dir", 'P', 0, G_OPTION_ARG_STRING, &extraplugindir, "directory where to find additional plugins", NULL }
+    { "extra-plugin-dir", 'E', 0, G_OPTION_ARG_STRING, &extraplugindir, "directory where to find additional plugins", NULL }
   };
 
 void
