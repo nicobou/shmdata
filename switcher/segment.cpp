@@ -118,9 +118,7 @@ namespace switcher
 
   Segment::~Segment()
   {
-    g_debug ("Segment::~Segment begin (%s)",get_nick_name().c_str ());
-    clean_bin ();
-    g_debug ("Segment::~Segment end");
+    clear_shmdatas ();
   }
   
   void 
@@ -164,12 +162,24 @@ namespace switcher
 		//GstUtils::clean_element (GST_ELEMENT (child->data));
 	      }
 	  }
-	g_debug ("~Segment: cleaning internal bin");
+	g_debug ("going to clean bin_");
+	// GstUtils::g_idle_add_full_with_context (get_g_main_context (),
+	// 					G_PRIORITY_DEFAULT_IDLE,
+	// 					Segment::clean_element_invoke,
+	// 					(gpointer)bin_,
+	// 					NULL);
 	GstUtils::clean_element (bin_);
+	g_debug ("~Segment: cleaning internal bin");
       }
   }
 
- 
+  gboolean
+  Segment::clean_element_invoke (gpointer user_data)
+  {
+    GstUtils::clean_element ((GstElement *) user_data);
+    return TRUE;
+  }
+
   GstElement *
   Segment::get_bin()
   {

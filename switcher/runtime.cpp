@@ -130,7 +130,8 @@ namespace switcher
     if (position_tracking_source_ != NULL)
        g_source_destroy (position_tracking_source_);
 
-     gst_element_set_state (pipeline_, GST_STATE_NULL);
+    GstUtils::clean_element (pipeline_);
+			      //gst_element_set_state (pipeline_, GST_STATE_NULL);
      gst_object_unref (GST_OBJECT (pipeline_));
      if (!g_source_is_destroyed (source_))
        g_source_destroy (source_);

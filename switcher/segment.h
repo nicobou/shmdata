@@ -69,6 +69,7 @@ namespace switcher
     void update_shmdata_readers_description ();
     static bool get_shmdata_writers_by_gvalue (GValue *value, void *user_data);
     static bool get_shmdata_readers_by_gvalue (GValue *value, void *user_data);
+    static gboolean clean_element_invoke (gpointer user_data);
   };
 }  // end of namespace
 
