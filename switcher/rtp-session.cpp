@@ -560,8 +560,6 @@ namespace switcher
   bool
   RtpSession::add_udp_stream_to_dest (std::string shmdata_socket_path, std::string nick_name, std::string port)
   {
-    //g_print ("%s debut\n", __FUNCTION__);
-    g_debug ("RtpSession::add_udp_stream_to_dest");
     auto id_it = internal_id_.find (shmdata_socket_path);
     if (internal_id_.end () == id_it)
       {
@@ -592,6 +590,7 @@ namespace switcher
 	return false;
       }
     std::string id = id_it->second;
+
     auto manager_it = quiddity_managers_.find (shmdata_socket_path);
     if (quiddity_managers_.end () == manager_it)
       {
@@ -618,10 +617,14 @@ namespace switcher
 	manager_it = quiddity_managers_.find (shmdata_socket_path);
       }
     QuiddityManager::ptr manager = manager_it->second;
-
+    if (!(bool) manager)
+      {
+	g_warning ("add_udp_stream_to_dest ...not a manager...");
+	return false;
+      }
     //rtp stream (sending)
     RtpDestination::ptr dest = destinations_[nick_name];
-    dest->add_stream (shmdata_socket_path,manager,port);
+    dest->add_stream (shmdata_socket_path, manager,port);
     std::vector <std::string> arg;
     arg.push_back (dest->get_host_name ());
     arg.push_back (port);
@@ -644,16 +647,14 @@ namespace switcher
      //  GstUtils::sync_state_with_parent (udpsrc);
      //  if (!gst_element_link (udpsrc, funnel))
      //    g_debug ("udpsrc and funnel link failled in rtp-session");
-     g_debug ("RtpSession::add_udp_stream_to_dest (done)");
-     //g_print ("%s fin\n", __FUNCTION__);
      return true;
   }
 
   
   gboolean 
   RtpSession::remove_udp_stream_to_dest_wrapped (gpointer shmdata_socket_path, 
-				       gpointer dest_name, 
-				       gpointer user_data)
+						 gpointer dest_name, 
+						 gpointer user_data)
   {
     RtpSession *context = static_cast<RtpSession*>(user_data);
 
@@ -681,14 +682,15 @@ namespace switcher
     std::string port = dest->get_port (shmdata_socket_path);
     dest->remove_stream (shmdata_socket_path);
     
-    
-    QuiddityManager::ptr manager = quiddity_managers_[shmdata_socket_path];
-    if (!(bool) manager)
+    auto manager_it = quiddity_managers_.find (shmdata_socket_path);
+    if (manager_it == quiddity_managers_.end ())
       {
-	g_warning ("RtpSession::remove_udp_stream_to_dest, shmdata %s is not managed by the session", shmdata_socket_path.c_str ());
+	g_warning ("RtpSession::remove_udp_stream_to_dest, shmdata %s is not managed by the session", 
+		   shmdata_socket_path.c_str ());
 	return false;
       }
     
+    QuiddityManager::ptr manager = manager_it->second;
 
     //rtp
     std::vector <std::string> arg;
@@ -704,7 +706,6 @@ namespace switcher
     rtcp_port << rtp_port + 1;
     arg.push_back (rtcp_port.str());
     manager->invoke ("udpsend_rtp", "remove_client", NULL, arg);
-    
     return true;
   }
 
@@ -722,8 +723,12 @@ namespace switcher
   bool
   RtpSession::add_data_stream (std::string shmdata_socket_path)
   {
+    if (internal_id_.end () != internal_id_.find (shmdata_socket_path))
+      {
+	g_warning ("RtpSession::add_data_stream : stream not added since already managed");
+	return false;
+      }
     ShmdataReader::ptr reader;
-    //g_print ("%s debut\n", __FUNCTION__);
     reader.reset (new ShmdataReader ());
     reader->set_path (shmdata_socket_path.c_str());
     reader->set_g_main_context (get_g_main_context ());
@@ -737,7 +742,6 @@ namespace switcher
     next_id_++;
     internal_id_[shmdata_socket_path] = os_id.str();
     register_shmdata_reader (reader);
-    //g_print ("%s fin\n", __FUNCTION__);
     return true;
   }  
 
@@ -754,9 +758,8 @@ namespace switcher
   bool
   RtpSession::remove_data_stream (std::string shmdata_socket_path)
   {
-    //g_print ("%s debut\n", __FUNCTION__);
-    auto it = internal_id_.find (shmdata_socket_path);
-    if (internal_id_.end () == it)
+    auto internal_id_it = internal_id_.find (shmdata_socket_path);
+    if (internal_id_.end () == internal_id_it)
       {
 	g_warning ("RtpSession::remove_data_stream: %s not present",shmdata_socket_path.c_str ());
 	return false;
@@ -767,8 +770,8 @@ namespace switcher
 	if (it.second->has_shmdata (shmdata_socket_path))
 	  it.second->remove_stream (shmdata_socket_path);
       }
-    std::string id = it->second;
-    internal_id_.erase (it);
+    std::string id = internal_id_it->second;
+    internal_id_.erase (internal_id_it);
     internal_shmdata_writers_.erase (make_file_name ("send_rtp_src_"+id));
     internal_shmdata_writers_.erase (make_file_name ("send_rtcp_src_"+id));
     unregister_shmdata_reader (shmdata_socket_path);
