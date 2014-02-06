@@ -58,7 +58,6 @@ namespace switcher
 
     if (!make_elements ())
       return false;
-    set_name (gst_element_get_name (pulsesink_));
 
     g_object_set (G_OBJECT (pulsesink_),"client", get_nick_name ().c_str (), NULL);
 
@@ -419,7 +418,17 @@ namespace switcher
     context->make_elements ();
   }
 
+  void 
+  PulseSink::on_shmdata_disconnect () 
+  {
+    reset_bin ();
+  }
 
+  void 
+  PulseSink::on_shmdata_connect (std::string /* shmdata_sochet_path */) 
+  {
+    make_elements ();
+  }
 }//end of PulseSink class
   
   

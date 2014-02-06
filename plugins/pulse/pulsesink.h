@@ -80,9 +80,9 @@ namespace switcher
       std::vector <std::pair <std::string/*port*/,std::string /*description*/> > ports_;
       std::string active_port_;
     } DeviceDescription;
-
     std::map <std::string, DeviceDescription> devices_; //indexed by pulse_device_name
-
+    void on_shmdata_disconnect ();
+    void on_shmdata_connect (std::string /* shmdata_sochet_path */);
   };
 
   SWITCHER_DECLARE_PLUGIN(PulseSink);
