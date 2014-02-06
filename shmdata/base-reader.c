@@ -31,7 +31,9 @@ struct shmdata_base_reader_
   //monitoring the shm file
   GFile *shmfile_;
   GFileMonitor *dirMonitor_;
-  char *socketName_;
+  //manual file polling
+  GSource *polling_g_source_;
+  char *socket_name_;
   //user callback
   void (*on_first_data_) (shmdata_base_reader_t *, void *);
   void *on_first_data_userData_;
@@ -87,8 +89,6 @@ shmdata_base_reader_clean_element (GstElement *element)
 	gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element);
     }
 }
-
-
 
 gboolean
 shmdata_base_reader_clean_source (gpointer user_data)
@@ -191,7 +191,6 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
 {
   if (reader->attached_)
     return FALSE;
-  
   reader->attached_ = TRUE;
   reader->source_ = gst_element_factory_make ("shmsrc", NULL);
   reader->deserializer_ = gst_element_factory_make ("gdpdepay", NULL);
@@ -199,7 +198,6 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
   gst_pad_add_data_probe (pad,
               G_CALLBACK (shmdata_base_reader_reset_time),
               reader);
-
   reader->typefind_ = gst_element_factory_make ("typefind", NULL);
   if (reader->typefind_ == NULL)
     g_critical ("no typefind !");
@@ -233,7 +231,7 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
 		     (gpointer)reader);
 
   g_object_set (G_OBJECT (reader->source_), "socket-path",
-		reader->socketName_, NULL);
+		reader->socket_name_, NULL);
 
   gst_bin_add_many (GST_BIN (reader->bin_),
 		    reader->source_, reader->deserializer_, reader->typefind_, NULL);
@@ -250,11 +248,9 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
 			 reader->typefind_,
 			 NULL);
   gst_pad_link (reader->src_pad_, reader->sink_pad_);
-
   gst_element_set_state (reader->typefind_,GST_STATE_TARGET(reader->bin_));
   gst_element_set_state (reader->deserializer_,GST_STATE_TARGET(reader->bin_));
   gst_element_set_state (reader->source_,GST_STATE_TARGET(reader->bin_));
-
   return FALSE; //for g_idle_add
 }
 
@@ -269,7 +265,7 @@ shmdata_base_reader_poll_shmdata_path (void *user_data)
     }
   shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
   
-  if (g_file_test(context->socketName_, G_FILE_TEST_EXISTS) && !context->attached_)  
+  if (g_file_test(context->socket_name_, G_FILE_TEST_EXISTS) && !context->attached_)  
     {
       if (!context->initialized_)
 	{
@@ -344,11 +340,7 @@ gboolean
 shmdata_base_reader_recover_from_deserializer_error (shmdata_base_reader_t * reader)
 {
   shmdata_base_reader_detach (reader);
-
   shmdata_base_reader_attach (reader);
-  /* gst_object_unref (reader->deserializer_); */
-  /* gst_object_unref (reader->bin_); */
-
   return FALSE; //for g_idle_add use
 }
 
@@ -450,6 +442,7 @@ shmdata_base_reader_new ()
   reader->timereset_ = TRUE;
   reader->timeshift_ = 0;
   reader->g_main_context_ = NULL;
+  reader->polling_g_source_ = NULL;
   return reader;
 }
 
@@ -491,9 +484,22 @@ shmdata_base_reader_set_bin (shmdata_base_reader_t * reader, GstElement *bin)
   return TRUE;
 }
 
+void 
+destroy_polling_g_source (shmdata_base_reader_t *reader)
+{
+  if (NULL == reader)
+    return;
+  if (NULL == reader->polling_g_source_)
+    return;
+  g_source_destroy (reader->polling_g_source_);
+}
+
 gboolean 
 shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPath)
 {
+  if (NULL == reader)
+    return FALSE;
+  destroy_polling_g_source (reader);
   if (reader->install_sync_handler_)
     {
       g_debug ("installing a sync handler");
@@ -516,14 +522,11 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
 	  return FALSE;
 	}
     }
-  
-  reader->socketName_ = g_strdup (socketPath);
-  
+  reader->socket_name_ = g_strdup (socketPath);
   //monitoring the shared memory file
-  reader->shmfile_ = g_file_new_for_commandline_arg (reader->socketName_);
-  
+  reader->shmfile_ = g_file_new_for_commandline_arg (reader->socket_name_);
   if (g_file_query_exists (reader->shmfile_, NULL))
-    {
+    { 
       gchar *uri = g_file_get_uri (reader->shmfile_);
       g_debug ("existing shmdata, attaching (%s)", uri);
       g_free (uri);
@@ -537,18 +540,17 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
       g_debug ("monitoring %s", uri);
       g_free (uri);
     }
-
   //#ifdef HAVE_OSX
 #if 1 
   //directory monitoring is not working on osx, use polling :(
   /* g_timeout_add (500, */
   /*                shmdata_base_reader_poll_shmdata_path, */
   /* 		 reader); */
-  GSource *source;
-  source = g_timeout_source_new(500);
-  g_source_set_callback(source, shmdata_base_reader_poll_shmdata_path, reader, NULL);
-  g_source_attach(source, reader->g_main_context_);
-  g_source_unref(source);
+  //GSource *source;
+  reader->polling_g_source_ = g_timeout_source_new(500);
+  g_source_set_callback(reader->polling_g_source_, shmdata_base_reader_poll_shmdata_path, reader, NULL);
+  g_source_attach(reader->polling_g_source_, reader->g_main_context_);
+  g_source_unref(reader->polling_g_source_);
 #else
   //FIXME fix monitoring with custom gmaincontext... find how to use "g_main_context_push_thread_default"... 
   if (reader->g_main_context_ != NULL)
@@ -556,13 +558,11 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
       g_debug ("+++++++++++++++++++++ shmdata_base_reader_start: set a custom maincontext");
       g_main_context_push_thread_default (reader->g_main_context_);
     }
-
   GFile *dir = g_file_get_parent (reader->shmfile_);
   g_debug ("trying to monitor directory %s",g_file_get_uri (dir));
   
   if (!g_file_supports_thread_contexts(dir))
     g_debug ("++++++++++++++++++++ does not support thread_context");
-  
   GError *error = NULL;
   reader->dirMonitor_ = g_file_monitor_directory (dir,
 						  G_FILE_MONITOR_NONE,
@@ -581,16 +581,12 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
 		    reader);
   if (reader->g_main_context_ != NULL)
     g_main_context_pop_thread_default (reader->g_main_context_);
-
 #endif
   gchar *uri = g_file_get_uri (reader->shmfile_);
   g_debug ("shmdata reader started (%s)", uri);
   g_free (uri);
   return TRUE;
-  
 }
-
-
 
 shmdata_base_reader_t *
 shmdata_base_reader_init (const char *socketName,
@@ -603,7 +599,7 @@ shmdata_base_reader_init (const char *socketName,
   reader->initialized_ = FALSE;
   reader->on_first_data_ = on_first_data;
   reader->on_first_data_userData_ = user_data;
-  reader->socketName_ = g_strdup (socketName);
+  reader->socket_name_ = g_strdup (socketName);
   reader->attached_ = FALSE;
   reader->bin_ = bin;
   reader->do_absolute_ = FALSE;
@@ -627,7 +623,7 @@ shmdata_base_reader_init (const char *socketName,
   /*     g_debug ("not watching the bus. Application should handle error messages (GST_RESOURCE_ERROR_READ from shmsrc) and call shmdata_base_reader_process_error.\n"); */
   
   //monitoring the shared memory file
-  reader->shmfile_ = g_file_new_for_commandline_arg (reader->socketName_);
+  reader->shmfile_ = g_file_new_for_commandline_arg (reader->socket_name_);
   g_debug ("monitoring %s", g_file_get_uri (reader->shmfile_));
   
   if (g_file_query_exists (reader->shmfile_, NULL))
@@ -667,16 +663,19 @@ shmdata_base_reader_set_absolute_timestamp (shmdata_base_reader_t * reader,
 void
 shmdata_base_reader_close (shmdata_base_reader_t * reader)
 {
+  destroy_polling_g_source (reader);
+
   if (reader != NULL)
     {
-      if (reader->socketName_ != NULL)
-	g_free (reader->socketName_);
+      if (reader->socket_name_ != NULL)
+	g_free (reader->socket_name_);
       shmdata_base_reader_detach (reader);
       if (reader->shmfile_ != NULL)
 	g_object_unref (reader->shmfile_);
       if (reader->dirMonitor_ != NULL)
 	g_object_unref (reader->dirMonitor_);
       g_free (reader);
+      reader = NULL;
       g_debug ("base reader closed");
     }
 }
