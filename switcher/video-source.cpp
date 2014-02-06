@@ -26,34 +26,40 @@ namespace switcher
 {
   VideoSource::VideoSource () :
     rawvideo_ (NULL),
-    video_tee_ (NULL)
+    video_tee_ (NULL),
+    videocaps_ (gst_caps_new_simple ("video/x-raw-yuv",
+				     // "format", GST_TYPE_FOURCC,
+				     // GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y'),
+				     // "format", GST_TYPE_FOURCC,
+				     // GST_MAKE_FOURCC ('I', '4', '2', '0'),
+				     //"framerate", GST_TYPE_FRACTION, 30, 1,
+				     // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1, 
+				     //  "width", G_TYPE_INT, 640, 
+				     //  "height", G_TYPE_INT, 480,
+				     NULL)),
+    shmdata_path_ (),
+    custom_props_ (new CustomPropertyHelper ()),
+    primary_codec_spec_ (NULL),
+    primary_codec_ (),
+    secondary_codec_spec_ (NULL),
+    secondary_codec_ (),
+    codec_ (0),
+    codec_long_list_spec_ (NULL),
+    codec_long_list_ (false),
+    codec_element_ (NULL),
+    queue_codec_element_ (NULL),
+    color_space_codec_element_ (NULL),
+    codec_properties_ ()
   {
-    codec_ = 0; //None
-    codec_element_ = NULL;
-    color_space_codec_element_  = NULL;
-    queue_codec_element_ = NULL;
-    videocaps_ = gst_caps_new_simple ("video/x-raw-yuv",
-				      // "format", GST_TYPE_FOURCC,
-				      // GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y'),
-				      // "format", GST_TYPE_FOURCC,
-				      // GST_MAKE_FOURCC ('I', '4', '2', '0'),
-				      //"framerate", GST_TYPE_FRACTION, 30, 1,
-				      // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1, 
-				      //  "width", G_TYPE_INT, 640, 
-				      //  "height", G_TYPE_INT, 480,
-				      NULL);
-    
-     GstUtils::element_factory_list_to_g_enum (primary_codec_, 
+    init_startable (this);
+    GstUtils::element_factory_list_to_g_enum (primary_codec_, 
      					      GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER, 
      					      GST_RANK_PRIMARY);
-
-     GstUtils::element_factory_list_to_g_enum (secondary_codec_, 
+    
+    GstUtils::element_factory_list_to_g_enum (secondary_codec_, 
      					      GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER, 
      					      GST_RANK_SECONDARY);
-
-
-     custom_props_.reset (new CustomPropertyHelper ());
-     primary_codec_spec_ = 
+    primary_codec_spec_ = 
        custom_props_->make_enum_property ("codec", 
 					  "Codec Short List",
 					  codec_, 
@@ -62,38 +68,34 @@ namespace switcher
 					  VideoSource::set_codec,
 					  VideoSource::get_codec,
 					  this);
-     
-     install_property_by_pspec (custom_props_->get_gobject (), 
-				 primary_codec_spec_, 
-				 "codec",
-				 "Video Codecs (Short List)");
-
-     secondary_codec_spec_ = 
-       custom_props_->make_enum_property ("codec", 
-					  "Codec Long List",
-					  codec_, 
-					  secondary_codec_,
-					  (GParamFlags) G_PARAM_READWRITE,
-					  VideoSource::set_codec,
-					  VideoSource::get_codec,
-					  this);
-     
-      codec_long_list_ = false;
-      codec_long_list_spec_ = 
-	custom_props_->make_boolean_property ("more_codecs", 
-					      "Get More codecs",
-					      (gboolean)FALSE,
-					      (GParamFlags) G_PARAM_READWRITE,
-					      VideoSource::set_codec_long_list,
-					      VideoSource::get_codec_long_list,
-					      this);
-      install_property_by_pspec (custom_props_->get_gobject (), 
-				  codec_long_list_spec_, 
-				  "more_codecs",
-				  "More Codecs");
-      
-      make_codec_properties ();
-      init_startable (this);
+    install_property_by_pspec (custom_props_->get_gobject (), 
+			       primary_codec_spec_, 
+			       "codec",
+			       "Video Codecs (Short List)");
+    secondary_codec_spec_ = 
+      custom_props_->make_enum_property ("codec", 
+					 "Codec Long List",
+					 codec_, 
+					 secondary_codec_,
+					 (GParamFlags) G_PARAM_READWRITE,
+					 VideoSource::set_codec,
+					 VideoSource::get_codec,
+					 this);
+    
+    codec_long_list_spec_ = 
+      custom_props_->make_boolean_property ("more_codecs", 
+					    "Get More codecs",
+					    (gboolean)FALSE,
+					    (GParamFlags) G_PARAM_READWRITE,
+					    VideoSource::set_codec_long_list,
+					    VideoSource::get_codec_long_list,
+					    this);
+    install_property_by_pspec (custom_props_->get_gobject (), 
+			       codec_long_list_spec_, 
+			       "more_codecs",
+			       "More Codecs");
+    
+    make_codec_properties ();
   }
 
   VideoSource::~VideoSource () 
