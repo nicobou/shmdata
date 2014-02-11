@@ -121,46 +121,45 @@ namespace switcher
     g_free (device_name_);
   }
 
-
   bool
-  PulseSink::make_elements ()
+  PulseSink::build_elements ()
   {
-
     if (!GstUtils::make_element ("pulsesink",&pulsesink_))
       return false;
     if (!GstUtils::make_element ("audioconvert",&audioconvert_))
       return false;
     if (!GstUtils::make_element ("bin",&pulsesink_bin_))
       return false;
-
     uninstall_property ("volume");
     uninstall_property ("mute");
     install_property (G_OBJECT (pulsesink_),"volume","volume", "Volume");
     install_property (G_OBJECT (pulsesink_),"mute","mute", "Mute");
-
-
     if (g_strcmp0 (device_name_, "default") != 0)
       g_object_set (G_OBJECT (pulsesink_), "device", device_name_, NULL);
-
     g_object_set (G_OBJECT (pulsesink_), "client", get_nick_name ().c_str (), NULL);
-
     gst_bin_add_many (GST_BIN (pulsesink_bin_),
       		      pulsesink_,
 		      audioconvert_,
       		      NULL);
-
     gst_element_link (audioconvert_, pulsesink_);
-    
     g_object_set (G_OBJECT (pulsesink_), "sync", FALSE, NULL);
-
     GstPad *sink_pad = gst_element_get_static_pad (audioconvert_, "sink");
     GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
     gst_pad_set_active(ghost_sinkpad,TRUE);
     gst_element_add_pad (pulsesink_bin_, ghost_sinkpad); 
     gst_object_unref (sink_pad);
-    set_sink_element (pulsesink_bin_);
-
     return true;
+  }
+
+  bool
+  PulseSink::make_elements ()
+  {
+    if (build_elements ())
+      {
+	set_sink_element (pulsesink_bin_);
+	return true;
+      }
+    return false;
   }
 
   void 
@@ -425,7 +424,9 @@ namespace switcher
   void 
   PulseSink::on_shmdata_connect (std::string /* shmdata_sochet_path */) 
   {
-    make_elements ();
+    reset_bin ();
+    build_elements ();
+    set_sink_element_no_connect (pulsesink_bin_);
   }
 }//end of PulseSink class
   

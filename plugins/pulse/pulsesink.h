@@ -41,6 +41,7 @@ namespace switcher
     GstElement *pulsesink_bin_;
     bool connected_to_pulse_;
     bool make_elements ();
+    bool build_elements ();
     static gchar *get_devices_json (void *user_data);
     void make_device_description (pa_context *pulse_context);
     void make_json_description ();
