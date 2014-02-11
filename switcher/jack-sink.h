@@ -40,6 +40,7 @@ namespace switcher
     bool start ();
     bool stop ();
 
+
   private:
     GstElement *jacksink_;
     CustomPropertyHelper::ptr custom_props_; 
@@ -47,6 +48,8 @@ namespace switcher
     gchar *client_name_;
     bool init_segment ();
     bool make_elements ();
+    void on_shmdata_disconnect ();
+    void on_shmdata_connect (std::string /* shmdata_sochet_path */) ;
     static void set_client_name (const gchar *value, void *user_data);
     static gchar *get_client_name (void *user_data);
   };

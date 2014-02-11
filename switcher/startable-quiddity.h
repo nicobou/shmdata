@@ -39,6 +39,7 @@ namespace switcher
 
   protected:
     void init_startable (void *quiddity);//FIXME should called quiddity-manager-impl 
+    bool is_started ();
     //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
 
   private:

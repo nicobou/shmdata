@@ -68,7 +68,7 @@ namespace switcher
     BaseSink *context = static_cast<BaseSink*>(user_data);
     context->clear_shmdatas ();
     context->on_shmdata_disconnect ();
-    return FALSE;
+    return TRUE;
   }
 
    gboolean
@@ -110,15 +110,21 @@ namespace switcher
   void
   BaseSink::set_sink_element (GstElement *sink)
   {
+    set_sink_element_no_connect (sink);
+    if (g_strcmp0 (shmdata_path_.c_str (), "") != 0)
+      connect (shmdata_path_);
+  }
+ 
+  void
+  BaseSink::set_sink_element_no_connect (GstElement *sink)
+  {
     if (sink_element_ != NULL && sink_element_ != sink)
       GstUtils::clean_element (sink_element_);
     //sink element will be added to bin_ by the shmdata reader when appropriate
     sink_element_ = sink;
-    
-    if (g_strcmp0 (shmdata_path_.c_str (), "") != 0)
-      connect (shmdata_path_);
   }
-  
+
+ 
   void 
   BaseSink::set_on_first_data_hook (ShmdataReader::on_first_data_hook cb, void *user_data)
   {

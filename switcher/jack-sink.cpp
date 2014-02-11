@@ -125,4 +125,23 @@ namespace switcher
     JackSink *context = static_cast <JackSink *> (user_data);
     return context->client_name_;
   }
+
+  void 
+  JackSink::on_shmdata_disconnect () 
+  {
+    g_print ("haha\n");
+    stop ();
+  }
+
+  void 
+  JackSink::on_shmdata_connect (std::string /* shmdata_sochet_path */) 
+  {
+    g_print ("hehe\n");
+    if (is_started ())
+      {
+	stop ();
+	make_elements ();
+	set_sink_element_no_connect (jacksink_);
+      }
+  }
 }

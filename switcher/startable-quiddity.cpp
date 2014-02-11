@@ -75,6 +75,12 @@ namespace switcher
       }
     context->custom_props_->notify_property_changed (context->started_prop_);
   }
+
+    bool 
+    StartableQuiddity::is_started ()
+    {
+      return started_;
+    }
   
 }//end of class
 
