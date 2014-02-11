@@ -345,9 +345,23 @@ shmdata_base_reader_recover_from_deserializer_error (shmdata_base_reader_t * rea
 }
 
 gboolean
-shmdata_base_reader_process_error (shmdata_base_reader_t * reader, 
+shmdata_base_reader_process_error (shmdata_base_reader_t *reader, 
 				   GstMessage *msg)
 {
+  if (NULL == reader)
+    {
+      g_warning ("%s: trying to process error of a NULL reader",
+		 __FUNCTION__);
+      return FALSE;
+    }
+
+  if (NULL == msg)
+    {
+      g_warning ("%s: trying to process error with a NULL msg",
+		 __FUNCTION__);
+      return FALSE;
+    }
+
   switch (GST_MESSAGE_TYPE (msg))
     {
     case GST_MESSAGE_ERROR:
