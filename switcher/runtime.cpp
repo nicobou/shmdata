@@ -383,7 +383,7 @@ res = gst_element_query (pipeline_, query);
     Runtime *context = static_cast<Runtime *>(user_data);
     if ( reader != NULL)
       {
-	if ( shmdata_base_reader_process_error (reader, msg)) 
+	if (NULL != msg && shmdata_base_reader_process_error (reader, msg)) 
 	  return GST_BUS_DROP; 
 	else 
 	  return GST_BUS_PASS; 
