@@ -49,7 +49,7 @@ static gchar **remaining_args = NULL;
 
 // static GOptionEntry entries[22] =
 //   {
-//     { "server", 'S', 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:8080)", NULL },
+//     { "server", 'S', 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:37465)", NULL },
 //     { "save", 'w', 0, G_OPTION_ARG_NONE, &save, "save history to file (--save filename)", NULL },
 //     { "load", 'x', 0, G_OPTION_ARG_NONE, &load, "load state from history file (--load filename)", NULL },
 //     //FIXME make this working { "run", NULL, 0, G_OPTION_ARG_NONE, &run, "run history to file (--run filename)", NULL },
@@ -76,7 +76,7 @@ static gchar **remaining_args = NULL;
 
 static GOptionEntry entries[23] =
   {
-    { "server", 0, 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:8080)", NULL },
+    { "server", 0, 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:37465)", NULL },
     { "save", 'w', 0, G_OPTION_ARG_NONE, &save, "save history to file (--save filename)", NULL },
     { "load", 'x', 0, G_OPTION_ARG_NONE, &load, "load state from history file (--load filename)", NULL },
     //FIXME make this working { "run", NULL, 0, G_OPTION_ARG_NONE, &run, "run history to file (--run filename)", NULL },
@@ -116,7 +116,7 @@ int main(int argc, char *argv [])
     } 
 
   if (server == NULL)
-    server = g_strdup ("http://localhost:8080");
+    server = g_strdup ("http://localhost:37465");
   
   if (! (renamequiddity
 	 ^ save

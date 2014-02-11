@@ -54,7 +54,7 @@ static GOptionEntry entries[15] =
   {
     { "version", 'V', 0, G_OPTION_ARG_NONE, &display_version, "display switcher version number", NULL },
     { "server-name", 'n', 0, G_OPTION_ARG_STRING, &server_name, "server name (default is \"default\")", NULL },
-    { "port-number", 'p', 0, G_OPTION_ARG_STRING, &port_number, "port number the server will bind (default is 8080)", NULL },
+    { "port-number", 'p', 0, G_OPTION_ARG_STRING, &port_number, "port number the server will bind (default is 37465)", NULL },
     { "load", 'l', 0, G_OPTION_ARG_STRING, &load_file, "load state from history file (-l filename)", NULL },
     { "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet, "do not display any message", NULL },
     { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "display all messages, excluding debug", NULL },
@@ -136,7 +136,7 @@ main (int argc,
   if (server_name == NULL)
     server_name = "default";
   if (port_number == NULL)
-    port_number = "8080";
+    port_number = "37465";
 
   manager = switcher::QuiddityManager::make_manager (server_name);  
 
