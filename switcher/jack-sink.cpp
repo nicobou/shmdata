@@ -129,14 +129,12 @@ namespace switcher
   void 
   JackSink::on_shmdata_disconnect () 
   {
-    g_print ("haha\n");
     stop ();
   }
 
   void 
   JackSink::on_shmdata_connect (std::string /* shmdata_sochet_path */) 
   {
-    g_print ("hehe\n");
     if (is_started ())
       {
 	stop ();
