@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher-avcodecs.
  *
  * switcher  avcodecs is free software: you can redistribute it and/or modify

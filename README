@@ -23,15 +23,9 @@ Project URL
 -----------
 http://code.sat.qc.ca/redmine/projects/switcher
 
-Switcher/libswitcher Author 
----------------------------
-* Nicolas Bouillot
-
-Switcher Contributors
----------------------
-* Alexandre Quessy (help with initial gsoap packaging)
-* Emmanuel Durand (bug fix & OSX packaging)
-* Mike Wozniewski (OSX xcode project)
+Switcher/libswitcher Author & Contributors
+------------------------------------------
+* see AUTHORS
 
 See also
 --------

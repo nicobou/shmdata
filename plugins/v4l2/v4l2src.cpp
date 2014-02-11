@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher-v4l2.
  *
  * switcher-v4l2 is free software: you can redistribute it and/or modify
