@@ -213,34 +213,36 @@ shmdata_base_writer_switch_to_new_serializer (GstPad * pad,
 }
 
 void
-shmdata_base_writer_on_client_disconnected (GstElement * shmsink,
-					    gint num, gpointer user_data)
+shmdata_base_writer_on_client_disconnected (GstElement *shmsink,
+					    gint num, 
+					    gpointer user_data)
 {
   g_debug ("client disconnected (number %d)", num);
 }
 
 void
-shmdata_base_writer_on_client_connected (GstElement * shmsink,
-					 gint num, gpointer user_data)
+shmdata_base_writer_on_client_connected (GstElement *shmsink,
+					 gint num, 
+					 gpointer user_data)
 {
   shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
-  
-  g_debug ("new client connected (number %d, socket:%s)", num, context->socket_path_);
-  
+  if (NULL == context)
+    {
+      g_debug ("%s: cannot connect to NULL",
+	       __FUNCTION__);
+      return;
+    }
+  if (NULL != context->socket_path_)
+    g_debug ("new client connected (number %d, socket:%s)", num, context->socket_path_);
   GstPad *serializerSinkPad = gst_element_get_static_pad (context->serializer_, "sink");
   GstPad *padToBlock = gst_pad_get_peer (serializerSinkPad);
- 
- 
- gst_pad_set_blocked_async (padToBlock,
-			    TRUE,
-			    (GstPadBlockCallback)
-			    (shmdata_base_writer_switch_to_new_serializer),
-			    (void *) context);
- 
-  
+  gst_pad_set_blocked_async (padToBlock,
+			     TRUE,
+			     (GstPadBlockCallback)
+			     (shmdata_base_writer_switch_to_new_serializer),
+			     (void *) context);
   gst_object_unref (serializerSinkPad);
   gst_object_unref (padToBlock);
-  //  g_debug ("new client connected (number %d, socket:%s) -- done", num, context->socket_path_);
 }
 
 void
