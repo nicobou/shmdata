@@ -39,7 +39,7 @@ namespace switcher
     num_channels_spec_ (NULL),
     num_channels_(2),
     client_name_spec_ (NULL),
-    client_name_ (g_strdup ("switcher"))
+    client_name_ (NULL)
   {}
 
   bool
@@ -63,6 +63,7 @@ namespace switcher
 			       num_channels_spec_, 
 			       "channels",
 			       "Channels");
+    client_name_ = g_strdup (get_nick_name ().c_str ());
     
     client_name_spec_ =
       custom_props_->make_string_property ("jack-client-name", 

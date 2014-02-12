@@ -41,6 +41,7 @@ namespace switcher
       return false;
     init_startable (this);
     
+    client_name_ = g_strdup (get_nick_name ().c_str ());
     client_name_spec_ =
       custom_props_->make_string_property ("jack-client-name", 
 					   "the jack client name",
@@ -62,7 +63,7 @@ namespace switcher
     jacksink_ (NULL),
     custom_props_ (new CustomPropertyHelper ()),
     client_name_spec_ (NULL),
-    client_name_ (g_strdup ("switcher"))
+    client_name_ (NULL)
   {}
 
   JackSink::~JackSink ()
