@@ -23,22 +23,32 @@
 namespace switcher
 {
 
-  ShmdataReader::ShmdataReader()
-  {
-    json_description_.reset (new JSONBuilder ());
-    reader_ = shmdata_base_reader_new ();
-    bin_ = NULL;
-    path_ = "";
-    sink_element_ = NULL;
-    funnel_ = NULL;
-    connection_hook_ = NULL;
-   }
+  ShmdataReader::ShmdataReader() :
+    connection_hook_ (NULL),
+    hook_user_data_ (NULL),
+    caps_ (NULL),
+    path_ (),
+    reader_ (shmdata_base_reader_new ()),
+    bin_ (NULL),
+    sink_element_ (NULL),
+    funnel_ (NULL),
+    g_main_context_ (NULL),
+    elements_to_remove_ (),
+    json_description_ (new JSONBuilder ())
+
+  {}
 
   ShmdataReader::~ShmdataReader()
   {
+    if (!path_.empty ())
       g_debug ("ShmdataReader: deleting %s", path_.c_str());
-      shmdata_base_reader_close (reader_);
+    else
+      g_debug ("closing empty reader");
+    shmdata_base_reader_close (reader_);
+    if (!path_.empty ())
       g_debug ("ShmdataReader: %s deleted ", path_.c_str());
+    else
+      g_debug ("closing empty reader");
   }
 
   void
@@ -68,6 +78,11 @@ namespace switcher
   void 
   ShmdataReader::set_path (const char *absolute_path)
   {
+    if (NULL == absolute_path)
+      {
+	g_debug ("shmdata path is NULL");
+	return;
+      }
     path_ = absolute_path;
     make_json_description ();
   }
@@ -100,7 +115,7 @@ namespace switcher
     reader_ = shmdata_base_reader_new ();
     shmdata_base_reader_set_g_main_context (reader_, g_main_context_);
     shmdata_base_reader_set_on_have_type_callback (reader_, ShmdataReader::on_have_type, this);
-    if (path_ == "" ||  bin_ == NULL)
+    if (path_.empty () ||  bin_ == NULL)
       {
 	g_warning ("cannot start the shmdata reader: name or bin or sink element has not bin set");
 	return;
@@ -164,7 +179,8 @@ namespace switcher
       g_debug (" ShmdataReader::on_first_data");
       if (reader->connection_hook_ != NULL) //user want to create the sink_element_ 
 	reader->connection_hook_ (reader, reader->hook_user_data_);
-      if (!GST_IS_ELEMENT (GST_ELEMENT_PARENT (reader->sink_element_)))
+      if (NULL != reader->sink_element_)
+	if (!GST_IS_ELEMENT (GST_ELEMENT_PARENT (reader->sink_element_)))
 	  gst_bin_add (GST_BIN (reader->bin_), reader->sink_element_);
       // else 
       // 	  g_debug ("ShmdataReader::on_first_data: (%s) sink element (%s) has a parent (%s) %d", 

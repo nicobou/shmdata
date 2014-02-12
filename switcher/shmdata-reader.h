@@ -64,11 +64,11 @@ namespace switcher
     GstElement *funnel_;
     GMainContext *g_main_context_;
     std::vector<GstElement *> elements_to_remove_;
+    JSONBuilder::ptr json_description_;
     static void on_first_data (shmdata_base_reader_t *context, void *user_data);
     //static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
     static void unlink_pad (GstPad * pad);
     static void on_have_type (shmdata_base_reader_t *base_reader, GstCaps *caps, void *user_data);
-    JSONBuilder::ptr json_description_;
     void make_json_description ();
   };
   
