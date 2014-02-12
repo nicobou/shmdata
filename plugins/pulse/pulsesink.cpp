@@ -40,46 +40,32 @@ namespace switcher
     custom_props_ (new CustomPropertyHelper ()), 
     devices_description_spec_ (NULL),
     devices_description_ (NULL),
-    device_name_spec_ (NULL),
-    device_name_ (NULL),
     pa_glib_mainloop_ (NULL),
     pa_mainloop_api_ (NULL),
     pa_context_ (NULL),
     server_ (NULL),
-    devices_ ()
+    devices_ (),
+    devices_mutex_ (),
+    devices_cond_ (),
+    devices_enum_spec_ (NULL),
+    devices_enum_ (),
+    device_ (0)
   {}
 
   bool
   PulseSink::init_segment ()
   {
-    device_name_ = g_strdup ("default");
-
     if (!make_elements ())
       return false;
-
     g_object_set (G_OBJECT (pulsesink_),"client", get_nick_name ().c_str (), NULL);
 
-    pa_context_ = NULL;
-    server_ = NULL;
+    std::unique_lock<std::mutex> lock (devices_mutex_); 
+    GstUtils::g_idle_add_full_with_context (get_g_main_context (),
+					    G_PRIORITY_DEFAULT_IDLE,
+					    async_get_pulse_devices,
+					    this,
+					    NULL);
     
-    pa_glib_mainloop_ = pa_glib_mainloop_new(get_g_main_context ());
-    
-    pa_mainloop_api_ = pa_glib_mainloop_get_api(pa_glib_mainloop_);
-    
-    if (!(pa_context_ = pa_context_new(pa_mainloop_api_, NULL))) {
-      g_debug ("PulseSink:: pa_context_new() failed.");
-      return false;
-    }
-    
-    pa_context_set_state_callback(pa_context_, pa_context_state_callback, this);
-    
-    if (pa_context_connect(pa_context_, server_, (pa_context_flags_t)0, NULL) < 0) {
-      g_debug ("pa_context_connect() failed: %s", pa_strerror(pa_context_errno(pa_context_)));
-      return false;
-    }
-    
-    connected_to_pulse_ = true;
-   
     devices_description_spec_ = custom_props_->make_string_property ("devices-json", 
       								     "Description of audio devices (json formated)",
       								     "default",
@@ -93,18 +79,12 @@ namespace switcher
      				"devices-json",
      				"Devices Description");
     
-    device_name_spec_ = custom_props_->make_string_property ("device-name", 
-							     "Device pulse name",
-							     "",
-							     (GParamFlags) G_PARAM_READWRITE,
-							     PulseSink::set_device_name,
-							     PulseSink::get_device_name,
-							     this);
-    
-    install_property_by_pspec (custom_props_->get_gobject (), 
-				device_name_spec_, 
-				"device-name",
-				"Device Name");
+    devices_cond_.wait (lock);
+    if (!connected_to_pulse_)
+      {
+	g_debug ("not connected to pulse, cannot init");
+	return false;
+      }
     return true;
   }
   
@@ -118,24 +98,49 @@ namespace switcher
       }
     if (devices_description_ != NULL)
       g_free (devices_description_);
-    g_free (device_name_);
   }
+
+  gboolean
+  PulseSink::async_get_pulse_devices (void *user_data)
+  {
+    PulseSink *context = static_cast <PulseSink *> (user_data);
+    context->pa_glib_mainloop_ = pa_glib_mainloop_new (context->get_g_main_context ());
+    context->pa_mainloop_api_ = pa_glib_mainloop_get_api (context->pa_glib_mainloop_);
+    context->pa_context_ = pa_context_new (context->pa_mainloop_api_, NULL);
+    if (NULL == context->pa_context_) 
+      {
+	g_debug ("PulseSink:: pa_context_new() failed.");
+	return FALSE;
+      }
+    pa_context_set_state_callback (context->pa_context_, pa_context_state_callback, context);
+    if (pa_context_connect (context->pa_context_, 
+			    context->server_, 
+			    (pa_context_flags_t)0, 
+			    NULL) < 0) 
+      {
+	g_debug ("pa_context_connect() failed: %s", pa_strerror(pa_context_errno(context->pa_context_)));
+	return FALSE;
+      }
+    context->connected_to_pulse_ = true;
+    return FALSE;
+  }
+
 
   bool
   PulseSink::build_elements ()
   {
-    if (!GstUtils::make_element ("pulsesink",&pulsesink_))
+    if (!GstUtils::make_element ("pulsesink", &pulsesink_))
       return false;
-    if (!GstUtils::make_element ("audioconvert",&audioconvert_))
+    if (!GstUtils::make_element ("audioconvert", &audioconvert_))
       return false;
-    if (!GstUtils::make_element ("bin",&pulsesink_bin_))
+    if (!GstUtils::make_element ("bin", &pulsesink_bin_))
       return false;
     uninstall_property ("volume");
     uninstall_property ("mute");
     install_property (G_OBJECT (pulsesink_),"volume","volume", "Volume");
     install_property (G_OBJECT (pulsesink_),"mute","mute", "Mute");
-    if (g_strcmp0 (device_name_, "default") != 0)
-      g_object_set (G_OBJECT (pulsesink_), "device", device_name_, NULL);
+    if (!devices_.empty ())
+      g_object_set (G_OBJECT (pulsesink_), "device", devices_.at (device_).name_.c_str (), NULL);
     g_object_set (G_OBJECT (pulsesink_), "client", get_nick_name ().c_str (), NULL);
     gst_bin_add_many (GST_BIN (pulsesink_bin_),
       		      pulsesink_,
@@ -163,7 +168,9 @@ namespace switcher
   }
 
   void 
-  PulseSink::pa_context_state_callback(pa_context *pulse_context, void *user_data) {
+  PulseSink::pa_context_state_callback (pa_context *pulse_context, 
+					void *user_data) 
+  {
     
     PulseSink *context = static_cast <PulseSink *> (user_data);
     
@@ -206,7 +213,7 @@ namespace switcher
       context->pa_context_ = NULL;
       break;
     case PA_CONTEXT_FAILED:
-      //g_print ("PA_CONTEXT_FAILED\n");
+      g_print ("PA_CONTEXT_FAILED\n");
       break;
     default:
       g_debug ("PulseSink Context error: %s\n",pa_strerror(pa_context_errno(pulse_context)));
@@ -228,13 +235,13 @@ namespace switcher
     for (auto &it: devices_)
       {
 	builder->begin_object ();
-	builder->add_string_member ("long name", it.second.description_.c_str());
-	builder->add_string_member ("name", it.second.name_.c_str());
-	builder->add_string_member ("state", it.second.state_.c_str());
-	builder->add_string_member ("sample format", it.second.sample_format_.c_str());
-	builder->add_string_member ("sample rate", it.second.sample_rate_.c_str());
-	builder->add_string_member ("channels", it.second.channels_.c_str());
-	builder->add_string_member ("active port", it.second.active_port_.c_str());
+	builder->add_string_member ("long name", it.description_.c_str());
+	builder->add_string_member ("name", it.name_.c_str());
+	builder->add_string_member ("state", it.state_.c_str());
+	builder->add_string_member ("sample format", it.sample_format_.c_str());
+	builder->add_string_member ("sample rate", it.sample_rate_.c_str());
+	builder->add_string_member ("channels", it.channels_.c_str());
+	builder->add_string_member ("active port", it.active_port_.c_str());
 	builder->end_object ();
       }
     
@@ -257,13 +264,29 @@ namespace switcher
       g_debug ("Failed to get sink information: %s", pa_strerror(pa_context_errno(pulse_context)));
       return;
     }
-    
     if (is_last) {
       pa_operation *operation = pa_context_drain(pulse_context, NULL, NULL);
       if (operation)
         pa_operation_unref(operation);
-      
+
+      context->update_output_device ();
+      context->devices_enum_spec_ = 
+	context->custom_props_->make_enum_property ("device", 
+						    "Enumeration of Pulse output devices",
+						    context->device_, 
+						    context->devices_enum_,
+						    (GParamFlags) G_PARAM_READWRITE,
+						    PulseSink::set_device,
+						    PulseSink::get_device,
+						    context);
+      context->install_property_by_pspec (context->custom_props_->get_gobject (), 
+					   context->devices_enum_spec_, 
+					   "device",
+					   "Ouput Device");
+
       context->make_json_description ();
+      std::unique_lock<std::mutex> lock (context->devices_mutex_);
+      context->devices_cond_.notify_all ();
       return;
     }
     
@@ -341,7 +364,7 @@ namespace switcher
      else
        description.active_port_ = "n/a";
 
-    context->devices_[description.name_] = description;
+     context->devices_.push_back (description);
     
      // if (i->formats) {
      //   uint8_t j;
@@ -396,25 +419,6 @@ namespace switcher
     return context->devices_description_;
   }
 
-  gchar *
-  PulseSink::get_device_name (void *user_data)
-  {
-    PulseSink *context = static_cast<PulseSink *> (user_data);
-    return context->device_name_;
-  }
- 
-  void 
-  PulseSink::set_device_name (const gchar *value, 
-			      void *user_data)
-  {
-    PulseSink *context = static_cast<PulseSink *> (user_data);
-    g_free (context->device_name_);
-    context->device_name_ = g_strdup (value);
-    GObjectWrapper::notify_property_changed (context->gobject_->get_gobject (), 
-					     context->device_name_spec_);
-    context->make_elements ();
-  }
-
   void 
   PulseSink::on_shmdata_disconnect () 
   {
@@ -428,6 +432,38 @@ namespace switcher
     build_elements ();
     set_sink_element_no_connect (pulsesink_bin_);
   }
+
+  void
+  PulseSink::update_output_device ()
+  {
+    gint i = 0;
+    for (auto &it : devices_)
+	{
+	  devices_enum_ [i].value = i;
+	  //FIXME previous free here
+	  devices_enum_ [i].value_name = g_strdup (it.description_.c_str ());
+	  devices_enum_ [i].value_nick = g_strdup (it.name_.c_str ());
+	  i ++;
+	}
+      devices_enum_ [i].value = 0;
+      devices_enum_ [i].value_name = NULL;
+      devices_enum_ [i].value_nick = NULL;
+  }
+
+  void 
+  PulseSink::set_device (const gint value, void *user_data)
+  {
+    PulseSink *context = static_cast <PulseSink *> (user_data);
+    context->device_ = value;
+  }
+
+  gint 
+  PulseSink::get_device (void *user_data)
+  {
+    PulseSink *context = static_cast <PulseSink *> (user_data);
+    return context->device_;
+  }
+
 }//end of PulseSink class
   
   

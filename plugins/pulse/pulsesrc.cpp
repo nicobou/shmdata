@@ -39,7 +39,7 @@ namespace switcher
     connected_to_pulse_ (false),
     devices_mutex_ (),
     devices_cond_ (),
-    custom_props_ (), 
+    custom_props_ (new CustomPropertyHelper ()), 
     capture_devices_description_spec_ (NULL),
     capture_devices_description_ (NULL),
     devices_enum_spec_ (NULL),
@@ -66,9 +66,6 @@ namespace switcher
 					    this,
 					    NULL);
 
-    capture_devices_description_ = NULL;
-
-    custom_props_.reset (new CustomPropertyHelper ());
     capture_devices_description_spec_ = custom_props_->make_string_property ("devices-json", 
 									     "Description of capture devices (json formated)",
 									     "",
@@ -86,7 +83,7 @@ namespace switcher
     devices_cond_.wait (lock);
     if (!connected_to_pulse_)
       {
-	g_print ("NOT CONNECTED TO PULSE\n");
+	g_debug ("not connected to pulse, cannot init");
 	return false;
       }
     return true;
