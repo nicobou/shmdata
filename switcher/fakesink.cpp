@@ -47,11 +47,8 @@ namespace switcher
   {
      if (update_byterate_source_ != NULL)
        g_source_destroy (update_byterate_source_);
-
     clear_shmdatas ();
-    
     reset_bin ();
-
     GstUtils::clean_element (fakesink_);
     g_free (string_caps_);
   }
