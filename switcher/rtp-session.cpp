@@ -336,14 +336,8 @@ namespace switcher
 					  gpointer user_data)
   {
     RtpSession *context = static_cast<RtpSession *>(user_data);
-
-
     g_debug ("RtpSession::make_data_stream_available");
-
-    // GstUtils::wait_state_changed (context->bin_);
-    // GstUtils::wait_state_changed (context->rtpsession_);
-    
-    GstElement *pay;
+    GstElement *pay = NULL;
     GList *list = gst_registry_feature_filter (gst_registry_get_default (),
 					       (GstPluginFeatureFilter) sink_factory_filter, 
 					       FALSE, caps);
@@ -355,7 +349,8 @@ namespace switcher
 	GstUtils::make_element ("rtpgstpay", &pay);
 
     
-    ShmdataReader *reader= (ShmdataReader *) g_object_get_data (G_OBJECT (typefind),"shmdata-reader");
+    ShmdataReader *reader = (ShmdataReader *) g_object_get_data (G_OBJECT (typefind),
+								 "shmdata-reader");
     reader->add_element_to_cleaner (pay);
         
     g_debug ("RtpSession::make_data_stream_available: %s payloader",

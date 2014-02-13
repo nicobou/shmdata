@@ -162,8 +162,7 @@ namespace switcher
   {
     if (NULL == user_data || NULL == caps)
       {
-	g_warning ("%s: cannot save caps",
-		   __FUNCTION__);
+	g_warning ("ShmdataReader::on_have_type cannot save caps");
 	return;
       }
     ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
