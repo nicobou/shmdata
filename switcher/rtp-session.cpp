@@ -736,7 +736,6 @@ namespace switcher
     reader->set_g_main_context (get_g_main_context ());
     reader->set_bin (bin_);
     reader->set_on_first_data_hook (attach_data_stream, this);
-    //GstUtils::wait_state_changed (bin_);
     reader->start ();
     //saving info about this local stream
     std::ostringstream os_id;

@@ -34,8 +34,9 @@ namespace switcher
     funnel_ (NULL),
     g_main_context_ (NULL),
     elements_to_remove_ (),
-    json_description_ (new JSONBuilder ())
-
+    json_description_ (new JSONBuilder ()),
+    start_mutex_ (),
+    start_cond_ ()
   {}
 
   ShmdataReader::~ShmdataReader()
@@ -111,42 +112,48 @@ namespace switcher
   void 
   ShmdataReader::start ()
   {
-    g_debug ("shmdata-reader::start");
-    shmdata_base_reader_close (reader_);
-    GstUtils::clean_element (funnel_);
-    reader_ = shmdata_base_reader_new ();
-    shmdata_base_reader_set_g_main_context (reader_, g_main_context_);
-    shmdata_base_reader_set_on_have_type_callback (reader_, ShmdataReader::on_have_type, this);
-    if (path_.empty () ||  bin_ == NULL)
+    std::unique_lock<std::mutex> lock (start_mutex_); 
+    GstUtils::g_idle_add_full_with_context (g_main_context_,
+					    G_PRIORITY_DEFAULT_IDLE,
+					    start_idle,
+					    this,
+					    NULL);
+    g_debug ("%s: wait for start idle",
+	     __PRETTY_FUNCTION__);
+    start_cond_.wait (lock);
+    g_debug ("%s: start idle has unlocked",
+	     __PRETTY_FUNCTION__);
+}
+
+  gboolean
+  ShmdataReader::start_idle (void *user_data)
+  {
+    ShmdataReader *context = static_cast<ShmdataReader *>(user_data);
+    g_debug ("shmdata-reader::start_idle");
+    shmdata_base_reader_close (context->reader_);
+    GstUtils::clean_element (context->funnel_);
+    context->reader_ = shmdata_base_reader_new ();
+    shmdata_base_reader_set_g_main_context (context->reader_, context->g_main_context_);
+    shmdata_base_reader_set_on_have_type_callback (context->reader_, 
+						   ShmdataReader::on_have_type, 
+						   context);
+    if (context->path_.empty () ||  context->bin_ == NULL)
       {
 	g_warning ("cannot start the shmdata reader: name or bin or sink element has not bin set");
-	return;
+	return FALSE;
       }
-    
-    // //looking for the bus, searching the top level pipeline
-    // GstElement *pipe = bin_;
-    // while (pipe != NULL && !GST_IS_PIPELINE (pipe))
-    //   pipe = GST_ELEMENT_PARENT (pipe);
-    // if( GST_IS_PIPELINE (pipe))
-    //   {
-    // 	GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipe));  
-    // 	//clear old handler and install a new one 
-    // 	gst_bus_set_sync_handler (bus, NULL, NULL);
-    // 	gst_bus_set_sync_handler (bus, ShmdataReader::bus_sync_handler, NULL);  
-    // 	gst_object_unref (bus);  
-    //   }
-    // else
-    //   {
-    // 	g_warning ("no top level pipeline found when starting, cannot install sync_handler");
-    // 	return;
-    //   }
-
-    shmdata_base_reader_set_callback (reader_, ShmdataReader::on_first_data, this);
-    shmdata_base_reader_install_sync_handler (reader_, FALSE);
-    shmdata_base_reader_set_bin (reader_, bin_);
-    shmdata_base_reader_start (reader_, path_.c_str());
-    g_debug ("shmdata-reader::start done");
+    shmdata_base_reader_set_callback (context->reader_, 
+				      ShmdataReader::on_first_data, 
+				      context);
+    shmdata_base_reader_install_sync_handler (context->reader_, FALSE);
+    shmdata_base_reader_set_bin (context->reader_, context->bin_);
+    shmdata_base_reader_start (context->reader_, context->path_.c_str());
+    g_debug ("shmdata-reader::start_idle done");
+    std::unique_lock<std::mutex> lock (context->start_mutex_);
+    context->start_cond_.notify_all ();
+    return FALSE;//do not repeat
   }
+
 
   void 
   ShmdataReader::on_have_type (shmdata_base_reader_t *, 
