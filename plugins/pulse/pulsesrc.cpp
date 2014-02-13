@@ -376,7 +376,8 @@ namespace switcher
   void 
   PulseSrc::make_device_description (pa_context *pulse_context)
   {
-    capture_devices_.clear ();
+    if (!capture_devices_.empty ())
+      capture_devices_.clear ();
     pa_operation_unref(pa_context_get_source_info_list(pulse_context, get_source_info_callback, this));
   }
 
