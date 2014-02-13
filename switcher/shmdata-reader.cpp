@@ -112,18 +112,20 @@ namespace switcher
   void 
   ShmdataReader::start ()
   {
-    std::unique_lock<std::mutex> lock (start_mutex_); 
-    GstUtils::g_idle_add_full_with_context (g_main_context_,
-					    G_PRIORITY_DEFAULT_IDLE,
-					    start_idle,
-					    this,
-					    NULL);
-    g_debug ("%s: wait for start idle",
-	     __PRETTY_FUNCTION__);
-    start_cond_.wait (lock);
-    g_debug ("%s: start idle has unlocked",
-	     __PRETTY_FUNCTION__);
-}
+    // std::unique_lock<std::mutex> lock (start_mutex_); 
+    // GstUtils::g_idle_add_full_with_context (g_main_context_,
+    // 					    G_PRIORITY_DEFAULT_IDLE,
+    // 					    start_idle,
+    // 					    this,
+    // 					    NULL);
+    // g_debug ("%s: wait for start idle",
+    // 	     __PRETTY_FUNCTION__);
+    // start_cond_.wait (lock);
+    // g_debug ("%s: start idle has unlocked",
+    // 	     __PRETTY_FUNCTION__);
+    start_idle (this);
+
+  }
 
   gboolean
   ShmdataReader::start_idle (void *user_data)
@@ -149,8 +151,8 @@ namespace switcher
     shmdata_base_reader_set_bin (context->reader_, context->bin_);
     shmdata_base_reader_start (context->reader_, context->path_.c_str());
     g_debug ("shmdata-reader::start_idle done");
-    std::unique_lock<std::mutex> lock (context->start_mutex_);
-    context->start_cond_.notify_all ();
+    // std::unique_lock<std::mutex> lock (context->start_mutex_);
+    // context->start_cond_.notify_all ();
     return FALSE;//do not repeat
   }
 
