@@ -136,14 +136,15 @@ shmdata_base_reader_on_type_found (GstElement* typefind,
 				   GstCaps *caps, 
 				   gpointer user_data)
 {
-  shmdata_base_reader_t * reader = (shmdata_base_reader_t *) user_data; 
+  shmdata_base_reader_t *reader = (shmdata_base_reader_t *)user_data; 
   reader->caps_ = caps;
-  if (reader->on_have_type_ != NULL)
+  if (NULL != reader->on_have_type_)
     reader->on_have_type_ (reader,
 			   reader->caps_,
 			   reader->on_have_type_userData_);
   gchar *caps_string = gst_caps_to_string (reader->caps_);
-  g_debug ("new caps for base reader: %s", caps_string);
+  g_debug ("new caps for base reader: %s", 
+	   caps_string);
   g_free (caps_string);
 }
 

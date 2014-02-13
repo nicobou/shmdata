@@ -97,7 +97,10 @@ shmdata_base_writer_close (shmdata_base_writer_t *writer)
 
   g_debug ("writer closed (%s)",writer->socket_path_);
   if (writer->socket_path_ != NULL)
-    g_free (writer->socket_path_);
+    {
+      g_free (writer->socket_path_);
+      writer->socket_path_ = NULL;
+    }
   g_free (writer);
 
     
@@ -233,7 +236,9 @@ shmdata_base_writer_on_client_connected (GstElement *shmsink,
       return;
     }
   if (NULL != context->socket_path_)
-    g_debug ("new client connected (number %d, socket:%s)", num, context->socket_path_);
+    g_debug ("new client connected (number %d, socket:%s)", 
+	     num, 
+	     context->socket_path_);
   GstPad *serializerSinkPad = gst_element_get_static_pad (context->serializer_,
 							  "sink");
   GstPad *padToBlock = gst_pad_get_peer (serializerSinkPad);
