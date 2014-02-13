@@ -142,6 +142,7 @@ shmdata_base_writer_set_branch_state_as_pipeline (shmdata_base_writer_t *
   gst_element_set_state (writer->qserial_,GST_STATE_TARGET (parent));
   gst_element_set_state (writer->serializer_,GST_STATE_TARGET (parent));
   gst_element_set_state (writer->shmsink_,GST_STATE_TARGET (parent));
+  g_debug ("base writer: manual state sync done");
   return;//parent is already doing something
 }
 
@@ -155,7 +156,7 @@ shmdata_base_writer_pad_unblocked (GstPad * pad,
 }
 
 void
-shmdata_base_writer_switch_to_new_serializer (GstPad * pad,
+shmdata_base_writer_switch_to_new_serializer (GstPad *pad,
 					      gboolean blocked,
 					      gpointer user_data)
 {
@@ -198,7 +199,6 @@ shmdata_base_writer_switch_to_new_serializer (GstPad * pad,
   gst_object_unref (srcPadPeer);
   gst_object_unref (sinkPadPeer);
 
-
   if (!gst_element_set_state (context->serializer_,
 			      GST_STATE_TARGET(GST_ELEMENT_PARENT(context->serializer_))))
       g_critical ("Error: issue changing newSerializer state");
@@ -234,14 +234,21 @@ shmdata_base_writer_on_client_connected (GstElement *shmsink,
     }
   if (NULL != context->socket_path_)
     g_debug ("new client connected (number %d, socket:%s)", num, context->socket_path_);
-  GstPad *serializerSinkPad = gst_element_get_static_pad (context->serializer_, "sink");
+  GstPad *serializerSinkPad = gst_element_get_static_pad (context->serializer_,
+							  "sink");
   GstPad *padToBlock = gst_pad_get_peer (serializerSinkPad);
-  gst_pad_set_blocked_async (padToBlock,
+  gst_object_unref (serializerSinkPad);
+
+  if (!GST_IS_PAD (padToBlock))
+    {
+      g_warning ("%s: peer pad is not a pad, cannot block");
+      return;
+    }
+    gst_pad_set_blocked_async (padToBlock,
 			     TRUE,
 			     (GstPadBlockCallback)
 			     (shmdata_base_writer_switch_to_new_serializer),
 			     (void *) context);
-  gst_object_unref (serializerSinkPad);
   gst_object_unref (padToBlock);
 }
 
