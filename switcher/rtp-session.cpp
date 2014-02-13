@@ -363,15 +363,15 @@ namespace switcher
     /* add capture and payloading to the pipeline and link */
     gst_bin_add_many (GST_BIN (context->bin_), pay, NULL);
     gst_element_link (typefind, pay);
-    // GstUtils::wait_state_changed (context->bin_);
     GstUtils::sync_state_with_parent (pay);
 
     g_object_set (G_OBJECT (pay), "mtu", (guint)context->mtu_at_add_data_stream_, NULL);
     
     /* now link all to the rtpbin, start by getting an RTP sinkpad for session "%d" */
-    GstPad *srcpad, *sinkpad;
-    sinkpad = gst_element_get_request_pad (context->rtpsession_, "send_rtp_sink_%d");
-    srcpad = gst_element_get_static_pad (pay, "src");
+    GstPad *sinkpad = gst_element_get_request_pad (context->rtpsession_, 
+						   "send_rtp_sink_%d");
+    GstPad *srcpad = gst_element_get_static_pad (pay, 
+						 "src");
     if (gst_pad_link (srcpad, sinkpad) != GST_PAD_LINK_OK)
       g_warning ("RtpSession::make_data_stream_available: failed to link payloader to rtpbin");
     gst_object_unref (sinkpad);
