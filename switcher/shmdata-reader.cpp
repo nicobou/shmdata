@@ -49,6 +49,8 @@ namespace switcher
       g_debug ("ShmdataReader: %s deleted ", path_.c_str());
     else
       g_debug ("closing empty reader");
+    if (NULL != caps_)
+      gst_caps_unref (caps_);
   }
 
   void
@@ -151,7 +153,14 @@ namespace switcher
 			       GstCaps *caps, 
 			       void *user_data)
   {
+    if (NULL == user_data || NULL == caps)
+      {
+	g_warning ("%s: cannot save caps",
+		   __FUNCTION__);
+	return;
+      }
     ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
+    gst_caps_ref (caps);
     reader->caps_ = caps;
     g_debug ("shmdata new caps: \n%s",gst_caps_to_string (reader->caps_));
   }
@@ -161,6 +170,11 @@ namespace switcher
   {
     g_debug ("ShmdataReader::stop");
     shmdata_base_reader_close (reader_);
+    if (NULL != caps_)
+      {
+	gst_caps_unref (caps_);
+	caps_ = NULL;
+      }
     GstUtils::clean_element (funnel_);
   } 
  
