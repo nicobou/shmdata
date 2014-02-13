@@ -169,7 +169,7 @@ namespace switcher
     ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
     gst_caps_ref (caps);
     reader->caps_ = caps;
-    g_debug ("shmdata new caps: \n%s",gst_caps_to_string (reader->caps_));
+    g_debug ("shmdata new caps");
   }
 
   void 
