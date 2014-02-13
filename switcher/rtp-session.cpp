@@ -358,13 +358,17 @@ namespace switcher
     ShmdataReader *reader= (ShmdataReader *) g_object_get_data (G_OBJECT (typefind),"shmdata-reader");
     reader->add_element_to_cleaner (pay);
         
-    g_debug ("RtpSession::make_data_stream_available: %s payloader",GST_ELEMENT_NAME (pay));
+    g_debug ("RtpSession::make_data_stream_available: %s payloader",
+	     GST_ELEMENT_NAME (pay));
 
     /* add capture and payloading to the pipeline and link */
     gst_bin_add_many (GST_BIN (context->bin_), pay, NULL);
     gst_element_link (typefind, pay);
+    g_debug ("%s sync",
+	     __PRETTY_FUNCTION__);
     GstUtils::sync_state_with_parent (pay);
-
+    g_debug ("%s after sync",
+	     __PRETTY_FUNCTION__);
     g_object_set (G_OBJECT (pay), "mtu", (guint)context->mtu_at_add_data_stream_, NULL);
     
     /* now link all to the rtpbin, start by getting an RTP sinkpad for session "%d" */
