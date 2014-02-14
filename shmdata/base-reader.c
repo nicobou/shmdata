@@ -142,10 +142,8 @@ shmdata_base_reader_on_type_found (GstElement* typefind,
     reader->on_have_type_ (reader,
 			   reader->caps_,
 			   reader->on_have_type_userData_);
-  gchar *caps_string = gst_caps_to_string (reader->caps_);
-  g_debug ("new caps for base reader: %s", 
-	   caps_string);
-  g_free (caps_string);
+  g_debug ("new caps for base reader: %"GST_PTR_FORMAT, 
+	   reader->caps_);
 }
 
 GstCaps *
