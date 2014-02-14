@@ -139,7 +139,7 @@ namespace switcher
     uninstall_property ("mute");
     install_property (G_OBJECT (pulsesink_),"volume","volume", "Volume");
     install_property (G_OBJECT (pulsesink_),"mute","mute", "Mute");
-    g_object_set (G_OBJECT (pulsesink_), "slave-method", "resample", NULL);
+    g_object_set (G_OBJECT (pulsesink_), "slave-method", 0, NULL); //resample
     if (!devices_.empty ())
       g_object_set (G_OBJECT (pulsesink_), "device", devices_.at (device_).name_.c_str (), NULL);
     g_object_set (G_OBJECT (pulsesink_), "client", get_nick_name ().c_str (), NULL);
