@@ -1026,7 +1026,6 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   void
   QuiddityManager::invoke_in_thread ()
   {
-    //g_print ("-- avant --\n");
     JSONBuilder::ptr builder;
     builder.reset (new JSONBuilder ());
     builder->reset ();
@@ -1040,13 +1039,6 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
       g_async_queue_push (command_queue_, command_.get ());
       execution_done_cond_.wait (lock);
     }
-    // //FIXME remove that
-    // timespec delay;
-    // delay.tv_sec = 0;
-    // delay.tv_nsec = 1000000;
-    // nanosleep(&delay, NULL);
-
-    //g_print ("-- apres --\n");
   }
 
   gboolean
