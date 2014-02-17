@@ -201,43 +201,37 @@ namespace switcher
   void
   Property::make_description ()
   {
-    // guint i;
-    //gboolean readable = FALSE;
-    // gboolean first_flag;
+    if (NULL == property_)
+      {
+	g_warning ("%s: cannot make description from a NULL property",
+		   __PRETTY_FUNCTION__);
+	return;
+      }
     GValue value = G_VALUE_INIT;
-    // GObject *element = object_; 
     g_value_init (&value, property_->value_type);
     
     g_object_get_property (object_,
 			   property_->name,
 			   &value);
-
     json_description_->reset ();
     json_description_->begin_object ();
-
     //long name 
     json_description_->add_string_member ("long name", long_name_.c_str ());
-
     //name
     json_description_->add_string_member ("name", name_.c_str ());
-
     //nickname 
     //json_description_->add_string_member ("nickname", g_param_spec_get_nick (property_));
 
     // short description
     json_description_->add_string_member ("short description", g_param_spec_get_blurb (property_));
-    
     json_description_->add_string_member ("position category", get_category ().c_str ());
     json_description_->add_int_member    ("position weight", get_position_weight ());
-
     // name
     //json_description_->add_string_member ("internal name", g_param_spec_get_name (property_));
-
     if (property_->flags & G_PARAM_WRITABLE) 
       json_description_->add_string_member ("writable", "true");
     else
       json_description_->add_string_member ("writable", "false");
-    
     switch (G_VALUE_TYPE (&value)) {
     case G_TYPE_STRING:
       {
