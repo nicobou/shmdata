@@ -22,6 +22,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <thread>
 #include "abstract-factory.h" 
 #include "quiddity.h" 
 #include "json-builder.h"
@@ -222,11 +223,11 @@ namespace switcher
       void give_name_if_unnamed (std::shared_ptr <Quiddity> quiddity);
 
       //gmainloop 
-      GThread *thread_; //this runs the main loop 
+      std::thread thread_; //this runs the main loop 
       GMainContext *main_context_;
       GMainLoop *mainloop_; 
       void init_gmainloop (); 
-      static gpointer main_loop_thread (gpointer user_data); 
+      void main_loop_thread (); 
     };
   
 } // end of namespace
