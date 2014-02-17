@@ -120,14 +120,12 @@ shmdata_any_reader_on_new_buffer_from_source (GstElement * elt,
       else
 	{
 	  g_debug
-	    ("incompatible data frame retrieved, data %p, data size %d, timestamp %llu, caps %s",
+	    ("incompatible data frame retrieved, data %p, data size %d, timestamp %llu, caps %"GST_PTR_FORMAT,
 	     GST_BUFFER_DATA (buf), GST_BUFFER_SIZE (buf),
 	     GST_TIME_AS_MSECONDS (GST_BUFFER_TIMESTAMP (buf)),
-	     gst_caps_to_string (GST_BUFFER_CAPS (buf)));
-
+	     GST_BUFFER_CAPS (buf));
 	}
     }
-
   /* if (buf) */
   /*  gst_buffer_unref (buf); */
 }

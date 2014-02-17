@@ -681,7 +681,10 @@ shmdata_base_reader_close (shmdata_base_reader_t * reader)
   if (reader != NULL)
     {
       if (reader->socket_name_ != NULL)
-	g_free (reader->socket_name_);
+	{
+	  g_free (reader->socket_name_);
+	  reader->socket_name_ = NULL;
+	}
       shmdata_base_reader_detach (reader);
       if (reader->shmfile_ != NULL)
 	g_object_unref (reader->shmfile_);
