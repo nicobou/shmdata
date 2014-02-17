@@ -44,6 +44,17 @@ namespace switcher
     bool stop ();
 
   private:
+    typedef struct {
+      std::string name_;
+      std::string description_;
+      std::string state_;
+      std::string sample_format_;
+      std::string sample_rate_;
+      std::string channels_;
+      std::vector <std::pair <std::string/*port*/,std::string /*description*/> > ports_;
+      std::string active_port_;
+    } DeviceDescription;
+
     GstElement *pulsesrc_;
     GstElement *capsfilter_;
     GstElement *pulsesrc_bin_;
@@ -63,19 +74,11 @@ namespace switcher
     pa_mainloop_api *pa_mainloop_api_;
     pa_context *pa_context_;
     char *server_;
-    typedef struct {
-      std::string name_;
-      std::string description_;
-      std::string state_;
-      std::string sample_format_;
-      std::string sample_rate_;
-      std::string channels_;
-      std::vector <std::pair <std::string/*port*/,std::string /*description*/> > ports_;
-      std::string active_port_;
-    } DeviceDescription;
-
     std::vector <DeviceDescription> capture_devices_; 
-
+    //quit
+    std::mutex quit_mutex_;
+    std::condition_variable quit_cond_;
+    
     bool make_elements ();
     static gchar *get_capture_devices_json (void *user_data);
     static gboolean async_get_pulse_devices (void *user_data);
@@ -98,9 +101,7 @@ namespace switcher
 				     pa_subscription_event_type_t t,
 				     uint32_t idx, 
 				     void *userdata);
-
-
-
+    static gboolean quit_pulse (void *user_data);
   };
 
   SWITCHER_DECLARE_PLUGIN(PulseSrc);

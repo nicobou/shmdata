@@ -71,6 +71,9 @@ namespace switcher
     GParamSpec *devices_enum_spec_;
     GEnumValue devices_enum_ [128];
     gint device_;
+    //quit
+    std::mutex quit_mutex_;
+    std::condition_variable quit_cond_;
 
     bool make_elements ();
     bool build_elements ();
@@ -90,6 +93,7 @@ namespace switcher
     void update_output_device ();
     static void set_device (const gint value, void *user_data);
     static gint get_device (void *user_data);
+    static gboolean quit_pulse (void *user_data);
   };
 
   SWITCHER_DECLARE_PLUGIN(PulseSink);

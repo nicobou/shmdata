@@ -49,7 +49,9 @@ namespace switcher
     pa_mainloop_api_ (NULL),
     pa_context_ (NULL),
     server_ (NULL),
-    capture_devices_ ()
+    capture_devices_ (),
+    quit_mutex_ (),
+    quit_cond_ ()
   {}
 
   bool
@@ -118,15 +120,30 @@ namespace switcher
   {
     if (connected_to_pulse_)
       {
-	pa_context_disconnect (pa_context_);
-	pa_context_unref (pa_context_);
-	pa_context_ = NULL;
-	pa_glib_mainloop_free(pa_glib_mainloop_);
+	std::unique_lock<std::mutex> lock (quit_mutex_); 
+	GstUtils::g_idle_add_full_with_context (get_g_main_context (),
+						G_PRIORITY_DEFAULT_IDLE,
+						quit_pulse,
+						this,
+						NULL);
+	quit_cond_.wait (lock);
       }
     if (NULL != capture_devices_description_)
       g_free (capture_devices_description_);
   }
 
+  gboolean
+  PulseSrc::quit_pulse (void *user_data)
+  {
+    PulseSrc *context = static_cast <PulseSrc *> (user_data);
+    pa_context_disconnect (context->pa_context_);
+    // pa_context_unref (context->pa_context_);
+    // context->pa_context_ = NULL;
+    pa_glib_mainloop_free (context->pa_glib_mainloop_);
+    std::unique_lock<std::mutex> lock (context->quit_mutex_);
+    context->quit_cond_.notify_all ();
+    return FALSE;
+  }
 
   bool
   PulseSrc::make_elements ()

@@ -42,10 +42,10 @@ main ()
 #else
     return 1;
 #endif
-    
+
     if (!switcher::QuiddityBasicTest::test_full (manager, "pulsesrc"))
       success = false;
-
+    
     if (!switcher::QuiddityBasicTest::test_full (manager, "pulsesink"))
       success = false;
 
