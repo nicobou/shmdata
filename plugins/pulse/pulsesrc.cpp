@@ -118,10 +118,11 @@ namespace switcher
 
   PulseSrc::~PulseSrc ()
   {
-    if (connected_to_pulse_)
+    GMainContext *main_context = get_g_main_context ();
+    if (NULL != main_context && connected_to_pulse_)
       {
-	std::unique_lock<std::mutex> lock (quit_mutex_); 
-	GstUtils::g_idle_add_full_with_context (get_g_main_context (),
+	std::unique_lock<std::mutex> lock (quit_mutex_);
+	GstUtils::g_idle_add_full_with_context (main_context,
 						G_PRIORITY_DEFAULT_IDLE,
 						quit_pulse,
 						this,
