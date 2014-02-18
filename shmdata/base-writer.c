@@ -21,6 +21,8 @@ struct shmdata_base_writer_
   GstElement *shmsink_;
   GstElement *parent_bin_;
   gchar *socket_path_;
+  gulong client_connected_handler_id_;
+  gulong client_disconnected_handler_id_;
 };
 
 
@@ -62,48 +64,45 @@ shmdata_base_writer_clean_element (GstElement *element)
       }
 }
 
+void
+shmdata_base_writer_init_members (shmdata_base_writer_t *writer)
+{
+  writer->qserial_ = NULL;
+  writer->serializer_ = NULL;
+  writer->shmsink_ = NULL;
+  writer->parent_bin_ = NULL;
+  writer->socket_path_ = NULL;
+  writer->client_connected_handler_id_ = 0;
+  writer->client_disconnected_handler_id_ = 0;
+}
 
 void
 shmdata_base_writer_close (shmdata_base_writer_t *writer)
 {
-  if (writer == NULL)
+  if (NULL == writer)
     {
       g_debug("trying to close a NULL writer");
       return;
     }
-
-  if (writer->socket_path_ != NULL)
-    g_debug ("closing writer %s",writer->socket_path_);
+  if (0 != writer->client_connected_handler_id_)
+      g_signal_handler_disconnect (writer->shmsink_, 
+				   writer->client_connected_handler_id_);
+  if (0 != writer->client_disconnected_handler_id_)
+    g_signal_handler_disconnect (writer->shmsink_, 
+				 writer->client_disconnected_handler_id_);
+  shmdata_base_writer_clean_element (writer->qserial_); 
+  shmdata_base_writer_clean_element (writer->serializer_); 
+  shmdata_base_writer_clean_element (writer->shmsink_); 
+  if (NULL != writer->socket_path_)
+    {
+      g_debug ("closing writer %s", writer->socket_path_);
+      g_free (writer->socket_path_);
+    }
   else
     g_debug ("closing writer with no socket path");
-
-   shmdata_base_writer_clean_element (writer->qserial_); 
-   shmdata_base_writer_clean_element (writer->serializer_); 
-   shmdata_base_writer_clean_element (writer->shmsink_); 
-
-   /* if (GST_IS_ELEMENT (writer->qserial_))  */
-   /*     gst_element_set_state (writer->qserial_, GST_STATE_NULL);  */
-   /* if (GST_IS_ELEMENT (writer->serializer_))  */
-   /*   gst_element_set_state (writer->serializer_, GST_STATE_NULL);  */
-   /* if (GST_IS_ELEMENT (writer->shmsink_))  */
-   /*   gst_element_set_state (writer->shmsink_, GST_STATE_NULL);  */
-
-   /* if (GST_IS_BIN (writer->parent_bin_))  */
-   /*   gst_bin_remove_many (GST_BIN (writer->parent_bin_),  */
-   /* 			 writer->qserial_,  */
-   /* 			 writer->serializer_,  */
-   /* 			 writer->shmsink_,  */
-   /* 			 NULL);  */
-
-  g_debug ("writer closed (%s)",writer->socket_path_);
-  if (writer->socket_path_ != NULL)
-    {
-      g_free (writer->socket_path_);
-      writer->socket_path_ = NULL;
-    }
+  shmdata_base_writer_init_members (writer);
   g_free (writer);
-
-    
+  writer = NULL;
 }
 
 void
@@ -236,8 +235,7 @@ shmdata_base_writer_on_client_connected (GstElement *shmsink,
       return;
     }
   if (NULL != context->socket_path_)
-    g_debug ("new client connected (number %d, socket:%s)", 
-	     num, 
+    g_debug ("new client connected (socket:%s)", 
 	     context->socket_path_);
   GstPad *serializerSinkPad = gst_element_get_static_pad (context->serializer_,
 							  "sink");
@@ -287,24 +285,27 @@ shmdata_base_writer_make_shm_branch (shmdata_base_writer_t * writer,
   g_object_set (G_OBJECT (writer->shmsink_), "wait-for-connection", FALSE,
 		NULL);
 
-  g_signal_connect (writer->shmsink_, "client-connected",
-		    G_CALLBACK (shmdata_base_writer_on_client_connected),
-		    writer);
-
-  g_signal_connect (writer->shmsink_, "client-disconnected",
-		    G_CALLBACK (shmdata_base_writer_on_client_disconnected),
-		    writer);
+  writer->client_connected_handler_id_ = 
+    g_signal_connect (writer->shmsink_, "client-connected",
+		      G_CALLBACK (shmdata_base_writer_on_client_connected),
+		      writer);
+  writer->client_disconnected_handler_id_ = 
+    g_signal_connect (writer->shmsink_, "client-disconnected",
+		      G_CALLBACK (shmdata_base_writer_on_client_disconnected),
+		      writer);
 
   gst_bin_add_many (GST_BIN (writer->parent_bin_), writer->qserial_,
 		    writer->serializer_, writer->shmsink_, NULL);
 }
+
+
 
 shmdata_base_writer_t *
 shmdata_base_writer_new ()
 {
   shmdata_base_writer_t *writer =
     (shmdata_base_writer_t *) g_malloc0 (sizeof (shmdata_base_writer_t));
-
+  shmdata_base_writer_init_members (writer);
   return writer;
 }
 
@@ -337,17 +338,17 @@ shmdata_base_writer_plug (shmdata_base_writer_t *writer,
 			  GstElement *srcElement)
 {
   g_debug ("shmdata_base_writer_plug");
-
   if (!GST_IS_BIN (pipeline))
     {
-      g_critical ("shmdata_base_writer_plug, not a bin");
+      g_warning ("shmdata_base_writer_plug, not a bin");
       return;
     }
   writer->parent_bin_ = pipeline;
-
-  if (writer->socket_path_ == NULL) 
-        g_critical ("cannot start when socket path has not been set");
-
+  if (NULL == writer->socket_path_) 
+    {
+      g_warning ("cannot start when socket path has not been set");
+      return;
+    }
   shmdata_base_writer_make_shm_branch (writer, writer->socket_path_);
   shmdata_base_writer_link_branch (writer, srcElement);
   shmdata_base_writer_set_branch_state_as_pipeline (writer);
