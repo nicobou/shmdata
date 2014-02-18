@@ -217,51 +217,60 @@ namespace switcher
 		       gpointer user_data)
   {
     Logger *context = static_cast<Logger *>(user_data);
-
     if (context->mute_)
       return;
-    
     gboolean update_last_line = TRUE;
+    char *tmp_message = (NULL == message) ? g_strdup ("null-message") : g_strdup (message);
+    char *tmp_log_domain = (NULL == log_domain) ? g_strdup ("null-log-domain") : g_strdup (log_domain);
 
-     switch (log_level) {
-     case G_LOG_LEVEL_ERROR:
-       context->replace_last_line(g_strdup_printf ("%s-error: %s",log_domain, message));
+    switch (log_level) {
+    case G_LOG_LEVEL_ERROR:
+      context->replace_last_line(g_strdup_printf ("%s-error: %s",
+						  tmp_log_domain, 
+						  tmp_message));
        break;
      case G_LOG_LEVEL_CRITICAL:
-       context->replace_last_line(g_strdup_printf ("%s-critical: %s",log_domain, message));
+       context->replace_last_line(g_strdup_printf ("%s-critical: %s",
+						   tmp_log_domain, 
+						   tmp_message));
        break;
      case G_LOG_LEVEL_WARNING:
-       context->replace_last_line(g_strdup_printf ("%s-warning: %s",log_domain, message));
+       context->replace_last_line(g_strdup_printf ("%s-warning: %s",
+						   tmp_log_domain, 
+						   message));
        break;
      case G_LOG_LEVEL_MESSAGE:
        if (context->debug_ || context->verbose_)
-	   context->replace_last_line(g_strdup_printf ("%s-message: %s",log_domain, message));
+	   context->replace_last_line(g_strdup_printf ("%s-message: %s",
+						       tmp_log_domain, 
+						       tmp_message));
        else
 	 update_last_line = FALSE;
        break;
      case G_LOG_LEVEL_INFO:
        if (context->debug_ || context->verbose_)
-	   context->replace_last_line(g_strdup_printf ("%s-info: %s",log_domain, message));
+	   context->replace_last_line(g_strdup_printf ("%s-info: %s",
+						       tmp_log_domain, 
+						       tmp_message));
        else
 	 update_last_line = FALSE;
        break;
      case G_LOG_LEVEL_DEBUG:
        if (context->debug_)
-	 context->replace_last_line(g_strdup_printf ("%s-debug: %s",log_domain, message));
+	 context->replace_last_line(g_strdup_printf ("%s-debug: %s",
+						     tmp_log_domain, 
+						     tmp_message));
        else
 	 update_last_line = FALSE;
        break;
      default:
-       if (NULL != log_domain && NULL != message)
-	 context->replace_last_line(g_strdup_printf ("%s-unknown-level: %s",
-						     log_domain, 
-						     message));
-       else
-	 context->replace_last_line(g_strdup ("unknow error from logger"));
-       	 
+       context->replace_last_line(g_strdup_printf ("%s-unknown-level: %s",
+						   tmp_log_domain, 
+						   tmp_message));
        break;
      }
-
+    g_free (tmp_log_domain);
+    g_free (tmp_message);
      if (update_last_line)
        context->custom_props_->notify_property_changed (context->last_line_prop_);
 }
