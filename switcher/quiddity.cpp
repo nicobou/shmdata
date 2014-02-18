@@ -878,7 +878,7 @@ namespace switcher
     QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
     if ((bool) manager)
       return manager->get_g_main_context ();
-    g_print ("from -%s-: returning NULL\n", __FUNCTION__);
+    g_debug ("%s: returning NULL\n", __PRETTY_FUNCTION__);
     return NULL;
   }
 
