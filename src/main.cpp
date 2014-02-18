@@ -149,7 +149,7 @@ main (int argc,
   //manage logs from Glib
   manager->invoke_va ("internal_logger", "install_log_handler", NULL, "Glib", NULL);
   //manage logs from Glib-GObject
-  manager->invoke_va ("internal_logger", "install_log_handler", NULL, "Glib-GObject", NULL);
+  manager->invoke_va ("internal_logger", "install_log_handler", NULL, "GLib-GObject", NULL);
   
   if (quiet)
     manager->set_property ("internal_logger", "mute", "true");
