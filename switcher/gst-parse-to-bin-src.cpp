@@ -108,7 +108,7 @@ namespace switcher
     context->custom_props_->notify_property_changed (context->gst_launch_pipeline_spec_);
    }
   
-  gchar *
+  const gchar *
   GstParseToBinSrc::get_gst_launch_pipeline (void *user_data)
   {
     GstParseToBinSrc *context = static_cast <GstParseToBinSrc *> (user_data);

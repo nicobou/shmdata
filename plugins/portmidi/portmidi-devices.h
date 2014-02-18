@@ -50,7 +50,7 @@ namespace switcher
    
   protected:
     //info
-    static gchar *get_devices_description_json (gpointer user_data);
+    static const gchar *get_devices_description_json (gpointer user_data);
     GEnumValue input_devices_enum_[128];
     GEnumValue output_devices_enum_[128];
 

@@ -49,7 +49,6 @@ namespace switcher
     void set_sink_element (GstElement *sink_element);
     void set_on_first_data_hook (on_first_data_hook cb, void *user_data);
     std::string get_path ();
-    GstCaps *get_caps ();
     void start ();
     void stop ();
     //get json doc:

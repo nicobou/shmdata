@@ -80,7 +80,7 @@ namespace switcher
     std::condition_variable quit_cond_;
     
     bool make_elements ();
-    static gchar *get_capture_devices_json (void *user_data);
+    static const gchar *get_capture_devices_json (void *user_data);
     static gboolean async_get_pulse_devices (void *user_data);
     
     bool capture_device ();

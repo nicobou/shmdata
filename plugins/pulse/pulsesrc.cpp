@@ -426,7 +426,7 @@ namespace switcher
       }
   }
   
-  gchar *
+  const gchar *
   PulseSrc::get_capture_devices_json (void *user_data)
   {
     PulseSrc *context = static_cast<PulseSrc *> (user_data);

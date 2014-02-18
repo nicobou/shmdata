@@ -41,7 +41,7 @@ namespace switcher
 
     gboolean install_log_handler (const gchar *log_domain);
     gboolean remove_log_handler (const gchar *log_domain);
-    static gchar *get_last_line (void *user_data);
+    static const gchar *get_last_line (void *user_data);
     static gboolean get_mute (void *user_data);
     static void set_mute (gboolean mute, void *user_data);
     static gboolean get_debug (void *user_data);
@@ -57,10 +57,10 @@ namespace switcher
 			     gpointer user_data);
 
   private:
-    void replace_last_line(gchar *next_line);
     static bool installed_;
+
     bool i_am_the_one_;
-    gchar *last_line_;
+    std::string last_line_;
     bool mute_;
     bool debug_;
     bool verbose_;
@@ -71,6 +71,8 @@ namespace switcher
     GParamSpec *mute_prop_;
     GParamSpec *debug_prop_;
     GParamSpec *verbose_prop_;
+
+    void replace_last_line (std::string next_line);
   };
   
 }  // end of namespace

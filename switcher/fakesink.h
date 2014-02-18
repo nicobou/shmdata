@@ -52,7 +52,7 @@ namespace switcher
 			       gpointer user_data);
     static gboolean update_byte_rate (gpointer user_data); 
     static gint get_byte_rate (void *user_data);
-    static gchar * get_caps (void *user_data);
+    static const gchar *get_caps (void *user_data);
     //byte rate property 
     CustomPropertyHelper::ptr props_;
     GParamSpec *byte_rate_spec_;

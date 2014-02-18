@@ -182,7 +182,7 @@ namespace switcher
     context->custom_props_->notify_property_changed (context->client_name_spec_);
    }
   
-  gchar *
+  const gchar *
   JackAudioSource::get_client_name (void *user_data)
   {
     JackAudioSource *context = static_cast <JackAudioSource *> (user_data);

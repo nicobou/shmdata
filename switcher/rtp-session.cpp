@@ -788,10 +788,16 @@ namespace switcher
       }
     std::string id = internal_id_it->second;
     internal_id_.erase (internal_id_it);
-    internal_shmdata_writers_.erase (make_file_name ("send_rtp_src_"+id));
-    internal_shmdata_writers_.erase (make_file_name ("send_rtcp_src_"+id));
+    auto writer_it = internal_shmdata_writers_.find (make_file_name ("send_rtp_src_"+id));
+    if (internal_shmdata_writers_.end () != writer_it)
+      internal_shmdata_writers_.erase (writer_it);
+    writer_it = internal_shmdata_writers_.find (make_file_name ("send_rtcp_src_"+id));
+    if (internal_shmdata_writers_.end () != writer_it)
+      internal_shmdata_writers_.erase (writer_it);
     unregister_shmdata_reader (shmdata_socket_path);
-    internal_shmdata_readers_.erase (make_file_name ("recv_rtcp_sink_"+id));
+    auto reader_it = internal_shmdata_readers_.find (make_file_name ("recv_rtcp_sink_"+id));
+    if (internal_shmdata_readers_.end () != reader_it)
+      internal_shmdata_readers_.erase (reader_it);
     auto funnel_it = funnels_.find (shmdata_socket_path);
     if (funnels_.end () == funnel_it)
       {
@@ -950,7 +956,7 @@ namespace switcher
     g_debug ("on_no_more_pad");
   }
 
-  gchar *
+  const gchar *
   RtpSession::get_destinations_json (void *user_data)
   {
     //g_print ("%s\n", __PRETTY_FUNCTION__);

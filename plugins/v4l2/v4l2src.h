@@ -107,7 +107,7 @@ namespace switcher
 				    unsigned pixel_format,
 				    unsigned width,
 				    unsigned height);
-    static gchar *get_capture_devices_json (void *user_data);
+    static const gchar *get_capture_devices_json (void *user_data);
     
     //custom properties:
     CustomPropertyHelper::ptr custom_props_; 

@@ -691,7 +691,7 @@ namespace switcher
   }
 
  
-  gchar *
+  const gchar *
   V4L2Src::get_capture_devices_json (void *user_data)
   {
     V4L2Src *context = static_cast<V4L2Src *> (user_data);

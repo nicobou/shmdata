@@ -51,7 +51,7 @@ namespace switcher
     bool to_shmdata ();
     bool init_segment ();
     static void set_gst_launch_pipeline (const gchar *value, void *user_data);
-    static gchar *get_gst_launch_pipeline (void *user_data);
+    static const gchar *get_gst_launch_pipeline (void *user_data);
   };
 
 }  // end of namespace

@@ -85,7 +85,7 @@ namespace switcher
     context->custom_props_->notify_property_changed (context->shmdata_path_spec_);
   }
   
-  gchar *
+  const gchar *
   FakeShmdataWriter::get_shmdata_path (void *user_data)
   {
     FakeShmdataWriter *context = static_cast <FakeShmdataWriter *> (user_data);

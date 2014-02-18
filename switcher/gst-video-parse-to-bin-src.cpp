@@ -120,7 +120,7 @@ namespace switcher
     context->custom_props_->notify_property_changed (context->gst_launch_pipeline_spec_);
    }
   
-  gchar *
+  const gchar *
   GstVideoParseToBinSrc::get_gst_launch_pipeline (void *user_data)
   {
     GstVideoParseToBinSrc *context = static_cast <GstVideoParseToBinSrc *> (user_data);

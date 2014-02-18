@@ -34,7 +34,7 @@ namespace switcher
   public:
     typedef std::shared_ptr<CustomPropertyHelper> ptr;
     typedef void (*set_string_method)(const gchar *value, void *user_data);
-    typedef gchar *(*get_string_method)(void *user_data);
+    typedef const gchar *(*get_string_method)(void *user_data);
     typedef void (*set_boolean_method)(const gboolean value, void *user_data);
     typedef gboolean (*get_boolean_method)(void *user_data);
     typedef void (*set_int_method)(const gint value, void *user_data);

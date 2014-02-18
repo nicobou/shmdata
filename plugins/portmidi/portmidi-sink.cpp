@@ -178,7 +178,7 @@ namespace switcher
     shmdata_any_reader_start (context->reader_, context->shmdata_path_);
   }
  
-  gchar *
+  const gchar *
   PortMidiSink::get_shmdata_path (void *user_data)
   {
     PortMidiSink *context = static_cast <PortMidiSink *> (user_data);

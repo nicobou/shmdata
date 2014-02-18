@@ -216,12 +216,6 @@ namespace switcher
       shmdata_base_reader_set_sink (context, reader->funnel_);
   }
 
-  GstCaps *
-  ShmdataReader::get_caps () 
-  {
-    return caps_; 
-  }
-
   void
   ShmdataReader::make_json_description ()
   {

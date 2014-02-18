@@ -33,7 +33,7 @@ namespace switcher
 				       "Nicolas Bouillot");
   Logger::Logger () :
     i_am_the_one_ (false),
-    last_line_ (g_strdup ("")),
+    last_line_ (),
     mute_ (false),
     debug_ (true),
     verbose_ (true),
@@ -58,7 +58,6 @@ namespace switcher
 	installed_ = true;
 	i_am_the_one_ = true;
       }
-    set_name ("logger");
     
     last_line_prop_ = 
       custom_props_->make_string_property ("last-line", 
@@ -156,7 +155,6 @@ namespace switcher
       {
 	for (auto &it : handler_ids_)
 	  g_log_remove_handler (it.first.c_str (), it.second);
-	g_free (last_line_);
 	installed_ = false;
       }
   }
@@ -203,11 +201,9 @@ namespace switcher
   }
   
   void 
-  Logger::replace_last_line(gchar *next_line)
+  Logger::replace_last_line(std::string next_line)
   {
-    gchar *old_line = last_line_;
     last_line_ = next_line;
-    g_free (old_line);
   }
 
   void
@@ -220,66 +216,52 @@ namespace switcher
     if (context->mute_)
       return;
     gboolean update_last_line = TRUE;
-    char *tmp_message = (NULL == message) ? g_strdup ("null-message") : g_strdup (message);
-    char *tmp_log_domain = (NULL == log_domain) ? g_strdup ("null-log-domain") : g_strdup (log_domain);
-
+    std::string tmp_message = std::string ((NULL == message) ? "null-message" : message);
+    std::string tmp_log_domain = std::string ((NULL == log_domain) ? "null-log-domain" : log_domain);
+    std::string tmp_level = std::string ("unknown");
     switch (log_level) {
     case G_LOG_LEVEL_ERROR:
-      context->replace_last_line(g_strdup_printf ("%s-error: %s",
-						  tmp_log_domain, 
-						  tmp_message));
-       break;
-     case G_LOG_LEVEL_CRITICAL:
-       context->replace_last_line(g_strdup_printf ("%s-critical: %s",
-						   tmp_log_domain, 
-						   tmp_message));
-       break;
-     case G_LOG_LEVEL_WARNING:
-       context->replace_last_line(g_strdup_printf ("%s-warning: %s",
-						   tmp_log_domain, 
-						   message));
-       break;
-     case G_LOG_LEVEL_MESSAGE:
-       if (context->debug_ || context->verbose_)
-	   context->replace_last_line(g_strdup_printf ("%s-message: %s",
-						       tmp_log_domain, 
-						       tmp_message));
-       else
-	 update_last_line = FALSE;
-       break;
-     case G_LOG_LEVEL_INFO:
-       if (context->debug_ || context->verbose_)
-	   context->replace_last_line(g_strdup_printf ("%s-info: %s",
-						       tmp_log_domain, 
-						       tmp_message));
-       else
-	 update_last_line = FALSE;
-       break;
-     case G_LOG_LEVEL_DEBUG:
-       if (context->debug_)
-	 context->replace_last_line(g_strdup_printf ("%s-debug: %s",
-						     tmp_log_domain, 
-						     tmp_message));
-       else
-	 update_last_line = FALSE;
-       break;
-     default:
-       context->replace_last_line(g_strdup_printf ("%s-unknown-level: %s",
-						   tmp_log_domain, 
-						   tmp_message));
-       break;
-     }
-    g_free (tmp_log_domain);
-    g_free (tmp_message);
-     if (update_last_line)
-       context->custom_props_->notify_property_changed (context->last_line_prop_);
-}
+      tmp_level = std::string ("error");
+      break;
+    case G_LOG_LEVEL_CRITICAL:
+      tmp_level = std::string ("critical");
+      break;
+    case G_LOG_LEVEL_WARNING:
+      tmp_level = std::string ("warning");
+      break;
+    case G_LOG_LEVEL_MESSAGE:
+      if (context->debug_ || context->verbose_)
+	tmp_level = std::string ("message");
+      else
+	update_last_line = FALSE;
+      break;
+    case G_LOG_LEVEL_INFO:
+      if (context->debug_ || context->verbose_)
+	tmp_level = std::string ("info");
+      else
+	update_last_line = FALSE;
+      break;
+    case G_LOG_LEVEL_DEBUG:
+      if (context->debug_)
+	tmp_level = std::string ("debug");
+      else
+	update_last_line = FALSE;
+      break;
+    default:
+      break;
+    }
+    if (update_last_line)
+      {
+	context->replace_last_line (std::string (tmp_log_domain + "-" + tmp_level + ": " + tmp_message));
+	context->custom_props_->notify_property_changed (context->last_line_prop_);
+      }
+  }
 
-  gchar *
+  const gchar *
   Logger::get_last_line (void *user_data)
   {
     Logger *context = static_cast<Logger *> (user_data);
-    return context->last_line_;
+    return g_strdup (context->last_line_.c_str ());
   }
 
   

@@ -120,7 +120,7 @@ namespace switcher
     context->custom_props_->notify_property_changed (context->client_name_spec_);
    }
   
-  gchar *
+  const gchar *
   JackSink::get_client_name (void *user_data)
   {
     JackSink *context = static_cast <JackSink *> (user_data);

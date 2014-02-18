@@ -441,7 +441,7 @@ namespace switcher
       }
   }
   
-  gchar *
+  const gchar *
   PulseSink::get_devices_json (void *user_data)
   {
     //g_print ("%s\n", __PRETTY_FUNCTION__); 

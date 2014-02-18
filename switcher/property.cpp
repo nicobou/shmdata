@@ -138,11 +138,12 @@ namespace switcher
   Property::unsubscribe (Callback cb, void *user_data)
   {
     std::pair <Callback, void *> subscribe_id = std::make_pair (cb, user_data);
-    if (subscribed_handlers_.find(subscribe_id) == subscribed_handlers_.end ())
+    auto it = subscribed_handlers_.find(subscribe_id); 
+    if (subscribed_handlers_.end () == it)
       return false;
     
     g_signal_handler_disconnect (object_, subscribed_handlers_[subscribe_id]);
-    subscribed_handlers_.erase (subscribe_id);
+    subscribed_handlers_.erase (it);
     return true;
   }
 

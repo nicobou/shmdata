@@ -77,7 +77,7 @@ namespace switcher
 
     bool make_elements ();
     bool build_elements ();
-    static gchar *get_devices_json (void *user_data);
+    static const gchar *get_devices_json (void *user_data);
     void make_device_description (pa_context *pulse_context);
     void make_json_description ();
     bool init_segment ();

@@ -252,7 +252,9 @@ namespace switcher
 
   bool Segment::unregister_shmdata_reader (std::string shmdata_path)
   {
-    shmdata_readers_.erase (shmdata_path);
+    auto it = shmdata_readers_.find (shmdata_path);
+    if (shmdata_readers_.end () != it)
+      shmdata_readers_.erase (it);
     update_shmdata_readers_description ();
     GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
     return true;
@@ -260,7 +262,9 @@ namespace switcher
 
   bool Segment::unregister_shmdata_writer (std::string shmdata_path)
   {
-    shmdata_writers_.erase (shmdata_path);
+    auto it = shmdata_writers_.find (shmdata_path);
+    if (shmdata_writers_.end () != it)
+      shmdata_writers_.erase (it);
     update_shmdata_writers_description ();
     GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_writers_description_);
     return true;

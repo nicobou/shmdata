@@ -57,7 +57,7 @@ namespace switcher
    static void set_num_channels (const gint value, void *user_data);
    static gint get_num_channels (void *user_data);
    static void set_client_name (const gchar *value, void *user_data);
-   static gchar *get_client_name (void *user_data);
+   static const gchar *get_client_name (void *user_data);
   };
 
 }  // end of namespace

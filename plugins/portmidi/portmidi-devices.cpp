@@ -398,7 +398,7 @@ namespace switcher
 	}
     }
 
-  gchar *
+  const gchar *
   PortMidi::get_devices_description_json (gpointer user_data)
   {
     PortMidi *context = static_cast <PortMidi *> (user_data);

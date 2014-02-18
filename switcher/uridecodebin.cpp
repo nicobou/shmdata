@@ -546,7 +546,7 @@ namespace switcher
     context->custom_props_->notify_property_changed (context->uri_spec_);
   }
 
-  gchar *
+  const gchar *
   Uridecodebin::get_uri (void *user_data)
   {
     Uridecodebin *context = static_cast <Uridecodebin *> (user_data);

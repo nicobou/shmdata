@@ -51,7 +51,7 @@ namespace switcher
     void on_shmdata_disconnect ();
     void on_shmdata_connect (std::string /* shmdata_sochet_path */) ;
     static void set_client_name (const gchar *value, void *user_data);
-    static gchar *get_client_name (void *user_data);
+    static const gchar *get_client_name (void *user_data);
   };
 
 }  // end of namespace
