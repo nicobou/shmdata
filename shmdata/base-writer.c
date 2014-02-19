@@ -321,7 +321,6 @@ gboolean
 shmdata_base_writer_set_path (shmdata_base_writer_t *writer,
 			      const char *socket_path)
 {
-  g_mutex_lock (&writer->mutex_);
   GFile *shmfile = g_file_new_for_commandline_arg (socket_path);
   if (g_file_query_exists (shmfile, NULL))
     {
@@ -331,6 +330,7 @@ shmdata_base_writer_set_path (shmdata_base_writer_t *writer,
       return FALSE; 
     }
   g_object_unref (shmfile);
+  g_mutex_lock (&writer->mutex_);
   writer->socket_path_ = g_strdup (socket_path);;
   g_mutex_unlock (&writer->mutex_);
   return TRUE;
