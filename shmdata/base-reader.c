@@ -147,8 +147,6 @@ shmdata_base_reader_on_type_found (GstElement* typefind,
   if (NULL != reader->caps_)
     gst_caps_unref (reader->caps_);
   reader->caps_ = gst_caps_copy (caps);
-  g_debug ("new caps for base reader: %"GST_PTR_FORMAT, 
-	   reader->caps_);
   if (NULL != reader->on_have_type_)
     {
       g_mutex_unlock (&reader->mutex_);// give hand to user
