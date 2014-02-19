@@ -49,6 +49,8 @@ struct shmdata_base_reader_
   gboolean timereset_;
   GstClockTime timeshift_;
   GMainContext *g_main_context_;
+  GMutex mutex_;//thread safe
+  gulong have_type_handler_id_;
 };
 
 void 
@@ -77,6 +79,8 @@ shmdata_base_reader_init_members (shmdata_base_reader_t *reader)
   reader->timereset_ = FALSE;
   reader->timeshift_ = 0;
   reader-> g_main_context_ = NULL;
+  g_mutex_init (&reader->mutex_);
+  reader->have_type_handler_id_ = 0;
 }
 
 //FIXME this should be part of the library
@@ -122,6 +126,10 @@ gboolean
 shmdata_base_reader_clean_source (gpointer user_data)
 {
   shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
+  if (0 != context->have_type_handler_id_)
+    g_signal_handler_disconnect (context->typefind_, 
+				 context->have_type_handler_id_);
+  context->have_type_handler_id_ = 0;
   shmdata_base_reader_clean_element (context->typefind_);
   shmdata_base_reader_clean_element (context->deserializer_);
   shmdata_base_reader_clean_element (context->source_);
@@ -135,21 +143,32 @@ shmdata_base_reader_on_type_found (GstElement* typefind,
 				   gpointer user_data)
 {
   shmdata_base_reader_t *reader = (shmdata_base_reader_t *)user_data; 
+  g_mutex_lock (&reader->mutex_);
   if (NULL != reader->caps_)
     gst_caps_unref (reader->caps_);
   reader->caps_ = gst_caps_copy (caps);
   g_debug ("new caps for base reader: %"GST_PTR_FORMAT, 
 	   reader->caps_);
   if (NULL != reader->on_have_type_)
-    reader->on_have_type_ (reader,
-			   reader->caps_,
-			   reader->on_have_type_userData_);
+    {
+      g_mutex_unlock (&reader->mutex_);// give hand to user
+      reader->on_have_type_ (reader,
+			     reader->caps_,
+			     reader->on_have_type_userData_);
+      g_mutex_lock (&reader->mutex_);// getting hand back
+    }
+  g_mutex_unlock (&reader->mutex_);
 }
 
 GstCaps *
 shmdata_base_reader_get_caps (shmdata_base_reader_t *reader)
 {
-  return reader->caps_;
+  if (NULL == reader || NULL == reader->caps_)
+    return NULL;
+  g_mutex_lock (&reader->mutex_);
+  GstCaps *value = gst_caps_copy (reader->caps_);
+  g_mutex_unlock (&reader->mutex_);
+  return value;
 }
 
 gboolean
@@ -188,63 +207,67 @@ shmdata_base_reader_reset_time (GstPad * pad,
 gboolean
 shmdata_base_reader_attach (shmdata_base_reader_t *reader)
 {
+  g_mutex_lock (&reader->mutex_);
   if (reader->attached_)
-    return FALSE;
+    {
+      g_mutex_unlock (&reader->mutex_);
+      return FALSE;
+    }
   reader->attached_ = TRUE;
   reader->source_ = gst_element_factory_make ("shmsrc", NULL);
   reader->deserializer_ = gst_element_factory_make ("gdpdepay", NULL);
   GstPad *pad = gst_element_get_pad(reader->deserializer_, "src");
   gst_pad_add_data_probe (pad,
-              G_CALLBACK (shmdata_base_reader_reset_time),
-              reader);
+			  G_CALLBACK (shmdata_base_reader_reset_time),
+			  reader);
   reader->typefind_ = gst_element_factory_make ("typefind", NULL);
   if (NULL == reader->typefind_)
     {
       g_warning ("no typefind !");
+      g_mutex_unlock (&reader->mutex_);
       return FALSE;
     }
-  g_signal_connect (reader->typefind_, "have-type", G_CALLBACK (shmdata_base_reader_on_type_found), reader);
-
+  reader->have_type_handler_id_ =
+    g_signal_connect (reader->typefind_, 
+		      "have-type", 
+		      G_CALLBACK (shmdata_base_reader_on_type_found), 
+		      reader);
   if (reader->do_absolute_)
     reader->timereset_ = FALSE;
-
   if (!reader->source_)
     {
       g_critical ("Reader: \"shmsrc\" element could not be created, consider installing libshmdata.");
+      g_mutex_unlock (&reader->mutex_);
       return FALSE;
     }
   if (!reader->deserializer_)
     {
       g_critical ("Reader: \"gdpdepay\" element could not be created.");
+      g_mutex_unlock (&reader->mutex_);
       return FALSE;
     }
   if (!reader->typefind_)
     {
       g_critical ("Reader: \"typefind\" element could not be created.");
+      g_mutex_unlock (&reader->mutex_);
       return FALSE;
     }
-
   g_object_set_data (G_OBJECT (reader->source_), 
 		     "shmdata_base_reader",
 		     (gpointer)reader);
-
   g_object_set_data (G_OBJECT (reader->deserializer_), 
 		     "shmdata_base_reader",
 		     (gpointer)reader);
-
   g_object_set (G_OBJECT (reader->source_), "socket-path",
 		reader->socket_name_, NULL);
-
   gst_bin_add_many (GST_BIN (reader->bin_),
 		    reader->source_, reader->deserializer_, reader->typefind_, NULL);
-
   reader->src_pad_ = gst_element_get_static_pad (reader->typefind_,
-						     "src");
+						 "src");
   reader->sink_pad_ = gst_element_get_compatible_pad (reader->sink_,
-						     reader->src_pad_,
-						     GST_PAD_CAPS
-						     (reader->src_pad_));
-
+						      reader->src_pad_,
+						      GST_PAD_CAPS
+						      (reader->src_pad_));
   gst_element_link_many (reader->source_, 
 			 reader->deserializer_,
 			 reader->typefind_,
@@ -253,9 +276,9 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
   gst_element_set_state (reader->typefind_,GST_STATE_TARGET(reader->bin_));
   gst_element_set_state (reader->deserializer_,GST_STATE_TARGET(reader->bin_));
   gst_element_set_state (reader->source_,GST_STATE_TARGET(reader->bin_));
+  g_mutex_unlock (&reader->mutex_);
   return FALSE; //for g_idle_add
 }
-
 
 gboolean 
 shmdata_base_reader_poll_shmdata_path (void *user_data)
@@ -266,7 +289,6 @@ shmdata_base_reader_poll_shmdata_path (void *user_data)
       return FALSE;
     }
   shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
-  
   if (g_file_test(context->socket_name_, G_FILE_TEST_EXISTS) && !context->attached_)  
     {
       if (!context->initialized_)
@@ -289,7 +311,6 @@ shmdata_base_reader_file_system_monitor_change (GFileMonitor *monitor,
 {
   char *filename = g_file_get_path (file);
   shmdata_base_reader_t *context = (shmdata_base_reader_t *) user_data;
-
   switch (type)
     {
     case G_FILE_MONITOR_EVENT_CREATED:
@@ -341,7 +362,9 @@ shmdata_base_reader_detach (shmdata_base_reader_t * reader)
 gboolean
 shmdata_base_reader_recover_from_deserializer_error (shmdata_base_reader_t * reader)
 {
+  g_mutex_unlock (&reader->mutex_);
   shmdata_base_reader_detach (reader);
+  g_mutex_unlock (&reader->mutex_);
   shmdata_base_reader_attach (reader);
   return FALSE; //for g_idle_add use
 }
@@ -375,7 +398,7 @@ shmdata_base_reader_process_error (shmdata_base_reader_t *reader,
 		 error->message, 
 		 GST_OBJECT_NAME (msg->src));
 	g_free (debug);
-	if (g_strcmp0
+  	if (g_strcmp0
 	    (GST_ELEMENT_NAME (reader->source_),
 	     GST_OBJECT_NAME (msg->src)) == 0)
 	  {
@@ -456,8 +479,10 @@ shmdata_base_reader_set_callback (shmdata_base_reader_t *reader,
 				  shmdata_base_reader_on_first_data cb,
 				  void *user_data)
 {
+  g_mutex_lock (&reader->mutex_);
   reader->on_first_data_ = cb;
   reader->on_first_data_userData_ = user_data;
+  g_mutex_unlock (&reader->mutex_);
 }
 
 void 
@@ -465,14 +490,18 @@ shmdata_base_reader_set_on_have_type_callback (shmdata_base_reader_t *reader,
 					       shmdata_base_reader_on_have_type cb,
 					       void *user_data)
 {
+  g_mutex_lock (&reader->mutex_);
   reader->on_have_type_ = cb;
   reader->on_have_type_userData_ = user_data;
+  g_mutex_unlock (&reader->mutex_);
 }
 void 
 shmdata_base_reader_install_sync_handler (shmdata_base_reader_t *reader,
 					  gboolean install)
 {
+  g_mutex_lock (&reader->mutex_);
   reader->install_sync_handler_ = install;
+  g_mutex_unlock (&reader->mutex_);
 }
 
 gboolean 
@@ -483,7 +512,6 @@ shmdata_base_reader_set_bin (shmdata_base_reader_t * reader, GstElement *bin)
       g_warning ("base reader: not a bin");
       return FALSE;
     }
-  
   reader->bin_ = bin;
   return TRUE;
 }
@@ -503,6 +531,7 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
 {
   if (NULL == reader)
     return FALSE;
+  g_mutex_lock (&reader->mutex_);
   destroy_polling_g_source (reader);
   if (reader->install_sync_handler_)
     {
@@ -523,7 +552,8 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
       else
 	{
 	  g_warning ("no top level pipeline found when starting, cannot install sync_handler");
-	  return FALSE;
+	  g_mutex_unlock (&reader->mutex_);
+  	  return FALSE;
 	}
     }
   reader->socket_name_ = g_strdup (socketPath);
@@ -534,8 +564,10 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
       g_debug ("existing shmdata, attaching (%s)", 
 	       reader->socket_name_);
       reader->initialized_ = TRUE;
+      g_mutex_unlock (&reader->mutex_);//give hand to user
       reader->on_first_data_ (reader, reader->on_first_data_userData_);
-      shmdata_base_reader_attach (reader);
+      shmdata_base_reader_attach (reader); //attach is acquiring mutex
+      g_mutex_lock (&reader->mutex_);//get hand back
     }
   else
     g_debug ("monitoring %s", 
@@ -548,9 +580,13 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
   /* 		 reader); */
   //GSource *source;
   reader->polling_g_source_ = g_timeout_source_new (500);
-  g_source_set_callback(reader->polling_g_source_, shmdata_base_reader_poll_shmdata_path, reader, NULL);
-  g_source_attach(reader->polling_g_source_, reader->g_main_context_);
-  g_source_unref(reader->polling_g_source_);
+  g_source_set_callback (reader->polling_g_source_, 
+			 shmdata_base_reader_poll_shmdata_path, 
+			 reader, 
+			 NULL);
+  g_source_attach (reader->polling_g_source_, 
+		  reader->g_main_context_);
+  g_source_unref (reader->polling_g_source_);
 #else
   //FIXME fix monitoring with custom gmaincontext... find how to use "g_main_context_push_thread_default"... 
   if (reader->g_main_context_ != NULL)
@@ -571,6 +607,7 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
       g_warning ("monitor directory failled: %s",
 		 error->message);
       g_error_free (error);
+      g_mutex_unlock (&reader->mutex_);
       return FALSE;
     }
   g_signal_connect (reader->dirMonitor_,
@@ -580,7 +617,8 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
   if (reader->g_main_context_ != NULL)
     g_main_context_pop_thread_default (reader->g_main_context_);
 #endif
-   g_debug ("shmdata reader started (%s)", reader->socket_name_); 
+  g_debug ("shmdata reader started (%s)", reader->socket_name_); 
+  g_mutex_unlock (&reader->mutex_);
   return TRUE;
 }
 
@@ -598,14 +636,14 @@ shmdata_base_reader_init (const char *socketName,
   GstElement *pipe = reader->bin_;
   
   while (pipe != NULL && !GST_IS_PIPELINE (pipe))
-      pipe = GST_ELEMENT_PARENT (pipe);
+    pipe = GST_ELEMENT_PARENT (pipe);
 
   if( GST_IS_PIPELINE (pipe))
-      {
-	  GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipe));  
-	  gst_bus_set_sync_handler (bus, shmdata_base_reader_message_handler, NULL);  
-	  gst_object_unref (bus);  
-      }
+    {
+      GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipe));  
+      gst_bus_set_sync_handler (bus, shmdata_base_reader_message_handler, NULL);  
+      gst_object_unref (bus);  
+    }
   /* else */
   /*     g_debug ("not watching the bus. Application should handle error messages (GST_RESOURCE_ERROR_READ from shmsrc) and call shmdata_base_reader_process_error.\n"); */
   
@@ -634,24 +672,32 @@ shmdata_base_reader_init (const char *socketName,
 
 void
 shmdata_base_reader_set_sink (shmdata_base_reader_t * reader,
-            			      GstElement * sink)
+			      GstElement * sink)
 {
+  g_mutex_lock (&reader->mutex_);
   reader->sink_ = sink;
+  g_mutex_unlock (&reader->mutex_);
 }
 
 void
 shmdata_base_reader_set_absolute_timestamp (shmdata_base_reader_t * reader,
                                             gboolean do_absolute)
 {
+  g_mutex_lock (&reader->mutex_);
   reader->do_absolute_ = do_absolute;
+  g_mutex_unlock (&reader->mutex_);
 }
 
 void
 shmdata_base_reader_close (shmdata_base_reader_t * reader)
 {
-  destroy_polling_g_source (reader);
-  if (reader != NULL)
+  if (NULL != reader)
     {
+      g_mutex_lock (&reader->mutex_);
+      destroy_polling_g_source (reader);
+      if (0 != reader->have_type_handler_id_)
+	g_signal_handler_disconnect (reader->typefind_, 
+				     reader->have_type_handler_id_);
       if (reader->socket_name_ != NULL)
 	g_free (reader->socket_name_);
       shmdata_base_reader_detach (reader);
@@ -661,6 +707,8 @@ shmdata_base_reader_close (shmdata_base_reader_t * reader)
 	g_object_unref (reader->dirMonitor_);
       if (NULL != reader->caps_)
 	gst_caps_unref (reader->caps_);
+      g_mutex_unlock (&reader->mutex_);
+      g_mutex_clear (&reader->mutex_);
       shmdata_base_reader_init_members (reader);
       g_free (reader);
       reader = NULL;
@@ -672,6 +720,8 @@ gboolean
 shmdata_base_reader_set_g_main_context (shmdata_base_reader_t *reader, 
 					GMainContext *context)
 {
+  g_mutex_lock (&reader->mutex_);
   reader->g_main_context_ = context;
+  g_mutex_unlock (&reader->mutex_);
 }
 

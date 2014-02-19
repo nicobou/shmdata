@@ -218,7 +218,7 @@ extern "C"
 
 
   /** 
-   * Get the caps of the data passing through the shmdata reader.
+   * Get a copy of the caps describing data passing through the shmdata reader.
    * 
    * @param reader is the base reader 
    *
