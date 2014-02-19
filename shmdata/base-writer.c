@@ -23,8 +23,8 @@ struct shmdata_base_writer_
   gchar *socket_path_;
   gulong client_connected_handler_id_;
   gulong client_disconnected_handler_id_;
+  GMutex mutex_;//thread safe
 };
-
 
 //FIXME this should be part of the library
 void
@@ -74,6 +74,7 @@ shmdata_base_writer_init_members (shmdata_base_writer_t *writer)
   writer->socket_path_ = NULL;
   writer->client_connected_handler_id_ = 0;
   writer->client_disconnected_handler_id_ = 0;
+  g_mutex_init (&writer->mutex_);
 }
 
 void
@@ -84,9 +85,10 @@ shmdata_base_writer_close (shmdata_base_writer_t *writer)
       g_debug("trying to close a NULL writer");
       return;
     }
+  g_mutex_lock (&writer->mutex_);
   if (0 != writer->client_connected_handler_id_)
-      g_signal_handler_disconnect (writer->shmsink_, 
-				   writer->client_connected_handler_id_);
+    g_signal_handler_disconnect (writer->shmsink_, 
+				 writer->client_connected_handler_id_);
   if (0 != writer->client_disconnected_handler_id_)
     g_signal_handler_disconnect (writer->shmsink_, 
 				 writer->client_disconnected_handler_id_);
@@ -100,6 +102,8 @@ shmdata_base_writer_close (shmdata_base_writer_t *writer)
     }
   else
     g_debug ("closing writer with no socket path");
+  g_mutex_unlock (&writer->mutex_);
+  g_mutex_clear (&writer->mutex_);
   shmdata_base_writer_init_members (writer);
   g_free (writer);
   writer = NULL;
@@ -111,7 +115,9 @@ shmdata_base_writer_link_branch (shmdata_base_writer_t * writer,
 {
   gst_element_link_many (srcElement,
 			 writer->qserial_,
-			 writer->serializer_, writer->shmsink_, NULL);
+			 writer->serializer_, 
+			 writer->shmsink_, 
+			 NULL);
 }
 
 void
@@ -150,7 +156,8 @@ shmdata_base_writer_set_branch_state_as_pipeline (shmdata_base_writer_t *
 
 void
 shmdata_base_writer_pad_unblocked (GstPad * pad,
-				   gboolean blocked, gpointer user_data)
+				   gboolean blocked, 
+				   gpointer user_data)
 {
   shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
   if (blocked)
@@ -165,30 +172,24 @@ shmdata_base_writer_switch_to_new_serializer (GstPad *pad,
   shmdata_base_writer_t *context = (shmdata_base_writer_t *) user_data;
 
   g_debug ("base_writer switch_to_new_serializer");
-
+  g_mutex_lock (&context->mutex_);
   //unlink the old serializer
   GstPad *srcPad = gst_element_get_static_pad (context->serializer_, "src");
   GstPad *srcPadPeer = gst_pad_get_peer (srcPad);
   if (!gst_pad_unlink (srcPad, srcPadPeer))
     g_critical ("Error: cannot unlink src");
-
   GstPad *sinkPad = gst_element_get_static_pad (context->serializer_, "sink");
   GstPad *sinkPadPeer = gst_pad_get_peer (sinkPad);
   if (!gst_pad_unlink (sinkPadPeer, sinkPad))
     g_critical ("Error: cannot unlink sink");
-
   gst_object_unref (srcPad);
   gst_object_unref (sinkPad);
-
   GstBin *bin = GST_BIN (GST_ELEMENT_PARENT (context->serializer_));
-
   gst_element_set_state (context->serializer_, GST_STATE_NULL); 
   gst_bin_remove (GST_BIN (bin), context->serializer_);
-
   //creating and linking the new serializer
   context->serializer_ = gst_element_factory_make ("gdppay", NULL);
   gst_bin_add (bin, context->serializer_);
-  
   GstPad *newSinkPad =
     gst_element_get_static_pad (context->serializer_, "sink");
   GstPad *newSrcPad =
@@ -197,14 +198,11 @@ shmdata_base_writer_switch_to_new_serializer (GstPad *pad,
   gst_pad_link (sinkPadPeer, newSinkPad);
   gst_object_unref (newSinkPad);
   gst_object_unref (newSrcPad);
-
   gst_object_unref (srcPadPeer);
   gst_object_unref (sinkPadPeer);
-
   if (!gst_element_set_state (context->serializer_,
 			      GST_STATE_TARGET(GST_ELEMENT_PARENT(context->serializer_))))
-      g_critical ("Error: issue changing newSerializer state");
-  
+    g_critical ("Error: issue changing newSerializer state");
 
   //unblocking data stream
   gst_pad_set_blocked_async (pad,
@@ -212,6 +210,8 @@ shmdata_base_writer_switch_to_new_serializer (GstPad *pad,
 			     (GstPadBlockCallback)
 			     (shmdata_base_writer_pad_unblocked),
 			     (void *) context);
+  g_mutex_unlock (&context->mutex_);
+
 }
 
 void
@@ -234,6 +234,7 @@ shmdata_base_writer_on_client_connected (GstElement *shmsink,
 	       __FUNCTION__);
       return;
     }
+  g_mutex_lock (&context->mutex_);
   if (NULL != context->socket_path_)
     g_debug ("new client connected (socket:%s)", 
 	     context->socket_path_);
@@ -247,12 +248,13 @@ shmdata_base_writer_on_client_connected (GstElement *shmsink,
       g_warning ("%s: peer pad is not a pad, cannot block");
       return;
     }
-    gst_pad_set_blocked_async (padToBlock,
+  gst_pad_set_blocked_async (padToBlock,
 			     TRUE,
 			     (GstPadBlockCallback)
 			     (shmdata_base_writer_switch_to_new_serializer),
 			     (void *) context);
   gst_object_unref (padToBlock);
+  g_mutex_unlock (&context->mutex_);
 }
 
 void
@@ -316,19 +318,21 @@ shmdata_base_writer_init ()
 }
 
 gboolean 
-shmdata_base_writer_set_path (shmdata_base_writer_t * writer,
+shmdata_base_writer_set_path (shmdata_base_writer_t *writer,
 			      const char *socket_path)
 {
+  g_mutex_lock (&writer->mutex_);
   GFile *shmfile = g_file_new_for_commandline_arg (socket_path);
   if (g_file_query_exists (shmfile, NULL))
     {
       g_object_unref (shmfile);
       g_debug ("file %s exists, could be a writer or a file to delete",
-		  socket_path);
+	       socket_path);
       return FALSE; 
     }
   g_object_unref (shmfile);
   writer->socket_path_ = g_strdup (socket_path);;
+  g_mutex_unlock (&writer->mutex_);
   return TRUE;
 }
 
@@ -337,7 +341,11 @@ shmdata_base_writer_plug (shmdata_base_writer_t *writer,
 			  GstElement *pipeline, 
 			  GstElement *srcElement)
 {
-  g_debug ("shmdata_base_writer_plug");
+  if (NULL == writer)
+    {
+      g_debug ("cannot plug a NULL writer");
+      return;
+    }
   if (!GST_IS_BIN (pipeline))
     {
       g_warning ("shmdata_base_writer_plug, not a bin");
@@ -349,34 +357,35 @@ shmdata_base_writer_plug (shmdata_base_writer_t *writer,
       g_warning ("cannot start when socket path has not been set");
       return;
     }
+  g_mutex_lock (&writer->mutex_);
   shmdata_base_writer_make_shm_branch (writer, writer->socket_path_);
   shmdata_base_writer_link_branch (writer, srcElement);
   shmdata_base_writer_set_branch_state_as_pipeline (writer);
-  g_debug ("shmdata_base_writer_plug (done) ");
+  g_mutex_unlock (&writer->mutex_);
 }
 
 void
-shmdata_base_writer_plug_pad (shmdata_base_writer_t * writer,
-			      GstElement * pipeline, 
-			      GstPad * srcPad)
+shmdata_base_writer_plug_pad (shmdata_base_writer_t *writer,
+			      GstElement *pipeline, 
+			      GstPad *srcPad)
 {
-  
-  g_debug ("shmdata_base_writer_plug_pad ");
-
+  if (NULL == writer)
+    {
+      g_debug ("cannot plug a NULL writer");
+      return;
+    }
   if (!GST_IS_BIN (pipeline))
     {
       g_critical ("shmdata_base_writer_plug, not a bin");
       return;
     }
-  writer->parent_bin_ = pipeline; //TODO get rid of the pipeline arg ?
-
+  writer->parent_bin_ = pipeline; //TODO get rid of the pipeline arg
   if (writer->socket_path_ == NULL) 
     g_critical ("cannot start when socket path has not been set");
-
+  g_mutex_lock (&writer->mutex_);
   shmdata_base_writer_make_shm_branch (writer, writer->socket_path_);
   shmdata_base_writer_link_branch_pad (writer, srcPad);
   shmdata_base_writer_set_branch_state_as_pipeline (writer);
-
-  g_debug ("shmdata_base_writer_plug_pad (done)");
+  g_mutex_unlock (&writer->mutex_);
 }
 
