@@ -42,7 +42,8 @@ namespace switcher
     last_line_prop_ (NULL),
     mute_prop_ (NULL),
     debug_prop_ (NULL),
-    verbose_prop_ (NULL)
+    verbose_prop_ (NULL),
+    last_line_mutex_ ()
   {}
   
   bool
@@ -203,6 +204,7 @@ namespace switcher
   void 
   Logger::replace_last_line(std::string next_line)
   {
+    std::unique_lock<std::mutex> lock (last_line_mutex_); 
     last_line_ = next_line;
   }
 
@@ -261,6 +263,7 @@ namespace switcher
   Logger::get_last_line (void *user_data)
   {
     Logger *context = static_cast<Logger *> (user_data);
+    std::unique_lock<std::mutex> lock (context->last_line_mutex_); 
     return context->last_line_.c_str ();
   }
 

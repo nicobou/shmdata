@@ -25,6 +25,7 @@
 #include <unordered_map>
 #include "quiddity.h"
 #include "custom-property-helper.h"
+#include <mutex>
 
 namespace switcher
 {
@@ -71,7 +72,7 @@ namespace switcher
     GParamSpec *mute_prop_;
     GParamSpec *debug_prop_;
     GParamSpec *verbose_prop_;
-
+    std::mutex last_line_mutex_;
     void replace_last_line (std::string next_line);
   };
   
