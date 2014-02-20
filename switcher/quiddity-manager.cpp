@@ -1037,7 +1037,9 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     {
       std::unique_lock <std::mutex> lock (execution_done_mutex_);
       g_async_queue_push (command_queue_, command_.get ());
+      //g_print ("PUSHED - %s\n", builder->get_string(true).c_str ());
       execution_done_cond_.wait (lock);
+      //g_print ("DONE - %s\n", builder->get_string(true).c_str ());
     }
   }
 
