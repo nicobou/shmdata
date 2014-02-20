@@ -387,12 +387,15 @@ shmdata_base_reader_process_error (shmdata_base_reader_t *reader,
     {
     case GST_MESSAGE_ERROR:
       {
-	gchar *debug;
-	GError *error;
+	gchar *debug = NULL;
+	GError *error = NULL;
 	gst_message_parse_error (msg, &error, &debug);
-	g_debug ("error: %s (%s)",
-		 error->message, 
-		 GST_OBJECT_NAME (msg->src));
+	if (NULL != error && NULL != error->message)
+	  g_debug ("error: %s (%s)",
+		   error->message, 
+		   GST_OBJECT_NAME (msg->src));
+	else
+	  g_debug ("%s: error with error parsing");
 	g_free (debug);
   	if (g_strcmp0
 	    (GST_ELEMENT_NAME (reader->source_),

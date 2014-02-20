@@ -55,7 +55,7 @@ shmdata_base_writer_clean_element (GstElement *element)
 	pad_iter = gst_element_iterate_pads (element);
 	gst_iterator_foreach (pad_iter, (GFunc) shmdata_base_writer_unlink_pad, element);
 	gst_iterator_free (pad_iter);
-	if (GST_STATE_TARGET (element) != GST_STATE_NULL)
+	if (GST_STATE_TARGET (element) != GST_STATE_NULL && GST_STATE (element) != GST_STATE_NULL)
 	  if (GST_STATE_CHANGE_ASYNC == gst_element_set_state (element, GST_STATE_NULL))
 	    while (GST_STATE (element) != GST_STATE_NULL)
 	      gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
