@@ -252,7 +252,7 @@ namespace switcher
     }
     if (update_last_line)
       {
-	context->replace_last_line (std::string (tmp_log_domain + "-" + tmp_level + ": " + tmp_message));
+	context->replace_last_line (tmp_log_domain + "-" + tmp_level + ": " + tmp_message);
 	context->custom_props_->notify_property_changed (context->last_line_prop_);
       }
   }
@@ -261,7 +261,7 @@ namespace switcher
   Logger::get_last_line (void *user_data)
   {
     Logger *context = static_cast<Logger *> (user_data);
-    return g_strdup (context->last_line_.c_str ());
+    return context->last_line_.c_str ();
   }
 
   
