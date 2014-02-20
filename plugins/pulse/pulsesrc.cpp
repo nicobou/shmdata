@@ -60,6 +60,9 @@ namespace switcher
     if (!make_elements ())
       return false;
 
+    install_property (G_OBJECT (pulsesrc_),"volume", "volume", "Volume");
+    install_property (G_OBJECT (pulsesrc_),"mute", "mute", "Mute");
+
     init_startable (this);
     std::unique_lock<std::mutex> lock (devices_mutex_); 
     GstUtils::g_idle_add_full_with_context (get_g_main_context (),
@@ -155,26 +158,26 @@ namespace switcher
       return false;
     if (!GstUtils::make_element ("bin",&pulsesrc_bin_))
       return false;
-
-    uninstall_property ("volume");
-    uninstall_property ("mute");
-    install_property (G_OBJECT (pulsesrc_),"volume","volume", "Volume");
-    install_property (G_OBJECT (pulsesrc_),"mute","mute", "Mute");
-
+    
     g_object_set (G_OBJECT (pulsesrc_), "client", get_nick_name ().c_str (), NULL);
     
     gst_bin_add_many (GST_BIN (pulsesrc_bin_),
 		      pulsesrc_,
 		      capsfilter_,
 		      NULL);
-
+    
     gst_element_link (pulsesrc_, capsfilter_);
-
+    
     GstPad *src_pad = gst_element_get_static_pad (capsfilter_, "src");
     GstPad *ghost_srcpad = gst_ghost_pad_new (NULL, src_pad);
     gst_pad_set_active(ghost_srcpad,TRUE);
     gst_element_add_pad (pulsesrc_bin_, ghost_srcpad); 
     gst_object_unref (src_pad);
+    
+    // uninstall_property ("volume");
+    // uninstall_property ("mute");
+    reinstall_property (G_OBJECT (pulsesrc_),"volume","volume", "Volume");
+    reinstall_property (G_OBJECT (pulsesrc_),"mute","mute", "Mute");
 
     return true;
   }
