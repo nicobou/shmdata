@@ -147,7 +147,7 @@ main (int argc,
   //manage logs from GStreamer
   manager->invoke_va ("internal_logger", "install_log_handler", NULL, "GStreamer", NULL);
   //manage logs from Glib
-  manager->invoke_va ("internal_logger", "install_log_handler", NULL, "Glib", NULL);
+  manager->invoke_va ("internal_logger", "install_log_handler", NULL, "GLib", NULL);
   //manage logs from Glib-GObject
   manager->invoke_va ("internal_logger", "install_log_handler", NULL, "GLib-GObject", NULL);
   
