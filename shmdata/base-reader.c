@@ -115,8 +115,6 @@ shmdata_base_reader_clean_element (GstElement *element)
 	if (GST_STATE_CHANGE_ASYNC == gst_element_set_state (element, GST_STATE_NULL))
 	  while (GST_STATE (element) != GST_STATE_NULL)
 	    gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
-      
- 
       if (GST_IS_BIN (gst_element_get_parent (element)))
 	gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element);
     }
@@ -360,7 +358,7 @@ shmdata_base_reader_detach (shmdata_base_reader_t * reader)
 gboolean
 shmdata_base_reader_recover_from_deserializer_error (shmdata_base_reader_t * reader)
 {
-  g_mutex_unlock (&reader->mutex_);
+  g_mutex_lock (&reader->mutex_);
   shmdata_base_reader_detach (reader);
   g_mutex_unlock (&reader->mutex_);
   shmdata_base_reader_attach (reader);
@@ -694,8 +692,11 @@ shmdata_base_reader_close (shmdata_base_reader_t * reader)
       g_mutex_lock (&reader->mutex_);
       destroy_polling_g_source (reader);
       if (0 != reader->have_type_handler_id_)
-	g_signal_handler_disconnect (reader->typefind_, 
-				     reader->have_type_handler_id_);
+	{
+	  g_signal_handler_disconnect (reader->typefind_, 
+				       reader->have_type_handler_id_);
+	  reader->have_type_handler_id_ = 0;
+	}
       if (reader->socket_name_ != NULL)
 	g_free (reader->socket_name_);
       shmdata_base_reader_detach (reader);
