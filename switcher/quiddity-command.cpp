@@ -211,7 +211,9 @@ namespace switcher
     for (j = 0; j< num_elements; j ++)
       {
 	json_reader_read_element (reader, j);
-	expected_result.push_back (json_reader_get_string_value (reader));
+	const char *string_value = json_reader_get_string_value (reader);
+	if (NULL != string_value)
+	  expected_result.push_back (string_value);
 	json_reader_end_element (reader);
       }
     json_reader_end_member (reader);
