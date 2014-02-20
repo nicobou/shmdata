@@ -27,7 +27,7 @@ namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
 				       "Media Player (URI)",
-				       "uri source", 
+				       "uri src", 
 				       "decode an URI and writes to shmdata(s)",
 				       "LGPL",
 				       "uridecodebin", 
