@@ -62,7 +62,11 @@ namespace switcher
     GstElement *sink_bin_;
     GstElement *queue_;
     GstElement *ffmpegcolorspace_;
+    GstElement *videoflip_;
+    GstElement *gamma_;
+    GstElement *videobalance_;
     GstElement *xvimagesink_;
+
 #if HAVE_OSX
     NSView * window_handle_;
 #else

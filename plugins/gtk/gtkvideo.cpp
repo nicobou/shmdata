@@ -50,6 +50,12 @@ namespace switcher
       return false;
     if (!GstUtils::make_element ("ffmpegcolorspace", &ffmpegcolorspace_))
       return false;
+    if (!GstUtils::make_element ("videoflip", &videoflip_))
+      g_warning ("video fliping not available");
+    if (!GstUtils::make_element ("gamma", &gamma_))
+      g_warning ("gamma control not available");
+    if (!GstUtils::make_element ("videobalance", &videobalance_))
+      g_warning ("video balance not available");
 #if HAVE_OSX
     if (!GstUtils::make_element ("osxvideosink", &xvimagesink_))
       return false;
@@ -62,10 +68,28 @@ namespace switcher
 		      ffmpegcolorspace_,
 		      xvimagesink_,
 		      NULL);
-    gst_element_link_many (queue_, 
-			   ffmpegcolorspace_, 
-			   xvimagesink_,
-			   NULL);
+    gst_element_link (queue_, ffmpegcolorspace_);
+    GstElement *next_to_connect_with = ffmpegcolorspace_;
+    if (NULL != videoflip_)
+      {
+	gst_bin_add (GST_BIN (sink_bin_), videoflip_);
+	gst_element_link (next_to_connect_with, videoflip_);
+	next_to_connect_with = videoflip_;
+      }
+    if (NULL != gamma_)
+      {
+	gst_bin_add (GST_BIN (sink_bin_), gamma_);
+	gst_element_link (next_to_connect_with, gamma_);
+	next_to_connect_with = gamma_;
+      }
+    if (NULL != videobalance_)
+      {
+	gst_bin_add (GST_BIN (sink_bin_), videobalance_);
+	gst_element_link (next_to_connect_with, videobalance_);
+	next_to_connect_with = videobalance_;
+      }
+    gst_element_link (next_to_connect_with, xvimagesink_);
+
     GstPad *sink_pad = gst_element_get_static_pad (queue_, 
 						   "sink");
     GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
@@ -111,6 +135,37 @@ namespace switcher
     		  "force-aspect-ratio", TRUE,
     		  "draw-borders", TRUE,
     		  NULL);
+
+    if (NULL != videoflip_)
+      install_property (G_OBJECT (videoflip_),
+			"method",
+			"method", 
+			"Flip Method");
+    if (NULL != gamma_)
+      install_property (G_OBJECT (gamma_),
+			"gamma",
+			"gamma", 
+			"Gamma");
+    if (NULL != videobalance_)
+      {
+	install_property (G_OBJECT (videobalance_),
+			  "contrast",
+			  "contrast", 
+			  "Contrast");
+	install_property (G_OBJECT (videobalance_),
+			  "brightness",
+			  "brightness", 
+			  "Brightness");
+	install_property (G_OBJECT (videobalance_),
+			  "hue",
+			  "hue", 
+			  "Hue");
+	install_property (G_OBJECT (videobalance_),
+			  "saturation",
+			  "saturation", 
+			  "Saturation");
+      }
+
     std::unique_lock<std::mutex> lock (wait_window_mutex_);
     gtk_idle_add ((GtkFunction)create_ui,
     		  this);
@@ -127,6 +182,9 @@ namespace switcher
     sink_bin_ (NULL),
     queue_ (NULL),
     ffmpegcolorspace_ (NULL),
+    videoflip_ (NULL),
+    gamma_(NULL),
+    videobalance_ (NULL),
     xvimagesink_ (NULL),
 #if HAVE_OSX
     window_handle_ (NULL),
