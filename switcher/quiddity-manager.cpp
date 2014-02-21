@@ -154,10 +154,17 @@ namespace switcher
 	  }
 	else
 	  {
+	    //it not propable that create will return the same name, 
+	    //so converting create into create_nick_named with 
+	    //the name that was given first
+	    if (QuiddityCommand::create == command_->id_)
+	      {
+		command_->id_ = QuiddityCommand::create_nick_named;
+		command_->args_.push_back (command_->result_[0]);
+	      }
 	    command_lock ();
 	    command_ = it;
-	    
-	    g_debug ("running command %s", QuiddityCommand::get_string_from_id (command_->id_));
+	    g_message ("running command %s", QuiddityCommand::get_string_from_id (command_->id_));
 	    invoke_in_thread ();
 	    //TODO test result consistency
 	    command_unlock ();
