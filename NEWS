@@ -1,6 +1,20 @@
 shmdata release notes
 ===================== 
 
+shmdata 0.8.10 (2014-02-24)
+---------------------------
+This is an official release in the 0.8 stable series. 
+
+New features:
+
+* There are no new features, this is a bugfix release
+
+Bugs fixed:
+
+* NULL checking
+* base reader and writter are thread safe
+* clean signal handlers
+
 shmdata 0.8.8 (2014-01-16)
 ---------------------------
 This is an official release in the 0.8 stable series. 
