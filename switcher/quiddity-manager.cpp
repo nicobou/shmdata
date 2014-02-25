@@ -106,16 +106,6 @@ namespace switcher
     //command has been invoked with the return value
     //save the command
     command_history_.push_back (command_);
-
-     // JSONBuilder::ptr builder;
-     // builder.reset (new JSONBuilder ());
-     // builder->reset ();
-     // builder->begin_object ();
-     // builder->set_member_name ("command");
-     // builder->add_node_value (command_->get_json_root_node ());
-     // builder->end_object ();
-     // g_print ("%s\n", builder->get_string(true).c_str ());
-
     seq_mutex_.unlock ();
   }
 
@@ -537,8 +527,6 @@ namespace switcher
     command_lock ();
     std::vector<std::string> method_args;
     command_->set_id (QuiddityCommand::invoke);
-    
-    //g_print ("------ invoke_va\n");
     if (quiddity_name == NULL)
       {
 	g_warning ("trying to invoke with a NULL quiddity name");
@@ -1010,15 +998,6 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	command_arg = va_arg( vl, char *);
       }
     va_end(vl);
-
-    // JSONBuilder::ptr builder;
-    // builder.reset (new JSONBuilder ());
-    // builder->reset ();
-    // builder->begin_object ();
-    // builder->set_member_name ("command");
-    // builder->add_node_value (command_->get_json_root_node ());
-    // builder->end_object ();
-    // g_print ("%s\n", builder->get_string(true).c_str ());
     
     invoke_in_thread ();
     res = command_->result_[0];

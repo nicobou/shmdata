@@ -34,7 +34,7 @@ namespace switcher
     gst_video_parse_to_bin_src_ (NULL),
     custom_props_ (new CustomPropertyHelper ()),
     gst_launch_pipeline_spec_ (NULL),
-    gst_launch_pipeline_ (g_strdup (""))
+    gst_launch_pipeline_ (g_strdup ("videotestsrc is-live=true"))
   {}
 
   GstVideoParseToBinSrc::~GstVideoParseToBinSrc ()
@@ -73,6 +73,7 @@ namespace switcher
     gst_video_parse_to_bin_src_ = gst_parse_bin_from_description (gst_launch_pipeline_,
 								  TRUE,
 								  &error);
+    g_object_set (G_OBJECT (gst_video_parse_to_bin_src_), "async-handling", TRUE, NULL);
     if (error != NULL)
       {
 	g_debug ("%s",error->message);
@@ -118,14 +119,15 @@ namespace switcher
   bool 
   GstVideoParseToBinSrc::on_start ()
   {
-    disable_property ("gst-pipeline");
+    //disable_property ("gst-pipeline");
     return true;
   }
   
   bool 
   GstVideoParseToBinSrc::on_stop ()
   {
-    enable_property ("gst-pipeline");
+    reset_bin ();
+    //enable_property ("gst-pipeline");
     return true;
   }
 
