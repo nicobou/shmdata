@@ -85,9 +85,12 @@ namespace shmdata
     //reader_ = shmdata_base_reader_init (socketName_->c_str(), pipeline_, 
 	//				OsgReader_impl::on_first_video_data,
 	//				static_cast<void *>(this));
+    
     reader_ = shmdata_base_reader_new ();
-    shmdata_base_reader_set_callback(reader_, OsgReader_impl::on_first_video_data, static_cast<void*>(this));
-    shmdata_base_reader_start(reader_, socketName_->c_str());
+    shmdata_base_reader_set_callback (reader_, OsgReader_impl::on_first_video_data, static_cast<void*>(this));
+    shmdata_base_reader_set_bin (reader_, pipeline_);
+    shmdata_base_reader_install_sync_handler (reader_, TRUE);
+    shmdata_base_reader_start (reader_, socketName_->c_str());
     g_message ("new reader %p",reader_);
     
     return true;
