@@ -105,7 +105,7 @@ namespace switcher
   {
     clean_on_error_command ();
     if (NULL != souphttpsrc_)
-      GstUtils::clean_element (souphttpsrc_);
+	GstUtils::clean_element (souphttpsrc_);
     souphttpsrc_ = NULL;
     if (NULL != sdpdemux_)
       GstUtils::clean_element (sdpdemux_);

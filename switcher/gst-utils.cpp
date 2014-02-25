@@ -158,7 +158,7 @@ namespace switcher
 	if (GST_IS_BIN (gst_element_get_parent (element)))
 	  gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element);
       }
-    
+    element = NULL;
   }
   
   void
