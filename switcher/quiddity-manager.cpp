@@ -147,10 +147,10 @@ namespace switcher
 	    //it not propable that create will return the same name, 
 	    //so converting create into create_nick_named with 
 	    //the name that was given first
-	    if (QuiddityCommand::create == command_->id_)
+	    if (QuiddityCommand::create == it->id_)
 	      {
-		command_->id_ = QuiddityCommand::create_nick_named;
-		command_->args_.push_back (command_->result_[0]);
+		it->id_ = QuiddityCommand::create_nick_named;
+		it->args_.push_back (it->expected_result_[0]);
 	      }
 	    command_lock ();
 	    command_ = it;
