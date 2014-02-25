@@ -128,9 +128,13 @@ add_shared_video_reader (gpointer user_data)
 {
   GstElement *pipeline = (GstElement *) user_data;
   g_print ("add shared video reader\n");
-  reader =
-    shmdata_base_reader_init (socketName, pipeline, &on_first_video_data,
-			      NULL);
+  reader = shmdata_base_reader_new ();
+  shmdata_base_reader_set_callback (reader, &on_first_video_data, NULL);
+  shmdata_base_reader_set_bin (reader, pipeline);
+  shmdata_base_reader_install_sync_handler (reader, TRUE);
+  shmdata_base_reader_start (reader, socketName);
+  //    shmdata_base_reader_init (socketName, pipeline, &on_first_video_data,
+  //NULL);
   return FALSE;
 }
 
