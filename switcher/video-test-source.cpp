@@ -43,16 +43,15 @@ namespace switcher
   bool
   VideoTestSource::init_segment ()
   {
-    videotestsrc_ = NULL;
     bool made = make_video_source (&videotestsrc_);    
     if (!made)
       return false;
     
     //"pattern" property available atfer initialization 
     install_property (G_OBJECT (videotestsrc_),
-		       "pattern",
-		       "pattern", 
-		       "Video Pattern");
+		      "pattern",
+		      "pattern", 
+		      "Video Pattern");
     return true;
   }
 

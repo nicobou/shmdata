@@ -206,9 +206,6 @@ namespace switcher
   bool
   VideoSource::remake_codec_elements ()
   {
-    
-    //return false;
-    
     if (codec_ == 0)
       return false;
 
@@ -220,7 +217,6 @@ namespace switcher
     GstElement *tmp_queue_codec_element = queue_codec_element_;
 
     //TODO queue property ? 
-
     if (!GstUtils::make_element (secondary_codec_[codec_].value_nick, &codec_element_) 
      	|| !GstUtils::make_element ("ffmpegcolorspace", &color_space_codec_element_)
      	|| !GstUtils::make_element ("queue", &queue_codec_element_))
@@ -232,17 +228,14 @@ namespace switcher
 	GstUtils::apply_property_value (G_OBJECT (tmp_codec_element),
 					G_OBJECT (codec_element_),
 					it.c_str ());
-
 	install_property (G_OBJECT (codec_element_),
-			   it,
-			   it, 
-			   it);
+			  it,
+			  it, 
+			  it);
       }
-
     GstUtils::clean_element (tmp_codec_element);
     GstUtils::clean_element (tmp_color_space_codec_element);
     GstUtils::clean_element (tmp_queue_codec_element);
-
     return true;
   }
 
