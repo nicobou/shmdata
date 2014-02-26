@@ -25,6 +25,7 @@
 #include <iostream>
 #include <signal.h>
 #include <time.h>
+#include "locale.h"
 #ifdef HAVE_GTK
 #include <gtk/gtk.h>
 #endif
@@ -102,10 +103,9 @@ logger_cb (std::string /*subscriber_name*/,
 }
 
 
-int
-main (int argc,
-      char *argv[])
+int main (int argc, char *argv[])
 {
+  setlocale(LC_ALL, "");
   (void) signal (SIGINT, leave);
   (void) signal (SIGABRT, leave);
   (void) signal (SIGQUIT, leave);

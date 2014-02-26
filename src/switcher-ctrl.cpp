@@ -19,6 +19,7 @@
 #include <glib.h> 
 #include "webservices/soapcontrolProxy.h"
 #include "webservices/control.nsmap"
+#include "locale.h"
 
 //options
 static gchar *server = NULL;
@@ -103,8 +104,9 @@ static GOptionEntry entries[23] =
   };
 
 
-int main(int argc, char *argv [])
+int main (int argc, char *argv [])
 { 
+  setlocale(LC_ALL, "");
   //command line options
   GError *error = NULL;
   GOptionContext *context = g_option_context_new (" switcher control via webservice");
