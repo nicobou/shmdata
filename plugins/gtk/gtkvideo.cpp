@@ -164,6 +164,20 @@ namespace switcher
 			  "saturation",
 			  "saturation", 
 			  "Saturation");
+	title_ = g_strdup (get_nick_name ().c_str ());
+	title_prop_spec_ = 
+	  custom_props_->make_string_property ("title", 
+					       "Window Title",
+					       title_,
+					       (GParamFlags) G_PARAM_READWRITE,
+					       GTKVideo::set_title,
+					       GTKVideo::get_title,
+					       this);
+	install_property_by_pspec (custom_props_->get_gobject (), 
+				   title_prop_spec_, 
+				   "title",
+				   "Window Title");
+
       }
 
     std::unique_lock<std::mutex> lock (wait_window_mutex_);
@@ -196,6 +210,8 @@ namespace switcher
     custom_props_ (new CustomPropertyHelper ()),
     fullscreen_prop_spec_ (NULL),
     is_fullscreen_ (FALSE),
+    title_prop_spec_ (NULL),
+    title_ (NULL),
     wait_window_mutex_(),
     wait_window_cond_(),
     window_destruction_mutex_(),
@@ -265,6 +281,8 @@ namespace switcher
   {
     reset_bin ();
     g_idle_remove_by_data (this);
+    if (NULL != title_)
+      g_free (title_);
     //destroy child widgets too
     if (main_window_ != NULL && GTK_IS_WIDGET (main_window_))
       {
@@ -359,6 +377,7 @@ namespace switcher
     g_signal_connect (context->video_window_, "realize", G_CALLBACK (realize_cb), context);
     gtk_container_add (GTK_CONTAINER (context->main_window_), context->video_window_);
     gtk_window_set_default_size (GTK_WINDOW (context->main_window_), 640, 480);
+    gtk_window_set_title (GTK_WINDOW (context->main_window_), context->title_);
     context->blank_cursor_ = gdk_cursor_new(GDK_BLANK_CURSOR);
     gtk_widget_set_events (context->main_window_, GDK_KEY_PRESS_MASK );
     g_signal_connect(G_OBJECT(context->main_window_), 
@@ -421,4 +440,23 @@ namespace switcher
 		       (gpointer)&window_handle_);
     gdk_threads_leave ();
   }
+
+  void 
+  GTKVideo::set_title (const gchar *value, void *user_data)
+  {
+    GTKVideo *context = static_cast <GTKVideo *> (user_data);
+    if (NULL != context->title_)
+      g_free (context->title_);
+    context->title_ = g_strdup (value);
+    gtk_window_set_title (GTK_WINDOW (context->main_window_), context->title_);
+    context->custom_props_->notify_property_changed (context->title_prop_spec_);
+   }
+  
+  const gchar *
+  GTKVideo::get_title (void *user_data)
+  {
+    GTKVideo *context = static_cast <GTKVideo *> (user_data);
+    return context->title_;
+  }
+
 }
