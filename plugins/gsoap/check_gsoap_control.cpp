@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher-gsoap.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -32,16 +30,17 @@ static bool success = false;
 void 
 quiddity_created_removed_cb (std::string /*subscriber_name*/, 
 			     std::string /*quiddity_name*/, 
-			     std::string /*signal_name*/, 
+			     std::string signal_name, 
 			     std::vector<std::string> params, 
 			     void */*user_data*/)
 {
-  //g_message ("%s: %s %s", signal_name.c_str (), params[0].c_str (), params[1].c_str ());
+  // g_print ("%s: %s %s", 
+  // 	   signal_name.c_str (), 
+  // 	   params[0].c_str (), 
+  // 	   params[1].c_str ());
   if (params[1].compare ("true"))
     success = true;
 }
-
-
 
 int
 main ()

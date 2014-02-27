@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -38,20 +36,23 @@ namespace switcher
     ~BaseSink ();
     BaseSink (const BaseSink &) = delete;
     BaseSink &operator= (const BaseSink &) = delete;
-    bool connect (std::string shmdata_socket_path);
-    //wrapper for being called
-    static gboolean connect_wrapped (gpointer shmdata_socket_path, gpointer user_data);
     
   protected:
     void set_sink_element (GstElement *sink);
+    void set_sink_element_no_connect (GstElement *sink);
     void set_on_first_data_hook (ShmdataReader::on_first_data_hook cb, void *user_data);
 
   private:
-    virtual void on_shmdata_connect (std::string /* shmdata_sochet_path */) {};
     ShmdataReader::on_first_data_hook connection_hook_;
     void *hook_user_data_;
     GstElement *sink_element_;
     std::string shmdata_path_;
+    bool connect (std::string shmdata_socket_path);
+    //wrapper for being called
+    static gboolean connect_wrapped (gpointer shmdata_socket_path, gpointer user_data);
+    static gboolean disconnect (gpointer , gpointer user_data);
+    virtual void on_shmdata_connect (std::string /* shmdata_sochet_path */) {};
+    virtual void on_shmdata_disconnect () {};
   };
 
 }  // end of namespace

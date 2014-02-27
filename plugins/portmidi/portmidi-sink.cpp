@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher-portmidi.
  *
  * switcher-myplugin is free software; you can redistribute it and/or
@@ -180,7 +178,7 @@ namespace switcher
     shmdata_any_reader_start (context->reader_, context->shmdata_path_);
   }
  
-  gchar *
+  const gchar *
   PortMidiSink::get_shmdata_path (void *user_data)
   {
     PortMidiSink *context = static_cast <PortMidiSink *> (user_data);

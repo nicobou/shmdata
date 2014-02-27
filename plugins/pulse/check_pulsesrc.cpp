@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher-pulsesrc.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -44,10 +42,10 @@ main ()
 #else
     return 1;
 #endif
-    
+
     if (!switcher::QuiddityBasicTest::test_full (manager, "pulsesrc"))
       success = false;
-
+    
     if (!switcher::QuiddityBasicTest::test_full (manager, "pulsesink"))
       success = false;
 

@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -39,11 +37,53 @@ namespace switcher
   bool
   JackSink::init_segment ()
   {
+    if (false == make_elements ())
+      return false;
+    init_startable (this);
+    
+    client_name_ = g_strdup (get_nick_name ().c_str ());
+    client_name_spec_ =
+      custom_props_->make_string_property ("jack-client-name", 
+					   "the jack client name",
+					   "switcher",
+					   (GParamFlags) G_PARAM_READWRITE,
+					   JackSink::set_client_name,
+					   JackSink::get_client_name,
+					   this);
+    install_property_by_pspec (custom_props_->get_gobject (), 
+			       client_name_spec_, 
+			       "client-name",
+			       "Client Name");
+    
+
+    return true;
+  }
+  
+  JackSink::JackSink () :
+    jacksink_ (NULL),
+    custom_props_ (new CustomPropertyHelper ()),
+    client_name_spec_ (NULL),
+    client_name_ (NULL)
+  {}
+
+  JackSink::~JackSink ()
+  {
+    if (NULL != client_name_)
+      g_free (client_name_);
+  }
+  
+  bool 
+  JackSink::make_elements ()
+  {
     GError *error = NULL;
-    jacksink_ = gst_parse_bin_from_description ("audioconvert ! jackaudiosink sync=false",
+
+    gchar *description = g_strdup_printf ("audioconvert ! jackaudiosink client-name=%s sync=false", client_name_);
+    
+    jacksink_ = gst_parse_bin_from_description (description,
 						TRUE,
 						&error);
     g_object_set (G_OBJECT (jacksink_), "async-handling",TRUE, NULL);
+    g_free (description);
 
     if (error != NULL)
       {
@@ -51,13 +91,56 @@ namespace switcher
 	g_error_free (error);
 	return false;
       }
-    
+    return true;
+  }
+ 
+  bool 
+  JackSink::start ()
+  {
+    if (false == make_elements ())
+      return false;
     set_sink_element (jacksink_);
     return true;
   }
   
-  JackSink::JackSink () :
-    jacksink_ (NULL)
-  {}
- 
+  bool 
+  JackSink::stop ()
+  {
+    reset_bin ();
+    return true;
+  }
+
+  void 
+  JackSink::set_client_name (const gchar *value, void *user_data)
+  {
+    JackSink *context = static_cast <JackSink *> (user_data);
+    if (NULL != context->client_name_)
+      g_free (context->client_name_);
+    context->client_name_ = g_strdup(value);
+    context->custom_props_->notify_property_changed (context->client_name_spec_);
+   }
+  
+  const gchar *
+  JackSink::get_client_name (void *user_data)
+  {
+    JackSink *context = static_cast <JackSink *> (user_data);
+    return context->client_name_;
+  }
+
+  void 
+  JackSink::on_shmdata_disconnect () 
+  {
+    stop ();
+  }
+
+  void 
+  JackSink::on_shmdata_connect (std::string /* shmdata_sochet_path */) 
+  {
+    if (is_started ())
+      {
+	stop ();
+	make_elements ();
+	set_sink_element_no_connect (jacksink_);
+      }
+  }
 }

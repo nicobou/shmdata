@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher.
  *
  * switcher is free software: you can redistribute it and/or modify
@@ -109,7 +107,7 @@ namespace switcher
 				    unsigned pixel_format,
 				    unsigned width,
 				    unsigned height);
-    static gchar *get_capture_devices_json (void *user_data);
+    static const gchar *get_capture_devices_json (void *user_data);
     
     //custom properties:
     CustomPropertyHelper::ptr custom_props_; 

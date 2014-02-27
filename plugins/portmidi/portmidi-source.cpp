@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher-portmidi.
  *
  * switcher-myplugin is free software; you can redistribute it and/or
@@ -125,7 +123,7 @@ namespace switcher
 
     install_method ("Last MIDI Event To Property", //long name
 		    "last_midi_event_to_property", //name
-		    "Wait for a MIDI event and make a property for this channel", //description
+		    "make a property with the given name from the next incoming MIDI event", //description
 		    "success or fail", //return description
 		    Method::make_arg_description ("Property Long Name", //first arg long name
 						  "property_long_name", //fisrt arg name

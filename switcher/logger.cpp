@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -33,9 +31,10 @@ namespace switcher
 				       "LGPL",
 				       "logger",
 				       "Nicolas Bouillot");
+
   Logger::Logger () :
     i_am_the_one_ (false),
-    last_line_ (g_strdup ("")),
+    last_line_ (),
     mute_ (false),
     debug_ (true),
     verbose_ (true),
@@ -44,7 +43,8 @@ namespace switcher
     last_line_prop_ (NULL),
     mute_prop_ (NULL),
     debug_prop_ (NULL),
-    verbose_prop_ (NULL)
+    verbose_prop_ (NULL),
+    last_line_mutex_ ()
   {}
   
   bool
@@ -60,8 +60,15 @@ namespace switcher
 	installed_ = true;
 	i_am_the_one_ = true;
       }
-    set_name ("logger");
     
+    //FIXME: make the following not necessary, 
+    // avoid the following warnings:
+    // Attempt to add property MyObject::customprop1 after class was initialised
+    guint quiet_handler_id = g_log_set_handler ("GLib-GObject", 
+						G_LOG_LEVEL_MASK, 
+						quiet_log_handler, 
+						NULL);  
+
     last_line_prop_ = 
       custom_props_->make_string_property ("last-line", 
 					   "last log line",
@@ -114,6 +121,8 @@ namespace switcher
 				verbose_prop_, 
 				"verbose",
 				"Verbose");
+
+    
     
     //handler must be installed after custom property creation 
     handler_ids_["switcher"] = g_log_set_handler ("switcher", 
@@ -121,7 +130,8 @@ namespace switcher
 						  log_handler, 
 						  this);
     
-    
+    g_log_remove_handler ("GLib-GObject", quiet_handler_id);
+
     install_method ("Install Log Handler",
 		    "install_log_handler", 
 		    "make the logger managing the log domain", 
@@ -152,13 +162,19 @@ namespace switcher
     return true;
   }
 
+  void
+  Logger::quiet_log_handler (const gchar */*log_domain*/, 
+			     GLogLevelFlags /*log_level*/,
+			     const gchar */*message*/,
+			     gpointer /*user_data*/)
+  {}
+  
   Logger::~Logger()
   {
     if (i_am_the_one_)
       {
 	for (auto &it : handler_ids_)
 	  g_log_remove_handler (it.first.c_str (), it.second);
-	g_free (last_line_);
 	installed_ = false;
       }
   }
@@ -205,11 +221,10 @@ namespace switcher
   }
   
   void 
-  Logger::replace_last_line(gchar *next_line)
+  Logger::replace_last_line(std::string next_line)
   {
-    gchar *old_line = last_line_;
+    std::unique_lock<std::mutex> lock (last_line_mutex_); 
     last_line_ = next_line;
-    g_free (old_line);
   }
 
   void
@@ -219,54 +234,62 @@ namespace switcher
 		       gpointer user_data)
   {
     Logger *context = static_cast<Logger *>(user_data);
-
     if (context->mute_)
       return;
-    
     gboolean update_last_line = TRUE;
+    std::string tmp_message = std::string ((NULL == message) ? "null-message" : message);
+    std::string tmp_log_domain = std::string ((NULL == log_domain) ? "null-log-domain" : log_domain);
+    std::string tmp_level = std::string ("unknown");
 
-     switch (log_level) {
-     case G_LOG_LEVEL_ERROR:
-       context->replace_last_line(g_strdup_printf ("%s-error: %s",log_domain, message));
-       break;
-     case G_LOG_LEVEL_CRITICAL:
-       context->replace_last_line(g_strdup_printf ("%s-critical: %s",log_domain, message));
-       break;
-     case G_LOG_LEVEL_WARNING:
-       context->replace_last_line(g_strdup_printf ("%s-warning: %s",log_domain, message));
-       break;
-     case G_LOG_LEVEL_MESSAGE:
-       if (context->debug_ || context->verbose_)
-	   context->replace_last_line(g_strdup_printf ("%s-message: %s",log_domain, message));
-       else
-	 update_last_line = FALSE;
-       break;
-     case G_LOG_LEVEL_INFO:
-       if (context->debug_ || context->verbose_)
-	   context->replace_last_line(g_strdup_printf ("%s-info: %s",log_domain, message));
-       else
-	 update_last_line = FALSE;
-       break;
-     case G_LOG_LEVEL_DEBUG:
-       if (context->debug_)
-	 context->replace_last_line(g_strdup_printf ("%s-debug: %s",log_domain, message));
-       else
-	 update_last_line = FALSE;
-       break;
-     default:
-       context->replace_last_line(g_strdup_printf ("%s-unknown-level: %s",log_domain, message));
-       break;
-     }
+    //FIXME: 
+    if (0 == tmp_log_domain.compare ("GLib-GObject") 
+	&& 0 == tmp_message.compare  (0, 23, "Attempt to add property"))
+      return;
 
-     if (update_last_line)
-       context->custom_props_->notify_property_changed (context->last_line_prop_);
-}
+    switch (log_level) {
+    case G_LOG_LEVEL_ERROR:
+      tmp_level = std::string ("error");
+      break;
+    case G_LOG_LEVEL_CRITICAL:
+      tmp_level = std::string ("critical");
+      break;
+    case G_LOG_LEVEL_WARNING:
+      tmp_level = std::string ("warning");
+      break;
+    case G_LOG_LEVEL_MESSAGE:
+      if (context->debug_ || context->verbose_)
+	tmp_level = std::string ("message");
+      else
+	update_last_line = FALSE;
+      break;
+    case G_LOG_LEVEL_INFO:
+      if (context->debug_ || context->verbose_)
+	tmp_level = std::string ("info");
+      else
+	update_last_line = FALSE;
+      break;
+    case G_LOG_LEVEL_DEBUG:
+      if (context->debug_)
+	tmp_level = std::string ("debug");
+      else
+	update_last_line = FALSE;
+      break;
+    default:
+      break;
+    }
+    if (update_last_line)
+      {
+	context->replace_last_line (tmp_log_domain + "-" + tmp_level + ": " + tmp_message);
+	context->custom_props_->notify_property_changed (context->last_line_prop_);
+      }
+  }
 
-  gchar *
+  const gchar *
   Logger::get_last_line (void *user_data)
   {
     Logger *context = static_cast<Logger *> (user_data);
-    return context->last_line_;
+    std::unique_lock<std::mutex> lock (context->last_line_mutex_); 
+    return context->last_line_.c_str ();
   }
 
   

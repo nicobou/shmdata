@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -54,7 +52,7 @@ namespace switcher
 			       gpointer user_data);
     static gboolean update_byte_rate (gpointer user_data); 
     static gint get_byte_rate (void *user_data);
-    static gchar * get_caps (void *user_data);
+    static const gchar *get_caps (void *user_data);
     //byte rate property 
     CustomPropertyHelper::ptr props_;
     GParamSpec *byte_rate_spec_;

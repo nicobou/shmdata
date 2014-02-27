@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher-portmidi.
  *
  * switcher-myplugin is free software; you can redistribute it and/or
@@ -400,7 +398,7 @@ namespace switcher
 	}
     }
 
-  gchar *
+  const gchar *
   PortMidi::get_devices_description_json (gpointer user_data)
   {
     PortMidi *context = static_cast <PortMidi *> (user_data);

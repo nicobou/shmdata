@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -54,7 +52,7 @@ namespace switcher
     bool remove_destination (std::string dest_name);
 
     //destination property
-    static gchar *get_destinations_json (void *user_data);
+    static const gchar *get_destinations_json (void *user_data);
     //MTU property
     static void set_mtu_at_add_data_stream (const gint value, void *user_data);
     static gint get_mtu_at_add_data_stream (void *user_data);

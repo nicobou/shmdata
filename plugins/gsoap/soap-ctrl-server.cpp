@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher-gsoap.
  *
  * switcher-gsoap is free software: you can redistribute it and/or modify
@@ -19,6 +17,13 @@
 
 #include "soap-ctrl-server.h"
 #include "webservices/control.nsmap"
+//hacking gsoap bug for ubuntu 13.10
+#ifdef WITH_IPV6
+#define SOAPBINDTO "::"
+#else
+# define SOAPBINDTO NULL
+#endif
+
 
 namespace switcher
 {
@@ -36,7 +41,7 @@ namespace switcher
     quit_server_thread_ (false),
     service_ (NULL), 
     socket_ (),
-    thread_ (NULL)
+    thread_ ()
   {}
 
   bool
@@ -168,15 +173,16 @@ namespace switcher
     soap_.user = (void *)this;
     quit_server_thread_ = false;
     service_ = new controlService (soap_);
-    socket_ = service_->bind (NULL, port_, 100 /* BACKLOG */);
+    socket_ = service_->bind (SOAPBINDTO, port_, 100 /* BACKLOG */);
     if (!soap_valid_socket (socket_))
       {
 	service_->soap_print_fault (stderr);
 	delete service_;
+	service_ = NULL;
 	return false;
       }
-    else
-      thread_ = g_thread_new ("SoapCtrlServer", GThreadFunc(server_thread), this);
+
+    thread_ = std::thread (&SoapCtrlServer::server_thread, this);
     return true;
   }
 
@@ -193,22 +199,20 @@ namespace switcher
   SoapCtrlServer::stop ()
   {
     quit_server_thread_ = true;
-    if (thread_ != NULL)
-      g_thread_join (thread_);
-    thread_ = NULL;
+    if (thread_.joinable ())
+      thread_.join ();      
     soap_closesocket (socket_);
     soap_destroy(&soap_);
     soap_end(&soap_);
     soap_done(&soap_);
-    delete service_;
+    if (NULL != service_)
+      delete service_;
     return true;
   }
   
-  gpointer
-  SoapCtrlServer::server_thread (gpointer user_data)
+  void
+  SoapCtrlServer::server_thread ()
   {
-    SoapCtrlServer *context = static_cast<SoapCtrlServer*>(user_data);
-    
     // /* run iterative server on port until fatal error */
     // if (context->service_->run(context->port_))
     //   { context->service_->soap_stream_fault(std::cerr);
@@ -216,13 +220,13 @@ namespace switcher
     // return NULL;
 
     //for (int i = 1; ; i++)
-    while(!context->quit_server_thread_)
+    while(!quit_server_thread_)
       { 
-	SOAP_SOCKET s = context->service_->accept();
+	SOAP_SOCKET s = service_->accept();
 	if (!soap_valid_socket(s))
 	  { 
-	    if (context->service_->errnum)
-	      context->service_->soap_print_fault (stderr);
+	    if (service_->errnum)
+	      service_->soap_print_fault (stderr);
 	    else
 	      {
 		//g_debug ("SOAP server timed out");
@@ -232,18 +236,17 @@ namespace switcher
 	  {
 	    // g_debug ("client request %d accepted on socket %d, client IP is %d.%d.%d.%d", 
 	    // 	    i, s, 
-	    // 	    (int)(context->service_->ip>>24)&0xFF, 
-	    // 	    (int)(context->service_->ip>>16)&0xFF, 
-	    // 	    (int)(context->service_->ip>>8)&0xFF, 
-	    // 	    (int)context->service_->ip&0xFF);
-	    controlService *tcontrol = context->service_->copy();
-	    if (context->service_->errnum)
-	      context->service_->soap_print_fault(stderr);
+	    // 	    (int)(service_->ip>>24)&0xFF, 
+	    // 	    (int)(service_->ip>>16)&0xFF, 
+	    // 	    (int)(service_->ip>>8)&0xFF, 
+	    // 	    (int)service_->ip&0xFF);
+	    controlService *tcontrol = service_->copy();
+	    if (service_->errnum)
+	      service_->soap_print_fault(stderr);
 	    tcontrol->serve();
 	    delete tcontrol;
 	  }
       }
-    return NULL;
   }
 
 }//end of SoapCtrlServer class

@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -53,7 +51,7 @@ namespace switcher
     bool init_segment ();
     static gboolean add_shmdata_path_wrapped (gpointer name, gpointer user_data);
     static void set_shmdata_path (const gchar *value, void *user_data);
-    static gchar *get_shmdata_path (void *user_data);
+    static const gchar *get_shmdata_path (void *user_data);
   };
 
 }  // end of namespace

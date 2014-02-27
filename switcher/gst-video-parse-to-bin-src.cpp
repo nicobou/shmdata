@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -36,20 +34,19 @@ namespace switcher
     gst_video_parse_to_bin_src_ (NULL),
     custom_props_ (new CustomPropertyHelper ()),
     gst_launch_pipeline_spec_ (NULL),
-    gst_launch_pipeline_ (g_strdup (""))
+    gst_launch_pipeline_ (g_strdup ("videotestsrc is-live=true"))
   {}
 
   GstVideoParseToBinSrc::~GstVideoParseToBinSrc ()
   {
     g_free (gst_launch_pipeline_);
-    if (GST_IS_ELEMENT (gst_video_parse_to_bin_src_))
+    if (NULL != gst_video_parse_to_bin_src_)
       GstUtils::clean_element (gst_video_parse_to_bin_src_);
   }
 
   bool 
   GstVideoParseToBinSrc::init_segment ()
   {
-    init_startable (this);
     gst_launch_pipeline_spec_ = 
       custom_props_->make_string_property ("gst-pipeline", 
 					   "GStreamer Launch Source Pipeline",
@@ -67,49 +64,39 @@ namespace switcher
   }
   
   bool
-  GstVideoParseToBinSrc::to_shmdata ()
+  GstVideoParseToBinSrc::make_video_source (GstElement **new_element)
   {
-    g_debug ("to_shmdata set GStreamer description %s", gst_launch_pipeline_);
-    
+    g_debug ("trying to make video source from pipeline (%s)", gst_launch_pipeline_);
+    if (NULL != gst_video_parse_to_bin_src_)
+      GstUtils::clean_element (gst_video_parse_to_bin_src_);
     GError *error = NULL;
     gst_video_parse_to_bin_src_ = gst_parse_bin_from_description (gst_launch_pipeline_,
 								  TRUE,
 								  &error);
+    g_object_set (G_OBJECT (gst_video_parse_to_bin_src_), "async-handling", TRUE, NULL);
     if (error != NULL)
       {
 	g_debug ("%s",error->message);
 	g_error_free (error);
+	gst_video_parse_to_bin_src_ = NULL;
 	return false;
       }
-    
     GstPad *src_pad = gst_element_get_static_pad (gst_video_parse_to_bin_src_,"src");
-
-    //g_debug ("pad current caps: %s", gst_caps_to_string (gst_pad_get_caps (src_pad)));
-    GstCaps * caps = gst_pad_get_caps (src_pad);
+    GstCaps *caps = gst_pad_get_caps (src_pad);
     gchar *string_caps = gst_caps_to_string (caps);
     if (!g_str_has_prefix (string_caps,"video/") && !g_str_has_prefix (string_caps,"ANY"))
       {
 	g_debug ("description does not provide video (caps is %s)",string_caps);
+	gst_caps_unref (caps);
 	g_free (string_caps);
+	gst_object_unref (src_pad);
+	gst_video_parse_to_bin_src_ = NULL;
 	return false;
       }
     g_free (string_caps);
-    
-    //creating a connector for raw audio
-    ShmdataWriter::ptr writer;
-    writer.reset (new ShmdataWriter ());
-    std::string writer_name = make_file_name ("video");
-    writer->set_path (writer_name.c_str());
-
-    gst_bin_add (GST_BIN (bin_), gst_video_parse_to_bin_src_);
-    writer->plug (bin_, src_pad);
-
-    GstUtils::wait_state_changed (bin_);
-    GstUtils::sync_state_with_parent (gst_video_parse_to_bin_src_);
-
-    register_shmdata_writer (writer);
-    
+    gst_caps_unref (caps);
     gst_object_unref (src_pad);
+    *new_element = gst_video_parse_to_bin_src_;
     return true;
   }
 
@@ -122,7 +109,7 @@ namespace switcher
     context->custom_props_->notify_property_changed (context->gst_launch_pipeline_spec_);
    }
   
-  gchar *
+  const gchar *
   GstVideoParseToBinSrc::get_gst_launch_pipeline (void *user_data)
   {
     GstVideoParseToBinSrc *context = static_cast <GstVideoParseToBinSrc *> (user_data);
@@ -130,31 +117,17 @@ namespace switcher
   }
 
   bool 
-  GstVideoParseToBinSrc::clean ()
+  GstVideoParseToBinSrc::on_start ()
   {
-    reset_bin ();
-    return unregister_shmdata_writer (make_file_name ("video"));
-  }
-  
-  bool 
-  GstVideoParseToBinSrc::start ()
-  {
-    clean ();
-    if (! to_shmdata ())
-      return false;
-    uninstall_property ("gst-pipeline");
+    //disable_property ("gst-pipeline");
     return true;
   }
   
   bool 
-  GstVideoParseToBinSrc::stop ()
+  GstVideoParseToBinSrc::on_stop ()
   {
-    clean ();
-    uninstall_property ("gst-pipeline");
-    install_property_by_pspec (custom_props_->get_gobject (), 
-				gst_launch_pipeline_spec_, 
-				"gst-pipeline",
-				"GStreamer Pipeline");
+    reset_bin ();
+    //enable_property ("gst-pipeline");
     return true;
   }
 

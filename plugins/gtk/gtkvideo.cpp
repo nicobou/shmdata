@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher-gtk.
  *
  * switcher-gtk is free software; you can redistribute it and/or
@@ -52,6 +50,12 @@ namespace switcher
       return false;
     if (!GstUtils::make_element ("ffmpegcolorspace", &ffmpegcolorspace_))
       return false;
+    if (!GstUtils::make_element ("videoflip", &videoflip_))
+      g_warning ("video fliping not available");
+    if (!GstUtils::make_element ("gamma", &gamma_))
+      g_warning ("gamma control not available");
+    if (!GstUtils::make_element ("videobalance", &videobalance_))
+      g_warning ("video balance not available");
 #if HAVE_OSX
     if (!GstUtils::make_element ("osxvideosink", &xvimagesink_))
       return false;
@@ -64,10 +68,28 @@ namespace switcher
 		      ffmpegcolorspace_,
 		      xvimagesink_,
 		      NULL);
-    gst_element_link_many (queue_, 
-			   ffmpegcolorspace_, 
-			   xvimagesink_,
-			   NULL);
+    gst_element_link (queue_, ffmpegcolorspace_);
+    GstElement *next_to_connect_with = ffmpegcolorspace_;
+    if (NULL != videoflip_)
+      {
+	gst_bin_add (GST_BIN (sink_bin_), videoflip_);
+	gst_element_link (next_to_connect_with, videoflip_);
+	next_to_connect_with = videoflip_;
+      }
+    if (NULL != gamma_)
+      {
+	gst_bin_add (GST_BIN (sink_bin_), gamma_);
+	gst_element_link (next_to_connect_with, gamma_);
+	next_to_connect_with = gamma_;
+      }
+    if (NULL != videobalance_)
+      {
+	gst_bin_add (GST_BIN (sink_bin_), videobalance_);
+	gst_element_link (next_to_connect_with, videobalance_);
+	next_to_connect_with = videobalance_;
+      }
+    gst_element_link (next_to_connect_with, xvimagesink_);
+
     GstPad *sink_pad = gst_element_get_static_pad (queue_, 
 						   "sink");
     GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
@@ -113,6 +135,51 @@ namespace switcher
     		  "force-aspect-ratio", TRUE,
     		  "draw-borders", TRUE,
     		  NULL);
+
+    if (NULL != videoflip_)
+      install_property (G_OBJECT (videoflip_),
+			"method",
+			"method", 
+			"Flip Method");
+    if (NULL != gamma_)
+      install_property (G_OBJECT (gamma_),
+			"gamma",
+			"gamma", 
+			"Gamma");
+    if (NULL != videobalance_)
+      {
+	install_property (G_OBJECT (videobalance_),
+			  "contrast",
+			  "contrast", 
+			  "Contrast");
+	install_property (G_OBJECT (videobalance_),
+			  "brightness",
+			  "brightness", 
+			  "Brightness");
+	install_property (G_OBJECT (videobalance_),
+			  "hue",
+			  "hue", 
+			  "Hue");
+	install_property (G_OBJECT (videobalance_),
+			  "saturation",
+			  "saturation", 
+			  "Saturation");
+	title_ = g_strdup (get_nick_name ().c_str ());
+	title_prop_spec_ = 
+	  custom_props_->make_string_property ("title", 
+					       "Window Title",
+					       title_,
+					       (GParamFlags) G_PARAM_READWRITE,
+					       GTKVideo::set_title,
+					       GTKVideo::get_title,
+					       this);
+	install_property_by_pspec (custom_props_->get_gobject (), 
+				   title_prop_spec_, 
+				   "title",
+				   "Window Title");
+
+      }
+
     std::unique_lock<std::mutex> lock (wait_window_mutex_);
     gtk_idle_add ((GtkFunction)create_ui,
     		  this);
@@ -129,6 +196,9 @@ namespace switcher
     sink_bin_ (NULL),
     queue_ (NULL),
     ffmpegcolorspace_ (NULL),
+    videoflip_ (NULL),
+    gamma_(NULL),
+    videobalance_ (NULL),
     xvimagesink_ (NULL),
 #if HAVE_OSX
     window_handle_ (NULL),
@@ -140,6 +210,8 @@ namespace switcher
     custom_props_ (new CustomPropertyHelper ()),
     fullscreen_prop_spec_ (NULL),
     is_fullscreen_ (FALSE),
+    title_prop_spec_ (NULL),
+    title_ (NULL),
     wait_window_mutex_(),
     wait_window_cond_(),
     window_destruction_mutex_(),
@@ -209,6 +281,8 @@ namespace switcher
   {
     reset_bin ();
     g_idle_remove_by_data (this);
+    if (NULL != title_)
+      g_free (title_);
     //destroy child widgets too
     if (main_window_ != NULL && GTK_IS_WIDGET (main_window_))
       {
@@ -303,6 +377,7 @@ namespace switcher
     g_signal_connect (context->video_window_, "realize", G_CALLBACK (realize_cb), context);
     gtk_container_add (GTK_CONTAINER (context->main_window_), context->video_window_);
     gtk_window_set_default_size (GTK_WINDOW (context->main_window_), 640, 480);
+    gtk_window_set_title (GTK_WINDOW (context->main_window_), context->title_);
     context->blank_cursor_ = gdk_cursor_new(GDK_BLANK_CURSOR);
     gtk_widget_set_events (context->main_window_, GDK_KEY_PRESS_MASK );
     g_signal_connect(G_OBJECT(context->main_window_), 
@@ -365,4 +440,23 @@ namespace switcher
 		       (gpointer)&window_handle_);
     gdk_threads_leave ();
   }
+
+  void 
+  GTKVideo::set_title (const gchar *value, void *user_data)
+  {
+    GTKVideo *context = static_cast <GTKVideo *> (user_data);
+    if (NULL != context->title_)
+      g_free (context->title_);
+    context->title_ = g_strdup (value);
+    gtk_window_set_title (GTK_WINDOW (context->main_window_), context->title_);
+    context->custom_props_->notify_property_changed (context->title_prop_spec_);
+   }
+  
+  const gchar *
+  GTKVideo::get_title (void *user_data)
+  {
+    GTKVideo *context = static_cast <GTKVideo *> (user_data);
+    return context->title_;
+  }
+
 }

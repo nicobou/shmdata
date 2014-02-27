@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher-myplugin.
  *
  * switcher-myplugin is free software; you can redistribute it and/or
@@ -52,7 +50,7 @@ namespace switcher
    
   protected:
     //info
-    static gchar *get_devices_description_json (gpointer user_data);
+    static const gchar *get_devices_description_json (gpointer user_data);
     GEnumValue input_devices_enum_[128];
     GEnumValue output_devices_enum_[128];
 

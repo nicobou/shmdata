@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher.
  *
  * switcher is free software: you can redistribute it and/or modify
@@ -21,6 +19,7 @@
 #include <glib.h> 
 #include "webservices/soapcontrolProxy.h"
 #include "webservices/control.nsmap"
+#include "locale.h"
 
 //options
 static gchar *server = NULL;
@@ -47,38 +46,9 @@ static gboolean getprop = FALSE;
 static gboolean invokemethod = FALSE;
 static gchar **remaining_args = NULL;
 
-//FIXME the list-something should actually give lists, and json formated should be given without one-char option
-
-// static GOptionEntry entries[22] =
-//   {
-//     { "server", 'S', 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:8080)", NULL },
-//     { "save", 'w', 0, G_OPTION_ARG_NONE, &save, "save history to file (--save filename)", NULL },
-//     { "load", 'x', 0, G_OPTION_ARG_NONE, &load, "load state from history file (--load filename)", NULL },
-//     //FIXME make this working { "run", NULL, 0, G_OPTION_ARG_NONE, &run, "run history to file (--run filename)", NULL },
-//     { "create-quiddity", 'C', 0, G_OPTION_ARG_NONE, &createquiddity, "create a quiddity instance (-C quiddity_class [optional nick name])", NULL },
-//     { "delete-quiddity", 'D', 0, G_OPTION_ARG_NONE, &deletequiddity, "delete a quiddity instance by its name", NULL },
-//     { "rename", 'r', 0, G_OPTION_ARG_NONE, &renamequiddity, "rename a quiddity (-r nick name new_nick_name)", NULL },
-//     { "list-classes", 'c', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", NULL },
-//     { "list-quiddities", 'e', 0, G_OPTION_ARG_NONE, &listquiddities, "list quiddity instances", NULL },
-//     { "list-props", 'p', 0, G_OPTION_ARG_NONE, &listprop, "list properties of a quiddity", NULL },
-//     { "list-props-by-class", 'P', 0, G_OPTION_ARG_NONE, &listpropbyclass, "list properties of a class", NULL },
-//     { "list-methods", 'm', 0, G_OPTION_ARG_NONE, &listmethods, "list methods of a quiddity", NULL },
-//     { "list-methods-by-class", 'M', 0, G_OPTION_ARG_NONE, &listmethodsbyclass, "list methods of a class", NULL },
-//     { "list-signals", 'l', 0, G_OPTION_ARG_NONE, &listsignals, "list signals of a quiddity", NULL },
-//     { "list-signals-by-class", 'L', 0, G_OPTION_ARG_NONE, &listsignalsbyclass, "list signals of a class", NULL },
-//     { "set-prop", 's', 0, G_OPTION_ARG_NONE, &setprop, "set property value (-s quiddity_name prop_name val)", NULL },
-//     { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g quiddity_name prop_name)", NULL },
-//     { "invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod, "invoke method of a quiddity (-i quiddity_name method_name args...)", NULL },
-//     { "classes-doc", 'K', 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", NULL },
-//     { "class-doc", 'k', 0, G_OPTION_ARG_NONE, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
-//     { "quiddities-descr", 'Q', 0, G_OPTION_ARG_NONE, &quidditiesdescr, "print instanciated quiddities, JSON-formated", NULL },
-//     { "quiddity-descr", 'q', 0, G_OPTION_ARG_NONE, &quidditydescr, "print quiddity documentation, JSON-formated (--class-doc class_name)", NULL },
-//     {G_OPTION_REMAINING, 0, 0, G_OPTION_ARG_STRING_ARRAY, &remaining_args, "remaining arguments", NULL},
-//   };
-
 static GOptionEntry entries[23] =
   {
-    { "server", 0, 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:8080)", NULL },
+    { "server", 0, 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:27182)", NULL },
     { "save", 'w', 0, G_OPTION_ARG_NONE, &save, "save history to file (--save filename)", NULL },
     { "load", 'x', 0, G_OPTION_ARG_NONE, &load, "load state from history file (--load filename)", NULL },
     //FIXME make this working { "run", NULL, 0, G_OPTION_ARG_NONE, &run, "run history to file (--run filename)", NULL },
@@ -105,8 +75,9 @@ static GOptionEntry entries[23] =
   };
 
 
-int main(int argc, char *argv [])
+int main (int argc, char *argv [])
 { 
+  setlocale(LC_ALL, "");
   //command line options
   GError *error = NULL;
   GOptionContext *context = g_option_context_new (" switcher control via webservice");
@@ -118,7 +89,7 @@ int main(int argc, char *argv [])
     } 
 
   if (server == NULL)
-    server = g_strdup ("http://localhost:8080");
+    server = g_strdup ("http://localhost:27182");
   
   if (! (renamequiddity
 	 ^ save

@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -53,8 +51,6 @@ namespace switcher
   private:
     std::string path_;
     shmdata_base_writer_t *writer_;
-    //GstElementCleaner::ptr cleaner_;
-    //GstCaps *writer_caps_;
     GstElement *bin_;
     GstElement *tee_;
     GstElement *queue_;

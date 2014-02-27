@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher-myplugin.
  *
  * switcher-myplugin is free software; you can redistribute it and/or
@@ -59,7 +57,7 @@ namespace switcher
     static gint get_device (void *user_data);
 
     static void set_shmdata_path (const gchar * value, void *user_data);
-    static gchar *get_shmdata_path (void *user_data);
+    static const gchar *get_shmdata_path (void *user_data);
  
     static void on_shmreader_data (shmdata_any_reader_t * reader,
 				   void *shmbuf,

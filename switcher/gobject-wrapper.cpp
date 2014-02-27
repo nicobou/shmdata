@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -303,7 +301,7 @@ namespace switcher
     guint prop_id = next_prop_id_;
     next_prop_id_++;
     
-    gchar *name = g_strdup_printf ("customprop%d", prop_id);
+    gchar *name = g_strdup_printf ("customprop%u", prop_id);
     g_debug ("custom property internal name %s", name);
     
     GParamSpec *param = g_param_spec_boolean (name,

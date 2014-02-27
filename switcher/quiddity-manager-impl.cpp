@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -90,12 +88,12 @@ namespace switcher
       creation_hook_user_data_ (NULL),
       removal_hook_user_data_ (NULL),
       quiddity_created_counter_ (0), 
-      thread_ (NULL),
+      thread_ (),
       main_context_ (NULL),
       mainloop_ (NULL) 
   {
     init_gmainloop ();
-    remove_shmdata_sockets ();
+    remove_shmdata_sockets (); 
     register_classes ();
     make_classes_doc ();
   }
@@ -104,6 +102,8 @@ namespace switcher
   {
     g_main_loop_quit (mainloop_);
     g_main_context_unref (main_context_);
+    if (thread_.joinable ())
+      thread_.join ();      
   }
 
   void
@@ -1120,15 +1120,13 @@ namespace switcher
     registry = gst_registry_get_default();
     //TODO add option for scanning a path
     gst_registry_scan_path (registry, "/usr/local/lib/gstreamer-0.10/");
-    thread_ = g_thread_new ("SwitcherMainLoop", GThreadFunc(main_loop_thread), this);
+    thread_ = std::thread (&QuiddityManager_Impl::main_loop_thread, this);
   }
   
-  gpointer
-  QuiddityManager_Impl::main_loop_thread (gpointer user_data)
+  void
+  QuiddityManager_Impl::main_loop_thread ()
   {
-    QuiddityManager_Impl *context = static_cast<QuiddityManager_Impl*>(user_data);
-    g_main_loop_run (context->mainloop_);
-    return NULL;
+    g_main_loop_run (mainloop_);
   }
   
   GMainContext *

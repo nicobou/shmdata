@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -36,7 +34,7 @@ namespace switcher
   public:
     typedef std::shared_ptr<CustomPropertyHelper> ptr;
     typedef void (*set_string_method)(const gchar *value, void *user_data);
-    typedef gchar *(*get_string_method)(void *user_data);
+    typedef const gchar *(*get_string_method)(void *user_data);
     typedef void (*set_boolean_method)(const gboolean value, void *user_data);
     typedef gboolean (*get_boolean_method)(void *user_data);
     typedef void (*set_int_method)(const gint value, void *user_data);
@@ -117,7 +115,6 @@ namespace switcher
     
   private:
     GObjectWrapper::ptr gobject_;
-    void *user_data_;
     std::vector< std::shared_ptr<UserMethod> > user_methods_;
     void make_user_method (const gchar *nickname,
 			   GParamSpec *pspec,

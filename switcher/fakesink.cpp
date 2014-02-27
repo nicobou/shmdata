@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -49,11 +47,7 @@ namespace switcher
   {
      if (update_byterate_source_ != NULL)
        g_source_destroy (update_byterate_source_);
-
-    clear_shmdatas ();
-    
     reset_bin ();
-
     GstUtils::clean_element (fakesink_);
     g_free (string_caps_);
   }
@@ -72,7 +66,7 @@ namespace switcher
     g_signal_connect(fakesink_, "handoff", (GCallback)on_handoff_cb, this);
 
     //registering some properties 
-    install_property (G_OBJECT (fakesink_),"last-message","last-message", "Last Message");
+    //install_property (G_OBJECT (fakesink_),"last-message","last-message", "Last Message");
     
     byte_rate_spec_ = 
       props_->make_int_property ("byte-rate", 
@@ -154,7 +148,7 @@ namespace switcher
     return context->byte_rate_;
   }
 
-  gchar *
+  const gchar *
   FakeSink::get_caps (void *user_data)
   {
     FakeSink *context = static_cast<FakeSink *> (user_data);

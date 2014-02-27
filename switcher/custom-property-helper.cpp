@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -197,7 +195,7 @@ namespace switcher
     
     if (G_VALUE_TYPE(value) == G_TYPE_STRING)
       {
-	gchar *val = ((get_string_method)user_method->get) (user_method->user_data);
+	const gchar *val = ((get_string_method)user_method->get) (user_method->user_data);
 	g_value_set_string (value, val);
       }
     else if (G_VALUE_TYPE(value) == G_TYPE_BOOLEAN)

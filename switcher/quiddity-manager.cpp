@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -108,16 +106,6 @@ namespace switcher
     //command has been invoked with the return value
     //save the command
     command_history_.push_back (command_);
-
-     // JSONBuilder::ptr builder;
-     // builder.reset (new JSONBuilder ());
-     // builder->reset ();
-     // builder->begin_object ();
-     // builder->set_member_name ("command");
-     // builder->add_node_value (command_->get_json_root_node ());
-     // builder->end_object ();
-     // g_print ("%s\n", builder->get_string(true).c_str ());
-
     seq_mutex_.unlock ();
   }
 
@@ -156,10 +144,17 @@ namespace switcher
 	  }
 	else
 	  {
+	    //it not propable that create will return the same name, 
+	    //so converting create into create_nick_named with 
+	    //the name that was given first
+	    if (QuiddityCommand::create == it->id_)
+	      {
+		it->id_ = QuiddityCommand::create_nick_named;
+		it->args_.push_back (it->expected_result_[0]);
+	      }
 	    command_lock ();
 	    command_ = it;
-	    
-	    g_debug ("running command %s", QuiddityCommand::get_string_from_id (command_->id_));
+	    g_message ("running command %s", QuiddityCommand::get_string_from_id (command_->id_));
 	    invoke_in_thread ();
 	    //TODO test result consistency
 	    command_unlock ();
@@ -532,8 +527,6 @@ namespace switcher
     command_lock ();
     std::vector<std::string> method_args;
     command_->set_id (QuiddityCommand::invoke);
-    
-    //g_print ("------ invoke_va\n");
     if (quiddity_name == NULL)
       {
 	g_warning ("trying to invoke with a NULL quiddity name");
@@ -1005,15 +998,6 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	command_arg = va_arg( vl, char *);
       }
     va_end(vl);
-
-    // JSONBuilder::ptr builder;
-    // builder.reset (new JSONBuilder ());
-    // builder->reset ();
-    // builder->begin_object ();
-    // builder->set_member_name ("command");
-    // builder->add_node_value (command_->get_json_root_node ());
-    // builder->end_object ();
-    // g_print ("%s\n", builder->get_string(true).c_str ());
     
     invoke_in_thread ();
     res = command_->result_[0];
@@ -1028,7 +1012,6 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   void
   QuiddityManager::invoke_in_thread ()
   {
-    //g_print ("-- avant --\n");
     JSONBuilder::ptr builder;
     builder.reset (new JSONBuilder ());
     builder->reset ();
@@ -1040,15 +1023,10 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     {
       std::unique_lock <std::mutex> lock (execution_done_mutex_);
       g_async_queue_push (command_queue_, command_.get ());
+      //g_print ("PUSHED - %s\n", builder->get_string(true).c_str ());
       execution_done_cond_.wait (lock);
+      //g_print ("DONE - %s\n", builder->get_string(true).c_str ());
     }
-    // //FIXME remove that
-    // timespec delay;
-    // delay.tv_sec = 0;
-    // delay.tv_nsec = 1000000;
-    // nanosleep(&delay, NULL);
-
-    //g_print ("-- apres --\n");
   }
 
   gboolean
@@ -1130,19 +1108,23 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	break;
       case QuiddityCommand::invoke:
 	{
-	  std::string *result;
+	  std::string *result = NULL;
 	  if (context->manager_impl_->invoke (context->command_->args_[0],
 					      context->command_->args_[1], 
 					      &result,
 					      context->command_->vector_arg_))
 	    {
 	      context->command_->success_ = true; //result_.push_back ("true");
-	      context->command_->result_.push_back (*result);
+	      if (NULL == result)
+		context->command_->result_.push_back ("error");
+	      else
+		context->command_->result_.push_back (*result);
 	    }
 	  else
 	    context->command_->success_ = false; //result_.push_back ("false");
 
-	  delete result;
+	  if (NULL != result)
+	    delete result;
 	}
 	break;
       case QuiddityCommand::subscribe_signal:

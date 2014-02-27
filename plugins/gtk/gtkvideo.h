@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher-gtk.
  *
  * switcher-gtk is free software; you can redistribute it and/or
@@ -64,7 +62,11 @@ namespace switcher
     GstElement *sink_bin_;
     GstElement *queue_;
     GstElement *ffmpegcolorspace_;
+    GstElement *videoflip_;
+    GstElement *gamma_;
+    GstElement *videobalance_;
     GstElement *xvimagesink_;
+
 #if HAVE_OSX
     NSView * window_handle_;
 #else
@@ -76,6 +78,8 @@ namespace switcher
     CustomPropertyHelper::ptr custom_props_;
     GParamSpec *fullscreen_prop_spec_;
     gboolean is_fullscreen_;
+    GParamSpec *title_prop_spec_;
+    gchar *title_;
 
     std::mutex wait_window_mutex_;
     std::condition_variable wait_window_cond_;
@@ -96,6 +100,8 @@ namespace switcher
 				      gpointer   user_data);
     static void window_destroyed (gpointer data);
     static gboolean destroy_window (gpointer data);
+    static void set_title (const gchar *value, void *user_data);
+    static const gchar *get_title (void *user_data);
 
     //implementation of parent
     void on_shmdata_connect (std::string shmdata_sochet_path);

@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -85,7 +83,7 @@ namespace switcher
       }
 
     g_object_set (G_OBJECT (gst_parse_to_bin_src_), "async-handling",TRUE, NULL);
-    GstUtils::wait_state_changed (bin_);
+    //GstUtils::wait_state_changed (bin_);
     
     GstPad *src_pad = gst_element_get_static_pad (gst_parse_to_bin_src_,"src");
     gst_bin_add (GST_BIN (bin_), gst_parse_to_bin_src_);
@@ -110,7 +108,7 @@ namespace switcher
     context->custom_props_->notify_property_changed (context->gst_launch_pipeline_spec_);
    }
   
-  gchar *
+  const gchar *
   GstParseToBinSrc::get_gst_launch_pipeline (void *user_data)
   {
     GstParseToBinSrc *context = static_cast <GstParseToBinSrc *> (user_data);

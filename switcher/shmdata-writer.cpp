@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -26,24 +24,27 @@ namespace switcher
 {
 
   ShmdataWriter::ShmdataWriter() :
-    writer_ (shmdata_base_writer_init ())
-  {
-    path_ = "";
-    json_description_.reset (new JSONBuilder());
-    tee_ = NULL;
-    queue_ = NULL;
-    fakesink_ = NULL;
-  }
+    path_ (),
+    writer_ (shmdata_base_writer_init ()),
+    bin_ (NULL),
+    tee_ (NULL),
+    queue_ (NULL),
+    fakesink_ (NULL),
+    json_description_ (new JSONBuilder())
+  {}
 
   ShmdataWriter::~ShmdataWriter()
   {
     //g_debug ("ShmdataWriter: cleaning elements %s", path_.c_str());
-    GstUtils::clean_element (tee_);
-    GstUtils::clean_element (queue_);
-    GstUtils::clean_element (fakesink_);
-    // g_debug ("ShmdataWriter: deleting %s", path_.c_str());
+    if (NULL != tee_)
+      GstUtils::clean_element (tee_);
+    if (NULL != queue_)
+      GstUtils::clean_element (queue_);
+    if (NULL != fakesink_)
+      GstUtils::clean_element (fakesink_);
     shmdata_base_writer_close (writer_);
-    g_debug ("ShmdataWriter: %s deleted", path_.c_str());
+    if (!path_.empty ())
+      g_debug ("ShmdataWriter: %s deleted", path_.c_str());
   }
 
   //WARNING if the file exist it will be deleted
@@ -82,7 +83,9 @@ namespace switcher
   }
  
   void 
-  ShmdataWriter::plug (GstElement *bin, GstElement *source_element, GstCaps *caps)
+  ShmdataWriter::plug (GstElement *bin, 
+		       GstElement *source_element, 
+		       GstCaps *caps)
   {
     g_debug ("ShmdataWriter::plug (source element)");
     bin_ = bin;
@@ -91,48 +94,55 @@ namespace switcher
     GstUtils::make_element ("fakesink", &fakesink_);
     g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
     gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
-
-    shmdata_base_writer_plug (writer_, bin, tee_);
-
-    gst_element_link_filtered (source_element, tee_, caps);
-    gst_element_link_many (tee_, queue_, fakesink_,NULL);
-
+    shmdata_base_writer_plug (writer_, 
+			      bin, 
+			      tee_);
+    gst_element_link_filtered (source_element, 
+			       tee_, 
+			       caps);
+    gst_element_link_many (tee_, 
+			   queue_, 
+			   fakesink_,
+			   NULL);
     GstUtils::sync_state_with_parent (tee_);
     GstUtils::sync_state_with_parent (queue_);
     GstUtils::sync_state_with_parent (fakesink_);
-    g_debug ("shmdata writer plugged (%s)",path_.c_str());
+    if (!path_.empty ())
+      g_debug ("shmdata writer plugged (%s)", path_.c_str());
   }
 
   void 
-  ShmdataWriter::plug (GstElement *bin, GstPad *source_pad)
+  ShmdataWriter::plug (GstElement *bin, 
+		       GstPad *source_pad)
   {
     bin_ = bin;
     GstUtils::make_element ("tee", &tee_);
     GstUtils::make_element ("queue", &queue_);
     GstUtils::make_element ("fakesink", &fakesink_);
-    g_object_set (G_OBJECT(fakesink_),"sync", FALSE,NULL);
-    g_object_set (G_OBJECT(fakesink_),"silent", TRUE,NULL);
-    
+    g_object_set (G_OBJECT(fakesink_), "sync", FALSE, NULL);
+    g_object_set (G_OBJECT(fakesink_), "silent", TRUE, NULL);
     gst_bin_add_many (GST_BIN (bin), 
      		      tee_, 
      		      queue_, 
      		      fakesink_,
      		      NULL);
-
-    shmdata_base_writer_plug (writer_, bin, tee_);
-    
-    GstPad *sinkpad = gst_element_get_static_pad (tee_, "sink");
+    shmdata_base_writer_plug (writer_, 
+			      bin, 
+			      tee_);
+    GstPad *sinkpad = gst_element_get_static_pad (tee_, 
+						  "sink");
     if (gst_pad_link (source_pad, sinkpad) != GST_PAD_LINK_OK)
       g_debug ("ShmdataWriter: failed to link with tee");
-    
     gst_object_unref (sinkpad);
-    gst_element_link_many (tee_, queue_, fakesink_,NULL);
-
+    gst_element_link_many (tee_, 
+			   queue_, 
+			   fakesink_,
+			   NULL);
     GstUtils::sync_state_with_parent (tee_);
     GstUtils::sync_state_with_parent (queue_);
     GstUtils::sync_state_with_parent (fakesink_);
-    
-    g_debug ("shmdata writer pad plugged (%s)",path_.c_str());
+    if (!path_.empty ())
+      g_debug ("shmdata writer pad plugged (%s)", path_.c_str());
   }
   
   void

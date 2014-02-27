@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -151,20 +149,20 @@ namespace switcher
   StringDictionary::remove_entry (const gchar *entry_name, void *user_data)
   {
     StringDictionary *context = static_cast<StringDictionary *> (user_data);
-    if (context->dico_.find (entry_name) == context->dico_.end ())
+    auto it = context->dico_.find (entry_name);
+    if (context->dico_.end () == it)
       {
 	g_debug ("cannot remove entry named %s (not existing)", entry_name);
 	return FALSE;
       }
-    
     context->uninstall_property (entry_name);
-    context->dico_.erase (entry_name);
+    context->dico_.erase (it);
     context->prop_specs_.erase (entry_name);
     context->set_get_contexts_.erase (entry_name);
     return TRUE;
   }
 
-  gchar *
+  const gchar *
   StringDictionary::string_getter (void *user_data)
   {
     PropertySetGet *context = static_cast <PropertySetGet *> (user_data);

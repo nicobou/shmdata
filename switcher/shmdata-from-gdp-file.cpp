@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -134,9 +132,10 @@ namespace switcher
   bool
   ShmdataFromGDPFile::remove_file (std::string file_path)
   {
-    if (shmdata_names_.find (file_path) != shmdata_names_.end ())
+    auto it = shmdata_names_.find (file_path);
+    if (shmdata_names_.end () != it)
       return false;
-    shmdata_names_.erase (file_path);
+    shmdata_names_.erase (it);
     return true;
   }
 

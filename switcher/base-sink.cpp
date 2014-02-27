@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -31,12 +29,11 @@ namespace switcher
   }  
   
   BaseSink::BaseSink () :
-    connection_hook_ (NULL)
+    connection_hook_ (NULL),
+    hook_user_data_ (NULL),
+    sink_element_ (),
+    shmdata_path_ ("")
   {
-    
-    sink_element_ = NULL;
-    shmdata_path_ = "";
-
     //registering connect
     install_method ("Connect",
 		    "connect",
@@ -50,6 +47,28 @@ namespace switcher
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
+  
+    //registering disconnect
+    install_method ("Disconnect",
+		    "disconnect",
+		    "disconnect the sink from the shmdata socket", 
+		    "success or fail",
+		    Method::make_arg_description ("none",
+						  NULL),
+		    (Method::method_ptr)&disconnect, 
+		    G_TYPE_BOOLEAN,
+		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
+		    this);
+  }
+  
+  gboolean
+  BaseSink::disconnect (gpointer /*unused*/, gpointer user_data)
+  {
+    //std::string connector = static_cast<std::string>(connector_name);
+    BaseSink *context = static_cast<BaseSink*>(user_data);
+    context->clear_shmdatas ();
+    context->on_shmdata_disconnect ();
+    return TRUE;
   }
 
    gboolean
@@ -83,29 +102,29 @@ namespace switcher
 	g_debug ("BaseSink::connect set on_first_data_hook ");
 	reader_->set_on_first_data_hook (connection_hook_, hook_user_data_);
       }
-    //if (runtime_) // starting the reader if runtime is set
-      reader_->start ();
+    reader_->start ();
     register_shmdata_reader (reader_);
-
     return true;
   }
 
   void
   BaseSink::set_sink_element (GstElement *sink)
   {
+    set_sink_element_no_connect (sink);
+    if (g_strcmp0 (shmdata_path_.c_str (), "") != 0)
+      connect (shmdata_path_);
+  }
+ 
+  void
+  BaseSink::set_sink_element_no_connect (GstElement *sink)
+  {
     if (sink_element_ != NULL && sink_element_ != sink)
       GstUtils::clean_element (sink_element_);
     //sink element will be added to bin_ by the shmdata reader when appropriate
     sink_element_ = sink;
-
-    if (g_strcmp0 (shmdata_path_.c_str (), "") != 0)
-      {
-	g_debug ("-------- -- -- - - - -reseting basse sink shmdata reader");
-	connect (shmdata_path_);
-      }
-   
   }
 
+ 
   void 
   BaseSink::set_on_first_data_hook (ShmdataReader::on_first_data_hook cb, void *user_data)
   {

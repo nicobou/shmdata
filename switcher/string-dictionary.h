@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -51,7 +49,7 @@ namespace switcher
     //property
     CustomPropertyHelper::ptr custom_props_;
     std::map<std::string, GParamSpec *> prop_specs_;
-    static gchar* string_getter (void *user_data);
+    static const gchar* string_getter (void *user_data);
     static void string_setter (const gchar *value, 
 			       void *user_data);
 

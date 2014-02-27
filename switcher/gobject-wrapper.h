@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -132,7 +130,6 @@ namespace switcher
     //static std::map<guint, GObjectCustomSignal::ptr> custom_signals_;  
     static guint next_signal_num_; //this is only for generation of unique signal names  
     std::map<std::string, void *> signal_user_datas_;  
-    void *signal_default_user_data_;  
   };
 
 }  // end of namespace

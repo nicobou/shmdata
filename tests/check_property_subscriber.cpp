@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -29,34 +27,34 @@ static switcher::QuiddityManager::ptr manager;
 
 
 void 
-mon_property_cb(std::string /*subscriber_name*/, 
-		std::string quiddity_name, 
-		std::string property_name, 
-		std::string value, 
-		void *user_data)
+mon_property_cb (std::string /*subscriber_name*/, 
+		 std::string quiddity_name, 
+		 std::string property_name, 
+		 std::string value, 
+		 void *user_data)
 {
-  if (g_strcmp0 (quiddity_name.c_str (), "vid") != 0)
+  if (0 != quiddity_name.compare ("vid"))
     {
       g_warning ("quiddity name does not match, got %s instead of \"vid\"", 
 		 quiddity_name.c_str ());
       return;
     }
 
-  if (g_strcmp0 (property_name.c_str (), "pattern") != 0)
+  if (0 != property_name.compare ("pattern"))
     {
       g_warning ("property name does not match, got %s instead of \"pattern\"", 
 		 property_name.c_str ());
       return;
     }
 
-  if (g_strcmp0 (value.c_str (), "Random (television snow)") != 0)
+  if (0 != value.compare ("Random (television snow)"))
     {
       g_warning ("value does not match, got %s instead of Random (television snow)", 
 		 value.c_str ());
       return;
     }
 
-  if (g_strcmp0 ((char *)user_data, "hello world") != 0)
+  if (0 != g_strcmp0 ((char *)user_data, "hello world"))
     {
       g_warning ("user_data name does not match, got %s instead of \"hello world\"", 
 		 (char *)user_data);
@@ -77,7 +75,7 @@ main ()
 
     manager->make_property_subscriber ("sub", mon_property_cb, (void *)user_string);
     manager->create ("videotestsrc","vid");
-     manager->subscribe_property ("sub","vid","pattern");
+    manager->subscribe_property ("sub","vid","pattern");
     
     std::vector<std::string> subscribers = manager->list_property_subscribers ();
     if (subscribers.size () != 1 

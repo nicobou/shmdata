@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -118,9 +116,7 @@ namespace switcher
 
   Segment::~Segment()
   {
-    g_debug ("Segment::~Segment begin (%s)",get_nick_name().c_str ());
-    clean_bin ();
-    g_debug ("Segment::~Segment end");
+    clear_shmdatas ();
   }
   
   void 
@@ -164,12 +160,24 @@ namespace switcher
 		//GstUtils::clean_element (GST_ELEMENT (child->data));
 	      }
 	  }
-	g_debug ("~Segment: cleaning internal bin");
+	g_debug ("going to clean bin_");
+	// GstUtils::g_idle_add_full_with_context (get_g_main_context (),
+	// 					G_PRIORITY_DEFAULT_IDLE,
+	// 					Segment::clean_element_invoke,
+	// 					(gpointer)bin_,
+	// 					NULL);
 	GstUtils::clean_element (bin_);
+	g_debug ("~Segment: cleaning internal bin");
       }
   }
 
- 
+  gboolean
+  Segment::clean_element_invoke (gpointer user_data)
+  {
+    GstUtils::clean_element ((GstElement *) user_data);
+    return TRUE;
+  }
+
   GstElement *
   Segment::get_bin()
   {
@@ -244,7 +252,9 @@ namespace switcher
 
   bool Segment::unregister_shmdata_reader (std::string shmdata_path)
   {
-    shmdata_readers_.erase (shmdata_path);
+    auto it = shmdata_readers_.find (shmdata_path);
+    if (shmdata_readers_.end () != it)
+      shmdata_readers_.erase (it);
     update_shmdata_readers_description ();
     GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
     return true;
@@ -252,7 +262,9 @@ namespace switcher
 
   bool Segment::unregister_shmdata_writer (std::string shmdata_path)
   {
-    shmdata_writers_.erase (shmdata_path);
+    auto it = shmdata_writers_.find (shmdata_path);
+    if (shmdata_writers_.end () != it)
+      shmdata_writers_.erase (it);
     update_shmdata_writers_description ();
     GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_writers_description_);
     return true;

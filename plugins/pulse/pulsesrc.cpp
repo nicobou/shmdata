@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher-pulse. 
  *
  * Partially from pactl.c Copyright 2004-2006 Lennart Poettering 
@@ -41,7 +39,7 @@ namespace switcher
     connected_to_pulse_ (false),
     devices_mutex_ (),
     devices_cond_ (),
-    custom_props_ (), 
+    custom_props_ (new CustomPropertyHelper ()), 
     capture_devices_description_spec_ (NULL),
     capture_devices_description_ (NULL),
     devices_enum_spec_ (NULL),
@@ -51,7 +49,9 @@ namespace switcher
     pa_mainloop_api_ (NULL),
     pa_context_ (NULL),
     server_ (NULL),
-    capture_devices_ ()
+    capture_devices_ (),
+    quit_mutex_ (),
+    quit_cond_ ()
   {}
 
   bool
@@ -59,6 +59,9 @@ namespace switcher
   {
     if (!make_elements ())
       return false;
+
+    install_property (G_OBJECT (pulsesrc_),"volume", "volume", "Volume");
+    install_property (G_OBJECT (pulsesrc_),"mute", "mute", "Mute");
 
     init_startable (this);
     std::unique_lock<std::mutex> lock (devices_mutex_); 
@@ -68,9 +71,6 @@ namespace switcher
 					    this,
 					    NULL);
 
-    capture_devices_description_ = NULL;
-
-    custom_props_.reset (new CustomPropertyHelper ());
     capture_devices_description_spec_ = custom_props_->make_string_property ("devices-json", 
 									     "Description of capture devices (json formated)",
 									     "",
@@ -88,7 +88,7 @@ namespace switcher
     devices_cond_.wait (lock);
     if (!connected_to_pulse_)
       {
-	g_print ("NOT CONNECTED TO PULSE\n");
+	g_debug ("not connected to pulse, cannot init");
 	return false;
       }
     return true;
@@ -100,29 +100,54 @@ namespace switcher
     PulseSrc *context = static_cast <PulseSrc *> (user_data);
     context->pa_glib_mainloop_ = pa_glib_mainloop_new (context->get_g_main_context ());
     context->pa_mainloop_api_ = pa_glib_mainloop_get_api (context->pa_glib_mainloop_);
-    if (!(context->pa_context_ = pa_context_new (context->pa_mainloop_api_, NULL))) {
-      g_debug ("PulseSrc:: pa_context_new() failed.");
-      return FALSE;
-    }
+    context->pa_context_ = pa_context_new (context->pa_mainloop_api_, NULL);
+    if (NULL == context->pa_context_) 
+      {
+	g_debug ("PulseSrc:: pa_context_new() failed.");
+	return FALSE;
+      }
     pa_context_set_state_callback (context->pa_context_, pa_context_state_callback, context);
-    if (pa_context_connect(context->pa_context_, context->server_, (pa_context_flags_t)0, NULL) < 0) {
-      g_debug ("pa_context_connect() failed: %s", pa_strerror(pa_context_errno(context->pa_context_)));
-      return FALSE;
-    }
+    if (pa_context_connect (context->pa_context_, 
+			    context->server_, 
+			    (pa_context_flags_t)0, 
+			    NULL) < 0) 
+      {
+	g_debug ("pa_context_connect() failed: %s", pa_strerror(pa_context_errno(context->pa_context_)));
+	return FALSE;
+      }
     context->connected_to_pulse_ = true;
     return FALSE;
   }
 
   PulseSrc::~PulseSrc ()
   {
-    if (connected_to_pulse_)
-      pa_context_disconnect (pa_context_);
-    //pa_mainloop_api_->quit (pa_mainloop_api_, 0);
-    //pa_glib_mainloop_free(pa_glib_mainloop_);
-    if (capture_devices_description_ != NULL)
+    GMainContext *main_context = get_g_main_context ();
+    if (NULL != main_context && connected_to_pulse_)
+      {
+	std::unique_lock<std::mutex> lock (quit_mutex_);
+	GstUtils::g_idle_add_full_with_context (main_context,
+						G_PRIORITY_DEFAULT_IDLE,
+						quit_pulse,
+						this,
+						NULL);
+	quit_cond_.wait (lock);
+      }
+    if (NULL != capture_devices_description_)
       g_free (capture_devices_description_);
   }
 
+  gboolean
+  PulseSrc::quit_pulse (void *user_data)
+  {
+    PulseSrc *context = static_cast <PulseSrc *> (user_data);
+    pa_context_disconnect (context->pa_context_);
+    // pa_context_unref (context->pa_context_);
+    // context->pa_context_ = NULL;
+    pa_glib_mainloop_free (context->pa_glib_mainloop_);
+    std::unique_lock<std::mutex> lock (context->quit_mutex_);
+    context->quit_cond_.notify_all ();
+    return FALSE;
+  }
 
   bool
   PulseSrc::make_elements ()
@@ -133,26 +158,26 @@ namespace switcher
       return false;
     if (!GstUtils::make_element ("bin",&pulsesrc_bin_))
       return false;
-
-    uninstall_property ("volume");
-    uninstall_property ("mute");
-    install_property (G_OBJECT (pulsesrc_),"volume","volume", "Volume");
-    install_property (G_OBJECT (pulsesrc_),"mute","mute", "Mute");
-
+    
     g_object_set (G_OBJECT (pulsesrc_), "client", get_nick_name ().c_str (), NULL);
     
     gst_bin_add_many (GST_BIN (pulsesrc_bin_),
 		      pulsesrc_,
 		      capsfilter_,
 		      NULL);
-
+    
     gst_element_link (pulsesrc_, capsfilter_);
-
+    
     GstPad *src_pad = gst_element_get_static_pad (capsfilter_, "src");
     GstPad *ghost_srcpad = gst_ghost_pad_new (NULL, src_pad);
     gst_pad_set_active(ghost_srcpad,TRUE);
     gst_element_add_pad (pulsesrc_bin_, ghost_srcpad); 
     gst_object_unref (src_pad);
+    
+    // uninstall_property ("volume");
+    // uninstall_property ("mute");
+    reinstall_property (G_OBJECT (pulsesrc_),"volume","volume", "Volume");
+    reinstall_property (G_OBJECT (pulsesrc_),"mute","mute", "Mute");
 
     return true;
   }
@@ -199,15 +224,16 @@ namespace switcher
       
       break;
     case PA_CONTEXT_TERMINATED:
-      g_debug ("PulseSrc: PA_CONTEXT_TERMINATED\n");
-      pa_context_unref(context->pa_context_);
-      context->pa_context_ = NULL;
+      {
+	g_debug ("PulseSrc: PA_CONTEXT_TERMINATED");
+      }
       break;
     case PA_CONTEXT_FAILED:
-      //g_print ("PA_CONTEXT_FAILED\n");
+      g_debug ("PA_CONTEXT_FAILED");
       break;
     default:
-      g_debug ("PulseSrc Context error: %s\n",pa_strerror(pa_context_errno(pulse_context)));
+      g_debug ("PulseSrc Context error: %s",
+	       pa_strerror(pa_context_errno(pulse_context)));
     }
   }
 
@@ -371,7 +397,8 @@ namespace switcher
   void 
   PulseSrc::make_device_description (pa_context *pulse_context)
   {
-    capture_devices_.clear ();
+    if (!capture_devices_.empty ())
+      capture_devices_.clear ();
     pa_operation_unref(pa_context_get_source_info_list(pulse_context, get_source_info_callback, this));
   }
 
@@ -403,7 +430,7 @@ namespace switcher
       }
   }
   
-  gchar *
+  const gchar *
   PulseSrc::get_capture_devices_json (void *user_data)
   {
     PulseSrc *context = static_cast<PulseSrc *> (user_data);

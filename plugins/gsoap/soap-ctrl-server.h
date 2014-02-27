@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher-gsoap.
  *
  * switcher-gsoap is free software: you can redistribute it and/or modify
@@ -22,8 +20,9 @@
 #define __SWITCHER_SOAP_CTRL_SERVER_H__
 
 #include "switcher/quiddity-manager-wrapper.h"
-#include <memory>
 #include "webservices/soapcontrolService.h"
+#include <thread>
+#include <memory>
 
 namespace switcher
 {
@@ -52,8 +51,8 @@ namespace switcher
     bool quit_server_thread_;
     controlService *service_; 
     SOAP_SOCKET socket_;
-    GThread *thread_;
-    static gpointer server_thread (gpointer user_data);
+    std::thread thread_;
+    void server_thread ();
     static int http_get (struct soap *soap);
   };
 

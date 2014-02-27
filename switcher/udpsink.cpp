@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -186,7 +184,7 @@ namespace switcher
     gst_element_link (context->typefind_,
      		      context->udpsink_);
     
-    GstUtils::wait_state_changed (context->udpsink_bin_);
+    //GstUtils::wait_state_changed (context->udpsink_bin_);
     GstUtils::sync_state_with_parent (context->udpsink_bin_);
     
     GstPad *sink_pad = gst_element_get_static_pad (context->typefind_, "sink");

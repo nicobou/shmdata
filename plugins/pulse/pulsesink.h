@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher-pulse.
  *
  * switcher-pulse is free software; you can redistribute it and/or
@@ -26,6 +24,9 @@
 #include <pulse/pulseaudio.h>
 #include <pulse/glib-mainloop.h>
 #include "switcher/custom-property-helper.h"
+#include <mutex>
+#include <condition_variable>
+#include <vector>
 
 namespace switcher
 {
@@ -36,40 +37,10 @@ namespace switcher
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSink);
     PulseSink ();
     ~PulseSink ();
+    PulseSink (const PulseSink&) = delete;
+    PulseSink &operator= (const PulseSink &) = delete;
 
   private:
-    GstElement *pulsesink_;
-    GstElement *audioconvert_;
-    GstElement *pulsesink_bin_;
-    bool connected_to_pulse_;
-    bool make_elements ();
-    static gchar *get_devices_json (void *user_data);
-    void make_device_description (pa_context *pulse_context);
-    void make_json_description ();
-
-    //custom property:
-    CustomPropertyHelper::ptr custom_props_; 
-    GParamSpec *devices_description_spec_;//json formated
-    gchar *devices_description_;//json formated
-    GParamSpec *device_name_spec_;//json formated
-    gchar *device_name_;//json formated
-
-    //pulse_audio
-    pa_glib_mainloop *pa_glib_mainloop_;
-    pa_mainloop_api *pa_mainloop_api_;
-    pa_context *pa_context_;
-    char *server_;
-
-    bool init_segment ();
-    static void pa_context_state_callback(pa_context *c, void *userdata);
-    static void get_sink_info_callback(pa_context *c, const pa_sink_info *i, int is_last, void *userdata);
-    static void on_pa_event_callback(pa_context *c, 
-				     pa_subscription_event_type_t t,
-				     uint32_t idx, 
-				     void *userdata);
-    static gchar *get_device_name (void *user_data);
-    static void set_device_name (const gchar *value, 
-				 void *user_data);
     typedef struct {
       std::string name_;
       std::string description_;
@@ -80,9 +51,49 @@ namespace switcher
       std::vector <std::pair <std::string/*port*/,std::string /*description*/> > ports_;
       std::string active_port_;
     } DeviceDescription;
+    GstElement *pulsesink_;
+    GstElement *audioconvert_;
+    GstElement *pulsesink_bin_;
+    bool connected_to_pulse_;
+    //custom property:
+    CustomPropertyHelper::ptr custom_props_; 
+    GParamSpec *devices_description_spec_;//json formated
+    gchar *devices_description_;//json formated
+    //pulse_audio
+    pa_glib_mainloop *pa_glib_mainloop_;
+    pa_mainloop_api *pa_mainloop_api_;
+    pa_context *pa_context_;
+    char *server_;
+    std::vector <DeviceDescription> devices_; //indexed by pulse_device_name
+    std::mutex devices_mutex_;
+    std::condition_variable devices_cond_;
+    //devices enumeration
+    GParamSpec *devices_enum_spec_;
+    GEnumValue devices_enum_ [128];
+    gint device_;
+    //quit
+    std::mutex quit_mutex_;
+    std::condition_variable quit_cond_;
 
-    std::map <std::string, DeviceDescription> devices_; //indexed by pulse_device_name
-
+    bool make_elements ();
+    bool build_elements ();
+    static const gchar *get_devices_json (void *user_data);
+    void make_device_description (pa_context *pulse_context);
+    void make_json_description ();
+    bool init_segment ();
+    static void pa_context_state_callback(pa_context *c, void *userdata);
+    static void get_sink_info_callback(pa_context *c, const pa_sink_info *i, int is_last, void *userdata);
+    static void on_pa_event_callback(pa_context *c, 
+				     pa_subscription_event_type_t t,
+				     uint32_t idx, 
+				     void *userdata);
+    void on_shmdata_disconnect ();
+    void on_shmdata_connect (std::string /* shmdata_sochet_path */);
+    static gboolean async_get_pulse_devices (void *user_data);
+    void update_output_device ();
+    static void set_device (const gint value, void *user_data);
+    static gint get_device (void *user_data);
+    static gboolean quit_pulse (void *user_data);
   };
 
   SWITCHER_DECLARE_PLUGIN(PulseSink);

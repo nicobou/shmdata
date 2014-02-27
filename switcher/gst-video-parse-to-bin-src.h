@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -23,8 +21,7 @@
 #ifndef __SWITCHER_GST_VIDEO_PARSE_TO_BIN_SRC_H__
 #define __SWITCHER_GST_VIDEO_PARSE_TO_BIN_SRC_H__
 
-#include "base-source.h"
-#include "startable-quiddity.h"
+#include "video-source.h"
 #include "custom-property-helper.h"
 #include <gst/gst.h>
 #include <memory>
@@ -32,7 +29,7 @@
 namespace switcher
 {
 
-  class GstVideoParseToBinSrc : public BaseSource, StartableQuiddity
+  class GstVideoParseToBinSrc : public VideoSource
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstVideoParseToBinSrc);
@@ -41,20 +38,17 @@ namespace switcher
     GstVideoParseToBinSrc (const GstVideoParseToBinSrc &) = delete;
     GstVideoParseToBinSrc &operator= (const GstVideoParseToBinSrc &) = delete;
 
-    bool start ();
-    bool stop ();
+    bool on_start ();
+    bool on_stop ();
    
   private:
-    bool clean ();
     GstElement *gst_video_parse_to_bin_src_;
-
     CustomPropertyHelper::ptr custom_props_; 
     GParamSpec *gst_launch_pipeline_spec_;
     gchar *gst_launch_pipeline_;
-
     static void set_gst_launch_pipeline (const gchar *value, void *user_data);
-    static gchar *get_gst_launch_pipeline (void *user_data);
-    bool to_shmdata ();
+    static const gchar *get_gst_launch_pipeline (void *user_data);
+    bool make_video_source (GstElement **new_element);
     bool init_segment ();
   };
 

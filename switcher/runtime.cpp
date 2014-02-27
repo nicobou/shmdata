@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -68,7 +66,7 @@ namespace switcher
     g_source_unref (source_);
     ((GstBusSource*)source_)->inited = FALSE;
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
-    GstUtils::wait_state_changed (pipeline_);
+    //GstUtils::wait_state_changed (pipeline_);
     play_pause_spec_ = 
       custom_props_->make_boolean_property ("play", 
 					    "play",
@@ -129,11 +127,9 @@ namespace switcher
   {
     if (position_tracking_source_ != NULL)
        g_source_destroy (position_tracking_source_);
-
-     gst_element_set_state (pipeline_, GST_STATE_NULL);
-     gst_object_unref (GST_OBJECT (pipeline_));
-     if (!g_source_is_destroyed (source_))
-       g_source_destroy (source_);
+    GstUtils::clean_element (pipeline_);
+    if (!g_source_is_destroyed (source_))
+      g_source_destroy (source_);
   }
 
 
@@ -240,7 +236,7 @@ namespace switcher
     //query position
     query = gst_query_new_position (GST_FORMAT_TIME);
 res = gst_element_query (pipeline_, query);
-    gint64 cur_pos;
+    gint64 cur_pos = 0;
     if (res) {
       gst_query_parse_position (query, 
 				NULL, 
@@ -384,7 +380,7 @@ res = gst_element_query (pipeline_, query);
     Runtime *context = static_cast<Runtime *>(user_data);
     if ( reader != NULL)
       {
-	if ( shmdata_base_reader_process_error (reader, msg)) 
+	if (NULL != msg && shmdata_base_reader_process_error (reader, msg)) 
 	  return GST_BUS_DROP; 
 	else 
 	  return GST_BUS_PASS; 

@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -87,7 +85,7 @@ namespace switcher
     context->custom_props_->notify_property_changed (context->shmdata_path_spec_);
   }
   
-  gchar *
+  const gchar *
   FakeShmdataWriter::get_shmdata_path (void *user_data)
   {
     FakeShmdataWriter *context = static_cast <FakeShmdataWriter *> (user_data);

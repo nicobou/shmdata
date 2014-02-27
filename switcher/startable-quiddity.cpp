@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -77,6 +75,12 @@ namespace switcher
       }
     context->custom_props_->notify_property_changed (context->started_prop_);
   }
+
+    bool 
+    StartableQuiddity::is_started ()
+    {
+      return started_;
+    }
   
 }//end of class
 

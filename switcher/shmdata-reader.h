@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
@@ -26,6 +24,8 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <mutex>
+#include <condition_variable>
 #include <shmdata/base-reader.h>
 #include "gst-element-cleaner.h"
 #include "json-builder.h"
@@ -49,7 +49,6 @@ namespace switcher
     void set_sink_element (GstElement *sink_element);
     void set_on_first_data_hook (on_first_data_hook cb, void *user_data);
     std::string get_path ();
-    GstCaps *get_caps ();
     void start ();
     void stop ();
     //get json doc:
@@ -66,12 +65,15 @@ namespace switcher
     GstElement *funnel_;
     GMainContext *g_main_context_;
     std::vector<GstElement *> elements_to_remove_;
+    JSONBuilder::ptr json_description_;
+    std::mutex start_mutex_;
+    std::condition_variable start_cond_;
     static void on_first_data (shmdata_base_reader_t *context, void *user_data);
     //static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
     static void unlink_pad (GstPad * pad);
     static void on_have_type (shmdata_base_reader_t *base_reader, GstCaps *caps, void *user_data);
-    JSONBuilder::ptr json_description_;
     void make_json_description ();
+    static gboolean start_idle (void *user_data);
   };
   
 }  // end of namespace

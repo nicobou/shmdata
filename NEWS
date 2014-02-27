@@ -1,3 +1,16 @@
+switcher 0.4.2 (2014-02-27)
+---------------------------
+This is an official release in the 0.4 stable series. 
+
+New features:
+
+* title property for gtkvideosink
+* adding videoflip, video balance and gamma to gtk video sink
+
+Bugs fixed:
+
+* too many for being listed here
+
 switcher 0.4.0 (2014-01-28)
 ---------------------------
 This is an official release in the 0.4 stable series. 

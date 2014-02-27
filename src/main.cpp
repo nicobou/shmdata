@@ -1,6 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
- *
  * This file is part of switcher.
  *
  * switcher is free software: you can redistribute it and/or modify
@@ -27,6 +25,7 @@
 #include <iostream>
 #include <signal.h>
 #include <time.h>
+#include "locale.h"
 #ifdef HAVE_GTK
 #include <gtk/gtk.h>
 #endif
@@ -56,7 +55,7 @@ static GOptionEntry entries[15] =
   {
     { "version", 'V', 0, G_OPTION_ARG_NONE, &display_version, "display switcher version number", NULL },
     { "server-name", 'n', 0, G_OPTION_ARG_STRING, &server_name, "server name (default is \"default\")", NULL },
-    { "port-number", 'p', 0, G_OPTION_ARG_STRING, &port_number, "port number the server will bind (default is 8080)", NULL },
+    { "port-number", 'p', 0, G_OPTION_ARG_STRING, &port_number, "port number the server will bind (default is 27182)", NULL },
     { "load", 'l', 0, G_OPTION_ARG_STRING, &load_file, "load state from history file (-l filename)", NULL },
     { "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet, "do not display any message", NULL },
     { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "display all messages, excluding debug", NULL },
@@ -68,7 +67,7 @@ static GOptionEntry entries[15] =
     { "classes-doc", 'K', 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", NULL },
     { "class-doc", 'k', 0, G_OPTION_ARG_STRING, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
     { "osc-port", 'o', 0, G_OPTION_ARG_STRING, &osc_port_number, "osc port number (osc enabled only if set)", NULL },
-    { "extra-plugin-dir", 'P', 0, G_OPTION_ARG_STRING, &extraplugindir, "directory where to find additional plugins", NULL }
+    { "extra-plugin-dir", 'E', 0, G_OPTION_ARG_STRING, &extraplugindir, "directory where to find additional plugins", NULL }
   };
 
 void
@@ -104,10 +103,9 @@ logger_cb (std::string /*subscriber_name*/,
 }
 
 
-int
-main (int argc,
-      char *argv[])
+int main (int argc, char *argv[])
 {
+  setlocale(LC_ALL, "");
   (void) signal (SIGINT, leave);
   (void) signal (SIGABRT, leave);
   (void) signal (SIGQUIT, leave);
@@ -138,7 +136,7 @@ main (int argc,
   if (server_name == NULL)
     server_name = "default";
   if (port_number == NULL)
-    port_number = "8080";
+    port_number = "27182";
 
   manager = switcher::QuiddityManager::make_manager (server_name);  
 
@@ -149,9 +147,9 @@ main (int argc,
   //manage logs from GStreamer
   manager->invoke_va ("internal_logger", "install_log_handler", NULL, "GStreamer", NULL);
   //manage logs from Glib
-  manager->invoke_va ("internal_logger", "install_log_handler", NULL, "Glib", NULL);
+  manager->invoke_va ("internal_logger", "install_log_handler", NULL, "GLib", NULL);
   //manage logs from Glib-GObject
-  manager->invoke_va ("internal_logger", "install_log_handler", NULL, "Glib-GObject", NULL);
+  manager->invoke_va ("internal_logger", "install_log_handler", NULL, "GLib-GObject", NULL);
   
   if (quiet)
     manager->set_property ("internal_logger", "mute", "true");
