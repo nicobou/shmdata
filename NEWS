@@ -1,6 +1,19 @@
 shmdata release notes
 ===================== 
 
+shmdata 0.8.12 (2014-02-27)
+---------------------------
+This is an official release in the 0.8 stable series. 
+
+New features:
+
+* There are no new features, this is a bugfix release
+
+Bugs fixed:
+
+* removing deprecated init function
+* fix osg library
+
 shmdata 0.8.10 (2014-02-24)
 ---------------------------
 This is an official release in the 0.8 stable series. 
