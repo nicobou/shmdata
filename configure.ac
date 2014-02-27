@@ -268,6 +268,17 @@ else
     AC_DEFINE(HAVE_GTK, [0], [GTK not detected])
 fi
 
+#check node-gyp
+AC_CHECK_PROG(HAVE_NODE_GYP, [node-gyp], [node-gyp])
+if test "x$HAVE_NODE_GYP" ="xfalse" ; then
+    NODEADDONBUILD=disabled
+    AC_MSG_WARN([Missing node-gyp, please install nodejs-dev and npm])
+else
+    NODEADDONBUILD=enabled
+    AC_CONFIG_FILES([nodejs/Makefile])
+fi
+AM_CONDITIONAL(NODEADDONBUILD, test "x${NODEADDONBUILD}" = "xenabled")
+
 dnl Use the C++ compiler for the compile tests
 AC_LANG(C++)
 
@@ -399,6 +410,7 @@ AC_OUTPUT
 [echo ""]
 [echo "SWITCHER OPTIONAL FEATURE"]
 [echo ""]
+[echo "nodejs addon               ${NODEADDONBUILD}"]
 [echo "python                     ${PYTHONBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
