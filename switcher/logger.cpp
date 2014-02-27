@@ -31,6 +31,7 @@ namespace switcher
 				       "LGPL",
 				       "logger",
 				       "Nicolas Bouillot");
+
   Logger::Logger () :
     i_am_the_one_ (false),
     last_line_ (),
@@ -60,6 +61,14 @@ namespace switcher
 	i_am_the_one_ = true;
       }
     
+    //FIXME: make the following not necessary, 
+    // avoid the following warnings:
+    // Attempt to add property MyObject::customprop1 after class was initialised
+    guint quiet_handler_id = g_log_set_handler ("GLib-GObject", 
+						G_LOG_LEVEL_MASK, 
+						quiet_log_handler, 
+						NULL);  
+
     last_line_prop_ = 
       custom_props_->make_string_property ("last-line", 
 					   "last log line",
@@ -112,6 +121,8 @@ namespace switcher
 				verbose_prop_, 
 				"verbose",
 				"Verbose");
+
+    
     
     //handler must be installed after custom property creation 
     handler_ids_["switcher"] = g_log_set_handler ("switcher", 
@@ -119,7 +130,8 @@ namespace switcher
 						  log_handler, 
 						  this);
     
-    
+    g_log_remove_handler ("GLib-GObject", quiet_handler_id);
+
     install_method ("Install Log Handler",
 		    "install_log_handler", 
 		    "make the logger managing the log domain", 
@@ -150,6 +162,13 @@ namespace switcher
     return true;
   }
 
+  void
+  Logger::quiet_log_handler (const gchar */*log_domain*/, 
+			     GLogLevelFlags /*log_level*/,
+			     const gchar */*message*/,
+			     gpointer /*user_data*/)
+  {}
+  
   Logger::~Logger()
   {
     if (i_am_the_one_)
