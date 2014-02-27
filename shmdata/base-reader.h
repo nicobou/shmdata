@@ -64,26 +64,6 @@ extern "C"
 						   void *user_data);
 
   /** 
-   * \deprecated use shmdata_base_reader_new instead
-   * Initialization function that starts monitoring the socket path. This install by default a sync_handler on 
-   * the gst_bus. Using multiple readers will warn about trying to replace the sync handler, but does not 
-   * affect the readers.   
-   * 
-   * @param socketPath is the file name of the shared memory
-   * @param bin is the bin where the base writer will be added. This bin should already be added to a pipeline. 
-   * @param on_first_data is the function pointer that will be called when 
-   * the connecting with the writer. Your sink elements may need to be added to the bin and state synchronized in this function.   
-   * @param user_data is the user data pointer for the on_first_video_data
-   * callback
-   * 
-   * @return a base reader
-   */
-  shmdata_base_reader_t *shmdata_base_reader_init (const char *socketPath,
-						   GstElement *bin,
-						   shmdata_base_reader_on_first_data cb,
-						   void *user_data);
-
-  /** 
    * Initialization function that will replace shmdata_base_reader_init. 
    * Before starting the shmdata, one need to set the callback function and 
    * set if the Gstreamer bus sync handler (singleton) is managed by the library (see

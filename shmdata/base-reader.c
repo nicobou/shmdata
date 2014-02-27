@@ -622,54 +622,6 @@ shmdata_base_reader_start (shmdata_base_reader_t * reader, const char *socketPat
   return TRUE;
 }
 
-shmdata_base_reader_t *
-shmdata_base_reader_init (const char *socketName,
-			  GstElement *bin,
-			  void (*on_first_data) (shmdata_base_reader_t *, void *), 
-			  void *user_data)
-{
-  shmdata_base_reader_t *reader =
-    (shmdata_base_reader_t *) g_malloc0 (sizeof (shmdata_base_reader_t));
-  shmdata_base_reader_init_members (reader);
-
-  //looking for the bus, searching the top level
-  GstElement *pipe = reader->bin_;
-  
-  while (pipe != NULL && !GST_IS_PIPELINE (pipe))
-    pipe = GST_ELEMENT_PARENT (pipe);
-
-  if( GST_IS_PIPELINE (pipe))
-    {
-      GstBus *bus = gst_pipeline_get_bus (GST_PIPELINE (pipe));  
-      gst_bus_set_sync_handler (bus, shmdata_base_reader_message_handler, NULL);  
-      gst_object_unref (bus);  
-    }
-  /* else */
-  /*     g_debug ("not watching the bus. Application should handle error messages (GST_RESOURCE_ERROR_READ from shmsrc) and call shmdata_base_reader_process_error.\n"); */
-  
-  //monitoring the shared memory file
-  reader->shmfile_ = g_file_new_for_commandline_arg (reader->socket_name_);
-  
-  if (g_file_query_exists (reader->shmfile_, NULL))
-    {
-      reader->initialized_ = TRUE;
-      reader->on_first_data_ (reader, reader->on_first_data_userData_);
-      shmdata_base_reader_attach (reader);
-    }
-
-  GFile *dir = g_file_get_parent (reader->shmfile_);
-  reader->dirMonitor_ = g_file_monitor_directory (dir,
-						  G_FILE_MONITOR_NONE,
-						  NULL, NULL);
-  g_object_unref (dir);
-  g_signal_connect (reader->dirMonitor_,
-		    "changed",
-		    G_CALLBACK
-		    (shmdata_base_reader_file_system_monitor_change), reader);
-
-  return reader;
-}
-
 void
 shmdata_base_reader_set_sink (shmdata_base_reader_t * reader,
 			      GstElement * sink)
