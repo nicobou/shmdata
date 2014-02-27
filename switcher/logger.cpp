@@ -221,6 +221,12 @@ namespace switcher
     std::string tmp_message = std::string ((NULL == message) ? "null-message" : message);
     std::string tmp_log_domain = std::string ((NULL == log_domain) ? "null-log-domain" : log_domain);
     std::string tmp_level = std::string ("unknown");
+
+    //FIXME: 
+    if (0 == tmp_log_domain.compare ("GLib-GObject") 
+	&& 0 == tmp_message.compare  (0, 23, "Attempt to add property"))
+      return;
+
     switch (log_level) {
     case G_LOG_LEVEL_ERROR:
       tmp_level = std::string ("error");
