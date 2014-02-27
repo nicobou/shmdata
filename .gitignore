@@ -35,6 +35,8 @@ install-sh
 libtool
 ltmain.sh
 missing
+nodejs/.deps/
+nodejs/build/
 plugins/.deps/
 plugins/.libs/
 plugins/avcodecs/.deps/
