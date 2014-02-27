@@ -21,6 +21,7 @@ check_PROGRAMS = \
     check_description_by_class \
     check_fakesink \
     check_quiddity_create_remove \
+    check_property_mapper \
     check_property_subscriber \
     check_rtp_session \
     check_signal_subscriber \
@@ -31,6 +32,9 @@ check_description_by_class_SOURCES = \
 
 check_quiddity_create_remove_SOURCES = \
     check_quiddity_create_remove.cpp
+
+check_property_mapper_SOURCES = \
+    check_property_mapper.cpp
 
 check_property_subscriber_SOURCES = \
     check_property_subscriber.cpp
