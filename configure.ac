@@ -268,16 +268,12 @@ else
     AC_DEFINE(HAVE_GTK, [0], [GTK not detected])
 fi
 
-#check node-gyp
-AC_CHECK_PROG(HAVE_NODE_GYP, [node-gyp], [node-gyp])
-if test "x$HAVE_NODE_GYP" ="xfalse" ; then
-    NODEADDONBUILD=disabled
-    AC_MSG_WARN([Missing node-gyp, please install nodejs-dev and npm])
-else
-    NODEADDONBUILD=enabled
-    AC_CONFIG_FILES([nodejs/Makefile])
-    AC_CONFIG_FILES([nodejs/binding.gyp:nodejs/binding.gyp.in])
-fi
+#check nodejs-dev
+AC_CHECK_FILE([/usr/include/nodejs/src/node.h],
+              [NODEADDONBUILD=enabled
+               AC_CONFIG_FILES([nodejs/Makefile])],
+              [NODEADDONBUILD=disabled
+               AC_MSG_WARN([Missing nodejs-dev package])])
 AM_CONDITIONAL(NODEADDONBUILD, test "x${NODEADDONBUILD}" = "xenabled")
 
 dnl Use the C++ compiler for the compile tests
@@ -374,11 +370,7 @@ if test "${SWITCHERBUILD}" = "enabled";
 fi
 AM_CONDITIONAL(SWITCHERBUILD, test "${SWITCHERBUILD}" = "enabled")
 
-LIBSWITCHER_INTERNAL_CFLAGS="$(GLIB_CFLAGS) $(GSOAP_CFLAGS) $(GST_CFLAGS) $(JSONGLIB_CFLAGS) $(SHMDATA_CFLAGS) -DG_LOG_DOMAIN=\"switcher\" -I$(top_srcdir)"
-AC_SUBST([LIBSWITCHER_INTERNAL_CFLAGS], [${LIBSWITCHER_INTERNAL_CFLAGS}])
-LIBSWITCHER_INTERNAL_LIBS="$(GLIB_LIBS) $(GSOAP_LIBS) $(GST_LIBS) $(JSONGLIB_LIBS) $(SHMDATA_LIBS) $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la"
-AC_SUBST([LIBSWITCHER_INTERNAL_LIBS], [${LIBSWITCHER_INTERNAL_LIBS}])
- 
+
 dnl =======================================================================
 dnl Finally, create Makefiles in all directories
 dnl =======================================================================
