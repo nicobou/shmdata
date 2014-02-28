@@ -276,6 +276,7 @@ if test "x$HAVE_NODE_GYP" ="xfalse" ; then
 else
     NODEADDONBUILD=enabled
     AC_CONFIG_FILES([nodejs/Makefile])
+    AC_CONFIG_FILES([nodejs/binding.gyp:nodejs/binding.gyp.in])
 fi
 AM_CONDITIONAL(NODEADDONBUILD, test "x${NODEADDONBUILD}" = "xenabled")
 
@@ -372,7 +373,12 @@ if test "${SWITCHERBUILD}" = "enabled";
   then AC_CONFIG_FILES([src/Makefile])
 fi
 AM_CONDITIONAL(SWITCHERBUILD, test "${SWITCHERBUILD}" = "enabled")
-                            
+
+LIBSWITCHER_INTERNAL_CFLAGS="$(GLIB_CFLAGS) $(GSOAP_CFLAGS) $(GST_CFLAGS) $(JSONGLIB_CFLAGS) $(SHMDATA_CFLAGS) -DG_LOG_DOMAIN=\"switcher\" -I$(top_srcdir)"
+AC_SUBST([LIBSWITCHER_INTERNAL_CFLAGS], [${LIBSWITCHER_INTERNAL_CFLAGS}])
+LIBSWITCHER_INTERNAL_LIBS="$(GLIB_LIBS) $(GSOAP_LIBS) $(GST_LIBS) $(JSONGLIB_LIBS) $(SHMDATA_LIBS) $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la"
+AC_SUBST([LIBSWITCHER_INTERNAL_LIBS], [${LIBSWITCHER_INTERNAL_LIBS}])
+ 
 dnl =======================================================================
 dnl Finally, create Makefiles in all directories
 dnl =======================================================================
