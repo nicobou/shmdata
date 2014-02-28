@@ -1,0 +1,136 @@
+{
+  "history" : [
+    {
+      "command" : "create_nick_named",
+      "calling time" : 547,
+      "arguments" : [
+        "videotestsrc",
+        "vid"
+      ],
+      "vector argument" : [
+      ],
+      "results" : [
+        "vid"
+      ]
+    },
+    {
+      "command" : "has_method",
+      "calling time" : 138319,
+      "arguments" : [
+        "vid",
+        "set_runtime"
+      ],
+      "vector argument" : [
+      ],
+      "results" : [
+      ]
+    },
+    {
+      "command" : "invoke",
+      "calling time" : 138355,
+      "arguments" : [
+        "vid",
+        "set_runtime"
+      ],
+      "vector argument" : [
+        "pipeline0"
+      ],
+      "results" : [
+        "true"
+      ]
+    },
+    {
+      "command" : "create_nick_named",
+      "calling time" : 144491,
+      "arguments" : [
+        "videosink",
+        "win"
+      ],
+      "vector argument" : [
+      ],
+      "results" : [
+        "win"
+      ]
+    },
+    {
+      "command" : "has_method",
+      "calling time" : 142453,
+      "arguments" : [
+        "win",
+        "set_runtime"
+      ],
+      "vector argument" : [
+      ],
+      "results" : [
+        "true"
+      ]
+    },
+    {
+      "command" : "invoke",
+      "calling time" : 142461,
+      "arguments" : [
+        "win",
+        "set_runtime"
+      ],
+      "vector argument" : [
+        "pipeline0"
+      ],
+      "results" : [
+        "true"
+      ]
+    },
+    {
+      "command" : "has_method",
+      "calling time" : 145164,
+      "arguments" : [
+        "win",
+        "set_runtime"
+      ],
+      "vector argument" : [
+      ],
+      "results" : [
+      ]
+    },
+    {
+      "command" : "invoke",
+      "calling time" : 145170,
+      "arguments" : [
+        "win",
+        "set_runtime"
+      ],
+      "vector argument" : [
+        "pipeline0"
+      ],
+      "results" : [
+        "true"
+      ]
+    },
+    {
+      "command" : "invoke",
+      "calling time" : 145309,
+      "arguments" : [
+        "win",
+        "connect"
+      ],
+      "vector argument" : [
+        "/tmp/switcher_nodeserver_vid_video"
+      ],
+      "results" : [
+        "true"
+      ]
+    },
+    {
+      "command" : "has_method",
+      "calling time" : 161089,
+      "arguments" : [
+        "vid",
+        "set_runtime"
+      ],
+      "vector argument" : [
+      ],
+      "results" : [
+        "true"
+      ]
+    }
+  ]
+}
