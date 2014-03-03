@@ -251,7 +251,7 @@ namespace switcher
   {
     if (url_ != NULL)
       g_free (url_);
-    if (try_connect_g_source_ != NULL)
+    if (NULL != try_connect_g_source_ && !g_source_is_destroyed (try_connect_g_source_))
       {
 	g_source_destroy (try_connect_g_source_);
 	try_connect_g_source_ = NULL;
