@@ -58,7 +58,7 @@ v8::Handle<v8::Value> SaveHistory(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue file_path(args[0]->ToString());
+  v8::String::Utf8Value file_path(args[0]->ToString());
 
   if (switcher_container[0]->save_command_history (std::string(*file_path).c_str ()))
     {
@@ -79,7 +79,7 @@ v8::Handle<v8::Value> LoadHistoryFromCurrentState(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue file_path(args[0]->ToString());
+  v8::String::Utf8Value file_path(args[0]->ToString());
 
   switcher_is_loading = true;
   switcher::QuiddityManager::CommandHistory histo = 
@@ -108,7 +108,7 @@ v8::Handle<v8::Value> LoadHistoryFromScratch(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue file_path(args[0]->ToString());
+  v8::String::Utf8Value file_path(args[0]->ToString());
 
   switcher_is_loading = true;
 
@@ -141,7 +141,7 @@ v8::Handle<v8::Value> Remove(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("switcher remove: Wrong first arguments type")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue first_arg(args[0]->ToString());
+  v8::String::Utf8Value first_arg(args[0]->ToString());
   if (switcher_container[0]->remove(std::string(*first_arg)))
     return v8::Boolean::New(true);
   else
@@ -158,7 +158,7 @@ v8::Handle<v8::Value> Create(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("switcher create: Wrong first arg type")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue first_arg(args[0]->ToString());
+  v8::String::Utf8Value first_arg(args[0]->ToString());
   v8::Local<v8::String> name;
   if (args.Length() ==2)
     {
@@ -166,7 +166,7 @@ v8::Handle<v8::Value> Create(const v8::Arguments& args) {
 	ThrowException(v8::Exception::TypeError(v8::String::New("switcher create: Wrong second arg type")));
 	return scope.Close(v8::Undefined());
       }
-      v8::String::AsciiValue second_arg(args[1]->ToString());
+      v8::String::Utf8Value second_arg(args[1]->ToString());
       name = v8::String::New(switcher_container[0]->create(std::string(*first_arg), 
 							   std::string(*second_arg)).c_str());
     }
@@ -186,13 +186,13 @@ v8::Handle<v8::Value> Rename(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("switcher create: Wrong first arg type")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue first_arg(args[0]->ToString());
+  v8::String::Utf8Value first_arg(args[0]->ToString());
 
   if (!args[1]->IsString()) {
     ThrowException(v8::Exception::TypeError(v8::String::New("switcher create: Wrong second arg type")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue second_arg(args[1]->ToString());
+  v8::String::Utf8Value second_arg(args[1]->ToString());
 
   v8::Local<v8::String> name;
   
@@ -231,7 +231,7 @@ v8::Handle<v8::Value> GetClassDoc(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue class_name(args[0]->ToString());
+  v8::String::Utf8Value class_name(args[0]->ToString());
 
   v8::Handle<v8::String> res = 
     v8::String::New(switcher_container[0]->get_class_doc(std::string(*class_name)).c_str() );
@@ -248,7 +248,7 @@ v8::Handle<v8::Value> GetQuiddityDescription(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue quiddity_name(args[0]->ToString());
+  v8::String::Utf8Value quiddity_name(args[0]->ToString());
 
   v8::Handle<v8::String> res = 
     v8::String::New(switcher_container[0]->get_quiddity_description(std::string(*quiddity_name)).c_str() );
@@ -276,9 +276,9 @@ v8::Handle<v8::Value> SetProperty(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue element_name(args[0]->ToString());
-  v8::String::AsciiValue property_name(args[1]->ToString());
-  v8::String::AsciiValue property_val(args[2]->ToString());
+  v8::String::Utf8Value element_name(args[0]->ToString());
+  v8::String::Utf8Value property_name(args[1]->ToString());
+  v8::String::Utf8Value property_val(args[2]->ToString());
 
   v8::Handle<v8::Boolean> res = 
     v8::Boolean::New(switcher_container[0]->set_property(std::string(*element_name), 
@@ -297,8 +297,8 @@ v8::Handle<v8::Value> GetProperty(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue element_name(args[0]->ToString());
-  v8::String::AsciiValue property_name(args[1]->ToString());
+  v8::String::Utf8Value element_name(args[0]->ToString());
+  v8::String::Utf8Value property_name(args[1]->ToString());
 
   v8::Handle<v8::String> res = 
     v8::String::New(switcher_container[0]->get_property(std::string(*element_name), 
@@ -316,7 +316,7 @@ v8::Handle<v8::Value> GetPropertiesDescription(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue element_name(args[0]->ToString());
+  v8::String::Utf8Value element_name(args[0]->ToString());
 
   v8::Handle<v8::String> res = 
     v8::String::New(switcher_container[0]->get_properties_description(std::string(*element_name)).c_str());
@@ -333,8 +333,8 @@ v8::Handle<v8::Value> GetPropertyDescription(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue element_name(args[0]->ToString());
-  v8::String::AsciiValue property_name(args[1]->ToString());
+  v8::String::Utf8Value element_name(args[0]->ToString());
+  v8::String::Utf8Value property_name(args[1]->ToString());
 
   v8::Handle<v8::String> res = 
     v8::String::New(switcher_container[0]->get_property_description(std::string(*element_name), 
@@ -352,7 +352,7 @@ v8::Handle<v8::Value> GetPropertiesDescriptionByClass(const v8::Arguments& args)
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue class_name(args[0]->ToString());
+  v8::String::Utf8Value class_name(args[0]->ToString());
 
   v8::Handle<v8::String> res = 
     v8::String::New(switcher_container[0]->get_properties_description_by_class(std::string(*class_name)).c_str());
@@ -369,8 +369,8 @@ v8::Handle<v8::Value> GetPropertyDescriptionByClass(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue class_name(args[0]->ToString());
-  v8::String::AsciiValue property_name(args[1]->ToString());
+  v8::String::Utf8Value class_name(args[0]->ToString());
+  v8::String::Utf8Value property_name(args[1]->ToString());
 
   v8::Handle<v8::String> res = 
     v8::String::New(switcher_container[0]->get_property_description_by_class(std::string(*class_name), 
@@ -390,14 +390,14 @@ v8::Handle<v8::Value> Invoke(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue element_name(args[0]->ToString());
-  v8::String::AsciiValue method_name(args[1]->ToString());
+  v8::String::Utf8Value element_name(args[0]->ToString());
+  v8::String::Utf8Value method_name(args[1]->ToString());
   v8::Local<v8::Object> obj_arguments = args[2]->ToObject();
   v8::Local<v8::Array> arguments = obj_arguments->GetPropertyNames();
 
   std::vector<std::string> vector_arg;
   for(unsigned int i = 0; i < arguments->Length(); i++) {
-    v8::String::AsciiValue val(obj_arguments->Get(i)->ToString());
+    v8::String::Utf8Value val(obj_arguments->Get(i)->ToString());
     vector_arg.push_back(std::string(*val));
   }
 
@@ -420,7 +420,7 @@ v8::Handle<v8::Value> GetMethodsDescription(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue element_name(args[0]->ToString());
+  v8::String::Utf8Value element_name(args[0]->ToString());
 
   v8::Handle<v8::String> res = 
     v8::String::New(switcher_container[0]->get_methods_description(std::string(*element_name)).c_str());
@@ -437,8 +437,8 @@ v8::Handle<v8::Value> GetMethodDescription(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue element_name(args[0]->ToString());
-  v8::String::AsciiValue method_name(args[1]->ToString());
+  v8::String::Utf8Value element_name(args[0]->ToString());
+  v8::String::Utf8Value method_name(args[1]->ToString());
 
   v8::Handle<v8::String> res = 
     v8::String::New(switcher_container[0]->get_method_description(std::string(*element_name), 
@@ -456,7 +456,7 @@ v8::Handle<v8::Value> GetMethodsDescriptionByClass(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue class_name(args[0]->ToString());
+  v8::String::Utf8Value class_name(args[0]->ToString());
 
   v8::Handle<v8::String> res = 
     v8::String::New(switcher_container[0]->get_methods_description_by_class(std::string(*class_name)).c_str());
@@ -473,8 +473,8 @@ v8::Handle<v8::Value> GetMethodDescriptionByClass(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue class_name(args[0]->ToString());
-  v8::String::AsciiValue method_name(args[1]->ToString());
+  v8::String::Utf8Value class_name(args[0]->ToString());
+  v8::String::Utf8Value method_name(args[1]->ToString());
 
   v8::Handle<v8::String> res = 
     v8::String::New(switcher_container[0]->get_method_description_by_class(std::string(*class_name), 
@@ -591,8 +591,8 @@ v8::Handle<v8::Value> SubscribeToProperty(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue element_name(args[0]->ToString());
-  v8::String::AsciiValue property_name(args[1]->ToString());
+  v8::String::Utf8Value element_name(args[0]->ToString());
+  v8::String::Utf8Value property_name(args[1]->ToString());
 
   v8::Handle<v8::Boolean> res = 
     v8::Boolean::New(switcher_container[0]->subscribe_property (std::string ("prop_sub"),
@@ -611,8 +611,8 @@ v8::Handle<v8::Value> UnsubscribeToProperty(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue element_name(args[0]->ToString());
-  v8::String::AsciiValue property_name(args[1]->ToString());
+  v8::String::Utf8Value element_name(args[0]->ToString());
+  v8::String::Utf8Value property_name(args[1]->ToString());
 
   v8::Handle<v8::Boolean> res = 
     v8::Boolean::New(switcher_container[0]->unsubscribe_property (std::string ("prop_sub"),
@@ -700,8 +700,8 @@ v8::Handle<v8::Value> SubscribeToSignal(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue element_name(args[0]->ToString());
-  v8::String::AsciiValue signal_name(args[1]->ToString());
+  v8::String::Utf8Value element_name(args[0]->ToString());
+  v8::String::Utf8Value signal_name(args[1]->ToString());
 
   v8::Handle<v8::Boolean> res = 
     v8::Boolean::New(switcher_container[0]->subscribe_signal (std::string ("signal_sub"),
@@ -720,8 +720,8 @@ v8::Handle<v8::Value> UnsubscribeToSignal(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue element_name(args[0]->ToString());
-  v8::String::AsciiValue signal_name(args[1]->ToString());
+  v8::String::Utf8Value element_name(args[0]->ToString());
+  v8::String::Utf8Value signal_name(args[1]->ToString());
 
   v8::Handle<v8::Boolean> res = 
     v8::Boolean::New(switcher_container[0]->unsubscribe_signal (std::string ("signal_sub"),
@@ -750,7 +750,7 @@ v8::Handle<v8::Value> GetSignalsDescription(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue element_name(args[0]->ToString());
+  v8::String::Utf8Value element_name(args[0]->ToString());
 
   v8::Handle<v8::String> res = 
     v8::String::New(switcher_container[0]->get_signals_description(std::string(*element_name)).c_str());
@@ -767,8 +767,8 @@ v8::Handle<v8::Value> GetSignalDescription(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue element_name(args[0]->ToString());
-  v8::String::AsciiValue signal_name(args[1]->ToString());
+  v8::String::Utf8Value element_name(args[0]->ToString());
+  v8::String::Utf8Value signal_name(args[1]->ToString());
 
   v8::Handle<v8::String> res = 
     v8::String::New(switcher_container[0]->get_signal_description(std::string(*element_name), 
@@ -786,7 +786,7 @@ v8::Handle<v8::Value> GetSignalsDescriptionByClass(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue class_name(args[0]->ToString());
+  v8::String::Utf8Value class_name(args[0]->ToString());
 
   v8::Handle<v8::String> res = 
     v8::String::New(switcher_container[0]->get_signals_description_by_class(std::string(*class_name)).c_str());
@@ -803,8 +803,8 @@ v8::Handle<v8::Value> GetSignalDescriptionByClass(const v8::Arguments& args) {
     ThrowException(v8::Exception::TypeError(v8::String::New("Wrong arguments")));
     return scope.Close(v8::Undefined());
   }
-  v8::String::AsciiValue class_name(args[0]->ToString());
-  v8::String::AsciiValue signal_name(args[1]->ToString());
+  v8::String::Utf8Value class_name(args[0]->ToString());
+  v8::String::Utf8Value signal_name(args[1]->ToString());
 
   v8::Handle<v8::String> res = 
     v8::String::New(switcher_container[0]->get_signal_description_by_class(std::string(*class_name), 
