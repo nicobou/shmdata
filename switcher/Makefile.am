@@ -42,6 +42,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gst-utils.cpp \
     http-sdp.cpp \
     http-sdp-dec.cpp \
+    information-tree.cpp \
     jack-audio-source.cpp \
     jack-sink.cpp \
     jpegenc.cpp \
@@ -120,6 +121,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     hash-table_spec.h \
     http-sdp.h \
     http-sdp-dec.h \
+    information-tree.h \
     jack-audio-source.h \
     jack-sink.h \
     jpegenc.h \
