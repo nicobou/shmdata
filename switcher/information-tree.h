@@ -27,26 +27,27 @@
 
 
 namespace switcher { 
-  namespace Information {
+  namespace information {
     class Tree
     {
     public:
       typedef std::shared_ptr<Tree> ptr;
       Tree ();
       ~Tree ();
-      
       Tree (const std::string &data);
-      
-      /* Tree (const Tree  &) = delete; */
-      /* Tree &operator= (const Tree  &) = delete; */
-      
+      std::string get_data () const;
+      void set_data (const std::string &data);
+      bool is_leaf () const;
+      void add_child (const std::string &path, Tree::ptr child);
+  
     private:
       std::string data_;
-      std::list<Tree::ptr> childrens_;
+      std::list<std::pair <std::string, Tree::ptr>> childrens_;
     };
 
     Tree::ptr make_tree (const std::string &data); 
+    Tree::ptr make_tree (); 
 
-  } // end of namespace Information
+  } // end of namespace information
 }  // end of namespace switcher
 #endif // ifndef

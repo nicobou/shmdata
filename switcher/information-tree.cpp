@@ -20,11 +20,16 @@
 #include "information-tree.h"
 
 namespace switcher { 
-  namespace Information {
+  namespace information {
     
     Tree::ptr make_tree (const std::string &data)
     {
       return std::make_shared<Tree> (data);
+    } 
+
+    Tree::ptr make_tree ()
+    {
+      return std::make_shared<Tree> ();
     } 
 
     Tree::Tree () :
@@ -40,5 +45,30 @@ namespace switcher {
       childrens_ ()
     {}
 
+    std::string
+    Tree::get_data () const
+    {
+      return data_;
+    }
+
+    void 
+    Tree::set_data (const std::string &data)
+    {
+      data_ = data;
+    }
+
+    bool
+    Tree::is_leaf () const
+    {
+      return childrens_.empty ();
+    }
+
+    void 
+    Tree::add_child (const std::string &path, Tree::ptr child)
+    {
+      //HERE handle the path
+      childrens_.emplace_back (path, child);
+    }
+    
   } // end of namespace Information
 }  // end of namespace switcher
