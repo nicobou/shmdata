@@ -1,3 +1,16 @@
+switcher 0.4.4 (2014-03-05)
+---------------------------
+This is an official release in the 0.4 stable series. 
+
+New features:
+
+* adding node-switchon addons in sources
+
+Bugs fixed:
+
+* fix segfault in soap-ctrl-client
+* make node-switcher encoding strings in utf8 instead of ascii
+
 switcher 0.4.2 (2014-02-27)
 ---------------------------
 This is an official release in the 0.4 stable series. 
