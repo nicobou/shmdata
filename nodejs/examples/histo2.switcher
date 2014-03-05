@@ -1,0 +1,149 @@
+{
+  "history" : [
+    {
+      "command" : "has_method",
+      "calling time" : 27,
+      "arguments" : [
+        "win2",
+        "set_runtime"
+      ],
+      "vector argument" : [
+      ],
+      "results" : [
+        "false"
+      ]
+    },
+    {
+      "command" : "create_nick_named",
+      "calling time" : 1836,
+      "arguments" : [
+        "videotestsrc",
+        "myvid"
+      ],
+      "vector argument" : [
+      ],
+      "results" : [
+        "myvid"
+      ]
+    },
+    {
+      "command" : "has_method",
+      "calling time" : 141589,
+      "arguments" : [
+        "myvid",
+        "set_runtime"
+      ],
+      "vector argument" : [
+      ],
+      "results" : [
+      ]
+    },
+    {
+      "command" : "invoke",
+      "calling time" : 141619,
+      "arguments" : [
+        "myvid",
+        "set_runtime"
+      ],
+      "vector argument" : [
+        "pipeline0"
+      ],
+      "results" : [
+        "true"
+      ]
+    },
+    {
+      "command" : "create_nick_named",
+      "calling time" : 147831,
+      "arguments" : [
+        "videosink",
+        "win2"
+      ],
+      "vector argument" : [
+      ],
+      "results" : [
+        "win2"
+      ]
+    },
+    {
+      "command" : "has_method",
+      "calling time" : 138920,
+      "arguments" : [
+        "myvid",
+        "set_runtime"
+      ],
+      "vector argument" : [
+      ],
+      "results" : [
+        "true"
+      ]
+    },
+    {
+      "command" : "invoke",
+      "calling time" : 138930,
+      "arguments" : [
+        "myvid",
+        "set_runtime"
+      ],
+      "vector argument" : [
+        "pipeline0"
+      ],
+      "results" : [
+        "true"
+      ]
+    },
+    {
+      "command" : "has_method",
+      "calling time" : 148574,
+      "arguments" : [
+        "win2",
+        "set_runtime"
+      ],
+      "vector argument" : [
+      ],
+      "results" : [
+      ]
+    },
+    {
+      "command" : "invoke",
+      "calling time" : 148579,
+      "arguments" : [
+        "win2",
+        "set_runtime"
+      ],
+      "vector argument" : [
+        "pipeline0"
+      ],
+      "results" : [
+        "true"
+      ]
+    },
+    {
+      "command" : "invoke",
+      "calling time" : 148739,
+      "arguments" : [
+        "win2",
+        "connect"
+      ],
+      "vector argument" : [
+        "/tmp/switcher_nodeserver_myvid_video"
+      ],
+      "results" : [
+        "true"
+      ]
+    },
+    {
+      "command" : "has_method",
+      "calling time" : 146291,
+      "arguments" : [
+        "win2",
+        "set_runtime"
+      ],
+      "vector argument" : [
+      ],
+      "results" : [
+        "true"
+      ]
+    }
+  ]
+}

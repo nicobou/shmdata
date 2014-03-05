@@ -45,7 +45,8 @@ First, make sure you have shmdata installed.
 Once you have it, here is how to build and install switcher::
 
   $ sudo apt-get install automake bison build-essential flex libtool
-  $ sudo apt-get install libglib2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libjson-glib-dev liblo-dev libcgsi-gsoap-dev linux-libc-dev libgtk2.0-dev libpulse-dev libportmidi-dev python-dev
+  $ sudo apt-get install libglib2.0-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libjson-glib-dev liblo-dev libcgsi-gsoap-dev linux-libc-dev libgtk2.0-dev libpulse-dev libportmidi-dev python-dev nodejs-dev
+  $ sudo apt-get install gstreamer0.10-ffmpeg gstreamer0.10-plugins-bad gstreamer0.10-plugins-base gstreamer0.10-plugins-good gstreamer0.10-plugins-ugly
   $ ./autogen.sh
   $ ./configure
   $ make

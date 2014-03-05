@@ -2,7 +2,7 @@ dnl required version of autoconf
 AC_PREREQ([2.53])
 
 dnl package name and package version
-AC_INIT([switcher],[0.4.2])
+AC_INIT([switcher],[0.4.4])
 
 dnl required version of gstreamer and gst-plugins-base
 GST_REQUIRED=0.10.36
@@ -265,6 +265,14 @@ else
     AC_DEFINE(HAVE_GTK, [0], [GTK not detected])
 fi
 
+#check nodejs-dev
+AC_CHECK_FILE([/usr/include/nodejs/src/node.h],
+              [NODEADDONBUILD=enabled
+               AC_CONFIG_FILES([nodejs/Makefile])],
+              [NODEADDONBUILD=disabled
+               AC_MSG_WARN([Missing nodejs-dev package])])
+AM_CONDITIONAL(NODEADDONBUILD, test "x${NODEADDONBUILD}" = "xenabled")
+
 dnl Use the C++ compiler for the compile tests
 AC_LANG(C++)
 
@@ -358,8 +366,8 @@ if test "${SWITCHERBUILD}" = "enabled";
   then AC_CONFIG_FILES([src/Makefile])
 fi
 AM_CONDITIONAL(SWITCHERBUILD, test "${SWITCHERBUILD}" = "enabled")
-                            
 
+dnl =======================================================================
 dnl Finally, create Makefiles in all directories
 
 AC_CONFIG_FILES([
@@ -395,6 +403,7 @@ AC_OUTPUT
 [echo ""]
 [echo "SWITCHER OPTIONAL FEATURE"]
 [echo ""]
+[echo "nodejs addon               ${NODEADDONBUILD}"]
 [echo "python                     ${PYTHONBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]

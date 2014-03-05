@@ -1,11 +1,16 @@
 SUBDIRS= \
     switcher \
     plugins \
-    tests
+    tests 
 
 if SWITCHERBUILD
 SUBDIRS += \
     src
+endif
+
+if NODEADDONBUILD
+SUBDIRS += \
+    nodejs
 endif
 
 EXTRA_DIST=autogen.sh
