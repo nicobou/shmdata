@@ -34,12 +34,13 @@ switcher_addon_la_CXXFLAGS = \
     -DEV_MULTIPLICITY=0 \
     -DG_LOG_DOMAIN=\"switcher\" \
     -DPIC \
-    -D_FILE_OFFSET_BITS=64 \
     -D_GNU_SOURCE \
     -D_LARGEFILE_SOURCE \
     -I$(top_srcdir) \
     -I/usr/include/nodejs/deps/uv/include/ \
     -I/usr/include/nodejs/src \
-    -fPIC \
-    -m64 
+    -fPIC
+
+#    -D_FILE_OFFSET_BITS=64 \
+#    -m64 
 
