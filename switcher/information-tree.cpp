@@ -20,17 +20,20 @@
 #include "information-tree.h"
 
 namespace switcher { 
-  namespace information {
+  namespace data {
     
     Tree::ptr make_tree (const std::string &data)
     {
       return std::make_shared<Tree> (data);
     } 
-
+    
     Tree::ptr make_tree ()
     {
       return std::make_shared<Tree> ();
     } 
+
+    template <typename ValueType>
+      Tree::ptr make_tree (const ValueType &value);
 
     Tree::Tree () :
       data_ (),
@@ -48,13 +51,14 @@ namespace switcher {
     std::string
     Tree::get_data () const
     {
-      return data_;
+      //FIXME
+      return get_string<std::string> (&data_);
     }
 
     void 
     Tree::set_data (const std::string &data)
     {
-      data_ = data;
+      //data_ = Any (data);
     }
 
     bool

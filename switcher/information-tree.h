@@ -24,10 +24,10 @@
 #include <string>
 #include <list>
 #include <memory>
-
+#include "any.h"
 
 namespace switcher { 
-  namespace information {
+  namespace data {
     class Tree
     {
     public:
@@ -41,13 +41,16 @@ namespace switcher {
       void add_child (const std::string &path, Tree::ptr child);
   
     private:
-      std::string data_;
+      Any data_;
       std::list<std::pair <std::string, Tree::ptr>> childrens_;
     };
 
     Tree::ptr make_tree (const std::string &data); 
     Tree::ptr make_tree (); 
+    
+    template <typename ValueType>
+      Tree::ptr make_tree (const ValueType &value);
 
-  } // end of namespace information
-}  // end of namespace switcher
+  } // end of "data" namespace 
+}  // end of "switcher" namespace
 #endif // ifndef

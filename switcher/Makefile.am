@@ -96,6 +96,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_includedir = \
 libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     abstract-factory.h \
     abstract-factory_spec.h \
+    any.h \
     aravis-genicam.h \
     audio-sink.h \
     audio-source.h \
