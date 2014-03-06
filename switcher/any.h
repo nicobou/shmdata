@@ -32,7 +32,7 @@ struct Any
     auto derived = dynamic_cast<Derived<T>*> (ptr_);
     if (!derived)
       throw std::bad_cast ();
-    return derived->value;
+    return derived->value_;
   }
 
   template<class U>

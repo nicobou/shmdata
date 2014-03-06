@@ -16,6 +16,7 @@
  */
 #include "switcher/information-tree.h"
 #include <string>
+#include <cassert>
 
 int
 main ()
@@ -23,17 +24,25 @@ main ()
   using namespace switcher::data;
    {
      Tree::ptr tree = make_tree (std::string ("truc"));
-     if (!tree->is_leaf())
-       return 1;
+     assert (tree->is_leaf());
+     std::string data = tree->get_data ();
+     assert (0 == data.compare ("truc"));
    }
    {
      Tree::ptr tree = make_tree ("test");
-     if (!tree->is_leaf())
-       return 1;
+     assert (tree->is_leaf());
    }
-    {
-       Tree::ptr tree = make_tree ();
-       tree->add_child ("a.path.to.a.leaf",make_tree (std::string ("q")));
-    }
-  return 0;
+   {
+     Tree::ptr tree = make_tree (1.2f);
+     float val = tree->get_data ();
+     assert (1.2f == val);
+   }
+   {
+     Tree::ptr tree = make_tree ();
+     tree->add_child ("child_key", make_tree (std::string ("child_data")));
+     assert (!tree->is_leaf());
+     tree->remove_child ("child_key");
+     assert (tree->is_leaf());
+   }
+   return 0;
 }

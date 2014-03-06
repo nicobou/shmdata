@@ -36,10 +36,14 @@ namespace switcher {
       Tree ();
       ~Tree ();
       Tree (const Any &data);
-      std::string get_data () const;
       bool is_leaf () const;
+
       void add_child (const std::string &key, Tree::ptr child);
-  
+      void remove_child (const std::string &key);
+
+      Any get_data () const;
+      void set_data (const Any &data);
+
     private:
       Any data_;
       std::list<std::pair <std::string, Tree::ptr>> childrens_;

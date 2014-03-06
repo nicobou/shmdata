@@ -18,6 +18,7 @@
  */
 
 #include "information-tree.h"
+#include <algorithm>
 
 namespace switcher { 
   namespace data {
@@ -55,5 +56,28 @@ namespace switcher {
       childrens_.emplace_back (key, child);
     }
     
+    Any
+    Tree::get_data () const
+    {
+      return data_;
+    }
+
+    void
+    Tree::set_data (const Any &data)
+    {
+      data_ = data;
+    }
+   
+    void
+    Tree::remove_child (const std::string &key)
+    {
+      auto it = std::find_if (childrens_.begin (), 
+			      childrens_.end (),
+			      [key] (const std::pair <std::string, Tree::ptr>& s) 
+			      { return 0 == s.first.compare (key); }
+			      );
+      if (childrens_.end () != it)
+	childrens_.erase (it);
+    }
   } // end of namespace Information
 }  // end of namespace switcher
