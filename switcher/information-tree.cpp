@@ -22,13 +22,6 @@
 namespace switcher { 
   namespace data {
     
-    //FIXME make others
-    template <typename ValueType>
-    Tree::ptr make_tree (const ValueType &data)
-    {
-      return std::make_shared<Tree> (data);
-    } 
-   
     Tree::ptr make_tree ()
     {
       return std::make_shared<Tree> ();

@@ -45,9 +45,13 @@ namespace switcher {
       std::list<std::pair <std::string, Tree::ptr>> childrens_;
     };
 
-    template <typename ValueType>
-      Tree::ptr make_tree (const ValueType &value);
     Tree::ptr make_tree (); 
+
+    template <typename ValueType>
+    Tree::ptr make_tree (ValueType data)
+    {
+      return std::make_shared<Tree> (data);
+    } 
 
   } // end of "data" namespace 
 }  // end of "switcher" namespace
