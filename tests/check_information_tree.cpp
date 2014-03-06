@@ -23,14 +23,12 @@ main ()
   using namespace switcher::data;
   // {
   //   Tree::ptr tree = make_tree ("test");
-  //   if (0 != tree->get_data ().compare ("test") )
-  //     return 1;
   //   if (!tree->is_leaf())
   //     return 1;
   // }
   // {
-  //   Tree::ptr tree = make_tree ();
-  //   tree->add_child ("a.path.to.a.leaf",make_tree ("q"));
+  //    Tree::ptr tree = make_tree ();
+  //    tree->add_child ("a.path.to.a.leaf",make_tree ("q"));
   // }
   return 0;
 }

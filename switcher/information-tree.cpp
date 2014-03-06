@@ -22,11 +22,13 @@
 namespace switcher { 
   namespace data {
     
-    Tree::ptr make_tree (const std::string &data)
+    //FIXME make others
+    template <typename ValueType>
+    Tree::ptr make_tree (const ValueType &data)
     {
       return std::make_shared<Tree> (data);
     } 
-    
+   
     Tree::ptr make_tree ()
     {
       return std::make_shared<Tree> ();
@@ -43,23 +45,10 @@ namespace switcher {
     Tree::~Tree ()
     {}
 
-    Tree::Tree (const std::string &data) :
+    Tree::Tree (const Any &data) :
       data_ (data),
       childrens_ ()
     {}
-
-    std::string
-    Tree::get_data () const
-    {
-      //FIXME
-      return get_string<std::string> (&data_);
-    }
-
-    void 
-    Tree::set_data (const std::string &data)
-    {
-      //data_ = Any (data);
-    }
 
     bool
     Tree::is_leaf () const

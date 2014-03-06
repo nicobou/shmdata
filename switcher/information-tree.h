@@ -28,15 +28,15 @@
 
 namespace switcher { 
   namespace data {
+
     class Tree
     {
     public:
       typedef std::shared_ptr<Tree> ptr;
       Tree ();
       ~Tree ();
-      Tree (const std::string &data);
+      Tree (const Any &data);
       std::string get_data () const;
-      void set_data (const std::string &data);
       bool is_leaf () const;
       void add_child (const std::string &path, Tree::ptr child);
   
@@ -45,11 +45,9 @@ namespace switcher {
       std::list<std::pair <std::string, Tree::ptr>> childrens_;
     };
 
-    Tree::ptr make_tree (const std::string &data); 
-    Tree::ptr make_tree (); 
-    
     template <typename ValueType>
       Tree::ptr make_tree (const ValueType &value);
+    Tree::ptr make_tree (); 
 
   } // end of "data" namespace 
 }  // end of "switcher" namespace
