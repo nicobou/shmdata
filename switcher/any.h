@@ -13,29 +13,25 @@ struct Any
 
   template<typename U> Any (U&& value)
   : ptr_ (new Derived<StorageType<U>> (std::forward<U> (value)))
-  {
+  {}
 
-  }
-
-  template<class U> bool is () const
+  template<class U> 
+  bool 
+  is () const
   {
     typedef StorageType<U> T;
-
     auto derived = dynamic_cast<Derived<T>*> (ptr_);
-
     return derived;
   }
 
   template<class U>
-  StorageType<U>& as ()
+  StorageType<U>& 
+  as ()
   {
     typedef StorageType<U> T;
-
     auto derived = dynamic_cast<Derived<T>*> (ptr_);
-
     if (!derived)
       throw std::bad_cast ();
-
     return derived->value;
   }
 
@@ -44,22 +40,22 @@ struct Any
   {
     return as<StorageType<U>> ();
   }
-
+  
   Any ()
   : ptr_ (nullptr)
   {}
   
-  Any (Any& that)
+  Any (Any &that)
   : ptr_ (that.clone ())
   {}
-
-  Any (Any&& that)
+  
+  Any (Any &&that)
   : ptr_ (that.ptr_)
   {
     that.ptr_ = nullptr;
   }
 
-  Any (const Any& that)
+  Any (const Any &that)
   : ptr_ (that.clone ())
   {}
 
@@ -97,6 +93,7 @@ struct Any
 private:
   struct Base
   {
+    //Base (const Base &) = delete;
     virtual ~Base () {}
     virtual Base* clone () const = 0;
   };
@@ -105,12 +102,16 @@ private:
   struct Derived : Base
   {
     template<typename U> 
-      Derived (U&& value) : 
+      Derived (U &&value) : 
     value_ (std::forward<U> (value)) 
       {}
 
     T value_;
-    Base* clone () const { return new Derived<T> (value_); }
+    Base* 
+      clone () const 
+    { 
+      return new Derived<T> (value_); 
+    }
   };
 
   Base* 

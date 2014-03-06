@@ -50,10 +50,9 @@ namespace switcher {
     }
 
     void 
-    Tree::add_child (const std::string &path, Tree::ptr child)
+    Tree::add_child (const std::string &key, Tree::ptr child)
     {
-      //HERE handle the path
-      childrens_.emplace_back (path, child);
+      childrens_.emplace_back (key, child);
     }
     
   } // end of namespace Information

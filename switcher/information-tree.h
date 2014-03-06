@@ -38,7 +38,7 @@ namespace switcher {
       Tree (const Any &data);
       std::string get_data () const;
       bool is_leaf () const;
-      void add_child (const std::string &path, Tree::ptr child);
+      void add_child (const std::string &key, Tree::ptr child);
   
     private:
       Any data_;

@@ -22,13 +22,18 @@ main ()
 {
   using namespace switcher::data;
    {
-     Tree::ptr tree = make_tree ("test");
+     Tree::ptr tree = make_tree (std::string ("truc"));
      if (!tree->is_leaf())
        return 1;
    }
    {
-      Tree::ptr tree = make_tree ();
-      tree->add_child ("a.path.to.a.leaf",make_tree ("q"));
+     Tree::ptr tree = make_tree ("test");
+     if (!tree->is_leaf())
+       return 1;
    }
+    {
+       Tree::ptr tree = make_tree ();
+       tree->add_child ("a.path.to.a.leaf",make_tree (std::string ("q")));
+    }
   return 0;
 }
