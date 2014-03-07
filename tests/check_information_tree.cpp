@@ -28,10 +28,10 @@ main ()
      std::string data = tree->get_data ();
      assert (0 == data.compare ("truc"));
    }
-   {
-     Tree::ptr tree = make_tree ("test");
-     assert (tree->is_leaf());
-   }
+    {
+      Tree::ptr tree = make_tree ("test");
+      assert (tree->is_leaf());
+    }
    {
      Tree::ptr tree = make_tree (1.2f);
      float val = tree->get_data ();
