@@ -50,18 +50,13 @@ namespace switcher {
     };
 
     Tree::ptr make_tree (); 
-
-    Tree::ptr make_tree (const char *data)
-    {
-      return std::make_shared<Tree> (std::string (data));
-    } 
+    Tree::ptr make_tree (const char *data);
 
     template <typename ValueType>
     Tree::ptr make_tree (ValueType data)
     {
       return std::make_shared<Tree> (data);
     } 
-
 
   } // end of "data" namespace 
 }  // end of "switcher" namespace

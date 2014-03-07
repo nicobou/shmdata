@@ -23,13 +23,17 @@
 namespace switcher { 
   namespace data {
     
-    Tree::ptr make_tree ()
+    Tree::ptr 
+    make_tree ()
     {
       return std::make_shared<Tree> ();
     } 
 
-    template <typename ValueType>
-      Tree::ptr make_tree (const ValueType &value);
+    Tree::ptr 
+    make_tree (const char *data)
+    {
+      return std::make_shared<Tree> (std::string (data));
+    } 
 
     Tree::Tree () :
       data_ (),
