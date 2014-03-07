@@ -22,27 +22,36 @@ int
 main ()
 {
   using namespace switcher::data;
-   {
+  {//node data as std::string
      Tree::ptr tree = make_tree (std::string ("truc"));
-     assert (tree->is_leaf());
+     assert (tree->is_leaf ());
      std::string data = tree->get_data ();
      assert (0 == data.compare ("truc"));
-   }
-    {
-      Tree::ptr tree = make_tree ("test");
-      assert (tree->is_leaf());
-    }
-   {
-     Tree::ptr tree = make_tree (1.2f);
-     float val = tree->get_data ();
-     assert (1.2f == val);
-   }
-   {
-     Tree::ptr tree = make_tree ();
-     tree->add_child ("child_key", make_tree (std::string ("child_data")));
-     assert (!tree->is_leaf());
-     tree->remove_child ("child_key");
-     assert (tree->is_leaf());
-   }
-   return 0;
+  }
+  {//node data as const char *
+    Tree::ptr tree = make_tree ("test");
+    assert (tree->is_leaf ());
+  }
+  {//node data as float
+    Tree::ptr tree = make_tree (1.2f);
+    float val = tree->get_data ();
+    assert (1.2f == val);
+  }
+  {//graft a child and prune it
+    Tree::ptr tree = make_tree ();
+    tree->graft ("child_key", make_tree (std::string ("child_data")));
+    assert (!tree->is_leaf ());
+    Tree::ptr child = tree->prune ("child_key");
+    assert (tree->is_leaf ());
+    assert (child->is_leaf ());
+  }
+  {//graft a child and get it
+    Tree::ptr tree = make_tree ();
+    tree->graft ("child_key", make_tree (std::string ("child_data")));
+    assert (!tree->is_leaf ());
+    Tree::ptr child = tree->get ("child_key");
+    assert (!tree->is_leaf ());
+    assert (child->is_leaf ());
+  }
+  return 0;
 }

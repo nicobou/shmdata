@@ -54,12 +54,6 @@ namespace switcher {
       return childrens_.empty ();
     }
 
-    void 
-    Tree::add_child (const std::string &key, Tree::ptr child)
-    {
-      childrens_.emplace_back (key, child);
-    }
-    
     Any
     Tree::get_data () const
     {
@@ -72,16 +66,45 @@ namespace switcher {
       data_ = data;
     }
    
-    void
-    Tree::remove_child (const std::string &key)
+    Tree::child_list_type::iterator
+    Tree::get_child_iterator (const std::string &key)
     {
-      auto it = std::find_if (childrens_.begin (), 
-			      childrens_.end (),
-			      [key] (const std::pair <std::string, Tree::ptr>& s) 
-			      { return 0 == s.first.compare (key); }
-			      );
-      if (childrens_.end () != it)
-	childrens_.erase (it);
+      return std::find_if (childrens_.begin (), 
+			   childrens_.end (),
+			   [key] (const Tree::child_type& s) 
+			   { 
+			     return (0 == s.first.compare (key));
+			   });
     }
-  } // end of namespace Information
+    
+    Tree::ptr
+    Tree::prune (const std::string &key)
+    {
+      Tree::ptr res;
+      auto it = get_child_iterator (key);
+      if (childrens_.end () != it)
+	{
+	  res = it->second;
+	  childrens_.erase (it);
+	}
+      return res;
+    }
+
+    Tree::ptr
+    Tree::get (const std::string &key)
+    {
+      auto it = get_child_iterator (key);
+      if (childrens_.end () != it)
+	return (it->second);
+      Tree::ptr res;
+      return res;
+    }
+
+    void 
+    Tree::graft (const std::string &key, Tree::ptr child)
+    {
+      childrens_.emplace_back (key, child);
+    }
+        
+  } // end of namespace information
 }  // end of namespace switcher
