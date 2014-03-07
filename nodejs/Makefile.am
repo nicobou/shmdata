@@ -1,16 +1,16 @@
-pluginsdir = $(prefix)/nodejs/node-switcher
+pluginsdir = $(prefix)/lib/nodejs
 
 plugins_LTLIBRARIES = \
-    switcher_addon.la
+    switcher.la
 
 #libmyplugin info
-switcher_addon_la_SOURCES = \
-    switcher_addon.cpp
+switcher_la_SOURCES = \
+    node-switcher.cpp
 
-switcher_addon_la_includedir = \
+switcher_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
-switcher_addon_la_LDFLAGS = \
+switcher_la_LDFLAGS = \
     $(GLIB_LIBS) \
     $(GMODULE_LIBS) \
     $(GST_LIBS) \
@@ -25,7 +25,7 @@ switcher_addon_la_LDFLAGS = \
     -shrext .node \
     -undefined suppress 
 
-switcher_addon_la_CXXFLAGS = \
+switcher_la_CXXFLAGS = \
     $(GLIB_CFLAGS) \
     $(GMODULE_CFLAGS) \
     $(GST_CFLAGS) \

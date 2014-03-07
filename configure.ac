@@ -2,7 +2,7 @@ dnl required version of autoconf
 AC_PREREQ([2.53])
 
 dnl package name and package version
-AC_INIT([switcher],[0.4.4])
+AC_INIT([switcher],[0.4.6])
 
 dnl required version of gstreamer and gst-plugins-base
 GST_REQUIRED=0.10.36

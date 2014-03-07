@@ -940,4 +940,4 @@ void Init(v8::Handle<v8::Object> target)
 	      v8::FunctionTemplate::New(ListSubscribedSignals)->GetFunction());  
 }
 
-NODE_MODULE(switcher_addon, Init)
+NODE_MODULE(switcher, Init)
