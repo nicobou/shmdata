@@ -68,8 +68,6 @@ namespace switcher {
       std::pair <Tree::child_list_type, Tree::child_list_type::iterator>
 	get_node (const std::string &path);
       bool get_next (std::istringstream &path, 
-		     child_list_type &this_parent_list,
-		     child_list_type::iterator this_it, 
 		     child_list_type &parent_list_result, 
 		     child_list_type::iterator &result_iterator);
     };

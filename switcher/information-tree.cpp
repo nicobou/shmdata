@@ -111,20 +111,16 @@ namespace switcher {
     {
       std::istringstream iss (path);
       Tree::child_list_type child_list;
-      Tree::child_list_type::iterator result;
+      Tree::child_list_type::iterator child_iterator;
       get_next (iss, 
-		childrens_,
-		Tree::child_list_type::iterator (), 
 		child_list, 
-		result);
-      return std::make_pair (child_list, result);
+		child_iterator);
+      return std::make_pair (child_list, child_iterator);
     }
     
 
     bool 
     Tree::get_next (std::istringstream &path, 
-		    Tree::child_list_type &this_parent_list, 
-		    Tree::child_list_type::iterator this_it, 
 		    Tree::child_list_type &parent_list_result, 
 		    Tree::child_list_type::iterator &iterator_result)
     {
@@ -132,8 +128,8 @@ namespace switcher {
       if (!std::getline (path, child_key, '.'))
 	{
 	  std::cout << "FOUND in get_next" << std::endl;
-	  iterator_result = this_it;
-	  parent_list_result = this_parent_list;
+	  // iterator_result = this_it;
+	  // parent_list_result = this_parent_list;
 	  return true;
 	}
       std::cout << "child_key: " << child_key << std::endl;
@@ -141,8 +137,6 @@ namespace switcher {
 	{
 	  std::cout << "child_key empty" << std::endl;
 	  return this->get_next (path, 
-				 this_parent_list, 
-				 this_it, 
 				 parent_list_result, 
 				 iterator_result);
 	}
@@ -152,7 +146,12 @@ namespace switcher {
       if (childrens_.end () != it)
 	{
 	  std::cout << "pliplipipl" << std::endl;
-	  return it->second->get_next (path, childrens_, it, parent_list_result, iterator_result);
+	  if( it->second->get_next (path, parent_list_result, iterator_result))
+	    {
+	      iterator_result = it;
+	      parent_list_result = childrens_;
+	    }
+	  return false;
 	}
       
       std::cout << "NOT FOUND IN get_next" << std::endl; 

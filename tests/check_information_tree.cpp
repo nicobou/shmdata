@@ -66,6 +66,8 @@ main ()
     assert (1.2f == data) ;
     Tree::ptr child1 = tree->get (".child1..");
     assert (!child1->is_leaf ());
+    Tree::ptr not_child = tree->get ("child1.foo");
+    assert (!not_child);
   }
   return 0;
 }
