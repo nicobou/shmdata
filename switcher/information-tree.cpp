@@ -66,6 +66,38 @@ namespace switcher {
     {
       data_ = data;
     }
+
+
+    bool
+    Tree::is_leaf (const std::string &path)
+    {
+      auto found = get_node (path);
+      if (!found.first.empty ())
+	return found.second->second->is_leaf ();
+      return false;
+    }
+
+    Any
+    Tree::get_data (const std::string &path)
+    {
+      auto found = get_node (path);
+      if (!found.first.empty ())
+	return found.second->second->get_data ();
+      Any res;
+      return res;
+    }
+
+    bool
+    Tree::set_data (const std::string &path, Any &data)
+    {
+      auto found = get_node (path);
+      if (!found.first.empty ())
+	{
+	  found.second->second->set_data (data);
+	  return true;
+	}
+      return false;
+    }
    
     Tree::child_list_type::iterator
     Tree::get_child_iterator (const std::string &key)

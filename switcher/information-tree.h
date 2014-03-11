@@ -54,11 +54,16 @@ namespace switcher {
       ~Tree ();
       Tree (const Any &data);
       bool is_leaf () const;
-      Tree::ptr get (const std::string &path);
-      bool graft (const std::string &where, Tree::ptr);
-      Tree::ptr prune (const std::string &key);
       Any get_data () const;
       void set_data (Any &data);
+
+      //path based methods
+      bool is_leaf (const std::string &path);
+      Any get_data (const std::string &path);
+      bool set_data (const std::string &path, Any &data);
+      Tree::ptr get (const std::string &path);
+      bool graft (const std::string &path, Tree::ptr);
+      Tree::ptr prune (const std::string &path);
 
     private:
       Any data_;

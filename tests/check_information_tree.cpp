@@ -63,7 +63,19 @@ main ()
     assert (child2);
     assert (child1->is_leaf ());
     assert (child2->is_leaf ());
-
+  }
+  {//is_leaf with path
+    Tree::ptr tree = make_tree ();
+    tree->graft ("child1.child2", make_tree ());
+    assert (tree->is_leaf ("child1.child2"));
+    assert (!tree->is_leaf ("child1"));
+    assert (!tree->is_leaf ("foofoo"));
+  }
+  {//set/get data with path
+    Tree::ptr tree = make_tree ();
+    tree->graft ("child1.child2", make_tree ());
+    //assert (tree->set_data ("child1.child2", "test"));
+    //assert (tree->set_data ("child1", 1.2f));
   }
   return 0;
 }
