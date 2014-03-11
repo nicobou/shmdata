@@ -37,27 +37,9 @@ main ()
     float val = tree->get_data ();
     assert (1.2f == val);
   }
-  {//graft a direct child and prune it
-    Tree::ptr tree = make_tree ();
-    tree->graft ("child_key", make_tree ());
-    assert (!tree->is_leaf ());
-    Tree::ptr child = tree->prune ("child_key");
-    assert (tree->is_leaf ());
-    assert (child->is_leaf ());
-  }
-  {//graft a direct child and get it
-    Tree::ptr tree = make_tree ();
-    tree->graft ("child_key", make_tree ());
-    assert (!tree->is_leaf ());
-    Tree::ptr child = tree->get ("child_key");
-    assert (child);
-    assert (!tree->is_leaf ());
-    assert (child->is_leaf ());
-  }
   {//graft a multiple childs and get them
     Tree::ptr tree = make_tree ();
     tree->graft ("...child1....child2..", make_tree (1.2f));
-    std::cout << "--------------------" << std::endl;
     assert (!tree->is_leaf ());
     Tree::ptr child2 = tree->get ("..child1.child2");
     assert (child2);
@@ -66,8 +48,22 @@ main ()
     assert (1.2f == data) ;
     Tree::ptr child1 = tree->get (".child1..");
     assert (!child1->is_leaf ());
-    Tree::ptr not_child = tree->get ("child1.foo");
-    assert (!not_child);
+    assert (!tree->get ("child1.foo"));//this is not a child
+  }
+  {//graft a childs and prune it
+    Tree::ptr tree = make_tree ();
+    tree->graft ("child1.child2", make_tree ());
+    assert (!tree->is_leaf ());
+    Tree::ptr child1 = tree->prune ("child1");
+    assert (child1);
+    assert (tree->is_leaf ());
+    assert (!child1->is_leaf ());
+    //child2 from the pruned child1
+    Tree::ptr child2 = child1->prune ("child2");
+    assert (child2);
+    assert (child1->is_leaf ());
+    assert (child2->is_leaf ());
+
   }
   return 0;
 }

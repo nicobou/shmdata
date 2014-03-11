@@ -20,7 +20,6 @@
 #include "information-tree.h"
 #include <algorithm>
 #include <regex>
-#include <iostream>
 
 namespace switcher { 
   namespace data {
@@ -75,7 +74,6 @@ namespace switcher {
 			   childrens_.end (),
 			   [key] (const Tree::child_type& s) 
 			   { 
-			     std::cout << "key to find " << key << " key visited " << s.first << std::endl;
 			     return (0 == s.first.compare (key));
 			   });
     }
@@ -100,8 +98,7 @@ namespace switcher {
       auto found =  get_node (path);
       if (!found.first.empty ())
 	return found.second->second;
-      //no found
-      std::cout << "NOT FPOUND" << std::endl;
+      //not found
       Tree::ptr res;
       return res;
     }
@@ -126,26 +123,17 @@ namespace switcher {
     {
       std::string child_key;
       if (!std::getline (path, child_key, '.'))
-	{
-	  std::cout << "FOUND in get_next" << std::endl;
-	  // iterator_result = this_it;
-	  // parent_list_result = this_parent_list;
-	  return true;
-	}
-      std::cout << "child_key: " << child_key << std::endl;
+	return true;
       if (child_key.empty ())
 	{
-	  std::cout << "child_key empty" << std::endl;
 	  return this->get_next (path, 
 				 parent_list_result, 
 				 iterator_result);
 	}
       
       auto it = get_child_iterator (child_key);
-      std::cout << "blalbal" << std::endl;
       if (childrens_.end () != it)
 	{
-	  std::cout << "pliplipipl" << std::endl;
 	  if( it->second->get_next (path, parent_list_result, iterator_result))
 	    {
 	      iterator_result = it;
@@ -153,8 +141,6 @@ namespace switcher {
 	    }
 	  return false;
 	}
-      
-      std::cout << "NOT FOUND IN get_next" << std::endl; 
       return false;
     }
 
@@ -170,21 +156,14 @@ namespace switcher {
     {
       std::string child;
       if (!std::getline (path, child, '.'))
-	{
-	  std::cout << "graft finished parsing" << std::endl;
-	  return true;
-	}
+	return true;
       if (child.empty ()) //in case of two or more consecutive dots
 	  return graft_next (path, tree, leaf);
-      std::cout << " child " << child << std::endl;
       auto it = tree->get_child_iterator (child);
       if (tree->childrens_.end () != it)
 	{
 	  if (graft_next (path, it->second.get (), leaf)) //graft on already existing child
-	    {
-	      std::cout << "replacing previous with" << std::endl;
-	      it->second = leaf; // replacing the previously empy tree with the one to graft
-	    }
+	    it->second = leaf; // replacing the previously empy tree with the one to graft
   	}
       else
 	{
@@ -192,7 +171,6 @@ namespace switcher {
 	  tree->childrens_.emplace_back (child, child_node);
 	  if (graft_next (path, child_node.get (), leaf)) //graft on already existing child
 	    {
-	      std::cout << "replacing previous with 2" << std::endl;
 	      // replacing empty tree for replacement by leaf
 	      tree->childrens_.pop_back ();
 	      tree->childrens_.emplace_back (child, leaf);
