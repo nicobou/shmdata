@@ -279,13 +279,13 @@ AM_CONDITIONAL(NODEADDONBUILD, test "x${NODEADDONBUILD}" = "xenabled")
 dnl Use the C++ compiler for the compile tests
 AC_LANG(C++)
 
-AC_MSG_CHECKING([to see if compiler understands -std=c++0x])
-CXXFLAGS="$CXXFLAGS -std=c++0x"
+AC_MSG_CHECKING([to see if compiler understands -std=c++11])
+CXXFLAGS="$CXXFLAGS -std=c++11"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
   AC_MSG_RESULT([yes])
 ], [
   AC_MSG_RESULT([no])
-  AC_MSG_ERROR([compiler does not understand -std=c++0x])
+  AC_MSG_ERROR([compiler does not understand -std=c++11])
 ])
 
 

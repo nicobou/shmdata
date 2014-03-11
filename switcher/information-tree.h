@@ -54,19 +54,26 @@ namespace switcher {
       ~Tree ();
       Tree (const Any &data);
       bool is_leaf () const;
-      void graft (const std::string &key, Tree::ptr child);
+      Tree::ptr get (const std::string &path);
+      bool graft (const std::string &where, Tree::ptr);
       Tree::ptr prune (const std::string &key);
-      Tree::ptr get (const std::string &key);
-      
       Any get_data () const;
-      void set_data (const Any &data);
+      void set_data (Any &data);
 
     private:
       Any data_;
       child_list_type childrens_;
       child_list_type::iterator get_child_iterator (const std::string &key);
+      static bool graft_next (std::istringstream &path, Tree *tree, Tree::ptr leaf);
+      std::pair <Tree::child_list_type, Tree::child_list_type::iterator>
+	get_node (const std::string &path);
+      bool get_next (std::istringstream &path, 
+		     child_list_type &this_parent_list,
+		     child_list_type::iterator this_it, 
+		     child_list_type &parent_list_result, 
+		     child_list_type::iterator &result_iterator);
     };
-
+    
     Tree::ptr make_tree (); 
     Tree::ptr make_tree (const char *data);
 

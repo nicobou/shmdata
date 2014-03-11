@@ -19,6 +19,8 @@
 
 #include "information-tree.h"
 #include <algorithm>
+#include <regex>
+#include <iostream>
 
 namespace switcher { 
   namespace data {
@@ -61,7 +63,7 @@ namespace switcher {
     }
 
     void
-    Tree::set_data (const Any &data)
+    Tree::set_data (Any &data)
     {
       data_ = data;
     }
@@ -73,38 +75,131 @@ namespace switcher {
 			   childrens_.end (),
 			   [key] (const Tree::child_type& s) 
 			   { 
+			     std::cout << "key to find " << key << " key visited " << s.first << std::endl;
 			     return (0 == s.first.compare (key));
 			   });
     }
     
     Tree::ptr
-    Tree::prune (const std::string &key)
+    Tree::prune (const std::string &path)
     {
+      auto found = get_node (path);
+      if (!found.first.empty ())
+       	{
+	  Tree::ptr res = found.second->second;
+	  found.first.erase (found.second);
+	  return res;
+	}
+      Tree::ptr res = found.second->second;
+      return res;
+    }
+
+    Tree::ptr 
+    Tree::get  (const std::string &path)
+    {
+      auto found =  get_node (path);
+      if (!found.first.empty ())
+	return found.second->second;
+      //no found
+      std::cout << "NOT FPOUND" << std::endl;
       Tree::ptr res;
-      auto it = get_child_iterator (key);
+      return res;
+    }
+
+    std::pair <Tree::child_list_type, Tree::child_list_type::iterator>
+    Tree::get_node (const std::string &path)
+    {
+      std::istringstream iss (path);
+      Tree::child_list_type child_list;
+      Tree::child_list_type::iterator result;
+      get_next (iss, 
+		childrens_,
+		Tree::child_list_type::iterator (), 
+		child_list, 
+		result);
+      return std::make_pair (child_list, result);
+    }
+    
+
+    bool 
+    Tree::get_next (std::istringstream &path, 
+		    Tree::child_list_type &this_parent_list, 
+		    Tree::child_list_type::iterator this_it, 
+		    Tree::child_list_type &parent_list_result, 
+		    Tree::child_list_type::iterator &iterator_result)
+    {
+      std::string child_key;
+      if (!std::getline (path, child_key, '.'))
+	{
+	  std::cout << "FOUND in get_next" << std::endl;
+	  iterator_result = this_it;
+	  parent_list_result = this_parent_list;
+	  return true;
+	}
+      std::cout << "child_key: " << child_key << std::endl;
+      if (child_key.empty ())
+	{
+	  std::cout << "child_key empty" << std::endl;
+	  return this->get_next (path, 
+				 this_parent_list, 
+				 this_it, 
+				 parent_list_result, 
+				 iterator_result);
+	}
+      
+      auto it = get_child_iterator (child_key);
+      std::cout << "blalbal" << std::endl;
       if (childrens_.end () != it)
 	{
-	  res = it->second;
-	  childrens_.erase (it);
+	  std::cout << "pliplipipl" << std::endl;
+	  return it->second->get_next (path, childrens_, it, parent_list_result, iterator_result);
 	}
-      return res;
+      
+      std::cout << "NOT FOUND IN get_next" << std::endl; 
+      return false;
     }
 
-    Tree::ptr
-    Tree::get (const std::string &key)
+    bool 
+    Tree::graft (const std::string &where, Tree::ptr tree)
     {
-      auto it = get_child_iterator (key);
-      if (childrens_.end () != it)
-	return (it->second);
-      Tree::ptr res;
-      return res;
+      std::istringstream iss (where);
+      return graft_next (iss, this, tree);
     }
 
-    void 
-    Tree::graft (const std::string &key, Tree::ptr child)
+    bool
+    Tree::graft_next (std::istringstream &path, Tree *tree, Tree::ptr leaf)
     {
-      childrens_.emplace_back (key, child);
+      std::string child;
+      if (!std::getline (path, child, '.'))
+	{
+	  std::cout << "graft finished parsing" << std::endl;
+	  return true;
+	}
+      if (child.empty ()) //in case of two or more consecutive dots
+	  return graft_next (path, tree, leaf);
+      std::cout << " child " << child << std::endl;
+      auto it = tree->get_child_iterator (child);
+      if (tree->childrens_.end () != it)
+	{
+	  if (graft_next (path, it->second.get (), leaf)) //graft on already existing child
+	    {
+	      std::cout << "replacing previous with" << std::endl;
+	      it->second = leaf; // replacing the previously empy tree with the one to graft
+	    }
+  	}
+      else
+	{
+	  Tree::ptr child_node = make_tree ();
+	  tree->childrens_.emplace_back (child, child_node);
+	  if (graft_next (path, child_node.get (), leaf)) //graft on already existing child
+	    {
+	      std::cout << "replacing previous with 2" << std::endl;
+	      // replacing empty tree for replacement by leaf
+	      tree->childrens_.pop_back ();
+	      tree->childrens_.emplace_back (child, leaf);
+	    }
+	}
+      return false;
     }
-        
   } // end of namespace information
 }  // end of namespace switcher
