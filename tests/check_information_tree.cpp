@@ -28,7 +28,7 @@ main ()
     std::string data = tree->get_data ();
     assert (0 == data.compare ("truc"));
   }
-  {//node data as const char *
+  {//node data as const char * (converted to std::string for being stored in Any)
     Tree::ptr tree = make_tree ("test");
     assert (tree->is_leaf ());
   }
@@ -73,9 +73,32 @@ main ()
   }
   {//set/get data with path
     Tree::ptr tree = make_tree ();
+    //tree->set_data ("", 1.2f); // this is not possible 
+    //float tree_data = tree->get_data ("."); // this is not possible 
+    // assert (1.2f == tree_data);
     tree->graft ("child1.child2", make_tree ());
-    //assert (tree->set_data ("child1.child2", "test"));
-    //assert (tree->set_data ("child1", 1.2f));
+    assert (tree->set_data ("child1.child2", "test"));
+    assert (tree->set_data ("child1", 1.2f));
+    std::string child2_data = tree->get_data ("child1.child2");
+    assert (0 == child2_data.compare ("test"));
+    float child1_data = tree->get_data ("child1");
+    assert (1.2f == child1_data);
+  }
+  {//removing using empty data
+    Tree::ptr tree = make_tree ();
+    tree->set_data ("test");
+    assert (tree->has_data ());
+    tree->set_data (Any ());
+    assert (!tree->has_data ());
+    tree->graft ("child1.child2", make_tree ());
+    assert (tree->set_data ("child1.child2", "test"));
+    assert (tree->set_data ("child1", "test"));
+    assert (tree->has_data ("child1.child2"));
+    assert (tree->has_data ("child1"));
+    assert (tree->set_data ("child1.child2", Any ()));
+    assert (tree->set_data ("child1", Any ()));
+    assert (!tree->has_data ("child1.child2"));
+    assert (!tree->has_data ("child1"));
   }
   return 0;
 }

@@ -20,6 +20,7 @@
 #include "information-tree.h"
 #include <algorithm>
 #include <regex>
+#include <iostream>
 
 namespace switcher { 
   namespace data {
@@ -55,6 +56,12 @@ namespace switcher {
       return childrens_.empty ();
     }
 
+    bool
+    Tree::has_data () const
+    {
+      return !data_.is_null ();
+    }
+
     Any
     Tree::get_data () const
     {
@@ -62,11 +69,22 @@ namespace switcher {
     }
 
     void
-    Tree::set_data (Any &data)
+    Tree::set_data (const Any &data)
     {
       data_ = data;
     }
 
+    void
+    Tree::set_data (const char *data)
+    {
+      set_data (std::string (data));
+    }
+
+    void
+    Tree::set_data (std::nullptr_t ptr)
+    {
+      data_ = ptr;
+    }
 
     bool
     Tree::is_leaf (const std::string &path)
@@ -74,6 +92,15 @@ namespace switcher {
       auto found = get_node (path);
       if (!found.first.empty ())
 	return found.second->second->is_leaf ();
+      return false;
+    }
+
+    bool
+    Tree::has_data (const std::string &path)
+    {
+      auto found = get_node (path);
+      if (!found.first.empty ())
+	return found.second->second->has_data ();
       return false;
     }
 
@@ -88,7 +115,7 @@ namespace switcher {
     }
 
     bool
-    Tree::set_data (const std::string &path, Any &data)
+    Tree::set_data (const std::string &path, const Any &data)
     {
       auto found = get_node (path);
       if (!found.first.empty ())
@@ -97,6 +124,19 @@ namespace switcher {
 	  return true;
 	}
       return false;
+    }
+
+    bool
+    Tree::set_data (const std::string &path, const char *data)
+    {
+      return set_data (path, std::string (data));
+    }
+
+    bool
+    Tree::set_data (const std::string &path, std::nullptr_t ptr)
+    {
+      std::cout << __FUNCTION__ << std::endl;
+      return set_data (path, Any (ptr));
     }
    
     Tree::child_list_type::iterator
@@ -141,9 +181,12 @@ namespace switcher {
       std::istringstream iss (path);
       Tree::child_list_type child_list;
       Tree::child_list_type::iterator child_iterator;
-      get_next (iss, 
-		child_list, 
-		child_iterator);
+      if (get_next (iss, 
+		    child_list, 
+		    child_iterator))
+	{
+	  //asking root node
+	}
       return std::make_pair (child_list, child_iterator);
     }
     

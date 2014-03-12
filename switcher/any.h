@@ -11,7 +11,8 @@ struct Any
   bool is_null () const { return !ptr_; }
   bool not_null () const { return ptr_; }
 
-  template<typename U> Any (U&& value)
+  template<typename U> 
+  Any (U&& value)
   : ptr_ (new Derived<StorageType<U>> (std::forward<U> (value)))
   {}
 
@@ -84,6 +85,12 @@ struct Any
     return *this;
   }
     
+  bool
+  is_null ()
+  {
+    return nullptr == ptr_;
+  }
+
   ~Any ()
   {
     if (ptr_)
