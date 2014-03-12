@@ -100,5 +100,10 @@ main ()
     assert (!tree->has_data ("child1.child2"));
     assert (!tree->has_data ("child1"));
   }
+  {//Any to string
+    Any a (std::string ("test"));
+    Any b (1.2f);
+    
+  }
   return 0;
 }
