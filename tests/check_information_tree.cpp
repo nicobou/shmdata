@@ -18,6 +18,7 @@
 #include <string>
 #include <cassert>
 #include <iostream>
+
 int
 main ()
 {
@@ -103,7 +104,9 @@ main ()
   {//Any to string
     Any a (std::string ("test"));
     Any b (1.2f);
-    
+    std::stringstream ss;
+    ss << a << b;
+    assert (0 == ss.str ().compare ("test1.2"));
   }
   return 0;
 }

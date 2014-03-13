@@ -21,9 +21,48 @@
 #include <typeinfo>
 #include <string>
 #include <ostream>
+#include <sstream>
 
 template <class T>
 using StorageType = typename std::decay<T>::type; 
+
+  struct Base
+  {
+    //Base (const Base &) = delete;
+    virtual ~Base () {}
+    virtual Base* clone () const = 0;
+    virtual std::string to_string () const = 0;
+  };
+
+  template<typename T>
+  struct Derived : Base
+  {
+    template<typename U> 
+      Derived (U &&value) : 
+    value_ (std::forward<U> (value)) 
+      {}
+    T value_;
+    Base* clone () const {return new Derived<T> (value_);}
+    std::string to_string () const 
+      {
+	std::stringstream ss;
+	ss << value_;
+	return ss.str ();
+      } 
+  };
+
+  template<>
+  struct Derived <std::nullptr_t> : Base
+  {
+    template<typename U> 
+      Derived (U &&value) : 
+    value_ (std::forward<U> (value)) 
+      {}
+    std::nullptr_t value_;
+    Base* clone () const {return new Derived<std::nullptr_t> (value_);}
+    std::string to_string () const {return std::string ("not a nullptr");} 
+  };
+
 
 struct Any
 {
@@ -111,40 +150,7 @@ struct Any
   }
 
 private:
-  struct Base
-  {
-    //Base (const Base &) = delete;
-    virtual ~Base () {}
-    virtual Base* clone () const = 0;
-    //virtual std::string to_string () const { return std::string ("nullptr");};
-  };
 
-  template<typename T>
-  struct Derived : Base
-  {
-    template<typename U> 
-      Derived (U &&value) : 
-    value_ (std::forward<U> (value)) 
-      {}
-
-    T value_;
-    
-    Base* 
-      clone () const 
-    { 
-      return new Derived<T> (value_); 
-    }
-    
-    /* //if value is not a nullptr */
-    /* typename std::enable_if<!std::is_same<T, std::nullptr_t>::value, std::string>   */
-    /*   to_string () const */
-    /*   { */
-    /* 	//std::string res; */
-    /* 	//res << value_; */
-    /* 	return std::string ("not a nullptr"); */
-    /* } */
-   
-  };
 
   Base* 
   clone () const
@@ -162,6 +168,6 @@ private:
 std::ostream & 
 operator<< (std::ostream &os, const Any &any)
 {
-  //os << any.ptr_->to_string ();
+  os << any.ptr_->to_string ();
   return os;
 }
