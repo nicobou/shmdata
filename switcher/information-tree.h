@@ -90,6 +90,10 @@ namespace switcher {
       Tree::ptr make_tree (ValueType data) {return std::make_shared<Tree> (data);} 
     Tree::ptr make_tree (const char *data); //Tree will store a std::string
 
+    //walks
+    //typedef 
+    void inorder_tree_walk (Tree::ptr, void (*)(Tree::ptr));
+    
   } // end of "data" namespace 
 }  // end of "switcher" namespace
 #endif // ifndef
