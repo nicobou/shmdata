@@ -44,6 +44,7 @@
 namespace switcher { 
   namespace data {
 
+    //-------- 
     class Tree
     {
     public:
@@ -81,6 +82,35 @@ namespace switcher {
       bool get_next (std::istringstream &path, 
 		     child_list_type &parent_list_result, 
 		     child_list_type::iterator &result_iterator);
+
+      //walks
+      template <typename T, typename OnGoingTo, typename OnFinished, typename OnNode>
+	friend void 
+	preorder_tree_walk (Tree::ptr tree,
+			    OnGoingTo on_going_to_visit_childrens,
+			    OnFinished on_finished_visit_childrens, 
+			    OnNode on_node,
+			    T user_data)
+	{
+	  if (!tree->is_leaf())
+	    {
+	      on_going_to_visit_childrens (user_data); 
+	      for (auto &it : tree->childrens_)
+		{
+		  on_node (it.first,  
+			   it.second->get_data (),  
+			   it.second->childrens_.size (), 
+			   user_data); 
+		  preorder_tree_walk (it.second, 
+				      on_going_to_visit_childrens,
+				      on_finished_visit_childrens,  
+				      on_node, 
+				      user_data);
+		}
+	       on_finished_visit_childrens (user_data);  
+	    }
+	}
+      
     };
 
     //-------------- utils
@@ -90,10 +120,6 @@ namespace switcher {
       Tree::ptr make_tree (ValueType data) {return std::make_shared<Tree> (data);} 
     Tree::ptr make_tree (const char *data); //Tree will store a std::string
 
-    //walks
-    //typedef 
-    void inorder_tree_walk (Tree::ptr, void (*)(Tree::ptr));
-    
   } // end of "data" namespace 
 }  // end of "switcher" namespace
 #endif // ifndef

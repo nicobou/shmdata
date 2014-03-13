@@ -84,8 +84,11 @@ main ()
   }
   {//is_leaf with path
     Tree::ptr tree = make_tree ();
+    tree->graft ("child1", make_tree ());
     tree->graft ("child1.child2", make_tree ());
-    assert (tree->is_leaf ("child1.child2"));
+    tree->graft ("child1.child2.child3", make_tree ());
+    assert (tree->is_leaf ("child1.child2.child3"));
+    assert (!tree->is_leaf ("child1.child2"));
     assert (!tree->is_leaf ("child1"));
     assert (!tree->is_leaf ("foofoo"));
   }
@@ -132,5 +135,22 @@ main ()
     //std::cout << ss.str () << std::endl;
     assert (0 == ss.str ().compare ("null-test-1.2-not serializable-hello"));
   }
+  {//walk
+    Tree::ptr tree = make_tree ();
+    tree->graft ("child1.child2", make_tree ("val2"));
+    tree->graft ("child1.child3", make_tree (1.2f));
+    tree->graft ("child1.child2.bla1", make_tree (true));
+    tree->graft ("child1.child2.bla2", make_tree ("val5"));
+    std::string hello = "";
+    preorder_tree_walk<std::string> (tree,
+				     [] (std::string &hello) {std::cout<< std::endl << hello <<"[ "; hello = hello + " ";},
+				     [] (std::string &hello) {std::cout<< hello << "] "  << std::endl; },
+				     [] (std::string key, 
+					 Any value, 
+					 std::size_t n,
+					 std::string &hello) { std::cout << key << " " << value << " " << n << ", ";},
+				     hello);
+  }
+
   return 0;
 }

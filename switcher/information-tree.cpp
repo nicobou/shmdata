@@ -25,23 +25,20 @@
 namespace switcher { 
   namespace data {
     
-    Tree::ptr 
-    make_tree ()
-    {
-      return std::make_shared<Tree> ();
-    } 
 
+    //--------------- utils
+    //constructor
     Tree::ptr 
-    make_tree (const char *data)
-    {
-      return std::make_shared<Tree> (std::string (data));
-    } 
+    make_tree () {return std::make_shared<Tree> ();} 
+    Tree::ptr 
+    make_tree (const char *data) {return std::make_shared<Tree> (std::string (data));} 
 
-    Tree::Tree () :
-      data_ (),
-      childrens_ ()
+    //--------------- class
+    Tree::Tree () : 
+      data_ (), 
+      childrens_ () 
     {}
-
+    
     Tree::~Tree ()
     {}
 
