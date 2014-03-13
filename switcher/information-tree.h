@@ -82,15 +82,13 @@ namespace switcher {
 		     child_list_type &parent_list_result, 
 		     child_list_type::iterator &result_iterator);
     };
-    
-    Tree::ptr make_tree (); 
-    Tree::ptr make_tree (const char *data);
 
-    template <typename ValueType>
-    Tree::ptr make_tree (ValueType data)
-    {
-      return std::make_shared<Tree> (data);
-    } 
+    //-------------- utils
+    //constructor
+    Tree::ptr make_tree (); 
+    template <typename ValueType> 
+      Tree::ptr make_tree (ValueType data) {return std::make_shared<Tree> (data);} 
+    Tree::ptr make_tree (const char *data); //Tree will store a std::string
 
   } // end of "data" namespace 
 }  // end of "switcher" namespace

@@ -16,6 +16,10 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
+
+#ifndef __SWITCHER_ANY_H__
+#define __SWITCHER_ANY_H__
+
 #include <type_traits>
 #include <utility>
 #include <typeinfo>
@@ -26,42 +30,42 @@
 template <class T>
 using StorageType = typename std::decay<T>::type; 
 
-  struct Base
-  {
-    //Base (const Base &) = delete;
-    virtual ~Base () {}
-    virtual Base* clone () const = 0;
-    virtual std::string to_string () const = 0;
-  };
+struct AnyValueBase
+{
+  //AnyValueBase (const AnyValueBase &) = delete;
+  virtual ~AnyValueBase () {}
+  virtual AnyValueBase* clone () const = 0;
+  virtual std::string to_string () const = 0;
+};
 
-  template<typename T>
-  struct Derived : Base
-  {
-    template<typename U> 
-      Derived (U &&value) : 
-    value_ (std::forward<U> (value)) 
-      {}
-    T value_;
-    Base* clone () const {return new Derived<T> (value_);}
-    std::string to_string () const 
-      {
-	std::stringstream ss;
-	ss << value_;
-	return ss.str ();
-      } 
-  };
+template<typename T>
+struct AnyValueDerived : AnyValueBase
+{
+  template<typename U> 
+    AnyValueDerived (U &&value) : 
+  value_ (std::forward<U> (value)) 
+    {}
+  T value_;
+  AnyValueBase* clone () const {return new AnyValueDerived<T> (value_);}
+  std::string to_string () const 
+    {
+      std::stringstream ss;
+      ss << value_;
+      return ss.str ();
+    } 
+};
 
-  template<>
-  struct Derived <std::nullptr_t> : Base
-  {
-    template<typename U> 
-      Derived (U &&value) : 
-    value_ (std::forward<U> (value)) 
-      {}
-    std::nullptr_t value_;
-    Base* clone () const {return new Derived<std::nullptr_t> (value_);}
-    std::string to_string () const {return std::string ("not a nullptr");} 
-  };
+template<>
+struct AnyValueDerived <std::nullptr_t> : AnyValueBase
+{
+  template<typename U> 
+    AnyValueDerived (U &&value) : 
+  value_ (std::forward<U> (value)) 
+    {}
+  std::nullptr_t value_;
+  AnyValueBase* clone () const {return new AnyValueDerived<std::nullptr_t> (value_);}
+  std::string to_string () const {return std::string ("null");} 
+};
 
 
 struct Any
@@ -71,7 +75,7 @@ struct Any
 
   template<typename U> 
   Any (U&& value)
-  : ptr_ (new Derived<StorageType<U>> (std::forward<U> (value)))
+  : ptr_ (new AnyValueDerived<StorageType<U>> (std::forward<U> (value)))
   {}
 
   template<class U> 
@@ -79,7 +83,7 @@ struct Any
   is () const
   {
     typedef StorageType<U> T;
-    auto derived = dynamic_cast<Derived<T>*> (ptr_);
+    auto derived = dynamic_cast<AnyValueDerived<T>*> (ptr_);
     return derived;
   }
 
@@ -88,7 +92,7 @@ struct Any
   as ()
   {
     typedef StorageType<U> T;
-    auto derived = dynamic_cast<Derived<T>*> (ptr_);
+    auto derived = dynamic_cast<AnyValueDerived<T>*> (ptr_);
     if (!derived)
       throw std::bad_cast ();
     return derived->value_;
@@ -134,8 +138,8 @@ struct Any
     return *this;
   }
     
-  Any & 
-  operator= (Any &&a)
+    Any & 
+    operator= (Any &&a)
   {
     if (ptr_ == a.ptr_)
       return *this;
@@ -143,16 +147,14 @@ struct Any
     return *this;
   }
     
-  ~Any ()
+      ~Any ()
   {
     if (ptr_)
       delete ptr_;
   }
 
 private:
-
-
-  Base* 
+  AnyValueBase* 
   clone () const
   {
     if (ptr_)
@@ -161,13 +163,36 @@ private:
       return nullptr;
   }
 
-  Base* ptr_;
+  AnyValueBase* ptr_;
   friend std::ostream &operator<< (std::ostream &os, const Any &any);
 };
 
 std::ostream & 
 operator<< (std::ostream &os, const Any &any)
 {
-  os << any.ptr_->to_string ();
+  if (any.ptr_)
+    os << any.ptr_->to_string ();
+  else
+    os << "null";
   return os;
 }
+
+//this is for Any of complex value, where default serilization will 
+//be implemented as follw
+//
+
+template <typename T> struct DefaultSerializable;
+template <typename T>
+std::ostream & 
+operator<< (std::ostream &os, const DefaultSerializable<T> &)
+{
+  os << "not serializable";
+  return os;
+}
+template <typename T>
+struct DefaultSerializable {
+  virtual ~DefaultSerializable() {};
+  friend std::ostream &operator<< <> (std::ostream &os, const DefaultSerializable<T> &);
+};
+
+#endif // ifndef

@@ -21,7 +21,6 @@
  * The Quiddity class
  */
 
-
 #ifndef __SWITCHER_QUIDDITY_H__
 #define __SWITCHER_QUIDDITY_H__
 

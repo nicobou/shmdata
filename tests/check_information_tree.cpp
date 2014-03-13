@@ -18,6 +18,23 @@
 #include <string>
 #include <cassert>
 #include <iostream>
+#include <memory>
+
+//----------------- a custom struct without operator <<
+struct Widget : public DefaultSerializable<Widget> 
+{};
+
+//----------------- a custom struct with operator <<
+struct SerializableWidget 
+{
+  friend std::ostream &operator<< (std::ostream &os, const SerializableWidget &);
+};
+std::ostream & 
+operator<< (std::ostream &os, const SerializableWidget &)
+{
+  os << "hello";
+  return os;
+}
 
 int
 main ()
@@ -102,11 +119,18 @@ main ()
     assert (!tree->has_data ("child1"));
   }
   {//Any to string
+    Any n;
     Any a (std::string ("test"));
     Any b (1.2f);
+    Widget widget;
+    Any w (std::move(widget));
+    SerializableWidget serializable_widget;
+    Any sw (serializable_widget);
+    
     std::stringstream ss;
-    ss << a << b;
-    assert (0 == ss.str ().compare ("test1.2"));
+    ss << n << "-" <<a << "-" << b << "-" << w << "-" << sw;
+    //std::cout << ss.str () << std::endl;
+    assert (0 == ss.str ().compare ("null-test-1.2-not serializable-hello"));
   }
   return 0;
 }
