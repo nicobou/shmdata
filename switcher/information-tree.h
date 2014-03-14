@@ -39,6 +39,7 @@
 #include <string>
 #include <list>
 #include <memory>
+#include <type_traits>
 #include "any.h"
 
 namespace switcher { 
@@ -84,30 +85,35 @@ namespace switcher {
 		     child_list_type::iterator &result_iterator);
 
       //walks
-      template <typename T, typename OnGoingTo, typename OnFinished, typename OnNode>
+      template <typename T, typename OnVisitingNode, typename OnNodeVisited>
 	friend void 
 	preorder_tree_walk (Tree::ptr tree,
-			    OnGoingTo on_going_to_visit_childrens,
-			    OnFinished on_finished_visit_childrens, 
-			    OnNode on_node,
-			    T user_data)
+			    //OnGoingTo on_going_to_visit_childrens,
+			    //OnFinished on_finished_visit_childrens, 
+			    OnVisitingNode on_visiting_node,
+			    OnNodeVisited on_node_visited,
+			    T &user_data)
 	{
 	  if (!tree->is_leaf())
 	    {
-	      on_going_to_visit_childrens (user_data); 
+	      //on_going_to_visit_childrens (user_data); 
 	      for (auto &it : tree->childrens_)
 		{
-		  on_node (it.first,  
-			   it.second->get_data (),  
-			   it.second->childrens_.size (), 
-			   user_data); 
+		  std::size_t size = it.second->childrens_.size ();
+		  on_visiting_node (it.first,  
+				 it.second->get_data (),  
+				 size, 
+				 user_data); 
 		  preorder_tree_walk (it.second, 
-				      on_going_to_visit_childrens,
-				      on_finished_visit_childrens,  
-				      on_node, 
+				      on_visiting_node, 
+				      on_node_visited,
 				      user_data);
+		  on_node_visited (it.first,  
+				   it.second->get_data (),  
+				   size, 
+				   user_data);
 		}
-	       on_finished_visit_childrens (user_data);  
+	      //on_finished_visit_childrens (user_data);  
 	    }
 	}
       

@@ -15,6 +15,7 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include "switcher/information-tree.h"
+#include "switcher/information-tree-basic-serializer.h"
 #include <string>
 #include <cassert>
 #include <iostream>
@@ -36,6 +37,7 @@ operator<< (std::ostream &os, const SerializableWidget &)
   return os;
 }
 
+//---------------- test
 int
 main ()
 {
@@ -137,20 +139,25 @@ main ()
   }
   {//walk
     Tree::ptr tree = make_tree ();
-    tree->graft ("child1.child2", make_tree ("val2"));
-    tree->graft ("child1.child3", make_tree (1.2f));
-    tree->graft ("child1.child2.bla1", make_tree (true));
-    tree->graft ("child1.child2.bla2", make_tree ("val5"));
-    std::string hello = "";
-    preorder_tree_walk<std::string> (tree,
-				     [] (std::string &hello) {std::cout<< std::endl << hello <<"[ "; hello = hello + " ";},
-				     [] (std::string &hello) {std::cout<< hello << "] "  << std::endl; },
-				     [] (std::string key, 
-					 Any value, 
-					 std::size_t n,
-					 std::string &hello) { std::cout << key << " " << value << " " << n << ", ";},
-				     hello);
+    tree->graft (".child1.child2", make_tree ("switch"));
+    tree->graft (".child1.child3", make_tree (1.2f));
+    tree->graft (".child1.child2.bla1", make_tree ("wire"));
+    tree->graft (".child1.child2.bla2", make_tree ("hub"));
+    // std::string hello = "";
+    // preorder_tree_walk<std::string> (tree,
+    // 				     [] (std::string &hello) {std::cout<< std::endl << hello <<"[ "; hello = hello + " ";},
+    // 				     [] (std::string &hello) {std::cout<< hello << "] "  << std::endl; },
+    // 				     [] (std::string key, 
+    // 					 Any value, 
+    // 					 std::size_t n,
+    // 					 std::string &hello) { std::cout << key << " " << value << " " << n << ", ";},
+    // 				     hello);
+    std::string serialized = BasicSerializer::serialize (tree);
+    //std::cout << serialized << std::endl;
+    Tree::ptr tree2 = BasicSerializer::deserialize (serialized);
+    std::string serialized2 = BasicSerializer::serialize (tree);
+    //std::cout << serialized2 << std::endl;
+    assert (serialized == serialized2);
   }
-
   return 0;
 }

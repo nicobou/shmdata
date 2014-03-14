@@ -153,6 +153,13 @@ struct Any
       delete ptr_;
   }
 
+  static std::string to_string (const Any &any)
+  {
+    std::stringstream ss;
+    ss << any;
+    return ss.str ();
+  }
+  
 private:
   AnyValueBase* 
   clone () const
@@ -164,35 +171,29 @@ private:
   }
 
   AnyValueBase* ptr_;
-  friend std::ostream &operator<< (std::ostream &os, const Any &any);
+  friend std::ostream &operator<< (std::ostream &os, const Any &any)
+  {
+    if (any.ptr_)
+      os << any.ptr_->to_string ();
+    else
+      os << "null";
+    return os;
+  }
 };
 
-std::ostream & 
-operator<< (std::ostream &os, const Any &any)
-{
-  if (any.ptr_)
-    os << any.ptr_->to_string ();
-  else
-    os << "null";
-  return os;
-}
-
 //this is for Any of complex value, where default serilization will 
-//be implemented as follw
+//be implemented as follow
 //
 
-template <typename T> struct DefaultSerializable;
-template <typename T>
-std::ostream & 
-operator<< (std::ostream &os, const DefaultSerializable<T> &)
-{
-  os << "not serializable";
-  return os;
-}
 template <typename T>
 struct DefaultSerializable {
   virtual ~DefaultSerializable() {};
-  friend std::ostream &operator<< <> (std::ostream &os, const DefaultSerializable<T> &);
+  template <typename U>
+  friend std::ostream &operator<< (std::ostream &os, const DefaultSerializable<U> &)
+  {
+    os << "not serializable";
+    return os;
+  }
 };
 
 #endif // ifndef
