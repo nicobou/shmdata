@@ -44,6 +44,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     http-sdp-dec.cpp \
     information-tree.cpp \
     information-tree-basic-serializer.cpp \
+    information-tree-json.cpp \
     jack-audio-source.cpp \
     jack-sink.cpp \
     jpegenc.cpp \
@@ -125,6 +126,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     http-sdp-dec.h \
     information-tree.h \
     information-tree-basic-serializer.h \
+    information-tree-json.h \
     jack-audio-source.h \
     jack-sink.h \
     jpegenc.h \

@@ -31,10 +31,9 @@ namespace switcher
     long_name_ ("undefined_long_name"),
     name_ ("undefined_name"),
     property_ (NULL),
-    object_ (NULL)
-  {
-    json_description_.reset (new JSONBuilder());
-  }
+    object_ (NULL),
+    json_description_ (new JSONBuilder())
+  {}
 
   Property::~Property ()
   {

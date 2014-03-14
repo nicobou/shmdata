@@ -27,10 +27,9 @@
 namespace switcher
 {
 
-  JSONBuilder::JSONBuilder ()
-  {
-    builder_ = json_builder_new ();
-  }    
+  JSONBuilder::JSONBuilder () :
+    builder_ (json_builder_new ())
+  {}    
 
   JSONBuilder::~JSONBuilder ()
   {
@@ -147,16 +146,14 @@ namespace switcher
   std::string 
   JSONBuilder::get_string (Node root_node, bool pretty)
   {
-    JsonGenerator *generator;
-    gsize length;
-    gchar *data;
-    generator = json_generator_new ();
+    JsonGenerator *generator = json_generator_new ();
+    gsize length = 0;
     if (pretty)
       json_generator_set_pretty (generator, TRUE);
     else
       json_generator_set_pretty (generator, FALSE);
     json_generator_set_root (generator, root_node);
-    data = json_generator_to_data (generator, &length);
+    gchar *data = json_generator_to_data (generator, &length);
     std::string description (data);
     g_free (data);
     g_object_unref (generator);
