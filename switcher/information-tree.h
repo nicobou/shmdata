@@ -17,19 +17,19 @@
  * Boston, MA 02111-1307, USA.
  */
 
-  /**
-   * @file   information-tree.h
-   * 
-   * @brief tree data structure for storing, formating and serializing informations  
-   * 
-   * The information tree is largely inspired from the boost' property tree. 
-   * It provides a data structure that stores an arbitrarily deeply nested 
-   * tree of values, indexed at each level by some key. Each node of the 
-   * tree stores its own value, plus an ordered list of its subnodes and their keys. 
-   * The tree allows easy access to any of its nodes by means of a path, 
-   * which is a concatenation of multiple keys. 
-   *
-   */
+/**
+ * @file   information-tree.h
+ * 
+ * @brief tree data structure for storing, formating and serializing informations  
+ * 
+ * The information tree is largely inspired from the boost' property tree. 
+ * It provides a data structure that stores an arbitrarily deeply nested 
+ * tree of values, indexed at each level by some key. Each node of the 
+ * tree stores its own value, plus an ordered list of its subnodes and their keys. 
+ * The tree allows easy access to any of its nodes by means of a path, 
+ * which is a concatenation of multiple keys. 
+ *
+ */
 
 
 
@@ -40,6 +40,7 @@
 #include <list>
 #include <memory>
 #include <type_traits>
+#include <mutex>
 #include "any.h"
 
 namespace switcher { 
@@ -55,9 +56,9 @@ namespace switcher {
       Tree ();
       ~Tree ();
       Tree (const Any &data);
-      bool is_leaf () const;
-      bool has_data () const;
-      Any get_data () const;
+      bool is_leaf ();
+      bool has_data ();
+      Any get_data ();
       void set_data (const Any &data);
       void set_data (const char *data);
       void set_data (std::nullptr_t ptr);
@@ -76,6 +77,7 @@ namespace switcher {
     private:
       Any data_;
       child_list_type childrens_;
+      std::mutex mutex_;
       child_list_type::iterator get_child_iterator (const std::string &key);
       static bool graft_next (std::istringstream &path, Tree *tree, Tree::ptr leaf);
       std::pair <Tree::child_list_type, Tree::child_list_type::iterator>
@@ -88,35 +90,31 @@ namespace switcher {
       template <typename T, typename OnVisitingNode, typename OnNodeVisited>
 	friend void 
 	preorder_tree_walk (Tree::ptr tree,
-			    //OnGoingTo on_going_to_visit_childrens,
-			    //OnFinished on_finished_visit_childrens, 
 			    OnVisitingNode on_visiting_node,
 			    OnNodeVisited on_node_visited,
 			    T &user_data)
-	{
-	  if (!tree->is_leaf())
-	    {
-	      //on_going_to_visit_childrens (user_data); 
-	      for (auto &it : tree->childrens_)
-		{
-		  std::size_t size = it.second->childrens_.size ();
-		  on_visiting_node (it.first,  
+      {
+	std::unique_lock <std::mutex> lock (tree->mutex_);
+	if (!tree->childrens_.empty ())
+	  {
+	    for (auto &it : tree->childrens_)
+	      {
+		std::size_t size = it.second->childrens_.size ();
+		on_visiting_node (it.first,  
+				  it.second->get_data (),  
+				  size, 
+				  user_data); 
+		preorder_tree_walk (it.second, 
+				    on_visiting_node, 
+				    on_node_visited,
+				    user_data);
+		on_node_visited (it.first,  
 				 it.second->get_data (),  
 				 size, 
-				 user_data); 
-		  preorder_tree_walk (it.second, 
-				      on_visiting_node, 
-				      on_node_visited,
-				      user_data);
-		  on_node_visited (it.first,  
-				   it.second->get_data (),  
-				   size, 
-				   user_data);
-		}
-	      //on_finished_visit_childrens (user_data);  
-	    }
-	}
-      
+				 user_data);
+	      }
+	  }
+      }
     };
 
     //-------------- utils

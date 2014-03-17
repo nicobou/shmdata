@@ -24,40 +24,38 @@
 namespace switcher { 
   namespace data {
 
-     std::string 
-     JSONSerializer::serialize (Tree::ptr tree)
-     {
-       JsonBuilder *json_builder = json_builder_new ();
-       json_builder_begin_object (json_builder);
-       preorder_tree_walk<JsonBuilder *> (tree,
-					  JSONSerializer::on_visiting_node,
-					  JSONSerializer::on_node_visited,
-					  json_builder);
-       json_builder_end_object (json_builder);
-       JsonNode *node = json_builder_get_root (json_builder);
-       if (NULL == node)
-	 {
-	   g_object_unref (json_builder);
-	   return std::string();
-	 }
-       JsonGenerator *generator = json_generator_new ();
-       json_generator_set_pretty (generator, TRUE);
-       json_generator_set_root (generator, node);
-       gsize length = 0;
-       gchar *data = json_generator_to_data (generator, &length);
-       std::string result (data);
-       g_free (data);
-       g_object_unref (generator);
-       g_object_unref (json_builder);
-       return result;
-     }
+    std::string 
+    JSONSerializer::serialize (Tree::ptr tree)
+    {
+      JsonBuilder *json_builder = json_builder_new ();
+      json_builder_begin_object (json_builder);
+      preorder_tree_walk<JsonBuilder *> (tree,
+					 JSONSerializer::on_visiting_node,
+					 JSONSerializer::on_node_visited,
+					 json_builder);
+      json_builder_end_object (json_builder);
+      JsonNode *node = json_builder_get_root (json_builder);
+      if (NULL == node)
+	{
+	  g_object_unref (json_builder);
+	  return std::string();
+	}
+      JsonGenerator *generator = json_generator_new ();
+      json_generator_set_pretty (generator, TRUE);
+      json_generator_set_root (generator, node);
+      gsize length = 0;
+      gchar *data = json_generator_to_data (generator, &length);
+      std::string result (data);
+      g_free (data);
+      g_object_unref (generator);
+      g_object_unref (json_builder);
+      return result;
+    }
 
     void 
     JSONSerializer::on_visiting_node (std::string key, Any value, std::size_t n, JsonBuilder *builder)
     {
-      std::cout << key << std::endl;
       json_builder_set_member_name (builder, key.c_str ());
-
       if (0 != n)
 	{
 	  json_builder_begin_object (builder);
@@ -100,5 +98,6 @@ namespace switcher {
     //   return tree;
     // }
     
-  } // end of "data" namespace 
-}  // end of "switcher" namespace
+  }  //end of "data" namespace 
+}   //end of "switcher" namespace
+ 

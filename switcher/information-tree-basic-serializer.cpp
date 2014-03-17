@@ -23,16 +23,16 @@
 namespace switcher { 
   namespace data {
 
-     std::string 
-     BasicSerializer::serialize (Tree::ptr tree)
-     {
-       BasicSerializerData data;
-       preorder_tree_walk<BasicSerializerData> (tree,
-						BasicSerializer::on_visiting_node,
-						BasicSerializer::on_node_visited,
-						data);
-       return data.result_;
-     }
+    std::string 
+    BasicSerializer::serialize (Tree::ptr tree)
+    {
+      BasicSerializerData data;
+      preorder_tree_walk<BasicSerializerData> (tree,
+					       BasicSerializer::on_visiting_node,
+					       BasicSerializer::on_node_visited,
+					       data);
+      return data.result_;
+    }
 
     void 
     BasicSerializer::on_visiting_node (std::string key, Any value, std::size_t n, BasicSerializerData &data)
@@ -61,7 +61,7 @@ namespace switcher {
     Tree::ptr 
     BasicSerializer::deserialize (std::string &serialized)
     {
-      Tree::ptr tree;
+      Tree::ptr tree = make_tree ();
       std::istringstream ss (serialized);
       std::string line;
       while (std::getline (ss, line))
@@ -70,8 +70,6 @@ namespace switcher {
 	  std::string absolute_key;
 	  while (std::getline (line_ss, absolute_key, ' ') && absolute_key.empty ())
 	    {}
-	  if ("#" != absolute_key || "/" != absolute_key) //discard comments
-	    break;
 	  std::string value;
 	  while (std::getline (line_ss, value, ' ') && value.empty ())
 	    {}

@@ -36,7 +36,8 @@ namespace switcher {
     //--------------- class
     Tree::Tree () : 
       data_ (), 
-      childrens_ () 
+      childrens_ (),
+      mutex_ ()
     {}
     
     Tree::~Tree ()
@@ -44,69 +45,79 @@ namespace switcher {
 
     Tree::Tree (const Any &data) :
       data_ (data),
-      childrens_ ()
+      childrens_ (),
+      mutex_ ()
     {}
 
     bool
-    Tree::is_leaf () const
+    Tree::is_leaf ()
     {
+      std::unique_lock <std::mutex> lock (mutex_);
       return childrens_.empty ();
     }
 
     bool
-    Tree::has_data () const
+    Tree::has_data ()
     {
+      std::unique_lock <std::mutex> lock (mutex_);
       return !data_.is_null ();
     }
 
     Any
-    Tree::get_data () const
+    Tree::get_data ()
     {
+      std::unique_lock <std::mutex> lock (mutex_);
       return data_;
     }
 
     void
     Tree::set_data (const Any &data)
     {
+      std::unique_lock <std::mutex> lock (mutex_);
       data_ = data;
     }
 
     void
     Tree::set_data (const char *data)
     {
-      set_data (std::string (data));
+      std::unique_lock <std::mutex> lock (mutex_);
+      data_ = std::string (data);
     }
 
     void
     Tree::set_data (std::nullptr_t ptr)
     {
+      std::unique_lock <std::mutex> lock (mutex_);
       data_ = ptr;
     }
 
     bool
     Tree::is_leaf (const std::string &path)
     {
+      std::unique_lock <std::mutex> lock (mutex_);
       auto found = get_node (path);
       if (!found.first.empty ())
-	return found.second->second->is_leaf ();
+	return found.second->second->childrens_.empty ();
       return false;
     }
 
     bool
     Tree::has_data (const std::string &path)
     {
+      std::unique_lock <std::mutex> lock (mutex_);
       auto found = get_node (path);
       if (!found.first.empty ())
-	return found.second->second->has_data ();
+	return found.second->second->data_.not_null ();
       return false;
     }
 
     Any
     Tree::get_data (const std::string &path)
     {
+      std::unique_lock <std::mutex> lock (mutex_);
       auto found = get_node (path);
       if (!found.first.empty ())
-	return found.second->second->get_data ();
+	return found.second->second->data_;
       Any res;
       return res;
     }
@@ -114,10 +125,11 @@ namespace switcher {
     bool
     Tree::set_data (const std::string &path, const Any &data)
     {
+      std::unique_lock <std::mutex> lock (mutex_);
       auto found = get_node (path);
       if (!found.first.empty ())
 	{
-	  found.second->second->set_data (data);
+	  found.second->second->data_ = data;
 	  return true;
 	}
       return false;
@@ -132,7 +144,6 @@ namespace switcher {
     bool
     Tree::set_data (const std::string &path, std::nullptr_t ptr)
     {
-      std::cout << __FUNCTION__ << std::endl;
       return set_data (path, Any (ptr));
     }
    
@@ -150,6 +161,7 @@ namespace switcher {
     Tree::ptr
     Tree::prune (const std::string &path)
     {
+      std::unique_lock <std::mutex> lock (mutex_);
       auto found = get_node (path);
       if (!found.first.empty ())
        	{
@@ -164,6 +176,7 @@ namespace switcher {
     Tree::ptr 
     Tree::get  (const std::string &path)
     {
+      std::unique_lock <std::mutex> lock (mutex_);
       auto found =  get_node (path);
       if (!found.first.empty ())
 	return found.second->second;
@@ -219,6 +232,9 @@ namespace switcher {
     bool 
     Tree::graft (const std::string &where, Tree::ptr tree)
     {
+      if (!tree)
+	return false;
+      std::unique_lock <std::mutex> lock (mutex_);
       std::istringstream iss (where);
       return graft_next (iss, this, tree);
     }
@@ -230,7 +246,7 @@ namespace switcher {
       if (!std::getline (path, child, '.'))
 	return true;
       if (child.empty ()) //in case of two or more consecutive dots
-	  return graft_next (path, tree, leaf);
+	return graft_next (path, tree, leaf);
       auto it = tree->get_child_iterator (child);
       if (tree->childrens_.end () != it)
 	{
