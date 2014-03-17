@@ -34,6 +34,7 @@
 #include "property.h"
 #include "method.h"
 #include "signal-string.h"
+#include "information-tree.h"
 #include "quiddity-documentation.h"
 #include "quiddity-manager-impl.h"
 #include "json-builder.h"
@@ -107,6 +108,9 @@ namespace switcher
     bool emit_action (const std::string signal_name,
 			std::string **return_value,
 			const std::vector<std::string> args);
+
+    //information
+    std::string get_info (const std::string &path);
    
     //shmdata socket names
     static std::string get_socket_name_prefix ();
@@ -116,6 +120,9 @@ namespace switcher
     void set_manager_impl (std::shared_ptr<QuiddityManager_Impl> manager_impl);
 
   private:
+    //information tree
+    data::Tree::ptr information_tree_;
+
     //properties
     std::unordered_map <std::string, Property::ptr> properties_;
     std::unordered_map <std::string, Property::ptr> disabled_properties_;
@@ -141,6 +148,11 @@ namespace switcher
     std::string name_;
     std::string nick_name_;
 
+    //information
+    bool graft_tree (const std::string &path, data::Tree::ptr tree_to_graft);
+    data::Tree::ptr prune_tree (const std::string &path);
+    
+    //property
     bool register_property (GObject *object, 
 			    GParamSpec *pspec, 
 			    std::string name_to_give,
@@ -202,6 +214,7 @@ namespace switcher
 				 GType *param_types,
 				 void *user_data);
    
+
   protected:
     //property
     bool install_property (GObject *object, 

@@ -1218,4 +1218,13 @@ namespace switcher
     return true;
   }
 
+  std::string
+  QuiddityManager_Impl::get_info (const std::string &nick_name, const std::string &path)
+  {
+    auto it = quiddities_nick_names_.find (nick_name);
+    if (quiddities_nick_names_.end () == it)
+      return "{ \"error\":\"quiddity not found\"}";
+    return quiddities_[quiddities_nick_names_[nick_name]]->get_info (path);
+  }
+
 } // end of namespace

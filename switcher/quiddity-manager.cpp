@@ -314,6 +314,15 @@ namespace switcher
   }
 
   std::string 
+  QuiddityManager::get_info (const std::string &quiddity_name, const std::string &path)
+  {
+    return seq_invoke (QuiddityCommand::get_info,
+		       quiddity_name.c_str(),
+		       path.c_str(),
+		       NULL);
+  }
+
+  std::string 
   QuiddityManager::get_properties_description_by_class (std::string class_name)
   {
     return seq_invoke (QuiddityCommand::get_properties_description_by_class,
@@ -1077,6 +1086,9 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	break;
       case QuiddityCommand::get_property_description:
 	context->command_->result_.push_back (context->manager_impl_->get_property_description (context->command_->args_[0], context->command_->args_[1]));
+	break;
+      case QuiddityCommand::get_info:
+	context->command_->result_.push_back (context->manager_impl_->get_info (context->command_->args_[0], context->command_->args_[1]));
 	break;
       case QuiddityCommand::get_properties_description_by_class:
 	context->command_->result_.push_back (context->manager_impl_->get_properties_description_by_class (context->command_->args_[0]));

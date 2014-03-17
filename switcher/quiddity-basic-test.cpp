@@ -26,6 +26,8 @@ namespace switcher
   QuiddityBasicTest::test_full (QuiddityManager::ptr manager, 
 				std::string quiddity_class_name)
   {
+    if (!test_get_info (manager, quiddity_class_name))
+      return false;
     if (!test_create (manager, quiddity_class_name))
       return false;
     if (!test_description_by_class (manager, quiddity_class_name))
@@ -144,4 +146,15 @@ namespace switcher
     
     return true;
   }
+  
+  bool 
+  QuiddityBasicTest::test_get_info (QuiddityManager::ptr manager, 
+				    std::string quiddity_class_name)
+  {
+    std::string name = manager->create (quiddity_class_name);
+    std::string res = manager->get_info (name,".");    
+    return true;
+  }
+  
+
 }
