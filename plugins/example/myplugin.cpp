@@ -66,6 +66,15 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 
+    //creating some custom infos
+    data::Tree::ptr tree = data::make_tree ();
+    tree->graft (".child1.child2", data::make_tree ("switch"));
+    tree->graft (".child1.child3", data::make_tree (1.2f));
+    tree->graft (".child1.child2.bla1", data::make_tree ("wire"));
+    tree->graft (".child1.child2.bla2", data::make_tree ("hub"));
+    //attaching it to the quiddity (at the root) 
+    graft_tree (".custom.information.", tree);
+
     g_debug ("hello from plugin");
     return true;
   }

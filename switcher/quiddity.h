@@ -148,10 +148,6 @@ namespace switcher
     std::string name_;
     std::string nick_name_;
 
-    //information
-    bool graft_tree (const std::string &path, data::Tree::ptr tree_to_graft);
-    data::Tree::ptr prune_tree (const std::string &path);
-    
     //property
     bool register_property (GObject *object, 
 			    GParamSpec *pspec, 
@@ -216,6 +212,10 @@ namespace switcher
    
 
   protected:
+    //information
+    bool graft_tree (const std::string &path, data::Tree::ptr tree_to_graft);
+    data::Tree::ptr prune_tree (const std::string &path);
+    
     //property
     bool install_property (GObject *object, 
 			    std::string gobject_property_name, 
