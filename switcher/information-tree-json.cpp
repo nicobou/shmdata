@@ -17,7 +17,7 @@
 
 #include "information-tree-json.h"
 #include <json-glib/json-glib.h>
-// #include <iostream>
+#include <iostream>
 // #include <string>
 // #include <iterator>
 
@@ -28,11 +28,12 @@ namespace switcher {
      JSONSerializer::serialize (Tree::ptr tree)
      {
        JsonBuilder *json_builder = json_builder_new ();
+       json_builder_begin_object (json_builder);
        preorder_tree_walk<JsonBuilder *> (tree,
 					  JSONSerializer::on_visiting_node,
 					  JSONSerializer::on_node_visited,
 					  json_builder);
-
+       json_builder_end_object (json_builder);
        JsonNode *node = json_builder_get_root (json_builder);
        if (NULL == node)
 	 {
@@ -54,32 +55,20 @@ namespace switcher {
     void 
     JSONSerializer::on_visiting_node (std::string key, Any value, std::size_t n, JsonBuilder *builder)
     {
-      if (1 < n)
-	{ 
-	  json_builder_begin_object (builder);
-	  json_builder_set_member_name (builder, key.c_str ());
-	  json_builder_begin_array (builder);
-	  // if (value.not_null ())
-	  //   {
-	  //     json_builder_begin_object (builder);
-	  //     json_builder_set_member_name (builder, "key_value");
-	  //     json_builder_add_string_value (builder, Any::to_string (value).c_str ());
-	  //     json_builder_end_object (builder);
-	  //   }
-	  return;
-	}
-      
-      if (1 == n)
-	{
-	  json_builder_begin_object (builder);
-	  json_builder_set_member_name (builder, key.c_str ());
-	  //json_builder_add_string_value (builder, Any::to_string (value).c_str ());
-	  return;
-	}
+      std::cout << key << std::endl;
+      json_builder_set_member_name (builder, key.c_str ());
 
-      if (0 == n)
+      if (0 != n)
 	{
-	  json_builder_set_member_name (builder, key.c_str ());
+	  json_builder_begin_object (builder);
+	  if (value.not_null ())
+	    {
+	      json_builder_set_member_name (builder, "key_value");
+	      json_builder_add_string_value (builder, Any::to_string (value).c_str ());
+	    }
+	}
+      else
+	{
 	  json_builder_add_string_value (builder, Any::to_string (value).c_str ());
 	  return;
 	}
@@ -88,13 +77,7 @@ namespace switcher {
     void 
     JSONSerializer::on_node_visited (std::string, Any, std::size_t n, JsonBuilder *builder)
     {
-      if (1 < n)
-	{
-	  json_builder_end_array (builder);
-	  json_builder_end_object (builder);
-	  return;
-	}
-      if (1 == n)
+      if (0 != n)
 	json_builder_end_object (builder);
     }
    

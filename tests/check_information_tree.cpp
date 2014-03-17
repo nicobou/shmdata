@@ -161,7 +161,7 @@ main ()
     tree->graft (".child1.child2.bla1", make_tree ("wire"));
     tree->graft (".child1.child2.bla2", make_tree ("hub"));
     std::string serialized = JSONSerializer::serialize (tree);
-    std::cout << serialized << std::endl;
+    //std::cout << serialized << std::endl;
  
   }
 
