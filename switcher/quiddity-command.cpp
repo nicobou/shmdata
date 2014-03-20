@@ -197,7 +197,10 @@ namespace switcher
     for (j = 0; j< num_elements; j ++)
       {
 	json_reader_read_element (reader, j);
-	string_vect_arg.push_back (json_reader_get_string_value (reader));
+    const char* stringValue = json_reader_get_string_value (reader);
+    if (stringValue == NULL)
+        stringValue = "null";
+	string_vect_arg.push_back (stringValue);
 	json_reader_end_element (reader);
       }
     json_reader_end_member (reader);
