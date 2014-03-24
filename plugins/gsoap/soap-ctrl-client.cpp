@@ -249,6 +249,7 @@ namespace switcher
   void
   SoapCtrlClient::reset_endpoint ()
   {
+    std::unique_lock<std::mutex> lock(try_connect_mutex_);
     if (url_ != NULL)
       g_free (url_);
     if (NULL != try_connect_g_source_ && !g_source_is_destroyed (try_connect_g_source_))
@@ -306,6 +307,10 @@ namespace switcher
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
     if (context->url_ == NULL)
       return FALSE;
+
+    std::unique_lock<std::mutex> lock(context->try_connect_mutex_);
+    if (context->try_connect_g_source_ == NULL)
+        return FALSE;
     
     std::vector<std::string> resultlist;
     context->switcher_control_->get_quiddity_names (&resultlist);
