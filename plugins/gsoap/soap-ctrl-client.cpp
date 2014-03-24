@@ -32,15 +32,16 @@ namespace switcher
   SoapCtrlClient::SoapCtrlClient () :
     switcher_control_ (NULL),
     url_ (NULL),
-    try_connect_g_source_ (NULL)
+    try_connect_g_source_ (NULL),
+    try_connect_mutex_ ()
   {}
 
   bool
   SoapCtrlClient::init()
   {
     switcher_control_ = new controlProxy (SOAP_IO_KEEPALIVE | SOAP_XML_INDENT);
-    switcher_control_->send_timeout = 4; // 4 seconds
-    switcher_control_->recv_timeout = 4; // 4 seconds
+    switcher_control_->send_timeout = 1; // 1 seconds
+    switcher_control_->recv_timeout = 1; // 1 seconds
     url_ = NULL;
     switcher_control_->soap_endpoint = url_;
 
@@ -291,7 +292,7 @@ namespace switcher
     context->switcher_control_->soap_endpoint = context->url_;
     if (TRUE == context->try_connect (context))
       {
-	guint id = GstUtils::g_timeout_add_to_context (1000,
+	guint id = GstUtils::g_timeout_add_to_context (2000, //must be higher than gsoap timeouts
 						       try_connect, 
 						       context,
 						       context->get_g_main_context ());
@@ -309,9 +310,7 @@ namespace switcher
       return FALSE;
 
     std::unique_lock<std::mutex> lock(context->try_connect_mutex_);
-    if (context->try_connect_g_source_ == NULL)
-        return FALSE;
-    
+   
     std::vector<std::string> resultlist;
     context->switcher_control_->get_quiddity_names (&resultlist);
     
