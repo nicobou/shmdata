@@ -79,6 +79,9 @@ namespace switcher
       bool set_removed_hook (quiddity_removed_hook hook, void *user_data);
       void reset_create_remove_hooks ();
       
+      //**** information
+      std::string get_info (const std::string &nick_name, const std::string &path); 
+
       //**** properties
       //doc (json formatted)
       std::string get_properties_description (std::string quiddity_name);

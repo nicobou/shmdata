@@ -42,6 +42,9 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gst-utils.cpp \
     http-sdp.cpp \
     http-sdp-dec.cpp \
+    information-tree.cpp \
+    information-tree-basic-serializer.cpp \
+    information-tree-json.cpp \
     jack-audio-source.cpp \
     jack-sink.cpp \
     jpegenc.cpp \
@@ -95,6 +98,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_includedir = \
 libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     abstract-factory.h \
     abstract-factory_spec.h \
+    any.h \
     aravis-genicam.h \
     audio-sink.h \
     audio-source.h \
@@ -120,6 +124,9 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     hash-table_spec.h \
     http-sdp.h \
     http-sdp-dec.h \
+    information-tree.h \
+    information-tree-basic-serializer.h \
+    information-tree-json.h \
     jack-audio-source.h \
     jack-sink.h \
     jpegenc.h \

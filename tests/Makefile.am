@@ -20,6 +20,7 @@ AM_LDFLAGS = \
 check_PROGRAMS = \
     check_description_by_class \
     check_fakesink \
+    check_information_tree \
     check_quiddity_create_remove \
     check_property_mapper \
     check_property_subscriber \
@@ -50,5 +51,8 @@ check_startable_SOURCES = \
 
 check_fakesink_SOURCES = \
     check_fakesink.cpp
+
+check_information_tree_SOURCES = \
+    check_information_tree.cpp
 
 TESTS = $(check_PROGRAMS)

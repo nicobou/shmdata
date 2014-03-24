@@ -24,6 +24,7 @@
 #include "quiddity.h"
 #include "quiddity-manager-impl.h"
 #include "gst-utils.h"
+#include "information-tree-json.h"
 #include <list>
 #include <algorithm> 
 
@@ -32,6 +33,7 @@ namespace switcher
   std::map<std::pair <std::string,std::string>, guint> Quiddity::signals_ids_;
 
   Quiddity::Quiddity () :
+    information_tree_ (data::make_tree ()),
     properties_ (),
     disabled_properties_ (),
     properties_description_ (new JSONBuilder()),
@@ -947,4 +949,31 @@ namespace switcher
     return true; 
   }
 
+  std::string 
+  Quiddity::get_info (const std::string &path)
+  {
+    data::Tree::ptr tree = information_tree_->get (path);
+    if (tree)
+      return data::JSONSerializer::serialize (tree);
+    return "{ \"error\": \"no such path\" }";
+  }
+
+  bool 
+  Quiddity::graft_tree (const std::string &path, data::Tree::ptr tree)
+  {
+    if (!information_tree_->graft (path, tree))
+      return false;
+    //notify change on path
+    return true;
+  }
+
+  data::Tree::ptr 
+  Quiddity::prune_tree (const std::string &path)
+  {
+    data::Tree::ptr result = information_tree_->prune (path);
+    if (!result)
+      return result;
+    //notify change on path
+    return result;
+  }
 }

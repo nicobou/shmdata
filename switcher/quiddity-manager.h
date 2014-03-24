@@ -97,6 +97,9 @@ namespace switcher
       bool remove (std::string quiddity_name);
       bool rename (std::string nick_name, std::string new_nick_name);
 
+      //****************** informations **********************************************************
+      std::string get_info (const std::string &nick_name, const std::string &path);
+      
       //****************** properties ************************************************************
       //doc (json formatted)
       std::string get_properties_description (std::string quiddity_name);
