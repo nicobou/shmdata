@@ -126,7 +126,7 @@ namespace switcher
 	gst_pad_unlink (peer, pad);
       //checking if the pad has been requested and releasing it needed 
       GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);//check if this must be unrefed for GST 1
-      if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
+      if (NULL != pad_templ && GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
 	gst_element_release_request_pad (gst_pad_get_parent_element(peer), peer);
       gst_object_unref (peer);
     }

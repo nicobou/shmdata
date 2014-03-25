@@ -118,8 +118,9 @@ namespace switcher
   bool 
   GstParseToBinSrc::clean ()
   {
-    reset_bin ();
-    return unregister_shmdata_writer (make_file_name ("video"));
+    clear_shmdatas ();
+    reset_bin ();//bool res = unregister_shmdata_writer (make_file_name ("video"));
+    return true;
   }
 
   bool 
