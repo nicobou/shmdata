@@ -22,7 +22,10 @@
 
 #include "switcher/quiddity.h"
 #include "switcher/startable-quiddity.h"
+
+#include <pjsua-lib/pjsua.h>
 #include <memory>
+#include <thread>
 
 namespace switcher
 {
@@ -38,6 +41,14 @@ namespace switcher
     bool init ();
     bool start ();
     bool stop ();
+  private:
+    pj_status_t pj_init_status_; 
+    pj_thread_desc thread_handler_desc_; 
+    pj_thread_t	*pj_thread_ref_; 
+    //std::thread sip_init_shutdown_thread_;
+    std::thread sip_thread_;
+    void sip_init_shutdown_thread ();
+    void sip_handling_thread ();
   };
   
   SWITCHER_DECLARE_PLUGIN(PJSIP);
