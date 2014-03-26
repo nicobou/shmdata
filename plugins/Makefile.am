@@ -31,3 +31,8 @@ if PORTMIDIBUILD
 SUBDIRS += \
     portmidi
 endif
+
+if PJSIPBUILD
+SUBDIRS += \
+    pjsip
+endif

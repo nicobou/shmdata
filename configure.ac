@@ -223,8 +223,6 @@ if test "${PORTMIDIBUILD}" = "enabled"; then
   AC_SUBST([PORTMIDI_LIBS], "$PORTMIDI_LIBS")
 fi
 
-
-
 #pulse
 PKG_CHECK_MODULES(PULSE, libpulse-mainloop-glib, have_libpulse=true, have_libpulse=false)
 if test "x${have_libpulse}" = "xfalse" ; then
@@ -236,6 +234,7 @@ else
 fi
 AM_CONDITIONAL(PULSEBUILD, test "${PULSEBUILD}" = "enabled")
 
+#json
 PKG_CHECK_MODULES(JSONGLIB, json-glib-1.0, have_jsonglib=true, have_jsonglib=false)
 if test "x${have_jsonglib}" = "xfalse" ; then
     AC_MSG_ERROR([Missing libjson-glib-dev package])
@@ -251,6 +250,18 @@ if test "x${V4L2BUILD}" = "xenabled";
 else
   V4L2BUILD=disabled
 fi
+
+#pjsip
+PKG_CHECK_MODULES(PJSIP, libpjproject, have_pjsip=true, have_pjsip=false)
+if test "x${have_pjsip}" = "xfalse" ; then
+    PJSIPBUILD=disabled
+    AC_MSG_WARN([Missing pjsip dev files])
+else
+    PJSIPBUILD=enabled
+    AC_CONFIG_FILES([plugins/pjsip/Makefile])
+fi
+AM_CONDITIONAL(PJSIPBUILD, test "${PJSIPBUILD}" = "enabled")
+
 
 # check for gtk (compatible with gstreamer sdk)
 PKG_CHECK_MODULES(GTK, gtk+-2.0, have_gtk=true, have_gtk=false)
@@ -396,6 +407,7 @@ AC_OUTPUT
 [echo "GTK fullscreen video       ${GTKBUILD}"]
 [echo "Pulse audio                ${PULSEBUILD}"]
 [echo "PortMidi                   ${PORTMIDIBUILD}"]
+[echo "PJSIP                      ${PJSIPBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]
