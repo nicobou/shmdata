@@ -49,6 +49,7 @@ namespace switcher
     std::thread sip_thread_;
     void sip_init_shutdown_thread ();
     void sip_handling_thread ();
+    static void on_buddy_state(pjsua_buddy_id buddy_id);
   };
   
   SWITCHER_DECLARE_PLUGIN(PJSIP);

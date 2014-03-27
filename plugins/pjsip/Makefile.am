@@ -1,19 +1,19 @@
 pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
 plugins_LTLIBRARIES = \
-    libpjsip.la 
+    libpjsip_plugin.la 
 
 #libpjsip info
-libpjsip_la_SOURCES = \
+libpjsip_plugin_la_SOURCES = \
     pj-sip.cpp
 
-libpjsip_la_include_HEADERS = \
+libpjsip_plugin_la_include_HEADERS = \
     pj-sip.h
 
-libpjsip_la_includedir = \
+libpjsip_plugin_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
-libpjsip_la_LDFLAGS = \
+libpjsip_plugin_la_LDFLAGS = \
     $(GLIB_LIBS) \
     $(GST_LIBS) \
     $(GMODULE_LIBS) \
@@ -25,7 +25,7 @@ libpjsip_la_LDFLAGS = \
     -L$(top_builddir)/switcher/.libs \
     -lswitcher-@LIBSWITCHER_API_VERSION@
 
-libpjsip_la_CXXFLAGS = \
+libpjsip_plugin_la_CXXFLAGS = \
     $(GLIB_CFLAGS) \
     $(GMODULE_CFLAGS) \
     $(GST_CFLAGS) \
@@ -33,7 +33,8 @@ libpjsip_la_CXXFLAGS = \
     $(PJSIP_CFLAGS) \
     $(SHMDATA_CFLAGS) \
     -DG_LOG_DOMAIN=\"switcher\" \
-    -I$(top_srcdir) 
+    -I$(top_srcdir) \
+    -Wno-error=write-strings
 
 
 #### plugin unit test

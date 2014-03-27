@@ -7,3 +7,16 @@ cd pjproject-2.2.1
 make dep
 make
 sudo make install
+
+
+
+
+
+
+
+#freeswitch
+register to freeswitch with ekiga
+- http://lists.freeswitch.org/pipermail/freeswitch-users/2013-May/095204.html
+(/usr/local/freeswitch/conf/sip_profiles/internal.xml:
+Set multiple-registrations to true)
+
