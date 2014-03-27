@@ -35,17 +35,17 @@ namespace switcher
 				       "sip",				
 				       "Nicolas Bouillot");
   PJSIP::PJSIP ():
-    pj_init_status_ (pj_init()),
+    //    pj_init_status_ (pj_init()),
     thread_handler_desc_ (),
     pj_thread_ref_ (NULL),
     sip_thread_ (std::thread (&PJSIP::sip_handling_thread, this))
     //sip_init_shutdown_thread_ (std::thread (&PJSIP::sip_init_shutdown_thread, this))
   {
-    if (PJ_SUCCESS != pj_init_status_)
-      g_warning ("pj_init () did not work");
+    // if (PJ_SUCCESS != pj_init_status_)
+    //   g_warning ("pj_init () did not work");
     if (sip_thread_.joinable ())
       sip_thread_.join ();
-    pj_shutdown();
+    //pj_shutdown();
   }
 
   // void 
@@ -62,12 +62,12 @@ namespace switcher
   void 
   PJSIP::sip_handling_thread ()
   {
+    pj_init ();
     // Register the thread, after pj_init() is called
      pj_thread_register("hehe",//Quiddity::get_name ().c_str (),
       		       thread_handler_desc_,
       		       &pj_thread_ref_);
 
-     pjsua_acc_id acc_id;
      pj_status_t status;
 
      /* Create pjsua first! */
@@ -128,26 +128,27 @@ namespace switcher
      	  return;
      	}	    
        /* Register to SIP server by creating SIP account. */
-       {
-     	pjsua_acc_config cfg;
+        pjsua_acc_id acc_id;
+        {
+        	pjsua_acc_config cfg;
 	      
-     	pjsua_acc_config_default (&cfg);
-     	cfg.id = pj_str (g_strdup ("sip:" SIP_USER "@" SIP_DOMAIN)); //FIXME free them  
-     	cfg.reg_uri = pj_str (g_strdup ("sip:" SIP_DOMAIN));
-     	cfg.cred_count = 1;
-     	cfg.cred_info[0].realm = pj_str(g_strdup (SIP_DOMAIN));
-     	cfg.cred_info[0].scheme = pj_str(g_strdup ("digest"));
-     	cfg.cred_info[0].username = pj_str(g_strdup (SIP_USER));
-     	cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
-     	cfg.cred_info[0].data = pj_str(g_strdup (SIP_PASSWD));
+        	pjsua_acc_config_default (&cfg);
+        	cfg.id = pj_str (g_strdup ("sip:" SIP_USER "@" SIP_DOMAIN)); //FIXME free them  
+        	cfg.reg_uri = pj_str (g_strdup ("sip:" SIP_DOMAIN));
+        	cfg.cred_count = 1;
+        	cfg.cred_info[0].realm = pj_str(g_strdup (SIP_DOMAIN));
+        	cfg.cred_info[0].scheme = pj_str(g_strdup ("digest"));
+        	cfg.cred_info[0].username = pj_str(g_strdup (SIP_USER));
+        	cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
+        	cfg.cred_info[0].data = pj_str(g_strdup (SIP_PASSWD));
 	      
-     	status = pjsua_acc_add(&cfg, PJ_TRUE, &acc_id);
-     	if (status != PJ_SUCCESS) 
-     	  {
-     	    g_warning ("Error adding account");
-     	    return;
-     	  }
-       }
+        	status = pjsua_acc_add(&cfg, PJ_TRUE, &acc_id);
+        	if (status != PJ_SUCCESS) 
+        	  {
+        	    g_warning ("Error adding account");
+        	    return;
+        	  }
+        }
 	    
        // /* If URL is specified, make call to the URL. */
        // if (argc > 1) {
@@ -174,6 +175,7 @@ namespace switcher
      }
     
     pjsua_destroy();
+    pj_shutdown ();
   }
 
   PJSIP::~PJSIP ()
