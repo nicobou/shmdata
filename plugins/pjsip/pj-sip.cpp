@@ -36,30 +36,25 @@ namespace switcher
 				       "sip",				
 				       "Nicolas Bouillot");
   PJSIP::PJSIP ():
-    //    pj_init_status_ (pj_init()),
     thread_handler_desc_ (),
     pj_thread_ref_ (NULL),
-    sip_thread_ (std::thread (&PJSIP::sip_handling_thread, this))
-    //sip_init_shutdown_thread_ (std::thread (&PJSIP::sip_init_shutdown_thread, this))
+    sip_thread_ ()
+  {}
+
+  PJSIP::~PJSIP ()
   {
-    // if (PJ_SUCCESS != pj_init_status_)
-    //   g_warning ("pj_init () did not work");
     if (sip_thread_.joinable ())
       sip_thread_.join ();
-    //pj_shutdown();
   }
 
-  // void 
-  // PJSIP::sip_init_shutdown_thread ()
-  // {
-  //   if (PJ_SUCCESS != pj_init ())
-  //     g_warning ("pj_init () did not work");
-  //   std::thread sip_thread_ = std::thread (&PJSIP::sip_handling_thread, this);
-  //   if (sip_thread_.joinable ())
-  //     sip_thread_.join ();
-  //   pj_shutdown();
-  // }
-
+  bool
+  PJSIP::init ()
+  {
+    init_startable (this);
+    g_debug ("hello from pjsip plugin");
+    sip_thread_ = std::thread (&PJSIP::sip_handling_thread, this);
+    return true;
+  }
 
   void 
   PJSIP::on_buddy_state(pjsua_buddy_id buddy_id)
@@ -68,7 +63,7 @@ namespace switcher
     //pjsua_buddy_update_pres (buddy_id);
     pjsua_buddy_get_info(buddy_id, &info);
     
-    g_print ("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1 %.*s status is %.*s, subscription state is %s "
+    g_print ("!!!!!!!!!!!!!1 %.*s status is %.*s, subscription state is %s "
 	     "(last termination reason code=%d %.*s)\n",
 	     (int)info.uri.slen,
 	     info.uri.ptr,
@@ -85,7 +80,7 @@ namespace switcher
   {
     pj_init ();
     // Register the thread, after pj_init() is called
-     pj_thread_register("hehe",//Quiddity::get_name ().c_str (),
+     pj_thread_register(Quiddity::get_name ().c_str (),
       		       thread_handler_desc_,
       		       &pj_thread_ref_);
 
@@ -164,6 +159,7 @@ namespace switcher
 	 g_warning ("Error starting pjsua");
 	 return;
        }	    
+
      /* Register to SIP server by creating SIP account. */
      pjsua_acc_id acc_id;
      {
@@ -282,59 +278,23 @@ namespace switcher
        
      usleep (2000000);
      
-     // /* If URL is specified, make call to the URL. */
-     // if (argc > 1) {
-     //   pj_str_t uri = pj_str(argv[1]);
-     //   status = pjsua_call_make_call(acc_id, &uri, 0, NULL, NULL, NULL);
-     //   if (status != PJ_SUCCESS) error_exit("Error making call", status);
-     // }
-     
-     // /* Wait until user press "q" to quit. */
-     // for (;;) {
-     // 	char option[10];
-     
-     // 	puts("Press 'h' to hangup all calls, 'q' to quit");
-     // 	if (fgets(option, sizeof(option), stdin) == NULL) {
-     // 	    puts("EOF while reading stdin, will quit now..");
-     // 	    break;
-     // 	}
-     
-     // 	if (option[0] == 'q')
-     // 	    break;
-     
-     // 	if (option[0] == 'h')
-     // 	    pjsua_call_hangup_all();
-    
      pjsua_destroy();
      pj_shutdown ();
   }
 
-  PJSIP::~PJSIP ()
-  {
-     if (sip_thread_.joinable ())
-       sip_thread_.join ();
-  }
-  
-  bool
-  PJSIP::init ()
-  {
-    init_startable (this);
-    g_debug ("hello from plugin");
-    return true;
-  }
     
   
   bool
   PJSIP::start ()
   {
-    g_debug ("start from my plugin");
+    g_debug ("start from pjsip plugin");
     return true;
   }
 
   bool
   PJSIP::stop ()
   {
-    g_debug ("stop from my plugin");
+    g_debug ("stop from pjsip plugin");
     return true;
   }
 }
