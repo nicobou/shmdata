@@ -26,6 +26,8 @@
 #include <pjsua-lib/pjsua.h>
 #include <memory>
 #include <thread>
+#include <mutex>
+#include <condition_variable>
 
 namespace switcher
 {
@@ -42,14 +44,29 @@ namespace switcher
     bool start ();
     bool stop ();
   private:
-    pj_status_t pj_init_status_; 
     pj_thread_desc thread_handler_desc_; 
     pj_thread_t	*pj_thread_ref_; 
-    //std::thread sip_init_shutdown_thread_;
     std::thread sip_thread_;
+    std::mutex pj_init_mutex_;
+    std::condition_variable pj_init_cond_;
+    bool pj_sip_inited_;
+    std::mutex work_mutex_;
+    std::condition_variable work_cond_;
+    std::mutex done_mutex_;
+    std::condition_variable done_cond_;
+    bool continue_;
+    std::function<void()> command_;
+    pjsua_acc_id account_id_;
     void sip_init_shutdown_thread ();
     void sip_handling_thread ();
     static void on_buddy_state(pjsua_buddy_id buddy_id);
+    bool pj_sip_init ();
+    void exit_cmd ();
+    void run_command_sync (std::function<void()> command);
+    void register_account (const std::string &sip_user, 
+			   const std::string &sip_domain, 
+			   const std::string &sip_password);
+    static gboolean register_account_wrapped (gchar *user, gchar *domain, gchar *password, void *user_data);
   };
   
   SWITCHER_DECLARE_PLUGIN(PJSIP);

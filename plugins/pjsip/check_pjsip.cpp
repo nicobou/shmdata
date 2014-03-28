@@ -46,6 +46,12 @@ main ()
      //   success = false;
 
      manager->create ("sip", "test");
+     if (!manager->invoke_va ("test","register", NULL, 
+			      "1010", //user
+			      "10.10.30.115", //domain
+			      "1234", //password
+			      NULL))
+       return 1;
      //manager->create ("sip", "test2");//FIXME this is failling
      manager->remove ("test");
      

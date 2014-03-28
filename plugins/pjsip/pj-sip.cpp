@@ -19,10 +19,11 @@
 
 #include "pj-sip.h"
 #include <unistd.h>  //sleep
+#include <iostream>
 
-#define SIP_DOMAIN	"10.10.30.115"
-#define SIP_USER	"1000"
-#define SIP_PASSWD	"1234"
+// #define SIP_DOMAIN	"10.10.30.115"
+// #define SIP_USER	"1000"
+// #define SIP_PASSWD	"1234"
 
 
 namespace switcher
@@ -38,21 +39,72 @@ namespace switcher
   PJSIP::PJSIP ():
     thread_handler_desc_ (),
     pj_thread_ref_ (NULL),
-    sip_thread_ ()
+    sip_thread_ (),
+    pj_init_mutex_ (),
+    pj_init_cond_ (),
+    pj_sip_inited_ (false),
+    work_mutex_ (),
+    work_cond_ (),
+    done_mutex_ (),
+    done_cond_ (),
+    continue_ (true),
+    command_ (),
+    account_id_ (-1)
   {}
 
   PJSIP::~PJSIP ()
   {
+    run_command_sync (std::bind (&PJSIP::exit_cmd, this));
+   
     if (sip_thread_.joinable ())
       sip_thread_.join ();
   }
 
+  
+  void 
+  PJSIP::run_command_sync (std::function<void()> command)
+  {
+    {
+      std::unique_lock<std::mutex> lock (work_mutex_);
+      command_ = command;
+    }
+    std::unique_lock<std::mutex> lock_done (done_mutex_);
+    work_cond_.notify_one();
+    done_cond_.wait (lock_done);
+  }
+  
   bool
   PJSIP::init ()
   {
     init_startable (this);
-    g_debug ("hello from pjsip plugin");
+    std::unique_lock <std::mutex> lock (pj_init_mutex_);
     sip_thread_ = std::thread (&PJSIP::sip_handling_thread, this);
+    pj_init_cond_.wait (lock);
+
+    if (!pj_sip_inited_)
+      return false;
+
+    install_method ("Register SIP Account", //long name
+		    "register", //name
+		    "register a SIP account", //description
+		    "success", //return description
+		    Method::make_arg_description ("SIP User Name", //first arg long name
+						  "user", //fisrt arg name
+						  "string", //first arg description
+						  "SIP Domain", //first arg long name
+						  "domain", //fisrt arg name
+						  "string", //first arg description
+						  "SIP password", //first arg long name
+						  "password", //fisrt arg name
+						  "string", //first arg description
+						  NULL),
+  		    (Method::method_ptr) &register_account_wrapped, 
+		    G_TYPE_BOOLEAN,
+		    Method::make_arg_type_description (G_TYPE_STRING, 
+						       G_TYPE_STRING, 
+						       G_TYPE_STRING, 
+						       NULL),
+		    this);
     return true;
   }
 
@@ -75,69 +127,68 @@ namespace switcher
 	     info.sub_term_reason.ptr);
 }
 
-  void 
-  PJSIP::sip_handling_thread ()
+  bool
+  PJSIP::pj_sip_init ()
   {
-    pj_init ();
-    // Register the thread, after pj_init() is called
-     pj_thread_register(Quiddity::get_name ().c_str (),
-      		       thread_handler_desc_,
-      		       &pj_thread_ref_);
-
-     pj_status_t status;
-
-     /* Create pjsua first! */
-     status = pjsua_create();
-     if (status != PJ_SUCCESS) 
-       {
-     	g_warning ("Error in pjsua_create()");
-     	return;
-       }
-
+      pj_init ();
+      // Register the thread, after pj_init() is called
+      pj_thread_register(Quiddity::get_name ().c_str (),
+			 thread_handler_desc_,
+			 &pj_thread_ref_);
+      
+      pj_status_t status;
+      /* Create pjsua first! */
+      status = pjsua_create();
+      if (status != PJ_SUCCESS) 
+	{
+	  g_warning ("Error in pjsua_create()");
+	  return false;
+	}
+      
      //pjsua_pool_create();
-   
+      
      // /* If argument is specified, it's got to be a valid SIP URL */
      // if (argc > 1) {
      // 	status = pjsua_verify_url(argv[1]);
      // 	if (status != PJ_SUCCESS) error_exit("Invalid URL in argv", status);
      // }
-    
+      
      /* Init pjsua */
-     {
-       pjsua_config cfg;
-       pjsua_logging_config log_cfg;
+      {
+	pjsua_config cfg;
+	pjsua_logging_config log_cfg;
+	
+	pjsua_config_default(&cfg);
+	cfg.cb.on_buddy_state = &on_buddy_state;
+	// cfg.cb.on_incoming_call = &on_incoming_call;
+	// cfg.cb.on_call_media_state = &on_call_media_state;
+	// cfg.cb.on_call_state = &on_call_state;
+	
+	pjsua_logging_config_default(&log_cfg);
+	log_cfg.console_level = 1;//4;
+	
+	status = pjsua_init(&cfg, &log_cfg, NULL);
+	if (status != PJ_SUCCESS) 
+	  {
+	    g_warning ("Error in pjsua_init()");
+	    return false;
+	  }
+      }
       
-       pjsua_config_default(&cfg);
-       cfg.cb.on_buddy_state = &on_buddy_state;
-       // cfg.cb.on_incoming_call = &on_incoming_call;
-       // cfg.cb.on_call_media_state = &on_call_media_state;
-       // cfg.cb.on_call_state = &on_call_state;
+      /* Add UDP transport. */
+      {
+	pjsua_transport_config cfg;
+	
+	pjsua_transport_config_default(&cfg);
+	cfg.port = 5070;
+	status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, NULL);
+	if (status != PJ_SUCCESS) 
+	  {
+	    g_warning ("Error creating UDP transport");
+	    return false;
+	  }
+      }	
       
-       pjsua_logging_config_default(&log_cfg);
-       log_cfg.console_level = 1;//4;
-      
-       status = pjsua_init(&cfg, &log_cfg, NULL);
-       if (status != PJ_SUCCESS) 
-     	{
-     	  g_warning ("Error in pjsua_init()");
-     	  return;
-     	}
-     }
-
-     /* Add UDP transport. */
-     {
-       pjsua_transport_config cfg;
-       
-       pjsua_transport_config_default(&cfg);
-       cfg.port = 5070;
-       status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, NULL);
-       if (status != PJ_SUCCESS) 
-	 {
-	   g_warning ("Error creating UDP transport");
-	   return;
-	 }
-     }	
-     
       /* Add TCP transport. */
       {
         pjsua_transport_config cfg;
@@ -146,143 +197,207 @@ namespace switcher
         cfg.port = 5070;
         status = pjsua_transport_create(PJSIP_TRANSPORT_TCP, &cfg, NULL);
         if (status != PJ_SUCCESS) 
-      	{
-      	  g_warning ("Error creating TCP transport");
-      	  return;
-      	}
+	  {
+	    g_warning ("Error creating TCP transport");
+	    return false;
+	  }
       }	
+      
+      /* Initialization is done, now start pjsua */
+      status = pjsua_start();
+      if (status != PJ_SUCCESS) 
+	{
+	  g_warning ("Error starting pjsua");
+	  return false;
+	}	    
+      
+      return true;    
+  }
+  
+  void 
+  PJSIP::sip_handling_thread ()
+  {
+    {//init pj sip
+      std::unique_lock <std::mutex> lock (pj_init_mutex_);
+      pj_sip_inited_ = pj_sip_init ();
+      pj_init_cond_.notify_all ();
+    }
 
-     /* Initialization is done, now start pjsua */
-     status = pjsua_start();
-     if (status != PJ_SUCCESS) 
-       {
-	 g_warning ("Error starting pjsua");
-	 return;
-       }	    
+    while (continue_)
+      {
+	std::unique_lock<std::mutex> lock_work (work_mutex_);
+	work_cond_.wait (lock_work);
+	//do_something
+	{
+	  std::unique_lock<std::mutex> lock_done (done_mutex_);
+	  command_ ();
+	}
+	done_cond_.notify_one ();
+      }
 
-     /* Register to SIP server by creating SIP account. */
-     pjsua_acc_id acc_id;
-     {
-       pjsua_acc_config cfg;
-       
-       pjsua_acc_config_default (&cfg);
-       cfg.id = pj_str ("sip:" SIP_USER "@" SIP_DOMAIN); 
-       cfg.reg_uri = pj_str ("sip:" SIP_DOMAIN);
-       cfg.cred_count = 1;
-       cfg.cred_info[0].realm = pj_str(SIP_DOMAIN);
-       cfg.cred_info[0].scheme = pj_str("digest");
-       cfg.cred_info[0].username = pj_str(SIP_USER);
-       cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
-       cfg.cred_info[0].data = pj_str(SIP_PASSWD);
-       cfg.publish_enabled = PJ_TRUE; 
-       status = pjsua_acc_add(&cfg, PJ_TRUE, &acc_id);
-       if (status != PJ_SUCCESS) 
-	 {
-	   g_warning ("Error adding account");
-	   return;
-	 }
-     }
      
-     {
-       pjsua_buddy_config buddy_cfg;
-       pjsua_buddy_id buddy_id;
-       pj_status_t status = PJ_SUCCESS;
+     //  {
+     //    pjsua_buddy_config buddy_cfg;
+     //    pjsua_buddy_id buddy_id;
+     //    pj_status_t status = PJ_SUCCESS;
        
-       if (pjsua_verify_url("sip:1001@10.10.30.115") != PJ_SUCCESS) {
-	 g_debug ("Invalid URI");
-       } else {
-	 pj_bzero(&buddy_cfg, sizeof(pjsua_buddy_config));
+     //    if (pjsua_verify_url("sip:1001@10.10.30.115") != PJ_SUCCESS) {
+     //  	 g_debug ("Invalid URI");
+     //    } else {
+     //  	 pj_bzero(&buddy_cfg, sizeof(pjsua_buddy_config));
 	 
-	 buddy_cfg.uri = pj_str("sip:1001@10.10.30.115");
-	 buddy_cfg.subscribe = PJ_TRUE;
+     //  	 buddy_cfg.uri = pj_str("sip:1001@10.10.30.115");
+     //  	 buddy_cfg.subscribe = PJ_TRUE;
 	 
-	 status = pjsua_buddy_add(&buddy_cfg, &buddy_id);
-	 if (status == PJ_SUCCESS) {
-	   g_debug ("New buddy");
-	 }
+     //  	 status = pjsua_buddy_add(&buddy_cfg, &buddy_id);
+     //  	 if (status == PJ_SUCCESS) {
+     //  	   g_debug ("New buddy");
+     //  	 }
+     //    }
+     //  }
 
-	 //	 pjsua_buddy_subscribe_pres
-       }
-     }
-
-     {
-       pjsua_buddy_config buddy_cfg;
-       pjsua_buddy_id buddy_id;
-       pj_status_t status = PJ_SUCCESS;
+     //  {
+     //    pjsua_buddy_config buddy_cfg;
+     //    pjsua_buddy_id buddy_id;
+     //    pj_status_t status = PJ_SUCCESS;
        
-       if (pjsua_verify_url("sip:1002@10.10.30.115") != PJ_SUCCESS) {
-	 g_debug ("Invalid URI");
-       } else {
-	 pj_bzero(&buddy_cfg, sizeof(pjsua_buddy_config));
+     //    if (pjsua_verify_url("sip:1002@10.10.30.115") != PJ_SUCCESS) {
+     //  	 g_debug ("Invalid URI");
+     //    } else {
+     //  	 pj_bzero(&buddy_cfg, sizeof(pjsua_buddy_config));
 	 
-	 buddy_cfg.uri = pj_str("sip:1002@10.10.30.115");
-	 buddy_cfg.subscribe = PJ_TRUE;
+     //  	 buddy_cfg.uri = pj_str("sip:1002@10.10.30.115");
+     //  	 buddy_cfg.subscribe = PJ_TRUE;
 	 
-	 status = pjsua_buddy_add(&buddy_cfg, &buddy_id);
-	 if (status == PJ_SUCCESS) {
-	   g_debug ("New buddy");
-	 }
-
-	 //	 pjsua_buddy_subscribe_pres
-       }
-     }
+     //  	 status = pjsua_buddy_add(&buddy_cfg, &buddy_id);
+     //  	 if (status == PJ_SUCCESS) {
+     //  	   g_debug ("New buddy");
+     //  	 }
+     //    }
+     //  }
      
-     {
-       pjrpid_element elem;
-       pj_bool_t online_status = PJ_TRUE;
-       pj_bzero(&elem, sizeof(elem));
-       elem.type = PJRPID_ELEMENT_TYPE_PERSON;
+     //  {
+     //    pjrpid_element elem;
+     //    pj_bool_t online_status = PJ_TRUE;
+     //    pj_bzero(&elem, sizeof(elem));
+     //    elem.type = PJRPID_ELEMENT_TYPE_PERSON;
        
-       // switch (choice) {
-       // case AVAILABLE:
-       // 	break;
-       // case BUSY:
-       // 	elem.activity = PJRPID_ACTIVITY_BUSY;
-       // 	elem.note = pj_str("Busy");
-       // 	break;
-       // case OTP:
-       // 	elem.activity = PJRPID_ACTIVITY_BUSY;
-       // 	elem.note = pj_str("On the phone");
-       // 	break;
-       // case IDLE:
-       // 	elem.activity = PJRPID_ACTIVITY_UNKNOWN;
-       // 	elem.note = pj_str("Idle");
-       // 	break;
-       // case AWAY:
-       elem.activity = PJRPID_ACTIVITY_AWAY;
-       elem.note = pj_str("Away");
-       // 	break;
-       // case BRB:
-       // elem.activity = PJRPID_ACTIVITY_UNKNOWN;
-       // elem.note = pj_str("Be right back SWITCHER");
-       // 	break;
-       // case OFFLINE:
-       // 	online_status = PJ_FALSE;
-       // 	break;
-       // }
-       pjsua_acc_set_online_status2(acc_id, online_status, &elem);
-     }
+     //    // switch (choice) {
+     //    // case AVAILABLE:
+     //    // 	break;
+     //    // case BUSY:
+     //    // 	elem.activity = PJRPID_ACTIVITY_BUSY;
+     //    // 	elem.note = pj_str("Busy");
+     //    // 	break;
+     //    // case OTP:
+     //    // 	elem.activity = PJRPID_ACTIVITY_BUSY;
+     //    // 	elem.note = pj_str("On the phone");
+     //    // 	break;
+     //    // case IDLE:
+     //    // 	elem.activity = PJRPID_ACTIVITY_UNKNOWN;
+     //    // 	elem.note = pj_str("Idle");
+     //    // 	break;
+     //    // case AWAY:
+     //    elem.activity = PJRPID_ACTIVITY_AWAY;
+     //    elem.note = pj_str("Away");
+     //    // 	break;
+     //    // case BRB:
+     //    // elem.activity = PJRPID_ACTIVITY_UNKNOWN;
+     //    // elem.note = pj_str("Be right back SWITCHER");
+     //    // 	break;
+     //    // case OFFLINE:
+     //    // 	online_status = PJ_FALSE;
+     //    // 	break;
+     //    // }
+     //    pjsua_acc_set_online_status2(acc_id, online_status, &elem);
+     //  }
        
-     usleep (2000000);
+     //  usleep (2000000);
 
-     {
-       pjrpid_element elem;
-       pj_bool_t online_status = PJ_TRUE;
-       pj_bzero(&elem, sizeof(elem));
-       elem.type = PJRPID_ELEMENT_TYPE_PERSON;
+     //  {
+     //    pjrpid_element elem;
+     //    pj_bool_t online_status = PJ_TRUE;
+     //    pj_bzero(&elem, sizeof(elem));
+     //    elem.type = PJRPID_ELEMENT_TYPE_PERSON;
        
-       elem.activity = PJRPID_ACTIVITY_BUSY;
-       elem.note = pj_str("Busy");
-       pjsua_acc_set_online_status2(acc_id, online_status, &elem);
-     }
-       
-     usleep (2000000);
+     //    elem.activity = PJRPID_ACTIVITY_BUSY;
+     //    elem.note = pj_str("Busy");
+     //    pjsua_acc_set_online_status2(acc_id, online_status, &elem);
+     //  }
+     //  usleep (2000000);
      
      pjsua_destroy();
      pj_shutdown ();
+     g_print ("pj has shutdowned");
   }
 
-    
+  gboolean
+  PJSIP::register_account_wrapped (gchar *user, gchar *domain, gchar *password, void *user_data)
+  {
+    PJSIP *context = static_cast<PJSIP *> (user_data);
+    if (NULL == user || NULL == domain || NULL == password)
+      {
+	g_warning ("register sip account received NULL user or domain or password");
+	return FALSE;
+      }
+
+    context->run_command_sync (std::bind (&PJSIP::register_account, 
+					  context, 
+					  std::string (user),
+					  std::string (domain),
+					  std::string (password)));
+    if (-1 == context->account_id_)
+      return FALSE;
+    return TRUE;
+  }
+
+  void 
+  PJSIP::register_account (const std::string &sip_user, 
+			   const std::string &sip_domain, 
+			   const std::string &sip_password)
+  {
+    // Register to SIP server by creating SIP account.
+    pjsua_acc_config cfg;
+    pj_status_t status;
+
+    gchar *id = g_strdup_printf ("sip:%s@%s",  
+				 sip_user.c_str (),
+				 sip_domain.c_str ());
+    gchar *reg_uri = g_strdup_printf ("sip:%s", sip_domain.c_str ());
+    gchar *user = g_strdup (sip_user.c_str ());
+    gchar *domain = g_strdup (sip_domain.c_str ());
+    gchar *password = g_strdup (sip_password.c_str ());
+    pjsua_acc_config_default (&cfg);
+    cfg.id = pj_str (id); 
+    cfg.reg_uri = pj_str (reg_uri);
+    cfg.cred_count = 1;
+    cfg.cred_info[0].realm = pj_str (domain);
+    cfg.cred_info[0].scheme = pj_str ("digest");
+    cfg.cred_info[0].username = pj_str (user);
+    cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
+    cfg.cred_info[0].data = pj_str (password);
+    cfg.publish_enabled = PJ_TRUE; 
+    status = pjsua_acc_add (&cfg, PJ_TRUE, &account_id_);
+    g_free (id);
+    g_free (reg_uri);
+    g_free (user);
+    g_free (domain);
+    g_free (password);
+    if (status != PJ_SUCCESS) 
+      {
+	account_id_ = -1;
+	g_warning ("Error adding SIP account");
+	return;
+      }
+    usleep (2000000);//FIXME without this, test is not unregistering SIP account
+  }
+
+  void
+  PJSIP::exit_cmd ()
+  {
+    std::cout << "EXIT CMD !!" << std::endl;
+    continue_ = false;
+  }
   
   bool
   PJSIP::start ()
