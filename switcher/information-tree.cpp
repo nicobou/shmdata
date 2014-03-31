@@ -236,7 +236,7 @@ namespace switcher {
 	return false;
       std::unique_lock <std::mutex> lock (mutex_);
       std::istringstream iss (where);
-      return graft_next (iss, this, tree);
+      return !graft_next (iss, this, tree);
     }
 
     bool

@@ -124,25 +124,29 @@ namespace switcher
 	     info.sub_term_code,
 	     (int)info.sub_term_reason.slen,
 	     info.sub_term_reason.ptr);
-     data::Tree::ptr tree = data::make_tree (std::string (info.uri.ptr));
+    
+    data::Tree::ptr tree = data::make_tree ();
+    
+    std::string buddy_url (info.uri.ptr);
+    tree->graft (".sip_url", data::make_tree (buddy_url));
      switch (info.status) {
      case PJSUA_BUDDY_STATUS_UNKNOWN :
-     tree->graft (".status", data::make_tree ("unknown"));
+       tree->graft (".status", data::make_tree ("unknown"));
        break;
      case PJSUA_BUDDY_STATUS_ONLINE :
-     tree->graft (".status", data::make_tree ("online"));
+       tree->graft (".status", data::make_tree ("online"));
        break;
      case PJSUA_BUDDY_STATUS_OFFLINE :
-     tree->graft (".status", data::make_tree ("offline"));
+       tree->graft (".status", data::make_tree ("offline"));
        break;
      default:
-     tree->graft (".status", data::make_tree ("undefined"));
+       tree->graft (".status", data::make_tree ("error"));
        break;
      }
-    
-     tree->graft (".status_text", data::make_tree (std::string (info.status_text.ptr)));
-     tree->graft (".subscription_state", data::make_tree (std::string (info.sub_state_name)));
-     context->graft_tree (".presence", tree);
+
+  tree->graft (".status_text", data::make_tree (std::string (info.status_text.ptr)));
+  tree->graft (".subscription_state", data::make_tree (std::string (info.sub_state_name)));
+  context->graft_tree (std::string (".presence." + buddy_url), tree);
   }
 
   bool
