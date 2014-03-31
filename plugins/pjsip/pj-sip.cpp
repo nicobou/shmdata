@@ -21,11 +21,6 @@
 #include <unistd.h>  //sleep
 #include <iostream>
 
-// #define SIP_DOMAIN	"10.10.30.115"
-// #define SIP_USER	"1000"
-// #define SIP_PASSWD	"1234"
-
-
 namespace switcher
 {
 
@@ -47,6 +42,8 @@ namespace switcher
     work_cond_ (),
     done_mutex_ (),
     done_cond_ (),
+    registration_mutex_ (),
+    registration_cond_ (),
     continue_ (true),
     command_ (),
     account_id_ (-1)
@@ -111,11 +108,13 @@ namespace switcher
   void 
   PJSIP::on_buddy_state(pjsua_buddy_id buddy_id)
   {
+    PJSIP *context = static_cast<PJSIP *> (pjsua_buddy_get_user_data (buddy_id));
+    if (NULL == context)
+      return;
     pjsua_buddy_info info;
-    //pjsua_buddy_update_pres (buddy_id);
     pjsua_buddy_get_info(buddy_id, &info);
-    
-    g_print ("!!!!!!!!!!!!!1 %.*s status is %.*s, subscription state is %s "
+
+    g_debug ("%.*s status is %.*s, subscription state is %s "
 	     "(last termination reason code=%d %.*s)\n",
 	     (int)info.uri.slen,
 	     info.uri.ptr,
@@ -125,7 +124,26 @@ namespace switcher
 	     info.sub_term_code,
 	     (int)info.sub_term_reason.slen,
 	     info.sub_term_reason.ptr);
-}
+     data::Tree::ptr tree = data::make_tree (std::string (info.uri.ptr));
+     switch (info.status) {
+     case PJSUA_BUDDY_STATUS_UNKNOWN :
+     tree->graft (".status", data::make_tree ("unknown"));
+       break;
+     case PJSUA_BUDDY_STATUS_ONLINE :
+     tree->graft (".status", data::make_tree ("online"));
+       break;
+     case PJSUA_BUDDY_STATUS_OFFLINE :
+     tree->graft (".status", data::make_tree ("offline"));
+       break;
+     default:
+     tree->graft (".status", data::make_tree ("undefined"));
+       break;
+     }
+    
+     tree->graft (".status_text", data::make_tree (std::string (info.status_text.ptr)));
+     tree->graft (".subscription_state", data::make_tree (std::string (info.sub_state_name)));
+     context->graft_tree (".presence", tree);
+  }
 
   bool
   PJSIP::pj_sip_init ()
@@ -160,6 +178,7 @@ namespace switcher
 	
 	pjsua_config_default(&cfg);
 	cfg.cb.on_buddy_state = &on_buddy_state;
+	cfg.cb.on_reg_state2 = &on_registration_state;
 	// cfg.cb.on_incoming_call = &on_incoming_call;
 	// cfg.cb.on_call_media_state = &on_call_media_state;
 	// cfg.cb.on_call_state = &on_call_state;
@@ -189,19 +208,19 @@ namespace switcher
 	  }
       }	
       
-      /* Add TCP transport. */
-      {
-        pjsua_transport_config cfg;
+       /* Add TCP transport. */
+       {
+         pjsua_transport_config cfg;
 	
-        pjsua_transport_config_default(&cfg);
-        cfg.port = 5070;
-        status = pjsua_transport_create(PJSIP_TRANSPORT_TCP, &cfg, NULL);
-        if (status != PJ_SUCCESS) 
-	  {
-	    g_warning ("Error creating TCP transport");
-	    return false;
-	  }
-      }	
+         pjsua_transport_config_default(&cfg);
+         cfg.port = 5070;
+         status = pjsua_transport_create(PJSIP_TRANSPORT_TCP, &cfg, NULL);
+         if (status != PJ_SUCCESS) 
+       	  {
+       	    g_warning ("Error creating TCP transport");
+       	    return false;
+       	  }
+       }	
       
       /* Initialization is done, now start pjsua */
       status = pjsua_start();
@@ -210,7 +229,6 @@ namespace switcher
 	  g_warning ("Error starting pjsua");
 	  return false;
 	}	    
-      
       return true;    
   }
   
@@ -225,9 +243,9 @@ namespace switcher
 
     while (continue_)
       {
-	std::unique_lock<std::mutex> lock_work (work_mutex_);
-	work_cond_.wait (lock_work);
-	//do_something
+	  std::unique_lock<std::mutex> lock_work (work_mutex_);
+	  work_cond_.wait (lock_work);
+	  //do_something
 	{
 	  std::unique_lock<std::mutex> lock_done (done_mutex_);
 	  command_ ();
@@ -356,6 +374,7 @@ namespace switcher
 			   const std::string &sip_domain, 
 			   const std::string &sip_password)
   {
+    std::unique_lock<std::mutex> lock (registration_mutex_);
     // Register to SIP server by creating SIP account.
     pjsua_acc_config cfg;
     pj_status_t status;
@@ -366,22 +385,25 @@ namespace switcher
     gchar *reg_uri = g_strdup_printf ("sip:%s", sip_domain.c_str ());
     gchar *user = g_strdup (sip_user.c_str ());
     gchar *domain = g_strdup (sip_domain.c_str ());
+    gchar *digest = g_strdup ("digest");
     gchar *password = g_strdup (sip_password.c_str ());
     pjsua_acc_config_default (&cfg);
     cfg.id = pj_str (id); 
     cfg.reg_uri = pj_str (reg_uri);
     cfg.cred_count = 1;
     cfg.cred_info[0].realm = pj_str (domain);
-    cfg.cred_info[0].scheme = pj_str ("digest");
+    cfg.cred_info[0].scheme = pj_str (digest);
     cfg.cred_info[0].username = pj_str (user);
     cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
     cfg.cred_info[0].data = pj_str (password);
     cfg.publish_enabled = PJ_TRUE; 
+    cfg.register_on_acc_add = PJ_TRUE; //or  pjsua_acc_set_registration (account_id_, PJ_TRUE);
     status = pjsua_acc_add (&cfg, PJ_TRUE, &account_id_);
     g_free (id);
     g_free (reg_uri);
     g_free (user);
     g_free (domain);
+    g_free (digest);
     g_free (password);
     if (status != PJ_SUCCESS) 
       {
@@ -389,9 +411,53 @@ namespace switcher
 	g_warning ("Error adding SIP account");
 	return;
       }
-    usleep (2000000);//FIXME without this, test is not unregistering SIP account
+    pjsua_acc_set_user_data (account_id_, this);
+    registration_cond_.wait (lock);
+    add_buddy ("sip:1000@10.10.30.115");
+    add_buddy ("sip:1001@10.10.30.115");
+    add_buddy ("sip:1002@10.10.30.115");
+    add_buddy ("sip:1003@10.10.30.115");
+    add_buddy ("sip:1004@10.10.30.115");
+    add_buddy ("sip:1005@10.10.30.115");
+    add_buddy ("sip:1006@10.10.30.115");
+    add_buddy ("sip:1007@10.10.30.115");
+    add_buddy ("sip:1008@10.10.30.115");
+    add_buddy ("sip:1009@10.10.30.115");
+    add_buddy ("sip:1010@10.10.30.115");
+    add_buddy ("sip:1011@10.10.30.115");
+    add_buddy ("sip:1012@10.10.30.115");
+    add_buddy ("sip:1013@10.10.30.115");
+    add_buddy ("sip:1014@10.10.30.115");
+    add_buddy ("sip:1015@10.10.30.115");
+    add_buddy ("sip:1016@10.10.30.115");
+    add_buddy ("sip:1017@10.10.30.115");
+    add_buddy ("sip:1018@10.10.30.115");
+    add_buddy ("sip:1019@10.10.30.115");
   }
 
+  void
+  PJSIP::add_buddy (const std::string &sip_user)
+  {
+    pjsua_buddy_config buddy_cfg;
+    pjsua_buddy_id buddy_id;
+    pj_status_t status = PJ_SUCCESS;
+    
+    if (pjsua_verify_url(sip_user.c_str ()) != PJ_SUCCESS) {
+      g_warning ("Invalid buddy URI %s", sip_user.c_str ());
+      return;
+    } 
+
+    pj_bzero(&buddy_cfg, sizeof(pjsua_buddy_config));
+    gchar *buddy = g_strdup (sip_user.c_str ());
+    buddy_cfg.uri = pj_str(buddy);
+    buddy_cfg.subscribe = PJ_TRUE;
+    buddy_cfg.user_data = this;
+    status = pjsua_buddy_add(&buddy_cfg, &buddy_id);
+    if (status == PJ_SUCCESS) 
+      g_debug ("Buddy added");
+    g_free (buddy);
+  }
+  
   void
   PJSIP::exit_cmd ()
   {
@@ -412,4 +478,14 @@ namespace switcher
     g_debug ("stop from pjsip plugin");
     return true;
   }
+
+  void 
+  PJSIP::on_registration_state (pjsua_acc_id acc_id, pjsua_reg_info *info)
+  {
+    PJSIP *context = static_cast<PJSIP *> (pjsua_acc_get_user_data (acc_id));
+    std::unique_lock <std::mutex> lock (context->registration_mutex_);
+    context->registration_cond_.notify_one ();
+    g_debug ("registration SIP status code %d\n", info->cbparam->code);
+  }
+
 }

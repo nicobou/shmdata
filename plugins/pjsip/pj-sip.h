@@ -54,6 +54,8 @@ namespace switcher
     std::condition_variable work_cond_;
     std::mutex done_mutex_;
     std::condition_variable done_cond_;
+    std::mutex registration_mutex_;
+    std::condition_variable registration_cond_;
     bool continue_;
     std::function<void()> command_;
     pjsua_acc_id account_id_;
@@ -67,6 +69,8 @@ namespace switcher
 			   const std::string &sip_domain, 
 			   const std::string &sip_password);
     static gboolean register_account_wrapped (gchar *user, gchar *domain, gchar *password, void *user_data);
+    static  void on_registration_state (pjsua_acc_id acc_id, pjsua_reg_info *info);
+    void add_buddy (const std::string &sip_user);
   };
   
   SWITCHER_DECLARE_PLUGIN(PJSIP);
