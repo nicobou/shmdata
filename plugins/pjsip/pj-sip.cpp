@@ -24,6 +24,28 @@
 namespace switcher
 {
 
+// /* This is a PJSIP module to be registered by application to handle
+//  * incoming requests outside any dialogs/transactions. The main purpose
+//  * here is to handle incoming INVITE request message, where we will
+//  * create a dialog and INVITE session for it.
+//  */
+// static pjsip_module mod_siprtp =
+// {
+//     NULL, NULL,			    /* prev, next.		*/
+//     { "mod-siprtpapp", 13 },	    /* Name.			*/
+//     -1,				    /* Id			*/
+//     PJSIP_MOD_PRIORITY_APPLICATION, /* Priority			*/
+//     NULL,			    /* load()			*/
+//     NULL,			    /* start()			*/
+//     NULL,			    /* stop()			*/
+//     NULL,			    /* unload()			*/
+//     &on_rx_request,		    /* on_rx_request()		*/
+//     NULL,			    /* on_rx_response()		*/
+//     NULL,			    /* on_tx_request.		*/
+//     NULL,			    /* on_tx_response()		*/
+//     NULL,			    /* on_tsx_state()		*/
+// };
+
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PJSIP,
 				       "SIP (Session Initiation Protocol)",
 				       "network", 
@@ -159,6 +181,41 @@ namespace switcher
 			 &pj_thread_ref_);
       
       pj_status_t status;
+
+      // /* init PJLIB-UTIL: */
+      // status = pjlib_util_init();
+      // pj_caching_pool cp;
+      // pjsip_endpoint	*sip_endpt;
+
+      // /* Must create a pool factory before we can allocate any memory. */
+      // pj_caching_pool_init (&cp, &pj_pool_factory_default_policy, 0);
+      
+      // /* Create application pool for misc. */
+      // //pj_pool_t	*pool = pj_pool_create (&cp.factory, "app", 1000, 1000, NULL);
+      
+      // /* Create the endpoint: */
+      // status = pjsip_endpt_create(&cp.factory, pj_gethostname()->ptr, 
+      // 				  &sip_endpt);
+
+       /* 
+        * Init transaction layer.
+        * This will create/initialize transaction hash tables etc.
+        */
+       // status = pjsip_tsx_layer_init_module(sip_endpt);
+       // PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+      
+      // /*  Initialize UA layer. */
+      // status = pjsip_ua_init_module(sip_endpt, NULL );
+      // PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+      
+      // /* Initialize 100rel support */
+      // status = pjsip_100rel_init_module(sip_endpt);
+
+      // PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+      /* Register our module to receive incoming requests. */
+      // status = pjsip_endpt_register_module( sip_endpt, &mod_siprtp);
+      // PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
       /* Create pjsua first! */
       status = pjsua_create();
       if (status != PJ_SUCCESS) 
@@ -183,10 +240,7 @@ namespace switcher
 	pjsua_config_default(&cfg);
 	cfg.cb.on_buddy_state = &on_buddy_state;
 	cfg.cb.on_reg_state2 = &on_registration_state;
-	// cfg.cb.on_incoming_call = &on_incoming_call;
-	// cfg.cb.on_call_media_state = &on_call_media_state;
-	// cfg.cb.on_call_state = &on_call_state;
-	
+
 	pjsua_logging_config_default(&log_cfg);
 	log_cfg.console_level = 1;//4;
 	
@@ -350,7 +404,6 @@ namespace switcher
      
      pjsua_destroy();
      pj_shutdown ();
-     g_print ("pj has shutdowned");
   }
 
   gboolean
@@ -368,6 +421,7 @@ namespace switcher
 					  std::string (user),
 					  std::string (domain),
 					  std::string (password)));
+
     if (-1 == context->account_id_)
       return FALSE;
     return TRUE;
@@ -402,6 +456,7 @@ namespace switcher
     cfg.cred_info[0].data = pj_str (password);
     cfg.publish_enabled = PJ_TRUE; 
     cfg.register_on_acc_add = PJ_TRUE; //or  pjsua_acc_set_registration (account_id_, PJ_TRUE);
+
     status = pjsua_acc_add (&cfg, PJ_TRUE, &account_id_);
     g_free (id);
     g_free (reg_uri);
@@ -412,7 +467,6 @@ namespace switcher
     if (status != PJ_SUCCESS) 
       {
 	account_id_ = -1;
-	g_warning ("Error adding SIP account");
 	return;
       }
     pjsua_acc_set_user_data (account_id_, this);
@@ -491,5 +545,5 @@ namespace switcher
     context->registration_cond_.notify_one ();
     g_debug ("registration SIP status code %d\n", info->cbparam->code);
   }
-
+  
 }

@@ -22,6 +22,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <unistd.h>//usleep
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -45,13 +46,23 @@ main ()
      // if (!switcher::QuiddityBasicTest::test_full (manager, "sip"))
      //   success = false;
 
-     manager->create ("sip", "test");
-     if (!manager->invoke_va ("test","register", NULL, 
-			      "1010", //user
-			      "10.10.30.115", //domain
-			      "1234", //password
-			      NULL))
-       return 1;
+     if (0 != manager->create ("sip", "test").compare ("test"))
+       {
+	 g_print ("cannot create\n");
+	 return 1;
+       }
+     bool registered = manager->invoke_va ("test","register", NULL, 
+					   "1010", //user
+					   "10.10.30.115", //domain
+					   "1234", //password
+					   NULL);
+     
+     if (!registered)
+       {
+	 g_print ("cannot register \n");
+	 return 1;
+       }
+     //usleep (200000000);
      //manager->create ("sip", "test2");//FIXME this is failling
      manager->remove ("test");
      
