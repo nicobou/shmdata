@@ -291,14 +291,11 @@ namespace switcher
     context->url_ = g_strdup ((char *)url);
     context->switcher_control_->soap_endpoint = context->url_;
     if (TRUE == context->try_connect (context))
-      {
-	guint id = GstUtils::g_timeout_add_to_context (2000, //must be higher than gsoap timeouts
-						       try_connect, 
-						       context,
-						       context->get_g_main_context ());
-	context->try_connect_g_source_ = g_main_context_find_source_by_id (context->get_g_main_context (),
-									   id);
-      }
+	context->try_connect_g_source_ = 
+	  GstUtils::g_timeout_add_to_context (2000, //must be higher than gsoap timeouts
+					      try_connect, 
+					      context,
+					      context->get_g_main_context ());
     return TRUE;
   }
 

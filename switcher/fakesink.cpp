@@ -85,13 +85,10 @@ namespace switcher
 				"Byte Rate (Bps)");
     
      
-    guint update_byterate_id = GstUtils::g_timeout_add_to_context (1000, 
-								   update_byte_rate, 
-								   this,
-								   get_g_main_context ());
-    
-    update_byterate_source_ = g_main_context_find_source_by_id (get_g_main_context (),
-								update_byterate_id);
+    update_byterate_source_ = GstUtils::g_timeout_add_to_context (1000, 
+								  update_byte_rate, 
+								  this,
+								  get_g_main_context ());
     
     caps_spec_ = 
       props_->make_string_property ("caps", 

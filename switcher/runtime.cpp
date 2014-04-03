@@ -28,6 +28,7 @@
 #include "gst-utils.h"
 #include <shmdata/base-reader.h>
 #include <gst/interfaces/xoverlay.h>
+#include <algorithm>
 
 namespace switcher
 {
@@ -44,7 +45,8 @@ namespace switcher
     play_ (true),
     seek_spec_ (NULL),
     seek_ (0.0),
-    length_ (0)
+    length_ (0),
+    commands_ ()
   {}
 
   void
@@ -125,6 +127,10 @@ namespace switcher
   
   Runtime::~Runtime ()
   {
+    if (!commands_.empty ())
+      for (auto &it : commands_)
+	if (!g_source_is_destroyed (it))
+	  g_source_destroy (it);
     if (position_tracking_source_ != NULL)
        g_source_destroy (position_tracking_source_);
     GstUtils::clean_element (pipeline_);
@@ -141,17 +147,11 @@ namespace switcher
     play_ = play;
     if (NULL == position_tracking_source_
 	&& NULL != quid_->get_g_main_context ())
-      {
-	guint position_tracking_id = 
-	  GstUtils::g_timeout_add_to_context (200, 
-					      (GSourceFunc) query_position, 
-					      this,
-					      quid_->get_g_main_context ());
-	position_tracking_source_ = 
-	  g_main_context_find_source_by_id (quid_->get_g_main_context (),
-					    position_tracking_id);
-      }
-    
+      position_tracking_source_ = 
+	GstUtils::g_timeout_add_to_context (200, 
+					    (GSourceFunc) query_position, 
+					    this,
+					    quid_->get_g_main_context ());
     if (TRUE == play)
       gst_element_set_state (pipeline_, 
 			     GST_STATE_PLAYING);
@@ -327,6 +327,11 @@ res = gst_element_query (pipeline_, query);
     else
       g_warning ("Runtime::bus_sync_handler, cannot run command");
     
+    auto it = std::find (context->self->commands_.begin (),
+			 context->self->commands_.end (),
+			 context->src);
+    if (context->self->commands_.end () != it)
+      context->self->commands_.erase (it);
     delete context;
     return FALSE; //do not repeat run_command
   }  
@@ -408,17 +413,26 @@ res = gst_element_query (pipeline_, query);
 	    QuidCommandArg *args = new QuidCommandArg ();
 	    args->self = context;
 	    args->command = command;
+	    args->src = NULL;
 	    if (command->time_ > 1)
-	      GstUtils::g_timeout_add_to_context ((guint) command->time_,
-						  (GSourceFunc)run_command,
-						  args,
-						  context->quid_->get_g_main_context ());   
+	      {
+		args->src = g_timeout_source_new ((guint) command->time_);
+		g_source_set_callback (args->src, 
+				       (GSourceFunc)run_command, 
+				       args, 
+				       NULL);
+		context->commands_.push_back (args->src);
+		g_source_attach (args->src, context->quid_->get_g_main_context ());   
+		g_source_unref(args->src);
+	      }
 	    else
-	      GstUtils::g_idle_add_full_with_context (context->quid_->get_g_main_context (),
-						      G_PRIORITY_DEFAULT_IDLE,
-						      (GSourceFunc) run_command,   
-						      (gpointer)args,
-						      NULL);   
+	      {
+		GstUtils::g_idle_add_full_with_context (context->quid_->get_g_main_context (),
+							G_PRIORITY_DEFAULT_IDLE,
+							(GSourceFunc) run_command,   
+							(gpointer) args,
+							NULL);
+	      }   
 
 	  }
 
