@@ -90,6 +90,10 @@ namespace switcher
     discard_next_uncomplete_buffer_ = false;
     rtpgstcaps_ = gst_caps_from_string ("application/x-rtp, media=(string)application");
 
+    // g_object_set (G_OBJECT (sdpdemux_), 
+    // 		  "latency",
+    // 		  2000,
+    // 		  NULL);
     g_signal_connect (G_OBJECT (sdpdemux_), 
 		      "pad-added", 
 		      (GCallback) HTTPSDPDec::httpsdpdec_pad_added_cb,

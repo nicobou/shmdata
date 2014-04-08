@@ -152,7 +152,7 @@ namespace switcher
   V4L2Src::update_discrete_resolution (CaptureDescription cap_descr)
   {
     uninstall_property ("resolution");
-    resolution_ = -1;
+    //resolution_ = -1;
     if (!cap_descr.frame_size_discrete_.empty ())
       {
      	gint i = 0;
@@ -179,7 +179,7 @@ namespace switcher
 								 V4L2Src::set_resolution,
 								 V4L2Src::get_resolution,
 								 this); 
-	resolution_ = 0;
+	//resolution_ = 0;
      	install_property_by_pspec (custom_props_->get_gobject (), 
 				   resolutions_spec_, 
 				   "resolution",
@@ -193,7 +193,7 @@ namespace switcher
   V4L2Src::update_discrete_framerate (CaptureDescription cap_descr)
   {
     uninstall_property ("framerate");
-    framerate_ = -1;
+    //framerate_ = -1;
     if (!cap_descr.frame_interval_discrete_.empty ())
       {
      	gint i = 0;
@@ -221,7 +221,7 @@ namespace switcher
 							       V4L2Src::set_framerate,
 							       V4L2Src::get_framerate,
 							       this); 
-	framerate_ = 0;
+	//framerate_ = 0;
 	install_property_by_pspec (custom_props_->get_gobject (), 
 				   framerate_spec_, 
 				   "framerate",
@@ -235,11 +235,11 @@ namespace switcher
   {
     uninstall_property ("width");
     uninstall_property ("height");
-    width_ = -1;
-    height_ = -1;
+    //width_ = -1;
+    //height_ = -1;
     if (cap_descr.frame_size_stepwise_max_width_ > 0)
       {
-	width_ = cap_descr.frame_size_stepwise_max_width_;	
+	//width_ = cap_descr.frame_size_stepwise_max_width_;	
 	if (width_spec_ == NULL)
 	  width_spec_ = 
 	    custom_props_->make_int_property ("width", 
@@ -257,7 +257,7 @@ namespace switcher
 				   "width",
 				   "Width");
 
-	height_ = cap_descr.frame_size_stepwise_max_height_;
+	//height_ = cap_descr.frame_size_stepwise_max_height_;
 
 	if (height_spec_ == NULL)
 	  height_spec_ = 
@@ -285,12 +285,12 @@ namespace switcher
   {
     uninstall_property ("framerate_numerator");
     uninstall_property ("framerate_denominator");
-    framerate_numerator_ = -1;
-    framerate_denominator_ = -1;
+    //framerate_numerator_ = -1;
+    //framerate_denominator_ = -1;
     if (cap_descr.frame_interval_stepwise_max_numerator_ > 0)
       {
 
-	framerate_numerator_ = 60;	
+	//framerate_numerator_ = 60;	
 	
 	if (framerate_numerator_spec_ == NULL)
 	  framerate_numerator_spec_ = 
@@ -334,7 +334,7 @@ namespace switcher
   V4L2Src::update_tv_standard (CaptureDescription cap_descr)
   {
     uninstall_property ("tv_standard");
-    tv_standard_ = -1;
+    //tv_standard_ = -1;
     if (!cap_descr.tv_standards_.empty ())
       {
      	gint i = 0;
@@ -360,7 +360,7 @@ namespace switcher
 								  V4L2Src::get_tv_standard,
 								  this); 
 	
-	tv_standard_ = 0;
+	//tv_standard_ = 0;
      	install_property_by_pspec (custom_props_->get_gobject (), 
 				   tv_standards_spec_, 
 				   "tv_standard",
@@ -509,6 +509,8 @@ namespace switcher
 	description.frame_size_stepwise_step_height_ = frmsize.stepwise.step_height;
 	default_width = frmsize.stepwise.max_width ;
 	default_height = frmsize.stepwise.max_height;
+	width_ = default_width;
+	height_ = default_height;
       }
     else
       {
@@ -574,6 +576,8 @@ namespace switcher
 	description.frame_interval_stepwise_min_denominator_ = frmival.stepwise.max.denominator;
 	description.frame_interval_stepwise_step_numerator_ = frmival.stepwise.step.numerator;
 	description.frame_interval_stepwise_step_denominator_ = frmival.stepwise.step.denominator;
+	framerate_numerator_ = 60;//FIXME use actual values
+	framerate_denominator_ = 60;//FIXME use actual values
       }
     else
       {
@@ -665,6 +669,9 @@ namespace switcher
     uninstall_property ("tv_standard");
     uninstall_property ("device");
     uninstall_property ("framerate");
+    uninstall_property ("framerate_numerator");
+    uninstall_property ("framerate_denominator");
+
     // install_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
     // install_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
     // install_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
