@@ -55,6 +55,9 @@ plugins/gtk/check_gtk_video
 plugins/osc/.deps/
 plugins/osc/.libs/
 plugins/osc/check_osc
+plugins/pjsip/.deps
+plugins/pjsip/.libs
+plugins/pjsip/check_pjsip
 plugins/portmidi/.deps/
 plugins/portmidi/.libs/
 plugins/portmidi/check_midi_plugins

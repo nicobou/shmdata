@@ -26,6 +26,7 @@
 
 #include <gst/gst.h>
 #include <memory>
+#include <vector>
 
 namespace switcher
 {
@@ -56,6 +57,7 @@ namespace switcher
      typedef struct {
        Runtime *self;
        QuiddityCommand *command;
+       GSource *src;
      } QuidCommandArg;
       //GstBus is a specific context:
       typedef struct
@@ -77,7 +79,8 @@ namespace switcher
       GParamSpec *seek_spec_;
       gdouble seek_;
       gint64 length_;
-
+      std::vector<GSource *> commands_;
+ 
       bool speed (gdouble speed);
       static gboolean get_play (void *user_data);
       static void set_play (gboolean play, void *user_data);

@@ -295,7 +295,17 @@ namespace switcher
     codec_properties_.push_back ("speed-preset");//x264
     codec_properties_.push_back ("bitrate");//x264
     codec_properties_.push_back ("threads");//x264
+    codec_properties_.push_back ("ref");//x264
+    codec_properties_.push_back ("trellis");//x264
+    codec_properties_.push_back ("key-int-max");//x264
     codec_properties_.push_back ("speed");//vp8
+    codec_properties_.push_back ("mode");//vp8
+    codec_properties_.push_back ("error-resilient");//vp8
+    codec_properties_.push_back ("max-latency");//vp8
+    codec_properties_.push_back ("max-keyframe-distance");//vp8
+    //codec_properties_.push_back ("");//vp8
+
+
     codec_properties_.push_back ("qmin");//smokeenc
     codec_properties_.push_back ("qmax");//smokeenc
     codec_properties_.push_back ("keyframe");//smokeenc

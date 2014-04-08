@@ -29,22 +29,31 @@ process.on('SIGINT', function () {
     process.exit(0);
 });
 
+ // switcher_addon.register_log_callback(function (msg){
+ //     console.log('.....log message: ', msg);
+ // });
+
+// switcher_addon.register_prop_callback(function (qname, qprop, pvalue){
+//     console.log('...PROP...: ', qname, ' ', qprop, ' ', pvalue);
+// });
+
 switcher_addon.register_signal_callback(function (qname, qsignal, pvalue){
-    console.log('...SIGNAL...: ', qname, ' ', qsignal, ' ', pvalue);
-
-    if (qsignal == "on-quiddity-created")
+    //console.log('...SIGNAL...: ', qname, ' ', qprop, ' ', pvalue);
+    if (qsignal == "on-tree-grafted" || qsignal == "on-tree-pruned" )
     {
-	console.log(switcher_addon.subscribe_to_signal (pvalue[0], "on-new-property"));
-	console.log(switcher_addon.subscribe_to_signal (pvalue[0], "on-property-removed"));
-	console.log(switcher_addon.subscribe_to_signal (pvalue[0], "on-new-method"));
-	console.log(switcher_addon.subscribe_to_signal (pvalue[0], "on-method-removed"));
+	console.log('info_tree: ', qname, ' ', qsignal, ' ', pvalue[0], 
+		    switcher_addon.get_info (qname, pvalue[0]));
     }
-
 });
 
-//signal info
-console.log ("------------ signals ------------");
-console.log (switcher_addon.create("videotestsrc","vidtest"));
+console.log (switcher_addon.create("sip","sipquid"));
 
-setTimeout (function () {console.log (switcher_addon.set_property_value ("vidtest","started", "true"))}, 1000);
+console.log(switcher_addon.subscribe_to_signal ("sipquid", "on-tree-grafted"));
+console.log(switcher_addon.subscribe_to_signal ("sipquid", "on-tree-pruned"));
 
+console.log (switcher_addon.invoke("sipquid","register", ["1010", 
+							  "10.10.30.115",
+							  "1234"]));
+
+
+setTimeout (function () {console.log ("- the end -")}, 1000000);

@@ -1,0 +1,22 @@
+#get pjsip:
+cd /var/tmp
+wget http://www.pjsip.org/release/2.2.1/pjproject-2.2.1.tar.bz2
+tar -xjvf pjproject-2.2.1.tar.bz2
+cd pjproject-2.2.1
+./configure --enable-shared --disable-video  --disable-sound --disable-g711-codec --disable-g7221-codec  --disable-g722-codec --disable-gsm-codec --disable-ilbc-codec --disable-l16-codec --disable-speex-aec  --disable-speex-codec
+make dep
+make
+sudo make install
+
+
+
+
+
+
+
+#freeswitch
+register to freeswitch with ekiga
+- http://lists.freeswitch.org/pipermail/freeswitch-users/2013-May/095204.html
+(/usr/local/freeswitch/conf/sip_profiles/internal.xml:
+Set multiple-registrations to true)
+

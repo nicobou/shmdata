@@ -176,6 +176,28 @@ v8::Handle<v8::Value> Create(const v8::Arguments& args) {
   return scope.Close(name);
 }
 
+v8::Handle<v8::Value> GetInfo(const v8::Arguments& args) {
+  v8::HandleScope scope;
+  if (args.Length() != 2) {
+    ThrowException(v8::Exception::TypeError(v8::String::New("Wrong number of arguments")));
+    return scope.Close(v8::Undefined());
+  }
+  if (!args[0]->IsString() ) {
+    ThrowException(v8::Exception::TypeError(v8::String::New("switcher get_info: Wrong first arg type")));
+    return scope.Close(v8::Undefined());
+  }
+  v8::String::Utf8Value first_arg(args[0]->ToString());
+  v8::Local<v8::String> name;
+  if (!args[1]->IsString() ) {
+    ThrowException(v8::Exception::TypeError(v8::String::New("switcher get_info: Wrong second arg type")));
+    return scope.Close(v8::Undefined());
+      }
+  v8::String::Utf8Value second_arg(args[1]->ToString());
+  name = v8::String::New(switcher_container[0]->get_info(std::string(*first_arg), 
+							 std::string(*second_arg)).c_str());
+  return scope.Close(name);
+}
+
 v8::Handle<v8::Value> Rename(const v8::Arguments& args) {
   v8::HandleScope scope;
   if (args.Length() != 2) {
@@ -879,6 +901,9 @@ void Init(v8::Handle<v8::Object> target)
 	      v8::FunctionTemplate::New(GetQuiddityDescription)->GetFunction());  
   target->Set(v8::String::NewSymbol("get_quiddities_description"),
 	      v8::FunctionTemplate::New(GetQuidditiesDescription)->GetFunction());  
+
+  target->Set(v8::String::NewSymbol("get_info"),
+	      v8::FunctionTemplate::New(GetInfo)->GetFunction());  
 
   //properties
   target->Set(v8::String::NewSymbol("get_properties_description"),

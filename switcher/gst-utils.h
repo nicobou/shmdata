@@ -50,10 +50,10 @@ namespace switcher
 					       GSourceFunc function,
 					       gpointer data,
 					       GDestroyNotify notify);
-    static guint g_timeout_add_to_context(guint interval, 
-					  GSourceFunc function,
-					  gpointer data, 
-					  GMainContext *context);
+    static GSource *g_timeout_add_to_context (guint interval, 
+					      GSourceFunc function,
+					      gpointer data, 
+					      GMainContext *context);
     static  bool apply_property_value (GObject *g_object_master, 
 				       GObject *g_object_slave,
 				       const char *property_name);

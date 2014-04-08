@@ -121,6 +121,34 @@ namespace switcher
 				    1, 
 				    arg_type);
 
+    install_signal_with_class_name ("Quiddity",
+				    "On Tree Grafted",
+				    "on-tree-grafted",
+				    "A tree has been grafted to the quiddity tree",
+				    Signal::make_arg_description("Quiddity Name",
+								 "quiddity_name",
+								 "the quiddity name",
+								 "Branch Name",
+								 "branch_name",
+								 "the branch name",
+								 NULL),
+				    1, 
+				    arg_type);
+
+    install_signal_with_class_name ("Quiddity",
+				    "On Tree Pruned",
+				    "on-tree-pruned",
+				    "A tree has been pruned from the quiddity tree",
+				    Signal::make_arg_description("Quiddity Name",
+								 "quiddity_name",
+								 "the quiddity name",
+								 "Branch Name",
+								 "branch_name",
+								 "the branch name",
+								 NULL),
+				    1, 
+				    arg_type);
+
   }
   
   Quiddity::~Quiddity () 
@@ -963,7 +991,7 @@ namespace switcher
   {
     if (!information_tree_->graft (path, tree))
       return false;
-    //notify change on path
+    signal_emit ("on-tree-grafted", path.c_str ());
     return true;
   }
 
@@ -973,7 +1001,7 @@ namespace switcher
     data::Tree::ptr result = information_tree_->prune (path);
     if (!result)
       return result;
-    //notify change on path
+    signal_emit ("on-tree-pruned", path.c_str ());
     return result;
   }
 }
