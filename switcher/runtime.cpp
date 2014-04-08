@@ -345,34 +345,34 @@ res = gst_element_query (pipeline_, query);
   void
   Runtime::print_one_tag (const GstTagList * list, const gchar * tag, gpointer user_data)
   {
-    // int i, num;
+     // int i, num;
     
-    // num = gst_tag_list_get_tag_size (list, tag);
-    // for (i = 0; i < num; ++i) {
-    //   const GValue *val;
+     // num = gst_tag_list_get_tag_size (list, tag);
+     // for (i = 0; i < num; ++i) {
+     //   const GValue *val;
       
-    //   /* Note: when looking for specific tags, use the g_tag_list_get_xyz() API,
-    //    * we only use the GValue approach here because it is more generic */
-    //   val = gst_tag_list_get_value_index (list, tag, i);
-    //   if (G_VALUE_HOLDS_STRING (val)) {
-    // 	g_print ("\t%20s : %s\n", tag, g_value_get_string (val));
-    //   } else if (G_VALUE_HOLDS_UINT (val)) {
-    // 	g_print ("\t%20s : %u\n", tag, g_value_get_uint (val));
-    //   } else if (G_VALUE_HOLDS_DOUBLE (val)) {
-    // 	g_print ("\t%20s : %g\n", tag, g_value_get_double (val));
-    //   } else if (G_VALUE_HOLDS_BOOLEAN (val)) {
-    // 	g_print ("\t%20s : %s\n", tag,
-    // 		 (g_value_get_boolean (val)) ? "true" : "false");
-    //   } else if (GST_VALUE_HOLDS_BUFFER (val)) {
-    // 	g_print ("\t%20s : buffer of size %u\n", tag,
-    // 		 GST_BUFFER_SIZE (gst_value_get_buffer (val)));
-    //   } else if (GST_VALUE_HOLDS_DATE (val)) {
-    // 	g_print ("\t%20s : date (year=%u,...)\n", tag,
-    // 		 g_date_get_year (gst_value_get_date (val)));
-    //   } else {
-    // 	g_print ("\t%20s : tag of type '%s'\n", tag, G_VALUE_TYPE_NAME (val));
-    //   }
-    // }
+     //   /* Note: when looking for specific tags, use the g_tag_list_get_xyz() API,
+     //    * we only use the GValue approach here because it is more generic */
+     //   val = gst_tag_list_get_value_index (list, tag, i);
+     //   if (G_VALUE_HOLDS_STRING (val)) {
+     // 	g_print ("\t%20s : %s\n", tag, g_value_get_string (val));
+     //   } else if (G_VALUE_HOLDS_UINT (val)) {
+     // 	g_print ("\t%20s : %u\n", tag, g_value_get_uint (val));
+     //   } else if (G_VALUE_HOLDS_DOUBLE (val)) {
+     // 	g_print ("\t%20s : %g\n", tag, g_value_get_double (val));
+     //   } else if (G_VALUE_HOLDS_BOOLEAN (val)) {
+     // 	g_print ("\t%20s : %s\n", tag,
+     // 		 (g_value_get_boolean (val)) ? "true" : "false");
+     //   } else if (GST_VALUE_HOLDS_BUFFER (val)) {
+     // 	g_print ("\t%20s : buffer of size %u\n", tag,
+     // 		 GST_BUFFER_SIZE (gst_value_get_buffer (val)));
+     //   } else if (GST_VALUE_HOLDS_DATE (val)) {
+     // 	g_print ("\t%20s : date (year=%u,...)\n", tag,
+     // 		 g_date_get_year (gst_value_get_date (val)));
+     //   } else {
+     // 	g_print ("\t%20s : tag of type '%s'\n", tag, G_VALUE_TYPE_NAME (val));
+     //   }
+     // }
   }
   
   GstBusSyncReply 
@@ -380,10 +380,33 @@ res = gst_element_query (pipeline_, query);
 			     GstMessage *msg, 
 			     gpointer user_data) 
   {
-    shmdata_base_reader_t *reader = (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), 
-										 "shmdata_base_reader");
+    shmdata_base_reader_t *reader = 
+      (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), 
+						   "shmdata_base_reader");
     Runtime *context = static_cast<Runtime *>(user_data);
-    if ( reader != NULL)
+
+    // g_print ("-----------%s-----%s--------------------------\n",
+    // 	     G_OBJECT_TYPE_NAME(G_OBJECT (msg->src)),
+    // 	     GST_MESSAGE_TYPE_NAME (msg));
+
+    if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_QOS)
+      {
+	GstFormat format;
+	guint64 processed;
+	guint64 dropped;
+	gst_message_parse_qos_stats (msg,
+				     &format,
+				     &processed,
+				     &dropped);
+	// g_print ("QOS from %s, format %d, processed %lu dropped %lu\n",
+	// 	 G_OBJECT_TYPE_NAME(G_OBJECT (msg->src)),
+	// 	 format,
+	// 	 processed,
+	// 	 dropped);
+	return GST_BUS_PASS; 
+      }
+
+    if (reader != NULL)
       {
 	if (NULL != msg && shmdata_base_reader_process_error (reader, msg)) 
 	  return GST_BUS_DROP; 
@@ -451,12 +474,12 @@ res = gst_element_query (pipeline_, query);
     
     if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_TAG)
       {
-	GstTagList *tags = NULL;
-	gst_message_parse_tag (msg, &tags);
+	// GstTagList *tags = NULL;
+	// gst_message_parse_tag (msg, &tags);
 	// g_print ("Got tags from element %s:\n", GST_OBJECT_NAME (msg->src));
 	// gst_tag_list_foreach (tags, print_one_tag, NULL);
 	// g_print ("\n");
-	gst_tag_list_free (tags);
+	// gst_tag_list_free (tags);
       }
     return GST_BUS_PASS; 
   }
