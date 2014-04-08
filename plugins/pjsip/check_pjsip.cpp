@@ -51,17 +51,17 @@ main ()
 	 g_print ("cannot create\n");
 	 return 1;
        }
-     bool registered = manager->invoke_va ("test","register", NULL, 
-					   "1010", //user
-					   "10.10.30.115", //domain
-					   "1234", //password
-					   NULL);
+     // bool registered = manager->invoke_va ("test","register", NULL, 
+     // 					   "1010", //user
+     // 					   "10.10.30.115", //domain
+     // 					   "1234", //password
+     // 					   NULL);
      
-     if (!registered)
-       {
-	 g_print ("cannot register \n");
-	 return 1;
-       }
+     // if (!registered)
+     //   {
+     // 	 g_print ("cannot register \n");
+     // 	 return 1;
+     //   }
      //usleep (200000000);
      //manager->create ("sip", "test2");//FIXME this is failling
      manager->remove ("test");
