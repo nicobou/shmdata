@@ -18,33 +18,13 @@
  */
 
 #include "pj-sip.h"
+#include "transport_adapter_sample.h"
 #include <unistd.h>  //sleep
 #include <iostream>
 
 namespace switcher
 {
 
-// /* This is a PJSIP module to be registered by application to handle
-//  * incoming requests outside any dialogs/transactions. The main purpose
-//  * here is to handle incoming INVITE request message, where we will
-//  * create a dialog and INVITE session for it.
-//  */
-// static pjsip_module mod_siprtp =
-// {
-//     NULL, NULL,			    /* prev, next.		*/
-//     { "mod-siprtpapp", 13 },	    /* Name.			*/
-//     -1,				    /* Id			*/
-//     PJSIP_MOD_PRIORITY_APPLICATION, /* Priority			*/
-//     NULL,			    /* load()			*/
-//     NULL,			    /* start()			*/
-//     NULL,			    /* stop()			*/
-//     NULL,			    /* unload()			*/
-//     &on_rx_request,		    /* on_rx_request()		*/
-//     NULL,			    /* on_rx_response()		*/
-//     NULL,			    /* on_tx_request.		*/
-//     NULL,			    /* on_tx_response()		*/
-//     NULL,			    /* on_tsx_state()		*/
-// };
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PJSIP,
 				       "SIP (Session Initiation Protocol)",
@@ -240,6 +220,28 @@ namespace switcher
 	pjsua_config_default(&cfg);
 	cfg.cb.on_buddy_state = &on_buddy_state;
 	cfg.cb.on_reg_state2 = &on_registration_state;
+	cfg.cb.on_create_media_transport = &on_create_media_transport;
+ 
+	//see pjsip-apps/src/pjsua/pjsua_app.c
+	// cfg.cb.on_call_state = &on_call_state;
+	// cfg.cb.on_call_media_state = &on_call_media_state;
+	cfg.cb.on_incoming_call = &on_incoming_call;
+	// cfg.cb.on_call_tsx_state = &on_call_tsx_state;
+	// cfg.cb.on_dtmf_digit = &call_on_dtmf_callback;
+	// cfg.cb.on_call_redirected = &call_on_redirected;
+	// cfg.cb.on_reg_state = &on_reg_state;
+	// cfg.cb.on_incoming_subscribe = &on_incoming_subscribe;
+	// cfg.cb.on_buddy_evsub_state = &on_buddy_evsub_state;
+	// cfg.cb.on_pager = &on_pager;
+	// cfg.cb.on_typing = &on_typing;
+	// cfg.cb.on_call_transfer_status = &on_call_transfer_status;
+	// cfg.cb.on_call_replaced = &on_call_replaced;
+	// cfg.cb.on_nat_detect = &on_nat_detect;
+	// cfg.cb.on_mwi_info = &on_mwi_info;
+	// cfg.cb.on_transport_state = &on_transport_state;
+	// cfg.cb.on_ice_transport_error = &on_ice_transport_error;
+	// cfg.cb.on_snd_dev_operation = &on_snd_dev_operation;
+	// cfg.cb.on_call_media_event = &on_call_media_event;
 
 	pjsua_logging_config_default(&log_cfg);
 	log_cfg.console_level = 1;//4;
@@ -544,6 +546,59 @@ namespace switcher
     std::unique_lock <std::mutex> lock (context->registration_mutex_);
     context->registration_cond_.notify_one ();
     g_debug ("registration SIP status code %d\n", info->cbparam->code);
+  }
+
+/*
+ * This callback is called when media transport needs to be created.
+ */
+  pjmedia_transport *
+  PJSIP::on_create_media_transport (pjsua_call_id call_id,
+				    unsigned media_idx,
+				    pjmedia_transport *base_tp,
+				    unsigned flags)
+  {
+    pjmedia_transport *adapter;
+    pj_status_t status;
+    
+    /* Create the adapter */
+    status = pjmedia_switcher_adapter_create(pjsua_get_pjmedia_endpt(),
+					     NULL, base_tp,
+					     (flags & PJSUA_MED_TP_CLOSE_MEMBER),
+					     &adapter);
+    if (status != PJ_SUCCESS) {
+      g_warning ("Error creating adapter");
+      return NULL;
+    }
+    
+    g_debug ("Media transport is created for call %d media %d",
+	      call_id, media_idx);
+    
+    return adapter;
+  }
+
+/**
+ * Handler when there is incoming call.
+ */
+  void 
+  PJSIP::on_incoming_call(pjsua_acc_id acc_id, 
+			  pjsua_call_id call_id,
+			  pjsip_rx_data *rdata)
+  {
+    pjsua_call_info call_info;
+    
+    PJ_UNUSED_ARG(acc_id);
+    PJ_UNUSED_ARG(rdata);
+    
+    pjsua_call_get_info(call_id, &call_info);
+    g_print ( "Incoming call for account %d!\n"
+	      "Media count: %d audio & %d video\n"
+	      "From: %s\n"
+	      "To: %s\n",
+	      acc_id,
+	      call_info.rem_aud_cnt,
+	      call_info.rem_vid_cnt,
+	      call_info.remote_info.ptr,
+	      call_info.local_info.ptr);
   }
   
 }

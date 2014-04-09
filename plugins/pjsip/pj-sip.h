@@ -71,6 +71,14 @@ namespace switcher
     static gboolean register_account_wrapped (gchar *user, gchar *domain, gchar *password, void *user_data);
     static  void on_registration_state (pjsua_acc_id acc_id, pjsua_reg_info *info);
     void add_buddy (const std::string &sip_user);
+    static pjmedia_transport *on_create_media_transport (pjsua_call_id call_id,
+							 unsigned media_idx,
+							 pjmedia_transport *base_tp,
+							 unsigned flags);
+    static void on_incoming_call (pjsua_acc_id acc_id, 
+				  pjsua_call_id call_id,
+				  pjsip_rx_data *rdata);
+
   };
   
   SWITCHER_DECLARE_PLUGIN(PJSIP);
