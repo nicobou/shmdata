@@ -79,7 +79,6 @@ namespace switcher
   bool
   PJSIP::init ()
   {
-    init_startable (this);
     std::unique_lock <std::mutex> lock (pj_init_mutex_);
     sip_thread_ = std::thread (&PJSIP::sip_handling_thread, this);
     pj_init_cond_.wait (lock);
@@ -552,20 +551,6 @@ namespace switcher
     continue_ = false;
   }
   
-  bool
-  PJSIP::start ()
-  {
-    g_debug ("start from pjsip plugin");
-    return true;
-  }
-
-  bool
-  PJSIP::stop ()
-  {
-    g_debug ("stop from pjsip plugin");
-    return true;
-  }
-
   void 
   PJSIP::on_registration_state (pjsua_acc_id acc_id, pjsua_reg_info *info)
   {

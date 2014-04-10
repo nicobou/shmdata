@@ -21,7 +21,7 @@
 #define __SWITCHER_PJSIP_H__
 
 #include "switcher/quiddity.h"
-#include "switcher/startable-quiddity.h"
+#include "switcher/custom-property-helper.h"
 
 #include <pjsua-lib/pjsua.h>
 #include <memory>
@@ -32,7 +32,7 @@
 namespace switcher
 {
   
-  class PJSIP : public Quiddity, public StartableQuiddity 
+  class PJSIP : public Quiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PJSIP);
