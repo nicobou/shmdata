@@ -34,6 +34,10 @@ namespace switcher
 				       "sip",				
 				       "Nicolas Bouillot");
   PJSIP::PJSIP ():
+    custom_props_ (std::make_shared<CustomPropertyHelper> ()),
+    sip_port_ (5060),
+    sip_port_spec_ (NULL),
+    transport_id_ (NULL),
     thread_handler_desc_ (),
     pj_thread_ref_ (NULL),
     sip_thread_ (),
@@ -104,6 +108,22 @@ namespace switcher
 						       G_TYPE_STRING, 
 						       NULL),
 		    this);
+    sip_port_spec_ =
+      custom_props_->make_int_property ("port", 
+					"SIP port used when registering",
+					0,
+					65535,
+					sip_port_,
+					(GParamFlags) G_PARAM_READWRITE,
+					set_port,
+					get_port,
+					this);
+
+    install_property_by_pspec (custom_props_->get_gobject (), 
+			       sip_port_spec_, 
+			       "port",
+			       "SIP port used when registering");
+
     return true;
   }
 
@@ -254,33 +274,20 @@ namespace switcher
 	  }
       }
       
-      /* Add UDP transport. */
-      {
-	pjsua_transport_config cfg;
+ 
+       // /* Add TCP transport. */
+       // {
+       //   pjsua_transport_config cfg;
 	
-	pjsua_transport_config_default(&cfg);
-	cfg.port = 5070;
-	status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, NULL);
-	if (status != PJ_SUCCESS) 
-	  {
-	    g_warning ("Error creating UDP transport");
-	    return false;
-	  }
-      }	
-      
-       /* Add TCP transport. */
-       {
-         pjsua_transport_config cfg;
-	
-         pjsua_transport_config_default(&cfg);
-         cfg.port = 5070;
-         status = pjsua_transport_create(PJSIP_TRANSPORT_TCP, &cfg, NULL);
-         if (status != PJ_SUCCESS) 
-       	  {
-       	    g_warning ("Error creating TCP transport");
-       	    return false;
-       	  }
-       }	
+       //   pjsua_transport_config_default(&cfg);
+       //   cfg.port = 5070;
+       //   status = pjsua_transport_create(PJSIP_TRANSPORT_TCP, &cfg, NULL);
+       //   if (status != PJ_SUCCESS) 
+       // 	  {
+       // 	    g_warning ("Error creating TCP transport");
+       // 	    return false;
+       // 	  }
+       // }	
       
       /* Initialization is done, now start pjsua */
       status = pjsua_start();
@@ -435,6 +442,23 @@ namespace switcher
 			   const std::string &sip_password)
   {
     std::unique_lock<std::mutex> lock (registration_mutex_);
+
+    // Add UDP transport. 
+    {
+      if (NULL != transport_id_)
+	pjsua_transport_close (*transport_id_, PJ_FALSE);
+
+      pjsua_transport_config cfg;
+      pjsua_transport_config_default(&cfg);
+      cfg.port = sip_port_;
+      pj_status_t status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, NULL);
+      if (status != PJ_SUCCESS) 
+	{
+	  g_warning ("Error creating UDP transport");
+	  return;
+	}
+    }	
+
     // Register to SIP server by creating SIP account.
     pjsua_acc_config cfg;
     pj_status_t status;
@@ -599,6 +623,22 @@ namespace switcher
 	      call_info.rem_vid_cnt,
 	      call_info.remote_info.ptr,
 	      call_info.local_info.ptr);
+  }
+
+   void 
+   PJSIP::set_port (const gint value, void *user_data)
+   {
+     PJSIP *context = static_cast <PJSIP *> (user_data);
+     context->sip_port_ = value;
+     GObjectWrapper::notify_property_changed (context->gobject_->get_gobject (),
+					      context->sip_port_spec_);
+   }
+   
+  gint 
+  PJSIP::get_port (void *user_data)
+  {
+    PJSIP *context = static_cast <PJSIP *> (user_data);
+    return context->sip_port_;
   }
   
 }

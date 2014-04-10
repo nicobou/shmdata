@@ -44,6 +44,10 @@ namespace switcher
     bool start ();
     bool stop ();
   private:
+    CustomPropertyHelper::ptr custom_props_;
+    unsigned sip_port_;
+    GParamSpec *sip_port_spec_;
+    pjsua_transport_id *transport_id_;
     pj_thread_desc thread_handler_desc_; 
     pj_thread_t	*pj_thread_ref_; 
     std::thread sip_thread_;
@@ -65,6 +69,9 @@ namespace switcher
     bool pj_sip_init ();
     void exit_cmd ();
     void run_command_sync (std::function<void()> command);
+    static void set_port (const gint value, void *user_data);
+    static gint get_port (void *user_data);
+
     void register_account (const std::string &sip_user, 
 			   const std::string &sip_domain, 
 			   const std::string &sip_password);

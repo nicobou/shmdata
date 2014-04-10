@@ -30,7 +30,7 @@ namespace switcher
 				       "myplugin",				
 				       "Nicolas Bouillot");
   MyPlugin::MyPlugin () :
-    custom_props_ (new CustomPropertyHelper ()),
+    custom_props_ (std::make_shared<CustomPropertyHelper> ()),
     myprop_ (false),
     myprop_prop_ (NULL),
     hello_ (g_strdup ("hello"))
