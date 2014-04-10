@@ -149,7 +149,8 @@ namespace switcher
     
     data::Tree::ptr tree = data::make_tree ();
     
-    std::string buddy_url (info.uri.ptr);
+    std::string buddy_url (info.uri.ptr,
+			   (size_t)info.uri.slen);
     tree->graft (".sip_url", data::make_tree (buddy_url));
      switch (info.status) {
      case PJSUA_BUDDY_STATUS_UNKNOWN :
@@ -166,9 +167,12 @@ namespace switcher
        break;
      }
 
-  tree->graft (".status_text", data::make_tree (std::string (info.status_text.ptr)));
-  tree->graft (".subscription_state", data::make_tree (std::string (info.sub_state_name)));
-  context->graft_tree (std::string (".presence." + buddy_url), tree);
+     tree->graft (".status_text", 
+		  data::make_tree (std::string (info.status_text.ptr, 
+						(size_t)info.status_text.slen)));
+     tree->graft (".subscription_state", 
+		  data::make_tree (std::string (info.sub_state_name)));
+     context->graft_tree (std::string (".presence." + buddy_url), tree);
   }
 
   bool
@@ -545,7 +549,6 @@ namespace switcher
   void
   PJSIP::exit_cmd ()
   {
-    std::cout << "EXIT CMD !!" << std::endl;
     continue_ = false;
   }
   
