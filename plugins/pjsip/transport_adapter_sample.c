@@ -21,7 +21,7 @@
 #include <pjmedia/endpoint.h>
 #include <pj/assert.h>
 #include <pj/pool.h>
-
+#include <stdio.h>
 
 /* Transport functions prototypes */
 static pj_status_t transport_get_info (pjmedia_transport *tp,
@@ -122,12 +122,13 @@ PJ_DEF(pj_status_t) pjmedia_switcher_adapter_create( pjmedia_endpt *endpt,
 						     pj_bool_t del_base,
 						     pjmedia_transport **p_tp)
 {
-    pj_pool_t *pool;
-    struct tp_adapter *adapter;
-
-    if (name == NULL)
-	name = "tpad%p";
-
+  printf ("%s\n",__FUNCTION__);
+  pj_pool_t *pool;
+  struct tp_adapter *adapter;
+  
+  if (name == NULL)
+    name = "tpad%p";
+  
     /* Create the pool and initialize the adapter structure */
     pool = pjmedia_endpt_create_pool(endpt, name, 512, 512);
     adapter = PJ_POOL_ZALLOC_T(pool, struct tp_adapter);
@@ -155,6 +156,7 @@ PJ_DEF(pj_status_t) pjmedia_switcher_adapter_create( pjmedia_endpt *endpt,
 static pj_status_t transport_get_info(pjmedia_transport *tp,
 				      pjmedia_transport_info *info)
 {
+  printf ("%s\n",__FUNCTION__);
     struct tp_adapter *adapter = (struct tp_adapter*)tp;
 
     /* Since we don't have our own connection here, we just pass
@@ -169,6 +171,7 @@ static pj_status_t transport_get_info(pjmedia_transport *tp,
  */
 static void transport_rtp_cb(void *user_data, void *pkt, pj_ssize_t size)
 {
+  printf ("%s\n",__FUNCTION__);
     struct tp_adapter *adapter = (struct tp_adapter*)user_data;
 
     pj_assert(adapter->stream_rtp_cb != NULL);
@@ -182,6 +185,7 @@ static void transport_rtp_cb(void *user_data, void *pkt, pj_ssize_t size)
  */
 static void transport_rtcp_cb(void *user_data, void *pkt, pj_ssize_t size)
 {
+  printf ("%s\n",__FUNCTION__);
     struct tp_adapter *adapter = (struct tp_adapter*)user_data;
 
     pj_assert(adapter->stream_rtcp_cb != NULL);
@@ -207,6 +211,7 @@ static pj_status_t transport_attach(pjmedia_transport *tp,
 						    void*,
 						    pj_ssize_t))
 {
+  printf ("%s\n",__FUNCTION__);
     struct tp_adapter *adapter = (struct tp_adapter*)tp;
     pj_status_t status;
 
@@ -238,6 +243,7 @@ static pj_status_t transport_attach(pjmedia_transport *tp,
  */
 static void transport_detach(pjmedia_transport *tp, void *strm)
 {
+  printf ("%s\n",__FUNCTION__);
     struct tp_adapter *adapter = (struct tp_adapter*)tp;
     
     PJ_UNUSED_ARG(strm);
@@ -259,6 +265,7 @@ static pj_status_t transport_send_rtp( pjmedia_transport *tp,
 				       const void *pkt,
 				       pj_size_t size)
 {
+  printf ("%s\n",__FUNCTION__);
     struct tp_adapter *adapter = (struct tp_adapter*)tp;
 
     /* You may do some processing to the RTP packet here if you want. */
@@ -276,6 +283,7 @@ static pj_status_t transport_send_rtcp(pjmedia_transport *tp,
 				       const void *pkt,
 				       pj_size_t size)
 {
+  printf ("%s\n",__FUNCTION__);
     struct tp_adapter *adapter = (struct tp_adapter*)tp;
 
     /* You may do some processing to the RTCP packet here if you want. */
@@ -295,6 +303,7 @@ static pj_status_t transport_send_rtcp2(pjmedia_transport *tp,
 				        const void *pkt,
 				        pj_size_t size)
 {
+  printf ("%s\n",__FUNCTION__);
     struct tp_adapter *adapter = (struct tp_adapter*)tp;
     return pjmedia_transport_send_rtcp2(adapter->slave_tp, addr, addr_len, 
 					pkt, size);
@@ -310,6 +319,7 @@ static pj_status_t transport_media_create(pjmedia_transport *tp,
 				          const pjmedia_sdp_session *rem_sdp,
 				          unsigned media_index)
 {
+  printf ("%s\n",__FUNCTION__);
     struct tp_adapter *adapter = (struct tp_adapter*)tp;
 
     /* if "rem_sdp" is not NULL, it means we are UAS. You may do some
@@ -338,6 +348,7 @@ static pj_status_t transport_encode_sdp(pjmedia_transport *tp,
 				        const pjmedia_sdp_session *rem_sdp,
 				        unsigned media_index)
 {
+  printf ("%s\n",__FUNCTION__);
     struct tp_adapter *adapter = (struct tp_adapter*)tp;
 
     /* If "rem_sdp" is not NULL, it means we're encoding SDP answer. You may
@@ -383,6 +394,7 @@ static pj_status_t transport_media_start(pjmedia_transport *tp,
 				         const pjmedia_sdp_session *rem_sdp,
 				         unsigned media_index)
 {
+  printf ("%s\n",__FUNCTION__);
     struct tp_adapter *adapter = (struct tp_adapter*)tp;
 
     /* Do something.. */
@@ -397,6 +409,7 @@ static pj_status_t transport_media_start(pjmedia_transport *tp,
  */
 static pj_status_t transport_media_stop(pjmedia_transport *tp)
 {
+  printf ("%s\n",__FUNCTION__);
     struct tp_adapter *adapter = (struct tp_adapter*)tp;
 
     /* Do something.. */
@@ -412,6 +425,7 @@ static pj_status_t transport_simulate_lost(pjmedia_transport *tp,
 				           pjmedia_dir dir,
 				           unsigned pct_lost)
 {
+  printf ("%s\n",__FUNCTION__);
     struct tp_adapter *adapter = (struct tp_adapter*)tp;
     return pjmedia_transport_simulate_lost(adapter->slave_tp, dir, pct_lost);
 }
@@ -421,6 +435,7 @@ static pj_status_t transport_simulate_lost(pjmedia_transport *tp,
  */
 static pj_status_t transport_destroy  (pjmedia_transport *tp)
 {
+  printf ("%s\n",__FUNCTION__);
     struct tp_adapter *adapter = (struct tp_adapter*)tp;
 
     /* Close the slave transport */

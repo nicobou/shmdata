@@ -135,8 +135,18 @@ namespace switcher
     pjsua_buddy_info info;
     pjsua_buddy_get_info(buddy_id, &info);
 
+    std::string activity;
+    if (PJRPID_ACTIVITY_UNKNOWN == info.rpid.activity)
+      activity = "unknown";
+    if (PJRPID_ACTIVITY_AWAY == info.rpid.activity)
+      activity = "away";
+    if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
+      activity = "busy";
+    
+    
     g_debug ("%.*s status is %.*s, subscription state is %s "
-	     "(last termination reason code=%d %.*s)\n",
+	     "(last termination reason code=%d %.*s)\n"
+	     "rpid  activity %s, note %.*s\n",
 	     (int)info.uri.slen,
 	     info.uri.ptr,
 	     (int)info.status_text.slen,
@@ -144,27 +154,37 @@ namespace switcher
 	     info.sub_state_name,
 	     info.sub_term_code,
 	     (int)info.sub_term_reason.slen,
-	     info.sub_term_reason.ptr);
+	     info.sub_term_reason.ptr,
+	     activity.c_str (),
+	     (int)info.rpid.note.slen,
+	     info.rpid.note.ptr);
     
     data::Tree::ptr tree = data::make_tree ();
     
     std::string buddy_url (info.uri.ptr,
 			   (size_t)info.uri.slen);
     tree->graft (".sip_url", data::make_tree (buddy_url));
+
+    std::string status ("unknown");
+
      switch (info.status) {
      case PJSUA_BUDDY_STATUS_UNKNOWN :
-       tree->graft (".status", data::make_tree ("unknown"));
        break;
      case PJSUA_BUDDY_STATUS_ONLINE :
-       tree->graft (".status", data::make_tree ("online"));
+       status = "online";
        break;
      case PJSUA_BUDDY_STATUS_OFFLINE :
-       tree->graft (".status", data::make_tree ("offline"));
+       status = "offline";
        break;
      default:
-       tree->graft (".status", data::make_tree ("error"));
        break;
      }
+     if (PJRPID_ACTIVITY_AWAY == info.rpid.activity)
+       status = "away";
+     if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
+       status = "busy";
+
+     tree->graft (".status", data::make_tree (status));
 
      tree->graft (".status_text", 
 		  data::make_tree (std::string (info.status_text.ptr, 
@@ -602,7 +622,7 @@ namespace switcher
     PJ_UNUSED_ARG(rdata);
     
     pjsua_call_get_info(call_id, &call_info);
-    g_print ( "Incoming call for account %d!\n"
+    g_debug ( "Incoming call for account %d!\n"
 	      "Media count: %d audio & %d video\n"
 	      "From: %s\n"
 	      "To: %s\n",
