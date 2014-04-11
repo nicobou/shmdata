@@ -79,12 +79,16 @@ namespace switcher
   {
     if (remove_created_quiddities)
       {
+	manager_impl_->mute_property_subscribers (true);
+	manager_impl_->mute_signal_subscribers (true);
 	for (auto &it: command_history_)
 	  {
 	    if (g_str_has_prefix (QuiddityCommand::get_string_from_id (it->id_),
 				  "create"))
 		remove (it->result_[0]);
 	  }
+	manager_impl_->mute_property_subscribers (false);
+	manager_impl_->mute_signal_subscribers (false);
       }
     history_begin_time_ = g_get_monotonic_time ();
     command_history_.clear ();
