@@ -267,7 +267,7 @@ namespace switcher
  
 	//see pjsip-apps/src/pjsua/pjsua_app.c
 	// cfg.cb.on_call_state = &on_call_state;
-	// cfg.cb.on_call_media_state = &on_call_media_state;
+	cfg.cb.on_call_media_state = &on_call_media_state;
 	cfg.cb.on_incoming_call = &on_incoming_call;
 	// cfg.cb.on_call_tsx_state = &on_call_tsx_state;
 	// cfg.cb.on_dtmf_digit = &call_on_dtmf_callback;
@@ -287,7 +287,7 @@ namespace switcher
 	// cfg.cb.on_call_media_event = &on_call_media_event;
 
 	pjsua_logging_config_default(&log_cfg);
-	log_cfg.console_level = 1;//4;
+	log_cfg.console_level = 1;
 	
 	status = pjsua_init(&cfg, &log_cfg, NULL);
 	if (status != PJ_SUCCESS) 
@@ -576,8 +576,19 @@ namespace switcher
   {
     PJSIP *context = static_cast<PJSIP *> (pjsua_acc_get_user_data (acc_id));
     std::unique_lock <std::mutex> lock (context->registration_mutex_);
+    if (PJ_SUCCESS != info->cbparam->status)
+      {
+	if (-1 != context->account_id_)
+	  {
+	    pj_status_t status = pjsua_acc_del (context->account_id_);
+	    if (PJ_SUCCESS != status) 
+	      g_warning ("Error deleting account after registration failled");
+	    context->account_id_ = -1;
+	  }
+      }
+    g_print ("registration SIP status code %d\n", info->cbparam->code);
     context->registration_cond_.notify_one ();
-    g_debug ("registration SIP status code %d\n", info->cbparam->code);
+    
   }
 
 /*
@@ -616,6 +627,7 @@ namespace switcher
 			  pjsua_call_id call_id,
 			  pjsip_rx_data *rdata)
   {
+    printf ("%s\n",__FUNCTION__);
     pjsua_call_info call_info;
     
     PJ_UNUSED_ARG(acc_id);
@@ -648,5 +660,15 @@ namespace switcher
     PJSIP *context = static_cast <PJSIP *> (user_data);
     return context->sip_port_;
   }
-  
+
+/*
+ * Callback on media state changed event.
+ * The action may connect the call to sound device, to file, or
+ * to loop the call.
+ */
+  void 
+  PJSIP::on_call_media_state(pjsua_call_id call_id)
+  {
+      printf ("%s\n",__FUNCTION__);
+  }
 }

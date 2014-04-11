@@ -329,6 +329,13 @@ static pj_status_t transport_media_create(pjmedia_transport *tp,
      */
     if (rem_sdp) {
 	/* Do your stuff.. */
+
+      char sdpbuf1[1024];
+      pj_ssize_t len1;
+      
+      len1 = pjmedia_sdp_print(rem_sdp, sdpbuf1, sizeof(sdpbuf1));
+      sdpbuf1[len1] = '\0';
+      printf ("rem : \n%s \n\n",sdpbuf1);
     }
 
     /* Once we're done with our initialization, pass the call to the
@@ -357,6 +364,7 @@ static pj_status_t transport_encode_sdp(pjmedia_transport *tp,
      */
     if (rem_sdp) {
 	/* Do checking stuffs here.. */
+      printf ("rem_sdp not null\n");
     }
 
     /* You may do anything to the local_sdp, e.g. adding new attributes, or
@@ -379,8 +387,40 @@ static pj_status_t transport_encode_sdp(pjmedia_transport *tp,
      * information in the SDP. You may choose to call encode_sdp() to slave
      * first before adding your custom attributes if you want.
      */
-    return pjmedia_transport_encode_sdp(adapter->slave_tp, sdp_pool, local_sdp,
+    
+    pj_status_t status = pjmedia_transport_encode_sdp(adapter->slave_tp, sdp_pool, local_sdp,
 					rem_sdp, media_index);
+
+    if (status != PJ_SUCCESS) 
+      printf ("no SUCCESS\n");
+    else
+      printf ("SUCCESS\n");
+
+    char sdpbuf1[1024], sdpbuf2[1024];
+    pj_ssize_t len1, len2;
+
+    len1 = pjmedia_sdp_print(local_sdp, sdpbuf1, sizeof(sdpbuf1));
+    if (len1 < 1) {
+      printf ("error: printing sdp1\n");
+      return status;
+    }
+    else
+      {
+	sdpbuf1[len1] = '\0';
+	printf ("local : \n%s \n\n",sdpbuf1);
+      }
+
+    len2 = pjmedia_sdp_print(rem_sdp, sdpbuf2, sizeof(sdpbuf2));
+    if (len2 < 1) {
+	printf ("error: printing sdp2\n");
+	return status;
+    }
+    else
+      {
+      sdpbuf2[len2] = '\0';
+      printf ("remote : \n%s \n\n", sdpbuf2);
+      }
+    return status; 
 }
 
 /*

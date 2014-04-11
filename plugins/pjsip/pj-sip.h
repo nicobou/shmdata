@@ -86,6 +86,7 @@ namespace switcher
 				  pjsua_call_id call_id,
 				  pjsip_rx_data *rdata);
 
+    static void on_call_media_state(pjsua_call_id call_id);
   };
   
   SWITCHER_DECLARE_PLUGIN(PJSIP);
