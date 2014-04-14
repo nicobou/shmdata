@@ -22,6 +22,7 @@
 
 #include "switcher/quiddity.h"
 #include "switcher/custom-property-helper.h"
+#include "pj-call.h"
 
 #include <memory>
 #include <thread>
@@ -43,6 +44,7 @@ namespace switcher
   
   class PJSIP : public Quiddity
   {
+    friend PJCall;
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PJSIP);
     PJSIP ();
@@ -73,6 +75,7 @@ namespace switcher
     pj_caching_pool cp_;
     pj_pool_t *pool_;
     pjsip_endpoint *sip_endpt_;
+    PJCall *sip_calls_;
     void sip_init_shutdown_thread ();
     void sip_handling_thread ();
     bool pj_sip_init ();
@@ -87,8 +90,6 @@ namespace switcher
     static gboolean register_account_wrapped (gchar *user, gchar *domain, gchar *password, void *user_data);
     void add_buddy (const std::string &sip_user);
   };
-  
-  SWITCHER_DECLARE_PLUGIN(PJSIP);
 
 }  // end of namespace
 
