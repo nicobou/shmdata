@@ -43,8 +43,8 @@ main ()
      return 1;
 #endif
      
-       // if (!switcher::QuiddityBasicTest::test_full (manager, "sip"))
-       //   success = false;
+        if (!switcher::QuiddityBasicTest::test_full (manager, "sip"))
+          success = false;
 
      if (0 != manager->create ("sip", "test").compare ("test"))
        {
