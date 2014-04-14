@@ -23,11 +23,20 @@
 #include "switcher/quiddity.h"
 #include "switcher/custom-property-helper.h"
 
-#include <pjsua-lib/pjsua.h>
 #include <memory>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+
+//pjsip
+#include <pjsip.h>
+#include <pjmedia.h>
+#include <pjmedia-codec.h>
+#include <pjsip_ua.h>
+#include <pjsip_simple.h>
+#include <pjlib-util.h>
+#include <pjlib.h>
+
 
 namespace switcher
 {
@@ -47,7 +56,6 @@ namespace switcher
     CustomPropertyHelper::ptr custom_props_;
     unsigned sip_port_;
     GParamSpec *sip_port_spec_;
-    pjsua_transport_id *transport_id_;
     pj_thread_desc thread_handler_desc_; 
     pj_thread_t	*pj_thread_ref_; 
     std::thread sip_thread_;
@@ -62,10 +70,11 @@ namespace switcher
     std::condition_variable registration_cond_;
     bool continue_;
     std::function<void()> command_;
-    pjsua_acc_id account_id_;
+    pj_caching_pool cp_;
+    pj_pool_t *pool_;
+    pjsip_endpoint *sip_endpt_;
     void sip_init_shutdown_thread ();
     void sip_handling_thread ();
-    static void on_buddy_state(pjsua_buddy_id buddy_id);
     bool pj_sip_init ();
     void exit_cmd ();
     void run_command_sync (std::function<void()> command);
@@ -76,17 +85,7 @@ namespace switcher
 			   const std::string &sip_domain, 
 			   const std::string &sip_password);
     static gboolean register_account_wrapped (gchar *user, gchar *domain, gchar *password, void *user_data);
-    static  void on_registration_state (pjsua_acc_id acc_id, pjsua_reg_info *info);
     void add_buddy (const std::string &sip_user);
-    static pjmedia_transport *on_create_media_transport (pjsua_call_id call_id,
-							 unsigned media_idx,
-							 pjmedia_transport *base_tp,
-							 unsigned flags);
-    static void on_incoming_call (pjsua_acc_id acc_id, 
-				  pjsua_call_id call_id,
-				  pjsip_rx_data *rdata);
-
-    static void on_call_media_state(pjsua_call_id call_id);
   };
   
   SWITCHER_DECLARE_PLUGIN(PJSIP);

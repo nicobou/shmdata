@@ -5,12 +5,10 @@ plugins_LTLIBRARIES = \
 
 #libpjsip info
 libpjsip_plugin_la_SOURCES = \
-    pj-sip.cpp \
-    transport_adapter_sample.c
+    pj-sip.cpp 
 
 libpjsip_plugin_la_include_HEADERS = \
-    pj-sip.h \
-    transport_adapter_sample.h
+    pj-sip.h 
 
 libpjsip_plugin_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
