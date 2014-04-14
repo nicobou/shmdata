@@ -18,13 +18,11 @@
  */
 
 #include "pj-sip.h"
-//#include <unistd.h>  //sleep
-//#include <iostream>
 
 namespace switcher
 {
 
-
+  SWITCHER_DECLARE_PLUGIN (PJSIP);
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PJSIP,
 				       "SIP (Session Initiation Protocol)",
 				       "network", 
@@ -52,7 +50,8 @@ namespace switcher
     command_ (),
     cp_ (),
     pool_ (NULL),
-    sip_endpt_ (NULL)
+    sip_endpt_ (NULL),
+    sip_calls_ (NULL)
   {}
 
   PJSIP::~PJSIP ()
@@ -214,6 +213,8 @@ namespace switcher
     return false;
   }
   
+  sip_calls_ = new PJCall (this);
+  
   return true;    
   }
   
@@ -239,6 +240,9 @@ namespace switcher
       }
 
     /* Shutting down... */
+    if (NULL != sip_calls_)
+      delete (sip_calls_);
+
     //destroy_media();
     
     if (NULL != sip_endpt_) 
