@@ -74,8 +74,12 @@ namespace switcher
     std::function<void()> command_;
     pj_caching_pool cp_;
     pj_pool_t *pool_;
-    pjsip_endpoint *sip_endpt_;
+    static pjsip_endpoint *sip_endpt_;
     PJCall *sip_calls_;
+    std::thread sip_worker_;
+    bool sip_work_;
+    pj_thread_desc worker_handler_desc_; 
+    pj_thread_t	*worker_thread_ref_; 
     void sip_init_shutdown_thread ();
     void sip_handling_thread ();
     bool pj_sip_init ();
@@ -89,6 +93,7 @@ namespace switcher
 			   const std::string &sip_password);
     static gboolean register_account_wrapped (gchar *user, gchar *domain, gchar *password, void *user_data);
     void add_buddy (const std::string &sip_user);
+    void sip_worker_thread ();
   };
 
 }  // end of namespace

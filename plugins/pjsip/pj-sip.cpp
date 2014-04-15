@@ -30,6 +30,11 @@ namespace switcher
 				       "LGPL",
 				       "sip",				
 				       "Nicolas Bouillot");
+
+  //according to pjsip documentation:
+  //Application should only instantiate one SIP endpoint instance for every process. 
+  pjsip_endpoint *PJSIP::sip_endpt_ = NULL;
+
   PJSIP::PJSIP ():
     custom_props_ (std::make_shared<CustomPropertyHelper> ()),
     sip_port_ (5060),
@@ -50,16 +55,27 @@ namespace switcher
     command_ (),
     cp_ (),
     pool_ (NULL),
-    sip_endpt_ (NULL),
-    sip_calls_ (NULL)
+    sip_calls_ (NULL),
+    sip_worker_ (),
+    sip_work_ (true),
+    worker_handler_desc_ (),
+    worker_thread_ref_ (NULL)
   {}
 
   PJSIP::~PJSIP ()
   {
+    if (!pj_sip_inited_)
+      return;
+
     run_command_sync (std::bind (&PJSIP::exit_cmd, this));
    
     if (sip_thread_.joinable ())
       sip_thread_.join ();
+    if (sip_worker_.joinable ())
+      {
+	sip_work_ = false;
+	sip_worker_.join ();
+      }
   }
 
   
@@ -78,6 +94,12 @@ namespace switcher
   bool
   PJSIP::init ()
   {
+    if (NULL != sip_endpt_) 
+      {
+	g_warning ("a pjsip_endpoint already exists, cannot create more");
+	return false;
+      }
+
     std::unique_lock <std::mutex> lock (pj_init_mutex_);
     sip_thread_ = std::thread (&PJSIP::sip_handling_thread, this);
     pj_init_cond_.wait (lock);
@@ -128,6 +150,8 @@ namespace switcher
   bool
   PJSIP::pj_sip_init ()
   {
+
+    
     pj_status_t status = pj_init();
     if (status != PJ_SUCCESS)
       return false;
@@ -148,7 +172,8 @@ namespace switcher
     pool_ = pj_pool_create(&cp_.factory, "switcher_sip", 1000, 1000, NULL);
     
     /* Create the endpoint: */
-    status = pjsip_endpt_create(&cp_.factory, pj_gethostname()->ptr, 
+    status = pjsip_endpt_create(&cp_.factory, 
+				pj_gethostname()->ptr, 
 				&sip_endpt_);
   if (status != PJ_SUCCESS) {
     g_warning ("Unable to create sip end point");
@@ -179,9 +204,9 @@ namespace switcher
 	//     }
 	// }
 
-	status = pjsip_udp_transport_start(sip_endpt_, &addr, 
-					   //(app.local_addr.slen ? &addrname:NULL),
-					   NULL,
+	status = pjsip_udp_transport_start (sip_endpt_, &addr, 
+					    //(app.local_addr.slen ? &addrname:NULL),
+					    NULL,
 					    1, &tp);
 	if (status != PJ_SUCCESS) {
 	    g_warning ("Unable to start UDP transport");
@@ -215,9 +240,29 @@ namespace switcher
   
   sip_calls_ = new PJCall (this);
   
+  sip_work_ = true;
+  sip_worker_ = std::thread (&PJSIP::sip_worker_thread, this);
+
   return true;    
   }
   
+  void 
+  PJSIP::sip_worker_thread ()
+  {
+    // Register the thread, after pj_init() is called
+    
+    pj_thread_register("sip_worker_thread",
+		       worker_handler_desc_,
+		       &worker_thread_ref_);
+    
+    while (sip_work_) 
+      {
+	pj_time_val timeout = {0, 10};
+	pjsip_endpt_handle_events(sip_endpt_, 
+				  &timeout);
+      }
+  }
+
   void 
   PJSIP::sip_handling_thread ()
   {

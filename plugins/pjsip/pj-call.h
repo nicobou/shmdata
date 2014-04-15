@@ -34,6 +34,7 @@
 #include <pjlib-util.h>
 #include <pjlib.h>
 
+#define MAX_CALLS 1024
 
 namespace switcher
 {
@@ -47,16 +48,20 @@ namespace switcher
     ~PJCall ();
     PJCall (const PJCall &) = delete;
     PJCall &operator= (const PJCall &) = delete;
+
   private:
     pjmedia_endpt *med_endpt_;
     static pjsip_module mod_siprtp_;
     static pj_bool_t on_rx_request (pjsip_rx_data *rdata);
-    static void call_on_state_changed( pjsip_inv_session *inv, 
+    static void call_on_state_changed (pjsip_inv_session *inv, 
 				       pjsip_event *e);
-    static void call_on_forked(pjsip_inv_session *inv, pjsip_event *e);
-    static void call_on_media_update( pjsip_inv_session *inv,
+    static void call_on_forked (pjsip_inv_session *inv, pjsip_event *e);
+    static void call_on_media_update (pjsip_inv_session *inv,
 				      pj_status_t status);
-  };
+    static void process_incoming_call (pjsip_rx_data *rdata);
+
+
+ };
   
 }  // end of namespace
 
