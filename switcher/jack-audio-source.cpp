@@ -123,8 +123,12 @@ namespace switcher
     if (!GstUtils::make_element ("bin",&jackaudiosrc_bin_))
       return false;
 
+    //using caps compatible with L16 RTP payload
     GstCaps *caps = gst_caps_new_simple ("audio/x-raw-int",
 					 "width", G_TYPE_INT, 16,
+					 "depth", G_TYPE_INT, 16,
+					 "signed", G_TYPE_BOOLEAN, TRUE,
+					 "endianness", G_TYPE_INT, 4321,
 					 "channels", G_TYPE_INT, num_channels_,
 					 NULL);
     g_object_set (G_OBJECT (capsfilter_), 
