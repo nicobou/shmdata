@@ -395,6 +395,7 @@ tests/Makefile
 plugins/Makefile
 plugins/example/Makefile
 plugins/avcodecs/Makefile
+plugins/systemusage/Makefile
 ])
 AC_OUTPUT
 
