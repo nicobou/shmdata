@@ -805,8 +805,8 @@ namespace switcher
     builder->end_array ();
     builder->end_object ();
     context->capture_devices_description_ = g_strdup (builder->get_string (true).c_str ());
-    g_print ("capture_devices_description_ %s\n",
-	     context->capture_devices_description_);
+    // g_print ("capture_devices_description_ %s\n",
+    // 	     context->capture_devices_description_);
     return context->capture_devices_description_;
   }
 
