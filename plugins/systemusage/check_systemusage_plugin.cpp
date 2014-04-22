@@ -63,6 +63,9 @@ main ()
       //creating a "top" quiddity
       if (g_strcmp0 (manager->create("systemusage", "test").c_str (), "test") != 0)
         success = false;
+
+      if (!manager->set_property ("test", "period", "0.5"))
+        success = false;
       
       manager->make_signal_subscriber ("signal_subscriber", quiddity_created_removed_cb, manager.get ());
       manager->subscribe_signal ("signal_subscriber","test","on-tree-grafted");

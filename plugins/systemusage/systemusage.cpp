@@ -43,8 +43,10 @@ namespace switcher
 				       "systemusage",				
 				       "Emmanuel Durand");
   SystemUsage::SystemUsage () :
+    custom_props_ (std::make_shared<CustomPropertyHelper> ()),
+    period_prop_ (NULL),
     cpuNbr_(0),
-    refreshRate_(2)
+    period_(1.0)
   {
   }
   
@@ -57,6 +59,21 @@ namespace switcher
   bool
   SystemUsage::init ()
   {
+    period_prop_ = 
+      custom_props_->make_double_property ("period", //name 
+					    "Update period", //description
+					    0.1,
+                        5.0,
+                        period_,
+					    (GParamFlags) G_PARAM_READWRITE,  
+					    SystemUsage::setRefreshPeriod,
+     					SystemUsage::getRefreshPeriod,
+					    this);
+    install_property_by_pspec (custom_props_->get_gobject (), 
+     				period_prop_, 
+     				"period",
+				    "Update period"); //long name
+
     // Initialize the properties tree
     tree_ = make_tree ();
 
@@ -201,7 +218,21 @@ namespace switcher
 
       firstRun = false;
 
-      this_thread::sleep_for(chrono::milliseconds(1000 / refreshRate_));
+      this_thread::sleep_for(chrono::milliseconds((int)(period_ * 1000.0)));
     }
+  }
+
+  void
+  SystemUsage::setRefreshPeriod(double period, void* user_data)
+  {
+    SystemUsage* ctx = static_cast<SystemUsage*>(user_data);
+    ctx->period_ = period;
+  }
+
+  double
+  SystemUsage::getRefreshPeriod(void* user_data)
+  {
+    SystemUsage* ctx = static_cast<SystemUsage*>(user_data);
+    return ctx->period_;
   }
 }
