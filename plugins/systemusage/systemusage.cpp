@@ -206,7 +206,7 @@ namespace switcher
           tree_->set_data("mem.free", qty);
         else if (type.find("Buffers") != string::npos)
           tree_->set_data("mem.buffers", qty);
-        else if (type.find("Cached") != string::npos)
+        else if (type.find("Cached") != string::npos && type.find("SwapCached") == string::npos)
           tree_->set_data("mem.cached", qty);
         else if (type.find("SwapTotal") != string::npos)
           tree_->set_data("mem.swap_total", qty);
