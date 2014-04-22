@@ -19,9 +19,11 @@
 
 #include "systemusage.h"
 #include "switcher/information-tree-basic-serializer.h"
+
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <map>
 #include <string>
 
 #define PROCSTATFILE "/proc/stat"
@@ -111,13 +113,7 @@ namespace switcher
 
         if (core.substr(0, 3) == "cpu")
         {
-          int totalTime = user + nice + system + idle + io + irq + softIrq + steal + guest;
-          float totalP, userP, niceP, systemP, idleP;
-          totalP = (float)(user + nice + system) / (float)totalTime;
-          userP = (float)user / (float)totalTime;
-          niceP = (float)nice / (float)totalTime;
-          systemP = (float)system / (float)totalTime;
-          idleP = (float)idle / (float)totalTime;
+          long totalTime = user + nice + system + idle + io + irq + softIrq + steal + guest;
 
           // Initialize the tree
           if (firstRun)
@@ -127,13 +123,38 @@ namespace switcher
             tree_->graft(".cpu." + core + ".nice", make_tree());
             tree_->graft(".cpu." + core + ".system", make_tree());
             tree_->graft(".cpu." + core + ".idle", make_tree());
+
+            _cpus[core] = Cpu();
+          }
+          else
+          {
+            if (totalTime == _cpus[core].totalTime)
+              continue;
+
+            float totalP, userP, niceP, systemP, idleP;
+            userP = (float)(user - _cpus[core].user) / (float)(totalTime - _cpus[core].totalTime);
+            niceP = (float)(nice - _cpus[core].nice) / (float)(totalTime - _cpus[core].totalTime);
+            systemP = (float)(system - _cpus[core].system) / (float)(totalTime - _cpus[core].totalTime);
+            idleP = (float)(idle - _cpus[core].idle) / (float)(totalTime - _cpus[core].totalTime);
+            totalP = userP + niceP + systemP;
+
+            tree_->set_data(".cpu." + core + ".total", totalP);
+            tree_->set_data(".cpu." + core + ".user", userP);
+            tree_->set_data(".cpu." + core + ".nice", niceP);
+            tree_->set_data(".cpu." + core + ".system", systemP);
+            tree_->set_data(".cpu." + core + ".idle", idleP);
           }
 
-          tree_->set_data(".cpu." + core + ".total", totalP);
-          tree_->set_data(".cpu." + core + ".user", userP);
-          tree_->set_data(".cpu." + core + ".nice", niceP);
-          tree_->set_data(".cpu." + core + ".system", systemP);
-          tree_->set_data(".cpu." + core + ".idle", idleP);
+          _cpus[core].user = user;
+          _cpus[core].nice = nice;
+          _cpus[core].system = system;
+          _cpus[core].idle = idle;
+          _cpus[core].io = io;
+          _cpus[core].irq = irq;
+          _cpus[core].softIrq = softIrq;
+          _cpus[core].steal = steal;
+          _cpus[core].guest = guest;
+          _cpus[core].totalTime = totalTime;
         }
       }
       file.close();

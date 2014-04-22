@@ -29,6 +29,20 @@
 
 namespace switcher
 {
+  struct Cpu
+  {
+    long user {0};
+    long nice {0};
+    long system {0};
+    long idle {0};
+    long io {0};
+    long irq {0};
+    long softIrq {0};
+    long steal {0};
+    long guest {0};
+
+    int totalTime {0};
+  };
   
   class SystemUsage : public Quiddity
   {
@@ -48,6 +62,7 @@ namespace switcher
 
     int cpuNbr_;
     int refreshRate_;
+    std::map<std::string, Cpu> _cpus;
 
     void pollState();
   };
