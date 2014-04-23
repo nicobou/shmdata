@@ -43,6 +43,21 @@ namespace switcher
 
     int totalTime {0};
   };
+
+  struct Net
+  {
+    long rx_rate {0};
+    long rx_bytes {0};
+    long rx_packets {0};
+    long rx_errors {0};
+    long rx_drop {0};
+
+    long tx_rate {0};
+    long tx_bytes {0};
+    long tx_packets {0};
+    long tx_errors {0};
+    long tx_drop {0};
+  };
   
   class SystemUsage : public Quiddity
   {
@@ -66,6 +81,7 @@ namespace switcher
     int cpuNbr_;
     double period_;
     std::map<std::string, Cpu> _cpus;
+    std::map<std::string, Net> _net;
 
     void pollState();
     static void setRefreshPeriod(double period, void* user_data);

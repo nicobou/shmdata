@@ -28,6 +28,7 @@
 
 #define PROCSTATFILE "/proc/stat"
 #define PROCMEMINFOFILE "/proc/meminfo"
+#define PROCNETDEVFILE "/proc/net/dev"
 
 using namespace std;
 using namespace switcher::data;
@@ -103,6 +104,11 @@ namespace switcher
       return false;
     file.close();
 
+    file.open(PROCNETDEVFILE);
+    if (!file.is_open())
+        return false;
+    file.close();
+
     return true;
   }
   
@@ -115,7 +121,9 @@ namespace switcher
     {
       ifstream file;
 
+      //
       // Get the cpu state
+      //
       file.open(PROCSTATFILE);
       if (!file.is_open())
         return;
@@ -123,7 +131,7 @@ namespace switcher
       for (string line; getline(file, line);)
       {
         string core;
-        int user, nice, system, idle, io, irq, softIrq, steal, guest;
+        long user, nice, system, idle, io, irq, softIrq, steal, guest;
 
         istringstream stream(line);
         stream >> core >> user >> nice >> system >> idle >> io >> irq >> softIrq >> steal >> guest;
@@ -176,7 +184,9 @@ namespace switcher
       }
       file.close();
 
+      //
       // Get the memory state
+      //
       file.open(PROCMEMINFOFILE);
       if (!file.is_open())
         return;
@@ -213,7 +223,81 @@ namespace switcher
         else if (type.find("SwapFree") != string::npos)
           tree_->set_data("mem.swap_free", qty);
       }
+      file.close();
 
+      //
+      // Get the network state
+      //
+      file.open(PROCNETDEVFILE);
+      if (!file.is_open())
+        return;
+
+      for (string line; getline(file, line);)
+      {
+        string netI;
+        long rBytes, rPackets, rErrs, rDrop, rFifo, rFrame, rCompressed, rMulticast;
+        long tBytes, tPackets, tErrs, tDrop, tFifo, tColls, tCarrier, tCompressed;
+
+        istringstream stream(line);
+        stream >> netI >> rBytes >> rPackets >> rErrs >> rDrop >> rFifo >> rFrame >> rCompressed >> rMulticast >> tBytes >> tPackets >> tErrs >> tDrop >> tFifo >> tColls >> tCarrier >> tCompressed;
+
+        if (netI.find("Inter") == string::npos && netI.find("face") == string::npos)
+        {
+          string netName;
+          netName = netI.substr(0, netI.find(":"));
+
+          if (firstRun)
+          {
+            tree_->graft(".net." + netName + ".rx_rate", make_tree());
+            tree_->graft(".net." + netName + ".rx_bytes", make_tree());
+            tree_->graft(".net." + netName + ".rx_packets", make_tree());
+            tree_->graft(".net." + netName + ".rx_errors", make_tree());
+            tree_->graft(".net." + netName + ".rx_drop", make_tree());
+
+            tree_->graft(".net." + netName + ".tx_rate", make_tree());
+            tree_->graft(".net." + netName + ".tx_bytes", make_tree());
+            tree_->graft(".net." + netName + ".tx_packets", make_tree());
+            tree_->graft(".net." + netName + ".tx_errors", make_tree());
+            tree_->graft(".net." + netName + ".tx_drop", make_tree());
+
+            _net[netName] = Net();
+          }
+          else
+          {
+            long rx_delta = rBytes - _net[netName].rx_bytes;
+            long tx_delta = tBytes - _net[netName].tx_bytes;
+
+            _net[netName].rx_rate = (long)((double)rx_delta / period_);
+            _net[netName].tx_rate = (long)((double)tx_delta / period_);
+
+            tree_->set_data(".net." + netName + ".rx_rate", _net[netName].rx_rate);
+            tree_->set_data(".net." + netName + ".tx_rate", _net[netName].tx_rate);
+          }
+
+          _net[netName].rx_bytes = rBytes;
+          _net[netName].rx_packets = rPackets;
+          _net[netName].rx_errors = rErrs;
+          _net[netName].rx_drop = rDrop;
+          
+          _net[netName].tx_bytes = tBytes;
+          _net[netName].tx_packets = tPackets;
+          _net[netName].tx_errors = tErrs;
+          _net[netName].tx_drop = tDrop;
+
+          tree_->set_data(".net." + netName + ".rx_bytes", _net[netName].rx_bytes);
+          tree_->set_data(".net." + netName + ".rx_packets", _net[netName].rx_packets);
+          tree_->set_data(".net." + netName + ".rx_errors", _net[netName].rx_errors);
+          tree_->set_data(".net." + netName + ".rx_drop", _net[netName].rx_drop);
+
+          tree_->set_data(".net." + netName + ".tx_bytes", _net[netName].tx_bytes);
+          tree_->set_data(".net." + netName + ".tx_packets", _net[netName].tx_packets);
+          tree_->set_data(".net." + netName + ".tx_errors", _net[netName].tx_errors);
+          tree_->set_data(".net." + netName + ".tx_drop", _net[netName].tx_drop);
+        }
+      }
+      file.close();
+
+      // Graft the data to the tree
       graft_tree (".top.", tree_);
 
       firstRun = false;
