@@ -34,6 +34,8 @@
 #include <pjlib-util.h>
 #include <pjlib.h>
 
+#include "pj-codec.h"
+
 #define MAX_CALLS 1024
 
 namespace switcher
@@ -42,6 +44,8 @@ namespace switcher
 
   class PJCall
   {
+    friend PJCodec;
+    
   public:
     PJCall () = delete;
     PJCall (PJSIP *sip_instance);
@@ -146,6 +150,19 @@ typedef struct app
   //pjmedia_endpt	*med_endpt;
     struct call		 call[MAX_CALLS];
 } app_t;
+
+ typedef struct alt_codec
+{
+    pj_str_t	encoding_name;
+    pj_uint8_t	payload_type;
+    unsigned	clock_rate;
+    unsigned	channel_cnt;
+    unsigned	frm_ptime;
+    unsigned	avg_bps;
+    unsigned	max_bps;
+ } alt_codec_t;
+
+
 
   private:
     static pjmedia_endpt *med_endpt_;

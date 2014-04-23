@@ -6,10 +6,12 @@ plugins_LTLIBRARIES = \
 #libpjsip info
 libpjsip_plugin_la_SOURCES = \
     pj-call.cpp \
+    pj-codec.cpp \
     pj-sip.cpp 
 
 libpjsip_plugin_la_include_HEADERS = \
     pj-call.h \
+    pj-codec.h \
     pj-sip.h 
 
 libpjsip_plugin_la_includedir = \

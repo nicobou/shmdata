@@ -87,8 +87,11 @@ namespace switcher
 	g_warning ("Init media failed");
 
       //TODO register codecs here
-      pjmedia_codec_g711_init(med_endpt_);
-
+      //pjmedia_codec_g711_init(med_endpt_);
+      status = PJCodec::install_codecs ();
+      if (status != PJ_SUCCESS) 
+	g_warning ("Install codecs failed");
+      
       /* Init calls */
       for (unsigned i=0; i<app.max_calls; ++i)
 	app.call[i].index = i;
