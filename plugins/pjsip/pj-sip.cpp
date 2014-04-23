@@ -156,6 +156,8 @@ namespace switcher
     if (status != PJ_SUCCESS)
       return false;
 
+    pj_log_set_level(5);
+
     // Register the thread, after pj_init() is called
     pj_thread_register(Quiddity::get_name ().c_str (),
 		       thread_handler_desc_,
