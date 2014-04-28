@@ -350,11 +350,11 @@ namespace switcher
 					       FALSE, caps);
     list = g_list_sort (list, (GCompareFunc) sink_compare_ranks);
 
-     if (list != NULL)  
-       pay = gst_element_factory_create (GST_ELEMENT_FACTORY (list->data), NULL);
-     else
+    if (list != NULL)  
+      pay = gst_element_factory_create (GST_ELEMENT_FACTORY (list->data), NULL);
+    else
       GstUtils::make_element ("rtpgstpay", &pay);
-
+    
     
     ShmdataReader *reader = (ShmdataReader *) g_object_get_data (G_OBJECT (typefind),
 								 "shmdata-reader");
