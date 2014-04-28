@@ -94,6 +94,10 @@ namespace switcher
     // 		  "latency",
     // 		  2000,
     // 		  NULL);
+    g_object_set (G_OBJECT (sdpdemux_), 
+     		  "async-handling",
+     		  TRUE,
+     		  NULL);
     g_signal_connect (G_OBJECT (sdpdemux_), 
 		      "pad-added", 
 		      (GCallback) HTTPSDPDec::httpsdpdec_pad_added_cb,
@@ -282,9 +286,9 @@ namespace switcher
     GstElement *identity;
     GstUtils::make_element ("identity", &identity);
     g_object_set (identity, 
-     		  "sync", TRUE, 
-     		  "single-segment", TRUE,
-     		  NULL);
+       		  "sync", TRUE, 
+		  "single-segment", TRUE,
+       		  NULL);
     GstElement *funnel;
     GstUtils::make_element ("funnel", &funnel);
     
@@ -393,6 +397,9 @@ namespace switcher
 		      NULL);
     GstPad *sinkpad = gst_element_get_static_pad (decodebin, "sink");
     GstUtils::check_pad_link_return (gst_pad_link (pad, sinkpad));
+    g_object_set (G_OBJECT (decodebin), 
+     		  "async-handling", TRUE,
+     		  NULL);
     g_signal_connect (G_OBJECT (decodebin), 
 		      "pad-added", 
 		      (GCallback) HTTPSDPDec::decodebin_pad_added_cb,
