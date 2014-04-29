@@ -21,7 +21,7 @@ libsystemusage_la_LDFLAGS = \
     $(SHMDATA_LIBS) \
     -avoid-version \
     -module \
-    -L$(systemusage_builddir)/switcher/.libs \
+    -L$(top_builddir)/switcher/.libs \
     -lswitcher-@LIBSWITCHER_API_VERSION@
 
 libsystemusage_la_CXXFLAGS = \
@@ -36,7 +36,7 @@ libsystemusage_la_CXXFLAGS = \
 
 #### plugin unit test
 AM_CFLAGS = \
-    -I$(systemusage_srcdir)
+    -I$(top_srcdir)
 
 AM_CXXFLAGS =  \
     $(GLIB_CFLAGS) \
