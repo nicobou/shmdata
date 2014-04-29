@@ -90,10 +90,10 @@ namespace switcher
     discard_next_uncomplete_buffer_ = false;
     rtpgstcaps_ = gst_caps_from_string ("application/x-rtp, media=(string)application");
 
-     // g_object_set (G_OBJECT (sdpdemux_), 
-     // 		  "latency",
-     // 		  2000,
-     // 		  NULL);
+      g_object_set (G_OBJECT (sdpdemux_), 
+      		  "latency",
+      		  0,
+      		  NULL);
     g_object_set (G_OBJECT (sdpdemux_), 
      		  "async-handling",
      		  TRUE,
@@ -171,7 +171,8 @@ namespace switcher
 	gchar *string_caps_char = g_strdup_printf ("%s", string_caps); 
 
 	if (g_str_has_prefix (string_caps_char, "audio/") 
-	    || g_str_has_prefix (string_caps_char, "video/") )
+	    || g_str_has_prefix (string_caps_char, "video/")
+	    || g_str_has_prefix (string_caps_char, "image/") )
 	  return_val = 0;
 
 	g_free (string_caps_char);
@@ -517,10 +518,9 @@ namespace switcher
 
     if (!writer->started ())
       {
-	 g_print ("-----------strating \n");
 	GstCaps *caps = gst_pad_get_negotiated_caps (pad);
 	gchar *string_caps = gst_caps_to_string (caps);
-	g_print ("%s\n", string_caps);
+	g_debug ("%s\n", string_caps);
 	 	writer->set_data_type (string_caps);
 	 	writer->start ();
 	g_free (string_caps);
