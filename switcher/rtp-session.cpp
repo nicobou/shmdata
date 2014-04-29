@@ -350,11 +350,28 @@ namespace switcher
 					       FALSE, caps);
     list = g_list_sort (list, (GCompareFunc) sink_compare_ranks);
 
-    if (list != NULL)  
+    //bypassing jpeg for high dimensions
+    bool jpeg_payloader = true;
+    GstStructure *caps_structure = gst_caps_get_structure (caps, 0);
+    if (g_str_has_prefix (gst_structure_get_name (caps_structure), "image/jpeg"))
+      {//check jpeg dimension are suported by jpeg payloader
+	gint width = 0, height = 0;
+	/* these properties are not mandatory, we can get them from the SOF, if there
+	 * is one. */
+	if (gst_structure_get_int (caps_structure, "height", &height)) {
+	  if (height <= 0 || height > 2040)
+	    jpeg_payloader = false;
+	}
+	if (gst_structure_get_int (caps_structure, "width", &width)) {
+	  if (width <= 0 || width > 2040)
+	    jpeg_payloader = false;
+	}
+      }
+      
+    if (list != NULL && jpeg_payloader)  
       pay = gst_element_factory_create (GST_ELEMENT_FACTORY (list->data), NULL);
     else
       GstUtils::make_element ("rtpgstpay", &pay);
-    
     
     ShmdataReader *reader = (ShmdataReader *) g_object_get_data (G_OBJECT (typefind),
 								 "shmdata-reader");
