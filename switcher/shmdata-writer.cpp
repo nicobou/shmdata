@@ -93,6 +93,8 @@ namespace switcher
     GstUtils::make_element ("queue", &queue_);
     GstUtils::make_element ("fakesink", &fakesink_);
     g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
+    g_object_set (G_OBJECT(fakesink_), "silent", TRUE, NULL);
+    g_object_set (G_OBJECT(queue_), "leaky", 2, NULL);
     gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
     shmdata_base_writer_plug (writer_, 
 			      bin, 
@@ -121,6 +123,7 @@ namespace switcher
     GstUtils::make_element ("fakesink", &fakesink_);
     g_object_set (G_OBJECT(fakesink_), "sync", FALSE, NULL);
     g_object_set (G_OBJECT(fakesink_), "silent", TRUE, NULL);
+    g_object_set (G_OBJECT(queue_), "leaky", 2, NULL);
     gst_bin_add_many (GST_BIN (bin), 
      		      tee_, 
      		      queue_, 

@@ -90,10 +90,14 @@ namespace switcher
     discard_next_uncomplete_buffer_ = false;
     rtpgstcaps_ = gst_caps_from_string ("application/x-rtp, media=(string)application");
 
-    // g_object_set (G_OBJECT (sdpdemux_), 
-    // 		  "latency",
-    // 		  2000,
-    // 		  NULL);
+     // g_object_set (G_OBJECT (sdpdemux_), 
+     // 		  "latency",
+     // 		  2000,
+     // 		  NULL);
+    g_object_set (G_OBJECT (sdpdemux_), 
+     		  "async-handling",
+     		  TRUE,
+     		  NULL);
     g_signal_connect (G_OBJECT (sdpdemux_), 
 		      "pad-added", 
 		      (GCallback) HTTPSDPDec::httpsdpdec_pad_added_cb,
@@ -280,11 +284,13 @@ namespace switcher
     g_debug ("httpsdpdec new pad name is %s\n",padname);
     
     GstElement *identity;
-    GstUtils::make_element ("identity", &identity);
+    GstUtils::make_element ("fakesink", &identity);
     g_object_set (identity, 
-     		  "sync", TRUE, 
-     		  "single-segment", TRUE,
-     		  NULL);
+       		  "sync", TRUE, 
+		  "signal-handoffs", TRUE,
+		  "silent", TRUE,
+       		  NULL);
+    
     GstElement *funnel;
     GstUtils::make_element ("funnel", &funnel);
     
@@ -322,22 +328,17 @@ namespace switcher
      g_debug ("httpsdpdec: new media %s %d\n",media_name, count );
      g_strfreev(padname_splitted);
 
+     
      //creating a shmdata
-     ShmdataWriter::ptr connector;
-     connector.reset (new ShmdataWriter ());
-     std::string connector_name = make_file_name (media_name);
-     connector->set_path (connector_name.c_str());
-     GstCaps *caps = gst_pad_get_caps_reffed (pad);
-
-     connector->plug (bin, identity, caps);
-
-     if (G_IS_OBJECT (caps))
-       gst_object_unref (caps);
-     register_shmdata_writer (connector);
-
+     ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
+     std::string shm_any_name = make_file_name (media_name);
+     shm_any->set_path (shm_any_name.c_str());
+     //shm_any->start ();
+     g_signal_connect(identity, "handoff", (GCallback)on_handoff_cb, shm_any.get ());
      g_message ("%s created a new shmdata writer (%s)", 
-     	       get_nick_name ().c_str(), 
-     	       connector_name.c_str ());
+		get_nick_name ().c_str(), 
+		shm_any_name.c_str ());
+     register_shmdata_any_writer (shm_any);
   }
 
   gboolean 
@@ -393,6 +394,9 @@ namespace switcher
 		      NULL);
     GstPad *sinkpad = gst_element_get_static_pad (decodebin, "sink");
     GstUtils::check_pad_link_return (gst_pad_link (pad, sinkpad));
+    g_object_set (G_OBJECT (decodebin), 
+     		  "async-handling", TRUE,
+     		  NULL);
     g_signal_connect (G_OBJECT (decodebin), 
 		      "pad-added", 
 		      (GCallback) HTTPSDPDec::decodebin_pad_added_cb,
@@ -502,4 +506,44 @@ namespace switcher
     GstUtils::sync_state_with_parent (sdpdemux_);
     return true;
   }
+
+  void 
+  HTTPSDPDec::on_handoff_cb (GstElement* /*object*/,
+			     GstBuffer* buf,
+			     GstPad* pad,
+			     gpointer user_data)
+  {
+    ShmdataAnyWriter *writer = static_cast <ShmdataAnyWriter *> (user_data);
+
+    if (!writer->started ())
+      {
+	 g_print ("-----------strating \n");
+	GstCaps *caps = gst_pad_get_negotiated_caps (pad);
+	gchar *string_caps = gst_caps_to_string (caps);
+	g_print ("%s\n", string_caps);
+	 	writer->set_data_type (string_caps);
+	 	writer->start ();
+	g_free (string_caps);
+	gst_caps_unref (caps);
+      }
+     else
+       {
+	 GstBuffer *buftmp = gst_buffer_copy (buf);
+	 writer->push_data (GST_BUFFER_DATA (buftmp),
+			    GST_BUFFER_SIZE (buftmp),
+			    GST_BUFFER_TIMESTAMP (buftmp),
+			    release_buf,
+			    buftmp);
+       }
+    
+  }
+
+  void
+  HTTPSDPDec::release_buf (void *user_data)
+  {
+    GstBuffer *buf = static_cast <GstBuffer *> (user_data);
+    gst_buffer_unref (buf);
+  }
+
+
 }
