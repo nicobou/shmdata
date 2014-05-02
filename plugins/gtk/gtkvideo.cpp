@@ -97,7 +97,10 @@ namespace switcher
     gst_element_add_pad (sink_bin_, ghost_sinkpad); 
     gst_object_unref (sink_pad);
     
-    g_object_set (G_OBJECT (xvimagesink_), "sync", FALSE, NULL);
+    g_object_set (G_OBJECT (xvimagesink_), 
+		  "sync", FALSE, 
+		  "qos", FALSE,
+		  NULL);
     //on_error_command_ = new QuiddityCommand ();
     on_error_command_->id_ = QuiddityCommand::remove;
     on_error_command_->add_arg (get_nick_name ());

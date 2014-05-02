@@ -50,7 +50,7 @@ namespace switcher
     gst_launch_pipeline_spec_ = 
       custom_props_->make_string_property ("gst-pipeline", 
 					   "GStreamer Launch Source Pipeline",
-					   "",
+					   "videotestsrc is-live=true",
 					   (GParamFlags) G_PARAM_READWRITE,
 					   GstVideoParseToBinSrc::set_gst_launch_pipeline,
 					   GstVideoParseToBinSrc::get_gst_launch_pipeline,
@@ -58,7 +58,7 @@ namespace switcher
     install_property_by_pspec (custom_props_->get_gobject (), 
 				gst_launch_pipeline_spec_, 
 				"gst-pipeline",
-				"GStreamer Pipeline");
+				"GStreamer Live Video Source Pipeline");
 
     return true;
   }

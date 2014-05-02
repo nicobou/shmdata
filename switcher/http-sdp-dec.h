@@ -69,6 +69,11 @@ namespace switcher
    static gboolean gstrtpdepay_buffer_probe_cb (GstPad * pad, GstMiniObject * mini_obj, gpointer user_data);
    static gboolean gstrtpdepay_event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data);
    void pad_to_shmdata_writer (GstElement *bin, GstPad *pad);
+   static void on_handoff_cb (GstElement* /*object*/,
+			      GstBuffer* buf,
+			      GstPad* /*pad*/,
+			      gpointer user_data);
+   static  void release_buf (void *user_data);
   };
 
 }  // end of namespace
