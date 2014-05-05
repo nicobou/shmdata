@@ -64,7 +64,7 @@ main ()
       	 g_print ("cannot register \n");
       	 return 1;
         }
-      usleep (300000000);
+      //usleep (300000000);
       manager->remove ("test");
      
      

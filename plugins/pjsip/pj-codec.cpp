@@ -84,16 +84,16 @@ namespace switcher
 
     pj_bzero(attr, sizeof(pjmedia_codec_param));
     attr->info.clock_rate = ac->clock_rate;
-    attr->info.channel_cnt = ac->channel_cnt;
-    attr->info.avg_bps = ac->avg_bps;
-    attr->info.max_bps = ac->max_bps;
-    attr->info.pcm_bits_per_sample = 16;
-    attr->info.frm_ptime = ac->frm_ptime;
-    attr->info.pt = ac->payload_type;
+    // attr->info.channel_cnt = ac->channel_cnt;
+    // attr->info.avg_bps = ac->avg_bps;
+    // attr->info.max_bps = ac->max_bps;
+    // attr->info.pcm_bits_per_sample = 16;
+    // attr->info.frm_ptime = ac->frm_ptime;
+    // attr->info.pt = ac->payload_type;
 
-    attr->setting.frm_per_pkt = 1;
-    attr->setting.vad = 1;
-    attr->setting.plc = 1;
+    // attr->setting.frm_per_pkt = 1;
+    // attr->setting.vad = 1;
+    // attr->setting.plc = 1;
 
     return PJ_SUCCESS;
   }

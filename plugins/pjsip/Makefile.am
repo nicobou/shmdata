@@ -7,11 +7,13 @@ plugins_LTLIBRARIES = \
 libpjsip_plugin_la_SOURCES = \
     pj-call.cpp \
     pj-codec.cpp \
+    pj-codec-utils.cpp \
     pj-sip.cpp 
 
 libpjsip_plugin_la_include_HEADERS = \
     pj-call.h \
     pj-codec.h \
+    pj-codec-utils.h \
     pj-sip.h 
 
 libpjsip_plugin_la_includedir = \
@@ -39,7 +41,6 @@ libpjsip_plugin_la_CXXFLAGS = \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir) \
     -Wno-error=write-strings
-
 
 #### plugin unit test
 AM_CFLAGS = \
