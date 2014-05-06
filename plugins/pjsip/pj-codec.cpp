@@ -20,7 +20,9 @@
 
 #include "pj-codec.h"
 #include "pj-call.h"
+#include "pj-codec-utils.h"
 #include <glib.h> //g_warning
+#include <iostream>
 
 namespace switcher
 {
@@ -55,6 +57,7 @@ namespace switcher
   pj_status_t PJCodec::alt_codec_test_alloc( pjmedia_codec_factory *factory,
 					     const pjmedia_codec_info *id )
   {
+    g_print ("*************************************** %s\n", __FUNCTION__);
     unsigned i;
     for (i=0; i<PJ_ARRAY_SIZE(codec_list); ++i) {
       if (pj_stricmp(&id->encoding_name, &codec_list[i].encoding_name)==0)
@@ -68,6 +71,7 @@ namespace switcher
 				   const pjmedia_codec_info *id,
 				   pjmedia_codec_param *attr )
   {
+    g_print ("*************************************** %s\n", __FUNCTION__);
     struct alt_codec *ac;
     unsigned i;
 
@@ -103,27 +107,58 @@ namespace switcher
 				 unsigned *count,
 				 pjmedia_codec_info codecs[])
   {
-    unsigned i;
+    g_print ("*************************************** %s\n", __FUNCTION__);
+
+      //TODO get rid of codec_list
+    PJCodecUtils::codecs available_codecs = PJCodecUtils::inspect_rtp_codecs ();
+
+    unsigned i = 0;
+    for (auto &it : available_codecs)
+      {
+	std::cout << " encoding " << it->encoding_name_ 
+		  << " payload " << it->payload_
+		  << " media " << it->media_
+		  << " clock rate " << it->clock_rate_
+		  << std::endl;
+	if (i >= *count)//FIXME
+	  break;
+	pj_bzero(&codecs[i], sizeof(pjmedia_codec_info));
+	//pj_str_t *str;
+	pj_cstr (&codecs[i].encoding_name, it->encoding_name_.c_str ()); //FIXME leaking?
+	codecs[i].pt = it->payload_;
+	if (0 == it->media_.compare ("audio"))
+	codecs[i].type = PJMEDIA_TYPE_AUDIO;
+	else if (0 == it->media_.compare ("video"))
+	   codecs[i].type = PJMEDIA_TYPE_VIDEO;
+	 else
+	   codecs[i].type = PJMEDIA_TYPE_APPLICATION;
+	codecs[i].clock_rate = it->clock_rate_;
+	//codecs[i].channel_cnt = ac->channel_cnt;
+	codecs[i].channel_cnt = 1;
+	i++;
+      }
+    // unsigned i;
     
-    for (i=0; i<*count && i<PJ_ARRAY_SIZE(codec_list); ++i) {
-      struct alt_codec *ac = &codec_list[i];
-      pj_bzero(&codecs[i], sizeof(pjmedia_codec_info));
-      codecs[i].encoding_name = ac->encoding_name;
-      codecs[i].pt = ac->payload_type;
-      codecs[i].type = PJMEDIA_TYPE_AUDIO;
-      codecs[i].clock_rate = ac->clock_rate;
-      codecs[i].channel_cnt = ac->channel_cnt;
+    // for (i=0; i<*count && i<PJ_ARRAY_SIZE(codec_list); ++i) {
+    //   struct alt_codec *ac = &codec_list[i];
+    //   pj_bzero(&codecs[i], sizeof(pjmedia_codec_info));
+    //   codecs[i].encoding_name = ac->encoding_name;
+    //   codecs[i].pt = ac->payload_type;
+    //   codecs[i].type = PJMEDIA_TYPE_AUDIO;
+    //   codecs[i].clock_rate = ac->clock_rate;
+    //   codecs[i].channel_cnt = ac->channel_cnt;
+    // }
+    
+      *count = i;
+      return PJ_SUCCESS;
     }
     
-    *count = i;
-    return PJ_SUCCESS;
-  }
-
-  pj_status_t 
+    pj_status_t 
   PJCodec::alt_codec_alloc_codec(pjmedia_codec_factory *factory,
 				 const pjmedia_codec_info *id,
 				 pjmedia_codec **p_codec)
   {
+    g_print ("*************************************** %s\n", __FUNCTION__);
     /* This will never get called since we won't be using this codec */
     //UNIMPLEMENTED(alt_codec_alloc_codec)
     return PJ_ENOTSUP;
@@ -133,6 +168,7 @@ namespace switcher
   PJCodec::alt_codec_dealloc_codec( pjmedia_codec_factory *factory,
 				    pjmedia_codec *codec )
   {
+    g_print ("*************************************** %s\n", __FUNCTION__);
     /* This will never get called */
     //UNIMPLEMENTED(alt_codec_dealloc_codec)
     return PJ_ENOTSUP;
@@ -141,6 +177,7 @@ namespace switcher
   pj_status_t 
   PJCodec::alt_codec_deinit(void)
   {
+    g_print ("*************************************** %s\n", __FUNCTION__);
     if (NULL == PJCall::med_endpt_)
       {
 	g_warning ("media endpoint is NULL, cannot deinit");
@@ -157,6 +194,7 @@ namespace switcher
   pj_status_t 
   PJCodec::install_codecs ()
   {
+    g_print ("*************************************** %s\n", __FUNCTION__);
     if (NULL == PJCall::med_endpt_)
       {
 	g_warning ("cannot install codec (NULL media endpoint)");
