@@ -23,19 +23,20 @@
 #include "pj-codec-utils.h"
 #include <glib.h> //g_warning
 #include <iostream>
+#include <algorithm>
 
 namespace switcher
 {
 
-  PJCodec::alt_codec_t PJCodec::codec_list[] =
-    {
-      /* G.729 */
-      { { "G729", 4 }, 18, 8000, 1, 10, 8000, 8000 },
-      /* PCMU */
-      { { "PCMU", 4 }, 0, 8000, 1, 10, 64000, 64000 },
-      /* Our proprietary high end low bit rate (5kbps) codec, if you wish */
-      { { "FOO", 3 }, 96, 16000, 1, 20, 5000, 5000 },
-    };
+  // PJCodec::alt_codec_t PJCodec::codec_list[] =
+  //    {
+  //      /* G.729 */
+  //      { { "G729", 4 }, 18, 8000, 1, 10, 8000, 8000 },
+  //      /* PCMU */
+  //      { { "PCMU", 4 }, 0, 8000, 1, 10, 64000, 64000 },
+  //      /* Our proprietary high end low bit rate (5kbps) codec, if you wish */
+  //      { { "FOO", 3 }, 96, 16000, 1, 20, 5000, 5000 },
+  //    };
   
   PJCodec::alt_codec_factory_t PJCodec::alt_codec_factory;
   
@@ -58,12 +59,29 @@ namespace switcher
 					     const pjmedia_codec_info *id )
   {
     g_print ("*************************************** %s\n", __FUNCTION__);
-    unsigned i;
-    for (i=0; i<PJ_ARRAY_SIZE(codec_list); ++i) {
-      if (pj_stricmp(&id->encoding_name, &codec_list[i].encoding_name)==0)
-	return PJ_SUCCESS;
-    }
-    return PJ_ENOTSUP;
+
+    //for performance, "available_codecs" could become static and reused here 
+    PJCodecUtils::codecs available_codecs = PJCodecUtils::inspect_rtp_codecs ();
+    
+    auto it = std::find_if (available_codecs.begin (),
+			    available_codecs.end (),
+			    [&id](const RTPCodec::ptr &codec)
+			    {
+			      return 0 == codec->encoding_name_.compare (0,
+									 id->encoding_name.slen,
+									 pj_strbuf(&id->encoding_name)); 
+			    });
+    if (available_codecs.end () == it)
+      return PJ_ENOTSUP;
+    g_print ("*********************************** test alloc succeed \n");
+    return PJ_SUCCESS;
+    
+    // unsigned i;
+    // for (i=0; i<PJ_ARRAY_SIZE(codec_list); ++i) {
+    //   if (pj_stricmp(&id->encoding_name, &codec_list[i].encoding_name)==0)
+    // 	return PJ_SUCCESS;
+    // }
+    // return PJ_ENOTSUP;
   }
   
   pj_status_t 
@@ -72,32 +90,60 @@ namespace switcher
 				   pjmedia_codec_param *attr )
   {
     g_print ("*************************************** %s\n", __FUNCTION__);
-    struct alt_codec *ac;
-    unsigned i;
 
-    PJ_UNUSED_ARG(factory);
-
-    for (i=0; i<PJ_ARRAY_SIZE(codec_list); ++i) {
-      if (pj_stricmp(&id->encoding_name, &codec_list[i].encoding_name)==0)
-	break;
-    }
-    if (i == PJ_ARRAY_SIZE(codec_list))
+    //for performance, "available_codecs" could become static and reused here 
+    PJCodecUtils::codecs available_codecs = PJCodecUtils::inspect_rtp_codecs ();
+    
+    auto it = std::find_if (available_codecs.begin (),
+			    available_codecs.end (),
+			    [&id](const RTPCodec::ptr &codec)
+			    {
+			      return 0 == codec->encoding_name_.compare (0,
+									 id->encoding_name.slen,
+									 pj_strbuf(&id->encoding_name)); 
+			    });
+    if (available_codecs.end () == it)
       return PJ_ENOTFOUND;
-
-    ac = &codec_list[i];
+    
+    g_print ("*********************************** %s succeed finding encoding name %s \n", 
+	     __FUNCTION__,
+	     (*it)->encoding_name_.c_str ());
 
     pj_bzero(attr, sizeof(pjmedia_codec_param));
-    attr->info.clock_rate = ac->clock_rate;
+    attr->info.clock_rate = (*it)->clock_rate_;
     // attr->info.channel_cnt = ac->channel_cnt;
     // attr->info.avg_bps = ac->avg_bps;
     // attr->info.max_bps = ac->max_bps;
     // attr->info.pcm_bits_per_sample = 16;
     // attr->info.frm_ptime = ac->frm_ptime;
-    // attr->info.pt = ac->payload_type;
+    attr->info.pt = (*it)->payload_;
 
-    // attr->setting.frm_per_pkt = 1;
-    // attr->setting.vad = 1;
-    // attr->setting.plc = 1;
+    // struct alt_codec *ac;
+    // unsigned i;
+
+    // PJ_UNUSED_ARG(factory);
+    
+    // for (i=0; i<PJ_ARRAY_SIZE(codec_list); ++i) {
+    //   if (pj_stricmp(&id->encoding_name, &codec_list[i].encoding_name)==0)
+    // 	break;
+    // }
+    // if (i == PJ_ARRAY_SIZE(codec_list))
+    //   return PJ_ENOTFOUND;
+
+    // ac = &codec_list[i];
+
+    // pj_bzero(attr, sizeof(pjmedia_codec_param));
+    // attr->info.clock_rate = ac->clock_rate;
+    // // attr->info.channel_cnt = ac->channel_cnt;
+    // // attr->info.avg_bps = ac->avg_bps;
+    // // attr->info.max_bps = ac->max_bps;
+    // // attr->info.pcm_bits_per_sample = 16;
+    // // attr->info.frm_ptime = ac->frm_ptime;
+    // // attr->info.pt = ac->payload_type;
+
+    // // attr->setting.frm_per_pkt = 1;
+    // // attr->setting.vad = 1;
+    // // attr->setting.plc = 1;
 
     return PJ_SUCCESS;
   }
@@ -120,7 +166,7 @@ namespace switcher
 		  << " media " << it->media_
 		  << " clock rate " << it->clock_rate_
 		  << std::endl;
-	if (i >= *count)//FIXME
+	if (i >= *count)//default pjsip is 32, need a patch to get more, like 128
 	  break;
 	pj_bzero(&codecs[i], sizeof(pjmedia_codec_info));
 	//pj_str_t *str;
