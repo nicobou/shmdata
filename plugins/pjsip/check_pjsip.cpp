@@ -52,12 +52,13 @@ main ()
 	 return 1;
        }
 
-     manager->set_property ("test", "port", "5070");
-     bool registered = manager->invoke_va ("test","register", NULL, 
-					   "1004", //user
-					   "10.10.30.115", //domain
-					   "1234", //password
-					   NULL);
+      manager->set_property ("test", "port", "5070");
+      bool registered = true;
+	// manager->invoke_va ("test","register", NULL, 
+     // 					   "1004", //user
+     // 					   "10.10.30.115", //domain
+     // 					   "1234", //password
+     // 					   NULL);
      
      if (!registered)
        {
