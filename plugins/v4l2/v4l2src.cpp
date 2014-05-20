@@ -59,7 +59,7 @@ namespace switcher
     tv_standard_ (0),
     framerate_spec_ (NULL), 
     framerates_enum_ (),
-    framerate_ (0),
+    framerate_ (-1),
     framerate_numerator_spec_ (NULL),
     framerate_denominator_spec_ (NULL),
     framerate_numerator_ (0),
@@ -963,7 +963,7 @@ namespace switcher
 	  + capture_devices_.at (device_).frame_size_discrete_.at (resolution_).second.c_str ();
       }
 
-    if (framerate_ > 0)
+    if (framerate_ > -1)
       {
 	caps = 
 	  caps + ", framerate=(fraction)" 
@@ -971,7 +971,7 @@ namespace switcher
 	  + "/" 
 	  + capture_devices_.at (device_).frame_interval_discrete_.at (framerate_).first.c_str () ;
       }
-    else if (framerate_numerator_ > -1)
+    else if (framerate_numerator_ > 0)
       {
 	gchar *numerator = g_strdup_printf ("%d",framerate_numerator_);
 	gchar *denominator = g_strdup_printf ("%d",framerate_denominator_);
@@ -984,6 +984,8 @@ namespace switcher
 	g_free (denominator);
       }
     
+    // g_print ("CAPSCAPS ------------------- %s\n",
+    // 	     caps.c_str ());
     GstCaps *usercaps = gst_caps_from_string (caps.c_str ());
     g_object_set (G_OBJECT (capsfilter_), 
    		  "caps",
