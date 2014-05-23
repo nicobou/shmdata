@@ -53,18 +53,18 @@ main ()
         }
 
       manager->set_property ("test", "port", "5070");
-      bool registered = manager->invoke_va ("test","register", NULL, 
-      					   "1004", //user
-      					   "10.10.30.115", //domain
-      					   "1234", //password
-      					   NULL);
+       bool registered = manager->invoke_va ("test","register", NULL, 
+       					   "1004", //user
+       					   "10.10.30.115", //domain
+       					   "1234", //password
+       					   NULL);
      
-      if (!registered)
-        {
-      	 g_print ("cannot register \n");
-      	 return 1;
-        }
-      usleep (300000000);
+       if (!registered)
+         {
+       	 g_print ("cannot register \n");
+       	 return 1;
+         }
+       usleep (300000000);
       manager->remove ("test");
      
      

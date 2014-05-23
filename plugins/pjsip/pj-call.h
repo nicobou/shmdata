@@ -103,15 +103,15 @@ struct media_stream
  */
 struct call
 {
-    unsigned		 index;
-    pjsip_inv_session	*inv;
-    unsigned		 media_count;
-    struct media_stream	 media[1];
-    pj_time_val		 start_time;
-    pj_time_val		 response_time;
-    pj_time_val		 connect_time;
-
-    pj_timer_entry	 d_timer;	    /**< Disconnect timer.	*/
+  unsigned		 index;
+  pjsip_inv_session	*inv;
+  unsigned		 media_count;
+  struct media_stream	 media[1];
+  pj_time_val		 start_time;
+  pj_time_val		 response_time;
+  pj_time_val		 connect_time;
+  
+  pj_timer_entry	 d_timer;	    /**< Disconnect timer.	*/
 };
 
 

@@ -28,16 +28,6 @@
 namespace switcher
 {
 
-  // PJCodec::alt_codec_t PJCodec::codec_list[] =
-  //    {
-  //      /* G.729 */
-  //      { { "G729", 4 }, 18, 8000, 1, 10, 8000, 8000 },
-  //      /* PCMU */
-  //      { { "PCMU", 4 }, 0, 8000, 1, 10, 64000, 64000 },
-  //      /* Our proprietary high end low bit rate (5kbps) codec, if you wish */
-  //      { { "FOO", 3 }, 96, 16000, 1, 20, 5000, 5000 },
-  //    };
-  
   PJCodec::alt_codec_factory_t PJCodec::alt_codec_factory;
   
   pjmedia_codec_factory_op PJCodec::alt_codec_factory_op =
@@ -58,7 +48,7 @@ namespace switcher
   pj_status_t PJCodec::alt_codec_test_alloc( pjmedia_codec_factory *factory,
 					     const pjmedia_codec_info *id )
   {
-    g_print ("*************************************** %s\n", __FUNCTION__);
+    //g_print ("*************************************** %s\n", __FUNCTION__);
 
     //for performance, "available_codecs" could become static and reused here 
     PJCodecUtils::codecs available_codecs = PJCodecUtils::inspect_rtp_codecs ();
@@ -73,15 +63,9 @@ namespace switcher
 			    });
     if (available_codecs.end () == it)
       return PJ_ENOTSUP;
-    g_print ("*********************************** test alloc succeed \n");
+    //g_print ("*********************************** test alloc succeed \n");
     return PJ_SUCCESS;
     
-    // unsigned i;
-    // for (i=0; i<PJ_ARRAY_SIZE(codec_list); ++i) {
-    //   if (pj_stricmp(&id->encoding_name, &codec_list[i].encoding_name)==0)
-    // 	return PJ_SUCCESS;
-    // }
-    // return PJ_ENOTSUP;
   }
   
   pj_status_t 
@@ -89,7 +73,7 @@ namespace switcher
 				   const pjmedia_codec_info *id,
 				   pjmedia_codec_param *attr )
   {
-    g_print ("*************************************** %s\n", __FUNCTION__);
+    //g_print ("*************************************** %s\n", __FUNCTION__);
 
     //for performance, "available_codecs" could become static and reused here 
     PJCodecUtils::codecs available_codecs = PJCodecUtils::inspect_rtp_codecs ();
@@ -105,9 +89,7 @@ namespace switcher
     if (available_codecs.end () == it)
       return PJ_ENOTFOUND;
     
-    g_print ("*********************************** %s succeed finding encoding name %s \n", 
-	     __FUNCTION__,
-	     (*it)->encoding_name_.c_str ());
+    //g_print ("*********************************** %s succeed finding encoding name %s \n", __FUNCTION__, (*it)->encoding_name_.c_str ());
 
     pj_bzero(attr, sizeof(pjmedia_codec_param));
     attr->info.clock_rate = (*it)->clock_rate_;
@@ -118,33 +100,6 @@ namespace switcher
     // attr->info.frm_ptime = ac->frm_ptime;
     attr->info.pt = (*it)->payload_;
 
-    // struct alt_codec *ac;
-    // unsigned i;
-
-    // PJ_UNUSED_ARG(factory);
-    
-    // for (i=0; i<PJ_ARRAY_SIZE(codec_list); ++i) {
-    //   if (pj_stricmp(&id->encoding_name, &codec_list[i].encoding_name)==0)
-    // 	break;
-    // }
-    // if (i == PJ_ARRAY_SIZE(codec_list))
-    //   return PJ_ENOTFOUND;
-
-    // ac = &codec_list[i];
-
-    // pj_bzero(attr, sizeof(pjmedia_codec_param));
-    // attr->info.clock_rate = ac->clock_rate;
-    // // attr->info.channel_cnt = ac->channel_cnt;
-    // // attr->info.avg_bps = ac->avg_bps;
-    // // attr->info.max_bps = ac->max_bps;
-    // // attr->info.pcm_bits_per_sample = 16;
-    // // attr->info.frm_ptime = ac->frm_ptime;
-    // // attr->info.pt = ac->payload_type;
-
-    // // attr->setting.frm_per_pkt = 1;
-    // // attr->setting.vad = 1;
-    // // attr->setting.plc = 1;
-
     return PJ_SUCCESS;
   }
 
@@ -153,19 +108,18 @@ namespace switcher
 				 unsigned *count,
 				 pjmedia_codec_info codecs[])
   {
-    g_print ("*************************************** %s\n", __FUNCTION__);
+    //g_print ("*************************************** %s\n", __FUNCTION__);
 
-      //TODO get rid of codec_list
     PJCodecUtils::codecs available_codecs = PJCodecUtils::inspect_rtp_codecs ();
 
     unsigned i = 0;
     for (auto &it : available_codecs)
       {
-	std::cout << " encoding " << it->encoding_name_ 
-		  << " payload " << it->payload_
-		  << " media " << it->media_
-		  << " clock rate " << it->clock_rate_
-		  << std::endl;
+	// std::cout << " encoding " << it->encoding_name_ 
+	// 	  << " payload " << it->payload_
+	// 	  << " media " << it->media_
+	// 	  << " clock rate " << it->clock_rate_
+	// 	  << std::endl;
 	if (i >= *count)//default pjsip is 32, need a patch to get more, like 128
 	  break;
 	pj_bzero(&codecs[i], sizeof(pjmedia_codec_info));
@@ -180,21 +134,9 @@ namespace switcher
 	   codecs[i].type = PJMEDIA_TYPE_APPLICATION;
 	codecs[i].clock_rate = it->clock_rate_;
 	//codecs[i].channel_cnt = ac->channel_cnt;
-	codecs[i].channel_cnt = 1;
+	//codecs[i].channel_cnt = 1;
 	i++;
       }
-    // unsigned i;
-    
-    // for (i=0; i<*count && i<PJ_ARRAY_SIZE(codec_list); ++i) {
-    //   struct alt_codec *ac = &codec_list[i];
-    //   pj_bzero(&codecs[i], sizeof(pjmedia_codec_info));
-    //   codecs[i].encoding_name = ac->encoding_name;
-    //   codecs[i].pt = ac->payload_type;
-    //   codecs[i].type = PJMEDIA_TYPE_AUDIO;
-    //   codecs[i].clock_rate = ac->clock_rate;
-    //   codecs[i].channel_cnt = ac->channel_cnt;
-    // }
-    
       *count = i;
       return PJ_SUCCESS;
     }
@@ -204,7 +146,7 @@ namespace switcher
 				 const pjmedia_codec_info *id,
 				 pjmedia_codec **p_codec)
   {
-    g_print ("*************************************** %s\n", __FUNCTION__);
+    //g_print ("*************************************** %s\n", __FUNCTION__);
     /* This will never get called since we won't be using this codec */
     //UNIMPLEMENTED(alt_codec_alloc_codec)
     return PJ_ENOTSUP;
@@ -214,7 +156,7 @@ namespace switcher
   PJCodec::alt_codec_dealloc_codec( pjmedia_codec_factory *factory,
 				    pjmedia_codec *codec )
   {
-    g_print ("*************************************** %s\n", __FUNCTION__);
+    //g_print ("*************************************** %s\n", __FUNCTION__);
     /* This will never get called */
     //UNIMPLEMENTED(alt_codec_dealloc_codec)
     return PJ_ENOTSUP;
@@ -223,7 +165,7 @@ namespace switcher
   pj_status_t 
   PJCodec::alt_codec_deinit(void)
   {
-    g_print ("*************************************** %s\n", __FUNCTION__);
+    //g_print ("*************************************** %s\n", __FUNCTION__);
     if (NULL == PJCall::med_endpt_)
       {
 	g_warning ("media endpoint is NULL, cannot deinit");
@@ -240,7 +182,7 @@ namespace switcher
   pj_status_t 
   PJCodec::install_codecs ()
   {
-    g_print ("*************************************** %s\n", __FUNCTION__);
+    //g_print ("*************************************** %s\n", __FUNCTION__);
     if (NULL == PJCall::med_endpt_)
       {
 	g_warning ("cannot install codec (NULL media endpoint)");
@@ -258,7 +200,7 @@ namespace switcher
     if (status != PJ_SUCCESS)
       return status;
     
-    /* TODO: initialize your evil library here */
+    /* initialize your evil library here */
     return PJ_SUCCESS;
   }
 
