@@ -17,44 +17,58 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include "switcher/json-builder.h"
 #include "osc-to-property.h"
-
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <unistd.h>
-//#include <utility> //std::make_pair (,)
 
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToProperty,
 				       "OSC message to property",
-				       "network converter", 
+				       "osc source", 
 				       "OSCprop reveives OSC messages and updates associated property",
 				       "LGPL",
 				       "OSCprop",
 				       "Nicolas Bouillot");
-    
+
   OscToProperty::OscToProperty () :
     custom_props_ (new CustomPropertyHelper ()),
-    port_ (),
-    osc_thread_ (NULL)
+    port_ (1056),
+    osc_thread_ (NULL),
+    port_spec_ (NULL),
+    start_ (std::chrono::system_clock::now()),
+    shm_any_ (std::make_shared<ShmdataAnyWriter> ())
   {}
-
+  
   bool
-  OscToProperty::init ()
+  OscToProperty::init_segment ()
   {
-    install_method ("Set Port",
-		    "set_port", 
-		    "set the port used by the osc server and start listening messages", 
-		    "success or fail",
-		    Method::make_arg_description ("Port",
-						  "port",
-						  "the port to bind",
-						  NULL),
-		    (Method::method_ptr) &set_port_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-     		    this);
+    init_startable (this);
+    port_spec_ = 
+      custom_props_->make_int_property ("Port", 
+					"osc port to listen",
+					1,
+					65536,
+					port_,
+					(GParamFlags) G_PARAM_READWRITE,
+					set_port,
+					get_port,
+					this);
+
+    install_property_by_pspec (custom_props_->get_gobject (), 
+			       port_spec_, 
+			       "port",
+			       "Port");
+
+    //creating a shmdata
+    //ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
+    std::string shm_any_name = make_file_name ("osc");
+    shm_any_->set_path (shm_any_name.c_str());
+    g_message ("%s created a new shmdata any writer (%s)", 
+	       get_nick_name ().c_str(), 
+	       shm_any_name.c_str ());
+    shm_any_->set_data_type ("application/x-json-osc");
+    shm_any_->start ();
+    register_shmdata_any_writer (shm_any_);
 
     return true;
   }
@@ -78,52 +92,109 @@ namespace switcher
     return res;
   }
 
-  gboolean
-  OscToProperty::set_port_wrapped (gpointer port, gpointer user_data)
-  {
-    OscToProperty *context = static_cast<OscToProperty*>(user_data);
-    context->set_port ((char *)port);
-    return TRUE;
-  }
 
   void 
-  OscToProperty::set_port (std::string port)
+  OscToProperty::set_port (const gint value, void *user_data)
   {
-    stop ();
-    port_ = port;
-    start ();
+    OscToProperty *context = static_cast <OscToProperty *> (user_data);
+    context->port_ = value;
+  }
+  
+  gint 
+  OscToProperty::get_port (void *user_data)
+  {
+    OscToProperty *context = static_cast <OscToProperty *> (user_data);
+    return context->port_;
   }
 
-  void 
+  bool 
   OscToProperty::start ()
   {
-    osc_thread_ = lo_server_thread_new(port_.c_str (), osc_error);
+    osc_thread_ = lo_server_thread_new (std::to_string(port_).c_str (), osc_error);
+    if (NULL == osc_thread_)
+      return false;
     /* add method that will match any path and args */
-    lo_server_thread_add_method(osc_thread_, NULL, NULL, osc_handler, this);
-    lo_server_thread_start(osc_thread_);
+    lo_server_thread_add_method (osc_thread_, NULL, NULL, osc_handler, this);
+    lo_server_thread_start (osc_thread_);
+    return true;
   }
 
-  void
+  bool
   OscToProperty::stop ()
   {
-    if (osc_thread_ != NULL)
-      lo_server_thread_free(osc_thread_);
-    osc_thread_ = NULL;
+    if (NULL != osc_thread_)
+      {
+	lo_server_thread_free (osc_thread_);
+	osc_thread_ = NULL;
+	return true;
+      }
+    return false;
   }
 
 
   /* catch any osc incoming messages. */
   int 
   OscToProperty::osc_handler(const char *path, 
-			     const char */*types*/, 
-			     lo_arg **/*argv*/,
-			     int /*argc*/, 
-			     void */*data*/, 
-			     void */*user_data*/)
+			     const char *types, 
+			     lo_arg **argv,
+			     int argc, 
+			     lo_message m, 
+			     void *user_data)
   {
-    //OscToProperty *context = static_cast<OscToProperty*>(user_data);
-    g_debug ("unknown osc path %s", path);
+    OscToProperty *context = static_cast<OscToProperty*>(user_data);
+    lo_timetag timetag = lo_message_get_timestamp (m);
+    //g_print ("timestamp %u %u", path, timetag.sec, timetag.frac);
+    if (0 != timetag.sec)
+      {
+	//FIXME handle internal timetag
+	//note: this is not implemented in osc-send
+      }
+    std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+    std::chrono::duration<unsigned long long, std::nano> clock = now - context->start_;
+    //g_print ("unknown osc path %s %llu", path, clock.count ());
+    std::string buf = osc_to_json (path, types, argv, argc);
+    gchar *buftmp = g_strdup (buf.c_str ());
+    context->shm_any_->push_data (buftmp,
+				  sizeof(char) * (buf.size () + 1),
+				  clock.count (),
+				  g_free,
+				  buftmp);
     return 0;
+  }
+
+  
+  std::string
+  OscToProperty::osc_to_json (const char *path, 
+			      const char *types, 
+			      lo_arg **argv,
+			      int argc)
+  {
+    JSONBuilder::ptr json_builder = std::make_shared<JSONBuilder> ();
+    json_builder->begin_object ();
+    json_builder->add_string_member ("path", path);
+    json_builder->set_member_name ("values");
+    json_builder->begin_array ();
+    // verbose:
+    // for (int i = 1; i < argc; i++)
+    //   {
+    // 	json_builder->begin_object ();
+    // 	const char * value_type = std::string  (1, types[i]).c_str ();
+    // 	json_builder->add_string_member ("type", value_type);
+    // 	gchar *value = string_from_osc_arg (types[i], argv[i]);
+    // 	json_builder->add_string_member ("value", value);
+    // 	g_free (value);
+    // 	json_builder->end_object ();
+    //   }
+    json_builder->add_string_value (types + 1); //first char is 's', probably string for the path
+    for (int i = 1; i < argc; i++)
+      {
+    	gchar *value = string_from_osc_arg (types[i], argv[i]);
+    	json_builder->add_string_value (value);
+    	g_free (value);
+      }
+    json_builder->end_array ();
+    json_builder->end_object ();
+    return json_builder->get_string (false);
   }
  
   gchar *
@@ -131,86 +202,86 @@ namespace switcher
   {
     gchar *res = NULL;
     gchar *tmp = NULL; 
-     switch (type) {
-     case LO_INT32:
-       res = g_strdup_printf ("%d", data->i);
-       break;
+    switch (type) {
+    case LO_INT32:
+      res = g_strdup_printf ("%d", data->i);
+      break;
        
-     case LO_FLOAT:
- 	tmp = g_strdup_printf ("%f", data->f);
-	if (g_str_has_suffix (tmp, ".000000")) // for pd
-	  {
-	    res = string_float_to_string_int (tmp);
-	    g_free (tmp);
-	  }
-	else
-	  res = tmp;
- 	break;
+    case LO_FLOAT:
+      tmp = g_strdup_printf ("%f", data->f);
+      if (g_str_has_suffix (tmp, ".000000")) // for pd
+	{
+	  res = string_float_to_string_int (tmp);
+	  g_free (tmp);
+	}
+      else
+	res = tmp;
+      break;
 
-     case LO_STRING:
- 	res = g_strdup_printf ("%s", (char *)data);
- 	break;
+    case LO_STRING:
+      res = g_strdup_printf ("%s", (char *)data);
+      break;
 
-     case LO_BLOB:
-       g_debug ("LO_BLOB not handled");
-       break;
+    case LO_BLOB:
+      g_debug ("LO_BLOB not handled");
+      break;
 
-     case LO_INT64:
- 	res = g_strdup_printf ("%lld", (long long int)data->i);
- 	break;
+    case LO_INT64:
+      res = g_strdup_printf ("%lld", (long long int)data->i);
+      break;
     
-     case LO_TIMETAG:
-       g_debug ("LO_BLOB not handled");
- 	break;
+    case LO_TIMETAG:
+      g_debug ("LO_BLOB not handled");
+      break;
     
-     case LO_DOUBLE:
- 	tmp = g_strdup_printf ("%f", data->f);
-	if (g_str_has_suffix (tmp, ".000000")) // for pd
-	  {
-	    res = string_float_to_string_int (tmp);
-	    g_free (tmp);
-	  }
-	else
-	  res = tmp;
- 	break;
+    case LO_DOUBLE:
+      tmp = g_strdup_printf ("%f", data->f);
+      if (g_str_has_suffix (tmp, ".000000")) // for pd
+	{
+	  res = string_float_to_string_int (tmp);
+	  g_free (tmp);
+	}
+      else
+	res = tmp;
+      break;
     
-     case LO_SYMBOL:
- 	res = g_strdup_printf ("'%s", (char *)data);
- 	break;
+    case LO_SYMBOL:
+      res = g_strdup_printf ("'%s", (char *)data);
+      break;
 
-     case LO_CHAR:
- 	res = g_strdup_printf ("'%c'", (char)data->c);
- 	break;
+    case LO_CHAR:
+      res = g_strdup_printf ("'%c'", (char)data->c);
+      break;
 
-     case LO_MIDI:
- 	// res = g_strdup_printf ("MIDI [");
- 	// for (i=0; i<4; i++) {
- 	//     res = g_strdup_printf ("0x%02x", *((uint8_t *)(data) + i));
- 	//     if (i+1 < 4) res = g_strdup_printf (" ");
- 	// }
- 	// res = g_strdup_printf ("]");
-       g_debug ("LO_MIDI not handled");
-       break;
-     case LO_TRUE:
- 	res = g_strdup_printf ("true");
- 	break;
+    case LO_MIDI:
+      // res = g_strdup_printf ("MIDI [");
+      // for (i=0; i<4; i++) {
+      //     res = g_strdup_printf ("0x%02x", *((uint8_t *)(data) + i));
+      //     if (i+1 < 4) res = g_strdup_printf (" ");
+      // }
+      // res = g_strdup_printf ("]");
+      g_debug ("LO_MIDI not handled");
+      break;
+    case LO_TRUE:
+      res = g_strdup_printf ("true");
+      break;
 
-     case LO_FALSE:
- 	res = g_strdup_printf ("false");
- 	break;
+    case LO_FALSE:
+      res = g_strdup_printf ("false");
+      break;
 
-     case LO_NIL:
- 	res = g_strdup_printf ("Nil");
- 	break;
+    case LO_NIL:
+      res = g_strdup_printf ("Nil");
+      break;
 
-     case LO_INFINITUM:
- 	res = g_strdup_printf ("Infinitum");
- 	break;
+    case LO_INFINITUM:
+      res = g_strdup_printf ("Infinitum");
+      break;
 
-     default:
-       g_warning ("unhandled liblo type: %c\n", type);
-       break;
-     }
+    default:
+      g_warning ("unhandled liblo type: %c\n", type);
+      break;
+    }
     return res;
   }
 

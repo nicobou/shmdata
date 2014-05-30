@@ -521,8 +521,8 @@ namespace switcher
 	GstCaps *caps = gst_pad_get_negotiated_caps (pad);
 	gchar *string_caps = gst_caps_to_string (caps);
 	g_debug ("%s\n", string_caps);
-	 	writer->set_data_type (string_caps);
-	 	writer->start ();
+	writer->set_data_type (string_caps);
+	writer->start ();
 	g_free (string_caps);
 	gst_caps_unref (caps);
       }

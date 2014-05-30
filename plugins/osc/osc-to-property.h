@@ -20,14 +20,16 @@
 #ifndef __SWITCHER_OSC_CTRL_SERVER_H__
 #define __SWITCHER_OSC_CTRL_SERVER_H__
 
-#include "switcher/quiddity.h"
+#include "switcher/segment.h" //only for shmdata management
 #include "switcher/custom-property-helper.h"
+#include "switcher/startable-quiddity.h"
 #include "lo/lo.h"
+
+#include <chrono>
 
 namespace switcher
 {
-
-  class OscToProperty : public Quiddity
+  class OscToProperty : public Segment, public StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(OscToProperty);
@@ -35,23 +37,30 @@ namespace switcher
     ~OscToProperty ();
     OscToProperty (const OscToProperty &) = delete;
     OscToProperty &operator=  (const OscToProperty &) = delete;
-    bool init ();
-
-    void set_port (std::string port);
+    bool init_segment ();
 
   private:
     CustomPropertyHelper::ptr custom_props_; 
-    std::string port_;
+    gint port_;
     lo_server_thread osc_thread_;
+    GParamSpec *port_spec_;
+    std::chrono::time_point<std::chrono::system_clock> start_;
+    ShmdataAnyWriter::ptr shm_any_;
 
-    void start ();
-    void stop ();
-    static gboolean set_port_wrapped (gpointer port, gpointer user_data);
+    bool start ();
+    bool stop ();
     static int osc_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data);
     static void osc_error(int num, const char *msg, const char *path);
     static gchar *string_from_osc_arg (char types, lo_arg *data);
     static gchar *string_float_to_string_int (const gchar *string_float);
+    static void set_port (const gint value, void *user_data);
+    static gint get_port (void *user_data);
+    static std::string osc_to_json (const char *path, 
+				    const char *types, 
+				    lo_arg **argv,
+				    int argc);
+      
   };
 
   SWITCHER_DECLARE_PLUGIN(OscToProperty);
