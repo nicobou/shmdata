@@ -527,22 +527,36 @@ namespace switcher
     //finding caller info
     char uristr[PJSIP_MAX_URL_SIZE];
     int len;
-    len = pjsip_uri_print(PJSIP_URI_IN_REQ_URI, rdata->msg_info.msg->line.req.uri, uristr, sizeof(uristr));
+    len = pjsip_uri_print(PJSIP_URI_IN_REQ_URI, 
+			  rdata->msg_info.msg->line.req.uri, 
+			  uristr, 
+			  sizeof(uristr));
     g_print ("call req uri %.*s\n", len, uristr);
-    len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, rdata->msg_info.from->uri, uristr, sizeof(uristr));
+    len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, 
+			  rdata->msg_info.from->uri, 
+			  uristr, 
+			  sizeof(uristr));
     g_print ("call from %.*s\n", len, uristr);
-    len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, rdata->msg_info.to->uri, uristr, sizeof(uristr));
+    len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, 
+			  rdata->msg_info.to->uri, 
+			  uristr, 
+			  sizeof(uristr));
     g_print ("call to %.*s\n", len, uristr);
     
 
     /* Create SDP */
-    //create_sdp (dlg->pool, call, &sdp);
-   
-    pjmedia_endpt_create_sdp 	(med_endpt_,
-				 dlg->pool,
-				 unsigned  	stream_cnt,
-				 const pjmedia_sock_info  	sock_info[],
-				 &sdp) 	
+    create_sdp (dlg->pool, call, &sdp);
+
+    // pjmedia_transport_info tpinfo;
+    // pjmedia_transport_info_init(&tpinfo);
+    // pjmedia_transport_get_info(audio->transport, &tpinfo);
+    // tpinfo.sock_info
+
+    // pjmedia_endpt_create_sdp 	(med_endpt_,
+    // 				 dlg->pool,
+    // 				 3,
+    // 				 const pjmedia_sock_info  	sock_info[],
+    // 				 &sdp) 	
 
     /* Create UAS invite session */
     status = pjsip_inv_create_uas( dlg, rdata, sdp, 0, &call->inv);
@@ -725,8 +739,6 @@ namespace switcher
      //attr->name = pj_str("recvonly");
 
      m->attr[m->attr_count++] = attr;
-
-
 
  // #if 1
  //     /*
