@@ -29,14 +29,14 @@
 
 namespace switcher
 {
-  class OscToProperty : public Segment, public StartableQuiddity
+  class OscToShmdata : public Segment, public StartableQuiddity
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(OscToProperty);
-    OscToProperty ();
-    ~OscToProperty ();
-    OscToProperty (const OscToProperty &) = delete;
-    OscToProperty &operator=  (const OscToProperty &) = delete;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(OscToShmdata);
+    OscToShmdata ();
+    ~OscToShmdata ();
+    OscToShmdata (const OscToShmdata &) = delete;
+    OscToShmdata &operator=  (const OscToShmdata &) = delete;
     bool init_segment ();
 
   private:
@@ -63,7 +63,7 @@ namespace switcher
       
   };
 
-  SWITCHER_DECLARE_PLUGIN(OscToProperty);
+  SWITCHER_DECLARE_PLUGIN(OscToShmdata);
 
 }  // end of namespace
 

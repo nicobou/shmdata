@@ -18,11 +18,11 @@
  */
 
 #include "switcher/json-builder.h"
-#include "osc-to-property.h"
+#include "osc-to-shmdata.h"
 
 namespace switcher
 {
-  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToProperty,
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
 				       "OSC message to property",
 				       "osc source", 
 				       "OSCprop reveives OSC messages and updates associated property",
@@ -30,7 +30,7 @@ namespace switcher
 				       "OSCprop",
 				       "Nicolas Bouillot");
 
-  OscToProperty::OscToProperty () :
+  OscToShmdata::OscToShmdata () :
     custom_props_ (new CustomPropertyHelper ()),
     port_ (1056),
     osc_thread_ (NULL),
@@ -40,7 +40,7 @@ namespace switcher
   {}
   
   bool
-  OscToProperty::init_segment ()
+  OscToShmdata::init_segment ()
   {
     init_startable (this);
     port_spec_ = 
@@ -73,7 +73,7 @@ namespace switcher
     return true;
   }
 
-  OscToProperty::~OscToProperty ()
+  OscToShmdata::~OscToShmdata ()
   {
     stop ();
   }
@@ -81,7 +81,7 @@ namespace switcher
 
   //floor
   gchar *
-  OscToProperty::string_float_to_string_int (const gchar *string_float)
+  OscToShmdata::string_float_to_string_int (const gchar *string_float)
   {
     gchar *res;
     gchar **split= g_strsplit (string_float,
@@ -94,21 +94,21 @@ namespace switcher
 
 
   void 
-  OscToProperty::set_port (const gint value, void *user_data)
+  OscToShmdata::set_port (const gint value, void *user_data)
   {
-    OscToProperty *context = static_cast <OscToProperty *> (user_data);
+    OscToShmdata *context = static_cast <OscToShmdata *> (user_data);
     context->port_ = value;
   }
   
   gint 
-  OscToProperty::get_port (void *user_data)
+  OscToShmdata::get_port (void *user_data)
   {
-    OscToProperty *context = static_cast <OscToProperty *> (user_data);
+    OscToShmdata *context = static_cast <OscToShmdata *> (user_data);
     return context->port_;
   }
 
   bool 
-  OscToProperty::start ()
+  OscToShmdata::start ()
   {
     osc_thread_ = lo_server_thread_new (std::to_string(port_).c_str (), osc_error);
     if (NULL == osc_thread_)
@@ -120,7 +120,7 @@ namespace switcher
   }
 
   bool
-  OscToProperty::stop ()
+  OscToShmdata::stop ()
   {
     if (NULL != osc_thread_)
       {
@@ -134,14 +134,14 @@ namespace switcher
 
   /* catch any osc incoming messages. */
   int 
-  OscToProperty::osc_handler(const char *path, 
+  OscToShmdata::osc_handler(const char *path, 
 			     const char *types, 
 			     lo_arg **argv,
 			     int argc, 
 			     lo_message m, 
 			     void *user_data)
   {
-    OscToProperty *context = static_cast<OscToProperty*>(user_data);
+    OscToShmdata *context = static_cast<OscToShmdata*>(user_data);
     lo_timetag timetag = lo_message_get_timestamp (m);
     //g_print ("timestamp %u %u", path, timetag.sec, timetag.frac);
     if (0 != timetag.sec)
@@ -164,7 +164,7 @@ namespace switcher
 
   
   std::string
-  OscToProperty::osc_to_json (const char *path, 
+  OscToShmdata::osc_to_json (const char *path, 
 			      const char *types, 
 			      lo_arg **argv,
 			      int argc)
@@ -198,7 +198,7 @@ namespace switcher
   }
  
   gchar *
-  OscToProperty::string_from_osc_arg (char type, lo_arg *data)
+  OscToShmdata::string_from_osc_arg (char type, lo_arg *data)
   {
     gchar *res = NULL;
     gchar *tmp = NULL; 
@@ -286,10 +286,10 @@ namespace switcher
   }
 
   void 
-  OscToProperty::osc_error(int num, const char *msg, const char *path)
+  OscToShmdata::osc_error(int num, const char *msg, const char *path)
   {
     g_debug ("liblo server error %d in path %s: %s", num, path, msg);
   }
-}//end of OscToProperty class
+}//end of OscToShmdata class
 
 
