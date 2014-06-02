@@ -17,17 +17,16 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/json-builder.h"
 #include "osc-to-shmdata.h"
 
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
-				       "OSC message to property",
+				       "OSC message to shmdata",
 				       "osc source", 
-				       "OSCprop reveives OSC messages and updates associated property",
+				       "OSCprop receives OSC messages and write to shmdata",
 				       "LGPL",
-				       "OSCprop",
+				       "OSCshm",
 				       "Nicolas Bouillot");
 
   OscToShmdata::OscToShmdata () :
@@ -45,7 +44,7 @@ namespace switcher
     init_startable (this);
     port_spec_ = 
       custom_props_->make_int_property ("Port", 
-					"osc port to listen",
+					"OSC port to listen",
 					1,
 					65536,
 					port_,
@@ -77,21 +76,6 @@ namespace switcher
   {
     stop ();
   }
-
-
-  //floor
-  gchar *
-  OscToShmdata::string_float_to_string_int (const gchar *string_float)
-  {
-    gchar *res;
-    gchar **split= g_strsplit (string_float,
-			       ".",
-			       2);
-    res = g_strdup (split[0]);
-    g_strfreev(split);
-    return res;
-  }
-
 
   void 
   OscToShmdata::set_port (const gint value, void *user_data)
@@ -131,7 +115,6 @@ namespace switcher
     return false;
   }
 
-
   /* catch any osc incoming messages. */
   int 
   OscToShmdata::osc_handler(const char *path, 
@@ -152,137 +135,15 @@ namespace switcher
     std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
     std::chrono::duration<unsigned long long, std::nano> clock = now - context->start_;
     //g_print ("unknown osc path %s %llu", path, clock.count ());
-    std::string buf = osc_to_json (path, types, argv, argc);
-    gchar *buftmp = g_strdup (buf.c_str ());
+
+    size_t size;
+    void *buftmp = lo_message_serialise (m, path, NULL, &size);
     context->shm_any_->push_data (buftmp,
-				  sizeof(char) * (buf.size () + 1),
-				  clock.count (),
-				  g_free,
-				  buftmp);
+     				  size,
+     				  clock.count (),
+     				  g_free,
+     				  buftmp);
     return 0;
-  }
-
-  
-  std::string
-  OscToShmdata::osc_to_json (const char *path, 
-			      const char *types, 
-			      lo_arg **argv,
-			      int argc)
-  {
-    JSONBuilder::ptr json_builder = std::make_shared<JSONBuilder> ();
-    json_builder->begin_object ();
-    json_builder->add_string_member ("path", path);
-    json_builder->set_member_name ("values");
-    json_builder->begin_array ();
-    // verbose:
-    // for (int i = 1; i < argc; i++)
-    //   {
-    // 	json_builder->begin_object ();
-    // 	const char * value_type = std::string  (1, types[i]).c_str ();
-    // 	json_builder->add_string_member ("type", value_type);
-    // 	gchar *value = string_from_osc_arg (types[i], argv[i]);
-    // 	json_builder->add_string_member ("value", value);
-    // 	g_free (value);
-    // 	json_builder->end_object ();
-    //   }
-    json_builder->add_string_value (types + 1); //first char is 's', probably string for the path
-    for (int i = 1; i < argc; i++)
-      {
-    	gchar *value = string_from_osc_arg (types[i], argv[i]);
-    	json_builder->add_string_value (value);
-    	g_free (value);
-      }
-    json_builder->end_array ();
-    json_builder->end_object ();
-    return json_builder->get_string (false);
-  }
- 
-  gchar *
-  OscToShmdata::string_from_osc_arg (char type, lo_arg *data)
-  {
-    gchar *res = NULL;
-    gchar *tmp = NULL; 
-    switch (type) {
-    case LO_INT32:
-      res = g_strdup_printf ("%d", data->i);
-      break;
-       
-    case LO_FLOAT:
-      tmp = g_strdup_printf ("%f", data->f);
-      if (g_str_has_suffix (tmp, ".000000")) // for pd
-	{
-	  res = string_float_to_string_int (tmp);
-	  g_free (tmp);
-	}
-      else
-	res = tmp;
-      break;
-
-    case LO_STRING:
-      res = g_strdup_printf ("%s", (char *)data);
-      break;
-
-    case LO_BLOB:
-      g_debug ("LO_BLOB not handled");
-      break;
-
-    case LO_INT64:
-      res = g_strdup_printf ("%lld", (long long int)data->i);
-      break;
-    
-    case LO_TIMETAG:
-      g_debug ("LO_BLOB not handled");
-      break;
-    
-    case LO_DOUBLE:
-      tmp = g_strdup_printf ("%f", data->f);
-      if (g_str_has_suffix (tmp, ".000000")) // for pd
-	{
-	  res = string_float_to_string_int (tmp);
-	  g_free (tmp);
-	}
-      else
-	res = tmp;
-      break;
-    
-    case LO_SYMBOL:
-      res = g_strdup_printf ("'%s", (char *)data);
-      break;
-
-    case LO_CHAR:
-      res = g_strdup_printf ("'%c'", (char)data->c);
-      break;
-
-    case LO_MIDI:
-      // res = g_strdup_printf ("MIDI [");
-      // for (i=0; i<4; i++) {
-      //     res = g_strdup_printf ("0x%02x", *((uint8_t *)(data) + i));
-      //     if (i+1 < 4) res = g_strdup_printf (" ");
-      // }
-      // res = g_strdup_printf ("]");
-      g_debug ("LO_MIDI not handled");
-      break;
-    case LO_TRUE:
-      res = g_strdup_printf ("true");
-      break;
-
-    case LO_FALSE:
-      res = g_strdup_printf ("false");
-      break;
-
-    case LO_NIL:
-      res = g_strdup_printf ("Nil");
-      break;
-
-    case LO_INFINITUM:
-      res = g_strdup_printf ("Infinitum");
-      break;
-
-    default:
-      g_warning ("unhandled liblo type: %c\n", type);
-      break;
-    }
-    return res;
   }
 
   void 

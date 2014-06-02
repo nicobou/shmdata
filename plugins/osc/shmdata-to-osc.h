@@ -17,46 +17,60 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_OSC_CTRL_SERVER_H__
-#define __SWITCHER_OSC_CTRL_SERVER_H__
+#ifndef __SWITCHER_SHMDATA_TO_OSC_H__
+#define __SWITCHER_SHMDATA_TO_OSC_H__
 
 #include "switcher/segment.h" //only for shmdata management
 #include "switcher/custom-property-helper.h"
 #include "switcher/startable-quiddity.h"
-#include "lo/lo.h"
+#include <lo/lo.h>
+#include <shmdata/any-data-reader.h>
+#include <mutex>
 
 #include <chrono>
 
 namespace switcher
 {
-  class OscToShmdata : public Segment, public StartableQuiddity
+  class ShmdataToOsc : public Segment, public StartableQuiddity
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(OscToShmdata);
-    OscToShmdata ();
-    ~OscToShmdata ();
-    OscToShmdata (const OscToShmdata &) = delete;
-    OscToShmdata &operator=  (const OscToShmdata &) = delete;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToOsc);
+    ShmdataToOsc ();
+    ~ShmdataToOsc ();
+    ShmdataToOsc (const ShmdataToOsc &) = delete;
+    ShmdataToOsc &operator=  (const ShmdataToOsc &) = delete;
     bool init_segment ();
 
   private:
     CustomPropertyHelper::ptr custom_props_; 
     gint port_;
-    lo_server_thread osc_thread_;
+    std::string host_;
+    std::string shmdata_path_;
     GParamSpec *port_spec_;
-    std::chrono::time_point<std::chrono::system_clock> start_;
-    ShmdataAnyWriter::ptr shm_any_;
+    GParamSpec *host_spec_;
+    GParamSpec *shmdata_path_spec_;
+    lo_address address_;
+    shmdata_any_reader_t *reader_;
+    std::mutex address_mutex_;
 
     bool start ();
     bool stop ();
-    static int osc_handler(const char *path, const char *types, lo_arg **argv,
-			   int argc, void *data, void *user_data);
-    static void osc_error(int num, const char *msg, const char *path);
     static void set_port (const gint value, void *user_data);
     static gint get_port (void *user_data);
+    static void set_host (const gchar *value, void *user_data);
+    static const gchar *get_host (void *user_data);
+    static void set_shmdata_path (const gchar * value, void *user_data);
+    static const gchar *get_shmdata_path (void *user_data);
+    static void on_shmreader_data (shmdata_any_reader_t */*reader*/,
+				   void *shmbuf,
+				   void *data,
+				   int /*data_size*/,
+				   unsigned long long /*timestamp*/,
+				   const char */*type_description*/, 
+				   void *user_data);
   };
 
-  SWITCHER_DECLARE_PLUGIN(OscToShmdata);
+  SWITCHER_DECLARE_PLUGIN(ShmdataToOsc);
 
 }  // end of namespace
 
