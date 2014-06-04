@@ -41,7 +41,8 @@ namespace switcher
     quit_server_thread_ (false),
     service_ (NULL), 
     socket_ (),
-    thread_ ()
+    thread_ (),
+    mutex_ ()
   {}
 
   bool
@@ -240,6 +241,7 @@ namespace switcher
 	    // 	    (int)(service_->ip>>16)&0xFF, 
 	    // 	    (int)(service_->ip>>8)&0xFF, 
 	    // 	    (int)service_->ip&0xFF);
+	    std::unique_lock<std::mutex> lock(mutex_);
 	    controlService *tcontrol = service_->copy();
 	    if (service_->errnum)
 	      service_->soap_print_fault(stderr);

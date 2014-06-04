@@ -185,7 +185,11 @@ namespace switcher
     for (j = 0; j< num_elements; j ++)
       {
 	json_reader_read_element (reader, j);
-	command->add_arg (json_reader_get_string_value (reader));
+	const gchar *str = json_reader_get_string_value (reader);
+	if (NULL != str)
+	  command->add_arg (str);
+	else
+	  command->add_arg ("null");
 	json_reader_end_element (reader);
       }
     json_reader_end_member (reader);

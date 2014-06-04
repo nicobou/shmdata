@@ -184,6 +184,4 @@ namespace switcher
     PortMidiSink *context = static_cast <PortMidiSink *> (user_data);
     return context->shmdata_path_;
   }
-  
-
 }

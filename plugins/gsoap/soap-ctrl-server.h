@@ -22,6 +22,7 @@
 #include "switcher/quiddity-manager-wrapper.h"
 #include "webservices/soapcontrolService.h"
 #include <thread>
+#include <mutex>
 #include <memory>
 
 namespace switcher
@@ -52,6 +53,7 @@ namespace switcher
     controlService *service_; 
     SOAP_SOCKET socket_;
     std::thread thread_;
+    std::mutex mutex_;
     void server_thread ();
     static int http_get (struct soap *soap);
   };

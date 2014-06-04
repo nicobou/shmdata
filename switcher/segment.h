@@ -30,6 +30,8 @@
 #include <vector>
 #include <unordered_map>
 
+//FIXME separate shmdata management and runtime
+
 namespace switcher
 {
   class Segment : public Quiddity, public Runtime
