@@ -31,49 +31,49 @@
 int
 main ()
 {
-   bool success = true;
-   {
-     switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
+  bool success = true;
+  {
+    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
      
 #ifdef HAVE_CONFIG_H
-     gchar *usr_plugin_dir = g_strdup_printf ("./%s", LT_OBJDIR);
-     manager->scan_directory_for_plugins (usr_plugin_dir);
-     g_free (usr_plugin_dir);
+    gchar *usr_plugin_dir = g_strdup_printf ("./%s", LT_OBJDIR);
+    manager->scan_directory_for_plugins (usr_plugin_dir);
+    g_free (usr_plugin_dir);
 #else
-     return 1;
+    return 1;
 #endif
      
-      // if (!switcher::QuiddityBasicTest::test_full (manager, "sip"))
-      //   success = false;
+    // if (!switcher::QuiddityBasicTest::test_full (manager, "sip"))
+    //   success = false;
      
-     if (0 != manager->create ("sip", "test").compare ("test"))
-       {
-      	 g_print ("cannot create\n");
-     	 return 1;
-        }
+    if (0 != manager->create ("sip", "test").compare ("test"))
+      {
+	g_print ("cannot create\n");
+	return 1;
+      }
 
-      manager->set_property ("test", "port", "5070");
-       bool registered = manager->invoke_va ("test","register", NULL, 
-       					   "1004", //user
-       					   "10.10.30.115", //domain
-       					   "1234", //password
-       					   NULL);
+    manager->set_property ("test", "port", "5070");
+    bool registered = manager->invoke_va ("test","register", NULL, 
+					  "1004", //user
+					  "10.10.30.115", //domain
+					  "1234", //password
+					  NULL);
      
-       if (!registered)
-         {
-       	 g_print ("cannot register \n");
-       	 return 1;
-         }
-       usleep (300000000);
-      manager->remove ("test");
+    if (!registered)
+      {
+	g_print ("cannot register \n");
+	return 1;
+      }
+    usleep (300000000);
+    manager->remove ("test");
      
      
-   }//end of scope is releasing the manager
+  }//end of scope is releasing the manager
    
-   if (success)
-     return 0;
-   else
-     return 1;
+  if (success)
+    return 0;
+  else
+    return 1;
 }
 
 

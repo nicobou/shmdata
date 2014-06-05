@@ -67,35 +67,38 @@ typedef struct codec
 
 
 /* A bidirectional media stream created when the call is active. */
-struct media_stream
-{
-    /* Static: */
-    unsigned		 call_index;	    /* Call owner.		*/
-    unsigned		 media_index;	    /* Media index in call.	*/
-    pjmedia_transport   *transport;	    /* To send/recv RTP/RTCP	*/
+ struct media_stream
+ {
+   /* Static: */
+   unsigned		 call_index;	    /* Call owner.		*/
+   unsigned		 media_index;	    /* Media index in call.	*/
+   pjmedia_transport   *transport;	    /* To send/recv RTP/RTCP	*/
 
-    /* Active? */
-    pj_bool_t		 active;	    /* Non-zero if is in call.	*/
+   /* Active? */
+   pj_bool_t		 active;	    /* Non-zero if is in call.	*/
 
-    /* Current stream info: */
-    pjmedia_stream_info	 si;		    /* Current stream info.	*/
+   /* Current stream info: */
+   pjmedia_stream_info	 si;		    /* Current stream info.	*/
 
-    /* More info: */
-    unsigned		 clock_rate;	    /* clock rate		*/
-    unsigned		 samples_per_frame; /* samples per frame	*/
-    unsigned		 bytes_per_frame;   /* frame size.		*/
+   /* More info: *///FIXME these 3 next should be removed
+   unsigned		 clock_rate;	    /* clock rate		*/
+   unsigned		 samples_per_frame; /* samples per frame	*/
+   unsigned		 bytes_per_frame;   /* frame size.		*/
 
-    /* RTP session: */
-    pjmedia_rtp_session	 out_sess;	    /* outgoing RTP session	*/
-    pjmedia_rtp_session	 in_sess;	    /* incoming RTP session	*/
-
-    /* RTCP stats: */
-    pjmedia_rtcp_session rtcp;		    /* incoming RTCP session.	*/
-
-    /* Thread: */
-    pj_bool_t		 thread_quit_flag;  /* Stop media thread.	*/
-    pj_thread_t		*thread;	    /* Media thread.		*/
-};
+   /* RTP session: */
+   pjmedia_rtp_session	 out_sess;	    /* outgoing RTP session	*/
+   pjmedia_rtp_session	 in_sess;	    /* incoming RTP session	*/
+  
+   /* RTCP stats: */
+   pjmedia_rtcp_session rtcp;		    /* incoming RTCP session.	*/
+  
+   /* Thread: */
+   pj_bool_t		 thread_quit_flag;  /* Stop media thread.	*/
+   pj_thread_t		*thread;	    /* Media thread.		*/
+  
+   //type
+   std::string type; //audio, video or application
+ };
 
 
 /* This is a call structure that is created when the application starts
@@ -106,7 +109,7 @@ struct call
   unsigned		 index;
   pjsip_inv_session	*inv;
   unsigned		 media_count;
-  struct media_stream	 media[1];
+  struct media_stream	 media[64];
   pj_time_val		 start_time;
   pj_time_val		 response_time;
   pj_time_val		 connect_time;
@@ -136,7 +139,7 @@ typedef struct app
     char		*log_filename;
     char		*report_filename;
 
-    struct codec	 audio_codec;
+  struct codec	 audio_codec;//FIXME should be removed ?
 
     pj_str_t		 uri_to_call;
 
@@ -182,7 +185,9 @@ typedef struct app
 				   pjmedia_sdp_session **p_sdp);  
     static void on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size);
     static void on_rx_rtcp(void *user_data, void *pkt, pj_ssize_t size);
-    
+    static pj_status_t parse_SDP_from_incoming_request (pjsip_rx_data *rdata, 
+							pjmedia_sdp_session *offer);
+    static void print_sdp (const pjmedia_sdp_session *local_sdp);
   };
   
 }  // end of namespace

@@ -104,29 +104,29 @@ namespace switcher
        	{
        	  unsigned j;
        	  /* Create transport for each media in the call */
-       	  for (j=0; j<PJ_ARRAY_SIZE(app.call[0].media); ++j) {
+       	  for (j = 0; j < PJ_ARRAY_SIZE (app.call[0].media); ++j) {
        	    /* Repeat binding media socket to next port when fails to bind
        	     * to current port number.
        	     */
-       	    //int retry;
+       	    // int retry;
 	    
        	    app.call[i].media[j].call_index = i;
        	    app.call[i].media[j].media_index = j;
 	    
        	    status = -1;
-	      // for (retry=0; retry<100; ++retry,rtp_port+=2)  {
-	      //   struct media_stream *m = &app.call[i].media[j];
+	    // for (retry=0; retry<100; ++retry,rtp_port+=2)  {
+	    //   struct media_stream *m = &app.call[i].media[j];
 	      
-	      //   status = pjmedia_transport_udp_create2(med_endpt_, 
-	      // 					     "siprtp",
-	      // 					     &app.local_addr,
-	      // 					     rtp_port, 0, 
-	      // 					     &m->transport);
-	      //   if (status == PJ_SUCCESS) {
-       	      //  	rtp_port += 2;
-       	      //  	break;
-	      //   }
-	      // }
+	    //   status = pjmedia_transport_udp_create2(med_endpt_, 
+	    //   					     "siprtp",
+	    //   					     &app.local_addr,
+	    //   					     rtp_port, 0, 
+	    //   					     &m->transport);
+	    //   if (status == PJ_SUCCESS) {
+       	    //    	rtp_port += 2;
+       	    //    	break;
+	    //   }
+	    // }
        	  }
        	}
   }
@@ -488,10 +488,26 @@ namespace switcher
 
     call = &app.call[i];
 
-    /* Verify that we can handle the request. */
+     /* Parse SDP from incoming request and verify that we can handle the request. */
+    pjmedia_sdp_session *offer = NULL;
+    if (rdata->msg_info.msg->body) {
+      pjsip_rdata_sdp_info *sdp_info;
+      sdp_info = pjsip_rdata_get_sdp_info(rdata);
+      offer = sdp_info->sdp;
+      if (NULL == offer)      
+	g_warning ("offer is null");
+      status = sdp_info->sdp_err;
+      if (status == PJ_SUCCESS && sdp_info->sdp == NULL)
+	status = PJSIP_ERRNO_FROM_SIP_STATUS (PJSIP_SC_NOT_ACCEPTABLE);
+      if (status != PJ_SUCCESS)
+	g_warning ("Bad SDP in incoming INVITE");
+    }
+
+    g_print ("*** offer ****\n");
+    print_sdp (offer);
     options = 0;
-    status = pjsip_inv_verify_request(rdata, &options, NULL, NULL,
-				      PJSIP::sip_endpt_, &tdata);
+    status = pjsip_inv_verify_request (rdata, &options, NULL, NULL, PJSIP::sip_endpt_, &tdata);
+
     if (status != PJ_SUCCESS) {
 	/*
 	 * No we can't handle the incoming INVITE request.
@@ -513,6 +529,7 @@ namespace switcher
 	return;
     }
 
+     
     /* Create UAS dialog */
     status = pjsip_dlg_create_uas( pjsip_ua_instance(), rdata,
 				   &app.local_contact, &dlg);
@@ -543,7 +560,52 @@ namespace switcher
 			  sizeof(uristr));
     g_print ("call to %.*s\n", len, uristr);
     
+    //checking number of transport to create for receiving 
+    //and creating transport for receiving data offered
 
+    call->media_count = 0;
+    pj_uint16_t rtp_port = (pj_uint16_t)(app.rtp_start_port & 0xFFFE);//FIXME start from last attributed
+    {
+      unsigned int j = 0;//counting media to receive
+      g_print ("media_count %d\n", offer->media_count);
+      for (unsigned int media_index=0; media_index< offer->media_count; media_index++)
+	{
+	  //g_print ("+++++++++++++++++ attribut count %d\n", offer->media[i]->attr_count);
+	  bool recv = false;
+	  for (unsigned int j=0; j<offer->media[i]->attr_count; j++)
+	    {
+	      if (0 == pj_strcmp2( &offer->media[i]->attr[j]->name, "sendrecv")
+		  || 0 == pj_strcmp2(&offer->media[i]->attr[j]->name, "sendonly"))
+		recv = true;
+	      // g_print ("name %.*s, value%.*s\n",
+	      // 	       (int)offer->media[i]->attr[j]->name.slen,
+	      // 	       offer->media[i]->attr[j]->name.ptr,
+	      // 	       (int)offer->media[i]->attr[j]->value.slen,
+	      // 	       offer->media[i]->attr[j]->value.ptr);
+	    }
+	  if (recv)
+	    {//creating transport
+	      call->media_count++;
+	      for (int retry=0; retry<100; ++retry,rtp_port+=2)  
+		{
+		  struct media_stream *m = &call->media[j];
+		  m->type = std::string (offer->media[media_index]->desc.media.ptr,
+					 offer->media[media_index]->desc.media.slen);
+		  status = pjmedia_transport_udp_create2(med_endpt_, 
+							 "siprtp",
+							 &app.local_addr,
+							 rtp_port, 0, 
+							 &m->transport);
+		  if (status == PJ_SUCCESS) {
+		    rtp_port += 2;
+		    break;
+		  }
+		}
+	      j++;
+	    }
+	}
+    }
+    
     /* Create SDP */
     create_sdp (dlg->pool, call, &sdp);
 
@@ -552,22 +614,24 @@ namespace switcher
     // pjmedia_transport_get_info(audio->transport, &tpinfo);
     // tpinfo.sock_info
 
-    // pjmedia_endpt_create_sdp 	(med_endpt_,
+    // pjmedia_endpt_create_sdp (med_endpt_,
     // 				 dlg->pool,
     // 				 3,
     // 				 const pjmedia_sock_info  	sock_info[],
     // 				 &sdp) 	
 
     /* Create UAS invite session */
-    status = pjsip_inv_create_uas( dlg, rdata, sdp, 0, &call->inv);
-    if (status != PJ_SUCCESS) {
-	pjsip_dlg_create_response(dlg, rdata, 500, NULL, &tdata);
-	pjsip_dlg_send_response(dlg, pjsip_rdata_get_tsx(rdata), tdata);
+    //sdp=NULL;
+    status = pjsip_inv_create_uas (dlg, rdata, sdp, 0, &call->inv);
+    if (status != PJ_SUCCESS) 
+      {
+	pjsip_dlg_create_response (dlg, rdata, 500, NULL, &tdata);
+	pjsip_dlg_send_response (dlg, pjsip_rdata_get_tsx(rdata), tdata);
 	return;
-    }
+      }
 
-    const pjmedia_sdp_session *offer = NULL;
-    pjmedia_sdp_neg_get_neg_remote(call->inv->neg, &offer);
+    // const pjmedia_sdp_session *offer = NULL;
+    // pjmedia_sdp_neg_get_neg_remote(call->inv->neg, &offer);
 
     /* Attach call data to invite session */
     call->inv->mod_data[mod_siprtp_.id] = call;
@@ -576,16 +640,16 @@ namespace switcher
     pj_gettimeofday(&call->start_time);
 
     /* Create 200 response .*/
-    status = pjsip_inv_initial_answer(call->inv, rdata, 200, 
-				      NULL, NULL, &tdata);
+    status = pjsip_inv_initial_answer (call->inv, rdata, 200, 
+				       NULL, NULL, &tdata);
     if (status != PJ_SUCCESS) {
-	status = pjsip_inv_initial_answer(call->inv, rdata, 
-					  PJSIP_SC_NOT_ACCEPTABLE,
-					  NULL, NULL, &tdata);
+	status = pjsip_inv_initial_answer (call->inv, rdata, 
+					   PJSIP_SC_NOT_ACCEPTABLE,
+					   NULL, NULL, &tdata);
 	if (status == PJ_SUCCESS)
-	    pjsip_inv_send_msg(call->inv, tdata); 
+	    pjsip_inv_send_msg (call->inv, tdata); 
 	else
-	    pjsip_inv_terminate(call->inv, 500, PJ_FALSE);
+	    pjsip_inv_terminate (call->inv, 500, PJ_FALSE);
 	return;
     }
 
@@ -609,15 +673,8 @@ namespace switcher
     pjmedia_sdp_session *sdp;
     pjmedia_sdp_media *m;
     pjmedia_sdp_attr *attr;
-    pjmedia_transport_info tpinfo;
-    struct media_stream *audio = &call->media[0];
 
     PJ_ASSERT_RETURN(pool && p_sdp, PJ_EINVAL);
-
-
-    /* Get transport info */
-    pjmedia_transport_info_init(&tpinfo);
-    pjmedia_transport_get_info(audio->transport, &tpinfo);
 
     /* Create and initialize basic SDP session */
     sdp = (pjmedia_sdp_session *)pj_pool_zalloc (pool, sizeof(pjmedia_sdp_session));
@@ -638,107 +695,138 @@ namespace switcher
     sdp->conn->addr_type = pj_str("IP4");
     sdp->conn->addr = app.local_addr;
 
-
     /* SDP time and attributes. */
     sdp->time.start = sdp->time.stop = 0;
     sdp->attr_count = 0;
 
-     /* ----------------- Create media stream 0: */
-     sdp->media_count = 1;
-     m = (pjmedia_sdp_media *)pj_pool_zalloc (pool, sizeof(pjmedia_sdp_media));
-     sdp->media[0] = m;
+    /* ----------------- Create media stream 0: */
 
-     /* Standard media info: */
-     m->desc.media = pj_str("audio");
-     m->desc.port = 18000;//pj_ntohs(tpinfo.sock_info.rtp_addr_name.ipv4.sin_port);
-     m->desc.port_count = 1;
-     m->desc.transport = pj_str("RTP/AVP");
-    
-     /* Add format and rtpmap for each codec. */
-     m->desc.fmt_count = 1;
-     m->attr_count = 0;
-    
-     {
-       pjmedia_sdp_rtpmap rtpmap;
-       pjmedia_sdp_attr *attr;
-       char ptstr[10];
-      
-       sprintf(ptstr, "%d", app.audio_codec.pt);
-       pj_strdup2(pool, &m->desc.fmt[0], ptstr);
-       rtpmap.pt = m->desc.fmt[0];
-       rtpmap.clock_rate = app.audio_codec.clock_rate;
-       rtpmap.enc_name = pj_str(app.audio_codec.name);
-       rtpmap.param.slen = 0;
-      
-       pjmedia_sdp_rtpmap_to_attr(pool, &rtpmap, &attr);
-       m->attr[m->attr_count++] = attr;
-     }
-    
-     /* Add sendrecv attribute. */
-     attr = (pjmedia_sdp_attr *)pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr));
-     //attr->name = pj_str("sendrecv");
-     attr->name = pj_str("recvonly");
-     m->attr[m->attr_count++] = attr;
-
-     attr = (pjmedia_sdp_attr *)pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr));
-     attr->name = pj_str("control:stream=0");
-     m->attr[m->attr_count++] = attr;
-
-     /* -------------- Create media stream 1: */
-     sdp->media_count++;
-     m = (pjmedia_sdp_media *)pj_pool_zalloc (pool, sizeof(pjmedia_sdp_media));
-     sdp->media[1] = m;
-
-     /* Standard media info: */
-     m->desc.media = pj_str("video");
-     m->desc.port = 18002;//pj_ntohs(tpinfo.sock_info.rtp_addr_name.ipv4.sin_port);
-     m->desc.port_count = 1;
-     m->desc.transport = pj_str("RTP/AVP");
-    
-     /* Add format and rtpmap for each codec. */
-     m->desc.fmt_count = 1;
-     m->attr_count = 0;
-    
-     {
-       pjmedia_sdp_rtpmap rtpmap;
-       pjmedia_sdp_attr *attr;
-       char ptstr[10];
-      
-       sprintf(ptstr, "%d", 92);
-       pj_strdup2(pool, &m->desc.fmt[0], ptstr);
-       rtpmap.pt = m->desc.fmt[0];
-       rtpmap.clock_rate = 90000;
-       rtpmap.enc_name = pj_str("theora");
-       rtpmap.param.slen = 0;
-      
-       pjmedia_sdp_rtpmap_to_attr(pool, &rtpmap, &attr);
-       m->attr[m->attr_count++] = attr;
-
-       // g_print ("+++++++++++++++++++++++++++ attr (%.*s) (%.*s)\n",
-       // 		(int)attr->name.slen,
-       // 		attr->name.ptr,
-       // 		(int)attr->value.slen,
-       // 		attr->value.ptr);
-     }
-
+    for (unsigned i = 0; i < call->media_count; i++)
       {
-        pjmedia_sdp_attr *attr;
-	attr = (pjmedia_sdp_attr *)pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr));
-	attr->name = pj_str("fmtp:92");
-	attr->value = pj_str ("height=576;width=706");
-	m->attr[m->attr_count++] = attr;
+	g_print ("((((TODO))) make media (%s)\n",
+		 call->media[i].type.c_str ());
+	//HERE recuperer le sdp_media de l offre et y mettre le transport pour la reception
+	// pjmedia_transport_info tpinfo;
+	// pjmedia_transport_info_init(&tpinfo);
+	// pjmedia_transport_get_info(call->media[i].transport, &tpinfo);
+	// pjmedia_sdp_media *sdp_media = NULL;
+	// if (0 == call->media[i].type.compare ("audio"))
+	//   {
+	    
+	//     pj_status_t status = pjmedia_endpt_create_audio_sdp (med_endpt_,
+	// 					     pool,
+	// 					     &tpinfo.sock_info,
+	// 					     0,
+	// 					     &sdp_media);
+	//      if (status != PJ_SUCCESS) 
+	//        g_warning ("cannot generate sdp media line\n");
+	//   }
       }
 
-     attr = (pjmedia_sdp_attr *)pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr));
-     attr->name = pj_str("control:stream=1");
-     m->attr[m->attr_count++] = attr;
     
-     /* Add sendrecv attribute. */
-     attr = (pjmedia_sdp_attr *)pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr));
-     attr->name = pj_str("sendrecv");
-     //attr->name = pj_str("recvonly");
+    /* Get transport info */
+    pjmedia_transport_info tpinfo;
+    struct media_stream *audio = &call->media[0];
+    pjmedia_transport_info_init(&tpinfo);
+    pjmedia_transport_get_info(audio->transport, &tpinfo);
 
-     m->attr[m->attr_count++] = attr;
+    sdp->media_count = 1;
+    m = (pjmedia_sdp_media *)pj_pool_zalloc (pool, sizeof(pjmedia_sdp_media));
+    sdp->media[0] = m;
+    
+    /* Standard media info: */
+    m->desc.media = pj_str("audio");
+    m->desc.port = pj_ntohs(tpinfo.sock_info.rtp_addr_name.ipv4.sin_port);
+    m->desc.port_count = 1;
+    m->desc.transport = pj_str("RTP/AVP");
+    
+    /* Add format and rtpmap for each codec. */
+    m->desc.fmt_count = 1;
+    m->attr_count = 0;
+    
+    {
+      pjmedia_sdp_rtpmap rtpmap;
+      pjmedia_sdp_attr *attr;
+      char ptstr[10];
+      
+      sprintf(ptstr, "%d", app.audio_codec.pt);
+      pj_strdup2(pool, &m->desc.fmt[0], ptstr);
+      rtpmap.pt = m->desc.fmt[0];
+      rtpmap.clock_rate = app.audio_codec.clock_rate;
+      rtpmap.enc_name = pj_str(app.audio_codec.name);
+      rtpmap.param.slen = 0;
+      
+      pjmedia_sdp_rtpmap_to_attr(pool, &rtpmap, &attr);
+      m->attr[m->attr_count++] = attr;
+    }
+    
+    /* Add sendrecv attribute. */
+    attr = (pjmedia_sdp_attr *)pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr));
+    //attr->name = pj_str("sendrecv");
+    attr->name = pj_str("recvonly");
+    m->attr[m->attr_count++] = attr;
+    
+    attr = (pjmedia_sdp_attr *)pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr));
+    attr->name = pj_str("control:stream=0");
+    m->attr[m->attr_count++] = attr;
+    
+    // /* -------------- Create media stream 1: */
+    // sdp->media_count++;
+    //  m = (pjmedia_sdp_media *)pj_pool_zalloc (pool, sizeof(pjmedia_sdp_media));
+    //  sdp->media[1] = m;
+     
+    //  /* Standard media info: */
+    //  m->desc.media = pj_str("video");
+    //  m->desc.port = 18002;//pj_ntohs(tpinfo.sock_info.rtp_addr_name.ipv4.sin_port);
+    //  m->desc.port_count = 1;
+    //  m->desc.transport = pj_str("RTP/AVP");
+    
+    //  /* Add format and rtpmap for each codec. */
+    //  m->desc.fmt_count = 1;
+    //  m->attr_count = 0;
+    
+    //  {
+    //    pjmedia_sdp_rtpmap rtpmap;
+    //    pjmedia_sdp_attr *attr;
+    //    char ptstr[10];
+      
+    //    sprintf(ptstr, "%d", 92);
+    //    pj_strdup2(pool, &m->desc.fmt[0], ptstr);
+    //    rtpmap.pt = m->desc.fmt[0];
+    //    rtpmap.clock_rate = 90000;
+    //    rtpmap.enc_name = pj_str("theora");
+    //    rtpmap.param.slen = 0;
+      
+    //    pjmedia_sdp_rtpmap_to_attr(pool, &rtpmap, &attr);
+    //    m->attr[m->attr_count++] = attr;
+
+    //    // g_print ("+++++++++++++++++++++++++++ attr (%.*s) (%.*s)\n",
+    //    // 		(int)attr->name.slen,
+    //    // 		attr->name.ptr,
+    //    // 		(int)attr->value.slen,
+    //    // 		attr->value.ptr);
+    //  }
+
+    //   {
+    //     pjmedia_sdp_attr *attr;
+    // 	attr = (pjmedia_sdp_attr *)pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr));
+    // 	attr->name = pj_str("fmtp:92");
+    // 	attr->value = pj_str ("height=576;width=706");
+    // 	m->attr[m->attr_count++] = attr;
+    //   }
+
+    //  attr = (pjmedia_sdp_attr *)pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr));
+    //  attr->name = pj_str("control:stream=1");
+    //  m->attr[m->attr_count++] = attr;
+    
+    //  /* Add sendrecv attribute. */
+    //  attr = (pjmedia_sdp_attr *)pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr));
+    //  attr->name = pj_str("sendrecv");
+    //  //attr->name = pj_str("recvonly");
+
+    //  m->attr[m->attr_count++] = attr;
+    //  //end media stream 1
+
 
  // #if 1
  //     /*
@@ -834,5 +922,26 @@ PJCall::on_rx_rtcp(void *user_data, void *pkt, pj_ssize_t size)
     /* Update RTCP session */
     pjmedia_rtcp_rx_rtcp(&strm->rtcp, pkt, size);
 }
+ 
 
+  void 
+  PJCall::print_sdp (const pjmedia_sdp_session *local_sdp)
+  {
+    char sdpbuf1[4096];
+    pj_ssize_t len1;
+    g_print ("1\n");
+    len1 = pjmedia_sdp_print(local_sdp, sdpbuf1, sizeof(sdpbuf1));
+    g_print ("2\n");
+    if (len1 < 1) {
+      g_print ("   error: printing local sdp\n");
+      return;
+    }
+    g_print ("3\n");
+    sdpbuf1[len1] = '\0';
+    g_print ("4\n");
+    g_print ("sdp : \n%s \n\n ",
+	     sdpbuf1);
+    g_print ("5 fin\n");
+    
+  }
 }
