@@ -23,6 +23,7 @@
 #include <memory>
 #include <thread>
 #include <mutex>
+#include <vector>
 #include <condition_variable>
 
 //pjsip
@@ -182,6 +183,7 @@ typedef struct app
     void init_app ();
     static pj_status_t create_sdp( pj_pool_t *pool,
 				   struct call *call,
+				   const std::vector<pjmedia_sdp_media *> media_to_receive,
 				   pjmedia_sdp_session **p_sdp);  
     static void on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size);
     static void on_rx_rtcp(void *user_data, void *pkt, pj_ssize_t size);

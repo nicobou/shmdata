@@ -115,11 +115,11 @@ namespace switcher
     unsigned i = 0;
     for (auto &it : available_codecs)
       {
-	// std::cout << " encoding " << it->encoding_name_ 
-	// 	  << " payload " << it->payload_
-	// 	  << " media " << it->media_
-	// 	  << " clock rate " << it->clock_rate_
-	// 	  << std::endl;
+	std::cout << " encoding " << it->encoding_name_ 
+		  << " payload " << it->payload_
+		  << " media " << it->media_
+		  << " clock rate " << it->clock_rate_
+		  << std::endl;
 	if (i >= *count)//default pjsip is 32, need a patch to get more, like 128
 	  break;
 	pj_bzero(&codecs[i], sizeof(pjmedia_codec_info));

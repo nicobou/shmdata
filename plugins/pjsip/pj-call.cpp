@@ -323,14 +323,12 @@ namespace switcher
     g_print ("--> %s\n", __FUNCTION__);
     struct call *call;
     //pj_pool_t *pool;
-    struct media_stream *audio;
     const pjmedia_sdp_session *local_sdp, *remote_sdp;
     struct codec *codec_desc = NULL;
     unsigned i;
 
     call = (struct call *)inv->mod_data[mod_siprtp_.id];
     //pool = inv->dlg->pool;
-    audio = &call->media[0];
 
     /* If this is a mid-call media update, then destroy existing media */
     // FIXME if (audio->thread != NULL)
@@ -360,21 +358,24 @@ namespace switcher
     len2 = pjmedia_sdp_print(remote_sdp, sdpbuf2, sizeof(sdpbuf2));
     if (len2 < 1) {
       g_print ("   error: printing sdp2");
-	return ;
+    	return ;
     }
     sdpbuf2[len2] = '\0';
     g_print ("*NEGOCIATED* local sdp : \n%s \n\nremote sdp : \n%s \n\n ",
-	     sdpbuf1, sdpbuf2);
+    	     sdpbuf1, sdpbuf2);
     
-    g_remove ("/tmp/truc.sdp");
-    g_file_set_contents ("/tmp/truc.sdp", 
-			 sdpbuf1, 
-			 -1, //no size, res is a null terminated string
-			 NULL); //not getting errors
+    // g_remove ("/tmp/truc.sdp");
+    // g_file_set_contents ("/tmp/truc.sdp", 
+    // 			 sdpbuf1, 
+    // 			 -1, //no size, res is a null terminated string
+    // 			 NULL); //not getting errors
 
     //FIXME bypassing pjmedia transport
-    return;
+    //return;
 
+    
+    struct media_stream *audio;
+    audio = &call->media[0];
     status = pjmedia_stream_info_from_sdp(&audio->si, inv->pool, med_endpt_,
 					  local_sdp, remote_sdp, 0);
 
@@ -429,8 +430,8 @@ namespace switcher
       	return;
       }
 
-    /* Start media thread. */
-    audio->thread_quit_flag = 0;
+    // /* Start media thread. */
+    // audio->thread_quit_flag = 0;
 
     //FIXME time to send rtp
 // #if PJ_HAS_THREADS
@@ -564,6 +565,7 @@ namespace switcher
     //and creating transport for receiving data offered
 
     call->media_count = 0;
+    std::vector <pjmedia_sdp_media *> media_to_receive;
     pj_uint16_t rtp_port = (pj_uint16_t)(app.rtp_start_port & 0xFFFE);//FIXME start from last attributed
     {
       unsigned int j = 0;//counting media to receive
@@ -572,19 +574,36 @@ namespace switcher
 	{
 	  //g_print ("+++++++++++++++++ attribut count %d\n", offer->media[i]->attr_count);
 	  bool recv = false;
-	  for (unsigned int j=0; j<offer->media[i]->attr_count; j++)
+	  pjmedia_sdp_media *tmp_media;
+	  for (unsigned int j=0; j<offer->media[media_index]->attr_count; j++)
 	    {
-	      if (0 == pj_strcmp2( &offer->media[i]->attr[j]->name, "sendrecv")
-		  || 0 == pj_strcmp2(&offer->media[i]->attr[j]->name, "sendonly"))
-		recv = true;
+	      if (0 == pj_strcmp2( &offer->media[media_index]->attr[j]->name, "sendrecv")
+		  || 0 == pj_strcmp2(&offer->media[media_index]->attr[j]->name, "sendonly"))
+		{
+		  tmp_media = pjmedia_sdp_media_clone (dlg->pool, offer->media[media_index]);
+		  //FIXME replace attr name with recvonly
+		  recv = true;
+		}
 	      // g_print ("name %.*s, value%.*s\n",
-	      // 	       (int)offer->media[i]->attr[j]->name.slen,
-	      // 	       offer->media[i]->attr[j]->name.ptr,
-	      // 	       (int)offer->media[i]->attr[j]->value.slen,
-	      // 	       offer->media[i]->attr[j]->value.ptr);
+	      // 	       (int)offer->media[media_index]->attr[j]->name.slen,
+	      // 	       offer->media[media_index]->attr[j]->name.ptr,
+	      // 	       (int)offer->media[media_index]->attr[j]->value.slen,
+	      // 	       offer->media[media_index]->attr[j]->value.ptr);
 	    }
 	  if (recv)
-	    {//creating transport
+	    {
+	      //adding control stream attribute
+	      pjmedia_sdp_attr *attr = 
+		(pjmedia_sdp_attr *)pj_pool_zalloc(dlg->pool, 
+						   sizeof(pjmedia_sdp_attr));
+	      std::string control_stream ("control:stream=" + std::to_string (j)); 
+	      pj_strdup2(dlg->pool, &attr->name, control_stream.c_str ());
+	      tmp_media->attr[tmp_media->attr_count++] = attr;
+
+	      //saving media
+	      media_to_receive.push_back (pjmedia_sdp_media_clone (dlg->pool, 
+								   tmp_media));   
+	      //creating transport
 	      call->media_count++;
 	      for (int retry=0; retry<100; ++retry,rtp_port+=2)  
 		{
@@ -605,9 +624,9 @@ namespace switcher
 	    }
 	}
     }
-    
+        
     /* Create SDP */
-    create_sdp (dlg->pool, call, &sdp);
+    create_sdp (dlg->pool, call, media_to_receive, &sdp);
 
     // pjmedia_transport_info tpinfo;
     // pjmedia_transport_info_init(&tpinfo);
@@ -664,15 +683,16 @@ namespace switcher
  * Create SDP session for a call.
  */
   pj_status_t 
-  PJCall::create_sdp( pj_pool_t *pool,
+  PJCall::create_sdp (pj_pool_t *pool,
 		      struct call *call,
+		      const std::vector<pjmedia_sdp_media *> media_to_receive,
 		      pjmedia_sdp_session **p_sdp)
   {
     g_print ("%s\n", __FUNCTION__);
     pj_time_val tv;
     pjmedia_sdp_session *sdp;
-    pjmedia_sdp_media *m;
-    pjmedia_sdp_attr *attr;
+    // pjmedia_sdp_media *m;
+    // pjmedia_sdp_attr *attr;
 
     PJ_ASSERT_RETURN(pool && p_sdp, PJ_EINVAL);
 
@@ -698,13 +718,14 @@ namespace switcher
     /* SDP time and attributes. */
     sdp->time.start = sdp->time.stop = 0;
     sdp->attr_count = 0;
+    sdp->media_count = 0;
 
-    /* ----------------- Create media stream 0: */
 
     for (unsigned i = 0; i < call->media_count; i++)
       {
-	g_print ("((((TODO))) make media (%s)\n",
+	g_print ("make media (%s)\n",
 		 call->media[i].type.c_str ());
+	
 	//HERE recuperer le sdp_media de l offre et y mettre le transport pour la reception
 	// pjmedia_transport_info tpinfo;
 	// pjmedia_transport_info_init(&tpinfo);
@@ -721,54 +742,65 @@ namespace switcher
 	//      if (status != PJ_SUCCESS) 
 	//        g_warning ("cannot generate sdp media line\n");
 	//   }
+
+	//getting offer media to receive
+	pjmedia_sdp_media *sdp_media = media_to_receive[i];
+	//getting transport info 
+	pjmedia_transport_info tpinfo;
+	pjmedia_transport_info_init(&tpinfo);
+	pjmedia_transport_get_info(call->media[i].transport, &tpinfo);
+	sdp_media->desc.port = pj_ntohs(tpinfo.sock_info.rtp_addr_name.ipv4.sin_port);
+	//put media in answer
+	sdp->media[i] = sdp_media;
+	sdp->media_count++;
       }
+    
+    // /* ----------------- Create media stream 0: */
+    // /* Get transport info */
+    // pjmedia_transport_info tpinfo;
+    // struct media_stream *audio = &call->media[0];
+    // pjmedia_transport_info_init(&tpinfo);
+    // pjmedia_transport_get_info(audio->transport, &tpinfo);
 
+    // sdp->media_count = 1;
+    // m = (pjmedia_sdp_media *)pj_pool_zalloc (pool, sizeof(pjmedia_sdp_media));
+    // sdp->media[0] = m;
     
-    /* Get transport info */
-    pjmedia_transport_info tpinfo;
-    struct media_stream *audio = &call->media[0];
-    pjmedia_transport_info_init(&tpinfo);
-    pjmedia_transport_get_info(audio->transport, &tpinfo);
-
-    sdp->media_count = 1;
-    m = (pjmedia_sdp_media *)pj_pool_zalloc (pool, sizeof(pjmedia_sdp_media));
-    sdp->media[0] = m;
+    // /* Standard media info: */
+    // m->desc.media = pj_str("audio");
+    // m->desc.port = pj_ntohs(tpinfo.sock_info.rtp_addr_name.ipv4.sin_port);
+    // m->desc.port_count = 1;
+    // m->desc.transport = pj_str("RTP/AVP");
     
-    /* Standard media info: */
-    m->desc.media = pj_str("audio");
-    m->desc.port = pj_ntohs(tpinfo.sock_info.rtp_addr_name.ipv4.sin_port);
-    m->desc.port_count = 1;
-    m->desc.transport = pj_str("RTP/AVP");
+    // /* Add format and rtpmap for each codec. */
+    // m->desc.fmt_count = 1;
+    // m->attr_count = 0;
     
-    /* Add format and rtpmap for each codec. */
-    m->desc.fmt_count = 1;
-    m->attr_count = 0;
-    
-    {
-      pjmedia_sdp_rtpmap rtpmap;
-      pjmedia_sdp_attr *attr;
-      char ptstr[10];
+    // {
+    //   pjmedia_sdp_rtpmap rtpmap;
+    //   pjmedia_sdp_attr *attr;
+    //   char ptstr[10];
       
-      sprintf(ptstr, "%d", app.audio_codec.pt);
-      pj_strdup2(pool, &m->desc.fmt[0], ptstr);
-      rtpmap.pt = m->desc.fmt[0];
-      rtpmap.clock_rate = app.audio_codec.clock_rate;
-      rtpmap.enc_name = pj_str(app.audio_codec.name);
-      rtpmap.param.slen = 0;
+    //   sprintf(ptstr, "%d", app.audio_codec.pt);
+    //   pj_strdup2(pool, &m->desc.fmt[0], ptstr);
+    //   rtpmap.pt = m->desc.fmt[0];
+    //   rtpmap.clock_rate = app.audio_codec.clock_rate;
+    //   rtpmap.enc_name = pj_str(app.audio_codec.name);
+    //   rtpmap.param.slen = 0;
       
-      pjmedia_sdp_rtpmap_to_attr(pool, &rtpmap, &attr);
-      m->attr[m->attr_count++] = attr;
-    }
+    //   pjmedia_sdp_rtpmap_to_attr(pool, &rtpmap, &attr);
+    //   m->attr[m->attr_count++] = attr;
+    // }
     
-    /* Add sendrecv attribute. */
-    attr = (pjmedia_sdp_attr *)pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr));
-    //attr->name = pj_str("sendrecv");
-    attr->name = pj_str("recvonly");
-    m->attr[m->attr_count++] = attr;
+    // /* Add sendrecv attribute. */
+    // attr = (pjmedia_sdp_attr *)pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr));
+    // //attr->name = pj_str("sendrecv");
+    // attr->name = pj_str("recvonly");
+    // m->attr[m->attr_count++] = attr;
     
-    attr = (pjmedia_sdp_attr *)pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr));
-    attr->name = pj_str("control:stream=0");
-    m->attr[m->attr_count++] = attr;
+    // attr = (pjmedia_sdp_attr *)pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr));
+    // attr->name = pj_str("control:stream=0");
+    // m->attr[m->attr_count++] = attr;
     
     // /* -------------- Create media stream 1: */
     // sdp->media_count++;

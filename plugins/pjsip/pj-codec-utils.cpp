@@ -138,8 +138,8 @@ namespace switcher
 	//g_print ("%s struct type %s\n", key.c_str (), G_VALUE_TYPE_NAME (val));  
 	if(GST_VALUE_HOLDS_INT_RANGE(val)) 
 	  { 
-	    //g_print ("%s min %d\n", key.c_str (), gst_value_get_int_range_min (val));  
-	    res.push_back (gst_value_get_int_range_min (val));
+	    //g_print ("%s min %d\n", key.c_str (), gst_value_get_int_range_max (val));  
+	    res.push_back (gst_value_get_int_range_max (val));
 	  } 
 	if (GST_VALUE_HOLDS_LIST(val)) 
 	  { 
