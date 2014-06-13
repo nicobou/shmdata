@@ -74,10 +74,13 @@ namespace switcher
    static gboolean event_probe_cb (GstPad *pad, GstEvent * event, gpointer data);
    static gboolean process_eos (gpointer user_data);
    static void unknown_type_cb (GstElement *bin, GstPad *pad, GstCaps *caps, gpointer user_data);
+   static int autoplug_continue_cb (GstElement *bin, GstPad *pad, GstCaps *caps, gpointer user_data);
    static int autoplug_select_cb (GstElement *bin, GstPad *pad, GstCaps *caps, GstElementFactory *factory, gpointer user_data);
    //filtering uncomplete custum buffers
    static gboolean gstrtpdepay_buffer_probe_cb (GstPad * pad, GstMiniObject * mini_obj, gpointer user_data);
    static gboolean gstrtpdepay_event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data);
+   static void on_handoff_cb (GstElement*, GstBuffer*, GstPad*, gpointer);
+   static void release_buf (void*);
    void pad_to_shmdata_writer (GstElement *bin, GstPad *pad);
    /* static GValueArray *autoplug_sort_cb (GstElement *bin, */
    /* 					 GstPad *pad, */
