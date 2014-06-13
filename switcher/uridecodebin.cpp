@@ -238,7 +238,6 @@ namespace switcher
                                 (GstPluginFeatureFilter) sink_factory_filter,
                                 FALSE, caps);
     int length = g_list_length (list);
-    g_print("----------------------------------> %i for %s\n", length, gst_caps_to_string(caps));
     gst_plugin_feature_list_free (list);
     if (length == 0)
         return 0;
@@ -371,7 +370,6 @@ namespace switcher
       {
 	      GstCaps *caps = gst_pad_get_negotiated_caps (pad);
 	      gchar *string_caps = gst_caps_to_string (caps);
-        g_print ("%s\n", string_caps);
 	      g_debug ("%s\n", string_caps);
 	      writer->set_data_type (string_caps);
 	      writer->start ();
@@ -540,7 +538,6 @@ namespace switcher
   {   
     Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
 
-    g_print("~~~~~ %s --- %s from %s\n", gst_element_get_name(context->bin_), gst_element_get_name(object), __FUNCTION__);
     // g_print ("------------- caps 1 %s \n-------------- caps 2 %s\n",
     // 	     gst_caps_to_string (context->gstrtpcaps_), 
     // 	     gst_caps_to_string (gst_pad_get_caps (pad)));
