@@ -27,7 +27,7 @@ namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
 				       "Media Player (URI)",
-				       "uri src", 
+				       "uri source", 
 				       "decode an URI and writes to shmdata(s)",
 				       "LGPL",
 				       "uridecodebin", 
@@ -123,10 +123,10 @@ namespace switcher
      		      "unknown-type",  
      		      (GCallback) Uridecodebin::unknown_type_cb ,  
      		      (gpointer) this);      
-    // g_signal_connect (G_OBJECT (uridecodebin_),  
-    // 		      "autoplug-continue",  
-    // 		      (GCallback) Uridecodebin::autoplug_continue_cb ,  
-    // 		      (gpointer) this);      
+    g_signal_connect (G_OBJECT (uridecodebin_),  
+    		      "autoplug-continue",  
+    		      (GCallback) Uridecodebin::autoplug_continue_cb ,  
+    		      (gpointer) this);      
      // g_signal_connect (G_OBJECT (uridecodebin_),  
      // 		      "autoplug-factory",  
      // 		      (GCallback) Uridecodebin::autoplug_factory_cb ,  
@@ -189,11 +189,60 @@ namespace switcher
 
   void 
   Uridecodebin::unknown_type_cb (GstElement *bin, 
-				 GstPad */*pad*/, 
+				 GstPad *pad, 
 				 GstCaps *caps, 
-				 gpointer /*user_data*/)
+				 gpointer user_data)
   {
+    Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
     g_warning ("Uridecodebin unknown type: %s (%s)\n", gst_caps_to_string (caps), gst_element_get_name (bin));
+    context->pad_to_shmdata_writer (context->bin_, pad);
+  }
+
+  gboolean
+  sink_factory_filter (GstPluginFeature* feature, gpointer data)
+  {
+    GstCaps* caps = (GstCaps*)data;
+
+    if (!GST_IS_ELEMENT_FACTORY (feature))
+        return FALSE;
+
+    const GList* static_pads = gst_element_factory_get_static_pad_templates (GST_ELEMENT_FACTORY (feature));
+    int not_any_number = 0;
+    for (GList* item = (GList*)static_pads; item; item = item->next)
+    {
+        GstStaticPadTemplate* padTemplate = (GstStaticPadTemplate*)item->data;
+        GstPadTemplate* pad = gst_static_pad_template_get (padTemplate);
+        GstCaps* padCaps = gst_pad_template_get_caps (pad);
+        if (!gst_caps_is_any (padCaps))
+            not_any_number++;
+    }
+    if (not_any_number == 0)
+        return FALSE;
+
+    if (!gst_element_factory_list_is_type (GST_ELEMENT_FACTORY (feature), GST_ELEMENT_FACTORY_TYPE_DECODABLE))
+        return FALSE;
+
+    if (!gst_element_factory_can_sink_caps (GST_ELEMENT_FACTORY (feature), caps))
+        return FALSE;
+
+    return TRUE;
+  }
+
+  int 
+  Uridecodebin::autoplug_continue_cb (GstElement */*bin*/, 
+				    GstPad */*pad*/, 
+				    GstCaps *caps, 
+				    gpointer /*user_data*/)
+  {
+    GList *list = gst_registry_feature_filter (gst_registry_get_default(),
+                                (GstPluginFeatureFilter) sink_factory_filter,
+                                FALSE, caps);
+    int length = g_list_length (list);
+    g_print("----------------------------------> %i for %s\n", length, gst_caps_to_string(caps));
+    gst_plugin_feature_list_free (list);
+    if (length == 0)
+        return 0;
+    return 1;
   }
 
   int 
@@ -310,12 +359,46 @@ namespace switcher
     return TRUE; 
   }
 
+  void 
+  Uridecodebin::on_handoff_cb (GstElement* /*object*/,
+			     GstBuffer* buf,
+			     GstPad* pad,
+			     gpointer user_data)
+  {
+    ShmdataAnyWriter *writer = static_cast <ShmdataAnyWriter *> (user_data);
+
+    if (!writer->started ())
+      {
+	      GstCaps *caps = gst_pad_get_negotiated_caps (pad);
+	      gchar *string_caps = gst_caps_to_string (caps);
+        g_print ("%s\n", string_caps);
+	      g_debug ("%s\n", string_caps);
+	      writer->set_data_type (string_caps);
+	      writer->start ();
+	      g_free (string_caps);
+	      gst_caps_unref (caps);
+      }
+    else
+      {
+	      GstBuffer *buftmp = gst_buffer_copy (buf);
+	      writer->push_data (GST_BUFFER_DATA (buftmp),
+	     		    GST_BUFFER_SIZE (buftmp),
+	     		    GST_BUFFER_TIMESTAMP (buftmp),
+	     		    release_buf,
+	     		    buftmp);
+      }
+  }
+
+  void
+  Uridecodebin::release_buf (void *user_data)
+  {
+    GstBuffer *buf = static_cast <GstBuffer *> (user_data);
+    gst_buffer_unref (buf);
+  }
 
   void
   Uridecodebin::pad_to_shmdata_writer (GstElement *bin, GstPad *pad)
   {
-    //g_print ("---- (%s)\n", gst_caps_to_string (gst_pad_get_caps (pad)));
-
     //detecting type of media
     const gchar *padname;
     if (0 == g_strcmp0 ("ANY", gst_caps_to_string (gst_pad_get_caps (pad))))
@@ -325,62 +408,87 @@ namespace switcher
 
     g_debug ("uridecodebin new pad name is %s\n",padname);
     
-    GstElement *identity;
-    GstUtils::make_element ("identity", &identity);
-    g_object_set (identity, 
+    GstElement *fakesink;
+    GstUtils::make_element ("fakesink", &fakesink);
+    g_object_set (fakesink, 
      		  "sync", TRUE, 
-     		  "single-segment", TRUE,
+          "signal-handoffs", TRUE,
      		  NULL);
     GstElement *funnel;
     GstUtils::make_element ("funnel", &funnel);
     
-    
-    gst_bin_add_many (GST_BIN (bin), identity, funnel, NULL);
+    auto parent = gst_pad_get_parent(pad);
+    auto grandparent = gst_object_get_parent(parent);
+    gst_object_unref(grandparent);
+    gst_object_unref(parent);
+    gst_bin_add_many (GST_BIN (bin), fakesink, funnel, NULL);
     GstUtils::link_static_to_request (pad, funnel);
-    gst_element_link (funnel, identity);
+    gst_element_link (funnel, fakesink);
 
     //GstUtils::wait_state_changed (bin);
-     GstUtils::sync_state_with_parent (identity);
-     GstUtils::sync_state_with_parent (funnel);
+    GstUtils::sync_state_with_parent (fakesink);
+    GstUtils::sync_state_with_parent (funnel);
     
-     //probing eos   
-     GstPad *srcpad = gst_element_get_static_pad (funnel, "src");
-     if (main_pad_ == NULL)
-       main_pad_ = srcpad;//saving first pad for looping
-     gst_pad_add_event_probe (srcpad, (GCallback) event_probe_cb, this);   
-     g_print ("PROBING -------\n");
-     gst_object_unref (srcpad);
+    //probing eos   
+    GstPad *srcpad = gst_element_get_static_pad (funnel, "src");
+    if (main_pad_ == NULL)
+      main_pad_ = srcpad;//saving first pad for looping
+    gst_pad_add_event_probe (srcpad, (GCallback) event_probe_cb, this);   
+    gst_object_unref (srcpad);
 
-     //giving a name to the stream
-     gchar **padname_splitted = g_strsplit_set (padname, "/",-1);
-     //counting 
-     int count = 0;
-     auto it = media_counters_.find (padname_splitted[0]);
-     if (media_counters_.end () != it)
-       count = it->second + 1;
-     media_counters_[padname_splitted[0]] = count;
+    //giving a name to the stream
+    gchar **padname_splitted = g_strsplit_set (padname, "/",-1);
+    //counting 
+    int count = 0;
+    auto it = media_counters_.find (padname_splitted[0]);
+    if (media_counters_.end () != it)
+      count = it->second + 1;
+    //else
+    //  {
+	  //    std::string media_type ("unknown");
+	  //    if (NULL != padname_splitted[0])
+	  //      media_type = padname_splitted[0];
+	  //    media_counters_[media_type] = count;
+    //  }
+    media_counters_[padname_splitted[0]] = count;
 	 
-     gchar media_name[256];
-     g_sprintf (media_name,"%s-%d",padname_splitted[0],count);
-     g_debug ("uridecodebin: new media %s %d\n",media_name, count );
-     g_strfreev(padname_splitted);
+    gchar media_name[256];
+    g_sprintf (media_name,"%s-%d",padname_splitted[0],count);
+    g_debug ("uridecodebin: new media %s %d\n",media_name, count );
+    g_strfreev(padname_splitted);
 
-     //creating a shmdata
-     ShmdataWriter::ptr connector;
-     connector.reset (new ShmdataWriter ());
-     std::string connector_name = make_file_name (media_name);
-     connector->set_path (connector_name.c_str());
-     GstCaps *caps = gst_pad_get_caps_reffed (pad);
+    //creating a shmdata
+    //ShmdataWriter::ptr connector;
+    //connector.reset (new ShmdataWriter ());
+    //std::string connector_name = make_file_name (media_name);
+    //connector->set_path (connector_name.c_str());
+    //GstCaps *caps = gst_pad_get_caps_reffed (pad);
 
-     connector->plug (bin, identity, caps);
+    //connector->plug (bin, fakesink, caps);
 
-     if (G_IS_OBJECT (caps))
-       gst_object_unref (caps);
-     register_shmdata_writer (connector);
+    //if (G_IS_OBJECT (caps))
+    //  gst_object_unref (caps);
+    //register_shmdata_writer (connector);
 
-     g_message ("%s created a new shmdata writer (%s)", 
-     	       get_nick_name ().c_str(), 
-     	       connector_name.c_str ());
+    ShmdataAnyWriter::ptr connector = std::make_shared<ShmdataAnyWriter>();
+    std::string connector_name = make_file_name (media_name);
+    connector->set_path (connector_name.c_str());
+    //GstCaps *caps = gst_pad_get_caps_reffed (pad);
+
+    //if (G_IS_OBJECT (caps))
+    //{
+    //  gchar *capsString = gst_caps_to_string (caps);
+    //  connector->set_data_type (std::string(capsString));
+    //  g_free(capsString);
+    //  gst_object_unref (caps);
+    //}
+
+    g_signal_connect (fakesink, "handoff", (GCallback)on_handoff_cb, connector.get());
+
+    g_message ("%s created a new shmdata any writer (%s)", 
+    	       get_nick_name ().c_str(), 
+    	       connector_name.c_str ());
+    register_shmdata_any_writer (connector);
   }
 
   gboolean 
@@ -431,8 +539,8 @@ namespace switcher
   Uridecodebin::uridecodebin_pad_added_cb (GstElement* object, GstPad *pad, gpointer user_data)   
   {   
     Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-   
 
+    g_print("~~~~~ %s --- %s from %s\n", gst_element_get_name(context->bin_), gst_element_get_name(object), __FUNCTION__);
     // g_print ("------------- caps 1 %s \n-------------- caps 2 %s\n",
     // 	     gst_caps_to_string (context->gstrtpcaps_), 
     // 	     gst_caps_to_string (gst_pad_get_caps (pad)));
