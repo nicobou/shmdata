@@ -25,7 +25,7 @@ namespace switcher
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FakeSink,
 				       "Shmdata Inspector",
-				       "fakesink sink", 
+				       "monitor", 
 				       "fakesink for testing purpose",
 				       "LGPL",
 				       "fakesink",
