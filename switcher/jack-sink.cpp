@@ -77,7 +77,7 @@ namespace switcher
   {
     GError *error = NULL;
 
-    gchar *description = g_strdup_printf ("audioconvert ! audioresample ! jackaudiosink provide-clock=false slave-method=resample buffer-time=20000 max-lateness=100000 client-name=%s sync=false", client_name_);
+    gchar *description = g_strdup_printf ("audioconvert ! audioresample ! jackaudiosink provide-clock=false slave-method=resample buffer-time=20000 max-lateness=10000 client-name=%s sync=false drift-tolerance=10000 discont-wait=20000000", client_name_);
     
     jacksink_ = gst_parse_bin_from_description (description,
 						TRUE,
