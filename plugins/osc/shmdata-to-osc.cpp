@@ -197,11 +197,13 @@ namespace switcher
     lo_message msg = lo_message_deserialise (data, 
 					     data_size, 
 					     NULL); //error code
-    if (NULL != msg)
+
+    if (NULL != msg )
       {
-	//lo_message_pp (msg);
 	std::unique_lock <std::mutex> lock (context->address_mutex_);
-	lo_send_message (context->address_, path, msg);
+	//lo_message_pp (msg);
+	if (NULL != context->address_)
+	  lo_send_message (context->address_, path, msg);
 	lo_message_free (msg);
       }
     shmdata_any_reader_free (shmbuf);
