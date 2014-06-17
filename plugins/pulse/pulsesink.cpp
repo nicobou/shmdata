@@ -151,7 +151,8 @@ namespace switcher
   PulseSink::build_elements ()
   {
     //g_print ("%s\n", __PRETTY_FUNCTION__); 
-    GstElement *pulsesink, *audioconvert, *audioresample, *queue, *audiorate;
+    GstElement *pulsesink, *audioconvert, *audioresample, *queue;
+    GstElement *audiorate;
     if (!GstUtils::make_element ("pulsesink", &pulsesink))
       return false;
     if (!GstUtils::make_element ("audiorate", &audiorate))
@@ -169,7 +170,7 @@ namespace switcher
     install_property (G_OBJECT (pulsesink),"volume","volume", "Volume");
     install_property (G_OBJECT (pulsesink),"mute","mute", "Mute");
     g_object_set (G_OBJECT (pulsesink), "provide-clock", TRUE, NULL);
-    g_object_set (G_OBJECT (pulsesink), "slave-method", 2, NULL); //none
+    //g_object_set (G_OBJECT (pulsesink), "slave-method", 2, NULL); //none
     g_object_set (G_OBJECT (pulsesink), "sync", FALSE, NULL);
     g_object_set (G_OBJECT (pulsesink), "buffer-time", 10000, NULL);
     g_object_set (G_OBJECT (queue), "max-size-buffers", 2, NULL);
