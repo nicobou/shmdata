@@ -51,8 +51,6 @@ namespace switcher
       std::vector <std::pair <std::string/*port*/,std::string /*description*/> > ports_;
       std::string active_port_;
     } DeviceDescription;
-    GstElement *pulsesink_;
-    GstElement *audioconvert_;
     GstElement *pulsesink_bin_;
     bool connected_to_pulse_;
     //custom property:

@@ -33,8 +33,6 @@ namespace switcher
 				       "Nicolas Bouillot");
     
   PulseSink::PulseSink () :
-    pulsesink_ (NULL),
-    audioconvert_ (NULL),
     pulsesink_bin_ (NULL),
     connected_to_pulse_ (false),
     custom_props_ (new CustomPropertyHelper ()), 
@@ -62,7 +60,6 @@ namespace switcher
     //g_print ("%s\n", __PRETTY_FUNCTION__); 
     if (!make_elements ())
       return false;
-    g_object_set (G_OBJECT (pulsesink_),"client", get_nick_name ().c_str (), NULL);
     
     std::unique_lock<std::mutex> lock (devices_mutex_); 
     GstUtils::g_idle_add_full_with_context (get_g_main_context (),
@@ -154,27 +151,41 @@ namespace switcher
   PulseSink::build_elements ()
   {
     //g_print ("%s\n", __PRETTY_FUNCTION__); 
-    if (!GstUtils::make_element ("pulsesink", &pulsesink_))
+    GstElement *pulsesink, *audioconvert, *audioresample, *queue;
+    if (!GstUtils::make_element ("pulsesink", &pulsesink))
       return false;
-    if (!GstUtils::make_element ("audioconvert", &audioconvert_))
+    if (!GstUtils::make_element ("audioconvert", &audioconvert))
+      return false;
+    if (!GstUtils::make_element ("audioresample", &audioresample))
+      return false;
+    if (!GstUtils::make_element ("queue", &queue)) //should be replaced by a clock drift corrector
       return false;
     if (!GstUtils::make_element ("bin", &pulsesink_bin_))
       return false;
     uninstall_property ("volume");
     uninstall_property ("mute");
-    install_property (G_OBJECT (pulsesink_),"volume","volume", "Volume");
-    install_property (G_OBJECT (pulsesink_),"mute","mute", "Mute");
-    g_object_set (G_OBJECT (pulsesink_), "slave-method", 0, NULL); //resample
+    install_property (G_OBJECT (pulsesink),"volume","volume", "Volume");
+    install_property (G_OBJECT (pulsesink),"mute","mute", "Mute");
+    g_object_set (G_OBJECT (pulsesink), "provide-clock", FALSE, NULL);
+    g_object_set (G_OBJECT (pulsesink), "slave-method", 2, NULL); //none
+    g_object_set (G_OBJECT (pulsesink), "sync", FALSE, NULL);
+    g_object_set (G_OBJECT (queue), "max-size-buffers", 2, NULL);
+    g_object_set (G_OBJECT (queue), "leaky", 2, NULL);//Leaky on downstream (old buffers)
     if (!devices_.empty ())
-      g_object_set (G_OBJECT (pulsesink_), "device", devices_.at (device_).name_.c_str (), NULL);
-    g_object_set (G_OBJECT (pulsesink_), "client", get_nick_name ().c_str (), NULL);
+      g_object_set (G_OBJECT (pulsesink), "device", devices_.at (device_).name_.c_str (), NULL);
+    g_object_set (G_OBJECT (pulsesink), "client", get_nick_name ().c_str (), NULL);
     gst_bin_add_many (GST_BIN (pulsesink_bin_),
-      		      pulsesink_,
-		      audioconvert_,
+      		      pulsesink,
+		      audioconvert,
+		      queue,
+		      audioresample,
       		      NULL);
-    gst_element_link (audioconvert_, pulsesink_);
-    g_object_set (G_OBJECT (pulsesink_), "sync", FALSE, NULL);
-    GstPad *sink_pad = gst_element_get_static_pad (audioconvert_, "sink");
+    gst_element_link_many (audioconvert, 
+			   audioresample,
+			   queue,
+			   pulsesink,
+			   NULL);
+    GstPad *sink_pad = gst_element_get_static_pad (audioconvert, "sink");
     GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
     gst_pad_set_active(ghost_sinkpad,TRUE);
     gst_element_add_pad (pulsesink_bin_, ghost_sinkpad); 
