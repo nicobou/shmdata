@@ -82,7 +82,7 @@ namespace switcher
     jacksink_ = gst_parse_bin_from_description (description,
 						TRUE,
 						&error);
-    g_object_set (G_OBJECT (jacksink_), "async-handling",TRUE, NULL);
+    g_object_set (G_OBJECT (jacksink_), "async-handling", TRUE, NULL);
     g_free (description);
 
     if (error != NULL)
