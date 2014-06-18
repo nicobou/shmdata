@@ -131,9 +131,7 @@ namespace switcher
 					  GstElement *element,
 					  gpointer    user_data)
   {
-    g_print ("%s, %s\n",
-	     __FUNCTION__,
-	     gst_element_get_name (element));
+    //FIXME add that in uridecodebin 
     g_object_set (G_OBJECT (element), 
       		  "ntp-sync",
       		  TRUE,

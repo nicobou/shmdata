@@ -151,12 +151,14 @@ namespace switcher
   PulseSink::build_elements ()
   {
     //g_print ("%s\n", __PRETTY_FUNCTION__); 
-    GstElement *pulsesink, *audioconvert, *audioresample, *queue;
-    GstElement *audiorate;
+    GstElement *pulsesink, *audioconvert, *audioresample
+      , *queue
+      ;
+    //GstElement *audiorate;
     if (!GstUtils::make_element ("pulsesink", &pulsesink))
       return false;
-    if (!GstUtils::make_element ("audiorate", &audiorate))
-      return false;
+    // if (!GstUtils::make_element ("audiorate", &audiorate))
+    //   return false;
     if (!GstUtils::make_element ("audioconvert", &audioconvert))
       return false;
     if (!GstUtils::make_element ("audioresample", &audioresample))
@@ -169,15 +171,15 @@ namespace switcher
     uninstall_property ("mute");
     install_property (G_OBJECT (pulsesink),"volume","volume", "Volume");
     install_property (G_OBJECT (pulsesink),"mute","mute", "Mute");
-    g_object_set (G_OBJECT (pulsesink), "provide-clock", TRUE, NULL);
-    //g_object_set (G_OBJECT (pulsesink), "slave-method", 2, NULL); //none
+    g_object_set (G_OBJECT (pulsesink), "provide-clock", FALSE, NULL);
+    g_object_set (G_OBJECT (pulsesink), "slave-method", 0, NULL); //resample
     g_object_set (G_OBJECT (pulsesink), "sync", FALSE, NULL);
     g_object_set (G_OBJECT (pulsesink), "buffer-time", 200000, NULL);
     g_object_set (G_OBJECT (pulsesink), "can-activate-pull", TRUE, NULL);
 
     g_object_set (G_OBJECT (queue), "max-size-buffers", 2, NULL);
     g_object_set (G_OBJECT (queue), "leaky", 2, NULL);//Leaky on downstream (old buffers)
-    g_object_set (G_OBJECT (audiorate), "skip-to-first", true, NULL);
+    // g_object_set (G_OBJECT (audiorate), "skip-to-first", true, NULL);
 
     if (!devices_.empty ())
       g_object_set (G_OBJECT (pulsesink), "device", devices_.at (device_).name_.c_str (), NULL);
@@ -187,12 +189,12 @@ namespace switcher
 		      audioconvert,
 		      queue,
 		      audioresample,
-		      audiorate,
+		      //audiorate,
       		      NULL);
     gst_element_link_many (audioconvert, 
 			   audioresample,
 			   queue,
-			   audiorate,
+			   // audiorate,
 			   pulsesink,
 			   NULL);
     GstPad *sink_pad = gst_element_get_static_pad (audioconvert, "sink");

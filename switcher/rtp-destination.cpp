@@ -239,6 +239,9 @@ RtpDestination::sdp_write_media_from_caps (GstSDPMessage *sdp_description,
     gst_sdp_media_add_attribute (smedia, "control", tmp);
     g_free (tmp);
 
+    // rtcp attribute
+    gst_sdp_media_add_attribute (smedia, "rtcp", std::to_string (dest_port + 1).c_str ());
+
     /* collect all other properties and add them to fmtp */
     fmtp = g_string_new ("");
     g_string_append_printf (fmtp, "%d ", caps_pt);
