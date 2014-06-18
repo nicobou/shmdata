@@ -89,8 +89,14 @@ namespace switcher
     
     discard_next_uncomplete_buffer_ = false;
     rtpgstcaps_ = gst_caps_from_string ("application/x-rtp, media=(string)application");
-
-      g_object_set (G_OBJECT (sdpdemux_), 
+    
+    //in order to set ntp-sync in rtpbin when created by sdpdemux 
+    g_signal_connect (GST_BIN (sdpdemux_),  
+		      "element-added",  
+		      (GCallback) HTTPSDPDec::on_new_element_in_sdpdemux,  
+		      NULL);      
+    
+    g_object_set (G_OBJECT (sdpdemux_), 
       		  "latency",
       		  0,
       		  NULL);
@@ -120,6 +126,20 @@ namespace switcher
     sdpdemux_ = NULL;
   }
 
+  void 
+  HTTPSDPDec::on_new_element_in_sdpdemux (GstBin     *bin,
+					  GstElement *element,
+					  gpointer    user_data)
+  {
+    g_print ("%s, %s\n",
+	     __FUNCTION__,
+	     gst_element_get_name (element));
+    g_object_set (G_OBJECT (element), 
+      		  "ntp-sync",
+      		  TRUE,
+      		  NULL);
+  }
+  
   void 
   HTTPSDPDec::clean_on_error_command ()
   {

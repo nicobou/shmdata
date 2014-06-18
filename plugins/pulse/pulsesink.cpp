@@ -172,7 +172,9 @@ namespace switcher
     g_object_set (G_OBJECT (pulsesink), "provide-clock", TRUE, NULL);
     //g_object_set (G_OBJECT (pulsesink), "slave-method", 2, NULL); //none
     g_object_set (G_OBJECT (pulsesink), "sync", FALSE, NULL);
-    g_object_set (G_OBJECT (pulsesink), "buffer-time", 10000, NULL);
+    g_object_set (G_OBJECT (pulsesink), "buffer-time", 200000, NULL);
+    g_object_set (G_OBJECT (pulsesink), "can-activate-pull", TRUE, NULL);
+
     g_object_set (G_OBJECT (queue), "max-size-buffers", 2, NULL);
     g_object_set (G_OBJECT (queue), "leaky", 2, NULL);//Leaky on downstream (old buffers)
     g_object_set (G_OBJECT (audiorate), "skip-to-first", true, NULL);

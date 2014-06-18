@@ -74,6 +74,10 @@ namespace switcher
 			      GstPad* /*pad*/,
 			      gpointer user_data);
    static  void release_buf (void *user_data);
+   static void on_new_element_in_sdpdemux (GstBin     *bin,
+                                           GstElement *element,
+					   gpointer    user_data);
+
   };
 
 }  // end of namespace
