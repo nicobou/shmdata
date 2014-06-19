@@ -151,27 +151,28 @@ namespace switcher
   PulseSink::build_elements ()
   {
     //g_print ("%s\n", __PRETTY_FUNCTION__); 
-    if (!GstUtils::make_element ("pulsesink", &pulsesink_))
+    GstElement *pulsesink, *audioconvert;
+    if (!GstUtils::make_element ("pulsesink", &pulsesink))
       return false;
-    if (!GstUtils::make_element ("audioconvert", &audioconvert_))
+    if (!GstUtils::make_element ("audioconvert", &audioconvert))
       return false;
     if (!GstUtils::make_element ("bin", &pulsesink_bin_))
       return false;
     uninstall_property ("volume");
     uninstall_property ("mute");
-    install_property (G_OBJECT (pulsesink_),"volume","volume", "Volume");
-    install_property (G_OBJECT (pulsesink_),"mute","mute", "Mute");
-    g_object_set (G_OBJECT (pulsesink_), "slave-method", 0, NULL); //resample
+    install_property (G_OBJECT (pulsesink),"volume","volume", "Volume");
+    install_property (G_OBJECT (pulsesink),"mute","mute", "Mute");
+    g_object_set (G_OBJECT (pulsesink), "slave-method", 0, NULL); //resample
     if (!devices_.empty ())
-      g_object_set (G_OBJECT (pulsesink_), "device", devices_.at (device_).name_.c_str (), NULL);
-    g_object_set (G_OBJECT (pulsesink_), "client", get_nick_name ().c_str (), NULL);
+      g_object_set (G_OBJECT (pulsesink), "device", devices_.at (device_).name_.c_str (), NULL);
+    g_object_set (G_OBJECT (pulsesink), "client", get_nick_name ().c_str (), NULL);
     gst_bin_add_many (GST_BIN (pulsesink_bin_),
-      		      pulsesink_,
-		      audioconvert_,
+      		      pulsesink,
+		      audioconvert,
       		      NULL);
-    gst_element_link (audioconvert_, pulsesink_);
-    g_object_set (G_OBJECT (pulsesink_), "sync", FALSE, NULL);
-    GstPad *sink_pad = gst_element_get_static_pad (audioconvert_, "sink");
+    gst_element_link (audioconvert, pulsesink);
+    g_object_set (G_OBJECT (pulsesink), "sync", FALSE, NULL);
+    GstPad *sink_pad = gst_element_get_static_pad (audioconvert, "sink");
     GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
     gst_pad_set_active(ghost_sinkpad,TRUE);
     gst_element_add_pad (pulsesink_bin_, ghost_sinkpad); 
