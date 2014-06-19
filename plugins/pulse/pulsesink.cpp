@@ -152,7 +152,7 @@ namespace switcher
   {
     //g_print ("%s\n", __PRETTY_FUNCTION__); 
     GstElement *pulsesink, *audioconvert, *audioresample
-      , *queue
+      //, *queue
       ;
     //GstElement *audiorate;
     if (!GstUtils::make_element ("pulsesink", &pulsesink))
@@ -163,8 +163,8 @@ namespace switcher
       return false;
     if (!GstUtils::make_element ("audioresample", &audioresample))
       return false;
-    if (!GstUtils::make_element ("queue", &queue)) //should be replaced by a clock drift corrector
-      return false;
+    // if (!GstUtils::make_element ("queue", &queue)) //should be replaced by a clock drift corrector
+    //   return false;
     if (!GstUtils::make_element ("bin", &pulsesink_bin_))
       return false;
     uninstall_property ("volume");
@@ -177,8 +177,8 @@ namespace switcher
     g_object_set (G_OBJECT (pulsesink), "buffer-time", 200000, NULL);
     g_object_set (G_OBJECT (pulsesink), "can-activate-pull", TRUE, NULL);
 
-    g_object_set (G_OBJECT (queue), "max-size-buffers", 2, NULL);
-    g_object_set (G_OBJECT (queue), "leaky", 2, NULL);//Leaky on downstream (old buffers)
+    // g_object_set (G_OBJECT (queue), "max-size-buffers", 2, NULL);
+    // g_object_set (G_OBJECT (queue), "leaky", 2, NULL);//Leaky on downstream (old buffers)
     // g_object_set (G_OBJECT (audiorate), "skip-to-first", true, NULL);
 
     if (!devices_.empty ())
@@ -187,13 +187,13 @@ namespace switcher
     gst_bin_add_many (GST_BIN (pulsesink_bin_),
       		      pulsesink,
 		      audioconvert,
-		      queue,
+		      //queue,
 		      audioresample,
 		      //audiorate,
       		      NULL);
     gst_element_link_many (audioconvert, 
 			   audioresample,
-			   queue,
+			   //queue,
 			   // audiorate,
 			   pulsesink,
 			   NULL);
