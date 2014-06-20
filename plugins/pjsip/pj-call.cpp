@@ -364,95 +364,72 @@ namespace switcher
     g_print ("*NEGOCIATED* local sdp : \n%s \n\nremote sdp : \n%s \n\n ",
     	     sdpbuf1, sdpbuf2);
     
-    // g_remove ("/tmp/truc.sdp");
-    // g_file_set_contents ("/tmp/truc.sdp", 
-    // 			 sdpbuf1, 
-    // 			 -1, //no size, res is a null terminated string
-    // 			 NULL); //not getting errors
-
-    // //FIXME bypassing pjmedia transport
-    // return;
-
-    struct media_stream *audio;
-    audio = &call->media[0];
-    // g_print ("**************************************************creating stream info from SDP\n");
-    // g_print ("%p -- %p -- %p -- %p -- %p \n",
-    // 	     &audio->si, 
-    // 	     inv->pool, 
-    // 	     med_endpt_,
-    // 	     local_sdp, 
-    // 	     remote_sdp);
-    status = stream_info_from_sdp (&audio->si, 
-				   inv->pool, 
-				   med_endpt_,
-				   local_sdp, 
-				   remote_sdp, 
-				   1);
-
-    if (status != PJ_SUCCESS) {
-      g_print ("Error geting stream info from sdp");
-      	return;
-      }
-   
-    // /* Get the remainder of codec information from codec descriptor */
-    // if (audio->si.fmt.pt == app.audio_codec.pt)
-    //   codec_desc = &app.audio_codec;
-    // else {
-    //   /* Find the codec description in codec array */
-    //   for (i=0; i<PJ_ARRAY_SIZE(audio_codecs); ++i) {
-    // 	if (audio_codecs[i].pt == audio->si.fmt.pt) {
-    // 	  codec_desc = &audio_codecs[i];
-    // 	  break;
-    // 	}
-    //   }
-
-    //   if (codec_desc == NULL) {
-    // 	g_print ("**************************************************Error: Invalid codec payload type\n");
-    // 	g_print ("\n");
-    // 	return;
-    //   }
-    // }
     
-    // audio->clock_rate = audio->si.fmt.clock_rate;
-    // audio->samples_per_frame = audio->clock_rate * codec_desc->ptime / 1000;
-    // audio->bytes_per_frame = codec_desc->bit_rate * codec_desc->ptime / 1000 / 8;
     
+    for (uint i=0; i < call->media_count; i++)
+      {
+	
+	struct media_stream *current_media;
+	current_media = &call->media[i];
+	status = stream_info_from_sdp (&current_media->si, 
+				       inv->pool, 
+				       med_endpt_,
+				       local_sdp, 
+				       remote_sdp, 
+				       i);
+	
+	if (status != PJ_SUCCESS) {
+	  g_print ("Error geting stream info from sdp");
+	  return;
+	}
+	
+	//current_media->clock_rate = current_media->si.fmt.clock_rate;
+	//current_media->samples_per_frame = current_media->clock_rate * codec_desc->ptime / 1000;
+	//current_media->bytes_per_frame = codec_desc->bit_rate * codec_desc->ptime / 1000 / 8;
+	
+	pjmedia_rtp_session_init(&current_media->out_sess, current_media->si.tx_pt, 
+				 pj_rand());
+	pjmedia_rtp_session_init(&current_media->in_sess, current_media->si.fmt.pt, 0);
+	//  pjmedia_rtcp_init(&current_media->rtcp, "rtcp", current_media->clock_rate, 
+	//  		      current_media->samples_per_frame, 0);
 
-    //  pjmedia_rtp_session_init(&audio->out_sess, audio->si.tx_pt, 
-    //  			     pj_rand());
-    //  pjmedia_rtp_session_init(&audio->in_sess, audio->si.fmt.pt, 0);
-    //  pjmedia_rtcp_init(&audio->rtcp, "rtcp", audio->clock_rate, 
-    //  		      audio->samples_per_frame, 0);
+	current_media->shm = std::make_shared<ShmdataAnyWriter> (); 
+	std::string shm_any_name ( "/tmp/switcher_sip_" + std::to_string (i));//FIXME use quiddity name
+	current_media->shm->set_path (shm_any_name.c_str());
+	g_message ("%s created a new shmdata any writer (%s)",  
+		   shm_any_name.c_str ());
 
-
-    /* Attach media to transport */
-    status = pjmedia_transport_attach( audio->transport, 
-				       audio, //user_data 
-				       &audio->si.rem_addr, 
-				       &audio->si.rem_rtcp, 
-				       sizeof(pj_sockaddr_in),
-				       &on_rx_rtp,
-				       &on_rx_rtcp);
-    if (status != PJ_SUCCESS) {
-      	g_print ("Error on pjmedia_transport_attach()");
-      	return;
-      }
-
-    // /* Start media thread. */
-    // audio->thread_quit_flag = 0;
-
+	
+	/* Attach media to transport */
+	status = pjmedia_transport_attach( current_media->transport, 
+					   current_media, //user_data 
+					   &current_media->si.rem_addr, 
+					   &current_media->si.rem_rtcp, 
+					   sizeof(pj_sockaddr_in),
+					   &on_rx_rtp,
+					   &on_rx_rtcp);
+	if (status != PJ_SUCCESS) {
+	  g_print ("Error on pjmedia_transport_attach()");
+	  return;
+	}
+	
+	// /* Start media thread. */
+    // current_media->thread_quit_flag = 0;
+	
     //FIXME time to send rtp
 // #if PJ_HAS_THREADS
-//     status = pj_thread_create( inv->pool, "media", &media_thread, audio,
-// 			       0, 0, &audio->thread);
+//     status = pj_thread_create( inv->pool, "media", &media_thread, current_media,
+// 			       0, 0, &current_media->thread);
 //     if (status != PJ_SUCCESS) {
 // 	app_perror(THIS_FILE, "Error creating media thread", status);
 // 	return;
 //     }
 // #endif
+	
+	/* Set the media as active */
+	current_media->active = PJ_TRUE;
+      }//end iterating media
 
-    /* Set the media as active */
-    audio->active = PJ_TRUE;
   }
 
 
@@ -907,8 +884,6 @@ namespace switcher
   PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size)
   {
 
-    g_print ("%s\n",__FUNCTION__);
-    return;
 
     struct media_stream *strm;
     pj_status_t status;
@@ -918,7 +893,7 @@ namespace switcher
 
     strm = (struct media_stream *)user_data;
     g_print ("%s, media index %u\n", __FUNCTION__, strm->media_index);
-    
+
     /* Discard packet if media is inactive */
     if (!strm->active)
       return;
@@ -933,6 +908,33 @@ namespace switcher
     status = pjmedia_rtp_decode_rtp(&strm->in_sess, 
 				    pkt, (int)size, 
 				    &hdr, &payload, &payload_len);
+
+    if (!strm->shm->started ())
+      {
+	//FIXME check for channels in fmt + all si.param + ssrc + clock-base + seqnum-base
+	std::string data_type ("application/x-rtp" 
+				 //+ ", media= " + current_media->type 
+				 //+ ", clock-rate=" + std::to_string (current_media->si.fmt.clock_rate)
+				 //+ ", payload=" + std::to_string (current_media->si.fmt.pt)
+				 //+ ", encoding-name=" + std::string (current_media->si.fmt.encoding_name.ptr, current_media->si.fmt.encoding_name.len)
+				 // + ", ssrc=" + 
+				 // + ", clock-base="
+				 // + ", seqnum-base=" + std::to_string (current_media->in_sess->seq_ctrl->base_seq)
+				 );
+	
+	strm->shm->set_data_type (data_type);
+	
+	//application/x-rtp, media=(string)application, clock-rate=(int)90000, encoding-name=(string)X-GST, ssrc=(uint)4199653519, payload=(int)96, clock-base=(uint)479267716, seqnum-base=(uint)53946
+	strm->shm->start ();
+      }
+
+    strm->shm->push_data (pkt, //FIXME handle that, make copy and make clock
+			  (size_t) size,
+			  0,
+			  NULL,
+			  NULL);
+    
+
     if (status != PJ_SUCCESS) {
 	g_print ("RTP decode error");
 	return;
@@ -942,8 +944,8 @@ namespace switcher
     //PJ_LOG(4,(THIS_FILE, "Rx seq=%d", pj_ntohs(hdr->seq)));
 
     /* Update the RTCP session. */
-    pjmedia_rtcp_rx_rtp(&strm->rtcp, pj_ntohs(hdr->seq),
-			pj_ntohl(hdr->ts), payload_len);
+    // pjmedia_rtcp_rx_rtp(&strm->rtcp, pj_ntohs(hdr->seq),
+    // 			pj_ntohl(hdr->ts), payload_len);
 
     /* Update RTP session */
     pjmedia_rtp_session_update(&strm->in_sess, hdr, NULL);

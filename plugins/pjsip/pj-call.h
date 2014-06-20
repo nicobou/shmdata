@@ -25,6 +25,7 @@
 #include <mutex>
 #include <vector>
 #include <condition_variable>
+#include "switcher/shmdata-any-writer.h"
 
 //pjsip
 #include <pjsip.h>
@@ -99,6 +100,9 @@ typedef struct codec
   
    //type
    std::string type; //audio, video or application
+   
+   //shmdata
+   ShmdataAnyWriter::ptr shm; //RTP, FIXME make RTCP shm
  };
 
 
@@ -109,7 +113,7 @@ struct call
 {
   unsigned		 index;
   pjsip_inv_session	*inv;
-  unsigned		 media_count;
+  unsigned		 media_count; //FIXME make this a std::list 
   struct media_stream	 media[64];
   pj_time_val		 start_time;
   pj_time_val		 response_time;
