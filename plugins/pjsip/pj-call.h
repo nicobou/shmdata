@@ -86,7 +86,7 @@ typedef struct codec
    unsigned		 samples_per_frame; /* samples per frame	*/
    unsigned		 bytes_per_frame;   /* frame size.		*/
 
-   /* RTP session: */
+   /* RTP session: */ //FIXME remove this, managed by gst
    pjmedia_rtp_session	 out_sess;	    /* outgoing RTP session	*/
    pjmedia_rtp_session	 in_sess;	    /* incoming RTP session	*/
   
@@ -190,7 +190,13 @@ typedef struct app
     static pj_status_t parse_SDP_from_incoming_request (pjsip_rx_data *rdata, 
 							pjmedia_sdp_session *offer);
     static void print_sdp (const pjmedia_sdp_session *local_sdp);
-  };
+    static pj_status_t stream_info_from_sdp(pjmedia_stream_info *si,
+					    pj_pool_t *pool,
+					    pjmedia_endpt *endpt,
+					    const pjmedia_sdp_session *local,
+					    const pjmedia_sdp_session *remote,
+					    unsigned stream_idx);
+      };
   
 }  // end of namespace
 
