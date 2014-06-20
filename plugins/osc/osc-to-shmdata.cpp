@@ -58,17 +58,6 @@ namespace switcher
 			       "port",
 			       "Port");
 
-    //creating a shmdata
-    //ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
-    std::string shm_any_name = make_file_name ("osc");
-    shm_any_->set_path (shm_any_name.c_str());
-    g_message ("%s created a new shmdata any writer (%s)", 
-	       get_nick_name ().c_str(), 
-	       shm_any_name.c_str ());
-    shm_any_->set_data_type ("application/x-json-osc");
-    shm_any_->start ();
-    register_shmdata_any_writer (shm_any_);
-
     return true;
   }
 
@@ -94,6 +83,17 @@ namespace switcher
   bool 
   OscToShmdata::start ()
   {
+    //creating a shmdata
+    //ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
+    std::string shm_any_name = make_file_name ("osc");
+    shm_any_->set_path (shm_any_name.c_str());
+    g_message ("%s created a new shmdata any writer (%s)", 
+	       get_nick_name ().c_str(), 
+	       shm_any_name.c_str ());
+    shm_any_->set_data_type ("application/x-libloserialized-osc");
+    shm_any_->start ();
+    register_shmdata_any_writer (shm_any_);
+
     osc_thread_ = lo_server_thread_new (std::to_string(port_).c_str (), osc_error);
     if (NULL == osc_thread_)
       return false;
@@ -106,6 +106,11 @@ namespace switcher
   bool
   OscToShmdata::stop ()
   {
+    unregister_shmdata_any_writer (make_file_name ("osc"));
+  {
+      ShmdataAnyWriter::ptr temp = std::make_shared<ShmdataAnyWriter> ();
+      std::swap (shm_any_,temp);
+    }
     if (NULL != osc_thread_)
       {
 	lo_server_thread_free (osc_thread_);
