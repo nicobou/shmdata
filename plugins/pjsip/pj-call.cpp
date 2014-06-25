@@ -174,6 +174,7 @@ namespace switcher
       return PJ_TRUE;
     }
     
+
     /* Handle incoming INVITE */
     process_incoming_call (rdata);
 
@@ -232,10 +233,10 @@ namespace switcher
 	
 	pj_time_val null_time = {0, 0};
 
-	if (call->d_timer.id != 0) {
-	  pjsip_endpt_cancel_timer(PJSIP::sip_endpt_, &call->d_timer);
-	    call->d_timer.id = 0;
-	}
+	// if (call->d_timer.id != 0) {
+	//   pjsip_endpt_cancel_timer(PJSIP::sip_endpt_, &call->d_timer);
+	//     call->d_timer.id = 0;
+	// }
 
 	g_print ("Call #%d disconnected. Reason=%d (%.*s)",
 		 call->index,
@@ -251,6 +252,14 @@ namespace switcher
 	
 	call->inv = NULL;
 	inv->mod_data[mod_siprtp_.id] = NULL;
+
+	//cleaning shmdatas
+	for (uint i=0; i < call->media_count; i++)
+	  {
+	    struct media_stream *current_media = &call->media[i];
+	    ShmdataAnyWriter::ptr shm;
+	    std::swap (current_media->shm, shm);
+	  }
 
 	// FIXME destroy_call_media(call->index);
 
@@ -274,16 +283,16 @@ namespace switcher
 	g_print ("Call #%d connected in %ld ms", call->index,
 		  PJ_TIME_VAL_MSEC(t));
 
-	if (app.duration != 0) {
-	  call->d_timer.id = 1;
-	  call->d_timer.user_data = call;
-	  call->d_timer.cb = NULL;//&timer_disconnect_call;
+	// if (app.duration != 0) {
+	//   call->d_timer.id = 1;
+	//   call->d_timer.user_data = call;
+	//   call->d_timer.cb = NULL;//&timer_disconnect_call;
 	  
-	  t.sec = app.duration;
-	  t.msec = 0;
+	//   t.sec = app.duration;
+	//   t.msec = 0;
 	  
-	  pjsip_endpt_schedule_timer(PJSIP::sip_endpt_, &call->d_timer, &t);
-	}
+	//   pjsip_endpt_schedule_timer(PJSIP::sip_endpt_, &call->d_timer, &t);
+	// }
 
     } else if (	inv->state == PJSIP_INV_STATE_EARLY ||
 		inv->state == PJSIP_INV_STATE_CONNECTING) {
@@ -381,7 +390,10 @@ namespace switcher
 	//  		      current_media->samples_per_frame, 0);
 
 	current_media->shm = std::make_shared<ShmdataAnyWriter> (); 
-	std::string shm_any_name ( "/tmp/switcher_sip_" + std::to_string (i));//FIXME use quiddity name
+	std::string shm_any_name ( "/tmp/switcher_sip_" 
+				   + call->peer_uri
+				   + "_"
+				   + std::to_string (i));//FIXME use quiddity name
 	current_media->shm->set_path (shm_any_name.c_str());
 	g_message ("%s created a new shmdata any writer (%s)",  
 		   shm_any_name.c_str ());
@@ -426,18 +438,27 @@ namespace switcher
   void 
   PJCall::process_incoming_call (pjsip_rx_data *rdata)
   {
-    // g_print ("TODO --> %s"
-    // 	     //", name %.*s, short name %.*s, tag %.*s"
-    // 	     "\n", 
-    // 	     __FUNCTION__
-    //  	     //, (int)rdata->msg_info.from->name.slen,
-    // 	     // rdata->msg_info.from->name.ptr,
-    // 	     // (int)rdata->msg_info.from->sname.slen,
-    // 	     // rdata->msg_info.from->sname.ptr,
-    // 	     // (int)rdata->msg_info.from->tag.slen,
-    // 	     // rdata->msg_info.from->tag.ptr
-    // 	     );
-    
+
+    //finding caller info
+    char uristr[PJSIP_MAX_URL_SIZE];
+    int len;
+    len = pjsip_uri_print(PJSIP_URI_IN_REQ_URI, 
+			  rdata->msg_info.msg->line.req.uri, 
+			  uristr, 
+			  sizeof(uristr));
+    g_print ("---------- call req uri %.*s\n", len, uristr);
+    len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, 
+			  pjsip_uri_get_uri (rdata->msg_info.from->uri), 
+			  uristr, 
+			  sizeof(uristr));
+    g_print ("---------- call from %.*s\n", len, uristr);
+    std::string from_uri (uristr, len);
+    len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, 
+			  rdata->msg_info.to->uri, 
+			  uristr, 
+			  sizeof(uristr));
+    g_print ("----------- call to %.*s\n", len, uristr);
+
     unsigned i, options;
     struct call *call;
     pjsip_dialog *dlg;
@@ -460,7 +481,8 @@ namespace switcher
     }
 
     call = &app.call[i];
-
+    call->peer_uri = from_uri;
+    
      /* Parse SDP from incoming request and verify that we can handle the request. */
     pjmedia_sdp_session *offer = NULL;
     if (rdata->msg_info.msg->body) {
@@ -514,25 +536,6 @@ namespace switcher
 	return;
     }
 
-    //finding caller info
-    char uristr[PJSIP_MAX_URL_SIZE];
-    int len;
-    len = pjsip_uri_print(PJSIP_URI_IN_REQ_URI, 
-			  rdata->msg_info.msg->line.req.uri, 
-			  uristr, 
-			  sizeof(uristr));
-    g_print ("call req uri %.*s\n", len, uristr);
-    len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, 
-			  rdata->msg_info.from->uri, 
-			  uristr, 
-			  sizeof(uristr));
-    g_print ("call from %.*s\n", len, uristr);
-    len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, 
-			  rdata->msg_info.to->uri, 
-			  uristr, 
-			  sizeof(uristr));
-    g_print ("call to %.*s\n", len, uristr);
-    
     //checking number of transport to create for receiving 
     //and creating transport for receiving data offered
 
@@ -713,11 +716,11 @@ namespace switcher
 	for (unsigned u = 0 ; u < sdp_media->desc.fmt_count; )
 	  {
 	    bool remove_it = false;
-	    //removing unassigned payload type (ekiga)
-	    unsigned pt = 0;
-	    pt = pj_strtoul(&sdp_media->desc.fmt[u]);
-	    if (77 <= pt && pt <= 95)  
-	      remove_it = true;
+	    // //removing unassigned payload type (ekiga)
+	    // unsigned pt = 0;
+	    // pt = pj_strtoul(&sdp_media->desc.fmt[u]);
+	    // if (77 <= pt && pt <= 95)  
+	    //   remove_it = true;
 
 	    //apply removal if necessary
 	    if (remove_it)
@@ -786,6 +789,9 @@ namespace switcher
     /* Update RTP session */
     pjmedia_rtp_session_update(&strm->in_sess, hdr, NULL);
 
+    if (!(bool)strm->shm)
+      return;
+
     if (!strm->shm->started ())
       {
 	std::string encoding_name (strm->si.fmt.encoding_name.ptr, 
@@ -812,10 +818,10 @@ namespace switcher
       }
 
     strm->shm->push_data (buf, //FIXME handle that, make copy and make clock
-			  (size_t) size,
-			  0,
-			  free,
-			  buf);
+    			  (size_t) size,
+    			  0,
+    			  free,
+    			  buf);
     
     if (status != PJ_SUCCESS) {
 	g_print ("RTP decode error");
@@ -1123,7 +1129,7 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
     unsigned i, fmti, pt = 0;
     pj_status_t status;
 
-    g_print ("--> line %d\n", __LINE__);
+    
     /* Find the first codec which is not telephone-event */
     for ( fmti = 0; fmti < local_m->desc.fmt_count; ++fmti ) {
 	pjmedia_sdp_rtpmap r;
@@ -1138,7 +1144,7 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
 	    break;
 	}
 
-    g_print ("--> line %d\n", __LINE__);
+    
 	attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
 					   &local_m->desc.fmt[fmti]);
 	if (attr == NULL)
@@ -1152,7 +1158,7 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
 	    break;
     }
 
-    g_print ("--> line %d\n", __LINE__);
+    
 
     if ( fmti >= local_m->desc.fmt_count )
 	return PJMEDIA_EINVALIDPT;
@@ -1164,10 +1170,10 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
      * For static payload types, get the info from codec manager.
      * For dynamic payload types, MUST get the rtpmap.
      */
-    g_print ("--> line %d\n", __LINE__);
+    
     if (pt < 77) {
 	pj_bool_t has_rtpmap;
-	g_print ("--> line %d\n", __LINE__);
+	
 
 	rtpmap = NULL;
 	has_rtpmap = PJ_TRUE;
@@ -1183,7 +1189,7 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
 		has_rtpmap = PJ_FALSE;
 	}
 
-	g_print ("--> line %d\n", __LINE__);
+	
 	
 	/* Build codec format info: */
 	if (has_rtpmap) {
@@ -1199,54 +1205,54 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
 	  if (si->fmt.pt == PJMEDIA_RTP_PT_G722)
 	    si->fmt.clock_rate = 16000;
 #endif
-	  g_print ("--> line %d\n", __LINE__);
+	  
 	  
 	  /* For audio codecs, rtpmap parameters denotes the number of
 	   * channels.
 	   */
 	  if (si->type == PJMEDIA_TYPE_AUDIO && rtpmap->param.slen) {
-	    g_print ("--> line %d\n", __LINE__);
+	    
 	    si->fmt.channel_cnt = (unsigned) pj_strtoul(&rtpmap->param);
 	  } else {
-	    g_print ("--> line %d\n", __LINE__);
+	    
 	    si->fmt.channel_cnt = 1;
 	  }
-	  g_print ("--> line %d\n", __LINE__);
+	  
 	  
 	} else {
 	  const pjmedia_codec_info *p_info;
-	  g_print ("--> line %d\n", __LINE__);
+	  
 	  
 	  status = pjmedia_codec_mgr_get_codec_info( mgr, pt, &p_info);
 	  if (status != PJ_SUCCESS)
 	    return status;
-	  g_print ("--> line %d\n", __LINE__);
+	  
 	  
 	  pj_memcpy(&si->fmt, p_info, sizeof(pjmedia_codec_info));
 	}
-    g_print ("--> line %d\n", __LINE__);
+	
 
 	/* For static payload type, pt's are symetric */
 	si->tx_pt = pt;
 
     } else {
-      g_print ("DOES NOT HAVE RTPMAP\n"); 
+      //g_print ("DOES NOT HAVE RTPMAP\n"); 
       //pjmedia_codec_id codec_id;
       //pj_str_t codec_id_st;
       //const pjmedia_codec_info *p_info;
       
-      g_print ("--> line %d\n", __LINE__);
+      
       attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
 					  &local_m->desc.fmt[fmti]);
       if (attr == NULL)
 	return PJMEDIA_EMISSINGRTPMAP;
-      g_print ("--> line %d\n", __LINE__);
+      
       
       status = pjmedia_sdp_attr_to_rtpmap(pool, attr, &rtpmap);
       if (status != PJ_SUCCESS)
 	return status;
       
-      g_print ("--> line %d\n", __LINE__);
+      
       /* Build codec format info: */
       
       si->fmt.type = si->type;
@@ -1258,10 +1264,10 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
        * channels.
        */
       if (si->type == PJMEDIA_TYPE_AUDIO && rtpmap->param.slen) {
-	g_print ("--> line %d\n", __LINE__);
+	
 	si->fmt.channel_cnt = (unsigned) pj_strtoul(&rtpmap->param);
       } else {
-	g_print ("--> line %d\n", __LINE__);
+	
 	si->fmt.channel_cnt = 1;
       }
       
@@ -1277,10 +1283,10 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
       // codec_id_st = pj_str(codec_id);
       // 	status = pjmedia_codec_mgr_find_codecs_by_id(mgr, &codec_id_st,
       // 						     &i, &p_info, NULL);
-      // 	g_print ("--> line %d\n", __LINE__);
+      // 	
       // 	if (status != PJ_SUCCESS)
       // 	  return status;
-      // 	g_print ("--> line %d\n", __LINE__);
+      // 	
 	
       // 	pj_memcpy(&si->fmt, p_info, sizeof(pjmedia_codec_info));
 	
@@ -1315,10 +1321,10 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
       // 	    }
       // 	}
 
-      // 	g_print ("--> line %d\n", __LINE__);
+      // 	
       // 	if (si->tx_pt == 0xFFFF)
       // 	  return PJMEDIA_EMISSINGRTPMAP;
-	g_print ("--> line %d\n", __LINE__);
+	
     }
 
 
@@ -1370,10 +1376,10 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
     //  *
     //  * Thanks Alain Totouom
     //  */
-    // g_print ("--> line %d\n", __LINE__);
+    // 
     // if (status != PJ_SUCCESS && si->dir != PJMEDIA_DIR_NONE)
     // 	return status;
-    // g_print ("--> line %d\n", __LINE__);
+    // 
 
 
     /* Get incomming payload type for telephone-events */
@@ -1407,7 +1413,7 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
 	    break;
 	}
     }
-    g_print ("--> line %d\n", __LINE__);
+    
 
     return PJ_SUCCESS;
 }

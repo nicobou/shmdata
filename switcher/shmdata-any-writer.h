@@ -25,6 +25,7 @@
 #include <string>
 #include <shmdata/any-data-writer.h>
 #include "json-builder.h"
+#include <mutex>
 
 namespace switcher
 {
@@ -56,6 +57,7 @@ namespace switcher
     std::string path_;
     shmdata_any_writer_t *writer_;
     JSONBuilder::ptr json_description_;
+    std::mutex thread_safe_;
     void make_json_description ();
     bool set_path_without_deleting (std::string name);
     /* static void on_handoff_cb (GstElement* object, */

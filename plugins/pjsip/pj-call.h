@@ -118,8 +118,8 @@ struct call
   pj_time_val		 start_time;
   pj_time_val		 response_time;
   pj_time_val		 connect_time;
-  
-  pj_timer_entry	 d_timer;	    /**< Disconnect timer.	*/
+  std::string            peer_uri;
+  //pj_timer_entry	 d_timer;	    /**< Disconnect timer.	*/
 };
 
 
