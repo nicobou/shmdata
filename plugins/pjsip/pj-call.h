@@ -144,8 +144,6 @@ typedef struct app
     char		*log_filename;
     char		*report_filename;
 
-  struct codec	 audio_codec;//FIXME should be removed ?
-
     pj_str_t		 uri_to_call;
 
     pj_caching_pool	 cp;
