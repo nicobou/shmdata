@@ -200,6 +200,13 @@ typedef struct app
 					    const pjmedia_sdp_session *local,
 					    const pjmedia_sdp_session *remote,
 					    unsigned stream_idx);
+    static pj_status_t get_audio_codec_info_param(pjmedia_stream_info *si,
+						  pj_pool_t *pool,
+						  pjmedia_codec_mgr *mgr,
+						  const pjmedia_sdp_media *local_m,
+						  const pjmedia_sdp_media *rem_m);
+    static void remove_from_sdp_media (pjmedia_sdp_media *sdp_media,
+				       unsigned fmt_pos);
       };
   
 }  // end of namespace

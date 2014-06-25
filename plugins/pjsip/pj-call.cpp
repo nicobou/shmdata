@@ -20,6 +20,9 @@
 #include "pj-call.h"
 #include "pj-sip.h"
 #include <glib/gstdio.h> //g_remove
+#include <cctype>
+#include <algorithm>
+#include <string>
 
 namespace switcher
 {
@@ -739,6 +742,37 @@ namespace switcher
 
 	//getting offer media to receive
 	pjmedia_sdp_media *sdp_media = media_to_receive[i];
+
+	for (unsigned u = 0 ; u < sdp_media->desc.fmt_count; )
+	  {
+	    bool remove_it = false;
+	    //removing unassigned payload type (ekiga)
+	    unsigned pt = 0;
+	    pt = pj_strtoul(&sdp_media->desc.fmt[u]);
+	    if (77 <= pt && pt <= 95)  
+	      remove_it = true;
+	    //check if h261
+	    pjmedia_sdp_attr *attr;
+	    attr = pjmedia_sdp_media_find_attr2(sdp_media, "rtpmap",
+						&sdp_media->desc.fmt[u]);
+	    if (NULL != attr)
+	      {
+		std::string val (attr->value.ptr, attr->value.slen);
+		std::transform (val.begin (),
+				val.end (),
+				val.begin(), 
+				(int(*)(int))std::toupper);
+		if (std::string::npos != val.find ("H261"))
+		  remove_it = true;
+	      }
+
+	    //apply removal if necessary
+	    if (remove_it)
+	      remove_from_sdp_media (sdp_media, u);
+	    else
+	      u++;
+	    
+	  }
 	//getting transport info 
 	pjmedia_transport_info tpinfo;
 	pjmedia_transport_info_init(&tpinfo);
@@ -892,7 +926,7 @@ namespace switcher
     unsigned payload_len;
 
     strm = (struct media_stream *)user_data;
-    g_print ("%s, media index %u\n", __FUNCTION__, strm->media_index);
+    //g_print ("%s, media index %u\n", __FUNCTION__, strm->media_index);
 
     /* Discard packet if media is inactive */
     if (!strm->active)
@@ -904,43 +938,14 @@ namespace switcher
 	return;
     }
 
+    void *buf = malloc (size);
+    memcpy (buf, pkt, size);
+    
     /* Decode RTP packet. */
     status = pjmedia_rtp_decode_rtp(&strm->in_sess, 
-				    pkt, (int)size, 
+				    buf, (int)size, 
 				    &hdr, &payload, &payload_len);
 
-    if (!strm->shm->started ())
-      {
-	//FIXME check for channels in fmt + all si.param + ssrc + clock-base + seqnum-base
-	std::string data_type ("application/x-rtp" 
-				 //+ ", media= " + current_media->type 
-				 //+ ", clock-rate=" + std::to_string (current_media->si.fmt.clock_rate)
-				 //+ ", payload=" + std::to_string (current_media->si.fmt.pt)
-				 //+ ", encoding-name=" + std::string (current_media->si.fmt.encoding_name.ptr, current_media->si.fmt.encoding_name.len)
-				 // + ", ssrc=" + 
-				 // + ", clock-base="
-				 // + ", seqnum-base=" + std::to_string (current_media->in_sess->seq_ctrl->base_seq)
-				 );
-	
-	strm->shm->set_data_type (data_type);
-	
-	//application/x-rtp, media=(string)application, clock-rate=(int)90000, encoding-name=(string)X-GST, ssrc=(uint)4199653519, payload=(int)96, clock-base=(uint)479267716, seqnum-base=(uint)53946
-	strm->shm->start ();
-      }
-
-    strm->shm->push_data (pkt, //FIXME handle that, make copy and make clock
-			  (size_t) size,
-			  0,
-			  NULL,
-			  NULL);
-    
-
-    if (status != PJ_SUCCESS) {
-	g_print ("RTP decode error");
-	return;
-    }
-
-    
     //PJ_LOG(4,(THIS_FILE, "Rx seq=%d", pj_ntohs(hdr->seq)));
 
     /* Update the RTCP session. */
@@ -949,6 +954,42 @@ namespace switcher
 
     /* Update RTP session */
     pjmedia_rtp_session_update(&strm->in_sess, hdr, NULL);
+
+    if (!strm->shm->started ())
+      {
+	std::string encoding_name (strm->si.fmt.encoding_name.ptr, 
+				   strm->si.fmt.encoding_name.slen);
+	std::transform (encoding_name.begin (),
+			encoding_name.end (),
+			encoding_name.begin(), 
+			(int(*)(int))std::toupper);
+	//FIXME check for channels in fmt + all si.param + ssrc + clock-base + seqnum-base
+	std::string data_type ("application/x-rtp" 
+			       ", media= " + strm->type 
+			       + ", clock-rate=" + std::to_string (strm->si.fmt.clock_rate)
+			       + ", payload=" + std::to_string (strm->si.fmt.pt)
+			       + ", encoding-name=" + encoding_name
+			       // + ", ssrc=" + 
+				 // + ", clock-base="
+				 // + ", seqnum-base=" + std::to_string (strm->in_sess->seq_ctrl->base_seq)
+				 );
+	
+	strm->shm->set_data_type (data_type);
+	
+	//application/x-rtp, media=(string)application, clock-rate=(int)90000, encoding-name=(string)X-GST, ssrc=(uint)4199653519, payload=(int)96, clock-base=(uint)479267716, seqnum-base=(uint)53946
+	strm->shm->start ();
+      }
+
+    strm->shm->push_data (buf, //FIXME handle that, make copy and make clock
+			  (size_t) size,
+			  0,
+			  free,
+			  buf);
+    
+    if (status != PJ_SUCCESS) {
+	g_print ("RTP decode error");
+	return;
+    }
 
 }
 
@@ -1009,7 +1050,7 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
 			     const pjmedia_sdp_session *remote,
 			     unsigned stream_idx)
 {
-  //pjmedia_codec_mgr *mgr;
+  pjmedia_codec_mgr *mgr;
     const pjmedia_sdp_attr *attr;
     const pjmedia_sdp_media *local_m;
     const pjmedia_sdp_media *rem_m;
@@ -1048,7 +1089,7 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
       si->type = PJMEDIA_TYPE_UNKNOWN;
 
     /* Get codec manager. */
-    //mgr = pjmedia_endpt_get_codec_mgr(endpt);
+    mgr = pjmedia_endpt_get_codec_mgr(endpt);
 
     /* Reset: */
 
@@ -1222,7 +1263,7 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
     */
 
     /* Get codec info and param */
-    status = PJ_SUCCESS;//get_audio_codec_info_param(si, pool, mgr, local_m, rem_m);
+    status = get_audio_codec_info_param(si, pool, mgr, local_m, rem_m);
 
     /* Leave SSRC to random. */
     si->ssrc = pj_rand();
@@ -1234,5 +1275,353 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
 
 }
   
+  
+  /*
+   * COPY and REWRITE of pjsip Internal function for collecting 
+   * codec info and param from the SDP media.
+   */
+  pj_status_t 
+  PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
+				     pj_pool_t *pool,
+				     pjmedia_codec_mgr *mgr,
+				     const pjmedia_sdp_media *local_m,
+				     const pjmedia_sdp_media *rem_m)
+  {
+    const pjmedia_sdp_attr *attr;
+    pjmedia_sdp_rtpmap *rtpmap;
+    unsigned i, fmti, pt = 0;
+    pj_status_t status;
 
+    g_print ("--> line %d\n", __LINE__);
+    /* Find the first codec which is not telephone-event */
+    for ( fmti = 0; fmti < local_m->desc.fmt_count; ++fmti ) {
+	pjmedia_sdp_rtpmap r;
+
+	if ( !pj_isdigit(*local_m->desc.fmt[fmti].ptr) )
+	    return PJMEDIA_EINVALIDPT;
+	pt = pj_strtoul(&local_m->desc.fmt[fmti]);
+
+	if (pt < 77) {
+	    /* This is known static PT. Skip rtpmap checking because it is
+	     * optional. */
+	    break;
+	}
+
+    g_print ("--> line %d\n", __LINE__);
+	attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
+					   &local_m->desc.fmt[fmti]);
+	if (attr == NULL)
+	    continue;
+
+	status = pjmedia_sdp_attr_get_rtpmap(attr, &r);
+	if (status != PJ_SUCCESS)
+	    continue;
+
+	if (pj_strcmp2(&r.enc_name, "telephone-event") != 0)
+	    break;
+    }
+
+    g_print ("--> line %d\n", __LINE__);
+
+    if ( fmti >= local_m->desc.fmt_count )
+	return PJMEDIA_EINVALIDPT;
+
+    /* Get payload type for receiving direction */
+    si->rx_pt = pt;
+
+    /* Get codec info.
+     * For static payload types, get the info from codec manager.
+     * For dynamic payload types, MUST get the rtpmap.
+     */
+    g_print ("--> line %d\n", __LINE__);
+    if (pt < 77) {
+	pj_bool_t has_rtpmap;
+	g_print ("--> line %d\n", __LINE__);
+
+	rtpmap = NULL;
+	has_rtpmap = PJ_TRUE;
+
+	attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
+					    &local_m->desc.fmt[fmti]);
+	if (attr == NULL) {
+	    has_rtpmap = PJ_FALSE;
+	}
+	if (attr != NULL) {
+	  status = pjmedia_sdp_attr_to_rtpmap(pool, attr, &rtpmap);
+	    if (status != PJ_SUCCESS)
+		has_rtpmap = PJ_FALSE;
+	}
+
+	g_print ("--> line %d\n", __LINE__);
+	
+	/* Build codec format info: */
+	if (has_rtpmap) {
+	  si->fmt.type = si->type;
+	  si->fmt.pt = pj_strtoul(&local_m->desc.fmt[fmti]);
+	  pj_strdup(pool, &si->fmt.encoding_name, &rtpmap->enc_name);
+	  si->fmt.clock_rate = rtpmap->clock_rate;
+	  
+#if defined(PJMEDIA_HANDLE_G722_MPEG_BUG) && (PJMEDIA_HANDLE_G722_MPEG_BUG != 0)
+	  /* The session info should have the actual clock rate, because
+	   * this info is used for calculationg buffer size, etc in stream
+	   */
+	  if (si->fmt.pt == PJMEDIA_RTP_PT_G722)
+	    si->fmt.clock_rate = 16000;
+#endif
+	  g_print ("--> line %d\n", __LINE__);
+	  
+	  /* For audio codecs, rtpmap parameters denotes the number of
+	   * channels.
+	   */
+	  if (si->type == PJMEDIA_TYPE_AUDIO && rtpmap->param.slen) {
+	    g_print ("--> line %d\n", __LINE__);
+	    si->fmt.channel_cnt = (unsigned) pj_strtoul(&rtpmap->param);
+	  } else {
+	    g_print ("--> line %d\n", __LINE__);
+	    si->fmt.channel_cnt = 1;
+	  }
+	  g_print ("--> line %d\n", __LINE__);
+	  
+	} else {
+	  const pjmedia_codec_info *p_info;
+	  g_print ("--> line %d\n", __LINE__);
+	  
+	  status = pjmedia_codec_mgr_get_codec_info( mgr, pt, &p_info);
+	  if (status != PJ_SUCCESS)
+	    return status;
+	  g_print ("--> line %d\n", __LINE__);
+	  
+	  pj_memcpy(&si->fmt, p_info, sizeof(pjmedia_codec_info));
+	}
+    g_print ("--> line %d\n", __LINE__);
+
+	/* For static payload type, pt's are symetric */
+	si->tx_pt = pt;
+
+    } else {
+      g_print ("DOES NOT HAVE RTPMAP\n"); 
+      //pjmedia_codec_id codec_id;
+      //pj_str_t codec_id_st;
+      //const pjmedia_codec_info *p_info;
+      
+      g_print ("--> line %d\n", __LINE__);
+      attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
+					  &local_m->desc.fmt[fmti]);
+      if (attr == NULL)
+	return PJMEDIA_EMISSINGRTPMAP;
+      g_print ("--> line %d\n", __LINE__);
+      
+      status = pjmedia_sdp_attr_to_rtpmap(pool, attr, &rtpmap);
+      if (status != PJ_SUCCESS)
+	return status;
+      
+      g_print ("--> line %d\n", __LINE__);
+      /* Build codec format info: */
+      
+      si->fmt.type = si->type;
+      si->fmt.pt = pj_strtoul(&local_m->desc.fmt[fmti]);
+      si->fmt.encoding_name = rtpmap->enc_name;
+      si->fmt.clock_rate = rtpmap->clock_rate;
+      
+      /* For audio codecs, rtpmap parameters denotes the number of
+       * channels.
+       */
+      if (si->type == PJMEDIA_TYPE_AUDIO && rtpmap->param.slen) {
+	g_print ("--> line %d\n", __LINE__);
+	si->fmt.channel_cnt = (unsigned) pj_strtoul(&rtpmap->param);
+      } else {
+	g_print ("--> line %d\n", __LINE__);
+	si->fmt.channel_cnt = 1;
+      }
+      
+      /* Normalize the codec info from codec manager. Note that the
+       * payload type will be resetted to its default (it might have
+       * been rewritten by the SDP negotiator to match to the remote
+       * offer), this is intentional as currently some components may
+       * prefer (or even require) the default PT in codec info.
+       */
+      // pjmedia_codec_info_to_id(&si->fmt, codec_id, sizeof(codec_id));
+      
+      // i = 1;
+      // codec_id_st = pj_str(codec_id);
+      // 	status = pjmedia_codec_mgr_find_codecs_by_id(mgr, &codec_id_st,
+      // 						     &i, &p_info, NULL);
+      // 	g_print ("--> line %d\n", __LINE__);
+      // 	if (status != PJ_SUCCESS)
+      // 	  return status;
+      // 	g_print ("--> line %d\n", __LINE__);
+	
+      // 	pj_memcpy(&si->fmt, p_info, sizeof(pjmedia_codec_info));
+	
+      // 	/* Determine payload type for outgoing channel, by finding
+      // 	 * dynamic payload type in remote SDP that matches the answer.
+      // 	 */
+      // 	si->tx_pt = 0xFFFF;
+      // 	for (i=0; i<rem_m->desc.fmt_count; ++i) {
+      // 	  unsigned rpt;
+      // 	  pjmedia_sdp_attr *r_attr;
+      // 	  pjmedia_sdp_rtpmap r_rtpmap;
+	  
+      // 	  rpt = pj_strtoul(&rem_m->desc.fmt[i]);
+      // 	  if (rpt < 96)
+      // 	    continue;
+	  
+      // 	  r_attr = pjmedia_sdp_media_find_attr2(rem_m, "rtpmap",
+      // 						&rem_m->desc.fmt[i]);
+      // 	  if (!r_attr)
+      // 	    continue;
+	  
+      // 	  if (pjmedia_sdp_attr_get_rtpmap(r_attr, &r_rtpmap) != PJ_SUCCESS)
+      // 	    continue;
+	  
+      // 	  if (!pj_stricmp(&rtpmap->enc_name, &r_rtpmap.enc_name) &&
+      // 	      rtpmap->clock_rate == r_rtpmap.clock_rate)
+      // 	    {
+      // 	      /* Found matched codec. */
+      // 	      si->tx_pt = rpt;
+	      
+      // 	      break;
+      // 	    }
+      // 	}
+
+      // 	g_print ("--> line %d\n", __LINE__);
+      // 	if (si->tx_pt == 0xFFFF)
+      // 	  return PJMEDIA_EMISSINGRTPMAP;
+	g_print ("--> line %d\n", __LINE__);
+    }
+
+
+    // /* Now that we have codec info, get the codec param. */
+    // si->param = PJ_POOL_ALLOC_T(pool, pjmedia_codec_param);
+    // status = pjmedia_codec_mgr_get_default_param(mgr, &si->fmt,
+    // 					         si->param);
+
+    // /* Get remote fmtp for our encoder. */
+    // pjmedia_stream_info_parse_fmtp(pool, rem_m, si->tx_pt,
+    // 				   &si->param->setting.enc_fmtp);
+
+    /* Get local fmtp for our decoder. */
+    // pjmedia_stream_info_parse_fmtp(pool, local_m, si->rx_pt,
+    // 				   &si->param->setting.dec_fmtp);
+
+    // /* Get the remote ptime for our encoder. */
+    // attr = pjmedia_sdp_attr_find2(rem_m->attr_count, rem_m->attr,
+    // 				  "ptime", NULL);
+    // if (attr) {
+    // 	pj_str_t tmp_val = attr->value;
+    // 	unsigned frm_per_pkt;
+
+    // 	pj_strltrim(&tmp_val);
+
+    // 	/* Round up ptime when the specified is not multiple of frm_ptime */
+    // 	frm_per_pkt = (pj_strtoul(&tmp_val) +
+    // 		      si->param->info.frm_ptime/2) /
+    // 		      si->param->info.frm_ptime;
+    // 	if (frm_per_pkt != 0) {
+    //         si->param->setting.frm_per_pkt = (pj_uint8_t)frm_per_pkt;
+    //     }
+    // }
+
+    // /* Get remote maxptime for our encoder. */
+    // attr = pjmedia_sdp_attr_find2(rem_m->attr_count, rem_m->attr,
+    // 				  "maxptime", NULL);
+    // if (attr) {
+    // 	pj_str_t tmp_val = attr->value;
+
+    // 	pj_strltrim(&tmp_val);
+    // 	si->tx_maxptime = pj_strtoul(&tmp_val);
+    // }
+
+    // /* When direction is NONE (it means SDP negotiation has failed) we don't
+    //  * need to return a failure here, as returning failure will cause
+    //  * the whole SDP to be rejected. See ticket #:
+    //  *	http://
+    //  *
+    //  * Thanks Alain Totouom
+    //  */
+    // g_print ("--> line %d\n", __LINE__);
+    // if (status != PJ_SUCCESS && si->dir != PJMEDIA_DIR_NONE)
+    // 	return status;
+    // g_print ("--> line %d\n", __LINE__);
+
+
+    /* Get incomming payload type for telephone-events */
+    si->rx_event_pt = -1;
+    for (i=0; i<local_m->attr_count; ++i) {
+	pjmedia_sdp_rtpmap r;
+
+	attr = local_m->attr[i];
+	if (pj_strcmp2(&attr->name, "rtpmap") != 0)
+	    continue;
+	if (pjmedia_sdp_attr_get_rtpmap(attr, &r) != PJ_SUCCESS)
+	    continue;
+	if (pj_strcmp2(&r.enc_name, "telephone-event") == 0) {
+	    si->rx_event_pt = pj_strtoul(&r.pt);
+	    break;
+	}
+    }
+
+    /* Get outgoing payload type for telephone-events */
+    si->tx_event_pt = -1;
+    for (i=0; i<rem_m->attr_count; ++i) {
+	pjmedia_sdp_rtpmap r;
+
+	attr = rem_m->attr[i];
+	if (pj_strcmp2(&attr->name, "rtpmap") != 0)
+	    continue;
+	if (pjmedia_sdp_attr_get_rtpmap(attr, &r) != PJ_SUCCESS)
+	    continue;
+	if (pj_strcmp2(&r.enc_name, "telephone-event") == 0) {
+	    si->tx_event_pt = pj_strtoul(&r.pt);
+	    break;
+	}
+    }
+    g_print ("--> line %d\n", __LINE__);
+
+    return PJ_SUCCESS;
+}
+
+
+  void
+  PJCall::remove_from_sdp_media (pjmedia_sdp_media *sdp_media,
+				 unsigned fmt_pos)
+  {
+    g_print ("sdp_media->desc.fmt_count %u\n", sdp_media->desc.fmt_count);
+    //remove the rtpmap
+    pjmedia_sdp_attr *attr;
+    attr = pjmedia_sdp_media_find_attr2(sdp_media, "rtpmap",
+					&sdp_media->desc.fmt[fmt_pos]);
+    if (attr != NULL)
+      {
+	pjmedia_sdp_attr_remove (&sdp_media->attr_count, 
+				 sdp_media->attr, 
+				 attr);
+	// std::string updated_val (attr->value.ptr, attr->value.slen);
+	// updated_val.replace (0,2, std::to_string (pt));
+	// pj_strdup2 (pool, &attr->value, updated_val.c_str ()); //FIXME free previous string
+      }
+    //remove the fmtp line
+    attr = pjmedia_sdp_media_find_attr2(sdp_media, "fmtp",
+					&sdp_media->desc.fmt[fmt_pos]);
+    if (attr != NULL)
+      {
+	pjmedia_sdp_attr_remove (&sdp_media->attr_count, 
+				 sdp_media->attr, 
+				 attr);
+	// std::string updated_val (attr->value.ptr, attr->value.slen);
+	// updated_val.replace (0,2, std::to_string (pt));
+	// pj_strdup2 (pool, &attr->value, updated_val.c_str ()); 
+      }
+    //remove from media line
+    pj_str_t *begin = &sdp_media->desc.fmt[fmt_pos];
+    pj_str_t *end = &sdp_media->desc.fmt[sdp_media->desc.fmt_count - 1];
+    std::remove_if (begin, 
+		    end,
+		    [&](pj_str_t item) {
+		      return (0 == pj_strcmp (&item, &sdp_media->desc.fmt[fmt_pos]));
+		    });
+    sdp_media->desc.fmt_count --;
+    //sdp_media->desc.fmt[u].slen = pj_utoa (pt, sdp_media->desc.fmt[u].ptr);//FIXME free old ptr
+  }
+  
 }
