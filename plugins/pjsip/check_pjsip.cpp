@@ -101,7 +101,7 @@ main ()
     //   }
     manager->set_property ("test", "rtp-session", "rtp");
 
-    usleep (300000000);
+//usleep (300000000);
     manager->remove ("test");
      
      
