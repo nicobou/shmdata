@@ -34,7 +34,7 @@ main ()
   bool success = true;
   {
     switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
-     
+    
 #ifdef HAVE_CONFIG_H
     gchar *usr_plugin_dir = g_strdup_printf ("./%s", LT_OBJDIR);
     manager->scan_directory_for_plugins (usr_plugin_dir);
@@ -42,28 +42,65 @@ main ()
 #else
     return 1;
 #endif
-     
+    
     // if (!switcher::QuiddityBasicTest::test_full (manager, "sip"))
     //   success = false;
-     
+    
+    //testing uncompressed data transmission
+    manager->create ("audiotestsrc","a");
+    manager->set_property ("a", "started", "true");
+    
+    manager->create ("videotestsrc","v");
+    manager->set_property ("v", "started", "true");
+    
+    manager->create ("rtpsession","rtp");
+    
+    manager->invoke_va ("rtp", 
+       			"add_data_stream",
+     			NULL,
+       			"/tmp/switcher_rtptest_a_audio",
+       			NULL);
+    
+    manager->invoke_va ("rtp", 
+			"add_data_stream",
+			NULL,
+			"/tmp/switcher_rtptest_v_video",
+			NULL);
+    
+    manager->invoke_va ("rtp", 
+			"add_data_stream",
+			NULL,
+			"/tmp/switcher_rtptest_v_encoded-video",
+			NULL);
+    
+    manager->invoke_va ("rtp", 
+			"add_destination",
+			NULL,
+			"local",
+			"127.0.0.1",
+			NULL);
+    
+    
+    //SIP
     if (0 != manager->create ("sip", "test").compare ("test"))
       {
 	g_print ("cannot create\n");
 	return 1;
       }
-
+    
     manager->set_property ("test", "port", "5070");
-    bool registered = manager->invoke_va ("test","register", NULL, 
-					  "1004", //user
-					  "10.10.30.115", //domain
-					  "1234", //password
-					  NULL);
-     
-    if (!registered)
-      {
-	g_print ("cannot register \n");
-	return 1;
-      }
+    // bool registered = manager->invoke_va ("test","register", NULL, 
+    // 					  "1004", //user
+    // 					  "10.10.30.115", //domain
+    // 					  "1234", //password
+    // 					  NULL);
+    // if (!registered)
+    //   {
+    // 	g_print ("cannot register \n");
+    // 	return 1;
+    //   }
+    manager->set_property ("test", "rtp-session", "rtp");
+
     usleep (300000000);
     manager->remove ("test");
      

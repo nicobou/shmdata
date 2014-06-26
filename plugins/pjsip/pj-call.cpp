@@ -49,7 +49,11 @@ namespace switcher
   
 
 
-  PJCall::PJCall (PJSIP *sip_instance)
+  PJCall::PJCall (PJSIP *sip_instance) :
+    sip_instance_ (sip_instance),
+    rtp_session_ (),
+    rtp_session_name_ (),
+    rtp_session_name_spec_ (NULL)
   {
     pj_status_t status;
 
@@ -65,82 +69,69 @@ namespace switcher
       inv_cb.on_media_update = &call_on_media_update;
       
       /* Initialize invite session module:  */
-      status = pjsip_inv_usage_init(sip_instance->sip_endpt_, &inv_cb);
+      status = pjsip_inv_usage_init(sip_instance_->sip_endpt_, &inv_cb);
       if (status != PJ_SUCCESS) 
 	g_warning ("Init invite session module failed");
     }
     
     /* Register our module to receive incoming requests. */
-    status = pjsip_endpt_register_module(sip_instance->sip_endpt_, &mod_siprtp_);
+    status = pjsip_endpt_register_module(sip_instance_->sip_endpt_, &mod_siprtp_);
     if (status != PJ_SUCCESS) 
       g_warning ("Register mod_siprtp_ failed");
 
     // /* Init media */
-    status = pjmedia_endpt_create(&sip_instance->cp_.factory, NULL, 1, &med_endpt_);
-      if (status != PJ_SUCCESS) 
-	g_warning ("Init media failed");
-
-      //registering codecs
-      //pjmedia_codec_g711_init(med_endpt_);
-      status = PJCodec::install_codecs ();
-      if (status != PJ_SUCCESS) 
-       	g_warning ("Install codecs failed");
+    status = pjmedia_endpt_create(&sip_instance_->cp_.factory, NULL, 1, &med_endpt_);
+    if (status != PJ_SUCCESS) 
+      g_warning ("Init media failed");
+    
+    //registering codecs
+    status = PJCodec::install_codecs ();
+    if (status != PJ_SUCCESS) 
+      g_warning ("Install codecs failed");
       
-      /* Init calls */
-      for (unsigned i=0; i<app.max_calls; ++i)
-	app.call[i].index = i;
-      g_print ("pj_call initialized\n");
+    /* Init calls */
+    for (unsigned i=0; i<app.max_calls; ++i)
+      app.call[i].index = i;
+    g_print ("pj_call initialized\n");
 
-          /* Init media transport for all calls. */
-      //pj_uint16_t rtp_port = (pj_uint16_t)(app.rtp_start_port & 0xFFFE);
-       for (unsigned i=0, count=0; i<app.max_calls; ++i, ++count) 
-       	{
-       	  unsigned j;
-       	  /* Create transport for each media in the call */
-       	  for (j = 0; j < PJ_ARRAY_SIZE (app.call[0].media); ++j) {
-       	    /* Repeat binding media socket to next port when fails to bind
-       	     * to current port number.
-       	     */
-       	    // int retry;
+    /* Init media transport for all calls. */
+    for (unsigned i=0, count=0; i<app.max_calls; ++i, ++count) 
+      {
+	unsigned j;
+	/* Create transport for each media in the call */
+	for (j = 0; j < PJ_ARRAY_SIZE (app.call[0].media); ++j) {
+	  /* Repeat binding media socket to next port when fails to bind
+	   * to current port number.
+	   */
 	    
-       	    app.call[i].media[j].call_index = i;
-       	    app.call[i].media[j].media_index = j;
-	    
-       	    status = -1;
-	    // for (retry=0; retry<100; ++retry,rtp_port+=2)  {
-	    //   struct media_stream *m = &app.call[i].media[j];
-	      
-	    //   status = pjmedia_transport_udp_create2(med_endpt_, 
-	    //   					     "siprtp",
-	    //   					     &app.local_addr,
-	    //   					     rtp_port, 0, 
-	    //   					     &m->transport);
-	    //   if (status == PJ_SUCCESS) {
-       	    //    	rtp_port += 2;
-       	    //    	break;
-	    //   }
-	    // }
-       	  }
-       	}
+	  app.call[i].media[j].call_index = i;
+	  app.call[i].media[j].media_index = j;
+	}
+      }
+  
+    rtp_session_name_spec_ =
+      sip_instance_->custom_props_->make_string_property ("rtp-session", 
+							 "Quiddity name managing RTP destinations",
+							 "",
+							 (GParamFlags) G_PARAM_READWRITE,
+							  PJCall::set_rtp_session,
+							  PJCall::get_rtp_session,
+							 this);
+    
+    sip_instance_->install_property_by_pspec (sip_instance_->custom_props_->get_gobject (), 
+					     rtp_session_name_spec_, 
+					     "rtp-session",
+					     "Quiddity name managing RTP destinations");
+    
   }
+
   PJCall::~PJCall ()
   {
-    // unsigned i;
-    // app.thread_quit = 1;
-    // for (i=0; i<app.thread_count; ++i) {
-    // 	if (app.sip_thread[i]) {
-    // 	    pj_thread_join(app.sip_thread[i]);
-    // 	    pj_thread_destroy(app.sip_thread[i]);
-    // 	    app.sip_thread[i] = NULL;
-    // 	}
-    // }
-
     unsigned i;
     for (i=0; i<app.max_calls; ++i) {
       unsigned j;
       for (j=0; j<PJ_ARRAY_SIZE(app.call[0].media); ++j) {
 	struct media_stream *m = &app.call[i].media[j];
-	
 	if (m->transport) {
 	  pjmedia_transport_close(m->transport);
 	  m->transport = NULL;
@@ -165,14 +156,14 @@ namespace switcher
     /* Respond (statelessly) any non-INVITE requests with 500  */
     if (rdata->msg_info.msg->line.req.method.id != PJSIP_INVITE_METHOD) 
       {
-      //FIXME 
-      pj_str_t reason = pj_str("Unsupported Operation");
-      pjsip_endpt_respond_stateless (rdata->tp_info.transport->endpt, 
-				     rdata, 
-       				     500, &reason,
-       				     NULL, NULL);
-      return PJ_TRUE;
-    }
+	//FIXME 
+	pj_str_t reason = pj_str("Unsupported Operation");
+	pjsip_endpt_respond_stateless (rdata->tp_info.transport->endpt, 
+				       rdata, 
+				       500, &reason,
+				       NULL, NULL);
+	return PJ_TRUE;
+      }
     
 
     /* Handle incoming INVITE */
@@ -191,14 +182,14 @@ namespace switcher
     
     /* Get local IP address for the default IP address */
     {
-	const pj_str_t *hostname;
-	pj_sockaddr_in tmp_addr;
-	char *addr;
+      const pj_str_t *hostname;
+      pj_sockaddr_in tmp_addr;
+      char *addr;
 
-	hostname = pj_gethostname();
-	pj_sockaddr_in_init(&tmp_addr, hostname, 0);
-	addr = pj_inet_ntoa(tmp_addr.sin_addr);
-	pj_ansi_strcpy(ip_addr, addr);
+      hostname = pj_gethostname();
+      pj_sockaddr_in_init(&tmp_addr, hostname, 0);
+      addr = pj_inet_ntoa(tmp_addr.sin_addr);
+      pj_ansi_strcpy(ip_addr, addr);
     }
 
     /* Init defaults */
@@ -227,72 +218,67 @@ namespace switcher
     PJ_UNUSED_ARG(e);
 
     if (!call)
-	return;
+      return;
 
     if (inv->state == PJSIP_INV_STATE_DISCONNECTED) {
 	
-	pj_time_val null_time = {0, 0};
+      pj_time_val null_time = {0, 0};
 
-	// if (call->d_timer.id != 0) {
-	//   pjsip_endpt_cancel_timer(PJSIP::sip_endpt_, &call->d_timer);
-	//     call->d_timer.id = 0;
-	// }
-
-	g_print ("Call #%d disconnected. Reason=%d (%.*s)",
-		 call->index,
-		 inv->cause,
-		 (int)inv->cause_text.slen,
-		 inv->cause_text.ptr);
+      g_print ("Call #%d disconnected. Reason=%d (%.*s)",
+	       call->index,
+	       inv->cause,
+	       (int)inv->cause_text.slen,
+	       inv->cause_text.ptr);
     
-	if (app.call_report) {
-	  g_print ("Call #%d statistics:", call->index);
-	  //print_call(call->index);
+      if (app.call_report) {
+	g_print ("Call #%d statistics:", call->index);
+	//print_call(call->index);
+      }
+	
+	
+      call->inv = NULL;
+      inv->mod_data[mod_siprtp_.id] = NULL;
+
+      //cleaning shmdatas
+      for (uint i=0; i < call->media_count; i++)
+	{
+	  struct media_stream *current_media = &call->media[i];
+	  ShmdataAnyWriter::ptr shm;
+	  std::swap (current_media->shm, shm);
 	}
-	
-	
-	call->inv = NULL;
-	inv->mod_data[mod_siprtp_.id] = NULL;
 
-	//cleaning shmdatas
-	for (uint i=0; i < call->media_count; i++)
-	  {
-	    struct media_stream *current_media = &call->media[i];
-	    ShmdataAnyWriter::ptr shm;
-	    std::swap (current_media->shm, shm);
-	  }
+      // FIXME destroy_call_media(call->index);
 
-	// FIXME destroy_call_media(call->index);
+      call->start_time = null_time;
+      call->response_time = null_time;
+      call->connect_time = null_time;
 
-	call->start_time = null_time;
-	call->response_time = null_time;
-	call->connect_time = null_time;
-
-	++app.uac_calls;
+      ++app.uac_calls;
 
     } else if (inv->state == PJSIP_INV_STATE_CONFIRMED) {
 
-	pj_time_val t;
+      pj_time_val t;
 
-	pj_gettimeofday(&call->connect_time);
-	if (call->response_time.sec == 0)
-	    call->response_time = call->connect_time;
+      pj_gettimeofday(&call->connect_time);
+      if (call->response_time.sec == 0)
+	call->response_time = call->connect_time;
 
-	t = call->connect_time;
-	PJ_TIME_VAL_SUB(t, call->start_time);
+      t = call->connect_time;
+      PJ_TIME_VAL_SUB(t, call->start_time);
 
-	g_print ("Call #%d connected in %ld ms", call->index,
-		  PJ_TIME_VAL_MSEC(t));
+      g_print ("Call #%d connected in %ld ms", call->index,
+	       PJ_TIME_VAL_MSEC(t));
 
-	// if (app.duration != 0) {
-	//   call->d_timer.id = 1;
-	//   call->d_timer.user_data = call;
-	//   call->d_timer.cb = NULL;//&timer_disconnect_call;
+      // if (app.duration != 0) {
+      //   call->d_timer.id = 1;
+      //   call->d_timer.user_data = call;
+      //   call->d_timer.cb = NULL;//&timer_disconnect_call;
 	  
-	//   t.sec = app.duration;
-	//   t.msec = 0;
+      //   t.sec = app.duration;
+      //   t.msec = 0;
 	  
-	//   pjsip_endpt_schedule_timer(PJSIP::sip_endpt_, &call->d_timer, &t);
-	// }
+      //   pjsip_endpt_schedule_timer(PJSIP::sip_endpt_, &call->d_timer, &t);
+      // }
 
     } else if (	inv->state == PJSIP_INV_STATE_EARLY ||
 		inv->state == PJSIP_INV_STATE_CONNECTING) {
@@ -333,8 +319,8 @@ namespace switcher
 
     /* Do nothing if media negotiation has failed */
     if (status != PJ_SUCCESS) {
-	g_print ("SDP negotiation failed");
-	return;
+      g_print ("SDP negotiation failed");
+      return;
     }
 
     /* Capture stream definition from the SDP */
@@ -354,7 +340,7 @@ namespace switcher
     len2 = pjmedia_sdp_print(remote_sdp, sdpbuf2, sizeof(sdpbuf2));
     if (len2 < 1) {
       g_print ("   error: printing sdp2");
-    	return ;
+      return ;
     }
     sdpbuf2[len2] = '\0';
     g_print ("*NEGOCIATED* local sdp : \n%s \n\nremote sdp : \n%s \n\n ",
@@ -413,17 +399,17 @@ namespace switcher
 	}
 	
 	// /* Start media thread. */
-    // current_media->thread_quit_flag = 0;
+	// current_media->thread_quit_flag = 0;
 	
-    //FIXME time to send rtp
-// #if PJ_HAS_THREADS
-//     status = pj_thread_create( inv->pool, "media", &media_thread, current_media,
-// 			       0, 0, &current_media->thread);
-//     if (status != PJ_SUCCESS) {
-// 	app_perror(THIS_FILE, "Error creating media thread", status);
-// 	return;
-//     }
-// #endif
+	//FIXME time to send rtp
+	// #if PJ_HAS_THREADS
+	//     status = pj_thread_create( inv->pool, "media", &media_thread, current_media,
+	// 			       0, 0, &current_media->thread);
+	//     if (status != PJ_SUCCESS) {
+	// 	app_perror(THIS_FILE, "Error creating media thread", status);
+	// 	return;
+	//     }
+	// #endif
 	
 	/* Set the media as active */
 	current_media->active = PJ_TRUE;
@@ -432,9 +418,9 @@ namespace switcher
   }
 
 
-/*
- * Receive incoming call
- */
+  /*
+   * Receive incoming call
+   */
   void 
   PJCall::process_incoming_call (pjsip_rx_data *rdata)
   {
@@ -468,22 +454,22 @@ namespace switcher
 
     /* Find free call slot */
     for (i=0; i<app.max_calls; ++i) {
-	if (app.call[i].inv == NULL)
-	    break;
+      if (app.call[i].inv == NULL)
+	break;
     }
 
     if (i == app.max_calls) {
-	const pj_str_t reason = pj_str("Too many calls");
-	pjsip_endpt_respond_stateless( PJSIP::sip_endpt_, rdata, 
-				       500, &reason,
-				       NULL, NULL);
-	return;
+      const pj_str_t reason = pj_str("Too many calls");
+      pjsip_endpt_respond_stateless( PJSIP::sip_endpt_, rdata, 
+				     500, &reason,
+				     NULL, NULL);
+      return;
     }
 
     call = &app.call[i];
     call->peer_uri = from_uri;
     
-     /* Parse SDP from incoming request and verify that we can handle the request. */
+    /* Parse SDP from incoming request and verify that we can handle the request. */
     pjmedia_sdp_session *offer = NULL;
     if (rdata->msg_info.msg->body) {
       pjsip_rdata_sdp_info *sdp_info;
@@ -504,24 +490,24 @@ namespace switcher
     status = pjsip_inv_verify_request (rdata, &options, NULL, NULL, PJSIP::sip_endpt_, &tdata);
 
     if (status != PJ_SUCCESS) {
-	/*
-	 * No we can't handle the incoming INVITE request.
-	 */
-	if (tdata) {
-	    pjsip_response_addr res_addr;
+      /*
+       * No we can't handle the incoming INVITE request.
+       */
+      if (tdata) {
+	pjsip_response_addr res_addr;
 	    
-	    pjsip_get_response_addr(tdata->pool, rdata, &res_addr);
-	    pjsip_endpt_send_response(PJSIP::sip_endpt_, &res_addr, tdata,
-		NULL, NULL);
+	pjsip_get_response_addr(tdata->pool, rdata, &res_addr);
+	pjsip_endpt_send_response(PJSIP::sip_endpt_, &res_addr, tdata,
+				  NULL, NULL);
 	    
-	} else {
+      } else {
 	    
-	    /* Respond with 500 (Internal Server Error) */
-	    pjsip_endpt_respond_stateless(PJSIP::sip_endpt_, rdata, 500, NULL,
-		NULL, NULL);
-	}
+	/* Respond with 500 (Internal Server Error) */
+	pjsip_endpt_respond_stateless(PJSIP::sip_endpt_, rdata, 500, NULL,
+				      NULL, NULL);
+      }
 	
-	return;
+      return;
     }
 
      
@@ -529,11 +515,11 @@ namespace switcher
     status = pjsip_dlg_create_uas( pjsip_ua_instance(), rdata,
 				   &app.local_contact, &dlg);
     if (status != PJ_SUCCESS) {
-	const pj_str_t reason = pj_str("Unable to create dialog");
-	pjsip_endpt_respond_stateless( PJSIP::sip_endpt_, rdata, 
-				       500, &reason,
-				       NULL, NULL);
-	return;
+      const pj_str_t reason = pj_str("Unable to create dialog");
+      pjsip_endpt_respond_stateless( PJSIP::sip_endpt_, rdata, 
+				     500, &reason,
+				     NULL, NULL);
+      return;
     }
 
     //checking number of transport to create for receiving 
@@ -643,14 +629,14 @@ namespace switcher
     status = pjsip_inv_initial_answer (call->inv, rdata, 200, 
 				       NULL, NULL, &tdata);
     if (status != PJ_SUCCESS) {
-	status = pjsip_inv_initial_answer (call->inv, rdata, 
-					   PJSIP_SC_NOT_ACCEPTABLE,
-					   NULL, NULL, &tdata);
-	if (status == PJ_SUCCESS)
-	    pjsip_inv_send_msg (call->inv, tdata); 
-	else
-	    pjsip_inv_terminate (call->inv, 500, PJ_FALSE);
-	return;
+      status = pjsip_inv_initial_answer (call->inv, rdata, 
+					 PJSIP_SC_NOT_ACCEPTABLE,
+					 NULL, NULL, &tdata);
+      if (status == PJ_SUCCESS)
+	pjsip_inv_send_msg (call->inv, tdata); 
+      else
+	pjsip_inv_terminate (call->inv, 500, PJ_FALSE);
+      return;
     }
 
     g_print ("local sdp before sending :");
@@ -664,8 +650,8 @@ namespace switcher
   }
 
   /*
- * Create SDP session for a call.
- */
+   * Create SDP session for a call.
+   */
   pj_status_t 
   PJCall::create_sdp (pj_pool_t *pool,
 		      struct call *call,
@@ -743,11 +729,11 @@ namespace switcher
     *p_sdp = sdp;
 
     return PJ_SUCCESS;
-}
+  }
 
-/*
- * This callback is called by media transport on receipt of RTP packet.
- */
+  /*
+   * This callback is called by media transport on receipt of RTP packet.
+   */
   void 
   PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size)
   {
@@ -768,8 +754,8 @@ namespace switcher
     
     /* Check for errors */
     if (size < 0) {
-	g_print ("RTP recv() error");
-	return;
+      g_print ("RTP recv() error");
+      return;
     }
 
     void *buf = malloc (size);
@@ -807,9 +793,9 @@ namespace switcher
 			       + ", payload=" + std::to_string (strm->si.fmt.pt)
 			       + ", encoding-name=" + encoding_name
 			       // + ", ssrc=" + 
-				 // + ", clock-base="
-				 // + ", seqnum-base=" + std::to_string (strm->in_sess->seq_ctrl->base_seq)
-				 );
+			       // + ", clock-base="
+			       // + ", seqnum-base=" + std::to_string (strm->in_sess->seq_ctrl->base_seq)
+			       );
 	
 	strm->shm->set_data_type (data_type);
 	
@@ -824,18 +810,18 @@ namespace switcher
     			  buf);
     
     if (status != PJ_SUCCESS) {
-	g_print ("RTP decode error");
-	return;
+      g_print ("RTP decode error");
+      return;
     }
 
-}
+  }
 
-/*
- * This callback is called by media transport on receipt of RTCP packet.
- */
-void 
-PJCall::on_rx_rtcp(void *user_data, void *pkt, pj_ssize_t size)
-{
+  /*
+   * This callback is called by media transport on receipt of RTCP packet.
+   */
+  void 
+  PJCall::on_rx_rtcp(void *user_data, void *pkt, pj_ssize_t size)
+  {
     g_print ("%s\n",__FUNCTION__);
     return;
 
@@ -845,17 +831,17 @@ PJCall::on_rx_rtcp(void *user_data, void *pkt, pj_ssize_t size)
 
     /* Discard packet if media is inactive */
     if (!strm->active)
-	return;
+      return;
 
     /* Check for errors */
     if (size < 0) {
-	g_print ("Error receiving RTCP packet");
-	return;
+      g_print ("Error receiving RTCP packet");
+      return;
     }
 
     /* Update RTCP session */
     pjmedia_rtcp_rx_rtcp(&strm->rtcp, pkt, size);
-}
+  }
  
 
   void 
@@ -875,19 +861,19 @@ PJCall::on_rx_rtcp(void *user_data, void *pkt, pj_ssize_t size)
   }
 
 
-/*
- * Rewrite of pjsip function in order to get more than only audio
- * (Create stream info from SDP media line.)
- */
-pj_status_t 
-PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
-			     pj_pool_t *pool,
-			     pjmedia_endpt *endpt,
-			     const pjmedia_sdp_session *local,
-			     const pjmedia_sdp_session *remote,
-			     unsigned stream_idx)
-{
-  pjmedia_codec_mgr *mgr;
+  /*
+   * Rewrite of pjsip function in order to get more than only audio
+   * (Create stream info from SDP media line.)
+   */
+  pj_status_t 
+  PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
+			       pj_pool_t *pool,
+			       pjmedia_endpt *endpt,
+			       const pjmedia_sdp_session *local,
+			       const pjmedia_sdp_session *remote,
+			       unsigned stream_idx)
+  {
+    pjmedia_codec_mgr *mgr;
     const pjmedia_sdp_attr *attr;
     const pjmedia_sdp_media *local_m;
     const pjmedia_sdp_media *rem_m;
@@ -909,11 +895,11 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
 
     local_conn = local_m->conn ? local_m->conn : local->conn;
     if (local_conn == NULL)
-	return PJMEDIA_SDP_EMISSINGCONN;
+      return PJMEDIA_SDP_EMISSINGCONN;
 
     rem_conn = rem_m->conn ? rem_m->conn : remote->conn;
     if (rem_conn == NULL)
-	return PJMEDIA_SDP_EMISSINGCONN;
+      return PJMEDIA_SDP_EMISSINGCONN;
 
     /* Media type must be audio */
     if (pj_stricmp2(&local_m->desc.media, "audio") == 0)
@@ -945,72 +931,72 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
     status = pjmedia_sdp_transport_cmp(&rem_m->desc.transport,
 				       &local_m->desc.transport);
     if (status != PJ_SUCCESS)
-	return PJMEDIA_SDPNEG_EINVANSTP;
+      return PJMEDIA_SDPNEG_EINVANSTP;
 
     if (pj_stricmp2(&local_m->desc.transport, "RTP/AVP") == 0) {
 
-	si->proto = PJMEDIA_TP_PROTO_RTP_AVP;
+      si->proto = PJMEDIA_TP_PROTO_RTP_AVP;
 
     } else if (pj_stricmp2(&local_m->desc.transport, "RTP/SAVP") == 0) {
 
-	si->proto = PJMEDIA_TP_PROTO_RTP_SAVP;
+      si->proto = PJMEDIA_TP_PROTO_RTP_SAVP;
 
     } else {
 
-	si->proto = PJMEDIA_TP_PROTO_UNKNOWN;
-	return PJ_SUCCESS;
+      si->proto = PJMEDIA_TP_PROTO_UNKNOWN;
+      return PJ_SUCCESS;
     }
 
 
     /* Check address family in remote SDP */
     rem_af = pj_AF_UNSPEC();
     if (pj_stricmp2(&rem_conn->net_type, "IN")==0) {
-	if (pj_stricmp2(&rem_conn->addr_type, "IP4")==0) {
-	    rem_af = pj_AF_INET();
-	} else if (pj_stricmp2(&rem_conn->addr_type, "IP6")==0) {
-	    rem_af = pj_AF_INET6();
-	}
+      if (pj_stricmp2(&rem_conn->addr_type, "IP4")==0) {
+	rem_af = pj_AF_INET();
+      } else if (pj_stricmp2(&rem_conn->addr_type, "IP6")==0) {
+	rem_af = pj_AF_INET6();
+      }
     }
 
     if (rem_af==pj_AF_UNSPEC()) {
-	/* Unsupported address family */
-	return PJ_EAFNOTSUP;
+      /* Unsupported address family */
+      return PJ_EAFNOTSUP;
     }
 
     /* Set remote address: */
     status = pj_sockaddr_init(rem_af, &si->rem_addr, &rem_conn->addr,
 			      rem_m->desc.port);
     if (status != PJ_SUCCESS) {
-	/* Invalid IP address. */
-	return PJMEDIA_EINVALIDIP;
+      /* Invalid IP address. */
+      return PJMEDIA_EINVALIDIP;
     }
 
     /* Check address family of local info */
     local_af = pj_AF_UNSPEC();
     if (pj_stricmp2(&local_conn->net_type, "IN")==0) {
-	if (pj_stricmp2(&local_conn->addr_type, "IP4")==0) {
-	    local_af = pj_AF_INET();
-	} else if (pj_stricmp2(&local_conn->addr_type, "IP6")==0) {
-	    local_af = pj_AF_INET6();
-	}
+      if (pj_stricmp2(&local_conn->addr_type, "IP4")==0) {
+	local_af = pj_AF_INET();
+      } else if (pj_stricmp2(&local_conn->addr_type, "IP6")==0) {
+	local_af = pj_AF_INET6();
+      }
     }
 
     if (local_af==pj_AF_UNSPEC()) {
-	/* Unsupported address family */
-	return PJ_SUCCESS;
+      /* Unsupported address family */
+      return PJ_SUCCESS;
     }
 
     /* Set remote address: */
     status = pj_sockaddr_init(local_af, &local_addr, &local_conn->addr,
 			      local_m->desc.port);
     if (status != PJ_SUCCESS) {
-	/* Invalid IP address. */
-	return PJMEDIA_EINVALIDIP;
+      /* Invalid IP address. */
+      return PJMEDIA_EINVALIDIP;
     }
 
     /* Local and remote address family must match */
     if (local_af != rem_af)
-	return PJ_EAFNOTSUP;
+      return PJ_EAFNOTSUP;
 
     /* Media direction: */
 
@@ -1018,34 +1004,34 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
 	pj_sockaddr_has_addr(&local_addr)==PJ_FALSE ||
 	pj_sockaddr_has_addr(&si->rem_addr)==PJ_FALSE ||
 	pjmedia_sdp_media_find_attr2(local_m, "inactive", NULL)!=NULL)
-    {
+      {
 	/* Inactive stream. */
 
 	si->dir = PJMEDIA_DIR_NONE;
 
-    } else if (pjmedia_sdp_media_find_attr2(local_m, "sendonly", NULL)!=NULL) {
+      } else if (pjmedia_sdp_media_find_attr2(local_m, "sendonly", NULL)!=NULL) {
 
-	/* Send only stream. */
+      /* Send only stream. */
 
-	si->dir = PJMEDIA_DIR_ENCODING;
+      si->dir = PJMEDIA_DIR_ENCODING;
 
     } else if (pjmedia_sdp_media_find_attr2(local_m, "recvonly", NULL)!=NULL) {
 
-	/* Recv only stream. */
+      /* Recv only stream. */
 
-	si->dir = PJMEDIA_DIR_DECODING;
+      si->dir = PJMEDIA_DIR_DECODING;
 
     } else {
 
-	/* Send and receive stream. */
+      /* Send and receive stream. */
 
-	si->dir = PJMEDIA_DIR_ENCODING_DECODING;
+      si->dir = PJMEDIA_DIR_ENCODING_DECODING;
 
     }
 
     /* No need to do anything else if stream is rejected */
     if (local_m->desc.port == 0) {
-	return PJ_SUCCESS;
+      return PJ_SUCCESS;
     }
 
     /* If "rtcp" attribute is present in the SDP, set the RTCP address
@@ -1054,49 +1040,49 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
     attr = pjmedia_sdp_attr_find2(rem_m->attr_count, rem_m->attr,
 				  "rtcp", NULL);
     if (attr) {
-	pjmedia_sdp_rtcp_attr rtcp;
-	status = pjmedia_sdp_attr_get_rtcp(attr, &rtcp);
-	if (status == PJ_SUCCESS) {
-	    if (rtcp.addr.slen) {
-		status = pj_sockaddr_init(rem_af, &si->rem_rtcp, &rtcp.addr,
-					  (pj_uint16_t)rtcp.port);
-	    } else {
-		pj_sockaddr_init(rem_af, &si->rem_rtcp, NULL,
-				 (pj_uint16_t)rtcp.port);
-		pj_memcpy(pj_sockaddr_get_addr(&si->rem_rtcp),
-		          pj_sockaddr_get_addr(&si->rem_addr),
-			  pj_sockaddr_get_addr_len(&si->rem_addr));
-	    }
+      pjmedia_sdp_rtcp_attr rtcp;
+      status = pjmedia_sdp_attr_get_rtcp(attr, &rtcp);
+      if (status == PJ_SUCCESS) {
+	if (rtcp.addr.slen) {
+	  status = pj_sockaddr_init(rem_af, &si->rem_rtcp, &rtcp.addr,
+				    (pj_uint16_t)rtcp.port);
+	} else {
+	  pj_sockaddr_init(rem_af, &si->rem_rtcp, NULL,
+			   (pj_uint16_t)rtcp.port);
+	  pj_memcpy(pj_sockaddr_get_addr(&si->rem_rtcp),
+		    pj_sockaddr_get_addr(&si->rem_addr),
+		    pj_sockaddr_get_addr_len(&si->rem_addr));
 	}
+      }
     }
 
     if (!pj_sockaddr_has_addr(&si->rem_rtcp)) {
-	int rtcp_port;
+      int rtcp_port;
 
-	pj_memcpy(&si->rem_rtcp, &si->rem_addr, sizeof(pj_sockaddr));
-	rtcp_port = pj_sockaddr_get_port(&si->rem_addr) + 1;
-	pj_sockaddr_set_port(&si->rem_rtcp, (pj_uint16_t)rtcp_port);
+      pj_memcpy(&si->rem_rtcp, &si->rem_addr, sizeof(pj_sockaddr));
+      rtcp_port = pj_sockaddr_get_port(&si->rem_addr) + 1;
+      pj_sockaddr_set_port(&si->rem_rtcp, (pj_uint16_t)rtcp_port);
     }
 
 
     /* Get the payload number for receive channel. */
     /*
-       Previously we used to rely on fmt[0] being the selected codec,
-       but some UA sends telephone-event as fmt[0] and this would
-       cause assert failure below.
+      Previously we used to rely on fmt[0] being the selected codec,
+      but some UA sends telephone-event as fmt[0] and this would
+      cause assert failure below.
 
-       Thanks Chris Hamilton <chamilton .at. cs.dal.ca> for this patch.
+      Thanks Chris Hamilton <chamilton .at. cs.dal.ca> for this patch.
 
-    // And codec must be numeric!
-    if (!pj_isdigit(*local_m->desc.fmt[0].ptr) ||
-	!pj_isdigit(*rem_m->desc.fmt[0].ptr))
-    {
-	return PJMEDIA_EINVALIDPT;
-    }
+      // And codec must be numeric!
+      if (!pj_isdigit(*local_m->desc.fmt[0].ptr) ||
+      !pj_isdigit(*rem_m->desc.fmt[0].ptr))
+      {
+      return PJMEDIA_EINVALIDPT;
+      }
 
-    pt = pj_strtoul(&local_m->desc.fmt[0]);
-    pj_assert(PJMEDIA_RTP_PT_TELEPHONE_EVENTS==0 ||
-	      pt != PJMEDIA_RTP_PT_TELEPHONE_EVENTS);
+      pt = pj_strtoul(&local_m->desc.fmt[0]);
+      pj_assert(PJMEDIA_RTP_PT_TELEPHONE_EVENTS==0 ||
+      pt != PJMEDIA_RTP_PT_TELEPHONE_EVENTS);
     */
 
     /* Get codec info and param */
@@ -1110,7 +1096,7 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
 
     return status;
 
-}
+  }
   
   
   /*
@@ -1132,36 +1118,36 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
     
     /* Find the first codec which is not telephone-event */
     for ( fmti = 0; fmti < local_m->desc.fmt_count; ++fmti ) {
-	pjmedia_sdp_rtpmap r;
+      pjmedia_sdp_rtpmap r;
 
-	if ( !pj_isdigit(*local_m->desc.fmt[fmti].ptr) )
-	    return PJMEDIA_EINVALIDPT;
-	pt = pj_strtoul(&local_m->desc.fmt[fmti]);
+      if ( !pj_isdigit(*local_m->desc.fmt[fmti].ptr) )
+	return PJMEDIA_EINVALIDPT;
+      pt = pj_strtoul(&local_m->desc.fmt[fmti]);
 
-	if (pt < 77) {
-	    /* This is known static PT. Skip rtpmap checking because it is
-	     * optional. */
-	    break;
-	}
+      if (pt < 77) {
+	/* This is known static PT. Skip rtpmap checking because it is
+	 * optional. */
+	break;
+      }
 
     
-	attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
-					   &local_m->desc.fmt[fmti]);
-	if (attr == NULL)
-	    continue;
+      attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
+					  &local_m->desc.fmt[fmti]);
+      if (attr == NULL)
+	continue;
 
-	status = pjmedia_sdp_attr_get_rtpmap(attr, &r);
-	if (status != PJ_SUCCESS)
-	    continue;
+      status = pjmedia_sdp_attr_get_rtpmap(attr, &r);
+      if (status != PJ_SUCCESS)
+	continue;
 
-	if (pj_strcmp2(&r.enc_name, "telephone-event") != 0)
-	    break;
+      if (pj_strcmp2(&r.enc_name, "telephone-event") != 0)
+	break;
     }
 
     
 
     if ( fmti >= local_m->desc.fmt_count )
-	return PJMEDIA_EINVALIDPT;
+      return PJMEDIA_EINVALIDPT;
 
     /* Get payload type for receiving direction */
     si->rx_pt = pt;
@@ -1172,68 +1158,68 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
      */
     
     if (pt < 77) {
-	pj_bool_t has_rtpmap;
+      pj_bool_t has_rtpmap;
 	
 
-	rtpmap = NULL;
-	has_rtpmap = PJ_TRUE;
+      rtpmap = NULL;
+      has_rtpmap = PJ_TRUE;
 
-	attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
-					    &local_m->desc.fmt[fmti]);
-	if (attr == NULL) {
-	    has_rtpmap = PJ_FALSE;
-	}
-	if (attr != NULL) {
-	  status = pjmedia_sdp_attr_to_rtpmap(pool, attr, &rtpmap);
-	    if (status != PJ_SUCCESS)
-		has_rtpmap = PJ_FALSE;
-	}
+      attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
+					  &local_m->desc.fmt[fmti]);
+      if (attr == NULL) {
+	has_rtpmap = PJ_FALSE;
+      }
+      if (attr != NULL) {
+	status = pjmedia_sdp_attr_to_rtpmap(pool, attr, &rtpmap);
+	if (status != PJ_SUCCESS)
+	  has_rtpmap = PJ_FALSE;
+      }
 
 	
 	
-	/* Build codec format info: */
-	if (has_rtpmap) {
-	  si->fmt.type = si->type;
-	  si->fmt.pt = pj_strtoul(&local_m->desc.fmt[fmti]);
-	  pj_strdup(pool, &si->fmt.encoding_name, &rtpmap->enc_name);
-	  si->fmt.clock_rate = rtpmap->clock_rate;
+      /* Build codec format info: */
+      if (has_rtpmap) {
+	si->fmt.type = si->type;
+	si->fmt.pt = pj_strtoul(&local_m->desc.fmt[fmti]);
+	pj_strdup(pool, &si->fmt.encoding_name, &rtpmap->enc_name);
+	si->fmt.clock_rate = rtpmap->clock_rate;
 	  
 #if defined(PJMEDIA_HANDLE_G722_MPEG_BUG) && (PJMEDIA_HANDLE_G722_MPEG_BUG != 0)
-	  /* The session info should have the actual clock rate, because
-	   * this info is used for calculationg buffer size, etc in stream
-	   */
-	  if (si->fmt.pt == PJMEDIA_RTP_PT_G722)
-	    si->fmt.clock_rate = 16000;
+	/* The session info should have the actual clock rate, because
+	 * this info is used for calculationg buffer size, etc in stream
+	 */
+	if (si->fmt.pt == PJMEDIA_RTP_PT_G722)
+	  si->fmt.clock_rate = 16000;
 #endif
 	  
 	  
-	  /* For audio codecs, rtpmap parameters denotes the number of
-	   * channels.
-	   */
-	  if (si->type == PJMEDIA_TYPE_AUDIO && rtpmap->param.slen) {
+	/* For audio codecs, rtpmap parameters denotes the number of
+	 * channels.
+	 */
+	if (si->type == PJMEDIA_TYPE_AUDIO && rtpmap->param.slen) {
 	    
-	    si->fmt.channel_cnt = (unsigned) pj_strtoul(&rtpmap->param);
-	  } else {
-	    
-	    si->fmt.channel_cnt = 1;
-	  }
-	  
-	  
+	  si->fmt.channel_cnt = (unsigned) pj_strtoul(&rtpmap->param);
 	} else {
-	  const pjmedia_codec_info *p_info;
-	  
-	  
-	  status = pjmedia_codec_mgr_get_codec_info( mgr, pt, &p_info);
-	  if (status != PJ_SUCCESS)
-	    return status;
-	  
-	  
-	  pj_memcpy(&si->fmt, p_info, sizeof(pjmedia_codec_info));
+	    
+	  si->fmt.channel_cnt = 1;
 	}
+	  
+	  
+      } else {
+	const pjmedia_codec_info *p_info;
+	  
+	  
+	status = pjmedia_codec_mgr_get_codec_info( mgr, pt, &p_info);
+	if (status != PJ_SUCCESS)
+	  return status;
+	  
+	  
+	pj_memcpy(&si->fmt, p_info, sizeof(pjmedia_codec_info));
+      }
 	
 
-	/* For static payload type, pt's are symetric */
-	si->tx_pt = pt;
+      /* For static payload type, pt's are symetric */
+      si->tx_pt = pt;
 
     } else {
       //g_print ("DOES NOT HAVE RTPMAP\n"); 
@@ -1385,38 +1371,38 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
     /* Get incomming payload type for telephone-events */
     si->rx_event_pt = -1;
     for (i=0; i<local_m->attr_count; ++i) {
-	pjmedia_sdp_rtpmap r;
+      pjmedia_sdp_rtpmap r;
 
-	attr = local_m->attr[i];
-	if (pj_strcmp2(&attr->name, "rtpmap") != 0)
-	    continue;
-	if (pjmedia_sdp_attr_get_rtpmap(attr, &r) != PJ_SUCCESS)
-	    continue;
-	if (pj_strcmp2(&r.enc_name, "telephone-event") == 0) {
-	    si->rx_event_pt = pj_strtoul(&r.pt);
-	    break;
-	}
+      attr = local_m->attr[i];
+      if (pj_strcmp2(&attr->name, "rtpmap") != 0)
+	continue;
+      if (pjmedia_sdp_attr_get_rtpmap(attr, &r) != PJ_SUCCESS)
+	continue;
+      if (pj_strcmp2(&r.enc_name, "telephone-event") == 0) {
+	si->rx_event_pt = pj_strtoul(&r.pt);
+	break;
+      }
     }
 
     /* Get outgoing payload type for telephone-events */
     si->tx_event_pt = -1;
     for (i=0; i<rem_m->attr_count; ++i) {
-	pjmedia_sdp_rtpmap r;
+      pjmedia_sdp_rtpmap r;
 
-	attr = rem_m->attr[i];
-	if (pj_strcmp2(&attr->name, "rtpmap") != 0)
-	    continue;
-	if (pjmedia_sdp_attr_get_rtpmap(attr, &r) != PJ_SUCCESS)
-	    continue;
-	if (pj_strcmp2(&r.enc_name, "telephone-event") == 0) {
-	    si->tx_event_pt = pj_strtoul(&r.pt);
-	    break;
-	}
+      attr = rem_m->attr[i];
+      if (pj_strcmp2(&attr->name, "rtpmap") != 0)
+	continue;
+      if (pjmedia_sdp_attr_get_rtpmap(attr, &r) != PJ_SUCCESS)
+	continue;
+      if (pj_strcmp2(&r.enc_name, "telephone-event") == 0) {
+	si->tx_event_pt = pj_strtoul(&r.pt);
+	break;
+      }
     }
     
 
     return PJ_SUCCESS;
-}
+  }
 
 
   void
@@ -1459,6 +1445,114 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
 		    });
     sdp_media->desc.fmt_count --;
     //sdp_media->desc.fmt[u].slen = pj_utoa (pt, sdp_media->desc.fmt[u].ptr);//FIXME free old ptr
+  }
+
+  /*
+   * Make outgoing call.
+   */
+  pj_status_t 
+  PJCall::make_call(const pj_str_t *dst_uri)
+  {
+    unsigned i;
+    struct call *call = NULL;
+    pjsip_dialog *dlg = NULL;
+    pjmedia_sdp_session *sdp = NULL;
+    pjsip_tx_data *tdata = NULL;
+    pj_status_t status;
+
+
+    /* Find unused call slot */
+    for (i=0; i<app.max_calls; ++i) {
+      if (app.call[i].inv == NULL)
+	break;
+    }
+
+    if (i == app.max_calls)
+      return PJ_ETOOMANY;
+
+    call = &app.call[i];
+
+    /* Create UAC dialog */
+    status = pjsip_dlg_create_uac( pjsip_ua_instance(), 
+				   &app.local_uri,	/* local URI	    */
+				   &app.local_contact,	/* local Contact    */
+				   dst_uri,		/* remote URI	    */
+				   dst_uri,		/* remote target    */
+				   &dlg);		/* dialog	    */
+    if (status != PJ_SUCCESS) {
+      ++app.uac_calls;
+      return status;
+    }
+
+    /* Create SDP */
+    //HERE
+    //create_outgoing_sdp( dlg->pool, call, &sdp);
+
+    /* Create the INVITE session. */
+    status = pjsip_inv_create_uac( dlg, sdp, 0, &call->inv);
+    if (status != PJ_SUCCESS) {
+      pjsip_dlg_terminate(dlg);
+      ++app.uac_calls;
+      return status;
+    }
+
+
+    /* Attach call data to invite session */
+    call->inv->mod_data[mod_siprtp_.id] = call;
+
+    /* Mark start of call */
+    pj_gettimeofday(&call->start_time);
+
+
+    /* Create initial INVITE request.
+     * This INVITE request will contain a perfectly good request and 
+     * an SDP body as well.
+     */
+    status = pjsip_inv_invite(call->inv, &tdata);
+    PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+
+    /* Send initial INVITE request. 
+     * From now on, the invite session's state will be reported to us
+     * via the invite session callbacks.
+     */
+    status = pjsip_inv_send_msg(call->inv, tdata);
+    PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+
+    return PJ_SUCCESS;
+  }
+
+  void 
+  PJCall::set_rtp_session (const gchar *quiddity_name, void *user_data)
+  {
+    PJCall *context = static_cast <PJCall *> (user_data);
+    QuiddityManager_Impl::ptr manager = context->sip_instance_->manager_impl_.lock ();
+    
+    if (!(bool) manager)
+      {
+	g_print ("manager not found");
+	return;
+      }
+    
+    Quiddity::ptr quid = manager->get_quiddity (quiddity_name);
+    
+    if (!(bool) quid)
+      {
+	g_print ("quiddity %s not found",
+		 quiddity_name);
+	return;
+      }
+    
+    context->rtp_session_name_ = quiddity_name;
+    context->sip_instance_->custom_props_->notify_property_changed (context->rtp_session_name_spec_);
+  }
+
+  const gchar *
+  PJCall::get_rtp_session (void *user_data)
+  {
+    PJCall *context = static_cast <PJCall *> (user_data);
+    return context->rtp_session_name_.c_str ();
   }
   
 }

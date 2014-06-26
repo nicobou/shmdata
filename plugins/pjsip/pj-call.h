@@ -26,6 +26,7 @@
 #include <vector>
 #include <condition_variable>
 #include "switcher/shmdata-any-writer.h"
+#include "switcher/rtp-session.h"
 
 //pjsip
 #include <pjsip.h>
@@ -47,7 +48,8 @@ namespace switcher
   class PJCall
   {
     friend PJCodec;
-    
+    friend PJSIP;
+
   public:
     PJCall () = delete;
     PJCall (PJSIP *sip_instance);
@@ -56,17 +58,6 @@ namespace switcher
     PJCall &operator= (const PJCall &) = delete;
 
   private:
-/* Codec descriptor: */
-typedef struct codec
-{
-    unsigned	pt;
-    char*	name;
-    unsigned	clock_rate;
-    unsigned	bit_rate;
-    unsigned	ptime;
-    char*	description;
-} codec_t;
-
 
 /* A bidirectional media stream created when the call is active. */
  struct media_stream
@@ -174,7 +165,12 @@ typedef struct app
     static pjmedia_endpt *med_endpt_;
     static pjsip_module mod_siprtp_;
     static app_t app;
-    static struct codec audio_codecs[];
+    PJSIP *sip_instance_;
+    //external rtp session quidity for sending
+    RtpSession::ptr rtp_session_;
+    std::string rtp_session_name_;
+    GParamSpec *rtp_session_name_spec_;
+    //sip functions
     static pj_bool_t on_rx_request (pjsip_rx_data *rdata);
     static void call_on_state_changed (pjsip_inv_session *inv, 
 				       pjsip_event *e);
@@ -205,6 +201,10 @@ typedef struct app
 						  const pjmedia_sdp_media *rem_m);
     static void remove_from_sdp_media (pjmedia_sdp_media *sdp_media,
 				       unsigned fmt_pos);
+    static pj_status_t make_call(const pj_str_t *dst_uri);
+    static void set_rtp_session (const gchar *value, void *user_data);
+    static const gchar *get_rtp_session (void *user_data);
+
       };
   
 }  // end of namespace
