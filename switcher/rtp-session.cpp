@@ -19,7 +19,6 @@
 
 #include "rtp-session.h"
 #include <sstream>
-#include <gst/sdp/gstsdpmessage.h>
 #include <glib/gstdio.h> //writing sdp file
 #include "gst-utils.h"
 #include "json-builder.h"
@@ -582,7 +581,6 @@ namespace switcher
       return FALSE;
   }
   
- 
   bool
   RtpSession::add_udp_stream_to_dest (std::string shmdata_socket_path, std::string nick_name, std::string port)
   {
