@@ -160,7 +160,7 @@ main ()
        			NULL);
 
      //wait 3 seconds
-     uint count = 300;
+     uint count = 3;
      while (do_continue)
        {
 	 if (count == 0)
