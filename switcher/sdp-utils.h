@@ -27,9 +27,11 @@
 
 namespace switcher
 {
-  
+  class SDPDescription;  
+
   class SDPMedia
   {
+    friend SDPDescription;
   public:
     SDPMedia ();
     ~SDPMedia ();
@@ -38,9 +40,9 @@ namespace switcher
     
     bool set_media_info_from_caps (const GstCaps *media_caps); //caps from a gst RTP payloader
     bool set_port (uint port);
-    bool add_to_sdp_description (GstSDPMessage *sdp_description, uint index) const;
 
   private :
+    bool add_to_sdp_description (GstSDPMessage *sdp_description, uint index) const;
     GstSDPMedia *media_;
     GstStructure *caps_structure_;
     uint port_;

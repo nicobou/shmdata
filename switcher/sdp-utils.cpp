@@ -100,7 +100,8 @@ namespace switcher
   const gchar *caps_params = gst_structure_get_string (caps_structure_, "encoding-params");
   if (NULL != caps_params)
     {
-      rtpmap.append ("/" + std::string (caps_params));
+      rtpmap.append ("/");
+      rtpmap.append (caps_params);
     }
   
   gst_sdp_media_add_attribute (media_, "rtpmap", rtpmap.c_str ());
@@ -111,9 +112,10 @@ namespace switcher
   
   /* collect all other properties and add them to fmtp */
   std::string fmtp = std::to_string (caps_pt);
+  fmtp.append (" ");
   bool first = true;
   guint n_fields = gst_structure_n_fields (caps_structure_);
-  
+
   for (uint j = 0; j < n_fields; j++) {
     const gchar *fname, *fval;
     
@@ -136,10 +138,19 @@ namespace switcher
       continue;
     if (g_strcmp0 (fname, "seqnum-base") == 0)
       continue;
-    
+
+    g_print ("fname val %s\n", gst_structure_get_string (caps_structure_, fname));
+
+    std::string fname_value (std::string (fname)
+			     + "="
+			     + std::string(gst_structure_get_string (caps_structure_, fname)));
+
     if ((fval = gst_structure_get_string (caps_structure_, fname))) {
-      fmtp.append (first ? "" : ";" + std::string (fname) + "=" +std::string (fval));
-      first = false;
+      if (!first)
+	fmtp.append (";");
+      else
+	first=false;
+      fmtp.append (fname_value);
     }
   }
   if (!first) 
@@ -159,6 +170,7 @@ namespace switcher
       gst_sdp_message_set_version (sdp_description_, "0");
       
       //FIXME check and chose between IP4 and IP6, IP4 hardcoded
+      //FIXME generate proper session id & version
       gst_sdp_message_set_origin (sdp_description_, 
 				  "-",                // the user name
 				  "1188340656180883", // a session id
