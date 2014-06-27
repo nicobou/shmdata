@@ -220,7 +220,7 @@ namespace switcher
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING,NULL),
 		    this);
-    
+
     destination_description_json_ = custom_props_->make_string_property ("destinations-json", 
 									 "json formated description of destinations",
 									 "",
@@ -660,19 +660,19 @@ namespace switcher
     std::ostringstream rtcp_port;
     rtcp_port << rtp_port + 1;
     arg.push_back (rtcp_port.str());
-     manager->invoke ("udpsend_rtcp", "add_client", NULL, arg);
-     //TODO rtcp receiving should be negociated 
-     // GstElementCleaner::ptr funnel_cleaner = funnels_[shmdata_socket_path];
-     //  GstElement *funnel = funnel_cleaner->get_labeled_element_from_cleaner ("funnel");
-     //  GstElement *udpsrc;
-     //  GstUtils::make_element ("udpsrc", &udpsrc);
-     //  dest->add_element_to_cleaner (udpsrc);
-     //  g_object_set (G_OBJECT (udpsrc), "port", rtp_port + 5, NULL);
-     //  gst_bin_add (GST_BIN (bin_), udpsrc);
-     //  GstUtils::sync_state_with_parent (udpsrc);
-     //  if (!gst_element_link (udpsrc, funnel))
-     //    g_debug ("udpsrc and funnel link failled in rtp-session");
-     return true;
+    manager->invoke ("udpsend_rtcp", "add_client", NULL, arg);
+    //TODO rtcp receiving should be negociated 
+    // GstElementCleaner::ptr funnel_cleaner = funnels_[shmdata_socket_path];
+    //  GstElement *funnel = funnel_cleaner->get_labeled_element_from_cleaner ("funnel");
+    //  GstElement *udpsrc;
+    //  GstUtils::make_element ("udpsrc", &udpsrc);
+    //  dest->add_element_to_cleaner (udpsrc);
+    //  g_object_set (G_OBJECT (udpsrc), "port", rtp_port + 5, NULL);
+    //  gst_bin_add (GST_BIN (bin_), udpsrc);
+    //  GstUtils::sync_state_with_parent (udpsrc);
+    //  if (!gst_element_link (udpsrc, funnel))
+    //    g_debug ("udpsrc and funnel link failled in rtp-session");
+    return true;
   }
 
   
@@ -792,7 +792,8 @@ namespace switcher
     auto internal_id_it = internal_id_.find (shmdata_socket_path);
     if (internal_id_.end () == internal_id_it)
       {
-	g_debug ("RtpSession::remove_data_stream: %s not present",shmdata_socket_path.c_str ());
+	g_debug ("RtpSession::remove_data_stream: %s not present",
+		 shmdata_socket_path.c_str ());
 	return false;
       }
     quiddity_managers_.erase (shmdata_socket_path);

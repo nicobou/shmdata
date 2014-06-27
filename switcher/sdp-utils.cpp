@@ -139,8 +139,6 @@ namespace switcher
     if (g_strcmp0 (fname, "seqnum-base") == 0)
       continue;
 
-    g_print ("fname val %s\n", gst_structure_get_string (caps_structure_, fname));
-
     std::string fname_value (std::string (fname)
 			     + "="
 			     + std::string(gst_structure_get_string (caps_structure_, fname)));

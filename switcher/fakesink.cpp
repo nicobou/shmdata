@@ -63,7 +63,7 @@ namespace switcher
 		  "signal-handoffs", TRUE,
 		  NULL);
 
-    g_signal_connect(fakesink_, "handoff", (GCallback)on_handoff_cb, this);
+    g_signal_connect (fakesink_, "handoff", (GCallback)on_handoff_cb, this);
 
     //registering some properties 
     //install_property (G_OBJECT (fakesink_),"last-message","last-message", "Last Message");
@@ -83,7 +83,6 @@ namespace switcher
      				byte_rate_spec_, 
      				"byte-rate",
 				"Byte Rate (Bps)");
-    
      
     update_byterate_source_ = GstUtils::g_timeout_add_to_context (1000, 
 								  update_byte_rate, 

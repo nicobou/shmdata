@@ -132,8 +132,16 @@ main ()
 			 "local",
 			 "9076",
 			 NULL);
-     
+
+     std::string *caps = NULL;
+     manager->invoke_va ("rtp",
+			 "get_rtp_caps",
+			 &caps,
+			 "/tmp/switcher_rtptest_v_video",
+			 NULL);
+
      usleep (1000000);
+
 
      manager->create ("httpsdpdec", "uri");
      manager->invoke_va ("uri", 
