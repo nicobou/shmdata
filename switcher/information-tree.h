@@ -73,6 +73,7 @@ namespace switcher {
       Tree::ptr get (const std::string &path);
       bool graft (const std::string &path, Tree::ptr);
       Tree::ptr prune (const std::string &path);
+      std::list<std::string> get_child_keys (const std::string &path);
 
     private:
       Any data_;

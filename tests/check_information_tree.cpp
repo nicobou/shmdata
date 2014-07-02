@@ -21,6 +21,7 @@
 #include <cassert>
 #include <iostream>
 #include <memory>
+#include <algorithm>
 
 //----------------- a custom struct without operator <<
 struct Widget : public DefaultSerializable<Widget> 
@@ -155,7 +156,7 @@ main ()
 
     assert (serialized == serialized2);
   }
-  {//basic serialization
+  {//JSON serialization
     Tree::ptr tree = make_tree ();
     tree->graft (".child1.child2", make_tree ("switch"));
     tree->graft (".child1.child3", make_tree (1.2f));
@@ -163,6 +164,26 @@ main ()
     tree->graft (".child1.child2.bla2", make_tree ("hub"));
     std::string serialized = JSONSerializer::serialize (tree);
     //std::cout << serialized << std::endl;
+  }
+
+  {//get childs keys
+    Tree::ptr tree = make_tree ();
+    std::list<std::string> childs {"child1", "child2", "child3",
+	                           "child4", "child5", "child6",
+                                   "child7", "child8", "child9"};
+    std::for_each (childs.begin (),
+		   childs.end (),
+		   [tree] (const std::string &val) 
+		   {
+		     tree->graft (".root." + val, make_tree ("val"));
+		   });
+    std::list<std::string> child_keys = tree->get_child_keys (".root");
+    assert (std::equal (childs.begin (), 
+			childs.end (),
+			child_keys.begin (),
+			[](const std::string &first, const std::string &second)
+			{return (0 == first.compare (second));} 
+			));
   }
 
   return 0;
