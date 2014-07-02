@@ -114,12 +114,12 @@ namespace switcher
 		    Method::make_arg_description ("SIP User Name", //first arg long name
 						  "user", //fisrt arg name
 						  "string", //first arg description
-						  "SIP Domain", //first arg long name
-						  "domain", //fisrt arg name
-						  "string", //first arg description
-						  "SIP password", //first arg long name
-						  "password", //fisrt arg name
-						  "string", //first arg description
+						  "SIP Domain", 
+						  "domain", 
+						  "string", 
+						  "SIP password", 
+						  "password", 
+						  "string", 
 						  NULL),
   		    (Method::method_ptr) &register_account_wrapped, 
 		    G_TYPE_BOOLEAN,
@@ -128,6 +128,20 @@ namespace switcher
 						       G_TYPE_STRING, 
 						       NULL),
 		    this);
+
+    install_method ("Call a contact", //long name
+		    "call", //name
+		    "invite a contact for a call", //description
+		    "the call has been initiated or not", //return description
+		    Method::make_arg_description ("SIP url", //first arg long name
+						  "url", //fisrt arg name
+						  "string", //first arg description
+						  NULL),
+  		    (Method::method_ptr) &call_sip_url, 
+		    G_TYPE_BOOLEAN,
+		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    this);
+
     sip_port_spec_ =
       custom_props_->make_int_property ("port", 
 					"SIP port used when registering",
@@ -382,6 +396,23 @@ namespace switcher
   {
     PJSIP *context = static_cast <PJSIP *> (user_data);
     return context->sip_port_;
+  }
+
+  gboolean
+  PJSIP::call_sip_url (gchar *sip_url, void *user_data)
+  {
+    if (NULL == sip_url || NULL == user_data)
+      {
+	g_warning ("register sip account received NULL user or domain or password");
+	return FALSE;
+      }
+    PJSIP *context = static_cast<PJSIP *> (user_data);
+
+    context->run_command_sync (std::bind (&PJCall::make_call, 
+					  context->sip_calls_, 
+					  std::string (sip_url)));
+
+    return TRUE;
   }
 
 }

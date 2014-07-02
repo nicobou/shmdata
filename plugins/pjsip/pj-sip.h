@@ -94,6 +94,7 @@ namespace switcher
     static gboolean register_account_wrapped (gchar *user, gchar *domain, gchar *password, void *user_data);
     void add_buddy (const std::string &sip_user);
     void sip_worker_thread ();
+    static gboolean call_sip_url (gchar *sip_url, void *user_data);
   };
 
 }  // end of namespace

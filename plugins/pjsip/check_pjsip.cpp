@@ -88,7 +88,8 @@ main ()
 	return 1;
       }
     
-    manager->set_property ("test", "port", "5070");
+    manager->set_property ("test", "port", "5072"); //FIXME this is not actually setting the port  
+
     // bool registered = manager->invoke_va ("test","register", NULL, 
     // 					  "1004", //user
     // 					  "10.10.30.115", //domain
@@ -99,9 +100,15 @@ main ()
     // 	g_print ("cannot register \n");
     // 	return 1;
     //   }
+
     manager->set_property ("test", "rtp-session", "rtp");
 
-//usleep (300000000);
+    manager->invoke_va ("test",
+			"call",
+			NULL,
+			"sip:coucou@localhost:5072",
+			NULL);
+    usleep (300000000);
     manager->remove ("test");
      
      

@@ -23,6 +23,7 @@
 #include <cctype>
 #include <algorithm>
 #include <string>
+#include "switcher/sdp-utils.h"
 
 namespace switcher
 {
@@ -1451,8 +1452,9 @@ namespace switcher
    * Make outgoing call.
    */
   pj_status_t 
-  PJCall::make_call(const pj_str_t *dst_uri)
+  PJCall::make_call(std::string dst_uri)
   {
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
     unsigned i;
     struct call *call = NULL;
     pjsip_dialog *dlg = NULL;
@@ -1472,21 +1474,33 @@ namespace switcher
 
     call = &app.call[i];
 
+    pj_str_t dest_str;
+    pj_cstr (&dest_str, dst_uri.c_str ());
     /* Create UAC dialog */
-    status = pjsip_dlg_create_uac( pjsip_ua_instance(), 
-				   &app.local_uri,	/* local URI	    */
-				   &app.local_contact,	/* local Contact    */
-				   dst_uri,		/* remote URI	    */
-				   dst_uri,		/* remote target    */
-				   &dlg);		/* dialog	    */
+    status = pjsip_dlg_create_uac(pjsip_ua_instance(), 
+				  &app.local_uri,	/* local URI	    */
+				  &app.local_contact,	/* local Contact    */
+				  &dest_str,		/* remote URI	    */
+				  &dest_str,		/* remote target    */
+				  &dlg);		/* dialog	    */
     if (status != PJ_SUCCESS) {
       ++app.uac_calls;
       return status;
     }
 
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
+
     /* Create SDP */
-    //HERE
-    //create_outgoing_sdp( dlg->pool, call, &sdp);
+    status = create_outgoing_sdp (dlg->pool, 
+				  call, 
+				  dst_uri,
+				  &sdp);
+    if (status != PJ_SUCCESS) {
+      ++app.uac_calls;
+      return status;
+    }
+
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
 
     /* Create the INVITE session. */
     status = pjsip_inv_create_uac( dlg, sdp, 0, &call->inv);
@@ -1496,6 +1510,7 @@ namespace switcher
       return status;
     }
 
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
 
     /* Attach call data to invite session */
     call->inv->mod_data[mod_siprtp_.id] = call;
@@ -1519,7 +1534,7 @@ namespace switcher
     status = pjsip_inv_send_msg(call->inv, tdata);
     PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
     return PJ_SUCCESS;
   }
 
@@ -1527,20 +1542,13 @@ namespace switcher
   PJCall::set_rtp_session (const gchar *quiddity_name, void *user_data)
   {
     PJCall *context = static_cast <PJCall *> (user_data);
-    QuiddityManager_Impl::ptr manager = context->sip_instance_->manager_impl_.lock ();
-    
-    if (!(bool) manager)
-      {
-	g_print ("manager not found");
-	return;
-      }
-    
-    Quiddity::ptr quid = manager->get_quiddity (quiddity_name);
-    
+    context->rtp_session_name_ = quiddity_name;
+    Quiddity::ptr quid = context->retrieve_rtp_manager ();
     if (!(bool) quid)
       {
-	g_print ("quiddity %s not found",
-		 quiddity_name);
+	g_warning ("rtp manager %s not found",
+		   quiddity_name);
+	context->rtp_session_name_ = std::string ();//reset
 	return;
       }
     
@@ -1553,6 +1561,62 @@ namespace switcher
   {
     PJCall *context = static_cast <PJCall *> (user_data);
     return context->rtp_session_name_.c_str ();
+  }
+
+  Quiddity::ptr
+  PJCall::retrieve_rtp_manager ()
+  {
+    QuiddityManager_Impl::ptr manager = sip_instance_->manager_impl_.lock ();
+    if (!(bool) manager)
+      {
+	g_warning ("manager not found");
+	Quiddity::ptr quid;
+	return quid;
+      }
+     return manager->get_quiddity (rtp_session_name_);
+  }
+
+  pj_status_t 
+  PJCall::create_outgoing_sdp (pj_pool_t *pool,
+			       struct call *call,
+			       std::string sip_url,
+			       pjmedia_sdp_session **p_sdp)
+  {
+    g_print ("--> %s\n", __FUNCTION__);
+
+    PJ_ASSERT_RETURN(pool && p_sdp, PJ_EINVAL);
+    Quiddity::ptr quid = retrieve_rtp_manager ();
+    if (!(bool) quid)
+      {
+	g_warning ("rtp manager not found");
+	return PJ_EINVAL;
+      }
+    pjmedia_sdp_session *sdp = NULL;
+
+    //FIXME select appropriate shmdata to include, adding all for now
+    SDPDescription desc;
+
+
+    // for(auto &it : ports_)
+    //   {
+    // 	std::string string_caps = (it.second)->get_property ("udpsend_rtp","caps");
+    // 	GstCaps *caps = gst_caps_from_string (string_caps.c_str ());
+    // 	gint port = atoi(it.first.c_str());
+    // 	SDPMedia media;
+    // 	media.set_media_info_from_caps (caps);
+    // 	media.set_port (port);
+	
+    // 	if (!desc.add_media (media))
+    // 	  g_warning ("a media has not been added to the SDP description");
+	
+    // 	gst_caps_unref (caps);
+    //   }
+    
+    
+    /* Done */
+    *p_sdp = sdp;
+
+    return PJ_SUCCESS;
   }
   
 }

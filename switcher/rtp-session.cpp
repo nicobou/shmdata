@@ -443,6 +443,11 @@ namespace switcher
      rtp_writer->plug (context->bin_, rtp_src_pad);
      context->internal_shmdata_writers_[rtp_writer_name] = rtp_writer;
      g_free (rtp_src_pad_name);
+     //set call back for saving caps in a property tree
+     rtp_writer->set_on_caps (std::bind (&RtpSession::on_rtp_caps, 
+					 context,
+					 std::move (rtp_writer_name),
+					 std::placeholders::_1));
 
      //rtcp src pad
      gchar *rtcp_src_pad_name = g_strconcat ("send_rtcp_src_", rtp_session_id,NULL); 
@@ -455,7 +460,7 @@ namespace switcher
      rtcp_writer->plug (context->bin_, rtcp_src_pad);
      context->internal_shmdata_writers_[rtcp_writer_name] = rtcp_writer;
      g_free (rtcp_src_pad_name);
-    
+
      // We also want to receive RTCP, request an RTCP sinkpad for given session and
      // link it to a funnel for future linking with network connections
      GstElement *funnel;
@@ -806,7 +811,10 @@ namespace switcher
     internal_id_.erase (internal_id_it);
     auto writer_it = internal_shmdata_writers_.find (make_file_name ("send_rtp_src_"+id));
     if (internal_shmdata_writers_.end () != writer_it)
-      internal_shmdata_writers_.erase (writer_it);
+      {
+	internal_shmdata_writers_.erase (writer_it);
+	prune_tree ("rtp_caps." + make_file_name ("send_rtp_src_"+id));
+      }
     writer_it = internal_shmdata_writers_.find (make_file_name ("send_rtcp_src_"+id));
     if (internal_shmdata_writers_.end () != writer_it)
       internal_shmdata_writers_.erase (writer_it);
@@ -1009,4 +1017,12 @@ namespace switcher
     return context->mtu_at_add_data_stream_;
   }
 
+  void
+  RtpSession::on_rtp_caps (std::string shmdata_path, std::string caps)
+  {
+    data::Tree::ptr tree = data::make_tree ();
+    tree->graft (std::move (shmdata_path),
+		 data::make_tree (std::move (caps)));
+    graft_tree ("rtp_caps", tree);
+  }
 }

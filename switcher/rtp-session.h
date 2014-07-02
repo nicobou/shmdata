@@ -96,6 +96,8 @@ namespace switcher
 
     bool init_segment ();
 
+    void on_rtp_caps (std::string shmdata_path, std::string caps);
+
     static void make_data_stream_available (GstElement* typefind, 
 					    guint probability, 
 					    GstCaps *caps, 
