@@ -31,12 +31,11 @@
  *
  */
 
-
-
 #ifndef __SWITCHER_INFORMATION_TREE_H__
 #define __SWITCHER_INFORMATION_TREE_H__
 
 #include <string>
+#include <algorithm>
 #include <list>
 #include <memory>
 #include <type_traits>
@@ -73,8 +72,40 @@ namespace switcher {
       Tree::ptr get (const std::string &path);
       bool graft (const std::string &path, Tree::ptr);
       Tree::ptr prune (const std::string &path);
-      std::list<std::string> get_child_keys (const std::string &path);
+      
+      //get child key in place, use with std::insert_iterator
+      template <typename Iter>
+	void
+	get_child_keys (const std::string path, Iter pos)
+	{
+	  std::unique_lock <std::mutex> lock (mutex_);
+	  auto found = get_node (path);
+	  if (!found.first.empty ())
+	    std::transform (found.second->second->childrens_.begin (),
+			    found.second->second->childrens_.end (),
+			    pos,
+			    [] (const child_type &child) {return child.first;});
+	}
 
+      //get child keys - returning a newly allocated container
+      template <template<class T, class = std::allocator<T> > class Container = std::list>
+	Container<std::string>
+	get_child_keys (const std::string path)
+	{
+	  Container<std::string> res;
+	  std::unique_lock <std::mutex> lock (mutex_);
+	  auto found = get_node (path);
+	  if (!found.first.empty ())
+	    {
+	      res.resize (found.second->second->childrens_.size ());
+	      std::transform (found.second->second->childrens_.begin (),
+			      found.second->second->childrens_.end (),
+			      res.begin (),
+			      [] (const child_type &child) {return child.first;});
+	    }
+	  return res;
+	}
+      
     private:
       Any data_;
       child_list_type childrens_;

@@ -185,18 +185,6 @@ namespace switcher {
       return res;
     }
 
-    std::list<std::string> 
-    Tree::get_child_keys (const std::string &path)
-    {
-      std::list<std::string> res;
-     std::unique_lock <std::mutex> lock (mutex_);
-      auto found = get_node (path);
-      if (!found.first.empty ())
-	for (auto &it : found.second->second->childrens_)
-	  res.push_back (it.first);
-      return res;
-    }
-
     std::pair <Tree::child_list_type, Tree::child_list_type::iterator>
     Tree::get_node (const std::string &path)
     {

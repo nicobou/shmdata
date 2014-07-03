@@ -166,7 +166,7 @@ main ()
     //std::cout << serialized << std::endl;
   }
 
-  {//get childs keys
+  {//get childs keys inserting in an existing container
     Tree::ptr tree = make_tree ();
     std::list<std::string> childs {"child1", "child2", "child3",
 	                           "child4", "child5", "child6",
@@ -177,7 +177,30 @@ main ()
 		   {
 		     tree->graft (".root." + val, make_tree ("val"));
 		   });
-    std::list<std::string> child_keys = tree->get_child_keys (".root");
+    std::vector<std::string> child_keys;
+    tree->get_child_keys (".root", 
+    			  std::insert_iterator<std::vector <std::string>> (child_keys,
+    									   child_keys.begin ()));
+    assert (std::equal (childs.begin (), 
+			childs.end (),
+			child_keys.begin (),
+			[](const std::string &first, const std::string &second)
+			{return (0 == first.compare (second));} 
+			));
+  }
+
+  {//get childs keys in a newly allocated container
+    Tree::ptr tree = make_tree ();
+    std::list<std::string> childs {"child1", "child2", "child3",
+	                           "child4", "child5", "child6",
+                                   "child7", "child8", "child9"};
+    std::for_each (childs.begin (),
+		   childs.end (),
+		   [tree] (const std::string &val) 
+		   {
+		     tree->graft (".root." + val, make_tree ("val"));
+		   });
+    std::list<std::string> child_keys = tree->get_child_keys<> (".root");
     assert (std::equal (childs.begin (), 
 			childs.end (),
 			child_keys.begin (),
