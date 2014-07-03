@@ -986,6 +986,12 @@ namespace switcher
     return "{ \"error\": \"no such path\" }";
   }
 
+  Any 
+  Quiddity::get_data (const std::string &path)
+  {
+    return information_tree_->get_data (path);
+  }
+  
   bool 
   Quiddity::graft_tree (const std::string &path, data::Tree::ptr tree)
   {

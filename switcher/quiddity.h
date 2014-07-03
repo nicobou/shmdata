@@ -111,7 +111,14 @@ namespace switcher
 
     //information
     std::string get_info (const std::string &path);
-   
+    Any get_data (const std::string &path);
+    template <template<class T, class = std::allocator<T> > class Container = std::list>
+      Container<std::string>
+      get_child_keys (const std::string path)
+      {
+	return  information_tree_->get_child_keys<Container> (path);
+      }
+    
     //shmdata socket names
     static std::string get_socket_name_prefix ();
     static std::string get_socket_dir ();

@@ -87,7 +87,10 @@ namespace switcher
   gst_sdp_media_set_proto (media_, "RTP/AVP");
 
   /* for the c= line */
-  gst_sdp_media_add_connection (media_, "IN", "udp", "127.0.0.1", 16, 0);
+  gst_sdp_media_add_connection (media_, "IN", "IP4", "127.0.0.1", 16, 0);
+
+  //sendonly
+  gst_sdp_media_add_attribute (media_, "sendonly", NULL);
 
   /* get clock-rate, media type and params for the rtpmap attribute */
   gint caps_rate = 0;
@@ -175,7 +178,7 @@ namespace switcher
 				  "1",                // a session version
 				  "IN",               // a network type
 				  "IP4",              // an address type
-				  "localhost");       //an address
+				  "127.0.0.1");       //an address
       
       gst_sdp_message_set_session_name (sdp_description_, "switcher session");
       gst_sdp_message_set_information (sdp_description_, "telepresence");

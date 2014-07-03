@@ -380,8 +380,40 @@ namespace switcher
     continue_ = false;
   }
   
-
-
+  void //FIXME probably useless member
+  PJSIP::add_udp_transport ()
+  {
+    /* Add UDP transport. */
+    pj_sockaddr_in addr;
+    pjsip_transport *tp;
+    
+    pj_bzero(&addr, sizeof(addr));
+    addr.sin_family = pj_AF_INET();
+    addr.sin_addr.s_addr = 0;
+    addr.sin_port = pj_htons((pj_uint16_t)sip_port_);
+    
+    // pjsip_host_port addrname;
+    // if (app.local_addr.slen) {
+    
+	//     addrname.host = app.local_addr;
+	//     addrname.port = app.sip_port;
+    
+	//     status = pj_sockaddr_in_init(&addr, &app.local_addr, 
+	// 				 (pj_uint16_t)app.sip_port);
+	//     if (status != PJ_SUCCESS) {
+	// 	app_perror(THIS_FILE, "Unable to resolve IP interface", status);
+	// 	return status;
+	//     }
+	// }
+    
+    if (PJ_SUCCESS !=pjsip_udp_transport_start (sip_endpt_, &addr, 
+						//(app.local_addr.slen ? &addrname:NULL),
+						NULL,
+						1, &tp))
+      g_warning ("Unable to start UDP transport");
+    
+  }
+  
    void 
    PJSIP::set_port (const gint value, void *user_data)
    {

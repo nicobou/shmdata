@@ -95,6 +95,7 @@ namespace switcher
     void add_buddy (const std::string &sip_user);
     void sip_worker_thread ();
     static gboolean call_sip_url (gchar *sip_url, void *user_data);
+    void add_udp_transport ();
   };
 
 }  // end of namespace

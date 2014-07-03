@@ -33,7 +33,7 @@ main ()
 {
   bool success = true;
   {
-    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
+    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("siptest");  
     
 #ifdef HAVE_CONFIG_H
     gchar *usr_plugin_dir = g_strdup_printf ("./%s", LT_OBJDIR);
@@ -58,28 +58,23 @@ main ()
     manager->invoke_va ("rtp", 
        			"add_data_stream",
      			NULL,
-       			"/tmp/switcher_rtptest_a_audio",
+       			"/tmp/switcher_siptest_a_audio",
        			NULL);
     
     manager->invoke_va ("rtp", 
 			"add_data_stream",
 			NULL,
-			"/tmp/switcher_rtptest_v_video",
+			"/tmp/switcher_siptest_v_video",
 			NULL);
     
-    manager->invoke_va ("rtp", 
-			"add_data_stream",
-			NULL,
-			"/tmp/switcher_rtptest_v_encoded-video",
-			NULL);
+    // manager->invoke_va ("rtp", 
+    // 			"add_destination",
+    // 			NULL,
+    // 			"local",
+    // 			"127.0.0.1",
+    // 			NULL);
     
-    manager->invoke_va ("rtp", 
-			"add_destination",
-			NULL,
-			"local",
-			"127.0.0.1",
-			NULL);
-    
+    usleep (2000000);
     
     //SIP
     if (0 != manager->create ("sip", "test").compare ("test"))
