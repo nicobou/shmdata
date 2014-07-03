@@ -60,6 +60,7 @@ namespace switcher
     GParamSpec *sip_port_spec_;
     pj_thread_desc thread_handler_desc_; 
     pj_thread_t	*pj_thread_ref_; 
+    pjsip_transport *udp_transport_;
     std::thread sip_thread_;
     std::mutex pj_init_mutex_;
     std::condition_variable pj_init_cond_;
@@ -95,7 +96,7 @@ namespace switcher
     void add_buddy (const std::string &sip_user);
     void sip_worker_thread ();
     static gboolean call_sip_url (gchar *sip_url, void *user_data);
-    void add_udp_transport ();
+    void start_udp_transport ();
   };
 
 }  // end of namespace

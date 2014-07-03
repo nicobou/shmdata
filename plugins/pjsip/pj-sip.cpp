@@ -41,6 +41,7 @@ namespace switcher
     sip_port_spec_ (NULL),
     thread_handler_desc_ (),
     pj_thread_ref_ (NULL),
+    udp_transport_ (NULL),
     sip_thread_ (),
     pj_init_mutex_ (),
     pj_init_cond_ (),
@@ -195,40 +196,8 @@ namespace switcher
     g_warning ("Unable to create sip end point");
     return false;
   }
-    
-  /* Add UDP transport. */
-    {
-	pj_sockaddr_in addr;
-	pjsip_transport *tp;
 
-	pj_bzero(&addr, sizeof(addr));
-	addr.sin_family = pj_AF_INET();
-	addr.sin_addr.s_addr = 0;
-	addr.sin_port = pj_htons((pj_uint16_t)5072);
-
-	// pjsip_host_port addrname;
-	// if (app.local_addr.slen) {
-
-	//     addrname.host = app.local_addr;
-	//     addrname.port = app.sip_port;
-
-	//     status = pj_sockaddr_in_init(&addr, &app.local_addr, 
-	// 				 (pj_uint16_t)app.sip_port);
-	//     if (status != PJ_SUCCESS) {
-	// 	app_perror(THIS_FILE, "Unable to resolve IP interface", status);
-	// 	return status;
-	//     }
-	// }
-
-	status = pjsip_udp_transport_start (sip_endpt_, &addr, 
-					    //(app.local_addr.slen ? &addrname:NULL),
-					    NULL,
-					    1, &tp);
-	if (status != PJ_SUCCESS) {
-	    g_warning ("Unable to start UDP transport");
-	    return false;
-	}
-  }//end add DUP transport
+  start_udp_transport ();
 
   /* 
    * Init transaction layer.
@@ -380,37 +349,35 @@ namespace switcher
     continue_ = false;
   }
   
-  void //FIXME probably useless member
-  PJSIP::add_udp_transport ()
+  void
+  PJSIP::start_udp_transport ()
   {
     /* Add UDP transport. */
     pj_sockaddr_in addr;
-    pjsip_transport *tp;
     
     pj_bzero(&addr, sizeof(addr));
     addr.sin_family = pj_AF_INET();
     addr.sin_addr.s_addr = 0;
     addr.sin_port = pj_htons((pj_uint16_t)sip_port_);
     
-    // pjsip_host_port addrname;
-    // if (app.local_addr.slen) {
-    
-	//     addrname.host = app.local_addr;
-	//     addrname.port = app.sip_port;
-    
-	//     status = pj_sockaddr_in_init(&addr, &app.local_addr, 
-	// 				 (pj_uint16_t)app.sip_port);
-	//     if (status != PJ_SUCCESS) {
-	// 	app_perror(THIS_FILE, "Unable to resolve IP interface", status);
-	// 	return status;
-	//     }
-	// }
-    
-    if (PJ_SUCCESS !=pjsip_udp_transport_start (sip_endpt_, &addr, 
-						//(app.local_addr.slen ? &addrname:NULL),
-						NULL,
-						1, &tp))
-      g_warning ("Unable to start UDP transport");
+    if (NULL == udp_transport_)
+      {
+	if (PJ_SUCCESS != pjsip_udp_transport_start (sip_endpt_, 
+						     &addr, 
+						     NULL,
+						     1, 
+						     &udp_transport_))
+	g_warning ("Unable to start UDP transport");
+      }
+    else
+      {
+	if (PJ_SUCCESS != pjsip_udp_transport_restart (udp_transport_,
+						       PJSIP_UDP_TRANSPORT_DESTROY_SOCKET,
+						       PJ_INVALID_SOCKET,
+						       &addr,
+						       NULL))
+	g_warning ("Unable to restart UDP transport");
+      }
     
   }
   
@@ -419,6 +386,8 @@ namespace switcher
    {
      PJSIP *context = static_cast <PJSIP *> (user_data);
      context->sip_port_ = value;
+     context->run_command_sync (std::bind (&PJSIP::start_udp_transport, 
+					   context));
      GObjectWrapper::notify_property_changed (context->gobject_->get_gobject (),
 					      context->sip_port_spec_);
    }
