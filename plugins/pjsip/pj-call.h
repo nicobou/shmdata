@@ -204,10 +204,7 @@ typedef struct app
     pj_status_t make_call(std::string contact_uri);
     static void set_rtp_session (const gchar *value, void *user_data);
     static const gchar *get_rtp_session (void *user_data);
-    pj_status_t create_outgoing_sdp (pj_pool_t *pool,
-				     struct call *call,
-				     std::string sip_url,
-				     pjmedia_sdp_session **p_sdp);
+    std::string create_outgoing_sdp ();
     Quiddity::ptr retrieve_rtp_manager ();
   };
   

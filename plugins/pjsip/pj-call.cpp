@@ -1490,59 +1490,67 @@ namespace switcher
     g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
 
     /* Create SDP */
-    status = create_outgoing_sdp (dlg->pool, 
-				  call, 
-				  dst_uri,
-				  &sdp);
+    std::string outgoing_sdp = create_outgoing_sdp ();
+    gchar *tmp = g_strdup (outgoing_sdp.c_str ());
+    status = pjmedia_sdp_parse (dlg->pool,
+				tmp,
+				outgoing_sdp.length (),
+				&sdp);
+    //g_free (tmp);//FIXME attach this to the call and free it when done
+
+    // status = create_outgoing_sdp (dlg->pool, 
+    // 				  call, 
+    // 				  dst_uri,
+    // 				  &sdp);
     if (status != PJ_SUCCESS) {
       ++app.uac_calls;
       return status;
     }
 
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
-    status = pjmedia_sdp_validate (sdp);
+    // g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
+    // status = pjmedia_sdp_validate (sdp);
 
-    switch (status) {
-    case PJ_SUCCESS:
-      g_print ("PJ_SUCCESS\n");
-      break;
-    case PJ_EINVAL:
-      g_print ("error PJ_EINVAL\n");
-      break;
-    case PJMEDIA_SDP_EINORIGIN:
-      g_print ("errorPJMEDIA_SDP_EINORIGIN \n"
-	       );
-      break;
-    case PJMEDIA_SDP_EINNAME:
-      g_print ("error PJMEDIA_SDP_EINNAME\n"
-	       );
-      break;
-    case PJMEDIA_SDP_ENOFMT:
-      g_print ("PJMEDIA_SDP_ENOFMT\n");
-      break;
-    case PJMEDIA_SDP_EINMEDIA:
-      g_print ("error PJMEDIA_SDP_EINMEDIA\n"
-	       );
-      break;
-    case PJMEDIA_SDP_EMISSINGCONN:
-      g_print ("errorPJMEDIA_SDP_EMISSINGCONN\n"
-	       );
-      break;
-    case PJMEDIA_SDP_EINPT:
-      g_print ("errorPJMEDIA_SDP_EINPT\n"
-	       );
-      break;
-    case PJMEDIA_SDP_EMISSINGRTPMAP:
-      g_print ("errorPJMEDIA_SDP_EMISSINGRTPMAP\n"
-	       );
-      break;
-    case PJMEDIA_SDP_EINCONN:
-      g_print ("PJMEDIA_SDP_EINCONN\n");
-      break;
-    default:
-      g_print ("error default \n");
-      break;
-    }
+    // switch (status) {
+    // case PJ_SUCCESS:
+    //   g_print ("PJ_SUCCESS\n");
+    //   break;
+    // case PJ_EINVAL:
+    //   g_print ("error PJ_EINVAL\n");
+    //   break;
+    // case PJMEDIA_SDP_EINORIGIN:
+    //   g_print ("errorPJMEDIA_SDP_EINORIGIN \n"
+    // 	       );
+    //   break;
+    // case PJMEDIA_SDP_EINNAME:
+    //   g_print ("error PJMEDIA_SDP_EINNAME\n"
+    // 	       );
+    //   break;
+    // case PJMEDIA_SDP_ENOFMT:
+    //   g_print ("PJMEDIA_SDP_ENOFMT\n");
+    //   break;
+    // case PJMEDIA_SDP_EINMEDIA:
+    //   g_print ("error PJMEDIA_SDP_EINMEDIA\n"
+    // 	       );
+    //   break;
+    // case PJMEDIA_SDP_EMISSINGCONN:
+    //   g_print ("errorPJMEDIA_SDP_EMISSINGCONN\n"
+    // 	       );
+    //   break;
+    // case PJMEDIA_SDP_EINPT:
+    //   g_print ("errorPJMEDIA_SDP_EINPT\n"
+    // 	       );
+    //   break;
+    // case PJMEDIA_SDP_EMISSINGRTPMAP:
+    //   g_print ("errorPJMEDIA_SDP_EMISSINGRTPMAP\n"
+    // 	       );
+    //   break;
+    // case PJMEDIA_SDP_EINCONN:
+    //   g_print ("PJMEDIA_SDP_EINCONN\n");
+    //   break;
+    // default:
+    //   g_print ("error default \n");
+    //   break;
+    // }
 
     /* Create the INVITE session. */
     status = pjsip_inv_create_uac( dlg, sdp, 0, &call->inv);
@@ -1618,49 +1626,44 @@ namespace switcher
      return manager->get_quiddity (rtp_session_name_);
   }
 
-  pj_status_t 
-  PJCall::create_outgoing_sdp (pj_pool_t *pool,
-			       struct call *call,
-			       std::string sip_url,
-			       pjmedia_sdp_session **p_sdp)
+  std::string 
+  PJCall::create_outgoing_sdp ()
   {
     g_print ("--> %s\n", __FUNCTION__);
 
-    PJ_ASSERT_RETURN(pool && p_sdp, PJ_EINVAL);
     Quiddity::ptr quid = retrieve_rtp_manager ();
     if (!(bool) quid)
       {
 	g_warning ("rtp manager not found");
-	return PJ_EINVAL;
+	return std::string ();
       }
-    pjmedia_sdp_session *sdp = NULL;
 
     //FIXME select appropriate shmdata to include, adding all for now
     SDPDescription desc;
 
     std::forward_list <std::string> paths = quid->get_child_keys<std::forward_list> ("rtp_caps.");
 
-    g_print ("-------0000000---------- %s\n",
-	     quid->get_info (".rtp_caps").c_str ());
+    // g_print ("-------0000000---------- %s\n",
+    // 	     quid->get_info (".rtp_caps").c_str ());
 
-    g_print ("00000000000000000000000000000\n");
-    std::for_each (paths.begin (),
-		   paths.end (),
-		   [] (const std::string &val){g_print ("%s\n", val.c_str ());});
+    // g_print ("00000000000000000000000000000\n");
+    // std::for_each (paths.begin (),
+    // 		   paths.end (),
+    // 		   [] (const std::string &val){g_print ("%s\n", val.c_str ());});
 
-    g_print ("00000000000000000000000000000\n");
+    // g_print ("00000000000000000000000000000\n");
     std::transform (paths.begin (),
 		    paths.end (),
 		    paths.begin (),
 		    [] (const std::string &val){return std::string ("rtp_caps."+ val);});
-    g_print ("00000000000000000000000000000\n");
-    std::for_each (paths.begin (),
-		   paths.end (),
-		   [&quid] (const std::string &val){
-		     std::string data = quid->get_data (val);
-		     g_print ("%s\n",  data.c_str ());});
+    // g_print ("00000000000000000000000000000\n");
+    // std::for_each (paths.begin (),
+    // 		   paths.end (),
+    // 		   [&quid] (const std::string &val){
+    // 		     std::string data = quid->get_data (val);
+    // 		     g_print ("%s\n",  data.c_str ());});
 
-    g_print ("00000000000000000000000000000\n");
+    // g_print ("00000000000000000000000000000\n");
 
     gint port = 12000;//starting at  
     for(auto &it : paths)
@@ -1675,19 +1678,7 @@ namespace switcher
     	gst_caps_unref (caps);
 	port+=2;
       }
-    
-    g_print ("SDP FOR CALLING ------------------\n%s\n",
-	     desc.get_string ().c_str ());
-    std::string rtp_session_sdp = desc.get_string ();
-    gchar *tmp = g_strdup (rtp_session_sdp.c_str ());
-    /* Done */
-    pj_status_t status = pjmedia_sdp_parse (pool,
-					    tmp,
-					    rtp_session_sdp.length (),
-					    &sdp);
-    //g_free (tmp);//FIXME attach this to the call and free it when done
-    *p_sdp = sdp;
-    return status;
+    return desc.get_string ();
   }
   
 }
