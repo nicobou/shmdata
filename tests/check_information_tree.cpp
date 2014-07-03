@@ -200,13 +200,24 @@ main ()
 		   {
 		     tree->graft (".root." + val, make_tree ("val"));
 		   });
-    std::list<std::string> child_keys = tree->get_child_keys<> (".root");
+    auto string_compare = 
+      [] (const std::string &first, const std::string &second)
+      {return (0 == first.compare (second));};
+
+    //using a list
+    std::list<std::string> child_keys_list = tree->get_child_keys<> (".root");
     assert (std::equal (childs.begin (), 
 			childs.end (),
-			child_keys.begin (),
-			[](const std::string &first, const std::string &second)
-			{return (0 == first.compare (second));} 
-			));
+			child_keys_list.begin (),
+			string_compare));
+
+    //using a vector
+    std::vector<std::string> child_keys_vector = tree->get_child_keys<std::vector> (".root");
+    assert (std::equal (childs.begin (), 
+			childs.end (),
+			child_keys_vector.begin (),
+			string_compare));
+    
   }
 
   return 0;
