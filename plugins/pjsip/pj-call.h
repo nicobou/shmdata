@@ -94,6 +94,8 @@ namespace switcher
    
    //shmdata
    ShmdataAnyWriter::ptr shm; //RTP, FIXME make RTCP shm
+   //shmdata path to send
+   std::string shm_path_to_send;
  };
 
 
@@ -204,7 +206,8 @@ typedef struct app
     pj_status_t make_call(std::string contact_uri);
     static void set_rtp_session (const gchar *value, void *user_data);
     static const gchar *get_rtp_session (void *user_data);
-    std::string create_outgoing_sdp ();
+    std::string create_outgoing_sdp (struct call *call,
+				     std::string dst_uri);
     Quiddity::ptr retrieve_rtp_manager ();
   };
   

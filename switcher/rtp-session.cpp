@@ -446,7 +446,7 @@ namespace switcher
      //set call back for saving caps in a property tree
      rtp_writer->set_on_caps (std::bind (&RtpSession::on_rtp_caps, 
 					 context,
-					 std::move (rtp_writer_name),
+					 reader->get_path (),//std::move (rtp_writer_name),
 					 std::placeholders::_1));
 
      //rtcp src pad
@@ -1020,9 +1020,10 @@ namespace switcher
   void
   RtpSession::on_rtp_caps (std::string shmdata_path, std::string caps)
   {
-    data::Tree::ptr tree = data::make_tree ();
-    tree->graft (std::move (shmdata_path),
-		 data::make_tree (std::move (caps)));
-    graft_tree ("rtp_caps", tree);
+    //data::Tree::ptr tree = data::make_tree ();
+    // tree->graft (std::move (shmdata_path),
+    // 		 data::make_tree (std::move (caps)));
+    graft_tree ("rtp_caps." + std::move (shmdata_path), 
+		data::make_tree (std::move (caps)));
   }
 }

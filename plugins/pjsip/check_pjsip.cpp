@@ -83,7 +83,7 @@ main ()
 	return 1;
       }
     
-    manager->set_property ("test", "port", "5072"); 
+    manager->set_property ("test", "port", "5070"); 
 
     // bool registered = manager->invoke_va ("test","register", NULL, 
     // 					  "1004", //user

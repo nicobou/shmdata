@@ -91,7 +91,10 @@ namespace switcher
       
     /* Init calls */
     for (unsigned i=0; i<app.max_calls; ++i)
-      app.call[i].index = i;
+      {
+	app.call[i].index = i;
+	app.call[i].media_count = 0;
+      }
     g_print ("pj_call initialized\n");
 
     /* Init media transport for all calls. */
@@ -304,22 +307,12 @@ namespace switcher
   {
     g_print ("--> %s\n", __FUNCTION__);
     struct call *call;
-    //pj_pool_t *pool;
     const pjmedia_sdp_session *local_sdp, *remote_sdp;
-    // struct codec *codec_desc = NULL;
-    // unsigned i;
-
     call = (struct call *)inv->mod_data[mod_siprtp_.id];
-    //pool = inv->dlg->pool;
-
-    /* If this is a mid-call media update, then destroy existing media */
-    // FIXME if (audio->thread != NULL)
-    // 	destroy_call_media(call->index);
-
 
     /* Do nothing if media negotiation has failed */
     if (status != PJ_SUCCESS) {
-      g_print ("SDP negotiation failed");
+      g_warning ("SDP negotiation failed");
       return;
     }
 
@@ -327,30 +320,13 @@ namespace switcher
     pjmedia_sdp_neg_get_active_local(inv->neg, &local_sdp);
     pjmedia_sdp_neg_get_active_remote(inv->neg, &remote_sdp);
 
-    char sdpbuf1[1024], sdpbuf2[1024];
-    pj_ssize_t len1, len2;
+    g_print ("negotiated LOCAL\n"); print_sdp (local_sdp);
+    g_print ("negotiated REMOTE\n"); print_sdp (remote_sdp);
     
-    //print sdp
-    len1 = pjmedia_sdp_print(local_sdp, sdpbuf1, sizeof(sdpbuf1));
-    if (len1 < 1) {
-      g_print ("   error: printing local sdp\n");
-      return;
-    }
-    sdpbuf1[len1] = '\0';
-    len2 = pjmedia_sdp_print(remote_sdp, sdpbuf2, sizeof(sdpbuf2));
-    if (len2 < 1) {
-      g_print ("   error: printing sdp2");
-      return ;
-    }
-    sdpbuf2[len2] = '\0';
-    g_print ("*NEGOCIATED* local sdp : \n%s \n\nremote sdp : \n%s \n\n ",
-    	     sdpbuf1, sdpbuf2);
-    
-    
-    
+    g_print ("MEDIA COUNT %u\n", call->media_count);
+
     for (uint i=0; i < call->media_count; i++)
       {
-	
 	struct media_stream *current_media;
 	current_media = &call->media[i];
 	status = stream_info_from_sdp (&current_media->si, 
@@ -365,52 +341,58 @@ namespace switcher
 	  return;
 	}
 	
-	//current_media->clock_rate = current_media->si.fmt.clock_rate;
-	//current_media->samples_per_frame = current_media->clock_rate * codec_desc->ptime / 1000;
-	//current_media->bytes_per_frame = codec_desc->bit_rate * codec_desc->ptime / 1000 / 8;
-	
-	pjmedia_rtp_session_init(&current_media->out_sess, current_media->si.tx_pt, 
-				 pj_rand());
-	pjmedia_rtp_session_init(&current_media->in_sess, current_media->si.fmt.pt, 0);
-	//  pjmedia_rtcp_init(&current_media->rtcp, "rtcp", current_media->clock_rate, 
-	//  		      current_media->samples_per_frame, 0);
+	g_print ("------------------- tx_pt %u rx_pt %u\n", 
+		 current_media->si.tx_pt, 
+		 current_media->si.rx_pt);
 
-	current_media->shm = std::make_shared<ShmdataAnyWriter> (); 
-	std::string shm_any_name ( "/tmp/switcher_sip_" 
-				   + call->peer_uri
-				   + "_"
-				   + std::to_string (i));//FIXME use quiddity name
-	current_media->shm->set_path (shm_any_name.c_str());
-	g_message ("%s created a new shmdata any writer (%s)",  
-		   shm_any_name.c_str ());
+	// testing if receiving
+	if (PJMEDIA_DIR_DECODING == current_media->si.dir 
+	    || PJMEDIA_DIR_PLAYBACK == current_media->si.dir 
+	    || PJMEDIA_DIR_RENDER == current_media->si.dir 
+	    || PJMEDIA_DIR_ENCODING_DECODING == current_media->si.dir 
+	    || PJMEDIA_DIR_CAPTURE_PLAYBACK == current_media->si.dir 
+	    || PJMEDIA_DIR_CAPTURE_RENDER == current_media->si.dir )
+	  {
+	    pjmedia_rtp_session_init(&current_media->out_sess, current_media->si.tx_pt, 
+				     pj_rand());
+	    pjmedia_rtp_session_init(&current_media->in_sess, current_media->si.fmt.pt, 0);
+	    //  pjmedia_rtcp_init(&current_media->rtcp, "rtcp", current_media->clock_rate, 
+	    //  		      current_media->samples_per_frame, 0);
+	    
+	    current_media->shm = std::make_shared<ShmdataAnyWriter> (); 
+	    std::string shm_any_name ( "/tmp/switcher_sip_" 
+				       + call->peer_uri
+				       + "_"
+				       + std::to_string (i));//FIXME use quiddity name
+	    current_media->shm->set_path (shm_any_name.c_str());
+	    g_message ("%s created a new shmdata any writer (%s)",  
+		       shm_any_name.c_str ());
+	    
+	    /* Attach media to transport */
+	    status = pjmedia_transport_attach( current_media->transport, 
+					       current_media, //user_data 
+					       &current_media->si.rem_addr, 
+					       &current_media->si.rem_rtcp, 
+					       sizeof(pj_sockaddr_in),
+					       &on_rx_rtp,
+					       &on_rx_rtcp);
+	    if (status != PJ_SUCCESS) {
+	      g_print ("Error on pjmedia_transport_attach()");
+	      return;
+	    }
+	  }//end receiving 
 
-	
-	/* Attach media to transport */
-	status = pjmedia_transport_attach( current_media->transport, 
-					   current_media, //user_data 
-					   &current_media->si.rem_addr, 
-					   &current_media->si.rem_rtcp, 
-					   sizeof(pj_sockaddr_in),
-					   &on_rx_rtp,
-					   &on_rx_rtcp);
-	if (status != PJ_SUCCESS) {
-	  g_print ("Error on pjmedia_transport_attach()");
-	  return;
-	}
-	
-	// /* Start media thread. */
-	// current_media->thread_quit_flag = 0;
-	
-	//FIXME time to send rtp
-	// #if PJ_HAS_THREADS
-	//     status = pj_thread_create( inv->pool, "media", &media_thread, current_media,
-	// 			       0, 0, &current_media->thread);
-	//     if (status != PJ_SUCCESS) {
-	// 	app_perror(THIS_FILE, "Error creating media thread", status);
-	// 	return;
-	//     }
-	// #endif
-	
+	// send streams 
+	if (PJMEDIA_DIR_ENCODING == current_media->si.dir
+	    || PJMEDIA_DIR_CAPTURE == current_media->si.dir
+	    || PJMEDIA_DIR_ENCODING_DECODING == current_media->si.dir 
+	    || PJMEDIA_DIR_CAPTURE_PLAYBACK == current_media->si.dir 
+	    || PJMEDIA_DIR_CAPTURE_RENDER == current_media->si.dir)
+	  {
+	    g_print ("NEED TO SEND !!!! %s on port %u\n",
+		     current_media->shm_path_to_send.c_str (),
+		     remote_sdp->media[i]->desc.port);
+	  }
 	/* Set the media as active */
 	current_media->active = PJ_TRUE;
       }//end iterating media
@@ -1490,7 +1472,8 @@ namespace switcher
     g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
 
     /* Create SDP */
-    std::string outgoing_sdp = create_outgoing_sdp ();
+    std::string outgoing_sdp = create_outgoing_sdp (call,
+						    dst_uri);
     gchar *tmp = g_strdup (outgoing_sdp.c_str ());
     status = pjmedia_sdp_parse (dlg->pool,
 				tmp,
@@ -1498,10 +1481,6 @@ namespace switcher
 				&sdp);
     //g_free (tmp);//FIXME attach this to the call and free it when done
 
-    // status = create_outgoing_sdp (dlg->pool, 
-    // 				  call, 
-    // 				  dst_uri,
-    // 				  &sdp);
     if (status != PJ_SUCCESS) {
       ++app.uac_calls;
       return status;
@@ -1627,7 +1606,8 @@ namespace switcher
   }
 
   std::string 
-  PJCall::create_outgoing_sdp ()
+  PJCall::create_outgoing_sdp (struct call *call,
+			       std::string /*dst_uri*/)
   {
     g_print ("--> %s\n", __FUNCTION__);
 
@@ -1652,29 +1632,34 @@ namespace switcher
     // 		   [] (const std::string &val){g_print ("%s\n", val.c_str ());});
 
     // g_print ("00000000000000000000000000000\n");
-    std::transform (paths.begin (),
-		    paths.end (),
-		    paths.begin (),
-		    [] (const std::string &val){return std::string ("rtp_caps."+ val);});
-    // g_print ("00000000000000000000000000000\n");
-    // std::for_each (paths.begin (),
-    // 		   paths.end (),
-    // 		   [&quid] (const std::string &val){
-    // 		     std::string data = quid->get_data (val);
-    // 		     g_print ("%s\n",  data.c_str ());});
+    // std::transform (paths.begin (),
+    // 		    paths.end (),
+    // 		    paths.begin (),
+    // 		    [] (const std::string &val){return std::string ("rtp_caps."+ val);});
+    g_print ("00000000000000000000000000000\n");
+    std::for_each (paths.begin (),
+    		   paths.end (),
+    		   [&quid] (const std::string &val){
+    		     std::string data = quid->get_data ("rtp_caps." + val);
+    		     g_print ("%s\n",  data.c_str ());});
 
     // g_print ("00000000000000000000000000000\n");
 
-    gint port = 12000;//starting at  
+    gint port = 12000;//proposing ports starting at  
     for(auto &it : paths)
       {
-	std::string data = quid->get_data (it);
+	std::string data = quid->get_data ("rtp_caps." + it);
     	GstCaps *caps = gst_caps_from_string (data.c_str ());
     	SDPMedia media;
     	media.set_media_info_from_caps (caps);
     	media.set_port (port);
     	if (!desc.add_media (media))
     	  g_warning ("a media has not been added to the SDP description");
+	else
+	  {
+	    call->media [call->media_count].shm_path_to_send = it;
+	    call->media_count ++;
+	  }
     	gst_caps_unref (caps);
 	port+=2;
       }
