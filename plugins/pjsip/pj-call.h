@@ -104,15 +104,16 @@ namespace switcher
  */
 struct call
 {
-  unsigned		 index;
-  pjsip_inv_session	*inv;
-  unsigned		 media_count; //FIXME make this a std::list 
-  struct media_stream	 media[64];
-  pj_time_val		 start_time;
-  pj_time_val		 response_time;
-  pj_time_val		 connect_time;
-  std::string            peer_uri;
+  unsigned index;
+  pjsip_inv_session *inv;
+  unsigned media_count; //FIXME make this a std::list 
+  struct media_stream media[64];
+  pj_time_val start_time;
+  pj_time_val response_time;
+  pj_time_val connect_time;
+  std::string peer_uri;
   //pj_timer_entry	 d_timer;	    /**< Disconnect timer.	*/
+  PJCall *instance; 
 };
 
 

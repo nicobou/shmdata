@@ -94,6 +94,7 @@ namespace switcher
       {
 	app.call[i].index = i;
 	app.call[i].media_count = 0;
+	app.call[i].instance = this;
       }
     g_print ("pj_call initialized\n");
 
@@ -392,14 +393,34 @@ namespace switcher
 	    g_print ("NEED TO SEND !!!! %s on port %u\n",
 		     current_media->shm_path_to_send.c_str (),
 		     remote_sdp->media[i]->desc.port);
+	    QuiddityManager_Impl::ptr manager = call->instance->sip_instance_->manager_impl_.lock ();
+	    if ((bool) manager)
+	      {
+		{
+		  manager->invoke (call->instance->rtp_session_name_,
+				   "add_destination",
+				   NULL,
+				   {call->peer_uri,
+				    std::string (remote_sdp->origin.addr.ptr, 
+						 remote_sdp->origin.addr.slen)});
+
+		  manager->invoke (call->instance->rtp_session_name_,
+				   "add_udp_stream_to_dest",
+				   NULL,
+				   {current_media->shm_path_to_send,
+				    call->peer_uri,
+				    std::to_string (remote_sdp->media[i]->desc.port)});
+		}
+	      }
 	  }
+
 	/* Set the media as active */
 	current_media->active = PJ_TRUE;
       }//end iterating media
-
+    
   }
-
-
+  
+  
   /*
    * Receive incoming call
    */
@@ -1468,6 +1489,8 @@ namespace switcher
       ++app.uac_calls;
       return status;
     }
+
+    call->peer_uri = dst_uri;
 
     g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
 
