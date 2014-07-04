@@ -342,10 +342,6 @@ namespace switcher
 	  return;
 	}
 	
-	g_print ("------------------- tx_pt %u rx_pt %u\n", 
-		 current_media->si.tx_pt, 
-		 current_media->si.rx_pt);
-
 	// testing if receiving
 	if (PJMEDIA_DIR_DECODING == current_media->si.dir 
 	    || PJMEDIA_DIR_PLAYBACK == current_media->si.dir 
@@ -354,6 +350,34 @@ namespace switcher
 	    || PJMEDIA_DIR_CAPTURE_PLAYBACK == current_media->si.dir 
 	    || PJMEDIA_DIR_CAPTURE_RENDER == current_media->si.dir )
 	  {
+	    for (uint attr_i = 0; attr_i < remote_sdp->media[i]->attr_count; attr_i ++)
+	      {
+		pjmedia_sdp_attr *attr = remote_sdp->media[i]->attr[attr_i];
+		// g_print ("RECEIVING, ATTR name %.*s, val %.*s\n",
+		// 	 (int)attr->name.slen,
+		// 	 attr->name.ptr,
+		// 	 (int)attr->value.slen,
+		// 	 attr->value.ptr);
+		if (0 == std::string (attr->name.ptr, attr->name.slen).compare ("fmtp"))
+		  {
+		    std::string value (attr->value.ptr, attr->value.slen);
+		    std::size_t found = value.find_first_of(" ");
+		    if (std::string::npos != found)
+		      {
+			g_print ("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH\n");
+			g_print ("pt %s, params %s\n",
+				 std::string (value, 0, found).c_str (),
+				 std::string (value, found + 1, value.length () - (found + 1)).c_str ());
+			//testing if fmtp line is about the considered media fmt
+			if (0 == std::string (value, 0, found).compare (std::to_string (current_media->si.fmt.pt)))
+			  {
+			    g_print ("ADDING extra params\n");
+			    current_media->extra_params = std::string (value, found + 1, value.length () - (found + 1)).c_str ();
+			  }
+		      }
+		  }
+	      }
+	    
 	    pjmedia_rtp_session_init(&current_media->out_sess, current_media->si.tx_pt, 
 				     pj_rand());
 	    pjmedia_rtp_session_init(&current_media->in_sess, current_media->si.fmt.pt, 0);
@@ -799,7 +823,13 @@ namespace switcher
 			       // + ", clock-base="
 			       // + ", seqnum-base=" + std::to_string (strm->in_sess->seq_ctrl->base_seq)
 			       );
-	
+	if (!strm->extra_params.empty ())
+	  {
+	    data_type.append (std::string (", " + strm->extra_params));
+	    g_print ("SHMDATA data_type %s\n",
+		     data_type.c_str ());
+	  }
+
 	strm->shm->set_data_type (data_type);
 	
 	//application/x-rtp, media=(string)application, clock-rate=(int)90000, encoding-name=(string)X-GST, ssrc=(uint)4199653519, payload=(int)96, clock-base=(uint)479267716, seqnum-base=(uint)53946

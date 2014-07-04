@@ -89,9 +89,9 @@ namespace switcher
    pj_bool_t		 thread_quit_flag;  /* Stop media thread.	*/
    pj_thread_t		*thread;	    /* Media thread.		*/
   
-   //type
+   //type + codec param
    std::string type; //audio, video or application
-   
+   std::string extra_params;
    //shmdata
    ShmdataAnyWriter::ptr shm; //RTP, FIXME make RTCP shm
    //shmdata path to send
