@@ -1,0 +1,269 @@
+/*
+ * This file is part of libswitcher.
+ *
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
+ */
+
+#include "decodebin-to-shmdata.h"
+#include <glib/gprintf.h>
+
+namespace switcher
+{
+  DecodebinToShmdata::DecodebinToShmdata () :
+    decodebin_ ("decodebin2"),
+    discard_next_uncomplete_buffer_ (false),
+    main_pad_ (),
+    media_counters_ ()
+  {
+    //set async property
+    auto set_prop = std::bind (g_object_set, 
+			       std::placeholders::_1, 
+			       "async-handling", 
+			       TRUE,
+			       NULL);
+    decodebin_.invoke_as_gobject (std::move (set_prop));
+
+    //pd added callback
+    auto pad_added = std::bind (GstUtils::g_signal_connect_function,
+				std::placeholders::_1,
+				"pad-added", 
+				(GCallback) DecodebinToShmdata::on_pad_added,
+				(gpointer) this);
+    decodebin_.invoke_as_gobject (std::move (pad_added));
+    
+    //autoplug callback
+    auto autoplug = std::bind (GstUtils::g_signal_connect_function,
+			       std::placeholders::_1,
+			       "autoplug-select",  
+			       (GCallback) DecodebinToShmdata::on_autoplug_select ,  
+			       (gpointer) this);
+    decodebin_.invoke_as_gobject_with_return<gulong> (std::move (autoplug));
+  }
+
+  void 
+  DecodebinToShmdata::on_pad_added (GstElement* object, GstPad *pad, gpointer user_data)   
+  {   
+    DecodebinToShmdata *context = static_cast<DecodebinToShmdata *>(user_data);
+    GstUtils::CapsUnref rtpcaps (gst_caps_from_string ("application/x-rtp, media=(string)application"));
+    GstUtils::CapsUnref padcaps (gst_pad_get_caps (pad));
+    if (gst_caps_can_intersect (rtpcaps.get (),
+    				padcaps.get ()))
+      {
+     	//asking rtpbin to send an event when a packet is lost (do-lost property)
+     	GstUtils::set_element_property_in_bin (object, "gstrtpbin", "do-lost", TRUE);
+	
+     	g_message ("custom rtp stream found");
+     	GstElement *rtpgstdepay;
+     	GstUtils::make_element ("rtpgstdepay", &rtpgstdepay);
+
+     	//adding a probe for discarding uncomplete packets
+    	GstPad *depaysrcpad = gst_element_get_static_pad (rtpgstdepay, "src");
+    	gst_pad_add_buffer_probe (depaysrcpad,
+    				  G_CALLBACK (DecodebinToShmdata::gstrtpdepay_buffer_probe_cb),
+    				  context);
+    	gst_object_unref (depaysrcpad);
+
+	//was this: gst_bin_add (GST_BIN (context->bin_), rtpgstdepay);
+     	gst_bin_add (GST_BIN (GST_ELEMENT_PARENT (object)), rtpgstdepay);
+    	GstPad *sinkpad = gst_element_get_static_pad (rtpgstdepay, "sink");
+    	//adding a probe for handling loss messages from rtpbin
+    	gst_pad_add_event_probe (sinkpad, (GCallback) DecodebinToShmdata::gstrtpdepay_event_probe_cb, context);   
+	
+	GstUtils::check_pad_link_return (gst_pad_link (pad, sinkpad));
+	gst_object_unref (sinkpad);
+	GstPad *srcpad = gst_element_get_static_pad (rtpgstdepay, "src");
+	GstUtils::sync_state_with_parent (rtpgstdepay);
+	gst_element_get_state (rtpgstdepay, NULL, NULL, GST_CLOCK_TIME_NONE);
+	//was this: context->pad_to_shmdata_writer (context->bin_, srcpad);
+	context->pad_to_shmdata_writer (GST_ELEMENT_PARENT (object), srcpad);
+	gst_object_unref (srcpad);
+	return;
+      }
+    
+    //was this: context->pad_to_shmdata_writer (context->bin_, pad);
+    context->pad_to_shmdata_writer (GST_ELEMENT_PARENT (object), pad);
+  }
+
+  int 
+  DecodebinToShmdata::on_autoplug_select (GstElement */*bin*/, 
+					  GstPad *pad, 
+					  GstCaps */*caps*/, 
+					  GstElementFactory *factory, 
+					  gpointer /*user_data*/)
+  {
+    //     typedef enum {
+    //   GST_AUTOPLUG_SELECT_TRY,
+    //   GST_AUTOPLUG_SELECT_EXPOSE,
+    //   GST_AUTOPLUG_SELECT_SKIP
+    // } GstAutoplugSelectResult;
+    
+    if (g_strcmp0 (GST_OBJECT_NAME (factory), "rtpgstdepay") == 0)
+      {
+    	int return_val = 1;
+    	const GValue *val = gst_structure_get_value (gst_caps_get_structure(gst_pad_get_caps (pad),
+									    0),
+    						     "caps");
+	
+    	gsize taille = 256;
+    	guchar *string_caps = g_base64_decode (g_value_get_string (val),
+    					       &taille);
+	
+    	gchar *string_caps_char = g_strdup_printf ("%s", string_caps); 
+	
+    	if (g_str_has_prefix (string_caps_char, "audio/") 
+    	    || g_str_has_prefix (string_caps_char, "video/")
+    	    || g_str_has_prefix (string_caps_char, "image/") )
+    	  return_val = 0;
+
+    	g_free (string_caps_char);
+    	g_free (string_caps);
+    	return return_val; //expose
+      }
+    return 0; //try
+  }
+
+  gboolean 
+  DecodebinToShmdata::gstrtpdepay_buffer_probe_cb (GstPad */*pad*/, 
+						   GstMiniObject */*mini_obj*/, 
+						   gpointer user_data)
+  {
+    DecodebinToShmdata *context = static_cast<DecodebinToShmdata *>(user_data);
+    if (true == context->discard_next_uncomplete_buffer_)
+      {
+	g_debug ("discarding uncomplete custom frame due to a network loss");
+	context->discard_next_uncomplete_buffer_ = false;
+	return FALSE;// drop buffer
+      }
+    return TRUE; // pass buffer
+  }
+
+  gboolean
+  DecodebinToShmdata::gstrtpdepay_event_probe_cb (GstPad */*pad*/,
+					  GstEvent *event, 
+					  gpointer user_data)
+  {
+    DecodebinToShmdata *context = static_cast<DecodebinToShmdata *>(user_data);
+    if (GST_EVENT_TYPE (event) == GST_EVENT_CUSTOM_DOWNSTREAM) 
+      {
+	const GstStructure *s;
+	s = gst_event_get_structure (event);
+	//g_debug ("event probed (%s)\n", gst_structure_get_name (s));
+	if (gst_structure_has_name (s, "GstRTPPacketLost")) 
+	  context->discard_next_uncomplete_buffer_ = true;
+	return FALSE;
+      }
+    return TRUE; 
+  }
+
+  void
+  DecodebinToShmdata::pad_to_shmdata_writer (GstElement *bin, GstPad *pad)
+  {
+    //looking for type of media
+    std::string padname;
+    {
+      GstUtils::CapsUnref padcaps (gst_pad_get_caps (pad));
+      gchar *stringcaps = gst_caps_to_string (padcaps.get ());
+      if (0 == g_strcmp0 ("ANY", stringcaps))
+	padname = "custom";
+      else
+	padname = gst_structure_get_name (gst_caps_get_structure(padcaps.get (),0));
+      g_free (stringcaps);
+    }
+
+    g_debug ("httpsdpdec new pad name is %s\n", padname.c_str ());
+    
+    GstElement *identity;
+    GstUtils::make_element ("fakesink", &identity);
+    g_object_set (identity, 
+       		  "sync", TRUE, 
+    		  "signal-handoffs", TRUE,
+    		  "silent", TRUE,
+       		  NULL);
+    
+    GstElement *funnel;
+    GstUtils::make_element ("funnel", &funnel);
+    
+    gst_bin_add_many (GST_BIN (bin), identity, funnel, NULL);
+    GstUtils::link_static_to_request (pad, funnel);
+    gst_element_link (funnel, identity);
+
+    //GstUtils::wait_state_changed (bin);
+    GstUtils::sync_state_with_parent (identity);
+    GstUtils::sync_state_with_parent (funnel);
+    
+    //probing eos   
+    GstPad *srcpad = gst_element_get_static_pad (funnel, "src");
+    if (!(bool)main_pad_)
+      main_pad_.reset (srcpad); //saving first pad for looping
+    gst_pad_add_event_probe (srcpad, (GCallback) eos_probe_cb, this);   
+    gst_object_unref (srcpad);
+    
+    //giving a name to the stream
+    gchar **padname_splitted = g_strsplit_set (padname.c_str (), "/",-1);
+    //counting 
+    int count = 0;
+    auto it = media_counters_.find (std::string (padname_splitted[0]));
+    if (media_counters_.end () != it)
+      count = ++(it->second);
+    else
+      {
+    	std::string media_type ("unknown");
+    	if (NULL != padname_splitted[0])
+    	  media_type = padname_splitted[0];
+    	media_counters_[media_type] = count;
+      }
+    gchar media_name[256];
+    g_sprintf (media_name,"%s-%d", padname_splitted[0], count);
+    g_debug ("httpsdpdec: new media %s %d\n",media_name, count );
+    g_strfreev(padname_splitted);
+    
+    //HERE need to friend with segment
+    // //creating a shmdata
+    // ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
+    // std::string shm_any_name = make_file_name (media_name);
+    // shm_any->set_path (shm_any_name.c_str());
+    // //shm_any->start ();
+    // g_signal_connect(identity, "handoff", (GCallback)on_handoff_cb, shm_any.get ());
+    // g_message ("%s created a new shmdata writer (%s)", 
+    // 	       get_nick_name ().c_str(), 
+    // 	       shm_any_name.c_str ());
+    // register_shmdata_any_writer (shm_any);
+  }
+
+  gboolean
+  DecodebinToShmdata::eos_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data)
+  {
+    DecodebinToShmdata *context = static_cast<DecodebinToShmdata *>(user_data);
+    if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) { 
+      if (context->main_pad_.get () == pad)
+       	{
+	  // FIXME
+	  // 	  GstUtils::g_idle_add_full_with_context (context->get_g_main_context (),
+	  // 	  					  G_PRIORITY_DEFAULT_IDLE,
+	  // 	  					  (GSourceFunc) rewind,   
+	  // 	  					  (gpointer)context,
+	  // 	  					  NULL);   
+       	}
+      return FALSE;
+    }  
+    
+    if (GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_START || 
+	GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_STOP) 
+      return FALSE;
+    return TRUE; 
+  }
+  
+}

@@ -32,6 +32,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     custom-property-helper.cpp \
     create-remove-spy.cpp \
     decodebin2.cpp \
+    decodebin-to-shmdata.cpp \
     deinterleave.cpp \
     fake-shmdata-writer.cpp \
     file-sdp.cpp \
@@ -79,6 +80,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     startable-quiddity.cpp \
     string-dictionary.cpp \
     udpsink.cpp \
+    unique-gst-element.cpp \
     uridecodebin.cpp \
     video-rate.cpp \
     video-sink.cpp \
@@ -115,6 +117,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     creator.h \
     custom-property-helper.h \
     decodebin2.h \
+    decodebin-to-shmdata.h \
     deinterleave.h \
     fake-shmdata-writer.h \
     fakesink.h \
@@ -164,6 +167,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     startable-quiddity.h \
     string-dictionary.h \
     udpsink.h \
+    unique-gst-element.h \
     uridecodebin.h \
     video-rate.h \
     video-sink.h \
