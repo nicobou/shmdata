@@ -385,4 +385,20 @@ namespace switcher
     
   }
 
+  void 
+  GstUtils::gst_element_deleter (GstElement *element)
+  {
+    //delete if ownership has not been taken by a parent
+    if (NULL != element && NULL != GST_OBJECT_PARENT(element))
+      gst_object_unref (element);
+  }
+  
+  gulong
+  GstUtils::g_signal_connect_function (gpointer gobject, 
+				       const gchar *signal,
+				       GCallback cb,
+				       gpointer user_data)
+  {
+    return g_signal_connect (gobject, signal, cb, user_data);
+  }
 }
