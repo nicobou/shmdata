@@ -350,57 +350,56 @@ namespace switcher
 	    || PJMEDIA_DIR_CAPTURE_PLAYBACK == current_media->si.dir 
 	    || PJMEDIA_DIR_CAPTURE_RENDER == current_media->si.dir )
 	  {
+	    
+	    //managing rtp with pjsip
 	    for (uint attr_i = 0; attr_i < remote_sdp->media[i]->attr_count; attr_i ++)
 	      {
-		pjmedia_sdp_attr *attr = remote_sdp->media[i]->attr[attr_i];
-		// g_print ("RECEIVING, ATTR name %.*s, val %.*s\n",
-		// 	 (int)attr->name.slen,
-		// 	 attr->name.ptr,
-		// 	 (int)attr->value.slen,
-		// 	 attr->value.ptr);
-		if (0 == std::string (attr->name.ptr, attr->name.slen).compare ("fmtp"))
-		  {
-		    std::string value (attr->value.ptr, attr->value.slen);
-		    std::size_t found = value.find_first_of(" ");
-		    if (std::string::npos != found)
-		      {
-			g_print ("HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH\n");
-			g_print ("pt %s, params %s\n",
-				 std::string (value, 0, found).c_str (),
-				 std::string (value, found + 1, value.length () - (found + 1)).c_str ());
-			//testing if fmtp line is about the considered media fmt
-			if (0 == std::string (value, 0, found).compare (std::to_string (current_media->si.fmt.pt)))
-			  {
-			    g_print ("ADDING extra params\n");
-			    current_media->extra_params = std::string (value, found + 1, value.length () - (found + 1)).c_str ();
-			  }
-		      }
-		  }
+	    	pjmedia_sdp_attr *attr = remote_sdp->media[i]->attr[attr_i];
+	    	if (0 == std::string (attr->name.ptr, attr->name.slen).compare ("fmtp"))
+	    	  {
+	    	    std::string value (attr->value.ptr, attr->value.slen);
+	    	    std::size_t found = value.find_first_of(" ");
+	    	    if (std::string::npos != found)
+	    	      {
+	    		//testing if fmtp line is about the considered media fmt
+	    		if (0 == std::string (value, 0, found).compare (std::to_string (current_media->si.fmt.pt)))
+	    		  {
+	    		    size_t string_len = value.length ();
+	    		    size_t last_pos = string_len - (found + 1);
+	    		    //removing trailing "=" if present since it makes shmdata fail
+	    		    if ('=' == value[string_len - 1])
+	    		      last_pos = last_pos - 1;
+	    		    current_media->extra_params = std::string (value, 
+	    							       found + 1, 
+	    							       last_pos).c_str ();
+	    		  }
+	    	      }
+	    	  }
 	      }
 	    
 	    pjmedia_rtp_session_init(&current_media->out_sess, current_media->si.tx_pt, 
-				     pj_rand());
+	    			     pj_rand());
 	    pjmedia_rtp_session_init(&current_media->in_sess, current_media->si.fmt.pt, 0);
 	    //  pjmedia_rtcp_init(&current_media->rtcp, "rtcp", current_media->clock_rate, 
 	    //  		      current_media->samples_per_frame, 0);
 	    
 	    current_media->shm = std::make_shared<ShmdataAnyWriter> (); 
 	    std::string shm_any_name ( "/tmp/switcher_sip_" 
-				       + call->peer_uri
-				       + "_"
-				       + std::to_string (i));//FIXME use quiddity name
+	    			       + call->peer_uri
+	    			       + "_"
+	    			       + std::to_string (i));//FIXME use quiddity name
 	    current_media->shm->set_path (shm_any_name.c_str());
 	    g_message ("%s created a new shmdata any writer (%s)",  
-		       shm_any_name.c_str ());
+	    	       shm_any_name.c_str ());
 	    
 	    /* Attach media to transport */
-	    status = pjmedia_transport_attach( current_media->transport, 
-					       current_media, //user_data 
-					       &current_media->si.rem_addr, 
-					       &current_media->si.rem_rtcp, 
-					       sizeof(pj_sockaddr_in),
-					       &on_rx_rtp,
-					       &on_rx_rtcp);
+	    status = pjmedia_transport_attach(current_media->transport, 
+					      current_media, //user_data 
+					      &current_media->si.rem_addr, 
+					      &current_media->si.rem_rtcp, 
+					      sizeof(pj_sockaddr_in),
+					      &on_rx_rtp,
+					      &on_rx_rtcp);
 	    if (status != PJ_SUCCESS) {
 	      g_print ("Error on pjmedia_transport_attach()");
 	      return;
@@ -829,18 +828,17 @@ namespace switcher
 	    g_print ("SHMDATA data_type %s\n",
 		     data_type.c_str ());
 	  }
-
+	
 	strm->shm->set_data_type (data_type);
 	
 	//application/x-rtp, media=(string)application, clock-rate=(int)90000, encoding-name=(string)X-GST, ssrc=(uint)4199653519, payload=(int)96, clock-base=(uint)479267716, seqnum-base=(uint)53946
 	strm->shm->start ();
       }
-
-    strm->shm->push_data (buf, //FIXME handle that, make copy and make clock
-    			  (size_t) size,
-    			  0,
-    			  free,
-    			  buf);
+    
+    strm->shm->push_data_auto_clock (buf, 
+				     (size_t) size,
+				     free,
+				     buf);
     
     if (status != PJ_SUCCESS) {
       g_print ("RTP decode error");
