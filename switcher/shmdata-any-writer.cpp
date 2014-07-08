@@ -28,7 +28,7 @@ namespace switcher
     path_ (),
     writer_ (shmdata_any_writer_init ()),
     json_description_ (new JSONBuilder()),
-    thread_safe_ ()
+    thread_safe_ ()    
   {
     //g_print ("%s\n",__FUNCTION__);
     shmdata_any_writer_set_debug (writer_, SHMDATA_ENABLE_DEBUG);
@@ -107,6 +107,22 @@ namespace switcher
 				    data,
 				    data_size,
 				    clock,
+				    data_not_required_anymore, 
+				    user_data);
+  }
+
+  void
+  ShmdataAnyWriter::push_data_auto_clock (void *data, 
+					  size_t data_size, 
+					  void (*data_not_required_anymore) (void *),
+					  void *user_data)
+  {
+    ////g_print ("%s\n",__FUNCTION__);
+    if (started_)
+      shmdata_any_writer_push_data (writer_,
+				    data,
+				    data_size,
+				    clock_.get_count (),
 				    data_not_required_anymore, 
 				    user_data);
   }
