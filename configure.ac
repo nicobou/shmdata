@@ -396,6 +396,7 @@ plugins/Makefile
 plugins/example/Makefile
 plugins/avcodecs/Makefile
 plugins/systemusage/Makefile
+plugins/syphonsrc/Makefile
 ])
 AC_OUTPUT
 
