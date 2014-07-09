@@ -1,7 +1,6 @@
 SUBDIRS= \
     example \
-    avcodecs \
-	systemusage
+    avcodecs 
 
 if V4L2BUILD
 SUBDIRS += \
@@ -36,4 +35,9 @@ endif
 if PJSIPBUILD
 SUBDIRS += \
     pjsip
+endif
+
+if !HAVE_OSX
+SUBDIRS += \
+    systemusage
 endif
