@@ -67,19 +67,6 @@ namespace switcher
 				      GCallback cb,
 				      gpointer user_data);
 
-    //performs caps unref when object is deleted
-    class CapsUnref
-    {
-    public:
-       CapsUnref (GstCaps *caps) :
-	caps_ (caps, gst_caps_unref)
-	{}
-      GstCaps *get () {return caps_.get ();}
-    private:
-      using gst_caps_handle = std::unique_ptr <GstCaps, decltype (&gst_caps_unref)>;
-      gst_caps_handle caps_;
-    };
-
   } //end of GstUtils namespace
 }  // end of switcher namespace
 

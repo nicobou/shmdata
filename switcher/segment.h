@@ -34,8 +34,11 @@
 
 namespace switcher
 {
+  class DecodebinToShmdata;
+
   class Segment : public Quiddity, public Runtime
   {
+    friend DecodebinToShmdata; //in order to register shmdata
   public:
     typedef std::shared_ptr<Segment> ptr;
     Segment ();

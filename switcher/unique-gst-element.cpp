@@ -28,9 +28,16 @@ namespace switcher
   {}
 
     void 
-    UniqueGstElement::invoke_as_gobject (std::function <void (gpointer)> command)
+    UniqueGstElement::g_invoke (std::function <void (gpointer)> command)
     {
       command (G_OBJECT (element_.get ()));
+      return;
+    }
+
+    void 
+    UniqueGstElement::invoke (std::function <void (GstElement *)> command)
+    {
+      command (element_.get ());
       return;
     }
 

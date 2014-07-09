@@ -24,27 +24,46 @@
 #include <memory>
 #include <map>
 #include "unique-gst-element.h"
+#include "segment.h"
 
 namespace switcher
 {
+  //this class has been designed for being possessed by a segment
 
   class DecodebinToShmdata
   {
   public:
-    DecodebinToShmdata ();
+    DecodebinToShmdata (Segment &segment);
+    ~DecodebinToShmdata ();
+    DecodebinToShmdata () = delete;
+    DecodebinToShmdata (const DecodebinToShmdata &) = delete;
+    DecodebinToShmdata &operator= (const DecodebinToShmdata&) = delete;
+    
+    //invoke a std::function on the internal decodebin as GstElement
+    template <typename Return_type> 
+      Return_type  
+      invoke_with_return (std::function <Return_type (GstElement *)> command) 
+      { 
+	return decodebin_.invoke_with_return<Return_type> (command); 
+      } 
+    
+    void invoke (std::function <void (GstElement *)> command);
+
   private: 
     UniqueGstElement decodebin_;
     bool discard_next_uncomplete_buffer_;
     std::unique_ptr <GstPad> main_pad_;
     std::map<std::string, uint> media_counters_;
+    Segment *segment_;
+    std::list <std::string> shmdata_path_; //for unregistering in the segment
     static void on_pad_added (GstElement* object, 
 			      GstPad *pad, 
 			      gpointer user_data);  
-    static  int on_autoplug_select (GstElement *bin, 
-				    GstPad *pad, 
-				    GstCaps *caps, 
-				    GstElementFactory *factory, 
-				    gpointer user_data);
+    static int on_autoplug_select (GstElement *bin, 
+				   GstPad *pad, 
+				   GstCaps *caps, 
+				   GstElementFactory *factory, 
+				   gpointer user_data);
     static gboolean gstrtpdepay_buffer_probe_cb (GstPad */*pad*/, 
 						 GstMiniObject */*mini_obj*/, 
 						 gpointer user_data);
@@ -54,6 +73,10 @@ namespace switcher
 						gpointer user_data);
     void pad_to_shmdata_writer (GstElement *bin, GstPad *pad);
     static gboolean eos_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data);
+    static void on_handoff_cb (GstElement */*object*/,
+			       GstBuffer *buf,
+			       GstPad *pad,
+			       gpointer user_data);
   };
   
 }  // end of namespace

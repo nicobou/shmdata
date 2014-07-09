@@ -18,15 +18,18 @@
  */
 
 #include "decodebin-to-shmdata.h"
+#include "scope-exit.h"
 #include <glib/gprintf.h>
 
 namespace switcher
 {
-  DecodebinToShmdata::DecodebinToShmdata () :
+  DecodebinToShmdata::DecodebinToShmdata (Segment &segment) :
     decodebin_ ("decodebin2"),
     discard_next_uncomplete_buffer_ (false),
     main_pad_ (),
-    media_counters_ ()
+    media_counters_ (),
+    segment_ (&segment),
+    shmdata_path_ ()
   {
     //set async property
     auto set_prop = std::bind (g_object_set, 
@@ -34,7 +37,7 @@ namespace switcher
 			       "async-handling", 
 			       TRUE,
 			       NULL);
-    decodebin_.invoke_as_gobject (std::move (set_prop));
+    decodebin_.g_invoke (std::move (set_prop));
 
     //pd added callback
     auto pad_added = std::bind (GstUtils::g_signal_connect_function,
@@ -42,7 +45,7 @@ namespace switcher
 				"pad-added", 
 				(GCallback) DecodebinToShmdata::on_pad_added,
 				(gpointer) this);
-    decodebin_.invoke_as_gobject (std::move (pad_added));
+    decodebin_.g_invoke (std::move (pad_added));
     
     //autoplug callback
     auto autoplug = std::bind (GstUtils::g_signal_connect_function,
@@ -50,17 +53,24 @@ namespace switcher
 			       "autoplug-select",  
 			       (GCallback) DecodebinToShmdata::on_autoplug_select ,  
 			       (gpointer) this);
-    decodebin_.invoke_as_gobject_with_return<gulong> (std::move (autoplug));
+    decodebin_.g_invoke_with_return<gulong> (std::move (autoplug));
   }
 
+  DecodebinToShmdata::~DecodebinToShmdata ()
+  {
+    for (auto &it: shmdata_path_)
+      segment_->unregister_shmdata_any_writer (it);
+  }
   void 
   DecodebinToShmdata::on_pad_added (GstElement* object, GstPad *pad, gpointer user_data)   
   {   
     DecodebinToShmdata *context = static_cast<DecodebinToShmdata *>(user_data);
-    GstUtils::CapsUnref rtpcaps (gst_caps_from_string ("application/x-rtp, media=(string)application"));
-    GstUtils::CapsUnref padcaps (gst_pad_get_caps (pad));
-    if (gst_caps_can_intersect (rtpcaps.get (),
-    				padcaps.get ()))
+    GstCaps * rtpcaps  = gst_caps_from_string ("application/x-rtp, media=(string)application");
+    On_scope_exit {gst_caps_unref (rtpcaps);};
+    GstCaps *padcaps  = gst_pad_get_caps (pad);
+    On_scope_exit {gst_caps_unref (padcaps);};
+    if (gst_caps_can_intersect (rtpcaps,
+    				padcaps))
       {
      	//asking rtpbin to send an event when a packet is lost (do-lost property)
      	GstUtils::set_element_property_in_bin (object, "gstrtpbin", "do-lost", TRUE);
@@ -174,13 +184,14 @@ namespace switcher
     //looking for type of media
     std::string padname;
     {
-      GstUtils::CapsUnref padcaps (gst_pad_get_caps (pad));
-      gchar *stringcaps = gst_caps_to_string (padcaps.get ());
+      GstCaps *padcaps = gst_pad_get_caps (pad);
+      On_scope_exit { gst_caps_unref (padcaps);};
+      gchar *stringcaps = gst_caps_to_string (padcaps);
+      On_scope_exit { g_free (stringcaps); };
       if (0 == g_strcmp0 ("ANY", stringcaps))
 	padname = "custom";
       else
-	padname = gst_structure_get_name (gst_caps_get_structure(padcaps.get (),0));
-      g_free (stringcaps);
+	padname = gst_structure_get_name (gst_caps_get_structure(padcaps,0));
     }
 
     g_debug ("httpsdpdec new pad name is %s\n", padname.c_str ());
@@ -227,20 +238,19 @@ namespace switcher
       }
     gchar media_name[256];
     g_sprintf (media_name,"%s-%d", padname_splitted[0], count);
-    g_debug ("httpsdpdec: new media %s %d\n",media_name, count );
+    g_debug ("httpsdpdec: new media %s %d\n", media_name, count );
     g_strfreev(padname_splitted);
     
-    //HERE need to friend with segment
-    // //creating a shmdata
-    // ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
-    // std::string shm_any_name = make_file_name (media_name);
-    // shm_any->set_path (shm_any_name.c_str());
-    // //shm_any->start ();
-    // g_signal_connect(identity, "handoff", (GCallback)on_handoff_cb, shm_any.get ());
-    // g_message ("%s created a new shmdata writer (%s)", 
-    // 	       get_nick_name ().c_str(), 
-    // 	       shm_any_name.c_str ());
-    // register_shmdata_any_writer (shm_any);
+    //creating a shmdata
+    ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
+    std::string shm_any_name = segment_->make_file_name (media_name);
+    shm_any->set_path (shm_any_name.c_str());
+    //shm_any->start ();
+    g_signal_connect (identity, "handoff", (GCallback) on_handoff_cb, shm_any.get ());
+    g_message ("%s created a new shmdata writer (%s)", 
+    	       segment_->get_nick_name ().c_str(), 
+    	       shm_any_name.c_str ());
+    segment_->register_shmdata_any_writer (shm_any);
   }
 
   gboolean
@@ -249,14 +259,11 @@ namespace switcher
     DecodebinToShmdata *context = static_cast<DecodebinToShmdata *>(user_data);
     if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) { 
       if (context->main_pad_.get () == pad)
-       	{
-	  // FIXME
-	  // 	  GstUtils::g_idle_add_full_with_context (context->get_g_main_context (),
-	  // 	  					  G_PRIORITY_DEFAULT_IDLE,
-	  // 	  					  (GSourceFunc) rewind,   
-	  // 	  					  (gpointer)context,
-	  // 	  					  NULL);   
-       	}
+	GstUtils::g_idle_add_full_with_context (context->segment_->get_g_main_context (),
+						G_PRIORITY_DEFAULT_IDLE,
+						(GSourceFunc) rewind,   
+						(gpointer) context,
+						NULL);   
       return FALSE;
     }  
     
@@ -265,5 +272,37 @@ namespace switcher
       return FALSE;
     return TRUE; 
   }
-  
+
+  void 
+  DecodebinToShmdata::on_handoff_cb (GstElement */*object*/,
+				     GstBuffer *buf,
+				     GstPad *pad,
+				     gpointer user_data)
+  {
+    ShmdataAnyWriter *writer = static_cast <ShmdataAnyWriter *> (user_data);
+
+    if (!writer->started ())
+      {
+	GstCaps *caps = gst_pad_get_negotiated_caps (pad);
+	On_scope_exit {gst_caps_unref (caps);};
+	gchar *string_caps = gst_caps_to_string (caps);
+	On_scope_exit {g_free (string_caps);};
+	writer->set_data_type (string_caps);
+	writer->start ();
+      }
+    else
+      {
+	GstBuffer *buftmp = gst_buffer_copy (buf);
+	writer->push_data (GST_BUFFER_DATA (buftmp),
+			   GST_BUFFER_SIZE (buftmp),
+			   GST_BUFFER_TIMESTAMP (buftmp),
+			   (void (*)(void*))gst_buffer_unref,
+			   buftmp);
+      }
+  }
+
+  void DecodebinToShmdata::invoke (std::function <void (GstElement *)> command)
+  {
+    decodebin_.invoke (command);
+  }
 }
