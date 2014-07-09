@@ -92,6 +92,16 @@ namespace switcher {
 	preorder_tree_walk (Tree::ptr tree,
 			    OnVisitingNode on_visiting_node,
 			    OnNodeVisited on_node_visited,
+			    T &user_data);
+    };
+
+    //-------------- utils
+
+      template <typename T, typename OnVisitingNode, typename OnNodeVisited>
+	void 
+	preorder_tree_walk (Tree::ptr tree,
+			    OnVisitingNode on_visiting_node,
+			    OnNodeVisited on_node_visited,
 			    T &user_data)
       {
 	std::unique_lock <std::mutex> lock (tree->mutex_);
@@ -115,9 +125,7 @@ namespace switcher {
 	      }
 	  }
       }
-    };
 
-    //-------------- utils
     //constructor
     Tree::ptr make_tree (); 
     template <typename ValueType> 
