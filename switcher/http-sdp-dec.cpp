@@ -545,5 +545,4 @@ namespace switcher
     gst_buffer_unref (buf);
   }
 
-
 }
