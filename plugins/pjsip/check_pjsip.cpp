@@ -74,7 +74,7 @@ main ()
     // 			"127.0.0.1",
     // 			NULL);
     
-    usleep (2000000);
+    //usleep (2000000);
     
     //SIP
     if (0 != manager->create ("sip", "test").compare ("test"))
@@ -103,7 +103,7 @@ main ()
 			NULL,
 			"sip:coucou@localhost:5072",
 			NULL);
-    usleep (300000000);
+//usleep (300000000);
     manager->remove ("test");
      
      
