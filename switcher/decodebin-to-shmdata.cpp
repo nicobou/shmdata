@@ -194,7 +194,7 @@ namespace switcher
 	padname = gst_structure_get_name (gst_caps_get_structure(padcaps,0));
     }
 
-    g_debug ("httpsdpdec new pad name is %s\n", padname.c_str ());
+    g_debug ("decodebin-to-shmdata new pad name is %s\n", padname.c_str ());
     
     GstElement *identity;
     GstUtils::make_element ("fakesink", &identity);
@@ -238,7 +238,7 @@ namespace switcher
       }
     gchar media_name[256];
     g_sprintf (media_name,"%s-%d", padname_splitted[0], count);
-    g_debug ("httpsdpdec: new media %s %d\n", media_name, count );
+    g_debug ("decodebin-to-shmdata: new media %s %d\n", media_name, count );
     g_strfreev(padname_splitted);
     
     //creating a shmdata
