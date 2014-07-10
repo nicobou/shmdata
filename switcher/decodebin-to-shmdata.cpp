@@ -26,7 +26,7 @@ namespace switcher
   DecodebinToShmdata::DecodebinToShmdata (Segment &segment) :
     decodebin_ ("decodebin2"),
     discard_next_uncomplete_buffer_ (false),
-    main_pad_ (),
+    main_pad_ (NULL),
     media_counters_ (),
     segment_ (&segment),
     shmdata_path_ ()
@@ -39,7 +39,7 @@ namespace switcher
 			       NULL);
     decodebin_.g_invoke (std::move (set_prop));
 
-    //pd added callback
+    //pad added callback
     auto pad_added = std::bind (GstUtils::g_signal_connect_function,
 				std::placeholders::_1,
 				"pad-added", 
@@ -217,8 +217,8 @@ namespace switcher
     
     //probing eos   
     GstPad *srcpad = gst_element_get_static_pad (funnel, "src");
-    if (!(bool)main_pad_)
-      main_pad_.reset (srcpad); //saving first pad for looping
+    if (NULL == main_pad_)
+      main_pad_ = srcpad; //saving first pad for looping
     gst_pad_add_event_probe (srcpad, (GCallback) eos_probe_cb, this);   
     gst_object_unref (srcpad);
     
@@ -258,10 +258,10 @@ namespace switcher
   {
     DecodebinToShmdata *context = static_cast<DecodebinToShmdata *>(user_data);
     if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) { 
-      if (context->main_pad_.get () == pad)
+      if (context->main_pad_ == pad)
 	GstUtils::g_idle_add_full_with_context (context->segment_->get_g_main_context (),
 						G_PRIORITY_DEFAULT_IDLE,
-						(GSourceFunc) rewind,   
+						(GSourceFunc) DecodebinToShmdata::rewind,   
 						(gpointer) context,
 						NULL);   
       return FALSE;
@@ -305,4 +305,44 @@ namespace switcher
   {
     decodebin_.invoke (command);
   }
+
+  gboolean
+  DecodebinToShmdata::rewind (gpointer user_data)
+  {
+    DecodebinToShmdata *context = static_cast<DecodebinToShmdata *>(user_data);
+    GstQuery *query;
+    gboolean res;
+    query = gst_query_new_segment (GST_FORMAT_TIME);
+    res = gst_element_query (context->segment_->get_pipeline (), query);
+    gdouble rate = -2.0;
+    gint64 start_value = -2.0;
+    gint64 stop_value = -2.0;
+    if (res) {
+      gst_query_parse_segment (query, &rate, NULL, &start_value, &stop_value);
+      // g_print ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n", 
+      // 	       rate,
+      // 	       GST_TIME_ARGS (start_value),
+      // 	       GST_TIME_ARGS (stop_value));
+    }
+    else {
+      g_debug ("duration query failed...");
+    }
+    gst_query_unref (query);
+    gboolean ret;
+    ret = gst_element_seek (GST_ELEMENT (gst_pad_get_parent (context->main_pad_)),
+			    rate,  
+			    GST_FORMAT_TIME,  
+			    (GstSeekFlags) (GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE), 
+			    //| GST_SEEK_FLAG_SKIP 
+			    //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization 
+			    GST_SEEK_TYPE_SET,  
+			    0.0 * GST_SECOND,  
+			    GST_SEEK_TYPE_NONE,  
+			    GST_CLOCK_TIME_NONE);  
+    if (!ret)
+      g_debug ("looping error\n");
+    g_debug ("finish looping");
+    return FALSE;
+  }
+
 }

@@ -52,7 +52,7 @@ namespace switcher
   private: 
     UniqueGstElement decodebin_;
     bool discard_next_uncomplete_buffer_;
-    std::unique_ptr <GstPad> main_pad_;
+    GstPad *main_pad_;
     std::map<std::string, uint> media_counters_;
     Segment *segment_;
     std::list <std::string> shmdata_path_; //for unregistering in the segment
@@ -77,6 +77,7 @@ namespace switcher
 			       GstBuffer *buf,
 			       GstPad *pad,
 			       gpointer user_data);
+    static gboolean rewind (gpointer user_data);
   };
   
 }  // end of namespace
