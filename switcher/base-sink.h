@@ -36,12 +36,12 @@ namespace switcher
     ~BaseSink ();
     BaseSink (const BaseSink &) = delete;
     BaseSink &operator= (const BaseSink &) = delete;
-    
-  protected:
+
+    //  protected: //made public for allowing composition and/or delegation
     void set_sink_element (GstElement *sink);
     void set_sink_element_no_connect (GstElement *sink);
     void set_on_first_data_hook (ShmdataReader::on_first_data_hook cb, void *user_data);
-
+    
   private:
     ShmdataReader::on_first_data_hook connection_hook_;
     void *hook_user_data_;
