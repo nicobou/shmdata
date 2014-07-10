@@ -26,6 +26,7 @@
 
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <json-glib/json-glib.h>
 #include "glib.h" 
@@ -40,8 +41,8 @@ namespace switcher
     typedef JsonNode *Node;
     JSONBuilder ();
     ~JSONBuilder ();
-    JSONBuilder (const JSONBuilder &source);
-    JSONBuilder& operator= (const JSONBuilder &source);
+    JSONBuilder (const JSONBuilder &source) = delete;
+    JSONBuilder& operator= (const JSONBuilder &source) = delete;
 
     void reset();
     void begin_object ();
@@ -63,6 +64,7 @@ namespace switcher
     static void node_free (Node root_node);
   private:
     JsonBuilder *builder_;
+    std::mutex thread_safe_;
     
   };
 
