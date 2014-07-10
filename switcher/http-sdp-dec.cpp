@@ -123,10 +123,9 @@ namespace switcher
     Segment *segment = static_cast<Segment *>(user_data);
     std::unique_ptr<DecodebinToShmdata> decodebin (new DecodebinToShmdata (*segment));
 
-    decodebin->invoke (std::bind (gst_bin_add_many,
+    decodebin->invoke (std::bind (gst_bin_add,
 				 GST_BIN (context->bin_),
-				 std::placeholders::_1, 
-				 NULL));
+				 std::placeholders::_1));
     
     // GstPad *sinkpad = gst_element_get_static_pad (decodebin, "sink");
     auto get_pad = std::bind (gst_element_get_static_pad, 
