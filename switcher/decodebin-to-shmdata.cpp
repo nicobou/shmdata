@@ -30,7 +30,8 @@ namespace switcher
     media_counters_ (),
     segment_ (&segment),
     shmdata_path_ (),
-    cb_ids_ ()
+    cb_ids_ (),
+    thread_safe_ ()
   {
     //set async property
     auto set_prop = std::bind (g_object_set, 
@@ -59,6 +60,7 @@ namespace switcher
 
   DecodebinToShmdata::~DecodebinToShmdata ()
   {
+    std::unique_lock<std::mutex> lock (thread_safe_);
     for (auto &it: cb_ids_)
       if (0 != it)
 	decodebin_.g_invoke (std::bind (g_signal_handler_disconnect,
@@ -67,10 +69,12 @@ namespace switcher
     for (auto &it: shmdata_path_)
       segment_->unregister_shmdata_any_writer (it);
   }
+
   void 
   DecodebinToShmdata::on_pad_added (GstElement* object, GstPad *pad, gpointer user_data)   
   {   
     DecodebinToShmdata *context = static_cast<DecodebinToShmdata *>(user_data);
+    std::unique_lock<std::mutex> lock (context->thread_safe_);
     GstCaps * rtpcaps  = gst_caps_from_string ("application/x-rtp, media=(string)application");
     On_scope_exit {gst_caps_unref (rtpcaps);};
     GstCaps *padcaps  = gst_pad_get_caps (pad);
@@ -157,6 +161,7 @@ namespace switcher
 						   gpointer user_data)
   {
     DecodebinToShmdata *context = static_cast<DecodebinToShmdata *>(user_data);
+    std::unique_lock<std::mutex> lock (context->thread_safe_);
     if (true == context->discard_next_uncomplete_buffer_)
       {
 	g_debug ("discarding uncomplete custom frame due to a network loss");
@@ -172,6 +177,7 @@ namespace switcher
 					  gpointer user_data)
   {
     DecodebinToShmdata *context = static_cast<DecodebinToShmdata *>(user_data);
+    std::unique_lock<std::mutex> lock (context->thread_safe_);
     if (GST_EVENT_TYPE (event) == GST_EVENT_CUSTOM_DOWNSTREAM) 
       {
 	const GstStructure *s;
@@ -263,6 +269,8 @@ namespace switcher
   DecodebinToShmdata::eos_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data)
   {
     DecodebinToShmdata *context = static_cast<DecodebinToShmdata *>(user_data);
+    std::unique_lock<std::mutex> lock (context->thread_safe_);
+
     if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) { 
       if (context->main_pad_ == pad)
 	GstUtils::g_idle_add_full_with_context (context->segment_->get_g_main_context (),
@@ -308,6 +316,8 @@ namespace switcher
 
   void DecodebinToShmdata::invoke (std::function <void (GstElement *)> command)
   {
+    std::unique_lock<std::mutex> lock (thread_safe_);
+
     decodebin_.invoke (command);
   }
 

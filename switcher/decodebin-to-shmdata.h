@@ -23,6 +23,7 @@
 
 #include <memory>
 #include <map>
+#include <mutex>
 #include "unique-gst-element.h"
 #include "segment.h"
 
@@ -44,6 +45,7 @@ namespace switcher
       Return_type  
       invoke_with_return (std::function <Return_type (GstElement *)> command) 
       { 
+	std::unique_lock<std::mutex> lock (thread_safe_);
 	return decodebin_.invoke_with_return<Return_type> (command); 
       } 
     
@@ -57,6 +59,7 @@ namespace switcher
     Segment *segment_;
     std::list <std::string> shmdata_path_; //for unregistering in the segment
     std::vector<gulong> cb_ids_;
+    std::mutex thread_safe_;
     static void on_pad_added (GstElement* object, 
 			      GstPad *pad, 
 			      gpointer user_data);  
