@@ -67,6 +67,7 @@ case "$host" in *-darwin* | *-macos10*)
     LDFLAGS+=" -L/sw/lib"
   fi
   
+  AC_PROG_OBJCXX
   AM_CONDITIONAL([HAVE_OSX], true)
   AC_DEFINE(HAVE_OSX,[1],[Apple Mac OS X operating system detected])
   

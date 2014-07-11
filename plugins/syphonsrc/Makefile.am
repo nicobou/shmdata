@@ -1,26 +1,36 @@
+LIBTOOL = glibtool --tag=CXX
+
 pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
+
+#all:
+#	sh build_syphon.sh
+
+#clean: clean-am
+#	rm -rf Syphon-framework/build
 
 plugins_LTLIBRARIES = \
     libsyphonsrc.la 
 
 #libsyphonsrc info
 libsyphonsrc_la_SOURCES = \
-    syphonsrc.cpp
+    syphonsrc.cpp \
+	syphonreader.mm
 
 libsyphonsrc_la_include_HEADERS = \
-    syphonsrc.h
+    syphonsrc.h \
+    syphonreader.h
 
 libsyphonsrc_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
 libsyphonsrc_la_LDFLAGS = \
+	-framework Syphon \
     $(GLIB_LIBS) \
     $(GST_LIBS) \
     $(GMODULE_LIBS) \
     $(JSONGLIB_LIBS) \
     $(SHMDATA_LIBS) \
     -avoid-version \
-    -module \
     -L$(top_builddir)/switcher/.libs \
     -lswitcher-@LIBSWITCHER_API_VERSION@
 
@@ -30,8 +40,12 @@ libsyphonsrc_la_CXXFLAGS = \
     $(GST_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
     $(SHMDATA_CFLAGS) \
-    -DG_LOG_DOMAIN=\"switcher\" \
-    -I$(top_srcdir) 
+    -I$(top_srcdir) \
+	-framework Syphon \
+    -DG_LOG_DOMAIN=\"switcher\"
+
+libsyphonsrc_la_OBJCXXFLAGS = \
+	-framework Syphon
 
 
 #### plugin unit test

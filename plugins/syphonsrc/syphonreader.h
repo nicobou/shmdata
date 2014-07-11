@@ -17,42 +17,34 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_SYPHONSRC_H__
-#define __SWITCHER_SYPHONSRC_H__
-
-#include "switcher/segment.h"
-#include "switcher/startable-quiddity.h"
-#include "switcher/custom-property-helper.h"
-
-#include "syphonreader.h"
+#ifndef __SWITCHER_SYPHONOBJC_H__
+#define __SWITCHER_SYPHONOBJC_H__
 
 #include <string>
+#include <vector>
 
 namespace switcher
 {
-  class SyphonSrc : public Segment
+
+  class SyphonReader
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SyphonSrc);
-    SyphonSrc ();
-    ~SyphonSrc ();
-    SyphonSrc (const SyphonSrc &) = delete;
-    SyphonSrc &operator= (const SyphonSrc &) = delete;
-    bool init_segment ();
+    SyphonReader();
+    ~SyphonReader();
+    void connect(const char* serveName);
+    void disconnect();
+    void getFrame(int& width, int& height, char* pixels);
 
-  private:
-    SyphonReader reader_;
+  protected:
+    void* client_; // Holds the real Syphon client
+    void* glContext_; // CGL context
 
-    CustomPropertyHelper::ptr custom_props_;
-    std::string syphon_servername_;
-    GParamSpec* syphon_servername_prop_;
+    int width_, height_;
+    std::vector<char> frame_;
 
-    static const gchar* get_servername(void* user_data);
-    static void set_servername(const gchar* name, void* user_data);
+    void handleNewFrame();
   };
-  
-  SWITCHER_DECLARE_PLUGIN(SyphonSrc);
 
-}  // end of namespace
+} // end of namespace
 
 #endif // ifndef
