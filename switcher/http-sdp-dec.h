@@ -60,6 +60,9 @@ namespace switcher
    static void source_setup_cb (GstElement *httpsdpdec, 
 				GstElement *source, 
 				gpointer user_data);
+   static void on_new_element_in_sdpdemux (GstBin     *bin,
+                                           GstElement *element,
+					   gpointer    user_data);
   };
 
 }  // end of namespace

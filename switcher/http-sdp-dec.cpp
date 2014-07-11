@@ -78,6 +78,11 @@ namespace switcher
 	return;
       }
 
+    g_signal_connect (GST_BIN (sdpdemux_),  
+		      "element-added",  
+		      (GCallback) HTTPSDPDec::on_new_element_in_sdpdemux,  
+		      NULL);      
+
     g_object_set (G_OBJECT (sdpdemux_), 
       		  "latency",
       		  0,
