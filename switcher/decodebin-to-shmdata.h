@@ -56,6 +56,7 @@ namespace switcher
     std::map<std::string, uint> media_counters_;
     Segment *segment_;
     std::list <std::string> shmdata_path_; //for unregistering in the segment
+    std::vector<gulong> cb_ids_;
     static void on_pad_added (GstElement* object, 
 			      GstPad *pad, 
 			      gpointer user_data);  

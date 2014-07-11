@@ -105,6 +105,18 @@ namespace switcher
   }
 
   void 
+  HTTPSDPDec::on_new_element_in_sdpdemux (GstBin     *bin,
+					  GstElement *element,
+					  gpointer    user_data)
+  {
+    //FIXME add that in uridecodebin 
+    g_object_set (G_OBJECT (element), 
+      		  "ntp-sync",
+      		  TRUE,
+      		  NULL);
+  }
+  
+  void 
   HTTPSDPDec::clean_on_error_command ()
   {
     if (NULL != on_error_command_)

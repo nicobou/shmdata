@@ -393,6 +393,7 @@ namespace switcher
       gst_object_unref (element);
   }
   
+  //g_signal_connect is actually a macro, so wrapping it for use with std::bind
   gulong
   GstUtils::g_signal_connect_function (gpointer gobject, 
 				       const gchar *signal,

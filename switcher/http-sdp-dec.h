@@ -52,9 +52,14 @@ namespace switcher
    std::list<std::unique_ptr<DecodebinToShmdata>> decodebins_;
    void clean_on_error_command ();
    bool init_segment ();
-   static void httpsdpdec_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
-   static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);
-   static void source_setup_cb (GstElement *httpsdpdec, GstElement *source, gpointer user_data);
+   static void httpsdpdec_pad_added_cb (GstElement* object, 
+					GstPad* pad, 
+					gpointer user_data);
+   static gboolean to_shmdata_wrapped (gpointer uri, 
+				       gpointer user_data);
+   static void source_setup_cb (GstElement *httpsdpdec, 
+				GstElement *source, 
+				gpointer user_data);
   };
 
 }  // end of namespace

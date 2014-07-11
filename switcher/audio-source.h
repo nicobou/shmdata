@@ -37,8 +37,6 @@ namespace switcher
   private:
     GstElement *rawaudio_;
     GstElement *audio_tee_;
-    GstElement *audioconvert_;   
-    GstElement *resample_;
     void make_audio_elements ();
     std::string shmdata_path_;
 

@@ -94,6 +94,7 @@ namespace switcher
   {
     if (!GstUtils::make_element ("gstrtpbin", &rtpsession_))
       return false;
+    g_object_set (G_OBJECT (rtpsession_), "ntp-sync", TRUE, NULL);
 
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
     

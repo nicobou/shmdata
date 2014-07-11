@@ -30,12 +30,13 @@ namespace switcher
     json_description_ (new JSONBuilder()),
     thread_safe_ ()    
   {
-    //g_print ("%s\n",__FUNCTION__);
+    g_print ("%s writer %p\n",__FUNCTION__, writer_);
     shmdata_any_writer_set_debug (writer_, SHMDATA_ENABLE_DEBUG);
   }
 
   ShmdataAnyWriter::~ShmdataAnyWriter()
   {
+    std::unique_lock<std::mutex> lock (thread_safe_);
     //g_print ("%s\n",__FUNCTION__);
     shmdata_any_writer_close (writer_);
     if (!path_.empty ())
@@ -46,6 +47,7 @@ namespace switcher
   bool 
   ShmdataAnyWriter::set_path (std::string name)
   {
+    std::unique_lock<std::mutex> lock (thread_safe_);
     //g_print ("%s\n",__FUNCTION__);
     GFile *shmfile = g_file_new_for_commandline_arg (name.c_str());
     if( g_file_query_exists (shmfile, NULL))
@@ -76,6 +78,7 @@ namespace switcher
   std::string 
   ShmdataAnyWriter::get_path ()
   {
+    std::unique_lock<std::mutex> lock (thread_safe_);
     //g_print ("%s\n",__FUNCTION__);
     return path_;
   }
@@ -83,6 +86,7 @@ namespace switcher
   void 
   ShmdataAnyWriter::start ()
   {
+    std::unique_lock<std::mutex> lock (thread_safe_);
     shmdata_any_writer_start (writer_);
     started_ = true;
   }
@@ -90,6 +94,7 @@ namespace switcher
   void
   ShmdataAnyWriter::set_data_type (std::string data_type)
   {
+    std::unique_lock<std::mutex> lock (thread_safe_);
     //g_print ("%s\n",__FUNCTION__);
     shmdata_any_writer_set_data_type (writer_, data_type.c_str ());
   }
@@ -101,6 +106,7 @@ namespace switcher
 			       void (*data_not_required_anymore) (void *),
 			       void *user_data)
   {
+    std::unique_lock<std::mutex> lock (thread_safe_);
     ////g_print ("%s\n",__FUNCTION__);
     if (started_)
       shmdata_any_writer_push_data (writer_,
@@ -117,6 +123,7 @@ namespace switcher
 					  void (*data_not_required_anymore) (void *),
 					  void *user_data)
   {
+    std::unique_lock<std::mutex> lock (thread_safe_);
     ////g_print ("%s\n",__FUNCTION__);
     if (started_)
       shmdata_any_writer_push_data (writer_,
@@ -147,6 +154,7 @@ namespace switcher
   bool 
   ShmdataAnyWriter::started ()
   {
+    std::unique_lock<std::mutex> lock (thread_safe_);
     return started_;
   }
   

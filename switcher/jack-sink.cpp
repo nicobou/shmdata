@@ -77,12 +77,12 @@ namespace switcher
   {
     GError *error = NULL;
 
-    gchar *description = g_strdup_printf ("audioconvert ! audioresample ! jackaudiosink client-name=%s sync=false", client_name_);
+    gchar *description = g_strdup_printf ("audioconvert ! audioresample ! queue max-size-buffers=2 leaky=downstream ! jackaudiosink provide-clock=false slave-method=none client-name=%s sync=false buffer-time=10000", client_name_);
     
     jacksink_ = gst_parse_bin_from_description (description,
 						TRUE,
 						&error);
-    g_object_set (G_OBJECT (jacksink_), "async-handling",TRUE, NULL);
+    g_object_set (G_OBJECT (jacksink_), "async-handling", TRUE, NULL);
     g_free (description);
 
     if (error != NULL)

@@ -29,7 +29,8 @@ namespace switcher
     main_pad_ (NULL),
     media_counters_ (),
     segment_ (&segment),
-    shmdata_path_ ()
+    shmdata_path_ (),
+    cb_ids_ ()
   {
     //set async property
     auto set_prop = std::bind (g_object_set, 
@@ -45,7 +46,7 @@ namespace switcher
 				"pad-added", 
 				(GCallback) DecodebinToShmdata::on_pad_added,
 				(gpointer) this);
-    decodebin_.g_invoke (std::move (pad_added));
+    cb_ids_.push_back (decodebin_.g_invoke_with_return<gulong> (std::move (pad_added)));
     
     //autoplug callback
     auto autoplug = std::bind (GstUtils::g_signal_connect_function,
@@ -53,11 +54,16 @@ namespace switcher
 			       "autoplug-select",  
 			       (GCallback) DecodebinToShmdata::on_autoplug_select ,  
 			       (gpointer) this);
-    decodebin_.g_invoke_with_return<gulong> (std::move (autoplug));
+    cb_ids_.push_back (decodebin_.g_invoke_with_return<gulong> (std::move (autoplug)));
   }
 
   DecodebinToShmdata::~DecodebinToShmdata ()
   {
+    for (auto &it: cb_ids_)
+      if (0 != it)
+	decodebin_.g_invoke (std::bind (g_signal_handler_disconnect,
+					std::placeholders::_1,
+					it));
     for (auto &it: shmdata_path_)
       segment_->unregister_shmdata_any_writer (it);
   }
@@ -246,7 +252,7 @@ namespace switcher
     std::string shm_any_name = segment_->make_file_name (media_name);
     shm_any->set_path (shm_any_name.c_str());
     //shm_any->start ();
-    g_signal_connect (identity, "handoff", (GCallback) on_handoff_cb, shm_any.get ());
+    cb_ids_.push_back (g_signal_connect (identity, "handoff", (GCallback) on_handoff_cb, shm_any.get ()));
     g_message ("%s created a new shmdata writer (%s)", 
     	       segment_->get_nick_name ().c_str(), 
     	       shm_any_name.c_str ());
@@ -292,12 +298,11 @@ namespace switcher
       }
     else
       {
-	GstBuffer *buftmp = gst_buffer_copy (buf);
-	writer->push_data (GST_BUFFER_DATA (buftmp),
-			   GST_BUFFER_SIZE (buftmp),
-			   GST_BUFFER_TIMESTAMP (buftmp),
-			   (void (*)(void*))gst_buffer_unref,
-			   buftmp);
+	writer->push_data (GST_BUFFER_DATA (buf),
+			   GST_BUFFER_SIZE (buf),
+			   GST_BUFFER_TIMESTAMP (buf),
+			   NULL,
+			   NULL);
       }
   }
 

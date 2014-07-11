@@ -374,7 +374,7 @@ namespace switcher
   {
     if (capture_devices_description_ != NULL)
       g_free (capture_devices_description_);
-    clean_elements ();
+    //clean_elements ();
   }
 
   bool
