@@ -17,6 +17,7 @@
 
 #include "soap-ctrl-server.h"
 #include "webservices/control.nsmap"
+#include "switcher/scope-exit.h"
 //hacking gsoap bug for ubuntu 13.10
 #ifdef WITH_IPV6
 #define SOAPBINDTO "::"
@@ -135,18 +136,23 @@ namespace switcher
        sdp_file.append ("/");
        sdp_file.append (get_socket_name_prefix ());
        sdp_file.append(manager->get_name()+"_"+rtpsession_name+"_"+destination_name+".sdp");
-       gchar *sdp_contents;
+       gchar *sdp_contents = NULL;
        gsize file_length;
-       g_file_get_contents (sdp_file.c_str (), 
-			    &sdp_contents, 
-			    &file_length, 
-			    NULL); //not getting errors
-
-       soap_response(soap, SOAP_FILE); 
-       soap->http_content = "application/x-sdp";
-       soap_send_raw(soap, sdp_contents, file_length);
-       g_free (sdp_contents);
-       return soap_end_send(soap);
+       if (g_file_get_contents (sdp_file.c_str (), 
+				&sdp_contents, 
+				&file_length, 
+				NULL) && 0 != file_length)  //not getting errors
+	 {
+	   On_scope_exit {g_free (sdp_contents);};
+	   soap_response(soap, SOAP_FILE); 
+	   soap->http_content = "application/x-sdp";
+	   soap_send_raw (soap, sdp_contents, file_length);
+	   return soap_end_send(soap);
+	 }
+       else
+	 g_warning ("cannot get sdp description for rtpsession %s, destination %s\n",
+		    rtpsession_name.c_str (),
+		    destination_name.c_str ());
      }
    return 404;
  }
