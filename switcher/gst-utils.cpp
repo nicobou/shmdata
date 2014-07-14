@@ -389,7 +389,7 @@ namespace switcher
   GstUtils::gst_element_deleter (GstElement *element)
   {
     //delete if ownership has not been taken by a parent
-    if (NULL != element && NULL != GST_OBJECT_PARENT(element))
+    if (NULL != element && NULL == GST_OBJECT_PARENT(element))
       gst_object_unref (element);
   }
   
