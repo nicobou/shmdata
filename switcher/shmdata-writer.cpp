@@ -47,9 +47,10 @@ namespace switcher
       GstUtils::clean_element (queue_);
     if (NULL != fakesink_)
       {
+	// if (0 != handoff_handler_)
+	// //FIXME this is blocking sometime :
+	//   g_signal_handler_disconnect (G_OBJECT (fakesink_), handoff_handler_);
 	GstUtils::clean_element (fakesink_);
-	if (0 != handoff_handler_)
-	  g_signal_handler_disconnect (G_OBJECT (fakesink_), handoff_handler_);
       }
     shmdata_base_writer_close (writer_);
     if (!path_.empty ())
