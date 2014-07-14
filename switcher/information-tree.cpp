@@ -169,7 +169,7 @@ namespace switcher {
 	  found.first.erase (found.second);
 	  return res;
 	}
-      Tree::ptr res = found.second->second;
+      Tree::ptr res;
       return res;
     }
 
