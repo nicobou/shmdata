@@ -30,7 +30,6 @@ namespace switcher
     json_description_ (new JSONBuilder()),
     thread_safe_ ()    
   {
-    g_print ("%s writer %p\n",__FUNCTION__, writer_);
     shmdata_any_writer_set_debug (writer_, SHMDATA_ENABLE_DEBUG);
   }
 
