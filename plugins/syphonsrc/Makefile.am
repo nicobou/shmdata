@@ -57,7 +57,7 @@ BUILT_SOURCES = \
 	Syphon-framework/build/Release/Syphon.framework/Headers/Syphon.h
 
 Syphon-framework/build/Release/Syphon.framework/Headers/Syphon.h: Makefile
-	sh build_syphon.sh
+	git submodule init && git submodule update && sh build_syphon.sh
 
 #### plugin unit test
 AM_CFLAGS = \
