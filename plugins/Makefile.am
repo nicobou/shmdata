@@ -39,7 +39,7 @@ endif
 
 if HAVE_OSX
 SUBDIRS += \
-	syphonsrc
+    syphonsrc
 endif
 
 if !HAVE_OSX

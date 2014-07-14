@@ -52,6 +52,8 @@ AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ], [
   AC_MSG_ERROR([You need to have pkg-config installed or set the PATH.])
 ])
 
+## for building syphon, but seems it must be call unconditionally 
+AC_PROG_OBJCXX
 case "$host" in *-darwin* | *-macos10*)
   LIBTOOL="glibtool"
   CXXFLAGS+=" -D__Darwin -stdlib=libc++ -Qunused-arguments"
@@ -67,10 +69,12 @@ case "$host" in *-darwin* | *-macos10*)
     LDFLAGS+=" -L/sw/lib"
   fi
   
-  AC_PROG_OBJCXX
   AM_CONDITIONAL([HAVE_OSX], true)
   AC_DEFINE(HAVE_OSX,[1],[Apple Mac OS X operating system detected])
   
+  #going to build syphon git submodule if osx
+  AC_CONFIG_FILES([plugins/syphonsrc/Makefile])
+
   # OSX does not include /usr/local/lib/pkgconfig path, so we export it here
   # (for everyone, just in case)
   PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
@@ -101,7 +105,6 @@ AC_CHECK_FILE([/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig],
                PKG_CONFIG_PATH=/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig:$PKG_CONFIG_PATH
                export PKG_CONFIG_PATH],
               [AC_MSG_WARN([OSX GStreamer SDK not found])])
-
 
 
 dnl =======================================================================
@@ -288,6 +291,7 @@ AC_CHECK_FILE([/usr/include/nodejs/src/node.h],
                AC_MSG_WARN([Missing nodejs-dev package])])
 AM_CONDITIONAL(NODEADDONBUILD, test "x${NODEADDONBUILD}" = "xenabled")
 
+
 dnl Use the C++ compiler for the compile tests
 AC_LANG(C++)
 
@@ -397,7 +401,6 @@ plugins/Makefile
 plugins/example/Makefile
 plugins/avcodecs/Makefile
 plugins/systemusage/Makefile
-plugins/syphonsrc/Makefile
 ])
 AC_OUTPUT
 
