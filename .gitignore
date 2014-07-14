@@ -64,6 +64,8 @@ plugins/portmidi/check_midi_plugins
 plugins/pulse/.deps/
 plugins/pulse/.libs/
 plugins/pulse/check_pulsesrc
+plugins/syphonsrc/.deps
+plugins/syphonsrc/.libs
 plugins/systemusage/.deps/
 plugins/systemusage/.libs/
 plugins/systemusage/check_systemusage_plugin

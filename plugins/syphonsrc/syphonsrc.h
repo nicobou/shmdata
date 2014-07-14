@@ -26,11 +26,12 @@
 
 #include "syphonreader.h"
 
+#include <memory>
 #include <string>
 
 namespace switcher
 {
-  class SyphonSrc : public Segment
+  class SyphonSrc : public Segment, public StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SyphonSrc);
@@ -38,17 +39,29 @@ namespace switcher
     ~SyphonSrc ();
     SyphonSrc (const SyphonSrc &) = delete;
     SyphonSrc &operator= (const SyphonSrc &) = delete;
-    bool init_segment ();
+
+    bool start ();
+    bool stop ();
 
   private:
-    SyphonReader reader_;
+    std::shared_ptr<SyphonReader> reader_;
+    ShmdataAnyWriter::ptr writer_;
 
     CustomPropertyHelper::ptr custom_props_;
     std::string syphon_servername_;
     GParamSpec* syphon_servername_prop_;
+    std::string syphon_appname_;
+    GParamSpec* syphon_appname_prop_;
+
+    int width_, height_;
+
+    bool init_segment ();
+    static void frameCallback(void*, const char*, int&, int&);
 
     static const gchar* get_servername(void* user_data);
     static void set_servername(const gchar* name, void* user_data);
+    static const gchar* get_appname(void* user_data);
+    static void set_appname(const gchar* name, void* user_data);
   };
   
   SWITCHER_DECLARE_PLUGIN(SyphonSrc);

@@ -2,11 +2,12 @@ LIBTOOL = glibtool --tag=CXX
 
 pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
-#all:
-#	sh build_syphon.sh
+clean: clean-am
+	rm -rf Syphon-framework/build
 
-#clean: clean-am
-#	rm -rf Syphon-framework/build
+install: install-am
+	sh build_syphon.sh install
+	sh build_syphon.sh clean
 
 plugins_LTLIBRARIES = \
     libsyphonsrc.la 
@@ -18,12 +19,14 @@ libsyphonsrc_la_SOURCES = \
 
 libsyphonsrc_la_include_HEADERS = \
     syphonsrc.h \
-    syphonreader.h
+    syphonreader.h \
+	Syphon-framework/build/Release/Syphon.framework/Headers/Syphon.h
 
 libsyphonsrc_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
 libsyphonsrc_la_LDFLAGS = \
+	-F$(top_srcdir)/plugins/syphonsrc/Syphon-framework/build/Release \
 	-framework Syphon \
     $(GLIB_LIBS) \
     $(GST_LIBS) \
@@ -41,12 +44,20 @@ libsyphonsrc_la_CXXFLAGS = \
     $(JSONGLIB_CFLAGS) \
     $(SHMDATA_CFLAGS) \
     -I$(top_srcdir) \
+	-F$(top_srcdir)/plugins/syphonsrc/Syphon-framework/build/Release \
 	-framework Syphon \
     -DG_LOG_DOMAIN=\"switcher\"
 
 libsyphonsrc_la_OBJCXXFLAGS = \
+	-F$(top_srcdir)/plugins/syphonsrc/Syphon-framework/build/Release \
 	-framework Syphon
 
+# Needed to build Syphon.framework before syphonsrc
+BUILT_SOURCES = \
+	Syphon-framework/build/Release/Syphon.framework/Headers/Syphon.h
+
+Syphon-framework/build/Release/Syphon.framework/Headers/Syphon.h: Makefile
+	sh build_syphon.sh
 
 #### plugin unit test
 AM_CFLAGS = \
