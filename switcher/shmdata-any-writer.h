@@ -23,8 +23,12 @@
 
 #include <memory>
 #include <string>
+#include <mutex>
+
 #include <shmdata/any-data-writer.h>
+
 #include "json-builder.h"
+#include "clock.h"
 
 namespace switcher
 {
@@ -45,6 +49,10 @@ namespace switcher
 		    unsigned long long clock,
 		    void (*data_not_required_anymore) (void *),
 		    void *user_data);
+    void push_data_auto_clock (void *data, 
+			       size_t data_size, 
+			       void (*data_not_required_anymore) (void *),
+			       void *user_data);
     void start ();
     bool started ();
 
@@ -56,12 +64,10 @@ namespace switcher
     std::string path_;
     shmdata_any_writer_t *writer_;
     JSONBuilder::ptr json_description_;
+    std::mutex thread_safe_;
+    CumulativeClock<> clock_;
     void make_json_description ();
     bool set_path_without_deleting (std::string name);
-    /* static void on_handoff_cb (GstElement* object, */
-    /* 				GstBuffer* buf, */
-    /* 				GstPad* pad, */
-    /* 				gpointer user_data); */
   };
   
 }  // end of namespace
