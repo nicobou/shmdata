@@ -133,11 +133,7 @@ namespace switcher
 	  g_source_destroy (it);
     if (position_tracking_source_ != NULL)
        g_source_destroy (position_tracking_source_);
-    if (GST_STATE_CHANGE_ASYNC == gst_element_set_state (pipeline_, GST_STATE_NULL))
-      while (GST_STATE (pipeline_) != GST_STATE_NULL)
-	//warning this may be blocking
-	gst_element_get_state (pipeline_, NULL, NULL, GST_CLOCK_TIME_NONE);
-    gst_object_unref (pipeline_);
+    GstUtils::clean_element (pipeline_);
     if (!g_source_is_destroyed (source_))
       g_source_destroy (source_);
   }
