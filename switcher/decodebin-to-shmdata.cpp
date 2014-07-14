@@ -61,11 +61,11 @@ namespace switcher
   DecodebinToShmdata::~DecodebinToShmdata ()
   {
     std::unique_lock<std::mutex> lock (thread_safe_);
-    for (auto &it: cb_ids_)
-      if (0 != it)
-	decodebin_.g_invoke (std::bind (g_signal_handler_disconnect,
-					std::placeholders::_1,
-					it));
+    // for (auto &it: cb_ids_)
+    //   if (0 != it)
+    // 	decodebin_.g_invoke (std::bind (g_signal_handler_disconnect,
+    // 					std::placeholders::_1,
+    // 					it));
     for (auto &it: shmdata_path_)
       segment_->unregister_shmdata_any_writer (it);
   }
