@@ -423,12 +423,17 @@ v8::Handle<v8::Value> Invoke(const v8::Arguments& args) {
     vector_arg.push_back(std::string(*val));
   }
 
-  std::string *return_value;
+  std::string *return_value = NULL;
   switcher_container[0]->invoke (std::string(*element_name),
 				 std::string(*method_name),
 				 &return_value,
 				 vector_arg);
-  v8::Handle<v8::String> res = v8::String::New((*return_value).c_str ());
+  if (NULL != return_value)
+    {
+      v8::Handle<v8::String> res = v8::String::New((*return_value).c_str ());
+      return scope.Close(res);
+    }
+  v8::Handle<v8::String> res = v8::String::New("");
   return scope.Close(res);
 }
 
