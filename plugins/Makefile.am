@@ -37,6 +37,11 @@ SUBDIRS += \
     pjsip
 endif
 
+if HAVE_OSX
+SUBDIRS += \
+    syphonsrc
+endif
+
 if !HAVE_OSX
 SUBDIRS += \
     systemusage
