@@ -30,7 +30,6 @@ namespace switcher
 
   GstElementCleaner::~GstElementCleaner ()
   {
-    g_debug ("~GstElementCleaner");
     for (auto &it : elements_to_remove_)
       GstUtils::clean_element (it);
   }

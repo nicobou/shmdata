@@ -22,7 +22,6 @@
 #define __SWITCHER_HTTP_SDP_DEC_H__
 
 #include "base-source.h"
-#include "gst-element-cleaner.h"
 #include "quiddity-command.h"
 #include "decodebin-to-shmdata.h"
 #include <memory>
@@ -32,7 +31,7 @@
 namespace switcher
 {
 
-  class HTTPSDPDec : public BaseSource, public GstElementCleaner
+  class HTTPSDPDec : public BaseSource
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);

@@ -82,5 +82,5 @@ namespace switcher
       return started_;
     }
   
-}//end of class
+}//end of switcher namespace
 

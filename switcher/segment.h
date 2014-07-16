@@ -26,6 +26,7 @@
 #include "shmdata-any-writer.h"
 #include "shmdata-writer.h"
 #include "shmdata-reader.h"
+#include "counter-map.h"
 #include "json-builder.h"
 #include <vector>
 #include <unordered_map>
@@ -36,7 +37,8 @@ namespace switcher
 {
   class DecodebinToShmdata;
 
-  class Segment : public Quiddity, public Runtime
+  class Segment : public Quiddity, public Runtime, public CounterMap 
+  /*inherit from CounterMap for sharing counters between multiple DecodebinToShmdata*/
   {
     friend DecodebinToShmdata; //in order to register shmdata
   public:

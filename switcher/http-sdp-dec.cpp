@@ -101,12 +101,12 @@ namespace switcher
   HTTPSDPDec::destroy_httpsdpdec ()
   {
     clean_on_error_command ();
-    if (NULL != souphttpsrc_)
-	GstUtils::clean_element (souphttpsrc_);
+    clear_shmdatas ();
+    reset_bin ();
+    reset_counter_map ();
     souphttpsrc_ = NULL;
-    if (NULL != sdpdemux_)
-      GstUtils::clean_element (sdpdemux_);
     sdpdemux_ = NULL;
+    
   }
 
   void 

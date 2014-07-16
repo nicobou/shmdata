@@ -61,7 +61,6 @@ namespace switcher
 			       port_spec_, 
 			       "port",
 			       "Port");
-
     host_spec_ = 
       custom_props_->make_string_property ("host", 
 					   "destination host",
@@ -74,7 +73,6 @@ namespace switcher
 			       host_spec_, 
 			       "host",
 			       "Destination Host");
-
     shmdata_path_spec_ = 
       custom_props_->make_string_property ("shmdata-path", 
 					   "path of the shmdata to connect with",
@@ -83,18 +81,15 @@ namespace switcher
 					   set_shmdata_path,
 					   get_shmdata_path,
 					   this);
-    
     install_property_by_pspec (custom_props_->get_gobject (), 
-				shmdata_path_spec_, 
-				"shmdata-path",
-				"Shmdata Path");
-
+			       shmdata_path_spec_, 
+			       "shmdata-path",
+			       "Shmdata Path");
     shmdata_any_reader_set_debug (reader_, SHMDATA_ENABLE_DEBUG);
     shmdata_any_reader_set_on_data_handler (reader_, 
 					    &on_shmreader_data,
 					    this);
-    shmdata_any_reader_set_data_type (reader_, "application/x-json-osc");
-
+    shmdata_any_reader_set_data_type (reader_, "application/x-libloserialized-osc");
     return true;
   }
 
@@ -141,7 +136,7 @@ namespace switcher
   {
     if (NULL != address_)
       {
-	std::unique_lock <std::mutex> lock (address_mutex_);
+ 	std::unique_lock <std::mutex> lock (address_mutex_);
 	lo_address_free (address_);
 	address_ = NULL;
       }
@@ -158,7 +153,7 @@ namespace switcher
     context->host_ = value;
     context->start ();
     context->custom_props_->notify_property_changed (context->host_spec_);
-   }
+  }
   
   const gchar *
   ShmdataToOsc::get_host (void *user_data)
@@ -166,7 +161,6 @@ namespace switcher
     ShmdataToOsc *context = static_cast <ShmdataToOsc *> (user_data);
     return context->host_.c_str ();
   }
-
 
   void 
   ShmdataToOsc::set_shmdata_path (const gchar * value, void *user_data)
@@ -197,7 +191,6 @@ namespace switcher
     lo_message msg = lo_message_deserialise (data, 
 					     data_size, 
 					     NULL); //error code
-
     if (NULL != msg )
       {
 	std::unique_lock <std::mutex> lock (context->address_mutex_);

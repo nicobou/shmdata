@@ -306,9 +306,21 @@ namespace switcher
 
   bool Segment::clear_shmdatas ()
   {
+    bool update_writer_description = false;
     if (!shmdata_writers_.empty ())
       {
 	shmdata_writers_.clear ();
+	update_writer_description = true;
+      }
+
+    if (!shmdata_any_writers_.empty ())
+      {
+	shmdata_any_writers_.clear ();
+	update_writer_description = true;
+      }
+
+    if (true == update_writer_description)
+      {
 	update_shmdata_writers_description ();
 	GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_writers_description_);
       }

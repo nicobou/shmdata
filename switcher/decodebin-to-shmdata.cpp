@@ -28,6 +28,7 @@ namespace switcher
     discard_next_uncomplete_buffer_ (false),
     main_pad_ (NULL),
     media_counters_ (),
+    media_counter_mutex_ (),
     segment_ (&segment),
     shmdata_path_ (),
     cb_ids_ (),
@@ -107,13 +108,11 @@ namespace switcher
 	GstPad *srcpad = gst_element_get_static_pad (rtpgstdepay, "src");
 	GstUtils::sync_state_with_parent (rtpgstdepay);
 	gst_element_get_state (rtpgstdepay, NULL, NULL, GST_CLOCK_TIME_NONE);
-	//was this: context->pad_to_shmdata_writer (context->bin_, srcpad);
 	context->pad_to_shmdata_writer (GST_ELEMENT_PARENT (object), srcpad);
 	gst_object_unref (srcpad);
 	return;
       }
     
-    //was this: context->pad_to_shmdata_writer (context->bin_, pad);
     context->pad_to_shmdata_writer (GST_ELEMENT_PARENT (object), pad);
   }
 
@@ -208,9 +207,9 @@ namespace switcher
 
     g_debug ("decodebin-to-shmdata new pad name is %s\n", padname.c_str ());
     
-    GstElement *identity;
-    GstUtils::make_element ("fakesink", &identity);
-    g_object_set (identity, 
+    GstElement *fakesink;
+    GstUtils::make_element ("fakesink", &fakesink);
+    g_object_set (fakesink, 
        		  "sync", TRUE, 
     		  "signal-handoffs", TRUE,
     		  "silent", TRUE,
@@ -219,12 +218,12 @@ namespace switcher
     GstElement *funnel;
     GstUtils::make_element ("funnel", &funnel);
     
-    gst_bin_add_many (GST_BIN (bin), identity, funnel, NULL);
+    gst_bin_add_many (GST_BIN (bin), fakesink, funnel, NULL);
     GstUtils::link_static_to_request (pad, funnel);
-    gst_element_link (funnel, identity);
+    gst_element_link (funnel, fakesink);
 
     //GstUtils::wait_state_changed (bin);
-    GstUtils::sync_state_with_parent (identity);
+    GstUtils::sync_state_with_parent (fakesink);
     GstUtils::sync_state_with_parent (funnel);
     
     //probing eos   
@@ -234,34 +233,27 @@ namespace switcher
     gst_pad_add_event_probe (srcpad, (GCallback) eos_probe_cb, this);   
     gst_object_unref (srcpad);
     
-    //giving a name to the stream
-    gchar **padname_splitted = g_strsplit_set (padname.c_str (), "/",-1);
-    //counting 
-    int count = 0;
-    auto it = media_counters_.find (std::string (padname_splitted[0]));
-    if (media_counters_.end () != it)
-      count = ++(it->second);
-    else
-      {
-    	std::string media_type ("unknown");
-    	if (NULL != padname_splitted[0])
-    	  media_type = padname_splitted[0];
-    	media_counters_[media_type] = count;
-      }
-    gchar media_name[256];
-    g_sprintf (media_name,"%s-%d", padname_splitted[0], count);
-    g_debug ("decodebin-to-shmdata: new media %s %d\n", media_name, count );
-    g_strfreev(padname_splitted);
-    
+    std::string media_name ("unknown");
+
+    {//giving a name to the stream
+      gchar **padname_splitted = g_strsplit_set (padname.c_str (), "/",-1);
+      On_scope_exit { g_strfreev(padname_splitted);};
+      if (NULL != padname_splitted[0])
+	media_name = padname_splitted[0];
+      media_name.append ("-" + std::to_string (segment_->get_count (media_name)));
+
+      g_debug ("decodebin-to-shmdata: new media %s \n", media_name.c_str ());
+    }
+
     //creating a shmdata
     ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
     std::string shm_any_name = segment_->make_file_name (media_name);
     shm_any->set_path (shm_any_name.c_str());
     //shm_any->start ();
-    cb_ids_.push_back (g_signal_connect (identity, "handoff", (GCallback) on_handoff_cb, shm_any.get ()));
-    g_message ("%s created a new shmdata writer (%s)", 
-    	       segment_->get_nick_name ().c_str(), 
-    	       shm_any_name.c_str ());
+    cb_ids_.push_back (g_signal_connect (fakesink, "handoff", (GCallback) on_handoff_cb, shm_any.get ()));
+    g_debug ("%s created a new shmdata writer (%s)", 
+	     segment_->get_nick_name ().c_str(), 
+	     shm_any_name.c_str ());
     segment_->register_shmdata_any_writer (shm_any);
   }
 

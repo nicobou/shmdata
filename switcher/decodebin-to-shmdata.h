@@ -56,6 +56,7 @@ namespace switcher
     bool discard_next_uncomplete_buffer_;
     GstPad *main_pad_;
     std::map<std::string, uint> media_counters_;
+    std::mutex media_counter_mutex_;
     Segment *segment_;
     std::list <std::string> shmdata_path_; //for unregistering in the segment
     std::vector<gulong> cb_ids_;

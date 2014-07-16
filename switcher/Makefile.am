@@ -29,6 +29,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     base-sink.cpp \
     base-source.cpp \
     categorizable.cpp \
+    counter-map.cpp \
     custom-property-helper.cpp \
     create-remove-spy.cpp \
     decodebin2.cpp \
@@ -113,6 +114,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     base-sink.h \
     base-source.h \
     categorizable.h \
+    counter-map.h \
     create-remove-spy.h \
     creator.h \
     custom-property-helper.h \
