@@ -31,7 +31,7 @@ namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(UDPSink,
 				       "UDP Sender",
-				       "udp sink", 
+				       "udp network", 
 				       "send data stream with udp",
 				       "LGPL",
 				       "udpsink",

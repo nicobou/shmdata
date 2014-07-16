@@ -32,7 +32,7 @@ namespace switcher
 				       "Nicolas Bouillot");
 
   PortMidiSource::PortMidiSource () :
-    shmdata_writer_ (shmdata_any_writer_init ()),
+    shm_any_ (std::make_shared<ShmdataAnyWriter> ()),
     last_status_ (-1),
     last_data1_ (-1),
     last_data2_ (-1),
@@ -51,13 +51,11 @@ namespace switcher
   {}
 
   PortMidiSource::~PortMidiSource ()
-  {
-    shmdata_any_writer_close (shmdata_writer_);
-  }
+  {}
   
   
   bool
-  PortMidiSource::init ()
+  PortMidiSource::init_segment ()
   {
 
     if (input_devices_enum_ [0].value_name == NULL)
@@ -147,16 +145,15 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
 		    this);
 
-    if (! shmdata_any_writer_set_path (shmdata_writer_, make_file_name ("midi").c_str ()))
-      {
-	g_debug ("**** The file exists, therefore a shmdata cannot be operated with this path.\n");
-	shmdata_any_writer_close (shmdata_writer_);
-	return false;
-      }
-    shmdata_any_writer_set_debug (shmdata_writer_, SHMDATA_ENABLE_DEBUG);
-    shmdata_any_writer_set_data_type (shmdata_writer_, "audio/midi");
-    shmdata_any_writer_start (shmdata_writer_);
-  
+    std::string shm_any_name = make_file_name ("midi");
+    shm_any_->set_path (shm_any_name.c_str());
+    g_message ("%s created a new shmdata any writer (%s)", 
+	       get_nick_name ().c_str(), 
+	       shm_any_name.c_str ());
+    shm_any_->set_data_type ("audio/midi");
+    shm_any_->start ();
+    register_shmdata_any_writer (shm_any_);
+
     return true;
   }
   
@@ -210,10 +207,10 @@ namespace switcher
     PmEvent *tmp_event = (PmEvent *)g_malloc (sizeof (PmEvent));
     tmp_event->message = event->message;
     tmp_event->timestamp = event->timestamp;
-    shmdata_any_writer_push_data (context->shmdata_writer_,
-				  tmp_event,
-				  sizeof (PmEvent),
-				  (unsigned long long)tmp_event->timestamp * 1000000,//timestamp is in ms
+    context->shm_any_->push_data (tmp_event,
+     				  sizeof (PmEvent),
+				  //(timestamp is in ms)
+				  (unsigned long long) tmp_event->timestamp * 1000000,
 				  g_free, 
 				  tmp_event);
 

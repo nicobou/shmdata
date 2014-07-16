@@ -20,16 +20,15 @@
 #ifndef __SWITCHER_PORTMIDI_SOURCE_H__
 #define __SWITCHER_PORTMIDI_SOURCE_H__
 
+#include "switcher/segment.h" //FIXME only for shmdata management, should be "quiddity" only
 #include "portmidi-devices.h"
-#include "switcher/quiddity.h"
 #include "switcher/startable-quiddity.h"
 #include "switcher/custom-property-helper.h"
-#include <shmdata/any-data-writer.h>
 
 namespace switcher
 {
   
-  class PortMidiSource : public Quiddity, public StartableQuiddity, public PortMidi
+  class PortMidiSource : public Segment, public StartableQuiddity, public PortMidi
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSource);
@@ -37,7 +36,7 @@ namespace switcher
     ~PortMidiSource ();
     PortMidiSource (const PortMidiSource &) = delete;
     PortMidiSource &operator= (const PortMidiSource &) = delete;
-    bool init ();
+    bool init_segment ();
 
     bool start ();
     bool stop ();
@@ -48,7 +47,7 @@ namespace switcher
       std::string property_long_name_;
     } MidiPropertyContext;
 
-    shmdata_any_writer_t *shmdata_writer_;
+    ShmdataAnyWriter::ptr shm_any_;
     gint last_status_;
     gint last_data1_;
     gint last_data2_;
