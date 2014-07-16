@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_OSC_CTRL_SERVER_H__
 #define __SWITCHER_OSC_CTRL_SERVER_H__
 
-#include "switcher/segment.h" //only for shmdata management
+#include "switcher/segment.h" //FIXME only for shmdata management
 #include "switcher/custom-property-helper.h"
 #include "switcher/startable-quiddity.h"
 #include "lo/lo.h"
