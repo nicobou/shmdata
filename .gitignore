@@ -5,6 +5,7 @@
 *.o
 *.pc
 *.swp
+*.tar.gz
 *.trs
 *~
 INSTALL
