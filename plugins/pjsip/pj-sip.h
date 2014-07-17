@@ -30,14 +30,7 @@
 #include <condition_variable>
 
 //pjsip
-#include <pjsip.h>
-#include <pjmedia.h>
-#include <pjmedia-codec.h>
-#include <pjsip_ua.h>
-#include <pjsip_simple.h>
-#include <pjlib-util.h>
-#include <pjlib.h>
-
+#include <pjsua-lib/pjsua.h>
 
 namespace switcher
 {
@@ -60,7 +53,7 @@ namespace switcher
     GParamSpec *sip_port_spec_;
     pj_thread_desc thread_handler_desc_; 
     pj_thread_t	*pj_thread_ref_; 
-    pjsip_transport *udp_transport_;
+    pjsua_transport_id *transport_id_;//pjsip_transport *udp_transport_;
     std::thread sip_thread_;
     std::mutex pj_init_mutex_;
     std::condition_variable pj_init_cond_;
@@ -81,6 +74,7 @@ namespace switcher
     bool sip_work_;
     pj_thread_desc worker_handler_desc_; 
     pj_thread_t	*worker_thread_ref_; 
+    pjsua_acc_id account_id_;
     void sip_init_shutdown_thread ();
     void sip_handling_thread ();
     bool pj_sip_init ();
@@ -97,6 +91,10 @@ namespace switcher
     void sip_worker_thread ();
     static gboolean call_sip_url (gchar *sip_url, void *user_data);
     void start_udp_transport ();
+
+    static  void on_registration_state (pjsua_acc_id acc_id, pjsua_reg_info *info);
+    //buddy
+    static void on_buddy_state(pjsua_buddy_id buddy_id);
   };
 
 }  // end of namespace

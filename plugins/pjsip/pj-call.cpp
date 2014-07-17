@@ -58,6 +58,9 @@ namespace switcher
     pj_status_t status;
 
     init_app ();
+
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
+
     /*  Init invite session module. */
     {
       pjsip_inv_callback inv_cb;
@@ -68,16 +71,28 @@ namespace switcher
       inv_cb.on_new_session = &call_on_forked;
       inv_cb.on_media_update = &call_on_media_update;
       
+      g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
+      
+      //unregister/shutdown default invite module
+      status = pjsip_endpt_unregister_module (sip_instance_->sip_endpt_,
+					      pjsip_inv_usage_instance ());	
+      if (status != PJ_SUCCESS) 
+    	g_warning ("unregistering default invite module failed");
+
       /* Initialize invite session module:  */
       status = pjsip_inv_usage_init(sip_instance_->sip_endpt_, &inv_cb);
       if (status != PJ_SUCCESS) 
-	g_warning ("Init invite session module failed");
+    	g_warning ("Init invite session module failed");
     }
+
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
     
     /* Register our module to receive incoming requests. */
     status = pjsip_endpt_register_module(sip_instance_->sip_endpt_, &mod_siprtp_);
     if (status != PJ_SUCCESS) 
       g_warning ("Register mod_siprtp_ failed");
+
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
 
     // /* Init media */
     status = pjmedia_endpt_create(&sip_instance_->cp_.factory, NULL, 1, &med_endpt_);
@@ -1493,6 +1508,7 @@ namespace switcher
     pj_status_t status;
 
 
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
     /* Find unused call slot */
     for (i=0; i<app.max_calls; ++i) {
       if (app.call[i].inv == NULL)
@@ -1503,6 +1519,7 @@ namespace switcher
       return PJ_ETOOMANY;
 
     call = &app.call[i];
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
 
     pj_str_t dest_str;
     pj_cstr (&dest_str, dst_uri.c_str ());
@@ -1513,10 +1530,15 @@ namespace switcher
 				  &dest_str,		/* remote URI	    */
 				  &dest_str,		/* remote target    */
 				  &dlg);		/* dialog	    */
+
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
+
     if (status != PJ_SUCCESS) {
       ++app.uac_calls;
       return status;
     }
+
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
 
     call->peer_uri = dst_uri;
 
@@ -1532,10 +1554,14 @@ namespace switcher
 				&sdp);
     //g_free (tmp);//FIXME attach this to the call and free it when done
 
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
+
     if (status != PJ_SUCCESS) {
       ++app.uac_calls;
       return status;
     }
+
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
 
     // g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
     // status = pjmedia_sdp_validate (sdp);
@@ -1582,6 +1608,9 @@ namespace switcher
     //   break;
     // }
 
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
+
+
     /* Create the INVITE session. */
     status = pjsip_inv_create_uac( dlg, sdp, 0, &call->inv);
     if (status != PJ_SUCCESS) {
@@ -1589,6 +1618,7 @@ namespace switcher
       ++app.uac_calls;
       return status;
     }
+
 
     g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
 
@@ -1599,12 +1629,19 @@ namespace switcher
     pj_gettimeofday(&call->start_time);
 
 
+
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
+
+
     /* Create initial INVITE request.
      * This INVITE request will contain a perfectly good request and 
      * an SDP body as well.
      */
     status = pjsip_inv_invite(call->inv, &tdata);
     PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+
+    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
+
 
 
     /* Send initial INVITE request. 
@@ -1614,7 +1651,9 @@ namespace switcher
     status = pjsip_inv_send_msg(call->inv, tdata);
     PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
+
     g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
+
     return PJ_SUCCESS;
   }
 
