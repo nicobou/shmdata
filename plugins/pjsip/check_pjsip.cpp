@@ -85,12 +85,11 @@ main ()
     
     manager->set_property ("test", "port", "5070"); 
 
-    bool registered = manager->invoke_va ("test","register", NULL, 
-					  "1004", //user
-					  "10.10.30.252", //domain
-					  "1234", //password
-					  NULL);
-    if (!registered)
+    if (!manager->invoke_va ("test","register", NULL, 
+			     "1004", //user
+			     "10.10.30.252", //domain
+			     "1234", //password
+			     NULL))
       {
 	g_print ("cannot register \n");
 	return 1;
@@ -104,7 +103,22 @@ main ()
 			"sip:coucou@localhost:5072",
 			NULL);
 
+
     usleep (2000000);
+    
+    manager->set_property ("test","status", "Away");
+
+    usleep (2000000);
+    
+    manager->set_property ("test","status_note", "coucou");
+
+    usleep (2000000);
+
+    manager->set_property ("test","status", "BRB");
+
+    usleep (2000000);
+
+    //usleep (2000000);
     //usleep (300000000);
 
     manager->remove ("test");

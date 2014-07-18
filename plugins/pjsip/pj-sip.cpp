@@ -301,33 +301,6 @@ namespace switcher
 	return;
       }
     
-  // /* Add UDP transport. */
-  //   pj_sockaddr_in addr;
-    
-  //   pj_bzero(&addr, sizeof(addr));
-  //   addr.sin_family = pj_AF_INET();
-  //   addr.sin_addr.s_addr = 0;
-  //   addr.sin_port = pj_htons((pj_uint16_t)sip_port_);
-    
-  //   if (NULL == udp_transport_)
-  //     {
-  // 	if (PJ_SUCCESS != pjsip_udp_transport_start (sip_endpt_, 
-  // 						     &addr, 
-  // 						     NULL,
-  // 						     1, 
-  // 						     &udp_transport_))
-  // 	g_warning ("Unable to start UDP transport");
-  //     }
-  //   else
-  //     {
-  // 	if (PJ_SUCCESS != pjsip_udp_transport_restart (udp_transport_,
-  // 						       PJSIP_UDP_TRANSPORT_DESTROY_SOCKET,
-  // 						       PJ_INVALID_SOCKET,
-  // 						       &addr,
-  // 						       NULL))
-  // 	g_warning ("Unable to restart UDP transport");
-  //     }
-    
   }
   
    void 

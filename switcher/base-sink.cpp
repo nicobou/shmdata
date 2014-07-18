@@ -64,7 +64,6 @@ namespace switcher
   gboolean
   BaseSink::disconnect (gpointer /*unused*/, gpointer user_data)
   {
-    //std::string connector = static_cast<std::string>(connector_name);
     BaseSink *context = static_cast<BaseSink*>(user_data);
     context->clear_shmdatas ();
     context->on_shmdata_disconnect ();
@@ -75,11 +74,9 @@ namespace switcher
    BaseSink::connect_wrapped (gpointer connector_name, gpointer user_data)
   {
     BaseSink *context = static_cast<BaseSink*>(user_data);
-       
     if (context->connect ((char *)connector_name))
       return TRUE;
-    else
-      return FALSE;
+    return FALSE;
   }
 
   bool

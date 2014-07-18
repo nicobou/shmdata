@@ -24,6 +24,7 @@
 #include <condition_variable>
 #include <pjsua-lib/pjsua.h>
 #include <glib.h> //gboolean
+#include <glib-object.h>//GEnumValue
 
 namespace switcher
 {
@@ -40,20 +41,42 @@ namespace switcher
     PJPresence (const PJPresence &) = delete;
     PJPresence &operator= (const PJPresence &) = delete;
 
+    enum {
+      AVAILABLE, BUSY, OTP, IDLE, AWAY, BRB, OFFLINE, OPT_MAX
+    };
+    
   private:
     PJSIP *sip_instance_;
     pjsua_acc_id account_id_;
     std::mutex registration_mutex_;
     std::condition_variable registration_cond_;
+
+    //online status
+    GParamSpec *status_enum_spec_;
+    static GEnumValue status_enum_[8];
+    gint status_;
+    GParamSpec *custom_status_spec_;
+    std::string custom_status_;
+
+    //registration
+    static  void on_registration_state (pjsua_acc_id acc_id, pjsua_reg_info *info);
     void register_account (const std::string &sip_user, 
 			   const std::string &sip_domain, 
 			   const std::string &sip_password);
     static gboolean register_account_wrapped (gchar *user, gchar *domain, gchar *password, void *user_data);
+    bool unregister_account ();
+    static gboolean unregister_account_wrapped (gpointer /*unused*/, void *user_data);
+    
+    //buddies
     void add_buddy (const std::string &sip_user);
-    static  void on_registration_state (pjsua_acc_id acc_id, pjsua_reg_info *info);
-    //buddy
     static void on_buddy_state(pjsua_buddy_id buddy_id);
 
+    //online status
+    static void set_status (const gint value, void *user_data);
+    static gint get_status (void *user_data);
+    static void set_note (const gchar *cutom_status, void *user_data);
+    static const gchar *get_note (void *user_data);
+    void change_online_status (gint status);
   };
   
 }  // end of namespace
