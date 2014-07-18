@@ -17,25 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_CALL_H__
-#define __SWITCHER_CALL_H__
+#ifndef __SWITCHER_PJ_CALL_H__
+#define __SWITCHER_PJ_CALL_H__
 
-#include <memory>
-#include <thread>
-#include <mutex>
-#include <vector>
-#include <condition_variable>
+#include <pjsua-lib/pjsua.h>
+
 #include "switcher/shmdata-any-writer.h"
 #include "switcher/rtp-session.h"
-
-//pjsip
-#include <pjsip.h>
-#include <pjmedia.h>
-#include <pjmedia-codec.h>
-#include <pjsip_ua.h>
-#include <pjsip_simple.h>
-#include <pjlib-util.h>
-#include <pjlib.h>
 
 #include "pj-codec.h"
 
@@ -48,7 +36,6 @@ namespace switcher
   class PJCall
   {
     friend PJCodec;
-    friend PJSIP;
 
   public:
     PJCall () = delete;
@@ -210,6 +197,8 @@ typedef struct app
     std::string create_outgoing_sdp (struct call *call,
 				     std::string dst_uri);
     Quiddity::ptr retrieve_rtp_manager ();
+    static gboolean call_sip_url (gchar *sip_url, void *user_data);
+
   };
   
 }  // end of namespace

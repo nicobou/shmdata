@@ -20,9 +20,6 @@
 #ifndef __SWITCHER_PJSIP_H__
 #define __SWITCHER_PJSIP_H__
 
-#include "switcher/quiddity.h"
-#include "switcher/custom-property-helper.h"
-#include "pj-call.h"
 
 #include <memory>
 #include <thread>
@@ -32,12 +29,17 @@
 //pjsip
 #include <pjsua-lib/pjsua.h>
 
+#include "switcher/quiddity.h"
+#include "switcher/custom-property-helper.h"
+#include "pj-call.h"
+#include "pj-presence.h"
+
 namespace switcher
 {
-  
   class PJSIP : public Quiddity
   {
     friend PJCall;
+    friend PJPresence;
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PJSIP);
     PJSIP ();
@@ -53,7 +55,7 @@ namespace switcher
     GParamSpec *sip_port_spec_;
     pj_thread_desc thread_handler_desc_; 
     pj_thread_t	*pj_thread_ref_; 
-    pjsua_transport_id *transport_id_;//pjsip_transport *udp_transport_;
+    pjsua_transport_id *transport_id_;
     std::thread sip_thread_;
     std::mutex pj_init_mutex_;
     std::condition_variable pj_init_cond_;
@@ -62,19 +64,17 @@ namespace switcher
     std::condition_variable work_cond_;
     std::mutex done_mutex_;
     std::condition_variable done_cond_;
-    std::mutex registration_mutex_;
-    std::condition_variable registration_cond_;
     bool continue_;
     std::function<void()> command_;
     pj_caching_pool cp_;
     pj_pool_t *pool_;
     static pjsip_endpoint *sip_endpt_;
     PJCall *sip_calls_;
+    PJPresence *sip_presence_;
     std::thread sip_worker_;
     bool sip_work_;
     pj_thread_desc worker_handler_desc_; 
     pj_thread_t	*worker_thread_ref_; 
-    pjsua_acc_id account_id_;
     void sip_init_shutdown_thread ();
     void sip_handling_thread ();
     bool pj_sip_init ();
@@ -82,19 +82,8 @@ namespace switcher
     void run_command_sync (std::function<void()> command);
     static void set_port (const gint value, void *user_data);
     static gint get_port (void *user_data);
-
-    void register_account (const std::string &sip_user, 
-			   const std::string &sip_domain, 
-			   const std::string &sip_password);
-    static gboolean register_account_wrapped (gchar *user, gchar *domain, gchar *password, void *user_data);
-    void add_buddy (const std::string &sip_user);
     void sip_worker_thread ();
-    static gboolean call_sip_url (gchar *sip_url, void *user_data);
     void start_udp_transport ();
-
-    static  void on_registration_state (pjsua_acc_id acc_id, pjsua_reg_info *info);
-    //buddy
-    static void on_buddy_state(pjsua_buddy_id buddy_id);
   };
 
 }  // end of namespace

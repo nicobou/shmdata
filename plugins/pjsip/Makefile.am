@@ -8,12 +8,14 @@ libpjsip_plugin_la_SOURCES = \
     pj-call.cpp \
     pj-codec.cpp \
     pj-codec-utils.cpp \
+    pj-presence.cpp \
     pj-sip.cpp 
 
 libpjsip_plugin_la_include_HEADERS = \
     pj-call.h \
     pj-codec.h \
     pj-codec-utils.h \
+    pj-presence.h \
     pj-sip.h 
 
 libpjsip_plugin_la_includedir = \

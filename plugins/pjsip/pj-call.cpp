@@ -59,8 +59,6 @@ namespace switcher
 
     init_app ();
 
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
-
     /*  Init invite session module. */
     {
       pjsip_inv_callback inv_cb;
@@ -70,8 +68,6 @@ namespace switcher
       inv_cb.on_state_changed = &call_on_state_changed;
       inv_cb.on_new_session = &call_on_forked;
       inv_cb.on_media_update = &call_on_media_update;
-      
-      g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
       
       //unregister/shutdown default invite module
       status = pjsip_endpt_unregister_module (sip_instance_->sip_endpt_,
@@ -85,14 +81,10 @@ namespace switcher
     	g_warning ("Init invite session module failed");
     }
 
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
-    
     /* Register our module to receive incoming requests. */
     status = pjsip_endpt_register_module(sip_instance_->sip_endpt_, &mod_siprtp_);
     if (status != PJ_SUCCESS) 
       g_warning ("Register mod_siprtp_ failed");
-
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
 
     // /* Init media */
     status = pjmedia_endpt_create(&sip_instance_->cp_.factory, NULL, 1, &med_endpt_);
@@ -111,7 +103,6 @@ namespace switcher
 	app.call[i].media_count = 0;
 	app.call[i].instance = this;
       }
-    g_print ("pj_call initialized\n");
 
     /* Init media transport for all calls. */
     for (unsigned i=0, count=0; i<app.max_calls; ++i, ++count) 
@@ -128,6 +119,21 @@ namespace switcher
 	}
       }
   
+
+    //properties and methods for user
+    sip_instance_->install_method ("Call a contact", //long name
+				   "call", //name
+				   "invite a contact for a call", //description
+				   "the call has been initiated or not", //return description
+				   Method::make_arg_description ("SIP url", //first arg long name
+								 "url", //fisrt arg name
+								 "string", //first arg description
+								 NULL),
+				   (Method::method_ptr) &call_sip_url, 
+				   G_TYPE_BOOLEAN,
+				   Method::make_arg_type_description (G_TYPE_STRING, NULL),
+				   this);
+
     rtp_session_name_spec_ =
       sip_instance_->custom_props_->make_string_property ("rtp-session", 
 							 "Quiddity name managing RTP destinations",
@@ -243,14 +249,14 @@ namespace switcher
 	
       pj_time_val null_time = {0, 0};
 
-      g_print ("Call #%d disconnected. Reason=%d (%.*s)",
+      g_debug ("Call #%d disconnected. Reason=%d (%.*s)",
 	       call->index,
 	       inv->cause,
 	       (int)inv->cause_text.slen,
 	       inv->cause_text.ptr);
-    
+      
       if (app.call_report) {
-	g_print ("Call #%d statistics:", call->index);
+	g_debug ("Call #%d statistics:", call->index);
 	//print_call(call->index);
       }
 	
@@ -285,7 +291,7 @@ namespace switcher
       t = call->connect_time;
       PJ_TIME_VAL_SUB(t, call->start_time);
 
-      g_print ("Call #%d connected in %ld ms", call->index,
+      g_debug ("Call #%d connected in %ld ms", call->index,
 	       PJ_TIME_VAL_MSEC(t));
 
       // if (app.duration != 0) {
@@ -313,7 +319,6 @@ namespace switcher
   void 
   PJCall::call_on_forked(pjsip_inv_session *inv, pjsip_event *e)
   {
-    g_print ("--> %s\n", __FUNCTION__);
   }
   
   /* Callback to be called when SDP negotiation is done in the call: */
@@ -321,7 +326,6 @@ namespace switcher
   PJCall::call_on_media_update( pjsip_inv_session *inv,
 				pj_status_t status)
   {
-    g_print ("--> %s\n", __FUNCTION__);
     struct call *call;
     const pjmedia_sdp_session *local_sdp, *remote_sdp;
     call = (struct call *)inv->mod_data[mod_siprtp_.id];
@@ -336,10 +340,10 @@ namespace switcher
     pjmedia_sdp_neg_get_active_local(inv->neg, &local_sdp);
     pjmedia_sdp_neg_get_active_remote(inv->neg, &remote_sdp);
 
-    g_print ("negotiated LOCAL\n"); print_sdp (local_sdp);
-    g_print ("negotiated REMOTE\n"); print_sdp (remote_sdp);
+    // g_print ("negotiated LOCAL\n"); print_sdp (local_sdp);
+    // g_print ("negotiated REMOTE\n"); print_sdp (remote_sdp);
     
-    g_print ("MEDIA COUNT %u\n", call->media_count);
+    // g_print ("MEDIA COUNT %u\n", call->media_count);
 
     for (uint i=0; i < call->media_count; i++)
       {
@@ -353,7 +357,7 @@ namespace switcher
 				       i);
 	
 	if (status != PJ_SUCCESS) {
-	  g_print ("Error geting stream info from sdp");
+	  g_debug ("Error geting stream info from sdp");
 	  return;
 	}
 	
@@ -416,7 +420,7 @@ namespace switcher
 					      &on_rx_rtp,
 					      &on_rx_rtcp);
 	    if (status != PJ_SUCCESS) {
-	      g_print ("Error on pjmedia_transport_attach()");
+	      g_debug ("Error on pjmedia_transport_attach()");
 	      return;
 	    }
 	  }//end receiving 
@@ -428,9 +432,6 @@ namespace switcher
 	    || PJMEDIA_DIR_CAPTURE_PLAYBACK == current_media->si.dir 
 	    || PJMEDIA_DIR_CAPTURE_RENDER == current_media->si.dir)
 	  {
-	    g_print ("NEED TO SEND !!!! %s on port %u\n",
-		     current_media->shm_path_to_send.c_str (),
-		     remote_sdp->media[i]->desc.port);
 	    QuiddityManager_Impl::ptr manager = call->instance->sip_instance_->manager_impl_.lock ();
 	    if ((bool) manager)
 	      {
@@ -473,18 +474,18 @@ namespace switcher
 			  rdata->msg_info.msg->line.req.uri, 
 			  uristr, 
 			  sizeof(uristr));
-    g_print ("---------- call req uri %.*s\n", len, uristr);
+    //g_print ("---------- call req uri %.*s\n", len, uristr);
     len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, 
 			  pjsip_uri_get_uri (rdata->msg_info.from->uri), 
 			  uristr, 
 			  sizeof(uristr));
-    g_print ("---------- call from %.*s\n", len, uristr);
+    //g_print ("---------- call from %.*s\n", len, uristr);
     std::string from_uri (uristr, len);
     len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, 
 			  rdata->msg_info.to->uri, 
 			  uristr, 
 			  sizeof(uristr));
-    g_print ("----------- call to %.*s\n", len, uristr);
+    //g_print ("----------- call to %.*s\n", len, uristr);
 
     unsigned i, options;
     struct call *call;
@@ -525,8 +526,8 @@ namespace switcher
 	g_warning ("Bad SDP in incoming INVITE");
     }
 
-    g_print ("*** offer ****\n");
-    print_sdp (offer);
+    // g_print ("*** offer ****\n");
+    // print_sdp (offer);
     options = 0;
     status = pjsip_inv_verify_request (rdata, &options, NULL, NULL, PJSIP::sip_endpt_, &tdata);
 
@@ -571,7 +572,7 @@ namespace switcher
     pj_uint16_t rtp_port = (pj_uint16_t)(app.rtp_start_port & 0xFFFE);//FIXME start from last attributed
     {
       unsigned int j = 0;//counting media to receive
-      g_print ("media_count %d\n", offer->media_count);
+      //g_print ("media_count %d\n", offer->media_count);
       for (unsigned int media_index=0; media_index< offer->media_count; media_index++)
 	{
 	  //g_print ("+++++++++++++++++ attribut count %d\n", offer->media[i]->attr_count);
@@ -630,32 +631,19 @@ namespace switcher
     /* Create SDP */
     create_sdp (dlg->pool, call, media_to_receive, &sdp);
 
-    g_print ("sdp created from remote\n");
-    print_sdp (sdp);
+    // g_print ("sdp created from remote\n");
+    // print_sdp (sdp);
     
-    // pjmedia_transport_info tpinfo;
-    // pjmedia_transport_info_init(&tpinfo);
-    // pjmedia_transport_get_info(audio->transport, &tpinfo);
-    // tpinfo.sock_info
-
-    // pjmedia_endpt_create_sdp (med_endpt_,
-    // 				 dlg->pool,
-    // 				 3,
-    // 				 const pjmedia_sock_info  	sock_info[],
-    // 				 &sdp) 	
-
     /* Create UAS invite session */
     //sdp=NULL;
     status = pjsip_inv_create_uas (dlg, rdata, sdp, 0, &call->inv);
     if (status != PJ_SUCCESS) 
       {
-	g_print ("********************************** error creating uas");
+	g_debug ("error creating uas");
 	pjsip_dlg_create_response (dlg, rdata, 500, NULL, &tdata);
 	pjsip_dlg_send_response (dlg, pjsip_rdata_get_tsx(rdata), tdata);
 	return;
       }
-    else
-      g_print ("********************************** success creating uas");
 	  
     // const pjmedia_sdp_session *offer = NULL;
     // pjmedia_sdp_neg_get_neg_remote(call->inv->neg, &offer);
@@ -680,8 +668,8 @@ namespace switcher
       return;
     }
 
-    g_print ("local sdp before sending :");
-    print_sdp (sdp);
+    // g_print ("local sdp before sending :");
+    // print_sdp (sdp);
 
     /* Send the 200 response. */  
     status = pjsip_inv_send_msg(call->inv, tdata); 
@@ -734,9 +722,6 @@ namespace switcher
 
     for (unsigned i = 0; i < call->media_count; i++)
       {
-	// g_print ("make media (%s)\n",
-	// 	 call->media[i].type.c_str ());
-	
 	//getting offer media to receive
 	pjmedia_sdp_media *sdp_media = media_to_receive[i];
 
@@ -787,7 +772,6 @@ namespace switcher
     unsigned payload_len;
 
     strm = (struct media_stream *)user_data;
-    //g_print ("%s, media index %u\n", __FUNCTION__, strm->media_index);
 
     /* Discard packet if media is inactive */
     if (!strm->active)
@@ -795,7 +779,7 @@ namespace switcher
     
     /* Check for errors */
     if (size < 0) {
-      g_print ("RTP recv() error");
+      g_debug ("RTP recv() error");
       return;
     }
 
@@ -838,11 +822,7 @@ namespace switcher
 			       // + ", seqnum-base=" + std::to_string (strm->in_sess->seq_ctrl->base_seq)
 			       );
 	if (!strm->extra_params.empty ())
-	  {
-	    data_type.append (std::string (", " + strm->extra_params));
-	    g_print ("SHMDATA data_type %s\n",
-		     data_type.c_str ());
-	  }
+	  data_type.append (std::string (", " + strm->extra_params));
 	
 	strm->shm->set_data_type (data_type);
 	
@@ -856,7 +836,7 @@ namespace switcher
 				     buf);
     
     if (status != PJ_SUCCESS) {
-      g_print ("RTP decode error");
+      g_debug ("RTP decode error");
       return;
     }
 
@@ -1721,19 +1701,15 @@ namespace switcher
     // 		   paths.end (),
     // 		   [] (const std::string &val){g_print ("%s\n", val.c_str ());});
 
-    // g_print ("00000000000000000000000000000\n");
     // std::transform (paths.begin (),
     // 		    paths.end (),
     // 		    paths.begin (),
     // 		    [] (const std::string &val){return std::string ("rtp_caps."+ val);});
-    g_print ("00000000000000000000000000000\n");
     std::for_each (paths.begin (),
     		   paths.end (),
     		   [&quid] (const std::string &val){
     		     std::string data = quid->get_data ("rtp_caps." + val);
     		     g_print ("%s\n",  data.c_str ());});
-
-    // g_print ("00000000000000000000000000000\n");
 
     gint port = 12000;//proposing ports starting at  
     for(auto &it : paths)
@@ -1755,5 +1731,23 @@ namespace switcher
       }
     return desc.get_string ();
   }
+
+  gboolean
+  PJCall::call_sip_url (gchar *sip_url, void *user_data)
+  {
+    if (NULL == sip_url || NULL == user_data)
+      {
+	g_warning ("register sip account received NULL user or domain or password");
+	return FALSE;
+      }
+    PJCall *context = static_cast<PJCall *> (user_data);
+
+    context->sip_instance_->run_command_sync (std::bind (&PJCall::make_call, 
+							 context, 
+							 std::string (sip_url)));
+
+    return TRUE;
+  }
+
   
 }
