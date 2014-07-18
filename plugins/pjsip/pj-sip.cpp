@@ -78,6 +78,7 @@ namespace switcher
 	sip_work_ = false;
 	sip_worker_.join ();
       }
+
   }
 
   
@@ -289,26 +290,23 @@ namespace switcher
 	  }
 	  done_cond_.notify_one ();
       }
-
     /* Shutting down... */
     if (NULL != sip_calls_)
-      delete (sip_calls_);
+      {
+	delete (sip_calls_);
+	sip_calls_ = NULL;
+      }
 
     //destroy_media();
-    
-    if (NULL != sip_endpt_) 
-      {
-	pjsip_endpt_destroy(sip_endpt_);
-	sip_endpt_ = NULL;
-      }
     
     if (NULL != pool_) {
       pj_pool_release(pool_);
       pool_ = NULL;
       pj_caching_pool_destroy(&cp_);
     }
+    
+    pjsua_destroy();
     pj_shutdown ();
-    //g_print ("PJ shutdowned\n");
   }
   
   gboolean
