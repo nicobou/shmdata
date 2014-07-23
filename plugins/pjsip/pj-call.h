@@ -114,8 +114,8 @@ typedef struct app
     unsigned		 duration;
     pj_bool_t		 auto_quit;
     unsigned		 thread_count;
-    int			 sip_port;
-    int			 rtp_start_port;
+  //int			 sip_port;
+  //int			 rtp_start_port;
     pj_str_t		 local_addr;
     pj_str_t		 local_uri;
     pj_str_t		 local_contact;
@@ -160,6 +160,8 @@ typedef struct app
     RtpSession::ptr rtp_session_;
     std::string rtp_session_name_;
     GParamSpec *rtp_session_name_spec_;
+    uint starting_rtp_port_; 
+    GParamSpec *starting_rtp_port_spec_;
     //sip functions
     static pj_bool_t on_rx_request (pjsip_rx_data *rdata);
     static void call_on_state_changed (pjsip_inv_session *inv, 
@@ -198,7 +200,10 @@ typedef struct app
 				     std::string dst_uri);
     Quiddity::ptr retrieve_rtp_manager ();
     static gboolean call_sip_url (gchar *sip_url, void *user_data);
-
+    static void set_starting_rtp_port (const gint value, void *user_data);
+    static gint get_starting_rtp_port (void *user_data);
+    bool make_hang_up (std::string contact_uri);
+    static gboolean hang_up (gchar *sip_url, void *user_data);
   };
   
 }  // end of namespace

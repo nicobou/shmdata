@@ -87,7 +87,7 @@ main ()
 
     if (!manager->invoke_va ("test","register", NULL, 
 			     "1004", //user
-			     "10.10.30.252", //domain
+			     "10.10.30.223", //domain
 			     "1234", //password
 			     NULL))
       {
@@ -98,28 +98,46 @@ main ()
     manager->set_property ("test", "rtp-session", "rtp");
 
     manager->invoke_va ("test",
-			"call",
-			NULL,
-			"sip:coucou@localhost:5072",
-			NULL);
+			  "call",
+			  NULL,
+    			  "sip:1002@10.10.30.223",
+    			NULL);
 
 
     usleep (2000000);
-    
-    manager->set_property ("test","status", "Away");
+g_print ("--------------------------------------------- %d\n", __LINE__);    
+
+
+manager->set_property ("test","status", "Away");
+
+g_print ("--------------------------------------------- %d\n", __LINE__);    
+
+usleep (2000000);
+
+g_print ("--------------------------------------------- %d\n", __LINE__);    
+
+
+manager->set_property ("test","status-note", "coucou");
+
+g_print ("--------------------------------------------- %d\n", __LINE__);    
+    usleep (2000000);
+
+g_print ("--------------------------------------------- %d\n", __LINE__);    
+
+manager->set_property ("test","status", "BRB");
+g_print ("--------------------------------------------- %d\n", __LINE__);    
 
     usleep (2000000);
-    
-    manager->set_property ("test","status_note", "coucou");
+manager->invoke_va ("test",
+		      "hang-up",
+		      NULL,
+		      "sip:1002@10.10.30.223",
+		      NULL);
 
     usleep (2000000);
 
-    manager->set_property ("test","status", "BRB");
 
-    usleep (2000000);
-
-    //usleep (2000000);
-    //usleep (300000000);
+//usleep (300000000);
 
     manager->remove ("test");
      

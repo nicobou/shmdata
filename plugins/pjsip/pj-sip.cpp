@@ -166,9 +166,9 @@ namespace switcher
 	// cfg.cb.on_call_tsx_state = &on_call_tsx_state;
 	// cfg.cb.on_dtmf_digit = &call_on_dtmf_callback;
 	// cfg.cb.on_call_redirected = &call_on_redirected;
-	// cfg.cb.on_reg_state = &on_reg_state;
-	// cfg.cb.on_incoming_subscribe = &on_incoming_subscribe;
-	// cfg.cb.on_buddy_evsub_state = &on_buddy_evsub_state;
+	cfg.cb.on_reg_state = &PJPresence::on_reg_state;
+	cfg.cb.on_incoming_subscribe = &PJPresence::on_incoming_subscribe;
+	cfg.cb.on_buddy_evsub_state = &PJPresence::on_buddy_evsub_state;
 	// cfg.cb.on_pager = &on_pager;
 	// cfg.cb.on_typing = &on_typing;
 	// cfg.cb.on_call_transfer_status = &on_call_transfer_status;

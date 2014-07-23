@@ -77,8 +77,21 @@ namespace switcher
     static void set_note (const gchar *cutom_status, void *user_data);
     static const gchar *get_note (void *user_data);
     void change_online_status (gint status);
+
+    static void on_reg_state(pjsua_acc_id acc_id);
+    static void on_incoming_subscribe(pjsua_acc_id acc_id,
+				      pjsua_srv_pres *srv_pres,
+				      pjsua_buddy_id buddy_id,
+				      const pj_str_t *from,
+				      pjsip_rx_data *rdata,
+				      pjsip_status_code *code,
+				      pj_str_t *reason,
+				      pjsua_msg_data *msg_data);
+
+    static void on_buddy_evsub_state(pjsua_buddy_id buddy_id,
+				     pjsip_evsub *sub,
+				     pjsip_event *event);
   };
-  
 }  // end of namespace
 
 #endif // ifndef

@@ -96,18 +96,18 @@ namespace switcher
 					      "status",
 					      "Online Status");
     custom_status_spec_ = 
-      sip_instance_->custom_props_->make_string_property ("status_note", 
+      sip_instance_->custom_props_->make_string_property ("status-note", 
 							  "Custom status note",
 							  "",
 							  (GParamFlags) G_PARAM_READWRITE,
 							  PJPresence::set_note,
 							  PJPresence::get_note,
-							 this);
+							  this);
     
     sip_instance_->install_property_by_pspec (sip_instance_->custom_props_->get_gobject (), 
 					      custom_status_spec_, 
-					     "status-note",
-					     "Custom status note");
+					      "status-note",
+					      "Custom status note");
     
 
   }
@@ -183,26 +183,26 @@ namespace switcher
     pjsua_acc_set_user_data (account_id_, this);
     registration_cond_.wait (lock);
 
-    add_buddy ("sip:1000@10.10.30.252");
-    add_buddy ("sip:1001@10.10.30.252");
-    add_buddy ("sip:1002@10.10.30.252");
-    add_buddy ("sip:1003@10.10.30.252");
-    add_buddy ("sip:1004@10.10.30.252");
-    add_buddy ("sip:1005@10.10.30.252");
-    add_buddy ("sip:1006@10.10.30.252");
-    add_buddy ("sip:1007@10.10.30.252");
-    add_buddy ("sip:1008@10.10.30.252");
-    add_buddy ("sip:1009@10.10.30.252");
-    add_buddy ("sip:1010@10.10.30.252");
-    add_buddy ("sip:1011@10.10.30.252");
-    add_buddy ("sip:1012@10.10.30.252");
-    add_buddy ("sip:1013@10.10.30.252");
-    add_buddy ("sip:1014@10.10.30.252");
-    add_buddy ("sip:1015@10.10.30.252");
-    add_buddy ("sip:1016@10.10.30.252");
-    add_buddy ("sip:1017@10.10.30.252");
-    add_buddy ("sip:1018@10.10.30.252");
-    add_buddy ("sip:1019@10.10.30.252");
+    add_buddy ("sip:1000@10.10.30.223");
+    add_buddy ("sip:1001@10.10.30.223");
+    add_buddy ("sip:1002@10.10.30.223");
+    add_buddy ("sip:1003@10.10.30.223");
+    add_buddy ("sip:1004@10.10.30.223");
+    add_buddy ("sip:1005@10.10.30.223");
+    add_buddy ("sip:1006@10.10.30.223");
+    add_buddy ("sip:1007@10.10.30.223");
+    add_buddy ("sip:1008@10.10.30.223");
+    add_buddy ("sip:1009@10.10.30.223");
+    add_buddy ("sip:1010@10.10.30.223");
+    add_buddy ("sip:1011@10.10.30.223");
+    add_buddy ("sip:1012@10.10.30.223");
+    add_buddy ("sip:1013@10.10.30.223");
+    add_buddy ("sip:1014@10.10.30.223");
+    add_buddy ("sip:1015@10.10.30.223");
+    add_buddy ("sip:1016@10.10.30.223");
+    add_buddy ("sip:1017@10.10.30.223");
+    add_buddy ("sip:1018@10.10.30.223");
+    add_buddy ("sip:1019@10.10.30.223");
   }
 
 
@@ -317,31 +317,31 @@ namespace switcher
 
     std::string status ("unknown");
 
-     switch (info.status) {
-     case PJSUA_BUDDY_STATUS_UNKNOWN :
-       break;
-     case PJSUA_BUDDY_STATUS_ONLINE :
-       status = "online";
-       break;
-     case PJSUA_BUDDY_STATUS_OFFLINE :
-       status = "offline";
-       break;
-     default:
-       break;
-     }
-     if (PJRPID_ACTIVITY_AWAY == info.rpid.activity)
-       status = "away";
-     if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
-       status = "busy";
+    switch (info.status) {
+    case PJSUA_BUDDY_STATUS_UNKNOWN :
+      break;
+    case PJSUA_BUDDY_STATUS_ONLINE :
+      status = "online";
+      break;
+    case PJSUA_BUDDY_STATUS_OFFLINE :
+      status = "offline";
+      break;
+    default:
+      break;
+    }
+    if (PJRPID_ACTIVITY_AWAY == info.rpid.activity)
+      status = "away";
+    if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
+      status = "busy";
 
-     tree->graft (".status", data::make_tree (status));
+    tree->graft (".status", data::make_tree (status));
 
-     tree->graft (".status_text", 
-		  data::make_tree (std::string (info.status_text.ptr, 
-						(size_t)info.status_text.slen)));
-     tree->graft (".subscription_state", 
-		  data::make_tree (std::string (info.sub_state_name)));
-     context->sip_instance_->graft_tree (std::string (".presence." + buddy_url), tree);
+    tree->graft (".status_text", 
+		 data::make_tree (std::string (info.status_text.ptr, 
+					       (size_t)info.status_text.slen)));
+    tree->graft (".subscription_state", 
+		 data::make_tree (std::string (info.sub_state_name)));
+    context->sip_instance_->graft_tree (std::string (".presence." + buddy_url), tree);
   }
 
   void 
@@ -397,30 +397,32 @@ namespace switcher
     
     switch (status) {
     case AVAILABLE:
-	break;
+      break;
     case BUSY:
-	elem.activity = PJRPID_ACTIVITY_BUSY;
-	if (!has_custom_status) elem.note = pj_str("Busy");
-	break;
+      elem.activity = PJRPID_ACTIVITY_BUSY;
+      if (!has_custom_status) elem.note = pj_str("Busy");
+      break;
     case OTP:
-	elem.activity = PJRPID_ACTIVITY_BUSY;
-	if (!has_custom_status) elem.note = pj_str("On the phone");
-	break;
+      elem.activity = PJRPID_ACTIVITY_BUSY;
+      if (!has_custom_status) elem.note = pj_str("On the phone");
+      break;
     case IDLE:
-	elem.activity = PJRPID_ACTIVITY_UNKNOWN;
-	if (!has_custom_status) elem.note = pj_str("Idle");
-	break;
+      //elem.activity = PJRPID_ACTIVITY_UNKNOWN;
+      elem.activity = PJRPID_ACTIVITY_AWAY;
+      if (!has_custom_status) elem.note = pj_str("Idle");
+      break;
     case AWAY:
-	elem.activity = PJRPID_ACTIVITY_AWAY;
-	if (!has_custom_status) elem.note = pj_str("Away");
-	break;
+      elem.activity = PJRPID_ACTIVITY_AWAY;
+      if (!has_custom_status) elem.note = pj_str("Away");
+      break;
     case BRB:
-	elem.activity = PJRPID_ACTIVITY_UNKNOWN;
-	if (!has_custom_status) elem.note = pj_str("Be right back");
-	break;
+      //elem.activity = PJRPID_ACTIVITY_UNKNOWN;
+      elem.activity = PJRPID_ACTIVITY_AWAY;
+      if (!has_custom_status) elem.note = pj_str("Be right back");
+      break;
     case OFFLINE:
-	online_status = PJ_FALSE;
-	break;
+      online_status = PJ_FALSE;
+      break;
     }
 
     pjsua_acc_set_online_status2(account_id_, online_status, &elem);
@@ -430,14 +432,19 @@ namespace switcher
   PJPresence::set_note (const gchar *custom_status, void *user_data)
   {
     PJPresence *context = static_cast <PJPresence *> (user_data);
+    g_print ("|||||||||||||||||||||||| %d\n", __LINE__);
     if (0 == context->custom_status_.compare (custom_status))
-	return;
+      return;
+    g_print ("|||||||||||||||||||||||| %d\n", __LINE__);
     context->custom_status_ = custom_status;
+    g_print ("|||||||||||||||||||||||| %d\n", __LINE__);
     context->sip_instance_->run_command_sync (std::bind (&PJPresence::change_online_status, 
 							 context,
 							 context->status_));
 
+    g_print ("|||||||||||||||||||||||| %d\n", __LINE__);
     context->sip_instance_->custom_props_->notify_property_changed (context->custom_status_spec_);
+    g_print ("|||||||||||||||||||||||| %d\n", __LINE__);
   }
 
   const gchar *
@@ -447,4 +454,71 @@ namespace switcher
     return context->custom_status_.c_str ();
   }
 
+  /*
+   * Handler registration status has changed.
+   */
+  void 
+  PJPresence::on_reg_state(pjsua_acc_id acc_id)
+  {
+    PJ_UNUSED_ARG(acc_id);
+    printf ("%s\n", __FUNCTION__);
+    // Log already written.
+  }
+  
+  /*
+   * Handler for incoming presence subscription request
+   */
+  void 
+  PJPresence::on_incoming_subscribe(pjsua_acc_id acc_id,
+				    pjsua_srv_pres *srv_pres,
+				    pjsua_buddy_id buddy_id,
+				    const pj_str_t *from,
+				    pjsip_rx_data *rdata,
+				    pjsip_status_code *code,
+				    pj_str_t *reason,
+				    pjsua_msg_data *msg_data)
+  {
+    printf ("%s\n", __FUNCTION__);
+    /* Just accept the request (the default behavior) */
+    PJ_UNUSED_ARG(acc_id);
+    PJ_UNUSED_ARG(srv_pres);
+    PJ_UNUSED_ARG(buddy_id);
+    PJ_UNUSED_ARG(from);
+    PJ_UNUSED_ARG(rdata);
+    PJ_UNUSED_ARG(code);
+    PJ_UNUSED_ARG(reason);
+    PJ_UNUSED_ARG(msg_data);
+  }
+  
+  /*
+   * Subscription state has changed.
+   */
+  void 
+  PJPresence::on_buddy_evsub_state(pjsua_buddy_id buddy_id,
+				   pjsip_evsub *sub,
+				   pjsip_event *event)
+  {
+    printf ("%s\n", __FUNCTION__);
+    char event_info[80];
+    
+    PJ_UNUSED_ARG(sub);
+    
+    event_info[0] = '\0';
+    
+    if (event->type == PJSIP_EVENT_TSX_STATE &&
+	event->body.tsx_state.type == PJSIP_EVENT_RX_MSG)
+      {
+	pjsip_rx_data *rdata = event->body.tsx_state.src.rdata;
+	snprintf(event_info, sizeof(event_info),
+		 " (RX %s)",
+		 pjsip_rx_data_get_info(rdata));
+      }
+    
+    printf ("Buddy %d: subscription state: %s (event: %s%s)",
+	    buddy_id, pjsip_evsub_get_state_name(sub),
+	    pjsip_event_str(event->type),
+	    event_info);
+    
+  }
+ 
 }
