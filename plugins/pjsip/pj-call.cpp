@@ -49,11 +49,7 @@ namespace switcher
 
 
   PJCall::PJCall (PJSIP *sip_instance) :
-    sip_instance_ (sip_instance),
-    rtp_session_ (),
-    rtp_session_name_ (),
-    rtp_session_name_spec_ (NULL),
-    starting_rtp_port_ (18000)
+    sip_instance_ (sip_instance)
   {
     pj_status_t status;
     init_app ();
@@ -210,12 +206,10 @@ namespace switcher
     /* Ignore strandled ACKs (must not send respone) */
     if (rdata->msg_info.msg->line.req.method.id == PJSIP_ACK_METHOD)
       return PJ_FALSE;
-    printf ("%s %d\n", __FUNCTION__, __LINE__);
     
     /* Respond (statelessly) any non-INVITE requests with 500  */
     if (rdata->msg_info.msg->line.req.method.id != PJSIP_INVITE_METHOD) 
       {
-	printf ("%s %d\n", __FUNCTION__, __LINE__);
 	return PJ_SUCCESS;
 	//FIXME 
 	pj_str_t reason = pj_str("Unsupported Operation");
@@ -223,19 +217,14 @@ namespace switcher
 				       rdata, 
 				       500, &reason,
 				       NULL, NULL);
-	printf ("%s %d\n", __FUNCTION__, __LINE__);
 	return PJ_TRUE;
       }
     
-    printf ("%s %d\n", __FUNCTION__, __LINE__);
-
     /* Handle incoming INVITE */
     process_incoming_call (rdata);
-    printf ("%s %d\n", __FUNCTION__, __LINE__);
 
     /* Done */
     return PJ_TRUE;
-
   }
 
   void
@@ -258,19 +247,7 @@ namespace switcher
 
     /* Init defaults */
     app.max_calls = 256;
-    app.thread_count = 1;
-    //app.rtp_start_port = starting_rtp_port_;
     app.local_addr = pj_str(ip_addr);
-    app.log_level = 5;
-    app.app_log_level = 3;
-    app.log_filename = NULL;
-
-    /* Build local URI and contact */
-    // char *local_uri = NULL;
-    // pj_ansi_sprintf( local_uri, "sip:%s:%d", app.local_addr.ptr, sip_instance_->sip_port_);
-    // app.local_uri = pj_str(local_uri);
-    //app.local_uri = pj_str(g_strdup ("sip:1004@10.10.30.252"));
-    //app.local_contact = app.local_uri;
   }
   
   /* Callback to be called when invite session's state has changed: */
@@ -287,7 +264,7 @@ namespace switcher
 
     if (inv->state == PJSIP_INV_STATE_DISCONNECTED) {
  
-      pj_time_val null_time = {0, 0};
+      //pj_time_val null_time = {0, 0};
 
       g_debug ("Call #%d disconnected. Reason=%d (%.*s)",
 	       call->index,
@@ -295,12 +272,6 @@ namespace switcher
 	       (int)inv->cause_text.slen,
 	       inv->cause_text.ptr);
       
-      if (app.call_report) {
-	g_debug ("Call #%d statistics:", call->index);
-	//print_call(call->index);
-      }
- 
- 
       call->inv = NULL;
       inv->mod_data[mod_siprtp_.id] = NULL;
 
@@ -314,9 +285,9 @@ namespace switcher
 
       // FIXME destroy_call_media(call->index);
 
-      call->start_time = null_time;
-      call->response_time = null_time;
-      call->connect_time = null_time;
+      // call->start_time = null_time;
+      // call->response_time = null_time;
+      // call->connect_time = null_time;
 
       ++app.uac_calls;
 
@@ -512,18 +483,18 @@ namespace switcher
 			  rdata->msg_info.msg->line.req.uri, 
 			  uristr, 
 			  sizeof(uristr));
-    g_print ("---------- call req uri %.*s\n", len, uristr);
+    //g_print ("---------- call req uri %.*s\n", len, uristr);
     len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, 
 			  pjsip_uri_get_uri (rdata->msg_info.from->uri), 
 			  uristr, 
 			  sizeof(uristr));
-    g_print ("---------- call from %.*s\n", len, uristr);
+    //g_print ("---------- call from %.*s\n", len, uristr);
     std::string from_uri (uristr, len);
     len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, 
 			  rdata->msg_info.to->uri, 
 			  uristr, 
 			  sizeof(uristr));
-    g_print ("----------- call to %.*s\n", len, uristr);
+    //g_print ("----------- call to %.*s\n", len, uristr);
 
     unsigned i, options;
     struct call *call;
@@ -1474,7 +1445,7 @@ namespace switcher
   PJCall::remove_from_sdp_media (pjmedia_sdp_media *sdp_media,
 				 unsigned fmt_pos)
   {
-    g_print ("sdp_media->desc.fmt_count %u\n", sdp_media->desc.fmt_count);
+    //g_print ("sdp_media->desc.fmt_count %u\n", sdp_media->desc.fmt_count);
     //remove the rtpmap
     pjmedia_sdp_attr *attr;
     attr = pjmedia_sdp_media_find_attr2(sdp_media, "rtpmap",

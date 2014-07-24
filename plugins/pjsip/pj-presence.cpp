@@ -205,26 +205,26 @@ namespace switcher
       // 	       sip_instance_->sip_port_);
     }
 
-    // add_buddy ("sip:1000@10.10.30.223");
-    // add_buddy ("sip:1001@10.10.30.223");
-    // add_buddy ("sip:1002@10.10.30.223");
-    // add_buddy ("sip:1003@10.10.30.223");
-    // add_buddy ("sip:1004@10.10.30.223");
-    // add_buddy ("sip:1005@10.10.30.223");
-    // add_buddy ("sip:1006@10.10.30.223");
-    // add_buddy ("sip:1007@10.10.30.223");
-    // add_buddy ("sip:1008@10.10.30.223");
-    // add_buddy ("sip:1009@10.10.30.223");
-    // add_buddy ("sip:1010@10.10.30.223");
-    // add_buddy ("sip:1011@10.10.30.223");
-    // add_buddy ("sip:1012@10.10.30.223");
-    // add_buddy ("sip:1013@10.10.30.223");
-    // add_buddy ("sip:1014@10.10.30.223");
-    // add_buddy ("sip:1015@10.10.30.223");
-    // add_buddy ("sip:1016@10.10.30.223");
-    // add_buddy ("sip:1017@10.10.30.223");
-    // add_buddy ("sip:1018@10.10.30.223");
-    // add_buddy ("sip:1019@10.10.30.223");
+    add_buddy ("sip:1000@10.10.30.223");
+    add_buddy ("sip:1001@10.10.30.223");
+    add_buddy ("sip:1002@10.10.30.223");
+    add_buddy ("sip:1003@10.10.30.223");
+    add_buddy ("sip:1004@10.10.30.223");
+    add_buddy ("sip:1005@10.10.30.223");
+    add_buddy ("sip:1006@10.10.30.223");
+    add_buddy ("sip:1007@10.10.30.223");
+    add_buddy ("sip:1008@10.10.30.223");
+    add_buddy ("sip:1009@10.10.30.223");
+    add_buddy ("sip:1010@10.10.30.223");
+    add_buddy ("sip:1011@10.10.30.223");
+    add_buddy ("sip:1012@10.10.30.223");
+    add_buddy ("sip:1013@10.10.30.223");
+    add_buddy ("sip:1014@10.10.30.223");
+    add_buddy ("sip:1015@10.10.30.223");
+    add_buddy ("sip:1016@10.10.30.223");
+    add_buddy ("sip:1017@10.10.30.223");
+    add_buddy ("sip:1018@10.10.30.223");
+    add_buddy ("sip:1019@10.10.30.223");
   }
 
 
@@ -424,25 +424,25 @@ namespace switcher
       break;
     case BUSY:
       elem.activity = PJRPID_ACTIVITY_BUSY;
-      if (!has_custom_status) elem.note = pj_str("Busy");
+      if (!has_custom_status) pj_cstr(&elem.note, "Busy");
       break;
     case OTP:
       elem.activity = PJRPID_ACTIVITY_BUSY;
-      if (!has_custom_status) elem.note = pj_str("On the phone");
+      if (!has_custom_status) pj_cstr(&elem.note, "On the phone");
       break;
     case IDLE:
       //elem.activity = PJRPID_ACTIVITY_UNKNOWN;
       elem.activity = PJRPID_ACTIVITY_AWAY;
-      if (!has_custom_status) elem.note = pj_str("Idle");
+      if (!has_custom_status) pj_cstr(&elem.note, "Idle");
       break;
     case AWAY:
       elem.activity = PJRPID_ACTIVITY_AWAY;
-      if (!has_custom_status) elem.note = pj_str("Away");
+      if (!has_custom_status) pj_cstr(&elem.note, "Away");
       break;
     case BRB:
       //elem.activity = PJRPID_ACTIVITY_UNKNOWN;
       elem.activity = PJRPID_ACTIVITY_AWAY;
-      if (!has_custom_status) elem.note = pj_str("Be right back");
+      if (!has_custom_status) pj_cstr(&elem.note, "Be right back");
       break;
     case OFFLINE:
       online_status = PJ_FALSE;
@@ -456,19 +456,14 @@ namespace switcher
   PJPresence::set_note (const gchar *custom_status, void *user_data)
   {
     PJPresence *context = static_cast <PJPresence *> (user_data);
-    g_print ("|||||||||||||||||||||||| %d\n", __LINE__);
     if (0 == context->custom_status_.compare (custom_status))
       return;
-    g_print ("|||||||||||||||||||||||| %d\n", __LINE__);
     context->custom_status_ = custom_status;
-    g_print ("|||||||||||||||||||||||| %d\n", __LINE__);
     context->sip_instance_->run_command_sync (std::bind (&PJPresence::change_online_status, 
 							 context,
 							 context->status_));
 
-    g_print ("|||||||||||||||||||||||| %d\n", __LINE__);
     context->sip_instance_->custom_props_->notify_property_changed (context->custom_status_spec_);
-    g_print ("|||||||||||||||||||||||| %d\n", __LINE__);
   }
 
   const gchar *

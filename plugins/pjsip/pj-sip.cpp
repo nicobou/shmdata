@@ -35,31 +35,7 @@ namespace switcher
   //Application should only instantiate one SIP endpoint instance for every process. 
   pjsip_endpoint *PJSIP::sip_endpt_ = NULL;
 
-  PJSIP::PJSIP ():
-    custom_props_ (std::make_shared<CustomPropertyHelper> ()),
-    sip_port_ (5060),
-    sip_port_spec_ (NULL),
-    thread_handler_desc_ (),
-    pj_thread_ref_ (NULL),
-    transport_id_ (NULL),
-    sip_thread_ (),
-    pj_init_mutex_ (),
-    pj_init_cond_ (),
-    pj_sip_inited_ (false),
-    work_mutex_ (),
-    work_cond_ (),
-    done_mutex_ (),
-    done_cond_ (),
-    continue_ (true),
-    command_ (),
-    cp_ (),
-    pool_ (NULL),
-    sip_calls_ (NULL),
-    sip_worker_ (),
-    sip_work_ (true),
-    worker_handler_desc_ (),
-    worker_thread_ref_ (NULL)
-  {}
+  PJSIP::PJSIP () : cp_ () {}
 
   PJSIP::~PJSIP ()
   {

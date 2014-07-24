@@ -50,20 +50,20 @@ namespace switcher
  struct media_stream
  {
    /* Static: */
-   unsigned		 call_index;	    /* Call owner.		*/
-   unsigned		 media_index;	    /* Media index in call.	*/
-   pjmedia_transport   *transport;	    /* To send/recv RTP/RTCP	*/
+   unsigned		 call_index {0};	    /* Call owner.		*/
+   unsigned		 media_index {0};	    /* Media index in call.	*/
+   pjmedia_transport   *transport {nullptr};	    /* To send/recv RTP/RTCP	*/
 
    /* Active? */
-   pj_bool_t		 active;	    /* Non-zero if is in call.	*/
+   pj_bool_t		 active {PJ_FALSE};	    /* Non-zero if is in call.	*/
 
    /* Current stream info: */
    pjmedia_stream_info	 si;		    /* Current stream info.	*/
 
    /* More info: *///FIXME these 3 next should be removed
-   unsigned		 clock_rate;	    /* clock rate		*/
-   unsigned		 samples_per_frame; /* samples per frame	*/
-   unsigned		 bytes_per_frame;   /* frame size.		*/
+   /* unsigned		 clock_rate;	    /\* clock rate		*\/ */
+   /* unsigned		 samples_per_frame; /\* samples per frame	*\/ */
+   /* unsigned		 bytes_per_frame;   /\* frame size.		*\/ */
 
    /* RTP session: */ //FIXME remove this, managed by gst
    pjmedia_rtp_session	 out_sess;	    /* outgoing RTP session	*/
@@ -73,16 +73,19 @@ namespace switcher
    pjmedia_rtcp_session rtcp;		    /* incoming RTCP session.	*/
   
    /* Thread: */
-   pj_bool_t		 thread_quit_flag;  /* Stop media thread.	*/
-   pj_thread_t		*thread;	    /* Media thread.		*/
+   //pj_bool_t		 thread_quit_flag;  /* Stop media thread.	*/
+   //pj_thread_t		*thread;	    /* Media thread.		*/
   
    //type + codec param
-   std::string type; //audio, video or application
-   std::string extra_params;
+   std::string type {}; //audio, video or application
+   std::string extra_params {};
    //shmdata
-   ShmdataAnyWriter::ptr shm; //RTP, FIXME make RTCP shm
+   ShmdataAnyWriter::ptr shm {}; //RTP, FIXME make RTCP shm
    //shmdata path to send
-   std::string shm_path_to_send;
+   std::string shm_path_to_send {};
+   
+   //constructor for default init of pj types
+   media_stream () : si (), out_sess (), in_sess (), rtcp () {}
  };
 
 
@@ -91,64 +94,26 @@ namespace switcher
  */
 struct call
 {
-  unsigned index;
-  pjsip_inv_session *inv;
-  unsigned media_count; //FIXME make this a std::list 
+  unsigned index {0};
+  pjsip_inv_session *inv {nullptr};
+  unsigned media_count {0}; //FIXME make this more STL 
   struct media_stream media[64];
-  pj_time_val start_time;
-  pj_time_val response_time;
-  pj_time_val connect_time;
-  std::string peer_uri;
-  //pj_timer_entry	 d_timer;	    /**< Disconnect timer.	*/
-  PJCall *instance; 
+  pj_time_val start_time {0, 0};
+  pj_time_val response_time {0, 0};
+  pj_time_val connect_time {0, 0};
+  std::string peer_uri {};
+  PJCall *instance {nullptr}; 
 };
 
 
 /* Application's global variables */
 typedef struct app
 {
-    unsigned		 max_calls;
-    unsigned		 call_gap;
-    pj_bool_t		 call_report;
-    unsigned		 uac_calls;
-    unsigned		 duration;
-    pj_bool_t		 auto_quit;
-    unsigned		 thread_count;
-  //int			 sip_port;
-  //int			 rtp_start_port;
-    pj_str_t		 local_addr;
-  //pj_str_t		 local_uri;
-  // pj_str_t		 local_contact;
-    
-    int			 app_log_level;
-    int			 log_level;
-    char		*log_filename;
-    char		*report_filename;
-
-    pj_str_t		 uri_to_call;
-
-    pj_caching_pool	 cp;
-    pj_pool_t		*pool;
-
-  //pjsip_endpoint	*sip_endpt;
-    pj_bool_t		 thread_quit;
-    pj_thread_t		*sip_thread[1];
-
-  //pjmedia_endpt	*med_endpt;
-    struct call		 call[MAX_CALLS];
+  unsigned		 max_calls       {256};
+  unsigned		 uac_calls       {0};
+  pj_str_t		 local_addr      {nullptr, 0};
+  struct call		 call[MAX_CALLS]; // FIXME make this more STL
 } app_t;
-
- typedef struct alt_codec
-{
-    pj_str_t	encoding_name;
-    pj_uint8_t	payload_type;
-    unsigned	clock_rate;
-    unsigned	channel_cnt;
-    unsigned	frm_ptime;
-    unsigned	avg_bps;
-    unsigned	max_bps;
- } alt_codec_t;
-
 
 
   private:
@@ -157,11 +122,12 @@ typedef struct app
     static app_t app;
     PJSIP *sip_instance_;
     //external rtp session quidity for sending
-    RtpSession::ptr rtp_session_;
-    std::string rtp_session_name_;
-    GParamSpec *rtp_session_name_spec_;
-    uint starting_rtp_port_; 
-    GParamSpec *starting_rtp_port_spec_;
+    RtpSession::ptr rtp_session_ {};
+    std::string rtp_session_name_ {};
+    GParamSpec *rtp_session_name_spec_ {nullptr};
+    uint starting_rtp_port_ {18000}; 
+    GParamSpec *starting_rtp_port_spec_ {nullptr};
+
     //sip functions
     static pj_bool_t on_rx_request (pjsip_rx_data *rdata);
     static void call_on_state_changed (pjsip_inv_session *inv, 
