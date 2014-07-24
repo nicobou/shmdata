@@ -117,8 +117,8 @@ typedef struct app
   //int			 sip_port;
   //int			 rtp_start_port;
     pj_str_t		 local_addr;
-    pj_str_t		 local_uri;
-    pj_str_t		 local_contact;
+  //pj_str_t		 local_uri;
+  // pj_str_t		 local_contact;
     
     int			 app_log_level;
     int			 log_level;

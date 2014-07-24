@@ -29,11 +29,12 @@
 namespace switcher
 {
   class PJSIP;
+  class PJCall;
 
   class PJPresence
   {
     friend PJSIP;
-
+    friend PJCall; //for account local uri
   public:
     PJPresence () = delete;
     PJPresence (PJSIP *sip_instance);
@@ -56,7 +57,10 @@ namespace switcher
     static GEnumValue status_enum_[8];
     gint status_;
     GParamSpec *custom_status_spec_;
-    std::string custom_status_;
+    std::string custom_status_; 
+
+    //account info
+    std::string sip_local_user_;
 
     //registration
     static  void on_registration_state (pjsua_acc_id acc_id, pjsua_reg_info *info);

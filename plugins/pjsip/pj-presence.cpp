@@ -43,7 +43,8 @@ namespace switcher
     status_enum_spec_ (NULL),
     status_ (PJPresence::OFFLINE),
     custom_status_spec_ (NULL),
-    custom_status_ ()
+    custom_status_ (),
+    sip_local_user_ ()
   {
     //registering account
     sip_instance_->install_method ("Register SIP Account", //long name
@@ -183,26 +184,47 @@ namespace switcher
     pjsua_acc_set_user_data (account_id_, this);
     registration_cond_.wait (lock);
 
-    add_buddy ("sip:1000@10.10.30.223");
-    add_buddy ("sip:1001@10.10.30.223");
-    add_buddy ("sip:1002@10.10.30.223");
-    add_buddy ("sip:1003@10.10.30.223");
-    add_buddy ("sip:1004@10.10.30.223");
-    add_buddy ("sip:1005@10.10.30.223");
-    add_buddy ("sip:1006@10.10.30.223");
-    add_buddy ("sip:1007@10.10.30.223");
-    add_buddy ("sip:1008@10.10.30.223");
-    add_buddy ("sip:1009@10.10.30.223");
-    add_buddy ("sip:1010@10.10.30.223");
-    add_buddy ("sip:1011@10.10.30.223");
-    add_buddy ("sip:1012@10.10.30.223");
-    add_buddy ("sip:1013@10.10.30.223");
-    add_buddy ("sip:1014@10.10.30.223");
-    add_buddy ("sip:1015@10.10.30.223");
-    add_buddy ("sip:1016@10.10.30.223");
-    add_buddy ("sip:1017@10.10.30.223");
-    add_buddy ("sip:1018@10.10.30.223");
-    add_buddy ("sip:1019@10.10.30.223");
+    
+    //char ip_addr[32];
+    /* Get local IP address for the default IP address */
+    {
+      const pj_str_t *hostname;
+      pj_sockaddr_in tmp_addr;
+      char *addr;
+      
+      hostname = pj_gethostname();
+      pj_sockaddr_in_init(&tmp_addr, hostname, 0);
+      addr = pj_inet_ntoa(tmp_addr.sin_addr);
+      //pj_ansi_strcpy(ip_addr, addr);
+    
+      sip_local_user_ = std::string ("sip:") + sip_user + addr + std::to_string (sip_instance_->sip_port_);
+      // sprintf (sip_local_user_,
+      // 	       "sip:%s@%s:%u",
+      // 	       sip_user.c_str (),
+      // 	       addr,
+      // 	       sip_instance_->sip_port_);
+    }
+
+    // add_buddy ("sip:1000@10.10.30.223");
+    // add_buddy ("sip:1001@10.10.30.223");
+    // add_buddy ("sip:1002@10.10.30.223");
+    // add_buddy ("sip:1003@10.10.30.223");
+    // add_buddy ("sip:1004@10.10.30.223");
+    // add_buddy ("sip:1005@10.10.30.223");
+    // add_buddy ("sip:1006@10.10.30.223");
+    // add_buddy ("sip:1007@10.10.30.223");
+    // add_buddy ("sip:1008@10.10.30.223");
+    // add_buddy ("sip:1009@10.10.30.223");
+    // add_buddy ("sip:1010@10.10.30.223");
+    // add_buddy ("sip:1011@10.10.30.223");
+    // add_buddy ("sip:1012@10.10.30.223");
+    // add_buddy ("sip:1013@10.10.30.223");
+    // add_buddy ("sip:1014@10.10.30.223");
+    // add_buddy ("sip:1015@10.10.30.223");
+    // add_buddy ("sip:1016@10.10.30.223");
+    // add_buddy ("sip:1017@10.10.30.223");
+    // add_buddy ("sip:1018@10.10.30.223");
+    // add_buddy ("sip:1019@10.10.30.223");
   }
 
 
@@ -230,6 +252,8 @@ namespace switcher
 	return false;
       }
     account_id_ = -1;
+    
+    sip_local_user_.clear ();
     return true;
   }
 

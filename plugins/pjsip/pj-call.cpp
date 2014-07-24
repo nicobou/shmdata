@@ -104,7 +104,7 @@ namespace switcher
       }
 
     /* Init media transport for all calls. */
-    for (unsigned i=0, count=0; i<app.max_calls; ++i, ++count) 
+    for (unsigned i=0, count=0; i < app.max_calls; ++i, ++count) 
       {
 	unsigned j;
 	/* Create transport for each media in the call */
@@ -180,7 +180,7 @@ namespace switcher
   PJCall::~PJCall ()
   {
     unsigned i;
-    for (i=0; i<app.max_calls; ++i) {
+    for (i = 0; i < app.max_calls; ++i) {
       unsigned j;
       for (j=0; j<PJ_ARRAY_SIZE(app.call[0].media); ++j) {
 	struct media_stream *m = &app.call[i].media[j];
@@ -266,10 +266,11 @@ namespace switcher
     app.log_filename = NULL;
 
     /* Build local URI and contact */
-    //pj_ansi_sprintf( local_uri, "sip:%s:%d", app.local_addr.ptr, app.sip_port);
-    //app.local_uri = pj_str(local_uri);
-    app.local_uri = pj_str(g_strdup ("sip:1004@10.10.30.252"));
-    app.local_contact = app.local_uri;
+    // char *local_uri = NULL;
+    // pj_ansi_sprintf( local_uri, "sip:%s:%d", app.local_addr.ptr, sip_instance_->sip_port_);
+    // app.local_uri = pj_str(local_uri);
+    //app.local_uri = pj_str(g_strdup ("sip:1004@10.10.30.252"));
+    //app.local_contact = app.local_uri;
   }
   
   /* Callback to be called when invite session's state has changed: */
@@ -382,8 +383,6 @@ namespace switcher
     // g_print ("negotiated LOCAL\n"); print_sdp (local_sdp);
     // g_print ("negotiated REMOTE\n"); print_sdp (remote_sdp);
     
-    // g_print ("MEDIA COUNT %u\n", call->media_count);
-
     for (uint i=0; i < call->media_count; i++)
       {
 	struct media_stream *current_media;
@@ -479,15 +478,15 @@ namespace switcher
 				   "add_destination",
 				   NULL,
 				   {call->peer_uri,
-				       std::string (remote_sdp->origin.addr.ptr, 
-						    remote_sdp->origin.addr.slen)});
+				    std::string (remote_sdp->origin.addr.ptr, 
+				    remote_sdp->origin.addr.slen)});
 
 		  manager->invoke (call->instance->rtp_session_name_,
 				   "add_udp_stream_to_dest",
 				   NULL,
 				   {current_media->shm_path_to_send,
-				       call->peer_uri,
-				       std::to_string (remote_sdp->media[i]->desc.port)});
+				    call->peer_uri,
+				    std::to_string (remote_sdp->media[i]->desc.port)});
 		}
 	      }
 	  }
@@ -513,18 +512,18 @@ namespace switcher
 			  rdata->msg_info.msg->line.req.uri, 
 			  uristr, 
 			  sizeof(uristr));
-    //g_print ("---------- call req uri %.*s\n", len, uristr);
+    g_print ("---------- call req uri %.*s\n", len, uristr);
     len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, 
 			  pjsip_uri_get_uri (rdata->msg_info.from->uri), 
 			  uristr, 
 			  sizeof(uristr));
-    //g_print ("---------- call from %.*s\n", len, uristr);
+    g_print ("---------- call from %.*s\n", len, uristr);
     std::string from_uri (uristr, len);
     len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR, 
 			  rdata->msg_info.to->uri, 
 			  uristr, 
 			  sizeof(uristr));
-    //g_print ("----------- call to %.*s\n", len, uristr);
+    g_print ("----------- call to %.*s\n", len, uristr);
 
     unsigned i, options;
     struct call *call;
@@ -580,21 +579,19 @@ namespace switcher
 	pjsip_get_response_addr(tdata->pool, rdata, &res_addr);
 	pjsip_endpt_send_response(PJSIP::sip_endpt_, &res_addr, tdata,
 				  NULL, NULL);
-     
-      } else {
-     
-	/* Respond with 500 (Internal Server Error) */
-	pjsip_endpt_respond_stateless(PJSIP::sip_endpt_, rdata, 500, NULL,
-				      NULL, NULL);
-      }
- 
+      } 
+      else /* Respond with 500 (Internal Server Error) */
+	pjsip_endpt_respond_stateless(PJSIP::sip_endpt_, rdata, 500, NULL, NULL, NULL);
+
       return;
     }
-
+    
      
     /* Create UAS dialog */
-    status = pjsip_dlg_create_uas( pjsip_ua_instance(), rdata,
-				   &app.local_contact, &dlg);
+    status = pjsip_dlg_create_uas( pjsip_ua_instance(), 
+				   rdata,
+				   NULL,//&app.local_contact, 
+				   &dlg);
     if (status != PJ_SUCCESS) 
       {
 	const pj_str_t reason = pj_str ("Unable to create dialog");
@@ -782,7 +779,6 @@ namespace switcher
 	      remove_from_sdp_media (sdp_media, u);
 	    else
 	      u++;
-     
 	  }
 	//getting transport info 
 	pjmedia_transport_info tpinfo;
@@ -1522,7 +1518,13 @@ namespace switcher
   pj_status_t 
   PJCall::make_call(std::string dst_uri)
   {
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
+    if (sip_instance_->sip_presence_->sip_local_user_.empty ())
+      {
+	g_warning ("cannot call if not registered");
+	return PJ_EUNKNOWN;
+      }
+    pj_str_t local_uri;
+    pj_cstr (&local_uri, sip_instance_->sip_presence_->sip_local_user_.c_str ()); 
     unsigned i;
     struct call *call = NULL;
     pjsip_dialog *dlg = NULL;
@@ -1530,10 +1532,8 @@ namespace switcher
     pjsip_tx_data *tdata = NULL;
     pj_status_t status;
 
-
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
     /* Find unused call slot */
-    for (i=0; i<app.max_calls; ++i) {
+    for (i = 0; i < app.max_calls; ++i) {
       if (app.call[i].inv == NULL)
 	break;
     }
@@ -1542,30 +1542,24 @@ namespace switcher
       return PJ_ETOOMANY;
 
     call = &app.call[i];
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
 
     pj_str_t dest_str;
     pj_cstr (&dest_str, dst_uri.c_str ());
+    
     /* Create UAC dialog */
-    status = pjsip_dlg_create_uac(pjsip_ua_instance(), 
-				  &app.local_uri, /* local URI     */
-				  &app.local_contact, /* local Contact    */
-				  &dest_str,  /* remote URI     */
-				  &dest_str,  /* remote target    */
-				  &dlg);  /* dialog     */
-
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
-
+    status = pjsip_dlg_create_uac (pjsip_ua_instance(), 
+				   &local_uri,//&app.local_uri, /* local URI     */
+				   &local_uri,//&app.local_contact, /* local Contact    */
+				   &dest_str, /* remote URI     */
+				   &dest_str,  /* remote target    */
+				   &dlg);  /* dialog     */
+    
     if (status != PJ_SUCCESS) {
       ++app.uac_calls;
       return status;
     }
 
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
-
     call->peer_uri = dst_uri;
-
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
 
     /* Create SDP */
     std::string outgoing_sdp = create_outgoing_sdp (call,
@@ -1577,62 +1571,10 @@ namespace switcher
 				&sdp);
     //g_free (tmp);//FIXME attach this to the call and free it when done
 
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
-
     if (status != PJ_SUCCESS) {
       ++app.uac_calls;
       return status;
     }
-
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
-
-    // g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
-    // status = pjmedia_sdp_validate (sdp);
-
-    // switch (status) {
-    // case PJ_SUCCESS:
-    //   g_print ("PJ_SUCCESS\n");
-    //   break;
-    // case PJ_EINVAL:
-    //   g_print ("error PJ_EINVAL\n");
-    //   break;
-    // case PJMEDIA_SDP_EINORIGIN:
-    //   g_print ("errorPJMEDIA_SDP_EINORIGIN \n"
-    //         );
-    //   break;
-    // case PJMEDIA_SDP_EINNAME:
-    //   g_print ("error PJMEDIA_SDP_EINNAME\n"
-    //         );
-    //   break;
-    // case PJMEDIA_SDP_ENOFMT:
-    //   g_print ("PJMEDIA_SDP_ENOFMT\n");
-    //   break;
-    // case PJMEDIA_SDP_EINMEDIA:
-    //   g_print ("error PJMEDIA_SDP_EINMEDIA\n"
-    //         );
-    //   break;
-    // case PJMEDIA_SDP_EMISSINGCONN:
-    //   g_print ("errorPJMEDIA_SDP_EMISSINGCONN\n"
-    //         );
-    //   break;
-    // case PJMEDIA_SDP_EINPT:
-    //   g_print ("errorPJMEDIA_SDP_EINPT\n"
-    //         );
-    //   break;
-    // case PJMEDIA_SDP_EMISSINGRTPMAP:
-    //   g_print ("errorPJMEDIA_SDP_EMISSINGRTPMAP\n"
-    //         );
-    //   break;
-    // case PJMEDIA_SDP_EINCONN:
-    //   g_print ("PJMEDIA_SDP_EINCONN\n");
-    //   break;
-    // default:
-    //   g_print ("error default \n");
-    //   break;
-    // }
-
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
-
 
     /* Create the INVITE session. */
     status = pjsip_inv_create_uac( dlg, sdp, 0, &call->inv);
@@ -1642,19 +1584,11 @@ namespace switcher
       return status;
     }
 
-
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
-
     /* Attach call data to invite session */
     call->inv->mod_data[mod_siprtp_.id] = call;
 
     /* Mark start of call */
     pj_gettimeofday(&call->start_time);
-
-
-
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
-
 
     /* Create initial INVITE request.
      * This INVITE request will contain a perfectly good request and 
@@ -1663,19 +1597,12 @@ namespace switcher
     status = pjsip_inv_invite(call->inv, &tdata);
     PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
-
-
-
     /* Send initial INVITE request. 
      * From now on, the invite session's state will be reported to us
      * via the invite session callbacks.
      */
     status = pjsip_inv_send_msg(call->inv, tdata);
     PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
-
-
-    g_print ("function %s line %d\n", __FUNCTION__, __LINE__);
 
     return PJ_SUCCESS;
   }
@@ -1690,7 +1617,7 @@ namespace switcher
       {
 	g_warning ("rtp manager %s not found",
 		   quiddity_name);
-	context->rtp_session_name_ = std::string ();//reset
+	context->rtp_session_name_.clear ();
 	return;
       }
     
@@ -1816,7 +1743,6 @@ namespace switcher
   {
     pjsip_tx_data *tdata;
     pj_status_t status;
-
     bool res;
     for (unsigned i = 0; i < app.max_calls; ++i) 
       {
@@ -1824,9 +1750,9 @@ namespace switcher
 	  break;
 	if (0 == contact_uri.compare (app.call[i].peer_uri))
 	  {
-	    status = pjsip_inv_end_session(app.call[i].inv, 603, NULL, &tdata);
+	    status = pjsip_inv_end_session (app.call[i].inv, 603, NULL, &tdata);
 	    if (status==PJ_SUCCESS && tdata!=NULL)
-	      pjsip_inv_send_msg(app.call[i].inv, tdata);
+	      pjsip_inv_send_msg (app.call[i].inv, tdata);
 	    res = true;
 	  }
       }

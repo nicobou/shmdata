@@ -134,10 +134,7 @@ manager->invoke_va ("test",
 		      "sip:1002@10.10.30.223",
 		      NULL);
 
-    usleep (2000000);
-
-
-//usleep (300000000);
+    usleep (20000000);
 
     manager->remove ("test");
      
