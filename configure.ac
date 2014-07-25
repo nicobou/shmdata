@@ -291,6 +291,17 @@ AC_CHECK_FILE([/usr/include/nodejs/src/node.h],
                AC_MSG_WARN([Missing nodejs-dev package])])
 AM_CONDITIONAL(NODEADDONBUILD, test "x${NODEADDONBUILD}" = "xenabled")
 
+# check for posturevision
+PKG_CHECK_MODULES(POSTURE, posture, have_posture=true, have_posture=false)
+if test "x${have_posture}" = "xfalse" ; then
+    POSTUREBUILD=disabled
+    AC_MSG_WARN([Missing Posturevision, there won't be support for point clouds captures])
+else
+    POSTUREBUILD=enabled
+    AC_CONFIG_FILES([plugins/posture/Makefile])
+fi
+AM_CONDITIONAL(POSTUREBUILD, test "${POSTUREBUILD}" = "enabled")
+
 
 dnl Use the C++ compiler for the compile tests
 AC_LANG(C++)
@@ -428,6 +439,7 @@ AC_OUTPUT
 [echo ""]
 [echo "nodejs addon               ${NODEADDONBUILD}"]
 [echo "python                     ${PYTHONBUILD}"]
+[echo "posture support            ${POSTUREBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]

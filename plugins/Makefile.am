@@ -37,6 +37,11 @@ SUBDIRS += \
     pjsip
 endif
 
+if POSTUREBUILD
+SUBDIRS += \
+	posture
+endif
+
 if HAVE_OSX
 SUBDIRS += \
     syphonsrc
