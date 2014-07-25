@@ -50,10 +50,16 @@ namespace switcher
     std::string devices_path_ {"devices.kvc"};
     unsigned int device_index_ {0};
     bool capture_ir_ {false};
+    bool compress_cloud_ {false};
     GParamSpec* calibration_path_prop_ {nullptr};
     GParamSpec* devices_path_prop_ {nullptr};
     GParamSpec* device_index_prop_ {nullptr};
     GParamSpec* capture_ir_prop_ {nullptr};
+    GParamSpec* compress_cloud_prop_ {nullptr};
+
+    int capture_mode_ {0};
+    GParamSpec* capture_mode_prop_ {nullptr};
+    GEnumValue capture_modes_enum_[16];
 
     std::shared_ptr<posture::ZCamera> zcamera_ {nullptr};
 
@@ -77,6 +83,10 @@ namespace switcher
     static void set_device_index(const int index, void* user_data);
     static int get_capture_ir(void* user_data);
     static void set_capture_ir(const int ir, void* user_data);
+    static int get_compress_cloud(void* user_data);
+    static void set_compress_cloud(const int compress, void* user_data);
+    static int get_capture_mode(void* user_data);
+    static void set_capture_mode(const int mode, void* user_data);
 
     static void cb_frame_cloud(void* context, const std::vector<char>& data);
     static void cb_frame_depth(void* context, const std::vector<unsigned char>& data, int width, int height);

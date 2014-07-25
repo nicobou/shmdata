@@ -30,8 +30,8 @@ using namespace posture;
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureSrc,
-				       "3D captures through Kinects and the like",
-				       "PostureSrc", 
+				       "3D captures through zcameras",
+				       "video source", 
 				       "Grabs 3D data (point clouds / meshes) using a zcamera",
 				       "LGPL",
 				       "posturesrc",				
@@ -60,6 +60,8 @@ namespace switcher
     zcamera_->setDevicesPath(devices_path_);
     zcamera_->setDeviceIndex(device_index_);
     zcamera_->setCaptureIR(capture_ir_);
+    zcamera_->setCompression(compress_cloud_);
+    zcamera_->setCaptureMode((posture::ZCamera::CaptureMode)capture_mode_);
 
     zcamera_->start();
     return true;
@@ -70,10 +72,26 @@ namespace switcher
   {
     zcamera_->stop();
 
-    cloud_writer_.reset();
-    depth_writer_.reset();
-    rgb_writer_.reset();
-    ir_writer_.reset();
+    if (cloud_writer_.get() != nullptr)
+    {
+      unregister_shmdata_any_writer(cloud_writer_->get_path());
+      cloud_writer_.reset();
+    }
+    if (depth_writer_.get() != nullptr)
+    {
+      unregister_shmdata_any_writer(depth_writer_->get_path());
+      depth_writer_.reset();
+    }
+    if (rgb_writer_.get() != nullptr)
+    {
+      unregister_shmdata_any_writer(rgb_writer_->get_path());
+      rgb_writer_.reset();
+    }
+    if (ir_writer_.get() != nullptr)
+    {
+      unregister_shmdata_any_writer(ir_writer_->get_path());
+      ir_writer_.reset();
+    }
 
     return true;
   }
@@ -132,6 +150,65 @@ namespace switcher
       capture_ir_prop_,
       "capture_ir",
       "Grab the IR image if true");
+
+    compress_cloud_prop_ = custom_props_->make_boolean_property ("compress_cloud",
+      "Compress the cloud if true",
+      compress_cloud_,
+      (GParamFlags)G_PARAM_READWRITE,
+      PostureSrc::set_compress_cloud,
+      PostureSrc::get_compress_cloud,
+      this);
+    install_property_by_pspec (custom_props_->get_gobject (),
+      compress_cloud_prop_,
+      "compress_cloud",
+      "Compress the cloud if true");
+
+    capture_modes_enum_[0].value = 0;
+    capture_modes_enum_[0].value_name = "Default mode";
+    capture_modes_enum_[0].value_nick = capture_modes_enum_[0].value_name;
+    capture_modes_enum_[1].value = 1;
+    capture_modes_enum_[1].value_name = "SXGA 15Hz";
+    capture_modes_enum_[1].value_nick = capture_modes_enum_[0].value_name;
+    capture_modes_enum_[2].value = 2;
+    capture_modes_enum_[2].value_name = "VGA 30Hz";
+    capture_modes_enum_[2].value_nick = capture_modes_enum_[0].value_name;
+    capture_modes_enum_[3].value = 3;
+    capture_modes_enum_[3].value_name = "VGA 25Hz";
+    capture_modes_enum_[3].value_nick = capture_modes_enum_[0].value_name;
+    capture_modes_enum_[4].value = 4;
+    capture_modes_enum_[4].value_name = "QVGA 25Hz";
+    capture_modes_enum_[4].value_nick = capture_modes_enum_[0].value_name;
+    capture_modes_enum_[5].value = 5;
+    capture_modes_enum_[5].value_name = "QVGA 30Hz";
+    capture_modes_enum_[5].value_nick = capture_modes_enum_[0].value_name;
+    capture_modes_enum_[6].value = 6;
+    capture_modes_enum_[6].value_name = "QVGA 60Hz";
+    capture_modes_enum_[6].value_nick = capture_modes_enum_[0].value_name;
+    capture_modes_enum_[7].value = 7;
+    capture_modes_enum_[7].value_name = "QQVGA 25Hz";
+    capture_modes_enum_[7].value_nick = capture_modes_enum_[0].value_name;
+    capture_modes_enum_[8].value = 8;
+    capture_modes_enum_[8].value_name = "QQVGA 30Hz";
+    capture_modes_enum_[8].value_nick = capture_modes_enum_[0].value_name;
+    capture_modes_enum_[9].value = 9;
+    capture_modes_enum_[9].value_name = "QQVGA 60Hz";
+    capture_modes_enum_[9].value_nick = capture_modes_enum_[0].value_name;
+    capture_modes_enum_[10].value = 0;
+    capture_modes_enum_[10].value_name = NULL;
+    capture_modes_enum_[10].value_nick = NULL;
+
+    capture_mode_prop_ = custom_props_->make_enum_property ("capture_mode",
+      "Capture mode of the device",
+      0,
+      capture_modes_enum_,
+      (GParamFlags)G_PARAM_READWRITE,
+      PostureSrc::set_capture_mode,
+      PostureSrc::get_capture_mode,
+      this);
+    install_property_by_pspec (custom_props_->get_gobject (),
+      capture_mode_prop_,
+      "capture_mode",
+      "Capture mode of the device");
 
     return true;
   }
@@ -194,6 +271,34 @@ namespace switcher
     ctx->capture_ir_ = ir;
   }
 
+  int
+  PostureSrc::get_compress_cloud(void* user_data)
+  {
+    PostureSrc* ctx = (PostureSrc*)user_data;
+    return ctx->compress_cloud_;
+  }
+
+  void
+  PostureSrc::set_compress_cloud(const int compress, void* user_data)
+  {
+    PostureSrc* ctx = (PostureSrc*)user_data;
+    ctx->compress_cloud_ = compress;
+  }
+
+  int
+  PostureSrc::get_capture_mode(void* user_data)
+  {
+    PostureSrc* ctx = (PostureSrc*)user_data;
+    return ctx->capture_mode_;
+  }
+
+  void
+  PostureSrc::set_capture_mode(const int mode, void* user_data)
+  {
+    PostureSrc* ctx = (PostureSrc*)user_data;
+    ctx->capture_mode_ = mode;
+  }
+
   void
   PostureSrc::cb_frame_cloud(void* context, const vector<char>& data)
   {
@@ -203,6 +308,7 @@ namespace switcher
     {
       ctx->cloud_writer_.reset(new ShmdataAnyWriter);
       ctx->cloud_writer_->set_path(ctx->make_file_name("cloud"));
+      ctx->register_shmdata_any_writer(ctx->cloud_writer_);
       ctx->cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_BASE));
       ctx->cloud_writer_->start();
     }
