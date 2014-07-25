@@ -31,6 +31,7 @@
 int
 main ()
 {
+
   bool success = true;
   {
     switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("siptest");  
@@ -87,7 +88,7 @@ main ()
 
     if (!manager->invoke_va ("test","register", NULL, 
 			     "1004", //user
-			     "10.10.30.223", //domain
+			     "10.10.30.179", //domain
 			     "1234", //password
 			     NULL))
       {

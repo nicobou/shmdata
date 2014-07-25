@@ -52,7 +52,7 @@ console.log(switcher_addon.subscribe_to_signal ("sipquid", "on-tree-grafted"));
 console.log(switcher_addon.subscribe_to_signal ("sipquid", "on-tree-pruned"));
 
 console.log (switcher_addon.invoke("sipquid","register", ["1010", 
-							  "10.10.30.115",
+							  "10.10.30.179",
 							  "1234"]));
 
 

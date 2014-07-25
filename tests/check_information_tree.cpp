@@ -147,12 +147,12 @@ main ()
     tree->graft (".child1.child2.bla2", make_tree ("hub"));
 
     std::string serialized = BasicSerializer::serialize (tree);
-    //std::cout << serialized << std::endl;
+    std::cout << serialized << std::endl;
 
     Tree::ptr tree2 = BasicSerializer::deserialize (serialized);
     assert (tree2);
     std::string serialized2 = BasicSerializer::serialize (tree2);
-    //std::cout << serialized2 << std::endl;
+    std::cout << serialized2 << std::endl;
 
     assert (serialized == serialized2);
   }
@@ -186,7 +186,7 @@ main ()
     tree->tag_as_array (".child1.child2", true);
 
     std::string serialized = JSONSerializer::serialize (tree);
-    //std::cout << serialized << std::endl;
+    std::cout << serialized << std::endl;
   }
 
   {//get childs keys inserting in an existing container
