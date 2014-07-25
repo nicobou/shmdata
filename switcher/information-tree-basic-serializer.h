@@ -38,21 +38,11 @@
 
 namespace switcher { 
   namespace data {
+    namespace BasicSerializer {
 
-    class BasicSerializer {
-    public :
-      static std::string serialize (Tree::ptr);
-      static Tree::ptr deserialize (std::string &serialized);
-    private:
-      BasicSerializer () = delete;
-      ~BasicSerializer () = delete;
-      typedef struct {
-	std::list<std::string> path_ {};
-	std::string result_ {};
-      } BasicSerializerData;
-      static void on_visiting_node (std::string key, Any value, std::size_t n, BasicSerializerData &data);
-      static void on_node_visited (std::string key, Any value, std::size_t n, BasicSerializerData &data);
-      static std::string path_to_string (std::list<std::string> path);
+      std::string serialize (Tree::ptr);
+      Tree::ptr deserialize (const std::string &serialized);
+      
     };
 
   } // end of "data" namespace 

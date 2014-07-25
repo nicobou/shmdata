@@ -32,21 +32,29 @@ namespace switcher {
     make_tree () {return std::make_shared<Tree> ();} 
     Tree::ptr 
     make_tree (const char *data) {return std::make_shared<Tree> (std::string (data));} 
+    
+    void 
+    preorder_tree_walk (Tree::ptr tree,
+			Tree::OnNodeFunction on_visiting_node,
+			Tree::OnNodeFunction on_node_visited)
+    {
+      std::unique_lock <std::mutex> lock (tree->mutex_);
+      if (!tree->childrens_.empty ())
+	{
+	  for (auto &it : tree->childrens_)
+	    {
+	      on_visiting_node (it.first, it.second, tree->is_array_); 
+	      preorder_tree_walk (it.second, 
+				  on_visiting_node, 
+				  on_node_visited);
+	      on_node_visited (it.first, it.second, tree->is_array_);
+	    }
+	}
+    }
 
     //--------------- class
-    Tree::Tree () : 
-      data_ (), 
-      childrens_ (),
-      mutex_ ()
-    {}
-    
-    Tree::~Tree ()
-    {}
-
     Tree::Tree (const Any &data) :
-      data_ (data),
-      childrens_ (),
-      mutex_ ()
+      data_ (data)
     {}
 
     bool
@@ -54,6 +62,13 @@ namespace switcher {
     {
       std::unique_lock <std::mutex> lock (mutex_);
       return childrens_.empty ();
+    }
+
+    bool
+    Tree::is_array ()
+    {
+      std::unique_lock <std::mutex> lock (mutex_);
+      return is_array_;
     }
 
     bool
@@ -266,5 +281,25 @@ namespace switcher {
 	}
       return false;
     }
+
+    bool 
+    Tree::tag_as_array (const std::string &path, bool is_array)
+    {
+      Tree::ptr tree = Tree::get (path);
+      if (!(bool) tree)
+	return false;
+      tree->is_array_ = is_array;
+      return true;
+    }
+    
+    bool 
+    Tree::is_array (const std::string &path)
+    {
+      Tree::ptr tree= Tree::get (path);
+      if (!(bool) tree)
+	return false;
+      return tree->is_array_;
+    }
+      
   } // end of namespace information
 }  // end of namespace switcher

@@ -34,18 +34,12 @@
 
 namespace switcher { 
   namespace data {
+    namespace JSONSerializer {
 
-    class JSONSerializer {
-    public :
-      static std::string serialize (Tree::ptr);
-      //static Tree::ptr deserialize (std::string &serialized);
-    private:
-      JSONSerializer () = delete;
-      ~JSONSerializer () = delete;
-      static void on_visiting_node (std::string key, Any value, std::size_t n, JsonBuilder *builder);
-      static void on_node_visited (std::string key, Any value, std::size_t n, JsonBuilder *builder);
+      std::string serialize (const Tree::ptr);
+      //FIXME implement this: Tree::ptr deserialize (std::string &serialized);
+
     };
-
   } // end of "data" namespace 
 }  // end of "switcher" namespace
 

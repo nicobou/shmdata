@@ -156,12 +156,35 @@ main ()
 
     assert (serialized == serialized2);
   }
-  {//JSON serialization
+  {
+    // JSON serialization with child1.child2 as an array
     Tree::ptr tree = make_tree ();
+
+    // if children are grafted to child3, its value 
+    // will be serialized with "key_value, as follow:
+    // "child3" : {
+    //  "key_value" : "1.2",
+    //  "child4" : "float"
+    //  }
+    tree->graft (".child1.child3", make_tree (3.1f));
+    tree->graft (".child1.child3.child4", make_tree ("child4_value"));
+
+    // if the array is made with a value, it will not be serialized  
+    // a node trageted as an array should be created like this :
+    // tree->graft (".child1.child2", make_tree ());
+    // however, this is accepted:
     tree->graft (".child1.child2", make_tree ("switch"));
-    tree->graft (".child1.child3", make_tree (1.2f));
-    tree->graft (".child1.child2.bla1", make_tree ("wire"));
-    tree->graft (".child1.child2.bla2", make_tree ("hub"));
+    //
+    Tree::ptr elem1 = make_tree ();
+    elem1->graft ("equipment", make_tree ("door"));
+    elem1->graft ("color", make_tree ("red"));
+    Tree::ptr elem2 = make_tree ();
+    elem2->graft ("equipment", make_tree ("door"));
+    elem2->graft ("color", make_tree ("black"));
+    tree->graft (".child1.child2.red_door", elem1);
+    tree->graft (".child1.child2.black_door", elem2);
+    tree->tag_as_array (".child1.child2", true);
+
     std::string serialized = JSONSerializer::serialize (tree);
     //std::cout << serialized << std::endl;
   }
