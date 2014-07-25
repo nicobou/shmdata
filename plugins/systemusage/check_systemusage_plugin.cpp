@@ -60,16 +60,20 @@ main ()
       if (!switcher::QuiddityBasicTest::test_full (manager, "systemusage"))
         success = false;
 
-      //creating a "top" quiddity
-      if (g_strcmp0 (manager->create("systemusage", "test").c_str (), "test") != 0)
-        success = false;
+      // //creating a "top" quiddity
+      // if (g_strcmp0 (manager->create("systemusage", "test").c_str (), "test") != 0)
+      //   success = false;
 
-      if (!manager->set_property ("test", "period", "0.5"))
-        success = false;
+      // if (!manager->set_property ("test", "period", "0.5"))
+      //   success = false;
       
-      manager->make_signal_subscriber ("signal_subscriber", quiddity_created_removed_cb, manager.get ());
-      manager->subscribe_signal ("signal_subscriber","test","on-tree-grafted");
-      std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+      // manager->make_signal_subscriber ("signal_subscriber", 
+      // 				       quiddity_created_removed_cb, 
+      // 				       manager.get ());
+      // manager->subscribe_signal ("signal_subscriber", 
+      // 				 "test",
+      // 				 "on-tree-grafted");
+      // std::this_thread::sleep_for(std::chrono::milliseconds(3000));
    }//end of scope is releasing the manager
 
    if (success)

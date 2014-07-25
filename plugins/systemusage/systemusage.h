@@ -70,18 +70,18 @@ namespace switcher
     bool init ();
 
   private:
-    std::shared_ptr<std::thread> pollStateThread_;
+    std::shared_ptr<std::thread> pollStateThread_ {};
     bool running_ {false};
 
     CustomPropertyHelper::ptr custom_props_;
     GParamSpec *period_prop_;
 
-    data::Tree::ptr tree_;
+    data::Tree::ptr tree_ {};
 
-    int cpuNbr_;
+    int cpuNbr_ ;
     double period_;
-    std::map<std::string, Cpu> _cpus;
-    std::map<std::string, Net> _net;
+    std::map<std::string, Cpu> _cpus {};
+    std::map<std::string, Net> _net {};
 
     void pollState();
     static void setRefreshPeriod(double period, void* user_data);
