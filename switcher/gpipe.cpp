@@ -34,27 +34,10 @@ namespace switcher
 {
 
   GPipe::GPipe () :
-    pipeline_ (gst_pipeline_new (NULL)),
-    speed_ (1.0),
-    position_tracking_source_ (NULL),
     source_funcs_ (),
-    source_ (NULL),
-    quid_ (NULL),
-    custom_props_ (new CustomPropertyHelper ()),
-    play_pause_spec_ (NULL),
-    play_ (true),
-    seek_spec_ (NULL),
-    seek_ (0.0),
-    length_ (0),
-    commands_ ()
+    custom_props_ (new CustomPropertyHelper ())
   {
     make_bin ();
-  }
-
-  void
-  GPipe::init_gpipe (Quiddity &quiddity)
-  {
-    quid_ = &quiddity;
     source_funcs_.prepare = source_prepare;
     source_funcs_.check = source_check;
     source_funcs_.dispatch = source_dispatch;
@@ -62,10 +45,10 @@ namespace switcher
     source_ = g_source_new (&source_funcs_, sizeof (GstBusSource));
     ((GstBusSource*)source_)->bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_));
     g_source_set_callback(source_, (GSourceFunc)bus_called, NULL, NULL);
-    if (NULL == quid_->get_g_main_context ())
+    if (NULL == get_g_main_context ())
       g_warning ("%s: g_main_context is NULL",
      		 __FUNCTION__);
-    g_source_attach(source_, quid_->get_g_main_context ());
+    g_source_attach(source_, get_g_main_context ());
     gst_bus_set_sync_handler (((GstBusSource*)source_)->bus, bus_sync_handler, this); 
     g_source_unref (source_);
     ((GstBusSource*)source_)->inited = FALSE;
@@ -89,13 +72,12 @@ namespace switcher
 					   GPipe::set_seek,
 					   GPipe::get_seek,
 					   this);
-
   }
 
   void
   GPipe::install_play_pause ()
   {
-    quid_->install_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				      play_pause_spec_, 
 				      "play",
 				      "Play");
@@ -104,7 +86,7 @@ namespace switcher
   void 
   GPipe::install_seek ()
   {
-    quid_->install_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (custom_props_->get_gobject (), 
 				      seek_spec_, 
 				      "seek",
 				      "Seek");
@@ -113,7 +95,7 @@ namespace switcher
   void
   GPipe::install_speed ()
   {
-    quid_->install_method ("Speed",
+    install_method ("Speed",
 			   "speed", 
 			   "controle speed of pipeline", 
 			   "success or fail",
@@ -148,12 +130,12 @@ namespace switcher
       return;
     play_ = play;
     if (NULL == position_tracking_source_
-	&& NULL != quid_->get_g_main_context ())
+	&& NULL != get_g_main_context ())
       position_tracking_source_ = 
 	GstUtils::g_timeout_add_to_context (200, 
 					    (GSourceFunc) query_position, 
 					    this,
-					    quid_->get_g_main_context ());
+					    get_g_main_context ());
     if (TRUE == play)
       gst_element_set_state (pipeline_, 
 			     GST_STATE_PLAYING);
@@ -297,7 +279,7 @@ res = gst_element_query (pipeline_, query);
   GPipe::run_command (gpointer user_data)
   {
     QuidCommandArg *context = static_cast<QuidCommandArg *>(user_data);
-    QuiddityManager_Impl::ptr manager = context->self->quid_->manager_impl_.lock ();
+    QuiddityManager_Impl::ptr manager = context->self->manager_impl_.lock ();
     if ((bool) manager && context->command != NULL)
       {
 	switch (context->command->id_)
@@ -447,12 +429,12 @@ res = gst_element_query (pipeline_, query);
 				       args, 
 				       NULL);
 		context->commands_.push_back (args->src);
-		g_source_attach (args->src, context->quid_->get_g_main_context ());   
+		g_source_attach (args->src, context->get_g_main_context ());   
 		g_source_unref(args->src);
 	      }
 	    else
 	      {
-		GstUtils::g_idle_add_full_with_context (context->quid_->get_g_main_context (),
+		GstUtils::g_idle_add_full_with_context (context->get_g_main_context (),
 							G_PRIORITY_DEFAULT_IDLE,
 							(GSourceFunc) run_command,   
 							(gpointer) args,

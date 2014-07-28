@@ -27,6 +27,7 @@
 #include <gst/gst.h>
 #include <memory>
 #include <vector>
+#include "quiddity.h"
 
 namespace switcher
 {
@@ -34,7 +35,7 @@ namespace switcher
   class QuiddityCommand;
   class CustomPropertyHelper;
 
-  class GPipe
+  class GPipe : public Quiddity
     {
     public:
       GPipe ();
@@ -43,7 +44,7 @@ namespace switcher
       GPipe &operator= (const GPipe &) = delete;
 
     protected:
-      void init_gpipe (Quiddity &quiddity);//FIXME should called quiddity-manager-impl 
+      //void init_gpipe (Quiddity &quiddity);//FIXME should called quiddity-manager-impl 
       //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
       GstElement *get_bin ();
       GstElement *bin_ {nullptr}; //FIXME should be private
@@ -70,19 +71,18 @@ namespace switcher
 	gboolean inited;
       } GstBusSource;
 
-      GstElement *pipeline_;
-      gdouble speed_;//was gunint64 ???
-      GSource *position_tracking_source_;
+      GstElement *pipeline_ {gst_pipeline_new (nullptr)};
+      gdouble speed_ {1.0};
+      GSource *position_tracking_source_ {nullptr};
       GSourceFuncs source_funcs_;
-      GSource *source_;
-      Quiddity *quid_;
+      GSource *source_{nullptr};
       std::shared_ptr<CustomPropertyHelper> custom_props_;
-      GParamSpec *play_pause_spec_;
-      bool play_;
-      GParamSpec *seek_spec_;
-      gdouble seek_;
-      gint64 length_;
-      std::vector<GSource *> commands_;
+      GParamSpec *play_pause_spec_ {nullptr};
+      bool play_ {true};
+      GParamSpec *seek_spec_ {nullptr};
+      gdouble seek_ {0.0};
+      gint64 length_ {0};
+      std::vector<GSource *> commands_ {};
  
       void make_bin ();
       void clean_bin ();

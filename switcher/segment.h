@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_SEGMENT_H__
 #define __SWITCHER_SEGMENT_H__
 
-#include "quiddity.h"
+//#include "quiddity.h"
 #include "gpipe.h"
 #include "shmdata-any-writer.h"
 #include "shmdata-writer.h"
@@ -37,7 +37,7 @@ namespace switcher
 {
   class DecodebinToShmdata;
 
-  class Segment : public Quiddity, public GPipe, public CounterMap 
+  class Segment : public GPipe, public CounterMap 
   /*inherit from CounterMap for sharing counters between multiple DecodebinToShmdata*/
   {
     friend DecodebinToShmdata; //in order to register shmdata

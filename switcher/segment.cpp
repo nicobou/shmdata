@@ -68,7 +68,7 @@ namespace switcher
   bool
   Segment::init ()
   {
-    init_gpipe (*this);
+    //init_gpipe (*this);
     return init_segment ();
   }
 
