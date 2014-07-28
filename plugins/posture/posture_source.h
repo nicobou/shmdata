@@ -1,8 +1,7 @@
-
 /*
- * This file is part of syphonsrc.
+ * This file is part of posture.
  *
- * switcher-top is free software; you can redistribute it and/or
+ * posture is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2 of the License, or (at your option) any later version.
@@ -18,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_POSTURE_H__
-#define __SWITCHER_POSTURE_H__
+#ifndef __SWITCHER_POSTURE_SRC_H__
+#define __SWITCHER_POSTURE_SRC_H__
 
 #include "switcher/segment.h"
 #include "switcher/startable-quiddity.h"

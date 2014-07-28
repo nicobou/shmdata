@@ -61,6 +61,8 @@ plugins/pjsip/check_pjsip
 plugins/portmidi/.deps/
 plugins/portmidi/.libs/
 plugins/portmidi/check_midi_plugins
+plugins/posture/.deps/
+plugins/posture/.libs/
 plugins/pulse/.deps/
 plugins/pulse/.libs/
 plugins/pulse/check_pulsesrc
