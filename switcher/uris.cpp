@@ -83,7 +83,7 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
 		    this);
     
-    //using play pause seek from runtime
+    //using play pause seek from pipeline
     // //registering pause
     // register_method("pause",
     // 		    (void *)&pause_wrapped, 

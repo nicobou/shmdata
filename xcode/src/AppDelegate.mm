@@ -146,18 +146,6 @@ logger_cb (std::string subscriber_name,
   //[[[NSApplication sharedApplication] delegate] logPrint:[NSString stringWithUTF8String:value.c_str()]];
 }
 
-gpointer
-set_runtime_invoker (gpointer name)
-{
-  if (manager->has_method ((char *)name, "set_runtime"))
-      {
-	std::string result;
-	manager->invoke_va ((char *)name, "set_runtime", &result, "single_runtime", NULL);
-      }
-  g_free (name);
-  return NULL;
-}
-
 void 
 quiddity_created_removed_cb (std::string subscriber_name, 
 			     std::string quiddity_name, 
@@ -166,12 +154,7 @@ quiddity_created_removed_cb (std::string subscriber_name,
 			     void *user_data)
 {
   g_message ("%s: %s", signal_name.c_str (), params[0].c_str ());
-  std::cout << signal_name << ": " << params[0] << std::endl;
-  if (g_strcmp0 (signal_name.c_str (), "on-quiddity-created") == 0
-      && is_loading == FALSE)
-    g_thread_new ("runtime invoker",
-                  GThreadFunc(set_runtime_invoker), 
-   		  g_strdup (params[0].c_str ()));
+  //std::cout << signal_name << ": " << params[0] << std::endl;
 }
 
 
@@ -280,10 +263,6 @@ int start (int argc, char *argv[])
      //subscribe to logs:
      manager->make_property_subscriber ("log_sub", logger_cb, NULL);
      manager->subscribe_property ("log_sub","internal_logger","last-line");
-     
-     // Create a runtime (named "single_runtime")
-     //std::string runtime = 
-     manager->create ("runtime","single_runtime");
      
     //make on-quiddity-created and on-quiddity-removed signals
      manager->create ("create_remove_spy", "create_remove_spy");

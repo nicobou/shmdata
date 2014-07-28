@@ -166,7 +166,7 @@ namespace switcher
       {
 	g_debug ("creating manager");
 	manager_ = QuiddityManager::make_manager ("manager_"+get_name());
-	//FIXME pause runtime
+	//FIXME pause pipeline
       }
     for (auto &it : shmdata_names_)
       {
@@ -182,10 +182,10 @@ namespace switcher
 	 		     NULL);
 	g_free (pipe);
       }
-    manager_->invoke_va("single_runtime", 
-			"play", 
-			NULL, 
-			NULL);
+    // manager_->invoke_va("single_runtime", 
+    // 			"play", 
+    // 			NULL, 
+    // 			NULL);
     return true;
   }
 

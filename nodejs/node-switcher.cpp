@@ -868,7 +868,6 @@ void Init(v8::Handle<v8::Object> target)
   
   switcher_manager->make_property_subscriber ("prop_sub", property_cb, NULL);
   
-  switcher_manager->create ("runtime", "single_runtime");
   switcher_container.push_back (switcher_manager); // keep reference only in the container
   
   switcher_manager->make_signal_subscriber ("signal_sub", signal_cb, NULL);

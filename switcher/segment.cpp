@@ -27,7 +27,6 @@ namespace switcher
   GParamSpec *Segment::json_readers_description_ = NULL;
 
   Segment::Segment() :
-    bin_ (NULL),
     shmdata_any_writers_ (),
     shmdata_writers_ (),
     shmdata_readers_ (),
@@ -64,54 +63,12 @@ namespace switcher
 			       json_readers_description_, 
 			       "shmdata-readers",
 			       "Shmdata Readers");
- 
-    make_bin();
-
-    //FIXME
-    // GType types[] = {G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING};
-    // make_custom_signal_with_class_name ("segment",
-    // 					 "on-new-shmdata-writer", 
-    // 					 G_TYPE_NONE,
-    // 					 3,
-    // 					 types);
-    // set_signal_description ("On New Shmdata Writer",
-    // 			     "on-new-shmdata-writer",
-    // 			     "a new shmdata writer has been created",
-    // 			     Signal::make_arg_description("Quiddity Name",
-    // 							  "quiddity_name",
-    // 							  "the quiddity name",
-    // 							  "Path",
-    // 							  "path",
-    // 							  "the shmdata path",
-    // 							  "JSON Documentation",
-    // 							  "json_doc",
-    // 							  "the writer json documentation",
-    // 							  NULL));
-    // make_custom_signal_with_class_name ("segment",
-    // 					 "on-new-shmdata-reader", 
-    // 					 G_TYPE_NONE,
-    // 					 3,
-    // 					 types);
-    // set_signal_description ("On New Shmdata Reader",
-    // 			     "on-new-shmdata-reader",
-    // 			     "a new shmdata reader has been created",
-    // 			     Signal::make_arg_description("Quiddity Name",
-    // 							  "quiddity_name",
-    // 							  "the quiddity name",
-    // 							  "Path",
-    // 							  "path",
-    // 							  "the shmdata path",
-    // 							  "JSON Documentation",
-    // 							  "json_doc",
-    // 							  "the writer json documentation",
-    // 							  NULL));
   }
 
   bool
   Segment::init ()
   {
-    //runtime
-    init_runtime (*this);
+    init_gpipe (*this);
     return init_segment ();
   }
 
@@ -120,71 +77,7 @@ namespace switcher
     clear_shmdatas ();
   }
   
-  void 
-  Segment::make_bin ()
-  {
-    GstUtils::make_element ("bin", &bin_);
-    g_object_set (G_OBJECT (bin_), "async-handling",TRUE, NULL);
-    gst_bin_add (GST_BIN (get_pipeline ()), bin_);
-    GstUtils::wait_state_changed (get_pipeline ());
-    GstUtils::sync_state_with_parent (bin_);
-    GstUtils::wait_state_changed (bin_);
-  }
-  
-  void
-  Segment::clean_bin()
-  {
-    g_debug ("Segment, bin state %s, target %s, num children %d ", 
-	     gst_element_state_get_name (GST_STATE (bin_)), 
-	     gst_element_state_get_name (GST_STATE_TARGET (bin_)), 
-	     GST_BIN_NUMCHILDREN(GST_BIN (bin_)));
-    
-    GstUtils::wait_state_changed (bin_);
-    
-    if (GST_IS_ELEMENT (bin_))
-      {
-	clear_shmdatas ();
-
-	g_debug ("Segment, bin state %s, target %s, num children %d ", 
-		 gst_element_state_get_name (GST_STATE (bin_)), 
-		 gst_element_state_get_name (GST_STATE_TARGET (bin_)), 
-		 GST_BIN_NUMCHILDREN(GST_BIN (bin_)));
-	
-	if (g_list_length (GST_BIN_CHILDREN (bin_)) > 0)
-	  {
-	    g_debug ("segment: some child elements have not been cleaned in %s",
-		     get_nick_name ().c_str ());
-	    GList *child = NULL, *children = GST_BIN_CHILDREN (bin_);
-	    for (child = children; child != NULL; child = g_list_next (child)) 
-	      {
-		g_debug ("segment warning: child %s", GST_ELEMENT_NAME (GST_ELEMENT (child->data)));
-		//GstUtils::clean_element (GST_ELEMENT (child->data));
-	      }
-	  }
-	g_debug ("going to clean bin_");
-	// GstUtils::g_idle_add_full_with_context (get_g_main_context (),
-	// 					G_PRIORITY_DEFAULT_IDLE,
-	// 					Segment::clean_element_invoke,
-	// 					(gpointer)bin_,
-	// 					NULL);
-	GstUtils::clean_element (bin_);
-	g_debug ("~Segment: cleaning internal bin");
-      }
-  }
-
-  gboolean
-  Segment::clean_element_invoke (gpointer user_data)
-  {
-    GstUtils::clean_element ((GstElement *) user_data);
-    return TRUE;
-  }
-
-  GstElement *
-  Segment::get_bin()
-  {
-    return bin_;
-  }
-
+ 
   void
   Segment::update_shmdata_writers_description ()
   {
@@ -351,13 +244,5 @@ namespace switcher
     g_value_set_string (value, context->shmdata_readers_description_->get_string (true).c_str ());
     return TRUE;
   }
-
-  bool 
-  Segment::reset_bin ()
-  {
-    clean_bin ();
-    make_bin ();
-    return true;
- }
 
 }

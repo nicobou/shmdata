@@ -40,6 +40,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     fakesink.cpp \
     gobject-custom-property.cpp \
     gobject-wrapper.cpp \
+    gpipe.cpp \
     gst-element-cleaner.cpp \
     gst-parse-to-bin-src.cpp \
     gst-video-parse-to-bin-src.cpp \
@@ -69,7 +70,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     quiddity.cpp \
     rtp-destination.cpp \
     rtp-session.cpp \
-    runtime.cpp \
     sdp-utils.cpp \
     segment.cpp \
     shmdata-any-writer.cpp \
@@ -126,6 +126,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     file-sdp.h \
     gobject-custom-property.h \
     gobject-wrapper.h \
+    gpipe.h \
     gst-element-cleaner.h \
     gst-parse-to-bin-src.h \
     gst-video-parse-to-bin-src.h \
@@ -157,7 +158,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     quiddity.h \
     rtp-destination.h \
     rtp-session.h \
-    runtime.h \
     sdp-utils.h \
     segment.h \
     shmdata-any-writer.h \

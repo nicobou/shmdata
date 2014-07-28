@@ -22,7 +22,7 @@
 #define __SWITCHER_SEGMENT_H__
 
 #include "quiddity.h"
-#include "runtime.h"
+#include "gpipe.h"
 #include "shmdata-any-writer.h"
 #include "shmdata-writer.h"
 #include "shmdata-reader.h"
@@ -37,7 +37,7 @@ namespace switcher
 {
   class DecodebinToShmdata;
 
-  class Segment : public Quiddity, public Runtime, public CounterMap 
+  class Segment : public Quiddity, public GPipe, public CounterMap 
   /*inherit from CounterMap for sharing counters between multiple DecodebinToShmdata*/
   {
     friend DecodebinToShmdata; //in order to register shmdata
@@ -48,11 +48,9 @@ namespace switcher
     Segment (const Segment &) = delete;
     Segment &operator= (const Segment&) = delete;
     virtual bool init_segment () = 0;
-    bool init ();
+    bool init () final;
 
   protected:
-    GstElement *get_bin ();
-    GstElement *bin_; //FIXME should be private
     bool register_shmdata_writer (ShmdataWriter::ptr writer);
     bool unregister_shmdata_writer (std::string shmdata_path);
     bool register_shmdata_any_writer (ShmdataAnyWriter::ptr writer);
@@ -60,7 +58,6 @@ namespace switcher
     bool register_shmdata_reader (ShmdataReader::ptr reader);
     bool unregister_shmdata_reader (std::string shmdata_path);
     bool clear_shmdatas ();
-    bool reset_bin ();
 
   private:
     std::unordered_map <std::string, ShmdataAnyWriter::ptr> shmdata_any_writers_;
@@ -72,13 +69,10 @@ namespace switcher
     static GParamSpec *json_writers_description_;
     static GParamSpec *json_readers_description_;
 
-    void make_bin ();
-    void clean_bin ();
     void update_shmdata_writers_description ();
     void update_shmdata_readers_description ();
     static bool get_shmdata_writers_by_gvalue (GValue *value, void *user_data);
     static bool get_shmdata_readers_by_gvalue (GValue *value, void *user_data);
-    static gboolean clean_element_invoke (gpointer user_data);
   };
 }  // end of namespace
 

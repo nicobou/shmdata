@@ -72,7 +72,7 @@ namespace switcher
 #else
     guintptr window_handle_;
 #endif
-    QuiddityCommand *on_error_command_; //for the runtime error handler
+    QuiddityCommand *on_error_command_; //for the GPipe error handler
     GdkCursor *blank_cursor_;
 
     CustomPropertyHelper::ptr custom_props_;

@@ -18,11 +18,11 @@
  */
 
 /**
- * The Runtime class
+ * The GPipe class
  */
 
-#ifndef __SWITCHER_RUNTIME_H__
-#define __SWITCHER_RUNTIME_H__
+#ifndef __SWITCHER_GPIPE_H__
+#define __SWITCHER_GPIPE_H__
 
 #include <gst/gst.h>
 #include <memory>
@@ -34,17 +34,20 @@ namespace switcher
   class QuiddityCommand;
   class CustomPropertyHelper;
 
-  class Runtime
+  class GPipe
     {
     public:
-      Runtime ();
-      virtual ~Runtime ();
-      Runtime (const Runtime &) = delete;
-      Runtime &operator= (const Runtime &) = delete;
+      GPipe ();
+      virtual ~GPipe ();
+      GPipe (const GPipe &) = delete;
+      GPipe &operator= (const GPipe &) = delete;
 
     protected:
-      void init_runtime (Quiddity &quiddity);//FIXME should called quiddity-manager-impl 
+      void init_gpipe (Quiddity &quiddity);//FIXME should called quiddity-manager-impl 
       //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
+      GstElement *get_bin ();
+      GstElement *bin_ {nullptr}; //FIXME should be private
+      bool reset_bin ();
       GstElement *get_pipeline ();
       void install_play_pause ();
       void install_seek ();
@@ -55,7 +58,7 @@ namespace switcher
 
     private:
      typedef struct {
-       Runtime *self;
+       GPipe *self;
        QuiddityCommand *command;
        GSource *src;
      } QuidCommandArg;
@@ -81,6 +84,8 @@ namespace switcher
       gint64 length_;
       std::vector<GSource *> commands_;
  
+      void make_bin ();
+      void clean_bin ();
       bool speed (gdouble speed);
       static gboolean get_play (void *user_data);
       static void set_play (gboolean play, void *user_data);

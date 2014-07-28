@@ -23,18 +23,7 @@
 namespace switcher
 {
 
-  ShmdataWriter::ShmdataWriter() :
-    path_ (),
-    caps_ (),
-    writer_ (shmdata_base_writer_init ()),
-    bin_ (NULL),
-    tee_ (NULL),
-    queue_ (NULL),
-    fakesink_ (NULL),
-    handoff_handler_ (0),
-    caps_mutex_ (),
-    on_caps_callback_ (nullptr),
-    json_description_ (new JSONBuilder())
+  ShmdataWriter::ShmdataWriter() 
   {}
 
   ShmdataWriter::~ShmdataWriter()

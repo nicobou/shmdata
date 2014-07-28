@@ -118,7 +118,7 @@ namespace switcher
 
     file_names_[shmdata_socket_path] = file_location;
     
-     if (recording_) // starting the reader if runtime is set
+     if (recording_) // starting the reader if pipeline is set
        {
 	     //FIXME make the recorder
        }

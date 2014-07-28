@@ -51,17 +51,18 @@ namespace switcher
     JSONBuilder::Node get_json_root_node ();
 
   private:
-    std::string path_;
-    std::string caps_;
-    shmdata_base_writer_t *writer_;
-    GstElement *bin_;
-    GstElement *tee_;
-    GstElement *queue_;
-    GstElement *fakesink_;
-    gulong handoff_handler_;
-    std::mutex caps_mutex_;
-    std::function<void (std::string)> on_caps_callback_;
-    JSONBuilder::ptr json_description_;
+    std::string path_ {};
+    std::string caps_ {};
+    shmdata_base_writer_t *writer_ {shmdata_base_writer_init ()};
+    GstElement *bin_  {nullptr};
+    GstElement *tee_ {nullptr};
+    GstElement *queue_ {nullptr};
+    GstElement *fakesink_ {nullptr};
+    gulong handoff_handler_ {0};
+    std::mutex caps_mutex_ {};
+    std::function<void (std::string)> on_caps_callback_ {nullptr};
+    JSONBuilder::ptr json_description_ {new JSONBuilder()};
+
     void make_json_description ();
     static void on_handoff_cb (GstElement* object, 
 			       GstBuffer* buf, 

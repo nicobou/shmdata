@@ -45,10 +45,9 @@ namespace switcher
    GstPad *main_pad_;
    GstCaps *rtpgstcaps_;
    bool discard_next_uncomplete_buffer_;
-   //   std::string runtime_name_;
    void init_uridecodebin ();
    void destroy_uridecodebin ();
-   QuiddityCommand *on_error_command_; //for the runtime error handler
+   QuiddityCommand *on_error_command_; //for the pipeline error handler
    void clean_on_error_command ();
    
    //custom properties 

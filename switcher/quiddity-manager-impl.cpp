@@ -45,12 +45,10 @@
 #include "logger.h"
 #include "property-mapper.h"
 #include "rtp-session.h"
-//#include "runtime.h"
 #include "shmdata-to-file.h"
 #include "shmdata-from-gdp-file.h"
 #include "udpsink.h"
 #include "uridecodebin.h"
-//#include "uris.h"
 #include "string-dictionary.h"
 #include "video-rate.h"
 #include "video-test-source.h"
@@ -213,8 +211,6 @@ namespace switcher
 						      PropertyMapper::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<RtpSession> (RtpSession::switcher_doc_.get_class_name (), 
       						  RtpSession::switcher_doc_.get_json_root_node ());
-    // abstract_factory_.register_class<Runtime> (Runtime::switcher_doc_.get_class_name (), 
-    //    					       Runtime::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<ShmdataFromGDPFile> (ShmdataFromGDPFile::switcher_doc_.get_class_name (), 
       							  ShmdataFromGDPFile::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<ShmdataToFile> (ShmdataToFile::switcher_doc_.get_class_name (), 

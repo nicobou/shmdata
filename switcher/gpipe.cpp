@@ -18,10 +18,10 @@
  */
 
 /**
- * The Runtime class
+ * The GPipe class
  */
 
-#include "runtime.h"
+#include "gpipe.h"
 #include "quiddity.h" 
 #include "quiddity-command.h" 
 #include "custom-property-helper.h"
@@ -33,7 +33,7 @@
 namespace switcher
 {
 
-  Runtime::Runtime () :
+  GPipe::GPipe () :
     pipeline_ (gst_pipeline_new (NULL)),
     speed_ (1.0),
     position_tracking_source_ (NULL),
@@ -47,10 +47,12 @@ namespace switcher
     seek_ (0.0),
     length_ (0),
     commands_ ()
-  {}
+  {
+    make_bin ();
+  }
 
   void
-  Runtime::init_runtime (Quiddity &quiddity)
+  GPipe::init_gpipe (Quiddity &quiddity)
   {
     quid_ = &quiddity;
     source_funcs_.prepare = source_prepare;
@@ -74,8 +76,8 @@ namespace switcher
 					    "play",
 					    (gboolean)TRUE,
 					    (GParamFlags) G_PARAM_READWRITE,
-					    Runtime::set_play,
-					    Runtime::get_play,
+					    GPipe::set_play,
+					    GPipe::get_play,
 					    this);
     seek_spec_ = 
       custom_props_->make_double_property ("seek", 
@@ -84,14 +86,14 @@ namespace switcher
 					   1.0,
 					   0.0,
 					   (GParamFlags) G_PARAM_READWRITE,
-					   Runtime::set_seek,
-					   Runtime::get_seek,
+					   GPipe::set_seek,
+					   GPipe::get_seek,
 					   this);
 
   }
 
   void
-  Runtime::install_play_pause ()
+  GPipe::install_play_pause ()
   {
     quid_->install_property_by_pspec (custom_props_->get_gobject (), 
 				      play_pause_spec_, 
@@ -100,7 +102,7 @@ namespace switcher
   }
   
   void 
-  Runtime::install_seek ()
+  GPipe::install_seek ()
   {
     quid_->install_property_by_pspec (custom_props_->get_gobject (), 
 				      seek_spec_, 
@@ -109,11 +111,11 @@ namespace switcher
   }
   
   void
-  Runtime::install_speed ()
+  GPipe::install_speed ()
   {
     quid_->install_method ("Speed",
 			   "speed", 
-			   "controle speed of runtime", 
+			   "controle speed of pipeline", 
 			   "success or fail",
 			   Method::make_arg_description ("Speed",
 							 "speed",
@@ -125,7 +127,7 @@ namespace switcher
 			   this);
   }
   
-  Runtime::~Runtime ()
+  GPipe::~GPipe ()
   {
     if (!commands_.empty ())
       for (auto &it : commands_)
@@ -140,7 +142,7 @@ namespace switcher
 
 
   void 
-  Runtime::play (gboolean play)
+  GPipe::play (gboolean play)
   {
     if (play_ == play)
       return;
@@ -162,21 +164,21 @@ namespace switcher
   }
 
   void 
-  Runtime::set_play (gboolean play, void *user_data)
+  GPipe::set_play (gboolean play, void *user_data)
   {
-    Runtime *context = static_cast<Runtime *> (user_data);
+    GPipe *context = static_cast<GPipe *> (user_data);
     context->play (play);
   }
 
   gboolean 
-  Runtime::get_play (void *user_data)
+  GPipe::get_play (void *user_data)
   {
-    Runtime *context = static_cast<Runtime *> (user_data);
+    GPipe *context = static_cast<GPipe *> (user_data);
     return context->play_;
   }
 
   bool
-  Runtime::seek (gdouble position)
+  GPipe::seek (gdouble position)
   {
     gboolean ret = FALSE;
     ret = gst_element_seek (pipeline_,  
@@ -198,22 +200,22 @@ namespace switcher
   }
   
   gdouble 
-  Runtime::get_seek (void *user_data)
+  GPipe::get_seek (void *user_data)
   {
-    Runtime *context = static_cast<Runtime *> (user_data);
+    GPipe *context = static_cast<GPipe *> (user_data);
     return context->seek_;
   }
   void 
-  Runtime::set_seek (gdouble position, void *user_data)
+  GPipe::set_seek (gdouble position, void *user_data)
   {
-    Runtime *context = static_cast<Runtime *> (user_data);
+    GPipe *context = static_cast<GPipe *> (user_data);
     context->seek (position);
   }
 
   gboolean
-  Runtime::speed_wrapped (gdouble speed, gpointer user_data)
+  GPipe::speed_wrapped (gdouble speed, gpointer user_data)
   {
-    Runtime *context = static_cast<Runtime *>(user_data);
+    GPipe *context = static_cast<GPipe *>(user_data);
       
     g_debug ("speed_wrapped %f", speed);
 
@@ -224,9 +226,9 @@ namespace switcher
   }
 
   bool
-  Runtime::speed (gdouble speed)
+  GPipe::speed (gdouble speed)
   {
-    g_debug ("Runtime::speed %f", speed);
+    g_debug ("GPipe::speed %f", speed);
 
     speed_ = speed;
     
@@ -268,7 +270,7 @@ res = gst_element_query (pipeline_, query);
   }
 
   void
-  Runtime::query_position_and_length ()
+  GPipe::query_position_and_length ()
   {
     GstFormat fmt = GST_FORMAT_TIME;
     gint64 pos;
@@ -283,16 +285,16 @@ res = gst_element_query (pipeline_, query);
   }
   
   gboolean
-  Runtime::query_position (gpointer user_data)
+  GPipe::query_position (gpointer user_data)
   {
-    Runtime *context = static_cast<Runtime *>(user_data);
+    GPipe *context = static_cast<GPipe *>(user_data);
     context->query_position_and_length ();
     /* call me again */
     return TRUE;
   }
   
   gboolean
-  Runtime::run_command (gpointer user_data)
+  GPipe::run_command (gpointer user_data)
   {
     QuidCommandArg *context = static_cast<QuidCommandArg *>(user_data);
     QuiddityManager_Impl::ptr manager = context->self->quid_->manager_impl_.lock ();
@@ -325,7 +327,7 @@ res = gst_element_query (pipeline_, query);
 	  }
       }
     else
-      g_warning ("Runtime::bus_sync_handler, cannot run command");
+      g_warning ("GPipe::bus_sync_handler, cannot run command");
     
     auto it = std::find (context->self->commands_.begin (),
 			 context->self->commands_.end (),
@@ -337,13 +339,13 @@ res = gst_element_query (pipeline_, query);
   }  
 
   GstElement * 
-  Runtime::get_pipeline ()
+  GPipe::get_pipeline ()
   {
     return pipeline_;
   }
 
   void
-  Runtime::print_one_tag (const GstTagList * list, const gchar * tag, gpointer user_data)
+  GPipe::print_one_tag (const GstTagList * list, const gchar * tag, gpointer user_data)
   {
      // int i, num;
     
@@ -376,14 +378,14 @@ res = gst_element_query (pipeline_, query);
   }
   
   GstBusSyncReply 
-  Runtime::bus_sync_handler (GstBus */*bus*/,
+  GPipe::bus_sync_handler (GstBus */*bus*/,
 			     GstMessage *msg, 
 			     gpointer user_data) 
   {
     shmdata_base_reader_t *reader = 
       (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src), 
 						   "shmdata_base_reader");
-    Runtime *context = static_cast<Runtime *>(user_data);
+    GPipe *context = static_cast<GPipe *>(user_data);
 
     // g_print ("-----------%s-----%s--------------------------\n",
     // 	     G_OBJECT_TYPE_NAME(G_OBJECT (msg->src)),
@@ -421,7 +423,7 @@ res = gst_element_query (pipeline_, query);
 	
 	gst_message_parse_error (msg, &error, &debug);
 	g_free (debug);
-	g_debug ("Runtime::bus_sync_handler Error: %s from %s", error->message, GST_MESSAGE_SRC_NAME(msg));
+	g_debug ("GPipe::bus_sync_handler Error: %s from %s", error->message, GST_MESSAGE_SRC_NAME(msg));
 	
 	QuiddityCommand *command = (QuiddityCommand *) g_object_get_data (G_OBJECT (msg->src), 
 									  "on-error-command");
@@ -485,7 +487,7 @@ res = gst_element_query (pipeline_, query);
   }
 
   gboolean
-  Runtime::bus_called (GstBus */*bus*/,
+  GPipe::bus_called (GstBus */*bus*/,
 		       GstMessage *msg,
 		       gpointer /*user_data*/)
   {
@@ -530,7 +532,7 @@ res = gst_element_query (pipeline_, query);
   }
   
   gboolean 
-  Runtime::source_prepare(GSource *source, gint *timeout)
+  GPipe::source_prepare(GSource *source, gint *timeout)
   {
     GstBusSource *bsrc = (GstBusSource *)source;
     *timeout = -1;
@@ -538,7 +540,7 @@ res = gst_element_query (pipeline_, query);
   }
   
   gboolean 
-  Runtime::source_check(GSource *source)
+  GPipe::source_check(GSource *source)
   {
     GstBusSource *bsrc = (GstBusSource *)source;
     return gst_bus_have_pending (bsrc->bus);
@@ -546,7 +548,7 @@ res = gst_element_query (pipeline_, query);
 
 
   gboolean 
-  Runtime::source_dispatch(GSource *source, GSourceFunc callback,
+  GPipe::source_dispatch(GSource *source, GSourceFunc callback,
 			   gpointer user_data)
   {
     GstBusFunc   handler = (GstBusFunc) callback;
@@ -567,13 +569,71 @@ res = gst_element_query (pipeline_, query);
   }
   
   void 
-  Runtime::source_finalize (GSource * source)
+  GPipe::source_finalize (GSource * source)
   {
     GstBusSource *bsrc = (GstBusSource *)source;
     gst_object_unref (bsrc->bus);
     bsrc->bus = NULL;
   }
+
+ void 
+  GPipe::make_bin ()
+  {
+    GstUtils::make_element ("bin", &bin_);
+    g_object_set (G_OBJECT (bin_), "async-handling",TRUE, NULL);
+    gst_bin_add (GST_BIN (get_pipeline ()), bin_);
+    GstUtils::wait_state_changed (get_pipeline ());
+    GstUtils::sync_state_with_parent (bin_);
+    GstUtils::wait_state_changed (bin_);
+  }
   
+  void
+  GPipe::clean_bin()
+  {
+    g_debug ("GPipe, bin state %s, target %s, num children %d ", 
+	     gst_element_state_get_name (GST_STATE (bin_)), 
+	     gst_element_state_get_name (GST_STATE_TARGET (bin_)), 
+	     GST_BIN_NUMCHILDREN(GST_BIN (bin_)));
+    
+    GstUtils::wait_state_changed (bin_);
+    
+    if (GST_IS_ELEMENT (bin_))
+      {
+	//FIXME clear_shmdatas ();
+
+	g_debug ("GPipe, bin state %s, target %s, num children %d ", 
+		 gst_element_state_get_name (GST_STATE (bin_)), 
+		 gst_element_state_get_name (GST_STATE_TARGET (bin_)), 
+		 GST_BIN_NUMCHILDREN(GST_BIN (bin_)));
+	
+	if (g_list_length (GST_BIN_CHILDREN (bin_)) > 0)
+	  {
+	    GList *child = NULL, *children = GST_BIN_CHILDREN (bin_);
+	    for (child = children; child != NULL; child = g_list_next (child)) 
+	      {
+		g_debug ("segment warning: child %s", GST_ELEMENT_NAME (GST_ELEMENT (child->data)));
+		//GstUtils::clean_element (GST_ELEMENT (child->data));
+	      }
+	  }
+	g_debug ("going to clean bin_");
+	GstUtils::clean_element (bin_);
+	g_debug ("GPipe: cleaning internal bin");
+      }
+  }
+
+  GstElement *
+  GPipe::get_bin()
+  {
+    return bin_;
+  }
+  
+  bool 
+  GPipe::reset_bin ()
+  {
+    clean_bin ();
+    make_bin ();
+    return true;
+ }
 
 }
 
