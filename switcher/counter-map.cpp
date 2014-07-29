@@ -27,6 +27,8 @@ namespace switcher
     mutex_ ()
   {}
 
+  CounterMap::~CounterMap () {}
+
   uint
   CounterMap::get_count (const std::string &key)
   {

@@ -40,6 +40,7 @@ namespace switcher
   {
   public:
     CounterMap ();
+    virtual ~CounterMap ();
 
   protected:
     uint get_count (const std::string &key);
