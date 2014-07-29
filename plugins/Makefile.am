@@ -1,6 +1,5 @@
 SUBDIRS= \
-    example \
-    avcodecs 
+    example
 
 if V4L2BUILD
 SUBDIRS += \

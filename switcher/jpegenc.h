@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_JPEG_ENC_H__
 #define __SWITCHER_JPEG_ENC_H__
 
-#include "switcher/video-sink.h"
+#include "switcher/base-sink.h"
 #include "switcher/gst-element-cleaner.h"
 #include <gst/gst.h>
 #include <memory>
@@ -28,7 +28,7 @@
 namespace switcher
 {
 
-  class JpegEnc : public VideoSink, public GstElementCleaner
+  class JpegEnc : public BaseSink, public GstElementCleaner
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JpegEnc);

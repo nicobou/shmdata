@@ -30,7 +30,7 @@
 namespace switcher
 {
 
-  class AravisGenicam : public BaseSource, public GstElementCleaner
+  class AravisGenicam : public GPipe, public GstElementCleaner
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AravisGenicam);

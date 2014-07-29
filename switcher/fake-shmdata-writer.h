@@ -22,14 +22,14 @@
 #define __SWITCHER_FAKE_SHMDATA_WRITER_H__
 
 #include <memory>
-#include "base-source.h"
+#include "gpipe.h"
 #include "startable-quiddity.h"
 #include "custom-property-helper.h"
 
 namespace switcher
 {
 
-  class FakeShmdataWriter : public BaseSource, StartableQuiddity
+  class FakeShmdataWriter : public GPipe, StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeShmdataWriter);

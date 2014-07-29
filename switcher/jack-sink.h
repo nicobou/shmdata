@@ -21,14 +21,14 @@
 #ifndef __SWITCHER_JACK_SINK_H__
 #define __SWITCHER_JACK_SINK_H__
 
-#include "switcher/audio-sink.h"
+#include "switcher/base-sink.h"
 #include "switcher/startable-quiddity.h"
 #include <memory>
 
 namespace switcher
 {
 
-  class JackSink : public AudioSink, public StartableQuiddity
+  class JackSink : public BaseSink, public StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JackSink);

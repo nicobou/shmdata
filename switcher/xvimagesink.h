@@ -21,14 +21,14 @@
 #ifndef __SWITCHER_XVIMAGESINK_H__
 #define __SWITCHER_XVIMAGESINK_H__
 
-#include "video-sink.h"
+#include "base-sink.h"
 #include <gst/gst.h>
 #include <memory>
 
 namespace switcher
 {
 
-  class Xvimagesink : public VideoSink
+  class Xvimagesink : public BaseSink
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Xvimagesink);

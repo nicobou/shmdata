@@ -21,14 +21,14 @@
 #ifndef __SWITCHER_FILE_SDP_H__
 #define __SWITCHER_FILE_SDP_H__
 
-#include "base-source.h"
+#include "gpipe.h"
 #include "gst-element-cleaner.h"
 #include <memory>
 
 namespace switcher
 {
 
-  class FileSDP : public BaseSource, public GstElementCleaner
+  class FileSDP : public GPipe, public GstElementCleaner
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FileSDP);

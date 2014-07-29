@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_URIDECODEBIN_H__
 #define __SWITCHER_URIDECODEBIN_H__
 
-#include "base-source.h"
+#include "gpipe.h"
 #include "gst-element-cleaner.h"
 #include "custom-property-helper.h"
 #include <unordered_map>
@@ -29,7 +29,7 @@
 namespace switcher
 {
 
-  class Uridecodebin : public BaseSource, public GstElementCleaner
+  class Uridecodebin : public GPipe, public GstElementCleaner
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Uridecodebin);

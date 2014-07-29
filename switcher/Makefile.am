@@ -23,11 +23,9 @@ lib_LTLIBRARIES = \
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     aravis-genicam.cpp \
-    audio-sink.cpp \
     audio-source.cpp \
     audio-test-source.cpp \
     base-sink.cpp \
-    base-source.cpp \
     categorizable.cpp \
     counter-map.cpp \
     custom-property-helper.cpp \
@@ -84,7 +82,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     unique-gst-element.cpp \
     uridecodebin.cpp \
     video-rate.cpp \
-    video-sink.cpp \
     video-source.cpp \
     video-test-source.cpp \
     vorbis.cpp \
@@ -108,11 +105,9 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     abstract-factory_spec.h \
     any.h \
     aravis-genicam.h \
-    audio-sink.h \
     audio-source.h \
     audio-test-source.h \
     base-sink.h \
-    base-source.h \
     categorizable.h \
     counter-map.h \
     create-remove-spy.h \
@@ -172,7 +167,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     unique-gst-element.h \
     uridecodebin.h \
     video-rate.h \
-    video-sink.h \
     video-source.h \
     video-test-source.h \
     vorbis.h \

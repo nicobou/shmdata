@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_HTTP_SDP_DEC_H__
 #define __SWITCHER_HTTP_SDP_DEC_H__
 
-#include "base-source.h"
+#include "gpipe.h"
 #include "quiddity-command.h"
 #include "decodebin-to-shmdata.h"
 #include <memory>
@@ -31,7 +31,7 @@
 namespace switcher
 {
 
-  class HTTPSDPDec : public BaseSource
+  class HTTPSDPDec : public GPipe
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);

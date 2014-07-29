@@ -21,13 +21,13 @@
 #ifndef __SWITCHER_AUDIO_SOURCE_H__
 #define __SWITCHER_AUDIO_SOURCE_H__
 
-#include "base-source.h"
+#include "gpipe.h"
 #include <memory>
 
 
 namespace switcher
 {
-  class AudioSource : public BaseSource
+  class AudioSource : public GPipe
   {
   public:
     typedef std::shared_ptr<AudioSource> ptr;
