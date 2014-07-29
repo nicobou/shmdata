@@ -24,16 +24,16 @@ namespace switcher
 {
 
   PluginLoader::PluginLoader() :
-    create_ (NULL),
-    destroy_ (NULL),
-    module_ (NULL), 
-    get_documentation_ (NULL),
-    json_doc_ (NULL)
+    create_ (nullptr),
+    destroy_ (nullptr),
+    module_ (nullptr), 
+    get_documentation_ (nullptr),
+    json_doc_ (nullptr)
   {}
   
   PluginLoader::~PluginLoader()
   {
-    if (module_ != NULL)
+    if (module_ != nullptr)
       g_module_close (module_);
   }
 
@@ -66,7 +66,7 @@ namespace switcher
 	return false;
       }
      
-    if (create_ == NULL)
+    if (create_ == nullptr)
       {
   	g_debug ("%s: %s", 
 		 filename,
@@ -84,7 +84,7 @@ namespace switcher
 	return false;
       }
 	
-    if (destroy_ == NULL)
+    if (destroy_ == nullptr)
       {
 	g_debug ("%s: %s", 
 		 filename,
@@ -102,7 +102,7 @@ namespace switcher
 	return false;
       }
      
-    if (get_documentation_ == NULL)
+    if (get_documentation_ == nullptr)
       {
   	g_debug ("%s: %s", 
 		 filename, 
@@ -120,7 +120,7 @@ namespace switcher
   bool 
   PluginLoader::close ()
   {
-    if (module_ == NULL)
+    if (module_ == nullptr)
       return false;
     
     if (!g_module_close (module_))
@@ -128,14 +128,14 @@ namespace switcher
 	g_debug ("closing module: %s", g_module_error ());
 	return false;
       }
-    module_ = NULL;
+    module_ = nullptr;
     return true;
   }
   
   std::string 
   PluginLoader::get_class_name ()
   {
-    if (module_ == NULL)
+    if (module_ == nullptr)
       return "";
     return class_name_;
   } 
@@ -143,8 +143,8 @@ namespace switcher
   JSONBuilder::Node   
   PluginLoader::get_json_root_node ()
   {
-    if (module_ == NULL)
-      return NULL;
+    if (module_ == nullptr)
+      return nullptr;
     return json_doc_;
   }
 

@@ -49,11 +49,11 @@ namespace switcher
     std::unique_lock<std::mutex> lock (thread_safe_);
     //g_print ("%s\n",__FUNCTION__);
     GFile *shmfile = g_file_new_for_commandline_arg (name.c_str());
-    if( g_file_query_exists (shmfile, NULL))
+    if( g_file_query_exists (shmfile, nullptr))
       {    
 	//thrash it
 	g_debug ("ShmdataAnyWriter::set_path warning: file %s exists and will be deleted.",name.c_str());
-	if (! g_file_delete (shmfile, NULL, NULL)) 
+	if (! g_file_delete (shmfile, nullptr, nullptr)) 
 	  {
 	    g_debug ("ShmdataAnyWriter::set_path error: file %s is already existing and cannot be trashed.",name.c_str());
 	    return false;

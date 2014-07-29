@@ -32,20 +32,20 @@ namespace switcher
 				       "Nicolas Bouillot");
 
   FakeSink::FakeSink () :
-    fakesink_ (NULL),
+    fakesink_ (nullptr),
     num_bytes_since_last_update_ (0),
-    update_byterate_source_ (NULL),
+    update_byterate_source_ (nullptr),
     byte_rate_ (0),
     string_caps_ (g_strdup ("unknown")),
     set_string_caps_ (true),
     props_ (new CustomPropertyHelper ()),
-    byte_rate_spec_ (NULL),
-    caps_spec_ (NULL)
+    byte_rate_spec_ (nullptr),
+    caps_spec_ (nullptr)
     {} 
  
   FakeSink::~FakeSink ()
   {
-     if (update_byterate_source_ != NULL)
+     if (update_byterate_source_ != nullptr)
        g_source_destroy (update_byterate_source_);
     reset_bin ();
     GstUtils::clean_element (fakesink_);
@@ -61,7 +61,7 @@ namespace switcher
     g_object_set (G_OBJECT (fakesink_), 
 		  "sync", FALSE, 
 		  "signal-handoffs", TRUE,
-		  NULL);
+		  nullptr);
 
     g_signal_connect (fakesink_, "handoff", (GCallback)on_handoff_cb, this);
 
@@ -75,7 +75,7 @@ namespace switcher
      					  G_MAXINT,
      					  byte_rate_,
      					  (GParamFlags) G_PARAM_READABLE,
-     					  NULL,
+     					  nullptr,
      					  FakeSink::get_byte_rate,
      					  this);
     
@@ -94,7 +94,7 @@ namespace switcher
 				    "caps of the attached shmdata",
 				    "unknown",
 				    (GParamFlags) G_PARAM_READABLE,
-				    NULL,
+				    nullptr,
 				    FakeSink::get_caps,
 				    this);
     

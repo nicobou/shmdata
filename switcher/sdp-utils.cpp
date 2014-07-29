@@ -23,8 +23,8 @@ namespace switcher
 {
   
   SDPMedia::SDPMedia () :
-    media_ (NULL),
-    caps_structure_ (NULL),
+    media_ (nullptr),
+    caps_structure_ (nullptr),
     port_ (0) //means "disabled media" 
   {
     gst_sdp_media_new (&media_);
@@ -33,22 +33,22 @@ namespace switcher
   SDPMedia::~SDPMedia ()
     {
       gst_sdp_media_free (media_);
-      if (NULL != caps_structure_)
+      if (nullptr != caps_structure_)
 	gst_structure_free (caps_structure_);
     }
 
     bool 
     SDPMedia::set_media_info_from_caps (const GstCaps *media_caps)
     {
-      if (NULL == media_caps)
+      if (nullptr == media_caps)
 	return false;
       GstStructure *s = gst_caps_get_structure (media_caps, 0);
-      if (NULL == s)
+      if (nullptr == s)
 	return false;
 
       gint value;
-      if (NULL == gst_structure_get_string (s, "media")
-	  || NULL == gst_structure_get_string (s, "encoding-name")
+      if (nullptr == gst_structure_get_string (s, "media")
+	  || nullptr == gst_structure_get_string (s, "encoding-name")
 	  || !gst_structure_get_int (s, "payload", &value)
 	  || !gst_structure_get_int (s, "clock-rate", &value))
 	{
@@ -69,7 +69,7 @@ namespace switcher
   bool 
   SDPMedia::add_to_sdp_description (GstSDPMessage *sdp_description, uint index) const
   {
-    if (0 == port_ || NULL == caps_structure_)
+    if (0 == port_ || nullptr == caps_structure_)
       {
 	g_warning ("missing information for adding media to sdp description");
 	return false;
@@ -90,7 +90,7 @@ namespace switcher
   gst_sdp_media_add_connection (media_, "IN", "IP4", "127.0.0.1", 16, 0);
 
   //sendonly
-  gst_sdp_media_add_attribute (media_, "sendonly", NULL);
+  gst_sdp_media_add_attribute (media_, "sendonly", nullptr);
 
   /* get clock-rate, media type and params for the rtpmap attribute */
   gint caps_rate = 0;
@@ -101,7 +101,7 @@ namespace switcher
 		      + std::to_string (caps_rate));
 
   const gchar *caps_params = gst_structure_get_string (caps_structure_, "encoding-params");
-  if (NULL != caps_params)
+  if (nullptr != caps_params)
     {
       rtpmap.append ("/");
       rtpmap.append (caps_params);
@@ -163,7 +163,7 @@ namespace switcher
   }
 
   SDPDescription::SDPDescription () :
-    sdp_description_ (NULL),
+    sdp_description_ (nullptr),
     index_ (0)
     {
       gst_sdp_message_new (&sdp_description_);
@@ -182,7 +182,7 @@ namespace switcher
       
       gst_sdp_message_set_session_name (sdp_description_, "switcher session");
       gst_sdp_message_set_information (sdp_description_, "telepresence");
-      gst_sdp_message_add_time (sdp_description_, "0", "0", NULL);
+      gst_sdp_message_add_time (sdp_description_, "0", "0", nullptr);
       gst_sdp_message_add_attribute (sdp_description_, "tool", "switcher");
       gst_sdp_message_add_attribute (sdp_description_, "type", "broadcast");
       gst_sdp_message_add_attribute (sdp_description_, "control", "*");

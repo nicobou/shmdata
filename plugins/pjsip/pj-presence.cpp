@@ -32,7 +32,7 @@ namespace switcher
       { PJPresence::AWAY, "Away", "AWAY"},
       { PJPresence::BRB, "Be right back", "BRB"},
       { PJPresence::OFFLINE, "Offline", "OFFLINE"},
-      { 0, NULL, NULL}
+      { 0, nullptr, nullptr}
     };
   
   PJPresence::PJPresence (PJSIP *sip_instance) :
@@ -40,9 +40,9 @@ namespace switcher
     account_id_ (-1),
     registration_mutex_ (),
     registration_cond_ (),
-    status_enum_spec_ (NULL),
+    status_enum_spec_ (nullptr),
     status_ (PJPresence::OFFLINE),
-    custom_status_spec_ (NULL),
+    custom_status_spec_ (nullptr),
     custom_status_ (),
     sip_local_user_ ()
   {
@@ -60,13 +60,13 @@ namespace switcher
 								 "SIP password", 
 								 "password", 
 								 "string", 
-								 NULL),
+								 nullptr),
 				   (Method::method_ptr) &register_account_wrapped, 
 				   G_TYPE_BOOLEAN,
 				   Method::make_arg_type_description (G_TYPE_STRING, 
 								      G_TYPE_STRING, 
 								      G_TYPE_STRING, 
-								      NULL),
+								      nullptr),
 				   this);
 
     sip_instance_->install_method ("Unregister SIP Account", //long name
@@ -74,11 +74,11 @@ namespace switcher
 				   "unregister SIP account", //description
 				   "success", //return description
 				   Method::make_arg_description ("none", 
-								 NULL),
+								 nullptr),
 				   (Method::method_ptr) &unregister_account_wrapped, 
 				   G_TYPE_BOOLEAN,
 				   Method::make_arg_type_description (G_TYPE_NONE,
-								      NULL),
+								      nullptr),
 				   this);
 
     //online status
@@ -125,9 +125,9 @@ namespace switcher
 					void *user_data)
   {
     PJPresence *context = static_cast<PJPresence *> (user_data);
-    if (NULL == user || NULL == domain || NULL == password)
+    if (nullptr == user || nullptr == domain || nullptr == password)
       {
-	g_warning ("register sip account received NULL user or domain or password");
+	g_warning ("register sip account received nullptr user or domain or password");
 	return FALSE;
       }
     context->sip_instance_->run_command_sync (std::bind (&PJPresence::register_account, 
@@ -304,7 +304,7 @@ namespace switcher
   PJPresence::on_buddy_state(pjsua_buddy_id buddy_id)
   {
     PJPresence *context = static_cast<PJPresence *> (pjsua_buddy_get_user_data (buddy_id));
-    if (NULL == context)
+    if (nullptr == context)
       return;
     pjsua_buddy_info info;
     pjsua_buddy_get_info(buddy_id, &info);
@@ -409,8 +409,8 @@ namespace switcher
     pj_bzero(&elem, sizeof(elem));
     elem.type = PJRPID_ELEMENT_TYPE_PERSON;
     bool has_custom_status = true;
-    char *tmp = NULL; 
-    On_scope_exit {if (NULL != tmp) g_free (tmp);};
+    char *tmp = nullptr; 
+    On_scope_exit {if (nullptr != tmp) g_free (tmp);};
     if (custom_status_.empty () || 0 == custom_status_.compare (""))
       has_custom_status = false;
     else

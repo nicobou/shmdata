@@ -30,11 +30,11 @@ namespace switcher
   {
     //g_debug ("ShmdataWriter: cleaning elements %s", path_.c_str());
 
-    if (NULL != tee_)
+    if (nullptr != tee_)
       GstUtils::clean_element (tee_);
-    if (NULL != queue_)
+    if (nullptr != queue_)
       GstUtils::clean_element (queue_);
-    if (NULL != fakesink_)
+    if (nullptr != fakesink_)
       {
 	// if (0 != handoff_handler_)
 	// //FIXME this is blocking sometime :
@@ -51,11 +51,11 @@ namespace switcher
   ShmdataWriter::set_path (std::string name)
   {
     GFile *shmfile = g_file_new_for_commandline_arg (name.c_str());
-    if( g_file_query_exists (shmfile, NULL))
+    if( g_file_query_exists (shmfile, nullptr))
       {    
 	//thrash it
 	g_debug ("ShmdataWriter::set_path warning: file %s exists and will be deleted.",name.c_str());
-	if (! g_file_delete (shmfile, NULL, NULL)) 
+	if (! g_file_delete (shmfile, nullptr, nullptr)) 
 	  {
 	    g_debug ("ShmdataWriter::set_path error: file %s is already existing and cannot be trashed.",name.c_str());
 	    return false;
@@ -93,16 +93,16 @@ namespace switcher
     GstUtils::make_element ("fakesink", &fakesink_);
     g_object_set (G_OBJECT(fakesink_), 
 		  "sync", FALSE, 
-		  NULL);
+		  nullptr);
     g_object_set (G_OBJECT(fakesink_), 
 		  "silent", TRUE, 
 		  "signal-handoffs", TRUE,
-		  NULL);
+		  nullptr);
     handoff_handler_ = g_signal_connect (fakesink_, "handoff", (GCallback)on_handoff_cb, this);
     g_object_set (G_OBJECT(queue_), 
 		  "leaky", 2, 
-		  NULL);
-    gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
+		  nullptr);
+    gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, nullptr);
     shmdata_base_writer_plug (writer_, 
 			      bin, 
 			      tee_);
@@ -112,7 +112,7 @@ namespace switcher
     gst_element_link_many (tee_, 
 			   queue_, 
 			   fakesink_,
-			   NULL);
+			   nullptr);
     GstUtils::sync_state_with_parent (tee_);
     GstUtils::sync_state_with_parent (queue_);
     GstUtils::sync_state_with_parent (fakesink_);
@@ -131,17 +131,17 @@ namespace switcher
     g_object_set (G_OBJECT(fakesink_), 
 		  "sync", FALSE, 
 		  "signal-handoffs", TRUE,
-		  NULL);
+		  nullptr);
     g_signal_connect (fakesink_, "handoff", (GCallback)on_handoff_cb, this);
     g_object_set (G_OBJECT(fakesink_), 
 		  "silent", TRUE, 
-		  NULL);
-    g_object_set (G_OBJECT(queue_), "leaky", 2, NULL);
+		  nullptr);
+    g_object_set (G_OBJECT(queue_), "leaky", 2, nullptr);
     gst_bin_add_many (GST_BIN (bin), 
      		      tee_, 
      		      queue_, 
      		      fakesink_,
-     		      NULL);
+     		      nullptr);
     shmdata_base_writer_plug (writer_, 
 			      bin, 
 			      tee_);
@@ -153,7 +153,7 @@ namespace switcher
     gst_element_link_many (tee_, 
 			   queue_, 
 			   fakesink_,
-			   NULL);
+			   nullptr);
     GstUtils::sync_state_with_parent (tee_);
     GstUtils::sync_state_with_parent (queue_);
     GstUtils::sync_state_with_parent (fakesink_);
@@ -171,7 +171,7 @@ namespace switcher
 
     std::unique_lock<std::mutex> lock (context->caps_mutex_);
     GstCaps *caps = gst_pad_get_negotiated_caps (pad);
-    if (NULL == caps)
+    if (nullptr == caps)
       return;
     gchar *string_caps = gst_caps_to_string (caps);
     context->caps_ = string_caps;
@@ -183,7 +183,7 @@ namespace switcher
       g_signal_handler_disconnect (G_OBJECT (object), context->handoff_handler_);
     g_object_set (G_OBJECT (context->fakesink_), 
     		  "signal-handoffs", FALSE,
-    		  NULL);
+    		  nullptr);
   }
 
   std::string

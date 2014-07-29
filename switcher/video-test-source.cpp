@@ -32,7 +32,7 @@ namespace switcher
 				       "Nicolas Bouillot");
 
   VideoTestSource::VideoTestSource() :
-    videotestsrc_ (NULL)
+    videotestsrc_ (nullptr)
   {}
  
   VideoTestSource::~VideoTestSource()
@@ -65,9 +65,9 @@ namespace switcher
     
     g_object_set (G_OBJECT (videotest),
 		  "is-live", TRUE,
-		  NULL);
+		  nullptr);
     
-    if (videotestsrc_ != NULL)
+    if (videotestsrc_ != nullptr)
       {
 	GstUtils::apply_property_value (G_OBJECT (videotestsrc_), G_OBJECT (videotest), "pattern");
 	

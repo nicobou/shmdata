@@ -28,23 +28,23 @@ namespace switcher
 {
 
   PJCall::app_t PJCall::app;
-  pjmedia_endpt *PJCall::med_endpt_ = NULL;
+  pjmedia_endpt *PJCall::med_endpt_ = nullptr;
 
   pjsip_module PJCall::mod_siprtp_ =
     {
-      NULL, NULL,                 /* prev, next.  */
+      nullptr, nullptr,                 /* prev, next.  */
       { "mod-siprtpapp", 13 },    /* Name.   */
       -1,                         /* Id   */
       30,                         /* Priority (before  PJSIP_MOD_PRIORITY_UA_PROXY_LAYER)  */
-      NULL,                       /* load()   */
-      NULL,                       /* start()   */
-      NULL,                       /* stop()   */
-      NULL,                       /* unload()   */
+      nullptr,                       /* load()   */
+      nullptr,                       /* start()   */
+      nullptr,                       /* stop()   */
+      nullptr,                       /* unload()   */
       &on_rx_request,             /* on_rx_request()  */
-      NULL,                       /* on_rx_response()  */
-      NULL,                       /* on_tx_request.  */
-      NULL,                       /* on_tx_response()  */
-      NULL,                       /* on_tsx_state()  */
+      nullptr,                       /* on_rx_response()  */
+      nullptr,                       /* on_tx_request.  */
+      nullptr,                       /* on_tx_response()  */
+      nullptr,                       /* on_tsx_state()  */
     };
 
 
@@ -82,7 +82,7 @@ namespace switcher
       g_warning ("Register mod_siprtp_ failed");
 
     // /* Init media */
-    status = pjmedia_endpt_create(&sip_instance_->cp_.factory, NULL, 1, &med_endpt_);
+    status = pjmedia_endpt_create(&sip_instance_->cp_.factory, nullptr, 1, &med_endpt_);
     if (status != PJ_SUCCESS) 
       g_warning ("Init media failed");
     
@@ -123,10 +123,10 @@ namespace switcher
 				   Method::make_arg_description ("SIP url", //first arg long name
 								 "url", //fisrt arg name
 								 "string", //first arg description
-								 NULL),
+								 nullptr),
 				   (Method::method_ptr) &call_sip_url, 
 				   G_TYPE_BOOLEAN,
-				   Method::make_arg_type_description (G_TYPE_STRING, NULL),
+				   Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 				   this);
 
     sip_instance_->install_method ("Hang Up", //long name
@@ -136,10 +136,10 @@ namespace switcher
 				   Method::make_arg_description ("SIP url", //first arg long name
 								 "url", //fisrt arg name
 								 "string", //first arg description
-								 NULL),
+								 nullptr),
 				   (Method::method_ptr) &hang_up, 
 				   G_TYPE_BOOLEAN,
-				   Method::make_arg_type_description (G_TYPE_STRING, NULL),
+				   Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 				   this);
 
     rtp_session_name_spec_ =
@@ -182,14 +182,14 @@ namespace switcher
 	struct media_stream *m = &app.call[i].media[j];
 	if (m->transport) {
 	  pjmedia_transport_close(m->transport);
-	  m->transport = NULL;
+	  m->transport = nullptr;
 	}
       }
     }
 
     if (med_endpt_) {
       pjmedia_endpt_destroy(med_endpt_);
-      med_endpt_ = NULL;
+      med_endpt_ = nullptr;
     }
   }
 
@@ -216,7 +216,7 @@ namespace switcher
 	pjsip_endpt_respond_stateless (rdata->tp_info.transport->endpt, 
 				       rdata, 
 				       500, &reason,
-				       NULL, NULL);
+				       nullptr, nullptr);
 	return PJ_TRUE;
       }
     
@@ -272,8 +272,8 @@ namespace switcher
 	       (int)inv->cause_text.slen,
 	       inv->cause_text.ptr);
       
-      call->inv = NULL;
-      inv->mod_data[mod_siprtp_.id] = NULL;
+      call->inv = nullptr;
+      inv->mod_data[mod_siprtp_.id] = nullptr;
 
       //cleaning shmdatas
       for (uint i=0; i < call->media_count; i++)
@@ -308,7 +308,7 @@ namespace switcher
       // if (app.duration != 0) {
       //   call->d_timer.id = 1;
       //   call->d_timer.user_data = call;
-      //   call->d_timer.cb = NULL;//&timer_disconnect_call;
+      //   call->d_timer.cb = nullptr;//&timer_disconnect_call;
    
       //   t.sec = app.duration;
       //   t.msec = 0;
@@ -447,14 +447,14 @@ namespace switcher
 		{
 		  manager->invoke (call->instance->rtp_session_name_,
 				   "add_destination",
-				   NULL,
+				   nullptr,
 				   {call->peer_uri,
 				    std::string (remote_sdp->origin.addr.ptr, 
 				    remote_sdp->origin.addr.slen)});
 
 		  manager->invoke (call->instance->rtp_session_name_,
 				   "add_udp_stream_to_dest",
-				   NULL,
+				   nullptr,
 				   {current_media->shm_path_to_send,
 				    call->peer_uri,
 				    std::to_string (remote_sdp->media[i]->desc.port)});
@@ -505,7 +505,7 @@ namespace switcher
 
     /* Find free call slot */
     for (i=0; i<app.max_calls; ++i) {
-      if (app.call[i].inv == NULL)
+      if (app.call[i].inv == nullptr)
 	break;
     }
 
@@ -513,7 +513,7 @@ namespace switcher
       const pj_str_t reason = pj_str("Too many calls");
       pjsip_endpt_respond_stateless( PJSIP::sip_endpt_, rdata, 
 				     500, &reason,
-				     NULL, NULL);
+				     nullptr, nullptr);
       return;
     }
 
@@ -521,15 +521,15 @@ namespace switcher
     call->peer_uri = from_uri;
     
     /* Parse SDP from incoming request and verify that we can handle the request. */
-    pjmedia_sdp_session *offer = NULL;
+    pjmedia_sdp_session *offer = nullptr;
     if (rdata->msg_info.msg->body) {
       pjsip_rdata_sdp_info *sdp_info;
       sdp_info = pjsip_rdata_get_sdp_info(rdata);
       offer = sdp_info->sdp;
-      if (NULL == offer)      
+      if (nullptr == offer)      
 	g_warning ("offer is null");
       status = sdp_info->sdp_err;
-      if (status == PJ_SUCCESS && sdp_info->sdp == NULL)
+      if (status == PJ_SUCCESS && sdp_info->sdp == nullptr)
 	status = PJSIP_ERRNO_FROM_SIP_STATUS (PJSIP_SC_NOT_ACCEPTABLE);
       if (status != PJ_SUCCESS)
 	g_warning ("Bad SDP in incoming INVITE");
@@ -538,7 +538,7 @@ namespace switcher
     // g_print ("*** offer ****\n");
     // print_sdp (offer);
     options = 0;
-    status = pjsip_inv_verify_request (rdata, &options, NULL, NULL, PJSIP::sip_endpt_, &tdata);
+    status = pjsip_inv_verify_request (rdata, &options, nullptr, nullptr, PJSIP::sip_endpt_, &tdata);
 
     if (status != PJ_SUCCESS) {
       /*
@@ -549,10 +549,10 @@ namespace switcher
      
 	pjsip_get_response_addr(tdata->pool, rdata, &res_addr);
 	pjsip_endpt_send_response(PJSIP::sip_endpt_, &res_addr, tdata,
-				  NULL, NULL);
+				  nullptr, nullptr);
       } 
       else /* Respond with 500 (Internal Server Error) */
-	pjsip_endpt_respond_stateless(PJSIP::sip_endpt_, rdata, 500, NULL, NULL, NULL);
+	pjsip_endpt_respond_stateless(PJSIP::sip_endpt_, rdata, 500, nullptr, nullptr, nullptr);
 
       return;
     }
@@ -561,7 +561,7 @@ namespace switcher
     /* Create UAS dialog */
     status = pjsip_dlg_create_uas( pjsip_ua_instance(), 
 				   rdata,
-				   NULL,//&app.local_contact, 
+				   nullptr,//&app.local_contact, 
 				   &dlg);
     if (status != PJ_SUCCESS) 
       {
@@ -570,8 +570,8 @@ namespace switcher
 				       rdata, 
 				       500, 
 				       &reason,
-				       NULL, 
-				       NULL);
+				       nullptr, 
+				       nullptr);
 	return;
       }
     
@@ -588,7 +588,7 @@ namespace switcher
 	{
 	  //g_print ("+++++++++++++++++ attribut count %d\n", offer->media[i]->attr_count);
 	  bool recv = false;
-	  pjmedia_sdp_media *tmp_media = NULL;
+	  pjmedia_sdp_media *tmp_media = nullptr;
 	  for (unsigned int j=0; j<offer->media[media_index]->attr_count; j++)
 	    {
 	      if (0 == pj_strcmp2( &offer->media[media_index]->attr[j]->name, "sendrecv")
@@ -604,7 +604,7 @@ namespace switcher
 	      //         (int)offer->media[media_index]->attr[j]->value.slen,
 	      //         offer->media[media_index]->attr[j]->value.ptr);
 	    }
-	  if (recv && NULL != tmp_media)
+	  if (recv && nullptr != tmp_media)
 	    {
 	      //adding control stream attribute
 	      pjmedia_sdp_attr *attr = 
@@ -646,17 +646,17 @@ namespace switcher
     // print_sdp (sdp);
     
     /* Create UAS invite session */
-    //sdp=NULL;
+    //sdp=nullptr;
     status = pjsip_inv_create_uas (dlg, rdata, sdp, 0, &call->inv);
     if (status != PJ_SUCCESS) 
       {
 	g_debug ("error creating uas");
-	pjsip_dlg_create_response (dlg, rdata, 500, NULL, &tdata);
+	pjsip_dlg_create_response (dlg, rdata, 500, nullptr, &tdata);
 	pjsip_dlg_send_response (dlg, pjsip_rdata_get_tsx(rdata), tdata);
 	return;
       }
    
-    // const pjmedia_sdp_session *offer = NULL;
+    // const pjmedia_sdp_session *offer = nullptr;
     // pjmedia_sdp_neg_get_neg_remote(call->inv->neg, &offer);
 
     /* Attach call data to invite session */
@@ -667,11 +667,11 @@ namespace switcher
 
     /* Create 200 response .*/
     status = pjsip_inv_initial_answer (call->inv, rdata, 200, 
-				       NULL, NULL, &tdata);
+				       nullptr, nullptr, &tdata);
     if (status != PJ_SUCCESS) {
       status = pjsip_inv_initial_answer (call->inv, rdata, 
 					 PJSIP_SC_NOT_ACCEPTABLE,
-					 NULL, NULL, &tdata);
+					 nullptr, nullptr, &tdata);
       if (status == PJ_SUCCESS)
 	pjsip_inv_send_msg (call->inv, tdata); 
       else
@@ -808,7 +808,7 @@ namespace switcher
     //    pj_ntohl(hdr->ts), payload_len);
 
     /* Update RTP session */
-    pjmedia_rtp_session_update(&strm->in_sess, hdr, NULL);
+    pjmedia_rtp_session_update(&strm->in_sess, hdr, nullptr);
 
     if (!(bool)strm->shm)
       return;
@@ -930,11 +930,11 @@ namespace switcher
     rem_m = remote->media[stream_idx];
 
     local_conn = local_m->conn ? local_m->conn : local->conn;
-    if (local_conn == NULL)
+    if (local_conn == nullptr)
       return PJMEDIA_SDP_EMISSINGCONN;
 
     rem_conn = rem_m->conn ? rem_m->conn : remote->conn;
-    if (rem_conn == NULL)
+    if (rem_conn == nullptr)
       return PJMEDIA_SDP_EMISSINGCONN;
 
     /* Media type must be audio */
@@ -1039,19 +1039,19 @@ namespace switcher
     if (local_m->desc.port == 0 ||
 	pj_sockaddr_has_addr(&local_addr)==PJ_FALSE ||
 	pj_sockaddr_has_addr(&si->rem_addr)==PJ_FALSE ||
-	pjmedia_sdp_media_find_attr2(local_m, "inactive", NULL)!=NULL)
+	pjmedia_sdp_media_find_attr2(local_m, "inactive", nullptr)!=nullptr)
       {
 	/* Inactive stream. */
 
 	si->dir = PJMEDIA_DIR_NONE;
 
-      } else if (pjmedia_sdp_media_find_attr2(local_m, "sendonly", NULL)!=NULL) {
+      } else if (pjmedia_sdp_media_find_attr2(local_m, "sendonly", nullptr)!=nullptr) {
 
       /* Send only stream. */
 
       si->dir = PJMEDIA_DIR_ENCODING;
 
-    } else if (pjmedia_sdp_media_find_attr2(local_m, "recvonly", NULL)!=NULL) {
+    } else if (pjmedia_sdp_media_find_attr2(local_m, "recvonly", nullptr)!=nullptr) {
 
       /* Recv only stream. */
 
@@ -1074,7 +1074,7 @@ namespace switcher
      * from that attribute. Otherwise, calculate from RTP address.
      */
     attr = pjmedia_sdp_attr_find2(rem_m->attr_count, rem_m->attr,
-				  "rtcp", NULL);
+				  "rtcp", nullptr);
     if (attr) {
       pjmedia_sdp_rtcp_attr rtcp;
       status = pjmedia_sdp_attr_get_rtcp(attr, &rtcp);
@@ -1083,7 +1083,7 @@ namespace switcher
 	  status = pj_sockaddr_init(rem_af, &si->rem_rtcp, &rtcp.addr,
 				    (pj_uint16_t)rtcp.port);
 	} else {
-	  pj_sockaddr_init(rem_af, &si->rem_rtcp, NULL,
+	  pj_sockaddr_init(rem_af, &si->rem_rtcp, nullptr,
 			   (pj_uint16_t)rtcp.port);
 	  pj_memcpy(pj_sockaddr_get_addr(&si->rem_rtcp),
 		    pj_sockaddr_get_addr(&si->rem_addr),
@@ -1169,7 +1169,7 @@ namespace switcher
     
       attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
 					  &local_m->desc.fmt[fmti]);
-      if (attr == NULL)
+      if (attr == nullptr)
 	continue;
 
       status = pjmedia_sdp_attr_get_rtpmap(attr, &r);
@@ -1197,15 +1197,15 @@ namespace switcher
       pj_bool_t has_rtpmap;
  
 
-      rtpmap = NULL;
+      rtpmap = nullptr;
       has_rtpmap = PJ_TRUE;
 
       attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
 					  &local_m->desc.fmt[fmti]);
-      if (attr == NULL) {
+      if (attr == nullptr) {
 	has_rtpmap = PJ_FALSE;
       }
-      if (attr != NULL) {
+      if (attr != nullptr) {
 	status = pjmedia_sdp_attr_to_rtpmap(pool, attr, &rtpmap);
 	if (status != PJ_SUCCESS)
 	  has_rtpmap = PJ_FALSE;
@@ -1266,7 +1266,7 @@ namespace switcher
       
       attr = pjmedia_sdp_media_find_attr2(local_m, "rtpmap",
 					  &local_m->desc.fmt[fmti]);
-      if (attr == NULL)
+      if (attr == nullptr)
 	return PJMEDIA_EMISSINGRTPMAP;
       
       
@@ -1304,7 +1304,7 @@ namespace switcher
       // i = 1;
       // codec_id_st = pj_str(codec_id);
       //  status = pjmedia_codec_mgr_find_codecs_by_id(mgr, &codec_id_st,
-      //            &i, &p_info, NULL);
+      //            &i, &p_info, nullptr);
       //  
       //  if (status != PJ_SUCCESS)
       //    return status;
@@ -1365,7 +1365,7 @@ namespace switcher
 
     // /* Get the remote ptime for our encoder. */
     // attr = pjmedia_sdp_attr_find2(rem_m->attr_count, rem_m->attr,
-    //       "ptime", NULL);
+    //       "ptime", nullptr);
     // if (attr) {
     //  pj_str_t tmp_val = attr->value;
     //  unsigned frm_per_pkt;
@@ -1383,7 +1383,7 @@ namespace switcher
 
     // /* Get remote maxptime for our encoder. */
     // attr = pjmedia_sdp_attr_find2(rem_m->attr_count, rem_m->attr,
-    //       "maxptime", NULL);
+    //       "maxptime", nullptr);
     // if (attr) {
     //  pj_str_t tmp_val = attr->value;
 
@@ -1450,7 +1450,7 @@ namespace switcher
     pjmedia_sdp_attr *attr;
     attr = pjmedia_sdp_media_find_attr2(sdp_media, "rtpmap",
 					&sdp_media->desc.fmt[fmt_pos]);
-    if (attr != NULL)
+    if (attr != nullptr)
       {
 	pjmedia_sdp_attr_remove (&sdp_media->attr_count, 
 				 sdp_media->attr, 
@@ -1462,7 +1462,7 @@ namespace switcher
     //remove the fmtp line
     attr = pjmedia_sdp_media_find_attr2(sdp_media, "fmtp",
 					&sdp_media->desc.fmt[fmt_pos]);
-    if (attr != NULL)
+    if (attr != nullptr)
       {
 	pjmedia_sdp_attr_remove (&sdp_media->attr_count, 
 				 sdp_media->attr, 
@@ -1497,15 +1497,15 @@ namespace switcher
     pj_str_t local_uri;
     pj_cstr (&local_uri, sip_instance_->sip_presence_->sip_local_user_.c_str ()); 
     unsigned i;
-    struct call *call = NULL;
-    pjsip_dialog *dlg = NULL;
-    pjmedia_sdp_session *sdp = NULL;
-    pjsip_tx_data *tdata = NULL;
+    struct call *call = nullptr;
+    pjsip_dialog *dlg = nullptr;
+    pjmedia_sdp_session *sdp = nullptr;
+    pjsip_tx_data *tdata = nullptr;
     pj_status_t status;
 
     /* Find unused call slot */
     for (i = 0; i < app.max_calls; ++i) {
-      if (app.call[i].inv == NULL)
+      if (app.call[i].inv == nullptr)
 	break;
     }
 
@@ -1678,9 +1678,9 @@ namespace switcher
   gboolean
   PJCall::call_sip_url (gchar *sip_url, void *user_data)
   {
-    if (NULL == sip_url || NULL == user_data)
+    if (nullptr == sip_url || nullptr == user_data)
       {
-	g_warning ("calling sip account received NULL url");
+	g_warning ("calling sip account received nullptr url");
 	return FALSE;
       }
     PJCall *context = static_cast<PJCall *> (user_data);
@@ -1695,9 +1695,9 @@ namespace switcher
   gboolean
   PJCall::hang_up (gchar *sip_url, void *user_data)
   {
-    if (NULL == sip_url || NULL == user_data)
+    if (nullptr == sip_url || nullptr == user_data)
       {
-	g_warning ("hang up received NULL url");
+	g_warning ("hang up received nullptr url");
 	return FALSE;
       }
     PJCall *context = static_cast<PJCall *> (user_data);
@@ -1717,12 +1717,12 @@ namespace switcher
     bool res;
     for (unsigned i = 0; i < app.max_calls; ++i) 
       {
-	if (app.call[i].inv == NULL)
+	if (app.call[i].inv == nullptr)
 	  break;
 	if (0 == contact_uri.compare (app.call[i].peer_uri))
 	  {
-	    status = pjsip_inv_end_session (app.call[i].inv, 603, NULL, &tdata);
-	    if (status==PJ_SUCCESS && tdata!=NULL)
+	    status = pjsip_inv_end_session (app.call[i].inv, 603, nullptr, &tdata);
+	    if (status==PJ_SUCCESS && tdata!=nullptr)
 	      pjsip_inv_send_msg (app.call[i].inv, tdata);
 	    res = true;
 	  }

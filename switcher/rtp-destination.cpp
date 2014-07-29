@@ -37,14 +37,14 @@ namespace switcher
 	std::vector <std::string> arg;
 	arg.push_back (host_name_);
 	arg.push_back (it.first);
-	manager->invoke ("udpsend_rtp", "remove_client", NULL ,arg);
+	manager->invoke ("udpsend_rtp", "remove_client", nullptr ,arg);
 	//cleaning rtcp
 	arg.clear ();
 	arg.push_back (host_name_);
 	std::ostringstream rtcp_port;
 	rtcp_port << atoi(it.first.c_str()) + 1;
 	arg.push_back (rtcp_port.str());
-	manager->invoke ("udpsend_rtp", "remove_client", NULL, arg);
+	manager->invoke ("udpsend_rtp", "remove_client", nullptr, arg);
 	//TODO remove connection to funnel
       }
   }

@@ -33,7 +33,7 @@ namespace switcher
       table_  = g_hash_table_new_full ((GHashFunc)g_str_hash, 
 				       (GEqualFunc)g_str_equal,
 				       (GDestroyNotify)g_free, //freeing keys
-				       NULL); //not freeing values
+				       nullptr); //not freeing values
     }
   
   template <typename T>
@@ -88,11 +88,11 @@ namespace switcher
       gpointer value;
       res = g_hash_table_lookup_extended        (table_,
 						 (gconstpointer) key.c_str(),
-						 NULL, //origin key
+						 nullptr, //origin key
 						 &value);
 
-      if (res && value == NULL)
-	g_debug ("warning: key %s has been found with a NULL value", key.c_str() );
+      if (res && value == nullptr)
+	g_debug ("warning: key %s has been found with a nullptr value", key.c_str() );
       
       return (T *)value;
     }
@@ -104,7 +104,7 @@ namespace switcher
       GList *list = g_hash_table_get_keys (table_);
       std::vector<std::string> keys;
 	
-      while (list != NULL)
+      while (list != nullptr)
 	{
 	  keys.push_back ((char *)list->data);
 	  list = g_list_remove(list,list->data);
@@ -120,7 +120,7 @@ namespace switcher
       GList *list = g_hash_table_get_values (table_);
       std::vector<T *> values;
 	
-      while (list != NULL)
+      while (list != nullptr)
 	{
 	  values.push_back ((T *)list->data);
 	  list = g_list_remove(list,list->data);

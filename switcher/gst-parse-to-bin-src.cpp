@@ -32,16 +32,16 @@ namespace switcher
 				       "Nicolas Bouillot");
   
   GstParseToBinSrc::GstParseToBinSrc () :
-    gst_parse_to_bin_src_ (NULL),
+    gst_parse_to_bin_src_ (nullptr),
     custom_props_ (new CustomPropertyHelper ()),
-    gst_launch_pipeline_spec_ (NULL),
+    gst_launch_pipeline_spec_ (nullptr),
     gst_launch_pipeline_ (g_strdup (""))
   {}
 
   GstParseToBinSrc::~GstParseToBinSrc ()
   {
     g_free (gst_launch_pipeline_);
-    if (gst_parse_to_bin_src_ != NULL)
+    if (gst_parse_to_bin_src_ != nullptr)
       GstUtils::clean_element (gst_parse_to_bin_src_);
   }
 
@@ -69,20 +69,20 @@ namespace switcher
   GstParseToBinSrc::to_shmdata ()
   {
 
-    GError *error = NULL;
+    GError *error = nullptr;
     gst_parse_to_bin_src_ = gst_parse_bin_from_description (gst_launch_pipeline_,
 							    TRUE,
 							    &error);
 
-    if (error != NULL)
+    if (error != nullptr)
       {
 	g_debug ("%s",error->message);
 	g_error_free (error);
-	gst_parse_to_bin_src_ = NULL;
+	gst_parse_to_bin_src_ = nullptr;
 	return false;
       }
 
-    g_object_set (G_OBJECT (gst_parse_to_bin_src_), "async-handling",TRUE, NULL);
+    g_object_set (G_OBJECT (gst_parse_to_bin_src_), "async-handling",TRUE, nullptr);
     //GstUtils::wait_state_changed (bin_);
     
     GstPad *src_pad = gst_element_get_static_pad (gst_parse_to_bin_src_,"src");

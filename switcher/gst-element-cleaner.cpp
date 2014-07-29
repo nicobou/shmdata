@@ -51,7 +51,7 @@ namespace switcher
   {
     auto it = labeled_elements_.find (new_label);
     if (labeled_elements_.end () == it)
-      return NULL;
+      return nullptr;
     return it->second;
   }
 

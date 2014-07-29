@@ -27,11 +27,11 @@ namespace switcher
   PJCodecUtils::inspect_rtp_codecs ()
   {
     PJCodecUtils::codecs res;
-    //assuming gst_init (NULL, NULL); has been called
+    //assuming gst_init (nullptr, nullptr); has been called
     GList *element_list = gst_element_factory_list_get_elements (GST_ELEMENT_FACTORY_TYPE_DEPAYLOADER, 
 								 GST_RANK_NONE);
     GList *iter = element_list;
-    while (iter != NULL)
+    while (iter != nullptr)
       {
 	//g_print ("+++++\n");
 	//g_print ("%s -- ", gst_element_factory_get_longname ((GstElementFactory *)iter->data));
@@ -57,7 +57,7 @@ namespace switcher
     const GList *static_pads = 
       gst_element_factory_get_static_pad_templates (factory);
     
-    while (NULL != static_pads)
+    while (nullptr != static_pads)
       {
 	GstStaticPadTemplate *pad = (GstStaticPadTemplate *)static_pads->data; 
 	//the following is EMPTY gchar *caps_str = gst_caps_to_string (&pad->static_caps.caps); 
@@ -102,7 +102,7 @@ namespace switcher
   {
     std::vector<std::string> res;
     const GValue *val = gst_structure_get_value (caps_struct, key.c_str ());  
-    if (NULL != val) 
+    if (nullptr != val) 
       {
 	//g_print ("%s struct type %s\n", key.c_str (), G_VALUE_TYPE_NAME (val));  
 	if (GST_VALUE_HOLDS_LIST(val)) 
@@ -133,7 +133,7 @@ namespace switcher
   {
     std::vector<gint> res;
     const GValue *val = gst_structure_get_value (caps_struct, key.c_str ());  
-    if (NULL != val) 
+    if (nullptr != val) 
       { 
 	//g_print ("%s struct type %s\n", key.c_str (), G_VALUE_TYPE_NAME (val));  
 	if(GST_VALUE_HOLDS_INT_RANGE(val)) 

@@ -30,8 +30,8 @@ namespace switcher
 				       "videorate",
 				       "Nicolas Bouillot");
   VideoRate::VideoRate () :
-    video_rate_bin_ (NULL),
-    video_rate_enc_ (NULL)
+    video_rate_bin_ (nullptr),
+    video_rate_enc_ (nullptr)
   {}
 
   bool
@@ -41,7 +41,7 @@ namespace switcher
      	|| !GstUtils::make_element ("videorate",&video_rate_enc_))
       return false;
     
-    //    g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
+    //    g_object_set (G_OBJECT (bin_), "async-handling", TRUE, nullptr);
     add_element_to_cleaner (video_rate_enc_);
     add_element_to_cleaner (video_rate_bin_);
 
@@ -64,19 +64,19 @@ namespace switcher
     if (!GstUtils::make_element ("capsfilter",&capsfilter))
       return;
 
-    g_object_set (G_OBJECT (capsfilter), "caps", video_rate_caps,NULL);
+    g_object_set (G_OBJECT (capsfilter), "caps", video_rate_caps,nullptr);
 
     gst_bin_add_many (GST_BIN (context->video_rate_bin_),
 		      context->video_rate_enc_,
 		      capsfilter,
-		      NULL);
+		      nullptr);
 
     gst_element_link (context->video_rate_enc_, capsfilter);
 
     GstUtils::sync_state_with_parent (context->video_rate_bin_);
 
     GstPad *sink_pad = gst_element_get_static_pad (context->video_rate_enc_, "sink");
-    GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
+    GstPad *ghost_sinkpad = gst_ghost_pad_new (nullptr, sink_pad);
     gst_pad_set_active(ghost_sinkpad,TRUE);
     gst_element_add_pad (context->video_rate_bin_, ghost_sinkpad); 
     gst_object_unref (sink_pad);

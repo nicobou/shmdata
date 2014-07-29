@@ -45,7 +45,7 @@ namespace switcher
 				       "Emmanuel Durand");
   SystemUsage::SystemUsage () :
     custom_props_ (std::make_shared<CustomPropertyHelper> ()),
-    period_prop_ (NULL),
+    period_prop_ (nullptr),
     cpuNbr_(0),
     period_(0.1)
   {}

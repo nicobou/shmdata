@@ -52,17 +52,17 @@ main ()
     std::string mapper = mgr->create ("property-mapper", "mapper");
     if (! mgr->invoke_va (mapper.c_str (), 
 			  "set-source-property", 
-			  NULL,
+			  nullptr,
 			  audio1.c_str (), 
 			  "freq",
-			  NULL))
+			  nullptr))
       return 1;
     if (! mgr->invoke_va (mapper.c_str (), 
 			  "set-sink-property", 
-			  NULL,
+			  nullptr,
 			  audio2.c_str (), 
 			  "freq",
-			  NULL))
+			  nullptr))
       return 1;
     if (! mgr->set_property (audio1, "freq", "1000"))
       return 1;

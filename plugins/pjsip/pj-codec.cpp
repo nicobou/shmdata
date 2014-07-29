@@ -166,9 +166,9 @@ namespace switcher
   PJCodec::alt_codec_deinit(void)
   {
     //g_print ("*************************************** %s\n", __FUNCTION__);
-    if (NULL == PJCall::med_endpt_)
+    if (nullptr == PJCall::med_endpt_)
       {
-	g_warning ("media endpoint is NULL, cannot deinit");
+	g_warning ("media endpoint is nullptr, cannot deinit");
 	return PJ_TRUE;//failure 
       }
     pjmedia_codec_mgr *codec_mgr;
@@ -183,9 +183,9 @@ namespace switcher
   PJCodec::install_codecs ()
   {
     //g_print ("*************************************** %s\n", __FUNCTION__);
-    if (NULL == PJCall::med_endpt_)
+    if (nullptr == PJCall::med_endpt_)
       {
-	g_warning ("cannot install codec (NULL media endpoint)");
+	g_warning ("cannot install codec (nullptr media endpoint)");
 	return PJ_TRUE;//failure
       }
 

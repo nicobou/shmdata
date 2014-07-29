@@ -33,7 +33,7 @@ namespace switcher
 
   //according to pjsip documentation:
   //Application should only instantiate one SIP endpoint instance for every process. 
-  pjsip_endpoint *PJSIP::sip_endpt_ = NULL;
+  pjsip_endpoint *PJSIP::sip_endpt_ = nullptr;
 
   PJSIP::PJSIP () : cp_ () {}
 
@@ -70,7 +70,7 @@ namespace switcher
   bool
   PJSIP::init ()
   {
-    if (NULL != sip_endpt_) 
+    if (nullptr != sip_endpt_) 
       {
 	g_warning ("a pjsip_endpoint already exists, cannot create more");
 	return false;
@@ -159,7 +159,7 @@ namespace switcher
 	pjsua_logging_config_default(&log_cfg);
 	log_cfg.console_level = 1;
 	
-	status = pjsua_init(&cfg, &log_cfg, NULL);
+	status = pjsua_init(&cfg, &log_cfg, nullptr);
 	if (status != PJ_SUCCESS) 
 	  {
 	    g_warning ("Error in pjsua_init()");
@@ -172,7 +172,7 @@ namespace switcher
       pj_caching_pool_init(&cp_, &pj_pool_factory_default_policy, 0);
       
     /* Create application pool for misc. */
-    pool_ = pj_pool_create(&cp_.factory, "switcher_sip", 1000, 1000, NULL);
+    pool_ = pj_pool_create(&cp_.factory, "switcher_sip", 1000, 1000, nullptr);
     
 
     start_udp_transport ();
@@ -232,21 +232,21 @@ namespace switcher
 	  done_cond_.notify_one ();
       }
     /* Shutting down... */
-    if (NULL != sip_calls_)
+    if (nullptr != sip_calls_)
       {
 	delete (sip_calls_);
-	sip_calls_ = NULL;
+	sip_calls_ = nullptr;
       }
 
-    if (NULL == sip_presence_)
+    if (nullptr == sip_presence_)
       {
 	delete (sip_presence_);
-	sip_presence_ = NULL;
+	sip_presence_ = nullptr;
       }
 
-    if (NULL != pool_) {
+    if (nullptr != pool_) {
       pj_pool_release(pool_);
-      pool_ = NULL;
+      pool_ = nullptr;
       pj_caching_pool_destroy(&cp_);
     }
     
@@ -264,13 +264,13 @@ namespace switcher
   PJSIP::start_udp_transport ()
   {
     
-    if (NULL != transport_id_)
+    if (nullptr != transport_id_)
       pjsua_transport_close (*transport_id_, PJ_FALSE);
     
     pjsua_transport_config cfg;
     pjsua_transport_config_default(&cfg);
     cfg.port = sip_port_;
-    pj_status_t status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, NULL);
+    pj_status_t status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, nullptr);
     if (status != PJ_SUCCESS) 
       {
 	g_warning ("Error creating UDP transport");

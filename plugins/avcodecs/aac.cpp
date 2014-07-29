@@ -28,15 +28,15 @@ namespace switcher
 				       "aacenc",
 				       "Nicolas Bouillot");
   AAC::AAC () :
-    aacbin_ (NULL),
-    aacenc_ (NULL)
+    aacbin_ (nullptr),
+    aacenc_ (nullptr)
   {}
 
   bool
   AAC::init_gpipe ()
   {
     GstUtils::make_element ("bin", &aacbin_);
-    //g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
+    //g_object_set (G_OBJECT (bin_), "async-handling", TRUE, nullptr);
     
     if (GstUtils::make_element ("ffenc_aac", &aacenc_))
       {
@@ -78,20 +78,20 @@ namespace switcher
     gst_bin_add_many (GST_BIN (context->aacbin_),
 		      context->aacenc_,
 		      audioconvert,
-		      NULL);
+		      nullptr);
     gst_element_link_many (audioconvert,
 			   context->aacenc_,
-			   NULL);
+			   nullptr);
     
     GstUtils::sync_state_with_parent (context->aacbin_);
 
     GstPad *sink_pad = gst_element_get_static_pad (audioconvert, "sink");
-    GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
+    GstPad *ghost_sinkpad = gst_ghost_pad_new (nullptr, sink_pad);
     gst_pad_set_active(ghost_sinkpad,TRUE);
     gst_element_add_pad (context->aacbin_, ghost_sinkpad); 
     gst_object_unref (sink_pad);
     
-     GstCaps *aaccaps = gst_caps_new_simple ("audio/mpeg", NULL);
+     GstCaps *aaccaps = gst_caps_new_simple ("audio/mpeg", nullptr);
      ShmdataWriter::ptr aacframes_writer;
      aacframes_writer.reset (new ShmdataWriter ());
      std::string writer_name = context->make_file_name ("aacframes"); 

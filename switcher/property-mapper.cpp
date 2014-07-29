@@ -44,13 +44,13 @@ namespace switcher
     source_quiddity_ (),
     source_property_name_ (),
     sink_quiddity_ (),
-    sink_quiddity_pspec_ (NULL),
+    sink_quiddity_pspec_ (nullptr),
     sink_property_name_ (),
     custom_props_ (new CustomPropertyHelper ()),
-    sink_min_spec_ (NULL),
-    sink_max_spec_ (NULL),
-    source_min_spec_ (NULL),
-    source_max_spec_ (NULL),
+    sink_min_spec_ (nullptr),
+    sink_max_spec_ (nullptr),
+    source_min_spec_ (nullptr),
+    source_max_spec_ (nullptr),
     sink_min_ (0),
     sink_max_ (0),
     source_min_ (0),
@@ -70,10 +70,10 @@ namespace switcher
 						  "property Name", //first arg long name
 						  "property_name", //fisrt arg name
 						  "Name of the property", //first arg description
-						  NULL),
+						  nullptr),
   		    (Method::method_ptr) &set_source_property_method, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, nullptr),
 		    this);
 
     install_method ("Set Sink Property", //long name
@@ -86,10 +86,10 @@ namespace switcher
 						  "property Name", //first arg long name
 						  "property_name", //fisrt arg name
 						  "Name of the property", //first arg description
-						  NULL),
+						  nullptr),
   		    (Method::method_ptr) &set_sink_property_method, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, nullptr),
 		    this);
 
 
@@ -100,7 +100,7 @@ namespace switcher
      // PyObject *numpy_name = PyString_FromString("numpy");
      // PyObject *numpy = PyImport_Import(numpy_name);
      // Py_DECREF(numpy_name);
-     // if (numpy != NULL) 
+     // if (numpy != nullptr) 
      //   g_print ("got numpy !\n");
      // else
      //   g_print ("no numpy\n");
@@ -108,7 +108,7 @@ namespace switcher
      // PyObject *numpey_name = PyString_FromString("numpey");
      // PyObject *numpey = PyImport_Import(numpey_name);
      // Py_DECREF(numpey_name);
-     // if (numpey != NULL) 
+     // if (numpey != nullptr) 
      //   g_print ("got numpey !\n");
      // else
      //   g_print ("no numpey..\n");

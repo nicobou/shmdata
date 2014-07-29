@@ -56,7 +56,7 @@ namespace switcher
 						   "json formated shmdata writers description",
 						   "",
 						   (GParamFlags) G_PARAM_READABLE,
-						   NULL,
+						   nullptr,
 						   Segment::get_shmdata_writers_string,
 						   this);
     
@@ -65,7 +65,7 @@ namespace switcher
 						   "json formated shmdata readers description",
 						   "",
 						   (GParamFlags) G_PARAM_READABLE,
-						   NULL,
+						   nullptr,
 						   Segment::get_shmdata_readers_string,
 						   this);
     

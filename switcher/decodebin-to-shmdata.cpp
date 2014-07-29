@@ -26,7 +26,7 @@ namespace switcher
   DecodebinToShmdata::DecodebinToShmdata (GPipe &gpipe) :
     decodebin_ ("decodebin2"),
     discard_next_uncomplete_buffer_ (false),
-    main_pad_ (NULL),
+    main_pad_ (nullptr),
     media_counters_ (),
     media_counter_mutex_ (),
     gpipe_ (&gpipe),
@@ -39,7 +39,7 @@ namespace switcher
 			       std::placeholders::_1, 
 			       "async-handling", 
 			       TRUE,
-			       NULL);
+			       nullptr);
     decodebin_.g_invoke (std::move (set_prop));
 
     //pad added callback
@@ -107,7 +107,7 @@ namespace switcher
 	gst_object_unref (sinkpad);
 	GstPad *srcpad = gst_element_get_static_pad (rtpgstdepay, "src");
 	GstUtils::sync_state_with_parent (rtpgstdepay);
-	gst_element_get_state (rtpgstdepay, NULL, NULL, GST_CLOCK_TIME_NONE);
+	gst_element_get_state (rtpgstdepay, nullptr, nullptr, GST_CLOCK_TIME_NONE);
 	context->pad_to_shmdata_writer (GST_ELEMENT_PARENT (object), srcpad);
 	gst_object_unref (srcpad);
 	return;
@@ -213,12 +213,12 @@ namespace switcher
        		  "sync", TRUE, 
     		  "signal-handoffs", TRUE,
     		  "silent", TRUE,
-       		  NULL);
+       		  nullptr);
     
     GstElement *funnel;
     GstUtils::make_element ("funnel", &funnel);
     
-    gst_bin_add_many (GST_BIN (bin), fakesink, funnel, NULL);
+    gst_bin_add_many (GST_BIN (bin), fakesink, funnel, nullptr);
     GstUtils::link_static_to_request (pad, funnel);
     gst_element_link (funnel, fakesink);
 
@@ -228,7 +228,7 @@ namespace switcher
     
     //probing eos   
     GstPad *srcpad = gst_element_get_static_pad (funnel, "src");
-    if (NULL == main_pad_)
+    if (nullptr == main_pad_)
       main_pad_ = srcpad; //saving first pad for looping
     gst_pad_add_event_probe (srcpad, (GCallback) eos_probe_cb, this);   
     gst_object_unref (srcpad);
@@ -238,7 +238,7 @@ namespace switcher
     {//giving a name to the stream
       gchar **padname_splitted = g_strsplit_set (padname.c_str (), "/",-1);
       On_scope_exit { g_strfreev(padname_splitted);};
-      if (NULL != padname_splitted[0])
+      if (nullptr != padname_splitted[0])
 	media_name = padname_splitted[0];
       media_name.append ("-" + std::to_string (gpipe_->get_count (media_name)));
 
@@ -269,7 +269,7 @@ namespace switcher
 						G_PRIORITY_DEFAULT_IDLE,
 						(GSourceFunc) DecodebinToShmdata::rewind,   
 						(gpointer) context,
-						NULL);   
+						nullptr);   
       return FALSE;
     }  
     
@@ -301,8 +301,8 @@ namespace switcher
 	writer->push_data (GST_BUFFER_DATA (buf),
 			   GST_BUFFER_SIZE (buf),
 			   GST_BUFFER_TIMESTAMP (buf),
-			   NULL,
-			   NULL);
+			   nullptr,
+			   nullptr);
       }
   }
 
@@ -325,7 +325,7 @@ namespace switcher
     gint64 start_value = -2.0;
     gint64 stop_value = -2.0;
     if (res) {
-      gst_query_parse_segment (query, &rate, NULL, &start_value, &stop_value);
+      gst_query_parse_segment (query, &rate, nullptr, &start_value, &stop_value);
       // g_print ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n", 
       // 	       rate,
       // 	       GST_TIME_ARGS (start_value),

@@ -61,7 +61,7 @@ namespace switcher
 								 "Property Name",
 								 "property_name",
 								 "the property name",
-								 NULL),
+								 nullptr),
 				    1, 
 				    arg_type);
 
@@ -75,7 +75,7 @@ namespace switcher
 								 "Property Name",
 								 "property_name",
 								 "the property name",
-								 NULL),
+								 nullptr),
 				    1, 
 				    arg_type);
 
@@ -89,7 +89,7 @@ namespace switcher
 								 "Property Name",
 								 "property_name",
 								 "the property name",
-								 NULL),
+								 nullptr),
 				    1, 
 				    arg_type);
 
@@ -103,7 +103,7 @@ namespace switcher
 								 "Method Name",
 								 "method_name",
 								 "the method name",
-								 NULL),
+								 nullptr),
 				    1, 
 				    arg_type);
 
@@ -117,7 +117,7 @@ namespace switcher
 								 "Method Name",
 								 "method_name",
 								 "the method name",
-								 NULL),
+								 nullptr),
 				    1, 
 				    arg_type);
 
@@ -131,7 +131,7 @@ namespace switcher
 								 "Branch Name",
 								 "branch_name",
 								 "the branch name",
-								 NULL),
+								 nullptr),
 				    1, 
 				    arg_type);
 
@@ -145,7 +145,7 @@ namespace switcher
 								 "Branch Name",
 								 "branch_name",
 								 "the branch name",
-								 NULL),
+								 nullptr),
 				    1, 
 				    arg_type);
 
@@ -399,9 +399,9 @@ namespace switcher
 		   method_name.c_str());
 	return false;
       }
-    if (method == NULL)
+    if (method == nullptr)
       {
-	g_warning ("cannot register a NULL method (for %s)", method_name.c_str());
+	g_warning ("cannot register a nullptr method (for %s)", method_name.c_str());
 	return false;
       }
       
@@ -412,7 +412,7 @@ namespace switcher
     //using signal ids in order to avoid id conflicts between signal and methods
     if (signals_ids_.find(sig_pair) == signals_ids_.end())
       {
-	closure = g_cclosure_new (G_CALLBACK (method), user_data, NULL/*destroy data*/);
+	closure = g_cclosure_new (G_CALLBACK (method), user_data, nullptr/*destroy data*/);
 	g_closure_set_marshal  (closure, g_cclosure_marshal_generic);
 
 	guint id = GObjectWrapper::make_signal_action (closure,
@@ -499,7 +499,7 @@ namespace switcher
   {
     GParamSpec *pspec = g_object_class_find_property (G_OBJECT_GET_CLASS(object), 
 						      gobject_property_name.c_str());
-    if (pspec == NULL)
+    if (pspec == nullptr)
       {
 	g_debug ("property not found %s", gobject_property_name.c_str());
 	return false;
@@ -523,7 +523,7 @@ namespace switcher
     GParamSpec *pspec = 
       g_object_class_find_property (G_OBJECT_GET_CLASS(object), 
 				    gobject_property_name.c_str());
-    if (pspec == NULL)
+    if (pspec == nullptr)
       {
 	g_debug ("property not found %s", gobject_property_name.c_str());
 	return false;
@@ -572,7 +572,7 @@ namespace switcher
 	return false;
       }
     
-    if (return_value != NULL)
+    if (return_value != nullptr)
       {
 	gchar *res_val = GstUtils::gvalue_serialize (&res);
 	*return_value = new std::string (res_val);
@@ -596,7 +596,7 @@ namespace switcher
     else 
       {
 	GValue res = signals_[signal_name]->action_emit (args);
-	if (return_value != NULL)
+	if (return_value != nullptr)
 	  {
 	    gchar *res_val = GstUtils::gvalue_serialize (&res);
 	    //gchar *res_val;
@@ -628,9 +628,9 @@ namespace switcher
 			     Method::args_types arg_types, 
 			     gpointer user_data)
   {
-    if (method == NULL)
+    if (method == nullptr)
       {
-	g_debug ("fail registering %s (method is NULL)",method_name.c_str());
+	g_debug ("fail registering %s (method is nullptr)",method_name.c_str());
 	return false;
       }
     
@@ -845,7 +845,7 @@ namespace switcher
 	signals_description_->begin_object ();
 	signals_description_->add_string_member ("name",it.first.c_str ());
 	JsonNode *root_node = it.second->get_json_root_node ();
-	if (root_node != NULL)
+	if (root_node != nullptr)
 	  signals_description_->add_JsonNode_member ("description", root_node);
 	else
 	  signals_description_->add_string_member ("description","missing description");
@@ -908,8 +908,8 @@ namespace switcher
     QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
     if ((bool) manager)
       return manager->get_g_main_context ();
-    g_debug ("%s: returning NULL\n", __PRETTY_FUNCTION__);
-    return NULL;
+    g_debug ("%s: returning nullptr\n", __PRETTY_FUNCTION__);
+    return nullptr;
   }
 
   //methods

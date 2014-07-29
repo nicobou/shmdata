@@ -186,7 +186,7 @@ namespace switcher
       {
 	json_reader_read_element (reader, j);
 	const gchar *str = json_reader_get_string_value (reader);
-	if (NULL != str)
+	if (nullptr != str)
 	  command->add_arg (str);
 	else
 	  command->add_arg ("null");
@@ -203,7 +203,7 @@ namespace switcher
       {
 	json_reader_read_element (reader, j);
     const char* stringValue = json_reader_get_string_value (reader);
-    if (stringValue == NULL)
+    if (stringValue == nullptr)
         stringValue = "null";
 	string_vect_arg.push_back (stringValue);
 	json_reader_end_element (reader);
@@ -220,7 +220,7 @@ namespace switcher
       {
 	json_reader_read_element (reader, j);
 	const char *string_value = json_reader_get_string_value (reader);
-	if (NULL != string_value)
+	if (nullptr != string_value)
 	  expected_result.push_back (string_value);
 	json_reader_end_element (reader);
       }

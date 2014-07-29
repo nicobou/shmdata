@@ -98,7 +98,7 @@ namespace switcher {
 				       json_builder));
 	json_builder_end_object (json_builder);
 	JsonNode *node = json_builder_get_root (json_builder);
-	if (NULL == node)
+	if (nullptr == node)
 	  return std::string();
 	JsonGenerator *generator = json_generator_new ();
 	On_scope_exit {g_object_unref (generator);};
@@ -116,11 +116,11 @@ namespace switcher {
       // {
      
       //   // JsonParser *parser = json_parser_new ();
-      //   // GError *error = NULL;
+      //   // GError *error = nullptr;
       //   // json_parser_load_from_data (parser,
       //   // 				  serialized.c_str (),
       //   // 				  &error);
-      //   // if (error != NULL)
+      //   // if (error != nullptr)
       //   // 	{
       //   // 	  g_warning ("%s",error->message);
       //   // 	  g_object_unref(parser);

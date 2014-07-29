@@ -29,8 +29,8 @@ namespace switcher
 				       "x264enc",
 				       "Nicolas Bouillot");
   H264::H264 () :
-    h264bin_ (NULL),
-    h264enc_ (NULL)
+    h264bin_ (nullptr),
+    h264enc_ (nullptr)
   {}
 
   bool
@@ -45,7 +45,7 @@ namespace switcher
 		  "bitrate",10000,
                   "threads", 4,
 		  //"sliced-threads", TRUE,
-		  NULL);
+		  nullptr);
     add_element_to_cleaner (h264enc_);
     add_element_to_cleaner (h264bin_);
 
@@ -71,20 +71,20 @@ namespace switcher
     gst_bin_add_many (GST_BIN (context->h264bin_),
 		      context->h264enc_,
 		      colorspace,
-		      NULL);
+		      nullptr);
     gst_element_link_many (colorspace,
 			   context->h264enc_,
-			   NULL);
+			   nullptr);
     
     GstUtils::sync_state_with_parent (context->h264bin_);
 
     GstPad *sink_pad = gst_element_get_static_pad (colorspace, "sink");
-    GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
+    GstPad *ghost_sinkpad = gst_ghost_pad_new (nullptr, sink_pad);
     gst_pad_set_active(ghost_sinkpad,TRUE);
     gst_element_add_pad (context->h264bin_, ghost_sinkpad); 
     gst_object_unref (sink_pad);
     
-     GstCaps *h264caps = gst_caps_new_simple ("video/x-h264", NULL);
+     GstCaps *h264caps = gst_caps_new_simple ("video/x-h264", nullptr);
      ShmdataWriter::ptr h264frames_writer;
      h264frames_writer.reset (new ShmdataWriter ());
      std::string writer_name = context->make_file_name ("h264frames"); 

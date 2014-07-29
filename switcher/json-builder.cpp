@@ -35,7 +35,7 @@ namespace switcher
   JSONBuilder::~JSONBuilder ()
   {
     std::unique_lock<std::mutex> lock (thread_safe_);
-    if (builder_ != NULL && G_IS_OBJECT (builder_))
+    if (builder_ != nullptr && G_IS_OBJECT (builder_))
       g_object_unref (builder_);
   }
 

@@ -40,18 +40,18 @@ namespace switcher
   }
 
   Uridecodebin::Uridecodebin () :
-    uridecodebin_ (NULL),
+    uridecodebin_ (nullptr),
     media_counters_ (),
-    main_pad_ (NULL),
-    rtpgstcaps_ (NULL),
+    main_pad_ (nullptr),
+    rtpgstcaps_ (nullptr),
     discard_next_uncomplete_buffer_ (false),
-    on_error_command_ (NULL),
+    on_error_command_ (nullptr),
     custom_props_ (new CustomPropertyHelper ()),
-    loop_prop_ (NULL),
+    loop_prop_ (nullptr),
     loop_ (false),
-    playing_prop_ (NULL),
+    playing_prop_ (nullptr),
     playing_ (true),
-    uri_spec_ (NULL),
+    uri_spec_ (nullptr),
     uri_ (g_strdup ("")) 
   {}
   
@@ -99,7 +99,7 @@ namespace switcher
       }
     
     media_counters_.clear ();
-    main_pad_ = NULL;
+    main_pad_ = nullptr;
     //discard_next_uncomplete_buffer_ = false;
     rtpgstcaps_ = gst_caps_from_string ("application/x-rtp, media=(string)application");
     
@@ -157,7 +157,7 @@ namespace switcher
        		  "expose-all-streams", TRUE,
        		  "async-handling",TRUE, 
        		  //"buffer-duration",9223372036854775807, 
-       		  NULL); 
+       		  nullptr); 
   }
 
   void 
@@ -171,10 +171,10 @@ namespace switcher
   void 
   Uridecodebin::clean_on_error_command ()
   {
-    if (on_error_command_ != NULL)
+    if (on_error_command_ != nullptr)
       {
 	delete on_error_command_;
-	on_error_command_ = NULL;
+	on_error_command_ = nullptr;
       }
   }
 
@@ -270,7 +270,7 @@ namespace switcher
   // 				     gpointer         user_data)
   // {
   //   g_print ("autoplug factory ---------- %s\n",gst_caps_to_string (caps));
-  //   return NULL;
+  //   return nullptr;
   // }
 
   // GValueArray *
@@ -296,7 +296,7 @@ namespace switcher
     gint64 start_value = -2.0;
     gint64 stop_value = -2.0;
     if (res) {
-      gst_query_parse_segment (query, &rate, NULL, &start_value, &stop_value);
+      gst_query_parse_segment (query, &rate, nullptr, &start_value, &stop_value);
       // g_print ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n", 
       // 	       rate,
       // 	       GST_TIME_ARGS (start_value),
@@ -342,7 +342,7 @@ namespace switcher
 						  G_PRIORITY_DEFAULT_IDLE,
 						  (GSourceFunc) process_eos,   
 						  (gpointer)context,
-						  NULL);   
+						  nullptr);   
 	}
       return FALSE;
     }  
@@ -411,7 +411,7 @@ namespace switcher
     g_object_set (fakesink, 
      		  "sync", TRUE, 
           "signal-handoffs", TRUE,
-     		  NULL);
+     		  nullptr);
     GstElement *funnel;
     GstUtils::make_element ("funnel", &funnel);
     
@@ -419,7 +419,7 @@ namespace switcher
     auto grandparent = gst_object_get_parent(parent);
     gst_object_unref(grandparent);
     gst_object_unref(parent);
-    gst_bin_add_many (GST_BIN (bin), fakesink, funnel, NULL);
+    gst_bin_add_many (GST_BIN (bin), fakesink, funnel, nullptr);
     GstUtils::link_static_to_request (pad, funnel);
     gst_element_link (funnel, fakesink);
 
@@ -429,7 +429,7 @@ namespace switcher
     
     //probing eos   
     GstPad *srcpad = gst_element_get_static_pad (funnel, "src");
-    if (main_pad_ == NULL)
+    if (main_pad_ == nullptr)
       main_pad_ = srcpad;//saving first pad for looping
     gst_pad_add_event_probe (srcpad, (GCallback) event_probe_cb, this);   
     gst_object_unref (srcpad);
@@ -444,7 +444,7 @@ namespace switcher
     //else
     //  {
 	  //    std::string media_type ("unknown");
-	  //    if (NULL != padname_splitted[0])
+	  //    if (nullptr != padname_splitted[0])
 	  //      media_type = padname_splitted[0];
 	  //    media_counters_[media_type] = count;
     //  }
@@ -568,7 +568,7 @@ namespace switcher
 	gst_object_unref (sinkpad);
 	GstPad *srcpad = gst_element_get_static_pad (rtpgstdepay, "src");
 	GstUtils::sync_state_with_parent (rtpgstdepay);
-	gst_element_get_state (rtpgstdepay, NULL, NULL, GST_CLOCK_TIME_NONE);
+	gst_element_get_state (rtpgstdepay, nullptr, nullptr, GST_CLOCK_TIME_NONE);
 	context->pad_to_shmdata_writer (context->bin_, srcpad);
 	//gst_object_unref (srcpad);
       }
@@ -619,7 +619,7 @@ namespace switcher
     reset_bin ();
     init_uridecodebin ();
     g_debug ("to_shmdata set uri %s", uri_);
-    g_object_set (G_OBJECT (uridecodebin_), "uri", uri_, NULL); 
+    g_object_set (G_OBJECT (uridecodebin_), "uri", uri_, nullptr); 
     gst_bin_add (GST_BIN (bin_), uridecodebin_);
     //GstUtils::wait_state_changed (bin_);
     GstUtils::sync_state_with_parent (uridecodebin_);

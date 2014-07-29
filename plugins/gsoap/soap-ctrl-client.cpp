@@ -30,9 +30,9 @@ namespace switcher
 				       "Nicolas Bouillot");
 
   SoapCtrlClient::SoapCtrlClient () :
-    switcher_control_ (NULL),
-    url_ (NULL),
-    try_connect_g_source_ (NULL),
+    switcher_control_ (nullptr),
+    url_ (nullptr),
+    try_connect_g_source_ (nullptr),
     try_connect_mutex_ ()
   {}
 
@@ -42,7 +42,7 @@ namespace switcher
     switcher_control_ = new controlProxy (SOAP_IO_KEEPALIVE | SOAP_XML_INDENT);
     switcher_control_->send_timeout = 1; // 1 seconds
     switcher_control_->recv_timeout = 1; // 1 seconds
-    url_ = NULL;
+    url_ = nullptr;
     switcher_control_->soap_endpoint = url_;
 
     install_method ("Set Remote Switcher",
@@ -52,10 +52,10 @@ namespace switcher
 		    Method::make_arg_description ("URL",
 						  "url",
 						  "SOAP url",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &set_remote_url, 
 		    G_TYPE_BOOLEAN,
-     		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+     		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
      		    this);
 
     install_method ("Set Remote Switcher URL And Retry Until Success",
@@ -65,10 +65,10 @@ namespace switcher
      		    Method::make_arg_description ("URL",
      						  "url",
      						  "SOAP url",
-     						  NULL),
+     						  nullptr),
      		    (Method::method_ptr) &set_remote_url_retry, 
      		    G_TYPE_BOOLEAN,
-      		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+      		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
       		    this);
 
     GType connection_tried_type[] = {G_TYPE_STRING, G_TYPE_BOOLEAN};
@@ -81,7 +81,7 @@ namespace switcher
 						  "Connected",
 						  "connected",
 						  "connection succeed", 
-						  NULL),
+						  nullptr),
 		    2,
 		    connection_tried_type);
 
@@ -96,10 +96,10 @@ namespace switcher
 						  "Quiddity Name",
 						  "quiddity_name",
 						  "the name to give",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &create, 
 		    G_TYPE_BOOLEAN,
-     		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
+     		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, nullptr),
      		    this);
 
   
@@ -110,10 +110,10 @@ namespace switcher
 		    Method::make_arg_description ("Quiddity Name",
 						  "quiddity_name",
 						  "name of quiddity to remove",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &remove, 
 		    G_TYPE_BOOLEAN,
-     		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+     		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
      		    this);
  
      
@@ -130,10 +130,10 @@ namespace switcher
 						  "Property Value",
 						  "property_value",
 						  "value to set",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &set_property, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, nullptr),
 		    this);
 
 
@@ -150,10 +150,10 @@ namespace switcher
 						  "First Argument",
 						  "arg1",
 						  "first argument",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &invoke1, 
 		    G_TYPE_BOOLEAN,
-      		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, NULL),
+      		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, nullptr),
       		    this); 
 
 
@@ -173,11 +173,11 @@ namespace switcher
 						  "Second Argument",
 						  "arg2",
 						  "second argument",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &invoke2, 
 		    G_TYPE_BOOLEAN,
      		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, 
-     						       G_TYPE_STRING, G_TYPE_STRING, NULL),
+     						       G_TYPE_STRING, G_TYPE_STRING, nullptr),
      		    this);
 
 
@@ -200,12 +200,12 @@ namespace switcher
 						  "Third Argument",
 						  "arg3",
 						  "third argument",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &invoke3, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, 
 						       G_TYPE_STRING, G_TYPE_STRING, 
-						       G_TYPE_STRING, NULL),
+						       G_TYPE_STRING, nullptr),
 		    this);
 
     install_method ("Invoke 4",
@@ -230,12 +230,12 @@ namespace switcher
 						  "Fourth Argument",
 						  "arg4",
 						  "fourth argument",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &invoke4, 
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, 
 						       G_TYPE_STRING, G_TYPE_STRING, 
-						       G_TYPE_STRING, G_TYPE_STRING, NULL),
+						       G_TYPE_STRING, G_TYPE_STRING, nullptr),
 		    this);
     return true;
   }
@@ -243,7 +243,7 @@ namespace switcher
   SoapCtrlClient::~SoapCtrlClient()
   {
     reset_endpoint ();
-    if (switcher_control_ != NULL)
+    if (switcher_control_ != nullptr)
       delete switcher_control_;
   }
 
@@ -251,12 +251,12 @@ namespace switcher
   SoapCtrlClient::reset_endpoint ()
   {
     std::unique_lock<std::mutex> lock(try_connect_mutex_);
-    if (url_ != NULL)
+    if (url_ != nullptr)
       g_free (url_);
-    if (NULL != try_connect_g_source_ && !g_source_is_destroyed (try_connect_g_source_))
+    if (nullptr != try_connect_g_source_ && !g_source_is_destroyed (try_connect_g_source_))
       {
 	g_source_destroy (try_connect_g_source_);
-	try_connect_g_source_ = NULL;
+	try_connect_g_source_ = nullptr;
       }
   }
   
@@ -276,7 +276,7 @@ namespace switcher
       {
 	g_warning ("SoapCtrlClient::set_remote_url, url not valid or not responding");
 	g_free (context->url_);
-	context->url_ = NULL;
+	context->url_ = nullptr;
 	return FALSE;
       }
     return TRUE;
@@ -305,7 +305,7 @@ namespace switcher
   SoapCtrlClient::try_connect (gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
-    if (context->url_ == NULL)
+    if (context->url_ == nullptr)
       return FALSE;
 
     std::unique_lock<std::mutex> lock(context->try_connect_mutex_);
@@ -330,7 +330,7 @@ namespace switcher
 			  gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
-    if (context->url_ == NULL)
+    if (context->url_ == nullptr)
       return FALSE;
     std::string name;
     context->switcher_control_->create_named_quiddity ((const char *)class_name, 
@@ -349,7 +349,7 @@ namespace switcher
 			  gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
-    if (context->url_ == NULL)
+    if (context->url_ == nullptr)
       return FALSE;
     context->switcher_control_->delete_quiddity ((gchar *)quiddity_name);
     if (context->switcher_control_->error)
@@ -365,7 +365,7 @@ namespace switcher
 				gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
-    if (context->url_ == NULL)
+    if (context->url_ == nullptr)
       return FALSE;
     context->switcher_control_->send_set_property ((gchar *)quiddity_name, 
 						   (gchar *)property_name, 
@@ -386,7 +386,7 @@ namespace switcher
 			   gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
-    if (context->url_ == NULL)
+    if (context->url_ == nullptr)
       return FALSE;
 
     std::vector<std::string> args;
@@ -407,7 +407,7 @@ namespace switcher
 			   gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
-    if (context->url_ == NULL)
+    if (context->url_ == nullptr)
       return FALSE;
     
     std::vector<std::string> args;
@@ -430,7 +430,7 @@ namespace switcher
 			   gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
-    if (context->url_ == NULL)
+    if (context->url_ == nullptr)
       return FALSE;
     
     std::vector<std::string> args;
@@ -455,7 +455,7 @@ namespace switcher
 			   gpointer user_data)
   {
     SoapCtrlClient *context = static_cast<SoapCtrlClient *> (user_data);
-    if (context->url_ == NULL)
+    if (context->url_ == nullptr)
       return FALSE;
     
     std::vector<std::string> args;

@@ -29,8 +29,8 @@ namespace switcher
   }  
   
   BaseSink::BaseSink () :
-    connection_hook_ (NULL),
-    hook_user_data_ (NULL),
+    connection_hook_ (nullptr),
+    hook_user_data_ (nullptr),
     sink_element_ (),
     shmdata_path_ ("")
   {
@@ -42,10 +42,10 @@ namespace switcher
 		    Method::make_arg_description ("Shmdata Path",
 						  "socket",
 						  "shmdata socket path to connect with",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr)&connect_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
   
     //registering disconnect
@@ -54,10 +54,10 @@ namespace switcher
 		    "disconnect the sink from the shmdata socket", 
 		    "success or fail",
 		    Method::make_arg_description ("none",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr)&disconnect, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
+		    Method::make_arg_type_description (G_TYPE_NONE, nullptr),
 		    this);
   }
   
@@ -92,9 +92,9 @@ namespace switcher
     reader_->set_g_main_context (get_g_main_context ());
     reader_->set_bin (bin_);
 
-    if (sink_element_ !=NULL)
+    if (sink_element_ !=nullptr)
       reader_->set_sink_element (sink_element_);
-    if (connection_hook_ != NULL) 
+    if (connection_hook_ != nullptr) 
       {
 	g_debug ("BaseSink::connect set on_first_data_hook ");
 	reader_->set_on_first_data_hook (connection_hook_, hook_user_data_);
@@ -115,7 +115,7 @@ namespace switcher
   void
   BaseSink::set_sink_element_no_connect (GstElement *sink)
   {
-    if (sink_element_ != NULL && sink_element_ != sink)
+    if (sink_element_ != nullptr && sink_element_ != sink)
       GstUtils::clean_element (sink_element_);
     //sink element will be added to bin_ by the shmdata reader when appropriate
     sink_element_ = sink;

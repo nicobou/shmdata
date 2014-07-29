@@ -32,8 +32,8 @@ namespace switcher
   OscToShmdata::OscToShmdata () :
     custom_props_ (new CustomPropertyHelper ()),
     port_ (1056),
-    osc_thread_ (NULL),
-    port_spec_ (NULL),
+    osc_thread_ (nullptr),
+    port_spec_ (nullptr),
     start_ (std::chrono::system_clock::now()),
     shm_any_ (std::make_shared<ShmdataAnyWriter> ())
   {}
@@ -95,10 +95,10 @@ namespace switcher
     register_shmdata_any_writer (shm_any_);
 
     osc_thread_ = lo_server_thread_new (std::to_string(port_).c_str (), osc_error);
-    if (NULL == osc_thread_)
+    if (nullptr == osc_thread_)
       return false;
     /* add method that will match any path and args */
-    lo_server_thread_add_method (osc_thread_, NULL, NULL, osc_handler, this);
+    lo_server_thread_add_method (osc_thread_, nullptr, nullptr, osc_handler, this);
     lo_server_thread_start (osc_thread_);
     return true;
   }
@@ -111,10 +111,10 @@ namespace switcher
       ShmdataAnyWriter::ptr temp = std::make_shared<ShmdataAnyWriter> ();
       std::swap (shm_any_,temp);
     }
-    if (NULL != osc_thread_)
+    if (nullptr != osc_thread_)
       {
 	lo_server_thread_free (osc_thread_);
-	osc_thread_ = NULL;
+	osc_thread_ = nullptr;
 	return true;
       }
     return false;
@@ -142,7 +142,7 @@ namespace switcher
     //g_print ("unknown osc path %s %llu", path, clock.count ());
 
     size_t size;
-    void *buftmp = lo_message_serialise (m, path, NULL, &size);
+    void *buftmp = lo_message_serialise (m, path, nullptr, &size);
     context->shm_any_->push_data (buftmp,
      				  size,
      				  clock.count (),

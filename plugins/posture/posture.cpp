@@ -194,8 +194,8 @@ namespace switcher
     capture_modes_enum_[9].value_name = "QQVGA 60Hz";
     capture_modes_enum_[9].value_nick = capture_modes_enum_[0].value_name;
     capture_modes_enum_[10].value = 0;
-    capture_modes_enum_[10].value_name = NULL;
-    capture_modes_enum_[10].value_nick = NULL;
+    capture_modes_enum_[10].value_name = nullptr;
+    capture_modes_enum_[10].value_nick = nullptr;
 
     capture_mode_prop_ = custom_props_->make_enum_property ("capture_mode",
       "Capture mode of the device",
@@ -313,7 +313,7 @@ namespace switcher
       ctx->cloud_writer_->start();
     }
 
-    ctx->cloud_writer_->push_data_auto_clock((void*)data.data(), data.size(), NULL, NULL);
+    ctx->cloud_writer_->push_data_auto_clock((void*)data.data(), data.size(), nullptr, nullptr);
   }
 
   void
@@ -335,7 +335,7 @@ namespace switcher
       ctx->depth_writer_->start();
     }
 
-    ctx->depth_writer_->push_data_auto_clock((void*)data.data(), width * height * 2, NULL, NULL);
+    ctx->depth_writer_->push_data_auto_clock((void*)data.data(), width * height * 2, nullptr, nullptr);
   }
 
   void
@@ -357,7 +357,7 @@ namespace switcher
       ctx->rgb_writer_->start();
     }
 
-    ctx->rgb_writer_->push_data_auto_clock((void*)data.data(), width * height * 3, NULL, NULL);
+    ctx->rgb_writer_->push_data_auto_clock((void*)data.data(), width * height * 3, nullptr, nullptr);
   }
 
   void
@@ -379,6 +379,6 @@ namespace switcher
       ctx->ir_writer_->start();
     }
 
-    ctx->ir_writer_->push_data_auto_clock((void*)data.data(), width * height * 2, NULL, NULL);
+    ctx->ir_writer_->push_data_auto_clock((void*)data.data(), width * height * 2, nullptr, nullptr);
   }
 }

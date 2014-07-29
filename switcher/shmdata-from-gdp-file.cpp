@@ -56,10 +56,10 @@ namespace switcher
 						  "Shmdata Path",
 						  "shmpath",
 						  "shmdata socket path to create",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &add_file_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, nullptr),
 		    this);
     
     install_method ("Remove File",
@@ -69,10 +69,10 @@ namespace switcher
 		    Method::make_arg_description ("File Path",
 						  "filepath", 
 						  "file path to remove", 
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &remove_file_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
     
     
@@ -176,16 +176,16 @@ namespace switcher
 	g_debug ("ShmdataFromGDPFile::make_players %s", pipe); 
 	manager_->invoke_va (it.first.c_str (),
 			     "to_shmdata_with_path", 
-			     NULL,
+			     nullptr,
 			     pipe, 
 	 		     it.second.c_str (), 
-	 		     NULL);
+	 		     nullptr);
 	g_free (pipe);
       }
     // manager_->invoke_va("single_runtime", 
     // 			"play", 
-    // 			NULL, 
-    // 			NULL);
+    // 			nullptr, 
+    // 			nullptr);
     return true;
   }
 

@@ -34,9 +34,9 @@ namespace switcher
 				       "Nicolas Bouillot");
   
   HTTPSDPDec::HTTPSDPDec () :
-    souphttpsrc_ (NULL),
-    sdpdemux_ (NULL),
-    on_error_command_ (NULL),
+    souphttpsrc_ (nullptr),
+    sdpdemux_ (nullptr),
+    on_error_command_ (nullptr),
     decodebins_ ()
   {}
 
@@ -60,10 +60,10 @@ namespace switcher
 		    Method::make_arg_description ("URL",
 						  "url", 
 						  "the url to the sdp file",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &to_shmdata_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
     return true;
   }
@@ -81,16 +81,16 @@ namespace switcher
     g_signal_connect (GST_BIN (sdpdemux_),  
 		      "element-added",  
 		      (GCallback) HTTPSDPDec::on_new_element_in_sdpdemux,  
-		      NULL);      
+		      nullptr);      
 
     g_object_set (G_OBJECT (sdpdemux_), 
       		  "latency",
       		  0,
-      		  NULL);
+      		  nullptr);
     g_object_set (G_OBJECT (sdpdemux_), 
      		  "async-handling",
      		  TRUE,
-     		  NULL);
+     		  nullptr);
     g_signal_connect (G_OBJECT (sdpdemux_), 
 		      "pad-added", 
 		      (GCallback) HTTPSDPDec::httpsdpdec_pad_added_cb,
@@ -104,8 +104,8 @@ namespace switcher
     clear_shmdatas ();
     reset_bin ();
     reset_counter_map ();
-    souphttpsrc_ = NULL;
-    sdpdemux_ = NULL;
+    souphttpsrc_ = nullptr;
+    sdpdemux_ = nullptr;
     
   }
 
@@ -118,16 +118,16 @@ namespace switcher
     g_object_set (G_OBJECT (element), 
       		  "ntp-sync",
       		  TRUE,
-      		  NULL);
+      		  nullptr);
   }
   
   void 
   HTTPSDPDec::clean_on_error_command ()
   {
-    if (NULL != on_error_command_)
+    if (nullptr != on_error_command_)
       {
 	delete on_error_command_;
-	on_error_command_ = NULL;
+	on_error_command_ = nullptr;
       }
   }
 
@@ -201,12 +201,12 @@ namespace switcher
     
     g_debug ("httpsdpdec: to_shmdata set uri %s", uri.c_str ());
 
-    g_object_set (G_OBJECT (souphttpsrc_), "location", uri.c_str (), NULL); 
+    g_object_set (G_OBJECT (souphttpsrc_), "location", uri.c_str (), nullptr); 
 
     gst_bin_add_many (GST_BIN (bin_), 
 		      souphttpsrc_, 
 		      sdpdemux_,
-		      NULL);
+		      nullptr);
     
     gst_element_link (souphttpsrc_, sdpdemux_);
 

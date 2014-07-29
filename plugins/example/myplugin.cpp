@@ -32,7 +32,7 @@ namespace switcher
   MyPlugin::MyPlugin () :
     custom_props_ (std::make_shared<CustomPropertyHelper> ()),
     myprop_ (false),
-    myprop_prop_ (NULL),
+    myprop_prop_ (nullptr),
     hello_ (g_strdup ("hello"))
   {}
 
@@ -60,10 +60,10 @@ namespace switcher
 		    Method::make_arg_description ("Text To Repeat", //first arg long name
 						  "text", //fisrt arg name
 						  "string", //first arg description
-						  NULL),
+						  nullptr),
   		    (Method::method_ptr) &my_hello_world_method, 
 		    G_TYPE_STRING,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
 
     //creating some custom infos

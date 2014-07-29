@@ -32,7 +32,7 @@ namespace switcher
 				       "deinterleave", 
 				       "Nicolas Bouillot");
   Deinterleave::Deinterleave () :
-    deinterleave_ (NULL),
+    deinterleave_ (nullptr),
     media_counters_ ()
   {}
 

@@ -33,7 +33,7 @@ namespace switcher
     SyphonReader();
     SyphonReader(syphonCallback, void*);
     ~SyphonReader();
-    void connect(const char* serveName = NULL, const char* appName = NULL);
+    void connect(const char* serveName = nullptr, const char* appName = nullptr);
     void disconnect();
     void getFrame(int& width, int& height, char* pixels);
 

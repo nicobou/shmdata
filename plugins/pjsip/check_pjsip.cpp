@@ -58,22 +58,22 @@ main ()
     
     manager->invoke_va ("rtp", 
        			"add_data_stream",
-     			NULL,
+     			nullptr,
        			"/tmp/switcher_siptest_a_audio",
-       			NULL);
+       			nullptr);
     
     manager->invoke_va ("rtp", 
 			"add_data_stream",
-			NULL,
+			nullptr,
 			"/tmp/switcher_siptest_v_video",
-			NULL);
+			nullptr);
     
     // manager->invoke_va ("rtp", 
     // 			"add_destination",
-    // 			NULL,
+    // 			nullptr,
     // 			"local",
     // 			"127.0.0.1",
-    // 			NULL);
+    // 			nullptr);
     
     usleep (2000000);
     
@@ -86,11 +86,11 @@ main ()
     
     manager->set_property ("test", "port", "5070"); 
 
-    if (!manager->invoke_va ("test","register", NULL, 
+    if (!manager->invoke_va ("test","register", nullptr, 
 			     "1004", //user
 			     "10.10.30.179", //domain
 			     "1234", //password
-			     NULL))
+			     nullptr))
       {
 	g_print ("cannot register \n");
 	return 1;
@@ -100,9 +100,9 @@ main ()
 
     manager->invoke_va ("test",
 			"call",
-			NULL,
+			nullptr,
 			"sip:1002@10.10.30.223",
-    			NULL);
+    			nullptr);
 
 
     usleep (2000000);
@@ -121,9 +121,9 @@ main ()
     usleep (2000000);
     manager->invoke_va ("test",
 			"hang-up",
-			NULL,
+			nullptr,
 			"sip:1002@10.10.30.223",
-			NULL);
+			nullptr);
 
     usleep (20000000);
 
