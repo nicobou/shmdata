@@ -60,7 +60,7 @@ namespace switcher
     Callback cb_ {nullptr};
     void* cb_user_data_ {nullptr};
 
-    shmdata_any_reader_t *reader_;
+    shmdata_any_reader_t *reader_ {nullptr};
     JSONBuilder::ptr json_description_;
     void make_json_description ();
 

@@ -25,23 +25,26 @@ namespace switcher
   ShmdataAnyReader::ShmdataAnyReader() :
     started_ (false),
     path_ (""),
-    reader_ (shmdata_any_reader_init ()),
     json_description_ (new JSONBuilder())
   {
-    shmdata_any_reader_set_debug (reader_, SHMDATA_ENABLE_DEBUG);
-    shmdata_any_reader_set_on_data_handler(reader_, ShmdataAnyReader::on_data, this);
   }
 
   ShmdataAnyReader::~ShmdataAnyReader()
   {
-    shmdata_any_reader_close (reader_);
+    if (reader_ != nullptr)
+      shmdata_any_reader_close (reader_);
   }
 
   bool 
   ShmdataAnyReader::set_path (std::string name)
   {
-    if (started_ == true)
+    if (reader_ != nullptr)
       shmdata_any_reader_close(reader_);
+
+    reader_ = shmdata_any_reader_init ();
+    shmdata_any_reader_set_debug (reader_, SHMDATA_ENABLE_DEBUG);
+    shmdata_any_reader_set_on_data_handler(reader_, ShmdataAnyReader::on_data, this);
+
     path_ = name;
     make_json_description();
     return true;
