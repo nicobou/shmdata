@@ -24,9 +24,7 @@
 namespace switcher
 {
   BaseSink::~BaseSink ()
-  {
-    g_debug ("~BaseSink");
-  }  
+  {}  
   
   BaseSink::BaseSink () :
     connection_hook_ (nullptr),
