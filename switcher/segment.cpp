@@ -37,9 +37,7 @@ namespace switcher
   {}
 
   Segment::~Segment()
-  {
-    //clear_shmdatas ();
-  }
+  {}
   
   bool 
   Segment::init_segment (Quiddity *quid)
@@ -122,57 +120,84 @@ namespace switcher
   bool 
   Segment::register_shmdata_any_writer (ShmdataAnyWriter::ptr writer)
   {
-    const gchar *name = writer->get_path ().c_str ();
-    if (g_strcmp0 (name, "") == 0)
+    std::string name = writer->get_path ();
+    if (name.empty () || 0 == name.compare (""))
       {
-	g_warning ("Segment:: can not register shmdata writer with no path");
+	g_warning ("Segment cannot register shmdata writer with no path");
 	return false;
       }
+    {//removing old one if present
+      auto it = shmdata_any_writers_.find (name);
+      if (shmdata_any_writers_.end () != it)
+	shmdata_any_writers_.erase (name);
+    }
+ 
     shmdata_any_writers_[name] = writer;
-    update_shmdata_writers_description ();
-    segment_custom_props_->notify_property_changed (json_writers_description_);
-    quid_->signal_emit ("on-new-shmdata-writer", 
-			quid_->get_nick_name ().c_str (), 
-			writer->get_path ().c_str (),
-			(JSONBuilder::get_string (writer->get_json_root_node (), true)).c_str ());
+
+    {//JSON
+      update_shmdata_writers_description ();
+      segment_custom_props_->notify_property_changed (json_writers_description_);
+      quid_->signal_emit ("on-new-shmdata-writer", 
+			  quid_->get_nick_name ().c_str (), 
+			  writer->get_path ().c_str (),
+			  (JSONBuilder::get_string (writer->get_json_root_node (), true)).c_str ());
+    }
     return true;
   }
 
   bool 
   Segment::register_shmdata_writer (ShmdataWriter::ptr writer)
   {
-    const gchar *name = writer->get_path ().c_str ();
-    if (g_strcmp0 (name, "") == 0)
+    std::string name = writer->get_path ();
+    if (name.empty () || 0 == name.compare (""))
       {
-	g_warning ("Segment:: can not register shmdata writer with no path");
+	g_warning ("Segment cannot register shmdata writer with no path");
 	return false;
       }
+    {//removing old one if present
+      auto it = shmdata_writers_.find (name);
+      if (shmdata_writers_.end () != it)
+	shmdata_writers_.erase (name);
+    }
+ 
     shmdata_writers_[name] = writer;
-    update_shmdata_writers_description ();
-    segment_custom_props_->notify_property_changed (json_writers_description_);
-    quid_->signal_emit ("on-new-shmdata-writer", 
-			quid_->get_nick_name ().c_str (), 
-			writer->get_path ().c_str (),
-			(JSONBuilder::get_string (writer->get_json_root_node (), true)).c_str ());
+ 
+   {//JSON
+      update_shmdata_writers_description ();
+      segment_custom_props_->notify_property_changed (json_writers_description_);
+      quid_->signal_emit ("on-new-shmdata-writer", 
+			  quid_->get_nick_name ().c_str (), 
+			  writer->get_path ().c_str (),
+			  (JSONBuilder::get_string (writer->get_json_root_node (), true)).c_str ());
+    }
     return true;
   }
 
   
   bool Segment::register_shmdata_reader (ShmdataReader::ptr reader)
   {
-    const gchar *name = reader->get_path ().c_str ();
-    if (g_strcmp0 (name, "") == 0)
+    std::string name = reader->get_path ();
+    if (name.empty () || 0 == name.compare (""))
       {
-	g_warning ("Segment:: can not register shmdata reader with no path");
+	g_warning ("Segment cannot register shmdata writer with no path");
 	return false;
       }
+    {//removing old one if present
+      auto it = shmdata_readers_.find (name);
+      if (shmdata_readers_.end () != it)
+	shmdata_readers_.erase (name);
+    }
+
     shmdata_readers_[name] = reader;
-    update_shmdata_readers_description ();
-    segment_custom_props_->notify_property_changed (json_readers_description_);
-    quid_->signal_emit ("on-new-shmdata-reader", 
-			quid_->get_nick_name ().c_str (), 
-			reader->get_path ().c_str (),
-			JSONBuilder::get_string (reader->get_json_root_node (), true).c_str ());
+
+    {//JSON
+      update_shmdata_readers_description ();
+      segment_custom_props_->notify_property_changed (json_readers_description_);
+      quid_->signal_emit ("on-new-shmdata-reader", 
+			  quid_->get_nick_name ().c_str (), 
+			  reader->get_path ().c_str (),
+			  JSONBuilder::get_string (reader->get_json_root_node (), true).c_str ());
+    }
     return true;
   }
 
@@ -188,19 +213,28 @@ namespace switcher
 
   bool Segment::register_shmdata_any_reader (ShmdataAnyReader::ptr reader)
   {
-    const gchar *name = reader->get_path ().c_str ();
-    if (g_strcmp0 (name, "") == 0)
+    std::string name = reader->get_path ();
+    if (name.empty () || 0 == name.compare (""))
       {
-	g_warning ("Segment:: can not register shmdata reader with no path");
+	g_warning ("Segment cannot register shmdata writer with no path");
 	return false;
       }
+    {//removing old one if present
+      auto it = shmdata_any_readers_.find (name);
+      if (shmdata_any_readers_.end () != it)
+	shmdata_any_readers_.erase (name);
+    }
+    
     shmdata_any_readers_[name] = reader;
-    update_shmdata_readers_description ();
-    segment_custom_props_->notify_property_changed (json_writers_description_);
-    quid_->signal_emit ("on-new-shmdata-reader", 
-			quid_->get_nick_name ().c_str (), 
-			reader->get_path ().c_str (),
-			JSONBuilder::get_string (reader->get_json_root_node (), true).c_str ());
+
+    {//JSON
+      update_shmdata_readers_description ();
+      segment_custom_props_->notify_property_changed (json_writers_description_);
+      quid_->signal_emit ("on-new-shmdata-reader", 
+			  quid_->get_nick_name ().c_str (), 
+			  reader->get_path ().c_str (),
+			  JSONBuilder::get_string (reader->get_json_root_node (), true).c_str ());
+    }
     return true;
   }
 

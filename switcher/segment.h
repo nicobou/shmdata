@@ -21,8 +21,6 @@
 #ifndef __SWITCHER_SEGMENT_H__
 #define __SWITCHER_SEGMENT_H__
 
-//#include "quiddity.h"
-//#include "gpipe.h"
 #include "shmdata-any-writer.h"
 #include "shmdata-any-reader.h"
 #include "shmdata-writer.h"
@@ -32,8 +30,6 @@
 #include "custom-property-helper.h"
 #include <vector>
 #include <unordered_map>
-
-//FIXME separate shmdata management and runtime
 
 namespace switcher
 {
@@ -68,13 +64,13 @@ namespace switcher
     std::unordered_map <std::string, ShmdataAnyReader::ptr> shmdata_any_readers_;
     std::unordered_map <std::string, ShmdataWriter::ptr> shmdata_writers_;
     std::unordered_map <std::string, ShmdataReader::ptr> shmdata_readers_;
+
+    //JSON
     JSONBuilder::ptr shmdata_writers_description_;
     JSONBuilder::ptr shmdata_readers_description_;
-    //shmdatas as param
     CustomPropertyHelper::ptr segment_custom_props_;
     GParamSpec *json_writers_description_;
     GParamSpec *json_readers_description_;
-
     void update_shmdata_writers_description ();
     void update_shmdata_readers_description ();
     static const gchar *get_shmdata_writers_string (void *user_data);
