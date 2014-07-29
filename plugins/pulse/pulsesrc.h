@@ -40,9 +40,6 @@ namespace switcher
     PulseSrc (const PulseSrc&) = delete;
     PulseSrc &operator= (const PulseSrc &) = delete;
 
-    bool start ();
-    bool stop ();
-
   private:
     typedef struct {
       std::string name_;
@@ -79,6 +76,9 @@ namespace switcher
     std::mutex quit_mutex_;
     std::condition_variable quit_cond_;
     
+    bool start () final;
+    bool stop () final;
+
     bool make_elements ();
     static const gchar *get_capture_devices_json (void *user_data);
     static gboolean async_get_pulse_devices (void *user_data);

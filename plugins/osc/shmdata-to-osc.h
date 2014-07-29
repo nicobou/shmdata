@@ -20,7 +20,8 @@
 #ifndef __SWITCHER_SHMDATA_TO_OSC_H__
 #define __SWITCHER_SHMDATA_TO_OSC_H__
 
-#include "switcher/gpipe.h" //only for shmdata management
+#include "switcher/quiddity.h"
+#include "switcher/segment.h"
 #include "switcher/custom-property-helper.h"
 #include "switcher/startable-quiddity.h"
 #include <lo/lo.h>
@@ -31,7 +32,7 @@
 
 namespace switcher
 {
-  class ShmdataToOsc : public GPipe, public StartableQuiddity
+  class ShmdataToOsc : public Quiddity, public Segment, public StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToOsc);
@@ -39,7 +40,6 @@ namespace switcher
     ~ShmdataToOsc ();
     ShmdataToOsc (const ShmdataToOsc &) = delete;
     ShmdataToOsc &operator=  (const ShmdataToOsc &) = delete;
-    bool init_gpipe () final;
 
   private:
     CustomPropertyHelper::ptr custom_props_; 
@@ -53,8 +53,10 @@ namespace switcher
     shmdata_any_reader_t *reader_;
     std::mutex address_mutex_;
 
-    bool start ();
-    bool stop ();
+    bool init () final;
+    bool start () final;
+    bool stop () final;
+
     static void set_port (const gint value, void *user_data);
     static gint get_port (void *user_data);
     static void set_host (const gchar *value, void *user_data);

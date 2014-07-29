@@ -55,7 +55,7 @@ namespace switcher
   
   
   bool
-  PortMidiSource::init_gpipe ()
+  PortMidiSource::init ()
   {
 
     if (input_devices_enum_ [0].value_name == nullptr)
@@ -64,6 +64,7 @@ namespace switcher
 	return false;
       }
     init_startable (this);
+    init_segment (this);
     devices_description_spec_ = 
       custom_props_->make_string_property ("devices-json", 
 					   "Description of capture devices (json formated)",

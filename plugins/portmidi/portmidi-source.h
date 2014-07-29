@@ -20,7 +20,8 @@
 #ifndef __SWITCHER_PORTMIDI_SOURCE_H__
 #define __SWITCHER_PORTMIDI_SOURCE_H__
 
-#include "switcher/gpipe.h" //FIXME only for shmdata management, should be "quiddity" only
+#include "switcher/quiddity.h"
+#include "switcher/segment.h"
 #include "portmidi-devices.h"
 #include "switcher/startable-quiddity.h"
 #include "switcher/custom-property-helper.h"
@@ -28,7 +29,11 @@
 namespace switcher
 {
   
-  class PortMidiSource : public GPipe, public StartableQuiddity, public PortMidi
+  class PortMidiSource : 
+    public Quiddity, 
+    public Segment, 
+    public StartableQuiddity, 
+    public PortMidi
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSource);
@@ -36,10 +41,6 @@ namespace switcher
     ~PortMidiSource ();
     PortMidiSource (const PortMidiSource &) = delete;
     PortMidiSource &operator= (const PortMidiSource &) = delete;
-    bool init_gpipe () final;
-
-    bool start ();
-    bool stop ();
     
   private:
     typedef struct {
@@ -66,6 +67,10 @@ namespace switcher
     std::map <std::pair <guint,guint>, std::string> midi_channels_;
     std::map <std::string, guint> midi_values_; 
     std::map <std::string, GParamSpec *> unused_props_specs_; //using property name instead of long name
+
+    bool init () final;
+    bool start () final;
+    bool stop () final;
 
     bool make_property (std::string property_long_name);
     static void set_device (const gint value, void *user_data);

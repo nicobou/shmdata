@@ -37,11 +37,7 @@ namespace switcher
     ~OscCtrlServer ();
     OscCtrlServer (const OscCtrlServer&) = delete;
     OscCtrlServer &operator= (const OscCtrlServer&) = delete;
-    bool init ();
-
     void set_port (std::string port);
-    void start (); 
-    void stop ();
     //for invocation into osc handlers:
     std::shared_ptr<QuiddityManager> get_quiddity_manager ();
     //wrappers
@@ -51,6 +47,11 @@ namespace switcher
     std::string port_;
     std::map<std::string, std::pair <std::string, std::string> > osc_subscribers_; //(host + port)
     lo_server_thread osc_thread_;
+
+    bool init () final;
+    
+    void start (); 
+    void stop ();
     static void prop_cb (std::string subscriber_name, 
 			 std::string quiddity_name, 
 			 std::string property_name, 

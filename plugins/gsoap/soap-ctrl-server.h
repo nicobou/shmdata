@@ -36,7 +36,7 @@ namespace switcher
     ~SoapCtrlServer ();
     SoapCtrlServer (const SoapCtrlServer &) = delete;
     SoapCtrlServer &operator= (const SoapCtrlServer &) = delete;
-    bool init ();
+    bool init () final;
 
     bool set_port (int port);//default port is 8080
     bool start (); 

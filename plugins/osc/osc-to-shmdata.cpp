@@ -39,9 +39,10 @@ namespace switcher
   {}
   
   bool
-  OscToShmdata::init_gpipe ()
+  OscToShmdata::init ()
   {
     init_startable (this);
+    init_segment (this);
     port_spec_ = 
       custom_props_->make_int_property ("Port", 
 					"OSC port to listen",

@@ -36,17 +36,17 @@ namespace switcher
     ~MyPlugin ();
     MyPlugin (const MyPlugin &) = delete;
     MyPlugin &operator= (const MyPlugin &) = delete;
-    bool init ();
 
-    bool start ();
-    bool stop ();
-    
   private:
     CustomPropertyHelper::ptr custom_props_;
     bool myprop_;
     GParamSpec *myprop_prop_;
     gchar *hello_;
 
+    bool init () final;
+    bool start () final;
+    bool stop () final;
+    
     static gboolean get_myprop (void *user_data);
     static void set_myprop (gboolean myprop, void *user_data);
     static gchar *my_hello_world_method (gchar *first_arg, void *user_data);

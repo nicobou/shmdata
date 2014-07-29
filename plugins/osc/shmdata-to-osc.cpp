@@ -44,9 +44,10 @@ namespace switcher
   {}
   
   bool
-  ShmdataToOsc::init_gpipe ()
+  ShmdataToOsc::init ()
   {
     init_startable (this);
+    init_segment (this);
     port_spec_ = 
       custom_props_->make_int_property ("Port", 
 					"OSC destination port",
