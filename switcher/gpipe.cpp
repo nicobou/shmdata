@@ -39,7 +39,7 @@ namespace switcher
     gpipe_custom_props_ (new CustomPropertyHelper ())
   {
     make_bin ();
-    init_nico_segment (this);
+    init_segment (this);
   }
 
   GPipe::~GPipe ()

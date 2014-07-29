@@ -49,7 +49,7 @@ namespace switcher
     Segment (const Segment &) = delete;
     Segment &operator= (const Segment&) = delete;
 
-    bool init_nico_segment (Quiddity *quid);
+    bool init_segment (Quiddity *quid);
 
   protected:
     bool register_shmdata_writer (ShmdataWriter::ptr writer);

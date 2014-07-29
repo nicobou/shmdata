@@ -42,7 +42,7 @@ namespace switcher
   }
   
   bool 
-  Segment::init_nico_segment (Quiddity *quid)
+  Segment::init_segment (Quiddity *quid)
   {
     if (nullptr == quid)
       return false;
@@ -196,11 +196,11 @@ namespace switcher
       }
     shmdata_any_readers_[name] = reader;
     update_shmdata_readers_description ();
-    GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
-    signal_emit ("on-new-shmdata-reader", 
-		 get_nick_name ().c_str (), 
-		 reader->get_path ().c_str (),
-		 JSONBuilder::get_string (reader->get_json_root_node (), true).c_str ());
+    segment_custom_props_->notify_property_changed (json_writers_description_);
+    quid_->signal_emit ("on-new-shmdata-reader", 
+			quid_->get_nick_name ().c_str (), 
+			reader->get_path ().c_str (),
+			JSONBuilder::get_string (reader->get_json_root_node (), true).c_str ());
     return true;
   }
 
@@ -210,7 +210,7 @@ namespace switcher
     if (shmdata_any_readers_.end () != it)
       shmdata_any_readers_.erase (it);
     update_shmdata_readers_description ();
-    GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
+    segment_custom_props_->notify_property_changed (json_writers_description_);
     return true;
   }
 
@@ -266,14 +266,14 @@ namespace switcher
       {
 	shmdata_any_writers_.clear ();
 	update_shmdata_writers_description ();
-	GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_writers_description_);
+	segment_custom_props_->notify_property_changed (json_readers_description_);
       }
 
     if (!shmdata_any_readers_.empty ())
       {
 	shmdata_any_readers_.clear ();
 	update_shmdata_readers_description ();
-	GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
+	segment_custom_props_->notify_property_changed (json_readers_description_);
       }
     return true;
   }
