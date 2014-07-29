@@ -95,7 +95,7 @@ namespace switcher
 
     if (cloud_writer_.get() != nullptr)
     {
-      unregister_shmdata_any_writer(cloud_writer_->get_path());
+      unregister_shmdata(cloud_writer_->get_path());
       cloud_writer_.reset();
     }
 
@@ -185,7 +185,7 @@ namespace switcher
       {
         cloud_writer_.reset(new ShmdataAnyWriter);
         cloud_writer_->set_path(make_file_name("cloud"));
-        register_shmdata_any_writer(cloud_writer_);
+        register_shmdata(cloud_writer_);
         if (compress_cloud_)
           cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_COMPRESSED));
         else
@@ -197,7 +197,7 @@ namespace switcher
     }, nullptr);
 
     reader_->start ();
-    register_shmdata_any_reader (reader_);
+    register_shmdata (reader_);
     
     return true;
   }

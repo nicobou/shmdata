@@ -80,7 +80,7 @@ namespace switcher
   bool
   BaseSink::connect (std::string shmdata_socket_path)
   {
-    unregister_shmdata_reader (shmdata_socket_path);
+    unregister_shmdata (shmdata_socket_path);
     on_shmdata_connect (shmdata_socket_path);
 
     ShmdataReader::ptr reader_;
@@ -98,7 +98,7 @@ namespace switcher
 	reader_->set_on_first_data_hook (connection_hook_, hook_user_data_);
       }
     reader_->start ();
-    register_shmdata_reader (reader_);
+    register_shmdata (reader_);
     return true;
   }
 

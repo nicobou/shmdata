@@ -93,7 +93,7 @@ namespace switcher
 	       shm_any_name.c_str ());
     shm_any_->set_data_type ("application/x-libloserialized-osc");
     shm_any_->start ();
-    register_shmdata_any_writer (shm_any_);
+    register_shmdata (shm_any_);
 
     osc_thread_ = lo_server_thread_new (std::to_string(port_).c_str (), osc_error);
     if (nullptr == osc_thread_)
@@ -107,7 +107,7 @@ namespace switcher
   bool
   OscToShmdata::stop ()
   {
-    unregister_shmdata_any_writer (make_file_name ("osc"));
+    unregister_shmdata (make_file_name ("osc"));
   {
       ShmdataAnyWriter::ptr temp = std::make_shared<ShmdataAnyWriter> ();
       std::swap (shm_any_,temp);

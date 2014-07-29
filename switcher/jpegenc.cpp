@@ -85,7 +85,7 @@ namespace switcher
     std::string writer_name = context->make_file_name ("jpegframes"); 
     jpegencframes_writer->set_path (writer_name.c_str());
     jpegencframes_writer->plug (context->bin_, context->jpegencenc_, jpegenccaps);
-    context->register_shmdata_writer (jpegencframes_writer);
+    context->register_shmdata (jpegencframes_writer);
   }
 
 }

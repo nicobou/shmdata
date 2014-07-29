@@ -55,7 +55,7 @@ namespace switcher
     shmdata_path_ = make_file_name ("audio");
     shmdata_writer->set_path (shmdata_path_.c_str());
     shmdata_writer->plug (bin_, audio_tee_, audiocaps);
-    register_shmdata_writer (shmdata_writer);
+    register_shmdata (shmdata_writer);
     gst_caps_unref(audiocaps);
     GstUtils::sync_state_with_parent (rawaudio_);
     GstUtils::sync_state_with_parent (audio_tee_);
@@ -65,7 +65,7 @@ namespace switcher
   AudioSource::unset_raw_audio_element ()
   {
     if (!shmdata_path_.empty ())
-      unregister_shmdata_writer (shmdata_path_);
+      unregister_shmdata (shmdata_path_);
     reset_bin ();
   }
 

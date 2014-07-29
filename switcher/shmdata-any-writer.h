@@ -24,6 +24,7 @@
 #include <memory>
 #include <string>
 #include <mutex>
+#include <list>
 
 #include <shmdata/any-data-writer.h>
 
@@ -37,6 +38,7 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<ShmdataAnyWriter> ptr;
+    using CapsCallBack = std::function<void(std::string)>;
     ShmdataAnyWriter();
     ~ShmdataAnyWriter();
     ShmdataAnyWriter (const ShmdataAnyWriter &) = delete;
@@ -56,6 +58,8 @@ namespace switcher
     void start ();
     bool started ();
 
+    void set_on_caps (CapsCallBack callback);
+
     //get json doc:
     JSONBuilder::Node get_json_root_node ();
 
@@ -66,6 +70,8 @@ namespace switcher
     JSONBuilder::ptr json_description_;
     std::mutex thread_safe_;
     CumulativeClock<> clock_;
+    std::string caps_ {};
+    std::list <CapsCallBack> on_caps_callback_ {};
     void make_json_description ();
     bool set_path_without_deleting (std::string name);
   };

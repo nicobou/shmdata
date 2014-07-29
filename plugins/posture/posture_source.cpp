@@ -74,22 +74,22 @@ namespace switcher
 
     if (cloud_writer_.get() != nullptr)
       {
-	unregister_shmdata_any_writer(cloud_writer_->get_path());
+	unregister_shmdata(cloud_writer_->get_path());
 	cloud_writer_.reset();
       }
     if (depth_writer_.get() != nullptr)
       {
-	unregister_shmdata_any_writer(depth_writer_->get_path());
+	unregister_shmdata(depth_writer_->get_path());
 	depth_writer_.reset();
       }
     if (rgb_writer_.get() != nullptr)
       {
-	unregister_shmdata_any_writer(rgb_writer_->get_path());
+	unregister_shmdata(rgb_writer_->get_path());
 	rgb_writer_.reset();
       }
     if (ir_writer_.get() != nullptr)
       {
-	unregister_shmdata_any_writer(ir_writer_->get_path());
+	unregister_shmdata(ir_writer_->get_path());
 	ir_writer_.reset();
       }
 
@@ -308,7 +308,7 @@ namespace switcher
       {
 	ctx->cloud_writer_.reset(new ShmdataAnyWriter);
 	ctx->cloud_writer_->set_path(ctx->make_file_name("cloud"));
-	ctx->register_shmdata_any_writer(ctx->cloud_writer_);
+	ctx->register_shmdata(ctx->cloud_writer_);
 	if (ctx->compress_cloud_)
 	  ctx->cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_COMPRESSED));
 	else
@@ -328,7 +328,7 @@ namespace switcher
       {
 	ctx->depth_writer_.reset(new ShmdataAnyWriter);
 	ctx->depth_writer_->set_path(ctx->make_file_name("depth"));
-	ctx->register_shmdata_any_writer(ctx->depth_writer_);
+	ctx->register_shmdata(ctx->depth_writer_);
 	ctx->depth_width_ = width;
 	ctx->depth_height_ = height;
 
@@ -350,7 +350,7 @@ namespace switcher
       {
 	ctx->rgb_writer_.reset(new ShmdataAnyWriter);
 	ctx->rgb_writer_->set_path(ctx->make_file_name("rgb"));
-	ctx->register_shmdata_any_writer(ctx->rgb_writer_);
+	ctx->register_shmdata(ctx->rgb_writer_);
 	ctx->rgb_width_ = width;
 	ctx->rgb_height_ = height;
 
@@ -372,7 +372,7 @@ namespace switcher
       {
 	ctx->ir_writer_.reset(new ShmdataAnyWriter);
 	ctx->ir_writer_->set_path(ctx->make_file_name("ir"));
-	ctx->register_shmdata_any_writer(ctx->ir_writer_);
+	ctx->register_shmdata(ctx->ir_writer_);
 	ctx->ir_width_ = width;
 	ctx->ir_height_ = height;
 

@@ -103,7 +103,7 @@ namespace switcher
     std::string connector_name = context->make_file_name (media_name);
     connector->set_path (connector_name.c_str());
     connector->plug (context->bin_, pad);
-    context->register_shmdata_writer (connector);
+    context->register_shmdata (connector);
     g_message ("%s created a new shmdata writer (%s)", 
      	       context->get_nick_name ().c_str(), 
      	       connector_name.c_str ());

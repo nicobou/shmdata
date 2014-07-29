@@ -48,14 +48,12 @@ namespace switcher
     bool init_segment (Quiddity *quid);
 
   protected:
-    bool register_shmdata_writer (ShmdataWriter::ptr writer);
-    bool unregister_shmdata_writer (std::string shmdata_path);
-    bool register_shmdata_any_writer (ShmdataAnyWriter::ptr writer);
-    bool unregister_shmdata_any_writer (std::string shmdata_path);
-    bool register_shmdata_reader (ShmdataReader::ptr reader);
-    bool unregister_shmdata_reader (std::string shmdata_path);
-    bool register_shmdata_any_reader (ShmdataAnyReader::ptr reader);
-    bool unregister_shmdata_any_reader (std::string shmdata_path);
+    bool register_shmdata (ShmdataWriter::ptr writer);
+    bool register_shmdata (ShmdataAnyWriter::ptr writer);
+    bool register_shmdata (ShmdataReader::ptr reader);
+    bool register_shmdata (ShmdataAnyReader::ptr reader);
+    bool unregister_shmdata (std::string shmdata_path);
+
     bool clear_shmdatas ();
 
   private:

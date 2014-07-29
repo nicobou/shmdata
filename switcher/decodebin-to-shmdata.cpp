@@ -68,7 +68,7 @@ namespace switcher
     // 					std::placeholders::_1,
     // 					it));
     for (auto &it: shmdata_path_)
-      gpipe_->unregister_shmdata_any_writer (it);
+      gpipe_->unregister_shmdata (it);
   }
 
   void 
@@ -254,7 +254,7 @@ namespace switcher
     g_debug ("%s created a new shmdata writer (%s)", 
 	     gpipe_->get_nick_name ().c_str(), 
 	     shm_any_name.c_str ());
-    gpipe_->register_shmdata_any_writer (shm_any);
+    gpipe_->register_shmdata (shm_any);
   }
 
   gboolean

@@ -175,14 +175,15 @@ namespace switcher
       return;
     gchar *string_caps = gst_caps_to_string (caps);
     context->caps_ = string_caps;
-    if (nullptr != context->on_caps_callback_)
-      context->on_caps_callback_ (context->caps_);
+    for (auto &it : context->on_caps_callback_)
+      it (context->caps_);
     g_free (string_caps);
     gst_caps_unref (caps);
     if (context->handoff_handler_ > 0)
       g_signal_handler_disconnect (G_OBJECT (object), context->handoff_handler_);
     g_object_set (G_OBJECT (context->fakesink_), 
-    		  "signal-handoffs", FALSE,
+    		  "signal-handoffs", 
+		  FALSE,
     		  nullptr);
   }
 
@@ -192,12 +193,13 @@ namespace switcher
     return caps_;
   }
 
-  void ShmdataWriter::set_on_caps (std::function<void(std::string)> callback)
+  void 
+  ShmdataWriter::set_on_caps (std::function<void(std::string)> callback)
   {
     std::unique_lock<std::mutex> lock (caps_mutex_);
-    on_caps_callback_ = callback;
+    on_caps_callback_.push_back (callback);
     if (!caps_.empty ())
-      on_caps_callback_ (caps_);
+      callback (caps_);
   }
 
   void

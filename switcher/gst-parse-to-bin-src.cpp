@@ -93,7 +93,7 @@ namespace switcher
      writer.reset (new ShmdataWriter ());
      writer->set_path (make_file_name ("gstsrc").c_str ());//FIXME use caps name
      writer->plug (bin_, src_pad);
-     register_shmdata_writer (writer);
+     register_shmdata (writer);
      gst_object_unref (src_pad);
      GstUtils::sync_state_with_parent (gst_parse_to_bin_src_);
      return true;
@@ -119,7 +119,7 @@ namespace switcher
   GstParseToBinSrc::clean ()
   {
     clear_shmdatas ();
-    reset_bin ();//bool res = unregister_shmdata_writer (make_file_name ("video"));
+    reset_bin ();//bool res = unregister_shmdata (make_file_name ("video"));
     return true;
   }
 

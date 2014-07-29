@@ -129,7 +129,7 @@ namespace switcher
         ctx->writer_->set_path(ctx->make_file_name(ctx->syphon_servername_));
       else
         ctx->writer_->set_path(ctx->make_file_name(ctx->syphon_appname_));
-      ctx->register_shmdata_any_writer(ctx->writer_);
+      ctx->register_shmdata(ctx->writer_);
       ctx->width_ = width;
       ctx->height_ = height;
 

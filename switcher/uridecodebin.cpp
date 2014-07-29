@@ -464,7 +464,7 @@ namespace switcher
     g_message ("%s created a new shmdata any writer (%s)", 
     	       get_nick_name ().c_str(), 
     	       connector_name.c_str ());
-    register_shmdata_any_writer (connector);
+    register_shmdata (connector);
   }
 
   gboolean 

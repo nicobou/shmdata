@@ -772,7 +772,7 @@ namespace switcher
     os_id << next_id_;
     next_id_++;
     internal_id_[shmdata_socket_path] = os_id.str();
-    register_shmdata_reader (reader);
+    register_shmdata (reader);
     return true;
   }  
 
@@ -815,7 +815,7 @@ namespace switcher
     writer_it = internal_shmdata_writers_.find (make_file_name ("send_rtcp_src_"+id));
     if (internal_shmdata_writers_.end () != writer_it)
       internal_shmdata_writers_.erase (writer_it);
-    unregister_shmdata_reader (shmdata_socket_path);
+    unregister_shmdata (shmdata_socket_path);
     auto reader_it = internal_shmdata_readers_.find (make_file_name ("recv_rtcp_sink_"+id));
     if (internal_shmdata_readers_.end () != reader_it)
       internal_shmdata_readers_.erase (reader_it);
@@ -1002,14 +1002,12 @@ namespace switcher
   void 
   RtpSession::set_mtu_at_add_data_stream (const gint value, void *user_data)
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast<RtpSession *> (user_data);
     context->mtu_at_add_data_stream_ = value;
   }
    
   gint RtpSession::get_mtu_at_add_data_stream (void *user_data)
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast<RtpSession *> (user_data);
     return context->mtu_at_add_data_stream_;
   }
@@ -1017,9 +1015,6 @@ namespace switcher
   void
   RtpSession::on_rtp_caps (std::string shmdata_path, std::string caps)
   {
-    //data::Tree::ptr tree = data::make_tree ();
-    // tree->graft (std::move (shmdata_path),
-    // 		 data::make_tree (std::move (caps)));
     graft_tree ("rtp_caps." + std::move (shmdata_path), 
 		data::make_tree (std::move (caps)));
   }

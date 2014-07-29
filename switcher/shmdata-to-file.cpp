@@ -140,7 +140,7 @@ namespace switcher
   bool
   ShmdataToFile::remove_shmdata (std::string shmdata_socket_path)
   {
-    unregister_shmdata_reader (shmdata_socket_path);
+    unregister_shmdata (shmdata_socket_path);
     g_debug ("data_stream %s removed", shmdata_socket_path.c_str ());
     return true;
   }
@@ -197,7 +197,7 @@ namespace switcher
 	 //GstUtils::wait_state_changed (bin_);
 	 reader->start ();
 	 shmdata_recorders_[it.first] = recorder_bin;
-	 register_shmdata_reader (reader);
+	 register_shmdata (reader);
       }
     return true;
   }
@@ -209,7 +209,7 @@ namespace switcher
     for (auto &it : shmdata_recorders_)
       {
 	GstUtils::clean_element (it.second);
-	unregister_shmdata_reader (it.first);
+	unregister_shmdata (it.first);
       }
     shmdata_recorders_.clear ();
     return true;

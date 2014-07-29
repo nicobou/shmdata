@@ -95,7 +95,10 @@ namespace switcher
   {
     std::unique_lock<std::mutex> lock (thread_safe_);
     //g_print ("%s\n",__FUNCTION__);
-    shmdata_any_writer_set_data_type (writer_, data_type.c_str ());
+    caps_ = data_type;
+    shmdata_any_writer_set_data_type (writer_, caps_.c_str ());
+    for (auto &it : on_caps_callback_)
+      it (caps_);
   }
 
   void
@@ -155,6 +158,15 @@ namespace switcher
   {
     std::unique_lock<std::mutex> lock (thread_safe_);
     return started_;
+  }
+
+  void 
+  ShmdataAnyWriter::set_on_caps (std::function<void(std::string)> callback)
+  {
+    std::unique_lock<std::mutex> lock (thread_safe_);
+    on_caps_callback_.push_back (callback);
+    if (!caps_.empty ())
+      callback (caps_);
   }
   
 }

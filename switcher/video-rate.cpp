@@ -86,7 +86,7 @@ namespace switcher
     std::string writer_name = context->make_file_name ("video"); 
     video_rate_frames_writer->set_path (writer_name.c_str());
     video_rate_frames_writer->plug (context->bin_, capsfilter, video_rate_caps);
-    context->register_shmdata_writer (video_rate_frames_writer);
+    context->register_shmdata (video_rate_frames_writer);
   }
 
 }

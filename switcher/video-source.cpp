@@ -135,7 +135,7 @@ namespace switcher
     shmdata_path_ = make_file_name ("video"); 
     shmdata_writer->set_path (shmdata_path_.c_str());
     shmdata_writer->plug (bin_, video_tee_, videocaps_);
-    register_shmdata_writer (shmdata_writer);
+    register_shmdata (shmdata_writer);
     
     GstUtils::sync_state_with_parent (rawvideo_);
     GstUtils::sync_state_with_parent (video_tee_);
@@ -163,7 +163,7 @@ namespace switcher
 	GstPad *srcpad = gst_element_get_static_pad (codec_element_, "src");
 	shmdata_codec->plug (bin_, srcpad);
 	gst_object_unref (srcpad);
-	register_shmdata_writer (shmdata_codec);
+	register_shmdata (shmdata_codec);
 	GstUtils::sync_state_with_parent (queue_codec_element_);
 	GstUtils::sync_state_with_parent (color_space_codec_element_);
 	GstUtils::sync_state_with_parent (codec_element_);

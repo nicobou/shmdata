@@ -24,6 +24,7 @@
 #include <memory>
 #include <string>
 #include <mutex>
+#include <list>
 #include <shmdata/base-writer.h>
 #include "json-builder.h"
 
@@ -34,18 +35,21 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<ShmdataWriter> ptr;
+    using CapsCallBack = std::function<void(std::string)>;
     ShmdataWriter();
     ~ShmdataWriter();
     ShmdataWriter (const ShmdataWriter &) = delete;
     ShmdataWriter &operator= (const ShmdataWriter &) = delete;
+
     bool set_path (std::string name); //path needs to be fully specified
     bool set_path_without_deleting (std::string name); //path needs to be fully specified
     std::string get_path ();
+
     //caps does not need to be fully specified:
     void plug (GstElement *bin, GstElement *source_element,GstCaps *caps);
     void plug (GstElement *bin, GstPad *source_pad);
 
-    void set_on_caps (std::function<void(std::string)> callback);
+    void set_on_caps (CapsCallBack callback);
     std::string get_caps ();
     //get json doc:
     JSONBuilder::Node get_json_root_node ();
@@ -60,7 +64,7 @@ namespace switcher
     GstElement *fakesink_ {nullptr};
     gulong handoff_handler_ {0};
     std::mutex caps_mutex_ {};
-    std::function<void (std::string)> on_caps_callback_ {nullptr};
+    std::list <CapsCallBack> on_caps_callback_ {};
     JSONBuilder::ptr json_description_ {new JSONBuilder()};
 
     void make_json_description ();

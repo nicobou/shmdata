@@ -153,7 +153,7 @@ namespace switcher
 	       shm_any_name.c_str ());
     shm_any_->set_data_type ("audio/midi");
     shm_any_->start ();
-    register_shmdata_any_writer (shm_any_);
+    register_shmdata (shm_any_);
 
     return true;
   }
