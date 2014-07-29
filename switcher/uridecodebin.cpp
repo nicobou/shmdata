@@ -455,31 +455,9 @@ namespace switcher
     g_debug ("uridecodebin: new media %s %d\n",media_name, count );
     g_strfreev(padname_splitted);
 
-    //creating a shmdata
-    //ShmdataWriter::ptr connector;
-    //connector.reset (new ShmdataWriter ());
-    //std::string connector_name = make_file_name (media_name);
-    //connector->set_path (connector_name.c_str());
-    //GstCaps *caps = gst_pad_get_caps_reffed (pad);
-
-    //connector->plug (bin, fakesink, caps);
-
-    //if (G_IS_OBJECT (caps))
-    //  gst_object_unref (caps);
-    //register_shmdata_writer (connector);
-
     ShmdataAnyWriter::ptr connector = std::make_shared<ShmdataAnyWriter>();
     std::string connector_name = make_file_name (media_name);
     connector->set_path (connector_name.c_str());
-    //GstCaps *caps = gst_pad_get_caps_reffed (pad);
-
-    //if (G_IS_OBJECT (caps))
-    //{
-    //  gchar *capsString = gst_caps_to_string (caps);
-    //  connector->set_data_type (std::string(capsString));
-    //  g_free(capsString);
-    //  gst_object_unref (caps);
-    //}
 
     g_signal_connect (fakesink, "handoff", (GCallback)on_handoff_cb, connector.get());
 
