@@ -1,6 +1,6 @@
 /*
  *
- * switcher-top is free software; you can redistribute it and/or
+ * posture is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2 of the License, or (at your option) any later version.
@@ -16,7 +16,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "posture.h"
+#include "posture_source.h"
 
 #include <iostream>
 
@@ -30,11 +30,11 @@ using namespace posture;
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureSrc,
-				       "3D captures through zcameras",
+				       "3D camera",
 				       "video source", 
 				       "Grabs 3D data (point clouds / meshes) using a zcamera",
 				       "LGPL",
-				       "posturesrc",				
+				       "posturesrc",
 				       "Emmanuel Durand");
 
   PostureSrc::PostureSrc() :
@@ -309,7 +309,10 @@ namespace switcher
       ctx->cloud_writer_.reset(new ShmdataAnyWriter);
       ctx->cloud_writer_->set_path(ctx->make_file_name("cloud"));
       ctx->register_shmdata_any_writer(ctx->cloud_writer_);
-      ctx->cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_BASE));
+      if (ctx->compress_cloud_)
+        ctx->cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_COMPRESSED));
+      else
+        ctx->cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_BASE));
       ctx->cloud_writer_->start();
     }
 

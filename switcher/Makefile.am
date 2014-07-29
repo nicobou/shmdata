@@ -71,6 +71,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     sdp-utils.cpp \
     segment.cpp \
     shmdata-any-writer.cpp \
+    shmdata-any-reader.cpp \
     shmdata-from-gdp-file.cpp \
     shmdata-reader.cpp \
     shmdata-to-file.cpp \
@@ -156,6 +157,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     sdp-utils.h \
     segment.h \
     shmdata-any-writer.h \
+    shmdata-any-reader.h \
     shmdata-from-gdp-file.h \
     shmdata-reader.h \
     shmdata-to-file.h \
