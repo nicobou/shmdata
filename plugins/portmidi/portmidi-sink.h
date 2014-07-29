@@ -39,9 +39,6 @@ namespace switcher
     ~PortMidiSink ();
     PortMidiSink (const PortMidiSink &) = delete;
     PortMidiSink &operator= (const PortMidiSink &) = delete;
-    bool init (); 
-    bool start ();
-    bool stop ();
 
   private:
     shmdata_any_reader_t *reader_;
@@ -52,6 +49,10 @@ namespace switcher
     //device selection
     GParamSpec *devices_enum_spec_;
     gint device_;
+
+    bool init () final; 
+    bool start () final;
+    bool stop () final;
 
     static void set_device (const gint value, void *user_data);
     static gint get_device (void *user_data);

@@ -67,7 +67,6 @@ namespace switcher
     ~SystemUsage ();
     SystemUsage (const SystemUsage &) = delete;
     SystemUsage &operator= (const SystemUsage &) = delete;
-    bool init ();
 
   private:
     std::shared_ptr<std::thread> pollStateThread_ {};
@@ -82,6 +81,8 @@ namespace switcher
     double period_;
     std::map<std::string, Cpu> _cpus {};
     std::map<std::string, Net> _net {};
+
+    bool init () final;
 
     void pollState();
     static void setRefreshPeriod(double period, void* user_data);

@@ -35,7 +35,7 @@ namespace switcher
     ~SoapCtrlClient ();
     SoapCtrlClient (const SoapCtrlClient &) = delete;
     SoapCtrlClient &operator= (const SoapCtrlClient &) = delete;
-    bool init ();
+    bool init () final;
 
   private:
     controlProxy *switcher_control_;

@@ -57,6 +57,7 @@ namespace switcher
   bool SyphonSrc::init_gpipe()
   {
     init_startable (this);
+    init_segment (this);
 
     reader_.reset(new SyphonReader(frameCallback, (void*)this));
 

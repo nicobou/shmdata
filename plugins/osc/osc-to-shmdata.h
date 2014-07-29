@@ -20,7 +20,8 @@
 #ifndef __SWITCHER_OSC_CTRL_SERVER_H__
 #define __SWITCHER_OSC_CTRL_SERVER_H__
 
-#include "switcher/gpipe.h" //FIXME only for shmdata management
+#include "switcher/quiddity.h"
+#include "switcher/segment.h"
 #include "switcher/custom-property-helper.h"
 #include "switcher/startable-quiddity.h"
 #include "lo/lo.h"
@@ -29,7 +30,7 @@
 
 namespace switcher
 {
-  class OscToShmdata : public GPipe, public StartableQuiddity
+  class OscToShmdata : public Quiddity, public Segment, public StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(OscToShmdata);
@@ -37,7 +38,6 @@ namespace switcher
     ~OscToShmdata ();
     OscToShmdata (const OscToShmdata &) = delete;
     OscToShmdata &operator=  (const OscToShmdata &) = delete;
-    bool init_gpipe () final;
 
   private:
     CustomPropertyHelper::ptr custom_props_; 
@@ -47,8 +47,10 @@ namespace switcher
     std::chrono::time_point<std::chrono::system_clock> start_;
     ShmdataAnyWriter::ptr shm_any_;
 
-    bool start ();
-    bool stop ();
+    bool init () final;
+    bool start () final;
+    bool stop () final;
+
     static int osc_handler(const char *path, const char *types, lo_arg **argv,
 			   int argc, void *data, void *user_data);
     static void osc_error(int num, const char *msg, const char *path);
