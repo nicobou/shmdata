@@ -26,6 +26,7 @@
 #include "switcher/custom-property-helper.h"
 
 #include <memory>
+#include <mutex>
 #include <string>
 
 #include <posture/pointcloudmerger.h>
@@ -53,9 +54,18 @@ namespace switcher
     GParamSpec* devices_path_prop_ {nullptr};
     GParamSpec* compress_cloud_prop_ {nullptr};
 
-    std::shared_ptr<posture::PointCloudMerger> merger_;
+    unsigned int source_id_ {0};
+    std::shared_ptr<posture::PointCloudMerger> merger_ {nullptr};
+    std::mutex mutex_ {};
+    std::vector<char> merged_cloud_ {};
+
+    ShmdataAnyWriter::ptr cloud_writer_ {nullptr};
 
     bool init_segment ();
+    
+    bool connect (std::string shmdata_socket_path);
+    static gboolean connect_wrapped (gpointer shmdata_socket_path, gpointer user_data);
+    static gboolean disconnect (gpointer , gpointer user_data);
 
     static const gchar* get_calibration_path(void* user_data);
     static void set_calibration_path(const gchar* name, void* user_data);
