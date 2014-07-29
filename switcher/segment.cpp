@@ -29,6 +29,7 @@ namespace switcher
   Segment::Segment() :
     bin_ (NULL),
     shmdata_any_writers_ (),
+    shmdata_any_readers_ (),
     shmdata_writers_ (),
     shmdata_readers_ (),
     shmdata_writers_description_ (new JSONBuilder()),
@@ -210,8 +211,13 @@ namespace switcher
     shmdata_readers_description_->begin_object ();
     shmdata_readers_description_->set_member_name ("shmdata_readers");
     shmdata_readers_description_->begin_array ();
+
     for (auto &it : shmdata_readers_)
       shmdata_readers_description_->add_node_value (it.second->get_json_root_node ());
+      
+    for (auto &it : shmdata_any_readers_)
+      shmdata_readers_description_->add_node_value (it.second->get_json_root_node ());
+
     shmdata_readers_description_->end_array ();
     shmdata_readers_description_->end_object ();
   }
@@ -271,7 +277,6 @@ namespace switcher
 		 reader->get_path ().c_str (),
 		 JSONBuilder::get_string (reader->get_json_root_node (), true).c_str ());
     return true;
-    
   }
 
   bool Segment::unregister_shmdata_reader (std::string shmdata_path)
@@ -279,6 +284,34 @@ namespace switcher
     auto it = shmdata_readers_.find (shmdata_path);
     if (shmdata_readers_.end () != it)
       shmdata_readers_.erase (it);
+    update_shmdata_readers_description ();
+    GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
+    return true;
+  }
+
+  bool Segment::register_shmdata_any_reader (ShmdataAnyReader::ptr reader)
+  {
+    const gchar *name = reader->get_path ().c_str ();
+    if (g_strcmp0 (name, "") == 0)
+      {
+	g_warning ("Segment:: can not register shmdata reader with no path");
+	return false;
+      }
+    shmdata_any_readers_[name] = reader;
+    update_shmdata_readers_description ();
+    GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
+    signal_emit ("on-new-shmdata-reader", 
+		 get_nick_name ().c_str (), 
+		 reader->get_path ().c_str (),
+		 JSONBuilder::get_string (reader->get_json_root_node (), true).c_str ());
+    return true;
+  }
+
+  bool Segment::unregister_shmdata_any_reader (std::string shmdata_path)
+  {
+    auto it = shmdata_any_readers_.find (shmdata_path);
+    if (shmdata_any_readers_.end () != it)
+      shmdata_any_readers_.erase (it);
     update_shmdata_readers_description ();
     GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
     return true;
@@ -316,6 +349,20 @@ namespace switcher
     if (!shmdata_readers_.empty ())
       {
 	shmdata_readers_.clear ();
+	update_shmdata_readers_description ();
+	GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
+      }
+
+    if (!shmdata_any_writers_.empty ())
+      {
+	shmdata_any_writers_.clear ();
+	update_shmdata_writers_description ();
+	GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_writers_description_);
+      }
+
+    if (!shmdata_any_readers_.empty ())
+      {
+	shmdata_any_readers_.clear ();
 	update_shmdata_readers_description ();
 	GObjectWrapper::notify_property_changed (gobject_->get_gobject (), json_readers_description_);
       }

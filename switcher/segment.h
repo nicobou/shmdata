@@ -24,6 +24,7 @@
 #include "quiddity.h"
 #include "runtime.h"
 #include "shmdata-any-writer.h"
+#include "shmdata-any-reader.h"
 #include "shmdata-writer.h"
 #include "shmdata-reader.h"
 #include "json-builder.h"
@@ -54,11 +55,14 @@ namespace switcher
     bool unregister_shmdata_any_writer (std::string shmdata_path);
     bool register_shmdata_reader (ShmdataReader::ptr reader);
     bool unregister_shmdata_reader (std::string shmdata_path);
+    bool register_shmdata_any_reader (ShmdataAnyReader::ptr reader);
+    bool unregister_shmdata_any_reader (std::string shmdata_path);
     bool clear_shmdatas ();
     bool reset_bin ();
 
   private:
     std::unordered_map <std::string, ShmdataAnyWriter::ptr> shmdata_any_writers_;
+    std::unordered_map <std::string, ShmdataAnyReader::ptr> shmdata_any_readers_;
     std::unordered_map <std::string, ShmdataWriter::ptr> shmdata_writers_;
     std::unordered_map <std::string, ShmdataReader::ptr> shmdata_readers_;
     JSONBuilder::ptr shmdata_writers_description_;
