@@ -32,11 +32,11 @@ namespace switcher
 				       "Nicolas Bouillot");
   
   AudioTestSource::AudioTestSource () :
-    audiotestsrc_ (NULL)
+    audiotestsrc_ (nullptr)
   {}
   
   bool
-  AudioTestSource::init_segment ()
+  AudioTestSource::init_gpipe ()
   {
     init_startable (this);
     return make_audiotestsrc ();
@@ -56,9 +56,9 @@ namespace switcher
 
     g_object_set (G_OBJECT (audiotest),
 		  "is-live", TRUE,
-		  NULL);
+		  nullptr);
 
-    if (audiotestsrc_ != NULL)
+    if (audiotestsrc_ != nullptr)
       {
 	GstUtils::apply_property_value (G_OBJECT (audiotestsrc_), G_OBJECT (audiotest), "volume");
 	GstUtils::apply_property_value (G_OBJECT (audiotestsrc_), G_OBJECT (audiotest), "freq");
@@ -70,7 +70,7 @@ namespace switcher
     else
       g_object_set (G_OBJECT (audiotest),
 		    "samplesperbuffer", 512,
-		    NULL);
+		    nullptr);
 
     audiotestsrc_ = audiotest;
 

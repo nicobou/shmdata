@@ -33,7 +33,7 @@ namespace switcher
   
   ShmdataToFile::ShmdataToFile () :
     custom_prop_ (new CustomPropertyHelper ()),  
-    recording_param_ (NULL), 
+    recording_param_ (nullptr), 
     recording_ (FALSE), 
     file_names_ (),
     shmdata_recorders_ ()
@@ -45,7 +45,7 @@ namespace switcher
   }
 
   bool 
-  ShmdataToFile::init_segment ()
+  ShmdataToFile::init_gpipe ()
   {
     install_method ("Add Shmdata",
 		    "add_shmdata", 
@@ -57,10 +57,10 @@ namespace switcher
 						  "File Path"
 						  "filepath",
 						  "file location",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &add_shmdata_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, nullptr),
 		    this);
     
     install_method ("Remove Shmdata",
@@ -70,10 +70,10 @@ namespace switcher
 		    Method::make_arg_description ("Shmdata Path",
 						  "shmpath", 
 						  "shmdata socket path to remove", 
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &remove_shmdata_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
     
  
@@ -118,7 +118,7 @@ namespace switcher
 
     file_names_[shmdata_socket_path] = file_location;
     
-     if (recording_) // starting the reader if runtime is set
+     if (recording_) // starting the reader if pipeline is set
        {
 	     //FIXME make the recorder
        }
@@ -170,14 +170,14 @@ namespace switcher
     for (auto &it :file_names_)
       {
 	//FIXME check file
-	GError *error = NULL;
+	GError *error = nullptr;
 	gchar *pipe = g_strdup_printf ("gdppay ! filesink location=%s",
 				       it.second.c_str());
 	GstElement *recorder_bin = gst_parse_bin_from_description (pipe,
 								   TRUE,
 								   &error);
 	g_free (pipe);
-	if (error != NULL)
+	if (error != nullptr)
 	  {
 	    g_warning ("%s",error->message);
 	    g_error_free (error);

@@ -74,7 +74,7 @@ namespace switcher
     object_ = object;
     id_ = gobject_signal_id;
     inspect_gobject_signal ();
-    hook_id_ = g_signal_add_emission_hook (id_, 0, on_signal_emitted, this, NULL);
+    hook_id_ = g_signal_add_emission_hook (id_, 0, on_signal_emitted, this, nullptr);
 
     return true;
   }
@@ -99,7 +99,7 @@ namespace switcher
     //guint *signals;
     //guint nsignals;
     guint j;
-    GSignalQuery *query = NULL;
+    GSignalQuery *query = nullptr;
     //GType type;
     
     query = g_new0 (GSignalQuery, 1);
@@ -189,12 +189,12 @@ namespace switcher
     do
       {
 	arg_long_name = va_arg( vl, char *);
-	if (arg_long_name != NULL)
+	if (arg_long_name != nullptr)
 	  {
 	    arg_name = va_arg( vl, char *); 
 	    arg_desc = va_arg( vl, char *);
 	
-	    if (arg_name != NULL && arg_desc != NULL)
+	    if (arg_name != nullptr && arg_desc != nullptr)
 	      res.push_back (std::make_tuple (arg_long_name, 
 					      arg_name,
 					      arg_desc));
@@ -251,8 +251,8 @@ namespace switcher
      for (i = 1; i < n_param_values; i++) //we do not deserialize the gobject
        {
 	 gchar *val_str = GstUtils::gvalue_serialize (&param_values[i]);
-	 if (val_str == NULL)//gst-streamer connt serialize this
-	   val_str = g_strdup ("NULL");
+	 if (val_str == nullptr)//gst-streamer connt serialize this
+	   val_str = g_strdup ("nullptr");
 	 params.push_back (val_str);
 	 g_free (val_str);
        }
@@ -311,7 +311,7 @@ namespace switcher
     // 					    G_PRIORITY_DEFAULT_IDLE,
     // 					    GSourceFunc (signal_emit_in_main_loop),
     // 					    (gpointer)args,
-    // 					    NULL);
+    // 					    nullptr);
   }  
   
   // gboolean 

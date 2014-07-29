@@ -32,12 +32,12 @@ namespace switcher
 				       "deinterleave", 
 				       "Nicolas Bouillot");
   Deinterleave::Deinterleave () :
-    deinterleave_ (NULL),
+    deinterleave_ (nullptr),
     media_counters_ ()
   {}
 
   bool
-  Deinterleave::init_segment () 
+  Deinterleave::init_gpipe () 
   { 
     if (!GstUtils::make_element ("deinterleave",&deinterleave_))
       return false;

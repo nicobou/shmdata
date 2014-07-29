@@ -21,13 +21,13 @@
 #ifndef __SWITCHER_URIS_H__
 #define __SWITCHER_URIS_H__
 
-#include "base-source.h"
+#include "gpipe.h"
 #include "gst-element-cleaner.h"
 #include <unordered_map>
 
 namespace switcher
 {
-  class Uris : public BaseSource, public GstElementCleaner
+  class Uris : public GPipe, public GstElementCleaner
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Uris);

@@ -21,13 +21,15 @@
 #ifndef __SWITCHER_SEGMENT_H__
 #define __SWITCHER_SEGMENT_H__
 
-#include "quiddity.h"
-#include "runtime.h"
+//#include "quiddity.h"
+//#include "gpipe.h"
 #include "shmdata-any-writer.h"
 #include "shmdata-any-reader.h"
 #include "shmdata-writer.h"
 #include "shmdata-reader.h"
+#include "counter-map.h"
 #include "json-builder.h"
+#include "custom-property-helper.h"
 #include <vector>
 #include <unordered_map>
 
@@ -35,7 +37,10 @@
 
 namespace switcher
 {
-  class Segment : public Quiddity, public Runtime
+  class Quiddity;
+
+  class Segment : public CounterMap 
+  /*inherit from CounterMap for sharing counters between multiple DecodebinToShmdata*/
   {
   public:
     typedef std::shared_ptr<Segment> ptr;
@@ -43,12 +48,10 @@ namespace switcher
     virtual ~Segment ();
     Segment (const Segment &) = delete;
     Segment &operator= (const Segment&) = delete;
-    virtual bool init_segment () = 0;
-    bool init ();
+
+    bool init_segment (Quiddity *quid);
 
   protected:
-    GstElement *get_bin ();
-    GstElement *bin_; //FIXME should be private
     bool register_shmdata_writer (ShmdataWriter::ptr writer);
     bool unregister_shmdata_writer (std::string shmdata_path);
     bool register_shmdata_any_writer (ShmdataAnyWriter::ptr writer);
@@ -58,9 +61,9 @@ namespace switcher
     bool register_shmdata_any_reader (ShmdataAnyReader::ptr reader);
     bool unregister_shmdata_any_reader (std::string shmdata_path);
     bool clear_shmdatas ();
-    bool reset_bin ();
 
   private:
+    Quiddity *quid_ {nullptr};
     std::unordered_map <std::string, ShmdataAnyWriter::ptr> shmdata_any_writers_;
     std::unordered_map <std::string, ShmdataAnyReader::ptr> shmdata_any_readers_;
     std::unordered_map <std::string, ShmdataWriter::ptr> shmdata_writers_;
@@ -68,16 +71,14 @@ namespace switcher
     JSONBuilder::ptr shmdata_writers_description_;
     JSONBuilder::ptr shmdata_readers_description_;
     //shmdatas as param
-    static GParamSpec *json_writers_description_;
-    static GParamSpec *json_readers_description_;
+    CustomPropertyHelper::ptr segment_custom_props_;
+    GParamSpec *json_writers_description_;
+    GParamSpec *json_readers_description_;
 
-    void make_bin ();
-    void clean_bin ();
     void update_shmdata_writers_description ();
     void update_shmdata_readers_description ();
-    static bool get_shmdata_writers_by_gvalue (GValue *value, void *user_data);
-    static bool get_shmdata_readers_by_gvalue (GValue *value, void *user_data);
-    static gboolean clean_element_invoke (gpointer user_data);
+    static const gchar *get_shmdata_writers_string (void *user_data);
+    static const gchar *get_shmdata_readers_string (void *user_data);
   };
 }  // end of namespace
 

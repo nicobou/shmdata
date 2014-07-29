@@ -24,7 +24,6 @@
 #include "shmdata-reader.h"
 #include "quiddity-manager.h"
 #include "json-builder.h"
-#include <gst/sdp/gstsdpmessage.h>
 #include <gst/gst.h>
 #include <map>
 #include <string>
@@ -58,12 +57,6 @@ namespace switcher
     std::string host_name_;
     std::map<std::string, QuiddityManager::ptr> ports_; //maps port with rtp shmdata reader
     std::map<std::string, std::string> source_streams_; //maps shmdata source stream with port
-    static void sdp_write_media_from_caps (GstSDPMessage *sdp_description, 
-					   GstCaps *media_caps,
-					   gint dest_port,
-					   std::string server_host_name,
-					   std::string transport_proto,
-					   gint stream_number);
     JSONBuilder::ptr json_description_;
     void make_json_description ();
   };

@@ -39,7 +39,7 @@ namespace switcher
   private: 
    GstElement *deinterleave_;
    std::map<std::string, int> media_counters_;
-   bool init_segment ();
+   bool init_gpipe () final;
    static void make_deinterleave_active (ShmdataReader *caller, void *deinterleave_instance);
    static void pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
    static void no_more_pads_cb (GstElement* object, gpointer user_data);

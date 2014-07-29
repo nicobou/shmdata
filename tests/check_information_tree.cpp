@@ -21,6 +21,7 @@
 #include <cassert>
 #include <iostream>
 #include <memory>
+#include <algorithm>
 
 //----------------- a custom struct without operator <<
 struct Widget : public DefaultSerializable<Widget> 
@@ -146,23 +147,100 @@ main ()
     tree->graft (".child1.child2.bla2", make_tree ("hub"));
 
     std::string serialized = BasicSerializer::serialize (tree);
-    //std::cout << serialized << std::endl;
+    std::cout << serialized << std::endl;
 
     Tree::ptr tree2 = BasicSerializer::deserialize (serialized);
     assert (tree2);
     std::string serialized2 = BasicSerializer::serialize (tree2);
-    //std::cout << serialized2 << std::endl;
+    std::cout << serialized2 << std::endl;
 
     assert (serialized == serialized2);
   }
-  {//basic serialization
+  {
+    // JSON serialization with child1.child2 as an array
     Tree::ptr tree = make_tree ();
+
+    // if children are grafted to child3, its value 
+    // will be serialized with "key_value, as follow:
+    // "child3" : {
+    //  "key_value" : "1.2",
+    //  "child4" : "float"
+    //  }
+    tree->graft (".child1.child3", make_tree (3.1f));
+    tree->graft (".child1.child3.child4", make_tree ("child4_value"));
+
+    // if the array is made with a value, it will not be serialized  
+    // a node trageted as an array should be created like this :
+    // tree->graft (".child1.child2", make_tree ());
+    // however, this is accepted:
     tree->graft (".child1.child2", make_tree ("switch"));
-    tree->graft (".child1.child3", make_tree (1.2f));
-    tree->graft (".child1.child2.bla1", make_tree ("wire"));
-    tree->graft (".child1.child2.bla2", make_tree ("hub"));
+    //
+    Tree::ptr elem1 = make_tree ();
+    elem1->graft ("equipment", make_tree ("door"));
+    elem1->graft ("color", make_tree ("red"));
+    Tree::ptr elem2 = make_tree ();
+    elem2->graft ("equipment", make_tree ("door"));
+    elem2->graft ("color", make_tree ("black"));
+    tree->graft (".child1.child2.red_door", elem1);
+    tree->graft (".child1.child2.black_door", elem2);
+    tree->tag_as_array (".child1.child2", true);
+
     std::string serialized = JSONSerializer::serialize (tree);
-    //std::cout << serialized << std::endl;
+    std::cout << serialized << std::endl;
+  }
+
+  {//get childs keys inserting in an existing container
+    Tree::ptr tree = make_tree ();
+    std::list<std::string> childs {"child1", "child2", "child3",
+	                           "child4", "child5", "child6",
+                                   "child7", "child8", "child9"};
+    std::for_each (childs.begin (),
+		   childs.end (),
+		   [tree] (const std::string &val) 
+		   {
+		     tree->graft (".root." + val, make_tree ("val"));
+		   });
+    std::vector<std::string> child_keys;
+    tree->get_child_keys (".root", 
+    			  std::insert_iterator<std::vector <std::string>> (child_keys,
+    									   child_keys.begin ()));
+    assert (std::equal (childs.begin (), 
+			childs.end (),
+			child_keys.begin (),
+			[](const std::string &first, const std::string &second)
+			{return (0 == first.compare (second));} 
+			));
+  }
+
+  {//get childs keys in a newly allocated container
+    Tree::ptr tree = make_tree ();
+    std::list<std::string> childs {"child1", "child2", "child3",
+	                           "child4", "child5", "child6",
+                                   "child7", "child8", "child9"};
+    std::for_each (childs.begin (),
+		   childs.end (),
+		   [tree] (const std::string &val) 
+		   {
+		     tree->graft (".root." + val, make_tree ("val"));
+		   });
+    auto string_compare = 
+      [] (const std::string &first, const std::string &second)
+      {return (0 == first.compare (second));};
+
+    //using a list
+    std::list<std::string> child_keys_list = tree->get_child_keys<> (".root");
+    assert (std::equal (childs.begin (), 
+			childs.end (),
+			child_keys_list.begin (),
+			string_compare));
+
+    //using a vector
+    std::vector<std::string> child_keys_vector = tree->get_child_keys<std::vector> (".root");
+    assert (std::equal (childs.begin (), 
+			childs.end (),
+			child_keys_vector.begin (),
+			string_compare));
+    
   }
 
   return 0;

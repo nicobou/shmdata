@@ -40,10 +40,10 @@ namespace switcher
     verbose_ (true),
     handler_ids_ (),
     custom_props_ (new CustomPropertyHelper ()),
-    last_line_prop_ (NULL),
-    mute_prop_ (NULL),
-    debug_prop_ (NULL),
-    verbose_prop_ (NULL),
+    last_line_prop_ (nullptr),
+    mute_prop_ (nullptr),
+    debug_prop_ (nullptr),
+    verbose_prop_ (nullptr),
     last_line_mutex_ ()
   {}
   
@@ -67,14 +67,14 @@ namespace switcher
     guint quiet_handler_id = g_log_set_handler ("GLib-GObject", 
 						G_LOG_LEVEL_MASK, 
 						quiet_log_handler, 
-						NULL);  
+						nullptr);  
 
     last_line_prop_ = 
       custom_props_->make_string_property ("last-line", 
 					   "last log line",
 					   "",
 					   (GParamFlags) G_PARAM_READABLE,
-					   NULL,
+					   nullptr,
 					   Logger::get_last_line,
 					   this);
     
@@ -139,10 +139,10 @@ namespace switcher
 		    Method::make_arg_description ("LogDomain",
 						  "log domain", 
 						  "the glib log domain (e.g. shmdata, Glib or GStreamer)",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &install_log_handler_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
 
 
@@ -153,10 +153,10 @@ namespace switcher
 		    Method::make_arg_description ("Log Domain",
 						  "log domain", 
 						  "the glib log domain (e.g. shmdata, Glib or GStreamer)",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &remove_log_handler_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
 
     return true;
@@ -237,8 +237,8 @@ namespace switcher
     if (context->mute_)
       return;
     gboolean update_last_line = TRUE;
-    std::string tmp_message = std::string ((NULL == message) ? "null-message" : message);
-    std::string tmp_log_domain = std::string ((NULL == log_domain) ? "null-log-domain" : log_domain);
+    std::string tmp_message = std::string ((nullptr == message) ? "null-message" : message);
+    std::string tmp_log_domain = std::string ((nullptr == log_domain) ? "null-log-domain" : log_domain);
     std::string tmp_level = std::string ("unknown");
 
     //FIXME: 

@@ -17,23 +17,33 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
-#ifndef __SWITCHER_VIDEO_SINK_H__
-#define __SWITCHER_VIDEO_SINK_H__
-
-#include "base-sink.h"
-#include <memory>
+#include "counter-map.h"
 
 namespace switcher
 {
 
-  class VideoSink : public BaseSink
+  CounterMap::CounterMap () :
+    counters_ (),
+    mutex_ ()
+  {}
+
+  uint
+  CounterMap::get_count (const std::string &key)
   {
-  public:
-    typedef std::shared_ptr<VideoSink> ptr;
+    std::unique_lock<std::mutex> lock (mutex_);
+    auto it = counters_.find (key);
+    if (counters_.end () != it)
+      return ++(it->second);
+    //else init to 0 for this key
+    counters_[key] = 0;
+    return 0;
+  }
 
-  };
+  void 
+  CounterMap::reset_counter_map ()
+  {
+    std::unique_lock<std::mutex> lock (mutex_);
+    counters_.clear ();
+  }
+}//end of switcher namespace
 
-}  // end of namespace
-
-#endif // ifndef

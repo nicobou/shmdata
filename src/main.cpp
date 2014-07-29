@@ -30,44 +30,44 @@
 #include <gtk/gtk.h>
 #endif
 
-static const gchar *server_name = NULL;
-static const gchar *port_number = NULL;
-static const gchar *load_file = NULL;
-static gchar *osc_port_number = NULL;
+static const gchar *server_name = nullptr;
+static const gchar *port_number = nullptr;
+static const gchar *load_file = nullptr;
+static gchar *osc_port_number = nullptr;
 static gboolean display_version;
 static gboolean quiet;
 static gboolean debug;
 static gboolean verbose;
-//static gchar **remaining_args = NULL;
+//static gchar **remaining_args = nullptr;
 
 static gboolean listclasses;
 static gboolean classesdoc;
-static gchar *classdoc = NULL;
-static gchar *listpropbyclass = NULL;
-static gchar *listmethodsbyclass = NULL;
-static gchar *listsignalsbyclass = NULL;
-static gchar *extraplugindir = NULL;
+static gchar *classdoc = nullptr;
+static gchar *listpropbyclass = nullptr;
+static gchar *listmethodsbyclass = nullptr;
+static gchar *listsignalsbyclass = nullptr;
+static gchar *extraplugindir = nullptr;
 
 //static std::vector<switcher::QuiddityManager::ptr> container;
 static switcher::QuiddityManager::ptr manager;
 
 static GOptionEntry entries[15] =
   {
-    { "version", 'V', 0, G_OPTION_ARG_NONE, &display_version, "display switcher version number", NULL },
-    { "server-name", 'n', 0, G_OPTION_ARG_STRING, &server_name, "server name (default is \"default\")", NULL },
-    { "port-number", 'p', 0, G_OPTION_ARG_STRING, &port_number, "port number the server will bind (default is 27182)", NULL },
-    { "load", 'l', 0, G_OPTION_ARG_STRING, &load_file, "load state from history file (-l filename)", NULL },
-    { "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet, "do not display any message", NULL },
-    { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "display all messages, excluding debug", NULL },
-    { "debug", 'd', 0, G_OPTION_ARG_NONE, &debug, "display all messages, including debug", NULL },
-    { "list-classes", 'C', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", NULL },
-    { "list-props-by-class", 'P', 0, G_OPTION_ARG_STRING, &listpropbyclass, "list properties of a class", NULL },
-    { "list-methods-by-class", 'M', 0, G_OPTION_ARG_STRING, &listmethodsbyclass, "list methods of a class", NULL },
-    { "list-signals-by-class", 'S', 0, G_OPTION_ARG_STRING, &listsignalsbyclass, "list signals of a class", NULL },
-    { "classes-doc", 'K', 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", NULL },
-    { "class-doc", 'k', 0, G_OPTION_ARG_STRING, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", NULL },
-    { "osc-port", 'o', 0, G_OPTION_ARG_STRING, &osc_port_number, "osc port number (osc enabled only if set)", NULL },
-    { "extra-plugin-dir", 'E', 0, G_OPTION_ARG_STRING, &extraplugindir, "directory where to find additional plugins", NULL }
+    { "version", 'V', 0, G_OPTION_ARG_NONE, &display_version, "display switcher version number", nullptr },
+    { "server-name", 'n', 0, G_OPTION_ARG_STRING, &server_name, "server name (default is \"default\")", nullptr },
+    { "port-number", 'p', 0, G_OPTION_ARG_STRING, &port_number, "port number the server will bind (default is 27182)", nullptr },
+    { "load", 'l', 0, G_OPTION_ARG_STRING, &load_file, "load state from history file (-l filename)", nullptr },
+    { "quiet", 'q', 0, G_OPTION_ARG_NONE, &quiet, "do not display any message", nullptr },
+    { "verbose", 'v', 0, G_OPTION_ARG_NONE, &verbose, "display all messages, excluding debug", nullptr },
+    { "debug", 'd', 0, G_OPTION_ARG_NONE, &debug, "display all messages, including debug", nullptr },
+    { "list-classes", 'C', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", nullptr },
+    { "list-props-by-class", 'P', 0, G_OPTION_ARG_STRING, &listpropbyclass, "list properties of a class", nullptr },
+    { "list-methods-by-class", 'M', 0, G_OPTION_ARG_STRING, &listmethodsbyclass, "list methods of a class", nullptr },
+    { "list-signals-by-class", 'S', 0, G_OPTION_ARG_STRING, &listsignalsbyclass, "list signals of a class", nullptr },
+    { "classes-doc", 'K', 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", nullptr },
+    { "class-doc", 'k', 0, G_OPTION_ARG_STRING, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", nullptr },
+    { "osc-port", 'o', 0, G_OPTION_ARG_STRING, &osc_port_number, "osc port number (osc enabled only if set)", nullptr },
+    { "extra-plugin-dir", 'E', 0, G_OPTION_ARG_STRING, &extraplugindir, "directory where to find additional plugins", nullptr }
   };
 
 void
@@ -112,10 +112,10 @@ int main (int argc, char *argv[])
   (void) signal (SIGTERM, leave);
 
   //command line options
-  GError *error = NULL;
+  GError *error = nullptr;
   GOptionContext *context;
   context = g_option_context_new ("- switcher server");
-  g_option_context_add_main_entries (context, entries, NULL);
+  g_option_context_add_main_entries (context, entries, nullptr);
   if (!g_option_context_parse (context, &argc, &argv, &error))
     {
       g_printerr ("option parsing failed: %s\n", error->message);
@@ -133,9 +133,9 @@ int main (int argc, char *argv[])
     }
 
   //running a switcher server  
-  if (server_name == NULL)
+  if (server_name == nullptr)
     server_name = "default";
-  if (port_number == NULL)
+  if (port_number == nullptr)
     port_number = "27182";
 
   manager = switcher::QuiddityManager::make_manager (server_name);  
@@ -143,13 +143,13 @@ int main (int argc, char *argv[])
   //create logger managing switcher log domain
   manager->create ("logger", "internal_logger");
   //manage logs from shmdata
-  manager->invoke_va ("internal_logger", "install_log_handler", NULL, "shmdata", NULL);
+  manager->invoke_va ("internal_logger", "install_log_handler", nullptr, "shmdata", nullptr);
   //manage logs from GStreamer
-  manager->invoke_va ("internal_logger", "install_log_handler", NULL, "GStreamer", NULL);
+  manager->invoke_va ("internal_logger", "install_log_handler", nullptr, "GStreamer", nullptr);
   //manage logs from Glib
-  manager->invoke_va ("internal_logger", "install_log_handler", NULL, "GLib", NULL);
+  manager->invoke_va ("internal_logger", "install_log_handler", nullptr, "GLib", nullptr);
   //manage logs from Glib-GObject
-  manager->invoke_va ("internal_logger", "install_log_handler", NULL, "GLib-GObject", NULL);
+  manager->invoke_va ("internal_logger", "install_log_handler", nullptr, "GLib-GObject", nullptr);
   
   if (quiet)
     manager->set_property ("internal_logger", "mute", "true");
@@ -165,7 +165,7 @@ int main (int argc, char *argv[])
     manager->set_property ("internal_logger", "verbose", "false");
   
   //subscribe to logs:
-  manager->make_property_subscriber ("log_sub", logger_cb, NULL);
+  manager->make_property_subscriber ("log_sub", logger_cb, nullptr);
   manager->subscribe_property ("log_sub","internal_logger","last-line");
 
   //loading plugins from default location //FIXME add an option
@@ -181,13 +181,13 @@ int main (int argc, char *argv[])
   g_warning ("plugins from default location not loaded (config.h missing)");
 #endif
 
-  if (extraplugindir != NULL)
+  if (extraplugindir != nullptr)
     manager->scan_directory_for_plugins (extraplugindir);
 
   //checking if this is printing info only
   if (listclasses)
     {
-      g_log_set_default_handler (quiet_log_handler, NULL);
+      g_log_set_default_handler (quiet_log_handler, nullptr);
       std::vector<std::string> resultlist = manager->get_classes ();
       for(uint i = 0; i < resultlist.size(); i++)
 	g_print ("%s\n",resultlist[i].c_str ());
@@ -195,31 +195,31 @@ int main (int argc, char *argv[])
     }
   if (classesdoc)
     {
-      g_log_set_default_handler (quiet_log_handler, NULL);
+      g_log_set_default_handler (quiet_log_handler, nullptr);
       g_print ("%s\n", manager->get_classes_doc ().c_str ());
       return 0;
     }
-  if (classdoc != NULL)
+  if (classdoc != nullptr)
     {
-      g_log_set_default_handler (quiet_log_handler, NULL);
+      g_log_set_default_handler (quiet_log_handler, nullptr);
       g_print ("%s\n", manager->get_class_doc (classdoc).c_str ());
       return 0;
     }
-  if (listpropbyclass != NULL)
+  if (listpropbyclass != nullptr)
     {
-      g_log_set_default_handler (quiet_log_handler, NULL);
+      g_log_set_default_handler (quiet_log_handler, nullptr);
       g_print ("%s\n", manager->get_properties_description_by_class (listpropbyclass).c_str ());
       return 0;
     }
-  if (listmethodsbyclass != NULL)
+  if (listmethodsbyclass != nullptr)
     {
-      g_log_set_default_handler (quiet_log_handler, NULL);
+      g_log_set_default_handler (quiet_log_handler, nullptr);
       g_print ("%s\n", manager->get_methods_description_by_class (listmethodsbyclass).c_str ());
       return 0;
     }
-  if (listsignalsbyclass != NULL)
+  if (listsignalsbyclass != nullptr)
     {
-      g_log_set_default_handler (quiet_log_handler, NULL);
+      g_log_set_default_handler (quiet_log_handler, nullptr);
       g_print ("%s\n", manager->get_signals_description_by_class (listsignalsbyclass).c_str ());
       return 0;
     }
@@ -229,22 +229,22 @@ int main (int argc, char *argv[])
   port_arg.push_back (port_number);
   std::string *result;
   manager->invoke (soap_name, "set_port", &result, port_arg);
-  if (g_strcmp0 ("false", result->c_str ()) == 0 && osc_port_number == NULL)
+  if (g_strcmp0 ("false", result->c_str ()) == 0 && osc_port_number == nullptr)
     return 0;
 
   // start osc if port number has been set
-  if (osc_port_number != NULL)
+  if (osc_port_number != nullptr)
     {
       std::string osc_name = manager->create ("OSCctl");
       if (osc_name.compare ("") == 0)
 	g_warning ("osc plugin not found");
       else
-	manager->invoke_va (osc_name.c_str (), "set_port", NULL, osc_port_number, NULL);
+	manager->invoke_va (osc_name.c_str (), "set_port", nullptr, osc_port_number, nullptr);
     }
   
   manager->reset_command_history (false);
   
-  if (load_file != NULL)
+  if (load_file != nullptr)
     {
       switcher::QuiddityManager::CommandHistory histo = 
    	manager->get_command_history_from_file (load_file);
@@ -258,16 +258,16 @@ int main (int argc, char *argv[])
       if (!signal_subscriber_names.empty ())
    	g_warning ("creation of signal subscriber not handled when loading file %s", load_file);
       
-      manager->play_command_history (histo, NULL, NULL, true); 
+      manager->play_command_history (histo, nullptr, nullptr, true); 
     }
   
   // manager->create ("videotestsrc", "vid");
   // manager->create("videosink","win");
   // manager->invoke_va ("win",
   //   			 "connect",
-  //                     NULL,
+  //                     nullptr,
   //   			 "/tmp/switcher_default_vid_video",
-  //   			 NULL);
+  //   			 nullptr);
      
   // //  g_print ("---- histo testing ------ \n");
   // manager->save_command_history ("trup.switcher");
@@ -295,14 +295,14 @@ int main (int argc, char *argv[])
   // //    //   g_print ("signal sub %s\n", it.c_str ());
      
   //      switcher::QuiddityManager::PropCallbackMap prop_cb_data;
-  //      prop_cb_data ["log_sub"] = std::make_pair (logger_cb, (void *)NULL);
+  //      prop_cb_data ["log_sub"] = std::make_pair (logger_cb, (void *)nullptr);
   //      switcher::QuiddityManager::SignalCallbackMap sig_cb_data;
-  //      sig_cb_data["create_remove_subscriber"] = std::make_pair (quiddity_created_removed_cb, (void *)NULL);
+  //      sig_cb_data["create_remove_subscriber"] = std::make_pair (quiddity_created_removed_cb, (void *)nullptr);
   //      manager->play_command_history (histo, &prop_cb_data, &sig_cb_data); 
   //      g_print ("--fin-- %s\n",manager->get_quiddities_description ().c_str ());
 
 #ifdef HAVE_GTK
-  if (!gtk_init_check (NULL, NULL))
+  if (!gtk_init_check (nullptr, nullptr))
     std::cerr << "cannot init gtk in main" << std::endl;
   else
       gtk_main ();
@@ -313,7 +313,7 @@ int main (int argc, char *argv[])
   delay.tv_sec = 1;
   delay.tv_nsec = 0;
   while (1)
-    nanosleep(&delay, NULL);
+    nanosleep(&delay, nullptr);
   
   return 0;
 }

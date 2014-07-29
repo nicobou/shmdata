@@ -38,37 +38,37 @@ namespace switcher
 				       "Nicolas Bouillot");
   
   V4L2Src::V4L2Src () :
-    v4l2src_ (NULL),
-    v4l2_bin_ (NULL),
-    capsfilter_ (NULL),
+    v4l2src_ (nullptr),
+    v4l2_bin_ (nullptr),
+    capsfilter_ (nullptr),
     custom_props_ (new CustomPropertyHelper ()), 
-    capture_devices_description_spec_ (NULL),
-    capture_devices_description_ (NULL),
-    devices_enum_spec_ (NULL),
+    capture_devices_description_spec_ (nullptr),
+    capture_devices_description_ (nullptr),
+    devices_enum_spec_ (nullptr),
     devices_enum_ (),
     device_ (0),
-    resolutions_spec_ (NULL), 
+    resolutions_spec_ (nullptr), 
     resolutions_enum_ (),
     resolution_ (0),
-    width_spec_ (NULL),
-    height_spec_ (NULL),
+    width_spec_ (nullptr),
+    height_spec_ (nullptr),
     width_ (0),
     height_ (0),
-    tv_standards_spec_ (NULL), 
+    tv_standards_spec_ (nullptr), 
     tv_standards_enum_ (),
     tv_standard_ (0),
-    framerate_spec_ (NULL), 
+    framerate_spec_ (nullptr), 
     framerates_enum_ (),
     framerate_ (-1),
-    framerate_numerator_spec_ (NULL),
-    framerate_denominator_spec_ (NULL),
+    framerate_numerator_spec_ (nullptr),
+    framerate_denominator_spec_ (nullptr),
     framerate_numerator_ (0),
     framerate_denominator_ (1),
     capture_devices_ ()
   {}
 
   bool
-  V4L2Src::init_segment ()
+  V4L2Src::init_gpipe ()
   {
     if (!make_elements ())
       return false;
@@ -87,7 +87,7 @@ namespace switcher
 					   "Description of capture devices (json formated)",
 					   get_capture_devices_json (this),
 					   (GParamFlags) G_PARAM_READABLE,
-					   NULL,
+					   nullptr,
 					   V4L2Src::get_capture_devices_json,
 					   this);
       
@@ -129,8 +129,8 @@ namespace switcher
 	i ++;
       }
     devices_enum_[i].value = 0;
-    devices_enum_[i].value_name = NULL;
-    devices_enum_[i].value_nick = NULL;
+    devices_enum_[i].value_name = nullptr;
+    devices_enum_[i].value_nick = nullptr;
   }
 
 
@@ -167,10 +167,10 @@ namespace switcher
 	    i ++;
 	  }
      	resolutions_enum_ [i].value = 0;
-     	resolutions_enum_ [i].value_name = NULL;
-     	resolutions_enum_ [i].value_nick = NULL;
+     	resolutions_enum_ [i].value_name = nullptr;
+     	resolutions_enum_ [i].value_nick = nullptr;
 	
-	if (resolutions_spec_ == NULL)
+	if (resolutions_spec_ == nullptr)
 	  resolutions_spec_ = custom_props_->make_enum_property ("resolution", 
 								 "resolution of selected capture devices",
 								 0, 
@@ -209,10 +209,10 @@ namespace switcher
 	    i ++;
 	  }
      	framerates_enum_ [i].value = 0;
-     	framerates_enum_ [i].value_name = NULL;
-     	framerates_enum_ [i].value_nick = NULL;
+     	framerates_enum_ [i].value_name = nullptr;
+     	framerates_enum_ [i].value_nick = nullptr;
 	
-	if (framerate_spec_ == NULL)
+	if (framerate_spec_ == nullptr)
 	  framerate_spec_ = custom_props_->make_enum_property ("framerate", 
 							       "framerate of selected capture devices",
 							       0, 
@@ -240,7 +240,7 @@ namespace switcher
     if (cap_descr.frame_size_stepwise_max_width_ > 0)
       {
 	//width_ = cap_descr.frame_size_stepwise_max_width_;	
-	if (width_spec_ == NULL)
+	if (width_spec_ == nullptr)
 	  width_spec_ = 
 	    custom_props_->make_int_property ("width", 
 					      "width of selected capture devices",
@@ -259,7 +259,7 @@ namespace switcher
 
 	//height_ = cap_descr.frame_size_stepwise_max_height_;
 
-	if (height_spec_ == NULL)
+	if (height_spec_ == nullptr)
 	  height_spec_ = 
 	    custom_props_->make_int_property ("height", 
 					      "height of selected capture devices",
@@ -292,7 +292,7 @@ namespace switcher
 
 	//framerate_numerator_ = 60;	
 	
-	if (framerate_numerator_spec_ == NULL)
+	if (framerate_numerator_spec_ == nullptr)
 	  framerate_numerator_spec_ = 
 	    custom_props_->make_int_property ("framerate_numerator", 
 					      "framerate numerator of selected capture devices",
@@ -309,7 +309,7 @@ namespace switcher
 				   "Framerate Numerator");
 
 	framerate_denominator_ = 1;
-	if (framerate_denominator_spec_ == NULL)
+	if (framerate_denominator_spec_ == nullptr)
 	  framerate_denominator_spec_ = 
 	    custom_props_->make_int_property ("framerate_denominator", 
 					      "Framerate denominator of selected capture devices",
@@ -347,10 +347,10 @@ namespace switcher
 	    i ++;
 	  }
      	tv_standards_enum_ [i].value = 0;
-     	tv_standards_enum_ [i].value_name = NULL;
-     	tv_standards_enum_ [i].value_nick = NULL;
+     	tv_standards_enum_ [i].value_name = nullptr;
+     	tv_standards_enum_ [i].value_nick = nullptr;
 	
-	if (tv_standards_spec_ == NULL)
+	if (tv_standards_spec_ == nullptr)
 	  tv_standards_spec_ = custom_props_->make_enum_property ("tv_standard", 
 								  "tv standard of selected capture devices",
 								  0, 
@@ -372,9 +372,9 @@ namespace switcher
 
   V4L2Src::~V4L2Src ()
   {
-    if (capture_devices_description_ != NULL)
+    if (capture_devices_description_ != nullptr)
       g_free (capture_devices_description_);
-    clean_elements ();
+    //clean_elements ();
   }
 
   bool
@@ -392,12 +392,12 @@ namespace switcher
     gst_bin_add_many (GST_BIN (v4l2_bin_),
 		      v4l2src_,
 		      capsfilter_,
-		      NULL);
+		      nullptr);
 
     gst_element_link (v4l2src_, capsfilter_);
 
     GstPad *src_pad = gst_element_get_static_pad (capsfilter_, "src");
-    GstPad *ghost_srcpad = gst_ghost_pad_new (NULL, src_pad);
+    GstPad *ghost_srcpad = gst_ghost_pad_new (nullptr, src_pad);
     gst_pad_set_active(ghost_srcpad,TRUE);
     gst_element_add_pad (v4l2_bin_, ghost_srcpad); 
     gst_object_unref (src_pad);
@@ -607,15 +607,15 @@ namespace switcher
     GFile *descend;
     char *absolute_path;
     
-    error = NULL;
+    error = nullptr;
     enumerator =
       g_file_enumerate_children (inspected_dir, "*",
-				 G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, NULL,
+				 G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr,
 				 &error);
     if (! enumerator)
       return false;
-    error = NULL;
-    info = g_file_enumerator_next_file (enumerator, NULL, &error);
+    error = nullptr;
+    info = g_file_enumerator_next_file (enumerator, nullptr, &error);
     while ((info) && (!error))
       {
 	descend = g_file_get_child (inspected_dir, g_file_info_get_name (info));
@@ -630,19 +630,19 @@ namespace switcher
 	  }
 		  
 	g_object_unref (descend);
-	error = NULL;
-	info = g_file_enumerator_next_file (enumerator, NULL, &error);
+	error = nullptr;
+	info = g_file_enumerator_next_file (enumerator, nullptr, &error);
       }
 
-    if (error != NULL)
-      g_debug ("error not NULL");
+    if (error != nullptr)
+      g_debug ("error not nullptr");
     
-    error = NULL;
-    res = g_file_enumerator_close (enumerator, NULL, &error);
+    error = nullptr;
+    res = g_file_enumerator_close (enumerator, nullptr, &error);
     if (res != TRUE)
       g_debug ("V4L2Src: file enumerator not properly closed");
-    if (error != NULL)
-      g_debug ("V4L2Src: error not NULL");
+    if (error != nullptr)
+      g_debug ("V4L2Src: error not nullptr");
     g_object_unref (inspected_dir);
    
     return true;
@@ -703,17 +703,17 @@ namespace switcher
   {
     V4L2Src *context = static_cast<V4L2Src *> (user_data);
 
-    if (NULL != context->capture_devices_description_)
+    if (nullptr != context->capture_devices_description_)
       {
 	g_free (context->capture_devices_description_);
-	context->capture_devices_description_ = NULL;
+	context->capture_devices_description_ = nullptr;
       }
     
     if (context->capture_devices_.empty ())
       {
 	g_warning ("%s: no capture device, cannot make description",
 		   __PRETTY_FUNCTION__);
-	return NULL;
+	return nullptr;
       }
     
     JSONBuilder::ptr builder (new JSONBuilder ());
@@ -937,12 +937,12 @@ namespace switcher
 
     g_object_set (G_OBJECT (v4l2src_), 
 		  "device", capture_devices_.at (device_).file_device_.c_str (), 
-		  NULL);
+		  nullptr);
     
     if (tv_standard_ > 0) //0 is none
       g_object_set (G_OBJECT (v4l2src_), 
 		    "norm", capture_devices_.at (device_).tv_standards_.at (tv_standard_).c_str (), 
-		    NULL);
+		    nullptr);
     
     std::string caps;
     caps = "video/x-raw-yuv";
@@ -990,7 +990,7 @@ namespace switcher
     g_object_set (G_OBJECT (capsfilter_), 
    		  "caps",
    		  usercaps,
-   		  NULL);
+   		  nullptr);
     gst_caps_unref (usercaps);
 
     *new_element = v4l2_bin_;

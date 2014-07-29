@@ -23,21 +23,22 @@ lib_LTLIBRARIES = \
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     aravis-genicam.cpp \
-    audio-sink.cpp \
     audio-source.cpp \
     audio-test-source.cpp \
     base-sink.cpp \
-    base-source.cpp \
     categorizable.cpp \
+    counter-map.cpp \
     custom-property-helper.cpp \
     create-remove-spy.cpp \
     decodebin2.cpp \
+    decodebin-to-shmdata.cpp \
     deinterleave.cpp \
     fake-shmdata-writer.cpp \
     file-sdp.cpp \
     fakesink.cpp \
     gobject-custom-property.cpp \
     gobject-wrapper.cpp \
+    gpipe.cpp \
     gst-element-cleaner.cpp \
     gst-parse-to-bin-src.cpp \
     gst-video-parse-to-bin-src.cpp \
@@ -67,7 +68,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     quiddity.cpp \
     rtp-destination.cpp \
     rtp-session.cpp \
-    runtime.cpp \
+    sdp-utils.cpp \
     segment.cpp \
     shmdata-any-writer.cpp \
     shmdata-any-reader.cpp \
@@ -79,9 +80,9 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     startable-quiddity.cpp \
     string-dictionary.cpp \
     udpsink.cpp \
+    unique-gst-element.cpp \
     uridecodebin.cpp \
     video-rate.cpp \
-    video-sink.cpp \
     video-source.cpp \
     video-test-source.cpp \
     vorbis.cpp \
@@ -105,22 +106,23 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     abstract-factory_spec.h \
     any.h \
     aravis-genicam.h \
-    audio-sink.h \
     audio-source.h \
     audio-test-source.h \
     base-sink.h \
-    base-source.h \
     categorizable.h \
+    counter-map.h \
     create-remove-spy.h \
     creator.h \
     custom-property-helper.h \
     decodebin2.h \
+    decodebin-to-shmdata.h \
     deinterleave.h \
     fake-shmdata-writer.h \
     fakesink.h \
     file-sdp.h \
     gobject-custom-property.h \
     gobject-wrapper.h \
+    gpipe.h \
     gst-element-cleaner.h \
     gst-parse-to-bin-src.h \
     gst-video-parse-to-bin-src.h \
@@ -152,7 +154,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     quiddity.h \
     rtp-destination.h \
     rtp-session.h \
-    runtime.h \
+    sdp-utils.h \
     segment.h \
     shmdata-any-writer.h \
     shmdata-any-reader.h \
@@ -164,9 +166,9 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     startable-quiddity.h \
     string-dictionary.h \
     udpsink.h \
+    unique-gst-element.h \
     uridecodebin.h \
     video-rate.h \
-    video-sink.h \
     video-source.h \
     video-test-source.h \
     vorbis.h \

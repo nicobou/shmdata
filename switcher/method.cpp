@@ -28,7 +28,7 @@ namespace switcher
 {
 
   Method::Method () :
-    closure_ (NULL)
+    closure_ (nullptr)
   {
     json_description_.reset (new JSONBuilder());
     
@@ -36,7 +36,7 @@ namespace switcher
 
   Method::~Method ()
   {
-    if (closure_ != NULL)
+    if (closure_ != nullptr)
       g_closure_unref (closure_);
   }
 
@@ -60,7 +60,7 @@ namespace switcher
     short_description_ = source.short_description_;
     return_description_ = source.return_description_;
     arg_description_ = source.arg_description_;
-    if (closure_ != NULL)
+    if (closure_ != nullptr)
       {
 	g_closure_ref (source.closure_);
 	closure_ = source.closure_;
@@ -82,9 +82,9 @@ namespace switcher
 	g_debug ("Method::set_method is called with empty arg_types");
 	return false;
       }
-    if (method == NULL)
+    if (method == nullptr)
       {
-	g_debug ("Method::set_method is called with a NULL function");
+	g_debug ("Method::set_method is called with a nullptr function");
 	return false;
       }
     closure_ = g_cclosure_new (G_CALLBACK (method), user_data, Method::destroy_data);
@@ -139,7 +139,7 @@ namespace switcher
       }
 
     g_value_init (result_value, return_type_);
-    g_closure_invoke (closure_, result_value, num_of_value_args_, params, NULL);
+    g_closure_invoke (closure_, result_value, num_of_value_args_, params, nullptr);
     
     for (guint i=0; i < num_of_value_args_; i++)
       g_value_unset (&params[i]);
@@ -253,11 +253,11 @@ namespace switcher
       {
 	arg_long_name = va_arg( vl, char *);
 	
-	if (arg_long_name != NULL)
+	if (arg_long_name != nullptr)
 	  {
 	    arg_name = va_arg( vl, char *); 
 	    arg_desc = va_arg( vl, char *);
-	    if (arg_name != NULL && arg_desc != NULL)
+	    if (arg_name != nullptr && arg_desc != nullptr)
 	      res.push_back (std::make_tuple (arg_long_name, 
 					      arg_name,
 					      arg_desc));

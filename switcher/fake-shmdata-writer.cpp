@@ -33,12 +33,12 @@ namespace switcher
   
   FakeShmdataWriter::FakeShmdataWriter () :
     custom_props_ (new CustomPropertyHelper ()),
-    shmdata_path_spec_ (NULL),
+    shmdata_path_spec_ (nullptr),
     shmdata_path_ (g_strdup ("none"))
   {}
 
   bool
-  FakeShmdataWriter::init_segment ()
+  FakeShmdataWriter::init_gpipe ()
   {
     init_startable (this);
 

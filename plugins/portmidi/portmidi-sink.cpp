@@ -31,10 +31,10 @@ namespace switcher
   PortMidiSink::PortMidiSink () :
     reader_ (shmdata_any_reader_init ()),
     custom_props_ (new CustomPropertyHelper ()),
-    devices_description_spec_ (NULL),
-    shmdata_path_spec_ (NULL),
+    devices_description_spec_ (nullptr),
+    shmdata_path_spec_ (nullptr),
     shmdata_path_ (g_strdup ("")),
-    devices_enum_spec_ (NULL),
+    devices_enum_spec_ (nullptr),
     device_ (0)
   {}
 
@@ -47,7 +47,7 @@ namespace switcher
 					   "Description of capture devices (json formated)",
 					   get_devices_description_json ((PortMidi *)this),
 					   (GParamFlags) G_PARAM_READABLE,
-					   NULL,
+					   nullptr,
 					   get_devices_description_json,
 					   (PortMidi *)this);
     

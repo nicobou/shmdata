@@ -21,6 +21,7 @@
 #ifndef __SWITCHER_POSTURE_MERGE_H__
 #define __SWITCHER_POSTURE_MERGE_H__
 
+#include "switcher/quiddity.h"
 #include "switcher/segment.h"
 #include "switcher/startable-quiddity.h"
 #include "switcher/custom-property-helper.h"
@@ -33,7 +34,7 @@
 
 namespace switcher
 {
-  class PostureMerge : public Segment, public StartableQuiddity
+  class PostureMerge : public Quiddity, public Segment, public StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureMerge);
@@ -61,7 +62,7 @@ namespace switcher
 
     ShmdataAnyWriter::ptr cloud_writer_ {nullptr};
 
-    bool init_segment ();
+    bool init () final;
     
     bool connect (std::string shmdata_socket_path);
     static gboolean connect_wrapped (gpointer shmdata_socket_path, gpointer user_data);

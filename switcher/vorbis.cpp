@@ -30,16 +30,16 @@ namespace switcher
 				       "vorbis",
 				       "Nicolas Bouillot");
   Vorbis::Vorbis () :
-    vorbisbin_ (NULL),
-    vorbisenc_ (NULL)
+    vorbisbin_ (nullptr),
+    vorbisenc_ (nullptr)
   {}
 
   bool
-  Vorbis::init_segment ()
+  Vorbis::init_gpipe ()
   {
     GstUtils::make_element ("bin",&vorbisbin_);
     GstUtils::make_element ("vorbisenc", &vorbisenc_);
-    //g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
+    //g_object_set (G_OBJECT (bin_), "async-handling", TRUE, nullptr);
     add_element_to_cleaner (vorbisenc_);
     add_element_to_cleaner (vorbisbin_);
 
@@ -65,21 +65,21 @@ namespace switcher
     gst_bin_add_many (GST_BIN (context->vorbisbin_),
 		      context->vorbisenc_,
 		      audioconvert,
-		      NULL);
+		      nullptr);
     gst_element_link_many (audioconvert,
 			   context->vorbisenc_,
-			   NULL);
+			   nullptr);
     
     GstUtils::sync_state_with_parent (context->vorbisbin_);
 
     //FIXME try to release ghost sinkpad
     GstPad *sink_pad = gst_element_get_static_pad (audioconvert, "sink");
-    GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
+    GstPad *ghost_sinkpad = gst_ghost_pad_new (nullptr, sink_pad);
     gst_pad_set_active(ghost_sinkpad,TRUE);
     gst_element_add_pad (context->vorbisbin_, ghost_sinkpad); 
     gst_object_unref (sink_pad);
     
-     GstCaps *vorbiscaps = gst_caps_new_simple ("audio/x-vorbis", NULL);
+     GstCaps *vorbiscaps = gst_caps_new_simple ("audio/x-vorbis", nullptr);
      ShmdataWriter::ptr vorbisframes_writer;
      vorbisframes_writer.reset (new ShmdataWriter ());
      std::string writer_name = context->make_file_name ("vorbisframes"); 

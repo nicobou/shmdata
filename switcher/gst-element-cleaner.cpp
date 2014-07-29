@@ -30,7 +30,6 @@ namespace switcher
 
   GstElementCleaner::~GstElementCleaner ()
   {
-    g_debug ("~GstElementCleaner");
     for (auto &it : elements_to_remove_)
       GstUtils::clean_element (it);
   }
@@ -52,7 +51,7 @@ namespace switcher
   {
     auto it = labeled_elements_.find (new_label);
     if (labeled_elements_.end () == it)
-      return NULL;
+      return nullptr;
     return it->second;
   }
 

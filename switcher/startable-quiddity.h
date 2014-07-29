@@ -40,7 +40,7 @@ namespace switcher
   protected:
     void init_startable (void *quiddity);//FIXME should called quiddity-manager-impl 
     bool is_started ();
-    //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
+    //find a way to avoid invoking init_startable (this) in quiddities (policies)
 
   private:
     virtual bool start () = 0;
@@ -50,7 +50,7 @@ namespace switcher
 
     bool started_;
     GParamSpec *started_prop_;//FIXME should be static
-    CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr startable_custom_props_;
  };
 
 }  // end of namespace

@@ -112,7 +112,7 @@ namespace switcher
     
       if (manager->has_property (name, "started"))
         {
-	  manager->make_property_subscriber ("sub", on_started_cb, NULL);
+	  manager->make_property_subscriber ("sub", on_started_cb, nullptr);
 	  manager->subscribe_property ("sub", name, "started");
 	  //g_print ("has a started property\n");
 	  manager->set_property (name, "started", "true");

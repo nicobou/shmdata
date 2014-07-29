@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_PULSE_SINK_H__
 #define __SWITCHER_PULSE_SINK_H__
 
-#include "switcher/audio-sink.h"
+#include "switcher/base-sink.h"
 #include <pulse/pulseaudio.h>
 #include <pulse/glib-mainloop.h>
 #include "switcher/custom-property-helper.h"
@@ -31,7 +31,7 @@
 namespace switcher
 {
 
-  class PulseSink : public AudioSink
+  class PulseSink : public BaseSink
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSink);
@@ -78,7 +78,7 @@ namespace switcher
     static const gchar *get_devices_json (void *user_data);
     void make_device_description (pa_context *pulse_context);
     void make_json_description ();
-    bool init_segment ();
+    bool init_gpipe () final;
     static void pa_context_state_callback(pa_context *c, void *userdata);
     static void get_sink_info_callback(pa_context *c, const pa_sink_info *i, int is_last, void *userdata);
     static void on_pa_event_callback(pa_context *c, 

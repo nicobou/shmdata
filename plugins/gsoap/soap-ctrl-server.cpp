@@ -17,11 +17,12 @@
 
 #include "soap-ctrl-server.h"
 #include "webservices/control.nsmap"
+#include "switcher/scope-exit.h"
 //hacking gsoap bug for ubuntu 13.10
 #ifdef WITH_IPV6
 #define SOAPBINDTO "::"
 #else
-# define SOAPBINDTO NULL
+# define SOAPBINDTO nullptr
 #endif
 
 
@@ -39,7 +40,7 @@ namespace switcher
     soap_ (),
     port_ (8080),
     quit_server_thread_ (false),
-    service_ (NULL), 
+    service_ (nullptr), 
     socket_ (),
     thread_ (),
     mutex_ ()
@@ -62,10 +63,10 @@ namespace switcher
 		    Method::make_arg_description ("Port",
 						  "port",
 						  "the port to bind",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &set_port_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_INT, NULL),
+		    Method::make_arg_type_description (G_TYPE_INT, nullptr),
      		    this);
    
     return true;
@@ -93,20 +94,20 @@ namespace switcher
      {
        gchar **query = g_strsplit_set (soap->path, "?",-1);
        
-       if (query[1] == NULL)
+       if (query[1] == nullptr)
 	 return 404;
 
        gchar **query_vars = g_strsplit_set (query[1], "&",-1);
        int i=0;
-       while (query_vars [i] != NULL)
+       while (query_vars [i] != nullptr)
 	 {
 	   gchar **var = g_strsplit_set (query_vars [i], "=",-1);
-	   if (g_strcmp0 (var[0],"rtpsession") == 0 && var[1] != NULL)
+	   if (g_strcmp0 (var[0],"rtpsession") == 0 && var[1] != nullptr)
 	     {
 	       rtpsession_name.clear ();
 	       rtpsession_name.append (var[1]);
 	     }
-	   else if (g_strcmp0 (var[0],"destination") == 0 && var[1] != NULL)
+	   else if (g_strcmp0 (var[0],"destination") == 0 && var[1] != nullptr)
 	     {
 	       destination_name.clear ();
 	       destination_name.append (var[1]);
@@ -119,7 +120,7 @@ namespace switcher
        
        SoapCtrlServer *ctrl_server = (SoapCtrlServer *) soap->user;
        QuiddityManager::ptr manager;
-       if (ctrl_server != NULL)
+       if (ctrl_server != nullptr)
 	 manager = ctrl_server->get_quiddity_manager ();
 
        if (!(bool) manager)
@@ -127,7 +128,7 @@ namespace switcher
 
        std::vector<std::string> arg;
        arg.push_back (destination_name);
-       if (!manager->invoke (rtpsession_name, "write_sdp_file", NULL, arg))
+       if (!manager->invoke (rtpsession_name, "write_sdp_file", nullptr, arg))
 	   return 404;
        
        //sending file to client
@@ -135,18 +136,23 @@ namespace switcher
        sdp_file.append ("/");
        sdp_file.append (get_socket_name_prefix ());
        sdp_file.append(manager->get_name()+"_"+rtpsession_name+"_"+destination_name+".sdp");
-       gchar *sdp_contents;
+       gchar *sdp_contents = nullptr;
        gsize file_length;
-       g_file_get_contents (sdp_file.c_str (), 
-			    &sdp_contents, 
-			    &file_length, 
-			    NULL); //not getting errors
-
-       soap_response(soap, SOAP_FILE); 
-       soap->http_content = "application/x-sdp";
-       soap_send_raw(soap, sdp_contents, file_length);
-       g_free (sdp_contents);
-       return soap_end_send(soap);
+       if (g_file_get_contents (sdp_file.c_str (), 
+				&sdp_contents, 
+				&file_length, 
+				nullptr) && 0 != file_length)  //not getting errors
+	 {
+	   On_scope_exit {g_free (sdp_contents);};
+	   soap_response(soap, SOAP_FILE); 
+	   soap->http_content = "application/x-sdp";
+	   soap_send_raw (soap, sdp_contents, file_length);
+	   return soap_end_send(soap);
+	 }
+       else
+	 g_warning ("cannot get sdp description for rtpsession %s, destination %s\n",
+		    rtpsession_name.c_str (),
+		    destination_name.c_str ());
      }
    return 404;
  }
@@ -179,7 +185,7 @@ namespace switcher
       {
 	service_->soap_print_fault (stderr);
 	delete service_;
-	service_ = NULL;
+	service_ = nullptr;
 	return false;
       }
 
@@ -206,7 +212,7 @@ namespace switcher
     soap_destroy(&soap_);
     soap_end(&soap_);
     soap_done(&soap_);
-    if (NULL != service_)
+    if (nullptr != service_)
       delete service_;
     return true;
   }
@@ -218,7 +224,7 @@ namespace switcher
     // if (context->service_->run(context->port_))
     //   { context->service_->soap_stream_fault(std::cerr);
     //   }
-    // return NULL;
+    // return nullptr;
 
     //for (int i = 1; ; i++)
     while(!quit_server_thread_)
@@ -263,14 +269,14 @@ controlService::get_factory_capabilities(std::vector<std::string> *result){//FIX
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
     
-  if (ctrl_server == NULL || !(bool)manager)
+  if (ctrl_server == nullptr || !(bool)manager)
     {
       char *s = (char*)soap_malloc(this, 1024);
-      g_debug ("controlService::get_factory_capabilities: cannot get manager from SoapCtrlServer (NULL)");
-      sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (NULL)</error>");
+      g_debug ("controlService::get_factory_capabilities: cannot get manager from SoapCtrlServer (nullptr)");
+      sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
       return soap_senderfault("error in get_factory_capabilities", s);
     }
   
@@ -284,14 +290,14 @@ controlService::get_classes_doc(std::string *result){
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
     
-  if (ctrl_server == NULL || !(bool)manager)
+  if (ctrl_server == nullptr || !(bool)manager)
     {
       char *s = (char*)soap_malloc(this, 1024);
-      g_debug ("controlService::get_classes_doc: cannot get manager from SoapCtrlServer (NULL)");
-      sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (NULL)</error>");
+      g_debug ("controlService::get_classes_doc: cannot get manager from SoapCtrlServer (nullptr)");
+      sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
       return soap_senderfault("error in get_classes_doc", s);
     }
   
@@ -305,14 +311,14 @@ controlService::get_quiddity_description(std::string quiddity_name, std::string 
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
     
-  if (ctrl_server == NULL || !(bool)manager)
+  if (ctrl_server == nullptr || !(bool)manager)
     {
       char *s = (char*)soap_malloc(this, 1024);
-      g_debug ("controlService::get_class_doc: cannot get manager from SoapCtrlServer (NULL)");
-      sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (NULL)</error>");
+      g_debug ("controlService::get_class_doc: cannot get manager from SoapCtrlServer (nullptr)");
+      sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
       return soap_senderfault("error in get_class_doc", s);
     }
   
@@ -326,14 +332,14 @@ controlService::get_quiddities_description (std::string *result){
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
     
-  if (ctrl_server == NULL || !(bool)manager)
+  if (ctrl_server == nullptr || !(bool)manager)
     {
       char *s = (char*)soap_malloc(this, 1024);
-      g_debug ("controlService::get_quiddities_description: cannot get manager from SoapCtrlServer (NULL)");
-      sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_quiddities_description: cannot get manager (NULL)</error>");
+      g_debug ("controlService::get_quiddities_description: cannot get manager from SoapCtrlServer (nullptr)");
+      sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_quiddities_description: cannot get manager (nullptr)</error>");
       return soap_senderfault("error in get_classes_doc", s);
     }
   
@@ -347,14 +353,14 @@ controlService::get_class_doc(std::string class_name, std::string *result){
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
     
-  if (ctrl_server == NULL || !(bool)manager)
+  if (ctrl_server == nullptr || !(bool)manager)
     {
       char *s = (char*)soap_malloc(this, 1024);
-      g_debug ("controlService::get_class_doc: cannot get manager from SoapCtrlServer (NULL)");
-      sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (NULL)</error>");
+      g_debug ("controlService::get_class_doc: cannot get manager from SoapCtrlServer (nullptr)");
+      sprintf(s, "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
       return soap_senderfault("error in get_class_doc", s);
     }
   
@@ -369,7 +375,7 @@ controlService::get_quiddity_names(std::vector<std::string> *result)
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   *result = manager->get_quiddities ();
@@ -384,7 +390,7 @@ controlService::get_properties_description (std::string quiddity_name,
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   *result = manager->get_properties_description (quiddity_name);
@@ -399,7 +405,7 @@ controlService::get_properties_description_by_class (std::string class_name,
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   *result = manager->get_properties_description_by_class (class_name);
@@ -415,7 +421,7 @@ controlService::get_property_description (std::string quiddity_name,
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   *result = manager->get_property_description (quiddity_name, property_name);
@@ -431,7 +437,7 @@ controlService::get_property_description_by_class (std::string class_name,
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   *result = manager->get_property_description_by_class (class_name, property_name);
@@ -448,7 +454,7 @@ controlService::set_property (std::string quiddity_name,
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   manager->set_property (quiddity_name, property_name, property_value);
@@ -465,7 +471,7 @@ controlService::get_property (std::string quiddity_name,
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
  *result = manager->get_property (quiddity_name, property_name);
@@ -481,7 +487,7 @@ controlService::create_quiddity (std::string quiddity_class,
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
    std::string name = manager->create (quiddity_class);
@@ -507,7 +513,7 @@ controlService::create_named_quiddity (std::string quiddity_class,
 
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
 
@@ -534,7 +540,7 @@ controlService::rename_quiddity (std::string nick_name,
 
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   if (manager->rename (nick_name, new_nick_name))
@@ -550,7 +556,7 @@ controlService::delete_quiddity (std::string quiddity_name)
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
  
   if (manager->remove (quiddity_name))
@@ -575,7 +581,7 @@ controlService::invoke_method (std::string quiddity_name,
 
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
   std::string *invocation_result;
   if (manager->invoke (quiddity_name, method_name, &invocation_result, args))
@@ -601,7 +607,7 @@ controlService::get_methods_description (std::string quiddity_name,
 
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   *result = manager->get_methods_description (quiddity_name);
@@ -617,7 +623,7 @@ controlService::get_method_description (std::string quiddity_name,
 
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   *result = manager->get_method_description (quiddity_name, method_name);
@@ -632,7 +638,7 @@ controlService::get_methods_description_by_class (std::string class_name,
 
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   *result = manager->get_methods_description_by_class (class_name);
@@ -648,7 +654,7 @@ controlService::get_method_description_by_class (std::string class_name,
 
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   *result = manager->get_method_description_by_class (class_name, method_name);
@@ -663,7 +669,7 @@ controlService::get_signals_description (std::string quiddity_name,
 
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   *result = manager->get_signals_description (quiddity_name);
@@ -679,7 +685,7 @@ controlService::get_signal_description (std::string quiddity_name,
 
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   *result = manager->get_signal_description (quiddity_name, signal_name);
@@ -694,7 +700,7 @@ controlService::get_signals_description_by_class (std::string class_name,
 
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   *result = manager->get_signals_description_by_class (class_name);
@@ -710,7 +716,7 @@ controlService::get_signal_description_by_class (std::string class_name,
 
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   *result = manager->get_signal_description_by_class (class_name, signal_name);
@@ -726,7 +732,7 @@ controlService::save (std::string file_name,
 
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   if (manager->save_command_history (file_name.c_str ()))
@@ -744,7 +750,7 @@ controlService::load (std::string file_name,
 
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   manager->reset_command_history(true);
@@ -756,7 +762,7 @@ controlService::load (std::string file_name,
       *result = "false";
       return SOAP_OK;
     }
-   manager->play_command_history (histo, NULL, NULL, true); 
+   manager->play_command_history (histo, nullptr, nullptr, true); 
   *result = "true";
   return SOAP_OK;
 }
@@ -769,7 +775,7 @@ controlService::run (std::string file_name,
 
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
-  if (ctrl_server != NULL)
+  if (ctrl_server != nullptr)
     manager = ctrl_server->get_quiddity_manager ();
 
   switcher::QuiddityManager::CommandHistory histo = 
@@ -779,7 +785,7 @@ controlService::run (std::string file_name,
       *result = "false";
       return SOAP_OK;
     }
-   manager->play_command_history (histo, NULL, NULL, true); 
+   manager->play_command_history (histo, nullptr, nullptr, true); 
    *result = "true";
   return SOAP_OK;
 }

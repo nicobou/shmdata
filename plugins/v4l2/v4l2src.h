@@ -167,7 +167,7 @@ namespace switcher
 
     std::vector <CaptureDescription> capture_devices_; //FIXME should be static
 
-    bool init_segment ();
+    bool init_gpipe () final;
   };
   
   SWITCHER_DECLARE_PLUGIN(V4L2Src);

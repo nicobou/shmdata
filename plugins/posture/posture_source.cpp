@@ -73,95 +73,95 @@ namespace switcher
     zcamera_->stop();
 
     if (cloud_writer_.get() != nullptr)
-    {
-      unregister_shmdata_any_writer(cloud_writer_->get_path());
-      cloud_writer_.reset();
-    }
+      {
+	unregister_shmdata_any_writer(cloud_writer_->get_path());
+	cloud_writer_.reset();
+      }
     if (depth_writer_.get() != nullptr)
-    {
-      unregister_shmdata_any_writer(depth_writer_->get_path());
-      depth_writer_.reset();
-    }
+      {
+	unregister_shmdata_any_writer(depth_writer_->get_path());
+	depth_writer_.reset();
+      }
     if (rgb_writer_.get() != nullptr)
-    {
-      unregister_shmdata_any_writer(rgb_writer_->get_path());
-      rgb_writer_.reset();
-    }
+      {
+	unregister_shmdata_any_writer(rgb_writer_->get_path());
+	rgb_writer_.reset();
+      }
     if (ir_writer_.get() != nullptr)
-    {
-      unregister_shmdata_any_writer(ir_writer_->get_path());
-      ir_writer_.reset();
-    }
+      {
+	unregister_shmdata_any_writer(ir_writer_->get_path());
+	ir_writer_.reset();
+      }
 
     return true;
   }
 
   bool
-  PostureSrc::init_segment()
+  PostureSrc::init()
   {
     init_startable (this);
-
+    init_segment (this);
     calibration_path_prop_ = custom_props_->make_string_property ("calibration_path",
-      "Path to the calibration file",
-      calibration_path_.c_str(),
-      (GParamFlags)G_PARAM_READWRITE,
-      PostureSrc::set_calibration_path,
-      PostureSrc::get_calibration_path,
-      this);
+								  "Path to the calibration file",
+								  calibration_path_.c_str(),
+								  (GParamFlags)G_PARAM_READWRITE,
+								  PostureSrc::set_calibration_path,
+								  PostureSrc::get_calibration_path,
+								  this);
     install_property_by_pspec (custom_props_->get_gobject (),
-      calibration_path_prop_,
-      "calibration_path",
-      "Path to the calibration file");
+			       calibration_path_prop_,
+			       "calibration_path",
+			       "Path to the calibration file");
 
     devices_path_prop_ = custom_props_->make_string_property ("devices_path",
-      "Path to the devices description file",
-      devices_path_.c_str(),
-      (GParamFlags)G_PARAM_READWRITE,
-      PostureSrc::set_devices_path,
-      PostureSrc::get_devices_path,
-      this);
+							      "Path to the devices description file",
+							      devices_path_.c_str(),
+							      (GParamFlags)G_PARAM_READWRITE,
+							      PostureSrc::set_devices_path,
+							      PostureSrc::get_devices_path,
+							      this);
     install_property_by_pspec (custom_props_->get_gobject (),
-      devices_path_prop_,
-      "devices",
-      "Path to the devices description file");
+			       devices_path_prop_,
+			       "devices",
+			       "Path to the devices description file");
 
     device_index_prop_ = custom_props_->make_int_property ("device_index",
-      "Index of the device to use",
-      0,
-      127,
-      device_index_,
-      (GParamFlags)G_PARAM_READWRITE,
-      PostureSrc::set_device_index,
-      PostureSrc::get_device_index,
-      this);
+							   "Index of the device to use",
+							   0,
+							   127,
+							   device_index_,
+							   (GParamFlags)G_PARAM_READWRITE,
+							   PostureSrc::set_device_index,
+							   PostureSrc::get_device_index,
+							   this);
     install_property_by_pspec (custom_props_->get_gobject (),
-      device_index_prop_,
-      "device_index",
-      "Index of the device to use");
+			       device_index_prop_,
+			       "device_index",
+			       "Index of the device to use");
 
     capture_ir_prop_ = custom_props_->make_boolean_property ("capture_ir",
-      "Grab the IR image if true",
-      capture_ir_,
-      (GParamFlags)G_PARAM_READWRITE,
-      PostureSrc::set_capture_ir,
-      PostureSrc::get_capture_ir,
-      this);
+							     "Grab the IR image if true",
+							     capture_ir_,
+							     (GParamFlags)G_PARAM_READWRITE,
+							     PostureSrc::set_capture_ir,
+							     PostureSrc::get_capture_ir,
+							     this);
     install_property_by_pspec (custom_props_->get_gobject (),
-      capture_ir_prop_,
-      "capture_ir",
-      "Grab the IR image if true");
+			       capture_ir_prop_,
+			       "capture_ir",
+			       "Grab the IR image if true");
 
     compress_cloud_prop_ = custom_props_->make_boolean_property ("compress_cloud",
-      "Compress the cloud if true",
-      compress_cloud_,
-      (GParamFlags)G_PARAM_READWRITE,
-      PostureSrc::set_compress_cloud,
-      PostureSrc::get_compress_cloud,
-      this);
+								 "Compress the cloud if true",
+								 compress_cloud_,
+								 (GParamFlags)G_PARAM_READWRITE,
+								 PostureSrc::set_compress_cloud,
+								 PostureSrc::get_compress_cloud,
+								 this);
     install_property_by_pspec (custom_props_->get_gobject (),
-      compress_cloud_prop_,
-      "compress_cloud",
-      "Compress the cloud if true");
+			       compress_cloud_prop_,
+			       "compress_cloud",
+			       "Compress the cloud if true");
 
     capture_modes_enum_[0].value = 0;
     capture_modes_enum_[0].value_name = "Default mode";
@@ -194,21 +194,21 @@ namespace switcher
     capture_modes_enum_[9].value_name = "QQVGA 60Hz";
     capture_modes_enum_[9].value_nick = capture_modes_enum_[0].value_name;
     capture_modes_enum_[10].value = 0;
-    capture_modes_enum_[10].value_name = NULL;
-    capture_modes_enum_[10].value_nick = NULL;
+    capture_modes_enum_[10].value_name = nullptr;
+    capture_modes_enum_[10].value_nick = nullptr;
 
     capture_mode_prop_ = custom_props_->make_enum_property ("capture_mode",
-      "Capture mode of the device",
-      0,
-      capture_modes_enum_,
-      (GParamFlags)G_PARAM_READWRITE,
-      PostureSrc::set_capture_mode,
-      PostureSrc::get_capture_mode,
-      this);
+							    "Capture mode of the device",
+							    0,
+							    capture_modes_enum_,
+							    (GParamFlags)G_PARAM_READWRITE,
+							    PostureSrc::set_capture_mode,
+							    PostureSrc::get_capture_mode,
+							    this);
     install_property_by_pspec (custom_props_->get_gobject (),
-      capture_mode_prop_,
-      "capture_mode",
-      "Capture mode of the device");
+			       capture_mode_prop_,
+			       "capture_mode",
+			       "Capture mode of the device");
 
     return true;
   }
@@ -305,18 +305,18 @@ namespace switcher
     PostureSrc* ctx = (PostureSrc*)context;
 
     if (ctx->cloud_writer_.get() == nullptr)
-    {
-      ctx->cloud_writer_.reset(new ShmdataAnyWriter);
-      ctx->cloud_writer_->set_path(ctx->make_file_name("cloud"));
-      ctx->register_shmdata_any_writer(ctx->cloud_writer_);
-      if (ctx->compress_cloud_)
-        ctx->cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_COMPRESSED));
-      else
-        ctx->cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_BASE));
-      ctx->cloud_writer_->start();
-    }
+      {
+	ctx->cloud_writer_.reset(new ShmdataAnyWriter);
+	ctx->cloud_writer_->set_path(ctx->make_file_name("cloud"));
+	ctx->register_shmdata_any_writer(ctx->cloud_writer_);
+	if (ctx->compress_cloud_)
+	  ctx->cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_COMPRESSED));
+	else
+	  ctx->cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_BASE));
+	ctx->cloud_writer_->start();
+      }
 
-    ctx->cloud_writer_->push_data_auto_clock((void*)data.data(), data.size(), NULL, NULL);
+    ctx->cloud_writer_->push_data_auto_clock((void*)data.data(), data.size(), nullptr, nullptr);
   }
 
   void
@@ -325,20 +325,20 @@ namespace switcher
     PostureSrc* ctx = (PostureSrc*)context;
 
     if (ctx->depth_writer_.get() == nullptr || ctx->depth_width_ != width || ctx->depth_height_ != height)
-    {
-      ctx->depth_writer_.reset(new ShmdataAnyWriter);
-      ctx->depth_writer_->set_path(ctx->make_file_name("depth"));
-      ctx->register_shmdata_any_writer(ctx->depth_writer_);
-      ctx->depth_width_ = width;
-      ctx->depth_height_ = height;
+      {
+	ctx->depth_writer_.reset(new ShmdataAnyWriter);
+	ctx->depth_writer_->set_path(ctx->make_file_name("depth"));
+	ctx->register_shmdata_any_writer(ctx->depth_writer_);
+	ctx->depth_width_ = width;
+	ctx->depth_height_ = height;
 
-      char buffer[256] = "";
-      sprintf(buffer, "video/x-raw-gray,bpp=16,endianness=1234,depth=16,width=%i,height=%i,framerate=30/1", width, height);
-      ctx->depth_writer_->set_data_type(string(buffer));
-      ctx->depth_writer_->start();
-    }
+	char buffer[256] = "";
+	sprintf(buffer, "video/x-raw-gray,bpp=16,endianness=1234,depth=16,width=%i,height=%i,framerate=30/1", width, height);
+	ctx->depth_writer_->set_data_type(string(buffer));
+	ctx->depth_writer_->start();
+      }
 
-    ctx->depth_writer_->push_data_auto_clock((void*)data.data(), width * height * 2, NULL, NULL);
+    ctx->depth_writer_->push_data_auto_clock((void*)data.data(), width * height * 2, nullptr, nullptr);
   }
 
   void
@@ -347,20 +347,20 @@ namespace switcher
     PostureSrc* ctx = (PostureSrc*)context;
 
     if (ctx->rgb_writer_.get() == nullptr || ctx->rgb_width_ != width || ctx->rgb_height_ != height)
-    {
-      ctx->rgb_writer_.reset(new ShmdataAnyWriter);
-      ctx->rgb_writer_->set_path(ctx->make_file_name("rgb"));
-      ctx->register_shmdata_any_writer(ctx->rgb_writer_);
-      ctx->rgb_width_ = width;
-      ctx->rgb_height_ = height;
+      {
+	ctx->rgb_writer_.reset(new ShmdataAnyWriter);
+	ctx->rgb_writer_->set_path(ctx->make_file_name("rgb"));
+	ctx->register_shmdata_any_writer(ctx->rgb_writer_);
+	ctx->rgb_width_ = width;
+	ctx->rgb_height_ = height;
 
-      char buffer[256] = "";
-      sprintf(buffer, "video/x-raw-rgb,bpp=24,endianness=4321,depth=24,red_mask=16711680,green_mask=65280,blue_mask=255,width=%i,height=%i,framerate=30/1", width, height);
-      ctx->rgb_writer_->set_data_type(string(buffer));
-      ctx->rgb_writer_->start();
-    }
+	char buffer[256] = "";
+	sprintf(buffer, "video/x-raw-rgb,bpp=24,endianness=4321,depth=24,red_mask=16711680,green_mask=65280,blue_mask=255,width=%i,height=%i,framerate=30/1", width, height);
+	ctx->rgb_writer_->set_data_type(string(buffer));
+	ctx->rgb_writer_->start();
+      }
 
-    ctx->rgb_writer_->push_data_auto_clock((void*)data.data(), width * height * 3, NULL, NULL);
+    ctx->rgb_writer_->push_data_auto_clock((void*)data.data(), width * height * 3, nullptr, nullptr);
   }
 
   void
@@ -369,19 +369,19 @@ namespace switcher
     PostureSrc* ctx = (PostureSrc*)context;
 
     if (ctx->ir_writer_.get() == nullptr || ctx->ir_width_ != width || ctx->ir_height_ != height)
-    {
-      ctx->ir_writer_.reset(new ShmdataAnyWriter);
-      ctx->ir_writer_->set_path(ctx->make_file_name("ir"));
-      ctx->register_shmdata_any_writer(ctx->ir_writer_);
-      ctx->ir_width_ = width;
-      ctx->ir_height_ = height;
+      {
+	ctx->ir_writer_.reset(new ShmdataAnyWriter);
+	ctx->ir_writer_->set_path(ctx->make_file_name("ir"));
+	ctx->register_shmdata_any_writer(ctx->ir_writer_);
+	ctx->ir_width_ = width;
+	ctx->ir_height_ = height;
 
-      char buffer[256] = "";
-      sprintf(buffer, "video/x-raw-gray,bpp=16,endianness=1234,depth=16,width=%i,height=%i,framerate=30/1", width, height);
-      ctx->ir_writer_->set_data_type(string(buffer));
-      ctx->ir_writer_->start();
-    }
+	char buffer[256] = "";
+	sprintf(buffer, "video/x-raw-gray,bpp=16,endianness=1234,depth=16,width=%i,height=%i,framerate=30/1", width, height);
+	ctx->ir_writer_->set_data_type(string(buffer));
+	ctx->ir_writer_->start();
+      }
 
-    ctx->ir_writer_->push_data_auto_clock((void*)data.data(), width * height * 2, NULL, NULL);
+    ctx->ir_writer_->push_data_auto_clock((void*)data.data(), width * height * 2, nullptr, nullptr);
   }
 }

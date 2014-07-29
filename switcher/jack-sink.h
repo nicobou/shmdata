@@ -21,14 +21,14 @@
 #ifndef __SWITCHER_JACK_SINK_H__
 #define __SWITCHER_JACK_SINK_H__
 
-#include "switcher/audio-sink.h"
+#include "switcher/base-sink.h"
 #include "switcher/startable-quiddity.h"
 #include <memory>
 
 namespace switcher
 {
 
-  class JackSink : public AudioSink, public StartableQuiddity
+  class JackSink : public BaseSink, public StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JackSink);
@@ -46,7 +46,7 @@ namespace switcher
     CustomPropertyHelper::ptr custom_props_; 
     GParamSpec *client_name_spec_;
     gchar *client_name_;
-    bool init_segment ();
+    bool init_gpipe () final;
     bool make_elements ();
     void on_shmdata_disconnect ();
     void on_shmdata_connect (std::string /* shmdata_sochet_path */) ;

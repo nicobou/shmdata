@@ -42,9 +42,9 @@ namespace switcher
   SyphonSrc::SyphonSrc () :
     custom_props_(std::make_shared<CustomPropertyHelper> ()),
     syphon_servername_(""),
-    syphon_servername_prop_(NULL),
+    syphon_servername_prop_(nullptr),
     syphon_appname_(""),
-    syphon_appname_prop_(NULL),
+    syphon_appname_prop_(nullptr),
     width_(0),
     height_(0)
   {
@@ -54,7 +54,7 @@ namespace switcher
   {
   }
 
-  bool SyphonSrc::init_segment()
+  bool SyphonSrc::init_gpipe()
   {
     init_startable (this);
 
@@ -92,12 +92,12 @@ namespace switcher
     if (syphon_servername_ == "" && syphon_appname_ == "")
     {
       cout << "SyphonSrc::start - No servername nor appname specified, using the first available server" << endl;
-      reader_->connect(NULL, NULL);
+      reader_->connect(nullptr, nullptr);
     }
     else if (syphon_servername_ != "" && syphon_appname_ == "")
-      reader_->connect(syphon_servername_.c_str(), NULL);
+      reader_->connect(syphon_servername_.c_str(), nullptr);
     else if (syphon_servername_ == "" && syphon_appname_ != "")
-      reader_->connect(NULL, syphon_appname_.c_str());
+      reader_->connect(nullptr, syphon_appname_.c_str());
     else
       reader_->connect(syphon_servername_.c_str(), syphon_appname_.c_str());
 
@@ -138,7 +138,7 @@ namespace switcher
       set = true;
     }
 
-    ctx->writer_->push_data_auto_clock((void*)data, width * height * 4, NULL, NULL);
+    ctx->writer_->push_data_auto_clock((void*)data, width * height * 4, nullptr, nullptr);
   }
 
   const gchar*

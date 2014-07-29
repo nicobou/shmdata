@@ -25,8 +25,9 @@ check_PROGRAMS = \
     check_property_mapper \
     check_property_subscriber \
     check_rtp_session \
+    check_scope_guard \
     check_signal_subscriber \
-    check_startable
+    check_startable 
 
 check_description_by_class_SOURCES = \
     check_description_by_class.cpp
@@ -54,5 +55,8 @@ check_fakesink_SOURCES = \
 
 check_information_tree_SOURCES = \
     check_information_tree.cpp
+
+check_scope_guard_SOURCES = \
+    check_scope_guard.cpp
 
 TESTS = $(check_PROGRAMS)

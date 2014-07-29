@@ -45,11 +45,10 @@ namespace switcher
 				       "Emmanuel Durand");
   SystemUsage::SystemUsage () :
     custom_props_ (std::make_shared<CustomPropertyHelper> ()),
-    period_prop_ (NULL),
+    period_prop_ (nullptr),
     cpuNbr_(0),
-    period_(1.0)
-  {
-  }
+    period_(0.1)
+  {}
   
   SystemUsage::~SystemUsage ()
   {
@@ -60,55 +59,66 @@ namespace switcher
   bool
   SystemUsage::init ()
   {
+    g_print ("debut %s %d\n", __FUNCTION__, __LINE__);
     period_prop_ = 
       custom_props_->make_double_property ("period", //name 
-					    "Update period", //description
-					    0.1,
-                        5.0,
-                        period_,
-					    (GParamFlags) G_PARAM_READWRITE,  
-					    SystemUsage::setRefreshPeriod,
-     					SystemUsage::getRefreshPeriod,
-					    this);
+					   "Update period", //description
+					   0.1,
+					   5.0,
+					   period_,
+					   (GParamFlags) G_PARAM_READWRITE,  
+					   SystemUsage::setRefreshPeriod,
+					   SystemUsage::getRefreshPeriod,
+					   this);
     install_property_by_pspec (custom_props_->get_gobject (), 
-     				period_prop_, 
-     				"period",
-				    "Update period"); //long name
-
+			       period_prop_, 
+			       "period",
+			       "Update period"); //long name
+    
+    g_print ("%s %d\n", __FUNCTION__, __LINE__);
     // Initialize the properties tree
     tree_ = make_tree ();
-
+    
+    g_print ("%s %d\n", __FUNCTION__, __LINE__);
     // Launch the polling thread
     running_ = true;
     pollStateThread_ = make_shared<thread>([&] () {
-      pollState();
-    });
-
+	pollState();
+      });
+    
+    g_print ("%s %d\n", __FUNCTION__, __LINE__);
     // Trying to reach the /proc files
     ifstream file;
     file.open(PROCSTATFILE);
     if (!file.is_open())
       return false;
 
+    g_print ("%s %d\n", __FUNCTION__, __LINE__);
     for (string line; getline(file, line);)
     {
       string substr = line.substr(0, 3);
       if (substr == "cpu")
         cpuNbr_++;
     }
+    g_print ("%s %d\n", __FUNCTION__, __LINE__);
     cpuNbr_ = cpuNbr_ == 1 ? 1 : cpuNbr_ - 1;
     file.close();
 
+    g_print ("%s %d\n", __FUNCTION__, __LINE__);
     file.open(PROCMEMINFOFILE);
+    g_print ("%s %d\n", __FUNCTION__, __LINE__);
     if (!file.is_open())
       return false;
     file.close();
+    g_print ("%s %d\n", __FUNCTION__, __LINE__);
 
     file.open(PROCNETDEVFILE);
     if (!file.is_open())
         return false;
+    g_print ("%s %d\n", __FUNCTION__, __LINE__);
     file.close();
 
+    g_print ("fin %s %d\n", __FUNCTION__, __LINE__);
     return true;
   }
   
@@ -302,6 +312,7 @@ namespace switcher
 
       firstRun = false;
 
+      //FIXME do not sleep in the polling thread
       this_thread::sleep_for(chrono::milliseconds((int)(period_ * 1000.0)));
     }
   }

@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_URIDECODEBIN_H__
 #define __SWITCHER_URIDECODEBIN_H__
 
-#include "base-source.h"
+#include "gpipe.h"
 #include "gst-element-cleaner.h"
 #include "custom-property-helper.h"
 #include <unordered_map>
@@ -29,7 +29,7 @@
 namespace switcher
 {
 
-  class Uridecodebin : public BaseSource, public GstElementCleaner
+  class Uridecodebin : public GPipe, public GstElementCleaner
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Uridecodebin);
@@ -45,10 +45,9 @@ namespace switcher
    GstPad *main_pad_;
    GstCaps *rtpgstcaps_;
    bool discard_next_uncomplete_buffer_;
-   //   std::string runtime_name_;
    void init_uridecodebin ();
    void destroy_uridecodebin ();
-   QuiddityCommand *on_error_command_; //for the runtime error handler
+   QuiddityCommand *on_error_command_; //for the pipeline error handler
    void clean_on_error_command ();
    
    //custom properties 
@@ -61,7 +60,7 @@ namespace switcher
    GParamSpec *uri_spec_;
    gchar *uri_;
 
-   bool init_segment ();
+   bool init_gpipe () final;
    static gboolean get_loop (void *user_data);
    static void set_loop (gboolean mute, void *user_data);
    static void set_uri (const gchar *value, void *user_data);

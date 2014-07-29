@@ -35,16 +35,16 @@ namespace switcher
     port_ (1056),
     host_ ("localhost"),
     shmdata_path_ (),
-    port_spec_ (NULL),
-    host_spec_ (NULL),
-    shmdata_path_spec_ (NULL),
-    address_ (NULL),
+    port_spec_ (nullptr),
+    host_spec_ (nullptr),
+    shmdata_path_spec_ (nullptr),
+    address_ (nullptr),
     reader_ (shmdata_any_reader_init ()),
     address_mutex_ ()
   {}
   
   bool
-  ShmdataToOsc::init_segment ()
+  ShmdataToOsc::init_gpipe ()
   {
     init_startable (this);
     port_spec_ = 
@@ -126,7 +126,7 @@ namespace switcher
       address_ = lo_address_new (host_.c_str (), 
 				 std::to_string (port_).c_str ());
     }
-    if (NULL == address_)
+    if (nullptr == address_)
       return false;
     return true;
   }
@@ -134,11 +134,11 @@ namespace switcher
   bool
   ShmdataToOsc::stop ()
   {
-    if (NULL != address_)
+    if (nullptr != address_)
       {
  	std::unique_lock <std::mutex> lock (address_mutex_);
 	lo_address_free (address_);
-	address_ = NULL;
+	address_ = nullptr;
       }
     return true;
   }
@@ -190,12 +190,12 @@ namespace switcher
     const char *path = lo_get_path (data, data_size);
     lo_message msg = lo_message_deserialise (data, 
 					     data_size, 
-					     NULL); //error code
-    if (NULL != msg )
+					     nullptr); //error code
+    if (nullptr != msg )
       {
 	std::unique_lock <std::mutex> lock (context->address_mutex_);
 	//lo_message_pp (msg);
-	if (NULL != context->address_)
+	if (nullptr != context->address_)
 	  lo_send_message (context->address_, path, msg);
 	lo_message_free (msg);
       }

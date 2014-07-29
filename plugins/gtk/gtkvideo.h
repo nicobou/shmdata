@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_GTK_VIDEO_H__
 #define __SWITCHER_GTK_VIDEO_H__
 
-#include "switcher/video-sink.h"
+#include "switcher/base-sink.h"
 #include "switcher/custom-property-helper.h"
 #include <memory>
 #include <thread>
@@ -43,7 +43,7 @@
 
 namespace switcher
 {
-  class GTKVideo : public VideoSink
+  class GTKVideo : public BaseSink
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GTKVideo);
@@ -72,10 +72,10 @@ namespace switcher
 #else
     guintptr window_handle_;
 #endif
-    QuiddityCommand *on_error_command_; //for the runtime error handler
+    QuiddityCommand *on_error_command_; //for the GPipe error handler
     GdkCursor *blank_cursor_;
 
-    CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr gtk_custom_props_;
     GParamSpec *fullscreen_prop_spec_;
     gboolean is_fullscreen_;
     GParamSpec *title_prop_spec_;
@@ -87,7 +87,7 @@ namespace switcher
     std::mutex window_destruction_mutex_;
     std::condition_variable window_destruction_cond_;
 
-    bool init_segment ();
+    bool init_gpipe () final;
     static gboolean create_ui (void *user_data);
     static void realize_cb (GtkWidget *widget, void *user_data);
     static void delete_event_cb (GtkWidget *widget, GdkEvent *event, void *user_data);

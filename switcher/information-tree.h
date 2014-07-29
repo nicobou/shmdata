@@ -18,7 +18,7 @@
  */
 
 /**
- * @file   information-tree.h
+ * @file  information-tree.h
  * 
  * @brief tree data structure for storing, formating and serializing informations  
  * 
@@ -31,12 +31,11 @@
  *
  */
 
-
-
 #ifndef __SWITCHER_INFORMATION_TREE_H__
 #define __SWITCHER_INFORMATION_TREE_H__
 
 #include <string>
+#include <algorithm>
 #include <list>
 #include <memory>
 #include <type_traits>
@@ -53,10 +52,13 @@ namespace switcher {
       typedef std::shared_ptr<Tree> ptr;
       typedef std::pair <std::string, Tree::ptr> child_type;
       typedef std::list<child_type> child_list_type;
-      Tree ();
-      ~Tree ();
+      typedef std::function<void (const std::string &name, 
+				  const Tree::ptr tree,
+				  bool is_array_element)> OnNodeFunction;
+      Tree () {};
       Tree (const Any &data);
       bool is_leaf ();
+      bool is_array ();
       bool has_data ();
       Any get_data ();
       void set_data (const Any &data);
@@ -70,14 +72,59 @@ namespace switcher {
       bool set_data (const std::string &path, const Any &data);
       bool set_data (const std::string &path, const char *data);
       bool set_data (const std::string &path, std::nullptr_t ptr);
-      Tree::ptr get (const std::string &path);
-      bool graft (const std::string &path, Tree::ptr);
-      Tree::ptr prune (const std::string &path);
 
+      // graft will create the path and graft the tree, 
+      // or remove old one and replace will the new tree
+      bool graft (const std::string &path, Tree::ptr);
+      //return empty tree if nothing can be pruned
+      Tree::ptr prune (const std::string &path);
+      //get but not remove
+      Tree::ptr get (const std::string &path);
+
+      // return false if the path does not exist
+      // when a path is tagged as an array, keys might be discarded 
+      // by some serializers, such as JSON
+      bool tag_as_array (const std::string &path, bool is_array);
+      bool is_array (const std::string &path);
+      
+      //get child key in place, use with std::insert_iterator
+      template <typename Iter>
+	void
+	get_child_keys (const std::string path, Iter pos)
+	{
+	  std::unique_lock <std::mutex> lock (mutex_);
+	  auto found = get_node (path);
+	  if (!found.first.empty ())
+	    std::transform (found.second->second->childrens_.begin (),
+			    found.second->second->childrens_.end (),
+			    pos,
+			    [] (const child_type &child) {return child.first;});
+	}
+
+      //get child keys - returning a newly allocated container
+      template <template<class T, class = std::allocator<T> > class Container = std::list>
+	Container<std::string>
+	get_child_keys (const std::string path)
+	{
+	  Container<std::string> res;
+	  std::unique_lock <std::mutex> lock (mutex_);
+	  auto found = get_node (path);
+	  if (!found.first.empty ())
+	    {
+	      res.resize (found.second->second->childrens_.size ());
+	      std::transform (found.second->second->childrens_.begin (),
+			      found.second->second->childrens_.end (),
+			      res.begin (),
+			      [] (const child_type &child) {return child.first;});
+	    }
+	  return res;
+	}
+      
     private:
-      Any data_;
-      child_list_type childrens_;
-      std::mutex mutex_;
+      Any data_ {};
+      bool is_array_ {false};
+      child_list_type childrens_ {};
+      std::mutex mutex_ {};
       child_list_type::iterator get_child_iterator (const std::string &key);
       static bool graft_next (std::istringstream &path, Tree *tree, Tree::ptr leaf);
       std::pair <Tree::child_list_type, Tree::child_list_type::iterator>
@@ -87,44 +134,12 @@ namespace switcher {
 		     child_list_type::iterator &result_iterator);
 
       //walks
-      template <typename T, typename OnVisitingNode, typename OnNodeVisited>
-	friend void 
+      friend void 
 	preorder_tree_walk (Tree::ptr tree,
-			    OnVisitingNode on_visiting_node,
-			    OnNodeVisited on_node_visited,
-			    T &user_data);
+			    Tree::OnNodeFunction on_visiting_node,
+			    Tree::OnNodeFunction on_node_visited);
+
     };
-
-    //-------------- utils
-
-      template <typename T, typename OnVisitingNode, typename OnNodeVisited>
-	void 
-	preorder_tree_walk (Tree::ptr tree,
-			    OnVisitingNode on_visiting_node,
-			    OnNodeVisited on_node_visited,
-			    T &user_data)
-      {
-	std::unique_lock <std::mutex> lock (tree->mutex_);
-	if (!tree->childrens_.empty ())
-	  {
-	    for (auto &it : tree->childrens_)
-	      {
-		std::size_t size = it.second->childrens_.size ();
-		on_visiting_node (it.first,  
-				  it.second->get_data (),  
-				  size, 
-				  user_data); 
-		preorder_tree_walk (it.second, 
-				    on_visiting_node, 
-				    on_node_visited,
-				    user_data);
-		on_node_visited (it.first,  
-				 it.second->get_data (),  
-				 size, 
-				 user_data);
-	      }
-	  }
-      }
 
     //constructor
     Tree::ptr make_tree (); 

@@ -23,7 +23,8 @@
 
 namespace switcher
 {
-  AudioSource::AudioSource() 
+  AudioSource::AudioSource() :
+    shmdata_path_ ()
   { 
     make_audio_elements ();
   }
@@ -47,7 +48,7 @@ namespace switcher
     gst_element_link (rawaudio_, audio_tee_);
     GstCaps *audiocaps = gst_caps_new_simple ("audio/x-raw-int",
 					      "width", G_TYPE_INT, 16,
-     					      NULL);
+     					      nullptr);
     //creating a connector for raw audio
     ShmdataWriter::ptr shmdata_writer;
     shmdata_writer.reset (new ShmdataWriter ());
@@ -63,7 +64,8 @@ namespace switcher
   void 
   AudioSource::unset_raw_audio_element ()
   {
-    unregister_shmdata_writer (shmdata_path_);
+    if (!shmdata_path_.empty ())
+      unregister_shmdata_writer (shmdata_path_);
     reset_bin ();
   }
 

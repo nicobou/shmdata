@@ -64,12 +64,12 @@ namespace switcher
 
     GValue action_emit (std::vector<std::string> args);
     
-    //helper methods, use NULL sentinel
+    //helper methods, use nullptr sentinel
     //do not describe the first gobject (first signal arg)
     //use G_TYPE_NONE if no arg
     static args_types make_arg_type_description (GType arg_type, ...);
     
-    //helper methods, use NULL sentinel
+    //helper methods, use nullptr sentinel
     static args_doc make_arg_description (const gchar *first_arg_name, ...);
     JSONBuilder::Node get_json_root_node (); 
     

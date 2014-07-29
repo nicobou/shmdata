@@ -31,12 +31,12 @@ namespace switcher
 				       "jpegenc",
 				       "Nicolas Bouillot");
   JpegEnc::JpegEnc () :
-    jpegencbin_ (NULL),
-    jpegencenc_ (NULL)
+    jpegencbin_ (nullptr),
+    jpegencenc_ (nullptr)
   {}
  
   bool
-  JpegEnc::init_segment ()
+  JpegEnc::init_gpipe ()
   {
     if (!GstUtils::make_element ("bin", &jpegencbin_)
 	|| !GstUtils::make_element ("jpegenc", &jpegencenc_))
@@ -66,20 +66,20 @@ namespace switcher
     gst_bin_add_many (GST_BIN (context->jpegencbin_),
 		      context->jpegencenc_,
 		      colorspace,
-		      NULL);
+		      nullptr);
     gst_element_link_many (colorspace,
 			   context->jpegencenc_,
-			   NULL);
+			   nullptr);
     
     GstUtils::sync_state_with_parent (context->jpegencbin_);
 
     GstPad *sink_pad = gst_element_get_static_pad (colorspace, "sink");
-    GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
+    GstPad *ghost_sinkpad = gst_ghost_pad_new (nullptr, sink_pad);
     gst_pad_set_active(ghost_sinkpad,TRUE);
     gst_element_add_pad (context->jpegencbin_, ghost_sinkpad); 
     gst_object_unref (sink_pad);
     
-    GstCaps *jpegenccaps = gst_caps_new_simple ("image/jpeg", NULL);
+    GstCaps *jpegenccaps = gst_caps_new_simple ("image/jpeg", nullptr);
     ShmdataWriter::ptr jpegencframes_writer;
     jpegencframes_writer.reset (new ShmdataWriter ());
     std::string writer_name = context->make_file_name ("jpegframes"); 

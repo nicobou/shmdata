@@ -103,9 +103,10 @@ namespace switcher
   }
 
   bool
-  PostureMerge::init_segment()
+  PostureMerge::init()
   {
     init_startable (this);
+    init_segment (this);
 
     calibration_path_prop_ = custom_props_->make_string_property ("calibration_path",
       "Path to the calibration file",

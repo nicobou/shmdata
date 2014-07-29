@@ -23,8 +23,8 @@
 namespace switcher
 {
   VideoSource::VideoSource () :
-    rawvideo_ (NULL),
-    video_tee_ (NULL),
+    rawvideo_ (nullptr),
+    video_tee_ (nullptr),
     videocaps_ (gst_caps_new_simple ("video/x-raw-yuv",
 				     // "format", GST_TYPE_FOURCC,
 				     // GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y'),
@@ -34,19 +34,19 @@ namespace switcher
 				     // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1, 
 				     //  "width", G_TYPE_INT, 640, 
 				     //  "height", G_TYPE_INT, 480,
-				     NULL)),
+				     nullptr)),
     shmdata_path_ (),
     custom_props_ (new CustomPropertyHelper ()),
-    primary_codec_spec_ (NULL),
+    primary_codec_spec_ (nullptr),
     primary_codec_ (),
-    secondary_codec_spec_ (NULL),
+    secondary_codec_spec_ (nullptr),
     secondary_codec_ (),
     codec_ (0),
-    codec_long_list_spec_ (NULL),
+    codec_long_list_spec_ (nullptr),
     codec_long_list_ (false),
-    codec_element_ (NULL),
-    queue_codec_element_ (NULL),
-    color_space_codec_element_ (NULL),
+    codec_element_ (nullptr),
+    queue_codec_element_ (nullptr),
+    color_space_codec_element_ (nullptr),
     codec_properties_ ()
   {
     init_startable (this);
@@ -125,7 +125,7 @@ namespace switcher
       }
     gst_bin_add_many (GST_BIN (bin_),
       		      video_tee_,
-      		      NULL);
+      		      nullptr);
     
     gst_bin_add (GST_BIN (bin_), rawvideo_);
     gst_element_link (rawvideo_, video_tee_);
@@ -147,13 +147,13 @@ namespace switcher
 			  queue_codec_element_,
 			  codec_element_,
 			  color_space_codec_element_,
-			  NULL);
+			  nullptr);
 
 	gst_element_link_many (video_tee_, 
 			       queue_codec_element_,
 			       color_space_codec_element_,
 			       codec_element_,
-			       NULL);
+			       nullptr);
 
 	ShmdataWriter::ptr shmdata_codec;
 	shmdata_codec.reset (new ShmdataWriter ());
@@ -175,7 +175,7 @@ namespace switcher
   bool 
   VideoSource::start ()
   {
-    rawvideo_ = NULL;
+    rawvideo_ = nullptr;
     if (!make_video_source (&rawvideo_))
       {
 	g_debug ("cannot make video source");

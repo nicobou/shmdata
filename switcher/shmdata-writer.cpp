@@ -23,25 +23,24 @@
 namespace switcher
 {
 
-  ShmdataWriter::ShmdataWriter() :
-    path_ (),
-    writer_ (shmdata_base_writer_init ()),
-    bin_ (NULL),
-    tee_ (NULL),
-    queue_ (NULL),
-    fakesink_ (NULL),
-    json_description_ (new JSONBuilder())
+  ShmdataWriter::ShmdataWriter() 
   {}
 
   ShmdataWriter::~ShmdataWriter()
   {
     //g_debug ("ShmdataWriter: cleaning elements %s", path_.c_str());
-    if (NULL != tee_)
+
+    if (nullptr != tee_)
       GstUtils::clean_element (tee_);
-    if (NULL != queue_)
+    if (nullptr != queue_)
       GstUtils::clean_element (queue_);
-    if (NULL != fakesink_)
-      GstUtils::clean_element (fakesink_);
+    if (nullptr != fakesink_)
+      {
+	// if (0 != handoff_handler_)
+	// //FIXME this is blocking sometime :
+	//   g_signal_handler_disconnect (G_OBJECT (fakesink_), handoff_handler_);
+	GstUtils::clean_element (fakesink_);
+      }
     shmdata_base_writer_close (writer_);
     if (!path_.empty ())
       g_debug ("ShmdataWriter: %s deleted", path_.c_str());
@@ -52,11 +51,11 @@ namespace switcher
   ShmdataWriter::set_path (std::string name)
   {
     GFile *shmfile = g_file_new_for_commandline_arg (name.c_str());
-    if( g_file_query_exists (shmfile, NULL))
+    if( g_file_query_exists (shmfile, nullptr))
       {    
 	//thrash it
 	g_debug ("ShmdataWriter::set_path warning: file %s exists and will be deleted.",name.c_str());
-	if (! g_file_delete (shmfile, NULL, NULL)) 
+	if (! g_file_delete (shmfile, nullptr, nullptr)) 
 	  {
 	    g_debug ("ShmdataWriter::set_path error: file %s is already existing and cannot be trashed.",name.c_str());
 	    return false;
@@ -92,10 +91,18 @@ namespace switcher
     GstUtils::make_element ("tee", &tee_);
     GstUtils::make_element ("queue", &queue_);
     GstUtils::make_element ("fakesink", &fakesink_);
-    g_object_set (G_OBJECT(fakesink_),"sync",FALSE,NULL);
-    g_object_set (G_OBJECT(fakesink_), "silent", TRUE, NULL);
-    g_object_set (G_OBJECT(queue_), "leaky", 2, NULL);
-    gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, NULL);
+    g_object_set (G_OBJECT(fakesink_), 
+		  "sync", FALSE, 
+		  nullptr);
+    g_object_set (G_OBJECT(fakesink_), 
+		  "silent", TRUE, 
+		  "signal-handoffs", TRUE,
+		  nullptr);
+    handoff_handler_ = g_signal_connect (fakesink_, "handoff", (GCallback)on_handoff_cb, this);
+    g_object_set (G_OBJECT(queue_), 
+		  "leaky", 2, 
+		  nullptr);
+    gst_bin_add_many (GST_BIN (bin), tee_, queue_, fakesink_, nullptr);
     shmdata_base_writer_plug (writer_, 
 			      bin, 
 			      tee_);
@@ -105,7 +112,7 @@ namespace switcher
     gst_element_link_many (tee_, 
 			   queue_, 
 			   fakesink_,
-			   NULL);
+			   nullptr);
     GstUtils::sync_state_with_parent (tee_);
     GstUtils::sync_state_with_parent (queue_);
     GstUtils::sync_state_with_parent (fakesink_);
@@ -121,14 +128,20 @@ namespace switcher
     GstUtils::make_element ("tee", &tee_);
     GstUtils::make_element ("queue", &queue_);
     GstUtils::make_element ("fakesink", &fakesink_);
-    g_object_set (G_OBJECT(fakesink_), "sync", FALSE, NULL);
-    g_object_set (G_OBJECT(fakesink_), "silent", TRUE, NULL);
-    g_object_set (G_OBJECT(queue_), "leaky", 2, NULL);
+    g_object_set (G_OBJECT(fakesink_), 
+		  "sync", FALSE, 
+		  "signal-handoffs", TRUE,
+		  nullptr);
+    g_signal_connect (fakesink_, "handoff", (GCallback)on_handoff_cb, this);
+    g_object_set (G_OBJECT(fakesink_), 
+		  "silent", TRUE, 
+		  nullptr);
+    g_object_set (G_OBJECT(queue_), "leaky", 2, nullptr);
     gst_bin_add_many (GST_BIN (bin), 
      		      tee_, 
      		      queue_, 
      		      fakesink_,
-     		      NULL);
+     		      nullptr);
     shmdata_base_writer_plug (writer_, 
 			      bin, 
 			      tee_);
@@ -140,7 +153,7 @@ namespace switcher
     gst_element_link_many (tee_, 
 			   queue_, 
 			   fakesink_,
-			   NULL);
+			   nullptr);
     GstUtils::sync_state_with_parent (tee_);
     GstUtils::sync_state_with_parent (queue_);
     GstUtils::sync_state_with_parent (fakesink_);
@@ -148,6 +161,45 @@ namespace switcher
       g_debug ("shmdata writer pad plugged (%s)", path_.c_str());
   }
   
+  void 
+  ShmdataWriter::on_handoff_cb (GstElement* object,
+				GstBuffer* buf,
+				GstPad* pad,
+				gpointer user_data)
+  {
+    ShmdataWriter *context = static_cast <ShmdataWriter *> (user_data);
+
+    std::unique_lock<std::mutex> lock (context->caps_mutex_);
+    GstCaps *caps = gst_pad_get_negotiated_caps (pad);
+    if (nullptr == caps)
+      return;
+    gchar *string_caps = gst_caps_to_string (caps);
+    context->caps_ = string_caps;
+    if (nullptr != context->on_caps_callback_)
+      context->on_caps_callback_ (context->caps_);
+    g_free (string_caps);
+    gst_caps_unref (caps);
+    if (context->handoff_handler_ > 0)
+      g_signal_handler_disconnect (G_OBJECT (object), context->handoff_handler_);
+    g_object_set (G_OBJECT (context->fakesink_), 
+    		  "signal-handoffs", FALSE,
+    		  nullptr);
+  }
+
+  std::string
+  ShmdataWriter::get_caps ()
+  {
+    return caps_;
+  }
+
+  void ShmdataWriter::set_on_caps (std::function<void(std::string)> callback)
+  {
+    std::unique_lock<std::mutex> lock (caps_mutex_);
+    on_caps_callback_ = callback;
+    if (!caps_.empty ())
+      on_caps_callback_ (caps_);
+  }
+
   void
   ShmdataWriter::make_json_description ()
   {

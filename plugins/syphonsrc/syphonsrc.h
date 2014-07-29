@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_SYPHONSRC_H__
 #define __SWITCHER_SYPHONSRC_H__
 
-#include "switcher/segment.h"
+#include "switcher/gpipe.h"
 #include "switcher/startable-quiddity.h"
 #include "switcher/custom-property-helper.h"
 
@@ -31,7 +31,7 @@
 
 namespace switcher
 {
-  class SyphonSrc : public Segment, public StartableQuiddity
+  class SyphonSrc : public GPipe, public StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SyphonSrc);
@@ -55,7 +55,7 @@ namespace switcher
 
     int width_, height_;
 
-    bool init_segment ();
+    bool init_gpipe () final;
     static void frameCallback(void*, const char*, int&, int&);
 
     static const gchar* get_servername(void* user_data);

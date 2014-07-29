@@ -5,12 +5,18 @@ plugins_LTLIBRARIES = \
 
 #libpjsip info
 libpjsip_plugin_la_SOURCES = \
-    pj-sip.cpp \
-    transport_adapter_sample.c
+    pj-call.cpp \
+    pj-codec.cpp \
+    pj-codec-utils.cpp \
+    pj-presence.cpp \
+    pj-sip.cpp 
 
 libpjsip_plugin_la_include_HEADERS = \
-    pj-sip.h \
-    transport_adapter_sample.h
+    pj-call.h \
+    pj-codec.h \
+    pj-codec-utils.h \
+    pj-presence.h \
+    pj-sip.h 
 
 libpjsip_plugin_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
@@ -37,7 +43,6 @@ libpjsip_plugin_la_CXXFLAGS = \
     -DG_LOG_DOMAIN=\"switcher\" \
     -I$(top_srcdir) \
     -Wno-error=write-strings
-
 
 #### plugin unit test
 AM_CFLAGS = \

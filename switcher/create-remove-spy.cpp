@@ -59,7 +59,7 @@ namespace switcher
 		    Signal::make_arg_description ("Quiddity Name",
 						  "quiddity_name",
 						  "the quiddity name",
-						  NULL),
+						  nullptr),
 		    1,
 		    string_type);
 
@@ -69,7 +69,7 @@ namespace switcher
 		    Signal::make_arg_description("Quiddity Name",
 						 "quiddity_name",
 						 "the quiddity name",
-						 NULL),
+						 nullptr),
 		    1,
 		    string_type);
 

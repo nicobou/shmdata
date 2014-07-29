@@ -28,10 +28,10 @@ namespace switcher
 {
 
   SyphonReader::SyphonReader() :
-    callback_(NULL),
-    context_(NULL),
-    client_(NULL),
-    glContext_(NULL),
+    callback_(nullptr),
+    context_(nullptr),
+    client_(nullptr),
+    glContext_(nullptr),
     width_(0),
     height_(0),
     drawTex_(0),
@@ -41,10 +41,10 @@ namespace switcher
   }
 
   SyphonReader::SyphonReader(syphonCallback callback, void* context) :
-    callback_(NULL),
-    context_(NULL),
-    client_(NULL),
-    glContext_(NULL),
+    callback_(nullptr),
+    context_(nullptr),
+    client_(nullptr),
+    glContext_(nullptr),
     width_(0),
     height_(0),
     drawTex_(0),
@@ -63,15 +63,15 @@ namespace switcher
   void
   SyphonReader::connect(const char* serverName, const char* appName)
   {
-    SyphonClient* newClient = NULL;
+    SyphonClient* newClient = nullptr;
     SyphonClient* client = (SyphonClient*)client_;
 
     NSArray* serverMatches;
-    if (serverName != NULL && appName == NULL)
+    if (serverName != nullptr && appName == nullptr)
       serverMatches = [[SyphonServerDirectory sharedDirectory] serversMatchingName:[NSString stringWithCString:serverName] appName:nil]; 
-    else if (serverName == NULL && appName != NULL)
+    else if (serverName == nullptr && appName != nullptr)
       serverMatches = [[SyphonServerDirectory sharedDirectory] serversMatchingName:nil appName:[NSString stringWithCString:appName]]; 
-    else if (serverName != NULL && appName != NULL)
+    else if (serverName != nullptr && appName != nullptr)
       serverMatches = [[SyphonServerDirectory sharedDirectory] serversMatchingName:[NSString stringWithCString:serverName] appName:[NSString stringWithCString:appName]]; 
     else
       serverMatches = [[SyphonServerDirectory sharedDirectory] serversMatchingName:nil appName:nil]; 
@@ -100,10 +100,10 @@ namespace switcher
   void
   SyphonReader::disconnect()
   {
-    if (client_ != NULL)
+    if (client_ != nullptr)
       [(SyphonClient*)client_ release];
 
-    if (glContext_ != NULL)
+    if (glContext_ != nullptr)
       CGLDestroyContext(*(CGLContextObj*)glContext_);
   }
 
@@ -120,7 +120,7 @@ namespace switcher
     glEnable(GL_ALL_ATTRIB_BITS);
     glGenTextures(1, &drawTex_);
     glBindTexture(GL_TEXTURE_RECTANGLE_ARB, drawTex_);
-    glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA8, width_, height_, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, NULL);
+    glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA8, width_, height_, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, nullptr);
 
     if (fbo_ != 0)
       glDeleteFramebuffers(1, &fbo_);
@@ -156,7 +156,7 @@ namespace switcher
     else
       cout << "SyphonReader::init - Pixel format created successfully" << endl;
     glContext_ = (void*)(new CGLContextObj);
-    error = CGLCreateContext(pix, NULL, (CGLContextObj*)glContext_);
+    error = CGLCreateContext(pix, nullptr, (CGLContextObj*)glContext_);
     if (error != kCGLNoError)
       cout << "SyphonReader::init - Error while creating context: " << error << endl;
     else
@@ -247,9 +247,9 @@ namespace switcher
     if (glError != GL_NO_ERROR)
       cout << "SyphonReader::handleNewFrame - Error while copying shared texture. GL state: " << glError << endl;
 
-    CGLSetCurrentContext(NULL);
+    CGLSetCurrentContext(nullptr);
 
-    if (callback_ != NULL)
+    if (callback_ != nullptr)
     {
       callback_(context_, frame_.data(), width_, height_);
     }

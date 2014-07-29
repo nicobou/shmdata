@@ -21,14 +21,14 @@
 #ifndef __SWITCHER_VORBIS_H__
 #define __SWITCHER_VORBIS_H__
 
-#include "audio-sink.h"
+#include "base-sink.h"
 #include "gst-element-cleaner.h"
 #include <gst/gst.h>
 #include <memory>
 
 namespace switcher
 {
-  class Vorbis : public AudioSink, public GstElementCleaner
+  class Vorbis : public BaseSink, public GstElementCleaner
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Vorbis);
@@ -40,7 +40,7 @@ namespace switcher
   private:
     GstElement *vorbisbin_;
     GstElement *vorbisenc_;
-    bool init_segment ();
+    bool init_gpipe () final;
   };
 
 }  // end of namespace

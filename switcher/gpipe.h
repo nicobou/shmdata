@@ -18,33 +18,42 @@
  */
 
 /**
- * The Runtime class
+ * The GPipe class
  */
 
-#ifndef __SWITCHER_RUNTIME_H__
-#define __SWITCHER_RUNTIME_H__
+#ifndef __SWITCHER_GPIPE_H__
+#define __SWITCHER_GPIPE_H__
 
 #include <gst/gst.h>
 #include <memory>
 #include <vector>
+#include "quiddity.h"
+#include "segment.h"
 
 namespace switcher
 {
   class Quiddity;
   class QuiddityCommand;
   class CustomPropertyHelper;
+  class DecodebinToShmdata;
 
-  class Runtime
+  class GPipe : public Quiddity, public Segment 
     {
+      friend DecodebinToShmdata; 
     public:
-      Runtime ();
-      virtual ~Runtime ();
-      Runtime (const Runtime &) = delete;
-      Runtime &operator= (const Runtime &) = delete;
-
+      GPipe ();
+      virtual ~GPipe ();
+      GPipe (const GPipe &) = delete;
+      GPipe &operator= (const GPipe &) = delete;
+      bool init () final;
+      virtual bool init_gpipe () = 0;
+      
     protected:
-      void init_runtime (Quiddity &quiddity);//FIXME should called quiddity-manager-impl 
+      //void init_gpipe (Quiddity &quiddity);//FIXME should called quiddity-manager-impl 
       //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
+      GstElement *get_bin ();
+      GstElement *bin_ {nullptr}; //FIXME should be private
+      bool reset_bin ();
       GstElement *get_pipeline ();
       void install_play_pause ();
       void install_seek ();
@@ -55,7 +64,7 @@ namespace switcher
 
     private:
      typedef struct {
-       Runtime *self;
+       GPipe *self;
        QuiddityCommand *command;
        GSource *src;
      } QuidCommandArg;
@@ -67,20 +76,21 @@ namespace switcher
 	gboolean inited;
       } GstBusSource;
 
-      GstElement *pipeline_;
-      gdouble speed_;//was gunint64 ???
-      GSource *position_tracking_source_;
+      GstElement *pipeline_ {nullptr};
+      gdouble speed_ {1.0};
+      GSource *position_tracking_source_ {nullptr};
       GSourceFuncs source_funcs_;
-      GSource *source_;
-      Quiddity *quid_;
-      std::shared_ptr<CustomPropertyHelper> custom_props_;
-      GParamSpec *play_pause_spec_;
-      bool play_;
-      GParamSpec *seek_spec_;
-      gdouble seek_;
-      gint64 length_;
-      std::vector<GSource *> commands_;
+      GSource *source_{nullptr};
+      std::shared_ptr<CustomPropertyHelper> gpipe_custom_props_;
+      GParamSpec *play_pause_spec_ {nullptr};
+      bool play_ {true};
+      GParamSpec *seek_spec_ {nullptr};
+      gdouble seek_ {0.0};
+      gint64 length_ {0};
+      std::vector<GSource *> commands_ {};
  
+      void make_bin ();
+      void clean_bin ();
       bool speed (gdouble speed);
       static gboolean get_play (void *user_data);
       static void set_play (gboolean play, void *user_data);

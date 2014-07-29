@@ -22,13 +22,14 @@
 #define __SWITCHER_DECODEBIN2_H__
 
 #include "base-sink.h"
+#include "decodebin-to-shmdata.h"
 #include <memory>
 #include <map>
 
 namespace switcher
 {
 
-  class Decodebin2 : public BaseSink, public GstElementCleaner
+  class Decodebin2 : public BaseSink
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Decodebin2);
@@ -37,12 +38,10 @@ namespace switcher
     Decodebin2 &operator= (const Decodebin2 &) = delete;
 
   private: 
-   GstElement *decodebin2_;
+   std::unique_ptr<DecodebinToShmdata> decodebin_;
    std::map<std::string, int> media_counters_;
-   bool init_segment ();
-   static void make_decodebin2_active (ShmdataReader *caller, void *decodebin2_instance);
-   static void pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
-   static void no_more_pads_cb (GstElement* object, gpointer user_data);
+   bool init_gpipe () final;
+   static void make_decodebin_active (ShmdataReader *caller, void *decodebin2_instance);
   };
 
 }  // end of namespace

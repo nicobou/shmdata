@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_RTPSESSION_H__
 #define __SWITCHER_RTPSESSION_H__
 
-#include "segment.h"
+#include "gpipe.h"
 #include "quiddity-manager.h"
 #include "rtp-destination.h"
 #include "custom-property-helper.h"
@@ -33,7 +33,7 @@
  
 namespace switcher
 {
-  class RtpSession : public Segment
+  class RtpSession : public GPipe
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(RtpSession);
@@ -66,26 +66,6 @@ namespace switcher
     bool write_sdp_file (std::string dest_name);
 
  
-    //wrapper for registering the data_stream functions
-    static gboolean add_data_stream_wrapped (gpointer shmdata_socket_path, 
-					     gpointer user_data);
-    static gboolean remove_data_stream_wrapped (gpointer shmdata_socket_path, 
-						gpointer user_data);
-    static gboolean add_destination_wrapped (gpointer desst_name,
-					     gpointer host_name,
-					     gpointer user_data);
-    static gboolean remove_destination_wrapped (gpointer nick_name, 
-     						gpointer user_data); 
-    static gboolean add_udp_stream_to_dest_wrapped (gpointer shmdata_name, 
-						    gpointer dest_name, 
-						    gpointer port, 
-						    gpointer user_data);
-    static gboolean remove_udp_stream_to_dest_wrapped (gpointer shmdata_socket_path, 
-						       gpointer dest_name, 
-						       gpointer user_data);
-    static gboolean write_sdp_file_wrapped (gpointer nick_name,
-					    gpointer user_data);
-    
     //will be called by shmdata reader
     static void attach_data_stream(ShmdataReader *caller, void *rtpsession_instance); 
     
@@ -114,7 +94,9 @@ namespace switcher
     //destinations
     std::map<std::string, RtpDestination::ptr> destinations_;
 
-    bool init_segment ();
+    bool init_gpipe () final;
+
+    void on_rtp_caps (std::string shmdata_path, std::string caps);
 
     static void make_data_stream_available (GstElement* typefind, 
 					    guint probability, 
@@ -138,6 +120,25 @@ namespace switcher
     static void on_pad_removed (GstElement *gstelement, GstPad *new_pad, gpointer user_data);
     static void on_no_more_pad (GstElement *gstelement, gpointer user_data);
 
+    //wrapper for registering the data_stream functions
+    static gboolean add_data_stream_wrapped (gpointer shmdata_socket_path, 
+					     gpointer user_data);
+    static gboolean remove_data_stream_wrapped (gpointer shmdata_socket_path, 
+						gpointer user_data);
+    static gboolean add_destination_wrapped (gpointer desst_name,
+					     gpointer host_name,
+					     gpointer user_data);
+    static gboolean remove_destination_wrapped (gpointer nick_name, 
+     						gpointer user_data); 
+    static gboolean add_udp_stream_to_dest_wrapped (gpointer shmdata_name, 
+						    gpointer dest_name, 
+						    gpointer port, 
+						    gpointer user_data);
+    static gboolean remove_udp_stream_to_dest_wrapped (gpointer shmdata_socket_path, 
+						       gpointer dest_name, 
+						       gpointer user_data);
+    static gboolean write_sdp_file_wrapped (gpointer nick_name,
+					    gpointer user_data);
   };
 }  // end of namespace
 

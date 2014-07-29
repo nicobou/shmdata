@@ -23,8 +23,8 @@
 
 #include <memory>
 #include <string>
+#include <mutex>
 #include <shmdata/base-writer.h>
-//#include "gst-element-cleaner.h"
 #include "json-builder.h"
 
 namespace switcher
@@ -45,22 +45,29 @@ namespace switcher
     void plug (GstElement *bin, GstElement *source_element,GstCaps *caps);
     void plug (GstElement *bin, GstPad *source_pad);
 
+    void set_on_caps (std::function<void(std::string)> callback);
+    std::string get_caps ();
     //get json doc:
     JSONBuilder::Node get_json_root_node ();
 
   private:
-    std::string path_;
-    shmdata_base_writer_t *writer_;
-    GstElement *bin_;
-    GstElement *tee_;
-    GstElement *queue_;
-    GstElement *fakesink_;
-    JSONBuilder::ptr json_description_;
+    std::string path_ {};
+    std::string caps_ {};
+    shmdata_base_writer_t *writer_ {shmdata_base_writer_init ()};
+    GstElement *bin_  {nullptr};
+    GstElement *tee_ {nullptr};
+    GstElement *queue_ {nullptr};
+    GstElement *fakesink_ {nullptr};
+    gulong handoff_handler_ {0};
+    std::mutex caps_mutex_ {};
+    std::function<void (std::string)> on_caps_callback_ {nullptr};
+    JSONBuilder::ptr json_description_ {new JSONBuilder()};
+
     void make_json_description ();
-    /* static void on_handoff_cb (GstElement* object, */
-    /* 				GstBuffer* buf, */
-    /* 				GstPad* pad, */
-    /* 				gpointer user_data); */
+    static void on_handoff_cb (GstElement* object, 
+			       GstBuffer* buf, 
+			       GstPad* pad, 
+			       gpointer user_data); 
   };
   
 }  // end of namespace

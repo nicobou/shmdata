@@ -59,7 +59,7 @@ main ()
      //usleep (1000000);
      
      //connecting 
-     if (!manager->invoke_va ("win", "connect", NULL, "/tmp/switcher_gtktest_vid_video", NULL))
+     if (!manager->invoke_va ("win", "connect", nullptr, "/tmp/switcher_gtktest_vid_video", nullptr))
        return 1;
 
      //usleep (10000000);

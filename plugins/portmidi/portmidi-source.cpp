@@ -37,10 +37,10 @@ namespace switcher
     last_data1_ (-1),
     last_data2_ (-1),
     custom_props_ (new CustomPropertyHelper ()),
-    devices_description_spec_ (NULL),
-    devices_enum_spec_ (NULL),
+    devices_description_spec_ (nullptr),
+    devices_enum_spec_ (nullptr),
     device_ (0),
-    midi_value_spec_ (NULL),
+    midi_value_spec_ (nullptr),
     make_property_for_next_midi_event_ (FALSE),
     next_property_name_ (),
     prop_specs_ (),
@@ -55,10 +55,10 @@ namespace switcher
   
   
   bool
-  PortMidiSource::init_segment ()
+  PortMidiSource::init_gpipe ()
   {
 
-    if (input_devices_enum_ [0].value_name == NULL)
+    if (input_devices_enum_ [0].value_name == nullptr)
       {
 	g_debug ("no MIDI capture device detected");
 	return false;
@@ -69,7 +69,7 @@ namespace switcher
 					   "Description of capture devices (json formated)",
 					   get_devices_description_json ((PortMidi *)this),
 					   (GParamFlags) G_PARAM_READABLE,
-					   NULL,
+					   nullptr,
 					   get_devices_description_json,
 					   (PortMidi *)this);
     
@@ -102,7 +102,7 @@ namespace switcher
 					127,
 					0,
 					(GParamFlags) G_PARAM_READABLE,
-					NULL,
+					nullptr,
 					get_midi_value,
 					this);
 
@@ -113,10 +113,10 @@ namespace switcher
 		    Method::make_arg_description ("Property Long Name", //first arg long name
 						  "property_long_name", //fisrt arg name
 						  "string", //first arg description 
-						  NULL),
+						  nullptr),
   		    (Method::method_ptr) &next_midi_event_to_property_method, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
 
     install_method ("Last MIDI Event To Property", //long name
@@ -126,10 +126,10 @@ namespace switcher
 		    Method::make_arg_description ("Property Long Name", //first arg long name
 						  "property_long_name", //fisrt arg name
 						  "string", //first arg description 
-						  NULL),
+						  nullptr),
   		    (Method::method_ptr) &last_midi_event_to_property_method, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
 
     install_method ("Remove Midi Property", //long name
@@ -139,10 +139,10 @@ namespace switcher
 		    Method::make_arg_description ("Property Long Name", //first arg long name
 						  "property_long_name", //fisrt arg name
 						  "string", //first arg description 
-						  NULL),
+						  nullptr),
   		    (Method::method_ptr) &remove_property_method, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
 
     std::string shm_any_name = make_file_name ("midi");
@@ -256,7 +256,7 @@ namespace switcher
     delay.tv_sec = 0;
     delay.tv_nsec = 1000000; //1ms
     while (context->make_property_for_next_midi_event_)
-      nanosleep(&delay, NULL);
+      nanosleep(&delay, nullptr);
     return TRUE;
   }
 
@@ -349,7 +349,7 @@ namespace switcher
 					    127,
 					    0,
 					    (GParamFlags) G_PARAM_READABLE,
-					    NULL,
+					    nullptr,
 					    get_midi_property_value,
 					    &midi_property_contexts_[property_long_name]);
       }

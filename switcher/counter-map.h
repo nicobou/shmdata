@@ -17,9 +17,39 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "audio-sink.h"
+
+#ifndef __SWITCHER_COUNTER_MAP_H__
+#define __SWITCHER_COUNTER_MAP_H__
+
+#include <map>
+#include <mutex>
+
+/**
+ *
+ * maintains a thread safe map of 
+ * string as key and a uint counter as value
+ *
+ * users should inherit from this class
+ *
+**/  
 
 namespace switcher
 {
 
-}
+  class CounterMap
+  {
+  public:
+    CounterMap ();
+
+  protected:
+    uint get_count (const std::string &key);
+    void reset_counter_map ();
+
+  private:
+    std::map<std::string, uint> counters_;
+    std::mutex mutex_;
+ };
+
+}  // end of namespace
+
+#endif // ifndef

@@ -65,10 +65,10 @@ main ()
       manager->create ("SOAPcontrolClient", "soapclient");
       manager->make_signal_subscriber ("signal_subscriber", quiddity_created_removed_cb, manager.get ());
       manager->subscribe_signal ("signal_subscriber","soapclient","on-connection-tried");
-      manager->invoke_va ("soapclient", "set_remote_url_retry", NULL, "http://localhost:38084", NULL);
+      manager->invoke_va ("soapclient", "set_remote_url_retry", nullptr, "http://localhost:38084", nullptr);
       
       manager->create ("SOAPcontrolServer", "soapserver");
-      manager->invoke_va ("soapserver", "set_port", NULL, "38084", NULL);
+      manager->invoke_va ("soapserver", "set_port", nullptr, "38084", nullptr);
 
       //soapclient is waiting 1 sec between retries
       usleep (1100000);
