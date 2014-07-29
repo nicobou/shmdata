@@ -46,7 +46,7 @@ namespace switcher
   }
   
   bool
-  HTTPSDPDec::init_segment () 
+  HTTPSDPDec::init_gpipe () 
   { 
     if (!GstUtils::make_element ("souphttpsrc", &souphttpsrc_)
 	|| !GstUtils::make_element ("sdpdemux", &sdpdemux_))
@@ -137,8 +137,8 @@ namespace switcher
 				       gpointer user_data)   
   {   
     HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
-    Segment *segment = static_cast<Segment *>(user_data);
-    std::unique_ptr<DecodebinToShmdata> decodebin (new DecodebinToShmdata (*segment));
+    GPipe *gpipe = static_cast<GPipe *>(user_data);
+    std::unique_ptr<DecodebinToShmdata> decodebin (new DecodebinToShmdata (*gpipe));
 
     decodebin->invoke (std::bind (gst_bin_add,
 				 GST_BIN (context->bin_),

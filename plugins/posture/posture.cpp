@@ -97,7 +97,7 @@ namespace switcher
   }
 
   bool
-  PostureSrc::init_segment()
+  PostureSrc::init_gpipe()
   {
     init_startable (this);
 

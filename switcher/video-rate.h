@@ -40,7 +40,7 @@ namespace switcher
   private:
     GstElement *video_rate_bin_;
     GstElement *video_rate_enc_;
-    bool init_segment ();
+    bool init_gpipe () final;
   };
 
 }  // end of namespace

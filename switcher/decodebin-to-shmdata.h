@@ -23,18 +23,19 @@
 
 #include <memory>
 #include <map>
+#include <list>
 #include <mutex>
 #include "unique-gst-element.h"
-#include "segment.h"
+#include "gpipe.h"
 
 namespace switcher
 {
-  //this class has been designed for being possessed by a segment
+  //this class has been designed for being possessed by a gpipe
 
   class DecodebinToShmdata
   {
   public:
-    DecodebinToShmdata (Segment &segment);
+    DecodebinToShmdata (GPipe &gpipe);
     ~DecodebinToShmdata ();
     DecodebinToShmdata () = delete;
     DecodebinToShmdata (const DecodebinToShmdata &) = delete;
@@ -57,7 +58,7 @@ namespace switcher
     GstPad *main_pad_;
     std::map<std::string, uint> media_counters_;
     std::mutex media_counter_mutex_;
-    Segment *segment_;
+    GPipe *gpipe_;
     std::list <std::string> shmdata_path_; //for unregistering in the segment
     std::vector<gulong> cb_ids_;
     std::mutex thread_safe_;

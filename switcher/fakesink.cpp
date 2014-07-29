@@ -53,7 +53,7 @@ namespace switcher
   }
   
   bool
-  FakeSink::init_segment ()
+  FakeSink::init_gpipe ()
   {
     if (!GstUtils::make_element ("fakesink", &fakesink_))
       return false;

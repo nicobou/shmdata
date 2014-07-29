@@ -54,7 +54,7 @@ namespace switcher
   {
   }
 
-  bool SyphonSrc::init_segment()
+  bool SyphonSrc::init_gpipe()
   {
     init_startable (this);
 

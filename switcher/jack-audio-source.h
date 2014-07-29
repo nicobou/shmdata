@@ -51,7 +51,7 @@ namespace switcher
    uint num_channels_;
    GParamSpec *client_name_spec_;
    gchar *client_name_;
-   bool init_segment ();
+   bool init_gpipe () final;
    bool make_elements ();
 
    static void set_num_channels (const gint value, void *user_data);

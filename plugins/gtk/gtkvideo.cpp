@@ -42,7 +42,7 @@ namespace switcher
   std::thread GTKVideo::gtk_main_thread_ {};
 
   bool
-  GTKVideo::init_segment ()
+  GTKVideo::init_gpipe ()
   {
     if (!GstUtils::make_element ("bin",&sink_bin_))
       return false;
@@ -121,16 +121,16 @@ namespace switcher
 	  g_debug ("gtkvideosink: GTK main loop detected, using it");
       }
     instances_counter_++;
-    //custom_props_.reset (new CustomPropertyHelper ());
+
     fullscreen_prop_spec_ = 
-      custom_props_->make_boolean_property ("fullscreen", 
+      gtk_custom_props_->make_boolean_property ("fullscreen", 
     					    "Enable/Disable Fullscreen",
     					    (gboolean)FALSE,
     					    (GParamFlags) G_PARAM_READWRITE,
     					    GTKVideo::set_fullscreen,
     					    GTKVideo::get_fullscreen,
     					    this);
-    install_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (gtk_custom_props_->get_gobject (), 
 			       fullscreen_prop_spec_, 
 			       "fullscreen",
 			       "Fullscreen");
@@ -169,14 +169,14 @@ namespace switcher
 			  "Saturation");
 	title_ = g_strdup (get_nick_name ().c_str ());
 	title_prop_spec_ = 
-	  custom_props_->make_string_property ("title", 
+	  gtk_custom_props_->make_string_property ("title", 
 					       "Window Title",
 					       title_,
 					       (GParamFlags) G_PARAM_READWRITE,
 					       GTKVideo::set_title,
 					       GTKVideo::get_title,
 					       this);
-	install_property_by_pspec (custom_props_->get_gobject (), 
+	install_property_by_pspec (gtk_custom_props_->get_gobject (), 
 				   title_prop_spec_, 
 				   "title",
 				   "Window Title");
@@ -210,7 +210,7 @@ namespace switcher
 #endif
     on_error_command_ (new QuiddityCommand ()),
     blank_cursor_ (NULL),
-    custom_props_ (new CustomPropertyHelper ()),
+    gtk_custom_props_ (new CustomPropertyHelper ()),
     fullscreen_prop_spec_ (NULL),
     is_fullscreen_ (FALSE),
     title_prop_spec_ (NULL),
@@ -431,7 +431,7 @@ namespace switcher
      	  }
      	context->is_fullscreen_ = FALSE;
       }
-    context->custom_props_->notify_property_changed (context->fullscreen_prop_spec_);
+    context->gtk_custom_props_->notify_property_changed (context->fullscreen_prop_spec_);
   }
 
   void 
@@ -452,7 +452,7 @@ namespace switcher
       g_free (context->title_);
     context->title_ = g_strdup (value);
     gtk_window_set_title (GTK_WINDOW (context->main_window_), context->title_);
-    context->custom_props_->notify_property_changed (context->title_prop_spec_);
+    context->gtk_custom_props_->notify_property_changed (context->title_prop_spec_);
    }
   
   const gchar *

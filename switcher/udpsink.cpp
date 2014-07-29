@@ -44,7 +44,7 @@ namespace switcher
   {}
 
   bool 
-  UDPSink::init_segment ()
+  UDPSink::init_gpipe ()
   {
     if ( !GstUtils::make_element ("bin", &udpsink_bin_)
 	 || !GstUtils::make_element ("typefind", &typefind_)

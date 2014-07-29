@@ -46,7 +46,7 @@ namespace switcher
   }
 
   bool 
-  GstParseToBinSrc::init_segment ()
+  GstParseToBinSrc::init_gpipe ()
   {
     init_startable (this);
     gst_launch_pipeline_spec_ = 

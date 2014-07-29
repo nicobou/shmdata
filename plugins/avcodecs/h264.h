@@ -40,7 +40,7 @@ namespace switcher
   private:
     GstElement *h264bin_;
     GstElement *h264enc_;
-    bool init_segment ();
+    bool init_gpipe () final;
   };
 
   SWITCHER_DECLARE_PLUGIN(H264);

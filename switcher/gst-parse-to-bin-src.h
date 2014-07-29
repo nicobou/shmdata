@@ -49,7 +49,7 @@ namespace switcher
     gchar *gst_launch_pipeline_;
     bool clean ();
     bool to_shmdata ();
-    bool init_segment ();
+    bool init_gpipe () final;
     static void set_gst_launch_pipeline (const gchar *value, void *user_data);
     static const gchar *get_gst_launch_pipeline (void *user_data);
   };

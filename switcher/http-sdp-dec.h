@@ -50,7 +50,7 @@ namespace switcher
    QuiddityCommand *on_error_command_; //for the pipeline error handler
    std::list<std::unique_ptr<DecodebinToShmdata>> decodebins_;
    void clean_on_error_command ();
-   bool init_segment ();
+   bool init_gpipe () final;
    static void httpsdpdec_pad_added_cb (GstElement* object, 
 					GstPad* pad, 
 					gpointer user_data);

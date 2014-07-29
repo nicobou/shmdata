@@ -36,7 +36,7 @@ namespace switcher
   {}
   
   bool
-  AudioTestSource::init_segment ()
+  AudioTestSource::init_gpipe ()
   {
     init_startable (this);
     return make_audiotestsrc ();

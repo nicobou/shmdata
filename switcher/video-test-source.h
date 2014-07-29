@@ -41,7 +41,7 @@ namespace switcher
     bool make_video_source (GstElement **new_element);
     bool on_start (); 
     bool on_stop (); 
-    bool init_segment ();
+    bool init_gpipe () final;
   };
 
 }  // end of namespace

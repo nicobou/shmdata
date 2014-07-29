@@ -39,7 +39,7 @@ namespace switcher
   {}
   
   bool
-  OscToShmdata::init_segment ()
+  OscToShmdata::init_gpipe ()
   {
     init_startable (this);
     port_spec_ = 

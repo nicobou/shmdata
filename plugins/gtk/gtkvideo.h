@@ -75,7 +75,7 @@ namespace switcher
     QuiddityCommand *on_error_command_; //for the GPipe error handler
     GdkCursor *blank_cursor_;
 
-    CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr gtk_custom_props_;
     GParamSpec *fullscreen_prop_spec_;
     gboolean is_fullscreen_;
     GParamSpec *title_prop_spec_;
@@ -87,7 +87,7 @@ namespace switcher
     std::mutex window_destruction_mutex_;
     std::condition_variable window_destruction_cond_;
 
-    bool init_segment ();
+    bool init_gpipe () final;
     static gboolean create_ui (void *user_data);
     static void realize_cb (GtkWidget *widget, void *user_data);
     static void delete_event_cb (GtkWidget *widget, GdkEvent *event, void *user_data);

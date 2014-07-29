@@ -28,21 +28,26 @@
 #include <memory>
 #include <vector>
 #include "quiddity.h"
+#include "segment.h"
 
 namespace switcher
 {
   class Quiddity;
   class QuiddityCommand;
   class CustomPropertyHelper;
+  class DecodebinToShmdata;
 
-  class GPipe : public Quiddity
+  class GPipe : public Quiddity, public Segment 
     {
+      friend DecodebinToShmdata; 
     public:
       GPipe ();
       virtual ~GPipe ();
       GPipe (const GPipe &) = delete;
       GPipe &operator= (const GPipe &) = delete;
-
+      bool init () final;
+      virtual bool init_gpipe () = 0;
+      
     protected:
       //void init_gpipe (Quiddity &quiddity);//FIXME should called quiddity-manager-impl 
       //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
@@ -71,12 +76,12 @@ namespace switcher
 	gboolean inited;
       } GstBusSource;
 
-      GstElement *pipeline_ {gst_pipeline_new (nullptr)};
+      GstElement *pipeline_ {nullptr};
       gdouble speed_ {1.0};
       GSource *position_tracking_source_ {nullptr};
       GSourceFuncs source_funcs_;
       GSource *source_{nullptr};
-      std::shared_ptr<CustomPropertyHelper> custom_props_;
+      std::shared_ptr<CustomPropertyHelper> gpipe_custom_props_;
       GParamSpec *play_pause_spec_ {nullptr};
       bool play_ {true};
       GParamSpec *seek_spec_ {nullptr};

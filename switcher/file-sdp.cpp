@@ -37,7 +37,7 @@ namespace switcher
   {}
 
   bool
-  FileSDP::init_segment () 
+  FileSDP::init_gpipe () 
   { 
     if (!GstUtils::make_element ("filesrc", &filesrc_)
 	|| !GstUtils::make_element ("sdpdemux", &sdpdemux_))

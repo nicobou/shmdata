@@ -44,7 +44,7 @@ namespace switcher
   {}
   
   bool
-  ShmdataToOsc::init_segment ()
+  ShmdataToOsc::init_gpipe ()
   {
     init_startable (this);
     port_spec_ = 

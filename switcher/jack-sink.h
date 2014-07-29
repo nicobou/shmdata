@@ -46,7 +46,7 @@ namespace switcher
     CustomPropertyHelper::ptr custom_props_; 
     GParamSpec *client_name_spec_;
     gchar *client_name_;
-    bool init_segment ();
+    bool init_gpipe () final;
     bool make_elements ();
     void on_shmdata_disconnect ();
     void on_shmdata_connect (std::string /* shmdata_sochet_path */) ;

@@ -41,7 +41,7 @@ namespace switcher
     bool start (std::string name);
   private:
     GstElement *aravissrc_;
-    bool init_segment ();
+    bool init_gpipe () final;
     static gboolean start_wrapped (gpointer name, gpointer user_data);
   };
 

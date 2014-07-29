@@ -78,7 +78,7 @@ namespace switcher
     static const gchar *get_devices_json (void *user_data);
     void make_device_description (pa_context *pulse_context);
     void make_json_description ();
-    bool init_segment ();
+    bool init_gpipe () final;
     static void pa_context_state_callback(pa_context *c, void *userdata);
     static void get_sink_info_callback(pa_context *c, const pa_sink_info *i, int is_last, void *userdata);
     static void on_pa_event_callback(pa_context *c, 

@@ -55,7 +55,7 @@ namespace switcher
   {}
 
   bool
-  PulseSrc::init_segment ()
+  PulseSrc::init_gpipe ()
   {
     if (!make_elements ())
       return false;

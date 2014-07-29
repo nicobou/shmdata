@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_SHMDATA_TO_OSC_H__
 #define __SWITCHER_SHMDATA_TO_OSC_H__
 
-#include "switcher/segment.h" //only for shmdata management
+#include "switcher/gpipe.h" //only for shmdata management
 #include "switcher/custom-property-helper.h"
 #include "switcher/startable-quiddity.h"
 #include <lo/lo.h>
@@ -31,7 +31,7 @@
 
 namespace switcher
 {
-  class ShmdataToOsc : public Segment, public StartableQuiddity
+  class ShmdataToOsc : public GPipe, public StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToOsc);
@@ -39,7 +39,7 @@ namespace switcher
     ~ShmdataToOsc ();
     ShmdataToOsc (const ShmdataToOsc &) = delete;
     ShmdataToOsc &operator=  (const ShmdataToOsc &) = delete;
-    bool init_segment ();
+    bool init_gpipe () final;
 
   private:
     CustomPropertyHelper::ptr custom_props_; 

@@ -90,7 +90,7 @@ namespace switcher
     }
 
   bool 
-  RtpSession::init_segment ()
+  RtpSession::init_gpipe ()
   {
     if (!GstUtils::make_element ("gstrtpbin", &rtpsession_))
       return false;

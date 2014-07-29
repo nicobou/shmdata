@@ -49,7 +49,7 @@ namespace switcher
   {
     
     friend class StartableQuiddity;
-    friend class GPipe;
+    friend class Segment;
 
   public:
     typedef std::shared_ptr<Quiddity> ptr;

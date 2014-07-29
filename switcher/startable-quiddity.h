@@ -50,7 +50,7 @@ namespace switcher
 
     bool started_;
     GParamSpec *started_prop_;//FIXME should be static
-    CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr startable_custom_props_;
  };
 
 }  // end of namespace

@@ -41,7 +41,7 @@ namespace switcher
   }
   
   bool
-  VideoTestSource::init_segment ()
+  VideoTestSource::init_gpipe ()
   {
     bool made = make_video_source (&videotestsrc_);    
     if (!made)

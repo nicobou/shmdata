@@ -55,7 +55,7 @@ namespace switcher
   
   
   bool
-  PortMidiSource::init_segment ()
+  PortMidiSource::init_gpipe ()
   {
 
     if (input_devices_enum_ [0].value_name == NULL)

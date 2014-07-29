@@ -22,12 +22,12 @@
 #define __SWITCHER_BASE_SOURCE_H__
 
 #include <memory>
-#include "segment.h"
+#include "gpipe.h"
 
 namespace switcher
 {
 
-  class BaseSource : public Segment
+  class BaseSource : public GPipe
   {
   public:
     typedef std::shared_ptr<BaseSource> ptr;

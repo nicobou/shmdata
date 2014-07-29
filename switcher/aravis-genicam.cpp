@@ -35,7 +35,7 @@ namespace switcher
   {}
 
   bool
-  AravisGenicam::init_segment ()
+  AravisGenicam::init_gpipe ()
   {
     if (!GstUtils::make_element ("aravissrc", &aravissrc_))
       {

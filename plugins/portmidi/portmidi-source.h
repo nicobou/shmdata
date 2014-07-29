@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_PORTMIDI_SOURCE_H__
 #define __SWITCHER_PORTMIDI_SOURCE_H__
 
-#include "switcher/segment.h" //FIXME only for shmdata management, should be "quiddity" only
+#include "switcher/gpipe.h" //FIXME only for shmdata management, should be "quiddity" only
 #include "portmidi-devices.h"
 #include "switcher/startable-quiddity.h"
 #include "switcher/custom-property-helper.h"
@@ -28,7 +28,7 @@
 namespace switcher
 {
   
-  class PortMidiSource : public Segment, public StartableQuiddity, public PortMidi
+  class PortMidiSource : public GPipe, public StartableQuiddity, public PortMidi
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSource);
@@ -36,7 +36,7 @@ namespace switcher
     ~PortMidiSource ();
     PortMidiSource (const PortMidiSource &) = delete;
     PortMidiSource &operator= (const PortMidiSource &) = delete;
-    bool init_segment ();
+    bool init_gpipe () final;
 
     bool start ();
     bool stop ();

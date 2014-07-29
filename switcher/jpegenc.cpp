@@ -36,7 +36,7 @@ namespace switcher
   {}
  
   bool
-  JpegEnc::init_segment ()
+  JpegEnc::init_gpipe ()
   {
     if (!GstUtils::make_element ("bin", &jpegencbin_)
 	|| !GstUtils::make_element ("jpegenc", &jpegencenc_))

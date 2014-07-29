@@ -34,10 +34,30 @@ namespace switcher
 {
 
   GPipe::GPipe () :
+    pipeline_ (gst_pipeline_new (nullptr)),
     source_funcs_ (),
-    custom_props_ (new CustomPropertyHelper ())
+    gpipe_custom_props_ (new CustomPropertyHelper ())
   {
     make_bin ();
+    init_nico_segment (this);
+  }
+
+  GPipe::~GPipe ()
+  {
+    if (!commands_.empty ())
+      for (auto &it : commands_)
+	if (!g_source_is_destroyed (it))
+	  g_source_destroy (it);
+    if (position_tracking_source_ != NULL)
+       g_source_destroy (position_tracking_source_);
+    GstUtils::clean_element (pipeline_);
+    if (!g_source_is_destroyed (source_))
+      g_source_destroy (source_);
+  }
+
+  bool
+  GPipe::init ()
+  {
     source_funcs_.prepare = source_prepare;
     source_funcs_.check = source_check;
     source_funcs_.dispatch = source_dispatch;
@@ -46,8 +66,11 @@ namespace switcher
     ((GstBusSource*)source_)->bus = gst_pipeline_get_bus (GST_PIPELINE (pipeline_));
     g_source_set_callback(source_, (GSourceFunc)bus_called, NULL, NULL);
     if (NULL == get_g_main_context ())
-      g_warning ("%s: g_main_context is NULL",
+      {
+	g_warning ("%s: g_main_context is NULL",
      		 __FUNCTION__);
+	return false;
+      }
     g_source_attach(source_, get_g_main_context ());
     gst_bus_set_sync_handler (((GstBusSource*)source_)->bus, bus_sync_handler, this); 
     g_source_unref (source_);
@@ -55,7 +78,7 @@ namespace switcher
     gst_element_set_state (pipeline_, GST_STATE_PLAYING);
     //GstUtils::wait_state_changed (pipeline_);
     play_pause_spec_ = 
-      custom_props_->make_boolean_property ("play", 
+      gpipe_custom_props_->make_boolean_property ("play", 
 					    "play",
 					    (gboolean)TRUE,
 					    (GParamFlags) G_PARAM_READWRITE,
@@ -63,7 +86,7 @@ namespace switcher
 					    GPipe::get_play,
 					    this);
     seek_spec_ = 
-      custom_props_->make_double_property ("seek", 
+      gpipe_custom_props_->make_double_property ("seek", 
 					   "seek (in percent)",
 					   0.0,
 					   1.0,
@@ -72,12 +95,13 @@ namespace switcher
 					   GPipe::set_seek,
 					   GPipe::get_seek,
 					   this);
+    return init_gpipe ();
   }
 
   void
   GPipe::install_play_pause ()
   {
-    install_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (gpipe_custom_props_->get_gobject (), 
 				      play_pause_spec_, 
 				      "play",
 				      "Play");
@@ -86,7 +110,7 @@ namespace switcher
   void 
   GPipe::install_seek ()
   {
-    install_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (gpipe_custom_props_->get_gobject (), 
 				      seek_spec_, 
 				      "seek",
 				      "Seek");
@@ -109,20 +133,6 @@ namespace switcher
 			   this);
   }
   
-  GPipe::~GPipe ()
-  {
-    if (!commands_.empty ())
-      for (auto &it : commands_)
-	if (!g_source_is_destroyed (it))
-	  g_source_destroy (it);
-    if (position_tracking_source_ != NULL)
-       g_source_destroy (position_tracking_source_);
-    GstUtils::clean_element (pipeline_);
-    if (!g_source_is_destroyed (source_))
-      g_source_destroy (source_);
-  }
-
-
   void 
   GPipe::play (gboolean play)
   {
@@ -142,7 +152,7 @@ namespace switcher
     else
       gst_element_set_state (pipeline_, 
 			     GST_STATE_PAUSED);
-    custom_props_->notify_property_changed (play_pause_spec_);
+    gpipe_custom_props_->notify_property_changed (play_pause_spec_);
   }
 
   void 
@@ -175,7 +185,7 @@ namespace switcher
 			    GST_SEEK_TYPE_NONE,  
 			    GST_CLOCK_TIME_NONE);  
 
-    custom_props_->notify_property_changed (seek_spec_);
+    gpipe_custom_props_->notify_property_changed (seek_spec_);
     if (!ret)
       g_debug ("seek not handled\n");
     return true;

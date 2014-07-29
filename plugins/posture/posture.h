@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_POSTURE_H__
 #define __SWITCHER_POSTURE_H__
 
-#include "switcher/segment.h"
+#include "switcher/gpipe.h"
 #include "switcher/startable-quiddity.h"
 #include "switcher/custom-property-helper.h"
 
@@ -32,7 +32,7 @@
 
 namespace switcher
 {
-  class PostureSrc : public Segment, public StartableQuiddity
+  class PostureSrc : public GPipe, public StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureSrc);
@@ -73,7 +73,7 @@ namespace switcher
     int rgb_width_ {0}, rgb_height_ {0};
     int ir_width_ {0}, ir_height_ {0};
 
-    bool init_segment ();
+    bool init_gpipe () final;
 
     static const gchar* get_calibration_path(void* user_data);
     static void set_calibration_path(const gchar* name, void* user_data);

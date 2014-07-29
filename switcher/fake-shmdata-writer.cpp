@@ -38,7 +38,7 @@ namespace switcher
   {}
 
   bool
-  FakeShmdataWriter::init_segment ()
+  FakeShmdataWriter::init_gpipe ()
   {
     init_startable (this);
 

@@ -57,7 +57,7 @@ namespace switcher
     CustomPropertyHelper::ptr props_;
     GParamSpec *byte_rate_spec_;
     GParamSpec *caps_spec_;
-    bool init_segment ();
+    bool init_gpipe () final;
   };
 
 }  // end of namespace

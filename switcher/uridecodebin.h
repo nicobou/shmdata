@@ -60,7 +60,7 @@ namespace switcher
    GParamSpec *uri_spec_;
    gchar *uri_;
 
-   bool init_segment ();
+   bool init_gpipe () final;
    static gboolean get_loop (void *user_data);
    static void set_loop (gboolean mute, void *user_data);
    static void set_uri (const gchar *value, void *user_data);

@@ -35,10 +35,10 @@ namespace switcher
     AudioSource (const AudioSource &) = delete;
     AudioSource &operator= (const AudioSource &) = delete;
   private:
-    GstElement *rawaudio_;
-    GstElement *audio_tee_;
-    void make_audio_elements ();
+    GstElement *rawaudio_ {nullptr};
+    GstElement *audio_tee_ {nullptr};
     std::string shmdata_path_;
+    void make_audio_elements ();
 
   protected:
     void set_raw_audio_element (GstElement *elt);

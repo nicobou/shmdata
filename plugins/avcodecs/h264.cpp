@@ -34,7 +34,7 @@ namespace switcher
   {}
 
   bool
-  H264::init_segment ()
+  H264::init_gpipe ()
   {
     if (!GstUtils::make_element ("bin", &h264bin_)
 	|| !GstUtils::make_element ("x264enc", &h264enc_))

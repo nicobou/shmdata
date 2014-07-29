@@ -55,7 +55,7 @@ namespace switcher
     static void on_client_added (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data);
     static void on_client_removed (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data);
     static void add_elements_to_bin (ShmdataReader *caller, void *udpbin_instance);
-    bool init_segment ();
+    bool init_gpipe () final;
   };
 
 }  // end of namespace

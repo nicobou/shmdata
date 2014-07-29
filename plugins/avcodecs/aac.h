@@ -39,7 +39,7 @@ namespace switcher
   private:
     GstElement *aacbin_;
     GstElement *aacenc_;
-    bool init_segment ();
+    bool init_gpipe () final;
   };
 
   SWITCHER_DECLARE_PLUGIN(AAC);

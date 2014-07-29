@@ -51,7 +51,7 @@ namespace switcher
   }
 
   bool
-  Xvimagesink::init_segment ()
+  Xvimagesink::init_gpipe ()
   {
 
     if (!GstUtils::make_element ("bin",&sink_bin_))

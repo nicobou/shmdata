@@ -68,7 +68,7 @@ namespace switcher
   {}
 
   bool
-  V4L2Src::init_segment ()
+  V4L2Src::init_gpipe ()
   {
     if (!make_elements ())
       return false;

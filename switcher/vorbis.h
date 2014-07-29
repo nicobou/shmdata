@@ -40,7 +40,7 @@ namespace switcher
   private:
     GstElement *vorbisbin_;
     GstElement *vorbisenc_;
-    bool init_segment ();
+    bool init_gpipe () final;
   };
 
 }  // end of namespace

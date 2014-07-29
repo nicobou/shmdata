@@ -43,7 +43,7 @@ namespace switcher
     GstElement *ffmpegcolorspace_;
     GstElement *xvimagesink_;
     QuiddityCommand *on_error_command_; //for the pipeline error handler
-    bool init_segment ();
+    bool init_gpipe () final;
   };
 
 }  // end of namespace

@@ -22,12 +22,13 @@
 #define __SWITCHER_SEGMENT_H__
 
 //#include "quiddity.h"
-#include "gpipe.h"
+//#include "gpipe.h"
 #include "shmdata-any-writer.h"
 #include "shmdata-writer.h"
 #include "shmdata-reader.h"
 #include "counter-map.h"
 #include "json-builder.h"
+#include "custom-property-helper.h"
 #include <vector>
 #include <unordered_map>
 
@@ -35,20 +36,19 @@
 
 namespace switcher
 {
-  class DecodebinToShmdata;
+  class Quiddity;
 
-  class Segment : public GPipe, public CounterMap 
+  class Segment : public CounterMap 
   /*inherit from CounterMap for sharing counters between multiple DecodebinToShmdata*/
   {
-    friend DecodebinToShmdata; //in order to register shmdata
   public:
     typedef std::shared_ptr<Segment> ptr;
     Segment ();
     virtual ~Segment ();
     Segment (const Segment &) = delete;
     Segment &operator= (const Segment&) = delete;
-    virtual bool init_segment () = 0;
-    bool init () final;
+
+    bool init_nico_segment (Quiddity *quid);
 
   protected:
     bool register_shmdata_writer (ShmdataWriter::ptr writer);
@@ -60,19 +60,21 @@ namespace switcher
     bool clear_shmdatas ();
 
   private:
+    Quiddity *quid_ {nullptr};
     std::unordered_map <std::string, ShmdataAnyWriter::ptr> shmdata_any_writers_;
     std::unordered_map <std::string, ShmdataWriter::ptr> shmdata_writers_;
     std::unordered_map <std::string, ShmdataReader::ptr> shmdata_readers_;
     JSONBuilder::ptr shmdata_writers_description_;
     JSONBuilder::ptr shmdata_readers_description_;
     //shmdatas as param
-    static GParamSpec *json_writers_description_;
-    static GParamSpec *json_readers_description_;
+    CustomPropertyHelper::ptr segment_custom_props_;
+    GParamSpec *json_writers_description_;
+    GParamSpec *json_readers_description_;
 
     void update_shmdata_writers_description ();
     void update_shmdata_readers_description ();
-    static bool get_shmdata_writers_by_gvalue (GValue *value, void *user_data);
-    static bool get_shmdata_readers_by_gvalue (GValue *value, void *user_data);
+    static const gchar *get_shmdata_writers_string (void *user_data);
+    static const gchar *get_shmdata_readers_string (void *user_data);
   };
 }  // end of namespace
 

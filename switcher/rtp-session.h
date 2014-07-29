@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_RTPSESSION_H__
 #define __SWITCHER_RTPSESSION_H__
 
-#include "segment.h"
+#include "gpipe.h"
 #include "quiddity-manager.h"
 #include "rtp-destination.h"
 #include "custom-property-helper.h"
@@ -33,7 +33,7 @@
  
 namespace switcher
 {
-  class RtpSession : public Segment
+  class RtpSession : public GPipe
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(RtpSession);
@@ -94,7 +94,7 @@ namespace switcher
     //destinations
     std::map<std::string, RtpDestination::ptr> destinations_;
 
-    bool init_segment ();
+    bool init_gpipe () final;
 
     void on_rtp_caps (std::string shmdata_path, std::string caps);
 

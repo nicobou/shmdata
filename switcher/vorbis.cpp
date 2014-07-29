@@ -35,7 +35,7 @@ namespace switcher
   {}
 
   bool
-  Vorbis::init_segment ()
+  Vorbis::init_gpipe ()
   {
     GstUtils::make_element ("bin",&vorbisbin_);
     GstUtils::make_element ("vorbisenc", &vorbisenc_);

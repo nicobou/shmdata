@@ -37,7 +37,7 @@ namespace switcher
   {}
 
   bool
-  Deinterleave::init_segment () 
+  Deinterleave::init_gpipe () 
   { 
     if (!GstUtils::make_element ("deinterleave",&deinterleave_))
       return false;

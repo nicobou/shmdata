@@ -21,14 +21,14 @@
 #ifndef __SWITCHER_BASE_SINK_H__
 #define __SWITCHER_BASE_SINK_H__
 
-#include "segment.h"
+#include "gpipe.h"
 #include "shmdata-reader.h"
 #include <memory>
 
 namespace switcher
 {
 
-  class BaseSink : public Segment
+  class BaseSink : public GPipe
   {
   public:
     typedef std::shared_ptr<BaseSink> ptr;

@@ -37,7 +37,7 @@ namespace switcher
   {}
   
   bool
-  HTTPSDP::init_segment () 
+  HTTPSDP::init_gpipe () 
   { 
     if (!GstUtils::make_element ("souphttpsrc", &souphttpsrc_)
 	|| !GstUtils::make_element ("sdpdemux", &sdpdemux_))

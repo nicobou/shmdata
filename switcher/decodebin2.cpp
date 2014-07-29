@@ -34,12 +34,12 @@ namespace switcher
 				       "Nicolas Bouillot");
   
   Decodebin2::Decodebin2 () :
-    decodebin_ (new DecodebinToShmdata (*(static_cast <Segment *> (this)))),
+    decodebin_ (new DecodebinToShmdata (*(static_cast <GPipe *> (this)))),
     media_counters_ ()
   {}
 
   bool
-  Decodebin2::init_segment () 
+  Decodebin2::init_gpipe () 
   { 
     std::string str (__FUNCTION__); g_print ("begin %s\n", str.c_str ()); On_scope_exit {g_print ("end %s\n", str.c_str ());};
     decodebin_->invoke (std::bind(&BaseSink::set_sink_element,

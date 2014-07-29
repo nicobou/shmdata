@@ -35,7 +35,7 @@ namespace switcher
   {}
 
   bool
-  VideoRate::init_segment ()
+  VideoRate::init_gpipe ()
   {
     if (!GstUtils::make_element ("bin",&video_rate_bin_)
      	|| !GstUtils::make_element ("videorate",&video_rate_enc_))

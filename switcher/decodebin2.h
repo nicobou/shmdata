@@ -40,7 +40,7 @@ namespace switcher
   private: 
    std::unique_ptr<DecodebinToShmdata> decodebin_;
    std::map<std::string, int> media_counters_;
-   bool init_segment ();
+   bool init_gpipe () final;
    static void make_decodebin_active (ShmdataReader *caller, void *decodebin2_instance);
   };
 

@@ -43,7 +43,7 @@ namespace switcher
   {}
 
   bool
-  JackAudioSource::init_segment ()
+  JackAudioSource::init_gpipe ()
   {
     if (false == make_elements ())
       return false;

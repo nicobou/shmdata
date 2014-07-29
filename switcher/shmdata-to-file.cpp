@@ -45,7 +45,7 @@ namespace switcher
   }
 
   bool 
-  ShmdataToFile::init_segment ()
+  ShmdataToFile::init_gpipe ()
   {
     install_method ("Add Shmdata",
 		    "add_shmdata", 

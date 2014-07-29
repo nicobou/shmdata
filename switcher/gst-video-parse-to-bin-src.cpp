@@ -45,7 +45,7 @@ namespace switcher
   }
 
   bool 
-  GstVideoParseToBinSrc::init_segment ()
+  GstVideoParseToBinSrc::init_gpipe ()
   {
     gst_launch_pipeline_spec_ = 
       custom_props_->make_string_property ("gst-pipeline", 

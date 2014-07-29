@@ -33,7 +33,7 @@ namespace switcher
   {}
 
   bool
-  AAC::init_segment ()
+  AAC::init_gpipe ()
   {
     GstUtils::make_element ("bin", &aacbin_);
     //g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);

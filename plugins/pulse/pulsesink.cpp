@@ -55,7 +55,7 @@ namespace switcher
   }
 
   bool
-  PulseSink::init_segment ()
+  PulseSink::init_gpipe ()
   {
     //g_print ("%s\n", __PRETTY_FUNCTION__); 
     if (!make_elements ())

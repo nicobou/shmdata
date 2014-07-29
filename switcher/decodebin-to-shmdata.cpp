@@ -23,13 +23,13 @@
 
 namespace switcher
 {
-  DecodebinToShmdata::DecodebinToShmdata (Segment &segment) :
+  DecodebinToShmdata::DecodebinToShmdata (GPipe &gpipe) :
     decodebin_ ("decodebin2"),
     discard_next_uncomplete_buffer_ (false),
     main_pad_ (NULL),
     media_counters_ (),
     media_counter_mutex_ (),
-    segment_ (&segment),
+    gpipe_ (&gpipe),
     shmdata_path_ (),
     cb_ids_ (),
     thread_safe_ ()
@@ -68,7 +68,7 @@ namespace switcher
     // 					std::placeholders::_1,
     // 					it));
     for (auto &it: shmdata_path_)
-      segment_->unregister_shmdata_any_writer (it);
+      gpipe_->unregister_shmdata_any_writer (it);
   }
 
   void 
@@ -240,21 +240,21 @@ namespace switcher
       On_scope_exit { g_strfreev(padname_splitted);};
       if (NULL != padname_splitted[0])
 	media_name = padname_splitted[0];
-      media_name.append ("-" + std::to_string (segment_->get_count (media_name)));
+      media_name.append ("-" + std::to_string (gpipe_->get_count (media_name)));
 
       g_debug ("decodebin-to-shmdata: new media %s \n", media_name.c_str ());
     }
 
     //creating a shmdata
     ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
-    std::string shm_any_name = segment_->make_file_name (media_name);
+    std::string shm_any_name = gpipe_->make_file_name (media_name);
     shm_any->set_path (shm_any_name.c_str());
     //shm_any->start ();
     cb_ids_.push_back (g_signal_connect (fakesink, "handoff", (GCallback) on_handoff_cb, shm_any.get ()));
     g_debug ("%s created a new shmdata writer (%s)", 
-	     segment_->get_nick_name ().c_str(), 
+	     gpipe_->get_nick_name ().c_str(), 
 	     shm_any_name.c_str ());
-    segment_->register_shmdata_any_writer (shm_any);
+    gpipe_->register_shmdata_any_writer (shm_any);
   }
 
   gboolean
@@ -265,7 +265,7 @@ namespace switcher
 
     if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) { 
       if (context->main_pad_ == pad)
-	GstUtils::g_idle_add_full_with_context (context->segment_->get_g_main_context (),
+	GstUtils::g_idle_add_full_with_context (context->gpipe_->get_g_main_context (),
 						G_PRIORITY_DEFAULT_IDLE,
 						(GSourceFunc) DecodebinToShmdata::rewind,   
 						(gpointer) context,
@@ -320,7 +320,7 @@ namespace switcher
     GstQuery *query;
     gboolean res;
     query = gst_query_new_segment (GST_FORMAT_TIME);
-    res = gst_element_query (context->segment_->get_pipeline (), query);
+    res = gst_element_query (context->gpipe_->get_pipeline (), query);
     gdouble rate = -2.0;
     gint64 start_value = -2.0;
     gint64 stop_value = -2.0;

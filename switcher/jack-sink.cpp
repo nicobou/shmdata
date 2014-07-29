@@ -35,7 +35,7 @@ namespace switcher
 				       "Nicolas Bouillot");
   
   bool
-  JackSink::init_segment ()
+  JackSink::init_gpipe ()
   {
     if (false == make_elements ())
       return false;
