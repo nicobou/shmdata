@@ -170,7 +170,8 @@ namespace switcher
     // This is the callback for when new clouds are received
     reader_->set_callback([=](void* data, int size, unsigned long long timestamp, const char* type, void* user_data)
     {
-      lock_guard<mutex> lock(mutex_);
+      if (!mutex_.try_lock())
+        return;
 
       if (string(type) == string(POINTCLOUD_TYPE_BASE))
         merger_->setInputCloud(index, vector<char>((char*)data, (char*)data + size), false, timestamp);
@@ -194,6 +195,8 @@ namespace switcher
       }
 
       cloud_writer_->push_data_auto_clock((void*)merged_cloud_.data(), merged_cloud_.size(), NULL, NULL);
+
+      mutex_.unlock();
     }, nullptr);
 
     reader_->start ();
