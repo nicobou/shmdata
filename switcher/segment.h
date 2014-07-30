@@ -65,7 +65,11 @@ namespace switcher
 
     //JSON
     JSONBuilder::ptr shmdata_writers_description_;
+    std::mutex writers_mutex_ {}; //protecting from parallel registers
+    std::string writers_string_ {};
     JSONBuilder::ptr shmdata_readers_description_;
+    std::mutex readers_mutex_ {}; //protecting from parallel registers
+    std::string readers_string_ {};
     CustomPropertyHelper::ptr segment_custom_props_;
     GParamSpec *json_writers_description_;
     GParamSpec *json_readers_description_;

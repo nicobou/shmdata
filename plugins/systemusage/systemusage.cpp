@@ -59,7 +59,6 @@ namespace switcher
   bool
   SystemUsage::init ()
   {
-    g_print ("debut %s %d\n", __FUNCTION__, __LINE__);
     period_prop_ = 
       custom_props_->make_double_property ("period", //name 
 					   "Update period", //description
@@ -75,50 +74,39 @@ namespace switcher
 			       "period",
 			       "Update period"); //long name
     
-    g_print ("%s %d\n", __FUNCTION__, __LINE__);
     // Initialize the properties tree
     tree_ = make_tree ();
     
-    g_print ("%s %d\n", __FUNCTION__, __LINE__);
     // Launch the polling thread
     running_ = true;
     pollStateThread_ = make_shared<thread>([&] () {
 	pollState();
       });
     
-    g_print ("%s %d\n", __FUNCTION__, __LINE__);
     // Trying to reach the /proc files
     ifstream file;
     file.open(PROCSTATFILE);
     if (!file.is_open())
       return false;
 
-    g_print ("%s %d\n", __FUNCTION__, __LINE__);
     for (string line; getline(file, line);)
     {
       string substr = line.substr(0, 3);
       if (substr == "cpu")
         cpuNbr_++;
     }
-    g_print ("%s %d\n", __FUNCTION__, __LINE__);
     cpuNbr_ = cpuNbr_ == 1 ? 1 : cpuNbr_ - 1;
     file.close();
 
-    g_print ("%s %d\n", __FUNCTION__, __LINE__);
     file.open(PROCMEMINFOFILE);
-    g_print ("%s %d\n", __FUNCTION__, __LINE__);
     if (!file.is_open())
       return false;
     file.close();
-    g_print ("%s %d\n", __FUNCTION__, __LINE__);
 
     file.open(PROCNETDEVFILE);
     if (!file.is_open())
         return false;
-    g_print ("%s %d\n", __FUNCTION__, __LINE__);
     file.close();
-
-    g_print ("fin %s %d\n", __FUNCTION__, __LINE__);
     return true;
   }
   

@@ -20,6 +20,7 @@
 #include "segment.h"
 #include "gst-utils.h"
 #include "quiddity.h"
+#include "scope-exit.h"
 
 namespace switcher
 {
@@ -84,6 +85,8 @@ namespace switcher
   bool 
   Segment::register_shmdata (ShmdataAnyWriter::ptr writer)
   {
+    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
+    std::unique_lock<std::mutex> lock (writers_mutex_);
     std::string name = writer->get_path ();
     if (name.empty () || 0 == name.compare (""))
       {
@@ -102,9 +105,9 @@ namespace switcher
       update_shmdata_writers_description ();
       segment_custom_props_->notify_property_changed (json_writers_description_);
       quid_->signal_emit ("on-new-shmdata-writer", 
-			  quid_->get_nick_name ().c_str (), 
-			  writer->get_path ().c_str (),
-			  (JSONBuilder::get_string (writer->get_json_root_node (), true)).c_str ());
+      			  quid_->get_nick_name ().c_str (), 
+      			  writer->get_path ().c_str (),
+      			  (JSONBuilder::get_string (writer->get_json_root_node (), true)).c_str ());
     }
     return true;
   }
@@ -112,6 +115,8 @@ namespace switcher
   bool 
   Segment::register_shmdata (ShmdataWriter::ptr writer)
   {
+    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
+    std::unique_lock<std::mutex> lock (writers_mutex_);
     std::string name = writer->get_path ();
     if (name.empty () || 0 == name.compare (""))
       {
@@ -140,6 +145,8 @@ namespace switcher
   
   bool Segment::register_shmdata (ShmdataReader::ptr reader)
   {
+    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
+    std::unique_lock<std::mutex> lock (readers_mutex_);
     std::string name = reader->get_path ();
     if (name.empty () || 0 == name.compare (""))
       {
@@ -167,6 +174,8 @@ namespace switcher
 
   bool Segment::register_shmdata (ShmdataAnyReader::ptr reader)
   {
+    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
+    std::unique_lock<std::mutex> lock (readers_mutex_);
     std::string name = reader->get_path ();
     if (name.empty () || 0 == name.compare (""))
       {
@@ -185,15 +194,18 @@ namespace switcher
       update_shmdata_readers_description ();
       segment_custom_props_->notify_property_changed (json_writers_description_);
       quid_->signal_emit ("on-new-shmdata-reader", 
-			  quid_->get_nick_name ().c_str (), 
-			  reader->get_path ().c_str (),
-			  JSONBuilder::get_string (reader->get_json_root_node (), true).c_str ());
+      			  quid_->get_nick_name ().c_str (), 
+      			  reader->get_path ().c_str (),
+      			  JSONBuilder::get_string (reader->get_json_root_node (), true).c_str ());
     }
     return true;
   }
 
   bool Segment::unregister_shmdata (std::string shmdata_path)
   {
+    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
+    std::unique_lock<std::mutex> lock_w (writers_mutex_);
+    std::unique_lock<std::mutex> lock_r (readers_mutex_);
     bool update_writer = false;
     bool update_reader = false;
 
@@ -221,35 +233,39 @@ namespace switcher
 	segment_custom_props_->notify_property_changed (json_readers_description_);
       }
     
-    {//any writer
-      auto it = shmdata_any_writers_.find (shmdata_path);
-      if (shmdata_any_writers_.end () != it)
-	{
-	  shmdata_any_writers_.erase (it);
-	  update_writer = true;
-	}
-    }
-
-    {//writer
-      auto it = shmdata_writers_.find (shmdata_path);
-      if (shmdata_writers_.end () != it)
-	{
-	  shmdata_writers_.erase (it);
-	  update_writer = true;
-	}
-    }
-
-    if (update_writer)
-      {
-	update_shmdata_writers_description ();
-	segment_custom_props_->notify_property_changed (json_writers_description_);
+      {//any writer
+	auto it = shmdata_any_writers_.find (shmdata_path);
+	if (shmdata_any_writers_.end () != it)
+	  {
+	    shmdata_any_writers_.erase (it);
+	    update_writer = true;
+	  }
       }
-
+      
+      {//writer
+	auto it = shmdata_writers_.find (shmdata_path);
+	if (shmdata_writers_.end () != it)
+	  {
+	    shmdata_writers_.erase (it);
+	    update_writer = true;
+	  }
+      }
+      
+      if (update_writer)
+	{
+	  update_shmdata_writers_description ();
+	  segment_custom_props_->notify_property_changed (json_writers_description_);
+	}
+    
     return update_reader || update_writer;
   }
 
   bool Segment::clear_shmdatas ()
   {
+    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
+    std::unique_lock<std::mutex> lock_w (writers_mutex_);
+    std::unique_lock<std::mutex> lock_r (readers_mutex_);
+    
     bool update_writer_description = false;
     if (!shmdata_writers_.empty ())
       {
@@ -295,20 +311,23 @@ namespace switcher
   const gchar *
   Segment::get_shmdata_writers_string (void *user_data)
   {
+    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
     Segment *context = static_cast<Segment *>(user_data);
-    return context->shmdata_writers_description_->get_string (true).c_str ();
+    return context->writers_string_.c_str ();
   }
 
   const gchar *
   Segment::get_shmdata_readers_string (void *user_data)
   {
+    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
     Segment *context = static_cast<Segment *>(user_data);
-    return context->shmdata_readers_description_->get_string (true).c_str ();
+    return context->readers_string_.c_str ();
   }
 
   void
   Segment::update_shmdata_writers_description ()
   {
+    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
     shmdata_writers_description_->reset();
     shmdata_writers_description_->begin_object ();
     shmdata_writers_description_->set_member_name ("shmdata_writers");
@@ -322,11 +341,15 @@ namespace switcher
     
     shmdata_writers_description_->end_array ();
     shmdata_writers_description_->end_object ();
+
+    writers_string_ = shmdata_writers_description_->get_string (true);
   }
 
   void
   Segment::update_shmdata_readers_description ()
   {
+    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
+
     shmdata_readers_description_->reset();
     shmdata_readers_description_->begin_object ();
     shmdata_readers_description_->set_member_name ("shmdata_readers");
@@ -340,6 +363,8 @@ namespace switcher
 
     shmdata_readers_description_->end_array ();
     shmdata_readers_description_->end_object ();
+
+    readers_string_ = shmdata_readers_description_->get_string (true);
   }
 
 }
