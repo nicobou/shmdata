@@ -23,15 +23,14 @@
 
 #include <memory>
 #include <string>
-#include <mutex>
-#include <list>
 #include <shmdata/base-writer.h>
 #include "json-builder.h"
+#include "on-caps.h"
 
 namespace switcher
 {
 
-  class ShmdataWriter
+  class ShmdataWriter : public OnCaps
   {
   public:
     typedef std::shared_ptr<ShmdataWriter> ptr;
@@ -49,22 +48,17 @@ namespace switcher
     void plug (GstElement *bin, GstElement *source_element,GstCaps *caps);
     void plug (GstElement *bin, GstPad *source_pad);
 
-    void set_on_caps (CapsCallBack callback);
-    std::string get_caps ();
     //get json doc:
     JSONBuilder::Node get_json_root_node ();
 
   private:
     std::string path_ {};
-    std::string caps_ {};
     shmdata_base_writer_t *writer_ {shmdata_base_writer_init ()};
     GstElement *bin_  {nullptr};
     GstElement *tee_ {nullptr};
     GstElement *queue_ {nullptr};
     GstElement *fakesink_ {nullptr};
     gulong handoff_handler_ {0};
-    std::mutex caps_mutex_ {};
-    std::list <CapsCallBack> on_caps_callback_ {};
     JSONBuilder::ptr json_description_ {new JSONBuilder()};
 
     void make_json_description ();

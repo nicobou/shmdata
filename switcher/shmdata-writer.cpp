@@ -19,6 +19,7 @@
 
 #include "shmdata-writer.h"
 #include "gst-utils.h"
+#include "scope-exit.h"
 
 namespace switcher
 {
@@ -168,38 +169,23 @@ namespace switcher
 				gpointer user_data)
   {
     ShmdataWriter *context = static_cast <ShmdataWriter *> (user_data);
-
-    std::unique_lock<std::mutex> lock (context->caps_mutex_);
+   
     GstCaps *caps = gst_pad_get_negotiated_caps (pad);
     if (nullptr == caps)
       return;
+    On_scope_exit {gst_caps_unref (caps);};
+
     gchar *string_caps = gst_caps_to_string (caps);
-    context->caps_ = string_caps;
-    for (auto &it : context->on_caps_callback_)
-      it (context->caps_);
-    g_free (string_caps);
-    gst_caps_unref (caps);
+    On_scope_exit { if (nullptr != string_caps) g_free (string_caps);};
+    if (!context->set_negociated_caps (std::string (string_caps)))
+      return;
+    
     if (context->handoff_handler_ > 0)
       g_signal_handler_disconnect (G_OBJECT (object), context->handoff_handler_);
     g_object_set (G_OBJECT (context->fakesink_), 
     		  "signal-handoffs", 
 		  FALSE,
     		  nullptr);
-  }
-
-  std::string
-  ShmdataWriter::get_caps ()
-  {
-    return caps_;
-  }
-
-  void 
-  ShmdataWriter::set_on_caps (std::function<void(std::string)> callback)
-  {
-    std::unique_lock<std::mutex> lock (caps_mutex_);
-    on_caps_callback_.push_back (callback);
-    if (!caps_.empty ())
-      callback (caps_);
   }
 
   void
