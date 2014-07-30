@@ -29,11 +29,12 @@
 #include <shmdata/base-reader.h>
 #include "gst-element-cleaner.h"
 #include "json-builder.h"
+#include "on-caps.h"
 
 namespace switcher
 {
 
-  class ShmdataReader : public GstElementCleaner 
+  class ShmdataReader : public OnCaps, public GstElementCleaner 
   {
   public:
     typedef std::shared_ptr<ShmdataReader> ptr;
@@ -57,7 +58,6 @@ namespace switcher
   private:
     on_first_data_hook connection_hook_;
     void *hook_user_data_;
-    GstCaps *caps_;
     std::string path_;
     shmdata_base_reader_t *reader_;
     GstElement *bin_;

@@ -94,11 +94,8 @@ namespace switcher
   ShmdataAnyWriter::set_data_type (std::string data_type)
   {
     std::unique_lock<std::mutex> lock (thread_safe_);
-    //g_print ("%s\n",__FUNCTION__);
-    caps_ = data_type;
-    shmdata_any_writer_set_data_type (writer_, caps_.c_str ());
-    for (auto &it : on_caps_callback_)
-      it (caps_);
+    shmdata_any_writer_set_data_type (writer_, data_type.c_str ());
+    set_negociated_caps (std::move(data_type));
   }
 
   void
@@ -160,13 +157,4 @@ namespace switcher
     return started_;
   }
 
-  void 
-  ShmdataAnyWriter::set_on_caps (std::function<void(std::string)> callback)
-  {
-    std::unique_lock<std::mutex> lock (thread_safe_);
-    on_caps_callback_.push_back (callback);
-    if (!caps_.empty ())
-      callback (caps_);
-  }
-  
 }

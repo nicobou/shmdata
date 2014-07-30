@@ -23,33 +23,36 @@ namespace switcher
 {
 
   ShmdataAnyReader::ShmdataAnyReader() :
-    started_ (false),
-    path_ (""),
+    path_ (),
+    reader_ (shmdata_any_reader_init ()),
     json_description_ (new JSONBuilder())
-  {
-  }
+  {}
 
   ShmdataAnyReader::~ShmdataAnyReader()
   {
-    if (reader_ != nullptr)
-      shmdata_any_reader_close (reader_);
+    shmdata_any_reader_close (reader_);
   }
 
   bool 
-  ShmdataAnyReader::set_path (std::string name)
+  ShmdataAnyReader::set_path (std::string path)
   {
-    if (reader_ != nullptr)
-      shmdata_any_reader_close(reader_);
-
-    reader_ = shmdata_any_reader_init ();
     shmdata_any_reader_set_debug (reader_, SHMDATA_ENABLE_DEBUG);
     shmdata_any_reader_set_on_data_handler(reader_, ShmdataAnyReader::on_data, this);
-
-    path_ = name;
+    path_ = path;
     make_json_description();
     return true;
   }
 
+  bool 
+  ShmdataAnyReader::start ()
+  {
+    if (path_.empty ())
+      return false;
+    shmdata_any_reader_start(reader_, path_.c_str());
+    return true;
+  }
+  
+  
   std::string 
   ShmdataAnyReader::get_path ()
   {
@@ -64,20 +67,16 @@ namespace switcher
     return true;
   }
 
-  void 
-  ShmdataAnyReader::start ()
-  {
-    if (cb_ == nullptr)
-      return;
-    shmdata_any_reader_start(reader_, path_.c_str());
-    started_ = true;
+  void
+  ShmdataAnyReader::mute (bool mute)
+  { 
+    muted_ = mute; 
   }
 
-  void
-  ShmdataAnyReader::stop()
+  bool
+  ShmdataAnyReader::is_muted ()
   {
-    shmdata_any_reader_close(reader_);
-    started_ = false;
+    return muted_;
   }
 
   void
@@ -95,18 +94,23 @@ namespace switcher
     return json_description_->get_root ();
   }
 
-  bool 
-  ShmdataAnyReader::started ()
-  {
-    return started_;
-  }
-  
   void
-  ShmdataAnyReader::on_data (shmdata_any_reader_t*, void* shmbuf, void* data, int data_size, unsigned long long timestamp,
-    const char* type_description, void* user_data)
+  ShmdataAnyReader::on_data (shmdata_any_reader_t*, 
+			     void* shmbuf, 
+			     void* data, 
+			     int data_size, 
+			     unsigned long long timestamp,
+			     const char *type_description, 
+			     void* user_data)
   {
-    ShmdataAnyReader* ctx = (ShmdataAnyReader*)user_data;
-    ctx->cb_(data, data_size, timestamp, type_description, ctx->cb_user_data_);
+    ShmdataAnyReader* context = static_cast <ShmdataAnyReader *>(user_data);
+    if (!context->is_caps_set_)
+      {
+	context->set_negociated_caps (std::string (type_description));
+	context->is_caps_set_ = true;
+      }
+    if (nullptr != context->cb_ && !context->muted_)
+      context->cb_(data, data_size, timestamp, type_description, context->cb_user_data_);
     shmdata_any_reader_free(shmbuf);
   }
 }

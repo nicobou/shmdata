@@ -19,14 +19,13 @@
 
 #include "shmdata-reader.h"
 #include "gst-utils.h"
+#include "scope-exit.h"
 
 namespace switcher
 {
-
   ShmdataReader::ShmdataReader() :
     connection_hook_ (nullptr),
     hook_user_data_ (nullptr),
-    caps_ (nullptr),
     path_ (),
     reader_ (shmdata_base_reader_new ()),
     bin_ (nullptr),
@@ -50,8 +49,6 @@ namespace switcher
       g_debug ("ShmdataReader: %s deleted ", path_.c_str());
     else
       g_debug ("closing empty reader");
-    if (nullptr != caps_)
-      gst_caps_unref (caps_);
   }
 
   void
@@ -167,8 +164,10 @@ namespace switcher
 	g_warning ("ShmdataReader::on_have_type cannot save caps");
 	return;
       }
-    ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
-    reader->caps_ = gst_caps_copy (caps);
+    ShmdataReader *context = static_cast<ShmdataReader *>(user_data);
+    gchar *string_caps = gst_caps_to_string (caps);
+    On_scope_exit { if (nullptr != string_caps) g_free (string_caps);};
+    context->set_negociated_caps (std::string (string_caps));
   }
 
   void 
@@ -176,11 +175,6 @@ namespace switcher
   {
     g_debug ("ShmdataReader::stop");
     shmdata_base_reader_close (reader_);
-    if (nullptr != caps_)
-      {
-	gst_caps_unref (caps_);
-	caps_ = nullptr;
-      }
     GstUtils::clean_element (funnel_);
   } 
  

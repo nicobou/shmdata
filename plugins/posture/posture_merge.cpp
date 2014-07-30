@@ -163,7 +163,6 @@ namespace switcher
   {
     int index = source_id_;
     source_id_ += 1;
-
     ShmdataAnyReader::ptr reader_ = make_shared<ShmdataAnyReader>();
     reader_->set_path (shmdata_socket_path);
 

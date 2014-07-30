@@ -25,45 +25,51 @@
 #include <functional>
 #include <memory>
 #include <string>
-
 #include <shmdata/any-data-reader.h>
-
 #include "json-builder.h"
+#include "on-caps.h"
 
 namespace switcher
 {
 
-  class ShmdataAnyReader
+  class ShmdataAnyReader : public OnCaps
   {
   public:
     typedef std::shared_ptr<ShmdataAnyReader> ptr;
-    typedef std::function<void(void*, int, unsigned long long, const char*, void*)> Callback;
+    using Callback = std::function<void(void *, 
+					int, 
+					unsigned long long, 
+					const char*, 
+					void*)>;
 
     ShmdataAnyReader();
     ~ShmdataAnyReader();
     ShmdataAnyReader (const ShmdataAnyReader &) = delete;
     ShmdataAnyReader &operator= (const ShmdataAnyReader &) = delete;
-    bool set_path (std::string name); //path needs to be fully specified
-    std::string get_path ();
-    bool set_callback (Callback cb, void* user_data);
-    void start ();
-    void stop ();
-    bool started ();
 
-    //get json doc:
+    //conrfiguration member before starting:
+    bool set_path (std::string path); //path needs to be fully specified
+    bool set_callback (Callback cb, void* user_data);
+
+    //starting the reader:
+    bool start ();
+
+    //info + controls before and after starting the reader : 
+    std::string get_path ();
+    void mute (bool mute);
+    bool is_muted ();
     JSONBuilder::Node get_json_root_node ();
 
   private:
-    bool started_;
+    bool muted_ {false};
     std::string path_;
-
     Callback cb_ {nullptr};
     void* cb_user_data_ {nullptr};
-
     shmdata_any_reader_t *reader_ {nullptr};
+    bool is_caps_set_ {false};
+
     JSONBuilder::ptr json_description_;
     void make_json_description ();
-
     static void on_data (shmdata_any_reader_t*, void* shmbuf, void* data, int data_size, unsigned long long timestamp,
       const char* type_description, void* user_data);
   };
