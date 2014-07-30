@@ -85,7 +85,6 @@ namespace switcher
   bool 
   Segment::register_shmdata (ShmdataAnyWriter::ptr writer)
   {
-    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
     std::unique_lock<std::mutex> lock (writers_mutex_);
     std::string name = writer->get_path ();
     if (name.empty () || 0 == name.compare (""))
@@ -115,7 +114,6 @@ namespace switcher
   bool 
   Segment::register_shmdata (ShmdataWriter::ptr writer)
   {
-    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
     std::unique_lock<std::mutex> lock (writers_mutex_);
     std::string name = writer->get_path ();
     if (name.empty () || 0 == name.compare (""))
@@ -145,7 +143,6 @@ namespace switcher
   
   bool Segment::register_shmdata (ShmdataReader::ptr reader)
   {
-    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
     std::unique_lock<std::mutex> lock (readers_mutex_);
     std::string name = reader->get_path ();
     if (name.empty () || 0 == name.compare (""))
@@ -174,7 +171,6 @@ namespace switcher
 
   bool Segment::register_shmdata (ShmdataAnyReader::ptr reader)
   {
-    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
     std::unique_lock<std::mutex> lock (readers_mutex_);
     std::string name = reader->get_path ();
     if (name.empty () || 0 == name.compare (""))
@@ -203,7 +199,6 @@ namespace switcher
 
   bool Segment::unregister_shmdata (std::string shmdata_path)
   {
-    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
     std::unique_lock<std::mutex> lock_w (writers_mutex_);
     std::unique_lock<std::mutex> lock_r (readers_mutex_);
     bool update_writer = false;
@@ -262,7 +257,6 @@ namespace switcher
 
   bool Segment::clear_shmdatas ()
   {
-    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
     std::unique_lock<std::mutex> lock_w (writers_mutex_);
     std::unique_lock<std::mutex> lock_r (readers_mutex_);
     
@@ -311,7 +305,6 @@ namespace switcher
   const gchar *
   Segment::get_shmdata_writers_string (void *user_data)
   {
-    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
     Segment *context = static_cast<Segment *>(user_data);
     return context->writers_string_.c_str ();
   }
@@ -319,7 +312,6 @@ namespace switcher
   const gchar *
   Segment::get_shmdata_readers_string (void *user_data)
   {
-    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
     Segment *context = static_cast<Segment *>(user_data);
     return context->readers_string_.c_str ();
   }
@@ -327,7 +319,6 @@ namespace switcher
   void
   Segment::update_shmdata_writers_description ()
   {
-    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
     shmdata_writers_description_->reset();
     shmdata_writers_description_->begin_object ();
     shmdata_writers_description_->set_member_name ("shmdata_writers");
@@ -348,8 +339,6 @@ namespace switcher
   void
   Segment::update_shmdata_readers_description ()
   {
-    std::string func (__FUNCTION__); g_print ("entering %s\n", func.c_str ()); On_scope_exit {g_print ("leaving %s\n", func.c_str ());};
-
     shmdata_readers_description_->reset();
     shmdata_readers_description_->begin_object ();
     shmdata_readers_description_->set_member_name ("shmdata_readers");

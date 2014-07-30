@@ -363,12 +363,10 @@ namespace switcher
   QuiddityManager::get_property (std::string quiddity_name,
 				 std::string property_name)
   {
-    std::string res = seq_invoke (QuiddityCommand::get_property,
+    return seq_invoke (QuiddityCommand::get_property,
 		       quiddity_name.c_str(),
 		       property_name.c_str(),
 		       nullptr);
-    g_print ("%s: res is %s\n", __FUNCTION__, res.c_str ());
-    return res;
   }
 
 
