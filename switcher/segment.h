@@ -43,6 +43,7 @@ namespace switcher
     using OnConnect = std::function<bool(std::string)>;
     using OnDisconnect = std::function<bool(std::string)>;
     using OnDisconnectAll = std::function<bool()>;
+    using CanSinkCaps = std::function<bool(std::string)>;
 
     Segment ();
     virtual ~Segment ();
@@ -60,6 +61,7 @@ namespace switcher
     bool install_connect_method (OnConnect on_connect_cb,
 				 OnDisconnect on_disconnect_cb,
 				 OnDisconnectAll on_disconnect_all_cb,
+				 CanSinkCaps on_can_sink_caps_cb,
 				 uint max_reader);
       
   private:
@@ -73,9 +75,11 @@ namespace switcher
     OnConnect on_connect_cb_ {nullptr};
     OnDisconnect on_disconnect_cb_ {nullptr};
     OnDisconnectAll on_disconnect_all_cb_ {nullptr};
+    CanSinkCaps on_can_sink_caps_cb_ {nullptr};
     static gboolean connect_wrapped (gpointer path, gpointer user_data);
     static gboolean disconnect_wrapped (gpointer path, gpointer user_data);
     static gboolean disconnect_all_wrapped (gpointer /*unused*/, gpointer user_data);
+    static gboolean can_sink_caps_wrapped (gpointer caps, gpointer user_data);
 
     //JSON
     JSONBuilder::ptr shmdata_writers_description_;

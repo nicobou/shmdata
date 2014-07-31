@@ -411,6 +411,7 @@ namespace switcher
   Segment::install_connect_method (OnConnect on_connect_cb,
 				   OnDisconnect on_disconnect_cb,
 				   OnDisconnectAll on_disconnect_all_cb,
+				   CanSinkCaps on_can_sink_caps_cb,
 				   uint max_reader)
   {
     data::Tree::ptr tree = data::make_tree ();
@@ -420,6 +421,7 @@ namespace switcher
     on_connect_cb_ = on_connect_cb;
     on_disconnect_cb_ = on_disconnect_cb;
     on_disconnect_all_cb_ = on_disconnect_all_cb; 
+    on_can_sink_caps_cb_ = on_can_sink_caps_cb;
 
     quid_->install_method ("Connect",
 			   "connect",
@@ -456,6 +458,19 @@ namespace switcher
 			   (Method::method_ptr)&Segment::disconnect_all_wrapped, 
 			   G_TYPE_BOOLEAN,
 			   Method::make_arg_type_description (G_TYPE_NONE, nullptr),
+			   this);
+
+    quid_->install_method ("Can sink caps",
+			   "can-sink-caps",
+			   "can we connect with this caps", 
+			   "true or false",
+			   Method::make_arg_description ("String Caps",
+							 "caps",
+							 "caps as a string",
+							 nullptr),
+			   (Method::method_ptr)&Segment::can_sink_caps_wrapped, 
+			   G_TYPE_BOOLEAN,
+			   Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 			   this);
 
     return true;
@@ -513,4 +528,21 @@ namespace switcher
       return FALSE;
   }
 
+  gboolean
+  Segment::can_sink_caps_wrapped (gpointer caps, gpointer user_data)
+  {
+    Segment *context = static_cast<Segment *>(user_data);
+    
+    if (nullptr == context->on_can_sink_caps_cb_)
+      {
+  	g_warning ("on disconnect callback not installed\n");
+  	return FALSE;
+      }
+    
+    if (context->on_can_sink_caps_cb_ ((char *)caps))
+      return TRUE;
+    else
+      return FALSE;
+  }
+  
 }

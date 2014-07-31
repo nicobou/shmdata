@@ -34,7 +34,9 @@ namespace switcher
 			    nullptr, //no disconnect
 			    std::bind (&SinglePadGstSink::disconnect_all,
 				       this),
+			    nullptr, //FIXME can sink caps
 			    1);
+    
   }
   
   bool

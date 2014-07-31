@@ -49,8 +49,9 @@ namespace switcher
     bool init () final;
     
     bool connect (std::string shmdata_socket_path);
-    static gboolean connect_wrapped (gpointer shmdata_socket_path, gpointer user_data);
-    static gboolean disconnect (gpointer , gpointer user_data);
+    bool disconnect_all ();
+    bool can_sink_caps (std::string caps);
+
   };
   
   SWITCHER_DECLARE_PLUGIN(PostureDisplay);

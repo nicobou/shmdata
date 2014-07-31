@@ -40,31 +40,16 @@ namespace switcher
   PostureMerge::PostureMerge() :
     custom_props_(std::make_shared<CustomPropertyHelper> ())
   {
-    //registering connect
-    install_method ("Connect",
-		    "connect",
-		    "connect the sink to a shmdata socket", 
-		    "success or fail",
-		    Method::make_arg_description ("Shmdata Path",
-						  "socket",
-						  "shmdata socket path to connect with",
-						  NULL),
-		    (Method::method_ptr)&connect_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    this);
-  
-    //registering disconnect
-    install_method ("Disconnect",
-		    "disconnect-all",
-		    "disconnect the sink from the shmdata socket", 
-		    "success or fail",
-		    Method::make_arg_description ("none",
-						  NULL),
-		    (Method::method_ptr)&disconnect, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    this);
+    install_connect_method (std::bind (&PostureMerge::connect,
+				       this, 
+				       std::placeholders::_1),
+			    nullptr, //FIXME implement this (disconnect with the shmdata as unique argument)
+			    std::bind (&PostureMerge::disconnect_all,
+				       this),
+			    std::bind (&PostureMerge::can_sink_caps,
+				       this, 
+				       std::placeholders::_1),
+			    8);
   }
 
   PostureMerge::~PostureMerge()
@@ -146,17 +131,6 @@ namespace switcher
     return true;
   }
 
-  gboolean
-  PostureMerge::connect_wrapped (gpointer connector_name, gpointer user_data)
-  {
-    PostureMerge* context = static_cast<PostureMerge*>(user_data);
-       
-    if (context->connect ((char *)connector_name))
-      return TRUE;
-    else
-      return FALSE;
-  }
-
   bool
   PostureMerge::connect (std::string shmdata_socket_path)
   {
@@ -164,55 +138,52 @@ namespace switcher
     source_id_ += 1;
     ShmdataAnyReader::ptr reader_ = make_shared<ShmdataAnyReader>();
     reader_->set_path (shmdata_socket_path);
-
+    
     // This is the callback for when new clouds are received
     reader_->set_callback([=](void* data, int size, unsigned long long timestamp, const char* type, void* /*unused*/)
-    {
-      if (!mutex_.try_lock())
-        return;
-
-      if (string(type) == string(POINTCLOUD_TYPE_BASE))
-        merger_->setInputCloud(index, vector<char>((char*)data, (char*)data + size), false, timestamp);
-      else if (string(type) == string(POINTCLOUD_TYPE_COMPRESSED))
-        merger_->setInputCloud(index, vector<char>((char*)data, (char*)data + size), true, timestamp);
-      else
-      {
-        mutex_.unlock();
-        return;
-      }
-
-      merged_cloud_ = merger_->getCloud();
-
-      if (cloud_writer_.get() == nullptr)
-      {
-        cloud_writer_.reset(new ShmdataAnyWriter);
-        cloud_writer_->set_path(make_file_name("cloud"));
-        register_shmdata(cloud_writer_);
-        if (compress_cloud_)
-          cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_COMPRESSED));
-        else
-          cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_BASE));
-        cloud_writer_->start();
-      }
-
-      cloud_writer_->push_data_auto_clock((void*)merged_cloud_.data(), merged_cloud_.size(), NULL, NULL);
-
-      mutex_.unlock();
-    }, nullptr);
-
+			  {
+			    if (!mutex_.try_lock())
+			      return;
+			    
+			    if (string(type) == string(POINTCLOUD_TYPE_BASE))
+			      merger_->setInputCloud(index, vector<char>((char*)data, (char*)data + size), false, timestamp);
+			    else if (string(type) == string(POINTCLOUD_TYPE_COMPRESSED))
+			      merger_->setInputCloud(index, vector<char>((char*)data, (char*)data + size), true, timestamp);
+			    else
+			      {
+				mutex_.unlock();
+				return;
+			      }
+			    
+			    merged_cloud_ = merger_->getCloud();
+			    
+			    if (cloud_writer_.get() == nullptr)
+			      {
+				cloud_writer_.reset(new ShmdataAnyWriter);
+				cloud_writer_->set_path(make_file_name("cloud"));
+				register_shmdata(cloud_writer_);
+				if (compress_cloud_)
+				  cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_COMPRESSED));
+				else
+				  cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_BASE));
+				cloud_writer_->start();
+			      }
+			    
+			    cloud_writer_->push_data_auto_clock((void*)merged_cloud_.data(), merged_cloud_.size(), NULL, NULL);
+			    
+			    mutex_.unlock();
+			  }, nullptr);
+    
     reader_->start ();
     register_shmdata (reader_);
-    
     return true;
   }
-
-  gboolean
-  PostureMerge::disconnect (gpointer /*unused*/, gpointer user_data)
+  
+  bool
+  PostureMerge::disconnect_all ()
   {
-    PostureMerge* context = static_cast<PostureMerge*>(user_data);
-    context->clear_shmdatas ();
-    context->source_id_ = 0;
-    return TRUE;
+    source_id_ = 0;
+    return true;
   }
 
   const gchar*
@@ -259,4 +230,10 @@ namespace switcher
     ctx->compress_cloud_ = compress;
   }
 
+  bool
+  PostureMerge::can_sink_caps (std::string caps)
+  {
+    return (caps == POINTCLOUD_TYPE_BASE)
+      || (caps == POINTCLOUD_TYPE_COMPRESSED);
+  }
 } // end of namespace
