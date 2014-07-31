@@ -32,49 +32,20 @@ namespace switcher
     sink_element_ (),
     shmdata_path_ ("")
   {
-    //registering connect
-    install_method ("Connect",
-		    "connect",
-		    "connect the sink to a shmdata socket", 
-		    "success or fail",
-		    Method::make_arg_description ("Shmdata Path",
-						  "socket",
-						  "shmdata socket path to connect with",
-						  nullptr),
-		    (Method::method_ptr)&connect_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
-		    this);
-  
-    //registering disconnect
-    install_method ("Disconnect",
-		    "disconnect-all",
-		    "disconnect the sink from the shmdata socket", 
-		    "success or fail",
-		    Method::make_arg_description ("none",
-						  nullptr),
-		    (Method::method_ptr)&disconnect, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_NONE, nullptr),
-		    this);
+    install_connect_method (std::bind (&BaseSink::connect,
+				       this, 
+				       std::placeholders::_1),
+			    nullptr, //no disconnect
+			    std::bind (&BaseSink::disconnect_all,
+				       this),
+			    1);
   }
   
-  gboolean
-  BaseSink::disconnect (gpointer /*unused*/, gpointer user_data)
+  bool
+  BaseSink::disconnect_all ()
   {
-    BaseSink *context = static_cast<BaseSink*>(user_data);
-    context->clear_shmdatas ();
-    context->on_shmdata_disconnect ();
-    return TRUE;
-  }
-
-   gboolean
-   BaseSink::connect_wrapped (gpointer connector_name, gpointer user_data)
-  {
-    BaseSink *context = static_cast<BaseSink*>(user_data);
-    if (context->connect ((char *)connector_name))
-      return TRUE;
-    return FALSE;
+    on_shmdata_disconnect ();
+    return true;
   }
 
   bool

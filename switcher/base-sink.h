@@ -47,11 +47,13 @@ namespace switcher
     void *hook_user_data_;
     GstElement *sink_element_;
     std::string shmdata_path_;
+
+    //for segment
     bool connect (std::string shmdata_socket_path);
-    //wrapper for being called
-    static gboolean connect_wrapped (gpointer shmdata_socket_path, gpointer user_data);
-    static gboolean disconnect (gpointer , gpointer user_data);
-    virtual void on_shmdata_connect (std::string /* shmdata_sochet_path */) {};
+    bool disconnect_all ();
+
+    //for subclasses
+    virtual void on_shmdata_connect (std::string /*shmdata_sochet_path*/) {};
     virtual void on_shmdata_disconnect () {};
   };
 
