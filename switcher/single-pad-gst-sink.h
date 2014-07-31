@@ -28,14 +28,14 @@
 namespace switcher
 {
 
-  class BaseSink : public GPipe
+  class SinglePadGstSink : public GPipe
   {
   public:
-    typedef std::shared_ptr<BaseSink> ptr;
-    BaseSink ();
-    ~BaseSink ();
-    BaseSink (const BaseSink &) = delete;
-    BaseSink &operator= (const BaseSink &) = delete;
+    typedef std::shared_ptr<SinglePadGstSink> ptr;
+    SinglePadGstSink ();
+    ~SinglePadGstSink ();
+    SinglePadGstSink (const SinglePadGstSink &) = delete;
+    SinglePadGstSink &operator= (const SinglePadGstSink &) = delete;
 
     //  protected: //made public for allowing composition and/or delegation
     void set_sink_element (GstElement *sink);

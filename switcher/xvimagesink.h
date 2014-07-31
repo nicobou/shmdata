@@ -21,14 +21,14 @@
 #ifndef __SWITCHER_XVIMAGESINK_H__
 #define __SWITCHER_XVIMAGESINK_H__
 
-#include "base-sink.h"
+#include "single-pad-gst-sink.h"
 #include <gst/gst.h>
 #include <memory>
 
 namespace switcher
 {
 
-  class Xvimagesink : public BaseSink
+  class Xvimagesink : public SinglePadGstSink
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Xvimagesink);

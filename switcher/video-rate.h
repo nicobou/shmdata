@@ -21,14 +21,14 @@
 #ifndef __SWITCHER_VIDEO_RATE_H__
 #define __SWITCHER_VIDEO_RATE_H__
 
-#include "base-sink.h"
+#include "single-pad-gst-sink.h"
 #include "gst-element-cleaner.h"
 #include <gst/gst.h>
 #include <memory>
 
 namespace switcher
 {
-  class VideoRate : public BaseSink, public GstElementCleaner
+  class VideoRate : public SinglePadGstSink, public GstElementCleaner
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VideoRate);

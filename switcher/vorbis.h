@@ -21,14 +21,14 @@
 #ifndef __SWITCHER_VORBIS_H__
 #define __SWITCHER_VORBIS_H__
 
-#include "base-sink.h"
+#include "single-pad-gst-sink.h"
 #include "gst-element-cleaner.h"
 #include <gst/gst.h>
 #include <memory>
 
 namespace switcher
 {
-  class Vorbis : public BaseSink, public GstElementCleaner
+  class Vorbis : public SinglePadGstSink, public GstElementCleaner
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Vorbis);
