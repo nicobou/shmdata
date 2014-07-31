@@ -40,11 +40,14 @@ namespace switcher
   {
   public:
     typedef std::shared_ptr<Segment> ptr;
+    using OnConnect = std::function<bool(std::string)>;
+    using OnDisconnect = std::function<bool(std::string)>;
+    using OnDisconnectAll = std::function<bool()>;
+
     Segment ();
     virtual ~Segment ();
     Segment (const Segment &) = delete;
     Segment &operator= (const Segment&) = delete;
-
     bool init_segment (Quiddity *quid);
 
   protected:
@@ -53,15 +56,26 @@ namespace switcher
     bool register_shmdata (ShmdataReader::ptr reader);
     bool register_shmdata (ShmdataAnyReader::ptr reader);
     bool unregister_shmdata (std::string shmdata_path);
-
     bool clear_shmdatas ();
-
+    bool install_connect_method (OnConnect on_connect_cb,
+				 OnDisconnect on_disconnect_cb,
+				 OnDisconnectAll on_disconnect_all_cb,
+				 uint max_reader);
+      
   private:
     Quiddity *quid_ {nullptr};
     std::unordered_map <std::string, ShmdataAnyWriter::ptr> shmdata_any_writers_;
     std::unordered_map <std::string, ShmdataAnyReader::ptr> shmdata_any_readers_;
     std::unordered_map <std::string, ShmdataWriter::ptr> shmdata_writers_;
     std::unordered_map <std::string, ShmdataReader::ptr> shmdata_readers_;
+    
+    //reader methods to install by a subclass
+    OnConnect on_connect_cb_ {nullptr};
+    OnDisconnect on_disconnect_cb_ {nullptr};
+    OnDisconnectAll on_disconnect_all_cb_ {nullptr};
+    static gboolean connect_wrapped (gpointer path, gpointer user_data);
+    static gboolean disconnect_wrapped (gpointer path, gpointer user_data);
+    static gboolean disconnect_all_wrapped (gpointer /*unused*/, gpointer user_data);
 
     //JSON
     JSONBuilder::ptr shmdata_writers_description_;
@@ -77,6 +91,8 @@ namespace switcher
     void update_shmdata_readers_description ();
     static const gchar *get_shmdata_writers_string (void *user_data);
     static const gchar *get_shmdata_readers_string (void *user_data);
+
+    void populate_tree (std::string key, std::string caps);
   };
 }  // end of namespace
 

@@ -57,7 +57,7 @@ namespace switcher
   
     //registering disconnect
     install_method ("Disconnect",
-		    "disconnect",
+		    "disconnect-all",
 		    "disconnect the sink from the shmdata socket", 
 		    "success or fail",
 		    Method::make_arg_description ("none",

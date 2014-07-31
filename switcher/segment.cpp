@@ -78,6 +78,7 @@ namespace switcher
 				      "shmdata-readers",
 				      "Shmdata Readers");
     
+    
     return true;
   }
   
@@ -97,7 +98,12 @@ namespace switcher
       if (shmdata_any_writers_.end () != it)
 	shmdata_any_writers_.erase (name);
     }
- 
+
+    writer->set_on_caps (std::bind (&Segment::populate_tree, 
+    				    this, 
+    				    std::string (".shmdata.writer.") + name,
+    				    std::placeholders::_1));
+
     shmdata_any_writers_[name] = writer;
 
     {//JSON
@@ -127,9 +133,14 @@ namespace switcher
 	shmdata_writers_.erase (name);
     }
  
+    writer->set_on_caps (std::bind (&Segment::populate_tree, 
+    				    this, 
+    				    std::string (".shmdata.writer.") + name,
+    				    std::placeholders::_1));
+    
     shmdata_writers_[name] = writer;
- 
-   {//JSON
+    
+    {//JSON
       update_shmdata_writers_description ();
       segment_custom_props_->notify_property_changed (json_writers_description_);
       quid_->signal_emit ("on-new-shmdata-writer", 
@@ -354,6 +365,152 @@ namespace switcher
     shmdata_readers_description_->end_object ();
 
     readers_string_ = shmdata_readers_description_->get_string (true);
+  }
+
+  void 
+  Segment::populate_tree (std::string key, std::string caps)
+  {
+    std::string category;
+    std::string mime_type (caps.begin (), std::find (caps.begin (), caps.end (), (',')));
+    
+    if (std::string::npos != mime_type.find ("video/x-raw"))
+      category = "video";
+    else if (std::string::npos != mime_type.find ("video/x-"))
+      category = "compressed video";
+    else if (std::string::npos != mime_type.find ("audio/midi"))
+      category = "midi";
+    else if (std::string::npos != mime_type.find ("audio/x-raw"))
+      category = "audio";
+    else if (std::string::npos != mime_type.find ("audio/x-"))
+      category = "compressed audio";
+    else if (std::string::npos != mime_type.find ("application/x-libloserialized-osc"))
+      category = "osc";
+    else if (std::string::npos != mime_type.find ("application/x-"))
+      {
+	auto it = std::find (mime_type.begin(), 
+			     mime_type.end (), 
+			     '-');
+	it ++;
+	if (mime_type.end () == it)
+	  category = "unknown";
+	else
+	  category = std::string (it,
+				  mime_type.end ());
+      }
+    else
+      category = mime_type;
+
+    data::Tree::ptr tree = data::make_tree ();
+    tree->graft (".category", data::make_tree (category));
+    tree->graft (".caps", data::make_tree (caps));
+    //attaching it to the quiddity (at the root) 
+    quid_->graft_tree (key, tree);
+  }
+ 
+  bool 
+  Segment::install_connect_method (OnConnect on_connect_cb,
+				   OnDisconnect on_disconnect_cb,
+				   OnDisconnectAll on_disconnect_all_cb,
+				   uint max_reader)
+  {
+    data::Tree::ptr tree = data::make_tree ();
+    tree->graft (".max_reader", data::make_tree (max_reader));
+    quid_->graft_tree (".shmdata", tree);
+
+    on_connect_cb_ = on_connect_cb;
+    on_disconnect_cb_ = on_disconnect_cb;
+    on_disconnect_all_cb_ = on_disconnect_all_cb; 
+
+    quid_->install_method ("Connect",
+			   "connect",
+			   "connect to a shmdata", 
+			   "success or fail",
+			   Method::make_arg_description ("Shmdata Path",
+							 "path",
+							 "shmdata path to connect with",
+							 nullptr),
+			   (Method::method_ptr)&Segment::connect_wrapped, 
+			   G_TYPE_BOOLEAN,
+			   Method::make_arg_type_description (G_TYPE_STRING, nullptr),
+			   this);
+
+    quid_->install_method ("Disconnect",
+			   "disconnect",
+			   "disconnect a shmdata", 
+			   "success or fail",
+			   Method::make_arg_description ("Shmdata Path",
+							 "path",
+							 "shmdata path to connect with",
+							 nullptr),
+			   (Method::method_ptr)&Segment::disconnect_wrapped, 
+			   G_TYPE_BOOLEAN,
+			   Method::make_arg_type_description (G_TYPE_STRING, nullptr),
+			   this);
+    
+    quid_->install_method ("Disconnect All",
+			   "disconnect-all",
+			   "disconnect all shmdata reader", 
+			   "success or fail",
+			   Method::make_arg_description ("none",
+							 nullptr),
+			   (Method::method_ptr)&Segment::disconnect_all_wrapped, 
+			   G_TYPE_BOOLEAN,
+			   Method::make_arg_type_description (G_TYPE_NONE, nullptr),
+			   this);
+
+    return true;
+  }
+    
+  gboolean
+  Segment::connect_wrapped (gpointer path, gpointer user_data)
+  {
+    Segment *context = static_cast<Segment *>(user_data);
+    
+    if (nullptr == context->on_connect_cb_)
+      {
+	g_warning ("on connect callback not installed\n");
+	return FALSE;
+      }
+    
+    if (context->on_connect_cb_ ((char *)path))
+      return TRUE;
+    else
+      return FALSE;
+  }
+
+  gboolean
+  Segment::disconnect_wrapped (gpointer path, gpointer user_data)
+  {
+    Segment *context = static_cast<Segment *>(user_data);
+    
+    if (nullptr == context->on_disconnect_cb_)
+      {
+  	g_warning ("on disconnect callback not installed\n");
+  	return FALSE;
+      }
+    
+    if (context->on_disconnect_cb_ ((char *)path))
+      return TRUE;
+    else
+      return FALSE;
+  }
+
+  gboolean
+  Segment::disconnect_all_wrapped (gpointer /*unused*/, gpointer user_data)
+  {
+    Segment* context = static_cast<Segment*>(user_data);
+    On_scope_exit {context->clear_shmdatas ();};
+
+    if (nullptr == context->on_disconnect_all_cb_)
+      {
+  	g_warning ("on disconnect all callback not installed\n");
+  	return FALSE;
+      }
+    
+    if (context->on_disconnect_all_cb_ ())
+      return TRUE;
+    else
+      return FALSE;
   }
 
 }
