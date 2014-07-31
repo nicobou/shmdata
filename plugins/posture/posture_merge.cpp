@@ -1,4 +1,3 @@
-
 /*
  *
  * posture is free software; you can redistribute it and/or
@@ -167,7 +166,7 @@ namespace switcher
     reader_->set_path (shmdata_socket_path);
 
     // This is the callback for when new clouds are received
-    reader_->set_callback([=](void* data, int size, unsigned long long timestamp, const char* type, void* user_data)
+    reader_->set_callback([=](void* data, int size, unsigned long long timestamp, const char* type, void* /*unused*/)
     {
       if (!mutex_.try_lock())
         return;
@@ -177,7 +176,10 @@ namespace switcher
       else if (string(type) == string(POINTCLOUD_TYPE_COMPRESSED))
         merger_->setInputCloud(index, vector<char>((char*)data, (char*)data + size), true, timestamp);
       else
+      {
+        mutex_.unlock();
         return;
+      }
 
       merged_cloud_ = merger_->getCloud();
 

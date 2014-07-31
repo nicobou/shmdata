@@ -306,17 +306,21 @@ namespace switcher
 
     if (ctx->cloud_writer_.get() == nullptr)
       {
-	ctx->cloud_writer_.reset(new ShmdataAnyWriter);
-	ctx->cloud_writer_->set_path(ctx->make_file_name("cloud"));
-	ctx->register_shmdata(ctx->cloud_writer_);
-	if (ctx->compress_cloud_)
-	  ctx->cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_COMPRESSED));
-	else
-	  ctx->cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_BASE));
-	ctx->cloud_writer_->start();
+        ctx->cloud_writer_.reset(new ShmdataAnyWriter);
+        ctx->cloud_writer_->set_path(ctx->make_file_name("cloud"));
+        ctx->register_shmdata(ctx->cloud_writer_);
+        if (ctx->compress_cloud_)
+          ctx->cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_COMPRESSED));
+        else
+          ctx->cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_BASE));
+        ctx->cloud_writer_->start();
       }
 
-    ctx->cloud_writer_->push_data_auto_clock((void*)data.data(), data.size(), nullptr, nullptr);
+    ctx->cloud_buffers_[ctx->cloud_buffer_index_] = make_shared<vector<char>>(data);
+    ctx->cloud_writer_->push_data_auto_clock((void*)ctx->cloud_buffers_[ctx->cloud_buffer_index_]->data(), data.size(), nullptr, nullptr);
+    ctx->cloud_buffer_index_++;
+    if (ctx->cloud_buffer_index_ >= 3)
+      ctx->cloud_buffer_index_ = 0;
   }
 
   void
@@ -326,16 +330,16 @@ namespace switcher
 
     if (ctx->depth_writer_.get() == nullptr || ctx->depth_width_ != width || ctx->depth_height_ != height)
       {
-	ctx->depth_writer_.reset(new ShmdataAnyWriter);
-	ctx->depth_writer_->set_path(ctx->make_file_name("depth"));
-	ctx->register_shmdata(ctx->depth_writer_);
-	ctx->depth_width_ = width;
-	ctx->depth_height_ = height;
-
-	char buffer[256] = "";
-	sprintf(buffer, "video/x-raw-gray,bpp=16,endianness=1234,depth=16,width=%i,height=%i,framerate=30/1", width, height);
-	ctx->depth_writer_->set_data_type(string(buffer));
-	ctx->depth_writer_->start();
+        ctx->depth_writer_.reset(new ShmdataAnyWriter);
+        ctx->depth_writer_->set_path(ctx->make_file_name("depth"));
+        ctx->register_shmdata(ctx->depth_writer_);
+        ctx->depth_width_ = width;
+        ctx->depth_height_ = height;
+        
+        char buffer[256] = "";
+        sprintf(buffer, "video/x-raw-gray,bpp=16,endianness=1234,depth=16,width=%i,height=%i,framerate=30/1", width, height);
+        ctx->depth_writer_->set_data_type(string(buffer));
+        ctx->depth_writer_->start();
       }
 
     ctx->depth_writer_->push_data_auto_clock((void*)data.data(), width * height * 2, nullptr, nullptr);
@@ -348,16 +352,16 @@ namespace switcher
 
     if (ctx->rgb_writer_.get() == nullptr || ctx->rgb_width_ != width || ctx->rgb_height_ != height)
       {
-	ctx->rgb_writer_.reset(new ShmdataAnyWriter);
-	ctx->rgb_writer_->set_path(ctx->make_file_name("rgb"));
-	ctx->register_shmdata(ctx->rgb_writer_);
-	ctx->rgb_width_ = width;
-	ctx->rgb_height_ = height;
-
-	char buffer[256] = "";
-	sprintf(buffer, "video/x-raw-rgb,bpp=24,endianness=4321,depth=24,red_mask=16711680,green_mask=65280,blue_mask=255,width=%i,height=%i,framerate=30/1", width, height);
-	ctx->rgb_writer_->set_data_type(string(buffer));
-	ctx->rgb_writer_->start();
+        ctx->rgb_writer_.reset(new ShmdataAnyWriter);
+        ctx->rgb_writer_->set_path(ctx->make_file_name("rgb"));
+        ctx->register_shmdata(ctx->rgb_writer_);
+        ctx->rgb_width_ = width;
+        ctx->rgb_height_ = height;
+        
+        char buffer[256] = "";
+        sprintf(buffer, "video/x-raw-rgb,bpp=24,endianness=4321,depth=24,red_mask=16711680,green_mask=65280,blue_mask=255,width=%i,height=%i,framerate=30/1", width, height);
+        ctx->rgb_writer_->set_data_type(string(buffer));
+        ctx->rgb_writer_->start();
       }
 
     ctx->rgb_writer_->push_data_auto_clock((void*)data.data(), width * height * 3, nullptr, nullptr);
@@ -370,16 +374,16 @@ namespace switcher
 
     if (ctx->ir_writer_.get() == nullptr || ctx->ir_width_ != width || ctx->ir_height_ != height)
       {
-	ctx->ir_writer_.reset(new ShmdataAnyWriter);
-	ctx->ir_writer_->set_path(ctx->make_file_name("ir"));
-	ctx->register_shmdata(ctx->ir_writer_);
-	ctx->ir_width_ = width;
-	ctx->ir_height_ = height;
-
-	char buffer[256] = "";
-	sprintf(buffer, "video/x-raw-gray,bpp=16,endianness=1234,depth=16,width=%i,height=%i,framerate=30/1", width, height);
-	ctx->ir_writer_->set_data_type(string(buffer));
-	ctx->ir_writer_->start();
+        ctx->ir_writer_.reset(new ShmdataAnyWriter);
+        ctx->ir_writer_->set_path(ctx->make_file_name("ir"));
+        ctx->register_shmdata(ctx->ir_writer_);
+        ctx->ir_width_ = width;
+        ctx->ir_height_ = height;
+        
+        char buffer[256] = "";
+        sprintf(buffer, "video/x-raw-gray,bpp=16,endianness=1234,depth=16,width=%i,height=%i,framerate=30/1", width, height);
+        ctx->ir_writer_->set_data_type(string(buffer));
+        ctx->ir_writer_->start();
       }
 
     ctx->ir_writer_->push_data_auto_clock((void*)data.data(), width * height * 2, nullptr, nullptr);
