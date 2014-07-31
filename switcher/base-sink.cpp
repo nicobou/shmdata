@@ -26,11 +26,7 @@ namespace switcher
   BaseSink::~BaseSink ()
   {}  
   
-  BaseSink::BaseSink () :
-    connection_hook_ (nullptr),
-    hook_user_data_ (nullptr),
-    sink_element_ (),
-    shmdata_path_ ("")
+  BaseSink::BaseSink () 
   {
     install_connect_method (std::bind (&BaseSink::connect,
 				       this, 
@@ -61,7 +57,7 @@ namespace switcher
     reader_->set_g_main_context (get_g_main_context ());
     reader_->set_bin (bin_);
 
-    if (sink_element_ !=nullptr)
+    if (sink_element_ != nullptr)
       reader_->set_sink_element (sink_element_);
     if (connection_hook_ != nullptr) 
       {
@@ -77,7 +73,7 @@ namespace switcher
   BaseSink::set_sink_element (GstElement *sink)
   {
     set_sink_element_no_connect (sink);
-    if (g_strcmp0 (shmdata_path_.c_str (), "") != 0)
+    if (!shmdata_path_.empty ())
       connect (shmdata_path_);
   }
  

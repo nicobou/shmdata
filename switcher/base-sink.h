@@ -43,10 +43,10 @@ namespace switcher
     void set_on_first_data_hook (ShmdataReader::on_first_data_hook cb, void *user_data);
     
   private:
-    ShmdataReader::on_first_data_hook connection_hook_;
-    void *hook_user_data_;
-    GstElement *sink_element_;
-    std::string shmdata_path_;
+    ShmdataReader::on_first_data_hook connection_hook_ {nullptr};
+    void *hook_user_data_ {nullptr};
+    GstElement *sink_element_ {nullptr};
+    std::string shmdata_path_ {};
 
     //for segment
     bool connect (std::string shmdata_socket_path);
