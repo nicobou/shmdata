@@ -28,6 +28,7 @@
 #include <memory>
 #include <string>
 
+#include <posture/display.h>
 #include <posture/zcamera.h>
 
 namespace switcher
@@ -68,6 +69,9 @@ namespace switcher
     ShmdataAnyWriter::ptr rgb_writer_ {nullptr};
     ShmdataAnyWriter::ptr ir_writer_ {nullptr};
 
+    std::shared_ptr<std::vector<char>> cloud_buffers_[3];
+    unsigned int cloud_buffer_index_ {0};
+
     bool cloud_compressed_ {false};
     int depth_width_ {0}, depth_height_ {0};
     int rgb_width_ {0}, rgb_height_ {0};
@@ -92,6 +96,8 @@ namespace switcher
     static void cb_frame_depth(void* context, const std::vector<unsigned char>& data, int width, int height);
     static void cb_frame_rgb(void* context, const std::vector<unsigned char>& data, int width, int height);
     static void cb_frame_ir(void* context, const std::vector<unsigned char>& data, int width, int height);
+
+    std::shared_ptr<posture::Display> display_ {nullptr};
   };
   
   SWITCHER_DECLARE_PLUGIN(PostureSrc);
