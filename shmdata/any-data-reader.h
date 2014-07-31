@@ -52,7 +52,7 @@ extern "C"
   /**
    * @file   any-data-reader.h
    * 
-   * @brief  Reading any kind of data flow to a shared memory 
+   * @brief  Reading any kind of data flow from a shared memory 
    * 
    */
 
