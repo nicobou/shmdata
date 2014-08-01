@@ -428,8 +428,10 @@ namespace switcher
 	{
 	  output_devices_enum_ [output_i].value = i;
 	  //FIXME free
-	  output_devices_enum_ [output_i].value_nick = g_strdup (listinfo->name);
-	  output_devices_enum_ [output_i].value_name = g_strdup_printf ("%d",i);
+	  output_devices_enum_ [output_i].value_nick = g_strdup_printf ("%s (%s)",
+								      listinfo->name,
+								      listinfo->interf);
+	  output_devices_enum_ [output_i].value_name = output_devices_enum_ [output_i].value_nick;
 	  output_i ++;
 	}
     }
