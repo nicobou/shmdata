@@ -790,4 +790,19 @@ controlService::run (std::string file_name,
   return SOAP_OK;
 }
 
+int
+controlService::get_information_tree (std::string quiddity_name,
+				      std::string path,
+				      std::string *result)
+{
+  using namespace switcher;
+  SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
+  QuiddityManager::ptr manager;
+  if (ctrl_server != nullptr)
+    manager = ctrl_server->get_quiddity_manager ();
+
+  *result = manager->get_info (quiddity_name, path);
+
+  return SOAP_OK;
+}
 

@@ -43,10 +43,11 @@ static gboolean listsignals = FALSE;
 static gboolean listsignalsbyclass = FALSE;
 static gboolean setprop = FALSE;
 static gboolean getprop = FALSE;
+static gboolean print_tree = FALSE;
 static gboolean invokemethod = FALSE;
 static gchar **remaining_args = nullptr;
 
-static GOptionEntry entries[23] =
+static GOptionEntry entries[24] =
   {
     { "server", 0, 0, G_OPTION_ARG_STRING, &server, "server URI (default http://localhost:27182)", nullptr },
     { "save", 'w', 0, G_OPTION_ARG_NONE, &save, "save history to file (--save filename)", nullptr },
@@ -65,6 +66,7 @@ static GOptionEntry entries[23] =
     { "list-signals-by-class", 'L', 0, G_OPTION_ARG_NONE, &listsignalsbyclass, "list signals of a class", nullptr },
     { "set-prop", 's', 0, G_OPTION_ARG_NONE, &setprop, "set property value (-s quiddity_name prop_name val)", nullptr },
     { "get-prop", 'g', 0, G_OPTION_ARG_NONE, &getprop, "get property value (-g quiddity_name prop_name)", nullptr },
+    { "print-tree", 't', 0, G_OPTION_ARG_NONE, &print_tree, "print information tree (-t quiddity_name)", nullptr },
     { "invoke-method", 'i', 0, G_OPTION_ARG_NONE, &invokemethod, "invoke method of a quiddity (-i quiddity_name method_name args...)", nullptr },
     { "classes-doc", 'K', 0, G_OPTION_ARG_NONE, &classesdoc, "print classes documentation, JSON-formated", nullptr },
     { "class-doc", 'k', 0, G_OPTION_ARG_NONE, &classdoc, "print class documentation, JSON-formated (--class-doc class_name)", nullptr },
@@ -111,7 +113,8 @@ int main (int argc, char *argv [])
 	 ^ listmethodsbyclass
 	 ^ listsignals
 	 ^ listsignalsbyclass
-	 ^ invokemethod))
+	 ^ invokemethod
+	 ^ print_tree))
     {
       g_printerr ("I am very sorry for the inconvenience, but I am able to process only one command at a time. \n");
       exit (1);
@@ -235,6 +238,24 @@ int main (int argc, char *argv [])
 	switcher_control.get_property_description (remaining_args[0],
 						   remaining_args[1],
 						   &resultlist);
+      std::cout << resultlist << std::endl;
+    }
+  else if (print_tree)
+    {
+      std::string resultlist;
+      if (remaining_args[0] == nullptr)
+	{
+	  g_printerr ("quiddity name missing for printing the tree\n");
+	  return false;
+	}
+      if (remaining_args[1] == nullptr)
+	switcher_control.get_information_tree (remaining_args[0],
+					       ".",
+					       &resultlist);
+      else	
+	switcher_control.get_information_tree (remaining_args[0],
+					       remaining_args[1],
+					       &resultlist);
       std::cout << resultlist << std::endl;
     }
   else if (listpropbyclass)

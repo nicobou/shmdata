@@ -143,3 +143,8 @@ int switcher__run (std::string file_name,
 int switcher__get_signal_description_by_class (std::string class_name,
 					       std::string signal_name,
 					       std::string *result);
+
+//gsoap switcher service method-documentation: get a json formated description of the properties  
+int switcher__get_information_tree (std::string quiddity_name, 
+				    std::string path,
+				    std::string *result); 

@@ -166,6 +166,11 @@ namespace switcher
       if (shmdata_readers_.end () != it)
 	shmdata_readers_.erase (name);
     }
+    
+    reader->set_on_caps (std::bind (&Segment::populate_tree, 
+    				    this, 
+    				    std::string (".shmdata.reader.") + name,
+    				    std::placeholders::_1));
 
     shmdata_readers_[name] = reader;
 
@@ -194,6 +199,11 @@ namespace switcher
       if (shmdata_any_readers_.end () != it)
 	shmdata_any_readers_.erase (name);
     }
+
+    reader->set_on_caps (std::bind (&Segment::populate_tree, 
+    				    this, 
+    				    std::string (".shmdata.reader.") + name,
+    				    std::placeholders::_1));
     
     shmdata_any_readers_[name] = reader;
 
