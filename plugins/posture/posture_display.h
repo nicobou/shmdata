@@ -20,6 +20,8 @@
 #ifndef __SWITCHER_POSTURE_DISPLAY_H__
 #define __SWITCHER_POSTURE_DISPLAY_H__
 
+#include <posture.h>
+
 #include "switcher/quiddity.h"
 #include "switcher/segment.h"
 #include "switcher/custom-property-helper.h"
@@ -27,8 +29,6 @@
 #include <memory>
 #include <mutex>
 #include <string>
-
-#include <posture/display.h>
 
 namespace switcher
 {

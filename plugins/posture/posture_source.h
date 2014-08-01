@@ -20,6 +20,8 @@
 #ifndef __SWITCHER_POSTURE_SRC_H__
 #define __SWITCHER_POSTURE_SRC_H__
 
+#include <posture.h>
+
 #include "switcher/quiddity.h"
 #include "switcher/segment.h"
 #include "switcher/startable-quiddity.h"
@@ -27,9 +29,6 @@
 
 #include <memory>
 #include <string>
-
-#include <posture/display.h>
-#include <posture/zcamera.h>
 
 namespace switcher
 {

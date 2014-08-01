@@ -20,9 +20,6 @@
 
 #include <iostream>
 
-#define POINTCLOUD_TYPE_BASE          "application/x-pcl"
-#define POINTCLOUD_TYPE_COMPRESSED    "application/x-pcd"
-
 using namespace std;
 using namespace switcher::data;
 using namespace posture;
@@ -128,7 +125,7 @@ namespace switcher
     device_index_prop_ = custom_props_->make_int_property ("device_index",
 							   "Index of the device to use",
 							   0,
-							   127,
+							   7,
 							   device_index_,
 							   (GParamFlags)G_PARAM_READWRITE,
 							   PostureSrc::set_device_index,
@@ -318,9 +315,7 @@ namespace switcher
 
     ctx->cloud_buffers_[ctx->cloud_buffer_index_] = make_shared<vector<char>>(data);
     ctx->cloud_writer_->push_data_auto_clock((void*)ctx->cloud_buffers_[ctx->cloud_buffer_index_]->data(), data.size(), nullptr, nullptr);
-    ctx->cloud_buffer_index_++;
-    if (ctx->cloud_buffer_index_ >= 3)
-      ctx->cloud_buffer_index_ = 0;
+    ctx->cloud_buffer_index_ = (ctx->cloud_buffer_index_ + 1) % 3;
   }
 
   void
