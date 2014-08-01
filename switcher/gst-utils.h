@@ -66,7 +66,7 @@ namespace switcher
 				      const gchar *signal,
 				      GCallback cb,
 				      gpointer user_data);
-
+    bool can_sink_caps (std::string factory_name, std::string caps);
   } //end of GstUtils namespace
 }  // end of switcher namespace
 

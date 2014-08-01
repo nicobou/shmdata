@@ -105,5 +105,13 @@ namespace switcher
 
     return true;
   }
- 
+
+  bool 
+  Xvimagesink::can_sink_caps (std::string caps) 
+  {
+    return GstUtils::can_sink_caps ("ffmpegcolorspace",
+				    caps);
+  };
+
+
 }

@@ -34,9 +34,10 @@ namespace switcher
 			    nullptr, //no disconnect
 			    std::bind (&SinglePadGstSink::disconnect_all,
 				       this),
-			    nullptr, //FIXME can sink caps
+			    std::bind (&SinglePadGstSink::can_sink_caps,
+				       this, 
+				       std::placeholders::_1), 
 			    1);
-    
   }
   
   bool
@@ -95,5 +96,21 @@ namespace switcher
     connection_hook_ = cb;
     hook_user_data_ = user_data;
   }
+
+  bool
+  SinglePadGstSink::can_sink_caps (std::string caps)
+  {
+    g_warning ("%s is not implemented for this quiddity");
+    return false;
+  }
+
+  void 
+  SinglePadGstSink::on_shmdata_connect (std::string shmdata_sochet_path) 
+  {}
+
+  void 
+  SinglePadGstSink::on_shmdata_disconnect () 
+  {}
+
 
 }

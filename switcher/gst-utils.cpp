@@ -19,6 +19,7 @@
 
 #include "gst-utils.h"
 #include <unistd.h>  //sleep
+#include "scope-exit.h"
 
 namespace switcher
 {
@@ -402,4 +403,34 @@ namespace switcher
   {
     return g_signal_connect (gobject, signal, cb, user_data);
   }
+
+  bool
+  GstUtils::can_sink_caps (std::string factory_name, std::string caps)
+  {
+    if (caps.empty ())
+      {
+	g_warning ("%s: input caps string is empty, returning false", 
+		   __FUNCTION__);
+	return false;
+      }
+
+    GstCaps *caps_ptr = gst_caps_from_string (caps.c_str ());
+    On_scope_exit {gst_caps_unref (caps_ptr);};
+
+    GstElementFactory *factory = gst_element_factory_find (factory_name.c_str ());
+    if (nullptr == factory)
+      {
+	g_warning ("%s: factory %s cannot be found, returning false", 
+		   __FUNCTION__, 
+		   factory_name.c_str ());
+	return false;
+      }	
+    On_scope_exit {gst_object_unref (factory);};
+
+    if (!gst_element_factory_can_sink_all_caps (factory,
+						caps_ptr))
+      return false;
+    return true;
+  }
+  
 }

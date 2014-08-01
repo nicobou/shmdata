@@ -53,8 +53,9 @@ namespace switcher
     bool disconnect_all ();
 
     //for subclasses
-    virtual void on_shmdata_connect (std::string /*shmdata_sochet_path*/) {};
-    virtual void on_shmdata_disconnect () {};
+    virtual void on_shmdata_connect (std::string shmdata_sochet_path);
+    virtual void on_shmdata_disconnect ();
+    virtual bool can_sink_caps (std::string caps);
   };
 
 }  // end of namespace

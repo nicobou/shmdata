@@ -44,6 +44,7 @@ namespace switcher
     GstElement *xvimagesink_;
     QuiddityCommand *on_error_command_; //for the pipeline error handler
     bool init_gpipe () final;
+    bool can_sink_caps (std::string caps) final;
   };
 
 }  // end of namespace
