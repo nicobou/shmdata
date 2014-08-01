@@ -20,9 +20,6 @@
 
 #include <iostream>
 
-#define POINTCLOUD_TYPE_BASE          "application/x-pcl"
-#define POINTCLOUD_TYPE_COMPRESSED    "application/x-pcd"
-
 using namespace std;
 using namespace switcher::data;
 using namespace posture;

@@ -20,6 +20,8 @@
 #ifndef __SWITCHER_POSTURE_MERGE_H__
 #define __SWITCHER_POSTURE_MERGE_H__
 
+#include <posture.h>
+
 #include "switcher/quiddity.h"
 #include "switcher/segment.h"
 #include "switcher/startable-quiddity.h"
@@ -28,8 +30,6 @@
 #include <memory>
 #include <mutex>
 #include <string>
-
-#include <posture/pointcloudmerger.h>
 
 namespace switcher
 {
