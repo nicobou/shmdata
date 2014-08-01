@@ -37,16 +37,6 @@ namespace switcher
   PostureMerge::PostureMerge() :
     custom_props_(std::make_shared<CustomPropertyHelper> ())
   {
-    install_connect_method (std::bind (&PostureMerge::connect,
-				       this, 
-				       std::placeholders::_1),
-			    nullptr, //FIXME implement this (disconnect with the shmdata as unique argument)
-			    std::bind (&PostureMerge::disconnect_all,
-				       this),
-			    std::bind (&PostureMerge::can_sink_caps,
-				       this, 
-				       std::placeholders::_1),
-			    8);
   }
 
   PostureMerge::~PostureMerge()
@@ -88,6 +78,17 @@ namespace switcher
   {
     init_startable (this);
     init_segment (this);
+
+    install_connect_method (std::bind (&PostureMerge::connect,
+				       this, 
+				       std::placeholders::_1),
+			    nullptr, //FIXME implement this (disconnect with the shmdata as unique argument)
+			    std::bind (&PostureMerge::disconnect_all,
+				       this),
+			    std::bind (&PostureMerge::can_sink_caps,
+				       this, 
+				       std::placeholders::_1),
+			    8);
 
     calibration_path_prop_ = custom_props_->make_string_property ("calibration_path",
       "Path to the calibration file",

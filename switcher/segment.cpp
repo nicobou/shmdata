@@ -414,6 +414,12 @@ namespace switcher
 				   CanSinkCaps on_can_sink_caps_cb,
 				   uint max_reader)
   {
+    if (quid_ == nullptr)
+    {
+        g_warning("Segment::%s - Segment not initialized yet, call Segment::init_segment(this) first", __FUNCTION__);
+        return false;
+    }
+
     data::Tree::ptr tree = data::make_tree ();
     tree->graft (".max_reader", data::make_tree (max_reader));
     quid_->graft_tree (".shmdata", tree);

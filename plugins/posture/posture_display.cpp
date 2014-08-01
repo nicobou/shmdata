@@ -37,17 +37,6 @@ namespace switcher
   PostureDisplay::PostureDisplay() :
     custom_props_(std::make_shared<CustomPropertyHelper> ())
   {
-    install_connect_method (std::bind (&PostureDisplay::connect,
-				       this, 
-				       std::placeholders::_1),
-			    nullptr, //no disconnect
-			    std::bind (&PostureDisplay::disconnect_all,
-				       this),
-			    std::bind (&PostureDisplay::can_sink_caps,
-				       this, 
-				       std::placeholders::_1),
-			    1);
-
   }
 
   PostureDisplay::~PostureDisplay()
@@ -58,6 +47,17 @@ namespace switcher
   PostureDisplay::init()
   {
     init_segment (this);
+
+    install_connect_method (std::bind (&PostureDisplay::connect,
+				       this, 
+				       std::placeholders::_1),
+			    nullptr, //no disconnect
+			    std::bind (&PostureDisplay::disconnect_all,
+				       this),
+			    std::bind (&PostureDisplay::can_sink_caps,
+				       this, 
+				       std::placeholders::_1),
+			    1);
 
     return true;
   }
