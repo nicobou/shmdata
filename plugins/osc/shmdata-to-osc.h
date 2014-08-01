@@ -45,31 +45,29 @@ namespace switcher
     CustomPropertyHelper::ptr custom_props_; 
     gint port_;
     std::string host_;
-    std::string shmdata_path_;
     GParamSpec *port_spec_;
     GParamSpec *host_spec_;
-    GParamSpec *shmdata_path_spec_;
     lo_address address_;
-    shmdata_any_reader_t *reader_;
     std::mutex address_mutex_;
 
     bool init () final;
     bool start () final;
     bool stop () final;
 
+    //segment handlers
+    bool connect (std::string shmdata_path);
+    bool can_sink_caps (std::string caps);
+
+    void on_shmreader_data (void *data,
+			    int data_size,
+			    unsigned long long timestamp,
+			    const char *type_description, 
+			    void *user_data);
+    
     static void set_port (const gint value, void *user_data);
     static gint get_port (void *user_data);
     static void set_host (const gchar *value, void *user_data);
     static const gchar *get_host (void *user_data);
-    static void set_shmdata_path (const gchar * value, void *user_data);
-    static const gchar *get_shmdata_path (void *user_data);
-    static void on_shmreader_data (shmdata_any_reader_t */*reader*/,
-				   void *shmbuf,
-				   void *data,
-				   int /*data_size*/,
-				   unsigned long long /*timestamp*/,
-				   const char */*type_description*/, 
-				   void *user_data);
   };
 
   SWITCHER_DECLARE_PLUGIN(ShmdataToOsc);

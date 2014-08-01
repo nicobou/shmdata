@@ -34,12 +34,9 @@ namespace switcher
     custom_props_ (new CustomPropertyHelper ()),
     port_ (1056),
     host_ ("localhost"),
-    shmdata_path_ (),
     port_spec_ (nullptr),
     host_spec_ (nullptr),
-    shmdata_path_spec_ (nullptr),
     address_ (nullptr),
-    reader_ (shmdata_any_reader_init ()),
     address_mutex_ ()
   {}
   
@@ -48,6 +45,13 @@ namespace switcher
   {
     init_startable (this);
     init_segment (this);
+    
+    install_connect_method (std::bind (&ShmdataToOsc::connect, this, std::placeholders::_1),
+			    nullptr,
+			    nullptr,
+			    std::bind (&ShmdataToOsc::can_sink_caps, this, std::placeholders::_1),
+			    1);//could be more but should be tested
+
     port_spec_ = 
       custom_props_->make_int_property ("Port", 
 					"OSC destination port",
@@ -74,23 +78,6 @@ namespace switcher
 			       host_spec_, 
 			       "host",
 			       "Destination Host");
-    shmdata_path_spec_ = 
-      custom_props_->make_string_property ("shmdata-path", 
-					   "path of the shmdata to connect with",
-					   shmdata_path_.c_str (),
-					   (GParamFlags) G_PARAM_READWRITE,
-					   set_shmdata_path,
-					   get_shmdata_path,
-					   this);
-    install_property_by_pspec (custom_props_->get_gobject (), 
-			       shmdata_path_spec_, 
-			       "shmdata-path",
-			       "Shmdata Path");
-    shmdata_any_reader_set_debug (reader_, SHMDATA_ENABLE_DEBUG);
-    shmdata_any_reader_set_on_data_handler (reader_, 
-					    &on_shmreader_data,
-					    this);
-    shmdata_any_reader_set_data_type (reader_, "application/x-libloserialized-osc");
     return true;
   }
 
@@ -163,44 +150,50 @@ namespace switcher
     return context->host_.c_str ();
   }
 
-  void 
-  ShmdataToOsc::set_shmdata_path (const gchar * value, void *user_data)
+  bool 
+  ShmdataToOsc::connect (std::string path)
   {
-    ShmdataToOsc *context = static_cast <ShmdataToOsc *> (user_data);
-    context->shmdata_path_ = value;
-    shmdata_any_reader_start (context->reader_, context->shmdata_path_.c_str ());
+    ShmdataAnyReader::ptr reader = std::make_shared<ShmdataAnyReader>();
+    reader->set_data_type ("application/x-libloserialized-osc");
+    reader->set_path (path);
+    reader->set_callback(std::bind (&ShmdataToOsc::on_shmreader_data,
+				    this,
+				    std::placeholders::_1,
+				    std::placeholders::_2,
+				    std::placeholders::_3,
+				    std::placeholders::_4,
+				    std::placeholders::_5),
+			 NULL);
+    reader->start ();
+    register_shmdata (reader);
+    return true;
   }
  
-  const gchar *
-  ShmdataToOsc::get_shmdata_path (void *user_data)
-  {
-    ShmdataToOsc *context = static_cast <ShmdataToOsc *> (user_data);
-    return context->shmdata_path_.c_str ();
-  }
-
   void
-  ShmdataToOsc::on_shmreader_data (shmdata_any_reader_t */*reader*/,
-				   void *shmbuf,
-				   void *data,
+  ShmdataToOsc::on_shmreader_data (void *data,
 				   int data_size,
 				   unsigned long long timestamp,
 				   const char *type_description, 
 				   void *user_data)
   {
-    ShmdataToOsc *context = static_cast <ShmdataToOsc *> (user_data);
     const char *path = lo_get_path (data, data_size);
     lo_message msg = lo_message_deserialise (data, 
 					     data_size, 
 					     nullptr); //error code
     if (nullptr != msg )
       {
-	std::unique_lock <std::mutex> lock (context->address_mutex_);
+	std::unique_lock <std::mutex> lock (address_mutex_);
 	//lo_message_pp (msg);
-	if (nullptr != context->address_)
-	  lo_send_message (context->address_, path, msg);
+	if (nullptr != address_)
+	  lo_send_message (address_, path, msg);
 	lo_message_free (msg);
       }
-    shmdata_any_reader_free (shmbuf);
+  }
+
+  bool 
+  ShmdataToOsc::can_sink_caps (std::string caps)
+  {
+    return 0 == caps.find ("application/x-libloserialized-osc");
   }
 
 }//end of ShmdataToOsc class
