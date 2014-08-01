@@ -125,7 +125,7 @@ namespace switcher
     device_index_prop_ = custom_props_->make_int_property ("device_index",
 							   "Index of the device to use",
 							   0,
-							   127,
+							   7,
 							   device_index_,
 							   (GParamFlags)G_PARAM_READWRITE,
 							   PostureSrc::set_device_index,
