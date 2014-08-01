@@ -37,25 +37,38 @@ namespace switcher
     UDPSink (const UDPSink &) = delete;
     UDPSink &operator= (const UDPSink &) = delete;
 
-    //client management
-    bool remove_client (gchar *host, gint port);
-    bool add_client (gchar *host, gint port);
-    bool clear_clients ();
-
-    //client management (wrapped for being invoked from the quiddity manager)
-    static gboolean remove_client_wrapped (gpointer host, gint port, gpointer user_data);
-    static gboolean add_client_wrapped (gpointer host, gint port, gpointer user_data);
-    static gboolean clear_wrapped (gpointer unused, gpointer user_data);
-
   private:
     GstElement *udpsink_;
     GstElement *udpsink_bin_;
     GstElement *typefind_;
     GstPad *ghost_sinkpad_;
-    static void on_client_added (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data);
-    static void on_client_removed (GstElement *multiudpsink, gchar *host, gint port, gpointer user_data);
-    static void add_elements_to_bin (ShmdataReader *caller, void *udpbin_instance);
+    
     bool init_gpipe () final;
+    bool can_sink_caps (std::string) final  {return true;};
+
+    //client management
+    bool remove_client (gchar *host, gint port);
+    bool add_client (gchar *host, gint port);
+    bool clear_clients ();
+    static gboolean remove_client_wrapped (gpointer host, 
+					   gint port, 
+					   gpointer user_data);
+    static gboolean add_client_wrapped (gpointer host, 
+					gint port, 
+					gpointer user_data);
+    static gboolean clear_wrapped (gpointer unused, 
+				   gpointer user_data);
+    static void on_client_added (GstElement *multiudpsink, 
+				 gchar *host, 
+				 gint port, 
+				 gpointer user_data);
+    static void on_client_removed (GstElement *multiudpsink, 
+				   gchar *host, 
+				   gint port, 
+				   gpointer user_data);
+    static void add_elements_to_bin (ShmdataReader *caller, 
+				     void *udpbin_instance);
+
   };
 
 }  // end of namespace

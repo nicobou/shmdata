@@ -50,6 +50,8 @@ namespace switcher
     //conrfiguration member before starting:
     bool set_path (std::string path); //path needs to be fully specified
     bool set_callback (Callback cb, void* user_data);
+    bool set_data_type (std::string data_type);
+    bool set_absolute_timestamp (bool absolute_timestamp);
 
     //starting the reader:
     bool start ();

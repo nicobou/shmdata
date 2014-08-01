@@ -500,6 +500,13 @@ namespace switcher
     return context->device_;
   }
 
+  bool 
+  PulseSink::can_sink_caps (std::string caps) 
+  {
+    return GstUtils::can_sink_caps ("audioconvert",
+				    caps);
+  };
+
 }//end of PulseSink class
   
   

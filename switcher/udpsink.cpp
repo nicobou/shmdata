@@ -84,7 +84,6 @@ namespace switcher
     install_property (G_OBJECT (udpsink_),"ttl","ttl", "TTL");
     install_property (G_OBJECT (udpsink_),"ttl-mc","ttl-mc", "TTL-MC");
     install_property (G_OBJECT (udpsink_),"loop","loop", "Loop");
-
     install_property (G_OBJECT (typefind_), "caps","caps", "Capabilities");
 
     // g_signal_connect (G_OBJECT (udpsink_), "client-added",  

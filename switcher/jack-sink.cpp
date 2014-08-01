@@ -143,4 +143,10 @@ namespace switcher
 	set_sink_element_no_connect (jacksink_);
       }
   }
+
+  bool 
+  JackSink::can_sink_caps (std::string caps)
+  {
+    return GstUtils::can_sink_caps ("audioconvert", caps);
+  }
 }

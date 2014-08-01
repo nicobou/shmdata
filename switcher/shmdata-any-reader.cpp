@@ -111,6 +111,28 @@ namespace switcher
       }
     if (nullptr != context->cb_ && !context->muted_)
       context->cb_(data, data_size, timestamp, type_description, context->cb_user_data_);
-    shmdata_any_reader_free(shmbuf);
+    shmdata_any_reader_free (shmbuf);
   }
+  
+  bool 
+  ShmdataAnyReader::set_data_type (std::string data_type)
+  {
+    shmdata_any_reader_set_data_type (reader_,
+				      data_type.c_str ());
+    return true;
+  }
+  
+  bool 
+  ShmdataAnyReader::set_absolute_timestamp (bool absolute_timestamp)
+  {
+    if (absolute_timestamp)
+      shmdata_any_reader_set_absolute_timestamp (reader_,
+						 SHMDATA_ENABLE_ABSOLUTE_TIMESTAMP);
+    else
+      shmdata_any_reader_set_absolute_timestamp (reader_,
+						 SHMDATA_DISABLE_ABSOLUTE_TIMESTAMP);
+    
+    return true;
+  }
+
 }

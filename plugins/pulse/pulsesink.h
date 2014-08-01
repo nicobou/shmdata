@@ -51,6 +51,7 @@ namespace switcher
       std::vector <std::pair <std::string/*port*/,std::string /*description*/> > ports_;
       std::string active_port_;
     } DeviceDescription;
+
     GstElement *pulsesink_bin_;
     bool connected_to_pulse_;
     //custom property:
@@ -73,23 +74,31 @@ namespace switcher
     std::mutex quit_mutex_;
     std::condition_variable quit_cond_;
 
+    bool init_gpipe () final;
+    void on_shmdata_disconnect () final;
+    void on_shmdata_connect (std::string shmdata_sochet_path) final;
+    bool can_sink_caps (std::string) final;
+    
     bool make_elements ();
     bool build_elements ();
-    static const gchar *get_devices_json (void *user_data);
     void make_device_description (pa_context *pulse_context);
     void make_json_description ();
-    bool init_gpipe () final;
-    static void pa_context_state_callback(pa_context *c, void *userdata);
-    static void get_sink_info_callback(pa_context *c, const pa_sink_info *i, int is_last, void *userdata);
-    static void on_pa_event_callback(pa_context *c, 
-				     pa_subscription_event_type_t t,
-				     uint32_t idx, 
-				     void *userdata);
-    void on_shmdata_disconnect ();
-    void on_shmdata_connect (std::string /* shmdata_sochet_path */);
-    static gboolean async_get_pulse_devices (void *user_data);
     void update_output_device ();
-    static void set_device (const gint value, void *user_data);
+
+    static const gchar *get_devices_json (void *user_data);
+    static void pa_context_state_callback (pa_context *c, 
+					  void *userdata);
+    static void get_sink_info_callback (pa_context *c, 
+					const pa_sink_info *i, 
+					int is_last, 
+					void *userdata);
+    static void on_pa_event_callback (pa_context *c, 
+				      pa_subscription_event_type_t t,
+				      uint32_t idx, 
+				      void *userdata);
+    static gboolean async_get_pulse_devices (void *user_data);
+    static void set_device (const gint value, 
+			    void *user_data);
     static gint get_device (void *user_data);
     static gboolean quit_pulse (void *user_data);
   };
