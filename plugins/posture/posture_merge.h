@@ -57,9 +57,11 @@ namespace switcher
     unsigned int source_id_ {0};
     std::shared_ptr<posture::PointCloudMerger> merger_ {nullptr};
     std::mutex mutex_ {};
-    std::vector<char> merged_cloud_ {};
 
     ShmdataAnyWriter::ptr cloud_writer_ {nullptr};
+
+    std::shared_ptr<std::vector<char>> cloud_buffers_[3];
+    unsigned int cloud_buffer_index_ {0};
 
     bool init () final;
     

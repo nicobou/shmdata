@@ -315,9 +315,7 @@ namespace switcher
 
     ctx->cloud_buffers_[ctx->cloud_buffer_index_] = make_shared<vector<char>>(data);
     ctx->cloud_writer_->push_data_auto_clock((void*)ctx->cloud_buffers_[ctx->cloud_buffer_index_]->data(), data.size(), nullptr, nullptr);
-    ctx->cloud_buffer_index_++;
-    if (ctx->cloud_buffer_index_ >= 3)
-      ctx->cloud_buffer_index_ = 0;
+    ctx->cloud_buffer_index_ = (ctx->cloud_buffer_index_ + 1) % 3;
   }
 
   void
