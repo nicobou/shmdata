@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_DECODEBIN2_H__
 #define __SWITCHER_DECODEBIN2_H__
 
-#include "base-sink.h"
+#include "single-pad-gst-sink.h"
 #include "decodebin-to-shmdata.h"
 #include <memory>
 #include <map>
@@ -29,7 +29,7 @@
 namespace switcher
 {
 
-  class Decodebin2 : public BaseSink
+  class Decodebin2 : public SinglePadGstSink
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Decodebin2);

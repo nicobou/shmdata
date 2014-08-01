@@ -25,7 +25,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     aravis-genicam.cpp \
     audio-source.cpp \
     audio-test-source.cpp \
-    base-sink.cpp \
+    single-pad-gst-sink.cpp \
     categorizable.cpp \
     counter-map.cpp \
     custom-property-helper.cpp \
@@ -109,7 +109,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     aravis-genicam.h \
     audio-source.h \
     audio-test-source.h \
-    base-sink.h \
+    single-pad-gst-sink.h \
     categorizable.h \
     counter-map.h \
     create-remove-spy.h \

@@ -37,31 +37,17 @@ namespace switcher
   PostureDisplay::PostureDisplay() :
     custom_props_(std::make_shared<CustomPropertyHelper> ())
   {
-    //registering connect
-    install_method ("Connect",
-		    "connect",
-		    "connect the sink to a shmdata socket", 
-		    "success or fail",
-		    Method::make_arg_description ("Shmdata Path",
-						  "socket",
-						  "shmdata socket path to connect with",
-						  NULL),
-		    (Method::method_ptr)&connect_wrapped, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
-		    this);
-  
-    //registering disconnect
-    install_method ("Disconnect",
-		    "disconnect",
-		    "disconnect the sink from the shmdata socket", 
-		    "success or fail",
-		    Method::make_arg_description ("none",
-						  NULL),
-		    (Method::method_ptr)&disconnect, 
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_NONE, NULL),
-		    this);
+    install_connect_method (std::bind (&PostureDisplay::connect,
+				       this, 
+				       std::placeholders::_1),
+			    nullptr, //no disconnect
+			    std::bind (&PostureDisplay::disconnect_all,
+				       this),
+			    std::bind (&PostureDisplay::can_sink_caps,
+				       this, 
+				       std::placeholders::_1),
+			    1);
+
   }
 
   PostureDisplay::~PostureDisplay()
@@ -74,17 +60,6 @@ namespace switcher
     init_segment (this);
 
     return true;
-  }
-
-  gboolean
-  PostureDisplay::connect_wrapped (gpointer connector_name, gpointer user_data)
-  {
-    PostureDisplay* context = static_cast<PostureDisplay*>(user_data);
-       
-    if (context->connect ((char *)connector_name))
-      return TRUE;
-    else
-      return FALSE;
   }
 
   bool
@@ -111,13 +86,18 @@ namespace switcher
     return true;
   }
 
-  gboolean
-  PostureDisplay::disconnect (gpointer /*unused*/, gpointer user_data)
+  bool
+  PostureDisplay::disconnect_all ()
   {
-    PostureDisplay* context = static_cast<PostureDisplay*>(user_data);
-    context->display_.reset();
-    context->clear_shmdatas ();
-    return TRUE;
+    display_.reset();
+    return true;
   }
 
+  bool
+  PostureDisplay::can_sink_caps (std::string caps)
+  {
+    return (caps == POINTCLOUD_TYPE_BASE)
+      || (caps == POINTCLOUD_TYPE_COMPRESSED);
+  }
+  
 } // end of namespace

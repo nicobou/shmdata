@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_GTK_VIDEO_H__
 #define __SWITCHER_GTK_VIDEO_H__
 
-#include "switcher/base-sink.h"
+#include "switcher/single-pad-gst-sink.h"
 #include "switcher/custom-property-helper.h"
 #include <memory>
 #include <thread>
@@ -43,7 +43,7 @@
 
 namespace switcher
 {
-  class GTKVideo : public BaseSink
+  class GTKVideo : public SinglePadGstSink
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GTKVideo);

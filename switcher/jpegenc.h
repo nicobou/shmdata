@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_JPEG_ENC_H__
 #define __SWITCHER_JPEG_ENC_H__
 
-#include "switcher/base-sink.h"
+#include "switcher/single-pad-gst-sink.h"
 #include "switcher/gst-element-cleaner.h"
 #include <gst/gst.h>
 #include <memory>
@@ -28,7 +28,7 @@
 namespace switcher
 {
 
-  class JpegEnc : public BaseSink, public GstElementCleaner
+  class JpegEnc : public SinglePadGstSink, public GstElementCleaner
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JpegEnc);

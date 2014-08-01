@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_FAKESINK_H__
 #define __SWITCHER_FAKESINK_H__
 
-#include "base-sink.h"
+#include "single-pad-gst-sink.h"
 #include "gst-element-cleaner.h"
 #include "custom-property-helper.h"
 #include <gst/gst.h>
@@ -30,7 +30,7 @@
 namespace switcher
 {
 
-  class FakeSink : public BaseSink
+  class FakeSink : public SinglePadGstSink
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeSink);

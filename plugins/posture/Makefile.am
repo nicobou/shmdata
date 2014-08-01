@@ -90,31 +90,31 @@ noinst_HEADERS = \
 	posture_display.h
 
 #### plugin unit test
-AM_CFLAGS = \
-    -I$(top_srcdir)
+# AM_CFLAGS = \
+#     -I$(top_srcdir)
 
-AM_CXXFLAGS =  \
-    $(GLIB_CFLAGS) \
-    $(GSOAP_CFLAGS) \
-    $(GST_CFLAGS) \
-    $(JSONGLIB_CFLAGS) \
-	$(POSTURE_CFLAGS) \
-    $(SHMDATA_CFLAGS) \
-    -I$(top_srcdir) 
+# AM_CXXFLAGS =  \
+#     $(GLIB_CFLAGS) \
+#     $(GSOAP_CFLAGS) \
+#     $(GST_CFLAGS) \
+#     $(JSONGLIB_CFLAGS) \
+# 	$(POSTURE_CFLAGS) \
+#     $(SHMDATA_CFLAGS) \
+#     -I$(top_srcdir) 
 
-AM_LDFLAGS = \
-    $(GLIB_LIBS) \
-    $(GSOAP_LIBS) \
-    $(GST_LIBS) \
-    $(JSONGLIB_LIBS) \
-	$(POSTURE_LIBS) \
-    $(SHMDATA_LIBS) \
-    $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
+# AM_LDFLAGS = \
+#     $(GLIB_LIBS) \
+#     $(GSOAP_LIBS) \
+#     $(GST_LIBS) \
+#     $(JSONGLIB_LIBS) \
+# 	$(POSTURE_LIBS) \
+#     $(SHMDATA_LIBS) \
+#     $(top_builddir)/switcher/libswitcher-@LIBSWITCHER_API_VERSION@.la
 
-check_PROGRAMS = \
-    check_posture_plugin
+# check_PROGRAMS = \
+#     check_posture_plugin
 
-check_posture_plugin_SOURCES = \
-    check_posture_plugin.cpp
+# check_posture_plugin_SOURCES = \
+#     check_posture_plugin.cpp
 
-TESTS = $(check_PROGRAMS)
+#TESTS = $(check_PROGRAMS)

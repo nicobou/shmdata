@@ -21,14 +21,14 @@
 #ifndef __SWITCHER_UDPSINK_H__
 #define __SWITCHER_UDPSINK_H__
 
-#include "base-sink.h"
+#include "single-pad-gst-sink.h"
 #include <gst/gst.h>
 #include <memory>
 
 namespace switcher
 {
 
-  class UDPSink : public BaseSink
+  class UDPSink : public SinglePadGstSink
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(UDPSink);

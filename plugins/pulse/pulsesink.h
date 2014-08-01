@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_PULSE_SINK_H__
 #define __SWITCHER_PULSE_SINK_H__
 
-#include "switcher/base-sink.h"
+#include "switcher/single-pad-gst-sink.h"
 #include <pulse/pulseaudio.h>
 #include <pulse/glib-mainloop.h>
 #include "switcher/custom-property-helper.h"
@@ -31,7 +31,7 @@
 namespace switcher
 {
 
-  class PulseSink : public BaseSink
+  class PulseSink : public SinglePadGstSink
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSink);

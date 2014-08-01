@@ -21,14 +21,14 @@
 #ifndef __SWITCHER_DEINTERLEAVE_H__
 #define __SWITCHER_DEINTERLEAVE_H__
 
-#include "base-sink.h"
+#include "single-pad-gst-sink.h"
 #include <memory>
 #include <map>
 
 namespace switcher
 {
 
-  class Deinterleave : public BaseSink, public GstElementCleaner
+  class Deinterleave : public SinglePadGstSink, public GstElementCleaner
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Deinterleave);

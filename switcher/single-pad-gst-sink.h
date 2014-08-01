@@ -28,14 +28,14 @@
 namespace switcher
 {
 
-  class BaseSink : public GPipe
+  class SinglePadGstSink : public GPipe
   {
   public:
-    typedef std::shared_ptr<BaseSink> ptr;
-    BaseSink ();
-    ~BaseSink ();
-    BaseSink (const BaseSink &) = delete;
-    BaseSink &operator= (const BaseSink &) = delete;
+    typedef std::shared_ptr<SinglePadGstSink> ptr;
+    SinglePadGstSink ();
+    ~SinglePadGstSink ();
+    SinglePadGstSink (const SinglePadGstSink &) = delete;
+    SinglePadGstSink &operator= (const SinglePadGstSink &) = delete;
 
     //  protected: //made public for allowing composition and/or delegation
     void set_sink_element (GstElement *sink);
@@ -43,15 +43,17 @@ namespace switcher
     void set_on_first_data_hook (ShmdataReader::on_first_data_hook cb, void *user_data);
     
   private:
-    ShmdataReader::on_first_data_hook connection_hook_;
-    void *hook_user_data_;
-    GstElement *sink_element_;
-    std::string shmdata_path_;
+    ShmdataReader::on_first_data_hook connection_hook_ {nullptr};
+    void *hook_user_data_ {nullptr};
+    GstElement *sink_element_ {nullptr};
+    std::string shmdata_path_ {};
+
+    //for segment
     bool connect (std::string shmdata_socket_path);
-    //wrapper for being called
-    static gboolean connect_wrapped (gpointer shmdata_socket_path, gpointer user_data);
-    static gboolean disconnect (gpointer , gpointer user_data);
-    virtual void on_shmdata_connect (std::string /* shmdata_sochet_path */) {};
+    bool disconnect_all ();
+
+    //for subclasses
+    virtual void on_shmdata_connect (std::string /*shmdata_sochet_path*/) {};
     virtual void on_shmdata_disconnect () {};
   };
 
