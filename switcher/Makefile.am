@@ -50,7 +50,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     information-tree-json.cpp \
     jack-audio-source.cpp \
     jack-sink.cpp \
-    jpegenc.cpp \
     json-builder.cpp \
     logger.cpp \
     method.cpp \
@@ -83,10 +82,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     udpsink.cpp \
     unique-gst-element.cpp \
     uridecodebin.cpp \
-    video-rate.cpp \
     video-source.cpp \
     video-test-source.cpp \
-    vorbis.cpp \
     xvimagesink.cpp
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_LDFLAGS = \
@@ -137,7 +134,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     information-tree-json.h \
     jack-audio-source.h \
     jack-sink.h \
-    jpegenc.h \
     json-builder.h \
     logger.h \
     method.h \
@@ -170,8 +166,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     udpsink.h \
     unique-gst-element.h \
     uridecodebin.h \
-    video-rate.h \
     video-source.h \
     video-test-source.h \
-    vorbis.h \
     xvimagesink.h

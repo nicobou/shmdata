@@ -41,7 +41,6 @@
 #include "http-sdp-dec.h"
 #include "jack-audio-source.h"
 #include "jack-sink.h"
-#include "jpegenc.h"
 #include "logger.h"
 #include "property-mapper.h"
 #include "rtp-session.h"
@@ -50,9 +49,7 @@
 #include "udpsink.h"
 #include "uridecodebin.h"
 #include "string-dictionary.h"
-#include "video-rate.h"
 #include "video-test-source.h"
-#include "vorbis.h"
 #include "xvimagesink.h"
 
 namespace switcher
@@ -203,8 +200,6 @@ namespace switcher
 						       JackAudioSource::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<JackSink> (JackSink::switcher_doc_.get_class_name (), 
 						JackSink::switcher_doc_.get_json_root_node ());
-    abstract_factory_.register_class<JpegEnc> (JpegEnc::switcher_doc_.get_class_name (), 
-					       JpegEnc::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<Logger> (Logger::switcher_doc_.get_class_name (), 
       					       Logger::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<PropertyMapper> (PropertyMapper::switcher_doc_.get_class_name (), 
@@ -221,14 +216,8 @@ namespace switcher
        					       UDPSink::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<Uridecodebin> (Uridecodebin::switcher_doc_.get_class_name (), 
 						    Uridecodebin::switcher_doc_.get_json_root_node ());
-    // abstract_factory_.register_class<Uris> (Uris::switcher_doc_.get_class_name (), 
-    //  					    Uris::switcher_doc_.get_json_root_node ());
-    abstract_factory_.register_class<VideoRate> (VideoRate::switcher_doc_.get_class_name (),
-      						 VideoRate::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<VideoTestSource> (VideoTestSource::switcher_doc_.get_class_name (),
 						       VideoTestSource::switcher_doc_.get_json_root_node ());
-    abstract_factory_.register_class<Vorbis> (Vorbis::switcher_doc_.get_class_name (),
-     					      Vorbis::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<Xvimagesink> (Xvimagesink::switcher_doc_.get_class_name (),
        						   Xvimagesink::switcher_doc_.get_json_root_node ());
   }
