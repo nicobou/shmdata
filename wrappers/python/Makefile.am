@@ -1,8 +1,8 @@
-python_LTLIBRARIES = \
+plugins_LTLIBRARIES = \
 	pyshmdata.la
 
 # pyshmdata
-pyshmdatadir = `python3 -c 'from distutils import sysconfig; print(sysconfig.get_python_lib(1,0))'`
+pluginsdir = `python3 -c 'from distutils import sysconfig; print(sysconfig.get_python_lib(1,0))'`
 
 pyshmdata_la_SOURCES = \
 	pyshmdata.cpp
