@@ -51,6 +51,3 @@ SUBDIRS += \
     systemusage
 endif
 
-#FIXME this will remove from sources what cannot be compiled 
-#in the machine where make dist has been asked
-DIST_SUBDIRS = ${SUBDIRS}

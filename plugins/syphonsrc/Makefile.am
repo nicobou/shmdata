@@ -15,19 +15,18 @@ plugins_LTLIBRARIES = \
 #libsyphonsrc info
 libsyphonsrc_la_SOURCES = \
     syphonsrc.cpp \
-	syphonreader.mm
+    syphonreader.mm
 
-libsyphonsrc_la_include_HEADERS = \
+noinst_HEADERS = \
     syphonsrc.h \
-    syphonreader.h \
-	Syphon-framework/build/Release/Syphon.framework/Headers/Syphon.h
+    syphonreader.h
 
 libsyphonsrc_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
 libsyphonsrc_la_LDFLAGS = \
-	-F$(top_srcdir)/plugins/syphonsrc/Syphon-framework/build/Release \
-	-framework Syphon \
+    -F$(top_srcdir)/plugins/syphonsrc/Syphon-framework/build/Release \
+    -framework Syphon \
     $(GLIB_LIBS) \
     $(GST_LIBS) \
     $(GMODULE_LIBS) \
@@ -44,21 +43,22 @@ libsyphonsrc_la_CXXFLAGS = \
     $(JSONGLIB_CFLAGS) \
     $(SHMDATA_CFLAGS) \
     -I$(top_srcdir) \
-	-F$(top_srcdir)/plugins/syphonsrc/Syphon-framework/build/Release \
-	-framework Syphon \
+    -F$(top_srcdir)/plugins/syphonsrc/Syphon-framework/build/Release \
+    -framework Syphon \
     -DG_LOG_DOMAIN=\"switcher\"
 
 libsyphonsrc_la_OBJCXXFLAGS = \
-	-F$(top_srcdir)/plugins/syphonsrc/Syphon-framework/build/Release \
-	-framework Syphon
+    -F$(top_srcdir)/plugins/syphonsrc/Syphon-framework/build/Release \
+    -framework Syphon
 
 # Needed to build Syphon.framework before syphonsrc
+if HAVE_OSX
 BUILT_SOURCES = \
-	Syphon-framework/build/Release/Syphon.framework/Headers/Syphon.h
+    Syphon-framework/build/Release/Syphon.framework/Headers/Syphon.h
 
 Syphon-framework/build/Release/Syphon.framework/Headers/Syphon.h: Makefile
 	git submodule init && git submodule update && sh build_syphon.sh
-
+endif
 #### plugin unit test
 AM_CFLAGS = \
     -I$(top_srcdir)

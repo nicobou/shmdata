@@ -72,9 +72,6 @@ case "$host" in *-darwin* | *-macos10*)
   AM_CONDITIONAL([HAVE_OSX], true)
   AC_DEFINE(HAVE_OSX,[1],[Apple Mac OS X operating system detected])
   
-  #going to build syphon git submodule if osx
-  AC_CONFIG_FILES([plugins/syphonsrc/Makefile])
-
   # OSX does not include /usr/local/lib/pkgconfig path, so we export it here
   # (for everyone, just in case)
   PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
@@ -172,7 +169,6 @@ if test "x${have_gsoap}" = "xfalse" ; then
     AC_MSG_WARN([Missing gsoap package])
 else
     GSOAPBUILD=enabled
-    AC_CONFIG_FILES([plugins/gsoap/Makefile])
 fi
 AM_CONDITIONAL(GSOAPBUILD, test "${GSOAPBUILD}" = "enabled")
 
@@ -183,7 +179,6 @@ if test "x${have_liblo}" = "xfalse" ; then
     AC_MSG_WARN([Missing liblo-dev package, switcher will not be built])
 else
     OSCBUILD=enabled
-    AC_CONFIG_FILES([plugins/osc/Makefile])
 fi
 AM_CONDITIONAL(OSCBUILD, test "${OSCBUILD}" = "enabled")
 
@@ -219,7 +214,6 @@ dnl fi
 AM_CONDITIONAL(PORTMIDIBUILD, test "${PORTMIDIBUILD}" = "enabled")
 
 if test "${PORTMIDIBUILD}" = "enabled"; then
-    AC_CONFIG_FILES([plugins/portmidi/Makefile])
   PORTMIDI_CFLAGS="-DPMALSA"
   AC_SUBST([PORTMIDI_CFLAGS], "$PORTMIDI_CFLAGS")
   dnl PORTMIDI_LIBS="-lportmidi -lporttime -lpthread -lm"
@@ -234,7 +228,6 @@ if test "x${have_libpulse}" = "xfalse" ; then
     AC_MSG_WARN([Missing libpulse-dev])
 else
     PULSEBUILD=enabled
-    AC_CONFIG_FILES([plugins/pulse/Makefile])
 fi
 AM_CONDITIONAL(PULSEBUILD, test "${PULSEBUILD}" = "enabled")
 
@@ -247,13 +240,9 @@ fi
 # check for v4l2 
 AC_CHECK_HEADER(linux/videodev2.h,
                 V4L2BUILD=enabled,
-                AC_MSG_WARN([v4l2 capture plugin will not be built (missing videodev2.h from package linux-libc-dev)]))
+                [AC_MSG_WARN([v4l2 capture plugin will not be built (missing videodev2.h from package linux-libc-dev)])
+                V4L2BUILD=disabled])
 AM_CONDITIONAL(V4L2BUILD, test "${V4L2BUILD}" = "enabled")
-if test "x${V4L2BUILD}" = "xenabled";
-  then AC_CONFIG_FILES([plugins/v4l2/Makefile])
-else
-  V4L2BUILD=disabled
-fi
 
 #pjsip
 PKG_CHECK_MODULES(PJSIP, libpjproject, have_pjsip=true, have_pjsip=false)
@@ -262,7 +251,6 @@ if test "x${have_pjsip}" = "xfalse" ; then
     AC_MSG_WARN([Missing pjsip dev files])
 else
     PJSIPBUILD=enabled
-    AC_CONFIG_FILES([plugins/pjsip/Makefile])
 fi
 AM_CONDITIONAL(PJSIPBUILD, test "${PJSIPBUILD}" = "enabled")
 
@@ -274,7 +262,6 @@ if test "x${have_gtk}" = "xfalse" ; then
     AC_MSG_WARN([Missing libgtk2.0-dev package, gtk fullscreen video will not be built])
 else
     GTKBUILD=enabled
-    AC_CONFIG_FILES([plugins/gtk/Makefile])
 fi
 AM_CONDITIONAL(GTKBUILD, test "${GTKBUILD}" = "enabled")
 if test "${GTKBUILD}" = "enabled"; then
@@ -285,8 +272,7 @@ fi
 
 #check nodejs-dev
 AC_CHECK_FILE([/usr/include/nodejs/src/node.h],
-              [NODEADDONBUILD=enabled
-               AC_CONFIG_FILES([nodejs/Makefile])],
+              [NODEADDONBUILD=enabled],
               [NODEADDONBUILD=disabled
                AC_MSG_WARN([Missing nodejs-dev package])])
 AM_CONDITIONAL(NODEADDONBUILD, test "x${NODEADDONBUILD}" = "xenabled")
@@ -298,7 +284,6 @@ if test "x${have_posture}" = "xfalse" ; then
     AC_MSG_WARN([Missing Posturevision, there won't be support for point clouds captures])
 else
     POSTUREBUILD=enabled
-    AC_CONFIG_FILES([plugins/posture/Makefile])
 fi
 AM_CONDITIONAL(POSTUREBUILD, test "${POSTUREBUILD}" = "enabled")
 
@@ -392,9 +377,6 @@ fi
 if test "${SOAPBUILD}" = "disabled";
   then SWITCHERBUILD=disabled
 fi
-if test "${SWITCHERBUILD}" = "enabled";
-  then AC_CONFIG_FILES([src/Makefile])
-fi
 AM_CONDITIONAL(SWITCHERBUILD, test "${SWITCHERBUILD}" = "enabled")
 
 
@@ -408,9 +390,20 @@ doxyfile
 switcher-${LIBSWITCHER_API_VERSION}.pc:switcher.pc.in
 switcher/Makefile
 tests/Makefile
+src/Makefile
 plugins/Makefile
 plugins/example/Makefile
 plugins/systemusage/Makefile
+plugins/syphonsrc/Makefile
+plugins/gsoap/Makefile
+plugins/osc/Makefile
+plugins/portmidi/Makefile
+plugins/pulse/Makefile
+plugins/v4l2/Makefile
+plugins/pjsip/Makefile
+plugins/gtk/Makefile
+nodejs/Makefile
+plugins/posture/Makefile
 ])
 AC_OUTPUT
 
