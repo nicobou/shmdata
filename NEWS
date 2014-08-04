@@ -1,3 +1,21 @@
+switcher 0.6.0 (2014-08-04)
+---------------------------
+This is an official release in the 0.6 stable series. 
+
+New features:
+
+* information tree
+* syphon (OSX)
+* improved per-quiddity shmdata dynamic description
+* shmdata-any support
+* system usage quiddity
+* SIP
+* posture plugins
+ 
+Bugs fixed:
+
+* too many for being listed here 
+
 switcher 0.4.6 (2014-03-07)
 ---------------------------
 This is an official release in the 0.4 stable series. 
