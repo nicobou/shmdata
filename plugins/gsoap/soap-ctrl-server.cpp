@@ -68,13 +68,14 @@ namespace switcher
 		    G_TYPE_BOOLEAN,
 		    Method::make_arg_type_description (G_TYPE_INT, nullptr),
      		    this);
-   
     return true;
   }
 
   SoapCtrlServer::~SoapCtrlServer ()
   {
+    g_print ("%s %d \n", __FUNCTION__, __LINE__);
     stop ();
+    g_print ("%s %d \n", __FUNCTION__, __LINE__);
   }
 
   std::shared_ptr<QuiddityManager>
