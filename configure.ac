@@ -197,12 +197,11 @@ if test "${PUREDATA}" = "y" ; then
 fi
 
 # Check for Python to build a wrapper
-PKG_CHECK_MODULES(PYTHON3, python3)
+AM_PATH_PYTHON([3])
 if test "x${have_python3}" = "xfalse" ; then
-    AC_MSG_WARN([Missing Python3 dev package, not building python3 wrapper])
+    AC_MSG_WARN([Missing python3-dev package, not building python3 wrapper])
     AM_CONDITIONAL(HAVE_PYTHON3, false)
 else
-    AM_PATH_PYTHON([3])
     AM_CONDITIONAL(HAVE_PYTHON3, true)
 fi
 

@@ -8,11 +8,12 @@ pyshmdata_la_SOURCES = \
 	pyshmdata.cpp
 
 pyshmdata_la_CXXFLAGS = \
+	-std=c++11 \
 	$(AM_CXXFLAGS) \
-	$(PYTHON3_CFLAGS) \
+	`python3-config --cflags` \
 	-I$(top_builddir)/shmdata
 
 pyshmdata_la_LDFLAGS = \
 	-module -fPIC \
-	$(PYTHON3_LIBS) \
-	$(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la
+	`python3-config --libs` \
+	$(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
