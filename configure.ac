@@ -196,6 +196,16 @@ if test "${PUREDATA}" = "y" ; then
    fi
 fi
 
+# Check for Python to build a wrapper
+PKG_CHECK_MODULES(PYTHON3, python3)
+if test "x${have_python3}" = "xfalse" ; then
+    AC_MSG_WARN([Missing Python3 dev package, not building python3 wrapper])
+    AM_CONDITIONAL(HAVE_PYTHON3, false)
+else
+    AM_PATH_PYTHON([3])
+    AM_CONDITIONAL(HAVE_PYTHON3, true)
+fi
+
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
 AC_CONFIG_FILES([
@@ -210,6 +220,8 @@ AC_CONFIG_FILES([
         plugins/puredata/Makefile
         gst/Makefile
         gst/shm/Makefile
+        wrappers/Makefile
+        wrappers/python/Makefile
         ])
 
 AC_OUTPUT

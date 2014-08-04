@@ -7,7 +7,7 @@
 *.pc
 *.swp
 *.trs
-*/.deps/
+*.deps/
 */.libs/
 *~
 Makefile

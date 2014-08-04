@@ -9,7 +9,8 @@ SUBDIRS = \
     gst \
     tests \
     plugins \
-    examples 
+    examples \
+	wrappers
 
 EXTRA_DIST = \
     LICENSE \
