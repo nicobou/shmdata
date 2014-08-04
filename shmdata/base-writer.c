@@ -262,6 +262,7 @@ shmdata_base_writer_make_shm_branch (shmdata_base_writer_t * writer,
 				     const char *socketPath)
 {
   writer->qserial_ = gst_element_factory_make ("queue", NULL);
+  
   writer->serializer_ = gst_element_factory_make ("gdppay", NULL);
   writer->shmsink_ = gst_element_factory_make ("shmsink", NULL);
 
@@ -284,8 +285,9 @@ shmdata_base_writer_make_shm_branch (shmdata_base_writer_t * writer,
   g_object_set (G_OBJECT (writer->shmsink_), "socket-path", socketPath, NULL);
   g_object_set (G_OBJECT (writer->shmsink_), "shm-size", 94967295, NULL);
   g_object_set (G_OBJECT (writer->shmsink_), "sync", FALSE, NULL);
-  g_object_set (G_OBJECT (writer->shmsink_), "wait-for-connection", FALSE,
-		NULL);
+  g_object_set (G_OBJECT (writer->shmsink_), "wait-for-connection", FALSE, NULL);
+  g_object_set (G_OBJECT (writer->qserial_), "leaky", 1, "max-size-buffers", 2, NULL);
+  
 
   writer->client_connected_handler_id_ = 
     g_signal_connect (writer->shmsink_, "client-connected",
