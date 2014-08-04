@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_GST_PARSE_TO_BIN_SRC_H__
 #define __SWITCHER_GST_PARSE_TO_BIN_SRC_H__
 
-#include "base-source.h"
+#include "gpipe.h"
 #include "startable-quiddity.h"
 #include "custom-property-helper.h"
 #include <gst/gst.h>
@@ -30,7 +30,7 @@
 namespace switcher
 {
 
-  class GstParseToBinSrc : public BaseSource, StartableQuiddity
+  class GstParseToBinSrc : public GPipe, StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstParseToBinSrc);
@@ -49,7 +49,7 @@ namespace switcher
     gchar *gst_launch_pipeline_;
     bool clean ();
     bool to_shmdata ();
-    bool init_segment ();
+    bool init_gpipe () final;
     static void set_gst_launch_pipeline (const gchar *value, void *user_data);
     static const gchar *get_gst_launch_pipeline (void *user_data);
   };

@@ -1,0 +1,11 @@
+--- ./pjmedia/include/pjmedia/codec.h	2012-10-05 06:04:54.000000000 -0400
++++ ./pjmedia/include/pjmedia/codec128.h	2014-05-07 12:24:28.594106978 -0400
+@@ -621,7 +621,7 @@
+ /**
+  * Declare maximum codecs
+  */
+-#define PJMEDIA_CODEC_MGR_MAX_CODECS	    32
++#define PJMEDIA_CODEC_MGR_MAX_CODECS	    128
+ 
+ 
+ /**

@@ -30,11 +30,10 @@ namespace switcher
   Property::Property () :
     long_name_ ("undefined_long_name"),
     name_ ("undefined_name"),
-    property_ (NULL),
-    object_ (NULL)
-  {
-    json_description_.reset (new JSONBuilder());
-  }
+    property_ (nullptr),
+    object_ (nullptr),
+    json_description_ (new JSONBuilder())
+  {}
 
   Property::~Property ()
   {
@@ -61,14 +60,14 @@ namespace switcher
     name_ = source.name_;
     json_description_ = source.json_description_;
     subscribed_handlers_ = source.subscribed_handlers_;
-    property_ = NULL;
-    object_ = NULL;
-    if (source.property_ != NULL)
+    property_ = nullptr;
+    object_ = nullptr;
+    if (source.property_ != nullptr)
       {
 	g_param_spec_ref (source.property_);
 	property_ = source.property_;
       }
-    if (source.object_ != NULL)
+    if (source.object_ != nullptr)
       {
 	g_object_ref (source.object_);   
 	object_ = source.object_;
@@ -122,7 +121,7 @@ namespace switcher
   Property::subscribe (Callback cb, void *user_data)
   {
     std::pair <Callback, void *> subscribe_id = std::make_pair (cb, user_data);
-    gchar *signal = g_strconcat ("notify::", property_->name, NULL);
+    gchar *signal = g_strconcat ("notify::", property_->name, nullptr);
     if (subscribed_handlers_.find(subscribe_id) != subscribed_handlers_.end ())
       {
 	g_debug ("cannot subscribe callback/user_data");
@@ -202,9 +201,9 @@ namespace switcher
   void
   Property::make_description ()
   {
-    if (NULL == property_)
+    if (nullptr == property_)
       {
-	g_warning ("%s: cannot make description from a NULL property",
+	g_warning ("%s: cannot make description from a nullptr property",
 		   __PRETTY_FUNCTION__);
 	return;
       }
@@ -238,7 +237,7 @@ namespace switcher
       {
 	const char *string_val = g_value_get_string (&value);
 	json_description_->add_string_member ("type", "string");
-	if (string_val == NULL)
+	if (string_val == nullptr)
 	  json_description_->add_string_member ("default value","");
 	else
 	  json_description_->add_string_member ("default value",string_val);
@@ -565,11 +564,11 @@ namespace switcher
     // 	first_flag = FALSE;
     // }
     // if (property_->flags & GST_PARAM_MUTABLE_PLAYING) {
-    // 	g_debug (", %s", ("changeable in NULL, READY, PAUSED or PLAYING state"));
+    // 	g_debug (", %s", ("changeable in nullptr, READY, PAUSED or PLAYING state"));
     // } else if (property_->flags & GST_PARAM_MUTABLE_PAUSED) {
-    // 	g_debug (", %s", ("changeable only in NULL, READY or PAUSED state"));
+    // 	g_debug (", %s", ("changeable only in nullptr, READY or PAUSED state"));
     // } else if (property_->flags & GST_PARAM_MUTABLE_READY) {
-    // 	g_debug (", %s", ("changeable only in NULL or READY state"));
+    // 	g_debug (", %s", ("changeable only in nullptr or READY state"));
     // }
     // if (property_->flags & ~KNOWN_PARAM_FLAGS) {
     // 	g_debug ("%s0x%0x", (first_flag) ? "" : ", ",
@@ -584,7 +583,7 @@ namespace switcher
 
 	g_debug ("%-23.23s String. ", "");
 
-	if (string_val == NULL)
+	if (string_val == nullptr)
 	  g_debug ("Default: null");
 	else
 	  g_debug ("Default: \"%s\"", string_val);
@@ -678,7 +677,7 @@ namespace switcher
 	const GstCaps *caps = gst_value_get_caps (&value);
 
 	if (!caps)
-	  g_debug ("%-23.23s Caps (NULL)", "");
+	  g_debug ("%-23.23s Caps (nullptr)", "");
 	else {
 	  g_debug ("%-23.23s Caps (%s)", "", gst_caps_to_string (caps));
 	}

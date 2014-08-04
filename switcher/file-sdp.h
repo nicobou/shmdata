@@ -21,14 +21,14 @@
 #ifndef __SWITCHER_FILE_SDP_H__
 #define __SWITCHER_FILE_SDP_H__
 
-#include "base-source.h"
+#include "gpipe.h"
 #include "gst-element-cleaner.h"
 #include <memory>
 
 namespace switcher
 {
 
-  class FileSDP : public BaseSource, public GstElementCleaner
+  class FileSDP : public GPipe, public GstElementCleaner
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FileSDP);
@@ -41,7 +41,7 @@ namespace switcher
    GstElement *filesrc_;
    GstElement *sdpdemux_;
    int media_counter_;
-   bool init_segment ();
+   bool init_gpipe () final;
    static void pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
    static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);
    static void no_more_pads_cb (GstElement* object, gpointer user_data);

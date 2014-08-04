@@ -19,6 +19,8 @@
 #ifndef __SWITCHER_SOAP_CTRL_CLIENT_H__
 #define __SWITCHER_SOAP_CTRL_CLIENT_H__
 
+#include <mutex>
+
 #include "switcher/quiddity.h"
 #include "webservices/soapcontrolProxy.h"
 
@@ -33,12 +35,13 @@ namespace switcher
     ~SoapCtrlClient ();
     SoapCtrlClient (const SoapCtrlClient &) = delete;
     SoapCtrlClient &operator= (const SoapCtrlClient &) = delete;
-    bool init ();
+    bool init () final;
 
   private:
     controlProxy *switcher_control_;
     gchar *url_;
     GSource *try_connect_g_source_;
+    std::mutex try_connect_mutex_;
     void reset_endpoint ();
     static gboolean set_remote_url (gpointer url,
 					    gpointer user_data);

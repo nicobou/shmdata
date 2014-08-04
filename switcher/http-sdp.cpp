@@ -31,13 +31,13 @@ namespace switcher
 				       "httpsdp", 
 				       "Nicolas Bouillot");
   HTTPSDP::HTTPSDP () :
-    souphttpsrc_ (NULL),
-    sdpdemux_ (NULL),
+    souphttpsrc_ (nullptr),
+    sdpdemux_ (nullptr),
     media_counter_ (0)
   {}
   
   bool
-  HTTPSDP::init_segment () 
+  HTTPSDP::init_gpipe () 
   { 
     if (!GstUtils::make_element ("souphttpsrc", &souphttpsrc_)
 	|| !GstUtils::make_element ("sdpdemux", &sdpdemux_))
@@ -65,10 +65,10 @@ namespace switcher
 		    Method::make_arg_description ("URL",
 						  "url", 
 						  "the url to the sdp file",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &to_shmdata_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
     //registering "latency"
     install_property (G_OBJECT (sdpdemux_),"latency","latency", "Latency");
@@ -93,7 +93,7 @@ namespace switcher
 
     GstElement *identity;
     GstUtils::make_element ("identity", &identity);
-    g_object_set (identity, "sync", TRUE, NULL);
+    g_object_set (identity, "sync", TRUE, nullptr);
 
     gst_bin_add (GST_BIN (context->bin_), identity);
     GstUtils::link_static_to_request (pad, identity);
@@ -116,7 +116,7 @@ namespace switcher
     connector->plug (context->bin_, identity, caps);
     if (G_IS_OBJECT (caps))
       gst_object_unref (caps);
-    context->register_shmdata_writer (connector);
+    context->register_shmdata (connector);
     g_message ("%s created a new shmdata writer (%s)", 
 	       context->get_nick_name ().c_str(), 
 	       connector_name.c_str ());
@@ -139,8 +139,8 @@ namespace switcher
   HTTPSDP::to_shmdata (std::string uri)
   {
     g_debug ("HTTPSDP::to_shmdata set location %s", uri.c_str ());
-    g_object_set (G_OBJECT (souphttpsrc_), "location", uri.c_str (), NULL);  
-    gst_bin_add_many (GST_BIN (bin_), souphttpsrc_, sdpdemux_, NULL);
+    g_object_set (G_OBJECT (souphttpsrc_), "location", uri.c_str (), nullptr);  
+    gst_bin_add_many (GST_BIN (bin_), souphttpsrc_, sdpdemux_, nullptr);
     gst_element_link (souphttpsrc_,sdpdemux_);
     GstUtils::sync_state_with_parent (souphttpsrc_);
     GstUtils::sync_state_with_parent (sdpdemux_);

@@ -22,14 +22,14 @@
 #define __SWITCHER_SHMDATA_TO_FILE_H__
 
 #include <gst/gst.h>
-#include "segment.h"
+#include "gpipe.h"
 #include "custom-property-helper.h"
 #include <unordered_map>
  
 namespace switcher
 {
 
-  class ShmdataToFile : public Segment
+  class ShmdataToFile : public GPipe
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToFile);
@@ -52,7 +52,7 @@ namespace switcher
      GParamSpec *recording_param_; 
      gboolean recording_; 
 
-     bool init_segment ();
+     bool init_gpipe () final;
      bool make_recorders ();
      bool clean_recorders ();
      std::unordered_map <std::string, std::string> file_names_;

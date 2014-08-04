@@ -21,17 +21,17 @@
 #define __SWITCHER_PORTMIDI_SINK_H__
 
 #include "switcher/quiddity.h"
+#include "switcher/segment.h"
 #include "portmidi-devices.h"
 #include "switcher/custom-property-helper.h"
 #include "switcher/startable-quiddity.h"
 #include <shmdata/any-data-reader.h>
-
 #include <memory>
 
 namespace switcher
 {
   
-  class PortMidiSink : public Quiddity, public StartableQuiddity, public PortMidi
+  class PortMidiSink : public Quiddity, public Segment, public StartableQuiddity, public PortMidi
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSink);
@@ -39,34 +39,30 @@ namespace switcher
     ~PortMidiSink ();
     PortMidiSink (const PortMidiSink &) = delete;
     PortMidiSink &operator= (const PortMidiSink &) = delete;
-    bool init (); 
-    bool start ();
-    bool stop ();
 
   private:
-    shmdata_any_reader_t *reader_;
     CustomPropertyHelper::ptr custom_props_;
     GParamSpec *devices_description_spec_;
-    GParamSpec *shmdata_path_spec_;
-    gchar *shmdata_path_;
-    //device selection
     GParamSpec *devices_enum_spec_;
     gint device_;
 
+    bool init () final; 
+    bool start () final;
+    bool stop () final;
+
+    //segment callback
+    bool connect (std::string path);
+    bool can_sink_caps (std::string caps);
+
+    //shmdata any callback
+    void on_shmreader_data (void *data,
+			    int data_size,
+			    unsigned long long timestamp,
+			    const char *type_description, 
+			    void *user_data);
+
     static void set_device (const gint value, void *user_data);
     static gint get_device (void *user_data);
-
-    static void set_shmdata_path (const gchar * value, void *user_data);
-    static const gchar *get_shmdata_path (void *user_data);
- 
-    static void on_shmreader_data (shmdata_any_reader_t * reader,
-				   void *shmbuf,
-				   void *data,
-				   int data_size,
-				   unsigned long long timestamp,
-				   const char *type_description, 
-				   void *user_data);
-
   };
   
   SWITCHER_DECLARE_PLUGIN(PortMidiSink);

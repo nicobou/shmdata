@@ -91,7 +91,7 @@ v8::Handle<v8::Value> LoadHistoryFromCurrentState(const v8::Arguments& args) {
       return scope.Close(res);
     }
 
-  switcher_container[0]->play_command_history (histo, NULL, NULL, true);
+  switcher_container[0]->play_command_history (histo, nullptr, nullptr, true);
   v8::Handle<v8::String> res = v8::String::New("true");
 
   switcher_is_loading = false;
@@ -123,7 +123,7 @@ v8::Handle<v8::Value> LoadHistoryFromScratch(const v8::Arguments& args) {
 
   switcher_container[0]->reset_command_history(true);
 
-  switcher_container[0]->play_command_history (histo, NULL, NULL, true);
+  switcher_container[0]->play_command_history (histo, nullptr, nullptr, true);
   v8::Handle<v8::String> res = v8::String::New("true");
 
   switcher_is_loading = false;
@@ -173,6 +173,28 @@ v8::Handle<v8::Value> Create(const v8::Arguments& args) {
   else
     name = v8::String::New(switcher_container[0]->create(std::string(*first_arg)).c_str());
 
+  return scope.Close(name);
+}
+
+v8::Handle<v8::Value> GetInfo(const v8::Arguments& args) {
+  v8::HandleScope scope;
+  if (args.Length() != 2) {
+    ThrowException(v8::Exception::TypeError(v8::String::New("Wrong number of arguments")));
+    return scope.Close(v8::Undefined());
+  }
+  if (!args[0]->IsString() ) {
+    ThrowException(v8::Exception::TypeError(v8::String::New("switcher get_info: Wrong first arg type")));
+    return scope.Close(v8::Undefined());
+  }
+  v8::String::Utf8Value first_arg(args[0]->ToString());
+  v8::Local<v8::String> name;
+  if (!args[1]->IsString() ) {
+    ThrowException(v8::Exception::TypeError(v8::String::New("switcher get_info: Wrong second arg type")));
+    return scope.Close(v8::Undefined());
+      }
+  v8::String::Utf8Value second_arg(args[1]->ToString());
+  name = v8::String::New(switcher_container[0]->get_info(std::string(*first_arg), 
+							 std::string(*second_arg)).c_str());
   return scope.Close(name);
 }
 
@@ -401,12 +423,17 @@ v8::Handle<v8::Value> Invoke(const v8::Arguments& args) {
     vector_arg.push_back(std::string(*val));
   }
 
-  std::string *return_value;
+  std::string *return_value = nullptr;
   switcher_container[0]->invoke (std::string(*element_name),
 				 std::string(*method_name),
 				 &return_value,
 				 vector_arg);
-  v8::Handle<v8::String> res = v8::String::New((*return_value).c_str ());
+  if (nullptr != return_value)
+    {
+      v8::Handle<v8::String> res = v8::String::New((*return_value).c_str ());
+      return scope.Close(res);
+    }
+  v8::Handle<v8::String> res = v8::String::New("");
   return scope.Close(res);
 }
 
@@ -821,14 +848,14 @@ void Init(v8::Handle<v8::Object> target)
     = switcher::QuiddityManager::make_manager ("nodeserver");  
   
   switcher_manager->create ("logger", "internal_logger");
-  switcher_manager->invoke_va ("internal_logger", "install_log_handler", NULL, "shmdata", NULL);
-  switcher_manager->invoke_va ("internal_logger", "install_log_handler", NULL, "GStreamer", NULL);
-  switcher_manager->invoke_va ("internal_logger", "install_log_handler", NULL, "GLib", NULL);
-  switcher_manager->invoke_va ("internal_logger", "install_log_handler", NULL, "GLib-GObject", NULL);
+  switcher_manager->invoke_va ("internal_logger", "install_log_handler", nullptr, "shmdata", nullptr);
+  switcher_manager->invoke_va ("internal_logger", "install_log_handler", nullptr, "GStreamer", nullptr);
+  switcher_manager->invoke_va ("internal_logger", "install_log_handler", nullptr, "GLib", nullptr);
+  switcher_manager->invoke_va ("internal_logger", "install_log_handler", nullptr, "GLib-GObject", nullptr);
   switcher_manager->set_property ("internal_logger", "mute", "false");
   switcher_manager->set_property ("internal_logger", "debug", "true");
   switcher_manager->set_property ("internal_logger", "verbose", "true");
-  switcher_manager->make_property_subscriber ("log_sub", logger_cb, NULL);
+  switcher_manager->make_property_subscriber ("log_sub", logger_cb, nullptr);
   switcher_manager->subscribe_property ("log_sub","internal_logger","last-line");
    
   gchar *usr_plugin_dir = g_strdup_printf ("/usr/switcher-0.4/plugins");
@@ -839,12 +866,11 @@ void Init(v8::Handle<v8::Object> target)
   switcher_manager->scan_directory_for_plugins (usr_local_plugin_dir);
   g_free (usr_local_plugin_dir);
   
-  switcher_manager->make_property_subscriber ("prop_sub", property_cb, NULL);
+  switcher_manager->make_property_subscriber ("prop_sub", property_cb, nullptr);
   
-  switcher_manager->create ("runtime", "single_runtime");
   switcher_container.push_back (switcher_manager); // keep reference only in the container
   
-  switcher_manager->make_signal_subscriber ("signal_sub", signal_cb, NULL);
+  switcher_manager->make_signal_subscriber ("signal_sub", signal_cb, nullptr);
   switcher_manager->create ("create_remove_spy", "create_remove_spy");
   switcher_manager->subscribe_signal ("signal_sub","create_remove_spy","on-quiddity-created");
   switcher_manager->subscribe_signal ("signal_sub","create_remove_spy","on-quiddity-removed");
@@ -879,6 +905,9 @@ void Init(v8::Handle<v8::Object> target)
 	      v8::FunctionTemplate::New(GetQuiddityDescription)->GetFunction());  
   target->Set(v8::String::NewSymbol("get_quiddities_description"),
 	      v8::FunctionTemplate::New(GetQuidditiesDescription)->GetFunction());  
+
+  target->Set(v8::String::NewSymbol("get_info"),
+	      v8::FunctionTemplate::New(GetInfo)->GetFunction());  
 
   //properties
   target->Set(v8::String::NewSymbol("get_properties_description"),

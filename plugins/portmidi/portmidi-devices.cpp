@@ -24,17 +24,17 @@
 namespace switcher
 {
 
-  PortMidi::PortMidiScheduler *PortMidi::scheduler_ = NULL;
+  PortMidi::PortMidiScheduler *PortMidi::scheduler_ = nullptr;
   guint PortMidi::instance_counter_ = 0;
   
   PortMidi::PortMidi () :
-    devices_description_ (NULL),
+    devices_description_ (nullptr),
     input_streams_ (),
     output_streams_ ()
   {
-    if (scheduler_ == NULL)
+    if (scheduler_ == nullptr)
       scheduler_ = new PortMidiScheduler();
-    devices_description_ = NULL;
+    devices_description_ = nullptr;
     make_devices_description (this);
     update_device_enum ();
     instance_counter_ ++;
@@ -54,7 +54,7 @@ namespace switcher
     if (instance_counter_ == 0)
       {
 	delete scheduler_;
-	scheduler_ = NULL;
+	scheduler_ = nullptr;
       }
   }
   
@@ -80,7 +80,7 @@ namespace switcher
       }
 
     PmStream *stream = scheduler_->add_input_stream (id, method, user_data);
-    if (stream == NULL)
+    if (stream == nullptr)
       return false;
     input_streams_[id] = stream;
     g_message ("Midi input device opened (id %d)", id);
@@ -98,7 +98,7 @@ namespace switcher
       }
     
     PmStream *stream = scheduler_->add_output_stream (id);
-    if (stream == NULL)
+    if (stream == nullptr)
       return false;
     output_streams_[id] = stream;
     g_message ("Midi output device opened (id %d)", id);
@@ -147,7 +147,7 @@ namespace switcher
   {
     PortMidi *context = static_cast<PortMidi *> (user_data);
         
-    if (context->devices_description_ != NULL)
+    if (context->devices_description_ != nullptr)
       g_free (context->devices_description_);
     JSONBuilder::ptr builder (new JSONBuilder ());
     builder->reset();
@@ -216,11 +216,11 @@ namespace switcher
       PmStream *midi_in;
       if (pmNoError != Pm_OpenInput(&midi_in, 
 				    id, 
-				    NULL /* driver info */,
+				    nullptr /* driver info */,
 				    0 /* use default input size */,
-				    NULL,
-				    NULL /* time info */))
-	return NULL;
+				    nullptr,
+				    nullptr /* time info */))
+	return nullptr;
       /* Note: if you set a filter here, then this will filter what goes
 	 to the MIDI THRU port. You may not want to do this.
       */
@@ -237,12 +237,12 @@ namespace switcher
       PmStream *midi_out;
       if (pmNoError != Pm_OpenOutput(&midi_out, 
 				     id, 
-				     NULL /* driver info */,
+				     nullptr /* driver info */,
 				     0 /* use default input size */,
-				     NULL,
-				     NULL, /* time info */
+				     nullptr,
+				     nullptr, /* time info */
 				     0))
-	return NULL;
+	return nullptr;
       std::unique_lock<std::mutex> lock (streams_mutex_);
       output_queues_[midi_out] = new std::queue<PmEvent>();      
       return midi_out;
@@ -428,17 +428,19 @@ namespace switcher
 	{
 	  output_devices_enum_ [output_i].value = i;
 	  //FIXME free
-	  output_devices_enum_ [output_i].value_nick = g_strdup (listinfo->name);
-	  output_devices_enum_ [output_i].value_name = g_strdup_printf ("%d",i);
+	  output_devices_enum_ [output_i].value_nick = g_strdup_printf ("%s (%s)",
+								      listinfo->name,
+								      listinfo->interf);
+	  output_devices_enum_ [output_i].value_name = output_devices_enum_ [output_i].value_nick;
 	  output_i ++;
 	}
     }
     input_devices_enum_[input_i].value = 0;
-    input_devices_enum_[input_i].value_name = NULL;
-    input_devices_enum_[input_i].value_nick = NULL;
+    input_devices_enum_[input_i].value_name = nullptr;
+    input_devices_enum_[input_i].value_nick = nullptr;
     output_devices_enum_[output_i].value = 0;
-    output_devices_enum_[output_i].value_name = NULL;
-    output_devices_enum_[output_i].value_nick = NULL;
+    output_devices_enum_[output_i].value_name = nullptr;
+    output_devices_enum_[output_i].value_nick = nullptr;
   }
 
 }

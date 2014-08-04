@@ -21,14 +21,14 @@
 #ifndef __SWITCHER_HTTP_SDP_H__
 #define __SWITCHER_HTTP_SDP_H__
 
-#include "base-source.h"
+#include "gpipe.h"
 #include "gst-element-cleaner.h"
 #include <memory>
 
 namespace switcher
 {
 
-  class HTTPSDP : public BaseSource, public GstElementCleaner
+  class HTTPSDP : public GPipe, public GstElementCleaner
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDP);
@@ -42,7 +42,7 @@ namespace switcher
    GstElement *souphttpsrc_;
    GstElement *sdpdemux_;
    int media_counter_;
-   bool init_segment ();
+   bool init_gpipe () final;
    static void pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
    static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);
    static void no_more_pads_cb (GstElement* object, gpointer user_data);

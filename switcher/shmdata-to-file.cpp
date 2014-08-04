@@ -33,7 +33,7 @@ namespace switcher
   
   ShmdataToFile::ShmdataToFile () :
     custom_prop_ (new CustomPropertyHelper ()),  
-    recording_param_ (NULL), 
+    recording_param_ (nullptr), 
     recording_ (FALSE), 
     file_names_ (),
     shmdata_recorders_ ()
@@ -45,7 +45,7 @@ namespace switcher
   }
 
   bool 
-  ShmdataToFile::init_segment ()
+  ShmdataToFile::init_gpipe ()
   {
     install_method ("Add Shmdata",
 		    "add_shmdata", 
@@ -57,10 +57,10 @@ namespace switcher
 						  "File Path"
 						  "filepath",
 						  "file location",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &add_shmdata_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, nullptr),
 		    this);
     
     install_method ("Remove Shmdata",
@@ -70,10 +70,10 @@ namespace switcher
 		    Method::make_arg_description ("Shmdata Path",
 						  "shmpath", 
 						  "shmdata socket path to remove", 
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &remove_shmdata_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
     
  
@@ -118,7 +118,7 @@ namespace switcher
 
     file_names_[shmdata_socket_path] = file_location;
     
-     if (recording_) // starting the reader if runtime is set
+     if (recording_) // starting the reader if pipeline is set
        {
 	     //FIXME make the recorder
        }
@@ -140,7 +140,7 @@ namespace switcher
   bool
   ShmdataToFile::remove_shmdata (std::string shmdata_socket_path)
   {
-    unregister_shmdata_reader (shmdata_socket_path);
+    unregister_shmdata (shmdata_socket_path);
     g_debug ("data_stream %s removed", shmdata_socket_path.c_str ());
     return true;
   }
@@ -170,14 +170,14 @@ namespace switcher
     for (auto &it :file_names_)
       {
 	//FIXME check file
-	GError *error = NULL;
+	GError *error = nullptr;
 	gchar *pipe = g_strdup_printf ("gdppay ! filesink location=%s",
 				       it.second.c_str());
 	GstElement *recorder_bin = gst_parse_bin_from_description (pipe,
 								   TRUE,
 								   &error);
 	g_free (pipe);
-	if (error != NULL)
+	if (error != nullptr)
 	  {
 	    g_warning ("%s",error->message);
 	    g_error_free (error);
@@ -197,7 +197,7 @@ namespace switcher
 	 //GstUtils::wait_state_changed (bin_);
 	 reader->start ();
 	 shmdata_recorders_[it.first] = recorder_bin;
-	 register_shmdata_reader (reader);
+	 register_shmdata (reader);
       }
     return true;
   }
@@ -209,7 +209,7 @@ namespace switcher
     for (auto &it : shmdata_recorders_)
       {
 	GstUtils::clean_element (it.second);
-	unregister_shmdata_reader (it.first);
+	unregister_shmdata (it.first);
       }
     shmdata_recorders_.clear ();
     return true;

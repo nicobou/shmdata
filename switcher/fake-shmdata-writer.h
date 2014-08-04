@@ -22,14 +22,14 @@
 #define __SWITCHER_FAKE_SHMDATA_WRITER_H__
 
 #include <memory>
-#include "base-source.h"
+#include "gpipe.h"
 #include "startable-quiddity.h"
 #include "custom-property-helper.h"
 
 namespace switcher
 {
 
-  class FakeShmdataWriter : public BaseSource, StartableQuiddity
+  class FakeShmdataWriter : public GPipe, StartableQuiddity
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeShmdataWriter);
@@ -48,7 +48,7 @@ namespace switcher
     GParamSpec *shmdata_path_spec_;
     gchar *shmdata_path_;
     bool clean ();
-    bool init_segment ();
+    bool init_gpipe () final;
     static gboolean add_shmdata_path_wrapped (gpointer name, gpointer user_data);
     static void set_shmdata_path (const gchar *value, void *user_data);
     static const gchar *get_shmdata_path (void *user_data);

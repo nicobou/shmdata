@@ -19,20 +19,19 @@
 
 #include "shmdata-reader.h"
 #include "gst-utils.h"
+#include "scope-exit.h"
 
 namespace switcher
 {
-
   ShmdataReader::ShmdataReader() :
-    connection_hook_ (NULL),
-    hook_user_data_ (NULL),
-    caps_ (NULL),
+    connection_hook_ (nullptr),
+    hook_user_data_ (nullptr),
     path_ (),
     reader_ (shmdata_base_reader_new ()),
-    bin_ (NULL),
-    sink_element_ (NULL),
-    funnel_ (NULL),
-    g_main_context_ (NULL),
+    bin_ (nullptr),
+    sink_element_ (nullptr),
+    funnel_ (nullptr),
+    g_main_context_ (nullptr),
     elements_to_remove_ (),
     json_description_ (new JSONBuilder ()),
     start_mutex_ (),
@@ -50,8 +49,6 @@ namespace switcher
       g_debug ("ShmdataReader: %s deleted ", path_.c_str());
     else
       g_debug ("closing empty reader");
-    if (NULL != caps_)
-      gst_caps_unref (caps_);
   }
 
   void
@@ -81,9 +78,9 @@ namespace switcher
   void 
   ShmdataReader::set_path (const char *absolute_path)
   {
-    if (NULL == absolute_path)
+    if (nullptr == absolute_path)
       {
-	g_debug ("shmdata path is NULL");
+	g_debug ("shmdata path is nullptr");
 	return;
       }
     path_ = absolute_path;
@@ -117,7 +114,7 @@ namespace switcher
     // 					    G_PRIORITY_DEFAULT_IDLE,
     // 					    start_idle,
     // 					    this,
-    // 					    NULL);
+    // 					    nullptr);
     // g_debug ("%s: wait for start idle",
     // 	     __PRETTY_FUNCTION__);
     // start_cond_.wait (lock);
@@ -139,7 +136,7 @@ namespace switcher
     shmdata_base_reader_set_on_have_type_callback (context->reader_, 
 						   ShmdataReader::on_have_type, 
 						   context);
-    if (context->path_.empty () ||  context->bin_ == NULL)
+    if (context->path_.empty () ||  context->bin_ == nullptr)
       {
 	g_warning ("cannot start the shmdata reader: name or bin or sink element has not bin set");
 	return FALSE;
@@ -162,13 +159,15 @@ namespace switcher
 			       GstCaps *caps, 
 			       void *user_data)
   {
-    if (NULL == user_data || NULL == caps)
+    if (nullptr == user_data || nullptr == caps)
       {
 	g_warning ("ShmdataReader::on_have_type cannot save caps");
 	return;
       }
-    ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
-    reader->caps_ = gst_caps_copy (caps);
+    ShmdataReader *context = static_cast<ShmdataReader *>(user_data);
+    gchar *string_caps = gst_caps_to_string (caps);
+    On_scope_exit { if (nullptr != string_caps) g_free (string_caps);};
+    context->set_negociated_caps (std::string (string_caps));
   }
 
   void 
@@ -176,11 +175,6 @@ namespace switcher
   {
     g_debug ("ShmdataReader::stop");
     shmdata_base_reader_close (reader_);
-    if (NULL != caps_)
-      {
-	gst_caps_unref (caps_);
-	caps_ = NULL;
-      }
     GstUtils::clean_element (funnel_);
   } 
  
@@ -197,9 +191,9 @@ namespace switcher
   {
       ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
       g_debug (" ShmdataReader::on_first_data");
-      if (reader->connection_hook_ != NULL) //user want to create the sink_element_ 
+      if (reader->connection_hook_ != nullptr) //user want to create the sink_element_ 
 	reader->connection_hook_ (reader, reader->hook_user_data_);
-      if (NULL != reader->sink_element_)
+      if (nullptr != reader->sink_element_)
 	if (!GST_IS_ELEMENT (GST_ELEMENT_PARENT (reader->sink_element_)))
 	  gst_bin_add (GST_BIN (reader->bin_), reader->sink_element_);
       // else 

@@ -30,7 +30,7 @@ namespace switcher
   QuiddityManager::make_manager (std::string name)
   {
     if (! gst_is_initialized ())
-      gst_init (NULL,NULL);
+      gst_init (nullptr,nullptr);
     QuiddityManager::ptr manager(new QuiddityManager(name));
     return manager;
   }
@@ -79,12 +79,16 @@ namespace switcher
   {
     if (remove_created_quiddities)
       {
+	manager_impl_->mute_property_subscribers (true);
+	manager_impl_->mute_signal_subscribers (true);
 	for (auto &it: command_history_)
 	  {
 	    if (g_str_has_prefix (QuiddityCommand::get_string_from_id (it->id_),
 				  "create"))
 		remove (it->result_[0]);
 	  }
+	manager_impl_->mute_property_subscribers (false);
+	manager_impl_->mute_signal_subscribers (false);
       }
     history_begin_time_ = g_get_monotonic_time ();
     command_history_.clear ();
@@ -126,7 +130,7 @@ namespace switcher
       {
 	if (it->id_ == QuiddityCommand::make_property_subscriber)
 	  {
-	    if (prop_cb_data != NULL)
+	    if (prop_cb_data != nullptr)
 	      {
 		QuiddityManager::PropCallbackMap::iterator prop_it = prop_cb_data->find (it->args_[0]);
 		if (prop_it != prop_cb_data->end ())
@@ -135,7 +139,7 @@ namespace switcher
 	  }
 	else if (it->id_ == QuiddityCommand::make_signal_subscriber)
 	  {
-	    if (sig_cb_data != NULL)
+	    if (sig_cb_data != nullptr)
 	      {
 		QuiddityManager::SignalCallbackMap::iterator sig_it = sig_cb_data->find (it->args_[0]);
 		if (sig_it != sig_cb_data->end ())
@@ -198,11 +202,11 @@ namespace switcher
 
     std::vector<QuiddityCommand::ptr> res;
     JsonParser *parser = json_parser_new ();
-    GError *error = NULL;
+    GError *error = nullptr;
     json_parser_load_from_file (parser,
 				file_path,
 				&error);
-    if (error != NULL)
+    if (error != nullptr)
       {
 	g_warning ("%s",error->message);
 	g_object_unref(parser);
@@ -240,14 +244,14 @@ namespace switcher
     
     GFile *file = g_file_new_for_commandline_arg (file_path);
  
-    GError *error = NULL;
+    GError *error = nullptr;
     GFileOutputStream *file_stream = g_file_replace (file,
-						    NULL,
+						    nullptr,
 						    TRUE, //make backup
 						    G_FILE_CREATE_NONE ,
-						    NULL,
+						    nullptr,
 						    &error);
-    if (error != NULL)
+    if (error != nullptr)
       {
 	g_warning ("%s",error->message);
 	g_error_free (error);
@@ -271,10 +275,10 @@ namespace switcher
     g_output_stream_write ((GOutputStream *)file_stream,
 			   history,
 			   sizeof (gchar) * strlen (history),
-			   NULL,
+			   nullptr,
 			   &error);
     g_free (history);
-    if (error != NULL)
+    if (error != nullptr)
       {
 	g_warning ("%s",error->message);
 	g_error_free (error);
@@ -282,9 +286,9 @@ namespace switcher
       }
      
     g_output_stream_close ((GOutputStream *)file_stream,
-					   NULL,
+					   nullptr,
 					   &error);
-     if (error != NULL)
+     if (error != nullptr)
       {
 	g_warning ("%s",error->message);
 	g_error_free (error);
@@ -301,7 +305,7 @@ namespace switcher
   {
     return seq_invoke (QuiddityCommand::get_properties_description,
 		       quiddity_name.c_str(),
-		       NULL);
+		       nullptr);
   }
 
   std::string 
@@ -310,7 +314,16 @@ namespace switcher
     return seq_invoke (QuiddityCommand::get_property_description,
 		       quiddity_name.c_str(),
 		       property_name.c_str(),
-		       NULL);
+		       nullptr);
+  }
+
+  std::string 
+  QuiddityManager::get_info (const std::string &quiddity_name, const std::string &path)
+  {
+    return seq_invoke (QuiddityCommand::get_info,
+		       quiddity_name.c_str(),
+		       path.c_str(),
+		       nullptr);
   }
 
   std::string 
@@ -318,7 +331,7 @@ namespace switcher
   {
     return seq_invoke (QuiddityCommand::get_properties_description_by_class,
 		       class_name.c_str(),
-		       NULL);
+		       nullptr);
   }
 
   std::string 
@@ -327,7 +340,7 @@ namespace switcher
     return seq_invoke (QuiddityCommand::get_property_description_by_class,
 		       class_name.c_str(),
 		       property_name.c_str(),
-		       NULL);
+		       nullptr);
   }
 
   bool
@@ -339,7 +352,7 @@ namespace switcher
 		       quiddity_name.c_str(),
 		       property_name.c_str(),
 		       property_value.c_str(),
-		       NULL);
+		       nullptr);
     if (res == "true")
       return true;
     else 
@@ -353,7 +366,7 @@ namespace switcher
     return seq_invoke (QuiddityCommand::get_property,
 		       quiddity_name.c_str(),
 		       property_name.c_str(),
-		       NULL);
+		       nullptr);
   }
 
 
@@ -399,7 +412,7 @@ namespace switcher
 				  subscriber_name.c_str (),
 				  quiddity_name.c_str (),
 				  property_name.c_str (),
-				  NULL);
+				  nullptr);
     if (g_strcmp0 (res.c_str (), "true") == 0)
       return true;
     return false;
@@ -428,7 +441,7 @@ namespace switcher
 				  subscriber_name.c_str (),
 				  quiddity_name.c_str (),
 				  property_name.c_str (),
-				  NULL);
+				  nullptr);
     if (g_strcmp0 (res.c_str (), "true") == 0)
       return true;
     return false;
@@ -527,15 +540,15 @@ namespace switcher
     command_lock ();
     std::vector<std::string> method_args;
     command_->set_id (QuiddityCommand::invoke);
-    if (quiddity_name == NULL)
+    if (quiddity_name == nullptr)
       {
-	g_warning ("trying to invoke with a NULL quiddity name");
+	g_warning ("trying to invoke with a nullptr quiddity name");
 	command_unlock ();
 	return false;
       }
-    if (method_name == NULL)
+    if (method_name == nullptr)
       {
-	g_warning ("trying to invoke with a NULL method name");
+	g_warning ("trying to invoke with a nullptr method name");
 	command_unlock ();
 	return false;
       }
@@ -543,7 +556,7 @@ namespace switcher
     va_list vl;
     va_start(vl, return_value);
     char *method_arg = va_arg(vl, char *);
-    while (method_arg != NULL)
+    while (method_arg != nullptr)
       {
 	method_args.push_back (method_arg);
 	method_arg = va_arg(vl, char *);
@@ -554,7 +567,7 @@ namespace switcher
     command_->add_arg (method_name);
     command_->set_vector_arg (method_args);
     invoke_in_thread  ();
-    if (return_value != NULL && !command_->result_.empty ())
+    if (return_value != nullptr && !command_->result_.empty ())
       *return_value = new std::string (command_->result_[0]);
     bool res = command_->success_;
 
@@ -575,7 +588,7 @@ namespace switcher
     command_->add_arg (method_name);
     command_->set_vector_arg (args);
     invoke_in_thread  ();
-    if (return_value != NULL && !command_->result_.empty ())
+    if (return_value != nullptr && !command_->result_.empty ())
       *return_value = new std::string (command_->result_[0]);
     bool res = command_->success_;
     command_unlock ();
@@ -587,7 +600,7 @@ namespace switcher
   {
     return seq_invoke (QuiddityCommand::get_methods_description, 
 		       quiddity_name.c_str(),
-		       NULL);
+		       nullptr);
   }
 
   std::string
@@ -596,7 +609,7 @@ namespace switcher
     return seq_invoke (QuiddityCommand::get_method_description, 
 		       quiddity_name.c_str(),
 		       method_name.c_str(),
-		       NULL);
+		       nullptr);
   }
 
   std::string
@@ -604,7 +617,7 @@ namespace switcher
   {
     return seq_invoke (QuiddityCommand::get_methods_description_by_class, 
 		       class_name.c_str(),
-		       NULL);
+		       nullptr);
   }
 
   std::string
@@ -614,7 +627,7 @@ namespace switcher
     return seq_invoke (QuiddityCommand::get_method_description_by_class, 
 		       class_name.c_str(),
 		       method_name.c_str(),
-		       NULL);
+		       nullptr);
   }
 
   bool
@@ -684,7 +697,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 				  subscriber_name.c_str (),
 				  quiddity_name.c_str (),
 				  signal_name.c_str (),
-				  NULL);
+				  nullptr);
     if (g_strcmp0 (res.c_str (), "true") == 0)
       return true;
     return false;
@@ -699,7 +712,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 				  subscriber_name.c_str (),
 				  quiddity_name.c_str (),
 				  signal_name.c_str (),
-				  NULL);
+				  nullptr);
     if (g_strcmp0 (res.c_str (), "true") == 0)
       return true;
     return false;
@@ -836,7 +849,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   {
     std::string res = seq_invoke (QuiddityCommand::create, 
 				  quiddity_class.c_str(),
-				  NULL);
+				  nullptr);
     return res;
   }
 
@@ -846,7 +859,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     std::string res = seq_invoke (QuiddityCommand::rename, 
 				  nick_name.c_str(),
 				  new_nick_name.c_str (),
-				  NULL);
+				  nullptr);
     if (res == "true")
       return true;
     else
@@ -859,7 +872,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   {
     std::string res = seq_invoke (QuiddityCommand::scan_directory_for_plugins, 
 				  directory.c_str(),
-				  NULL);
+				  nullptr);
     if (res == "true")
       return true;
     else
@@ -873,7 +886,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     std::string res = seq_invoke (QuiddityCommand::create_nick_named, 
 				 quiddity_class.c_str(), 
 				 nick_name.c_str(), 
-				 NULL);
+				 nullptr);
     return res;
   }
 
@@ -883,7 +896,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     
     std::string res = seq_invoke (QuiddityCommand::remove, 
 				  quiddity_name.c_str(),
-				  NULL);
+				  nullptr);
     if (res == "true")
       return true;
     else
@@ -906,7 +919,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   QuiddityManager::get_classes_doc ()
   {
     return seq_invoke (QuiddityCommand::get_classes_doc,
-		       NULL);
+		       nullptr);
   }
 
   
@@ -915,14 +928,14 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   {
     return seq_invoke (QuiddityCommand::get_class_doc,
 		       class_name.c_str (),
-		       NULL);
+		       nullptr);
   }
 
   std::string 
   QuiddityManager::get_quiddities_description ()
   {
     return seq_invoke (QuiddityCommand::get_quiddities_description,
-		       NULL);
+		       nullptr);
   }
 
   std::string 
@@ -930,7 +943,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
   {
     return seq_invoke (QuiddityCommand::get_quiddity_description,
 		       quiddity_name.c_str (),
-		       NULL);
+		       nullptr);
   }
 
  
@@ -982,7 +995,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     command_unlock ();
   }
 
-  //works for char * args only. Use NULL sentinel
+  //works for char * args only. Use nullptr sentinel
   std::string
   QuiddityManager::seq_invoke (QuiddityCommand::command command, ...)
   {
@@ -992,7 +1005,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
     va_start(vl, command);
     command_->set_id (command);
     char *command_arg = va_arg( vl, char *);
-    while (command_arg != NULL)
+    while (command_arg != nullptr)
       {
 	command_->add_arg (command_arg);
 	command_arg = va_arg( vl, char *);
@@ -1078,6 +1091,9 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
       case QuiddityCommand::get_property_description:
 	context->command_->result_.push_back (context->manager_impl_->get_property_description (context->command_->args_[0], context->command_->args_[1]));
 	break;
+      case QuiddityCommand::get_info:
+	context->command_->result_.push_back (context->manager_impl_->get_info (context->command_->args_[0], context->command_->args_[1]));
+	break;
       case QuiddityCommand::get_properties_description_by_class:
 	context->command_->result_.push_back (context->manager_impl_->get_properties_description_by_class (context->command_->args_[0]));
 	break;
@@ -1108,14 +1124,14 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	break;
       case QuiddityCommand::invoke:
 	{
-	  std::string *result = NULL;
+	  std::string *result = nullptr;
 	  if (context->manager_impl_->invoke (context->command_->args_[0],
 					      context->command_->args_[1], 
 					      &result,
 					      context->command_->vector_arg_))
 	    {
 	      context->command_->success_ = true; //result_.push_back ("true");
-	      if (NULL == result)
+	      if (nullptr == result)
 		context->command_->result_.push_back ("error");
 	      else
 		context->command_->result_.push_back (*result);
@@ -1123,7 +1139,7 @@ QuiddityManager::remove_signal_subscriber (std::string subscriber_name)
 	  else
 	    context->command_->success_ = false; //result_.push_back ("false");
 
-	  if (NULL != result)
+	  if (nullptr != result)
 	    delete result;
 	}
 	break;

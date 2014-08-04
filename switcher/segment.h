@@ -21,53 +21,82 @@
 #ifndef __SWITCHER_SEGMENT_H__
 #define __SWITCHER_SEGMENT_H__
 
-#include "quiddity.h"
-#include "runtime.h"
+#include "shmdata-any-writer.h"
+#include "shmdata-any-reader.h"
 #include "shmdata-writer.h"
 #include "shmdata-reader.h"
+#include "counter-map.h"
 #include "json-builder.h"
+#include "custom-property-helper.h"
 #include <vector>
 #include <unordered_map>
 
 namespace switcher
 {
-  class Segment : public Quiddity, public Runtime
+  class Quiddity;
+
+  class Segment : public CounterMap 
+  /*inherit from CounterMap for sharing counters between multiple DecodebinToShmdata*/
   {
   public:
     typedef std::shared_ptr<Segment> ptr;
+    using OnConnect = std::function<bool(std::string)>;
+    using OnDisconnect = std::function<bool(std::string)>;
+    using OnDisconnectAll = std::function<bool()>;
+    using CanSinkCaps = std::function<bool(std::string)>;
+
     Segment ();
     virtual ~Segment ();
     Segment (const Segment &) = delete;
     Segment &operator= (const Segment&) = delete;
-    virtual bool init_segment () = 0;
-    bool init ();
+    bool init_segment (Quiddity *quid);
 
   protected:
-    GstElement *get_bin ();
-    GstElement *bin_; //FIXME should be private
-    bool register_shmdata_writer (ShmdataWriter::ptr writer);
-    bool unregister_shmdata_writer (std::string shmdata_path);
-    bool register_shmdata_reader (ShmdataReader::ptr reader);
-    bool unregister_shmdata_reader (std::string shmdata_path);
+    bool register_shmdata (ShmdataWriter::ptr writer);
+    bool register_shmdata (ShmdataAnyWriter::ptr writer);
+    bool register_shmdata (ShmdataReader::ptr reader);
+    bool register_shmdata (ShmdataAnyReader::ptr reader);
+    bool unregister_shmdata (std::string shmdata_path);
     bool clear_shmdatas ();
-    bool reset_bin ();
-
+    bool install_connect_method (OnConnect on_connect_cb,
+				 OnDisconnect on_disconnect_cb,
+				 OnDisconnectAll on_disconnect_all_cb,
+				 CanSinkCaps on_can_sink_caps_cb,
+				 uint max_reader);
+      
   private:
+    Quiddity *quid_ {nullptr};
+    std::unordered_map <std::string, ShmdataAnyWriter::ptr> shmdata_any_writers_;
+    std::unordered_map <std::string, ShmdataAnyReader::ptr> shmdata_any_readers_;
     std::unordered_map <std::string, ShmdataWriter::ptr> shmdata_writers_;
     std::unordered_map <std::string, ShmdataReader::ptr> shmdata_readers_;
-    JSONBuilder::ptr shmdata_writers_description_;
-    JSONBuilder::ptr shmdata_readers_description_;
-    //shmdatas as param
-    static GParamSpec *json_writers_description_;
-    static GParamSpec *json_readers_description_;
+    
+    //reader methods to install by a subclass
+    OnConnect on_connect_cb_ {nullptr};
+    OnDisconnect on_disconnect_cb_ {nullptr};
+    OnDisconnectAll on_disconnect_all_cb_ {nullptr};
+    CanSinkCaps on_can_sink_caps_cb_ {nullptr};
+    static gboolean connect_wrapped (gpointer path, gpointer user_data);
+    static gboolean disconnect_wrapped (gpointer path, gpointer user_data);
+    static gboolean disconnect_all_wrapped (gpointer /*unused*/, gpointer user_data);
+    static gboolean can_sink_caps_wrapped (gpointer caps, gpointer user_data);
 
-    void make_bin ();
-    void clean_bin ();
+    //JSON
+    JSONBuilder::ptr shmdata_writers_description_;
+    std::mutex writers_mutex_ {}; //protecting from parallel registers
+    std::string writers_string_ {};
+    JSONBuilder::ptr shmdata_readers_description_;
+    std::mutex readers_mutex_ {}; //protecting from parallel registers
+    std::string readers_string_ {};
+    CustomPropertyHelper::ptr segment_custom_props_;
+    GParamSpec *json_writers_description_;
+    GParamSpec *json_readers_description_;
     void update_shmdata_writers_description ();
     void update_shmdata_readers_description ();
-    static bool get_shmdata_writers_by_gvalue (GValue *value, void *user_data);
-    static bool get_shmdata_readers_by_gvalue (GValue *value, void *user_data);
-    static gboolean clean_element_invoke (gpointer user_data);
+    static const gchar *get_shmdata_writers_string (void *user_data);
+    static const gchar *get_shmdata_readers_string (void *user_data);
+
+    void populate_tree (std::string key, std::string caps);
   };
 }  // end of namespace
 

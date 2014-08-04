@@ -42,7 +42,7 @@ namespace switcher
   std::thread GTKVideo::gtk_main_thread_ {};
 
   bool
-  GTKVideo::init_segment ()
+  GTKVideo::init_gpipe ()
   {
     if (!GstUtils::make_element ("bin",&sink_bin_))
       return false;
@@ -67,22 +67,22 @@ namespace switcher
 		      queue_,
 		      ffmpegcolorspace_,
 		      xvimagesink_,
-		      NULL);
+		      nullptr);
     gst_element_link (queue_, ffmpegcolorspace_);
     GstElement *next_to_connect_with = ffmpegcolorspace_;
-    if (NULL != videoflip_)
+    if (nullptr != videoflip_)
       {
 	gst_bin_add (GST_BIN (sink_bin_), videoflip_);
 	gst_element_link (next_to_connect_with, videoflip_);
 	next_to_connect_with = videoflip_;
       }
-    if (NULL != gamma_)
+    if (nullptr != gamma_)
       {
 	gst_bin_add (GST_BIN (sink_bin_), gamma_);
 	gst_element_link (next_to_connect_with, gamma_);
 	next_to_connect_with = gamma_;
       }
-    if (NULL != videobalance_)
+    if (nullptr != videobalance_)
       {
 	gst_bin_add (GST_BIN (sink_bin_), videobalance_);
 	gst_element_link (next_to_connect_with, videobalance_);
@@ -92,12 +92,15 @@ namespace switcher
 
     GstPad *sink_pad = gst_element_get_static_pad (queue_, 
 						   "sink");
-    GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
+    GstPad *ghost_sinkpad = gst_ghost_pad_new (nullptr, sink_pad);
     gst_pad_set_active(ghost_sinkpad, TRUE);
     gst_element_add_pad (sink_bin_, ghost_sinkpad); 
     gst_object_unref (sink_pad);
     
-    g_object_set (G_OBJECT (xvimagesink_), "sync", FALSE, NULL);
+    g_object_set (G_OBJECT (xvimagesink_), 
+		  "sync", FALSE, 
+		  "qos", FALSE,
+		  nullptr);
     //on_error_command_ = new QuiddityCommand ();
     on_error_command_->id_ = QuiddityCommand::remove;
     on_error_command_->add_arg (get_nick_name ());
@@ -118,35 +121,35 @@ namespace switcher
 	  g_debug ("gtkvideosink: GTK main loop detected, using it");
       }
     instances_counter_++;
-    //custom_props_.reset (new CustomPropertyHelper ());
+
     fullscreen_prop_spec_ = 
-      custom_props_->make_boolean_property ("fullscreen", 
+      gtk_custom_props_->make_boolean_property ("fullscreen", 
     					    "Enable/Disable Fullscreen",
     					    (gboolean)FALSE,
     					    (GParamFlags) G_PARAM_READWRITE,
     					    GTKVideo::set_fullscreen,
     					    GTKVideo::get_fullscreen,
     					    this);
-    install_property_by_pspec (custom_props_->get_gobject (), 
+    install_property_by_pspec (gtk_custom_props_->get_gobject (), 
 			       fullscreen_prop_spec_, 
 			       "fullscreen",
 			       "Fullscreen");
     g_object_set (G_OBJECT (xvimagesink_),
     		  "force-aspect-ratio", TRUE,
     		  "draw-borders", TRUE,
-    		  NULL);
+    		  nullptr);
 
-    if (NULL != videoflip_)
+    if (nullptr != videoflip_)
       install_property (G_OBJECT (videoflip_),
 			"method",
 			"method", 
 			"Flip Method");
-    if (NULL != gamma_)
+    if (nullptr != gamma_)
       install_property (G_OBJECT (gamma_),
 			"gamma",
 			"gamma", 
 			"Gamma");
-    if (NULL != videobalance_)
+    if (nullptr != videobalance_)
       {
 	install_property (G_OBJECT (videobalance_),
 			  "contrast",
@@ -166,14 +169,14 @@ namespace switcher
 			  "Saturation");
 	title_ = g_strdup (get_nick_name ().c_str ());
 	title_prop_spec_ = 
-	  custom_props_->make_string_property ("title", 
+	  gtk_custom_props_->make_string_property ("title", 
 					       "Window Title",
 					       title_,
 					       (GParamFlags) G_PARAM_READWRITE,
 					       GTKVideo::set_title,
 					       GTKVideo::get_title,
 					       this);
-	install_property_by_pspec (custom_props_->get_gobject (), 
+	install_property_by_pspec (gtk_custom_props_->get_gobject (), 
 				   title_prop_spec_, 
 				   "title",
 				   "Window Title");
@@ -184,34 +187,34 @@ namespace switcher
     gtk_idle_add ((GtkFunction)create_ui,
     		  this);
     wait_window_cond_.wait (lock);
-    if (NULL == display_)
+    if (nullptr == display_)
       return false;
     return true;
   }
   
   GTKVideo::GTKVideo () :
-    display_ (NULL),
-    main_window_ (NULL),
-    video_window_ (NULL),
-    sink_bin_ (NULL),
-    queue_ (NULL),
-    ffmpegcolorspace_ (NULL),
-    videoflip_ (NULL),
-    gamma_(NULL),
-    videobalance_ (NULL),
-    xvimagesink_ (NULL),
+    display_ (nullptr),
+    main_window_ (nullptr),
+    video_window_ (nullptr),
+    sink_bin_ (nullptr),
+    queue_ (nullptr),
+    ffmpegcolorspace_ (nullptr),
+    videoflip_ (nullptr),
+    gamma_(nullptr),
+    videobalance_ (nullptr),
+    xvimagesink_ (nullptr),
 #if HAVE_OSX
-    window_handle_ (NULL),
+    window_handle_ (nullptr),
 #else
     window_handle_ (0),
 #endif
     on_error_command_ (new QuiddityCommand ()),
-    blank_cursor_ (NULL),
-    custom_props_ (new CustomPropertyHelper ()),
-    fullscreen_prop_spec_ (NULL),
+    blank_cursor_ (nullptr),
+    gtk_custom_props_ (new CustomPropertyHelper ()),
+    fullscreen_prop_spec_ (nullptr),
     is_fullscreen_ (FALSE),
-    title_prop_spec_ (NULL),
-    title_ (NULL),
+    title_prop_spec_ (nullptr),
+    title_ (nullptr),
     wait_window_mutex_(),
     wait_window_cond_(),
     window_destruction_mutex_(),
@@ -221,7 +224,7 @@ namespace switcher
   void
   GTKVideo::gtk_main_loop_thread ()
   {
-    if (!gtk_init_check (NULL, NULL))
+    if (!gtk_init_check (nullptr, nullptr))
       {
     	g_debug ("GTKVideo::init, cannot init gtk");
       }
@@ -281,10 +284,10 @@ namespace switcher
   {
     reset_bin ();
     g_idle_remove_by_data (this);
-    if (NULL != title_)
+    if (nullptr != title_)
       g_free (title_);
     //destroy child widgets too
-    if (main_window_ != NULL && GTK_IS_WIDGET (main_window_))
+    if (main_window_ != nullptr && GTK_IS_WIDGET (main_window_))
       {
 	std::unique_lock<std::mutex> lock (window_destruction_mutex_);
 	// g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
@@ -294,7 +297,7 @@ namespace switcher
 	gtk_idle_add (destroy_window, this);
 	window_destruction_cond_.wait (lock);
       }
-    if (blank_cursor_ != NULL)
+    if (blank_cursor_ != nullptr)
       gdk_cursor_destroy (blank_cursor_);
     // instances_counter_ --;
     // if (instances_counter_ == 0)
@@ -302,7 +305,7 @@ namespace switcher
     // 	g_debug ("GTKVideo::~GTKVideo invoking gtk_main_quit");
     // 	gtk_main_quit ();
     //   }
-    if (on_error_command_ != NULL)
+    if (on_error_command_ != nullptr)
       delete on_error_command_;
   }
   
@@ -343,7 +346,7 @@ namespace switcher
     
     context->reset_bin ();
     gtk_widget_destroy (context->main_window_);
-    context->main_window_ = NULL;
+    context->main_window_ = nullptr;
     QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
     if ((bool) manager)
       manager->remove (context->get_nick_name ());
@@ -356,7 +359,7 @@ namespace switcher
   {
     GTKVideo *context = static_cast <GTKVideo *> (user_data);
     context->display_ =  gdk_display_get_default ();
-    if (NULL == context->display_)
+    if (nullptr == context->display_)
       {
 	g_debug ("gtkvideo: no default display, cannot create window");
 	std::unique_lock<std::mutex> lock (context->wait_window_mutex_);
@@ -411,7 +414,7 @@ namespace switcher
     
     if (fullscreen)
       {
-     	if (context->main_window_ != NULL)
+     	if (context->main_window_ != nullptr)
      	  {
      	    gdk_window_set_cursor(GDK_WINDOW(context->video_window_->window), 
 				  context->blank_cursor_);
@@ -421,14 +424,14 @@ namespace switcher
       }
     else
       {
-     	if (context->main_window_ != NULL)
+     	if (context->main_window_ != nullptr)
      	  {
-     	    gdk_window_set_cursor(GDK_WINDOW(context->video_window_->window), NULL);
+     	    gdk_window_set_cursor(GDK_WINDOW(context->video_window_->window), nullptr);
      	    gtk_window_unfullscreen(GTK_WINDOW(context->main_window_));
      	  }
      	context->is_fullscreen_ = FALSE;
       }
-    context->custom_props_->notify_property_changed (context->fullscreen_prop_spec_);
+    context->gtk_custom_props_->notify_property_changed (context->fullscreen_prop_spec_);
   }
 
   void 
@@ -445,11 +448,11 @@ namespace switcher
   GTKVideo::set_title (const gchar *value, void *user_data)
   {
     GTKVideo *context = static_cast <GTKVideo *> (user_data);
-    if (NULL != context->title_)
+    if (nullptr != context->title_)
       g_free (context->title_);
     context->title_ = g_strdup (value);
     gtk_window_set_title (GTK_WINDOW (context->main_window_), context->title_);
-    context->custom_props_->notify_property_changed (context->title_prop_spec_);
+    context->gtk_custom_props_->notify_property_changed (context->title_prop_spec_);
    }
   
   const gchar *
@@ -458,5 +461,12 @@ namespace switcher
     GTKVideo *context = static_cast <GTKVideo *> (user_data);
     return context->title_;
   }
+
+  bool 
+  GTKVideo::can_sink_caps (std::string caps) 
+  {
+    return GstUtils::can_sink_caps ("ffmpegcolorspace",
+				    caps);
+  };
 
 }

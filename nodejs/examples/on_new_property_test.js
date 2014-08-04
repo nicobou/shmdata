@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2012-2013 Nicolas Bouillot (http://www.nicolasbouillot.net)
  *
  * This file is part of node-switcher.
  *
@@ -17,7 +16,7 @@
  * along with node-switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var switcher_addon = require('../build/Release/switcher_addon');
+var switcher_addon = require('../.libs/switcher');
 
 //please quit switcher properly
 process.on('exit', function () {

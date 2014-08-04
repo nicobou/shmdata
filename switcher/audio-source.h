@@ -21,13 +21,13 @@
 #ifndef __SWITCHER_AUDIO_SOURCE_H__
 #define __SWITCHER_AUDIO_SOURCE_H__
 
-#include "base-source.h"
+#include "gpipe.h"
 #include <memory>
 
 
 namespace switcher
 {
-  class AudioSource : public BaseSource
+  class AudioSource : public GPipe
   {
   public:
     typedef std::shared_ptr<AudioSource> ptr;
@@ -35,12 +35,10 @@ namespace switcher
     AudioSource (const AudioSource &) = delete;
     AudioSource &operator= (const AudioSource &) = delete;
   private:
-    GstElement *rawaudio_;
-    GstElement *audio_tee_;
-    GstElement *audioconvert_;   
-    GstElement *resample_;
-    void make_audio_elements ();
+    GstElement *rawaudio_ {nullptr};
+    GstElement *audio_tee_ {nullptr};
     std::string shmdata_path_;
+    void make_audio_elements ();
 
   protected:
     void set_raw_audio_element (GstElement *elt);

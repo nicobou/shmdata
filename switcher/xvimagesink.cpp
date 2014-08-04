@@ -36,22 +36,22 @@ namespace switcher
   
 
   Xvimagesink::Xvimagesink () :
-    sink_bin_ (NULL),
-    queue_ (NULL),
-    ffmpegcolorspace_ (NULL),
-    xvimagesink_ (NULL)
+    sink_bin_ (nullptr),
+    queue_ (nullptr),
+    ffmpegcolorspace_ (nullptr),
+    xvimagesink_ (nullptr)
   {}
 
   Xvimagesink::~Xvimagesink ()
   {
     GstUtils::clean_element (xvimagesink_);
-    if (on_error_command_ != NULL)
+    if (on_error_command_ != nullptr)
       delete on_error_command_;
     
   }
 
   bool
-  Xvimagesink::init_segment ()
+  Xvimagesink::init_gpipe ()
   {
 
     if (!GstUtils::make_element ("bin",&sink_bin_))
@@ -72,18 +72,18 @@ namespace switcher
 		      queue_,
 		      ffmpegcolorspace_,
 		      xvimagesink_,
-		      NULL);
-    gst_element_link_many (queue_, ffmpegcolorspace_, xvimagesink_, NULL);
+		      nullptr);
+    gst_element_link_many (queue_, ffmpegcolorspace_, xvimagesink_, nullptr);
 
     g_object_set (G_OBJECT (xvimagesink_),
 		  "draw-borders", TRUE,
 		  "force-aspect-ratio", TRUE,
 		  "sync", FALSE, 
-		  NULL);
+		  nullptr);
 
     GstPad *sink_pad = gst_element_get_static_pad (queue_, 
 						   "sink");
-    GstPad *ghost_sinkpad = gst_ghost_pad_new (NULL, sink_pad);
+    GstPad *ghost_sinkpad = gst_ghost_pad_new (nullptr, sink_pad);
     gst_pad_set_active(ghost_sinkpad, TRUE);
     gst_element_add_pad (sink_bin_, ghost_sinkpad); 
     gst_object_unref (sink_pad);
@@ -105,5 +105,12 @@ namespace switcher
 
     return true;
   }
- 
+
+  bool 
+  Xvimagesink::can_sink_caps (std::string caps) 
+  {
+    return GstUtils::can_sink_caps ("ffmpegcolorspace",
+				    caps);
+  };
+
 }

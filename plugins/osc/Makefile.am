@@ -2,7 +2,8 @@ pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 
 plugins_LTLIBRARIES = \
     libosc-ctrl-server.la \
-    libosc-to-property.la
+    libosc-to-shmdata.la \
+    libshmdata-to-osc.la
 
 OSC_PLUGINS_LDFLAGS = \
     $(LIBLO_LIBS) \
@@ -27,7 +28,7 @@ OSC_PLUGINS_CXXFLAGS = \
     -I$(top_srcdir) 
 
 
-#libosc_ctrl_server (control from osc)
+########### libosc_ctrl_server (control from osc)
 libosc_ctrl_server_la_LDFLAGS = \
     $(OSC_PLUGINS_LDFLAGS)
 
@@ -43,23 +44,39 @@ libosc_ctrl_server_la_include_HEADERS = \
 libosc_ctrl_server_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
-#libosc-to-property
-libosc_to_property_la_LDFLAGS = \
+########## libosc-to-shmdata
+libosc_to_shmdata_la_LDFLAGS = \
     $(OSC_PLUGINS_LDFLAGS)
 
-libosc_to_property_la_CXXFLAGSS = \
+libosc_to_shmdata_la_CXXFLAGSS = \
     $(OSC_PLUGINS_CXXFLAGS)
 
-libosc_to_property_la_SOURCES = \
-    osc-to-property.cpp
+libosc_to_shmdata_la_SOURCES = \
+    osc-to-shmdata.cpp
 
-libosc_to_property_la_include_HEADERS = \
-    osc-to-property.h
+libosc_to_shmdata_la_include_HEADERS = \
+    osc-to-shmdata.h
 
-libosc_to_property_la_includedir = \
+libosc_to_shmdata_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
 
-#### plugin unit test
+########## libshmdata_to_shmdata
+libshmdata_to_osc_la_LDFLAGS = \
+    $(OSC_PLUGINS_LDFLAGS)
+
+libshmdata_to_osc_la_CXXFLAGSS = \
+    $(OSC_PLUGINS_CXXFLAGS)
+
+libshmdata_to_osc_la_SOURCES = \
+    shmdata-to-osc.cpp
+
+libshmdata_to_osc_la_include_HEADERS = \
+    shmdata-to-osc.h
+
+libshmdata_to_osc_la_includedir = \
+    $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
+
+########### plugin unit test
 AM_CFLAGS = \
     -I$(top_srcdir)
 

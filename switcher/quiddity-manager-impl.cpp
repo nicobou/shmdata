@@ -41,20 +41,15 @@
 #include "http-sdp-dec.h"
 #include "jack-audio-source.h"
 #include "jack-sink.h"
-#include "jpegenc.h"
 #include "logger.h"
 #include "property-mapper.h"
 #include "rtp-session.h"
-//#include "runtime.h"
 #include "shmdata-to-file.h"
 #include "shmdata-from-gdp-file.h"
 #include "udpsink.h"
 #include "uridecodebin.h"
-//#include "uris.h"
 #include "string-dictionary.h"
-#include "video-rate.h"
 #include "video-test-source.h"
-#include "vorbis.h"
 #include "xvimagesink.h"
 
 namespace switcher
@@ -83,14 +78,14 @@ namespace switcher
       property_subscribers_ (),
       signal_subscribers_ (),
       classes_doc_ (new JSONBuilder ()),
-      creation_hook_ (NULL),
-      removal_hook_ (NULL),
-      creation_hook_user_data_ (NULL),
-      removal_hook_user_data_ (NULL),
+      creation_hook_ (nullptr),
+      removal_hook_ (nullptr),
+      creation_hook_user_data_ (nullptr),
+      removal_hook_user_data_ (nullptr),
       quiddity_created_counter_ (0), 
       thread_ (),
-      main_context_ (NULL),
-      mainloop_ (NULL) 
+      main_context_ (nullptr),
+      mainloop_ (nullptr) 
   {
     init_gmainloop ();
     remove_shmdata_sockets (); 
@@ -115,7 +110,7 @@ namespace switcher
     gchar *shmdata_prefix = g_strconcat (Quiddity::get_socket_name_prefix ().c_str (), 
 					 name_.c_str (), 
 					 "_",
-					 NULL);
+					 nullptr);
     
     gboolean res;
     GError *error;
@@ -124,44 +119,44 @@ namespace switcher
     GFile *descend;
     char *relative_path;
     
-    error = NULL;
+    error = nullptr;
     enumerator =
       g_file_enumerate_children (shmdata_dir, "*",
-				 G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, NULL,
+				 G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr,
 				 &error);
     if (! enumerator)
       return;
-    error = NULL;
-    info = g_file_enumerator_next_file (enumerator, NULL, &error);
+    error = nullptr;
+    info = g_file_enumerator_next_file (enumerator, nullptr, &error);
     while ((info) && (!error))
       {
 	descend = g_file_get_child (shmdata_dir, g_file_info_get_name (info));
-	//g_assert (descend != NULL);
+	//g_assert (descend != nullptr);
 	relative_path = g_file_get_relative_path (shmdata_dir, descend);
 	
-	error = NULL;
+	error = nullptr;
 	
 	if (g_str_has_prefix (relative_path, shmdata_prefix))
 	  {
 	    g_debug ("deleting previous shmdata socket (%s)", g_file_get_path (descend));
-	    res = g_file_delete (descend, NULL, &error);
+	    res = g_file_delete (descend, nullptr, &error);
 	    if(res != TRUE)
 	      g_warning ("previous switcher file \"%s\" cannot be deleted", g_file_get_path (descend));
 	  }
 	
 	g_object_unref (descend);
-	error = NULL;
-	info = g_file_enumerator_next_file (enumerator, NULL, &error);
+	error = nullptr;
+	info = g_file_enumerator_next_file (enumerator, nullptr, &error);
       }
-    if (error != NULL)
-      g_debug ("error not NULL");
+    if (error != nullptr)
+      g_debug ("error not nullptr");
     
-    error = NULL;
-    res = g_file_enumerator_close (enumerator, NULL, &error);
+    error = nullptr;
+    res = g_file_enumerator_close (enumerator, nullptr, &error);
     if (res != TRUE)
       g_debug ("QuiddityManager_Impl: file enumerator not properly closed");
-    if (error != NULL)
-      g_debug ("error not NULL");
+    if (error != nullptr)
+      g_debug ("error not nullptr");
     
     g_object_unref (shmdata_dir);
     g_free (shmdata_prefix);
@@ -205,16 +200,12 @@ namespace switcher
 						       JackAudioSource::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<JackSink> (JackSink::switcher_doc_.get_class_name (), 
 						JackSink::switcher_doc_.get_json_root_node ());
-    abstract_factory_.register_class<JpegEnc> (JpegEnc::switcher_doc_.get_class_name (), 
-					       JpegEnc::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<Logger> (Logger::switcher_doc_.get_class_name (), 
       					       Logger::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<PropertyMapper> (PropertyMapper::switcher_doc_.get_class_name (), 
 						      PropertyMapper::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<RtpSession> (RtpSession::switcher_doc_.get_class_name (), 
       						  RtpSession::switcher_doc_.get_json_root_node ());
-    // abstract_factory_.register_class<Runtime> (Runtime::switcher_doc_.get_class_name (), 
-    //    					       Runtime::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<ShmdataFromGDPFile> (ShmdataFromGDPFile::switcher_doc_.get_class_name (), 
       							  ShmdataFromGDPFile::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<ShmdataToFile> (ShmdataToFile::switcher_doc_.get_class_name (), 
@@ -225,14 +216,8 @@ namespace switcher
        					       UDPSink::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<Uridecodebin> (Uridecodebin::switcher_doc_.get_class_name (), 
 						    Uridecodebin::switcher_doc_.get_json_root_node ());
-    // abstract_factory_.register_class<Uris> (Uris::switcher_doc_.get_class_name (), 
-    //  					    Uris::switcher_doc_.get_json_root_node ());
-    abstract_factory_.register_class<VideoRate> (VideoRate::switcher_doc_.get_class_name (),
-      						 VideoRate::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<VideoTestSource> (VideoTestSource::switcher_doc_.get_class_name (),
 						       VideoTestSource::switcher_doc_.get_json_root_node ());
-    abstract_factory_.register_class<Vorbis> (Vorbis::switcher_doc_.get_class_name (),
-     					      Vorbis::switcher_doc_.get_json_root_node ());
     abstract_factory_.register_class<Xvimagesink> (Xvimagesink::switcher_doc_.get_class_name (),
        						   Xvimagesink::switcher_doc_.get_json_root_node ());
   }
@@ -308,7 +293,7 @@ namespace switcher
     quiddities_[quiddity->get_name()] = quiddity;
     quiddities_nick_names_[quiddity->get_nick_name ()] = quiddity->get_name();
     
-    if (creation_hook_ != NULL)
+    if (creation_hook_ != nullptr)
       (*creation_hook_) (quiddity->get_nick_name (), creation_hook_user_data_);
 
     return true;
@@ -322,7 +307,7 @@ namespace switcher
       return "";
     
     Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class);
-    if (quiddity.get() != NULL)
+    if (quiddity.get() != nullptr)
       {
 	quiddity->set_manager_impl (shared_from_this());
 	give_name_if_unnamed (quiddity);
@@ -343,7 +328,7 @@ namespace switcher
       return "";
     
      Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class);
-     if (quiddity.get() != NULL)
+     if (quiddity.get() != nullptr)
        if (!init_quiddity (quiddity))
 	 {
 	   g_debug ("initialization of %s failled",quiddity_class.c_str ());
@@ -365,7 +350,7 @@ namespace switcher
     
     Quiddity::ptr quiddity = abstract_factory_.create (quiddity_class);
 
-    if (quiddity.get() != NULL)
+    if (quiddity.get() != nullptr)
       {
 	if (!nick_name.empty ())
 	  quiddity->set_nick_name (nick_name);
@@ -526,7 +511,7 @@ namespace switcher
       it.second->unsubscribe (get_quiddity (quiddity_name));
     quiddities_.erase (quiddities_nick_names_[quiddity_name]);
     quiddities_nick_names_.erase (quiddity_name);
-    if (removal_hook_ != NULL)
+    if (removal_hook_ != nullptr)
       (*removal_hook_) (quiddity_name.c_str (), removal_hook_user_data_);
     return true;
   }
@@ -810,7 +795,7 @@ namespace switcher
     if (!exists (quiddity_name))
       {
 	g_debug ("quiddity %s not found, cannot invoke",quiddity_name.c_str());
-	if (return_value != NULL)
+	if (return_value != nullptr)
 	  *return_value = new std::string ("");
 	return false;
       }
@@ -819,7 +804,7 @@ namespace switcher
     if (!quiddity->has_method (method_name)) 
       {
 	g_debug ("method %s not found, cannot invoke",method_name.c_str());
-	if (return_value != NULL)
+	if (return_value != nullptr)
 	  *return_value = new std::string ("");
 	return false;
       }
@@ -1079,7 +1064,7 @@ namespace switcher
   QuiddityManager_Impl::set_created_hook (quiddity_created_hook hook, 
 					  void *user_data)
   {
-    if (creation_hook_ != NULL)
+    if (creation_hook_ != nullptr)
       return false;
     creation_hook_ = hook;
     creation_hook_user_data_ = user_data;
@@ -1090,7 +1075,7 @@ namespace switcher
   QuiddityManager_Impl::set_removed_hook (quiddity_removed_hook hook,
 					  void *user_data)
   {
-    if (removal_hook_ != NULL)
+    if (removal_hook_ != nullptr)
       return false;
     removal_hook_ = hook;
     removal_hook_user_data_ = user_data;
@@ -1100,10 +1085,10 @@ namespace switcher
   void 
   QuiddityManager_Impl::reset_create_remove_hooks ()
   {
-    creation_hook_ = NULL;
-    removal_hook_ = NULL;
-    creation_hook_user_data_ = NULL;
-    removal_hook_user_data_ = NULL;
+    creation_hook_ = nullptr;
+    removal_hook_ = nullptr;
+    creation_hook_user_data_ = nullptr;
+    removal_hook_user_data_ = nullptr;
   }
 
 
@@ -1111,11 +1096,11 @@ namespace switcher
   QuiddityManager_Impl::init_gmainloop ()
   {
     if (! gst_is_initialized ())
-      gst_init (NULL,NULL);
+      gst_init (nullptr,nullptr);
     
     main_context_ = g_main_context_new ();
     mainloop_ = g_main_loop_new (main_context_, FALSE);
-    //mainloop_ = g_main_loop_new (NULL, FALSE);
+    //mainloop_ = g_main_loop_new (nullptr, FALSE);
     GstRegistry *registry;
     registry = gst_registry_get_default();
     //TODO add option for scanning a path
@@ -1180,16 +1165,16 @@ namespace switcher
     GFileInfo *info;
     GFile *descend;
     char *absolute_path;
-    error = NULL;
+    error = nullptr;
     enumerator =
       g_file_enumerate_children (dir, "*",
 				 G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, 
-				 NULL,
+				 nullptr,
 				 &error);
     if (! enumerator)
       return false;;
-    error = NULL;
-    info = g_file_enumerator_next_file (enumerator, NULL, &error);
+    error = nullptr;
+    info = g_file_enumerator_next_file (enumerator, nullptr, &error);
     while ((info) && (!error))
       {
 	descend = g_file_get_child (dir, g_file_info_get_name (info));
@@ -1202,20 +1187,29 @@ namespace switcher
 	  }
 	g_free (absolute_path);
 	g_object_unref (descend);
-	info = g_file_enumerator_next_file (enumerator, NULL, &error);
+	info = g_file_enumerator_next_file (enumerator, nullptr, &error);
       }
-    error = NULL;
-    res = g_file_enumerator_close (enumerator, NULL, &error);
+    error = nullptr;
+    res = g_file_enumerator_close (enumerator, nullptr, &error);
     if (res != TRUE)
       g_debug ("scanning dir: file enumerator not properly closed");
-    if (error != NULL)
-      g_debug ("scanning dir: error not NULL");
+    if (error != nullptr)
+      g_debug ("scanning dir: error not nullptr");
     g_object_unref (dir);
 
     classes_doc_.reset (new JSONBuilder ());
     make_classes_doc ();
         
     return true;
+  }
+
+  std::string
+  QuiddityManager_Impl::get_info (const std::string &nick_name, const std::string &path)
+  {
+    auto it = quiddities_nick_names_.find (nick_name);
+    if (quiddities_nick_names_.end () == it)
+      return "{ \"error\":\"quiddity not found\"}";
+    return quiddities_[quiddities_nick_names_[nick_name]]->get_info (path);
   }
 
 } // end of namespace

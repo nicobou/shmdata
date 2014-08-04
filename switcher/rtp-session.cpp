@@ -19,7 +19,6 @@
 
 #include "rtp-session.h"
 #include <sstream>
-#include <gst/sdp/gstsdpmessage.h>
 #include <glib/gstdio.h> //writing sdp file
 #include "gst-utils.h"
 #include "json-builder.h"
@@ -35,12 +34,12 @@ namespace switcher
 				       "Nicolas Bouillot");
 
   RtpSession::RtpSession () :
-    rtpsession_ (NULL),
+    rtpsession_ (nullptr),
     next_id_ (79), //this value is arbitrary and can be changed
     custom_props_ (new CustomPropertyHelper ()), 
-    destination_description_json_ (NULL),
-    destinations_json_ (NULL),
-    mtu_at_add_data_stream_spec_ (NULL),
+    destination_description_json_ (nullptr),
+    destinations_json_ (nullptr),
+    mtu_at_add_data_stream_spec_ (nullptr),
     mtu_at_add_data_stream_ (1400),
     internal_id_ (),
     rtp_ids_ (),
@@ -91,12 +90,13 @@ namespace switcher
     }
 
   bool 
-  RtpSession::init_segment ()
+  RtpSession::init_gpipe ()
   {
     if (!GstUtils::make_element ("gstrtpbin", &rtpsession_))
       return false;
+    g_object_set (G_OBJECT (rtpsession_), "ntp-sync", TRUE, nullptr);
 
-    g_object_set (G_OBJECT (bin_), "async-handling", TRUE, NULL);
+    g_object_set (G_OBJECT (bin_), "async-handling", TRUE, nullptr);
     
     g_signal_connect (G_OBJECT (rtpsession_), "on-bye-ssrc", 
 		      (GCallback) on_bye_ssrc, (gpointer) this);
@@ -135,10 +135,10 @@ namespace switcher
 		    Method::make_arg_description ("Shmdata Path",
 						  "socket", 
 						  "shmdata socket path to add to the session",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &add_data_stream_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
 
     install_method ("Remove Data Stream",
@@ -148,10 +148,10 @@ namespace switcher
 		    Method::make_arg_description ("Shmdata Path",
 						  "socket", 
 						  "shmdata socket path to remove from the session", 
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &remove_data_stream_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
 
     install_method ("Add Destination",
@@ -164,10 +164,10 @@ namespace switcher
 						  "Host Name or IP",
 						  "host_name",
 						  "the host name of the destination",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &add_destination_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, nullptr),
 		    this);
     
     install_method ("Remove Destination",
@@ -177,10 +177,10 @@ namespace switcher
 		    Method::make_arg_description ("Name",
 						  "name", 
 						  "the destination name",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &remove_destination_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
 
 
@@ -191,10 +191,10 @@ namespace switcher
 		    Method::make_arg_description ("Shmdata Path", "socket", "local socket path of the shmdata",
 						  "Destination", "dest", "name of the destination",
 						  "Port", "port", "destination port",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &add_udp_stream_to_dest_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,G_TYPE_STRING,NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,G_TYPE_STRING,nullptr),
 		    this);
     
     install_method ("Remove UDP Stream",
@@ -203,10 +203,10 @@ namespace switcher
 		    "succes or fail",
 		    Method::make_arg_description ("Shmdata Path", "socket", "local socket path of the shmdata",
 						  "Destination", "dest_name", "destination name",
-						  NULL),
+						  nullptr),
       		    (Method::method_ptr) &remove_udp_stream_to_dest_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING,G_TYPE_STRING,nullptr),
 		    this);
     
     install_method ("Write SDP File",
@@ -216,17 +216,17 @@ namespace switcher
 		    Method::make_arg_description ("Destination",
 						  "name", 
 						  "the name of the destination",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &write_sdp_file_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING,NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING,nullptr),
 		    this);
-    
+
     destination_description_json_ = custom_props_->make_string_property ("destinations-json", 
 									 "json formated description of destinations",
 									 "",
 									 (GParamFlags) G_PARAM_READABLE,
-									 NULL,
+									 nullptr,
 									 RtpSession::get_destinations_json,
 									 this);
 
@@ -290,7 +290,7 @@ namespace switcher
     if (!g_file_set_contents (sdp_file.c_str (), 
 			      res.c_str (), 
 			      -1, //no size, res is a null terminated string
-			      NULL)) //not getting errors
+			      nullptr)) //not getting errors
       return false;
     
     return true;
@@ -344,17 +344,34 @@ namespace switcher
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug ("RtpSession::make_data_stream_available");
-    GstElement *pay = NULL;
+    GstElement *pay = nullptr;
     GList *list = gst_registry_feature_filter (gst_registry_get_default (),
 					       (GstPluginFeatureFilter) sink_factory_filter, 
 					       FALSE, caps);
     list = g_list_sort (list, (GCompareFunc) sink_compare_ranks);
 
-    if (list != NULL)  
-      pay = gst_element_factory_create (GST_ELEMENT_FACTORY (list->data), NULL);
+    //bypassing jpeg for high dimensions
+    bool jpeg_payloader = true;
+     GstStructure *caps_structure = gst_caps_get_structure (caps, 0);
+     if (g_str_has_prefix (gst_structure_get_name (caps_structure), "image/jpeg"))
+       {//check jpeg dimension are suported by jpeg payloader
+     	gint width = 0, height = 0;
+     	/* these properties are not mandatory, we can get them from the SOF, if there
+     	 * is one. */
+     	if (gst_structure_get_int (caps_structure, "height", &height)) {
+     	  if (height <= 0 || height > 2040)
+     	    jpeg_payloader = false;
+     	}
+     	if (gst_structure_get_int (caps_structure, "width", &width)) {
+     	  if (width <= 0 || width > 2040)
+     	    jpeg_payloader = false;
+     	}
+       }
+      
+    if (list != nullptr && jpeg_payloader)  
+      pay = gst_element_factory_create (GST_ELEMENT_FACTORY (list->data), nullptr);
     else
       GstUtils::make_element ("rtpgstpay", &pay);
-
     
     ShmdataReader *reader = (ShmdataReader *) g_object_get_data (G_OBJECT (typefind),
 								 "shmdata-reader");
@@ -364,14 +381,14 @@ namespace switcher
 	     GST_ELEMENT_NAME (pay));
 
     /* add capture and payloading to the pipeline and link */
-    gst_bin_add_many (GST_BIN (context->bin_), pay, NULL);
+    gst_bin_add_many (GST_BIN (context->bin_), pay, nullptr);
     gst_element_link (typefind, pay);
     g_debug ("%s sync",
 	     __PRETTY_FUNCTION__);
     GstUtils::sync_state_with_parent (pay);
     g_debug ("%s after sync",
 	     __PRETTY_FUNCTION__);
-    g_object_set (G_OBJECT (pay), "mtu", (guint)context->mtu_at_add_data_stream_, NULL);
+    g_object_set (G_OBJECT (pay), "mtu", (guint)context->mtu_at_add_data_stream_, nullptr);
     
     /* now link all to the rtpbin, start by getting an RTP sinkpad for session "%d" */
     GstPad *sinkpad = gst_element_get_request_pad (context->rtpsession_, 
@@ -396,7 +413,7 @@ namespace switcher
     g_strfreev (rtp_session_array);
     
     // rtp src pad (is a static pad since created after the request of rtp sink pad)
-    gchar *rtp_src_pad_name = g_strconcat ("send_rtp_src_", rtp_session_id, NULL); 
+    gchar *rtp_src_pad_name = g_strconcat ("send_rtp_src_", rtp_session_id, nullptr); 
     g_debug ("RtpSession: request rtp src pad and create a corresponding shmwriter %s",rtp_src_pad_name);
     GstPad *rtp_src_pad = gst_element_get_static_pad (context->rtpsession_, rtp_src_pad_name);
 
@@ -407,16 +424,16 @@ namespace switcher
     // GstElement *myfake;
     // //GstUtils::make_element ("fakesink", &myfake);
     // GstUtils::make_element ("multiudpsink", &myfake);
-    // g_object_set (G_OBJECT (myfake), "sync", FALSE, NULL);
+    // g_object_set (G_OBJECT (myfake), "sync", FALSE, nullptr);
     
-    // gst_bin_add_many (GST_BIN (context->bin_), myfake, NULL);
+    // gst_bin_add_many (GST_BIN (context->bin_), myfake, nullptr);
     // GstPad *fakepad = gst_element_get_static_pad (myfake, "sink");
     // if (gst_pad_link (rtp_src_pad, fakepad) != GST_PAD_LINK_OK)
     //   g_debug ("RtpSession::make_data_stream_available linking with multiudpsink failled");
     // GstUtils::sync_state_with_parent (myfake);
     
-    // g_signal_emit_by_name (myfake, "add", "localhost", "8044", NULL);
-    // //g_signal_emit_by_name (myfake, "add", "localhost", "9040", NULL);
+    // g_signal_emit_by_name (myfake, "add", "localhost", "8044", nullptr);
+    // //g_signal_emit_by_name (myfake, "add", "localhost", "9040", nullptr);
     
     //end testing
     
@@ -427,9 +444,14 @@ namespace switcher
      rtp_writer->plug (context->bin_, rtp_src_pad);
      context->internal_shmdata_writers_[rtp_writer_name] = rtp_writer;
      g_free (rtp_src_pad_name);
+     //set call back for saving caps in a property tree
+     rtp_writer->set_on_caps (std::bind (&RtpSession::on_rtp_caps, 
+					 context,
+					 reader->get_path (),//std::move (rtp_writer_name),
+					 std::placeholders::_1));
 
      //rtcp src pad
-     gchar *rtcp_src_pad_name = g_strconcat ("send_rtcp_src_", rtp_session_id,NULL); 
+     gchar *rtcp_src_pad_name = g_strconcat ("send_rtcp_src_", rtp_session_id,nullptr); 
      g_debug ("RtpSession: request rtcp src pad %s",rtcp_src_pad_name);
      GstPad *rtcp_src_pad = gst_element_get_request_pad (context->rtpsession_, rtcp_src_pad_name);
      ShmdataWriter::ptr rtcp_writer;
@@ -439,7 +461,7 @@ namespace switcher
      rtcp_writer->plug (context->bin_, rtcp_src_pad);
      context->internal_shmdata_writers_[rtcp_writer_name] = rtcp_writer;
      g_free (rtcp_src_pad_name);
-    
+
      // We also want to receive RTCP, request an RTCP sinkpad for given session and
      // link it to a funnel for future linking with network connections
      GstElement *funnel;
@@ -448,7 +470,7 @@ namespace switcher
      //GstUtils::wait_state_changed (context->bin_);
      GstUtils::sync_state_with_parent (funnel);
      GstPad *funnel_src_pad = gst_element_get_static_pad (funnel, "src");
-     gchar *rtcp_sink_pad_name = g_strconcat ("recv_rtcp_sink_", rtp_session_id,NULL); 
+     gchar *rtcp_sink_pad_name = g_strconcat ("recv_rtcp_sink_", rtp_session_id,nullptr); 
      GstPad *rtcp_sink_pad = gst_element_get_request_pad (context->rtpsession_, rtcp_sink_pad_name);
      if (gst_pad_link (funnel_src_pad, rtcp_sink_pad) != GST_PAD_LINK_OK)
        g_warning ("RtpSession::make_data_stream_available: Failed to link rtcpsrc to rtpbin");
@@ -477,7 +499,7 @@ namespace switcher
     //give caller to typefind in order to register telement to remove
     g_object_set_data (G_OBJECT (typefind), "shmdata-reader", (gpointer)caller);
     g_signal_connect (typefind, "have-type", G_CALLBACK (RtpSession::make_data_stream_available), context);
-    gst_bin_add_many (GST_BIN (context->bin_), funnel, typefind, NULL);
+    gst_bin_add_many (GST_BIN (context->bin_), funnel, typefind, nullptr);
     gst_element_link (funnel, typefind);
     
     //GstUtils::wait_state_changed (context->bin_);
@@ -565,7 +587,6 @@ namespace switcher
       return FALSE;
   }
   
- 
   bool
   RtpSession::add_udp_stream_to_dest (std::string shmdata_socket_path, std::string nick_name, std::string port)
   {
@@ -607,22 +628,18 @@ namespace switcher
 	//creating an internal quiddity manager 
 	QuiddityManager::ptr manager = QuiddityManager::make_manager ("manager_"+get_name()+"_"+id);
 	quiddity_managers_[shmdata_socket_path] = manager;
-	//manager->create ("runtime","single_runtime");//only one runtime for all
 
 	std::vector <std::string> arg;
 	manager->create ("udpsink","udpsend_rtp");
 	manager->create ("udpsink","udpsend_rtcp");
-	// arg.push_back ("single_runtime");
-	// manager->invoke ("udpsend_rtp", "set_runtime", NULL, arg);
-	// manager->invoke ("udpsend_rtcp", "set_runtime", NULL, arg);
 	
 	arg.clear ();
 	arg.push_back (make_file_name ("send_rtp_src_"+id));
-	manager->invoke ("udpsend_rtp", "connect", NULL, arg);
+	manager->invoke ("udpsend_rtp", "connect", nullptr, arg);
 
 	arg.clear ();
 	arg.push_back (make_file_name ("send_rtcp_src_"+id));
-	manager->invoke ("udpsend_rtcp", "connect", NULL, arg);
+	manager->invoke ("udpsend_rtcp", "connect", nullptr, arg);
 	//update manager_it with the new one
 	manager_it = quiddity_managers_.find (shmdata_socket_path);
       }
@@ -638,26 +655,26 @@ namespace switcher
     std::vector <std::string> arg;
     arg.push_back (dest->get_host_name ());
     arg.push_back (port);
-    manager->invoke ("udpsend_rtp","add_client", NULL, arg);
+    manager->invoke ("udpsend_rtp","add_client", nullptr, arg);
     //rtcp stream (sending)
     arg.clear ();
     arg.push_back (dest->get_host_name ());
     std::ostringstream rtcp_port;
     rtcp_port << rtp_port + 1;
     arg.push_back (rtcp_port.str());
-     manager->invoke ("udpsend_rtcp", "add_client", NULL, arg);
-     //TODO rtcp receiving should be negociated 
-     // GstElementCleaner::ptr funnel_cleaner = funnels_[shmdata_socket_path];
-     //  GstElement *funnel = funnel_cleaner->get_labeled_element_from_cleaner ("funnel");
-     //  GstElement *udpsrc;
-     //  GstUtils::make_element ("udpsrc", &udpsrc);
-     //  dest->add_element_to_cleaner (udpsrc);
-     //  g_object_set (G_OBJECT (udpsrc), "port", rtp_port + 5, NULL);
-     //  gst_bin_add (GST_BIN (bin_), udpsrc);
-     //  GstUtils::sync_state_with_parent (udpsrc);
-     //  if (!gst_element_link (udpsrc, funnel))
-     //    g_debug ("udpsrc and funnel link failled in rtp-session");
-     return true;
+    manager->invoke ("udpsend_rtcp", "add_client", nullptr, arg);
+    //TODO rtcp receiving should be negociated 
+    // GstElementCleaner::ptr funnel_cleaner = funnels_[shmdata_socket_path];
+    //  GstElement *funnel = funnel_cleaner->get_labeled_element_from_cleaner ("funnel");
+    //  GstElement *udpsrc;
+    //  GstUtils::make_element ("udpsrc", &udpsrc);
+    //  dest->add_element_to_cleaner (udpsrc);
+    //  g_object_set (G_OBJECT (udpsrc), "port", rtp_port + 5, nullptr);
+    //  gst_bin_add (GST_BIN (bin_), udpsrc);
+    //  GstUtils::sync_state_with_parent (udpsrc);
+    //  if (!gst_element_link (udpsrc, funnel))
+    //    g_debug ("udpsrc and funnel link failled in rtp-session");
+    return true;
   }
 
   
@@ -708,7 +725,7 @@ namespace switcher
     std::vector <std::string> arg;
     arg.push_back (dest->get_host_name ());
     arg.push_back (port);
-    manager->invoke ("udpsend_rtp", "remove_client", NULL, arg);
+    manager->invoke ("udpsend_rtp", "remove_client", nullptr, arg);
     
     //rtcp
     arg.clear ();
@@ -717,7 +734,7 @@ namespace switcher
     std::ostringstream rtcp_port;
     rtcp_port << rtp_port + 1;
     arg.push_back (rtcp_port.str());
-    manager->invoke ("udpsend_rtp", "remove_client", NULL, arg);
+    manager->invoke ("udpsend_rtp", "remove_client", nullptr, arg);
     return true;
   }
 
@@ -755,7 +772,7 @@ namespace switcher
     os_id << next_id_;
     next_id_++;
     internal_id_[shmdata_socket_path] = os_id.str();
-    register_shmdata_reader (reader);
+    register_shmdata (reader);
     return true;
   }  
 
@@ -777,7 +794,8 @@ namespace switcher
     auto internal_id_it = internal_id_.find (shmdata_socket_path);
     if (internal_id_.end () == internal_id_it)
       {
-	g_debug ("RtpSession::remove_data_stream: %s not present",shmdata_socket_path.c_str ());
+	g_debug ("RtpSession::remove_data_stream: %s not present",
+		 shmdata_socket_path.c_str ());
 	return false;
       }
     quiddity_managers_.erase (shmdata_socket_path);
@@ -790,11 +808,14 @@ namespace switcher
     internal_id_.erase (internal_id_it);
     auto writer_it = internal_shmdata_writers_.find (make_file_name ("send_rtp_src_"+id));
     if (internal_shmdata_writers_.end () != writer_it)
-      internal_shmdata_writers_.erase (writer_it);
+      {
+	internal_shmdata_writers_.erase (writer_it);
+	prune_tree ("rtp_caps." + make_file_name ("send_rtp_src_"+id));
+      }
     writer_it = internal_shmdata_writers_.find (make_file_name ("send_rtcp_src_"+id));
     if (internal_shmdata_writers_.end () != writer_it)
       internal_shmdata_writers_.erase (writer_it);
-    unregister_shmdata_reader (shmdata_socket_path);
+    unregister_shmdata (shmdata_socket_path);
     auto reader_it = internal_shmdata_readers_.find (make_file_name ("recv_rtcp_sink_"+id));
     if (internal_shmdata_readers_.end () != reader_it)
       internal_shmdata_readers_.erase (reader_it);
@@ -962,7 +983,7 @@ namespace switcher
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast<RtpSession *> (user_data);
 
-    if (context->destinations_json_ != NULL)
+    if (context->destinations_json_ != nullptr)
       g_free (context->destinations_json_);
 
     JSONBuilder::ptr destinations_json (new JSONBuilder ());
@@ -981,16 +1002,20 @@ namespace switcher
   void 
   RtpSession::set_mtu_at_add_data_stream (const gint value, void *user_data)
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast<RtpSession *> (user_data);
     context->mtu_at_add_data_stream_ = value;
   }
    
   gint RtpSession::get_mtu_at_add_data_stream (void *user_data)
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast<RtpSession *> (user_data);
     return context->mtu_at_add_data_stream_;
   }
 
+  void
+  RtpSession::on_rtp_caps (std::string shmdata_path, std::string caps)
+  {
+    graft_tree ("rtp_caps." + std::move (shmdata_path), 
+		data::make_tree (std::move (caps)));
+  }
 }

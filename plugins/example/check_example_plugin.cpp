@@ -53,21 +53,25 @@ main ()
       //testing myprop property
       if (!manager->set_property ("test", "myprop", "true"))
         success = false;
+
+      std::string info = manager->get_info ("test", "custom.information");
+      std::cout << info << std::endl;
+
       // if (g_strcmp0 (manager->get_property ("test", "myprop").c_str (), "true") != 0)
       //   success = false;
 
- //     //testing hello-world method
- //     std::string *res;
- //     if (!manager->invoke_va ("test", "hello-world", &res, "Nico", NULL))
- //       success = false;
- //     if (g_strcmp0 (res->c_str (), "hello Nico") != 0)
- //       success = false;
- //     delete res;
-
- //     //removing the quiddity
- //     if (!manager->remove ("test"))
- //       success = false;
-  
+      //     //testing hello-world method
+      //     std::string *res;
+      //     if (!manager->invoke_va ("test", "hello-world", &res, "Nico", nullptr))
+      //       success = false;
+      //     if (g_strcmp0 (res->c_str (), "hello Nico") != 0)
+      //       success = false;
+      //     delete res;
+      
+      //     //removing the quiddity
+      //     if (!manager->remove ("test"))
+      //       success = false;
+      
    }//end of scope is releasing the manager
 
    if (success)

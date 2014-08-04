@@ -23,7 +23,9 @@
 namespace switcher
 {
 
-  StartableQuiddity::StartableQuiddity ()
+  StartableQuiddity::StartableQuiddity () :
+    started_ (false),
+    startable_custom_props_ (new CustomPropertyHelper ())
   {}
 
   StartableQuiddity::~StartableQuiddity ()
@@ -34,20 +36,18 @@ namespace switcher
   {
     Quiddity *quid = static_cast <Quiddity *> (quiddity);
 
-    started_ = false;
-    custom_props_.reset (new CustomPropertyHelper ());
     started_prop_ = 
-      custom_props_->make_boolean_property ("started", 
-					    "started or not",
-					    (gboolean)FALSE,
-					    (GParamFlags) G_PARAM_READWRITE,
-					    StartableQuiddity::set_started,
-					    StartableQuiddity::get_started,
-					    this);
-    quid->install_property_by_pspec (custom_props_->get_gobject (), 
-				      started_prop_, 
-				      "started",
-				      "Started");
+      startable_custom_props_->make_boolean_property ("started", 
+						      "started or not",
+						      (gboolean)FALSE,
+						      (GParamFlags) G_PARAM_READWRITE,
+						      StartableQuiddity::set_started,
+						      StartableQuiddity::get_started,
+						      this);
+    quid->install_property_by_pspec (startable_custom_props_->get_gobject (), 
+				     started_prop_, 
+				     "started",
+				     "Started");
   }
 
   gboolean 
@@ -73,7 +73,7 @@ namespace switcher
 	if (context->stop ())
 	  context->started_ = false;
       }
-    context->custom_props_->notify_property_changed (context->started_prop_);
+    context->startable_custom_props_->notify_property_changed (context->started_prop_);
   }
 
     bool 
@@ -82,5 +82,5 @@ namespace switcher
       return started_;
     }
   
-}//end of class
+}//end of switcher namespace
 

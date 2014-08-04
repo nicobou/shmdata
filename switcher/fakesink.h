@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_FAKESINK_H__
 #define __SWITCHER_FAKESINK_H__
 
-#include "base-sink.h"
+#include "single-pad-gst-sink.h"
 #include "gst-element-cleaner.h"
 #include "custom-property-helper.h"
 #include <gst/gst.h>
@@ -30,7 +30,7 @@
 namespace switcher
 {
 
-  class FakeSink : public BaseSink
+  class FakeSink : public SinglePadGstSink
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeSink);
@@ -46,6 +46,14 @@ namespace switcher
     gint byte_rate_;
     gchar *string_caps_;
     gboolean set_string_caps_;
+    //byte rate property 
+    CustomPropertyHelper::ptr props_;
+    GParamSpec *byte_rate_spec_;
+    GParamSpec *caps_spec_;
+
+    bool init_gpipe () final;
+    bool can_sink_caps (std::string caps) final {return true;};
+
     static void on_handoff_cb (GstElement* object,
 			       GstBuffer* buf,
 			       GstPad* pad,
@@ -53,11 +61,6 @@ namespace switcher
     static gboolean update_byte_rate (gpointer user_data); 
     static gint get_byte_rate (void *user_data);
     static const gchar *get_caps (void *user_data);
-    //byte rate property 
-    CustomPropertyHelper::ptr props_;
-    GParamSpec *byte_rate_spec_;
-    GParamSpec *caps_spec_;
-    bool init_segment ();
   };
 
 }  // end of namespace

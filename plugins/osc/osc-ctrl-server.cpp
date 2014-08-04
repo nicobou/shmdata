@@ -39,13 +39,13 @@ namespace switcher
   OscCtrlServer::OscCtrlServer () :
     port_ (),
     osc_subscribers_ (),
-    osc_thread_ (NULL)
+    osc_thread_ (nullptr)
   {}
 
   bool
   OscCtrlServer::init ()
   {
-    osc_thread_ = NULL;
+    osc_thread_ = nullptr;
     srand(time(0));
     set_name (g_strdup_printf ("oscctrlserver%d",rand() % 1024));
     
@@ -56,10 +56,10 @@ namespace switcher
 		    Method::make_arg_description ("Port",
 						  "port",
 						  "the port to bind",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &set_port_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
      		    this);
     return true;
   }
@@ -157,16 +157,16 @@ namespace switcher
   {
     osc_thread_ = lo_server_thread_new(port_.c_str (), osc_error);
         /* add method that will match any path and args */
-    lo_server_thread_add_method(osc_thread_, NULL, NULL, osc_handler, this);
+    lo_server_thread_add_method(osc_thread_, nullptr, nullptr, osc_handler, this);
     lo_server_thread_start(osc_thread_);
   }
 
   void
   OscCtrlServer::stop ()
   {
-    if (osc_thread_ != NULL)
+    if (osc_thread_ != nullptr)
       lo_server_thread_free(osc_thread_);
-    osc_thread_ = NULL;
+    osc_thread_ = nullptr;
   }
 
 
@@ -256,7 +256,7 @@ namespace switcher
 		args.push_back (val);
 		g_free (val);
 	      }
-	    manager->invoke (quid_name, method_name, NULL, args);
+	    manager->invoke (quid_name, method_name, nullptr, args);
 	    g_free (quid_name); 
 	    g_free (method_name); 
 	  }
@@ -280,7 +280,7 @@ namespace switcher
 		g_warning ("OscCtrlServer: a subscriber named %s is already registered", subscriber_name);
 		return 0;
 	      }
-	    if (host == NULL || port_int == NULL)
+	    if (host == nullptr || port_int == nullptr)
 	      {
 		g_warning ("OscCtrlServer: issue with host name or port");
 		return 0;
@@ -336,7 +336,7 @@ namespace switcher
 	    gchar *property_name = string_from_osc_arg (types[1], argv[1]);
 	    gchar *response_url = string_from_osc_arg (types[2], argv[2]);
 
-	    if (quiddity_name == NULL || property_name == NULL || response_url == NULL)
+	    if (quiddity_name == nullptr || property_name == nullptr || response_url == nullptr)
 	      {
 		g_warning ("OscCtrlServer: issue with quiddity name or property name or response url");
 		return 0;
@@ -346,7 +346,7 @@ namespace switcher
 						       property_name);
 	    lo_address response_lo_address = lo_address_new_from_url(response_url);
 
-	    if (response_lo_address != NULL && !lo_address_errno (response_lo_address))
+	    if (response_lo_address != nullptr && !lo_address_errno (response_lo_address))
 	      {
 		gchar *message = g_strdup_printf("/%s/%s", 
 						 quiddity_name, 
@@ -381,7 +381,7 @@ namespace switcher
 		g_warning ("OscCtrlServer: a subscriber named %s does not exist", subscriber_name);
 		return 0;
 	      }
-	    if (quiddity_name == NULL || property_name == NULL)
+	    if (quiddity_name == nullptr || property_name == nullptr)
 	      {
 		g_warning ("OscCtrlServer: issue with quiddity name or property name");
 		return 0;
@@ -418,7 +418,7 @@ namespace switcher
 		g_warning ("OscCtrlServer: a subscriber named %s does not exist", subscriber_name);
 		return 0;
 	      }
-	    if (quiddity_name == NULL || property_name == NULL)
+	    if (quiddity_name == nullptr || property_name == nullptr)
 	      {
 		g_warning ("OscCtrlServer: issue with quiddity name or property name");
 		return 0;
@@ -449,7 +449,7 @@ namespace switcher
   OscCtrlServer::string_from_osc_arg (char type, lo_arg *data)
   {
     //lo_arg_host_endian ((lo_type) type, data);
-    gchar *res = NULL;// = g_strdup_printf ("videotestsrc");
+    gchar *res = nullptr;// = g_strdup_printf ("videotestsrc");
 
     gchar *tmp; 
      switch (type) {

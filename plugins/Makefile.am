@@ -1,6 +1,5 @@
 SUBDIRS= \
-    example \
-    avcodecs 
+    example
 
 if V4L2BUILD
 SUBDIRS += \
@@ -31,3 +30,24 @@ if PORTMIDIBUILD
 SUBDIRS += \
     portmidi
 endif
+
+if PJSIPBUILD
+SUBDIRS += \
+    pjsip
+endif
+
+if POSTUREBUILD
+SUBDIRS += \
+	posture
+endif
+
+if HAVE_OSX
+SUBDIRS += \
+    syphonsrc
+endif
+
+if !HAVE_OSX
+SUBDIRS += \
+    systemusage
+endif
+

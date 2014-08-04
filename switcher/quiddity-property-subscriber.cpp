@@ -111,7 +111,7 @@ namespace switcher
   QuiddityPropertySubscriber::subscribe (Quiddity::ptr quid, 
 					 std::string property_name)
   {
-    if (user_callback_ == NULL)
+    if (user_callback_ == nullptr)
       {
 	g_warning ("cannot subscribe before setting a callback (%s %s)",
 		   quid->get_nick_name ().c_str (),

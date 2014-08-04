@@ -31,13 +31,13 @@ namespace switcher
 				       "filesdp", 
 				       "Nicolas Bouillot");
   FileSDP::FileSDP () :
-    filesrc_ (NULL),
-    sdpdemux_ (NULL),
+    filesrc_ (nullptr),
+    sdpdemux_ (nullptr),
     media_counter_ (0)
   {}
 
   bool
-  FileSDP::init_segment () 
+  FileSDP::init_gpipe () 
   { 
     if (!GstUtils::make_element ("filesrc", &filesrc_)
 	|| !GstUtils::make_element ("sdpdemux", &sdpdemux_))
@@ -68,10 +68,10 @@ namespace switcher
 		    Method::make_arg_description ("SDP File URL",
 						  "url", 
 						  "The sdp file path (such as file:///home/me/file.sdp)",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr)&to_shmdata_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
     
     install_property (G_OBJECT (sdpdemux_),"latency","latency", "Latency");
@@ -96,7 +96,7 @@ namespace switcher
 
     GstElement *identity;
     GstUtils::make_element ("identity", &identity);
-    g_object_set (identity, "sync", TRUE, NULL);
+    g_object_set (identity, "sync", TRUE, nullptr);
 
     gst_bin_add (GST_BIN (context->bin_), identity);
     GstUtils::link_static_to_request (pad, identity);
@@ -119,7 +119,7 @@ namespace switcher
     connector->plug (context->bin_, identity, caps);
     if (G_IS_OBJECT (caps))
       gst_object_unref (caps);
-    context->register_shmdata_writer (connector);
+    context->register_shmdata (connector);
     g_message ("%s created a new shmdata writer (%s)", 
 	       context->get_nick_name ().c_str(), 
 	       connector_name.c_str ());
@@ -142,8 +142,8 @@ namespace switcher
   FileSDP::to_shmdata (std::string uri)
   {
     g_debug ("FileSDP::to_shmdata set location %s", uri.c_str ());
-    g_object_set (G_OBJECT (filesrc_), "location", uri.c_str (), NULL);  
-    gst_bin_add_many (GST_BIN (bin_), filesrc_, sdpdemux_, NULL);
+    g_object_set (G_OBJECT (filesrc_), "location", uri.c_str (), nullptr);  
+    gst_bin_add_many (GST_BIN (bin_), filesrc_, sdpdemux_, nullptr);
     gst_element_link (filesrc_,sdpdemux_);
     GstUtils::sync_state_with_parent (filesrc_);
     GstUtils::sync_state_with_parent (sdpdemux_);

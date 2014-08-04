@@ -31,20 +31,20 @@ namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(UDPSink,
 				       "UDP Sender",
-				       "udp sink", 
+				       "udp network", 
 				       "send data stream with udp",
 				       "LGPL",
 				       "udpsink",
 				       "Nicolas Bouillot");
   UDPSink::UDPSink () :
-    udpsink_ (NULL),
-    udpsink_bin_ (NULL),
-    typefind_ (NULL),
-    ghost_sinkpad_ (NULL)
+    udpsink_ (nullptr),
+    udpsink_bin_ (nullptr),
+    typefind_ (nullptr),
+    ghost_sinkpad_ (nullptr)
   {}
 
   bool 
-  UDPSink::init_segment ()
+  UDPSink::init_gpipe ()
   {
     if ( !GstUtils::make_element ("bin", &udpsink_bin_)
 	 || !GstUtils::make_element ("typefind", &typefind_)
@@ -52,12 +52,12 @@ namespace switcher
       return false;
 
   
-    //g_object_set (G_OBJECT (udpsink_bin_), "async-handling", TRUE, NULL);
-    ghost_sinkpad_ = NULL;
+    //g_object_set (G_OBJECT (udpsink_bin_), "async-handling", TRUE, nullptr);
+    ghost_sinkpad_ = nullptr;
 
     //set the name before registering properties
     set_name (gst_element_get_name (udpsink_));
-    g_object_set (G_OBJECT (udpsink_), "sync", FALSE, NULL);
+    g_object_set (G_OBJECT (udpsink_), "sync", FALSE, nullptr);
 
 #if HAVE_OSX    
     // turnaround for OSX: create sender socket
@@ -74,7 +74,7 @@ namespace switcher
 	g_warning ("udp sink: cannot set broadcast to socket");
 	return false;
       }
-    g_object_set (G_OBJECT (udpsink_), "sockfd", sock, NULL);
+    g_object_set (G_OBJECT (udpsink_), "sockfd", sock, nullptr);
 #endif
 
 
@@ -84,7 +84,6 @@ namespace switcher
     install_property (G_OBJECT (udpsink_),"ttl","ttl", "TTL");
     install_property (G_OBJECT (udpsink_),"ttl-mc","ttl-mc", "TTL-MC");
     install_property (G_OBJECT (udpsink_),"loop","loop", "Loop");
-
     install_property (G_OBJECT (typefind_), "caps","caps", "Capabilities");
 
     // g_signal_connect (G_OBJECT (udpsink_), "client-added",  
@@ -102,10 +101,10 @@ namespace switcher
 						  "Port",
 						  "port",
 						  "the port of the client to add",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &add_client_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, nullptr),
      		    this);
    
     install_method ("Remove Client",
@@ -118,10 +117,10 @@ namespace switcher
 						  "Port",
 						  "port",
 						  "the port of the client to remove",
-						  NULL),
+						  nullptr),
 		    (Method::method_ptr) &remove_client_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_INT, nullptr),
      		    this);
 
      
@@ -129,10 +128,10 @@ namespace switcher
 		    "clear", 
 		    "remove a client with destination host and port to the list of clients", 
 		    "success or fail",
-		    Method::make_arg_description ("none",NULL),
+		    Method::make_arg_description ("none",nullptr),
 		    (Method::method_ptr) &clear_wrapped, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_NONE, NULL), 
+		    Method::make_arg_type_description (G_TYPE_NONE, nullptr), 
 		    this);
       
     //registering sink element
@@ -150,7 +149,7 @@ namespace switcher
     // g_debug ("num child in parent bin : %d", 
     // 	     GST_BIN_NUMCHILDREN (parent));
     
-    if (ghost_sinkpad_ != NULL)
+    if (ghost_sinkpad_ != nullptr)
       {
 	if (gst_pad_is_linked (ghost_sinkpad_))
 	  {
@@ -180,7 +179,7 @@ namespace switcher
     gst_bin_add_many (GST_BIN (context->udpsink_bin_),
 		      context->typefind_,
 		      context->udpsink_,
-		      NULL);
+		      nullptr);
     gst_element_link (context->typefind_,
      		      context->udpsink_);
     
@@ -188,7 +187,7 @@ namespace switcher
     GstUtils::sync_state_with_parent (context->udpsink_bin_);
     
     GstPad *sink_pad = gst_element_get_static_pad (context->typefind_, "sink");
-    context->ghost_sinkpad_ = gst_ghost_pad_new (NULL, sink_pad);
+    context->ghost_sinkpad_ = gst_ghost_pad_new (nullptr, sink_pad);
     gst_pad_set_active(context->ghost_sinkpad_,TRUE);
     gst_element_add_pad (context->udpsink_bin_, context->ghost_sinkpad_); 
     gst_object_unref (sink_pad);
@@ -229,7 +228,7 @@ namespace switcher
   bool 
   UDPSink::remove_client (gchar *host, gint port)
   {
-    g_signal_emit_by_name (udpsink_, "remove", host, port, NULL);
+    g_signal_emit_by_name (udpsink_, "remove", host, port, nullptr);
     return true;
   }
 
@@ -248,7 +247,7 @@ namespace switcher
   bool 
   UDPSink::add_client (gchar *host, gint port)
   {
-    g_signal_emit_by_name (udpsink_, "add", host, port, NULL);
+    g_signal_emit_by_name (udpsink_, "add", host, port, nullptr);
     return true;
   }
 
@@ -267,7 +266,7 @@ namespace switcher
   bool 
   UDPSink::clear_clients ()
   {
-    g_signal_emit_by_name (udpsink_, "clear", NULL);
+    g_signal_emit_by_name (udpsink_, "clear", nullptr);
     return true;
   }
 

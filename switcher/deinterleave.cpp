@@ -26,18 +26,18 @@ namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Deinterleave,
 				       "Deinterleave",
-				       "video converter", 
+				       "video sink", 
 				       "connect to an audio shmdata and split channels to multiple shmdata(s)",
 				       "LGPL",
 				       "deinterleave", 
 				       "Nicolas Bouillot");
   Deinterleave::Deinterleave () :
-    deinterleave_ (NULL),
+    deinterleave_ (nullptr),
     media_counters_ ()
   {}
 
   bool
-  Deinterleave::init_segment () 
+  Deinterleave::init_gpipe () 
   { 
     if (!GstUtils::make_element ("deinterleave",&deinterleave_))
       return false;
@@ -103,11 +103,12 @@ namespace switcher
     std::string connector_name = context->make_file_name (media_name);
     connector->set_path (connector_name.c_str());
     connector->plug (context->bin_, pad);
-    context->register_shmdata_writer (connector);
-    g_message ("%s created a new shmdata writer (%s)", 
-     	       context->get_nick_name ().c_str(), 
-     	       connector_name.c_str ());
- 
+    context->register_shmdata (connector);
   }   
 
+  bool 
+  Deinterleave::can_sink_caps (std::string caps)
+  {
+    return GstUtils::can_sink_caps ("deinterleave", caps);
+  }
 }

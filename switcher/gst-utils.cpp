@@ -19,6 +19,7 @@
 
 #include "gst-utils.h"
 #include <unistd.h>  //sleep
+#include "scope-exit.h"
 
 namespace switcher
 {
@@ -28,16 +29,16 @@ namespace switcher
 			  GstElement **target_element)
   {
     
-    // if (*target_element != NULL)
+    // if (*target_element != nullptr)
     //   {
-    // 	g_warning ("cannot make element on a non NULL element (%s, %s)",
+    // 	g_warning ("cannot make element on a non nullptr element (%s, %s)",
     // 		   class_name, GST_ELEMENT_NAME (*target_element));
     // 	return false;
     //   }
 
 
-    *target_element = gst_element_factory_make (class_name, NULL);
-    if (*target_element == NULL)
+    *target_element = gst_element_factory_make (class_name, nullptr);
+    if (*target_element == nullptr)
       {
 	g_debug ("gstreamer element class %s cannot be instanciated", class_name);
 	return false;
@@ -56,7 +57,7 @@ namespace switcher
     GstPad *srcpad =  gst_element_get_static_pad (src, "src");
     GstPad *sinkpad = gst_element_get_compatible_pad(sink,
 						     srcpad,
-						     NULL); //const GstCaps *caps to use as a filter
+						     nullptr); //const GstCaps *caps to use as a filter
     bool res = GstUtils::check_pad_link_return(gst_pad_link (srcpad,sinkpad));
     if (GST_IS_PAD (src))
 	gst_object_unref (srcpad);
@@ -72,7 +73,7 @@ namespace switcher
   {
     GstPad *sinkpad = gst_element_get_compatible_pad(sink,
 						     srcpad,
-						     NULL); //const GstCaps *caps to use as a filter
+						     nullptr); //const GstCaps *caps to use as a filter
     bool res = GstUtils::check_pad_link_return(gst_pad_link (srcpad,sinkpad));
     
     if (GST_IS_PAD (sinkpad))
@@ -126,7 +127,7 @@ namespace switcher
 	gst_pad_unlink (peer, pad);
       //checking if the pad has been requested and releasing it needed 
       GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);//check if this must be unrefed for GST 1
-      if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
+      if (nullptr != pad_templ && GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
 	gst_element_release_request_pad (gst_pad_get_parent_element(peer), peer);
       gst_object_unref (peer);
     }
@@ -135,7 +136,7 @@ namespace switcher
   void
   GstUtils::clean_element (GstElement *element)
   {
-    if (element != NULL 
+    if (element != nullptr 
 	&& GST_IS_ELEMENT (element) 
 	&& GST_STATE_CHANGE_FAILURE != GST_STATE_RETURN (element))
       {
@@ -153,12 +154,12 @@ namespace switcher
 	    while (GST_STATE (element) != GST_STATE_NULL)
 	      {
 		//warning this may be blocking
-		gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);
+		gst_element_get_state (element, nullptr, nullptr, GST_CLOCK_TIME_NONE);
 	      }
 	if (GST_IS_BIN (gst_element_get_parent (element)))
 	  gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element);
       }
-    element = NULL;
+    element = nullptr;
   }
   
   void
@@ -184,7 +185,7 @@ namespace switcher
 		   gst_element_state_get_name (GST_STATE (bin)),
 		   gst_element_state_get_name (GST_STATE_TARGET (bin)));
 	  
-	  gst_element_get_state (bin, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
+	  gst_element_get_state (bin, nullptr, nullptr, GST_CLOCK_TIME_NONE);//warning this may be blocking
 	}
     g_value_unset (&val);
     return;
@@ -224,8 +225,8 @@ namespace switcher
 
     if (g_list_length (GST_BIN_CHILDREN (GST_BIN (bin))) > 0)
       {
-	GList *child = NULL, *children = GST_BIN_CHILDREN (GST_BIN (bin));
-	for (child = children; child != NULL; child = g_list_next (child)) 
+	GList *child = nullptr, *children = GST_BIN_CHILDREN (GST_BIN (bin));
+	for (child = children; child != nullptr; child = g_list_next (child)) 
 	  {
 	    GstElement *current_element = GST_ELEMENT (child->data);
 	    GstElementFactory *factory = gst_element_get_factory (current_element);
@@ -239,7 +240,7 @@ namespace switcher
 	    if (g_strcmp0 (factory_name, gst_plugin_feature_get_name (GST_PLUGIN_FEATURE (factory))) == 0)
 	      {
 		g_debug ("GstUtils: setting property for %s", factory_name);
-		g_object_set (G_OBJECT (current_element), property_name, property_value, NULL);
+		g_object_set (G_OBJECT (current_element), property_name, property_value, nullptr);
 	      }
 	    
 	    if (GST_IS_BIN (current_element)) //recursive
@@ -257,7 +258,7 @@ namespace switcher
   GstUtils::gvalue_serialize (const GValue *val)
   {
     if (!G_IS_VALUE (val))
-      return NULL;
+      return nullptr;
     gchar *val_str;
     if (G_VALUE_TYPE (val) == G_TYPE_STRING)
       val_str = g_strdup (g_value_get_string (val));
@@ -276,7 +277,7 @@ namespace switcher
     GSource *source;
     guint id;
 
-    if (function == NULL)
+    if (function == nullptr)
       return 0;
     
     source = g_idle_source_new ();
@@ -291,22 +292,19 @@ namespace switcher
     return id;
   }
   
-  guint 
+  GSource * 
   GstUtils::g_timeout_add_to_context(guint interval, 
 				     GSourceFunc function,
 				     gpointer data, 
 				     GMainContext *context) 
   {
     GSource *source;
-    guint id;
-    
-    g_return_val_if_fail(function != NULL, 0);
-    source = g_timeout_source_new(interval);
-    g_source_set_callback(source, function, data, NULL);
-    id = g_source_attach(source, context);
+    g_return_val_if_fail (function != nullptr, 0);
+    source = g_timeout_source_new (interval);
+    g_source_set_callback (source, function, data, nullptr);
+    /*guint id =*/ g_source_attach (source, context);
     g_source_unref(source);
-    
-    return id;
+    return source;
   }
 
 
@@ -315,7 +313,7 @@ namespace switcher
 				  GObject *g_object_slave,
 				  const char *property_name)
   {
-    if (g_object_master == NULL || g_object_slave == NULL)
+    if (g_object_master == nullptr || g_object_slave == nullptr)
       return false;
     
     if (!G_IS_OBJECT (g_object_master) || !G_IS_OBJECT (g_object_slave))
@@ -324,7 +322,7 @@ namespace switcher
     GParamSpec *pspec_master = 
       g_object_class_find_property (G_OBJECT_CLASS (G_OBJECT_GET_CLASS (g_object_master)),
 				    property_name);
-    if (pspec_master == NULL)
+    if (pspec_master == nullptr)
       {
 	g_debug ("property %s not found for master ", property_name);
 	return false;
@@ -333,7 +331,7 @@ namespace switcher
     GParamSpec *pspec_slave = 
       g_object_class_find_property (G_OBJECT_CLASS (G_OBJECT_GET_CLASS (g_object_slave)),
 				    property_name);
-    if (pspec_slave == NULL)
+    if (pspec_slave == nullptr)
       {
 	g_debug ("property %s, not found for slave", property_name);
 	  return false;
@@ -371,7 +369,7 @@ namespace switcher
      target_enum[0].value_name = g_strdup ("None");
      target_enum[0].value_nick = target_enum[0].value_name;
      gint i = 1;
-     while (iter != NULL)
+     while (iter != nullptr)
        {
      	target_enum[i].value = i;
      	//FIXME this is leaking
@@ -381,11 +379,58 @@ namespace switcher
      	i ++;
        }
      target_enum[i].value = 0;
-     target_enum[i].value_name = NULL;
-     target_enum[i].value_nick = NULL;
+     target_enum[i].value_name = nullptr;
+     target_enum[i].value_nick = nullptr;
      
      gst_plugin_feature_list_free (element_list);
     
   }
 
+  void 
+  GstUtils::gst_element_deleter (GstElement *element)
+  {
+    //delete if ownership has not been taken by a parent
+    if (nullptr != element && nullptr == GST_OBJECT_PARENT(element))
+      gst_object_unref (element);
+  }
+  
+  //g_signal_connect is actually a macro, so wrapping it for use with std::bind
+  gulong
+  GstUtils::g_signal_connect_function (gpointer gobject, 
+				       const gchar *signal,
+				       GCallback cb,
+				       gpointer user_data)
+  {
+    return g_signal_connect (gobject, signal, cb, user_data);
+  }
+
+  bool
+  GstUtils::can_sink_caps (std::string factory_name, std::string caps)
+  {
+    if (caps.empty ())
+      {
+	g_warning ("%s: input caps string is empty, returning false", 
+		   __FUNCTION__);
+	return false;
+      }
+
+    GstCaps *caps_ptr = gst_caps_from_string (caps.c_str ());
+    On_scope_exit {gst_caps_unref (caps_ptr);};
+
+    GstElementFactory *factory = gst_element_factory_find (factory_name.c_str ());
+    if (nullptr == factory)
+      {
+	g_warning ("%s: factory %s cannot be found, returning false", 
+		   __FUNCTION__, 
+		   factory_name.c_str ());
+	return false;
+      }	
+    On_scope_exit {gst_object_unref (factory);};
+
+    if (!gst_element_factory_can_sink_all_caps (factory,
+						caps_ptr))
+      return false;
+    return true;
+  }
+  
 }

@@ -21,14 +21,14 @@
 #ifndef __SWITCHER_XVIMAGESINK_H__
 #define __SWITCHER_XVIMAGESINK_H__
 
-#include "video-sink.h"
+#include "single-pad-gst-sink.h"
 #include <gst/gst.h>
 #include <memory>
 
 namespace switcher
 {
 
-  class Xvimagesink : public VideoSink
+  class Xvimagesink : public SinglePadGstSink
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Xvimagesink);
@@ -42,8 +42,9 @@ namespace switcher
     GstElement *queue_;
     GstElement *ffmpegcolorspace_;
     GstElement *xvimagesink_;
-    QuiddityCommand *on_error_command_; //for the runtime error handler
-    bool init_segment ();
+    QuiddityCommand *on_error_command_; //for the pipeline error handler
+    bool init_gpipe () final;
+    bool can_sink_caps (std::string caps) final;
   };
 
 }  // end of namespace

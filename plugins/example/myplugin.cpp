@@ -30,9 +30,9 @@ namespace switcher
 				       "myplugin",				
 				       "Nicolas Bouillot");
   MyPlugin::MyPlugin () :
-    custom_props_ (new CustomPropertyHelper ()),
+    custom_props_ (std::make_shared<CustomPropertyHelper> ()),
     myprop_ (false),
-    myprop_prop_ (NULL),
+    myprop_prop_ (nullptr),
     hello_ (g_strdup ("hello"))
   {}
 
@@ -60,11 +60,20 @@ namespace switcher
 		    Method::make_arg_description ("Text To Repeat", //first arg long name
 						  "text", //fisrt arg name
 						  "string", //first arg description
-						  NULL),
+						  nullptr),
   		    (Method::method_ptr) &my_hello_world_method, 
 		    G_TYPE_STRING,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
+
+    //creating some custom infos
+    data::Tree::ptr tree = data::make_tree ();
+    tree->graft (".child1.child2", data::make_tree ("switch"));
+    tree->graft (".child1.child3", data::make_tree (1.2f));
+    tree->graft (".child1.child2.bla1", data::make_tree ("wire"));
+    tree->graft (".child1.child2.bla2", data::make_tree ("hub"));
+    //attaching it to the quiddity (at the root) 
+    graft_tree (".custom.information.", tree);
 
     g_debug ("hello from plugin");
     return true;

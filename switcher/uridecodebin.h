@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_URIDECODEBIN_H__
 #define __SWITCHER_URIDECODEBIN_H__
 
-#include "base-source.h"
+#include "gpipe.h"
 #include "gst-element-cleaner.h"
 #include "custom-property-helper.h"
 #include <unordered_map>
@@ -29,7 +29,7 @@
 namespace switcher
 {
 
-  class Uridecodebin : public BaseSource, public GstElementCleaner
+  class Uridecodebin : public GPipe, public GstElementCleaner
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Uridecodebin);
@@ -44,10 +44,9 @@ namespace switcher
    GstPad *main_pad_;
    GstCaps *rtpgstcaps_;
    bool discard_next_uncomplete_buffer_;
-   //   std::string runtime_name_;
    void init_uridecodebin ();
    void destroy_uridecodebin ();
-   QuiddityCommand *on_error_command_; //for the runtime error handler
+   QuiddityCommand *on_error_command_; //for the pipeline error handler
    void clean_on_error_command ();
    
    //custom properties 
@@ -60,7 +59,7 @@ namespace switcher
    GParamSpec *uri_spec_;
    gchar *uri_;
 
-   bool init_segment ();
+   bool init_gpipe () final;
    static gboolean get_loop (void *user_data);
    static void set_loop (gboolean mute, void *user_data);
    static void set_uri (const gchar *value, void *user_data);
@@ -73,10 +72,13 @@ namespace switcher
    static gboolean event_probe_cb (GstPad *pad, GstEvent * event, gpointer data);
    static gboolean process_eos (gpointer user_data);
    static void unknown_type_cb (GstElement *bin, GstPad *pad, GstCaps *caps, gpointer user_data);
+   static int autoplug_continue_cb (GstElement *bin, GstPad *pad, GstCaps *caps, gpointer user_data);
    static int autoplug_select_cb (GstElement *bin, GstPad *pad, GstCaps *caps, GstElementFactory *factory, gpointer user_data);
    //filtering uncomplete custum buffers
    static gboolean gstrtpdepay_buffer_probe_cb (GstPad * pad, GstMiniObject * mini_obj, gpointer user_data);
    static gboolean gstrtpdepay_event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data);
+   static void on_handoff_cb (GstElement*, GstBuffer*, GstPad*, gpointer);
+   static void release_buf (void*);
    void pad_to_shmdata_writer (GstElement *bin, GstPad *pad);
    /* static GValueArray *autoplug_sort_cb (GstElement *bin, */
    /* 					 GstPad *pad, */

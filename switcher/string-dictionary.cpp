@@ -58,10 +58,10 @@ namespace switcher
 						  "Long Name",
 						  "long-name", 
 						  "string",
-						  NULL),
+						  nullptr),
   		    (Method::method_ptr) &create_entry, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, nullptr),
 		    this);
 
     install_method ("Remove An Entry",
@@ -71,10 +71,10 @@ namespace switcher
 		    Method::make_arg_description ("Entry Name",
 						  "name", 
 						  "string",
-						  NULL),
+						  nullptr),
   		    (Method::method_ptr) &remove_entry, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
 
     install_method ("Save To A File",
@@ -84,10 +84,10 @@ namespace switcher
      		    Method::make_arg_description ("File path",
      						  "path", 
      						  "string",
-     						  NULL),
+     						  nullptr),
      		    (Method::method_ptr) &save, 
      		    G_TYPE_BOOLEAN,
-     		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+     		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
      		    this);
     
     install_method ("Load From File",
@@ -97,10 +97,10 @@ namespace switcher
      		    Method::make_arg_description ("File path",
      						  "path", 
      						  "string",
-     						  NULL),
+     						  nullptr),
      		    (Method::method_ptr) &load, 
      		    G_TYPE_BOOLEAN,
-     		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+     		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
      		    this);
   
     return true;
@@ -184,14 +184,14 @@ namespace switcher
   StringDictionary::save_file (const gchar *file_path)
   {
     GFile *file = g_file_new_for_commandline_arg (file_path);
-    GError *error = NULL;
+    GError *error = nullptr;
     GFileOutputStream *file_stream = g_file_replace (file,
-						     NULL,
+						     nullptr,
 						     TRUE, //make backup
 						     G_FILE_CREATE_NONE ,
-						     NULL,
+						     nullptr,
 						     &error);
-    if (error != NULL)
+    if (error != nullptr)
       {
 	g_warning ("%s",error->message);
 	g_error_free (error);
@@ -224,10 +224,10 @@ namespace switcher
     g_output_stream_write ((GOutputStream *)file_stream,
 			   dico_json,
 			   sizeof (gchar) * strlen (dico_json),
-			   NULL,
+			   nullptr,
 			   &error);
     g_free (dico_json);
-    if (error != NULL)
+    if (error != nullptr)
       {
 	g_warning ("%s",error->message);
 	g_error_free (error);
@@ -235,9 +235,9 @@ namespace switcher
       }
      
     g_output_stream_close ((GOutputStream *)file_stream,
-			   NULL,
+			   nullptr,
 			   &error);
-    if (error != NULL)
+    if (error != nullptr)
       {
 	g_warning ("%s",error->message);
 	g_error_free (error);
@@ -260,11 +260,11 @@ namespace switcher
   StringDictionary::load_file (const gchar *file_path)
   {
     JsonParser *parser = json_parser_new ();
-    GError *error = NULL;
+    GError *error = nullptr;
     json_parser_load_from_file (parser,
 				file_path,
 				&error);
-    if (error != NULL)
+    if (error != nullptr)
       {
 	g_warning ("%s",error->message);
 	g_object_unref(parser);

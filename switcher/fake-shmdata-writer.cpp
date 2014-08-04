@@ -33,12 +33,12 @@ namespace switcher
   
   FakeShmdataWriter::FakeShmdataWriter () :
     custom_props_ (new CustomPropertyHelper ()),
-    shmdata_path_spec_ (NULL),
+    shmdata_path_spec_ (nullptr),
     shmdata_path_ (g_strdup ("none"))
   {}
 
   bool
-  FakeShmdataWriter::init_segment ()
+  FakeShmdataWriter::init_gpipe ()
   {
     init_startable (this);
 
@@ -67,7 +67,7 @@ namespace switcher
     ShmdataWriter::ptr connector;
     connector.reset (new ShmdataWriter ());
     connector->set_path_without_deleting (name.c_str());
-    register_shmdata_writer (connector);
+    register_shmdata (connector);
 
     g_message ("%s created a new shmdata writer (%s)", 
      	       get_nick_name ().c_str(), 
@@ -100,7 +100,7 @@ namespace switcher
   bool
   FakeShmdataWriter::clean ()
   {
-    return unregister_shmdata_writer (shmdata_path_);
+    return unregister_shmdata (shmdata_path_);
   }
 
   bool 
@@ -115,7 +115,7 @@ namespace switcher
     ShmdataWriter::ptr connector;
     connector.reset (new ShmdataWriter ());
     connector->set_path_without_deleting (shmdata_path_);
-    register_shmdata_writer (connector);
+    register_shmdata (connector);
 
     g_message ("%s created a new shmdata writer (%s)", 
      	       get_nick_name ().c_str(), 

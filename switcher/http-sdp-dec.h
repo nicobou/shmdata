@@ -21,9 +21,9 @@
 #ifndef __SWITCHER_HTTP_SDP_DEC_H__
 #define __SWITCHER_HTTP_SDP_DEC_H__
 
-#include "base-source.h"
-#include "gst-element-cleaner.h"
+#include "gpipe.h"
 #include "quiddity-command.h"
+#include "decodebin-to-shmdata.h"
 #include <memory>
 #include <map>
 #include <string>
@@ -31,7 +31,7 @@
 namespace switcher
 {
 
-  class HTTPSDPDec : public BaseSource, public GstElementCleaner
+  class HTTPSDPDec : public GPipe
   {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);
@@ -45,30 +45,23 @@ namespace switcher
   private: 
    GstElement *souphttpsrc_;
    GstElement *sdpdemux_;
-   std::vector<GstElement *> decodebins_;
-   std::map<std::string, int> media_counters_;
-   GstPad *main_pad_;
-   GstCaps *rtpgstcaps_;
-   bool discard_next_uncomplete_buffer_;
-   //std::string runtime_name_;
    void init_httpsdpdec ();
    void destroy_httpsdpdec ();
-   QuiddityCommand *on_error_command_; //for the runtime error handler
+   QuiddityCommand *on_error_command_; //for the pipeline error handler
+   std::list<std::unique_ptr<DecodebinToShmdata>> decodebins_;
    void clean_on_error_command ();
-   bool init_segment ();
-   static void decodebin_pad_added_cb (GstElement* object, GstPad *pad, gpointer user_data);
-   static void httpsdpdec_pad_added_cb (GstElement* object, GstPad* pad, gpointer user_data);
-   static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);
-   static void no_more_pads_cb (GstElement* object, gpointer user_data);
-   static void source_setup_cb (GstElement *httpsdpdec, GstElement *source, gpointer user_data);
-   static gboolean event_probe_cb (GstPad *pad, GstEvent * event, gpointer data);
-   static gboolean rewind (gpointer user_data);
-   static void unknown_type_cb (GstElement *bin, GstPad *pad, GstCaps *caps, gpointer user_data);
-   static int autoplug_select_cb (GstElement *bin, GstPad *pad, GstCaps *caps, GstElementFactory *factory, gpointer user_data);
-   //filtering uncomplete custum buffers
-   static gboolean gstrtpdepay_buffer_probe_cb (GstPad * pad, GstMiniObject * mini_obj, gpointer user_data);
-   static gboolean gstrtpdepay_event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data);
-   void pad_to_shmdata_writer (GstElement *bin, GstPad *pad);
+   bool init_gpipe () final;
+   static void httpsdpdec_pad_added_cb (GstElement* object, 
+					GstPad* pad, 
+					gpointer user_data);
+   static gboolean to_shmdata_wrapped (gpointer uri, 
+				       gpointer user_data);
+   static void source_setup_cb (GstElement *httpsdpdec, 
+				GstElement *source, 
+				gpointer user_data);
+   static void on_new_element_in_sdpdemux (GstBin     *bin,
+                                           GstElement *element,
+					   gpointer    user_data);
   };
 
 }  // end of namespace

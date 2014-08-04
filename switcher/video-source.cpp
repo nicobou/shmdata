@@ -23,8 +23,8 @@
 namespace switcher
 {
   VideoSource::VideoSource () :
-    rawvideo_ (NULL),
-    video_tee_ (NULL),
+    rawvideo_ (nullptr),
+    video_tee_ (nullptr),
     videocaps_ (gst_caps_new_simple ("video/x-raw-yuv",
 				     // "format", GST_TYPE_FOURCC,
 				     // GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y'),
@@ -34,19 +34,19 @@ namespace switcher
 				     // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1, 
 				     //  "width", G_TYPE_INT, 640, 
 				     //  "height", G_TYPE_INT, 480,
-				     NULL)),
+				     nullptr)),
     shmdata_path_ (),
     custom_props_ (new CustomPropertyHelper ()),
-    primary_codec_spec_ (NULL),
+    primary_codec_spec_ (nullptr),
     primary_codec_ (),
-    secondary_codec_spec_ (NULL),
+    secondary_codec_spec_ (nullptr),
     secondary_codec_ (),
     codec_ (0),
-    codec_long_list_spec_ (NULL),
+    codec_long_list_spec_ (nullptr),
     codec_long_list_ (false),
-    codec_element_ (NULL),
-    queue_codec_element_ (NULL),
-    color_space_codec_element_ (NULL),
+    codec_element_ (nullptr),
+    queue_codec_element_ (nullptr),
+    color_space_codec_element_ (nullptr),
     codec_properties_ ()
   {
     init_startable (this);
@@ -125,7 +125,7 @@ namespace switcher
       }
     gst_bin_add_many (GST_BIN (bin_),
       		      video_tee_,
-      		      NULL);
+      		      nullptr);
     
     gst_bin_add (GST_BIN (bin_), rawvideo_);
     gst_element_link (rawvideo_, video_tee_);
@@ -135,7 +135,7 @@ namespace switcher
     shmdata_path_ = make_file_name ("video"); 
     shmdata_writer->set_path (shmdata_path_.c_str());
     shmdata_writer->plug (bin_, video_tee_, videocaps_);
-    register_shmdata_writer (shmdata_writer);
+    register_shmdata (shmdata_writer);
     
     GstUtils::sync_state_with_parent (rawvideo_);
     GstUtils::sync_state_with_parent (video_tee_);
@@ -147,13 +147,13 @@ namespace switcher
 			  queue_codec_element_,
 			  codec_element_,
 			  color_space_codec_element_,
-			  NULL);
+			  nullptr);
 
 	gst_element_link_many (video_tee_, 
 			       queue_codec_element_,
 			       color_space_codec_element_,
 			       codec_element_,
-			       NULL);
+			       nullptr);
 
 	ShmdataWriter::ptr shmdata_codec;
 	shmdata_codec.reset (new ShmdataWriter ());
@@ -163,7 +163,7 @@ namespace switcher
 	GstPad *srcpad = gst_element_get_static_pad (codec_element_, "src");
 	shmdata_codec->plug (bin_, srcpad);
 	gst_object_unref (srcpad);
-	register_shmdata_writer (shmdata_codec);
+	register_shmdata (shmdata_codec);
 	GstUtils::sync_state_with_parent (queue_codec_element_);
 	GstUtils::sync_state_with_parent (color_space_codec_element_);
 	GstUtils::sync_state_with_parent (codec_element_);
@@ -175,7 +175,7 @@ namespace switcher
   bool 
   VideoSource::start ()
   {
-    rawvideo_ = NULL;
+    rawvideo_ = nullptr;
     if (!make_video_source (&rawvideo_))
       {
 	g_debug ("cannot make video source");
@@ -295,7 +295,17 @@ namespace switcher
     codec_properties_.push_back ("speed-preset");//x264
     codec_properties_.push_back ("bitrate");//x264
     codec_properties_.push_back ("threads");//x264
+    codec_properties_.push_back ("ref");//x264
+    codec_properties_.push_back ("trellis");//x264
+    codec_properties_.push_back ("key-int-max");//x264
     codec_properties_.push_back ("speed");//vp8
+    codec_properties_.push_back ("mode");//vp8
+    codec_properties_.push_back ("error-resilient");//vp8
+    codec_properties_.push_back ("max-latency");//vp8
+    codec_properties_.push_back ("max-keyframe-distance");//vp8
+    //codec_properties_.push_back ("");//vp8
+
+
     codec_properties_.push_back ("qmin");//smokeenc
     codec_properties_.push_back ("qmax");//smokeenc
     codec_properties_.push_back ("keyframe");//smokeenc

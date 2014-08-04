@@ -31,19 +31,19 @@ namespace switcher
 				       "Nicolas Bouillot");
   
   JackAudioSource::JackAudioSource() :
-    jackaudiosrc_ (NULL),
-    audioconvert_ (NULL),
-    capsfilter_ (NULL),
-    jackaudiosrc_bin_ (NULL),
+    jackaudiosrc_ (nullptr),
+    audioconvert_ (nullptr),
+    capsfilter_ (nullptr),
+    jackaudiosrc_bin_ (nullptr),
     custom_props_ (new CustomPropertyHelper ()),
-    num_channels_spec_ (NULL),
+    num_channels_spec_ (nullptr),
     num_channels_(2),
-    client_name_spec_ (NULL),
-    client_name_ (NULL)
+    client_name_spec_ (nullptr),
+    client_name_ (nullptr)
   {}
 
   bool
-  JackAudioSource::init_segment ()
+  JackAudioSource::init_gpipe ()
   {
     if (false == make_elements ())
       return false;
@@ -81,14 +81,14 @@ namespace switcher
     // g_object_set (G_OBJECT (jackaudiosrc_),
     // 		  "is-live", TRUE,
     // 		  "samplesperbuffer",512,
-    // 		  NULL);
+    // 		  nullptr);
 
     return true;
   }
 
   JackAudioSource::~JackAudioSource()
   {
-    if (NULL != client_name_)
+    if (nullptr != client_name_)
       g_free (client_name_);
   }
   
@@ -123,32 +123,36 @@ namespace switcher
     if (!GstUtils::make_element ("bin",&jackaudiosrc_bin_))
       return false;
 
+    //using caps compatible with L16 RTP payload
     GstCaps *caps = gst_caps_new_simple ("audio/x-raw-int",
 					 "width", G_TYPE_INT, 16,
+					 "depth", G_TYPE_INT, 16,
+					 "signed", G_TYPE_BOOLEAN, TRUE,
+					 "endianness", G_TYPE_INT, 4321,
 					 "channels", G_TYPE_INT, num_channels_,
-					 NULL);
+					 nullptr);
     g_object_set (G_OBJECT (capsfilter_), 
 		  "caps", caps,
-		  NULL);
+		  nullptr);
     gst_caps_unref(caps);
 
     g_object_set (G_OBJECT (jackaudiosrc_), 
 		  "client-name", client_name_,
-		  NULL);
+		  nullptr);
 
     gst_bin_add_many (GST_BIN (jackaudiosrc_bin_),
 		      jackaudiosrc_,
 		      audioconvert_,
 		      capsfilter_,
-		      NULL);
+		      nullptr);
 
     gst_element_link_many (jackaudiosrc_,
 			   audioconvert_,
 			   capsfilter_,
-			   NULL);
+			   nullptr);
 
     GstPad *src_pad = gst_element_get_static_pad (capsfilter_, "src");
-    GstPad *ghost_srcpad = gst_ghost_pad_new (NULL, src_pad);
+    GstPad *ghost_srcpad = gst_ghost_pad_new (nullptr, src_pad);
     gst_pad_set_active(ghost_srcpad,TRUE);
     gst_element_add_pad (jackaudiosrc_bin_, ghost_srcpad); 
     gst_object_unref (src_pad);
@@ -176,7 +180,7 @@ namespace switcher
   JackAudioSource::set_client_name (const gchar *value, void *user_data)
   {
     JackAudioSource *context = static_cast <JackAudioSource *> (user_data);
-    if (NULL != context->client_name_)
+    if (nullptr != context->client_name_)
       g_free (context->client_name_);
     context->client_name_ = g_strdup(value);
     context->custom_props_->notify_property_changed (context->client_name_spec_);

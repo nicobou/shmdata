@@ -25,27 +25,27 @@ namespace switcher
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FakeSink,
 				       "Shmdata Inspector",
-				       "fakesink sink", 
+				       "monitor", 
 				       "fakesink for testing purpose",
 				       "LGPL",
 				       "fakesink",
 				       "Nicolas Bouillot");
 
   FakeSink::FakeSink () :
-    fakesink_ (NULL),
+    fakesink_ (nullptr),
     num_bytes_since_last_update_ (0),
-    update_byterate_source_ (NULL),
+    update_byterate_source_ (nullptr),
     byte_rate_ (0),
     string_caps_ (g_strdup ("unknown")),
     set_string_caps_ (true),
     props_ (new CustomPropertyHelper ()),
-    byte_rate_spec_ (NULL),
-    caps_spec_ (NULL)
+    byte_rate_spec_ (nullptr),
+    caps_spec_ (nullptr)
     {} 
  
   FakeSink::~FakeSink ()
   {
-     if (update_byterate_source_ != NULL)
+     if (update_byterate_source_ != nullptr)
        g_source_destroy (update_byterate_source_);
     reset_bin ();
     GstUtils::clean_element (fakesink_);
@@ -53,7 +53,7 @@ namespace switcher
   }
   
   bool
-  FakeSink::init_segment ()
+  FakeSink::init_gpipe ()
   {
     if (!GstUtils::make_element ("fakesink", &fakesink_))
       return false;
@@ -61,9 +61,9 @@ namespace switcher
     g_object_set (G_OBJECT (fakesink_), 
 		  "sync", FALSE, 
 		  "signal-handoffs", TRUE,
-		  NULL);
+		  nullptr);
 
-    g_signal_connect(fakesink_, "handoff", (GCallback)on_handoff_cb, this);
+    g_signal_connect (fakesink_, "handoff", (GCallback)on_handoff_cb, this);
 
     //registering some properties 
     //install_property (G_OBJECT (fakesink_),"last-message","last-message", "Last Message");
@@ -75,7 +75,7 @@ namespace switcher
      					  G_MAXINT,
      					  byte_rate_,
      					  (GParamFlags) G_PARAM_READABLE,
-     					  NULL,
+     					  nullptr,
      					  FakeSink::get_byte_rate,
      					  this);
     
@@ -83,22 +83,18 @@ namespace switcher
      				byte_rate_spec_, 
      				"byte-rate",
 				"Byte Rate (Bps)");
-    
      
-    guint update_byterate_id = GstUtils::g_timeout_add_to_context (1000, 
-								   update_byte_rate, 
-								   this,
-								   get_g_main_context ());
-    
-    update_byterate_source_ = g_main_context_find_source_by_id (get_g_main_context (),
-								update_byterate_id);
+    update_byterate_source_ = GstUtils::g_timeout_add_to_context (1000, 
+								  update_byte_rate, 
+								  this,
+								  get_g_main_context ());
     
     caps_spec_ = 
       props_->make_string_property ("caps", 
 				    "caps of the attached shmdata",
 				    "unknown",
 				    (GParamFlags) G_PARAM_READABLE,
-				    NULL,
+				    nullptr,
 				    FakeSink::get_caps,
 				    this);
     

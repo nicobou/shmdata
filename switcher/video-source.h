@@ -21,7 +21,7 @@
 #ifndef __SWITCHER_VIDEO_SOURCE_H__
 #define __SWITCHER_VIDEO_SOURCE_H__
 
-#include "base-source.h"
+#include "gpipe.h"
 #include "gst-element-cleaner.h"
 #include "startable-quiddity.h"
 #include <memory>
@@ -29,7 +29,7 @@
 namespace switcher
 {
 
-  class VideoSource : public BaseSource, public StartableQuiddity 
+  class VideoSource : public GPipe, public StartableQuiddity 
   {
   public:
     typedef std::shared_ptr<VideoSource> ptr;

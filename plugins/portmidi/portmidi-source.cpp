@@ -32,15 +32,15 @@ namespace switcher
 				       "Nicolas Bouillot");
 
   PortMidiSource::PortMidiSource () :
-    shmdata_writer_ (shmdata_any_writer_init ()),
+    shm_any_ (std::make_shared<ShmdataAnyWriter> ()),
     last_status_ (-1),
     last_data1_ (-1),
     last_data2_ (-1),
     custom_props_ (new CustomPropertyHelper ()),
-    devices_description_spec_ (NULL),
-    devices_enum_spec_ (NULL),
+    devices_description_spec_ (nullptr),
+    devices_enum_spec_ (nullptr),
     device_ (0),
-    midi_value_spec_ (NULL),
+    midi_value_spec_ (nullptr),
     make_property_for_next_midi_event_ (FALSE),
     next_property_name_ (),
     prop_specs_ (),
@@ -51,27 +51,26 @@ namespace switcher
   {}
 
   PortMidiSource::~PortMidiSource ()
-  {
-    shmdata_any_writer_close (shmdata_writer_);
-  }
+  {}
   
   
   bool
   PortMidiSource::init ()
   {
 
-    if (input_devices_enum_ [0].value_name == NULL)
+    if (input_devices_enum_ [0].value_name == nullptr)
       {
 	g_debug ("no MIDI capture device detected");
 	return false;
       }
     init_startable (this);
+    init_segment (this);
     devices_description_spec_ = 
       custom_props_->make_string_property ("devices-json", 
 					   "Description of capture devices (json formated)",
 					   get_devices_description_json ((PortMidi *)this),
 					   (GParamFlags) G_PARAM_READABLE,
-					   NULL,
+					   nullptr,
 					   get_devices_description_json,
 					   (PortMidi *)this);
     
@@ -104,7 +103,7 @@ namespace switcher
 					127,
 					0,
 					(GParamFlags) G_PARAM_READABLE,
-					NULL,
+					nullptr,
 					get_midi_value,
 					this);
 
@@ -115,10 +114,10 @@ namespace switcher
 		    Method::make_arg_description ("Property Long Name", //first arg long name
 						  "property_long_name", //fisrt arg name
 						  "string", //first arg description 
-						  NULL),
+						  nullptr),
   		    (Method::method_ptr) &next_midi_event_to_property_method, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
 
     install_method ("Last MIDI Event To Property", //long name
@@ -128,10 +127,10 @@ namespace switcher
 		    Method::make_arg_description ("Property Long Name", //first arg long name
 						  "property_long_name", //fisrt arg name
 						  "string", //first arg description 
-						  NULL),
+						  nullptr),
   		    (Method::method_ptr) &last_midi_event_to_property_method, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
 
     install_method ("Remove Midi Property", //long name
@@ -141,22 +140,21 @@ namespace switcher
 		    Method::make_arg_description ("Property Long Name", //first arg long name
 						  "property_long_name", //fisrt arg name
 						  "string", //first arg description 
-						  NULL),
+						  nullptr),
   		    (Method::method_ptr) &remove_property_method, 
 		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING, NULL),
+		    Method::make_arg_type_description (G_TYPE_STRING, nullptr),
 		    this);
 
-    if (! shmdata_any_writer_set_path (shmdata_writer_, make_file_name ("midi").c_str ()))
-      {
-	g_debug ("**** The file exists, therefore a shmdata cannot be operated with this path.\n");
-	shmdata_any_writer_close (shmdata_writer_);
-	return false;
-      }
-    shmdata_any_writer_set_debug (shmdata_writer_, SHMDATA_ENABLE_DEBUG);
-    shmdata_any_writer_set_data_type (shmdata_writer_, "audio/midi");
-    shmdata_any_writer_start (shmdata_writer_);
-  
+    std::string shm_any_name = make_file_name ("midi");
+    shm_any_->set_path (shm_any_name.c_str());
+    g_message ("%s created a new shmdata any writer (%s)", 
+	       get_nick_name ().c_str(), 
+	       shm_any_name.c_str ());
+    shm_any_->set_data_type ("audio/midi");
+    shm_any_->start ();
+    register_shmdata (shm_any_);
+
     return true;
   }
   
@@ -210,10 +208,10 @@ namespace switcher
     PmEvent *tmp_event = (PmEvent *)g_malloc (sizeof (PmEvent));
     tmp_event->message = event->message;
     tmp_event->timestamp = event->timestamp;
-    shmdata_any_writer_push_data (context->shmdata_writer_,
-				  tmp_event,
-				  sizeof (PmEvent),
-				  (unsigned long long)tmp_event->timestamp * 1000000,//timestamp is in ms
+    context->shm_any_->push_data (tmp_event,
+     				  sizeof (PmEvent),
+				  //(timestamp is in ms)
+				  (unsigned long long) tmp_event->timestamp * 1000000,
 				  g_free, 
 				  tmp_event);
 
@@ -259,7 +257,7 @@ namespace switcher
     delay.tv_sec = 0;
     delay.tv_nsec = 1000000; //1ms
     while (context->make_property_for_next_midi_event_)
-      nanosleep(&delay, NULL);
+      nanosleep(&delay, nullptr);
     return TRUE;
   }
 
@@ -352,7 +350,7 @@ namespace switcher
 					    127,
 					    0,
 					    (GParamFlags) G_PARAM_READABLE,
-					    NULL,
+					    nullptr,
 					    get_midi_property_value,
 					    &midi_property_contexts_[property_long_name]);
       }

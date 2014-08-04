@@ -60,7 +60,7 @@ namespace switcher
 			  args_doc arg_description);
     std::string get_description (); //json formated description
 
-    //helper methods, use NULL sentinel
+    //helper methods, use nullptr sentinel
     static args_types make_arg_type_description (GType arg_type, ...);//use G_TYPE_NONE if no arg
     static args_doc make_arg_description (const char *first_arg_long_name, ...);
     

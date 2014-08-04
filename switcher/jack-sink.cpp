@@ -35,7 +35,7 @@ namespace switcher
 				       "Nicolas Bouillot");
   
   bool
-  JackSink::init_segment ()
+  JackSink::init_gpipe ()
   {
     if (false == make_elements ())
       return false;
@@ -60,32 +60,32 @@ namespace switcher
   }
   
   JackSink::JackSink () :
-    jacksink_ (NULL),
+    jacksink_ (nullptr),
     custom_props_ (new CustomPropertyHelper ()),
-    client_name_spec_ (NULL),
-    client_name_ (NULL)
+    client_name_spec_ (nullptr),
+    client_name_ (nullptr)
   {}
 
   JackSink::~JackSink ()
   {
-    if (NULL != client_name_)
+    if (nullptr != client_name_)
       g_free (client_name_);
   }
   
   bool 
   JackSink::make_elements ()
   {
-    GError *error = NULL;
+    GError *error = nullptr;
 
-    gchar *description = g_strdup_printf ("audioconvert ! jackaudiosink client-name=%s sync=false", client_name_);
+    gchar *description = g_strdup_printf ("audioconvert ! audioresample ! queue max-size-buffers=2 leaky=downstream ! jackaudiosink provide-clock=false slave-method=none client-name=%s sync=false buffer-time=10000", client_name_);
     
     jacksink_ = gst_parse_bin_from_description (description,
 						TRUE,
 						&error);
-    g_object_set (G_OBJECT (jacksink_), "async-handling",TRUE, NULL);
+    g_object_set (G_OBJECT (jacksink_), "async-handling", TRUE, nullptr);
     g_free (description);
 
-    if (error != NULL)
+    if (error != nullptr)
       {
 	g_warning ("%s",error->message);
 	g_error_free (error);
@@ -114,7 +114,7 @@ namespace switcher
   JackSink::set_client_name (const gchar *value, void *user_data)
   {
     JackSink *context = static_cast <JackSink *> (user_data);
-    if (NULL != context->client_name_)
+    if (nullptr != context->client_name_)
       g_free (context->client_name_);
     context->client_name_ = g_strdup(value);
     context->custom_props_->notify_property_changed (context->client_name_spec_);
@@ -142,5 +142,11 @@ namespace switcher
 	make_elements ();
 	set_sink_element_no_connect (jacksink_);
       }
+  }
+
+  bool 
+  JackSink::can_sink_caps (std::string caps)
+  {
+    return GstUtils::can_sink_caps ("audioconvert", caps);
   }
 }

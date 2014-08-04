@@ -43,7 +43,7 @@ namespace switcher
   private: 
    GstElement *audiotestsrc_;
    bool make_audiotestsrc ();
-   bool init_segment ();
+   bool init_gpipe () final;
   };
 
 }  // end of namespace

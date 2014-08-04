@@ -2,7 +2,7 @@ dnl required version of autoconf
 AC_PREREQ([2.53])
 
 dnl package name and package version
-AC_INIT([switcher],[0.4.6])
+AC_INIT([switcher],[0.6.0])
 
 dnl required version of gstreamer and gst-plugins-base
 GST_REQUIRED=0.10.36
@@ -30,11 +30,11 @@ AC_CANONICAL_HOST
 #  * current: Increment when the interface changes. (and set revision to 0)
 #  * revision: Increment when the implementation changes, but not the interface.
 #  * age: Backward-compatible with how many interface numbers.
-AC_SUBST([LIBSWITCHER_SO_VERSION], [1:0:0])
+AC_SUBST([LIBSWITCHER_SO_VERSION], [0:0:0])
 
 # The version of the API. Should be major.minor and not change until not backward-compatible
-AC_SUBST([LIBSWITCHER_API_VERSION], [0.4])
-AC_DEFINE(LIBSWITCHER_API_VERSION, ["0.4"], [API version])
+AC_SUBST([LIBSWITCHER_API_VERSION], [0.6])
+AC_DEFINE(LIBSWITCHER_API_VERSION, ["0.6"], [API version])
 
 dnl check for tools (compiler etc.)
 AC_PROG_CXX
@@ -52,6 +52,8 @@ AC_CHECK_PROG(HAVE_PKGCONFIG, pkg-config, [ ], [
   AC_MSG_ERROR([You need to have pkg-config installed or set the PATH.])
 ])
 
+## for building syphon, but seems it must be call unconditionally 
+AC_PROG_OBJCXX
 case "$host" in *-darwin* | *-macos10*)
   LIBTOOL="glibtool"
   CXXFLAGS+=" -D__Darwin -stdlib=libc++ -Qunused-arguments"
@@ -102,6 +104,7 @@ AC_CHECK_FILE([/Library/Frameworks/GStreamer.framework/Libraries/pkgconfig],
               [AC_MSG_WARN([OSX GStreamer SDK not found])])
 
 
+dnl =======================================================================
 dnl Check for the required version of GStreamer core (and gst-plugins-base)
 dnl
 dnl This will export GST_CFLAGS and GST_LIBS variables for use in Makefile.am
@@ -165,7 +168,6 @@ if test "x${have_gsoap}" = "xfalse" ; then
     AC_MSG_WARN([Missing gsoap package])
 else
     GSOAPBUILD=enabled
-    AC_CONFIG_FILES([plugins/gsoap/Makefile])
 fi
 AM_CONDITIONAL(GSOAPBUILD, test "${GSOAPBUILD}" = "enabled")
 
@@ -176,7 +178,6 @@ if test "x${have_liblo}" = "xfalse" ; then
     AC_MSG_WARN([Missing liblo-dev package, switcher will not be built])
 else
     OSCBUILD=enabled
-    AC_CONFIG_FILES([plugins/osc/Makefile])
 fi
 AM_CONDITIONAL(OSCBUILD, test "${OSCBUILD}" = "enabled")
 
@@ -212,15 +213,12 @@ dnl fi
 AM_CONDITIONAL(PORTMIDIBUILD, test "${PORTMIDIBUILD}" = "enabled")
 
 if test "${PORTMIDIBUILD}" = "enabled"; then
-    AC_CONFIG_FILES([plugins/portmidi/Makefile])
   PORTMIDI_CFLAGS="-DPMALSA"
   AC_SUBST([PORTMIDI_CFLAGS], "$PORTMIDI_CFLAGS")
   dnl PORTMIDI_LIBS="-lportmidi -lporttime -lpthread -lm"
   PORTMIDI_LIBS="-lportmidi -lpthread -lm"
   AC_SUBST([PORTMIDI_LIBS], "$PORTMIDI_LIBS")
 fi
-
-
 
 #pulse
 PKG_CHECK_MODULES(PULSE, libpulse-mainloop-glib, have_libpulse=true, have_libpulse=false)
@@ -229,10 +227,10 @@ if test "x${have_libpulse}" = "xfalse" ; then
     AC_MSG_WARN([Missing libpulse-dev])
 else
     PULSEBUILD=enabled
-    AC_CONFIG_FILES([plugins/pulse/Makefile])
 fi
 AM_CONDITIONAL(PULSEBUILD, test "${PULSEBUILD}" = "enabled")
 
+#json
 PKG_CHECK_MODULES(JSONGLIB, json-glib-1.0, have_jsonglib=true, have_jsonglib=false)
 if test "x${have_jsonglib}" = "xfalse" ; then
     AC_MSG_ERROR([Missing libjson-glib-dev package])
@@ -241,13 +239,20 @@ fi
 # check for v4l2 
 AC_CHECK_HEADER(linux/videodev2.h,
                 V4L2BUILD=enabled,
-                AC_MSG_WARN([v4l2 capture plugin will not be built (missing videodev2.h from package linux-libc-dev)]))
+                [AC_MSG_WARN([v4l2 capture plugin will not be built (missing videodev2.h from package linux-libc-dev)])
+                V4L2BUILD=disabled])
 AM_CONDITIONAL(V4L2BUILD, test "${V4L2BUILD}" = "enabled")
-if test "x${V4L2BUILD}" = "xenabled";
-  then AC_CONFIG_FILES([plugins/v4l2/Makefile])
+
+#pjsip
+PKG_CHECK_MODULES(PJSIP, libpjproject, have_pjsip=true, have_pjsip=false)
+if test "x${have_pjsip}" = "xfalse" ; then
+    PJSIPBUILD=disabled
+    AC_MSG_WARN([Missing pjsip dev files])
 else
-  V4L2BUILD=disabled
+    PJSIPBUILD=enabled
 fi
+AM_CONDITIONAL(PJSIPBUILD, test "${PJSIPBUILD}" = "enabled")
+
 
 # check for gtk (compatible with gstreamer sdk)
 PKG_CHECK_MODULES(GTK, gtk+-2.0, have_gtk=true, have_gtk=false)
@@ -256,7 +261,6 @@ if test "x${have_gtk}" = "xfalse" ; then
     AC_MSG_WARN([Missing libgtk2.0-dev package, gtk fullscreen video will not be built])
 else
     GTKBUILD=enabled
-    AC_CONFIG_FILES([plugins/gtk/Makefile])
 fi
 AM_CONDITIONAL(GTKBUILD, test "${GTKBUILD}" = "enabled")
 if test "${GTKBUILD}" = "enabled"; then
@@ -267,22 +271,32 @@ fi
 
 #check nodejs-dev
 AC_CHECK_FILE([/usr/include/nodejs/src/node.h],
-              [NODEADDONBUILD=enabled
-               AC_CONFIG_FILES([nodejs/Makefile])],
+              [NODEADDONBUILD=enabled],
               [NODEADDONBUILD=disabled
                AC_MSG_WARN([Missing nodejs-dev package])])
 AM_CONDITIONAL(NODEADDONBUILD, test "x${NODEADDONBUILD}" = "xenabled")
 
+# check for posturevision
+PKG_CHECK_MODULES(POSTURE, posture, have_posture=true, have_posture=false)
+if test "x${have_posture}" = "xfalse" ; then
+    POSTUREBUILD=disabled
+    AC_MSG_WARN([Missing Posturevision, there won't be support for point clouds captures])
+else
+    POSTUREBUILD=enabled
+fi
+AM_CONDITIONAL(POSTUREBUILD, test "${POSTUREBUILD}" = "enabled")
+
+
 dnl Use the C++ compiler for the compile tests
 AC_LANG(C++)
 
-AC_MSG_CHECKING([to see if compiler understands -std=c++0x])
-CXXFLAGS="$CXXFLAGS -std=c++0x"
+AC_MSG_CHECKING([to see if compiler understands -std=c++11])
+CXXFLAGS="$CXXFLAGS -std=c++11"
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([ ], [ ])], [
   AC_MSG_RESULT([yes])
 ], [
   AC_MSG_RESULT([no])
-  AC_MSG_ERROR([compiler does not understand -std=c++0x])
+  AC_MSG_ERROR([compiler does not understand -std=c++11])
 ])
 
 
@@ -362,9 +376,6 @@ fi
 if test "${SOAPBUILD}" = "disabled";
   then SWITCHERBUILD=disabled
 fi
-if test "${SWITCHERBUILD}" = "enabled";
-  then AC_CONFIG_FILES([src/Makefile])
-fi
 AM_CONDITIONAL(SWITCHERBUILD, test "${SWITCHERBUILD}" = "enabled")
 
 dnl =======================================================================
@@ -376,9 +387,20 @@ doxyfile
 switcher-${LIBSWITCHER_API_VERSION}.pc:switcher.pc.in
 switcher/Makefile
 tests/Makefile
+src/Makefile
 plugins/Makefile
 plugins/example/Makefile
-plugins/avcodecs/Makefile
+plugins/systemusage/Makefile
+plugins/syphonsrc/Makefile
+plugins/gsoap/Makefile
+plugins/osc/Makefile
+plugins/portmidi/Makefile
+plugins/pulse/Makefile
+plugins/v4l2/Makefile
+plugins/pjsip/Makefile
+plugins/gtk/Makefile
+nodejs/Makefile
+plugins/posture/Makefile
 ])
 AC_OUTPUT
 
@@ -391,6 +413,7 @@ AC_OUTPUT
 [echo "GTK fullscreen video       ${GTKBUILD}"]
 [echo "Pulse audio                ${PULSEBUILD}"]
 [echo "PortMidi                   ${PORTMIDIBUILD}"]
+[echo "PJSIP                      ${PJSIPBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]
@@ -405,6 +428,7 @@ AC_OUTPUT
 [echo ""]
 [echo "nodejs addon               ${NODEADDONBUILD}"]
 [echo "python                     ${PYTHONBUILD}"]
+[echo "posture support            ${POSTUREBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]

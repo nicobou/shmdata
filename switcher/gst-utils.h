@@ -22,47 +22,52 @@
 #define __SWITCHER_GST_UTILS_H__
 
 #include <gst/gst.h>
+#include <memory>
 
 namespace switcher
 {
-
-  class GstUtils
+  namespace GstUtils
   {
-  public:
-    static bool make_element (const gchar *class_name, 
-			      GstElement **target_element);
-    static bool link_static_to_request (GstElement *src,
-					GstElement *sink);
-    static bool link_static_to_request (GstPad *srcpad,
-					GstElement *sink);
-    static bool check_pad_link_return (GstPadLinkReturn res);
-    static void unlink_pad (GstPad * pad);
-    static void clean_element (GstElement *element);
-    static void wait_state_changed (GstElement *bin);
-    static void sync_state_with_parent (GstElement *element);
-    static void set_element_property_in_bin (GstElement *bin, 
-					     const gchar *factory_name, 
-					     const gchar *property_name,
-					     gboolean property_value);
-    static gchar *gvalue_serialize (const GValue *val);// g_free after use
-    static guint g_idle_add_full_with_context (GMainContext *context,
-					       gint priority, //in case of doubt use G_PRIORITY_DEFAULT_IDLE
-					       GSourceFunc function,
-					       gpointer data,
-					       GDestroyNotify notify);
-    static guint g_timeout_add_to_context(guint interval, 
-					  GSourceFunc function,
-					  gpointer data, 
-					  GMainContext *context);
-    static  bool apply_property_value (GObject *g_object_master, 
-				       GObject *g_object_slave,
-				       const char *property_name);
+    
+    bool make_element (const gchar *class_name, 
+		       GstElement **target_element);
+    bool link_static_to_request (GstElement *src,
+				 GstElement *sink);
+    bool link_static_to_request (GstPad *srcpad,
+				 GstElement *sink);
+    bool check_pad_link_return (GstPadLinkReturn res);
+    void unlink_pad (GstPad * pad);
+    void clean_element (GstElement *element);
+    void wait_state_changed (GstElement *bin);
+    void sync_state_with_parent (GstElement *element);
+    void set_element_property_in_bin (GstElement *bin, 
+				      const gchar *factory_name, 
+				      const gchar *property_name,
+				      gboolean property_value);
+    gchar *gvalue_serialize (const GValue *val);// g_free after use
+    guint g_idle_add_full_with_context (GMainContext *context,
+					gint priority, //in case of doubt use G_PRIORITY_DEFAULT_IDLE
+					GSourceFunc function,
+					gpointer data,
+					GDestroyNotify notify);
+    GSource *g_timeout_add_to_context (guint interval, 
+				       GSourceFunc function,
+				       gpointer data, 
+				       GMainContext *context);
+    bool apply_property_value (GObject *g_object_master, 
+			       GObject *g_object_slave,
+			       const char *property_name);
 
-    static void element_factory_list_to_g_enum (GEnumValue *target_enum,
-						GstElementFactoryListType type,
-						GstRank minrank);
-  };
-
-}  // end of namespace
+    void element_factory_list_to_g_enum (GEnumValue *target_enum,
+					 GstElementFactoryListType type,
+					 GstRank minrank);
+    void gst_element_deleter (GstElement *element);
+    gulong g_signal_connect_function (gpointer gobject, 
+				      const gchar *signal,
+				      GCallback cb,
+				      gpointer user_data);
+    bool can_sink_caps (std::string factory_name, std::string caps);
+  } //end of GstUtils namespace
+}  // end of switcher namespace
 
 #endif // ifndef

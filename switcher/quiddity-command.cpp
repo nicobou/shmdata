@@ -33,6 +33,7 @@ namespace switcher
     {get_class_doc, "get_class_doc"},
     {get_classes,  "get_classes"},
     {get_classes_doc,"get_classes_doc"},
+    {get_info, "get_info"},
     {get_method_description,"get_method_description"},
     {get_method_description_by_class,"get_method_description_by_class"},
     {get_methods_description,"get_methods_description"},
@@ -184,7 +185,11 @@ namespace switcher
     for (j = 0; j< num_elements; j ++)
       {
 	json_reader_read_element (reader, j);
-	command->add_arg (json_reader_get_string_value (reader));
+	const gchar *str = json_reader_get_string_value (reader);
+	if (nullptr != str)
+	  command->add_arg (str);
+	else
+	  command->add_arg ("null");
 	json_reader_end_element (reader);
       }
     json_reader_end_member (reader);
@@ -197,7 +202,10 @@ namespace switcher
     for (j = 0; j< num_elements; j ++)
       {
 	json_reader_read_element (reader, j);
-	string_vect_arg.push_back (json_reader_get_string_value (reader));
+    const char* stringValue = json_reader_get_string_value (reader);
+    if (stringValue == nullptr)
+        stringValue = "null";
+	string_vect_arg.push_back (stringValue);
 	json_reader_end_element (reader);
       }
     json_reader_end_member (reader);
@@ -212,7 +220,7 @@ namespace switcher
       {
 	json_reader_read_element (reader, j);
 	const char *string_value = json_reader_get_string_value (reader);
-	if (NULL != string_value)
+	if (nullptr != string_value)
 	  expected_result.push_back (string_value);
 	json_reader_end_element (reader);
       }

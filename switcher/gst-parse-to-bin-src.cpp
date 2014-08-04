@@ -32,27 +32,27 @@ namespace switcher
 				       "Nicolas Bouillot");
   
   GstParseToBinSrc::GstParseToBinSrc () :
-    gst_parse_to_bin_src_ (NULL),
+    gst_parse_to_bin_src_ (nullptr),
     custom_props_ (new CustomPropertyHelper ()),
-    gst_launch_pipeline_spec_ (NULL),
+    gst_launch_pipeline_spec_ (nullptr),
     gst_launch_pipeline_ (g_strdup (""))
   {}
 
   GstParseToBinSrc::~GstParseToBinSrc ()
   {
     g_free (gst_launch_pipeline_);
-    if (gst_parse_to_bin_src_ != NULL)
+    if (gst_parse_to_bin_src_ != nullptr)
       GstUtils::clean_element (gst_parse_to_bin_src_);
   }
 
   bool 
-  GstParseToBinSrc::init_segment ()
+  GstParseToBinSrc::init_gpipe ()
   {
     init_startable (this);
     gst_launch_pipeline_spec_ = 
       custom_props_->make_string_property ("gst-pipeline", 
 					   "GStreamer Launch Source Pipeline",
-					   "",
+					   "videotestsrc is-live=true",
 					   (GParamFlags) G_PARAM_READWRITE,
 					   GstParseToBinSrc::set_gst_launch_pipeline,
 					   GstParseToBinSrc::get_gst_launch_pipeline,
@@ -60,7 +60,7 @@ namespace switcher
     install_property_by_pspec (custom_props_->get_gobject (), 
 				gst_launch_pipeline_spec_, 
 				"gst-pipeline",
-				"GStreamer Pipeline");
+				"GStreamer Live Source Pipeline");
     
      return true;
   }
@@ -69,20 +69,20 @@ namespace switcher
   GstParseToBinSrc::to_shmdata ()
   {
 
-    GError *error = NULL;
+    GError *error = nullptr;
     gst_parse_to_bin_src_ = gst_parse_bin_from_description (gst_launch_pipeline_,
 							    TRUE,
 							    &error);
 
-    if (error != NULL)
+    if (error != nullptr)
       {
 	g_debug ("%s",error->message);
 	g_error_free (error);
-	gst_parse_to_bin_src_ = NULL;
+	gst_parse_to_bin_src_ = nullptr;
 	return false;
       }
 
-    g_object_set (G_OBJECT (gst_parse_to_bin_src_), "async-handling",TRUE, NULL);
+    g_object_set (G_OBJECT (gst_parse_to_bin_src_), "async-handling",TRUE, nullptr);
     //GstUtils::wait_state_changed (bin_);
     
     GstPad *src_pad = gst_element_get_static_pad (gst_parse_to_bin_src_,"src");
@@ -93,7 +93,7 @@ namespace switcher
      writer.reset (new ShmdataWriter ());
      writer->set_path (make_file_name ("gstsrc").c_str ());//FIXME use caps name
      writer->plug (bin_, src_pad);
-     register_shmdata_writer (writer);
+     register_shmdata (writer);
      gst_object_unref (src_pad);
      GstUtils::sync_state_with_parent (gst_parse_to_bin_src_);
      return true;
@@ -118,8 +118,9 @@ namespace switcher
   bool 
   GstParseToBinSrc::clean ()
   {
-    reset_bin ();
-    return unregister_shmdata_writer (make_file_name ("video"));
+    clear_shmdatas ();
+    reset_bin ();//bool res = unregister_shmdata (make_file_name ("video"));
+    return true;
   }
 
   bool 
