@@ -14,7 +14,7 @@ libposturesource_la_LDFLAGS = \
     $(GST_LIBS) \
     $(GMODULE_LIBS) \
     $(JSONGLIB_LIBS) \
-	$(POSTURE_LIBS) \
+    $(POSTURE_LIBS) \
     $(SHMDATA_LIBS) \
     -avoid-version \
     -L$(top_builddir)/switcher/.libs \
@@ -25,13 +25,14 @@ libposturesource_la_CXXFLAGS = \
     $(GMODULE_CFLAGS) \
     $(GST_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
-	$(POSTURE_CFLAGS) \
+    $(POSTURE_CFLAGS) \
     $(SHMDATA_CFLAGS) \
     -I$(top_srcdir) \
     -DG_LOG_DOMAIN=\"switcher\"
 
 noinst_HEADERS = \
-	posture_source.h
+    posture.h \
+    posture_source.h
 
 #libposturemerge info
 libposturemerge_la_SOURCES = \
@@ -42,7 +43,7 @@ libposturemerge_la_LDFLAGS = \
     $(GST_LIBS) \
     $(GMODULE_LIBS) \
     $(JSONGLIB_LIBS) \
-	$(POSTURE_LIBS) \
+    $(POSTURE_LIBS) \
     $(SHMDATA_LIBS) \
     -avoid-version \
     -L$(top_builddir)/switcher/.libs \
@@ -53,13 +54,13 @@ libposturemerge_la_CXXFLAGS = \
     $(GMODULE_CFLAGS) \
     $(GST_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
-	$(POSTURE_CFLAGS) \
+    $(POSTURE_CFLAGS) \
     $(SHMDATA_CFLAGS) \
     -I$(top_srcdir) \
     -DG_LOG_DOMAIN=\"switcher\"
 
-noinst_HEADERS = \
-	posture_merge.h
+noinst_HEADERS += \
+    posture_merge.h
 
 #libposturedisplay info
 libposturedisplay_la_SOURCES = \
@@ -70,7 +71,7 @@ libposturedisplay_la_LDFLAGS = \
     $(GST_LIBS) \
     $(GMODULE_LIBS) \
     $(JSONGLIB_LIBS) \
-	$(POSTURE_LIBS) \
+    $(POSTURE_LIBS) \
     $(SHMDATA_LIBS) \
     -avoid-version \
     -L$(top_builddir)/switcher/.libs \
@@ -81,13 +82,13 @@ libposturedisplay_la_CXXFLAGS = \
     $(GMODULE_CFLAGS) \
     $(GST_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
-	$(POSTURE_CFLAGS) \
+    $(POSTURE_CFLAGS) \
     $(SHMDATA_CFLAGS) \
     -I$(top_srcdir) \
     -DG_LOG_DOMAIN=\"switcher\"
 
-noinst_HEADERS = \
-	posture_display.h
+noinst_HEADERS += \
+    posture_display.h
 
 #### plugin unit test
 # AM_CFLAGS = \

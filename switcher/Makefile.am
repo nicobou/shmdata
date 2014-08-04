@@ -108,6 +108,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     audio-test-source.h \
     single-pad-gst-sink.h \
     categorizable.h \
+    clock.h \
     counter-map.h \
     create-remove-spy.h \
     creator.h \
@@ -152,6 +153,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     quiddity.h \
     rtp-destination.h \
     rtp-session.h \
+    scope-exit.h \
     sdp-utils.h \
     segment.h \
     shmdata-any-writer.h \
