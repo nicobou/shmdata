@@ -7,8 +7,8 @@
 *.pc
 *.swp
 *.trs
-*/.deps/
-*/.libs/
+*.deps/
+*.libs/
 *~
 Makefile
 Makefile.in
