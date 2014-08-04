@@ -1,6 +1,18 @@
 shmdata release notes
 ===================== 
 
+shmdata 0.8.14 (2014-08-04)
+---------------------------
+This is an official release in the 0.8 stable series. 
+
+New features:
+
+* There are no new features, this is a bugfix release
+
+Bugs fixed:
+
+* avoid accumulating data in the writer (leaking)
+
 shmdata 0.8.12 (2014-02-27)
 ---------------------------
 This is an official release in the 0.8 stable series. 
