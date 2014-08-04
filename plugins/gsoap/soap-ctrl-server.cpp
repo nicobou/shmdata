@@ -44,18 +44,23 @@ namespace switcher
     socket_ (),
     thread_ (),
     mutex_ ()
-  {}
+  {
+        g_print ("%s %d \n", __FUNCTION__, __LINE__);
+  }
 
   bool
   SoapCtrlServer::init ()
   {
+    g_print ("%s %d \n", __FUNCTION__, __LINE__);
     soap_init(&soap_);
+    g_print ("%s %d \n", __FUNCTION__, __LINE__);
     //release port
     soap_.connect_flags = SO_LINGER; 
     soap_.accept_flags = SO_LINGER;
     soap_.accept_timeout =  100 * -1000; //100ms
     soap_.fget = SoapCtrlServer::http_get;
     
+    g_print ("%s %d \n", __FUNCTION__, __LINE__);
     install_method ("Set Port",
 		    "set_port", 
 		    "set the port used by the soap server", 
@@ -69,12 +74,15 @@ namespace switcher
 		    Method::make_arg_type_description (G_TYPE_INT, nullptr),
      		    this);
    
+    g_print ("%s %d \n", __FUNCTION__, __LINE__);
     return true;
   }
 
   SoapCtrlServer::~SoapCtrlServer ()
   {
+    g_print ("%s %d \n", __FUNCTION__, __LINE__);
     stop ();
+    g_print ("%s %d \n", __FUNCTION__, __LINE__);
   }
 
   std::shared_ptr<QuiddityManager>

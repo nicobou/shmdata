@@ -858,11 +858,11 @@ void Init(v8::Handle<v8::Object> target)
   switcher_manager->make_property_subscriber ("log_sub", logger_cb, nullptr);
   switcher_manager->subscribe_property ("log_sub","internal_logger","last-line");
    
-  gchar *usr_plugin_dir = g_strdup_printf ("/usr/switcher-0.4/plugins");
+  gchar *usr_plugin_dir = g_strdup_printf ("/usr/switcher-0.6/plugins");
   switcher_manager->scan_directory_for_plugins (usr_plugin_dir);
   g_free (usr_plugin_dir);
   
-  gchar *usr_local_plugin_dir = g_strdup_printf ("/usr/local/switcher-0.4/plugins");
+  gchar *usr_local_plugin_dir = g_strdup_printf ("/usr/local/switcher-0.6/plugins");
   switcher_manager->scan_directory_for_plugins (usr_local_plugin_dir);
   g_free (usr_local_plugin_dir);
   
