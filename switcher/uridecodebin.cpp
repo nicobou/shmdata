@@ -160,21 +160,6 @@ namespace switcher
        		  nullptr); 
   }
 
-
-  void 
-  Uridecodebin::set_loop (gboolean loop, void *user_data)
-  {
-    Uridecodebin *context = static_cast<Uridecodebin *> (user_data);
-    context->loop_ = loop;
-  }
-
-  gboolean 
-  Uridecodebin::get_loop (void *user_data)
-  {
-    Uridecodebin *context = static_cast<Uridecodebin *> (user_data);
-    return context->loop_;
-  }
-
   void 
   Uridecodebin::destroy_uridecodebin ()
   {
