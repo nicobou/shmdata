@@ -20,12 +20,12 @@
 #ifndef PLUGINS_PJSIP_PJ_CALL_H_
 #define PLUGINS_PJSIP_PJ_CALL_H_
 
-#include <pjsua-lib/pjsua.h>
-
+#include "pj-codec.h"
 #include "switcher/shmdata-any-writer.h"
 #include "switcher/rtp-session.h"
-
-#include "./pj-codec.h"
+#include <pjsua-lib/pjsua.h>
+#include <string>
+#include <vector>
 
 #define MAX_CALLS 1024
 
@@ -34,28 +34,25 @@ namespace switcher {
 
   class PJCall {
     friend PJCodec;
-
-  public:
+    
+ public:
     PJCall() = delete;
     PJCall(PJSIP * sip_instance);
     ~PJCall();
     PJCall(const PJCall &) = delete;
     PJCall & operator=(const PJCall &) = delete;
 
-  private:
-    struct media_stream         /*media stream created when the call is active. */
+ private:
+    struct media_stream /*media stream created when the call is active. */
     {
       /* Static: */
-      unsigned call_index {
-	0};                       /* Call owner. */
-      unsigned media_index {
-	0};                       /* Media index in call. */
-      pjmedia_transport *transport {
-	nullptr};                 /* To send/recv RTP/RTCP */
+      unsigned call_index {0}; /* Call owner. */
+      unsigned media_index {0}; /* Media index in call. */
+      pjmedia_transport *transport {nullptr}; /* To send/recv RTP/RTCP */
 
       /* Active? */
       pj_bool_t active {
-	PJ_FALSE};                /* Non-zero if is in call. */
+        PJ_FALSE};                /* Non-zero if is in call. */
 
       /* Current stream info: */
       pjmedia_stream_info si;   /* Current stream info. */
@@ -68,8 +65,7 @@ namespace switcher {
       pjmedia_rtcp_session rtcp;        /* incoming RTCP session. */
 
       // type + codec param
-      std::string type {
-      };                        /* audio, video or appli */
+      std::string type {};              /* audio, video or appli */
       std::string extra_params {
       };
       // shmdata
@@ -79,8 +75,8 @@ namespace switcher {
       std::string shm_path_to_send {
       };
       // constructor for default init of pj types
-    media_stream():si(), out_sess(), in_sess(), rtcp() {
-    }
+     media_stream():si(), out_sess(), in_sess(), rtcp() {
+     }
     };
 
     /* This is a call structure that is created when the application starts
@@ -88,36 +84,36 @@ namespace switcher {
      */
     struct call {
       unsigned index {
-	0};
+        0};
       pjsip_inv_session *inv {
-	nullptr};
+        nullptr};
       unsigned media_count {
-	0};                       //FIXME make this more STL
+        0};                       //FIXME make this more STL
       struct media_stream media[64];
       pj_time_val start_time {
-	0, 0};
+        0, 0};
       pj_time_val response_time {
-	0, 0};
+        0, 0};
       pj_time_val connect_time {
-	0, 0};
+        0, 0};
       std::string peer_uri {
       };
       PJCall *instance {
-	nullptr};
+        nullptr};
     };
 
     /* Application's global variables */
     typedef struct app {
       unsigned max_calls {
-	256};
+        256};
       unsigned uac_calls {
-	0};
+        0};
       pj_str_t local_addr {
-	nullptr, 0};
+        nullptr, 0};
       struct call call[MAX_CALLS];      // FIXME make this more STL
     } app_t;
 
-  private:
+ private:
     static pjmedia_endpt *med_endpt_;
     static pjsip_module mod_siprtp_;
     static app_t app;
@@ -182,6 +178,6 @@ namespace switcher {
     static gboolean hang_up(gchar * sip_url, void *user_data);
   };
 
-}                               // end of namespace
+} // namespace switcher
 
-#endif // PLUGINS_PJSIP_PJ_CALL_H_
+#endif  // PLUGINS_PJSIP_PJ_CALL_H_

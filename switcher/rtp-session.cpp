@@ -18,10 +18,10 @@
  */
 
 #include "rtp-session.h"
-#include <sstream>
-#include <glib/gstdio.h>        //writing sdp file
 #include "gst-utils.h"
 #include "json-builder.h"
+#include <glib/gstdio.h>        //writing sdp file
+#include <sstream>
 
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RtpSession,
