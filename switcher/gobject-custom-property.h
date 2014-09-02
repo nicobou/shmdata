@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_GOBJECT_CUSTOM_PROPERTY_H__
 #define __SWITCHER_GOBJECT_CUSTOM_PROPERTY_H__
 
@@ -30,23 +29,23 @@ namespace switcher
   class GObjectCustomProperty
   {
   public:
-    typedef std::shared_ptr<GObjectCustomProperty> ptr;
-    typedef bool (*set_method_pointer) (const GValue *val, void *user_data);
-    typedef bool (*get_method_pointer) (GValue *val, void *user_data);
-    ~GObjectCustomProperty ();
-    
-    static GObjectCustomProperty::ptr 
+    typedef std::shared_ptr < GObjectCustomProperty > ptr;
+    typedef bool (*set_method_pointer) (const GValue * val, void *user_data);
+    typedef bool (*get_method_pointer) (GValue * val, void *user_data);
+     ~GObjectCustomProperty ();
+
+    static GObjectCustomProperty::ptr
       make_custom_property (set_method_pointer set_method,
 			    get_method_pointer get_method);
 
     set_method_pointer set_method_;
     get_method_pointer get_method_;
-    
+
   private:
-    GObjectCustomProperty ();
+      GObjectCustomProperty ();
     void set_members (set_method_pointer set_method,
 		      get_method_pointer get_method);
   };
-}  // end of namespace
+}				// end of namespace
 
-#endif // ifndef
+#endif				// ifndef

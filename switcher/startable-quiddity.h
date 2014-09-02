@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_STARTABLE_QUIDDITY_H__
 #define __SWITCHER_STARTABLE_QUIDDITY_H__
 
@@ -31,28 +30,28 @@ namespace switcher
   class StartableQuiddity
   {
   public:
-    typedef std::shared_ptr<StartableQuiddity> ptr;
-    StartableQuiddity ();
-    virtual ~StartableQuiddity ();
-    StartableQuiddity (const StartableQuiddity&) = delete;
-    StartableQuiddity & operator= (const StartableQuiddity&) = delete;
+    typedef std::shared_ptr < StartableQuiddity > ptr;
+      StartableQuiddity ();
+      virtual ~ StartableQuiddity ();
+      StartableQuiddity (const StartableQuiddity &) = delete;
+      StartableQuiddity & operator= (const StartableQuiddity &) = delete;
 
   protected:
-    void init_startable (void *quiddity);//FIXME should called quiddity-manager-impl 
+    void init_startable (void *quiddity);	//FIXME should called quiddity-manager-impl 
     bool is_started ();
     //find a way to avoid invoking init_startable (this) in quiddities (policies)
 
   private:
-    virtual bool start () = 0;
+      virtual bool start () = 0;
     virtual bool stop () = 0;
     static gboolean get_started (void *user_data);
     static void set_started (gboolean started, void *user_data);
 
     bool started_;
-    GParamSpec *started_prop_;//FIXME should be static
-    CustomPropertyHelper::ptr startable_custom_props_;
- };
+    GParamSpec *started_prop_;	//FIXME should be static
+      CustomPropertyHelper::ptr startable_custom_props_;
+  };
 
-}  // end of namespace
+}				// end of namespace
 
-#endif // ifndef
+#endif				// ifndef

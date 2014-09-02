@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_FAKESINK_H__
 #define __SWITCHER_FAKESINK_H__
 
@@ -30,39 +29,41 @@
 namespace switcher
 {
 
-  class FakeSink : public SinglePadGstSink
+  class FakeSink:public SinglePadGstSink
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeSink);
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (FakeSink);
     FakeSink ();
     ~FakeSink ();
     FakeSink (const FakeSink &) = delete;
-    FakeSink &operator= (const FakeSink &) = delete;
+      FakeSink & operator= (const FakeSink &) = delete;
 
   private:
-    GstElement *fakesink_;
+      GstElement * fakesink_;
     gsize num_bytes_since_last_update_;
     GSource *update_byterate_source_;
     gint byte_rate_;
     gchar *string_caps_;
     gboolean set_string_caps_;
     //byte rate property 
-    CustomPropertyHelper::ptr props_;
+      CustomPropertyHelper::ptr props_;
     GParamSpec *byte_rate_spec_;
     GParamSpec *caps_spec_;
 
     bool init_gpipe () final;
-    bool can_sink_caps (std::string caps) final {return true;};
+    bool can_sink_caps (std::string caps) final
+    {
+      return true;
+    };
 
-    static void on_handoff_cb (GstElement* object,
-			       GstBuffer* buf,
-			       GstPad* pad,
-			       gpointer user_data);
-    static gboolean update_byte_rate (gpointer user_data); 
+    static void on_handoff_cb (GstElement * object,
+			       GstBuffer * buf,
+			       GstPad * pad, gpointer user_data);
+    static gboolean update_byte_rate (gpointer user_data);
     static gint get_byte_rate (void *user_data);
     static const gchar *get_caps (void *user_data);
   };
 
-}  // end of namespace
+}				// end of namespace
 
 #endif // ifndef

@@ -25,52 +25,48 @@ namespace switcher
 {
   RtpDestination::RtpDestination ()
   {
-    json_description_.reset (new JSONBuilder());
+    json_description_.reset (new JSONBuilder ());
   }
-  
+
   RtpDestination::~RtpDestination ()
   {
-    for (auto &it : ports_)
+  for (auto & it:ports_)
       {
 	QuiddityManager::ptr manager = it.second;
-	//cleaning rtp
-	std::vector <std::string> arg;
+//cleaning rtp
+	std::vector < std::string > arg;
 	arg.push_back (host_name_);
 	arg.push_back (it.first);
-	manager->invoke ("udpsend_rtp", "remove_client", nullptr ,arg);
-	//cleaning rtcp
+	manager->invoke ("udpsend_rtp", "remove_client", nullptr, arg);
+//cleaning rtcp
 	arg.clear ();
 	arg.push_back (host_name_);
 	std::ostringstream rtcp_port;
-	rtcp_port << atoi(it.first.c_str()) + 1;
-	arg.push_back (rtcp_port.str());
+	rtcp_port << atoi (it.first.c_str ()) + 1;
+	arg.push_back (rtcp_port.str ());
 	manager->invoke ("udpsend_rtp", "remove_client", nullptr, arg);
-	//TODO remove connection to funnel
+//TODO remove connection to funnel
       }
   }
-  
-  void 
-  RtpDestination::set_name (std::string name)
+
+  void RtpDestination::set_name (std::string name)
   {
     name_ = name;
     make_json_description ();
   }
 
-  void 
-  RtpDestination::set_host_name (std::string host_name)
+  void RtpDestination::set_host_name (std::string host_name)
   {
     host_name_ = host_name;
     make_json_description ();
   }
-  
-  std::string
-  RtpDestination::get_host_name ()
+
+  std::string RtpDestination::get_host_name ()
   {
     return host_name_;
   }
 
-  std::string 
-  RtpDestination::get_port (std::string shmdata_path)
+  std::string RtpDestination::get_port (std::string shmdata_path)
   {
     auto it = source_streams_.find (shmdata_path);
     if (source_streams_.end () == it)
@@ -78,11 +74,10 @@ namespace switcher
     return it->second;
   }
 
-
-  bool 
-  RtpDestination::add_stream (std::string orig_shmdata_path,
-			      QuiddityManager::ptr manager, 
-			      std::string port)
+  bool
+    RtpDestination::add_stream (std::string orig_shmdata_path,
+				QuiddityManager::ptr manager,
+				std::string port)
   {
     ports_[port] = manager;
     source_streams_[orig_shmdata_path] = port;
@@ -90,25 +85,22 @@ namespace switcher
     return true;
   }
 
-  bool
-  RtpDestination::has_shmdata (std::string shmdata_path)
+  bool RtpDestination::has_shmdata (std::string shmdata_path)
   {
     return (source_streams_.end () != source_streams_.find (shmdata_path));
   }
 
-  bool
-  RtpDestination::has_port (std::string port)
+  bool RtpDestination::has_port (std::string port)
   {
     return (ports_.end () != ports_.find (port));
   }
-  
-  bool
-  RtpDestination::remove_stream (std::string shmdata_stream_path)
+
+  bool RtpDestination::remove_stream (std::string shmdata_stream_path)
   {
     auto it = source_streams_.find (shmdata_stream_path);
     if (source_streams_.end () == it)
       {
-	g_warning ("RtpDestination: stream not found, cannot remove %s", 
+	g_warning ("RtpDestination: stream not found, cannot remove %s",
 		   shmdata_stream_path.c_str ());
 	return false;
       }
@@ -117,17 +109,17 @@ namespace switcher
     make_json_description ();
     return true;
   }
-  
-  std::string 
-  RtpDestination::get_sdp ()
+
+  std::string RtpDestination::get_sdp ()
   {
     SDPDescription desc;
-    
-    for(auto &it : ports_)
+
+  for (auto & it:ports_)
       {
-	std::string string_caps = (it.second)->get_property ("udpsend_rtp","caps");
+	std::string string_caps =
+	  (it.second)->get_property ("udpsend_rtp", "caps");
 	GstCaps *caps = gst_caps_from_string (string_caps.c_str ());
-	gint port = atoi(it.first.c_str());
+	gint port = atoi (it.first.c_str ());
 	SDPMedia media;
 	media.set_media_info_from_caps (caps);
 	media.set_port (port);
@@ -138,13 +130,10 @@ namespace switcher
 	gst_caps_unref (caps);
       }
 
-    
     return desc.get_string ();
   }
 
-
-  void
-  RtpDestination::make_json_description ()
+  void RtpDestination::make_json_description ()
   {
     json_description_->reset ();
     json_description_->begin_object ();
@@ -152,7 +141,7 @@ namespace switcher
     json_description_->add_string_member ("host_name", host_name_.c_str ());
     json_description_->set_member_name ("data_streams");
     json_description_->begin_array ();
-    for (auto &it : source_streams_)
+  for (auto & it:source_streams_)
       {
 	json_description_->begin_object ();
 	json_description_->add_string_member ("path", it.first.c_str ());
@@ -163,11 +152,9 @@ namespace switcher
     json_description_->end_object ();
   }
 
-  JSONBuilder::Node 
-  RtpDestination::get_json_root_node ()
+  JSONBuilder::Node RtpDestination::get_json_root_node ()
   {
     return json_description_->get_root ();
   }
-
 
 }

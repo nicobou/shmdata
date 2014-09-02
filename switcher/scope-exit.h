@@ -22,31 +22,35 @@
 
 //scope exit implementation from Alexandrescu's talk at NDC 2014
 
-#include <utility> 
+#include <utility>
 
 namespace scope_guard
 {
 
-  template <typename Fun>
-    class ScopeGuard
+  template < typename Fun > class ScopeGuard
+  {
+  public:
+  ScopeGuard (Fun && fun):
+    fun_ (std::move (fun))
     {
-    public:
-      ScopeGuard (Fun &&fun) :
-        fun_ (std::move (fun))
-      {}
-	~ScopeGuard () {fun_ ();}
-    private:
-	Fun fun_;
-    };
+    }
+     ~ScopeGuard ()
+    {
+      fun_ ();
+    }
+  private:
+    Fun fun_;
+  };
 
-  enum class ScopeGuardOnExit {};
-  template <typename Fun>
-    ScopeGuard<Fun>
-    operator+ (ScopeGuardOnExit, Fun &&fn) {
-    return ScopeGuard<Fun> (std::forward<Fun> (fn));
+  enum class ScopeGuardOnExit
+  { };
+  template < typename Fun >
+    ScopeGuard < Fun > operator+ (ScopeGuardOnExit, Fun && fn)
+  {
+    return ScopeGuard < Fun > (std::forward < Fun > (fn));
   }
 
-}// end namespace scope_guard
+}				// end namespace scope_guard
 
 #define CONCATENATE_IMPL(s1, s2) s1##s2
 #define CONCATENATE(s1, s2) CONCATENATE_IMPL(s1, s2)
@@ -56,4 +60,4 @@ namespace scope_guard
   auto CONCATENATE(on_scope_exit_var, __LINE__) \
     = ::scope_guard::ScopeGuardOnExit () + [&]()
 
-#endif  //__SWITCHER_SCOPE_EXIT_H__
+#endif //__SWITCHER_SCOPE_EXIT_H__

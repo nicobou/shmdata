@@ -20,30 +20,34 @@
 #include <json-glib/json-glib.h>
 #include <iostream>
 
-namespace switcher { 
-  namespace data {
-    namespace JSONSerializer {
-      
-      void 
-      on_visiting_node (std::string key, 
-			const Tree::ptr node, 
-			bool is_array_element,
-			JsonBuilder *builder)
+namespace switcher
+{
+  namespace data
+  {
+    namespace JSONSerializer
+    {
+
+      void
+	on_visiting_node (std::string key,
+			  const Tree::ptr node,
+			  bool is_array_element, JsonBuilder * builder)
       {
-	if (!is_array_element) //discarding here to get it as a member called "name"
+	if (!is_array_element)	//discarding here to get it as a member called "name"
 	  json_builder_set_member_name (builder, key.c_str ());
-	
+
 	if (node->is_leaf ())
 	  {
-	    json_builder_add_string_value (builder, Any::to_string (node->get_data ()).c_str ());
+	    json_builder_add_string_value (builder,
+					   Any::to_string (node->get_data ()).
+					   c_str ());
 	    return;
 	  }
 	else
-	  { //adding node value with the key "key_value" along with other childrens
+	  {			//adding node value with the key "key_value" along with other childrens
 	    if (node->is_array ())
 	      {
 		json_builder_begin_array (builder);
-		//json_builder_begin_object (builder);
+//json_builder_begin_object (builder);
 	      }
 	    else
 	      {
@@ -57,17 +61,18 @@ namespace switcher {
 		if (value.not_null ())
 		  {
 		    json_builder_set_member_name (builder, "key_value");
-		    json_builder_add_string_value (builder, Any::to_string (value).c_str ());
+		    json_builder_add_string_value (builder,
+						   Any::to_string (value).
+						   c_str ());
 		  }
 	      }
 	  }
       }
-    
-      void 
-      on_node_visited (std::string, 
-		       const Tree::ptr node, 
-		       bool is_array_element,
-		       JsonBuilder *builder)
+
+      void
+	on_node_visited (std::string,
+			 const Tree::ptr node,
+			 bool is_array_element, JsonBuilder * builder)
       {
 	if (node->is_array ())
 	  {
@@ -79,11 +84,13 @@ namespace switcher {
 	  json_builder_end_object (builder);
       }
 
-      std::string 
-      serialize (const Tree::ptr tree)
+      std::string serialize (const Tree::ptr tree)
       {
 	JsonBuilder *json_builder = json_builder_new ();
-	On_scope_exit { g_object_unref (json_builder);};
+	On_scope_exit
+	{
+	  g_object_unref (json_builder);
+	};
 	json_builder_begin_object (json_builder);
 	preorder_tree_walk (tree,
 			    std::bind (JSONSerializer::on_visiting_node,
@@ -94,19 +101,24 @@ namespace switcher {
 			    std::bind (JSONSerializer::on_node_visited,
 				       std::placeholders::_1,
 				       std::placeholders::_2,
-				       std::placeholders::_3,
-				       json_builder));
+				       std::placeholders::_3, json_builder));
 	json_builder_end_object (json_builder);
 	JsonNode *node = json_builder_get_root (json_builder);
 	if (nullptr == node)
-	  return std::string();
+	  return std::string ();
 	JsonGenerator *generator = json_generator_new ();
-	On_scope_exit {g_object_unref (generator);};
+	On_scope_exit
+	{
+	  g_object_unref (generator);
+	};
 	json_generator_set_pretty (generator, TRUE);
 	json_generator_set_root (generator, node);
 	gsize length = 0;
 	gchar *data = json_generator_to_data (generator, &length);
-	On_scope_exit {g_free (data);};
+	On_scope_exit
+	{
+	  g_free (data);
+	};
 	std::string result (data);
 	return result;
       }
@@ -114,23 +126,22 @@ namespace switcher {
       // Tree::ptr 
       // deserialize (std::string &serialized)
       // {
-     
+
       //   // JsonParser *parser = json_parser_new ();
       //   // GError *error = nullptr;
       //   // json_parser_load_from_data (parser,
-      //   // 				  serialized.c_str (),
-      //   // 				  &error);
+      //   //   serialized.c_str (),
+      //   //   &error);
       //   // if (error != nullptr)
-      //   // 	{
-      //   // 	  g_warning ("%s",error->message);
-      //   // 	  g_object_unref(parser);
-      //   // 	  g_error_free (error);
-      //   // 	  return Tree::ptr ();
-      //   // 	}
+      //   // {
+      //   //   g_warning ("%s",error->message);
+      //   //   g_object_unref(parser);
+      //   //   g_error_free (error);
+      //   //   return Tree::ptr ();
+      //   // }
       //   return tree;
       // }
-    
-    }   //end of "JSONSerializer" namespace
-  }   //end of "data" namespace 
-}   //end of "switcher" namespace
- 
+
+    }				//end of "JSONSerializer" namespace
+  }				//end of "data" namespace 
+}				//end of "switcher" namespace

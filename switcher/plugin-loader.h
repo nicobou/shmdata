@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_PLUGIN_H__
 #define __SWITCHER_PLUGIN_H__
 
@@ -32,35 +31,34 @@ namespace switcher
   class QuiddityDocumentation;
 
   // the types of the class factories for quiddity pluggins
-  typedef switcher::Quiddity *create_t ();
+  typedef switcher::Quiddity * create_t ();
   typedef void destroy_t (switcher::Quiddity *);
   typedef switcher::QuiddityDocumentation get_documentation_t ();
-  
-  
+
   class PluginLoader
   {
   public:
-    typedef std::shared_ptr<PluginLoader> ptr;
-    PluginLoader ();
-    ~PluginLoader ();
-    PluginLoader (const PluginLoader &) = delete;
-    PluginLoader &operator= (const PluginLoader &) = delete;
+    typedef std::shared_ptr < PluginLoader > ptr;
+      PluginLoader ();
+     ~PluginLoader ();
+      PluginLoader (const PluginLoader &) = delete;
+      PluginLoader & operator= (const PluginLoader &) = delete;
 
     bool load (const char *filename);
     bool close ();
-    std::string get_class_name (); 
-    JSONBuilder::Node get_json_root_node ();
+      std::string get_class_name ();
+      JSONBuilder::Node get_json_root_node ();
 
     create_t *create_;
     destroy_t *destroy_;
 
   private:
-    GModule *module_;
-    get_documentation_t *get_documentation_; 
-    JSONBuilder::Node json_doc_;
-    std::string class_name_;
+      GModule * module_;
+    get_documentation_t *get_documentation_;
+      JSONBuilder::Node json_doc_;
+      std::string class_name_;
   };
-  
-}  // end of namespace
 
-#endif // ifndef
+}				// end of namespace
+
+#endif				// ifndef

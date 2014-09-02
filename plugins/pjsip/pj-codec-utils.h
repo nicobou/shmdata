@@ -27,37 +27,41 @@
 
 namespace switcher
 {
-  struct RTPCodec {
-    typedef std::unique_ptr<RTPCodec> ptr;
-    std::string encoding_name_;
+  struct RTPCodec
+  {
+    typedef std::unique_ptr < RTPCodec > ptr;
+      std::string encoding_name_;
     int payload_;
-    std::string media_;
+      std::string media_;
     int clock_rate_;
 
-    RTPCodec () : 
-      encoding_name_ (),
-      payload_ (-1),
-      media_ (),
-      clock_rate_ (-1)
-    {}
+      RTPCodec ():encoding_name_ (),
+      payload_ (-1), media_ (), clock_rate_ (-1)
+    {
+    }
   };
 
+  namespace PJCodecUtils
+  {
+    typedef std::vector < RTPCodec::ptr > codecs;
+    typedef std::vector < RTPCodec::ptr >::iterator codec_it;
 
-  namespace PJCodecUtils {
-    typedef std::vector<RTPCodec::ptr> codecs;
-    typedef std::vector<RTPCodec::ptr>::iterator codec_it;
+      PJCodecUtils::codecs inspect_rtp_codecs ();
+      PJCodecUtils::
+      codecs inspect_rtp_codec_from_gst_element_factory (GstElementFactory *
+							 factory);
+      PJCodecUtils::codecs inspect_rtp_codec_from_gst_caps (GstCaps * caps);
+      PJCodecUtils::codecs inspect_rtp_codec_from_gst_struct (GstStructure *
+							      caps_struct);
 
-    PJCodecUtils::codecs inspect_rtp_codecs ();
-    PJCodecUtils::codecs inspect_rtp_codec_from_gst_element_factory (GstElementFactory *factory);
-    PJCodecUtils::codecs inspect_rtp_codec_from_gst_caps (GstCaps *caps);
-    PJCodecUtils::codecs inspect_rtp_codec_from_gst_struct (GstStructure *caps_struct);
-
-    std::vector<std::string> get_string_values_from_gst_struct (GstStructure *caps_struct,
-								std::string key);
-    std::vector<gint> get_int_values_from_gst_struct (GstStructure *caps_struct,
-						      std::string key);
+      std::vector < std::string >
+      get_string_values_from_gst_struct (GstStructure * caps_struct,
+					 std::string key);
+      std::vector < gint >
+      get_int_values_from_gst_struct (GstStructure * caps_struct,
+				      std::string key);
   }
-  
-}  // end of namespace
 
-#endif // ifndef
+}				// end of namespace
+
+#endif				// ifndef

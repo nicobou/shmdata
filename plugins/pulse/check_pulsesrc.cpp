@@ -33,7 +33,8 @@ main ()
   bool success = true;
 
   {
-    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
+    switcher::QuiddityManager::ptr manager =
+      switcher::QuiddityManager::make_manager ("test_manager");
 
 #ifdef HAVE_CONFIG_H
     gchar *usr_plugin_dir = g_strdup_printf ("./%s", LT_OBJDIR);
@@ -45,17 +46,14 @@ main ()
 
     if (!switcher::QuiddityBasicTest::test_full (manager, "pulsesrc"))
       success = false;
-    
+
     if (!switcher::QuiddityBasicTest::test_full (manager, "pulsesink"))
       success = false;
 
-  }//end of scope is releasing the manager
-  
+  }				//end of scope is releasing the manager
+
   if (success)
     return 0;
   else
     return 1;
 }
-
-
-

@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_SEGMENT_H__
 #define __SWITCHER_SEGMENT_H__
 
@@ -35,24 +34,24 @@ namespace switcher
 {
   class Quiddity;
 
-  class Segment : public CounterMap 
-  /*inherit from CounterMap for sharing counters between multiple DecodebinToShmdata*/
+  class Segment:public CounterMap
+    /*inherit from CounterMap for sharing counters between multiple DecodebinToShmdata */
   {
   public:
-    typedef std::shared_ptr<Segment> ptr;
-    using OnConnect = std::function<bool(std::string)>;
-    using OnDisconnect = std::function<bool(std::string)>;
-    using OnDisconnectAll = std::function<bool()>;
-    using CanSinkCaps = std::function<bool(std::string)>;
+    typedef std::shared_ptr < Segment > ptr;
+    using OnConnect = std::function < bool (std::string) >;
+    using OnDisconnect = std::function < bool (std::string) >;
+    using OnDisconnectAll = std::function < bool () >;
+    using CanSinkCaps = std::function < bool (std::string) >;
 
-    Segment ();
-    virtual ~Segment ();
-    Segment (const Segment &) = delete;
-    Segment &operator= (const Segment&) = delete;
-    bool init_segment (Quiddity *quid);
+      Segment ();
+      virtual ~ Segment ();
+      Segment (const Segment &) = delete;
+      Segment & operator= (const Segment &) = delete;
+    bool init_segment (Quiddity * quid);
 
   protected:
-    bool register_shmdata (ShmdataWriter::ptr writer);
+      bool register_shmdata (ShmdataWriter::ptr writer);
     bool register_shmdata (ShmdataAnyWriter::ptr writer);
     bool register_shmdata (ShmdataReader::ptr reader);
     bool register_shmdata (ShmdataAnyReader::ptr reader);
@@ -63,31 +62,52 @@ namespace switcher
 				 OnDisconnectAll on_disconnect_all_cb,
 				 CanSinkCaps on_can_sink_caps_cb,
 				 uint max_reader);
-      
+
   private:
-    Quiddity *quid_ {nullptr};
-    std::unordered_map <std::string, ShmdataAnyWriter::ptr> shmdata_any_writers_;
-    std::unordered_map <std::string, ShmdataAnyReader::ptr> shmdata_any_readers_;
-    std::unordered_map <std::string, ShmdataWriter::ptr> shmdata_writers_;
-    std::unordered_map <std::string, ShmdataReader::ptr> shmdata_readers_;
-    
+      Quiddity * quid_
+    {
+    nullptr};
+      std::unordered_map < std::string,
+      ShmdataAnyWriter::ptr > shmdata_any_writers_;
+      std::unordered_map < std::string,
+      ShmdataAnyReader::ptr > shmdata_any_readers_;
+      std::unordered_map < std::string, ShmdataWriter::ptr > shmdata_writers_;
+      std::unordered_map < std::string, ShmdataReader::ptr > shmdata_readers_;
+
     //reader methods to install by a subclass
-    OnConnect on_connect_cb_ {nullptr};
-    OnDisconnect on_disconnect_cb_ {nullptr};
-    OnDisconnectAll on_disconnect_all_cb_ {nullptr};
-    CanSinkCaps on_can_sink_caps_cb_ {nullptr};
+    OnConnect on_connect_cb_
+    {
+    nullptr};
+    OnDisconnect on_disconnect_cb_
+    {
+    nullptr};
+    OnDisconnectAll on_disconnect_all_cb_
+    {
+    nullptr};
+    CanSinkCaps on_can_sink_caps_cb_
+    {
+    nullptr};
     static gboolean connect_wrapped (gpointer path, gpointer user_data);
     static gboolean disconnect_wrapped (gpointer path, gpointer user_data);
-    static gboolean disconnect_all_wrapped (gpointer /*unused*/, gpointer user_data);
+    static gboolean disconnect_all_wrapped (gpointer /*unused */ ,
+					    gpointer user_data);
     static gboolean can_sink_caps_wrapped (gpointer caps, gpointer user_data);
 
     //JSON
-    JSONBuilder::ptr shmdata_writers_description_;
-    std::mutex writers_mutex_ {}; //protecting from parallel registers
-    std::string writers_string_ {};
+      JSONBuilder::ptr shmdata_writers_description_;
+      std::mutex writers_mutex_
+    {
+    };				//protecting from parallel registers
+    std::string writers_string_
+    {
+    };
     JSONBuilder::ptr shmdata_readers_description_;
-    std::mutex readers_mutex_ {}; //protecting from parallel registers
-    std::string readers_string_ {};
+    std::mutex readers_mutex_
+    {
+    };				//protecting from parallel registers
+    std::string readers_string_
+    {
+    };
     CustomPropertyHelper::ptr segment_custom_props_;
     GParamSpec *json_writers_description_;
     GParamSpec *json_readers_description_;
@@ -98,6 +118,6 @@ namespace switcher
 
     void populate_tree (std::string key, std::string caps);
   };
-}  // end of namespace
+}				// end of namespace
 
 #endif // ifndef

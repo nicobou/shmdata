@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_QUIDDITY_MANAGER_TRANSLATOR_H__
 #define __SWITCHER_QUIDDITY_MANAGER_TRANSLATOR_H__
 
@@ -28,15 +27,15 @@ namespace switcher
 {
   class QuiddityManager;
 
-  class QuiddityManagerWrapper : public Quiddity
+  class QuiddityManagerWrapper:public Quiddity
   {
   public:
-    typedef std::shared_ptr<QuiddityManagerWrapper> ptr;
-    void set_quiddity_manager (std::shared_ptr<QuiddityManager> manager);
+    typedef std::shared_ptr < QuiddityManagerWrapper > ptr;
+    void set_quiddity_manager (std::shared_ptr < QuiddityManager > manager);
   protected:
-    std::weak_ptr<QuiddityManager> manager_;
+      std::weak_ptr < QuiddityManager > manager_;
   };
 
-}  // end of namespace
+}				// end of namespace
 
-#endif // ifndef
+#endif				// ifndef

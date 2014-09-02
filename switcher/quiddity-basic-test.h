@@ -20,25 +20,24 @@
 #ifndef __SWITCHER_QUIDDITY_BASIC_TEST_H__
 #define __SWITCHER_QUIDDITY_BASIC_TEST_H__
 
-
-namespace switcher 
+namespace switcher
 {
-  
+
   class QuiddityBasicTest
   {
   public:
-    static bool test_full (QuiddityManager::ptr manager, 
+    static bool test_full (QuiddityManager::ptr manager,
 			   std::string quiddity_class_name);
-    static bool test_get_info (QuiddityManager::ptr manager, 
+    static bool test_get_info (QuiddityManager::ptr manager,
 			       std::string quiddity_class_name);
-    static bool test_create (QuiddityManager::ptr manager, 
+    static bool test_create (QuiddityManager::ptr manager,
 			     std::string quiddity_class_name);
-    static bool test_description_by_class (QuiddityManager::ptr manager, 
+    static bool test_description_by_class (QuiddityManager::ptr manager,
 					   std::string quiddity_class_name);
-    static bool test_startable (QuiddityManager::ptr manager, 
+    static bool test_startable (QuiddityManager::ptr manager,
 				std::string quiddity_class_name);
   };
-  
+
 }
 
-#endif // ifndef
+#endif				// ifndef

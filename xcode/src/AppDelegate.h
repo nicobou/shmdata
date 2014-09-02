@@ -9,13 +9,15 @@
 #import <Cocoa/Cocoa.h>
 #import <Foundation/NSFileHandle.h>
 
-@interface AppDelegate : NSObject <NSApplicationDelegate>
+@ interface AppDelegate:NSObject < NSApplicationDelegate >
 {
-    NSPipe *pipe;
-    NSFileHandle *pipeReadHandle;
-    IBOutlet NSTextView *textView;
+  NSPipe *pipe;
+  NSFileHandle *pipeReadHandle;
+  IBOutlet NSTextView *textView;
 }
 
-@property (assign) IBOutlet NSWindow *window;
+@property (assign)
+     IBOutlet NSWindow *
+       window;
 
 @end

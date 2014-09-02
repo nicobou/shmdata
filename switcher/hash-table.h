@@ -32,34 +32,32 @@
 namespace switcher
 {
 
-  template <class T>
-    class HashTable
-    {
-    public:
-      typedef std::shared_ptr< HashTable<T> > ptr;
-      
-      HashTable ();
-      ~HashTable ();
-      
-      void insert (const std::string key, T *value);
-      bool remove (const std::string key);
-      bool contains (const std::string key);
-      unsigned int size ();
-      T *lookup (const std::string key);
-      std::vector<std::string> get_keys ();
-      std::vector<T *> get_values ();
-      void for_each (GHFunc function, void *user_data);
-      
-    private:
-      GHashTable *table_;
-      //FIX ME this is used only to keep ref count of shared pointer 
-      //std::map<std::string, T> keep_ref_count_;
-    };
+  template < class T > class HashTable
+  {
+  public:
+    typedef std::shared_ptr < HashTable < T > >ptr;
 
-} // end of namespace
+      HashTable ();
+     ~HashTable ();
+
+    void insert (const std::string key, T * value);
+    bool remove (const std::string key);
+    bool contains (const std::string key);
+    unsigned int size ();
+    T *lookup (const std::string key);
+      std::vector < std::string > get_keys ();
+      std::vector < T * >get_values ();
+    void for_each (GHFunc function, void *user_data);
+
+  private:
+      GHashTable * table_;
+    //FIX ME this is used only to keep ref count of shared pointer 
+    //std::map<std::string, T> keep_ref_count_;
+  };
+
+}				// end of namespace
 
   //including the actual code here
 #include "hash-table_spec.h"
-
 
 #endif // ifndef

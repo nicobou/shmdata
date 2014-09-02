@@ -23,10 +23,10 @@ namespace switcher
 {
 
   void
-  QuiddityManagerWrapper::set_quiddity_manager (std::shared_ptr<QuiddityManager> manager)
+    QuiddityManagerWrapper::set_quiddity_manager (std::shared_ptr <
+						  QuiddityManager > manager)
   {
     manager_ = manager;
   }
 
-}//end of class
-
+}				//end of class

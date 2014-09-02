@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_XVIMAGESINK_H__
 #define __SWITCHER_XVIMAGESINK_H__
 
@@ -28,25 +27,25 @@
 namespace switcher
 {
 
-  class Xvimagesink : public SinglePadGstSink
+  class Xvimagesink:public SinglePadGstSink
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Xvimagesink);
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (Xvimagesink);
     Xvimagesink ();
     ~Xvimagesink ();
     Xvimagesink (const Xvimagesink &) = delete;
-    Xvimagesink &operator= (const Xvimagesink &) = delete;
+      Xvimagesink & operator= (const Xvimagesink &) = delete;
 
   private:
-    GstElement *sink_bin_;
+      GstElement * sink_bin_;
     GstElement *queue_;
     GstElement *ffmpegcolorspace_;
     GstElement *xvimagesink_;
-    QuiddityCommand *on_error_command_; //for the pipeline error handler
+    QuiddityCommand *on_error_command_;	//for the pipeline error handler
     bool init_gpipe () final;
     bool can_sink_caps (std::string caps) final;
   };
 
-}  // end of namespace
+}				// end of namespace
 
-#endif // ifndef
+#endif				// ifndef

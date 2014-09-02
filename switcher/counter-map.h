@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_COUNTER_MAP_H__
 #define __SWITCHER_COUNTER_MAP_H__
 
@@ -31,7 +30,7 @@
  *
  * users should inherit from this class
  *
-**/  
+**/
 
 namespace switcher
 {
@@ -40,17 +39,17 @@ namespace switcher
   {
   public:
     CounterMap ();
-    virtual ~CounterMap ();
+    virtual ~ CounterMap ();
 
   protected:
-    uint get_count (const std::string &key);
+    uint get_count (const std::string & key);
     void reset_counter_map ();
 
   private:
-    std::map<std::string, uint> counters_;
-    std::mutex mutex_;
- };
+      std::map < std::string, uint > counters_;
+      std::mutex mutex_;
+  };
 
-}  // end of namespace
+}				// end of namespace
 
-#endif // ifndef
+#endif				// ifndef

@@ -32,23 +32,23 @@
 
 namespace switcher
 {
-  class ShmdataToOsc : public Quiddity, public Segment, public StartableQuiddity
+  class ShmdataToOsc:public Quiddity, public Segment, public StartableQuiddity
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToOsc);
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (ShmdataToOsc);
     ShmdataToOsc ();
     ~ShmdataToOsc ();
     ShmdataToOsc (const ShmdataToOsc &) = delete;
-    ShmdataToOsc &operator=  (const ShmdataToOsc &) = delete;
+      ShmdataToOsc & operator= (const ShmdataToOsc &) = delete;
 
   private:
-    CustomPropertyHelper::ptr custom_props_; 
+      CustomPropertyHelper::ptr custom_props_;
     gint port_;
-    std::string host_;
+      std::string host_;
     GParamSpec *port_spec_;
     GParamSpec *host_spec_;
     lo_address address_;
-    std::mutex address_mutex_;
+      std::mutex address_mutex_;
 
     bool init () final;
     bool start () final;
@@ -61,17 +61,16 @@ namespace switcher
     void on_shmreader_data (void *data,
 			    int data_size,
 			    unsigned long long timestamp,
-			    const char *type_description, 
-			    void *user_data);
-    
+			    const char *type_description, void *user_data);
+
     static void set_port (const gint value, void *user_data);
     static gint get_port (void *user_data);
-    static void set_host (const gchar *value, void *user_data);
+    static void set_host (const gchar * value, void *user_data);
     static const gchar *get_host (void *user_data);
   };
 
-  SWITCHER_DECLARE_PLUGIN(ShmdataToOsc);
+    SWITCHER_DECLARE_PLUGIN (ShmdataToOsc);
 
-}  // end of namespace
+}				// end of namespace
 
-#endif // ifndef
+#endif				// ifndef

@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_AUDIO_TEST_SOURCE_H__
 #define __SWITCHER_AUDIO_TEST_SOURCE_H__
 
@@ -28,24 +27,24 @@
 namespace switcher
 {
 
-  class AudioTestSource : public AudioSource, public StartableQuiddity
+  class AudioTestSource:public AudioSource, public StartableQuiddity
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AudioTestSource);
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (AudioTestSource);
     AudioTestSource ();
     ~AudioTestSource ();
     AudioTestSource (const AudioTestSource &) = delete;
-    AudioTestSource &operator= (const AudioTestSource &) = delete;
+      AudioTestSource & operator= (const AudioTestSource &) = delete;
 
     bool start ();
     bool stop ();
-    
-  private: 
-   GstElement *audiotestsrc_;
-   bool make_audiotestsrc ();
-   bool init_gpipe () final;
+
+  private:
+      GstElement * audiotestsrc_;
+    bool make_audiotestsrc ();
+    bool init_gpipe () final;
   };
 
-}  // end of namespace
+}				// end of namespace
 
-#endif // ifndef
+#endif				// ifndef

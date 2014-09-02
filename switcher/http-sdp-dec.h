@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_HTTP_SDP_DEC_H__
 #define __SWITCHER_HTTP_SDP_DEC_H__
 
@@ -31,39 +30,36 @@
 namespace switcher
 {
 
-  class HTTPSDPDec : public GPipe
+  class HTTPSDPDec:public GPipe
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (HTTPSDPDec);
     HTTPSDPDec ();
     ~HTTPSDPDec ();
     HTTPSDPDec (const HTTPSDPDec &) = delete;
-    HTTPSDPDec &operator= (const HTTPSDPDec &) = delete;
+      HTTPSDPDec & operator= (const HTTPSDPDec &) = delete;
 
     bool to_shmdata (std::string uri);
 
-  private: 
-   GstElement *souphttpsrc_;
-   GstElement *sdpdemux_;
-   void init_httpsdpdec ();
-   void destroy_httpsdpdec ();
-   QuiddityCommand *on_error_command_; //for the pipeline error handler
-   std::list<std::unique_ptr<DecodebinToShmdata>> decodebins_;
-   void clean_on_error_command ();
-   bool init_gpipe () final;
-   static void httpsdpdec_pad_added_cb (GstElement* object, 
-					GstPad* pad, 
-					gpointer user_data);
-   static gboolean to_shmdata_wrapped (gpointer uri, 
-				       gpointer user_data);
-   static void source_setup_cb (GstElement *httpsdpdec, 
-				GstElement *source, 
-				gpointer user_data);
-   static void on_new_element_in_sdpdemux (GstBin     *bin,
-                                           GstElement *element,
-					   gpointer    user_data);
+  private:
+      GstElement * souphttpsrc_;
+    GstElement *sdpdemux_;
+    void init_httpsdpdec ();
+    void destroy_httpsdpdec ();
+    QuiddityCommand *on_error_command_;	//for the pipeline error handler
+      std::list < std::unique_ptr < DecodebinToShmdata >> decodebins_;
+    void clean_on_error_command ();
+    bool init_gpipe () final;
+    static void httpsdpdec_pad_added_cb (GstElement * object,
+					 GstPad * pad, gpointer user_data);
+    static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);
+    static void source_setup_cb (GstElement * httpsdpdec,
+				 GstElement * source, gpointer user_data);
+    static void on_new_element_in_sdpdemux (GstBin * bin,
+					    GstElement * element,
+					    gpointer user_data);
   };
 
-}  // end of namespace
+}				// end of namespace
 
-#endif // ifndef
+#endif				// ifndef

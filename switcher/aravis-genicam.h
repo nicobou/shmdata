@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_ARAVIS_GENICAM_H__
 #define __SWITCHER_ARAVIS_GENICAM_H__
 
@@ -30,21 +29,21 @@
 namespace switcher
 {
 
-  class AravisGenicam : public GPipe, public GstElementCleaner
+  class AravisGenicam:public GPipe, public GstElementCleaner
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AravisGenicam);
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (AravisGenicam);
     AravisGenicam ();
     AravisGenicam (const AravisGenicam &) = delete;
-    AravisGenicam &operator= (const AravisGenicam &) = delete;
+      AravisGenicam & operator= (const AravisGenicam &) = delete;
 
     bool start (std::string name);
   private:
-    GstElement *aravissrc_;
+      GstElement * aravissrc_;
     bool init_gpipe () final;
     static gboolean start_wrapped (gpointer name, gpointer user_data);
   };
 
-}  // end of namespace
+}				// end of namespace
 
-#endif // ifndef
+#endif				// ifndef

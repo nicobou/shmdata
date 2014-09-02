@@ -24,41 +24,38 @@
 #ifndef __SWITCHER_ABSTRACT_FACTORY_H__
 #define __SWITCHER_ABSTRACT_FACTORY_H__
 
-
 #include <vector>
 #include <map>
 #include "creator.h"
 
-namespace switcher 
+namespace switcher
 {
 
-  template <class T, class Key, class Doc>
-    class AbstractFactory
+  template < class T, class Key, class Doc > class AbstractFactory
   {
   public:
-    template <class U> void register_class (Key Id, Doc doc);
-    AbstractFactory();
-    ~AbstractFactory();
-   
-    void register_class_with_custom_factory (Key Id, 
+    template < class U > void register_class (Key Id, Doc doc);
+      AbstractFactory ();
+     ~AbstractFactory ();
+
+    void register_class_with_custom_factory (Key Id,
 					     Doc doc,
 					     T * (*custom_create) (),
 					     void (*custom_destroy) (T *));
     bool unregister_class (Key Id);
-    std::vector<Key> get_keys ();
-    std::vector<Doc> get_classes_documentation ();
+      std::vector < Key > get_keys ();
+      std::vector < Doc > get_classes_documentation ();
     Doc get_class_documentation (Key Id);
-    std::shared_ptr<T> create(Key Id);
+      std::shared_ptr < T > create (Key Id);
     bool key_exists (Key Id);
 
   private:
-    std::map<Key, Creator<T>*> constructor_map_;
-    std::map<Key, void (*) (T *)> destructor_map_;
-    std::map<Key, Doc> classes_documentation_;
+      std::map < Key, Creator < T > *>constructor_map_;
+      std::map < Key, void (*) (T *) > destructor_map_;
+      std::map < Key, Doc > classes_documentation_;
   };
-  
-  
-} // end of namespace
+
+}				// end of namespace
 
 #include "abstract-factory_spec.h"
 

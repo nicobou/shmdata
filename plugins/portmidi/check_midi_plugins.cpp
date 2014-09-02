@@ -33,7 +33,8 @@ main ()
   bool success = true;
 
   {
-    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
+    switcher::QuiddityManager::ptr manager =
+      switcher::QuiddityManager::make_manager ("test_manager");
 
 #ifdef HAVE_CONFIG_H
     gchar *usr_plugin_dir = g_strdup_printf ("./%s", LT_OBJDIR);
@@ -42,13 +43,13 @@ main ()
 #else
     return 1;
 #endif
-    
-    if (manager->create ("midisrc","src").compare ("src") == 0)
+
+    if (manager->create ("midisrc", "src").compare ("src") == 0)
       manager->remove ("src");
     else
       success = false;
-    
-    if (manager->create ("midisrc","sink").compare ("sink") == 0)
+
+    if (manager->create ("midisrc", "sink").compare ("sink") == 0)
       manager->remove ("sink");
     else
       success = false;
@@ -58,14 +59,11 @@ main ()
 
     if (!switcher::QuiddityBasicTest::test_full (manager, "midisink"))
       success = false;
-    
-  }//end of scope is releasing the manager
-  
+
+  }				//end of scope is releasing the manager
+
   if (success)
     return 0;
   else
     return 1;
 }
-
-
-

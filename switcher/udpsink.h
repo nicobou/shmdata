@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_UDPSINK_H__
 #define __SWITCHER_UDPSINK_H__
 
@@ -28,49 +27,46 @@
 namespace switcher
 {
 
-  class UDPSink : public SinglePadGstSink
+  class UDPSink:public SinglePadGstSink
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(UDPSink);
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (UDPSink);
     UDPSink ();
     ~UDPSink ();
     UDPSink (const UDPSink &) = delete;
-    UDPSink &operator= (const UDPSink &) = delete;
+      UDPSink & operator= (const UDPSink &) = delete;
 
   private:
-    GstElement *udpsink_;
+      GstElement * udpsink_;
     GstElement *udpsink_bin_;
     GstElement *typefind_;
     GstPad *ghost_sinkpad_;
-    
+
     bool init_gpipe () final;
-    bool can_sink_caps (std::string) final  {return true;};
+    bool can_sink_caps (std::string) final
+    {
+      return true;
+    };
 
     //client management
-    bool remove_client (gchar *host, gint port);
-    bool add_client (gchar *host, gint port);
+    bool remove_client (gchar * host, gint port);
+    bool add_client (gchar * host, gint port);
     bool clear_clients ();
-    static gboolean remove_client_wrapped (gpointer host, 
-					   gint port, 
-					   gpointer user_data);
-    static gboolean add_client_wrapped (gpointer host, 
-					gint port, 
-					gpointer user_data);
-    static gboolean clear_wrapped (gpointer unused, 
-				   gpointer user_data);
-    static void on_client_added (GstElement *multiudpsink, 
-				 gchar *host, 
-				 gint port, 
-				 gpointer user_data);
-    static void on_client_removed (GstElement *multiudpsink, 
-				   gchar *host, 
-				   gint port, 
-				   gpointer user_data);
-    static void add_elements_to_bin (ShmdataReader *caller, 
+    static gboolean remove_client_wrapped (gpointer host,
+					   gint port, gpointer user_data);
+    static gboolean add_client_wrapped (gpointer host,
+					gint port, gpointer user_data);
+    static gboolean clear_wrapped (gpointer unused, gpointer user_data);
+    static void on_client_added (GstElement * multiudpsink,
+				 gchar * host, gint port, gpointer user_data);
+    static void on_client_removed (GstElement * multiudpsink,
+				   gchar * host,
+				   gint port, gpointer user_data);
+    static void add_elements_to_bin (ShmdataReader * caller,
 				     void *udpbin_instance);
 
   };
 
-}  // end of namespace
+}				// end of namespace
 
 #endif // ifndef

@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_GST_PARSE_TO_BIN_SRC_H__
 #define __SWITCHER_GST_PARSE_TO_BIN_SRC_H__
 
@@ -30,30 +29,31 @@
 namespace switcher
 {
 
-  class GstParseToBinSrc : public GPipe, StartableQuiddity
+  class GstParseToBinSrc:public GPipe, StartableQuiddity
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstParseToBinSrc);
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (GstParseToBinSrc);
     GstParseToBinSrc ();
     ~GstParseToBinSrc ();
     GstParseToBinSrc (const GstParseToBinSrc &) = delete;
-    GstParseToBinSrc &operator= (const GstParseToBinSrc &) = delete;
+      GstParseToBinSrc & operator= (const GstParseToBinSrc &) = delete;
 
     bool start ();
     bool stop ();
 
   private:
-    GstElement *gst_parse_to_bin_src_;
-    CustomPropertyHelper::ptr custom_props_; 
+      GstElement * gst_parse_to_bin_src_;
+      CustomPropertyHelper::ptr custom_props_;
     GParamSpec *gst_launch_pipeline_spec_;
     gchar *gst_launch_pipeline_;
     bool clean ();
     bool to_shmdata ();
     bool init_gpipe () final;
-    static void set_gst_launch_pipeline (const gchar *value, void *user_data);
+    static void set_gst_launch_pipeline (const gchar * value,
+					 void *user_data);
     static const gchar *get_gst_launch_pipeline (void *user_data);
   };
 
-}  // end of namespace
+}				// end of namespace
 
-#endif // ifndef
+#endif				// ifndef

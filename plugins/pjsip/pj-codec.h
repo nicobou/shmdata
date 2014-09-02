@@ -39,48 +39,50 @@ namespace switcher
     PJCodec () = delete;
     ~PJCodec () = delete;
     PJCodec (const PJCodec &) = delete;
-    PJCodec &operator= (const PJCodec &) = delete;
+      PJCodec & operator= (const PJCodec &) = delete;
 
     static pj_status_t install_codecs ();
 
   private:
     typedef struct alt_codec
     {
-      pj_str_t   encoding_name;
+      pj_str_t encoding_name;
       pj_uint8_t payload_type;
-      unsigned   clock_rate;
-      unsigned   channel_cnt;
-      unsigned   frm_ptime;
-      unsigned   avg_bps;
-      unsigned   max_bps;
+      unsigned clock_rate;
+      unsigned channel_cnt;
+      unsigned frm_ptime;
+      unsigned avg_bps;
+      unsigned max_bps;
     } alt_codec_t;
-   
+
     typedef struct alt_codec_factory
     {
       pjmedia_codec_factory base;
     } alt_codec_factory_t;
-    
+
   private:
-    
+
     static alt_codec_t codec_list[];
     static alt_codec_factory_t alt_codec_factory;
     static pjmedia_codec_factory_op alt_codec_factory_op;
-    static pj_status_t alt_codec_test_alloc( pjmedia_codec_factory *factory,
-					     const pjmedia_codec_info *id );
-    static pj_status_t alt_codec_default_attr( pjmedia_codec_factory *factory,
-					       const pjmedia_codec_info *id,
-					       pjmedia_codec_param *attr );
-    static pj_status_t alt_codec_enum_codecs(pjmedia_codec_factory *factory,
-					     unsigned *count,
-					     pjmedia_codec_info codecs[]);
-    static pj_status_t alt_codec_alloc_codec(pjmedia_codec_factory *factory,
-					     const pjmedia_codec_info *id,
-					     pjmedia_codec **p_codec);
-    static pj_status_t alt_codec_dealloc_codec( pjmedia_codec_factory *factory,
-						pjmedia_codec *codec );
-    static pj_status_t alt_codec_deinit(void);
+    static pj_status_t alt_codec_test_alloc (pjmedia_codec_factory * factory,
+					     const pjmedia_codec_info * id);
+    static pj_status_t alt_codec_default_attr (pjmedia_codec_factory *
+					       factory,
+					       const pjmedia_codec_info * id,
+					       pjmedia_codec_param * attr);
+    static pj_status_t alt_codec_enum_codecs (pjmedia_codec_factory * factory,
+					      unsigned *count,
+					      pjmedia_codec_info codecs[]);
+    static pj_status_t alt_codec_alloc_codec (pjmedia_codec_factory * factory,
+					      const pjmedia_codec_info * id,
+					      pjmedia_codec ** p_codec);
+    static pj_status_t alt_codec_dealloc_codec (pjmedia_codec_factory *
+						factory,
+						pjmedia_codec * codec);
+    static pj_status_t alt_codec_deinit (void);
   };
-  
-}  // end of namespace
 
-#endif // ifndef
+}				// end of namespace
+
+#endif				// ifndef

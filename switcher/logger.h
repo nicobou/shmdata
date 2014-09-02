@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_LOGGER_H__
 #define __SWITCHER_LOGGER_H__
 
@@ -30,34 +29,34 @@
 namespace switcher
 {
 
-  class Logger : public Quiddity
+  class Logger:public Quiddity
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Logger);
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (Logger);
     Logger ();
     ~Logger ();
     Logger (const Logger &) = delete;
-    Logger &operator= (const Logger &) = delete;
+      Logger & operator= (const Logger &) = delete;
     bool init ();
 
   private:
     static bool installed_;
     bool i_am_the_one_;
-    std::string last_line_;
+      std::string last_line_;
     bool mute_;
     bool debug_;
     bool verbose_;
-    std::unordered_map <std::string, guint> handler_ids_;
+      std::unordered_map < std::string, guint > handler_ids_;
     //custom properties 
-    CustomPropertyHelper::ptr custom_props_;
+      CustomPropertyHelper::ptr custom_props_;
     GParamSpec *last_line_prop_;
     GParamSpec *mute_prop_;
     GParamSpec *debug_prop_;
     GParamSpec *verbose_prop_;
-    std::mutex last_line_mutex_;
+      std::mutex last_line_mutex_;
     void replace_last_line (std::string next_line);
-    gboolean install_log_handler (const gchar *log_domain);
-    gboolean remove_log_handler (const gchar *log_domain);
+    gboolean install_log_handler (const gchar * log_domain);
+    gboolean remove_log_handler (const gchar * log_domain);
     static const gchar *get_last_line (void *user_data);
     static gboolean get_mute (void *user_data);
     static void set_mute (gboolean mute, void *user_data);
@@ -65,18 +64,18 @@ namespace switcher
     static void set_debug (gboolean debug, void *user_data);
     static gboolean get_verbose (void *user_data);
     static void set_verbose (gboolean verbose, void *user_data);
-    static gboolean install_log_handler_wrapped (gpointer log_domain, gpointer user_data);
-    static gboolean remove_log_handler_wrapped (gpointer log_domain, gpointer user_data);
-    static void log_handler (const gchar *log_domain, 
-			     GLogLevelFlags log_level,
-			     const gchar *message,
+    static gboolean install_log_handler_wrapped (gpointer log_domain,
+						 gpointer user_data);
+    static gboolean remove_log_handler_wrapped (gpointer log_domain,
+						gpointer user_data);
+    static void log_handler (const gchar * log_domain,
+			     GLogLevelFlags log_level, const gchar * message,
 			     gpointer user_data);
-    static void quiet_log_handler (const gchar *log_domain, 
+    static void quiet_log_handler (const gchar * log_domain,
 				   GLogLevelFlags log_level,
-				   const gchar *message,
-				   gpointer user_data);
+				   const gchar * message, gpointer user_data);
   };
-  
-}  // end of namespace
 
-#endif // ifndef
+}				// end of namespace
+
+#endif				// ifndef

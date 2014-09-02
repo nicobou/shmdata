@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_CLOCK_H__
 #define __SWITCHER_CLOCK_H__
 
@@ -26,27 +25,25 @@
 namespace switcher
 {
 
-  template <typename Clock_type = std::chrono::system_clock>
+  template < typename Clock_type = std::chrono::system_clock >
     class CumulativeClock
+  {
+  public:
+  CumulativeClock ():
+    start_ (Clock_type::now ())
     {
-    public:
-      CumulativeClock () :
-      start_ (Clock_type::now ())
-	{}
-      
-    template <typename Count_type = unsigned long long, typename Resolution = std::nano>
-    Count_type
-    get_count ()
-    {
-      std::chrono::time_point<Clock_type> now = Clock_type::now();
-      std::chrono::duration<Count_type, Resolution> clock = now - start_;
+    }
+
+    template < typename Count_type = unsigned long long, typename Resolution =
+      std::nano > Count_type get_count (){
+      std::chrono::time_point < Clock_type > now = Clock_type::now ();
+      std::chrono::duration < Count_type, Resolution > clock = now - start_;
       return clock.count ();
     }
-    
-    private:
-      std::chrono::time_point<Clock_type> start_;
-    };
 
-}  // end of namespace
+  private:
+    std::chrono::time_point < Clock_type > start_;
+  };
+
+}				// end of namespace
 #endif // ifndef
-  

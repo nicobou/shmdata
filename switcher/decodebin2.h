@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_DECODEBIN2_H__
 #define __SWITCHER_DECODEBIN2_H__
 
@@ -29,24 +28,28 @@
 namespace switcher
 {
 
-  class Decodebin2 : public SinglePadGstSink
+  class Decodebin2:public SinglePadGstSink
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Decodebin2);
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (Decodebin2);
     Decodebin2 ();
     Decodebin2 (const Decodebin2 &) = delete;
-    Decodebin2 &operator= (const Decodebin2 &) = delete;
+      Decodebin2 & operator= (const Decodebin2 &) = delete;
 
-  private: 
-   std::unique_ptr<DecodebinToShmdata> decodebin_;
-   std::map<std::string, int> media_counters_;
+  private:
+      std::unique_ptr < DecodebinToShmdata > decodebin_;
+      std::map < std::string, int >media_counters_;
 
-   bool init_gpipe () final;
-   bool can_sink_caps (std::string caps) final {return true;};
+    bool init_gpipe () final;
+    bool can_sink_caps (std::string caps) final
+    {
+      return true;
+    };
 
-   static void make_decodebin_active (ShmdataReader *caller, void *decodebin2_instance);
+    static void make_decodebin_active (ShmdataReader * caller,
+				       void *decodebin2_instance);
   };
 
-}  // end of namespace
+}				// end of namespace
 
 #endif // ifndef

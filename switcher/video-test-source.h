@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_VIDEO_TEST_SOURCE_H__
 #define __SWITCHER_VIDEO_TEST_SOURCE_H__
 
@@ -27,23 +26,23 @@
 namespace switcher
 {
 
-  class VideoTestSource : public VideoSource
+  class VideoTestSource:public VideoSource
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VideoTestSource);
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (VideoTestSource);
     VideoTestSource ();
     ~VideoTestSource ();
     VideoTestSource (const VideoTestSource &) = delete;
-    VideoTestSource &operator= (const VideoTestSource &) = delete;
+      VideoTestSource & operator= (const VideoTestSource &) = delete;
 
   private:
-    GstElement *videotestsrc_;
-    bool make_video_source (GstElement **new_element);
-    bool on_start (); 
-    bool on_stop (); 
+      GstElement * videotestsrc_;
+    bool make_video_source (GstElement ** new_element);
+    bool on_start ();
+    bool on_stop ();
     bool init_gpipe () final;
   };
 
-}  // end of namespace
+}				// end of namespace
 
-#endif // ifndef
+#endif				// ifndef

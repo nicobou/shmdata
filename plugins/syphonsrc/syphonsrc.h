@@ -32,24 +32,24 @@
 
 namespace switcher
 {
-  class SyphonSrc : public Quiddity, public Segment, public StartableQuiddity
+  class SyphonSrc:public Quiddity, public Segment, public StartableQuiddity
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SyphonSrc);
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (SyphonSrc);
     SyphonSrc ();
     ~SyphonSrc ();
     SyphonSrc (const SyphonSrc &) = delete;
-    SyphonSrc &operator= (const SyphonSrc &) = delete;
+      SyphonSrc & operator= (const SyphonSrc &) = delete;
 
   private:
-    std::shared_ptr<SyphonReader> reader_;
-    ShmdataAnyWriter::ptr writer_;
+      std::shared_ptr < SyphonReader > reader_;
+      ShmdataAnyWriter::ptr writer_;
 
-    CustomPropertyHelper::ptr custom_props_;
-    std::string syphon_servername_;
-    GParamSpec* syphon_servername_prop_;
-    std::string syphon_appname_;
-    GParamSpec* syphon_appname_prop_;
+      CustomPropertyHelper::ptr custom_props_;
+      std::string syphon_servername_;
+    GParamSpec *syphon_servername_prop_;
+      std::string syphon_appname_;
+    GParamSpec *syphon_appname_prop_;
 
     int width_, height_;
 
@@ -57,16 +57,16 @@ namespace switcher
     bool start () final;
     bool stop () final;
 
-    static void frameCallback(void*, const char*, int&, int&);
+    static void frameCallback (void *, const char *, int &, int &);
 
-    static const gchar* get_servername(void* user_data);
-    static void set_servername(const gchar* name, void* user_data);
-    static const gchar* get_appname(void* user_data);
-    static void set_appname(const gchar* name, void* user_data);
+    static const gchar *get_servername (void *user_data);
+    static void set_servername (const gchar * name, void *user_data);
+    static const gchar *get_appname (void *user_data);
+    static void set_appname (const gchar * name, void *user_data);
   };
-  
-  SWITCHER_DECLARE_PLUGIN(SyphonSrc);
 
-}  // end of namespace
+    SWITCHER_DECLARE_PLUGIN (SyphonSrc);
 
-#endif // ifndef
+}				// end of namespace
+
+#endif				// ifndef

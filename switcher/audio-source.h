@@ -17,34 +17,36 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_AUDIO_SOURCE_H__
 #define __SWITCHER_AUDIO_SOURCE_H__
 
 #include "gpipe.h"
 #include <memory>
 
-
 namespace switcher
 {
-  class AudioSource : public GPipe
+  class AudioSource:public GPipe
   {
   public:
-    typedef std::shared_ptr<AudioSource> ptr;
-    AudioSource ();
-    AudioSource (const AudioSource &) = delete;
-    AudioSource &operator= (const AudioSource &) = delete;
+    typedef std::shared_ptr < AudioSource > ptr;
+      AudioSource ();
+      AudioSource (const AudioSource &) = delete;
+      AudioSource & operator= (const AudioSource &) = delete;
   private:
-    GstElement *rawaudio_ {nullptr};
-    GstElement *audio_tee_ {nullptr};
-    std::string shmdata_path_;
+      GstElement * rawaudio_
+    {
+    nullptr};
+    GstElement *audio_tee_
+    {
+    nullptr};
+      std::string shmdata_path_;
     void make_audio_elements ();
 
   protected:
-    void set_raw_audio_element (GstElement *elt);
+    void set_raw_audio_element (GstElement * elt);
     void unset_raw_audio_element ();
   };
 
-}  // end of namespace
+}				// end of namespace
 
 #endif // ifndef

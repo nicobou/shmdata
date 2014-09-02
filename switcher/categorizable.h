@@ -17,7 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-
 #ifndef __SWITCHER_CATEGORIZABLE_H__
 #define __SWITCHER_CATEGORIZABLE_H__
 
@@ -30,30 +29,28 @@ namespace switcher
   class Categorizable
   {
   public:
-    typedef std::shared_ptr<Categorizable> ptr;
+    typedef std::shared_ptr < Categorizable > ptr;
 
-    Categorizable ();
-    virtual ~Categorizable ();
+      Categorizable ();
+      virtual ~ Categorizable ();
     //default category is ""
     void set_category (std::string category_name);
     //default position weight is 0
     void set_position_weight (int position_weight);
 
-    std::string get_category ();
+      std::string get_category ();
     int get_position_weight ();
 
-    static bool compare_ptr (Categorizable::ptr first, 
+    static bool compare_ptr (Categorizable::ptr first,
 			     Categorizable::ptr second);
 
-    static bool compare (Categorizable first, 
-			 Categorizable second);
-
+    static bool compare (Categorizable first, Categorizable second);
 
   private:
-    std::string category_;
+      std::string category_;
     int position_weight_;
   };
 
-}  // end of namespace
+}				// end of namespace
 
-#endif // ifndef
+#endif				// ifndef

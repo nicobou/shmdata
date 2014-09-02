@@ -15,7 +15,6 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #ifndef __SWITCHER_SOAP_CTRL_SERVER_H__
 #define __SWITCHER_SOAP_CTRL_SERVER_H__
 
@@ -28,21 +27,21 @@
 namespace switcher
 {
 
-  class SoapCtrlServer : public QuiddityManagerWrapper
+  class SoapCtrlServer:public QuiddityManagerWrapper
   {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SoapCtrlServer);
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (SoapCtrlServer);
     SoapCtrlServer ();
     ~SoapCtrlServer ();
     SoapCtrlServer (const SoapCtrlServer &) = delete;
-    SoapCtrlServer &operator= (const SoapCtrlServer &) = delete;
+      SoapCtrlServer & operator= (const SoapCtrlServer &) = delete;
     bool init () final;
 
-    bool set_port (int port);//default port is 8080
-    bool start (); 
+    bool set_port (int port);	//default port is 8080
+    bool start ();
     bool stop ();
     //for invocation into soap handlers:
-    std::shared_ptr<QuiddityManager> get_quiddity_manager ();
+      std::shared_ptr < QuiddityManager > get_quiddity_manager ();
     //wrappers
     static gboolean set_port_wrapped (gint port, gpointer user_data);
 
@@ -50,16 +49,16 @@ namespace switcher
     struct soap soap_;
     int port_;
     bool quit_server_thread_;
-    controlService *service_; 
+    controlService *service_;
     SOAP_SOCKET socket_;
-    std::thread thread_;
-    std::mutex mutex_;
+      std::thread thread_;
+      std::mutex mutex_;
     void server_thread ();
     static int http_get (struct soap *soap);
   };
 
-  SWITCHER_DECLARE_PLUGIN(SoapCtrlServer);
+    SWITCHER_DECLARE_PLUGIN (SoapCtrlServer);
 
-}  // end of namespace
+}				// end of namespace
 
-#endif // ifndef
+#endif				// ifndef
