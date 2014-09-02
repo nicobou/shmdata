@@ -33,11 +33,11 @@
 namespace switcher {
   class SyphonSrc:public Quiddity, public Segment, public StartableQuiddity {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (SyphonSrc);
-    SyphonSrc ();
-    ~SyphonSrc ();
-    SyphonSrc (const SyphonSrc &) = delete;
-      SyphonSrc & operator= (const SyphonSrc &) = delete;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SyphonSrc);
+    SyphonSrc();
+    ~SyphonSrc();
+    SyphonSrc(const SyphonSrc &) = delete;
+      SyphonSrc & operator=(const SyphonSrc &) = delete;
 
   private:
       std::shared_ptr < SyphonReader > reader_;
@@ -51,19 +51,19 @@ namespace switcher {
 
     int width_, height_;
 
-    bool init_gpipe () final;
-    bool start () final;
-    bool stop () final;
+    bool init_gpipe() final;
+    bool start() final;
+    bool stop() final;
 
-    static void frameCallback (void *, const char *, int &, int &);
+    static void frameCallback(void *, const char *, int &, int &);
 
-    static const gchar *get_servername (void *user_data);
-    static void set_servername (const gchar * name, void *user_data);
-    static const gchar *get_appname (void *user_data);
-    static void set_appname (const gchar * name, void *user_data);
+    static const gchar *get_servername(void *user_data);
+    static void set_servername(const gchar * name, void *user_data);
+    static const gchar *get_appname(void *user_data);
+    static void set_appname(const gchar * name, void *user_data);
   };
 
-    SWITCHER_DECLARE_PLUGIN (SyphonSrc);
+    SWITCHER_DECLARE_PLUGIN(SyphonSrc);
 
 }                               // end of namespace
 

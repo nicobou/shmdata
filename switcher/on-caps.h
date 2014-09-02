@@ -30,11 +30,11 @@ namespace switcher {
   public:
     using CapsCallBack = std::function < void (std::string) >;
 
-      virtual ~ OnCaps () {
+      virtual ~ OnCaps() {
     };
 
-    void set_on_caps (CapsCallBack callback);
-      std::string get_caps ();
+    void set_on_caps(CapsCallBack callback);
+      std::string get_caps();
 
   private:
       std::string negociated_caps_ {
@@ -45,7 +45,7 @@ namespace switcher {
     };
 
   protected:
-    bool set_negociated_caps (std::string caps);
+    bool set_negociated_caps(std::string caps);
   };
 
 }                               // end of namespace

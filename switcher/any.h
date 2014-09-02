@@ -32,13 +32,11 @@ template < class T > using StorageType = typename std::decay < T >::type;
 struct AnyValueBase {
   //AnyValueBase (const AnyValueBase &) = delete;
   virtual ~
-  AnyValueBase () {
+  AnyValueBase() {
   }
   virtual AnyValueBase *
-  clone () const = 0;
-  virtual
-    std::string
-  to_string () const = 0;
+  clone() const = 0;
+  virtual std::string to_string()const = 0;
 };
 
 template < typename T > struct AnyValueDerived:
@@ -46,27 +44,27 @@ template < typename T > struct AnyValueDerived:
   template <
     typename
     U >
-  AnyValueDerived (U && value):
-  value_ (std::forward < U > (value)) {
+  AnyValueDerived(U && value):
+  value_(std::forward < U > (value)) {
   }
   T
     value_;
   AnyValueBase *
-  clone () const {
+  clone() const {
     return
       new
       AnyValueDerived <
     T > (value_);
   }
   std::string
-  to_string () const {
+  to_string() const {
     std::stringstream
       ss;
     ss <<
       value_;
     return
       ss.
-    str ();
+    str();
   }
 };
 
@@ -76,33 +74,33 @@ template <> struct AnyValueDerived <
   template <
     typename
     U >
-  AnyValueDerived (U && value):
-  value_ (std::forward < U > (value)) {
+  AnyValueDerived(U && value):
+  value_(std::forward < U > (value)) {
   }
   std::nullptr_t
     value_;
   AnyValueBase *
-  clone () const {
+  clone() const {
     return
       new
       AnyValueDerived <
     std::nullptr_t > (value_);
   }
   std::string
-  to_string () const {
+  to_string() const {
     return
-    std::string ("null");
+    std::string("null");
   }
 };
 
 struct Any {
   bool
-  is_null () const {
+  is_null() const {
     return !
       ptr_;
   }
   bool
-  not_null () const {
+  not_null() const {
     return
       ptr_;
   }
@@ -110,15 +108,15 @@ struct Any {
   template <
     typename
     U >
-  Any (U && value):
-  ptr_ (new AnyValueDerived < StorageType < U >> (std::forward < U > (value))) {
+  Any(U && value):
+  ptr_(new AnyValueDerived < StorageType < U >> (std::forward < U > (value))) {
   }
 
   template <
     class
     U >
     bool
-  is () const {
+  is() const {
     typedef
       StorageType <
       U >
@@ -134,79 +132,74 @@ struct Any {
     U >
     StorageType <
   U > &
-  as () {
+  as() {
     typedef
       StorageType <
       U >
       T;
-    auto
-      derived = dynamic_cast < AnyValueDerived < T > *>(ptr_);
+    auto derived = dynamic_cast < AnyValueDerived < T > *>(ptr_);
     if (!derived)
-      throw
-      std::bad_cast ();
+      throw std::bad_cast();
     return derived->value_;
   }
 
-  template < class U > operator    U () {
+  template < class U > operator     U() {
     return as < StorageType < U >> ();
   }
 
-Any ():ptr_ (nullptr) {
+Any():ptr_(nullptr) {
   }
 
-Any (Any & that):ptr_ (that.clone ()) {
+Any(Any & that):ptr_(that.clone()) {
   }
 
-Any (Any && that):ptr_ (that.ptr_) {
+Any(Any && that):ptr_(that.ptr_) {
     that.ptr_ = nullptr;
   }
 
-Any (const Any & that):ptr_ (that.clone ()) {
+Any(const Any & that):ptr_(that.clone()) {
   }
 
-  Any (const Any && that):
-  ptr_ (that.clone ()) {
+  Any(const Any && that):
+  ptr_(that.clone()) {
   }
 
-  Any & operator= (const Any & a) {
+  Any & operator=(const Any & a) {
     if (ptr_ == a.ptr_)
       return *this;
-    auto
-      old_ptr = ptr_;
-    ptr_ = a.clone ();
+    auto old_ptr = ptr_;
+    ptr_ = a.clone();
     if (old_ptr)
-      delete
-        old_ptr;
+      delete old_ptr;
     return *this;
   }
 
-  Any & operator= (Any && a) {
+  Any & operator=(Any && a) {
     if (ptr_ == a.ptr_)
       return *this;
-    std::swap (ptr_, a.ptr_);
+    std::swap(ptr_, a.ptr_);
     return *this;
   }
 
-  ~Any () {
+  ~Any() {
     if (ptr_)
-      delete
-        ptr_;
+      delete ptr_;
   }
 
   static
     std::string
-  to_string (const Any & any) {
+  to_string(const Any & any) {
     std::stringstream ss;
     ss << any;
-    return ss.str ();
+    return ss.str();
   }
 
 private:
-  AnyValueBase * clone ()const {
+  AnyValueBase * clone()const {
     if (ptr_)
       return
         ptr_->
-      clone ();
+      clone();
     else
       return
         nullptr;
@@ -214,11 +207,9 @@ private:
 
   AnyValueBase *
     ptr_;
-  friend
-    std::ostream &
-  operator<< (std::ostream & os, const Any & any) {
+  friend std::ostream & operator<<(std::ostream & os, const Any & any) {
     if (any.ptr_)
-      os << any.ptr_->to_string ();
+      os << any.ptr_->to_string();
     else
       os << "null";
     return os;
@@ -231,11 +222,11 @@ private:
 
 template < typename T > struct DefaultSerializable {
   virtual ~
-  DefaultSerializable () {
+  DefaultSerializable() {
   };
   template < typename U >
-    friend std::ostream & operator<< (std::ostream & os,
-                                      const DefaultSerializable < U > &) {
+    friend std::ostream & operator<<(std::ostream & os,
+                                     const DefaultSerializable < U > &) {
     os << "not serializable";
     return os;
   }

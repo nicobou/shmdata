@@ -28,25 +28,25 @@
 #endif
 
 int
-main () {
+main() {
   bool success = true;
 
   {
     switcher::QuiddityManager::ptr manager =
-      switcher::QuiddityManager::make_manager ("test_manager");
+      switcher::QuiddityManager::make_manager("test_manager");
 
 #ifdef HAVE_CONFIG_H
-    gchar *usr_plugin_dir = g_strdup_printf ("./%s", LT_OBJDIR);
-    manager->scan_directory_for_plugins (usr_plugin_dir);
-    g_free (usr_plugin_dir);
+    gchar *usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
+    manager->scan_directory_for_plugins(usr_plugin_dir);
+    g_free(usr_plugin_dir);
 #else
     return 1;
 #endif
 
-    if (!switcher::QuiddityBasicTest::test_full (manager, "OSCctl"))
+    if (!switcher::QuiddityBasicTest::test_full(manager, "OSCctl"))
       success = false;
 
-    if (!switcher::QuiddityBasicTest::test_full (manager, "OSCprop"))
+    if (!switcher::QuiddityBasicTest::test_full(manager, "OSCprop"))
       success = false;
 
   }                             //end of scope is releasing the manager

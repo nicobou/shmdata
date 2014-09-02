@@ -40,8 +40,8 @@ namespace switcher {
   namespace data {
     namespace BasicSerializer {
 
-      std::string serialize (Tree::ptr);
-      Tree::ptr deserialize (const std::string & serialized);
+      std::string serialize(Tree::ptr);
+      Tree::ptr deserialize(const std::string & serialized);
 
     };
 

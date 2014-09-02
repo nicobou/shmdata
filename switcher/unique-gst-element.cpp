@@ -21,20 +21,19 @@
 
 namespace switcher {
 
-  UniqueGstElement::UniqueGstElement (const gchar *
-                                      class_name):element_
-    (gst_element_factory_make (class_name, nullptr),
+  UniqueGstElement::UniqueGstElement(const gchar *
+                                     class_name):element_
+    (gst_element_factory_make(class_name, nullptr),
      &GstUtils::gst_element_deleter) {
   }
 
-  void UniqueGstElement::g_invoke (std::function < void (gpointer) > command) {
-    command (G_OBJECT (element_.get ()));
+  void UniqueGstElement::g_invoke(std::function < void (gpointer) > command) {
+    command(G_OBJECT(element_.get()));
     return;
   }
 
-  void
-    UniqueGstElement::invoke (std::function < void (GstElement *) > command) {
-    command (element_.get ());
+  void UniqueGstElement::invoke(std::function < void (GstElement *) > command) {
+    command(element_.get());
     return;
   }
 

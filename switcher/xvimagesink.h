@@ -28,11 +28,11 @@ namespace switcher {
 
   class Xvimagesink:public SinglePadGstSink {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (Xvimagesink);
-    Xvimagesink ();
-    ~Xvimagesink ();
-    Xvimagesink (const Xvimagesink &) = delete;
-      Xvimagesink & operator= (const Xvimagesink &) = delete;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Xvimagesink);
+    Xvimagesink();
+    ~Xvimagesink();
+    Xvimagesink(const Xvimagesink &) = delete;
+      Xvimagesink & operator=(const Xvimagesink &) = delete;
 
   private:
       GstElement * sink_bin_;
@@ -40,8 +40,8 @@ namespace switcher {
     GstElement *ffmpegcolorspace_;
     GstElement *xvimagesink_;
     QuiddityCommand *on_error_command_; //for the pipeline error handler
-    bool init_gpipe () final;
-    bool can_sink_caps (std::string caps) final;
+    bool init_gpipe() final;
+    bool can_sink_caps(std::string caps) final;
   };
 
 }                               // end of namespace

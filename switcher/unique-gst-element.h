@@ -27,31 +27,30 @@ namespace switcher {
 
   class UniqueGstElement {
   public:
-    UniqueGstElement (const gchar * class_name);
+    UniqueGstElement(const gchar * class_name);
 
     //invoke as g_object
       template < typename Return_type >
       Return_type
-      g_invoke_with_return (std::function < Return_type (gpointer) > command)
-    {
-      return command (G_OBJECT (element_.get ()));
+      g_invoke_with_return(std::function < Return_type(gpointer) > command) {
+      return command(G_OBJECT(element_.get()));
     }
 
-    void g_invoke (std::function < void (gpointer) > command);
+    void g_invoke(std::function < void (gpointer) > command);
 
     //invoke as GstElement
       template < typename Return_type >
       Return_type
-      invoke_with_return (std::function < Return_type (GstElement *) >
-                          command) {
-      return command (element_.get ());
+      invoke_with_return(std::function < Return_type(GstElement *) >
+                         command) {
+      return command(element_.get());
     }
 
-    void invoke (std::function < void (GstElement *) > command);
+    void invoke(std::function < void (GstElement *) > command);
 
   private:
     using gst_element_handle = std::unique_ptr < GstElement,
-      decltype (&GstUtils::gst_element_deleter) >;
+      decltype(&GstUtils::gst_element_deleter) >;
     gst_element_handle element_;
   };
 

@@ -30,34 +30,34 @@
 #endif
 
 void
-quiddity_created_removed_cb (std::string /*subscriber_name */ ,
-                             std::string quiddity_name,
-                             std::string signal_name,
-                             std::vector < std::string > params,
-                             void *user_data) {
-  g_print ("%s: %s\n", signal_name.c_str (), params[0].c_str ());
+quiddity_created_removed_cb(std::string /*subscriber_name */ ,
+                            std::string quiddity_name,
+                            std::string signal_name,
+                            std::vector < std::string > params,
+                            void *user_data) {
+  g_print("%s: %s\n", signal_name.c_str(), params[0].c_str());
   switcher::QuiddityManager * ctx =
     static_cast < switcher::QuiddityManager * >(user_data);
-  std::cout << ctx->get_info (quiddity_name, params[0]) << std::endl;
+  std::cout << ctx->get_info(quiddity_name, params[0]) << std::endl;
 }
 
 int
-main () {
+main() {
   bool success = true;
 
   {
     switcher::QuiddityManager::ptr manager =
-      switcher::QuiddityManager::make_manager ("test_manager");
+      switcher::QuiddityManager::make_manager("test_manager");
 
 #ifdef HAVE_CONFIG_H
-    gchar *usr_plugin_dir = g_strdup_printf ("./%s", LT_OBJDIR);
-    manager->scan_directory_for_plugins (usr_plugin_dir);
-    g_free (usr_plugin_dir);
+    gchar *usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
+    manager->scan_directory_for_plugins(usr_plugin_dir);
+    g_free(usr_plugin_dir);
 #else
     return 1;
 #endif
 
-    if (!switcher::QuiddityBasicTest::test_full (manager, "systemusage"))
+    if (!switcher::QuiddityBasicTest::test_full(manager, "systemusage"))
       success = false;
 
     // //creating a "top" quiddity

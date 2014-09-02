@@ -38,29 +38,29 @@ namespace switcher {
   {
   public:
     typedef std::shared_ptr < Segment > ptr;
-    using OnConnect = std::function < bool (std::string) >;
-    using OnDisconnect = std::function < bool (std::string) >;
-    using OnDisconnectAll = std::function < bool () >;
-    using CanSinkCaps = std::function < bool (std::string) >;
+    using OnConnect = std::function < bool(std::string) >;
+    using OnDisconnect = std::function < bool(std::string) >;
+    using OnDisconnectAll = std::function < bool() >;
+    using CanSinkCaps = std::function < bool(std::string) >;
 
-      Segment ();
-      virtual ~ Segment ();
-      Segment (const Segment &) = delete;
-      Segment & operator= (const Segment &) = delete;
-    bool init_segment (Quiddity * quid);
+      Segment();
+      virtual ~ Segment();
+      Segment(const Segment &) = delete;
+      Segment & operator=(const Segment &) = delete;
+    bool init_segment(Quiddity * quid);
 
   protected:
-      bool register_shmdata (ShmdataWriter::ptr writer);
-    bool register_shmdata (ShmdataAnyWriter::ptr writer);
-    bool register_shmdata (ShmdataReader::ptr reader);
-    bool register_shmdata (ShmdataAnyReader::ptr reader);
-    bool unregister_shmdata (std::string shmdata_path);
-    bool clear_shmdatas ();
-    bool install_connect_method (OnConnect on_connect_cb,
-                                 OnDisconnect on_disconnect_cb,
-                                 OnDisconnectAll on_disconnect_all_cb,
-                                 CanSinkCaps on_can_sink_caps_cb,
-                                 uint max_reader);
+      bool register_shmdata(ShmdataWriter::ptr writer);
+    bool register_shmdata(ShmdataAnyWriter::ptr writer);
+    bool register_shmdata(ShmdataReader::ptr reader);
+    bool register_shmdata(ShmdataAnyReader::ptr reader);
+    bool unregister_shmdata(std::string shmdata_path);
+    bool clear_shmdatas();
+    bool install_connect_method(OnConnect on_connect_cb,
+                                OnDisconnect on_disconnect_cb,
+                                OnDisconnectAll on_disconnect_all_cb,
+                                CanSinkCaps on_can_sink_caps_cb,
+                                uint max_reader);
 
   private:
       Quiddity * quid_ {
@@ -81,11 +81,11 @@ namespace switcher {
     nullptr};
     CanSinkCaps on_can_sink_caps_cb_ {
     nullptr};
-    static gboolean connect_wrapped (gpointer path, gpointer user_data);
-    static gboolean disconnect_wrapped (gpointer path, gpointer user_data);
-    static gboolean disconnect_all_wrapped (gpointer /*unused */ ,
-                                            gpointer user_data);
-    static gboolean can_sink_caps_wrapped (gpointer caps, gpointer user_data);
+    static gboolean connect_wrapped(gpointer path, gpointer user_data);
+    static gboolean disconnect_wrapped(gpointer path, gpointer user_data);
+    static gboolean disconnect_all_wrapped(gpointer /*unused */ ,
+                                           gpointer user_data);
+    static gboolean can_sink_caps_wrapped(gpointer caps, gpointer user_data);
 
     //JSON
       JSONBuilder::ptr shmdata_writers_description_;
@@ -101,12 +101,12 @@ namespace switcher {
     CustomPropertyHelper::ptr segment_custom_props_;
     GParamSpec *json_writers_description_;
     GParamSpec *json_readers_description_;
-    void update_shmdata_writers_description ();
-    void update_shmdata_readers_description ();
-    static const gchar *get_shmdata_writers_string (void *user_data);
-    static const gchar *get_shmdata_readers_string (void *user_data);
+    void update_shmdata_writers_description();
+    void update_shmdata_readers_description();
+    static const gchar *get_shmdata_writers_string(void *user_data);
+    static const gchar *get_shmdata_readers_string(void *user_data);
 
-    void populate_tree (std::string key, std::string caps);
+    void populate_tree(std::string key, std::string caps);
   };
 }                               // end of namespace
 

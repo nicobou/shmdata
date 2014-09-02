@@ -27,15 +27,15 @@ namespace switcher {
 
   class CreateRemoveSpy:public Quiddity {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (CreateRemoveSpy);
-    CreateRemoveSpy ();
-    ~CreateRemoveSpy ();
-    CreateRemoveSpy (const CreateRemoveSpy &) = delete;
-      CreateRemoveSpy & operator= (const CreateRemoveSpy &) = delete;
-    bool init ();
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(CreateRemoveSpy);
+    CreateRemoveSpy();
+    ~CreateRemoveSpy();
+    CreateRemoveSpy(const CreateRemoveSpy &) = delete;
+      CreateRemoveSpy & operator=(const CreateRemoveSpy &) = delete;
+    bool init();
 
-    static void on_created (std::string quiddity_nick_name, void *user_data);
-    static void on_removed (std::string quiddity_nick_name, void *user_data);
+    static void on_created(std::string quiddity_nick_name, void *user_data);
+    static void on_removed(std::string quiddity_nick_name, void *user_data);
 
   private:
       bool i_am_the_one_;

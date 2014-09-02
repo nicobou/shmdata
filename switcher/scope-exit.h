@@ -28,11 +28,11 @@ namespace scope_guard {
 
   template < typename Fun > class ScopeGuard {
   public:
-  ScopeGuard (Fun && fun):
-    fun_ (std::move (fun)) {
+  ScopeGuard(Fun && fun):
+    fun_(std::move(fun)) {
     }
-     ~ScopeGuard () {
-      fun_ ();
+     ~ScopeGuard() {
+      fun_();
     }
   private:
     Fun fun_;
@@ -40,7 +40,7 @@ namespace scope_guard {
 
   enum class ScopeGuardOnExit { };
   template < typename Fun >
-    ScopeGuard < Fun > operator+ (ScopeGuardOnExit, Fun && fn) {
+    ScopeGuard < Fun > operator+(ScopeGuardOnExit, Fun && fn) {
     return ScopeGuard < Fun > (std::forward < Fun > (fn));
   }
 

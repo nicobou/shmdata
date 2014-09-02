@@ -21,91 +21,89 @@
 
 namespace switcher {
 
-  ShmdataAnyReader::ShmdataAnyReader ():path_ (),
-    reader_ (shmdata_any_reader_init ()),
-    json_description_ (new JSONBuilder ()) {
+  ShmdataAnyReader::ShmdataAnyReader():path_(),
+    reader_(shmdata_any_reader_init()), json_description_(new JSONBuilder()) {
   }
 
-  ShmdataAnyReader::~ShmdataAnyReader () {
-    shmdata_any_reader_close (reader_);
+  ShmdataAnyReader::~ShmdataAnyReader() {
+    shmdata_any_reader_close(reader_);
   }
 
-  bool ShmdataAnyReader::set_path (std::string path) {
-    shmdata_any_reader_set_debug (reader_, SHMDATA_ENABLE_DEBUG);
-    shmdata_any_reader_set_on_data_handler (reader_,
-                                            ShmdataAnyReader::on_data, this);
+  bool ShmdataAnyReader::set_path(std::string path) {
+    shmdata_any_reader_set_debug(reader_, SHMDATA_ENABLE_DEBUG);
+    shmdata_any_reader_set_on_data_handler(reader_,
+                                           ShmdataAnyReader::on_data, this);
     path_ = path;
-    make_json_description ();
+    make_json_description();
     return true;
   }
 
-  bool ShmdataAnyReader::start () {
-    if (path_.empty ())
+  bool ShmdataAnyReader::start() {
+    if (path_.empty())
       return false;
-    shmdata_any_reader_start (reader_, path_.c_str ());
+    shmdata_any_reader_start(reader_, path_.c_str());
     return true;
   }
 
-  std::string ShmdataAnyReader::get_path () {
+  std::string ShmdataAnyReader::get_path() {
     return path_;
   }
 
-  bool ShmdataAnyReader::set_callback (Callback cb, void *user_data) {
+  bool ShmdataAnyReader::set_callback(Callback cb, void *user_data) {
     cb_user_data_ = user_data;
     cb_ = cb;
     return true;
   }
 
-  void ShmdataAnyReader::mute (bool mute) {
+  void ShmdataAnyReader::mute(bool mute) {
     muted_ = mute;
   }
 
-  bool ShmdataAnyReader::is_muted () {
+  bool ShmdataAnyReader::is_muted() {
     return muted_;
   }
 
-  void ShmdataAnyReader::make_json_description () {
-    json_description_->reset ();
-    json_description_->begin_object ();
-    json_description_->add_string_member ("path", path_.c_str ());
-    json_description_->end_object ();
+  void ShmdataAnyReader::make_json_description() {
+    json_description_->reset();
+    json_description_->begin_object();
+    json_description_->add_string_member("path", path_.c_str());
+    json_description_->end_object();
   }
 
-  JSONBuilder::Node ShmdataAnyReader::get_json_root_node () {
-    return json_description_->get_root ();
+  JSONBuilder::Node ShmdataAnyReader::get_json_root_node() {
+    return json_description_->get_root();
   }
 
   void
-    ShmdataAnyReader::on_data (shmdata_any_reader_t *,
-                               void *shmbuf,
-                               void *data,
-                               int data_size,
-                               unsigned long long timestamp,
-                               const char *type_description, void *user_data)
-  {
+    ShmdataAnyReader::on_data(shmdata_any_reader_t *,
+                              void *shmbuf,
+                              void *data,
+                              int data_size,
+                              unsigned long long timestamp,
+                              const char *type_description, void *user_data) {
     ShmdataAnyReader *context = static_cast < ShmdataAnyReader * >(user_data);
     if (!context->is_caps_set_) {
-      context->set_negociated_caps (std::string (type_description));
+      context->set_negociated_caps(std::string(type_description));
       context->is_caps_set_ = true;
     }
     if (nullptr != context->cb_ && !context->muted_)
-      context->cb_ (data, data_size, timestamp, type_description,
-                    context->cb_user_data_);
-    shmdata_any_reader_free (shmbuf);
+      context->cb_(data, data_size, timestamp, type_description,
+                   context->cb_user_data_);
+    shmdata_any_reader_free(shmbuf);
   }
 
-  bool ShmdataAnyReader::set_data_type (std::string data_type) {
-    shmdata_any_reader_set_data_type (reader_, data_type.c_str ());
+  bool ShmdataAnyReader::set_data_type(std::string data_type) {
+    shmdata_any_reader_set_data_type(reader_, data_type.c_str());
     return true;
   }
 
-  bool ShmdataAnyReader::set_absolute_timestamp (bool absolute_timestamp) {
+  bool ShmdataAnyReader::set_absolute_timestamp(bool absolute_timestamp) {
     if (absolute_timestamp)
-      shmdata_any_reader_set_absolute_timestamp (reader_,
-                                                 SHMDATA_ENABLE_ABSOLUTE_TIMESTAMP);
+      shmdata_any_reader_set_absolute_timestamp(reader_,
+                                                SHMDATA_ENABLE_ABSOLUTE_TIMESTAMP);
     else
-      shmdata_any_reader_set_absolute_timestamp (reader_,
-                                                 SHMDATA_DISABLE_ABSOLUTE_TIMESTAMP);
+      shmdata_any_reader_set_absolute_timestamp(reader_,
+                                                SHMDATA_DISABLE_ABSOLUTE_TIMESTAMP);
 
     return true;
   }

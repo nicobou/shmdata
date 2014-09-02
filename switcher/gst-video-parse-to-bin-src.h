@@ -29,26 +29,25 @@ namespace switcher {
 
   class GstVideoParseToBinSrc:public VideoSource {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (GstVideoParseToBinSrc);
-    GstVideoParseToBinSrc ();
-    ~GstVideoParseToBinSrc ();
-    GstVideoParseToBinSrc (const GstVideoParseToBinSrc &) = delete;
-      GstVideoParseToBinSrc & operator= (const GstVideoParseToBinSrc &) =
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstVideoParseToBinSrc);
+    GstVideoParseToBinSrc();
+    ~GstVideoParseToBinSrc();
+    GstVideoParseToBinSrc(const GstVideoParseToBinSrc &) = delete;
+      GstVideoParseToBinSrc & operator=(const GstVideoParseToBinSrc &) =
       delete;
 
-    bool on_start ();
-    bool on_stop ();
+    bool on_start();
+    bool on_stop();
 
   private:
       GstElement * gst_video_parse_to_bin_src_;
       CustomPropertyHelper::ptr custom_props_;
     GParamSpec *gst_launch_pipeline_spec_;
     gchar *gst_launch_pipeline_;
-    static void set_gst_launch_pipeline (const gchar * value,
-                                         void *user_data);
-    static const gchar *get_gst_launch_pipeline (void *user_data);
-    bool make_video_source (GstElement ** new_element);
-    bool init_gpipe () final;
+    static void set_gst_launch_pipeline(const gchar * value, void *user_data);
+    static const gchar *get_gst_launch_pipeline(void *user_data);
+    bool make_video_source(GstElement ** new_element);
+    bool init_gpipe() final;
   };
 
 }                               // end of namespace

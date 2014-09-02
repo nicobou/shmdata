@@ -18,7 +18,7 @@
 
 //note: do not write On_scope_exit call in the same line
 int
-main () {
+main() {
   int counter = 0;
   {
     counter = 1;

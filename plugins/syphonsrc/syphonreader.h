@@ -29,13 +29,13 @@ namespace switcher {
 
   class SyphonReader {
   public:
-    SyphonReader ();
-    SyphonReader (syphonCallback, void *);
-     ~SyphonReader ();
-    void connect (const char *serveName = nullptr, const char *appName =
-                  nullptr);
-    void disconnect ();
-    void getFrame (int &width, int &height, char *pixels);
+    SyphonReader();
+    SyphonReader(syphonCallback, void *);
+     ~SyphonReader();
+    void connect(const char *serveName = nullptr, const char *appName =
+                 nullptr);
+    void disconnect();
+    void getFrame(int &width, int &height, char *pixels);
 
   protected:
       syphonCallback callback_;
@@ -49,9 +49,9 @@ namespace switcher {
 
     unsigned int drawTex_, fbo_;
 
-    void createFBO ();
-    void init ();
-    void handleNewFrame ();
+    void createFBO();
+    void init();
+    void handleNewFrame();
   };
 
 }                               // end of namespace

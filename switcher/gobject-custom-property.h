@@ -28,21 +28,21 @@ namespace switcher {
   class GObjectCustomProperty {
   public:
     typedef std::shared_ptr < GObjectCustomProperty > ptr;
-    typedef bool (*set_method_pointer) (const GValue * val, void *user_data);
-    typedef bool (*get_method_pointer) (GValue * val, void *user_data);
-     ~GObjectCustomProperty ();
+    typedef bool(*set_method_pointer) (const GValue * val, void *user_data);
+    typedef bool(*get_method_pointer) (GValue * val, void *user_data);
+     ~GObjectCustomProperty();
 
     static GObjectCustomProperty::ptr
-      make_custom_property (set_method_pointer set_method,
-                            get_method_pointer get_method);
+      make_custom_property(set_method_pointer set_method,
+                           get_method_pointer get_method);
 
     set_method_pointer set_method_;
     get_method_pointer get_method_;
 
   private:
-      GObjectCustomProperty ();
-    void set_members (set_method_pointer set_method,
-                      get_method_pointer get_method);
+      GObjectCustomProperty();
+    void set_members(set_method_pointer set_method,
+                     get_method_pointer get_method);
   };
 }                               // end of namespace
 

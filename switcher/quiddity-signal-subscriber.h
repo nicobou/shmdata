@@ -42,30 +42,30 @@ namespace switcher {
                                        std::string signal_name,
                                        std::vector < std::string > params,
                                        void *user_data);
-      QuidditySignalSubscriber ();
-     ~QuidditySignalSubscriber ();
-      QuidditySignalSubscriber (const QuidditySignalSubscriber &) = delete;
-      QuidditySignalSubscriber & operator= (const QuidditySignalSubscriber &)
+      QuidditySignalSubscriber();
+     ~QuidditySignalSubscriber();
+      QuidditySignalSubscriber(const QuidditySignalSubscriber &) = delete;
+      QuidditySignalSubscriber & operator=(const QuidditySignalSubscriber &)
       = delete;
-    void mute (bool muted);
+    void mute(bool muted);
 
-    void set_callback (OnEmittedCallback cb);
-    void set_user_data (void *user_data);
-    void set_name (const gchar * name);
-    bool subscribe (std::shared_ptr < Quiddity > quid,
-                    std::string signal_name);
-    bool unsubscribe (std::shared_ptr < Quiddity > quid,
-                      std::string signal_name);
-    bool unsubscribe (std::shared_ptr < Quiddity > quid);
+    void set_callback(OnEmittedCallback cb);
+    void set_user_data(void *user_data);
+    void set_name(const gchar * name);
+    bool subscribe(std::shared_ptr < Quiddity > quid,
+                   std::string signal_name);
+    bool unsubscribe(std::shared_ptr < Quiddity > quid,
+                     std::string signal_name);
+    bool unsubscribe(std::shared_ptr < Quiddity > quid);
 
       std::vector < std::pair < std::string,
-      std::string > >list_subscribed_signals ();
-    static void signal_cb (std::vector < std::string > params,
-                           gpointer user_data);
+      std::string > >list_subscribed_signals();
+    static void signal_cb(std::vector < std::string > params,
+                          gpointer user_data);
 
     //manager_impl initialization
-    void set_manager_impl (std::shared_ptr < QuiddityManager_Impl >
-                           manager_impl);
+    void set_manager_impl(std::shared_ptr < QuiddityManager_Impl >
+                          manager_impl);
 
   private:
       bool muted_;

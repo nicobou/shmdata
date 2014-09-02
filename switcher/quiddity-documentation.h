@@ -28,28 +28,28 @@ namespace switcher {
   class QuiddityDocumentation {
 
   public:
-    QuiddityDocumentation (std::string long_name,
-                           std::string category,
-                           std::string short_description,
-                           std::string license,
-                           std::string class_name, std::string author);
+    QuiddityDocumentation(std::string long_name,
+                          std::string category,
+                          std::string short_description,
+                          std::string license,
+                          std::string class_name, std::string author);
 
-    std::string get_category () const;
-      std::string get_class_name () const;
-      std::string get_description () const;
-      std::string get_long_name () const;
-      std::string get_author () const;
-      std::string get_license () const;
+    std::string get_category() const;
+      std::string get_class_name() const;
+      std::string get_description() const;
+      std::string get_long_name() const;
+      std::string get_author() const;
+      std::string get_license() const;
 
-    void set_category (std::string category);
-    void set_class_name (std::string class_name);
-    void set_description (std::string description);
-    void set_long_name (std::string long_name);
-    void set_author (std::string author);
-    void set_license (std::string license);
+    void set_category(std::string category);
+    void set_class_name(std::string class_name);
+    void set_description(std::string description);
+    void set_long_name(std::string long_name);
+    void set_author(std::string author);
+    void set_license(std::string license);
 
-      std::string get_json_documentation ();
-      JSONBuilder::Node get_json_root_node ();
+      std::string get_json_documentation();
+      JSONBuilder::Node get_json_root_node();
 
   private:
       std::string category_;
@@ -60,7 +60,7 @@ namespace switcher {
       std::string license_;
 
       JSONBuilder::ptr json_description_;
-    void make_json_description ();
+    void make_json_description();
   };
 
 }                               // end of namespace

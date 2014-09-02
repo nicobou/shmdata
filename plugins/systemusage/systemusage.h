@@ -78,11 +78,11 @@ namespace switcher {
 
   class SystemUsage:public Quiddity {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (SystemUsage);
-    SystemUsage ();
-    ~SystemUsage ();
-    SystemUsage (const SystemUsage &) = delete;
-      SystemUsage & operator= (const SystemUsage &) = delete;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SystemUsage);
+    SystemUsage();
+    ~SystemUsage();
+    SystemUsage(const SystemUsage &) = delete;
+      SystemUsage & operator=(const SystemUsage &) = delete;
 
   private:
       std::shared_ptr < std::thread > pollStateThread_ {
@@ -103,14 +103,14 @@ namespace switcher {
     std::map < std::string, Net > _net {
     };
 
-    bool init () final;
+    bool init() final;
 
-    void pollState ();
-    static void setRefreshPeriod (double period, void *user_data);
-    static double getRefreshPeriod (void *user_data);
+    void pollState();
+    static void setRefreshPeriod(double period, void *user_data);
+    static double getRefreshPeriod(void *user_data);
   };
 
-  SWITCHER_DECLARE_PLUGIN (SystemUsage);
+  SWITCHER_DECLARE_PLUGIN(SystemUsage);
 
 }                               // end of namespace
 

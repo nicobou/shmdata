@@ -38,14 +38,14 @@ namespace switcher {
     friend PJCall;
     friend PJPresence;
   public:
-      SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (PJSIP);
-      PJSIP ();
-     ~PJSIP ();
-      PJSIP (const PJSIP &) = delete;
-      PJSIP & operator= (const PJSIP &) = delete;
-    bool init ();
-    bool start ();
-    bool stop ();
+      SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PJSIP);
+      PJSIP();
+     ~PJSIP();
+      PJSIP(const PJSIP &) = delete;
+      PJSIP & operator=(const PJSIP &) = delete;
+    bool init();
+    bool start();
+    bool stop();
   private:
       CustomPropertyHelper::ptr custom_props_ {
     std::make_shared < CustomPropertyHelper > ()};
@@ -96,15 +96,15 @@ namespace switcher {
     static pjsip_endpoint *sip_endpt_;
     pj_caching_pool cp_;
 
-    void sip_init_shutdown_thread ();
-    void sip_handling_thread ();
-    bool pj_sip_init ();
-    void exit_cmd ();
-    void run_command_sync (std::function < void () > command);
-    static void set_port (const gint value, void *user_data);
-    static gint get_port (void *user_data);
-    void sip_worker_thread ();
-    void start_udp_transport ();
+    void sip_init_shutdown_thread();
+    void sip_handling_thread();
+    bool pj_sip_init();
+    void exit_cmd();
+    void run_command_sync(std::function < void () > command);
+    static void set_port(const gint value, void *user_data);
+    static gint get_port(void *user_data);
+    void sip_worker_thread();
+    void start_udp_transport();
   };
 
 }                               // end of namespace

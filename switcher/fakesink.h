@@ -30,11 +30,11 @@ namespace switcher {
 
   class FakeSink:public SinglePadGstSink {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (FakeSink);
-    FakeSink ();
-    ~FakeSink ();
-    FakeSink (const FakeSink &) = delete;
-      FakeSink & operator= (const FakeSink &) = delete;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeSink);
+    FakeSink();
+    ~FakeSink();
+    FakeSink(const FakeSink &) = delete;
+      FakeSink & operator=(const FakeSink &) = delete;
 
   private:
       GstElement * fakesink_;
@@ -48,17 +48,17 @@ namespace switcher {
     GParamSpec *byte_rate_spec_;
     GParamSpec *caps_spec_;
 
-    bool init_gpipe () final;
-    bool can_sink_caps (std::string caps) final {
+    bool init_gpipe() final;
+    bool can_sink_caps(std::string caps) final {
       return true;
     };
 
-    static void on_handoff_cb (GstElement * object,
-                               GstBuffer * buf,
-                               GstPad * pad, gpointer user_data);
-    static gboolean update_byte_rate (gpointer user_data);
-    static gint get_byte_rate (void *user_data);
-    static const gchar *get_caps (void *user_data);
+    static void on_handoff_cb(GstElement * object,
+                              GstBuffer * buf,
+                              GstPad * pad, gpointer user_data);
+    static gboolean update_byte_rate(gpointer user_data);
+    static gint get_byte_rate(void *user_data);
+    static const gchar *get_caps(void *user_data);
   };
 
 }                               // end of namespace

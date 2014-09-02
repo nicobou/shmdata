@@ -30,22 +30,22 @@ namespace switcher {
   class QuiddityDocumentation;
 
   // the types of the class factories for quiddity pluggins
-  typedef switcher::Quiddity * create_t ();
-  typedef void destroy_t (switcher::Quiddity *);
-  typedef switcher::QuiddityDocumentation get_documentation_t ();
+  typedef switcher::Quiddity * create_t();
+  typedef void destroy_t(switcher::Quiddity *);
+  typedef switcher::QuiddityDocumentation get_documentation_t();
 
   class PluginLoader {
   public:
     typedef std::shared_ptr < PluginLoader > ptr;
-      PluginLoader ();
-     ~PluginLoader ();
-      PluginLoader (const PluginLoader &) = delete;
-      PluginLoader & operator= (const PluginLoader &) = delete;
+      PluginLoader();
+     ~PluginLoader();
+      PluginLoader(const PluginLoader &) = delete;
+      PluginLoader & operator=(const PluginLoader &) = delete;
 
-    bool load (const char *filename);
-    bool close ();
-      std::string get_class_name ();
-      JSONBuilder::Node get_json_root_node ();
+    bool load(const char *filename);
+    bool close();
+      std::string get_class_name();
+      JSONBuilder::Node get_json_root_node();
 
     create_t *create_;
     destroy_t *destroy_;

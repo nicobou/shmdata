@@ -35,17 +35,17 @@ namespace switcher {
   public:
     typedef std::shared_ptr < HashTable < T > >ptr;
 
-      HashTable ();
-     ~HashTable ();
+      HashTable();
+     ~HashTable();
 
-    void insert (const std::string key, T * value);
-    bool remove (const std::string key);
-    bool contains (const std::string key);
-    unsigned int size ();
-    T *lookup (const std::string key);
-      std::vector < std::string > get_keys ();
-      std::vector < T * >get_values ();
-    void for_each (GHFunc function, void *user_data);
+    void insert(const std::string key, T * value);
+    bool remove(const std::string key);
+    bool contains(const std::string key);
+    unsigned int size();
+    T *lookup(const std::string key);
+      std::vector < std::string > get_keys();
+      std::vector < T * >get_values();
+    void for_each(GHFunc function, void *user_data);
 
   private:
       GHashTable * table_;

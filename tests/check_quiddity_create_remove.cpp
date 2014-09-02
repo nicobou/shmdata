@@ -23,16 +23,16 @@
 #include <string>
 #include <iostream>
 int
-main (int /*argc */ ,
-      char * /*argv */ []) {
+main(int /*argc */ ,
+     char * /*argv */ []) {
   bool success = true;
   switcher::QuiddityManager::ptr manager =
-    switcher::QuiddityManager::make_manager ("test_manager");
-  std::vector < std::string > classes = manager->get_classes ();
+    switcher::QuiddityManager::make_manager("test_manager");
+  std::vector < std::string > classes = manager->get_classes();
 
 for (auto & it:classes) {
     //std::cout << class_name << std::endl;
-    if (!switcher::QuiddityBasicTest::test_create (manager, it))
+    if (!switcher::QuiddityBasicTest::test_create(manager, it))
       success = false;
     //std::cout << res << std::endl;
   }

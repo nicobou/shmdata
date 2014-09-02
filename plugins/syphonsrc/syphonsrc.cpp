@@ -29,87 +29,83 @@ using namespace std;
 using namespace
   switcher::data;
 
-namespace
-  switcher {
+namespace switcher {
 
-  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (SyphonSrc,
-                                        "Video capture (through Syphon)",
-                                        "SyphonSrc",
-                                        "Reads video input from a Syphon source",
-                                        "LGPL",
-                                        "syphonsrc", "Emmanuel Durand");
+  SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SyphonSrc,
+                                       "Video capture (through Syphon)",
+                                       "SyphonSrc",
+                                       "Reads video input from a Syphon source",
+                                       "LGPL",
+                                       "syphonsrc", "Emmanuel Durand");
 
-  SyphonSrc::SyphonSrc ():
-  custom_props_ (std::make_shared < CustomPropertyHelper > ()),
-  syphon_servername_ (""),
-  syphon_servername_prop_ (nullptr),
-  syphon_appname_ (""),
-  syphon_appname_prop_ (nullptr),
-  width_ (0),
-  height_ (0) {
+SyphonSrc::SyphonSrc():
+  custom_props_(std::make_shared < CustomPropertyHelper > ()),
+    syphon_servername_(""),
+    syphon_servername_prop_(nullptr),
+    syphon_appname_(""),
+    syphon_appname_prop_(nullptr), width_(0), height_(0) {
   }
 
-  SyphonSrc::~
-  SyphonSrc () {
+  SyphonSrc::~SyphonSrc() {
   }
 
-  bool
-  SyphonSrc::init_gpipe () {
-    init_startable (this);
-    init_segment (this);
+  bool SyphonSrc::init_gpipe() {
+    init_startable(this);
+    init_segment(this);
 
-    reader_.reset (new SyphonReader (frameCallback, (void *) this));
+    reader_.reset(new SyphonReader(frameCallback, (void *) this));
 
     syphon_servername_prop_ =
-      custom_props_->make_string_property ("servername",
-                                           "servername is the name of the Syphon server",
-                                           syphon_servername_.c_str (),
-                                           (GParamFlags) G_PARAM_READWRITE,
-                                           SyphonSrc::set_servername,
-                                           SyphonSrc::get_servername, this);
+      custom_props_->make_string_property("servername",
+                                          "servername is the name of the Syphon server",
+                                          syphon_servername_.c_str(),
+                                          (GParamFlags) G_PARAM_READWRITE,
+                                          SyphonSrc::set_servername,
+                                          SyphonSrc::get_servername, this);
     syphon_appname_prop_ =
-      custom_props_->make_string_property ("appname",
-                                           "appname is the name of the Syphon application",
-                                           syphon_appname_.c_str (),
-                                           (GParamFlags) G_PARAM_READWRITE,
-                                           SyphonSrc::set_appname,
-                                           SyphonSrc::get_appname, this);
-    install_property_by_pspec (custom_props_->get_gobject (),
-                               syphon_servername_prop_, "servername",
-                               "Syphon server name");
-    install_property_by_pspec (custom_props_->get_gobject (),
-                               syphon_appname_prop_, "appname",
-                               "Syphon application name");
+      custom_props_->make_string_property("appname",
+                                          "appname is the name of the Syphon application",
+                                          syphon_appname_.c_str(),
+                                          (GParamFlags) G_PARAM_READWRITE,
+                                          SyphonSrc::set_appname,
+                                          SyphonSrc::get_appname, this);
+    install_property_by_pspec(custom_props_->get_gobject(),
+                              syphon_servername_prop_, "servername",
+                              "Syphon server name");
+    install_property_by_pspec(custom_props_->get_gobject(),
+                              syphon_appname_prop_, "appname",
+                              "Syphon application name");
 
     return true;
   }
 
-  bool SyphonSrc::start () {
+  bool
+  SyphonSrc::start() {
     if (syphon_servername_ == "" && syphon_appname_ == "") {
       cout <<
         "SyphonSrc::start - No servername nor appname specified, using the first available server"
         << endl;
-      reader_->connect (nullptr, nullptr);
+      reader_->connect(nullptr, nullptr);
     }
     else if (syphon_servername_ != "" && syphon_appname_ == "")
-      reader_->connect (syphon_servername_.c_str (), nullptr);
+      reader_->connect(syphon_servername_.c_str(), nullptr);
     else if (syphon_servername_ == "" && syphon_appname_ != "")
-      reader_->connect (nullptr, syphon_appname_.c_str ());
+      reader_->connect(nullptr, syphon_appname_.c_str());
     else
-      reader_->connect (syphon_servername_.c_str (),
-                        syphon_appname_.c_str ());
+      reader_->connect(syphon_servername_.c_str(), syphon_appname_.c_str());
 
     return true;
   }
 
-  bool SyphonSrc::stop () {
-    reader_->disconnect ();
+  bool
+  SyphonSrc::stop() {
+    reader_->disconnect();
     return true;
   }
 
   void
-  SyphonSrc::frameCallback (void *context, const char *data, int &width,
-                            int &height) {
+  SyphonSrc::frameCallback(void *context, const char *data, int &width,
+                           int &height) {
     SyphonSrc *
       ctx = (SyphonSrc *) context;
 
@@ -120,41 +116,40 @@ namespace
       set = false;
 
     if (set == false || ctx->width_ != width || ctx->height_ != height) {
-      ctx->writer_.reset (new ShmdataAnyWriter);
+      ctx->writer_.reset(new ShmdataAnyWriter);
       if (ctx->syphon_servername_ != "" && ctx->syphon_appname_ != "")
-        ctx->writer_->set_path (ctx->make_file_name
-                                (ctx->syphon_servername_ + "_" +
-                                 ctx->syphon_appname_));
+        ctx->writer_->set_path(ctx->make_file_name
+                               (ctx->syphon_servername_ + "_" +
+                                ctx->syphon_appname_));
       else if (ctx->syphon_servername_ != "")
-        ctx->writer_->set_path (ctx->
-                                make_file_name (ctx->syphon_servername_));
+        ctx->writer_->set_path(ctx->make_file_name(ctx->syphon_servername_));
       else
-        ctx->writer_->set_path (ctx->make_file_name (ctx->syphon_appname_));
-      ctx->register_shmdata (ctx->writer_);
+        ctx->writer_->set_path(ctx->make_file_name(ctx->syphon_appname_));
+      ctx->register_shmdata(ctx->writer_);
       ctx->width_ = width;
       ctx->height_ = height;
 
-      sprintf (buffer,
-               "video/x-raw-rgb,bpp=32,endianness=4321,depth=32,red_mask=-16777216,green_mask=16711680,blue_mask=65280,width=%i,height=%i,framerate=30/1",
-               width, height);
-      ctx->writer_->set_data_type (string (buffer));
-      ctx->writer_->start ();
+      sprintf(buffer,
+              "video/x-raw-rgb,bpp=32,endianness=4321,depth=32,red_mask=-16777216,green_mask=16711680,blue_mask=65280,width=%i,height=%i,framerate=30/1",
+              width, height);
+      ctx->writer_->set_data_type(string(buffer));
+      ctx->writer_->start();
       set = true;
     }
 
-    ctx->writer_->push_data_auto_clock ((void *) data, width * height * 4,
-                                        nullptr, nullptr);
+    ctx->writer_->push_data_auto_clock((void *) data, width * height * 4,
+                                       nullptr, nullptr);
   }
 
   const gchar *
-  SyphonSrc::get_servername (void *user_data) {
+  SyphonSrc::get_servername(void *user_data) {
     SyphonSrc *
       ctx = (SyphonSrc *) user_data;
-    return ctx->syphon_servername_.c_str ();
+    return ctx->syphon_servername_.c_str();
   }
 
   void
-  SyphonSrc::set_servername (const gchar * name, void *user_data) {
+  SyphonSrc::set_servername(const gchar * name, void *user_data) {
     SyphonSrc *
       ctx = (SyphonSrc *) user_data;
 
@@ -163,14 +158,14 @@ namespace
   }
 
   const gchar *
-  SyphonSrc::get_appname (void *user_data) {
+  SyphonSrc::get_appname(void *user_data) {
     SyphonSrc *
       ctx = (SyphonSrc *) user_data;
-    return ctx->syphon_appname_.c_str ();
+    return ctx->syphon_appname_.c_str();
   }
 
   void
-  SyphonSrc::set_appname (const gchar * name, void *user_data) {
+  SyphonSrc::set_appname(const gchar * name, void *user_data) {
     SyphonSrc *
       ctx = (SyphonSrc *) user_data;
 

@@ -15,7 +15,7 @@
   IBOutlet NSTextView *textView;
 }
 
-@property (assign)
+@property(assign)
      IBOutlet NSWindow *
        window;
 

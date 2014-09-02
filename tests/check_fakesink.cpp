@@ -22,42 +22,42 @@
 #include <unistd.h>             //sleep
 
 void
-property_cb (std::string subscriber_name,
-             std::string quiddity_name,
-             std::string property_name, std::string value, void *user_data) {
-  g_debug ("%s %s %s %s\n",
-           subscriber_name.c_str (),
-           quiddity_name.c_str (), property_name.c_str (), value.c_str ());
+property_cb(std::string subscriber_name,
+            std::string quiddity_name,
+            std::string property_name, std::string value, void *user_data) {
+  g_debug("%s %s %s %s\n",
+          subscriber_name.c_str(),
+          quiddity_name.c_str(), property_name.c_str(), value.c_str());
 }
 
 int
-main () {
+main() {
   {
     switcher::QuiddityManager::ptr manager =
-      switcher::QuiddityManager::make_manager ("check_fakesink");
+      switcher::QuiddityManager::make_manager("check_fakesink");
 
-    manager->make_property_subscriber ("sub", property_cb, nullptr);
+    manager->make_property_subscriber("sub", property_cb, nullptr);
 
-    manager->create ("audiotestsrc", "audio");
-    manager->subscribe_property ("sub", "audio", "shmdata-writers");
-    manager->set_property ("audio", "started", "true");
-    manager->create ("fakesink", "vu");
-    manager->subscribe_property ("sub", "vu", "byte-rate");
-    manager->invoke_va ("vu", "connect", nullptr,
-                        "/tmp/switcher_check_fakesink_audio_audio", nullptr);
-    manager->invoke_va ("vu", "disconnect-all", nullptr, nullptr);
-    manager->invoke_va ("vu", "connect", nullptr,
-                        "/tmp/switcher_check_fakesink_audio_audio", nullptr);
-    manager->set_property ("audio", "started", "false");
-    manager->remove ("vu");
-    manager->set_property ("audio", "started", "true");
+    manager->create("audiotestsrc", "audio");
+    manager->subscribe_property("sub", "audio", "shmdata-writers");
+    manager->set_property("audio", "started", "true");
+    manager->create("fakesink", "vu");
+    manager->subscribe_property("sub", "vu", "byte-rate");
+    manager->invoke_va("vu", "connect", nullptr,
+                       "/tmp/switcher_check_fakesink_audio_audio", nullptr);
+    manager->invoke_va("vu", "disconnect-all", nullptr, nullptr);
+    manager->invoke_va("vu", "connect", nullptr,
+                       "/tmp/switcher_check_fakesink_audio_audio", nullptr);
+    manager->set_property("audio", "started", "false");
+    manager->remove("vu");
+    manager->set_property("audio", "started", "true");
 
-    manager->create ("fakesink", "vu");
-    manager->subscribe_property ("sub", "vu", "byte-rate");
-    manager->invoke_va ("vu", "disconnect-all", nullptr, nullptr);
-    manager->invoke_va ("vu", "connect", nullptr,
-                        "/tmp/switcher_check_fakesink_audio_audio", nullptr);
-    manager->remove ("vu");
+    manager->create("fakesink", "vu");
+    manager->subscribe_property("sub", "vu", "byte-rate");
+    manager->invoke_va("vu", "disconnect-all", nullptr, nullptr);
+    manager->invoke_va("vu", "connect", nullptr,
+                       "/tmp/switcher_check_fakesink_audio_audio", nullptr);
+    manager->remove("vu");
   }                             // releasing manager
 
   //success

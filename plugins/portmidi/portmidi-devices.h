@@ -42,31 +42,31 @@ namespace switcher {
   public:
     typedef void (*on_pm_event_method) (PmEvent * midi_event,
                                         void *user_data);
-      PortMidi ();
-      virtual ~ PortMidi ();
-      PortMidi (const PortMidi &) = delete;
-      PortMidi & operator= (const PortMidi &) = delete;
+      PortMidi();
+      virtual ~ PortMidi();
+      PortMidi(const PortMidi &) = delete;
+      PortMidi & operator=(const PortMidi &) = delete;
 
   protected:
     //info
-    static const gchar *get_devices_description_json (gpointer user_data);
+    static const gchar *get_devices_description_json(gpointer user_data);
     GEnumValue input_devices_enum_[128];
     GEnumValue output_devices_enum_[128];
 
     //input
-    int get_default_input_device_id ();
-    bool open_input_device (int id, on_pm_event_method method,
-                            void *user_data);
-    bool close_input_device (int id);
+    int get_default_input_device_id();
+    bool open_input_device(int id, on_pm_event_method method,
+                           void *user_data);
+    bool close_input_device(int id);
     //bool is_queue_empty(int id);
-      std::vector < unsigned char >poll (int id);
+      std::vector < unsigned char >poll(int id);
 
     //ouput
-    int get_default_output_device_id ();
-    bool open_output_device (int id);
-    bool close_output_device (int id);
-    bool push_midi_message (int id, unsigned char status, unsigned char data1,
-                            unsigned char data2);
+    int get_default_output_device_id();
+    bool open_output_device(int id);
+    bool close_output_device(int id);
+    bool push_midi_message(int id, unsigned char status, unsigned char data1,
+                           unsigned char data2);
 
   private:
       gchar * devices_description_;
@@ -74,23 +74,23 @@ namespace switcher {
       std::map < guint, PmStream * >output_streams_;
 
     /** Prints the list of MIDI source devices. */
-    static gchar *make_devices_description (void *user_data);
-    void update_device_enum ();
+    static gchar *make_devices_description(void *user_data);
+    void update_device_enum();
 
     //internal midi scheduler
     class PortMidiScheduler     //singleton
     {
     public:
-      PortMidiScheduler ();
-      ~PortMidiScheduler ();
-      PmStream *add_input_stream (int id, on_pm_event_method method,
-                                  void *user_data);
-      bool remove_input_stream (PmStream * stream);
+      PortMidiScheduler();
+      ~PortMidiScheduler();
+      PmStream *add_input_stream(int id, on_pm_event_method method,
+                                 void *user_data);
+      bool remove_input_stream(PmStream * stream);
 
-      PmStream *add_output_stream (int id);
-      bool remove_output_stream (PmStream * stream);
-      bool push_message (PmStream * stream, unsigned char status,
-                         unsigned char data1, unsigned char data2);
+      PmStream *add_output_stream(int id);
+      bool remove_output_stream(PmStream * stream);
+      bool push_message(PmStream * stream, unsigned char status,
+                        unsigned char data1, unsigned char data2);
 
     private:
         std::mutex streams_mutex_;
@@ -103,7 +103,7 @@ namespace switcher {
       bool app_sysex_in_progress_;
       bool thru_sysex_in_progress_;
 
-      static void process_midi (PtTimestamp timestamp, void *userData);
+      static void process_midi(PtTimestamp timestamp, void *userData);
     };                          //end of PortMidiScheduler
 
     static PortMidiScheduler *scheduler_;

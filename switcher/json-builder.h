@@ -36,30 +36,30 @@ namespace switcher {
   public:
     typedef std::shared_ptr < JSONBuilder > ptr;
     typedef JsonNode *Node;
-      JSONBuilder ();
-     ~JSONBuilder ();
-      JSONBuilder (const JSONBuilder & source) = delete;
-      JSONBuilder & operator= (const JSONBuilder & source) = delete;
+      JSONBuilder();
+     ~JSONBuilder();
+      JSONBuilder(const JSONBuilder & source) = delete;
+      JSONBuilder & operator=(const JSONBuilder & source) = delete;
 
-    void reset ();
-    void begin_object ();
-    void end_object ();
-    void begin_array ();
-    void add_string_value (const gchar * string_value);
-    void add_double_value (gdouble double_value);
-    void add_node_value (Node node_value);
-    void end_array ();
-    void set_member_name (const gchar * member_name);
-    void add_string_member (const gchar * member_name,
-                            const gchar * string_value);
-    void add_double_member (const gchar * member_name, gdouble double_value);
-    void add_int_member (const gchar * member_name, gint int_value);
-    void add_JsonNode_member (const gchar * member_name, Node JsonNode_value);
+    void reset();
+    void begin_object();
+    void end_object();
+    void begin_array();
+    void add_string_value(const gchar * string_value);
+    void add_double_value(gdouble double_value);
+    void add_node_value(Node node_value);
+    void end_array();
+    void set_member_name(const gchar * member_name);
+    void add_string_member(const gchar * member_name,
+                           const gchar * string_value);
+    void add_double_member(const gchar * member_name, gdouble double_value);
+    void add_int_member(const gchar * member_name, gint int_value);
+    void add_JsonNode_member(const gchar * member_name, Node JsonNode_value);
 
-      std::string get_string (bool pretty);
-    static std::string get_string (Node root_node, bool pretty);
-    Node get_root ();           // call node free when done if not used with add_node_value
-    static void node_free (Node root_node);
+      std::string get_string(bool pretty);
+    static std::string get_string(Node root_node, bool pretty);
+    Node get_root();            // call node free when done if not used with add_node_value
+    static void node_free(Node root_node);
   private:
       JsonBuilder * builder_;
       std::mutex thread_safe_;

@@ -54,50 +54,49 @@ namespace switcher {
       typedef std::function < void (const std::string & name,
                                     const Tree::ptr tree,
                                     bool is_array_element) > OnNodeFunction;
-        Tree () {
+        Tree() {
       };
-        Tree (const Any & data);
-      bool is_leaf ();
-      bool is_array ();
-      bool has_data ();
-      Any get_data ();
-      void set_data (const Any & data);
-      void set_data (const char *data);
-      void set_data (std::nullptr_t ptr);
+        Tree(const Any & data);
+      bool is_leaf();
+      bool is_array();
+      bool has_data();
+      Any get_data();
+      void set_data(const Any & data);
+      void set_data(const char *data);
+      void set_data(std::nullptr_t ptr);
 
       //path based methods
-      bool is_leaf (const std::string & path);
-      bool has_data (const std::string & path);
-      Any get_data (const std::string & path);
-      bool set_data (const std::string & path, const Any & data);
-      bool set_data (const std::string & path, const char *data);
-      bool set_data (const std::string & path, std::nullptr_t ptr);
+      bool is_leaf(const std::string & path);
+      bool has_data(const std::string & path);
+      Any get_data(const std::string & path);
+      bool set_data(const std::string & path, const Any & data);
+      bool set_data(const std::string & path, const char *data);
+      bool set_data(const std::string & path, std::nullptr_t ptr);
 
       // graft will create the path and graft the tree,
       // or remove old one and replace will the new tree
-      bool graft (const std::string & path, Tree::ptr);
+      bool graft(const std::string & path, Tree::ptr);
       //return empty tree if nothing can be pruned
-        Tree::ptr prune (const std::string & path);
+        Tree::ptr prune(const std::string & path);
       //get but not remove
-        Tree::ptr get (const std::string & path);
+        Tree::ptr get(const std::string & path);
 
       // return false if the path does not exist
       // when a path is tagged as an array, keys might be discarded
       // by some serializers, such as JSON
-      bool tag_as_array (const std::string & path, bool is_array);
-      bool is_array (const std::string & path);
+      bool tag_as_array(const std::string & path, bool is_array);
+      bool is_array(const std::string & path);
 
       //get child key in place, use with std::insert_iterator
         template < typename Iter >
-        void get_child_keys (const std::string path, Iter pos) {
-        std::unique_lock < std::mutex > lock (mutex_);
-        auto found = get_node (path);
-        if (!found.first.empty ())
-            std::transform (found.second->second->childrens_.begin (),
-                            found.second->second->childrens_.end (),
-                            pos,[](const child_type & child) {
-                            return child.first;
-                            }
+        void get_child_keys(const std::string path, Iter pos) {
+        std::unique_lock < std::mutex > lock(mutex_);
+        auto found = get_node(path);
+        if (!found.first.empty())
+            std::transform(found.second->second->childrens_.begin(),
+                           found.second->second->childrens_.end(),
+                           pos,[](const child_type & child) {
+                           return child.first;}
         );
       }
 
@@ -105,17 +104,16 @@ namespace switcher {
       template < template < class T, class =
         std::allocator < T > >class Container =
         std::list > Container < std::string >
-        get_child_keys (const std::string path) {
+        get_child_keys(const std::string path) {
         Container < std::string > res;
-        std::unique_lock < std::mutex > lock (mutex_);
-        auto found = get_node (path);
-        if (!found.first.empty ()) {
-          res.resize (found.second->second->childrens_.size ());
-          std::transform (found.second->second->childrens_.begin (),
-                          found.second->second->childrens_.end (),
-                          res.begin (),[](const child_type & child) {
-                          return child.first;
-                          }
+        std::unique_lock < std::mutex > lock(mutex_);
+        auto found = get_node(path);
+        if (!found.first.empty()) {
+          res.resize(found.second->second->childrens_.size());
+          std::transform(found.second->second->childrens_.begin(),
+                         found.second->second->childrens_.end(),
+                         res.begin(),[](const child_type & child) {
+                         return child.first;}
           );
         }
         return res;
@@ -130,29 +128,29 @@ namespace switcher {
       };
       std::mutex mutex_ {
       };
-      child_list_type::iterator get_child_iterator (const std::string & key);
-      static bool graft_next (std::istringstream & path, Tree * tree,
-                              Tree::ptr leaf);
+      child_list_type::iterator get_child_iterator(const std::string & key);
+      static bool graft_next(std::istringstream & path, Tree * tree,
+                             Tree::ptr leaf);
       std::pair < Tree::child_list_type,
-        Tree::child_list_type::iterator > get_node (const std::string & path);
-      bool get_next (std::istringstream & path,
-                     child_list_type & parent_list_result,
-                     child_list_type::iterator & result_iterator);
+        Tree::child_list_type::iterator > get_node(const std::string & path);
+      bool get_next(std::istringstream & path,
+                    child_list_type & parent_list_result,
+                    child_list_type::iterator & result_iterator);
 
       //walks
       friend void
-        preorder_tree_walk (Tree::ptr tree,
-                            Tree::OnNodeFunction on_visiting_node,
-                            Tree::OnNodeFunction on_node_visited);
+        preorder_tree_walk(Tree::ptr tree,
+                           Tree::OnNodeFunction on_visiting_node,
+                           Tree::OnNodeFunction on_node_visited);
 
     };
 
     //constructor
-    Tree::ptr make_tree ();
-    template < typename ValueType > Tree::ptr make_tree (ValueType data) {
+    Tree::ptr make_tree();
+    template < typename ValueType > Tree::ptr make_tree(ValueType data) {
       return std::make_shared < Tree > (data);
     }
-    Tree::ptr make_tree (const char *data);     //Tree will store a std::string
+    Tree::ptr make_tree(const char *data);      //Tree will store a std::string
 
   }                             // end of "data" namespace
 }                               // end of "switcher" namespace

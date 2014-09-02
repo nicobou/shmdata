@@ -36,7 +36,7 @@ namespace switcher {
   namespace data {
     namespace JSONSerializer {
 
-      std::string serialize (const Tree::ptr);
+      std::string serialize(const Tree::ptr);
       //FIXME implement this: Tree::ptr deserialize (std::string &serialized);
 
     };

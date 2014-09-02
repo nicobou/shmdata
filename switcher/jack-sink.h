@@ -28,11 +28,11 @@ namespace switcher {
 
   class JackSink:public SinglePadGstSink, public StartableQuiddity {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (JackSink);
-    JackSink ();
-    ~JackSink ();
-    JackSink (const JackSink &) = delete;
-      JackSink & operator= (const JackSink &) = delete;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JackSink);
+    JackSink();
+    ~JackSink();
+    JackSink(const JackSink &) = delete;
+      JackSink & operator=(const JackSink &) = delete;
 
   private:
       GstElement * jacksink_;
@@ -40,16 +40,16 @@ namespace switcher {
     GParamSpec *client_name_spec_;
     gchar *client_name_;
 
-    bool init_gpipe () final;
-    bool start () final;
-    bool stop () final;
-    void on_shmdata_disconnect () final;
-    void on_shmdata_connect (std::string shmdata_sochet_path) final;
-    bool can_sink_caps (std::string caps) final;
+    bool init_gpipe() final;
+    bool start() final;
+    bool stop() final;
+    void on_shmdata_disconnect() final;
+    void on_shmdata_connect(std::string shmdata_sochet_path) final;
+    bool can_sink_caps(std::string caps) final;
 
-    bool make_elements ();
-    static void set_client_name (const gchar * value, void *user_data);
-    static const gchar *get_client_name (void *user_data);
+    bool make_elements();
+    static void set_client_name(const gchar * value, void *user_data);
+    static const gchar *get_client_name(void *user_data);
   };
 
 }                               // end of namespace

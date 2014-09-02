@@ -33,11 +33,11 @@
 namespace switcher {
   class ShmdataToOsc:public Quiddity, public Segment, public StartableQuiddity {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (ShmdataToOsc);
-    ShmdataToOsc ();
-    ~ShmdataToOsc ();
-    ShmdataToOsc (const ShmdataToOsc &) = delete;
-      ShmdataToOsc & operator= (const ShmdataToOsc &) = delete;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToOsc);
+    ShmdataToOsc();
+    ~ShmdataToOsc();
+    ShmdataToOsc(const ShmdataToOsc &) = delete;
+      ShmdataToOsc & operator=(const ShmdataToOsc &) = delete;
 
   private:
       CustomPropertyHelper::ptr custom_props_;
@@ -48,26 +48,26 @@ namespace switcher {
     lo_address address_;
       std::mutex address_mutex_;
 
-    bool init () final;
-    bool start () final;
-    bool stop () final;
+    bool init() final;
+    bool start() final;
+    bool stop() final;
 
     //segment handlers
-    bool connect (std::string shmdata_path);
-    bool can_sink_caps (std::string caps);
+    bool connect(std::string shmdata_path);
+    bool can_sink_caps(std::string caps);
 
-    void on_shmreader_data (void *data,
-                            int data_size,
-                            unsigned long long timestamp,
-                            const char *type_description, void *user_data);
+    void on_shmreader_data(void *data,
+                           int data_size,
+                           unsigned long long timestamp,
+                           const char *type_description, void *user_data);
 
-    static void set_port (const gint value, void *user_data);
-    static gint get_port (void *user_data);
-    static void set_host (const gchar * value, void *user_data);
-    static const gchar *get_host (void *user_data);
+    static void set_port(const gint value, void *user_data);
+    static gint get_port(void *user_data);
+    static void set_host(const gchar * value, void *user_data);
+    static const gchar *get_host(void *user_data);
   };
 
-    SWITCHER_DECLARE_PLUGIN (ShmdataToOsc);
+    SWITCHER_DECLARE_PLUGIN(ShmdataToOsc);
 
 }                               // end of namespace
 

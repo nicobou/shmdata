@@ -23,15 +23,15 @@
 #include <string>
 #include <iostream>
 int
-main () {
+main() {
   bool success = true;
   switcher::QuiddityManager::ptr manager =
-    switcher::QuiddityManager::make_manager ("check_startable_manager");
+    switcher::QuiddityManager::make_manager("check_startable_manager");
 
-  std::vector < std::string > classes = manager->get_classes ();
+  std::vector < std::string > classes = manager->get_classes();
 
 for (auto & it:classes)
-    if (!switcher::QuiddityBasicTest::test_startable (manager, it))
+    if (!switcher::QuiddityBasicTest::test_startable(manager, it))
       success = false;
 
   if (success)

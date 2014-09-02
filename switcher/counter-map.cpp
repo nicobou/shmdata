@@ -21,24 +21,24 @@
 
 namespace switcher {
 
-  CounterMap::CounterMap ():counters_ (), mutex_ () {
+  CounterMap::CounterMap():counters_(), mutex_() {
   }
 
-  CounterMap::~CounterMap () {
+  CounterMap::~CounterMap() {
   }
 
-  uint CounterMap::get_count (const std::string & key) {
-    std::unique_lock < std::mutex > lock (mutex_);
-    auto it = counters_.find (key);
-    if (counters_.end () != it)
+  uint CounterMap::get_count(const std::string & key) {
+    std::unique_lock < std::mutex > lock(mutex_);
+    auto it = counters_.find(key);
+    if (counters_.end() != it)
       return ++(it->second);
     //else init to 0 for this key
     counters_[key] = 0;
     return 0;
   }
 
-  void CounterMap::reset_counter_map () {
-    std::unique_lock < std::mutex > lock (mutex_);
-    counters_.clear ();
+  void CounterMap::reset_counter_map() {
+    std::unique_lock < std::mutex > lock(mutex_);
+    counters_.clear();
   }
 }                               //end of switcher namespace

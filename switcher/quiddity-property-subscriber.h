@@ -41,30 +41,29 @@ namespace switcher {
                               std::string quiddity_name,
                               std::string property_name,
                               std::string value, void *user_data);
-      QuiddityPropertySubscriber ();
-     ~QuiddityPropertySubscriber ();
-      QuiddityPropertySubscriber (const QuiddityPropertySubscriber &) =
-      delete;
-      QuiddityPropertySubscriber & operator= (const QuiddityPropertySubscriber
-                                              &) = delete;
-    void mute (bool muted);
+      QuiddityPropertySubscriber();
+     ~QuiddityPropertySubscriber();
+      QuiddityPropertySubscriber(const QuiddityPropertySubscriber &) = delete;
+      QuiddityPropertySubscriber & operator=(const QuiddityPropertySubscriber
+                                             &) = delete;
+    void mute(bool muted);
 
-    void set_callback (Callback cb);
-    void set_user_data (void *user_data);
-    void set_name (const gchar * name);
-    bool subscribe (std::shared_ptr < Quiddity > quid,
-                    std::string property_name);
-    bool unsubscribe (std::shared_ptr < Quiddity > quid,
-                      std::string property_name);
-    bool unsubscribe (std::shared_ptr < Quiddity > quid);
+    void set_callback(Callback cb);
+    void set_user_data(void *user_data);
+    void set_name(const gchar * name);
+    bool subscribe(std::shared_ptr < Quiddity > quid,
+                   std::string property_name);
+    bool unsubscribe(std::shared_ptr < Quiddity > quid,
+                     std::string property_name);
+    bool unsubscribe(std::shared_ptr < Quiddity > quid);
       std::vector < std::pair < std::string,
-      std::string > >list_subscribed_properties ();
-    static void property_cb (GObject * gobject, GParamSpec * pspec,
-                             gpointer user_data);
+      std::string > >list_subscribed_properties();
+    static void property_cb(GObject * gobject, GParamSpec * pspec,
+                            gpointer user_data);
 
     //manager_impl initialization
-    void set_manager_impl (std::shared_ptr < QuiddityManager_Impl >
-                           manager_impl);
+    void set_manager_impl(std::shared_ptr < QuiddityManager_Impl >
+                          manager_impl);
 
   private:
       Callback user_callback_;

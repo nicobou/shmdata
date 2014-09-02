@@ -21,37 +21,37 @@
 #include "gst/gst.h"
 
 namespace switcher {
-  Categorizable::Categorizable () {
+  Categorizable::Categorizable() {
     category_ = "";
     position_weight_ = 0;
   }
 
-  Categorizable::~Categorizable () {
+  Categorizable::~Categorizable() {
   }
 
-  void Categorizable::set_category (std::string category_name) {
+  void Categorizable::set_category(std::string category_name) {
     category_ = category_name;
   }
 
-  void Categorizable::set_position_weight (int position_weight) {
+  void Categorizable::set_position_weight(int position_weight) {
     position_weight_ = position_weight;
   }
 
-  std::string Categorizable::get_category () {
+  std::string Categorizable::get_category() {
     return category_;
   }
 
-  int Categorizable::get_position_weight () {
+  int Categorizable::get_position_weight() {
     return position_weight_;
   }
 
   bool
-    Categorizable::compare_ptr (Categorizable::ptr first,
-                                Categorizable::ptr second) {
+    Categorizable::compare_ptr(Categorizable::ptr first,
+                               Categorizable::ptr second) {
     return first->position_weight_ < second->position_weight_;
   }
 
-  bool Categorizable::compare (Categorizable first, Categorizable second) {
+  bool Categorizable::compare(Categorizable first, Categorizable second) {
     return first.position_weight_ < second.position_weight_;
   }
 }

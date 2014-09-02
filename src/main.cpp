@@ -89,58 +89,58 @@ static
 };
 
 void
-leave (int sig) {
+leave(int sig) {
   //removing reference to manager in order to delete it
   {
     switcher::QuiddityManager::ptr empty;
-    manager.swap (empty);
+    manager.swap(empty);
   }
 #ifdef HAVE_GTK
-  gtk_main_quit ();
+  gtk_main_quit();
 #endif
-  exit (sig);
+  exit(sig);
 }
 
 static void
-quiet_log_handler (const gchar * /*log_domain */ ,
-                   GLogLevelFlags /*log_level */ ,
-                   const gchar * /*message */ ,
-                   gpointer /*user_data */ ) {
+quiet_log_handler(const gchar * /*log_domain */ ,
+                  GLogLevelFlags /*log_level */ ,
+                  const gchar * /*message */ ,
+                  gpointer /*user_data */ ) {
 }
 
 static void
-logger_cb (std::string /*subscriber_name */ ,
-           std::string /*quiddity_name */ ,
-           std::string /*property_name */ ,
-           std::string value, void * /*user_data */ ) {
-  g_print ("%s\n", value.c_str ());
+logger_cb(std::string /*subscriber_name */ ,
+          std::string /*quiddity_name */ ,
+          std::string /*property_name */ ,
+          std::string value, void * /*user_data */ ) {
+  g_print("%s\n", value.c_str());
 }
 
 int
-main (int argc, char *argv[]) {
-  setlocale (LC_ALL, "");
-  (void) signal (SIGINT, leave);
-  (void) signal (SIGABRT, leave);
-  (void) signal (SIGQUIT, leave);
-  (void) signal (SIGTERM, leave);
+main(int argc, char *argv[]) {
+  setlocale(LC_ALL, "");
+  (void) signal(SIGINT, leave);
+  (void) signal(SIGABRT, leave);
+  (void) signal(SIGQUIT, leave);
+  (void) signal(SIGTERM, leave);
 
   //command line options
   GError *
     error = nullptr;
   GOptionContext *
     context;
-  context = g_option_context_new ("- switcher server");
-  g_option_context_add_main_entries (context, entries, nullptr);
-  if (!g_option_context_parse (context, &argc, &argv, &error)) {
-    g_printerr ("option parsing failed: %s\n", error->message);
-    exit (1);
+  context = g_option_context_new("- switcher server");
+  g_option_context_add_main_entries(context, entries, nullptr);
+  if (!g_option_context_parse(context, &argc, &argv, &error)) {
+    g_printerr("option parsing failed: %s\n", error->message);
+    exit(1);
   }
 
   if (display_version) {
 #ifdef HAVE_CONFIG_H
-    g_print ("%s\n", VERSION);
+    g_print("%s\n", VERSION);
 #else
-    g_print ("unknown\n");
+    g_print("unknown\n");
 #endif
     return 0;
   }
@@ -151,140 +151,139 @@ main (int argc, char *argv[]) {
   if (port_number == nullptr)
     port_number = "27182";
 
-  manager = switcher::QuiddityManager::make_manager (server_name);
+  manager = switcher::QuiddityManager::make_manager(server_name);
 
   //create logger managing switcher log domain
-  manager->create ("logger", "internal_logger");
+  manager->create("logger", "internal_logger");
   //manage logs from shmdata
-  manager->invoke_va ("internal_logger", "install_log_handler", nullptr,
-                      "shmdata", nullptr);
+  manager->invoke_va("internal_logger", "install_log_handler", nullptr,
+                     "shmdata", nullptr);
   //manage logs from GStreamer
-  manager->invoke_va ("internal_logger", "install_log_handler", nullptr,
-                      "GStreamer", nullptr);
+  manager->invoke_va("internal_logger", "install_log_handler", nullptr,
+                     "GStreamer", nullptr);
   //manage logs from Glib
-  manager->invoke_va ("internal_logger", "install_log_handler", nullptr,
-                      "GLib", nullptr);
+  manager->invoke_va("internal_logger", "install_log_handler", nullptr,
+                     "GLib", nullptr);
   //manage logs from Glib-GObject
-  manager->invoke_va ("internal_logger", "install_log_handler", nullptr,
-                      "GLib-GObject", nullptr);
+  manager->invoke_va("internal_logger", "install_log_handler", nullptr,
+                     "GLib-GObject", nullptr);
 
   if (quiet)
-    manager->set_property ("internal_logger", "mute", "true");
+    manager->set_property("internal_logger", "mute", "true");
   else
-    manager->set_property ("internal_logger", "mute", "false");
+    manager->set_property("internal_logger", "mute", "false");
   if (debug)
-    manager->set_property ("internal_logger", "debug", "true");
+    manager->set_property("internal_logger", "debug", "true");
   else
-    manager->set_property ("internal_logger", "debug", "false");
+    manager->set_property("internal_logger", "debug", "false");
   if (verbose)
-    manager->set_property ("internal_logger", "verbose", "true");
+    manager->set_property("internal_logger", "verbose", "true");
   else
-    manager->set_property ("internal_logger", "verbose", "false");
+    manager->set_property("internal_logger", "verbose", "false");
 
   //subscribe to logs:
-  manager->make_property_subscriber ("log_sub", logger_cb, nullptr);
-  manager->subscribe_property ("log_sub", "internal_logger", "last-line");
+  manager->make_property_subscriber("log_sub", logger_cb, nullptr);
+  manager->subscribe_property("log_sub", "internal_logger", "last-line");
 
   //loading plugins from default location //FIXME add an option
 #ifdef HAVE_CONFIG_H
   gchar *
-    usr_plugin_dir = g_strdup_printf ("/usr/%s-%s/plugins", PACKAGE_NAME,
-                                      LIBSWITCHER_API_VERSION);
-  manager->scan_directory_for_plugins (usr_plugin_dir);
-  g_free (usr_plugin_dir);
+    usr_plugin_dir = g_strdup_printf("/usr/%s-%s/plugins", PACKAGE_NAME,
+                                     LIBSWITCHER_API_VERSION);
+  manager->scan_directory_for_plugins(usr_plugin_dir);
+  g_free(usr_plugin_dir);
 
   gchar *
     usr_local_plugin_dir =
-    g_strdup_printf ("/usr/local/%s-%s/plugins", PACKAGE_NAME,
-                     LIBSWITCHER_API_VERSION);
-  manager->scan_directory_for_plugins (usr_local_plugin_dir);
-  g_free (usr_local_plugin_dir);
+    g_strdup_printf("/usr/local/%s-%s/plugins", PACKAGE_NAME,
+                    LIBSWITCHER_API_VERSION);
+  manager->scan_directory_for_plugins(usr_local_plugin_dir);
+  g_free(usr_local_plugin_dir);
 #else
-  g_warning ("plugins from default location not loaded (config.h missing)");
+  g_warning("plugins from default location not loaded (config.h missing)");
 #endif
 
   if (extraplugindir != nullptr)
-    manager->scan_directory_for_plugins (extraplugindir);
+    manager->scan_directory_for_plugins(extraplugindir);
 
   //checking if this is printing info only
   if (listclasses) {
-    g_log_set_default_handler (quiet_log_handler, nullptr);
-    std::vector < std::string > resultlist = manager->get_classes ();
-    for (uint i = 0; i < resultlist.size (); i++)
-      g_print ("%s\n", resultlist[i].c_str ());
+    g_log_set_default_handler(quiet_log_handler, nullptr);
+    std::vector < std::string > resultlist = manager->get_classes();
+    for (uint i = 0; i < resultlist.size(); i++)
+      g_print("%s\n", resultlist[i].c_str());
     return 0;
   }
   if (classesdoc) {
-    g_log_set_default_handler (quiet_log_handler, nullptr);
-    g_print ("%s\n", manager->get_classes_doc ().c_str ());
+    g_log_set_default_handler(quiet_log_handler, nullptr);
+    g_print("%s\n", manager->get_classes_doc().c_str());
     return 0;
   }
   if (classdoc != nullptr) {
-    g_log_set_default_handler (quiet_log_handler, nullptr);
-    g_print ("%s\n", manager->get_class_doc (classdoc).c_str ());
+    g_log_set_default_handler(quiet_log_handler, nullptr);
+    g_print("%s\n", manager->get_class_doc(classdoc).c_str());
     return 0;
   }
   if (listpropbyclass != nullptr) {
-    g_log_set_default_handler (quiet_log_handler, nullptr);
-    g_print ("%s\n",
-             manager->get_properties_description_by_class (listpropbyclass).
-             c_str ());
+    g_log_set_default_handler(quiet_log_handler, nullptr);
+    g_print("%s\n",
+            manager->
+            get_properties_description_by_class(listpropbyclass).c_str());
     return 0;
   }
   if (listmethodsbyclass != nullptr) {
-    g_log_set_default_handler (quiet_log_handler, nullptr);
-    g_print ("%s\n",
-             manager->get_methods_description_by_class (listmethodsbyclass).
-             c_str ());
+    g_log_set_default_handler(quiet_log_handler, nullptr);
+    g_print("%s\n",
+            manager->
+            get_methods_description_by_class(listmethodsbyclass).c_str());
     return 0;
   }
   if (listsignalsbyclass != nullptr) {
-    g_log_set_default_handler (quiet_log_handler, nullptr);
-    g_print ("%s\n",
-             manager->get_signals_description_by_class (listsignalsbyclass).
-             c_str ());
+    g_log_set_default_handler(quiet_log_handler, nullptr);
+    g_print("%s\n",
+            manager->
+            get_signals_description_by_class(listsignalsbyclass).c_str());
     return 0;
   }
 
-  std::string soap_name = manager->create ("SOAPcontrolServer", "soapserver");
+  std::string soap_name = manager->create("SOAPcontrolServer", "soapserver");
   std::vector < std::string > port_arg;
-  port_arg.push_back (port_number);
+  port_arg.push_back(port_number);
   std::string * result;
-  manager->invoke (soap_name, "set_port", &result, port_arg);
-  if (g_strcmp0 ("false", result->c_str ()) == 0
-      && osc_port_number == nullptr)
+  manager->invoke(soap_name, "set_port", &result, port_arg);
+  if (g_strcmp0("false", result->c_str()) == 0 && osc_port_number == nullptr)
     return 0;
 
   // start osc if port number has been set
   if (osc_port_number != nullptr) {
-    std::string osc_name = manager->create ("OSCctl");
-    if (osc_name.compare ("") == 0)
-      g_warning ("osc plugin not found");
+    std::string osc_name = manager->create("OSCctl");
+    if (osc_name.compare("") == 0)
+      g_warning("osc plugin not found");
     else
-      manager->invoke_va (osc_name.c_str (), "set_port", nullptr,
-                          osc_port_number, nullptr);
+      manager->invoke_va(osc_name.c_str(), "set_port", nullptr,
+                         osc_port_number, nullptr);
   }
 
-  manager->reset_command_history (false);
+  manager->reset_command_history(false);
 
   if (load_file != nullptr) {
     switcher::QuiddityManager::CommandHistory histo =
-      manager->get_command_history_from_file (load_file);
+      manager->get_command_history_from_file(load_file);
     std::vector < std::string > prop_subscriber_names =
-      manager->get_property_subscribers_names (histo);
-    if (!prop_subscriber_names.empty ())
+      manager->get_property_subscribers_names(histo);
+    if (!prop_subscriber_names.empty())
       g_warning
         ("creation of property subscriber not handled when loading file %s",
          load_file);
 
     std::vector < std::string > signal_subscriber_names =
-      manager->get_signal_subscribers_names (histo);
-    if (!signal_subscriber_names.empty ())
+      manager->get_signal_subscribers_names(histo);
+    if (!signal_subscriber_names.empty())
       g_warning
         ("creation of signal subscriber not handled when loading file %s",
          load_file);
 
-    manager->play_command_history (histo, nullptr, nullptr, true);
+    manager->play_command_history(histo, nullptr, nullptr, true);
   }
 
   // manager->create ("videotestsrc", "vid");
@@ -328,19 +327,18 @@ main (int argc, char *argv[]) {
   //      g_print ("--fin-- %s\n",manager->get_quiddities_description ().c_str ());
 
 #ifdef HAVE_GTK
-  if (!gtk_init_check (nullptr, nullptr))
+  if (!gtk_init_check(nullptr, nullptr))
     std::cerr << "cannot init gtk in main" << std::endl;
   else
-    gtk_main ();
+    gtk_main();
 #endif
 
   //waiting for end of life
-  timespec
-    delay;
+  timespec delay;
   delay.tv_sec = 1;
   delay.tv_nsec = 0;
   while (1)
-    nanosleep (&delay, nullptr);
+    nanosleep(&delay, nullptr);
 
   return 0;
 }

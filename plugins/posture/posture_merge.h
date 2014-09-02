@@ -34,14 +34,14 @@
 namespace switcher {
   class PostureMerge:public Quiddity, public Segment, public StartableQuiddity {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (PostureMerge);
-    PostureMerge ();
-    ~PostureMerge ();
-    PostureMerge (const PostureMerge &) = delete;
-      PostureMerge & operator= (const PostureMerge &) = delete;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureMerge);
+    PostureMerge();
+    ~PostureMerge();
+    PostureMerge(const PostureMerge &) = delete;
+      PostureMerge & operator=(const PostureMerge &) = delete;
 
-    bool start ();
-    bool stop ();
+    bool start();
+    bool stop();
 
   private:
       CustomPropertyHelper::ptr custom_props_;
@@ -72,21 +72,21 @@ namespace switcher {
     unsigned int cloud_buffer_index_ {
     0};
 
-    bool init () final;
+    bool init() final;
 
-    bool connect (std::string shmdata_socket_path);
-    bool disconnect_all ();
-    bool can_sink_caps (std::string caps);
+    bool connect(std::string shmdata_socket_path);
+    bool disconnect_all();
+    bool can_sink_caps(std::string caps);
 
-    static const gchar *get_calibration_path (void *user_data);
-    static void set_calibration_path (const gchar * name, void *user_data);
-    static const gchar *get_devices_path (void *user_data);
-    static void set_devices_path (const gchar * name, void *user_data);
-    static int get_compress_cloud (void *user_data);
-    static void set_compress_cloud (const int compress, void *user_data);
+    static const gchar *get_calibration_path(void *user_data);
+    static void set_calibration_path(const gchar * name, void *user_data);
+    static const gchar *get_devices_path(void *user_data);
+    static void set_devices_path(const gchar * name, void *user_data);
+    static int get_compress_cloud(void *user_data);
+    static void set_compress_cloud(const int compress, void *user_data);
   };
 
-  SWITCHER_DECLARE_PLUGIN (PostureMerge);
+  SWITCHER_DECLARE_PLUGIN(PostureMerge);
 
 }                               // end of namespace
 

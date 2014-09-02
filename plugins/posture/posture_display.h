@@ -33,11 +33,11 @@
 namespace switcher {
   class PostureDisplay:public Quiddity, public Segment {
   public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (PostureDisplay);
-    PostureDisplay ();
-    ~PostureDisplay ();
-    PostureDisplay (const PostureDisplay &) = delete;
-      PostureDisplay & operator= (const PostureDisplay &) = delete;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureDisplay);
+    PostureDisplay();
+    ~PostureDisplay();
+    PostureDisplay(const PostureDisplay &) = delete;
+      PostureDisplay & operator=(const PostureDisplay &) = delete;
 
   private:
       CustomPropertyHelper::ptr custom_props_;
@@ -45,15 +45,15 @@ namespace switcher {
       std::shared_ptr < posture::Display > display_ {
     nullptr};
 
-    bool init () final;
+    bool init() final;
 
-    bool connect (std::string shmdata_socket_path);
-    bool disconnect_all ();
-    bool can_sink_caps (std::string caps);
+    bool connect(std::string shmdata_socket_path);
+    bool disconnect_all();
+    bool can_sink_caps(std::string caps);
 
   };
 
-  SWITCHER_DECLARE_PLUGIN (PostureDisplay);
+  SWITCHER_DECLARE_PLUGIN(PostureDisplay);
 
 }                               // end of namespace
 

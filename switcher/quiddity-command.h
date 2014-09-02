@@ -85,7 +85,7 @@ namespace switcher {
       unsubscribe_signal
     };
 
-      QuiddityCommand ();
+      QuiddityCommand();
     command id_;
       std::vector < std::string > args_;
       std::vector < std::string > vector_arg_;
@@ -93,15 +93,15 @@ namespace switcher {
       std::vector < std::string > expected_result_;
     bool success_;
     gint64 time_;               ////monotonic time, in microseconds
-    void clear ();
-    void set_id (command id);
-    void add_arg (std::string arg);
-    void set_vector_arg (std::vector < std::string > vector_arg);
-    static command get_id_from_string (const char *com);
-    static const char *get_string_from_id (QuiddityCommand::command id);
-    static QuiddityCommand::ptr parse_command_from_json_reader (JsonReader *
-                                                                reader);
-      JSONBuilder::Node get_json_root_node ();
+    void clear();
+    void set_id(command id);
+    void add_arg(std::string arg);
+    void set_vector_arg(std::vector < std::string > vector_arg);
+    static command get_id_from_string(const char *com);
+    static const char *get_string_from_id(QuiddityCommand::command id);
+    static QuiddityCommand::ptr parse_command_from_json_reader(JsonReader *
+                                                               reader);
+      JSONBuilder::Node get_json_root_node();
       JSONBuilder::ptr json_builder_;
     static const std::map < int, const char *>command_names_;
   };

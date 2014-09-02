@@ -30,12 +30,12 @@ namespace switcher {
   class VideoSource:public GPipe, public StartableQuiddity {
   public:
     typedef std::shared_ptr < VideoSource > ptr;
-      VideoSource ();
-     ~VideoSource ();
-      VideoSource (const VideoSource &) = delete;
-      VideoSource & operator= (const VideoSource &) = delete;
-    bool start ();
-    bool stop ();
+      VideoSource();
+     ~VideoSource();
+      VideoSource(const VideoSource &) = delete;
+      VideoSource & operator=(const VideoSource &) = delete;
+    bool start();
+    bool stop();
 
   private:
       GstElement * rawvideo_;
@@ -58,25 +58,25 @@ namespace switcher {
     GstElement *color_space_codec_element_;
       std::vector < std::string > codec_properties_;
 
-    virtual bool on_start () {
+    virtual bool on_start() {
       return true;
     };
-    virtual bool on_stop () {
+    virtual bool on_stop() {
       return true;
     };
-    virtual bool make_video_source (GstElement ** new_element) = 0;
-    bool make_new_shmdatas ();
-    bool remake_codec_elements ();
-    void make_codec_properties ();
-    static void set_codec (const gint value, void *user_data);
-    static gint get_codec (void *user_data);
-    static gboolean get_codec_long_list (void *user_data);
-    static void set_codec_long_list (gboolean mute, void *user_data);
-    static gboolean sink_factory_filter (GstPluginFeature * feature,
-                                         gpointer data);
-    static gint sink_compare_ranks (GstPluginFeature * f1,
-                                    GstPluginFeature * f2);
-    static void print_list (gpointer data, gpointer user_data);
+    virtual bool make_video_source(GstElement ** new_element) = 0;
+    bool make_new_shmdatas();
+    bool remake_codec_elements();
+    void make_codec_properties();
+    static void set_codec(const gint value, void *user_data);
+    static gint get_codec(void *user_data);
+    static gboolean get_codec_long_list(void *user_data);
+    static void set_codec_long_list(gboolean mute, void *user_data);
+    static gboolean sink_factory_filter(GstPluginFeature * feature,
+                                        gpointer data);
+    static gint sink_compare_ranks(GstPluginFeature * f1,
+                                   GstPluginFeature * f2);
+    static void print_list(gpointer data, gpointer user_data);
   };
 
 }                               // end of namespace
