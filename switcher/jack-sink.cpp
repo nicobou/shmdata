@@ -27,11 +27,11 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (JackSink,
-					"Audio Display (with Jack Audio)",
-					"audio sink",
-					"Audio display with minimal features",
-					"LGPL",
-					"jacksink", "Nicolas Bouillot");
+                                        "Audio Display (with Jack Audio)",
+                                        "audio sink",
+                                        "Audio display with minimal features",
+                                        "LGPL",
+                                        "jacksink", "Nicolas Bouillot");
 
   bool JackSink::init_gpipe ()
   {
@@ -42,14 +42,14 @@ namespace switcher
     client_name_ = g_strdup (get_nick_name ().c_str ());
     client_name_spec_ =
       custom_props_->make_string_property ("jack-client-name",
-					   "the jack client name",
-					   "switcher",
-					   (GParamFlags) G_PARAM_READWRITE,
-					   JackSink::set_client_name,
-					   JackSink::get_client_name, this);
+                                           "the jack client name",
+                                           "switcher",
+                                           (GParamFlags) G_PARAM_READWRITE,
+                                           JackSink::set_client_name,
+                                           JackSink::get_client_name, this);
     install_property_by_pspec (custom_props_->get_gobject (),
-			       client_name_spec_,
-			       "client-name", "Client Name");
+                               client_name_spec_,
+                               "client-name", "Client Name");
 
     return true;
   }
@@ -81,9 +81,9 @@ namespace switcher
 
     if (error != nullptr)
       {
-	g_warning ("%s", error->message);
-	g_error_free (error);
-	return false;
+        g_warning ("%s", error->message);
+        g_error_free (error);
+        return false;
       }
     return true;
   }
@@ -108,8 +108,8 @@ namespace switcher
     if (nullptr != context->client_name_)
       g_free (context->client_name_);
     context->client_name_ = g_strdup (value);
-    context->custom_props_->notify_property_changed (context->
-						     client_name_spec_);
+    context->custom_props_->
+      notify_property_changed (context->client_name_spec_);
   }
 
   const gchar *JackSink::get_client_name (void *user_data)
@@ -127,9 +127,9 @@ namespace switcher
   {
     if (is_started ())
       {
-	stop ();
-	make_elements ();
-	set_sink_element_no_connect (jacksink_);
+        stop ();
+        make_elements ();
+        set_sink_element_no_connect (jacksink_);
       }
   }
 

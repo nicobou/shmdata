@@ -121,27 +121,27 @@ main (int argc, char *argv[])
     server = g_strdup ("http://localhost:27182");
 
   if (!(renamequiddity
-	^ save
-	^ load
-	^ run
-	^ listclasses
-	^ classesdoc
-	^ classdoc
-	^ listquiddities
-	^ quidditydescr
-	^ quidditiesdescr
-	^ listprop
-	^ listpropbyclass
-	^ setprop
-	^ getprop
-	^ createquiddity
-	^ deletequiddity
-	^ listmethods
-	^ listmethodsbyclass
-	^ listsignals ^ listsignalsbyclass ^ invokemethod ^ print_tree))
+        ^ save
+        ^ load
+        ^ run
+        ^ listclasses
+        ^ classesdoc
+        ^ classdoc
+        ^ listquiddities
+        ^ quidditydescr
+        ^ quidditiesdescr
+        ^ listprop
+        ^ listpropbyclass
+        ^ setprop
+        ^ getprop
+        ^ createquiddity
+        ^ deletequiddity
+        ^ listmethods
+        ^ listmethodsbyclass
+        ^ listsignals ^ listsignalsbyclass ^ invokemethod ^ print_tree))
     {
       g_printerr
-	("I am very sorry for the inconvenience, but I am able to process only one command at a time. \n");
+        ("I am very sorry for the inconvenience, but I am able to process only one command at a time. \n");
       exit (1);
     }
 
@@ -151,29 +151,29 @@ main (int argc, char *argv[])
   if (renamequiddity)
     {
       if (remaining_args[0] == nullptr)
-	{
-	  g_printerr ("missing nick name\n");
-	  return false;
-	}
+        {
+          g_printerr ("missing nick name\n");
+          return false;
+        }
       std::string res;
       if (remaining_args[1] == nullptr)
-	{
-	  g_printerr ("missing new nick name\n");
-	  return false;
-	}
+        {
+          g_printerr ("missing new nick name\n");
+          return false;
+        }
 
       switcher_control.rename_quiddity (remaining_args[0], remaining_args[1],
-					&res);
+                                        &res);
       std::cout << res << std::endl;
     }
   else if (save)
     {
       std::string result;
       if (remaining_args[0] == nullptr)
-	{
-	  g_printerr ("file name missing\n");
-	  return false;
-	}
+        {
+          g_printerr ("file name missing\n");
+          return false;
+        }
       switcher_control.save (remaining_args[0], &result);
       std::cout << result << std::endl;
     }
@@ -181,10 +181,10 @@ main (int argc, char *argv[])
     {
       std::string result;
       if (remaining_args[0] == nullptr)
-	{
-	  g_printerr ("file name missing\n");
-	  return false;
-	}
+        {
+          g_printerr ("file name missing\n");
+          return false;
+        }
       switcher_control.load (remaining_args[0], &result);
       std::cout << result << std::endl;
     }
@@ -192,10 +192,10 @@ main (int argc, char *argv[])
     {
       std::string result;
       if (remaining_args[0] == nullptr)
-	{
-	  g_printerr ("file name missing\n");
-	  return false;
-	}
+        {
+          g_printerr ("file name missing\n");
+          return false;
+        }
       switcher_control.run (remaining_args[0], &result);
       std::cout << result << std::endl;
     }
@@ -204,7 +204,7 @@ main (int argc, char *argv[])
       std::vector < std::string > resultlist;
       switcher_control.get_factory_capabilities (&resultlist);
       for (uint i = 0; i < resultlist.size (); i++)
-	std::cout << resultlist[i] << std::endl;
+        std::cout << resultlist[i] << std::endl;
     }
   else if (classesdoc)
     {
@@ -216,10 +216,10 @@ main (int argc, char *argv[])
     {
       std::string resultlist;
       if (remaining_args[0] == nullptr)
-	{
-	  g_printerr ("class name missing\n");
-	  return false;
-	}
+        {
+          g_printerr ("class name missing\n");
+          return false;
+        }
       switcher_control.get_class_doc (remaining_args[0], &resultlist);
       std::cout << resultlist << std::endl;
     }
@@ -227,12 +227,12 @@ main (int argc, char *argv[])
     {
       std::string resultlist;
       if (remaining_args[0] == nullptr)
-	{
-	  g_printerr ("quiddity name missing\n");
-	  return false;
-	}
+        {
+          g_printerr ("quiddity name missing\n");
+          return false;
+        }
       switcher_control.get_quiddity_description (remaining_args[0],
-						 &resultlist);
+                                                 &resultlist);
       std::cout << resultlist << std::endl;
     }
   else if (quidditiesdescr)
@@ -246,76 +246,76 @@ main (int argc, char *argv[])
       std::vector < std::string > resultlist;
       switcher_control.get_quiddity_names (&resultlist);
       for (uint i = 0; i < resultlist.size (); i++)
-	{
-	  std::cout << resultlist[i] << std::endl;
-	}
+        {
+          std::cout << resultlist[i] << std::endl;
+        }
     }
   else if (listprop)
     {
       std::string resultlist;
       if (remaining_args[0] == nullptr)
-	{
-	  g_printerr ("quiddity name missing for listing properties\n");
-	  return false;
-	}
+        {
+          g_printerr ("quiddity name missing for listing properties\n");
+          return false;
+        }
       if (remaining_args[1] == nullptr)
-	switcher_control.get_properties_description (remaining_args[0],
-						     &resultlist);
+        switcher_control.get_properties_description (remaining_args[0],
+                                                     &resultlist);
       else
-	switcher_control.get_property_description (remaining_args[0],
-						   remaining_args[1],
-						   &resultlist);
+        switcher_control.get_property_description (remaining_args[0],
+                                                   remaining_args[1],
+                                                   &resultlist);
       std::cout << resultlist << std::endl;
     }
   else if (print_tree)
     {
       std::string resultlist;
       if (remaining_args[0] == nullptr)
-	{
-	  g_printerr ("quiddity name missing for printing the tree\n");
-	  return false;
-	}
+        {
+          g_printerr ("quiddity name missing for printing the tree\n");
+          return false;
+        }
       if (remaining_args[1] == nullptr)
-	switcher_control.get_information_tree (remaining_args[0],
-					       ".", &resultlist);
+        switcher_control.get_information_tree (remaining_args[0],
+                                               ".", &resultlist);
       else
-	switcher_control.get_information_tree (remaining_args[0],
-					       remaining_args[1],
-					       &resultlist);
+        switcher_control.get_information_tree (remaining_args[0],
+                                               remaining_args[1],
+                                               &resultlist);
       std::cout << resultlist << std::endl;
     }
   else if (listpropbyclass)
     {
       std::string resultlist;
       if (remaining_args[0] == nullptr)
-	{
-	  g_printerr ("class name missing for listing properties\n");
-	  return false;
-	}
+        {
+          g_printerr ("class name missing for listing properties\n");
+          return false;
+        }
       if (remaining_args[1] == nullptr)
-	switcher_control.
-	  get_properties_description_by_class (remaining_args[0],
-					       &resultlist);
+        switcher_control.get_properties_description_by_class (remaining_args
+                                                              [0],
+                                                              &resultlist);
       else
-	switcher_control.get_property_description_by_class (remaining_args[0],
-							    remaining_args[1],
-							    &resultlist);
+        switcher_control.get_property_description_by_class (remaining_args[0],
+                                                            remaining_args[1],
+                                                            &resultlist);
       std::cout << resultlist << std::endl;
     }
   else if (setprop)
     {
       if (remaining_args[0] == nullptr || remaining_args[1] == nullptr
-	  || remaining_args[2] == nullptr)
-	{
-	  g_printerr ("missing argument for set property\n");
-	  return false;
-	}
+          || remaining_args[2] == nullptr)
+        {
+          g_printerr ("missing argument for set property\n");
+          return false;
+        }
       //special since on
       switcher_control.send_set_property (remaining_args[0],
-					  remaining_args[1],
-					  remaining_args[2]);
+                                          remaining_args[1],
+                                          remaining_args[2]);
       if (switcher_control.recv_set_property_empty_response ())
-	switcher_control.soap_print_fault (stderr);
+        switcher_control.soap_print_fault (stderr);
       // connection should not be kept alive after the last call: be nice to the server and tell it that we close the connection after this call
       soap_clr_omode (&switcher_control, SOAP_IO_KEEPALIVE);
       switcher_control.soap_close_socket ();
@@ -324,129 +324,129 @@ main (int argc, char *argv[])
   else if (getprop)
     {
       if (remaining_args[0] == nullptr || remaining_args[1] == nullptr)
-	{
-	  g_printerr ("missing argument for get property\n");
-	  return false;
-	}
+        {
+          g_printerr ("missing argument for get property\n");
+          return false;
+        }
       std::string val;
       switcher_control.get_property (remaining_args[0], remaining_args[1],
-				     &val);
+                                     &val);
       std::cout << val << std::endl;
     }
   else if (createquiddity)
     {
       if (remaining_args[0] == nullptr)
-	{
-	  g_printerr ("missing class name for creating quiddity\n");
-	  return false;
-	}
+        {
+          g_printerr ("missing class name for creating quiddity\n");
+          return false;
+        }
       std::string name;
       if (remaining_args[1] == nullptr)
-	switcher_control.create_quiddity (remaining_args[0], &name);
+        switcher_control.create_quiddity (remaining_args[0], &name);
       else
-	switcher_control.create_named_quiddity (remaining_args[0],
-						remaining_args[1], &name);
+        switcher_control.create_named_quiddity (remaining_args[0],
+                                                remaining_args[1], &name);
       std::cout << name << std::endl;
     }
   else if (deletequiddity)
     {
       if (remaining_args[0] == nullptr)
-	{
-	  g_printerr ("missing quiddity name for deleting quiddity\n");
-	  return false;
-	}
+        {
+          g_printerr ("missing quiddity name for deleting quiddity\n");
+          return false;
+        }
 
       switcher_control.delete_quiddity (remaining_args[0]);
     }
   else if (listsignals)
     {
       if (remaining_args[0] == nullptr)
-	{
-	  g_printerr ("missing quiddity name for list signals\n");
-	  return false;
-	}
+        {
+          g_printerr ("missing quiddity name for list signals\n");
+          return false;
+        }
       std::string resultlist;
       if (remaining_args[1] == nullptr)
-	switcher_control.get_signals_description (remaining_args[0],
-						  &resultlist);
+        switcher_control.get_signals_description (remaining_args[0],
+                                                  &resultlist);
       else
-	switcher_control.get_signal_description (remaining_args[0],
-						 remaining_args[1],
-						 &resultlist);
+        switcher_control.get_signal_description (remaining_args[0],
+                                                 remaining_args[1],
+                                                 &resultlist);
       std::cout << resultlist << std::endl;
     }
   else if (listsignalsbyclass)
     {
       if (remaining_args[0] == nullptr)
-	{
-	  g_printerr ("missing quiddity name for list signals\n");
-	  return false;
-	}
+        {
+          g_printerr ("missing quiddity name for list signals\n");
+          return false;
+        }
 
       std::string resultlist;
       if (remaining_args[1] == nullptr)
-	switcher_control.get_signals_description_by_class (remaining_args[0],
-							   &resultlist);
+        switcher_control.get_signals_description_by_class (remaining_args[0],
+                                                           &resultlist);
       else
-	switcher_control.get_signal_description_by_class (remaining_args[0],
-							  remaining_args[1],
-							  &resultlist);
+        switcher_control.get_signal_description_by_class (remaining_args[0],
+                                                          remaining_args[1],
+                                                          &resultlist);
       std::cout << resultlist << std::endl;
     }
   else if (listmethods)
     {
       if (remaining_args[0] == nullptr)
-	{
-	  g_printerr ("missing quiddity name for list methods\n");
-	  return false;
-	}
+        {
+          g_printerr ("missing quiddity name for list methods\n");
+          return false;
+        }
 
       std::string resultlist;
       if (remaining_args[1] == nullptr)
-	switcher_control.get_methods_description (remaining_args[0],
-						  &resultlist);
+        switcher_control.get_methods_description (remaining_args[0],
+                                                  &resultlist);
       else
-	switcher_control.get_method_description (remaining_args[0],
-						 remaining_args[1],
-						 &resultlist);
+        switcher_control.get_method_description (remaining_args[0],
+                                                 remaining_args[1],
+                                                 &resultlist);
       std::cout << resultlist << std::endl;
     }
   else if (listmethodsbyclass)
     {
       if (remaining_args[0] == nullptr)
-	{
-	  g_printerr ("missing quiddity name for list methods\n");
-	  return false;
-	}
+        {
+          g_printerr ("missing quiddity name for list methods\n");
+          return false;
+        }
 
       std::string resultlist;
       if (remaining_args[1] == nullptr)
-	switcher_control.get_methods_description_by_class (remaining_args[0],
-							   &resultlist);
+        switcher_control.get_methods_description_by_class (remaining_args[0],
+                                                           &resultlist);
       else
-	switcher_control.get_method_description_by_class (remaining_args[0],
-							  remaining_args[1],
-							  &resultlist);
+        switcher_control.get_method_description_by_class (remaining_args[0],
+                                                          remaining_args[1],
+                                                          &resultlist);
       std::cout << resultlist << std::endl;
     }
   else if (invokemethod)
     {
       if (remaining_args[0] == nullptr || remaining_args[1] == nullptr)
-	{
-	  g_printerr ("not enough argument for invoking a function\n");
-	  return false;
-	}
+        {
+          g_printerr ("not enough argument for invoking a function\n");
+          return false;
+        }
       std::vector < std::string > args;
       int i = 2;
       while (remaining_args[i] != nullptr)
-	{
-	  args.push_back (remaining_args[i]);
-	  i++;
-	}
+        {
+          args.push_back (remaining_args[i]);
+          i++;
+        }
 
       std::string result;
       switcher_control.invoke_method (remaining_args[0],
-				      remaining_args[1], args, &result);
+                                      remaining_args[1], args, &result);
       g_print ("%s\n", result.c_str ());
     }
 

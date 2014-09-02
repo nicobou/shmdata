@@ -87,7 +87,7 @@ namespace switcher
 
   void
     JSONBuilder::add_string_member (const gchar * member_name,
-				    const gchar * string_value)
+                                    const gchar * string_value)
   {
     std::unique_lock < std::mutex > lock (thread_safe_);
     json_builder_set_member_name (builder_, member_name);
@@ -96,7 +96,7 @@ namespace switcher
 
   void
     JSONBuilder::add_double_member (const gchar * member_name,
-				    gdouble double_value)
+                                    gdouble double_value)
   {
     std::unique_lock < std::mutex > lock (thread_safe_);
     json_builder_set_member_name (builder_, member_name);
@@ -118,7 +118,7 @@ namespace switcher
 
   void
     JSONBuilder::add_JsonNode_member (const gchar * member_name,
-				      JsonNode * JsonNode_value)
+                                      JsonNode * JsonNode_value)
   {
     std::unique_lock < std::mutex > lock (thread_safe_);
     json_builder_set_member_name (builder_, member_name);
@@ -153,7 +153,7 @@ namespace switcher
   JsonNode *JSONBuilder::get_root ()
   {
     std::unique_lock < std::mutex > lock (thread_safe_);
-    return json_builder_get_root (builder_);	//FIXME this might be leaking
+    return json_builder_get_root (builder_);    //FIXME this might be leaking
   }
 
   void JSONBuilder::node_free (JsonNode * root_node)

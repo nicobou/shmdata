@@ -67,6 +67,6 @@ namespace switcher
 
     SWITCHER_DECLARE_PLUGIN (SyphonSrc);
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

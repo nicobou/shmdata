@@ -29,10 +29,10 @@ static bool success = false;
 
 void
 quiddity_created_removed_cb (std::string /*subscriber_name */ ,
-			     std::string /*quiddity_name */ ,
-			     std::string signal_name,
-			     std::vector < std::string > params,
-			     void * /*user_data */ )
+                             std::string /*quiddity_name */ ,
+                             std::string signal_name,
+                             std::vector < std::string > params,
+                             void * /*user_data */ )
 {
   // g_print ("%s: %s %s", 
   //    signal_name.c_str (), 
@@ -57,22 +57,22 @@ main ()
     return 1;
 #endif
 
-    if (!switcher::QuiddityBasicTest::
-	test_full (manager, "SOAPcontrolClient"))
+    if (!switcher::
+        QuiddityBasicTest::test_full (manager, "SOAPcontrolClient"))
       success = false;
 
-    if (!switcher::QuiddityBasicTest::
-	test_full (manager, "SOAPcontrolServer"))
+    if (!switcher::
+        QuiddityBasicTest::test_full (manager, "SOAPcontrolServer"))
       success = false;
 
     manager->create ("SOAPcontrolClient", "soapclient");
     manager->make_signal_subscriber ("signal_subscriber",
-				     quiddity_created_removed_cb,
-				     manager.get ());
+                                     quiddity_created_removed_cb,
+                                     manager.get ());
     manager->subscribe_signal ("signal_subscriber", "soapclient",
-			       "on-connection-tried");
+                               "on-connection-tried");
     manager->invoke_va ("soapclient", "set_remote_url_retry", nullptr,
-			"http://localhost:38084", nullptr);
+                        "http://localhost:38084", nullptr);
 
     manager->create ("SOAPcontrolServer", "soapserver");
     manager->invoke_va ("soapserver", "set_port", nullptr, "38084", nullptr);
@@ -80,7 +80,7 @@ main ()
     //soapclient is waiting 1 sec between retries
     usleep (1100000);
 
-  }				//end of scope is releasing the manager
+  }                             //end of scope is releasing the manager
 
   if (success)
     return 0;

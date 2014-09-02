@@ -44,7 +44,7 @@ namespace switcher
       template < typename Return_type >
       Return_type
       invoke_with_return (std::function < Return_type (GstElement *) >
-			  command)
+                          command)
     {
       std::unique_lock < std::mutex > lock (thread_safe_);
       return decodebin_.invoke_with_return < Return_type > (command);
@@ -59,33 +59,32 @@ namespace switcher
       std::map < std::string, uint > media_counters_;
       std::mutex media_counter_mutex_;
     GPipe *gpipe_;
-      std::list < std::string > shmdata_path_;	//for unregistering in the segment
+      std::list < std::string > shmdata_path_;  //for unregistering in the segment
       std::vector < gulong > cb_ids_;
       std::mutex thread_safe_;
     static void on_pad_added (GstElement * object,
-			      GstPad * pad, gpointer user_data);
+                              GstPad * pad, gpointer user_data);
     static int on_autoplug_select (GstElement * bin,
-				   GstPad * pad,
-				   GstCaps * caps,
-				   GstElementFactory * factory,
-				   gpointer user_data);
+                                   GstPad * pad,
+                                   GstCaps * caps,
+                                   GstElementFactory * factory,
+                                   gpointer user_data);
     static gboolean gstrtpdepay_buffer_probe_cb (GstPad * /*pad */ ,
-						 GstMiniObject * /*mini_obj */
-						 ,
-						 gpointer user_data);
+                                                 GstMiniObject *        /*mini_obj */
+                                                 , gpointer user_data);
 
     static gboolean gstrtpdepay_event_probe_cb (GstPad * /*pad */ ,
-						GstEvent * event,
-						gpointer user_data);
+                                                GstEvent * event,
+                                                gpointer user_data);
     void pad_to_shmdata_writer (GstElement * bin, GstPad * pad);
     static gboolean eos_probe_cb (GstPad * pad, GstEvent * event,
-				  gpointer user_data);
+                                  gpointer user_data);
     static void on_handoff_cb (GstElement * /*object */ ,
-			       GstBuffer * buf,
-			       GstPad * pad, gpointer user_data);
+                               GstBuffer * buf,
+                               GstPad * pad, gpointer user_data);
     static gboolean rewind (gpointer user_data);
   };
 
-}				// end of namespace
+}                               // end of namespace
 
 #endif // ifndef

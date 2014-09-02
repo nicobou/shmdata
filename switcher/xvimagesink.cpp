@@ -27,11 +27,11 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (Xvimagesink,
-					"Video Display",
-					"video sink",
-					"Video window with minimal features",
-					"LGPL",
-					"videosink", "Nicolas Bouillot");
+                                        "Video Display",
+                                        "video sink",
+                                        "Video window with minimal features",
+                                        "LGPL",
+                                        "videosink", "Nicolas Bouillot");
 
   Xvimagesink::Xvimagesink ():sink_bin_ (nullptr),
     queue_ (nullptr), ffmpegcolorspace_ (nullptr), xvimagesink_ (nullptr)
@@ -64,15 +64,15 @@ namespace switcher
 #endif
 
     gst_bin_add_many (GST_BIN (sink_bin_),
-		      queue_, ffmpegcolorspace_, xvimagesink_, nullptr);
+                      queue_, ffmpegcolorspace_, xvimagesink_, nullptr);
     gst_element_link_many (queue_, ffmpegcolorspace_, xvimagesink_, nullptr);
 
     g_object_set (G_OBJECT (xvimagesink_),
-		  "draw-borders", TRUE,
-		  "force-aspect-ratio", TRUE, "sync", FALSE, nullptr);
+                  "draw-borders", TRUE,
+                  "force-aspect-ratio", TRUE, "sync", FALSE, nullptr);
 
     GstPad *sink_pad = gst_element_get_static_pad (queue_,
-						   "sink");
+                                                   "sink");
     GstPad *ghost_sinkpad = gst_ghost_pad_new (nullptr, sink_pad);
     gst_pad_set_active (ghost_sinkpad, TRUE);
     gst_element_add_pad (sink_bin_, ghost_sinkpad);
@@ -88,7 +88,7 @@ namespace switcher
     on_error_command_->add_arg (get_nick_name ());
 
     g_object_set_data (G_OBJECT (xvimagesink_),
-		       "on-error-command", (gpointer) on_error_command_);
+                       "on-error-command", (gpointer) on_error_command_);
 
     set_sink_element (sink_bin_);
 

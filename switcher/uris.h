@@ -64,7 +64,7 @@ namespace switcher
       GAsyncQueue *numTasks;
       GHashTable *padtoblock;
       double seek_position;
-      gpointer user_data;	//this
+      gpointer user_data;       //this
     } Group;
     typedef struct
     {
@@ -91,47 +91,47 @@ namespace switcher
     static gboolean group_pause (Group * group);
     static gboolean group_seek (Group * group, gdouble position);
     static void uridecodebin_pad_added_cb (GstElement * object, GstPad * pad,
-					   gpointer user_data);
+                                           gpointer user_data);
     static void uridecodebin_no_more_pads_cb (GstElement * object,
-					      gpointer user_data);
+                                              gpointer user_data);
     static void uridecodebin_drained_cb (GstElement * object,
-					 gpointer user_data);
+                                         gpointer user_data);
     static void group_add_task (gpointer key, gpointer value,
-				gpointer user_data);
+                                gpointer user_data);
     static void group_queue_command (Group * group, gpointer func,
-				     gpointer arg);
+                                     gpointer arg);
     static void group_try_change_state (gpointer user_data);
     static gboolean group_launch_command (gpointer user_data);
     static void group_link_datastream (gpointer key, gpointer value,
-				       gpointer user_data);
+                                       gpointer user_data);
     static void group_unblock_datastream (gpointer key, gpointer value,
-					  gpointer user_data);
+                                          gpointer user_data);
     static gboolean group_play_wrapped_for_commands (gpointer user_data,
-						     gpointer user_data2);
+                                                     gpointer user_data2);
     static void pad_blocked_cb (GstPad * pad, gboolean blocked,
-				gpointer user_data);
+                                gpointer user_data);
     static void group_unlink_datastream (gpointer key, gpointer value,
-					 gpointer user_data);
+                                         gpointer user_data);
     static void unlink_pad (GstPad * pad);
     static gboolean group_pause_wrapped_for_commands (gpointer user_data,
-						      gpointer user_data2);
+                                                      gpointer user_data2);
     static void group_block_datastream_wrapped_for_hash (gpointer key,
-							 gpointer value,
-							 gpointer user_data);
+                                                         gpointer value,
+                                                         gpointer user_data);
     static void group_do_block_datastream (Sample * sample);
     static void group_seek_datastream (gpointer key, gpointer value,
-				       gpointer user_data);
+                                       gpointer user_data);
     static gboolean group_seek_wrapped_for_commands (gpointer user_data,
-						     gpointer user_data2);
+                                                     gpointer user_data2);
     static void group_do_seek_datastream (Sample * sample);
     static void group_do_group_seek (Group * group);
     static void group_queue_command_unlocked (Group * group, gpointer func,
-					      gpointer arg);
+                                              gpointer arg);
     static gboolean event_probe_cb (GstPad * pad, GstEvent * event,
-				    gpointer data);
+                                    gpointer data);
     static gboolean group_eos_rewind (Group * group);
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

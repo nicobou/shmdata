@@ -41,8 +41,8 @@ namespace switcher
     void
     AbstractFactory < T, Key,
     Doc >::register_class_with_custom_factory (Key Id, Doc doc,
-					       T * (*custom_create) (),
-					       void (*custom_destroy) (T *))
+                                               T * (*custom_create) (),
+                                               void (*custom_destroy) (T *))
   {
     CustomDerivedCreator < T > *creator = new CustomDerivedCreator < T > ();
     creator->custom_create_ = custom_create;
@@ -59,7 +59,7 @@ namespace switcher
 
   for (auto & it:constructor_map_)
       {
-	constructor_names.push_back (it.first);
+        constructor_names.push_back (it.first);
       }
 
     return constructor_names;
@@ -74,8 +74,8 @@ namespace switcher
       classes_documentation_.begin ();
     while (i != classes_documentation_.end ())
       {
-	tmp.push_back ((*i).second);
-	++i;
+        tmp.push_back ((*i).second);
+        ++i;
       }
     return tmp;
   }
@@ -115,11 +115,11 @@ namespace switcher
     std::shared_ptr < T > pointer;
     if (constructor_map_.find (Id) != constructor_map_.end ())
       {
-	if (destructor_map_.find (Id) != destructor_map_.end ())
-	  pointer.reset (constructor_map_[Id]->Create (),
-			 destructor_map_[Id]);
-	else
-	  pointer.reset (constructor_map_[Id]->Create ());
+        if (destructor_map_.find (Id) != destructor_map_.end ())
+          pointer.reset (constructor_map_[Id]->Create (),
+                         destructor_map_[Id]);
+        else
+          pointer.reset (constructor_map_[Id]->Create ());
       }
 
     return pointer;
@@ -132,8 +132,8 @@ namespace switcher
       constructor_map_.begin ();
     while (i != constructor_map_.end ())
       {
-	delete (*i).second;
-	++i;
+        delete (*i).second;
+        ++i;
       }
   }
 
@@ -143,4 +143,4 @@ template < typename T, typename Key, typename Doc > AbstractFactory < T, Key, Do
   {
   }
 
-}				// end of namespace
+}                               // end of namespace

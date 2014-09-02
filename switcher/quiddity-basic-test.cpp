@@ -24,7 +24,7 @@ namespace switcher
 {
   bool
     QuiddityBasicTest::test_full (QuiddityManager::ptr manager,
-				  std::string quiddity_class_name)
+                                  std::string quiddity_class_name)
   {
     if (!test_get_info (manager, quiddity_class_name))
       return false;
@@ -39,7 +39,7 @@ namespace switcher
 
   bool
     QuiddityBasicTest::test_create (QuiddityManager::ptr manager,
-				    std::string quiddity_class_name)
+                                    std::string quiddity_class_name)
   {
 
     //g_print ("%s\n", quiddity_class_name.c_str ());
@@ -49,42 +49,42 @@ namespace switcher
       manager->create (quiddity_class_name, quiddity_class_name);
     if (res_with_nick.compare (quiddity_class_name) != 0)
       {
-	g_warning ("quiddity %s cannot be created (with nickname)",
-		   quiddity_class_name.c_str ());
-	return true;		//true because some quiddity may not be crated because of a missing resource 
+        g_warning ("quiddity %s cannot be created (with nickname)",
+                   quiddity_class_name.c_str ());
+        return true;            //true because some quiddity may not be crated because of a missing resource 
       }
 
     if (!manager->remove (res_with_nick))
       {
-	g_warning ("error while removing quiddity %s (with nickname)",
-		   quiddity_class_name.c_str ());
-	return false;
+        g_warning ("error while removing quiddity %s (with nickname)",
+                   quiddity_class_name.c_str ());
+        return false;
       }
 
     //testing without nick name
     std::string res_without_nick = manager->create (quiddity_class_name);
     if (res_without_nick.compare ("") == 0)
       {
-	g_warning ("quiddity %s cannot be created (without nickname)",
-		   quiddity_class_name.c_str ());
-	return false;
+        g_warning ("quiddity %s cannot be created (without nickname)",
+                   quiddity_class_name.c_str ());
+        return false;
       }
 
     if (!manager->remove (res_without_nick))
       {
-	g_warning ("error while removing quiddity %s (without nickname)",
-		   quiddity_class_name.c_str ());
-	return false;
+        g_warning ("error while removing quiddity %s (without nickname)",
+                   quiddity_class_name.c_str ());
+        return false;
       }
 
     return true;
   }
 
   void on_started_cb (std::string /*subscriber_name */ ,
-		      std::string /*quiddity_name */ ,
-		      std::string /*property_name */ ,
-		      std::string /*value */ ,
-		      void * /*user_data */ )
+                      std::string /*quiddity_name */ ,
+                      std::string /*property_name */ ,
+                      std::string /*value */ ,
+                      void * /*user_data */ )
   {
     // g_print ("on_started_cb: %s, %s, %s, %s\n",
     //      subscriber_name.c_str (), 
@@ -96,7 +96,7 @@ namespace switcher
 
   bool
     QuiddityBasicTest::test_startable (QuiddityManager::ptr manager,
-				       std::string quiddity_class_name)
+                                       std::string quiddity_class_name)
   {
     //g_print ("---- startable test for %s\n", quiddity_class_name.c_str ());
 
@@ -104,42 +104,41 @@ namespace switcher
       manager->create (quiddity_class_name, quiddity_class_name);
     if (name.compare (quiddity_class_name) != 0)
       {
-	g_warning
-	  ("quiddity %s cannot be created (startable not actualy tested)",
-	   quiddity_class_name.c_str ());
-	return true;		//true because some quiddity may not be crated because of a missing resource 
+        g_warning
+          ("quiddity %s cannot be created (startable not actualy tested)",
+           quiddity_class_name.c_str ());
+        return true;            //true because some quiddity may not be crated because of a missing resource 
       }
 
     if (manager->has_property (name, "started"))
       {
-	manager->make_property_subscriber ("sub", on_started_cb, nullptr);
-	manager->subscribe_property ("sub", name, "started");
-	//g_print ("has a started property\n");
-	manager->set_property (name, "started", "true");
-	//g_print ("started\n");
-	manager->set_property (name, "started", "false");
-	//g_print ("stoped\n");
-	manager->set_property (name, "started", "true");
-	//g_print ("restarted\n");
-	manager->unsubscribe_property ("sub", name, "started");
-	manager->remove_property_subscriber ("sub");
+        manager->make_property_subscriber ("sub", on_started_cb, nullptr);
+        manager->subscribe_property ("sub", name, "started");
+        //g_print ("has a started property\n");
+        manager->set_property (name, "started", "true");
+        //g_print ("started\n");
+        manager->set_property (name, "started", "false");
+        //g_print ("stoped\n");
+        manager->set_property (name, "started", "true");
+        //g_print ("restarted\n");
+        manager->unsubscribe_property ("sub", name, "started");
+        manager->remove_property_subscriber ("sub");
       }
 
     if (!manager->remove (name))
       {
-	g_warning ("error while removing quiddity %s (startable test)",
-		   quiddity_class_name.c_str ());
-	return false;
+        g_warning ("error while removing quiddity %s (startable test)",
+                   quiddity_class_name.c_str ());
+        return false;
       }
 
     return true;
   }
 
   bool
-    QuiddityBasicTest::test_description_by_class (QuiddityManager::
-						  ptr manager,
-						  std::
-						  string quiddity_class_name)
+    QuiddityBasicTest::
+    test_description_by_class (QuiddityManager::ptr manager,
+                               std::string quiddity_class_name)
   {
     //by class
     std::string props =
@@ -154,7 +153,7 @@ namespace switcher
 
   bool
     QuiddityBasicTest::test_get_info (QuiddityManager::ptr manager,
-				      std::string quiddity_class_name)
+                                      std::string quiddity_class_name)
   {
     std::string name = manager->create (quiddity_class_name);
     std::string res = manager->get_info (name, ".");

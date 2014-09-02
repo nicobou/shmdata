@@ -130,7 +130,7 @@ namespace switcher
       json_builder_->add_string_value ("");
     else
     for (auto & it:result_)
-	json_builder_->add_string_value (it.c_str ());
+        json_builder_->add_string_value (it.c_str ());
     json_builder_->end_array ();
     json_builder_->end_object ();
     return json_builder_->get_root ();
@@ -142,12 +142,12 @@ namespace switcher
     std::map < int, const char *>::const_iterator it;
     for (it = command_names_.begin (); it != command_names_.end (); ++it)
       if (g_strcmp0 (it->second, com) == 0)
-	return (QuiddityCommand::command) it->first;
+        return (QuiddityCommand::command) it->first;
     return invalid_command;
   }
 
-  const char *QuiddityCommand::get_string_from_id (QuiddityCommand::
-						   command id)
+  const char *QuiddityCommand::
+    get_string_from_id (QuiddityCommand::command id)
   {
     std::map < int, const char *>::const_iterator it =
       command_names_.find (id);
@@ -166,9 +166,8 @@ namespace switcher
 
     //command
     json_reader_read_member (reader, "command");
-    command->
-      set_id (QuiddityCommand::
-	      get_id_from_string (json_reader_get_string_value (reader)));
+    command->set_id (QuiddityCommand::get_id_from_string
+                     (json_reader_get_string_value (reader)));
     json_reader_end_member (reader);
     //---
 
@@ -183,13 +182,13 @@ namespace switcher
     num_elements = json_reader_count_elements (reader);
     for (j = 0; j < num_elements; j++)
       {
-	json_reader_read_element (reader, j);
-	const gchar *str = json_reader_get_string_value (reader);
-	if (nullptr != str)
-	  command->add_arg (str);
-	else
-	  command->add_arg ("null");
-	json_reader_end_element (reader);
+        json_reader_read_element (reader, j);
+        const gchar *str = json_reader_get_string_value (reader);
+        if (nullptr != str)
+          command->add_arg (str);
+        else
+          command->add_arg ("null");
+        json_reader_end_element (reader);
       }
     json_reader_end_member (reader);
     //---
@@ -200,12 +199,12 @@ namespace switcher
     std::vector < std::string > string_vect_arg;
     for (j = 0; j < num_elements; j++)
       {
-	json_reader_read_element (reader, j);
-	const char *stringValue = json_reader_get_string_value (reader);
-	if (stringValue == nullptr)
-	  stringValue = "null";
-	string_vect_arg.push_back (stringValue);
-	json_reader_end_element (reader);
+        json_reader_read_element (reader, j);
+        const char *stringValue = json_reader_get_string_value (reader);
+        if (stringValue == nullptr)
+          stringValue = "null";
+        string_vect_arg.push_back (stringValue);
+        json_reader_end_element (reader);
       }
     json_reader_end_member (reader);
     command->set_vector_arg (string_vect_arg);
@@ -217,11 +216,11 @@ namespace switcher
     std::vector < std::string > expected_result;
     for (j = 0; j < num_elements; j++)
       {
-	json_reader_read_element (reader, j);
-	const char *string_value = json_reader_get_string_value (reader);
-	if (nullptr != string_value)
-	  expected_result.push_back (string_value);
-	json_reader_end_element (reader);
+        json_reader_read_element (reader, j);
+        const char *string_value = json_reader_get_string_value (reader);
+        if (nullptr != string_value)
+          expected_result.push_back (string_value);
+        json_reader_end_element (reader);
       }
     json_reader_end_member (reader);
     command->expected_result_ = expected_result;

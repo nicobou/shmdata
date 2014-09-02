@@ -43,7 +43,7 @@ namespace switcher
       //FIXME implement this: Tree::ptr deserialize (std::string &serialized);
 
     };
-  }				// end of "data" namespace 
-}				// end of "switcher" namespace
+  }                             // end of "data" namespace 
+}                               // end of "switcher" namespace
 
-#endif				// ifndef
+#endif                          // ifndef

@@ -52,8 +52,8 @@ namespace switcher
     bool stop () final;
 
     static int osc_handler (const char *path, const char *types,
-			    lo_arg ** argv, int argc, void *data,
-			    void *user_data);
+                            lo_arg ** argv, int argc, void *data,
+                            void *user_data);
     static void osc_error (int num, const char *msg, const char *path);
     static void set_port (const gint value, void *user_data);
     static gint get_port (void *user_data);
@@ -61,6 +61,6 @@ namespace switcher
 
     SWITCHER_DECLARE_PLUGIN (OscToShmdata);
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

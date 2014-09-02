@@ -23,7 +23,7 @@ namespace switcher
 {
 
   UniqueGstElement::UniqueGstElement (const gchar *
-				      class_name):element_
+                                      class_name):element_
     (gst_element_factory_make (class_name, nullptr),
      &GstUtils::gst_element_deleter)
   {

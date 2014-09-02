@@ -42,7 +42,7 @@ namespace switcher
     int get_position_weight ();
 
     static bool compare_ptr (Categorizable::ptr first,
-			     Categorizable::ptr second);
+                             Categorizable::ptr second);
 
     static bool compare (Categorizable first, Categorizable second);
 
@@ -51,6 +51,6 @@ namespace switcher
     int position_weight_;
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

@@ -24,11 +24,11 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (FakeSink,
-					"Shmdata Inspector",
-					"monitor",
-					"fakesink for testing purpose",
-					"LGPL",
-					"fakesink", "Nicolas Bouillot");
+                                        "Shmdata Inspector",
+                                        "monitor",
+                                        "fakesink for testing purpose",
+                                        "LGPL",
+                                        "fakesink", "Nicolas Bouillot");
 
   FakeSink::FakeSink ():fakesink_ (nullptr),
     num_bytes_since_last_update_ (0),
@@ -56,7 +56,7 @@ namespace switcher
       return false;
 
     g_object_set (G_OBJECT (fakesink_),
-		  "sync", FALSE, "signal-handoffs", TRUE, nullptr);
+                  "sync", FALSE, "signal-handoffs", TRUE, nullptr);
 
     g_signal_connect (fakesink_, "handoff", (GCallback) on_handoff_cb, this);
 
@@ -65,32 +65,32 @@ namespace switcher
 
     byte_rate_spec_ =
       props_->make_int_property ("byte-rate",
-				 "the byte rate (updated each second)",
-				 0,
-				 G_MAXINT,
-				 byte_rate_,
-				 (GParamFlags) G_PARAM_READABLE,
-				 nullptr, FakeSink::get_byte_rate, this);
+                                 "the byte rate (updated each second)",
+                                 0,
+                                 G_MAXINT,
+                                 byte_rate_,
+                                 (GParamFlags) G_PARAM_READABLE,
+                                 nullptr, FakeSink::get_byte_rate, this);
 
     install_property_by_pspec (props_->get_gobject (),
-			       byte_rate_spec_,
-			       "byte-rate", "Byte Rate (Bps)");
+                               byte_rate_spec_,
+                               "byte-rate", "Byte Rate (Bps)");
 
     update_byterate_source_ = GstUtils::g_timeout_add_to_context (1000,
-								  update_byte_rate,
-								  this,
-								  get_g_main_context
-								  ());
+                                                                  update_byte_rate,
+                                                                  this,
+                                                                  get_g_main_context
+                                                                  ());
 
     caps_spec_ =
       props_->make_string_property ("caps",
-				    "caps of the attached shmdata",
-				    "unknown",
-				    (GParamFlags) G_PARAM_READABLE,
-				    nullptr, FakeSink::get_caps, this);
+                                    "caps of the attached shmdata",
+                                    "unknown",
+                                    (GParamFlags) G_PARAM_READABLE,
+                                    nullptr, FakeSink::get_caps, this);
 
     install_property_by_pspec (props_->get_gobject (),
-			       caps_spec_, "caps", "Capabilities");
+                               caps_spec_, "caps", "Capabilities");
 
     set_sink_element (fakesink_);
     return true;
@@ -106,19 +106,19 @@ namespace switcher
   }
 
   void FakeSink::on_handoff_cb (GstElement * /*object */ ,
-				GstBuffer * buf,
-				GstPad * pad, gpointer user_data)
+                                GstBuffer * buf,
+                                GstPad * pad, gpointer user_data)
   {
     FakeSink *context = static_cast < FakeSink * >(user_data);
 
     if (context->set_string_caps_)
       {
-	context->set_string_caps_ = false;
-	GstCaps *caps = gst_pad_get_negotiated_caps (pad);
-	g_free (context->string_caps_);
-	context->string_caps_ = gst_caps_to_string (caps);
-	context->props_->notify_property_changed (context->caps_spec_);
-	gst_caps_unref (caps);
+        context->set_string_caps_ = false;
+        GstCaps *caps = gst_pad_get_negotiated_caps (pad);
+        g_free (context->string_caps_);
+        context->string_caps_ = gst_caps_to_string (caps);
+        context->props_->notify_property_changed (context->caps_spec_);
+        gst_caps_unref (caps);
       }
     context->num_bytes_since_last_update_ += GST_BUFFER_SIZE (buf);
   }

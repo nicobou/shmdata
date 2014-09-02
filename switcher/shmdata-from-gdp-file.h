@@ -59,14 +59,14 @@ namespace switcher
       QuiddityManager::ptr manager_;
 
     static gboolean event_probe_cb (GstPad * pad, GstEvent * event,
-				    gpointer user_data);
+                                    gpointer user_data);
     //wrappers
     static gboolean add_file_wrapped (gpointer file_path,
-				      gpointer shmdata_socket_path,
-				      gpointer user_data);
+                                      gpointer shmdata_socket_path,
+                                      gpointer user_data);
     static gboolean remove_file_wrapped (gpointer file_path,
-					 gpointer user_data);
+                                         gpointer user_data);
   };
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

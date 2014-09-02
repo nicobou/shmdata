@@ -23,15 +23,14 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (GstVideoParseToBinSrc,
-					"GStreamer Video Pipeline",
-					"video source",
-					"GStreamer (src) video pipeline description to a *single* shmdata",
-					"LGPL",
-					"gstvideosrc", "Nicolas Bouillot");
+                                        "GStreamer Video Pipeline",
+                                        "video source",
+                                        "GStreamer (src) video pipeline description to a *single* shmdata",
+                                        "LGPL",
+                                        "gstvideosrc", "Nicolas Bouillot");
 
-  GstVideoParseToBinSrc::
-    GstVideoParseToBinSrc ():gst_video_parse_to_bin_src_ (nullptr),
-    custom_props_ (new CustomPropertyHelper ()),
+  GstVideoParseToBinSrc::GstVideoParseToBinSrc ():gst_video_parse_to_bin_src_
+    (nullptr), custom_props_ (new CustomPropertyHelper ()),
     gst_launch_pipeline_spec_ (nullptr),
     gst_launch_pipeline_ (g_strdup ("videotestsrc is-live=true"))
   {
@@ -48,16 +47,15 @@ namespace switcher
   {
     gst_launch_pipeline_spec_ =
       custom_props_->make_string_property ("gst-pipeline",
-					   "GStreamer Launch Source Pipeline",
-					   "videotestsrc is-live=true",
-					   (GParamFlags) G_PARAM_READWRITE,
-					   GstVideoParseToBinSrc::
-					   set_gst_launch_pipeline,
-					   GstVideoParseToBinSrc::
-					   get_gst_launch_pipeline, this);
+                                           "GStreamer Launch Source Pipeline",
+                                           "videotestsrc is-live=true",
+                                           (GParamFlags) G_PARAM_READWRITE,
+                                           GstVideoParseToBinSrc::set_gst_launch_pipeline,
+                                           GstVideoParseToBinSrc::get_gst_launch_pipeline,
+                                           this);
     install_property_by_pspec (custom_props_->get_gobject (),
-			       gst_launch_pipeline_spec_, "gst-pipeline",
-			       "GStreamer Live Video Source Pipeline");
+                               gst_launch_pipeline_spec_, "gst-pipeline",
+                               "GStreamer Live Video Source Pipeline");
 
     return true;
   }
@@ -65,35 +63,35 @@ namespace switcher
   bool GstVideoParseToBinSrc::make_video_source (GstElement ** new_element)
   {
     g_debug ("trying to make video source from pipeline (%s)",
-	     gst_launch_pipeline_);
+             gst_launch_pipeline_);
     if (nullptr != gst_video_parse_to_bin_src_)
       GstUtils::clean_element (gst_video_parse_to_bin_src_);
     GError *error = nullptr;
     gst_video_parse_to_bin_src_ =
       gst_parse_bin_from_description (gst_launch_pipeline_, TRUE, &error);
     g_object_set (G_OBJECT (gst_video_parse_to_bin_src_), "async-handling",
-		  TRUE, nullptr);
+                  TRUE, nullptr);
     if (error != nullptr)
       {
-	g_debug ("%s", error->message);
-	g_error_free (error);
-	gst_video_parse_to_bin_src_ = nullptr;
-	return false;
+        g_debug ("%s", error->message);
+        g_error_free (error);
+        gst_video_parse_to_bin_src_ = nullptr;
+        return false;
       }
     GstPad *src_pad =
       gst_element_get_static_pad (gst_video_parse_to_bin_src_, "src");
     GstCaps *caps = gst_pad_get_caps (src_pad);
     gchar *string_caps = gst_caps_to_string (caps);
     if (!g_str_has_prefix (string_caps, "video/")
-	&& !g_str_has_prefix (string_caps, "ANY"))
+        && !g_str_has_prefix (string_caps, "ANY"))
       {
-	g_debug ("description does not provide video (caps is %s)",
-		 string_caps);
-	gst_caps_unref (caps);
-	g_free (string_caps);
-	gst_object_unref (src_pad);
-	gst_video_parse_to_bin_src_ = nullptr;
-	return false;
+        g_debug ("description does not provide video (caps is %s)",
+                 string_caps);
+        gst_caps_unref (caps);
+        g_free (string_caps);
+        gst_object_unref (src_pad);
+        gst_video_parse_to_bin_src_ = nullptr;
+        return false;
       }
     g_free (string_caps);
     gst_caps_unref (caps);
@@ -104,18 +102,18 @@ namespace switcher
 
   void
     GstVideoParseToBinSrc::set_gst_launch_pipeline (const gchar * value,
-						    void *user_data)
+                                                    void *user_data)
   {
     GstVideoParseToBinSrc *context =
       static_cast < GstVideoParseToBinSrc * >(user_data);
     g_free (context->gst_launch_pipeline_);
     context->gst_launch_pipeline_ = g_strdup (value);
-    context->custom_props_->notify_property_changed (context->
-						     gst_launch_pipeline_spec_);
+    context->custom_props_->
+      notify_property_changed (context->gst_launch_pipeline_spec_);
   }
 
-  const gchar *GstVideoParseToBinSrc::
-    get_gst_launch_pipeline (void *user_data)
+  const gchar *GstVideoParseToBinSrc::get_gst_launch_pipeline (void
+                                                               *user_data)
   {
     GstVideoParseToBinSrc *context =
       static_cast < GstVideoParseToBinSrc * >(user_data);

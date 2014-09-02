@@ -50,6 +50,6 @@ namespace switcher
       std::mutex mutex_;
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

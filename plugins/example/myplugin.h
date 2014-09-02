@@ -54,6 +54,6 @@ namespace switcher
 
     SWITCHER_DECLARE_PLUGIN (MyPlugin);
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

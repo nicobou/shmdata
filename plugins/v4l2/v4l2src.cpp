@@ -17,8 +17,8 @@
 
 #include "v4l2src.h"
 #include "switcher/gst-utils.h"
-#include <cstdlib>		// For srand() and rand()
-#include <ctime>		// For time()
+#include <cstdlib>              // For srand() and rand()
+#include <ctime>                // For time()
 
 #include <linux/videodev2.h>
 #include <sys/ioctl.h>
@@ -29,10 +29,10 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (V4L2Src,
-					"Video Capture (with v4l2)",
-					"video source",
-					"Discover and use v4l2 supported capture cards and cameras",
-					"GPL", "v4l2src", "Nicolas Bouillot");
+                                        "Video Capture (with v4l2)",
+                                        "video source",
+                                        "Discover and use v4l2 supported capture cards and cameras",
+                                        "GPL", "v4l2src", "Nicolas Bouillot");
 
   V4L2Src::V4L2Src ():v4l2src_ (nullptr),
     v4l2_bin_ (nullptr),
@@ -73,34 +73,34 @@ namespace switcher
 
     if (capture_devices_.empty ())
       {
-	g_debug ("no video 4 linux device detected");
-	return false;
+        g_debug ("no video 4 linux device detected");
+        return false;
       }
     capture_devices_description_spec_ =
       custom_props_->make_string_property ("devices-json",
-					   "Description of capture devices (json formated)",
-					   get_capture_devices_json (this),
-					   (GParamFlags) G_PARAM_READABLE,
-					   nullptr,
-					   V4L2Src::get_capture_devices_json,
-					   this);
+                                           "Description of capture devices (json formated)",
+                                           get_capture_devices_json (this),
+                                           (GParamFlags) G_PARAM_READABLE,
+                                           nullptr,
+                                           V4L2Src::get_capture_devices_json,
+                                           this);
 
     install_property_by_pspec (custom_props_->get_gobject (),
-			       capture_devices_description_spec_,
-			       "devices-json", "Capture Devices");
+                               capture_devices_description_spec_,
+                               "devices-json", "Capture Devices");
 
     devices_enum_spec_ =
       custom_props_->make_enum_property ("device",
-					 "Enumeration of v4l2 capture devices",
-					 device_,
-					 devices_enum_,
-					 (GParamFlags) G_PARAM_READWRITE,
-					 V4L2Src::set_camera,
-					 V4L2Src::get_camera, this);
+                                         "Enumeration of v4l2 capture devices",
+                                         device_,
+                                         devices_enum_,
+                                         (GParamFlags) G_PARAM_READWRITE,
+                                         V4L2Src::set_camera,
+                                         V4L2Src::get_camera, this);
 
     install_property_by_pspec (custom_props_->get_gobject (),
-			       devices_enum_spec_,
-			       "device", "Capture Device");
+                               devices_enum_spec_,
+                               "device", "Capture Device");
 
     update_device_specific_properties (device_);
     return true;
@@ -111,11 +111,11 @@ namespace switcher
     gint i = 0;
   for (auto & it:capture_devices_)
       {
-	devices_enum_[i].value = i;
+        devices_enum_[i].value = i;
 //FIXME previous free here
-	devices_enum_[i].value_name = g_strdup (it.card_.c_str ());
-	devices_enum_[i].value_nick = g_strdup (it.file_device_.c_str ());
-	i++;
+        devices_enum_[i].value_name = g_strdup (it.card_.c_str ());
+        devices_enum_[i].value_nick = g_strdup (it.file_device_.c_str ());
+        i++;
       }
     devices_enum_[i].value = 0;
     devices_enum_[i].value_name = nullptr;
@@ -141,39 +141,38 @@ namespace switcher
     //resolution_ = -1;
     if (!cap_descr.frame_size_discrete_.empty ())
       {
-	gint i = 0;
+        gint i = 0;
       for (auto & it:cap_descr.frame_size_discrete_)
-	  {
-	    resolutions_enum_[i].value = i;
-	    //FIXME free previous here
-	    resolutions_enum_[i].value_name = g_strdup_printf ("%sx%s",
-							       it.first.
-							       c_str (),
-							       it.second.
-							       c_str ());
-	    resolutions_enum_[i].value_nick = resolutions_enum_[i].value_name;
-	    i++;
-	  }
-	resolutions_enum_[i].value = 0;
-	resolutions_enum_[i].value_name = nullptr;
-	resolutions_enum_[i].value_nick = nullptr;
+          {
+            resolutions_enum_[i].value = i;
+            //FIXME free previous here
+            resolutions_enum_[i].value_name = g_strdup_printf ("%sx%s",
+                                                               it.
+                                                               first.c_str (),
+                                                               it.
+                                                               second.c_str
+                                                               ());
+            resolutions_enum_[i].value_nick = resolutions_enum_[i].value_name;
+            i++;
+          }
+        resolutions_enum_[i].value = 0;
+        resolutions_enum_[i].value_name = nullptr;
+        resolutions_enum_[i].value_nick = nullptr;
 
-	if (resolutions_spec_ == nullptr)
-	  resolutions_spec_ = custom_props_->make_enum_property ("resolution",
-								 "resolution of selected capture devices",
-								 0,
-								 resolutions_enum_,
-								 (GParamFlags)
-								 G_PARAM_READWRITE,
-								 V4L2Src::
-								 set_resolution,
-								 V4L2Src::
-								 get_resolution,
-								 this);
+        if (resolutions_spec_ == nullptr)
+          resolutions_spec_ = custom_props_->make_enum_property ("resolution",
+                                                                 "resolution of selected capture devices",
+                                                                 0,
+                                                                 resolutions_enum_,
+                                                                 (GParamFlags)
+                                                                 G_PARAM_READWRITE,
+                                                                 V4L2Src::set_resolution,
+                                                                 V4L2Src::get_resolution,
+                                                                 this);
 //resolution_ = 0;
-	install_property_by_pspec (custom_props_->get_gobject (),
-				   resolutions_spec_,
-				   "resolution", "Resolution");
+        install_property_by_pspec (custom_props_->get_gobject (),
+                                   resolutions_spec_,
+                                   "resolution", "Resolution");
 
       }
 
@@ -185,39 +184,37 @@ namespace switcher
     //framerate_ = -1;
     if (!cap_descr.frame_interval_discrete_.empty ())
       {
-	gint i = 0;
+        gint i = 0;
       for (auto & it:cap_descr.frame_interval_discrete_)
-	  {
-	    framerates_enum_[i].value = i;
-	    //FIXME free previous here
-	    //inversing enumerator and denominator because gst wants framerate while v4l2 gives frame interval 
-	    framerates_enum_[i].value_name = g_strdup_printf ("%s/%s",
-							      it.second.
-							      c_str (),
-							      it.first.
-							      c_str ());
-	    framerates_enum_[i].value_nick = framerates_enum_[i].value_name;
-	    i++;
-	  }
-	framerates_enum_[i].value = 0;
-	framerates_enum_[i].value_name = nullptr;
-	framerates_enum_[i].value_nick = nullptr;
+          {
+            framerates_enum_[i].value = i;
+            //FIXME free previous here
+            //inversing enumerator and denominator because gst wants framerate while v4l2 gives frame interval 
+            framerates_enum_[i].value_name = g_strdup_printf ("%s/%s",
+                                                              it.
+                                                              second.c_str (),
+                                                              it.
+                                                              first.c_str ());
+            framerates_enum_[i].value_nick = framerates_enum_[i].value_name;
+            i++;
+          }
+        framerates_enum_[i].value = 0;
+        framerates_enum_[i].value_name = nullptr;
+        framerates_enum_[i].value_nick = nullptr;
 
-	if (framerate_spec_ == nullptr)
-	  framerate_spec_ = custom_props_->make_enum_property ("framerate",
-							       "framerate of selected capture devices",
-							       0,
-							       framerates_enum_,
-							       (GParamFlags)
-							       G_PARAM_READWRITE,
-							       V4L2Src::
-							       set_framerate,
-							       V4L2Src::
-							       get_framerate,
-							       this);
+        if (framerate_spec_ == nullptr)
+          framerate_spec_ = custom_props_->make_enum_property ("framerate",
+                                                               "framerate of selected capture devices",
+                                                               0,
+                                                               framerates_enum_,
+                                                               (GParamFlags)
+                                                               G_PARAM_READWRITE,
+                                                               V4L2Src::set_framerate,
+                                                               V4L2Src::get_framerate,
+                                                               this);
 //framerate_ = 0;
-	install_property_by_pspec (custom_props_->get_gobject (),
-				   framerate_spec_, "framerate", "Framerate");
+        install_property_by_pspec (custom_props_->get_gobject (),
+                                   framerate_spec_, "framerate", "Framerate");
 
       }
   }
@@ -231,49 +228,43 @@ namespace switcher
     if (cap_descr.frame_size_stepwise_max_width_ > 0)
       {
 //width_ = cap_descr.frame_size_stepwise_max_width_;
-	if (width_spec_ == nullptr)
-	  width_spec_ =
-	    custom_props_->make_int_property ("width",
-					      "width of selected capture devices",
-					      cap_descr.
-					      frame_size_stepwise_min_width_,
-					      cap_descr.
-					      frame_size_stepwise_max_width_,
-					      cap_descr.
-					      frame_size_stepwise_max_width_,
-					      (GParamFlags) G_PARAM_READWRITE,
-					      V4L2Src::set_width,
-					      V4L2Src::get_width, this);
+        if (width_spec_ == nullptr)
+          width_spec_ =
+            custom_props_->make_int_property ("width",
+                                              "width of selected capture devices",
+                                              cap_descr.frame_size_stepwise_min_width_,
+                                              cap_descr.frame_size_stepwise_max_width_,
+                                              cap_descr.frame_size_stepwise_max_width_,
+                                              (GParamFlags) G_PARAM_READWRITE,
+                                              V4L2Src::set_width,
+                                              V4L2Src::get_width, this);
 
-	install_property_by_pspec (custom_props_->get_gobject (),
-				   width_spec_, "width", "Width");
+        install_property_by_pspec (custom_props_->get_gobject (),
+                                   width_spec_, "width", "Width");
 
 //height_ = cap_descr.frame_size_stepwise_max_height_;
 
-	if (height_spec_ == nullptr)
-	  height_spec_ =
-	    custom_props_->make_int_property ("height",
-					      "height of selected capture devices",
-					      cap_descr.
-					      frame_size_stepwise_min_height_,
-					      cap_descr.
-					      frame_size_stepwise_max_height_,
-					      cap_descr.
-					      frame_size_stepwise_max_height_,
-					      (GParamFlags) G_PARAM_READWRITE,
-					      V4L2Src::set_height,
-					      V4L2Src::get_height, this);
+        if (height_spec_ == nullptr)
+          height_spec_ =
+            custom_props_->make_int_property ("height",
+                                              "height of selected capture devices",
+                                              cap_descr.frame_size_stepwise_min_height_,
+                                              cap_descr.frame_size_stepwise_max_height_,
+                                              cap_descr.frame_size_stepwise_max_height_,
+                                              (GParamFlags) G_PARAM_READWRITE,
+                                              V4L2Src::set_height,
+                                              V4L2Src::get_height, this);
 
-	install_property_by_pspec (custom_props_->get_gobject (),
-				   height_spec_, "height", "Height");
+        install_property_by_pspec (custom_props_->get_gobject (),
+                                   height_spec_, "height", "Height");
 
       }
 
   }
 
   void
-    V4L2Src::
-    update_framerate_numerator_denominator (CaptureDescription cap_descr)
+    V4L2Src::update_framerate_numerator_denominator (CaptureDescription
+                                                     cap_descr)
   {
     uninstall_property ("framerate_numerator");
     uninstall_property ("framerate_denominator");
@@ -284,41 +275,37 @@ namespace switcher
 
 //framerate_numerator_ = 60;
 
-	if (framerate_numerator_spec_ == nullptr)
-	  framerate_numerator_spec_ = custom_props_->make_int_property ("framerate_numerator", "framerate numerator of selected capture devices", 1,	//FIXME do actually use values
-									60,
-									60,
-									(GParamFlags)
-									G_PARAM_READWRITE,
-									V4L2Src::
-									set_framerate_numerator,
-									V4L2Src::
-									get_framerate_numerator,
-									this);
-	install_property_by_pspec (custom_props_->get_gobject (),
-				   framerate_numerator_spec_,
-				   "framerate_numerator",
-				   "Framerate Numerator");
+        if (framerate_numerator_spec_ == nullptr)
+          framerate_numerator_spec_ = custom_props_->make_int_property ("framerate_numerator", "framerate numerator of selected capture devices", 1,    //FIXME do actually use values
+                                                                        60,
+                                                                        60,
+                                                                        (GParamFlags)
+                                                                        G_PARAM_READWRITE,
+                                                                        V4L2Src::set_framerate_numerator,
+                                                                        V4L2Src::get_framerate_numerator,
+                                                                        this);
+        install_property_by_pspec (custom_props_->get_gobject (),
+                                   framerate_numerator_spec_,
+                                   "framerate_numerator",
+                                   "Framerate Numerator");
 
-	framerate_denominator_ = 1;
-	if (framerate_denominator_spec_ == nullptr)
-	  framerate_denominator_spec_ =
-	    custom_props_->make_int_property ("framerate_denominator",
-					      "Framerate denominator of selected capture devices",
-					      1,
-					      1,
-					      1,
-					      (GParamFlags) G_PARAM_READWRITE,
-					      V4L2Src::
-					      set_framerate_denominator,
-					      V4L2Src::
-					      get_framerate_denominator,
-					      this);
+        framerate_denominator_ = 1;
+        if (framerate_denominator_spec_ == nullptr)
+          framerate_denominator_spec_ =
+            custom_props_->make_int_property ("framerate_denominator",
+                                              "Framerate denominator of selected capture devices",
+                                              1,
+                                              1,
+                                              1,
+                                              (GParamFlags) G_PARAM_READWRITE,
+                                              V4L2Src::set_framerate_denominator,
+                                              V4L2Src::get_framerate_denominator,
+                                              this);
 
-	install_property_by_pspec (custom_props_->get_gobject (),
-				   framerate_denominator_spec_,
-				   "framerate_denominator",
-				   "Framerate Denominator");
+        install_property_by_pspec (custom_props_->get_gobject (),
+                                   framerate_denominator_spec_,
+                                   "framerate_denominator",
+                                   "Framerate Denominator");
 
       }
 
@@ -330,35 +317,35 @@ namespace switcher
     //tv_standard_ = -1;
     if (!cap_descr.tv_standards_.empty ())
       {
-	gint i = 0;
+        gint i = 0;
       for (auto & it:cap_descr.tv_standards_)
-	  {
-	    tv_standards_enum_[i].value = i;
-	    //FIXME free previous here
-	    tv_standards_enum_[i].value_name = g_strdup (it.c_str ());
-	    tv_standards_enum_[i].value_nick =
-	      tv_standards_enum_[i].value_name;
-	    i++;
-	  }
-	tv_standards_enum_[i].value = 0;
-	tv_standards_enum_[i].value_name = nullptr;
-	tv_standards_enum_[i].value_nick = nullptr;
+          {
+            tv_standards_enum_[i].value = i;
+            //FIXME free previous here
+            tv_standards_enum_[i].value_name = g_strdup (it.c_str ());
+            tv_standards_enum_[i].value_nick =
+              tv_standards_enum_[i].value_name;
+            i++;
+          }
+        tv_standards_enum_[i].value = 0;
+        tv_standards_enum_[i].value_name = nullptr;
+        tv_standards_enum_[i].value_nick = nullptr;
 
-	if (tv_standards_spec_ == nullptr)
-	  tv_standards_spec_ =
-	    custom_props_->make_enum_property ("tv_standard",
-					       "tv standard of selected capture devices",
-					       0, tv_standards_enum_,
-					       (GParamFlags)
-					       G_PARAM_READWRITE,
-					       V4L2Src::set_tv_standard,
-					       V4L2Src::get_tv_standard,
-					       this);
+        if (tv_standards_spec_ == nullptr)
+          tv_standards_spec_ =
+            custom_props_->make_enum_property ("tv_standard",
+                                               "tv standard of selected capture devices",
+                                               0, tv_standards_enum_,
+                                               (GParamFlags)
+                                               G_PARAM_READWRITE,
+                                               V4L2Src::set_tv_standard,
+                                               V4L2Src::get_tv_standard,
+                                               this);
 
 //tv_standard_ = 0;
-	install_property_by_pspec (custom_props_->get_gobject (),
-				   tv_standards_spec_,
-				   "tv_standard", "TV Standard");
+        install_property_by_pspec (custom_props_->get_gobject (),
+                                   tv_standards_spec_,
+                                   "tv_standard", "TV Standard");
 
       }
 
@@ -415,8 +402,8 @@ namespace switcher
 
     if (fd < 0)
       {
-	g_debug ("V4L2Src: inspecting file gets negative file descriptor");
-	return false;
+        g_debug ("V4L2Src: inspecting file gets negative file descriptor");
+        return false;
       }
 
     CaptureDescription description;
@@ -442,26 +429,27 @@ namespace switcher
     fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     while (ioctl (fd, VIDIOC_ENUM_FMT, &fmt) >= 0)
       {
-	if (fmt.pixelformat != 0)
-	  {
-	    if (default_pixel_format == 0)
-	      default_pixel_format = fmt.pixelformat;
-	    // g_print ("******** pixel format  %s - %s\n", 
-	    //      pixel_format_to_string(fmt.pixelformat).c_str (), 
-	    //      (const char *)fmt.description);
-	    description.pixel_formats_.
-	      push_back (std::
-			 make_pair (pixel_format_to_string (fmt.pixelformat),
-				    (const char *) fmt.description));
-	  }
-	fmt.index++;
+        if (fmt.pixelformat != 0)
+          {
+            if (default_pixel_format == 0)
+              default_pixel_format = fmt.pixelformat;
+            // g_print ("******** pixel format  %s - %s\n", 
+            //      pixel_format_to_string(fmt.pixelformat).c_str (), 
+            //      (const char *)fmt.description);
+            description.
+              pixel_formats_.push_back (std::make_pair
+                                        (pixel_format_to_string
+                                         (fmt.pixelformat),
+                                         (const char *) fmt.description));
+          }
+        fmt.index++;
       }
 
     if (default_pixel_format == 0)
       {
-	g_debug ("no default pixel format found for %s, returning",
-		 file_path);
-	return false;
+        g_debug ("no default pixel format found for %s, returning",
+                 file_path);
+        return false;
       }
 
     v4l2_frmsizeenum frmsize;
@@ -471,52 +459,52 @@ namespace switcher
     unsigned default_width = 0;
     unsigned default_height = 0;
     while (ioctl (fd, VIDIOC_ENUM_FRAMESIZES, &frmsize) >= 0
-	   && frmsize.type == V4L2_FRMSIZE_TYPE_DISCRETE)
+           && frmsize.type == V4L2_FRMSIZE_TYPE_DISCRETE)
       {
-	if (frmsize.index == 0)
-	  {
-	    default_width = frmsize.discrete.width;
-	    default_height = frmsize.discrete.height;
-	  }
-	char *width = g_strdup_printf ("%u", frmsize.discrete.width);
-	char *height = g_strdup_printf ("%u", frmsize.discrete.height);
-	description.frame_size_discrete_.
-	  push_back (std::make_pair (width, height));
-	g_free (width);
-	g_free (height);
+        if (frmsize.index == 0)
+          {
+            default_width = frmsize.discrete.width;
+            default_height = frmsize.discrete.height;
+          }
+        char *width = g_strdup_printf ("%u", frmsize.discrete.width);
+        char *height = g_strdup_printf ("%u", frmsize.discrete.height);
+        description.
+          frame_size_discrete_.push_back (std::make_pair (width, height));
+        g_free (width);
+        g_free (height);
 // g_print ("++++++++++++++++ %d, %d \n", 
 //  frmsize.discrete.width,
 //  frmsize.discrete.height);
-	frmsize.index++;
+        frmsize.index++;
       }
 
     if (frmsize.type != V4L2_FRMSIZE_TYPE_DISCRETE)
       {
-	description.frame_size_stepwise_max_width_ =
-	  frmsize.stepwise.max_width;
-	description.frame_size_stepwise_min_width_ =
-	  frmsize.stepwise.min_width;
-	description.frame_size_stepwise_step_width_ =
-	  frmsize.stepwise.step_width;
-	description.frame_size_stepwise_max_height_ =
-	  frmsize.stepwise.max_height;
-	description.frame_size_stepwise_min_height_ =
-	  frmsize.stepwise.min_height;
-	description.frame_size_stepwise_step_height_ =
-	  frmsize.stepwise.step_height;
-	default_width = frmsize.stepwise.max_width;
-	default_height = frmsize.stepwise.max_height;
-	width_ = default_width;
-	height_ = default_height;
+        description.frame_size_stepwise_max_width_ =
+          frmsize.stepwise.max_width;
+        description.frame_size_stepwise_min_width_ =
+          frmsize.stepwise.min_width;
+        description.frame_size_stepwise_step_width_ =
+          frmsize.stepwise.step_width;
+        description.frame_size_stepwise_max_height_ =
+          frmsize.stepwise.max_height;
+        description.frame_size_stepwise_min_height_ =
+          frmsize.stepwise.min_height;
+        description.frame_size_stepwise_step_height_ =
+          frmsize.stepwise.step_height;
+        default_width = frmsize.stepwise.max_width;
+        default_height = frmsize.stepwise.max_height;
+        width_ = default_width;
+        height_ = default_height;
       }
     else
       {
-	description.frame_size_stepwise_max_width_ = -1;
-	description.frame_size_stepwise_min_width_ = -1;
-	description.frame_size_stepwise_step_width_ = -1;
-	description.frame_size_stepwise_max_height_ = -1;
-	description.frame_size_stepwise_min_height_ = -1;
-	description.frame_size_stepwise_step_height_ = -1;
+        description.frame_size_stepwise_max_width_ = -1;
+        description.frame_size_stepwise_min_width_ = -1;
+        description.frame_size_stepwise_step_width_ = -1;
+        description.frame_size_stepwise_max_height_ = -1;
+        description.frame_size_stepwise_min_height_ = -1;
+        description.frame_size_stepwise_step_height_ = -1;
       }
 
     v4l2_standard std;
@@ -525,9 +513,9 @@ namespace switcher
     description.tv_standards_.push_back ("none");
     while (ioctl (fd, VIDIOC_ENUMSTD, &std) >= 0)
       {
-	description.tv_standards_.push_back ((char *) std.name);
+        description.tv_standards_.push_back ((char *) std.name);
 //g_print ("TV standard %s\n", (char *)std.name);
-	std.index++;
+        std.index++;
       }
 
     v4l2_frmivalenum frmival;
@@ -539,26 +527,28 @@ namespace switcher
 
     //g_print ("frame interval for default pixel format and default frame size:\n");
     while (ioctl (fd, VIDIOC_ENUM_FRAMEINTERVALS, &frmival) >= 0
-	   && frmival.type == V4L2_FRMIVAL_TYPE_DISCRETE)
+           && frmival.type == V4L2_FRMIVAL_TYPE_DISCRETE)
       {
-	if (frmival.type == V4L2_FRMIVAL_TYPE_DISCRETE)
-	  {
-	    char *numerator =
-	      g_strdup_printf ("%u", frmival.discrete.numerator);
-	    char *denominator =
-	      g_strdup_printf ("%u", frmival.discrete.denominator);
+        if (frmival.type == V4L2_FRMIVAL_TYPE_DISCRETE)
+          {
+            char *numerator =
+              g_strdup_printf ("%u", frmival.discrete.numerator);
+            char *denominator =
+              g_strdup_printf ("%u", frmival.discrete.denominator);
 
-	    description.frame_interval_discrete_.
-	      push_back (std::make_pair (numerator, denominator));
-	    g_free (numerator);
-	    g_free (denominator);
-	    // g_print ("       %u/%u \n", 
-	    //       frmival.discrete.numerator,
-	    //       frmival.discrete.denominator);
-	  }
+            description.
+              frame_interval_discrete_.push_back (std::
+                                                  make_pair (numerator,
+                                                             denominator));
+            g_free (numerator);
+            g_free (denominator);
+            // g_print ("       %u/%u \n", 
+            //       frmival.discrete.numerator,
+            //       frmival.discrete.denominator);
+          }
 // else
 //   g_debug ("V4L2Src: frame size is not discret");
-	frmival.index++;
+        frmival.index++;
       }
 
     if (frmival.type != V4L2_FRMIVAL_TYPE_DISCRETE)
@@ -571,29 +561,29 @@ namespace switcher
 //   frmival.stepwise.step.numerator,
 //   frmival.stepwise.step.denominator);
 
-	description.frame_interval_stepwise_max_numerator_ =
-	  frmival.stepwise.max.numerator;
-	description.frame_interval_stepwise_max_denominator_ =
-	  frmival.stepwise.max.denominator;
-	description.frame_interval_stepwise_min_numerator_ =
-	  frmival.stepwise.max.numerator;
-	description.frame_interval_stepwise_min_denominator_ =
-	  frmival.stepwise.max.denominator;
-	description.frame_interval_stepwise_step_numerator_ =
-	  frmival.stepwise.step.numerator;
-	description.frame_interval_stepwise_step_denominator_ =
-	  frmival.stepwise.step.denominator;
-	framerate_numerator_ = 60;	//FIXME use actual values
-	framerate_denominator_ = 60;	//FIXME use actual values
+        description.frame_interval_stepwise_max_numerator_ =
+          frmival.stepwise.max.numerator;
+        description.frame_interval_stepwise_max_denominator_ =
+          frmival.stepwise.max.denominator;
+        description.frame_interval_stepwise_min_numerator_ =
+          frmival.stepwise.max.numerator;
+        description.frame_interval_stepwise_min_denominator_ =
+          frmival.stepwise.max.denominator;
+        description.frame_interval_stepwise_step_numerator_ =
+          frmival.stepwise.step.numerator;
+        description.frame_interval_stepwise_step_denominator_ =
+          frmival.stepwise.step.denominator;
+        framerate_numerator_ = 60;      //FIXME use actual values
+        framerate_denominator_ = 60;    //FIXME use actual values
       }
     else
       {
-	description.frame_interval_stepwise_max_numerator_ = -1;
-	description.frame_interval_stepwise_max_denominator_ = -1;
-	description.frame_interval_stepwise_min_numerator_ = -1;
-	description.frame_interval_stepwise_min_denominator_ = -1;
-	description.frame_interval_stepwise_step_numerator_ = -1;
-	description.frame_interval_stepwise_step_denominator_ = -1;
+        description.frame_interval_stepwise_max_numerator_ = -1;
+        description.frame_interval_stepwise_max_denominator_ = -1;
+        description.frame_interval_stepwise_min_numerator_ = -1;
+        description.frame_interval_stepwise_min_denominator_ = -1;
+        description.frame_interval_stepwise_step_numerator_ = -1;
+        description.frame_interval_stepwise_step_denominator_ = -1;
       }
     close (fd);
 
@@ -615,29 +605,29 @@ namespace switcher
     error = nullptr;
     enumerator =
       g_file_enumerate_children (inspected_dir, "*",
-				 G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr,
-				 &error);
+                                 G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr,
+                                 &error);
     if (!enumerator)
       return false;
     error = nullptr;
     info = g_file_enumerator_next_file (enumerator, nullptr, &error);
     while ((info) && (!error))
       {
-	descend =
-	  g_file_get_child (inspected_dir, g_file_info_get_name (info));
-	absolute_path = g_file_get_path (descend);
+        descend =
+          g_file_get_child (inspected_dir, g_file_info_get_name (info));
+        absolute_path = g_file_get_path (descend);
 
-	if (g_str_has_prefix (absolute_path, "/dev/video")
-	    /*|| g_str_has_prefix (absolute_path, "/dev/radio")
-	       || g_str_has_prefix (absolute_path, "/dev/vbi")
-	       || g_str_has_prefix (absolute_path, "/dev/vtx") */ )
-	  {
-	    inspect_file_device (absolute_path);
-	  }
+        if (g_str_has_prefix (absolute_path, "/dev/video")
+            /*|| g_str_has_prefix (absolute_path, "/dev/radio")
+               || g_str_has_prefix (absolute_path, "/dev/vbi")
+               || g_str_has_prefix (absolute_path, "/dev/vtx") */ )
+          {
+            inspect_file_device (absolute_path);
+          }
 
-	g_object_unref (descend);
-	error = nullptr;
-	info = g_file_enumerator_next_file (enumerator, nullptr, &error);
+        g_object_unref (descend);
+        error = nullptr;
+        info = g_file_enumerator_next_file (enumerator, nullptr, &error);
       }
 
     if (error != nullptr)
@@ -655,9 +645,9 @@ namespace switcher
   }
 
   bool V4L2Src::inspect_frame_rate (const char * /*file_path */ ,
-				    unsigned /*pixel_format */ ,
-				    unsigned /*width */ ,
-				    unsigned /*height */ )
+                                    unsigned /*pixel_format */ ,
+                                    unsigned /*width */ ,
+                                    unsigned /*height */ )
   {
     //FIXME, framerate can change according to pixel_format and resolution
     g_debug ("  V4L2Src::inspect_frame_rate: TODO");
@@ -687,8 +677,8 @@ namespace switcher
   {
     clean_elements ();
     install_property_by_pspec (custom_props_->get_gobject (),
-			       devices_enum_spec_,
-			       "device", "Capture Device");
+                               devices_enum_spec_,
+                               "device", "Capture Device");
     update_device_specific_properties (device_);
     // uninstall_property ("brightness");
     // uninstall_property ("contrast");
@@ -704,15 +694,15 @@ namespace switcher
 
     if (nullptr != context->capture_devices_description_)
       {
-	g_free (context->capture_devices_description_);
-	context->capture_devices_description_ = nullptr;
+        g_free (context->capture_devices_description_);
+        context->capture_devices_description_ = nullptr;
       }
 
     if (context->capture_devices_.empty ())
       {
-	g_warning ("%s: no capture device, cannot make description",
-		   __PRETTY_FUNCTION__);
-	return nullptr;
+        g_warning ("%s: no capture device, cannot make description",
+                   __PRETTY_FUNCTION__);
+        return nullptr;
       }
 
     JSONBuilder::ptr builder (new JSONBuilder ());
@@ -723,104 +713,104 @@ namespace switcher
 
   for (auto & it:context->capture_devices_)
       {
-	builder->begin_object ();
-	builder->add_string_member ("long name", it.card_.c_str ());
-	builder->add_string_member ("file path", it.file_device_.c_str ());
-	builder->add_string_member ("bus info", it.bus_info_.c_str ());
-	builder->set_member_name ("resolutions list");
-	builder->begin_array ();
+        builder->begin_object ();
+        builder->add_string_member ("long name", it.card_.c_str ());
+        builder->add_string_member ("file path", it.file_device_.c_str ());
+        builder->add_string_member ("bus info", it.bus_info_.c_str ());
+        builder->set_member_name ("resolutions list");
+        builder->begin_array ();
       for (auto & frame_size_it:it.frame_size_discrete_)
-	  {
-	    builder->begin_object ();
-	    builder->add_string_member ("width",
-					frame_size_it.first.c_str ());
-	    builder->add_string_member ("height",
-					frame_size_it.second.c_str ());
-	    builder->end_object ();
-	  }
-	builder->end_array ();
-	char *stepwise_max_width =
-	  g_strdup_printf ("%d", it.frame_size_stepwise_max_width_);
-	char *stepwise_min_width =
-	  g_strdup_printf ("%d", it.frame_size_stepwise_min_width_);
-	char *stepwise_step_width =
-	  g_strdup_printf ("%d", it.frame_size_stepwise_step_width_);
-	char *stepwise_max_height =
-	  g_strdup_printf ("%d", it.frame_size_stepwise_max_height_);
-	char *stepwise_min_height =
-	  g_strdup_printf ("%d", it.frame_size_stepwise_min_height_);
-	char *stepwise_step_height =
-	  g_strdup_printf ("%d", it.frame_size_stepwise_step_height_);
-	builder->add_string_member ("stepwise max width", stepwise_max_width);
-	builder->add_string_member ("stepwise min width", stepwise_min_width);
-	builder->add_string_member ("stepwise step width",
-				    stepwise_step_width);
-	builder->add_string_member ("stepwise max height",
-				    stepwise_max_height);
-	builder->add_string_member ("stepwise min height",
-				    stepwise_min_height);
-	builder->add_string_member ("stepwise step height",
-				    stepwise_step_height);
-	g_free (stepwise_max_width);
-	g_free (stepwise_min_width);
-	g_free (stepwise_step_width);
-	g_free (stepwise_max_height);
-	g_free (stepwise_min_height);
-	g_free (stepwise_step_height);
-	builder->set_member_name ("tv standards list");
-	builder->begin_array ();
+          {
+            builder->begin_object ();
+            builder->add_string_member ("width",
+                                        frame_size_it.first.c_str ());
+            builder->add_string_member ("height",
+                                        frame_size_it.second.c_str ());
+            builder->end_object ();
+          }
+        builder->end_array ();
+        char *stepwise_max_width =
+          g_strdup_printf ("%d", it.frame_size_stepwise_max_width_);
+        char *stepwise_min_width =
+          g_strdup_printf ("%d", it.frame_size_stepwise_min_width_);
+        char *stepwise_step_width =
+          g_strdup_printf ("%d", it.frame_size_stepwise_step_width_);
+        char *stepwise_max_height =
+          g_strdup_printf ("%d", it.frame_size_stepwise_max_height_);
+        char *stepwise_min_height =
+          g_strdup_printf ("%d", it.frame_size_stepwise_min_height_);
+        char *stepwise_step_height =
+          g_strdup_printf ("%d", it.frame_size_stepwise_step_height_);
+        builder->add_string_member ("stepwise max width", stepwise_max_width);
+        builder->add_string_member ("stepwise min width", stepwise_min_width);
+        builder->add_string_member ("stepwise step width",
+                                    stepwise_step_width);
+        builder->add_string_member ("stepwise max height",
+                                    stepwise_max_height);
+        builder->add_string_member ("stepwise min height",
+                                    stepwise_min_height);
+        builder->add_string_member ("stepwise step height",
+                                    stepwise_step_height);
+        g_free (stepwise_max_width);
+        g_free (stepwise_min_width);
+        g_free (stepwise_step_width);
+        g_free (stepwise_max_height);
+        g_free (stepwise_min_height);
+        g_free (stepwise_step_height);
+        builder->set_member_name ("tv standards list");
+        builder->begin_array ();
       for (auto & tv_standards_it:it.tv_standards_)
-	  builder->add_string_value (tv_standards_it.c_str ());
-	builder->end_array ();
+          builder->add_string_value (tv_standards_it.c_str ());
+        builder->end_array ();
 
-	builder->set_member_name ("frame interval list (sec.)");
-	builder->begin_array ();
-	if (!it.frame_interval_discrete_.empty ())
-	for (auto & frame_interval_it:it.frame_interval_discrete_)
-	    {
-	      builder->begin_object ();
-	      builder->add_string_member ("numerator",
-					  frame_interval_it.first.c_str ());
-	      builder->add_string_member ("denominator",
-					  frame_interval_it.second.c_str ());
-	      builder->end_object ();
-	    }
-	builder->end_array ();
+        builder->set_member_name ("frame interval list (sec.)");
+        builder->begin_array ();
+        if (!it.frame_interval_discrete_.empty ())
+        for (auto & frame_interval_it:it.frame_interval_discrete_)
+            {
+              builder->begin_object ();
+              builder->add_string_member ("numerator",
+                                          frame_interval_it.first.c_str ());
+              builder->add_string_member ("denominator",
+                                          frame_interval_it.second.c_str ());
+              builder->end_object ();
+            }
+        builder->end_array ();
 
-	char *stepwise_max_numerator =
-	  g_strdup_printf ("%d", it.frame_interval_stepwise_max_numerator_);
-	char *stepwise_min_numerator =
-	  g_strdup_printf ("%d", it.frame_interval_stepwise_min_numerator_);
-	char *stepwise_step_numerator =
-	  g_strdup_printf ("%d", it.frame_interval_stepwise_step_numerator_);
-	char *stepwise_max_denominator =
-	  g_strdup_printf ("%d", it.frame_interval_stepwise_max_denominator_);
-	char *stepwise_min_denominator =
-	  g_strdup_printf ("%d", it.frame_interval_stepwise_min_denominator_);
-	char *stepwise_step_denominator =
-	  g_strdup_printf ("%d",
-			   it.frame_interval_stepwise_step_denominator_);
+        char *stepwise_max_numerator =
+          g_strdup_printf ("%d", it.frame_interval_stepwise_max_numerator_);
+        char *stepwise_min_numerator =
+          g_strdup_printf ("%d", it.frame_interval_stepwise_min_numerator_);
+        char *stepwise_step_numerator =
+          g_strdup_printf ("%d", it.frame_interval_stepwise_step_numerator_);
+        char *stepwise_max_denominator =
+          g_strdup_printf ("%d", it.frame_interval_stepwise_max_denominator_);
+        char *stepwise_min_denominator =
+          g_strdup_printf ("%d", it.frame_interval_stepwise_min_denominator_);
+        char *stepwise_step_denominator = g_strdup_printf ("%d",
+                                                           it.
+                                                           frame_interval_stepwise_step_denominator_);
 
-	builder->add_string_member ("stepwise max frame interval numerator",
-				    stepwise_max_numerator);
-	builder->add_string_member ("stepwise max frame interval denominator",
-				    stepwise_max_denominator);
-	builder->add_string_member ("stepwise min frame interval numerator",
-				    stepwise_min_numerator);
-	builder->add_string_member ("stepwise min frame interval denominator",
-				    stepwise_min_denominator);
-	builder->add_string_member ("stepwise step frame interval numerator",
-				    stepwise_step_numerator);
-	builder->
-	  add_string_member ("stepwise step frame interval denominator",
-			     stepwise_step_denominator);
-	g_free (stepwise_max_numerator);
-	g_free (stepwise_min_numerator);
-	g_free (stepwise_step_numerator);
-	g_free (stepwise_max_denominator);
-	g_free (stepwise_min_denominator);
-	g_free (stepwise_step_denominator);
-	builder->end_object ();
+        builder->add_string_member ("stepwise max frame interval numerator",
+                                    stepwise_max_numerator);
+        builder->add_string_member ("stepwise max frame interval denominator",
+                                    stepwise_max_denominator);
+        builder->add_string_member ("stepwise min frame interval numerator",
+                                    stepwise_min_numerator);
+        builder->add_string_member ("stepwise min frame interval denominator",
+                                    stepwise_min_denominator);
+        builder->add_string_member ("stepwise step frame interval numerator",
+                                    stepwise_step_numerator);
+        builder->add_string_member
+          ("stepwise step frame interval denominator",
+           stepwise_step_denominator);
+        g_free (stepwise_max_numerator);
+        g_free (stepwise_min_numerator);
+        g_free (stepwise_step_numerator);
+        g_free (stepwise_max_denominator);
+        g_free (stepwise_min_denominator);
+        g_free (stepwise_step_denominator);
+        builder->end_object ();
       }
 
     builder->end_array ();
@@ -933,63 +923,63 @@ namespace switcher
   {
     if (capture_devices_.empty ())
       {
-	g_debug
-	  ("V4L2Src:: no capture device available for starting capture");
-	return false;
+        g_debug
+          ("V4L2Src:: no capture device available for starting capture");
+        return false;
       }
 
     make_elements ();
 
     g_object_set (G_OBJECT (v4l2src_),
-		  "device",
-		  capture_devices_.at (device_).file_device_.c_str (),
-		  nullptr);
+                  "device",
+                  capture_devices_.at (device_).file_device_.c_str (),
+                  nullptr);
 
-    if (tv_standard_ > 0)	//0 is none
+    if (tv_standard_ > 0)       //0 is none
       g_object_set (G_OBJECT (v4l2src_),
-		    "norm",
-		    capture_devices_.at (device_).tv_standards_.
-		    at (tv_standard_).c_str (), nullptr);
+                    "norm",
+                    capture_devices_.at (device_).
+                    tv_standards_.at (tv_standard_).c_str (), nullptr);
 
     std::string caps;
     caps = "video/x-raw-yuv";
     if (width_ > 0)
       {
-	gchar *width = g_strdup_printf ("%d", width_);
-	gchar *height = g_strdup_printf ("%d", height_);
-	caps = caps + ", width=(int)" + width + ", height=(int)" + height;
-	g_free (width);
-	g_free (height);
+        gchar *width = g_strdup_printf ("%d", width_);
+        gchar *height = g_strdup_printf ("%d", height_);
+        caps = caps + ", width=(int)" + width + ", height=(int)" + height;
+        g_free (width);
+        g_free (height);
       }
     else if (resolution_ > -1)
       {
-	caps =
-	  caps + ", width=(int)"
-	  +
-	  capture_devices_.at (device_).frame_size_discrete_.at (resolution_).
-	  first.c_str () + ", height=(int)" +
-	  capture_devices_.at (device_).frame_size_discrete_.at (resolution_).
-	  second.c_str ();
+        caps =
+          caps + ", width=(int)"
+          +
+          capture_devices_.at (device_).frame_size_discrete_.
+          at (resolution_).first.c_str () + ", height=(int)" +
+          capture_devices_.at (device_).frame_size_discrete_.
+          at (resolution_).second.c_str ();
       }
 
     if (framerate_ > -1)
       {
-	caps =
-	  caps + ", framerate=(fraction)"
-	  +
-	  capture_devices_.at (device_).frame_interval_discrete_.
-	  at (framerate_).second.c_str () + "/" +
-	  capture_devices_.at (device_).frame_interval_discrete_.
-	  at (framerate_).first.c_str ();
+        caps =
+          caps + ", framerate=(fraction)"
+          +
+          capture_devices_.at (device_).
+          frame_interval_discrete_.at (framerate_).second.c_str () + "/" +
+          capture_devices_.at (device_).
+          frame_interval_discrete_.at (framerate_).first.c_str ();
       }
     else if (framerate_numerator_ > 0)
       {
-	gchar *numerator = g_strdup_printf ("%d", framerate_numerator_);
-	gchar *denominator = g_strdup_printf ("%d", framerate_denominator_);
-	caps =
-	  caps + ", framerate=(fraction)" + numerator + "/" + denominator;
-	g_free (numerator);
-	g_free (denominator);
+        gchar *numerator = g_strdup_printf ("%d", framerate_numerator_);
+        gchar *denominator = g_strdup_printf ("%d", framerate_denominator_);
+        caps =
+          caps + ", framerate=(fraction)" + numerator + "/" + denominator;
+        g_free (numerator);
+        g_free (denominator);
       }
 
     // g_print ("CAPSCAPS ------------------- %s\n",

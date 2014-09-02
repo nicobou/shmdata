@@ -50,7 +50,7 @@ namespace switcher
       std::string sample_rate_;
       std::string channels_;
       std::vector < std::pair < std::string /*port */ ,
-	std::string /*description */  > >ports_;
+      std::string /*description */  > >ports_;
       std::string active_port_;
     } DeviceDescription;
 
@@ -58,14 +58,14 @@ namespace switcher
     bool connected_to_pulse_;
     //custom property:
       CustomPropertyHelper::ptr custom_props_;
-    GParamSpec *devices_description_spec_;	//json formated
-    gchar *devices_description_;	//json formated
+    GParamSpec *devices_description_spec_;      //json formated
+    gchar *devices_description_;        //json formated
     //pulse_audio
     pa_glib_mainloop *pa_glib_mainloop_;
     pa_mainloop_api *pa_mainloop_api_;
     pa_context *pa_context_;
     char *server_;
-      std::vector < DeviceDescription > devices_;	//indexed by pulse_device_name
+      std::vector < DeviceDescription > devices_;       //indexed by pulse_device_name
       std::mutex devices_mutex_;
       std::condition_variable devices_cond_;
     //devices enumeration
@@ -90,11 +90,11 @@ namespace switcher
     static const gchar *get_devices_json (void *user_data);
     static void pa_context_state_callback (pa_context * c, void *userdata);
     static void get_sink_info_callback (pa_context * c,
-					const pa_sink_info * i,
-					int is_last, void *userdata);
+                                        const pa_sink_info * i,
+                                        int is_last, void *userdata);
     static void on_pa_event_callback (pa_context * c,
-				      pa_subscription_event_type_t t,
-				      uint32_t idx, void *userdata);
+                                      pa_subscription_event_type_t t,
+                                      uint32_t idx, void *userdata);
     static gboolean async_get_pulse_devices (void *user_data);
     static void set_device (const gint value, void *user_data);
     static gint get_device (void *user_data);
@@ -103,6 +103,6 @@ namespace switcher
 
     SWITCHER_DECLARE_PLUGIN (PulseSink);
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

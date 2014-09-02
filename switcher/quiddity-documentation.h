@@ -31,10 +31,10 @@ namespace switcher
 
   public:
     QuiddityDocumentation (std::string long_name,
-			   std::string category,
-			   std::string short_description,
-			   std::string license,
-			   std::string class_name, std::string author);
+                           std::string category,
+                           std::string short_description,
+                           std::string license,
+                           std::string class_name, std::string author);
 
     std::string get_category () const;
       std::string get_class_name () const;
@@ -65,6 +65,6 @@ namespace switcher
     void make_json_description ();
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

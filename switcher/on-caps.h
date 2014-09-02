@@ -54,6 +54,6 @@ namespace switcher
     bool set_negociated_caps (std::string caps);
   };
 
-}				// end of namespace
+}                               // end of namespace
 
 #endif // ifndef

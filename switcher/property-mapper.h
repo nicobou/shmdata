@@ -59,17 +59,17 @@ namespace switcher
     void make_numerical_source_properties ();
     void make_numerical_sink_properties ();
     static gboolean set_source_property_method (gchar * quiddity_name,
-						gchar * property_name,
-						void *user_data);
+                                                gchar * property_name,
+                                                void *user_data);
     static void property_cb (GObject * gobject,
-			     GParamSpec * pspec, gpointer user_data);
+                             GParamSpec * pspec, gpointer user_data);
     static gboolean set_sink_property_method (gchar * quiddity_name,
-					      gchar * property_name,
-					      void *user_data);
+                                              gchar * property_name,
+                                              void *user_data);
     void unsubscribe_source_property ();
     static void set_double_value (gdouble value, void *user_data);
     static gdouble get_double_value (void *user_data);
   };
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

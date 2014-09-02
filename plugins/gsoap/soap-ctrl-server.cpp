@@ -28,12 +28,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (SoapCtrlServer,
-					"Switcher Web Controler (SOAP)",
-					"control server",
-					"getting switcher controled through SOAP webservices",
-					"GPL",
-					"SOAPcontrolServer",
-					"Nicolas Bouillot");
+                                        "Switcher Web Controler (SOAP)",
+                                        "control server",
+                                        "getting switcher controled through SOAP webservices",
+                                        "GPL",
+                                        "SOAPcontrolServer",
+                                        "Nicolas Bouillot");
 
   SoapCtrlServer::SoapCtrlServer ():soap_ (),
     port_ (8080),
@@ -48,21 +48,21 @@ namespace switcher
     //release port
     soap_.connect_flags = SO_LINGER;
     soap_.accept_flags = SO_LINGER;
-    soap_.accept_timeout = 100 * -1000;	//100ms
+    soap_.accept_timeout = 100 * -1000; //100ms
     soap_.fget = SoapCtrlServer::http_get;
 
     install_method ("Set Port",
-		    "set_port",
-		    "set the port used by the soap server",
-		    "success or fail",
-		    Method::make_arg_description ("Port",
-						  "port",
-						  "the port to bind",
-						  nullptr),
-		    (Method::method_ptr) & set_port_wrapped,
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_INT, nullptr),
-		    this);
+                    "set_port",
+                    "set the port used by the soap server",
+                    "success or fail",
+                    Method::make_arg_description ("Port",
+                                                  "port",
+                                                  "the port to bind",
+                                                  nullptr),
+                    (Method::method_ptr) & set_port_wrapped,
+                    G_TYPE_BOOLEAN,
+                    Method::make_arg_type_description (G_TYPE_INT, nullptr),
+                    this);
     return true;
   }
 
@@ -85,70 +85,70 @@ namespace switcher
 
     if (g_str_has_prefix (soap->path, "/sdp"))
       {
-	gchar **query = g_strsplit_set (soap->path, "?", -1);
+        gchar **query = g_strsplit_set (soap->path, "?", -1);
 
-	if (query[1] == nullptr)
-	  return 404;
+        if (query[1] == nullptr)
+          return 404;
 
-	gchar **query_vars = g_strsplit_set (query[1], "&", -1);
-	int i = 0;
-	while (query_vars[i] != nullptr)
-	  {
-	    gchar **var = g_strsplit_set (query_vars[i], "=", -1);
-	    if (g_strcmp0 (var[0], "rtpsession") == 0 && var[1] != nullptr)
-	      {
-		rtpsession_name.clear ();
-		rtpsession_name.append (var[1]);
-	      }
-	    else if (g_strcmp0 (var[0], "destination") == 0
-		     && var[1] != nullptr)
-	      {
-		destination_name.clear ();
-		destination_name.append (var[1]);
-	      }
-	    g_strfreev (var);
-	    i++;
-	  }
-	g_strfreev (query_vars);
-	g_strfreev (query);
+        gchar **query_vars = g_strsplit_set (query[1], "&", -1);
+        int i = 0;
+        while (query_vars[i] != nullptr)
+          {
+            gchar **var = g_strsplit_set (query_vars[i], "=", -1);
+            if (g_strcmp0 (var[0], "rtpsession") == 0 && var[1] != nullptr)
+              {
+                rtpsession_name.clear ();
+                rtpsession_name.append (var[1]);
+              }
+            else if (g_strcmp0 (var[0], "destination") == 0
+                     && var[1] != nullptr)
+              {
+                destination_name.clear ();
+                destination_name.append (var[1]);
+              }
+            g_strfreev (var);
+            i++;
+          }
+        g_strfreev (query_vars);
+        g_strfreev (query);
 
-	SoapCtrlServer *ctrl_server = (SoapCtrlServer *) soap->user;
-	QuiddityManager::ptr manager;
-	if (ctrl_server != nullptr)
-	  manager = ctrl_server->get_quiddity_manager ();
+        SoapCtrlServer *ctrl_server = (SoapCtrlServer *) soap->user;
+        QuiddityManager::ptr manager;
+        if (ctrl_server != nullptr)
+          manager = ctrl_server->get_quiddity_manager ();
 
-	if (!(bool) manager)
-	  return 404;
+        if (!(bool) manager)
+          return 404;
 
-	std::vector < std::string > arg;
-	arg.push_back (destination_name);
-	if (!manager->
-	    invoke (rtpsession_name, "write_sdp_file", nullptr, arg))
-	  return 404;
+        std::vector < std::string > arg;
+        arg.push_back (destination_name);
+        if (!manager->invoke
+            (rtpsession_name, "write_sdp_file", nullptr, arg))
+          return 404;
 
-	//sending file to client
-	std::string sdp_file = get_socket_dir ();
-	sdp_file.append ("/");
-	sdp_file.append (get_socket_name_prefix ());
-	sdp_file.append (manager->get_name () + "_" + rtpsession_name + "_" +
-			 destination_name + ".sdp");
-	gchar *sdp_contents = nullptr;
-	gsize file_length;
-	if (g_file_get_contents (sdp_file.c_str (), &sdp_contents, &file_length, nullptr) && 0 != file_length)	//not getting errors
-	  {
-	    On_scope_exit
-	    {
-	      g_free (sdp_contents);
-	    };
-	    soap_response (soap, SOAP_FILE);
-	    soap->http_content = "application/x-sdp";
-	    soap_send_raw (soap, sdp_contents, file_length);
-	    return soap_end_send (soap);
-	  }
-	else
-	  g_warning
-	    ("cannot get sdp description for rtpsession %s, destination %s\n",
-	     rtpsession_name.c_str (), destination_name.c_str ());
+        //sending file to client
+        std::string sdp_file = get_socket_dir ();
+        sdp_file.append ("/");
+        sdp_file.append (get_socket_name_prefix ());
+        sdp_file.append (manager->get_name () + "_" + rtpsession_name + "_" +
+                         destination_name + ".sdp");
+        gchar *sdp_contents = nullptr;
+        gsize file_length;
+        if (g_file_get_contents (sdp_file.c_str (), &sdp_contents, &file_length, nullptr) && 0 != file_length)  //not getting errors
+          {
+            On_scope_exit
+            {
+              g_free (sdp_contents);
+            };
+            soap_response (soap, SOAP_FILE);
+            soap->http_content = "application/x-sdp";
+            soap_send_raw (soap, sdp_contents, file_length);
+            return soap_end_send (soap);
+          }
+        else
+          g_warning
+            ("cannot get sdp description for rtpsession %s, destination %s\n",
+             rtpsession_name.c_str (), destination_name.c_str ());
       }
     return 404;
   }
@@ -176,10 +176,10 @@ namespace switcher
     socket_ = service_->bind (SOAPBINDTO, port_, 100 /* BACKLOG */ );
     if (!soap_valid_socket (socket_))
       {
-	service_->soap_print_fault (stderr);
-	delete service_;
-	service_ = nullptr;
-	return false;
+        service_->soap_print_fault (stderr);
+        delete service_;
+        service_ = nullptr;
+        return false;
       }
 
     thread_ = std::thread (&SoapCtrlServer::server_thread, this);
@@ -219,35 +219,35 @@ namespace switcher
     //for (int i = 1; ; i++)
     while (!quit_server_thread_)
       {
-	SOAP_SOCKET s = service_->accept ();
-	if (!soap_valid_socket (s))
-	  {
-	    if (service_->errnum)
-	      service_->soap_print_fault (stderr);
-	    else
-	      {
+        SOAP_SOCKET s = service_->accept ();
+        if (!soap_valid_socket (s))
+          {
+            if (service_->errnum)
+              service_->soap_print_fault (stderr);
+            else
+              {
 //g_debug ("SOAP server timed out");
-	      }
-	  }
-	else
-	  {
-	    // g_debug ("client request %d accepted on socket %d, client IP is %d.%d.%d.%d", 
-	    //     i, s, 
-	    //     (int)(service_->ip>>24)&0xFF, 
-	    //     (int)(service_->ip>>16)&0xFF, 
-	    //     (int)(service_->ip>>8)&0xFF, 
-	    //     (int)service_->ip&0xFF);
-	    std::unique_lock < std::mutex > lock (mutex_);
-	    controlService *tcontrol = service_->copy ();
-	    if (service_->errnum)
-	      service_->soap_print_fault (stderr);
-	    tcontrol->serve ();
-	    delete tcontrol;
-	  }
+              }
+          }
+        else
+          {
+            // g_debug ("client request %d accepted on socket %d, client IP is %d.%d.%d.%d", 
+            //     i, s, 
+            //     (int)(service_->ip>>24)&0xFF, 
+            //     (int)(service_->ip>>16)&0xFF, 
+            //     (int)(service_->ip>>8)&0xFF, 
+            //     (int)service_->ip&0xFF);
+            std::unique_lock < std::mutex > lock (mutex_);
+            controlService *tcontrol = service_->copy ();
+            if (service_->errnum)
+              service_->soap_print_fault (stderr);
+            tcontrol->serve ();
+            delete tcontrol;
+          }
       }
   }
 
-}				//end of SoapCtrlServer class
+}                               //end of SoapCtrlServer class
 
 /**********************************************
  * below is the implementation of the service *
@@ -255,7 +255,7 @@ namespace switcher
 
 int
 controlService::get_factory_capabilities (std::vector < std::string > *result)
-{				//FIXME rename that to get_classes
+{                               //FIXME rename that to get_classes
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
@@ -266,9 +266,9 @@ controlService::get_factory_capabilities (std::vector < std::string > *result)
     {
       char *s = (char *) soap_malloc (this, 1024);
       g_debug
-	("controlService::get_factory_capabilities: cannot get manager from SoapCtrlServer (nullptr)");
+        ("controlService::get_factory_capabilities: cannot get manager from SoapCtrlServer (nullptr)");
       sprintf (s,
-	       "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
+               "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
       return soap_senderfault ("error in get_factory_capabilities", s);
     }
 
@@ -290,9 +290,9 @@ controlService::get_classes_doc (std::string * result)
     {
       char *s = (char *) soap_malloc (this, 1024);
       g_debug
-	("controlService::get_classes_doc: cannot get manager from SoapCtrlServer (nullptr)");
+        ("controlService::get_classes_doc: cannot get manager from SoapCtrlServer (nullptr)");
       sprintf (s,
-	       "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
+               "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
       return soap_senderfault ("error in get_classes_doc", s);
     }
 
@@ -303,7 +303,7 @@ controlService::get_classes_doc (std::string * result)
 
 int
 controlService::get_quiddity_description (std::string quiddity_name,
-					  std::string * result)
+                                          std::string * result)
 {
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
@@ -315,9 +315,9 @@ controlService::get_quiddity_description (std::string quiddity_name,
     {
       char *s = (char *) soap_malloc (this, 1024);
       g_debug
-	("controlService::get_class_doc: cannot get manager from SoapCtrlServer (nullptr)");
+        ("controlService::get_class_doc: cannot get manager from SoapCtrlServer (nullptr)");
       sprintf (s,
-	       "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
+               "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
       return soap_senderfault ("error in get_class_doc", s);
     }
 
@@ -339,9 +339,9 @@ controlService::get_quiddities_description (std::string * result)
     {
       char *s = (char *) soap_malloc (this, 1024);
       g_debug
-	("controlService::get_quiddities_description: cannot get manager from SoapCtrlServer (nullptr)");
+        ("controlService::get_quiddities_description: cannot get manager from SoapCtrlServer (nullptr)");
       sprintf (s,
-	       "<error xmlns=\"http://tempuri.org/\">controlService::get_quiddities_description: cannot get manager (nullptr)</error>");
+               "<error xmlns=\"http://tempuri.org/\">controlService::get_quiddities_description: cannot get manager (nullptr)</error>");
       return soap_senderfault ("error in get_classes_doc", s);
     }
 
@@ -363,9 +363,9 @@ controlService::get_class_doc (std::string class_name, std::string * result)
     {
       char *s = (char *) soap_malloc (this, 1024);
       g_debug
-	("controlService::get_class_doc: cannot get manager from SoapCtrlServer (nullptr)");
+        ("controlService::get_class_doc: cannot get manager from SoapCtrlServer (nullptr)");
       sprintf (s,
-	       "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
+               "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
       return soap_senderfault ("error in get_class_doc", s);
     }
 
@@ -390,7 +390,7 @@ controlService::get_quiddity_names (std::vector < std::string > *result)
 
 int
 controlService::get_properties_description (std::string quiddity_name,
-					    std::string * result)
+                                            std::string * result)
 {
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
@@ -405,7 +405,7 @@ controlService::get_properties_description (std::string quiddity_name,
 
 int
 controlService::get_properties_description_by_class (std::string class_name,
-						     std::string * result)
+                                                     std::string * result)
 {
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
@@ -420,8 +420,8 @@ controlService::get_properties_description_by_class (std::string class_name,
 
 int
 controlService::get_property_description (std::string quiddity_name,
-					  std::string property_name,
-					  std::string * result)
+                                          std::string property_name,
+                                          std::string * result)
 {
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
@@ -436,8 +436,8 @@ controlService::get_property_description (std::string quiddity_name,
 
 int
 controlService::get_property_description_by_class (std::string class_name,
-						   std::string property_name,
-						   std::string * result)
+                                                   std::string property_name,
+                                                   std::string * result)
 {
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
@@ -453,8 +453,8 @@ controlService::get_property_description_by_class (std::string class_name,
 
 int
 controlService::set_property (std::string quiddity_name,
-			      std::string property_name,
-			      std::string property_value)
+                              std::string property_name,
+                              std::string property_value)
 {
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
@@ -469,7 +469,7 @@ controlService::set_property (std::string quiddity_name,
 
 int
 controlService::get_property (std::string quiddity_name,
-			      std::string property_name, std::string * result)
+                              std::string property_name, std::string * result)
 {
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
@@ -484,7 +484,7 @@ controlService::get_property (std::string quiddity_name,
 
 int
 controlService::create_quiddity (std::string quiddity_class,
-				 std::string * result)
+                                 std::string * result)
 {
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
@@ -501,7 +501,7 @@ controlService::create_quiddity (std::string quiddity_class,
     {
       char *s = (char *) soap_malloc (this, 1024);
       sprintf (s, "%s cannot be created, see switcher logs",
-	       quiddity_class.c_str ());
+               quiddity_class.c_str ());
       return soap_senderfault ("Quiddity creation error", s);
     }
   return SOAP_OK;
@@ -509,8 +509,8 @@ controlService::create_quiddity (std::string quiddity_class,
 
 int
 controlService::create_named_quiddity (std::string quiddity_class,
-				       std::string nick_name,
-				       std::string * result)
+                                       std::string nick_name,
+                                       std::string * result)
 {
   using namespace switcher;
 
@@ -528,7 +528,7 @@ controlService::create_named_quiddity (std::string quiddity_class,
     {
       char *s = (char *) soap_malloc (this, 1024);
       sprintf (s, "%s cannot be created, see switcher logs",
-	       quiddity_class.c_str ());
+               quiddity_class.c_str ());
       return soap_senderfault ("Quiddity creation error", s);
     }
   return SOAP_OK;
@@ -536,8 +536,8 @@ controlService::create_named_quiddity (std::string quiddity_class,
 
 int
 controlService::rename_quiddity (std::string nick_name,
-				 std::string new_nick_name,
-				 std::string * result)
+                                 std::string new_nick_name,
+                                 std::string * result)
 {
   using namespace switcher;
 
@@ -569,19 +569,19 @@ controlService::delete_quiddity (std::string quiddity_name)
       char *s = (char *) soap_malloc (this, 1024);
       sprintf (s, "%s is not found, not deleting", quiddity_name.c_str ());
       sprintf (s,
-	       "<error xmlns=\"http://tempuri.org/\">%s is not found, not deleting</error>",
-	       quiddity_name.c_str ());
+               "<error xmlns=\"http://tempuri.org/\">%s is not found, not deleting</error>",
+               quiddity_name.c_str ());
       return
-	send_set_property_empty_response (soap_senderfault
-					  ("Quiddity creation error", s));
+        send_set_property_empty_response (soap_senderfault
+                                          ("Quiddity creation error", s));
     }
 }
 
 int
 controlService::invoke_method (std::string quiddity_name,
-			       std::string method_name,
-			       std::vector < std::string > args,
-			       std::string * result)
+                               std::string method_name,
+                               std::vector < std::string > args,
+                               std::string * result)
 {
   using namespace switcher;
 
@@ -599,17 +599,17 @@ controlService::invoke_method (std::string quiddity_name,
     {
       char *s = (char *) soap_malloc (this, 1024);
       sprintf (s, "invoking %s/%s returned false", quiddity_name.c_str (),
-	       method_name.c_str ());
+               method_name.c_str ());
       sprintf (s,
-	       "<error xmlns=\"http://tempuri.org/\">invoking %s/%s returned false</error>",
-	       quiddity_name.c_str (), method_name.c_str ());
+               "<error xmlns=\"http://tempuri.org/\">invoking %s/%s returned false</error>",
+               quiddity_name.c_str (), method_name.c_str ());
       return soap_senderfault ("Method invocation error", s);
     }
 }
 
 int
 controlService::get_methods_description (std::string quiddity_name,
-					 std::string * result)
+                                         std::string * result)
 {
   using namespace switcher;
 
@@ -624,8 +624,8 @@ controlService::get_methods_description (std::string quiddity_name,
 
 int
 controlService::get_method_description (std::string quiddity_name,
-					std::string method_name,
-					std::string * result)
+                                        std::string method_name,
+                                        std::string * result)
 {
   using namespace switcher;
 
@@ -640,7 +640,7 @@ controlService::get_method_description (std::string quiddity_name,
 
 int
 controlService::get_methods_description_by_class (std::string class_name,
-						  std::string * result)
+                                                  std::string * result)
 {
   using namespace switcher;
 
@@ -655,8 +655,8 @@ controlService::get_methods_description_by_class (std::string class_name,
 
 int
 controlService::get_method_description_by_class (std::string class_name,
-						 std::string method_name,
-						 std::string * result)
+                                                 std::string method_name,
+                                                 std::string * result)
 {
   using namespace switcher;
 
@@ -672,7 +672,7 @@ controlService::get_method_description_by_class (std::string class_name,
 
 int
 controlService::get_signals_description (std::string quiddity_name,
-					 std::string * result)
+                                         std::string * result)
 {
   using namespace switcher;
 
@@ -687,8 +687,8 @@ controlService::get_signals_description (std::string quiddity_name,
 
 int
 controlService::get_signal_description (std::string quiddity_name,
-					std::string signal_name,
-					std::string * result)
+                                        std::string signal_name,
+                                        std::string * result)
 {
   using namespace switcher;
 
@@ -703,7 +703,7 @@ controlService::get_signal_description (std::string quiddity_name,
 
 int
 controlService::get_signals_description_by_class (std::string class_name,
-						  std::string * result)
+                                                  std::string * result)
 {
   using namespace switcher;
 
@@ -718,8 +718,8 @@ controlService::get_signals_description_by_class (std::string class_name,
 
 int
 controlService::get_signal_description_by_class (std::string class_name,
-						 std::string signal_name,
-						 std::string * result)
+                                                 std::string signal_name,
+                                                 std::string * result)
 {
   using namespace switcher;
 
@@ -798,7 +798,7 @@ controlService::run (std::string file_name, std::string * result)
 
 int
 controlService::get_information_tree (std::string quiddity_name,
-				      std::string path, std::string * result)
+                                      std::string path, std::string * result)
 {
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;

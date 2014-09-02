@@ -59,6 +59,6 @@ namespace switcher
       std::string class_name_;
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

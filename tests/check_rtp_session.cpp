@@ -22,7 +22,7 @@
 #include "switcher/quiddity-manager.h"
 #include <vector>
 #include <string>
-#include <unistd.h>		//sleep
+#include <unistd.h>             //sleep
 
 static bool audio_success;
 static bool video_success;
@@ -30,9 +30,9 @@ static bool do_continue;
 
 void
 mon_property_cb (std::string /*subscriber_name */ ,
-		 std::string quiddity_name,
-		 std::string property_name,
-		 std::string value, void * /*user_data */ )
+                 std::string quiddity_name,
+                 std::string property_name,
+                 std::string value, void * /*user_data */ )
 {
   // if (g_strcmp0 (property_name.c_str (), "caps") == 0)
   //   g_print ("-caps- %s\n",value.c_str ());
@@ -44,14 +44,14 @@ mon_property_cb (std::string /*subscriber_name */ ,
       g_message ("audio received !");
       audio_success = true;
       if (video_success)
-	do_continue = false;
+        do_continue = false;
     }
   if (!video_success && g_strcmp0 (quiddity_name.c_str (), "videoprobe") == 0)
     {
       g_message ("video received !");
       video_success = true;
       if (audio_success)
-	do_continue = false;
+        do_continue = false;
     }
 
 }
@@ -89,67 +89,67 @@ main ()
     manager->create ("rtpsession", "rtp");
 
     manager->invoke_va ("rtp",
-			"add_data_stream",
-			nullptr, "/tmp/switcher_rtptest_a_audio", nullptr);
+                        "add_data_stream",
+                        nullptr, "/tmp/switcher_rtptest_a_audio", nullptr);
 
     manager->invoke_va ("rtp",
-			"add_data_stream",
-			nullptr, "/tmp/switcher_rtptest_v_video", nullptr);
+                        "add_data_stream",
+                        nullptr, "/tmp/switcher_rtptest_v_video", nullptr);
 
     manager->invoke_va ("rtp",
-			"add_data_stream",
-			nullptr,
-			"/tmp/switcher_rtptest_v_encoded-video", nullptr);
+                        "add_data_stream",
+                        nullptr,
+                        "/tmp/switcher_rtptest_v_encoded-video", nullptr);
 
     manager->invoke_va ("rtp",
-			"add_destination",
-			nullptr, "local", "127.0.0.1", nullptr);
+                        "add_destination",
+                        nullptr, "local", "127.0.0.1", nullptr);
     manager->invoke_va ("rtp",
-			"add_udp_stream_to_dest",
-			nullptr,
-			"/tmp/switcher_rtptest_a_audio",
-			"local", "9066", nullptr);
+                        "add_udp_stream_to_dest",
+                        nullptr,
+                        "/tmp/switcher_rtptest_a_audio",
+                        "local", "9066", nullptr);
     manager->invoke_va ("rtp",
-			"add_udp_stream_to_dest",
-			nullptr,
-			"/tmp/switcher_rtptest_v_video",
-			"local", "9076", nullptr);
+                        "add_udp_stream_to_dest",
+                        nullptr,
+                        "/tmp/switcher_rtptest_v_video",
+                        "local", "9076", nullptr);
 
     usleep (1000000);
 
     manager->create ("httpsdpdec", "uri");
     manager->invoke_va ("uri",
-			"to_shmdata",
-			nullptr,
-			"http://127.0.0.1:38084/sdp?rtpsession=rtp&destination=local",
-			nullptr);
+                        "to_shmdata",
+                        nullptr,
+                        "http://127.0.0.1:38084/sdp?rtpsession=rtp&destination=local",
+                        nullptr);
     manager->make_property_subscriber ("sub", mon_property_cb, nullptr);
     manager->create ("fakesink", "audioprobe");
     manager->subscribe_property ("sub", "audioprobe", "caps");
     manager->subscribe_property ("sub", "audioprobe", "last-message");
     manager->invoke_va ("audioprobe",
-			"connect",
-			nullptr,
-			"/tmp/switcher_rtptest_uri_audio-0", nullptr);
+                        "connect",
+                        nullptr,
+                        "/tmp/switcher_rtptest_uri_audio-0", nullptr);
     manager->create ("fakesink", "videoprobe");
     manager->subscribe_property ("sub", "videoprobe", "last-message");
     manager->subscribe_property ("sub", "videoprobe", "caps");
     manager->invoke_va ("videoprobe",
-			"connect",
-			nullptr,
-			"/tmp/switcher_rtptest_uri_video-0", nullptr);
+                        "connect",
+                        nullptr,
+                        "/tmp/switcher_rtptest_uri_video-0", nullptr);
 
     //wait 3 seconds
     uint count = 3;
     while (do_continue)
       {
-	if (count == 0)
-	  do_continue = false;
-	else
-	  {
-	    --count;
-	    usleep (1000000);
-	  }
+        if (count == 0)
+          do_continue = false;
+        else
+          {
+            --count;
+            usleep (1000000);
+          }
       }
   }
 

@@ -23,13 +23,13 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (MyPlugin,
-					"My Plugin",
-					"test",
-					"Creates a quiddity from a plugin",
-					"LGPL",
-					"myplugin", "Nicolas Bouillot");
+                                        "My Plugin",
+                                        "test",
+                                        "Creates a quiddity from a plugin",
+                                        "LGPL",
+                                        "myplugin", "Nicolas Bouillot");
   MyPlugin::MyPlugin ():custom_props_ (std::make_shared <
-				       CustomPropertyHelper > ()),
+                                       CustomPropertyHelper > ()),
     myprop_ (false), myprop_prop_ (nullptr), hello_ (g_strdup ("hello"))
   {
   }
@@ -37,28 +37,28 @@ namespace switcher
   bool MyPlugin::init ()
   {
     init_startable (this);
-    myprop_prop_ = custom_props_->make_boolean_property ("myprop",	//name 
-							 "myprop is a boolean property",	//description
-							 (gboolean) FALSE,	//default value
-							 (GParamFlags)
-							 G_PARAM_READWRITE,
-							 MyPlugin::set_myprop,
-							 MyPlugin::get_myprop,
-							 this);
-    install_property_by_pspec (custom_props_->get_gobject (), myprop_prop_, "myprop", "My Property");	//long name
+    myprop_prop_ = custom_props_->make_boolean_property ("myprop",      //name 
+                                                         "myprop is a boolean property",        //description
+                                                         (gboolean) FALSE,      //default value
+                                                         (GParamFlags)
+                                                         G_PARAM_READWRITE,
+                                                         MyPlugin::set_myprop,
+                                                         MyPlugin::get_myprop,
+                                                         this);
+    install_property_by_pspec (custom_props_->get_gobject (), myprop_prop_, "myprop", "My Property");   //long name
 
-    install_method ("Hello World",	//long name
-		    "hello-world",	//name
-		    "say hello and repeat first argument",	//description
-		    "the hello answer",	//return description
-		    Method::make_arg_description ("Text To Repeat",	//first arg long name
-						  "text",	//fisrt arg name
-						  "string",	//first arg description
-						  nullptr),
-		    (Method::method_ptr) & my_hello_world_method,
-		    G_TYPE_STRING,
-		    Method::make_arg_type_description (G_TYPE_STRING,
-						       nullptr), this);
+    install_method ("Hello World",      //long name
+                    "hello-world",      //name
+                    "say hello and repeat first argument",      //description
+                    "the hello answer", //return description
+                    Method::make_arg_description ("Text To Repeat",     //first arg long name
+                                                  "text",       //fisrt arg name
+                                                  "string",     //first arg description
+                                                  nullptr),
+                    (Method::method_ptr) & my_hello_world_method,
+                    G_TYPE_STRING,
+                    Method::make_arg_type_description (G_TYPE_STRING,
+                                                       nullptr), this);
 
     //creating some custom infos
     data::Tree::ptr tree = data::make_tree ();
@@ -88,9 +88,9 @@ namespace switcher
   {
     MyPlugin *context = static_cast < MyPlugin * >(user_data);
     context->myprop_ = myprop;
-    GObjectWrapper::notify_property_changed (context->gobject_->
-					     get_gobject (),
-					     context->myprop_prop_);
+    GObjectWrapper::notify_property_changed (context->
+                                             gobject_->get_gobject (),
+                                             context->myprop_prop_);
   }
 
   gchar *MyPlugin::my_hello_world_method (gchar * first_arg, void *user_data)

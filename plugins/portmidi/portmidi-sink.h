@@ -57,9 +57,9 @@ namespace switcher
 
     //shmdata any callback
     void on_shmreader_data (void *data,
-			    int data_size,
-			    unsigned long long timestamp,
-			    const char *type_description, void *user_data);
+                            int data_size,
+                            unsigned long long timestamp,
+                            const char *type_description, void *user_data);
 
     static void set_device (const gint value, void *user_data);
     static gint get_device (void *user_data);
@@ -67,6 +67,6 @@ namespace switcher
 
     SWITCHER_DECLARE_PLUGIN (PortMidiSink);
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

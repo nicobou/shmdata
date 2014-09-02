@@ -40,10 +40,10 @@ namespace switcher
   public:
     typedef std::shared_ptr < QuidditySignalSubscriber > ptr;
     typedef void (*OnEmittedCallback) (std::string subscriber_name,
-				       std::string quiddity_name,
-				       std::string signal_name,
-				       std::vector < std::string > params,
-				       void *user_data);
+                                       std::string quiddity_name,
+                                       std::string signal_name,
+                                       std::vector < std::string > params,
+                                       void *user_data);
       QuidditySignalSubscriber ();
      ~QuidditySignalSubscriber ();
       QuidditySignalSubscriber (const QuidditySignalSubscriber &) = delete;
@@ -55,19 +55,19 @@ namespace switcher
     void set_user_data (void *user_data);
     void set_name (const gchar * name);
     bool subscribe (std::shared_ptr < Quiddity > quid,
-		    std::string signal_name);
+                    std::string signal_name);
     bool unsubscribe (std::shared_ptr < Quiddity > quid,
-		      std::string signal_name);
+                      std::string signal_name);
     bool unsubscribe (std::shared_ptr < Quiddity > quid);
 
       std::vector < std::pair < std::string,
       std::string > >list_subscribed_signals ();
     static void signal_cb (std::vector < std::string > params,
-			   gpointer user_data);
+                           gpointer user_data);
 
     //manager_impl initialization
     void set_manager_impl (std::shared_ptr < QuiddityManager_Impl >
-			   manager_impl);
+                           manager_impl);
 
   private:
       bool muted_;
@@ -90,6 +90,6 @@ namespace switcher
     SignalDataMap signal_datas_;
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

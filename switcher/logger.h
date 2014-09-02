@@ -65,17 +65,17 @@ namespace switcher
     static gboolean get_verbose (void *user_data);
     static void set_verbose (gboolean verbose, void *user_data);
     static gboolean install_log_handler_wrapped (gpointer log_domain,
-						 gpointer user_data);
+                                                 gpointer user_data);
     static gboolean remove_log_handler_wrapped (gpointer log_domain,
-						gpointer user_data);
+                                                gpointer user_data);
     static void log_handler (const gchar * log_domain,
-			     GLogLevelFlags log_level, const gchar * message,
-			     gpointer user_data);
+                             GLogLevelFlags log_level, const gchar * message,
+                             gpointer user_data);
     static void quiet_log_handler (const gchar * log_domain,
-				   GLogLevelFlags log_level,
-				   const gchar * message, gpointer user_data);
+                                   GLogLevelFlags log_level,
+                                   const gchar * message, gpointer user_data);
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

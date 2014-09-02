@@ -40,20 +40,20 @@ namespace switcher
 
     void
       preorder_tree_walk (Tree::ptr tree,
-			  Tree::OnNodeFunction on_visiting_node,
-			  Tree::OnNodeFunction on_node_visited)
+                          Tree::OnNodeFunction on_visiting_node,
+                          Tree::OnNodeFunction on_node_visited)
     {
       std::unique_lock < std::mutex > lock (tree->mutex_);
       if (!tree->childrens_.empty ())
-	{
-	for (auto & it:tree->childrens_)
-	    {
-	      on_visiting_node (it.first, it.second, tree->is_array_);
-	      preorder_tree_walk (it.second,
-				  on_visiting_node, on_node_visited);
-	      on_node_visited (it.first, it.second, tree->is_array_);
-	    }
-	}
+        {
+        for (auto & it:tree->childrens_)
+            {
+              on_visiting_node (it.first, it.second, tree->is_array_);
+              preorder_tree_walk (it.second,
+                                  on_visiting_node, on_node_visited);
+              on_node_visited (it.first, it.second, tree->is_array_);
+            }
+        }
     }
 
     //--------------- class
@@ -108,7 +108,7 @@ namespace switcher
       std::unique_lock < std::mutex > lock (mutex_);
       auto found = get_node (path);
       if (!found.first.empty ())
-	return found.second->second->childrens_.empty ();
+        return found.second->second->childrens_.empty ();
       return false;
     }
 
@@ -117,7 +117,7 @@ namespace switcher
       std::unique_lock < std::mutex > lock (mutex_);
       auto found = get_node (path);
       if (!found.first.empty ())
-	return found.second->second->data_.not_null ();
+        return found.second->second->data_.not_null ();
       return false;
     }
 
@@ -126,7 +126,7 @@ namespace switcher
       std::unique_lock < std::mutex > lock (mutex_);
       auto found = get_node (path);
       if (!found.first.empty ())
-	return found.second->second->data_;
+        return found.second->second->data_;
       Any res;
       return res;
     }
@@ -136,10 +136,10 @@ namespace switcher
       std::unique_lock < std::mutex > lock (mutex_);
       auto found = get_node (path);
       if (!found.first.empty ())
-	{
-	  found.second->second->data_ = data;
-	  return true;
-	}
+        {
+          found.second->second->data_ = data;
+          return true;
+        }
       return false;
     }
 
@@ -157,10 +157,11 @@ namespace switcher
       Tree::get_child_iterator (const std::string & key)
     {
       return std::find_if (childrens_.begin (),
-			   childrens_.end (),
-			   [key] (const Tree::child_type & s)
-			   {
-			   return (0 == s.first.compare (key));}
+                           childrens_.end (),
+                           [key] (const Tree::child_type & s)
+                           {
+                           return (0 == s.first.compare (key));
+                           }
       );
     }
 
@@ -169,11 +170,11 @@ namespace switcher
       std::unique_lock < std::mutex > lock (mutex_);
       auto found = get_node (path);
       if (!found.first.empty ())
-	{
-	  Tree::ptr res = found.second->second;
-	  found.first.erase (found.second);
-	  return res;
-	}
+        {
+          Tree::ptr res = found.second->second;
+          found.first.erase (found.second);
+          return res;
+        }
       Tree::ptr res;
       return res;
     }
@@ -183,7 +184,7 @@ namespace switcher
       std::unique_lock < std::mutex > lock (mutex_);
       auto found = get_node (path);
       if (!found.first.empty ())
-	return found.second->second;
+        return found.second->second;
       //not found
       Tree::ptr res;
       return res;
@@ -196,43 +197,43 @@ namespace switcher
       Tree::child_list_type child_list;
       Tree::child_list_type::iterator child_iterator;
       if (get_next (iss, child_list, child_iterator))
-	{
-	  //asking root node
-	}
+        {
+          //asking root node
+        }
       return std::make_pair (child_list, child_iterator);
     }
 
     bool
       Tree::get_next (std::istringstream & path,
-		      Tree::child_list_type & parent_list_result,
-		      Tree::child_list_type::iterator & iterator_result)
+                      Tree::child_list_type & parent_list_result,
+                      Tree::child_list_type::iterator & iterator_result)
     {
       std::string child_key;
       if (!std::getline (path, child_key, '.'))
-	return true;
+        return true;
       if (child_key.empty ())
-	{
-	  return this->get_next (path, parent_list_result, iterator_result);
-	}
+        {
+          return this->get_next (path, parent_list_result, iterator_result);
+        }
 
       auto it = get_child_iterator (child_key);
       if (childrens_.end () != it)
-	{
-	  if (it->second->
-	      get_next (path, parent_list_result, iterator_result))
-	    {
-	      iterator_result = it;
-	      parent_list_result = childrens_;
-	    }
-	  return false;
-	}
+        {
+          if (it->
+              second->get_next (path, parent_list_result, iterator_result))
+            {
+              iterator_result = it;
+              parent_list_result = childrens_;
+            }
+          return false;
+        }
       return false;
     }
 
     bool Tree::graft (const std::string & where, Tree::ptr tree)
     {
       if (!tree)
-	return false;
+        return false;
       std::unique_lock < std::mutex > lock (mutex_);
       std::istringstream iss (where);
       return !graft_next (iss, this, tree);
@@ -240,30 +241,30 @@ namespace switcher
 
     bool
       Tree::graft_next (std::istringstream & path, Tree * tree,
-			Tree::ptr leaf)
+                        Tree::ptr leaf)
     {
       std::string child;
       if (!std::getline (path, child, '.'))
-	return true;
-      if (child.empty ())	//in case of two or more consecutive dots
-	return graft_next (path, tree, leaf);
+        return true;
+      if (child.empty ())       //in case of two or more consecutive dots
+        return graft_next (path, tree, leaf);
       auto it = tree->get_child_iterator (child);
       if (tree->childrens_.end () != it)
-	{
-	  if (graft_next (path, it->second.get (), leaf))	//graft on already existing child
-	    it->second = leaf;	// replacing the previously empy tree with the one to graft
-	}
+        {
+          if (graft_next (path, it->second.get (), leaf))       //graft on already existing child
+            it->second = leaf;  // replacing the previously empy tree with the one to graft
+        }
       else
-	{
-	  Tree::ptr child_node = make_tree ();
-	  tree->childrens_.emplace_back (child, child_node);
-	  if (graft_next (path, child_node.get (), leaf))	//graft on already existing child
-	    {
-	      // replacing empty tree for replacement by leaf
-	      tree->childrens_.pop_back ();
-	      tree->childrens_.emplace_back (child, leaf);
-	    }
-	}
+        {
+          Tree::ptr child_node = make_tree ();
+          tree->childrens_.emplace_back (child, child_node);
+          if (graft_next (path, child_node.get (), leaf))       //graft on already existing child
+            {
+              // replacing empty tree for replacement by leaf
+              tree->childrens_.pop_back ();
+              tree->childrens_.emplace_back (child, leaf);
+            }
+        }
       return false;
     }
 
@@ -271,7 +272,7 @@ namespace switcher
     {
       Tree::ptr tree = Tree::get (path);
       if (!(bool) tree)
-	return false;
+        return false;
       tree->is_array_ = is_array;
       return true;
     }
@@ -280,9 +281,9 @@ namespace switcher
     {
       Tree::ptr tree = Tree::get (path);
       if (!(bool) tree)
-	return false;
+        return false;
       return tree->is_array_;
     }
 
-  }				// end of namespace information
-}				// end of namespace switcher
+  }                             // end of namespace information
+}                               // end of namespace switcher

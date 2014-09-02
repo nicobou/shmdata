@@ -95,7 +95,7 @@ namespace switcher
       std::vector < std::string > result_;
       std::vector < std::string > expected_result_;
     bool success_;
-    gint64 time_;		////monotonic time, in microseconds 
+    gint64 time_;               ////monotonic time, in microseconds 
     void clear ();
     void set_id (command id);
     void add_arg (std::string arg);
@@ -103,12 +103,12 @@ namespace switcher
     static command get_id_from_string (const char *com);
     static const char *get_string_from_id (QuiddityCommand::command id);
     static QuiddityCommand::ptr parse_command_from_json_reader (JsonReader *
-								reader);
+                                                                reader);
       JSONBuilder::Node get_json_root_node ();
       JSONBuilder::ptr json_builder_;
     static const std::map < int, const char *>command_names_;
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

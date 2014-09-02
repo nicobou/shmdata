@@ -59,6 +59,6 @@ namespace switcher
     static const gchar *get_client_name (void *user_data);
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

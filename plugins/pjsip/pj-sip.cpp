@@ -24,16 +24,16 @@ namespace switcher
 
   SWITCHER_DECLARE_PLUGIN (PJSIP);
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (PJSIP,
-					"SIP (Session Initiation Protocol)",
-					"network",
-					"Manages user sessions",
-					"LGPL", "sip", "Nicolas Bouillot");
+                                        "SIP (Session Initiation Protocol)",
+                                        "network",
+                                        "Manages user sessions",
+                                        "LGPL", "sip", "Nicolas Bouillot");
 
   //according to pjsip documentation:
   //Application should only instantiate one SIP endpoint instance for every process. 
   pjsip_endpoint *PJSIP::sip_endpt_ = nullptr;
 
-    PJSIP::PJSIP ():cp_ ()
+  PJSIP::PJSIP ():cp_ ()
   {
   }
 
@@ -48,8 +48,8 @@ namespace switcher
       sip_thread_.join ();
     if (sip_worker_.joinable ())
       {
-	sip_work_ = false;
-	sip_worker_.join ();
+        sip_work_ = false;
+        sip_worker_.join ();
       }
 
   }
@@ -69,8 +69,8 @@ namespace switcher
   {
     if (nullptr != sip_endpt_)
       {
-	g_warning ("a pjsip_endpoint already exists, cannot create more");
-	return false;
+        g_warning ("a pjsip_endpoint already exists, cannot create more");
+        return false;
       }
 
     std::unique_lock < std::mutex > lock (pj_init_mutex_);
@@ -82,16 +82,16 @@ namespace switcher
 
     sip_port_spec_ =
       custom_props_->make_int_property ("port",
-					"SIP port used when registering",
-					0,
-					65535,
-					sip_port_,
-					(GParamFlags) G_PARAM_READWRITE,
-					set_port, get_port, this);
+                                        "SIP port used when registering",
+                                        0,
+                                        65535,
+                                        sip_port_,
+                                        (GParamFlags) G_PARAM_READWRITE,
+                                        set_port, get_port, this);
 
     install_property_by_pspec (custom_props_->get_gobject (),
-			       sip_port_spec_,
-			       "port", "SIP port used when registering");
+                               sip_port_spec_,
+                               "port", "SIP port used when registering");
 
     return true;
   }
@@ -106,13 +106,13 @@ namespace switcher
 
     // Register the thread, after pj_init() is called
     pj_thread_register (Quiddity::get_name ().c_str (),
-			thread_handler_desc_, &pj_thread_ref_);
+                        thread_handler_desc_, &pj_thread_ref_);
 
     status = pjsua_create ();
     if (status != PJ_SUCCESS)
       {
-	g_warning ("Error in pjsua_create()");
-	return false;
+        g_warning ("Error in pjsua_create()");
+        return false;
       }
     /* Init pjsua */
     {
@@ -150,10 +150,10 @@ namespace switcher
 
       status = pjsua_init (&cfg, &log_cfg, nullptr);
       if (status != PJ_SUCCESS)
-	{
-	  g_warning ("Error in pjsua_init()");
-	  return false;
-	}
+        {
+          g_warning ("Error in pjsua_init()");
+          return false;
+        }
       sip_endpt_ = pjsua_get_pjsip_endpt ();
     }
 
@@ -176,8 +176,8 @@ namespace switcher
     status = pjsua_start ();
     if (status != PJ_SUCCESS)
       {
-	g_warning ("Error starting pjsua");
-	return false;
+        g_warning ("Error starting pjsua");
+        return false;
       }
 
     return true;
@@ -188,18 +188,18 @@ namespace switcher
     // Register the thread, after pj_init() is called
 
     pj_thread_register ("sip_worker_thread",
-			worker_handler_desc_, &worker_thread_ref_);
+                        worker_handler_desc_, &worker_thread_ref_);
 
     while (sip_work_)
       {
-	pj_time_val timeout = { 0, 10 };
-	pjsip_endpt_handle_events (sip_endpt_, &timeout);
+        pj_time_val timeout = { 0, 10 };
+        pjsip_endpt_handle_events (sip_endpt_, &timeout);
       }
   }
 
   void PJSIP::sip_handling_thread ()
   {
-    {				//init pj sip
+    {                           //init pj sip
       std::unique_lock < std::mutex > lock (pj_init_mutex_);
       pj_sip_inited_ = pj_sip_init ();
       pj_init_cond_.notify_all ();
@@ -207,33 +207,33 @@ namespace switcher
 
     while (continue_)
       {
-	std::unique_lock < std::mutex > lock_work (work_mutex_);
-	work_cond_.wait (lock_work);
-	//do_something
-	{
-	  std::unique_lock < std::mutex > lock_done (done_mutex_);
-	  command_ ();
-	}
-	done_cond_.notify_one ();
+        std::unique_lock < std::mutex > lock_work (work_mutex_);
+        work_cond_.wait (lock_work);
+        //do_something
+        {
+          std::unique_lock < std::mutex > lock_done (done_mutex_);
+          command_ ();
+        }
+        done_cond_.notify_one ();
       }
     /* Shutting down... */
     if (nullptr != sip_calls_)
       {
-	delete (sip_calls_);
-	sip_calls_ = nullptr;
+        delete (sip_calls_);
+        sip_calls_ = nullptr;
       }
 
     if (nullptr == sip_presence_)
       {
-	delete (sip_presence_);
-	sip_presence_ = nullptr;
+        delete (sip_presence_);
+        sip_presence_ = nullptr;
       }
 
     if (nullptr != pool_)
       {
-	pj_pool_release (pool_);
-	pool_ = nullptr;
-	pj_caching_pool_destroy (&cp_);
+        pj_pool_release (pool_);
+        pool_ = nullptr;
+        pj_caching_pool_destroy (&cp_);
       }
 
     pjsua_destroy ();
@@ -258,8 +258,8 @@ namespace switcher
       pjsua_transport_create (PJSIP_TRANSPORT_UDP, &cfg, nullptr);
     if (status != PJ_SUCCESS)
       {
-	g_warning ("Error creating UDP transport");
-	return;
+        g_warning ("Error creating UDP transport");
+        return;
       }
 
   }
@@ -269,10 +269,10 @@ namespace switcher
     PJSIP *context = static_cast < PJSIP * >(user_data);
     context->sip_port_ = value;
     context->run_command_sync (std::bind (&PJSIP::start_udp_transport,
-					  context));
-    GObjectWrapper::notify_property_changed (context->gobject_->
-					     get_gobject (),
-					     context->sip_port_spec_);
+                                          context));
+    GObjectWrapper::notify_property_changed (context->
+                                             gobject_->get_gobject (),
+                                             context->sip_port_spec_);
   }
 
   gint PJSIP::get_port (void *user_data)

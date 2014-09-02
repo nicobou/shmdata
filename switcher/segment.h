@@ -58,10 +58,10 @@ namespace switcher
     bool unregister_shmdata (std::string shmdata_path);
     bool clear_shmdatas ();
     bool install_connect_method (OnConnect on_connect_cb,
-				 OnDisconnect on_disconnect_cb,
-				 OnDisconnectAll on_disconnect_all_cb,
-				 CanSinkCaps on_can_sink_caps_cb,
-				 uint max_reader);
+                                 OnDisconnect on_disconnect_cb,
+                                 OnDisconnectAll on_disconnect_all_cb,
+                                 CanSinkCaps on_can_sink_caps_cb,
+                                 uint max_reader);
 
   private:
       Quiddity * quid_
@@ -90,21 +90,21 @@ namespace switcher
     static gboolean connect_wrapped (gpointer path, gpointer user_data);
     static gboolean disconnect_wrapped (gpointer path, gpointer user_data);
     static gboolean disconnect_all_wrapped (gpointer /*unused */ ,
-					    gpointer user_data);
+                                            gpointer user_data);
     static gboolean can_sink_caps_wrapped (gpointer caps, gpointer user_data);
 
     //JSON
       JSONBuilder::ptr shmdata_writers_description_;
       std::mutex writers_mutex_
     {
-    };				//protecting from parallel registers
+    };                          //protecting from parallel registers
     std::string writers_string_
     {
     };
     JSONBuilder::ptr shmdata_readers_description_;
     std::mutex readers_mutex_
     {
-    };				//protecting from parallel registers
+    };                          //protecting from parallel registers
     std::string readers_string_
     {
     };
@@ -118,6 +118,6 @@ namespace switcher
 
     void populate_tree (std::string key, std::string caps);
   };
-}				// end of namespace
+}                               // end of namespace
 
 #endif // ifndef

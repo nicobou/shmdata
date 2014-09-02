@@ -35,7 +35,7 @@ namespace switcher
   public:
     typedef std::shared_ptr < Property > ptr;
     typedef void (*Callback) (GObject * gobject, GParamSpec * pspec,
-			      gpointer user_data);
+                              gpointer user_data);
       Property ();
      ~Property ();
       Property (const Property & source);
@@ -51,7 +51,7 @@ namespace switcher
     bool subscribe (Callback cb, void *user_data);
     bool unsubscribe (Callback cb, void *user_data);
     static std::string parse_callback_args (GObject * gobject,
-					    GParamSpec * pspec);
+                                            GParamSpec * pspec);
 
     GObject *get_gobject ();
     GParamSpec *get_paramspec ();
@@ -77,6 +77,6 @@ namespace switcher
       std::map < std::pair < Callback, void *>, gulong > subscribed_handlers_;
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

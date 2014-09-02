@@ -57,13 +57,13 @@ namespace switcher
     };
 
     static void on_handoff_cb (GstElement * object,
-			       GstBuffer * buf,
-			       GstPad * pad, gpointer user_data);
+                               GstBuffer * buf,
+                               GstPad * pad, gpointer user_data);
     static gboolean update_byte_rate (gpointer user_data);
     static gint get_byte_rate (void *user_data);
     static const gchar *get_caps (void *user_data);
   };
 
-}				// end of namespace
+}                               // end of namespace
 
 #endif // ifndef

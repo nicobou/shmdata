@@ -38,9 +38,7 @@ struct AnyValueBase
   }
   virtual AnyValueBase *
   clone () const = 0;
-  virtual
-    std::string
-  to_string () const = 0;
+  virtual std::string to_string ()const = 0;
 };
 
 template < typename T > struct AnyValueDerived:
@@ -155,15 +153,13 @@ struct Any
       StorageType <
       U >
       T;
-    auto
-      derived = dynamic_cast < AnyValueDerived < T > *>(ptr_);
+    auto derived = dynamic_cast < AnyValueDerived < T > *>(ptr_);
     if (!derived)
-      throw
-      std::bad_cast ();
+      throw std::bad_cast ();
     return derived->value_;
   }
 
-  template < class U > operator  U ()
+  template < class U > operator   U ()
   {
     return as < StorageType < U >> ();
   }
@@ -194,12 +190,10 @@ Any (const Any & that):ptr_ (that.clone ())
   {
     if (ptr_ == a.ptr_)
       return *this;
-    auto
-      old_ptr = ptr_;
+    auto old_ptr = ptr_;
     ptr_ = a.clone ();
     if (old_ptr)
-      delete
-	old_ptr;
+      delete old_ptr;
     return *this;
   }
 
@@ -214,8 +208,7 @@ Any (const Any & that):ptr_ (that.clone ())
   ~Any ()
   {
     if (ptr_)
-      delete
-	ptr_;
+      delete ptr_;
   }
 
   static
@@ -232,18 +225,16 @@ private:
   {
     if (ptr_)
       return
-	ptr_->
+        ptr_->
       clone ();
     else
       return
-	nullptr;
+        nullptr;
   }
 
   AnyValueBase *
     ptr_;
-  friend
-    std::ostream &
-  operator<< (std::ostream & os, const Any & any)
+  friend std::ostream & operator<< (std::ostream & os, const Any & any)
   {
     if (any.ptr_)
       os << any.ptr_->to_string ();
@@ -265,7 +256,7 @@ template < typename T > struct DefaultSerializable
   };
   template < typename U >
     friend std::ostream & operator<< (std::ostream & os,
-				      const DefaultSerializable < U > &)
+                                      const DefaultSerializable < U > &)
   {
     os << "not serializable";
     return os;

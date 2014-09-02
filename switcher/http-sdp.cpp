@@ -24,11 +24,11 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (HTTPSDP,
-					"HTTP/SDP Receiver",
-					"network",
-					"get raw stream from sdp file distributed with http",
-					"LGPL",
-					"httpsdp", "Nicolas Bouillot");
+                                        "HTTP/SDP Receiver",
+                                        "network",
+                                        "get raw stream from sdp file distributed with http",
+                                        "LGPL",
+                                        "httpsdp", "Nicolas Bouillot");
   HTTPSDP::HTTPSDP ():souphttpsrc_ (nullptr),
     sdpdemux_ (nullptr), media_counter_ (0)
   {
@@ -37,58 +37,56 @@ namespace switcher
   bool HTTPSDP::init_gpipe ()
   {
     if (!GstUtils::make_element ("souphttpsrc", &souphttpsrc_)
-	|| !GstUtils::make_element ("sdpdemux", &sdpdemux_))
+        || !GstUtils::make_element ("sdpdemux", &sdpdemux_))
       return false;
 
     add_element_to_cleaner (souphttpsrc_);
     add_element_to_cleaner (sdpdemux_);
 
     g_signal_connect (G_OBJECT (sdpdemux_),
-		      "pad-added",
-		      (GCallback) HTTPSDP::pad_added_cb, (gpointer) this);
+                      "pad-added",
+                      (GCallback) HTTPSDP::pad_added_cb, (gpointer) this);
     g_signal_connect (G_OBJECT (sdpdemux_),
-		      "no-more-pads",
-		      (GCallback) HTTPSDP::no_more_pads_cb, (gpointer) this);
+                      "no-more-pads",
+                      (GCallback) HTTPSDP::no_more_pads_cb, (gpointer) this);
     // g_signal_connect (G_OBJECT (sdpdemux_),  
     //       "pad-removed",  
     //       (GCallback) HTTPSDP::pad_removed_cb ,  
     //       (gpointer) this);      
     install_method ("To Shmdata",
-		    "to_shmdata",
-		    "get raw streams from an sdp description distributed over http and write them to shmdatas",
-		    "success or fail",
-		    Method::make_arg_description ("URL",
-						  "url",
-						  "the url to the sdp file",
-						  nullptr),
-		    (Method::method_ptr) & to_shmdata_wrapped,
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING,
-						       nullptr), this);
+                    "to_shmdata",
+                    "get raw streams from an sdp description distributed over http and write them to shmdatas",
+                    "success or fail",
+                    Method::make_arg_description ("URL",
+                                                  "url",
+                                                  "the url to the sdp file",
+                                                  nullptr),
+                    (Method::method_ptr) & to_shmdata_wrapped,
+                    G_TYPE_BOOLEAN,
+                    Method::make_arg_type_description (G_TYPE_STRING,
+                                                       nullptr), this);
     //registering "latency"
     install_property (G_OBJECT (sdpdemux_), "latency", "latency", "Latency");
     return true;
   }
 
-  void
-    HTTPSDP::no_more_pads_cb (GstElement * /*object */ ,
-			      gpointer /*user_data */ )
+  void HTTPSDP::no_more_pads_cb (GstElement * /*object */ ,
+                                 gpointer /*user_data */ )
   {
     //HTTPSDP *context = static_cast<HTTPSDP *>(user_data);
   }
 
-  void
-    HTTPSDP::pad_added_cb (GstElement * /*object */ , GstPad * pad,
-			   gpointer user_data)
+  void HTTPSDP::pad_added_cb (GstElement * /*object */ , GstPad * pad,
+                              gpointer user_data)
   {
     HTTPSDP *context = static_cast < HTTPSDP * >(user_data);
 
     const gchar *padname =
       gst_structure_get_name (gst_caps_get_structure
-			      (gst_pad_get_caps (pad), 0));
+                              (gst_pad_get_caps (pad), 0));
     g_debug ("httpsdp new pad name is %s", padname);
     g_debug ("httpsdp new caps %s",
-	     gst_caps_to_string (gst_pad_get_caps (pad)));
+             gst_caps_to_string (gst_pad_get_caps (pad)));
 
     GstElement *identity;
     GstUtils::make_element ("identity", &identity);
@@ -102,7 +100,7 @@ namespace switcher
     gchar **padname_splitted = g_strsplit_set (padname, "/", -1);
     gchar media_name[256];
     g_sprintf (media_name, "%s_%d", padname_splitted[0],
-	       context->media_counter_);
+               context->media_counter_);
     context->media_counter_++;
     g_strfreev (padname_splitted);
 
@@ -118,7 +116,7 @@ namespace switcher
       gst_object_unref (caps);
     context->register_shmdata (connector);
     g_message ("%s created a new shmdata writer (%s)",
-	       context->get_nick_name ().c_str (), connector_name.c_str ());
+               context->get_nick_name ().c_str (), connector_name.c_str ());
   }
 
   gboolean HTTPSDP::to_shmdata_wrapped (gpointer uri, gpointer user_data)

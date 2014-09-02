@@ -26,7 +26,7 @@
 namespace switcher
 {
   typedef void (*syphonCallback) (void *context, const char *buffer,
-				  int &width, int &height);
+                                  int &width, int &height);
 
   class SyphonReader
   {
@@ -35,15 +35,15 @@ namespace switcher
     SyphonReader (syphonCallback, void *);
      ~SyphonReader ();
     void connect (const char *serveName = nullptr, const char *appName =
-		  nullptr);
+                  nullptr);
     void disconnect ();
     void getFrame (int &width, int &height, char *pixels);
 
   protected:
       syphonCallback callback_;
     void *context_;
-    void *client_;		// Holds the real Syphon client
-    void *glContext_;		// CGL context
+    void *client_;              // Holds the real Syphon client
+    void *glContext_;           // CGL context
 
     void *texture_;
     int width_, height_;
@@ -56,6 +56,6 @@ namespace switcher
     void handleNewFrame ();
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

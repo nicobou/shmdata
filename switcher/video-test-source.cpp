@@ -24,11 +24,11 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (VideoTestSource,
-					"Video Test",
-					"video source",
-					"Creates a test video stream",
-					"LGPL",
-					"videotestsrc", "Nicolas Bouillot");
+                                        "Video Test",
+                                        "video source",
+                                        "Creates a test video stream",
+                                        "LGPL",
+                                        "videotestsrc", "Nicolas Bouillot");
 
   VideoTestSource::VideoTestSource ():videotestsrc_ (nullptr)
   {
@@ -47,7 +47,7 @@ namespace switcher
 
     //"pattern" property available atfer initialization 
     install_property (G_OBJECT (videotestsrc_),
-		      "pattern", "pattern", "Video Pattern");
+                      "pattern", "pattern", "Video Pattern");
     return true;
   }
 
@@ -62,10 +62,10 @@ namespace switcher
 
     if (videotestsrc_ != nullptr)
       {
-	GstUtils::apply_property_value (G_OBJECT (videotestsrc_),
-					G_OBJECT (videotest), "pattern");
+        GstUtils::apply_property_value (G_OBJECT (videotestsrc_),
+                                        G_OBJECT (videotest), "pattern");
 
-	GstUtils::clean_element (videotestsrc_);
+        GstUtils::clean_element (videotestsrc_);
       }
 
     videotestsrc_ = videotest;
@@ -77,7 +77,7 @@ namespace switcher
   bool VideoTestSource::on_start ()
   {
     reinstall_property (G_OBJECT (videotestsrc_),
-			"pattern", "pattern", "Video Pattern");
+                        "pattern", "pattern", "Video Pattern");
     return true;
   }
 
@@ -89,7 +89,7 @@ namespace switcher
       return false;
 
     reinstall_property (G_OBJECT (videotestsrc_),
-			"pattern", "pattern", "Video Pattern");
+                        "pattern", "pattern", "Video Pattern");
     return true;
   }
 

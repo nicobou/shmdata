@@ -36,7 +36,7 @@ namespace switcher
 
     static GObjectCustomProperty::ptr
       make_custom_property (set_method_pointer set_method,
-			    get_method_pointer get_method);
+                            get_method_pointer get_method);
 
     set_method_pointer set_method_;
     get_method_pointer get_method_;
@@ -44,8 +44,8 @@ namespace switcher
   private:
       GObjectCustomProperty ();
     void set_members (set_method_pointer set_method,
-		      get_method_pointer get_method);
+                      get_method_pointer get_method);
   };
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

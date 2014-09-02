@@ -47,34 +47,34 @@ namespace switcher
     static gboolean try_connect (gpointer user_data);
 
     static gboolean create (gpointer class_name,
-			    gpointer quiddity_name, gpointer user_data);
+                            gpointer quiddity_name, gpointer user_data);
     static gboolean remove (gpointer quiddity_name, gpointer user_data);
     static gboolean set_property (gpointer quiddity_name,
-				  gpointer property_name,
-				  gpointer value, gpointer user_data);
+                                  gpointer property_name,
+                                  gpointer value, gpointer user_data);
     static gboolean invoke1 (gpointer quiddity_name,
-			     gpointer method_name,
-			     gpointer arg1, gpointer user_data);
+                             gpointer method_name,
+                             gpointer arg1, gpointer user_data);
     static gboolean invoke2 (gpointer quiddity_name,
-			     gpointer method_name,
-			     gpointer arg1,
-			     gpointer arg2, gpointer user_data);
+                             gpointer method_name,
+                             gpointer arg1,
+                             gpointer arg2, gpointer user_data);
     static gboolean invoke3 (gpointer quiddity_name,
-			     gpointer method_name,
-			     gpointer arg1,
-			     gpointer arg2,
-			     gpointer arg3, gpointer user_data);
+                             gpointer method_name,
+                             gpointer arg1,
+                             gpointer arg2,
+                             gpointer arg3, gpointer user_data);
     static gboolean invoke4 (gpointer quiddity_name,
-			     gpointer method_name,
-			     gpointer arg1,
-			     gpointer arg2,
-			     gpointer arg3,
-			     gpointer arg4, gpointer user_data);
+                             gpointer method_name,
+                             gpointer arg1,
+                             gpointer arg2,
+                             gpointer arg3,
+                             gpointer arg4, gpointer user_data);
 
   };
 
     SWITCHER_DECLARE_PLUGIN (SoapCtrlClient);
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

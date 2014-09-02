@@ -55,16 +55,16 @@ namespace switcher
     GstPad *peer;
     if ((peer = gst_pad_get_peer (pad)))
       {
-	if (gst_pad_get_direction (pad) == GST_PAD_SRC)
-	  gst_pad_unlink (pad, peer);
-	else
-	  gst_pad_unlink (peer, pad);
-	//checking if the pad has been requested and releasing it needed 
-	GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);	//check if this must be unrefed for GST 1
-	if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
-	  gst_element_release_request_pad (gst_pad_get_parent_element (peer),
-					   peer);
-	gst_object_unref (peer);
+        if (gst_pad_get_direction (pad) == GST_PAD_SRC)
+          gst_pad_unlink (pad, peer);
+        else
+          gst_pad_unlink (peer, pad);
+        //checking if the pad has been requested and releasing it needed 
+        GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);    //check if this must be unrefed for GST 1
+        if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
+          gst_element_release_request_pad (gst_pad_get_parent_element (peer),
+                                           peer);
+        gst_object_unref (peer);
       }
   }
 
@@ -77,8 +77,8 @@ namespace switcher
   {
     if (nullptr == absolute_path)
       {
-	g_debug ("shmdata path is nullptr");
-	return;
+        g_debug ("shmdata path is nullptr");
+        return;
       }
     path_ = absolute_path;
     make_json_description ();
@@ -124,42 +124,42 @@ namespace switcher
     GstUtils::clean_element (context->funnel_);
     context->reader_ = shmdata_base_reader_new ();
     shmdata_base_reader_set_g_main_context (context->reader_,
-					    context->g_main_context_);
+                                            context->g_main_context_);
     shmdata_base_reader_set_on_have_type_callback (context->reader_,
-						   ShmdataReader::
-						   on_have_type, context);
+                                                   ShmdataReader::on_have_type,
+                                                   context);
     if (context->path_.empty () || context->bin_ == nullptr)
       {
-	g_warning
-	  ("cannot start the shmdata reader: name or bin or sink element has not bin set");
-	return FALSE;
+        g_warning
+          ("cannot start the shmdata reader: name or bin or sink element has not bin set");
+        return FALSE;
       }
     shmdata_base_reader_set_callback (context->reader_,
-				      ShmdataReader::on_first_data, context);
+                                      ShmdataReader::on_first_data, context);
     shmdata_base_reader_install_sync_handler (context->reader_, FALSE);
     shmdata_base_reader_set_bin (context->reader_, context->bin_);
     shmdata_base_reader_start (context->reader_, context->path_.c_str ());
     g_debug ("shmdata-reader::start_idle done");
     // std::unique_lock<std::mutex> lock (context->start_mutex_);
     // context->start_cond_.notify_all ();
-    return FALSE;		//do not repeat
+    return FALSE;               //do not repeat
   }
 
   void
     ShmdataReader::on_have_type (shmdata_base_reader_t *,
-				 GstCaps * caps, void *user_data)
+                                 GstCaps * caps, void *user_data)
   {
     if (nullptr == user_data || nullptr == caps)
       {
-	g_warning ("ShmdataReader::on_have_type cannot save caps");
-	return;
+        g_warning ("ShmdataReader::on_have_type cannot save caps");
+        return;
       }
     ShmdataReader *context = static_cast < ShmdataReader * >(user_data);
     gchar *string_caps = gst_caps_to_string (caps);
     On_scope_exit
     {
       if (nullptr != string_caps)
-	g_free (string_caps);
+        g_free (string_caps);
     };
     context->set_negociated_caps (std::string (string_caps));
   }
@@ -173,7 +173,7 @@ namespace switcher
 
   void
     ShmdataReader::set_on_first_data_hook (on_first_data_hook cb,
-					   void *user_data)
+                                           void *user_data)
   {
     g_debug ("ShmdataReader::set_on_first_data_hook");
     connection_hook_ = cb;
@@ -182,15 +182,15 @@ namespace switcher
 
   void
     ShmdataReader::on_first_data (shmdata_base_reader_t * context,
-				  void *user_data)
+                                  void *user_data)
   {
     ShmdataReader *reader = static_cast < ShmdataReader * >(user_data);
     g_debug (" ShmdataReader::on_first_data");
-    if (reader->connection_hook_ != nullptr)	//user want to create the sink_element_ 
+    if (reader->connection_hook_ != nullptr)    //user want to create the sink_element_ 
       reader->connection_hook_ (reader, reader->hook_user_data_);
     if (nullptr != reader->sink_element_)
       if (!GST_IS_ELEMENT (GST_ELEMENT_PARENT (reader->sink_element_)))
-	gst_bin_add (GST_BIN (reader->bin_), reader->sink_element_);
+        gst_bin_add (GST_BIN (reader->bin_), reader->sink_element_);
     // else 
     //   g_debug ("ShmdataReader::on_first_data: (%s) sink element (%s) has a parent (%s) %d", 
     //       reader->get_path ().c_str(), 

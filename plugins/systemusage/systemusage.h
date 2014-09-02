@@ -141,6 +141,6 @@ namespace switcher
 
   SWITCHER_DECLARE_PLUGIN (SystemUsage);
 
-}				// end of namespace
+}                               // end of namespace
 
 #endif // ifndef

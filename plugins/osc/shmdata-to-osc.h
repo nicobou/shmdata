@@ -59,9 +59,9 @@ namespace switcher
     bool can_sink_caps (std::string caps);
 
     void on_shmreader_data (void *data,
-			    int data_size,
-			    unsigned long long timestamp,
-			    const char *type_description, void *user_data);
+                            int data_size,
+                            unsigned long long timestamp,
+                            const char *type_description, void *user_data);
 
     static void set_port (const gint value, void *user_data);
     static gint get_port (void *user_data);
@@ -71,6 +71,6 @@ namespace switcher
 
     SWITCHER_DECLARE_PLUGIN (ShmdataToOsc);
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

@@ -39,8 +39,8 @@ namespace switcher
   {
     if (!g_module_supported ())
       {
-	g_debug ("g_module not supported !, cannot load %s", filename);
-	return false;
+        g_debug ("g_module not supported !, cannot load %s", filename);
+        return false;
       }
     close ();
 
@@ -48,51 +48,51 @@ namespace switcher
 
     if (!module_)
       {
-	g_debug ("loading %s: %s", filename, g_module_error ());
-	return false;
+        g_debug ("loading %s: %s", filename, g_module_error ());
+        return false;
       }
 
     if (!g_module_symbol (module_, "create", (gpointer *) & create_))
       {
-	g_debug ("loading %s: %s", filename, g_module_error ());
-	close ();
-	return false;
+        g_debug ("loading %s: %s", filename, g_module_error ());
+        close ();
+        return false;
       }
 
     if (create_ == nullptr)
       {
-	g_debug ("%s: %s", filename, g_module_error ());
-	close ();
-	return false;
+        g_debug ("%s: %s", filename, g_module_error ());
+        close ();
+        return false;
       }
 
     if (!g_module_symbol (module_, "destroy", (gpointer *) & destroy_))
       {
-	g_debug ("%s: %s", filename, g_module_error ());
-	close ();
-	return false;
+        g_debug ("%s: %s", filename, g_module_error ());
+        close ();
+        return false;
       }
 
     if (destroy_ == nullptr)
       {
-	g_debug ("%s: %s", filename, g_module_error ());
-	close ();
-	return false;
+        g_debug ("%s: %s", filename, g_module_error ());
+        close ();
+        return false;
       }
 
     if (!g_module_symbol
-	(module_, "get_documentation", (gpointer *) & get_documentation_))
+        (module_, "get_documentation", (gpointer *) & get_documentation_))
       {
-	g_debug ("%s: %s", filename, g_module_error ());
-	close ();
-	return false;
+        g_debug ("%s: %s", filename, g_module_error ());
+        close ();
+        return false;
       }
 
     if (get_documentation_ == nullptr)
       {
-	g_debug ("%s: %s", filename, g_module_error ());
-	close ();
-	return false;
+        g_debug ("%s: %s", filename, g_module_error ());
+        close ();
+        return false;
       }
 
     QuiddityDocumentation doc = get_documentation_ ();
@@ -108,8 +108,8 @@ namespace switcher
 
     if (!g_module_close (module_))
       {
-	g_debug ("closing module: %s", g_module_error ());
-	return false;
+        g_debug ("closing module: %s", g_module_error ());
+        return false;
       }
     module_ = nullptr;
     return true;

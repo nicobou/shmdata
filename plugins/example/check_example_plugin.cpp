@@ -49,7 +49,7 @@ main ()
 
     //creating a "myplugin" quiddity
     if (g_strcmp0 (manager->create ("myplugin", "test").c_str (), "test") !=
-	0)
+        0)
       success = false;
 
     //testing myprop property
@@ -74,7 +74,7 @@ main ()
     //     if (!manager->remove ("test"))
     //       success = false;
 
-  }				//end of scope is releasing the manager
+  }                             //end of scope is releasing the manager
 
   if (success)
     return 0;

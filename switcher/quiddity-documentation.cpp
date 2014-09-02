@@ -22,11 +22,11 @@
 namespace switcher
 {
   QuiddityDocumentation::QuiddityDocumentation (std::string long_name,
-						std::string category,
-						std::string short_description,
-						std::string license,
-						std::string class_name,
-						std::string author)
+                                                std::string category,
+                                                std::string short_description,
+                                                std::string license,
+                                                std::string class_name,
+                                                std::string author)
   {
     category_ = category;
     class_name_ = class_name;
@@ -74,7 +74,7 @@ namespace switcher
     json_description_->add_string_member ("long name", long_name_.c_str ());
     json_description_->add_string_member ("category", category_.c_str ());
     json_description_->add_string_member ("short description",
-					  description_.c_str ());
+                                          description_.c_str ());
     json_description_->add_string_member ("license", license_.c_str ());
     json_description_->add_string_member ("class name", class_name_.c_str ());
     json_description_->add_string_member ("author", author_.c_str ());

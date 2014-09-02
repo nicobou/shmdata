@@ -45,7 +45,7 @@ namespace switcher
 
     //---------- properties
     static bool notify_property_changed (GObject * object,
-					 GParamSpec * pspec);
+                                         GParamSpec * pspec);
     //user data for set and get methods
     void property_set_user_data (std::string nickname, void *user_data);
     void *property_get_user_data (std::string nickname);
@@ -54,51 +54,51 @@ namespace switcher
 
     //TODO see g_value_... for  implementation of other types
     static GParamSpec *make_int_property (const gchar * nickname,
-					  const gchar * description,
-					  gint min_value,
-					  gint max_value,
-					  gint default_value,
-					  GParamFlags read_write_flags,
-					  GObjectCustomProperty::
-					  set_method_pointer set_method,
-					  GObjectCustomProperty::
-					  get_method_pointer get_method);
+                                          const gchar * description,
+                                          gint min_value,
+                                          gint max_value,
+                                          gint default_value,
+                                          GParamFlags read_write_flags,
+                                          GObjectCustomProperty::set_method_pointer
+                                          set_method,
+                                          GObjectCustomProperty::get_method_pointer
+                                          get_method);
 
     static GParamSpec *make_string_property (const gchar * nickname,
-					     const gchar * description,
-					     const gchar * default_value,
-					     GParamFlags read_write_flags,
-					     GObjectCustomProperty::
-					     set_method_pointer set_method,
-					     GObjectCustomProperty::
-					     get_method_pointer get_method);
+                                             const gchar * description,
+                                             const gchar * default_value,
+                                             GParamFlags read_write_flags,
+                                             GObjectCustomProperty::set_method_pointer
+                                             set_method,
+                                             GObjectCustomProperty::get_method_pointer
+                                             get_method);
 
     static GParamSpec *make_boolean_property (const gchar * nickname,
-					      const gchar * description,
-					      gboolean default_value,
-					      GParamFlags read_write_flags,
-					      GObjectCustomProperty::
-					      set_method_pointer set_method,
-					      GObjectCustomProperty::
-					      get_method_pointer get_method);
+                                              const gchar * description,
+                                              gboolean default_value,
+                                              GParamFlags read_write_flags,
+                                              GObjectCustomProperty::set_method_pointer
+                                              set_method,
+                                              GObjectCustomProperty::get_method_pointer
+                                              get_method);
 
-    static GParamSpec *make_enum_property (const gchar * nickname, const gchar * description, const gint default_value, const GEnumValue * custom_enum,	//*must* be static
-					   GParamFlags read_write_flags,
-					   GObjectCustomProperty::
-					   set_method_pointer set_method,
-					   GObjectCustomProperty::
-					   get_method_pointer get_method);
+    static GParamSpec *make_enum_property (const gchar * nickname, const gchar * description, const gint default_value, const GEnumValue * custom_enum, //*must* be static
+                                           GParamFlags read_write_flags,
+                                           GObjectCustomProperty::set_method_pointer
+                                           set_method,
+                                           GObjectCustomProperty::get_method_pointer
+                                           get_method);
 
     static GParamSpec *make_double_property (const gchar * nickname,
-					     const gchar * description,
-					     gdouble min_value,
-					     gdouble max_value,
-					     gdouble default_value,
-					     GParamFlags read_write_flags,
-					     GObjectCustomProperty::
-					     set_method_pointer set_method,
-					     GObjectCustomProperty::
-					     get_method_pointer get_method);
+                                             const gchar * description,
+                                             gdouble min_value,
+                                             gdouble max_value,
+                                             gdouble default_value,
+                                             GParamFlags read_write_flags,
+                                             GObjectCustomProperty::set_method_pointer
+                                             set_method,
+                                             GObjectCustomProperty::get_method_pointer
+                                             get_method);
 
     //signal    
     static guint
@@ -106,14 +106,14 @@ namespace switcher
 
     static guint
       make_signal_action (GClosure * class_closure,
-			  GType return_type,
-			  guint n_params, GType * param_types);
+                          GType return_type,
+                          guint n_params, GType * param_types);
 
     //for the gobject class
-      GObjectCustomProperty::
-      set_method_pointer get_set_method_pointer (guint prop_id);
-      GObjectCustomProperty::
-      get_method_pointer get_get_method_pointer (guint prop_id);
+      GObjectCustomProperty::set_method_pointer get_set_method_pointer (guint
+                                                                        prop_id);
+      GObjectCustomProperty::get_method_pointer get_get_method_pointer (guint
+                                                                        prop_id);
 
   private:
     struct _MyObject *my_object_;
@@ -125,10 +125,10 @@ namespace switcher
     void *property_default_user_data_;
     //---------- signals
     //static std::map<guint, GObjectCustomSignal::ptr> custom_signals_;  
-    static guint next_signal_num_;	//this is only for generation of unique signal names  
+    static guint next_signal_num_;      //this is only for generation of unique signal names  
       std::map < std::string, void *>signal_user_datas_;
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

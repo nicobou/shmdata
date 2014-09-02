@@ -49,16 +49,16 @@ namespace switcher
     if (g_file_query_exists (shmfile, nullptr))
       {
 //thrash it
-	g_debug
-	  ("ShmdataAnyWriter::set_path warning: file %s exists and will be deleted.",
-	   name.c_str ());
-	if (!g_file_delete (shmfile, nullptr, nullptr))
-	  {
-	    g_debug
-	      ("ShmdataAnyWriter::set_path error: file %s is already existing and cannot be trashed.",
-	       name.c_str ());
-	    return false;
-	  }
+        g_debug
+          ("ShmdataAnyWriter::set_path warning: file %s exists and will be deleted.",
+           name.c_str ());
+        if (!g_file_delete (shmfile, nullptr, nullptr))
+          {
+            g_debug
+              ("ShmdataAnyWriter::set_path error: file %s is already existing and cannot be trashed.",
+               name.c_str ());
+            return false;
+          }
       }
 
     return set_path_without_deleting (name);
@@ -97,35 +97,35 @@ namespace switcher
 
   void
     ShmdataAnyWriter::push_data (void *data,
-				 size_t data_size,
-				 unsigned long long clock,
-				 void (*data_not_required_anymore) (void *),
-				 void *user_data)
+                                 size_t data_size,
+                                 unsigned long long clock,
+                                 void (*data_not_required_anymore) (void *),
+                                 void *user_data)
   {
     std::unique_lock < std::mutex > lock (thread_safe_);
     ////g_print ("%s\n",__FUNCTION__);
     if (started_)
       shmdata_any_writer_push_data (writer_,
-				    data,
-				    data_size,
-				    clock,
-				    data_not_required_anymore, user_data);
+                                    data,
+                                    data_size,
+                                    clock,
+                                    data_not_required_anymore, user_data);
   }
 
   void
     ShmdataAnyWriter::push_data_auto_clock (void *data,
-					    size_t data_size,
-					    void (*data_not_required_anymore)
-					    (void *), void *user_data)
+                                            size_t data_size,
+                                            void (*data_not_required_anymore)
+                                            (void *), void *user_data)
   {
     std::unique_lock < std::mutex > lock (thread_safe_);
     ////g_print ("%s\n",__FUNCTION__);
     if (started_)
       shmdata_any_writer_push_data (writer_,
-				    data,
-				    data_size,
-				    clock_.get_count (),
-				    data_not_required_anymore, user_data);
+                                    data,
+                                    data_size,
+                                    clock_.get_count (),
+                                    data_not_required_anymore, user_data);
   }
 
   void ShmdataAnyWriter::make_json_description ()

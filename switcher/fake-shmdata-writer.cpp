@@ -24,14 +24,15 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (FakeShmdataWriter,
-					"Shmdata From Software",
-					"fake source",
-					"add a shmdata from an other software",
-					"LGPL",
-					"fakeshmsrc", "Nicolas Bouillot");
+                                        "Shmdata From Software",
+                                        "fake source",
+                                        "add a shmdata from an other software",
+                                        "LGPL",
+                                        "fakeshmsrc", "Nicolas Bouillot");
 
-  FakeShmdataWriter::
-    FakeShmdataWriter ():custom_props_ (new CustomPropertyHelper ()),
+  FakeShmdataWriter::FakeShmdataWriter ():custom_props_ (new
+                                                         CustomPropertyHelper
+                                                         ()),
     shmdata_path_spec_ (nullptr), shmdata_path_ (g_strdup ("none"))
   {
   }
@@ -44,16 +45,15 @@ namespace switcher
     custom_props_.reset (new CustomPropertyHelper ());
     shmdata_path_spec_ =
       custom_props_->make_string_property ("shmdata-path",
-					   "Path Of The Shmdata The Include",
-					   "",
-					   (GParamFlags) G_PARAM_READWRITE,
-					   FakeShmdataWriter::
-					   set_shmdata_path,
-					   FakeShmdataWriter::
-					   get_shmdata_path, this);
+                                           "Path Of The Shmdata The Include",
+                                           "",
+                                           (GParamFlags) G_PARAM_READWRITE,
+                                           FakeShmdataWriter::set_shmdata_path,
+                                           FakeShmdataWriter::get_shmdata_path,
+                                           this);
     install_property_by_pspec (custom_props_->get_gobject (),
-			       shmdata_path_spec_, "shmdata-path",
-			       "Shmdata Path");
+                               shmdata_path_spec_, "shmdata-path",
+                               "Shmdata Path");
 
     return true;
   }
@@ -67,7 +67,7 @@ namespace switcher
     register_shmdata (connector);
 
     g_message ("%s created a new shmdata writer (%s)",
-	       get_nick_name ().c_str (), name.c_str ());
+               get_nick_name ().c_str (), name.c_str ());
     return true;
   }
 
@@ -79,8 +79,8 @@ namespace switcher
     g_free (context->shmdata_path_);
 
     context->shmdata_path_ = g_strdup (value);
-    context->custom_props_->notify_property_changed (context->
-						     shmdata_path_spec_);
+    context->custom_props_->
+      notify_property_changed (context->shmdata_path_spec_);
   }
 
   const gchar *FakeShmdataWriter::get_shmdata_path (void *user_data)
@@ -114,7 +114,7 @@ namespace switcher
     register_shmdata (connector);
 
     g_message ("%s created a new shmdata writer (%s)",
-	       get_nick_name ().c_str (), shmdata_path_);
+               get_nick_name ().c_str (), shmdata_path_);
 
     return true;
   }
@@ -123,8 +123,8 @@ namespace switcher
   {
     clean ();
     install_property_by_pspec (custom_props_->get_gobject (),
-			       shmdata_path_spec_,
-			       "shmdata-path", "Shmdata Path");
+                               shmdata_path_spec_,
+                               "shmdata-path", "Shmdata Path");
     return true;
   }
 }

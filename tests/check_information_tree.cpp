@@ -32,7 +32,7 @@ struct Widget:public DefaultSerializable < Widget >
 struct SerializableWidget
 {
   friend std::ostream & operator<< (std::ostream & os,
-				    const SerializableWidget &);
+                                    const SerializableWidget &);
 };
 std::ostream & operator<< (std::ostream & os, const SerializableWidget &)
 {
@@ -45,22 +45,22 @@ int
 main ()
 {
   using namespace switcher::data;
-  {				//node data as std::string
+  {                             //node data as std::string
     Tree::ptr tree = make_tree (std::string ("truc"));
     assert (tree->is_leaf ());
     std::string data = tree->get_data ();
     assert (0 == data.compare ("truc"));
   }
-  {				//node data as const char * (converted to std::string for being stored in Any)
+  {                             //node data as const char * (converted to std::string for being stored in Any)
     Tree::ptr tree = make_tree ("test");
     assert (tree->is_leaf ());
   }
-  {				//node data as float
+  {                             //node data as float
     Tree::ptr tree = make_tree (1.2f);
     float val = tree->get_data ();
     assert (1.2f == val);
   }
-  {				//graft a multiple childs and get them
+  {                             //graft a multiple childs and get them
     Tree::ptr tree = make_tree ();
     tree->graft ("...child1....child2..", make_tree (1.2f));
     assert (!tree->is_leaf ());
@@ -71,9 +71,9 @@ main ()
     assert (1.2f == data);
     Tree::ptr child1 = tree->get (".child1..");
     assert (!child1->is_leaf ());
-    assert (!tree->get ("child1.foo"));	//this is not a child
+    assert (!tree->get ("child1.foo")); //this is not a child
   }
-  {				//graft a childs and prune it
+  {                             //graft a childs and prune it
     Tree::ptr tree = make_tree ();
     tree->graft ("child1.child2", make_tree ());
     assert (!tree->is_leaf ());
@@ -87,7 +87,7 @@ main ()
     assert (child1->is_leaf ());
     assert (child2->is_leaf ());
   }
-  {				//is_leaf with path
+  {                             //is_leaf with path
     Tree::ptr tree = make_tree ();
     tree->graft ("child1", make_tree ());
     tree->graft ("child1.child2", make_tree ());
@@ -97,7 +97,7 @@ main ()
     assert (!tree->is_leaf ("child1"));
     assert (!tree->is_leaf ("foofoo"));
   }
-  {				//set/get data with path
+  {                             //set/get data with path
     Tree::ptr tree = make_tree ();
     //tree->set_data ("", 1.2f); // this is not possible 
     //float tree_data = tree->get_data ("."); // this is not possible 
@@ -110,7 +110,7 @@ main ()
     float child1_data = tree->get_data ("child1");
     assert (1.2f == child1_data);
   }
-  {				//removing using empty data
+  {                             //removing using empty data
     Tree::ptr tree = make_tree ();
     tree->set_data ("test");
     assert (tree->has_data ());
@@ -126,7 +126,7 @@ main ()
     assert (!tree->has_data ("child1.child2"));
     assert (!tree->has_data ("child1"));
   }
-  {				//Any to string
+  {                             //Any to string
     Any n;
     Any a (std::string ("test"));
     Any b (1.2f);
@@ -140,7 +140,7 @@ main ()
     //std::cout << ss.str () << std::endl;
     assert (0 == ss.str ().compare ("null-test-1.2-not serializable-hello"));
   }
-  {				//basic serialization
+  {                             //basic serialization
     Tree::ptr tree = make_tree ();
     tree->graft (".child1.child2", make_tree ("switch"));
     tree->graft (".child1.child3", make_tree (1.2f));
@@ -190,39 +190,40 @@ main ()
     std::cout << serialized << std::endl;
   }
 
-  {				//get childs keys inserting in an existing container
+  {                             //get childs keys inserting in an existing container
     Tree::ptr tree = make_tree ();
     std::list < std::string > childs
     {
     "child1", "child2", "child3",
-	"child4", "child5", "child6", "child7", "child8", "child9"};
+        "child4", "child5", "child6", "child7", "child8", "child9"};
     std::for_each (childs.begin (),
-		   childs.end (),[tree] (const std::string & val)
-		   {
-		   tree->graft (".root." + val, make_tree ("val"));});
+                   childs.end (),[tree] (const std::string & val)
+                   {
+                   tree->graft (".root." + val, make_tree ("val"));
+                   });
     std::vector < std::string > child_keys;
     tree->get_child_keys (".root",
-			  std::insert_iterator < std::vector <
-			  std::string >> (child_keys, child_keys.begin ()));
-    assert (std::
-	    equal (childs.begin (), childs.end (), child_keys.begin (),
-		   [](const std::string & first, const std::string & second)
-		   {
-		   return (0 == first.compare (second));
-		   }
-	    ));
+                          std::insert_iterator < std::vector <
+                          std::string >> (child_keys, child_keys.begin ()));
+    assert (std::equal (childs.begin (), childs.end (), child_keys.begin (),
+                        [](const std::string & first,
+                           const std::string & second)
+                        {
+                        return (0 == first.compare (second));}
+            ));
   }
 
-  {				//get childs keys in a newly allocated container
+  {                             //get childs keys in a newly allocated container
     Tree::ptr tree = make_tree ();
     std::list < std::string > childs
     {
     "child1", "child2", "child3",
-	"child4", "child5", "child6", "child7", "child8", "child9"};
+        "child4", "child5", "child6", "child7", "child8", "child9"};
     std::for_each (childs.begin (),
-		   childs.end (),[tree] (const std::string & val)
-		   {
-		   tree->graft (".root." + val, make_tree ("val"));});
+                   childs.end (),[tree] (const std::string & val)
+                   {
+                   tree->graft (".root." + val, make_tree ("val"));
+                   });
     auto string_compare =
       [](const std::string & first, const std::string & second)
       { return (0 == first.compare (second));
@@ -231,16 +232,16 @@ main ()
     //using a list
     std::list < std::string > child_keys_list =
       tree->get_child_keys <> (".root");
-    assert (std::
-	    equal (childs.begin (), childs.end (), child_keys_list.begin (),
-		   string_compare));
+    assert (std::equal
+            (childs.begin (), childs.end (), child_keys_list.begin (),
+             string_compare));
 
     //using a vector
     std::vector < std::string > child_keys_vector =
       tree->get_child_keys < std::vector > (".root");
-    assert (std::
-	    equal (childs.begin (), childs.end (), child_keys_vector.begin (),
-		   string_compare));
+    assert (std::equal
+            (childs.begin (), childs.end (), child_keys_vector.begin (),
+             string_compare));
 
   }
 

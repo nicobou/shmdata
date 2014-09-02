@@ -43,6 +43,6 @@ namespace switcher
       bool i_am_the_one_;
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

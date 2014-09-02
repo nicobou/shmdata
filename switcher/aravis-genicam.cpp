@@ -24,11 +24,11 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (AravisGenicam,
-					"GenICam Camera",
-					"genicam video",
-					"Genicam video source using the Aravis library",
-					"LGPL",
-					"genicam", "Nicolas Bouillot");
+                                        "GenICam Camera",
+                                        "genicam video",
+                                        "Genicam video source using the Aravis library",
+                                        "LGPL",
+                                        "genicam", "Nicolas Bouillot");
   AravisGenicam::AravisGenicam ():aravissrc_ (nullptr)
   {
   }
@@ -37,9 +37,9 @@ namespace switcher
   {
     if (!GstUtils::make_element ("aravissrc", &aravissrc_))
       {
-	g_debug
-	  ("aravissrc not available, install aravis (http://git.gnome.org/browse/aravis/)");
-	return false;
+        g_debug
+          ("aravissrc not available, install aravis (http://git.gnome.org/browse/aravis/)");
+        return false;
       }
     set_name (gst_element_get_name (aravissrc_));
 
@@ -48,33 +48,33 @@ namespace switcher
     install_property (G_OBJECT (aravissrc_), "gain", "gain", "Gain");
 
     install_property (G_OBJECT (aravissrc_), "gain-auto", "gain-auto",
-		      "Gain Auto");
+                      "Gain Auto");
 
     install_property (G_OBJECT (aravissrc_), "exposure", "exposure",
-		      "Exposure");
+                      "Exposure");
     install_property (G_OBJECT (aravissrc_), "exposure-auto", "exposure-auto",
-		      "Exposure Auto");
+                      "Exposure Auto");
     install_property (G_OBJECT (aravissrc_), "h-binning", "h-binning",
-		      "H-binning");
+                      "H-binning");
     install_property (G_OBJECT (aravissrc_), "v-binning", "v-binning",
-		      "V-binning");
+                      "V-binning");
     install_property (G_OBJECT (aravissrc_), "offset-x", "offset-x",
-		      "Offset-x");
+                      "Offset-x");
     install_property (G_OBJECT (aravissrc_), "offset-y", "offset-y",
-		      "Offset-y");
+                      "Offset-y");
 
     install_method ("Capture",
-		    "capture",
-		    "start capturing from camera",
-		    "success or fail",
-		    Method::make_arg_description ("Name",
-						  "name",
-						  "the genicam camera name obtained with the command arv-tool-0.2 or 'default')",
-						  nullptr),
-		    (Method::method_ptr) & start_wrapped,
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING,
-						       nullptr), this);
+                    "capture",
+                    "start capturing from camera",
+                    "success or fail",
+                    Method::make_arg_description ("Name",
+                                                  "name",
+                                                  "the genicam camera name obtained with the command arv-tool-0.2 or 'default')",
+                                                  nullptr),
+                    (Method::method_ptr) & start_wrapped,
+                    G_TYPE_BOOLEAN,
+                    Method::make_arg_type_description (G_TYPE_STRING,
+                                                       nullptr), this);
 
     return true;
   }
@@ -93,9 +93,9 @@ namespace switcher
   {
     g_debug ("Genicam using camera %s", name.c_str ());
     if (g_strcmp0 (name.c_str (), "default") != 0
-	&& g_strcmp0 (name.c_str (), "Default") != 0)
+        && g_strcmp0 (name.c_str (), "Default") != 0)
       g_object_set (G_OBJECT (aravissrc_), "camera-name", name.c_str (),
-		    nullptr);
+                    nullptr);
 
     GstElement *colorspace;
     if (!GstUtils::make_element ("ffmpegcolorspace", &colorspace))
@@ -117,7 +117,7 @@ namespace switcher
     register_shmdata (connector);
 
     g_message ("%s created a new shmdata writer (%s)",
-	       get_nick_name ().c_str (), connector_name.c_str ());
+               get_nick_name ().c_str (), connector_name.c_str ());
 
     return true;
   }

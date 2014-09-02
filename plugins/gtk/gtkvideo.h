@@ -72,7 +72,7 @@ namespace switcher
 #else
     guintptr window_handle_;
 #endif
-    QuiddityCommand *on_error_command_;	//for the GPipe error handler
+    QuiddityCommand *on_error_command_; //for the GPipe error handler
     GdkCursor *blank_cursor_;
 
       CustomPropertyHelper::ptr gtk_custom_props_;
@@ -94,14 +94,14 @@ namespace switcher
     static gboolean create_ui (void *user_data);
     static void realize_cb (GtkWidget * widget, void *user_data);
     static void delete_event_cb (GtkWidget * widget,
-				 GdkEvent * event, void *user_data);
+                                 GdkEvent * event, void *user_data);
     static void gtk_main_loop_thread ();
     static gboolean key_pressed_cb (GtkWidget * widget,
-				    GdkEventKey * event, gpointer data);
+                                    GdkEventKey * event, gpointer data);
     static gboolean get_fullscreen (void *user_data);
     static void set_fullscreen (gboolean fullscreen, void *user_data);
     static gboolean on_destroy_event (GtkWidget * widget,
-				      GdkEvent * event, gpointer user_data);
+                                      GdkEvent * event, gpointer user_data);
     static void window_destroyed (gpointer data);
     static gboolean destroy_window (gpointer data);
     static void set_title (const gchar * value, void *user_data);
@@ -110,6 +110,6 @@ namespace switcher
 
     SWITCHER_DECLARE_PLUGIN (GTKVideo);
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

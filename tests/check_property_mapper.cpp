@@ -23,10 +23,10 @@
 
 void
 property_cb (std::string /*subscriber_name */ ,
-	     std::string /*quiddity_name */ ,
-	     std::string /*property_name */ ,
-	     std::string /*value */ ,
-	     void *user_data)
+             std::string /*quiddity_name */ ,
+             std::string /*property_name */ ,
+             std::string /*value */ ,
+             void *user_data)
 {
   uint *val = (uint *) user_data;
   *val = *val + 1;
@@ -51,12 +51,12 @@ main ()
     mgr->subscribe_property ("sub", audio2.c_str (), "freq");
     std::string mapper = mgr->create ("property-mapper", "mapper");
     if (!mgr->invoke_va (mapper.c_str (),
-			 "set-source-property",
-			 nullptr, audio1.c_str (), "freq", nullptr))
+                         "set-source-property",
+                         nullptr, audio1.c_str (), "freq", nullptr))
       return 1;
     if (!mgr->invoke_va (mapper.c_str (),
-			 "set-sink-property",
-			 nullptr, audio2.c_str (), "freq", nullptr))
+                         "set-sink-property",
+                         nullptr, audio2.c_str (), "freq", nullptr))
       return 1;
     if (!mgr->set_property (audio1, "freq", "1000"))
       return 1;

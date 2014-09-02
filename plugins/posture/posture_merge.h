@@ -101,6 +101,6 @@ namespace switcher
 
   SWITCHER_DECLARE_PLUGIN (PostureMerge);
 
-}				// end of namespace
+}                               // end of namespace
 
 #endif // ifndef

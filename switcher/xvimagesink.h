@@ -41,11 +41,11 @@ namespace switcher
     GstElement *queue_;
     GstElement *ffmpegcolorspace_;
     GstElement *xvimagesink_;
-    QuiddityCommand *on_error_command_;	//for the pipeline error handler
+    QuiddityCommand *on_error_command_; //for the pipeline error handler
     bool init_gpipe () final;
     bool can_sink_caps (std::string caps) final;
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

@@ -31,10 +31,10 @@
 
 void
 quiddity_created_removed_cb (std::string /*subscriber_name */ ,
-			     std::string quiddity_name,
-			     std::string signal_name,
-			     std::vector < std::string > params,
-			     void *user_data)
+                             std::string quiddity_name,
+                             std::string signal_name,
+                             std::vector < std::string > params,
+                             void *user_data)
 {
   g_print ("%s: %s\n", signal_name.c_str (), params[0].c_str ());
   switcher::QuiddityManager * ctx =
@@ -72,7 +72,7 @@ main ()
     //manager->make_signal_subscriber ("signal_subscriber", quiddity_created_removed_cb, manager.get ());
     //manager->subscribe_signal ("signal_subscriber","test","on-tree-grafted");
     //std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-  }				//end of scope is releasing the manager
+  }                             //end of scope is releasing the manager
 
   if (success)
     return 0;

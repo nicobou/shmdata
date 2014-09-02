@@ -39,7 +39,7 @@ namespace switcher
 
     //local streams
     bool add_shmdata (std::string shmdata_socket_path,
-		      std::string file_location);
+                      std::string file_location);
     bool remove_shmdata (std::string shmdata_socket_path);
 
     static void set_recording (gboolean mute, void *user_data);
@@ -59,11 +59,11 @@ namespace switcher
 
     //wrapper for registering the data_stream functions
     static gboolean add_shmdata_wrapped (gpointer shmdata_socket_path,
-					 gpointer file_location,
-					 gpointer user_data);
+                                         gpointer file_location,
+                                         gpointer user_data);
     static gboolean remove_shmdata_wrapped (gpointer shmdata_socket_path,
-					    gpointer user_data);
+                                            gpointer user_data);
   };
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

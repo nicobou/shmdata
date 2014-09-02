@@ -75,9 +75,9 @@ namespace switcher
     bool set_property (std::string name, std::string value);
       std::string get_property (std::string name);
     bool subscribe_property (std::string name,
-			     Property::Callback cb, void *user_data);
+                             Property::Callback cb, void *user_data);
     bool unsubscribe_property (std::string name,
-			       Property::Callback cb, void *user_data);
+                               Property::Callback cb, void *user_data);
     bool has_property (std::string property_name);
       Property::ptr get_property_ptr (std::string property_name);
 
@@ -85,10 +85,10 @@ namespace switcher
       std::string get_method_description (std::string method_name);
       std::string get_methods_description ();
     bool invoke_method (const std::string function_name,
-			std::string ** return_value,
-			const std::vector < std::string > args);
-    int method_get_num_value_args (std::string function_name);	//returns -1 if method not found
-    int method_get_num_pointer_args (std::string function_name);	//returns -1 if method not found
+                        std::string ** return_value,
+                        const std::vector < std::string > args);
+    int method_get_num_value_args (std::string function_name);  //returns -1 if method not found
+    int method_get_num_pointer_args (std::string function_name);        //returns -1 if method not found
     bool has_method (const std::string method_name);
       Method::ptr get_method_ptr (std::string method_name);
 
@@ -96,12 +96,12 @@ namespace switcher
       std::string get_signals_description ();
       std::string get_signal_description (std::string signal_name);
     bool subscribe_signal (std::string name,
-			   Signal::OnEmittedCallback cb, void *user_data);
+                           Signal::OnEmittedCallback cb, void *user_data);
     bool unsubscribe_signal (std::string name,
-			     Signal::OnEmittedCallback cb, void *user_data);
+                             Signal::OnEmittedCallback cb, void *user_data);
     bool emit_action (const std::string signal_name,
-		      std::string ** return_value,
-		      const std::vector < std::string > args);
+                      std::string ** return_value,
+                      const std::vector < std::string > args);
 
     //information
       std::string get_info (const std::string & path);
@@ -120,7 +120,7 @@ namespace switcher
 
     //manager_impl  initialization
     void set_manager_impl (std::shared_ptr < QuiddityManager_Impl >
-			   manager_impl);
+                           manager_impl);
 
   private:
     //information tree
@@ -154,76 +154,76 @@ namespace switcher
 
     //property
     bool register_property (GObject * object,
-			    GParamSpec * pspec,
-			    std::string name_to_give,
-			    std::string long_name,
-			    std::string signal_to_emit);
+                            GParamSpec * pspec,
+                            std::string name_to_give,
+                            std::string long_name,
+                            std::string signal_to_emit);
 
     //method
     bool register_method (std::string method_name,
-			  Method::method_ptr method,
-			  Method::return_type return_type,
-			  Method::args_types arg_types, gpointer user_data);
+                          Method::method_ptr method,
+                          Method::return_type return_type,
+                          Method::args_types arg_types, gpointer user_data);
 
     bool set_method_description (const std::string long_name,
-				 const std::string method_name,
-				 const std::string short_description,
-				 const std::string return_description,
-				 const Method::args_doc arg_description);
+                                 const std::string method_name,
+                                 const std::string short_description,
+                                 const std::string return_description,
+                                 const Method::args_doc arg_description);
 
     //category and positions
     bool put_method_in_category (std::string method, std::string category);
     bool set_method_position_weight (std::string method, int position_weight);
     bool put_property_in_category (std::string property,
-				   std::string category);
+                                   std::string category);
     bool set_property_position_weight (std::string property,
-				       int position_weight);
+                                       int position_weight);
 
     //signals
-    bool register_signal_gobject (const std::string signal_name,	//the name to give
-				  GObject * object, const std::string gobject_signal_name);	//the internal gobject signal name
+    bool register_signal_gobject (const std::string signal_name,        //the name to give
+                                  GObject * object, const std::string gobject_signal_name);     //the internal gobject signal name
 
     //allows for creation of signals in a parent class (like segment)
-    bool make_custom_signal_with_class_name (const std::string class_name,	//quiddity class name that is making the signal
-					     const std::string signal_name,	//the name to give
-					     GType return_type, guint n_params,	//number of params
-					     GType * param_types);
+    bool make_custom_signal_with_class_name (const std::string class_name,      //quiddity class name that is making the signal
+                                             const std::string signal_name,     //the name to give
+                                             GType return_type, guint n_params, //number of params
+                                             GType * param_types);
 
     bool set_signal_description (const std::string long_name,
-				 const std::string signal_name,
-				 const std::string short_description,
-				 const std::string return_description,
-				 const Signal::args_doc arg_description);
+                                 const std::string signal_name,
+                                 const std::string short_description,
+                                 const std::string return_description,
+                                 const Signal::args_doc arg_description);
 
     //allows for creation of signals in a parent class
     // FIXME the actual method signature in the quiddity should start with a unused void *, such as:
     // static gchar *my_signal_action (void *, gchar *first_arg, void *user_data);
-    bool register_signal_action_with_class_name (const std::string class_name, const std::string method_name,	//the name to give
-						 void *method, GType return_type, guint n_params,	//number of params
-						 GType * param_types,
-						 void *user_data);
-    bool register_signal_action (const std::string method_name,	//the name to give
-				 void *method, GType return_type, guint n_params,	//number of params
-				 GType * param_types, void *user_data);
+    bool register_signal_action_with_class_name (const std::string class_name, const std::string method_name,   //the name to give
+                                                 void *method, GType return_type, guint n_params,       //number of params
+                                                 GType * param_types,
+                                                 void *user_data);
+    bool register_signal_action (const std::string method_name, //the name to give
+                                 void *method, GType return_type, guint n_params,       //number of params
+                                 GType * param_types, void *user_data);
 
   protected:
     //information
       bool graft_tree (const std::string & path,
-		       data::Tree::ptr tree_to_graft);
+                       data::Tree::ptr tree_to_graft);
       data::Tree::ptr prune_tree (const std::string & path);
 
     //property
     bool install_property (GObject * object,
-			   std::string gobject_property_name,
-			   std::string name_to_give, std::string long_name);
+                           std::string gobject_property_name,
+                           std::string name_to_give, std::string long_name);
     bool reinstall_property (GObject * replacement_object,
-			     std::string gobject_property_name,
-			     std::string name, std::string long_name);
+                             std::string gobject_property_name,
+                             std::string name, std::string long_name);
 
     bool install_property_by_pspec (GObject * object,
-				    GParamSpec * pspec,
-				    std::string name_to_give,
-				    std::string long_name);
+                                    GParamSpec * pspec,
+                                    std::string name_to_give,
+                                    std::string long_name);
     bool uninstall_property (std::string name);
     //properties are enabled by default during installation
     bool disable_property (std::string name);
@@ -231,13 +231,13 @@ namespace switcher
 
     //methods
     bool install_method (const std::string long_name,
-			 const std::string method_name,
-			 const std::string short_description,
-			 const std::string return_description,
-			 const Method::args_doc arg_description,
-			 Method::method_ptr method,
-			 Method::return_type return_type,
-			 Method::args_types arg_types, gpointer user_data);
+                         const std::string method_name,
+                         const std::string short_description,
+                         const std::string return_description,
+                         const Method::args_doc arg_description,
+                         Method::method_ptr method,
+                         Method::return_type return_type,
+                         Method::args_types arg_types, gpointer user_data);
 
     bool uninstall_method (std::string name);
     bool disable_method (std::string name);
@@ -245,24 +245,24 @@ namespace switcher
 
     //signals 
     bool install_signal (const std::string long_name,
-			 const std::string signal_name,
-			 const std::string short_description,
-			 const Signal::args_doc arg_description,
-			 guint number_of_params, GType * param_types);
+                         const std::string signal_name,
+                         const std::string short_description,
+                         const Signal::args_doc arg_description,
+                         guint number_of_params, GType * param_types);
 
     bool install_signal_with_class_name (const std::string class_name,
-					 const std::string long_name,
-					 const std::string signal_name,
-					 const std::string short_description,
-					 const Signal::
-					 args_doc arg_description,
-					 guint number_of_params,
-					 GType * param_types);
+                                         const std::string long_name,
+                                         const std::string signal_name,
+                                         const std::string short_description,
+                                         const Signal::args_doc
+                                         arg_description,
+                                         guint number_of_params,
+                                         GType * param_types);
 
     void signal_emit (const std::string signal_name, ...);
 
     //custom signals
-    void emit_on_interface_changed ();	//in order to tell properties/methods has changed
+    void emit_on_interface_changed ();  //in order to tell properties/methods has changed
 
     //use a consistent naming for shmdatas FIXME move that to segment (or not?) 
       std::string make_file_name (std::string suffix);
@@ -311,6 +311,6 @@ namespace switcher
     return cpp_quiddity_class::switcher_doc_;\
   }
 
-}				// end of namespace
+}                               // end of namespace
 
 #endif // ifndef

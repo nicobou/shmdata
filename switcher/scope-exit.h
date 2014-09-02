@@ -50,7 +50,7 @@ namespace scope_guard
     return ScopeGuard < Fun > (std::forward < Fun > (fn));
   }
 
-}				// end namespace scope_guard
+}                               // end namespace scope_guard
 
 #define CONCATENATE_IMPL(s1, s2) s1##s2
 #define CONCATENATE(s1, s2) CONCATENATE_IMPL(s1, s2)

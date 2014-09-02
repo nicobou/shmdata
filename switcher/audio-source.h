@@ -47,6 +47,6 @@ namespace switcher
     void unset_raw_audio_element ();
   };
 
-}				// end of namespace
+}                               // end of namespace
 
 #endif // ifndef

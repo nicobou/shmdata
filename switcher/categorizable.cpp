@@ -54,7 +54,7 @@ namespace switcher
 
   bool
     Categorizable::compare_ptr (Categorizable::ptr first,
-				Categorizable::ptr second)
+                                Categorizable::ptr second)
   {
     return first->position_weight_ < second->position_weight_;
   }

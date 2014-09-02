@@ -22,12 +22,12 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (SoapCtrlClient,
-					"Switcher Web Client (SOAP)",
-					"control client",
-					"controling a switcher instance through SOAP webservices",
-					"GPL",
-					"SOAPcontrolClient",
-					"Nicolas Bouillot");
+                                        "Switcher Web Client (SOAP)",
+                                        "control client",
+                                        "controling a switcher instance through SOAP webservices",
+                                        "GPL",
+                                        "SOAPcontrolClient",
+                                        "Nicolas Bouillot");
 
   SoapCtrlClient::SoapCtrlClient ():switcher_control_ (nullptr),
     url_ (nullptr), try_connect_g_source_ (nullptr), try_connect_mutex_ ()
@@ -38,208 +38,208 @@ namespace switcher
   {
     switcher_control_ =
       new controlProxy (SOAP_IO_KEEPALIVE | SOAP_XML_INDENT);
-    switcher_control_->send_timeout = 1;	// 1 seconds
-    switcher_control_->recv_timeout = 1;	// 1 seconds
+    switcher_control_->send_timeout = 1;        // 1 seconds
+    switcher_control_->recv_timeout = 1;        // 1 seconds
     url_ = nullptr;
     switcher_control_->soap_endpoint = url_;
 
     install_method ("Set Remote Switcher",
-		    "set_remote_url",
-		    "set remote url to control (for instance http://localhost:8080)",
-		    "success or fail",
-		    Method::make_arg_description ("URL",
-						  "url",
-						  "SOAP url",
-						  nullptr),
-		    (Method::method_ptr) & set_remote_url,
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING,
-						       nullptr), this);
+                    "set_remote_url",
+                    "set remote url to control (for instance http://localhost:8080)",
+                    "success or fail",
+                    Method::make_arg_description ("URL",
+                                                  "url",
+                                                  "SOAP url",
+                                                  nullptr),
+                    (Method::method_ptr) & set_remote_url,
+                    G_TYPE_BOOLEAN,
+                    Method::make_arg_type_description (G_TYPE_STRING,
+                                                       nullptr), this);
 
     install_method ("Set Remote Switcher URL And Retry Until Success",
-		    "set_remote_url_retry",
-		    "connect remote url to control until success, each try being notified with the on_connection_tried",
-		    "periodic try has been instanciated",
-		    Method::make_arg_description ("URL",
-						  "url",
-						  "SOAP url",
-						  nullptr),
-		    (Method::method_ptr) & set_remote_url_retry,
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING,
-						       nullptr), this);
+                    "set_remote_url_retry",
+                    "connect remote url to control until success, each try being notified with the on_connection_tried",
+                    "periodic try has been instanciated",
+                    Method::make_arg_description ("URL",
+                                                  "url",
+                                                  "SOAP url",
+                                                  nullptr),
+                    (Method::method_ptr) & set_remote_url_retry,
+                    G_TYPE_BOOLEAN,
+                    Method::make_arg_type_description (G_TYPE_STRING,
+                                                       nullptr), this);
 
     GType connection_tried_type[] = { G_TYPE_STRING, G_TYPE_BOOLEAN };
     install_signal ("On Connection Tried",
-		    "on-connection-tried",
-		    "a connection has been tried",
-		    Signal::make_arg_description ("URL",
-						  "url",
-						  "the remote switcher URL (SOAP control server)",
-						  "Connected",
-						  "connected",
-						  "connection succeed",
-						  nullptr),
-		    2, connection_tried_type);
+                    "on-connection-tried",
+                    "a connection has been tried",
+                    Signal::make_arg_description ("URL",
+                                                  "url",
+                                                  "the remote switcher URL (SOAP control server)",
+                                                  "Connected",
+                                                  "connected",
+                                                  "connection succeed",
+                                                  nullptr),
+                    2, connection_tried_type);
 
     install_method ("Create",
-		    "create",
-		    "create a quiddity",
-		    "success or fail",
-		    Method::make_arg_description ("Quiddity Class Name",
-						  "class_name",
-						  "the class of the quiddity to create",
-						  "Quiddity Name",
-						  "quiddity_name",
-						  "the name to give",
-						  nullptr),
-		    (Method::method_ptr) & create,
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       nullptr), this);
+                    "create",
+                    "create a quiddity",
+                    "success or fail",
+                    Method::make_arg_description ("Quiddity Class Name",
+                                                  "class_name",
+                                                  "the class of the quiddity to create",
+                                                  "Quiddity Name",
+                                                  "quiddity_name",
+                                                  "the name to give",
+                                                  nullptr),
+                    (Method::method_ptr) & create,
+                    G_TYPE_BOOLEAN,
+                    Method::make_arg_type_description (G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       nullptr), this);
 
     install_method ("Remove",
-		    "remove",
-		    "remove a quiddity",
-		    "success or fail",
-		    Method::make_arg_description ("Quiddity Name",
-						  "quiddity_name",
-						  "name of quiddity to remove",
-						  nullptr),
-		    (Method::method_ptr) & remove,
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING,
-						       nullptr), this);
+                    "remove",
+                    "remove a quiddity",
+                    "success or fail",
+                    Method::make_arg_description ("Quiddity Name",
+                                                  "quiddity_name",
+                                                  "name of quiddity to remove",
+                                                  nullptr),
+                    (Method::method_ptr) & remove,
+                    G_TYPE_BOOLEAN,
+                    Method::make_arg_type_description (G_TYPE_STRING,
+                                                       nullptr), this);
 
     install_method ("Set Property",
-		    "set_property",
-		    "set a quiddity property",
-		    "success or fail",
-		    Method::make_arg_description ("Quiddity Name",
-						  "quiddity_name",
-						  "name of quiddity to remove",
-						  "Property Name",
-						  "property_name",
-						  "name of the property",
-						  "Property Value",
-						  "property_value",
-						  "value to set",
-						  nullptr),
-		    (Method::method_ptr) & set_property,
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       nullptr), this);
+                    "set_property",
+                    "set a quiddity property",
+                    "success or fail",
+                    Method::make_arg_description ("Quiddity Name",
+                                                  "quiddity_name",
+                                                  "name of quiddity to remove",
+                                                  "Property Name",
+                                                  "property_name",
+                                                  "name of the property",
+                                                  "Property Value",
+                                                  "property_value",
+                                                  "value to set",
+                                                  nullptr),
+                    (Method::method_ptr) & set_property,
+                    G_TYPE_BOOLEAN,
+                    Method::make_arg_type_description (G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       nullptr), this);
 
     install_method ("Invoke 1",
-		    "invoke1",
-		    "invoke a method with one argument",
-		    "success or fail",
-		    Method::make_arg_description ("Quiddity Name ",
-						  "quiddity_name",
-						  "name of quiddity to remove",
-						  "Method Name",
-						  "method_name",
-						  "name of the method",
-						  "First Argument",
-						  "arg1",
-						  "first argument",
-						  nullptr),
-		    (Method::method_ptr) & invoke1,
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       nullptr), this);
+                    "invoke1",
+                    "invoke a method with one argument",
+                    "success or fail",
+                    Method::make_arg_description ("Quiddity Name ",
+                                                  "quiddity_name",
+                                                  "name of quiddity to remove",
+                                                  "Method Name",
+                                                  "method_name",
+                                                  "name of the method",
+                                                  "First Argument",
+                                                  "arg1",
+                                                  "first argument",
+                                                  nullptr),
+                    (Method::method_ptr) & invoke1,
+                    G_TYPE_BOOLEAN,
+                    Method::make_arg_type_description (G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       nullptr), this);
 
     install_method ("Invoke 2",
-		    "invoke2",
-		    "invoke a method with two arguments",
-		    "success or fail",
-		    Method::make_arg_description ("quiddity Name",
-						  "quiddity_name",
-						  "name of quiddity to remove",
-						  "Method Name",
-						  "method_name",
-						  "name of the method",
-						  "First Argument",
-						  "arg1",
-						  "first argument",
-						  "Second Argument",
-						  "arg2",
-						  "second argument",
-						  nullptr),
-		    (Method::method_ptr) & invoke2,
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       nullptr), this);
+                    "invoke2",
+                    "invoke a method with two arguments",
+                    "success or fail",
+                    Method::make_arg_description ("quiddity Name",
+                                                  "quiddity_name",
+                                                  "name of quiddity to remove",
+                                                  "Method Name",
+                                                  "method_name",
+                                                  "name of the method",
+                                                  "First Argument",
+                                                  "arg1",
+                                                  "first argument",
+                                                  "Second Argument",
+                                                  "arg2",
+                                                  "second argument",
+                                                  nullptr),
+                    (Method::method_ptr) & invoke2,
+                    G_TYPE_BOOLEAN,
+                    Method::make_arg_type_description (G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       nullptr), this);
 
     install_method ("Invoke 3",
-		    "invoke3",
-		    "invoke a method with three arguments",
-		    "success or fail",
-		    Method::make_arg_description ("quiddity Name",
-						  "quiddity_name",
-						  "name of quiddity to remove",
-						  "Method Name",
-						  "method_name",
-						  "name of the method",
-						  "First Argument",
-						  "arg1",
-						  "first argument",
-						  "Second Argument",
-						  "arg2",
-						  "second argument",
-						  "Third Argument",
-						  "arg3",
-						  "third argument",
-						  nullptr),
-		    (Method::method_ptr) & invoke3,
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       nullptr), this);
+                    "invoke3",
+                    "invoke a method with three arguments",
+                    "success or fail",
+                    Method::make_arg_description ("quiddity Name",
+                                                  "quiddity_name",
+                                                  "name of quiddity to remove",
+                                                  "Method Name",
+                                                  "method_name",
+                                                  "name of the method",
+                                                  "First Argument",
+                                                  "arg1",
+                                                  "first argument",
+                                                  "Second Argument",
+                                                  "arg2",
+                                                  "second argument",
+                                                  "Third Argument",
+                                                  "arg3",
+                                                  "third argument",
+                                                  nullptr),
+                    (Method::method_ptr) & invoke3,
+                    G_TYPE_BOOLEAN,
+                    Method::make_arg_type_description (G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       nullptr), this);
 
     install_method ("Invoke 4",
-		    "invoke4",
-		    "invoke a method with four arguments",
-		    "success or fail",
-		    Method::make_arg_description ("quiddity Name",
-						  "quiddity_name",
-						  "name of quiddity to remove",
-						  "Method Name",
-						  "method_name",
-						  "name of the method",
-						  "First Argument",
-						  "arg1",
-						  "first argument",
-						  "Second Argument",
-						  "arg2",
-						  "second argument",
-						  "Third Argument",
-						  "arg3",
-						  "third argument",
-						  "Fourth Argument",
-						  "arg4",
-						  "fourth argument",
-						  nullptr),
-		    (Method::method_ptr) & invoke4,
-		    G_TYPE_BOOLEAN,
-		    Method::make_arg_type_description (G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       G_TYPE_STRING,
-						       nullptr), this);
+                    "invoke4",
+                    "invoke a method with four arguments",
+                    "success or fail",
+                    Method::make_arg_description ("quiddity Name",
+                                                  "quiddity_name",
+                                                  "name of quiddity to remove",
+                                                  "Method Name",
+                                                  "method_name",
+                                                  "name of the method",
+                                                  "First Argument",
+                                                  "arg1",
+                                                  "first argument",
+                                                  "Second Argument",
+                                                  "arg2",
+                                                  "second argument",
+                                                  "Third Argument",
+                                                  "arg3",
+                                                  "third argument",
+                                                  "Fourth Argument",
+                                                  "arg4",
+                                                  "fourth argument",
+                                                  nullptr),
+                    (Method::method_ptr) & invoke4,
+                    G_TYPE_BOOLEAN,
+                    Method::make_arg_type_description (G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       nullptr), this);
     return true;
   }
 
@@ -256,10 +256,10 @@ namespace switcher
     if (url_ != nullptr)
       g_free (url_);
     if (nullptr != try_connect_g_source_
-	&& !g_source_is_destroyed (try_connect_g_source_))
+        && !g_source_is_destroyed (try_connect_g_source_))
       {
-	g_source_destroy (try_connect_g_source_);
-	try_connect_g_source_ = nullptr;
+        g_source_destroy (try_connect_g_source_);
+        try_connect_g_source_ = nullptr;
       }
   }
 
@@ -275,11 +275,11 @@ namespace switcher
 
     if (context->switcher_control_->error)
       {
-	g_warning
-	  ("SoapCtrlClient::set_remote_url, url not valid or not responding");
-	g_free (context->url_);
-	context->url_ = nullptr;
-	return FALSE;
+        g_warning
+          ("SoapCtrlClient::set_remote_url, url not valid or not responding");
+        g_free (context->url_);
+        context->url_ = nullptr;
+        return FALSE;
       }
     return TRUE;
   }
@@ -293,12 +293,11 @@ namespace switcher
     context->switcher_control_->soap_endpoint = context->url_;
     if (TRUE == context->try_connect (context))
       {
-	context->try_connect_g_source_ = GstUtils::g_timeout_add_to_context (2000,	//must be higher than gsoap timeouts
-									     try_connect,
-									     context,
-									     context->
-									     get_g_main_context
-									     ());
+        context->try_connect_g_source_ = GstUtils::g_timeout_add_to_context (2000,      //must be higher than gsoap timeouts
+                                                                             try_connect,
+                                                                             context,
+                                                                             context->get_g_main_context
+                                                                             ());
       }
     return TRUE;
   }
@@ -316,10 +315,10 @@ namespace switcher
 
     if (context->switcher_control_->error)
       {
-	g_debug ("SoapCtrlClient::try_connect (%s) failled, will retry",
-		 context->url_);
-	context->signal_emit ("on-connection-tried", context->url_, FALSE);
-	return TRUE;
+        g_debug ("SoapCtrlClient::try_connect (%s) failled, will retry",
+                 context->url_);
+        context->signal_emit ("on-connection-tried", context->url_, FALSE);
+        return TRUE;
       }
     context->signal_emit ("on-connection-tried", context->url_, TRUE);
     return FALSE;
@@ -327,19 +326,20 @@ namespace switcher
 
   gboolean
     SoapCtrlClient::create (gpointer class_name,
-			    gpointer quiddity_name, gpointer user_data)
+                            gpointer quiddity_name, gpointer user_data)
   {
     SoapCtrlClient *context = static_cast < SoapCtrlClient * >(user_data);
     if (context->url_ == nullptr)
       return FALSE;
     std::string name;
-    context->switcher_control_->
-      create_named_quiddity ((const char *) class_name,
-			     (const char *) quiddity_name, &name);
+    context->
+      switcher_control_->create_named_quiddity ((const char *) class_name,
+                                                (const char *) quiddity_name,
+                                                &name);
     if (g_strcmp0 ((gchar *) quiddity_name, name.c_str ()) != 0)
       {
-	context->switcher_control_->delete_quiddity (name.c_str ());
-	return FALSE;
+        context->switcher_control_->delete_quiddity (name.c_str ());
+        return FALSE;
       }
     return TRUE;
   }
@@ -357,17 +357,17 @@ namespace switcher
 
   gboolean
     SoapCtrlClient::set_property (gpointer quiddity_name,
-				  gpointer property_name,
-				  gpointer value, gpointer user_data)
+                                  gpointer property_name,
+                                  gpointer value, gpointer user_data)
   {
     SoapCtrlClient *context = static_cast < SoapCtrlClient * >(user_data);
     if (context->url_ == nullptr)
       return FALSE;
     context->switcher_control_->send_set_property ((gchar *) quiddity_name,
-						   (gchar *) property_name,
-						   (gchar *) value);
+                                                   (gchar *) property_name,
+                                                   (gchar *) value);
     if (context->switcher_control_->recv_set_property_empty_response ())
-      return FALSE;		//context->switcher_control_->soap_print_fault(stderr);
+      return FALSE;             //context->switcher_control_->soap_print_fault(stderr);
 
     // connection should not be kept alive after the last call: be nice to the server and tell it that we close the connection after this call
     soap_clr_omode ((context->switcher_control_), SOAP_IO_KEEPALIVE);
@@ -377,8 +377,8 @@ namespace switcher
 
   gboolean
     SoapCtrlClient::invoke1 (gpointer quiddity_name,
-			     gpointer method_name,
-			     gpointer arg1, gpointer user_data)
+                             gpointer method_name,
+                             gpointer arg1, gpointer user_data)
   {
     SoapCtrlClient *context = static_cast < SoapCtrlClient * >(user_data);
     if (context->url_ == nullptr)
@@ -388,15 +388,15 @@ namespace switcher
     args.push_back ((char *) arg1);
     std::string result;
     context->switcher_control_->invoke_method ((gchar *) quiddity_name,
-					       (gchar *) method_name,
-					       args, &result);
+                                               (gchar *) method_name,
+                                               args, &result);
     return TRUE;
   }
 
   gboolean
     SoapCtrlClient::invoke2 (gpointer quiddity_name,
-			     gpointer method_name,
-			     gpointer arg1, gpointer arg2, gpointer user_data)
+                             gpointer method_name,
+                             gpointer arg1, gpointer arg2, gpointer user_data)
   {
     SoapCtrlClient *context = static_cast < SoapCtrlClient * >(user_data);
     if (context->url_ == nullptr)
@@ -407,16 +407,16 @@ namespace switcher
     args.push_back ((char *) arg2);
     std::string result;
     context->switcher_control_->invoke_method ((gchar *) quiddity_name,
-					       (gchar *) method_name,
-					       args, &result);
+                                               (gchar *) method_name,
+                                               args, &result);
     return TRUE;
   }
 
   gboolean
     SoapCtrlClient::invoke3 (gpointer quiddity_name,
-			     gpointer method_name,
-			     gpointer arg1,
-			     gpointer arg2, gpointer arg3, gpointer user_data)
+                             gpointer method_name,
+                             gpointer arg1,
+                             gpointer arg2, gpointer arg3, gpointer user_data)
   {
     SoapCtrlClient *context = static_cast < SoapCtrlClient * >(user_data);
     if (context->url_ == nullptr)
@@ -428,17 +428,17 @@ namespace switcher
     args.push_back ((char *) arg3);
     std::string result;
     context->switcher_control_->invoke_method ((gchar *) quiddity_name,
-					       (gchar *) method_name,
-					       args, &result);
+                                               (gchar *) method_name,
+                                               args, &result);
     return TRUE;
   }
 
   gboolean
     SoapCtrlClient::invoke4 (gpointer quiddity_name,
-			     gpointer method_name,
-			     gpointer arg1,
-			     gpointer arg2,
-			     gpointer arg3, gpointer arg4, gpointer user_data)
+                             gpointer method_name,
+                             gpointer arg1,
+                             gpointer arg2,
+                             gpointer arg3, gpointer arg4, gpointer user_data)
   {
     SoapCtrlClient *context = static_cast < SoapCtrlClient * >(user_data);
     if (context->url_ == nullptr)
@@ -451,8 +451,8 @@ namespace switcher
     args.push_back ((char *) arg4);
     std::string result;
     context->switcher_control_->invoke_method ((gchar *) quiddity_name,
-					       (gchar *) method_name,
-					       args, &result);
+                                               (gchar *) method_name,
+                                               args, &result);
     return TRUE;
   }
 }

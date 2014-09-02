@@ -49,31 +49,29 @@ namespace switcher
 
   static void
     my_object_set_property (GObject * gobject,
-			    guint prop_id,
-			    const GValue * value, GParamSpec * pspec)
+                            guint prop_id,
+                            const GValue * value, GParamSpec * pspec)
   {
     MyObject *myobj = (MyObject *) gobject;
     GObjectWrapper *context =
       static_cast < GObjectWrapper * >(myobj->context);
     (*context->get_set_method_pointer (prop_id)) (value,
-						  context->
-						  property_get_user_data
-						  (g_param_spec_get_nick
-						   (pspec)));
+                                                  context->property_get_user_data
+                                                  (g_param_spec_get_nick
+                                                   (pspec)));
   }
 
   static void
     my_object_get_property (GObject * gobject,
-			    guint prop_id, GValue * value, GParamSpec * pspec)
+                            guint prop_id, GValue * value, GParamSpec * pspec)
   {
     MyObject *myobj = (MyObject *) gobject;
     GObjectWrapper *context =
       static_cast < GObjectWrapper * >(myobj->context);
     (*context->get_get_method_pointer (prop_id)) (value,
-						  context->
-						  property_get_user_data
-						  (g_param_spec_get_nick
-						   (pspec)));
+                                                  context->property_get_user_data
+                                                  (g_param_spec_get_nick
+                                                   (pspec)));
   }
 
   static void my_object_class_init (MyObjectClass * klass)
@@ -108,7 +106,7 @@ namespace switcher
 
   bool
     GObjectWrapper::notify_property_changed (GObject * object,
-					     GParamSpec * pspec)
+                                             GParamSpec * pspec)
   {
     if (!G_IS_OBJECT (object))
       return false;
@@ -118,24 +116,22 @@ namespace switcher
 
   void
     GObjectWrapper::property_set_user_data (std::string nickname,
-					    void *user_data)
+                                            void *user_data)
   {
     property_user_datas_[nickname] = user_data;
   }
 
   //set_method and get_method must be static
   GParamSpec *GObjectWrapper::make_int_property (const gchar * nickname,
-						 const gchar * description,
-						 gint min_value,
-						 gint max_value,
-						 gint default_value,
-						 GParamFlags read_write_flags,
-						 GObjectCustomProperty::
-						 set_method_pointer
-						 set_method,
-						 GObjectCustomProperty::
-						 get_method_pointer
-						 get_method)
+                                                 const gchar * description,
+                                                 gint min_value,
+                                                 gint max_value,
+                                                 gint default_value,
+                                                 GParamFlags read_write_flags,
+                                                 GObjectCustomProperty::set_method_pointer
+                                                 set_method,
+                                                 GObjectCustomProperty::get_method_pointer
+                                                 get_method)
   {
     guint prop_id = next_prop_id_;
     next_prop_id_++;
@@ -144,12 +140,12 @@ namespace switcher
     g_debug ("custom property internal name %s", name);
 
     GParamSpec *param = g_param_spec_int (name,
-					  nickname,
-					  description,
-					  min_value,
-					  max_value,
-					  default_value,
-					  read_write_flags);
+                                          nickname,
+                                          description,
+                                          min_value,
+                                          max_value,
+                                          default_value,
+                                          read_write_flags);
 
     GObjectCustomProperty::ptr property =
       GObjectCustomProperty::make_custom_property (set_method, get_method);
@@ -160,24 +156,22 @@ namespace switcher
     MyObject *obj =
       (MyObject *) g_object_new (my_object_get_type (), nullptr);
     g_object_class_install_property (G_OBJECT_GET_CLASS (obj), prop_id,
-				     param);
+                                     param);
     g_object_unref (obj);
     return param;
   }
 
   GParamSpec *GObjectWrapper::make_double_property (const gchar * nickname,
-						    const gchar * description,
-						    gdouble min_value,
-						    gdouble max_value,
-						    gdouble default_value,
-						    GParamFlags
-						    read_write_flags,
-						    GObjectCustomProperty::
-						    set_method_pointer
-						    set_method,
-						    GObjectCustomProperty::
-						    get_method_pointer
-						    get_method)
+                                                    const gchar * description,
+                                                    gdouble min_value,
+                                                    gdouble max_value,
+                                                    gdouble default_value,
+                                                    GParamFlags
+                                                    read_write_flags,
+                                                    GObjectCustomProperty::set_method_pointer
+                                                    set_method,
+                                                    GObjectCustomProperty::get_method_pointer
+                                                    get_method)
   {
     guint prop_id = next_prop_id_;
     next_prop_id_++;
@@ -186,12 +180,12 @@ namespace switcher
     g_debug ("custom property internal name %s", name);
 
     GParamSpec *param = g_param_spec_double (name,
-					     nickname,
-					     description,
-					     min_value,
-					     max_value,
-					     default_value,
-					     read_write_flags);
+                                             nickname,
+                                             description,
+                                             min_value,
+                                             max_value,
+                                             default_value,
+                                             read_write_flags);
 
     GObjectCustomProperty::ptr property =
       GObjectCustomProperty::make_custom_property (set_method, get_method);
@@ -202,24 +196,22 @@ namespace switcher
     MyObject *obj =
       (MyObject *) g_object_new (my_object_get_type (), nullptr);
     g_object_class_install_property (G_OBJECT_GET_CLASS (obj), prop_id,
-				     param);
+                                     param);
     g_object_unref (obj);
     return param;
   }
 
   //set_method and get_method must be static
   GParamSpec *GObjectWrapper::make_string_property (const gchar * nickname,
-						    const gchar * description,
-						    const gchar *
-						    default_value,
-						    GParamFlags
-						    read_write_flags,
-						    GObjectCustomProperty::
-						    set_method_pointer
-						    set_method,
-						    GObjectCustomProperty::
-						    get_method_pointer
-						    get_method)
+                                                    const gchar * description,
+                                                    const gchar *
+                                                    default_value,
+                                                    GParamFlags
+                                                    read_write_flags,
+                                                    GObjectCustomProperty::set_method_pointer
+                                                    set_method,
+                                                    GObjectCustomProperty::get_method_pointer
+                                                    get_method)
   {
     guint prop_id = next_prop_id_;
     next_prop_id_++;
@@ -227,10 +219,10 @@ namespace switcher
     gchar *name = g_strdup_printf ("customprop%d", prop_id);
 
     GParamSpec *param = g_param_spec_string (name,
-					     nickname,
-					     description,
-					     default_value,
-					     read_write_flags);
+                                             nickname,
+                                             description,
+                                             default_value,
+                                             read_write_flags);
 
     GObjectCustomProperty::ptr property =
       GObjectCustomProperty::make_custom_property (set_method, get_method);
@@ -241,24 +233,22 @@ namespace switcher
     MyObject *obj =
       (MyObject *) g_object_new (my_object_get_type (), nullptr);
     g_object_class_install_property (G_OBJECT_GET_CLASS (obj), prop_id,
-				     param);
+                                     param);
     g_object_unref (obj);
     return param;
   }
 
   GParamSpec *GObjectWrapper::make_enum_property (const gchar * nickname,
-						  const gchar * description,
-						  const gint default_value,
-						  const GEnumValue *
-						  custom_enum,
-						  GParamFlags
-						  read_write_flags,
-						  GObjectCustomProperty::
-						  set_method_pointer
-						  set_method,
-						  GObjectCustomProperty::
-						  get_method_pointer
-						  get_method)
+                                                  const gchar * description,
+                                                  const gint default_value,
+                                                  const GEnumValue *
+                                                  custom_enum,
+                                                  GParamFlags
+                                                  read_write_flags,
+                                                  GObjectCustomProperty::set_method_pointer
+                                                  set_method,
+                                                  GObjectCustomProperty::get_method_pointer
+                                                  get_method)
   {
     guint prop_id = next_prop_id_;
     next_prop_id_++;
@@ -284,12 +274,12 @@ namespace switcher
     GType gtype = g_enum_register_static (name, custom_enum);
 
     GParamSpec *param = g_param_spec_enum (name,
-					   nickname,
-					   description,
-					   gtype,
-					   default_value,
-					   (GParamFlags) (read_write_flags	// | G_PARAM_STATIC_STRINGS
-					   ));
+                                           nickname,
+                                           description,
+                                           gtype,
+                                           default_value,
+                                           (GParamFlags) (read_write_flags      // | G_PARAM_STATIC_STRINGS
+                                           ));
 
     GObjectCustomProperty::ptr property =
       GObjectCustomProperty::make_custom_property (set_method, get_method);
@@ -300,24 +290,22 @@ namespace switcher
     MyObject *obj =
       (MyObject *) g_object_new (my_object_get_type (), nullptr);
     g_object_class_install_property (G_OBJECT_GET_CLASS (obj), prop_id,
-				     param);
+                                     param);
     g_object_unref (obj);
     return param;
   }
 
   //set_method and get_method must be static
   GParamSpec *GObjectWrapper::make_boolean_property (const gchar * nickname,
-						     const gchar *
-						     description,
-						     gboolean default_value,
-						     GParamFlags
-						     read_write_flags,
-						     GObjectCustomProperty::
-						     set_method_pointer
-						     set_method,
-						     GObjectCustomProperty::
-						     get_method_pointer
-						     get_method)
+                                                     const gchar *
+                                                     description,
+                                                     gboolean default_value,
+                                                     GParamFlags
+                                                     read_write_flags,
+                                                     GObjectCustomProperty::set_method_pointer
+                                                     set_method,
+                                                     GObjectCustomProperty::get_method_pointer
+                                                     get_method)
   {
     guint prop_id = next_prop_id_;
     next_prop_id_++;
@@ -326,10 +314,10 @@ namespace switcher
     g_debug ("custom property internal name %s", name);
 
     GParamSpec *param = g_param_spec_boolean (name,
-					      nickname,
-					      description,
-					      default_value,
-					      read_write_flags);
+                                              nickname,
+                                              description,
+                                              default_value,
+                                              read_write_flags);
 
     GObjectCustomProperty::ptr property =
       GObjectCustomProperty::make_custom_property (set_method, get_method);
@@ -340,14 +328,14 @@ namespace switcher
     MyObject *obj =
       (MyObject *) g_object_new (my_object_get_type (), nullptr);
     g_object_class_install_property (G_OBJECT_GET_CLASS (obj), prop_id,
-				     param);
+                                     param);
     g_object_unref (obj);
     return param;
   }
 
   guint
     GObjectWrapper::make_signal (GType return_type,
-				 guint n_params, GType * param_types)
+                                 guint n_params, GType * param_types)
   {
     guint sig_id = next_signal_num_;
     next_signal_num_++;
@@ -357,16 +345,16 @@ namespace switcher
     MyObject *obj =
       (MyObject *) g_object_new (my_object_get_type (), nullptr);
     guint signal_id = g_signal_newv (name,
-				     G_TYPE_FROM_CLASS (G_OBJECT_GET_CLASS
-							(obj)),
-				     G_SIGNAL_RUN_LAST,
-				     0,
-				     nullptr,	//GSignalAccumulator
-				     nullptr,	//gpointer accu_data
-				     nullptr,	//GSignalCMarshaller
-				     return_type,
-				     n_params,
-				     param_types);
+                                     G_TYPE_FROM_CLASS (G_OBJECT_GET_CLASS
+                                                        (obj)),
+                                     G_SIGNAL_RUN_LAST,
+                                     0,
+                                     nullptr,   //GSignalAccumulator
+                                     nullptr,   //gpointer accu_data
+                                     nullptr,   //GSignalCMarshaller
+                                     return_type,
+                                     n_params,
+                                     param_types);
     g_object_unref (obj);
 
     return signal_id;
@@ -374,8 +362,8 @@ namespace switcher
 
   guint
     GObjectWrapper::make_signal_action (GClosure * class_closure,
-					GType return_type,
-					guint n_params, GType * param_types)
+                                        GType return_type,
+                                        guint n_params, GType * param_types)
   {
     guint sig_id = next_signal_num_;
     next_signal_num_++;
@@ -385,17 +373,17 @@ namespace switcher
     MyObject *obj =
       (MyObject *) g_object_new (my_object_get_type (), nullptr);
     guint signal_id = g_signal_newv (name,
-				     G_TYPE_FROM_CLASS (G_OBJECT_GET_CLASS
-							(obj)),
-				     (GSignalFlags) (G_SIGNAL_RUN_LAST |
-						     G_SIGNAL_ACTION),
-				     class_closure,
-				     nullptr,	//GSignalAccumulator
-				     nullptr,	//gpointer accu_data
-				     nullptr,	//GSignalCMarshaller
-				     return_type,
-				     n_params,
-				     param_types);
+                                     G_TYPE_FROM_CLASS (G_OBJECT_GET_CLASS
+                                                        (obj)),
+                                     (GSignalFlags) (G_SIGNAL_RUN_LAST |
+                                                     G_SIGNAL_ACTION),
+                                     class_closure,
+                                     nullptr,   //GSignalAccumulator
+                                     nullptr,   //gpointer accu_data
+                                     nullptr,   //GSignalCMarshaller
+                                     return_type,
+                                     n_params,
+                                     param_types);
     g_object_unref (obj);
 
     // GObjectCustomSignal::ptr signal =  

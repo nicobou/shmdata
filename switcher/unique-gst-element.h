@@ -45,7 +45,7 @@ namespace switcher
       template < typename Return_type >
       Return_type
       invoke_with_return (std::function < Return_type (GstElement *) >
-			  command)
+                          command)
     {
       return command (element_.get ());
     }
@@ -58,6 +58,6 @@ namespace switcher
     gst_element_handle element_;
   };
 
-}				// end of namespace
+}                               // end of namespace
 
 #endif // ifndef

@@ -55,7 +55,7 @@ namespace switcher
     //std::map<std::string, T> keep_ref_count_;
   };
 
-}				// end of namespace
+}                               // end of namespace
 
   //including the actual code here
 #include "hash-table_spec.h"

@@ -45,5 +45,5 @@ namespace switcher
     std::chrono::time_point < Clock_type > start_;
   };
 
-}				// end of namespace
+}                               // end of namespace
 #endif // ifndef

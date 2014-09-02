@@ -32,19 +32,19 @@ namespace switcher
   {
   for (auto & it:ports_)
       {
-	QuiddityManager::ptr manager = it.second;
+        QuiddityManager::ptr manager = it.second;
 //cleaning rtp
-	std::vector < std::string > arg;
-	arg.push_back (host_name_);
-	arg.push_back (it.first);
-	manager->invoke ("udpsend_rtp", "remove_client", nullptr, arg);
+        std::vector < std::string > arg;
+        arg.push_back (host_name_);
+        arg.push_back (it.first);
+        manager->invoke ("udpsend_rtp", "remove_client", nullptr, arg);
 //cleaning rtcp
-	arg.clear ();
-	arg.push_back (host_name_);
-	std::ostringstream rtcp_port;
-	rtcp_port << atoi (it.first.c_str ()) + 1;
-	arg.push_back (rtcp_port.str ());
-	manager->invoke ("udpsend_rtp", "remove_client", nullptr, arg);
+        arg.clear ();
+        arg.push_back (host_name_);
+        std::ostringstream rtcp_port;
+        rtcp_port << atoi (it.first.c_str ()) + 1;
+        arg.push_back (rtcp_port.str ());
+        manager->invoke ("udpsend_rtp", "remove_client", nullptr, arg);
 //TODO remove connection to funnel
       }
   }
@@ -76,8 +76,8 @@ namespace switcher
 
   bool
     RtpDestination::add_stream (std::string orig_shmdata_path,
-				QuiddityManager::ptr manager,
-				std::string port)
+                                QuiddityManager::ptr manager,
+                                std::string port)
   {
     ports_[port] = manager;
     source_streams_[orig_shmdata_path] = port;
@@ -100,9 +100,9 @@ namespace switcher
     auto it = source_streams_.find (shmdata_stream_path);
     if (source_streams_.end () == it)
       {
-	g_warning ("RtpDestination: stream not found, cannot remove %s",
-		   shmdata_stream_path.c_str ());
-	return false;
+        g_warning ("RtpDestination: stream not found, cannot remove %s",
+                   shmdata_stream_path.c_str ());
+        return false;
       }
     ports_.erase (it->second);
     source_streams_.erase (it);
@@ -116,18 +116,18 @@ namespace switcher
 
   for (auto & it:ports_)
       {
-	std::string string_caps =
-	  (it.second)->get_property ("udpsend_rtp", "caps");
-	GstCaps *caps = gst_caps_from_string (string_caps.c_str ());
-	gint port = atoi (it.first.c_str ());
-	SDPMedia media;
-	media.set_media_info_from_caps (caps);
-	media.set_port (port);
+        std::string string_caps =
+          (it.second)->get_property ("udpsend_rtp", "caps");
+        GstCaps *caps = gst_caps_from_string (string_caps.c_str ());
+        gint port = atoi (it.first.c_str ());
+        SDPMedia media;
+        media.set_media_info_from_caps (caps);
+        media.set_port (port);
 
-	if (!desc.add_media (media))
-	  g_warning ("a media has not been added to the SDP description");
+        if (!desc.add_media (media))
+          g_warning ("a media has not been added to the SDP description");
 
-	gst_caps_unref (caps);
+        gst_caps_unref (caps);
       }
 
     return desc.get_string ();
@@ -143,10 +143,10 @@ namespace switcher
     json_description_->begin_array ();
   for (auto & it:source_streams_)
       {
-	json_description_->begin_object ();
-	json_description_->add_string_member ("path", it.first.c_str ());
-	json_description_->add_string_member ("port", it.second.c_str ());
-	json_description_->end_object ();
+        json_description_->begin_object ();
+        json_description_->add_string_member ("path", it.first.c_str ());
+        json_description_->add_string_member ("port", it.second.c_str ());
+        json_description_->end_object ();
       }
     json_description_->end_array ();
     json_description_->end_object ();

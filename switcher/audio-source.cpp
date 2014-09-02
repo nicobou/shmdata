@@ -43,8 +43,8 @@ namespace switcher
     gst_bin_add (GST_BIN (bin_), rawaudio_);
     gst_element_link (rawaudio_, audio_tee_);
     GstCaps *audiocaps = gst_caps_new_simple ("audio/x-raw-int",
-					      "width", G_TYPE_INT, 16,
-					      nullptr);
+                                              "width", G_TYPE_INT, 16,
+                                              nullptr);
     //creating a connector for raw audio
     ShmdataWriter::ptr shmdata_writer;
     shmdata_writer.reset (new ShmdataWriter ());

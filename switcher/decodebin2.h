@@ -47,9 +47,9 @@ namespace switcher
     };
 
     static void make_decodebin_active (ShmdataReader * caller,
-				       void *decodebin2_instance);
+                                       void *decodebin2_instance);
   };
 
-}				// end of namespace
+}                               // end of namespace
 
 #endif // ifndef

@@ -43,7 +43,7 @@ namespace switcher
   {
   public:
     typedef void (*on_pm_event_method) (PmEvent * midi_event,
-					void *user_data);
+                                        void *user_data);
       PortMidi ();
       virtual ~ PortMidi ();
       PortMidi (const PortMidi &) = delete;
@@ -58,7 +58,7 @@ namespace switcher
     //input
     int get_default_input_device_id ();
     bool open_input_device (int id, on_pm_event_method method,
-			    void *user_data);
+                            void *user_data);
     bool close_input_device (int id);
     //bool is_queue_empty(int id);
       std::vector < unsigned char >poll (int id);
@@ -68,7 +68,7 @@ namespace switcher
     bool open_output_device (int id);
     bool close_output_device (int id);
     bool push_midi_message (int id, unsigned char status, unsigned char data1,
-			    unsigned char data2);
+                            unsigned char data2);
 
   private:
       gchar * devices_description_;
@@ -80,38 +80,38 @@ namespace switcher
     void update_device_enum ();
 
     //internal midi scheduler
-    class PortMidiScheduler	//singleton
+    class PortMidiScheduler     //singleton
     {
     public:
       PortMidiScheduler ();
       ~PortMidiScheduler ();
       PmStream *add_input_stream (int id, on_pm_event_method method,
-				  void *user_data);
+                                  void *user_data);
       bool remove_input_stream (PmStream * stream);
 
       PmStream *add_output_stream (int id);
       bool remove_output_stream (PmStream * stream);
       bool push_message (PmStream * stream, unsigned char status,
-			 unsigned char data1, unsigned char data2);
+                         unsigned char data1, unsigned char data2);
 
     private:
         std::mutex streams_mutex_;
         std::mutex finalize_mutex_;
       gboolean finalizing_;
         std::map < PmStream *, std::pair < on_pm_event_method,
-	void *>>input_callbacks_;
+        void *>>input_callbacks_;
         std::map < PmStream *, std::queue < PmEvent > *>output_queues_;
       bool portmidi_initialized_;
       bool app_sysex_in_progress_;
       bool thru_sysex_in_progress_;
 
       static void process_midi (PtTimestamp timestamp, void *userData);
-    };				//end of PortMidiScheduler
+    };                          //end of PortMidiScheduler
 
     static PortMidiScheduler *scheduler_;
     static guint instance_counter_;
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

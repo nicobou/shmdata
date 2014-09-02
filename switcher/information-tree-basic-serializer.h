@@ -48,7 +48,7 @@ namespace switcher
 
     };
 
-  }				// end of "data" namespace 
-}				// end of "switcher" namespace
+  }                             // end of "data" namespace 
+}                               // end of "switcher" namespace
 
-#endif				// ifndef
+#endif                          // ifndef

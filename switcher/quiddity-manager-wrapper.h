@@ -36,6 +36,6 @@ namespace switcher
       std::weak_ptr < QuiddityManager > manager_;
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

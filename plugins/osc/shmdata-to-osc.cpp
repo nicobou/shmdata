@@ -23,10 +23,10 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (ShmdataToOsc,
-					"shmdata to OSC messages (default to localhost:1056)",
-					"osc sink",
-					"OSCprop reveives OSC messages and updates associated property",
-					"LGPL", "shmOSC", "Nicolas Bouillot");
+                                        "shmdata to OSC messages (default to localhost:1056)",
+                                        "osc sink",
+                                        "OSCprop reveives OSC messages and updates associated property",
+                                        "LGPL", "shmOSC", "Nicolas Bouillot");
 
   ShmdataToOsc::ShmdataToOsc ():custom_props_ (new CustomPropertyHelper ()),
     port_ (1056),
@@ -41,27 +41,27 @@ namespace switcher
     init_startable (this);
     init_segment (this);
 
-    install_connect_method (std::bind (&ShmdataToOsc::connect, this, std::placeholders::_1), nullptr, nullptr, std::bind (&ShmdataToOsc::can_sink_caps, this, std::placeholders::_1), 1);	//could be more but should be tested
+    install_connect_method (std::bind (&ShmdataToOsc::connect, this, std::placeholders::_1), nullptr, nullptr, std::bind (&ShmdataToOsc::can_sink_caps, this, std::placeholders::_1), 1);       //could be more but should be tested
 
     port_spec_ =
       custom_props_->make_int_property ("Port",
-					"OSC destination port",
-					1,
-					65536,
-					port_,
-					(GParamFlags) G_PARAM_READWRITE,
-					set_port, get_port, this);
+                                        "OSC destination port",
+                                        1,
+                                        65536,
+                                        port_,
+                                        (GParamFlags) G_PARAM_READWRITE,
+                                        set_port, get_port, this);
     install_property_by_pspec (custom_props_->get_gobject (),
-			       port_spec_, "port", "Port");
+                               port_spec_, "port", "Port");
     host_spec_ =
       custom_props_->make_string_property ("host",
-					   "destination host",
-					   host_.c_str (),
-					   (GParamFlags) G_PARAM_READWRITE,
-					   ShmdataToOsc::set_host,
-					   ShmdataToOsc::get_host, this);
+                                           "destination host",
+                                           host_.c_str (),
+                                           (GParamFlags) G_PARAM_READWRITE,
+                                           ShmdataToOsc::set_host,
+                                           ShmdataToOsc::get_host, this);
     install_property_by_pspec (custom_props_->get_gobject (),
-			       host_spec_, "host", "Destination Host");
+                               host_spec_, "host", "Destination Host");
     return true;
   }
 
@@ -93,7 +93,7 @@ namespace switcher
     {
       std::unique_lock < std::mutex > lock (address_mutex_);
       address_ = lo_address_new (host_.c_str (),
-				 std::to_string (port_).c_str ());
+                                 std::to_string (port_).c_str ());
     }
     if (nullptr == address_)
       return false;
@@ -104,9 +104,9 @@ namespace switcher
   {
     if (nullptr != address_)
       {
-	std::unique_lock < std::mutex > lock (address_mutex_);
-	lo_address_free (address_);
-	address_ = nullptr;
+        std::unique_lock < std::mutex > lock (address_mutex_);
+        lo_address_free (address_);
+        address_ = nullptr;
       }
     return true;
   }
@@ -134,12 +134,12 @@ namespace switcher
     reader->set_data_type ("application/x-libloserialized-osc");
     reader->set_path (path);
     reader->set_callback (std::bind (&ShmdataToOsc::on_shmreader_data,
-				     this,
-				     std::placeholders::_1,
-				     std::placeholders::_2,
-				     std::placeholders::_3,
-				     std::placeholders::_4,
-				     std::placeholders::_5), NULL);
+                                     this,
+                                     std::placeholders::_1,
+                                     std::placeholders::_2,
+                                     std::placeholders::_3,
+                                     std::placeholders::_4,
+                                     std::placeholders::_5), NULL);
     reader->start ();
     register_shmdata (reader);
     return true;
@@ -147,22 +147,22 @@ namespace switcher
 
   void
     ShmdataToOsc::on_shmreader_data (void *data,
-				     int data_size,
-				     unsigned long long timestamp,
-				     const char *type_description,
-				     void *user_data)
+                                     int data_size,
+                                     unsigned long long timestamp,
+                                     const char *type_description,
+                                     void *user_data)
   {
     const char *path = lo_get_path (data, data_size);
     lo_message msg = lo_message_deserialise (data,
-					     data_size,
-					     nullptr);	//error code
+                                             data_size,
+                                             nullptr);  //error code
     if (nullptr != msg)
       {
-	std::unique_lock < std::mutex > lock (address_mutex_);
+        std::unique_lock < std::mutex > lock (address_mutex_);
 //lo_message_pp (msg);
-	if (nullptr != address_)
-	  lo_send_message (address_, path, msg);
-	lo_message_free (msg);
+        if (nullptr != address_)
+          lo_send_message (address_, path, msg);
+        lo_message_free (msg);
       }
   }
 
@@ -171,4 +171,4 @@ namespace switcher
     return 0 == caps.find ("application/x-libloserialized-osc");
   }
 
-}				//end of ShmdataToOsc class
+}                               //end of ShmdataToOsc class

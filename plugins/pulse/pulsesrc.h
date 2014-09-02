@@ -50,7 +50,7 @@ namespace switcher
       std::string sample_rate_;
       std::string channels_;
       std::vector < std::pair < std::string /*port */ ,
-	std::string /*description */  > >ports_;
+      std::string /*description */  > >ports_;
       std::string active_port_;
     } DeviceDescription;
 
@@ -62,8 +62,8 @@ namespace switcher
       std::condition_variable devices_cond_;
     //custom property:
       CustomPropertyHelper::ptr custom_props_;
-    GParamSpec *capture_devices_description_spec_;	//json formated
-    gchar *capture_devices_description_;	//json formated
+    GParamSpec *capture_devices_description_spec_;      //json formated
+    gchar *capture_devices_description_;        //json formated
     //device enum members
     GParamSpec *devices_enum_spec_;
     GEnumValue devices_enum_[128];
@@ -99,16 +99,16 @@ namespace switcher
 
     static void pa_context_state_callback (pa_context * c, void *userdata);
     static void get_source_info_callback (pa_context * c,
-					  const pa_source_info * i,
-					  int is_last, void *userdata);
+                                          const pa_source_info * i,
+                                          int is_last, void *userdata);
     static void on_pa_event_callback (pa_context * c,
-				      pa_subscription_event_type_t t,
-				      uint32_t idx, void *userdata);
+                                      pa_subscription_event_type_t t,
+                                      uint32_t idx, void *userdata);
     static gboolean quit_pulse (void *user_data);
   };
 
     SWITCHER_DECLARE_PLUGIN (PulseSrc);
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

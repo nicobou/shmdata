@@ -63,9 +63,9 @@ namespace switcher
       std::string bus_info_;
       std::string driver_;
       std::vector < std::pair < std::string /*name */ ,
-	std::string /*description */  > >pixel_formats_;
+      std::string /*description */  > >pixel_formats_;
       std::vector < std::pair < std::string /*width */ ,
-	std::string /*height */  > >frame_size_discrete_;
+      std::string /*height */  > >frame_size_discrete_;
       gint frame_size_stepwise_max_width_;
       gint frame_size_stepwise_min_width_;
       gint frame_size_stepwise_step_width_;
@@ -74,7 +74,7 @@ namespace switcher
       gint frame_size_stepwise_step_height_;
         std::vector < std::string > tv_standards_;
         std::vector < std::pair < std::string /*numerator */ ,
-	std::string /*denominator */  > >frame_interval_discrete_;
+        std::string /*denominator */  > >frame_interval_discrete_;
       gint frame_interval_stepwise_min_numerator_;
       gint frame_interval_stepwise_min_denominator_;
       gint frame_interval_stepwise_max_numerator_;
@@ -92,7 +92,7 @@ namespace switcher
     void update_tv_standard (CaptureDescription descr);
     void update_discrete_framerate (CaptureDescription cap_descr);
     void update_framerate_numerator_denominator (CaptureDescription
-						 cap_descr);
+                                                 cap_descr);
 
     /* static gboolean capture_full_wrapped (gpointer device_file_path,  */
     /*   gpointer width, */
@@ -107,14 +107,14 @@ namespace switcher
 
     static std::string pixel_format_to_string (unsigned pf_id);
     static bool inspect_frame_rate (const char *file_path,
-				    unsigned pixel_format,
-				    unsigned width, unsigned height);
+                                    unsigned pixel_format,
+                                    unsigned width, unsigned height);
     static const gchar *get_capture_devices_json (void *user_data);
 
     //custom properties:
       CustomPropertyHelper::ptr custom_props_;
-    GParamSpec *capture_devices_description_spec_;	//json formated
-    gchar *capture_devices_description_;	//json formated
+    GParamSpec *capture_devices_description_spec_;      //json formated
+    gchar *capture_devices_description_;        //json formated
 
     //device enum and select
     GParamSpec *devices_enum_spec_;
@@ -167,13 +167,13 @@ namespace switcher
     static void set_framerate_denominator (const gint value, void *user_data);
     static gint get_framerate_denominator (void *user_data);
 
-      std::vector < CaptureDescription > capture_devices_;	//FIXME should be static
+      std::vector < CaptureDescription > capture_devices_;      //FIXME should be static
 
     bool init_gpipe () final;
   };
 
     SWITCHER_DECLARE_PLUGIN (V4L2Src);
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

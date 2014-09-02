@@ -46,20 +46,20 @@ namespace switcher
     GstElement *sdpdemux_;
     void init_httpsdpdec ();
     void destroy_httpsdpdec ();
-    QuiddityCommand *on_error_command_;	//for the pipeline error handler
+    QuiddityCommand *on_error_command_; //for the pipeline error handler
       std::list < std::unique_ptr < DecodebinToShmdata >> decodebins_;
     void clean_on_error_command ();
     bool init_gpipe () final;
     static void httpsdpdec_pad_added_cb (GstElement * object,
-					 GstPad * pad, gpointer user_data);
+                                         GstPad * pad, gpointer user_data);
     static gboolean to_shmdata_wrapped (gpointer uri, gpointer user_data);
     static void source_setup_cb (GstElement * httpsdpdec,
-				 GstElement * source, gpointer user_data);
+                                 GstElement * source, gpointer user_data);
     static void on_new_element_in_sdpdemux (GstBin * bin,
-					    GstElement * element,
-					    gpointer user_data);
+                                            GstElement * element,
+                                            gpointer user_data);
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

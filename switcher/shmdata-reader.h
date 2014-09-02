@@ -38,7 +38,7 @@ namespace switcher
   public:
     typedef std::shared_ptr < ShmdataReader > ptr;
     typedef void (*on_first_data_hook) (ShmdataReader * caller,
-					void *user_data);
+                                        void *user_data);
 
       ShmdataReader ();
      ~ShmdataReader ();
@@ -69,15 +69,15 @@ namespace switcher
       std::mutex start_mutex_;
       std::condition_variable start_cond_;
     static void on_first_data (shmdata_base_reader_t * context,
-			       void *user_data);
+                               void *user_data);
     //static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
     static void unlink_pad (GstPad * pad);
     static void on_have_type (shmdata_base_reader_t * base_reader,
-			      GstCaps * caps, void *user_data);
+                              GstCaps * caps, void *user_data);
     void make_json_description ();
     static gboolean start_idle (void *user_data);
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

@@ -58,6 +58,6 @@ namespace switcher
 
   SWITCHER_DECLARE_PLUGIN (PostureDisplay);
 
-}				// end of namespace
+}                               // end of namespace
 
 #endif // ifndef

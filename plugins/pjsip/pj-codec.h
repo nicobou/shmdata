@@ -66,23 +66,23 @@ namespace switcher
     static alt_codec_factory_t alt_codec_factory;
     static pjmedia_codec_factory_op alt_codec_factory_op;
     static pj_status_t alt_codec_test_alloc (pjmedia_codec_factory * factory,
-					     const pjmedia_codec_info * id);
+                                             const pjmedia_codec_info * id);
     static pj_status_t alt_codec_default_attr (pjmedia_codec_factory *
-					       factory,
-					       const pjmedia_codec_info * id,
-					       pjmedia_codec_param * attr);
+                                               factory,
+                                               const pjmedia_codec_info * id,
+                                               pjmedia_codec_param * attr);
     static pj_status_t alt_codec_enum_codecs (pjmedia_codec_factory * factory,
-					      unsigned *count,
-					      pjmedia_codec_info codecs[]);
+                                              unsigned *count,
+                                              pjmedia_codec_info codecs[]);
     static pj_status_t alt_codec_alloc_codec (pjmedia_codec_factory * factory,
-					      const pjmedia_codec_info * id,
-					      pjmedia_codec ** p_codec);
+                                              const pjmedia_codec_info * id,
+                                              pjmedia_codec ** p_codec);
     static pj_status_t alt_codec_dealloc_codec (pjmedia_codec_factory *
-						factory,
-						pjmedia_codec * codec);
+                                                factory,
+                                                pjmedia_codec * codec);
     static pj_status_t alt_codec_deinit (void);
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

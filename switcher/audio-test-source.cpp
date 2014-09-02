@@ -24,11 +24,11 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (AudioTestSource,
-					"Audio Test",
-					"audio source",
-					"Creates audio test signals",
-					"LGPL",
-					"audiotestsrc", "Nicolas Bouillot");
+                                        "Audio Test",
+                                        "audio source",
+                                        "Creates audio test signals",
+                                        "LGPL",
+                                        "audiotestsrc", "Nicolas Bouillot");
 
   AudioTestSource::AudioTestSource ():audiotestsrc_ (nullptr)
   {
@@ -55,17 +55,17 @@ namespace switcher
 
     if (audiotestsrc_ != nullptr)
       {
-	GstUtils::apply_property_value (G_OBJECT (audiotestsrc_),
-					G_OBJECT (audiotest), "volume");
-	GstUtils::apply_property_value (G_OBJECT (audiotestsrc_),
-					G_OBJECT (audiotest), "freq");
-	GstUtils::apply_property_value (G_OBJECT (audiotestsrc_),
-					G_OBJECT (audiotest),
-					"samplesperbuffer");
-	GstUtils::apply_property_value (G_OBJECT (audiotestsrc_),
-					G_OBJECT (audiotest), "wave");
+        GstUtils::apply_property_value (G_OBJECT (audiotestsrc_),
+                                        G_OBJECT (audiotest), "volume");
+        GstUtils::apply_property_value (G_OBJECT (audiotestsrc_),
+                                        G_OBJECT (audiotest), "freq");
+        GstUtils::apply_property_value (G_OBJECT (audiotestsrc_),
+                                        G_OBJECT (audiotest),
+                                        "samplesperbuffer");
+        GstUtils::apply_property_value (G_OBJECT (audiotestsrc_),
+                                        G_OBJECT (audiotest), "wave");
 
-	GstUtils::clean_element (audiotestsrc_);
+        GstUtils::clean_element (audiotestsrc_);
       }
     else
       g_object_set (G_OBJECT (audiotest), "samplesperbuffer", 512, nullptr);
@@ -80,7 +80,7 @@ namespace switcher
     //        "samplesperbuffer", 
     //        "Samples Per Buffer");
     install_property (G_OBJECT (audiotestsrc_),
-		      "wave", "wave", "Signal Form");
+                      "wave", "wave", "Signal Form");
 
     return true;
   }

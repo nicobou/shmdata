@@ -44,6 +44,6 @@ namespace switcher
     static gboolean start_wrapped (gpointer name, gpointer user_data);
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

@@ -77,12 +77,12 @@ namespace switcher
     static gboolean get_codec_long_list (void *user_data);
     static void set_codec_long_list (gboolean mute, void *user_data);
     static gboolean sink_factory_filter (GstPluginFeature * feature,
-					 gpointer data);
+                                         gpointer data);
     static gint sink_compare_ranks (GstPluginFeature * f1,
-				    GstPluginFeature * f2);
+                                    GstPluginFeature * f2);
     static void print_list (gpointer data, gpointer user_data);
   };
 
-}				// end of namespace
+}                               // end of namespace
 
 #endif // ifndef

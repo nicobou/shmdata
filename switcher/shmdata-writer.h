@@ -39,8 +39,8 @@ namespace switcher
       ShmdataWriter (const ShmdataWriter &) = delete;
       ShmdataWriter & operator= (const ShmdataWriter &) = delete;
 
-    bool set_path (std::string name);	//path needs to be fully specified
-    bool set_path_without_deleting (std::string name);	//path needs to be fully specified
+    bool set_path (std::string name);   //path needs to be fully specified
+    bool set_path_without_deleting (std::string name);  //path needs to be fully specified
       std::string get_path ();
 
     //caps does not need to be fully specified:
@@ -78,10 +78,10 @@ namespace switcher
 
     void make_json_description ();
     static void on_handoff_cb (GstElement * object,
-			       GstBuffer * buf,
-			       GstPad * pad, gpointer user_data);
+                               GstBuffer * buf,
+                               GstPad * pad, gpointer user_data);
   };
 
-}				// end of namespace
+}                               // end of namespace
 
 #endif // ifndef

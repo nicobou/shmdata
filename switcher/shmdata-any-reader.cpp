@@ -37,7 +37,7 @@ namespace switcher
   {
     shmdata_any_reader_set_debug (reader_, SHMDATA_ENABLE_DEBUG);
     shmdata_any_reader_set_on_data_handler (reader_,
-					    ShmdataAnyReader::on_data, this);
+                                            ShmdataAnyReader::on_data, this);
     path_ = path;
     make_json_description ();
     return true;
@@ -88,21 +88,21 @@ namespace switcher
 
   void
     ShmdataAnyReader::on_data (shmdata_any_reader_t *,
-			       void *shmbuf,
-			       void *data,
-			       int data_size,
-			       unsigned long long timestamp,
-			       const char *type_description, void *user_data)
+                               void *shmbuf,
+                               void *data,
+                               int data_size,
+                               unsigned long long timestamp,
+                               const char *type_description, void *user_data)
   {
     ShmdataAnyReader *context = static_cast < ShmdataAnyReader * >(user_data);
     if (!context->is_caps_set_)
       {
-	context->set_negociated_caps (std::string (type_description));
-	context->is_caps_set_ = true;
+        context->set_negociated_caps (std::string (type_description));
+        context->is_caps_set_ = true;
       }
     if (nullptr != context->cb_ && !context->muted_)
       context->cb_ (data, data_size, timestamp, type_description,
-		    context->cb_user_data_);
+                    context->cb_user_data_);
     shmdata_any_reader_free (shmbuf);
   }
 
@@ -116,10 +116,10 @@ namespace switcher
   {
     if (absolute_timestamp)
       shmdata_any_reader_set_absolute_timestamp (reader_,
-						 SHMDATA_ENABLE_ABSOLUTE_TIMESTAMP);
+                                                 SHMDATA_ENABLE_ABSOLUTE_TIMESTAMP);
     else
       shmdata_any_reader_set_absolute_timestamp (reader_,
-						 SHMDATA_DISABLE_ABSOLUTE_TIMESTAMP);
+                                                 SHMDATA_DISABLE_ABSOLUTE_TIMESTAMP);
 
     return true;
   }

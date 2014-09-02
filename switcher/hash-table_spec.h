@@ -29,8 +29,8 @@ namespace switcher
 {
   template < typename T > HashTable < T >::HashTable ()
   {
-    table_ = g_hash_table_new_full ((GHashFunc) g_str_hash, (GEqualFunc) g_str_equal, (GDestroyNotify) g_free,	//freeing keys
-				    nullptr);	//not freeing values
+    table_ = g_hash_table_new_full ((GHashFunc) g_str_hash, (GEqualFunc) g_str_equal, (GDestroyNotify) g_free,  //freeing keys
+                                    nullptr);   //not freeing values
   }
 
   template < typename T > HashTable < T >::~HashTable ()
@@ -71,12 +71,12 @@ namespace switcher
   {
     gboolean res;
     gpointer value;
-    res = g_hash_table_lookup_extended (table_, (gconstpointer) key.c_str (), nullptr,	//origin key
-					&value);
+    res = g_hash_table_lookup_extended (table_, (gconstpointer) key.c_str (), nullptr,  //origin key
+                                        &value);
 
     if (res && value == nullptr)
       g_debug ("warning: key %s has been found with a nullptr value",
-	       key.c_str ());
+               key.c_str ());
 
     return (T *) value;
   }
@@ -89,8 +89,8 @@ namespace switcher
 
     while (list != nullptr)
       {
-	keys.push_back ((char *) list->data);
-	list = g_list_remove (list, list->data);
+        keys.push_back ((char *) list->data);
+        list = g_list_remove (list, list->data);
       }
 
     return keys;
@@ -103,8 +103,8 @@ namespace switcher
 
     while (list != nullptr)
       {
-	values.push_back ((T *) list->data);
-	list = g_list_remove (list, list->data);
+        values.push_back ((T *) list->data);
+        list = g_list_remove (list, list->data);
       }
     return values;
   }

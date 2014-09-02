@@ -45,6 +45,6 @@ namespace switcher
     bool init_gpipe () final;
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

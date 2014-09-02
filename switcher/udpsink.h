@@ -53,20 +53,20 @@ namespace switcher
     bool add_client (gchar * host, gint port);
     bool clear_clients ();
     static gboolean remove_client_wrapped (gpointer host,
-					   gint port, gpointer user_data);
+                                           gint port, gpointer user_data);
     static gboolean add_client_wrapped (gpointer host,
-					gint port, gpointer user_data);
+                                        gint port, gpointer user_data);
     static gboolean clear_wrapped (gpointer unused, gpointer user_data);
     static void on_client_added (GstElement * multiudpsink,
-				 gchar * host, gint port, gpointer user_data);
+                                 gchar * host, gint port, gpointer user_data);
     static void on_client_removed (GstElement * multiudpsink,
-				   gchar * host,
-				   gint port, gpointer user_data);
+                                   gchar * host,
+                                   gint port, gpointer user_data);
     static void add_elements_to_bin (ShmdataReader * caller,
-				     void *udpbin_instance);
+                                     void *udpbin_instance);
 
   };
 
-}				// end of namespace
+}                               // end of namespace
 
 #endif // ifndef

@@ -58,8 +58,8 @@ namespace switcher
     arg_description_ = source.arg_description_;
     if (closure_ != nullptr)
       {
-	g_closure_ref (source.closure_);
-	closure_ = source.closure_;
+        g_closure_ref (source.closure_);
+        closure_ = source.closure_;
       }
     return_type_ = source.return_type_;
     arg_types_ = source.arg_types_;
@@ -69,18 +69,18 @@ namespace switcher
 
   bool
     Method::set_method (method_ptr method,
-			return_type return_type,
-			args_types arg_types, gpointer user_data)
+                        return_type return_type,
+                        args_types arg_types, gpointer user_data)
   {
     if (arg_types.size () < 1)
       {
-	g_debug ("Method::set_method is called with empty arg_types");
-	return false;
+        g_debug ("Method::set_method is called with empty arg_types");
+        return false;
       }
     if (method == nullptr)
       {
-	g_debug ("Method::set_method is called with a nullptr function");
-	return false;
+        g_debug ("Method::set_method is called with a nullptr function");
+        return false;
       }
     closure_ =
       g_cclosure_new (G_CALLBACK (method), user_data, Method::destroy_data);
@@ -106,9 +106,9 @@ namespace switcher
 
     if (args.size () != num_of_value_args_ && arg_types_[0] != G_TYPE_NONE)
       {
-	g_warning
-	  ("Method::invoke number of arguments does not correspond to the size of argument types");
-	return false;
+        g_warning
+          ("Method::invoke number of arguments does not correspond to the size of argument types");
+        return false;
       }
 
     GValue params[arg_types_.size ()];
@@ -116,27 +116,27 @@ namespace switcher
     //with args
     if (arg_types_[0] != G_TYPE_NONE)
       for (gulong i = 0; i < num_of_value_args_; i++)
-	{
-	  params[i] = G_VALUE_INIT;
-	  g_value_init (&params[i], arg_types_[i]);
-	  if (!gst_value_deserialize (&params[i], args[i].c_str ()))
-	    {
-	      g_warning
-		("Method::invoke string not transformable into gvalue (argument: %s) ",
-		 args[i].c_str ());
-	      return false;
-	    }
-	}
+        {
+          params[i] = G_VALUE_INIT;
+          g_value_init (&params[i], arg_types_[i]);
+          if (!gst_value_deserialize (&params[i], args[i].c_str ()))
+            {
+              g_warning
+                ("Method::invoke string not transformable into gvalue (argument: %s) ",
+                 args[i].c_str ());
+              return false;
+            }
+        }
     else
       {
-	params[0] = G_VALUE_INIT;
-	g_value_init (&params[0], G_TYPE_STRING);
-	gst_value_deserialize (&params[0], "");
+        params[0] = G_VALUE_INIT;
+        g_value_init (&params[0], G_TYPE_STRING);
+        gst_value_deserialize (&params[0], "");
       }
 
     g_value_init (result_value, return_type_);
     g_closure_invoke (closure_, result_value, num_of_value_args_, params,
-		      nullptr);
+                      nullptr);
 
     for (guint i = 0; i < num_of_value_args_; i++)
       g_value_unset (&params[i]);
@@ -144,17 +144,17 @@ namespace switcher
   }
 
   void Method::destroy_data (gpointer /*data */ ,
-			     GClosure * /*closure */ )
+                             GClosure * /*closure */ )
   {
     //g_debug ("Method::destroy data");
   }
 
   void
     Method::set_description (std::string long_name,
-			     std::string method_name,
-			     std::string short_description,
-			     std::string return_description,
-			     args_doc arg_description)
+                             std::string method_name,
+                             std::string short_description,
+                             std::string return_description,
+                             args_doc arg_description)
   {
     long_name_ = long_name;
     method_name_ = method_name;
@@ -170,15 +170,15 @@ namespace switcher
     json_description_->add_string_member ("long name", long_name_.c_str ());
     json_description_->add_string_member ("name", method_name_.c_str ());
     json_description_->add_string_member ("description",
-					  short_description_.c_str ());
+                                          short_description_.c_str ());
     json_description_->add_string_member ("position category",
-					  get_category ().c_str ());
+                                          get_category ().c_str ());
     json_description_->add_int_member ("position weight",
-				       get_position_weight ());
+                                       get_position_weight ());
     json_description_->add_string_member ("return type",
-					  g_type_name (return_type_));
+                                          g_type_name (return_type_));
     json_description_->add_string_member ("return description",
-					  return_description_.c_str ());
+                                          return_description_.c_str ());
 
     json_description_->set_member_name ("arguments");
     json_description_->begin_array ();
@@ -186,22 +186,22 @@ namespace switcher
     int j = 0;
     if (!arg_description_.empty ())
       for (it = arg_description_.begin (); it != arg_description_.end ();
-	   it++)
-	{
-	  json_description_->begin_object ();
-	  json_description_->add_string_member ("long name",
-						std::get < 0 >
-						(*it).c_str ());
-	  json_description_->add_string_member ("name",
-						std::get < 1 >
-						(*it).c_str ());
-	  json_description_->add_string_member ("description",
-						std::get < 2 >
-						(*it).c_str ());
-	  json_description_->add_string_member ("type",
-						g_type_name (arg_types_[j]));
-	  json_description_->end_object ();
-	}
+           it++)
+        {
+          json_description_->begin_object ();
+          json_description_->add_string_member ("long name",
+                                                std::get < 0 >
+                                                (*it).c_str ());
+          json_description_->add_string_member ("name",
+                                                std::get < 1 >
+                                                (*it).c_str ());
+          json_description_->add_string_member ("description",
+                                                std::get < 2 >
+                                                (*it).c_str ());
+          json_description_->add_string_member ("type",
+                                                g_type_name (arg_types_[j]));
+          json_description_->end_object ();
+        }
     json_description_->end_array ();
     json_description_->end_object ();
 
@@ -245,27 +245,27 @@ namespace switcher
     char *arg_desc;
     va_start (vl, first_arg_long_name);
     if (g_strcmp0 (first_arg_long_name, "none") != 0
-	&& (arg_name = va_arg (vl, char *))
-	&& (arg_desc = va_arg (vl, char *)))
+        && (arg_name = va_arg (vl, char *))
+        && (arg_desc = va_arg (vl, char *)))
         res.push_back (std::make_tuple (first_arg_long_name,
-					arg_name, arg_desc));
+                                        arg_name, arg_desc));
     gboolean parsing = true;
     do
       {
-	arg_long_name = va_arg (vl, char *);
+        arg_long_name = va_arg (vl, char *);
 
-	if (arg_long_name != nullptr)
-	  {
-	    arg_name = va_arg (vl, char *);
-	    arg_desc = va_arg (vl, char *);
-	    if (arg_name != nullptr && arg_desc != nullptr)
-	      res.push_back (std::make_tuple (arg_long_name,
-					      arg_name, arg_desc));
-	    else
-	      parsing = false;
-	  }
-	else
-	  parsing = false;
+        if (arg_long_name != nullptr)
+          {
+            arg_name = va_arg (vl, char *);
+            arg_desc = va_arg (vl, char *);
+            if (arg_name != nullptr && arg_desc != nullptr)
+              res.push_back (std::make_tuple (arg_long_name,
+                                              arg_name, arg_desc));
+            else
+              parsing = false;
+          }
+        else
+          parsing = false;
       }
     while (parsing);
     va_end (vl);

@@ -24,10 +24,10 @@ namespace switcher
 {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (GstParseToBinSrc,
-					"GStreamer Pipeline",
-					"source",
-					"GStreamer (src) pipeline description to a *single* shmdata",
-					"LGPL", "gstsrc", "Nicolas Bouillot");
+                                        "GStreamer Pipeline",
+                                        "source",
+                                        "GStreamer (src) pipeline description to a *single* shmdata",
+                                        "LGPL", "gstsrc", "Nicolas Bouillot");
 
   GstParseToBinSrc::GstParseToBinSrc ():gst_parse_to_bin_src_ (nullptr),
     custom_props_ (new CustomPropertyHelper ()),
@@ -47,16 +47,15 @@ namespace switcher
     init_startable (this);
     gst_launch_pipeline_spec_ =
       custom_props_->make_string_property ("gst-pipeline",
-					   "GStreamer Launch Source Pipeline",
-					   "videotestsrc is-live=true",
-					   (GParamFlags) G_PARAM_READWRITE,
-					   GstParseToBinSrc::
-					   set_gst_launch_pipeline,
-					   GstParseToBinSrc::
-					   get_gst_launch_pipeline, this);
+                                           "GStreamer Launch Source Pipeline",
+                                           "videotestsrc is-live=true",
+                                           (GParamFlags) G_PARAM_READWRITE,
+                                           GstParseToBinSrc::set_gst_launch_pipeline,
+                                           GstParseToBinSrc::get_gst_launch_pipeline,
+                                           this);
     install_property_by_pspec (custom_props_->get_gobject (),
-			       gst_launch_pipeline_spec_, "gst-pipeline",
-			       "GStreamer Live Source Pipeline");
+                               gst_launch_pipeline_spec_, "gst-pipeline",
+                               "GStreamer Live Source Pipeline");
 
     return true;
   }
@@ -70,14 +69,14 @@ namespace switcher
 
     if (error != nullptr)
       {
-	g_debug ("%s", error->message);
-	g_error_free (error);
-	gst_parse_to_bin_src_ = nullptr;
-	return false;
+        g_debug ("%s", error->message);
+        g_error_free (error);
+        gst_parse_to_bin_src_ = nullptr;
+        return false;
       }
 
     g_object_set (G_OBJECT (gst_parse_to_bin_src_), "async-handling", TRUE,
-		  nullptr);
+                  nullptr);
     //GstUtils::wait_state_changed (bin_);
 
     GstPad *src_pad =
@@ -87,7 +86,7 @@ namespace switcher
     //make a shmwriter
     ShmdataWriter::ptr writer;
     writer.reset (new ShmdataWriter ());
-    writer->set_path (make_file_name ("gstsrc").c_str ());	//FIXME use caps name
+    writer->set_path (make_file_name ("gstsrc").c_str ());      //FIXME use caps name
     writer->plug (bin_, src_pad);
     register_shmdata (writer);
     gst_object_unref (src_pad);
@@ -97,13 +96,13 @@ namespace switcher
 
   void
     GstParseToBinSrc::set_gst_launch_pipeline (const gchar * value,
-					       void *user_data)
+                                               void *user_data)
   {
     GstParseToBinSrc *context = static_cast < GstParseToBinSrc * >(user_data);
     g_free (context->gst_launch_pipeline_);
     context->gst_launch_pipeline_ = g_strdup (value);
-    context->custom_props_->notify_property_changed (context->
-						     gst_launch_pipeline_spec_);
+    context->custom_props_->
+      notify_property_changed (context->gst_launch_pipeline_spec_);
   }
 
   const gchar *GstParseToBinSrc::get_gst_launch_pipeline (void *user_data)
@@ -115,7 +114,7 @@ namespace switcher
   bool GstParseToBinSrc::clean ()
   {
     clear_shmdatas ();
-    reset_bin ();		//bool res = unregister_shmdata (make_file_name ("video"));
+    reset_bin ();               //bool res = unregister_shmdata (make_file_name ("video"));
     return true;
   }
 
@@ -133,8 +132,8 @@ namespace switcher
     clean ();
     uninstall_property ("gst-pipeline");
     install_property_by_pspec (custom_props_->get_gobject (),
-			       gst_launch_pipeline_spec_,
-			       "gst-pipeline", "GStreamer Pipeline");
+                               gst_launch_pipeline_spec_,
+                               "gst-pipeline", "GStreamer Pipeline");
     return true;
   }
 

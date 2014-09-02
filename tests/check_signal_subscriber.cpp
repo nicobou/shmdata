@@ -26,10 +26,10 @@ static int signal_counter = 0;
 
 void
 quiddity_created_removed_cb (std::string /*subscriber_name */ ,
-			     std::string /*quiddity_name */ ,
-			     std::string signal_name,
-			     std::vector < std::string > params,
-			     void * /*user_data */ )
+                             std::string /*quiddity_name */ ,
+                             std::string signal_name,
+                             std::vector < std::string > params,
+                             void * /*user_data */ )
 {
   g_message ("%s: %s", signal_name.c_str (), params[0].c_str ());
   signal_counter++;
@@ -47,12 +47,12 @@ main ()
     //make on-quiddity-created and on-quiddity-removed signals
     manager->create ("create_remove_spy", "create_remove_spy");
     manager->make_signal_subscriber ("signal_subscriber",
-				     quiddity_created_removed_cb,
-				     manager.get ());
+                                     quiddity_created_removed_cb,
+                                     manager.get ());
     manager->subscribe_signal ("signal_subscriber", "create_remove_spy",
-			       "on-quiddity-created");
+                               "on-quiddity-created");
     manager->subscribe_signal ("signal_subscriber", "create_remove_spy",
-			       "on-quiddity-removed");
+                               "on-quiddity-removed");
 
     manager->create ("videotestsrc", "vid1");
     manager->create ("fakesink", "fake1");
@@ -71,22 +71,22 @@ main ()
     std::vector < std::string > subscribers =
       manager->list_signal_subscribers ();
     if (subscribers.size () != 1
-	|| g_strcmp0 (subscribers.at (0).c_str (), "signal_subscriber") != 0)
+        || g_strcmp0 (subscribers.at (0).c_str (), "signal_subscriber") != 0)
       {
-	g_warning ("pb with list_signal_subscribers");
-	return 1;
+        g_warning ("pb with list_signal_subscribers");
+        return 1;
       }
 
     std::vector < std::pair < std::string, std::string > >signals =
       manager->list_subscribed_signals ("signal_subscriber");
     if (signals.size () != 2
-	|| g_strcmp0 (signals.at (0).first.c_str (), "create_remove_spy")
-	|| g_strcmp0 (signals.at (0).second.c_str (), "on-quiddity-created")
-	|| g_strcmp0 (signals.at (1).first.c_str (), "create_remove_spy")
-	|| g_strcmp0 (signals.at (1).second.c_str (), "on-quiddity-removed"))
+        || g_strcmp0 (signals.at (0).first.c_str (), "create_remove_spy")
+        || g_strcmp0 (signals.at (0).second.c_str (), "on-quiddity-created")
+        || g_strcmp0 (signals.at (1).first.c_str (), "create_remove_spy")
+        || g_strcmp0 (signals.at (1).second.c_str (), "on-quiddity-removed"))
       {
-	g_warning ("pb with list_subscribed_signals");
-	return 1;
+        g_warning ("pb with list_subscribed_signals");
+        return 1;
       }
 
     manager->remove ("create_remove_spy");
@@ -94,8 +94,8 @@ main ()
     signals = manager->list_subscribed_signals ("signal_subscriber");
     if (signals.size () != 0)
       {
-	g_warning ("pb with automatic unsubscribe at quiddity removal");
-	return 1;
+        g_warning ("pb with automatic unsubscribe at quiddity removal");
+        return 1;
       }
     // manager->unsubscribe_signal ("signal_subscriber","create_remove_spy","on-quiddity-created");
     // manager->unsubscribe_signal ("signal_subscriber","create_remove_spy","on-quiddity-removed");
@@ -106,7 +106,7 @@ main ()
     // manager->unsubscribe_signal ("signal_subscriber","create_remove_spy","on-quiddity-removed");
   }
 
-  if (signal_counter == 4)	//4 creations has been asked
+  if (signal_counter == 4)      //4 creations has been asked
     success = true;
 
   if (success)

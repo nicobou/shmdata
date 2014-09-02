@@ -55,8 +55,8 @@ namespace switcher
 
     //methods
     static gboolean create_entry (const gchar * entry_name,
-				  const gchar * description,
-				  const gchar * long_name, void *user_data);
+                                  const gchar * description,
+                                  const gchar * long_name, void *user_data);
     static gboolean remove_entry (const gchar * entry_name, void *user_data);
     static gboolean save (gchar * file_path, void *user_data);
     static gboolean load (gchar * file_path, void *user_data);
@@ -64,6 +64,6 @@ namespace switcher
     gboolean save_file (const gchar * file_path);
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

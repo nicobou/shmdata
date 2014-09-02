@@ -19,16 +19,16 @@
 
 #include "switcher/quiddity-manager.h"
 #include <string>
-#include <unistd.h>		//sleep
+#include <unistd.h>             //sleep
 
 void
 property_cb (std::string subscriber_name,
-	     std::string quiddity_name,
-	     std::string property_name, std::string value, void *user_data)
+             std::string quiddity_name,
+             std::string property_name, std::string value, void *user_data)
 {
   g_debug ("%s %s %s %s\n",
-	   subscriber_name.c_str (),
-	   quiddity_name.c_str (), property_name.c_str (), value.c_str ());
+           subscriber_name.c_str (),
+           quiddity_name.c_str (), property_name.c_str (), value.c_str ());
 }
 
 int
@@ -46,10 +46,10 @@ main ()
     manager->create ("fakesink", "vu");
     manager->subscribe_property ("sub", "vu", "byte-rate");
     manager->invoke_va ("vu", "connect", nullptr,
-			"/tmp/switcher_check_fakesink_audio_audio", nullptr);
+                        "/tmp/switcher_check_fakesink_audio_audio", nullptr);
     manager->invoke_va ("vu", "disconnect-all", nullptr, nullptr);
     manager->invoke_va ("vu", "connect", nullptr,
-			"/tmp/switcher_check_fakesink_audio_audio", nullptr);
+                        "/tmp/switcher_check_fakesink_audio_audio", nullptr);
     manager->set_property ("audio", "started", "false");
     manager->remove ("vu");
     manager->set_property ("audio", "started", "true");
@@ -58,9 +58,9 @@ main ()
     manager->subscribe_property ("sub", "vu", "byte-rate");
     manager->invoke_va ("vu", "disconnect-all", nullptr, nullptr);
     manager->invoke_va ("vu", "connect", nullptr,
-			"/tmp/switcher_check_fakesink_audio_audio", nullptr);
+                        "/tmp/switcher_check_fakesink_audio_audio", nullptr);
     manager->remove ("vu");
-  }				// releasing manager
+  }                             // releasing manager
 
   //success
   return 0;

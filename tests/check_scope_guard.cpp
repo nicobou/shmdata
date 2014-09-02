@@ -29,13 +29,13 @@ main ()
     };
     On_scope_exit
     {
-    };				//ensuring multiple calls in the same scope
+    };                          //ensuring multiple calls in the same scope
   }
 
   On_scope_exit
   {
     counter = 3;
-  };				//should be assigned after "main"
+  };                            //should be assigned after "main"
 
   if (2 == counter)
     return 0;

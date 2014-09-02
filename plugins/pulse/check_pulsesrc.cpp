@@ -50,7 +50,7 @@ main ()
     if (!switcher::QuiddityBasicTest::test_full (manager, "pulsesink"))
       success = false;
 
-  }				//end of scope is releasing the manager
+  }                             //end of scope is releasing the manager
 
   if (success)
     return 0;

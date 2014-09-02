@@ -37,7 +37,7 @@ namespace switcher
       StartableQuiddity & operator= (const StartableQuiddity &) = delete;
 
   protected:
-    void init_startable (void *quiddity);	//FIXME should called quiddity-manager-impl 
+    void init_startable (void *quiddity);       //FIXME should called quiddity-manager-impl 
     bool is_started ();
     //find a way to avoid invoking init_startable (this) in quiddities (policies)
 
@@ -48,10 +48,10 @@ namespace switcher
     static void set_started (gboolean started, void *user_data);
 
     bool started_;
-    GParamSpec *started_prop_;	//FIXME should be static
+    GParamSpec *started_prop_;  //FIXME should be static
       CustomPropertyHelper::ptr startable_custom_props_;
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

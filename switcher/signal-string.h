@@ -38,7 +38,7 @@ namespace switcher
     //long name, name, description
     typedef std::vector < std::tuple < std::string, std::string,
       std::string > >args_doc;
-    typedef void (*OnEmittedCallback) (std::vector < std::string > params, gpointer user_data);	//FIXME params should be const
+    typedef void (*OnEmittedCallback) (std::vector < std::string > params, gpointer user_data); //FIXME params should be const
 
       Signal ();
      ~Signal ();
@@ -46,13 +46,13 @@ namespace switcher
       Signal & operator= (const Signal &) = delete;
 
     bool set_gobject_signame (GObject * object,
-			      std::string gobject_signal_name);
+                              std::string gobject_signal_name);
     bool set_gobject_sigid (GObject * object, guint gobject_signal_id);
     void set_description (std::string long_name,
-			  std::string signal_name,
-			  std::string short_description,
-			  std::string return_description,
-			  args_doc arg_description);
+                          std::string signal_name,
+                          std::string short_description,
+                          std::string return_description,
+                          args_doc arg_description);
       std::string get_description ();
 
     bool subscribe (OnEmittedCallback cb, void *user_data);
@@ -83,9 +83,9 @@ namespace switcher
       std::vector < std::pair < OnEmittedCallback,
       void *>>subscribed_on_emitted_callbacks_;
     static gboolean on_signal_emitted (GSignalInvocationHint * ihint,
-				       guint n_param_values,
-				       const GValue * param_values,
-				       gpointer user_data);
+                                       guint n_param_values,
+                                       const GValue * param_values,
+                                       gpointer user_data);
 
     /* static gboolean signal_emit_in_main_loop (gpointer user_data); */
     /* typedef struct { */
@@ -95,6 +95,6 @@ namespace switcher
     /* } EmitArgs; */
   };
 
-}				// end of namespace 
+}                               // end of namespace 
 
-#endif				// ifndef
+#endif                          // ifndef

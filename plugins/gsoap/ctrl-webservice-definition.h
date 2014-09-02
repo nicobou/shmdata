@@ -33,7 +33,7 @@ int switcher__get_classes_doc (std::string * result);
 
 //gsoap switcher service method-documentation: get available json doc *without* props and methods
 int switcher__get_quiddity_description (std::string quiddity_name,
-					std::string * result);
+                                        std::string * result);
 
 //gsoap switcher service method-documentation: get json formatted quiddities list with info
 int switcher__get_quiddities_description (std::string * result);
@@ -46,84 +46,84 @@ int switcher__get_quiddity_names (std::vector < std::string > *result);
 
 //gsoap switcher service method-documentation: get a json formated description of the properties  
 int switcher__get_properties_description (std::string quiddity_name,
-					  std::string * result);
+                                          std::string * result);
 
 //gsoap switcher service method-documentation: get a json formated description of the properties  
 int switcher__get_property_description (std::string quiddity_name,
-					std::string property_name,
-					std::string * result);
+                                        std::string property_name,
+                                        std::string * result);
 
 //gsoap switcher service method-documentation: get a json formated description of the properties  
 int switcher__get_properties_description_by_class (std::string class_name,
-						   std::string * result);
+                                                   std::string * result);
 
 //gsoap switcher service method-documentation: get a json formated description of the properties  
 int switcher__get_property_description_by_class (std::string class_name,
-						 std::string property_name,
-						 std::string * result);
+                                                 std::string property_name,
+                                                 std::string * result);
 
 //gsoap switcher service method-documentation: set a value of a property from an quiddity instance  
 int switcher__set_property (std::string quiddity_name,
-			    std::string property_name,
-			    std::string property_value, void);
+                            std::string property_name,
+                            std::string property_value, void);
 
 //gsoap switcher service method-documentation: get a value of a property from an quiddity instance  
 int switcher__get_property (std::string quiddity_name,
-			    std::string property_name, std::string * result);
+                            std::string property_name, std::string * result);
 
 //gsoap switcher service method-documentation: create an quiddity instance and return its name  
 int switcher__create_quiddity (std::string quiddity_class,
-			       std::string * result);
+                               std::string * result);
 
 //gsoap switcher service method-documentation: create an quiddity instance and return its name  
 int switcher__create_named_quiddity (std::string quiddity_class,
-				     std::string nick_name,
-				     std::string * result);
+                                     std::string nick_name,
+                                     std::string * result);
 
 //gsoap switcher service method-documentation: create an quiddity instance and return its name  
 int switcher__rename_quiddity (std::string nick_name,
-			       std::string new_nick_name,
-			       std::string * result);
+                               std::string new_nick_name,
+                               std::string * result);
 
 //gsoap switcher service method-documentation: create an quiddity instance and return its name  
 int switcher__delete_quiddity (std::string quiddity_name, void);
 
 //gsoap switcher service method-documentation: get a json formated description of methods   
 int switcher__get_methods_description (std::string quiddity_name,
-				       std::string * result);
+                                       std::string * result);
 
 //gsoap switcher service method-documentation: get a json formated description of the method
 int switcher__get_method_description (std::string quiddity_name,
-				      std::string method_name,
-				      std::string * result);
+                                      std::string method_name,
+                                      std::string * result);
 
 //gsoap switcher service method-documentation: get a json formated description of methods   
 int switcher__get_methods_description_by_class (std::string class_name,
-						std::string * result);
+                                                std::string * result);
 
 //gsoap switcher service method-documentation: get a json formated description of the method   
 int switcher__get_method_description_by_class (std::string class_name,
-					       std::string method_name,
-					       std::string * result);
+                                               std::string method_name,
+                                               std::string * result);
 
 //gsoap switcher service method-documentation: invoke a method of an quiddity   
 int switcher__invoke_method (std::string quiddity_name,
-			     std::string method_name,
-			     std::vector < std::string > args,
-			     std::string * result);
+                             std::string method_name,
+                             std::vector < std::string > args,
+                             std::string * result);
 
 //gsoap switcher service signal-documentation: get a json formated description of signals   
 int switcher__get_signals_description (std::string quiddity_name,
-				       std::string * result);
+                                       std::string * result);
 
 //gsoap switcher service signal-documentation: get a json formated description of the signal
 int switcher__get_signal_description (std::string quiddity_name,
-				      std::string signal_name,
-				      std::string * result);
+                                      std::string signal_name,
+                                      std::string * result);
 
 //gsoap switcher service signal-documentation: get a json formated description of signals   
 int switcher__get_signals_description_by_class (std::string class_name,
-						std::string * result);
+                                                std::string * result);
 
 //gsoap switcher service documentation: save history   
 int switcher__save (std::string file_name, std::string * result);
@@ -136,9 +136,9 @@ int switcher__run (std::string file_name, std::string * result);
 
 //gsoap switcher service signal-documentation: get a json formated description of the signal   
 int switcher__get_signal_description_by_class (std::string class_name,
-					       std::string signal_name,
-					       std::string * result);
+                                               std::string signal_name,
+                                               std::string * result);
 
 //gsoap switcher service method-documentation: get a json formated description of the properties  
 int switcher__get_information_tree (std::string quiddity_name,
-				    std::string path, std::string * result);
+                                    std::string path, std::string * result);

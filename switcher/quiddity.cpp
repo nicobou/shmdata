@@ -50,102 +50,74 @@ namespace switcher
 
     GType arg_type[] = { G_TYPE_STRING };
     install_signal_with_class_name ("Quiddity",
-				    "On New Property",
-				    "on-property-added",
-				    "A new property has been installed",
-				    Signal::
-				    make_arg_description ("Quiddity Name",
-							  "quiddity_name",
-							  "the quiddity name",
-							  "Property Name",
-							  "property_name",
-							  "the property name",
-							  nullptr), 1,
-				    arg_type);
+                                    "On New Property",
+                                    "on-property-added",
+                                    "A new property has been installed",
+                                    Signal::make_arg_description
+                                    ("Quiddity Name", "quiddity_name",
+                                     "the quiddity name", "Property Name",
+                                     "property_name", "the property name",
+                                     nullptr), 1, arg_type);
 
     install_signal_with_class_name ("Quiddity",
-				    "On Property Removed",
-				    "on-property-removed",
-				    "A properties has been uninstalled",
-				    Signal::
-				    make_arg_description ("Quiddity Name",
-							  "quiddity_name",
-							  "the quiddity name",
-							  "Property Name",
-							  "property_name",
-							  "the property name",
-							  nullptr), 1,
-				    arg_type);
+                                    "On Property Removed",
+                                    "on-property-removed",
+                                    "A properties has been uninstalled",
+                                    Signal::make_arg_description
+                                    ("Quiddity Name", "quiddity_name",
+                                     "the quiddity name", "Property Name",
+                                     "property_name", "the property name",
+                                     nullptr), 1, arg_type);
 
     install_signal_with_class_name ("Quiddity",
-				    "On Property reinstalled",
-				    "on-property-reinstalled",
-				    "A property has been reinstalled",
-				    Signal::
-				    make_arg_description ("Quiddity Name",
-							  "quiddity_name",
-							  "the quiddity name",
-							  "Property Name",
-							  "property_name",
-							  "the property name",
-							  nullptr), 1,
-				    arg_type);
+                                    "On Property reinstalled",
+                                    "on-property-reinstalled",
+                                    "A property has been reinstalled",
+                                    Signal::make_arg_description
+                                    ("Quiddity Name", "quiddity_name",
+                                     "the quiddity name", "Property Name",
+                                     "property_name", "the property name",
+                                     nullptr), 1, arg_type);
 
     install_signal_with_class_name ("Quiddity",
-				    "On New Method",
-				    "on-method-added",
-				    "A new method has been installed",
-				    Signal::
-				    make_arg_description ("Quiddity Name",
-							  "quiddity_name",
-							  "the quiddity name",
-							  "Method Name",
-							  "method_name",
-							  "the method name",
-							  nullptr), 1,
-				    arg_type);
+                                    "On New Method",
+                                    "on-method-added",
+                                    "A new method has been installed",
+                                    Signal::make_arg_description
+                                    ("Quiddity Name", "quiddity_name",
+                                     "the quiddity name", "Method Name",
+                                     "method_name", "the method name",
+                                     nullptr), 1, arg_type);
 
     install_signal_with_class_name ("Quiddity",
-				    "On Method Removed",
-				    "on-method-removed",
-				    "A method has been uninstalled",
-				    Signal::
-				    make_arg_description ("Quiddity Name",
-							  "quiddity_name",
-							  "the quiddity name",
-							  "Method Name",
-							  "method_name",
-							  "the method name",
-							  nullptr), 1,
-				    arg_type);
+                                    "On Method Removed",
+                                    "on-method-removed",
+                                    "A method has been uninstalled",
+                                    Signal::make_arg_description
+                                    ("Quiddity Name", "quiddity_name",
+                                     "the quiddity name", "Method Name",
+                                     "method_name", "the method name",
+                                     nullptr), 1, arg_type);
 
     install_signal_with_class_name ("Quiddity",
-				    "On Tree Grafted",
-				    "on-tree-grafted",
-				    "A tree has been grafted to the quiddity tree",
-				    Signal::
-				    make_arg_description ("Quiddity Name",
-							  "quiddity_name",
-							  "the quiddity name",
-							  "Branch Name",
-							  "branch_name",
-							  "the branch name",
-							  nullptr), 1,
-				    arg_type);
+                                    "On Tree Grafted",
+                                    "on-tree-grafted",
+                                    "A tree has been grafted to the quiddity tree",
+                                    Signal::make_arg_description
+                                    ("Quiddity Name", "quiddity_name",
+                                     "the quiddity name", "Branch Name",
+                                     "branch_name", "the branch name",
+                                     nullptr), 1, arg_type);
 
     install_signal_with_class_name ("Quiddity",
-				    "On Tree Pruned",
-				    "on-tree-pruned",
-				    "A tree has been pruned from the quiddity tree",
-				    Signal::
-				    make_arg_description ("Quiddity Name",
-							  "quiddity_name",
-							  "the quiddity name",
-							  "Branch Name",
-							  "branch_name",
-							  "the branch name",
-							  nullptr), 1,
-				    arg_type);
+                                    "On Tree Pruned",
+                                    "on-tree-pruned",
+                                    "A tree has been pruned from the quiddity tree",
+                                    Signal::make_arg_description
+                                    ("Quiddity Name", "quiddity_name",
+                                     "the quiddity name", "Branch Name",
+                                     "branch_name", "the branch name",
+                                     nullptr), 1, arg_type);
 
   }
 
@@ -179,15 +151,15 @@ namespace switcher
 
   bool
     Quiddity::register_signal_gobject (std::string signal_name,
-				       GObject * object,
-				       std::string gobject_signal_name)
+                                       GObject * object,
+                                       std::string gobject_signal_name)
   {
     if (signals_.find (signal_name) != signals_.end ())
       {
-	g_warning
-	  ("signals: a signal named %s has already been registered for this class",
-	   signal_name.c_str ());
-	return false;
+        g_warning
+          ("signals: a signal named %s has already been registered for this class",
+           signal_name.c_str ());
+        return false;
       }
 
     Signal::ptr signal;
@@ -196,25 +168,25 @@ namespace switcher
       return false;
     signals_[signal_name] = signal;
     g_debug ("signal %s registered with name %s",
-	     gobject_signal_name.c_str (), signal_name.c_str ());
+             gobject_signal_name.c_str (), signal_name.c_str ());
     return true;
   }
 
   bool
     Quiddity::install_signal (const std::string long_name,
-			      const std::string signal_name,
-			      const std::string short_description,
-			      const Signal::args_doc arg_description,
-			      guint number_of_params, GType * param_types)
+                              const std::string signal_name,
+                              const std::string short_description,
+                              const Signal::args_doc arg_description,
+                              guint number_of_params, GType * param_types)
   {
     if (!make_custom_signal_with_class_name
-	(get_documentation ().get_class_name (), signal_name, G_TYPE_NONE,
-	 number_of_params, param_types))
+        (get_documentation ().get_class_name (), signal_name, G_TYPE_NONE,
+         number_of_params, param_types))
       return false;
 
     if (!set_signal_description (long_name,
-				 signal_name,
-				 short_description, "n/a", arg_description))
+                                 signal_name,
+                                 short_description, "n/a", arg_description))
       return false;
 
     return true;
@@ -222,58 +194,58 @@ namespace switcher
 
   bool
     Quiddity::install_signal_with_class_name (const std::string class_name,
-					      const std::string long_name,
-					      const std::string signal_name,
-					      const std::
-					      string short_description,
-					      const Signal::
-					      args_doc arg_description,
-					      guint number_of_params,
-					      GType * param_types)
+                                              const std::string long_name,
+                                              const std::string signal_name,
+                                              const std::string
+                                              short_description,
+                                              const Signal::args_doc
+                                              arg_description,
+                                              guint number_of_params,
+                                              GType * param_types)
   {
     if (!make_custom_signal_with_class_name (class_name,
-					     signal_name,
-					     G_TYPE_NONE,
-					     number_of_params, param_types))
+                                             signal_name,
+                                             G_TYPE_NONE,
+                                             number_of_params, param_types))
       return false;
 
     if (!set_signal_description (long_name,
-				 signal_name,
-				 short_description, "n/a", arg_description))
+                                 signal_name,
+                                 short_description, "n/a", arg_description))
       return false;
 
     return true;
   }
 
-  bool Quiddity::make_custom_signal_with_class_name (const std::string class_name, const std::string signal_name,	//the name to give
-						     GType return_type, guint n_params,	//number of params
-						     GType * param_types)
+  bool Quiddity::make_custom_signal_with_class_name (const std::string class_name, const std::string signal_name,       //the name to give
+                                                     GType return_type, guint n_params, //number of params
+                                                     GType * param_types)
   {
     if (signals_.find (signal_name) != signals_.end ())
       {
 //g_debug ("signals: a signal named %s has already been registered for this class",signal_name.c_str());
-	return false;
+        return false;
       }
 
     std::pair < std::string, std::string > sig_pair =
       std::make_pair (class_name, signal_name);
     if (signals_ids_.find (sig_pair) == signals_ids_.end ())
       {
-	guint id = GObjectWrapper::make_signal (return_type,
-						n_params,
-						param_types);
-	if (id == 0)
-	  {
-	    g_warning ("custom signal %s not created because of a type issue",
-		       signal_name.c_str ());
-	    return false;
-	  }
-	signals_ids_[sig_pair] = id;
+        guint id = GObjectWrapper::make_signal (return_type,
+                                                n_params,
+                                                param_types);
+        if (id == 0)
+          {
+            g_warning ("custom signal %s not created because of a type issue",
+                       signal_name.c_str ());
+            return false;
+          }
+        signals_ids_[sig_pair] = id;
       }
 
     Signal::ptr signal (new Signal ());
-    if (!signal->
-	set_gobject_sigid (gobject_->get_gobject (), signals_ids_[sig_pair]))
+    if (!signal->set_gobject_sigid
+        (gobject_->get_gobject (), signals_ids_[sig_pair]))
       return false;
     signals_[signal_name] = signal;
     g_debug ("signal %s registered", signal_name.c_str ());
@@ -282,22 +254,22 @@ namespace switcher
 
   bool
     Quiddity::set_signal_description (const std::string long_name,
-				      const std::string signal_name,
-				      const std::string short_description,
-				      const std::string return_description,
-				      const Signal::args_doc arg_description)
+                                      const std::string signal_name,
+                                      const std::string short_description,
+                                      const std::string return_description,
+                                      const Signal::args_doc arg_description)
   {
 
     if (signals_.find (signal_name) == signals_.end ())
       {
-	g_warning ("cannot set description of a not existing signal");
-	return false;
+        g_warning ("cannot set description of a not existing signal");
+        return false;
       }
     signals_[signal_name]->set_description (long_name,
-					    signal_name,
-					    short_description,
-					    return_description,
-					    arg_description);
+                                            signal_name,
+                                            short_description,
+                                            return_description,
+                                            arg_description);
 
     // signal_emit ("on-new-signal-registered", 
     //  get_nick_name ().c_str (), 
@@ -308,16 +280,16 @@ namespace switcher
 
   bool
     Quiddity::register_property (GObject * object,
-				 GParamSpec * pspec,
-				 std::string name_to_give,
-				 std::string long_name,
-				 std::string signal_to_emit)
+                                 GParamSpec * pspec,
+                                 std::string name_to_give,
+                                 std::string long_name,
+                                 std::string signal_to_emit)
   {
     auto it = properties_.find (name_to_give);
     if (properties_.end () != it)
       {
-	g_debug ("registering name %s already exists", name_to_give.c_str ());
-	return false;
+        g_debug ("registering name %s already exists", name_to_give.c_str ());
+        return false;
       }
     Property::ptr prop (new Property ());
     prop->set_gobject_pspec (object, pspec);
@@ -333,13 +305,13 @@ namespace switcher
 
   bool
     Quiddity::install_property_by_pspec (GObject * object,
-					 GParamSpec * pspec,
-					 std::string name_to_give,
-					 std::string long_name)
+                                         GParamSpec * pspec,
+                                         std::string name_to_give,
+                                         std::string long_name)
   {
     return register_property (object,
-			      pspec,
-			      name_to_give, long_name, "on-property-added");
+                              pspec,
+                              name_to_give, long_name, "on-property-added");
   }
 
   Property::ptr Quiddity::get_property_ptr (std::string property_name)
@@ -348,7 +320,7 @@ namespace switcher
     if (properties_.end () != it)
       return it->second;
     g_debug ("Quiddity::get_property_ptr %s not found",
-	     property_name.c_str ());
+             property_name.c_str ());
     Property::ptr result;
     return result;
   }
@@ -363,23 +335,23 @@ namespace switcher
     return result;
   }
 
-  bool Quiddity::register_signal_action_with_class_name (const std::string class_name, const std::string method_name,	//the name to give
-							 void *method, GType return_type, guint n_params,	//number of params
-							 GType * param_types,
-							 void *user_data)
+  bool Quiddity::register_signal_action_with_class_name (const std::string class_name, const std::string method_name,   //the name to give
+                                                         void *method, GType return_type, guint n_params,       //number of params
+                                                         GType * param_types,
+                                                         void *user_data)
   {
     if (signals_.find (method_name) != signals_.end ())
       {
-	g_warning
-	  ("a custom method named %s has already been registered for this class",
-	   method_name.c_str ());
-	return false;
+        g_warning
+          ("a custom method named %s has already been registered for this class",
+           method_name.c_str ());
+        return false;
       }
     if (method == nullptr)
       {
-	g_warning ("cannot register a nullptr method (for %s)",
-		   method_name.c_str ());
-	return false;
+        g_warning ("cannot register a nullptr method (for %s)",
+                   method_name.c_str ());
+        return false;
       }
 
     std::pair < std::string, std::string > sig_pair =
@@ -389,43 +361,44 @@ namespace switcher
     //using signal ids in order to avoid id conflicts between signal and methods
     if (signals_ids_.find (sig_pair) == signals_ids_.end ())
       {
-	closure =
-	  g_cclosure_new (G_CALLBACK (method), user_data,
-			  nullptr /*destroy data */ );
-	g_closure_set_marshal (closure, g_cclosure_marshal_generic);
+        closure =
+          g_cclosure_new (G_CALLBACK (method), user_data,
+                          nullptr /*destroy data */ );
+        g_closure_set_marshal (closure, g_cclosure_marshal_generic);
 
-	guint id = GObjectWrapper::make_signal_action (closure,
-						       return_type,
-						       n_params,
-						       param_types);
-	if (id == 0)
-	  {
-	    g_warning ("custom signal %s not created because of a type issue",
-		       method_name.c_str ());
-	    return false;
-	  }
-	signals_ids_[sig_pair] = id;
+        guint id = GObjectWrapper::make_signal_action (closure,
+                                                       return_type,
+                                                       n_params,
+                                                       param_types);
+        if (id == 0)
+          {
+            g_warning ("custom signal %s not created because of a type issue",
+                       method_name.c_str ());
+            return false;
+          }
+        signals_ids_[sig_pair] = id;
       }
 
     Signal::ptr signal (new Signal ());
-    if (!signal->
-	set_gobject_sigid (gobject_->get_gobject (), signals_ids_[sig_pair]))
+    if (!signal->set_gobject_sigid
+        (gobject_->get_gobject (), signals_ids_[sig_pair]))
       return false;
     signals_[method_name] = signal;
     g_debug ("signal %s registered", method_name.c_str ());
     return true;
   }
 
-  bool Quiddity::register_signal_action (const std::string method_name,	//the name to give
-					 void *method, GType return_type, guint n_params,	//number of params
-					 GType * param_types, void *user_data)
+  bool Quiddity::register_signal_action (const std::string method_name, //the name to give
+                                         void *method, GType return_type, guint n_params,       //number of params
+                                         GType * param_types, void *user_data)
   {
 
-    return register_signal_action_with_class_name (get_documentation ().
-						   get_class_name (),
-						   method_name, method,
-						   return_type, n_params,
-						   param_types, user_data);
+    return
+      register_signal_action_with_class_name (get_documentation
+                                              ().get_class_name (),
+                                              method_name, method,
+                                              return_type, n_params,
+                                              param_types, user_data);
   }
 
   bool Quiddity::uninstall_property (std::string property_name)
@@ -462,17 +435,17 @@ namespace switcher
 
   bool
     Quiddity::install_property (GObject * object,
-				std::string gobject_property_name,
-				std::string name_to_give,
-				std::string long_name)
+                                std::string gobject_property_name,
+                                std::string name_to_give,
+                                std::string long_name)
   {
     GParamSpec *pspec =
       g_object_class_find_property (G_OBJECT_GET_CLASS (object),
-				    gobject_property_name.c_str ());
+                                    gobject_property_name.c_str ());
     if (pspec == nullptr)
       {
-	g_debug ("property not found %s", gobject_property_name.c_str ());
-	return false;
+        g_debug ("property not found %s", gobject_property_name.c_str ());
+        return false;
       }
 
     return install_property_by_pspec (object, pspec, name_to_give, long_name);
@@ -480,8 +453,8 @@ namespace switcher
 
   bool
     Quiddity::reinstall_property (GObject * object,
-				  std::string gobject_property_name,
-				  std::string name, std::string long_name)
+                                  std::string gobject_property_name,
+                                  std::string name, std::string long_name)
   {
     auto it = properties_.find (name);
     if (properties_.end () == it)
@@ -490,14 +463,14 @@ namespace switcher
 
     GParamSpec *pspec =
       g_object_class_find_property (G_OBJECT_GET_CLASS (object),
-				    gobject_property_name.c_str ());
+                                    gobject_property_name.c_str ());
     if (pspec == nullptr)
       {
-	g_debug ("property not found %s", gobject_property_name.c_str ());
-	return false;
+        g_debug ("property not found %s", gobject_property_name.c_str ());
+        return false;
       }
     return register_property (object, pspec, name, long_name,
-			      "on-property-reinstalled");
+                              "on-property-reinstalled");
   }
 
   //return -1 if method not found
@@ -509,7 +482,7 @@ namespace switcher
       return (int) it->second->get_num_of_value_args ();
 
     g_debug ("Quiddity::method_get_num_value_args error: method %s not found",
-	     method_name.c_str ());
+             method_name.c_str ());
     return -1;
   }
 
@@ -520,30 +493,30 @@ namespace switcher
 
   bool
     Quiddity::invoke_method (const std::string method_name,
-			     std::string ** return_value,
-			     const std::vector < std::string > args)
+                             std::string ** return_value,
+                             const std::vector < std::string > args)
   {
     auto it = methods_.find (method_name);
     if (methods_.end () == it)
       {
-	g_debug ("Quiddity::invoke_method error: method %s not found",
-		 method_name.c_str ());
-	return false;
+        g_debug ("Quiddity::invoke_method error: method %s not found",
+                 method_name.c_str ());
+        return false;
       }
 
     GValue res = G_VALUE_INIT;
     if (false == it->second->invoke (args, &res))
       {
-	g_debug ("invokation of %s failled (missing argments ?)",
-		 method_name.c_str ());
-	return false;
+        g_debug ("invokation of %s failled (missing argments ?)",
+                 method_name.c_str ());
+        return false;
       }
 
     if (return_value != nullptr)
       {
-	gchar *res_val = GstUtils::gvalue_serialize (&res);
-	*return_value = new std::string (res_val);
-	g_free (res_val);
+        gchar *res_val = GstUtils::gvalue_serialize (&res);
+        *return_value = new std::string (res_val);
+        g_free (res_val);
       }
     g_value_unset (&res);
     return true;
@@ -551,60 +524,60 @@ namespace switcher
 
   bool
     Quiddity::emit_action (const std::string signal_name,
-			   std::string ** return_value,
-			   const std::vector < std::string > args)
+                           std::string ** return_value,
+                           const std::vector < std::string > args)
   {
     if (signals_.find (signal_name) == signals_.end ())
       {
-	g_debug ("Quiddity::invoke_signal error: %s not found",
-		 signal_name.c_str ());
-	return false;
+        g_debug ("Quiddity::invoke_signal error: %s not found",
+                 signal_name.c_str ());
+        return false;
       }
     else
       {
-	GValue res = signals_[signal_name]->action_emit (args);
-	if (return_value != nullptr)
-	  {
-	    gchar *res_val = GstUtils::gvalue_serialize (&res);
-	    //gchar *res_val;
-	    // if (G_VALUE_HOLDS_STRING(&res))
-	    //   res_val = g_strdup (g_value_get_string (&res));
-	    // else
-	    //   res_val = gst_value_serialize (&res);
+        GValue res = signals_[signal_name]->action_emit (args);
+        if (return_value != nullptr)
+          {
+            gchar *res_val = GstUtils::gvalue_serialize (&res);
+            //gchar *res_val;
+            // if (G_VALUE_HOLDS_STRING(&res))
+            //   res_val = g_strdup (g_value_get_string (&res));
+            // else
+            //   res_val = gst_value_serialize (&res);
 
-	    *return_value = new std::string (res_val);
-	    g_free (res_val);
-	  }
-	g_value_unset (&res);
-	return true;
+            *return_value = new std::string (res_val);
+            g_free (res_val);
+          }
+        g_value_unset (&res);
+        return true;
       }
   }
 
   bool Quiddity::method_is_registered (std::string method_name)
   {
     return (methods_.end () != methods_.find (method_name)
-	    || disabled_methods_.end () !=
-	    disabled_methods_.find (method_name));
+            || disabled_methods_.end () !=
+            disabled_methods_.find (method_name));
   }
 
   bool
     Quiddity::register_method (std::string method_name,
-			       Method::method_ptr method,
-			       Method::return_type return_type,
-			       Method::args_types arg_types,
-			       gpointer user_data)
+                               Method::method_ptr method,
+                               Method::return_type return_type,
+                               Method::args_types arg_types,
+                               gpointer user_data)
   {
     if (method == nullptr)
       {
-	g_debug ("fail registering %s (method is nullptr)",
-		 method_name.c_str ());
-	return false;
+        g_debug ("fail registering %s (method is nullptr)",
+                 method_name.c_str ());
+        return false;
       }
 
     if (method_is_registered (method_name))
       {
-	g_debug ("registering name %s already exists", method_name.c_str ());
-	return false;
+        g_debug ("registering name %s already exists", method_name.c_str ());
+        return false;
       }
 
     Method::ptr meth (new Method ());
@@ -619,19 +592,19 @@ namespace switcher
 
   bool
     Quiddity::set_method_description (const std::string long_name,
-				      const std::string method_name,
-				      const std::string short_description,
-				      const std::string return_description,
-				      const Method::args_doc arg_description)
+                                      const std::string method_name,
+                                      const std::string short_description,
+                                      const std::string return_description,
+                                      const Method::args_doc arg_description)
   {
     auto it = methods_.find (method_name);
     if (methods_.end () == it)
       it = disabled_methods_.find (method_name);
 
     it->second->set_description (long_name,
-				 method_name,
-				 short_description,
-				 return_description, arg_description);
+                                 method_name,
+                                 short_description,
+                                 return_description, arg_description);
     return true;
   }
 
@@ -671,7 +644,7 @@ namespace switcher
   for (auto & it:properties_)
       properties.push_back (it.second);
     std::sort (properties.begin (),
-	       properties.end (), Categorizable::compare_ptr);
+               properties.end (), Categorizable::compare_ptr);
   for (auto & it:properties)
       properties_description_->add_node_value (it->get_json_root_node ());
     properties_description_->end_array ();
@@ -693,9 +666,9 @@ namespace switcher
     auto it = properties_.find (property_name);
     if (properties_.end () == it)
       {
-	g_debug ("cannot set non existing property (%s)",
-		 property_name.c_str ());
-	return false;
+        g_debug ("cannot set non existing property (%s)",
+                 property_name.c_str ());
+        return false;
       }
     it->second->set (value);
     return true;
@@ -716,20 +689,20 @@ namespace switcher
 
   bool
     Quiddity::subscribe_property (std::string property_name,
-				  Property::Callback cb, void *user_data)
+                                  Property::Callback cb, void *user_data)
   {
     auto it = properties_.find (property_name);
     if (properties_.end () == it)
       {
-	g_debug ("property not found (%s)", property_name.c_str ());
-	return false;
+        g_debug ("property not found (%s)", property_name.c_str ());
+        return false;
       }
     return it->second->subscribe (cb, user_data);
   }
 
   bool
     Quiddity::unsubscribe_property (std::string property_name,
-				    Property::Callback cb, void *user_data)
+                                    Property::Callback cb, void *user_data)
   {
     auto it = properties_.find (property_name);
     if (properties_.end () == it)
@@ -740,14 +713,14 @@ namespace switcher
 
   bool
     Quiddity::subscribe_signal (std::string signal_name,
-				Signal::OnEmittedCallback cb, void *user_data)
+                                Signal::OnEmittedCallback cb, void *user_data)
   {
 
     if (signals_.find (signal_name) == signals_.end ())
       {
-	g_warning ("Quiddity::subscribe_signal, signal %s not found",
-		   signal_name.c_str ());
-	return false;
+        g_warning ("Quiddity::subscribe_signal, signal %s not found",
+                   signal_name.c_str ());
+        return false;
       }
     Signal::ptr sig = signals_[signal_name];
     return sig->subscribe (cb, user_data);
@@ -755,8 +728,8 @@ namespace switcher
 
   bool
     Quiddity::unsubscribe_signal (std::string signal_name,
-				  Signal::OnEmittedCallback cb,
-				  void *user_data)
+                                  Signal::OnEmittedCallback cb,
+                                  void *user_data)
   {
     if (signals_.find (signal_name) == signals_.end ())
       return false;
@@ -776,7 +749,7 @@ namespace switcher
     // va_copy (va_cp, var_args);
     // signal->signal_emit (get_g_main_context (), signal_name.c_str (), va_cp); 
     signal->signal_emit ( /*get_g_main_context (), */ signal_name.c_str (),
-			 var_args);
+                         var_args);
     va_end (var_args);
   }
 
@@ -792,16 +765,16 @@ namespace switcher
 
   for (auto & it:signals_)
       {
-	signals_description_->begin_object ();
-	signals_description_->add_string_member ("name", it.first.c_str ());
-	JsonNode *root_node = it.second->get_json_root_node ();
-	if (root_node != nullptr)
-	  signals_description_->add_JsonNode_member ("description",
-						     root_node);
-	else
-	  signals_description_->add_string_member ("description",
-						   "missing description");
-	signals_description_->end_object ();
+        signals_description_->begin_object ();
+        signals_description_->add_string_member ("name", it.first.c_str ());
+        JsonNode *root_node = it.second->get_json_root_node ();
+        if (root_node != nullptr)
+          signals_description_->add_JsonNode_member ("description",
+                                                     root_node);
+        else
+          signals_description_->add_string_member ("description",
+                                                   "missing description");
+        signals_description_->end_object ();
       }
 
     signals_description_->end_array ();
@@ -826,7 +799,7 @@ namespace switcher
     QuiddityManager_Impl::ptr manager = manager_impl_.lock ();
     if ((bool) manager)
       connector_name.append ("/tmp/switcher_" + manager->get_name () + "_" +
-			     nick_name_ + "_" + suffix);
+                             nick_name_ + "_" + suffix);
     else
       connector_name.append ("/tmp/switcher__" + nick_name_ + "_" + suffix);
 
@@ -860,23 +833,23 @@ namespace switcher
   //methods
   bool
     Quiddity::install_method (const std::string long_name,
-			      const std::string method_name,
-			      const std::string short_description,
-			      const std::string return_description,
-			      const Method::args_doc arg_description,
-			      Method::method_ptr method,
-			      Method::return_type return_type,
-			      Method::args_types arg_types,
-			      gpointer user_data)
+                              const std::string method_name,
+                              const std::string short_description,
+                              const std::string return_description,
+                              const Method::args_doc arg_description,
+                              Method::method_ptr method,
+                              Method::return_type return_type,
+                              Method::args_types arg_types,
+                              gpointer user_data)
   {
     if (!register_method (method_name,
-			  method, return_type, arg_types, user_data))
+                          method, return_type, arg_types, user_data))
       return false;
 
     if (!set_method_description (long_name,
-				 method_name,
-				 short_description,
-				 return_description, arg_description))
+                                 method_name,
+                                 short_description,
+                                 return_description, arg_description))
       return false;
 
     signal_emit ("on-method-added", method_name.c_str ());

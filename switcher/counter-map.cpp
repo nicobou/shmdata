@@ -46,4 +46,4 @@ namespace switcher
     std::unique_lock < std::mutex > lock (mutex_);
     counters_.clear ();
   }
-}				//end of switcher namespace
+}                               //end of switcher namespace

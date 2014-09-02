@@ -47,12 +47,12 @@ namespace switcher
     GParamSpec *gst_launch_pipeline_spec_;
     gchar *gst_launch_pipeline_;
     static void set_gst_launch_pipeline (const gchar * value,
-					 void *user_data);
+                                         void *user_data);
     static const gchar *get_gst_launch_pipeline (void *user_data);
     bool make_video_source (GstElement ** new_element);
     bool init_gpipe () final;
   };
 
-}				// end of namespace
+}                               // end of namespace
 
-#endif				// ifndef
+#endif                          // ifndef

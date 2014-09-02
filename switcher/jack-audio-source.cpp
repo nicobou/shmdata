@@ -23,11 +23,11 @@
 namespace switcher
 {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (JackAudioSource,
-					"Jack Audio",
-					"audio source",
-					"get audio from jack",
-					"LGPL",
-					"jacksrc", "Nicolas Bouillot");
+                                        "Jack Audio",
+                                        "audio source",
+                                        "get audio from jack",
+                                        "LGPL",
+                                        "jacksrc", "Nicolas Bouillot");
 
   JackAudioSource::JackAudioSource ():jackaudiosrc_ (nullptr),
     audioconvert_ (nullptr),
@@ -47,29 +47,29 @@ namespace switcher
 
     num_channels_spec_ =
       custom_props_->make_int_property ("channels",
-					"number of channels",
-					1,
-					64,
-					num_channels_,
-					(GParamFlags) G_PARAM_READWRITE,
-					JackAudioSource::set_num_channels,
-					JackAudioSource::get_num_channels,
-					this);
+                                        "number of channels",
+                                        1,
+                                        64,
+                                        num_channels_,
+                                        (GParamFlags) G_PARAM_READWRITE,
+                                        JackAudioSource::set_num_channels,
+                                        JackAudioSource::get_num_channels,
+                                        this);
     install_property_by_pspec (custom_props_->get_gobject (),
-			       num_channels_spec_, "channels", "Channels");
+                               num_channels_spec_, "channels", "Channels");
     client_name_ = g_strdup (get_nick_name ().c_str ());
 
     client_name_spec_ =
       custom_props_->make_string_property ("jack-client-name",
-					   "the jack client name",
-					   "switcher",
-					   (GParamFlags) G_PARAM_READWRITE,
-					   JackAudioSource::set_client_name,
-					   JackAudioSource::get_client_name,
-					   this);
+                                           "the jack client name",
+                                           "switcher",
+                                           (GParamFlags) G_PARAM_READWRITE,
+                                           JackAudioSource::set_client_name,
+                                           JackAudioSource::get_client_name,
+                                           this);
     install_property_by_pspec (custom_props_->get_gobject (),
-			       client_name_spec_,
-			       "client-name", "Client Name");
+                               client_name_spec_,
+                               "client-name", "Client Name");
 
     // g_object_set (G_OBJECT (jackaudiosrc_),
     //   "is-live", TRUE,
@@ -115,24 +115,24 @@ namespace switcher
 
     //using caps compatible with L16 RTP payload
     GstCaps *caps = gst_caps_new_simple ("audio/x-raw-int",
-					 "width", G_TYPE_INT, 16,
-					 "depth", G_TYPE_INT, 16,
-					 "signed", G_TYPE_BOOLEAN, TRUE,
-					 "endianness", G_TYPE_INT, 4321,
-					 "channels", G_TYPE_INT,
-					 num_channels_,
-					 nullptr);
+                                         "width", G_TYPE_INT, 16,
+                                         "depth", G_TYPE_INT, 16,
+                                         "signed", G_TYPE_BOOLEAN, TRUE,
+                                         "endianness", G_TYPE_INT, 4321,
+                                         "channels", G_TYPE_INT,
+                                         num_channels_,
+                                         nullptr);
     g_object_set (G_OBJECT (capsfilter_), "caps", caps, nullptr);
     gst_caps_unref (caps);
 
     g_object_set (G_OBJECT (jackaudiosrc_),
-		  "client-name", client_name_, nullptr);
+                  "client-name", client_name_, nullptr);
 
     gst_bin_add_many (GST_BIN (jackaudiosrc_bin_),
-		      jackaudiosrc_, audioconvert_, capsfilter_, nullptr);
+                      jackaudiosrc_, audioconvert_, capsfilter_, nullptr);
 
     gst_element_link_many (jackaudiosrc_,
-			   audioconvert_, capsfilter_, nullptr);
+                           audioconvert_, capsfilter_, nullptr);
 
     GstPad *src_pad = gst_element_get_static_pad (capsfilter_, "src");
     GstPad *ghost_srcpad = gst_ghost_pad_new (nullptr, src_pad);
@@ -147,9 +147,9 @@ namespace switcher
   {
     JackAudioSource *context = static_cast < JackAudioSource * >(user_data);
     context->num_channels_ = value;
-    GObjectWrapper::notify_property_changed (context->gobject_->
-					     get_gobject (),
-					     context->num_channels_spec_);
+    GObjectWrapper::notify_property_changed (context->
+                                             gobject_->get_gobject (),
+                                             context->num_channels_spec_);
   }
 
   gint JackAudioSource::get_num_channels (void *user_data)
@@ -164,8 +164,8 @@ namespace switcher
     if (nullptr != context->client_name_)
       g_free (context->client_name_);
     context->client_name_ = g_strdup (value);
-    context->custom_props_->notify_property_changed (context->
-						     client_name_spec_);
+    context->custom_props_->
+      notify_property_changed (context->client_name_spec_);
   }
 
   const gchar *JackAudioSource::get_client_name (void *user_data)
