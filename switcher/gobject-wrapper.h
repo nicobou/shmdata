@@ -100,7 +100,7 @@ namespace switcher
                                              GObjectCustomProperty::get_method_pointer
                                              get_method);
 
-    //signal    
+    //signal
     static guint
       make_signal (GType return_type, guint n_params, GType * param_types);
 
@@ -124,8 +124,8 @@ namespace switcher
       std::map < std::string, void *>property_user_datas_;
     void *property_default_user_data_;
     //---------- signals
-    //static std::map<guint, GObjectCustomSignal::ptr> custom_signals_;  
-    static guint next_signal_num_;      //this is only for generation of unique signal names  
+    //static std::map<guint, GObjectCustomSignal::ptr> custom_signals_;
+    static guint next_signal_num_;      //this is only for generation of unique signal names
       std::map < std::string, void *>signal_user_datas_;
   };
 

@@ -106,10 +106,10 @@ namespace switcher
                       "source-setup",
                       (GCallback) Uridecodebin::source_setup_cb,
                       (gpointer) this);
-    // g_signal_connect (G_OBJECT (uridecodebin_),  
-    //       "pad-removed",  
-    //       (GCallback) Uridecodebin::pad_removed_cb ,  
-    //       (gpointer) this);      
+    // g_signal_connect (G_OBJECT (uridecodebin_),
+    //       "pad-removed",
+    //       (GCallback) Uridecodebin::pad_removed_cb ,
+    //       (gpointer) this);
     g_signal_connect (G_OBJECT (uridecodebin_),
                       "unknown-type",
                       (GCallback) Uridecodebin::unknown_type_cb,
@@ -118,35 +118,35 @@ namespace switcher
                       "autoplug-continue",
                       (GCallback) Uridecodebin::autoplug_continue_cb,
                       (gpointer) this);
-    // g_signal_connect (G_OBJECT (uridecodebin_),  
-    //       "autoplug-factory",  
-    //       (GCallback) Uridecodebin::autoplug_factory_cb ,  
-    //       (gpointer) this);      
-    // g_signal_connect (G_OBJECT (uridecodebin_),  
-    //       "autoplug-sort",  
-    //       (GCallback) Uridecodebin::autoplug_sort_cb ,  
-    //       (gpointer) this);      
+    // g_signal_connect (G_OBJECT (uridecodebin_),
+    //       "autoplug-factory",
+    //       (GCallback) Uridecodebin::autoplug_factory_cb ,
+    //       (gpointer) this);
+    // g_signal_connect (G_OBJECT (uridecodebin_),
+    //       "autoplug-sort",
+    //       (GCallback) Uridecodebin::autoplug_sort_cb ,
+    //       (gpointer) this);
     g_signal_connect (G_OBJECT (uridecodebin_),
                       "autoplug-select",
                       (GCallback) Uridecodebin::autoplug_select_cb,
                       (gpointer) this);
-    // g_signal_connect (G_OBJECT (uridecodebin_),  
-    //       "drained",  
-    //       (GCallback) Uridecodebin::drained_cb ,  
-    //       (gpointer) this);      
+    // g_signal_connect (G_OBJECT (uridecodebin_),
+    //       "drained",
+    //       (GCallback) Uridecodebin::drained_cb ,
+    //       (gpointer) this);
 
-    // g_signal_connect (G_OBJECT (uridecodebin_),  
-    //      "drained",  
-    //      (GCallback) uridecodebin_drained_cb ,  
-    //      (gpointer) this);      
+    // g_signal_connect (G_OBJECT (uridecodebin_),
+    //      "drained",
+    //      (GCallback) uridecodebin_drained_cb ,
+    //      (gpointer) this);
 
     g_object_set (G_OBJECT (uridecodebin_),
-                  // "ring-buffer-max-size",(guint64)200000000, 
-                  //"download",TRUE, 
-                  //"use-buffering",TRUE, 
+                  // "ring-buffer-max-size",(guint64)200000000,
+                  //"download",TRUE,
+                  //"use-buffering",TRUE,
                   //"ring-buffer-max-size", 4294967295,
                   "expose-all-streams", TRUE, "async-handling", TRUE,
-                  //"buffer-duration",9223372036854775807, 
+                  //"buffer-duration",9223372036854775807,
                   nullptr);
   }
 
@@ -268,9 +268,9 @@ namespace switcher
   //   GstPad *pad,
   //   GstCaps *caps,
   //   GValueArray *factories,
-  //   gpointer user_data)  
+  //   gpointer user_data)
   // {
-  //   g_print ("sort---------------- bin: %s\n%s\n", gst_element_get_name (bin), gst_caps_to_string (caps)); 
+  //   g_print ("sort---------------- bin: %s\n%s\n", gst_element_get_name (bin), gst_caps_to_string (caps));
   //   return g_value_array_copy(factories);
   // }
 
@@ -288,7 +288,7 @@ namespace switcher
       {
         gst_query_parse_segment (query, &rate, nullptr, &start_value,
                                  &stop_value);
-        // g_print ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n", 
+        // g_print ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n",
         //        rate,
         //        GST_TIME_ARGS (start_value),
         //        GST_TIME_ARGS (stop_value));
@@ -310,8 +310,8 @@ namespace switcher
                         rate, GST_FORMAT_TIME,
                         (GstSeekFlags) (GST_SEEK_FLAG_FLUSH |
                                         GST_SEEK_FLAG_ACCURATE),
-                        //| GST_SEEK_FLAG_SKIP 
-                        //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization 
+                        //| GST_SEEK_FLAG_SKIP
+                        //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization
                         GST_SEEK_TYPE_SET,
                         0.0 * GST_SECOND,
                         GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
@@ -414,7 +414,7 @@ namespace switcher
     GstUtils::sync_state_with_parent (fakesink);
     GstUtils::sync_state_with_parent (funnel);
 
-    //probing eos   
+    //probing eos
     GstPad *srcpad = gst_element_get_static_pad (funnel, "src");
     if (main_pad_ == nullptr)
       main_pad_ = srcpad;       //saving first pad for looping
@@ -423,7 +423,7 @@ namespace switcher
 
     //giving a name to the stream
     gchar **padname_splitted = g_strsplit_set (padname, "/", -1);
-    //counting 
+    //counting
     int count = 0;
     auto it = media_counters_.find (padname_splitted[0]);
     if (media_counters_.end () != it)
@@ -504,7 +504,7 @@ namespace switcher
     Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
 
     // g_print ("------------- caps 1 %s \n-------------- caps 2 %s\n",
-    //      gst_caps_to_string (context->gstrtpcaps_), 
+    //      gst_caps_to_string (context->gstrtpcaps_),
     //      gst_caps_to_string (gst_pad_get_caps (pad)));
 
     if (gst_caps_can_intersect (context->rtpgstcaps_, gst_pad_get_caps (pad)))

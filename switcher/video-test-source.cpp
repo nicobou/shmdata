@@ -45,7 +45,7 @@ namespace switcher
     if (!made)
       return false;
 
-    //"pattern" property available atfer initialization 
+    //"pattern" property available atfer initialization
     install_property (G_OBJECT (videotestsrc_),
                       "pattern", "pattern", "Video Pattern");
     return true;
@@ -83,7 +83,7 @@ namespace switcher
 
   bool VideoTestSource::on_stop ()
   {
-    //need a new element for property setting 
+    //need a new element for property setting
     bool made = make_video_source (&videotestsrc_);
     if (!made)
       return false;

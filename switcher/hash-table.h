@@ -51,7 +51,7 @@ namespace switcher
 
   private:
       GHashTable * table_;
-    //FIX ME this is used only to keep ref count of shared pointer 
+    //FIX ME this is used only to keep ref count of shared pointer
     //std::map<std::string, T> keep_ref_count_;
   };
 

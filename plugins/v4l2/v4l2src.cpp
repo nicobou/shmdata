@@ -189,7 +189,7 @@ namespace switcher
           {
             framerates_enum_[i].value = i;
             //FIXME free previous here
-            //inversing enumerator and denominator because gst wants framerate while v4l2 gives frame interval 
+            //inversing enumerator and denominator because gst wants framerate while v4l2 gives frame interval
             framerates_enum_[i].value_name = g_strdup_printf ("%s/%s",
                                                               it.
                                                               second.c_str (),
@@ -416,7 +416,7 @@ namespace switcher
     description.bus_info_ = (char *) vcap.bus_info;
     description.driver_ = (char *) vcap.driver;
 
-    // g_print ("-------------------------- card %s bus %s driver %s\n", 
+    // g_print ("-------------------------- card %s bus %s driver %s\n",
     //        (char *)vcap.card,
     //        (char *)vcap.bus_info,
     //        (char *)vcap.driver);
@@ -433,8 +433,8 @@ namespace switcher
           {
             if (default_pixel_format == 0)
               default_pixel_format = fmt.pixelformat;
-            // g_print ("******** pixel format  %s - %s\n", 
-            //      pixel_format_to_string(fmt.pixelformat).c_str (), 
+            // g_print ("******** pixel format  %s - %s\n",
+            //      pixel_format_to_string(fmt.pixelformat).c_str (),
             //      (const char *)fmt.description);
             description.
               pixel_formats_.push_back (std::make_pair
@@ -472,7 +472,7 @@ namespace switcher
           frame_size_discrete_.push_back (std::make_pair (width, height));
         g_free (width);
         g_free (height);
-// g_print ("++++++++++++++++ %d, %d \n", 
+// g_print ("++++++++++++++++ %d, %d \n",
 //  frmsize.discrete.width,
 //  frmsize.discrete.height);
         frmsize.index++;
@@ -542,7 +542,7 @@ namespace switcher
                                                              denominator));
             g_free (numerator);
             g_free (denominator);
-            // g_print ("       %u/%u \n", 
+            // g_print ("       %u/%u \n",
             //       frmival.discrete.numerator,
             //       frmival.discrete.denominator);
           }

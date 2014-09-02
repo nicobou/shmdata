@@ -425,7 +425,7 @@ namespace switcher
     data::Tree::ptr tree = data::make_tree ();
     tree->graft (".category", data::make_tree (category));
     tree->graft (".caps", data::make_tree (caps));
-    //attaching it to the quiddity (at the root) 
+    //attaching it to the quiddity (at the root)
     quid_->graft_tree (key, tree);
   }
 

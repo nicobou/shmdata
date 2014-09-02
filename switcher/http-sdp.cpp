@@ -49,10 +49,10 @@ namespace switcher
     g_signal_connect (G_OBJECT (sdpdemux_),
                       "no-more-pads",
                       (GCallback) HTTPSDP::no_more_pads_cb, (gpointer) this);
-    // g_signal_connect (G_OBJECT (sdpdemux_),  
-    //       "pad-removed",  
-    //       (GCallback) HTTPSDP::pad_removed_cb ,  
-    //       (gpointer) this);      
+    // g_signal_connect (G_OBJECT (sdpdemux_),
+    //       "pad-removed",
+    //       (GCallback) HTTPSDP::pad_removed_cb ,
+    //       (gpointer) this);
     install_method ("To Shmdata",
                     "to_shmdata",
                     "get raw streams from an sdp description distributed over http and write them to shmdatas",

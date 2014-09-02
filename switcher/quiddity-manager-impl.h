@@ -76,7 +76,7 @@ namespace switcher
       std::shared_ptr < Quiddity >
       get_quiddity (std::string quiddity_nick_name);
     bool rename (std::string nick_name, std::string new_nick_name);     //FIXME remove that
-    // only one hook is allowed now, 
+    // only one hook is allowed now,
     // it is used by the quiddity manager-spy-create-remove
     // for converting creating removal into signals
     bool set_created_hook (quiddity_created_hook hook, void *user_data);
@@ -138,7 +138,7 @@ namespace switcher
                                   Property::Callback cb, void *user_data);
     bool unsubscribe_property_glib (std::string quiddity_name, std::string property_name, Property::Callback cb, void *user_data);      //the same as called with subscribe
 
-    //**** methods 
+    //**** methods
     //doc (json formatted)
       std::string get_methods_description (std::string quiddity_name);
       std::string get_method_description (std::string quiddity_name,
@@ -160,7 +160,7 @@ namespace switcher
       std::string get_signals_description (std::string quiddity_name);
       std::string get_signal_description (std::string quiddity_name,
                                           std::string signal_name);
-    //following "by_class" methods provide properties available after creation only, 
+    //following "by_class" methods provide properties available after creation only,
     //avoiding possible properties created dynamically
       std::string get_signals_description_by_class (std::string class_name);
       std::string get_signal_description_by_class (std::string class_name,
@@ -194,7 +194,7 @@ namespace switcher
     //mainloop
     GMainContext *get_g_main_context ();
 
-    //for use of "get description by class" 
+    //for use of "get description by class"
     //and from quiddity that creates other quiddity in the same manager
       std::string create_without_hook (std::string quiddity_class);
     bool remove_without_hook (std::string quiddity_name);
@@ -227,8 +227,8 @@ namespace switcher
     guint quiddity_created_counter_;
     void give_name_if_unnamed (std::shared_ptr < Quiddity > quiddity);
 
-    //gmainloop 
-      std::thread thread_;      //this runs the main loop 
+    //gmainloop
+      std::thread thread_;      //this runs the main loop
     GMainContext *main_context_;
     GMainLoop *mainloop_;
     void init_gmainloop ();

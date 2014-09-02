@@ -45,12 +45,12 @@ namespace switcher
     group_->masterpad = nullptr;
     group_->datastreams = g_hash_table_new (g_direct_hash, g_direct_equal);
     group_->padtoblock = g_hash_table_new (g_direct_hash, g_direct_equal);
-    //allows to add and remove to/from the pipeline without disposing   
-    //unref done in the group_remove function   
+    //allows to add and remove to/from the pipeline without disposing
+    //unref done in the group_remove function
     gst_object_ref (group_->bin);
     gst_bin_add (GST_BIN (bin_), group_->bin);
-    // if (!gst_element_sync_state_with_parent (group_->bin)) 
-    //   g_warning ("create_group: pb sync bin state with parent"); 
+    // if (!gst_element_sync_state_with_parent (group_->bin))
+    //   g_warning ("create_group: pb sync bin state with parent");
     g_debug ("group created");
     group_->state = GROUP_PAUSED;
     group_->user_data = this;
@@ -82,21 +82,21 @@ namespace switcher
     //using play pause seek from pipeline
     // //registering pause
     // register_method("pause",
-    //     (void *)&pause_wrapped, 
+    //     (void *)&pause_wrapped,
     //     Method::make_arg_type_description (G_TYPE_NONE, nullptr),
     //     (gpointer)this);
-    // set_method_description ("pause", 
-    //     "pause the stream(s)", 
+    // set_method_description ("pause",
+    //     "pause the stream(s)",
     //     Method::make_arg_description ("none",
     //   nullptr));
 
     // //registering seek
     // register_method("seek",
-    //     (void *)&seek_wrapped, 
+    //     (void *)&seek_wrapped,
     //     Method::make_arg_type_description (G_TYPE_DOUBLE, nullptr),
     //     (gpointer)this);
-    // set_method_description ("seek", 
-    //     "seek the stream(s)", 
+    // set_method_description ("seek",
+    //     "seek the stream(s)",
     //     Method::make_arg_description ("position",
     //   "position in milliseconds",
     //   nullptr));
@@ -269,7 +269,7 @@ namespace switcher
         /* add to the bin */
         gst_bin_add_many (GST_BIN (group->bin),
                           // continuous_stream,
-                          // identity, 
+                          // identity,
                           queue, nullptr);
 // gst_element_link (continuous_stream, identity);
 // gst_element_link (identity, queue);
@@ -277,7 +277,7 @@ namespace switcher
         GstPad *queue_srcpad = gst_element_get_static_pad (queue, "src");
         sample->bin_srcpad = gst_ghost_pad_new (nullptr, queue_srcpad);
         group_do_block_datastream (sample);
-        //gst_pad_set_blocked_async (sample->bin_srcpad,TRUE,pad_blocked_cb,sample);     
+        //gst_pad_set_blocked_async (sample->bin_srcpad,TRUE,pad_blocked_cb,sample);
         gst_object_unref (queue_srcpad);
         gst_pad_set_active (sample->bin_srcpad, TRUE);
         gst_element_add_pad (group->bin, sample->bin_srcpad);
@@ -287,7 +287,7 @@ namespace switcher
             group->masterpad = sample->bin_srcpad;
           }
 
-        //probing eos        
+        //probing eos
         gst_pad_add_event_probe (sample->bin_srcpad,
                                  (GCallback) event_probe_cb,
                                  (gpointer) sample);
@@ -297,25 +297,25 @@ namespace switcher
 
         GstPad *queue_sinkpad = gst_element_get_static_pad (queue, "sink");
 
-        //linking newly created pad with the audioconvert_sinkpad -- FIXME should verify compatibility       
+        //linking newly created pad with the audioconvert_sinkpad -- FIXME should verify compatibility
         gst_pad_link (pad, queue_sinkpad);
         gst_object_unref (queue_sinkpad);
 
         if (!gst_element_sync_state_with_parent (queue))
           g_debug ("pb syncing video datastream state");
 
-        //assuming object is an uridecodebin and get the uri    
+        //assuming object is an uridecodebin and get the uri
         gchar *uri;
         g_object_get (object, "uri", &uri, nullptr);
         g_debug ("new sample from uri: %s", uri);
-        //adding sample to hash table   
-        g_hash_table_insert (group->datastreams, sample, uri);  //FIXME clean hash    
+        //adding sample to hash table
+        g_hash_table_insert (group->datastreams, sample, uri);  //FIXME clean hash
 
 //making a shmdata:
 // GstElement *identity;
 // GstUtils::make_element ("identity", &identity);
-// g_object_set (identity, 
-//       "sync", TRUE, 
+// g_object_set (identity,
+//       "sync", TRUE,
 //       "single-segment", TRUE,
 //       nullptr);
         GstElement *funnel;
@@ -344,7 +344,7 @@ namespace switcher
 //giving a name to the stream
         gchar **padname_splitted = g_strsplit_set (padname, "/", -1);
 
-//counting 
+//counting
         int count = 0;
         auto it = context->media_counters_.find (padname_splitted[0]);
         if (context->media_counters_.end () != it)
@@ -401,7 +401,7 @@ namespace switcher
   void Uris::uridecodebin_drained_cb (GstElement * /*object */ ,
                                       gpointer /*user_data */ )
   {
-    //Group *group = (Group *) user_data;   
+    //Group *group = (Group *) user_data;
     g_debug ("drained");
   }
 
@@ -451,7 +451,7 @@ namespace switcher
 
             GroupCommand *command =
               (GroupCommand *) g_async_queue_try_pop (group->commands);
-            //launching the command with the higher priority 
+            //launching the command with the higher priority
             if (command != nullptr)
               GstUtils::g_idle_add_full_with_context (((Uris *) group->
                                                        user_data)->get_g_main_context
@@ -632,7 +632,7 @@ namespace switcher
       {
         GstElement *peerpadparent = gst_pad_get_parent_element (peerpad);
         g_debug ("unlink returns %d", gst_pad_unlink (pad, peerpad));
-// give back the pad     
+// give back the pad
         gst_element_release_request_pad (peerpadparent, peerpad);
         gst_object_unref (peerpad);
         gst_object_unref (peerpadparent);
@@ -791,7 +791,7 @@ namespace switcher
     // gint64 stop_value = -2.0;
     // if (res) {
     //   gst_query_parse_segment (query, &rate, nullptr, &start_value, &stop_value);
-    //   g_debug ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"", 
+    //   g_debug ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"",
     //        rate,
     //        GST_TIME_ARGS (start_value),
     //        GST_TIME_ARGS (stop_value));
@@ -809,8 +809,8 @@ namespace switcher
                             GST_FORMAT_TIME,
                             (GstSeekFlags) (GST_SEEK_FLAG_FLUSH |
                                             GST_SEEK_FLAG_ACCURATE),
-                            //| GST_SEEK_FLAG_SKIP 
-                            //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization 
+                            //| GST_SEEK_FLAG_SKIP
+                            //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization
                             GST_SEEK_TYPE_SET,
                             sample->group->seek_position * GST_SECOND,
                             GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
@@ -877,8 +877,8 @@ namespace switcher
           {
             // this seems not working if play rate >1.0
             g_debug ("EOS on master pad, looping");
-            // g_idle_add ((GSourceFunc) group_eos_rewind,   
-            //       (gpointer)sample->group);   
+            // g_idle_add ((GSourceFunc) group_eos_rewind,
+            //       (gpointer)sample->group);
             GstUtils::g_idle_add_full_with_context (((Uris *) sample->
                                                      group->user_data)->get_g_main_context
                                                     (), G_PRIORITY_DEFAULT,

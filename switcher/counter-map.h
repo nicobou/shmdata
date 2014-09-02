@@ -25,7 +25,7 @@
 
 /**
  *
- * maintains a thread safe map of 
+ * maintains a thread safe map of
  * string as key and a uint counter as value
  *
  * users should inherit from this class

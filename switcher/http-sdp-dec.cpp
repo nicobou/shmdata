@@ -103,7 +103,7 @@ namespace switcher
                                             GstElement * element,
                                             gpointer user_data)
   {
-    //FIXME add that in uridecodebin 
+    //FIXME add that in uridecodebin
     g_object_set (G_OBJECT (element), "ntp-sync", TRUE, nullptr);
   }
 

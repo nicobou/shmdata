@@ -59,7 +59,7 @@ namespace switcher
           gst_pad_unlink (pad, peer);
         else
           gst_pad_unlink (peer, pad);
-        //checking if the pad has been requested and releasing it needed 
+        //checking if the pad has been requested and releasing it needed
         GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);    //check if this must be unrefed for GST 1
         if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
           gst_element_release_request_pad (gst_pad_get_parent_element (peer),
@@ -101,7 +101,7 @@ namespace switcher
 
   void ShmdataReader::start ()
   {
-    // std::unique_lock<std::mutex> lock (start_mutex_); 
+    // std::unique_lock<std::mutex> lock (start_mutex_);
     // GstUtils::g_idle_add_full_with_context (g_main_context_,
     //     G_PRIORITY_DEFAULT_IDLE,
     //     start_idle,
@@ -186,15 +186,15 @@ namespace switcher
   {
     ShmdataReader *reader = static_cast < ShmdataReader * >(user_data);
     g_debug (" ShmdataReader::on_first_data");
-    if (reader->connection_hook_ != nullptr)    //user want to create the sink_element_ 
+    if (reader->connection_hook_ != nullptr)    //user want to create the sink_element_
       reader->connection_hook_ (reader, reader->hook_user_data_);
     if (nullptr != reader->sink_element_)
       if (!GST_IS_ELEMENT (GST_ELEMENT_PARENT (reader->sink_element_)))
         gst_bin_add (GST_BIN (reader->bin_), reader->sink_element_);
-    // else 
-    //   g_debug ("ShmdataReader::on_first_data: (%s) sink element (%s) has a parent (%s) %d", 
-    //       reader->get_path ().c_str(), 
-    //       GST_ELEMENT_NAME (reader->sink_element_), 
+    // else
+    //   g_debug ("ShmdataReader::on_first_data: (%s) sink element (%s) has a parent (%s) %d",
+    //       reader->get_path ().c_str(),
+    //       GST_ELEMENT_NAME (reader->sink_element_),
     //       GST_ELEMENT_NAME(GST_ELEMENT_PARENT (reader->sink_element_)),
     //       GST_IS_ELEMENT(GST_ELEMENT_PARENT (reader->sink_element_)));
     GstUtils::make_element ("funnel", &reader->funnel_);

@@ -70,11 +70,11 @@ namespace switcher
   {
     SignalData *signal = static_cast < SignalData * >(user_data);
 
-    // g_print ("---------------- signal callback: %s -- %s -- %s -- %s\n",  
+    // g_print ("---------------- signal callback: %s -- %s -- %s -- %s\n",
     //      signal->quiddity_name,
     //      signal->signal_name,
     //      Signal::parse_callback_args (gobject, pspec).c_str (),
-    //      (gchar *)signal->user_data); 
+    //      (gchar *)signal->user_data);
     if (!signal->subscriber->muted_)
       signal->user_callback (signal->name,
                              signal->quiddity_name,

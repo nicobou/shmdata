@@ -299,9 +299,9 @@ namespace switcher
 
         json_reader_end_element (reader);
 // g_print ("%s, %s, %s, %s\n",
-//  name, 
-//  description, 
-//  long_name, 
+//  name,
+//  description,
+//  long_name,
 //  value);
         if (create_entry (name, description, long_name, this))
           {

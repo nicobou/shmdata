@@ -259,7 +259,7 @@ GTKVideo::GTKVideo ():
       {
         std::unique_lock < std::mutex > lock (window_destruction_mutex_);
 // g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
-//     destroy_window, 
+//     destroy_window,
 //     this,
 //     window_destroyed);
         gtk_idle_add (destroy_window, this);
@@ -287,7 +287,7 @@ GTKVideo::GTKVideo ():
 
     gdk_threads_enter ();
     gdk_display_sync (context->display_);
-    //gdk_error_trap_pop ();  
+    //gdk_error_trap_pop ();
 
     /* Retrieve window handler from GDK */
 #if defined (GDK_WINDOWING_WIN32)

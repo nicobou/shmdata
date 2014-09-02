@@ -72,12 +72,12 @@ namespace switcher
 
     audiotestsrc_ = audiotest;
 
-    //registering 
+    //registering
     install_property (G_OBJECT (audiotestsrc_), "volume", "volume", "Volume");
     install_property (G_OBJECT (audiotestsrc_), "freq", "freq", "Frequency");
     // install_property (G_OBJECT (audiotestsrc_),
     //        "samplesperbuffer",
-    //        "samplesperbuffer", 
+    //        "samplesperbuffer",
     //        "Samples Per Buffer");
     install_property (G_OBJECT (audiotestsrc_),
                       "wave", "wave", "Signal Form");

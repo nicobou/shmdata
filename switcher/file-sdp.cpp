@@ -50,10 +50,10 @@ namespace switcher
                       "no-more-pads",
                       (GCallback) FileSDP::no_more_pads_cb, (gpointer) this);
 
-    // g_signal_connect (G_OBJECT (sdpdemux_),  
-    //       "pad-removed",  
-    //       (GCallback) FileSDP::pad_removed_cb ,  
-    //       (gpointer) this);      
+    // g_signal_connect (G_OBJECT (sdpdemux_),
+    //       "pad-removed",
+    //       (GCallback) FileSDP::pad_removed_cb ,
+    //       (gpointer) this);
 
     install_method ("To Shmdata",
                     "to_shmdata",

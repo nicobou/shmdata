@@ -175,7 +175,7 @@ namespace switcher
         return 0;
       }
 
-    //create 
+    //create
     if (g_str_has_prefix (path, "/c") || g_str_has_prefix (path, "/C"))
       {
         if (argc == 1)
@@ -197,7 +197,7 @@ namespace switcher
         return 0;
       }
 
-    //remove 
+    //remove
     if (g_str_has_prefix (path, "/r") || g_str_has_prefix (path, "/R"))
       {
         if (argc == 1)
@@ -211,7 +211,7 @@ namespace switcher
         return 0;
       }
 
-    //set_property 
+    //set_property
     if (g_str_has_prefix (path, "/s") || g_str_has_prefix (path, "/S"))
       {
         if (argc == 3)
@@ -229,7 +229,7 @@ namespace switcher
         return 0;
       }
 
-    //invoke 
+    //invoke
     if (g_str_has_prefix (path, "/i") || g_str_has_prefix (path, "/I"))
       {
         if (argc >= 2)

@@ -1,7 +1,7 @@
 /*
- * This file is part of switcher-pulse. 
+ * This file is part of switcher-pulse.
  *
- * Partially from pactl.c Copyright 2004-2006 Lennart Poettering 
+ * Partially from pactl.c Copyright 2004-2006 Lennart Poettering
  *
  * switcher-pulse is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -46,12 +46,12 @@ namespace switcher
     devices_enum_spec_ (nullptr),
     devices_enum_ (), device_ (0), quit_mutex_ (), quit_cond_ ()
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__); 
+    //g_print ("%s\n", __PRETTY_FUNCTION__);
   }
 
   bool PulseSink::init_gpipe ()
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__); 
+    //g_print ("%s\n", __PRETTY_FUNCTION__);
     if (!make_elements ())
       return false;
 
@@ -111,7 +111,7 @@ namespace switcher
 
   gboolean PulseSink::async_get_pulse_devices (void *user_data)
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__); 
+    //g_print ("%s\n", __PRETTY_FUNCTION__);
     PulseSink *context = static_cast < PulseSink * >(user_data);
     context->pa_glib_mainloop_ =
       pa_glib_mainloop_new (context->get_g_main_context ());
@@ -140,7 +140,7 @@ namespace switcher
 
   bool PulseSink::build_elements ()
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__); 
+    //g_print ("%s\n", __PRETTY_FUNCTION__);
     GstElement *pulsesink, *audioconvert;
     if (!GstUtils::make_element ("pulsesink", &pulsesink))
       return false;
@@ -172,7 +172,7 @@ namespace switcher
 
   bool PulseSink::make_elements ()
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__); 
+    //g_print ("%s\n", __PRETTY_FUNCTION__);
     if (build_elements ())
       {
         set_sink_element (pulsesink_bin_);
@@ -185,7 +185,7 @@ namespace switcher
     PulseSink::pa_context_state_callback (pa_context * pulse_context,
                                           void *user_data)
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__); 
+    //g_print ("%s\n", __PRETTY_FUNCTION__);
 
     PulseSink *context = static_cast < PulseSink * >(user_data);
 
@@ -228,7 +228,7 @@ namespace switcher
 
   void PulseSink::make_json_description ()
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__); 
+    //g_print ("%s\n", __PRETTY_FUNCTION__);
     if (devices_description_ != nullptr)
       g_free (devices_description_);
 
@@ -265,7 +265,7 @@ namespace switcher
                                        const pa_sink_info * i,
                                        int is_last, void *user_data)
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__); 
+    //g_print ("%s\n", __PRETTY_FUNCTION__);
     PulseSink *context = static_cast < PulseSink * >(user_data);
 
     if (is_last < 0)
@@ -394,7 +394,7 @@ namespace switcher
 
   void PulseSink::make_device_description (pa_context * pulse_context)
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__); 
+    //g_print ("%s\n", __PRETTY_FUNCTION__);
     devices_.clear ();
     pa_operation_unref (pa_context_get_sink_info_list
                         (pulse_context, get_sink_info_callback, this));
@@ -406,7 +406,7 @@ namespace switcher
                                      pulse_event_type, uint32_t /*index */ ,
                                      void *user_data)
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__); 
+    //g_print ("%s\n", __PRETTY_FUNCTION__);
     PulseSink *context = static_cast < PulseSink * >(user_data);
 
     if ((pulse_event_type & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) ==
@@ -434,7 +434,7 @@ namespace switcher
 
   const gchar *PulseSink::get_devices_json (void *user_data)
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__); 
+    //g_print ("%s\n", __PRETTY_FUNCTION__);
     PulseSink *context = static_cast < PulseSink * >(user_data);
     if (context->devices_description_ == nullptr)
       context->devices_description_ = g_strdup ("{ \"devices\" : [] }");
@@ -444,13 +444,13 @@ namespace switcher
 
   void PulseSink::on_shmdata_disconnect ()
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__); 
+    //g_print ("%s\n", __PRETTY_FUNCTION__);
     reset_bin ();
   }
 
   void PulseSink::on_shmdata_connect (std::string /* shmdata_sochet_path */ )
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__); 
+    //g_print ("%s\n", __PRETTY_FUNCTION__);
     reset_bin ();
     build_elements ();
     set_sink_element_no_connect (pulsesink_bin_);
@@ -458,7 +458,7 @@ namespace switcher
 
   void PulseSink::update_output_device ()
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__); 
+    //g_print ("%s\n", __PRETTY_FUNCTION__);
     gint i = 0;
   for (auto & it:devices_)
       {
@@ -475,14 +475,14 @@ namespace switcher
 
   void PulseSink::set_device (const gint value, void *user_data)
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__); 
+    //g_print ("%s\n", __PRETTY_FUNCTION__);
     PulseSink *context = static_cast < PulseSink * >(user_data);
     context->device_ = value;
   }
 
   gint PulseSink::get_device (void *user_data)
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__); 
+    //g_print ("%s\n", __PRETTY_FUNCTION__);
     PulseSink *context = static_cast < PulseSink * >(user_data);
     return context->device_;
   }

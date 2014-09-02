@@ -82,9 +82,9 @@ namespace switcher
     install_property (G_OBJECT (udpsink_), "loop", "loop", "Loop");
     install_property (G_OBJECT (typefind_), "caps", "caps", "Capabilities");
 
-    // g_signal_connect (G_OBJECT (udpsink_), "client-added",  
+    // g_signal_connect (G_OBJECT (udpsink_), "client-added",
     //       (GCallback)  on_client_added, (gpointer) this);
-    // g_signal_connect (G_OBJECT (udpsink_), "client-removed",  
+    // g_signal_connect (G_OBJECT (udpsink_), "client-removed",
     //       (GCallback)  on_client_removed, (gpointer) this);
 
     install_method ("Add Client",
@@ -144,7 +144,7 @@ namespace switcher
              GST_ELEMENT_NAME (udpsink_bin_));
 
     // GstBin *parent = GST_BIN( GST_ELEMENT_PARENT (udpsink_bin_));
-    // g_debug ("num child in parent bin : %d", 
+    // g_debug ("num child in parent bin : %d",
     //      GST_BIN_NUMCHILDREN (parent));
 
     if (ghost_sinkpad_ != nullptr)

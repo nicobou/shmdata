@@ -48,7 +48,7 @@ namespace switcher
   {
     //g_print ("*************************************** %s\n", __FUNCTION__);
 
-    //for performance, "available_codecs" could become static and reused here 
+    //for performance, "available_codecs" could become static and reused here
     PJCodecUtils::codecs available_codecs =
       PJCodecUtils::inspect_rtp_codecs ();
 
@@ -75,7 +75,7 @@ namespace switcher
   {
     //g_print ("*************************************** %s\n", __FUNCTION__);
 
-    //for performance, "available_codecs" could become static and reused here 
+    //for performance, "available_codecs" could become static and reused here
     PJCodecUtils::codecs available_codecs =
       PJCodecUtils::inspect_rtp_codecs ();
 
@@ -170,7 +170,7 @@ namespace switcher
     if (nullptr == PJCall::med_endpt_)
       {
         g_warning ("media endpoint is nullptr, cannot deinit");
-        return PJ_TRUE;         //failure 
+        return PJ_TRUE;         //failure
       }
     pjmedia_codec_mgr *codec_mgr;
     codec_mgr = pjmedia_endpt_get_codec_mgr (PJCall::med_endpt_);

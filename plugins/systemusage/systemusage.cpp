@@ -58,7 +58,7 @@ SystemUsage::SystemUsage ():
   bool
   SystemUsage::init ()
   {
-    period_prop_ = custom_props_->make_double_property ("period",       //name 
+    period_prop_ = custom_props_->make_double_property ("period",       //name
                                                         "Update period",        //description
                                                         0.1,
                                                         5.0,

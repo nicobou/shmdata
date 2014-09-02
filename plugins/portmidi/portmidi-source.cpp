@@ -94,7 +94,7 @@ namespace switcher
                     "success or fail",  //return description
                     Method::make_arg_description ("Property Long Name", //first arg long name
                                                   "property_long_name", //fisrt arg name
-                                                  "string",     //first arg description 
+                                                  "string",     //first arg description
                                                   nullptr),
                     (Method::method_ptr) & next_midi_event_to_property_method,
                     G_TYPE_BOOLEAN,
@@ -107,7 +107,7 @@ namespace switcher
                     "success or fail",  //return description
                     Method::make_arg_description ("Property Long Name", //first arg long name
                                                   "property_long_name", //fisrt arg name
-                                                  "string",     //first arg description 
+                                                  "string",     //first arg description
                                                   nullptr),
                     (Method::method_ptr) & last_midi_event_to_property_method,
                     G_TYPE_BOOLEAN,
@@ -120,7 +120,7 @@ namespace switcher
                     "success or fail",  //return description
                     Method::make_arg_description ("Property Long Name", //first arg long name
                                                   "property_long_name", //fisrt arg name
-                                                  "string",     //first arg description 
+                                                  "string",     //first arg description
                                                   nullptr),
                     (Method::method_ptr) & remove_property_method,
                     G_TYPE_BOOLEAN,

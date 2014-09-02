@@ -1,7 +1,7 @@
 /*
- * This file is part of switcher-pulse. 
+ * This file is part of switcher-pulse.
  *
- * Partially from pactl.c Copyright 2004-2006 Lennart Poettering 
+ * Partially from pactl.c Copyright 2004-2006 Lennart Poettering
  *
  * switcher-pulse is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -77,7 +77,7 @@ namespace switcher
                                capture_devices_description_spec_,
                                "devices-json", "Capture Devices");
 
-    //waiting for devices to be updated 
+    //waiting for devices to be updated
     devices_cond_.wait (lock);
     if (!connected_to_pulse_)
       {
@@ -195,7 +195,7 @@ namespace switcher
         //g_print ("PA_CONTEXT_READY\n");
         context->make_device_description (pulse_context);
         // pa_operation_unref(pa_context_get_source_info_list(pulse_context,
-        //  get_source_info_callback, 
+        //  get_source_info_callback,
         //  nullptr));
 
         pa_context_set_subscribe_callback (pulse_context,

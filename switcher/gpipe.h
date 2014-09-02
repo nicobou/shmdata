@@ -49,7 +49,7 @@ namespace switcher
     virtual bool init_gpipe () = 0;
 
   protected:
-    //void init_gpipe (Quiddity &quiddity);//FIXME should called quiddity-manager-impl 
+    //void init_gpipe (Quiddity &quiddity);//FIXME should called quiddity-manager-impl
     //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
       GstElement * get_bin ();
     GstElement *bin_

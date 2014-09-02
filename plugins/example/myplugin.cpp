@@ -37,7 +37,7 @@ namespace switcher
   bool MyPlugin::init ()
   {
     init_startable (this);
-    myprop_prop_ = custom_props_->make_boolean_property ("myprop",      //name 
+    myprop_prop_ = custom_props_->make_boolean_property ("myprop",      //name
                                                          "myprop is a boolean property",        //description
                                                          (gboolean) FALSE,      //default value
                                                          (GParamFlags)
@@ -66,7 +66,7 @@ namespace switcher
     tree->graft (".child1.child3", data::make_tree (1.2f));
     tree->graft (".child1.child2.bla1", data::make_tree ("wire"));
     tree->graft (".child1.child2.bla2", data::make_tree ("hub"));
-    //attaching it to the quiddity (at the root) 
+    //attaching it to the quiddity (at the root)
     graft_tree (".custom.information.", tree);
 
     g_debug ("hello from plugin");

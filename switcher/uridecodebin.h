@@ -48,7 +48,7 @@ namespace switcher
     QuiddityCommand *on_error_command_; //for the pipeline error handler
     void clean_on_error_command ();
 
-    //custom properties 
+    //custom properties
       CustomPropertyHelper::ptr custom_props_;
     GParamSpec *loop_prop_;
     bool loop_;

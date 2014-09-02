@@ -29,7 +29,7 @@
 
 #define MAX_CALLS 1024
 
-namespace switcher 
+namespace switcher
 {
   class PJSIP;
 
@@ -43,7 +43,7 @@ namespace switcher
     ~PJCall ();
     PJCall (const PJCall &) = delete;
     PJCall & operator= (const PJCall &) = delete;
-    
+
   private:
     struct media_stream /*media stream created when the call is active. */
     {
@@ -51,20 +51,20 @@ namespace switcher
       unsigned call_index {0};                    /* Call owner. */
       unsigned media_index {0};                   /* Media index in call. */
       pjmedia_transport *transport {nullptr};     /* To send/recv RTP/RTCP */
-      
+
       /* Active? */
       pj_bool_t active {PJ_FALSE};                /* Non-zero if is in call. */
-      
+
       /* Current stream info: */
       pjmedia_stream_info si;                     /* Current stream info. */
-      
+
       /* RTP session: FIXME remove this, managed by gst */
       pjmedia_rtp_session out_sess;               /* outgoing RTP session */
       pjmedia_rtp_session in_sess;                /* incoming RTP session */
-      
+
       /* RTCP stats: */
       pjmedia_rtcp_session rtcp;                  /* incoming RTCP session. */
-      
+
       // type + codec param
       std::string type {};                        /* audio, video or appli*/
       std::string extra_params {};
@@ -85,7 +85,7 @@ namespace switcher
     {
       unsigned index {0};
       pjsip_inv_session *inv {nullptr};
-      unsigned media_count {0};   //FIXME make this more STL 
+      unsigned media_count {0};   //FIXME make this more STL
       struct media_stream media[64];
       pj_time_val start_time {0, 0};
       pj_time_val response_time {0, 0};

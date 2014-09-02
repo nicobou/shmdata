@@ -219,7 +219,7 @@ PJCall::PJCall (PJSIP * sip_instance):
     if (rdata->msg_info.msg->line.req.method.id != PJSIP_INVITE_METHOD)
       {
         return PJ_SUCCESS;
-//FIXME 
+//FIXME
         pj_str_t reason = pj_str ("Unsupported Operation");
         pjsip_endpt_respond_stateless (rdata->tp_info.transport->endpt,
                                        rdata, 500, &reason, nullptr, nullptr);
@@ -422,7 +422,7 @@ PJCall::PJCall (PJSIP * sip_instance):
                                       current_media->si.tx_pt, pj_rand ());
             pjmedia_rtp_session_init (&current_media->in_sess,
                                       current_media->si.fmt.pt, 0);
-            //  pjmedia_rtcp_init(&current_media->rtcp, "rtcp", current_media->clock_rate, 
+            //  pjmedia_rtcp_init(&current_media->rtcp, "rtcp", current_media->clock_rate,
             //          current_media->samples_per_frame, 0);
 
             current_media->shm = std::make_shared < ShmdataAnyWriter > ();
@@ -432,7 +432,7 @@ PJCall::PJCall (PJSIP * sip_instance):
                        shm_any_name.c_str ());
 
             /* Attach media to transport */
-            status = pjmedia_transport_attach (current_media->transport, current_media, //user_data 
+            status = pjmedia_transport_attach (current_media->transport, current_media, //user_data
                                                &current_media->si.rem_addr,
                                                &current_media->si.rem_rtcp,
                                                sizeof (pj_sockaddr_in),
@@ -442,9 +442,9 @@ PJCall::PJCall (PJSIP * sip_instance):
                 g_debug ("Error on pjmedia_transport_attach()");
                 return;
               }
-          }                     //end receiving 
+          }                     //end receiving
 
-// send streams 
+// send streams
         if (PJMEDIA_DIR_ENCODING == current_media->si.dir
             || PJMEDIA_DIR_CAPTURE == current_media->si.dir
             || PJMEDIA_DIR_ENCODING_DECODING == current_media->si.dir
@@ -573,7 +573,7 @@ PJCall::PJCall (PJSIP * sip_instance):
       }
 
     /* Create UAS dialog */
-    status = pjsip_dlg_create_uas (pjsip_ua_instance (), rdata, nullptr,        //&app.local_contact, 
+    status = pjsip_dlg_create_uas (pjsip_ua_instance (), rdata, nullptr,        //&app.local_contact,
                                    &dlg);
     if (status != PJ_SUCCESS)
       {
@@ -583,7 +583,7 @@ PJCall::PJCall (PJSIP * sip_instance):
         return;
       }
 
-    //checking number of transport to create for receiving 
+    //checking number of transport to create for receiving
     //and creating transport for receiving data offered
 
     call->media_count = 0;
@@ -764,7 +764,7 @@ PJCall::PJCall (PJSIP * sip_instance):
             // //removing unassigned payload type (ekiga)
             // unsigned pt = 0;
             // pt = pj_strtoul(&sdp_media->desc.fmt[u]);
-            // if (77 <= pt && pt <= 95)  
+            // if (77 <= pt && pt <= 95)
             //   remove_it = true;
 
             //apply removal if necessary
@@ -773,7 +773,7 @@ PJCall::PJCall (PJSIP * sip_instance):
             else
               u++;
           }
-//getting transport info 
+//getting transport info
         pjmedia_transport_info tpinfo;
         pjmedia_transport_info_init (&tpinfo);
         pjmedia_transport_get_info (call->media[i].transport, &tpinfo);
@@ -850,7 +850,7 @@ PJCall::PJCall (PJSIP * sip_instance):
                                ", payload=" +
                                std::to_string (strm->si.fmt.pt) +
                                ", encoding-name=" + encoding_name
-                               // + ", ssrc=" + 
+                               // + ", ssrc=" +
                                // + ", clock-base="
                                // + ", seqnum-base=" + std::to_string (strm->in_sess->seq_ctrl->base_seq)
           );
@@ -1183,7 +1183,7 @@ PJCall::PJCall (PJSIP * sip_instance):
   }
 
   /*
-   * COPY and REWRITE of pjsip Internal function for collecting 
+   * COPY and REWRITE of pjsip Internal function for collecting
    * codec info and param from the SDP media.
    */
   pj_status_t
@@ -1306,7 +1306,7 @@ PJCall::PJCall (PJSIP * sip_instance):
       }
     else
       {
-        //g_print ("DOES NOT HAVE RTPMAP\n"); 
+        //g_print ("DOES NOT HAVE RTPMAP\n");
         //pjmedia_codec_id codec_id;
         //pj_str_t codec_id_st;
         //const pjmedia_codec_info *p_info;
@@ -1353,10 +1353,10 @@ PJCall::PJCall (PJSIP * sip_instance):
         // codec_id_st = pj_str(codec_id);
         //  status = pjmedia_codec_mgr_find_codecs_by_id(mgr, &codec_id_st,
         //            &i, &p_info, nullptr);
-        //  
+        //
         //  if (status != PJ_SUCCESS)
         //    return status;
-        //  
+        //
 
         //  pj_memcpy(&si->fmt, p_info, sizeof(pjmedia_codec_info));
 
@@ -1391,7 +1391,7 @@ PJCall::PJCall (PJSIP * sip_instance):
         //      }
         //  }
 
-        //  
+        //
         //  if (si->tx_pt == 0xFFFF)
         //    return PJMEDIA_EMISSINGRTPMAP;
 
@@ -1445,10 +1445,10 @@ PJCall::PJCall (PJSIP * sip_instance):
     //  *
     //  * Thanks Alain Totouom
     //  */
-    // 
+    //
     // if (status != PJ_SUCCESS && si->dir != PJMEDIA_DIR_NONE)
     //  return status;
-    // 
+    //
 
     /* Get incomming payload type for telephone-events */
     si->rx_event_pt = -1;
@@ -1515,7 +1515,7 @@ PJCall::PJCall (PJSIP * sip_instance):
                                  sdp_media->attr, attr);
 // std::string updated_val (attr->value.ptr, attr->value.slen);
 // updated_val.replace (0,2, std::to_string (pt));
-// pj_strdup2 (pool, &attr->value, updated_val.c_str ()); 
+// pj_strdup2 (pool, &attr->value, updated_val.c_str ());
       }
     //remove from media line
     pj_str_t *begin = &sdp_media->desc.fmt[fmt_pos];
@@ -1608,13 +1608,13 @@ PJCall::PJCall (PJSIP * sip_instance):
     pj_gettimeofday (&call->start_time);
 
     /* Create initial INVITE request.
-     * This INVITE request will contain a perfectly good request and 
+     * This INVITE request will contain a perfectly good request and
      * an SDP body as well.
      */
     status = pjsip_inv_invite (call->inv, &tdata);
     PJ_ASSERT_RETURN (status == PJ_SUCCESS, status);
 
-    /* Send initial INVITE request. 
+    /* Send initial INVITE request.
      * From now on, the invite session's state will be reported to us
      * via the invite session callbacks.
      */

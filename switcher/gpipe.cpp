@@ -155,10 +155,10 @@ namespace switcher
   bool GPipe::seek (gdouble position)
   {
     gboolean ret = FALSE;
-    ret = gst_element_seek (pipeline_, speed_, GST_FORMAT_TIME, (GstSeekFlags) (        //GST_SEEK_FLAG_FLUSH | 
+    ret = gst_element_seek (pipeline_, speed_, GST_FORMAT_TIME, (GstSeekFlags) (        //GST_SEEK_FLAG_FLUSH |
                                                                                  GST_SEEK_FLAG_ACCURATE),
-                            //| GST_SEEK_FLAG_SKIP 
-                            //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization 
+                            //| GST_SEEK_FLAG_SKIP
+                            //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization
                             GST_SEEK_TYPE_SET,
                             position * length_ * GST_MSECOND,
                             GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);

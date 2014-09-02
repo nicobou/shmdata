@@ -89,7 +89,7 @@ namespace switcher
     return json_description_->get_root ();
   }
 
-  //make json formated description 
+  //make json formated description
   void Signal::inspect_gobject_signal ()
   {
     /* Signals/Actions Block */
@@ -220,19 +220,19 @@ namespace switcher
     // char *arg_name;
     // char *arg_desc;
     // va_start(vl, first_arg_long_name);
-    // if (g_strcmp0 (first_arg_long_name, "none") != 0 
-    // && (arg_name = va_arg(vl, char *)) 
+    // if (g_strcmp0 (first_arg_long_name, "none") != 0
+    // && (arg_name = va_arg(vl, char *))
     // && (arg_desc = va_arg(vl, char *)))
     //   {
-    // res.push_back (std::make_tuple (first_arg_long_name, 
+    // res.push_back (std::make_tuple (first_arg_long_name,
     // arg_name,
     // arg_desc));
     //   }
     // while ((arg_long_name = va_arg( vl, char *))
-    //    && (arg_name = va_arg( vl, char *)) 
+    //    && (arg_name = va_arg( vl, char *))
     //    && (arg_desc = va_arg( vl, char *)))
     //   {
-    // res.push_back (std::make_tuple (arg_long_name, 
+    // res.push_back (std::make_tuple (arg_long_name,
     // arg_name,
     // arg_desc));
     //   }
@@ -275,10 +275,10 @@ namespace switcher
   {
     std::pair < OnEmittedCallback, void *>cb_pair =
       std::make_pair (cb, user_data);
-    //FIXME do not save twice the same cb/user data for signals 
-    // if(std::find(subscribed_on_emitted_callbacks_.begin(), 
-    //   subscribed_on_emitted_callbacks_.end(), 
-    //   cb_pair) != subscribed_on_emitted_callbacks_.end()) 
+    //FIXME do not save twice the same cb/user data for signals
+    // if(std::find(subscribed_on_emitted_callbacks_.begin(),
+    //   subscribed_on_emitted_callbacks_.end(),
+    //   cb_pair) != subscribed_on_emitted_callbacks_.end())
     {
       subscribed_on_emitted_callbacks_.push_back (cb_pair);
       return true;
@@ -311,14 +311,14 @@ namespace switcher
     // args->object_ = object_;
     // args->id_ = id_;
     // va_copy (args->var_args_, var_args);
-    // GstUtils::g_idle_add_full_with_context (context, 
+    // GstUtils::g_idle_add_full_with_context (context,
     //     G_PRIORITY_DEFAULT_IDLE,
     //     GSourceFunc (signal_emit_in_main_loop),
     //     (gpointer)args,
     //     nullptr);
   }
 
-  // gboolean 
+  // gboolean
   // Signal::signal_emit_in_main_loop (gpointer user_data)
   // {
   //   EmitArgs *args = static_cast <EmitArgs *> (user_data);

@@ -25,7 +25,7 @@
 // #ifdef HAVE_CONFIG_H
 // #include "config.h"
 // #ifdef HAVE_PYTHON
-// #include <Python.h> 
+// #include <Python.h>
 // #endif
 // #endif
 
@@ -97,7 +97,7 @@ namespace switcher
     // PyObject *numpy_name = PyString_FromString("numpy");
     // PyObject *numpy = PyImport_Import(numpy_name);
     // Py_DECREF(numpy_name);
-    // if (numpy != nullptr) 
+    // if (numpy != nullptr)
     //   g_print ("got numpy !\n");
     // else
     //   g_print ("no numpy\n");
@@ -105,7 +105,7 @@ namespace switcher
     // PyObject *numpey_name = PyString_FromString("numpey");
     // PyObject *numpey = PyImport_Import(numpey_name);
     // Py_DECREF(numpey_name);
-    // if (numpey != nullptr) 
+    // if (numpey != nullptr)
     //   g_print ("got numpey !\n");
     // else
     //   g_print ("no numpey..\n");
@@ -305,7 +305,7 @@ namespace switcher
       }
     g_value_unset (&val);
 
-    //scaling and transforming the value into a gdouble value 
+    //scaling and transforming the value into a gdouble value
     gdouble transformed_val =
       ((gdouble) new_value - context->source_min_) * (context->sink_max_ -
                                                       context->sink_min_) /
@@ -321,7 +321,7 @@ namespace switcher
 
     g_value_transform (&val_gdouble, &val_to_apply);
 
-    // g_print ("%f, %s\n", g_value_get_double(&val_gdouble), 
+    // g_print ("%f, %s\n", g_value_get_double(&val_gdouble),
     //      GstUtils::gvalue_serialize (&val_to_apply));
     if ((bool) quid && quid->has_property (context->sink_property_name_))
       quid->set_property (context->sink_property_name_,

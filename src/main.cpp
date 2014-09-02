@@ -151,7 +151,7 @@ main (int argc, char *argv[])
       return 0;
     }
 
-  //running a switcher server  
+  //running a switcher server
   if (server_name == nullptr)
     server_name = "default";
   if (port_number == nullptr)
@@ -322,16 +322,16 @@ main (int argc, char *argv[])
   // g_print ("---- reset done ----\n");
   // g_print ("--- %s\n",manager->get_quiddities_description ().c_str ());
 
-  // switcher::QuiddityManager::CommandHistory histo = 
+  // switcher::QuiddityManager::CommandHistory histo =
   //   manager->get_command_history_from_file ("trup.switcher");
 
-  // // std::vector <std::string> prop_subscriber_names = 
+  // // std::vector <std::string> prop_subscriber_names =
   // //   manager->get_property_subscribers_names (histo);
 
   // //    // for (auto &it: prop_subscriber_names)
   // //    //   g_print ("prop sub %s\n", it.c_str ());
 
-  // //    // std::vector <std::string> signal_subscriber_names = 
+  // //    // std::vector <std::string> signal_subscriber_names =
   // //    //   manager->get_signal_subscribers_names (histo);
 
   // //    // for (auto &it: signal_subscriber_names)
@@ -341,7 +341,7 @@ main (int argc, char *argv[])
   //      prop_cb_data ["log_sub"] = std::make_pair (logger_cb, (void *)nullptr);
   //      switcher::QuiddityManager::SignalCallbackMap sig_cb_data;
   //      sig_cb_data["create_remove_subscriber"] = std::make_pair (quiddity_created_removed_cb, (void *)nullptr);
-  //      manager->play_command_history (histo, &prop_cb_data, &sig_cb_data); 
+  //      manager->play_command_history (histo, &prop_cb_data, &sig_cb_data);
   //      g_print ("--fin-- %s\n",manager->get_quiddities_description ().c_str ());
 
 #ifdef HAVE_GTK

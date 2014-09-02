@@ -99,8 +99,8 @@ main ()
   }
   {                             //set/get data with path
     Tree::ptr tree = make_tree ();
-    //tree->set_data ("", 1.2f); // this is not possible 
-    //float tree_data = tree->get_data ("."); // this is not possible 
+    //tree->set_data ("", 1.2f); // this is not possible
+    //float tree_data = tree->get_data ("."); // this is not possible
     // assert (1.2f == tree_data);
     tree->graft ("child1.child2", make_tree ());
     assert (tree->set_data ("child1.child2", "test"));
@@ -161,7 +161,7 @@ main ()
     // JSON serialization with child1.child2 as an array
     Tree::ptr tree = make_tree ();
 
-    // if children are grafted to child3, its value 
+    // if children are grafted to child3, its value
     // will be serialized with "key_value, as follow:
     // "child3" : {
     //  "key_value" : "1.2",
@@ -170,7 +170,7 @@ main ()
     tree->graft (".child1.child3", make_tree (3.1f));
     tree->graft (".child1.child3.child4", make_tree ("child4_value"));
 
-    // if the array is made with a value, it will not be serialized  
+    // if the array is made with a value, it will not be serialized
     // a node trageted as an array should be created like this :
     // tree->graft (".child1.child2", make_tree ());
     // however, this is accepted:

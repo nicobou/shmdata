@@ -181,9 +181,9 @@ namespace switcher
                              nullptr, pipe, it.second.c_str (), nullptr);
         g_free (pipe);
       }
-    // manager_->invoke_va("single_runtime", 
-    // "play", 
-    // nullptr, 
+    // manager_->invoke_va("single_runtime",
+    // "play",
+    // nullptr,
     // nullptr);
     return true;
   }
@@ -194,8 +194,8 @@ namespace switcher
     return true;
   }
 
-  //FIXME use signals in switcher for handling gstsrc's eos 
-  // void 
+  //FIXME use signals in switcher for handling gstsrc's eos
+  // void
   // ShmdataFromGDPFile::rewind (gpointer user_data)
   // {
   //   ShmdataFromGDPFile *context = static_cast<ShmdataFromGDPFile *>(user_data);
@@ -206,15 +206,15 @@ namespace switcher
   // ShmdataFromGDPFile::event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data)
   // {
   //   ShmdataFromGDPFile *context = static_cast<ShmdataFromGDPFile *>(user_data);
-  //   if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) { 
+  //   if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) {
   //     g_print ("EOS caught and disabled \n");
   //     g_print ("----- pad with EOS %s:%s, src: %p %s\n",
   //             GST_DEBUG_PAD_NAME (pad),GST_EVENT_SRC(event), gst_element_get_name (GST_EVENT_SRC(event)));
-  //     g_idle_add ((GSourceFunc) ShmdataFromGDPFile::rewind,   
-  //        (gpointer)context);   
+  //     g_idle_add ((GSourceFunc) ShmdataFromGDPFile::rewind,
+  //        (gpointer)context);
   //     return FALSE;
-  //   }  
-  //   return TRUE; 
+  //   }
+  //   return TRUE;
   // }
 
 }

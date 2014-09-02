@@ -33,7 +33,7 @@ main (int /*argc */ ,
 
 for (auto & it:classes)
     {
-      //std::cout << class_name << std::endl; 
+      //std::cout << class_name << std::endl;
       if (!switcher::QuiddityBasicTest::test_create (manager, it))
         success = false;
       //std::cout << res << std::endl;

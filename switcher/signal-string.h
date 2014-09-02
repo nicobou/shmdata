@@ -95,6 +95,6 @@ namespace switcher
     /* } EmitArgs; */
   };
 
-}                               // end of namespace 
+}                               // end of namespace
 
 #endif                          // ifndef

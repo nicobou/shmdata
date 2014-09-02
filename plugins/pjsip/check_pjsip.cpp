@@ -64,7 +64,7 @@ main ()
                         "add_data_stream",
                         nullptr, "/tmp/switcher_siptest_v_video", nullptr);
 
-    // manager->invoke_va ("rtp", 
+    // manager->invoke_va ("rtp",
     // "add_destination",
     // nullptr,
     // "local",
@@ -82,9 +82,9 @@ main ()
 
     manager->set_property ("test", "port", "5070");
 
-    if (!manager->invoke_va ("test", 
-                             "register", 
-                             nullptr, 
+    if (!manager->invoke_va ("test",
+                             "register",
+                             nullptr,
                              "1004",          // user
                              "10.10.30.179",  // domain
                              "1234",          // password
@@ -97,9 +97,9 @@ main ()
     manager->set_property ("test", "rtp-session", "rtp");
 
     manager->invoke_va ("test",
-                        "call", 
-                        nullptr, 
-                        "sip:1002@10.10.30.223", 
+                        "call",
+                        nullptr,
+                        "sip:1002@10.10.30.223",
                         nullptr);
 
     usleep (2000000);

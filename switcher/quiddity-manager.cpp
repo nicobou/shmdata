@@ -144,8 +144,8 @@ namespace switcher
           }
         else
           {
-            //it not propable that create will return the same name, 
-            //so converting create into create_nick_named with 
+            //it not propable that create will return the same name,
+            //so converting create into create_nick_named with
             //the name that was given first
             if (QuiddityCommand::create == it->id_)
               {
@@ -618,7 +618,7 @@ namespace switcher
     QuiddityManager::has_method (const std::string quiddity_name,
                                  const std::string method_name)
   {
-    //FIXME do not have this 
+    //FIXME do not have this
     command_lock ();
     command_->set_id (QuiddityCommand::has_method);
     command_->add_arg (quiddity_name);

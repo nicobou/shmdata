@@ -87,7 +87,7 @@ namespace switcher
   }
 
   // ---------------------------------- CPP CLASS ----------------------------
-  //property id 0 is not allowed, starting at 1 
+  //property id 0 is not allowed, starting at 1
   guint GObjectWrapper::next_prop_id_ = 1;
   std::map < guint,
     GObjectCustomProperty::ptr > GObjectWrapper::custom_properties_;
@@ -386,7 +386,7 @@ namespace switcher
                                      param_types);
     g_object_unref (obj);
 
-    // GObjectCustomSignal::ptr signal =  
+    // GObjectCustomSignal::ptr signal =
     //   GObjectCustomSignal::make_custom_signal ();
 
     // custom_signals_[signal_id] = signal;

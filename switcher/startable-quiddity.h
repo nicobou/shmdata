@@ -37,7 +37,7 @@ namespace switcher
       StartableQuiddity & operator= (const StartableQuiddity &) = delete;
 
   protected:
-    void init_startable (void *quiddity);       //FIXME should called quiddity-manager-impl 
+    void init_startable (void *quiddity);       //FIXME should called quiddity-manager-impl
     bool is_started ();
     //find a way to avoid invoking init_startable (this) in quiddities (policies)
 

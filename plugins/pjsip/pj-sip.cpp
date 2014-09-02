@@ -30,7 +30,7 @@ namespace switcher
                                         "LGPL", "sip", "Nicolas Bouillot");
 
   //according to pjsip documentation:
-  //Application should only instantiate one SIP endpoint instance for every process. 
+  //Application should only instantiate one SIP endpoint instance for every process.
   pjsip_endpoint *PJSIP::sip_endpt_ = nullptr;
 
   PJSIP::PJSIP ():cp_ ()

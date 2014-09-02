@@ -19,15 +19,15 @@
 
 /**
  * @file  information-tree.h
- * 
- * @brief tree data structure for storing, formating and serializing informations  
- * 
- * The information tree is largely inspired from the boost' property tree. 
- * It provides a data structure that stores an arbitrarily deeply nested 
- * tree of values, indexed at each level by some key. Each node of the 
- * tree stores its own value, plus an ordered list of its subnodes and their keys. 
- * The tree allows easy access to any of its nodes by means of a path, 
- * which is a concatenation of multiple keys. 
+ *
+ * @brief tree data structure for storing, formating and serializing informations
+ *
+ * The information tree is largely inspired from the boost' property tree.
+ * It provides a data structure that stores an arbitrarily deeply nested
+ * tree of values, indexed at each level by some key. Each node of the
+ * tree stores its own value, plus an ordered list of its subnodes and their keys.
+ * The tree allows easy access to any of its nodes by means of a path,
+ * which is a concatenation of multiple keys.
  *
  */
 
@@ -47,7 +47,7 @@ namespace switcher
   namespace data
   {
 
-    //-------- 
+    //--------
     class Tree
     {
     public:
@@ -77,7 +77,7 @@ namespace switcher
       bool set_data (const std::string & path, const char *data);
       bool set_data (const std::string & path, std::nullptr_t ptr);
 
-      // graft will create the path and graft the tree, 
+      // graft will create the path and graft the tree,
       // or remove old one and replace will the new tree
       bool graft (const std::string & path, Tree::ptr);
       //return empty tree if nothing can be pruned
@@ -86,7 +86,7 @@ namespace switcher
         Tree::ptr get (const std::string & path);
 
       // return false if the path does not exist
-      // when a path is tagged as an array, keys might be discarded 
+      // when a path is tagged as an array, keys might be discarded
       // by some serializers, such as JSON
       bool tag_as_array (const std::string & path, bool is_array);
       bool is_array (const std::string & path);
@@ -166,6 +166,6 @@ namespace switcher
     }
     Tree::ptr make_tree (const char *data);     //Tree will store a std::string
 
-  }                             // end of "data" namespace 
+  }                             // end of "data" namespace
 }                               // end of "switcher" namespace
 #endif // ifndef

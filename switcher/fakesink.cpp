@@ -60,7 +60,7 @@ namespace switcher
 
     g_signal_connect (fakesink_, "handoff", (GCallback) on_handoff_cb, this);
 
-    //registering some properties 
+    //registering some properties
     //install_property (G_OBJECT (fakesink_),"last-message","last-message", "Last Message");
 
     byte_rate_spec_ =

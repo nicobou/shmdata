@@ -19,9 +19,9 @@
 
   /**
    * @file   information-tree-json.h
-   * 
-   * @brief serialize and deserialize an information tree using json  
-   * 
+   *
+   * @brief serialize and deserialize an information tree using json
+   *
    *
    */
 
@@ -43,7 +43,7 @@ namespace switcher
       //FIXME implement this: Tree::ptr deserialize (std::string &serialized);
 
     };
-  }                             // end of "data" namespace 
+  }                             // end of "data" namespace
 }                               // end of "switcher" namespace
 
 #endif                          // ifndef

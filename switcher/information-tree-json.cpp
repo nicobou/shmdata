@@ -125,7 +125,7 @@ namespace switcher
         return result;
       }
 
-      // Tree::ptr 
+      // Tree::ptr
       // deserialize (std::string &serialized)
       // {
 
@@ -145,5 +145,5 @@ namespace switcher
       // }
 
     }                           //end of "JSONSerializer" namespace
-  }                             //end of "data" namespace 
+  }                             //end of "data" namespace
 }                               //end of "switcher" namespace

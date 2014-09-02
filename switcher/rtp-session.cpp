@@ -74,7 +74,7 @@ namespace switcher
     // GstElement *parent = (GstElement *)gst_element_get_parent (rtpsession_);
     // g_debug ("%d, %d, %d, state return %d",
     //  GST_STATE(parent),
-    //  GST_STATE_TARGET (parent), 
+    //  GST_STATE_TARGET (parent),
     //  GST_STATE_PENDING (parent),
     //  GST_STATE_RETURN(parent));
     //   }
@@ -653,7 +653,7 @@ namespace switcher
     auto manager_it = quiddity_managers_.find (shmdata_socket_path);
     if (quiddity_managers_.end () == manager_it)
       {
-//creating an internal quiddity manager 
+//creating an internal quiddity manager
         QuiddityManager::ptr manager =
           QuiddityManager::make_manager ("manager_" + get_name () + "_" + id);
         quiddity_managers_[shmdata_socket_path] = manager;
@@ -692,7 +692,7 @@ namespace switcher
     rtcp_port << rtp_port + 1;
     arg.push_back (rtcp_port.str ());
     manager->invoke ("udpsend_rtcp", "add_client", nullptr, arg);
-    //TODO rtcp receiving should be negociated 
+    //TODO rtcp receiving should be negociated
     // GstElementCleaner::ptr funnel_cleaner = funnels_[shmdata_socket_path];
     //  GstElement *funnel = funnel_cleaner->get_labeled_element_from_cleaner ("funnel");
     //  GstElement *udpsrc;

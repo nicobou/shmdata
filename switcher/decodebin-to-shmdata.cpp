@@ -246,7 +246,7 @@ namespace switcher
     GstUtils::sync_state_with_parent (fakesink);
     GstUtils::sync_state_with_parent (funnel);
 
-    //probing eos   
+    //probing eos
     GstPad *srcpad = gst_element_get_static_pad (funnel, "src");
     if (nullptr == main_pad_)
       main_pad_ = srcpad;       //saving first pad for looping
@@ -361,7 +361,7 @@ namespace switcher
       {
         gst_query_parse_segment (query, &rate, nullptr, &start_value,
                                  &stop_value);
-        // g_print ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n", 
+        // g_print ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n",
         //        rate,
         //        GST_TIME_ARGS (start_value),
         //        GST_TIME_ARGS (stop_value));
@@ -377,8 +377,8 @@ namespace switcher
                         rate, GST_FORMAT_TIME,
                         (GstSeekFlags) (GST_SEEK_FLAG_FLUSH |
                                         GST_SEEK_FLAG_ACCURATE),
-                        //| GST_SEEK_FLAG_SKIP 
-                        //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization 
+                        //| GST_SEEK_FLAG_SKIP
+                        //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization
                         GST_SEEK_TYPE_SET,
                         0.0 * GST_SECOND,
                         GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);

@@ -55,7 +55,7 @@ namespace switcher
     //starting the reader:
     bool start ();
 
-    //info + controls before and after starting the reader : 
+    //info + controls before and after starting the reader :
       std::string get_path ();
     void mute (bool mute);
     bool is_muted ();

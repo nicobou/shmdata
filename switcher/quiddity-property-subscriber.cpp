@@ -69,11 +69,11 @@ namespace switcher
   {
     PropertyData *prop = static_cast < PropertyData * >(user_data);
 
-    // g_print ("---------------- property callback: %s -- %s -- %s -- %s\n",  
+    // g_print ("---------------- property callback: %s -- %s -- %s -- %s\n",
     //      prop->quiddity_name,
     //      prop->property_name,
     //      Property::parse_callback_args (gobject, pspec).c_str (),
-    //      (gchar *)prop->user_data); 
+    //      (gchar *)prop->user_data);
     if (!prop->property_subscriber->muted_)
       prop->user_callback (prop->name,
                            prop->quiddity_name,

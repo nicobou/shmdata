@@ -87,7 +87,7 @@ namespace switcher
     //***************** inspect ****************************************************************
       std::vector < std::string > get_classes ();       //know which quiddities can be created
       std::vector < std::string > get_quiddities ();    //know instances
-    // doc (json formatted) 
+    // doc (json formatted)
       std::string get_classes_doc ();
       std::string get_class_doc (std::string class_name);
       std::string get_quiddity_description (std::string quiddity_name);
@@ -107,7 +107,7 @@ namespace switcher
       std::string get_properties_description (std::string quiddity_name);
       std::string get_property_description (std::string quiddity_name,
                                             std::string property_name);
-    //following "by_class" methods provide properties available after creation only, 
+    //following "by_class" methods provide properties available after creation only,
     //avoiding possible properties created dynamically
       std::
       string get_properties_description_by_class (std::string class_name);
@@ -159,7 +159,7 @@ namespace switcher
                                   Property::Callback cb, void *user_data);
     bool unsubscribe_property_glib (std::string quiddity_name, std::string name, Property::Callback cb, void *user_data);       //the same called with subscribe
 
-    //*********************** methods 
+    //*********************** methods
     //doc (json formatted)
       std::string get_methods_description (std::string quiddity_name);
       std::string get_method_description (std::string quiddity_name,
@@ -180,12 +180,12 @@ namespace switcher
     bool has_method (const std::string quiddity_name,
                      const std::string method_name);
 
-    //************************ signals 
+    //************************ signals
     //doc (json formatted)
       std::string get_signals_description (std::string quiddity_name);
       std::string get_signal_description (std::string quiddity_name,
                                           std::string signal_name);
-    //following "by_class" methods provide properties available after creation only, 
+    //following "by_class" methods provide properties available after creation only,
     //avoiding possible properties created dynamically
       std::string get_signals_description_by_class (std::string class_name);
       std::string get_signal_description_by_class (std::string class_name,
@@ -215,16 +215,16 @@ namespace switcher
       std::string list_subscribed_signals_json (std::string subscriber_name);
 
   private:
-      QuiddityManager_Impl::ptr manager_impl_;  //may be shared with others for automatic quiddity creation 
+      QuiddityManager_Impl::ptr manager_impl_;  //may be shared with others for automatic quiddity creation
       std::string name_;
-    //running commands in sequence 
+    //running commands in sequence
       QuiddityCommand::ptr command_;
       std::mutex seq_mutex_;
     GAsyncQueue *command_queue_;
       std::thread invocation_thread_;
     //invokation in gmainloop
-      std::condition_variable execution_done_cond_;     //sync current thread and gmainloop  
-      std::mutex execution_done_mutex_; //sync current thread and gmainloop  
+      std::condition_variable execution_done_cond_;     //sync current thread and gmainloop
+      std::mutex execution_done_mutex_; //sync current thread and gmainloop
     //history
     CommandHistory command_history_;
     gint64 history_begin_time_; //monotonic time, in microseconds
@@ -243,6 +243,6 @@ namespace switcher
     void invoke_in_thread ();
   };
 
-}                               // end of namespace 
+}                               // end of namespace
 
 #endif

@@ -106,6 +106,6 @@ namespace switcher
           }
         return tree;
       }
-    }                           //end of "BasicSerializer" namespace     
-  }                             // end of "data" namespace 
+    }                           //end of "BasicSerializer" namespace
+  }                             // end of "data" namespace
 }                               // end of "switcher" namespace

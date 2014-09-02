@@ -271,8 +271,8 @@ namespace switcher
                                             return_description,
                                             arg_description);
 
-    // signal_emit ("on-new-signal-registered", 
-    //  get_nick_name ().c_str (), 
+    // signal_emit ("on-new-signal-registered",
+    //  get_nick_name ().c_str (),
     //  signal_name.c_str (),
     //  (JSONBuilder::get_string (signals_[signal_name]->get_json_root_node (), true)).c_str ());
     return true;
@@ -747,7 +747,7 @@ namespace switcher
     va_start (var_args, signal_name);
     // va_list va_cp;
     // va_copy (va_cp, var_args);
-    // signal->signal_emit (get_g_main_context (), signal_name.c_str (), va_cp); 
+    // signal->signal_emit (get_g_main_context (), signal_name.c_str (), va_cp);
     signal->signal_emit ( /*get_g_main_context (), */ signal_name.c_str (),
                          var_args);
     va_end (var_args);

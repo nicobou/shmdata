@@ -231,11 +231,11 @@ namespace switcher
           }
         else
           {
-            // g_debug ("client request %d accepted on socket %d, client IP is %d.%d.%d.%d", 
-            //     i, s, 
-            //     (int)(service_->ip>>24)&0xFF, 
-            //     (int)(service_->ip>>16)&0xFF, 
-            //     (int)(service_->ip>>8)&0xFF, 
+            // g_debug ("client request %d accepted on socket %d, client IP is %d.%d.%d.%d",
+            //     i, s,
+            //     (int)(service_->ip>>24)&0xFF,
+            //     (int)(service_->ip>>16)&0xFF,
+            //     (int)(service_->ip>>8)&0xFF,
             //     (int)service_->ip&0xFF);
             std::unique_lock < std::mutex > lock (mutex_);
             controlService *tcontrol = service_->copy ();

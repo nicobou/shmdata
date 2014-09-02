@@ -1227,7 +1227,7 @@ Init (v8::Handle < v8::Object > target)
   switcher_manager->subscribe_signal ("signal_sub", "create_remove_spy",
                                       "on-quiddity-removed");
 
-  //do not play with previous config 
+  //do not play with previous config
   switcher_manager->reset_command_history (false);
 
   //history

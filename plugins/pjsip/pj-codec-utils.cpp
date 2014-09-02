@@ -63,8 +63,8 @@ namespace switcher
       {
         GstStaticPadTemplate *pad =
           (GstStaticPadTemplate *) static_pads->data;
-//the following is EMPTY gchar *caps_str = gst_caps_to_string (&pad->static_caps.caps); 
-//g_free (caps_str); 
+//the following is EMPTY gchar *caps_str = gst_caps_to_string (&pad->static_caps.caps);
+//g_free (caps_str);
 /* //g_print ("string: %s\n",  */
 /*       pad->static_caps.string);  */
         GstCaps *caps = gst_caps_from_string (pad->static_caps.string);
@@ -112,19 +112,19 @@ namespace switcher
     const GValue *val = gst_structure_get_value (caps_struct, key.c_str ());
     if (nullptr != val)
       {
-//g_print ("%s struct type %s\n", key.c_str (), G_VALUE_TYPE_NAME (val));  
+//g_print ("%s struct type %s\n", key.c_str (), G_VALUE_TYPE_NAME (val));
         if (GST_VALUE_HOLDS_LIST (val))
           {
             for (guint i = 0; i < gst_value_list_get_size (val); i++)
               {
                 const GValue *item_val = gst_value_list_get_value (val, i);
-//g_print ("encoding-name list %s\n", g_value_get_string (item_val)); 
+//g_print ("encoding-name list %s\n", g_value_get_string (item_val));
                 res.emplace_back (g_value_get_string (item_val));
               }
           }
         if (G_VALUE_HOLDS_STRING (val))
           {
-            //g_print ("%s string %s\n", key.c_str (), g_value_get_string (val)); 
+            //g_print ("%s string %s\n", key.c_str (), g_value_get_string (val));
             res.emplace_back (g_value_get_string (val));
           }
       }
@@ -143,10 +143,10 @@ namespace switcher
     const GValue *val = gst_structure_get_value (caps_struct, key.c_str ());
     if (nullptr != val)
       {
-//g_print ("%s struct type %s\n", key.c_str (), G_VALUE_TYPE_NAME (val));  
+//g_print ("%s struct type %s\n", key.c_str (), G_VALUE_TYPE_NAME (val));
         if (GST_VALUE_HOLDS_INT_RANGE (val))
           {
-            //g_print ("%s min %d\n", key.c_str (), gst_value_get_int_range_max (val));  
+            //g_print ("%s min %d\n", key.c_str (), gst_value_get_int_range_max (val));
             res.push_back (gst_value_get_int_range_max (val));
           }
         if (GST_VALUE_HOLDS_LIST (val))
@@ -154,13 +154,13 @@ namespace switcher
             for (guint i = 0; i < gst_value_list_get_size (val); i++)
               {
                 const GValue *item_val = gst_value_list_get_value (val, i);
-//g_print ("%s list %d\n", key.c_str (), g_value_get_int (item_val)); 
+//g_print ("%s list %d\n", key.c_str (), g_value_get_int (item_val));
                 res.push_back (g_value_get_int (item_val));
               }
           }
         if (G_VALUE_HOLDS_INT (val))
           {
-            //g_print ("%s int %d\n", key.c_str (), g_value_get_int (val)); 
+            //g_print ("%s int %d\n", key.c_str (), g_value_get_int (val));
             res.push_back (g_value_get_int (val));
           }
       }
@@ -178,8 +178,8 @@ namespace switcher
           GstStructure *caps_struct = gst_caps_get_structure (caps, i - 1);
           if (gst_structure_has_name (caps_struct, "application/x-rtp"))
             {
-              // //g_print ("string: %s\n",   
-              //        gst_structure_to_string (caps_struct));   
+              // //g_print ("string: %s\n",
+              //        gst_structure_to_string (caps_struct));
               PJCodecUtils::codecs tmp =
                 inspect_rtp_codec_from_gst_struct (caps_struct);
               res.insert (res.begin (),
@@ -300,7 +300,7 @@ namespace switcher
     }
     // for (auto &it : res)
     //  {
-    //   std::cout << " encoding " << it->encoding_name_ 
+    //   std::cout << " encoding " << it->encoding_name_
     //        << " payload " << it->payload_
     //        << " media " << it->media_
     //        << " clock rate " << it->clock_rate_

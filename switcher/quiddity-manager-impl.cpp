@@ -23,7 +23,7 @@
 #include "quiddity-manager-impl.h"
 #include "quiddity.h"
 
-//removing shmdata 
+//removing shmdata
 #include <gio/gio.h>
 
 //the quiddities to manage (line sorted)
@@ -321,7 +321,7 @@ QuiddityManager_Impl::QuiddityManager_Impl (const std::string & name):
     return true;
   }
 
-  //for use of the "get description by class" methods 
+  //for use of the "get description by class" methods
   std::string
     QuiddityManager_Impl::create_without_hook (std::string quiddity_class)
   {
@@ -1285,7 +1285,7 @@ QuiddityManager_Impl::QuiddityManager_Impl (const std::string & name):
       {
         descend = g_file_get_child (dir, g_file_info_get_name (info));
         absolute_path = g_file_get_path (descend);      //g_file_get_relative_path (dir, descend);
-//trying to load the module 
+//trying to load the module
         if (g_str_has_suffix (absolute_path, ".so")
             || g_str_has_suffix (absolute_path, ".dylib"))
           {

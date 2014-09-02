@@ -181,7 +181,7 @@ namespace switcher
     return json_description_->get_root ();
   }
 
-  //make json formated description 
+  //make json formated description
   void Property::make_description ()
   {
     if (nullptr == property_)
@@ -196,11 +196,11 @@ namespace switcher
     g_object_get_property (object_, property_->name, &value);
     json_description_->reset ();
     json_description_->begin_object ();
-    //long name 
+    //long name
     json_description_->add_string_member ("long name", long_name_.c_str ());
     //name
     json_description_->add_string_member ("name", name_.c_str ());
-    //nickname 
+    //nickname
     //json_description_->add_string_member ("nickname", g_param_spec_get_nick (property_));
 
     // short description
@@ -422,8 +422,8 @@ namespace switcher
             json_description_->end_object ();
 
 // g_debug ("Enum \"%s\" Default: %d, \"%s\" \"%s\"",
-//  g_type_name (G_VALUE_TYPE (&value)), 
-//  enum_value, 
+//  g_type_name (G_VALUE_TYPE (&value)),
+//  enum_value,
 //  value_nick,
 //  value_name);
 
@@ -572,7 +572,7 @@ namespace switcher
 
     GValue value = G_VALUE_INIT;
 
-    //GObject *element = object_; 
+    //GObject *element = object_;
 
     readable = FALSE;
 

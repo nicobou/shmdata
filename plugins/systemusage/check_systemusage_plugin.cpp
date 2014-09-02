@@ -69,10 +69,10 @@ main ()
     // if (!manager->set_property ("test", "period", "0.5"))
     //   success = false;
 
-    // manager->make_signal_subscriber ("signal_subscriber", 
-    //        quiddity_created_removed_cb, 
+    // manager->make_signal_subscriber ("signal_subscriber",
+    //        quiddity_created_removed_cb,
     //        manager.get ());
-    // manager->subscribe_signal ("signal_subscriber", 
+    // manager->subscribe_signal ("signal_subscriber",
     //  "test",
     //  "on-tree-grafted");
     // std::this_thread::sleep_for(std::chrono::milliseconds(3000));

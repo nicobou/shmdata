@@ -22,8 +22,8 @@
  */
 
 // no includes here since this file is included from hash-table
-// this separation is done in order to make hash-table.h easier to read 
-// when using it  
+// this separation is done in order to make hash-table.h easier to read
+// when using it
 
 namespace switcher
 {

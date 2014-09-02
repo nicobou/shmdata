@@ -130,7 +130,7 @@ namespace switcher
           gst_pad_unlink (pad, peer);
         else
           gst_pad_unlink (peer, pad);
-        //checking if the pad has been requested and releasing it needed 
+        //checking if the pad has been requested and releasing it needed
         GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);    //check if this must be unrefed for GST 1
         if (nullptr != pad_templ
             && GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)

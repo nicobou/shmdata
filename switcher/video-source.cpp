@@ -29,8 +29,8 @@ namespace switcher
                                                            // "format", GST_TYPE_FOURCC,
                                                            // GST_MAKE_FOURCC ('I', '4', '2', '0'),
                                                            //"framerate", GST_TYPE_FRACTION, 30, 1,
-                                                           // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1, 
-                                                           //  "width", G_TYPE_INT, 640, 
+                                                           // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1,
+                                                           //  "width", G_TYPE_INT, 640,
                                                            //  "height", G_TYPE_INT, 480,
                                                            nullptr)),
     shmdata_path_ (),
@@ -98,7 +98,7 @@ namespace switcher
                                 gpointer /*user_data */ )
   {
     //g_print ("%s\n", g_type_name (gst_element_factory_get_element_type (GST_ELEMENT_FACTORY (data))));
-    // g_print ("long name: %s name %s description:%s\n", 
+    // g_print ("long name: %s name %s description:%s\n",
     //      gst_element_factory_get_longname ((GstElementFactory *)data),
     //      gst_plugin_feature_get_name ((GstPluginFeature *)data),
     //      gst_element_factory_get_description ((GstElementFactory *)data));
@@ -198,7 +198,7 @@ namespace switcher
     GstElement *tmp_color_space_codec_element = color_space_codec_element_;
     GstElement *tmp_queue_codec_element = queue_codec_element_;
 
-    //TODO queue property ? 
+    //TODO queue property ?
     if (!GstUtils::make_element
         (secondary_codec_[codec_].value_nick, &codec_element_)
         || !GstUtils::make_element ("ffmpegcolorspace",

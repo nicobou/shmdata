@@ -19,9 +19,9 @@
 
   /**
    * @file   information-tree-basic-serializer.h
-   * 
-   * @brief serialize and deserialize an information tree  
-   * 
+   *
+   * @brief serialize and deserialize an information tree
+   *
    * serializing as lines with absolute key path, space(s), value and new line
    * for instance:
    * .child1.child2.vol 0.6
@@ -48,7 +48,7 @@ namespace switcher
 
     };
 
-  }                             // end of "data" namespace 
+  }                             // end of "data" namespace
 }                               // end of "switcher" namespace
 
 #endif                          // ifndef

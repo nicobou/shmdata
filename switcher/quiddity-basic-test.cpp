@@ -51,7 +51,7 @@ namespace switcher
       {
         g_warning ("quiddity %s cannot be created (with nickname)",
                    quiddity_class_name.c_str ());
-        return true;            //true because some quiddity may not be crated because of a missing resource 
+        return true;            //true because some quiddity may not be crated because of a missing resource
       }
 
     if (!manager->remove (res_with_nick))
@@ -87,9 +87,9 @@ namespace switcher
                       void * /*user_data */ )
   {
     // g_print ("on_started_cb: %s, %s, %s, %s\n",
-    //      subscriber_name.c_str (), 
-    //      quiddity_name.c_str (), 
-    //      property_name.c_str (), 
+    //      subscriber_name.c_str (),
+    //      quiddity_name.c_str (),
+    //      property_name.c_str (),
     //      value.c_str ());
     return;
   }
@@ -107,7 +107,7 @@ namespace switcher
         g_warning
           ("quiddity %s cannot be created (startable not actualy tested)",
            quiddity_class_name.c_str ());
-        return true;            //true because some quiddity may not be crated because of a missing resource 
+        return true;            //true because some quiddity may not be crated because of a missing resource
       }
 
     if (manager->has_property (name, "started"))

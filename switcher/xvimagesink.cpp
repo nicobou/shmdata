@@ -80,7 +80,7 @@ namespace switcher
 
     // install_property (G_OBJECT (xvimagesink_),
     //        "force-aspect-ratio",
-    //        "force-aspect-ratio", 
+    //        "force-aspect-ratio",
     //        "Force Aspect Ratio");
 
     on_error_command_ = new QuiddityCommand ();

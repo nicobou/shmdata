@@ -142,7 +142,7 @@ namespace switcher
     bool compare_properties (std::string first, std::string second);
 
     //pair is <class_name, signal_name>
-    //this map is static in order to avoid re-creation of the same signal for each quiddity instance 
+    //this map is static in order to avoid re-creation of the same signal for each quiddity instance
     static std::map < std::pair < std::string, std::string >,
       guint > signals_ids_;
       std::unordered_map < std::string, Signal::ptr > signals_;
@@ -243,7 +243,7 @@ namespace switcher
     bool disable_method (std::string name);
     bool enable_method (std::string name);
 
-    //signals 
+    //signals
     bool install_signal (const std::string long_name,
                          const std::string signal_name,
                          const std::string short_description,
@@ -264,11 +264,11 @@ namespace switcher
     //custom signals
     void emit_on_interface_changed ();  //in order to tell properties/methods has changed
 
-    //use a consistent naming for shmdatas FIXME move that to segment (or not?) 
+    //use a consistent naming for shmdatas FIXME move that to segment (or not?)
       std::string make_file_name (std::string suffix);
 
-    //used in order to dynamically create other quiddity, weak_ptr is used in order to 
-    //avoid circular references to the manager_impl 
+    //used in order to dynamically create other quiddity, weak_ptr is used in order to
+    //avoid circular references to the manager_impl
       std::weak_ptr < QuiddityManager_Impl > manager_impl_;
 
     //gobject wrapper for custom signals and properties

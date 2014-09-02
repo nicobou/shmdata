@@ -46,7 +46,7 @@ namespace switcher
       std::string shmdata_path_;
     //custom properties:
       CustomPropertyHelper::ptr custom_props_;
-    //codec //FIXME make this static 
+    //codec //FIXME make this static
     GParamSpec *primary_codec_spec_;
     GEnumValue primary_codec_[128];
     GParamSpec *secondary_codec_spec_;
