@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "gobject-custom-property.h"
+#include "./gobject-custom-property.h"
 
 namespace switcher {
   GObjectCustomProperty::GObjectCustomProperty() {

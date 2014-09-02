@@ -12,10 +12,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
-#include "v4l2src.h"
+#include "./v4l2src.h"
 #include "switcher/gst-utils.h"
 #include <cstdlib>              // For srand() and rand()
 #include <ctime>                // For time()
@@ -64,7 +64,7 @@ namespace switcher {
     if (!make_elements())
       return false;
 
-    //device inspector
+    // device inspector
     check_folder_for_v4l2_devices("/dev");
     update_capture_device();
 
@@ -105,7 +105,7 @@ namespace switcher {
     gint i = 0;
   for (auto & it:capture_devices_) {
       devices_enum_[i].value = i;
-//FIXME previous free here
+// FIXME previous free here
       devices_enum_[i].value_name = g_strdup(it.card_.c_str());
       devices_enum_[i].value_nick = g_strdup(it.file_device_.c_str());
       i++;
@@ -129,12 +129,12 @@ namespace switcher {
 
   void V4L2Src::update_discrete_resolution(CaptureDescription cap_descr) {
     uninstall_property("resolution");
-    //resolution_ = -1;
+    // resolution_ = -1;
     if (!cap_descr.frame_size_discrete_.empty()) {
       gint i = 0;
     for (auto & it:cap_descr.frame_size_discrete_) {
         resolutions_enum_[i].value = i;
-        //FIXME free previous here
+        // FIXME free previous here
         resolutions_enum_[i].value_name = g_strdup_printf("%sx%s",
                                                           it.first.c_str(),
                                                           it.second.c_str());
@@ -155,7 +155,7 @@ namespace switcher {
                                                               V4L2Src::set_resolution,
                                                               V4L2Src::get_resolution,
                                                               this);
-//resolution_ = 0;
+// resolution_ = 0;
       install_property_by_pspec(custom_props_->get_gobject(),
                                 resolutions_spec_,
                                 "resolution", "Resolution");
@@ -166,13 +166,13 @@ namespace switcher {
 
   void V4L2Src::update_discrete_framerate(CaptureDescription cap_descr) {
     uninstall_property("framerate");
-    //framerate_ = -1;
+    // framerate_ = -1;
     if (!cap_descr.frame_interval_discrete_.empty()) {
       gint i = 0;
     for (auto & it:cap_descr.frame_interval_discrete_) {
         framerates_enum_[i].value = i;
-        //FIXME free previous here
-        //inversing enumerator and denominator because gst wants framerate while v4l2 gives frame interval
+        // FIXME free previous here
+        // inversing enumerator and denominator because gst wants framerate while v4l2 gives frame interval
         framerates_enum_[i].value_name = g_strdup_printf("%s/%s",
                                                          it.second.c_str(),
                                                          it.first.c_str());
@@ -193,7 +193,7 @@ namespace switcher {
                                                             V4L2Src::set_framerate,
                                                             V4L2Src::get_framerate,
                                                             this);
-//framerate_ = 0;
+// framerate_ = 0;
       install_property_by_pspec(custom_props_->get_gobject(),
                                 framerate_spec_, "framerate", "Framerate");
 
@@ -203,10 +203,10 @@ namespace switcher {
   void V4L2Src::update_width_height(CaptureDescription cap_descr) {
     uninstall_property("width");
     uninstall_property("height");
-    //width_ = -1;
-    //height_ = -1;
+    // width_ = -1;
+    // height_ = -1;
     if (cap_descr.frame_size_stepwise_max_width_ > 0) {
-//width_ = cap_descr.frame_size_stepwise_max_width_;
+// width_ = cap_descr.frame_size_stepwise_max_width_;
       if (width_spec_ == nullptr)
         width_spec_ =
           custom_props_->make_int_property("width",
@@ -221,7 +221,7 @@ namespace switcher {
       install_property_by_pspec(custom_props_->get_gobject(),
                                 width_spec_, "width", "Width");
 
-//height_ = cap_descr.frame_size_stepwise_max_height_;
+// height_ = cap_descr.frame_size_stepwise_max_height_;
 
       if (height_spec_ == nullptr)
         height_spec_ =
@@ -246,14 +246,14 @@ namespace switcher {
                                                     cap_descr) {
     uninstall_property("framerate_numerator");
     uninstall_property("framerate_denominator");
-    //framerate_numerator_ = -1;
-    //framerate_denominator_ = -1;
+    // framerate_numerator_ = -1;
+    // framerate_denominator_ = -1;
     if (cap_descr.frame_interval_stepwise_max_numerator_ > 0) {
 
-//framerate_numerator_ = 60;
+// framerate_numerator_ = 60;
 
       if (framerate_numerator_spec_ == nullptr)
-        framerate_numerator_spec_ = custom_props_->make_int_property("framerate_numerator", "framerate numerator of selected capture devices", 1,       //FIXME do actually use values
+        framerate_numerator_spec_ = custom_props_->make_int_property("framerate_numerator", "framerate numerator of selected capture devices", 1,       // FIXME do actually use values
                                                                      60,
                                                                      60,
                                                                      (GParamFlags)
@@ -289,12 +289,12 @@ namespace switcher {
 
   void V4L2Src::update_tv_standard(CaptureDescription cap_descr) {
     uninstall_property("tv_standard");
-    //tv_standard_ = -1;
+    // tv_standard_ = -1;
     if (!cap_descr.tv_standards_.empty()) {
       gint i = 0;
     for (auto & it:cap_descr.tv_standards_) {
         tv_standards_enum_[i].value = i;
-        //FIXME free previous here
+        // FIXME free previous here
         tv_standards_enum_[i].value_name = g_strdup(it.c_str());
         tv_standards_enum_[i].value_nick = tv_standards_enum_[i].value_name;
         i++;
@@ -313,7 +313,7 @@ namespace switcher {
                                             V4L2Src::set_tv_standard,
                                             V4L2Src::get_tv_standard, this);
 
-//tv_standard_ = 0;
+// tv_standard_ = 0;
       install_property_by_pspec(custom_props_->get_gobject(),
                                 tv_standards_spec_,
                                 "tv_standard", "TV Standard");
@@ -325,7 +325,7 @@ namespace switcher {
   V4L2Src::~V4L2Src() {
     if (capture_devices_description_ != nullptr)
       g_free(capture_devices_description_);
-    //clean_elements ();
+    // clean_elements ();
   }
 
   bool V4L2Src::make_elements() {
@@ -386,7 +386,7 @@ namespace switcher {
     //        (char *)vcap.bus_info,
     //        (char *)vcap.driver);
 
-    //pixel format
+    // pixel format
     v4l2_fmtdesc fmt;
     unsigned default_pixel_format = 0;
     memset(&fmt, 0, sizeof(fmt));
@@ -468,7 +468,7 @@ namespace switcher {
     description.tv_standards_.push_back("none");
     while (ioctl(fd, VIDIOC_ENUMSTD, &std) >= 0) {
       description.tv_standards_.push_back((char *) std.name);
-//g_print ("TV standard %s\n", (char *)std.name);
+// g_print ("TV standard %s\n", (char *)std.name);
       std.index++;
     }
 
@@ -479,7 +479,7 @@ namespace switcher {
     frmival.height = default_height;
     frmival.index = 0;
 
-    //g_print ("frame interval for default pixel format and default frame size:\n");
+    // g_print ("frame interval for default pixel format and default frame size:\n");
     while (ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frmival) >= 0
            && frmival.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
       if (frmival.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
@@ -523,8 +523,8 @@ namespace switcher {
         frmival.stepwise.step.numerator;
       description.frame_interval_stepwise_step_denominator_ =
         frmival.stepwise.step.denominator;
-      framerate_numerator_ = 60;        //FIXME use actual values
-      framerate_denominator_ = 60;      //FIXME use actual values
+      framerate_numerator_ = 60;        // FIXME use actual values
+      framerate_denominator_ = 60;      // FIXME use actual values
     }
     else {
       description.frame_interval_stepwise_max_numerator_ = -1;
@@ -594,7 +594,7 @@ namespace switcher {
                                    unsigned /*pixel_format */ ,
                                    unsigned /*width */ ,
                                    unsigned /*height */ ) {
-    //FIXME, framerate can change according to pixel_format and resolution
+    // FIXME, framerate can change according to pixel_format and resolution
     g_debug("  V4L2Src::inspect_frame_rate: TODO");
     return false;
   }

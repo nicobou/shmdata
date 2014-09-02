@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "gst-parse-to-bin-src.h"
-#include "gst-utils.h"
+#include "./gst-parse-to-bin-src.h"
+#include "./gst-utils.h"
 
 namespace switcher {
 
@@ -71,16 +71,16 @@ namespace switcher {
 
     g_object_set(G_OBJECT(gst_parse_to_bin_src_), "async-handling", TRUE,
                  nullptr);
-    //GstUtils::wait_state_changed (bin_);
+    // GstUtils::wait_state_changed (bin_);
 
     GstPad *src_pad =
       gst_element_get_static_pad(gst_parse_to_bin_src_, "src");
     gst_bin_add(GST_BIN(bin_), gst_parse_to_bin_src_);
 
-    //make a shmwriter
+    // make a shmwriter
     ShmdataWriter::ptr writer;
     writer.reset(new ShmdataWriter());
-    writer->set_path(make_file_name("gstsrc").c_str()); //FIXME use caps name
+    writer->set_path(make_file_name("gstsrc").c_str()); // FIXME use caps name
     writer->plug(bin_, src_pad);
     register_shmdata(writer);
     gst_object_unref(src_pad);
@@ -105,7 +105,7 @@ namespace switcher {
 
   bool GstParseToBinSrc::clean() {
     clear_shmdatas();
-    reset_bin();                //bool res = unregister_shmdata (make_file_name ("video"));
+    reset_bin();                // bool res = unregister_shmdata (make_file_name ("video"));
     return true;
   }
 

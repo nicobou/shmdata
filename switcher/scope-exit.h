@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_SCOPE_EXIT_H__
 #define __SWITCHER_SCOPE_EXIT_H__
 
-//scope exit implementation from Alexandrescu's talk at NDC 2014
+// scope exit implementation from Alexandrescu's talk at NDC 2014
 
 #include <utility>
 
@@ -49,7 +49,7 @@ namespace scope_guard {
 #define CONCATENATE_IMPL(s1, s2) s1##s2
 #define CONCATENATE(s1, s2) CONCATENATE_IMPL(s1, s2)
 
-//could replace __LINE__ with __COUNTER__ but not always available
+// could replace __LINE__ with __COUNTER__ but not always available
 #define On_scope_exit				\
   auto CONCATENATE(on_scope_exit_var, __LINE__) \
   = ::scope_guard::ScopeGuardOnExit () + [&]()

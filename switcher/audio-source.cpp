@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "audio-source.h"
-#include "gst-utils.h"
+#include "./audio-source.h"
+#include "./gst-utils.h"
 #include <memory>
 
 namespace switcher {
@@ -41,7 +41,7 @@ namespace switcher {
     GstCaps *audiocaps = gst_caps_new_simple("audio/x-raw-int",
                                              "width", G_TYPE_INT, 16,
                                              nullptr);
-    //creating a connector for raw audio
+    // creating a connector for raw audio
     ShmdataWriter::ptr shmdata_writer;
     shmdata_writer.reset(new ShmdataWriter());
     shmdata_path_ = make_file_name("audio");

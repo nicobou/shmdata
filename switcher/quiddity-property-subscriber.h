@@ -28,7 +28,7 @@
 #include <memory>
 #include <map>
 #include <vector>
-#include "property.h"
+#include "./property.h"
 
 namespace switcher {
   class Quiddity;
@@ -61,7 +61,7 @@ namespace switcher {
     static void property_cb(GObject * gobject, GParamSpec * pspec,
                             gpointer user_data);
 
-    //manager_impl initialization
+    // manager_impl initialization
     void set_manager_impl(std::shared_ptr < QuiddityManager_Impl >
                           manager_impl);
 

@@ -17,11 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "uridecodebin.h"
-#include "gst-utils.h"
+#include "./uridecodebin.h"
+#include "./gst-utils.h"
 #include <glib/gprintf.h>
 #include <memory>
-#include "quiddity-command.h"
+#include "./quiddity-command.h"
 
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
@@ -53,7 +53,7 @@ namespace switcher {
     if (!GstUtils::make_element("uridecodebin", &uridecodebin_))
       return false;
     install_play_pause();
-    //install_seek ();
+    // install_seek ();
     uri_spec_ =
       custom_props_->make_string_property("uri",
                                           "URI To Be Redirected Into Shmdata(s)",
@@ -84,7 +84,7 @@ namespace switcher {
 
     media_counters_.clear();
     main_pad_ = nullptr;
-    //discard_next_uncomplete_buffer_ = false;
+    // discard_next_uncomplete_buffer_ = false;
     rtpgstcaps_ =
       gst_caps_from_string("application/x-rtp, media=(string)application");
 
@@ -159,7 +159,7 @@ namespace switcher {
 
   void Uridecodebin::no_more_pads_cb(GstElement * /*object */ ,
                                      gpointer /*user_data */ ) {
-    //g_print ("---- no more pad\n");
+    // g_print ("---- no more pad\n");
     // Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   }
 
@@ -233,8 +233,8 @@ namespace switcher {
     // } GstAutoplugSelectResult;
 
     if (g_strcmp0(GST_OBJECT_NAME(factory), "rtpgstdepay") == 0)
-      return 1;                 //expose
-    return 0;                   //try
+      return 1;                 // expose
+    return 0;                   // try
   }
 
   // GValueArray*
@@ -291,7 +291,7 @@ namespace switcher {
                        (GstSeekFlags) (GST_SEEK_FLAG_FLUSH |
                                        GST_SEEK_FLAG_ACCURATE),
                        //| GST_SEEK_FLAG_SKIP
-                       //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization
+                       //| GST_SEEK_FLAG_KEY_UNIT, // using key unit is breaking synchronization
                        GST_SEEK_TYPE_SET,
                        0.0 * GST_SECOND,
                        GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
@@ -322,7 +322,7 @@ namespace switcher {
       return FALSE;
     }
 
-    //g_print ("event probed (%s)\n", GST_EVENT_TYPE_NAME(event));
+    // g_print ("event probed (%s)\n", GST_EVENT_TYPE_NAME(event));
     return TRUE;
   }
 
@@ -354,7 +354,7 @@ namespace switcher {
   }
 
   void Uridecodebin::pad_to_shmdata_writer(GstElement * bin, GstPad * pad) {
-    //detecting type of media
+    // detecting type of media
     const gchar *padname;
     if (0 == g_strcmp0("ANY", gst_caps_to_string(gst_pad_get_caps(pad))))
       padname = "custom";
@@ -379,25 +379,25 @@ namespace switcher {
     GstUtils::link_static_to_request(pad, funnel);
     gst_element_link(funnel, fakesink);
 
-    //GstUtils::wait_state_changed (bin);
+    // GstUtils::wait_state_changed (bin);
     GstUtils::sync_state_with_parent(fakesink);
     GstUtils::sync_state_with_parent(funnel);
 
-    //probing eos
+    // probing eos
     GstPad *srcpad = gst_element_get_static_pad(funnel, "src");
     if (main_pad_ == nullptr)
-      main_pad_ = srcpad;       //saving first pad for looping
+      main_pad_ = srcpad;       // saving first pad for looping
     gst_pad_add_event_probe(srcpad, (GCallback) event_probe_cb, this);
     gst_object_unref(srcpad);
 
-    //giving a name to the stream
+    // giving a name to the stream
     gchar **padname_splitted = g_strsplit_set(padname, "/", -1);
-    //counting
+    // counting
     int count = 0;
     auto it = media_counters_.find(padname_splitted[0]);
     if (media_counters_.end() != it)
       count = it->second + 1;
-    //else
+    // else
     //  {
     //    std::string media_type ("unknown");
     //    if (nullptr != padname_splitted[0])
@@ -454,7 +454,7 @@ namespace switcher {
     if (GST_EVENT_TYPE(event) == GST_EVENT_CUSTOM_DOWNSTREAM) {
       const GstStructure *s;
       s = gst_event_get_structure(event);
-//g_debug ("event probed (%s)\n", gst_structure_get_name (s));
+// g_debug ("event probed (%s)\n", gst_structure_get_name (s));
       if (gst_structure_has_name(s, "GstRTPPacketLost"))
         context->discard_next_uncomplete_buffer_ = true;
       return FALSE;
@@ -473,7 +473,7 @@ namespace switcher {
     //      gst_caps_to_string (gst_pad_get_caps (pad)));
 
     if (gst_caps_can_intersect(context->rtpgstcaps_, gst_pad_get_caps(pad))) {
-//asking rtpbin to send an event when a packet is lost (do-lost property)
+// asking rtpbin to send an event when a packet is lost (do-lost property)
       GstUtils::set_element_property_in_bin(object, "gstrtpbin", "do-lost",
                                             TRUE);
 
@@ -481,7 +481,7 @@ namespace switcher {
       GstElement *rtpgstdepay;
       GstUtils::make_element("rtpgstdepay", &rtpgstdepay);
 
-//adding a probe for discarding uncomplete packets
+// adding a probe for discarding uncomplete packets
       GstPad *depaysrcpad = gst_element_get_static_pad(rtpgstdepay, "src");
       gst_pad_add_buffer_probe(depaysrcpad,
                                G_CALLBACK
@@ -491,7 +491,7 @@ namespace switcher {
 
       gst_bin_add(GST_BIN(context->bin_), rtpgstdepay);
       GstPad *sinkpad = gst_element_get_static_pad(rtpgstdepay, "sink");
-//adding a probe for handling loss messages from rtpbin
+// adding a probe for handling loss messages from rtpbin
       gst_pad_add_event_probe(sinkpad, (GCallback)
                               Uridecodebin::gstrtpdepay_event_probe_cb,
                               context);
@@ -503,7 +503,7 @@ namespace switcher {
       gst_element_get_state(rtpgstdepay, nullptr, nullptr,
                             GST_CLOCK_TIME_NONE);
       context->pad_to_shmdata_writer(context->bin_, srcpad);
-//gst_object_unref (srcpad);
+// gst_object_unref (srcpad);
     }
     else
       context->pad_to_shmdata_writer(context->bin_, pad);
@@ -517,7 +517,7 @@ namespace switcher {
             GST_ELEMENT_NAME(source),
             G_OBJECT_CLASS_NAME(G_OBJECT_GET_CLASS(source)));
 
-    //get the uri
+    // get the uri
     GValue val = G_VALUE_INIT;
     g_value_init(&val, G_TYPE_STRING);
 
@@ -525,7 +525,7 @@ namespace switcher {
 
     gchar *val_str = GstUtils::gvalue_serialize(&val);
 
-    //building the command
+    // building the command
     context->clean_on_error_command();
     context->on_error_command_ = new QuiddityCommand();
     context->on_error_command_->id_ = QuiddityCommand::set_property;
@@ -550,7 +550,7 @@ namespace switcher {
     g_debug("to_shmdata set uri %s", uri_);
     g_object_set(G_OBJECT(uridecodebin_), "uri", uri_, nullptr);
     gst_bin_add(GST_BIN(bin_), uridecodebin_);
-    //GstUtils::wait_state_changed (bin_);
+    // GstUtils::wait_state_changed (bin_);
     GstUtils::sync_state_with_parent(uridecodebin_);
     return true;
   }

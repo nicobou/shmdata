@@ -20,9 +20,9 @@
 #ifndef __SWITCHER_FAKESINK_H__
 #define __SWITCHER_FAKESINK_H__
 
-#include "single-pad-gst-sink.h"
-#include "gst-element-cleaner.h"
-#include "custom-property-helper.h"
+#include "./single-pad-gst-sink.h"
+#include "./gst-element-cleaner.h"
+#include "./custom-property-helper.h"
 #include <gst/gst.h>
 #include <memory>
 
@@ -43,7 +43,7 @@ namespace switcher {
     gint byte_rate_;
     gchar *string_caps_;
     gboolean set_string_caps_;
-    //byte rate property
+    // byte rate property
     CustomPropertyHelper::ptr props_;
     GParamSpec *byte_rate_spec_;
     GParamSpec *caps_spec_;

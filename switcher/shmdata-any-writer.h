@@ -24,9 +24,9 @@
 #include <string>
 #include <mutex>
 #include <shmdata/any-data-writer.h>
-#include "json-builder.h"
-#include "clock.h"
-#include "on-caps.h"
+#include "./json-builder.h"
+#include "./clock.h"
+#include "./on-caps.h"
 
 namespace switcher {
 
@@ -38,7 +38,7 @@ namespace switcher {
     ~ShmdataAnyWriter();
     ShmdataAnyWriter(const ShmdataAnyWriter &) = delete;
     ShmdataAnyWriter & operator=(const ShmdataAnyWriter &) = delete;
-    bool set_path(std::string name);    //path needs to be fully specified
+    bool set_path(std::string name);    // path needs to be fully specified
     std::string get_path();
     void set_data_type(std::string data_type);
     void push_data(void *data,
@@ -53,7 +53,7 @@ namespace switcher {
     void start();
     bool started();
 
-    //get json doc:
+    // get json doc:
     JSONBuilder::Node get_json_root_node();
 
   private:

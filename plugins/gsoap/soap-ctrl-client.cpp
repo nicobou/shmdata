@@ -12,10 +12,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
-#include "soap-ctrl-client.h"
+#include "./soap-ctrl-client.h"
 #include "webservices/control.nsmap"
 #include "switcher/gst-utils.h"
 
@@ -41,7 +41,7 @@ namespace switcher {
 
     install_method("Set Remote Switcher",
                    "set_remote_url",
-                   "set remote url to control (for instance http://localhost:8080)",
+                   "set remote url to control (for instance http:// localhost:8080)",
                    "success or fail",
                    Method::make_arg_description("URL",
                                                 "url",
@@ -282,7 +282,7 @@ namespace switcher {
     context->url_ = g_strdup((char *) url);
     context->switcher_control_->soap_endpoint = context->url_;
     if (TRUE == context->try_connect(context)) {
-      context->try_connect_g_source_ = GstUtils::g_timeout_add_to_context(2000, //must be higher than gsoap timeouts
+      context->try_connect_g_source_ = GstUtils::g_timeout_add_to_context(2000, // must be higher than gsoap timeouts
                                                                           try_connect,
                                                                           context,
                                                                           context->get_g_main_context
@@ -350,7 +350,7 @@ namespace switcher {
                                                   (gchar *) property_name,
                                                   (gchar *) value);
     if (context->switcher_control_->recv_set_property_empty_response())
-      return FALSE;             //context->switcher_control_->soap_print_fault(stderr);
+      return FALSE;             // context->switcher_control_->soap_print_fault(stderr);
 
     // connection should not be kept alive after the last call: be nice to the server and tell it that we close the connection after this call
     soap_clr_omode((context->switcher_control_), SOAP_IO_KEEPALIVE);

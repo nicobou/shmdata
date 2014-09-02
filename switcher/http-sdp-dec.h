@@ -20,9 +20,9 @@
 #ifndef __SWITCHER_HTTP_SDP_DEC_H__
 #define __SWITCHER_HTTP_SDP_DEC_H__
 
-#include "gpipe.h"
-#include "quiddity-command.h"
-#include "decodebin-to-shmdata.h"
+#include "./gpipe.h"
+#include "./quiddity-command.h"
+#include "./decodebin-to-shmdata.h"
 #include <memory>
 #include <map>
 #include <string>
@@ -44,7 +44,7 @@ namespace switcher {
     GstElement *sdpdemux_;
     void init_httpsdpdec();
     void destroy_httpsdpdec();
-    QuiddityCommand *on_error_command_; //for the pipeline error handler
+    QuiddityCommand *on_error_command_; // for the pipeline error handler
     std::list < std::unique_ptr < DecodebinToShmdata >> decodebins_;
     void clean_on_error_command();
     bool init_gpipe() final;

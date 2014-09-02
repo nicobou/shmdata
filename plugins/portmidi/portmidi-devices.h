@@ -48,20 +48,20 @@ namespace switcher {
     PortMidi & operator=(const PortMidi &) = delete;
 
   protected:
-    //info
+    // info
     static const gchar *get_devices_description_json(gpointer user_data);
     GEnumValue input_devices_enum_[128];
     GEnumValue output_devices_enum_[128];
 
-    //input
+    // input
     int get_default_input_device_id();
     bool open_input_device(int id, on_pm_event_method method,
                            void *user_data);
     bool close_input_device(int id);
-    //bool is_queue_empty(int id);
+    // bool is_queue_empty(int id);
     std::vector < unsigned char >poll(int id);
 
-    //ouput
+    // ouput
     int get_default_output_device_id();
     bool open_output_device(int id);
     bool close_output_device(int id);
@@ -77,8 +77,8 @@ namespace switcher {
     static gchar *make_devices_description(void *user_data);
     void update_device_enum();
 
-    //internal midi scheduler
-    class PortMidiScheduler     //singleton
+    // internal midi scheduler
+    class PortMidiScheduler     // singleton
     {
     public:
       PortMidiScheduler();
@@ -104,7 +104,7 @@ namespace switcher {
       bool thru_sysex_in_progress_;
 
       static void process_midi(PtTimestamp timestamp, void *userData);
-    };                          //end of PortMidiScheduler
+    };                          // end of PortMidiScheduler
 
     static PortMidiScheduler *scheduler_;
     static guint instance_counter_;

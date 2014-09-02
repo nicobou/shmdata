@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "shmdata-to-file.h"
+#include "./shmdata-to-file.h"
 #include <glib/gstdio.h>
-#include "gst-utils.h"
+#include "./gst-utils.h"
 
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToFile,
@@ -69,7 +69,7 @@ namespace switcher {
                    Method::make_arg_type_description(G_TYPE_STRING,
                                                      nullptr), this);
 
-    //registering recording property
+    // registering recording property
     recording_param_ = custom_prop_->make_boolean_property("recording",
                                                            "start/stop recording",
                                                            FALSE,
@@ -109,7 +109,7 @@ namespace switcher {
 
     if (recording_)             // starting the reader if pipeline is set
     {
-      //FIXME make the recorder
+      // FIXME make the recorder
     }
 
     return true;
@@ -147,7 +147,7 @@ namespace switcher {
 
   bool ShmdataToFile::make_recorders() {
   for (auto & it:file_names_) {
-//FIXME check file
+// FIXME check file
       GError *error = nullptr;
       gchar *pipe = g_strdup_printf("gdppay ! filesink location=%s",
                                     it.second.c_str());
@@ -161,7 +161,7 @@ namespace switcher {
         return false;
       }
       gst_bin_add(GST_BIN(bin_), recorder_bin);
-      //GstUtils::wait_state_changed (bin_);
+      // GstUtils::wait_state_changed (bin_);
       GstUtils::sync_state_with_parent(recorder_bin);
 
       ShmdataReader::ptr reader;
@@ -171,7 +171,7 @@ namespace switcher {
       reader->set_g_main_context(get_g_main_context());
       reader->set_sink_element(recorder_bin);
 
-      //GstUtils::wait_state_changed (bin_);
+      // GstUtils::wait_state_changed (bin_);
       reader->start();
       shmdata_recorders_[it.first] = recorder_bin;
       register_shmdata(reader);

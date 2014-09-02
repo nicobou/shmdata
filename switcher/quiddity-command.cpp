@@ -21,7 +21,7 @@
  * The Quiddity command class
  */
 
-#include "quiddity-command.h"
+#include "./quiddity-command.h"
 
 namespace switcher {
 
@@ -152,20 +152,20 @@ namespace switcher {
 
     QuiddityCommand::ptr command(new QuiddityCommand());
 
-    //command
+    // command
     json_reader_read_member(reader, "command");
     command->set_id(QuiddityCommand::get_id_from_string
                     (json_reader_get_string_value(reader)));
     json_reader_end_member(reader);
     //---
 
-    //invokation time
+    // invokation time
     json_reader_read_member(reader, "calling time");
     command->time_ = json_reader_get_int_value(reader);
     json_reader_end_member(reader);
     //---
 
-    //arguments
+    // arguments
     json_reader_read_member(reader, "arguments");
     num_elements = json_reader_count_elements(reader);
     for (j = 0; j < num_elements; j++) {
@@ -180,7 +180,7 @@ namespace switcher {
     json_reader_end_member(reader);
     //---
 
-    //vector arguments
+    // vector arguments
     json_reader_read_member(reader, "vector argument");
     num_elements = json_reader_count_elements(reader);
     std::vector < std::string > string_vect_arg;
@@ -196,7 +196,7 @@ namespace switcher {
     command->set_vector_arg(string_vect_arg);
     //---
 
-    //results
+    // results
     json_reader_read_member(reader, "results");
     num_elements = json_reader_count_elements(reader);
     std::vector < std::string > expected_result;

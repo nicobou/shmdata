@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_XVIMAGESINK_H__
 #define __SWITCHER_XVIMAGESINK_H__
 
-#include "single-pad-gst-sink.h"
+#include "./single-pad-gst-sink.h"
 #include <gst/gst.h>
 #include <memory>
 
@@ -39,7 +39,7 @@ namespace switcher {
     GstElement *queue_;
     GstElement *ffmpegcolorspace_;
     GstElement *xvimagesink_;
-    QuiddityCommand *on_error_command_; //for the pipeline error handler
+    QuiddityCommand *on_error_command_; // for the pipeline error handler
     bool init_gpipe() final;
     bool can_sink_caps(std::string caps) final;
   };

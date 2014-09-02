@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "pj-sip.h"
+#include "./pj-sip.h"
 
 namespace switcher {
 
@@ -28,8 +28,8 @@ namespace switcher {
                                        "Manages user sessions",
                                        "LGPL", "sip", "Nicolas Bouillot");
 
-//according to pjsip documentation:
-//Application should only instantiate one SIP endpoint instance for every process.
+// according to pjsip documentation:
+// Application should only instantiate one SIP endpoint instance for every process.
   pjsip_endpoint *PJSIP::sip_endpt_ = nullptr;
 
     PJSIP::PJSIP():cp_() {
@@ -113,12 +113,12 @@ namespace switcher {
       pjsua_config_default(&cfg);
       cfg.cb.on_buddy_state = &PJPresence::on_buddy_state;
       cfg.cb.on_reg_state2 = &PJPresence::on_registration_state;
-      //cfg.cb.on_create_media_transport = &on_create_media_transport;---
+      // cfg.cb.on_create_media_transport = &on_create_media_transport;---
 
-      //see pjsip-apps/src/pjsua/pjsua_app.c
+      // see pjsip-apps/src/pjsua/pjsua_app.c
       // cfg.cb.on_call_state = &on_call_state;
-      //cfg.cb.on_call_media_state = &on_call_media_state;---
-      //cfg.cb.on_incoming_call = &on_incoming_call;---
+      // cfg.cb.on_call_media_state = &on_call_media_state;---
+      // cfg.cb.on_incoming_call = &on_incoming_call;---
       // cfg.cb.on_call_tsx_state = &on_call_tsx_state;
       // cfg.cb.on_dtmf_digit = &call_on_dtmf_callback;
       // cfg.cb.on_call_redirected = &call_on_redirected;
@@ -184,7 +184,7 @@ namespace switcher {
   }
 
   void PJSIP::sip_handling_thread() {
-    {                           //init pj sip
+    {                           // init pj sip
       std::unique_lock < std::mutex > lock(pj_init_mutex_);
       pj_sip_inited_ = pj_sip_init();
       pj_init_cond_.notify_all();
@@ -193,7 +193,7 @@ namespace switcher {
     while (continue_) {
       std::unique_lock < std::mutex > lock_work(work_mutex_);
       work_cond_.wait(lock_work);
-      //do_something
+      // do_something
       {
         std::unique_lock < std::mutex > lock_done(done_mutex_);
         command_();
@@ -256,4 +256,4 @@ namespace switcher {
     return context->sip_port_;
   }
 
-}                               // end namespace switcher 
+}                               // end namespace switcher

@@ -24,8 +24,8 @@
 #include <map>
 #include <string>
 #include <glib-object.h>
-#include "gobject-custom-property.h"
-//#include "gobject-custom-signal.h"
+#include "./gobject-custom-property.h"
+//#include "./gobject-custom-signal.h"
 
 namespace switcher {
   struct _MyObject;
@@ -43,13 +43,13 @@ namespace switcher {
 
     //---------- properties
     static bool notify_property_changed(GObject * object, GParamSpec * pspec);
-    //user data for set and get methods
+    // user data for set and get methods
     void property_set_user_data(std::string nickname, void *user_data);
     void *property_get_user_data(std::string nickname);
     void property_set_default_user_data(void *default_user_data);
     bool is_property_nickname_taken(std::string nickname);
 
-    //TODO see g_value_... for  implementation of other types
+    // TODO see g_value_... for  implementation of other types
     static GParamSpec *make_int_property(const gchar * nickname,
                                          const gchar * description,
                                          gint min_value,
@@ -97,7 +97,7 @@ namespace switcher {
                                             GObjectCustomProperty::get_method_pointer
                                             get_method);
 
-    //signal
+    // signal
     static guint
       make_signal(GType return_type, guint n_params, GType * param_types);
 
@@ -106,7 +106,7 @@ namespace switcher {
                          GType return_type,
                          guint n_params, GType * param_types);
 
-    //for the gobject class
+    // for the gobject class
     GObjectCustomProperty::set_method_pointer get_set_method_pointer(guint
 								     prop_id);
     GObjectCustomProperty::get_method_pointer get_get_method_pointer(guint
@@ -121,8 +121,8 @@ namespace switcher {
     std::map < std::string, void *>property_user_datas_;
     void *property_default_user_data_;
     //---------- signals
-    //static std::map<guint, GObjectCustomSignal::ptr> custom_signals_;
-    static guint next_signal_num_;      //this is only for generation of unique signal names
+    // static std::map<guint, GObjectCustomSignal::ptr> custom_signals_;
+    static guint next_signal_num_;      // this is only for generation of unique signal names
     std::map < std::string, void *>signal_user_datas_;
   };
 

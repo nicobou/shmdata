@@ -27,8 +27,8 @@
 #include <map>
 #include <stdarg.h>
 #include <tuple>
-#include "json-builder.h"
-#include "categorizable.h"
+#include "./json-builder.h"
+#include "./categorizable.h"
 
 namespace switcher {
 
@@ -56,14 +56,14 @@ namespace switcher {
                          std::string short_description,
                          std::string return_description,
                          args_doc arg_description);
-    std::string get_description();    //json formated description
+    std::string get_description();    // json formated description
 
-    //helper methods, use nullptr sentinel
-    static args_types make_arg_type_description(GType arg_type, ...);   //use G_TYPE_NONE if no arg
+    // helper methods, use nullptr sentinel
+    static args_types make_arg_type_description(GType arg_type, ...);   // use G_TYPE_NONE if no arg
     static args_doc make_arg_description(const char *first_arg_long_name,
                                          ...);
 
-    //Building complex json descriptions incuding this
+    // Building complex json descriptions incuding this
     JSONBuilder::Node get_json_root_node();
 
   private:

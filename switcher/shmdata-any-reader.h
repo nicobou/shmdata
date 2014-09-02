@@ -25,8 +25,8 @@
 #include <memory>
 #include <string>
 #include <shmdata/any-data-reader.h>
-#include "json-builder.h"
-#include "on-caps.h"
+#include "./json-builder.h"
+#include "./on-caps.h"
 
 namespace switcher {
 
@@ -44,16 +44,16 @@ namespace switcher {
     ShmdataAnyReader(const ShmdataAnyReader &) = delete;
     ShmdataAnyReader & operator=(const ShmdataAnyReader &) = delete;
 
-    //conrfiguration member before starting:
-    bool set_path(std::string path);    //path needs to be fully specified
+    // conrfiguration member before starting:
+    bool set_path(std::string path);    // path needs to be fully specified
     bool set_callback(Callback cb, void *user_data);
     bool set_data_type(std::string data_type);
     bool set_absolute_timestamp(bool absolute_timestamp);
 
-    //starting the reader:
+    // starting the reader:
     bool start();
 
-    //info + controls before and after starting the reader :
+    // info + controls before and after starting the reader :
     std::string get_path();
     void mute(bool mute);
     bool is_muted();

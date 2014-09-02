@@ -30,15 +30,15 @@
 #include <mutex>
 #include <condition_variable>
 #include <thread>
-#include "quiddity-manager-impl.h"
-#include "quiddity-command.h"
-#include "quiddity-manager-wrapper.h"
+#include "./quiddity-manager-impl.h"
+#include "./quiddity-command.h"
+#include "./quiddity-manager-wrapper.h"
 #include <stdarg.h>
 
 namespace switcher {
   class QuiddityManager:public std::enable_shared_from_this <
     QuiddityManager >
-  //FIXME add const for method args
+  // FIXME add const for method args
   {
   public:
     typedef std::shared_ptr < QuiddityManager > ptr;
@@ -78,21 +78,21 @@ namespace switcher {
                               QuiddityManager::SignalCallbackMap *
                               sig_cb_data,
                               bool mute_property_and_signal_subscribers);
-    void reset_command_history(bool remove_created_quiddities); //FIXME maybe implement undo and remove this  arg
+    void reset_command_history(bool remove_created_quiddities); // FIXME maybe implement undo and remove this  arg
 
     //************** plugins *******************************************************************
     bool scan_directory_for_plugins(std::string directory);
 
     //***************** inspect ****************************************************************
-    std::vector < std::string > get_classes();        //know which quiddities can be created
-    std::vector < std::string > get_quiddities();     //know instances
+    std::vector < std::string > get_classes();        // know which quiddities can be created
+    std::vector < std::string > get_quiddities();     // know instances
     // doc (json formatted)
     std::string get_classes_doc();
     std::string get_class_doc(std::string class_name);
     std::string get_quiddity_description(std::string quiddity_name);
     std::string get_quiddities_description();
     // create/remove/rename
-    std::string create(std::string class_name);       //returns the name
+    std::string create(std::string class_name);       // returns the name
     std::string create(std::string class_name, std::string nick_name);        // &?= chars are not allowed in nicknames
     bool remove(std::string quiddity_name);
     bool rename(std::string nick_name, std::string new_nick_name);
@@ -102,17 +102,17 @@ namespace switcher {
 			 const std::string & path);
 
     //****************** properties ************************************************************
-    //doc (json formatted)
+    // doc (json formatted)
     std::string get_properties_description(std::string quiddity_name);
     std::string get_property_description(std::string quiddity_name,
 					 std::string property_name);
-    //following "by_class" methods provide properties available after creation only,
-    //avoiding possible properties created dynamically
+    // following "by_class" methods provide properties available after creation only,
+    // avoiding possible properties created dynamically
     std::string get_properties_description_by_class(std::string class_name);
     std::string get_property_description_by_class(std::string class_name,
 						  std::string
 						  property_name);
-    //set & get
+    // set & get
     bool set_property(std::string quiddity_name,
                       std::string property_name, std::string property_value);
 
@@ -122,7 +122,7 @@ namespace switcher {
     bool has_property(const std::string quiddity_name,
                       const std::string property_name);
 
-    //property subscribtion
+    // property subscribtion
     bool make_property_subscriber(std::string subscriber_name,
                                   QuiddityManager::PropCallback callback,
                                   void *user_data);
@@ -136,37 +136,37 @@ namespace switcher {
     std::vector < std::string > list_property_subscribers();
     std::vector < std::pair < std::string,
       std::string > >list_subscribed_properties(std::string subscriber_name);
-    //json //FIXME implement
+    // json // FIXME implement
     std::string list_property_subscribers_json();
     std::string
       list_subscribed_properties_json(std::string subscriber_name);
 
-    //LOWER LEVEL subscription
-    //This is how to subscribe and get property values when changed:
+    // LOWER LEVEL subscription
+    // This is how to subscribe and get property values when changed:
     /* static gchar *hello = "hello"; */
     /* void prop_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data) */
     /*   g_print ("---------------- property callback: %s -- %s\n",  */
     /* (gchar *)user_data,  */
     /* switcher::Property::parse_callback_args (gobject, pspec).c_str ()); */
-    /* //testing property */
+    /* // testing property */
     /* manager->create ("videotestsrc","vid"); */
     /* manager->subscribe_property ("vid", "pattern", prop_cb, hello); */
 
     bool subscribe_property_glib(std::string quiddity_name,
                                  std::string name,
                                  Property::Callback cb, void *user_data);
-    bool unsubscribe_property_glib(std::string quiddity_name, std::string name, Property::Callback cb, void *user_data);        //the same called with subscribe
+    bool unsubscribe_property_glib(std::string quiddity_name, std::string name, Property::Callback cb, void *user_data);        // the same called with subscribe
 
     //*********************** methods
-    //doc (json formatted)
+    // doc (json formatted)
     std::string get_methods_description(std::string quiddity_name);
     std::string get_method_description(std::string quiddity_name,
 				       std::string method_name);
-    //following "by_class" methods provide properties available after creation only
+    // following "by_class" methods provide properties available after creation only
     std::string get_methods_description_by_class(std::string class_name);
     std::string get_method_description_by_class(std::string class_name,
 						std::string method_name);
-    //invoke
+    // invoke
     bool invoke(const std::string quiddity_name,
                 const std::string method_name,
                 std::string ** return_value,
@@ -179,12 +179,12 @@ namespace switcher {
                     const std::string method_name);
 
     //************************ signals
-    //doc (json formatted)
+    // doc (json formatted)
     std::string get_signals_description(std::string quiddity_name);
     std::string get_signal_description(std::string quiddity_name,
 				       std::string signal_name);
-    //following "by_class" methods provide properties available after creation only,
-    //avoiding possible properties created dynamically
+    // following "by_class" methods provide properties available after creation only,
+    // avoiding possible properties created dynamically
     std::string get_signals_description_by_class(std::string class_name);
     std::string get_signal_description_by_class(std::string class_name,
 						std::string signal_name);
@@ -207,28 +207,28 @@ namespace switcher {
     std::vector < std::string > list_signal_subscribers();
     std::vector < std::pair < std::string,
       std::string > >list_subscribed_signals(std::string subscriber_name);
-    //json //FIXME implement or remove
+    // json // FIXME implement or remove
     std::string list_signal_subscribers_json();
     std::string list_subscribed_signals_json(std::string subscriber_name);
 
   private:
-    QuiddityManager_Impl::ptr manager_impl_;  //may be shared with others for automatic quiddity creation
+    QuiddityManager_Impl::ptr manager_impl_;  // may be shared with others for automatic quiddity creation
     std::string name_;
-    //running commands in sequence
+    // running commands in sequence
     QuiddityCommand::ptr command_;
     std::mutex seq_mutex_;
     GAsyncQueue *command_queue_;
     std::thread invocation_thread_;
-    //invokation in gmainloop
-    std::condition_variable execution_done_cond_;     //sync current thread and gmainloop
-    std::mutex execution_done_mutex_; //sync current thread and gmainloop
-    //history
+    // invokation in gmainloop
+    std::condition_variable execution_done_cond_;     // sync current thread and gmainloop
+    std::mutex execution_done_mutex_; // sync current thread and gmainloop
+    // history
     CommandHistory command_history_;
-    gint64 history_begin_time_; //monotonic time, in microseconds
+    gint64 history_begin_time_; // monotonic time, in microseconds
 
     QuiddityManager() = delete;
     QuiddityManager(std::string name);
-    //auto invoke and init
+    // auto invoke and init
     void auto_init(std::string quiddity_name);
     void command_lock();
     void command_unlock();
@@ -236,7 +236,7 @@ namespace switcher {
     void init_command_sync();
     void clear_command_sync();
     void invocation_thread();
-    static gboolean execute_command(gpointer user_data);        //gmainloop source callback
+    static gboolean execute_command(gpointer user_data);        // gmainloop source callback
     void invoke_in_thread();
   };
 

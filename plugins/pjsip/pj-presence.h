@@ -23,8 +23,8 @@
 #include <mutex>
 #include <condition_variable>
 #include <pjsua-lib/pjsua.h>
-#include <glib.h>               //gboolean
-#include <glib-object.h>        //GEnumValue
+#include <glib.h>               // gboolean
+#include <glib-object.h>        // GEnumValue
 
 namespace switcher {
   class PJSIP;
@@ -32,7 +32,7 @@ namespace switcher {
 
   class PJPresence {
     friend PJSIP;
-    friend PJCall;              //for account local uri
+    friend PJCall;              // for account local uri
   public:
     PJPresence() = delete;
     PJPresence(PJSIP * sip_instance);
@@ -50,17 +50,17 @@ namespace switcher {
     std::mutex registration_mutex_;
     std::condition_variable registration_cond_;
 
-    //online status
+    // online status
     GParamSpec *status_enum_spec_;
     static GEnumValue status_enum_[8];
     gint status_;
     GParamSpec *custom_status_spec_;
     std::string custom_status_;
 
-    //account info
+    // account info
     std::string sip_local_user_;
 
-    //registration
+    // registration
     static void on_registration_state(pjsua_acc_id acc_id,
                                       pjsua_reg_info * info);
     void register_account(const std::string & sip_user,
@@ -73,11 +73,11 @@ namespace switcher {
     static gboolean unregister_account_wrapped(gpointer /*unused */ ,
                                                void *user_data);
 
-    //buddies
+    // buddies
     void add_buddy(const std::string & sip_user);
     static void on_buddy_state(pjsua_buddy_id buddy_id);
 
-    //online status
+    // online status
     static void set_status(const gint value, void *user_data);
     static gint get_status(void *user_data);
     static void set_note(const gchar * cutom_status, void *user_data);

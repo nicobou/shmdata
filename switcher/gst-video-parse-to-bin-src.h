@@ -20,8 +20,8 @@
 #ifndef __SWITCHER_GST_VIDEO_PARSE_TO_BIN_SRC_H__
 #define __SWITCHER_GST_VIDEO_PARSE_TO_BIN_SRC_H__
 
-#include "video-source.h"
-#include "custom-property-helper.h"
+#include "./video-source.h"
+#include "./custom-property-helper.h"
 #include <gst/gst.h>
 #include <memory>
 

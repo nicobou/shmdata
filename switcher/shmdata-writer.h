@@ -23,8 +23,8 @@
 #include <memory>
 #include <string>
 #include <shmdata/base-writer.h>
-#include "json-builder.h"
-#include "on-caps.h"
+#include "./json-builder.h"
+#include "./on-caps.h"
 
 namespace switcher {
 
@@ -37,15 +37,15 @@ namespace switcher {
     ShmdataWriter(const ShmdataWriter &) = delete;
     ShmdataWriter & operator=(const ShmdataWriter &) = delete;
 
-    bool set_path(std::string name);    //path needs to be fully specified
-    bool set_path_without_deleting(std::string name);   //path needs to be fully specified
+    bool set_path(std::string name);    // path needs to be fully specified
+    bool set_path_without_deleting(std::string name);   // path needs to be fully specified
     std::string get_path();
 
-    //caps does not need to be fully specified:
+    // caps does not need to be fully specified:
     void plug(GstElement * bin, GstElement * source_element, GstCaps * caps);
     void plug(GstElement * bin, GstPad * source_pad);
 
-    //get json doc:
+    // get json doc:
     JSONBuilder::Node get_json_root_node();
 
   private:

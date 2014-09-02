@@ -39,7 +39,7 @@ namespace switcher {
                                      const gchar * property_name,
                                      gboolean property_value);
     gchar *gvalue_serialize(const GValue * val);        // g_free after use
-    guint g_idle_add_full_with_context(GMainContext * context, gint priority,   //in case of doubt use G_PRIORITY_DEFAULT_IDLE
+    guint g_idle_add_full_with_context(GMainContext * context, gint priority,   // in case of doubt use G_PRIORITY_DEFAULT_IDLE
                                        GSourceFunc function,
                                        gpointer data, GDestroyNotify notify);
     GSource *g_timeout_add_to_context(guint interval,
@@ -57,7 +57,7 @@ namespace switcher {
                                      const gchar * signal,
                                      GCallback cb, gpointer user_data);
     bool can_sink_caps(std::string factory_name, std::string caps);
-  }                             //end of GstUtils namespace
+  }                             // end of GstUtils namespace
 }                               // end of switcher namespace
 
 #endif                          // ifndef

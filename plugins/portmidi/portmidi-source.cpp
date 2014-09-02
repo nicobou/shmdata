@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "portmidi-source.h"
+#include "./portmidi-source.h"
 #include <time.h>
 
 namespace switcher {
@@ -81,39 +81,39 @@ namespace switcher {
                                        (GParamFlags) G_PARAM_READABLE,
                                        nullptr, get_midi_value, this);
 
-    install_method("Next MIDI Event To Property",       //long name
-                   "next_midi_event_to_property",       //name
-                   "Wait for a MIDI event and make a property for this channel",        //description
-                   "success or fail",   //return description
-                   Method::make_arg_description("Property Long Name",   //first arg long name
-                                                "property_long_name",   //fisrt arg name
-                                                "string",       //first arg description
+    install_method("Next MIDI Event To Property",       // long name
+                   "next_midi_event_to_property",       // name
+                   "Wait for a MIDI event and make a property for this channel",        // description
+                   "success or fail",   // return description
+                   Method::make_arg_description("Property Long Name",   // first arg long name
+                                                "property_long_name",   // fisrt arg name
+                                                "string",       // first arg description
                                                 nullptr),
                    (Method::method_ptr) & next_midi_event_to_property_method,
                    G_TYPE_BOOLEAN,
                    Method::make_arg_type_description(G_TYPE_STRING,
                                                      nullptr), this);
 
-    install_method("Last MIDI Event To Property",       //long name
-                   "last_midi_event_to_property",       //name
-                   "make a property with the given name from the next incoming MIDI event",     //description
-                   "success or fail",   //return description
-                   Method::make_arg_description("Property Long Name",   //first arg long name
-                                                "property_long_name",   //fisrt arg name
-                                                "string",       //first arg description
+    install_method("Last MIDI Event To Property",       // long name
+                   "last_midi_event_to_property",       // name
+                   "make a property with the given name from the next incoming MIDI event",     // description
+                   "success or fail",   // return description
+                   Method::make_arg_description("Property Long Name",   // first arg long name
+                                                "property_long_name",   // fisrt arg name
+                                                "string",       // first arg description
                                                 nullptr),
                    (Method::method_ptr) & last_midi_event_to_property_method,
                    G_TYPE_BOOLEAN,
                    Method::make_arg_type_description(G_TYPE_STRING,
                                                      nullptr), this);
 
-    install_method("Remove Midi Property",      //long name
-                   "remove_midi_property",      //name
-                   "remove a property made with Make Property", //description
-                   "success or fail",   //return description
-                   Method::make_arg_description("Property Long Name",   //first arg long name
-                                                "property_long_name",   //fisrt arg name
-                                                "string",       //first arg description
+    install_method("Remove Midi Property",      // long name
+                   "remove_midi_property",      // name
+                   "remove a property made with Make Property", // description
+                   "success or fail",   // return description
+                   Method::make_arg_description("Property Long Name",   // first arg long name
+                                                "property_long_name",   // fisrt arg name
+                                                "string",       // first arg description
                                                 nullptr),
                    (Method::method_ptr) & remove_property_method,
                    G_TYPE_BOOLEAN,
@@ -185,7 +185,7 @@ namespace switcher {
     //        data2,
     //      event->timestamp);
 
-    //updating property if needed
+    // updating property if needed
     if (context->midi_channels_.find(std::make_pair(status, data1)) !=
         context->midi_channels_.end()) {
       std::string prop_long_name =
@@ -195,7 +195,7 @@ namespace switcher {
                                                       [prop_long_name]);
     }
 
-    //making property if needed
+    // making property if needed
     if (context->make_property_for_next_midi_event_)
       if (context->make_property(context->next_property_name_))
         context->make_property_for_next_midi_event_ = FALSE;

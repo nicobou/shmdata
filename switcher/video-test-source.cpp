@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "video-test-source.h"
+#include "./video-test-source.h"
 #include <gst/gst.h>
-#include "gst-utils.h"
+#include "./gst-utils.h"
 
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
@@ -75,7 +75,7 @@ namespace switcher {
   }
 
   bool VideoTestSource::on_stop() {
-    //need a new element for property setting
+    // need a new element for property setting
     bool made = make_video_source(&videotestsrc_);
     if (!made)
       return false;

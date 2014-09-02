@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_UDPSINK_H__
 #define __SWITCHER_UDPSINK_H__
 
-#include "single-pad-gst-sink.h"
+#include "./single-pad-gst-sink.h"
 #include <gst/gst.h>
 #include <memory>
 
@@ -45,7 +45,7 @@ namespace switcher {
       return true;
     };
 
-    //client management
+    // client management
     bool remove_client(gchar * host, gint port);
     bool add_client(gchar * host, gint port);
     bool clear_clients();

@@ -21,8 +21,8 @@
 #define __SWITCHER_SHMDATA_TO_FILE_H__
 
 #include <gst/gst.h>
-#include "gpipe.h"
-#include "custom-property-helper.h"
+#include "./gpipe.h"
+#include "./custom-property-helper.h"
 #include <unordered_map>
 
 namespace switcher {
@@ -35,7 +35,7 @@ namespace switcher {
     ShmdataToFile(const ShmdataToFile &);
     ShmdataToFile & operator=(const ShmdataToFile &);
 
-    //local streams
+    // local streams
     bool add_shmdata(std::string shmdata_socket_path,
                      std::string file_location);
     bool remove_shmdata(std::string shmdata_socket_path);
@@ -44,7 +44,7 @@ namespace switcher {
     static gboolean get_recording(void *user_data);
 
   private:
-    //custom properties:
+    // custom properties:
     CustomPropertyHelper::ptr custom_prop_;
     GParamSpec *recording_param_;
     gboolean recording_;
@@ -55,7 +55,7 @@ namespace switcher {
     std::unordered_map < std::string, std::string > file_names_;
     std::unordered_map < std::string, GstElement * >shmdata_recorders_;
 
-    //wrapper for registering the data_stream functions
+    // wrapper for registering the data_stream functions
     static gboolean add_shmdata_wrapped(gpointer shmdata_socket_path,
                                         gpointer file_location,
                                         gpointer user_data);

@@ -21,12 +21,12 @@
  * Class wrapping gobject for custum properties
  */
 
-#include "gobject-wrapper.h"
+#include "./gobject-wrapper.h"
 #include <glib/gprintf.h>
 
 namespace switcher {
 
-  //gobject
+  // gobject
   typedef struct _MyObject {
     GObject parent_instance;
     void *context;
@@ -80,14 +80,14 @@ namespace switcher {
   }
 
   // ---------------------------------- CPP CLASS ----------------------------
-  //property id 0 is not allowed, starting at 1
+  // property id 0 is not allowed, starting at 1
   guint GObjectWrapper::next_prop_id_ = 1;
   std::map < guint,
     GObjectCustomProperty::ptr > GObjectWrapper::custom_properties_;
 
-  //signals
+  // signals
   guint GObjectWrapper::next_signal_num_ = 1;
-  //std::map<guint, GObjectCustomSignal::ptr> GObjectWrapper::custom_signals_;
+  // std::map<guint, GObjectCustomSignal::ptr> GObjectWrapper::custom_signals_;
 
   GObjectWrapper::GObjectWrapper() {
     my_object_ = (MyObject *) g_object_new(my_object_get_type(), nullptr);
@@ -111,7 +111,7 @@ namespace switcher {
     property_user_datas_[nickname] = user_data;
   }
 
-  //set_method and get_method must be static
+  // set_method and get_method must be static
   GParamSpec *GObjectWrapper::make_int_property(const gchar * nickname,
                                                 const gchar * description,
                                                 gint min_value,
@@ -141,7 +141,7 @@ namespace switcher {
 
     custom_properties_[prop_id] = property;
 
-    //TODO find a way to get CLASS without instanciating an unused object
+    // TODO find a way to get CLASS without instanciating an unused object
     MyObject *obj = (MyObject *) g_object_new(my_object_get_type(), nullptr);
     g_object_class_install_property(G_OBJECT_GET_CLASS(obj), prop_id, param);
     g_object_unref(obj);
@@ -178,14 +178,14 @@ namespace switcher {
 
     custom_properties_[prop_id] = property;
 
-    //TODO find a way to get CLASS without instanciating an unused object
+    // TODO find a way to get CLASS without instanciating an unused object
     MyObject *obj = (MyObject *) g_object_new(my_object_get_type(), nullptr);
     g_object_class_install_property(G_OBJECT_GET_CLASS(obj), prop_id, param);
     g_object_unref(obj);
     return param;
   }
 
-  //set_method and get_method must be static
+  // set_method and get_method must be static
   GParamSpec *GObjectWrapper::make_string_property(const gchar * nickname,
                                                    const gchar * description,
                                                    const gchar *
@@ -212,7 +212,7 @@ namespace switcher {
 
     custom_properties_[prop_id] = property;
 
-    //TODO find a way to get CLASS without instanciating an unused object
+    // TODO find a way to get CLASS without instanciating an unused object
     MyObject *obj = (MyObject *) g_object_new(my_object_get_type(), nullptr);
     g_object_class_install_property(G_OBJECT_GET_CLASS(obj), prop_id, param);
     g_object_unref(obj);
@@ -250,7 +250,7 @@ namespace switcher {
     //   string_map_enum [i].value_name = nullptr;
     //   string_map_enum [i].value_nick = nullptr;
 
-    //registering the type with the name calculated previously
+    // registering the type with the name calculated previously
     GType gtype = g_enum_register_static(name, custom_enum);
 
     GParamSpec *param = g_param_spec_enum(name,
@@ -266,14 +266,14 @@ namespace switcher {
 
     custom_properties_[prop_id] = property;
 
-    //TODO find a way to get CLASS without instanciating an unused object
+    // TODO find a way to get CLASS without instanciating an unused object
     MyObject *obj = (MyObject *) g_object_new(my_object_get_type(), nullptr);
     g_object_class_install_property(G_OBJECT_GET_CLASS(obj), prop_id, param);
     g_object_unref(obj);
     return param;
   }
 
-  //set_method and get_method must be static
+  // set_method and get_method must be static
   GParamSpec *GObjectWrapper::make_boolean_property(const gchar * nickname,
                                                     const gchar *
                                                     description,
@@ -301,7 +301,7 @@ namespace switcher {
 
     custom_properties_[prop_id] = property;
 
-    //TODO find a way to get CLASS without instanciating an unused object
+    // TODO find a way to get CLASS without instanciating an unused object
     MyObject *obj = (MyObject *) g_object_new(my_object_get_type(), nullptr);
     g_object_class_install_property(G_OBJECT_GET_CLASS(obj), prop_id, param);
     g_object_unref(obj);
@@ -315,16 +315,16 @@ namespace switcher {
     next_signal_num_++;
     gchar *name = g_strdup_printf("custom_signal_%d", sig_id);
 
-    //TODO find a way to get CLASS without instanciating an unused object
+    // TODO find a way to get CLASS without instanciating an unused object
     MyObject *obj = (MyObject *) g_object_new(my_object_get_type(), nullptr);
     guint signal_id = g_signal_newv(name,
                                     G_TYPE_FROM_CLASS(G_OBJECT_GET_CLASS
                                                       (obj)),
                                     G_SIGNAL_RUN_LAST,
                                     0,
-                                    nullptr,    //GSignalAccumulator
-                                    nullptr,    //gpointer accu_data
-                                    nullptr,    //GSignalCMarshaller
+                                    nullptr,    // GSignalAccumulator
+                                    nullptr,    // gpointer accu_data
+                                    nullptr,    // GSignalCMarshaller
                                     return_type,
                                     n_params,
                                     param_types);
@@ -341,7 +341,7 @@ namespace switcher {
     next_signal_num_++;
     gchar *name = g_strdup_printf("custom_signal_%d", sig_id);
 
-    //TODO find a way to get CLASS without instanciating an unused object
+    // TODO find a way to get CLASS without instanciating an unused object
     MyObject *obj = (MyObject *) g_object_new(my_object_get_type(), nullptr);
     guint signal_id = g_signal_newv(name,
                                     G_TYPE_FROM_CLASS(G_OBJECT_GET_CLASS
@@ -349,9 +349,9 @@ namespace switcher {
                                     (GSignalFlags) (G_SIGNAL_RUN_LAST |
                                                     G_SIGNAL_ACTION),
                                     class_closure,
-                                    nullptr,    //GSignalAccumulator
-                                    nullptr,    //gpointer accu_data
-                                    nullptr,    //GSignalCMarshaller
+                                    nullptr,    // GSignalAccumulator
+                                    nullptr,    // gpointer accu_data
+                                    nullptr,    // GSignalCMarshaller
                                     return_type,
                                     n_params,
                                     param_types);

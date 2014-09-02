@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "fake-shmdata-writer.h"
-#include "gst-utils.h"
+#include "./fake-shmdata-writer.h"
+#include "./gst-utils.h"
 
 namespace switcher {
 
@@ -56,7 +56,7 @@ namespace switcher {
   }
 
   bool FakeShmdataWriter::add_shmdata_path(std::string name) {
-    //creating a shmdata
+    // creating a shmdata
     ShmdataWriter::ptr connector;
     connector.reset(new ShmdataWriter());
     connector->set_path_without_deleting(name.c_str());
@@ -99,7 +99,7 @@ namespace switcher {
     if (g_strcmp0(shmdata_path_, "") == 0)
       return false;
 
-    //creating a shmdata
+    // creating a shmdata
     ShmdataWriter::ptr connector;
     connector.reset(new ShmdataWriter());
     connector->set_path_without_deleting(shmdata_path_);

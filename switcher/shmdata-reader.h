@@ -26,9 +26,9 @@
 #include <mutex>
 #include <condition_variable>
 #include <shmdata/base-reader.h>
-#include "gst-element-cleaner.h"
-#include "json-builder.h"
-#include "on-caps.h"
+#include "./gst-element-cleaner.h"
+#include "./json-builder.h"
+#include "./on-caps.h"
 
 namespace switcher {
 
@@ -50,7 +50,7 @@ namespace switcher {
     std::string get_path();
     void start();
     void stop();
-    //get json doc:
+    // get json doc:
     JSONBuilder::Node get_json_root_node();
 
   private:
@@ -68,7 +68,7 @@ namespace switcher {
     std::condition_variable start_cond_;
     static void on_first_data(shmdata_base_reader_t * context,
                               void *user_data);
-    //static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
+    // static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
     static void unlink_pad(GstPad * pad);
     static void on_have_type(shmdata_base_reader_t * base_reader,
                              GstCaps * caps, void *user_data);

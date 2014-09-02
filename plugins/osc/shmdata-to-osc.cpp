@@ -18,7 +18,7 @@
  */
 
 #include "switcher/json-builder.h"
-#include "shmdata-to-osc.h"
+#include "./shmdata-to-osc.h"
 
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToOsc,
@@ -38,7 +38,7 @@ namespace switcher {
     init_startable(this);
     init_segment(this);
 
-    install_connect_method(std::bind(&ShmdataToOsc::connect, this, std::placeholders::_1), nullptr, nullptr, std::bind(&ShmdataToOsc::can_sink_caps, this, std::placeholders::_1), 1);  //could be more but should be tested
+    install_connect_method(std::bind(&ShmdataToOsc::connect, this, std::placeholders::_1), nullptr, nullptr, std::bind(&ShmdataToOsc::can_sink_caps, this, std::placeholders::_1), 1);  // could be more but should be tested
 
     port_spec_ =
       custom_props_->make_int_property("Port",
@@ -141,10 +141,10 @@ namespace switcher {
     const char *path = lo_get_path(data, data_size);
     lo_message msg = lo_message_deserialise(data,
                                             data_size,
-                                            nullptr);   //error code
+                                            nullptr);   // error code
     if (nullptr != msg) {
       std::unique_lock < std::mutex > lock(address_mutex_);
-//lo_message_pp (msg);
+// lo_message_pp (msg);
       if (nullptr != address_)
         lo_send_message(address_, path, msg);
       lo_message_free(msg);
@@ -155,4 +155,4 @@ namespace switcher {
     return 0 == caps.find("application/x-libloserialized-osc");
   }
 
-}                               //end of ShmdataToOsc class
+}                               // end of ShmdataToOsc class

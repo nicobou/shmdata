@@ -12,11 +12,11 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "../config.h"
 #endif
 
 #include "switcher/quiddity-manager.h"
@@ -24,7 +24,7 @@
 #include <iostream>
 #include <signal.h>
 #include <time.h>
-#include "locale.h"
+#include "./locale.h"
 #ifdef HAVE_GTK
 #include <gtk/gtk.h>
 #endif
@@ -37,7 +37,7 @@ static gboolean display_version;
 static gboolean quiet;
 static gboolean debug;
 static gboolean verbose;
-//static gchar **remaining_args = nullptr;
+// static gchar **remaining_args = nullptr;
 
 static gboolean listclasses;
 static gboolean classesdoc;
@@ -47,7 +47,7 @@ static gchar *listmethodsbyclass = nullptr;
 static gchar *listsignalsbyclass = nullptr;
 static gchar *extraplugindir = nullptr;
 
-//static std::vector<switcher::QuiddityManager::ptr> container;
+// static std::vector<switcher::QuiddityManager::ptr> container;
 static
   switcher::QuiddityManager::ptr
   manager;
@@ -90,7 +90,7 @@ static
 
 void
 leave(int sig) {
-  //removing reference to manager in order to delete it
+  // removing reference to manager in order to delete it
   {
     switcher::QuiddityManager::ptr empty;
     manager.swap(empty);
@@ -124,7 +124,7 @@ main(int argc, char *argv[]) {
   (void) signal(SIGQUIT, leave);
   (void) signal(SIGTERM, leave);
 
-  //command line options
+  // command line options
   GError *
     error = nullptr;
   GOptionContext *
@@ -145,7 +145,7 @@ main(int argc, char *argv[]) {
     return 0;
   }
 
-  //running a switcher server
+  // running a switcher server
   if (server_name == nullptr)
     server_name = "default";
   if (port_number == nullptr)
@@ -153,18 +153,18 @@ main(int argc, char *argv[]) {
 
   manager = switcher::QuiddityManager::make_manager(server_name);
 
-  //create logger managing switcher log domain
+  // create logger managing switcher log domain
   manager->create("logger", "internal_logger");
-  //manage logs from shmdata
+  // manage logs from shmdata
   manager->invoke_va("internal_logger", "install_log_handler", nullptr,
                      "shmdata", nullptr);
-  //manage logs from GStreamer
+  // manage logs from GStreamer
   manager->invoke_va("internal_logger", "install_log_handler", nullptr,
                      "GStreamer", nullptr);
-  //manage logs from Glib
+  // manage logs from Glib
   manager->invoke_va("internal_logger", "install_log_handler", nullptr,
                      "GLib", nullptr);
-  //manage logs from Glib-GObject
+  // manage logs from Glib-GObject
   manager->invoke_va("internal_logger", "install_log_handler", nullptr,
                      "GLib-GObject", nullptr);
 
@@ -181,11 +181,11 @@ main(int argc, char *argv[]) {
   else
     manager->set_property("internal_logger", "verbose", "false");
 
-  //subscribe to logs:
+  // subscribe to logs:
   manager->make_property_subscriber("log_sub", logger_cb, nullptr);
   manager->subscribe_property("log_sub", "internal_logger", "last-line");
 
-  //loading plugins from default location //FIXME add an option
+  // loading plugins from default location // FIXME add an option
 #ifdef HAVE_CONFIG_H
   gchar *
     usr_plugin_dir = g_strdup_printf("/usr/%s-%s/plugins", PACKAGE_NAME,
@@ -206,7 +206,7 @@ main(int argc, char *argv[]) {
   if (extraplugindir != nullptr)
     manager->scan_directory_for_plugins(extraplugindir);
 
-  //checking if this is printing info only
+  // checking if this is printing info only
   if (listclasses) {
     g_log_set_default_handler(quiet_log_handler, nullptr);
     std::vector < std::string > resultlist = manager->get_classes();
@@ -299,7 +299,7 @@ main(int argc, char *argv[]) {
 
   // manager->reset_command_history(true);
 
-  // //manager->reboot ();
+  // // manager->reboot ();
 
   // g_print ("---- reset done ----\n");
   // g_print ("--- %s\n",manager->get_quiddities_description ().c_str ());
@@ -333,7 +333,7 @@ main(int argc, char *argv[]) {
     gtk_main();
 #endif
 
-  //waiting for end of life
+  // waiting for end of life
   timespec delay;
   delay.tv_sec = 1;
   delay.tv_nsec = 0;

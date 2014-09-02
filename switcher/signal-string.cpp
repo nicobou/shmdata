@@ -21,8 +21,8 @@
  * The Signal class that wraps gobject signals and add some documentation to it
  */
 
-#include "signal-string.h"
-#include "gst-utils.h"
+#include "./signal-string.h"
+#include "./gst-utils.h"
 #include <algorithm>
 
 namespace switcher {
@@ -79,14 +79,14 @@ namespace switcher {
     return json_description_->get_root();
   }
 
-  //make json formated description
+  // make json formated description
   void Signal::inspect_gobject_signal() {
     /* Signals/Actions Block */
-    //guint *signals;
-    //guint nsignals;
+    // guint *signals;
+    // guint nsignals;
     guint j;
     GSignalQuery *query = nullptr;
-    //GType type;
+    // GType type;
 
     query = g_new0(GSignalQuery, 1);
     g_signal_query(id_, query);
@@ -231,10 +231,10 @@ namespace switcher {
     std::vector < std::string > params;
     // g_debug ("signal name n_value %d, object type %s\n", n_param_values, G_OBJECT_TYPE_NAME (object));
     guint i;
-    for (i = 1; i < n_param_values; i++)        //we do not deserialize the gobject
+    for (i = 1; i < n_param_values; i++)        // we do not deserialize the gobject
     {
       gchar *val_str = GstUtils::gvalue_serialize(&param_values[i]);
-      if (val_str == nullptr)   //gst-streamer connt serialize this
+      if (val_str == nullptr)   // gst-streamer connt serialize this
         val_str = g_strdup("nullptr");
       params.push_back(val_str);
       g_free(val_str);
@@ -245,13 +245,13 @@ namespace switcher {
          it != context->subscribed_on_emitted_callbacks_.end(); it++)
       it->first(params, it->second);
 
-    return TRUE;                //keep the hook alive
+    return TRUE;                // keep the hook alive
   }
 
   bool Signal::subscribe(OnEmittedCallback cb, void *user_data) {
     std::pair < OnEmittedCallback, void *>cb_pair =
       std::make_pair(cb, user_data);
-    //FIXME do not save twice the same cb/user data for signals
+    // FIXME do not save twice the same cb/user data for signals
     // if(std::find(subscribed_on_emitted_callbacks_.begin(),
     //   subscribed_on_emitted_callbacks_.end(),
     //   cb_pair) != subscribed_on_emitted_callbacks_.end())
@@ -295,7 +295,7 @@ namespace switcher {
   // Signal::signal_emit_in_main_loop (gpointer user_data)
   // {
   //   EmitArgs *args = static_cast <EmitArgs *> (user_data);
-  //   //args->object_;args->id_;args->var_args_;
+  //   // args->object_;args->id_;args->var_args_;
   //   g_signal_emit_valist (args->object_, args->id_, 0, args->var_args_);
   //   delete args;
   //   return FALSE;
@@ -327,7 +327,7 @@ namespace switcher {
     g_value_init(&params[0], G_OBJECT_TYPE(object_));
     g_value_set_object(&params[0], object_);
 
-    //with args
+    // with args
     if (arg_types_[0] != G_TYPE_NONE)
       for (gsize i = 0; i < arg_types_.size(); i++) {
         params[i + 1] = G_VALUE_INIT;

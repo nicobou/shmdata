@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "quiddity-manager-wrapper.h"
+#include "./quiddity-manager-wrapper.h"
 
 namespace switcher {
 
@@ -27,4 +27,4 @@ namespace switcher {
     manager_ = manager;
   }
 
-}                               //end of class
+}                               // end of class

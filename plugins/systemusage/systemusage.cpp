@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "systemusage.h"
+#include "./systemusage.h"
 #include "switcher/information-tree-basic-serializer.h"
 
 #include <chrono>
@@ -54,8 +54,8 @@ SystemUsage::SystemUsage():
 
   bool
   SystemUsage::init() {
-    period_prop_ = custom_props_->make_double_property("period",        //name
-                                                       "Update period", //description
+    period_prop_ = custom_props_->make_double_property("period",        // name
+                                                       "Update period", // description
                                                        0.1,
                                                        5.0,
                                                        period_, (GParamFlags)
@@ -63,7 +63,7 @@ SystemUsage::SystemUsage():
                                                        SystemUsage::setRefreshPeriod,
                                                        SystemUsage::getRefreshPeriod,
                                                        this);
-    install_property_by_pspec(custom_props_->get_gobject(), period_prop_, "period", "Update period");   //long name
+    install_property_by_pspec(custom_props_->get_gobject(), period_prop_, "period", "Update period");   // long name
 
     // Initialize the properties tree
     tree_ = make_tree();
@@ -341,7 +341,7 @@ SystemUsage::SystemUsage():
 
       firstRun = false;
 
-      //FIXME do not sleep in the polling thread
+      // FIXME do not sleep in the polling thread
       this_thread::sleep_for(chrono::milliseconds((int) (period_ * 1000.0)));
     }
   }

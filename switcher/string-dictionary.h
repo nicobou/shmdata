@@ -20,8 +20,8 @@
 #ifndef __SWITCHER_STRING_DICTIONARY_H__
 #define __SWITCHER_STRING_DICTIONARY_H__
 
-#include "quiddity.h"
-#include "custom-property-helper.h"
+#include "./quiddity.h"
+#include "./custom-property-helper.h"
 #include <map>
 
 namespace switcher {
@@ -44,13 +44,13 @@ namespace switcher {
     std::map < std::string,
       std::shared_ptr < PropertySetGet > >set_get_contexts_;
 
-    //property
+    // property
     CustomPropertyHelper::ptr custom_props_;
     std::map < std::string, GParamSpec * >prop_specs_;
     static const gchar *string_getter(void *user_data);
     static void string_setter(const gchar * value, void *user_data);
 
-    //methods
+    // methods
     static gboolean create_entry(const gchar * entry_name,
                                  const gchar * description,
                                  const gchar * long_name, void *user_data);

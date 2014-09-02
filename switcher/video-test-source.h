@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_VIDEO_TEST_SOURCE_H__
 #define __SWITCHER_VIDEO_TEST_SOURCE_H__
 
-#include "video-source.h"
+#include "./video-source.h"
 #include <memory>
 
 namespace switcher {

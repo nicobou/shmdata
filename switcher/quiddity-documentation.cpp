@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "quiddity-documentation.h"
+#include "./quiddity-documentation.h"
 
 namespace switcher {
   QuiddityDocumentation::QuiddityDocumentation(std::string long_name,

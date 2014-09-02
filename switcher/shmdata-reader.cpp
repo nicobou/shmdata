@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "shmdata-reader.h"
-#include "gst-utils.h"
-#include "scope-exit.h"
+#include "./shmdata-reader.h"
+#include "./gst-utils.h"
+#include "./scope-exit.h"
 
 namespace switcher {
   ShmdataReader::ShmdataReader():connection_hook_(nullptr),
@@ -54,8 +54,8 @@ namespace switcher {
         gst_pad_unlink(pad, peer);
       else
         gst_pad_unlink(peer, pad);
-      //checking if the pad has been requested and releasing it needed
-      GstPadTemplate *pad_templ = gst_pad_get_pad_template(peer);       //check if this must be unrefed for GST 1
+      // checking if the pad has been requested and releasing it needed
+      GstPadTemplate *pad_templ = gst_pad_get_pad_template(peer);       // check if this must be unrefed for GST 1
       if (GST_PAD_TEMPLATE_PRESENCE(pad_templ) == GST_PAD_REQUEST)
         gst_element_release_request_pad(gst_pad_get_parent_element(peer),
                                         peer);
@@ -128,7 +128,7 @@ namespace switcher {
     g_debug("shmdata-reader::start_idle done");
     // std::unique_lock<std::mutex> lock (context->start_mutex_);
     // context->start_cond_.notify_all ();
-    return FALSE;               //do not repeat
+    return FALSE;               // do not repeat
   }
 
   void
@@ -166,7 +166,7 @@ namespace switcher {
                                  void *user_data) {
     ShmdataReader *reader = static_cast < ShmdataReader * >(user_data);
     g_debug(" ShmdataReader::on_first_data");
-    if (reader->connection_hook_ != nullptr)    //user want to create the sink_element_
+    if (reader->connection_hook_ != nullptr)    // user want to create the sink_element_
       reader->connection_hook_(reader, reader->hook_user_data_);
     if (nullptr != reader->sink_element_)
       if (!GST_IS_ELEMENT(GST_ELEMENT_PARENT(reader->sink_element_)))

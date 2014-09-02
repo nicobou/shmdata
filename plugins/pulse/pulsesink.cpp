@@ -19,7 +19,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "pulsesink.h"
+#include "./pulsesink.h"
 #include "switcher/gst-utils.h"
 
 namespace switcher {
@@ -44,11 +44,11 @@ namespace switcher {
     devices_cond_(),
     devices_enum_spec_(nullptr),
     devices_enum_(), device_(0), quit_mutex_(), quit_cond_() {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
   }
 
   bool PulseSink::init_gpipe() {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     if (!make_elements())
       return false;
 
@@ -103,7 +103,7 @@ namespace switcher {
   }
 
   gboolean PulseSink::async_get_pulse_devices(void *user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     PulseSink *context = static_cast < PulseSink * >(user_data);
     context->pa_glib_mainloop_ =
       pa_glib_mainloop_new(context->get_g_main_context());
@@ -128,7 +128,7 @@ namespace switcher {
   }
 
   bool PulseSink::build_elements() {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     GstElement *pulsesink, *audioconvert;
     if (!GstUtils::make_element("pulsesink", &pulsesink))
       return false;
@@ -140,7 +140,7 @@ namespace switcher {
     uninstall_property("mute");
     install_property(G_OBJECT(pulsesink), "volume", "volume", "Volume");
     install_property(G_OBJECT(pulsesink), "mute", "mute", "Mute");
-    g_object_set(G_OBJECT(pulsesink), "slave-method", 0, nullptr);      //resample
+    g_object_set(G_OBJECT(pulsesink), "slave-method", 0, nullptr);      // resample
     if (!devices_.empty())
       g_object_set(G_OBJECT(pulsesink), "device",
                    devices_.at(device_).name_.c_str(), nullptr);
@@ -159,7 +159,7 @@ namespace switcher {
   }
 
   bool PulseSink::make_elements() {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     if (build_elements()) {
       set_sink_element(pulsesink_bin_);
       return true;
@@ -170,39 +170,39 @@ namespace switcher {
   void
     PulseSink::pa_context_state_callback(pa_context * pulse_context,
                                          void *user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
 
     PulseSink *context = static_cast < PulseSink * >(user_data);
 
     switch (pa_context_get_state(pulse_context)) {
     case PA_CONTEXT_CONNECTING:
-      //g_print ("PA_CONTEXT_CONNECTING\n");
+      // g_print ("PA_CONTEXT_CONNECTING\n");
       break;
     case PA_CONTEXT_AUTHORIZING:
-      //g_print ("PA_CONTEXT_AUTHORIZING\n");
+      // g_print ("PA_CONTEXT_AUTHORIZING\n");
       break;
     case PA_CONTEXT_SETTING_NAME:
-      //g_print ("PA_CONTEXT_SETTING_NAME\n");
+      // g_print ("PA_CONTEXT_SETTING_NAME\n");
       break;
     case PA_CONTEXT_READY:
-      //g_print ("PA_CONTEXT_READY\n");
+      // g_print ("PA_CONTEXT_READY\n");
       context->make_device_description(pulse_context);
 
       pa_context_set_subscribe_callback(pulse_context,
                                         on_pa_event_callback, nullptr);
 
-      pa_operation_unref(pa_context_subscribe(pulse_context, (pa_subscription_mask_t) (PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE | PA_SUBSCRIPTION_MASK_SINK_INPUT | PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT | PA_SUBSCRIPTION_MASK_MODULE | PA_SUBSCRIPTION_MASK_CLIENT | PA_SUBSCRIPTION_MASK_SAMPLE_CACHE | PA_SUBSCRIPTION_MASK_SERVER | PA_SUBSCRIPTION_MASK_CARD), nullptr,      //pa_context_success_cb_t cb,
-                                              nullptr)  //void *userdata);
+      pa_operation_unref(pa_context_subscribe(pulse_context, (pa_subscription_mask_t) (PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE | PA_SUBSCRIPTION_MASK_SINK_INPUT | PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT | PA_SUBSCRIPTION_MASK_MODULE | PA_SUBSCRIPTION_MASK_CLIENT | PA_SUBSCRIPTION_MASK_SAMPLE_CACHE | PA_SUBSCRIPTION_MASK_SERVER | PA_SUBSCRIPTION_MASK_CARD), nullptr,      // pa_context_success_cb_t cb,
+                                              nullptr)  // void *userdata);
         );
 
       break;
     case PA_CONTEXT_TERMINATED:
-      //g_print ("PA_CONTEXT_TERMINATED\n");
+      // g_print ("PA_CONTEXT_TERMINATED\n");
       pa_context_unref(context->pa_context_);
       context->pa_context_ = nullptr;
       break;
     case PA_CONTEXT_FAILED:
-      //g_print ("PA_CONTEXT_FAILED\n");
+      // g_print ("PA_CONTEXT_FAILED\n");
       break;
     default:
       g_debug("PulseSink Context error: %s\n",
@@ -211,7 +211,7 @@ namespace switcher {
   }
 
   void PulseSink::make_json_description() {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     if (devices_description_ != nullptr)
       g_free(devices_description_);
 
@@ -236,7 +236,7 @@ namespace switcher {
     builder->end_array();
     builder->end_object();
     devices_description_ = g_strdup(builder->get_string(true).c_str());
-    ////g_print ("%s\n",devices_description_);
+    //// g_print ("%s\n",devices_description_);
     GObjectWrapper::notify_property_changed(gobject_->get_gobject(),
                                             devices_description_spec_);
   }
@@ -245,7 +245,7 @@ namespace switcher {
     PulseSink::get_sink_info_callback(pa_context * pulse_context,
                                       const pa_sink_info * i,
                                       int is_last, void *user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     PulseSink *context = static_cast < PulseSink * >(user_data);
 
     if (is_last < 0) {
@@ -285,27 +285,27 @@ namespace switcher {
     switch (i->state) {
     case PA_SINK_INIT:
       description.state_ = "INIT";
-      //g_print ("state: INIT \n");
+      // g_print ("state: INIT \n");
       break;
     case PA_SINK_UNLINKED:
       description.state_ = "UNLINKED";
-      //g_print ("state: UNLINKED \n");
+      // g_print ("state: UNLINKED \n");
       break;
     case PA_SINK_INVALID_STATE:
       description.state_ = "n/a";
-      //g_print ("state: n/a \n");
+      // g_print ("state: n/a \n");
       break;
     case PA_SINK_RUNNING:
       description.state_ = "RUNNING";
-      //g_print ("state: RUNNING \n");
+      // g_print ("state: RUNNING \n");
       break;
     case PA_SINK_IDLE:
       description.state_ = "IDLE";
-      //g_print ("state: IDLE \n");
+      // g_print ("state: IDLE \n");
       break;
     case PA_SINK_SUSPENDED:
       description.state_ = "SUSPENDED";
-      //g_print ("state: SUSPENDED \n");
+      // g_print ("state: SUSPENDED \n");
       break;
     }
 
@@ -331,25 +331,25 @@ namespace switcher {
     //      " channels: %u\n",
     //      //"Channel Map: %s\n",
     //      i->name,
-    //      i->description,//warning this can be nullptr
+    //      i->description,// warning this can be nullptr
     //      pa_sample_format_to_string (i->sample_spec.format),
     //      i->sample_spec.rate,
     //      i->sample_spec.channels//,
-    //      //pa_channel_map_snprint(cm, sizeof(cm), &i->channel_map)
+    //      // pa_channel_map_snprint(cm, sizeof(cm), &i->channel_map)
     //      );
 
     if (i->ports) {
       pa_sink_port_info **p;
-      //printf("\tPorts:\n");
+      // printf("\tPorts:\n");
       for (p = i->ports; *p; p++) {
-        //printf("\t\t%s: %s (priority. %u)\n", (*p)->name, (*p)->description, (*p)->priority);
+        // printf("\t\t%s: %s (priority. %u)\n", (*p)->name, (*p)->description, (*p)->priority);
         description.
           ports_.push_back(std::make_pair((*p)->name, (*p)->description));
       }
     }
 
     if (i->active_port) {
-      //printf("\tActive Port: %s\n", i->active_port->name);
+      // printf("\tActive Port: %s\n", i->active_port->name);
       description.active_port_ = i->active_port->description;
     }
     else
@@ -366,7 +366,7 @@ namespace switcher {
   }
 
   void PulseSink::make_device_description(pa_context * pulse_context) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     devices_.clear();
     pa_operation_unref(pa_context_get_sink_info_list
                        (pulse_context, get_sink_info_callback, this));
@@ -377,7 +377,7 @@ namespace switcher {
                                     pa_subscription_event_type_t
                                     pulse_event_type, uint32_t /*index */ ,
                                     void *user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     PulseSink *context = static_cast < PulseSink * >(user_data);
 
     if ((pulse_event_type & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) ==
@@ -400,7 +400,7 @@ namespace switcher {
   }
 
   const gchar *PulseSink::get_devices_json(void *user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     PulseSink *context = static_cast < PulseSink * >(user_data);
     if (context->devices_description_ == nullptr)
       context->devices_description_ = g_strdup("{ \"devices\" : [] }");
@@ -409,23 +409,23 @@ namespace switcher {
   }
 
   void PulseSink::on_shmdata_disconnect() {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     reset_bin();
   }
 
   void PulseSink::on_shmdata_connect(std::string /* shmdata_sochet_path */ ) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     reset_bin();
     build_elements();
     set_sink_element_no_connect(pulsesink_bin_);
   }
 
   void PulseSink::update_output_device() {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     gint i = 0;
   for (auto & it:devices_) {
       devices_enum_[i].value = i;
-      //FIXME previous free here
+      // FIXME previous free here
       devices_enum_[i].value_name = g_strdup(it.description_.c_str());
       devices_enum_[i].value_nick = g_strdup(it.name_.c_str());
       i++;
@@ -436,13 +436,13 @@ namespace switcher {
   }
 
   void PulseSink::set_device(const gint value, void *user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     PulseSink *context = static_cast < PulseSink * >(user_data);
     context->device_ = value;
   }
 
   gint PulseSink::get_device(void *user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     PulseSink *context = static_cast < PulseSink * >(user_data);
     return context->device_;
   }
@@ -451,4 +451,4 @@ namespace switcher {
     return GstUtils::can_sink_caps("audioconvert", caps);
   };
 
-}                               //end of PulseSink class
+}                               // end of PulseSink class

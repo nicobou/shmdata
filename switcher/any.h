@@ -30,7 +30,7 @@
 template < class T > using StorageType = typename std::decay < T >::type;
 
 struct AnyValueBase {
-  //AnyValueBase (const AnyValueBase &) = delete;
+  // AnyValueBase (const AnyValueBase &) = delete;
   virtual ~
   AnyValueBase() {
   }
@@ -216,8 +216,8 @@ private:
   }
 };
 
-//this is for Any of complex value, where default serilization will
-//be implemented as follow
+// this is for Any of complex value, where default serilization will
+// be implemented as follow
 //
 
 template < typename T > struct DefaultSerializable {

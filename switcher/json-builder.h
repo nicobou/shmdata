@@ -28,7 +28,7 @@
 #include <mutex>
 #include <string>
 #include <json-glib/json-glib.h>
-#include "glib.h"
+#include "./glib.h"
 
 namespace switcher {
 

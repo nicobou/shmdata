@@ -20,10 +20,10 @@
 #ifndef __SWITCHER_RTPSESSION_H__
 #define __SWITCHER_RTPSESSION_H__
 
-#include "gpipe.h"
-#include "quiddity-manager.h"
-#include "rtp-destination.h"
-#include "custom-property-helper.h"
+#include "./gpipe.h"
+#include "./quiddity-manager.h"
+#include "./rtp-destination.h"
+#include "./custom-property-helper.h"
 #include <gst/gst.h>
 #include <gst/sdp/gstsdpmessage.h>
 #include <memory>
@@ -39,54 +39,54 @@ namespace switcher {
     RtpSession(const RtpSession &) = delete;
     RtpSession & operator=(const RtpSession &) = delete;
 
-    //local streams
+    // local streams
     bool add_data_stream(std::string shmdata_socket_path);
     bool remove_data_stream(std::string shmdata_socket_path);
 
-    //remote dest (using user defined "nick_name")
+    // remote dest (using user defined "nick_name")
     bool add_destination(std::string dest_name, std::string host_name);
     bool remove_destination(std::string dest_name);
 
-    //destination property
+    // destination property
     static const gchar *get_destinations_json(void *user_data);
-    //MTU property
+    // MTU property
     static void set_mtu_at_add_data_stream(const gint value, void *user_data);
     static gint get_mtu_at_add_data_stream(void *user_data);
 
-    //sending
+    // sending
     bool add_udp_stream_to_dest(std::string shmdata_socket_path,
                                 std::string dest_name, std::string port);
     bool remove_udp_stream_to_dest(std::string shmdata_socket_path,
                                    std::string dest_name);
     bool write_sdp_file(std::string dest_name);
 
-    //will be called by shmdata reader
+    // will be called by shmdata reader
     static void attach_data_stream(ShmdataReader * caller,
                                    void *rtpsession_instance);
 
   private:
     GstElement * rtpsession_;
-    //a counter used for setting id of internal streams
+    // a counter used for setting id of internal streams
     guint next_id_;
 
-    //custom properties:
+    // custom properties:
     CustomPropertyHelper::ptr custom_props_;
     GParamSpec *destination_description_json_;
     gchar *destinations_json_;
     GParamSpec *mtu_at_add_data_stream_spec_;
     gint mtu_at_add_data_stream_;
 
-    //local streams
-    std::map < std::string, std::string > internal_id_;       //maps shmdata path with internal id
-    std::map < std::string, std::string > rtp_ids_;   //maps shmdata path with rtp id
+    // local streams
+    std::map < std::string, std::string > internal_id_;       // maps shmdata path with internal id
+    std::map < std::string, std::string > rtp_ids_;   // maps shmdata path with rtp id
     std::map < std::string, QuiddityManager::ptr > quiddity_managers_;
-    std::map < std::string, GstElementCleaner::ptr > funnels_;        //maps internal id with funnel cleaner
+    std::map < std::string, GstElementCleaner::ptr > funnels_;        // maps internal id with funnel cleaner
 
-    //std::map<std::string, GstElement *>rtp_udp_sinks_;
+    // std::map<std::string, GstElement *>rtp_udp_sinks_;
     std::map < std::string, ShmdataWriter::ptr > internal_shmdata_writers_;
     std::map < std::string, ShmdataReader::ptr > internal_shmdata_readers_;
 
-    //destinations
+    // destinations
     std::map < std::string, RtpDestination::ptr > destinations_;
 
     bool init_gpipe() final;
@@ -102,7 +102,7 @@ namespace switcher {
     static gint sink_compare_ranks(GstPluginFeature * f1,
                                    GstPluginFeature * f2);
 
-    //internal rtpbin signals
+    // internal rtpbin signals
     static void on_bye_ssrc(GstElement * rtpbin, guint session, guint ssrc,
                             gpointer user_data);
     static void on_bye_timeout(GstElement * rtpbin, guint session,
@@ -129,7 +129,7 @@ namespace switcher {
                                gpointer user_data);
     static void on_no_more_pad(GstElement * gstelement, gpointer user_data);
 
-    //wrapper for registering the data_stream functions
+    // wrapper for registering the data_stream functions
     static gboolean add_data_stream_wrapped(gpointer shmdata_socket_path,
                                             gpointer user_data);
     static gboolean remove_data_stream_wrapped(gpointer shmdata_socket_path,

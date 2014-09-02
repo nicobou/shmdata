@@ -17,11 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "xvimagesink.h"
-#include "gst-utils.h"
-#include "quiddity-command.h"
+#include "./xvimagesink.h"
+#include "./gst-utils.h"
+#include "./quiddity-command.h"
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "../config.h"
 #endif
 
 namespace switcher {

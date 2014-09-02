@@ -17,13 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "property-mapper.h"
-#include "gst-utils.h"
+#include "./property-mapper.h"
+#include "./gst-utils.h"
 #include <math.h>
 
-//for python
+// for python
 // #ifdef HAVE_CONFIG_H
-// #include "config.h"
+// #include "../config.h"
 // #ifdef HAVE_PYTHON
 // #include <Python.h>
 // #endif
@@ -52,16 +52,16 @@ namespace switcher {
   }
 
   bool PropertyMapper::init() {
-    install_method("Set Source Property",       //long name
-                   "set-source-property",       //name
-                   "set the master property",   //description
-                   "success of fail",   //return description
-                   Method::make_arg_description("Quiddity Name",        //first arg long name
-                                                "quiddity_name",        //fisrt arg name
-                                                "Name of the quiddity", //first arg description
-                                                "property Name",        //first arg long name
-                                                "property_name",        //fisrt arg name
-                                                "Name of the property", //first arg description
+    install_method("Set Source Property",       // long name
+                   "set-source-property",       // name
+                   "set the master property",   // description
+                   "success of fail",   // return description
+                   Method::make_arg_description("Quiddity Name",        // first arg long name
+                                                "quiddity_name",        // fisrt arg name
+                                                "Name of the quiddity", // first arg description
+                                                "property Name",        // first arg long name
+                                                "property_name",        // fisrt arg name
+                                                "Name of the property", // first arg description
                                                 nullptr),
                    (Method::method_ptr) & set_source_property_method,
                    G_TYPE_BOOLEAN,
@@ -69,16 +69,16 @@ namespace switcher {
                                                      G_TYPE_STRING,
                                                      nullptr), this);
 
-    install_method("Set Sink Property", //long name
-                   "set-sink-property", //name
-                   "set the slave property",    //description
-                   "success of fail",   //return description
-                   Method::make_arg_description("Quiddity Name",        //first arg long name
-                                                "quiddity_name",        //fisrt arg name
-                                                "Name of the quiddity", //first arg description
-                                                "property Name",        //first arg long name
-                                                "property_name",        //fisrt arg name
-                                                "Name of the property", //first arg description
+    install_method("Set Sink Property", // long name
+                   "set-sink-property", // name
+                   "set the slave property",    // description
+                   "success of fail",   // return description
+                   Method::make_arg_description("Quiddity Name",        // first arg long name
+                                                "quiddity_name",        // fisrt arg name
+                                                "Name of the quiddity", // first arg description
+                                                "property Name",        // first arg long name
+                                                "property_name",        // fisrt arg name
+                                                "Name of the property", // first arg description
                                                 nullptr),
                    (Method::method_ptr) & set_sink_property_method,
                    G_TYPE_BOOLEAN,
@@ -146,7 +146,7 @@ namespace switcher {
     if (!quid->subscribe_property(property_name, property_cb, context))
       return FALSE;
 
-    //unsubscribing previously registered property
+    // unsubscribing previously registered property
     context->unsubscribe_source_property();
     context->source_quiddity_ = quid;
     context->source_property_name_ = property_name;
@@ -243,7 +243,7 @@ namespace switcher {
                                 gpointer user_data) {
     PropertyMapper *context = static_cast < PropertyMapper * >(user_data);
 
-    //return if not property to update
+    // return if not property to update
     Quiddity::ptr quid = context->sink_quiddity_.lock();
     if (!(bool) quid)
       return;
@@ -254,12 +254,12 @@ namespace switcher {
     g_value_init(&val, pspec->value_type);
     g_object_get_property(gobject, prop_name, &val);
 
-    //getting new value
+    // getting new value
     switch (pspec->value_type) {
     case G_TYPE_INT:
       {
         gint orig_val = g_value_get_int(&val);
-//ignoring value out of range
+// ignoring value out of range
         if (orig_val < context->source_min_
             || orig_val > context->source_max_) {
           g_value_unset(&val);
@@ -271,7 +271,7 @@ namespace switcher {
     case G_TYPE_DOUBLE:
       {
         gdouble orig_val = g_value_get_double(&val);
-//ignoring value out of range
+// ignoring value out of range
         if (orig_val < context->source_min_
             || orig_val > context->source_max_) {
           g_value_unset(&val);
@@ -289,7 +289,7 @@ namespace switcher {
     }
     g_value_unset(&val);
 
-    //scaling and transforming the value into a gdouble value
+    // scaling and transforming the value into a gdouble value
     gdouble transformed_val =
       ((gdouble) new_value - context->source_min_) * (context->sink_max_ -
                                                       context->sink_min_) /
@@ -299,7 +299,7 @@ namespace switcher {
     g_value_init(&val_gdouble, G_TYPE_DOUBLE);
     g_value_set_double(&val_gdouble, transformed_val);
 
-    //applying to sink property
+    // applying to sink property
     GValue val_to_apply = G_VALUE_INIT;
     g_value_init(&val_to_apply, context->sink_quiddity_pspec_->value_type);
 

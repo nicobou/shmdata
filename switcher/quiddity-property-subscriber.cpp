@@ -21,9 +21,9 @@
  * The Quiddity property subscriber
  */
 
-#include "quiddity-property-subscriber.h"
-#include "quiddity.h"
-#include "quiddity-manager-impl.h"
+#include "./quiddity-property-subscriber.h"
+#include "./quiddity.h"
+#include "./quiddity-manager-impl.h"
 
 namespace switcher {
   QuiddityPropertySubscriber::QuiddityPropertySubscriber() {
@@ -128,7 +128,7 @@ namespace switcher {
   bool
     QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid,
                                             std::string property_name) {
-    //std::pair<std::string, std::string> cur_pair;
+    // std::pair<std::string, std::string> cur_pair;
     auto cur_pair = std::make_pair(quid->get_nick_name(), property_name);
     PropDataMap::iterator it = prop_datas_.find(cur_pair);
     if (it != prop_datas_.end()) {

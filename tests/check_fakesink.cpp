@@ -19,7 +19,7 @@
 
 #include "switcher/quiddity-manager.h"
 #include <string>
-#include <unistd.h>             //sleep
+#include <unistd.h>             // sleep
 
 void
 property_cb(std::string subscriber_name,
@@ -60,6 +60,6 @@ main() {
     manager->remove("vu");
   }                             // releasing manager
 
-  //success
+  // success
   return 0;
 }

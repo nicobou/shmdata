@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "shmdata-from-gdp-file.h"
-#include "gst-utils.h"
+#include "./shmdata-from-gdp-file.h"
+#include "./gst-utils.h"
 
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataFromGDPFile,
@@ -69,7 +69,7 @@ namespace switcher {
                    Method::make_arg_type_description(G_TYPE_STRING,
                                                      nullptr), this);
 
-    //registering playing property
+    // registering playing property
     playing_param_ = custom_prop_->make_boolean_property("playing",
                                                          "start/stop playing",
                                                          FALSE, (GParamFlags)
@@ -152,7 +152,7 @@ namespace switcher {
     if (!(bool) manager_) {
       g_debug("creating manager");
       manager_ = QuiddityManager::make_manager("manager_" + get_name());
-//FIXME pause pipeline
+// FIXME pause pipeline
     }
   for (auto & it:shmdata_names_) {
       manager_->create("gstsrc", it.first.c_str());
@@ -177,7 +177,7 @@ namespace switcher {
     return true;
   }
 
-  //FIXME use signals in switcher for handling gstsrc's eos
+  // FIXME use signals in switcher for handling gstsrc's eos
   // void
   // ShmdataFromGDPFile::rewind (gpointer user_data)
   // {

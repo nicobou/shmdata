@@ -22,8 +22,8 @@
 
 #include <glib.h>
 #include <unordered_map>
-#include "quiddity.h"
-#include "custom-property-helper.h"
+#include "./quiddity.h"
+#include "./custom-property-helper.h"
 #include <mutex>
 
 namespace switcher {
@@ -45,7 +45,7 @@ namespace switcher {
     bool debug_;
     bool verbose_;
     std::unordered_map < std::string, guint > handler_ids_;
-    //custom properties
+    // custom properties
     CustomPropertyHelper::ptr custom_props_;
     GParamSpec *last_line_prop_;
     GParamSpec *mute_prop_;

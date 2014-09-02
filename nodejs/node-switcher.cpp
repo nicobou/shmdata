@@ -12,14 +12,14 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
 #include <node.h>
 #include <v8.h>
 #include <uv.h>
 #include <switcher/quiddity-manager.h>
-#include "locale.h"
+#include "./locale.h"
 
 static
   std::vector <
@@ -28,15 +28,15 @@ static
 static
   v8::Persistent <
   v8::Function >
-  user_log_cb;                  //must be disposed
+  user_log_cb;                  // must be disposed
 static
   v8::Persistent <
   v8::Function >
-  user_prop_cb;                 //must be disposed
+  user_prop_cb;                 // must be disposed
 static
   v8::Persistent <
   v8::Function >
-  user_signal_cb;               //must be disposed
+  user_signal_cb;               // must be disposed
 static
   bool
   switcher_is_loading = false;
@@ -278,7 +278,7 @@ v8::Handle < v8::Value > SwitcherClose(const v8::Arguments & args) {
   v8::HandleScope scope;
   // if (!user_log_cb.IsEmpty ())
   //  user_log_cb.Dispose ();
-  //removing reference to manager in order to delete it
+  // removing reference to manager in order to delete it
   switcher_container.clear();
   v8::Local < v8::String > name = v8::String::New("closed");
   return scope.Close(name);
@@ -342,7 +342,7 @@ v8::Handle < v8::Value > GetQuidditiesDescription(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-//end life manager
+// end life manager
 
 // ----------- properties
 v8::Handle < v8::Value > SetProperty(const v8::Arguments & args) {
@@ -478,7 +478,7 @@ GetPropertyDescriptionByClass(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-//end properties
+// end properties
 
 // ----------- methods
 v8::Handle < v8::Value > Invoke(const v8::Arguments & args) {
@@ -637,7 +637,7 @@ NotifyLog(uv_work_t * r) {
   }
 }
 
-//call client log callback
+// call client log callback
 static void
 logger_cb(std::string subscriber_name,
           std::string quiddity_name,
@@ -688,7 +688,7 @@ NotifyProp(uv_work_t * r) {
   }
 }
 
-//call client prop callback
+// call client prop callback
 static void
 property_cb(std::string subscriber_name,
             std::string quiddity_name,
@@ -805,7 +805,7 @@ NotifySignal(uv_work_t * r) {
   }
 }
 
-//call client signal callback
+// call client signal callback
 static void
 signal_cb(std::string subscriber_name,
           std::string quiddity_name,
@@ -1007,10 +1007,10 @@ Init(v8::Handle < v8::Object > target) {
   switcher_manager->subscribe_signal("signal_sub", "create_remove_spy",
                                      "on-quiddity-removed");
 
-  //do not play with previous config
+  // do not play with previous config
   switcher_manager->reset_command_history(false);
 
-  //history
+  // history
   target->Set(v8::String::NewSymbol("save_history"),
               v8::FunctionTemplate::New(SaveHistory)->GetFunction());
   target->Set(v8::String::NewSymbol("load_history_from_current_state"),
@@ -1020,7 +1020,7 @@ Init(v8::Handle < v8::Object > target) {
               v8::FunctionTemplate::
               New(LoadHistoryFromScratch)->GetFunction());
 
-  //life manager
+  // life manager
   target->Set(v8::String::NewSymbol("create"),
               v8::FunctionTemplate::New(Create)->GetFunction());
   target->Set(v8::String::NewSymbol("rename"),
@@ -1043,7 +1043,7 @@ Init(v8::Handle < v8::Object > target) {
   target->Set(v8::String::NewSymbol("get_info"),
               v8::FunctionTemplate::New(GetInfo)->GetFunction());
 
-  //properties
+  // properties
   target->Set(v8::String::NewSymbol("get_properties_description"),
               v8::FunctionTemplate::
               New(GetPropertiesDescription)->GetFunction());
@@ -1060,7 +1060,7 @@ Init(v8::Handle < v8::Object > target) {
               v8::FunctionTemplate::New(SetProperty)->GetFunction());
   target->Set(v8::String::NewSymbol("get_property_value"),
               v8::FunctionTemplate::New(GetProperty)->GetFunction());
-  //methods
+  // methods
   target->Set(v8::String::NewSymbol("get_methods_description"),
               v8::FunctionTemplate::
               New(GetMethodsDescription)->GetFunction());
@@ -1075,11 +1075,11 @@ Init(v8::Handle < v8::Object > target) {
   target->Set(v8::String::NewSymbol("invoke"),
               v8::FunctionTemplate::New(Invoke)->GetFunction());
 
-  //log
+  // log
   target->Set(v8::String::NewSymbol("register_log_callback"),
               v8::FunctionTemplate::New(RegisterLogCallback)->GetFunction());
 
-  //property subscription
+  // property subscription
   target->Set(v8::String::NewSymbol("register_prop_callback"),
               v8::FunctionTemplate::New(RegisterPropCallback)->GetFunction());
   target->Set(v8::String::NewSymbol("subscribe_to_property"),
@@ -1091,7 +1091,7 @@ Init(v8::Handle < v8::Object > target) {
               v8::FunctionTemplate::
               New(ListSubscribedProperties)->GetFunction());
 
-  //signals
+  // signals
   target->Set(v8::String::NewSymbol("get_signals_description"),
               v8::FunctionTemplate::
               New(GetSignalsDescription)->GetFunction());
@@ -1104,7 +1104,7 @@ Init(v8::Handle < v8::Object > target) {
               v8::FunctionTemplate::
               New(GetSignalDescriptionByClass)->GetFunction());
 
-  //signal subscription
+  // signal subscription
   target->Set(v8::String::NewSymbol("register_signal_callback"),
               v8::FunctionTemplate::
               New(RegisterSignalCallback)->GetFunction());

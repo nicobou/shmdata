@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "string-dictionary.h"
-#include "property.h"
+#include "./string-dictionary.h"
+#include "./property.h"
 #include <string.h>
 #include <iostream>
 
@@ -174,7 +174,7 @@ namespace switcher {
     GError *error = nullptr;
     GFileOutputStream *file_stream = g_file_replace(file,
                                                     nullptr,
-                                                    TRUE,       //make backup
+                                                    TRUE,       // make backup
                                                     G_FILE_CREATE_NONE,
                                                     nullptr,
                                                     &error);
@@ -187,8 +187,8 @@ namespace switcher {
     JSONBuilder::ptr builder;
     builder.reset(new JSONBuilder());
     builder->reset();
-    //builder->begin_object ();
-    //builder->set_member_name ("dictionary");
+    // builder->begin_object ();
+    // builder->set_member_name ("dictionary");
     builder->begin_array();
 
   for (auto & it:dico_) {
@@ -203,7 +203,7 @@ namespace switcher {
     }
 
     builder->end_array();
-    //builder->end_object ();
+    // builder->end_object ();
 
     gchar *dico_json = g_strdup(builder->get_string(true).c_str());
 

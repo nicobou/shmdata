@@ -21,7 +21,7 @@
 #define __SWITCHER_QUIDDITY_DOCUMENTATION_H__
 
 #include <string>
-#include "json-builder.h"
+#include "./json-builder.h"
 
 namespace switcher {
 

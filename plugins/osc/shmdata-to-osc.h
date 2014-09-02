@@ -52,7 +52,7 @@ namespace switcher {
     bool start() final;
     bool stop() final;
 
-    //segment handlers
+    // segment handlers
     bool connect(std::string shmdata_path);
     bool can_sink_caps(std::string caps);
 

@@ -39,7 +39,7 @@ main() {
       switcher::QuiddityManager::make_manager("property_mapper");
     mgr->make_property_subscriber("sub", property_cb, &count);
 
-    //map freq  property from audio1 to audio 2
+    // map freq  property from audio1 to audio 2
     std::string audio1 = mgr->create("audiotestsrc", "audio1");
     if (!mgr->set_property(audio1, "started", "true"))
       return 1;

@@ -40,7 +40,7 @@
 #include <memory>
 #include <type_traits>
 #include <mutex>
-#include "any.h"
+#include "./any.h"
 
 namespace switcher {
   namespace data {
@@ -65,7 +65,7 @@ namespace switcher {
       void set_data(const char *data);
       void set_data(std::nullptr_t ptr);
 
-      //path based methods
+      // path based methods
       bool is_leaf(const std::string & path);
       bool has_data(const std::string & path);
       Any get_data(const std::string & path);
@@ -76,9 +76,9 @@ namespace switcher {
       // graft will create the path and graft the tree,
       // or remove old one and replace will the new tree
       bool graft(const std::string & path, Tree::ptr);
-      //return empty tree if nothing can be pruned
+      // return empty tree if nothing can be pruned
       Tree::ptr prune(const std::string & path);
-      //get but not remove
+      // get but not remove
       Tree::ptr get(const std::string & path);
 
       // return false if the path does not exist
@@ -87,7 +87,7 @@ namespace switcher {
       bool tag_as_array(const std::string & path, bool is_array);
       bool is_array(const std::string & path);
 
-      //get child key in place, use with std::insert_iterator
+      // get child key in place, use with std::insert_iterator
       template < typename Iter >
         void get_child_keys(const std::string path, Iter pos) {
         std::unique_lock < std::mutex > lock(mutex_);
@@ -100,7 +100,7 @@ namespace switcher {
 			 );
       }
 
-      //get child keys - returning a newly allocated container
+      // get child keys - returning a newly allocated container
       template < template < class T, class =
         std::allocator < T > >class Container =
         std::list > Container < std::string >
@@ -137,7 +137,7 @@ namespace switcher {
                     child_list_type & parent_list_result,
                     child_list_type::iterator & result_iterator);
 
-      //walks
+      // walks
       friend void
         preorder_tree_walk(Tree::ptr tree,
                            Tree::OnNodeFunction on_visiting_node,
@@ -145,12 +145,12 @@ namespace switcher {
 
     };
 
-    //constructor
+    // constructor
     Tree::ptr make_tree();
     template < typename ValueType > Tree::ptr make_tree(ValueType data) {
       return std::make_shared < Tree > (data);
     }
-    Tree::ptr make_tree(const char *data);      //Tree will store a std::string
+    Tree::ptr make_tree(const char *data);      // Tree will store a std::string
 
   }                             // end of "data" namespace
 }                               // end of "switcher" namespace

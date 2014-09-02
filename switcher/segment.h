@@ -20,13 +20,13 @@
 #ifndef __SWITCHER_SEGMENT_H__
 #define __SWITCHER_SEGMENT_H__
 
-#include "shmdata-any-writer.h"
-#include "shmdata-any-reader.h"
-#include "shmdata-writer.h"
-#include "shmdata-reader.h"
-#include "counter-map.h"
-#include "json-builder.h"
-#include "custom-property-helper.h"
+#include "./shmdata-any-writer.h"
+#include "./shmdata-any-reader.h"
+#include "./shmdata-writer.h"
+#include "./shmdata-reader.h"
+#include "./counter-map.h"
+#include "./json-builder.h"
+#include "./custom-property-helper.h"
 #include <vector>
 #include <unordered_map>
 
@@ -72,7 +72,7 @@ namespace switcher {
     std::unordered_map < std::string, ShmdataWriter::ptr > shmdata_writers_;
     std::unordered_map < std::string, ShmdataReader::ptr > shmdata_readers_;
 
-    //reader methods to install by a subclass
+    // reader methods to install by a subclass
     OnConnect on_connect_cb_ {
       nullptr};
     OnDisconnect on_disconnect_cb_ {
@@ -87,15 +87,15 @@ namespace switcher {
                                            gpointer user_data);
     static gboolean can_sink_caps_wrapped(gpointer caps, gpointer user_data);
 
-    //JSON
+    // JSON
     JSONBuilder::ptr shmdata_writers_description_;
     std::mutex writers_mutex_ {
-    };                          //protecting from parallel registers
+    };                          // protecting from parallel registers
     std::string writers_string_ {
     };
     JSONBuilder::ptr shmdata_readers_description_;
     std::mutex readers_mutex_ {
-    };                          //protecting from parallel registers
+    };                          // protecting from parallel registers
     std::string readers_string_ {
     };
     CustomPropertyHelper::ptr segment_custom_props_;

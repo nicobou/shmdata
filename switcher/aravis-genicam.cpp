@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "aravis-genicam.h"
-#include "gst-utils.h"
+#include "./aravis-genicam.h"
+#include "./gst-utils.h"
 
 namespace switcher {
 
@@ -33,12 +33,12 @@ namespace switcher {
   bool AravisGenicam::init_gpipe() {
     if (!GstUtils::make_element("aravissrc", &aravissrc_)) {
       g_debug
-        ("aravissrc not available, install aravis (http://git.gnome.org/browse/aravis/)");
+        ("aravissrc not available, install aravis (http:// git.gnome.org/browse/aravis/)");
       return false;
     }
     set_name(gst_element_get_name(aravissrc_));
 
-    //install_property (G_OBJECT (aravissrc_),"camera-name","aravissrc");
+    // install_property (G_OBJECT (aravissrc_),"camera-name","aravissrc");
 
     install_property(G_OBJECT(aravissrc_), "gain", "gain", "Gain");
 
@@ -96,12 +96,12 @@ namespace switcher {
 
     gst_bin_add_many(GST_BIN(bin_), aravissrc_, colorspace, nullptr);
     gst_element_link(aravissrc_, colorspace);
-    //GstUtils::wait_state_changed (bin_);
+    // GstUtils::wait_state_changed (bin_);
     GstUtils::sync_state_with_parent(aravissrc_);
     GstUtils::sync_state_with_parent(colorspace);
 
     GstPad *srcpad = gst_element_get_static_pad(colorspace, "src");
-    //creating a shmdata
+    // creating a shmdata
     ShmdataWriter::ptr connector;
     connector.reset(new ShmdataWriter());
     std::string connector_name = make_file_name("video");

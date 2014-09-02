@@ -12,16 +12,16 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
 #include <string>
 #include <glib.h>
 #include "webservices/soapcontrolProxy.h"
 #include "webservices/control.nsmap"
-#include "locale.h"
+#include "./locale.h"
 
-//options
+// options
 static gchar *server = nullptr;
 static gboolean save = FALSE;
 static gboolean load = FALSE;
@@ -49,12 +49,12 @@ static gchar **remaining_args = nullptr;
 
 static GOptionEntry entries[24] = {
   {"server", 0, 0, G_OPTION_ARG_STRING, &server,
-   "server URI (default http://localhost:27182)", nullptr},
+   "server URI (default http:// localhost:27182)", nullptr},
   {"save", 'w', 0, G_OPTION_ARG_NONE, &save,
    "save history to file (--save filename)", nullptr},
   {"load", 'x', 0, G_OPTION_ARG_NONE, &load,
    "load state from history file (--load filename)", nullptr},
-  //FIXME make this working { "run", nullptr, 0, G_OPTION_ARG_NONE, &run, "run history to file (--run filename)", nullptr },
+  // FIXME make this working { "run", nullptr, 0, G_OPTION_ARG_NONE, &run, "run history to file (--run filename)", nullptr },
   {"create-quiddity", 'C', 0, G_OPTION_ARG_NONE, &createquiddity,
    "create a quiddity instance (-C quiddity_class [optional nick name])",
    nullptr},
@@ -105,7 +105,7 @@ static GOptionEntry entries[24] = {
 int
 main(int argc, char *argv[]) {
   setlocale(LC_ALL, "");
-  //command line options
+  // command line options
   GError *error = nullptr;
   GOptionContext *context =
     g_option_context_new(" switcher control via webservice");
@@ -116,7 +116,7 @@ main(int argc, char *argv[]) {
   }
 
   if (server == nullptr)
-    server = g_strdup("http://localhost:27182");
+    server = g_strdup("http:// localhost:27182");
 
   if (!(renamequiddity
         ^ save
@@ -278,7 +278,7 @@ main(int argc, char *argv[]) {
       g_printerr("missing argument for set property\n");
       return false;
     }
-    //special since on
+    // special since on
     switcher_control.send_set_property(remaining_args[0],
                                        remaining_args[1], remaining_args[2]);
     if (switcher_control.recv_set_property_empty_response())

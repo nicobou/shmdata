@@ -20,9 +20,9 @@
 #ifndef __SWITCHER_VIDEO_SOURCE_H__
 #define __SWITCHER_VIDEO_SOURCE_H__
 
-#include "gpipe.h"
-#include "gst-element-cleaner.h"
-#include "startable-quiddity.h"
+#include "./gpipe.h"
+#include "./gst-element-cleaner.h"
+#include "./startable-quiddity.h"
 #include <memory>
 
 namespace switcher {
@@ -42,15 +42,15 @@ namespace switcher {
     GstElement *video_tee_;
     GstCaps *videocaps_;
     std::string shmdata_path_;
-    //custom properties:
+    // custom properties:
     CustomPropertyHelper::ptr custom_props_;
-    //codec //FIXME make this static
+    // codec // FIXME make this static
     GParamSpec *primary_codec_spec_;
     GEnumValue primary_codec_[128];
     GParamSpec *secondary_codec_spec_;
     GEnumValue secondary_codec_[128];
     gint codec_;
-    //short or long codec list
+    // short or long codec list
     GParamSpec *codec_long_list_spec_;
     bool codec_long_list_;
     GstElement *codec_element_;

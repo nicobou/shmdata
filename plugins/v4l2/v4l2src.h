@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
 #ifndef __SWITCHER_V4L2SRC_H__
@@ -32,7 +32,7 @@ namespace switcher {
     V4L2Src(const V4L2Src &) = delete;
     V4L2Src & operator=(const V4L2Src &) = delete;
 
-    //use "NONE" for used arguments
+    // use "NONE" for used arguments
     /* bool capture_full (const char *device_file_path,  */
     /*        const char *width, */
     /*        const char *height, */
@@ -107,27 +107,27 @@ namespace switcher {
                                    unsigned width, unsigned height);
     static const gchar *get_capture_devices_json(void *user_data);
 
-    //custom properties:
+    // custom properties:
     CustomPropertyHelper::ptr custom_props_;
-    GParamSpec *capture_devices_description_spec_;      //json formated
-    gchar *capture_devices_description_;        //json formated
+    GParamSpec *capture_devices_description_spec_;      // json formated
+    gchar *capture_devices_description_;        // json formated
 
-    //device enum and select
+    // device enum and select
     GParamSpec *devices_enum_spec_;
     GEnumValue devices_enum_[128];
     gint device_;
     static void set_camera(const gint value, void *user_data);
     static gint get_camera(void *user_data);
 
-    //resolution enum and select for the currently selected device,
-    //this is updated when selecting an other device
+    // resolution enum and select for the currently selected device,
+    // this is updated when selecting an other device
     GParamSpec *resolutions_spec_;
     GEnumValue resolutions_enum_[128];
     gint resolution_;
     static void set_resolution(const gint value, void *user_data);
     static gint get_resolution(void *user_data);
 
-    //width height for the currently selected device
+    // width height for the currently selected device
     GParamSpec *width_spec_;
     GParamSpec *height_spec_;
     gint width_;
@@ -137,23 +137,23 @@ namespace switcher {
     static void set_height(const gint value, void *user_data);
     static gint get_height(void *user_data);
 
-    //tv standard enum and select for the currently selected device,
-    //this is updated when selecting an other device
+    // tv standard enum and select for the currently selected device,
+    // this is updated when selecting an other device
     GParamSpec *tv_standards_spec_;
     GEnumValue tv_standards_enum_[128];
     gint tv_standard_;
     static void set_tv_standard(const gint value, void *user_data);
     static gint get_tv_standard(void *user_data);
 
-    //framerate enum and select for the currently selected device,
-    //this is updated when selecting an other device
+    // framerate enum and select for the currently selected device,
+    // this is updated when selecting an other device
     GParamSpec *framerate_spec_;
     GEnumValue framerates_enum_[128];
     gint framerate_;
     static void set_framerate(const gint value, void *user_data);
     static gint get_framerate(void *user_data);
 
-    //width height for the currently selected device
+    // width height for the currently selected device
     GParamSpec *framerate_numerator_spec_;
     GParamSpec *framerate_denominator_spec_;
     gint framerate_numerator_;
@@ -163,7 +163,7 @@ namespace switcher {
     static void set_framerate_denominator(const gint value, void *user_data);
     static gint get_framerate_denominator(void *user_data);
 
-    std::vector < CaptureDescription > capture_devices_;      //FIXME should be static
+    std::vector < CaptureDescription > capture_devices_;      // FIXME should be static
 
     bool init_gpipe() final;
   };

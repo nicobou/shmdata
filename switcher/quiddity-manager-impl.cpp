@@ -19,38 +19,38 @@
 
 //#include <gmodule.h>
 
-#include "quiddity-documentation.h"
-#include "quiddity-manager-impl.h"
-#include "quiddity.h"
+#include "./quiddity-documentation.h"
+#include "./quiddity-manager-impl.h"
+#include "./quiddity.h"
 
-//removing shmdata
+// removing shmdata
 #include <gio/gio.h>
 
-//the quiddities to manage (line sorted)
-#include "aravis-genicam.h"
-#include "audio-test-source.h"
-#include "create-remove-spy.h"
-#include "decodebin2.h"
-#include "deinterleave.h"
-#include "fake-shmdata-writer.h"
-#include "fakesink.h"
-#include "file-sdp.h"
-#include "gst-parse-to-bin-src.h"
-#include "gst-video-parse-to-bin-src.h"
-#include "http-sdp.h"
-#include "http-sdp-dec.h"
-#include "jack-audio-source.h"
-#include "jack-sink.h"
-#include "logger.h"
-#include "property-mapper.h"
-#include "rtp-session.h"
-#include "shmdata-to-file.h"
-#include "shmdata-from-gdp-file.h"
-#include "udpsink.h"
-#include "uridecodebin.h"
-#include "string-dictionary.h"
-#include "video-test-source.h"
-#include "xvimagesink.h"
+// the quiddities to manage (line sorted)
+#include "./aravis-genicam.h"
+#include "./audio-test-source.h"
+#include "./create-remove-spy.h"
+#include "./decodebin2.h"
+#include "./deinterleave.h"
+#include "./fake-shmdata-writer.h"
+#include "./fakesink.h"
+#include "./file-sdp.h"
+#include "./gst-parse-to-bin-src.h"
+#include "./gst-video-parse-to-bin-src.h"
+#include "./http-sdp.h"
+#include "./http-sdp-dec.h"
+#include "./jack-audio-source.h"
+#include "./jack-sink.h"
+#include "./logger.h"
+#include "./property-mapper.h"
+#include "./rtp-session.h"
+#include "./shmdata-to-file.h"
+#include "./shmdata-from-gdp-file.h"
+#include "./udpsink.h"
+#include "./uridecodebin.h"
+#include "./string-dictionary.h"
+#include "./video-test-source.h"
+#include "./xvimagesink.h"
 
 namespace switcher {
 
@@ -122,7 +122,7 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
     info = g_file_enumerator_next_file(enumerator, nullptr, &error);
     while ((info) && (!error)) {
       descend = g_file_get_child(shmdata_dir, g_file_info_get_name(info));
-//g_assert (descend != nullptr);
+// g_assert (descend != nullptr);
       relative_path = g_file_get_relative_path(shmdata_dir, descend);
 
       error = nullptr;
@@ -159,7 +159,7 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
   }
 
   void QuiddityManager_Impl::register_classes() {
-    //registering quiddities
+    // registering quiddities
     abstract_factory_.register_class < AudioTestSource >
       (AudioTestSource::switcher_doc_.get_class_name(),
        AudioTestSource::switcher_doc_.get_json_root_node());
@@ -235,7 +235,7 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
   }
 
   std::vector < std::string > QuiddityManager_Impl::get_classes() {
-    //return abstract_factory_.get_classes_documentation ();
+    // return abstract_factory_.get_classes_documentation ();
     return abstract_factory_.get_keys();
   }
 
@@ -271,7 +271,7 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
   }
 
   void QuiddityManager_Impl::give_name_if_unnamed(Quiddity::ptr quiddity) {
-    //if no name was given, give one, should eventually be the prefered way
+    // if no name was given, give one, should eventually be the prefered way
     if (g_strcmp0(quiddity->get_name().c_str(), "") == 0) {
       gchar *name = g_strdup_printf("%s%u",
                                     quiddity->
@@ -301,7 +301,7 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
     return true;
   }
 
-  //for use of the "get description by class" methods
+  // for use of the "get description by class" methods
   std::string
     QuiddityManager_Impl::create_without_hook(std::string quiddity_class) {
     if (!class_exists(quiddity_class))
@@ -448,7 +448,7 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
     descr->reset();
     descr->begin_object();
     descr->add_string_member("name", nick_name.c_str());
-    //FIXME should use json node
+    // FIXME should use json node
     descr->add_string_member("class",
                              quiddities_[quiddities_nick_names_
                                          [nick_name]]->get_documentation().
@@ -492,7 +492,7 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
             quiddities_nick_names_.find(quiddity_name));
   }
 
-  //for use of "get description by class" methods only
+  // for use of "get description by class" methods only
   bool QuiddityManager_Impl::remove_without_hook(std::string quiddity_name) {
     if (!exists(quiddity_name)) {
       g_debug("(%s) quiddity %s not found for removing", name_.c_str(),
@@ -597,7 +597,7 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
                                                        ());
   }
 
-  //higher level subscriber
+  // higher level subscriber
   bool
     QuiddityManager_Impl::
     make_property_subscriber(std::string subscriber_name,
@@ -704,7 +704,7 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
   }
 
   std::string QuiddityManager_Impl::list_property_subscribers_json() {
-    return "{\"error\":\"to be implemented\"}"; //FIXME (list_property_subscriber_json)
+    return "{\"error\":\"to be implemented\"}"; // FIXME (list_property_subscriber_json)
   }
 
   std::string
@@ -729,7 +729,7 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
     return doc->get_string(true);
   }
 
-  //lower level subscriber
+  // lower level subscriber
   bool
     QuiddityManager_Impl::subscribe_property_glib(std::string quiddity_name,
                                                   std::string property_name,
@@ -798,7 +798,7 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
                                  const std::string method_name,
                                  std::string ** return_value,
                                  const std::vector < std::string > args) {
-    //g_debug ("QuiddityManager_Impl::quiddity_invoke_method %s %s, arg size %d",quiddity_name.c_str(), function_name.c_str(), args.size ());
+    // g_debug ("QuiddityManager_Impl::quiddity_invoke_method %s %s, arg size %d",quiddity_name.c_str(), function_name.c_str(), args.size ());
 
     if (!exists(quiddity_name)) {
       g_debug("quiddity %s not found, cannot invoke", quiddity_name.c_str());
@@ -919,7 +919,7 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
     return descr;
   }
 
-  //higher level subscriber
+  // higher level subscriber
 
   void QuiddityManager_Impl::mute_signal_subscribers(bool muted) {
   for (auto & it:signal_subscribers_)
@@ -1035,7 +1035,7 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
   }
 
   std::string QuiddityManager_Impl::list_signal_subscribers_json() {
-    return "{\"error\":\"to be implemented\"}"; //FIXME (list_signal_subscriber_json)
+    return "{\"error\":\"to be implemented\"}"; // FIXME (list_signal_subscriber_json)
   }
 
   std::string
@@ -1093,10 +1093,10 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
 
     main_context_ = g_main_context_new();
     mainloop_ = g_main_loop_new(main_context_, FALSE);
-    //mainloop_ = g_main_loop_new (nullptr, FALSE);
+    // mainloop_ = g_main_loop_new (nullptr, FALSE);
     GstRegistry *registry;
     registry = gst_registry_get_default();
-    //TODO add option for scanning a path
+    // TODO add option for scanning a path
     gst_registry_scan_path(registry, "/usr/local/lib/gstreamer-0.10/");
     thread_ = std::thread(&QuiddityManager_Impl::main_loop_thread, this);
   }
@@ -1118,7 +1118,7 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
 
     std::string class_name = plugin->get_class_name();
 
-    //close the old one if exists
+    // close the old one if exists
     auto it = plugins_.find(class_name);
     if (plugins_.end() != it) {
       g_debug("closing old plugin for reloading (class: %s)",
@@ -1160,8 +1160,8 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
     info = g_file_enumerator_next_file(enumerator, nullptr, &error);
     while ((info) && (!error)) {
       descend = g_file_get_child(dir, g_file_info_get_name(info));
-      absolute_path = g_file_get_path(descend); //g_file_get_relative_path (dir, descend);
-//trying to load the module
+      absolute_path = g_file_get_path(descend); // g_file_get_relative_path (dir, descend);
+// trying to load the module
       if (g_str_has_suffix(absolute_path, ".so")
           || g_str_has_suffix(absolute_path, ".dylib")) {
         g_debug("loading module %s", absolute_path);

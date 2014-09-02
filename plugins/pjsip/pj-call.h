@@ -20,12 +20,12 @@
 #ifndef PLUGINS_PJSIP_PJ_CALL_H_
 #define PLUGINS_PJSIP_PJ_CALL_H_
 
-#include "pj-codec.h"
-#include "switcher/shmdata-any-writer.h"
-#include "switcher/rtp-session.h"
 #include <pjsua-lib/pjsua.h>
 #include <string>
 #include <vector>
+#include "./pj-codec.h"
+#include "switcher/shmdata-any-writer.h"
+#include "switcher/rtp-session.h"
 
 #define MAX_CALLS 1024
 
@@ -34,10 +34,10 @@ namespace switcher {
 
   class PJCall {
     friend PJCodec;
-    
+
  public:
     PJCall() = delete;
-    PJCall(PJSIP * sip_instance);
+    explicit PJCall(PJSIP * sip_instance);
     ~PJCall();
     PJCall(const PJCall &) = delete;
     PJCall & operator=(const PJCall &) = delete;
@@ -88,7 +88,7 @@ namespace switcher {
       pjsip_inv_session *inv {
         nullptr};
       unsigned media_count {
-        0};                       //FIXME make this more STL
+        0};                       // FIXME make this more STL
       struct media_stream media[64];
       pj_time_val start_time {
         0, 0};
@@ -118,7 +118,7 @@ namespace switcher {
     static pjsip_module mod_siprtp_;
     static app_t app;
     PJSIP *sip_instance_;
-    //external rtp session quidity for sending
+    // external rtp session quidity for sending
     RtpSession::ptr rtp_session_ {
     };
     std::string rtp_session_name_ {
@@ -130,7 +130,7 @@ namespace switcher {
     GParamSpec *starting_rtp_port_spec_ {
       nullptr};
 
-    //sip functions
+    // sip functions
     static pj_bool_t on_rx_request(pjsip_rx_data * rdata);
     static void call_on_state_changed(pjsip_inv_session * inv,
                                       pjsip_event * e);
@@ -178,6 +178,6 @@ namespace switcher {
     static gboolean hang_up(gchar * sip_url, void *user_data);
   };
 
-} // namespace switcher
+}  // namespace switcher
 
 #endif  // PLUGINS_PJSIP_PJ_CALL_H_

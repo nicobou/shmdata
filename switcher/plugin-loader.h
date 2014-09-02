@@ -22,7 +22,7 @@
 
 #include <memory>
 #include <gmodule.h>
-#include "json-builder.h"
+#include "./json-builder.h"
 
 namespace switcher {
 

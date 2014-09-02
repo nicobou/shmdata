@@ -17,11 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "quiddity-manager.h"
-#include "quiddity.h"
-#include "gst-utils.h"
+#include "./quiddity-manager.h"
+#include "./quiddity.h"
+#include "./gst-utils.h"
 #include <string.h>
-#include <iostream>             //to remove
+#include <iostream>             // to remove
 
 namespace switcher {
 
@@ -86,8 +86,8 @@ namespace switcher {
   }
 
   void QuiddityManager::command_unlock() {
-    //command has been invoked with the return value
-    //save the command
+    // command has been invoked with the return value
+    // save the command
     command_history_.push_back(command_);
     seq_mutex_.unlock();
   }
@@ -125,9 +125,9 @@ namespace switcher {
         }
       }
       else {
-        //it not propable that create will return the same name,
-        //so converting create into create_nick_named with
-        //the name that was given first
+        // it not propable that create will return the same name,
+        // so converting create into create_nick_named with
+        // the name that was given first
         if (QuiddityCommand::create == it->id_) {
           it->id_ = QuiddityCommand::create_nick_named;
           it->args_.push_back(it->expected_result_[0]);
@@ -137,7 +137,7 @@ namespace switcher {
         g_message("running command %s",
                   QuiddityCommand::get_string_from_id(command_->id_));
         invoke_in_thread();
-        //TODO test result consistency
+        // TODO test result consistency
         command_unlock();
         if (command_->id_ == QuiddityCommand::create
             || command_->id_ == QuiddityCommand::create_nick_named)
@@ -216,7 +216,7 @@ namespace switcher {
     GError *error = nullptr;
     GFileOutputStream *file_stream = g_file_replace(file,
                                                     nullptr,
-                                                    TRUE,       //make backup
+                                                    TRUE,       // make backup
                                                     G_FILE_CREATE_NONE,
                                                     nullptr,
                                                     &error);
@@ -421,7 +421,7 @@ namespace switcher {
     command_->set_id(QuiddityCommand::list_subscribed_properties);
     std::vector < std::pair < std::string, std::string > >res =
       manager_impl_->list_subscribed_properties(subscriber_name);
-    //FIXME no result...
+    // FIXME no result...
     command_unlock();
     return res;
   }
@@ -448,7 +448,7 @@ namespace switcher {
     return res;
   }
 
-  //lower level subscription
+  // lower level subscription
   bool
     QuiddityManager::subscribe_property_glib(std::string quiddity_name,
                                              std::string property_name,
@@ -514,7 +514,7 @@ namespace switcher {
                             const std::string method_name,
                             std::string ** return_value,
                             const std::vector < std::string > args) {
-    //std::string res;
+    // std::string res;
     command_lock();
     command_->set_id(QuiddityCommand::invoke);
     command_->add_arg(quiddity_name);
@@ -559,7 +559,7 @@ namespace switcher {
   bool
     QuiddityManager::has_method(const std::string quiddity_name,
                                 const std::string method_name) {
-    //FIXME do not have this
+    // FIXME do not have this
     command_lock();
     command_->set_id(QuiddityCommand::has_method);
     command_->add_arg(quiddity_name);
@@ -669,7 +669,7 @@ namespace switcher {
     command_->set_id(QuiddityCommand::list_subscribed_signals);
     std::vector < std::pair < std::string, std::string > >res =
       manager_impl_->list_subscribed_signals(subscriber_name);
-    //FIXME no result...
+    // FIXME no result...
     command_unlock();
     return res;
   }
@@ -846,9 +846,9 @@ namespace switcher {
   }
 
   void QuiddityManager::init_command_sync() {
-    //command_queue_ = g_async_queue_new (); //FIXME release that
-    //invocation_thread_ (&invocation_thread, this);
-//invocation_thread_ = g_thread_new ("invocation_thread", GThreadFunc(invocation_thread), this);
+    // command_queue_ = g_async_queue_new (); // FIXME release that
+    // invocation_thread_ (&invocation_thread, this);
+// invocation_thread_ = g_thread_new ("invocation_thread", GThreadFunc(invocation_thread), this);
   }
 
   void QuiddityManager::invocation_thread() {
@@ -874,7 +874,7 @@ namespace switcher {
     command_unlock();
   }
 
-  //works for char * args only. Use nullptr sentinel
+  // works for char * args only. Use nullptr sentinel
   std::string
     QuiddityManager::seq_invoke(QuiddityCommand::command command, ...) {
     std::string res;
@@ -907,13 +907,13 @@ namespace switcher {
     builder->set_member_name("command");
     builder->add_node_value(command_->get_json_root_node());
     builder->end_object();
-    //g_print ("%s\n", builder->get_string(true).c_str ());
+    // g_print ("%s\n", builder->get_string(true).c_str ());
     {
       std::unique_lock < std::mutex > lock(execution_done_mutex_);
       g_async_queue_push(command_queue_, command_.get());
-      //g_print ("PUSHED - %s\n", builder->get_string(true).c_str ());
+      // g_print ("PUSHED - %s\n", builder->get_string(true).c_str ());
       execution_done_cond_.wait(lock);
-      //g_print ("DONE - %s\n", builder->get_string(true).c_str ());
+      // g_print ("DONE - %s\n", builder->get_string(true).c_str ());
     }
   }
 
@@ -1044,14 +1044,14 @@ namespace switcher {
                                            context->command_->args_[1],
                                            &result,
                                            context->command_->vector_arg_)) {
-          context->command_->success_ = true;   //result_.push_back ("true");
+          context->command_->success_ = true;   // result_.push_back ("true");
           if (nullptr == result)
             context->command_->result_.push_back("error");
           else
             context->command_->result_.push_back(*result);
         }
         else
-          context->command_->success_ = false;  //result_.push_back ("false");
+          context->command_->success_ = false;  // result_.push_back ("false");
 
         if (nullptr != result)
           delete result;
@@ -1106,7 +1106,7 @@ namespace switcher {
               QuiddityCommand::get_string_from_id(context->command_->id_));
     }
 
-    return FALSE;               //remove from gmainloop
+    return FALSE;               // remove from gmainloop
   }
 
 }

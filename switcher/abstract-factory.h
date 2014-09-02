@@ -26,7 +26,7 @@
 
 #include <vector>
 #include <map>
-#include "creator.h"
+#include "./creator.h"
 
 namespace switcher {
 
@@ -55,6 +55,6 @@ namespace switcher {
 
 }                               // end of namespace
 
-#include "abstract-factory_spec.h"
+#include "./abstract-factory_spec.h"
 
 #endif // ifndef

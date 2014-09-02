@@ -21,7 +21,7 @@
  * The JSONBuilder class
  */
 
-#include "json-builder.h"
+#include "./json-builder.h"
 
 namespace switcher {
 
@@ -134,7 +134,7 @@ namespace switcher {
 
   JsonNode *JSONBuilder::get_root() {
     std::unique_lock < std::mutex > lock(thread_safe_);
-    return json_builder_get_root(builder_);     //FIXME this might be leaking
+    return json_builder_get_root(builder_);     // FIXME this might be leaking
   }
 
   void JSONBuilder::node_free(JsonNode * root_node) {

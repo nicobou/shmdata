@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_PJCODEC_H__
 #define __SWITCHER_PJCODEC_H__
 
-//pjsip
+// pjsip
 #include <pjsip.h>
 #include <pjmedia.h>
 #include <pjmedia-codec.h>

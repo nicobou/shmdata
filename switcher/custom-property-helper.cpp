@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "custom-property-helper.h"
+#include "./custom-property-helper.h"
 
 namespace switcher {
 

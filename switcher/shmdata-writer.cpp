@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "shmdata-writer.h"
-#include "gst-utils.h"
-#include "scope-exit.h"
+#include "./shmdata-writer.h"
+#include "./gst-utils.h"
+#include "./scope-exit.h"
 
 namespace switcher {
 
@@ -27,7 +27,7 @@ namespace switcher {
   }
 
   ShmdataWriter::~ShmdataWriter() {
-    //g_debug ("ShmdataWriter: cleaning elements %s", path_.c_str());
+    // g_debug ("ShmdataWriter: cleaning elements %s", path_.c_str());
 
     if (nullptr != tee_)
       GstUtils::clean_element(tee_);
@@ -35,7 +35,7 @@ namespace switcher {
       GstUtils::clean_element(queue_);
     if (nullptr != fakesink_) {
 // if (0 != handoff_handler_)
-// //FIXME this is blocking sometime :
+// // FIXME this is blocking sometime :
 //   g_signal_handler_disconnect (G_OBJECT (fakesink_), handoff_handler_);
       GstUtils::clean_element(fakesink_);
     }
@@ -44,11 +44,11 @@ namespace switcher {
       g_debug("ShmdataWriter: %s deleted", path_.c_str());
   }
 
-  //WARNING if the file exist it will be deleted
+  // WARNING if the file exist it will be deleted
   bool ShmdataWriter::set_path(std::string name) {
     GFile *shmfile = g_file_new_for_commandline_arg(name.c_str());
     if (g_file_query_exists(shmfile, nullptr)) {
-//thrash it
+// thrash it
       g_debug
         ("ShmdataWriter::set_path warning: file %s exists and will be deleted.",
          name.c_str());
@@ -64,7 +64,7 @@ namespace switcher {
   }
 
   bool ShmdataWriter::set_path_without_deleting(std::string name) {
-    //setting the writer
+    // setting the writer
     shmdata_base_writer_set_path(writer_, name.c_str());
     path_ = name;
     make_json_description();

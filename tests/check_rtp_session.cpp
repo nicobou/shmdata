@@ -12,17 +12,17 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "../config.h"
 #endif
 
 #include "switcher/quiddity-manager.h"
 #include <vector>
 #include <string>
-#include <unistd.h>             //sleep
+#include <unistd.h>             // sleep
 
 static bool audio_success;
 static bool video_success;
@@ -74,7 +74,7 @@ main() {
 
     manager->invoke_va("soapserver", "set_port", nullptr, "38084", nullptr);
 
-    //testing uncompressed data transmission
+    // testing uncompressed data transmission
     manager->create("audiotestsrc", "a");
     manager->set_property("a", "started", "true");
 
@@ -132,7 +132,7 @@ main() {
                        "connect",
                        nullptr, "/tmp/switcher_rtptest_uri_video-0", nullptr);
 
-    //wait 3 seconds
+    // wait 3 seconds
     uint count = 3;
     while (do_continue) {
       if (count == 0)

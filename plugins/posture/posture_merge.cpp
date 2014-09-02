@@ -16,7 +16,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "posture_merge.h"
+#include "./posture_merge.h"
 
 #include <iostream>
 
@@ -73,7 +73,7 @@ PostureMerge::PostureMerge():
     init_startable(this);
     init_segment(this);
 
-    install_connect_method(std::bind(&PostureMerge::connect, this, std::placeholders::_1), nullptr,     //FIXME implement this (disconnect with the shmdata as unique argument)
+    install_connect_method(std::bind(&PostureMerge::connect, this, std::placeholders::_1), nullptr,     // FIXME implement this (disconnect with the shmdata as unique argument)
                            std::bind(&PostureMerge::disconnect_all,
                                      this),
                            std::bind(&PostureMerge::can_sink_caps,

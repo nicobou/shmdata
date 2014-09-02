@@ -22,7 +22,7 @@
 
 #include "switcher/quiddity.h"
 #include "switcher/segment.h"
-#include "portmidi-devices.h"
+#include "./portmidi-devices.h"
 #include "switcher/custom-property-helper.h"
 #include "switcher/startable-quiddity.h"
 #include <shmdata/any-data-reader.h>
@@ -49,11 +49,11 @@ namespace switcher {
     bool start() final;
     bool stop() final;
 
-    //segment callback
+    // segment callback
     bool connect(std::string path);
     bool can_sink_caps(std::string caps);
 
-    //shmdata any callback
+    // shmdata any callback
     void on_shmreader_data(void *data,
                            int data_size,
                            unsigned long long timestamp,

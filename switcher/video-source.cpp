@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "video-source.h"
-#include "gst-utils.h"
+#include "./video-source.h"
+#include "./gst-utils.h"
 
 namespace switcher {
   VideoSource::VideoSource():rawvideo_(nullptr),
@@ -93,7 +93,7 @@ namespace switcher {
 
   void VideoSource::print_list(gpointer /*data */ ,
                                gpointer /*user_data */ ) {
-    //g_print ("%s\n", g_type_name (gst_element_factory_get_element_type (GST_ELEMENT_FACTORY (data))));
+    // g_print ("%s\n", g_type_name (gst_element_factory_get_element_type (GST_ELEMENT_FACTORY (data))));
     // g_print ("long name: %s name %s description:%s\n",
     //      gst_element_factory_get_longname ((GstElementFactory *)data),
     //      gst_plugin_feature_get_name ((GstPluginFeature *)data),
@@ -186,7 +186,7 @@ namespace switcher {
     GstElement *tmp_color_space_codec_element = color_space_codec_element_;
     GstElement *tmp_queue_codec_element = queue_codec_element_;
 
-    //TODO queue property ?
+    // TODO queue property ?
     if (!GstUtils::make_element
         (secondary_codec_[codec_].value_nick, &codec_element_)
         || !GstUtils::make_element("ffmpegcolorspace",
@@ -194,7 +194,7 @@ namespace switcher {
         || !GstUtils::make_element("queue", &queue_codec_element_))
       return false;
 
-    //copy property value and register codec properties
+    // copy property value and register codec properties
   for (auto & it:codec_properties_) {
       GstUtils::apply_property_value(G_OBJECT(tmp_codec_element),
                                      G_OBJECT(codec_element_), it.c_str());
@@ -243,33 +243,33 @@ namespace switcher {
                                          "codec",
                                          "Video Codecs (Short List)");
     }
-    //reset codec value
+    // reset codec value
     set_codec(0, context);
   }
 
   void VideoSource::make_codec_properties() {
-    codec_properties_.push_back("quality");     //jpegenc
-    codec_properties_.push_back("idct-method"); //jpegenc
-    codec_properties_.push_back("speed-preset");        //x264
-    codec_properties_.push_back("bitrate");     //x264
-    codec_properties_.push_back("threads");     //x264
-    codec_properties_.push_back("ref"); //x264
-    codec_properties_.push_back("trellis");     //x264
-    codec_properties_.push_back("key-int-max"); //x264
-    codec_properties_.push_back("speed");       //vp8
-    codec_properties_.push_back("mode");        //vp8
-    codec_properties_.push_back("error-resilient");     //vp8
-    codec_properties_.push_back("max-latency"); //vp8
-    codec_properties_.push_back("max-keyframe-distance");       //vp8
-    //codec_properties_.push_back ("");//vp8
+    codec_properties_.push_back("quality");     // jpegenc
+    codec_properties_.push_back("idct-method"); // jpegenc
+    codec_properties_.push_back("speed-preset");        // x264
+    codec_properties_.push_back("bitrate");     // x264
+    codec_properties_.push_back("threads");     // x264
+    codec_properties_.push_back("ref"); // x264
+    codec_properties_.push_back("trellis");     // x264
+    codec_properties_.push_back("key-int-max"); // x264
+    codec_properties_.push_back("speed");       // vp8
+    codec_properties_.push_back("mode");        // vp8
+    codec_properties_.push_back("error-resilient");     // vp8
+    codec_properties_.push_back("max-latency"); // vp8
+    codec_properties_.push_back("max-keyframe-distance");       // vp8
+    // codec_properties_.push_back ("");// vp8
 
-    codec_properties_.push_back("qmin");        //smokeenc
-    codec_properties_.push_back("qmax");        //smokeenc
-    codec_properties_.push_back("keyframe");    //smokeenc
-    codec_properties_.push_back("rate-control");        //schroenc (dirac)
-    codec_properties_.push_back("max-bitrate"); //schroenc (dirac)
-    codec_properties_.push_back("min-bitrate"); //schroenc (dirac)
-    codec_properties_.push_back("snapshot");    //png
-    codec_properties_.push_back("compression-level");   //png
+    codec_properties_.push_back("qmin");        // smokeenc
+    codec_properties_.push_back("qmax");        // smokeenc
+    codec_properties_.push_back("keyframe");    // smokeenc
+    codec_properties_.push_back("rate-control");        // schroenc (dirac)
+    codec_properties_.push_back("max-bitrate"); // schroenc (dirac)
+    codec_properties_.push_back("min-bitrate"); // schroenc (dirac)
+    codec_properties_.push_back("snapshot");    // png
+    codec_properties_.push_back("compression-level");   // png
   }
 }

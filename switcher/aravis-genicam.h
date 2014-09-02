@@ -20,9 +20,9 @@
 #ifndef __SWITCHER_ARAVIS_GENICAM_H__
 #define __SWITCHER_ARAVIS_GENICAM_H__
 
-#include "video-source.h"
-#include "aravis-genicam.h"
-#include "gst-element-cleaner.h"
+#include "./video-source.h"
+#include "./aravis-genicam.h"
+#include "./gst-element-cleaner.h"
 #include <gst/gst.h>
 #include <memory>
 

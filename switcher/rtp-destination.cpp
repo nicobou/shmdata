@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rtp-destination.h"
+#include "./rtp-destination.h"
 #include <sstream>
-#include "sdp-utils.h"
+#include "./sdp-utils.h"
 
 namespace switcher {
   RtpDestination::RtpDestination() {
@@ -29,19 +29,19 @@ namespace switcher {
   RtpDestination::~RtpDestination() {
   for (auto & it:ports_) {
       QuiddityManager::ptr manager = it.second;
-//cleaning rtp
+// cleaning rtp
       std::vector < std::string > arg;
       arg.push_back(host_name_);
       arg.push_back(it.first);
       manager->invoke("udpsend_rtp", "remove_client", nullptr, arg);
-//cleaning rtcp
+// cleaning rtcp
       arg.clear();
       arg.push_back(host_name_);
       std::ostringstream rtcp_port;
       rtcp_port << atoi(it.first.c_str()) + 1;
       arg.push_back(rtcp_port.str());
       manager->invoke("udpsend_rtp", "remove_client", nullptr, arg);
-//TODO remove connection to funnel
+// TODO remove connection to funnel
     }
   }
 

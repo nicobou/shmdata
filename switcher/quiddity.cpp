@@ -21,10 +21,10 @@
  * The Quiddity class
  */
 
-#include "quiddity.h"
-#include "quiddity-manager-impl.h"
-#include "gst-utils.h"
-#include "information-tree-json.h"
+#include "./quiddity.h"
+#include "./quiddity-manager-impl.h"
+#include "./gst-utils.h"
+#include "./information-tree-json.h"
 #include <list>
 #include <algorithm>
 
@@ -205,11 +205,11 @@ namespace switcher {
     return true;
   }
 
-  bool Quiddity::make_custom_signal_with_class_name(const std::string class_name, const std::string signal_name,        //the name to give
-                                                    GType return_type, guint n_params,  //number of params
+  bool Quiddity::make_custom_signal_with_class_name(const std::string class_name, const std::string signal_name,        // the name to give
+                                                    GType return_type, guint n_params,  // number of params
                                                     GType * param_types) {
     if (signals_.find(signal_name) != signals_.end()) {
-//g_debug ("signals: a signal named %s has already been registered for this class",signal_name.c_str());
+// g_debug ("signals: a signal named %s has already been registered for this class",signal_name.c_str());
       return false;
     }
 
@@ -311,8 +311,8 @@ namespace switcher {
     return result;
   }
 
-  bool Quiddity::register_signal_action_with_class_name(const std::string class_name, const std::string method_name,    //the name to give
-                                                        void *method, GType return_type, guint n_params,        //number of params
+  bool Quiddity::register_signal_action_with_class_name(const std::string class_name, const std::string method_name,    // the name to give
+                                                        void *method, GType return_type, guint n_params,        // number of params
                                                         GType * param_types,
                                                         void *user_data) {
     if (signals_.find(method_name) != signals_.end()) {
@@ -331,7 +331,7 @@ namespace switcher {
       std::make_pair(class_name, method_name);
     GClosure *closure;
 
-    //using signal ids in order to avoid id conflicts between signal and methods
+    // using signal ids in order to avoid id conflicts between signal and methods
     if (signals_ids_.find(sig_pair) == signals_ids_.end()) {
       closure =
         g_cclosure_new(G_CALLBACK(method), user_data,
@@ -359,8 +359,8 @@ namespace switcher {
     return true;
   }
 
-  bool Quiddity::register_signal_action(const std::string method_name,  //the name to give
-                                        void *method, GType return_type, guint n_params,        //number of params
+  bool Quiddity::register_signal_action(const std::string method_name,  // the name to give
+                                        void *method, GType return_type, guint n_params,        // number of params
                                         GType * param_types, void *user_data) {
 
     return
@@ -436,8 +436,8 @@ namespace switcher {
                              "on-property-reinstalled");
   }
 
-  //return -1 if method not found
-  //TODO implement get method and let the manager to call invoke, get_num_args etc...
+  // return -1 if method not found
+  // TODO implement get method and let the manager to call invoke, get_num_args etc...
   int Quiddity::method_get_num_value_args(std::string method_name) {
     auto it = methods_.find(method_name);
     if (methods_.end() != it)
@@ -492,7 +492,7 @@ namespace switcher {
       GValue res = signals_[signal_name]->action_emit(args);
       if (return_value != nullptr) {
         gchar *res_val = GstUtils::gvalue_serialize(&res);
-        //gchar *res_val;
+        // gchar *res_val;
         // if (G_VALUE_HOLDS_STRING(&res))
         //   res_val = g_strdup (g_value_get_string (&res));
         // else
@@ -753,7 +753,7 @@ namespace switcher {
     return nullptr;
   }
 
-  //methods
+  // methods
   bool
     Quiddity::install_method(const std::string long_name,
                              const std::string method_name,

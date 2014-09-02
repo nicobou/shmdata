@@ -12,11 +12,11 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
-#include "information-tree-json.h"
-#include "scope-exit.h"
+#include "./information-tree-json.h"
+#include "./scope-exit.h"
 #include <json-glib/json-glib.h>
 #include <iostream>
 
@@ -28,7 +28,7 @@ namespace switcher {
         on_visiting_node(std::string key,
                          const Tree::ptr node,
                          bool is_array_element, JsonBuilder * builder) {
-        if (!is_array_element)  //discarding here to get it as a member called "name"
+        if (!is_array_element)  // discarding here to get it as a member called "name"
           json_builder_set_member_name(builder, key.c_str());
 
         if (node->is_leaf())
@@ -39,10 +39,10 @@ namespace switcher {
           return;
         }
         else
-        {                       //adding node value with the key "key_value" along with other childrens
+        {                       // adding node value with the key "key_value" along with other childrens
           if (node->is_array()) {
             json_builder_begin_array(builder);
-//json_builder_begin_object (builder);
+// json_builder_begin_object (builder);
           }
           else
           {
@@ -67,7 +67,7 @@ namespace switcher {
                         const Tree::ptr node,
                         bool is_array_element, JsonBuilder * builder) {
         if (node->is_array()) {
-          //json_builder_end_object (builder);
+          // json_builder_end_object (builder);
           json_builder_end_array(builder);
           return;
         }
@@ -129,6 +129,6 @@ namespace switcher {
       //   return tree;
       // }
 
-    }                           //end of "JSONSerializer" namespace
-  }                             //end of "data" namespace
-}                               //end of "switcher" namespace
+    }                           // end of "JSONSerializer" namespace
+  }                             // end of "data" namespace
+}                               // end of "switcher" namespace

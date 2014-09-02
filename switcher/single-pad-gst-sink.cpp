@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "single-pad-gst-sink.h"
-#include "gst-utils.h"
+#include "./single-pad-gst-sink.h"
+#include "./gst-utils.h"
 #include <utility>
 
 namespace switcher {
@@ -26,7 +26,7 @@ namespace switcher {
   }
 
   SinglePadGstSink::SinglePadGstSink() {
-    install_connect_method(std::bind(&SinglePadGstSink::connect, this, std::placeholders::_1), nullptr, //no disconnect
+    install_connect_method(std::bind(&SinglePadGstSink::connect, this, std::placeholders::_1), nullptr, // no disconnect
                            std::bind(&SinglePadGstSink::disconnect_all,
                                      this),
                            std::bind(&SinglePadGstSink::can_sink_caps,
@@ -69,7 +69,7 @@ namespace switcher {
   void SinglePadGstSink::set_sink_element_no_connect(GstElement * sink) {
     if (sink_element_ != nullptr && sink_element_ != sink)
       GstUtils::clean_element(sink_element_);
-    //sink element will be added to bin_ by the shmdata reader when appropriate
+    // sink element will be added to bin_ by the shmdata reader when appropriate
     sink_element_ = sink;
   }
 

@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "decodebin-to-shmdata.h"
-#include "scope-exit.h"
+#include "./decodebin-to-shmdata.h"
+#include "./scope-exit.h"
 #include <glib/gprintf.h>
 
 namespace switcher {
@@ -27,7 +27,7 @@ namespace switcher {
     discard_next_uncomplete_buffer_(false), main_pad_(nullptr),
     media_counters_(), media_counter_mutex_(), gpipe_(&gpipe),
     shmdata_path_(), cb_ids_(), thread_safe_() {
-    //set async property
+    // set async property
     auto set_prop = std::bind(g_object_set,
                               std::placeholders::_1,
                               "async-handling",
@@ -35,7 +35,7 @@ namespace switcher {
                               nullptr);
       decodebin_.g_invoke(std::move(set_prop));
 
-    //pad added callback
+    // pad added callback
     auto pad_added = std::bind(GstUtils::g_signal_connect_function,
                                std::placeholders::_1,
                                "pad-added",
@@ -44,7 +44,7 @@ namespace switcher {
       cb_ids_.push_back(decodebin_.g_invoke_with_return < gulong >
                         (std::move(pad_added)));
 
-    //autoplug callback
+    // autoplug callback
     auto autoplug = std::bind(GstUtils::g_signal_connect_function,
                               std::placeholders::_1,
                               "autoplug-select",
@@ -82,7 +82,7 @@ namespace switcher {
       gst_caps_unref(padcaps);
     };
     if (gst_caps_can_intersect(rtpcaps, padcaps)) {
-      //asking rtpbin to send an event when a packet is lost (do-lost property)
+      // asking rtpbin to send an event when a packet is lost (do-lost property)
       GstUtils::set_element_property_in_bin(object, "gstrtpbin", "do-lost",
                                             TRUE);
 
@@ -90,7 +90,7 @@ namespace switcher {
       GstElement *rtpgstdepay;
       GstUtils::make_element("rtpgstdepay", &rtpgstdepay);
 
-      //adding a probe for discarding uncomplete packets
+      // adding a probe for discarding uncomplete packets
       GstPad *depaysrcpad = gst_element_get_static_pad(rtpgstdepay, "src");
       gst_pad_add_buffer_probe(depaysrcpad,
                                G_CALLBACK
@@ -98,10 +98,10 @@ namespace switcher {
                                context);
       gst_object_unref(depaysrcpad);
 
-//was this: gst_bin_add (GST_BIN (context->bin_), rtpgstdepay);
+// was this: gst_bin_add (GST_BIN (context->bin_), rtpgstdepay);
       gst_bin_add(GST_BIN(GST_ELEMENT_PARENT(object)), rtpgstdepay);
       GstPad *sinkpad = gst_element_get_static_pad(rtpgstdepay, "sink");
-      //adding a probe for handling loss messages from rtpbin
+      // adding a probe for handling loss messages from rtpbin
       gst_pad_add_event_probe(sinkpad, (GCallback)
                               DecodebinToShmdata::gstrtpdepay_event_probe_cb,
                               context);
@@ -151,9 +151,9 @@ namespace switcher {
 
       g_free(string_caps_char);
       g_free(string_caps);
-      return return_val;        //expose
+      return return_val;        // expose
     }
-    return 0;                   //try
+    return 0;                   // try
   }
 
   gboolean DecodebinToShmdata::gstrtpdepay_buffer_probe_cb(GstPad * /*pad */ ,
@@ -181,7 +181,7 @@ namespace switcher {
     if (GST_EVENT_TYPE(event) == GST_EVENT_CUSTOM_DOWNSTREAM) {
       const GstStructure *s;
       s = gst_event_get_structure(event);
-//g_debug ("event probed (%s)\n", gst_structure_get_name (s));
+// g_debug ("event probed (%s)\n", gst_structure_get_name (s));
       if (gst_structure_has_name(s, "GstRTPPacketLost"))
         context->discard_next_uncomplete_buffer_ = true;
       return FALSE;
@@ -192,7 +192,7 @@ namespace switcher {
   void
     DecodebinToShmdata::pad_to_shmdata_writer(GstElement * bin, GstPad * pad)
   {
-    //looking for type of media
+    // looking for type of media
     std::string padname;
     {
       GstCaps *padcaps = gst_pad_get_caps(pad);
@@ -224,20 +224,20 @@ namespace switcher {
     GstUtils::link_static_to_request(pad, funnel);
     gst_element_link(funnel, fakesink);
 
-    //GstUtils::wait_state_changed (bin);
+    // GstUtils::wait_state_changed (bin);
     GstUtils::sync_state_with_parent(fakesink);
     GstUtils::sync_state_with_parent(funnel);
 
-    //probing eos
+    // probing eos
     GstPad *srcpad = gst_element_get_static_pad(funnel, "src");
     if (nullptr == main_pad_)
-      main_pad_ = srcpad;       //saving first pad for looping
+      main_pad_ = srcpad;       // saving first pad for looping
     gst_pad_add_event_probe(srcpad, (GCallback) eos_probe_cb, this);
     gst_object_unref(srcpad);
 
     std::string media_name("unknown");
 
-    {                           //giving a name to the stream
+    {                           // giving a name to the stream
       gchar **padname_splitted = g_strsplit_set(padname.c_str(), "/", -1);
       On_scope_exit {
         g_strfreev(padname_splitted);
@@ -249,11 +249,11 @@ namespace switcher {
       g_debug("decodebin-to-shmdata: new media %s \n", media_name.c_str());
     }
 
-    //creating a shmdata
+    // creating a shmdata
     ShmdataAnyWriter::ptr shm_any = std::make_shared < ShmdataAnyWriter > ();
     std::string shm_any_name = gpipe_->make_file_name(media_name);
     shm_any->set_path(shm_any_name.c_str());
-    //shm_any->start ();
+    // shm_any->start ();
     cb_ids_.push_back(g_signal_connect
                       (fakesink, "handoff", (GCallback) on_handoff_cb,
                        shm_any.get()));
@@ -346,7 +346,7 @@ namespace switcher {
                        (GstSeekFlags) (GST_SEEK_FLAG_FLUSH |
                                        GST_SEEK_FLAG_ACCURATE),
                        //| GST_SEEK_FLAG_SKIP
-                       //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization
+                       //| GST_SEEK_FLAG_KEY_UNIT, // using key unit is breaking synchronization
                        GST_SEEK_TYPE_SET,
                        0.0 * GST_SECOND,
                        GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);

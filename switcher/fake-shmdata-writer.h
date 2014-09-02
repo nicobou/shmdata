@@ -21,9 +21,9 @@
 #define __SWITCHER_FAKE_SHMDATA_WRITER_H__
 
 #include <memory>
-#include "gpipe.h"
-#include "startable-quiddity.h"
-#include "custom-property-helper.h"
+#include "./gpipe.h"
+#include "./startable-quiddity.h"
+#include "./custom-property-helper.h"
 
 namespace switcher {
 
@@ -40,7 +40,7 @@ namespace switcher {
     bool stop();
 
   private:
-    //custom properties:
+    // custom properties:
     CustomPropertyHelper::ptr custom_props_;
     GParamSpec *shmdata_path_spec_;
     gchar *shmdata_path_;

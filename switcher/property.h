@@ -24,8 +24,8 @@
 #include <memory>
 #include <map>
 #include <string>
-#include "json-builder.h"
-#include "categorizable.h"
+#include "./json-builder.h"
+#include "./categorizable.h"
 
 namespace switcher {
 
@@ -39,7 +39,7 @@ namespace switcher {
     Property(const Property & source);
     Property & operator=(const Property & source);
 
-    //this is when using an existing property
+    // this is when using an existing property
     void set_gobject_pspec(GObject * object, GParamSpec * pspec);
     void set_long_name(std::string long_name);
     void set_name(std::string name);
@@ -59,7 +59,7 @@ namespace switcher {
 
     void print();
 
-    //getter
+    // getter
     std::string get_long_name();
     std::string get_name();
     std::string get_short_description();

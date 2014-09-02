@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "fakesink.h"
-#include "gst-utils.h"
+#include "./fakesink.h"
+#include "./gst-utils.h"
 
 namespace switcher {
 
@@ -56,8 +56,8 @@ namespace switcher {
 
     g_signal_connect(fakesink_, "handoff", (GCallback) on_handoff_cb, this);
 
-    //registering some properties
-    //install_property (G_OBJECT (fakesink_),"last-message","last-message", "Last Message");
+    // registering some properties
+    // install_property (G_OBJECT (fakesink_),"last-message","last-message", "Last Message");
 
     byte_rate_spec_ =
       props_->make_int_property("byte-rate",

@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "pj-presence.h"
-#include "pj-sip.h"
+#include "./pj-presence.h"
+#include "./pj-sip.h"
 #include "switcher/scope-exit.h"
 namespace switcher {
 
@@ -48,14 +48,14 @@ PJPresence::PJPresence(PJSIP * sip_instance):
     status_enum_spec_(nullptr),
     status_(PJPresence::OFFLINE),
     custom_status_spec_(nullptr), custom_status_(), sip_local_user_() {
-    //registering account
-    sip_instance_->install_method("Register SIP Account",       //long name
-                                  "register",   //name
-                                  "register a SIP account",     //description
-                                  "success",    //return description
-                                  Method::make_arg_description("SIP User Name", //first arg long name
-                                                               "user",  //fisrt arg name
-                                                               "string",        //first arg description
+    // registering account
+    sip_instance_->install_method("Register SIP Account",       // long name
+                                  "register",   // name
+                                  "register a SIP account",     // description
+                                  "success",    // return description
+                                  Method::make_arg_description("SIP User Name", // first arg long name
+                                                               "user",  // fisrt arg name
+                                                               "string",        // first arg description
                                                                "SIP Domain",
                                                                "domain",
                                                                "string",
@@ -69,10 +69,10 @@ PJPresence::PJPresence(PJSIP * sip_instance):
                                   (G_TYPE_STRING, G_TYPE_STRING,
                                    G_TYPE_STRING, nullptr), this);
 
-    sip_instance_->install_method("Unregister SIP Account",     //long name
-                                  "unregister", //name
-                                  "unregister SIP account",     //description
-                                  "success",    //return description
+    sip_instance_->install_method("Unregister SIP Account",     // long name
+                                  "unregister", // name
+                                  "unregister SIP account",     // description
+                                  "success",    // return description
                                   Method::make_arg_description("none",
                                                                nullptr),
                                   (Method::method_ptr) &
@@ -80,7 +80,7 @@ PJPresence::PJPresence(PJSIP * sip_instance):
                                   Method::make_arg_type_description
                                   (G_TYPE_NONE, nullptr), this);
 
-    //online status
+    // online status
     status_enum_spec_ =
       sip_instance_->custom_props_->make_enum_property("status",
                                                        "Possible Status",
@@ -163,7 +163,7 @@ PJPresence::PJPresence(PJSIP * sip_instance):
     cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
     cfg.cred_info[0].data = pj_str(password);
     cfg.publish_enabled = PJ_TRUE;
-    cfg.register_on_acc_add = PJ_TRUE;  //or  pjsua_acc_set_registration (account_id_, PJ_TRUE);
+    cfg.register_on_acc_add = PJ_TRUE;  // or  pjsua_acc_set_registration (account_id_, PJ_TRUE);
 
     status = pjsua_acc_add(&cfg, PJ_TRUE, &account_id_);
     g_free(id);
@@ -179,7 +179,7 @@ PJPresence::PJPresence(PJSIP * sip_instance):
     pjsua_acc_set_user_data(account_id_, this);
     registration_cond_.wait(lock);
 
-    //char ip_addr[32];
+    // char ip_addr[32];
     /* Get local IP address for the default IP address */
     {
       const pj_str_t *hostname;
@@ -189,7 +189,7 @@ PJPresence::PJPresence(PJSIP * sip_instance):
       hostname = pj_gethostname();
       pj_sockaddr_in_init(&tmp_addr, hostname, 0);
       addr = pj_inet_ntoa(tmp_addr.sin_addr);
-      //pj_ansi_strcpy(ip_addr, addr);
+      // pj_ansi_strcpy(ip_addr, addr);
 
       sip_local_user_ =
         std::string("sip:") + sip_user + addr +
@@ -414,7 +414,7 @@ PJPresence::PJPresence(PJSIP * sip_instance):
         pj_cstr(&elem.note, "On the phone");
       break;
     case IDLE:
-      //elem.activity = PJRPID_ACTIVITY_UNKNOWN;
+      // elem.activity = PJRPID_ACTIVITY_UNKNOWN;
       elem.activity = PJRPID_ACTIVITY_AWAY;
       if (!has_custom_status)
         pj_cstr(&elem.note, "Idle");
@@ -425,7 +425,7 @@ PJPresence::PJPresence(PJSIP * sip_instance):
         pj_cstr(&elem.note, "Away");
       break;
     case BRB:
-      //elem.activity = PJRPID_ACTIVITY_UNKNOWN;
+      // elem.activity = PJRPID_ACTIVITY_UNKNOWN;
       elem.activity = PJRPID_ACTIVITY_AWAY;
       if (!has_custom_status)
         pj_cstr(&elem.note, "Be right back");

@@ -26,7 +26,7 @@
 #include <thread>
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "../../config.h"
 #endif
 
 void
@@ -60,7 +60,7 @@ main() {
     if (!switcher::QuiddityBasicTest::test_full(manager, "systemusage"))
       success = false;
 
-    // //creating a "top" quiddity
+    // // creating a "top" quiddity
     // if (g_strcmp0 (manager->create("systemusage", "test").c_str (), "test") != 0)
     //   success = false;
 
@@ -74,7 +74,7 @@ main() {
     //  "test",
     //  "on-tree-grafted");
     // std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-  }                             //end of scope is releasing the manager
+  }                             // end of scope is releasing the manager
 
   if (success)
     return 0;

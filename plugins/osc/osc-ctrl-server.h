@@ -36,9 +36,9 @@ namespace switcher {
     OscCtrlServer(const OscCtrlServer &) = delete;
     OscCtrlServer & operator=(const OscCtrlServer &) = delete;
     void set_port(std::string port);
-    //for invocation into osc handlers:
+    // for invocation into osc handlers:
     std::shared_ptr < QuiddityManager > get_quiddity_manager();
-    //wrappers
+    // wrappers
     static gboolean set_port_wrapped(gpointer port, gpointer user_data);
 
   private:

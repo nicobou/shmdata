@@ -21,7 +21,7 @@
  * The Method class
  */
 
-#include "method.h"
+#include "./method.h"
 
 namespace switcher {
 
@@ -82,14 +82,14 @@ namespace switcher {
     return true;
   }
 
-  //FIXME remove this method
+  // FIXME remove this method
   uint Method::get_num_of_value_args() {
     return num_of_value_args_;
   }
 
   bool Method::invoke(std::vector < std::string > args, GValue * result_value) {
 
-    //GValue result_value = G_VALUE_INIT;
+    // GValue result_value = G_VALUE_INIT;
 
     if (args.size() != num_of_value_args_ && arg_types_[0] != G_TYPE_NONE) {
       g_warning
@@ -99,7 +99,7 @@ namespace switcher {
 
     GValue params[arg_types_.size()];
 
-    //with args
+    // with args
     if (arg_types_[0] != G_TYPE_NONE)
       for (gulong i = 0; i < num_of_value_args_; i++) {
         params[i] = G_VALUE_INIT;
@@ -128,7 +128,7 @@ namespace switcher {
 
   void Method::destroy_data(gpointer /*data */ ,
                             GClosure * /*closure */ ) {
-    //g_debug ("Method::destroy data");
+    // g_debug ("Method::destroy data");
   }
 
   void
@@ -182,7 +182,7 @@ namespace switcher {
 
   }
 
-  //json formated description
+  // json formated description
   std::string Method::get_description() {
     make_description();
     return json_description_->get_string(true);
@@ -206,7 +206,7 @@ namespace switcher {
     return res;
   }
 
-  //FIXME, make this more robust to user missing strings
+  // FIXME, make this more robust to user missing strings
   Method::args_doc
     Method::make_arg_description(const char *first_arg_long_name, ...) {
     args_doc res;

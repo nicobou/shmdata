@@ -21,7 +21,7 @@
 #define __SWITCHER_UNIQUE_GST_ELEMENT_H__
 
 #include <memory>
-#include "gst-utils.h"
+#include "./gst-utils.h"
 
 namespace switcher {
 
@@ -29,7 +29,7 @@ namespace switcher {
   public:
     UniqueGstElement(const gchar * class_name);
 
-    //invoke as g_object
+    // invoke as g_object
     template < typename Return_type >
       Return_type
       g_invoke_with_return(std::function < Return_type(gpointer) > command) {
@@ -38,7 +38,7 @@ namespace switcher {
 
     void g_invoke(std::function < void (gpointer) > command);
 
-    //invoke as GstElement
+    // invoke as GstElement
     template < typename Return_type >
       Return_type
       invoke_with_return(std::function < Return_type(GstElement *) >

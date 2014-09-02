@@ -21,9 +21,9 @@
 #define __SWITCHER_SHMDATA_FROM_GDP_FILE_H__
 
 #include <gst/gst.h>
-#include "segment.h"
-#include "custom-property-helper.h"
-#include "quiddity-manager.h"
+#include "./segment.h"
+#include "./custom-property-helper.h"
+#include "./quiddity-manager.h"
 #include <unordered_map>
 
 namespace switcher {
@@ -37,7 +37,7 @@ namespace switcher {
     ShmdataFromGDPFile & operator=(const ShmdataFromGDPFile &) = delete;
     bool init();
 
-    //local streams
+    // local streams
     bool add_file(std::string shmwriter_path, std::string file_path);
     bool remove_file(std::string shmwriter_path);
 
@@ -46,7 +46,7 @@ namespace switcher {
     static void rewind(gpointer user_data);
 
   private:
-    //custom properties:
+    // custom properties:
     CustomPropertyHelper::ptr custom_prop_;
     GParamSpec *playing_param_;
     gboolean playing_;
@@ -58,7 +58,7 @@ namespace switcher {
 
     static gboolean event_probe_cb(GstPad * pad, GstEvent * event,
                                    gpointer user_data);
-    //wrappers
+    // wrappers
     static gboolean add_file_wrapped(gpointer file_path,
                                      gpointer shmdata_socket_path,
                                      gpointer user_data);

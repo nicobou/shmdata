@@ -105,7 +105,7 @@ main() {
     manager->remove_property_subscriber("sub");
   }
 
-  //cleanning manager
+  // cleanning manager
   {
     switcher::QuiddityManager::ptr empty;
     manager.swap(empty);

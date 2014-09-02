@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "portmidi-devices.h"
+#include "./portmidi-devices.h"
 #include "switcher/json-builder.h"
 #include <glib/gprintf.h>
 
@@ -239,7 +239,7 @@ PortMidi::PortMidiScheduler::PortMidiScheduler():
                                               unsigned char data2) {
     PmEvent message_to_push;
     message_to_push.message = Pm_Message(status, data1, data2);
-    message_to_push.timestamp = 0;      //use current time
+    message_to_push.timestamp = 0;      // use current time
 
     output_queues_[stream]->push(message_to_push);
     return true;
@@ -293,7 +293,7 @@ PortMidi::PortMidiScheduler::PortMidiScheduler():
 //  Pm_MessageData1(buffer.message),
 //  Pm_MessageData2(buffer.message));
 
-//invoking the callback
+// invoking the callback
             itr.second.first(&buffer, itr.second.second);
 
 /* sysex processing */
@@ -314,14 +314,14 @@ PortMidi::PortMidiScheduler::PortMidiScheduler():
         }
         while (result);
       }
-    }                           //end of "for input_streams_"
+    }                           // end of "for input_streams_"
 
   for (auto & itr:context->output_queues_) {
       /* see if there is application midi data to process */
       while (!itr.second->empty()) {
         /* see if it is time to output the next message */
         PmEvent *next = &(itr.second->front()); //(PmEvent *) Pm_QueuePeek(out_queue);
-        //assert(next); /* must be non-null because queue is not empty */
+        // assert(next); /* must be non-null because queue is not empty */
         /* time to send a message, first make sure it's not blocked */
         int status = Pm_MessageStatus(next->message);
         if ((status & 0xF8) == 0xF8) {
@@ -373,7 +373,7 @@ PortMidi::PortMidiScheduler::PortMidiScheduler():
 
       if (listinfo->input) {
         input_devices_enum_[input_i].value = i;
-        //FIXME free
+        // FIXME free
         input_devices_enum_[input_i].value_nick =
           g_strdup_printf("%s (%s)", listinfo->name, listinfo->interf);
         input_devices_enum_[input_i].value_name =
@@ -382,7 +382,7 @@ PortMidi::PortMidiScheduler::PortMidiScheduler():
       }
       else {
         output_devices_enum_[output_i].value = i;
-        //FIXME free
+        // FIXME free
         output_devices_enum_[output_i].value_nick =
           g_strdup_printf("%s (%s)", listinfo->name, listinfo->interf);
         output_devices_enum_[output_i].value_name =

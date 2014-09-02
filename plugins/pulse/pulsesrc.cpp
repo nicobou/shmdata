@@ -19,7 +19,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "pulsesrc.h"
+#include "./pulsesrc.h"
 #include "switcher/gst-utils.h"
 
 namespace switcher {
@@ -74,7 +74,7 @@ namespace switcher {
                               capture_devices_description_spec_,
                               "devices-json", "Capture Devices");
 
-    //waiting for devices to be updated
+    // waiting for devices to be updated
     devices_cond_.wait(lock);
     if (!connected_to_pulse_) {
       g_debug("not connected to pulse, cannot init");
@@ -168,16 +168,16 @@ namespace switcher {
 
     switch (pa_context_get_state(pulse_context)) {
     case PA_CONTEXT_CONNECTING:
-      //g_print ("PA_CONTEXT_CONNECTING\n");
+      // g_print ("PA_CONTEXT_CONNECTING\n");
       break;
     case PA_CONTEXT_AUTHORIZING:
-      //g_print ("PA_CONTEXT_AUTHORIZING\n");
+      // g_print ("PA_CONTEXT_AUTHORIZING\n");
       break;
     case PA_CONTEXT_SETTING_NAME:
-      //g_print ("PA_CONTEXT_SETTING_NAME\n");
+      // g_print ("PA_CONTEXT_SETTING_NAME\n");
       break;
     case PA_CONTEXT_READY:
-      //g_print ("PA_CONTEXT_READY\n");
+      // g_print ("PA_CONTEXT_READY\n");
       context->make_device_description(pulse_context);
       // pa_operation_unref(pa_context_get_source_info_list(pulse_context,
       //  get_source_info_callback,
@@ -186,8 +186,8 @@ namespace switcher {
       pa_context_set_subscribe_callback(pulse_context,
                                         on_pa_event_callback, nullptr);
 
-      pa_operation_unref(pa_context_subscribe(pulse_context, (pa_subscription_mask_t) (PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE | PA_SUBSCRIPTION_MASK_SINK_INPUT | PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT | PA_SUBSCRIPTION_MASK_MODULE | PA_SUBSCRIPTION_MASK_CLIENT | PA_SUBSCRIPTION_MASK_SAMPLE_CACHE | PA_SUBSCRIPTION_MASK_SERVER | PA_SUBSCRIPTION_MASK_CARD), nullptr,      //pa_context_success_cb_t cb,
-                                              nullptr)  //void *userdata);
+      pa_operation_unref(pa_context_subscribe(pulse_context, (pa_subscription_mask_t) (PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE | PA_SUBSCRIPTION_MASK_SINK_INPUT | PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT | PA_SUBSCRIPTION_MASK_MODULE | PA_SUBSCRIPTION_MASK_CLIENT | PA_SUBSCRIPTION_MASK_SAMPLE_CACHE | PA_SUBSCRIPTION_MASK_SERVER | PA_SUBSCRIPTION_MASK_CARD), nullptr,      // pa_context_success_cb_t cb,
+                                              nullptr)  // void *userdata);
         );
 
       break;
@@ -231,7 +231,7 @@ namespace switcher {
     builder->end_object();
     capture_devices_description_ =
       g_strdup(builder->get_string(true).c_str());
-    //g_print ("%s\n",capture_devices_description_);
+    // g_print ("%s\n",capture_devices_description_);
     GObjectWrapper::notify_property_changed(gobject_->get_gobject(),
                                             capture_devices_description_spec_);
   }
@@ -253,7 +253,7 @@ namespace switcher {
       if (operation)
         pa_operation_unref(operation);
 
-      //registering enum for devices
+      // registering enum for devices
       context->update_capture_device();
       context->devices_enum_spec_ =
         context->custom_props_->make_enum_property("device",
@@ -272,7 +272,7 @@ namespace switcher {
 
       context->make_json_description();
 
-      //signal init we are done
+      // signal init we are done
       std::unique_lock < std::mutex > lock(context->devices_mutex_);
       context->devices_cond_.notify_all();
       return;
@@ -282,27 +282,27 @@ namespace switcher {
     switch (i->state) {
     case PA_SOURCE_INIT:
       description.state_ = "INIT";
-      //g_print ("state: INIT \n");
+      // g_print ("state: INIT \n");
       break;
     case PA_SOURCE_UNLINKED:
       description.state_ = "UNLINKED";
-      //g_print ("state: UNLINKED \n");
+      // g_print ("state: UNLINKED \n");
       break;
     case PA_SOURCE_INVALID_STATE:
       description.state_ = "n/a";
-      //g_print ("state: n/a \n");
+      // g_print ("state: n/a \n");
       break;
     case PA_SOURCE_RUNNING:
       description.state_ = "RUNNING";
-      //g_print ("state: RUNNING \n");
+      // g_print ("state: RUNNING \n");
       break;
     case PA_SOURCE_IDLE:
       description.state_ = "IDLE";
-      //g_print ("state: IDLE \n");
+      // g_print ("state: IDLE \n");
       break;
     case PA_SOURCE_SUSPENDED:
       description.state_ = "SUSPENDED";
-      //g_print ("state: SUSPENDED \n");
+      // g_print ("state: SUSPENDED \n");
       break;
     }
 
@@ -328,25 +328,25 @@ namespace switcher {
     //      " channels: %u\n",
     //      //"Channel Map: %s\n",
     //      i->name,
-    //      i->description,//warning this can be nullptr
+    //      i->description,// warning this can be nullptr
     //      pa_sample_format_to_string (i->sample_spec.format),
     //      i->sample_spec.rate,
     //      i->sample_spec.channels//,
-    //      //pa_channel_map_snprint(cm, sizeof(cm), &i->channel_map)
+    //      // pa_channel_map_snprint(cm, sizeof(cm), &i->channel_map)
     //      );
 
     if (i->ports) {
       pa_source_port_info **p;
-      //printf("\tPorts:\n");
+      // printf("\tPorts:\n");
       for (p = i->ports; *p; p++) {
-        //printf("\t\t%s: %s (priority. %u)\n", (*p)->name, (*p)->description, (*p)->priority);
+        // printf("\t\t%s: %s (priority. %u)\n", (*p)->name, (*p)->description, (*p)->priority);
         description.
           ports_.push_back(std::make_pair((*p)->name, (*p)->description));
       }
     }
 
     if (i->active_port) {
-//printf("\tActive Port: %s\n", i->active_port->name);
+// printf("\tActive Port: %s\n", i->active_port->name);
       description.active_port_ = i->active_port->description;
     }
     else
@@ -419,7 +419,7 @@ namespace switcher {
     gint i = 0;
   for (auto & it:capture_devices_) {
       devices_enum_[i].value = i;
-      //FIXME previous free here
+      // FIXME previous free here
       devices_enum_[i].value_name = g_strdup(it.description_.c_str());
       devices_enum_[i].value_nick = g_strdup(it.name_.c_str());
       i++;
@@ -452,4 +452,4 @@ namespace switcher {
     return context->device_;
   }
 
-}                               //end of PulseSrc class
+}                               // end of PulseSrc class

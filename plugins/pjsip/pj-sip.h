@@ -25,13 +25,13 @@
 #include <mutex>
 #include <condition_variable>
 
-//pjsip
+// pjsip
 #include <pjsua-lib/pjsua.h>
 
 #include "switcher/quiddity.h"
 #include "switcher/custom-property-helper.h"
-#include "pj-call.h"
-#include "pj-presence.h"
+#include "./pj-call.h"
+#include "./pj-presence.h"
 
 namespace switcher {
   class PJSIP:public Quiddity {

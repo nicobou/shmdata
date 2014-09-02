@@ -22,7 +22,7 @@
 
 #include <glib.h>
 #include <memory>
-#include "custom-property-helper.h"
+#include "./custom-property-helper.h"
 
 namespace switcher {
 
@@ -35,9 +35,9 @@ namespace switcher {
     StartableQuiddity & operator=(const StartableQuiddity &) = delete;
 
   protected:
-    void init_startable(void *quiddity);        //FIXME should called quiddity-manager-impl
+    void init_startable(void *quiddity);        // FIXME should called quiddity-manager-impl
     bool is_started();
-    //find a way to avoid invoking init_startable (this) in quiddities (policies)
+    // find a way to avoid invoking init_startable (this) in quiddities (policies)
 
   private:
     virtual bool start() = 0;
@@ -46,7 +46,7 @@ namespace switcher {
     static void set_started(gboolean started, void *user_data);
 
     bool started_;
-    GParamSpec *started_prop_;  //FIXME should be static
+    GParamSpec *started_prop_;  // FIXME should be static
     CustomPropertyHelper::ptr startable_custom_props_;
   };
 

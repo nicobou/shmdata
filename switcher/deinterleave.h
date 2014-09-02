@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_DEINTERLEAVE_H__
 #define __SWITCHER_DEINTERLEAVE_H__
 
-#include "single-pad-gst-sink.h"
+#include "./single-pad-gst-sink.h"
 #include <memory>
 #include <map>
 

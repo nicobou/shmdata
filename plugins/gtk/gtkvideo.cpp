@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "gtkvideo.h"
+#include "./gtkvideo.h"
 #include "switcher/gst-utils.h"
 #include "switcher/quiddity-command.h"
 #include <gst/gst.h>
@@ -25,7 +25,7 @@
 #include <gdk/gdkcursor.h>
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "../../config.h"
 #endif
 
 namespace switcher {
@@ -90,7 +90,7 @@ namespace switcher {
 
     g_object_set(G_OBJECT(xvimagesink_),
                  "sync", FALSE, "qos", FALSE, nullptr);
-    //on_error_command_ = new QuiddityCommand ();
+    // on_error_command_ = new QuiddityCommand ();
     on_error_command_->id_ = QuiddityCommand::remove;
     on_error_command_->add_arg(get_nick_name());
     g_object_set_data(G_OBJECT(xvimagesink_),
@@ -235,7 +235,7 @@ GTKVideo::GTKVideo():
     g_idle_remove_by_data(this);
     if (nullptr != title_)
       g_free(title_);
-    //destroy child widgets too
+    // destroy child widgets too
     if (main_window_ != nullptr && GTK_IS_WIDGET(main_window_)) {
       std::unique_lock < std::mutex > lock(window_destruction_mutex_);
 // g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
@@ -266,7 +266,7 @@ GTKVideo::GTKVideo():
 
     gdk_threads_enter();
     gdk_display_sync(context->display_);
-    //gdk_error_trap_pop ();
+    // gdk_error_trap_pop ();
 
     /* Retrieve window handler from GDK */
 #if defined (GDK_WINDOWING_WIN32)

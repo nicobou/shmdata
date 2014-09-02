@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "plugin-loader.h"
-#include "quiddity-documentation.h"
+#include "./plugin-loader.h"
+#include "./quiddity-documentation.h"
 
 namespace switcher {
 

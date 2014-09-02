@@ -57,21 +57,21 @@ namespace switcher {
     bool connected_to_pulse_;
     std::mutex devices_mutex_;
     std::condition_variable devices_cond_;
-    //custom property:
+    // custom property:
     CustomPropertyHelper::ptr custom_props_;
-    GParamSpec *capture_devices_description_spec_;      //json formated
-    gchar *capture_devices_description_;        //json formated
-    //device enum members
+    GParamSpec *capture_devices_description_spec_;      // json formated
+    gchar *capture_devices_description_;        // json formated
+    // device enum members
     GParamSpec *devices_enum_spec_;
     GEnumValue devices_enum_[128];
     gint device_;
-    //pulse_audio
+    // pulse_audio
     pa_glib_mainloop *pa_glib_mainloop_;
     pa_mainloop_api *pa_mainloop_api_;
     pa_context *pa_context_;
     char *server_;
     std::vector < DeviceDescription > capture_devices_;
-    //quit
+    // quit
     std::mutex quit_mutex_;
     std::condition_variable quit_cond_;
 
@@ -90,7 +90,7 @@ namespace switcher {
 
     bool init_gpipe() final;
 
-    //device enum and select
+    // device enum and select
     static void set_device(const gint value, void *user_data);
     static gint get_device(void *user_data);
 

@@ -22,10 +22,10 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <unistd.h>             //sleep
+#include <unistd.h>             // sleep
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "../../config.h"
 #endif
 
 int
@@ -42,29 +42,29 @@ main() {
     return 1;
 #endif
 
-    //creating a "myplugin" quiddity
+    // creating a "myplugin" quiddity
     if (manager->create("gtkvideosink", "win").compare("win") != 0) {
-      //cannot create gtk window, stoping the test
+      // cannot create gtk window, stoping the test
       return 0;
     }
 
-    //creating a video source quiddity
+    // creating a video source quiddity
     if (manager->create("videotestsrc", "vid").compare("vid") != 0)
       return 1;
 
     if (!manager->set_property("vid", "started", "true"))
       return 1;
 
-    //usleep (1000000);
+    // usleep (1000000);
 
-    //connecting
+    // connecting
     if (!manager->invoke_va("win", "connect", nullptr,
                             "/tmp/switcher_gtktest_vid_video", nullptr))
       return 1;
 
-    //usleep (10000000);
+    // usleep (10000000);
 
-    //removing quiddities
+    // removing quiddities
     if (!manager->remove("win"))
       return 1;
 
@@ -74,7 +74,7 @@ main() {
     if (!switcher::QuiddityBasicTest::test_full(manager, "gtkvideosink"))
       return 1;
 
-  }                             //end of scope is releasing the manager
+  }                             // end of scope is releasing the manager
 
-  return 0;                     //success
+  return 0;                     // success
 }

@@ -17,11 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "sdp-utils.h"
+#include "./sdp-utils.h"
 
 namespace switcher {
 
-  SDPMedia::SDPMedia():media_(nullptr), caps_structure_(nullptr), port_(0)      //means "disabled media"
+  SDPMedia::SDPMedia():media_(nullptr), caps_structure_(nullptr), port_(0)      // means "disabled media"
   {
     gst_sdp_media_new(&media_);
   }
@@ -78,7 +78,7 @@ namespace switcher {
     /* for the c= line */
     gst_sdp_media_add_connection(media_, "IN", "IP4", "127.0.0.1", 16, 0);
 
-    //sendonly
+    // sendonly
     gst_sdp_media_add_attribute(media_, "sendonly", nullptr);
 
     /* get clock-rate, media type and params for the rtpmap attribute */
@@ -159,14 +159,14 @@ SDPDescription::SDPDescription():
     /* some standard things first */
     gst_sdp_message_set_version(sdp_description_, "0");
 
-    //FIXME check and chose between IP4 and IP6, IP4 hardcoded
-    //FIXME generate proper session id & version
+    // FIXME check and chose between IP4 and IP6, IP4 hardcoded
+    // FIXME generate proper session id & version
     gst_sdp_message_set_origin(sdp_description_, "-",   // the user name
                                "1188340656180883",      // a session id
                                "1",     // a session version
                                "IN",    // a network type
                                "IP4",   // an address type
-                               "127.0.0.1");    //an address
+                               "127.0.0.1");    // an address
 
     gst_sdp_message_set_session_name(sdp_description_, "switcher session");
     gst_sdp_message_set_information(sdp_description_, "telepresence");

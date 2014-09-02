@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "information-tree.h"
+#include "./information-tree.h"
 #include <algorithm>
 #include <regex>
 #include <iostream>
@@ -26,7 +26,7 @@ namespace switcher {
   namespace data {
 
     //--------------- utils
-    //constructor
+    // constructor
     Tree::ptr make_tree() {
       return std::make_shared < Tree > ();
     }
@@ -157,7 +157,7 @@ namespace switcher {
       auto found = get_node(path);
       if (!found.first.empty())
         return found.second->second;
-      //not found
+      // not found
       Tree::ptr res;
       return res;
     }
@@ -168,7 +168,7 @@ namespace switcher {
       Tree::child_list_type child_list;
       Tree::child_list_type::iterator child_iterator;
       if (get_next(iss, child_list, child_iterator)) {
-        //asking root node
+        // asking root node
       }
       return std::make_pair(child_list, child_iterator);
     }
@@ -209,17 +209,17 @@ namespace switcher {
       std::string child;
       if (!std::getline(path, child, '.'))
         return true;
-      if (child.empty())        //in case of two or more consecutive dots
+      if (child.empty())        // in case of two or more consecutive dots
         return graft_next(path, tree, leaf);
       auto it = tree->get_child_iterator(child);
       if (tree->childrens_.end() != it) {
-        if (graft_next(path, it->second.get(), leaf))   //graft on already existing child
+        if (graft_next(path, it->second.get(), leaf))   // graft on already existing child
           it->second = leaf;    // replacing the previously empy tree with the one to graft
       }
       else {
         Tree::ptr child_node = make_tree();
         tree->childrens_.emplace_back(child, child_node);
-        if (graft_next(path, child_node.get(), leaf))   //graft on already existing child
+        if (graft_next(path, child_node.get(), leaf))   // graft on already existing child
         {
           // replacing empty tree for replacement by leaf
           tree->childrens_.pop_back();

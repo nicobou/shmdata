@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "osc-to-shmdata.h"
+#include "./osc-to-shmdata.h"
 
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
@@ -67,8 +67,8 @@ namespace switcher {
   }
 
   bool OscToShmdata::start() {
-    //creating a shmdata
-    //ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
+    // creating a shmdata
+    // ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
     std::string shm_any_name = make_file_name("osc");
     shm_any_->set_path(shm_any_name.c_str());
     g_message("%s created a new shmdata any writer (%s)",
@@ -110,16 +110,16 @@ namespace switcher {
                               int argc, lo_message m, void *user_data) {
     OscToShmdata *context = static_cast < OscToShmdata * >(user_data);
     lo_timetag timetag = lo_message_get_timestamp(m);
-    //g_print ("timestamp %u %u", path, timetag.sec, timetag.frac);
+    // g_print ("timestamp %u %u", path, timetag.sec, timetag.frac);
     if (0 != timetag.sec) {
-//FIXME handle internal timetag
-//note: this is not implemented in osc-send
+// FIXME handle internal timetag
+// note: this is not implemented in osc-send
     }
     std::chrono::time_point < std::chrono::system_clock > now =
       std::chrono::system_clock::now();
     std::chrono::duration < unsigned long long, std::nano > clock =
       now - context->start_;
-    //g_print ("unknown osc path %s %llu", path, clock.count ());
+    // g_print ("unknown osc path %s %llu", path, clock.count ());
 
     size_t size;
     void *buftmp = lo_message_serialise(m, path, nullptr, &size);
@@ -130,4 +130,4 @@ namespace switcher {
   void OscToShmdata::osc_error(int num, const char *msg, const char *path) {
     g_debug("liblo server error %d in path %s: %s", num, path, msg);
   }
-}                               //end of OscToShmdata class
+}                               // end of OscToShmdata class

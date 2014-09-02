@@ -17,11 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "decodebin2.h"
-#include "gst-element-cleaner.h"
-#include "gst-utils.h"
+#include "./decodebin2.h"
+#include "./gst-element-cleaner.h"
+#include "./gst-utils.h"
 #include <glib/gprintf.h>
-#include "scope-exit.h"
+#include "./scope-exit.h"
 
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Decodebin2,

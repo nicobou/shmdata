@@ -49,13 +49,13 @@ namespace switcher {
 
   private:
     GHashTable * table_;
-    //FIX ME this is used only to keep ref count of shared pointer
-    //std::map<std::string, T> keep_ref_count_;
+    // FIX ME this is used only to keep ref count of shared pointer
+    // std::map<std::string, T> keep_ref_count_;
   };
 
 }                               // end of namespace
 
-//including the actual code here
-#include "hash-table_spec.h"
+// including the actual code here
+#include "./hash-table_spec.h"
 
 #endif // ifndef

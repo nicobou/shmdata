@@ -28,7 +28,7 @@
 #include <vector>
 #include <map>
 #include <memory>
-#include "json-builder.h"
+#include "./json-builder.h"
 
 namespace switcher {
 
@@ -92,7 +92,7 @@ namespace switcher {
     std::vector < std::string > result_;
     std::vector < std::string > expected_result_;
     bool success_;
-    gint64 time_;               ////monotonic time, in microseconds
+    gint64 time_;               //// monotonic time, in microseconds
     void clear();
     void set_id(command id);
     void add_arg(std::string arg);

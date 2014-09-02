@@ -12,11 +12,11 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 #include "switcher/scope-exit.h"
 
-//note: do not write On_scope_exit call in the same line
+// note: do not write On_scope_exit call in the same line
 int
 main() {
   int counter = 0;
@@ -26,12 +26,12 @@ main() {
       counter = 2;
     };
     On_scope_exit {
-    };                          //ensuring multiple calls in the same scope
+    };                          // ensuring multiple calls in the same scope
   }
 
   On_scope_exit {
     counter = 3;
-  };                            //should be assigned after "main"
+  };                            // should be assigned after "main"
 
   if (2 == counter)
     return 0;

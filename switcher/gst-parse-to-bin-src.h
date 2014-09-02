@@ -20,9 +20,9 @@
 #ifndef __SWITCHER_GST_PARSE_TO_BIN_SRC_H__
 #define __SWITCHER_GST_PARSE_TO_BIN_SRC_H__
 
-#include "gpipe.h"
-#include "startable-quiddity.h"
-#include "custom-property-helper.h"
+#include "./gpipe.h"
+#include "./startable-quiddity.h"
+#include "./custom-property-helper.h"
 #include <gst/gst.h>
 #include <memory>
 

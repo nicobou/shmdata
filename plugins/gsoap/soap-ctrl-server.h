@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
 #ifndef __SWITCHER_SOAP_CTRL_SERVER_H__
@@ -35,12 +35,12 @@ namespace switcher {
     SoapCtrlServer & operator=(const SoapCtrlServer &) = delete;
     bool init() final;
 
-    bool set_port(int port);    //default port is 8080
+    bool set_port(int port);    // default port is 8080
     bool start();
     bool stop();
-    //for invocation into soap handlers:
+    // for invocation into soap handlers:
     std::shared_ptr < QuiddityManager > get_quiddity_manager();
-    //wrappers
+    // wrappers
     static gboolean set_port_wrapped(gint port, gpointer user_data);
 
   private:

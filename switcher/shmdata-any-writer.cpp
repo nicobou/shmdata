@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "shmdata-any-writer.h"
-#include "gst-utils.h"
+#include "./shmdata-any-writer.h"
+#include "./gst-utils.h"
 
 namespace switcher {
 
@@ -31,19 +31,19 @@ namespace switcher {
 
   ShmdataAnyWriter::~ShmdataAnyWriter() {
     std::unique_lock < std::mutex > lock(thread_safe_);
-    //g_print ("%s\n",__FUNCTION__);
+    // g_print ("%s\n",__FUNCTION__);
     shmdata_any_writer_close(writer_);
     if (!path_.empty())
       g_debug("ShmdataAnyWriter: %s deleted", path_.c_str());
   }
 
-  //WARNING if the file exist it will be deleted
+  // WARNING if the file exist it will be deleted
   bool ShmdataAnyWriter::set_path(std::string name) {
     std::unique_lock < std::mutex > lock(thread_safe_);
-    //g_print ("%s\n",__FUNCTION__);
+    // g_print ("%s\n",__FUNCTION__);
     GFile *shmfile = g_file_new_for_commandline_arg(name.c_str());
     if (g_file_query_exists(shmfile, nullptr)) {
-//thrash it
+// thrash it
       g_debug
         ("ShmdataAnyWriter::set_path warning: file %s exists and will be deleted.",
          name.c_str());
@@ -59,8 +59,8 @@ namespace switcher {
   }
 
   bool ShmdataAnyWriter::set_path_without_deleting(std::string name) {
-    //g_print ("%s\n",__FUNCTION__);
-    //setting the writer
+    // g_print ("%s\n",__FUNCTION__);
+    // setting the writer
     shmdata_any_writer_set_path(writer_, name.c_str());
     path_ = name;
     make_json_description();
@@ -69,7 +69,7 @@ namespace switcher {
 
   std::string ShmdataAnyWriter::get_path() {
     std::unique_lock < std::mutex > lock(thread_safe_);
-    //g_print ("%s\n",__FUNCTION__);
+    // g_print ("%s\n",__FUNCTION__);
     return path_;
   }
 
@@ -92,7 +92,7 @@ namespace switcher {
                                 void (*data_not_required_anymore) (void *),
                                 void *user_data) {
     std::unique_lock < std::mutex > lock(thread_safe_);
-    ////g_print ("%s\n",__FUNCTION__);
+    //// g_print ("%s\n",__FUNCTION__);
     if (started_)
       shmdata_any_writer_push_data(writer_,
                                    data,
@@ -107,7 +107,7 @@ namespace switcher {
                                            void (*data_not_required_anymore)
                                              (void *), void *user_data) {
     std::unique_lock < std::mutex > lock(thread_safe_);
-    ////g_print ("%s\n",__FUNCTION__);
+    //// g_print ("%s\n",__FUNCTION__);
     if (started_)
       shmdata_any_writer_push_data(writer_,
                                    data,
@@ -117,7 +117,7 @@ namespace switcher {
   }
 
   void ShmdataAnyWriter::make_json_description() {
-    //g_print ("%s\n",__FUNCTION__);
+    // g_print ("%s\n",__FUNCTION__);
     json_description_->reset();
     json_description_->begin_object();
     json_description_->add_string_member("path", path_.c_str());
@@ -125,7 +125,7 @@ namespace switcher {
   }
 
   JSONBuilder::Node ShmdataAnyWriter::get_json_root_node() {
-    //g_print ("%s\n",__FUNCTION__);
+    // g_print ("%s\n",__FUNCTION__);
     return json_description_->get_root();
   }
 

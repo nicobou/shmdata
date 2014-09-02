@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "jack-audio-source.h"
+#include "./jack-audio-source.h"
 #include <gst/gst.h>
-#include "gst-utils.h"
+#include "./gst-utils.h"
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackAudioSource,
                                        "Jack Audio",
@@ -105,7 +105,7 @@ namespace switcher {
     if (!GstUtils::make_element("bin", &jackaudiosrc_bin_))
       return false;
 
-    //using caps compatible with L16 RTP payload
+    // using caps compatible with L16 RTP payload
     GstCaps *caps = gst_caps_new_simple("audio/x-raw-int",
                                         "width", G_TYPE_INT, 16,
                                         "depth", G_TYPE_INT, 16,

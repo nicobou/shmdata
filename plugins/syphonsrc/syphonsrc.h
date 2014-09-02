@@ -25,7 +25,7 @@
 #include "switcher/startable-quiddity.h"
 #include "switcher/custom-property-helper.h"
 
-#include "syphonreader.h"
+#include "./syphonreader.h"
 
 #include <memory>
 #include <string>

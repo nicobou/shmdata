@@ -31,9 +31,9 @@ namespace switcher {
 
     Categorizable();
     virtual ~ Categorizable();
-    //default category is ""
+    // default category is ""
     void set_category(std::string category_name);
-    //default position weight is 0
+    // default position weight is 0
     void set_position_weight(int position_weight);
 
     std::string get_category();

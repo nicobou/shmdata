@@ -25,7 +25,7 @@
 #include <vector>
 #include <tuple>
 #include <string>
-#include "json-builder.h"
+#include "./json-builder.h"
 
 namespace switcher {
 
@@ -33,10 +33,10 @@ namespace switcher {
   public:
     typedef std::shared_ptr < Signal > ptr;
     typedef std::vector < GType > args_types;
-    //long name, name, description
+    // long name, name, description
     typedef std::vector < std::tuple < std::string, std::string,
       std::string > >args_doc;
-    typedef void (*OnEmittedCallback) (std::vector < std::string > params, gpointer user_data); //FIXME params should be const
+    typedef void (*OnEmittedCallback) (std::vector < std::string > params, gpointer user_data); // FIXME params should be const
 
     Signal();
     ~Signal();
@@ -60,12 +60,12 @@ namespace switcher {
 
     GValue action_emit(std::vector < std::string > args);
 
-    //helper methods, use nullptr sentinel
-    //do not describe the first gobject (first signal arg)
-    //use G_TYPE_NONE if no arg
+    // helper methods, use nullptr sentinel
+    // do not describe the first gobject (first signal arg)
+    // use G_TYPE_NONE if no arg
     static args_types make_arg_type_description(GType arg_type, ...);
 
-    //helper methods, use nullptr sentinel
+    // helper methods, use nullptr sentinel
     static args_doc make_arg_description(const gchar * first_arg_name, ...);
     JSONBuilder::Node get_json_root_node();
 

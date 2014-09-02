@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "http-sdp-dec.h"
-#include "gst-utils.h"
-#include "scope-exit.h"
+#include "./http-sdp-dec.h"
+#include "./gst-utils.h"
+#include "./scope-exit.h"
 #include <glib/gprintf.h>
 #include <memory>
 
@@ -95,7 +95,7 @@ namespace switcher {
     HTTPSDPDec::on_new_element_in_sdpdemux(GstBin * bin,
                                            GstElement * element,
                                            gpointer user_data) {
-    //FIXME add that in uridecodebin
+    // FIXME add that in uridecodebin
     g_object_set(G_OBJECT(element), "ntp-sync", TRUE, nullptr);
   }
 
@@ -137,7 +137,7 @@ namespace switcher {
   void HTTPSDPDec::source_setup_cb(GstElement * /*httpsdpdec */ ,
                                    GstElement * source,
                                    gpointer /*user_data */ ) {
-    //HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
+    // HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
     g_debug("source %s %s\n", GST_ELEMENT_NAME(source),
             G_OBJECT_CLASS_NAME(G_OBJECT_GET_CLASS(source)));
   }

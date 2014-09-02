@@ -24,7 +24,7 @@
 #include <iostream>
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "../../config.h"
 #endif
 
 int
@@ -46,11 +46,11 @@ main() {
     if (!switcher::QuiddityBasicTest::test_full(manager, "myplugin"))
       success = false;
 
-    //creating a "myplugin" quiddity
+    // creating a "myplugin" quiddity
     if (g_strcmp0(manager->create("myplugin", "test").c_str(), "test") != 0)
       success = false;
 
-    //testing myprop property
+    // testing myprop property
     if (!manager->set_property("test", "myprop", "true"))
       success = false;
 
@@ -60,7 +60,7 @@ main() {
     // if (g_strcmp0 (manager->get_property ("test", "myprop").c_str (), "true") != 0)
     //   success = false;
 
-    //     //testing hello-world method
+    //     // testing hello-world method
     //     std::string *res;
     //     if (!manager->invoke_va ("test", "hello-world", &res, "Nico", nullptr))
     //       success = false;
@@ -68,11 +68,11 @@ main() {
     //       success = false;
     //     delete res;
 
-    //     //removing the quiddity
+    //     // removing the quiddity
     //     if (!manager->remove ("test"))
     //       success = false;
 
-  }                             //end of scope is releasing the manager
+  }                             // end of scope is releasing the manager
 
   if (success)
     return 0;

@@ -22,11 +22,11 @@
 
 #include <memory>
 #include <vector>
-#include "gobject-wrapper.h"
+#include "./gobject-wrapper.h"
 
 namespace switcher {
-  //you may get better performances are achieved using gobject wrapper with static paramspec
-  //since using the helper installs a new paramspec for each instance
+  // you may get better performances are achieved using gobject wrapper with static paramspec
+  // since using the helper installs a new paramspec for each instance
 
   class CustomPropertyHelper {
   public:
@@ -93,7 +93,7 @@ namespace switcher {
                                      get_double_method get_method,
                                      void *user_data);
 
-    GParamSpec *make_enum_property(const gchar * nickname, const gchar * description, const gint default_value, //map key
+    GParamSpec *make_enum_property(const gchar * nickname, const gchar * description, const gint default_value, // map key
                                    const GEnumValue * string_map_enum,
                                    GParamFlags read_write_flags,
                                    set_enum_method set_method,

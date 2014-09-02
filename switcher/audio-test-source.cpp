@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "audio-test-source.h"
+#include "./audio-test-source.h"
 #include <gst/gst.h>
-#include "gst-utils.h"
+#include "./gst-utils.h"
 namespace switcher {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
@@ -66,7 +66,7 @@ namespace switcher {
 
     audiotestsrc_ = audiotest;
 
-    //registering
+    // registering
     install_property(G_OBJECT(audiotestsrc_), "volume", "volume", "Volume");
     install_property(G_OBJECT(audiotestsrc_), "freq", "freq", "Frequency");
     // install_property (G_OBJECT (audiotestsrc_),

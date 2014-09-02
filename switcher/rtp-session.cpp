@@ -17,10 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "rtp-session.h"
-#include "gst-utils.h"
-#include "json-builder.h"
-#include <glib/gstdio.h>        //writing sdp file
+#include "./rtp-session.h"
+#include "./gst-utils.h"
+#include "./json-builder.h"
+#include <glib/gstdio.h>        // writing sdp file
 #include <sstream>
 
 namespace switcher {
@@ -31,7 +31,7 @@ namespace switcher {
                                        "LGPL",
                                        "rtpsession", "Nicolas Bouillot");
 
-  RtpSession::RtpSession():rtpsession_(nullptr), next_id_(79),  //this value is arbitrary and can be changed
+  RtpSession::RtpSession():rtpsession_(nullptr), next_id_(79),  // this value is arbitrary and can be changed
   custom_props_(new CustomPropertyHelper()),
     destination_description_json_(nullptr),
     destinations_json_(nullptr),
@@ -43,11 +43,11 @@ namespace switcher {
     funnels_(),
     internal_shmdata_writers_(),
     internal_shmdata_readers_(), destinations_() {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
   }
 
   RtpSession::~RtpSession() {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
 
     std::vector < std::string > paths;
   for (auto & it:quiddity_managers_)
@@ -55,7 +55,7 @@ namespace switcher {
   for (auto & it:paths)
       remove_data_stream(it);
 
-    //removing sdp files
+    // removing sdp files
     std::vector < std::string > destinations;
   for (auto & it:destinations_)
       destinations.push_back(it.first);
@@ -75,7 +75,7 @@ namespace switcher {
     //  GST_STATE_RETURN(parent));
     //   }
 
-    // //removing rtpsession
+    // // removing rtpsession
     // GstUtils::clean_element (rtpsession_);
 
     g_debug("rtpsession deleted");
@@ -251,7 +251,7 @@ namespace switcher {
   gboolean
     RtpSession::write_sdp_file_wrapped(gpointer nick_name,
                                        gpointer user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
 
     if (context->write_sdp_file((char *) nick_name))
@@ -261,7 +261,7 @@ namespace switcher {
   }
 
   bool RtpSession::write_sdp_file(std::string dest_name) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     auto it = destinations_.find(dest_name);
     if (destinations_.end() == it) {
       g_warning
@@ -279,18 +279,18 @@ namespace switcher {
 
     g_remove(sdp_file.c_str());
 
-    if (!g_file_set_contents(sdp_file.c_str(), res.c_str(), -1, //no size, res is a null terminated string
-                             nullptr))  //not getting errors
+    if (!g_file_set_contents(sdp_file.c_str(), res.c_str(), -1, // no size, res is a null terminated string
+                             nullptr))  // not getting errors
       return false;
 
     return true;
   }
 
-  //function used as a filter for selecting the appropriate rtp payloader
+  // function used as a filter for selecting the appropriate rtp payloader
   gboolean
     RtpSession::sink_factory_filter(GstPluginFeature * feature,
                                     gpointer data) {
-    ////g_print ("%s\n", __PRETTY_FUNCTION__);
+    //// g_print ("%s\n", __PRETTY_FUNCTION__);
     // guint rank;
     const gchar *klass;
 
@@ -311,11 +311,11 @@ namespace switcher {
     return TRUE;
   }
 
-  //sorting factory by rank
+  // sorting factory by rank
   gint
     RtpSession::sink_compare_ranks(GstPluginFeature * f1,
                                    GstPluginFeature * f2) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     gint diff;
 
     diff = gst_plugin_feature_get_rank(f2) - gst_plugin_feature_get_rank(f1);
@@ -325,12 +325,12 @@ namespace switcher {
                      gst_plugin_feature_get_name(f1));
   }
 
-  //this is a typefind function, called when type of input stream from a shmdata is found
+  // this is a typefind function, called when type of input stream from a shmdata is found
   void
     RtpSession::make_data_stream_available(GstElement * typefind,
                                            guint /*probability */ ,
                                            GstCaps * caps, gpointer user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
     g_debug("RtpSession::make_data_stream_available");
     GstElement *pay = nullptr;
@@ -340,10 +340,10 @@ namespace switcher {
                                               FALSE, caps);
     list = g_list_sort(list, (GCompareFunc) sink_compare_ranks);
 
-    //bypassing jpeg for high dimensions
+    // bypassing jpeg for high dimensions
     bool jpeg_payloader = true;
     GstStructure *caps_structure = gst_caps_get_structure(caps, 0);
-    if (g_str_has_prefix(gst_structure_get_name(caps_structure), "image/jpeg")) {       //check jpeg dimension are suported by jpeg payloader
+    if (g_str_has_prefix(gst_structure_get_name(caps_structure), "image/jpeg")) {       // check jpeg dimension are suported by jpeg payloader
       gint width = 0, height = 0;
       /* these properties are not mandatory, we can get them from the SOF, if there
        * is one. */
@@ -391,13 +391,13 @@ namespace switcher {
     gst_object_unref(sinkpad);
     gst_object_unref(srcpad);
 
-    //get name for the newly created pad
+    // get name for the newly created pad
     gchar *rtp_sink_pad_name = gst_pad_get_name(sinkpad);
     gchar **rtp_session_array = g_strsplit_set(rtp_sink_pad_name, "_", 0);
 
     gchar *rtp_session_id = g_strdup(rtp_session_array[3]);
     context->rtp_ids_[reader->get_path()] = rtp_session_id;
-    //using internal session id for this local stream
+    // using internal session id for this local stream
     std::
       string internal_session_id(context->internal_id_[reader->get_path()]);
 
@@ -418,7 +418,7 @@ namespace switcher {
 
     // testing
     // GstElement *myfake;
-    // //GstUtils::make_element ("fakesink", &myfake);
+    // // GstUtils::make_element ("fakesink", &myfake);
     // GstUtils::make_element ("multiudpsink", &myfake);
     // g_object_set (G_OBJECT (myfake), "sync", FALSE, nullptr);
 
@@ -429,9 +429,9 @@ namespace switcher {
     // GstUtils::sync_state_with_parent (myfake);
 
     // g_signal_emit_by_name (myfake, "add", "localhost", "8044", nullptr);
-    // //g_signal_emit_by_name (myfake, "add", "localhost", "9040", nullptr);
+    // // g_signal_emit_by_name (myfake, "add", "localhost", "9040", nullptr);
 
-    //end testing
+    // end testing
 
     ShmdataWriter::ptr rtp_writer;
     rtp_writer.reset(new ShmdataWriter());
@@ -441,11 +441,11 @@ namespace switcher {
     rtp_writer->plug(context->bin_, rtp_src_pad);
     context->internal_shmdata_writers_[rtp_writer_name] = rtp_writer;
     g_free(rtp_src_pad_name);
-    //set call back for saving caps in a property tree
-    rtp_writer->set_on_caps(std::bind(&RtpSession::on_rtp_caps, context, reader->get_path(),    //std::move (rtp_writer_name),
+    // set call back for saving caps in a property tree
+    rtp_writer->set_on_caps(std::bind(&RtpSession::on_rtp_caps, context, reader->get_path(),    // std::move (rtp_writer_name),
                                       std::placeholders::_1));
 
-    //rtcp src pad
+    // rtcp src pad
     gchar *rtcp_src_pad_name =
       g_strconcat("send_rtcp_src_", rtp_session_id, nullptr);
     g_debug("RtpSession: request rtcp src pad %s", rtcp_src_pad_name);
@@ -465,7 +465,7 @@ namespace switcher {
     GstElement *funnel;
     GstUtils::make_element("funnel", &funnel);
     gst_bin_add(GST_BIN(context->bin_), funnel);
-    //GstUtils::wait_state_changed (context->bin_);
+    // GstUtils::wait_state_changed (context->bin_);
     GstUtils::sync_state_with_parent(funnel);
     GstPad *funnel_src_pad = gst_element_get_static_pad(funnel, "src");
     gchar *rtcp_sink_pad_name =
@@ -477,11 +477,11 @@ namespace switcher {
         ("RtpSession::make_data_stream_available: Failed to link rtcpsrc to rtpbin");
     gst_object_unref(funnel_src_pad);
     g_free(rtcp_sink_pad_name);
-    //for cleaning of funnel
+    // for cleaning of funnel
     GstElementCleaner::ptr funnel_cleaning;
     funnel_cleaning.reset(new GstElementCleaner());
     funnel_cleaning->add_element_to_cleaner(funnel);
-    //saving funnel for being retried
+    // saving funnel for being retried
     funnel_cleaning->add_labeled_element_to_cleaner("funnel", funnel);
     context->funnels_[reader->get_path()] = funnel_cleaning;
     g_free(rtp_session_id);
@@ -492,12 +492,12 @@ namespace switcher {
   void
     RtpSession::attach_data_stream(ShmdataReader * caller,
                                    void *rtpsession_instance) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(rtpsession_instance);
     GstElement *funnel, *typefind;
     GstUtils::make_element("funnel", &funnel);
     GstUtils::make_element("typefind", &typefind);
-    //give caller to typefind in order to register telement to remove
+    // give caller to typefind in order to register telement to remove
     g_object_set_data(G_OBJECT(typefind), "shmdata-reader",
                       (gpointer) caller);
     g_signal_connect(typefind, "have-type",
@@ -506,7 +506,7 @@ namespace switcher {
     gst_bin_add_many(GST_BIN(context->bin_), funnel, typefind, nullptr);
     gst_element_link(funnel, typefind);
 
-    //GstUtils::wait_state_changed (context->bin_);
+    // GstUtils::wait_state_changed (context->bin_);
     GstUtils::sync_state_with_parent(funnel);
     GstUtils::sync_state_with_parent(typefind);
     caller->set_sink_element(funnel);
@@ -518,7 +518,7 @@ namespace switcher {
     RtpSession::add_destination_wrapped(gpointer nick_name,
                                         gpointer host_name,
                                         gpointer user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
 
     if (context->add_destination((char *) nick_name, (char *) host_name))
@@ -530,7 +530,7 @@ namespace switcher {
   bool
     RtpSession::add_destination(std::string nick_name, std::string host_name)
   {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     if (destinations_.end() != destinations_.find(nick_name)) {
       g_warning
         ("RtpSession: a destination named %s already exists, cannot add",
@@ -548,7 +548,7 @@ namespace switcher {
   gboolean
     RtpSession::remove_destination_wrapped(gpointer nick_name,
                                            gpointer user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
 
     if (context->remove_destination((char *) nick_name))
@@ -558,7 +558,7 @@ namespace switcher {
   }
 
   bool RtpSession::remove_destination(std::string nick_name) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     auto it = destinations_.find(nick_name);
     if (destinations_.end() == it) {
       g_warning
@@ -575,7 +575,7 @@ namespace switcher {
                                                gpointer nick_name,
                                                gpointer port,
                                                gpointer user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
 
     if (context->add_udp_stream_to_dest
@@ -589,7 +589,7 @@ namespace switcher {
     RtpSession::add_udp_stream_to_dest(std::string shmdata_socket_path,
                                        std::string nick_name,
                                        std::string port) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     auto id_it = internal_id_.find(shmdata_socket_path);
     if (internal_id_.end() == id_it) {
       g_warning("RtpSession is not connected to %s",
@@ -610,7 +610,7 @@ namespace switcher {
          nick_name.c_str(), shmdata_socket_path.c_str(), port.c_str());
       return false;
     }
-    //TODO check port has not been set for this destination
+    // TODO check port has not been set for this destination
     gint rtp_port = atoi(port.c_str());
 
     if (rtp_port % 2 != 0) {
@@ -622,7 +622,7 @@ namespace switcher {
 
     auto manager_it = quiddity_managers_.find(shmdata_socket_path);
     if (quiddity_managers_.end() == manager_it) {
-//creating an internal quiddity manager
+// creating an internal quiddity manager
       QuiddityManager::ptr manager =
         QuiddityManager::make_manager("manager_" + get_name() + "_" + id);
       quiddity_managers_[shmdata_socket_path] = manager;
@@ -638,7 +638,7 @@ namespace switcher {
       arg.clear();
       arg.push_back(make_file_name("send_rtcp_src_" + id));
       manager->invoke("udpsend_rtcp", "connect", nullptr, arg);
-//update manager_it with the new one
+// update manager_it with the new one
       manager_it = quiddity_managers_.find(shmdata_socket_path);
     }
     QuiddityManager::ptr manager = manager_it->second;
@@ -646,21 +646,21 @@ namespace switcher {
       g_warning("add_udp_stream_to_dest ...not a manager...");
       return false;
     }
-    //rtp stream (sending)
+    // rtp stream (sending)
     RtpDestination::ptr dest = destinations_[nick_name];
     dest->add_stream(shmdata_socket_path, manager, port);
     std::vector < std::string > arg;
     arg.push_back(dest->get_host_name());
     arg.push_back(port);
     manager->invoke("udpsend_rtp", "add_client", nullptr, arg);
-    //rtcp stream (sending)
+    // rtcp stream (sending)
     arg.clear();
     arg.push_back(dest->get_host_name());
     std::ostringstream rtcp_port;
     rtcp_port << rtp_port + 1;
     arg.push_back(rtcp_port.str());
     manager->invoke("udpsend_rtcp", "add_client", nullptr, arg);
-    //TODO rtcp receiving should be negociated
+    // TODO rtcp receiving should be negociated
     // GstElementCleaner::ptr funnel_cleaner = funnels_[shmdata_socket_path];
     //  GstElement *funnel = funnel_cleaner->get_labeled_element_from_cleaner ("funnel");
     //  GstElement *udpsrc;
@@ -679,7 +679,7 @@ namespace switcher {
                                                   shmdata_socket_path,
                                                   gpointer dest_name,
                                                   gpointer user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
 
     if (context->remove_udp_stream_to_dest((char *) shmdata_socket_path,
@@ -692,7 +692,7 @@ namespace switcher {
   bool
     RtpSession::remove_udp_stream_to_dest(std::string shmdata_socket_path,
                                           std::string dest_name) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     if (internal_id_.end() == internal_id_.find(shmdata_socket_path)) {
       g_warning("RtpSession is not connected to %s",
                 shmdata_socket_path.c_str());
@@ -719,13 +719,13 @@ namespace switcher {
 
     QuiddityManager::ptr manager = manager_it->second;
 
-    //rtp
+    // rtp
     std::vector < std::string > arg;
     arg.push_back(dest->get_host_name());
     arg.push_back(port);
     manager->invoke("udpsend_rtp", "remove_client", nullptr, arg);
 
-    //rtcp
+    // rtcp
     arg.clear();
     gint rtp_port = atoi(port.c_str());
     arg.push_back(dest->get_host_name());
@@ -739,7 +739,7 @@ namespace switcher {
   gboolean
     RtpSession::add_data_stream_wrapped(gpointer connector_name,
                                         gpointer user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
 
     if (context->add_data_stream((char *) connector_name))
@@ -749,7 +749,7 @@ namespace switcher {
   }
 
   bool RtpSession::add_data_stream(std::string shmdata_socket_path) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     // if (internal_id_.end () != internal_id_.find (shmdata_socket_path))
     //   {
     // g_warning ("RtpSession::add_data_stream : stream not added since already managed");
@@ -763,7 +763,7 @@ namespace switcher {
     reader->set_bin(bin_);
     reader->set_on_first_data_hook(attach_data_stream, this);
     reader->start();
-    //saving info about this local stream
+    // saving info about this local stream
     std::ostringstream os_id;
     os_id << next_id_;
     next_id_++;
@@ -775,7 +775,7 @@ namespace switcher {
   gboolean
     RtpSession::remove_data_stream_wrapped(gpointer connector_name,
                                            gpointer user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
     if (context->remove_data_stream((char *) connector_name))
       return TRUE;
@@ -784,7 +784,7 @@ namespace switcher {
   }
 
   bool RtpSession::remove_data_stream(std::string shmdata_socket_path) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     auto internal_id_it = internal_id_.find(shmdata_socket_path);
     if (internal_id_.end() == internal_id_it) {
       g_debug("RtpSession::remove_data_stream: %s not present",
@@ -828,8 +828,8 @@ namespace switcher {
                                guint /*session */ ,
                                guint /*ssrc */ ,
                                gpointer /*user_data */ ) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
-    //RtpSession *context = static_cast<RtpSession *>(user_data);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
+    // RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug("on_bye_ssrc");
   }
 
@@ -837,8 +837,8 @@ namespace switcher {
                                   guint /*session */ ,
                                   guint /*ssrc */ ,
                                   gpointer /*user_data */ ) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
-    //RtpSession *context = static_cast<RtpSession *>(user_data);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
+    // RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug("on_bye_timeout");
   }
 
@@ -846,8 +846,8 @@ namespace switcher {
                                guint /*session */ ,
                                guint /*ssrc */ ,
                                gpointer /*user_data */ ) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
-    //RtpSession *context = static_cast<RtpSession *>(user_data);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
+    // RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug("on_new_ssrc");
   }
 
@@ -855,8 +855,8 @@ namespace switcher {
                                guint /*session */ ,
                                guint /*ssrc */ ,
                                gpointer /*user_data */ ) {
-    //RtpSession *context = static_cast<RtpSession *>(user_data);
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // RtpSession *context = static_cast<RtpSession *>(user_data);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     g_debug("on_npt_stop");
   }
 
@@ -864,8 +864,8 @@ namespace switcher {
                                      guint /*session */ ,
                                      guint /*ssrc */ ,
                                      gpointer /*user_data */ ) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
-    //RtpSession *context = static_cast<RtpSession *>(user_data);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
+    // RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug("on_sender_timeout");
   }
 
@@ -873,8 +873,8 @@ namespace switcher {
                                   guint /*session */ ,
                                   guint /*ssrc */ ,
                                   gpointer /*user_data */ ) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
-    //RtpSession *context = static_cast<RtpSession *>(user_data);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
+    // RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug("on_ssrc_active");
   }
 
@@ -882,8 +882,8 @@ namespace switcher {
                                      guint /*session */ ,
                                      guint /*ssrc */ ,
                                      gpointer /*user_data */ ) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
-    //RtpSession *context = static_cast<RtpSession *>(user_data);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
+    // RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug("on_ssrc_active");
   }
 
@@ -891,8 +891,8 @@ namespace switcher {
                                 guint /*session */ ,
                                 guint /*ssrc */ ,
                                 gpointer /*user_data */ ) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
-    //RtpSession *context = static_cast<RtpSession *>(user_data);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
+    // RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug("on_ssrc_sdes");
   }
 
@@ -900,8 +900,8 @@ namespace switcher {
                                      guint /*session */ ,
                                      guint /*ssrc */ ,
                                      gpointer /*user_data */ ) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
-    //RtpSession *context = static_cast<RtpSession *>(user_data);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
+    // RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug("on_ssrc_validated");
   }
 
@@ -909,25 +909,25 @@ namespace switcher {
                               guint /*session */ ,
                               guint /*ssrc */ ,
                               gpointer /*user_data */ ) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
-    //RtpSession *context = static_cast<RtpSession *>(user_data);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
+    // RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug("on_timeout");
   }
 
   void RtpSession::on_pad_added(GstElement * /*gstelement */ ,
                                 GstPad * new_pad, gpointer user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
     g_debug("on_pad_added, name: %s, direction: %d",
             gst_pad_get_name(new_pad), gst_pad_get_direction(new_pad));
-    //gchar *bidule = g_strdup ("bidule");
+    // gchar *bidule = g_strdup ("bidule");
     context->signal_emit("truc", "bidule");
   }
 
   void RtpSession::on_pad_removed(GstElement * /*gstelement */ ,
                                   GstPad * new_pad, gpointer /*user_data */ ) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
-    //RtpSession *context = static_cast<RtpSession *>(user_data);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
+    // RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug("on_pad_removed, name: %s, direction: %d",
             gst_pad_get_name(new_pad), gst_pad_get_direction(new_pad));
 
@@ -935,13 +935,13 @@ namespace switcher {
 
   void RtpSession::on_no_more_pad(GstElement * /*gstelement */ ,
                                   gpointer /*user_data */ ) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
-    //RtpSession *context = static_cast<RtpSession *>(user_data);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
+    // RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug("on_no_more_pad");
   }
 
   const gchar *RtpSession::get_destinations_json(void *user_data) {
-    //g_print ("%s\n", __PRETTY_FUNCTION__);
+    // g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
 
     if (context->destinations_json_ != nullptr)

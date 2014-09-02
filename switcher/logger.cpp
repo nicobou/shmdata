@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "logger.h"
+#include "./logger.h"
 
 namespace switcher {
 
@@ -52,7 +52,7 @@ namespace switcher {
       i_am_the_one_ = true;
     }
 
-    //FIXME: make the following not necessary,
+    // FIXME: make the following not necessary,
     // avoid the following warnings:
     // Attempt to add property MyObject::customprop1 after class was initialised
     guint quiet_handler_id = g_log_set_handler("GLib-GObject",
@@ -101,7 +101,7 @@ namespace switcher {
     install_property_by_pspec(custom_props_->get_gobject(),
                               verbose_prop_, "verbose", "Verbose");
 
-    //handler must be installed after custom property creation
+    // handler must be installed after custom property creation
     handler_ids_["switcher"] = g_log_set_handler("switcher",
                                                  G_LOG_LEVEL_MASK,
                                                  log_handler, this);
@@ -204,7 +204,7 @@ namespace switcher {
       std::string((nullptr == log_domain) ? "null-log-domain" : log_domain);
     std::string tmp_level = std::string("unknown");
 
-    //FIXME:
+    // FIXME:
     if (0 == tmp_log_domain.compare("GLib-GObject")
         && 0 == tmp_message.compare(0, 23, "Attempt to add property"))
       return;

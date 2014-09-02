@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_AUDIO_SOURCE_H__
 #define __SWITCHER_AUDIO_SOURCE_H__
 
-#include "gpipe.h"
+#include "./gpipe.h"
 #include <memory>
 
 namespace switcher {

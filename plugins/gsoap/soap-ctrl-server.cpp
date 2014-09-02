@@ -12,13 +12,13 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
-#include "soap-ctrl-server.h"
+#include "./soap-ctrl-server.h"
 #include "webservices/control.nsmap"
 #include "switcher/scope-exit.h"
-//hacking gsoap bug for ubuntu 13.10
+// hacking gsoap bug for ubuntu 13.10
 #ifdef WITH_IPV6
 #define SOAPBINDTO "::"
 #else
@@ -42,7 +42,7 @@ namespace switcher {
 
   bool SoapCtrlServer::init() {
     soap_init(&soap_);
-    //release port
+    // release port
     soap_.connect_flags = SO_LINGER;
     soap_.accept_flags = SO_LINGER;
     soap_.accept_timeout = 100 * -1000; //100ms
@@ -114,7 +114,7 @@ namespace switcher {
       if (!manager->invoke(rtpsession_name, "write_sdp_file", nullptr, arg))
         return 404;
 
-      //sending file to client
+      // sending file to client
       std::string sdp_file = get_socket_dir();
       sdp_file.append("/");
       sdp_file.append(get_socket_name_prefix());
@@ -122,7 +122,7 @@ namespace switcher {
                       destination_name + ".sdp");
       gchar *sdp_contents = nullptr;
       gsize file_length;
-      if (g_file_get_contents(sdp_file.c_str(), &sdp_contents, &file_length, nullptr) && 0 != file_length)      //not getting errors
+      if (g_file_get_contents(sdp_file.c_str(), &sdp_contents, &file_length, nullptr) && 0 != file_length)      // not getting errors
       {
         On_scope_exit {
           g_free(sdp_contents);
@@ -197,14 +197,14 @@ namespace switcher {
     //   }
     // return nullptr;
 
-    //for (int i = 1; ; i++)
+    // for (int i = 1; ; i++)
     while (!quit_server_thread_) {
       SOAP_SOCKET s = service_->accept();
       if (!soap_valid_socket(s)) {
         if (service_->errnum)
           service_->soap_print_fault(stderr);
         else {
-//g_debug ("SOAP server timed out");
+// g_debug ("SOAP server timed out");
         }
       }
       else {
@@ -224,14 +224,14 @@ namespace switcher {
     }
   }
 
-}                               //end of SoapCtrlServer class
+}                               // end of SoapCtrlServer class
 
 /**********************************************
  * below is the implementation of the service *
  **********************************************/
 
 int
-controlService::get_factory_capabilities(std::vector < std::string > *result) { //FIXME rename that to get_classes
+controlService::get_factory_capabilities(std::vector < std::string > *result) { // FIXME rename that to get_classes
   using namespace switcher;
   SoapCtrlServer *ctrl_server = (SoapCtrlServer *) this->user;
   QuiddityManager::ptr manager;
@@ -243,7 +243,7 @@ controlService::get_factory_capabilities(std::vector < std::string > *result) { 
     g_debug
       ("controlService::get_factory_capabilities: cannot get manager from SoapCtrlServer (nullptr)");
     sprintf(s,
-            "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
+            "<error xmlns=\"http:// tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
     return soap_senderfault("error in get_factory_capabilities", s);
   }
 
@@ -265,7 +265,7 @@ controlService::get_classes_doc(std::string * result) {
     g_debug
       ("controlService::get_classes_doc: cannot get manager from SoapCtrlServer (nullptr)");
     sprintf(s,
-            "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
+            "<error xmlns=\"http:// tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
     return soap_senderfault("error in get_classes_doc", s);
   }
 
@@ -288,7 +288,7 @@ controlService::get_quiddity_description(std::string quiddity_name,
     g_debug
       ("controlService::get_class_doc: cannot get manager from SoapCtrlServer (nullptr)");
     sprintf(s,
-            "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
+            "<error xmlns=\"http:// tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
     return soap_senderfault("error in get_class_doc", s);
   }
 
@@ -310,7 +310,7 @@ controlService::get_quiddities_description(std::string * result) {
     g_debug
       ("controlService::get_quiddities_description: cannot get manager from SoapCtrlServer (nullptr)");
     sprintf(s,
-            "<error xmlns=\"http://tempuri.org/\">controlService::get_quiddities_description: cannot get manager (nullptr)</error>");
+            "<error xmlns=\"http:// tempuri.org/\">controlService::get_quiddities_description: cannot get manager (nullptr)</error>");
     return soap_senderfault("error in get_classes_doc", s);
   }
 
@@ -332,7 +332,7 @@ controlService::get_class_doc(std::string class_name, std::string * result) {
     g_debug
       ("controlService::get_class_doc: cannot get manager from SoapCtrlServer (nullptr)");
     sprintf(s,
-            "<error xmlns=\"http://tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
+            "<error xmlns=\"http:// tempuri.org/\">controlService::get_factory_capabilities: cannot get manager (nullptr)</error>");
     return soap_senderfault("error in get_class_doc", s);
   }
 
@@ -521,7 +521,7 @@ controlService::delete_quiddity(std::string quiddity_name) {
     char *s = (char *) soap_malloc(this, 1024);
     sprintf(s, "%s is not found, not deleting", quiddity_name.c_str());
     sprintf(s,
-            "<error xmlns=\"http://tempuri.org/\">%s is not found, not deleting</error>",
+            "<error xmlns=\"http:// tempuri.org/\">%s is not found, not deleting</error>",
             quiddity_name.c_str());
     return
       send_set_property_empty_response(soap_senderfault
@@ -550,7 +550,7 @@ controlService::invoke_method(std::string quiddity_name,
     sprintf(s, "invoking %s/%s returned false", quiddity_name.c_str(),
             method_name.c_str());
     sprintf(s,
-            "<error xmlns=\"http://tempuri.org/\">invoking %s/%s returned false</error>",
+            "<error xmlns=\"http:// tempuri.org/\">invoking %s/%s returned false</error>",
             quiddity_name.c_str(), method_name.c_str());
     return soap_senderfault("Method invocation error", s);
   }

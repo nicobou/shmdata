@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "uris.h"
-#include "gst-utils.h"
+#include "./uris.h"
+#include "./gst-utils.h"
 #include <glib/gprintf.h>
 
 namespace switcher {
@@ -34,7 +34,7 @@ namespace switcher {
     if (!GstUtils::make_element("bin", &group_->bin))
       return false;
 
-    //set the name before registering properties
+    // set the name before registering properties
     set_name(gst_element_get_name(group_->bin));
     add_element_to_cleaner(group_->bin);
 
@@ -43,8 +43,8 @@ namespace switcher {
     group_->masterpad = nullptr;
     group_->datastreams = g_hash_table_new(g_direct_hash, g_direct_equal);
     group_->padtoblock = g_hash_table_new(g_direct_hash, g_direct_equal);
-    //allows to add and remove to/from the pipeline without disposing
-    //unref done in the group_remove function
+    // allows to add and remove to/from the pipeline without disposing
+    // unref done in the group_remove function
     gst_object_ref(group_->bin);
     gst_bin_add(GST_BIN(bin_), group_->bin);
     // if (!gst_element_sync_state_with_parent (group_->bin))
@@ -77,8 +77,8 @@ namespace switcher {
                    Method::make_arg_type_description(G_TYPE_NONE, nullptr),
                    this);
 
-    //using play pause seek from pipeline
-    // //registering pause
+    // using play pause seek from pipeline
+    // // registering pause
     // register_method("pause",
     //     (void *)&pause_wrapped,
     //     Method::make_arg_type_description (G_TYPE_NONE, nullptr),
@@ -88,7 +88,7 @@ namespace switcher {
     //     Method::make_arg_description ("none",
     //   nullptr));
 
-    // //registering seek
+    // // registering seek
     // register_method("seek",
     //     (void *)&seek_wrapped,
     //     Method::make_arg_type_description (G_TYPE_DOUBLE, nullptr),
@@ -230,8 +230,8 @@ namespace switcher {
     Group *group = (Group *) user_data;
     Uris *context = static_cast < Uris * >(group->user_data);
 
-    //const gchar *padname= gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
-    //detecting type of media
+    // const gchar *padname= gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
+    // detecting type of media
     const gchar *padname;
     if (0 == g_strcmp0("ANY", gst_caps_to_string(gst_pad_get_caps(pad))))
       padname = "custom";
@@ -262,7 +262,7 @@ namespace switcher {
       GstPad *queue_srcpad = gst_element_get_static_pad(queue, "src");
       sample->bin_srcpad = gst_ghost_pad_new(nullptr, queue_srcpad);
       group_do_block_datastream(sample);
-      //gst_pad_set_blocked_async (sample->bin_srcpad,TRUE,pad_blocked_cb,sample);
+      // gst_pad_set_blocked_async (sample->bin_srcpad,TRUE,pad_blocked_cb,sample);
       gst_object_unref(queue_srcpad);
       gst_pad_set_active(sample->bin_srcpad, TRUE);
       gst_element_add_pad(group->bin, sample->bin_srcpad);
@@ -271,7 +271,7 @@ namespace switcher {
         group->masterpad = sample->bin_srcpad;
       }
 
-      //probing eos
+      // probing eos
       gst_pad_add_event_probe(sample->bin_srcpad,
                               (GCallback) event_probe_cb, (gpointer) sample);
       /* gst_pad_add_buffer_probe (sample->bin_srcpad,   */
@@ -280,21 +280,21 @@ namespace switcher {
 
       GstPad *queue_sinkpad = gst_element_get_static_pad(queue, "sink");
 
-      //linking newly created pad with the audioconvert_sinkpad -- FIXME should verify compatibility
+      // linking newly created pad with the audioconvert_sinkpad -- FIXME should verify compatibility
       gst_pad_link(pad, queue_sinkpad);
       gst_object_unref(queue_sinkpad);
 
       if (!gst_element_sync_state_with_parent(queue))
         g_debug("pb syncing video datastream state");
 
-      //assuming object is an uridecodebin and get the uri
+      // assuming object is an uridecodebin and get the uri
       gchar *uri;
       g_object_get(object, "uri", &uri, nullptr);
       g_debug("new sample from uri: %s", uri);
-      //adding sample to hash table
-      g_hash_table_insert(group->datastreams, sample, uri);     //FIXME clean hash
+      // adding sample to hash table
+      g_hash_table_insert(group->datastreams, sample, uri);     // FIXME clean hash
 
-//making a shmdata:
+// making a shmdata:
 // GstElement *identity;
 // GstUtils::make_element ("identity", &identity);
 // g_object_set (identity,
@@ -306,7 +306,7 @@ namespace switcher {
       GstElement *continuous_stream;
       if (g_str_has_prefix(padname, "video/")) {
         GstUtils::make_element("videomixer2", &continuous_stream);
-        //g_object_set (G_OBJECT (continuous_stream), "force-fps", 30, 1, nullptr);
+        // g_object_set (G_OBJECT (continuous_stream), "force-fps", 30, 1, nullptr);
       }
       else
         GstUtils::make_element("identity", &continuous_stream);
@@ -322,10 +322,10 @@ namespace switcher {
       GstUtils::sync_state_with_parent(continuous_stream);
       GstUtils::sync_state_with_parent(funnel);
 
-//giving a name to the stream
+// giving a name to the stream
       gchar **padname_splitted = g_strsplit_set(padname, "/", -1);
 
-//counting
+// counting
       int count = 0;
       auto it = context->media_counters_.find(padname_splitted[0]);
       if (context->media_counters_.end() != it)
@@ -337,7 +337,7 @@ namespace switcher {
       g_debug("uridecodebin: new media %s %d", media_name, count);
       g_strfreev(padname_splitted);
 
-//creating a shmdata
+// creating a shmdata
       ShmdataWriter::ptr connector;
       connector.reset(new ShmdataWriter());
       std::string connector_name = context->make_file_name(media_name);
@@ -353,7 +353,7 @@ namespace switcher {
       g_message("%s created a new shmdata writer (%s)",
                 context->get_nick_name().c_str(), connector_name.c_str());
 
-//saving where to connect to the shmdata
+// saving where to connect to the shmdata
       sample->element_to_link_with = funnel;
     }
     else {
@@ -378,7 +378,7 @@ namespace switcher {
 
   void Uris::uridecodebin_drained_cb(GstElement * /*object */ ,
                                      gpointer /*user_data */ ) {
-    //Group *group = (Group *) user_data;
+    // Group *group = (Group *) user_data;
     g_debug("drained");
   }
 
@@ -420,7 +420,7 @@ namespace switcher {
 
         GroupCommand *command =
           (GroupCommand *) g_async_queue_try_pop(group->commands);
-        //launching the command with the higher priority
+        // launching the command with the higher priority
         if (command != nullptr)
           GstUtils::g_idle_add_full_with_context(((Uris *) group->
                                                   user_data)->get_g_main_context
@@ -446,7 +446,7 @@ namespace switcher {
       }
       g_free(command);
     }
-    return FALSE;               //to be removed from the gmain loop
+    return FALSE;               // to be removed from the gmain loop
   }
 
   gboolean Uris::group_play(Group * group) {
@@ -489,19 +489,19 @@ namespace switcher {
   void Uris::group_link_datastream(gpointer key, gpointer /*value */ ,
                                    gpointer /*user_data */ ) {
     Sample *sample = (Sample *) key;
-    //Group *group = (Group *) user_data;
+    // Group *group = (Group *) user_data;
 
     if (gst_pad_is_linked(sample->bin_srcpad))
       g_warning(".....................oups, already linked ");
 
     GstPad *peerpad;
-    //trying video
+    // trying video
     if (!GST_IS_PAD(sample->bin_srcpad))
       sample->bin_srcpad =
         gst_element_get_compatible_pad(sample->element_to_link_with,
                                        sample->bin_srcpad, nullptr);
 
-    //FIXME everybody goes to the same mixer...
+    // FIXME everybody goes to the same mixer...
     peerpad = gst_element_get_compatible_pad(sample->element_to_link_with,
                                              sample->bin_srcpad, nullptr);
 
@@ -516,7 +516,7 @@ namespace switcher {
   void Uris::group_unblock_datastream(gpointer key, gpointer /*value */ ,
                                       gpointer /*user_data */ ) {
     Sample *sample = (Sample *) key;
-    //Group *group = (Group *) user_data;
+    // Group *group = (Group *) user_data;
 
     g_debug("group_unblock_datastream %p", sample->bin_srcpad);
 
@@ -545,8 +545,8 @@ namespace switcher {
     Uris::pad_blocked_cb(GstPad * pad, gboolean blocked, gpointer user_data) {
     Sample *sample = (Sample *) user_data;
     if (blocked) {
-//unlinking and changing state only if expected
-//this is done this way because this callback is sometime called twice
+// unlinking and changing state only if expected
+// this is done this way because this callback is sometime called twice
       if (g_hash_table_remove(sample->group->padtoblock, sample->bin_srcpad)) {
         group_unlink_datastream((gpointer) sample, nullptr, nullptr);
         g_debug("XXX pad_blocked_cb %p", pad);
@@ -598,7 +598,7 @@ namespace switcher {
     case GROUP_PAUSED:
       break;
     case GROUP_TO_PAUSED:
-      //group_queue_command (group,&group_pause_wrapped_for_commands,nullptr);
+      // group_queue_command (group,&group_pause_wrapped_for_commands,nullptr);
       break;
     case GROUP_PLAYING:
       g_debug("*** group pause");
@@ -643,7 +643,7 @@ namespace switcher {
          sample))
       g_warning("play_source: pb blocking");
     else {
-//keep the pad in memory for dequeueing task when necessary
+// keep the pad in memory for dequeueing task when necessary
       g_hash_table_insert(sample->group->padtoblock, sample->bin_srcpad,
                           sample->bin_srcpad);
     }
@@ -683,7 +683,7 @@ namespace switcher {
       break;
     case GROUP_PAUSED:
       g_debug("group_seek: GROUP_TO_PAUSED");
-      group->state = GROUP_TO_PAUSED;   //using PAUSED state for seeking
+      group->state = GROUP_TO_PAUSED;   // using PAUSED state for seeking
       break;
     case GROUP_PLAYING:
       g_async_queue_lock(group->commands);
@@ -713,7 +713,7 @@ namespace switcher {
     // GstQuery *query;
     // gboolean res;
     // query = gst_query_new_segment (GST_FORMAT_TIME);
-    // res = FALSE;//gst_element_query (sample->group->pipeline, query);
+    // res = FALSE;// gst_element_query (sample->group->pipeline, query);
     // gdouble rate = -2.0;
     // gint64 start_value = -2.0;
     // gint64 stop_value = -2.0;
@@ -729,7 +729,7 @@ namespace switcher {
     // }
     // gst_query_unref (query);
 
-    //FIXME get a position for seeking
+    // FIXME get a position for seeking
 
     gboolean ret;
     ret = gst_element_seek(sample->seek_element,
@@ -738,7 +738,7 @@ namespace switcher {
                            (GstSeekFlags) (GST_SEEK_FLAG_FLUSH |
                                            GST_SEEK_FLAG_ACCURATE),
                            //| GST_SEEK_FLAG_SKIP
-                           //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization
+                           //| GST_SEEK_FLAG_KEY_UNIT, // using key unit is breaking synchronization
                            GST_SEEK_TYPE_SET,
                            sample->group->seek_position * GST_SECOND,
                            GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
@@ -746,9 +746,9 @@ namespace switcher {
     if (!ret)
       g_warning("seek not handled");
 
-    /* //if the seek is performed with an unlinked pad, but not blocked,  */
-    /* //data will flow entirely before being linked, so blocking here  */
-    /* //in that case (call this function when blocked  */
+    /* // if the seek is performed with an unlinked pad, but not blocked,  */
+    /* // data will flow entirely before being linked, so blocking here  */
+    /* // in that case (call this function when blocked  */
     /* if (!gst_pad_is_blocked (sample->bin_srcpad)) */
     /*   { */
     /*     g_debug ("going to seek a not blocked pad! and unlinked pad"); */
@@ -764,7 +764,7 @@ namespace switcher {
     g_debug("*** group_seek");
     group_add_task(nullptr, nullptr, group);
     g_hash_table_foreach(group->datastreams, (GHFunc) group_add_task, group);
-    //g_hash_table_foreach (group->datastreams,(GHFunc)group_add_task,group);//counting duplicated blocked signals
+    // g_hash_table_foreach (group->datastreams,(GHFunc)group_add_task,group);// counting duplicated blocked signals
     g_hash_table_foreach(group->datastreams, (GHFunc) group_seek_datastream,
                          nullptr);
     group_try_change_state(group);
@@ -784,7 +784,7 @@ namespace switcher {
   gboolean Uris::event_probe_cb(GstPad * pad, GstEvent * event, gpointer data) {
     Sample *sample = (Sample *) data;
     if (GST_EVENT_TYPE(event) == GST_EVENT_EOS) {
-      //g_debug ("EOS caught and disabled ");
+      // g_debug ("EOS caught and disabled ");
       g_debug("pad with EOS %s:%s, pointer:%p src: %p %s",
               GST_DEBUG_PAD_NAME(pad), pad, GST_EVENT_SRC(event),
               gst_element_get_name(GST_EVENT_SRC(event)));

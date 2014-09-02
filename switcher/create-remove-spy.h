@@ -20,7 +20,7 @@
 #ifndef __SWITCHER_CREATE_REMOVE_SPY_H__
 #define __SWITCHER_CREATE_REMOVE_SPY_H__
 
-#include "quiddity.h"
+#include "./quiddity.h"
 #include <memory>
 
 namespace switcher {

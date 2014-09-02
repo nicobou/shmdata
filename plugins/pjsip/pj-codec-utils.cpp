@@ -17,14 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "pj-codec-utils.h"
+#include "./pj-codec-utils.h"
 #include <algorithm>
 #include <iostream>
 
 namespace switcher {
   PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codecs() {
     PJCodecUtils::codecs res;
-    //assuming gst_init (nullptr, nullptr); has been called
+    // assuming gst_init (nullptr, nullptr); has been called
     GList *element_list =
       gst_element_factory_list_get_elements
       (GST_ELEMENT_FACTORY_TYPE_DEPAYLOADER,
@@ -32,9 +32,9 @@ namespace switcher {
     GList *iter = element_list;
     while (iter != nullptr)
     {
-//g_print ("+++++\n");
-//g_print ("%s -- ", gst_element_factory_get_longname ((GstElementFactory *)iter->data));
-//g_print ("%s\n", gst_plugin_feature_get_name ((GstPluginFeature *)iter->data));
+// g_print ("+++++\n");
+// g_print ("%s -- ", gst_element_factory_get_longname ((GstElementFactory *)iter->data));
+// g_print ("%s\n", gst_plugin_feature_get_name ((GstPluginFeature *)iter->data));
       PJCodecUtils::codecs from_factory =
         inspect_rtp_codec_from_gst_element_factory((GstElementFactory *)
                                                    iter->data);
@@ -44,7 +44,7 @@ namespace switcher {
       iter = g_list_next(iter);
     }
     gst_plugin_feature_list_free(element_list);
-    //g_print ("------ %s, res size %lu\n",__FUNCTION__, res.size ());
+    // g_print ("------ %s, res size %lu\n",__FUNCTION__, res.size ());
     return res;
   }
 
@@ -58,14 +58,14 @@ namespace switcher {
 
     while (nullptr != static_pads) {
       GstStaticPadTemplate *pad = (GstStaticPadTemplate *) static_pads->data;
-//the following is EMPTY gchar *caps_str = gst_caps_to_string (&pad->static_caps.caps);
-//g_free (caps_str);
-/* //g_print ("string: %s\n",  */
+// the following is EMPTY gchar *caps_str = gst_caps_to_string (&pad->static_caps.caps);
+// g_free (caps_str);
+/* // g_print ("string: %s\n",  */
 /*       pad->static_caps.string);  */
       GstCaps *caps = gst_caps_from_string(pad->static_caps.string);
       PJCodecUtils::codecs from_caps = inspect_rtp_codec_from_gst_caps(caps);
 
-//replace null "encoding-name" by appropriate
+// replace null "encoding-name" by appropriate
       {
         codec_it not_null_encoding = std::find_if(from_caps.begin(),
                                                   from_caps.end(),
@@ -82,17 +82,17 @@ namespace switcher {
         for (auto & it:from_caps)
             if (0 == it->encoding_name_.compare("null"))
               it->encoding_name_ = encoding;
-          //g_print ("found encoding name %s\n", (*not_null_encoding)->encoding_name_.c_str ());
+          // g_print ("found encoding name %s\n", (*not_null_encoding)->encoding_name_.c_str ());
         }
       }
-//move result to res
+// move result to res
       res.insert(res.end(),
                  std::move_iterator < codec_it > (from_caps.begin()),
                  std::move_iterator < codec_it > (from_caps.end()));
       static_pads = g_list_next(static_pads);
       gst_caps_unref(caps);
     }
-    //g_print ("------ %s, res size %lu\n",__FUNCTION__, res.size ());
+    // g_print ("------ %s, res size %lu\n",__FUNCTION__, res.size ());
     return res;
   }
 
@@ -103,16 +103,16 @@ namespace switcher {
     std::vector < std::string > res;
     const GValue *val = gst_structure_get_value(caps_struct, key.c_str());
     if (nullptr != val) {
-//g_print ("%s struct type %s\n", key.c_str (), G_VALUE_TYPE_NAME (val));
+// g_print ("%s struct type %s\n", key.c_str (), G_VALUE_TYPE_NAME (val));
       if (GST_VALUE_HOLDS_LIST(val)) {
         for (guint i = 0; i < gst_value_list_get_size(val); i++) {
           const GValue *item_val = gst_value_list_get_value(val, i);
-//g_print ("encoding-name list %s\n", g_value_get_string (item_val));
+// g_print ("encoding-name list %s\n", g_value_get_string (item_val));
           res.emplace_back(g_value_get_string(item_val));
         }
       }
       if (G_VALUE_HOLDS_STRING(val)) {
-        //g_print ("%s string %s\n", key.c_str (), g_value_get_string (val));
+        // g_print ("%s string %s\n", key.c_str (), g_value_get_string (val));
         res.emplace_back(g_value_get_string(val));
       }
     }
@@ -128,20 +128,20 @@ namespace switcher {
     std::vector < gint > res;
     const GValue *val = gst_structure_get_value(caps_struct, key.c_str());
     if (nullptr != val) {
-//g_print ("%s struct type %s\n", key.c_str (), G_VALUE_TYPE_NAME (val));
+// g_print ("%s struct type %s\n", key.c_str (), G_VALUE_TYPE_NAME (val));
       if (GST_VALUE_HOLDS_INT_RANGE(val)) {
-        //g_print ("%s min %d\n", key.c_str (), gst_value_get_int_range_max (val));
+        // g_print ("%s min %d\n", key.c_str (), gst_value_get_int_range_max (val));
         res.push_back(gst_value_get_int_range_max(val));
       }
       if (GST_VALUE_HOLDS_LIST(val)) {
         for (guint i = 0; i < gst_value_list_get_size(val); i++) {
           const GValue *item_val = gst_value_list_get_value(val, i);
-//g_print ("%s list %d\n", key.c_str (), g_value_get_int (item_val));
+// g_print ("%s list %d\n", key.c_str (), g_value_get_int (item_val));
           res.push_back(g_value_get_int(item_val));
         }
       }
       if (G_VALUE_HOLDS_INT(val)) {
-        //g_print ("%s int %d\n", key.c_str (), g_value_get_int (val));
+        // g_print ("%s int %d\n", key.c_str (), g_value_get_int (val));
         res.push_back(g_value_get_int(val));
       }
     }
@@ -156,7 +156,7 @@ namespace switcher {
       for (guint i = caps_size; i > 0; i--) {
         GstStructure *caps_struct = gst_caps_get_structure(caps, i - 1);
         if (gst_structure_has_name(caps_struct, "application/x-rtp")) {
-          // //g_print ("string: %s\n",
+          // // g_print ("string: %s\n",
           //        gst_structure_to_string (caps_struct));
           PJCodecUtils::codecs tmp =
             inspect_rtp_codec_from_gst_struct(caps_struct);
@@ -165,7 +165,7 @@ namespace switcher {
                      std::move_iterator < codec_it > (tmp.end()));
         }
       }
-    //g_print ("------ %s, res size %lu\n",__FUNCTION__, res.size ());
+    // g_print ("------ %s, res size %lu\n",__FUNCTION__, res.size ());
     return res;
   }
 
@@ -173,20 +173,20 @@ namespace switcher {
     PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
                                                     caps_struct) {
     PJCodecUtils::codecs res;
-    //building RTPCodec
+    // building RTPCodec
     //-- encoding name
     {
       std::vector < std::string > encoding_names =
         get_string_values_from_gst_struct(caps_struct, "encoding-name");
       std::for_each(encoding_names.begin(),
                     encoding_names.end(),[&res] (const std::string & str) {
-                    //g_print ("writing encoding in res\n");
-                    //FIXME use make_unique and emplace_back when c++14
+                    // g_print ("writing encoding in res\n");
+                    // FIXME use make_unique and emplace_back when c++14
                     res.push_back(RTPCodec::ptr(new RTPCodec()));
                     res.back()->encoding_name_ = std::move(str);
                     });
     }
-    //g_print ("------ encoding, res size %lu\n", res.size ());
+    // g_print ("------ encoding, res size %lu\n", res.size ());
 
     //-- payloads
     {
@@ -215,7 +215,7 @@ namespace switcher {
                     });
       std::swap(res, with_payloads);
     }
-    //g_print ("------ payload, res size %lu\n", res.size ());
+    // g_print ("------ payload, res size %lu\n", res.size ());
 
     {                           //-- media
       std::vector < std::string > media =
@@ -242,8 +242,8 @@ namespace switcher {
                     });
       std::swap(res, with_media);
     }
-    //g_print ("------ media, res size %lu\n", res.size ());
-    {                           //clock rate
+    // g_print ("------ media, res size %lu\n", res.size ());
+    {                           // clock rate
       std::vector < gint > clock_rates =
         get_int_values_from_gst_struct(caps_struct, "clock-rate");
       PJCodecUtils::codecs with_clock_rates;
@@ -274,7 +274,7 @@ namespace switcher {
     //        << " clock rate " << it->clock_rate_
     //        << std::endl;
     // }
-    //g_print ("------ %s, res size %lu\n",__FUNCTION__, res.size ());
+    // g_print ("------ %s, res size %lu\n",__FUNCTION__, res.size ());
     return res;
   }
 }

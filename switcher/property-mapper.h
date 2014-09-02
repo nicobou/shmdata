@@ -20,8 +20,8 @@
 #ifndef __SWITCHER_PROPERTY_MAPPER_H__
 #define __SWITCHER_PROPERTY_MAPPER_H__
 
-#include "quiddity.h"
-#include "custom-property-helper.h"
+#include "./quiddity.h"
+#include "./custom-property-helper.h"
 
 namespace switcher {
 
@@ -42,7 +42,7 @@ namespace switcher {
     GParamSpec *sink_quiddity_pspec_;
     std::string sink_property_name_;
 
-    //clip values (and scale accordingly)
+    // clip values (and scale accordingly)
     CustomPropertyHelper::ptr custom_props_;
     GParamSpec *sink_min_spec_;
     GParamSpec *sink_max_spec_;

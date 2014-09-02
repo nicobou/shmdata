@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "create-remove-spy.h"
-#include "gst-utils.h"
+#include "./create-remove-spy.h"
+#include "./gst-utils.h"
 
 namespace switcher {
 
@@ -46,7 +46,7 @@ namespace switcher {
 
     i_am_the_one_ = true;
 
-    //we got the hook, so make signals of it
+    // we got the hook, so make signals of it
     GType string_type[] = { G_TYPE_STRING };
     install_signal("On Quiddity Created",
                    "on-quiddity-created",

@@ -24,11 +24,11 @@
 #include <map>
 #include <list>
 #include <mutex>
-#include "unique-gst-element.h"
-#include "gpipe.h"
+#include "./unique-gst-element.h"
+#include "./gpipe.h"
 
 namespace switcher {
-  //this class has been designed for being possessed by a gpipe
+  // this class has been designed for being possessed by a gpipe
 
   class DecodebinToShmdata {
   public:
@@ -38,7 +38,7 @@ namespace switcher {
     DecodebinToShmdata(const DecodebinToShmdata &) = delete;
     DecodebinToShmdata & operator=(const DecodebinToShmdata &) = delete;
 
-    //invoke a std::function on the internal decodebin as GstElement
+    // invoke a std::function on the internal decodebin as GstElement
     template < typename Return_type >
       Return_type
       invoke_with_return(std::function < Return_type(GstElement *) >
@@ -56,7 +56,7 @@ namespace switcher {
     std::map < std::string, uint > media_counters_;
     std::mutex media_counter_mutex_;
     GPipe *gpipe_;
-    std::list < std::string > shmdata_path_;  //for unregistering in the segment
+    std::list < std::string > shmdata_path_;  // for unregistering in the segment
     std::vector < gulong > cb_ids_;
     std::mutex thread_safe_;
     static void on_pad_added(GstElement * object,

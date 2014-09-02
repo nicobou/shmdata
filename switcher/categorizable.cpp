@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "categorizable.h"
+#include "./categorizable.h"
 #include "gst/gst.h"
 
 namespace switcher {

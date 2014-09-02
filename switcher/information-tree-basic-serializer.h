@@ -33,7 +33,7 @@
 #ifndef __SWITCHER_INFORMATION_TREE_BASIC_SERIALIZER_H__
 #define __SWITCHER_INFORMATION_TREE_BASIC_SERIALIZER_H__
 
-#include "information-tree.h"
+#include "./information-tree.h"
 #include <string>
 
 namespace switcher {

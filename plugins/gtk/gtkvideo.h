@@ -28,7 +28,7 @@
 #include <condition_variable>
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "../../config.h"
 #endif
 
 #include <gtk/gtk.h>
@@ -70,7 +70,7 @@ namespace switcher {
 #else
     guintptr window_handle_;
 #endif
-    QuiddityCommand *on_error_command_; //for the GPipe error handler
+    QuiddityCommand *on_error_command_; // for the GPipe error handler
     GdkCursor *blank_cursor_;
 
     CustomPropertyHelper::ptr gtk_custom_props_;

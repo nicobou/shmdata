@@ -20,8 +20,8 @@
 #ifndef __SWITCHER_URIS_H__
 #define __SWITCHER_URIS_H__
 
-#include "gpipe.h"
-#include "gst-element-cleaner.h"
+#include "./gpipe.h"
+#include "./gst-element-cleaner.h"
 #include <unordered_map>
 
 namespace switcher {
@@ -41,7 +41,7 @@ namespace switcher {
   private:
     std::unordered_map < std::string, int >media_counters_;
 
-    //wraping c code:
+    // wraping c code:
     typedef enum GourpState_ {
       GROUP_TO_PLAYING = 0,
       GROUP_PLAYING = 1,
@@ -53,14 +53,14 @@ namespace switcher {
       GroupState state;
       GHashTable *datastreams;
       GAsyncQueue *commands;
-      //pad of the sample that determine end of play
+      // pad of the sample that determine end of play
       GstPad *masterpad;
       // a thread safe counter of task to do before actually going to a state
       // and unlocking new command
       GAsyncQueue *numTasks;
       GHashTable *padtoblock;
       double seek_position;
-      gpointer user_data;       //this
+      gpointer user_data;       // this
     } Group;
     typedef struct {
       gboolean(*func) (gpointer, gpointer);
@@ -73,7 +73,7 @@ namespace switcher {
       GstPad *bin_srcpad;
       // group to which the sample belongs
       Group *group;
-      //shifting timestamps for video
+      // shifting timestamps for video
       GstClockTime timeshift;
       GstClockTime lastpause;
       GstElement *element_to_link_with;

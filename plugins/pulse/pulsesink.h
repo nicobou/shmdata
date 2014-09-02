@@ -53,23 +53,23 @@ namespace switcher {
 
     GstElement *pulsesink_bin_;
     bool connected_to_pulse_;
-    //custom property:
+    // custom property:
     CustomPropertyHelper::ptr custom_props_;
-    GParamSpec *devices_description_spec_;      //json formated
-    gchar *devices_description_;        //json formated
-    //pulse_audio
+    GParamSpec *devices_description_spec_;      // json formated
+    gchar *devices_description_;        // json formated
+    // pulse_audio
     pa_glib_mainloop *pa_glib_mainloop_;
     pa_mainloop_api *pa_mainloop_api_;
     pa_context *pa_context_;
     char *server_;
-    std::vector < DeviceDescription > devices_;       //indexed by pulse_device_name
+    std::vector < DeviceDescription > devices_;       // indexed by pulse_device_name
     std::mutex devices_mutex_;
     std::condition_variable devices_cond_;
-    //devices enumeration
+    // devices enumeration
     GParamSpec *devices_enum_spec_;
     GEnumValue devices_enum_[128];
     gint device_;
-    //quit
+    // quit
     std::mutex quit_mutex_;
     std::condition_variable quit_cond_;
 

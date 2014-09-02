@@ -20,8 +20,8 @@
 #ifndef __SWITCHER_HTTP_SDP_H__
 #define __SWITCHER_HTTP_SDP_H__
 
-#include "gpipe.h"
-#include "gst-element-cleaner.h"
+#include "./gpipe.h"
+#include "./gst-element-cleaner.h"
 #include <memory>
 
 namespace switcher {

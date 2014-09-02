@@ -22,7 +22,7 @@
 #include <unistd.h>
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "../../config.h"
 #endif
 
 static bool success = false;
@@ -68,15 +68,15 @@ main() {
     manager->subscribe_signal("signal_subscriber", "soapclient",
                               "on-connection-tried");
     manager->invoke_va("soapclient", "set_remote_url_retry", nullptr,
-                       "http://localhost:38084", nullptr);
+                       "http:// localhost:38084", nullptr);
 
     manager->create("SOAPcontrolServer", "soapserver");
     manager->invoke_va("soapserver", "set_port", nullptr, "38084", nullptr);
 
-    //soapclient is waiting 1 sec between retries
+    // soapclient is waiting 1 sec between retries
     usleep(1100000);
 
-  }                             //end of scope is releasing the manager
+  }                             // end of scope is releasing the manager
 
   if (success)
     return 0;

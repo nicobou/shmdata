@@ -16,7 +16,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "posture_display.h"
+#include "./posture_display.h"
 
 #include <iostream>
 
@@ -45,7 +45,7 @@ PostureDisplay::PostureDisplay():
   PostureDisplay::init() {
     init_segment(this);
 
-    install_connect_method(std::bind(&PostureDisplay::connect, this, std::placeholders::_1), nullptr,   //no disconnect
+    install_connect_method(std::bind(&PostureDisplay::connect, this, std::placeholders::_1), nullptr,   // no disconnect
                            std::bind(&PostureDisplay::disconnect_all,
                                      this),
                            std::bind(&PostureDisplay::can_sink_caps,

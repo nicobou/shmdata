@@ -17,10 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "segment.h"
-#include "gst-utils.h"
-#include "quiddity.h"
-#include "scope-exit.h"
+#include "./segment.h"
+#include "./gst-utils.h"
+#include "./quiddity.h"
+#include "./scope-exit.h"
 
 namespace switcher {
 
@@ -45,7 +45,7 @@ namespace switcher {
     update_shmdata_writers_description();
     update_shmdata_readers_description();
 
-    //installing custom prop for json shmdata description
+    // installing custom prop for json shmdata description
     json_writers_description_ =
       segment_custom_props_->make_string_property("shmdata-writers",
                                                   "json formated shmdata writers description",
@@ -79,7 +79,7 @@ namespace switcher {
       g_warning("Segment cannot register shmdata writer with no path");
       return false;
     }
-    {                           //removing old one if present
+    {                           // removing old one if present
       auto it = shmdata_any_writers_.find(name);
       if (shmdata_any_writers_.end() != it)
         shmdata_any_writers_.erase(name);
@@ -92,7 +92,7 @@ namespace switcher {
 
     shmdata_any_writers_[name] = writer;
 
-    {                           //JSON
+    {                           // JSON
       update_shmdata_writers_description();
       segment_custom_props_->notify_property_changed
         (json_writers_description_);
@@ -112,7 +112,7 @@ namespace switcher {
       g_warning("Segment cannot register shmdata writer with no path");
       return false;
     }
-    {                           //removing old one if present
+    {                           // removing old one if present
       auto it = shmdata_writers_.find(name);
       if (shmdata_writers_.end() != it)
         shmdata_writers_.erase(name);
@@ -125,7 +125,7 @@ namespace switcher {
 
     shmdata_writers_[name] = writer;
 
-    {                           //JSON
+    {                           // JSON
       update_shmdata_writers_description();
       segment_custom_props_->notify_property_changed
         (json_writers_description_);
@@ -145,7 +145,7 @@ namespace switcher {
       g_warning("Segment cannot register shmdata writer with no path");
       return false;
     }
-    {                           //removing old one if present
+    {                           // removing old one if present
       auto it = shmdata_readers_.find(name);
       if (shmdata_readers_.end() != it)
         shmdata_readers_.erase(name);
@@ -158,7 +158,7 @@ namespace switcher {
 
     shmdata_readers_[name] = reader;
 
-    {                           //JSON
+    {                           // JSON
       update_shmdata_readers_description();
       segment_custom_props_->notify_property_changed
         (json_readers_description_);
@@ -178,7 +178,7 @@ namespace switcher {
       g_warning("Segment cannot register shmdata writer with no path");
       return false;
     }
-    {                           //removing old one if present
+    {                           // removing old one if present
       auto it = shmdata_any_readers_.find(name);
       if (shmdata_any_readers_.end() != it)
         shmdata_any_readers_.erase(name);
@@ -191,7 +191,7 @@ namespace switcher {
 
     shmdata_any_readers_[name] = reader;
 
-    {                           //JSON
+    {                           // JSON
       update_shmdata_readers_description();
       segment_custom_props_->notify_property_changed
         (json_writers_description_);
@@ -210,7 +210,7 @@ namespace switcher {
     bool update_writer = false;
     bool update_reader = false;
 
-    {                           //any reader
+    {                           // any reader
       auto it = shmdata_any_readers_.find(shmdata_path);
       if (shmdata_any_readers_.end() != it) {
         shmdata_any_readers_.erase(it);
@@ -218,7 +218,7 @@ namespace switcher {
       }
     }
 
-    {                           //reader
+    {                           // reader
       auto it = shmdata_readers_.find(shmdata_path);
       if (shmdata_readers_.end() != it) {
         shmdata_readers_.erase(it);
@@ -232,7 +232,7 @@ namespace switcher {
         (json_readers_description_);
     }
 
-    {                           //any writer
+    {                           // any writer
       auto it = shmdata_any_writers_.find(shmdata_path);
       if (shmdata_any_writers_.end() != it) {
         shmdata_any_writers_.erase(it);
@@ -240,7 +240,7 @@ namespace switcher {
       }
     }
 
-    {                           //writer
+    {                           // writer
       auto it = shmdata_writers_.find(shmdata_path);
       if (shmdata_writers_.end() != it) {
         shmdata_writers_.erase(it);
@@ -389,7 +389,7 @@ namespace switcher {
     data::Tree::ptr tree = data::make_tree();
     tree->graft(".category", data::make_tree(category));
     tree->graft(".caps", data::make_tree(caps));
-    //attaching it to the quiddity (at the root)
+    // attaching it to the quiddity (at the root)
     quid_->graft_tree(key, tree);
   }
 

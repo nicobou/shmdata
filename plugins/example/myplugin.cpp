@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "myplugin.h"
+#include "./myplugin.h"
 
 namespace switcher {
 
@@ -34,36 +34,36 @@ namespace switcher {
 
   bool MyPlugin::init() {
     init_startable(this);
-    myprop_prop_ = custom_props_->make_boolean_property("myprop",       //name
-                                                        "myprop is a boolean property", //description
-                                                        (gboolean) FALSE,       //default value
+    myprop_prop_ = custom_props_->make_boolean_property("myprop",       // name
+                                                        "myprop is a boolean property", // description
+                                                        (gboolean) FALSE,       // default value
                                                         (GParamFlags)
                                                         G_PARAM_READWRITE,
                                                         MyPlugin::set_myprop,
                                                         MyPlugin::get_myprop,
                                                         this);
-    install_property_by_pspec(custom_props_->get_gobject(), myprop_prop_, "myprop", "My Property");     //long name
+    install_property_by_pspec(custom_props_->get_gobject(), myprop_prop_, "myprop", "My Property");     // long name
 
-    install_method("Hello World",       //long name
-                   "hello-world",       //name
-                   "say hello and repeat first argument",       //description
-                   "the hello answer",  //return description
-                   Method::make_arg_description("Text To Repeat",       //first arg long name
-                                                "text", //fisrt arg name
-                                                "string",       //first arg description
+    install_method("Hello World",       // long name
+                   "hello-world",       // name
+                   "say hello and repeat first argument",       // description
+                   "the hello answer",  // return description
+                   Method::make_arg_description("Text To Repeat",       // first arg long name
+                                                "text", // fisrt arg name
+                                                "string",       // first arg description
                                                 nullptr),
                    (Method::method_ptr) & my_hello_world_method,
                    G_TYPE_STRING,
                    Method::make_arg_type_description(G_TYPE_STRING,
                                                      nullptr), this);
 
-    //creating some custom infos
+    // creating some custom infos
     data::Tree::ptr tree = data::make_tree();
     tree->graft(".child1.child2", data::make_tree("switch"));
     tree->graft(".child1.child3", data::make_tree(1.2f));
     tree->graft(".child1.child2.bla1", data::make_tree("wire"));
     tree->graft(".child1.child2.bla2", data::make_tree("hub"));
-    //attaching it to the quiddity (at the root)
+    // attaching it to the quiddity (at the root)
     graft_tree(".custom.information.", tree);
 
     g_debug("hello from plugin");

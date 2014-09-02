@@ -20,8 +20,8 @@
 #ifndef __SWITCHER_AUDIO_TEST_SOURCE_H__
 #define __SWITCHER_AUDIO_TEST_SOURCE_H__
 
-#include "audio-source.h"
-#include "startable-quiddity.h"
+#include "./audio-source.h"
+#include "./startable-quiddity.h"
 #include <memory>
 
 namespace switcher {

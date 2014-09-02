@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "deinterleave.h"
-#include "gst-element-cleaner.h"
-#include "gst-utils.h"
+#include "./deinterleave.h"
+#include "./gst-element-cleaner.h"
+#include "./gst-utils.h"
 #include <glib/gprintf.h>
 
 namespace switcher {
@@ -35,7 +35,7 @@ namespace switcher {
   bool Deinterleave::init_gpipe() {
     if (!GstUtils::make_element("deinterleave", &deinterleave_))
       return false;
-    //set the name before registering properties
+    // set the name before registering properties
     set_name(gst_element_get_name(deinterleave_));
     add_element_to_cleaner(deinterleave_);
     set_sink_element(deinterleave_);
@@ -64,8 +64,8 @@ namespace switcher {
 
   void Deinterleave::no_more_pads_cb(GstElement * /*0object */ ,
                                      gpointer /*user_data */ ) {
-    //g_print ("no more pad");
-    //Deinterleave *context = static_cast<Deinterleave *>(user_data);
+    // g_print ("no more pad");
+    // Deinterleave *context = static_cast<Deinterleave *>(user_data);
   }
 
   void Deinterleave::pad_added_cb(GstElement * /*object */ , GstPad * pad,
@@ -77,7 +77,7 @@ namespace switcher {
                              (gst_pad_get_caps(pad), 0));
     g_debug("deinterleave new pad name is %s\n", padname);
 
-    //preparing pad name
+    // preparing pad name
     gchar **padname_splitted = g_strsplit_set(padname, "/", -1);
     int count = 0;
     auto it = context->media_counters_.find(std::string(padname_splitted[0]));
@@ -90,7 +90,7 @@ namespace switcher {
     g_debug("deinterleave: new media %s %d\n", media_name, count);
     g_strfreev(padname_splitted);
 
-    //creating a shmdata
+    // creating a shmdata
     ShmdataWriter::ptr connector;
     connector.reset(new ShmdataWriter());
     std::string connector_name = context->make_file_name(media_name);

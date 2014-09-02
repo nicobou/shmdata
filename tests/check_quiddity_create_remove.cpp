@@ -31,10 +31,10 @@ main(int /*argc */ ,
   std::vector < std::string > classes = manager->get_classes();
 
 for (auto & it:classes) {
-    //std::cout << class_name << std::endl;
+    // std::cout << class_name << std::endl;
     if (!switcher::QuiddityBasicTest::test_create(manager, it))
       success = false;
-    //std::cout << res << std::endl;
+    // std::cout << res << std::endl;
   }
 
   if (success)

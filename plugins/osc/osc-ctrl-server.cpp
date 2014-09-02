@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "osc-ctrl-server.h"
+#include "./osc-ctrl-server.h"
 #include <ctime>                // For time()
 #include <cstdlib>              // For srand() and rand()
 
@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <lo/lo.h>
-#include <utility>              //std::make_pair (,)
+#include <utility>              // std::make_pair (,)
 
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscCtrlServer,
@@ -108,7 +108,7 @@ namespace switcher {
     return res;
   }
 
-  //floor
+  // floor
   gchar *OscCtrlServer::string_float_to_string_int(const gchar * string_float) {
     gchar *res;
     gchar **split = g_strsplit(string_float,
@@ -159,7 +159,7 @@ namespace switcher {
       return 0;
     }
 
-    //create
+    // create
     if (g_str_has_prefix(path, "/c") || g_str_has_prefix(path, "/C")) {
       if (argc == 1) {
         gchar *class_name = string_from_osc_arg(types[0], argv[0]);
@@ -178,7 +178,7 @@ namespace switcher {
       return 0;
     }
 
-    //remove
+    // remove
     if (g_str_has_prefix(path, "/r") || g_str_has_prefix(path, "/R")) {
       if (argc == 1) {
         gchar *quid_name = string_from_osc_arg(types[0], argv[0]);
@@ -190,7 +190,7 @@ namespace switcher {
       return 0;
     }
 
-    //set_property
+    // set_property
     if (g_str_has_prefix(path, "/s") || g_str_has_prefix(path, "/S")) {
       if (argc == 3) {
         gchar *quid_name = string_from_osc_arg(types[0], argv[0]);
@@ -206,7 +206,7 @@ namespace switcher {
       return 0;
     }
 
-    //invoke
+    // invoke
     if (g_str_has_prefix(path, "/i") || g_str_has_prefix(path, "/I")) {
       if (argc >= 2) {
         gchar *quid_name = string_from_osc_arg(types[0], argv[0]);
@@ -227,7 +227,7 @@ namespace switcher {
       return 0;
     }
 
-    //add an osc subscriber
+    // add an osc subscriber
     if (g_str_has_prefix(path, "/a") || g_str_has_prefix(path, "/A")) {
       if (argc == 3) {
         gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);
@@ -267,7 +267,7 @@ namespace switcher {
       return 0;
     }
 
-    //delete an osc subscriber
+    // delete an osc subscriber
     if (g_str_has_prefix(path, "/d") || g_str_has_prefix(path, "/D")) {
       if (argc == 1) {
         gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);
@@ -290,7 +290,7 @@ namespace switcher {
       return 0;
     }
 
-    //subscribe to a property
+    // subscribe to a property
     if (g_strcmp0(path, "/get") == 0) {
       if (argc == 3) {
         gchar *quiddity_name = string_from_osc_arg(types[0], argv[0]);
@@ -331,7 +331,7 @@ namespace switcher {
       return 0;
     }
 
-    //subscribe to a property
+    // subscribe to a property
     if (g_str_has_prefix(path, "/get_property_")
         || g_str_has_prefix(path, "/G")) {
       if (argc == 3) {
@@ -369,7 +369,7 @@ namespace switcher {
       return 0;
     }
 
-    //unsubscribe to a property
+    // unsubscribe to a property
     if (g_str_has_prefix(path, "/u") || g_str_has_prefix(path, "/U")) {
       if (argc == 3) {
         gchar *subscriber_name = string_from_osc_arg(types[0], argv[0]);
@@ -411,7 +411,7 @@ namespace switcher {
   }
 
   gchar *OscCtrlServer::string_from_osc_arg(char type, lo_arg * data) {
-    //lo_arg_host_endian ((lo_type) type, data);
+    // lo_arg_host_endian ((lo_type) type, data);
     gchar *res = nullptr;       // = g_strdup_printf ("videotestsrc");
 
     gchar *tmp;
@@ -501,4 +501,4 @@ namespace switcher {
   void OscCtrlServer::osc_error(int num, const char *msg, const char *path) {
     g_debug("liblo server error %d in path %s: %s", num, path, msg);
   }
-}                               //end of OscCtrlServer class
+}                               // end of OscCtrlServer class

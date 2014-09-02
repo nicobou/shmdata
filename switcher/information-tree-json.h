@@ -28,7 +28,7 @@
 #ifndef __SWITCHER_INFORMATION_TREE_JSON_H__
 #define __SWITCHER_INFORMATION_TREE_JSON_H__
 
-#include "information-tree.h"
+#include "./information-tree.h"
 #include <json-glib/json-glib.h>
 #include <string>
 
@@ -37,7 +37,7 @@ namespace switcher {
     namespace JSONSerializer {
 
       std::string serialize(const Tree::ptr);
-      //FIXME implement this: Tree::ptr deserialize (std::string &serialized);
+      // FIXME implement this: Tree::ptr deserialize (std::string &serialized);
 
     };
   }                             // end of "data" namespace

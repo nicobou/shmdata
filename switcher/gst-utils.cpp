@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "gst-utils.h"
-#include <unistd.h>             //sleep
-#include "scope-exit.h"
+#include "./gst-utils.h"
+#include <unistd.h>             // sleep
+#include "./scope-exit.h"
 
 namespace switcher {
 
@@ -52,7 +52,7 @@ namespace switcher {
     GstPad *srcpad = gst_element_get_static_pad(src, "src");
     GstPad *sinkpad = gst_element_get_compatible_pad(sink,
                                                      srcpad,
-                                                     nullptr);  //const GstCaps *caps to use as a filter
+                                                     nullptr);  // const GstCaps *caps to use as a filter
     bool res = GstUtils::check_pad_link_return(gst_pad_link(srcpad, sinkpad));
     if (GST_IS_PAD(src))
       gst_object_unref(srcpad);
@@ -66,7 +66,7 @@ namespace switcher {
   bool GstUtils::link_static_to_request(GstPad * srcpad, GstElement * sink) {
     GstPad *sinkpad = gst_element_get_compatible_pad(sink,
                                                      srcpad,
-                                                     nullptr);  //const GstCaps *caps to use as a filter
+                                                     nullptr);  // const GstCaps *caps to use as a filter
     bool res = GstUtils::check_pad_link_return(gst_pad_link(srcpad, sinkpad));
 
     if (GST_IS_PAD(sinkpad))
@@ -114,8 +114,8 @@ namespace switcher {
         gst_pad_unlink(pad, peer);
       else
         gst_pad_unlink(peer, pad);
-      //checking if the pad has been requested and releasing it needed
-      GstPadTemplate *pad_templ = gst_pad_get_pad_template(peer);       //check if this must be unrefed for GST 1
+      // checking if the pad has been requested and releasing it needed
+      GstPadTemplate *pad_templ = gst_pad_get_pad_template(peer);       // check if this must be unrefed for GST 1
       if (nullptr != pad_templ
           && GST_PAD_TEMPLATE_PRESENCE(pad_templ) == GST_PAD_REQUEST)
         gst_element_release_request_pad(gst_pad_get_parent_element(peer),
@@ -142,7 +142,7 @@ namespace switcher {
         if (GST_STATE_CHANGE_ASYNC ==
             gst_element_set_state(element, GST_STATE_NULL))
           while (GST_STATE(element) != GST_STATE_NULL) {
-//warning this may be blocking
+// warning this may be blocking
             gst_element_get_state(element, nullptr, nullptr,
                                   GST_CLOCK_TIME_NONE);
           }
@@ -169,7 +169,7 @@ namespace switcher {
                 gst_element_state_get_name(GST_STATE(bin)),
                 gst_element_state_get_name(GST_STATE_TARGET(bin)));
 
-        gst_element_get_state(bin, nullptr, nullptr, GST_CLOCK_TIME_NONE);      //warning this may be blocking
+        gst_element_get_state(bin, nullptr, nullptr, GST_CLOCK_TIME_NONE);      // warning this may be blocking
       }
     g_value_unset(&val);
     return;
@@ -223,7 +223,7 @@ namespace switcher {
                        property_value, nullptr);
         }
 
-        if (GST_IS_BIN(current_element))        //recursive
+        if (GST_IS_BIN(current_element))        // recursive
         {
           GstUtils::set_element_property_in_bin(current_element,
                                                 factory_name,
@@ -338,7 +338,7 @@ namespace switcher {
     gint i = 1;
     while (iter != nullptr) {
       target_enum[i].value = i;
-      //FIXME this is leaking
+      // FIXME this is leaking
       target_enum[i].value_name =
         g_strdup(gst_element_factory_get_longname
                  ((GstElementFactory *) iter->data));
@@ -357,12 +357,12 @@ namespace switcher {
   }
 
   void GstUtils::gst_element_deleter(GstElement * element) {
-    //delete if ownership has not been taken by a parent
+    // delete if ownership has not been taken by a parent
     if (nullptr != element && nullptr == GST_OBJECT_PARENT(element))
       gst_object_unref(element);
   }
 
-  //g_signal_connect is actually a macro, so wrapping it for use with std::bind
+  // g_signal_connect is actually a macro, so wrapping it for use with std::bind
   gulong
     GstUtils::g_signal_connect_function(gpointer gobject,
                                         const gchar * signal,

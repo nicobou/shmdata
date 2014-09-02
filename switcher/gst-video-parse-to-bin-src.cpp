@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "gst-video-parse-to-bin-src.h"
-#include "gst-utils.h"
+#include "./gst-video-parse-to-bin-src.h"
+#include "./gst-utils.h"
 
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoParseToBinSrc,
@@ -110,13 +110,13 @@ namespace switcher {
   }
 
   bool GstVideoParseToBinSrc::on_start() {
-    //disable_property ("gst-pipeline");
+    // disable_property ("gst-pipeline");
     return true;
   }
 
   bool GstVideoParseToBinSrc::on_stop() {
     reset_bin();
-    //enable_property ("gst-pipeline");
+    // enable_property ("gst-pipeline");
     return true;
   }
 

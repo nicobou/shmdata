@@ -27,8 +27,8 @@
 #include <gst/gst.h>
 #include <memory>
 #include <vector>
-#include "quiddity.h"
-#include "segment.h"
+#include "./quiddity.h"
+#include "./segment.h"
 
 namespace switcher {
   class Quiddity;
@@ -47,11 +47,11 @@ namespace switcher {
     virtual bool init_gpipe() = 0;
 
   protected:
-    //void init_gpipe (Quiddity &quiddity);//FIXME should called quiddity-manager-impl
+    // void init_gpipe (Quiddity &quiddity);// FIXME should called quiddity-manager-impl
     //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
     GstElement * get_bin();
     GstElement *bin_ {
-      nullptr};                   //FIXME should be private
+      nullptr};                   // FIXME should be private
     bool reset_bin();
     GstElement *get_pipeline();
     void install_play_pause();
@@ -67,7 +67,7 @@ namespace switcher {
       QuiddityCommand *command;
       GSource *src;
     } QuidCommandArg;
-    //GstBus is a specific context:
+    // GstBus is a specific context:
     typedef struct {
       GSource source;
       GstBus *bus;

@@ -42,7 +42,7 @@ main() {
     switcher::QuiddityManager::ptr manager =
       switcher::QuiddityManager::make_manager("testing_signals");
 
-    //make on-quiddity-created and on-quiddity-removed signals
+    // make on-quiddity-created and on-quiddity-removed signals
     manager->create("create_remove_spy", "create_remove_spy");
     manager->make_signal_subscriber("signal_subscriber",
                                     quiddity_created_removed_cb,

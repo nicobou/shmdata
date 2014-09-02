@@ -28,7 +28,7 @@
 #include <memory>
 #include <map>
 #include <vector>
-#include "signal-string.h"
+#include "./signal-string.h"
 
 namespace switcher {
   class Quiddity;
@@ -63,7 +63,7 @@ namespace switcher {
     static void signal_cb(std::vector < std::string > params,
                           gpointer user_data);
 
-    //manager_impl initialization
+    // manager_impl initialization
     void set_manager_impl(std::shared_ptr < QuiddityManager_Impl >
                           manager_impl);
 

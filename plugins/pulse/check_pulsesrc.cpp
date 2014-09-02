@@ -24,7 +24,7 @@
 #include <iostream>
 
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "../../config.h"
 #endif
 
 int
@@ -49,7 +49,7 @@ main() {
     if (!switcher::QuiddityBasicTest::test_full(manager, "pulsesink"))
       success = false;
 
-  }                             //end of scope is releasing the manager
+  }                             // end of scope is releasing the manager
 
   if (success)
     return 0;

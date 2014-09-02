@@ -17,10 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "udpsink.h"
-#include "gst-utils.h"
+#include "./udpsink.h"
+#include "./gst-utils.h"
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "../config.h"
 #endif
 
 #if HAVE_OSX
@@ -43,10 +43,10 @@ namespace switcher {
         || !GstUtils::make_element("multiudpsink", &udpsink_))
       return false;
 
-    //g_object_set (G_OBJECT (udpsink_bin_), "async-handling", TRUE, nullptr);
+    // g_object_set (G_OBJECT (udpsink_bin_), "async-handling", TRUE, nullptr);
     ghost_sinkpad_ = nullptr;
 
-    //set the name before registering properties
+    // set the name before registering properties
     set_name(gst_element_get_name(udpsink_));
     g_object_set(G_OBJECT(udpsink_), "sync", FALSE, nullptr);
 
@@ -125,7 +125,7 @@ namespace switcher {
                    Method::make_arg_type_description(G_TYPE_NONE, nullptr),
                    this);
 
-    //registering sink element
+    // registering sink element
     set_on_first_data_hook(UDPSink::add_elements_to_bin, this);
     set_sink_element(udpsink_bin_);
 
@@ -168,7 +168,7 @@ namespace switcher {
                      context->typefind_, context->udpsink_, nullptr);
     gst_element_link(context->typefind_, context->udpsink_);
 
-    //GstUtils::wait_state_changed (context->udpsink_bin_);
+    // GstUtils::wait_state_changed (context->udpsink_bin_);
     GstUtils::sync_state_with_parent(context->udpsink_bin_);
 
     GstPad *sink_pad = gst_element_get_static_pad(context->typefind_, "sink");
@@ -182,7 +182,7 @@ namespace switcher {
                                 gchar * /*host */ ,
                                 gint /*port */ ,
                                 gpointer /*user_data */ ) {
-    //UDPSink *context = static_cast<UDPSink *>(user_data);
+    // UDPSink *context = static_cast<UDPSink *>(user_data);
     g_debug("UDPSink::on_client_added");
   }
 
@@ -190,14 +190,14 @@ namespace switcher {
                                   gchar * /*host */ ,
                                   gint /*port */ ,
                                   gpointer /*user_data */ ) {
-    //UDPSink *context = static_cast<UDPSink *>(user_data);
+    // UDPSink *context = static_cast<UDPSink *>(user_data);
     g_debug("UDPSink::on_client_removed");
   }
 
   gboolean
     UDPSink::remove_client_wrapped(gpointer host, gint port,
                                    gpointer user_data) {
-    //std::string connector = static_cast<std::string>(connector_name);
+    // std::string connector = static_cast<std::string>(connector_name);
     UDPSink *context = static_cast < UDPSink * >(user_data);
 
     if (context->remove_client((char *) host, port))
@@ -214,7 +214,7 @@ namespace switcher {
   gboolean
     UDPSink::add_client_wrapped(gpointer host, gint port, gpointer user_data)
   {
-    //std::string connector = static_cast<std::string>(connector_name);
+    // std::string connector = static_cast<std::string>(connector_name);
     UDPSink *context = static_cast < UDPSink * >(user_data);
 
     if (context->add_client((char *) host, port))
@@ -229,7 +229,7 @@ namespace switcher {
   }
 
   gboolean UDPSink::clear_wrapped(gpointer /*unused */ , gpointer user_data) {
-    //std::string connector = static_cast<std::string>(connector_name);
+    // std::string connector = static_cast<std::string>(connector_name);
     UDPSink *context = static_cast < UDPSink * >(user_data);
 
     if (context->clear_clients())

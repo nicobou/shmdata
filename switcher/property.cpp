@@ -21,8 +21,8 @@
  * The Param class
  */
 
-#include "property.h"
-#include "gst-utils.h"
+#include "./property.h"
+#include "./gst-utils.h"
 
 namespace switcher {
 
@@ -125,7 +125,7 @@ namespace switcher {
     g_value_init(&val, pspec->value_type);
     g_object_get_property(gobject, prop_name, &val);
     gchar *val_str = GstUtils::gvalue_serialize(&val);
-    //gchar *val_str;
+    // gchar *val_str;
     // if (pspec->value_type == G_TYPE_STRING)
     //   val_str = g_strdup (g_value_get_string (&val));
     // else
@@ -158,7 +158,7 @@ namespace switcher {
     return json_description_->get_root();
   }
 
-  //make json formated description
+  // make json formated description
   void Property::make_description() {
     if (nullptr == property_) {
       g_warning("%s: cannot make description from a nullptr property",
@@ -171,12 +171,12 @@ namespace switcher {
     g_object_get_property(object_, property_->name, &value);
     json_description_->reset();
     json_description_->begin_object();
-    //long name
+    // long name
     json_description_->add_string_member("long name", long_name_.c_str());
-    //name
+    // name
     json_description_->add_string_member("name", name_.c_str());
-    //nickname
-    //json_description_->add_string_member ("nickname", g_param_spec_get_nick (property_));
+    // nickname
+    // json_description_->add_string_member ("nickname", g_param_spec_get_nick (property_));
 
     // short description
     json_description_->add_string_member("short description",
@@ -186,7 +186,7 @@ namespace switcher {
     json_description_->add_int_member("position weight",
                                       get_position_weight());
     // name
-    //json_description_->add_string_member ("internal name", g_param_spec_get_name (property_));
+    // json_description_->add_string_member ("internal name", g_param_spec_get_name (property_));
     if (property_->flags & G_PARAM_WRITABLE)
       json_description_->add_string_member("writable", "true");
     else
@@ -442,7 +442,7 @@ namespace switcher {
 //   g_debug ("%-23.23s Pointer of type \"%s\".", "",
 //    g_type_name (property_->value_type));
 // } else if (property_->value_type == G_TYPE_VALUE_ARRAY) {
-//GParamSpecValueArray *pvarray = G_PARAM_SPEC_VALUE_ARRAY (property_);
+// GParamSpecValueArray *pvarray = G_PARAM_SPEC_VALUE_ARRAY (property_);
         // g_debug ("warning: array not handled");
 // if (pvarray->element_spec) {
 //   g_debug ("%-23.23s Array of GValues of type \"%s\"", "",
@@ -484,8 +484,8 @@ namespace switcher {
 //  gst_value_get_fraction_denominator (&value));
       }
       else if (GST_IS_PARAM_SPEC_MINI_OBJECT(property_)) {
-//g_warning ("warning param spec mini object not handled ");
-//g_warning ("%-23.23s MiniObject of type \"%s\"", "",
+// g_warning ("warning param spec mini object not handled ");
+// g_warning ("%-23.23s MiniObject of type \"%s\"", "",
 //   g_type_name (property_->value_type));
         json_description_->add_string_member("type",
                                              g_type_name
@@ -502,16 +502,16 @@ namespace switcher {
     json_description_->end_object();
   }
 
-  //from gst-inspect
+  // from gst-inspect
   void Property::print() {
 
-    //guint i;
+    // guint i;
     gboolean readable;
-    //gboolean first_flag;
+    // gboolean first_flag;
 
     GValue value = G_VALUE_INIT;
 
-    //GObject *element = object_;
+    // GObject *element = object_;
 
     readable = FALSE;
 

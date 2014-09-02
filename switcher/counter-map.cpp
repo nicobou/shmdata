@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "counter-map.h"
+#include "./counter-map.h"
 
 namespace switcher {
 
@@ -32,7 +32,7 @@ namespace switcher {
     auto it = counters_.find(key);
     if (counters_.end() != it)
       return ++(it->second);
-    //else init to 0 for this key
+    // else init to 0 for this key
     counters_[key] = 0;
     return 0;
   }
@@ -41,4 +41,4 @@ namespace switcher {
     std::unique_lock < std::mutex > lock(mutex_);
     counters_.clear();
   }
-}                               //end of switcher namespace
+}                               // end of switcher namespace

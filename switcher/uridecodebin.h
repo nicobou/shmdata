@@ -20,9 +20,9 @@
 #ifndef __SWITCHER_URIDECODEBIN_H__
 #define __SWITCHER_URIDECODEBIN_H__
 
-#include "gpipe.h"
-#include "gst-element-cleaner.h"
-#include "custom-property-helper.h"
+#include "./gpipe.h"
+#include "./gst-element-cleaner.h"
+#include "./custom-property-helper.h"
 #include <unordered_map>
 
 namespace switcher {
@@ -43,10 +43,10 @@ namespace switcher {
     bool discard_next_uncomplete_buffer_;
     void init_uridecodebin();
     void destroy_uridecodebin();
-    QuiddityCommand *on_error_command_; //for the pipeline error handler
+    QuiddityCommand *on_error_command_; // for the pipeline error handler
     void clean_on_error_command();
 
-    //custom properties
+    // custom properties
     CustomPropertyHelper::ptr custom_props_;
     GParamSpec *loop_prop_;
     bool loop_;
@@ -79,7 +79,7 @@ namespace switcher {
                                   GstCaps * caps,
                                   GstElementFactory * factory,
                                   gpointer user_data);
-    //filtering uncomplete custum buffers
+    // filtering uncomplete custum buffers
     static gboolean gstrtpdepay_buffer_probe_cb(GstPad * pad,
                                                 GstMiniObject * mini_obj,
                                                 gpointer user_data);

@@ -21,11 +21,11 @@
  * The GPipe class
  */
 
-#include "gpipe.h"
-#include "quiddity.h"
-#include "quiddity-command.h"
-#include "custom-property-helper.h"
-#include "gst-utils.h"
+#include "./gpipe.h"
+#include "./quiddity.h"
+#include "./quiddity-command.h"
+#include "./custom-property-helper.h"
+#include "./gst-utils.h"
 #include <shmdata/base-reader.h>
 #include <gst/interfaces/xoverlay.h>
 #include <algorithm>
@@ -70,7 +70,7 @@ namespace switcher {
     g_source_unref(source_);
     ((GstBusSource *) source_)->inited = FALSE;
     gst_element_set_state(pipeline_, GST_STATE_PLAYING);
-    //GstUtils::wait_state_changed (pipeline_);
+    // GstUtils::wait_state_changed (pipeline_);
     play_pause_spec_ =
       gpipe_custom_props_->make_boolean_property("play",
                                                  "play",
@@ -142,10 +142,10 @@ namespace switcher {
 
   bool GPipe::seek(gdouble position) {
     gboolean ret = FALSE;
-    ret = gst_element_seek(pipeline_, speed_, GST_FORMAT_TIME, (GstSeekFlags) ( //GST_SEEK_FLAG_FLUSH |
+    ret = gst_element_seek(pipeline_, speed_, GST_FORMAT_TIME, (GstSeekFlags) ( // GST_SEEK_FLAG_FLUSH |
                                                                                 GST_SEEK_FLAG_ACCURATE),
                            //| GST_SEEK_FLAG_SKIP
-                           //| GST_SEEK_FLAG_KEY_UNIT, //using key unit is breaking synchronization
+                           //| GST_SEEK_FLAG_KEY_UNIT, // using key unit is breaking synchronization
                            GST_SEEK_TYPE_SET,
                            position * length_ * GST_MSECOND,
                            GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
@@ -184,7 +184,7 @@ namespace switcher {
     GstQuery *query;
     gboolean res;
 
-    //query position
+    // query position
     query = gst_query_new_position(GST_FORMAT_TIME);
     res = gst_element_query(pipeline_, query);
     gint64 cur_pos = 0;
@@ -242,7 +242,7 @@ namespace switcher {
         break;
       case QuiddityCommand::invoke:
         {
-          manager->invoke(context->command->args_[0], context->command->args_[1], nullptr,      //do not care of return value
+          manager->invoke(context->command->args_[0], context->command->args_[1], nullptr,      // do not care of return value
                           context->command->vector_arg_);
         }
         break;
@@ -268,7 +268,7 @@ namespace switcher {
     if (context->self->commands_.end() != it)
       context->self->commands_.erase(it);
     delete context;
-    return FALSE;               //do not repeat run_command
+    return FALSE;               // do not repeat run_command
   }
 
   GstElement *GPipe::get_pipeline() {
@@ -352,7 +352,7 @@ namespace switcher {
       QuiddityCommand *command =
         (QuiddityCommand *) g_object_get_data(G_OBJECT(msg->src),
                                               "on-error-command");
-//removing command in order to get it invoked once
+// removing command in order to get it invoked once
       g_object_set_data(G_OBJECT(msg->src),
                         "on-error-command", (gpointer) nullptr);
 
@@ -440,7 +440,7 @@ namespace switcher {
       // }
       break;
     default:
-      //g_debug ("message %s from %s",GST_MESSAGE_TYPE_NAME(msg),GST_MESSAGE_SRC_NAME(msg));
+      // g_debug ("message %s from %s",GST_MESSAGE_TYPE_NAME(msg),GST_MESSAGE_SRC_NAME(msg));
       break;
     }
     return TRUE;
@@ -499,7 +499,7 @@ namespace switcher {
     GstUtils::wait_state_changed(bin_);
 
     if (GST_IS_ELEMENT(bin_)) {
-//FIXME clear_shmdatas ();
+// FIXME clear_shmdatas ();
 
       g_debug("GPipe, bin state %s, target %s, num children %d ",
               gst_element_state_get_name(GST_STATE(bin_)),
@@ -511,7 +511,7 @@ namespace switcher {
         for (child = children; child != nullptr; child = g_list_next(child)) {
           g_debug("segment warning: child %s",
                   GST_ELEMENT_NAME(GST_ELEMENT(child->data)));
-//GstUtils::clean_element (GST_ELEMENT (child->data));
+// GstUtils::clean_element (GST_ELEMENT (child->data));
         }
       }
       g_debug("going to clean bin_");

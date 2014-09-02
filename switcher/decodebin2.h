@@ -20,8 +20,8 @@
 #ifndef __SWITCHER_DECODEBIN2_H__
 #define __SWITCHER_DECODEBIN2_H__
 
-#include "single-pad-gst-sink.h"
-#include "decodebin-to-shmdata.h"
+#include "./single-pad-gst-sink.h"
+#include "./decodebin-to-shmdata.h"
 #include <memory>
 #include <map>
 

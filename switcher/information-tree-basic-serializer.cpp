@@ -12,10 +12,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+ * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
-#include "information-tree-basic-serializer.h"
+#include "./information-tree-basic-serializer.h"
 #include <iostream>
 #include <string>
 #include <iterator>
@@ -91,6 +91,6 @@ namespace switcher {
         }
         return tree;
       }
-    }                           //end of "BasicSerializer" namespace
+    }                           // end of "BasicSerializer" namespace
   }                             // end of "data" namespace
 }                               // end of "switcher" namespace
