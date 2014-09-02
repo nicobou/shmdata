@@ -39,19 +39,19 @@ namespace switcher {
   class GPipe:public Quiddity, public Segment {
     friend DecodebinToShmdata;
   public:
-      GPipe();
-      virtual ~ GPipe();
-      GPipe(const GPipe &) = delete;
-      GPipe & operator=(const GPipe &) = delete;
+    GPipe();
+    virtual ~ GPipe();
+    GPipe(const GPipe &) = delete;
+    GPipe & operator=(const GPipe &) = delete;
     bool init() final;
     virtual bool init_gpipe() = 0;
 
   protected:
     //void init_gpipe (Quiddity &quiddity);//FIXME should called quiddity-manager-impl
     //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
-      GstElement * get_bin();
+    GstElement * get_bin();
     GstElement *bin_ {
-    nullptr};                   //FIXME should be private
+      nullptr};                   //FIXME should be private
     bool reset_bin();
     GstElement *get_pipeline();
     void install_play_pause();
@@ -75,26 +75,26 @@ namespace switcher {
     } GstBusSource;
 
     GstElement *pipeline_ {
-    nullptr};
+      nullptr};
     gdouble speed_ {
-    1.0};
+      1.0};
     GSource *position_tracking_source_ {
-    nullptr};
+      nullptr};
     GSourceFuncs source_funcs_;
     GSource *source_ {
-    nullptr};
-      std::shared_ptr < CustomPropertyHelper > gpipe_custom_props_;
+      nullptr};
+    std::shared_ptr < CustomPropertyHelper > gpipe_custom_props_;
     GParamSpec *play_pause_spec_ {
-    nullptr};
+      nullptr};
     bool play_ {
-    true};
+      true};
     GParamSpec *seek_spec_ {
-    nullptr};
+      nullptr};
     gdouble seek_ {
-    0.0};
+      0.0};
     gint64 length_ {
-    0};
-      std::vector < GSource * >commands_ {
+      0};
+    std::vector < GSource * >commands_ {
     };
 
     void make_bin();

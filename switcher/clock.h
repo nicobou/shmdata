@@ -28,18 +28,18 @@ namespace switcher {
     class CumulativeClock {
   public:
   CumulativeClock():
-    start_(Clock_type::now()) {
-    }
+  start_(Clock_type::now()) {
+  }
 
-    template < typename Count_type = unsigned long long, typename Resolution =
-      std::nano > Count_type get_count(){
-      std::chrono::time_point < Clock_type > now = Clock_type::now();
-      std::chrono::duration < Count_type, Resolution > clock = now - start_;
-      return clock.count();
-    }
+  template < typename Count_type = unsigned long long, typename Resolution =
+  std::nano > Count_type get_count(){
+    std::chrono::time_point < Clock_type > now = Clock_type::now();
+    std::chrono::duration < Count_type, Resolution > clock = now - start_;
+    return clock.count();
+  }
 
   private:
-    std::chrono::time_point < Clock_type > start_;
+  std::chrono::time_point < Clock_type > start_;
   };
 
 }                               // end of namespace

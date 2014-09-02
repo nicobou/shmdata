@@ -54,9 +54,9 @@ namespace switcher {
       typedef std::function < void (const std::string & name,
                                     const Tree::ptr tree,
                                     bool is_array_element) > OnNodeFunction;
-        Tree() {
+      Tree() {
       };
-        Tree(const Any & data);
+      Tree(const Any & data);
       bool is_leaf();
       bool is_array();
       bool has_data();
@@ -77,9 +77,9 @@ namespace switcher {
       // or remove old one and replace will the new tree
       bool graft(const std::string & path, Tree::ptr);
       //return empty tree if nothing can be pruned
-        Tree::ptr prune(const std::string & path);
+      Tree::ptr prune(const std::string & path);
       //get but not remove
-        Tree::ptr get(const std::string & path);
+      Tree::ptr get(const std::string & path);
 
       // return false if the path does not exist
       // when a path is tagged as an array, keys might be discarded
@@ -88,16 +88,16 @@ namespace switcher {
       bool is_array(const std::string & path);
 
       //get child key in place, use with std::insert_iterator
-        template < typename Iter >
+      template < typename Iter >
         void get_child_keys(const std::string path, Iter pos) {
         std::unique_lock < std::mutex > lock(mutex_);
         auto found = get_node(path);
         if (!found.first.empty())
-            std::transform(found.second->second->childrens_.begin(),
-                           found.second->second->childrens_.end(),
-                           pos,[](const child_type & child) {
+	  std::transform(found.second->second->childrens_.begin(),
+			 found.second->second->childrens_.end(),
+			 pos,[](const child_type & child) {
                            return child.first;}
-        );
+			 );
       }
 
       //get child keys - returning a newly allocated container
@@ -113,8 +113,8 @@ namespace switcher {
           std::transform(found.second->second->childrens_.begin(),
                          found.second->second->childrens_.end(),
                          res.begin(),[](const child_type & child) {
-                         return child.first;}
-          );
+			   return child.first;}
+			 );
         }
         return res;
       }
@@ -123,7 +123,7 @@ namespace switcher {
       Any data_ {
       };
       bool is_array_ {
-      false};
+	false};
       child_list_type childrens_ {
       };
       std::mutex mutex_ {

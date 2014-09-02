@@ -30,16 +30,16 @@ namespace switcher {
   class SDPMedia {
     friend SDPDescription;
   public:
-      SDPMedia();
-     ~SDPMedia();
+    SDPMedia();
+    ~SDPMedia();
     SDPMedia *operator=(const SDPMedia &) = delete;
-      SDPMedia(const SDPMedia &) = delete;
+    SDPMedia(const SDPMedia &) = delete;
 
     bool set_media_info_from_caps(const GstCaps * media_caps);  //caps from a gst RTP payloader
     bool set_port(uint port);
 
   private:  bool add_to_sdp_description(GstSDPMessage * sdp_description,
-                                  uint index) const;
+					uint index) const;
     GstSDPMedia *media_;
     GstStructure *caps_structure_;
     uint port_;
@@ -50,12 +50,12 @@ namespace switcher {
     SDPDescription();
     ~SDPDescription();
     SDPDescription *operator=(const SDPDescription &) = delete;
-      SDPDescription(const SDPDescription &) = delete;
+    SDPDescription(const SDPDescription &) = delete;
 
     bool add_media(const SDPMedia & media);
-      std::string get_string();
+    std::string get_string();
   private:
-      GstSDPMessage * sdp_description_;
+    GstSDPMessage * sdp_description_;
     uint index_;
   };
 

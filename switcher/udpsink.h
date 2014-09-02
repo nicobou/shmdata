@@ -32,10 +32,10 @@ namespace switcher {
     UDPSink();
     ~UDPSink();
     UDPSink(const UDPSink &) = delete;
-      UDPSink & operator=(const UDPSink &) = delete;
+    UDPSink & operator=(const UDPSink &) = delete;
 
   private:
-      GstElement * udpsink_;
+    GstElement * udpsink_;
     GstElement *udpsink_bin_;
     GstElement *typefind_;
     GstPad *ghost_sinkpad_;

@@ -41,11 +41,11 @@ namespace switcher {
                               std::string quiddity_name,
                               std::string property_name,
                               std::string value, void *user_data);
-      QuiddityPropertySubscriber();
-     ~QuiddityPropertySubscriber();
-      QuiddityPropertySubscriber(const QuiddityPropertySubscriber &) = delete;
-      QuiddityPropertySubscriber & operator=(const QuiddityPropertySubscriber
-                                             &) = delete;
+    QuiddityPropertySubscriber();
+    ~QuiddityPropertySubscriber();
+    QuiddityPropertySubscriber(const QuiddityPropertySubscriber &) = delete;
+    QuiddityPropertySubscriber & operator=(const QuiddityPropertySubscriber
+					   &) = delete;
     void mute(bool muted);
 
     void set_callback(Callback cb);
@@ -56,7 +56,7 @@ namespace switcher {
     bool unsubscribe(std::shared_ptr < Quiddity > quid,
                      std::string property_name);
     bool unsubscribe(std::shared_ptr < Quiddity > quid);
-      std::vector < std::pair < std::string,
+    std::vector < std::pair < std::string,
       std::string > >list_subscribed_properties();
     static void property_cb(GObject * gobject, GParamSpec * pspec,
                             gpointer user_data);
@@ -66,10 +66,10 @@ namespace switcher {
                           manager_impl);
 
   private:
-      Callback user_callback_;
+    Callback user_callback_;
     void *user_data_;
-      std::string name_;
-      std::weak_ptr < QuiddityManager_Impl > manager_impl_;
+    std::string name_;
+    std::weak_ptr < QuiddityManager_Impl > manager_impl_;
     bool muted_;
 
     typedef struct {

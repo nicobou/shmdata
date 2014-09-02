@@ -30,20 +30,20 @@ namespace switcher {
   class VideoSource:public GPipe, public StartableQuiddity {
   public:
     typedef std::shared_ptr < VideoSource > ptr;
-      VideoSource();
-     ~VideoSource();
-      VideoSource(const VideoSource &) = delete;
-      VideoSource & operator=(const VideoSource &) = delete;
+    VideoSource();
+    ~VideoSource();
+    VideoSource(const VideoSource &) = delete;
+    VideoSource & operator=(const VideoSource &) = delete;
     bool start();
     bool stop();
 
   private:
-      GstElement * rawvideo_;
+    GstElement * rawvideo_;
     GstElement *video_tee_;
     GstCaps *videocaps_;
-      std::string shmdata_path_;
+    std::string shmdata_path_;
     //custom properties:
-      CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr custom_props_;
     //codec //FIXME make this static
     GParamSpec *primary_codec_spec_;
     GEnumValue primary_codec_[128];
@@ -56,7 +56,7 @@ namespace switcher {
     GstElement *codec_element_;
     GstElement *queue_codec_element_;
     GstElement *color_space_codec_element_;
-      std::vector < std::string > codec_properties_;
+    std::vector < std::string > codec_properties_;
 
     virtual bool on_start() {
       return true;

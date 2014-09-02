@@ -34,24 +34,24 @@ namespace switcher {
     Logger();
     ~Logger();
     Logger(const Logger &) = delete;
-      Logger & operator=(const Logger &) = delete;
+    Logger & operator=(const Logger &) = delete;
     bool init();
 
   private:
     static bool installed_;
     bool i_am_the_one_;
-      std::string last_line_;
+    std::string last_line_;
     bool mute_;
     bool debug_;
     bool verbose_;
-      std::unordered_map < std::string, guint > handler_ids_;
+    std::unordered_map < std::string, guint > handler_ids_;
     //custom properties
-      CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr custom_props_;
     GParamSpec *last_line_prop_;
     GParamSpec *mute_prop_;
     GParamSpec *debug_prop_;
     GParamSpec *verbose_prop_;
-      std::mutex last_line_mutex_;
+    std::mutex last_line_mutex_;
     void replace_last_line(std::string next_line);
     gboolean install_log_handler(const gchar * log_domain);
     gboolean remove_log_handler(const gchar * log_domain);

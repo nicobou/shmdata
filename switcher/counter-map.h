@@ -30,7 +30,7 @@
  *
  * users should inherit from this class
  *
-**/
+ **/
 
 namespace switcher {
 
@@ -44,8 +44,8 @@ namespace switcher {
     void reset_counter_map();
 
   private:
-      std::map < std::string, uint > counters_;
-      std::mutex mutex_;
+    std::map < std::string, uint > counters_;
+    std::mutex mutex_;
   };
 
 }                               // end of namespace

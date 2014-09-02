@@ -32,39 +32,39 @@ namespace switcher {
   public:
     typedef std::shared_ptr < ShmdataWriter > ptr;
     using CapsCallBack = std::function < void (std::string) >;
-      ShmdataWriter();
-     ~ShmdataWriter();
-      ShmdataWriter(const ShmdataWriter &) = delete;
-      ShmdataWriter & operator=(const ShmdataWriter &) = delete;
+    ShmdataWriter();
+    ~ShmdataWriter();
+    ShmdataWriter(const ShmdataWriter &) = delete;
+    ShmdataWriter & operator=(const ShmdataWriter &) = delete;
 
     bool set_path(std::string name);    //path needs to be fully specified
     bool set_path_without_deleting(std::string name);   //path needs to be fully specified
-      std::string get_path();
+    std::string get_path();
 
     //caps does not need to be fully specified:
     void plug(GstElement * bin, GstElement * source_element, GstCaps * caps);
     void plug(GstElement * bin, GstPad * source_pad);
 
     //get json doc:
-      JSONBuilder::Node get_json_root_node();
+    JSONBuilder::Node get_json_root_node();
 
   private:
-      std::string path_ {
+    std::string path_ {
     };
     shmdata_base_writer_t *writer_ {
-    shmdata_base_writer_init()};
+      shmdata_base_writer_init()};
     GstElement *bin_ {
-    nullptr};
+      nullptr};
     GstElement *tee_ {
-    nullptr};
+      nullptr};
     GstElement *queue_ {
-    nullptr};
+      nullptr};
     GstElement *fakesink_ {
-    nullptr};
+      nullptr};
     gulong handoff_handler_ {
-    0};
-      JSONBuilder::ptr json_description_ {
-    new JSONBuilder()};
+      0};
+    JSONBuilder::ptr json_description_ {
+      new JSONBuilder()};
 
     void make_json_description();
     static void on_handoff_cb(GstElement * object,

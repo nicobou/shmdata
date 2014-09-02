@@ -31,22 +31,22 @@ namespace switcher {
     StringDictionary();
     ~StringDictionary();
     StringDictionary(const StringDictionary &) = delete;
-      StringDictionary & operator=(const StringDictionary &) = delete;
+    StringDictionary & operator=(const StringDictionary &) = delete;
     bool init();
 
   private:
-      std::map < std::string, gchar * >dico_;
+    std::map < std::string, gchar * >dico_;
 
     typedef struct {
       StringDictionary *string_dictionary;
-        std::string entry_name;
+      std::string entry_name;
     } PropertySetGet;
-      std::map < std::string,
+    std::map < std::string,
       std::shared_ptr < PropertySetGet > >set_get_contexts_;
 
     //property
-      CustomPropertyHelper::ptr custom_props_;
-      std::map < std::string, GParamSpec * >prop_specs_;
+    CustomPropertyHelper::ptr custom_props_;
+    std::map < std::string, GParamSpec * >prop_specs_;
     static const gchar *string_getter(void *user_data);
     static void string_setter(const gchar * value, void *user_data);
 

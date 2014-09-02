@@ -30,7 +30,7 @@ namespace switcher {
     UniqueGstElement(const gchar * class_name);
 
     //invoke as g_object
-      template < typename Return_type >
+    template < typename Return_type >
       Return_type
       g_invoke_with_return(std::function < Return_type(gpointer) > command) {
       return command(G_OBJECT(element_.get()));
@@ -39,7 +39,7 @@ namespace switcher {
     void g_invoke(std::function < void (gpointer) > command);
 
     //invoke as GstElement
-      template < typename Return_type >
+    template < typename Return_type >
       Return_type
       invoke_with_return(std::function < Return_type(GstElement *) >
                          command) {

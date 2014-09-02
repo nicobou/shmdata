@@ -35,14 +35,14 @@ namespace switcher {
     virtual T *Create() = 0;
   };
 
-template < class T > class DerivedCreator:public Creator < T > {
+  template < class T > class DerivedCreator:public Creator < T > {
   public:
     T * Create() {
       return new T;
     }
   };
 
-template < class T > class CustomDerivedCreator:public Creator < T > {
+  template < class T > class CustomDerivedCreator:public Creator < T > {
   public:
     T * Create() {
       return (*custom_create_) ();

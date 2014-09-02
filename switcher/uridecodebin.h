@@ -33,11 +33,11 @@ namespace switcher {
     Uridecodebin();
     ~Uridecodebin();
     Uridecodebin(const Uridecodebin &) = delete;
-      Uridecodebin & operator=(const Uridecodebin &) = delete;
+    Uridecodebin & operator=(const Uridecodebin &) = delete;
 
   private:
-      GstElement * uridecodebin_;
-      std::unordered_map < std::string, int >media_counters_;
+    GstElement * uridecodebin_;
+    std::unordered_map < std::string, int >media_counters_;
     GstPad *main_pad_;
     GstCaps *rtpgstcaps_;
     bool discard_next_uncomplete_buffer_;
@@ -47,7 +47,7 @@ namespace switcher {
     void clean_on_error_command();
 
     //custom properties
-      CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr custom_props_;
     GParamSpec *loop_prop_;
     bool loop_;
     GParamSpec *playing_prop_;

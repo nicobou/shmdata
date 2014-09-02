@@ -50,10 +50,10 @@ namespace switcher {
 
   public:
     typedef std::shared_ptr < Quiddity > ptr;
-      Quiddity();
-      Quiddity(const Quiddity &) = delete;
-      Quiddity & operator=(const Quiddity &) = delete;
-      virtual ~ Quiddity();
+    Quiddity();
+    Quiddity(const Quiddity &) = delete;
+    Quiddity & operator=(const Quiddity &) = delete;
+    virtual ~ Quiddity();
 
     //class documentation
     virtual QuiddityDocumentation get_documentation() = 0;
@@ -62,37 +62,37 @@ namespace switcher {
     virtual bool init() = 0;
 
     //instance name
-      std::string get_name();
-      std::string get_nick_name();
+    std::string get_name();
+    std::string get_nick_name();
     bool set_nick_name(std::string nick_name);
     bool set_name(std::string name);
 
     //properties
-      std::string get_property_description(std::string property_name);
-      std::string get_properties_description();
+    std::string get_property_description(std::string property_name);
+    std::string get_properties_description();
     bool set_property(std::string name, std::string value);
-      std::string get_property(std::string name);
+    std::string get_property(std::string name);
     bool subscribe_property(std::string name,
                             Property::Callback cb, void *user_data);
     bool unsubscribe_property(std::string name,
                               Property::Callback cb, void *user_data);
     bool has_property(std::string property_name);
-      Property::ptr get_property_ptr(std::string property_name);
+    Property::ptr get_property_ptr(std::string property_name);
 
     //methods
-      std::string get_method_description(std::string method_name);
-      std::string get_methods_description();
+    std::string get_method_description(std::string method_name);
+    std::string get_methods_description();
     bool invoke_method(const std::string function_name,
                        std::string ** return_value,
                        const std::vector < std::string > args);
     int method_get_num_value_args(std::string function_name);   //returns -1 if method not found
     int method_get_num_pointer_args(std::string function_name); //returns -1 if method not found
     bool has_method(const std::string method_name);
-      Method::ptr get_method_ptr(std::string method_name);
+    Method::ptr get_method_ptr(std::string method_name);
 
     //signals
-      std::string get_signals_description();
-      std::string get_signal_description(std::string signal_name);
+    std::string get_signals_description();
+    std::string get_signal_description(std::string signal_name);
     bool subscribe_signal(std::string name,
                           Signal::OnEmittedCallback cb, void *user_data);
     bool unsubscribe_signal(std::string name,
@@ -102,9 +102,9 @@ namespace switcher {
                      const std::vector < std::string > args);
 
     //information
-      std::string get_info(const std::string & path);
+    std::string get_info(const std::string & path);
     Any get_data(const std::string & path);
-      template < template < class T, class =
+    template < template < class T, class =
       std::allocator < T > >class Container =
       std::list > Container < std::string >
       get_child_keys(const std::string path) {
@@ -121,18 +121,18 @@ namespace switcher {
 
   private:
     //information tree
-      data::Tree::ptr information_tree_;
+    data::Tree::ptr information_tree_;
 
     //properties
-      std::unordered_map < std::string, Property::ptr > properties_;
-      std::unordered_map < std::string, Property::ptr > disabled_properties_;
-      JSONBuilder::ptr properties_description_;
+    std::unordered_map < std::string, Property::ptr > properties_;
+    std::unordered_map < std::string, Property::ptr > disabled_properties_;
+    JSONBuilder::ptr properties_description_;
 
     //methods
-      std::unordered_map < std::string, Method::ptr > methods_;
-      std::unordered_map < std::string, Method::ptr > disabled_methods_;
+    std::unordered_map < std::string, Method::ptr > methods_;
+    std::unordered_map < std::string, Method::ptr > disabled_methods_;
     bool method_is_registered(std::string method_name);
-      JSONBuilder::ptr methods_description_;
+    JSONBuilder::ptr methods_description_;
 
     //position weight
     gint position_weight_counter_;
@@ -142,12 +142,12 @@ namespace switcher {
     //this map is static in order to avoid re-creation of the same signal for each quiddity instance
     static std::map < std::pair < std::string, std::string >,
       guint > signals_ids_;
-      std::unordered_map < std::string, Signal::ptr > signals_;
-      JSONBuilder::ptr signals_description_;
+    std::unordered_map < std::string, Signal::ptr > signals_;
+    JSONBuilder::ptr signals_description_;
 
     //naming
-      std::string name_;
-      std::string nick_name_;
+    std::string name_;
+    std::string nick_name_;
 
     //property
     bool register_property(GObject * object,
@@ -203,9 +203,9 @@ namespace switcher {
 
   protected:
     //information
-      bool graft_tree(const std::string & path,
-                      data::Tree::ptr tree_to_graft);
-      data::Tree::ptr prune_tree(const std::string & path);
+    bool graft_tree(const std::string & path,
+		    data::Tree::ptr tree_to_graft);
+    data::Tree::ptr prune_tree(const std::string & path);
 
     //property
     bool install_property(GObject * object,
@@ -260,50 +260,50 @@ namespace switcher {
     void emit_on_interface_changed();   //in order to tell properties/methods has changed
 
     //use a consistent naming for shmdatas FIXME move that to segment (or not?)
-      std::string make_file_name(std::string suffix);
+    std::string make_file_name(std::string suffix);
 
     //used in order to dynamically create other quiddity, weak_ptr is used in order to
     //avoid circular references to the manager_impl
-      std::weak_ptr < QuiddityManager_Impl > manager_impl_;
+    std::weak_ptr < QuiddityManager_Impl > manager_impl_;
 
     //gobject wrapper for custom signals and properties
-      GObjectWrapper::ptr gobject_;
+    GObjectWrapper::ptr gobject_;
 
     //g_main_context
     GMainContext *get_g_main_context();
   };
 
-#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(cpp_quiddity_class,\
-     long_name,\
-     category,\
-     short_description,\
-     license,\
-     class_name,\
-     author)\
-  QuiddityDocumentation\
-  cpp_quiddity_class::switcher_doc_ (long_name,\
-     category,\
-     short_description,\
-     license,\
-     class_name,\
-     author);\
-  QuiddityDocumentation cpp_quiddity_class::get_documentation ()\
-    {return switcher_doc_;}
+#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(cpp_quiddity_class,	\
+					     long_name,			\
+					     category,			\
+					     short_description,		\
+					     license,			\
+					     class_name,		\
+					     author)			\
+  QuiddityDocumentation							\
+    cpp_quiddity_class::switcher_doc_ (long_name,			\
+				       category,			\
+				       short_description,		\
+				       license,				\
+				       class_name,			\
+				       author);				\
+  QuiddityDocumentation cpp_quiddity_class::get_documentation ()	\
+  {return switcher_doc_;}
 
-#define SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(cpp_quiddity_class)\
-  typedef std::shared_ptr<cpp_quiddity_class> ptr;\
-  QuiddityDocumentation get_documentation ();\
+#define SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(cpp_quiddity_class)	\
+  typedef std::shared_ptr<cpp_quiddity_class> ptr;			\
+  QuiddityDocumentation get_documentation ();				\
   static QuiddityDocumentation switcher_doc_;
 
 #define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)             \
-  extern "C" Quiddity *create () {                \
-    return new cpp_quiddity_class;\
-  }\
-  extern "C" void destroy(Quiddity *quiddity) {\
-    delete quiddity;\
-  }\
-  extern "C" QuiddityDocumentation get_documentation () {                \
-    return cpp_quiddity_class::switcher_doc_;\
+  extern "C" Quiddity *create () {				\
+    return new cpp_quiddity_class;				\
+  }								\
+  extern "C" void destroy(Quiddity *quiddity) {			\
+    delete quiddity;						\
+  }								\
+  extern "C" QuiddityDocumentation get_documentation () {	\
+    return cpp_quiddity_class::switcher_doc_;			\
   }
 
 }                               // end of namespace

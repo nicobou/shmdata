@@ -39,7 +39,7 @@ namespace switcher {
     static gboolean seek_wrapped(gdouble position, gpointer user_data);
 
   private:
-      std::unordered_map < std::string, int >media_counters_;
+    std::unordered_map < std::string, int >media_counters_;
 
     //wraping c code:
     typedef enum GourpState_ {

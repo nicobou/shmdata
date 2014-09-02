@@ -48,7 +48,7 @@ namespace switcher {
     GTKVideo();
     ~GTKVideo();
     GTKVideo(const GTKVideo &) = delete;
-      GTKVideo & operator=(const GTKVideo &) = delete;
+    GTKVideo & operator=(const GTKVideo &) = delete;
     void toggle_fullscreen();
 
   private:
@@ -73,17 +73,17 @@ namespace switcher {
     QuiddityCommand *on_error_command_; //for the GPipe error handler
     GdkCursor *blank_cursor_;
 
-      CustomPropertyHelper::ptr gtk_custom_props_;
+    CustomPropertyHelper::ptr gtk_custom_props_;
     GParamSpec *fullscreen_prop_spec_;
     gboolean is_fullscreen_;
     GParamSpec *title_prop_spec_;
     gchar *title_;
 
-      std::mutex wait_window_mutex_;
-      std::condition_variable wait_window_cond_;
+    std::mutex wait_window_mutex_;
+    std::condition_variable wait_window_cond_;
 
-      std::mutex window_destruction_mutex_;
-      std::condition_variable window_destruction_cond_;
+    std::mutex window_destruction_mutex_;
+    std::condition_variable window_destruction_cond_;
 
     bool init_gpipe() final;
     void on_shmdata_connect(std::string shmdata_sochet_path) final;
@@ -106,7 +106,7 @@ namespace switcher {
     static const gchar *get_title(void *user_data);
   };
 
-    SWITCHER_DECLARE_PLUGIN(GTKVideo);
+  SWITCHER_DECLARE_PLUGIN(GTKVideo);
 
 }                               // end of namespace
 

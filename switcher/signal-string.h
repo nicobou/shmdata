@@ -38,10 +38,10 @@ namespace switcher {
       std::string > >args_doc;
     typedef void (*OnEmittedCallback) (std::vector < std::string > params, gpointer user_data); //FIXME params should be const
 
-      Signal();
-     ~Signal();
-      Signal(const Signal &) = delete;
-      Signal & operator=(const Signal &) = delete;
+    Signal();
+    ~Signal();
+    Signal(const Signal &) = delete;
+    Signal & operator=(const Signal &) = delete;
 
     bool set_gobject_signame(GObject * object,
                              std::string gobject_signal_name);
@@ -51,7 +51,7 @@ namespace switcher {
                          std::string short_description,
                          std::string return_description,
                          args_doc arg_description);
-      std::string get_description();
+    std::string get_description();
 
     bool subscribe(OnEmittedCallback cb, void *user_data);
     bool unsubscribe(OnEmittedCallback cb, void *user_data);
@@ -67,18 +67,18 @@ namespace switcher {
 
     //helper methods, use nullptr sentinel
     static args_doc make_arg_description(const gchar * first_arg_name, ...);
-      JSONBuilder::Node get_json_root_node();
+    JSONBuilder::Node get_json_root_node();
 
   private:
-      GObject * object_;
+    GObject * object_;
     guint id_;
     args_types arg_types_;
     GType return_type_;
     gboolean is_action_;
-      JSONBuilder::ptr json_description_;
+    JSONBuilder::ptr json_description_;
     void inspect_gobject_signal();
     gulong hook_id_;
-      std::vector < std::pair < OnEmittedCallback,
+    std::vector < std::pair < OnEmittedCallback,
       void *>>subscribed_on_emitted_callbacks_;
     static gboolean on_signal_emitted(GSignalInvocationHint * ihint,
                                       guint n_param_values,

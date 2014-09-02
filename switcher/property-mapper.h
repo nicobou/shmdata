@@ -31,19 +31,19 @@ namespace switcher {
     PropertyMapper();
     ~PropertyMapper();
     PropertyMapper(const PropertyMapper &);
-      PropertyMapper & operator=(const PropertyMapper &);
+    PropertyMapper & operator=(const PropertyMapper &);
     bool init();
 
   private:
-      std::weak_ptr < Quiddity > source_quiddity_;
-      std::string source_property_name_;
+    std::weak_ptr < Quiddity > source_quiddity_;
+    std::string source_property_name_;
 
-      std::weak_ptr < Quiddity > sink_quiddity_;
+    std::weak_ptr < Quiddity > sink_quiddity_;
     GParamSpec *sink_quiddity_pspec_;
-      std::string sink_property_name_;
+    std::string sink_property_name_;
 
     //clip values (and scale accordingly)
-      CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr custom_props_;
     GParamSpec *sink_min_spec_;
     GParamSpec *sink_max_spec_;
     GParamSpec *source_min_spec_;

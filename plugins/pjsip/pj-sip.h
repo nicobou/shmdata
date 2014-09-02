@@ -38,35 +38,35 @@ namespace switcher {
     friend PJCall;
     friend PJPresence;
   public:
-      SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PJSIP);
-      PJSIP();
-     ~PJSIP();
-      PJSIP(const PJSIP &) = delete;
-      PJSIP & operator=(const PJSIP &) = delete;
+    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PJSIP);
+    PJSIP();
+    ~PJSIP();
+    PJSIP(const PJSIP &) = delete;
+    PJSIP & operator=(const PJSIP &) = delete;
     bool init();
     bool start();
     bool stop();
   private:
-      CustomPropertyHelper::ptr custom_props_ {
-    std::make_shared < CustomPropertyHelper > ()};
+    CustomPropertyHelper::ptr custom_props_ {
+      std::make_shared < CustomPropertyHelper > ()};
     unsigned sip_port_ {
-    5060};
+      5060};
     GParamSpec *sip_port_spec_ {
-    nullptr};
+      nullptr};
     pj_thread_desc thread_handler_desc_ {
     };
     pj_thread_t *pj_thread_ref_ {
-    nullptr};
+      nullptr};
     pjsua_transport_id *transport_id_ {
-    nullptr};
-      std::thread sip_thread_ {
+      nullptr};
+    std::thread sip_thread_ {
     };
     std::mutex pj_init_mutex_ {
     };
     std::condition_variable pj_init_cond_ {
     };
     bool pj_sip_inited_ {
-    false};
+      false};
     std::mutex work_mutex_ {
     };
     std::condition_variable work_cond_ {
@@ -76,23 +76,23 @@ namespace switcher {
     std::condition_variable done_cond_ {
     };
     bool continue_ {
-    true};
+      true};
     std::function < void () > command_ {
     };
     pj_pool_t *pool_ {
-    nullptr};
+      nullptr};
     PJCall *sip_calls_ {
-    nullptr};
+      nullptr};
     PJPresence *sip_presence_ {
-    nullptr};
+      nullptr};
     std::thread sip_worker_ {
     };
     bool sip_work_ {
-    true};
+      true};
     pj_thread_desc worker_handler_desc_ {
     };
     pj_thread_t *worker_thread_ref_ {
-    nullptr};
+      nullptr};
     static pjsip_endpoint *sip_endpt_;
     pj_caching_pool cp_;
 

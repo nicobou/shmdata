@@ -34,14 +34,14 @@ namespace switcher {
     GstParseToBinSrc();
     ~GstParseToBinSrc();
     GstParseToBinSrc(const GstParseToBinSrc &) = delete;
-      GstParseToBinSrc & operator=(const GstParseToBinSrc &) = delete;
+    GstParseToBinSrc & operator=(const GstParseToBinSrc &) = delete;
 
     bool start();
     bool stop();
 
   private:
-      GstElement * gst_parse_to_bin_src_;
-      CustomPropertyHelper::ptr custom_props_;
+    GstElement * gst_parse_to_bin_src_;
+    CustomPropertyHelper::ptr custom_props_;
     GParamSpec *gst_launch_pipeline_spec_;
     gchar *gst_launch_pipeline_;
     bool clean();

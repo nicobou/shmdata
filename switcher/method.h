@@ -41,10 +41,10 @@ namespace switcher {
       std::string > >args_doc;
     typedef void *method_ptr;
 
-      Method();
-     ~Method();
-      Method(const Method & source);
-      Method & operator=(const Method & source);
+    Method();
+    ~Method();
+    Method(const Method & source);
+    Method & operator=(const Method & source);
 
     bool set_method(method_ptr method,
                     return_type return_type,
@@ -56,7 +56,7 @@ namespace switcher {
                          std::string short_description,
                          std::string return_description,
                          args_doc arg_description);
-      std::string get_description();    //json formated description
+    std::string get_description();    //json formated description
 
     //helper methods, use nullptr sentinel
     static args_types make_arg_type_description(GType arg_type, ...);   //use G_TYPE_NONE if no arg
@@ -64,22 +64,22 @@ namespace switcher {
                                          ...);
 
     //Building complex json descriptions incuding this
-      JSONBuilder::Node get_json_root_node();
+    JSONBuilder::Node get_json_root_node();
 
   private:
     static void destroy_data(gpointer data, GClosure * closure);
     void make_description();
     void copy_method(const Method & source);
-      std::string long_name_;
-      std::string method_name_;
-      std::string short_description_;
-      std::string return_description_;
+    std::string long_name_;
+    std::string method_name_;
+    std::string short_description_;
+    std::string return_description_;
     args_doc arg_description_;
     GClosure *closure_;
     GType return_type_;
     args_types arg_types_;
     uint num_of_value_args_;
-      JSONBuilder::ptr json_description_;
+    JSONBuilder::ptr json_description_;
   };
 
 }                               // end of namespace

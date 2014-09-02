@@ -32,13 +32,13 @@ namespace switcher {
     AudioTestSource();
     ~AudioTestSource();
     AudioTestSource(const AudioTestSource &) = delete;
-      AudioTestSource & operator=(const AudioTestSource &) = delete;
+    AudioTestSource & operator=(const AudioTestSource &) = delete;
 
     bool start();
     bool stop();
 
   private:
-      GstElement * audiotestsrc_;
+    GstElement * audiotestsrc_;
     bool make_audiotestsrc();
     bool init_gpipe() final;
   };

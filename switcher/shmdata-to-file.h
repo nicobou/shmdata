@@ -33,7 +33,7 @@ namespace switcher {
     ShmdataToFile();
     ~ShmdataToFile();
     ShmdataToFile(const ShmdataToFile &);
-      ShmdataToFile & operator=(const ShmdataToFile &);
+    ShmdataToFile & operator=(const ShmdataToFile &);
 
     //local streams
     bool add_shmdata(std::string shmdata_socket_path,
@@ -45,15 +45,15 @@ namespace switcher {
 
   private:
     //custom properties:
-      CustomPropertyHelper::ptr custom_prop_;
+    CustomPropertyHelper::ptr custom_prop_;
     GParamSpec *recording_param_;
     gboolean recording_;
 
     bool init_gpipe() final;
     bool make_recorders();
     bool clean_recorders();
-      std::unordered_map < std::string, std::string > file_names_;
-      std::unordered_map < std::string, GstElement * >shmdata_recorders_;
+    std::unordered_map < std::string, std::string > file_names_;
+    std::unordered_map < std::string, GstElement * >shmdata_recorders_;
 
     //wrapper for registering the data_stream functions
     static gboolean add_shmdata_wrapped(gpointer shmdata_socket_path,

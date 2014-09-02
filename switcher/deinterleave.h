@@ -31,11 +31,11 @@ namespace switcher {
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Deinterleave);
     Deinterleave();
     Deinterleave(const Deinterleave &) = delete;
-      Deinterleave & operator=(const Deinterleave &) = delete;
+    Deinterleave & operator=(const Deinterleave &) = delete;
 
   private:
-      GstElement * deinterleave_;
-      std::map < std::string, int >media_counters_;
+    GstElement * deinterleave_;
+    std::map < std::string, int >media_counters_;
 
     bool init_gpipe() final;
     bool can_sink_caps(std::string caps) final;

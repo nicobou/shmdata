@@ -31,11 +31,11 @@ namespace switcher {
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FileSDP);
     FileSDP();
     FileSDP(const FileSDP &) = delete;
-      FileSDP & operator=(const FileSDP &) = delete;
+    FileSDP & operator=(const FileSDP &) = delete;
     bool to_shmdata(std::string uri);
 
   private:
-      GstElement * filesrc_;
+    GstElement * filesrc_;
     GstElement *sdpdemux_;
     int media_counter_;
     bool init_gpipe() final;

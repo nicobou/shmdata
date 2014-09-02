@@ -33,10 +33,10 @@ namespace switcher {
     MyPlugin();
     ~MyPlugin();
     MyPlugin(const MyPlugin &) = delete;
-      MyPlugin & operator=(const MyPlugin &) = delete;
+    MyPlugin & operator=(const MyPlugin &) = delete;
 
   private:
-      CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr custom_props_;
     bool myprop_;
     GParamSpec *myprop_prop_;
     gchar *hello_;
@@ -50,7 +50,7 @@ namespace switcher {
     static gchar *my_hello_world_method(gchar * first_arg, void *user_data);
   };
 
-    SWITCHER_DECLARE_PLUGIN(MyPlugin);
+  SWITCHER_DECLARE_PLUGIN(MyPlugin);
 
 }                               // end of namespace
 

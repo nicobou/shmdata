@@ -36,7 +36,7 @@ namespace switcher {
     PulseSrc();
     ~PulseSrc();
     PulseSrc(const PulseSrc &) = delete;
-      PulseSrc & operator=(const PulseSrc &) = delete;
+    PulseSrc & operator=(const PulseSrc &) = delete;
 
   private:
     typedef struct {
@@ -47,7 +47,7 @@ namespace switcher {
       std::string sample_rate_;
       std::string channels_;
       std::vector < std::pair < std::string /*port */ ,
-      std::string /*description */  > >ports_;
+	std::string /*description */  > >ports_;
       std::string active_port_;
     } DeviceDescription;
 
@@ -55,10 +55,10 @@ namespace switcher {
     GstElement *capsfilter_;
     GstElement *pulsesrc_bin_;
     bool connected_to_pulse_;
-      std::mutex devices_mutex_;
-      std::condition_variable devices_cond_;
+    std::mutex devices_mutex_;
+    std::condition_variable devices_cond_;
     //custom property:
-      CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr custom_props_;
     GParamSpec *capture_devices_description_spec_;      //json formated
     gchar *capture_devices_description_;        //json formated
     //device enum members
@@ -70,10 +70,10 @@ namespace switcher {
     pa_mainloop_api *pa_mainloop_api_;
     pa_context *pa_context_;
     char *server_;
-      std::vector < DeviceDescription > capture_devices_;
+    std::vector < DeviceDescription > capture_devices_;
     //quit
-      std::mutex quit_mutex_;
-      std::condition_variable quit_cond_;
+    std::mutex quit_mutex_;
+    std::condition_variable quit_cond_;
 
     bool start() final;
     bool stop() final;
@@ -104,7 +104,7 @@ namespace switcher {
     static gboolean quit_pulse(void *user_data);
   };
 
-    SWITCHER_DECLARE_PLUGIN(PulseSrc);
+  SWITCHER_DECLARE_PLUGIN(PulseSrc);
 
 }                               // end of namespace
 

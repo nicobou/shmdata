@@ -17,18 +17,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-  /**
-   * @file   information-tree-basic-serializer.h
-   *
-   * @brief serialize and deserialize an information tree
-   *
-   * serializing as lines with absolute key path, space(s), value and new line
-   * for instance:
-   * .child1.child2.vol 0.6
-   * .child1.child2.freq 440
-   * .child1.child2.name myoscilator
-   *
-   */
+/**
+ * @file   information-tree-basic-serializer.h
+ *
+ * @brief serialize and deserialize an information tree
+ *
+ * serializing as lines with absolute key path, space(s), value and new line
+ * for instance:
+ * .child1.child2.vol 0.6
+ * .child1.child2.freq 440
+ * .child1.child2.name myoscilator
+ *
+ */
 
 #ifndef __SWITCHER_INFORMATION_TREE_BASIC_SERIALIZER_H__
 #define __SWITCHER_INFORMATION_TREE_BASIC_SERIALIZER_H__

@@ -37,16 +37,16 @@ namespace switcher {
     SyphonSrc();
     ~SyphonSrc();
     SyphonSrc(const SyphonSrc &) = delete;
-      SyphonSrc & operator=(const SyphonSrc &) = delete;
+    SyphonSrc & operator=(const SyphonSrc &) = delete;
 
   private:
-      std::shared_ptr < SyphonReader > reader_;
-      ShmdataAnyWriter::ptr writer_;
+    std::shared_ptr < SyphonReader > reader_;
+    ShmdataAnyWriter::ptr writer_;
 
-      CustomPropertyHelper::ptr custom_props_;
-      std::string syphon_servername_;
+    CustomPropertyHelper::ptr custom_props_;
+    std::string syphon_servername_;
     GParamSpec *syphon_servername_prop_;
-      std::string syphon_appname_;
+    std::string syphon_appname_;
     GParamSpec *syphon_appname_prop_;
 
     int width_, height_;
@@ -63,7 +63,7 @@ namespace switcher {
     static void set_appname(const gchar * name, void *user_data);
   };
 
-    SWITCHER_DECLARE_PLUGIN(SyphonSrc);
+  SWITCHER_DECLARE_PLUGIN(SyphonSrc);
 
 }                               // end of namespace
 

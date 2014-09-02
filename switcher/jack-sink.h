@@ -32,11 +32,11 @@ namespace switcher {
     JackSink();
     ~JackSink();
     JackSink(const JackSink &) = delete;
-      JackSink & operator=(const JackSink &) = delete;
+    JackSink & operator=(const JackSink &) = delete;
 
   private:
-      GstElement * jacksink_;
-      CustomPropertyHelper::ptr custom_props_;
+    GstElement * jacksink_;
+    CustomPropertyHelper::ptr custom_props_;
     GParamSpec *client_name_spec_;
     gchar *client_name_;
 

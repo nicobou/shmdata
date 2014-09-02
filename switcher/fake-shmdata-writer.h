@@ -33,7 +33,7 @@ namespace switcher {
     FakeShmdataWriter();
     ~FakeShmdataWriter();
     FakeShmdataWriter(const FakeShmdataWriter &) = delete;
-      FakeShmdataWriter & operator=(const FakeShmdataWriter &) = delete;
+    FakeShmdataWriter & operator=(const FakeShmdataWriter &) = delete;
 
     bool add_shmdata_path(std::string name);
     bool start();
@@ -41,7 +41,7 @@ namespace switcher {
 
   private:
     //custom properties:
-      CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr custom_props_;
     GParamSpec *shmdata_path_spec_;
     gchar *shmdata_path_;
     bool clean();

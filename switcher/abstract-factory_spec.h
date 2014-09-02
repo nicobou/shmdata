@@ -31,8 +31,8 @@ namespace switcher {
     template < class U > void
     AbstractFactory < T, Key, Doc >::register_class(Key Id, Doc doc) {
     Creator < T > *Fn = (Creator < T > *)new DerivedCreator < U > ();
-      constructor_map_[Id] = Fn;
-      classes_documentation_[Id] = doc;
+    constructor_map_[Id] = Fn;
+    classes_documentation_[Id] = doc;
   }
 
   template < typename T, typename Key, typename Doc >
@@ -53,7 +53,7 @@ namespace switcher {
     std::vector < Key > AbstractFactory < T, Key, Doc >::get_keys() {
     std::vector < Key > constructor_names;
 
-  for (auto & it:constructor_map_) {
+    for (auto & it:constructor_map_) {
       constructor_names.push_back(it.first);
     }
 
@@ -122,7 +122,7 @@ namespace switcher {
     }
   }
 
-template < typename T, typename Key, typename Doc > AbstractFactory < T, Key, Doc >::AbstractFactory():
+  template < typename T, typename Key, typename Doc > AbstractFactory < T, Key, Doc >::AbstractFactory():
   constructor_map_(),
     destructor_map_(), classes_documentation_() {
   }

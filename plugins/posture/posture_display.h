@@ -37,13 +37,13 @@ namespace switcher {
     PostureDisplay();
     ~PostureDisplay();
     PostureDisplay(const PostureDisplay &) = delete;
-      PostureDisplay & operator=(const PostureDisplay &) = delete;
+    PostureDisplay & operator=(const PostureDisplay &) = delete;
 
   private:
-      CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr custom_props_;
 
-      std::shared_ptr < posture::Display > display_ {
-    nullptr};
+    std::shared_ptr < posture::Display > display_ {
+      nullptr};
 
     bool init() final;
 

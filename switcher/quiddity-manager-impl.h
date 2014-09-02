@@ -46,31 +46,31 @@ namespace switcher {
 
     static QuiddityManager_Impl::ptr make_manager();    //will get name "default"
     static QuiddityManager_Impl::ptr make_manager(const std::string & name);
-      QuiddityManager_Impl() = delete;
-      virtual ~ QuiddityManager_Impl();
-      QuiddityManager_Impl(const QuiddityManager_Impl &) = delete;
-      QuiddityManager_Impl & operator=(const QuiddityManager_Impl &) = delete;
+    QuiddityManager_Impl() = delete;
+    virtual ~ QuiddityManager_Impl();
+    QuiddityManager_Impl(const QuiddityManager_Impl &) = delete;
+    QuiddityManager_Impl & operator=(const QuiddityManager_Impl &) = delete;
 
     //plugins
     bool scan_directory_for_plugins(const char *directory_path);
 
     //**** info about manager
-      std::string get_name();
-      std::vector < std::string > get_classes();        //vector of class names
-      std::vector < std::string > get_instances();      //vector of instance names
+    std::string get_name();
+    std::vector < std::string > get_classes();        //vector of class names
+    std::vector < std::string > get_instances();      //vector of instance names
     //doc (json formatted)
-      std::string get_classes_doc();
-      std::string get_class_doc(std::string class_name);
-      std::string get_quiddity_description(std::string quiddity_name);
-      std::string get_quiddities_description();
+    std::string get_classes_doc();
+    std::string get_class_doc(std::string class_name);
+    std::string get_quiddity_description(std::string quiddity_name);
+    std::string get_quiddities_description();
     bool class_exists(std::string class_name);
     bool exists(std::string quiddity_name);
 
     //**** creation/remove/get
-      std::string create(std::string quiddity_class);
-      std::string create(std::string quiddity_class, std::string nick_name);
+    std::string create(std::string quiddity_class);
+    std::string create(std::string quiddity_class, std::string nick_name);
     bool remove(std::string quiddity_name);
-      std::shared_ptr < Quiddity >
+    std::shared_ptr < Quiddity >
       get_quiddity(std::string quiddity_nick_name);
     bool rename(std::string nick_name, std::string new_nick_name);      //FIXME remove that
     // only one hook is allowed now,
@@ -81,24 +81,24 @@ namespace switcher {
     void reset_create_remove_hooks();
 
     //**** information
-      std::string get_info(const std::string & nick_name,
-                           const std::string & path);
+    std::string get_info(const std::string & nick_name,
+			 const std::string & path);
 
     //**** properties
     //doc (json formatted)
-      std::string get_properties_description(std::string quiddity_name);
-      std::string get_property_description(std::string quiddity_name,
-                                           std::string property_name);
+    std::string get_properties_description(std::string quiddity_name);
+    std::string get_property_description(std::string quiddity_name,
+					 std::string property_name);
     //following "by_class" methods provide properties available after creation only
-      std::string get_properties_description_by_class(std::string class_name);
-      std::string get_property_description_by_class(std::string class_name,
-                                                    std::string
-                                                    property_name);
+    std::string get_properties_description_by_class(std::string class_name);
+    std::string get_property_description_by_class(std::string class_name,
+						  std::string
+						  property_name);
     //set & get
     bool set_property(std::string quiddity_name,
                       std::string property_name, std::string property_value);
-      std::string get_property(std::string quiddity_name,
-                               std::string property_name);
+    std::string get_property(std::string quiddity_name,
+			     std::string property_name);
 
     bool has_property(std::string quiddity_name, std::string property_name);
 
@@ -121,11 +121,11 @@ namespace switcher {
                               std::string quiddity_name,
                               std::string property_name);
     //property subscribers info
-      std::vector < std::string > list_property_subscribers();
-      std::vector < std::pair < std::string,
+    std::vector < std::string > list_property_subscribers();
+    std::vector < std::pair < std::string,
       std::string > >list_subscribed_properties(std::string subscriber_name);
-      std::string list_property_subscribers_json();
-      std::string
+    std::string list_property_subscribers_json();
+    std::string
       list_subscribed_properties_json(std::string subscriber_name);
 
     //low level subscribe
@@ -136,13 +136,13 @@ namespace switcher {
 
     //**** methods
     //doc (json formatted)
-      std::string get_methods_description(std::string quiddity_name);
-      std::string get_method_description(std::string quiddity_name,
-                                         std::string method_name);
+    std::string get_methods_description(std::string quiddity_name);
+    std::string get_method_description(std::string quiddity_name,
+				       std::string method_name);
     //following "by_class" methods provide properties available after creation only
-      std::string get_methods_description_by_class(std::string class_name);
-      std::string get_method_description_by_class(std::string class_name,
-                                                  std::string method_name);
+    std::string get_methods_description_by_class(std::string class_name);
+    std::string get_method_description_by_class(std::string class_name,
+						std::string method_name);
     //invoke
     bool invoke(const std::string quiddity_name,
                 const std::string method_name,
@@ -153,14 +153,14 @@ namespace switcher {
 
     //**** signals
     //doc (json formatted)
-      std::string get_signals_description(std::string quiddity_name);
-      std::string get_signal_description(std::string quiddity_name,
-                                         std::string signal_name);
+    std::string get_signals_description(std::string quiddity_name);
+    std::string get_signal_description(std::string quiddity_name,
+				       std::string signal_name);
     //following "by_class" methods provide properties available after creation only,
     //avoiding possible properties created dynamically
-      std::string get_signals_description_by_class(std::string class_name);
-      std::string get_signal_description_by_class(std::string class_name,
-                                                  std::string signal_name);
+    std::string get_signals_description_by_class(std::string class_name);
+    std::string get_signal_description_by_class(std::string class_name,
+						std::string signal_name);
     //high level signal subscriber
     bool make_signal_subscriber(std::string subscriber_name,
                                 void (*callback) (std::string
@@ -180,41 +180,41 @@ namespace switcher {
     void mute_signal_subscribers(bool muted);
     void mute_property_subscribers(bool muted);
 
-      std::vector < std::string > list_signal_subscribers();
-      std::vector < std::pair < std::string,
+    std::vector < std::string > list_signal_subscribers();
+    std::vector < std::pair < std::string,
       std::string > >list_subscribed_signals(std::string subscriber_name);
-      std::string list_signal_subscribers_json();
-      std::string list_subscribed_signals_json(std::string subscriber_name);
+    std::string list_signal_subscribers_json();
+    std::string list_subscribed_signals_json(std::string subscriber_name);
 
     //mainloop
     GMainContext *get_g_main_context();
 
     //for use of "get description by class"
     //and from quiddity that creates other quiddity in the same manager
-      std::string create_without_hook(std::string quiddity_class);
+    std::string create_without_hook(std::string quiddity_class);
     bool remove_without_hook(std::string quiddity_name);
 
   private:
     //plugins
-      bool load_plugin(const char *filename);
+    bool load_plugin(const char *filename);
     void close_plugin(const std::string class_name);
-      std::unordered_map < std::string, PluginLoader::ptr > plugins_;
-      QuiddityManager_Impl(const std::string &);
+    std::unordered_map < std::string, PluginLoader::ptr > plugins_;
+    QuiddityManager_Impl(const std::string &);
     void make_classes_doc();
-      std::string name_;
+    std::string name_;
     void register_classes();
-      AbstractFactory < Quiddity, std::string,
+    AbstractFactory < Quiddity, std::string,
       JSONBuilder::Node > abstract_factory_;
-      std::unordered_map < std::string,
+    std::unordered_map < std::string,
       std::shared_ptr < Quiddity > >quiddities_;
-      std::unordered_map < std::string, std::string > quiddities_nick_names_;
-      std::unordered_map < std::string,
+    std::unordered_map < std::string, std::string > quiddities_nick_names_;
+    std::unordered_map < std::string,
       std::shared_ptr < QuiddityPropertySubscriber > >property_subscribers_;
-      std::unordered_map < std::string,
+    std::unordered_map < std::string,
       std::shared_ptr < QuidditySignalSubscriber > >signal_subscribers_;
     bool init_quiddity(std::shared_ptr < Quiddity > quiddity);
     void remove_shmdata_sockets();
-      JSONBuilder::ptr classes_doc_;
+    JSONBuilder::ptr classes_doc_;
     quiddity_created_hook creation_hook_;
     quiddity_removed_hook removal_hook_;
     void *creation_hook_user_data_;
@@ -223,7 +223,7 @@ namespace switcher {
     void give_name_if_unnamed(std::shared_ptr < Quiddity > quiddity);
 
     //gmainloop
-      std::thread thread_;      //this runs the main loop
+    std::thread thread_;      //this runs the main loop
     GMainContext *main_context_;
     GMainLoop *mainloop_;
     void init_gmainloop();

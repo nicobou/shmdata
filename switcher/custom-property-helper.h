@@ -51,9 +51,9 @@ namespace switcher {
       GParamSpec *pspec;
     } UserMethod;
 
-      CustomPropertyHelper();
-      CustomPropertyHelper(const CustomPropertyHelper &) = delete;
-      CustomPropertyHelper & operator=(const CustomPropertyHelper &) = delete;
+    CustomPropertyHelper();
+    CustomPropertyHelper(const CustomPropertyHelper &) = delete;
+    CustomPropertyHelper & operator=(const CustomPropertyHelper &) = delete;
 
     bool is_property_nickname_taken(std::string nickname);
     bool notify_property_changed(GParamSpec * pspec);
@@ -104,8 +104,8 @@ namespace switcher {
     static bool set_by_gvalue(const GValue * val, void *user_data);
 
   private:
-      GObjectWrapper::ptr gobject_;
-      std::vector < std::shared_ptr < UserMethod > >user_methods_;
+    GObjectWrapper::ptr gobject_;
+    std::vector < std::shared_ptr < UserMethod > >user_methods_;
     void make_user_method(const gchar * nickname,
                           GParamSpec * pspec,
                           void (*set_method) (void),

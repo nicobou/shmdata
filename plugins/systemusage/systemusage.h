@@ -30,50 +30,50 @@
 namespace switcher {
   struct Cpu {
     long user {
-    0};
+      0};
     long nice {
-    0};
+      0};
     long system {
-    0};
+      0};
     long idle {
-    0};
+      0};
     long io {
-    0};
+      0};
     long irq {
-    0};
+      0};
     long softIrq {
-    0};
+      0};
     long steal {
-    0};
+      0};
     long guest {
-    0};
+      0};
 
     int totalTime {
-    0};
+      0};
   };
 
   struct Net {
     long rx_rate {
-    0};
+      0};
     long rx_bytes {
-    0};
+      0};
     long rx_packets {
-    0};
+      0};
     long rx_errors {
-    0};
+      0};
     long rx_drop {
-    0};
+      0};
 
     long tx_rate {
-    0};
+      0};
     long tx_bytes {
-    0};
+      0};
     long tx_packets {
-    0};
+      0};
     long tx_errors {
-    0};
+      0};
     long tx_drop {
-    0};
+      0};
   };
 
   class SystemUsage:public Quiddity {
@@ -82,18 +82,18 @@ namespace switcher {
     SystemUsage();
     ~SystemUsage();
     SystemUsage(const SystemUsage &) = delete;
-      SystemUsage & operator=(const SystemUsage &) = delete;
+    SystemUsage & operator=(const SystemUsage &) = delete;
 
   private:
-      std::shared_ptr < std::thread > pollStateThread_ {
+    std::shared_ptr < std::thread > pollStateThread_ {
     };
     bool running_ {
-    false};
+      false};
 
-      CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr custom_props_;
     GParamSpec *period_prop_;
 
-      data::Tree::ptr tree_ {
+    data::Tree::ptr tree_ {
     };
 
     int cpuNbr_;

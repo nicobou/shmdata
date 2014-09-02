@@ -37,16 +37,16 @@ namespace switcher {
     ShmdataToOsc();
     ~ShmdataToOsc();
     ShmdataToOsc(const ShmdataToOsc &) = delete;
-      ShmdataToOsc & operator=(const ShmdataToOsc &) = delete;
+    ShmdataToOsc & operator=(const ShmdataToOsc &) = delete;
 
   private:
-      CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr custom_props_;
     gint port_;
-      std::string host_;
+    std::string host_;
     GParamSpec *port_spec_;
     GParamSpec *host_spec_;
     lo_address address_;
-      std::mutex address_mutex_;
+    std::mutex address_mutex_;
 
     bool init() final;
     bool start() final;
@@ -67,7 +67,7 @@ namespace switcher {
     static const gchar *get_host(void *user_data);
   };
 
-    SWITCHER_DECLARE_PLUGIN(ShmdataToOsc);
+  SWITCHER_DECLARE_PLUGIN(ShmdataToOsc);
 
 }                               // end of namespace
 

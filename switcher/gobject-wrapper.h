@@ -34,10 +34,10 @@ namespace switcher {
   class GObjectWrapper {
   public:
     typedef std::shared_ptr < GObjectWrapper > ptr;
-      GObjectWrapper();
-     ~GObjectWrapper();
-      GObjectWrapper(const GObjectWrapper &) = delete;
-      GObjectWrapper & operator=(const GObjectWrapper &) = delete;
+    GObjectWrapper();
+    ~GObjectWrapper();
+    GObjectWrapper(const GObjectWrapper &) = delete;
+    GObjectWrapper & operator=(const GObjectWrapper &) = delete;
 
     GObject *get_gobject();
 
@@ -107,10 +107,10 @@ namespace switcher {
                          guint n_params, GType * param_types);
 
     //for the gobject class
-      GObjectCustomProperty::set_method_pointer get_set_method_pointer(guint
-                                                                       prop_id);
-      GObjectCustomProperty::get_method_pointer get_get_method_pointer(guint
-                                                                       prop_id);
+    GObjectCustomProperty::set_method_pointer get_set_method_pointer(guint
+								     prop_id);
+    GObjectCustomProperty::get_method_pointer get_get_method_pointer(guint
+								     prop_id);
 
   private:
     struct _MyObject *my_object_;
@@ -118,12 +118,12 @@ namespace switcher {
     //---------- properties
     static std::map < guint, GObjectCustomProperty::ptr > custom_properties_;
     static guint next_prop_id_;
-      std::map < std::string, void *>property_user_datas_;
+    std::map < std::string, void *>property_user_datas_;
     void *property_default_user_data_;
     //---------- signals
     //static std::map<guint, GObjectCustomSignal::ptr> custom_signals_;
     static guint next_signal_num_;      //this is only for generation of unique signal names
-      std::map < std::string, void *>signal_user_datas_;
+    std::map < std::string, void *>signal_user_datas_;
   };
 
 }                               // end of namespace

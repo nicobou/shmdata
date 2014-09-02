@@ -33,15 +33,15 @@ namespace switcher {
     GstVideoParseToBinSrc();
     ~GstVideoParseToBinSrc();
     GstVideoParseToBinSrc(const GstVideoParseToBinSrc &) = delete;
-      GstVideoParseToBinSrc & operator=(const GstVideoParseToBinSrc &) =
+    GstVideoParseToBinSrc & operator=(const GstVideoParseToBinSrc &) =
       delete;
 
     bool on_start();
     bool on_stop();
 
   private:
-      GstElement * gst_video_parse_to_bin_src_;
-      CustomPropertyHelper::ptr custom_props_;
+    GstElement * gst_video_parse_to_bin_src_;
+    CustomPropertyHelper::ptr custom_props_;
     GParamSpec *gst_launch_pipeline_spec_;
     gchar *gst_launch_pipeline_;
     static void set_gst_launch_pipeline(const gchar * value, void *user_data);

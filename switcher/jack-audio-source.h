@@ -33,17 +33,17 @@ namespace switcher {
     JackAudioSource();
     ~JackAudioSource();
     JackAudioSource(const JackAudioSource &) = delete;
-      JackAudioSource & operator=(const JackAudioSource &) = delete;
+    JackAudioSource & operator=(const JackAudioSource &) = delete;
 
     bool start();
     bool stop();
 
   private:
-      GstElement * jackaudiosrc_;
+    GstElement * jackaudiosrc_;
     GstElement *audioconvert_;
     GstElement *capsfilter_;
     GstElement *jackaudiosrc_bin_;
-      CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr custom_props_;
     GParamSpec *num_channels_spec_;
     uint num_channels_;
     GParamSpec *client_name_spec_;

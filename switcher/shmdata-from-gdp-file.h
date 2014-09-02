@@ -34,7 +34,7 @@ namespace switcher {
     ShmdataFromGDPFile();
     ~ShmdataFromGDPFile();
     ShmdataFromGDPFile(const ShmdataFromGDPFile &) = delete;
-      ShmdataFromGDPFile & operator=(const ShmdataFromGDPFile &) = delete;
+    ShmdataFromGDPFile & operator=(const ShmdataFromGDPFile &) = delete;
     bool init();
 
     //local streams
@@ -47,14 +47,14 @@ namespace switcher {
 
   private:
     //custom properties:
-      CustomPropertyHelper::ptr custom_prop_;
+    CustomPropertyHelper::ptr custom_prop_;
     GParamSpec *playing_param_;
     gboolean playing_;
 
     bool make_players();
     bool clean_players();
-      std::unordered_map < std::string, std::string > shmdata_names_;
-      QuiddityManager::ptr manager_;
+    std::unordered_map < std::string, std::string > shmdata_names_;
+    QuiddityManager::ptr manager_;
 
     static gboolean event_probe_cb(GstPad * pad, GstEvent * event,
                                    gpointer user_data);

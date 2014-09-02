@@ -32,10 +32,10 @@ namespace switcher {
     Xvimagesink();
     ~Xvimagesink();
     Xvimagesink(const Xvimagesink &) = delete;
-      Xvimagesink & operator=(const Xvimagesink &) = delete;
+    Xvimagesink & operator=(const Xvimagesink &) = delete;
 
   private:
-      GstElement * sink_bin_;
+    GstElement * sink_bin_;
     GstElement *queue_;
     GstElement *ffmpegcolorspace_;
     GstElement *xvimagesink_;

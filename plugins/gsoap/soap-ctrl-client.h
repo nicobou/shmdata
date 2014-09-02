@@ -31,14 +31,14 @@ namespace switcher {
     SoapCtrlClient();
     ~SoapCtrlClient();
     SoapCtrlClient(const SoapCtrlClient &) = delete;
-      SoapCtrlClient & operator=(const SoapCtrlClient &) = delete;
+    SoapCtrlClient & operator=(const SoapCtrlClient &) = delete;
     bool init() final;
 
   private:
-      controlProxy * switcher_control_;
+    controlProxy * switcher_control_;
     gchar *url_;
     GSource *try_connect_g_source_;
-      std::mutex try_connect_mutex_;
+    std::mutex try_connect_mutex_;
     void reset_endpoint();
     static gboolean set_remote_url(gpointer url, gpointer user_data);
     static gboolean set_remote_url_retry(gpointer url, gpointer user_data);
@@ -68,7 +68,7 @@ namespace switcher {
 
   };
 
-    SWITCHER_DECLARE_PLUGIN(SoapCtrlClient);
+  SWITCHER_DECLARE_PLUGIN(SoapCtrlClient);
 
 }                               // end of namespace
 

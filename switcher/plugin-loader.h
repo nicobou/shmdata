@@ -37,24 +37,24 @@ namespace switcher {
   class PluginLoader {
   public:
     typedef std::shared_ptr < PluginLoader > ptr;
-      PluginLoader();
-     ~PluginLoader();
-      PluginLoader(const PluginLoader &) = delete;
-      PluginLoader & operator=(const PluginLoader &) = delete;
+    PluginLoader();
+    ~PluginLoader();
+    PluginLoader(const PluginLoader &) = delete;
+    PluginLoader & operator=(const PluginLoader &) = delete;
 
     bool load(const char *filename);
     bool close();
-      std::string get_class_name();
-      JSONBuilder::Node get_json_root_node();
+    std::string get_class_name();
+    JSONBuilder::Node get_json_root_node();
 
     create_t *create_;
     destroy_t *destroy_;
 
   private:
-      GModule * module_;
+    GModule * module_;
     get_documentation_t *get_documentation_;
-      JSONBuilder::Node json_doc_;
-      std::string class_name_;
+    JSONBuilder::Node json_doc_;
+    std::string class_name_;
   };
 
 }                               // end of namespace

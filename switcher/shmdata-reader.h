@@ -38,34 +38,34 @@ namespace switcher {
     typedef void (*on_first_data_hook) (ShmdataReader * caller,
                                         void *user_data);
 
-      ShmdataReader();
-     ~ShmdataReader();
-      ShmdataReader(const ShmdataReader &) = delete;
-      ShmdataReader & operator=(const ShmdataReader &) = delete;
+    ShmdataReader();
+    ~ShmdataReader();
+    ShmdataReader(const ShmdataReader &) = delete;
+    ShmdataReader & operator=(const ShmdataReader &) = delete;
     void set_path(const char *absolute_path);
     void set_bin(GstElement * bin);
     void set_g_main_context(GMainContext * context);
     void set_sink_element(GstElement * sink_element);
     void set_on_first_data_hook(on_first_data_hook cb, void *user_data);
-      std::string get_path();
+    std::string get_path();
     void start();
     void stop();
     //get json doc:
-      JSONBuilder::Node get_json_root_node();
+    JSONBuilder::Node get_json_root_node();
 
   private:
-      on_first_data_hook connection_hook_;
+    on_first_data_hook connection_hook_;
     void *hook_user_data_;
-      std::string path_;
+    std::string path_;
     shmdata_base_reader_t *reader_;
     GstElement *bin_;
     GstElement *sink_element_;
     GstElement *funnel_;
     GMainContext *g_main_context_;
-      std::vector < GstElement * >elements_to_remove_;
-      JSONBuilder::ptr json_description_;
-      std::mutex start_mutex_;
-      std::condition_variable start_cond_;
+    std::vector < GstElement * >elements_to_remove_;
+    JSONBuilder::ptr json_description_;
+    std::mutex start_mutex_;
+    std::condition_variable start_cond_;
     static void on_first_data(shmdata_base_reader_t * context,
                               void *user_data);
     //static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);

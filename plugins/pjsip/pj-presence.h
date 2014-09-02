@@ -34,31 +34,31 @@ namespace switcher {
     friend PJSIP;
     friend PJCall;              //for account local uri
   public:
-      PJPresence() = delete;
-      PJPresence(PJSIP * sip_instance);
-     ~PJPresence();
-      PJPresence(const PJPresence &) = delete;
-      PJPresence & operator=(const PJPresence &) = delete;
+    PJPresence() = delete;
+    PJPresence(PJSIP * sip_instance);
+    ~PJPresence();
+    PJPresence(const PJPresence &) = delete;
+    PJPresence & operator=(const PJPresence &) = delete;
 
     enum {
       AVAILABLE, BUSY, OTP, IDLE, AWAY, BRB, OFFLINE, OPT_MAX
     };
 
   private:
-      PJSIP * sip_instance_;
+    PJSIP * sip_instance_;
     pjsua_acc_id account_id_;
-      std::mutex registration_mutex_;
-      std::condition_variable registration_cond_;
+    std::mutex registration_mutex_;
+    std::condition_variable registration_cond_;
 
     //online status
     GParamSpec *status_enum_spec_;
     static GEnumValue status_enum_[8];
     gint status_;
     GParamSpec *custom_status_spec_;
-      std::string custom_status_;
+    std::string custom_status_;
 
     //account info
-      std::string sip_local_user_;
+    std::string sip_local_user_;
 
     //registration
     static void on_registration_state(pjsua_acc_id acc_id,

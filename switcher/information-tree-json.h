@@ -17,13 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-  /**
-   * @file   information-tree-json.h
-   *
-   * @brief serialize and deserialize an information tree using json
-   *
-   *
-   */
+/**
+ * @file   information-tree-json.h
+ *
+ * @brief serialize and deserialize an information tree using json
+ *
+ *
+ */
 
 #ifndef __SWITCHER_INFORMATION_TREE_JSON_H__
 #define __SWITCHER_INFORMATION_TREE_JSON_H__

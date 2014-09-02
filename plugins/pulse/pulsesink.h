@@ -36,7 +36,7 @@ namespace switcher {
     PulseSink();
     ~PulseSink();
     PulseSink(const PulseSink &) = delete;
-      PulseSink & operator=(const PulseSink &) = delete;
+    PulseSink & operator=(const PulseSink &) = delete;
 
   private:
     typedef struct {
@@ -47,14 +47,14 @@ namespace switcher {
       std::string sample_rate_;
       std::string channels_;
       std::vector < std::pair < std::string /*port */ ,
-      std::string /*description */  > >ports_;
+	std::string /*description */  > >ports_;
       std::string active_port_;
     } DeviceDescription;
 
     GstElement *pulsesink_bin_;
     bool connected_to_pulse_;
     //custom property:
-      CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr custom_props_;
     GParamSpec *devices_description_spec_;      //json formated
     gchar *devices_description_;        //json formated
     //pulse_audio
@@ -62,16 +62,16 @@ namespace switcher {
     pa_mainloop_api *pa_mainloop_api_;
     pa_context *pa_context_;
     char *server_;
-      std::vector < DeviceDescription > devices_;       //indexed by pulse_device_name
-      std::mutex devices_mutex_;
-      std::condition_variable devices_cond_;
+    std::vector < DeviceDescription > devices_;       //indexed by pulse_device_name
+    std::mutex devices_mutex_;
+    std::condition_variable devices_cond_;
     //devices enumeration
     GParamSpec *devices_enum_spec_;
     GEnumValue devices_enum_[128];
     gint device_;
     //quit
-      std::mutex quit_mutex_;
-      std::condition_variable quit_cond_;
+    std::mutex quit_mutex_;
+    std::condition_variable quit_cond_;
 
     bool init_gpipe() final;
     void on_shmdata_disconnect() final;
@@ -98,7 +98,7 @@ namespace switcher {
     static gboolean quit_pulse(void *user_data);
   };
 
-    SWITCHER_DECLARE_PLUGIN(PulseSink);
+  SWITCHER_DECLARE_PLUGIN(PulseSink);
 
 }                               // end of namespace
 

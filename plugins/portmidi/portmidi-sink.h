@@ -37,10 +37,10 @@ namespace switcher {
     PortMidiSink();
     ~PortMidiSink();
     PortMidiSink(const PortMidiSink &) = delete;
-      PortMidiSink & operator=(const PortMidiSink &) = delete;
+    PortMidiSink & operator=(const PortMidiSink &) = delete;
 
   private:
-      CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr custom_props_;
     GParamSpec *devices_description_spec_;
     GParamSpec *devices_enum_spec_;
     gint device_;
@@ -63,7 +63,7 @@ namespace switcher {
     static gint get_device(void *user_data);
   };
 
-    SWITCHER_DECLARE_PLUGIN(PortMidiSink);
+  SWITCHER_DECLARE_PLUGIN(PortMidiSink);
 
 }                               // end of namespace
 

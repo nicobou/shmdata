@@ -37,67 +37,67 @@ namespace switcher {
     PostureSrc();
     ~PostureSrc();
     PostureSrc(const PostureSrc &) = delete;
-      PostureSrc & operator=(const PostureSrc &) = delete;
+    PostureSrc & operator=(const PostureSrc &) = delete;
 
     bool start();
     bool stop();
 
   private:
-      CustomPropertyHelper::ptr custom_props_;
-      std::string calibration_path_ {
-    "default.kvc"};
-      std::string devices_path_ {
-    "devices.kvc"};
+    CustomPropertyHelper::ptr custom_props_;
+    std::string calibration_path_ {
+      "default.kvc"};
+    std::string devices_path_ {
+      "devices.kvc"};
     unsigned int device_index_ {
-    0};
+      0};
     bool capture_ir_ {
-    false};
+      false};
     bool compress_cloud_ {
-    false};
+      false};
     GParamSpec *calibration_path_prop_ {
-    nullptr};
+      nullptr};
     GParamSpec *devices_path_prop_ {
-    nullptr};
+      nullptr};
     GParamSpec *device_index_prop_ {
-    nullptr};
+      nullptr};
     GParamSpec *capture_ir_prop_ {
-    nullptr};
+      nullptr};
     GParamSpec *compress_cloud_prop_ {
-    nullptr};
+      nullptr};
 
     int capture_mode_ {
-    0};
+      0};
     GParamSpec *capture_mode_prop_ {
-    nullptr};
+      nullptr};
     GEnumValue capture_modes_enum_[16];
 
     std::shared_ptr < posture::ZCamera > zcamera_ {
-    nullptr};
+      nullptr};
 
     ShmdataAnyWriter::ptr cloud_writer_ {
-    nullptr};
+      nullptr};
     ShmdataAnyWriter::ptr depth_writer_ {
-    nullptr};
+      nullptr};
     ShmdataAnyWriter::ptr rgb_writer_ {
-    nullptr};
+      nullptr};
     ShmdataAnyWriter::ptr ir_writer_ {
-    nullptr};
+      nullptr};
 
     std::shared_ptr < std::vector < char >>cloud_buffers_[3];
     unsigned int cloud_buffer_index_ {
-    0};
+      0};
 
     bool cloud_compressed_ {
-    false};
+      false};
     int depth_width_ {
-    0}, depth_height_ {
-    0};
+      0}, depth_height_ {
+      0};
     int rgb_width_ {
-    0}, rgb_height_ {
-    0};
+      0}, rgb_height_ {
+      0};
     int ir_width_ {
-    0}, ir_height_ {
-    0};
+      0}, ir_height_ {
+      0};
 
     bool init() final;
 
@@ -127,7 +127,7 @@ namespace switcher {
                             int width, int height);
 
     std::shared_ptr < posture::Display > display_ {
-    nullptr};
+      nullptr};
   };
 
   SWITCHER_DECLARE_PLUGIN(PostureSrc);

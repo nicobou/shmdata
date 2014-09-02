@@ -42,10 +42,10 @@ namespace switcher {
                                        std::string signal_name,
                                        std::vector < std::string > params,
                                        void *user_data);
-      QuidditySignalSubscriber();
-     ~QuidditySignalSubscriber();
-      QuidditySignalSubscriber(const QuidditySignalSubscriber &) = delete;
-      QuidditySignalSubscriber & operator=(const QuidditySignalSubscriber &)
+    QuidditySignalSubscriber();
+    ~QuidditySignalSubscriber();
+    QuidditySignalSubscriber(const QuidditySignalSubscriber &) = delete;
+    QuidditySignalSubscriber & operator=(const QuidditySignalSubscriber &)
       = delete;
     void mute(bool muted);
 
@@ -58,7 +58,7 @@ namespace switcher {
                      std::string signal_name);
     bool unsubscribe(std::shared_ptr < Quiddity > quid);
 
-      std::vector < std::pair < std::string,
+    std::vector < std::pair < std::string,
       std::string > >list_subscribed_signals();
     static void signal_cb(std::vector < std::string > params,
                           gpointer user_data);
@@ -68,11 +68,11 @@ namespace switcher {
                           manager_impl);
 
   private:
-      bool muted_;
+    bool muted_;
     OnEmittedCallback user_callback_;
     void *user_data_;
-      std::string name_;
-      std::weak_ptr < QuiddityManager_Impl > manager_impl_;
+    std::string name_;
+    std::weak_ptr < QuiddityManager_Impl > manager_impl_;
 
     typedef struct {
       QuidditySignalSubscriber *subscriber;

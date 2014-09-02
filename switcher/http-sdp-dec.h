@@ -35,17 +35,17 @@ namespace switcher {
     HTTPSDPDec();
     ~HTTPSDPDec();
     HTTPSDPDec(const HTTPSDPDec &) = delete;
-      HTTPSDPDec & operator=(const HTTPSDPDec &) = delete;
+    HTTPSDPDec & operator=(const HTTPSDPDec &) = delete;
 
     bool to_shmdata(std::string uri);
 
   private:
-      GstElement * souphttpsrc_;
+    GstElement * souphttpsrc_;
     GstElement *sdpdemux_;
     void init_httpsdpdec();
     void destroy_httpsdpdec();
     QuiddityCommand *on_error_command_; //for the pipeline error handler
-      std::list < std::unique_ptr < DecodebinToShmdata >> decodebins_;
+    std::list < std::unique_ptr < DecodebinToShmdata >> decodebins_;
     void clean_on_error_command();
     bool init_gpipe() final;
     static void httpsdpdec_pad_added_cb(GstElement * object,

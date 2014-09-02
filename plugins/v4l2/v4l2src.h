@@ -30,7 +30,7 @@ namespace switcher {
     V4L2Src();
     ~V4L2Src();
     V4L2Src(const V4L2Src &) = delete;
-      V4L2Src & operator=(const V4L2Src &) = delete;
+    V4L2Src & operator=(const V4L2Src &) = delete;
 
     //use "NONE" for used arguments
     /* bool capture_full (const char *device_file_path,  */
@@ -46,7 +46,7 @@ namespace switcher {
     bool check_folder_for_v4l2_devices(const char *dir_path);
 
   private:
-      bool on_start();
+    bool on_start();
     bool on_stop();
     bool make_video_source(GstElement ** new_element);
 
@@ -60,17 +60,17 @@ namespace switcher {
       std::string bus_info_;
       std::string driver_;
       std::vector < std::pair < std::string /*name */ ,
-      std::string /*description */  > >pixel_formats_;
+	std::string /*description */  > >pixel_formats_;
       std::vector < std::pair < std::string /*width */ ,
-      std::string /*height */  > >frame_size_discrete_;
+	std::string /*height */  > >frame_size_discrete_;
       gint frame_size_stepwise_max_width_;
       gint frame_size_stepwise_min_width_;
       gint frame_size_stepwise_step_width_;
       gint frame_size_stepwise_max_height_;
       gint frame_size_stepwise_min_height_;
       gint frame_size_stepwise_step_height_;
-        std::vector < std::string > tv_standards_;
-        std::vector < std::pair < std::string /*numerator */ ,
+      std::vector < std::string > tv_standards_;
+      std::vector < std::pair < std::string /*numerator */ ,
         std::string /*denominator */  > >frame_interval_discrete_;
       gint frame_interval_stepwise_min_numerator_;
       gint frame_interval_stepwise_min_denominator_;
@@ -108,7 +108,7 @@ namespace switcher {
     static const gchar *get_capture_devices_json(void *user_data);
 
     //custom properties:
-      CustomPropertyHelper::ptr custom_props_;
+    CustomPropertyHelper::ptr custom_props_;
     GParamSpec *capture_devices_description_spec_;      //json formated
     gchar *capture_devices_description_;        //json formated
 
@@ -163,12 +163,12 @@ namespace switcher {
     static void set_framerate_denominator(const gint value, void *user_data);
     static gint get_framerate_denominator(void *user_data);
 
-      std::vector < CaptureDescription > capture_devices_;      //FIXME should be static
+    std::vector < CaptureDescription > capture_devices_;      //FIXME should be static
 
     bool init_gpipe() final;
   };
 
-    SWITCHER_DECLARE_PLUGIN(V4L2Src);
+  SWITCHER_DECLARE_PLUGIN(V4L2Src);
 
 }                               // end of namespace
 

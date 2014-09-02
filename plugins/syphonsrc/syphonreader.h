@@ -31,21 +31,21 @@ namespace switcher {
   public:
     SyphonReader();
     SyphonReader(syphonCallback, void *);
-     ~SyphonReader();
+    ~SyphonReader();
     void connect(const char *serveName = nullptr, const char *appName =
                  nullptr);
     void disconnect();
     void getFrame(int &width, int &height, char *pixels);
 
   protected:
-      syphonCallback callback_;
+    syphonCallback callback_;
     void *context_;
     void *client_;              // Holds the real Syphon client
     void *glContext_;           // CGL context
 
     void *texture_;
     int width_, height_;
-      std::vector < char >frame_;
+    std::vector < char >frame_;
 
     unsigned int drawTex_, fbo_;
 
