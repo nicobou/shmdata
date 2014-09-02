@@ -28,11 +28,9 @@
 #include <mutex>
 #include <condition_variable>
 
-namespace switcher
-{
+namespace switcher {
 
-  class PulseSrc:public AudioSource, public StartableQuiddity
-  {
+  class PulseSrc:public AudioSource, public StartableQuiddity {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (PulseSrc);
     PulseSrc ();
@@ -41,8 +39,7 @@ namespace switcher
       PulseSrc & operator= (const PulseSrc &) = delete;
 
   private:
-    typedef struct
-    {
+    typedef struct {
       std::string name_;
       std::string description_;
       std::string state_;

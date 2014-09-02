@@ -30,8 +30,7 @@
 #include <vector>
 #include <unordered_map>
 
-namespace switcher
-{
+namespace switcher {
   class Quiddity;
 
   class Segment:public CounterMap
@@ -64,8 +63,7 @@ namespace switcher
                                  uint max_reader);
 
   private:
-      Quiddity * quid_
-    {
+      Quiddity * quid_ {
     nullptr};
       std::unordered_map < std::string,
       ShmdataAnyWriter::ptr > shmdata_any_writers_;
@@ -75,17 +73,13 @@ namespace switcher
       std::unordered_map < std::string, ShmdataReader::ptr > shmdata_readers_;
 
     //reader methods to install by a subclass
-    OnConnect on_connect_cb_
-    {
+    OnConnect on_connect_cb_ {
     nullptr};
-    OnDisconnect on_disconnect_cb_
-    {
+    OnDisconnect on_disconnect_cb_ {
     nullptr};
-    OnDisconnectAll on_disconnect_all_cb_
-    {
+    OnDisconnectAll on_disconnect_all_cb_ {
     nullptr};
-    CanSinkCaps on_can_sink_caps_cb_
-    {
+    CanSinkCaps on_can_sink_caps_cb_ {
     nullptr};
     static gboolean connect_wrapped (gpointer path, gpointer user_data);
     static gboolean disconnect_wrapped (gpointer path, gpointer user_data);
@@ -95,18 +89,14 @@ namespace switcher
 
     //JSON
       JSONBuilder::ptr shmdata_writers_description_;
-      std::mutex writers_mutex_
-    {
+      std::mutex writers_mutex_ {
     };                          //protecting from parallel registers
-    std::string writers_string_
-    {
+    std::string writers_string_ {
     };
     JSONBuilder::ptr shmdata_readers_description_;
-    std::mutex readers_mutex_
-    {
+    std::mutex readers_mutex_ {
     };                          //protecting from parallel registers
-    std::string readers_string_
-    {
+    std::string readers_string_ {
     };
     CustomPropertyHelper::ptr segment_custom_props_;
     GParamSpec *json_writers_description_;

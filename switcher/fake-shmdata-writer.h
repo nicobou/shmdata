@@ -25,11 +25,9 @@
 #include "startable-quiddity.h"
 #include "custom-property-helper.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  class FakeShmdataWriter:public GPipe, StartableQuiddity
-  {
+  class FakeShmdataWriter:public GPipe, StartableQuiddity {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (FakeShmdataWriter);
     FakeShmdataWriter ();

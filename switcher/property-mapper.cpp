@@ -29,8 +29,7 @@
 // #endif
 // #endif
 
-namespace switcher
-{
+namespace switcher {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (PropertyMapper,
                                         "Switcher Property Mapper",
@@ -50,12 +49,10 @@ namespace switcher
     sink_max_spec_ (nullptr),
     source_min_spec_ (nullptr),
     source_max_spec_ (nullptr),
-    sink_min_ (0), sink_max_ (0), source_min_ (0), source_max_ (0)
-  {
+    sink_min_ (0), sink_max_ (0), source_min_ (0), source_max_ (0) {
   }
 
-  bool PropertyMapper::init ()
-  {
+  bool PropertyMapper::init () {
     install_method ("Set Source Property",      //long name
                     "set-source-property",      //name
                     "set the master property",  //description
@@ -116,13 +113,11 @@ namespace switcher
     return true;
   }
 
-  PropertyMapper::~PropertyMapper ()
-  {
+  PropertyMapper::~PropertyMapper () {
     unsubscribe_source_property ();
   }
 
-  void PropertyMapper::unsubscribe_source_property ()
-  {
+  void PropertyMapper::unsubscribe_source_property () {
     Quiddity::ptr source_quid = source_quiddity_.lock ();
     if ((bool) source_quid)
       source_quid->unsubscribe_property (source_property_name_, property_cb,
@@ -132,25 +127,22 @@ namespace switcher
   gboolean
     PropertyMapper::set_source_property_method (gchar * quiddity_name,
                                                 gchar * property_name,
-                                                void *user_data)
-  {
+                                                void *user_data) {
     PropertyMapper *context = static_cast < PropertyMapper * >(user_data);
 
     QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
 
-    if (!(bool) manager)
-      {
-        g_debug ("manager not found");
-        return FALSE;
-      }
+    if (!(bool) manager) {
+      g_debug ("manager not found");
+      return FALSE;
+    }
 
     Quiddity::ptr quid = manager->get_quiddity (quiddity_name);
 
-    if (!(bool) quid)
-      {
-        g_debug ("quiddity %s not found", quiddity_name);
-        return FALSE;
-      }
+    if (!(bool) quid) {
+      g_debug ("quiddity %s not found", quiddity_name);
+      return FALSE;
+    }
 
     if (!quid->subscribe_property (property_name, property_cb, context))
       return FALSE;
@@ -162,32 +154,30 @@ namespace switcher
 
     GParamSpec *pspec =
       quid->get_property_ptr (property_name)->get_paramspec ();
-    switch (pspec->value_type)
+    switch (pspec->value_type) {
+    case G_TYPE_INT:
       {
-      case G_TYPE_INT:
-        {
-          GParamSpecInt *pint = G_PARAM_SPEC_INT (pspec);
-          context->source_min_ = pint->minimum;
-          context->source_max_ = pint->maximum;
-          context->make_numerical_source_properties ();
-        }
-        break;
-      case G_TYPE_DOUBLE:
-        {
-          GParamSpecDouble *pdouble = G_PARAM_SPEC_DOUBLE (pspec);
-          context->source_min_ = pdouble->minimum;
-          context->source_max_ = pdouble->maximum;
-          context->make_numerical_source_properties ();
-        }
-        break;
-      default:
-        g_debug ("type not handled (%s)", g_type_name (pspec->value_type));
+        GParamSpecInt *pint = G_PARAM_SPEC_INT (pspec);
+        context->source_min_ = pint->minimum;
+        context->source_max_ = pint->maximum;
+        context->make_numerical_source_properties ();
       }
+      break;
+    case G_TYPE_DOUBLE:
+      {
+        GParamSpecDouble *pdouble = G_PARAM_SPEC_DOUBLE (pspec);
+        context->source_min_ = pdouble->minimum;
+        context->source_max_ = pdouble->maximum;
+        context->make_numerical_source_properties ();
+      }
+      break;
+    default:
+      g_debug ("type not handled (%s)", g_type_name (pspec->value_type));
+    }
     return TRUE;
   }
 
-  void PropertyMapper::make_numerical_source_properties ()
-  {
+  void PropertyMapper::make_numerical_source_properties () {
     uninstall_property ("source-min");
     source_min_spec_ =
       custom_props_->make_double_property ("source-min",
@@ -218,8 +208,7 @@ namespace switcher
                                "source-max", "Source Property Maximum");
   }
 
-  void PropertyMapper::make_numerical_sink_properties ()
-  {
+  void PropertyMapper::make_numerical_sink_properties () {
     uninstall_property ("sink-min");
     sink_min_spec_ =
       custom_props_->make_double_property ("sink-min",
@@ -252,8 +241,7 @@ namespace switcher
 
   void
     PropertyMapper::property_cb (GObject * gobject, GParamSpec * pspec,
-                                 gpointer user_data)
-  {
+                                 gpointer user_data) {
     PropertyMapper *context = static_cast < PropertyMapper * >(user_data);
 
     //return if not property to update
@@ -268,41 +256,38 @@ namespace switcher
     g_object_get_property (gobject, prop_name, &val);
 
     //getting new value
-    switch (pspec->value_type)
+    switch (pspec->value_type) {
+    case G_TYPE_INT:
       {
-      case G_TYPE_INT:
-        {
-          gint orig_val = g_value_get_int (&val);
+        gint orig_val = g_value_get_int (&val);
 //ignoring value out of range
-          if (orig_val < context->source_min_
-              || orig_val > context->source_max_)
-            {
-              g_value_unset (&val);
-              return;
-            }
-          new_value = (gdouble) orig_val;
-        }
-        break;
-      case G_TYPE_DOUBLE:
-        {
-          gdouble orig_val = g_value_get_double (&val);
-//ignoring value out of range
-          if (orig_val < context->source_min_
-              || orig_val > context->source_max_)
-            {
-              g_value_unset (&val);
-              return;
-            }
-          new_value = (gdouble) orig_val;
-        }
-        break;
-      default:
-        {
-          g_debug ("property mapper callback: type %s not handled (yet)\n",
-                   g_type_name (pspec->value_type));
+        if (orig_val < context->source_min_
+            || orig_val > context->source_max_) {
+          g_value_unset (&val);
           return;
         }
+        new_value = (gdouble) orig_val;
       }
+      break;
+    case G_TYPE_DOUBLE:
+      {
+        gdouble orig_val = g_value_get_double (&val);
+//ignoring value out of range
+        if (orig_val < context->source_min_
+            || orig_val > context->source_max_) {
+          g_value_unset (&val);
+          return;
+        }
+        new_value = (gdouble) orig_val;
+      }
+      break;
+    default:
+      {
+        g_debug ("property mapper callback: type %s not handled (yet)\n",
+                 g_type_name (pspec->value_type));
+        return;
+      }
+    }
     g_value_unset (&val);
 
     //scaling and transforming the value into a gdouble value
@@ -334,59 +319,54 @@ namespace switcher
   gboolean
     PropertyMapper::set_sink_property_method (gchar * quiddity_name,
                                               gchar * property_name,
-                                              void *user_data)
-  {
+                                              void *user_data) {
     PropertyMapper *context = static_cast < PropertyMapper * >(user_data);
 
     QuiddityManager_Impl::ptr manager = context->manager_impl_.lock ();
 
-    if (!(bool) manager)
-      {
-        g_debug ("manager not found");
-        return FALSE;
-      }
+    if (!(bool) manager) {
+      g_debug ("manager not found");
+      return FALSE;
+    }
 
     Quiddity::ptr quid = manager->get_quiddity (quiddity_name);
 
-    if (!(bool) quid)
-      {
-        g_debug ("quiddity %s not found", quiddity_name);
-        return FALSE;
-      }
+    if (!(bool) quid) {
+      g_debug ("quiddity %s not found", quiddity_name);
+      return FALSE;
+    }
 
-    if (!quid->has_property (property_name))
-      {
-        g_debug ("quiddity %s does not have a property named %s",
-                 quiddity_name, property_name);
-        return FALSE;
-      }
+    if (!quid->has_property (property_name)) {
+      g_debug ("quiddity %s does not have a property named %s",
+               quiddity_name, property_name);
+      return FALSE;
+    }
 
     GParamSpec *pspec =
       quid->get_property_ptr (property_name)->get_paramspec ();
-    switch (pspec->value_type)
+    switch (pspec->value_type) {
+    case G_TYPE_INT:
       {
-      case G_TYPE_INT:
-        {
-          GParamSpecInt *pint = G_PARAM_SPEC_INT (pspec);
-          context->sink_min_ = pint->minimum;
-          context->sink_max_ = pint->maximum;
-          context->make_numerical_sink_properties ();
-        }
-        break;
-      case G_TYPE_DOUBLE:
-        {
-          GParamSpecDouble *pdouble = G_PARAM_SPEC_DOUBLE (pspec);
-          context->sink_min_ = pdouble->minimum;
-          context->sink_max_ = pdouble->maximum;
-          context->make_numerical_sink_properties ();
-        }
-        break;
-      default:
-        {
-          g_debug ("type not handled (%s)", g_type_name (pspec->value_type));
-          return FALSE;
-        }
+        GParamSpecInt *pint = G_PARAM_SPEC_INT (pspec);
+        context->sink_min_ = pint->minimum;
+        context->sink_max_ = pint->maximum;
+        context->make_numerical_sink_properties ();
       }
+      break;
+    case G_TYPE_DOUBLE:
+      {
+        GParamSpecDouble *pdouble = G_PARAM_SPEC_DOUBLE (pspec);
+        context->sink_min_ = pdouble->minimum;
+        context->sink_max_ = pdouble->maximum;
+        context->make_numerical_sink_properties ();
+      }
+      break;
+    default:
+      {
+        g_debug ("type not handled (%s)", g_type_name (pspec->value_type));
+        return FALSE;
+      }
+    }
 
     context->sink_quiddity_ = quid;
     context->sink_property_name_ = property_name;
@@ -395,13 +375,11 @@ namespace switcher
     return TRUE;
   }
 
-  void PropertyMapper::set_double_value (gdouble value, void *user_data)
-  {
+  void PropertyMapper::set_double_value (gdouble value, void *user_data) {
     *(gdouble *) user_data = value;
   }
 
-  gdouble PropertyMapper::get_double_value (void *user_data)
-  {
+  gdouble PropertyMapper::get_double_value (void *user_data) {
     return *(gdouble *) user_data;
   }
 

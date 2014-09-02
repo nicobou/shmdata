@@ -19,8 +19,7 @@
 #include "webservices/control.nsmap"
 #include "switcher/gst-utils.h"
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (SoapCtrlClient,
                                         "Switcher Web Client (SOAP)",
                                         "control client",
@@ -30,12 +29,10 @@ namespace switcher
                                         "Nicolas Bouillot");
 
   SoapCtrlClient::SoapCtrlClient ():switcher_control_ (nullptr),
-    url_ (nullptr), try_connect_g_source_ (nullptr), try_connect_mutex_ ()
-  {
+    url_ (nullptr), try_connect_g_source_ (nullptr), try_connect_mutex_ () {
   }
 
-  bool SoapCtrlClient::init ()
-  {
+  bool SoapCtrlClient::init () {
     switcher_control_ =
       new controlProxy (SOAP_IO_KEEPALIVE | SOAP_XML_INDENT);
     switcher_control_->send_timeout = 1;        // 1 seconds
@@ -243,28 +240,24 @@ namespace switcher
     return true;
   }
 
-  SoapCtrlClient::~SoapCtrlClient ()
-  {
+  SoapCtrlClient::~SoapCtrlClient () {
     reset_endpoint ();
     if (switcher_control_ != nullptr)
       delete switcher_control_;
   }
 
-  void SoapCtrlClient::reset_endpoint ()
-  {
+  void SoapCtrlClient::reset_endpoint () {
     std::unique_lock < std::mutex > lock (try_connect_mutex_);
     if (url_ != nullptr)
       g_free (url_);
     if (nullptr != try_connect_g_source_
-        && !g_source_is_destroyed (try_connect_g_source_))
-      {
-        g_source_destroy (try_connect_g_source_);
-        try_connect_g_source_ = nullptr;
-      }
+        && !g_source_is_destroyed (try_connect_g_source_)) {
+      g_source_destroy (try_connect_g_source_);
+      try_connect_g_source_ = nullptr;
+    }
   }
 
-  gboolean SoapCtrlClient::set_remote_url (gpointer url, gpointer user_data)
-  {
+  gboolean SoapCtrlClient::set_remote_url (gpointer url, gpointer user_data) {
     SoapCtrlClient *context = static_cast < SoapCtrlClient * >(user_data);
     context->reset_endpoint ();
     context->url_ = g_strdup ((char *) url);
@@ -273,37 +266,34 @@ namespace switcher
     std::vector < std::string > resultlist;
     context->switcher_control_->get_quiddity_names (&resultlist);
 
-    if (context->switcher_control_->error)
-      {
-        g_warning
-          ("SoapCtrlClient::set_remote_url, url not valid or not responding");
-        g_free (context->url_);
-        context->url_ = nullptr;
-        return FALSE;
-      }
+    if (context->switcher_control_->error) {
+      g_warning
+        ("SoapCtrlClient::set_remote_url, url not valid or not responding");
+      g_free (context->url_);
+      context->url_ = nullptr;
+      return FALSE;
+    }
     return TRUE;
   }
 
   gboolean
-    SoapCtrlClient::set_remote_url_retry (gpointer url, gpointer user_data)
-  {
+    SoapCtrlClient::set_remote_url_retry (gpointer url, gpointer user_data) {
     SoapCtrlClient *context = static_cast < SoapCtrlClient * >(user_data);
     context->reset_endpoint ();
     context->url_ = g_strdup ((char *) url);
     context->switcher_control_->soap_endpoint = context->url_;
-    if (TRUE == context->try_connect (context))
-      {
-        context->try_connect_g_source_ = GstUtils::g_timeout_add_to_context (2000,      //must be higher than gsoap timeouts
-                                                                             try_connect,
-                                                                             context,
-                                                                             context->get_g_main_context
-                                                                             ());
-      }
+    if (TRUE == context->try_connect (context)) {
+      context->try_connect_g_source_ = GstUtils::g_timeout_add_to_context (2000,        //must be higher than gsoap timeouts
+                                                                           try_connect,
+                                                                           context,
+                                                                           context->
+                                                                           get_g_main_context
+                                                                           ());
+    }
     return TRUE;
   }
 
-  gboolean SoapCtrlClient::try_connect (gpointer user_data)
-  {
+  gboolean SoapCtrlClient::try_connect (gpointer user_data) {
     SoapCtrlClient *context = static_cast < SoapCtrlClient * >(user_data);
     if (context->url_ == nullptr)
       return FALSE;
@@ -313,39 +303,34 @@ namespace switcher
     std::vector < std::string > resultlist;
     context->switcher_control_->get_quiddity_names (&resultlist);
 
-    if (context->switcher_control_->error)
-      {
-        g_debug ("SoapCtrlClient::try_connect (%s) failled, will retry",
-                 context->url_);
-        context->signal_emit ("on-connection-tried", context->url_, FALSE);
-        return TRUE;
-      }
+    if (context->switcher_control_->error) {
+      g_debug ("SoapCtrlClient::try_connect (%s) failled, will retry",
+               context->url_);
+      context->signal_emit ("on-connection-tried", context->url_, FALSE);
+      return TRUE;
+    }
     context->signal_emit ("on-connection-tried", context->url_, TRUE);
     return FALSE;
   }
 
   gboolean
     SoapCtrlClient::create (gpointer class_name,
-                            gpointer quiddity_name, gpointer user_data)
-  {
+                            gpointer quiddity_name, gpointer user_data) {
     SoapCtrlClient *context = static_cast < SoapCtrlClient * >(user_data);
     if (context->url_ == nullptr)
       return FALSE;
     std::string name;
-    context->
-      switcher_control_->create_named_quiddity ((const char *) class_name,
-                                                (const char *) quiddity_name,
-                                                &name);
-    if (g_strcmp0 ((gchar *) quiddity_name, name.c_str ()) != 0)
-      {
-        context->switcher_control_->delete_quiddity (name.c_str ());
-        return FALSE;
-      }
+    context->switcher_control_->
+      create_named_quiddity ((const char *) class_name,
+                             (const char *) quiddity_name, &name);
+    if (g_strcmp0 ((gchar *) quiddity_name, name.c_str ()) != 0) {
+      context->switcher_control_->delete_quiddity (name.c_str ());
+      return FALSE;
+    }
     return TRUE;
   }
 
-  gboolean SoapCtrlClient::remove (gpointer quiddity_name, gpointer user_data)
-  {
+  gboolean SoapCtrlClient::remove (gpointer quiddity_name, gpointer user_data) {
     SoapCtrlClient *context = static_cast < SoapCtrlClient * >(user_data);
     if (context->url_ == nullptr)
       return FALSE;
@@ -358,8 +343,7 @@ namespace switcher
   gboolean
     SoapCtrlClient::set_property (gpointer quiddity_name,
                                   gpointer property_name,
-                                  gpointer value, gpointer user_data)
-  {
+                                  gpointer value, gpointer user_data) {
     SoapCtrlClient *context = static_cast < SoapCtrlClient * >(user_data);
     if (context->url_ == nullptr)
       return FALSE;
@@ -378,8 +362,7 @@ namespace switcher
   gboolean
     SoapCtrlClient::invoke1 (gpointer quiddity_name,
                              gpointer method_name,
-                             gpointer arg1, gpointer user_data)
-  {
+                             gpointer arg1, gpointer user_data) {
     SoapCtrlClient *context = static_cast < SoapCtrlClient * >(user_data);
     if (context->url_ == nullptr)
       return FALSE;

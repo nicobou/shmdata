@@ -40,12 +40,10 @@
 #include "json-builder.h"
 #include "gobject-wrapper.h"
 
-namespace switcher
-{
+namespace switcher {
   class QuiddityManager_Impl;
 
-  class Quiddity
-  {
+  class Quiddity {
 
     friend class StartableQuiddity;
     friend class Segment;
@@ -109,8 +107,7 @@ namespace switcher
       template < template < class T, class =
       std::allocator < T > >class Container =
       std::list > Container < std::string >
-      get_child_keys (const std::string path)
-    {
+      get_child_keys (const std::string path) {
       return information_tree_->get_child_keys < Container > (path);
     }
 

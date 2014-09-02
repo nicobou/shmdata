@@ -20,8 +20,7 @@
 #include "switcher/json-builder.h"
 #include "shmdata-to-osc.h"
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (ShmdataToOsc,
                                         "shmdata to OSC messages (default to localhost:1056)",
                                         "osc sink",
@@ -32,12 +31,10 @@ namespace switcher
     port_ (1056),
     host_ ("localhost"),
     port_spec_ (nullptr),
-    host_spec_ (nullptr), address_ (nullptr), address_mutex_ ()
-  {
+    host_spec_ (nullptr), address_ (nullptr), address_mutex_ () {
   }
 
-  bool ShmdataToOsc::init ()
-  {
+  bool ShmdataToOsc::init () {
     init_startable (this);
     init_segment (this);
 
@@ -65,13 +62,11 @@ namespace switcher
     return true;
   }
 
-  ShmdataToOsc::~ShmdataToOsc ()
-  {
+  ShmdataToOsc::~ShmdataToOsc () {
     stop ();
   }
 
-  void ShmdataToOsc::set_port (const gint value, void *user_data)
-  {
+  void ShmdataToOsc::set_port (const gint value, void *user_data) {
     ShmdataToOsc *context = static_cast < ShmdataToOsc * >(user_data);
     if (value == context->port_)
       return;
@@ -81,14 +76,12 @@ namespace switcher
     context->custom_props_->notify_property_changed (context->port_spec_);
   }
 
-  gint ShmdataToOsc::get_port (void *user_data)
-  {
+  gint ShmdataToOsc::get_port (void *user_data) {
     ShmdataToOsc *context = static_cast < ShmdataToOsc * >(user_data);
     return context->port_;
   }
 
-  bool ShmdataToOsc::start ()
-  {
+  bool ShmdataToOsc::start () {
     stop ();
     {
       std::unique_lock < std::mutex > lock (address_mutex_);
@@ -100,19 +93,16 @@ namespace switcher
     return true;
   }
 
-  bool ShmdataToOsc::stop ()
-  {
-    if (nullptr != address_)
-      {
-        std::unique_lock < std::mutex > lock (address_mutex_);
-        lo_address_free (address_);
-        address_ = nullptr;
-      }
+  bool ShmdataToOsc::stop () {
+    if (nullptr != address_) {
+      std::unique_lock < std::mutex > lock (address_mutex_);
+      lo_address_free (address_);
+      address_ = nullptr;
+    }
     return true;
   }
 
-  void ShmdataToOsc::set_host (const gchar * value, void *user_data)
-  {
+  void ShmdataToOsc::set_host (const gchar * value, void *user_data) {
     ShmdataToOsc *context = static_cast < ShmdataToOsc * >(user_data);
     if (0 == context->host_.compare (value))
       return;
@@ -122,14 +112,12 @@ namespace switcher
     context->custom_props_->notify_property_changed (context->host_spec_);
   }
 
-  const gchar *ShmdataToOsc::get_host (void *user_data)
-  {
+  const gchar *ShmdataToOsc::get_host (void *user_data) {
     ShmdataToOsc *context = static_cast < ShmdataToOsc * >(user_data);
     return context->host_.c_str ();
   }
 
-  bool ShmdataToOsc::connect (std::string path)
-  {
+  bool ShmdataToOsc::connect (std::string path) {
     ShmdataAnyReader::ptr reader = std::make_shared < ShmdataAnyReader > ();
     reader->set_data_type ("application/x-libloserialized-osc");
     reader->set_path (path);
@@ -150,24 +138,21 @@ namespace switcher
                                      int data_size,
                                      unsigned long long timestamp,
                                      const char *type_description,
-                                     void *user_data)
-  {
+                                     void *user_data) {
     const char *path = lo_get_path (data, data_size);
     lo_message msg = lo_message_deserialise (data,
                                              data_size,
                                              nullptr);  //error code
-    if (nullptr != msg)
-      {
-        std::unique_lock < std::mutex > lock (address_mutex_);
+    if (nullptr != msg) {
+      std::unique_lock < std::mutex > lock (address_mutex_);
 //lo_message_pp (msg);
-        if (nullptr != address_)
-          lo_send_message (address_, path, msg);
-        lo_message_free (msg);
-      }
+      if (nullptr != address_)
+        lo_send_message (address_, path, msg);
+      lo_message_free (msg);
+    }
   }
 
-  bool ShmdataToOsc::can_sink_caps (std::string caps)
-  {
+  bool ShmdataToOsc::can_sink_caps (std::string caps) {
     return 0 == caps.find ("application/x-libloserialized-osc");
   }
 

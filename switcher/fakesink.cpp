@@ -20,8 +20,7 @@
 #include "fakesink.h"
 #include "gst-utils.h"
 
-namespace switcher
-{
+namespace switcher {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (FakeSink,
                                         "Shmdata Inspector",
@@ -37,12 +36,10 @@ namespace switcher
     string_caps_ (g_strdup ("unknown")),
     set_string_caps_ (true),
     props_ (new CustomPropertyHelper ()),
-    byte_rate_spec_ (nullptr), caps_spec_ (nullptr)
-  {
+    byte_rate_spec_ (nullptr), caps_spec_ (nullptr) {
   }
 
-  FakeSink::~FakeSink ()
-  {
+  FakeSink::~FakeSink () {
     if (update_byterate_source_ != nullptr)
       g_source_destroy (update_byterate_source_);
     reset_bin ();
@@ -50,8 +47,7 @@ namespace switcher
     g_free (string_caps_);
   }
 
-  bool FakeSink::init_gpipe ()
-  {
+  bool FakeSink::init_gpipe () {
     if (!GstUtils::make_element ("fakesink", &fakesink_))
       return false;
 
@@ -96,8 +92,7 @@ namespace switcher
     return true;
   }
 
-  gboolean FakeSink::update_byte_rate (gpointer user_data)
-  {
+  gboolean FakeSink::update_byte_rate (gpointer user_data) {
     FakeSink *context = static_cast < FakeSink * >(user_data);
     context->byte_rate_ = context->num_bytes_since_last_update_;
     context->num_bytes_since_last_update_ = 0;
@@ -107,30 +102,26 @@ namespace switcher
 
   void FakeSink::on_handoff_cb (GstElement * /*object */ ,
                                 GstBuffer * buf,
-                                GstPad * pad, gpointer user_data)
-  {
+                                GstPad * pad, gpointer user_data) {
     FakeSink *context = static_cast < FakeSink * >(user_data);
 
-    if (context->set_string_caps_)
-      {
-        context->set_string_caps_ = false;
-        GstCaps *caps = gst_pad_get_negotiated_caps (pad);
-        g_free (context->string_caps_);
-        context->string_caps_ = gst_caps_to_string (caps);
-        context->props_->notify_property_changed (context->caps_spec_);
-        gst_caps_unref (caps);
-      }
+    if (context->set_string_caps_) {
+      context->set_string_caps_ = false;
+      GstCaps *caps = gst_pad_get_negotiated_caps (pad);
+      g_free (context->string_caps_);
+      context->string_caps_ = gst_caps_to_string (caps);
+      context->props_->notify_property_changed (context->caps_spec_);
+      gst_caps_unref (caps);
+    }
     context->num_bytes_since_last_update_ += GST_BUFFER_SIZE (buf);
   }
 
-  gint FakeSink::get_byte_rate (void *user_data)
-  {
+  gint FakeSink::get_byte_rate (void *user_data) {
     FakeSink *context = static_cast < FakeSink * >(user_data);
     return context->byte_rate_;
   }
 
-  const gchar *FakeSink::get_caps (void *user_data)
-  {
+  const gchar *FakeSink::get_caps (void *user_data) {
     FakeSink *context = static_cast < FakeSink * >(user_data);
     return context->string_caps_;
   }

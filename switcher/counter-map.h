@@ -32,11 +32,9 @@
  *
 **/
 
-namespace switcher
-{
+namespace switcher {
 
-  class CounterMap
-  {
+  class CounterMap {
   public:
     CounterMap ();
     virtual ~ CounterMap ();

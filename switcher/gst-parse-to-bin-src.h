@@ -26,11 +26,9 @@
 #include <gst/gst.h>
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class GstParseToBinSrc:public GPipe, StartableQuiddity
-  {
+  class GstParseToBinSrc:public GPipe, StartableQuiddity {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (GstParseToBinSrc);
     GstParseToBinSrc ();

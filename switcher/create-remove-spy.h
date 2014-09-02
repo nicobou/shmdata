@@ -23,11 +23,9 @@
 #include "quiddity.h"
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class CreateRemoveSpy:public Quiddity
-  {
+  class CreateRemoveSpy:public Quiddity {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (CreateRemoveSpy);
     CreateRemoveSpy ();

@@ -27,11 +27,9 @@
 #include "json-builder.h"
 #include "categorizable.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  class Property:public Categorizable
-  {
+  class Property:public Categorizable {
   public:
     typedef std::shared_ptr < Property > ptr;
     typedef void (*Callback) (GObject * gobject, GParamSpec * pspec,

@@ -24,11 +24,9 @@
 #include <mutex>
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class SoapCtrlServer:public QuiddityManagerWrapper
-  {
+  class SoapCtrlServer:public QuiddityManagerWrapper {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (SoapCtrlServer);
     SoapCtrlServer ();

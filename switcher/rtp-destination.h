@@ -27,10 +27,8 @@
 #include <map>
 #include <string>
 
-namespace switcher
-{
-  class RtpDestination:public GstElementCleaner
-  {
+namespace switcher {
+  class RtpDestination:public GstElementCleaner {
   public:
     typedef std::shared_ptr < RtpDestination > ptr;
       RtpDestination ();

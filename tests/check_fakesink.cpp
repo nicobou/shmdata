@@ -24,16 +24,14 @@
 void
 property_cb (std::string subscriber_name,
              std::string quiddity_name,
-             std::string property_name, std::string value, void *user_data)
-{
+             std::string property_name, std::string value, void *user_data) {
   g_debug ("%s %s %s %s\n",
            subscriber_name.c_str (),
            quiddity_name.c_str (), property_name.c_str (), value.c_str ());
 }
 
 int
-main ()
-{
+main () {
   {
     switcher::QuiddityManager::ptr manager =
       switcher::QuiddityManager::make_manager ("check_fakesink");

@@ -24,10 +24,8 @@
 #include "custom-property-helper.h"
 #include <map>
 
-namespace switcher
-{
-  class StringDictionary:public Quiddity
-  {
+namespace switcher {
+  class StringDictionary:public Quiddity {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (StringDictionary);
     StringDictionary ();
@@ -39,8 +37,7 @@ namespace switcher
   private:
       std::map < std::string, gchar * >dico_;
 
-    typedef struct
-    {
+    typedef struct {
       StringDictionary *string_dictionary;
         std::string entry_name;
     } PropertySetGet;

@@ -24,11 +24,9 @@
 #include <memory>
 #include "custom-property-helper.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  class StartableQuiddity
-  {
+  class StartableQuiddity {
   public:
     typedef std::shared_ptr < StartableQuiddity > ptr;
       StartableQuiddity ();

@@ -32,12 +32,9 @@
 #include <json-glib/json-glib.h>
 #include <string>
 
-namespace switcher
-{
-  namespace data
-  {
-    namespace JSONSerializer
-    {
+namespace switcher {
+  namespace data {
+    namespace JSONSerializer {
 
       std::string serialize (const Tree::ptr);
       //FIXME implement this: Tree::ptr deserialize (std::string &serialized);

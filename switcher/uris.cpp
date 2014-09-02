@@ -21,16 +21,14 @@
 #include "gst-utils.h"
 #include <glib/gprintf.h>
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (Uris,
                                         "Uri Player",
                                         "experimental uri player",
                                         "play/pause/seek/loop/synchronize multiple uris",
                                         "LGPL", "uris", "Nicolas Bouillot");
 
-  bool Uris::init ()
-  {
+  bool Uris::init () {
     group_ = g_new0 (Group, 1);
 
     if (!GstUtils::make_element ("bin", &group_->bin))
@@ -103,8 +101,7 @@ namespace switcher
     return true;
   }
 
-  gboolean Uris::add_uri_wrapped (gpointer uri, gpointer user_data)
-  {
+  gboolean Uris::add_uri_wrapped (gpointer uri, gpointer user_data) {
     Uris *context = static_cast < Uris * >(user_data);
     if (context->add_uri ((char *) uri))
       return TRUE;
@@ -112,16 +109,14 @@ namespace switcher
       return FALSE;
   }
 
-  bool Uris::add_uri (std::string uri)
-  {
+  bool Uris::add_uri (std::string uri) {
     g_debug ("add_uri %s", uri.c_str ());
     group_add_uri (group_, uri.c_str ());
     return true;
   }
 
   gboolean Uris::play_wrapped (gpointer /*unused */ ,
-                               gpointer user_data)
-  {
+                               gpointer user_data) {
     Uris *context = static_cast < Uris * >(user_data);
 
     if (context->play ())
@@ -130,16 +125,14 @@ namespace switcher
       return FALSE;
   }
 
-  bool Uris::play ()
-  {
+  bool Uris::play () {
     g_debug ("play");
     group_play (group_);
     return true;
   }
 
   gboolean Uris::pause_wrapped (gpointer /*unused */ ,
-                                gpointer user_data)
-  {
+                                gpointer user_data) {
     Uris *context = static_cast < Uris * >(user_data);
 
     if (context->pause ())
@@ -148,15 +141,13 @@ namespace switcher
       return FALSE;
   }
 
-  bool Uris::pause ()
-  {
+  bool Uris::pause () {
     g_debug ("pause");
     group_pause (group_);
     return true;
   }
 
-  gboolean Uris::seek_wrapped (gdouble position, gpointer user_data)
-  {
+  gboolean Uris::seek_wrapped (gdouble position, gpointer user_data) {
     Uris *context = static_cast < Uris * >(user_data);
 
     g_debug ("seek_wrapped %f", position);
@@ -167,8 +158,7 @@ namespace switcher
       return FALSE;
   }
 
-  bool Uris::seek (gdouble position)
-  {
+  bool Uris::seek (gdouble position) {
     g_debug ("seek %f", position);
     group_seek (group_, position);
     return true;
@@ -176,36 +166,34 @@ namespace switcher
 
   //************************* wrapping c code:
 
-  void Uris::group_add_uri (Group * group, const char *uri)
-  {
+  void Uris::group_add_uri (Group * group, const char *uri) {
     gchar *uri_tmp;
 
-    switch (group->state)
-      {
-      case GROUP_PAUSED:
-        g_debug ("group_add_uri: setting GROUP_TO_PAUSED ");
-        group->state = GROUP_TO_PAUSED;
-        group_add_task (nullptr, nullptr, group);
-        break;
-      case GROUP_TO_PAUSED:
-        uri_tmp = g_strdup (uri);
-        group_queue_command (group, (gpointer) & group_add_uri, uri_tmp);
-        return;
-        break;
-      case GROUP_PLAYING:
-        g_debug ("group_add_uri: setting GROUP_TO_PLAYING ");
-        group->state = GROUP_TO_PLAYING;
-        group_add_task (nullptr, nullptr, group);
-        break;
-      case GROUP_TO_PLAYING:
-        uri_tmp = g_strdup (uri);
-        group_queue_command (group, (gpointer) & group_add_uri, uri_tmp);
-        return;
-        break;
-      default:
-        g_warning ("unknown state when adding uri");
-        break;
-      }
+    switch (group->state) {
+    case GROUP_PAUSED:
+      g_debug ("group_add_uri: setting GROUP_TO_PAUSED ");
+      group->state = GROUP_TO_PAUSED;
+      group_add_task (nullptr, nullptr, group);
+      break;
+    case GROUP_TO_PAUSED:
+      uri_tmp = g_strdup (uri);
+      group_queue_command (group, (gpointer) & group_add_uri, uri_tmp);
+      return;
+      break;
+    case GROUP_PLAYING:
+      g_debug ("group_add_uri: setting GROUP_TO_PLAYING ");
+      group->state = GROUP_TO_PLAYING;
+      group_add_task (nullptr, nullptr, group);
+      break;
+    case GROUP_TO_PLAYING:
+      uri_tmp = g_strdup (uri);
+      group_queue_command (group, (gpointer) & group_add_uri, uri_tmp);
+      return;
+      break;
+    default:
+      g_warning ("unknown state when adding uri");
+      break;
+    }
 
     g_debug ("adding uri");
 
@@ -239,8 +227,7 @@ namespace switcher
 
   void
     Uris::uridecodebin_pad_added_cb (GstElement * object, GstPad * pad,
-                                     gpointer user_data)
-  {
+                                     gpointer user_data) {
     Group *group = (Group *) user_data;
     Uris *context = static_cast < Uris * >(group->user_data);
 
@@ -256,60 +243,57 @@ namespace switcher
 
     g_debug ("padname:%s", padname);
 
-    if (1 == 1)
-      {
-        group_add_task (nullptr, nullptr, group);
-        Sample *sample = g_new0 (Sample, 1);
-        sample->group = group;
-        sample->timeshift = 0;
+    if (1 == 1) {
+      group_add_task (nullptr, nullptr, group);
+      Sample *sample = g_new0 (Sample, 1);
+      sample->group = group;
+      sample->timeshift = 0;
 
-        GstElement *queue = gst_element_factory_make ("queue", nullptr);
-        sample->seek_element = queue;
+      GstElement *queue = gst_element_factory_make ("queue", nullptr);
+      sample->seek_element = queue;
 
-        /* add to the bin */
-        gst_bin_add_many (GST_BIN (group->bin),
-                          // continuous_stream,
-                          // identity,
-                          queue, nullptr);
+      /* add to the bin */
+      gst_bin_add_many (GST_BIN (group->bin),
+                        // continuous_stream,
+                        // identity,
+                        queue, nullptr);
 // gst_element_link (continuous_stream, identity);
 // gst_element_link (identity, queue);
 
-        GstPad *queue_srcpad = gst_element_get_static_pad (queue, "src");
-        sample->bin_srcpad = gst_ghost_pad_new (nullptr, queue_srcpad);
-        group_do_block_datastream (sample);
-        //gst_pad_set_blocked_async (sample->bin_srcpad,TRUE,pad_blocked_cb,sample);
-        gst_object_unref (queue_srcpad);
-        gst_pad_set_active (sample->bin_srcpad, TRUE);
-        gst_element_add_pad (group->bin, sample->bin_srcpad);
-        if (group->masterpad == nullptr)
-          {
-            g_debug ("masterpad is %p", sample->bin_srcpad);
-            group->masterpad = sample->bin_srcpad;
-          }
+      GstPad *queue_srcpad = gst_element_get_static_pad (queue, "src");
+      sample->bin_srcpad = gst_ghost_pad_new (nullptr, queue_srcpad);
+      group_do_block_datastream (sample);
+      //gst_pad_set_blocked_async (sample->bin_srcpad,TRUE,pad_blocked_cb,sample);
+      gst_object_unref (queue_srcpad);
+      gst_pad_set_active (sample->bin_srcpad, TRUE);
+      gst_element_add_pad (group->bin, sample->bin_srcpad);
+      if (group->masterpad == nullptr) {
+        g_debug ("masterpad is %p", sample->bin_srcpad);
+        group->masterpad = sample->bin_srcpad;
+      }
 
-        //probing eos
-        gst_pad_add_event_probe (sample->bin_srcpad,
-                                 (GCallback) event_probe_cb,
-                                 (gpointer) sample);
-        /* gst_pad_add_buffer_probe (sample->bin_srcpad,   */
-        /* (GCallback) buffer_probe_cb,   */
-        /* (gpointer)sample);   */
+      //probing eos
+      gst_pad_add_event_probe (sample->bin_srcpad,
+                               (GCallback) event_probe_cb, (gpointer) sample);
+      /* gst_pad_add_buffer_probe (sample->bin_srcpad,   */
+      /* (GCallback) buffer_probe_cb,   */
+      /* (gpointer)sample);   */
 
-        GstPad *queue_sinkpad = gst_element_get_static_pad (queue, "sink");
+      GstPad *queue_sinkpad = gst_element_get_static_pad (queue, "sink");
 
-        //linking newly created pad with the audioconvert_sinkpad -- FIXME should verify compatibility
-        gst_pad_link (pad, queue_sinkpad);
-        gst_object_unref (queue_sinkpad);
+      //linking newly created pad with the audioconvert_sinkpad -- FIXME should verify compatibility
+      gst_pad_link (pad, queue_sinkpad);
+      gst_object_unref (queue_sinkpad);
 
-        if (!gst_element_sync_state_with_parent (queue))
-          g_debug ("pb syncing video datastream state");
+      if (!gst_element_sync_state_with_parent (queue))
+        g_debug ("pb syncing video datastream state");
 
-        //assuming object is an uridecodebin and get the uri
-        gchar *uri;
-        g_object_get (object, "uri", &uri, nullptr);
-        g_debug ("new sample from uri: %s", uri);
-        //adding sample to hash table
-        g_hash_table_insert (group->datastreams, sample, uri);  //FIXME clean hash
+      //assuming object is an uridecodebin and get the uri
+      gchar *uri;
+      g_object_get (object, "uri", &uri, nullptr);
+      g_debug ("new sample from uri: %s", uri);
+      //adding sample to hash table
+      g_hash_table_insert (group->datastreams, sample, uri);    //FIXME clean hash
 
 //making a shmdata:
 // GstElement *identity;
@@ -318,104 +302,96 @@ namespace switcher
 //       "sync", TRUE,
 //       "single-segment", TRUE,
 //       nullptr);
-        GstElement *funnel;
-        GstUtils::make_element ("funnel", &funnel);
-        GstElement *continuous_stream;
-        if (g_str_has_prefix (padname, "video/"))
-          {
-            GstUtils::make_element ("videomixer2", &continuous_stream);
-            //g_object_set (G_OBJECT (continuous_stream), "force-fps", 30, 1, nullptr);
-          }
-        else
-          GstUtils::make_element ("identity", &continuous_stream);
-        GstElement *identity;
-        GstUtils::make_element ("identity", &identity);
-        g_object_set (identity,
-                      "sync", TRUE, "single-segment", TRUE, nullptr);
+      GstElement *funnel;
+      GstUtils::make_element ("funnel", &funnel);
+      GstElement *continuous_stream;
+      if (g_str_has_prefix (padname, "video/")) {
+        GstUtils::make_element ("videomixer2", &continuous_stream);
+        //g_object_set (G_OBJECT (continuous_stream), "force-fps", 30, 1, nullptr);
+      }
+      else
+        GstUtils::make_element ("identity", &continuous_stream);
+      GstElement *identity;
+      GstUtils::make_element ("identity", &identity);
+      g_object_set (identity, "sync", TRUE, "single-segment", TRUE, nullptr);
 
-        gst_bin_add_many (GST_BIN (context->bin_),
-                          continuous_stream, identity, funnel, nullptr);
-        gst_element_link (funnel, continuous_stream);
-        gst_element_link (continuous_stream, identity);
-        GstUtils::sync_state_with_parent (identity);
-        GstUtils::sync_state_with_parent (continuous_stream);
-        GstUtils::sync_state_with_parent (funnel);
+      gst_bin_add_many (GST_BIN (context->bin_),
+                        continuous_stream, identity, funnel, nullptr);
+      gst_element_link (funnel, continuous_stream);
+      gst_element_link (continuous_stream, identity);
+      GstUtils::sync_state_with_parent (identity);
+      GstUtils::sync_state_with_parent (continuous_stream);
+      GstUtils::sync_state_with_parent (funnel);
 
 //giving a name to the stream
-        gchar **padname_splitted = g_strsplit_set (padname, "/", -1);
+      gchar **padname_splitted = g_strsplit_set (padname, "/", -1);
 
 //counting
-        int count = 0;
-        auto it = context->media_counters_.find (padname_splitted[0]);
-        if (context->media_counters_.end () != it)
-          count = it->second + 1;
-        context->media_counters_[padname_splitted[0]] = count;
+      int count = 0;
+      auto it = context->media_counters_.find (padname_splitted[0]);
+      if (context->media_counters_.end () != it)
+        count = it->second + 1;
+      context->media_counters_[padname_splitted[0]] = count;
 
-        gchar media_name[256];
-        g_sprintf (media_name, "%s_%d", padname_splitted[0], count);
-        g_debug ("uridecodebin: new media %s %d", media_name, count);
-        g_strfreev (padname_splitted);
+      gchar media_name[256];
+      g_sprintf (media_name, "%s_%d", padname_splitted[0], count);
+      g_debug ("uridecodebin: new media %s %d", media_name, count);
+      g_strfreev (padname_splitted);
 
 //creating a shmdata
-        ShmdataWriter::ptr connector;
-        connector.reset (new ShmdataWriter ());
-        std::string connector_name = context->make_file_name (media_name);
-        connector->set_path (connector_name.c_str ());
-        GstCaps *caps = gst_pad_get_caps_reffed (pad);
+      ShmdataWriter::ptr connector;
+      connector.reset (new ShmdataWriter ());
+      std::string connector_name = context->make_file_name (media_name);
+      connector->set_path (connector_name.c_str ());
+      GstCaps *caps = gst_pad_get_caps_reffed (pad);
 
-        connector->plug (context->bin_, identity, caps);
+      connector->plug (context->bin_, identity, caps);
 
-        if (G_IS_OBJECT (caps))
-          gst_object_unref (caps);
-        context->register_shmdata (connector);
+      if (G_IS_OBJECT (caps))
+        gst_object_unref (caps);
+      context->register_shmdata (connector);
 
-        g_message ("%s created a new shmdata writer (%s)",
-                   context->get_nick_name ().c_str (),
-                   connector_name.c_str ());
+      g_message ("%s created a new shmdata writer (%s)",
+                 context->get_nick_name ().c_str (), connector_name.c_str ());
 
 //saving where to connect to the shmdata
-        sample->element_to_link_with = funnel;
-      }
-    else
-      {
-        g_debug ("not handled data type: %s", padname);
-        GstElement *fake = gst_element_factory_make ("fakesink", nullptr);
-        gst_bin_add (GST_BIN (group->bin), fake);
-        if (!gst_element_sync_state_with_parent (fake))
-          g_warning ("pb syncing datastream state: %s", padname);
-        GstPad *fakepad = gst_element_get_static_pad (fake, "sink");
-        gst_pad_link (pad, fakepad);
-        gst_object_unref (fakepad);
-      }
+      sample->element_to_link_with = funnel;
+    }
+    else {
+      g_debug ("not handled data type: %s", padname);
+      GstElement *fake = gst_element_factory_make ("fakesink", nullptr);
+      gst_bin_add (GST_BIN (group->bin), fake);
+      if (!gst_element_sync_state_with_parent (fake))
+        g_warning ("pb syncing datastream state: %s", padname);
+      GstPad *fakepad = gst_element_get_static_pad (fake, "sink");
+      gst_pad_link (pad, fakepad);
+      gst_object_unref (fakepad);
+    }
     return;
   }
 
   void Uris::uridecodebin_no_more_pads_cb (GstElement * /*object */ ,
-                                           gpointer user_data)
-  {
+                                           gpointer user_data) {
     Group *group = (Group *) user_data;
     g_debug ("** no more pads");
     group_try_change_state (group);
   }
 
   void Uris::uridecodebin_drained_cb (GstElement * /*object */ ,
-                                      gpointer /*user_data */ )
-  {
+                                      gpointer /*user_data */ ) {
     //Group *group = (Group *) user_data;
     g_debug ("drained");
   }
 
   void Uris::group_add_task (gpointer /*key */ ,
                              gpointer /*value */ ,
-                             gpointer user_data)
-  {
+                             gpointer user_data) {
     Group *group = (Group *) user_data;
     g_async_queue_push (group->numTasks, group);
     g_debug ("-- task added");
   }
 
-  void Uris::group_queue_command (Group * group, gpointer func, gpointer arg)
-  {
+  void Uris::group_queue_command (Group * group, gpointer func, gpointer arg) {
     GroupCommand *command = g_new0 (GroupCommand, 1);
     command->func = (gboolean (*)(gpointer, gpointer)) func;
     command->group = group;
@@ -424,111 +400,97 @@ namespace switcher
     g_debug ("-- queuing command");
   }
 
-  void Uris::group_try_change_state (gpointer user_data)
-  {
+  void Uris::group_try_change_state (gpointer user_data) {
     Group *group = (Group *) user_data;
 
     g_debug ("try to change state %d",
              g_async_queue_length (group->numTasks));
 
-    if (g_async_queue_length (group->numTasks) != 0)
-      {
-        if (nullptr == g_async_queue_try_pop (group->numTasks))
-          g_debug ("warning: queue not poped......................... ");
+    if (g_async_queue_length (group->numTasks) != 0) {
+      if (nullptr == g_async_queue_try_pop (group->numTasks))
+        g_debug ("warning: queue not poped......................... ");
 
-        if (g_async_queue_length (group->numTasks) == 0)
-          {
-            if (group->state == GROUP_TO_PLAYING)
-              {
-                group->state = GROUP_PLAYING;
-                g_debug ("back to playing state %p", &(group->state));
-              }
-            else if (group->state == GROUP_TO_PAUSED)
-              {
-                group->state = GROUP_PAUSED;
-                g_message ("back to plaused state");
-              }
+      if (g_async_queue_length (group->numTasks) == 0) {
+        if (group->state == GROUP_TO_PLAYING) {
+          group->state = GROUP_PLAYING;
+          g_debug ("back to playing state %p", &(group->state));
+        }
+        else if (group->state == GROUP_TO_PAUSED) {
+          group->state = GROUP_PAUSED;
+          g_message ("back to plaused state");
+        }
 
-            GroupCommand *command =
-              (GroupCommand *) g_async_queue_try_pop (group->commands);
-            //launching the command with the higher priority
-            if (command != nullptr)
-              GstUtils::g_idle_add_full_with_context (((Uris *) group->
-                                                       user_data)->get_g_main_context
-                                                      (), G_PRIORITY_DEFAULT,
-                                                      &group_launch_command,
-                                                      (gpointer) command,
-                                                      nullptr);
-            g_debug ("queue size %d", g_async_queue_length (group->numTasks));
-            g_debug ("** new command launched");
-          }
+        GroupCommand *command =
+          (GroupCommand *) g_async_queue_try_pop (group->commands);
+        //launching the command with the higher priority
+        if (command != nullptr)
+          GstUtils::
+            g_idle_add_full_with_context (((Uris *) group->user_data)->
+                                          get_g_main_context (),
+                                          G_PRIORITY_DEFAULT,
+                                          &group_launch_command,
+                                          (gpointer) command, nullptr);
+        g_debug ("queue size %d", g_async_queue_length (group->numTasks));
+        g_debug ("** new command launched");
       }
-    else
-      {
-        g_debug ("nothing to do for changing the state");
-      }
+    }
+    else {
+      g_debug ("nothing to do for changing the state");
+    }
   }
 
-  gboolean Uris::group_launch_command (gpointer user_data)
-  {
+  gboolean Uris::group_launch_command (gpointer user_data) {
     GroupCommand *command = (GroupCommand *) user_data;
-    if (user_data != nullptr)
-      {
-        (*command->func) (command->group, command->arg);
-        if (command->arg != nullptr)
-          {
-            g_debug ("freeing coommand arg");
-            g_free (command->arg);
-          }
-        g_free (command);
+    if (user_data != nullptr) {
+      (*command->func) (command->group, command->arg);
+      if (command->arg != nullptr) {
+        g_debug ("freeing coommand arg");
+        g_free (command->arg);
       }
+      g_free (command);
+    }
     return FALSE;               //to be removed from the gmain loop
   }
 
-  gboolean Uris::group_play (Group * group)
-  {
+  gboolean Uris::group_play (Group * group) {
     g_debug ("trying to play state %d, queue lenth %d", group->state,
              g_async_queue_length (group->numTasks));
 
-    if (!GST_IS_ELEMENT (group->bin))
-      {
-        g_warning
-          ("trying to play something that is not a GStreamer element");
-        return FALSE;
-      }
+    if (!GST_IS_ELEMENT (group->bin)) {
+      g_warning ("trying to play something that is not a GStreamer element");
+      return FALSE;
+    }
 
-    switch (group->state)
-      {
-      case GROUP_PAUSED:
-        g_debug ("*********************** play group");
-        group->state = GROUP_TO_PLAYING;
-        g_hash_table_foreach (group->datastreams, (GHFunc) group_add_task,
-                              group);
-        g_hash_table_foreach (group->datastreams,
-                              (GHFunc) group_link_datastream, group);
-        g_hash_table_foreach (group->datastreams,
-                              (GHFunc) group_unblock_datastream, group);
-        break;
-      case GROUP_TO_PAUSED:
-        group_queue_command (group,
-                             (gpointer) & group_play_wrapped_for_commands,
-                             nullptr);
-        break;
-      case GROUP_PLAYING:
-        break;
-      case GROUP_TO_PLAYING:
-        break;
-      default:
-        g_debug ("unknown state when playing");
-        break;
-      }
+    switch (group->state) {
+    case GROUP_PAUSED:
+      g_debug ("*********************** play group");
+      group->state = GROUP_TO_PLAYING;
+      g_hash_table_foreach (group->datastreams, (GHFunc) group_add_task,
+                            group);
+      g_hash_table_foreach (group->datastreams,
+                            (GHFunc) group_link_datastream, group);
+      g_hash_table_foreach (group->datastreams,
+                            (GHFunc) group_unblock_datastream, group);
+      break;
+    case GROUP_TO_PAUSED:
+      group_queue_command (group,
+                           (gpointer) & group_play_wrapped_for_commands,
+                           nullptr);
+      break;
+    case GROUP_PLAYING:
+      break;
+    case GROUP_TO_PLAYING:
+      break;
+    default:
+      g_debug ("unknown state when playing");
+      break;
+    }
 
     return FALSE;
   }
 
   void Uris::group_link_datastream (gpointer key, gpointer /*value */ ,
-                                    gpointer /*user_data */ )
-  {
+                                    gpointer /*user_data */ ) {
     Sample *sample = (Sample *) key;
     //Group *group = (Group *) user_data;
 
@@ -546,43 +508,38 @@ namespace switcher
     peerpad = gst_element_get_compatible_pad (sample->element_to_link_with,
                                               sample->bin_srcpad, nullptr);
 
-    if (GST_IS_PAD (peerpad))
-      {
-        g_debug ("pad_link: %d", gst_pad_link (sample->bin_srcpad, peerpad));
-        gst_object_unref (peerpad);
-        if (!gst_pad_is_linked (sample->bin_srcpad))
-          g_debug ("oups, link did not worked");
-      }
+    if (GST_IS_PAD (peerpad)) {
+      g_debug ("pad_link: %d", gst_pad_link (sample->bin_srcpad, peerpad));
+      gst_object_unref (peerpad);
+      if (!gst_pad_is_linked (sample->bin_srcpad))
+        g_debug ("oups, link did not worked");
+    }
   }
 
   void Uris::group_unblock_datastream (gpointer key, gpointer /*value */ ,
-                                       gpointer /*user_data */ )
-  {
+                                       gpointer /*user_data */ ) {
     Sample *sample = (Sample *) key;
     //Group *group = (Group *) user_data;
 
     g_debug ("group_unblock_datastream %p", sample->bin_srcpad);
 
     if (!gst_pad_is_blocked (sample->bin_srcpad)
-        || !gst_pad_is_linked (sample->bin_srcpad))
-      {
-        g_warning ("OOPS - trying to unblock a not blocked pad %p",
-                   sample->bin_srcpad);
-        return;
-      }
+        || !gst_pad_is_linked (sample->bin_srcpad)) {
+      g_warning ("OOPS - trying to unblock a not blocked pad %p",
+                 sample->bin_srcpad);
+      return;
+    }
     if (!gst_pad_set_blocked_async
         (sample->bin_srcpad, FALSE, (GstPadBlockCallback) pad_blocked_cb,
-         sample))
-      {
-        g_debug ("play_source: pb unblocking %p", sample->bin_srcpad);
-      }
+         sample)) {
+      g_debug ("play_source: pb unblocking %p", sample->bin_srcpad);
+    }
     group_try_change_state (sample->group);
   }
 
   gboolean
     Uris::group_play_wrapped_for_commands (gpointer user_data,
-                                           gpointer /*user_data2 */ )
-  {
+                                           gpointer /*user_data2 */ ) {
     Group *group = (Group *) user_data;
     return group_play (group);
   }
@@ -591,131 +548,113 @@ namespace switcher
     Uris::pad_blocked_cb (GstPad * pad, gboolean blocked, gpointer user_data)
   {
     Sample *sample = (Sample *) user_data;
-    if (blocked)
-      {
+    if (blocked) {
 //unlinking and changing state only if expected
 //this is done this way because this callback is sometime called twice
-        if (g_hash_table_remove
-            (sample->group->padtoblock, sample->bin_srcpad))
-          {
-            group_unlink_datastream ((gpointer) sample, nullptr, nullptr);
-            g_debug ("XXX pad_blocked_cb %p", pad);
-            group_try_change_state (sample->group);
-          }
-        else
-          g_debug ("pad_blocked_cb: cannot remove from hash pad to block %p",
-                   sample->bin_srcpad);
+      if (g_hash_table_remove (sample->group->padtoblock, sample->bin_srcpad)) {
+        group_unlink_datastream ((gpointer) sample, nullptr, nullptr);
+        g_debug ("XXX pad_blocked_cb %p", pad);
+        group_try_change_state (sample->group);
       }
-    else
-      {
-        g_debug ("xxx pad unblocked %p", pad);
-      }
+      else
+        g_debug ("pad_blocked_cb: cannot remove from hash pad to block %p",
+                 sample->bin_srcpad);
+    }
+    else {
+      g_debug ("xxx pad unblocked %p", pad);
+    }
   }
 
   void Uris::group_unlink_datastream (gpointer key, gpointer /*value */ ,
-                                      gpointer /*user_data */ )
-  {
+                                      gpointer /*user_data */ ) {
     Sample *sample = (Sample *) key;
     unlink_pad (sample->bin_srcpad);
   }
 
-  void Uris::unlink_pad (GstPad * pad)
-  {
-    if (!GST_IS_PAD (pad))
-      {
-        g_warning ("(unlink_pad): trying to unlink something not a pad");
-        return;
-      }
+  void Uris::unlink_pad (GstPad * pad) {
+    if (!GST_IS_PAD (pad)) {
+      g_warning ("(unlink_pad): trying to unlink something not a pad");
+      return;
+    }
 
     GstPad *peerpad = gst_pad_get_peer (pad);
-    if (GST_IS_PAD (peerpad))
-      {
-        GstElement *peerpadparent = gst_pad_get_parent_element (peerpad);
-        g_debug ("unlink returns %d", gst_pad_unlink (pad, peerpad));
+    if (GST_IS_PAD (peerpad)) {
+      GstElement *peerpadparent = gst_pad_get_parent_element (peerpad);
+      g_debug ("unlink returns %d", gst_pad_unlink (pad, peerpad));
 // give back the pad
-        gst_element_release_request_pad (peerpadparent, peerpad);
-        gst_object_unref (peerpad);
-        gst_object_unref (peerpadparent);
-      }
+      gst_element_release_request_pad (peerpadparent, peerpad);
+      gst_object_unref (peerpad);
+      gst_object_unref (peerpadparent);
+    }
   }
 
   gboolean
     Uris::group_pause_wrapped_for_commands (gpointer user_data,
-                                            gpointer /*user_data2 */ )
-  {
+                                            gpointer /*user_data2 */ ) {
     Group *group = (Group *) user_data;
     return group_pause (group);
   }
 
-  gboolean Uris::group_pause (Group * group)
-  {
+  gboolean Uris::group_pause (Group * group) {
     g_debug ("try to pause, state is %d", group->state);
 
-    switch (group->state)
-      {
-      case GROUP_PAUSED:
-        break;
-      case GROUP_TO_PAUSED:
-        //group_queue_command (group,&group_pause_wrapped_for_commands,nullptr);
-        break;
-      case GROUP_PLAYING:
-        g_debug ("*** group pause");
-        group->state = GROUP_TO_PAUSED;
-        g_hash_table_foreach (group->datastreams, (GHFunc) group_add_task,
-                              group);
-        g_debug ("task added");
-        g_hash_table_foreach (group->datastreams,
-                              (GHFunc)
-                              group_block_datastream_wrapped_for_hash,
-                              nullptr);
-        break;
-      case GROUP_TO_PLAYING:
-        group_queue_command (group,
-                             (gpointer) & group_pause_wrapped_for_commands,
-                             nullptr);
-        break;
-      default:
-        g_warning ("unknown state when playing");
-        break;
-      }
+    switch (group->state) {
+    case GROUP_PAUSED:
+      break;
+    case GROUP_TO_PAUSED:
+      //group_queue_command (group,&group_pause_wrapped_for_commands,nullptr);
+      break;
+    case GROUP_PLAYING:
+      g_debug ("*** group pause");
+      group->state = GROUP_TO_PAUSED;
+      g_hash_table_foreach (group->datastreams, (GHFunc) group_add_task,
+                            group);
+      g_debug ("task added");
+      g_hash_table_foreach (group->datastreams, (GHFunc)
+                            group_block_datastream_wrapped_for_hash, nullptr);
+      break;
+    case GROUP_TO_PLAYING:
+      group_queue_command (group,
+                           (gpointer) & group_pause_wrapped_for_commands,
+                           nullptr);
+      break;
+    default:
+      g_warning ("unknown state when playing");
+      break;
+    }
     return FALSE;
   }
 
   void
     Uris::group_block_datastream_wrapped_for_hash (gpointer key,
                                                    gpointer /*value */ ,
-                                                   gpointer /*user_data */ )
-  {
+                                                   gpointer /*user_data */ ) {
     Sample *sample = (Sample *) key;
     g_debug ("group_block_datastream_wrapped_for_hash: called %p",
              sample->bin_srcpad);
     if (!gst_pad_is_blocked (sample->bin_srcpad))
       group_do_block_datastream (sample);
-    else
-      {
-        g_warning
-          ("group_block_datastream_wrapped_for_hash: WARNING not blocking unblocked pad");
-        group_try_change_state (sample->group);
-      }
+    else {
+      g_warning
+        ("group_block_datastream_wrapped_for_hash: WARNING not blocking unblocked pad");
+      group_try_change_state (sample->group);
+    }
   }
 
-  void Uris::group_do_block_datastream (Sample * sample)
-  {
+  void Uris::group_do_block_datastream (Sample * sample) {
     if (!gst_pad_set_blocked_async
         (sample->bin_srcpad, TRUE, (GstPadBlockCallback) pad_blocked_cb,
          sample))
       g_warning ("play_source: pb blocking");
-    else
-      {
+    else {
 //keep the pad in memory for dequeueing task when necessary
-        g_hash_table_insert (sample->group->padtoblock, sample->bin_srcpad,
-                             sample->bin_srcpad);
-      }
+      g_hash_table_insert (sample->group->padtoblock, sample->bin_srcpad,
+                           sample->bin_srcpad);
+    }
   }
 
   void Uris::group_seek_datastream (gpointer key, gpointer /*value */ ,
-                                    gpointer /*user_data */ )
-  {
+                                    gpointer /*user_data */ ) {
     Sample *sample = (Sample *) key;
     group_do_seek_datastream (sample);
     return;
@@ -723,64 +662,58 @@ namespace switcher
 
   gboolean
     Uris::group_seek_wrapped_for_commands (gpointer user_data,
-                                           gpointer /*user_data2 */ )
-  {
+                                           gpointer /*user_data2 */ ) {
     Group *group = (Group *) user_data;
     return group_seek (group, group->seek_position);
   }
 
-  gboolean Uris::group_seek (Group * group, gdouble position)
-  {
+  gboolean Uris::group_seek (Group * group, gdouble position) {
     g_debug ("trying to seek, state %d", group->state);
 
     group->seek_position = position;
 
-    switch (group->state)
-      {
-      case GROUP_TO_PAUSED:
-        group_queue_command (group,
-                             (gpointer) & group_seek_wrapped_for_commands,
-                             nullptr);
-        return FALSE;
-        break;
-      case GROUP_TO_PLAYING:
-        group_queue_command (group,
-                             (gpointer) & group_seek_wrapped_for_commands,
-                             nullptr);
-        return FALSE;
-        break;
-      case GROUP_PAUSED:
-        g_debug ("group_seek: GROUP_TO_PAUSED");
-        group->state = GROUP_TO_PAUSED; //using PAUSED state for seeking
-        break;
-      case GROUP_PLAYING:
-        g_async_queue_lock (group->commands);
-        group_queue_command_unlocked (group,
-                                      (gpointer) &
-                                      group_pause_wrapped_for_commands,
-                                      nullptr);
-        group_queue_command_unlocked (group,
-                                      (gpointer) &
-                                      group_seek_wrapped_for_commands,
-                                      nullptr);
-        group_queue_command_unlocked (group,
-                                      (gpointer) &
-                                      group_play_wrapped_for_commands,
-                                      nullptr);
-        g_async_queue_unlock (group->commands);
-        group_launch_command (g_async_queue_try_pop (group->commands));
-        return FALSE;
-        break;
-      default:
-        g_warning ("unhandled state when seeking");
-        break;
-      }
+    switch (group->state) {
+    case GROUP_TO_PAUSED:
+      group_queue_command (group,
+                           (gpointer) & group_seek_wrapped_for_commands,
+                           nullptr);
+      return FALSE;
+      break;
+    case GROUP_TO_PLAYING:
+      group_queue_command (group,
+                           (gpointer) & group_seek_wrapped_for_commands,
+                           nullptr);
+      return FALSE;
+      break;
+    case GROUP_PAUSED:
+      g_debug ("group_seek: GROUP_TO_PAUSED");
+      group->state = GROUP_TO_PAUSED;   //using PAUSED state for seeking
+      break;
+    case GROUP_PLAYING:
+      g_async_queue_lock (group->commands);
+      group_queue_command_unlocked (group,
+                                    (gpointer) &
+                                    group_pause_wrapped_for_commands,
+                                    nullptr);
+      group_queue_command_unlocked (group,
+                                    (gpointer) &
+                                    group_seek_wrapped_for_commands, nullptr);
+      group_queue_command_unlocked (group,
+                                    (gpointer) &
+                                    group_play_wrapped_for_commands, nullptr);
+      g_async_queue_unlock (group->commands);
+      group_launch_command (g_async_queue_try_pop (group->commands));
+      return FALSE;
+      break;
+    default:
+      g_warning ("unhandled state when seeking");
+      break;
+    }
     group_do_group_seek (group);
     return FALSE;
   }
 
-  void Uris::group_do_seek_datastream (Sample * sample)
-  {
+  void Uris::group_do_seek_datastream (Sample * sample) {
     g_debug ("--------------: going to seek for a sample");
     // GstQuery *query;
     // gboolean res;
@@ -832,8 +765,7 @@ namespace switcher
     group_try_change_state (sample->group);
   }
 
-  void Uris::group_do_group_seek (Group * group)
-  {
+  void Uris::group_do_group_seek (Group * group) {
     g_debug ("*** group_seek");
     group_add_task (nullptr, nullptr, group);
     g_hash_table_foreach (group->datastreams, (GHFunc) group_add_task, group);
@@ -845,8 +777,7 @@ namespace switcher
 
   void
     Uris::group_queue_command_unlocked (Group * group, gpointer func,
-                                        gpointer arg)
-  {
+                                        gpointer arg) {
     GroupCommand *command = g_new0 (GroupCommand, 1);
     command->func = (gboolean (*)(gpointer, gpointer)) func;
     command->group = group;
@@ -856,46 +787,40 @@ namespace switcher
   }
 
   gboolean
-    Uris::event_probe_cb (GstPad * pad, GstEvent * event, gpointer data)
-  {
+    Uris::event_probe_cb (GstPad * pad, GstEvent * event, gpointer data) {
     Sample *sample = (Sample *) data;
-    if (GST_EVENT_TYPE (event) == GST_EVENT_EOS)
-      {
-        //g_debug ("EOS caught and disabled ");
-        g_debug ("pad with EOS %s:%s, pointer:%p src: %p %s",
-                 GST_DEBUG_PAD_NAME (pad), pad, GST_EVENT_SRC (event),
-                 gst_element_get_name (GST_EVENT_SRC (event)));
-        if (sample->group->state != GROUP_PLAYING)
-          {
-            g_warning
-              ("probing EOS while not playing should not be possible %p",
-               &(sample->group->state));
-          }
-        group_unlink_datastream ((gpointer) sample, nullptr, nullptr);
-
-        if (pad == sample->group->masterpad)
-          {
-            // this seems not working if play rate >1.0
-            g_debug ("EOS on master pad, looping");
-            // g_idle_add ((GSourceFunc) group_eos_rewind,
-            //       (gpointer)sample->group);
-            GstUtils::g_idle_add_full_with_context (((Uris *) sample->
-                                                     group->user_data)->get_g_main_context
-                                                    (), G_PRIORITY_DEFAULT,
-                                                    (GSourceFunc)
-                                                    group_eos_rewind,
-                                                    (gpointer) sample->group,
-                                                    nullptr);
-          }
-
-        return FALSE;
+    if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) {
+      //g_debug ("EOS caught and disabled ");
+      g_debug ("pad with EOS %s:%s, pointer:%p src: %p %s",
+               GST_DEBUG_PAD_NAME (pad), pad, GST_EVENT_SRC (event),
+               gst_element_get_name (GST_EVENT_SRC (event)));
+      if (sample->group->state != GROUP_PLAYING) {
+        g_warning
+          ("probing EOS while not playing should not be possible %p",
+           &(sample->group->state));
       }
+      group_unlink_datastream ((gpointer) sample, nullptr, nullptr);
+
+      if (pad == sample->group->masterpad) {
+        // this seems not working if play rate >1.0
+        g_debug ("EOS on master pad, looping");
+        // g_idle_add ((GSourceFunc) group_eos_rewind,
+        //       (gpointer)sample->group);
+        GstUtils::
+          g_idle_add_full_with_context (((Uris *) sample->group->user_data)->
+                                        get_g_main_context (),
+                                        G_PRIORITY_DEFAULT, (GSourceFunc)
+                                        group_eos_rewind,
+                                        (gpointer) sample->group, nullptr);
+      }
+
+      return FALSE;
+    }
     g_debug ("event received :%d", GST_EVENT_TYPE (event));
     return TRUE;
   }
 
-  gboolean Uris::group_eos_rewind (Group * group)
-  {
+  gboolean Uris::group_eos_rewind (Group * group) {
     group->state = GROUP_TO_PAUSED;
     g_hash_table_foreach (group->datastreams, (GHFunc) group_add_task, group);
     g_hash_table_foreach (group->datastreams, (GHFunc) group_add_task, group);

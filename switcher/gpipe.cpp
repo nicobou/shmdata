@@ -30,18 +30,15 @@
 #include <gst/interfaces/xoverlay.h>
 #include <algorithm>
 
-namespace switcher
-{
+namespace switcher {
 
   GPipe::GPipe ():pipeline_ (gst_pipeline_new (nullptr)),
-    source_funcs_ (), gpipe_custom_props_ (new CustomPropertyHelper ())
-  {
+    source_funcs_ (), gpipe_custom_props_ (new CustomPropertyHelper ()) {
     make_bin ();
     init_segment (this);
   }
 
-  GPipe::~GPipe ()
-  {
+  GPipe::~GPipe () {
     if (!commands_.empty ())
     for (auto & it:commands_)
         if (!g_source_is_destroyed (it))
@@ -53,8 +50,7 @@ namespace switcher
       g_source_destroy (source_);
   }
 
-  bool GPipe::init ()
-  {
+  bool GPipe::init () {
     source_funcs_.prepare = source_prepare;
     source_funcs_.check = source_check;
     source_funcs_.dispatch = source_dispatch;
@@ -64,11 +60,10 @@ namespace switcher
       gst_pipeline_get_bus (GST_PIPELINE (pipeline_));
     g_source_set_callback (source_, (GSourceFunc) bus_called, nullptr,
                            nullptr);
-    if (nullptr == get_g_main_context ())
-      {
-        g_warning ("%s: g_main_context is nullptr", __FUNCTION__);
-        return false;
-      }
+    if (nullptr == get_g_main_context ()) {
+      g_warning ("%s: g_main_context is nullptr", __FUNCTION__);
+      return false;
+    }
     g_source_attach (source_, get_g_main_context ());
     gst_bus_set_sync_handler (((GstBusSource *) source_)->bus,
                               bus_sync_handler, this);
@@ -86,28 +81,24 @@ namespace switcher
                                                   GPipe::get_play, this);
     seek_spec_ =
       gpipe_custom_props_->make_double_property ("seek", "seek (in percent)",
-                                                 0.0, 1.0, 0.0,
-                                                 (GParamFlags)
+                                                 0.0, 1.0, 0.0, (GParamFlags)
                                                  G_PARAM_READWRITE,
                                                  GPipe::set_seek,
                                                  GPipe::get_seek, this);
     return init_gpipe ();
   }
 
-  void GPipe::install_play_pause ()
-  {
+  void GPipe::install_play_pause () {
     install_property_by_pspec (gpipe_custom_props_->get_gobject (),
                                play_pause_spec_, "play", "Play");
   }
 
-  void GPipe::install_seek ()
-  {
+  void GPipe::install_seek () {
     install_property_by_pspec (gpipe_custom_props_->get_gobject (),
                                seek_spec_, "seek", "Seek");
   }
 
-  void GPipe::install_speed ()
-  {
+  void GPipe::install_speed () {
     install_method ("Speed",
                     "speed",
                     "controle speed of pipeline",
@@ -122,8 +113,7 @@ namespace switcher
                                                        nullptr), this);
   }
 
-  void GPipe::play (gboolean play)
-  {
+  void GPipe::play (gboolean play) {
     if (play_ == play)
       return;
     play_ = play;
@@ -140,20 +130,17 @@ namespace switcher
     gpipe_custom_props_->notify_property_changed (play_pause_spec_);
   }
 
-  void GPipe::set_play (gboolean play, void *user_data)
-  {
+  void GPipe::set_play (gboolean play, void *user_data) {
     GPipe *context = static_cast < GPipe * >(user_data);
     context->play (play);
   }
 
-  gboolean GPipe::get_play (void *user_data)
-  {
+  gboolean GPipe::get_play (void *user_data) {
     GPipe *context = static_cast < GPipe * >(user_data);
     return context->play_;
   }
 
-  bool GPipe::seek (gdouble position)
-  {
+  bool GPipe::seek (gdouble position) {
     gboolean ret = FALSE;
     ret = gst_element_seek (pipeline_, speed_, GST_FORMAT_TIME, (GstSeekFlags) (        //GST_SEEK_FLAG_FLUSH |
                                                                                  GST_SEEK_FLAG_ACCURATE),
@@ -169,19 +156,16 @@ namespace switcher
     return true;
   }
 
-  gdouble GPipe::get_seek (void *user_data)
-  {
+  gdouble GPipe::get_seek (void *user_data) {
     GPipe *context = static_cast < GPipe * >(user_data);
     return context->seek_;
   }
-  void GPipe::set_seek (gdouble position, void *user_data)
-  {
+  void GPipe::set_seek (gdouble position, void *user_data) {
     GPipe *context = static_cast < GPipe * >(user_data);
     context->seek (position);
   }
 
-  gboolean GPipe::speed_wrapped (gdouble speed, gpointer user_data)
-  {
+  gboolean GPipe::speed_wrapped (gdouble speed, gpointer user_data) {
     GPipe *context = static_cast < GPipe * >(user_data);
 
     g_debug ("speed_wrapped %f", speed);
@@ -192,8 +176,7 @@ namespace switcher
       return FALSE;
   }
 
-  bool GPipe::speed (gdouble speed)
-  {
+  bool GPipe::speed (gdouble speed) {
     g_debug ("GPipe::speed %f", speed);
 
     speed_ = speed;
@@ -205,16 +188,14 @@ namespace switcher
     query = gst_query_new_position (GST_FORMAT_TIME);
     res = gst_element_query (pipeline_, query);
     gint64 cur_pos = 0;
-    if (res)
-      {
-        gst_query_parse_position (query, nullptr, &cur_pos);
+    if (res) {
+      gst_query_parse_position (query, nullptr, &cur_pos);
 
-        g_debug ("cur pos = %" GST_TIME_FORMAT "\n", GST_TIME_ARGS (cur_pos));
-      }
-    else
-      {
-        g_warning ("position query failed...");
-      }
+      g_debug ("cur pos = %" GST_TIME_FORMAT "\n", GST_TIME_ARGS (cur_pos));
+    }
+    else {
+      g_warning ("position query failed...");
+    }
     gst_query_unref (query);
 
     gboolean ret;
@@ -232,59 +213,52 @@ namespace switcher
     return true;
   }
 
-  void GPipe::query_position_and_length ()
-  {
+  void GPipe::query_position_and_length () {
     GstFormat fmt = GST_FORMAT_TIME;
     gint64 pos;
 
     if (gst_element_query_position (pipeline_, &fmt, &pos)
-        && gst_element_query_duration (pipeline_, &fmt, &length_))
-      {
-        // g_print ("Time: %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r",
-        //  GST_TIME_ARGS (pos), GST_TIME_ARGS (length_));
-      }
+        && gst_element_query_duration (pipeline_, &fmt, &length_)) {
+      // g_print ("Time: %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r",
+      //  GST_TIME_ARGS (pos), GST_TIME_ARGS (length_));
+    }
 
   }
 
-  gboolean GPipe::query_position (gpointer user_data)
-  {
+  gboolean GPipe::query_position (gpointer user_data) {
     GPipe *context = static_cast < GPipe * >(user_data);
     context->query_position_and_length ();
     /* call me again */
     return TRUE;
   }
 
-  gboolean GPipe::run_command (gpointer user_data)
-  {
+  gboolean GPipe::run_command (gpointer user_data) {
     QuidCommandArg *context = static_cast < QuidCommandArg * >(user_data);
     QuiddityManager_Impl::ptr manager = context->self->manager_impl_.lock ();
-    if ((bool) manager && context->command != nullptr)
-      {
-        switch (context->command->id_)
-          {
-          case QuiddityCommand::remove:
-            manager->remove (context->command->args_[0]);
-            break;
-          case QuiddityCommand::invoke:
-            {
-              manager->invoke (context->command->args_[0], context->command->args_[1], nullptr, //do not care of return value
-                               context->command->vector_arg_);
-            }
-            break;
-          case QuiddityCommand::set_property:
-            {
-              manager->set_property (context->command->args_[0],
-                                     context->command->args_[1],
-                                     context->command->vector_arg_[0]);
-            }
-            break;
+    if ((bool) manager && context->command != nullptr) {
+      switch (context->command->id_) {
+      case QuiddityCommand::remove:
+        manager->remove (context->command->args_[0]);
+        break;
+      case QuiddityCommand::invoke:
+        {
+          manager->invoke (context->command->args_[0], context->command->args_[1], nullptr,     //do not care of return value
+                           context->command->vector_arg_);
+        }
+        break;
+      case QuiddityCommand::set_property:
+        {
+          manager->set_property (context->command->args_[0],
+                                 context->command->args_[1],
+                                 context->command->vector_arg_[0]);
+        }
+        break;
 
-          default:
-            g_debug ("on-error-command: %s not implemented\n",
-                     QuiddityCommand::get_string_from_id (context->
-                                                          command->id_));
-          }
+      default:
+        g_debug ("on-error-command: %s not implemented\n",
+                 QuiddityCommand::get_string_from_id (context->command->id_));
       }
+    }
     else
       g_warning ("GPipe::bus_sync_handler, cannot run command");
 
@@ -297,15 +271,13 @@ namespace switcher
     return FALSE;               //do not repeat run_command
   }
 
-  GstElement *GPipe::get_pipeline ()
-  {
+  GstElement *GPipe::get_pipeline () {
     return pipeline_;
   }
 
   void
     GPipe::print_one_tag (const GstTagList * list, const gchar * tag,
-                          gpointer user_data)
-  {
+                          gpointer user_data) {
     // int i, num;
 
     // num = gst_tag_list_get_tag_size (list, tag);
@@ -338,8 +310,7 @@ namespace switcher
 
   GstBusSyncReply GPipe::bus_sync_handler (GstBus * /*bus */ ,
                                            GstMessage * msg,
-                                           gpointer user_data)
-  {
+                                           gpointer user_data) {
     shmdata_base_reader_t *reader =
       (shmdata_base_reader_t *) g_object_get_data (G_OBJECT (msg->src),
                                                    "shmdata_base_reader");
@@ -349,188 +320,169 @@ namespace switcher
     //      G_OBJECT_TYPE_NAME(G_OBJECT (msg->src)),
     //      GST_MESSAGE_TYPE_NAME (msg));
 
-    if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_QOS)
-      {
-        GstFormat format;
-        guint64 processed;
-        guint64 dropped;
-        gst_message_parse_qos_stats (msg, &format, &processed, &dropped);
+    if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_QOS) {
+      GstFormat format;
+      guint64 processed;
+      guint64 dropped;
+      gst_message_parse_qos_stats (msg, &format, &processed, &dropped);
 // g_print ("QOS from %s, format %d, processed %lu dropped %lu\n",
 //  G_OBJECT_TYPE_NAME(G_OBJECT (msg->src)),
 //  format,
 //  processed,
 //  dropped);
-        return GST_BUS_PASS;
-      }
+      return GST_BUS_PASS;
+    }
 
-    if (reader != nullptr)
-      {
-        if (nullptr != msg && shmdata_base_reader_process_error (reader, msg))
-          return GST_BUS_DROP;
-        else
-          return GST_BUS_PASS;
-      }
-
-    if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR)
-      {
-        gchar *debug;
-        GError *error;
-
-        gst_message_parse_error (msg, &error, &debug);
-        g_free (debug);
-        g_debug ("GPipe::bus_sync_handler Error: %s from %s", error->message,
-                 GST_MESSAGE_SRC_NAME (msg));
-
-        QuiddityCommand *command =
-          (QuiddityCommand *) g_object_get_data (G_OBJECT (msg->src),
-                                                 "on-error-command");
-//removing command in order to get it invoked once
-        g_object_set_data (G_OBJECT (msg->src),
-                           "on-error-command", (gpointer) nullptr);
-
-        if (command != nullptr)
-          {
-            g_debug ("error contains data (on-error-command) ");
-            QuidCommandArg *args = new QuidCommandArg ();
-            args->self = context;
-            args->command = command;
-            args->src = nullptr;
-            if (command->time_ > 1)
-              {
-                args->src = g_timeout_source_new ((guint) command->time_);
-                g_source_set_callback (args->src,
-                                       (GSourceFunc) run_command,
-                                       args, nullptr);
-                context->commands_.push_back (args->src);
-                g_source_attach (args->src, context->get_g_main_context ());
-                g_source_unref (args->src);
-              }
-            else
-              {
-                GstUtils::
-                  g_idle_add_full_with_context (context->get_g_main_context
-                                                (), G_PRIORITY_DEFAULT_IDLE,
-                                                (GSourceFunc) run_command,
-                                                (gpointer) args, nullptr);
-              }
-
-          }
-
-        g_error_free (error);
+    if (reader != nullptr) {
+      if (nullptr != msg && shmdata_base_reader_process_error (reader, msg))
         return GST_BUS_DROP;
-      }
+      else
+        return GST_BUS_PASS;
+    }
 
-    if (nullptr != msg->structure)
-      if (gst_structure_has_name (msg->structure, "prepare-xwindow-id"))
-        {
-          guintptr *window_handle =
-            (guintptr *) g_object_get_data (G_OBJECT (msg->src),
-                                            "window-handle");
-          if (window_handle != nullptr)
-            gst_x_overlay_set_window_handle (GST_X_OVERLAY (msg->src),
-                                             *window_handle);
+    if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_ERROR) {
+      gchar *debug;
+      GError *error;
+
+      gst_message_parse_error (msg, &error, &debug);
+      g_free (debug);
+      g_debug ("GPipe::bus_sync_handler Error: %s from %s", error->message,
+               GST_MESSAGE_SRC_NAME (msg));
+
+      QuiddityCommand *command =
+        (QuiddityCommand *) g_object_get_data (G_OBJECT (msg->src),
+                                               "on-error-command");
+//removing command in order to get it invoked once
+      g_object_set_data (G_OBJECT (msg->src),
+                         "on-error-command", (gpointer) nullptr);
+
+      if (command != nullptr) {
+        g_debug ("error contains data (on-error-command) ");
+        QuidCommandArg *args = new QuidCommandArg ();
+        args->self = context;
+        args->command = command;
+        args->src = nullptr;
+        if (command->time_ > 1) {
+          args->src = g_timeout_source_new ((guint) command->time_);
+          g_source_set_callback (args->src,
+                                 (GSourceFunc) run_command, args, nullptr);
+          context->commands_.push_back (args->src);
+          g_source_attach (args->src, context->get_g_main_context ());
+          g_source_unref (args->src);
+        }
+        else {
+          GstUtils::g_idle_add_full_with_context (context->get_g_main_context
+                                                  (), G_PRIORITY_DEFAULT_IDLE,
+                                                  (GSourceFunc) run_command,
+                                                  (gpointer) args, nullptr);
         }
 
-    if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_TAG)
-      {
+      }
+
+      g_error_free (error);
+      return GST_BUS_DROP;
+    }
+
+    if (nullptr != msg->structure)
+      if (gst_structure_has_name (msg->structure, "prepare-xwindow-id")) {
+        guintptr *window_handle =
+          (guintptr *) g_object_get_data (G_OBJECT (msg->src),
+                                          "window-handle");
+        if (window_handle != nullptr)
+          gst_x_overlay_set_window_handle (GST_X_OVERLAY (msg->src),
+                                           *window_handle);
+      }
+
+    if (GST_MESSAGE_TYPE (msg) == GST_MESSAGE_TAG) {
 // GstTagList *tags = nullptr;
 // gst_message_parse_tag (msg, &tags);
 // g_print ("Got tags from element %s:\n", GST_OBJECT_NAME (msg->src));
 // gst_tag_list_foreach (tags, print_one_tag, nullptr);
 // g_print ("\n");
 // gst_tag_list_free (tags);
-      }
+    }
     return GST_BUS_PASS;
   }
 
   gboolean GPipe::bus_called (GstBus * /*bus */ ,
-                              GstMessage * msg, gpointer /*user_data */ )
-  {
-    switch (GST_MESSAGE_TYPE (msg))
-      {
-      case GST_MESSAGE_EOS:
-        g_debug ("bus_call End of stream, name: %s",
-                 GST_MESSAGE_SRC_NAME (msg));
-        break;
-      case GST_MESSAGE_SEGMENT_DONE:
-        g_debug ("bus_call segment done");
-        break;
-      case GST_MESSAGE_ERROR:
-        gchar * debug;
-        GError *error;
+                              GstMessage * msg, gpointer /*user_data */ ) {
+    switch (GST_MESSAGE_TYPE (msg)) {
+    case GST_MESSAGE_EOS:
+      g_debug ("bus_call End of stream, name: %s",
+               GST_MESSAGE_SRC_NAME (msg));
+      break;
+    case GST_MESSAGE_SEGMENT_DONE:
+      g_debug ("bus_call segment done");
+      break;
+    case GST_MESSAGE_ERROR:
+      gchar * debug;
+      GError *error;
 
-        gst_message_parse_error (msg, &error, &debug);
-        g_free (debug);
-        g_debug ("bus_call Error: %s from %s", error->message,
-                 GST_MESSAGE_SRC_NAME (msg));
-        g_error_free (error);
-        return FALSE;
+      gst_message_parse_error (msg, &error, &debug);
+      g_free (debug);
+      g_debug ("bus_call Error: %s from %s", error->message,
+               GST_MESSAGE_SRC_NAME (msg));
+      g_error_free (error);
+      return FALSE;
 
-        break;
-      case GST_MESSAGE_STATE_CHANGED:
-        // GstState old_state, new_state;
-        // gst_message_parse_state_changed (msg, &old_state, &new_state, nullptr);
-        // g_debug ("Element %s changed state from %s to %s.",
-        //        GST_OBJECT_NAME (msg->src),
-        //        gst_element_state_get_name (old_state),
-        //        gst_element_state_get_name (new_state));
-        // if (GST_IS_ELEMENT (GST_ELEMENT_PARENT (msg->src)))
-        // {
-        //   g_debug ("parent :%s (%s)",
-        //    GST_OBJECT_NAME (GST_ELEMENT_PARENT (msg->src)),
-        //    gst_element_state_get_name (GST_STATE(GST_ELEMENT_PARENT (msg->src))));
-        // }
-        break;
-      default:
-        //g_debug ("message %s from %s",GST_MESSAGE_TYPE_NAME(msg),GST_MESSAGE_SRC_NAME(msg));
-        break;
-      }
+      break;
+    case GST_MESSAGE_STATE_CHANGED:
+      // GstState old_state, new_state;
+      // gst_message_parse_state_changed (msg, &old_state, &new_state, nullptr);
+      // g_debug ("Element %s changed state from %s to %s.",
+      //        GST_OBJECT_NAME (msg->src),
+      //        gst_element_state_get_name (old_state),
+      //        gst_element_state_get_name (new_state));
+      // if (GST_IS_ELEMENT (GST_ELEMENT_PARENT (msg->src)))
+      // {
+      //   g_debug ("parent :%s (%s)",
+      //    GST_OBJECT_NAME (GST_ELEMENT_PARENT (msg->src)),
+      //    gst_element_state_get_name (GST_STATE(GST_ELEMENT_PARENT (msg->src))));
+      // }
+      break;
+    default:
+      //g_debug ("message %s from %s",GST_MESSAGE_TYPE_NAME(msg),GST_MESSAGE_SRC_NAME(msg));
+      break;
+    }
     return TRUE;
   }
 
-  gboolean GPipe::source_prepare (GSource * source, gint * timeout)
-  {
+  gboolean GPipe::source_prepare (GSource * source, gint * timeout) {
     GstBusSource *bsrc = (GstBusSource *) source;
     *timeout = -1;
     return gst_bus_have_pending (bsrc->bus);
   }
 
-  gboolean GPipe::source_check (GSource * source)
-  {
+  gboolean GPipe::source_check (GSource * source) {
     GstBusSource *bsrc = (GstBusSource *) source;
     return gst_bus_have_pending (bsrc->bus);
   }
 
   gboolean
     GPipe::source_dispatch (GSource * source, GSourceFunc callback,
-                            gpointer user_data)
-  {
+                            gpointer user_data) {
     GstBusFunc handler = (GstBusFunc) callback;
     GstBusSource *bsrc = (GstBusSource *) source;
     gboolean result = FALSE;
 
-    if (handler)
-      {
-        GstMessage *message = gst_bus_pop (bsrc->bus);
-        if (message)
-          {
-            result = handler (bsrc->bus, message, user_data);
-            gst_message_unref (message);
-          }
+    if (handler) {
+      GstMessage *message = gst_bus_pop (bsrc->bus);
+      if (message) {
+        result = handler (bsrc->bus, message, user_data);
+        gst_message_unref (message);
       }
+    }
 
     return result;
   }
 
-  void GPipe::source_finalize (GSource * source)
-  {
+  void GPipe::source_finalize (GSource * source) {
     GstBusSource *bsrc = (GstBusSource *) source;
     gst_object_unref (bsrc->bus);
     bsrc->bus = nullptr;
   }
 
-  void GPipe::make_bin ()
-  {
+  void GPipe::make_bin () {
     GstUtils::make_element ("bin", &bin_);
     g_object_set (G_OBJECT (bin_), "async-handling", TRUE, nullptr);
     gst_bin_add (GST_BIN (get_pipeline ()), bin_);
@@ -539,8 +491,7 @@ namespace switcher
     GstUtils::wait_state_changed (bin_);
   }
 
-  void GPipe::clean_bin ()
-  {
+  void GPipe::clean_bin () {
     g_debug ("GPipe, bin state %s, target %s, num children %d ",
              gst_element_state_get_name (GST_STATE (bin_)),
              gst_element_state_get_name (GST_STATE_TARGET (bin_)),
@@ -548,39 +499,33 @@ namespace switcher
 
     GstUtils::wait_state_changed (bin_);
 
-    if (GST_IS_ELEMENT (bin_))
-      {
+    if (GST_IS_ELEMENT (bin_)) {
 //FIXME clear_shmdatas ();
 
-        g_debug ("GPipe, bin state %s, target %s, num children %d ",
-                 gst_element_state_get_name (GST_STATE (bin_)),
-                 gst_element_state_get_name (GST_STATE_TARGET (bin_)),
-                 GST_BIN_NUMCHILDREN (GST_BIN (bin_)));
+      g_debug ("GPipe, bin state %s, target %s, num children %d ",
+               gst_element_state_get_name (GST_STATE (bin_)),
+               gst_element_state_get_name (GST_STATE_TARGET (bin_)),
+               GST_BIN_NUMCHILDREN (GST_BIN (bin_)));
 
-        if (g_list_length (GST_BIN_CHILDREN (bin_)) > 0)
-          {
-            GList *child = nullptr, *children = GST_BIN_CHILDREN (bin_);
-            for (child = children; child != nullptr;
-                 child = g_list_next (child))
-              {
-                g_debug ("segment warning: child %s",
-                         GST_ELEMENT_NAME (GST_ELEMENT (child->data)));
+      if (g_list_length (GST_BIN_CHILDREN (bin_)) > 0) {
+        GList *child = nullptr, *children = GST_BIN_CHILDREN (bin_);
+        for (child = children; child != nullptr; child = g_list_next (child)) {
+          g_debug ("segment warning: child %s",
+                   GST_ELEMENT_NAME (GST_ELEMENT (child->data)));
 //GstUtils::clean_element (GST_ELEMENT (child->data));
-              }
-          }
-        g_debug ("going to clean bin_");
-        GstUtils::clean_element (bin_);
-        g_debug ("GPipe: cleaning internal bin");
+        }
       }
+      g_debug ("going to clean bin_");
+      GstUtils::clean_element (bin_);
+      g_debug ("GPipe: cleaning internal bin");
+    }
   }
 
-  GstElement *GPipe::get_bin ()
-  {
+  GstElement *GPipe::get_bin () {
     return bin_;
   }
 
-  bool GPipe::reset_bin ()
-  {
+  bool GPipe::reset_bin () {
     clean_bin ();
     make_bin ();
     return true;

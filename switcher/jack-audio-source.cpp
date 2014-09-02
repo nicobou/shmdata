@@ -20,8 +20,7 @@
 #include "jack-audio-source.h"
 #include <gst/gst.h>
 #include "gst-utils.h"
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (JackAudioSource,
                                         "Jack Audio",
                                         "audio source",
@@ -35,12 +34,10 @@ namespace switcher
     jackaudiosrc_bin_ (nullptr),
     custom_props_ (new CustomPropertyHelper ()),
     num_channels_spec_ (nullptr),
-    num_channels_ (2), client_name_spec_ (nullptr), client_name_ (nullptr)
-  {
+    num_channels_ (2), client_name_spec_ (nullptr), client_name_ (nullptr) {
   }
 
-  bool JackAudioSource::init_gpipe ()
-  {
+  bool JackAudioSource::init_gpipe () {
     if (false == make_elements ())
       return false;
     init_startable (this);
@@ -79,14 +76,12 @@ namespace switcher
     return true;
   }
 
-  JackAudioSource::~JackAudioSource ()
-  {
+  JackAudioSource::~JackAudioSource () {
     if (nullptr != client_name_)
       g_free (client_name_);
   }
 
-  bool JackAudioSource::start ()
-  {
+  bool JackAudioSource::start () {
     make_elements ();
     set_raw_audio_element (jackaudiosrc_bin_);
     disable_property ("channels");
@@ -94,16 +89,14 @@ namespace switcher
     return true;
   }
 
-  bool JackAudioSource::stop ()
-  {
+  bool JackAudioSource::stop () {
     enable_property ("channels");
     enable_property ("client-name");
     reset_bin ();
     return true;
   }
 
-  bool JackAudioSource::make_elements ()
-  {
+  bool JackAudioSource::make_elements () {
     if (!GstUtils::make_element ("jackaudiosrc", &jackaudiosrc_))
       return false;
     if (!GstUtils::make_element ("audioconvert", &audioconvert_))
@@ -143,33 +136,29 @@ namespace switcher
     return true;
   }
 
-  void JackAudioSource::set_num_channels (const gint value, void *user_data)
-  {
+  void JackAudioSource::set_num_channels (const gint value, void *user_data) {
     JackAudioSource *context = static_cast < JackAudioSource * >(user_data);
     context->num_channels_ = value;
-    GObjectWrapper::notify_property_changed (context->
-                                             gobject_->get_gobject (),
+    GObjectWrapper::notify_property_changed (context->gobject_->
+                                             get_gobject (),
                                              context->num_channels_spec_);
   }
 
-  gint JackAudioSource::get_num_channels (void *user_data)
-  {
+  gint JackAudioSource::get_num_channels (void *user_data) {
     JackAudioSource *context = static_cast < JackAudioSource * >(user_data);
     return context->num_channels_;
   }
 
-  void JackAudioSource::set_client_name (const gchar * value, void *user_data)
-  {
+  void JackAudioSource::set_client_name (const gchar * value, void *user_data) {
     JackAudioSource *context = static_cast < JackAudioSource * >(user_data);
     if (nullptr != context->client_name_)
       g_free (context->client_name_);
     context->client_name_ = g_strdup (value);
-    context->custom_props_->
-      notify_property_changed (context->client_name_spec_);
+    context->custom_props_->notify_property_changed (context->
+                                                     client_name_spec_);
   }
 
-  const gchar *JackAudioSource::get_client_name (void *user_data)
-  {
+  const gchar *JackAudioSource::get_client_name (void *user_data) {
     JackAudioSource *context = static_cast < JackAudioSource * >(user_data);
     return context->client_name_;
   }

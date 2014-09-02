@@ -20,11 +20,9 @@
 #ifndef __SWITCHER_QUIDDITY_BASIC_TEST_H__
 #define __SWITCHER_QUIDDITY_BASIC_TEST_H__
 
-namespace switcher
-{
+namespace switcher {
 
-  class QuiddityBasicTest
-  {
+  class QuiddityBasicTest {
   public:
     static bool test_full (QuiddityManager::ptr manager,
                            std::string quiddity_class_name);

@@ -21,8 +21,7 @@
 #include <glib/gprintf.h>
 #include "gst-utils.h"
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (HTTPSDP,
                                         "HTTP/SDP Receiver",
                                         "network",
@@ -30,12 +29,10 @@ namespace switcher
                                         "LGPL",
                                         "httpsdp", "Nicolas Bouillot");
   HTTPSDP::HTTPSDP ():souphttpsrc_ (nullptr),
-    sdpdemux_ (nullptr), media_counter_ (0)
-  {
+    sdpdemux_ (nullptr), media_counter_ (0) {
   }
 
-  bool HTTPSDP::init_gpipe ()
-  {
+  bool HTTPSDP::init_gpipe () {
     if (!GstUtils::make_element ("souphttpsrc", &souphttpsrc_)
         || !GstUtils::make_element ("sdpdemux", &sdpdemux_))
       return false;
@@ -71,14 +68,12 @@ namespace switcher
   }
 
   void HTTPSDP::no_more_pads_cb (GstElement * /*object */ ,
-                                 gpointer /*user_data */ )
-  {
+                                 gpointer /*user_data */ ) {
     //HTTPSDP *context = static_cast<HTTPSDP *>(user_data);
   }
 
   void HTTPSDP::pad_added_cb (GstElement * /*object */ , GstPad * pad,
-                              gpointer user_data)
-  {
+                              gpointer user_data) {
     HTTPSDP *context = static_cast < HTTPSDP * >(user_data);
 
     const gchar *padname =
@@ -119,8 +114,7 @@ namespace switcher
                context->get_nick_name ().c_str (), connector_name.c_str ());
   }
 
-  gboolean HTTPSDP::to_shmdata_wrapped (gpointer uri, gpointer user_data)
-  {
+  gboolean HTTPSDP::to_shmdata_wrapped (gpointer uri, gpointer user_data) {
     HTTPSDP *context = static_cast < HTTPSDP * >(user_data);
 
     if (context->to_shmdata ((char *) uri))
@@ -129,8 +123,7 @@ namespace switcher
       return FALSE;
   }
 
-  bool HTTPSDP::to_shmdata (std::string uri)
-  {
+  bool HTTPSDP::to_shmdata (std::string uri) {
     g_debug ("HTTPSDP::to_shmdata set location %s", uri.c_str ());
     g_object_set (G_OBJECT (souphttpsrc_), "location", uri.c_str (), nullptr);
     gst_bin_add_many (GST_BIN (bin_), souphttpsrc_, sdpdemux_, nullptr);

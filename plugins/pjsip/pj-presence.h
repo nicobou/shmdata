@@ -26,13 +26,11 @@
 #include <glib.h>               //gboolean
 #include <glib-object.h>        //GEnumValue
 
-namespace switcher
-{
+namespace switcher {
   class PJSIP;
   class PJCall;
 
-  class PJPresence
-  {
+  class PJPresence {
     friend PJSIP;
     friend PJCall;              //for account local uri
   public:
@@ -42,8 +40,7 @@ namespace switcher
       PJPresence (const PJPresence &) = delete;
       PJPresence & operator= (const PJPresence &) = delete;
 
-    enum
-    {
+    enum {
       AVAILABLE, BUSY, OTP, IDLE, AWAY, BRB, OFFLINE, OPT_MAX
     };
 

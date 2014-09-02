@@ -24,8 +24,7 @@
 #include "config.h"
 #endif
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (Xvimagesink,
                                         "Video Display",
                                         "video sink",
@@ -34,20 +33,17 @@ namespace switcher
                                         "videosink", "Nicolas Bouillot");
 
   Xvimagesink::Xvimagesink ():sink_bin_ (nullptr),
-    queue_ (nullptr), ffmpegcolorspace_ (nullptr), xvimagesink_ (nullptr)
-  {
+    queue_ (nullptr), ffmpegcolorspace_ (nullptr), xvimagesink_ (nullptr) {
   }
 
-  Xvimagesink::~Xvimagesink ()
-  {
+  Xvimagesink::~Xvimagesink () {
     GstUtils::clean_element (xvimagesink_);
     if (on_error_command_ != nullptr)
       delete on_error_command_;
 
   }
 
-  bool Xvimagesink::init_gpipe ()
-  {
+  bool Xvimagesink::init_gpipe () {
 
     if (!GstUtils::make_element ("bin", &sink_bin_))
       return false;
@@ -95,8 +91,7 @@ namespace switcher
     return true;
   }
 
-  bool Xvimagesink::can_sink_caps (std::string caps)
-  {
+  bool Xvimagesink::can_sink_caps (std::string caps) {
     return GstUtils::can_sink_caps ("ffmpegcolorspace", caps);
   };
 

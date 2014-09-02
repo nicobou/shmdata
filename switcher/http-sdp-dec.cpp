@@ -23,8 +23,7 @@
 #include <glib/gprintf.h>
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (HTTPSDPDec,
                                         "HTTP/SDP Decoder",
                                         "network source",
@@ -33,17 +32,14 @@ namespace switcher
                                         "httpsdpdec", "Nicolas Bouillot");
 
   HTTPSDPDec::HTTPSDPDec ():souphttpsrc_ (nullptr),
-    sdpdemux_ (nullptr), on_error_command_ (nullptr), decodebins_ ()
-  {
+    sdpdemux_ (nullptr), on_error_command_ (nullptr), decodebins_ () {
   }
 
-  HTTPSDPDec::~HTTPSDPDec ()
-  {
+  HTTPSDPDec::~HTTPSDPDec () {
     destroy_httpsdpdec ();
   }
 
-  bool HTTPSDPDec::init_gpipe ()
-  {
+  bool HTTPSDPDec::init_gpipe () {
     if (!GstUtils::make_element ("souphttpsrc", &souphttpsrc_)
         || !GstUtils::make_element ("sdpdemux", &sdpdemux_))
       return false;
@@ -64,15 +60,13 @@ namespace switcher
     return true;
   }
 
-  void HTTPSDPDec::init_httpsdpdec ()
-  {
+  void HTTPSDPDec::init_httpsdpdec () {
     if (!GstUtils::make_element ("souphttpsrc", &souphttpsrc_)
-        || !GstUtils::make_element ("sdpdemux", &sdpdemux_))
-      {
-        g_warning
-          ("HTTPSDPDec::init_httpsdpdec, cannot create httpsdpdec elements");
-        return;
-      }
+        || !GstUtils::make_element ("sdpdemux", &sdpdemux_)) {
+      g_warning
+        ("HTTPSDPDec::init_httpsdpdec, cannot create httpsdpdec elements");
+      return;
+    }
 
     g_signal_connect (GST_BIN (sdpdemux_),
                       "element-added",
@@ -87,8 +81,7 @@ namespace switcher
                       (gpointer) this);
   }
 
-  void HTTPSDPDec::destroy_httpsdpdec ()
-  {
+  void HTTPSDPDec::destroy_httpsdpdec () {
     clean_on_error_command ();
     clear_shmdatas ();
     reset_bin ();
@@ -101,24 +94,20 @@ namespace switcher
   void
     HTTPSDPDec::on_new_element_in_sdpdemux (GstBin * bin,
                                             GstElement * element,
-                                            gpointer user_data)
-  {
+                                            gpointer user_data) {
     //FIXME add that in uridecodebin
     g_object_set (G_OBJECT (element), "ntp-sync", TRUE, nullptr);
   }
 
-  void HTTPSDPDec::clean_on_error_command ()
-  {
-    if (nullptr != on_error_command_)
-      {
-        delete on_error_command_;
-        on_error_command_ = nullptr;
-      }
+  void HTTPSDPDec::clean_on_error_command () {
+    if (nullptr != on_error_command_) {
+      delete on_error_command_;
+      on_error_command_ = nullptr;
+    }
   }
 
   void HTTPSDPDec::httpsdpdec_pad_added_cb (GstElement * /*object */ ,
-                                            GstPad * pad, gpointer user_data)
-  {
+                                            GstPad * pad, gpointer user_data) {
     HTTPSDPDec *context = static_cast < HTTPSDPDec * >(user_data);
     GPipe *gpipe = static_cast < GPipe * >(user_data);
     std::unique_ptr < DecodebinToShmdata >
@@ -134,8 +123,7 @@ namespace switcher
                               "sink");
     GstPad *sinkpad =
       decodebin->invoke_with_return < GstPad * >(std::move (get_pad));
-    On_scope_exit
-    {
+    On_scope_exit {
       gst_object_unref (GST_OBJECT (sinkpad));
     };
 
@@ -148,15 +136,13 @@ namespace switcher
 
   void HTTPSDPDec::source_setup_cb (GstElement * /*httpsdpdec */ ,
                                     GstElement * source,
-                                    gpointer /*user_data */ )
-  {
+                                    gpointer /*user_data */ ) {
     //HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
     g_debug ("source %s %s\n", GST_ELEMENT_NAME (source),
              G_OBJECT_CLASS_NAME (G_OBJECT_GET_CLASS (source)));
   }
 
-  gboolean HTTPSDPDec::to_shmdata_wrapped (gpointer uri, gpointer user_data)
-  {
+  gboolean HTTPSDPDec::to_shmdata_wrapped (gpointer uri, gpointer user_data) {
     HTTPSDPDec *context = static_cast < HTTPSDPDec * >(user_data);
 
     if (context->to_shmdata ((char *) uri))
@@ -165,8 +151,7 @@ namespace switcher
       return FALSE;
   }
 
-  bool HTTPSDPDec::to_shmdata (std::string uri)
-  {
+  bool HTTPSDPDec::to_shmdata (std::string uri) {
     destroy_httpsdpdec ();
     reset_bin ();
     init_httpsdpdec ();

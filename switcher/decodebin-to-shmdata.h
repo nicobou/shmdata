@@ -27,12 +27,10 @@
 #include "unique-gst-element.h"
 #include "gpipe.h"
 
-namespace switcher
-{
+namespace switcher {
   //this class has been designed for being possessed by a gpipe
 
-  class DecodebinToShmdata
-  {
+  class DecodebinToShmdata {
   public:
     DecodebinToShmdata (GPipe & gpipe);
     ~DecodebinToShmdata ();
@@ -44,8 +42,7 @@ namespace switcher
       template < typename Return_type >
       Return_type
       invoke_with_return (std::function < Return_type (GstElement *) >
-                          command)
-    {
+                          command) {
       std::unique_lock < std::mutex > lock (thread_safe_);
       return decodebin_.invoke_with_return < Return_type > (command);
     }

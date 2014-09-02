@@ -21,8 +21,7 @@
 #include <glib/gstdio.h>
 #include "gst-utils.h"
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (ShmdataToFile,
                                         "Shmdata Recorder",
                                         "file recorder",
@@ -32,17 +31,14 @@ namespace switcher
 
   ShmdataToFile::ShmdataToFile ():custom_prop_ (new CustomPropertyHelper ()),
     recording_param_ (nullptr),
-    recording_ (FALSE), file_names_ (), shmdata_recorders_ ()
-  {
+    recording_ (FALSE), file_names_ (), shmdata_recorders_ () {
   }
 
-  ShmdataToFile::~ShmdataToFile ()
-  {
+  ShmdataToFile::~ShmdataToFile () {
     clean_recorders ();
   }
 
-  bool ShmdataToFile::init_gpipe ()
-  {
+  bool ShmdataToFile::init_gpipe () {
     install_method ("Add Shmdata",
                     "add_shmdata",
                     "add a shmdata to record",
@@ -79,8 +75,10 @@ namespace switcher
                                                             FALSE,
                                                             (GParamFlags)
                                                             G_PARAM_READWRITE,
-                                                            ShmdataToFile::set_recording,
-                                                            ShmdataToFile::get_recording,
+                                                            ShmdataToFile::
+                                                            set_recording,
+                                                            ShmdataToFile::
+                                                            get_recording,
                                                             this);
     install_property_by_pspec (custom_prop_->get_gobject (), recording_param_,
                                "recording", "Recording");
@@ -90,8 +88,7 @@ namespace switcher
   gboolean
     ShmdataToFile::add_shmdata_wrapped (gpointer shmdata_socket_path,
                                         gpointer file_location,
-                                        gpointer user_data)
-  {
+                                        gpointer user_data) {
     ShmdataToFile *context = static_cast < ShmdataToFile * >(user_data);
 
     if (context->add_shmdata
@@ -103,29 +100,26 @@ namespace switcher
 
   bool
     ShmdataToFile::add_shmdata (std::string shmdata_socket_path,
-                                std::string file_location)
-  {
-    if (file_names_.find (shmdata_socket_path) != file_names_.end ())
-      {
-        g_warning ("ShmdataToFile::add_shmdata: %s is already added",
-                   shmdata_socket_path.c_str ());
-        return false;
-      }
+                                std::string file_location) {
+    if (file_names_.find (shmdata_socket_path) != file_names_.end ()) {
+      g_warning ("ShmdataToFile::add_shmdata: %s is already added",
+                 shmdata_socket_path.c_str ());
+      return false;
+    }
 
     file_names_[shmdata_socket_path] = file_location;
 
     if (recording_)             // starting the reader if pipeline is set
-      {
-        //FIXME make the recorder
-      }
+    {
+      //FIXME make the recorder
+    }
 
     return true;
   }
 
   gboolean
     ShmdataToFile::remove_shmdata_wrapped (gpointer connector_name,
-                                           gpointer user_data)
-  {
+                                           gpointer user_data) {
     ShmdataToFile *context = static_cast < ShmdataToFile * >(user_data);
     if (context->remove_shmdata ((char *) connector_name))
       return TRUE;
@@ -133,15 +127,13 @@ namespace switcher
       return FALSE;
   }
 
-  bool ShmdataToFile::remove_shmdata (std::string shmdata_socket_path)
-  {
+  bool ShmdataToFile::remove_shmdata (std::string shmdata_socket_path) {
     unregister_shmdata (shmdata_socket_path);
     g_debug ("data_stream %s removed", shmdata_socket_path.c_str ());
     return true;
   }
 
-  void ShmdataToFile::set_recording (gboolean recording, void *user_data)
-  {
+  void ShmdataToFile::set_recording (gboolean recording, void *user_data) {
     ShmdataToFile *context = static_cast < ShmdataToFile * >(user_data);
     if (recording)
       context->make_recorders ();
@@ -150,57 +142,51 @@ namespace switcher
     context->recording_ = recording;
   }
 
-  gboolean ShmdataToFile::get_recording (void *user_data)
-  {
+  gboolean ShmdataToFile::get_recording (void *user_data) {
     ShmdataToFile *context = static_cast < ShmdataToFile * >(user_data);
     return context->recording_;
   }
 
-  bool ShmdataToFile::make_recorders ()
-  {
-  for (auto & it:file_names_)
-      {
+  bool ShmdataToFile::make_recorders () {
+  for (auto & it:file_names_) {
 //FIXME check file
-        GError *error = nullptr;
-        gchar *pipe = g_strdup_printf ("gdppay ! filesink location=%s",
-                                       it.second.c_str ());
-        GstElement *recorder_bin = gst_parse_bin_from_description (pipe,
-                                                                   TRUE,
-                                                                   &error);
-        g_free (pipe);
-        if (error != nullptr)
-          {
-            g_warning ("%s", error->message);
-            g_error_free (error);
-            return false;
-          }
-        gst_bin_add (GST_BIN (bin_), recorder_bin);
-        //GstUtils::wait_state_changed (bin_);
-        GstUtils::sync_state_with_parent (recorder_bin);
-
-        ShmdataReader::ptr reader;
-        reader.reset (new ShmdataReader ());
-        reader->set_path (it.first.c_str ());
-        reader->set_bin (bin_);
-        reader->set_g_main_context (get_g_main_context ());
-        reader->set_sink_element (recorder_bin);
-
-        //GstUtils::wait_state_changed (bin_);
-        reader->start ();
-        shmdata_recorders_[it.first] = recorder_bin;
-        register_shmdata (reader);
+      GError *error = nullptr;
+      gchar *pipe = g_strdup_printf ("gdppay ! filesink location=%s",
+                                     it.second.c_str ());
+      GstElement *recorder_bin = gst_parse_bin_from_description (pipe,
+                                                                 TRUE,
+                                                                 &error);
+      g_free (pipe);
+      if (error != nullptr) {
+        g_warning ("%s", error->message);
+        g_error_free (error);
+        return false;
       }
+      gst_bin_add (GST_BIN (bin_), recorder_bin);
+      //GstUtils::wait_state_changed (bin_);
+      GstUtils::sync_state_with_parent (recorder_bin);
+
+      ShmdataReader::ptr reader;
+      reader.reset (new ShmdataReader ());
+      reader->set_path (it.first.c_str ());
+      reader->set_bin (bin_);
+      reader->set_g_main_context (get_g_main_context ());
+      reader->set_sink_element (recorder_bin);
+
+      //GstUtils::wait_state_changed (bin_);
+      reader->start ();
+      shmdata_recorders_[it.first] = recorder_bin;
+      register_shmdata (reader);
+    }
     return true;
   }
 
-  bool ShmdataToFile::clean_recorders ()
-  {
+  bool ShmdataToFile::clean_recorders () {
 
-  for (auto & it:shmdata_recorders_)
-      {
-        GstUtils::clean_element (it.second);
-        unregister_shmdata (it.first);
-      }
+  for (auto & it:shmdata_recorders_) {
+      GstUtils::clean_element (it.second);
+      unregister_shmdata (it.first);
+    }
     shmdata_recorders_.clear ();
     return true;
   }

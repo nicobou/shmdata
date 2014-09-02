@@ -19,13 +19,11 @@
 
 #include "quiddity-manager-wrapper.h"
 
-namespace switcher
-{
+namespace switcher {
 
   void
     QuiddityManagerWrapper::set_quiddity_manager (std::shared_ptr <
-                                                  QuiddityManager > manager)
-  {
+                                                  QuiddityManager > manager) {
     manager_ = manager;
   }
 

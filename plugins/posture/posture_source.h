@@ -30,10 +30,8 @@
 #include <memory>
 #include <string>
 
-namespace switcher
-{
-  class PostureSrc:public Quiddity, public Segment, public StartableQuiddity
-  {
+namespace switcher {
+  class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (PostureSrc);
     PostureSrc ();
@@ -46,84 +44,59 @@ namespace switcher
 
   private:
       CustomPropertyHelper::ptr custom_props_;
-      std::string calibration_path_
-    {
+      std::string calibration_path_ {
     "default.kvc"};
-      std::string devices_path_
-    {
+      std::string devices_path_ {
     "devices.kvc"};
-    unsigned int device_index_
-    {
+    unsigned int device_index_ {
     0};
-    bool capture_ir_
-    {
+    bool capture_ir_ {
     false};
-    bool compress_cloud_
-    {
+    bool compress_cloud_ {
     false};
-    GParamSpec *calibration_path_prop_
-    {
+    GParamSpec *calibration_path_prop_ {
     nullptr};
-    GParamSpec *devices_path_prop_
-    {
+    GParamSpec *devices_path_prop_ {
     nullptr};
-    GParamSpec *device_index_prop_
-    {
+    GParamSpec *device_index_prop_ {
     nullptr};
-    GParamSpec *capture_ir_prop_
-    {
+    GParamSpec *capture_ir_prop_ {
     nullptr};
-    GParamSpec *compress_cloud_prop_
-    {
+    GParamSpec *compress_cloud_prop_ {
     nullptr};
 
-    int capture_mode_
-    {
+    int capture_mode_ {
     0};
-    GParamSpec *capture_mode_prop_
-    {
+    GParamSpec *capture_mode_prop_ {
     nullptr};
     GEnumValue capture_modes_enum_[16];
 
-    std::shared_ptr < posture::ZCamera > zcamera_
-    {
+    std::shared_ptr < posture::ZCamera > zcamera_ {
     nullptr};
 
-    ShmdataAnyWriter::ptr cloud_writer_
-    {
+    ShmdataAnyWriter::ptr cloud_writer_ {
     nullptr};
-    ShmdataAnyWriter::ptr depth_writer_
-    {
+    ShmdataAnyWriter::ptr depth_writer_ {
     nullptr};
-    ShmdataAnyWriter::ptr rgb_writer_
-    {
+    ShmdataAnyWriter::ptr rgb_writer_ {
     nullptr};
-    ShmdataAnyWriter::ptr ir_writer_
-    {
+    ShmdataAnyWriter::ptr ir_writer_ {
     nullptr};
 
     std::shared_ptr < std::vector < char >>cloud_buffers_[3];
-    unsigned int cloud_buffer_index_
-    {
+    unsigned int cloud_buffer_index_ {
     0};
 
-    bool cloud_compressed_
-    {
+    bool cloud_compressed_ {
     false};
-    int depth_width_
-    {
-    0}, depth_height_
-    {
+    int depth_width_ {
+    0}, depth_height_ {
     0};
-    int rgb_width_
-    {
-    0}, rgb_height_
-    {
+    int rgb_width_ {
+    0}, rgb_height_ {
     0};
-    int ir_width_
-    {
-    0}, ir_height_
-    {
+    int ir_width_ {
+    0}, ir_height_ {
     0};
 
     bool init () final;
@@ -153,8 +126,7 @@ namespace switcher
                              const std::vector < unsigned char >&data,
                              int width, int height);
 
-    std::shared_ptr < posture::Display > display_
-    {
+    std::shared_ptr < posture::Display > display_ {
     nullptr};
   };
 

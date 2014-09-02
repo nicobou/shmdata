@@ -19,25 +19,21 @@
 
 #include "unique-gst-element.h"
 
-namespace switcher
-{
+namespace switcher {
 
   UniqueGstElement::UniqueGstElement (const gchar *
                                       class_name):element_
     (gst_element_factory_make (class_name, nullptr),
-     &GstUtils::gst_element_deleter)
-  {
+     &GstUtils::gst_element_deleter) {
   }
 
-  void UniqueGstElement::g_invoke (std::function < void (gpointer) > command)
-  {
+  void UniqueGstElement::g_invoke (std::function < void (gpointer) > command) {
     command (G_OBJECT (element_.get ()));
     return;
   }
 
   void
-    UniqueGstElement::invoke (std::function < void (GstElement *) > command)
-  {
+    UniqueGstElement::invoke (std::function < void (GstElement *) > command) {
     command (element_.get ());
     return;
   }

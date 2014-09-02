@@ -20,19 +20,16 @@
 #include "shmdata-any-writer.h"
 #include "gst-utils.h"
 
-namespace switcher
-{
+namespace switcher {
 
   ShmdataAnyWriter::ShmdataAnyWriter ():started_ (false),
     path_ (),
     writer_ (shmdata_any_writer_init ()),
-    json_description_ (new JSONBuilder ()), thread_safe_ ()
-  {
+    json_description_ (new JSONBuilder ()), thread_safe_ () {
     shmdata_any_writer_set_debug (writer_, SHMDATA_ENABLE_DEBUG);
   }
 
-  ShmdataAnyWriter::~ShmdataAnyWriter ()
-  {
+  ShmdataAnyWriter::~ShmdataAnyWriter () {
     std::unique_lock < std::mutex > lock (thread_safe_);
     //g_print ("%s\n",__FUNCTION__);
     shmdata_any_writer_close (writer_);
@@ -41,31 +38,27 @@ namespace switcher
   }
 
   //WARNING if the file exist it will be deleted
-  bool ShmdataAnyWriter::set_path (std::string name)
-  {
+  bool ShmdataAnyWriter::set_path (std::string name) {
     std::unique_lock < std::mutex > lock (thread_safe_);
     //g_print ("%s\n",__FUNCTION__);
     GFile *shmfile = g_file_new_for_commandline_arg (name.c_str ());
-    if (g_file_query_exists (shmfile, nullptr))
-      {
+    if (g_file_query_exists (shmfile, nullptr)) {
 //thrash it
+      g_debug
+        ("ShmdataAnyWriter::set_path warning: file %s exists and will be deleted.",
+         name.c_str ());
+      if (!g_file_delete (shmfile, nullptr, nullptr)) {
         g_debug
-          ("ShmdataAnyWriter::set_path warning: file %s exists and will be deleted.",
+          ("ShmdataAnyWriter::set_path error: file %s is already existing and cannot be trashed.",
            name.c_str ());
-        if (!g_file_delete (shmfile, nullptr, nullptr))
-          {
-            g_debug
-              ("ShmdataAnyWriter::set_path error: file %s is already existing and cannot be trashed.",
-               name.c_str ());
-            return false;
-          }
+        return false;
       }
+    }
 
     return set_path_without_deleting (name);
   }
 
-  bool ShmdataAnyWriter::set_path_without_deleting (std::string name)
-  {
+  bool ShmdataAnyWriter::set_path_without_deleting (std::string name) {
     //g_print ("%s\n",__FUNCTION__);
     //setting the writer
     shmdata_any_writer_set_path (writer_, name.c_str ());
@@ -74,22 +67,19 @@ namespace switcher
     return true;
   }
 
-  std::string ShmdataAnyWriter::get_path ()
-  {
+  std::string ShmdataAnyWriter::get_path () {
     std::unique_lock < std::mutex > lock (thread_safe_);
     //g_print ("%s\n",__FUNCTION__);
     return path_;
   }
 
-  void ShmdataAnyWriter::start ()
-  {
+  void ShmdataAnyWriter::start () {
     std::unique_lock < std::mutex > lock (thread_safe_);
     shmdata_any_writer_start (writer_);
     started_ = true;
   }
 
-  void ShmdataAnyWriter::set_data_type (std::string data_type)
-  {
+  void ShmdataAnyWriter::set_data_type (std::string data_type) {
     std::unique_lock < std::mutex > lock (thread_safe_);
     shmdata_any_writer_set_data_type (writer_, data_type.c_str ());
     set_negociated_caps (std::move (data_type));
@@ -100,8 +90,7 @@ namespace switcher
                                  size_t data_size,
                                  unsigned long long clock,
                                  void (*data_not_required_anymore) (void *),
-                                 void *user_data)
-  {
+                                 void *user_data) {
     std::unique_lock < std::mutex > lock (thread_safe_);
     ////g_print ("%s\n",__FUNCTION__);
     if (started_)
@@ -116,8 +105,7 @@ namespace switcher
     ShmdataAnyWriter::push_data_auto_clock (void *data,
                                             size_t data_size,
                                             void (*data_not_required_anymore)
-                                            (void *), void *user_data)
-  {
+                                              (void *), void *user_data) {
     std::unique_lock < std::mutex > lock (thread_safe_);
     ////g_print ("%s\n",__FUNCTION__);
     if (started_)
@@ -128,8 +116,7 @@ namespace switcher
                                     data_not_required_anymore, user_data);
   }
 
-  void ShmdataAnyWriter::make_json_description ()
-  {
+  void ShmdataAnyWriter::make_json_description () {
     //g_print ("%s\n",__FUNCTION__);
     json_description_->reset ();
     json_description_->begin_object ();
@@ -137,14 +124,12 @@ namespace switcher
     json_description_->end_object ();
   }
 
-  JSONBuilder::Node ShmdataAnyWriter::get_json_root_node ()
-  {
+  JSONBuilder::Node ShmdataAnyWriter::get_json_root_node () {
     //g_print ("%s\n",__FUNCTION__);
     return json_description_->get_root ();
   }
 
-  bool ShmdataAnyWriter::started ()
-  {
+  bool ShmdataAnyWriter::started () {
     std::unique_lock < std::mutex > lock (thread_safe_);
     return started_;
   }

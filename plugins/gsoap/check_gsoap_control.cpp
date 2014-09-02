@@ -32,8 +32,7 @@ quiddity_created_removed_cb (std::string /*subscriber_name */ ,
                              std::string /*quiddity_name */ ,
                              std::string signal_name,
                              std::vector < std::string > params,
-                             void * /*user_data */ )
-{
+                             void * /*user_data */ ) {
   // g_print ("%s: %s %s",
   //    signal_name.c_str (),
   //    params[0].c_str (),
@@ -43,8 +42,7 @@ quiddity_created_removed_cb (std::string /*subscriber_name */ ,
 }
 
 int
-main ()
-{
+main () {
   {
     switcher::QuiddityManager::ptr manager =
       switcher::QuiddityManager::make_manager ("test_manager");
@@ -57,12 +55,12 @@ main ()
     return 1;
 #endif
 
-    if (!switcher::
-        QuiddityBasicTest::test_full (manager, "SOAPcontrolClient"))
+    if (!switcher::QuiddityBasicTest::
+        test_full (manager, "SOAPcontrolClient"))
       success = false;
 
-    if (!switcher::
-        QuiddityBasicTest::test_full (manager, "SOAPcontrolServer"))
+    if (!switcher::QuiddityBasicTest::
+        test_full (manager, "SOAPcontrolServer"))
       success = false;
 
     manager->create ("SOAPcontrolClient", "soapclient");

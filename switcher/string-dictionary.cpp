@@ -22,8 +22,7 @@
 #include <string.h>
 #include <iostream>
 
-namespace switcher
-{
+namespace switcher {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (StringDictionary,
                                         "Dictionary",
@@ -32,16 +31,13 @@ namespace switcher
                                         "LGPL", "dico", "Nicolas Bouillot");
   StringDictionary::StringDictionary ():dico_ (),
     set_get_contexts_ (),
-    custom_props_ (new CustomPropertyHelper ()), prop_specs_ ()
-  {
+    custom_props_ (new CustomPropertyHelper ()), prop_specs_ () {
   }
 
-  StringDictionary::~StringDictionary ()
-  {
+  StringDictionary::~StringDictionary () {
   }
 
-  bool StringDictionary::init ()
-  {
+  bool StringDictionary::init () {
     install_method ("Create A New Entry",
                     "new-entry",
                     "create a new dictionary entry accessible through a property sharing the same name",
@@ -112,12 +108,10 @@ namespace switcher
   {
     StringDictionary *context = static_cast < StringDictionary * >(user_data);
 
-    if (context->dico_.find (entry_name) != context->dico_.end ())
-      {
-        g_debug ("cannot create entry named %s (already existing)",
-                 entry_name);
-        return FALSE;
-      }
+    if (context->dico_.find (entry_name) != context->dico_.end ()) {
+      g_debug ("cannot create entry named %s (already existing)", entry_name);
+      return FALSE;
+    }
 
     std::shared_ptr < PropertySetGet > prop_context;
     prop_context.reset (new PropertySetGet ());
@@ -130,15 +124,16 @@ namespace switcher
     context->prop_specs_[entry_name] =
       context->custom_props_->make_string_property (entry_name,
                                                     entry_description,
-                                                    "",
-                                                    (GParamFlags)
+                                                    "", (GParamFlags)
                                                     G_PARAM_READWRITE,
-                                                    StringDictionary::string_setter,
-                                                    StringDictionary::string_getter,
+                                                    StringDictionary::
+                                                    string_setter,
+                                                    StringDictionary::
+                                                    string_getter,
                                                     prop_context.get ());
 
-    context->install_property_by_pspec (context->
-                                        custom_props_->get_gobject (),
+    context->install_property_by_pspec (context->custom_props_->
+                                        get_gobject (),
                                         context->prop_specs_[entry_name],
                                         entry_name, long_name);
 
@@ -150,11 +145,10 @@ namespace switcher
   {
     StringDictionary *context = static_cast < StringDictionary * >(user_data);
     auto it = context->dico_.find (entry_name);
-    if (context->dico_.end () == it)
-      {
-        g_debug ("cannot remove entry named %s (not existing)", entry_name);
-        return FALSE;
-      }
+    if (context->dico_.end () == it) {
+      g_debug ("cannot remove entry named %s (not existing)", entry_name);
+      return FALSE;
+    }
     context->uninstall_property (entry_name);
     context->dico_.erase (it);
     context->prop_specs_.erase (entry_name);
@@ -162,27 +156,23 @@ namespace switcher
     return TRUE;
   }
 
-  const gchar *StringDictionary::string_getter (void *user_data)
-  {
+  const gchar *StringDictionary::string_getter (void *user_data) {
     PropertySetGet *context = static_cast < PropertySetGet * >(user_data);
     return context->string_dictionary->dico_[context->entry_name];
   }
 
-  void StringDictionary::string_setter (const gchar * value, void *user_data)
-  {
+  void StringDictionary::string_setter (const gchar * value, void *user_data) {
     PropertySetGet *context = static_cast < PropertySetGet * >(user_data);
     g_free (context->string_dictionary->dico_[context->entry_name]);
     context->string_dictionary->dico_[context->entry_name] = g_strdup (value);
-    GObjectWrapper::notify_property_changed (context->
-                                             string_dictionary->gobject_->
-                                             get_gobject (),
-                                             context->
-                                             string_dictionary->prop_specs_
-                                             [context->entry_name]);
+    GObjectWrapper::notify_property_changed (context->string_dictionary->
+                                             gobject_->get_gobject (),
+                                             context->string_dictionary->
+                                             prop_specs_[context->
+                                                         entry_name]);
   }
 
-  gboolean StringDictionary::save_file (const gchar * file_path)
-  {
+  gboolean StringDictionary::save_file (const gchar * file_path) {
     GFile *file = g_file_new_for_commandline_arg (file_path);
     GError *error = nullptr;
     GFileOutputStream *file_stream = g_file_replace (file,
@@ -191,12 +181,11 @@ namespace switcher
                                                      G_FILE_CREATE_NONE,
                                                      nullptr,
                                                      &error);
-    if (error != nullptr)
-      {
-        g_warning ("%s", error->message);
-        g_error_free (error);
-        return FALSE;
-      }
+    if (error != nullptr) {
+      g_warning ("%s", error->message);
+      g_error_free (error);
+      return FALSE;
+    }
 
     JSONBuilder::ptr builder;
     builder.reset (new JSONBuilder ());
@@ -205,18 +194,17 @@ namespace switcher
     //builder->set_member_name ("dictionary");
     builder->begin_array ();
 
-  for (auto & it:dico_)
-      {
-        builder->begin_object ();
-        Property::ptr prop = get_property_ptr (it.first);
-        builder->add_string_member ("name", it.first.c_str ());
-        builder->add_string_member ("description",
-                                    prop->get_short_description ().c_str ());
-        builder->add_string_member ("long name",
-                                    prop->get_long_name ().c_str ());
-        builder->add_string_member ("value", it.second);
-        builder->end_object ();
-      }
+  for (auto & it:dico_) {
+      builder->begin_object ();
+      Property::ptr prop = get_property_ptr (it.first);
+      builder->add_string_member ("name", it.first.c_str ());
+      builder->add_string_member ("description",
+                                  prop->get_short_description ().c_str ());
+      builder->add_string_member ("long name",
+                                  prop->get_long_name ().c_str ());
+      builder->add_string_member ("value", it.second);
+      builder->end_object ();
+    }
 
     builder->end_array ();
     //builder->end_object ();
@@ -228,87 +216,79 @@ namespace switcher
                            sizeof (gchar) * strlen (dico_json),
                            nullptr, &error);
     g_free (dico_json);
-    if (error != nullptr)
-      {
-        g_warning ("%s", error->message);
-        g_error_free (error);
-        return FALSE;
-      }
+    if (error != nullptr) {
+      g_warning ("%s", error->message);
+      g_error_free (error);
+      return FALSE;
+    }
 
     g_output_stream_close ((GOutputStream *) file_stream, nullptr, &error);
-    if (error != nullptr)
-      {
-        g_warning ("%s", error->message);
-        g_error_free (error);
-        return FALSE;
-      }
+    if (error != nullptr) {
+      g_warning ("%s", error->message);
+      g_error_free (error);
+      return FALSE;
+    }
 
     g_object_unref (file_stream);
     return TRUE;
   }
 
-  gboolean StringDictionary::save (gchar * file_path, void *user_data)
-  {
+  gboolean StringDictionary::save (gchar * file_path, void *user_data) {
     StringDictionary *context = static_cast < StringDictionary * >(user_data);
     return context->save_file (file_path);
   }
 
-  gboolean StringDictionary::load_file (const gchar * file_path)
-  {
+  gboolean StringDictionary::load_file (const gchar * file_path) {
     JsonParser *parser = json_parser_new ();
     GError *error = nullptr;
     json_parser_load_from_file (parser, file_path, &error);
-    if (error != nullptr)
-      {
-        g_warning ("%s", error->message);
-        g_object_unref (parser);
-        g_error_free (error);
-        return false;
-      }
+    if (error != nullptr) {
+      g_warning ("%s", error->message);
+      g_object_unref (parser);
+      g_error_free (error);
+      return false;
+    }
 
     JsonNode *root_node = json_parser_get_root (parser);
     JsonReader *reader = json_reader_new (root_node);
 
-    if (!json_reader_is_array (reader))
-      {
-        g_debug ("malformed dictionary file");
-        return false;
-      }
+    if (!json_reader_is_array (reader)) {
+      g_debug ("malformed dictionary file");
+      return false;
+    }
 
     gint num_elements = json_reader_count_elements (reader);
     int i;
-    for (i = 0; i < num_elements; i++)
-      {
-        json_reader_read_element (reader, i);
+    for (i = 0; i < num_elements; i++) {
+      json_reader_read_element (reader, i);
 
-        json_reader_read_member (reader, "name");
-        const gchar *name = json_reader_get_string_value (reader);
-        json_reader_end_member (reader);
+      json_reader_read_member (reader, "name");
+      const gchar *name = json_reader_get_string_value (reader);
+      json_reader_end_member (reader);
 
-        json_reader_read_member (reader, "description");
-        const gchar *description = json_reader_get_string_value (reader);
-        json_reader_end_member (reader);
+      json_reader_read_member (reader, "description");
+      const gchar *description = json_reader_get_string_value (reader);
+      json_reader_end_member (reader);
 
-        json_reader_read_member (reader, "long name");
-        const gchar *long_name = json_reader_get_string_value (reader);
-        json_reader_end_member (reader);
+      json_reader_read_member (reader, "long name");
+      const gchar *long_name = json_reader_get_string_value (reader);
+      json_reader_end_member (reader);
 
-        json_reader_read_member (reader, "value");
-        const gchar *value = json_reader_get_string_value (reader);
-        json_reader_end_member (reader);
+      json_reader_read_member (reader, "value");
+      const gchar *value = json_reader_get_string_value (reader);
+      json_reader_end_member (reader);
 
-        json_reader_end_element (reader);
+      json_reader_end_element (reader);
 // g_print ("%s, %s, %s, %s\n",
 //  name,
 //  description,
 //  long_name,
 //  value);
-        if (create_entry (name, description, long_name, this))
-          {
-            g_free (dico_[name]);
-            dico_[name] = g_strdup (value);
-          }
+      if (create_entry (name, description, long_name, this)) {
+        g_free (dico_[name]);
+        dico_[name] = g_strdup (value);
       }
+    }
 
     g_object_unref (reader);
     g_object_unref (parser);
@@ -316,8 +296,7 @@ namespace switcher
     return TRUE;
   }
 
-  gboolean StringDictionary::load (gchar * file_path, void *user_data)
-  {
+  gboolean StringDictionary::load (gchar * file_path, void *user_data) {
     StringDictionary *context = static_cast < StringDictionary * >(user_data);
     return context->load_file (file_path);
   }

@@ -23,8 +23,7 @@
 #include "gst-utils.h"
 #include "json-builder.h"
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (RtpSession,
                                         "RTP Session",
                                         "network",
@@ -43,13 +42,11 @@ namespace switcher
     quiddity_managers_ (),
     funnels_ (),
     internal_shmdata_writers_ (),
-    internal_shmdata_readers_ (), destinations_ ()
-  {
+    internal_shmdata_readers_ (), destinations_ () {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
   }
 
-  RtpSession::~RtpSession ()
-  {
+  RtpSession::~RtpSession () {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
 
     std::vector < std::string > paths;
@@ -62,12 +59,11 @@ namespace switcher
     std::vector < std::string > destinations;
   for (auto & it:destinations_)
       destinations.push_back (it.first);
-  for (auto & it:destinations)
-      {
-        std::string sdp_file = make_file_name (it);
-        sdp_file.append (".sdp");
-        g_remove (sdp_file.c_str ());
-      }
+  for (auto & it:destinations) {
+      std::string sdp_file = make_file_name (it);
+      sdp_file.append (".sdp");
+      g_remove (sdp_file.c_str ());
+    }
 
     // if (GST_IS_BIN (gst_element_get_parent (rtpsession_)))
     //   {
@@ -85,8 +81,7 @@ namespace switcher
     g_debug ("rtpsession deleted");
   }
 
-  bool RtpSession::init_gpipe ()
-  {
+  bool RtpSession::init_gpipe () {
     if (!GstUtils::make_element ("gstrtpbin", &rtpsession_))
       return false;
     g_object_set (G_OBJECT (rtpsession_), "ntp-sync", TRUE, nullptr);
@@ -242,9 +237,10 @@ namespace switcher
                                         "MTU that will be set during add_data_stream invokation",
                                         0, 15000, 1400,
                                         (GParamFlags) G_PARAM_READWRITE,
-                                        RtpSession::set_mtu_at_add_data_stream,
-                                        RtpSession::get_mtu_at_add_data_stream,
-                                        this);
+                                        RtpSession::
+                                        set_mtu_at_add_data_stream,
+                                        RtpSession::
+                                        get_mtu_at_add_data_stream, this);
 
     install_property_by_pspec (custom_props_->get_gobject (),
                                mtu_at_add_data_stream_spec_,
@@ -255,8 +251,7 @@ namespace switcher
 
   gboolean
     RtpSession::write_sdp_file_wrapped (gpointer nick_name,
-                                        gpointer user_data)
-  {
+                                        gpointer user_data) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
 
@@ -266,17 +261,15 @@ namespace switcher
       return FALSE;
   }
 
-  bool RtpSession::write_sdp_file (std::string dest_name)
-  {
+  bool RtpSession::write_sdp_file (std::string dest_name) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     auto it = destinations_.find (dest_name);
-    if (destinations_.end () == it)
-      {
-        g_warning
-          ("RtpSession: destination named %s does not exists, cannot print sdp ",
-           dest_name.c_str ());
-        return false;
-      }
+    if (destinations_.end () == it) {
+      g_warning
+        ("RtpSession: destination named %s does not exists, cannot print sdp ",
+         dest_name.c_str ());
+      return false;
+    }
     std::string res = it->second->get_sdp ();
 
     if (res == "")
@@ -297,8 +290,7 @@ namespace switcher
   //function used as a filter for selecting the appropriate rtp payloader
   gboolean
     RtpSession::sink_factory_filter (GstPluginFeature * feature,
-                                     gpointer data)
-  {
+                                     gpointer data) {
     ////g_print ("%s\n", __PRETTY_FUNCTION__);
     // guint rank;
     const gchar *klass;
@@ -323,8 +315,7 @@ namespace switcher
   //sorting factory by rank
   gint
     RtpSession::sink_compare_ranks (GstPluginFeature * f1,
-                                    GstPluginFeature * f2)
-  {
+                                    GstPluginFeature * f2) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     gint diff;
 
@@ -341,8 +332,7 @@ namespace switcher
     RtpSession::make_data_stream_available (GstElement * typefind,
                                             guint /*probability */ ,
                                             GstCaps * caps,
-                                            gpointer user_data)
-  {
+                                            gpointer user_data) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
     g_debug ("RtpSession::make_data_stream_available");
@@ -356,23 +346,19 @@ namespace switcher
     //bypassing jpeg for high dimensions
     bool jpeg_payloader = true;
     GstStructure *caps_structure = gst_caps_get_structure (caps, 0);
-    if (g_str_has_prefix
-        (gst_structure_get_name (caps_structure), "image/jpeg"))
-      {                         //check jpeg dimension are suported by jpeg payloader
-        gint width = 0, height = 0;
-        /* these properties are not mandatory, we can get them from the SOF, if there
-         * is one. */
-        if (gst_structure_get_int (caps_structure, "height", &height))
-          {
-            if (height <= 0 || height > 2040)
-              jpeg_payloader = false;
-          }
-        if (gst_structure_get_int (caps_structure, "width", &width))
-          {
-            if (width <= 0 || width > 2040)
-              jpeg_payloader = false;
-          }
+    if (g_str_has_prefix (gst_structure_get_name (caps_structure), "image/jpeg")) {     //check jpeg dimension are suported by jpeg payloader
+      gint width = 0, height = 0;
+      /* these properties are not mandatory, we can get them from the SOF, if there
+       * is one. */
+      if (gst_structure_get_int (caps_structure, "height", &height)) {
+        if (height <= 0 || height > 2040)
+          jpeg_payloader = false;
       }
+      if (gst_structure_get_int (caps_structure, "width", &width)) {
+        if (width <= 0 || width > 2040)
+          jpeg_payloader = false;
+      }
+    }
 
     if (list != nullptr && jpeg_payloader)
       pay =
@@ -416,8 +402,8 @@ namespace switcher
     gchar *rtp_session_id = g_strdup (rtp_session_array[3]);
     context->rtp_ids_[reader->get_path ()] = rtp_session_id;
     //using internal session id for this local stream
-    std::
-      string internal_session_id (context->internal_id_[reader->get_path ()]);
+    std::string internal_session_id (context->
+                                     internal_id_[reader->get_path ()]);
 
     g_free (rtp_sink_pad_name);
     g_strfreev (rtp_session_array);
@@ -509,8 +495,7 @@ namespace switcher
 
   void
     RtpSession::attach_data_stream (ShmdataReader * caller,
-                                    void *rtpsession_instance)
-  {
+                                    void *rtpsession_instance) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(rtpsession_instance);
     GstElement *funnel, *typefind;
@@ -536,8 +521,7 @@ namespace switcher
   gboolean
     RtpSession::add_destination_wrapped (gpointer nick_name,
                                          gpointer host_name,
-                                         gpointer user_data)
-  {
+                                         gpointer user_data) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
 
@@ -551,13 +535,12 @@ namespace switcher
     RtpSession::add_destination (std::string nick_name, std::string host_name)
   {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
-    if (destinations_.end () != destinations_.find (nick_name))
-      {
-        g_warning
-          ("RtpSession: a destination named %s already exists, cannot add",
-           nick_name.c_str ());
-        return false;
-      }
+    if (destinations_.end () != destinations_.find (nick_name)) {
+      g_warning
+        ("RtpSession: a destination named %s already exists, cannot add",
+         nick_name.c_str ());
+      return false;
+    }
     RtpDestination::ptr dest;
     dest.reset (new RtpDestination ());
     dest->set_name (nick_name);
@@ -568,8 +551,7 @@ namespace switcher
 
   gboolean
     RtpSession::remove_destination_wrapped (gpointer nick_name,
-                                            gpointer user_data)
-  {
+                                            gpointer user_data) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
 
@@ -579,17 +561,15 @@ namespace switcher
       return FALSE;
   }
 
-  bool RtpSession::remove_destination (std::string nick_name)
-  {
+  bool RtpSession::remove_destination (std::string nick_name) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     auto it = destinations_.find (nick_name);
-    if (destinations_.end () == it)
-      {
-        g_warning
-          ("RtpSession: destination named %s does not exists, cannot remove",
-           nick_name.c_str ());
-        return false;
-      }
+    if (destinations_.end () == it) {
+      g_warning
+        ("RtpSession: destination named %s does not exists, cannot remove",
+         nick_name.c_str ());
+      return false;
+    }
     destinations_.erase (it);
     return true;
   }
@@ -598,8 +578,7 @@ namespace switcher
     RtpSession::add_udp_stream_to_dest_wrapped (gpointer shmdata_name,
                                                 gpointer nick_name,
                                                 gpointer port,
-                                                gpointer user_data)
-  {
+                                                gpointer user_data) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
 
@@ -613,71 +592,64 @@ namespace switcher
   bool
     RtpSession::add_udp_stream_to_dest (std::string shmdata_socket_path,
                                         std::string nick_name,
-                                        std::string port)
-  {
+                                        std::string port) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     auto id_it = internal_id_.find (shmdata_socket_path);
-    if (internal_id_.end () == id_it)
-      {
-        g_warning ("RtpSession is not connected to %s",
-                   shmdata_socket_path.c_str ());
-        return false;
-      }
+    if (internal_id_.end () == id_it) {
+      g_warning ("RtpSession is not connected to %s",
+                 shmdata_socket_path.c_str ());
+      return false;
+    }
     auto destination_it = destinations_.find (nick_name);
-    if (destinations_.end () == destination_it)
-      {
-        g_warning ("RtpSession does not contain a destination named %s",
-                   nick_name.c_str ());
-        return false;
-      }
+    if (destinations_.end () == destination_it) {
+      g_warning ("RtpSession does not contain a destination named %s",
+                 nick_name.c_str ());
+      return false;
+    }
     if (g_strcmp0
         (destination_it->second->get_port (shmdata_socket_path).c_str (),
-         port.c_str ()) == 0)
-      {
-        g_warning
-          ("RtpSession: destination (%s) is already streaming shmdata (%s) to port %s",
-           nick_name.c_str (), shmdata_socket_path.c_str (), port.c_str ());
-        return false;
-      }
+         port.c_str ()) == 0) {
+      g_warning
+        ("RtpSession: destination (%s) is already streaming shmdata (%s) to port %s",
+         nick_name.c_str (), shmdata_socket_path.c_str (), port.c_str ());
+      return false;
+    }
     //TODO check port has not been set for this destination
     gint rtp_port = atoi (port.c_str ());
 
-    if (rtp_port % 2 != 0)
-      {
-        g_warning ("RtpSession rtp destination port %s must be even, not odd",
-                   port.c_str ());
-        return false;
-      }
+    if (rtp_port % 2 != 0) {
+      g_warning ("RtpSession rtp destination port %s must be even, not odd",
+                 port.c_str ());
+      return false;
+    }
     std::string id = id_it->second;
 
     auto manager_it = quiddity_managers_.find (shmdata_socket_path);
-    if (quiddity_managers_.end () == manager_it)
-      {
+    if (quiddity_managers_.end () == manager_it) {
 //creating an internal quiddity manager
-        QuiddityManager::ptr manager =
-          QuiddityManager::make_manager ("manager_" + get_name () + "_" + id);
-        quiddity_managers_[shmdata_socket_path] = manager;
+      QuiddityManager::ptr manager =
+        QuiddityManager::make_manager ("manager_" + get_name () + "_" + id);
+      quiddity_managers_[shmdata_socket_path] = manager;
 
-        std::vector < std::string > arg;
-        manager->create ("udpsink", "udpsend_rtp");
-        manager->create ("udpsink", "udpsend_rtcp");
+      std::vector < std::string > arg;
+      manager->create ("udpsink", "udpsend_rtp");
+      manager->create ("udpsink", "udpsend_rtcp");
 
-        arg.clear ();
-        arg.push_back (make_file_name ("send_rtp_src_" + id));
-        manager->invoke ("udpsend_rtp", "connect", nullptr, arg);
+      arg.clear ();
+      arg.push_back (make_file_name ("send_rtp_src_" + id));
+      manager->invoke ("udpsend_rtp", "connect", nullptr, arg);
 
-        arg.clear ();
-        arg.push_back (make_file_name ("send_rtcp_src_" + id));
-        manager->invoke ("udpsend_rtcp", "connect", nullptr, arg);
+      arg.clear ();
+      arg.push_back (make_file_name ("send_rtcp_src_" + id));
+      manager->invoke ("udpsend_rtcp", "connect", nullptr, arg);
 //update manager_it with the new one
-        manager_it = quiddity_managers_.find (shmdata_socket_path);
-      }
+      manager_it = quiddity_managers_.find (shmdata_socket_path);
+    }
     QuiddityManager::ptr manager = manager_it->second;
-    if (!(bool) manager)
-      {
-        g_warning ("add_udp_stream_to_dest ...not a manager...");
-        return false;
-      }
+    if (!(bool) manager) {
+      g_warning ("add_udp_stream_to_dest ...not a manager...");
+      return false;
+    }
     //rtp stream (sending)
     RtpDestination::ptr dest = destinations_[nick_name];
     dest->add_stream (shmdata_socket_path, manager, port);
@@ -710,8 +682,7 @@ namespace switcher
     RtpSession::remove_udp_stream_to_dest_wrapped (gpointer
                                                    shmdata_socket_path,
                                                    gpointer dest_name,
-                                                   gpointer user_data)
-  {
+                                                   gpointer user_data) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
 
@@ -724,35 +695,31 @@ namespace switcher
 
   bool
     RtpSession::remove_udp_stream_to_dest (std::string shmdata_socket_path,
-                                           std::string dest_name)
-  {
+                                           std::string dest_name) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
-    if (internal_id_.end () == internal_id_.find (shmdata_socket_path))
-      {
-        g_warning ("RtpSession is not connected to %s",
-                   shmdata_socket_path.c_str ());
-        return false;
-      }
+    if (internal_id_.end () == internal_id_.find (shmdata_socket_path)) {
+      g_warning ("RtpSession is not connected to %s",
+                 shmdata_socket_path.c_str ());
+      return false;
+    }
 
     RtpDestination::ptr dest = destinations_[dest_name];
-    if (!(bool) dest)
-      {
-        g_warning
-          ("RtpSession::remove_udp_stream_to_dest, dest %s does not exist",
-           dest_name.c_str ());
-        return false;
-      }
+    if (!(bool) dest) {
+      g_warning
+        ("RtpSession::remove_udp_stream_to_dest, dest %s does not exist",
+         dest_name.c_str ());
+      return false;
+    }
     std::string port = dest->get_port (shmdata_socket_path);
     dest->remove_stream (shmdata_socket_path);
 
     auto manager_it = quiddity_managers_.find (shmdata_socket_path);
-    if (manager_it == quiddity_managers_.end ())
-      {
-        g_warning
-          ("RtpSession::remove_udp_stream_to_dest, shmdata %s is not managed by the session",
-           shmdata_socket_path.c_str ());
-        return false;
-      }
+    if (manager_it == quiddity_managers_.end ()) {
+      g_warning
+        ("RtpSession::remove_udp_stream_to_dest, shmdata %s is not managed by the session",
+         shmdata_socket_path.c_str ());
+      return false;
+    }
 
     QuiddityManager::ptr manager = manager_it->second;
 
@@ -775,8 +742,7 @@ namespace switcher
 
   gboolean
     RtpSession::add_data_stream_wrapped (gpointer connector_name,
-                                         gpointer user_data)
-  {
+                                         gpointer user_data) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
 
@@ -786,8 +752,7 @@ namespace switcher
       return FALSE;
   }
 
-  bool RtpSession::add_data_stream (std::string shmdata_socket_path)
-  {
+  bool RtpSession::add_data_stream (std::string shmdata_socket_path) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     // if (internal_id_.end () != internal_id_.find (shmdata_socket_path))
     //   {
@@ -813,8 +778,7 @@ namespace switcher
 
   gboolean
     RtpSession::remove_data_stream_wrapped (gpointer connector_name,
-                                            gpointer user_data)
-  {
+                                            gpointer user_data) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
     if (context->remove_data_stream ((char *) connector_name))
@@ -823,31 +787,27 @@ namespace switcher
       return FALSE;
   }
 
-  bool RtpSession::remove_data_stream (std::string shmdata_socket_path)
-  {
+  bool RtpSession::remove_data_stream (std::string shmdata_socket_path) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     auto internal_id_it = internal_id_.find (shmdata_socket_path);
-    if (internal_id_.end () == internal_id_it)
-      {
-        g_debug ("RtpSession::remove_data_stream: %s not present",
-                 shmdata_socket_path.c_str ());
-        return false;
-      }
+    if (internal_id_.end () == internal_id_it) {
+      g_debug ("RtpSession::remove_data_stream: %s not present",
+               shmdata_socket_path.c_str ());
+      return false;
+    }
     quiddity_managers_.erase (shmdata_socket_path);
-  for (auto & it:destinations_)
-      {
-        if (it.second->has_shmdata (shmdata_socket_path))
-          it.second->remove_stream (shmdata_socket_path);
-      }
+  for (auto & it:destinations_) {
+      if (it.second->has_shmdata (shmdata_socket_path))
+        it.second->remove_stream (shmdata_socket_path);
+    }
     std::string id = internal_id_it->second;
     internal_id_.erase (internal_id_it);
     auto writer_it =
       internal_shmdata_writers_.find (make_file_name ("send_rtp_src_" + id));
-    if (internal_shmdata_writers_.end () != writer_it)
-      {
-        internal_shmdata_writers_.erase (writer_it);
-        prune_tree ("rtp_caps." + make_file_name ("send_rtp_src_" + id));
-      }
+    if (internal_shmdata_writers_.end () != writer_it) {
+      internal_shmdata_writers_.erase (writer_it);
+      prune_tree ("rtp_caps." + make_file_name ("send_rtp_src_" + id));
+    }
     writer_it =
       internal_shmdata_writers_.find (make_file_name ("send_rtcp_src_" + id));
     if (internal_shmdata_writers_.end () != writer_it)
@@ -859,11 +819,10 @@ namespace switcher
     if (internal_shmdata_readers_.end () != reader_it)
       internal_shmdata_readers_.erase (reader_it);
     auto funnel_it = funnels_.find (shmdata_socket_path);
-    if (funnels_.end () == funnel_it)
-      {
-        g_debug ("RtpSession::remove_data_stream: no funnel");
-        return false;
-      }
+    if (funnels_.end () == funnel_it) {
+      g_debug ("RtpSession::remove_data_stream: no funnel");
+      return false;
+    }
     funnels_.erase (funnel_it);
     rtp_ids_.erase (shmdata_socket_path);
     g_debug ("data_stream %s removed", shmdata_socket_path.c_str ());
@@ -873,8 +832,7 @@ namespace switcher
   void RtpSession::on_bye_ssrc (GstElement * /*rtpbin */ ,
                                 guint /*session */ ,
                                 guint /*ssrc */ ,
-                                gpointer /*user_data */ )
-  {
+                                gpointer /*user_data */ ) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug ("on_bye_ssrc");
@@ -883,8 +841,7 @@ namespace switcher
   void RtpSession::on_bye_timeout (GstElement * /*rtpbin */ ,
                                    guint /*session */ ,
                                    guint /*ssrc */ ,
-                                   gpointer /*user_data */ )
-  {
+                                   gpointer /*user_data */ ) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug ("on_bye_timeout");
@@ -893,8 +850,7 @@ namespace switcher
   void RtpSession::on_new_ssrc (GstElement * /*rtpbin */ ,
                                 guint /*session */ ,
                                 guint /*ssrc */ ,
-                                gpointer /*user_data */ )
-  {
+                                gpointer /*user_data */ ) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug ("on_new_ssrc");
@@ -903,8 +859,7 @@ namespace switcher
   void RtpSession::on_npt_stop (GstElement * /*rtpbin */ ,
                                 guint /*session */ ,
                                 guint /*ssrc */ ,
-                                gpointer /*user_data */ )
-  {
+                                gpointer /*user_data */ ) {
     //RtpSession *context = static_cast<RtpSession *>(user_data);
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     g_debug ("on_npt_stop");
@@ -913,8 +868,7 @@ namespace switcher
   void RtpSession::on_sender_timeout (GstElement * /*rtpbin */ ,
                                       guint /*session */ ,
                                       guint /*ssrc */ ,
-                                      gpointer /*user_data */ )
-  {
+                                      gpointer /*user_data */ ) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug ("on_sender_timeout");
@@ -923,8 +877,7 @@ namespace switcher
   void RtpSession::on_ssrc_active (GstElement * /*rtpbin */ ,
                                    guint /*session */ ,
                                    guint /*ssrc */ ,
-                                   gpointer /*user_data */ )
-  {
+                                   gpointer /*user_data */ ) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug ("on_ssrc_active");
@@ -933,8 +886,7 @@ namespace switcher
   void RtpSession::on_ssrc_collision (GstElement * /*rtpbin */ ,
                                       guint /*session */ ,
                                       guint /*ssrc */ ,
-                                      gpointer /*user_data */ )
-  {
+                                      gpointer /*user_data */ ) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug ("on_ssrc_active");
@@ -943,8 +895,7 @@ namespace switcher
   void RtpSession::on_ssrc_sdes (GstElement * /*rtpbin */ ,
                                  guint /*session */ ,
                                  guint /*ssrc */ ,
-                                 gpointer /*user_data */ )
-  {
+                                 gpointer /*user_data */ ) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug ("on_ssrc_sdes");
@@ -953,8 +904,7 @@ namespace switcher
   void RtpSession::on_ssrc_validated (GstElement * /*rtpbin */ ,
                                       guint /*session */ ,
                                       guint /*ssrc */ ,
-                                      gpointer /*user_data */ )
-  {
+                                      gpointer /*user_data */ ) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug ("on_ssrc_validated");
@@ -963,16 +913,14 @@ namespace switcher
   void RtpSession::on_timeout (GstElement * /*rtpbin */ ,
                                guint /*session */ ,
                                guint /*ssrc */ ,
-                               gpointer /*user_data */ )
-  {
+                               gpointer /*user_data */ ) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug ("on_timeout");
   }
 
   void RtpSession::on_pad_added (GstElement * /*gstelement */ ,
-                                 GstPad * new_pad, gpointer user_data)
-  {
+                                 GstPad * new_pad, gpointer user_data) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
     g_debug ("on_pad_added, name: %s, direction: %d",
@@ -982,8 +930,7 @@ namespace switcher
   }
 
   void RtpSession::on_pad_removed (GstElement * /*gstelement */ ,
-                                   GstPad * new_pad, gpointer /*user_data */ )
-  {
+                                   GstPad * new_pad, gpointer /*user_data */ ) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug ("on_pad_removed, name: %s, direction: %d",
@@ -992,15 +939,13 @@ namespace switcher
   }
 
   void RtpSession::on_no_more_pad (GstElement * /*gstelement */ ,
-                                   gpointer /*user_data */ )
-  {
+                                   gpointer /*user_data */ ) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     //RtpSession *context = static_cast<RtpSession *>(user_data);
     g_debug ("on_no_more_pad");
   }
 
-  const gchar *RtpSession::get_destinations_json (void *user_data)
-  {
+  const gchar *RtpSession::get_destinations_json (void *user_data) {
     //g_print ("%s\n", __PRETTY_FUNCTION__);
     RtpSession *context = static_cast < RtpSession * >(user_data);
 
@@ -1028,14 +973,12 @@ namespace switcher
     context->mtu_at_add_data_stream_ = value;
   }
 
-  gint RtpSession::get_mtu_at_add_data_stream (void *user_data)
-  {
+  gint RtpSession::get_mtu_at_add_data_stream (void *user_data) {
     RtpSession *context = static_cast < RtpSession * >(user_data);
     return context->mtu_at_add_data_stream_;
   }
 
-  void RtpSession::on_rtp_caps (std::string shmdata_path, std::string caps)
-  {
+  void RtpSession::on_rtp_caps (std::string shmdata_path, std::string caps) {
     graft_tree ("rtp_caps." + std::move (shmdata_path),
                 data::make_tree (std::move (caps)));
   }

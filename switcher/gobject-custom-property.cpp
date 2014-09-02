@@ -19,22 +19,18 @@
 
 #include "gobject-custom-property.h"
 
-namespace switcher
-{
-  GObjectCustomProperty::GObjectCustomProperty ()
-  {
+namespace switcher {
+  GObjectCustomProperty::GObjectCustomProperty () {
   }
 
-  GObjectCustomProperty::~GObjectCustomProperty ()
-  {
+  GObjectCustomProperty::~GObjectCustomProperty () {
   }
 
   GObjectCustomProperty::ptr
     GObjectCustomProperty::make_custom_property (set_method_pointer
                                                  set_method,
                                                  get_method_pointer
-                                                 get_method)
-  {
+                                                 get_method) {
     GObjectCustomProperty::ptr custom_prop (new GObjectCustomProperty);
     custom_prop->set_members (set_method, get_method);
     return custom_prop;
@@ -42,8 +38,7 @@ namespace switcher
 
   void
     GObjectCustomProperty::set_members (set_method_pointer set_method,
-                                        get_method_pointer get_method)
-  {
+                                        get_method_pointer get_method) {
     set_method_ = set_method;
     get_method_ = get_method;
   }

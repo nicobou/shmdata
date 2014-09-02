@@ -23,8 +23,7 @@
 
 #include "quiddity-command.h"
 
-namespace switcher
-{
+namespace switcher {
 
   const std::map < int, const char *>QuiddityCommand::command_names_ = {
     {auto_invoke, "auto_invoke"},
@@ -77,38 +76,32 @@ namespace switcher
     {unsubscribe_signal, "unsubscribe_signal"}
   };
 
-  void QuiddityCommand::clear ()
-  {
+  void QuiddityCommand::clear () {
     args_.clear ();
     vector_arg_.clear ();
     result_.clear ();
   }
 
-  void QuiddityCommand::set_id (command id)
-  {
+  void QuiddityCommand::set_id (command id) {
     clear ();
     id_ = id;
   }
 
-  void QuiddityCommand::add_arg (std::string arg)
-  {
+  void QuiddityCommand::add_arg (std::string arg) {
     args_.push_back (arg);
   }
 
   void
-    QuiddityCommand::set_vector_arg (std::vector < std::string > vector_arg)
-  {
+    QuiddityCommand::set_vector_arg (std::vector < std::string > vector_arg) {
     vector_arg_ = vector_arg;
   }
 
-  QuiddityCommand::QuiddityCommand ()
-  {
+  QuiddityCommand::QuiddityCommand () {
     json_builder_.reset (new JSONBuilder ());
     time_ = -1;
   }
 
-  JSONBuilder::Node QuiddityCommand::get_json_root_node ()
-  {
+  JSONBuilder::Node QuiddityCommand::get_json_root_node () {
     json_builder_->reset ();
     json_builder_->begin_object ();
     json_builder_->add_string_member ("command", command_names_.at (id_));
@@ -137,8 +130,7 @@ namespace switcher
   }
 
   QuiddityCommand::command
-    QuiddityCommand::get_id_from_string (const char *com)
-  {
+    QuiddityCommand::get_id_from_string (const char *com) {
     std::map < int, const char *>::const_iterator it;
     for (it = command_names_.begin (); it != command_names_.end (); ++it)
       if (g_strcmp0 (it->second, com) == 0)
@@ -146,9 +138,8 @@ namespace switcher
     return invalid_command;
   }
 
-  const char *QuiddityCommand::
-    get_string_from_id (QuiddityCommand::command id)
-  {
+  const char *QuiddityCommand::get_string_from_id (QuiddityCommand::
+                                                   command id) {
     std::map < int, const char *>::const_iterator it =
       command_names_.find (id);
     if (it == command_names_.end ())
@@ -157,8 +148,7 @@ namespace switcher
   }
 
   QuiddityCommand::ptr
-    QuiddityCommand::parse_command_from_json_reader (JsonReader * reader)
-  {
+    QuiddityCommand::parse_command_from_json_reader (JsonReader * reader) {
     int j;
     int num_elements;
 
@@ -180,16 +170,15 @@ namespace switcher
     //arguments
     json_reader_read_member (reader, "arguments");
     num_elements = json_reader_count_elements (reader);
-    for (j = 0; j < num_elements; j++)
-      {
-        json_reader_read_element (reader, j);
-        const gchar *str = json_reader_get_string_value (reader);
-        if (nullptr != str)
-          command->add_arg (str);
-        else
-          command->add_arg ("null");
-        json_reader_end_element (reader);
-      }
+    for (j = 0; j < num_elements; j++) {
+      json_reader_read_element (reader, j);
+      const gchar *str = json_reader_get_string_value (reader);
+      if (nullptr != str)
+        command->add_arg (str);
+      else
+        command->add_arg ("null");
+      json_reader_end_element (reader);
+    }
     json_reader_end_member (reader);
     //---
 
@@ -197,15 +186,14 @@ namespace switcher
     json_reader_read_member (reader, "vector argument");
     num_elements = json_reader_count_elements (reader);
     std::vector < std::string > string_vect_arg;
-    for (j = 0; j < num_elements; j++)
-      {
-        json_reader_read_element (reader, j);
-        const char *stringValue = json_reader_get_string_value (reader);
-        if (stringValue == nullptr)
-          stringValue = "null";
-        string_vect_arg.push_back (stringValue);
-        json_reader_end_element (reader);
-      }
+    for (j = 0; j < num_elements; j++) {
+      json_reader_read_element (reader, j);
+      const char *stringValue = json_reader_get_string_value (reader);
+      if (stringValue == nullptr)
+        stringValue = "null";
+      string_vect_arg.push_back (stringValue);
+      json_reader_end_element (reader);
+    }
     json_reader_end_member (reader);
     command->set_vector_arg (string_vect_arg);
     //---
@@ -214,14 +202,13 @@ namespace switcher
     json_reader_read_member (reader, "results");
     num_elements = json_reader_count_elements (reader);
     std::vector < std::string > expected_result;
-    for (j = 0; j < num_elements; j++)
-      {
-        json_reader_read_element (reader, j);
-        const char *string_value = json_reader_get_string_value (reader);
-        if (nullptr != string_value)
-          expected_result.push_back (string_value);
-        json_reader_end_element (reader);
-      }
+    for (j = 0; j < num_elements; j++) {
+      json_reader_read_element (reader, j);
+      const char *string_value = json_reader_get_string_value (reader);
+      if (nullptr != string_value)
+        expected_result.push_back (string_value);
+      json_reader_end_element (reader);
+    }
     json_reader_end_member (reader);
     command->expected_result_ = expected_result;
     //---

@@ -19,19 +19,15 @@
 
 #include "counter-map.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  CounterMap::CounterMap ():counters_ (), mutex_ ()
-  {
+  CounterMap::CounterMap ():counters_ (), mutex_ () {
   }
 
-  CounterMap::~CounterMap ()
-  {
+  CounterMap::~CounterMap () {
   }
 
-  uint CounterMap::get_count (const std::string & key)
-  {
+  uint CounterMap::get_count (const std::string & key) {
     std::unique_lock < std::mutex > lock (mutex_);
     auto it = counters_.find (key);
     if (counters_.end () != it)
@@ -41,8 +37,7 @@ namespace switcher
     return 0;
   }
 
-  void CounterMap::reset_counter_map ()
-  {
+  void CounterMap::reset_counter_map () {
     std::unique_lock < std::mutex > lock (mutex_);
     counters_.clear ();
   }

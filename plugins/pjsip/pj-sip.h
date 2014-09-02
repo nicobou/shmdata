@@ -33,10 +33,8 @@
 #include "pj-call.h"
 #include "pj-presence.h"
 
-namespace switcher
-{
-  class PJSIP:public Quiddity
-  {
+namespace switcher {
+  class PJSIP:public Quiddity {
     friend PJCall;
     friend PJPresence;
   public:
@@ -49,29 +47,52 @@ namespace switcher
     bool start ();
     bool stop ();
   private:
-    CustomPropertyHelper::ptr custom_props_ {std::make_shared < CustomPropertyHelper > ()};
-    unsigned sip_port_ {5060};
-    GParamSpec *sip_port_spec_ {nullptr};
-    pj_thread_desc thread_handler_desc_ {};
-    pj_thread_t *pj_thread_ref_ {nullptr};
-    pjsua_transport_id *transport_id_ {nullptr};
-    std::thread sip_thread_ {};
-    std::mutex pj_init_mutex_ {};
-    std::condition_variable pj_init_cond_ {};
-    bool pj_sip_inited_ {false};
-    std::mutex work_mutex_ {};
-    std::condition_variable work_cond_ {};
-    std::mutex done_mutex_ {};
-    std::condition_variable done_cond_ {};
-    bool continue_ {true};
-    std::function <void ()> command_ {};
-    pj_pool_t *pool_ {nullptr};
-    PJCall *sip_calls_ {nullptr};
-    PJPresence *sip_presence_ {nullptr};
-    std::thread sip_worker_ {};
-    bool sip_work_ {true};
-    pj_thread_desc worker_handler_desc_ {};
-    pj_thread_t *worker_thread_ref_ {nullptr};
+      CustomPropertyHelper::ptr custom_props_ {
+    std::make_shared < CustomPropertyHelper > ()};
+    unsigned sip_port_ {
+    5060};
+    GParamSpec *sip_port_spec_ {
+    nullptr};
+    pj_thread_desc thread_handler_desc_ {
+    };
+    pj_thread_t *pj_thread_ref_ {
+    nullptr};
+    pjsua_transport_id *transport_id_ {
+    nullptr};
+      std::thread sip_thread_ {
+    };
+    std::mutex pj_init_mutex_ {
+    };
+    std::condition_variable pj_init_cond_ {
+    };
+    bool pj_sip_inited_ {
+    false};
+    std::mutex work_mutex_ {
+    };
+    std::condition_variable work_cond_ {
+    };
+    std::mutex done_mutex_ {
+    };
+    std::condition_variable done_cond_ {
+    };
+    bool continue_ {
+    true};
+    std::function < void () > command_ {
+    };
+    pj_pool_t *pool_ {
+    nullptr};
+    PJCall *sip_calls_ {
+    nullptr};
+    PJPresence *sip_presence_ {
+    nullptr};
+    std::thread sip_worker_ {
+    };
+    bool sip_work_ {
+    true};
+    pj_thread_desc worker_handler_desc_ {
+    };
+    pj_thread_t *worker_thread_ref_ {
+    nullptr};
     static pjsip_endpoint *sip_endpt_;
     pj_caching_pool cp_;
 
@@ -79,7 +100,7 @@ namespace switcher
     void sip_handling_thread ();
     bool pj_sip_init ();
     void exit_cmd ();
-    void run_command_sync (std::function <void ()> command);
+    void run_command_sync (std::function < void () > command);
     static void set_port (const gint value, void *user_data);
     static gint get_port (void *user_data);
     void sip_worker_thread ();

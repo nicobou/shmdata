@@ -19,16 +19,13 @@
 
 #include "custom-property-helper.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  CustomPropertyHelper::CustomPropertyHelper ()
-  {
+  CustomPropertyHelper::CustomPropertyHelper () {
     gobject_.reset (new GObjectWrapper ());
   }
 
-  GObject *CustomPropertyHelper::get_gobject ()
-  {
+  GObject *CustomPropertyHelper::get_gobject () {
     return gobject_->get_gobject ();
   }
 
@@ -44,8 +41,7 @@ namespace switcher
                                                           set_method,
                                                           get_string_method
                                                           get_method,
-                                                          void *user_data)
-  {
+                                                          void *user_data) {
 
     GParamSpec *pspec = GObjectWrapper::make_string_property (nickname,
                                                               description,
@@ -73,8 +69,7 @@ namespace switcher
                                                            set_method,
                                                            get_boolean_method
                                                            get_method,
-                                                           void *user_data)
-  {
+                                                           void *user_data) {
 
     GParamSpec *pspec = GObjectWrapper::make_boolean_property (nickname,
                                                                description,
@@ -102,8 +97,7 @@ namespace switcher
                                                        set_method,
                                                        get_int_method
                                                        get_method,
-                                                       void *user_data)
-  {
+                                                       void *user_data) {
 
     GParamSpec *pspec = GObjectWrapper::make_int_property (nickname,
                                                            description,
@@ -135,8 +129,7 @@ namespace switcher
                                                           set_method,
                                                           get_double_method
                                                           get_method,
-                                                          void *user_data)
-  {
+                                                          void *user_data) {
 
     GParamSpec *pspec = GObjectWrapper::make_double_property (nickname,
                                                               description,
@@ -168,8 +161,7 @@ namespace switcher
                                                         set_method,
                                                         get_enum_method
                                                         get_method,
-                                                        void *user_data)
-  {
+                                                        void *user_data) {
 
     GParamSpec *pspec = GObjectWrapper::make_enum_property (nickname,
                                                             description,
@@ -191,8 +183,7 @@ namespace switcher
                                             GParamSpec * pspec,
                                             void (*set_method) (void),
                                             void (*get_method) (void),
-                                            void *user_data)
-  {
+                                            void *user_data) {
     std::shared_ptr < UserMethod > user_method (new UserMethod ());
     user_method->set = (void (*)(void)) set_method;
     user_method->get = (void (*)(void)) get_method;
@@ -203,40 +194,33 @@ namespace switcher
     gobject_->property_set_user_data (nickname, user_method.get ());
   }
 
-  bool CustomPropertyHelper::get_by_gvalue (GValue * value, void *user_data)
-  {
+  bool CustomPropertyHelper::get_by_gvalue (GValue * value, void *user_data) {
     UserMethod *user_method = static_cast < UserMethod * >(user_data);
 
-    if (G_VALUE_TYPE (value) == G_TYPE_STRING)
-      {
-        const gchar *val =
-          ((get_string_method) user_method->get) (user_method->user_data);
-        g_value_set_string (value, val);
-      }
-    else if (G_VALUE_TYPE (value) == G_TYPE_BOOLEAN)
-      {
-        gboolean val =
-          ((get_boolean_method) user_method->get) (user_method->user_data);
-        g_value_set_boolean (value, val);
-      }
-    else if (G_VALUE_TYPE (value) == G_TYPE_INT)
-      {
-        gint val =
-          ((get_int_method) user_method->get) (user_method->user_data);
-        g_value_set_int (value, val);
-      }
-    else if (G_TYPE_IS_ENUM (G_VALUE_TYPE (value)))
-      {
-        gint val =
-          ((get_enum_method) user_method->get) (user_method->user_data);
-        g_value_set_enum (value, val);
-      }
-    else if (G_VALUE_TYPE (value) == G_TYPE_DOUBLE)
-      {
-        gdouble val =
-          ((get_double_method) user_method->get) (user_method->user_data);
-        g_value_set_double (value, val);
-      }
+    if (G_VALUE_TYPE (value) == G_TYPE_STRING) {
+      const gchar *val =
+        ((get_string_method) user_method->get) (user_method->user_data);
+      g_value_set_string (value, val);
+    }
+    else if (G_VALUE_TYPE (value) == G_TYPE_BOOLEAN) {
+      gboolean val =
+        ((get_boolean_method) user_method->get) (user_method->user_data);
+      g_value_set_boolean (value, val);
+    }
+    else if (G_VALUE_TYPE (value) == G_TYPE_INT) {
+      gint val = ((get_int_method) user_method->get) (user_method->user_data);
+      g_value_set_int (value, val);
+    }
+    else if (G_TYPE_IS_ENUM (G_VALUE_TYPE (value))) {
+      gint val =
+        ((get_enum_method) user_method->get) (user_method->user_data);
+      g_value_set_enum (value, val);
+    }
+    else if (G_VALUE_TYPE (value) == G_TYPE_DOUBLE) {
+      gdouble val =
+        ((get_double_method) user_method->get) (user_method->user_data);
+      g_value_set_double (value, val);
+    }
     else
       g_debug ("CustomPropertyHelper: unknown type");
     return TRUE;
@@ -244,54 +228,45 @@ namespace switcher
 
   bool
     CustomPropertyHelper::set_by_gvalue (const GValue * value,
-                                         void *user_data)
-  {
+                                         void *user_data) {
     UserMethod *user_method = static_cast < UserMethod * >(user_data);
 
-    if (G_VALUE_TYPE (value) == G_TYPE_STRING)
-      {
-        ((set_string_method) user_method->set) (g_value_get_string (value),
-                                                user_method->user_data);
-      }
-    else if (G_VALUE_TYPE (value) == G_TYPE_BOOLEAN)
-      {
-        ((set_boolean_method) user_method->set) (g_value_get_boolean (value),
-                                                 user_method->user_data);
-      }
-    else if (G_VALUE_TYPE (value) == G_TYPE_INT)
-      {
-        ((set_int_method) user_method->set) (g_value_get_int (value),
-                                             user_method->user_data);
-      }
-    else if (G_TYPE_IS_ENUM (G_VALUE_TYPE (value)))
-      {
-        ((set_enum_method) user_method->set) (g_value_get_enum (value),
+    if (G_VALUE_TYPE (value) == G_TYPE_STRING) {
+      ((set_string_method) user_method->set) (g_value_get_string (value),
                                               user_method->user_data);
-      }
-    else if (G_VALUE_TYPE (value) == G_TYPE_DOUBLE)
-      {
-        ((set_double_method) user_method->set) (g_value_get_double (value),
-                                                user_method->user_data);
-      }
-    else
-      {
-        g_debug ("CustomPropertyHelper: %s is unhandled type",
-                 g_type_name (G_VALUE_TYPE (value)));
-        return FALSE;
-      }
+    }
+    else if (G_VALUE_TYPE (value) == G_TYPE_BOOLEAN) {
+      ((set_boolean_method) user_method->set) (g_value_get_boolean (value),
+                                               user_method->user_data);
+    }
+    else if (G_VALUE_TYPE (value) == G_TYPE_INT) {
+      ((set_int_method) user_method->set) (g_value_get_int (value),
+                                           user_method->user_data);
+    }
+    else if (G_TYPE_IS_ENUM (G_VALUE_TYPE (value))) {
+      ((set_enum_method) user_method->set) (g_value_get_enum (value),
+                                            user_method->user_data);
+    }
+    else if (G_VALUE_TYPE (value) == G_TYPE_DOUBLE) {
+      ((set_double_method) user_method->set) (g_value_get_double (value),
+                                              user_method->user_data);
+    }
+    else {
+      g_debug ("CustomPropertyHelper: %s is unhandled type",
+               g_type_name (G_VALUE_TYPE (value)));
+      return FALSE;
+    }
     GObjectWrapper::notify_property_changed (user_method->gobject,
                                              user_method->pspec);
     return TRUE;
   }
 
-  bool CustomPropertyHelper::notify_property_changed (GParamSpec * pspec)
-  {
+  bool CustomPropertyHelper::notify_property_changed (GParamSpec * pspec) {
     return GObjectWrapper::notify_property_changed (gobject_->get_gobject (),
                                                     pspec);
   }
 
-  bool CustomPropertyHelper::is_property_nickname_taken (std::string nickname)
-  {
+  bool CustomPropertyHelper::is_property_nickname_taken (std::string nickname) {
     return gobject_->is_property_nickname_taken (nickname);
   }
 }

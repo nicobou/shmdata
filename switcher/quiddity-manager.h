@@ -35,8 +35,7 @@
 #include "quiddity-manager-wrapper.h"
 #include <stdarg.h>
 
-namespace switcher
-{
+namespace switcher {
   class QuiddityManager:public std::enable_shared_from_this <
     QuiddityManager >
     //FIXME add const for method args
@@ -109,11 +108,11 @@ namespace switcher
                                             std::string property_name);
     //following "by_class" methods provide properties available after creation only,
     //avoiding possible properties created dynamically
-      std::
-      string get_properties_description_by_class (std::string class_name);
+      std::string get_properties_description_by_class (std::
+                                                       string class_name);
       std::string get_property_description_by_class (std::string class_name,
-                                                     std::string
-                                                     property_name);
+                                                     std::
+                                                     string property_name);
     //set & get
     bool set_property (std::string quiddity_name,
                        std::string property_name, std::string property_value);

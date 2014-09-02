@@ -19,8 +19,7 @@
 
 #include "myplugin.h"
 
-namespace switcher
-{
+namespace switcher {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (MyPlugin,
                                         "My Plugin",
@@ -30,12 +29,10 @@ namespace switcher
                                         "myplugin", "Nicolas Bouillot");
   MyPlugin::MyPlugin ():custom_props_ (std::make_shared <
                                        CustomPropertyHelper > ()),
-    myprop_ (false), myprop_prop_ (nullptr), hello_ (g_strdup ("hello"))
-  {
+    myprop_ (false), myprop_prop_ (nullptr), hello_ (g_strdup ("hello")) {
   }
 
-  bool MyPlugin::init ()
-  {
+  bool MyPlugin::init () {
     init_startable (this);
     myprop_prop_ = custom_props_->make_boolean_property ("myprop",      //name
                                                          "myprop is a boolean property",        //description
@@ -73,28 +70,24 @@ namespace switcher
     return true;
   }
 
-  MyPlugin::~MyPlugin ()
-  {
+  MyPlugin::~MyPlugin () {
     g_free (hello_);
   }
 
-  gboolean MyPlugin::get_myprop (void *user_data)
-  {
+  gboolean MyPlugin::get_myprop (void *user_data) {
     MyPlugin *context = static_cast < MyPlugin * >(user_data);
     return context->myprop_;
   }
 
-  void MyPlugin::set_myprop (gboolean myprop, void *user_data)
-  {
+  void MyPlugin::set_myprop (gboolean myprop, void *user_data) {
     MyPlugin *context = static_cast < MyPlugin * >(user_data);
     context->myprop_ = myprop;
-    GObjectWrapper::notify_property_changed (context->
-                                             gobject_->get_gobject (),
+    GObjectWrapper::notify_property_changed (context->gobject_->
+                                             get_gobject (),
                                              context->myprop_prop_);
   }
 
-  gchar *MyPlugin::my_hello_world_method (gchar * first_arg, void *user_data)
-  {
+  gchar *MyPlugin::my_hello_world_method (gchar * first_arg, void *user_data) {
     MyPlugin *context = static_cast < MyPlugin * >(user_data);
 
     g_debug ("hello world from myplugin");
@@ -103,14 +96,12 @@ namespace switcher
     return context->hello_;
   }
 
-  bool MyPlugin::start ()
-  {
+  bool MyPlugin::start () {
     g_debug ("start from my plugin");
     return true;
   }
 
-  bool MyPlugin::stop ()
-  {
+  bool MyPlugin::stop () {
     g_debug ("stop from my plugin");
     return true;
   }

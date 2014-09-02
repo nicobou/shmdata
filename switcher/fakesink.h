@@ -26,11 +26,9 @@
 #include <gst/gst.h>
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class FakeSink:public SinglePadGstSink
-  {
+  class FakeSink:public SinglePadGstSink {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (FakeSink);
     FakeSink ();
@@ -51,8 +49,7 @@ namespace switcher
     GParamSpec *caps_spec_;
 
     bool init_gpipe () final;
-    bool can_sink_caps (std::string caps) final
-    {
+    bool can_sink_caps (std::string caps) final {
       return true;
     };
 

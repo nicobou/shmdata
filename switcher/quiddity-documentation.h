@@ -23,11 +23,9 @@
 #include <string>
 #include "json-builder.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  class QuiddityDocumentation
-  {
+  class QuiddityDocumentation {
 
   public:
     QuiddityDocumentation (std::string long_name,

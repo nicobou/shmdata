@@ -30,15 +30,12 @@
 #include <memory>
 #include "json-builder.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  class QuiddityCommand
-  {
+  class QuiddityCommand {
   public:
     typedef std::shared_ptr < QuiddityCommand > ptr;
-    enum command
-    {
+    enum command {
       invalid_command = -1,
       auto_invoke = 0,
       create,

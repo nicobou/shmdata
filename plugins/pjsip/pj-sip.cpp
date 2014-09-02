@@ -19,8 +19,7 @@
 
 #include "pj-sip.h"
 
-namespace switcher
-{
+namespace switcher {
 
   SWITCHER_DECLARE_PLUGIN (PJSIP);
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (PJSIP,
@@ -33,12 +32,10 @@ namespace switcher
   //Application should only instantiate one SIP endpoint instance for every process.
   pjsip_endpoint *PJSIP::sip_endpt_ = nullptr;
 
-  PJSIP::PJSIP ():cp_ ()
-  {
+    PJSIP::PJSIP ():cp_ () {
   }
 
-  PJSIP::~PJSIP ()
-  {
+  PJSIP::~PJSIP () {
     if (!pj_sip_inited_)
       return;
 
@@ -46,16 +43,14 @@ namespace switcher
 
     if (sip_thread_.joinable ())
       sip_thread_.join ();
-    if (sip_worker_.joinable ())
-      {
-        sip_work_ = false;
-        sip_worker_.join ();
-      }
+    if (sip_worker_.joinable ()) {
+      sip_work_ = false;
+      sip_worker_.join ();
+    }
 
   }
 
-  void PJSIP::run_command_sync (std::function < void () > command)
-  {
+  void PJSIP::run_command_sync (std::function < void () > command) {
     {
       std::unique_lock < std::mutex > lock (work_mutex_);
       command_ = command;
@@ -65,13 +60,11 @@ namespace switcher
     done_cond_.wait (lock_done);
   }
 
-  bool PJSIP::init ()
-  {
-    if (nullptr != sip_endpt_)
-      {
-        g_warning ("a pjsip_endpoint already exists, cannot create more");
-        return false;
-      }
+  bool PJSIP::init () {
+    if (nullptr != sip_endpt_) {
+      g_warning ("a pjsip_endpoint already exists, cannot create more");
+      return false;
+    }
 
     std::unique_lock < std::mutex > lock (pj_init_mutex_);
     sip_thread_ = std::thread (&PJSIP::sip_handling_thread, this);
@@ -96,8 +89,7 @@ namespace switcher
     return true;
   }
 
-  bool PJSIP::pj_sip_init ()
-  {
+  bool PJSIP::pj_sip_init () {
     pj_status_t status = pj_init ();
     if (status != PJ_SUCCESS)
       return false;
@@ -109,11 +101,10 @@ namespace switcher
                         thread_handler_desc_, &pj_thread_ref_);
 
     status = pjsua_create ();
-    if (status != PJ_SUCCESS)
-      {
-        g_warning ("Error in pjsua_create()");
-        return false;
-      }
+    if (status != PJ_SUCCESS) {
+      g_warning ("Error in pjsua_create()");
+      return false;
+    }
     /* Init pjsua */
     {
       pjsua_config cfg;
@@ -149,11 +140,10 @@ namespace switcher
       log_cfg.console_level = 1;
 
       status = pjsua_init (&cfg, &log_cfg, nullptr);
-      if (status != PJ_SUCCESS)
-        {
-          g_warning ("Error in pjsua_init()");
-          return false;
-        }
+      if (status != PJ_SUCCESS) {
+        g_warning ("Error in pjsua_init()");
+        return false;
+      }
       sip_endpt_ = pjsua_get_pjsip_endpt ();
     }
 
@@ -174,79 +164,69 @@ namespace switcher
 
     /* Initialization is done, now start pjsua */
     status = pjsua_start ();
-    if (status != PJ_SUCCESS)
-      {
-        g_warning ("Error starting pjsua");
-        return false;
-      }
+    if (status != PJ_SUCCESS) {
+      g_warning ("Error starting pjsua");
+      return false;
+    }
 
     return true;
   }
 
-  void PJSIP::sip_worker_thread ()
-  {
+  void PJSIP::sip_worker_thread () {
     // Register the thread, after pj_init() is called
 
     pj_thread_register ("sip_worker_thread",
                         worker_handler_desc_, &worker_thread_ref_);
 
-    while (sip_work_)
-      {
-        pj_time_val timeout = { 0, 10 };
-        pjsip_endpt_handle_events (sip_endpt_, &timeout);
-      }
+    while (sip_work_) {
+      pj_time_val timeout = { 0, 10 };
+      pjsip_endpt_handle_events (sip_endpt_, &timeout);
+    }
   }
 
-  void PJSIP::sip_handling_thread ()
-  {
+  void PJSIP::sip_handling_thread () {
     {                           //init pj sip
       std::unique_lock < std::mutex > lock (pj_init_mutex_);
       pj_sip_inited_ = pj_sip_init ();
       pj_init_cond_.notify_all ();
     }
 
-    while (continue_)
+    while (continue_) {
+      std::unique_lock < std::mutex > lock_work (work_mutex_);
+      work_cond_.wait (lock_work);
+      //do_something
       {
-        std::unique_lock < std::mutex > lock_work (work_mutex_);
-        work_cond_.wait (lock_work);
-        //do_something
-        {
-          std::unique_lock < std::mutex > lock_done (done_mutex_);
-          command_ ();
-        }
-        done_cond_.notify_one ();
+        std::unique_lock < std::mutex > lock_done (done_mutex_);
+        command_ ();
       }
+      done_cond_.notify_one ();
+    }
     /* Shutting down... */
-    if (nullptr != sip_calls_)
-      {
-        delete (sip_calls_);
-        sip_calls_ = nullptr;
-      }
+    if (nullptr != sip_calls_) {
+      delete (sip_calls_);
+      sip_calls_ = nullptr;
+    }
 
-    if (nullptr == sip_presence_)
-      {
-        delete (sip_presence_);
-        sip_presence_ = nullptr;
-      }
+    if (nullptr == sip_presence_) {
+      delete (sip_presence_);
+      sip_presence_ = nullptr;
+    }
 
-    if (nullptr != pool_)
-      {
-        pj_pool_release (pool_);
-        pool_ = nullptr;
-        pj_caching_pool_destroy (&cp_);
-      }
+    if (nullptr != pool_) {
+      pj_pool_release (pool_);
+      pool_ = nullptr;
+      pj_caching_pool_destroy (&cp_);
+    }
 
     pjsua_destroy ();
     pj_shutdown ();
   }
 
-  void PJSIP::exit_cmd ()
-  {
+  void PJSIP::exit_cmd () {
     continue_ = false;
   }
 
-  void PJSIP::start_udp_transport ()
-  {
+  void PJSIP::start_udp_transport () {
 
     if (nullptr != transport_id_)
       pjsua_transport_close (*transport_id_, PJ_FALSE);
@@ -256,27 +236,24 @@ namespace switcher
     cfg.port = sip_port_;
     pj_status_t status =
       pjsua_transport_create (PJSIP_TRANSPORT_UDP, &cfg, nullptr);
-    if (status != PJ_SUCCESS)
-      {
-        g_warning ("Error creating UDP transport");
-        return;
-      }
+    if (status != PJ_SUCCESS) {
+      g_warning ("Error creating UDP transport");
+      return;
+    }
 
   }
 
-  void PJSIP::set_port (const gint value, void *user_data)
-  {
+  void PJSIP::set_port (const gint value, void *user_data) {
     PJSIP *context = static_cast < PJSIP * >(user_data);
     context->sip_port_ = value;
     context->run_command_sync (std::bind (&PJSIP::start_udp_transport,
                                           context));
-    GObjectWrapper::notify_property_changed (context->
-                                             gobject_->get_gobject (),
+    GObjectWrapper::notify_property_changed (context->gobject_->
+                                             get_gobject (),
                                              context->sip_port_spec_);
   }
 
-  gint PJSIP::get_port (void *user_data)
-  {
+  gint PJSIP::get_port (void *user_data) {
     PJSIP *context = static_cast < PJSIP * >(user_data);
     return context->sip_port_;
   }

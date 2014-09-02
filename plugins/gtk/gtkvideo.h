@@ -41,10 +41,8 @@
 #include <gdk/gdkquartz.h>
 #endif
 
-namespace switcher
-{
-  class GTKVideo:public SinglePadGstSink
-  {
+namespace switcher {
+  class GTKVideo:public SinglePadGstSink {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (GTKVideo);
     GTKVideo ();

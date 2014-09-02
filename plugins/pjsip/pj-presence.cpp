@@ -20,8 +20,7 @@
 #include "pj-presence.h"
 #include "pj-sip.h"
 #include "switcher/scope-exit.h"
-namespace switcher
-{
+namespace switcher {
 
   GEnumValue PJPresence::status_enum_[8] = {
     {PJPresence::AVAILABLE, "Available", "AVAILABLE"}
@@ -48,8 +47,7 @@ PJPresence::PJPresence (PJSIP * sip_instance):
     registration_cond_ (),
     status_enum_spec_ (nullptr),
     status_ (PJPresence::OFFLINE),
-    custom_status_spec_ (nullptr), custom_status_ (), sip_local_user_ ()
-  {
+    custom_status_spec_ (nullptr), custom_status_ (), sip_local_user_ () {
     //registering account
     sip_instance_->install_method ("Register SIP Account",      //long name
                                    "register",  //name
@@ -90,63 +88,59 @@ PJPresence::PJPresence (PJSIP * sip_instance):
                                                         status_enum_,
                                                         (GParamFlags)
                                                         G_PARAM_READWRITE,
-                                                        PJPresence::set_status,
-                                                        PJPresence::get_status,
-                                                        this);
+                                                        PJPresence::
+                                                        set_status,
+                                                        PJPresence::
+                                                        get_status, this);
 
-    sip_instance_->install_property_by_pspec (sip_instance_->
-                                              custom_props_->get_gobject (),
+    sip_instance_->install_property_by_pspec (sip_instance_->custom_props_->
+                                              get_gobject (),
                                               status_enum_spec_, "status",
                                               "Online Status");
     custom_status_spec_ =
       sip_instance_->custom_props_->make_string_property ("status-note",
                                                           "Custom status note",
-                                                          "",
-                                                          (GParamFlags)
+                                                          "", (GParamFlags)
                                                           G_PARAM_READWRITE,
-                                                          PJPresence::set_note,
-                                                          PJPresence::get_note,
-                                                          this);
+                                                          PJPresence::
+                                                          set_note,
+                                                          PJPresence::
+                                                          get_note, this);
 
-    sip_instance_->install_property_by_pspec (sip_instance_->
-                                              custom_props_->get_gobject (),
+    sip_instance_->install_property_by_pspec (sip_instance_->custom_props_->
+                                              get_gobject (),
                                               custom_status_spec_,
                                               "status-note",
                                               "Custom status note");
 
   }
 
-  PJPresence::~PJPresence ()
-  {
+  PJPresence::~PJPresence () {
     unregister_account ();
   }
 
   gboolean
     PJPresence::register_account_wrapped (gchar * user,
                                           gchar * domain,
-                                          gchar * password, void *user_data)
-  {
+                                          gchar * password, void *user_data) {
     PJPresence *context = static_cast < PJPresence * >(user_data);
-    if (nullptr == user || nullptr == domain || nullptr == password)
-      {
-        g_warning
-          ("register sip account received nullptr user or domain or password");
-        return FALSE;
-      }
-    context->
-      sip_instance_->run_command_sync (std::bind
-                                       (&PJPresence::register_account,
-                                        context, std::string (user),
-                                        std::string (domain),
-                                        std::string (password)));
+    if (nullptr == user || nullptr == domain || nullptr == password) {
+      g_warning
+        ("register sip account received nullptr user or domain or password");
+      return FALSE;
+    }
+    context->sip_instance_->run_command_sync (std::bind
+                                              (&PJPresence::register_account,
+                                               context, std::string (user),
+                                               std::string (domain),
+                                               std::string (password)));
     return TRUE;
   }
 
   void
     PJPresence::register_account (const std::string & sip_user,
                                   const std::string & sip_domain,
-                                  const std::string & sip_password)
-  {
+                                  const std::string & sip_password) {
     std::unique_lock < std::mutex > lock (registration_mutex_);
 
     // Register to SIP server by creating SIP account.
@@ -180,11 +174,10 @@ PJPresence::PJPresence (PJSIP * sip_instance):
     g_free (domain);
     g_free (digest);
     g_free (password);
-    if (status != PJ_SUCCESS)
-      {
-        account_id_ = -1;
-        return;
-      }
+    if (status != PJ_SUCCESS) {
+      account_id_ = -1;
+      return;
+    }
     pjsua_acc_set_user_data (account_id_, this);
     registration_cond_.wait (lock);
 
@@ -233,46 +226,39 @@ PJPresence::PJPresence (PJSIP * sip_instance):
   }
 
   gboolean PJPresence::unregister_account_wrapped (gpointer /*unused */ ,
-                                                   void *user_data)
-  {
+                                                   void *user_data) {
     PJPresence *context = static_cast < PJPresence * >(user_data);
-    context->
-      sip_instance_->run_command_sync (std::
-                                       bind (&PJPresence::unregister_account,
-                                             context));
+    context->sip_instance_->
+      run_command_sync (std::bind (&PJPresence::unregister_account, context));
     if (-1 != context->account_id_)
       return FALSE;
     return TRUE;
   }
 
-  bool PJPresence::unregister_account ()
-  {
+  bool PJPresence::unregister_account () {
     std::unique_lock < std::mutex > lock (registration_mutex_);
     if (-1 == account_id_)
       return false;
     change_online_status (PJPresence::OFFLINE);
-    if (PJ_SUCCESS != pjsua_acc_del (account_id_))
-      {
-        g_warning ("error when unregistering account");
-        return false;
-      }
+    if (PJ_SUCCESS != pjsua_acc_del (account_id_)) {
+      g_warning ("error when unregistering account");
+      return false;
+    }
     account_id_ = -1;
 
     sip_local_user_.clear ();
     return true;
   }
 
-  void PJPresence::add_buddy (const std::string & sip_user)
-  {
+  void PJPresence::add_buddy (const std::string & sip_user) {
     pjsua_buddy_config buddy_cfg;
     pjsua_buddy_id buddy_id;
     pj_status_t status = PJ_SUCCESS;
 
-    if (pjsua_verify_url (sip_user.c_str ()) != PJ_SUCCESS)
-      {
-        g_warning ("Invalid buddy URI %s", sip_user.c_str ());
-        return;
-      }
+    if (pjsua_verify_url (sip_user.c_str ()) != PJ_SUCCESS) {
+      g_warning ("Invalid buddy URI %s", sip_user.c_str ());
+      return;
+    }
 
     pj_bzero (&buddy_cfg, sizeof (pjsua_buddy_config));
     gchar *buddy = g_strdup (sip_user.c_str ());
@@ -287,28 +273,24 @@ PJPresence::PJPresence (PJSIP * sip_instance):
 
   void
     PJPresence::on_registration_state (pjsua_acc_id acc_id,
-                                       pjsua_reg_info * info)
-  {
+                                       pjsua_reg_info * info) {
 
     PJPresence *context =
       static_cast < PJPresence * >(pjsua_acc_get_user_data (acc_id));
     std::unique_lock < std::mutex > lock (context->registration_mutex_);
-    if (PJ_SUCCESS != info->cbparam->status)
-      {
-        if (-1 != context->account_id_)
-          {
-            pj_status_t status = pjsua_acc_del (context->account_id_);
-            if (PJ_SUCCESS != status)
-              g_warning ("Error deleting account after registration failled");
-            context->account_id_ = -1;
-          }
+    if (PJ_SUCCESS != info->cbparam->status) {
+      if (-1 != context->account_id_) {
+        pj_status_t status = pjsua_acc_del (context->account_id_);
+        if (PJ_SUCCESS != status)
+          g_warning ("Error deleting account after registration failled");
+        context->account_id_ = -1;
       }
+    }
     g_print ("registration SIP status code %d\n", info->cbparam->code);
     context->registration_cond_.notify_one ();
   }
 
-  void PJPresence::on_buddy_state (pjsua_buddy_id buddy_id)
-  {
+  void PJPresence::on_buddy_state (pjsua_buddy_id buddy_id) {
     PJPresence *context =
       static_cast < PJPresence * >(pjsua_buddy_get_user_data (buddy_id));
     if (nullptr == context)
@@ -345,19 +327,18 @@ PJPresence::PJPresence (PJSIP * sip_instance):
 
     std::string status ("unknown");
 
-    switch (info.status)
-      {
-      case PJSUA_BUDDY_STATUS_UNKNOWN:
-        break;
-      case PJSUA_BUDDY_STATUS_ONLINE:
-        status = "online";
-        break;
-      case PJSUA_BUDDY_STATUS_OFFLINE:
-        status = "offline";
-        break;
-      default:
-        break;
-      }
+    switch (info.status) {
+    case PJSUA_BUDDY_STATUS_UNKNOWN:
+      break;
+    case PJSUA_BUDDY_STATUS_ONLINE:
+      status = "online";
+      break;
+    case PJSUA_BUDDY_STATUS_OFFLINE:
+      status = "offline";
+      break;
+    default:
+      break;
+    }
     if (PJRPID_ACTIVITY_AWAY == info.rpid.activity)
       status = "away";
     if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
@@ -367,49 +348,42 @@ PJPresence::PJPresence (PJSIP * sip_instance):
 
     tree->graft (".status_text",
                  data::make_tree (std::string (info.status_text.ptr,
-                                               (size_t) info.
-                                               status_text.slen)));
+                                               (size_t) info.status_text.
+                                               slen)));
     tree->graft (".subscription_state",
                  data::make_tree (std::string (info.sub_state_name)));
-    context->
-      sip_instance_->graft_tree (std::string (".presence." + buddy_url),
-                                 tree);
+    context->sip_instance_->
+      graft_tree (std::string (".presence." + buddy_url), tree);
   }
 
-  void PJPresence::set_status (const gint value, void *user_data)
-  {
+  void PJPresence::set_status (const gint value, void *user_data) {
     PJPresence *context = static_cast < PJPresence * >(user_data);
-    if (value < 0 || value >= OPT_MAX)
-      {
-        g_warning ("invalide online status code");
-        return;
-      }
-    if (-1 == context->account_id_)
-      {
-        g_warning ("cannot set online status when not registered");
-        return;
-      }
+    if (value < 0 || value >= OPT_MAX) {
+      g_warning ("invalide online status code");
+      return;
+    }
+    if (-1 == context->account_id_) {
+      g_warning ("cannot set online status when not registered");
+      return;
+    }
 
     context->status_ = value;
-    context->
-      sip_instance_->run_command_sync (std::bind
-                                       (&PJPresence::change_online_status,
-                                        context, context->status_));
-    GObjectWrapper::notify_property_changed (context->
-                                             sip_instance_->gobject_->
-                                             get_gobject (),
+    context->sip_instance_->run_command_sync (std::bind
+                                              (&PJPresence::
+                                               change_online_status, context,
+                                               context->status_));
+    GObjectWrapper::notify_property_changed (context->sip_instance_->
+                                             gobject_->get_gobject (),
                                              context->status_enum_spec_);
 
   }
 
-  gint PJPresence::get_status (void *user_data)
-  {
+  gint PJPresence::get_status (void *user_data) {
     PJPresence *context = static_cast < PJPresence * >(user_data);
     return context->status_;
   }
 
-  void PJPresence::change_online_status (gint status)
-  {
+  void PJPresence::change_online_status (gint status) {
     if (-1 == account_id_)
       return;
     pj_bool_t online_status = PJ_TRUE;
@@ -418,75 +392,70 @@ PJPresence::PJPresence (PJSIP * sip_instance):
     elem.type = PJRPID_ELEMENT_TYPE_PERSON;
     bool has_custom_status = true;
     char *tmp = nullptr;
-    On_scope_exit
-    {
+    On_scope_exit {
       if (nullptr != tmp)
         g_free (tmp);
     };
     if (custom_status_.empty () || 0 == custom_status_.compare (""))
       has_custom_status = false;
-    else
-      {
-        tmp = g_strdup (custom_status_.c_str ());
-        elem.note = pj_str (tmp);
-      }
+    else {
+      tmp = g_strdup (custom_status_.c_str ());
+      elem.note = pj_str (tmp);
+    }
 
-    switch (status)
-      {
-      case AVAILABLE:
-        break;
-      case BUSY:
-        elem.activity = PJRPID_ACTIVITY_BUSY;
-        if (!has_custom_status)
-          pj_cstr (&elem.note, "Busy");
-        break;
-      case OTP:
-        elem.activity = PJRPID_ACTIVITY_BUSY;
-        if (!has_custom_status)
-          pj_cstr (&elem.note, "On the phone");
-        break;
-      case IDLE:
-        //elem.activity = PJRPID_ACTIVITY_UNKNOWN;
-        elem.activity = PJRPID_ACTIVITY_AWAY;
-        if (!has_custom_status)
-          pj_cstr (&elem.note, "Idle");
-        break;
-      case AWAY:
-        elem.activity = PJRPID_ACTIVITY_AWAY;
-        if (!has_custom_status)
-          pj_cstr (&elem.note, "Away");
-        break;
-      case BRB:
-        //elem.activity = PJRPID_ACTIVITY_UNKNOWN;
-        elem.activity = PJRPID_ACTIVITY_AWAY;
-        if (!has_custom_status)
-          pj_cstr (&elem.note, "Be right back");
-        break;
-      case OFFLINE:
-        online_status = PJ_FALSE;
-        break;
-      }
+    switch (status) {
+    case AVAILABLE:
+      break;
+    case BUSY:
+      elem.activity = PJRPID_ACTIVITY_BUSY;
+      if (!has_custom_status)
+        pj_cstr (&elem.note, "Busy");
+      break;
+    case OTP:
+      elem.activity = PJRPID_ACTIVITY_BUSY;
+      if (!has_custom_status)
+        pj_cstr (&elem.note, "On the phone");
+      break;
+    case IDLE:
+      //elem.activity = PJRPID_ACTIVITY_UNKNOWN;
+      elem.activity = PJRPID_ACTIVITY_AWAY;
+      if (!has_custom_status)
+        pj_cstr (&elem.note, "Idle");
+      break;
+    case AWAY:
+      elem.activity = PJRPID_ACTIVITY_AWAY;
+      if (!has_custom_status)
+        pj_cstr (&elem.note, "Away");
+      break;
+    case BRB:
+      //elem.activity = PJRPID_ACTIVITY_UNKNOWN;
+      elem.activity = PJRPID_ACTIVITY_AWAY;
+      if (!has_custom_status)
+        pj_cstr (&elem.note, "Be right back");
+      break;
+    case OFFLINE:
+      online_status = PJ_FALSE;
+      break;
+    }
 
     pjsua_acc_set_online_status2 (account_id_, online_status, &elem);
   }
 
-  void PJPresence::set_note (const gchar * custom_status, void *user_data)
-  {
+  void PJPresence::set_note (const gchar * custom_status, void *user_data) {
     PJPresence *context = static_cast < PJPresence * >(user_data);
     if (0 == context->custom_status_.compare (custom_status))
       return;
     context->custom_status_ = custom_status;
-    context->
-      sip_instance_->run_command_sync (std::bind
-                                       (&PJPresence::change_online_status,
-                                        context, context->status_));
+    context->sip_instance_->run_command_sync (std::bind
+                                              (&PJPresence::
+                                               change_online_status, context,
+                                               context->status_));
 
-    context->sip_instance_->custom_props_->
-      notify_property_changed (context->custom_status_spec_);
+    context->sip_instance_->custom_props_->notify_property_changed (context->
+                                                                    custom_status_spec_);
   }
 
-  const gchar *PJPresence::get_note (void *user_data)
-  {
+  const gchar *PJPresence::get_note (void *user_data) {
     PJPresence *context = static_cast < PJPresence * >(user_data);
     return context->custom_status_.c_str ();
   }
@@ -494,8 +463,7 @@ PJPresence::PJPresence (PJSIP * sip_instance):
   /*
    * Handler registration status has changed.
    */
-  void PJPresence::on_reg_state (pjsua_acc_id acc_id)
-  {
+  void PJPresence::on_reg_state (pjsua_acc_id acc_id) {
     PJ_UNUSED_ARG (acc_id);
     printf ("%s\n", __FUNCTION__);
     // Log already written.
@@ -512,8 +480,7 @@ PJPresence::PJPresence (PJSIP * sip_instance):
                                        pjsip_rx_data * rdata,
                                        pjsip_status_code * code,
                                        pj_str_t * reason,
-                                       pjsua_msg_data * msg_data)
-  {
+                                       pjsua_msg_data * msg_data) {
     printf ("%s\n", __FUNCTION__);
     /* Just accept the request (the default behavior) */
     PJ_UNUSED_ARG (acc_id);
@@ -541,12 +508,11 @@ PJPresence::PJPresence (PJSIP * sip_instance):
     event_info[0] = '\0';
 
     if (event->type == PJSIP_EVENT_TSX_STATE &&
-        event->body.tsx_state.type == PJSIP_EVENT_RX_MSG)
-      {
-        pjsip_rx_data *rdata = event->body.tsx_state.src.rdata;
-        snprintf (event_info, sizeof (event_info),
-                  " (RX %s)", pjsip_rx_data_get_info (rdata));
-      }
+        event->body.tsx_state.type == PJSIP_EVENT_RX_MSG) {
+      pjsip_rx_data *rdata = event->body.tsx_state.src.rdata;
+      snprintf (event_info, sizeof (event_info),
+                " (RX %s)", pjsip_rx_data_get_info (rdata));
+    }
 
     printf ("Buddy %d: subscription state: %s (event: %s%s)",
             buddy_id, pjsip_evsub_get_state_name (sub),

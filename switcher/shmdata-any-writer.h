@@ -28,11 +28,9 @@
 #include "clock.h"
 #include "on-caps.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  class ShmdataAnyWriter:public OnCaps
-  {
+  class ShmdataAnyWriter:public OnCaps {
   public:
     typedef std::shared_ptr < ShmdataAnyWriter > ptr;
     using CapsCallBack = std::function < void (std::string) >;

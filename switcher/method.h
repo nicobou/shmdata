@@ -30,11 +30,9 @@
 #include "json-builder.h"
 #include "categorizable.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  class Method:public Categorizable
-  {
+  class Method:public Categorizable {
   public:
     typedef std::shared_ptr < Method > ptr;
     typedef GType return_type;

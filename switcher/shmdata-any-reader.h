@@ -28,11 +28,9 @@
 #include "json-builder.h"
 #include "on-caps.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  class ShmdataAnyReader:public OnCaps
-  {
+  class ShmdataAnyReader:public OnCaps {
   public:
     typedef std::shared_ptr < ShmdataAnyReader > ptr;
     using Callback = std::function < void (void *,
@@ -62,21 +60,16 @@ namespace switcher
       JSONBuilder::Node get_json_root_node ();
 
   private:
-      bool muted_
-    {
+      bool muted_ {
     false};
       std::string path_;
-    Callback cb_
-    {
+    Callback cb_ {
     nullptr};
-    void *cb_user_data_
-    {
+    void *cb_user_data_ {
     nullptr};
-    shmdata_any_reader_t *reader_
-    {
+    shmdata_any_reader_t *reader_ {
     nullptr};
-    bool is_caps_set_
-    {
+    bool is_caps_set_ {
     false};
 
       JSONBuilder::ptr json_description_;

@@ -26,15 +26,13 @@ property_cb (std::string /*subscriber_name */ ,
              std::string /*quiddity_name */ ,
              std::string /*property_name */ ,
              std::string /*value */ ,
-             void *user_data)
-{
+             void *user_data) {
   uint *val = (uint *) user_data;
   *val = *val + 1;
 }
 
 int
-main ()
-{
+main () {
   uint count = 0;
   {
     switcher::QuiddityManager::ptr mgr =

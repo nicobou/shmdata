@@ -21,14 +21,12 @@
 #include "scope-exit.h"
 #include <glib/gprintf.h>
 
-namespace switcher
-{
+namespace switcher {
   DecodebinToShmdata::DecodebinToShmdata (GPipe &
                                           gpipe):decodebin_ ("decodebin2"),
     discard_next_uncomplete_buffer_ (false), main_pad_ (nullptr),
     media_counters_ (), media_counter_mutex_ (), gpipe_ (&gpipe),
-    shmdata_path_ (), cb_ids_ (), thread_safe_ ()
-  {
+    shmdata_path_ (), cb_ids_ (), thread_safe_ () {
     //set async property
     auto set_prop = std::bind (g_object_set,
                                std::placeholders::_1,
@@ -57,8 +55,7 @@ namespace switcher
                          (std::move (autoplug)));
   }
 
-  DecodebinToShmdata::~DecodebinToShmdata ()
-  {
+  DecodebinToShmdata::~DecodebinToShmdata () {
     std::unique_lock < std::mutex > lock (thread_safe_);
     // for (auto &it: cb_ids_)
     //   if (0 != it)
@@ -71,59 +68,54 @@ namespace switcher
 
   void
     DecodebinToShmdata::on_pad_added (GstElement * object, GstPad * pad,
-                                      gpointer user_data)
-  {
+                                      gpointer user_data) {
     DecodebinToShmdata *context =
       static_cast < DecodebinToShmdata * >(user_data);
     std::unique_lock < std::mutex > lock (context->thread_safe_);
     GstCaps *rtpcaps =
       gst_caps_from_string ("application/x-rtp, media=(string)application");
-    On_scope_exit
-    {
+    On_scope_exit {
       gst_caps_unref (rtpcaps);
     };
     GstCaps *padcaps = gst_pad_get_caps (pad);
-    On_scope_exit
-    {
+    On_scope_exit {
       gst_caps_unref (padcaps);
     };
-    if (gst_caps_can_intersect (rtpcaps, padcaps))
-      {
-        //asking rtpbin to send an event when a packet is lost (do-lost property)
-        GstUtils::set_element_property_in_bin (object, "gstrtpbin", "do-lost",
-                                               TRUE);
+    if (gst_caps_can_intersect (rtpcaps, padcaps)) {
+      //asking rtpbin to send an event when a packet is lost (do-lost property)
+      GstUtils::set_element_property_in_bin (object, "gstrtpbin", "do-lost",
+                                             TRUE);
 
-        g_message ("custom rtp stream found");
-        GstElement *rtpgstdepay;
-        GstUtils::make_element ("rtpgstdepay", &rtpgstdepay);
+      g_message ("custom rtp stream found");
+      GstElement *rtpgstdepay;
+      GstUtils::make_element ("rtpgstdepay", &rtpgstdepay);
 
-        //adding a probe for discarding uncomplete packets
-        GstPad *depaysrcpad = gst_element_get_static_pad (rtpgstdepay, "src");
-        gst_pad_add_buffer_probe (depaysrcpad,
-                                  G_CALLBACK
-                                  (DecodebinToShmdata::gstrtpdepay_buffer_probe_cb),
-                                  context);
-        gst_object_unref (depaysrcpad);
+      //adding a probe for discarding uncomplete packets
+      GstPad *depaysrcpad = gst_element_get_static_pad (rtpgstdepay, "src");
+      gst_pad_add_buffer_probe (depaysrcpad,
+                                G_CALLBACK
+                                (DecodebinToShmdata::
+                                 gstrtpdepay_buffer_probe_cb), context);
+      gst_object_unref (depaysrcpad);
 
 //was this: gst_bin_add (GST_BIN (context->bin_), rtpgstdepay);
-        gst_bin_add (GST_BIN (GST_ELEMENT_PARENT (object)), rtpgstdepay);
-        GstPad *sinkpad = gst_element_get_static_pad (rtpgstdepay, "sink");
-        //adding a probe for handling loss messages from rtpbin
-        gst_pad_add_event_probe (sinkpad,
-                                 (GCallback)
-                                 DecodebinToShmdata::gstrtpdepay_event_probe_cb,
-                                 context);
+      gst_bin_add (GST_BIN (GST_ELEMENT_PARENT (object)), rtpgstdepay);
+      GstPad *sinkpad = gst_element_get_static_pad (rtpgstdepay, "sink");
+      //adding a probe for handling loss messages from rtpbin
+      gst_pad_add_event_probe (sinkpad, (GCallback)
+                               DecodebinToShmdata::gstrtpdepay_event_probe_cb,
+                               context);
 
-        GstUtils::check_pad_link_return (gst_pad_link (pad, sinkpad));
-        gst_object_unref (sinkpad);
-        GstPad *srcpad = gst_element_get_static_pad (rtpgstdepay, "src");
-        GstUtils::sync_state_with_parent (rtpgstdepay);
-        gst_element_get_state (rtpgstdepay, nullptr, nullptr,
-                               GST_CLOCK_TIME_NONE);
-        context->pad_to_shmdata_writer (GST_ELEMENT_PARENT (object), srcpad);
-        gst_object_unref (srcpad);
-        return;
-      }
+      GstUtils::check_pad_link_return (gst_pad_link (pad, sinkpad));
+      gst_object_unref (sinkpad);
+      GstPad *srcpad = gst_element_get_static_pad (rtpgstdepay, "src");
+      GstUtils::sync_state_with_parent (rtpgstdepay);
+      gst_element_get_state (rtpgstdepay, nullptr, nullptr,
+                             GST_CLOCK_TIME_NONE);
+      context->pad_to_shmdata_writer (GST_ELEMENT_PARENT (object), srcpad);
+      gst_object_unref (srcpad);
+      return;
+    }
 
     context->pad_to_shmdata_writer (GST_ELEMENT_PARENT (object), pad);
   }
@@ -132,38 +124,36 @@ namespace switcher
                                               GstPad * pad,
                                               GstCaps * /*caps */ ,
                                               GstElementFactory * factory,
-                                              gpointer /*user_data */ )
-  {
+                                              gpointer /*user_data */ ) {
     //     typedef enum {
     //   GST_AUTOPLUG_SELECT_TRY,
     //   GST_AUTOPLUG_SELECT_EXPOSE,
     //   GST_AUTOPLUG_SELECT_SKIP
     // } GstAutoplugSelectResult;
 
-    if (g_strcmp0 (GST_OBJECT_NAME (factory), "rtpgstdepay") == 0)
-      {
-        int return_val = 1;
-        const GValue *val =
-          gst_structure_get_value (gst_caps_get_structure
-                                   (gst_pad_get_caps (pad),
-                                    0),
-                                   "caps");
+    if (g_strcmp0 (GST_OBJECT_NAME (factory), "rtpgstdepay") == 0) {
+      int return_val = 1;
+      const GValue *val =
+        gst_structure_get_value (gst_caps_get_structure
+                                 (gst_pad_get_caps (pad),
+                                  0),
+                                 "caps");
 
-        gsize taille = 256;
-        guchar *string_caps = g_base64_decode (g_value_get_string (val),
-                                               &taille);
+      gsize taille = 256;
+      guchar *string_caps = g_base64_decode (g_value_get_string (val),
+                                             &taille);
 
-        gchar *string_caps_char = g_strdup_printf ("%s", string_caps);
+      gchar *string_caps_char = g_strdup_printf ("%s", string_caps);
 
-        if (g_str_has_prefix (string_caps_char, "audio/")
-            || g_str_has_prefix (string_caps_char, "video/")
-            || g_str_has_prefix (string_caps_char, "image/"))
-          return_val = 0;
+      if (g_str_has_prefix (string_caps_char, "audio/")
+          || g_str_has_prefix (string_caps_char, "video/")
+          || g_str_has_prefix (string_caps_char, "image/"))
+        return_val = 0;
 
-        g_free (string_caps_char);
-        g_free (string_caps);
-        return return_val;      //expose
-      }
+      g_free (string_caps_char);
+      g_free (string_caps);
+      return return_val;        //expose
+    }
     return 0;                   //try
   }
 
@@ -171,17 +161,15 @@ namespace switcher
     DecodebinToShmdata::gstrtpdepay_buffer_probe_cb (GstPad * /*pad */ ,
                                                      GstMiniObject *
                                                      /*mini_obj */ ,
-                                                     gpointer user_data)
-  {
+                                                     gpointer user_data) {
     DecodebinToShmdata *context =
       static_cast < DecodebinToShmdata * >(user_data);
     std::unique_lock < std::mutex > lock (context->thread_safe_);
-    if (true == context->discard_next_uncomplete_buffer_)
-      {
-        g_debug ("discarding uncomplete custom frame due to a network loss");
-        context->discard_next_uncomplete_buffer_ = false;
-        return FALSE;           // drop buffer
-      }
+    if (true == context->discard_next_uncomplete_buffer_) {
+      g_debug ("discarding uncomplete custom frame due to a network loss");
+      context->discard_next_uncomplete_buffer_ = false;
+      return FALSE;             // drop buffer
+    }
     return TRUE;                // pass buffer
   }
 
@@ -192,15 +180,14 @@ namespace switcher
     DecodebinToShmdata *context =
       static_cast < DecodebinToShmdata * >(user_data);
     std::unique_lock < std::mutex > lock (context->thread_safe_);
-    if (GST_EVENT_TYPE (event) == GST_EVENT_CUSTOM_DOWNSTREAM)
-      {
-        const GstStructure *s;
-        s = gst_event_get_structure (event);
+    if (GST_EVENT_TYPE (event) == GST_EVENT_CUSTOM_DOWNSTREAM) {
+      const GstStructure *s;
+      s = gst_event_get_structure (event);
 //g_debug ("event probed (%s)\n", gst_structure_get_name (s));
-        if (gst_structure_has_name (s, "GstRTPPacketLost"))
-          context->discard_next_uncomplete_buffer_ = true;
-        return FALSE;
-      }
+      if (gst_structure_has_name (s, "GstRTPPacketLost"))
+        context->discard_next_uncomplete_buffer_ = true;
+      return FALSE;
+    }
     return TRUE;
   }
 
@@ -211,13 +198,11 @@ namespace switcher
     std::string padname;
     {
       GstCaps *padcaps = gst_pad_get_caps (pad);
-      On_scope_exit
-      {
+      On_scope_exit {
         gst_caps_unref (padcaps);
       };
       gchar *stringcaps = gst_caps_to_string (padcaps);
-      On_scope_exit
-      {
+      On_scope_exit {
         g_free (stringcaps);
       };
       if (0 == g_strcmp0 ("ANY", stringcaps))
@@ -257,8 +242,7 @@ namespace switcher
 
     {                           //giving a name to the stream
       gchar **padname_splitted = g_strsplit_set (padname.c_str (), "/", -1);
-      On_scope_exit
-      {
+      On_scope_exit {
         g_strfreev (padname_splitted);
       };
       if (nullptr != padname_splitted[0])
@@ -284,24 +268,21 @@ namespace switcher
 
   gboolean
     DecodebinToShmdata::eos_probe_cb (GstPad * pad, GstEvent * event,
-                                      gpointer user_data)
-  {
+                                      gpointer user_data) {
     DecodebinToShmdata *context =
       static_cast < DecodebinToShmdata * >(user_data);
     std::unique_lock < std::mutex > lock (context->thread_safe_);
 
-    if (GST_EVENT_TYPE (event) == GST_EVENT_EOS)
-      {
-        if (context->main_pad_ == pad)
-          GstUtils::g_idle_add_full_with_context (context->
-                                                  gpipe_->get_g_main_context
-                                                  (), G_PRIORITY_DEFAULT_IDLE,
-                                                  (GSourceFunc)
-                                                  DecodebinToShmdata::rewind,
-                                                  (gpointer) context,
-                                                  nullptr);
-        return FALSE;
-      }
+    if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) {
+      if (context->main_pad_ == pad)
+        GstUtils::g_idle_add_full_with_context (context->gpipe_->
+                                                get_g_main_context (),
+                                                G_PRIORITY_DEFAULT_IDLE,
+                                                (GSourceFunc)
+                                                DecodebinToShmdata::rewind,
+                                                (gpointer) context, nullptr);
+      return FALSE;
+    }
 
     if (GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_START ||
         GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_STOP)
@@ -311,43 +292,36 @@ namespace switcher
 
   void DecodebinToShmdata::on_handoff_cb (GstElement * /*object */ ,
                                           GstBuffer * buf,
-                                          GstPad * pad, gpointer user_data)
-  {
+                                          GstPad * pad, gpointer user_data) {
     ShmdataAnyWriter *writer = static_cast < ShmdataAnyWriter * >(user_data);
 
-    if (!writer->started ())
-      {
-        GstCaps *caps = gst_pad_get_negotiated_caps (pad);
-        On_scope_exit
-        {
-          gst_caps_unref (caps);
-        };
-        gchar *string_caps = gst_caps_to_string (caps);
-        On_scope_exit
-        {
-          g_free (string_caps);
-        };
-        writer->set_data_type (string_caps);
-        writer->start ();
-      }
-    else
-      {
-        writer->push_data (GST_BUFFER_DATA (buf),
-                           GST_BUFFER_SIZE (buf),
-                           GST_BUFFER_TIMESTAMP (buf), nullptr, nullptr);
-      }
+    if (!writer->started ()) {
+      GstCaps *caps = gst_pad_get_negotiated_caps (pad);
+      On_scope_exit {
+        gst_caps_unref (caps);
+      };
+      gchar *string_caps = gst_caps_to_string (caps);
+      On_scope_exit {
+        g_free (string_caps);
+      };
+      writer->set_data_type (string_caps);
+      writer->start ();
+    }
+    else {
+      writer->push_data (GST_BUFFER_DATA (buf),
+                         GST_BUFFER_SIZE (buf),
+                         GST_BUFFER_TIMESTAMP (buf), nullptr, nullptr);
+    }
   }
 
   void DecodebinToShmdata::invoke (std::function < void (GstElement *) >
-                                   command)
-  {
+                                   command) {
     std::unique_lock < std::mutex > lock (thread_safe_);
 
     decodebin_.invoke (command);
   }
 
-  gboolean DecodebinToShmdata::rewind (gpointer user_data)
-  {
+  gboolean DecodebinToShmdata::rewind (gpointer user_data) {
     DecodebinToShmdata *context =
       static_cast < DecodebinToShmdata * >(user_data);
     GstQuery *query;
@@ -357,19 +331,17 @@ namespace switcher
     gdouble rate = -2.0;
     gint64 start_value = -2.0;
     gint64 stop_value = -2.0;
-    if (res)
-      {
-        gst_query_parse_segment (query, &rate, nullptr, &start_value,
-                                 &stop_value);
-        // g_print ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n",
-        //        rate,
-        //        GST_TIME_ARGS (start_value),
-        //        GST_TIME_ARGS (stop_value));
-      }
-    else
-      {
-        g_debug ("duration query failed...");
-      }
+    if (res) {
+      gst_query_parse_segment (query, &rate, nullptr, &start_value,
+                               &stop_value);
+      // g_print ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n",
+      //        rate,
+      //        GST_TIME_ARGS (start_value),
+      //        GST_TIME_ARGS (stop_value));
+    }
+    else {
+      g_debug ("duration query failed...");
+    }
     gst_query_unref (query);
     gboolean ret;
     ret =

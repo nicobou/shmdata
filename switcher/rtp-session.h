@@ -30,10 +30,8 @@
 #include <map>
 #include <string>
 
-namespace switcher
-{
-  class RtpSession:public GPipe
-  {
+namespace switcher {
+  class RtpSession:public GPipe {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (RtpSession);
     RtpSession ();

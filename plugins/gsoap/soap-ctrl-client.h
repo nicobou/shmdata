@@ -23,11 +23,9 @@
 #include "switcher/quiddity.h"
 #include "webservices/soapcontrolProxy.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  class SoapCtrlClient:public Quiddity
-  {
+  class SoapCtrlClient:public Quiddity {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (SoapCtrlClient);
     SoapCtrlClient ();

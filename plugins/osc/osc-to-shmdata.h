@@ -28,10 +28,8 @@
 
 #include <chrono>
 
-namespace switcher
-{
-  class OscToShmdata:public Quiddity, public Segment, public StartableQuiddity
-  {
+namespace switcher {
+  class OscToShmdata:public Quiddity, public Segment, public StartableQuiddity {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (OscToShmdata);
     OscToShmdata ();

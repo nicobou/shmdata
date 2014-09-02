@@ -23,8 +23,7 @@
 #include <memory>
 #include "quiddity-command.h"
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (Uridecodebin,
                                         "Media Player (URI)",
                                         "uri source",
@@ -32,8 +31,7 @@ namespace switcher
                                         "LGPL",
                                         "uridecodebin", "Nicolas Bouillot");
 
-  Uridecodebin::~Uridecodebin ()
-  {
+  Uridecodebin::~Uridecodebin () {
     g_free (uri_);
     destroy_uridecodebin ();
   }
@@ -48,12 +46,10 @@ namespace switcher
     loop_prop_ (nullptr),
     loop_ (false),
     playing_prop_ (nullptr),
-    playing_ (true), uri_spec_ (nullptr), uri_ (g_strdup (""))
-  {
+    playing_ (true), uri_spec_ (nullptr), uri_ (g_strdup ("")) {
   }
 
-  bool Uridecodebin::init_gpipe ()
-  {
+  bool Uridecodebin::init_gpipe () {
     if (!GstUtils::make_element ("uridecodebin", &uridecodebin_))
       return false;
     install_play_pause ();
@@ -79,14 +75,12 @@ namespace switcher
     return true;
   }
 
-  void Uridecodebin::init_uridecodebin ()
-  {
-    if (!GstUtils::make_element ("uridecodebin", &uridecodebin_))
-      {
-        g_warning
-          (" Uridecodebin::init_uridecodebin, cannot create uridecodebin");
-        return;
-      }
+  void Uridecodebin::init_uridecodebin () {
+    if (!GstUtils::make_element ("uridecodebin", &uridecodebin_)) {
+      g_warning
+        (" Uridecodebin::init_uridecodebin, cannot create uridecodebin");
+      return;
+    }
 
     media_counters_.clear ();
     main_pad_ = nullptr;
@@ -150,25 +144,21 @@ namespace switcher
                   nullptr);
   }
 
-  void Uridecodebin::destroy_uridecodebin ()
-  {
+  void Uridecodebin::destroy_uridecodebin () {
     GstUtils::clean_element (uridecodebin_);
     clean_on_error_command ();
     clear_shmdatas ();
   }
 
-  void Uridecodebin::clean_on_error_command ()
-  {
-    if (on_error_command_ != nullptr)
-      {
-        delete on_error_command_;
-        on_error_command_ = nullptr;
-      }
+  void Uridecodebin::clean_on_error_command () {
+    if (on_error_command_ != nullptr) {
+      delete on_error_command_;
+      on_error_command_ = nullptr;
+    }
   }
 
   void Uridecodebin::no_more_pads_cb (GstElement * /*object */ ,
-                                      gpointer /*user_data */ )
-  {
+                                      gpointer /*user_data */ ) {
     //g_print ("---- no more pad\n");
     // Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   }
@@ -176,16 +166,14 @@ namespace switcher
   void
     Uridecodebin::unknown_type_cb (GstElement * bin,
                                    GstPad * pad,
-                                   GstCaps * caps, gpointer user_data)
-  {
+                                   GstCaps * caps, gpointer user_data) {
     Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
     g_warning ("Uridecodebin unknown type: %s (%s)\n",
                gst_caps_to_string (caps), gst_element_get_name (bin));
     context->pad_to_shmdata_writer (context->bin_, pad);
   }
 
-  gboolean sink_factory_filter (GstPluginFeature * feature, gpointer data)
-  {
+  gboolean sink_factory_filter (GstPluginFeature * feature, gpointer data) {
     GstCaps *caps = (GstCaps *) data;
 
     if (!GST_IS_ELEMENT_FACTORY (feature))
@@ -195,15 +183,13 @@ namespace switcher
       gst_element_factory_get_static_pad_templates (GST_ELEMENT_FACTORY
                                                     (feature));
     int not_any_number = 0;
-    for (GList * item = (GList *) static_pads; item; item = item->next)
-      {
-        GstStaticPadTemplate *padTemplate =
-          (GstStaticPadTemplate *) item->data;
-        GstPadTemplate *pad = gst_static_pad_template_get (padTemplate);
-        GstCaps *padCaps = gst_pad_template_get_caps (pad);
-        if (!gst_caps_is_any (padCaps))
-          not_any_number++;
-      }
+    for (GList * item = (GList *) static_pads; item; item = item->next) {
+      GstStaticPadTemplate *padTemplate = (GstStaticPadTemplate *) item->data;
+      GstPadTemplate *pad = gst_static_pad_template_get (padTemplate);
+      GstCaps *padCaps = gst_pad_template_get_caps (pad);
+      if (!gst_caps_is_any (padCaps))
+        not_any_number++;
+    }
     if (not_any_number == 0)
       return FALSE;
 
@@ -221,8 +207,7 @@ namespace switcher
   int Uridecodebin::autoplug_continue_cb (GstElement * /*bin */ ,
                                           GstPad * /*pad */ ,
                                           GstCaps * caps,
-                                          gpointer /*user_data */ )
-  {
+                                          gpointer /*user_data */ ) {
     GList *list = gst_registry_feature_filter (gst_registry_get_default (),
                                                (GstPluginFeatureFilter)
                                                sink_factory_filter,
@@ -238,8 +223,7 @@ namespace switcher
                                         GstPad * /*pad */ ,
                                         GstCaps * caps,
                                         GstElementFactory * factory,
-                                        gpointer /*user_data */ )
-  {
+                                        gpointer /*user_data */ ) {
     g_debug ("uridecodebin autoplug select %s, (factory %s)",
              gst_caps_to_string (caps), GST_OBJECT_NAME (factory));
     //     typedef enum {
@@ -274,8 +258,7 @@ namespace switcher
   //   return g_value_array_copy(factories);
   // }
 
-  gboolean Uridecodebin::process_eos (gpointer user_data)
-  {
+  gboolean Uridecodebin::process_eos (gpointer user_data) {
     Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
     GstQuery *query;
     gboolean res;
@@ -284,25 +267,22 @@ namespace switcher
     gdouble rate = 1.0;
     gint64 start_value = -2.0;
     gint64 stop_value = -2.0;
-    if (res)
-      {
-        gst_query_parse_segment (query, &rate, nullptr, &start_value,
-                                 &stop_value);
-        // g_print ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n",
-        //        rate,
-        //        GST_TIME_ARGS (start_value),
-        //        GST_TIME_ARGS (stop_value));
-      }
-    else
-      {
-        g_debug ("duration query failed...");
-      }
+    if (res) {
+      gst_query_parse_segment (query, &rate, nullptr, &start_value,
+                               &stop_value);
+      // g_print ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n",
+      //        rate,
+      //        GST_TIME_ARGS (start_value),
+      //        GST_TIME_ARGS (stop_value));
+    }
+    else {
+      g_debug ("duration query failed...");
+    }
     gst_query_unref (query);
 
-    if (!context->loop_)
-      {
-        context->play (FALSE);
-      }
+    if (!context->loop_) {
+      context->play (FALSE);
+    }
 
     gboolean ret = FALSE;
     ret =
@@ -322,30 +302,26 @@ namespace switcher
 
   gboolean
     Uridecodebin::event_probe_cb (GstPad * pad, GstEvent * event,
-                                  gpointer user_data)
-  {
+                                  gpointer user_data) {
     Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
-    if (GST_EVENT_TYPE (event) == GST_EVENT_EOS)
-      {
-        // g_print ("----- pad with EOS %s:%s, src: %p %s\n",
-        //         GST_DEBUG_PAD_NAME (pad),GST_EVENT_SRC(event), gst_element_get_name (GST_EVENT_SRC(event)));
+    if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) {
+      // g_print ("----- pad with EOS %s:%s, src: %p %s\n",
+      //         GST_DEBUG_PAD_NAME (pad),GST_EVENT_SRC(event), gst_element_get_name (GST_EVENT_SRC(event)));
 
-        if (pad == context->main_pad_)
-          {
-            GstUtils::
-              g_idle_add_full_with_context (context->get_g_main_context (),
-                                            G_PRIORITY_DEFAULT_IDLE,
-                                            (GSourceFunc) process_eos,
-                                            (gpointer) context, nullptr);
-          }
-        return FALSE;
+      if (pad == context->main_pad_) {
+        GstUtils::g_idle_add_full_with_context (context->
+                                                get_g_main_context (),
+                                                G_PRIORITY_DEFAULT_IDLE,
+                                                (GSourceFunc) process_eos,
+                                                (gpointer) context, nullptr);
       }
+      return FALSE;
+    }
 
     if (GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_START || GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_STOP       /*||
-                                                                                                                   GST_EVENT_TYPE (event) == GST_EVENT_LATENCY */ )
-      {
-        return FALSE;
-      }
+                                                                                                                   GST_EVENT_TYPE (event) == GST_EVENT_LATENCY */ ) {
+      return FALSE;
+    }
 
     //g_print ("event probed (%s)\n", GST_EVENT_TYPE_NAME(event));
     return TRUE;
@@ -353,38 +329,32 @@ namespace switcher
 
   void Uridecodebin::on_handoff_cb (GstElement * /*object */ ,
                                     GstBuffer * buf,
-                                    GstPad * pad, gpointer user_data)
-  {
+                                    GstPad * pad, gpointer user_data) {
     ShmdataAnyWriter *writer = static_cast < ShmdataAnyWriter * >(user_data);
 
-    if (!writer->started ())
-      {
-        GstCaps *caps = gst_pad_get_negotiated_caps (pad);
-        gchar *string_caps = gst_caps_to_string (caps);
-        g_debug ("%s\n", string_caps);
-        writer->set_data_type (string_caps);
-        writer->start ();
-        g_free (string_caps);
-        gst_caps_unref (caps);
-      }
-    else
-      {
-        GstBuffer *buftmp = gst_buffer_copy (buf);
-        writer->push_data (GST_BUFFER_DATA (buftmp),
-                           GST_BUFFER_SIZE (buftmp),
-                           GST_BUFFER_TIMESTAMP (buftmp),
-                           release_buf, buftmp);
-      }
+    if (!writer->started ()) {
+      GstCaps *caps = gst_pad_get_negotiated_caps (pad);
+      gchar *string_caps = gst_caps_to_string (caps);
+      g_debug ("%s\n", string_caps);
+      writer->set_data_type (string_caps);
+      writer->start ();
+      g_free (string_caps);
+      gst_caps_unref (caps);
+    }
+    else {
+      GstBuffer *buftmp = gst_buffer_copy (buf);
+      writer->push_data (GST_BUFFER_DATA (buftmp),
+                         GST_BUFFER_SIZE (buftmp),
+                         GST_BUFFER_TIMESTAMP (buftmp), release_buf, buftmp);
+    }
   }
 
-  void Uridecodebin::release_buf (void *user_data)
-  {
+  void Uridecodebin::release_buf (void *user_data) {
     GstBuffer *buf = static_cast < GstBuffer * >(user_data);
     gst_buffer_unref (buf);
   }
 
-  void Uridecodebin::pad_to_shmdata_writer (GstElement * bin, GstPad * pad)
-  {
+  void Uridecodebin::pad_to_shmdata_writer (GstElement * bin, GstPad * pad) {
     //detecting type of media
     const gchar *padname;
     if (0 == g_strcmp0 ("ANY", gst_caps_to_string (gst_pad_get_caps (pad))))
@@ -458,8 +428,7 @@ namespace switcher
   gboolean Uridecodebin::gstrtpdepay_buffer_probe_cb (GstPad * /*pad */ ,
                                                       GstMiniObject *
                                                       /*mini_obj */ ,
-                                                      gpointer user_data)
-  {
+                                                      gpointer user_data) {
     Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
 
     /* if (GST_IS_BUFFER (mini_obj)) */
@@ -469,31 +438,28 @@ namespace switcher
     /*        GST_BUFFER_SIZE (buffer)); */
     /*   } */
 
-    if (context->discard_next_uncomplete_buffer_ == true)
-      {
-        g_debug ("discarding uncomplete custom frame due to a network loss");
-        context->discard_next_uncomplete_buffer_ = false;
-        return FALSE;           // drop buffer
-      }
+    if (context->discard_next_uncomplete_buffer_ == true) {
+      g_debug ("discarding uncomplete custom frame due to a network loss");
+      context->discard_next_uncomplete_buffer_ = false;
+      return FALSE;             // drop buffer
+    }
     else
       return TRUE;              // pass buffer
   }
 
   gboolean Uridecodebin::gstrtpdepay_event_probe_cb (GstPad * /*pad */ ,
                                                      GstEvent * event,
-                                                     gpointer user_data)
-  {
+                                                     gpointer user_data) {
     Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
 
-    if (GST_EVENT_TYPE (event) == GST_EVENT_CUSTOM_DOWNSTREAM)
-      {
-        const GstStructure *s;
-        s = gst_event_get_structure (event);
+    if (GST_EVENT_TYPE (event) == GST_EVENT_CUSTOM_DOWNSTREAM) {
+      const GstStructure *s;
+      s = gst_event_get_structure (event);
 //g_debug ("event probed (%s)\n", gst_structure_get_name (s));
-        if (gst_structure_has_name (s, "GstRTPPacketLost"))
-          context->discard_next_uncomplete_buffer_ = true;
-        return FALSE;
-      }
+      if (gst_structure_has_name (s, "GstRTPPacketLost"))
+        context->discard_next_uncomplete_buffer_ = true;
+      return FALSE;
+    }
     return TRUE;
   }
 
@@ -507,49 +473,46 @@ namespace switcher
     //      gst_caps_to_string (context->gstrtpcaps_),
     //      gst_caps_to_string (gst_pad_get_caps (pad)));
 
-    if (gst_caps_can_intersect (context->rtpgstcaps_, gst_pad_get_caps (pad)))
-      {
+    if (gst_caps_can_intersect (context->rtpgstcaps_, gst_pad_get_caps (pad))) {
 //asking rtpbin to send an event when a packet is lost (do-lost property)
-        GstUtils::set_element_property_in_bin (object, "gstrtpbin", "do-lost",
-                                               TRUE);
+      GstUtils::set_element_property_in_bin (object, "gstrtpbin", "do-lost",
+                                             TRUE);
 
-        g_message ("custom rtp stream found");
-        GstElement *rtpgstdepay;
-        GstUtils::make_element ("rtpgstdepay", &rtpgstdepay);
+      g_message ("custom rtp stream found");
+      GstElement *rtpgstdepay;
+      GstUtils::make_element ("rtpgstdepay", &rtpgstdepay);
 
 //adding a probe for discarding uncomplete packets
-        GstPad *depaysrcpad = gst_element_get_static_pad (rtpgstdepay, "src");
-        gst_pad_add_buffer_probe (depaysrcpad,
-                                  G_CALLBACK
-                                  (Uridecodebin::gstrtpdepay_buffer_probe_cb),
-                                  context);
-        gst_object_unref (depaysrcpad);
+      GstPad *depaysrcpad = gst_element_get_static_pad (rtpgstdepay, "src");
+      gst_pad_add_buffer_probe (depaysrcpad,
+                                G_CALLBACK
+                                (Uridecodebin::gstrtpdepay_buffer_probe_cb),
+                                context);
+      gst_object_unref (depaysrcpad);
 
-        gst_bin_add (GST_BIN (context->bin_), rtpgstdepay);
-        GstPad *sinkpad = gst_element_get_static_pad (rtpgstdepay, "sink");
+      gst_bin_add (GST_BIN (context->bin_), rtpgstdepay);
+      GstPad *sinkpad = gst_element_get_static_pad (rtpgstdepay, "sink");
 //adding a probe for handling loss messages from rtpbin
-        gst_pad_add_event_probe (sinkpad,
-                                 (GCallback)
-                                 Uridecodebin::gstrtpdepay_event_probe_cb,
-                                 context);
+      gst_pad_add_event_probe (sinkpad, (GCallback)
+                               Uridecodebin::gstrtpdepay_event_probe_cb,
+                               context);
 
-        GstUtils::check_pad_link_return (gst_pad_link (pad, sinkpad));
-        gst_object_unref (sinkpad);
-        GstPad *srcpad = gst_element_get_static_pad (rtpgstdepay, "src");
-        GstUtils::sync_state_with_parent (rtpgstdepay);
-        gst_element_get_state (rtpgstdepay, nullptr, nullptr,
-                               GST_CLOCK_TIME_NONE);
-        context->pad_to_shmdata_writer (context->bin_, srcpad);
+      GstUtils::check_pad_link_return (gst_pad_link (pad, sinkpad));
+      gst_object_unref (sinkpad);
+      GstPad *srcpad = gst_element_get_static_pad (rtpgstdepay, "src");
+      GstUtils::sync_state_with_parent (rtpgstdepay);
+      gst_element_get_state (rtpgstdepay, nullptr, nullptr,
+                             GST_CLOCK_TIME_NONE);
+      context->pad_to_shmdata_writer (context->bin_, srcpad);
 //gst_object_unref (srcpad);
-      }
+    }
     else
       context->pad_to_shmdata_writer (context->bin_, pad);
   }
 
   void
     Uridecodebin::source_setup_cb (GstElement * uridecodebin,
-                                   GstElement * source, gpointer user_data)
-  {
+                                   GstElement * source, gpointer user_data) {
     Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
     g_debug ("uridecodebin source element is %s %s\n",
              GST_ELEMENT_NAME (source),
@@ -581,8 +544,7 @@ namespace switcher
     g_free (val_str);
   }
 
-  bool Uridecodebin::to_shmdata ()
-  {
+  bool Uridecodebin::to_shmdata () {
     destroy_uridecodebin ();
     reset_bin ();
     init_uridecodebin ();
@@ -594,20 +556,17 @@ namespace switcher
     return true;
   }
 
-  void Uridecodebin::set_loop (gboolean loop, void *user_data)
-  {
+  void Uridecodebin::set_loop (gboolean loop, void *user_data) {
     Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
     context->loop_ = loop;
   }
 
-  gboolean Uridecodebin::get_loop (void *user_data)
-  {
+  gboolean Uridecodebin::get_loop (void *user_data) {
     Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
     return context->loop_;
   }
 
-  void Uridecodebin::set_uri (const gchar * value, void *user_data)
-  {
+  void Uridecodebin::set_uri (const gchar * value, void *user_data) {
     Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
     g_free (context->uri_);
     context->uri_ = g_strdup (value);
@@ -616,8 +575,7 @@ namespace switcher
     context->custom_props_->notify_property_changed (context->uri_spec_);
   }
 
-  const gchar *Uridecodebin::get_uri (void *user_data)
-  {
+  const gchar *Uridecodebin::get_uri (void *user_data) {
     Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
     return context->uri_;
   }

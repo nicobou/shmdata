@@ -25,11 +25,9 @@
 #include "custom-property-helper.h"
 #include <unordered_map>
 
-namespace switcher
-{
+namespace switcher {
 
-  class ShmdataToFile:public GPipe
-  {
+  class ShmdataToFile:public GPipe {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (ShmdataToFile);
     ShmdataToFile ();

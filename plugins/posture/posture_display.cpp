@@ -23,12 +23,10 @@
 using namespace std;
 using namespace
   switcher::data;
-using
-  namespace
-  posture;
+using namespace posture;
 
-namespace switcher
-{
+namespace
+  switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (PostureDisplay,
                                         "Point clouds display",
                                         "video sink",
@@ -36,18 +34,15 @@ namespace switcher
                                         "LGPL",
                                         "posturedisplay", "Emmanuel Durand");
 
-PostureDisplay::PostureDisplay ():
-  custom_props_ (std::make_shared < CustomPropertyHelper > ())
-  {
+  PostureDisplay::PostureDisplay ():
+  custom_props_ (std::make_shared < CustomPropertyHelper > ()) {
   }
 
-  PostureDisplay::~PostureDisplay ()
-  {
+  PostureDisplay::~
+  PostureDisplay () {
   }
 
-  bool
-  PostureDisplay::init ()
-  {
+  bool PostureDisplay::init () {
     init_segment (this);
 
     install_connect_method (std::bind (&PostureDisplay::connect, this, std::placeholders::_1), nullptr, //no disconnect
@@ -59,9 +54,7 @@ PostureDisplay::PostureDisplay ():
     return true;
   }
 
-  bool
-  PostureDisplay::connect (std::string shmdata_socket_path)
-  {
+  bool PostureDisplay::connect (std::string shmdata_socket_path) {
     display_ = make_shared < Display > (shmdata_socket_path);
 
     ShmdataAnyReader::ptr reader = make_shared < ShmdataAnyReader > ();
@@ -70,17 +63,16 @@ PostureDisplay::PostureDisplay ():
     // This is the callback for when new clouds are received
     reader->set_callback ([ =]
                           (void *data, int size, unsigned long long timestamp,
-                           const char *type, void * /*unused */ )
-                          {
+                           const char *type, void * /*unused */ ) {
                           vector < char >buffer ((char *)data,
                                                  (char *)data + size);
                           if (string (type) ==
-                              string (POINTCLOUD_TYPE_BASE)) display_->
-                          setInputCloud (buffer, false, timestamp);
+                              string (POINTCLOUD_TYPE_BASE))
+                          display_->setInputCloud (buffer, false, timestamp);
                           else
                           if (string (type) ==
-                              string (POINTCLOUD_TYPE_COMPRESSED)) display_->
-                          setInputCloud (buffer, true, timestamp);}
+                              string (POINTCLOUD_TYPE_COMPRESSED))
+                          display_->setInputCloud (buffer, true, timestamp);}
                           , nullptr);
 
     reader->start ();
@@ -89,16 +81,12 @@ PostureDisplay::PostureDisplay ():
     return true;
   }
 
-  bool
-  PostureDisplay::disconnect_all ()
-  {
+  bool PostureDisplay::disconnect_all () {
     display_.reset ();
     return true;
   }
 
-  bool
-  PostureDisplay::can_sink_caps (std::string caps)
-  {
+  bool PostureDisplay::can_sink_caps (std::string caps) {
     return (caps == POINTCLOUD_TYPE_BASE)
       || (caps == POINTCLOUD_TYPE_COMPRESSED);
   }

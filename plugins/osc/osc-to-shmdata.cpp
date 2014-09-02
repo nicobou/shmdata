@@ -19,8 +19,7 @@
 
 #include "osc-to-shmdata.h"
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (OscToShmdata,
                                         "OSC message to shmdata",
                                         "osc source",
@@ -32,12 +31,10 @@ namespace switcher
     osc_thread_ (nullptr),
     port_spec_ (nullptr),
     start_ (std::chrono::system_clock::now ()),
-    shm_any_ (std::make_shared < ShmdataAnyWriter > ())
-  {
+    shm_any_ (std::make_shared < ShmdataAnyWriter > ()) {
   }
 
-  bool OscToShmdata::init ()
-  {
+  bool OscToShmdata::init () {
     init_startable (this);
     init_segment (this);
     port_spec_ =
@@ -55,25 +52,21 @@ namespace switcher
     return true;
   }
 
-  OscToShmdata::~OscToShmdata ()
-  {
+  OscToShmdata::~OscToShmdata () {
     stop ();
   }
 
-  void OscToShmdata::set_port (const gint value, void *user_data)
-  {
+  void OscToShmdata::set_port (const gint value, void *user_data) {
     OscToShmdata *context = static_cast < OscToShmdata * >(user_data);
     context->port_ = value;
   }
 
-  gint OscToShmdata::get_port (void *user_data)
-  {
+  gint OscToShmdata::get_port (void *user_data) {
     OscToShmdata *context = static_cast < OscToShmdata * >(user_data);
     return context->port_;
   }
 
-  bool OscToShmdata::start ()
-  {
+  bool OscToShmdata::start () {
     //creating a shmdata
     //ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
     std::string shm_any_name = make_file_name ("osc");
@@ -95,19 +88,17 @@ namespace switcher
     return true;
   }
 
-  bool OscToShmdata::stop ()
-  {
+  bool OscToShmdata::stop () {
     unregister_shmdata (make_file_name ("osc"));
     {
       ShmdataAnyWriter::ptr temp = std::make_shared < ShmdataAnyWriter > ();
       std::swap (shm_any_, temp);
     }
-    if (nullptr != osc_thread_)
-      {
-        lo_server_thread_free (osc_thread_);
-        osc_thread_ = nullptr;
-        return true;
-      }
+    if (nullptr != osc_thread_) {
+      lo_server_thread_free (osc_thread_);
+      osc_thread_ = nullptr;
+      return true;
+    }
     return false;
   }
 
@@ -116,16 +107,14 @@ namespace switcher
     OscToShmdata::osc_handler (const char *path,
                                const char *types,
                                lo_arg ** argv,
-                               int argc, lo_message m, void *user_data)
-  {
+                               int argc, lo_message m, void *user_data) {
     OscToShmdata *context = static_cast < OscToShmdata * >(user_data);
     lo_timetag timetag = lo_message_get_timestamp (m);
     //g_print ("timestamp %u %u", path, timetag.sec, timetag.frac);
-    if (0 != timetag.sec)
-      {
+    if (0 != timetag.sec) {
 //FIXME handle internal timetag
 //note: this is not implemented in osc-send
-      }
+    }
     std::chrono::time_point < std::chrono::system_clock > now =
       std::chrono::system_clock::now ();
     std::chrono::duration < unsigned long long, std::nano > clock =
@@ -139,8 +128,7 @@ namespace switcher
     return 0;
   }
 
-  void OscToShmdata::osc_error (int num, const char *msg, const char *path)
-  {
+  void OscToShmdata::osc_error (int num, const char *msg, const char *path) {
     g_debug ("liblo server error %d in path %s: %s", num, path, msg);
   }
 }                               //end of OscToShmdata class

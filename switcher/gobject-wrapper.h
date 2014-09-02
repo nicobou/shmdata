@@ -27,13 +27,11 @@
 #include "gobject-custom-property.h"
 //#include "gobject-custom-signal.h"
 
-namespace switcher
-{
+namespace switcher {
   struct _MyObject;
   struct _MyObjectClass;
 
-  class GObjectWrapper
-  {
+  class GObjectWrapper {
   public:
     typedef std::shared_ptr < GObjectWrapper > ptr;
       GObjectWrapper ();
@@ -59,35 +57,35 @@ namespace switcher
                                           gint max_value,
                                           gint default_value,
                                           GParamFlags read_write_flags,
-                                          GObjectCustomProperty::set_method_pointer
-                                          set_method,
-                                          GObjectCustomProperty::get_method_pointer
-                                          get_method);
+                                          GObjectCustomProperty::
+                                          set_method_pointer set_method,
+                                          GObjectCustomProperty::
+                                          get_method_pointer get_method);
 
     static GParamSpec *make_string_property (const gchar * nickname,
                                              const gchar * description,
                                              const gchar * default_value,
                                              GParamFlags read_write_flags,
-                                             GObjectCustomProperty::set_method_pointer
-                                             set_method,
-                                             GObjectCustomProperty::get_method_pointer
-                                             get_method);
+                                             GObjectCustomProperty::
+                                             set_method_pointer set_method,
+                                             GObjectCustomProperty::
+                                             get_method_pointer get_method);
 
     static GParamSpec *make_boolean_property (const gchar * nickname,
                                               const gchar * description,
                                               gboolean default_value,
                                               GParamFlags read_write_flags,
-                                              GObjectCustomProperty::set_method_pointer
-                                              set_method,
-                                              GObjectCustomProperty::get_method_pointer
-                                              get_method);
+                                              GObjectCustomProperty::
+                                              set_method_pointer set_method,
+                                              GObjectCustomProperty::
+                                              get_method_pointer get_method);
 
     static GParamSpec *make_enum_property (const gchar * nickname, const gchar * description, const gint default_value, const GEnumValue * custom_enum, //*must* be static
                                            GParamFlags read_write_flags,
-                                           GObjectCustomProperty::set_method_pointer
-                                           set_method,
-                                           GObjectCustomProperty::get_method_pointer
-                                           get_method);
+                                           GObjectCustomProperty::
+                                           set_method_pointer set_method,
+                                           GObjectCustomProperty::
+                                           get_method_pointer get_method);
 
     static GParamSpec *make_double_property (const gchar * nickname,
                                              const gchar * description,
@@ -95,10 +93,10 @@ namespace switcher
                                              gdouble max_value,
                                              gdouble default_value,
                                              GParamFlags read_write_flags,
-                                             GObjectCustomProperty::set_method_pointer
-                                             set_method,
-                                             GObjectCustomProperty::get_method_pointer
-                                             get_method);
+                                             GObjectCustomProperty::
+                                             set_method_pointer set_method,
+                                             GObjectCustomProperty::
+                                             get_method_pointer get_method);
 
     //signal
     static guint

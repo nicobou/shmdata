@@ -25,11 +25,9 @@
 #include <memory>
 #include <map>
 
-namespace switcher
-{
+namespace switcher {
 
-  class Decodebin2:public SinglePadGstSink
-  {
+  class Decodebin2:public SinglePadGstSink {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (Decodebin2);
     Decodebin2 ();
@@ -41,8 +39,7 @@ namespace switcher
       std::map < std::string, int >media_counters_;
 
     bool init_gpipe () final;
-    bool can_sink_caps (std::string caps) final
-    {
+    bool can_sink_caps (std::string caps) final {
       return true;
     };
 

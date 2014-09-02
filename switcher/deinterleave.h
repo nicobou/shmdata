@@ -24,11 +24,9 @@
 #include <memory>
 #include <map>
 
-namespace switcher
-{
+namespace switcher {
 
-  class Deinterleave:public SinglePadGstSink, public GstElementCleaner
-  {
+  class Deinterleave:public SinglePadGstSink, public GstElementCleaner {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (Deinterleave);
     Deinterleave ();

@@ -24,12 +24,10 @@
 #include <gst/gst.h>
 #include <gst/sdp/gstsdpmessage.h>
 
-namespace switcher
-{
+namespace switcher {
   class SDPDescription;
 
-  class SDPMedia
-  {
+  class SDPMedia {
     friend SDPDescription;
   public:
       SDPMedia ();
@@ -47,8 +45,7 @@ namespace switcher
     uint port_;
   };
 
-  class SDPDescription
-  {
+  class SDPDescription {
   public:
     SDPDescription ();
     ~SDPDescription ();

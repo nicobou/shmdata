@@ -24,10 +24,8 @@
 #include "gst-element-cleaner.h"
 #include <unordered_map>
 
-namespace switcher
-{
-  class Uris:public GPipe, public GstElementCleaner
-  {
+namespace switcher {
+  class Uris:public GPipe, public GstElementCleaner {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (Uris);
     bool add_uri (std::string uri);
@@ -44,15 +42,13 @@ namespace switcher
       std::unordered_map < std::string, int >media_counters_;
 
     //wraping c code:
-    typedef enum GourpState_
-    {
+    typedef enum GourpState_ {
       GROUP_TO_PLAYING = 0,
       GROUP_PLAYING = 1,
       GROUP_TO_PAUSED = 2,
       GROUP_PAUSED = 3
     } GroupState;
-    typedef struct
-    {
+    typedef struct {
       GstElement *bin /*, *audiomixer, *videomixer */ ;
       GroupState state;
       GHashTable *datastreams;
@@ -66,14 +62,12 @@ namespace switcher
       double seek_position;
       gpointer user_data;       //this
     } Group;
-    typedef struct
-    {
+    typedef struct {
       gboolean (*func) (gpointer, gpointer);
       Group *group;
       gpointer arg;
     } GroupCommand;
-    typedef struct
-    {
+    typedef struct {
       GstElement *seek_element;
       // ghost pad associated with the sample
       GstPad *bin_srcpad;

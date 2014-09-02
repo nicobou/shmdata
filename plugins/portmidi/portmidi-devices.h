@@ -36,11 +36,9 @@
 #include <glib-object.h>
 #include <mutex>
 
-namespace switcher
-{
+namespace switcher {
 
-  class PortMidi
-  {
+  class PortMidi {
   public:
     typedef void (*on_pm_event_method) (PmEvent * midi_event,
                                         void *user_data);

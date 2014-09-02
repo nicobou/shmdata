@@ -30,15 +30,13 @@
 #include "quiddity.h"
 #include "segment.h"
 
-namespace switcher
-{
+namespace switcher {
   class Quiddity;
   class QuiddityCommand;
   class CustomPropertyHelper;
   class DecodebinToShmdata;
 
-  class GPipe:public Quiddity, public Segment
-  {
+  class GPipe:public Quiddity, public Segment {
     friend DecodebinToShmdata;
   public:
       GPipe ();
@@ -52,8 +50,7 @@ namespace switcher
     //void init_gpipe (Quiddity &quiddity);//FIXME should called quiddity-manager-impl
     //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
       GstElement * get_bin ();
-    GstElement *bin_
-    {
+    GstElement *bin_ {
     nullptr};                   //FIXME should be private
     bool reset_bin ();
     GstElement *get_pipeline ();
@@ -65,51 +62,39 @@ namespace switcher
     void query_position_and_length ();
 
   private:
-    typedef struct
-    {
+    typedef struct {
       GPipe *self;
       QuiddityCommand *command;
       GSource *src;
     } QuidCommandArg;
     //GstBus is a specific context:
-    typedef struct
-    {
+    typedef struct {
       GSource source;
       GstBus *bus;
       gboolean inited;
     } GstBusSource;
 
-    GstElement *pipeline_
-    {
+    GstElement *pipeline_ {
     nullptr};
-    gdouble speed_
-    {
+    gdouble speed_ {
     1.0};
-    GSource *position_tracking_source_
-    {
+    GSource *position_tracking_source_ {
     nullptr};
     GSourceFuncs source_funcs_;
-    GSource *source_
-    {
+    GSource *source_ {
     nullptr};
       std::shared_ptr < CustomPropertyHelper > gpipe_custom_props_;
-    GParamSpec *play_pause_spec_
-    {
+    GParamSpec *play_pause_spec_ {
     nullptr};
-    bool play_
-    {
+    bool play_ {
     true};
-    GParamSpec *seek_spec_
-    {
+    GParamSpec *seek_spec_ {
     nullptr};
-    gdouble seek_
-    {
+    gdouble seek_ {
     0.0};
-    gint64 length_
-    {
+    gint64 length_ {
     0};
-      std::vector < GSource * >commands_
-    {
+      std::vector < GSource * >commands_ {
     };
 
     void make_bin ();

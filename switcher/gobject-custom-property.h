@@ -24,10 +24,8 @@
 #include <string>
 #include <glib-object.h>
 
-namespace switcher
-{
-  class GObjectCustomProperty
-  {
+namespace switcher {
+  class GObjectCustomProperty {
   public:
     typedef std::shared_ptr < GObjectCustomProperty > ptr;
     typedef bool (*set_method_pointer) (const GValue * val, void *user_data);

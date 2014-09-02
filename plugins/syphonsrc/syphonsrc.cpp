@@ -29,8 +29,8 @@ using namespace std;
 using namespace
   switcher::data;
 
-namespace switcher
-{
+namespace
+  switcher {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (SyphonSrc,
                                         "Video capture (through Syphon)",
@@ -39,21 +39,22 @@ namespace switcher
                                         "LGPL",
                                         "syphonsrc", "Emmanuel Durand");
 
-SyphonSrc::SyphonSrc ():
+  SyphonSrc::SyphonSrc ():
   custom_props_ (std::make_shared < CustomPropertyHelper > ()),
-    syphon_servername_ (""),
-    syphon_servername_prop_ (nullptr),
-    syphon_appname_ (""),
-    syphon_appname_prop_ (nullptr), width_ (0), height_ (0)
-  {
+  syphon_servername_ (""),
+  syphon_servername_prop_ (nullptr),
+  syphon_appname_ (""),
+  syphon_appname_prop_ (nullptr),
+  width_ (0),
+  height_ (0) {
   }
 
-  SyphonSrc::~SyphonSrc ()
-  {
+  SyphonSrc::~
+  SyphonSrc () {
   }
 
-  bool SyphonSrc::init_gpipe ()
-  {
+  bool
+  SyphonSrc::init_gpipe () {
     init_startable (this);
     init_segment (this);
 
@@ -83,16 +84,13 @@ SyphonSrc::SyphonSrc ():
     return true;
   }
 
-  bool
-  SyphonSrc::start ()
-  {
-    if (syphon_servername_ == "" && syphon_appname_ == "")
-      {
-        cout <<
-          "SyphonSrc::start - No servername nor appname specified, using the first available server"
-          << endl;
-        reader_->connect (nullptr, nullptr);
-      }
+  bool SyphonSrc::start () {
+    if (syphon_servername_ == "" && syphon_appname_ == "") {
+      cout <<
+        "SyphonSrc::start - No servername nor appname specified, using the first available server"
+        << endl;
+      reader_->connect (nullptr, nullptr);
+    }
     else if (syphon_servername_ != "" && syphon_appname_ == "")
       reader_->connect (syphon_servername_.c_str (), nullptr);
     else if (syphon_servername_ == "" && syphon_appname_ != "")
@@ -104,17 +102,14 @@ SyphonSrc::SyphonSrc ():
     return true;
   }
 
-  bool
-  SyphonSrc::stop ()
-  {
+  bool SyphonSrc::stop () {
     reader_->disconnect ();
     return true;
   }
 
   void
   SyphonSrc::frameCallback (void *context, const char *data, int &width,
-                            int &height)
-  {
+                            int &height) {
     SyphonSrc *
       ctx = (SyphonSrc *) context;
 
@@ -124,45 +119,42 @@ SyphonSrc::SyphonSrc ():
       bool
       set = false;
 
-    if (set == false || ctx->width_ != width || ctx->height_ != height)
-      {
-        ctx->writer_.reset (new ShmdataAnyWriter);
-        if (ctx->syphon_servername_ != "" && ctx->syphon_appname_ != "")
-          ctx->writer_->
-            set_path (ctx->make_file_name
-                      (ctx->syphon_servername_ + "_" + ctx->syphon_appname_));
-        else if (ctx->syphon_servername_ != "")
-          ctx->writer_->
-            set_path (ctx->make_file_name (ctx->syphon_servername_));
-        else
-          ctx->writer_->set_path (ctx->make_file_name (ctx->syphon_appname_));
-        ctx->register_shmdata (ctx->writer_);
-        ctx->width_ = width;
-        ctx->height_ = height;
+    if (set == false || ctx->width_ != width || ctx->height_ != height) {
+      ctx->writer_.reset (new ShmdataAnyWriter);
+      if (ctx->syphon_servername_ != "" && ctx->syphon_appname_ != "")
+        ctx->writer_->set_path (ctx->make_file_name
+                                (ctx->syphon_servername_ + "_" +
+                                 ctx->syphon_appname_));
+      else if (ctx->syphon_servername_ != "")
+        ctx->writer_->set_path (ctx->
+                                make_file_name (ctx->syphon_servername_));
+      else
+        ctx->writer_->set_path (ctx->make_file_name (ctx->syphon_appname_));
+      ctx->register_shmdata (ctx->writer_);
+      ctx->width_ = width;
+      ctx->height_ = height;
 
-        sprintf (buffer,
-                 "video/x-raw-rgb,bpp=32,endianness=4321,depth=32,red_mask=-16777216,green_mask=16711680,blue_mask=65280,width=%i,height=%i,framerate=30/1",
-                 width, height);
-        ctx->writer_->set_data_type (string (buffer));
-        ctx->writer_->start ();
-        set = true;
-      }
+      sprintf (buffer,
+               "video/x-raw-rgb,bpp=32,endianness=4321,depth=32,red_mask=-16777216,green_mask=16711680,blue_mask=65280,width=%i,height=%i,framerate=30/1",
+               width, height);
+      ctx->writer_->set_data_type (string (buffer));
+      ctx->writer_->start ();
+      set = true;
+    }
 
     ctx->writer_->push_data_auto_clock ((void *) data, width * height * 4,
                                         nullptr, nullptr);
   }
 
   const gchar *
-  SyphonSrc::get_servername (void *user_data)
-  {
+  SyphonSrc::get_servername (void *user_data) {
     SyphonSrc *
       ctx = (SyphonSrc *) user_data;
     return ctx->syphon_servername_.c_str ();
   }
 
   void
-  SyphonSrc::set_servername (const gchar * name, void *user_data)
-  {
+  SyphonSrc::set_servername (const gchar * name, void *user_data) {
     SyphonSrc *
       ctx = (SyphonSrc *) user_data;
 
@@ -171,16 +163,14 @@ SyphonSrc::SyphonSrc ():
   }
 
   const gchar *
-  SyphonSrc::get_appname (void *user_data)
-  {
+  SyphonSrc::get_appname (void *user_data) {
     SyphonSrc *
       ctx = (SyphonSrc *) user_data;
     return ctx->syphon_appname_.c_str ();
   }
 
   void
-  SyphonSrc::set_appname (const gchar * name, void *user_data)
-  {
+  SyphonSrc::set_appname (const gchar * name, void *user_data) {
     SyphonSrc *
       ctx = (SyphonSrc *) user_data;
 

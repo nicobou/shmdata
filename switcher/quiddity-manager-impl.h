@@ -30,15 +30,13 @@
 #include "quiddity-signal-subscriber.h"
 #include "plugin-loader.h"
 
-namespace switcher
-{
+namespace switcher {
   class Quiddity;
   class QuiddityPropertySubscriber;
   class QuidditySignalSubscriber;
 
   class QuiddityManager_Impl:public std::enable_shared_from_this <
-    QuiddityManager_Impl >
-  {
+    QuiddityManager_Impl > {
   public:
     typedef std::shared_ptr < QuiddityManager_Impl > ptr;
     typedef void (*quiddity_created_hook) (std::string nick_name,
@@ -93,11 +91,11 @@ namespace switcher
       std::string get_property_description (std::string quiddity_name,
                                             std::string property_name);
     //following "by_class" methods provide properties available after creation only
-      std::
-      string get_properties_description_by_class (std::string class_name);
+      std::string get_properties_description_by_class (std::
+                                                       string class_name);
       std::string get_property_description_by_class (std::string class_name,
-                                                     std::string
-                                                     property_name);
+                                                     std::
+                                                     string property_name);
     //set & get
     bool set_property (std::string quiddity_name,
                        std::string property_name, std::string property_value);

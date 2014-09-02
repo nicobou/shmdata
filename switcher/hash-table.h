@@ -29,11 +29,9 @@
 #include <string>
 #include <vector>
 #include <map>
-namespace switcher
-{
+namespace switcher {
 
-  template < class T > class HashTable
-  {
+  template < class T > class HashTable {
   public:
     typedef std::shared_ptr < HashTable < T > >ptr;
 

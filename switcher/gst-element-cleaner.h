@@ -26,10 +26,8 @@
 #include <map>
 #include <string>
 
-namespace switcher
-{
-  class GstElementCleaner
-  {
+namespace switcher {
+  class GstElementCleaner {
   public:
     typedef std::shared_ptr < GstElementCleaner > ptr;
       GstElementCleaner ();

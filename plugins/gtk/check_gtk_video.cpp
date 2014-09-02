@@ -29,8 +29,7 @@
 #endif
 
 int
-main ()
-{
+main () {
   {
     switcher::QuiddityManager::ptr manager =
       switcher::QuiddityManager::make_manager ("gtktest");
@@ -44,11 +43,10 @@ main ()
 #endif
 
     //creating a "myplugin" quiddity
-    if (manager->create ("gtkvideosink", "win").compare ("win") != 0)
-      {
-        //cannot create gtk window, stoping the test
-        return 0;
-      }
+    if (manager->create ("gtkvideosink", "win").compare ("win") != 0) {
+      //cannot create gtk window, stoping the test
+      return 0;
+    }
 
     //creating a video source quiddity
     if (manager->create ("videotestsrc", "vid").compare ("vid") != 0)

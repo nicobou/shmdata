@@ -24,11 +24,9 @@
 #include "switcher/startable-quiddity.h"
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class JackSink:public SinglePadGstSink, public StartableQuiddity
-  {
+  class JackSink:public SinglePadGstSink, public StartableQuiddity {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (JackSink);
     JackSink ();

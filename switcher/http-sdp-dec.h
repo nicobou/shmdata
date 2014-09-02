@@ -27,11 +27,9 @@
 #include <map>
 #include <string>
 
-namespace switcher
-{
+namespace switcher {
 
-  class HTTPSDPDec:public GPipe
-  {
+  class HTTPSDPDec:public GPipe {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (HTTPSDPDec);
     HTTPSDPDec ();

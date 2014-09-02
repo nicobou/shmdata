@@ -30,13 +30,11 @@
 #include <vector>
 #include "property.h"
 
-namespace switcher
-{
+namespace switcher {
   class Quiddity;
   class QuiddityManager_Impl;
 
-  class QuiddityPropertySubscriber
-  {
+  class QuiddityPropertySubscriber {
   public:
     typedef std::shared_ptr < QuiddityPropertySubscriber > ptr;
     typedef void (*Callback) (std::string subscriber_name,
@@ -75,8 +73,7 @@ namespace switcher
       std::weak_ptr < QuiddityManager_Impl > manager_impl_;
     bool muted_;
 
-    typedef struct
-    {
+    typedef struct {
       QuiddityPropertySubscriber *property_subscriber;
       gchar *name;
       gchar *quiddity_name;

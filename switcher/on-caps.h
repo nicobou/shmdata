@@ -24,30 +24,24 @@
 #include <list>
 #include <mutex>
 
-namespace switcher
-{
+namespace switcher {
 
-  class OnCaps
-  {
+  class OnCaps {
   public:
     using CapsCallBack = std::function < void (std::string) >;
 
-      virtual ~ OnCaps ()
-    {
+      virtual ~ OnCaps () {
     };
 
     void set_on_caps (CapsCallBack callback);
       std::string get_caps ();
 
   private:
-      std::string negociated_caps_
-    {
+      std::string negociated_caps_ {
     };
-    std::list < CapsCallBack > on_caps_callback_
-    {
+    std::list < CapsCallBack > on_caps_callback_ {
     };
-    std::mutex caps_mutex_
-    {
+    std::mutex caps_mutex_ {
     };
 
   protected:

@@ -20,8 +20,7 @@
 #include "gst-parse-to-bin-src.h"
 #include "gst-utils.h"
 
-namespace switcher
-{
+namespace switcher {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (GstParseToBinSrc,
                                         "GStreamer Pipeline",
@@ -35,24 +34,23 @@ namespace switcher
   {
   }
 
-  GstParseToBinSrc::~GstParseToBinSrc ()
-  {
+  GstParseToBinSrc::~GstParseToBinSrc () {
     g_free (gst_launch_pipeline_);
     if (gst_parse_to_bin_src_ != nullptr)
       GstUtils::clean_element (gst_parse_to_bin_src_);
   }
 
-  bool GstParseToBinSrc::init_gpipe ()
-  {
+  bool GstParseToBinSrc::init_gpipe () {
     init_startable (this);
     gst_launch_pipeline_spec_ =
       custom_props_->make_string_property ("gst-pipeline",
                                            "GStreamer Launch Source Pipeline",
                                            "videotestsrc is-live=true",
                                            (GParamFlags) G_PARAM_READWRITE,
-                                           GstParseToBinSrc::set_gst_launch_pipeline,
-                                           GstParseToBinSrc::get_gst_launch_pipeline,
-                                           this);
+                                           GstParseToBinSrc::
+                                           set_gst_launch_pipeline,
+                                           GstParseToBinSrc::
+                                           get_gst_launch_pipeline, this);
     install_property_by_pspec (custom_props_->get_gobject (),
                                gst_launch_pipeline_spec_, "gst-pipeline",
                                "GStreamer Live Source Pipeline");
@@ -60,20 +58,18 @@ namespace switcher
     return true;
   }
 
-  bool GstParseToBinSrc::to_shmdata ()
-  {
+  bool GstParseToBinSrc::to_shmdata () {
 
     GError *error = nullptr;
     gst_parse_to_bin_src_ =
       gst_parse_bin_from_description (gst_launch_pipeline_, TRUE, &error);
 
-    if (error != nullptr)
-      {
-        g_debug ("%s", error->message);
-        g_error_free (error);
-        gst_parse_to_bin_src_ = nullptr;
-        return false;
-      }
+    if (error != nullptr) {
+      g_debug ("%s", error->message);
+      g_error_free (error);
+      gst_parse_to_bin_src_ = nullptr;
+      return false;
+    }
 
     g_object_set (G_OBJECT (gst_parse_to_bin_src_), "async-handling", TRUE,
                   nullptr);
@@ -96,30 +92,26 @@ namespace switcher
 
   void
     GstParseToBinSrc::set_gst_launch_pipeline (const gchar * value,
-                                               void *user_data)
-  {
+                                               void *user_data) {
     GstParseToBinSrc *context = static_cast < GstParseToBinSrc * >(user_data);
     g_free (context->gst_launch_pipeline_);
     context->gst_launch_pipeline_ = g_strdup (value);
-    context->custom_props_->
-      notify_property_changed (context->gst_launch_pipeline_spec_);
+    context->custom_props_->notify_property_changed (context->
+                                                     gst_launch_pipeline_spec_);
   }
 
-  const gchar *GstParseToBinSrc::get_gst_launch_pipeline (void *user_data)
-  {
+  const gchar *GstParseToBinSrc::get_gst_launch_pipeline (void *user_data) {
     GstParseToBinSrc *context = static_cast < GstParseToBinSrc * >(user_data);
     return context->gst_launch_pipeline_;
   }
 
-  bool GstParseToBinSrc::clean ()
-  {
+  bool GstParseToBinSrc::clean () {
     clear_shmdatas ();
     reset_bin ();               //bool res = unregister_shmdata (make_file_name ("video"));
     return true;
   }
 
-  bool GstParseToBinSrc::start ()
-  {
+  bool GstParseToBinSrc::start () {
     clean ();
     if (!to_shmdata ())
       return false;
@@ -127,8 +119,7 @@ namespace switcher
     return true;
   }
 
-  bool GstParseToBinSrc::stop ()
-  {
+  bool GstParseToBinSrc::stop () {
     clean ();
     uninstall_property ("gst-pipeline");
     install_property_by_pspec (custom_props_->get_gobject (),

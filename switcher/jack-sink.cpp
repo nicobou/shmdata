@@ -24,8 +24,7 @@
 #include "config.h"
 #endif
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (JackSink,
                                         "Audio Display (with Jack Audio)",
                                         "audio sink",
@@ -33,8 +32,7 @@ namespace switcher
                                         "LGPL",
                                         "jacksink", "Nicolas Bouillot");
 
-  bool JackSink::init_gpipe ()
-  {
+  bool JackSink::init_gpipe () {
     if (false == make_elements ())
       return false;
     init_startable (this);
@@ -56,18 +54,15 @@ namespace switcher
 
   JackSink::JackSink ():jacksink_ (nullptr),
     custom_props_ (new CustomPropertyHelper ()),
-    client_name_spec_ (nullptr), client_name_ (nullptr)
-  {
+    client_name_spec_ (nullptr), client_name_ (nullptr) {
   }
 
-  JackSink::~JackSink ()
-  {
+  JackSink::~JackSink () {
     if (nullptr != client_name_)
       g_free (client_name_);
   }
 
-  bool JackSink::make_elements ()
-  {
+  bool JackSink::make_elements () {
     GError *error = nullptr;
 
     gchar *description =
@@ -79,62 +74,53 @@ namespace switcher
     g_object_set (G_OBJECT (jacksink_), "async-handling", TRUE, nullptr);
     g_free (description);
 
-    if (error != nullptr)
-      {
-        g_warning ("%s", error->message);
-        g_error_free (error);
-        return false;
-      }
+    if (error != nullptr) {
+      g_warning ("%s", error->message);
+      g_error_free (error);
+      return false;
+    }
     return true;
   }
 
-  bool JackSink::start ()
-  {
+  bool JackSink::start () {
     if (false == make_elements ())
       return false;
     set_sink_element (jacksink_);
     return true;
   }
 
-  bool JackSink::stop ()
-  {
+  bool JackSink::stop () {
     reset_bin ();
     return true;
   }
 
-  void JackSink::set_client_name (const gchar * value, void *user_data)
-  {
+  void JackSink::set_client_name (const gchar * value, void *user_data) {
     JackSink *context = static_cast < JackSink * >(user_data);
     if (nullptr != context->client_name_)
       g_free (context->client_name_);
     context->client_name_ = g_strdup (value);
-    context->custom_props_->
-      notify_property_changed (context->client_name_spec_);
+    context->custom_props_->notify_property_changed (context->
+                                                     client_name_spec_);
   }
 
-  const gchar *JackSink::get_client_name (void *user_data)
-  {
+  const gchar *JackSink::get_client_name (void *user_data) {
     JackSink *context = static_cast < JackSink * >(user_data);
     return context->client_name_;
   }
 
-  void JackSink::on_shmdata_disconnect ()
-  {
+  void JackSink::on_shmdata_disconnect () {
     stop ();
   }
 
-  void JackSink::on_shmdata_connect (std::string /* shmdata_sochet_path */ )
-  {
-    if (is_started ())
-      {
-        stop ();
-        make_elements ();
-        set_sink_element_no_connect (jacksink_);
-      }
+  void JackSink::on_shmdata_connect (std::string /* shmdata_sochet_path */ ) {
+    if (is_started ()) {
+      stop ();
+      make_elements ();
+      set_sink_element_no_connect (jacksink_);
+    }
   }
 
-  bool JackSink::can_sink_caps (std::string caps)
-  {
+  bool JackSink::can_sink_caps (std::string caps) {
     return GstUtils::can_sink_caps ("audioconvert", caps);
   }
 }

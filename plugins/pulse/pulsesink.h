@@ -28,11 +28,9 @@
 #include <condition_variable>
 #include <vector>
 
-namespace switcher
-{
+namespace switcher {
 
-  class PulseSink:public SinglePadGstSink
-  {
+  class PulseSink:public SinglePadGstSink {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (PulseSink);
     PulseSink ();
@@ -41,8 +39,7 @@ namespace switcher
       PulseSink & operator= (const PulseSink &) = delete;
 
   private:
-    typedef struct
-    {
+    typedef struct {
       std::string name_;
       std::string description_;
       std::string state_;

@@ -25,11 +25,9 @@
 #include "switcher/custom-property-helper.h"
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class JackAudioSource:public AudioSource, public StartableQuiddity
-  {
+  class JackAudioSource:public AudioSource, public StartableQuiddity {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (JackAudioSource);
     JackAudioSource ();

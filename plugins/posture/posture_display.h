@@ -30,10 +30,8 @@
 #include <mutex>
 #include <string>
 
-namespace switcher
-{
-  class PostureDisplay:public Quiddity, public Segment
-  {
+namespace switcher {
+  class PostureDisplay:public Quiddity, public Segment {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (PostureDisplay);
     PostureDisplay ();
@@ -44,8 +42,7 @@ namespace switcher
   private:
       CustomPropertyHelper::ptr custom_props_;
 
-      std::shared_ptr < posture::Display > display_
-    {
+      std::shared_ptr < posture::Display > display_ {
     nullptr};
 
     bool init () final;

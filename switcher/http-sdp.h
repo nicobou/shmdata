@@ -24,11 +24,9 @@
 #include "gst-element-cleaner.h"
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class HTTPSDP:public GPipe, public GstElementCleaner
-  {
+  class HTTPSDP:public GPipe, public GstElementCleaner {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (HTTPSDP);
     HTTPSDP ();

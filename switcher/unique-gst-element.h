@@ -23,11 +23,9 @@
 #include <memory>
 #include "gst-utils.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  class UniqueGstElement
-  {
+  class UniqueGstElement {
   public:
     UniqueGstElement (const gchar * class_name);
 
@@ -45,8 +43,7 @@ namespace switcher
       template < typename Return_type >
       Return_type
       invoke_with_return (std::function < Return_type (GstElement *) >
-                          command)
-    {
+                          command) {
       return command (element_.get ());
     }
 

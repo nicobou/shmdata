@@ -30,13 +30,11 @@
 #include <vector>
 #include "signal-string.h"
 
-namespace switcher
-{
+namespace switcher {
   class Quiddity;
   class QuiddityManager_Impl;
 
-  class QuidditySignalSubscriber
-  {
+  class QuidditySignalSubscriber {
   public:
     typedef std::shared_ptr < QuidditySignalSubscriber > ptr;
     typedef void (*OnEmittedCallback) (std::string subscriber_name,
@@ -76,8 +74,7 @@ namespace switcher
       std::string name_;
       std::weak_ptr < QuiddityManager_Impl > manager_impl_;
 
-    typedef struct
-    {
+    typedef struct {
       QuidditySignalSubscriber *subscriber;
       gchar *name;
       gchar *quiddity_name;

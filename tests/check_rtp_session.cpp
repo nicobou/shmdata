@@ -32,33 +32,29 @@ void
 mon_property_cb (std::string /*subscriber_name */ ,
                  std::string quiddity_name,
                  std::string property_name,
-                 std::string value, void * /*user_data */ )
-{
+                 std::string value, void * /*user_data */ ) {
   // if (g_strcmp0 (property_name.c_str (), "caps") == 0)
   //   g_print ("-caps- %s\n",value.c_str ());
 
   // g_print ("%s, %s, %s\n", quiddity_name.c_str (), property_name.c_str (), value.c_str ());
 
-  if (!audio_success && g_strcmp0 (quiddity_name.c_str (), "audioprobe") == 0)
-    {
-      g_message ("audio received !");
-      audio_success = true;
-      if (video_success)
-        do_continue = false;
-    }
-  if (!video_success && g_strcmp0 (quiddity_name.c_str (), "videoprobe") == 0)
-    {
-      g_message ("video received !");
-      video_success = true;
-      if (audio_success)
-        do_continue = false;
-    }
+  if (!audio_success && g_strcmp0 (quiddity_name.c_str (), "audioprobe") == 0) {
+    g_message ("audio received !");
+    audio_success = true;
+    if (video_success)
+      do_continue = false;
+  }
+  if (!video_success && g_strcmp0 (quiddity_name.c_str (), "videoprobe") == 0) {
+    g_message ("video received !");
+    video_success = true;
+    if (audio_success)
+      do_continue = false;
+  }
 
 }
 
 int
-main ()
-{
+main () {
   audio_success = false;
   video_success = false;
   do_continue = true;
@@ -141,16 +137,14 @@ main ()
 
     //wait 3 seconds
     uint count = 3;
-    while (do_continue)
-      {
-        if (count == 0)
-          do_continue = false;
-        else
-          {
-            --count;
-            usleep (1000000);
-          }
+    while (do_continue) {
+      if (count == 0)
+        do_continue = false;
+      else {
+        --count;
+        usleep (1000000);
       }
+    }
   }
 
   if (audio_success && video_success)

@@ -19,15 +19,13 @@
 
 #include "quiddity-documentation.h"
 
-namespace switcher
-{
+namespace switcher {
   QuiddityDocumentation::QuiddityDocumentation (std::string long_name,
                                                 std::string category,
                                                 std::string short_description,
                                                 std::string license,
                                                 std::string class_name,
-                                                std::string author)
-  {
+                                                std::string author) {
     category_ = category;
     class_name_ = class_name;
     description_ = short_description;
@@ -36,38 +34,31 @@ namespace switcher
     license_ = license;
   }
 
-  std::string QuiddityDocumentation::get_category () const
-  {
+  std::string QuiddityDocumentation::get_category () const {
     return category_;
   }
 
-  std::string QuiddityDocumentation::get_class_name () const
-  {
+  std::string QuiddityDocumentation::get_class_name () const {
     return class_name_;
   }
 
-  std::string QuiddityDocumentation::get_description () const
-  {
+  std::string QuiddityDocumentation::get_description () const {
     return description_;
   }
 
-  std::string QuiddityDocumentation::get_long_name () const
-  {
+  std::string QuiddityDocumentation::get_long_name () const {
     return long_name_;
   }
 
-  std::string QuiddityDocumentation::get_author () const
-  {
+  std::string QuiddityDocumentation::get_author () const {
     return author_;
   }
 
-  std::string QuiddityDocumentation::get_license () const
-  {
+  std::string QuiddityDocumentation::get_license () const {
     return license_;
   }
 
-  void QuiddityDocumentation::make_json_description ()
-  {
+  void QuiddityDocumentation::make_json_description () {
     json_description_.reset (new JSONBuilder ());
     json_description_->reset ();
     json_description_->begin_object ();
@@ -81,45 +72,37 @@ namespace switcher
     json_description_->end_object ();
   }
 
-  std::string QuiddityDocumentation::get_json_documentation ()
-  {
+  std::string QuiddityDocumentation::get_json_documentation () {
     make_json_description ();
     return json_description_->get_string (true);;
   }
 
-  JSONBuilder::Node QuiddityDocumentation::get_json_root_node ()
-  {
+  JSONBuilder::Node QuiddityDocumentation::get_json_root_node () {
     make_json_description ();
     return json_description_->get_root ();
   }
 
-  void QuiddityDocumentation::set_category (std::string category)
-  {
+  void QuiddityDocumentation::set_category (std::string category) {
     category_ = category;
   }
 
-  void QuiddityDocumentation::set_class_name (std::string class_name)
-  {
+  void QuiddityDocumentation::set_class_name (std::string class_name) {
     class_name_ = class_name;
   }
 
-  void QuiddityDocumentation::set_description (std::string description)
-  {
+  void QuiddityDocumentation::set_description (std::string description) {
     description_ = description;
   }
 
-  void QuiddityDocumentation::set_long_name (std::string long_name)
-  {
+  void QuiddityDocumentation::set_long_name (std::string long_name) {
     long_name_ = long_name;
   }
 
-  void QuiddityDocumentation::set_author (std::string author)
-  {
+  void QuiddityDocumentation::set_author (std::string author) {
     author_ = author;
   }
 
-  void QuiddityDocumentation::set_license (std::string license)
-  {
+  void QuiddityDocumentation::set_license (std::string license) {
     license_ = license;
   }
 }

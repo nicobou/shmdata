@@ -29,12 +29,10 @@
 #include <pjlib-util.h>
 #include <pjlib.h>
 
-namespace switcher
-{
+namespace switcher {
   class PJCall;
 
-  class PJCodec
-  {
+  class PJCodec {
   public:
     PJCodec () = delete;
     ~PJCodec () = delete;
@@ -44,8 +42,7 @@ namespace switcher
     static pj_status_t install_codecs ();
 
   private:
-    typedef struct alt_codec
-    {
+    typedef struct alt_codec {
       pj_str_t encoding_name;
       pj_uint8_t payload_type;
       unsigned clock_rate;
@@ -55,8 +52,7 @@ namespace switcher
       unsigned max_bps;
     } alt_codec_t;
 
-    typedef struct alt_codec_factory
-    {
+    typedef struct alt_codec_factory {
       pjmedia_codec_factory base;
     } alt_codec_factory_t;
 

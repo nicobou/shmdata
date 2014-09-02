@@ -22,16 +22,13 @@
 
 #include <chrono>
 
-namespace switcher
-{
+namespace switcher {
 
   template < typename Clock_type = std::chrono::system_clock >
-    class CumulativeClock
-  {
+    class CumulativeClock {
   public:
   CumulativeClock ():
-    start_ (Clock_type::now ())
-    {
+    start_ (Clock_type::now ()) {
     }
 
     template < typename Count_type = unsigned long long, typename Resolution =

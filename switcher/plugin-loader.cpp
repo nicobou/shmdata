@@ -20,80 +20,68 @@
 #include "plugin-loader.h"
 #include "quiddity-documentation.h"
 
-namespace switcher
-{
+namespace switcher {
 
   PluginLoader::PluginLoader ():create_ (nullptr),
     destroy_ (nullptr),
-    module_ (nullptr), get_documentation_ (nullptr), json_doc_ (nullptr)
-  {
+    module_ (nullptr), get_documentation_ (nullptr), json_doc_ (nullptr) {
   }
 
-  PluginLoader::~PluginLoader ()
-  {
+  PluginLoader::~PluginLoader () {
     if (module_ != nullptr)
       g_module_close (module_);
   }
 
-  bool PluginLoader::load (const char *filename)
-  {
-    if (!g_module_supported ())
-      {
-        g_debug ("g_module not supported !, cannot load %s", filename);
-        return false;
-      }
+  bool PluginLoader::load (const char *filename) {
+    if (!g_module_supported ()) {
+      g_debug ("g_module not supported !, cannot load %s", filename);
+      return false;
+    }
     close ();
 
     module_ = g_module_open (filename, G_MODULE_BIND_LAZY);
 
-    if (!module_)
-      {
-        g_debug ("loading %s: %s", filename, g_module_error ());
-        return false;
-      }
+    if (!module_) {
+      g_debug ("loading %s: %s", filename, g_module_error ());
+      return false;
+    }
 
-    if (!g_module_symbol (module_, "create", (gpointer *) & create_))
-      {
-        g_debug ("loading %s: %s", filename, g_module_error ());
-        close ();
-        return false;
-      }
+    if (!g_module_symbol (module_, "create", (gpointer *) & create_)) {
+      g_debug ("loading %s: %s", filename, g_module_error ());
+      close ();
+      return false;
+    }
 
-    if (create_ == nullptr)
-      {
-        g_debug ("%s: %s", filename, g_module_error ());
-        close ();
-        return false;
-      }
+    if (create_ == nullptr) {
+      g_debug ("%s: %s", filename, g_module_error ());
+      close ();
+      return false;
+    }
 
-    if (!g_module_symbol (module_, "destroy", (gpointer *) & destroy_))
-      {
-        g_debug ("%s: %s", filename, g_module_error ());
-        close ();
-        return false;
-      }
+    if (!g_module_symbol (module_, "destroy", (gpointer *) & destroy_)) {
+      g_debug ("%s: %s", filename, g_module_error ());
+      close ();
+      return false;
+    }
 
-    if (destroy_ == nullptr)
-      {
-        g_debug ("%s: %s", filename, g_module_error ());
-        close ();
-        return false;
-      }
+    if (destroy_ == nullptr) {
+      g_debug ("%s: %s", filename, g_module_error ());
+      close ();
+      return false;
+    }
 
     if (!g_module_symbol
-        (module_, "get_documentation", (gpointer *) & get_documentation_))
-      {
-        g_debug ("%s: %s", filename, g_module_error ());
-        close ();
-        return false;
-      }
+        (module_, "get_documentation", (gpointer *) & get_documentation_)) {
+      g_debug ("%s: %s", filename, g_module_error ());
+      close ();
+      return false;
+    }
 
-    if (get_documentation_ == nullptr)
-      {
-        g_debug ("%s: %s", filename, g_module_error ());
-        close ();
-        return false;
-      }
+    if (get_documentation_ == nullptr) {
+      g_debug ("%s: %s", filename, g_module_error ());
+      close ();
+      return false;
+    }
 
     QuiddityDocumentation doc = get_documentation_ ();
     class_name_ = doc.get_class_name ();
@@ -101,29 +89,25 @@ namespace switcher
     return true;
   }
 
-  bool PluginLoader::close ()
-  {
+  bool PluginLoader::close () {
     if (module_ == nullptr)
       return false;
 
-    if (!g_module_close (module_))
-      {
-        g_debug ("closing module: %s", g_module_error ());
-        return false;
-      }
+    if (!g_module_close (module_)) {
+      g_debug ("closing module: %s", g_module_error ());
+      return false;
+    }
     module_ = nullptr;
     return true;
   }
 
-  std::string PluginLoader::get_class_name ()
-  {
+  std::string PluginLoader::get_class_name () {
     if (module_ == nullptr)
       return "";
     return class_name_;
   }
 
-  JSONBuilder::Node PluginLoader::get_json_root_node ()
-  {
+  JSONBuilder::Node PluginLoader::get_json_root_node () {
     if (module_ == nullptr)
       return nullptr;
     return json_doc_;

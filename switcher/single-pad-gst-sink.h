@@ -24,11 +24,9 @@
 #include "shmdata-reader.h"
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class SinglePadGstSink:public GPipe
-  {
+  class SinglePadGstSink:public GPipe {
   public:
     typedef std::shared_ptr < SinglePadGstSink > ptr;
       SinglePadGstSink ();
@@ -43,17 +41,13 @@ namespace switcher
                                  void *user_data);
 
   private:
-      ShmdataReader::on_first_data_hook connection_hook_
-    {
+      ShmdataReader::on_first_data_hook connection_hook_ {
     nullptr};
-    void *hook_user_data_
-    {
+    void *hook_user_data_ {
     nullptr};
-    GstElement *sink_element_
-    {
+    GstElement *sink_element_ {
     nullptr};
-      std::string shmdata_path_
-    {
+      std::string shmdata_path_ {
     };
 
     //for segment

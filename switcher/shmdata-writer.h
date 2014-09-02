@@ -26,11 +26,9 @@
 #include "json-builder.h"
 #include "on-caps.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  class ShmdataWriter:public OnCaps
-  {
+  class ShmdataWriter:public OnCaps {
   public:
     typedef std::shared_ptr < ShmdataWriter > ptr;
     using CapsCallBack = std::function < void (std::string) >;
@@ -51,29 +49,21 @@ namespace switcher
       JSONBuilder::Node get_json_root_node ();
 
   private:
-      std::string path_
-    {
+      std::string path_ {
     };
-    shmdata_base_writer_t *writer_
-    {
+    shmdata_base_writer_t *writer_ {
     shmdata_base_writer_init ()};
-    GstElement *bin_
-    {
+    GstElement *bin_ {
     nullptr};
-    GstElement *tee_
-    {
+    GstElement *tee_ {
     nullptr};
-    GstElement *queue_
-    {
+    GstElement *queue_ {
     nullptr};
-    GstElement *fakesink_
-    {
+    GstElement *fakesink_ {
     nullptr};
-    gulong handoff_handler_
-    {
+    gulong handoff_handler_ {
     0};
-      JSONBuilder::ptr json_description_
-    {
+      JSONBuilder::ptr json_description_ {
     new JSONBuilder ()};
 
     void make_json_description ();

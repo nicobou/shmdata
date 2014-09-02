@@ -23,8 +23,7 @@
 #include <string>
 #include <iostream>
 int
-main ()
-{
+main () {
   bool success = true;
   switcher::QuiddityManager::ptr manager =
     switcher::QuiddityManager::make_manager ("check_description_manager");

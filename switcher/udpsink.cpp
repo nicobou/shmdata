@@ -27,8 +27,7 @@
 #include <sys/socket.h>
 #endif
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (UDPSink,
                                         "UDP Sender",
                                         "udp network",
@@ -36,12 +35,10 @@ namespace switcher
                                         "LGPL",
                                         "udpsink", "Nicolas Bouillot");
   UDPSink::UDPSink ():udpsink_ (nullptr),
-    udpsink_bin_ (nullptr), typefind_ (nullptr), ghost_sinkpad_ (nullptr)
-  {
+    udpsink_bin_ (nullptr), typefind_ (nullptr), ghost_sinkpad_ (nullptr) {
   }
 
-  bool UDPSink::init_gpipe ()
-  {
+  bool UDPSink::init_gpipe () {
     if (!GstUtils::make_element ("bin", &udpsink_bin_)
         || !GstUtils::make_element ("typefind", &typefind_)
         || !GstUtils::make_element ("multiudpsink", &udpsink_))
@@ -57,18 +54,16 @@ namespace switcher
 #if HAVE_OSX
     // turnaround for OSX: create sender socket
     int sock;
-    if ((sock = socket (AF_INET, SOCK_DGRAM, 0)) < 0)
-      {
-        g_warning ("udp sink: cannot create socket");
-        return false;
-      }
+    if ((sock = socket (AF_INET, SOCK_DGRAM, 0)) < 0) {
+      g_warning ("udp sink: cannot create socket");
+      return false;
+    }
     guint bc_val = 1;
     if (setsockopt (sock, SOL_SOCKET, SO_BROADCAST, &bc_val,
-                    sizeof (bc_val)) < 0)
-      {
-        g_warning ("udp sink: cannot set broadcast to socket");
-        return false;
-      }
+                    sizeof (bc_val)) < 0) {
+      g_warning ("udp sink: cannot set broadcast to socket");
+      return false;
+    }
     g_object_set (G_OBJECT (udpsink_), "sockfd", sock, nullptr);
 #endif
 
@@ -138,8 +133,7 @@ namespace switcher
     return true;
   }
 
-  UDPSink::~UDPSink ()
-  {
+  UDPSink::~UDPSink () {
     g_debug ("removing udpsink %s (%s)", get_nick_name ().c_str (),
              GST_ELEMENT_NAME (udpsink_bin_));
 
@@ -147,17 +141,15 @@ namespace switcher
     // g_debug ("num child in parent bin : %d",
     //      GST_BIN_NUMCHILDREN (parent));
 
-    if (ghost_sinkpad_ != nullptr)
-      {
-        if (gst_pad_is_linked (ghost_sinkpad_))
-          {
-            GstPad *peer_pad = gst_pad_get_peer (ghost_sinkpad_);
-            gst_pad_unlink (peer_pad, ghost_sinkpad_);
-            gst_object_unref (peer_pad);
-          }
-        gst_pad_set_active (ghost_sinkpad_, FALSE);
-        gst_element_remove_pad (udpsink_bin_, ghost_sinkpad_);
+    if (ghost_sinkpad_ != nullptr) {
+      if (gst_pad_is_linked (ghost_sinkpad_)) {
+        GstPad *peer_pad = gst_pad_get_peer (ghost_sinkpad_);
+        gst_pad_unlink (peer_pad, ghost_sinkpad_);
+        gst_object_unref (peer_pad);
       }
+      gst_pad_set_active (ghost_sinkpad_, FALSE);
+      gst_element_remove_pad (udpsink_bin_, ghost_sinkpad_);
+    }
 
     GstUtils::clean_element (typefind_);
     GstUtils::clean_element (udpsink_);
@@ -166,8 +158,7 @@ namespace switcher
 
   void
     UDPSink::add_elements_to_bin (ShmdataReader * caller,
-                                  void *udpbin_instance)
-  {
+                                  void *udpbin_instance) {
 
     UDPSink *context = static_cast < UDPSink * >(udpbin_instance);
 
@@ -192,8 +183,7 @@ namespace switcher
   void UDPSink::on_client_added (GstElement * /*multiudpsink */ ,
                                  gchar * /*host */ ,
                                  gint /*port */ ,
-                                 gpointer /*user_data */ )
-  {
+                                 gpointer /*user_data */ ) {
     //UDPSink *context = static_cast<UDPSink *>(user_data);
     g_debug ("UDPSink::on_client_added");
   }
@@ -201,16 +191,14 @@ namespace switcher
   void UDPSink::on_client_removed (GstElement * /*multiudpsink */ ,
                                    gchar * /*host */ ,
                                    gint /*port */ ,
-                                   gpointer /*user_data */ )
-  {
+                                   gpointer /*user_data */ ) {
     //UDPSink *context = static_cast<UDPSink *>(user_data);
     g_debug ("UDPSink::on_client_removed");
   }
 
   gboolean
     UDPSink::remove_client_wrapped (gpointer host, gint port,
-                                    gpointer user_data)
-  {
+                                    gpointer user_data) {
     //std::string connector = static_cast<std::string>(connector_name);
     UDPSink *context = static_cast < UDPSink * >(user_data);
 
@@ -220,8 +208,7 @@ namespace switcher
       return FALSE;
   }
 
-  bool UDPSink::remove_client (gchar * host, gint port)
-  {
+  bool UDPSink::remove_client (gchar * host, gint port) {
     g_signal_emit_by_name (udpsink_, "remove", host, port, nullptr);
     return true;
   }
@@ -238,14 +225,12 @@ namespace switcher
       return FALSE;
   }
 
-  bool UDPSink::add_client (gchar * host, gint port)
-  {
+  bool UDPSink::add_client (gchar * host, gint port) {
     g_signal_emit_by_name (udpsink_, "add", host, port, nullptr);
     return true;
   }
 
-  gboolean UDPSink::clear_wrapped (gpointer /*unused */ , gpointer user_data)
-  {
+  gboolean UDPSink::clear_wrapped (gpointer /*unused */ , gpointer user_data) {
     //std::string connector = static_cast<std::string>(connector_name);
     UDPSink *context = static_cast < UDPSink * >(user_data);
 
@@ -255,8 +240,7 @@ namespace switcher
       return FALSE;
   }
 
-  bool UDPSink::clear_clients ()
-  {
+  bool UDPSink::clear_clients () {
     g_signal_emit_by_name (udpsink_, "clear", nullptr);
     return true;
   }

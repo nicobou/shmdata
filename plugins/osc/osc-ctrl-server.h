@@ -26,11 +26,9 @@
 #include <map>
 #include <string>
 
-namespace switcher
-{
+namespace switcher {
 
-  class OscCtrlServer:public QuiddityManagerWrapper
-  {
+  class OscCtrlServer:public QuiddityManagerWrapper {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (OscCtrlServer);
     OscCtrlServer ();

@@ -22,15 +22,14 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <unistd.h> // usleep
+#include <unistd.h>             // usleep
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 int
-main ()
-{
+main () {
 
   bool success = true;
   {
@@ -74,33 +73,25 @@ main ()
     usleep (2000000);
 
     // SIP
-    if (0 != manager->create ("sip", "test").compare ("test"))
-      {
-        g_print ("cannot create\n");
-        return 1;
-      }
+    if (0 != manager->create ("sip", "test").compare ("test")) {
+      g_print ("cannot create\n");
+      return 1;
+    }
 
     manager->set_property ("test", "port", "5070");
 
-    if (!manager->invoke_va ("test",
-                             "register",
-                             nullptr,
-                             "1004",          // user
-                             "10.10.30.179",  // domain
-                             "1234",          // password
-                             nullptr))
-      {
-        g_print ("cannot register \n");
-        return 1;
-      }
+    if (!manager->invoke_va ("test", "register", nullptr, "1004",       // user
+                             "10.10.30.179",    // domain
+                             "1234",    // password
+                             nullptr)) {
+      g_print ("cannot register \n");
+      return 1;
+    }
 
     manager->set_property ("test", "rtp-session", "rtp");
 
     manager->invoke_va ("test",
-                        "call",
-                        nullptr,
-                        "sip:1002@10.10.30.223",
-                        nullptr);
+                        "call", nullptr, "sip:1002@10.10.30.223", nullptr);
 
     usleep (2000000);
 
@@ -122,7 +113,7 @@ main ()
 
     manager->remove ("test");
 
-  }// end of scope is releasing the manager
+  }                             // end of scope is releasing the manager
 
   if (success)
     return 0;

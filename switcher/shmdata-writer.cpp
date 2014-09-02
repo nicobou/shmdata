@@ -21,57 +21,49 @@
 #include "gst-utils.h"
 #include "scope-exit.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  ShmdataWriter::ShmdataWriter ()
-  {
+  ShmdataWriter::ShmdataWriter () {
   }
 
-  ShmdataWriter::~ShmdataWriter ()
-  {
+  ShmdataWriter::~ShmdataWriter () {
     //g_debug ("ShmdataWriter: cleaning elements %s", path_.c_str());
 
     if (nullptr != tee_)
       GstUtils::clean_element (tee_);
     if (nullptr != queue_)
       GstUtils::clean_element (queue_);
-    if (nullptr != fakesink_)
-      {
+    if (nullptr != fakesink_) {
 // if (0 != handoff_handler_)
 // //FIXME this is blocking sometime :
 //   g_signal_handler_disconnect (G_OBJECT (fakesink_), handoff_handler_);
-        GstUtils::clean_element (fakesink_);
-      }
+      GstUtils::clean_element (fakesink_);
+    }
     shmdata_base_writer_close (writer_);
     if (!path_.empty ())
       g_debug ("ShmdataWriter: %s deleted", path_.c_str ());
   }
 
   //WARNING if the file exist it will be deleted
-  bool ShmdataWriter::set_path (std::string name)
-  {
+  bool ShmdataWriter::set_path (std::string name) {
     GFile *shmfile = g_file_new_for_commandline_arg (name.c_str ());
-    if (g_file_query_exists (shmfile, nullptr))
-      {
+    if (g_file_query_exists (shmfile, nullptr)) {
 //thrash it
+      g_debug
+        ("ShmdataWriter::set_path warning: file %s exists and will be deleted.",
+         name.c_str ());
+      if (!g_file_delete (shmfile, nullptr, nullptr)) {
         g_debug
-          ("ShmdataWriter::set_path warning: file %s exists and will be deleted.",
+          ("ShmdataWriter::set_path error: file %s is already existing and cannot be trashed.",
            name.c_str ());
-        if (!g_file_delete (shmfile, nullptr, nullptr))
-          {
-            g_debug
-              ("ShmdataWriter::set_path error: file %s is already existing and cannot be trashed.",
-               name.c_str ());
-            return false;
-          }
+        return false;
       }
+    }
 
     return set_path_without_deleting (name);
   }
 
-  bool ShmdataWriter::set_path_without_deleting (std::string name)
-  {
+  bool ShmdataWriter::set_path_without_deleting (std::string name) {
     //setting the writer
     shmdata_base_writer_set_path (writer_, name.c_str ());
     path_ = name;
@@ -79,15 +71,13 @@ namespace switcher
     return true;
   }
 
-  std::string ShmdataWriter::get_path ()
-  {
+  std::string ShmdataWriter::get_path () {
     return path_;
   }
 
   void
     ShmdataWriter::plug (GstElement * bin,
-                         GstElement * source_element, GstCaps * caps)
-  {
+                         GstElement * source_element, GstCaps * caps) {
     g_debug ("ShmdataWriter::plug (source element)");
     bin_ = bin;
     GstUtils::make_element ("tee", &tee_);
@@ -111,8 +101,7 @@ namespace switcher
       g_debug ("shmdata writer plugged (%s)", path_.c_str ());
   }
 
-  void ShmdataWriter::plug (GstElement * bin, GstPad * source_pad)
-  {
+  void ShmdataWriter::plug (GstElement * bin, GstPad * source_pad) {
     bin_ = bin;
     GstUtils::make_element ("tee", &tee_);
     GstUtils::make_element ("queue", &queue_);
@@ -140,21 +129,18 @@ namespace switcher
   void
     ShmdataWriter::on_handoff_cb (GstElement * object,
                                   GstBuffer * buf,
-                                  GstPad * pad, gpointer user_data)
-  {
+                                  GstPad * pad, gpointer user_data) {
     ShmdataWriter *context = static_cast < ShmdataWriter * >(user_data);
 
     GstCaps *caps = gst_pad_get_negotiated_caps (pad);
     if (nullptr == caps)
       return;
-    On_scope_exit
-    {
+    On_scope_exit {
       gst_caps_unref (caps);
     };
 
     gchar *string_caps = gst_caps_to_string (caps);
-    On_scope_exit
-    {
+    On_scope_exit {
       if (nullptr != string_caps)
         g_free (string_caps);
     };
@@ -168,16 +154,14 @@ namespace switcher
                   nullptr);
   }
 
-  void ShmdataWriter::make_json_description ()
-  {
+  void ShmdataWriter::make_json_description () {
     json_description_->reset ();
     json_description_->begin_object ();
     json_description_->add_string_member ("path", path_.c_str ());
     json_description_->end_object ();
   }
 
-  JSONBuilder::Node ShmdataWriter::get_json_root_node ()
-  {
+  JSONBuilder::Node ShmdataWriter::get_json_root_node () {
     return json_description_->get_root ();
   }
 

@@ -20,8 +20,7 @@
 #include "fake-shmdata-writer.h"
 #include "gst-utils.h"
 
-namespace switcher
-{
+namespace switcher {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (FakeShmdataWriter,
                                         "Shmdata From Software",
@@ -33,12 +32,10 @@ namespace switcher
   FakeShmdataWriter::FakeShmdataWriter ():custom_props_ (new
                                                          CustomPropertyHelper
                                                          ()),
-    shmdata_path_spec_ (nullptr), shmdata_path_ (g_strdup ("none"))
-  {
+    shmdata_path_spec_ (nullptr), shmdata_path_ (g_strdup ("none")) {
   }
 
-  bool FakeShmdataWriter::init_gpipe ()
-  {
+  bool FakeShmdataWriter::init_gpipe () {
     init_startable (this);
 
     shmdata_path_ = g_strdup ("none");
@@ -48,9 +45,10 @@ namespace switcher
                                            "Path Of The Shmdata The Include",
                                            "",
                                            (GParamFlags) G_PARAM_READWRITE,
-                                           FakeShmdataWriter::set_shmdata_path,
-                                           FakeShmdataWriter::get_shmdata_path,
-                                           this);
+                                           FakeShmdataWriter::
+                                           set_shmdata_path,
+                                           FakeShmdataWriter::
+                                           get_shmdata_path, this);
     install_property_by_pspec (custom_props_->get_gobject (),
                                shmdata_path_spec_, "shmdata-path",
                                "Shmdata Path");
@@ -58,8 +56,7 @@ namespace switcher
     return true;
   }
 
-  bool FakeShmdataWriter::add_shmdata_path (std::string name)
-  {
+  bool FakeShmdataWriter::add_shmdata_path (std::string name) {
     //creating a shmdata
     ShmdataWriter::ptr connector;
     connector.reset (new ShmdataWriter ());
@@ -79,29 +76,25 @@ namespace switcher
     g_free (context->shmdata_path_);
 
     context->shmdata_path_ = g_strdup (value);
-    context->custom_props_->
-      notify_property_changed (context->shmdata_path_spec_);
+    context->custom_props_->notify_property_changed (context->
+                                                     shmdata_path_spec_);
   }
 
-  const gchar *FakeShmdataWriter::get_shmdata_path (void *user_data)
-  {
+  const gchar *FakeShmdataWriter::get_shmdata_path (void *user_data) {
     FakeShmdataWriter *context =
       static_cast < FakeShmdataWriter * >(user_data);
     return context->shmdata_path_;
   }
 
-  FakeShmdataWriter::~FakeShmdataWriter ()
-  {
+  FakeShmdataWriter::~FakeShmdataWriter () {
     g_free (shmdata_path_);
   }
 
-  bool FakeShmdataWriter::clean ()
-  {
+  bool FakeShmdataWriter::clean () {
     return unregister_shmdata (shmdata_path_);
   }
 
-  bool FakeShmdataWriter::start ()
-  {
+  bool FakeShmdataWriter::start () {
     clean ();
     uninstall_property ("shmdata-path");
     if (g_strcmp0 (shmdata_path_, "") == 0)
@@ -119,8 +112,7 @@ namespace switcher
     return true;
   }
 
-  bool FakeShmdataWriter::stop ()
-  {
+  bool FakeShmdataWriter::stop () {
     clean ();
     install_property_by_pspec (custom_props_->get_gobject (),
                                shmdata_path_spec_,

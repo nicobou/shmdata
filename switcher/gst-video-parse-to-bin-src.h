@@ -25,11 +25,9 @@
 #include <gst/gst.h>
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class GstVideoParseToBinSrc:public VideoSource
-  {
+  class GstVideoParseToBinSrc:public VideoSource {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (GstVideoParseToBinSrc);
     GstVideoParseToBinSrc ();

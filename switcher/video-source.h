@@ -25,11 +25,9 @@
 #include "startable-quiddity.h"
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class VideoSource:public GPipe, public StartableQuiddity
-  {
+  class VideoSource:public GPipe, public StartableQuiddity {
   public:
     typedef std::shared_ptr < VideoSource > ptr;
       VideoSource ();
@@ -60,12 +58,10 @@ namespace switcher
     GstElement *color_space_codec_element_;
       std::vector < std::string > codec_properties_;
 
-    virtual bool on_start ()
-    {
+    virtual bool on_start () {
       return true;
     };
-    virtual bool on_stop ()
-    {
+    virtual bool on_stop () {
       return true;
     };
     virtual bool make_video_source (GstElement ** new_element) = 0;

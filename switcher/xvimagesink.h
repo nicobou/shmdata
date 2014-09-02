@@ -24,11 +24,9 @@
 #include <gst/gst.h>
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class Xvimagesink:public SinglePadGstSink
-  {
+  class Xvimagesink:public SinglePadGstSink {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (Xvimagesink);
     Xvimagesink ();

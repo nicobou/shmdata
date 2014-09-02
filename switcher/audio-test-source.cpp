@@ -20,8 +20,7 @@
 #include "audio-test-source.h"
 #include <gst/gst.h>
 #include "gst-utils.h"
-namespace switcher
-{
+namespace switcher {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (AudioTestSource,
                                         "Audio Test",
@@ -30,18 +29,15 @@ namespace switcher
                                         "LGPL",
                                         "audiotestsrc", "Nicolas Bouillot");
 
-  AudioTestSource::AudioTestSource ():audiotestsrc_ (nullptr)
-  {
+  AudioTestSource::AudioTestSource ():audiotestsrc_ (nullptr) {
   }
 
-  bool AudioTestSource::init_gpipe ()
-  {
+  bool AudioTestSource::init_gpipe () {
     init_startable (this);
     return make_audiotestsrc ();
   }
 
-  bool AudioTestSource::make_audiotestsrc ()
-  {
+  bool AudioTestSource::make_audiotestsrc () {
     uninstall_property ("volume");
     uninstall_property ("freq");
     uninstall_property ("samplesperbuffer");
@@ -53,20 +49,19 @@ namespace switcher
 
     g_object_set (G_OBJECT (audiotest), "is-live", TRUE, nullptr);
 
-    if (audiotestsrc_ != nullptr)
-      {
-        GstUtils::apply_property_value (G_OBJECT (audiotestsrc_),
-                                        G_OBJECT (audiotest), "volume");
-        GstUtils::apply_property_value (G_OBJECT (audiotestsrc_),
-                                        G_OBJECT (audiotest), "freq");
-        GstUtils::apply_property_value (G_OBJECT (audiotestsrc_),
-                                        G_OBJECT (audiotest),
-                                        "samplesperbuffer");
-        GstUtils::apply_property_value (G_OBJECT (audiotestsrc_),
-                                        G_OBJECT (audiotest), "wave");
+    if (audiotestsrc_ != nullptr) {
+      GstUtils::apply_property_value (G_OBJECT (audiotestsrc_),
+                                      G_OBJECT (audiotest), "volume");
+      GstUtils::apply_property_value (G_OBJECT (audiotestsrc_),
+                                      G_OBJECT (audiotest), "freq");
+      GstUtils::apply_property_value (G_OBJECT (audiotestsrc_),
+                                      G_OBJECT (audiotest),
+                                      "samplesperbuffer");
+      GstUtils::apply_property_value (G_OBJECT (audiotestsrc_),
+                                      G_OBJECT (audiotest), "wave");
 
-        GstUtils::clean_element (audiotestsrc_);
-      }
+      GstUtils::clean_element (audiotestsrc_);
+    }
     else
       g_object_set (G_OBJECT (audiotest), "samplesperbuffer", 512, nullptr);
 
@@ -85,19 +80,16 @@ namespace switcher
     return true;
   }
 
-  AudioTestSource::~AudioTestSource ()
-  {
+  AudioTestSource::~AudioTestSource () {
     GstUtils::clean_element (audiotestsrc_);
   }
 
-  bool AudioTestSource::start ()
-  {
+  bool AudioTestSource::start () {
     set_raw_audio_element (audiotestsrc_);
     return true;
   }
 
-  bool AudioTestSource::stop ()
-  {
+  bool AudioTestSource::stop () {
     make_audiotestsrc ();
     unset_raw_audio_element ();
     return true;

@@ -24,13 +24,11 @@
 #include <vector>
 #include "gobject-wrapper.h"
 
-namespace switcher
-{
+namespace switcher {
   //you may get better performances are achieved using gobject wrapper with static paramspec
   //since using the helper installs a new paramspec for each instance
 
-  class CustomPropertyHelper
-  {
+  class CustomPropertyHelper {
   public:
     typedef std::shared_ptr < CustomPropertyHelper > ptr;
     typedef void (*set_string_method) (const gchar * value, void *user_data);
@@ -45,8 +43,7 @@ namespace switcher
     typedef void (*set_enum_method) (const gint value, void *user_data);
     typedef gint (*get_enum_method) (void *user_data);
 
-    typedef struct
-    {
+    typedef struct {
       void (*set) (void);
       void (*get) (void);
       void *user_data;

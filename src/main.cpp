@@ -89,8 +89,7 @@ static
 };
 
 void
-leave (int sig)
-{
+leave (int sig) {
   //removing reference to manager in order to delete it
   {
     switcher::QuiddityManager::ptr empty;
@@ -106,22 +105,19 @@ static void
 quiet_log_handler (const gchar * /*log_domain */ ,
                    GLogLevelFlags /*log_level */ ,
                    const gchar * /*message */ ,
-                   gpointer /*user_data */ )
-{
+                   gpointer /*user_data */ ) {
 }
 
 static void
 logger_cb (std::string /*subscriber_name */ ,
            std::string /*quiddity_name */ ,
            std::string /*property_name */ ,
-           std::string value, void * /*user_data */ )
-{
+           std::string value, void * /*user_data */ ) {
   g_print ("%s\n", value.c_str ());
 }
 
 int
-main (int argc, char *argv[])
-{
+main (int argc, char *argv[]) {
   setlocale (LC_ALL, "");
   (void) signal (SIGINT, leave);
   (void) signal (SIGABRT, leave);
@@ -135,21 +131,19 @@ main (int argc, char *argv[])
     context;
   context = g_option_context_new ("- switcher server");
   g_option_context_add_main_entries (context, entries, nullptr);
-  if (!g_option_context_parse (context, &argc, &argv, &error))
-    {
-      g_printerr ("option parsing failed: %s\n", error->message);
-      exit (1);
-    }
+  if (!g_option_context_parse (context, &argc, &argv, &error)) {
+    g_printerr ("option parsing failed: %s\n", error->message);
+    exit (1);
+  }
 
-  if (display_version)
-    {
+  if (display_version) {
 #ifdef HAVE_CONFIG_H
-      g_print ("%s\n", VERSION);
+    g_print ("%s\n", VERSION);
 #else
-      g_print ("unknown\n");
+    g_print ("unknown\n");
 #endif
-      return 0;
-    }
+    return 0;
+  }
 
   //running a switcher server
   if (server_name == nullptr)
@@ -213,53 +207,44 @@ main (int argc, char *argv[])
     manager->scan_directory_for_plugins (extraplugindir);
 
   //checking if this is printing info only
-  if (listclasses)
-    {
-      g_log_set_default_handler (quiet_log_handler, nullptr);
-      std::vector < std::string > resultlist = manager->get_classes ();
-      for (uint i = 0; i < resultlist.size (); i++)
-        g_print ("%s\n", resultlist[i].c_str ());
-      return 0;
-    }
-  if (classesdoc)
-    {
-      g_log_set_default_handler (quiet_log_handler, nullptr);
-      g_print ("%s\n", manager->get_classes_doc ().c_str ());
-      return 0;
-    }
-  if (classdoc != nullptr)
-    {
-      g_log_set_default_handler (quiet_log_handler, nullptr);
-      g_print ("%s\n", manager->get_class_doc (classdoc).c_str ());
-      return 0;
-    }
-  if (listpropbyclass != nullptr)
-    {
-      g_log_set_default_handler (quiet_log_handler, nullptr);
-      g_print ("%s\n",
-               manager->
-               get_properties_description_by_class (listpropbyclass).c_str
-               ());
-      return 0;
-    }
-  if (listmethodsbyclass != nullptr)
-    {
-      g_log_set_default_handler (quiet_log_handler, nullptr);
-      g_print ("%s\n",
-               manager->
-               get_methods_description_by_class (listmethodsbyclass).c_str
-               ());
-      return 0;
-    }
-  if (listsignalsbyclass != nullptr)
-    {
-      g_log_set_default_handler (quiet_log_handler, nullptr);
-      g_print ("%s\n",
-               manager->
-               get_signals_description_by_class (listsignalsbyclass).c_str
-               ());
-      return 0;
-    }
+  if (listclasses) {
+    g_log_set_default_handler (quiet_log_handler, nullptr);
+    std::vector < std::string > resultlist = manager->get_classes ();
+    for (uint i = 0; i < resultlist.size (); i++)
+      g_print ("%s\n", resultlist[i].c_str ());
+    return 0;
+  }
+  if (classesdoc) {
+    g_log_set_default_handler (quiet_log_handler, nullptr);
+    g_print ("%s\n", manager->get_classes_doc ().c_str ());
+    return 0;
+  }
+  if (classdoc != nullptr) {
+    g_log_set_default_handler (quiet_log_handler, nullptr);
+    g_print ("%s\n", manager->get_class_doc (classdoc).c_str ());
+    return 0;
+  }
+  if (listpropbyclass != nullptr) {
+    g_log_set_default_handler (quiet_log_handler, nullptr);
+    g_print ("%s\n",
+             manager->get_properties_description_by_class (listpropbyclass).
+             c_str ());
+    return 0;
+  }
+  if (listmethodsbyclass != nullptr) {
+    g_log_set_default_handler (quiet_log_handler, nullptr);
+    g_print ("%s\n",
+             manager->get_methods_description_by_class (listmethodsbyclass).
+             c_str ());
+    return 0;
+  }
+  if (listsignalsbyclass != nullptr) {
+    g_log_set_default_handler (quiet_log_handler, nullptr);
+    g_print ("%s\n",
+             manager->get_signals_description_by_class (listsignalsbyclass).
+             c_str ());
+    return 0;
+  }
 
   std::string soap_name = manager->create ("SOAPcontrolServer", "soapserver");
   std::vector < std::string > port_arg;
@@ -271,38 +256,36 @@ main (int argc, char *argv[])
     return 0;
 
   // start osc if port number has been set
-  if (osc_port_number != nullptr)
-    {
-      std::string osc_name = manager->create ("OSCctl");
-      if (osc_name.compare ("") == 0)
-        g_warning ("osc plugin not found");
-      else
-        manager->invoke_va (osc_name.c_str (), "set_port", nullptr,
-                            osc_port_number, nullptr);
-    }
+  if (osc_port_number != nullptr) {
+    std::string osc_name = manager->create ("OSCctl");
+    if (osc_name.compare ("") == 0)
+      g_warning ("osc plugin not found");
+    else
+      manager->invoke_va (osc_name.c_str (), "set_port", nullptr,
+                          osc_port_number, nullptr);
+  }
 
   manager->reset_command_history (false);
 
-  if (load_file != nullptr)
-    {
-      switcher::QuiddityManager::CommandHistory histo =
-        manager->get_command_history_from_file (load_file);
-      std::vector < std::string > prop_subscriber_names =
-        manager->get_property_subscribers_names (histo);
-      if (!prop_subscriber_names.empty ())
-        g_warning
-          ("creation of property subscriber not handled when loading file %s",
-           load_file);
+  if (load_file != nullptr) {
+    switcher::QuiddityManager::CommandHistory histo =
+      manager->get_command_history_from_file (load_file);
+    std::vector < std::string > prop_subscriber_names =
+      manager->get_property_subscribers_names (histo);
+    if (!prop_subscriber_names.empty ())
+      g_warning
+        ("creation of property subscriber not handled when loading file %s",
+         load_file);
 
-      std::vector < std::string > signal_subscriber_names =
-        manager->get_signal_subscribers_names (histo);
-      if (!signal_subscriber_names.empty ())
-        g_warning
-          ("creation of signal subscriber not handled when loading file %s",
-           load_file);
+    std::vector < std::string > signal_subscriber_names =
+      manager->get_signal_subscribers_names (histo);
+    if (!signal_subscriber_names.empty ())
+      g_warning
+        ("creation of signal subscriber not handled when loading file %s",
+         load_file);
 
-      manager->play_command_history (histo, nullptr, nullptr, true);
-    }
+    manager->play_command_history (histo, nullptr, nullptr, true);
+  }
 
   // manager->create ("videotestsrc", "vid");
   // manager->create("videosink","win");
@@ -352,7 +335,8 @@ main (int argc, char *argv[])
 #endif
 
   //waiting for end of life
-  timespec delay;
+  timespec
+    delay;
   delay.tv_sec = 1;
   delay.tv_nsec = 0;
   while (1)

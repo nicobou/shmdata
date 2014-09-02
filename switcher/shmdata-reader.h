@@ -30,11 +30,9 @@
 #include "json-builder.h"
 #include "on-caps.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  class ShmdataReader:public OnCaps, public GstElementCleaner
-  {
+  class ShmdataReader:public OnCaps, public GstElementCleaner {
   public:
     typedef std::shared_ptr < ShmdataReader > ptr;
     typedef void (*on_first_data_hook) (ShmdataReader * caller,

@@ -28,11 +28,9 @@
 #include <map>
 #include "creator.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  template < class T, class Key, class Doc > class AbstractFactory
-  {
+  template < class T, class Key, class Doc > class AbstractFactory {
   public:
     template < class U > void register_class (Key Id, Doc doc);
       AbstractFactory ();

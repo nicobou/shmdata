@@ -23,10 +23,8 @@
 #include <gst/gst.h>
 #include <memory>
 
-namespace switcher
-{
-  namespace GstUtils
-  {
+namespace switcher {
+  namespace GstUtils {
 
     bool make_element (const gchar * class_name,
                        GstElement ** target_element);

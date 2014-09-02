@@ -30,11 +30,9 @@
 #include <json-glib/json-glib.h>
 #include "glib.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  class JSONBuilder
-  {
+  class JSONBuilder {
   public:
     typedef std::shared_ptr < JSONBuilder > ptr;
     typedef JsonNode *Node;

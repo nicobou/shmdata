@@ -26,11 +26,9 @@
 #include <gst/gst.h>
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class AravisGenicam:public GPipe, public GstElementCleaner
-  {
+  class AravisGenicam:public GPipe, public GstElementCleaner {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (AravisGenicam);
     AravisGenicam ();

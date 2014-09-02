@@ -21,8 +21,7 @@
 #include <glib/gprintf.h>
 #include "gst-utils.h"
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (FileSDP,
                                         "File SDP Receiver",
                                         "network",
@@ -30,12 +29,10 @@ namespace switcher
                                         "LGPL",
                                         "filesdp", "Nicolas Bouillot");
   FileSDP::FileSDP ():filesrc_ (nullptr),
-    sdpdemux_ (nullptr), media_counter_ (0)
-  {
+    sdpdemux_ (nullptr), media_counter_ (0) {
   }
 
-  bool FileSDP::init_gpipe ()
-  {
+  bool FileSDP::init_gpipe () {
     if (!GstUtils::make_element ("filesrc", &filesrc_)
         || !GstUtils::make_element ("sdpdemux", &sdpdemux_))
       return false;
@@ -73,14 +70,12 @@ namespace switcher
   }
 
   void FileSDP::no_more_pads_cb (GstElement * /*object */ ,
-                                 gpointer /*user_data */ )
-  {
+                                 gpointer /*user_data */ ) {
     //FileSDP *context = static_cast<FileSDP *>(user_data);
   }
 
   void FileSDP::pad_added_cb (GstElement * /*object */ , GstPad * pad,
-                              gpointer user_data)
-  {
+                              gpointer user_data) {
     FileSDP *context = static_cast < FileSDP * >(user_data);
 
     const gchar *padname =
@@ -121,8 +116,7 @@ namespace switcher
                context->get_nick_name ().c_str (), connector_name.c_str ());
   }
 
-  gboolean FileSDP::to_shmdata_wrapped (gpointer uri, gpointer user_data)
-  {
+  gboolean FileSDP::to_shmdata_wrapped (gpointer uri, gpointer user_data) {
     FileSDP *context = static_cast < FileSDP * >(user_data);
 
     if (context->to_shmdata ((char *) uri))
@@ -131,8 +125,7 @@ namespace switcher
       return FALSE;
   }
 
-  bool FileSDP::to_shmdata (std::string uri)
-  {
+  bool FileSDP::to_shmdata (std::string uri) {
     g_debug ("FileSDP::to_shmdata set location %s", uri.c_str ());
     g_object_set (G_OBJECT (filesrc_), "location", uri.c_str (), nullptr);
     gst_bin_add_many (GST_BIN (bin_), filesrc_, sdpdemux_, nullptr);

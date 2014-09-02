@@ -27,80 +27,56 @@
 #include <memory>
 #include <thread>
 
-namespace switcher
-{
-  struct Cpu
-  {
-    long user
-    {
+namespace switcher {
+  struct Cpu {
+    long user {
     0};
-    long nice
-    {
+    long nice {
     0};
-    long system
-    {
+    long system {
     0};
-    long idle
-    {
+    long idle {
     0};
-    long io
-    {
+    long io {
     0};
-    long irq
-    {
+    long irq {
     0};
-    long softIrq
-    {
+    long softIrq {
     0};
-    long steal
-    {
+    long steal {
     0};
-    long guest
-    {
+    long guest {
     0};
 
-    int totalTime
-    {
+    int totalTime {
     0};
   };
 
-  struct Net
-  {
-    long rx_rate
-    {
+  struct Net {
+    long rx_rate {
     0};
-    long rx_bytes
-    {
+    long rx_bytes {
     0};
-    long rx_packets
-    {
+    long rx_packets {
     0};
-    long rx_errors
-    {
+    long rx_errors {
     0};
-    long rx_drop
-    {
+    long rx_drop {
     0};
 
-    long tx_rate
-    {
+    long tx_rate {
     0};
-    long tx_bytes
-    {
+    long tx_bytes {
     0};
-    long tx_packets
-    {
+    long tx_packets {
     0};
-    long tx_errors
-    {
+    long tx_errors {
     0};
-    long tx_drop
-    {
+    long tx_drop {
     0};
   };
 
-  class SystemUsage:public Quiddity
-  {
+  class SystemUsage:public Quiddity {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (SystemUsage);
     SystemUsage ();
@@ -109,27 +85,22 @@ namespace switcher
       SystemUsage & operator= (const SystemUsage &) = delete;
 
   private:
-      std::shared_ptr < std::thread > pollStateThread_
-    {
+      std::shared_ptr < std::thread > pollStateThread_ {
     };
-    bool running_
-    {
+    bool running_ {
     false};
 
       CustomPropertyHelper::ptr custom_props_;
     GParamSpec *period_prop_;
 
-      data::Tree::ptr tree_
-    {
+      data::Tree::ptr tree_ {
     };
 
     int cpuNbr_;
     double period_;
-    std::map < std::string, Cpu > _cpus
-    {
+    std::map < std::string, Cpu > _cpus {
     };
-    std::map < std::string, Net > _net
-    {
+    std::map < std::string, Net > _net {
     };
 
     bool init () final;

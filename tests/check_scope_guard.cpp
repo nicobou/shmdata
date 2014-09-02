@@ -18,22 +18,18 @@
 
 //note: do not write On_scope_exit call in the same line
 int
-main ()
-{
+main () {
   int counter = 0;
   {
     counter = 1;
-    On_scope_exit
-    {
+    On_scope_exit {
       counter = 2;
     };
-    On_scope_exit
-    {
+    On_scope_exit {
     };                          //ensuring multiple calls in the same scope
   }
 
-  On_scope_exit
-  {
+  On_scope_exit {
     counter = 3;
   };                            //should be assigned after "main"
 

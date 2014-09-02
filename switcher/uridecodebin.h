@@ -25,11 +25,9 @@
 #include "custom-property-helper.h"
 #include <unordered_map>
 
-namespace switcher
-{
+namespace switcher {
 
-  class Uridecodebin:public GPipe, public GstElementCleaner
-  {
+  class Uridecodebin:public GPipe, public GstElementCleaner {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (Uridecodebin);
     Uridecodebin ();

@@ -21,8 +21,7 @@
 #include <gst/gst.h>
 #include "gst-utils.h"
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (VideoTestSource,
                                         "Video Test",
                                         "video source",
@@ -30,17 +29,14 @@ namespace switcher
                                         "LGPL",
                                         "videotestsrc", "Nicolas Bouillot");
 
-  VideoTestSource::VideoTestSource ():videotestsrc_ (nullptr)
-  {
+  VideoTestSource::VideoTestSource ():videotestsrc_ (nullptr) {
   }
 
-  VideoTestSource::~VideoTestSource ()
-  {
+  VideoTestSource::~VideoTestSource () {
     GstUtils::clean_element (videotestsrc_);
   }
 
-  bool VideoTestSource::init_gpipe ()
-  {
+  bool VideoTestSource::init_gpipe () {
     bool made = make_video_source (&videotestsrc_);
     if (!made)
       return false;
@@ -51,8 +47,7 @@ namespace switcher
     return true;
   }
 
-  bool VideoTestSource::make_video_source (GstElement ** new_element)
-  {
+  bool VideoTestSource::make_video_source (GstElement ** new_element) {
 
     GstElement *videotest;
     if (!GstUtils::make_element ("videotestsrc", &videotest))
@@ -60,13 +55,12 @@ namespace switcher
 
     g_object_set (G_OBJECT (videotest), "is-live", TRUE, nullptr);
 
-    if (videotestsrc_ != nullptr)
-      {
-        GstUtils::apply_property_value (G_OBJECT (videotestsrc_),
-                                        G_OBJECT (videotest), "pattern");
+    if (videotestsrc_ != nullptr) {
+      GstUtils::apply_property_value (G_OBJECT (videotestsrc_),
+                                      G_OBJECT (videotest), "pattern");
 
-        GstUtils::clean_element (videotestsrc_);
-      }
+      GstUtils::clean_element (videotestsrc_);
+    }
 
     videotestsrc_ = videotest;
     *new_element = videotestsrc_;
@@ -74,15 +68,13 @@ namespace switcher
     return true;
   }
 
-  bool VideoTestSource::on_start ()
-  {
+  bool VideoTestSource::on_start () {
     reinstall_property (G_OBJECT (videotestsrc_),
                         "pattern", "pattern", "Video Pattern");
     return true;
   }
 
-  bool VideoTestSource::on_stop ()
-  {
+  bool VideoTestSource::on_stop () {
     //need a new element for property setting
     bool made = make_video_source (&videotestsrc_);
     if (!made)

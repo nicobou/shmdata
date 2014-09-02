@@ -23,11 +23,9 @@
 #include "video-source.h"
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class VideoTestSource:public VideoSource
-  {
+  class VideoTestSource:public VideoSource {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (VideoTestSource);
     VideoTestSource ();

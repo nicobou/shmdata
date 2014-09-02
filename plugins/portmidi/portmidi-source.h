@@ -26,12 +26,10 @@
 #include "switcher/startable-quiddity.h"
 #include "switcher/custom-property-helper.h"
 
-namespace switcher
-{
+namespace switcher {
 
   class PortMidiSource:public Quiddity,
-    public Segment, public StartableQuiddity, public PortMidi
-  {
+    public Segment, public StartableQuiddity, public PortMidi {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (PortMidiSource);
     PortMidiSource ();
@@ -40,8 +38,7 @@ namespace switcher
       PortMidiSource & operator= (const PortMidiSource &) = delete;
 
   private:
-    typedef struct
-    {
+    typedef struct {
       PortMidiSource *port_midi_source_;
         std::string property_long_name_;
     } MidiPropertyContext;

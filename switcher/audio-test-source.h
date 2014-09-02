@@ -24,11 +24,9 @@
 #include "startable-quiddity.h"
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class AudioTestSource:public AudioSource, public StartableQuiddity
-  {
+  class AudioTestSource:public AudioSource, public StartableQuiddity {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (AudioTestSource);
     AudioTestSource ();

@@ -27,11 +27,9 @@
 #include <string>
 #include "json-builder.h"
 
-namespace switcher
-{
+namespace switcher {
 
-  class Signal
-  {
+  class Signal {
   public:
     typedef std::shared_ptr < Signal > ptr;
     typedef std::vector < GType > args_types;

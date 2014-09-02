@@ -24,11 +24,9 @@
 #include <gst/gst.h>
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class UDPSink:public SinglePadGstSink
-  {
+  class UDPSink:public SinglePadGstSink {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (UDPSink);
     UDPSink ();
@@ -43,8 +41,7 @@ namespace switcher
     GstPad *ghost_sinkpad_;
 
     bool init_gpipe () final;
-    bool can_sink_caps (std::string) final
-    {
+    bool can_sink_caps (std::string) final {
       return true;
     };
 

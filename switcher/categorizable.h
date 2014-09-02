@@ -23,11 +23,9 @@
 #include <string>
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class Categorizable
-  {
+  class Categorizable {
   public:
     typedef std::shared_ptr < Categorizable > ptr;
 

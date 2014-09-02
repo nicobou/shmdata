@@ -30,10 +30,8 @@
 #include <memory>
 #include <string>
 
-namespace switcher
-{
-  class SyphonSrc:public Quiddity, public Segment, public StartableQuiddity
-  {
+namespace switcher {
+  class SyphonSrc:public Quiddity, public Segment, public StartableQuiddity {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (SyphonSrc);
     SyphonSrc ();

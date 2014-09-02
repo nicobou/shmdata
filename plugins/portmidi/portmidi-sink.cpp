@@ -19,8 +19,7 @@
 
 #include "portmidi-sink.h"
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (PortMidiSink,
                                         "Midi (PortMidiSink)",
                                         "midi sink",
@@ -29,12 +28,10 @@ namespace switcher
                                         "midisink", "Nicolas Bouillot");
   PortMidiSink::PortMidiSink ():custom_props_ (new CustomPropertyHelper ()),
     devices_description_spec_ (nullptr),
-    devices_enum_spec_ (nullptr), device_ (0)
-  {
+    devices_enum_spec_ (nullptr), device_ (0) {
   }
 
-  bool PortMidiSink::init ()
-  {
+  bool PortMidiSink::init () {
     init_startable (this);
     init_segment (this);
 
@@ -69,15 +66,13 @@ namespace switcher
     return true;
   }
 
-  PortMidiSink::~PortMidiSink ()
-  {
+  PortMidiSink::~PortMidiSink () {
   }
 
   void PortMidiSink::on_shmreader_data (void *data, int /*data_size */ ,
                                         unsigned long long /*timestamp */ ,
                                         const char * /*type_description */ ,
-                                        void *user_data)
-  {
+                                        void *user_data) {
     PmEvent *event = static_cast < PmEvent * >(data);
     push_midi_message (device_,
                        Pm_MessageStatus (event->message),
@@ -85,20 +80,17 @@ namespace switcher
                        Pm_MessageData2 (event->message));
   }
 
-  void PortMidiSink::set_device (const gint value, void *user_data)
-  {
+  void PortMidiSink::set_device (const gint value, void *user_data) {
     PortMidiSink *context = static_cast < PortMidiSink * >(user_data);
     context->device_ = value;
   }
 
-  gint PortMidiSink::get_device (void *user_data)
-  {
+  gint PortMidiSink::get_device (void *user_data) {
     PortMidiSink *context = static_cast < PortMidiSink * >(user_data);
     return context->device_;
   }
 
-  bool PortMidiSink::start ()
-  {
+  bool PortMidiSink::start () {
     uninstall_property ("device");
     open_output_device (device_);
     gint stat = 165;
@@ -109,8 +101,7 @@ namespace switcher
     return true;
   }
 
-  bool PortMidiSink::stop ()
-  {
+  bool PortMidiSink::stop () {
     close_output_device (device_);
     install_property_by_pspec (custom_props_->get_gobject (),
                                devices_enum_spec_,
@@ -118,8 +109,7 @@ namespace switcher
     return true;
   }
 
-  bool PortMidiSink::connect (std::string path)
-  {
+  bool PortMidiSink::connect (std::string path) {
     ShmdataAnyReader::ptr reader = std::make_shared < ShmdataAnyReader > ();
     reader->set_data_type ("audio/midi");
     reader->set_absolute_timestamp (false);
@@ -136,8 +126,7 @@ namespace switcher
     return true;
   }
 
-  bool PortMidiSink::can_sink_caps (std::string caps)
-  {
+  bool PortMidiSink::can_sink_caps (std::string caps) {
     return 0 == caps.find ("audio/midi");
   }
 }

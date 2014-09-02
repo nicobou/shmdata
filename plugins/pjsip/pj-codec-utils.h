@@ -25,10 +25,8 @@
 #include <string>
 #include <memory>
 
-namespace switcher
-{
-  struct RTPCodec
-  {
+namespace switcher {
+  struct RTPCodec {
     typedef std::unique_ptr < RTPCodec > ptr;
       std::string encoding_name_;
     int payload_;
@@ -36,13 +34,11 @@ namespace switcher
     int clock_rate_;
 
       RTPCodec ():encoding_name_ (),
-      payload_ (-1), media_ (), clock_rate_ (-1)
-    {
+      payload_ (-1), media_ (), clock_rate_ (-1) {
     }
   };
 
-  namespace PJCodecUtils
-  {
+  namespace PJCodecUtils {
     typedef std::vector < RTPCodec::ptr > codecs;
     typedef std::vector < RTPCodec::ptr >::iterator codec_it;
 

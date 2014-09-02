@@ -28,12 +28,10 @@
 #include <shmdata/any-data-reader.h>
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
   class PortMidiSink:public Quiddity, public Segment,
-    public StartableQuiddity, public PortMidi
-  {
+    public StartableQuiddity, public PortMidi {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (PortMidiSink);
     PortMidiSink ();

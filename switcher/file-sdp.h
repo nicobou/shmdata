@@ -24,11 +24,9 @@
 #include "gst-element-cleaner.h"
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class FileSDP:public GPipe, public GstElementCleaner
-  {
+  class FileSDP:public GPipe, public GstElementCleaner {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (FileSDP);
     FileSDP ();

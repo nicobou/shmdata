@@ -23,8 +23,7 @@
 #include <glib/gprintf.h>
 #include "scope-exit.h"
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (Decodebin2,
                                         "Shmdata Decoder",
                                         "decoder",
@@ -37,33 +36,28 @@ namespace switcher
                                                             (static_cast <
                                                              GPipe *
                                                              >(this)))),
-    media_counters_ ()
-  {
+    media_counters_ () {
   }
 
-  bool Decodebin2::init_gpipe ()
-  {
+  bool Decodebin2::init_gpipe () {
     std::string str (__FUNCTION__);
     g_print ("begin %s\n", str.c_str ());
-    On_scope_exit
-    {
+    On_scope_exit {
       g_print ("end %s\n", str.c_str ());
     };
     decodebin_->invoke (std::bind (&SinglePadGstSink::set_sink_element,
                                    this, std::placeholders::_1));
-    SinglePadGstSink::
-      set_on_first_data_hook (Decodebin2::make_decodebin_active, this);
+    SinglePadGstSink::set_on_first_data_hook (Decodebin2::
+                                              make_decodebin_active, this);
     return true;
   }
 
   void
     Decodebin2::make_decodebin_active (ShmdataReader * caller,
-                                       void *user_data)
-  {
+                                       void *user_data) {
     std::string str (__FUNCTION__);
     g_print ("begin %s\n", str.c_str ());
-    On_scope_exit
-    {
+    On_scope_exit {
       g_print ("end %s\n", str.c_str ());
     };
     Decodebin2 *context = static_cast < Decodebin2 * >(user_data);

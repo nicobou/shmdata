@@ -23,13 +23,11 @@
 #include <string>
 #include <vector>
 
-namespace switcher
-{
+namespace switcher {
   typedef void (*syphonCallback) (void *context, const char *buffer,
                                   int &width, int &height);
 
-  class SyphonReader
-  {
+  class SyphonReader {
   public:
     SyphonReader ();
     SyphonReader (syphonCallback, void *);

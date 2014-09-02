@@ -19,8 +19,7 @@
 
 #include "logger.h"
 
-namespace switcher
-{
+namespace switcher {
 
   bool Logger::installed_ = false;
 
@@ -40,22 +39,18 @@ namespace switcher
     custom_props_ (new CustomPropertyHelper ()),
     last_line_prop_ (nullptr),
     mute_prop_ (nullptr),
-    debug_prop_ (nullptr), verbose_prop_ (nullptr), last_line_mutex_ ()
-  {
+    debug_prop_ (nullptr), verbose_prop_ (nullptr), last_line_mutex_ () {
   }
 
-  bool Logger::init ()
-  {
-    if (installed_)
-      {
-        g_warning ("Only one logger instance is possible, cannot create");
-        return false;
-      }
-    else
-      {
-        installed_ = true;
-        i_am_the_one_ = true;
-      }
+  bool Logger::init () {
+    if (installed_) {
+      g_warning ("Only one logger instance is possible, cannot create");
+      return false;
+    }
+    else {
+      installed_ = true;
+      i_am_the_one_ = true;
+    }
 
     //FIXME: make the following not necessary,
     // avoid the following warnings:
@@ -145,38 +140,32 @@ namespace switcher
   void Logger::quiet_log_handler (const gchar * /*log_domain */ ,
                                   GLogLevelFlags /*log_level */ ,
                                   const gchar * /*message */ ,
-                                  gpointer /*user_data */ )
-  {
+                                  gpointer /*user_data */ ) {
   }
 
-  Logger::~Logger ()
-  {
-    if (i_am_the_one_)
-      {
-      for (auto & it:handler_ids_)
-          g_log_remove_handler (it.first.c_str (), it.second);
-        installed_ = false;
-      }
+  Logger::~Logger () {
+    if (i_am_the_one_) {
+    for (auto & it:handler_ids_)
+        g_log_remove_handler (it.first.c_str (), it.second);
+      installed_ = false;
+    }
   }
 
   gboolean
     Logger::install_log_handler_wrapped (gpointer log_domain,
-                                         gpointer user_data)
-  {
+                                         gpointer user_data) {
     Logger *context = static_cast < Logger * >(user_data);
     return context->install_log_handler ((gchar *) log_domain);
   }
 
   gboolean
     Logger::remove_log_handler_wrapped (gpointer log_domain,
-                                        gpointer user_data)
-  {
+                                        gpointer user_data) {
     Logger *context = static_cast < Logger * >(user_data);
     return context->remove_log_handler ((gchar *) log_domain);
   }
 
-  gboolean Logger::install_log_handler (const gchar * log_domain)
-  {
+  gboolean Logger::install_log_handler (const gchar * log_domain) {
     auto it = handler_ids_.find (log_domain);
     if (handler_ids_.end () != it)
       return FALSE;
@@ -187,8 +176,7 @@ namespace switcher
     return TRUE;
   }
 
-  gboolean Logger::remove_log_handler (const gchar * log_domain)
-  {
+  gboolean Logger::remove_log_handler (const gchar * log_domain) {
     auto it = handler_ids_.find (log_domain);
     if (handler_ids_.end () == it)
       return FALSE;
@@ -197,8 +185,7 @@ namespace switcher
     return TRUE;
   }
 
-  void Logger::replace_last_line (std::string next_line)
-  {
+  void Logger::replace_last_line (std::string next_line) {
     std::unique_lock < std::mutex > lock (last_line_mutex_);
     last_line_ = next_line;
   }
@@ -206,8 +193,7 @@ namespace switcher
   void
     Logger::log_handler (const gchar * log_domain,
                          GLogLevelFlags log_level,
-                         const gchar * message, gpointer user_data)
-  {
+                         const gchar * message, gpointer user_data) {
     Logger *context = static_cast < Logger * >(user_data);
     if (context->mute_)
       return;
@@ -223,86 +209,77 @@ namespace switcher
         && 0 == tmp_message.compare (0, 23, "Attempt to add property"))
       return;
 
-    switch (log_level)
-      {
-      case G_LOG_LEVEL_ERROR:
-        tmp_level = std::string ("error");
-        break;
-      case G_LOG_LEVEL_CRITICAL:
-        tmp_level = std::string ("critical");
-        break;
-      case G_LOG_LEVEL_WARNING:
-        tmp_level = std::string ("warning");
-        break;
-      case G_LOG_LEVEL_MESSAGE:
-        if (context->debug_ || context->verbose_)
-          tmp_level = std::string ("message");
-        else
-          update_last_line = FALSE;
-        break;
-      case G_LOG_LEVEL_INFO:
-        if (context->debug_ || context->verbose_)
-          tmp_level = std::string ("info");
-        else
-          update_last_line = FALSE;
-        break;
-      case G_LOG_LEVEL_DEBUG:
-        if (context->debug_)
-          tmp_level = std::string ("debug");
-        else
-          update_last_line = FALSE;
-        break;
-      default:
-        break;
-      }
-    if (update_last_line)
-      {
-        context->replace_last_line (tmp_log_domain + "-" + tmp_level + ": " +
-                                    tmp_message);
-        context->custom_props_->
-          notify_property_changed (context->last_line_prop_);
-      }
+    switch (log_level) {
+    case G_LOG_LEVEL_ERROR:
+      tmp_level = std::string ("error");
+      break;
+    case G_LOG_LEVEL_CRITICAL:
+      tmp_level = std::string ("critical");
+      break;
+    case G_LOG_LEVEL_WARNING:
+      tmp_level = std::string ("warning");
+      break;
+    case G_LOG_LEVEL_MESSAGE:
+      if (context->debug_ || context->verbose_)
+        tmp_level = std::string ("message");
+      else
+        update_last_line = FALSE;
+      break;
+    case G_LOG_LEVEL_INFO:
+      if (context->debug_ || context->verbose_)
+        tmp_level = std::string ("info");
+      else
+        update_last_line = FALSE;
+      break;
+    case G_LOG_LEVEL_DEBUG:
+      if (context->debug_)
+        tmp_level = std::string ("debug");
+      else
+        update_last_line = FALSE;
+      break;
+    default:
+      break;
+    }
+    if (update_last_line) {
+      context->replace_last_line (tmp_log_domain + "-" + tmp_level + ": " +
+                                  tmp_message);
+      context->custom_props_->notify_property_changed (context->
+                                                       last_line_prop_);
+    }
   }
 
-  const gchar *Logger::get_last_line (void *user_data)
-  {
+  const gchar *Logger::get_last_line (void *user_data) {
     Logger *context = static_cast < Logger * >(user_data);
     std::unique_lock < std::mutex > lock (context->last_line_mutex_);
     return context->last_line_.c_str ();
   }
 
-  gboolean Logger::get_mute (void *user_data)
-  {
+  gboolean Logger::get_mute (void *user_data) {
     Logger *context = static_cast < Logger * >(user_data);
     return context->mute_;
   }
 
-  void Logger::set_mute (gboolean mute, void *user_data)
-  {
+  void Logger::set_mute (gboolean mute, void *user_data) {
     Logger *context = static_cast < Logger * >(user_data);
     context->mute_ = mute;
   }
 
-  gboolean Logger::get_debug (void *user_data)
-  {
+  gboolean Logger::get_debug (void *user_data) {
     Logger *context = static_cast < Logger * >(user_data);
     return context->debug_;
   }
 
-  void Logger::set_debug (gboolean debug, void *user_data)
-  {
+  void Logger::set_debug (gboolean debug, void *user_data) {
     Logger *context = static_cast < Logger * >(user_data);
     context->debug_ = debug;
   }
 
-  gboolean Logger::get_verbose (void *user_data)
-  {
+  gboolean Logger::get_verbose (void *user_data) {
     Logger *context = static_cast < Logger * >(user_data);
     return context->verbose_;
   }
 
-  void Logger::set_verbose (gboolean verbose, void *user_data)
-  {
+  void Logger::set_verbose (gboolean verbose, void *user_data) {
     Logger *context = static_cast < Logger * >(user_data);
     context->verbose_ = verbose;
   }

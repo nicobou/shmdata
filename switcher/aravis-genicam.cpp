@@ -20,8 +20,7 @@
 #include "aravis-genicam.h"
 #include "gst-utils.h"
 
-namespace switcher
-{
+namespace switcher {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (AravisGenicam,
                                         "GenICam Camera",
@@ -29,18 +28,15 @@ namespace switcher
                                         "Genicam video source using the Aravis library",
                                         "LGPL",
                                         "genicam", "Nicolas Bouillot");
-  AravisGenicam::AravisGenicam ():aravissrc_ (nullptr)
-  {
+  AravisGenicam::AravisGenicam ():aravissrc_ (nullptr) {
   }
 
-  bool AravisGenicam::init_gpipe ()
-  {
-    if (!GstUtils::make_element ("aravissrc", &aravissrc_))
-      {
-        g_debug
-          ("aravissrc not available, install aravis (http://git.gnome.org/browse/aravis/)");
-        return false;
-      }
+  bool AravisGenicam::init_gpipe () {
+    if (!GstUtils::make_element ("aravissrc", &aravissrc_)) {
+      g_debug
+        ("aravissrc not available, install aravis (http://git.gnome.org/browse/aravis/)");
+      return false;
+    }
     set_name (gst_element_get_name (aravissrc_));
 
     //install_property (G_OBJECT (aravissrc_),"camera-name","aravissrc");
@@ -79,8 +75,7 @@ namespace switcher
     return true;
   }
 
-  gboolean AravisGenicam::start_wrapped (gpointer name, gpointer user_data)
-  {
+  gboolean AravisGenicam::start_wrapped (gpointer name, gpointer user_data) {
     AravisGenicam *context = static_cast < AravisGenicam * >(user_data);
 
     if (context->start ((char *) name))
@@ -89,8 +84,7 @@ namespace switcher
       return FALSE;
   }
 
-  bool AravisGenicam::start (std::string name)
-  {
+  bool AravisGenicam::start (std::string name) {
     g_debug ("Genicam using camera %s", name.c_str ());
     if (g_strcmp0 (name.c_str (), "default") != 0
         && g_strcmp0 (name.c_str (), "Default") != 0)

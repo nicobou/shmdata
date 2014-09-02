@@ -24,8 +24,7 @@
 #include <gmodule.h>
 #include "json-builder.h"
 
-namespace switcher
-{
+namespace switcher {
 
   class Quiddity;
   class QuiddityDocumentation;
@@ -35,8 +34,7 @@ namespace switcher
   typedef void destroy_t (switcher::Quiddity *);
   typedef switcher::QuiddityDocumentation get_documentation_t ();
 
-  class PluginLoader
-  {
+  class PluginLoader {
   public:
     typedef std::shared_ptr < PluginLoader > ptr;
       PluginLoader ();

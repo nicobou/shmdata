@@ -28,8 +28,7 @@
 #endif
 
 int
-main ()
-{
+main () {
   bool success = true;
 
   {

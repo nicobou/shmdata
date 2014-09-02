@@ -26,11 +26,9 @@
 #include "custom-property-helper.h"
 #include <mutex>
 
-namespace switcher
-{
+namespace switcher {
 
-  class Logger:public Quiddity
-  {
+  class Logger:public Quiddity {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (Logger);
     Logger ();

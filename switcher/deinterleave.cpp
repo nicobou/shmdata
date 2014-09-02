@@ -22,20 +22,17 @@
 #include "gst-utils.h"
 #include <glib/gprintf.h>
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (Deinterleave,
                                         "Deinterleave",
                                         "video sink",
                                         "connect to an audio shmdata and split channels to multiple shmdata(s)",
                                         "LGPL",
                                         "deinterleave", "Nicolas Bouillot");
-  Deinterleave::Deinterleave ():deinterleave_ (nullptr), media_counters_ ()
-  {
+  Deinterleave::Deinterleave ():deinterleave_ (nullptr), media_counters_ () {
   }
 
-  bool Deinterleave::init_gpipe ()
-  {
+  bool Deinterleave::init_gpipe () {
     if (!GstUtils::make_element ("deinterleave", &deinterleave_))
       return false;
     //set the name before registering properties
@@ -58,8 +55,7 @@ namespace switcher
 
   void
     Deinterleave::make_deinterleave_active (ShmdataReader * caller,
-                                            void *deinterleave_instance)
-  {
+                                            void *deinterleave_instance) {
     Deinterleave *context =
       static_cast < Deinterleave * >(deinterleave_instance);
     caller->set_sink_element (context->deinterleave_);
@@ -68,15 +64,13 @@ namespace switcher
   }
 
   void Deinterleave::no_more_pads_cb (GstElement * /*0object */ ,
-                                      gpointer /*user_data */ )
-  {
+                                      gpointer /*user_data */ ) {
     //g_print ("no more pad");
     //Deinterleave *context = static_cast<Deinterleave *>(user_data);
   }
 
   void Deinterleave::pad_added_cb (GstElement * /*object */ , GstPad * pad,
-                                   gpointer user_data)
-  {
+                                   gpointer user_data) {
     Deinterleave *context = static_cast < Deinterleave * >(user_data);
 
     const gchar *padname =
@@ -107,8 +101,7 @@ namespace switcher
     context->register_shmdata (connector);
   }
 
-  bool Deinterleave::can_sink_caps (std::string caps)
-  {
+  bool Deinterleave::can_sink_caps (std::string caps) {
     return GstUtils::can_sink_caps ("deinterleave", caps);
   }
 }

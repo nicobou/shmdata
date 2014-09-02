@@ -22,11 +22,9 @@
 #include "switcher/custom-property-helper.h"
 #include <memory>
 
-namespace switcher
-{
+namespace switcher {
 
-  class V4L2Src:public VideoSource
-  {
+  class V4L2Src:public VideoSource {
   public:
     SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS (V4L2Src);
     V4L2Src ();
@@ -56,8 +54,7 @@ namespace switcher
     GstElement *v4l2_bin_;
     GstElement *capsfilter_;
 
-    typedef struct
-    {
+    typedef struct {
       std::string card_;
       std::string file_device_;
       std::string bus_info_;

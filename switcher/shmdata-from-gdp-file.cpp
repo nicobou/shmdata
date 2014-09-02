@@ -20,8 +20,7 @@
 #include "shmdata-from-gdp-file.h"
 #include "gst-utils.h"
 
-namespace switcher
-{
+namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION (ShmdataFromGDPFile,
                                         "Shmdata File Player",
                                         "shmdata file player",
@@ -32,17 +31,14 @@ namespace switcher
   ShmdataFromGDPFile::ShmdataFromGDPFile ():custom_prop_ (new
                                                           CustomPropertyHelper
                                                           ()),
-    playing_param_ (), playing_ (FALSE), shmdata_names_ (), manager_ ()
-  {
+    playing_param_ (), playing_ (FALSE), shmdata_names_ (), manager_ () {
   }
 
-  ShmdataFromGDPFile::~ShmdataFromGDPFile ()
-  {
+  ShmdataFromGDPFile::~ShmdataFromGDPFile () {
     clean_players ();
   }
 
-  bool ShmdataFromGDPFile::init ()
-  {
+  bool ShmdataFromGDPFile::init () {
     install_method ("Add File",
                     "add_file",
                     "add a file to play",
@@ -76,12 +72,12 @@ namespace switcher
     //registering playing property
     playing_param_ = custom_prop_->make_boolean_property ("playing",
                                                           "start/stop playing",
-                                                          FALSE,
-                                                          (GParamFlags)
+                                                          FALSE, (GParamFlags)
                                                           G_PARAM_READWRITE,
-                                                          ShmdataFromGDPFile::set_playing,
-                                                          ShmdataFromGDPFile::get_playing,
-                                                          this);
+                                                          ShmdataFromGDPFile::
+                                                          set_playing,
+                                                          ShmdataFromGDPFile::
+                                                          get_playing, this);
     install_property_by_pspec (custom_prop_->get_gobject (), playing_param_,
                                "playing", "Playing");
     return true;
@@ -90,8 +86,7 @@ namespace switcher
   gboolean
     ShmdataFromGDPFile::add_file_wrapped (gpointer shmdata_socket_path,
                                           gpointer file_location,
-                                          gpointer user_data)
-  {
+                                          gpointer user_data) {
     ShmdataFromGDPFile *context =
       static_cast < ShmdataFromGDPFile * >(user_data);
 
@@ -104,14 +99,12 @@ namespace switcher
 
   bool
     ShmdataFromGDPFile::add_file (std::string file_path,
-                                  std::string shmdata_path)
-  {
-    if (shmdata_names_.find (file_path) != shmdata_names_.end ())
-      {
-        g_warning ("ShmdataFromGDPFile::add_file: %s is already added",
-                   file_path.c_str ());
-        return false;
-      }
+                                  std::string shmdata_path) {
+    if (shmdata_names_.find (file_path) != shmdata_names_.end ()) {
+      g_warning ("ShmdataFromGDPFile::add_file: %s is already added",
+                 file_path.c_str ());
+      return false;
+    }
 
     shmdata_names_[file_path] = shmdata_path;
     return true;
@@ -119,8 +112,7 @@ namespace switcher
 
   gboolean
     ShmdataFromGDPFile::remove_file_wrapped (gpointer file_path,
-                                             gpointer user_data)
-  {
+                                             gpointer user_data) {
     ShmdataFromGDPFile *context =
       static_cast < ShmdataFromGDPFile * >(user_data);
     if (context->remove_file ((char *) file_path))
@@ -129,8 +121,7 @@ namespace switcher
       return FALSE;
   }
 
-  bool ShmdataFromGDPFile::remove_file (std::string file_path)
-  {
+  bool ShmdataFromGDPFile::remove_file (std::string file_path) {
     auto it = shmdata_names_.find (file_path);
     if (shmdata_names_.end () != it)
       return false;
@@ -138,8 +129,7 @@ namespace switcher
     return true;
   }
 
-  void ShmdataFromGDPFile::set_playing (gboolean playing, void *user_data)
-  {
+  void ShmdataFromGDPFile::set_playing (gboolean playing, void *user_data) {
     ShmdataFromGDPFile *context =
       static_cast < ShmdataFromGDPFile * >(user_data);
 
@@ -148,39 +138,35 @@ namespace switcher
     else
       context->clean_players ();
     context->playing_ = playing;
-    GObjectWrapper::notify_property_changed (context->
-                                             custom_prop_->get_gobject (),
+    GObjectWrapper::notify_property_changed (context->custom_prop_->
+                                             get_gobject (),
                                              context->playing_param_);
   }
 
-  gboolean ShmdataFromGDPFile::get_playing (void *user_data)
-  {
+  gboolean ShmdataFromGDPFile::get_playing (void *user_data) {
     ShmdataFromGDPFile *context =
       static_cast < ShmdataFromGDPFile * >(user_data);
     return context->playing_;
   }
 
-  bool ShmdataFromGDPFile::make_players ()
-  {
-    if (!(bool) manager_)
-      {
-        g_debug ("creating manager");
-        manager_ = QuiddityManager::make_manager ("manager_" + get_name ());
+  bool ShmdataFromGDPFile::make_players () {
+    if (!(bool) manager_) {
+      g_debug ("creating manager");
+      manager_ = QuiddityManager::make_manager ("manager_" + get_name ());
 //FIXME pause pipeline
-      }
-  for (auto & it:shmdata_names_)
-      {
-        manager_->create ("gstsrc", it.first.c_str ());
-        gchar *pipe =
-          g_strdup_printf
-          ("filesrc location=%s ! gdpdepay ! identity sync=true",
-           it.first.c_str ());
-        g_debug ("ShmdataFromGDPFile::make_players %s", pipe);
-        manager_->invoke_va (it.first.c_str (),
-                             "to_shmdata_with_path",
-                             nullptr, pipe, it.second.c_str (), nullptr);
-        g_free (pipe);
-      }
+    }
+  for (auto & it:shmdata_names_) {
+      manager_->create ("gstsrc", it.first.c_str ());
+      gchar *pipe =
+        g_strdup_printf
+        ("filesrc location=%s ! gdpdepay ! identity sync=true",
+         it.first.c_str ());
+      g_debug ("ShmdataFromGDPFile::make_players %s", pipe);
+      manager_->invoke_va (it.first.c_str (),
+                           "to_shmdata_with_path",
+                           nullptr, pipe, it.second.c_str (), nullptr);
+      g_free (pipe);
+    }
     // manager_->invoke_va("single_runtime",
     // "play",
     // nullptr,
@@ -188,8 +174,7 @@ namespace switcher
     return true;
   }
 
-  bool ShmdataFromGDPFile::clean_players ()
-  {
+  bool ShmdataFromGDPFile::clean_players () {
     manager_.reset ();
     return true;
   }
