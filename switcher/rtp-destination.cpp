@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./rtp-destination.h"
+#include "./rtp-destination.hpp"
 #include <sstream>
-#include "./sdp-utils.h"
+#include "./sdp-utils.hpp"
 
 namespace switcher {
   RtpDestination::RtpDestination() {

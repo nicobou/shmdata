@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./http-sdp-dec.h"
-#include "./gst-utils.h"
-#include "./scope-exit.h"
+#include "./http-sdp-dec.hpp"
+#include "./gst-utils.hpp"
+#include "./scope-exit.hpp"
 #include <glib/gprintf.h>
 #include <memory>
 

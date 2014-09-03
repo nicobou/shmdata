@@ -21,9 +21,9 @@
  * The Quiddity property subscriber
  */
 
-#include "./quiddity-property-subscriber.h"
-#include "./quiddity.h"
-#include "./quiddity-manager-impl.h"
+#include "./quiddity-property-subscriber.hpp"
+#include "./quiddity.hpp"
+#include "./quiddity-manager-impl.hpp"
 
 namespace switcher {
   QuiddityPropertySubscriber::QuiddityPropertySubscriber() {

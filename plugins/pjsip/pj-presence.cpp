@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./pj-presence.h"
-#include "./pj-sip.h"
-#include "switcher/scope-exit.h"
+#include "./pj-presence.hpp"
+#include "./pj-sip.hpp"
+#include "switcher/scope-exit.hpp"
 namespace switcher {
 
   GEnumValue PJPresence::status_enum_[8] = {

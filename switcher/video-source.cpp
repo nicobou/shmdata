@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./video-source.h"
-#include "./gst-utils.h"
+#include "./video-source.hpp"
+#include "./gst-utils.hpp"
 
 namespace switcher {
   VideoSource::VideoSource():rawvideo_(nullptr),

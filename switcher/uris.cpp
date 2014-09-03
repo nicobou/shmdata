@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./uris.h"
-#include "./gst-utils.h"
+#include "./uris.hpp"
+#include "./gst-utils.hpp"
 #include <glib/gprintf.h>
 
 namespace switcher {

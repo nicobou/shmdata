@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./http-sdp.h"
+#include "./http-sdp.hpp"
 #include <glib/gprintf.h>
-#include "./gst-utils.h"
+#include "./gst-utils.hpp"
 
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(HTTPSDP,

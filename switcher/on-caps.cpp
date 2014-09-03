@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./on-caps.h"
-#include "./gst-utils.h"
+#include "./on-caps.hpp"
+#include "./gst-utils.hpp"
 
 namespace switcher {
 

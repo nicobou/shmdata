@@ -19,7 +19,7 @@
 #include "../config.h"
 #endif
 
-#include "switcher/quiddity-manager.h"
+#include "switcher/quiddity-manager.hpp"
 #include <vector>
 #include <string>
 #include <unistd.h>             // sleep

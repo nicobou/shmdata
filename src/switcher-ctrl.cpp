@@ -15,11 +15,11 @@
  * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
-#include <string>
 #include <glib.h>
+#include <locale.h>
+#include <string>
 #include "webservices/soapcontrolProxy.h"
 #include "webservices/control.nsmap"
-#include "./locale.h"
 
 // options
 static gchar *server = nullptr;

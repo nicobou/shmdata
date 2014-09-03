@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./fakesink.h"
-#include "./gst-utils.h"
+#include "./fakesink.hpp"
+#include "./gst-utils.hpp"
 
 namespace switcher {
 

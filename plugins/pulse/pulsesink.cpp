@@ -19,8 +19,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./pulsesink.h"
-#include "switcher/gst-utils.h"
+#include "./pulsesink.hpp"
+#include "switcher/gst-utils.hpp"
 
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSink,

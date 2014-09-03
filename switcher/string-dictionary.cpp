@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./string-dictionary.h"
-#include "./property.h"
+#include "./string-dictionary.hpp"
+#include "./property.hpp"
 #include <string.h>
 #include <iostream>
 

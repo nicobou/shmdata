@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./jack-audio-source.h"
+#include "./jack-audio-source.hpp"
 #include <gst/gst.h>
-#include "./gst-utils.h"
+#include "./gst-utils.hpp"
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackAudioSource,
                                        "Jack Audio",

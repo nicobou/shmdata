@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./syphonsrc.h"
+#include "./syphonsrc.hpp"
 
 #include <chrono>
 #include <fstream>

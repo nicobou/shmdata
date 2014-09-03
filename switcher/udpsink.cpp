@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./udpsink.h"
-#include "./gst-utils.h"
+#include "./udpsink.hpp"
+#include "./gst-utils.hpp"
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
 #endif

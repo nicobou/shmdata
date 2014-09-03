@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./gst-utils.h"
+#include "./gst-utils.hpp"
 #include <unistd.h>             // sleep
-#include "./scope-exit.h"
+#include "./scope-exit.hpp"
 
 namespace switcher {
 

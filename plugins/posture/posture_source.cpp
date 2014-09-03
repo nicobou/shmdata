@@ -16,7 +16,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./posture_source.h"
+#include "./posture_source.hpp"
 
 #include <iostream>
 

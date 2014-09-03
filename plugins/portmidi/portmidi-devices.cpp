@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./portmidi-devices.h"
-#include "switcher/json-builder.h"
+#include "./portmidi-devices.hpp"
+#include "switcher/json-builder.hpp"
 #include <glib/gprintf.h>
 
 namespace switcher {

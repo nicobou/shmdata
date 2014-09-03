@@ -18,8 +18,8 @@ libsyphonsrc_la_SOURCES = \
     syphonreader.mm
 
 noinst_HEADERS = \
-    syphonsrc.h \
-    syphonreader.h
+    syphonsrc.hpp \
+    syphonreader.hpp
 
 libsyphonsrc_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher

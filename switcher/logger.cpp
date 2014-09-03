@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./logger.h"
+#include "./logger.hpp"
 
 namespace switcher {
 

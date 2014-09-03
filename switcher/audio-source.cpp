@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./audio-source.h"
-#include "./gst-utils.h"
+#include "./audio-source.hpp"
+#include "./gst-utils.hpp"
 #include <memory>
 
 namespace switcher {

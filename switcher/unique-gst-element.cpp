@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./unique-gst-element.h"
+#include "./unique-gst-element.hpp"
 
 namespace switcher {
 

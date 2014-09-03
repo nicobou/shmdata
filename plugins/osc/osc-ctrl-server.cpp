@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./osc-ctrl-server.h"
+#include "./osc-ctrl-server.hpp"
 #include <ctime>                // For time()
 #include <cstdlib>              // For srand() and rand()
 

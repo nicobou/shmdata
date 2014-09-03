@@ -16,7 +16,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./posture_merge.h"
+#include "./posture_merge.hpp"
 
 #include <iostream>
 

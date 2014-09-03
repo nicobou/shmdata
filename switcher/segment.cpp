@@ -17,10 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./segment.h"
-#include "./gst-utils.h"
-#include "./quiddity.h"
-#include "./scope-exit.h"
+#include "./segment.hpp"
+#include "./gst-utils.hpp"
+#include "./quiddity.hpp"
+#include "./scope-exit.hpp"
 
 namespace switcher {
 

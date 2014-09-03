@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/quiddity-manager.h"
-#include "switcher/quiddity-basic-test.h"
+#include "switcher/quiddity-manager.hpp"
+#include "switcher/quiddity-basic-test.hpp"
 #include <vector>
 #include <string>
 #include <iostream>

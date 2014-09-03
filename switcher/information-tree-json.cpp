@@ -15,8 +15,8 @@
  * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
-#include "./information-tree-json.h"
-#include "./scope-exit.h"
+#include "./information-tree-json.hpp"
+#include "./scope-exit.hpp"
 #include <json-glib/json-glib.h>
 #include <iostream>
 

@@ -7,7 +7,7 @@ libv4l2src_la_SOURCES = \
     v4l2src.cpp
 
 libv4l2src_la_include_HEADERS = \
-    v4l2src.h
+    v4l2src.hpp
 
 libv4l2src_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher

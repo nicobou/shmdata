@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./myplugin.h"
+#include "./myplugin.hpp"
 
 namespace switcher {
 

@@ -19,12 +19,12 @@
 #include "../config.h"
 #endif
 
-#include "switcher/quiddity-manager.h"
 #include <vector>
 #include <iostream>
 #include <signal.h>
 #include <time.h>
-#include "./locale.h"
+#include "switcher/quiddity-manager.hpp"
+#include <locale.h>
 #ifdef HAVE_GTK
 #include <gtk/gtk.h>
 #endif

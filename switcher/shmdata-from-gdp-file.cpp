@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./shmdata-from-gdp-file.h"
-#include "./gst-utils.h"
+#include "./shmdata-from-gdp-file.hpp"
+#include "./gst-utils.hpp"
 
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataFromGDPFile,

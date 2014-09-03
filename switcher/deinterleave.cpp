@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./deinterleave.h"
-#include "./gst-element-cleaner.h"
-#include "./gst-utils.h"
+#include "./deinterleave.hpp"
+#include "./gst-element-cleaner.hpp"
+#include "./gst-utils.hpp"
 #include <glib/gprintf.h>
 
 namespace switcher {

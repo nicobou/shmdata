@@ -15,11 +15,11 @@
  * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
+#include <locale.h>
 #include <node.h>
 #include <v8.h>
 #include <uv.h>
-#include <switcher/quiddity-manager.h>
-#include "./locale.h"
+#include "switcher/quiddity-manager.hpp"
 
 static
   std::vector <

@@ -8,7 +8,7 @@ libgtkvideo_la_SOURCES = \
     gtkvideo.cpp
 
 libgtkvideo_la_include_HEADERS = \
-    gtkvideo.h
+    gtkvideo.hpp
 
 libgtkvideo_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher

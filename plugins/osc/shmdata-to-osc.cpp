@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/json-builder.h"
-#include "./shmdata-to-osc.h"
+#include "switcher/json-builder.hpp"
+#include "./shmdata-to-osc.hpp"
 
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToOsc,

@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./information-tree.h"
+#include "./information-tree.hpp"
 #include <algorithm>
 #include <regex>
 #include <iostream>

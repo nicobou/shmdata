@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./shmdata-reader.h"
-#include "./gst-utils.h"
-#include "./scope-exit.h"
+#include "./shmdata-reader.hpp"
+#include "./gst-utils.hpp"
+#include "./scope-exit.hpp"
 
 namespace switcher {
   ShmdataReader::ShmdataReader():connection_hook_(nullptr),

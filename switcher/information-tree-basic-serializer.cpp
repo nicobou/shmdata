@@ -15,7 +15,7 @@
  * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
-#include "./information-tree-basic-serializer.h"
+#include "./information-tree-basic-serializer.hpp"
 #include <iostream>
 #include <string>
 #include <iterator>

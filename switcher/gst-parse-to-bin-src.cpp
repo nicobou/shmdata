@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./gst-parse-to-bin-src.h"
-#include "./gst-utils.h"
+#include "./gst-parse-to-bin-src.hpp"
+#include "./gst-utils.hpp"
 
 namespace switcher {
 

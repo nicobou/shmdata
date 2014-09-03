@@ -21,7 +21,7 @@
  * The JSONBuilder class
  */
 
-#include "./json-builder.h"
+#include "./json-builder.hpp"
 
 namespace switcher {
 

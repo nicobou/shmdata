@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./gtkvideo.h"
-#include "switcher/gst-utils.h"
-#include "switcher/quiddity-command.h"
+#include "./gtkvideo.hpp"
+#include "switcher/gst-utils.hpp"
+#include "switcher/quiddity-command.hpp"
 #include <gst/gst.h>
 #include <gdk/gdkkeysyms.h>
 #include <gdk/gdkcursor.h>

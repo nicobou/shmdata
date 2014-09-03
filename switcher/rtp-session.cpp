@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./rtp-session.h"
-#include "./gst-utils.h"
-#include "./json-builder.h"
+#include "./rtp-session.hpp"
+#include "./gst-utils.hpp"
+#include "./json-builder.hpp"
 #include <glib/gstdio.h>        // writing sdp file
 #include <sstream>
 

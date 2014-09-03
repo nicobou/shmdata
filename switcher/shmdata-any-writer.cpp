@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./shmdata-any-writer.h"
-#include "./gst-utils.h"
+#include "./shmdata-any-writer.hpp"
+#include "./gst-utils.hpp"
 
 namespace switcher {
 

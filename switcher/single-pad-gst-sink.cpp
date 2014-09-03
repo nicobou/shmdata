@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./single-pad-gst-sink.h"
-#include "./gst-utils.h"
+#include "./single-pad-gst-sink.hpp"
+#include "./gst-utils.hpp"
 #include <utility>
 
 namespace switcher {

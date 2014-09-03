@@ -21,9 +21,9 @@
  * The Quiddity signal subscriber
  */
 
-#include "./quiddity-signal-subscriber.h"
-#include "./quiddity.h"
-#include "./quiddity-manager-impl.h"
+#include "./quiddity-signal-subscriber.hpp"
+#include "./quiddity.hpp"
+#include "./quiddity-manager-impl.hpp"
 
 namespace switcher {
 

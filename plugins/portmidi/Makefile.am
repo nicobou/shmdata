@@ -9,8 +9,8 @@ libportmidisrc_la_SOURCES = \
     portmidi-source.cpp
 
 libportmidisrc_la_include_HEADERS = \
-    portmidi-devices.h \
-    portmidi-source.h
+    portmidi-devices.hpp \
+    portmidi-source.hpp
 
 libportmidisrc_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher
@@ -44,8 +44,8 @@ libportmidisink_la_SOURCES = \
     portmidi-sink.cpp
 
 libportmidisink_la_include_HEADERS = \
-    portmidi-devices.h \
-    portmidi-sink.h
+    portmidi-devices.hpp \
+    portmidi-sink.hpp
 
 libportmidisink_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher

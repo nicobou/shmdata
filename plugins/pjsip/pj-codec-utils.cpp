@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./pj-codec-utils.h"
+#include "./pj-codec-utils.hpp"
 #include <algorithm>
 #include <iostream>
 

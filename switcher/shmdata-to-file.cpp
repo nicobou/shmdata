@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./shmdata-to-file.h"
+#include "./shmdata-to-file.hpp"
 #include <glib/gstdio.h>
-#include "./gst-utils.h"
+#include "./gst-utils.hpp"
 
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToFile,

@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./jack-sink.h"
-#include "./gst-utils.h"
-#include "./quiddity-command.h"
+#include "./jack-sink.hpp"
+#include "./gst-utils.hpp"
+#include "./quiddity-command.hpp"
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
 #endif

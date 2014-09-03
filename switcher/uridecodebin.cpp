@@ -17,11 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./uridecodebin.h"
-#include "./gst-utils.h"
+#include "./uridecodebin.hpp"
+#include "./gst-utils.hpp"
 #include <glib/gprintf.h>
 #include <memory>
-#include "./quiddity-command.h"
+#include "./quiddity-command.hpp"
 
 namespace switcher {
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,

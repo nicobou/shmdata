@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./quiddity-manager-wrapper.h"
+#include "./quiddity-manager-wrapper.hpp"
 
 namespace switcher {
 

@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./pj-call.h"
-#include "./pj-sip.h"
-#include "switcher/sdp-utils.h"
+#include "./pj-call.hpp"
+#include "./pj-sip.hpp"
+#include "switcher/sdp-utils.hpp"
 #include <cctype>
 #include <algorithm>
 #include <string>

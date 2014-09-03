@@ -21,11 +21,11 @@
  * The GPipe class
  */
 
-#include "./gpipe.h"
-#include "./quiddity.h"
-#include "./quiddity-command.h"
-#include "./custom-property-helper.h"
-#include "./gst-utils.h"
+#include "./gpipe.hpp"
+#include "./quiddity.hpp"
+#include "./quiddity-command.hpp"
+#include "./custom-property-helper.hpp"
+#include "./gst-utils.hpp"
 #include <shmdata/base-reader.h>
 #include <gst/interfaces/xoverlay.h>
 #include <algorithm>

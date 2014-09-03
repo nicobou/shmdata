@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./fake-shmdata-writer.h"
-#include "./gst-utils.h"
+#include "./fake-shmdata-writer.hpp"
+#include "./gst-utils.hpp"
 
 namespace switcher {
 

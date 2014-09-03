@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./aravis-genicam.h"
-#include "./gst-utils.h"
+#include "./aravis-genicam.hpp"
+#include "./gst-utils.hpp"
 
 namespace switcher {
 

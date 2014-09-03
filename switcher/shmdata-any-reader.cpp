@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./shmdata-any-reader.h"
+#include "./shmdata-any-reader.hpp"
 
 namespace switcher {
 

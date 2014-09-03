@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./decodebin-to-shmdata.h"
-#include "./scope-exit.h"
+#include "./decodebin-to-shmdata.hpp"
+#include "./scope-exit.hpp"
 #include <glib/gprintf.h>
 
 namespace switcher {

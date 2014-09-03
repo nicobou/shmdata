@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./property-mapper.h"
-#include "./gst-utils.h"
+#include "./property-mapper.hpp"
+#include "./gst-utils.hpp"
 #include <math.h>
 
 // for python

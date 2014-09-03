@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./create-remove-spy.h"
-#include "./gst-utils.h"
+#include "./create-remove-spy.hpp"
+#include "./gst-utils.hpp"
 
 namespace switcher {
 

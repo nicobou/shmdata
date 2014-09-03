@@ -16,7 +16,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./posture_display.h"
+#include "./posture_display.hpp"
 
 #include <iostream>
 

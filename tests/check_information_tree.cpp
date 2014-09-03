@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
-#include "switcher/information-tree.h"
-#include "switcher/information-tree-basic-serializer.h"
-#include "switcher/information-tree-json.h"
+#include "switcher/information-tree.hpp"
+#include "switcher/information-tree-basic-serializer.hpp"
+#include "switcher/information-tree-json.hpp"
 #include <string>
 #include <cassert>
 #include <iostream>

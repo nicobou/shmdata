@@ -21,7 +21,7 @@
  * The Method class
  */
 
-#include "./method.h"
+#include "./method.hpp"
 
 namespace switcher {
 

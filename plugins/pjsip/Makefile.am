@@ -12,11 +12,11 @@ libpjsip_plugin_la_SOURCES = \
     pj-sip.cpp 
 
 libpjsip_plugin_la_include_HEADERS = \
-    pj-call.h \
-    pj-codec.h \
-    pj-codec-utils.h \
-    pj-presence.h \
-    pj-sip.h 
+    pj-call.hpp \
+    pj-codec.hpp \
+    pj-codec-utils.hpp \
+    pj-presence.hpp \
+    pj-sip.hpp 
 
 libpjsip_plugin_la_includedir = \
     $(includedir)/switcher-$(LIBSWITCHER_API_VERSION)/switcher

@@ -21,8 +21,8 @@
  * The Signal class that wraps gobject signals and add some documentation to it
  */
 
-#include "./signal-string.h"
-#include "./gst-utils.h"
+#include "./signal-string.hpp"
+#include "./gst-utils.hpp"
 #include <algorithm>
 
 namespace switcher {

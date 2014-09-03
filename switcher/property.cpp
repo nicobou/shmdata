@@ -21,8 +21,8 @@
  * The Param class
  */
 
-#include "./property.h"
-#include "./gst-utils.h"
+#include "./property.hpp"
+#include "./gst-utils.hpp"
 
 namespace switcher {
 

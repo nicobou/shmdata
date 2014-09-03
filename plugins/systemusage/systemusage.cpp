@@ -17,8 +17,8 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./systemusage.h"
-#include "switcher/information-tree-basic-serializer.h"
+#include "./systemusage.hpp"
+#include "switcher/information-tree-basic-serializer.hpp"
 
 #include <chrono>
 #include <fstream>

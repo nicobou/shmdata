@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./audio-test-source.h"
+#include "./audio-test-source.hpp"
 #include <gst/gst.h>
-#include "./gst-utils.h"
+#include "./gst-utils.hpp"
 namespace switcher {
 
   SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,

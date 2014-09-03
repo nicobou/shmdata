@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./pj-codec.h"
-#include "./pj-call.h"
-#include "./pj-codec-utils.h"
+#include "./pj-codec.hpp"
+#include "./pj-call.hpp"
+#include "./pj-codec-utils.hpp"
 #include <glib.h>               // g_warning
 #include <iostream>
 #include <algorithm>

@@ -15,8 +15,8 @@
  * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
-#include "./v4l2src.h"
-#include "switcher/gst-utils.h"
+#include "./v4l2src.hpp"
+#include "switcher/gst-utils.hpp"
 #include <cstdlib>              // For srand() and rand()
 #include <ctime>                // For time()
 

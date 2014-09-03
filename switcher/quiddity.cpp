@@ -21,10 +21,10 @@
  * The Quiddity class
  */
 
-#include "./quiddity.h"
-#include "./quiddity-manager-impl.h"
-#include "./gst-utils.h"
-#include "./information-tree-json.h"
+#include "./quiddity.hpp"
+#include "./quiddity-manager-impl.hpp"
+#include "./gst-utils.hpp"
+#include "./information-tree-json.hpp"
 #include <list>
 #include <algorithm>
 

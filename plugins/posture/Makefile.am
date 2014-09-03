@@ -31,8 +31,8 @@ libposturesource_la_CXXFLAGS = \
     -DG_LOG_DOMAIN=\"switcher\"
 
 noinst_HEADERS = \
-    posture.h \
-    posture_source.h
+    posture.hpp \
+    posture_source.hpp
 
 #libposturemerge info
 libposturemerge_la_SOURCES = \
@@ -60,7 +60,7 @@ libposturemerge_la_CXXFLAGS = \
     -DG_LOG_DOMAIN=\"switcher\"
 
 noinst_HEADERS += \
-    posture_merge.h
+    posture_merge.hpp
 
 #libposturedisplay info
 libposturedisplay_la_SOURCES = \
@@ -88,7 +88,7 @@ libposturedisplay_la_CXXFLAGS = \
     -DG_LOG_DOMAIN=\"switcher\"
 
 noinst_HEADERS += \
-    posture_display.h
+    posture_display.hpp
 
 #### plugin unit test
 # AM_CFLAGS = \
