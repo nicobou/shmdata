@@ -45,40 +45,40 @@ quiddity_created_removed_cb (std::string  /* subscriber_name */,
 int
 main ()
 {
-   {
-     switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
+  {
+    switcher::QuiddityManager::ptr manager = switcher::QuiddityManager::make_manager("test_manager");  
      
 #ifdef HAVE_CONFIG_H
-     gchar *usr_plugin_dir = g_strdup_printf ("./%s", LT_OBJDIR);
-     manager->scan_directory_for_plugins (usr_plugin_dir);
-     g_free (usr_plugin_dir);
+    gchar *usr_plugin_dir = g_strdup_printf ("./%s", LT_OBJDIR);
+    manager->scan_directory_for_plugins (usr_plugin_dir);
+    g_free (usr_plugin_dir);
 #else
-     return 1;
+    return 1;
 #endif
       
-      if (!switcher::QuiddityBasicTest::test_full (manager, "SOAPcontrolClient"))
-	success = false;
+    if (!switcher::QuiddityBasicTest::test_full (manager, "SOAPcontrolClient"))
+      success = false;
       
-      if (!switcher::QuiddityBasicTest::test_full (manager, "SOAPcontrolServer"))
-	success = false;
+    if (!switcher::QuiddityBasicTest::test_full (manager, "SOAPcontrolServer"))
+      success = false;
 
-      manager->create ("SOAPcontrolClient", "soapclient");
-      manager->make_signal_subscriber ("signal_subscriber", quiddity_created_removed_cb, manager.get ());
-      manager->subscribe_signal ("signal_subscriber","soapclient","on-connection-tried");
-      manager->invoke_va ("soapclient", "set_remote_url_retry", nullptr, "http://localhost:38084", nullptr);
+    manager->create ("SOAPcontrolClient", "soapclient");
+    manager->make_signal_subscriber ("signal_subscriber", quiddity_created_removed_cb, manager.get ());
+    manager->subscribe_signal ("signal_subscriber","soapclient","on-connection-tried");
+    manager->invoke_va ("soapclient", "set_remote_url_retry", nullptr, "http://localhost:38084", nullptr);
       
-      manager->create ("SOAPcontrolServer", "soapserver");
-      manager->invoke_va ("soapserver", "set_port", nullptr, "38084", nullptr);
+    manager->create ("SOAPcontrolServer", "soapserver");
+    manager->invoke_va ("soapserver", "set_port", nullptr, "38084", nullptr);
 
-      //soapclient is waiting 1 sec between retries
-      usleep (1100000);
+    //soapclient is waiting 1 sec between retries
+    usleep (1100000);
 
-   }//end of scope is releasing the manager
+  }//end of scope is releasing the manager
 
-   if (success)
-     return 0;
-   else
-     return 1;
+  if (success)
+    return 0;
+  else
+    return 1;
 }
 
 

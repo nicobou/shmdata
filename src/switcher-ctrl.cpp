@@ -108,7 +108,7 @@ main(int argc, char *argv[]) {
   // command line options
   GError *error = nullptr;
   GOptionContext *context =
-    g_option_context_new(" switcher control via webservice");
+      g_option_context_new(" switcher control via webservice");
   g_option_context_add_main_entries(context, entries, nullptr);
   if (!g_option_context_parse(context, &argc, &argv, &error)) {
     g_printerr("option parsing failed: %s\n", error->message);
@@ -138,7 +138,7 @@ main(int argc, char *argv[]) {
         ^ listmethodsbyclass
         ^ listsignals ^ listsignalsbyclass ^ invokemethod ^ print_tree)) {
     g_printerr
-      ("I am very sorry for the inconvenience, but I am able to process only one command at a time. \n");
+        ("I am very sorry for the inconvenience, but I am able to process only one command at a time. \n");
     exit(1);
   }
 

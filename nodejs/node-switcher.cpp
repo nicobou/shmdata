@@ -22,53 +22,53 @@
 #include "switcher/quiddity-manager.hpp"
 
 static
-  std::vector <
+std::vector <
   switcher::QuiddityManager::ptr >
-  switcher_container;
+switcher_container;
 static
-  v8::Persistent <
+v8::Persistent <
   v8::Function >
-  user_log_cb;                  // must be disposed
+user_log_cb;                  // must be disposed
 static
-  v8::Persistent <
+v8::Persistent <
   v8::Function >
-  user_prop_cb;                 // must be disposed
+user_prop_cb;                 // must be disposed
 static
-  v8::Persistent <
+v8::Persistent <
   v8::Function >
-  user_signal_cb;               // must be disposed
+user_signal_cb;               // must be disposed
 static
-  bool
-  switcher_is_loading = false;
+bool
+switcher_is_loading = false;
 
 struct async_req_log {
   uv_work_t
-    req;
+  req;
   std::string
-    msg;
+  msg;
 };
 
 struct async_req_prop {
   uv_work_t
-    req;
+  req;
   std::string
-    quiddity_name;
+  quiddity_name;
   std::string
-    property_name;
+  property_name;
   std::string
-    value;
+  value;
 };
 
 struct async_req_signal {
   uv_work_t
-    req;
+  req;
   std::string
-    quiddity_name;
+  quiddity_name;
   std::string
-    signal_name;
+  signal_name;
   std::vector <
     std::string >
-    params;
+  params;
 };
 
 //------------ history
@@ -112,9 +112,9 @@ LoadHistoryFromCurrentState(const v8::Arguments & args) {
 
   switcher_is_loading = true;
   switcher::QuiddityManager::CommandHistory histo =
-    switcher_container[0]->get_command_history_from_file(std::
-                                                         string(*file_path).
-                                                         c_str());
+      switcher_container[0]->get_command_history_from_file(std::
+                                                           string(*file_path).
+                                                           c_str());
 
   if (histo.empty()) {
     v8::Handle < v8::String > res = v8::String::New("false");
@@ -145,9 +145,9 @@ v8::Handle < v8::Value > LoadHistoryFromScratch(const v8::Arguments & args) {
   switcher_is_loading = true;
 
   switcher::QuiddityManager::CommandHistory histo =
-    switcher_container[0]->get_command_history_from_file(std::
-                                                         string(*file_path).
-                                                         c_str());
+      switcher_container[0]->get_command_history_from_file(std::
+                                                           string(*file_path).
+                                                           c_str());
 
   if (histo.empty()) {
     v8::Handle < v8::String > res = v8::String::New("false");
@@ -205,14 +205,14 @@ v8::Handle < v8::Value > Create(const v8::Arguments & args) {
     }
     v8::String::Utf8Value second_arg(args[1]->ToString());
     name =
-      v8::String::New(switcher_container[0]->create
-                      (std::string(*first_arg),
-                       std::string(*second_arg)).c_str());
+        v8::String::New(switcher_container[0]->create
+                        (std::string(*first_arg),
+                         std::string(*second_arg)).c_str());
   }
   else
     name =
-      v8::String::New(switcher_container[0]->create(std::string(*first_arg)).
-                      c_str());
+        v8::String::New(switcher_container[0]->create(std::string(*first_arg)).
+                        c_str());
 
   return scope.Close(name);
 }
@@ -238,9 +238,9 @@ v8::Handle < v8::Value > GetInfo(const v8::Arguments & args) {
   }
   v8::String::Utf8Value second_arg(args[1]->ToString());
   name =
-    v8::String::New(switcher_container[0]->get_info
-                    (std::string(*first_arg),
-                     std::string(*second_arg)).c_str());
+      v8::String::New(switcher_container[0]->get_info
+                      (std::string(*first_arg),
+                       std::string(*second_arg)).c_str());
   return scope.Close(name);
 }
 
@@ -268,8 +268,8 @@ v8::Handle < v8::Value > Rename(const v8::Arguments & args) {
   v8::Local < v8::String > name;
 
   v8::Handle < v8::Boolean > res =
-    v8::Boolean::New(switcher_container[0]->rename(std::string(*first_arg),
-                                                   std::string(*second_arg)));
+      v8::Boolean::New(switcher_container[0]->rename(std::string(*first_arg),
+                                                     std::string(*second_arg)));
 
   return scope.Close(res);
 }
@@ -288,7 +288,7 @@ v8::Handle < v8::Value > GetClassesDoc(const v8::Arguments & args) {
   v8::HandleScope scope;
 
   v8::Handle < v8::String > res =
-    v8::String::New(switcher_container[0]->get_classes_doc().c_str());
+      v8::String::New(switcher_container[0]->get_classes_doc().c_str());
   return scope.Close(res);
 }
 
@@ -307,9 +307,9 @@ v8::Handle < v8::Value > GetClassDoc(const v8::Arguments & args) {
   v8::String::Utf8Value class_name(args[0]->ToString());
 
   v8::Handle < v8::String > res =
-    v8::String::
-    New(switcher_container[0]->get_class_doc(std::string(*class_name)).
-        c_str());
+      v8::String::
+      New(switcher_container[0]->get_class_doc(std::string(*class_name)).
+          c_str());
   return scope.Close(res);
 }
 
@@ -328,8 +328,8 @@ v8::Handle < v8::Value > GetQuiddityDescription(const v8::Arguments & args) {
   v8::String::Utf8Value quiddity_name(args[0]->ToString());
 
   v8::Handle < v8::String > res =
-    v8::String::New(switcher_container[0]->get_quiddity_description
-                    (std::string(*quiddity_name)).c_str());
+      v8::String::New(switcher_container[0]->get_quiddity_description
+                      (std::string(*quiddity_name)).c_str());
   return scope.Close(res);
 }
 
@@ -337,8 +337,8 @@ v8::Handle < v8::Value > GetQuidditiesDescription(const v8::Arguments & args) {
   v8::HandleScope scope;
 
   v8::Handle < v8::String > res =
-    v8::String::New(switcher_container[0]->
-                    get_quiddities_description().c_str());
+      v8::String::New(switcher_container[0]->
+                      get_quiddities_description().c_str());
   return scope.Close(res);
 }
 
@@ -362,10 +362,10 @@ v8::Handle < v8::Value > SetProperty(const v8::Arguments & args) {
   v8::String::Utf8Value property_val(args[2]->ToString());
 
   v8::Handle < v8::Boolean > res =
-    v8::Boolean::New(switcher_container[0]->set_property
-                     (std::string(*element_name),
-                      std::string(*property_name),
-                      std::string(*property_val)));
+      v8::Boolean::New(switcher_container[0]->set_property
+                       (std::string(*element_name),
+                        std::string(*property_name),
+                        std::string(*property_val)));
   return scope.Close(res);
 }
 
@@ -385,9 +385,9 @@ v8::Handle < v8::Value > GetProperty(const v8::Arguments & args) {
   v8::String::Utf8Value property_name(args[1]->ToString());
 
   v8::Handle < v8::String > res =
-    v8::String::New(switcher_container[0]->get_property
-                    (std::string(*element_name),
-                     std::string(*property_name)).c_str());
+      v8::String::New(switcher_container[0]->get_property
+                      (std::string(*element_name),
+                       std::string(*property_name)).c_str());
   return scope.Close(res);
 }
 
@@ -406,8 +406,8 @@ v8::Handle < v8::Value > GetPropertiesDescription(const v8::Arguments & args) {
   v8::String::Utf8Value element_name(args[0]->ToString());
 
   v8::Handle < v8::String > res =
-    v8::String::New(switcher_container[0]->get_properties_description
-                    (std::string(*element_name)).c_str());
+      v8::String::New(switcher_container[0]->get_properties_description
+                      (std::string(*element_name)).c_str());
   return scope.Close(res);
 }
 
@@ -427,9 +427,9 @@ v8::Handle < v8::Value > GetPropertyDescription(const v8::Arguments & args) {
   v8::String::Utf8Value property_name(args[1]->ToString());
 
   v8::Handle < v8::String > res =
-    v8::String::New(switcher_container[0]->get_property_description
-                    (std::string(*element_name),
-                     std::string(*property_name)).c_str());
+      v8::String::New(switcher_container[0]->get_property_description
+                      (std::string(*element_name),
+                       std::string(*property_name)).c_str());
   return scope.Close(res);
 }
 
@@ -449,9 +449,9 @@ GetPropertiesDescriptionByClass(const v8::Arguments & args) {
   v8::String::Utf8Value class_name(args[0]->ToString());
 
   v8::Handle < v8::String > res =
-    v8::String::
-    New(switcher_container[0]->get_properties_description_by_class
-        (std::string(*class_name)).c_str());
+      v8::String::
+      New(switcher_container[0]->get_properties_description_by_class
+          (std::string(*class_name)).c_str());
   return scope.Close(res);
 }
 
@@ -472,9 +472,9 @@ GetPropertyDescriptionByClass(const v8::Arguments & args) {
   v8::String::Utf8Value property_name(args[1]->ToString());
 
   v8::Handle < v8::String > res =
-    v8::String::New(switcher_container[0]->get_property_description_by_class
-                    (std::string(*class_name),
-                     std::string(*property_name)).c_str());
+      v8::String::New(switcher_container[0]->get_property_description_by_class
+                      (std::string(*class_name),
+                       std::string(*property_name)).c_str());
   return scope.Close(res);
 }
 
@@ -531,8 +531,8 @@ v8::Handle < v8::Value > GetMethodsDescription(const v8::Arguments & args) {
   v8::String::Utf8Value element_name(args[0]->ToString());
 
   v8::Handle < v8::String > res =
-    v8::String::New(switcher_container[0]->get_methods_description
-                    (std::string(*element_name)).c_str());
+      v8::String::New(switcher_container[0]->get_methods_description
+                      (std::string(*element_name)).c_str());
   return scope.Close(res);
 }
 
@@ -552,9 +552,9 @@ v8::Handle < v8::Value > GetMethodDescription(const v8::Arguments & args) {
   v8::String::Utf8Value method_name(args[1]->ToString());
 
   v8::Handle < v8::String > res =
-    v8::String::New(switcher_container[0]->get_method_description
-                    (std::string(*element_name),
-                     std::string(*method_name)).c_str());
+      v8::String::New(switcher_container[0]->get_method_description
+                      (std::string(*element_name),
+                       std::string(*method_name)).c_str());
   return scope.Close(res);
 }
 
@@ -574,8 +574,8 @@ GetMethodsDescriptionByClass(const v8::Arguments & args) {
   v8::String::Utf8Value class_name(args[0]->ToString());
 
   v8::Handle < v8::String > res =
-    v8::String::New(switcher_container[0]->get_methods_description_by_class
-                    (std::string(*class_name)).c_str());
+      v8::String::New(switcher_container[0]->get_methods_description_by_class
+                      (std::string(*class_name)).c_str());
   return scope.Close(res);
 }
 
@@ -596,9 +596,9 @@ GetMethodDescriptionByClass(const v8::Arguments & args) {
   v8::String::Utf8Value method_name(args[1]->ToString());
 
   v8::Handle < v8::String > res =
-    v8::String::New(switcher_container[0]->get_method_description_by_class
-                    (std::string(*class_name),
-                     std::string(*method_name)).c_str());
+      v8::String::New(switcher_container[0]->get_method_description_by_class
+                      (std::string(*class_name),
+                       std::string(*method_name)).c_str());
   return scope.Close(res);
 }
 
@@ -607,8 +607,8 @@ v8::Handle < v8::Value > RegisterLogCallback(const v8::Arguments & args) {
 
   v8::HandleScope scope;
   user_log_cb =
-    v8::Persistent < v8::Function >::New(v8::Local <
-                                         v8::Function >::Cast(args[0]));
+      v8::Persistent < v8::Function >::New(v8::Local <
+                                           v8::Function >::Cast(args[0]));
   // const unsigned argc = 1;
   // v8::Local<v8::Value> argv[argc] = { v8::Local<v8::Value>::New(v8::String::New("hello world")) };
   // user_log_cb->Call(v8::Context::GetCurrent()->Global(), argc, argv);
@@ -624,10 +624,10 @@ void
 NotifyLog(uv_work_t * r) {
   v8::HandleScope scope;
   async_req_log *
-    req = reinterpret_cast < async_req_log * >(r->data);
+      req = reinterpret_cast < async_req_log * >(r->data);
   v8::TryCatch try_catch;
   v8::Local < v8::Value > argv[] = {
-  v8::Local < v8::Value >::New(v8::String::New(req->msg.c_str()))};
+    v8::Local < v8::Value >::New(v8::String::New(req->msg.c_str()))};
   if (!user_log_cb.IsEmpty())
     if (user_log_cb->IsCallable())
       user_log_cb->Call(user_log_cb, 1, argv);
@@ -643,7 +643,7 @@ logger_cb(std::string subscriber_name,
           std::string quiddity_name,
           std::string property_name, std::string value, void *user_data) {
   async_req_log *
-    req = new async_req_log();
+      req = new async_req_log();
   req->req.data = req;
   req->msg = value;
   uv_queue_work(uv_default_loop(),
@@ -655,8 +655,8 @@ v8::Handle < v8::Value > RegisterPropCallback(const v8::Arguments & args) {
 
   v8::HandleScope scope;
   user_prop_cb =
-    v8::Persistent < v8::Function >::New(v8::Local <
-                                         v8::Function >::Cast(args[0]));
+      v8::Persistent < v8::Function >::New(v8::Local <
+                                           v8::Function >::Cast(args[0]));
   // const unsigned argc = 3;
   // v8::Local<v8::Value> argv[argc];
   // argv [0] = { v8::Local<v8::Value>::New(v8::String::New("hw1")) };
@@ -670,15 +670,15 @@ void
 NotifyProp(uv_work_t * r) {
   v8::HandleScope scope;
   async_req_prop *
-    req = reinterpret_cast < async_req_prop * >(r->data);
+      req = reinterpret_cast < async_req_prop * >(r->data);
   v8::TryCatch try_catch;
   v8::Local < v8::Value > argv[3];
   argv[0] = {
-  v8::Local < v8::Value >::New(v8::String::New(req->quiddity_name.c_str()))};
+    v8::Local < v8::Value >::New(v8::String::New(req->quiddity_name.c_str()))};
   argv[1] = {
-  v8::Local < v8::Value >::New(v8::String::New(req->property_name.c_str()))};
+    v8::Local < v8::Value >::New(v8::String::New(req->property_name.c_str()))};
   argv[2] = {
-  v8::Local < v8::Value >::New(v8::String::New(req->value.c_str()))};
+    v8::Local < v8::Value >::New(v8::String::New(req->value.c_str()))};
   if (!user_prop_cb.IsEmpty())
     if (user_prop_cb->IsCallable())
       user_prop_cb->Call(user_prop_cb, 3, argv);
@@ -694,7 +694,7 @@ property_cb(std::string subscriber_name,
             std::string quiddity_name,
             std::string property_name, std::string value, void *user_data) {
   async_req_prop *
-    req = new async_req_prop();
+      req = new async_req_prop();
   req->req.data = req;
   req->quiddity_name = quiddity_name;
   req->property_name = property_name;
@@ -719,9 +719,9 @@ v8::Handle < v8::Value > SubscribeToProperty(const v8::Arguments & args) {
   v8::String::Utf8Value property_name(args[1]->ToString());
 
   v8::Handle < v8::Boolean > res =
-    v8::Boolean::New(switcher_container[0]->subscribe_property
-                     (std::string("prop_sub"), std::string(*element_name),
-                      std::string(*property_name)));
+      v8::Boolean::New(switcher_container[0]->subscribe_property
+                       (std::string("prop_sub"), std::string(*element_name),
+                        std::string(*property_name)));
   return scope.Close(res);
 }
 
@@ -741,9 +741,9 @@ v8::Handle < v8::Value > UnsubscribeToProperty(const v8::Arguments & args) {
   v8::String::Utf8Value property_name(args[1]->ToString());
 
   v8::Handle < v8::Boolean > res =
-    v8::Boolean::New(switcher_container[0]->unsubscribe_property
-                     (std::string("prop_sub"), std::string(*element_name),
-                      std::string(*property_name)));
+      v8::Boolean::New(switcher_container[0]->unsubscribe_property
+                       (std::string("prop_sub"), std::string(*element_name),
+                        std::string(*property_name)));
   return scope.Close(res);
 }
 
@@ -751,9 +751,9 @@ v8::Handle < v8::Value > ListSubscribedProperties(const v8::Arguments & args) {
   v8::HandleScope scope;
 
   v8::Handle < v8::String > res =
-    v8::String::
-    New(switcher_container[0]->list_subscribed_properties_json("prop_sub").
-        c_str());
+      v8::String::
+      New(switcher_container[0]->list_subscribed_properties_json("prop_sub").
+          c_str());
   return scope.Close(res);
 }
 
@@ -762,8 +762,8 @@ v8::Handle < v8::Value > RegisterSignalCallback(const v8::Arguments & args) {
 
   v8::HandleScope scope;
   user_signal_cb =
-    v8::Persistent < v8::Function >::New(v8::Local <
-                                         v8::Function >::Cast(args[0]));
+      v8::Persistent < v8::Function >::New(v8::Local <
+                                           v8::Function >::Cast(args[0]));
   // const unsigned argc = 3;
   // v8::Local<v8::Value> argv[argc];
   // argv [0] = { v8::Local<v8::Value>::New(v8::String::New("hw1")) };
@@ -777,7 +777,7 @@ void
 NotifySignal(uv_work_t * r) {
   v8::HandleScope scope;
   async_req_signal *
-    req = reinterpret_cast < async_req_signal * >(r->data);
+      req = reinterpret_cast < async_req_signal * >(r->data);
   v8::TryCatch try_catch;
   v8::Local < v8::Value > argv[3];
   // Create a new empty array.
@@ -790,11 +790,11 @@ NotifySignal(uv_work_t * r) {
     array->Set(0, v8::String::New(it->c_str()));
 
   argv[0] = {
-  v8::Local < v8::Value >::New(v8::String::New(req->quiddity_name.c_str()))};
+    v8::Local < v8::Value >::New(v8::String::New(req->quiddity_name.c_str()))};
   argv[1] = {
-  v8::Local < v8::Value >::New(v8::String::New(req->signal_name.c_str()))};
+    v8::Local < v8::Value >::New(v8::String::New(req->signal_name.c_str()))};
   argv[2] = {
-  v8::Local < v8::Value >::New(array)};
+    v8::Local < v8::Value >::New(array)};
 
   if (!user_signal_cb.IsEmpty())
     if (user_signal_cb->IsCallable())
@@ -812,7 +812,7 @@ signal_cb(std::string subscriber_name,
           std::string signal_name,
           std::vector < std::string > params, void *user_data) {
   async_req_signal *
-    req = new async_req_signal();
+      req = new async_req_signal();
   req->req.data = req;
   req->quiddity_name = quiddity_name;
   req->signal_name = signal_name;
@@ -837,9 +837,9 @@ v8::Handle < v8::Value > SubscribeToSignal(const v8::Arguments & args) {
   v8::String::Utf8Value signal_name(args[1]->ToString());
 
   v8::Handle < v8::Boolean > res =
-    v8::Boolean::New(switcher_container[0]->subscribe_signal
-                     (std::string("signal_sub"),
-                      std::string(*element_name), std::string(*signal_name)));
+      v8::Boolean::New(switcher_container[0]->subscribe_signal
+                       (std::string("signal_sub"),
+                        std::string(*element_name), std::string(*signal_name)));
   return scope.Close(res);
 }
 
@@ -859,9 +859,9 @@ v8::Handle < v8::Value > UnsubscribeToSignal(const v8::Arguments & args) {
   v8::String::Utf8Value signal_name(args[1]->ToString());
 
   v8::Handle < v8::Boolean > res =
-    v8::Boolean::New(switcher_container[0]->unsubscribe_signal
-                     (std::string("signal_sub"),
-                      std::string(*element_name), std::string(*signal_name)));
+      v8::Boolean::New(switcher_container[0]->unsubscribe_signal
+                       (std::string("signal_sub"),
+                        std::string(*element_name), std::string(*signal_name)));
   return scope.Close(res);
 }
 
@@ -869,9 +869,9 @@ v8::Handle < v8::Value > ListSubscribedSignals(const v8::Arguments & args) {
   v8::HandleScope scope;
 
   v8::Handle < v8::String > res =
-    v8::String::
-    New(switcher_container[0]->list_subscribed_signals_json("signal_sub").
-        c_str());
+      v8::String::
+      New(switcher_container[0]->list_subscribed_signals_json("signal_sub").
+          c_str());
   return scope.Close(res);
 }
 
@@ -891,8 +891,8 @@ v8::Handle < v8::Value > GetSignalsDescription(const v8::Arguments & args) {
   v8::String::Utf8Value element_name(args[0]->ToString());
 
   v8::Handle < v8::String > res =
-    v8::String::New(switcher_container[0]->get_signals_description
-                    (std::string(*element_name)).c_str());
+      v8::String::New(switcher_container[0]->get_signals_description
+                      (std::string(*element_name)).c_str());
   return scope.Close(res);
 }
 
@@ -912,9 +912,9 @@ v8::Handle < v8::Value > GetSignalDescription(const v8::Arguments & args) {
   v8::String::Utf8Value signal_name(args[1]->ToString());
 
   v8::Handle < v8::String > res =
-    v8::String::New(switcher_container[0]->get_signal_description
-                    (std::string(*element_name),
-                     std::string(*signal_name)).c_str());
+      v8::String::New(switcher_container[0]->get_signal_description
+                      (std::string(*element_name),
+                       std::string(*signal_name)).c_str());
   return scope.Close(res);
 }
 
@@ -934,8 +934,8 @@ GetSignalsDescriptionByClass(const v8::Arguments & args) {
   v8::String::Utf8Value class_name(args[0]->ToString());
 
   v8::Handle < v8::String > res =
-    v8::String::New(switcher_container[0]->get_signals_description_by_class
-                    (std::string(*class_name)).c_str());
+      v8::String::New(switcher_container[0]->get_signals_description_by_class
+                      (std::string(*class_name)).c_str());
   return scope.Close(res);
 }
 
@@ -956,9 +956,9 @@ GetSignalDescriptionByClass(const v8::Arguments & args) {
   v8::String::Utf8Value signal_name(args[1]->ToString());
 
   v8::Handle < v8::String > res =
-    v8::String::New(switcher_container[0]->get_signal_description_by_class
-                    (std::string(*class_name),
-                     std::string(*signal_name)).c_str());
+      v8::String::New(switcher_container[0]->get_signal_description_by_class
+                      (std::string(*class_name),
+                       std::string(*signal_name)).c_str());
   return scope.Close(res);
 }
 
@@ -967,7 +967,7 @@ void
 Init(v8::Handle < v8::Object > target) {
   setlocale(LC_ALL, "");
   switcher::QuiddityManager::ptr switcher_manager
-    = switcher::QuiddityManager::make_manager("nodeserver");
+      = switcher::QuiddityManager::make_manager("nodeserver");
 
   switcher_manager->create("logger", "internal_logger");
   switcher_manager->invoke_va("internal_logger", "install_log_handler",
@@ -986,12 +986,12 @@ Init(v8::Handle < v8::Object > target) {
                                        "last-line");
 
   gchar *
-    usr_plugin_dir = g_strdup_printf("/usr/switcher-0.6/plugins");
+      usr_plugin_dir = g_strdup_printf("/usr/switcher-0.6/plugins");
   switcher_manager->scan_directory_for_plugins(usr_plugin_dir);
   g_free(usr_plugin_dir);
 
   gchar *
-    usr_local_plugin_dir = g_strdup_printf("/usr/local/switcher-0.6/plugins");
+      usr_local_plugin_dir = g_strdup_printf("/usr/local/switcher-0.6/plugins");
   switcher_manager->scan_directory_for_plugins(usr_local_plugin_dir);
   g_free(usr_local_plugin_dir);
 

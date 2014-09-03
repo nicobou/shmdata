@@ -40,7 +40,7 @@ main() {
 
   {
     switcher::QuiddityManager::ptr manager =
-      switcher::QuiddityManager::make_manager("testing_signals");
+        switcher::QuiddityManager::make_manager("testing_signals");
 
     // make on-quiddity-created and on-quiddity-removed signals
     manager->create("create_remove_spy", "create_remove_spy");
@@ -67,7 +67,7 @@ main() {
     // manager->set_property ("vid", "started", "true");
 
     std::vector < std::string > subscribers =
-      manager->list_signal_subscribers();
+        manager->list_signal_subscribers();
     if (subscribers.size() != 1
         || g_strcmp0(subscribers.at(0).c_str(), "signal_subscriber") != 0) {
       g_warning("pb with list_signal_subscribers");
@@ -75,7 +75,7 @@ main() {
     }
 
     std::vector < std::pair < std::string, std::string > >signals =
-      manager->list_subscribed_signals("signal_subscriber");
+        manager->list_subscribed_signals("signal_subscriber");
     if (signals.size() != 2
         || g_strcmp0(signals.at(0).first.c_str(), "create_remove_spy")
         || g_strcmp0(signals.at(0).second.c_str(), "on-quiddity-created")

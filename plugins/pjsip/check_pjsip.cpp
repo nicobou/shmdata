@@ -34,7 +34,7 @@ main() {
   bool success = true;
   {
     switcher::QuiddityManager::ptr manager =
-      switcher::QuiddityManager::make_manager("siptest");
+        switcher::QuiddityManager::make_manager("siptest");
 
 #ifdef HAVE_CONFIG_H
     gchar *usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);

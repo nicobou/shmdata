@@ -189,11 +189,11 @@ main() {
   {                             // get childs keys inserting in an existing container
     Tree::ptr tree = make_tree();
     std::list < std::string > childs {
-    "child1", "child2", "child3",
-        "child4", "child5", "child6", "child7", "child8", "child9"};
+      "child1", "child2", "child3",
+          "child4", "child5", "child6", "child7", "child8", "child9"};
     std::for_each(childs.begin(),
                   childs.end(),[tree] (const std::string & val) {
-                  tree->graft(".root." + val, make_tree("val"));
+                    tree->graft(".root." + val, make_tree("val"));
                   });
     std::vector < std::string > child_keys;
     tree->get_child_keys(".root",
@@ -202,34 +202,34 @@ main() {
     assert(std::equal(childs.begin(), childs.end(), child_keys.begin(),
                       [](const std::string & first,
                          const std::string & second) {
-                      return (0 == first.compare(second));}
-           ));
+                        return (0 == first.compare(second));}
+                      ));
   }
 
   {                             // get childs keys in a newly allocated container
     Tree::ptr tree = make_tree();
     std::list < std::string > childs {
-    "child1", "child2", "child3",
-        "child4", "child5", "child6", "child7", "child8", "child9"};
+      "child1", "child2", "child3",
+          "child4", "child5", "child6", "child7", "child8", "child9"};
     std::for_each(childs.begin(),
                   childs.end(),[tree] (const std::string & val) {
-                  tree->graft(".root." + val, make_tree("val"));
+                    tree->graft(".root." + val, make_tree("val"));
                   });
     auto string_compare =
-      [](const std::string & first, const std::string & second)
-      { return (0 == first.compare(second));
-    };
+        [](const std::string & first, const std::string & second)
+        { return (0 == first.compare(second));
+        };
 
     // using a list
     std::list < std::string > child_keys_list =
-      tree->get_child_keys <> (".root");
+        tree->get_child_keys <> (".root");
     assert(std::equal
            (childs.begin(), childs.end(), child_keys_list.begin(),
             string_compare));
 
     // using a vector
     std::vector < std::string > child_keys_vector =
-      tree->get_child_keys < std::vector > (".root");
+        tree->get_child_keys < std::vector > (".root");
     assert(std::equal
            (childs.begin(), childs.end(), child_keys_vector.begin(),
             string_compare));

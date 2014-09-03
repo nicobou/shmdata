@@ -60,7 +60,7 @@ main() {
   do_continue = true;
   {
     switcher::QuiddityManager::ptr manager =
-      switcher::QuiddityManager::make_manager("rtptest");
+        switcher::QuiddityManager::make_manager("rtptest");
 
 #ifdef HAVE_CONFIG_H
     gchar *usr_plugin_dir = g_strdup_printf("../plugins/gsoap/%s", LT_OBJDIR);

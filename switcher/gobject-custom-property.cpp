@@ -20,27 +20,27 @@
 #include "./gobject-custom-property.hpp"
 
 namespace switcher {
-  GObjectCustomProperty::GObjectCustomProperty() {
-  }
+GObjectCustomProperty::GObjectCustomProperty() {
+}
 
-  GObjectCustomProperty::~GObjectCustomProperty() {
-  }
+GObjectCustomProperty::~GObjectCustomProperty() {
+}
 
-  GObjectCustomProperty::ptr
-    GObjectCustomProperty::make_custom_property(set_method_pointer
-                                                set_method,
-                                                get_method_pointer
-                                                get_method) {
-    GObjectCustomProperty::ptr custom_prop(new GObjectCustomProperty);
-    custom_prop->set_members(set_method, get_method);
-    return custom_prop;
-  }
+GObjectCustomProperty::ptr
+GObjectCustomProperty::make_custom_property(set_method_pointer
+                                            set_method,
+                                            get_method_pointer
+                                            get_method) {
+  GObjectCustomProperty::ptr custom_prop(new GObjectCustomProperty);
+  custom_prop->set_members(set_method, get_method);
+  return custom_prop;
+}
 
-  void
-    GObjectCustomProperty::set_members(set_method_pointer set_method,
-                                       get_method_pointer get_method) {
-    set_method_ = set_method;
-    get_method_ = get_method;
-  }
+void
+GObjectCustomProperty::set_members(set_method_pointer set_method,
+                                   get_method_pointer get_method) {
+  set_method_ = set_method;
+  get_method_ = get_method;
+}
 
 }

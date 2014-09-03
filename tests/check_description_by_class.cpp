@@ -26,7 +26,7 @@ int
 main() {
   bool success = true;
   switcher::QuiddityManager::ptr manager =
-    switcher::QuiddityManager::make_manager("check_description_manager");
+      switcher::QuiddityManager::make_manager("check_description_manager");
 
   // std::vector<std::string> classes = manager->get_classes ();
 

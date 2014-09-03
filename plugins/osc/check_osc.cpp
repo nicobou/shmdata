@@ -33,7 +33,7 @@ main() {
 
   {
     switcher::QuiddityManager::ptr manager =
-      switcher::QuiddityManager::make_manager("test_manager");
+        switcher::QuiddityManager::make_manager("test_manager");
 
 #ifdef HAVE_CONFIG_H
     gchar *usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);

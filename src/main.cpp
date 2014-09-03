@@ -49,12 +49,12 @@ static gchar *extraplugindir = nullptr;
 
 // static std::vector<switcher::QuiddityManager::ptr> container;
 static
-  switcher::QuiddityManager::ptr
-  manager;
+switcher::QuiddityManager::ptr
+manager;
 
 static
-  GOptionEntry
-  entries[15] = {
+GOptionEntry
+entries[15] = {
   {"version", 'V', 0, G_OPTION_ARG_NONE, &display_version,
    "display switcher version number", nullptr},
   {"server-name", 'n', 0, G_OPTION_ARG_STRING, &server_name,
@@ -126,9 +126,9 @@ main(int argc, char *argv[]) {
 
   // command line options
   GError *
-    error = nullptr;
+      error = nullptr;
   GOptionContext *
-    context;
+      context;
   context = g_option_context_new("- switcher server");
   g_option_context_add_main_entries(context, entries, nullptr);
   if (!g_option_context_parse(context, &argc, &argv, &error)) {
@@ -188,15 +188,15 @@ main(int argc, char *argv[]) {
   // loading plugins from default location // FIXME add an option
 #ifdef HAVE_CONFIG_H
   gchar *
-    usr_plugin_dir = g_strdup_printf("/usr/%s-%s/plugins", PACKAGE_NAME,
-                                     LIBSWITCHER_API_VERSION);
+      usr_plugin_dir = g_strdup_printf("/usr/%s-%s/plugins", PACKAGE_NAME,
+                                       LIBSWITCHER_API_VERSION);
   manager->scan_directory_for_plugins(usr_plugin_dir);
   g_free(usr_plugin_dir);
 
   gchar *
-    usr_local_plugin_dir =
-    g_strdup_printf("/usr/local/%s-%s/plugins", PACKAGE_NAME,
-                    LIBSWITCHER_API_VERSION);
+      usr_local_plugin_dir =
+      g_strdup_printf("/usr/local/%s-%s/plugins", PACKAGE_NAME,
+                      LIBSWITCHER_API_VERSION);
   manager->scan_directory_for_plugins(usr_local_plugin_dir);
   g_free(usr_local_plugin_dir);
 #else
@@ -268,20 +268,20 @@ main(int argc, char *argv[]) {
 
   if (load_file != nullptr) {
     switcher::QuiddityManager::CommandHistory histo =
-      manager->get_command_history_from_file(load_file);
+        manager->get_command_history_from_file(load_file);
     std::vector < std::string > prop_subscriber_names =
-      manager->get_property_subscribers_names(histo);
+        manager->get_property_subscribers_names(histo);
     if (!prop_subscriber_names.empty())
       g_warning
-        ("creation of property subscriber not handled when loading file %s",
-         load_file);
+          ("creation of property subscriber not handled when loading file %s",
+           load_file);
 
     std::vector < std::string > signal_subscriber_names =
-      manager->get_signal_subscribers_names(histo);
+        manager->get_signal_subscribers_names(histo);
     if (!signal_subscriber_names.empty())
       g_warning
-        ("creation of signal subscriber not handled when loading file %s",
-         load_file);
+          ("creation of signal subscriber not handled when loading file %s",
+           load_file);
 
     manager->play_command_history(histo, nullptr, nullptr, true);
   }

@@ -36,7 +36,7 @@ main() {
   uint count = 0;
   {
     switcher::QuiddityManager::ptr mgr =
-      switcher::QuiddityManager::make_manager("property_mapper");
+        switcher::QuiddityManager::make_manager("property_mapper");
     mgr->make_property_subscriber("sub", property_cb, &count);
 
     // map freq  property from audio1 to audio 2

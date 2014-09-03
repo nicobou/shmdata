@@ -26,172 +26,172 @@
 
 namespace switcher {
 
-  Property::Property():long_name_("undefined_long_name"),
-    name_("undefined_name"),
-    property_(nullptr),
-    object_(nullptr), json_description_(new JSONBuilder()) {
+Property::Property():long_name_("undefined_long_name"),
+                     name_("undefined_name"),
+                     property_(nullptr),
+                     object_(nullptr), json_description_(new JSONBuilder()) {
+}
+
+Property::~Property() {
+  g_param_spec_ref(property_);
+  g_object_unref(object_);
+}
+
+Property::Property(const Property & source) {
+  copy_property(source);
+}
+
+Property & Property::operator=(const Property & source) {
+  copy_property(source);
+  return *this;
+}
+
+void Property::copy_property(const Property & source) {
+  long_name_ = source.long_name_;
+  name_ = source.name_;
+  json_description_ = source.json_description_;
+  subscribed_handlers_ = source.subscribed_handlers_;
+  property_ = nullptr;
+  object_ = nullptr;
+  if (source.property_ != nullptr) {
+    g_param_spec_ref(source.property_);
+    property_ = source.property_;
+  }
+  if (source.object_ != nullptr) {
+    g_object_ref(source.object_);
+    object_ = source.object_;
+  }
+}
+
+void Property::set_gobject_pspec(GObject * object, GParamSpec * pspec) {
+  g_param_spec_ref(pspec);
+  g_object_ref(object);
+  property_ = pspec;
+  object_ = object;
+}
+
+void Property::set_long_name(std::string long_name) {
+  long_name_ = long_name;
+}
+
+void Property::set_name(std::string name) {
+  name_ = name;
+}
+
+std::string Property::get_name() {
+  return name_;
+}
+
+void Property::set(std::string value) {
+
+  GValue transformed_val = G_VALUE_INIT;
+  g_value_init(&transformed_val, property_->value_type);
+
+  if (!gst_value_deserialize(&transformed_val, value.c_str()))
+    g_debug("string not transformable into gvalue ");
+
+  g_object_set_property(object_, property_->name, &transformed_val);
+}
+
+bool Property::subscribe(Callback cb, void *user_data) {
+  std::pair < Callback, void *>subscribe_id = std::make_pair(cb, user_data);
+  gchar *signal = g_strconcat("notify::", property_->name, nullptr);
+  if (subscribed_handlers_.find(subscribe_id) != subscribed_handlers_.end()) {
+    g_debug("cannot subscribe callback/user_data");
+    return false;
   }
 
-  Property::~Property() {
-    g_param_spec_ref(property_);
-    g_object_unref(object_);
-  }
-
-  Property::Property(const Property & source) {
-    copy_property(source);
-  }
-
-  Property & Property::operator=(const Property & source) {
-    copy_property(source);
-    return *this;
-  }
-
-  void Property::copy_property(const Property & source) {
-    long_name_ = source.long_name_;
-    name_ = source.name_;
-    json_description_ = source.json_description_;
-    subscribed_handlers_ = source.subscribed_handlers_;
-    property_ = nullptr;
-    object_ = nullptr;
-    if (source.property_ != nullptr) {
-      g_param_spec_ref(source.property_);
-      property_ = source.property_;
-    }
-    if (source.object_ != nullptr) {
-      g_object_ref(source.object_);
-      object_ = source.object_;
-    }
-  }
-
-  void Property::set_gobject_pspec(GObject * object, GParamSpec * pspec) {
-    g_param_spec_ref(pspec);
-    g_object_ref(object);
-    property_ = pspec;
-    object_ = object;
-  }
-
-  void Property::set_long_name(std::string long_name) {
-    long_name_ = long_name;
-  }
-
-  void Property::set_name(std::string name) {
-    name_ = name;
-  }
-
-  std::string Property::get_name() {
-    return name_;
-  }
-
-  void Property::set(std::string value) {
-
-    GValue transformed_val = G_VALUE_INIT;
-    g_value_init(&transformed_val, property_->value_type);
-
-    if (!gst_value_deserialize(&transformed_val, value.c_str()))
-      g_debug("string not transformable into gvalue ");
-
-    g_object_set_property(object_, property_->name, &transformed_val);
-  }
-
-  bool Property::subscribe(Callback cb, void *user_data) {
-    std::pair < Callback, void *>subscribe_id = std::make_pair(cb, user_data);
-    gchar *signal = g_strconcat("notify::", property_->name, nullptr);
-    if (subscribed_handlers_.find(subscribe_id) != subscribed_handlers_.end()) {
-      g_debug("cannot subscribe callback/user_data");
-      return false;
-    }
-
-    subscribed_handlers_[subscribe_id] =
+  subscribed_handlers_[subscribe_id] =
       g_signal_connect(object_, signal, G_CALLBACK(cb), user_data);
-    return true;
+  return true;
 
+}
+
+bool Property::unsubscribe(Callback cb, void *user_data) {
+  std::pair < Callback, void *>subscribe_id = std::make_pair(cb, user_data);
+  auto it = subscribed_handlers_.find(subscribe_id);
+  if (subscribed_handlers_.end() == it)
+    return false;
+
+  g_signal_handler_disconnect(object_, subscribed_handlers_[subscribe_id]);
+  subscribed_handlers_.erase(it);
+  return true;
+}
+
+std::string
+Property::parse_callback_args(GObject * gobject, GParamSpec * pspec) {
+  const gchar *prop_name = g_param_spec_get_name(pspec);
+  GValue val = G_VALUE_INIT;
+  g_value_init(&val, pspec->value_type);
+  g_object_get_property(gobject, prop_name, &val);
+  gchar *val_str = GstUtils::gvalue_serialize(&val);
+  // gchar *val_str;
+  // if (pspec->value_type == G_TYPE_STRING)
+  //   val_str = g_strdup (g_value_get_string (&val));
+  // else
+  //   val_str = gst_value_serialize (&val);
+  std::string res(val_str);
+  g_free(val_str);
+  g_value_unset(&val);
+  return res;
+}
+
+std::string Property::get() {
+  GValue val = G_VALUE_INIT;
+  g_value_init(&val, property_->value_type);
+
+  g_object_get_property(object_, property_->name, &val);
+
+  gchar *val_str = GstUtils::gvalue_serialize(&val);
+  std::string res(val_str);
+  g_free(val_str);
+  return res;
+}
+
+std::string Property::get_description() {
+  make_description();
+  return json_description_->get_string(true);
+}
+
+JSONBuilder::Node Property::get_json_root_node() {
+  make_description();
+  return json_description_->get_root();
+}
+
+// make json formated description
+void Property::make_description() {
+  if (nullptr == property_) {
+    g_warning("%s: cannot make description from a nullptr property",
+              __PRETTY_FUNCTION__);
+    return;
   }
+  GValue value = G_VALUE_INIT;
+  g_value_init(&value, property_->value_type);
 
-  bool Property::unsubscribe(Callback cb, void *user_data) {
-    std::pair < Callback, void *>subscribe_id = std::make_pair(cb, user_data);
-    auto it = subscribed_handlers_.find(subscribe_id);
-    if (subscribed_handlers_.end() == it)
-      return false;
+  g_object_get_property(object_, property_->name, &value);
+  json_description_->reset();
+  json_description_->begin_object();
+  // long name
+  json_description_->add_string_member("long name", long_name_.c_str());
+  // name
+  json_description_->add_string_member("name", name_.c_str());
+  // nickname
+  // json_description_->add_string_member ("nickname", g_param_spec_get_nick (property_));
 
-    g_signal_handler_disconnect(object_, subscribed_handlers_[subscribe_id]);
-    subscribed_handlers_.erase(it);
-    return true;
-  }
-
-  std::string
-    Property::parse_callback_args(GObject * gobject, GParamSpec * pspec) {
-    const gchar *prop_name = g_param_spec_get_name(pspec);
-    GValue val = G_VALUE_INIT;
-    g_value_init(&val, pspec->value_type);
-    g_object_get_property(gobject, prop_name, &val);
-    gchar *val_str = GstUtils::gvalue_serialize(&val);
-    // gchar *val_str;
-    // if (pspec->value_type == G_TYPE_STRING)
-    //   val_str = g_strdup (g_value_get_string (&val));
-    // else
-    //   val_str = gst_value_serialize (&val);
-    std::string res(val_str);
-    g_free(val_str);
-    g_value_unset(&val);
-    return res;
-  }
-
-  std::string Property::get() {
-    GValue val = G_VALUE_INIT;
-    g_value_init(&val, property_->value_type);
-
-    g_object_get_property(object_, property_->name, &val);
-
-    gchar *val_str = GstUtils::gvalue_serialize(&val);
-    std::string res(val_str);
-    g_free(val_str);
-    return res;
-  }
-
-  std::string Property::get_description() {
-    make_description();
-    return json_description_->get_string(true);
-  }
-
-  JSONBuilder::Node Property::get_json_root_node() {
-    make_description();
-    return json_description_->get_root();
-  }
-
-  // make json formated description
-  void Property::make_description() {
-    if (nullptr == property_) {
-      g_warning("%s: cannot make description from a nullptr property",
-                __PRETTY_FUNCTION__);
-      return;
-    }
-    GValue value = G_VALUE_INIT;
-    g_value_init(&value, property_->value_type);
-
-    g_object_get_property(object_, property_->name, &value);
-    json_description_->reset();
-    json_description_->begin_object();
-    // long name
-    json_description_->add_string_member("long name", long_name_.c_str());
-    // name
-    json_description_->add_string_member("name", name_.c_str());
-    // nickname
-    // json_description_->add_string_member ("nickname", g_param_spec_get_nick (property_));
-
-    // short description
-    json_description_->add_string_member("short description",
-                                         g_param_spec_get_blurb(property_));
-    json_description_->add_string_member("position category",
-                                         get_category().c_str());
-    json_description_->add_int_member("position weight",
-                                      get_position_weight());
-    // name
-    // json_description_->add_string_member ("internal name", g_param_spec_get_name (property_));
-    if (property_->flags & G_PARAM_WRITABLE)
-      json_description_->add_string_member("writable", "true");
-    else
-      json_description_->add_string_member("writable", "false");
-    switch (G_VALUE_TYPE(&value)) {
+  // short description
+  json_description_->add_string_member("short description",
+                                       g_param_spec_get_blurb(property_));
+  json_description_->add_string_member("position category",
+                                       get_category().c_str());
+  json_description_->add_int_member("position weight",
+                                    get_position_weight());
+  // name
+  // json_description_->add_string_member ("internal name", g_param_spec_get_name (property_));
+  if (property_->flags & G_PARAM_WRITABLE)
+    json_description_->add_string_member("writable", "true");
+  else
+    json_description_->add_string_member("writable", "false");
+  switch (G_VALUE_TYPE(&value)) {
     case G_TYPE_STRING:
       {
         const char *string_val = g_value_get_string(&value);
@@ -220,7 +220,7 @@ namespace switcher {
         gchar *min = g_strdup_printf("%lu", pulong->minimum);
         gchar *max = g_strdup_printf("%lu", pulong->maximum);
         gchar *default_value =
-          g_strdup_printf("%lu", g_value_get_ulong(&value));
+            g_strdup_printf("%lu", g_value_get_ulong(&value));
         json_description_->add_string_member("minimum", min);
         json_description_->add_string_member("maximum", max);
         json_description_->add_string_member("default value", default_value);
@@ -235,7 +235,7 @@ namespace switcher {
         gchar *min = g_strdup_printf("%ld", plong->minimum);
         gchar *max = g_strdup_printf("%ld", plong->maximum);
         gchar *default_value =
-          g_strdup_printf("%ld", g_value_get_ulong(&value));
+            g_strdup_printf("%ld", g_value_get_ulong(&value));
         json_description_->add_string_member("type", "long");
         json_description_->add_string_member("minimum", min);
         json_description_->add_string_member("maximum", max);
@@ -251,7 +251,7 @@ namespace switcher {
         gchar *min = g_strdup_printf("%u", puint->minimum);
         gchar *max = g_strdup_printf("%u", puint->maximum);
         gchar *default_value =
-          g_strdup_printf("%u", g_value_get_uint(&value));
+            g_strdup_printf("%u", g_value_get_uint(&value));
         json_description_->add_string_member("type", "uint");
         json_description_->add_string_member("minimum", min);
         json_description_->add_string_member("maximum", max);
@@ -298,7 +298,7 @@ namespace switcher {
         gchar *min = g_strdup_printf("%" G_GINT64_FORMAT, pint64->minimum);
         gchar *max = g_strdup_printf("%" G_GINT64_FORMAT, pint64->maximum);
         gchar *default_value =
-          g_strdup_printf("%" G_GINT64_FORMAT, g_value_get_int64(&value));
+            g_strdup_printf("%" G_GINT64_FORMAT, g_value_get_int64(&value));
         json_description_->add_string_member("type", "int64");
         json_description_->add_string_member("minimum", min);
         json_description_->add_string_member("maximum", max);
@@ -314,7 +314,7 @@ namespace switcher {
         gchar *min = g_strdup_printf("%.7g", pfloat->minimum);
         gchar *max = g_strdup_printf("%.7g", pfloat->maximum);
         gchar *default_value =
-          g_strdup_printf("%.7g", g_value_get_float(&value));
+            g_strdup_printf("%.7g", g_value_get_float(&value));
         json_description_->add_string_member("type", "float");
         json_description_->add_string_member("minimum", min);
         json_description_->add_string_member("maximum", max);
@@ -330,7 +330,7 @@ namespace switcher {
         gchar *min = g_strdup_printf("%.7g", pdouble->minimum);
         gchar *max = g_strdup_printf("%.7g", pdouble->maximum);
         gchar *default_value =
-          g_strdup_printf("%.7g", g_value_get_double(&value));
+            g_strdup_printf("%.7g", g_value_get_double(&value));
         json_description_->add_string_member("type", "double");
         json_description_->add_string_member("minimum", min);
         json_description_->add_string_member("maximum", max);
@@ -358,7 +358,7 @@ namespace switcher {
         const gchar *value_name = "";
         json_description_->add_string_member("type", "enum");
         values =
-          G_ENUM_CLASS(g_type_class_ref(property_->value_type))->values;
+            G_ENUM_CLASS(g_type_class_ref(property_->value_type))->values;
         enum_value = g_value_get_enum(&value);
         while (values[j].value_name) {
           if (values[j].value == enum_value) {
@@ -377,11 +377,11 @@ namespace switcher {
         json_description_->add_string_member("name", value_name);
         json_description_->end_object();
 
-// g_debug ("Enum \"%s\" Default: %d, \"%s\" \"%s\"",
-//  g_type_name (G_VALUE_TYPE (&value)),
-//  enum_value,
-//  value_nick,
-//  value_name);
+        // g_debug ("Enum \"%s\" Default: %d, \"%s\" \"%s\"",
+        //  g_type_name (G_VALUE_TYPE (&value)),
+        //  enum_value,
+        //  value_nick,
+        //  value_name);
 
         j = 0;
 
@@ -399,57 +399,57 @@ namespace switcher {
         }
         json_description_->end_array();
 
-/* g_type_class_unref (ec); */
+        /* g_type_class_unref (ec); */
       }
       else if (G_IS_PARAM_SPEC_FLAGS(property_)) {
         g_debug("warning: param spec flags not handled");
-// GParamSpecFlags *pflags = G_PARAM_SPEC_FLAGS (property_);
-// GFlagsValue *vals;
-// gchar *cur;
+        // GParamSpecFlags *pflags = G_PARAM_SPEC_FLAGS (property_);
+        // GFlagsValue *vals;
+        // gchar *cur;
 
-// vals = pflags->flags_class->values;
+        // vals = pflags->flags_class->values;
 
-// cur = flags_to_string (vals, g_value_get_flags (&value));
+        // cur = flags_to_string (vals, g_value_get_flags (&value));
 
-// g_debug ("%-23.23s Flags \"%s\" Default: 0x%08x, \"%s\"", "",
-//    g_type_name (G_VALUE_TYPE (&value)),
-//    g_value_get_flags (&value), cur);
+        // g_debug ("%-23.23s Flags \"%s\" Default: 0x%08x, \"%s\"", "",
+        //    g_type_name (G_VALUE_TYPE (&value)),
+        //    g_value_get_flags (&value), cur);
 
-// while (vals[0].value_name) {
-//   g_debug ("");
-//   if (_name)
-//     g_debug ("%s", _name);
-//   g_debug ("%-23.23s    (0x%08x): %-16s - %s", "",
-//      vals[0].value, vals[0].value_nick, vals[0].value_name);
-//   ++vals;
-// }
+        // while (vals[0].value_name) {
+        //   g_debug ("");
+        //   if (_name)
+        //     g_debug ("%s", _name);
+        //   g_debug ("%-23.23s    (0x%08x): %-16s - %s", "",
+        //      vals[0].value, vals[0].value_nick, vals[0].value_name);
+        //   ++vals;
+        // }
 
-// g_free (cur);
+        // g_free (cur);
       }
       else if (G_IS_PARAM_SPEC_OBJECT(property_)) {
         g_debug("warning: param spec object not handled");
-// g_debug ("%-23.23s Object of type \"%s\"", "",
-//  g_type_name (property_->value_type));
+        // g_debug ("%-23.23s Object of type \"%s\"", "",
+        //  g_type_name (property_->value_type));
       }
       else if (G_IS_PARAM_SPEC_BOXED(property_)) {
         g_debug("warning: param spec boxed not handled");
-// g_debug ("%-23.23s Boxed pointer of type \"%s\"", "",
-//  g_type_name (property_->value_type));
+        // g_debug ("%-23.23s Boxed pointer of type \"%s\"", "",
+        //  g_type_name (property_->value_type));
       }
       else if (G_IS_PARAM_SPEC_POINTER(property_)) {
         g_debug("warning: param spec pointer not handled");
-// if (property_->value_type != G_TYPE_POINTER) {
-//   g_debug ("%-23.23s Pointer of type \"%s\".", "",
-//    g_type_name (property_->value_type));
-// } else if (property_->value_type == G_TYPE_VALUE_ARRAY) {
-// GParamSpecValueArray *pvarray = G_PARAM_SPEC_VALUE_ARRAY (property_);
+        // if (property_->value_type != G_TYPE_POINTER) {
+        //   g_debug ("%-23.23s Pointer of type \"%s\".", "",
+        //    g_type_name (property_->value_type));
+        // } else if (property_->value_type == G_TYPE_VALUE_ARRAY) {
+        // GParamSpecValueArray *pvarray = G_PARAM_SPEC_VALUE_ARRAY (property_);
         // g_debug ("warning: array not handled");
-// if (pvarray->element_spec) {
-//   g_debug ("%-23.23s Array of GValues of type \"%s\"", "",
-//    g_type_name (pvarray->element_spec->value_type));
-// } else {
-//   g_debug ("%-23.23s Array of GValues", "");
-// }
+        // if (pvarray->element_spec) {
+        //   g_debug ("%-23.23s Array of GValues of type \"%s\"", "",
+        //    g_type_name (pvarray->element_spec->value_type));
+        // } else {
+        //   g_debug ("%-23.23s Array of GValues", "");
+        // }
       }
       else if (GST_IS_PARAM_SPEC_FRACTION(property_)) {
         GstParamSpecFraction *pfraction = GST_PARAM_SPEC_FRACTION(property_);
@@ -477,84 +477,84 @@ namespace switcher {
         g_free(maxden);
         g_free(defaultnum);
         g_free(defaultden);
-// g_debug ("Range: %d/%d - %d/%d Default: %d/%d ",
-//  pfraction->min_num, pfraction->min_den,
-//  pfraction->max_num, pfraction->max_den,
-//  gst_value_get_fraction_numerator (&value),
-//  gst_value_get_fraction_denominator (&value));
+        // g_debug ("Range: %d/%d - %d/%d Default: %d/%d ",
+        //  pfraction->min_num, pfraction->min_den,
+        //  pfraction->max_num, pfraction->max_den,
+        //  gst_value_get_fraction_numerator (&value),
+        //  gst_value_get_fraction_denominator (&value));
       }
       else if (GST_IS_PARAM_SPEC_MINI_OBJECT(property_)) {
-// g_warning ("warning param spec mini object not handled ");
-// g_warning ("%-23.23s MiniObject of type \"%s\"", "",
-//   g_type_name (property_->value_type));
+        // g_warning ("warning param spec mini object not handled ");
+        // g_warning ("%-23.23s MiniObject of type \"%s\"", "",
+        //   g_type_name (property_->value_type));
         json_description_->add_string_member("type",
                                              g_type_name
                                              (property_->value_type));
       }
       else {
         g_warning("warning: unknown type");
-// g_debug ("%-23.23s Unknown type %ld \"%s\"", "", property_->value_type,
-//  g_type_name (property_->value_type));
+        // g_debug ("%-23.23s Unknown type %ld \"%s\"", "", property_->value_type,
+        //  g_type_name (property_->value_type));
       }
       break;
-    }
-    g_value_reset(&value);
-    json_description_->end_object();
   }
+  g_value_reset(&value);
+  json_description_->end_object();
+}
 
-  // from gst-inspect
-  void Property::print() {
+// from gst-inspect
+void Property::print() {
 
-    // guint i;
-    gboolean readable;
-    // gboolean first_flag;
+  // guint i;
+  gboolean readable;
+  // gboolean first_flag;
 
-    GValue value = G_VALUE_INIT;
+  GValue value = G_VALUE_INIT;
 
-    // GObject *element = object_;
+  // GObject *element = object_;
 
-    readable = FALSE;
+  readable = FALSE;
 
-    g_value_init(&value, property_->value_type);
+  g_value_init(&value, property_->value_type);
 
-    g_debug("  %-20s: %s", g_param_spec_get_name(property_),
-            g_param_spec_get_blurb(property_));
+  g_debug("  %-20s: %s", g_param_spec_get_name(property_),
+          g_param_spec_get_blurb(property_));
 
-    // first_flag = TRUE;
-    // g_debug ("%-23.23s flags: ", "");
-    // if (property_->flags & G_PARAM_READABLE) {
-    // g_object_get_property (G_OBJECT (element), property_->name, &value);
-    // readable = TRUE;
-    // g_debug ("%s%s", (first_flag) ? "" : ", ", ("readable"));
-    // first_flag = FALSE;
-    // } else {
-    // /* if we can't read the property value, assume it's set to the default
-    //  * (which might not be entirely true for sub-classes, but that's an
-    //  * unlikely corner-case anyway) */
-    // g_param_value_set_default (property_, &value);
-    // }
-    // if (property_->flags & G_PARAM_WRITABLE) {
-    // g_debug ("%s%s", (first_flag) ? "" : ", ", ("writable"));
-    // first_flag = FALSE;
-    // }
-    // if (property_->flags & GST_PARAM_CONTROLLABLE) {
-    // g_debug (", %s", ("controllable"));
-    // first_flag = FALSE;
-    // }
-    // if (property_->flags & GST_PARAM_MUTABLE_PLAYING) {
-    // g_debug (", %s", ("changeable in nullptr, READY, PAUSED or PLAYING state"));
-    // } else if (property_->flags & GST_PARAM_MUTABLE_PAUSED) {
-    // g_debug (", %s", ("changeable only in nullptr, READY or PAUSED state"));
-    // } else if (property_->flags & GST_PARAM_MUTABLE_READY) {
-    // g_debug (", %s", ("changeable only in nullptr or READY state"));
-    // }
-    // if (property_->flags & ~KNOWN_PARAM_FLAGS) {
-    // g_debug ("%s0x%0x", (first_flag) ? "" : ", ",
-    //  property_->flags & ~KNOWN_PARAM_FLAGS);
-    // }
-    // g_debug ("");
+  // first_flag = TRUE;
+  // g_debug ("%-23.23s flags: ", "");
+  // if (property_->flags & G_PARAM_READABLE) {
+  // g_object_get_property (G_OBJECT (element), property_->name, &value);
+  // readable = TRUE;
+  // g_debug ("%s%s", (first_flag) ? "" : ", ", ("readable"));
+  // first_flag = FALSE;
+  // } else {
+  // /* if we can't read the property value, assume it's set to the default
+  //  * (which might not be entirely true for sub-classes, but that's an
+  //  * unlikely corner-case anyway) */
+  // g_param_value_set_default (property_, &value);
+  // }
+  // if (property_->flags & G_PARAM_WRITABLE) {
+  // g_debug ("%s%s", (first_flag) ? "" : ", ", ("writable"));
+  // first_flag = FALSE;
+  // }
+  // if (property_->flags & GST_PARAM_CONTROLLABLE) {
+  // g_debug (", %s", ("controllable"));
+  // first_flag = FALSE;
+  // }
+  // if (property_->flags & GST_PARAM_MUTABLE_PLAYING) {
+  // g_debug (", %s", ("changeable in nullptr, READY, PAUSED or PLAYING state"));
+  // } else if (property_->flags & GST_PARAM_MUTABLE_PAUSED) {
+  // g_debug (", %s", ("changeable only in nullptr, READY or PAUSED state"));
+  // } else if (property_->flags & GST_PARAM_MUTABLE_READY) {
+  // g_debug (", %s", ("changeable only in nullptr or READY state"));
+  // }
+  // if (property_->flags & ~KNOWN_PARAM_FLAGS) {
+  // g_debug ("%s0x%0x", (first_flag) ? "" : ", ",
+  //  property_->flags & ~KNOWN_PARAM_FLAGS);
+  // }
+  // g_debug ("");
 
-    switch (G_VALUE_TYPE(&value)) {
+  switch (G_VALUE_TYPE(&value)) {
     case G_TYPE_STRING:
       {
         const char *string_val = g_value_get_string(&value);
@@ -669,7 +669,7 @@ namespace switcher {
         const gchar *value_nick = "";
 
         values =
-          G_ENUM_CLASS(g_type_class_ref(property_->value_type))->values;
+            G_ENUM_CLASS(g_type_class_ref(property_->value_type))->values;
         enum_value = g_value_get_enum(&value);
 
         while (values[j].value_name) {
@@ -690,31 +690,31 @@ namespace switcher {
                   values[j].value_name);
           j++;
         }
-/* g_type_class_unref (ec); */
+        /* g_type_class_unref (ec); */
       }
       else if (G_IS_PARAM_SPEC_FLAGS(property_)) {
-// GParamSpecFlags *pflags = G_PARAM_SPEC_FLAGS (property_);
-// GFlagsValue *vals;
-// gchar *cur;
+        // GParamSpecFlags *pflags = G_PARAM_SPEC_FLAGS (property_);
+        // GFlagsValue *vals;
+        // gchar *cur;
 
-// vals = pflags->flags_class->values;
+        // vals = pflags->flags_class->values;
 
-// cur = flags_to_string (vals, g_value_get_flags (&value));
+        // cur = flags_to_string (vals, g_value_get_flags (&value));
 
-// g_debug ("%-23.23s Flags \"%s\" Default: 0x%08x, \"%s\"", "",
-//    g_type_name (G_VALUE_TYPE (&value)),
-//    g_value_get_flags (&value), cur);
+        // g_debug ("%-23.23s Flags \"%s\" Default: 0x%08x, \"%s\"", "",
+        //    g_type_name (G_VALUE_TYPE (&value)),
+        //    g_value_get_flags (&value), cur);
 
-// while (vals[0].value_name) {
-//   g_debug ("");
-//   if (_name)
-//     g_debug ("%s", _name);
-//   g_debug ("%-23.23s    (0x%08x): %-16s - %s", "",
-//      vals[0].value, vals[0].value_nick, vals[0].value_name);
-//   ++vals;
-// }
+        // while (vals[0].value_name) {
+        //   g_debug ("");
+        //   if (_name)
+        //     g_debug ("%s", _name);
+        //   g_debug ("%-23.23s    (0x%08x): %-16s - %s", "",
+        //      vals[0].value, vals[0].value_nick, vals[0].value_name);
+        //   ++vals;
+        // }
 
-// g_free (cur);
+        // g_free (cur);
       }
       else if (G_IS_PARAM_SPEC_OBJECT(property_)) {
         g_debug("%-23.23s Object of type \"%s\"", "",
@@ -762,26 +762,26 @@ namespace switcher {
                 property_->value_type, g_type_name(property_->value_type));
       }
       break;
-    }
-    if (!readable)
-      g_debug(" Write only");
-
-    g_value_reset(&value);
   }
+  if (!readable)
+    g_debug(" Write only");
 
-  std::string Property::get_short_description() {
-    return g_param_spec_get_blurb(property_);
-  }
+  g_value_reset(&value);
+}
 
-  std::string Property::get_long_name() {
-    return long_name_;
-  }
+std::string Property::get_short_description() {
+  return g_param_spec_get_blurb(property_);
+}
 
-  GObject *Property::get_gobject() {
-    return object_;
-  }
+std::string Property::get_long_name() {
+  return long_name_;
+}
 
-  GParamSpec *Property::get_paramspec() {
-    return property_;
-  }
+GObject *Property::get_gobject() {
+  return object_;
+}
+
+GParamSpec *Property::get_paramspec() {
+  return property_;
+}
 }

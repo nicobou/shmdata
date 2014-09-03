@@ -24,8 +24,8 @@
 static bool success;
 static const char *user_string = "hello world";
 static
-  switcher::QuiddityManager::ptr
-  manager;
+switcher::QuiddityManager::ptr
+manager;
 
 void
 mon_property_cb(std::string /*subscriber_name */ ,
@@ -40,22 +40,22 @@ mon_property_cb(std::string /*subscriber_name */ ,
 
   if (0 != property_name.compare("pattern")) {
     g_warning
-      ("property name does not match, got %s instead of \"pattern\"",
-       property_name.c_str());
+        ("property name does not match, got %s instead of \"pattern\"",
+         property_name.c_str());
     return;
   }
 
   if (0 != value.compare("Random (television snow)")) {
     g_warning
-      ("value does not match, got %s instead of Random (television snow)",
-       value.c_str());
+        ("value does not match, got %s instead of Random (television snow)",
+         value.c_str());
     return;
   }
 
   if (0 != g_strcmp0((char *) user_data, "hello world")) {
     g_warning
-      ("user_data name does not match, got %s instead of \"hello world\"",
-       (char *) user_data);
+        ("user_data name does not match, got %s instead of \"hello world\"",
+         (char *) user_data);
     return;
   }
 
@@ -75,7 +75,7 @@ main() {
     manager->subscribe_property("sub", "vid", "pattern");
 
     std::vector < std::string > subscribers =
-      manager->list_property_subscribers();
+        manager->list_property_subscribers();
     if (subscribers.size() != 1
         || g_strcmp0(subscribers.at(0).c_str(), "sub") != 0) {
       g_warning("pb with list_property_subscribers");
@@ -83,7 +83,7 @@ main() {
     }
 
     std::vector < std::pair < std::string, std::string > >properties =
-      manager->list_subscribed_properties("sub");
+        manager->list_subscribed_properties("sub");
     if (properties.size() != 1
         || g_strcmp0(properties.at(0).first.c_str(), "vid")
         || g_strcmp0(properties.at(0).second.c_str(), "pattern")) {

@@ -37,7 +37,7 @@ quiddity_created_removed_cb(std::string /*subscriber_name */ ,
                             void *user_data) {
   g_print("%s: %s\n", signal_name.c_str(), params[0].c_str());
   switcher::QuiddityManager * ctx =
-    static_cast < switcher::QuiddityManager * >(user_data);
+      static_cast < switcher::QuiddityManager * >(user_data);
   std::cout << ctx->get_info(quiddity_name, params[0]) << std::endl;
 }
 
@@ -47,7 +47,7 @@ main() {
 
   {
     switcher::QuiddityManager::ptr manager =
-      switcher::QuiddityManager::make_manager("test_manager");
+        switcher::QuiddityManager::make_manager("test_manager");
 
 #ifdef HAVE_CONFIG_H
     gchar *usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
