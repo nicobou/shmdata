@@ -76,6 +76,6 @@ class ShmdataReader:public OnCaps, public GstElementCleaner {
   static gboolean start_idle(void *user_data);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

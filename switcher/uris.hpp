@@ -126,6 +126,6 @@ class Uris:public GPipe, public GstElementCleaner {
   static gboolean group_eos_rewind(Group * group);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

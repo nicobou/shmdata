@@ -40,7 +40,7 @@ std::string serialize(const Tree::ptr);
 // FIXME implement this: Tree::ptr deserialize (std::string &serialized);
 
 };
-}                             // end of "data" namespace
-}                               // end of "switcher" namespace
 
-#endif                          // ifndef
+}  // namespace data
+}  // namespace switcher
+#endif

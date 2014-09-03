@@ -41,4 +41,5 @@ void CounterMap::reset_counter_map() {
   std::unique_lock < std::mutex > lock(mutex_);
   counters_.clear();
 }
-}                               // end of switcher namespace
+
+}  // namespace switcher

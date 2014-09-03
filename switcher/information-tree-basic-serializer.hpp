@@ -45,7 +45,6 @@ Tree::ptr deserialize(const std::string & serialized);
 
 };
 
-}                             // end of "data" namespace
-}                               // end of "switcher" namespace
-
-#endif                          // ifndef
+}  // namespace data
+}  // namespace switcher
+#endif

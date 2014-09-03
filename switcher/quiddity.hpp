@@ -306,6 +306,6 @@ class Quiddity {
     return cpp_quiddity_class::switcher_doc_;			\
   }
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

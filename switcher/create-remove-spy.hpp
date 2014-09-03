@@ -41,6 +41,6 @@ class CreateRemoveSpy:public Quiddity {
   bool i_am_the_one_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

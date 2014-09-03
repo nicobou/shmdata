@@ -170,6 +170,6 @@ class V4L2Src:public VideoSource {
 
 SWITCHER_DECLARE_PLUGIN(V4L2Src);
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

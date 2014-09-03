@@ -230,6 +230,6 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   void main_loop_thread();
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

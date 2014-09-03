@@ -87,6 +87,6 @@ class SystemUsage:public Quiddity {
 
 SWITCHER_DECLARE_PLUGIN(SystemUsage);
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

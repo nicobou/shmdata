@@ -66,6 +66,6 @@ class OscCtrlServer:public QuiddityManagerWrapper {
 
 SWITCHER_DECLARE_PLUGIN(OscCtrlServer);
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

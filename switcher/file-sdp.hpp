@@ -45,6 +45,6 @@ class FileSDP:public GPipe, public GstElementCleaner {
   static void no_more_pads_cb(GstElement * object, gpointer user_data);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

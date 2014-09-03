@@ -106,6 +106,6 @@ class QuiddityCommand {
   static const std::map < int, const char *>command_names_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

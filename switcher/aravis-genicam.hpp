@@ -42,6 +42,6 @@ class AravisGenicam:public GPipe, public GstElementCleaner {
   static gboolean start_wrapped(gpointer name, gpointer user_data);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

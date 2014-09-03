@@ -17,13 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./pj-call.hpp"
-#include "./pj-sip.hpp"
-#include "switcher/sdp-utils.hpp"
 #include <cctype>
 #include <algorithm>
 #include <string>
 #include <forward_list>
+#include <vector>
+#include "switcher/sdp-utils.hpp"
+#include "./pj-call.hpp"
+#include "./pj-sip.hpp"
 
 namespace switcher {
 
@@ -35,7 +36,8 @@ pjsip_module PJCall::mod_siprtp_ = {
   {"mod-siprtpapp", 13}
   ,                           /* Name.   */
   -1,                         /* Id   */
-  30,                         /* Priority (before  PJSIP_MOD_PRIORITY_UA_PROXY_LAYER)  */
+  // (before PJSIP_MOD_PRIORITY_UA_PROXY_LAYER):
+  30,                         /* Priority */
   nullptr,                    /* load()   */
   nullptr,                    /* start()   */
   nullptr,                    /* stop()   */
@@ -114,63 +116,67 @@ PJCall::PJCall(PJSIP * sip_instance):
   }
 
   // properties and methods for user
-  sip_instance_->install_method("Call a contact",     // long name
-                                "call",       // name
-                                "invite a contact for a call",        // description
-                                "the call has been initiated or not", // return description
-                                Method::make_arg_description("SIP url",       // first arg long name
-                                                             "url",   // fisrt arg name
-                                                             "string",        // first arg description
-                                                             nullptr),
-                                (Method::method_ptr) & call_sip_url,
-                                G_TYPE_BOOLEAN,
-                                Method::make_arg_type_description
-                                (G_TYPE_STRING, nullptr), this);
+  sip_instance_->
+      install_method("Call a contact",     // long name
+                     "call",       // name
+                     "invite a contact for a call",  // description
+                     "the call has been initiated or not",  // return desc
+                     Method::make_arg_description("SIP url",  // long name
+                                                  "url",  // name
+                                                  "string",  // description
+                                                  nullptr),
+                     (Method::method_ptr) & call_sip_url,
+                     G_TYPE_BOOLEAN,
+                     Method::make_arg_type_description
+                     (G_TYPE_STRING, nullptr), this);
 
-  sip_instance_->install_method("Hang Up",    // long name
-                                "hang-up",    // name
-                                "Hang up a call",     // description
-                                "success of not",     // return description
-                                Method::make_arg_description("SIP url",       // first arg long name
-                                                             "url",   // fisrt arg name
-                                                             "string",        // first arg description
-                                                             nullptr),
-                                (Method::method_ptr) & hang_up,
-                                G_TYPE_BOOLEAN,
-                                Method::make_arg_type_description
-                                (G_TYPE_STRING, nullptr), this);
+  sip_instance_->
+      install_method("Hang Up",  // long name
+                     "hang-up",  // name
+                     "Hang up a call",  // description
+                     "success of not",  // return description
+                     Method::make_arg_description("SIP url",  // long name
+                                                  "url",  // name
+                                                  "string",  // description
+                                                  nullptr),
+                     (Method::method_ptr) & hang_up,
+                     G_TYPE_BOOLEAN,
+                     Method::make_arg_type_description
+                     (G_TYPE_STRING, nullptr), this);
 
   rtp_session_name_spec_ =
-      sip_instance_->custom_props_->make_string_property("rtp-session",
-                                                         "Quiddity name managing RTP destinations",
-                                                         "", (GParamFlags)
-                                                         G_PARAM_READWRITE,
-                                                         PJCall::set_rtp_session,
-                                                         PJCall::get_rtp_session,
-                                                         this);
+      sip_instance_->custom_props_->
+      make_string_property("rtp-session",
+                           "Quiddity name managing RTP destinations",
+                           "", (GParamFlags)
+                           G_PARAM_READWRITE,
+                           PJCall::set_rtp_session,
+                           PJCall::get_rtp_session,
+                           this);
 
-  sip_instance_->install_property_by_pspec(sip_instance_->
-                                           custom_props_->get_gobject(),
-                                           rtp_session_name_spec_,
-                                           "rtp-session",
-                                           "Quiddity name managing RTP destinations");
+  sip_instance_->
+      install_property_by_pspec(sip_instance_->
+                                custom_props_->get_gobject(),
+                                rtp_session_name_spec_,
+                                "rtp-session",
+                                "Quiddity name managing RTP destinations");
   starting_rtp_port_spec_ =
-      sip_instance_->custom_props_->make_int_property("starting-rtp-port",
-                                                      "First RTP port to try",
-                                                      0, 65535,
-                                                      starting_rtp_port_,
-                                                      (GParamFlags)
-                                                      G_PARAM_READWRITE,
-                                                      PJCall::set_starting_rtp_port,
-                                                      PJCall::get_starting_rtp_port,
-                                                      this);
+      sip_instance_->custom_props_->
+      make_int_property("starting-rtp-port",
+                        "First RTP port to try",
+                        0, 65535,
+                        starting_rtp_port_,
+                        (GParamFlags)
+                        G_PARAM_READWRITE,
+                        PJCall::set_starting_rtp_port,
+                        PJCall::get_starting_rtp_port,
+                        this);
 
   sip_instance_->install_property_by_pspec(sip_instance_->
                                            custom_props_->get_gobject(),
                                            starting_rtp_port_spec_,
                                            "starting-rtp-port",
                                            "First RTP port to try");
-
 }
 
 PJCall::~PJCall() {
@@ -197,7 +203,7 @@ pj_bool_t PJCall::on_rx_request(pjsip_rx_data * rdata) {
   printf("%s %d %.*s\n",
          __FUNCTION__,
          __LINE__,
-         (int) rdata->msg_info.msg->line.req.method.name.slen,
+         static_cast<int>(rdata->msg_info.msg->line.req.method.name.slen),
          rdata->msg_info.msg->line.req.method.name.ptr);
 
   /* Ignore strandled ACKs (must not send respone) */
@@ -252,12 +258,12 @@ void PJCall::call_on_state_changed(pjsip_inv_session * inv, pjsip_event * e) {
     return;
 
   if (inv->state == PJSIP_INV_STATE_DISCONNECTED) {
-
     // pj_time_val null_time = {0, 0};
-
     g_debug("Call #%d disconnected. Reason=%d (%.*s)",
             call->index,
-            inv->cause, (int) inv->cause_text.slen, inv->cause_text.ptr);
+            inv->cause,
+            static_cast<int>(inv->cause_text.slen),
+            inv->cause_text.ptr);
 
     call->inv = nullptr;
     inv->mod_data[mod_siprtp_.id] = nullptr;
@@ -276,10 +282,7 @@ void PJCall::call_on_state_changed(pjsip_inv_session * inv, pjsip_event * e) {
     // call->connect_time = null_time;
 
     ++app.uac_calls;
-
-  }
-  else if (inv->state == PJSIP_INV_STATE_CONFIRMED) {
-
+  } else if (inv->state == PJSIP_INV_STATE_CONFIRMED) {
     pj_time_val t;
 
     pj_gettimeofday(&call->connect_time);
@@ -302,16 +305,11 @@ void PJCall::call_on_state_changed(pjsip_inv_session * inv, pjsip_event * e) {
 
     //   pjsip_endpt_schedule_timer(PJSIP::sip_endpt_, &call->d_timer, &t);
     // }
-
-  }
-  else if (inv->state == PJSIP_INV_STATE_EARLY ||
-           inv->state == PJSIP_INV_STATE_CONNECTING) {
-
+  } else if (inv->state == PJSIP_INV_STATE_EARLY ||
+             inv->state == PJSIP_INV_STATE_CONNECTING) {
     if (call->response_time.sec == 0)
       pj_gettimeofday(&call->response_time);
-
   }
-
 }
 
 /* Callback to be called when dialog has forked: */
@@ -319,9 +317,8 @@ void PJCall::call_on_forked(pjsip_inv_session * inv, pjsip_event * e) {
 }
 
 /* Callback to be called when SDP negotiation is done in the call: */
-void
-PJCall::call_on_media_update(pjsip_inv_session * inv, pj_status_t status)
-{
+void PJCall::call_on_media_update(pjsip_inv_session * inv,
+                                  pj_status_t status) {
   struct call *call;
   const pjmedia_sdp_session *local_sdp, *remote_sdp;
   call = (struct call *) inv->mod_data[mod_siprtp_.id];
@@ -358,7 +355,6 @@ PJCall::call_on_media_update(pjsip_inv_session * inv, pj_status_t status)
         || PJMEDIA_DIR_ENCODING_DECODING == current_media->si.dir
         || PJMEDIA_DIR_CAPTURE_PLAYBACK == current_media->si.dir
         || PJMEDIA_DIR_CAPTURE_RENDER == current_media->si.dir) {
-
       // managing rtp with pjsip
       for (uint attr_i = 0; attr_i < remote_sdp->media[i]->attr_count;
            attr_i++) {
@@ -391,17 +387,22 @@ PJCall::call_on_media_update(pjsip_inv_session * inv, pj_status_t status)
                                current_media->si.tx_pt, pj_rand());
       pjmedia_rtp_session_init(&current_media->in_sess,
                                current_media->si.fmt.pt, 0);
-      //  pjmedia_rtcp_init(&current_media->rtcp, "rtcp", current_media->clock_rate,
+      // pjmedia_rtcp_init(&current_media->rtcp,
+      // "rtcp", current_media->clock_rate,
       //          current_media->samples_per_frame, 0);
 
       current_media->shm = std::make_shared < ShmdataAnyWriter > ();
-      std::string shm_any_name("/tmp/switcher_sip_" + call->peer_uri + "_" + std::to_string(i));      // FIXME use quiddity name
+      // FIXME use quid name:
+      std::string shm_any_name("/tmp/switcher_sip_"
+                               + call->peer_uri
+                               + "_" + std::to_string(i));
       current_media->shm->set_path(shm_any_name.c_str());
       g_message("%s created a new shmdata any writer (%s)",
                 shm_any_name.c_str());
 
       /* Attach media to transport */
-      status = pjmedia_transport_attach(current_media->transport, current_media,      // user_data
+      status = pjmedia_transport_attach(current_media->transport,
+                                        current_media,  // user_data
                                         &current_media->si.rem_addr,
                                         &current_media->si.rem_rtcp,
                                         sizeof(pj_sockaddr_in),
@@ -420,21 +421,21 @@ PJCall::call_on_media_update(pjsip_inv_session * inv, pj_status_t status)
         || PJMEDIA_DIR_CAPTURE_RENDER == current_media->si.dir) {
       QuiddityManager_Impl::ptr manager =
           call->instance->sip_instance_->manager_impl_.lock();
-      if ((bool) manager) {
+      if (static_cast<bool>(manager)) {
         {
           manager->invoke(call->instance->rtp_session_name_,
                           "add_destination", nullptr, {
                             call->peer_uri,
                                 std::string(remote_sdp->origin.addr.ptr,
-                                            remote_sdp->origin.addr.slen)}
-                          );
+                                            remote_sdp->origin.addr.slen)});
 
           manager->invoke(call->instance->rtp_session_name_,
-                          "add_udp_stream_to_dest", nullptr, {
-                            current_media->shm_path_to_send,
-                                call->peer_uri,
-                                std::to_string(remote_sdp->media[i]->desc.port)}
-                          );
+                          "add_udp_stream_to_dest",
+                          nullptr,
+                          {
+                            current_media->shm_path_to_send, call->peer_uri,
+                                std::to_string(remote_sdp->media[i]->desc.port)
+                                });
         }
       }
     }
@@ -442,14 +443,12 @@ PJCall::call_on_media_update(pjsip_inv_session * inv, pj_status_t status)
     /* Set the media as active */
     current_media->active = PJ_TRUE;
   }                           // end iterating media
-
 }
 
 /*
  * Receive incoming call
  */
 void PJCall::process_incoming_call(pjsip_rx_data * rdata) {
-
   // finding caller info
   char uristr[PJSIP_MAX_URL_SIZE];
   int len;
@@ -489,7 +488,8 @@ void PJCall::process_incoming_call(pjsip_rx_data * rdata) {
   call = &app.call[i];
   call->peer_uri = from_uri;
 
-  /* Parse SDP from incoming request and verify that we can handle the request. */
+  /* Parse SDP from incoming request and
+     verify that we can handle the request. */
   pjmedia_sdp_session *offer = nullptr;
   if (rdata->msg_info.msg->body) {
     pjsip_rdata_sdp_info *sdp_info;
@@ -521,17 +521,15 @@ void PJCall::process_incoming_call(pjsip_rx_data * rdata) {
       pjsip_get_response_addr(tdata->pool, rdata, &res_addr);
       pjsip_endpt_send_response(PJSIP::sip_endpt_, &res_addr, tdata,
                                 nullptr, nullptr);
-    }
-    else                      /* Respond with 500 (Internal Server Error) */
+    } else {  /* Respond with 500 (Internal Server Error) */
       pjsip_endpt_respond_stateless(PJSIP::sip_endpt_, rdata, 500,
                                     nullptr, nullptr, nullptr);
-
+    }
     return;
   }
 
   /* Create UAS dialog */
-  status = pjsip_dlg_create_uas(pjsip_ua_instance(), rdata, nullptr,  //&app.local_contact,
-                                &dlg);
+  status = pjsip_dlg_create_uas(pjsip_ua_instance(), rdata, nullptr, &dlg);
   if (status != PJ_SUCCESS) {
     const pj_str_t reason = pj_str("Unable to create dialog");
     pjsip_endpt_respond_stateless(PJSIP::sip_endpt_,
@@ -544,13 +542,16 @@ void PJCall::process_incoming_call(pjsip_rx_data * rdata) {
 
   call->media_count = 0;
   std::vector < pjmedia_sdp_media * >media_to_receive;
-  pj_uint16_t rtp_port = (pj_uint16_t) (call->instance->starting_rtp_port_ & 0xFFFE); // FIXME start from last attributed
+  // FIXME start from last attributed
+  pj_uint16_t rtp_port =
+      (pj_uint16_t) (call->instance->starting_rtp_port_ & 0xFFFE);
+
   {
     unsigned int j = 0;       // counting media to receive
     // g_print ("media_count %d\n", offer->media_count);
     for (unsigned int media_index = 0; media_index < offer->media_count;
          media_index++) {
-      // g_print ("+++++++++++++++++ attribut count %d\n", offer->media[i]->attr_count);
+      // g_print ("++ attribut count %d\n", offer->media[i]->attr_count);
       bool recv = false;
       pjmedia_sdp_media *tmp_media = nullptr;
       for (unsigned int j = 0; j < offer->media[media_index]->attr_count;
@@ -567,16 +568,16 @@ void PJCall::process_incoming_call(pjsip_rx_data * rdata) {
           recv = true;
         }
         // g_print ("name %.*s, value%.*s\n",
-        //         (int)offer->media[media_index]->attr[j]->name.slen,
-        //         offer->media[media_index]->attr[j]->name.ptr,
-        //         (int)offer->media[media_index]->attr[j]->value.slen,
-        //         offer->media[media_index]->attr[j]->value.ptr);
+        //    static_cast<int>(offer->media[media_index]->attr[j]->name.slen),
+        //    offer->media[media_index]->attr[j]->name.ptr,
+        //    static_cast<int>(offer->media[media_index]->attr[j]->value.slen),
+        //    offer->media[media_index]->attr[j]->value.ptr);
       }
       if (recv && nullptr != tmp_media) {
         // adding control stream attribute
         pjmedia_sdp_attr *attr =
-            (pjmedia_sdp_attr *) pj_pool_zalloc(dlg->pool,
-                                                sizeof(pjmedia_sdp_attr));
+            static_cast<pjmedia_sdp_attr *>
+            (pj_pool_zalloc(dlg->pool, sizeof(pjmedia_sdp_attr)));
         std::string control_stream("control:stream=" + std::to_string(j));
         pj_strdup2(dlg->pool, &attr->name, control_stream.c_str());
         tmp_media->attr[tmp_media->attr_count++] = attr;
@@ -673,9 +674,8 @@ PJCall::create_sdp(pj_pool_t * pool,
 
   /* Create and initialize basic SDP session */
   sdp =
-      (pjmedia_sdp_session *) pj_pool_zalloc(pool,
-                                             sizeof(pjmedia_sdp_session));
-
+      reinterpret_cast<pjmedia_sdp_session *>
+      (pj_pool_zalloc(pool, sizeof(pjmedia_sdp_session)));
   pj_gettimeofday(&tv);
   sdp->origin.user = pj_str("pjsip-siprtp");
   sdp->origin.version = sdp->origin.id = tv.sec + 2208988800UL;
@@ -688,7 +688,8 @@ PJCall::create_sdp(pj_pool_t * pool,
    * SDP connection line in the session level.
    */
   sdp->conn =
-      (pjmedia_sdp_conn *) pj_pool_zalloc(pool, sizeof(pjmedia_sdp_conn));
+      reinterpret_cast<pjmedia_sdp_conn *>
+      (pj_pool_zalloc(pool, sizeof(pjmedia_sdp_conn)));
   sdp->conn->net_type = pj_str("IN");
   sdp->conn->addr_type = pj_str("IP4");
   sdp->conn->addr = app.local_addr;
@@ -737,7 +738,6 @@ PJCall::create_sdp(pj_pool_t * pool,
  * This callback is called by media transport on receipt of RTP packet.
  */
 void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
-
   struct media_stream *strm;
   pj_status_t status;
   const pjmedia_rtp_hdr *hdr;
@@ -761,7 +761,7 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
 
   /* Decode RTP packet. */
   status = pjmedia_rtp_decode_rtp(&strm->in_sess,
-                                  buf, (int) size,
+                                  buf, static_cast<int>(size),
                                   &hdr, &payload, &payload_len);
 
   // PJ_LOG(4,(THIS_FILE, "Rx seq=%d", pj_ntohs(hdr->seq)));
@@ -773,7 +773,7 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
   /* Update RTP session */
   pjmedia_rtp_session_update(&strm->in_sess, hdr, nullptr);
 
-  if (!(bool) strm->shm)
+  if (!static_cast<bool>(strm->shm))
     return;
 
   if (!strm->shm->started()) {
@@ -782,34 +782,34 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
     std::transform(encoding_name.begin(),
                    encoding_name.end(),
                    encoding_name.begin(), (int (*)(int)) std::toupper);
-    // FIXME check for channels in fmt + all si.param + ssrc + clock-base + seqnum-base
+    // FIXME check for channels in
+    // fmt + all si.param + ssrc + clock-base + seqnum-base
     std::string data_type("application/x-rtp"
                           ", media= " + strm->type
                           + ", clock-rate=" +
                           std::to_string(strm->si.fmt.clock_rate) +
                           ", payload=" +
                           std::to_string(strm->si.fmt.pt) +
-                          ", encoding-name=" + encoding_name
-                          // + ", ssrc=" +
-                          // + ", clock-base="
-                          // + ", seqnum-base=" + std::to_string (strm->in_sess->seq_ctrl->base_seq)
-                          );
+                          ", encoding-name=" + encoding_name);
+    // + ", ssrc=" +
+    // + ", clock-base="
+    // + ", seqnum-base="
+    //+ std::to_string (strm->in_sess->seq_ctrl->base_seq)
     if (!strm->extra_params.empty())
       data_type.append(std::string(", " + strm->extra_params));
 
     strm->shm->set_data_type(data_type);
-
-    // application/x-rtp, media=(string)application, clock-rate=(int)90000, encoding-name=(string)X-GST, ssrc=(uint)4199653519, payload=(int)96, clock-base=(uint)479267716, seqnum-base=(uint)53946
+    // application/x-rtp, media=(string)application, clock-rate=(int)90000,
+    // encoding-name=(string)X-GST, ssrc=(uint)4199653519, payload=(int)96,
+    // clock-base=(uint)479267716, seqnum-base=(uint)53946
     strm->shm->start();
   }
 
   strm->shm->push_data_auto_clock(buf, (size_t) size, free, buf);
-
   if (status != PJ_SUCCESS) {
     g_debug("RTP decode error");
     return;
   }
-
 }
 
 /*
@@ -847,7 +847,6 @@ void PJCall::print_sdp(const pjmedia_sdp_session * local_sdp) {
   }
   sdpbuf1[len1] = '\0';
   g_print("sdp : \n%s \n\n ", sdpbuf1);
-
 }
 
 /*
@@ -921,17 +920,10 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info * si,
     return PJMEDIA_SDPNEG_EINVANSTP;
 
   if (pj_stricmp2(&local_m->desc.transport, "RTP/AVP") == 0) {
-
     si->proto = PJMEDIA_TP_PROTO_RTP_AVP;
-
-  }
-  else if (pj_stricmp2(&local_m->desc.transport, "RTP/SAVP") == 0) {
-
+  } else if (pj_stricmp2(&local_m->desc.transport, "RTP/SAVP") == 0) {
     si->proto = PJMEDIA_TP_PROTO_RTP_SAVP;
-
-  }
-  else {
-
+  } else {
     si->proto = PJMEDIA_TP_PROTO_UNKNOWN;
     return PJ_SUCCESS;
   }
@@ -941,8 +933,7 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info * si,
   if (pj_stricmp2(&rem_conn->net_type, "IN") == 0) {
     if (pj_stricmp2(&rem_conn->addr_type, "IP4") == 0) {
       rem_af = pj_AF_INET();
-    }
-    else if (pj_stricmp2(&rem_conn->addr_type, "IP6") == 0) {
+    } else if (pj_stricmp2(&rem_conn->addr_type, "IP6") == 0) {
       rem_af = pj_AF_INET6();
     }
   }
@@ -965,8 +956,7 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info * si,
   if (pj_stricmp2(&local_conn->net_type, "IN") == 0) {
     if (pj_stricmp2(&local_conn->addr_type, "IP4") == 0) {
       local_af = pj_AF_INET();
-    }
-    else if (pj_stricmp2(&local_conn->addr_type, "IP6") == 0) {
+    } else if (pj_stricmp2(&local_conn->addr_type, "IP6") == 0) {
       local_af = pj_AF_INET6();
     }
   }
@@ -989,39 +979,25 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info * si,
     return PJ_EAFNOTSUP;
 
   /* Media direction: */
-
   if (local_m->desc.port == 0 ||
       pj_sockaddr_has_addr(&local_addr) == PJ_FALSE ||
       pj_sockaddr_has_addr(&si->rem_addr) == PJ_FALSE ||
       pjmedia_sdp_media_find_attr2(local_m, "inactive",
                                    nullptr) != nullptr) {
     /* Inactive stream. */
-
     si->dir = PJMEDIA_DIR_NONE;
-
-  }
-  else if (pjmedia_sdp_media_find_attr2(local_m, "sendonly", nullptr) !=
+  } else if (pjmedia_sdp_media_find_attr2(local_m, "sendonly", nullptr) !=
            nullptr) {
-
     /* Send only stream. */
-
     si->dir = PJMEDIA_DIR_ENCODING;
 
-  }
-  else if (pjmedia_sdp_media_find_attr2(local_m, "recvonly", nullptr) !=
+  } else if (pjmedia_sdp_media_find_attr2(local_m, "recvonly", nullptr) !=
            nullptr) {
-
     /* Recv only stream. */
-
     si->dir = PJMEDIA_DIR_DECODING;
-
-  }
-  else {
-
+  } else {
     /* Send and receive stream. */
-
     si->dir = PJMEDIA_DIR_ENCODING_DECODING;
-
   }
 
   /* No need to do anything else if stream is rejected */
@@ -1041,8 +1017,7 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info * si,
       if (rtcp.addr.slen) {
         status = pj_sockaddr_init(rem_af, &si->rem_rtcp, &rtcp.addr,
                                   (pj_uint16_t) rtcp.port);
-      }
-      else {
+      } else {
         pj_sockaddr_init(rem_af, &si->rem_rtcp, nullptr,
                          (pj_uint16_t) rtcp.port);
         pj_memcpy(pj_sockaddr_get_addr(&si->rem_rtcp),
@@ -1090,7 +1065,6 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info * si,
   si->jb_init = si->jb_max = si->jb_min_pre = si->jb_max_pre = -1;
 
   return status;
-
 }
 
 /*
@@ -1183,13 +1157,11 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info * si,
        */
       if (si->type == PJMEDIA_TYPE_AUDIO && rtpmap->param.slen) {
         si->fmt.channel_cnt = (unsigned) pj_strtoul(&rtpmap->param);
-      }
-      else {
+      } else {
         si->fmt.channel_cnt = 1;
       }
 
-    }
-    else {
+    } else {
       const pjmedia_codec_info *p_info;
 
       status = pjmedia_codec_mgr_get_codec_info(mgr, pt, &p_info);
@@ -1202,8 +1174,7 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info * si,
     /* For static payload type, pt's are symetric */
     si->tx_pt = pt;
 
-  }
-  else {
+  } else {
     // g_print ("DOES NOT HAVE RTPMAP\n");
     // pjmedia_codec_id codec_id;
     // pj_str_t codec_id_st;
@@ -1228,14 +1199,10 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info * si,
     /* For audio codecs, rtpmap parameters denotes the number of
      * channels.
      */
-    if (si->type == PJMEDIA_TYPE_AUDIO && rtpmap->param.slen) {
-
+    if (si->type == PJMEDIA_TYPE_AUDIO && rtpmap->param.slen)
       si->fmt.channel_cnt = (unsigned) pj_strtoul(&rtpmap->param);
-    }
-    else {
-
+    else
       si->fmt.channel_cnt = 1;
-    }
 
     /* Normalize the codec info from codec manager. Note that the
      * payload type will be resetted to its default (it might have
@@ -1290,7 +1257,6 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info * si,
     //
     //  if (si->tx_pt == 0xFFFF)
     //    return PJMEDIA_EMISSINGRTPMAP;
-
   }
 
   // /* Now that we have codec info, get the codec param. */
@@ -1393,7 +1359,8 @@ PJCall::remove_from_sdp_media(pjmedia_sdp_media * sdp_media,
     pjmedia_sdp_attr_remove(&sdp_media->attr_count, sdp_media->attr, attr);
     // std::string updated_val (attr->value.ptr, attr->value.slen);
     // updated_val.replace (0,2, std::to_string (pt));
-    // pj_strdup2 (pool, &attr->value, updated_val.c_str ()); // FIXME free previous string
+    // FIXME free following string
+    // pj_strdup2 (pool, &attr->value, updated_val.c_str ());
   }
   // remove the fmtp line
   attr = pjmedia_sdp_media_find_attr2(sdp_media, "fmtp",
@@ -1407,13 +1374,12 @@ PJCall::remove_from_sdp_media(pjmedia_sdp_media * sdp_media,
   // remove from media line
   pj_str_t *begin = &sdp_media->desc.fmt[fmt_pos];
   pj_str_t *end = &sdp_media->desc.fmt[sdp_media->desc.fmt_count - 1];
-  std::remove_if(begin, end,[&](pj_str_t item) {
-      return (0 ==
-              pj_strcmp(&item, &sdp_media->desc.fmt[fmt_pos]));
-    }
-    );
+  std::remove_if(begin, end, [&](pj_str_t item) {
+      return (0 == pj_strcmp(&item, &sdp_media->desc.fmt[fmt_pos]));
+    });
   sdp_media->desc.fmt_count--;
-  // sdp_media->desc.fmt[u].slen = pj_utoa (pt, sdp_media->desc.fmt[u].ptr);// FIXME free old ptr
+  // FIXME free old ptr:
+  // sdp_media->desc.fmt[u].slen = pj_utoa (pt, sdp_media->desc.fmt[u].ptr);
 }
 
 /*
@@ -1449,11 +1415,12 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
   pj_cstr(&dest_str, dst_uri.c_str());
 
   /* Create UAC dialog */
-  status = pjsip_dlg_create_uac(pjsip_ua_instance(), &local_uri,      // &app.local_uri, /* local URI     */
-                                &local_uri,   // &app.local_contact, /* local Contact    */
-                                &dest_str,    /* remote URI     */
-                                &dest_str,    /* remote target    */
-                                &dlg);        /* dialog     */
+  status = pjsip_dlg_create_uac(pjsip_ua_instance(),
+                                &local_uri,  /* local URI */
+                                &local_uri,  /* local Contact */
+                                &dest_str,  /* remote URI */
+                                &dest_str,  /* remote target */
+                                &dlg);  /* dialog */
 
   if (status != PJ_SUCCESS) {
     ++app.uac_calls;
@@ -1505,10 +1472,10 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
 }
 
 void PJCall::set_rtp_session(const gchar * quiddity_name, void *user_data) {
-  PJCall *context = static_cast < PJCall * >(user_data);
+  PJCall *context = static_cast<PJCall *>(user_data);
   context->rtp_session_name_ = quiddity_name;
   Quiddity::ptr quid = context->retrieve_rtp_manager();
-  if (!(bool) quid) {
+  if (!static_cast<bool>(quid)) {
     g_warning("rtp manager %s not found", quiddity_name);
     context->rtp_session_name_.clear();
     return;
@@ -1520,13 +1487,13 @@ void PJCall::set_rtp_session(const gchar * quiddity_name, void *user_data) {
 }
 
 const gchar *PJCall::get_rtp_session(void *user_data) {
-  PJCall *context = static_cast < PJCall * >(user_data);
+  PJCall *context = static_cast<PJCall *>(user_data);
   return context->rtp_session_name_.c_str();
 }
 
 Quiddity::ptr PJCall::retrieve_rtp_manager() {
   QuiddityManager_Impl::ptr manager = sip_instance_->manager_impl_.lock();
-  if (!(bool) manager) {
+  if (!static_cast<bool>(manager)) {
     g_warning("manager not found");
     Quiddity::ptr quid;
     return quid;
@@ -1540,7 +1507,7 @@ PJCall::create_outgoing_sdp(struct call * call,
   // g_print ("--> %s\n", __FUNCTION__);
 
   Quiddity::ptr quid = retrieve_rtp_manager();
-  if (!(bool) quid) {
+  if (!static_cast<bool>(quid)) {
     g_warning("rtp manager not found");
     return std::string();
   }
@@ -1572,15 +1539,15 @@ PJCall::create_outgoing_sdp(struct call * call,
   //    });
 
   gint port = starting_rtp_port_;
-  for (auto & it:paths) {
+  for (auto & it : paths) {
     std::string data = quid->get_data("rtp_caps." + it);
     GstCaps *caps = gst_caps_from_string(data.c_str());
     SDPMedia media;
     media.set_media_info_from_caps(caps);
     media.set_port(port);
-    if (!desc.add_media(media))
+    if (!desc.add_media(media)) {
       g_warning("a media has not been added to the SDP description");
-    else {
+    } else {
       call->media[call->media_count].shm_path_to_send = it;
       call->media_count++;
     }
@@ -1595,7 +1562,7 @@ gboolean PJCall::call_sip_url(gchar * sip_url, void *user_data) {
     g_warning("calling sip account received nullptr url");
     return FALSE;
   }
-  PJCall *context = static_cast < PJCall * >(user_data);
+  PJCall *context = static_cast<PJCall *>(user_data);
 
   context->sip_instance_->run_command_sync(std::bind(&PJCall::make_call,
                                                      context,
@@ -1609,7 +1576,7 @@ gboolean PJCall::hang_up(gchar * sip_url, void *user_data) {
     g_warning("hang up received nullptr url");
     return FALSE;
   }
-  PJCall *context = static_cast < PJCall * >(user_data);
+  PJCall *context = static_cast<PJCall *>(user_data);
 
   context->sip_instance_->run_command_sync(std::bind
                                            (&PJCall::make_hang_up, context,
@@ -1636,7 +1603,7 @@ bool PJCall::make_hang_up(std::string contact_uri) {
 }
 
 void PJCall::set_starting_rtp_port(const gint value, void *user_data) {
-  PJCall *context = static_cast < PJCall * >(user_data);
+  PJCall *context = static_cast<PJCall *>(user_data);
   context->starting_rtp_port_ = value;
   GObjectWrapper::notify_property_changed(context->sip_instance_->gobject_->
                                           get_gobject(),
@@ -1644,8 +1611,8 @@ void PJCall::set_starting_rtp_port(const gint value, void *user_data) {
 }
 
 gint PJCall::get_starting_rtp_port(void *user_data) {
-  PJCall *context = static_cast < PJCall * >(user_data);
+  PJCall *context = static_cast<PJCall *>(user_data);
   return context->starting_rtp_port_;
 }
 
-}
+}  // namespace switcher

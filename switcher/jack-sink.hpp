@@ -52,6 +52,6 @@ class JackSink:public SinglePadGstSink, public StartableQuiddity {
   static const gchar *get_client_name(void *user_data);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

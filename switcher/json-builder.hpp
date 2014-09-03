@@ -66,6 +66,6 @@ class JSONBuilder {
 
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

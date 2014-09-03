@@ -56,6 +56,6 @@ class RtpDestination:public GstElementCleaner {
   JSONBuilder::ptr json_description_;
   void make_json_description();
 };
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

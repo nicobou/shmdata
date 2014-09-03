@@ -42,6 +42,6 @@ class GstElementCleaner {
   std::vector < GstElement * >elements_to_remove_;
   std::map < std::string, GstElement * >labeled_elements_;
 };
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

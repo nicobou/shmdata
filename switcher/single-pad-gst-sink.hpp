@@ -56,6 +56,6 @@ class SinglePadGstSink:public GPipe {
   virtual bool can_sink_caps(std::string caps);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

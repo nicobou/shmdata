@@ -50,6 +50,6 @@ class StartableQuiddity {
   CustomPropertyHelper::ptr startable_custom_props_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

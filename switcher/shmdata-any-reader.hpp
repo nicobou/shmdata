@@ -74,6 +74,6 @@ class ShmdataAnyReader:public OnCaps {
                       const char *type_description, void *user_data);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

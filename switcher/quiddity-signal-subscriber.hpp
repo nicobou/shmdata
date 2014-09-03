@@ -87,6 +87,6 @@ class QuidditySignalSubscriber {
   SignalDataMap signal_datas_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

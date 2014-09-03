@@ -59,6 +59,6 @@ class SDPDescription {
   uint index_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

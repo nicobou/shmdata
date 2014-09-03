@@ -84,6 +84,5 @@ class SoapCtrlClient : public Quiddity
 
 SWITCHER_DECLARE_PLUGIN(SoapCtrlClient);
   
-}  // end of namespace
-
-#endif // ifndef
+}  // namespace switcher
+#endif

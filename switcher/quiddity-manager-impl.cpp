@@ -1194,4 +1194,4 @@ QuiddityManager_Impl::get_info(const std::string & nick_name,
   return quiddities_[quiddities_nick_names_[nick_name]]->get_info(path);
 }
 
-}                               // end of namespace
+}  // namespace switcher

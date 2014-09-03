@@ -42,5 +42,5 @@ class CumulativeClock {
   std::chrono::time_point < Clock_type > start_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 #endif // ifndef

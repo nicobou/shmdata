@@ -74,6 +74,6 @@ class Logger:public Quiddity {
                                 const gchar * message, gpointer user_data);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

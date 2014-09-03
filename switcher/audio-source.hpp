@@ -41,6 +41,6 @@ class AudioSource:public GPipe {
   void unset_raw_audio_element();
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

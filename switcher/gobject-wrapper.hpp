@@ -126,6 +126,6 @@ class GObjectWrapper {
   std::map < std::string, void *>signal_user_datas_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

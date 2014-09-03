@@ -57,7 +57,7 @@ gulong g_signal_connect_function(gpointer gobject,
                                  const gchar * signal,
                                  GCallback cb, gpointer user_data);
 bool can_sink_caps(std::string factory_name, std::string caps);
-}                             // end of GstUtils namespace
-}                               // end of switcher namespace
 
-#endif                          // ifndef
+}  // namespace GstUtils
+}  // namespace switcher
+#endif

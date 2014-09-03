@@ -52,6 +52,6 @@ class MyPlugin:public Quiddity, public StartableQuiddity {
 
 SWITCHER_DECLARE_PLUGIN(MyPlugin);
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

@@ -59,6 +59,6 @@ class SoapCtrlServer : public QuiddityManagerWrapper
 
 SWITCHER_DECLARE_PLUGIN(SoapCtrlServer);
 
-}  // end of namespace
+}  // namespace switcher
 
-#endif // ifndef
+#endif

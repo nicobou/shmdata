@@ -41,6 +41,6 @@ class VideoTestSource:public VideoSource {
   bool init_gpipe() final;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

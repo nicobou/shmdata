@@ -238,4 +238,5 @@ PostureMerge::can_sink_caps(std::string caps) {
   return (caps == POINTCLOUD_TYPE_BASE)
       || (caps == POINTCLOUD_TYPE_COMPRESSED);
 }
-}                               // end of namespace
+
+}  // namespace switcher

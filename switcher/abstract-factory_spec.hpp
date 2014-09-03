@@ -127,4 +127,4 @@ template < typename T, typename Key, typename Doc > AbstractFactory < T, Key, Do
     destructor_map_(), classes_documentation_() {
 }
 
-}                               // end of namespace
+}  // namespace switcher

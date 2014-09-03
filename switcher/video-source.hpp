@@ -79,6 +79,6 @@ class VideoSource:public GPipe, public StartableQuiddity {
   static void print_list(gpointer data, gpointer user_data);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

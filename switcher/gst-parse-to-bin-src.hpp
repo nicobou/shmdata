@@ -51,6 +51,6 @@ class GstParseToBinSrc:public GPipe, StartableQuiddity {
   static const gchar *get_gst_launch_pipeline(void *user_data);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

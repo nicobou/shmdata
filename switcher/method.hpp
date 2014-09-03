@@ -82,6 +82,6 @@ class Method:public Categorizable {
   JSONBuilder::ptr json_description_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

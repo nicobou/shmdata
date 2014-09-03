@@ -65,6 +65,6 @@ class SyphonSrc:public Quiddity, public Segment, public StartableQuiddity {
 
 SWITCHER_DECLARE_PLUGIN(SyphonSrc);
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

@@ -99,6 +99,6 @@ class Segment:public CounterMap
 
   void populate_tree(std::string key, std::string caps);
 };
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

@@ -20,11 +20,13 @@
 #ifndef __SWITCHER_PJ_PRESENCE_H__
 #define __SWITCHER_PJ_PRESENCE_H__
 
-#include <mutex>
-#include <condition_variable>
 #include <pjsua-lib/pjsua.h>
 #include <glib.h>               // gboolean
 #include <glib-object.h>        // GEnumValue
+
+#include <mutex>
+#include <condition_variable>
+#include <string>
 
 namespace switcher {
 class PJSIP;
@@ -33,9 +35,10 @@ class PJCall;
 class PJPresence {
   friend PJSIP;
   friend PJCall;              // for account local uri
+
  public:
   PJPresence() = delete;
-  PJPresence(PJSIP * sip_instance);
+  explicit PJPresence(PJSIP * sip_instance);
   ~PJPresence();
   PJPresence(const PJPresence &) = delete;
   PJPresence & operator=(const PJPresence &) = delete;
@@ -97,6 +100,6 @@ class PJPresence {
   static void on_buddy_evsub_state(pjsua_buddy_id buddy_id,
                                    pjsip_evsub * sub, pjsip_event * event);
 };
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

@@ -57,6 +57,6 @@ class PluginLoader {
   std::string class_name_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

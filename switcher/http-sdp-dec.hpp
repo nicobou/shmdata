@@ -58,6 +58,6 @@ class HTTPSDPDec:public GPipe {
                                          gpointer user_data);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

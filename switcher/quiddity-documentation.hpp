@@ -63,6 +63,6 @@ class QuiddityDocumentation {
   void make_json_description();
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

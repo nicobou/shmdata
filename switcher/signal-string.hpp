@@ -93,6 +93,6 @@ class Signal {
   /* } EmitArgs; */
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

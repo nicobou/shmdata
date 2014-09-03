@@ -61,6 +61,6 @@ class FakeSink:public SinglePadGstSink {
   static const gchar *get_caps(void *user_data);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

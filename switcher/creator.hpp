@@ -54,6 +54,6 @@ template < class T > class CustomDerivedCreator:public Creator < T > {
   }
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

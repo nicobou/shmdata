@@ -47,6 +47,6 @@ class Decodebin2:public SinglePadGstSink {
                                     void *decodebin2_instance);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

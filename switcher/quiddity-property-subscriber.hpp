@@ -85,6 +85,6 @@ class QuiddityPropertySubscriber {
   PropDataMap prop_datas_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

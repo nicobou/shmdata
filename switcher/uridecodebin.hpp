@@ -99,6 +99,6 @@ class Uridecodebin:public GPipe, public GstElementCleaner {
   /*     GstCaps *caps, */
   /*     gpointer user_data); */
 };
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

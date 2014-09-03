@@ -110,6 +110,6 @@ class PortMidi {
   static guint instance_counter_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

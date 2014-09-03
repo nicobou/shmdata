@@ -49,6 +49,6 @@ class Categorizable {
   int position_weight_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

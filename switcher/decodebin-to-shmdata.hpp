@@ -82,6 +82,6 @@ class DecodebinToShmdata {
   static gboolean rewind(gpointer user_data);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

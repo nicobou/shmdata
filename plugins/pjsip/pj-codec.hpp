@@ -57,7 +57,6 @@ class PJCodec {
   } alt_codec_factory_t;
 
  private:
-
   static alt_codec_t codec_list[];
   static alt_codec_factory_t alt_codec_factory;
   static pjmedia_codec_factory_op alt_codec_factory_op;
@@ -79,6 +78,5 @@ class PJCodec {
   static pj_status_t alt_codec_deinit(void);
 };
 
-}                               // end of namespace
-
-#endif                          // ifndef
+}  // namespace switcher
+#endif

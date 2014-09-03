@@ -109,6 +109,6 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
 
 SWITCHER_DECLARE_PLUGIN(PostureSrc);
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

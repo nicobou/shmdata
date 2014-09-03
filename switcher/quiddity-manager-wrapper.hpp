@@ -34,6 +34,6 @@ class QuiddityManagerWrapper:public Quiddity {
   std::weak_ptr < QuiddityManager > manager_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

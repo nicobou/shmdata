@@ -48,6 +48,6 @@ class CounterMap {
   std::mutex mutex_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

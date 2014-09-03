@@ -93,4 +93,4 @@ PostureDisplay::can_sink_caps(std::string caps) {
       || (caps == POINTCLOUD_TYPE_COMPRESSED);
 }
 
-}                               // end of namespace
+}  // namespace switcher

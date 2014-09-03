@@ -68,6 +68,6 @@ class PropertyMapper:public Quiddity {
   static void set_double_value(gdouble value, void *user_data);
   static gdouble get_double_value(void *user_data);
 };
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

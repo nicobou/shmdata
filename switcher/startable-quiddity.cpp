@@ -72,4 +72,4 @@ bool StartableQuiddity::is_started() {
   return started_;
 }
 
-}                               // end of switcher namespace
+}  // namespace switcher

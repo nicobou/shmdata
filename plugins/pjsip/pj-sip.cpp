@@ -29,10 +29,11 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PJSIP,
                                      "LGPL", "sip", "Nicolas Bouillot");
 
 // according to pjsip documentation:
-// Application should only instantiate one SIP endpoint instance for every process.
+// Application should only instantiate
+// one SIP endpoint instance for every process.
 pjsip_endpoint *PJSIP::sip_endpt_ = nullptr;
 
-PJSIP::PJSIP():cp_() {
+PJSIP::PJSIP():custom_props_(std::make_shared<CustomPropertyHelper>()), cp_() {
 }
 
 PJSIP::~PJSIP() {
@@ -47,10 +48,9 @@ PJSIP::~PJSIP() {
     sip_work_ = false;
     sip_worker_.join();
   }
-
 }
 
-void PJSIP::run_command_sync(std::function < void () > command) {
+void PJSIP::run_command_sync(std::function<void()> command) {
   {
     std::unique_lock < std::mutex > lock(work_mutex_);
     command_ = command;
@@ -226,7 +226,6 @@ void PJSIP::exit_cmd() {
 }
 
 void PJSIP::start_udp_transport() {
-
   if (nullptr != transport_id_)
     pjsua_transport_close(*transport_id_, PJ_FALSE);
 
@@ -239,7 +238,6 @@ void PJSIP::start_udp_transport() {
     g_warning("Error creating UDP transport");
     return;
   }
-
 }
 
 void PJSIP::set_port(const gint value, void *user_data) {
@@ -256,4 +254,4 @@ gint PJSIP::get_port(void *user_data) {
   return context->sip_port_;
 }
 
-}                               // end namespace switcher
+}  // namespace switcher

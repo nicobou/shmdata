@@ -17,26 +17,22 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <string>
+
 #include "./pj-presence.hpp"
 #include "./pj-sip.hpp"
 #include "switcher/scope-exit.hpp"
+
 namespace switcher {
 
 GEnumValue PJPresence::status_enum_[8] = {
-  {PJPresence::AVAILABLE, "Available", "AVAILABLE"}
-  ,
-  {PJPresence::BUSY, "Busy", "BUSY"}
-  ,
-  {PJPresence::OTP, "On the phone", "OTP"}
-  ,
-  {PJPresence::IDLE, "Idle", "IDLE"}
-  ,
-  {PJPresence::AWAY, "Away", "AWAY"}
-  ,
-  {PJPresence::BRB, "Be right back", "BRB"}
-  ,
-  {PJPresence::OFFLINE, "Offline", "OFFLINE"}
-  ,
+  {PJPresence::AVAILABLE, "Available", "AVAILABLE"},
+  {PJPresence::BUSY, "Busy", "BUSY"},
+  {PJPresence::OTP, "On the phone", "OTP"},
+  {PJPresence::IDLE, "Idle", "IDLE"},
+  {PJPresence::AWAY, "Away", "AWAY"},
+  {PJPresence::BRB, "Be right back", "BRB"},
+  {PJPresence::OFFLINE, "Offline", "OFFLINE"},
   {0, nullptr, nullptr}
 };
 
@@ -49,36 +45,38 @@ PJPresence::PJPresence(PJSIP * sip_instance):
     status_(PJPresence::OFFLINE),
     custom_status_spec_(nullptr), custom_status_(), sip_local_user_() {
   // registering account
-  sip_instance_->install_method("Register SIP Account",       // long name
-                                "register",   // name
-                                "register a SIP account",     // description
-                                "success",    // return description
-                                Method::make_arg_description("SIP User Name", // first arg long name
-                                                             "user",  // fisrt arg name
-                                                             "string",        // first arg description
-                                                             "SIP Domain",
-                                                             "domain",
-                                                             "string",
-                                                             "SIP password",
-                                                             "password",
-                                                             "string",
-                                                             nullptr),
-                                (Method::method_ptr) &
-                                register_account_wrapped, G_TYPE_BOOLEAN,
-                                Method::make_arg_type_description
-                                (G_TYPE_STRING, G_TYPE_STRING,
-                                 G_TYPE_STRING, nullptr), this);
+  sip_instance_->
+      install_method("Register SIP Account",  // long name
+                     "register",  // name
+                     "register a SIP account",  // description
+                     "success",  // return description
+                     Method::make_arg_description("SIP User Name",  // long name
+                                                  "user",  // name
+                                                  "string",  // description
+                                                  "SIP Domain",
+                                                  "domain",
+                                                  "string",
+                                                  "SIP password",
+                                                  "password",
+                                                  "string",
+                                                  nullptr),
+                     (Method::method_ptr) &
+                     register_account_wrapped, G_TYPE_BOOLEAN,
+                     Method::make_arg_type_description
+                     (G_TYPE_STRING, G_TYPE_STRING,
+                      G_TYPE_STRING, nullptr), this);
 
-  sip_instance_->install_method("Unregister SIP Account",     // long name
-                                "unregister", // name
-                                "unregister SIP account",     // description
-                                "success",    // return description
-                                Method::make_arg_description("none",
-                                                             nullptr),
-                                (Method::method_ptr) &
-                                unregister_account_wrapped, G_TYPE_BOOLEAN,
-                                Method::make_arg_type_description
-                                (G_TYPE_NONE, nullptr), this);
+  sip_instance_->
+      install_method("Unregister SIP Account",  // long name
+                     "unregister",  // name
+                     "unregister SIP account",  // description
+                     "success",  // return description
+                     Method::make_arg_description("none",
+                                                  nullptr),
+                     (Method::method_ptr) &
+                     unregister_account_wrapped, G_TYPE_BOOLEAN,
+                     Method::make_arg_type_description
+                     (G_TYPE_NONE, nullptr), this);
 
   // online status
   status_enum_spec_ =
@@ -110,7 +108,6 @@ PJPresence::PJPresence(PJSIP * sip_instance):
                                            custom_status_spec_,
                                            "status-note",
                                            "Custom status note");
-
 }
 
 PJPresence::~PJPresence() {
@@ -163,7 +160,8 @@ PJPresence::register_account(const std::string & sip_user,
   cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
   cfg.cred_info[0].data = pj_str(password);
   cfg.publish_enabled = PJ_TRUE;
-  cfg.register_on_acc_add = PJ_TRUE;  // or  pjsua_acc_set_registration (account_id_, PJ_TRUE);
+  // pjsua_acc_set_registration (account_id_, PJ_TRUE) or:
+  cfg.register_on_acc_add = PJ_TRUE;
 
   status = pjsua_acc_add(&cfg, PJ_TRUE, &account_id_);
   g_free(id);
@@ -274,7 +272,6 @@ void PJPresence::add_buddy(const std::string & sip_user) {
 void
 PJPresence::on_registration_state(pjsua_acc_id acc_id,
                                   pjsua_reg_info * info) {
-
   PJPresence *context =
       static_cast < PJPresence * >(pjsua_acc_get_user_data(acc_id));
   std::unique_lock < std::mutex > lock(context->registration_mutex_);
@@ -309,15 +306,17 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   g_print("%.*s status is %.*s, subscription state is %s "
           "(last termination reason code=%d %.*s)\n"
           "rpid  activity %s, note %.*s\n",
-          (int) info.uri.slen,
+          static_cast<int>(info.uri.slen),
           info.uri.ptr,
-          (int) info.status_text.slen,
+          static_cast<int>(info.status_text.slen),
           info.status_text.ptr,
           info.sub_state_name,
           info.sub_term_code,
-          (int) info.sub_term_reason.slen,
+          static_cast<int>(info.sub_term_reason.slen),
           info.sub_term_reason.ptr,
-          activity.c_str(), (int) info.rpid.note.slen, info.rpid.note.ptr);
+          activity.c_str(),
+          static_cast<int>(info.rpid.note.slen),
+          info.rpid.note.ptr);
 
   data::Tree::ptr tree = data::make_tree();
 
@@ -372,7 +371,6 @@ void PJPresence::set_status(const gint value, void *user_data) {
   GObjectWrapper::notify_property_changed(context->sip_instance_->gobject_->
                                           get_gobject(),
                                           context->status_enum_spec_);
-
 }
 
 gint PJPresence::get_status(void *user_data) {
@@ -393,9 +391,9 @@ void PJPresence::change_online_status(gint status) {
     if (nullptr != tmp)
       g_free(tmp);
   };
-  if (custom_status_.empty() || 0 == custom_status_.compare(""))
+  if (custom_status_.empty() || 0 == custom_status_.compare("")) {
     has_custom_status = false;
-  else {
+  } else {
     tmp = g_strdup(custom_status_.c_str());
     elem.note = pj_str(tmp);
   }
@@ -512,7 +510,6 @@ PJPresence::on_buddy_evsub_state(pjsua_buddy_id buddy_id,
   printf("Buddy %d: subscription state: %s (event: %s%s)",
          buddy_id, pjsip_evsub_get_state_name(sub),
          pjsip_event_str(event->type), event_info);
-
 }
 
-}
+}  // namespace switcher

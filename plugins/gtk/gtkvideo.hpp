@@ -108,6 +108,6 @@ class GTKVideo:public SinglePadGstSink {
 
 SWITCHER_DECLARE_PLUGIN(GTKVideo);
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

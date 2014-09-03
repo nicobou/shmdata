@@ -64,6 +64,6 @@ class ShmdataWriter:public OnCaps {
                             GstPad * pad, gpointer user_data);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

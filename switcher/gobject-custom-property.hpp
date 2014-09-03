@@ -44,6 +44,6 @@ class GObjectCustomProperty {
   void set_members(set_method_pointer set_method,
                    get_method_pointer get_method);
 };
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

@@ -53,7 +53,7 @@ template < class T > class HashTable {
   // std::map<std::string, T> keep_ref_count_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 // including the actual code here
 #include "./hash-table_spec.hpp"

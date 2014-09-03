@@ -75,6 +75,6 @@ class Property:public Categorizable {
   std::map < std::pair < Callback, void *>, gulong > subscribed_handlers_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

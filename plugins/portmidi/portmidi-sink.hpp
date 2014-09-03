@@ -65,6 +65,6 @@ class PortMidiSink:public Quiddity, public Segment,
 
 SWITCHER_DECLARE_PLUGIN(PortMidiSink);
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

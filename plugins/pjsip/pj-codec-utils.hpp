@@ -54,8 +54,7 @@ get_string_values_from_gst_struct(GstStructure * caps_struct,
 std::vector < gint >
 get_int_values_from_gst_struct(GstStructure * caps_struct,
                                std::string key);
-}
 
-}                               // end of namespace
-
-#endif                          // ifndef
+}  // namespace PJCodecUtils
+}  // namespace switcher
+#endif

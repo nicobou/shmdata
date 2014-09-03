@@ -84,6 +84,6 @@ class PortMidiSource:public Quiddity,
 
 SWITCHER_DECLARE_PLUGIN(PortMidiSource);
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

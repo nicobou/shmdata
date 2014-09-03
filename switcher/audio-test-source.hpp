@@ -43,6 +43,6 @@ class AudioTestSource:public AudioSource, public StartableQuiddity {
   bool init_gpipe() final;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

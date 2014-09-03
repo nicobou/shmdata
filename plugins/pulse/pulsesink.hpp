@@ -100,6 +100,6 @@ class PulseSink:public SinglePadGstSink {
 
 SWITCHER_DECLARE_PLUGIN(PulseSink);
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

@@ -244,5 +244,5 @@ bool Tree::is_array(const std::string & path) {
   return tree->is_array_;
 }
 
-}                             // end of namespace information
-}                               // end of namespace switcher
+}  // namespace information
+}  // namespace switcher

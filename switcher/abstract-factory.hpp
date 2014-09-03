@@ -53,7 +53,7 @@ template < class T, class Key, class Doc > class AbstractFactory {
   std::map < Key, Doc > classes_documentation_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #include "./abstract-factory_spec.hpp"
 

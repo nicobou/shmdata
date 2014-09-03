@@ -106,6 +106,6 @@ class PulseSrc:public AudioSource, public StartableQuiddity {
 
 SWITCHER_DECLARE_PLUGIN(PulseSrc);
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

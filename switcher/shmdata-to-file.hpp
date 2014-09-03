@@ -62,6 +62,6 @@ class ShmdataToFile:public GPipe {
   static gboolean remove_shmdata_wrapped(gpointer shmdata_socket_path,
                                          gpointer user_data);
 };
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

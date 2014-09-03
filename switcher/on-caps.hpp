@@ -44,6 +44,6 @@ class OnCaps {
   bool set_negociated_caps(std::string caps);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

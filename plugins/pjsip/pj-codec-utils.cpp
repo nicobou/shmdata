@@ -17,9 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./pj-codec-utils.hpp"
 #include <algorithm>
-#include <iostream>
+#include <string>
+#include <vector>
+
+#include "./pj-codec-utils.hpp"
 
 namespace switcher {
 PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codecs() {
@@ -30,14 +32,15 @@ PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codecs() {
       (GST_ELEMENT_FACTORY_TYPE_DEPAYLOADER,
        GST_RANK_NONE);
   GList *iter = element_list;
-  while (iter != nullptr)
-  {
+  while (iter != nullptr) {
     // g_print ("+++++\n");
-    // g_print ("%s -- ", gst_element_factory_get_longname ((GstElementFactory *)iter->data));
-    // g_print ("%s\n", gst_plugin_feature_get_name ((GstPluginFeature *)iter->data));
+    // g_print ("%s -- ",
+    // gst_element_factory_get_longname ((GstElementFactory *)iter->data));
+    // g_print ("%s\n",
+    // gst_plugin_feature_get_name ((GstPluginFeature *)iter->data));
     PJCodecUtils::codecs from_factory =
-        inspect_rtp_codec_from_gst_element_factory((GstElementFactory *)
-                                                   iter->data);
+        inspect_rtp_codec_from_gst_element_factory(
+            reinterpret_cast<GstElementFactory *>(iter->data));
     res.insert(res.end(),
                std::move_iterator < codec_it > (from_factory.begin()),
                std::move_iterator < codec_it > (from_factory.end()));
@@ -57,32 +60,33 @@ PJCodecUtils::inspect_rtp_codec_from_gst_element_factory
       gst_element_factory_get_static_pad_templates(factory);
 
   while (nullptr != static_pads) {
-    GstStaticPadTemplate *pad = (GstStaticPadTemplate *) static_pads->data;
-    // the following is EMPTY gchar *caps_str = gst_caps_to_string (&pad->static_caps.caps);
+    GstStaticPadTemplate *pad =
+        reinterpret_cast<GstStaticPadTemplate *>(static_pads->data);
+    // the following is EMPTY
+    // gchar *caps_str = gst_caps_to_string (&pad->static_caps.caps);
     // g_free (caps_str);
-    /* // g_print ("string: %s\n",  */
-    /*       pad->static_caps.string);  */
+    /* g_print ("string: %s\n",  */
+    /*     pad->static_caps.string);  */
     GstCaps *caps = gst_caps_from_string(pad->static_caps.string);
     PJCodecUtils::codecs from_caps = inspect_rtp_codec_from_gst_caps(caps);
 
     // replace null "encoding-name" by appropriate
     {
-      codec_it not_null_encoding = std::find_if(from_caps.begin(),
-                                                from_caps.end(),
-                                                [](const RTPCodec::ptr &
-                                                   codec) {
-                                                  return 0 !=
-                                                  codec->
-                                                  encoding_name_.compare
-                                                  ("null");
-                                                }
-                                                );
+      codec_it not_null_encoding =
+          std::find_if(from_caps.begin(),
+                       from_caps.end(),
+                       [](const RTPCodec::ptr &
+                          codec) {
+                         return 0 != codec->encoding_name_.compare
+                         ("null");
+                       });
       if (from_caps.end() != not_null_encoding) {
         std::string encoding = (*not_null_encoding)->encoding_name_;
-        for (auto & it:from_caps)
+        for (auto & it : from_caps)
           if (0 == it->encoding_name_.compare("null"))
             it->encoding_name_ = encoding;
-        // g_print ("found encoding name %s\n", (*not_null_encoding)->encoding_name_.c_str ());
+        // g_print ("found encoding name %s\n",
+        // (*not_null_encoding)->encoding_name_.c_str ());
       }
     }
     // move result to res
@@ -115,8 +119,7 @@ PJCodecUtils::get_string_values_from_gst_struct(GstStructure *
       // g_print ("%s string %s\n", key.c_str (), g_value_get_string (val));
       res.emplace_back(g_value_get_string(val));
     }
-  }
-  else {
+  } else {
     res.emplace_back("null");
   }
   return res;
@@ -130,7 +133,8 @@ PJCodecUtils::get_int_values_from_gst_struct(GstStructure * caps_struct,
   if (nullptr != val) {
     // g_print ("%s struct type %s\n", key.c_str (), G_VALUE_TYPE_NAME (val));
     if (GST_VALUE_HOLDS_INT_RANGE(val)) {
-      // g_print ("%s min %d\n", key.c_str (), gst_value_get_int_range_max (val));
+      // g_print ("%s min %d\n",
+      // key.c_str (), gst_value_get_int_range_max (val));
       res.push_back(gst_value_get_int_range_max(val));
     }
     if (GST_VALUE_HOLDS_LIST(val)) {
@@ -152,7 +156,7 @@ PJCodecUtils::codecs
 PJCodecUtils::inspect_rtp_codec_from_gst_caps(GstCaps * caps) {
   PJCodecUtils::codecs res;
   guint caps_size = gst_caps_get_size(caps);
-  if (!gst_caps_is_any(caps))
+  if (!gst_caps_is_any(caps)) {
     for (guint i = caps_size; i > 0; i--) {
       GstStructure *caps_struct = gst_caps_get_structure(caps, i - 1);
       if (gst_structure_has_name(caps_struct, "application/x-rtp")) {
@@ -165,6 +169,7 @@ PJCodecUtils::inspect_rtp_codec_from_gst_caps(GstCaps * caps) {
                    std::move_iterator < codec_it > (tmp.end()));
       }
     }
+  }
   // g_print ("------ %s, res size %lu\n",__FUNCTION__, res.size ());
   return res;
 }
@@ -179,7 +184,8 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
     std::vector < std::string > encoding_names =
         get_string_values_from_gst_struct(caps_struct, "encoding-name");
     std::for_each(encoding_names.begin(),
-                  encoding_names.end(),[&res] (const std::string & str) {
+                  encoding_names.end(),
+                  [&res] (const std::string & str) {
                     // g_print ("writing encoding in res\n");
                     // FIXME use make_unique and emplace_back when c++14
                     res.push_back(RTPCodec::ptr(new RTPCodec()));
@@ -194,7 +200,8 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
         get_int_values_from_gst_struct(caps_struct, "payload");
     PJCodecUtils::codecs with_payloads;
     std::for_each(payloads.begin(),
-                  payloads.end(),[&res, &with_payloads] (const gint & pt) {
+                  payloads.end(),
+                  [&res, &with_payloads] (const gint & pt) {
                     PJCodecUtils::codecs this_payload;
                     std::for_each(res.begin(),
                                   res.end(),
@@ -226,7 +233,8 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
                   [&res, &with_media] (const std::string media_str) {
                     PJCodecUtils::codecs this_media;
                     std::for_each(res.begin(),
-                                  res.end(),[&](const RTPCodec::ptr & codec) {
+                                  res.end(),
+                                  [&](const RTPCodec::ptr & codec) {
                                     this_media.emplace_back(RTPCodec::ptr
                                                             (new
                                                              RTPCodec
@@ -252,7 +260,8 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
                   [&res, &with_clock_rates] (const gint rate) {
                     PJCodecUtils::codecs this_clock_rate;
                     std::for_each(res.begin(),
-                                  res.end(),[&](const RTPCodec::ptr & codec) {
+                                  res.end(),
+                                  [&](const RTPCodec::ptr & codec) {
                                     this_clock_rate.emplace_back
                                         (RTPCodec::ptr(new RTPCodec(*codec)));
                                     this_clock_rate.back()->clock_rate_ =
@@ -277,4 +286,5 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
   // g_print ("------ %s, res size %lu\n",__FUNCTION__, res.size ());
   return res;
 }
-}
+
+}  // namespace switcher

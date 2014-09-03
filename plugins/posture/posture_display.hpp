@@ -53,6 +53,6 @@ class PostureDisplay:public Quiddity, public Segment {
 
 SWITCHER_DECLARE_PLUGIN(PostureDisplay);
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

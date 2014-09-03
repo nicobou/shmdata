@@ -150,6 +150,6 @@ class RtpSession:public GPipe {
   static gboolean write_sdp_file_wrapped(gpointer nick_name,
                                          gpointer user_data);
 };
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

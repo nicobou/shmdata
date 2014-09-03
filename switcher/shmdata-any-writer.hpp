@@ -67,6 +67,6 @@ class ShmdataAnyWriter:public OnCaps {
   bool set_path_without_deleting(std::string name);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

@@ -44,6 +44,6 @@ class Xvimagesink:public SinglePadGstSink {
   bool can_sink_caps(std::string caps) final;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

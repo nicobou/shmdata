@@ -52,6 +52,6 @@ class FakeShmdataWriter:public GPipe, StartableQuiddity {
   static const gchar *get_shmdata_path(void *user_data);
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

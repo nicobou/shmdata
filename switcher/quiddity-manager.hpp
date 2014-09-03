@@ -240,6 +240,6 @@ class QuiddityManager:public std::enable_shared_from_this <
   void invoke_in_thread();
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif

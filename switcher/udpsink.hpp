@@ -64,6 +64,6 @@ class UDPSink:public SinglePadGstSink {
 
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

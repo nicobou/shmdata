@@ -65,6 +65,6 @@ class ShmdataFromGDPFile:public Quiddity {
   static gboolean remove_file_wrapped(gpointer file_path,
                                       gpointer user_data);
 };
-}                               // end of namespace
+}  // namespace switcher
 
 #endif                          // ifndef

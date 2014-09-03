@@ -107,6 +107,6 @@ class GPipe:public Quiddity, public Segment {
                             const gchar * tag, gpointer user_data);
   static gboolean query_position(gpointer user_data);
 };
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef

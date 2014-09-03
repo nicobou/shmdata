@@ -54,6 +54,6 @@ class UniqueGstElement {
   gst_element_handle element_;
 };
 
-}                               // end of namespace
+}  // namespace switcher
 
 #endif // ifndef
