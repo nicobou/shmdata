@@ -20,7 +20,6 @@
 #include "./counter-map.hpp"
 
 namespace switcher {
-
 CounterMap::CounterMap():counters_(), mutex_() {
 }
 

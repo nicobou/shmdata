@@ -38,7 +38,6 @@ QuiddityBasicTest::test_full(QuiddityManager::ptr manager,
 bool
 QuiddityBasicTest::test_create(QuiddityManager::ptr manager,
                                std::string quiddity_class_name) {
-
   // g_print ("%s\n", quiddity_class_name.c_str ());
 
   // testing with a nick name

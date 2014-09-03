@@ -24,7 +24,6 @@
 
 namespace switcher {
 namespace data {
-
 //--------------- utils
 // constructor
 Tree::ptr make_tree() {

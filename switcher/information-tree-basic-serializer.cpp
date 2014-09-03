@@ -23,7 +23,6 @@
 namespace switcher {
 namespace data {
 namespace BasicSerializer {
-
 typedef struct {
   std::list < std::string > path_ {
   };

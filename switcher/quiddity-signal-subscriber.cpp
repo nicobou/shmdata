@@ -26,7 +26,6 @@
 #include "./quiddity-manager-impl.hpp"
 
 namespace switcher {
-
 QuidditySignalSubscriber::QuidditySignalSubscriber() {
   muted_ = false;
 }

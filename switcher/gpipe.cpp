@@ -31,7 +31,6 @@
 #include <algorithm>
 
 namespace switcher {
-
 GPipe::GPipe():pipeline_(gst_pipeline_new(nullptr)),
                source_funcs_(), gpipe_custom_props_(new CustomPropertyHelper()) {
   make_bin();

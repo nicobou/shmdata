@@ -26,7 +26,6 @@
 #include <string.h>
 
 namespace switcher {
-
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(V4L2Src,
                                      "Video Capture (with v4l2)",
                                      "video source",
@@ -244,7 +243,6 @@ V4L2Src::update_framerate_numerator_denominator(CaptureDescription
   // framerate_numerator_ = -1;
   // framerate_denominator_ = -1;
   if (cap_descr.frame_interval_stepwise_max_numerator_ > 0) {
-
     // framerate_numerator_ = 60;
 
     if (framerate_numerator_spec_ == nullptr)

@@ -25,7 +25,6 @@
 #include "./gst-utils.hpp"
 
 namespace switcher {
-
 Property::Property():long_name_("undefined_long_name"),
                      name_("undefined_name"),
                      property_(nullptr),
@@ -83,7 +82,6 @@ std::string Property::get_name() {
 }
 
 void Property::set(std::string value) {
-
   GValue transformed_val = G_VALUE_INIT;
   g_value_init(&transformed_val, property_->value_type);
 
@@ -503,7 +501,6 @@ void Property::make_description() {
 
 // from gst-inspect
 void Property::print() {
-
   // guint i;
   gboolean readable;
   // gboolean first_flag;

@@ -31,7 +31,6 @@ QuiddityPropertySubscriber::QuiddityPropertySubscriber() {
 }
 
 QuiddityPropertySubscriber::~QuiddityPropertySubscriber() {
-
   QuiddityManager_Impl::ptr manager = manager_impl_.lock();
   if (!(bool) manager)
     return;

@@ -23,7 +23,6 @@
 namespace switcher {
 namespace data {
 namespace JSONSerializer {
-
 void
 on_visiting_node(std::string key,
                  const Tree::ptr node,
@@ -113,7 +112,6 @@ std::string serialize(const Tree::ptr tree) {
 // Tree::ptr
 // deserialize (std::string &serialized)
 // {
-
 //   // JsonParser *parser = json_parser_new ();
 //   // GError *error = nullptr;
 //   // json_parser_load_from_data (parser,

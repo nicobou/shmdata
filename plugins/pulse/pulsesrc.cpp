@@ -163,7 +163,6 @@ bool PulseSrc::make_elements() {
 void
 PulseSrc::pa_context_state_callback(pa_context * pulse_context,
                                     void *user_data) {
-
   PulseSrc *context = static_cast < PulseSrc * >(user_data);
 
   switch (pa_context_get_state(pulse_context)) {

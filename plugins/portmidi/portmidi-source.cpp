@@ -21,7 +21,6 @@
 #include <time.h>
 
 namespace switcher {
-
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSource,
                                      "Midi (PortMidi)",
                                      "midi source",
@@ -43,7 +42,6 @@ PortMidiSource::~PortMidiSource() {
 }
 
 bool PortMidiSource::init() {
-
   if (input_devices_enum_[0].value_name == nullptr) {
     g_debug("no MIDI capture device detected");
     return false;

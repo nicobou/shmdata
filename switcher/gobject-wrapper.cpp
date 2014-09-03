@@ -25,7 +25,6 @@
 #include <glib/gprintf.h>
 
 namespace switcher {
-
 // gobject
 typedef struct _MyObject {
   GObject parent_instance;

@@ -53,7 +53,6 @@
 #include "./xvimagesink.hpp"
 
 namespace switcher {
-
 QuiddityManager_Impl::ptr QuiddityManager_Impl::make_manager() {
   QuiddityManager_Impl::ptr manager(new QuiddityManager_Impl("default"));
   return manager;
@@ -94,7 +93,6 @@ QuiddityManager_Impl::~QuiddityManager_Impl() {
 }
 
 void QuiddityManager_Impl::remove_shmdata_sockets() {
-
   GFile *shmdata_dir =
       g_file_new_for_commandline_arg(Quiddity::get_socket_dir().c_str());
 
@@ -527,7 +525,6 @@ bool QuiddityManager_Impl::remove(std::string quiddity_name) {
 std::string
 QuiddityManager_Impl::
 get_properties_description(std::string quiddity_name) {
-
   if (!exists(quiddity_name)) {
     g_warning
         ("quiddity %s not found, cannot get description of properties",
@@ -541,7 +538,6 @@ std::string
 QuiddityManager_Impl::get_property_description(std::string quiddity_name,
                                                std::string property_name)
 {
-
   if (!exists(quiddity_name)) {
     g_warning
         ("quiddity %s not found, cannot get description of properties",
@@ -867,7 +863,6 @@ get_method_description_by_class(std::string class_name,
 //*** signals
 std::string
 QuiddityManager_Impl::get_signals_description(std::string quiddity_name) {
-
   if (!exists(quiddity_name)) {
     g_warning("quiddity %s not found, cannot get signals description",
               quiddity_name.c_str());
@@ -879,7 +874,6 @@ QuiddityManager_Impl::get_signals_description(std::string quiddity_name) {
 std::string
 QuiddityManager_Impl::get_signal_description(std::string quiddity_name,
                                              std::string signal_name) {
-
   if (!exists(quiddity_name)) {
     g_warning("quiddity %s not found, cannot get signal description",
               quiddity_name.c_str());
@@ -1108,7 +1102,6 @@ GMainContext *QuiddityManager_Impl::get_g_main_context() {
 }
 
 bool QuiddityManager_Impl::load_plugin(const char *filename) {
-
   PluginLoader::ptr plugin(new PluginLoader());
 
   if (!plugin->load(filename))

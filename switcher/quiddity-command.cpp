@@ -24,7 +24,6 @@
 #include "./quiddity-command.hpp"
 
 namespace switcher {
-
 const std::map < int, const char *>QuiddityCommand::command_names_ = {
   {auto_invoke, "auto_invoke"},
   {create, "create"},

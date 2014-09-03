@@ -20,7 +20,6 @@
 #include "./custom-property-helper.hpp"
 
 namespace switcher {
-
 CustomPropertyHelper::CustomPropertyHelper() {
   gobject_.reset(new GObjectWrapper());
 }
@@ -42,7 +41,6 @@ GParamSpec *CustomPropertyHelper::make_string_property(const gchar *
                                                        get_string_method
                                                        get_method,
                                                        void *user_data) {
-
   GParamSpec *pspec = GObjectWrapper::make_string_property(nickname,
                                                            description,
                                                            default_value,
@@ -70,7 +68,6 @@ GParamSpec *CustomPropertyHelper::make_boolean_property(const gchar *
                                                         get_boolean_method
                                                         get_method,
                                                         void *user_data) {
-
   GParamSpec *pspec = GObjectWrapper::make_boolean_property(nickname,
                                                             description,
                                                             default_value,
@@ -98,7 +95,6 @@ GParamSpec *CustomPropertyHelper::make_int_property(const gchar * nickname,
                                                     get_int_method
                                                     get_method,
                                                     void *user_data) {
-
   GParamSpec *pspec = GObjectWrapper::make_int_property(nickname,
                                                         description,
                                                         min_value,
@@ -130,7 +126,6 @@ GParamSpec *CustomPropertyHelper::make_double_property(const gchar *
                                                        get_double_method
                                                        get_method,
                                                        void *user_data) {
-
   GParamSpec *pspec = GObjectWrapper::make_double_property(nickname,
                                                            description,
                                                            min_value,
@@ -162,7 +157,6 @@ GParamSpec *CustomPropertyHelper::make_enum_property(const gchar *
                                                      get_enum_method
                                                      get_method,
                                                      void *user_data) {
-
   GParamSpec *pspec = GObjectWrapper::make_enum_property(nickname,
                                                          description,
                                                          default_value,

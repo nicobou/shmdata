@@ -21,7 +21,6 @@
 #include <gst/gst.h>
 #include "./gst-utils.hpp"
 namespace switcher {
-
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
                                      "Audio Test",
                                      "audio source",

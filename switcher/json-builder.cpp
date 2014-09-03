@@ -24,7 +24,6 @@
 #include "./json-builder.hpp"
 
 namespace switcher {
-
 JSONBuilder::JSONBuilder():builder_(json_builder_new()), thread_safe_() {
 }
 

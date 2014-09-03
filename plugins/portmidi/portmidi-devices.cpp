@@ -22,7 +22,6 @@
 #include <glib/gprintf.h>
 
 namespace switcher {
-
 PortMidi::PortMidiScheduler * PortMidi::scheduler_ = nullptr;
 guint PortMidi::instance_counter_ = 0;
 
@@ -77,7 +76,6 @@ PortMidi::open_input_device(int id, on_pm_event_method method,
 }
 
 bool PortMidi::open_output_device(int id) {
-
   if (output_streams_.find(id) != output_streams_.end()) {
     g_debug("output device (id %d), already openned, cannot open", id);
     return false;
@@ -186,7 +184,6 @@ PmStream *PortMidi::PortMidiScheduler::add_input_stream(int id,
                                                         on_pm_event_method
                                                         method,
                                                         void *user_data) {
-
   PmStream *midi_in;
   if (pmNoError != Pm_OpenInput(&midi_in, id, nullptr /* driver info */ ,
                                 0 /* use default input size */ ,
@@ -253,7 +250,6 @@ PortMidi::PortMidiScheduler::push_message(PmStream * stream,
 */
 void PortMidi::PortMidiScheduler::process_midi(PtTimestamp /*timestamp */ ,
                                                void *user_data) {
-
   PortMidiScheduler *context =
       static_cast < PortMidiScheduler * >(user_data);
 

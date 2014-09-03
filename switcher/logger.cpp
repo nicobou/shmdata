@@ -20,7 +20,6 @@
 #include "./logger.hpp"
 
 namespace switcher {
-
 bool Logger::installed_ = false;
 
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Logger,

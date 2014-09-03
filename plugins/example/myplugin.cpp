@@ -20,7 +20,6 @@
 #include "./myplugin.hpp"
 
 namespace switcher {
-
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(MyPlugin,
                                      "My Plugin",
                                      "test",

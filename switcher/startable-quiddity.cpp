@@ -21,7 +21,6 @@
 #include "./quiddity.hpp"
 
 namespace switcher {
-
 StartableQuiddity::StartableQuiddity():started_(false),
                                        startable_custom_props_(new CustomPropertyHelper()) {
 }

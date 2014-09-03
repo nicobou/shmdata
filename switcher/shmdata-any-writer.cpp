@@ -21,7 +21,6 @@
 #include "./gst-utils.hpp"
 
 namespace switcher {
-
 ShmdataAnyWriter::ShmdataAnyWriter():started_(false),
                                      path_(),
                                      writer_(shmdata_any_writer_init()),

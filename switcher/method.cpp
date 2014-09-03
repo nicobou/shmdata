@@ -24,7 +24,6 @@
 #include "./method.hpp"
 
 namespace switcher {
-
 Method::Method():closure_(nullptr) {
   json_description_.reset(new JSONBuilder());
 }
@@ -87,7 +86,6 @@ uint Method::get_num_of_value_args() {
 }
 
 bool Method::invoke(std::vector < std::string > args, GValue * result_value) {
-
   // GValue result_value = G_VALUE_INIT;
 
   if (args.size() != num_of_value_args_ && arg_types_[0] != G_TYPE_NONE) {

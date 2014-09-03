@@ -23,7 +23,6 @@
 #include "./scope-exit.hpp"
 
 namespace switcher {
-
 Segment::Segment():shmdata_any_writers_(),
                    shmdata_any_readers_(),
                    shmdata_writers_(),

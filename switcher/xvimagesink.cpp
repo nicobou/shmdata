@@ -43,7 +43,6 @@ Xvimagesink::~Xvimagesink() {
 }
 
 bool Xvimagesink::init_gpipe() {
-
   if (!GstUtils::make_element("bin", &sink_bin_))
     return false;
   if (!GstUtils::make_element("queue", &queue_))

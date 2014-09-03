@@ -24,7 +24,6 @@
 #include "switcher/scope-exit.hpp"
 
 namespace switcher {
-
 GEnumValue PJPresence::status_enum_[8] = {
   {PJPresence::AVAILABLE, "Available", "AVAILABLE"},
   {PJPresence::BUSY, "Busy", "BUSY"},

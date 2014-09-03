@@ -22,7 +22,6 @@
 #include "./scope-exit.hpp"
 
 namespace switcher {
-
 ShmdataWriter::ShmdataWriter() {
 }
 

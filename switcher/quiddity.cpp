@@ -241,7 +241,6 @@ Quiddity::set_signal_description(const std::string long_name,
                                  const std::string short_description,
                                  const std::string return_description,
                                  const Signal::args_doc arg_description) {
-
   if (signals_.find(signal_name) == signals_.end()) {
     g_warning("cannot set description of a not existing signal");
     return false;
@@ -361,7 +360,6 @@ bool Quiddity::register_signal_action_with_class_name(const std::string class_na
 bool Quiddity::register_signal_action(const std::string method_name,  // the name to give
                                       void *method, GType return_type, guint n_params,        // number of params
                                       GType * param_types, void *user_data) {
-
   return
       register_signal_action_with_class_name(get_documentation
                                              ().get_class_name(),
@@ -555,7 +553,6 @@ Quiddity::set_method_description(const std::string long_name,
 }
 
 std::string Quiddity::get_methods_description() {
-
   methods_description_->reset();
   methods_description_->begin_object();
   methods_description_->set_member_name("methods");
@@ -649,7 +646,6 @@ bool
 Quiddity::subscribe_signal(std::string signal_name,
                            Signal::OnEmittedCallback cb, void *user_data)
 {
-
   if (signals_.find(signal_name) == signals_.end()) {
     g_warning("Quiddity::subscribe_signal, signal %s not found",
               signal_name.c_str());
@@ -685,7 +681,6 @@ void Quiddity::signal_emit(const std::string signal_name, ...) {
 }
 
 std::string Quiddity::get_signals_description() {
-
   std::string class_name = get_documentation().get_class_name();
 
   signals_description_->reset();
@@ -712,7 +707,6 @@ std::string Quiddity::get_signals_description() {
 }
 
 std::string Quiddity::get_signal_description(std::string signal_name) {
-
   if (signals_.find(signal_name) == signals_.end())
     return "";
 

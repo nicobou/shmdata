@@ -21,7 +21,6 @@
 #include "./gst-utils.hpp"
 
 namespace switcher {
-
 GstElementCleaner::GstElementCleaner():elements_to_remove_(),
                                        labeled_elements_() {
 }

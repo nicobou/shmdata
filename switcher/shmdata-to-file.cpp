@@ -180,7 +180,6 @@ bool ShmdataToFile::make_recorders() {
 }
 
 bool ShmdataToFile::clean_recorders() {
-
   for (auto & it:shmdata_recorders_) {
     GstUtils::clean_element(it.second);
     unregister_shmdata(it.first);

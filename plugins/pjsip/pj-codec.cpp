@@ -25,7 +25,6 @@
 #include <algorithm>
 
 namespace switcher {
-
 PJCodec::alt_codec_factory_t PJCodec::alt_codec_factory;
 
 pjmedia_codec_factory_op PJCodec::alt_codec_factory_op = {

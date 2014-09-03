@@ -21,7 +21,6 @@
 #include "./quiddity-documentation.hpp"
 
 namespace switcher {
-
 PluginLoader::PluginLoader():create_(nullptr),
                              destroy_(nullptr),
                              module_(nullptr), get_documentation_(nullptr), json_doc_(nullptr) {

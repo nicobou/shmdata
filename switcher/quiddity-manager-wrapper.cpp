@@ -20,7 +20,6 @@
 #include "./quiddity-manager-wrapper.hpp"
 
 namespace switcher {
-
 void
 QuiddityManagerWrapper::set_quiddity_manager(std::shared_ptr <
                                              QuiddityManager > manager) {

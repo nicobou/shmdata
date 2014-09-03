@@ -20,7 +20,6 @@
 #include "./shmdata-any-reader.hpp"
 
 namespace switcher {
-
 ShmdataAnyReader::ShmdataAnyReader():path_(),
                                      reader_(shmdata_any_reader_init()), json_description_(new JSONBuilder()) {
 }

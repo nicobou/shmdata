@@ -23,7 +23,6 @@
 #include <iostream>
 
 namespace switcher {
-
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(StringDictionary,
                                      "Dictionary",
                                      "dictionary",

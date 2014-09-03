@@ -30,7 +30,6 @@
 // #endif
 
 namespace switcher {
-
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PropertyMapper,
                                      "Switcher Property Mapper",
                                      "mapper",

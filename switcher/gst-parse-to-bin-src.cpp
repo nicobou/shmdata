@@ -21,7 +21,6 @@
 #include "./gst-utils.hpp"
 
 namespace switcher {
-
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstParseToBinSrc,
                                      "GStreamer Pipeline",
                                      "source",
@@ -57,7 +56,6 @@ bool GstParseToBinSrc::init_gpipe() {
 }
 
 bool GstParseToBinSrc::to_shmdata() {
-
   GError *error = nullptr;
   gst_parse_to_bin_src_ =
       gst_parse_bin_from_description(gst_launch_pipeline_, TRUE, &error);

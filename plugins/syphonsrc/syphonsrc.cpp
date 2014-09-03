@@ -30,7 +30,6 @@ using namespace
 switcher::data;
 
 namespace switcher {
-
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SyphonSrc,
                                      "Video capture (through Syphon)",
                                      "SyphonSrc",

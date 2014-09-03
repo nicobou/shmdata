@@ -22,11 +22,9 @@
 #include "./scope-exit.hpp"
 
 namespace switcher {
-
 bool
 GstUtils::make_element(const gchar * class_name,
                        GstElement ** target_element) {
-
   // if (*target_element != nullptr)
   //   {
   // g_warning ("cannot make element on a non nullptr element (%s, %s)",
@@ -153,7 +151,6 @@ void GstUtils::clean_element(GstElement * element) {
 }
 
 void GstUtils::wait_state_changed(GstElement * bin) {
-
   if (!GST_IS_BIN(bin)) {
     g_warning("GstUtils::wait_state_changed not a bin");
     return;

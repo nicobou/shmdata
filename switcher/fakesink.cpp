@@ -21,7 +21,6 @@
 #include "./gst-utils.hpp"
 
 namespace switcher {
-
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FakeSink,
                                      "Shmdata Inspector",
                                      "monitor",

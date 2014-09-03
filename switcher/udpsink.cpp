@@ -158,7 +158,6 @@ UDPSink::~UDPSink() {
 void
 UDPSink::add_elements_to_bin(ShmdataReader * caller,
                              void *udpbin_instance) {
-
   UDPSink *context = static_cast < UDPSink * >(udpbin_instance);
 
   caller->set_sink_element(context->udpsink_bin_);

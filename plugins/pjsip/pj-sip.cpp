@@ -20,7 +20,6 @@
 #include "./pj-sip.hpp"
 
 namespace switcher {
-
 SWITCHER_DECLARE_PLUGIN(PJSIP);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PJSIP,
                                      "SIP (Session Initiation Protocol)",

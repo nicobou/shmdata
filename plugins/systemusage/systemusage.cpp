@@ -35,7 +35,6 @@ using namespace
 switcher::data;
 
 namespace switcher {
-
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SystemUsage,
                                      "SystemUsage plugin",
                                      "SystemUsage",

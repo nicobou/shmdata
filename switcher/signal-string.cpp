@@ -26,7 +26,6 @@
 #include <algorithm>
 
 namespace switcher {
-
 Signal::Signal() {
   json_description_.reset(new JSONBuilder());
   hook_id_ = 0;
@@ -302,7 +301,6 @@ void Signal::signal_emit( /*GMainContext *context, */ const gchar *
 // }
 
 GValue Signal::action_emit(std::vector < std::string > args) {
-
   GValue result_value = G_VALUE_INIT;
 
   if (!is_action_) {

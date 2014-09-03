@@ -27,7 +27,6 @@
 #include "./pj-sip.hpp"
 
 namespace switcher {
-
 PJCall::app_t PJCall::app;
 pjmedia_endpt *PJCall::med_endpt_ = nullptr;
 

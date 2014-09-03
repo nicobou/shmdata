@@ -604,7 +604,6 @@ GetMethodDescriptionByClass(const v8::Arguments & args) {
 
 // log callback
 v8::Handle < v8::Value > RegisterLogCallback(const v8::Arguments & args) {
-
   v8::HandleScope scope;
   user_log_cb =
       v8::Persistent < v8::Function >::New(v8::Local <
@@ -652,7 +651,6 @@ logger_cb(std::string subscriber_name,
 
 // prop callback
 v8::Handle < v8::Value > RegisterPropCallback(const v8::Arguments & args) {
-
   v8::HandleScope scope;
   user_prop_cb =
       v8::Persistent < v8::Function >::New(v8::Local <
@@ -759,7 +757,6 @@ v8::Handle < v8::Value > ListSubscribedProperties(const v8::Arguments & args) {
 
 // signal callback
 v8::Handle < v8::Value > RegisterSignalCallback(const v8::Arguments & args) {
-
   v8::HandleScope scope;
   user_signal_cb =
       v8::Persistent < v8::Function >::New(v8::Local <

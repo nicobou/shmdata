@@ -30,7 +30,6 @@
 
 int
 main() {
-
   bool success = true;
   {
     switcher::QuiddityManager::ptr manager =

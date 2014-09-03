@@ -24,7 +24,6 @@
 #include <iostream>             // to remove
 
 namespace switcher {
-
 QuiddityManager::ptr QuiddityManager::make_manager(std::string name) {
   if (!gst_is_initialized())
     gst_init(nullptr, nullptr);
@@ -97,7 +96,6 @@ play_command_history(QuiddityManager::CommandHistory histo,
                      QuiddityManager::PropCallbackMap * prop_cb_data,
                      QuiddityManager::SignalCallbackMap * sig_cb_data,
                      bool mute_existing_subscribers) {
-
   if (mute_existing_subscribers) {
     manager_impl_->mute_property_subscribers(true);
     manager_impl_->mute_signal_subscribers(true);
@@ -172,7 +170,6 @@ get_signal_subscribers_names(QuiddityManager::CommandHistory histo) {
 
 QuiddityManager::CommandHistory
 QuiddityManager::get_command_history_from_file(const char *file_path) {
-
   std::vector < QuiddityCommand::ptr > res;
   JsonParser *parser = json_parser_new();
   GError *error = nullptr;
@@ -208,7 +205,6 @@ QuiddityManager::get_command_history_from_file(const char *file_path) {
 }
 
 bool QuiddityManager::save_command_history(const char *file_path) {
-
   GFile *file = g_file_new_for_commandline_arg(file_path);
 
   GError *error = nullptr;
@@ -471,7 +467,6 @@ bool
 QuiddityManager::invoke_va(const gchar * quiddity_name,
                            const gchar * method_name,
                            std::string ** return_value, ...) {
-
   command_lock();
   std::vector < std::string > method_args;
   command_->set_id(QuiddityCommand::invoke);
@@ -794,7 +789,6 @@ QuiddityManager::create(std::string quiddity_class,
 }
 
 bool QuiddityManager::remove(std::string quiddity_name) {
-
   std::string res = seq_invoke(QuiddityCommand::remove,
                                quiddity_name.c_str(), nullptr);
   if (res == "true")

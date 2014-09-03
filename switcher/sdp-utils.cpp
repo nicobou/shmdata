@@ -20,7 +20,6 @@
 #include "./sdp-utils.hpp"
 
 namespace switcher {
-
 SDPMedia::SDPMedia():media_(nullptr), caps_structure_(nullptr), port_(0)      // means "disabled media"
 {
   gst_sdp_media_new(&media_);
