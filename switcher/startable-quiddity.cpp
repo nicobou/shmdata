@@ -58,8 +58,7 @@ void StartableQuiddity::set_started(gboolean started, void *user_data) {
   if (started) {
     if (context->start())
       context->started_ = true;
-  }
-  else {
+  } else {
     if (context->stop())
       context->started_ = false;
   }

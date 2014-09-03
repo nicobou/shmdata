@@ -59,10 +59,10 @@ class VideoSource:public GPipe, public StartableQuiddity {
 
   virtual bool on_start() {
     return true;
-  };
+  }
   virtual bool on_stop() {
     return true;
-  };
+  }
   virtual bool make_video_source(GstElement ** new_element) = 0;
   bool make_new_shmdatas();
   bool remake_codec_elements();

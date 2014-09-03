@@ -116,8 +116,7 @@ QuidditySignalSubscriber::subscribe(Quiddity::ptr quid,
   if (quid->subscribe_signal(signal_name.c_str(), signal_cb, signal)) {
     signal_datas_[cur_pair] = signal;
     return true;
-  }
-  else {
+  } else {
     g_warning("QuidditySignalSubscriber: cannot subscribe to signal");
     return false;
   }

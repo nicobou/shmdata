@@ -274,8 +274,7 @@ gboolean Uridecodebin::process_eos(gpointer user_data) {
     //        rate,
     //        GST_TIME_ARGS (start_value),
     //        GST_TIME_ARGS (stop_value));
-  }
-  else {
+  } else {
     g_debug("duration query failed...");
   }
   gst_query_unref(query);
@@ -340,8 +339,7 @@ void Uridecodebin::on_handoff_cb(GstElement * /*object */ ,
     writer->start();
     g_free(string_caps);
     gst_caps_unref(caps);
-  }
-  else {
+  } else {
     GstBuffer *buftmp = gst_buffer_copy(buf);
     writer->push_data(GST_BUFFER_DATA(buftmp),
                       GST_BUFFER_SIZE(buftmp),

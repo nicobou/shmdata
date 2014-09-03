@@ -97,7 +97,7 @@ bool Method::invoke(std::vector < std::string > args, GValue * result_value) {
   GValue params[arg_types_.size()];
 
   // with args
-  if (arg_types_[0] != G_TYPE_NONE)
+  if (arg_types_[0] != G_TYPE_NONE) {
     for (gulong i = 0; i < num_of_value_args_; i++) {
       params[i] = G_VALUE_INIT;
       g_value_init(&params[i], arg_types_[i]);
@@ -108,7 +108,7 @@ bool Method::invoke(std::vector < std::string > args, GValue * result_value) {
         return false;
       }
     }
-  else {
+  } else {
     params[0] = G_VALUE_INIT;
     g_value_init(&params[0], G_TYPE_STRING);
     gst_value_deserialize(&params[0], "");
@@ -161,7 +161,7 @@ void Method::make_description() {
   json_description_->begin_array();
   args_doc::iterator it;
   int j = 0;
-  if (!arg_description_.empty())
+  if (!arg_description_.empty()) {
     for (it = arg_description_.begin(); it != arg_description_.end(); it++) {
       json_description_->begin_object();
       json_description_->add_string_member("long name",
@@ -174,6 +174,7 @@ void Method::make_description() {
                                            g_type_name(arg_types_[j]));
       json_description_->end_object();
     }
+  }
   json_description_->end_array();
   json_description_->end_object();
 }

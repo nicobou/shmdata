@@ -346,8 +346,7 @@ void Property::make_description() {
         else
           json_description_->add_string_member("default value",
                                                gst_caps_to_string(caps));
-      }
-      else if (G_IS_PARAM_SPEC_ENUM(property_)) {
+      } else if (G_IS_PARAM_SPEC_ENUM(property_)) {
         GEnumValue *values;
         guint j = 0;
         gint enum_value;
@@ -397,8 +396,7 @@ void Property::make_description() {
         json_description_->end_array();
 
         /* g_type_class_unref (ec); */
-      }
-      else if (G_IS_PARAM_SPEC_FLAGS(property_)) {
+      } else if (G_IS_PARAM_SPEC_FLAGS(property_)) {
         g_debug("warning: param spec flags not handled");
         // GParamSpecFlags *pflags = G_PARAM_SPEC_FLAGS (property_);
         // GFlagsValue *vals;
@@ -422,18 +420,15 @@ void Property::make_description() {
         // }
 
         // g_free (cur);
-      }
-      else if (G_IS_PARAM_SPEC_OBJECT(property_)) {
+      } else if (G_IS_PARAM_SPEC_OBJECT(property_)) {
         g_debug("warning: param spec object not handled");
         // g_debug ("%-23.23s Object of type \"%s\"", "",
         //  g_type_name (property_->value_type));
-      }
-      else if (G_IS_PARAM_SPEC_BOXED(property_)) {
+      } else if (G_IS_PARAM_SPEC_BOXED(property_)) {
         g_debug("warning: param spec boxed not handled");
         // g_debug ("%-23.23s Boxed pointer of type \"%s\"", "",
         //  g_type_name (property_->value_type));
-      }
-      else if (G_IS_PARAM_SPEC_POINTER(property_)) {
+      } else if (G_IS_PARAM_SPEC_POINTER(property_)) {
         g_debug("warning: param spec pointer not handled");
         // if (property_->value_type != G_TYPE_POINTER) {
         //   g_debug ("%-23.23s Pointer of type \"%s\".", "",
@@ -447,8 +442,7 @@ void Property::make_description() {
         // } else {
         //   g_debug ("%-23.23s Array of GValues", "");
         // }
-      }
-      else if (GST_IS_PARAM_SPEC_FRACTION(property_)) {
+      } else if (GST_IS_PARAM_SPEC_FRACTION(property_)) {
         GstParamSpecFraction *pfraction = GST_PARAM_SPEC_FRACTION(property_);
         json_description_->add_string_member("type", "fraction");
         gchar *minnum = g_strdup_printf("%d", pfraction->min_num);
@@ -479,16 +473,14 @@ void Property::make_description() {
         //  pfraction->max_num, pfraction->max_den,
         //  gst_value_get_fraction_numerator (&value),
         //  gst_value_get_fraction_denominator (&value));
-      }
-      else if (GST_IS_PARAM_SPEC_MINI_OBJECT(property_)) {
+      } else if (GST_IS_PARAM_SPEC_MINI_OBJECT(property_)) {
         // g_warning ("warning param spec mini object not handled ");
         // g_warning ("%-23.23s MiniObject of type \"%s\"", "",
         //   g_type_name (property_->value_type));
         json_description_->add_string_member("type",
                                              g_type_name
                                              (property_->value_type));
-      }
-      else {
+      } else {
         g_warning("warning: unknown type");
         // g_debug ("%-23.23s Unknown type %ld \"%s\"", "", property_->value_type,
         //  g_type_name (property_->value_type));
@@ -652,13 +644,12 @@ void Property::print() {
       if (property_->value_type == GST_TYPE_CAPS) {
         const GstCaps *caps = gst_value_get_caps(&value);
 
-        if (!caps)
+        if (!caps) {
           g_debug("%-23.23s Caps (nullptr)", "");
-        else {
+        } else {
           g_debug("%-23.23s Caps (%s)", "", gst_caps_to_string(caps));
         }
-      }
-      else if (G_IS_PARAM_SPEC_ENUM(property_)) {
+      } else if (G_IS_PARAM_SPEC_ENUM(property_)) {
         GEnumValue *values;
         guint j = 0;
         gint enum_value;
@@ -687,8 +678,7 @@ void Property::print() {
           j++;
         }
         /* g_type_class_unref (ec); */
-      }
-      else if (G_IS_PARAM_SPEC_FLAGS(property_)) {
+      } else if (G_IS_PARAM_SPEC_FLAGS(property_)) {
         // GParamSpecFlags *pflags = G_PARAM_SPEC_FLAGS (property_);
         // GFlagsValue *vals;
         // gchar *cur;
@@ -711,21 +701,17 @@ void Property::print() {
         // }
 
         // g_free (cur);
-      }
-      else if (G_IS_PARAM_SPEC_OBJECT(property_)) {
+      } else if (G_IS_PARAM_SPEC_OBJECT(property_)) {
         g_debug("%-23.23s Object of type \"%s\"", "",
                 g_type_name(property_->value_type));
-      }
-      else if (G_IS_PARAM_SPEC_BOXED(property_)) {
+      } else if (G_IS_PARAM_SPEC_BOXED(property_)) {
         g_debug("%-23.23s Boxed pointer of type \"%s\"", "",
                 g_type_name(property_->value_type));
-      }
-      else if (G_IS_PARAM_SPEC_POINTER(property_)) {
+      } else if (G_IS_PARAM_SPEC_POINTER(property_)) {
         if (property_->value_type != G_TYPE_POINTER) {
           g_debug("%-23.23s Pointer of type \"%s\".", "",
                   g_type_name(property_->value_type));
-        }
-        else {
+        } else {
           g_debug("%-23.23s Pointer.", "");
         }
         // } else if (property_->value_type == G_TYPE_VALUE_ARRAY) {
@@ -737,8 +723,7 @@ void Property::print() {
         // } else {
         //   g_debug ("%-23.23s Array of GValues", "");
         // }
-      }
-      else if (GST_IS_PARAM_SPEC_FRACTION(property_)) {
+      } else if (GST_IS_PARAM_SPEC_FRACTION(property_)) {
         GstParamSpecFraction *pfraction = GST_PARAM_SPEC_FRACTION(property_);
 
         g_debug("%-23.23s Fraction. ", "");
@@ -748,12 +733,10 @@ void Property::print() {
                 pfraction->max_num, pfraction->max_den,
                 gst_value_get_fraction_numerator(&value),
                 gst_value_get_fraction_denominator(&value));
-      }
-      else if (GST_IS_PARAM_SPEC_MINI_OBJECT(property_)) {
+      } else if (GST_IS_PARAM_SPEC_MINI_OBJECT(property_)) {
         g_debug("%-23.23s MiniObject of type \"%s\"", "",
                 g_type_name(property_->value_type));
-      }
-      else {
+      } else {
         g_debug("%-23.23s Unknown type %ld \"%s\"", "",
                 property_->value_type, g_type_name(property_->value_type));
       }

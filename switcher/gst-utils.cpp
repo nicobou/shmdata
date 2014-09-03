@@ -76,33 +76,32 @@ bool GstUtils::link_static_to_request(GstPad * srcpad, GstElement * sink) {
 bool GstUtils::check_pad_link_return(GstPadLinkReturn res) {
   if (res == GST_PAD_LINK_OK)
     return true;
-  else {
-    switch (res) {
-      case GST_PAD_LINK_WRONG_HIERARCHY:
-        g_debug
-            ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_HIERARCHY");
-        break;
-      case GST_PAD_LINK_WAS_LINKED:
-        g_debug("GstUtils::check_pad_link_return - GST_PAD_LINK_WAS_LINKED");
-        break;
-      case GST_PAD_LINK_WRONG_DIRECTION:
-        g_debug
-            ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_DIRECTION");
-        break;
-      case GST_PAD_LINK_NOFORMAT:
-        g_debug("GstUtils::check_pad_link_return - GST_PAD_LINK_NOFORMAT");
-        break;
-      case GST_PAD_LINK_NOSCHED:
-        g_debug("GstUtils::check_pad_link_return - GST_PAD_LINK_NOSCHED");
-        break;
-      case GST_PAD_LINK_REFUSED:
-        g_debug("GstUtils::check_pad_link_return - GST_PAD_LINK_REFUSED");
-        break;
-      default:
-        g_debug("GstUtils::check_pad_link_return - UNKNOWN ERROR");
-    }
-    return false;
+
+  switch (res) {
+    case GST_PAD_LINK_WRONG_HIERARCHY:
+      g_debug
+          ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_HIERARCHY");
+      break;
+    case GST_PAD_LINK_WAS_LINKED:
+      g_debug("GstUtils::check_pad_link_return - GST_PAD_LINK_WAS_LINKED");
+      break;
+    case GST_PAD_LINK_WRONG_DIRECTION:
+      g_debug
+          ("GstUtils::check_pad_link_return - GST_PAD_LINK_WRONG_DIRECTION");
+      break;
+    case GST_PAD_LINK_NOFORMAT:
+      g_debug("GstUtils::check_pad_link_return - GST_PAD_LINK_NOFORMAT");
+      break;
+    case GST_PAD_LINK_NOSCHED:
+      g_debug("GstUtils::check_pad_link_return - GST_PAD_LINK_NOSCHED");
+      break;
+    case GST_PAD_LINK_REFUSED:
+      g_debug("GstUtils::check_pad_link_return - GST_PAD_LINK_REFUSED");
+      break;
+    default:
+      g_debug("GstUtils::check_pad_link_return - UNKNOWN ERROR");
   }
+  return false;
 }
 
 void GstUtils::unlink_pad(GstPad * pad) {
@@ -136,14 +135,16 @@ void GstUtils::clean_element(GstElement * element) {
     gst_iterator_free(pad_iter);
 
     GstState state = GST_STATE_TARGET(element);
-    if (state != GST_STATE_NULL)
+    if (state != GST_STATE_NULL) {
       if (GST_STATE_CHANGE_ASYNC ==
-          gst_element_set_state(element, GST_STATE_NULL))
+          gst_element_set_state(element, GST_STATE_NULL)) {
         while (GST_STATE(element) != GST_STATE_NULL) {
           // warning this may be blocking
           gst_element_get_state(element, nullptr, nullptr,
                                 GST_CLOCK_TIME_NONE);
         }
+      }
+    }
     if (GST_IS_BIN(gst_element_get_parent(element)))
       gst_bin_remove(GST_BIN(gst_element_get_parent(element)), element);
   }

@@ -53,7 +53,7 @@ class Tree {
   typedef std::function < void (const std::string & name,
                                 const Tree::ptr tree,
                                 bool is_array_element) > OnNodeFunction;
-  Tree() {};
+  Tree() {}
   Tree(const Any & data);
   bool is_leaf();
   bool is_array();
@@ -90,13 +90,14 @@ class Tree {
   void get_child_keys(const std::string path, Iter pos) {
     std::unique_lock < std::mutex > lock(mutex_);
     auto found = get_node(path);
-    if (!found.first.empty())
+    if (!found.first.empty()) {
       std::transform(found.second->second->childrens_.begin(),
                      found.second->second->childrens_.end(),
                      pos,
                      [](const child_type & child) {
                        return child.first;
                      });
+    }
   }
 
   // get child keys - returning a newly allocated container

@@ -234,8 +234,7 @@ VideoSource::set_codec_long_list(gboolean codec_long_list,
                                        custom_props_->get_gobject(),
                                        context->secondary_codec_spec_,
                                        "codec", "Video Codecs (Long List)");
-  }
-  else {
+  } else {
     context->uninstall_property("codec");
     context->install_property_by_pspec(context->
                                        custom_props_->get_gobject(),

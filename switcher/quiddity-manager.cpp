@@ -111,8 +111,7 @@ play_command_history(QuiddityManager::CommandHistory histo,
                                    prop_it->second.first,
                                    prop_it->second.second);
       }
-    }
-    else if (it->id_ == QuiddityCommand::make_signal_subscriber) {
+    } else if (it->id_ == QuiddityCommand::make_signal_subscriber) {
       if (sig_cb_data != nullptr) {
         QuiddityManager::SignalCallbackMap::iterator sig_it =
             sig_cb_data->find(it->args_[0]);
@@ -120,8 +119,7 @@ play_command_history(QuiddityManager::CommandHistory histo,
           make_signal_subscriber(it->args_[0], sig_it->second.first,
                                  sig_it->second.second);
       }
-    }
-    else {
+    } else {
       // it not propable that create will return the same name,
       // so converting create into create_nick_named with
       // the name that was given first

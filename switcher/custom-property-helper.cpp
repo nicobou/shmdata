@@ -195,28 +195,24 @@ bool CustomPropertyHelper::get_by_gvalue(GValue * value, void *user_data) {
     const gchar *val =
         ((get_string_method) user_method->get) (user_method->user_data);
     g_value_set_string(value, val);
-  }
-  else if (G_VALUE_TYPE(value) == G_TYPE_BOOLEAN) {
+  } else if (G_VALUE_TYPE(value) == G_TYPE_BOOLEAN) {
     gboolean val =
         ((get_boolean_method) user_method->get) (user_method->user_data);
     g_value_set_boolean(value, val);
-  }
-  else if (G_VALUE_TYPE(value) == G_TYPE_INT) {
+  } else if (G_VALUE_TYPE(value) == G_TYPE_INT) {
     gint val = ((get_int_method) user_method->get) (user_method->user_data);
     g_value_set_int(value, val);
-  }
-  else if (G_TYPE_IS_ENUM(G_VALUE_TYPE(value))) {
+  } else if (G_TYPE_IS_ENUM(G_VALUE_TYPE(value))) {
     gint val =
         ((get_enum_method) user_method->get) (user_method->user_data);
     g_value_set_enum(value, val);
-  }
-  else if (G_VALUE_TYPE(value) == G_TYPE_DOUBLE) {
+  } else if (G_VALUE_TYPE(value) == G_TYPE_DOUBLE) {
     gdouble val =
         ((get_double_method) user_method->get) (user_method->user_data);
     g_value_set_double(value, val);
-  }
-  else
+  } else {
     g_debug("CustomPropertyHelper: unknown type");
+  }
   return TRUE;
 }
 
@@ -228,24 +224,19 @@ CustomPropertyHelper::set_by_gvalue(const GValue * value,
   if (G_VALUE_TYPE(value) == G_TYPE_STRING) {
     ((set_string_method) user_method->set) (g_value_get_string(value),
                                             user_method->user_data);
-  }
-  else if (G_VALUE_TYPE(value) == G_TYPE_BOOLEAN) {
+  } else if (G_VALUE_TYPE(value) == G_TYPE_BOOLEAN) {
     ((set_boolean_method) user_method->set) (g_value_get_boolean(value),
                                              user_method->user_data);
-  }
-  else if (G_VALUE_TYPE(value) == G_TYPE_INT) {
+  } else if (G_VALUE_TYPE(value) == G_TYPE_INT) {
     ((set_int_method) user_method->set) (g_value_get_int(value),
                                          user_method->user_data);
-  }
-  else if (G_TYPE_IS_ENUM(G_VALUE_TYPE(value))) {
+  } else if (G_TYPE_IS_ENUM(G_VALUE_TYPE(value))) {
     ((set_enum_method) user_method->set) (g_value_get_enum(value),
                                           user_method->user_data);
-  }
-  else if (G_VALUE_TYPE(value) == G_TYPE_DOUBLE) {
+  } else if (G_VALUE_TYPE(value) == G_TYPE_DOUBLE) {
     ((set_double_method) user_method->set) (g_value_get_double(value),
                                             user_method->user_data);
-  }
-  else {
+  } else {
     g_debug("CustomPropertyHelper: %s is unhandled type",
             g_type_name(G_VALUE_TYPE(value)));
     return FALSE;

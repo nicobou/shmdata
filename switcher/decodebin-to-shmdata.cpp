@@ -302,8 +302,7 @@ void DecodebinToShmdata::on_handoff_cb(GstElement * /*object */ ,
     };
     writer->set_data_type(string_caps);
     writer->start();
-  }
-  else {
+  } else {
     writer->push_data(GST_BUFFER_DATA(buf),
                       GST_BUFFER_SIZE(buf),
                       GST_BUFFER_TIMESTAMP(buf), nullptr, nullptr);
@@ -334,8 +333,7 @@ gboolean DecodebinToShmdata::rewind(gpointer user_data) {
     //        rate,
     //        GST_TIME_ARGS (start_value),
     //        GST_TIME_ARGS (stop_value));
-  }
-  else {
+  } else {
     g_debug("duration query failed...");
   }
   gst_query_unref(query);

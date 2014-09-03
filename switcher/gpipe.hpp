@@ -38,6 +38,7 @@ class DecodebinToShmdata;
 
 class GPipe:public Quiddity, public Segment {
   friend DecodebinToShmdata;
+
  public:
   GPipe();
   virtual ~ GPipe();
