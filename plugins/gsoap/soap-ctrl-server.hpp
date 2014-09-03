@@ -26,7 +26,7 @@
 #include "webservices/soapcontrolService.h"
 
 namespace switcher {
-  
+
 class SoapCtrlServer : public QuiddityManagerWrapper
 {
  public:
@@ -38,7 +38,7 @@ class SoapCtrlServer : public QuiddityManagerWrapper
   bool init() final;
 
   bool set_port(int port);//default port is 8080
-  bool start(); 
+  bool start();
   bool stop();
   //for invocation into soap handlers:
   std::shared_ptr<QuiddityManager> get_quiddity_manager();
@@ -49,7 +49,7 @@ class SoapCtrlServer : public QuiddityManagerWrapper
   struct soap soap_;
   int port_;
   bool quit_server_thread_;
-  controlService *service_; 
+  controlService *service_;
   SOAP_SOCKET socket_;
   std::thread thread_;
   std::mutex mutex_;

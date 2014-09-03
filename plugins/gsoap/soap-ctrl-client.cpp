@@ -46,27 +46,27 @@ SoapCtrlClient::init()
   switcher_control_->soap_endpoint = url_;
 
   install_method("Set Remote Switcher",
-                 "set_remote_url", 
-                 "set remote url to control (for instance http://localhost:8080)", 
+                 "set_remote_url",
+                 "set remote url to control (for instance http://localhost:8080)",
                  "success or fail",
                  Method::make_arg_description("URL",
                                               "url",
                                               "SOAP url",
                                               nullptr),
-                 (Method::method_ptr) &set_remote_url, 
+                 (Method::method_ptr) &set_remote_url,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING, nullptr),
                  this);
 
   install_method("Set Remote Switcher URL And Retry Until Success",
-                 "set_remote_url_retry", 
-                 "connect remote url to control until success, each try being notified with the on_connection_tried", 
+                 "set_remote_url_retry",
+                 "connect remote url to control until success, each try being notified with the on_connection_tried",
                  "periodic try has been instanciated",
                  Method::make_arg_description("URL",
                                               "url",
                                               "SOAP url",
                                               nullptr),
-                 (Method::method_ptr) &set_remote_url_retry, 
+                 (Method::method_ptr) &set_remote_url_retry,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING, nullptr),
                  this);
@@ -80,15 +80,15 @@ SoapCtrlClient::init()
                                               "the remote switcher URL (SOAP control server)",
                                               "Connected",
                                               "connected",
-                                              "connection succeed", 
+                                              "connection succeed",
                                               nullptr),
                  2,
                  connection_tried_type);
 
-    
+
   install_method("Create",
-                 "create", 
-                 "create a quiddity", 
+                 "create",
+                 "create a quiddity",
                  "success or fail",
                  Method::make_arg_description("Quiddity Class Name",
                                               "class_name",
@@ -97,29 +97,29 @@ SoapCtrlClient::init()
                                               "quiddity_name",
                                               "the name to give",
                                               nullptr),
-                 (Method::method_ptr) &create, 
+                 (Method::method_ptr) &create,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING, nullptr),
                  this);
 
-  
+
   install_method("Remove",
-                 "remove", 
-                 "remove a quiddity", 
+                 "remove",
+                 "remove a quiddity",
                  "success or fail",
                  Method::make_arg_description("Quiddity Name",
                                               "quiddity_name",
                                               "name of quiddity to remove",
                                               nullptr),
-                 (Method::method_ptr) &remove, 
+                 (Method::method_ptr) &remove,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING, nullptr),
                  this);
- 
-     
+
+
   install_method("Set Property",
-                 "set_property", 
-                 "set a quiddity property", 
+                 "set_property",
+                 "set a quiddity property",
                  "success or fail",
                  Method::make_arg_description("Quiddity Name",
                                               "quiddity_name",
@@ -131,15 +131,15 @@ SoapCtrlClient::init()
                                               "property_value",
                                               "value to set",
                                               nullptr),
-                 (Method::method_ptr) &set_property, 
+                 (Method::method_ptr) &set_property,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, nullptr),
                  this);
 
 
   install_method("Invoke 1",
-                 "invoke1", 
-                 "invoke a method with one argument", 
+                 "invoke1",
+                 "invoke a method with one argument",
                  "success or fail",
                  Method::make_arg_description("Quiddity Name ",
                                               "quiddity_name",
@@ -151,15 +151,15 @@ SoapCtrlClient::init()
                                               "arg1",
                                               "first argument",
                                               nullptr),
-                 (Method::method_ptr) &invoke1, 
+                 (Method::method_ptr) &invoke1,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, nullptr),
-                 this); 
+                 this);
 
 
   install_method("Invoke 2",
-                 "invoke2", 
-                 "invoke a method with two arguments", 
+                 "invoke2",
+                 "invoke a method with two arguments",
                  "success or fail",
                  Method::make_arg_description("quiddity Name",
                                               "quiddity_name",
@@ -174,16 +174,16 @@ SoapCtrlClient::init()
                                               "arg2",
                                               "second argument",
                                               nullptr),
-                 (Method::method_ptr) &invoke2, 
+                 (Method::method_ptr) &invoke2,
                  G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING, 
+                 Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING,
                                                    G_TYPE_STRING, G_TYPE_STRING, nullptr),
                  this);
 
 
   install_method("Invoke 3",
-                 "invoke3", 
-                 "invoke a method with three arguments", 
+                 "invoke3",
+                 "invoke a method with three arguments",
                  "success or fail",
                  Method::make_arg_description("quiddity Name",
                                               "quiddity_name",
@@ -201,16 +201,16 @@ SoapCtrlClient::init()
                                               "arg3",
                                               "third argument",
                                               nullptr),
-                 (Method::method_ptr) &invoke3, 
+                 (Method::method_ptr) &invoke3,
                  G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING, 
-                                                   G_TYPE_STRING, G_TYPE_STRING, 
+                 Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING,
+                                                   G_TYPE_STRING, G_TYPE_STRING,
                                                    G_TYPE_STRING, nullptr),
                  this);
 
   install_method("Invoke 4",
-                 "invoke4", 
-                 "invoke a method with four arguments", 
+                 "invoke4",
+                 "invoke a method with four arguments",
                  "success or fail",
                  Method::make_arg_description("quiddity Name",
                                               "quiddity_name",
@@ -231,10 +231,10 @@ SoapCtrlClient::init()
                                               "arg4",
                                               "fourth argument",
                                               nullptr),
-                 (Method::method_ptr) &invoke4, 
+                 (Method::method_ptr) &invoke4,
                  G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING, 
-                                                   G_TYPE_STRING, G_TYPE_STRING, 
+                 Method::make_arg_type_description(G_TYPE_STRING, G_TYPE_STRING,
+                                                   G_TYPE_STRING, G_TYPE_STRING,
                                                    G_TYPE_STRING, G_TYPE_STRING, nullptr),
                  this);
   return true;
@@ -259,7 +259,7 @@ SoapCtrlClient::reset_endpoint()
     try_connect_g_source_ = nullptr;
   }
 }
-  
+
 gboolean
 SoapCtrlClient::set_remote_url(gpointer url,
                                gpointer user_data)
@@ -268,10 +268,10 @@ SoapCtrlClient::set_remote_url(gpointer url,
   context->reset_endpoint();
   context->url_ = g_strdup((char *)url);
   context->switcher_control_->soap_endpoint = context->url_;
-    
+
   std::vector<std::string> resultlist;
   context->switcher_control_->get_quiddity_names(&resultlist);
-    
+
   if (context->switcher_control_->error)
   {
     g_warning("SoapCtrlClient::set_remote_url, url not valid or not responding");
@@ -292,9 +292,9 @@ SoapCtrlClient::set_remote_url_retry(gpointer url,
   context->switcher_control_->soap_endpoint = context->url_;
   if (TRUE == context->try_connect(context))
   {
-    context->try_connect_g_source_ = 
+    context->try_connect_g_source_ =
         GstUtils::g_timeout_add_to_context(2000,  //must be higher than gsoap timeouts
-                                           try_connect, 
+                                           try_connect,
                                            context,
                                            context->get_g_main_context());
   }
@@ -309,10 +309,10 @@ SoapCtrlClient::try_connect(gpointer user_data)
     return FALSE;
 
   std::unique_lock<std::mutex> lock(context->try_connect_mutex_);
-   
+
   std::vector<std::string> resultlist;
   context->switcher_control_->get_quiddity_names(&resultlist);
-    
+
   if (context->switcher_control_->error)
   {
     g_debug("SoapCtrlClient::try_connect (%s) failled, will retry",
@@ -333,7 +333,7 @@ SoapCtrlClient::create(gpointer class_name,
   if (context->url_ == nullptr)
     return FALSE;
   std::string name;
-  context->switcher_control_->create_named_quiddity((const char *)class_name, 
+  context->switcher_control_->create_named_quiddity((const char *)class_name,
                                                     (const char *)quiddity_name,
                                                     &name);
   if (g_strcmp0((gchar *)quiddity_name, name.c_str()) != 0)
@@ -367,8 +367,8 @@ SoapCtrlClient::set_property(gpointer quiddity_name,
   SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
   if (context->url_ == nullptr)
     return FALSE;
-  context->switcher_control_->send_set_property((gchar *)quiddity_name, 
-                                                (gchar *)property_name, 
+  context->switcher_control_->send_set_property((gchar *)quiddity_name,
+                                                (gchar *)property_name,
                                                 (gchar *)value);
   if (context->switcher_control_->recv_set_property_empty_response())
     return FALSE;//context->switcher_control_->soap_print_fault(stderr);
@@ -409,7 +409,7 @@ SoapCtrlClient::invoke2(gpointer quiddity_name,
   SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
   if (context->url_ == nullptr)
     return FALSE;
-    
+
   std::vector<std::string> args;
   args.push_back((char *) arg1);
   args.push_back((char *) arg2);
@@ -432,7 +432,7 @@ SoapCtrlClient::invoke3(gpointer quiddity_name,
   SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
   if (context->url_ == nullptr)
     return FALSE;
-    
+
   std::vector<std::string> args;
   args.push_back((char *) arg1);
   args.push_back((char *) arg2);
@@ -457,7 +457,7 @@ SoapCtrlClient::invoke4(gpointer quiddity_name,
   SoapCtrlClient *context = static_cast<SoapCtrlClient *>(user_data);
   if (context->url_ == nullptr)
     return FALSE;
-    
+
   std::vector<std::string> args;
   args.push_back((char *) arg1);
   args.push_back((char *) arg2);
