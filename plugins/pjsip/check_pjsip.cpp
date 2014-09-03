@@ -17,19 +17,20 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/quiddity-manager.hpp"
-#include "switcher/quiddity-basic-test.hpp"
+#include <unistd.h>             // usleep
+
 #include <vector>
 #include <string>
 #include <iostream>
-#include <unistd.h>             // usleep
+
+#include "switcher/quiddity-manager.hpp"
+#include "switcher/quiddity-basic-test.hpp"
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
 
-int
-main() {
+int main() {
   bool success = true;
   {
     switcher::QuiddityManager::ptr manager =

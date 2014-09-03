@@ -44,22 +44,21 @@ pjmedia_codec_factory_op PJCodec::alt_codec_factory_op = {
 pj_status_t PJCodec::alt_codec_test_alloc(pjmedia_codec_factory * factory,
                                           const pjmedia_codec_info * id) {
   // g_print ("*************************************** %s\n", __FUNCTION__);
-
   // for performance, "available_codecs" could become static and reused here
   PJCodecUtils::codecs available_codecs =
       PJCodecUtils::inspect_rtp_codecs();
-
-  auto it = std::find_if(available_codecs.begin(),
-                         available_codecs.end(),
-                         [&id] (const RTPCodec::ptr & codec) {
-                           return 0 == codec->encoding_name_.compare(0,
-                                                                     id->encoding_name.slen,
-                                                                     pj_strbuf
-                                                                     (&id->encoding_name));
-                         });
+  auto it =
+      std::find_if(available_codecs.begin(),
+                   available_codecs.end(),
+                   [&id] (const RTPCodec::ptr & codec) {
+                     return
+                     0 == codec->encoding_name_.compare(0,
+                                                        id->encoding_name.slen,
+                                                        pj_strbuf
+                                                        (&id->encoding_name));
+                   });
   if (available_codecs.end() == it)
     return PJ_ENOTSUP;
-  // g_print ("*********************************** test alloc succeed \n");
   return PJ_SUCCESS;
 }
 
@@ -73,18 +72,18 @@ PJCodec::alt_codec_default_attr(pjmedia_codec_factory * factory,
   PJCodecUtils::codecs available_codecs =
       PJCodecUtils::inspect_rtp_codecs();
 
-  auto it = std::find_if(available_codecs.begin(),
-                         available_codecs.end(),
-                         [&id] (const RTPCodec::ptr & codec) {
-                           return 0 == codec->encoding_name_.compare(0,
-                                                                     id->encoding_name.slen,
-                                                                     pj_strbuf
-                                                                     (&id->encoding_name));
-                         });
+  auto it =
+      std::find_if(available_codecs.begin(),
+                   available_codecs.end(),
+                   [&id] (const RTPCodec::ptr & codec) {
+                     return
+                     0 == codec->encoding_name_.compare(0,
+                                                        id->encoding_name.slen,
+                                                        pj_strbuf
+                                                        (&id->encoding_name));
+                   });
   if (available_codecs.end() == it)
     return PJ_ENOTFOUND;
-
-  // g_print ("*********************************** %s succeed finding encoding name %s \n", __FUNCTION__, (*it)->encoding_name_.c_str ());
 
   pj_bzero(attr, sizeof(pjmedia_codec_param));
   attr->info.clock_rate = (*it)->clock_rate_;
@@ -113,11 +112,11 @@ PJCodec::alt_codec_enum_codecs(pjmedia_codec_factory * factory,
               << " payload " << it->payload_
               << " media " << it->media_
               << " clock rate " << it->clock_rate_ << std::endl;
-    if (i >= *count)          // default pjsip is 32, need a patch to get more, like 128
+    if (i >= *count)  // default pjsip is 32, need a patch to get more, like 128
       break;
     pj_bzero(&codecs[i], sizeof(pjmedia_codec_info));
-    // pj_str_t *str;
-    pj_cstr(&codecs[i].encoding_name, it->encoding_name_.c_str());    // FIXME leaking?
+    // FIXME is the following leaking?
+    pj_cstr(&codecs[i].encoding_name, it->encoding_name_.c_str());
     codecs[i].pt = it->payload_;
     if (0 == it->media_.compare("audio"))
       codecs[i].type = PJMEDIA_TYPE_AUDIO;
