@@ -50,8 +50,7 @@ class GPipe:public Quiddity, public Segment {
   // void init_gpipe (Quiddity &quiddity);// FIXME should called quiddity-manager-impl
   //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
   GstElement * get_bin();
-  GstElement *bin_ {
-    nullptr};                   // FIXME should be private
+  GstElement *bin_ {nullptr};                   // FIXME should be private
   bool reset_bin();
   GstElement *get_pipeline();
   void install_play_pause();
@@ -74,28 +73,18 @@ class GPipe:public Quiddity, public Segment {
     gboolean inited;
   } GstBusSource;
 
-  GstElement *pipeline_ {
-    nullptr};
-  gdouble speed_ {
-    1.0};
-  GSource *position_tracking_source_ {
-    nullptr};
+  GstElement *pipeline_ {nullptr};
+  gdouble speed_ {1.0};
+  GSource *position_tracking_source_ {nullptr};
   GSourceFuncs source_funcs_;
-  GSource *source_ {
-    nullptr};
+  GSource *source_ {nullptr};
   std::shared_ptr < CustomPropertyHelper > gpipe_custom_props_;
-  GParamSpec *play_pause_spec_ {
-    nullptr};
-  bool play_ {
-    true};
-  GParamSpec *seek_spec_ {
-    nullptr};
-  gdouble seek_ {
-    0.0};
-  gint64 length_ {
-    0};
-  std::vector < GSource * >commands_ {
-  };
+  GParamSpec *play_pause_spec_ {nullptr};
+  bool play_ {true};
+  GParamSpec *seek_spec_ {nullptr};
+  gdouble seek_ {0.0};
+  gint64 length_ {0};
+  std::vector < GSource * >commands_ {};
 
   void make_bin();
   void clean_bin();

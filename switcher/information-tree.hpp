@@ -54,8 +54,7 @@ class Tree {
   typedef std::function < void (const std::string & name,
                                 const Tree::ptr tree,
                                 bool is_array_element) > OnNodeFunction;
-  Tree() {
-  };
+  Tree() {};
   Tree(const Any & data);
   bool is_leaf();
   bool is_array();
@@ -120,14 +119,10 @@ class Tree {
   }
 
  private:
-  Any data_ {
-  };
-  bool is_array_ {
-    false};
-  child_list_type childrens_ {
-  };
-  std::mutex mutex_ {
-  };
+  Any data_ {};
+  bool is_array_ {false};
+  child_list_type childrens_ {};
+  std::mutex mutex_ {};
   child_list_type::iterator get_child_iterator(const std::string & key);
   static bool graft_next(std::istringstream & path, Tree * tree,
                          Tree::ptr leaf);

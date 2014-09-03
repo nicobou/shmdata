@@ -44,32 +44,21 @@ class PostureMerge:public Quiddity, public Segment, public StartableQuiddity {
 
  private:
   CustomPropertyHelper::ptr custom_props_;
-  std::string calibration_path_ {
-    "default.kvc"};
-  std::string devices_path_ {
-    "devices.kvc"};
-  bool compress_cloud_ {
-    false};
-  GParamSpec *calibration_path_prop_ {
-    nullptr};
-  GParamSpec *devices_path_prop_ {
-    nullptr};
-  GParamSpec *compress_cloud_prop_ {
-    nullptr};
+  std::string calibration_path_ {"default.kvc"};
+  std::string devices_path_ {"devices.kvc"};
+  bool compress_cloud_ {false};
+  GParamSpec *calibration_path_prop_ {nullptr};
+  GParamSpec *devices_path_prop_ {nullptr};
+  GParamSpec *compress_cloud_prop_ {nullptr};
 
-  unsigned int source_id_ {
-    0};
-  std::shared_ptr < posture::PointCloudMerger > merger_ {
-    nullptr};
-  std::mutex mutex_ {
-  };
+  unsigned int source_id_ {0};
+  std::shared_ptr < posture::PointCloudMerger > merger_ {nullptr};
+  std::mutex mutex_ {};
 
-  ShmdataAnyWriter::ptr cloud_writer_ {
-    nullptr};
+  ShmdataAnyWriter::ptr cloud_writer_ {nullptr};
 
   std::shared_ptr < std::vector < char >>cloud_buffers_[3];
-  unsigned int cloud_buffer_index_ {
-    0};
+  unsigned int cloud_buffer_index_ {0};
 
   bool init() final;
 

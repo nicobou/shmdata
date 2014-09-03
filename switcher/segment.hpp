@@ -63,8 +63,7 @@ class Segment:public CounterMap
                               uint max_reader);
 
  private:
-  Quiddity * quid_ {
-    nullptr};
+  Quiddity * quid_ {nullptr};
   std::unordered_map < std::string,
                        ShmdataAnyWriter::ptr > shmdata_any_writers_;
   std::unordered_map < std::string,
@@ -73,14 +72,10 @@ class Segment:public CounterMap
   std::unordered_map < std::string, ShmdataReader::ptr > shmdata_readers_;
 
   // reader methods to install by a subclass
-  OnConnect on_connect_cb_ {
-    nullptr};
-  OnDisconnect on_disconnect_cb_ {
-    nullptr};
-  OnDisconnectAll on_disconnect_all_cb_ {
-    nullptr};
-  CanSinkCaps on_can_sink_caps_cb_ {
-    nullptr};
+  OnConnect on_connect_cb_ {nullptr};
+  OnDisconnect on_disconnect_cb_ {nullptr};
+  OnDisconnectAll on_disconnect_all_cb_ {nullptr};
+  CanSinkCaps on_can_sink_caps_cb_ {nullptr};
   static gboolean connect_wrapped(gpointer path, gpointer user_data);
   static gboolean disconnect_wrapped(gpointer path, gpointer user_data);
   static gboolean disconnect_all_wrapped(gpointer /*unused */ ,
@@ -89,15 +84,11 @@ class Segment:public CounterMap
 
   // JSON
   JSONBuilder::ptr shmdata_writers_description_;
-  std::mutex writers_mutex_ {
-  };                          // protecting from parallel registers
-  std::string writers_string_ {
-  };
+  std::mutex writers_mutex_ {};                          // protecting from parallel registers
+  std::string writers_string_ {};
   JSONBuilder::ptr shmdata_readers_description_;
-  std::mutex readers_mutex_ {
-  };                          // protecting from parallel registers
-  std::string readers_string_ {
-  };
+  std::mutex readers_mutex_ {};                          // protecting from parallel registers
+  std::string readers_string_ {};
   CustomPropertyHelper::ptr segment_custom_props_;
   GParamSpec *json_writers_description_;
   GParamSpec *json_readers_description_;

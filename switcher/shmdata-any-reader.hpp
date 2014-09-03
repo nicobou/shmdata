@@ -60,17 +60,12 @@ class ShmdataAnyReader:public OnCaps {
   JSONBuilder::Node get_json_root_node();
 
  private:
-  bool muted_ {
-    false};
+  bool muted_ {false};
   std::string path_;
-  Callback cb_ {
-    nullptr};
-  void *cb_user_data_ {
-    nullptr};
-  shmdata_any_reader_t *reader_ {
-    nullptr};
-  bool is_caps_set_ {
-    false};
+  Callback cb_ {nullptr};
+  void *cb_user_data_ {nullptr};
+  shmdata_any_reader_t *reader_ {nullptr};
+  bool is_caps_set_ {false};
 
   JSONBuilder::ptr json_description_;
   void make_json_description();

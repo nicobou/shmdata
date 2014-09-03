@@ -31,10 +31,8 @@ class AudioSource:public GPipe {
   AudioSource(const AudioSource &) = delete;
   AudioSource & operator=(const AudioSource &) = delete;
  private:
-  GstElement * rawaudio_ {
-    nullptr};
-  GstElement *audio_tee_ {
-    nullptr};
+  GstElement * rawaudio_ {nullptr};
+  GstElement *audio_tee_ {nullptr};
   std::string shmdata_path_;
   void make_audio_elements();
 
