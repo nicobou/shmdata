@@ -145,5 +145,4 @@ QuiddityBasicTest::test_get_info(QuiddityManager::ptr manager,
   std::string res = manager->get_info(name, ".");
   return true;
 }
-
 }

@@ -233,7 +233,6 @@ main() {
     assert(std::equal
            (childs.begin(), childs.end(), child_keys_vector.begin(),
             string_compare));
-
   }
 
   return 0;

@@ -242,5 +242,4 @@ bool UDPSink::clear_clients() {
   g_signal_emit_by_name(udpsink_, "clear", nullptr);
   return true;
 }
-
 }

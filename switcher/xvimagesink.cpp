@@ -40,7 +40,6 @@ Xvimagesink::~Xvimagesink() {
   GstUtils::clean_element(xvimagesink_);
   if (on_error_command_ != nullptr)
     delete on_error_command_;
-
 }
 
 bool Xvimagesink::init_gpipe() {
@@ -94,5 +93,4 @@ bool Xvimagesink::init_gpipe() {
 bool Xvimagesink::can_sink_caps(std::string caps) {
   return GstUtils::can_sink_caps("ffmpegcolorspace", caps);
 };
-
 }

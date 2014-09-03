@@ -42,5 +42,4 @@ GObjectCustomProperty::set_members(set_method_pointer set_method,
   set_method_ = set_method;
   get_method_ = get_method;
 }
-
 }

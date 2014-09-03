@@ -93,7 +93,6 @@ GObjectWrapper::GObjectWrapper() {
   my_object_ = (MyObject *) g_object_new(my_object_get_type(), nullptr);
   my_object_->context = this;
   property_default_user_data_ = nullptr;
-
 }
 
 bool

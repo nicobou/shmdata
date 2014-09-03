@@ -112,5 +112,4 @@ JSONBuilder::Node PluginLoader::get_json_root_node() {
     return nullptr;
   return json_doc_;
 }
-
 }

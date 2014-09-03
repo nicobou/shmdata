@@ -112,7 +112,6 @@ main() {
     usleep(20000000);
 
     manager->remove("test");
-
   }                             // end of scope is releasing the manager
 
   if (success)

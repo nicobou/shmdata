@@ -70,5 +70,4 @@ Decodebin2::make_decodebin_active(ShmdataReader * caller,
   context->decodebin_->invoke(std::bind(GstUtils::sync_state_with_parent,
                                         std::placeholders::_1));
 }
-
 }

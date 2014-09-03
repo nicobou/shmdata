@@ -827,5 +827,4 @@ gboolean Uris::group_eos_rewind(Group * group) {
   group_play(group);
   return FALSE;
 }
-
 }

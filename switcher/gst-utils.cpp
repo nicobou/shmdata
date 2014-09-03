@@ -191,7 +191,6 @@ void GstUtils::sync_state_with_parent(GstElement * element) {
   else
     g_warning
         ("GstUtils::sync_state_with_parent, cannot sync an orphan element");
-
 }
 
 void
@@ -353,7 +352,6 @@ GstUtils::element_factory_list_to_g_enum(GEnumValue * target_enum,
   target_enum[i].value_nick = nullptr;
 
   gst_plugin_feature_list_free(element_list);
-
 }
 
 void GstUtils::gst_element_deleter(GstElement * element) {
@@ -397,5 +395,4 @@ bool GstUtils::can_sink_caps(std::string factory_name, std::string caps) {
     return false;
   return true;
 }
-
 }

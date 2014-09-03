@@ -50,7 +50,6 @@ mon_property_cb(std::string /*subscriber_name */ ,
     if (audio_success)
       do_continue = false;
   }
-
 }
 
 int

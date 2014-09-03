@@ -125,5 +125,4 @@ const gchar *FakeSink::get_caps(void *user_data) {
   FakeSink *context = static_cast < FakeSink * >(user_data);
   return context->string_caps_;
 }
-
 }

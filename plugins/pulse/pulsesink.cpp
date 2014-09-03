@@ -450,5 +450,4 @@ gint PulseSink::get_device(void *user_data) {
 bool PulseSink::can_sink_caps(std::string caps) {
   return GstUtils::can_sink_caps("audioconvert", caps);
 };
-
 }                               // end of PulseSink class

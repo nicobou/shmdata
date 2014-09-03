@@ -48,7 +48,6 @@ main() {
 
     if (!switcher::QuiddityBasicTest::test_full(manager, "OSCprop"))
       success = false;
-
   }                             // end of scope is releasing the manager
 
   if (success)

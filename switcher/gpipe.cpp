@@ -222,7 +222,6 @@ void GPipe::query_position_and_length() {
     // g_print ("Time: %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r",
     //  GST_TIME_ARGS (pos), GST_TIME_ARGS (length_));
   }
-
 }
 
 gboolean GPipe::query_position(gpointer user_data) {
@@ -376,7 +375,6 @@ GstBusSyncReply GPipe::bus_sync_handler(GstBus * /*bus */ ,
                                                (GSourceFunc) run_command,
                                                (gpointer) args, nullptr);
       }
-
     }
 
     g_error_free(error);
@@ -529,5 +527,4 @@ bool GPipe::reset_bin() {
   make_bin();
   return true;
 }
-
 }

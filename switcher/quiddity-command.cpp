@@ -214,5 +214,4 @@ QuiddityCommand::parse_command_from_json_reader(JsonReader * reader) {
   json_reader_end_element(reader);
   return command;
 }
-
 }

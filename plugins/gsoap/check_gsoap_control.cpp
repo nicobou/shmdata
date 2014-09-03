@@ -72,7 +72,6 @@ main ()
 
     //soapclient is waiting 1 sec between retries
     usleep (1100000);
-
   }//end of scope is releasing the manager
 
   if (success)

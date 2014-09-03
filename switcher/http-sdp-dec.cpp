@@ -88,7 +88,6 @@ void HTTPSDPDec::destroy_httpsdpdec() {
   reset_counter_map();
   souphttpsrc_ = nullptr;
   sdpdemux_ = nullptr;
-
 }
 
 void
@@ -180,5 +179,4 @@ bool HTTPSDPDec::to_shmdata(std::string uri) {
   GstUtils::sync_state_with_parent(sdpdemux_);
   return true;
 }
-
 }

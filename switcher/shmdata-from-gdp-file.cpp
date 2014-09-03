@@ -199,5 +199,4 @@ bool ShmdataFromGDPFile::clean_players() {
 //   }
 //   return TRUE;
 // }
-
 }

@@ -71,5 +71,4 @@ void StartableQuiddity::set_started(gboolean started, void *user_data) {
 bool StartableQuiddity::is_started() {
   return started_;
 }
-
 }  // namespace switcher

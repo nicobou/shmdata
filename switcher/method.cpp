@@ -27,7 +27,6 @@ namespace switcher {
 
 Method::Method():closure_(nullptr) {
   json_description_.reset(new JSONBuilder());
-
 }
 
 Method::~Method() {
@@ -179,7 +178,6 @@ void Method::make_description() {
     }
   json_description_->end_array();
   json_description_->end_object();
-
 }
 
 // json formated description
@@ -239,5 +237,4 @@ Method::make_arg_description(const char *first_arg_long_name, ...) {
   va_end(vl);
   return res;
 }
-
 }

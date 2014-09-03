@@ -145,7 +145,6 @@ bool GTKVideo::init_gpipe() {
                                                 GTKVideo::get_title, this);
     install_property_by_pspec(gtk_custom_props_->get_gobject(),
                               title_prop_spec_, "title", "Window Title");
-
   }
 
   std::unique_lock < std::mutex > lock(wait_window_mutex_);
@@ -391,5 +390,4 @@ const gchar *GTKVideo::get_title(void *user_data) {
 bool GTKVideo::can_sink_caps(std::string caps) {
   return GstUtils::can_sink_caps("ffmpegcolorspace", caps);
 };
-
 }

@@ -257,7 +257,6 @@ SoapCtrlServer::server_thread ()
     }
   }
 }
-
 }//end of SoapCtrlServer class
 
 

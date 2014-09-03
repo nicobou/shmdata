@@ -58,5 +58,4 @@ void AudioSource::unset_raw_audio_element() {
     unregister_shmdata(shmdata_path_);
   reset_bin();
 }
-
 }

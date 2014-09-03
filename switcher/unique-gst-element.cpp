@@ -36,5 +36,4 @@ void UniqueGstElement::invoke(std::function < void (GstElement *) > command) {
   command(element_.get());
   return;
 }
-
 }

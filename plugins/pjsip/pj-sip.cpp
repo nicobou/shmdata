@@ -253,5 +253,4 @@ gint PJSIP::get_port(void *user_data) {
   PJSIP *context = static_cast < PJSIP * >(user_data);
   return context->sip_port_;
 }
-
 }  // namespace switcher

@@ -49,5 +49,4 @@ get_labeled_element_from_cleaner(const std::string & new_label) {
     return nullptr;
   return it->second;
 }
-
 }

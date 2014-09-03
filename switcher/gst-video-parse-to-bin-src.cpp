@@ -119,5 +119,4 @@ bool GstVideoParseToBinSrc::on_stop() {
   // enable_property ("gst-pipeline");
   return true;
 }
-
 }

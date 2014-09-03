@@ -125,5 +125,4 @@ bool GstParseToBinSrc::stop() {
                             "gst-pipeline", "GStreamer Pipeline");
   return true;
 }
-
 }

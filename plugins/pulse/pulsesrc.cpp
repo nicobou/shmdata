@@ -451,5 +451,4 @@ gint PulseSrc::get_device(void *user_data) {
   PulseSrc *context = static_cast < PulseSrc * >(user_data);
   return context->device_;
 }
-
 }                               // end of PulseSrc class

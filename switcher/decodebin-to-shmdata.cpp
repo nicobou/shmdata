@@ -355,5 +355,4 @@ gboolean DecodebinToShmdata::rewind(gpointer user_data) {
   g_debug("finish looping");
   return FALSE;
 }
-
 }

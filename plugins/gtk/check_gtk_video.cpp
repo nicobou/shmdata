@@ -73,7 +73,6 @@ main() {
 
     if (!switcher::QuiddityBasicTest::test_full(manager, "gtkvideosink"))
       return 1;
-
   }                             // end of scope is releasing the manager
 
   return 0;                     // success

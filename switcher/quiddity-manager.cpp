@@ -82,7 +82,6 @@ void QuiddityManager::command_lock() {
   command_.reset(new QuiddityCommand());
   gint64 cur_time = g_get_monotonic_time();
   command_->time_ = cur_time - history_begin_time_;
-
 }
 
 void QuiddityManager::command_unlock() {
@@ -149,7 +148,6 @@ play_command_history(QuiddityManager::CommandHistory histo,
     manager_impl_->mute_signal_subscribers(false);
     manager_impl_->mute_property_subscribers(false);
   }
-
 }
 
 std::vector < std::string >
@@ -775,7 +773,6 @@ QuiddityManager::rename(std::string nick_name, std::string new_nick_name)
     return true;
   else
     return false;
-
 }
 
 bool QuiddityManager::scan_directory_for_plugins(std::string directory) {
@@ -1108,5 +1105,4 @@ gboolean QuiddityManager::execute_command(gpointer user_data) {
 
   return FALSE;               // remove from gmainloop
 }
-
 }

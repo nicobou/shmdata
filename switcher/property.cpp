@@ -104,7 +104,6 @@ bool Property::subscribe(Callback cb, void *user_data) {
   subscribed_handlers_[subscribe_id] =
       g_signal_connect(object_, signal, G_CALLBACK(cb), user_data);
   return true;
-
 }
 
 bool Property::unsubscribe(Callback cb, void *user_data) {

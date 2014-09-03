@@ -115,7 +115,6 @@ Quiddity::Quiddity():information_tree_(data::make_tree()),
                                   "the quiddity name", "Branch Name",
                                   "branch_name", "the branch name",
                                   nullptr), 1, arg_type);
-
 }
 
 Quiddity::~Quiddity() {

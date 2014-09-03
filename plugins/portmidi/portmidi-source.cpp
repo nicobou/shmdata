@@ -321,5 +321,4 @@ gint PortMidiSource::get_midi_value(void *user_data) {
   PortMidiSource *context = static_cast < PortMidiSource * >(user_data);
   return context->last_data2_;
 }
-
 }

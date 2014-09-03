@@ -91,5 +91,4 @@ void SinglePadGstSink::on_shmdata_connect(std::string shmdata_sochet_path) {
 
 void SinglePadGstSink::on_shmdata_disconnect() {
 }
-
 }

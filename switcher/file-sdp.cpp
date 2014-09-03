@@ -132,5 +132,4 @@ bool FileSDP::to_shmdata(std::string uri) {
   g_debug("to_shmdata end");
   return true;
 }
-
 }

@@ -107,5 +107,4 @@ bool ShmdataAnyReader::set_absolute_timestamp(bool absolute_timestamp) {
 
   return true;
 }
-
 }

@@ -114,5 +114,4 @@ bool AravisGenicam::start(std::string name) {
 
   return true;
 }
-
 }

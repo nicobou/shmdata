@@ -529,5 +529,4 @@ gboolean Segment::can_sink_caps_wrapped(gpointer caps, gpointer user_data) {
   else
     return FALSE;
 }
-
 }

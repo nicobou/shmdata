@@ -286,5 +286,4 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
   // g_print ("------ %s, res size %lu\n",__FUNCTION__, res.size ());
   return res;
 }
-
 }  // namespace switcher

@@ -92,5 +92,4 @@ bool AudioTestSource::stop() {
   unset_raw_audio_element();
   return true;
 }
-
 }

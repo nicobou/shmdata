@@ -990,7 +990,6 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info * si,
            nullptr) {
     /* Send only stream. */
     si->dir = PJMEDIA_DIR_ENCODING;
-
   } else if (pjmedia_sdp_media_find_attr2(local_m, "recvonly", nullptr) !=
            nullptr) {
     /* Recv only stream. */
@@ -1160,7 +1159,6 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info * si,
       } else {
         si->fmt.channel_cnt = 1;
       }
-
     } else {
       const pjmedia_codec_info *p_info;
 
@@ -1173,7 +1171,6 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info * si,
 
     /* For static payload type, pt's are symetric */
     si->tx_pt = pt;
-
   } else {
     // g_print ("DOES NOT HAVE RTPMAP\n");
     // pjmedia_codec_id codec_id;
@@ -1614,5 +1611,4 @@ gint PJCall::get_starting_rtp_port(void *user_data) {
   PJCall *context = static_cast<PJCall *>(user_data);
   return context->starting_rtp_port_;
 }
-
 }  // namespace switcher

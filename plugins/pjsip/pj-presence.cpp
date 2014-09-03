@@ -511,5 +511,4 @@ PJPresence::on_buddy_evsub_state(pjsua_buddy_id buddy_id,
          buddy_id, pjsip_evsub_get_state_name(sub),
          pjsip_event_str(event->type), event_info);
 }
-
 }  // namespace switcher

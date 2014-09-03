@@ -63,7 +63,6 @@ pj_status_t PJCodec::alt_codec_test_alloc(pjmedia_codec_factory * factory,
     return PJ_ENOTSUP;
   // g_print ("*********************************** test alloc succeed \n");
   return PJ_SUCCESS;
-
 }
 
 pj_status_t
@@ -167,7 +166,6 @@ pj_status_t PJCodec::alt_codec_deinit(void) {
   codec_mgr = pjmedia_endpt_get_codec_mgr(PJCall::med_endpt_);
   return pjmedia_codec_mgr_unregister_factory(codec_mgr,
                                               &alt_codec_factory.base);
-
 }
 
 pj_status_t PJCodec::install_codecs() {
@@ -191,5 +189,4 @@ pj_status_t PJCodec::install_codecs() {
   /* initialize your evil library here */
   return PJ_SUCCESS;
 }
-
 }

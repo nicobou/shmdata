@@ -381,5 +381,4 @@ void PropertyMapper::set_double_value(gdouble value, void *user_data) {
 gdouble PropertyMapper::get_double_value(void *user_data) {
   return *(gdouble *) user_data;
 }
-
 }

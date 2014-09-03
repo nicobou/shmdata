@@ -89,5 +89,4 @@ CreateRemoveSpy::on_removed(std::string quiddity_nick_name,
   CreateRemoveSpy *context = static_cast < CreateRemoveSpy * >(user_data);
   context->signal_emit("on-quiddity-removed", quiddity_nick_name.c_str());
 }
-
 }

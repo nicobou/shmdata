@@ -128,7 +128,6 @@ std::string serialize(const Tree::ptr tree) {
 //   // }
 //   return tree;
 // }
-
 }  // namespace JSONSerializer
 }  // namespace data
 }  // namespace switcher

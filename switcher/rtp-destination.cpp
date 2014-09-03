@@ -138,5 +138,4 @@ void RtpDestination::make_json_description() {
 JSONBuilder::Node RtpDestination::get_json_root_node() {
   return json_description_->get_root();
 }
-
 }

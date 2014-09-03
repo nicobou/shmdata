@@ -165,5 +165,4 @@ std::vector < std::pair < std::string,
   }
   return res;
 }
-
 }

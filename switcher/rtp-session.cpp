@@ -930,7 +930,6 @@ void RtpSession::on_pad_removed(GstElement * /*gstelement */ ,
   // RtpSession *context = static_cast<RtpSession *>(user_data);
   g_debug("on_pad_removed, name: %s, direction: %d",
           gst_pad_get_name(new_pad), gst_pad_get_direction(new_pad));
-
 }
 
 void RtpSession::on_no_more_pad(GstElement * /*gstelement */ ,

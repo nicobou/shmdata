@@ -283,5 +283,4 @@ void Logger::set_verbose(gboolean verbose, void *user_data) {
   Logger *context = static_cast < Logger * >(user_data);
   context->verbose_ = verbose;
 }
-
 }

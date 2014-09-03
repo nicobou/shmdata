@@ -397,5 +397,4 @@ void PortMidi::update_device_enum() {
   output_devices_enum_[output_i].value_name = nullptr;
   output_devices_enum_[output_i].value_nick = nullptr;
 }
-
 }

@@ -101,7 +101,6 @@ void ShmdataReader::start() {
   // g_debug ("%s: start idle has unlocked",
   //      __PRETTY_FUNCTION__);
   start_idle(this);
-
 }
 
 gboolean ShmdataReader::start_idle(void *user_data) {
@@ -195,5 +194,4 @@ void ShmdataReader::make_json_description() {
 JSONBuilder::Node ShmdataReader::get_json_root_node() {
   return json_description_->get_root();
 }
-
 }

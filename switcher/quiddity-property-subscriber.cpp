@@ -164,5 +164,4 @@ std::vector < std::pair < std::string, std::string >>
     res.push_back(it.first);
   return res;
 }
-
 }

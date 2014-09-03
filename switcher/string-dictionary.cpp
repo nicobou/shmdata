@@ -295,5 +295,4 @@ gboolean StringDictionary::load(gchar * file_path, void *user_data) {
   StringDictionary *context = static_cast < StringDictionary * >(user_data);
   return context->load_file(file_path);
 }
-
 }

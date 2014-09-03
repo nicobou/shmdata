@@ -84,5 +84,4 @@ bool VideoTestSource::on_stop() {
                      "pattern", "pattern", "Video Pattern");
   return true;
 }
-
 }

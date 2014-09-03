@@ -71,7 +71,6 @@ main() {
     //     // removing the quiddity
     //     if (!manager->remove ("test"))
     //       success = false;
-
   }                             // end of scope is releasing the manager
 
   if (success)

@@ -163,5 +163,4 @@ void ShmdataWriter::make_json_description() {
 JSONBuilder::Node ShmdataWriter::get_json_root_node() {
   return json_description_->get_root();
 }
-
 }

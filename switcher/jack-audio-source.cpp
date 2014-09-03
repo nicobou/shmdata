@@ -159,5 +159,4 @@ const gchar *JackAudioSource::get_client_name(void *user_data) {
   JackAudioSource *context = static_cast < JackAudioSource * >(user_data);
   return context->client_name_;
 }
-
 }

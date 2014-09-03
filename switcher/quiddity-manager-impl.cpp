@@ -429,7 +429,6 @@ std::string QuiddityManager_Impl::get_quiddities_description() {
                              quid->get_documentation().
                              get_author().c_str());
     descr->end_object();
-
   }
 
   descr->end_array();
@@ -863,7 +862,6 @@ get_method_description_by_class(std::string class_name,
   std::string descr = get_method_description(quid_name, method_name);
   remove_without_hook(quid_name);
   return descr;
-
 }
 
 //*** signals
@@ -1193,5 +1191,4 @@ QuiddityManager_Impl::get_info(const std::string & nick_name,
     return "{ \"error\":\"quiddity not found\"}";
   return quiddities_[quiddities_nick_names_[nick_name]]->get_info(path);
 }
-
 }  // namespace switcher

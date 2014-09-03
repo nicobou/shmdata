@@ -133,5 +133,4 @@ bool ShmdataAnyWriter::started() {
   std::unique_lock < std::mutex > lock(thread_safe_);
   return started_;
 }
-
 }

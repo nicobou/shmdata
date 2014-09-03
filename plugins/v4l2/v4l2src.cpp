@@ -159,9 +159,7 @@ void V4L2Src::update_discrete_resolution(CaptureDescription cap_descr) {
     install_property_by_pspec(custom_props_->get_gobject(),
                               resolutions_spec_,
                               "resolution", "Resolution");
-
   }
-
 }
 
 void V4L2Src::update_discrete_framerate(CaptureDescription cap_descr) {
@@ -196,7 +194,6 @@ void V4L2Src::update_discrete_framerate(CaptureDescription cap_descr) {
     // framerate_ = 0;
     install_property_by_pspec(custom_props_->get_gobject(),
                               framerate_spec_, "framerate", "Framerate");
-
   }
 }
 
@@ -236,9 +233,7 @@ void V4L2Src::update_width_height(CaptureDescription cap_descr) {
 
     install_property_by_pspec(custom_props_->get_gobject(),
                               height_spec_, "height", "Height");
-
   }
-
 }
 
 void
@@ -282,9 +277,7 @@ V4L2Src::update_framerate_numerator_denominator(CaptureDescription
                               framerate_denominator_spec_,
                               "framerate_denominator",
                               "Framerate Denominator");
-
   }
-
 }
 
 void V4L2Src::update_tv_standard(CaptureDescription cap_descr) {
@@ -317,9 +310,7 @@ void V4L2Src::update_tv_standard(CaptureDescription cap_descr) {
     install_property_by_pspec(custom_props_->get_gobject(),
                               tv_standards_spec_,
                               "tv_standard", "TV Standard");
-
   }
-
 }
 
 V4L2Src::~V4L2Src() {
@@ -897,5 +888,4 @@ bool V4L2Src::make_video_source(GstElement ** new_element) {
   *new_element = v4l2_bin_;
   return true;
 }
-
 }
