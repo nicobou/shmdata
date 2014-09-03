@@ -27,41 +27,41 @@
 
 namespace switcher {
 
-  class ShmdataToFile:public GPipe {
-  public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToFile);
-    ShmdataToFile();
-    ~ShmdataToFile();
-    ShmdataToFile(const ShmdataToFile &);
-    ShmdataToFile & operator=(const ShmdataToFile &);
+class ShmdataToFile:public GPipe {
+ public:
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToFile);
+  ShmdataToFile();
+  ~ShmdataToFile();
+  ShmdataToFile(const ShmdataToFile &);
+  ShmdataToFile & operator=(const ShmdataToFile &);
 
-    // local streams
-    bool add_shmdata(std::string shmdata_socket_path,
-                     std::string file_location);
-    bool remove_shmdata(std::string shmdata_socket_path);
+  // local streams
+  bool add_shmdata(std::string shmdata_socket_path,
+                   std::string file_location);
+  bool remove_shmdata(std::string shmdata_socket_path);
 
-    static void set_recording(gboolean mute, void *user_data);
-    static gboolean get_recording(void *user_data);
+  static void set_recording(gboolean mute, void *user_data);
+  static gboolean get_recording(void *user_data);
 
-  private:
-    // custom properties:
-    CustomPropertyHelper::ptr custom_prop_;
-    GParamSpec *recording_param_;
-    gboolean recording_;
+ private:
+  // custom properties:
+  CustomPropertyHelper::ptr custom_prop_;
+  GParamSpec *recording_param_;
+  gboolean recording_;
 
-    bool init_gpipe() final;
-    bool make_recorders();
-    bool clean_recorders();
-    std::unordered_map < std::string, std::string > file_names_;
-    std::unordered_map < std::string, GstElement * >shmdata_recorders_;
+  bool init_gpipe() final;
+  bool make_recorders();
+  bool clean_recorders();
+  std::unordered_map < std::string, std::string > file_names_;
+  std::unordered_map < std::string, GstElement * >shmdata_recorders_;
 
-    // wrapper for registering the data_stream functions
-    static gboolean add_shmdata_wrapped(gpointer shmdata_socket_path,
-                                        gpointer file_location,
-                                        gpointer user_data);
-    static gboolean remove_shmdata_wrapped(gpointer shmdata_socket_path,
-                                           gpointer user_data);
-  };
+  // wrapper for registering the data_stream functions
+  static gboolean add_shmdata_wrapped(gpointer shmdata_socket_path,
+                                      gpointer file_location,
+                                      gpointer user_data);
+  static gboolean remove_shmdata_wrapped(gpointer shmdata_socket_path,
+                                         gpointer user_data);
+};
 }                               // end of namespace
 
 #endif                          // ifndef

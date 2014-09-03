@@ -25,41 +25,41 @@
 #include <map>
 
 namespace switcher {
-  class StringDictionary:public Quiddity {
-  public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(StringDictionary);
-    StringDictionary();
-    ~StringDictionary();
-    StringDictionary(const StringDictionary &) = delete;
-    StringDictionary & operator=(const StringDictionary &) = delete;
-    bool init();
+class StringDictionary:public Quiddity {
+ public:
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(StringDictionary);
+  StringDictionary();
+  ~StringDictionary();
+  StringDictionary(const StringDictionary &) = delete;
+  StringDictionary & operator=(const StringDictionary &) = delete;
+  bool init();
 
-  private:
-    std::map < std::string, gchar * >dico_;
+ private:
+  std::map < std::string, gchar * >dico_;
 
-    typedef struct {
-      StringDictionary *string_dictionary;
-      std::string entry_name;
-    } PropertySetGet;
-    std::map < std::string,
-      std::shared_ptr < PropertySetGet > >set_get_contexts_;
+  typedef struct {
+    StringDictionary *string_dictionary;
+    std::string entry_name;
+  } PropertySetGet;
+  std::map < std::string,
+             std::shared_ptr < PropertySetGet > >set_get_contexts_;
 
-    // property
-    CustomPropertyHelper::ptr custom_props_;
-    std::map < std::string, GParamSpec * >prop_specs_;
-    static const gchar *string_getter(void *user_data);
-    static void string_setter(const gchar * value, void *user_data);
+  // property
+  CustomPropertyHelper::ptr custom_props_;
+  std::map < std::string, GParamSpec * >prop_specs_;
+  static const gchar *string_getter(void *user_data);
+  static void string_setter(const gchar * value, void *user_data);
 
-    // methods
-    static gboolean create_entry(const gchar * entry_name,
-                                 const gchar * description,
-                                 const gchar * long_name, void *user_data);
-    static gboolean remove_entry(const gchar * entry_name, void *user_data);
-    static gboolean save(gchar * file_path, void *user_data);
-    static gboolean load(gchar * file_path, void *user_data);
-    gboolean load_file(const gchar * file_path);
-    gboolean save_file(const gchar * file_path);
-  };
+  // methods
+  static gboolean create_entry(const gchar * entry_name,
+                               const gchar * description,
+                               const gchar * long_name, void *user_data);
+  static gboolean remove_entry(const gchar * entry_name, void *user_data);
+  static gboolean save(gchar * file_path, void *user_data);
+  static gboolean load(gchar * file_path, void *user_data);
+  gboolean load_file(const gchar * file_path);
+  gboolean save_file(const gchar * file_path);
+};
 
 }                               // end of namespace
 

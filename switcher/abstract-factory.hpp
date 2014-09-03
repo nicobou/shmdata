@@ -30,28 +30,28 @@
 
 namespace switcher {
 
-  template < class T, class Key, class Doc > class AbstractFactory {
-  public:
-    template < class U > void register_class(Key Id, Doc doc);
-    AbstractFactory();
-    ~AbstractFactory();
+template < class T, class Key, class Doc > class AbstractFactory {
+ public:
+  template < class U > void register_class(Key Id, Doc doc);
+  AbstractFactory();
+  ~AbstractFactory();
 
-    void register_class_with_custom_factory(Key Id,
-                                            Doc doc,
-                                            T * (*custom_create) (),
-                                            void (*custom_destroy) (T *));
-    bool unregister_class(Key Id);
-    std::vector < Key > get_keys();
-    std::vector < Doc > get_classes_documentation();
-    Doc get_class_documentation(Key Id);
-    std::shared_ptr < T > create(Key Id);
-    bool key_exists(Key Id);
+  void register_class_with_custom_factory(Key Id,
+                                          Doc doc,
+                                          T * (*custom_create) (),
+                                          void (*custom_destroy) (T *));
+  bool unregister_class(Key Id);
+  std::vector < Key > get_keys();
+  std::vector < Doc > get_classes_documentation();
+  Doc get_class_documentation(Key Id);
+  std::shared_ptr < T > create(Key Id);
+  bool key_exists(Key Id);
 
-  private:
-    std::map < Key, Creator < T > *>constructor_map_;
-    std::map < Key, void (*) (T *) > destructor_map_;
-    std::map < Key, Doc > classes_documentation_;
-  };
+ private:
+  std::map < Key, Creator < T > *>constructor_map_;
+  std::map < Key, void (*) (T *) > destructor_map_;
+  std::map < Key, Doc > classes_documentation_;
+};
 
 }                               // end of namespace
 

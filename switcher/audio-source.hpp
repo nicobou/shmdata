@@ -24,24 +24,24 @@
 #include <memory>
 
 namespace switcher {
-  class AudioSource:public GPipe {
-  public:
-    typedef std::shared_ptr < AudioSource > ptr;
-    AudioSource();
-    AudioSource(const AudioSource &) = delete;
-    AudioSource & operator=(const AudioSource &) = delete;
-  private:
-    GstElement * rawaudio_ {
-      nullptr};
-    GstElement *audio_tee_ {
-      nullptr};
-    std::string shmdata_path_;
-    void make_audio_elements();
+class AudioSource:public GPipe {
+ public:
+  typedef std::shared_ptr < AudioSource > ptr;
+  AudioSource();
+  AudioSource(const AudioSource &) = delete;
+  AudioSource & operator=(const AudioSource &) = delete;
+ private:
+  GstElement * rawaudio_ {
+    nullptr};
+  GstElement *audio_tee_ {
+    nullptr};
+  std::string shmdata_path_;
+  void make_audio_elements();
 
-  protected:
-    void set_raw_audio_element(GstElement * elt);
-    void unset_raw_audio_element();
-  };
+ protected:
+  void set_raw_audio_element(GstElement * elt);
+  void unset_raw_audio_element();
+};
 
 }                               // end of namespace
 

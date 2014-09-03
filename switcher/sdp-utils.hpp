@@ -25,39 +25,39 @@
 #include <gst/sdp/gstsdpmessage.h>
 
 namespace switcher {
-  class SDPDescription;
+class SDPDescription;
 
-  class SDPMedia {
-    friend SDPDescription;
-  public:
-    SDPMedia();
-    ~SDPMedia();
-    SDPMedia *operator=(const SDPMedia &) = delete;
-    SDPMedia(const SDPMedia &) = delete;
+class SDPMedia {
+  friend SDPDescription;
+ public:
+  SDPMedia();
+  ~SDPMedia();
+  SDPMedia *operator=(const SDPMedia &) = delete;
+  SDPMedia(const SDPMedia &) = delete;
 
-    bool set_media_info_from_caps(const GstCaps * media_caps);  // caps from a gst RTP payloader
-    bool set_port(uint port);
+  bool set_media_info_from_caps(const GstCaps * media_caps);  // caps from a gst RTP payloader
+  bool set_port(uint port);
 
-  private:  bool add_to_sdp_description(GstSDPMessage * sdp_description,
-					uint index) const;
-    GstSDPMedia *media_;
-    GstStructure *caps_structure_;
-    uint port_;
-  };
+ private:  bool add_to_sdp_description(GstSDPMessage * sdp_description,
+                                       uint index) const;
+  GstSDPMedia *media_;
+  GstStructure *caps_structure_;
+  uint port_;
+};
 
-  class SDPDescription {
-  public:
-    SDPDescription();
-    ~SDPDescription();
-    SDPDescription *operator=(const SDPDescription &) = delete;
-    SDPDescription(const SDPDescription &) = delete;
+class SDPDescription {
+ public:
+  SDPDescription();
+  ~SDPDescription();
+  SDPDescription *operator=(const SDPDescription &) = delete;
+  SDPDescription(const SDPDescription &) = delete;
 
-    bool add_media(const SDPMedia & media);
-    std::string get_string();
-  private:
-    GstSDPMessage * sdp_description_;
-    uint index_;
-  };
+  bool add_media(const SDPMedia & media);
+  std::string get_string();
+ private:
+  GstSDPMessage * sdp_description_;
+  uint index_;
+};
 
 }                               // end of namespace
 

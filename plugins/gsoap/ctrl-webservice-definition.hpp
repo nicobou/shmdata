@@ -88,7 +88,7 @@ int switcher__rename_quiddity (std::string nick_name,
 
 //gsoap switcher service method-documentation: create an quiddity instance and return its name  
 int switcher__delete_quiddity (std::string quiddity_name,
-			     void); 
+                               void); 
 
 //gsoap switcher service method-documentation: get a json formated description of methods   
 int switcher__get_methods_description (std::string quiddity_name,

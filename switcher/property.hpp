@@ -29,51 +29,51 @@
 
 namespace switcher {
 
-  class Property:public Categorizable {
-  public:
-    typedef std::shared_ptr < Property > ptr;
-    typedef void (*Callback) (GObject * gobject, GParamSpec * pspec,
-                              gpointer user_data);
-    Property();
-    ~Property();
-    Property(const Property & source);
-    Property & operator=(const Property & source);
+class Property:public Categorizable {
+ public:
+  typedef std::shared_ptr < Property > ptr;
+  typedef void (*Callback) (GObject * gobject, GParamSpec * pspec,
+                            gpointer user_data);
+  Property();
+  ~Property();
+  Property(const Property & source);
+  Property & operator=(const Property & source);
 
-    // this is when using an existing property
-    void set_gobject_pspec(GObject * object, GParamSpec * pspec);
-    void set_long_name(std::string long_name);
-    void set_name(std::string name);
-    void set(std::string value);
-    std::string get();
+  // this is when using an existing property
+  void set_gobject_pspec(GObject * object, GParamSpec * pspec);
+  void set_long_name(std::string long_name);
+  void set_name(std::string name);
+  void set(std::string value);
+  std::string get();
 
-    bool subscribe(Callback cb, void *user_data);
-    bool unsubscribe(Callback cb, void *user_data);
-    static std::string parse_callback_args(GObject * gobject,
-                                           GParamSpec * pspec);
+  bool subscribe(Callback cb, void *user_data);
+  bool unsubscribe(Callback cb, void *user_data);
+  static std::string parse_callback_args(GObject * gobject,
+                                         GParamSpec * pspec);
 
-    GObject *get_gobject();
-    GParamSpec *get_paramspec();
+  GObject *get_gobject();
+  GParamSpec *get_paramspec();
 
-    std::string get_description();
-    JSONBuilder::Node get_json_root_node();
+  std::string get_description();
+  JSONBuilder::Node get_json_root_node();
 
-    void print();
+  void print();
 
-    // getter
-    std::string get_long_name();
-    std::string get_name();
-    std::string get_short_description();
+  // getter
+  std::string get_long_name();
+  std::string get_name();
+  std::string get_short_description();
 
-  private:
-    void make_description();
-    void copy_property(const Property & source);
-    std::string long_name_;
-    std::string name_;
-    GParamSpec *property_;
-    GObject *object_;
-    JSONBuilder::ptr json_description_;
-    std::map < std::pair < Callback, void *>, gulong > subscribed_handlers_;
-  };
+ private:
+  void make_description();
+  void copy_property(const Property & source);
+  std::string long_name_;
+  std::string name_;
+  GParamSpec *property_;
+  GObject *object_;
+  JSONBuilder::ptr json_description_;
+  std::map < std::pair < Callback, void *>, gulong > subscribed_handlers_;
+};
 
 }                               // end of namespace
 

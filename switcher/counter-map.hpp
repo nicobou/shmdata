@@ -34,19 +34,19 @@
 
 namespace switcher {
 
-  class CounterMap {
-  public:
-    CounterMap();
-    virtual ~ CounterMap();
+class CounterMap {
+ public:
+  CounterMap();
+  virtual ~ CounterMap();
 
-  protected:
-    uint get_count(const std::string & key);
-    void reset_counter_map();
+ protected:
+  uint get_count(const std::string & key);
+  void reset_counter_map();
 
-  private:
-    std::map < std::string, uint > counters_;
-    std::mutex mutex_;
-  };
+ private:
+  std::map < std::string, uint > counters_;
+  std::mutex mutex_;
+};
 
 }                               // end of namespace
 

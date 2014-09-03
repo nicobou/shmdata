@@ -26,25 +26,25 @@
 
 namespace switcher {
 
-  class HTTPSDP:public GPipe, public GstElementCleaner {
-  public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDP);
-    HTTPSDP();
-    HTTPSDP(const HTTPSDP &) = delete;
-    HTTPSDP & operator=(const HTTPSDP &) = delete;
+class HTTPSDP:public GPipe, public GstElementCleaner {
+ public:
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDP);
+  HTTPSDP();
+  HTTPSDP(const HTTPSDP &) = delete;
+  HTTPSDP & operator=(const HTTPSDP &) = delete;
 
-    bool to_shmdata(std::string uri);
+  bool to_shmdata(std::string uri);
 
-  private:
-    GstElement * souphttpsrc_;
-    GstElement *sdpdemux_;
-    int media_counter_;
-    bool init_gpipe() final;
-    static void pad_added_cb(GstElement * object, GstPad * pad,
-                             gpointer user_data);
-    static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);
-    static void no_more_pads_cb(GstElement * object, gpointer user_data);
-  };
+ private:
+  GstElement * souphttpsrc_;
+  GstElement *sdpdemux_;
+  int media_counter_;
+  bool init_gpipe() final;
+  static void pad_added_cb(GstElement * object, GstPad * pad,
+                           gpointer user_data);
+  static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);
+  static void no_more_pads_cb(GstElement * object, gpointer user_data);
+};
 
 }                               // end of namespace
 

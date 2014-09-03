@@ -28,31 +28,31 @@
 
 namespace switcher {
 
-  template < class T > class Creator {
-  public:
-    virtual ~ Creator() {
-    }
-    virtual T *Create() = 0;
-  };
+template < class T > class Creator {
+ public:
+  virtual ~ Creator() {
+  }
+  virtual T *Create() = 0;
+};
 
-  template < class T > class DerivedCreator:public Creator < T > {
-  public:
-    T * Create() {
-      return new T;
-    }
-  };
+template < class T > class DerivedCreator:public Creator < T > {
+ public:
+  T * Create() {
+    return new T;
+  }
+};
 
-  template < class T > class CustomDerivedCreator:public Creator < T > {
-  public:
-    T * Create() {
-      return (*custom_create_) ();
-    }
-    T *(*custom_create_) ();
+template < class T > class CustomDerivedCreator:public Creator < T > {
+ public:
+  T * Create() {
+    return (*custom_create_) ();
+  }
+  T *(*custom_create_) ();
 
   CustomDerivedCreator():
-    custom_create_() {
-    }
-  };
+      custom_create_() {
+  }
+};
 
 }                               // end of namespace
 

@@ -26,27 +26,27 @@
 
 namespace switcher {
 
-  class OnCaps {
-  public:
-    using CapsCallBack = std::function < void (std::string) >;
+class OnCaps {
+ public:
+  using CapsCallBack = std::function < void (std::string) >;
 
-    virtual ~ OnCaps() {
-    };
-
-    void set_on_caps(CapsCallBack callback);
-    std::string get_caps();
-
-  private:
-    std::string negociated_caps_ {
-    };
-    std::list < CapsCallBack > on_caps_callback_ {
-    };
-    std::mutex caps_mutex_ {
-    };
-
-  protected:
-    bool set_negociated_caps(std::string caps);
+  virtual ~ OnCaps() {
   };
+
+  void set_on_caps(CapsCallBack callback);
+  std::string get_caps();
+
+ private:
+  std::string negociated_caps_ {
+  };
+  std::list < CapsCallBack > on_caps_callback_ {
+  };
+  std::mutex caps_mutex_ {
+  };
+
+ protected:
+  bool set_negociated_caps(std::string caps);
+};
 
 }                               // end of namespace
 

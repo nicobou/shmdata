@@ -44,52 +44,52 @@ AnyValueBase {
   template <
     typename
     U >
-    AnyValueDerived(U && value):
-  value_(std::forward < U > (value)) {
+  AnyValueDerived(U && value):
+      value_(std::forward < U > (value)) {
   }
   T
-    value_;
+  value_;
   AnyValueBase *
-    clone() const {
+  clone() const {
     return
-      new
-      AnyValueDerived <
+        new
+        AnyValueDerived <
       T > (value_);
   }
   std::string
-    to_string() const {
+  to_string() const {
     std::stringstream
-      ss;
+        ss;
     ss <<
-      value_;
+        value_;
     return
-      ss.
-      str();
+        ss.
+        str();
   }
 };
 
 template <> struct AnyValueDerived <
-std::nullptr_t >:
+  std::nullptr_t >:
 AnyValueBase {
   template <
     typename
     U >
-    AnyValueDerived(U && value):
-  value_(std::forward < U > (value)) {
+  AnyValueDerived(U && value):
+      value_(std::forward < U > (value)) {
   }
   std::nullptr_t
-    value_;
+  value_;
   AnyValueBase *
-    clone() const {
+  clone() const {
     return
-      new
-      AnyValueDerived <
+        new
+        AnyValueDerived <
       std::nullptr_t > (value_);
   }
   std::string
-    to_string() const {
+  to_string() const {
     return
-      std::string("null");
+        std::string("null");
   }
 };
 
@@ -97,46 +97,46 @@ struct Any {
   bool
   is_null() const {
     return !
-      ptr_;
+        ptr_;
   }
   bool
   not_null() const {
     return
-      ptr_;
+        ptr_;
   }
 
   template <
-  typename
-  U >
+    typename
+    U >
   Any(U && value):
-  ptr_(new AnyValueDerived < StorageType < U >> (std::forward < U > (value))) {
+      ptr_(new AnyValueDerived < StorageType < U >> (std::forward < U > (value))) {
   }
 
   template <
-  class
-  U >
+    class
+    U >
   bool
   is() const {
     typedef
-      StorageType <
+        StorageType <
       U >
-      T;
+        T;
     auto
-      derived = dynamic_cast < AnyValueDerived < T > *>(ptr_);
+        derived = dynamic_cast < AnyValueDerived < T > *>(ptr_);
     return
-      derived;
+        derived;
   }
 
   template <
-  class
-  U >
+    class
+    U >
   StorageType <
-  U > &
+    U > &
   as() {
     typedef
-      StorageType <
+        StorageType <
       U >
-      T;
+        T;
     auto derived = dynamic_cast < AnyValueDerived < T > *>(ptr_);
     if (!derived)
       throw std::bad_cast();
@@ -147,21 +147,21 @@ struct Any {
     return as < StorageType < U >> ();
   }
 
-Any():ptr_(nullptr) {
-}
+  Any():ptr_(nullptr) {
+  }
 
-Any(Any & that):ptr_(that.clone()) {
-}
+  Any(Any & that):ptr_(that.clone()) {
+  }
 
-Any(Any && that):ptr_(that.ptr_) {
-  that.ptr_ = nullptr;
-}
+  Any(Any && that):ptr_(that.ptr_) {
+    that.ptr_ = nullptr;
+  }
 
-Any(const Any & that):ptr_(that.clone()) {
-}
+  Any(const Any & that):ptr_(that.clone()) {
+  }
 
-Any(const Any && that):
-  ptr_(that.clone()) {
+  Any(const Any && that):
+      ptr_(that.clone()) {
   }
 
   Any & operator=(const Any & a) {
@@ -174,17 +174,17 @@ Any(const Any && that):
     return *this;
   }
 
-    Any & operator=(Any && a) {
-      if (ptr_ == a.ptr_)
-	return *this;
-      std::swap(ptr_, a.ptr_);
+  Any & operator=(Any && a) {
+    if (ptr_ == a.ptr_)
       return *this;
-    }
+    std::swap(ptr_, a.ptr_);
+    return *this;
+  }
 
-      ~Any() {
-	if (ptr_)
-	  delete ptr_;
-      }
+  ~Any() {
+    if (ptr_)
+      delete ptr_;
+  }
 
   static
   std::string
@@ -194,15 +194,15 @@ Any(const Any && that):
     return ss.str();
   }
 
-private:
+ private:
   AnyValueBase * clone()const {
     if (ptr_)
       return
-        ptr_->
-	clone();
+          ptr_->
+          clone();
     else
       return
-        nullptr;
+          nullptr;
   }
 
   AnyValueBase *

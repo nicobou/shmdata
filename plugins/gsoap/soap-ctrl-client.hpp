@@ -26,63 +26,63 @@
 namespace switcher
 {
 
-  class SoapCtrlClient : public Quiddity
-  {
-  public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SoapCtrlClient);
-    SoapCtrlClient ();
-    ~SoapCtrlClient ();
-    SoapCtrlClient (const SoapCtrlClient &) = delete;
-    SoapCtrlClient &operator= (const SoapCtrlClient &) = delete;
-    bool init () final;
+class SoapCtrlClient : public Quiddity
+{
+ public:
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SoapCtrlClient);
+  SoapCtrlClient ();
+  ~SoapCtrlClient ();
+  SoapCtrlClient (const SoapCtrlClient &) = delete;
+  SoapCtrlClient &operator= (const SoapCtrlClient &) = delete;
+  bool init () final;
 
-  private:
-    controlProxy *switcher_control_;
-    gchar *url_;
-    GSource *try_connect_g_source_;
-    std::mutex try_connect_mutex_;
-    void reset_endpoint ();
-    static gboolean set_remote_url (gpointer url,
-					    gpointer user_data);
-    static gboolean set_remote_url_retry (gpointer url,
-					  gpointer user_data);
-    static gboolean try_connect (gpointer user_data);
+ private:
+  controlProxy *switcher_control_;
+  gchar *url_;
+  GSource *try_connect_g_source_;
+  std::mutex try_connect_mutex_;
+  void reset_endpoint ();
+  static gboolean set_remote_url (gpointer url,
+                                  gpointer user_data);
+  static gboolean set_remote_url_retry (gpointer url,
+                                        gpointer user_data);
+  static gboolean try_connect (gpointer user_data);
 
-    static gboolean create (gpointer class_name,
-				    gpointer quiddity_name,
-				    gpointer user_data);
-    static gboolean remove (gpointer quiddity_name,
-				    gpointer user_data);
-    static gboolean set_property (gpointer quiddity_name,
-					  gpointer property_name,
-					  gpointer value,
-					  gpointer user_data);
-    static gboolean invoke1 (gpointer quiddity_name,
-				     gpointer method_name,
-				     gpointer arg1,
-				     gpointer user_data);
-    static gboolean invoke2 (gpointer quiddity_name,
-				     gpointer method_name,
-				     gpointer arg1,
-				     gpointer arg2,
-				     gpointer user_data);
-    static gboolean invoke3 (gpointer quiddity_name,
-				     gpointer method_name,
-				     gpointer arg1,
-				     gpointer arg2,
-				     gpointer arg3,
-				     gpointer user_data);
-    static gboolean invoke4 (gpointer quiddity_name,
-				     gpointer method_name,
-				     gpointer arg1,
-				     gpointer arg2,
-				     gpointer arg3,
-				     gpointer arg4,
-				     gpointer user_data);
+  static gboolean create (gpointer class_name,
+                          gpointer quiddity_name,
+                          gpointer user_data);
+  static gboolean remove (gpointer quiddity_name,
+                          gpointer user_data);
+  static gboolean set_property (gpointer quiddity_name,
+                                gpointer property_name,
+                                gpointer value,
+                                gpointer user_data);
+  static gboolean invoke1 (gpointer quiddity_name,
+                           gpointer method_name,
+                           gpointer arg1,
+                           gpointer user_data);
+  static gboolean invoke2 (gpointer quiddity_name,
+                           gpointer method_name,
+                           gpointer arg1,
+                           gpointer arg2,
+                           gpointer user_data);
+  static gboolean invoke3 (gpointer quiddity_name,
+                           gpointer method_name,
+                           gpointer arg1,
+                           gpointer arg2,
+                           gpointer arg3,
+                           gpointer user_data);
+  static gboolean invoke4 (gpointer quiddity_name,
+                           gpointer method_name,
+                           gpointer arg1,
+                           gpointer arg2,
+                           gpointer arg3,
+                           gpointer arg4,
+                           gpointer user_data);
 
-  };
+};
 
-  SWITCHER_DECLARE_PLUGIN(SoapCtrlClient);
+SWITCHER_DECLARE_PLUGIN(SoapCtrlClient);
   
 }  // end of namespace
 

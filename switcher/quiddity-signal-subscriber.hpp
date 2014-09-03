@@ -31,61 +31,61 @@
 #include "./signal-string.hpp"
 
 namespace switcher {
-  class Quiddity;
-  class QuiddityManager_Impl;
+class Quiddity;
+class QuiddityManager_Impl;
 
-  class QuidditySignalSubscriber {
-  public:
-    typedef std::shared_ptr < QuidditySignalSubscriber > ptr;
-    typedef void (*OnEmittedCallback) (std::string subscriber_name,
-                                       std::string quiddity_name,
-                                       std::string signal_name,
-                                       std::vector < std::string > params,
-                                       void *user_data);
-    QuidditySignalSubscriber();
-    ~QuidditySignalSubscriber();
-    QuidditySignalSubscriber(const QuidditySignalSubscriber &) = delete;
-    QuidditySignalSubscriber & operator=(const QuidditySignalSubscriber &)
-      = delete;
-    void mute(bool muted);
+class QuidditySignalSubscriber {
+ public:
+  typedef std::shared_ptr < QuidditySignalSubscriber > ptr;
+  typedef void (*OnEmittedCallback) (std::string subscriber_name,
+                                     std::string quiddity_name,
+                                     std::string signal_name,
+                                     std::vector < std::string > params,
+                                     void *user_data);
+  QuidditySignalSubscriber();
+  ~QuidditySignalSubscriber();
+  QuidditySignalSubscriber(const QuidditySignalSubscriber &) = delete;
+  QuidditySignalSubscriber & operator=(const QuidditySignalSubscriber &)
+  = delete;
+  void mute(bool muted);
 
-    void set_callback(OnEmittedCallback cb);
-    void set_user_data(void *user_data);
-    void set_name(const gchar * name);
-    bool subscribe(std::shared_ptr < Quiddity > quid,
+  void set_callback(OnEmittedCallback cb);
+  void set_user_data(void *user_data);
+  void set_name(const gchar * name);
+  bool subscribe(std::shared_ptr < Quiddity > quid,
+                 std::string signal_name);
+  bool unsubscribe(std::shared_ptr < Quiddity > quid,
                    std::string signal_name);
-    bool unsubscribe(std::shared_ptr < Quiddity > quid,
-                     std::string signal_name);
-    bool unsubscribe(std::shared_ptr < Quiddity > quid);
+  bool unsubscribe(std::shared_ptr < Quiddity > quid);
 
-    std::vector < std::pair < std::string,
-      std::string > >list_subscribed_signals();
-    static void signal_cb(std::vector < std::string > params,
-                          gpointer user_data);
+  std::vector < std::pair < std::string,
+                            std::string > >list_subscribed_signals();
+  static void signal_cb(std::vector < std::string > params,
+                        gpointer user_data);
 
-    // manager_impl initialization
-    void set_manager_impl(std::shared_ptr < QuiddityManager_Impl >
-                          manager_impl);
+  // manager_impl initialization
+  void set_manager_impl(std::shared_ptr < QuiddityManager_Impl >
+                        manager_impl);
 
-  private:
-    bool muted_;
-    OnEmittedCallback user_callback_;
-    void *user_data_;
-    std::string name_;
-    std::weak_ptr < QuiddityManager_Impl > manager_impl_;
+ private:
+  bool muted_;
+  OnEmittedCallback user_callback_;
+  void *user_data_;
+  std::string name_;
+  std::weak_ptr < QuiddityManager_Impl > manager_impl_;
 
-    typedef struct {
-      QuidditySignalSubscriber *subscriber;
-      gchar *name;
-      gchar *quiddity_name;
-      gchar *signal_name;
-      OnEmittedCallback user_callback;
-      void *user_data;
-    } SignalData;
-    typedef std::map < std::pair < std::string, std::string >,
-      SignalData * >SignalDataMap;
-    SignalDataMap signal_datas_;
-  };
+  typedef struct {
+    QuidditySignalSubscriber *subscriber;
+    gchar *name;
+    gchar *quiddity_name;
+    gchar *signal_name;
+    OnEmittedCallback user_callback;
+    void *user_data;
+  } SignalData;
+  typedef std::map < std::pair < std::string, std::string >,
+                     SignalData * >SignalDataMap;
+  SignalDataMap signal_datas_;
+};
 
 }                               // end of namespace
 

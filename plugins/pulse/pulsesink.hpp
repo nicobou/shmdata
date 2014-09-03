@@ -30,75 +30,75 @@
 
 namespace switcher {
 
-  class PulseSink:public SinglePadGstSink {
-  public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSink);
-    PulseSink();
-    ~PulseSink();
-    PulseSink(const PulseSink &) = delete;
-    PulseSink & operator=(const PulseSink &) = delete;
+class PulseSink:public SinglePadGstSink {
+ public:
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSink);
+  PulseSink();
+  ~PulseSink();
+  PulseSink(const PulseSink &) = delete;
+  PulseSink & operator=(const PulseSink &) = delete;
 
-  private:
-    typedef struct {
-      std::string name_;
-      std::string description_;
-      std::string state_;
-      std::string sample_format_;
-      std::string sample_rate_;
-      std::string channels_;
-      std::vector < std::pair < std::string /*port */ ,
-	std::string /*description */  > >ports_;
-      std::string active_port_;
-    } DeviceDescription;
+ private:
+  typedef struct {
+    std::string name_;
+    std::string description_;
+    std::string state_;
+    std::string sample_format_;
+    std::string sample_rate_;
+    std::string channels_;
+    std::vector < std::pair < std::string /*port */ ,
+                              std::string /*description */  > >ports_;
+    std::string active_port_;
+  } DeviceDescription;
 
-    GstElement *pulsesink_bin_;
-    bool connected_to_pulse_;
-    // custom property:
-    CustomPropertyHelper::ptr custom_props_;
-    GParamSpec *devices_description_spec_;      // json formated
-    gchar *devices_description_;        // json formated
-    // pulse_audio
-    pa_glib_mainloop *pa_glib_mainloop_;
-    pa_mainloop_api *pa_mainloop_api_;
-    pa_context *pa_context_;
-    char *server_;
-    std::vector < DeviceDescription > devices_;       // indexed by pulse_device_name
-    std::mutex devices_mutex_;
-    std::condition_variable devices_cond_;
-    // devices enumeration
-    GParamSpec *devices_enum_spec_;
-    GEnumValue devices_enum_[128];
-    gint device_;
-    // quit
-    std::mutex quit_mutex_;
-    std::condition_variable quit_cond_;
+  GstElement *pulsesink_bin_;
+  bool connected_to_pulse_;
+  // custom property:
+  CustomPropertyHelper::ptr custom_props_;
+  GParamSpec *devices_description_spec_;      // json formated
+  gchar *devices_description_;        // json formated
+  // pulse_audio
+  pa_glib_mainloop *pa_glib_mainloop_;
+  pa_mainloop_api *pa_mainloop_api_;
+  pa_context *pa_context_;
+  char *server_;
+  std::vector < DeviceDescription > devices_;       // indexed by pulse_device_name
+  std::mutex devices_mutex_;
+  std::condition_variable devices_cond_;
+  // devices enumeration
+  GParamSpec *devices_enum_spec_;
+  GEnumValue devices_enum_[128];
+  gint device_;
+  // quit
+  std::mutex quit_mutex_;
+  std::condition_variable quit_cond_;
 
-    bool init_gpipe() final;
-    void on_shmdata_disconnect() final;
-    void on_shmdata_connect(std::string shmdata_sochet_path) final;
-    bool can_sink_caps(std::string) final;
+  bool init_gpipe() final;
+  void on_shmdata_disconnect() final;
+  void on_shmdata_connect(std::string shmdata_sochet_path) final;
+  bool can_sink_caps(std::string) final;
 
-    bool make_elements();
-    bool build_elements();
-    void make_device_description(pa_context * pulse_context);
-    void make_json_description();
-    void update_output_device();
+  bool make_elements();
+  bool build_elements();
+  void make_device_description(pa_context * pulse_context);
+  void make_json_description();
+  void update_output_device();
 
-    static const gchar *get_devices_json(void *user_data);
-    static void pa_context_state_callback(pa_context * c, void *userdata);
-    static void get_sink_info_callback(pa_context * c,
-                                       const pa_sink_info * i,
-                                       int is_last, void *userdata);
-    static void on_pa_event_callback(pa_context * c,
-                                     pa_subscription_event_type_t t,
-                                     uint32_t idx, void *userdata);
-    static gboolean async_get_pulse_devices(void *user_data);
-    static void set_device(const gint value, void *user_data);
-    static gint get_device(void *user_data);
-    static gboolean quit_pulse(void *user_data);
-  };
+  static const gchar *get_devices_json(void *user_data);
+  static void pa_context_state_callback(pa_context * c, void *userdata);
+  static void get_sink_info_callback(pa_context * c,
+                                     const pa_sink_info * i,
+                                     int is_last, void *userdata);
+  static void on_pa_event_callback(pa_context * c,
+                                   pa_subscription_event_type_t t,
+                                   uint32_t idx, void *userdata);
+  static gboolean async_get_pulse_devices(void *user_data);
+  static void set_device(const gint value, void *user_data);
+  static gint get_device(void *user_data);
+  static gboolean quit_pulse(void *user_data);
+};
 
-  SWITCHER_DECLARE_PLUGIN(PulseSink);
+SWITCHER_DECLARE_PLUGIN(PulseSink);
 
 }                               // end of namespace
 

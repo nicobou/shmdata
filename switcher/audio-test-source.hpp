@@ -26,22 +26,22 @@
 
 namespace switcher {
 
-  class AudioTestSource:public AudioSource, public StartableQuiddity {
-  public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AudioTestSource);
-    AudioTestSource();
-    ~AudioTestSource();
-    AudioTestSource(const AudioTestSource &) = delete;
-    AudioTestSource & operator=(const AudioTestSource &) = delete;
+class AudioTestSource:public AudioSource, public StartableQuiddity {
+ public:
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AudioTestSource);
+  AudioTestSource();
+  ~AudioTestSource();
+  AudioTestSource(const AudioTestSource &) = delete;
+  AudioTestSource & operator=(const AudioTestSource &) = delete;
 
-    bool start();
-    bool stop();
+  bool start();
+  bool stop();
 
-  private:
-    GstElement * audiotestsrc_;
-    bool make_audiotestsrc();
-    bool init_gpipe() final;
-  };
+ private:
+  GstElement * audiotestsrc_;
+  bool make_audiotestsrc();
+  bool init_gpipe() final;
+};
 
 }                               // end of namespace
 

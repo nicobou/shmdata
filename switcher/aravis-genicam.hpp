@@ -28,19 +28,19 @@
 
 namespace switcher {
 
-  class AravisGenicam:public GPipe, public GstElementCleaner {
-  public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AravisGenicam);
-    AravisGenicam();
-    AravisGenicam(const AravisGenicam &) = delete;
-    AravisGenicam & operator=(const AravisGenicam &) = delete;
+class AravisGenicam:public GPipe, public GstElementCleaner {
+ public:
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AravisGenicam);
+  AravisGenicam();
+  AravisGenicam(const AravisGenicam &) = delete;
+  AravisGenicam & operator=(const AravisGenicam &) = delete;
 
-    bool start(std::string name);
-  private:
-    GstElement * aravissrc_;
-    bool init_gpipe() final;
-    static gboolean start_wrapped(gpointer name, gpointer user_data);
-  };
+  bool start(std::string name);
+ private:
+  GstElement * aravissrc_;
+  bool init_gpipe() final;
+  static gboolean start_wrapped(gpointer name, gpointer user_data);
+};
 
 }                               // end of namespace
 

@@ -25,21 +25,21 @@
 
 namespace switcher {
 
-  class VideoTestSource:public VideoSource {
-  public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VideoTestSource);
-    VideoTestSource();
-    ~VideoTestSource();
-    VideoTestSource(const VideoTestSource &) = delete;
-    VideoTestSource & operator=(const VideoTestSource &) = delete;
+class VideoTestSource:public VideoSource {
+ public:
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VideoTestSource);
+  VideoTestSource();
+  ~VideoTestSource();
+  VideoTestSource(const VideoTestSource &) = delete;
+  VideoTestSource & operator=(const VideoTestSource &) = delete;
 
-  private:
-    GstElement * videotestsrc_;
-    bool make_video_source(GstElement ** new_element);
-    bool on_start();
-    bool on_stop();
-    bool init_gpipe() final;
-  };
+ private:
+  GstElement * videotestsrc_;
+  bool make_video_source(GstElement ** new_element);
+  bool on_start();
+  bool on_stop();
+  bool init_gpipe() final;
+};
 
 }                               // end of namespace
 

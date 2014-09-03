@@ -30,40 +30,40 @@
 
 namespace switcher {
 
-  class PortMidiSink:public Quiddity, public Segment,
-    public StartableQuiddity, public PortMidi {
-  public:
-    SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSink);
-    PortMidiSink();
-    ~PortMidiSink();
-    PortMidiSink(const PortMidiSink &) = delete;
-    PortMidiSink & operator=(const PortMidiSink &) = delete;
+class PortMidiSink:public Quiddity, public Segment,
+                   public StartableQuiddity, public PortMidi {
+ public:
+  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSink);
+  PortMidiSink();
+  ~PortMidiSink();
+  PortMidiSink(const PortMidiSink &) = delete;
+  PortMidiSink & operator=(const PortMidiSink &) = delete;
 
-  private:
-    CustomPropertyHelper::ptr custom_props_;
-    GParamSpec *devices_description_spec_;
-    GParamSpec *devices_enum_spec_;
-    gint device_;
+ private:
+  CustomPropertyHelper::ptr custom_props_;
+  GParamSpec *devices_description_spec_;
+  GParamSpec *devices_enum_spec_;
+  gint device_;
 
-    bool init() final;
-    bool start() final;
-    bool stop() final;
+  bool init() final;
+  bool start() final;
+  bool stop() final;
 
-    // segment callback
-    bool connect(std::string path);
-    bool can_sink_caps(std::string caps);
+  // segment callback
+  bool connect(std::string path);
+  bool can_sink_caps(std::string caps);
 
-    // shmdata any callback
-    void on_shmreader_data(void *data,
-                           int data_size,
-                           unsigned long long timestamp,
-                           const char *type_description, void *user_data);
+  // shmdata any callback
+  void on_shmreader_data(void *data,
+                         int data_size,
+                         unsigned long long timestamp,
+                         const char *type_description, void *user_data);
 
-    static void set_device(const gint value, void *user_data);
-    static gint get_device(void *user_data);
-  };
+  static void set_device(const gint value, void *user_data);
+  static gint get_device(void *user_data);
+};
 
-  SWITCHER_DECLARE_PLUGIN(PortMidiSink);
+SWITCHER_DECLARE_PLUGIN(PortMidiSink);
 
 }                               // end of namespace
 

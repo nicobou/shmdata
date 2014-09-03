@@ -33,14 +33,14 @@
 #include <string>
 
 namespace switcher {
-  namespace data {
-    namespace JSONSerializer {
+namespace data {
+namespace JSONSerializer {
 
-      std::string serialize(const Tree::ptr);
-      // FIXME implement this: Tree::ptr deserialize (std::string &serialized);
+std::string serialize(const Tree::ptr);
+// FIXME implement this: Tree::ptr deserialize (std::string &serialized);
 
-    };
-  }                             // end of "data" namespace
+};
+}                             // end of "data" namespace
 }                               // end of "switcher" namespace
 
 #endif                          // ifndef

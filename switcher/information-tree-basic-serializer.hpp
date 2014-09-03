@@ -37,15 +37,15 @@
 #include <string>
 
 namespace switcher {
-  namespace data {
-    namespace BasicSerializer {
+namespace data {
+namespace BasicSerializer {
 
-      std::string serialize(Tree::ptr);
-      Tree::ptr deserialize(const std::string & serialized);
+std::string serialize(Tree::ptr);
+Tree::ptr deserialize(const std::string & serialized);
 
-    };
+};
 
-  }                             // end of "data" namespace
+}                             // end of "data" namespace
 }                               // end of "switcher" namespace
 
 #endif                          // ifndef

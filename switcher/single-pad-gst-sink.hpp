@@ -26,39 +26,39 @@
 
 namespace switcher {
 
-  class SinglePadGstSink:public GPipe {
-  public:
-    typedef std::shared_ptr < SinglePadGstSink > ptr;
-    SinglePadGstSink();
-    ~SinglePadGstSink();
-    SinglePadGstSink(const SinglePadGstSink &) = delete;
-    SinglePadGstSink & operator=(const SinglePadGstSink &) = delete;
+class SinglePadGstSink:public GPipe {
+ public:
+  typedef std::shared_ptr < SinglePadGstSink > ptr;
+  SinglePadGstSink();
+  ~SinglePadGstSink();
+  SinglePadGstSink(const SinglePadGstSink &) = delete;
+  SinglePadGstSink & operator=(const SinglePadGstSink &) = delete;
 
-    //  protected: // made public for allowing composition and/or delegation
-    void set_sink_element(GstElement * sink);
-    void set_sink_element_no_connect(GstElement * sink);
-    void set_on_first_data_hook(ShmdataReader::on_first_data_hook cb,
-                                void *user_data);
+  //  protected: // made public for allowing composition and/or delegation
+  void set_sink_element(GstElement * sink);
+  void set_sink_element_no_connect(GstElement * sink);
+  void set_on_first_data_hook(ShmdataReader::on_first_data_hook cb,
+                              void *user_data);
 
-  private:
-    ShmdataReader::on_first_data_hook connection_hook_ {
-      nullptr};
-    void *hook_user_data_ {
-      nullptr};
-    GstElement *sink_element_ {
-      nullptr};
-    std::string shmdata_path_ {
-    };
-
-    // for segment
-    bool connect(std::string shmdata_socket_path);
-    bool disconnect_all();
-
-    // for subclasses
-    virtual void on_shmdata_connect(std::string shmdata_sochet_path);
-    virtual void on_shmdata_disconnect();
-    virtual bool can_sink_caps(std::string caps);
+ private:
+  ShmdataReader::on_first_data_hook connection_hook_ {
+    nullptr};
+  void *hook_user_data_ {
+    nullptr};
+  GstElement *sink_element_ {
+    nullptr};
+  std::string shmdata_path_ {
   };
+
+  // for segment
+  bool connect(std::string shmdata_socket_path);
+  bool disconnect_all();
+
+  // for subclasses
+  virtual void on_shmdata_connect(std::string shmdata_sochet_path);
+  virtual void on_shmdata_disconnect();
+  virtual bool can_sink_caps(std::string caps);
+};
 
 }                               // end of namespace
 
