@@ -185,9 +185,12 @@ PmStream *PortMidi::PortMidiScheduler::add_input_stream(int id,
                                                         method,
                                                         void *user_data) {
   PmStream *midi_in;
-  if (pmNoError != Pm_OpenInput(&midi_in, id, nullptr /* driver info */ ,
-                                0 /* use default input size */ ,
-                                nullptr, nullptr /* time info */ ))
+  if (pmNoError != Pm_OpenInput(&midi_in,
+                                id,
+                                nullptr /* driver info */,
+                                0 /* use default input size */,
+                                nullptr,
+                                nullptr /* time info */))
     return nullptr;
   /* Note: if you set a filter here, then this will filter what goes
      to the MIDI THRU port. You may not want to do this.

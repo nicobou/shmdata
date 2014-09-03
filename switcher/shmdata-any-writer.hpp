@@ -33,7 +33,7 @@ namespace switcher {
 class ShmdataAnyWriter:public OnCaps {
  public:
   typedef std::shared_ptr < ShmdataAnyWriter > ptr;
-  using CapsCallBack = std::function < void (std::string) >;
+  using CapsCallBack = std::function < void(std::string) >;
   ShmdataAnyWriter();
   ~ShmdataAnyWriter();
   ShmdataAnyWriter(const ShmdataAnyWriter &) = delete;
@@ -44,11 +44,11 @@ class ShmdataAnyWriter:public OnCaps {
   void push_data(void *data,
                  size_t data_size,
                  unsigned long long clock,
-                 void (*data_not_required_anymore) (void *),
+                 void(*data_not_required_anymore)(void *),
                  void *user_data);
   void push_data_auto_clock(void *data,
                             size_t data_size,
-                            void (*data_not_required_anymore) (void *),
+                            void(*data_not_required_anymore)(void *),
                             void *user_data);
   void start();
   bool started();

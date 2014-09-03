@@ -26,12 +26,12 @@ UniqueGstElement::UniqueGstElement(const gchar *
                                                 &GstUtils::gst_element_deleter) {
 }
 
-void UniqueGstElement::g_invoke(std::function < void (gpointer) > command) {
+void UniqueGstElement::g_invoke(std::function < void(gpointer) > command) {
   command(G_OBJECT(element_.get()));
   return;
 }
 
-void UniqueGstElement::invoke(std::function < void (GstElement *) > command) {
+void UniqueGstElement::invoke(std::function < void(GstElement *) > command) {
   command(element_.get());
   return;
 }

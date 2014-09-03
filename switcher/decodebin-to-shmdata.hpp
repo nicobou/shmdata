@@ -47,7 +47,7 @@ class DecodebinToShmdata {
     return decodebin_.invoke_with_return < Return_type > (command);
   }
 
-  void invoke(std::function < void (GstElement *) > command);
+  void invoke(std::function < void(GstElement *) > command);
 
  private:
   UniqueGstElement decodebin_;

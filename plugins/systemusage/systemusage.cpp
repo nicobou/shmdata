@@ -71,8 +71,7 @@ SystemUsage::init() {
   running_ = true;
   pollStateThread_ = make_shared < thread > ([&]() {
       pollState();
-    }
-    );
+    });
 
   // Trying to reach the /proc files
   ifstream file;

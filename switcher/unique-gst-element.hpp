@@ -36,7 +36,7 @@ class UniqueGstElement {
     return command(G_OBJECT(element_.get()));
   }
 
-  void g_invoke(std::function < void (gpointer) > command);
+  void g_invoke(std::function < void(gpointer) > command);
 
   // invoke as GstElement
   template < typename Return_type >
@@ -46,7 +46,7 @@ class UniqueGstElement {
     return command(element_.get());
   }
 
-  void invoke(std::function < void (GstElement *) > command);
+  void invoke(std::function < void(GstElement *) > command);
 
  private:
   using gst_element_handle = std::unique_ptr < GstElement,

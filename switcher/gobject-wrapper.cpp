@@ -256,8 +256,7 @@ GParamSpec *GObjectWrapper::make_enum_property(const gchar * nickname,
                                         description,
                                         gtype,
                                         default_value,
-                                        (GParamFlags) (read_write_flags       // | G_PARAM_STATIC_STRINGS
-                                                       ));
+                                        (GParamFlags) (read_write_flags));
 
   GObjectCustomProperty::ptr property =
       GObjectCustomProperty::make_custom_property(set_method, get_method);

@@ -276,8 +276,8 @@ bool Signal::unsubscribe(OnEmittedCallback cb, void *user_data) {
     return false;
 }
 
-void Signal::signal_emit( /*GMainContext *context, */ const gchar *
-                          /*unused_string */ , va_list var_args) {
+void Signal::signal_emit(/*GMainContext *context, */ const gchar */*unused*/,
+                         va_list var_args) {
   g_signal_emit_valist(object_, id_, 0, var_args);
   // EmitArgs *args = new EmitArgs;
   // args->object_ = object_;

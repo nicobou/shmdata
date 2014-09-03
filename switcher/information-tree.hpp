@@ -94,9 +94,10 @@ class Tree {
     if (!found.first.empty())
       std::transform(found.second->second->childrens_.begin(),
                      found.second->second->childrens_.end(),
-                     pos,[](const child_type & child) {
-                       return child.first;}
-                     );
+                     pos,
+                     [](const child_type & child) {
+                       return child.first;
+                     });
   }
 
   // get child keys - returning a newly allocated container
@@ -111,9 +112,10 @@ class Tree {
       res.resize(found.second->second->childrens_.size());
       std::transform(found.second->second->childrens_.begin(),
                      found.second->second->childrens_.end(),
-                     res.begin(),[](const child_type & child) {
-                       return child.first;}
-                     );
+                     res.begin(),
+                     [](const child_type & child) {
+                       return child.first;
+                     });
     }
     return res;
   }

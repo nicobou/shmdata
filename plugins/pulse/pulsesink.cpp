@@ -191,9 +191,20 @@ PulseSink::pa_context_state_callback(pa_context * pulse_context,
       pa_context_set_subscribe_callback(pulse_context,
                                         on_pa_event_callback, nullptr);
 
-      pa_operation_unref(pa_context_subscribe(pulse_context, (pa_subscription_mask_t) (PA_SUBSCRIPTION_MASK_SINK | PA_SUBSCRIPTION_MASK_SOURCE | PA_SUBSCRIPTION_MASK_SINK_INPUT | PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT | PA_SUBSCRIPTION_MASK_MODULE | PA_SUBSCRIPTION_MASK_CLIENT | PA_SUBSCRIPTION_MASK_SAMPLE_CACHE | PA_SUBSCRIPTION_MASK_SERVER | PA_SUBSCRIPTION_MASK_CARD), nullptr,      // pa_context_success_cb_t cb,
-                                              nullptr)  // void *userdata);
-                         );
+      pa_operation_unref(
+          pa_context_subscribe(pulse_context,
+                               static_cast<pa_subscription_mask_t>
+                               (PA_SUBSCRIPTION_MASK_SINK
+                                | PA_SUBSCRIPTION_MASK_SOURCE
+                                | PA_SUBSCRIPTION_MASK_SINK_INPUT
+                                | PA_SUBSCRIPTION_MASK_SOURCE_OUTPUT
+                                | PA_SUBSCRIPTION_MASK_MODULE
+                                | PA_SUBSCRIPTION_MASK_CLIENT
+                                | PA_SUBSCRIPTION_MASK_SAMPLE_CACHE
+                                | PA_SUBSCRIPTION_MASK_SERVER
+                                | PA_SUBSCRIPTION_MASK_CARD),
+                               nullptr,  // pa_context_success_cb_t cb,
+                               nullptr));  // void *userdata
 
       break;
     case PA_CONTEXT_TERMINATED:

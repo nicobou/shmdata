@@ -310,7 +310,7 @@ void DecodebinToShmdata::on_handoff_cb(GstElement * /*object */ ,
   }
 }
 
-void DecodebinToShmdata::invoke(std::function < void (GstElement *) >
+void DecodebinToShmdata::invoke(std::function < void(GstElement *) >
                                 command) {
   std::unique_lock < std::mutex > lock(thread_safe_);
 

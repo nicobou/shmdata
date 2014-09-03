@@ -88,7 +88,7 @@ void
 ShmdataAnyWriter::push_data(void *data,
                             size_t data_size,
                             unsigned long long clock,
-                            void (*data_not_required_anymore) (void *),
+                            void(*data_not_required_anymore)(void *),
                             void *user_data) {
   std::unique_lock < std::mutex > lock(thread_safe_);
   //// g_print ("%s\n",__FUNCTION__);
@@ -103,7 +103,7 @@ ShmdataAnyWriter::push_data(void *data,
 void
 ShmdataAnyWriter::push_data_auto_clock(void *data,
                                        size_t data_size,
-                                       void (*data_not_required_anymore)
+                                       void(*data_not_required_anymore)
                                        (void *), void *user_data) {
   std::unique_lock < std::mutex > lock(thread_safe_);
   //// g_print ("%s\n",__FUNCTION__);

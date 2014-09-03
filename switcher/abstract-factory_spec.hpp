@@ -40,7 +40,7 @@ void
 AbstractFactory < T, Key,
                   Doc >::register_class_with_custom_factory(Key Id, Doc doc,
                                                             T * (*custom_create) (),
-                                                            void (*custom_destroy) (T *)) {
+                                                            void(*custom_destroy) (T *)) {
   CustomDerivedCreator < T > *creator = new CustomDerivedCreator < T > ();
   creator->custom_create_ = custom_create;
   Creator < T > *Fn = (Creator < T > *)creator;

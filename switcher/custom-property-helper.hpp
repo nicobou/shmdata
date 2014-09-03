@@ -44,8 +44,8 @@ class CustomPropertyHelper {
   typedef gint(*get_enum_method) (void *user_data);
 
   typedef struct {
-    void (*set) (void);
-    void (*get) (void);
+    void(*set)(void);
+    void(*get)(void);
     void *user_data;
     GObject *gobject;
     GParamSpec *pspec;
@@ -93,7 +93,9 @@ class CustomPropertyHelper {
                                    get_double_method get_method,
                                    void *user_data);
 
-  GParamSpec *make_enum_property(const gchar * nickname, const gchar * description, const gint default_value, // map key
+  GParamSpec *make_enum_property(const gchar *nickname,
+                                 const gchar *description,
+                                 const gint default_value, // map key
                                  const GEnumValue * string_map_enum,
                                  GParamFlags read_write_flags,
                                  set_enum_method set_method,
@@ -106,10 +108,11 @@ class CustomPropertyHelper {
  private:
   GObjectWrapper::ptr gobject_;
   std::vector < std::shared_ptr < UserMethod > >user_methods_;
-  void make_user_method(const gchar * nickname,
-                        GParamSpec * pspec,
-                        void (*set_method) (void),
-                        void (*get_method) (void), void *user_data);
+  void make_user_method(const gchar *nickname,
+                        GParamSpec *pspec,
+                        void(*set_method)(void),
+                        void(*get_method)(void),
+                        void *user_data);
 };
 
 }  // namespace switcher

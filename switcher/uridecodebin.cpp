@@ -317,8 +317,9 @@ Uridecodebin::event_probe_cb(GstPad * pad, GstEvent * event,
     return FALSE;
   }
 
-  if (GST_EVENT_TYPE(event) == GST_EVENT_FLUSH_START || GST_EVENT_TYPE(event) == GST_EVENT_FLUSH_STOP /*||
-                                                                                                        GST_EVENT_TYPE (event) == GST_EVENT_LATENCY */ ) {
+  if (GST_EVENT_TYPE(event) == GST_EVENT_FLUSH_START
+      || GST_EVENT_TYPE(event) == GST_EVENT_FLUSH_STOP) {
+    /*|| GST_EVENT_TYPE (event) == GST_EVENT_LATENCY */
     return FALSE;
   }
 

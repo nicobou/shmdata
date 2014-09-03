@@ -135,8 +135,7 @@ Tree::get_child_iterator(const std::string & key) {
                       childrens_.end(),
                       [key] (const Tree::child_type & s) {
                         return (0 == s.first.compare(key));
-                      }
-                      );
+                      });
 }
 
 Tree::ptr Tree::prune(const std::string & path) {

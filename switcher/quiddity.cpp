@@ -332,8 +332,9 @@ bool Quiddity::register_signal_action_with_class_name(const std::string class_na
   // using signal ids in order to avoid id conflicts between signal and methods
   if (signals_ids_.find(sig_pair) == signals_ids_.end()) {
     closure =
-        g_cclosure_new(G_CALLBACK(method), user_data,
-                       nullptr /*destroy data */ );
+        g_cclosure_new(G_CALLBACK(method),
+                       user_data,
+                       nullptr);  // destroy data
     g_closure_set_marshal(closure, g_cclosure_marshal_generic);
 
     guint id = GObjectWrapper::make_signal_action(closure,
@@ -675,7 +676,7 @@ void Quiddity::signal_emit(const std::string signal_name, ...) {
   // va_list va_cp;
   // va_copy (va_cp, var_args);
   // signal->signal_emit (get_g_main_context (), signal_name.c_str (), va_cp);
-  signal->signal_emit( /*get_g_main_context (), */ signal_name.c_str(),
+  signal->signal_emit(/*get_g_main_context (), */ signal_name.c_str(),
                        var_args);
   va_end(var_args);
 }

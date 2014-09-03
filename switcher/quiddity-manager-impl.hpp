@@ -104,14 +104,14 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
 
   // high level property subscriber
   bool make_property_subscriber(std::string subscriber_name,
-                                void (*callback) (std::string
-                                                  subscriber_name,
-                                                  std::string
-                                                  quiddity_name,
-                                                  std::string
-                                                  property_name,
-                                                  std::string value,
-                                                  void *user_data),
+                                void(*callback) (std::string
+                                                 subscriber_name,
+                                                 std::string
+                                                 quiddity_name,
+                                                 std::string
+                                                 property_name,
+                                                 std::string value,
+                                                 void *user_data),
                                 void *user_data);
   bool remove_property_subscriber(std::string subscriber_name);
   bool subscribe_property(std::string subscriber_name,
@@ -163,12 +163,12 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
                                               std::string signal_name);
   // high level signal subscriber
   bool make_signal_subscriber(std::string subscriber_name,
-                              void (*callback) (std::string
-                                                subscriber_name,
-                                                std::string quiddity_name,
-                                                std::string property_name,
-                                                std::vector < std::string >
-                                                params, void *user_data),
+                              void(*callback) (std::string
+                                               subscriber_name,
+                                               std::string quiddity_name,
+                                               std::string property_name,
+                                               std::vector < std::string >
+                                               params, void *user_data),
                               void *user_data);
   bool remove_signal_subscriber(std::string subscriber_name);
   bool subscribe_signal(std::string subscriber_name,

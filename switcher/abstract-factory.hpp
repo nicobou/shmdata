@@ -39,7 +39,7 @@ template < class T, class Key, class Doc > class AbstractFactory {
   void register_class_with_custom_factory(Key Id,
                                           Doc doc,
                                           T * (*custom_create) (),
-                                          void (*custom_destroy) (T *));
+                                          void(*custom_destroy) (T *));
   bool unregister_class(Key Id);
   std::vector < Key > get_keys();
   std::vector < Doc > get_classes_documentation();
@@ -49,7 +49,7 @@ template < class T, class Key, class Doc > class AbstractFactory {
 
  private:
   std::map < Key, Creator < T > *>constructor_map_;
-  std::map < Key, void (*) (T *) > destructor_map_;
+  std::map < Key, void(*) (T *) > destructor_map_;
   std::map < Key, Doc > classes_documentation_;
 };
 

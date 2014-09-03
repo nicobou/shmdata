@@ -52,6 +52,6 @@ ScopeGuard < Fun > operator+(ScopeGuardOnExit, Fun && fn) {
 // could replace __LINE__ with __COUNTER__ but not always available
 #define On_scope_exit				\
   auto CONCATENATE(on_scope_exit_var, __LINE__) \
-  = ::scope_guard::ScopeGuardOnExit () + [&]()
+  = ::scope_guard::ScopeGuardOnExit() + [&]()
 
 #endif //__SWITCHER_SCOPE_EXIT_H__

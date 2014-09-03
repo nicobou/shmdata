@@ -268,11 +268,11 @@ void GTKVideo::realize_cb(GtkWidget * widget, void *user_data) {
   // gdk_error_trap_pop ();
 
   /* Retrieve window handler from GDK */
-#if defined (GDK_WINDOWING_WIN32)
-  context->window_handle_ = (guintptr) GDK_WINDOW_HWND(window);
-#elif defined (GDK_WINDOWING_QUARTZ)
+#if defined(GDK_WINDOWING_WIN32)
+  context->window_handle_ = reinterpret_cast<guintptr>(GDK_WINDOW_HWND(window));
+#elif defined(GDK_WINDOWING_QUARTZ)
   context->window_handle_ = gdk_quartz_window_get_nsview(window);
-#elif defined (GDK_WINDOWING_X11)
+#elif defined(GDK_WINDOWING_X11)
   context->window_handle_ = GDK_WINDOW_XID(window);
 #endif
   gdk_threads_leave();

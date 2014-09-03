@@ -56,8 +56,7 @@ pj_status_t PJCodec::alt_codec_test_alloc(pjmedia_codec_factory * factory,
                                                                      id->encoding_name.slen,
                                                                      pj_strbuf
                                                                      (&id->encoding_name));
-                         }
-                         );
+                         });
   if (available_codecs.end() == it)
     return PJ_ENOTSUP;
   // g_print ("*********************************** test alloc succeed \n");
@@ -81,8 +80,7 @@ PJCodec::alt_codec_default_attr(pjmedia_codec_factory * factory,
                                                                      id->encoding_name.slen,
                                                                      pj_strbuf
                                                                      (&id->encoding_name));
-                         }
-                         );
+                         });
   if (available_codecs.end() == it)
     return PJ_ENOTFOUND;
 

@@ -173,10 +173,10 @@ GParamSpec *CustomPropertyHelper::make_enum_property(const gchar *
 }
 
 void
-CustomPropertyHelper::make_user_method(const gchar * nickname,
-                                       GParamSpec * pspec,
-                                       void (*set_method) (void),
-                                       void (*get_method) (void),
+CustomPropertyHelper::make_user_method(const gchar *nickname,
+                                       GParamSpec *pspec,
+                                       void(*set_method)(void),
+                                       void(*get_method)(void),
                                        void *user_data) {
   std::shared_ptr < UserMethod > user_method(new UserMethod());
   user_method->set = (void (*)(void)) set_method;
