@@ -320,7 +320,7 @@ GValue Signal::action_emit(std::vector < std::string > args) {
   if (arg_types_[0] != G_TYPE_NONE)
     param_size = arg_types_.size() + 1;
 
-  GValue params[param_size];  //1 is instance and return value
+  GValue params[param_size];  // 1 is instance and return value
 
   params[0] = G_VALUE_INIT;
   g_value_init(&params[0], G_OBJECT_TYPE(object_));
@@ -346,4 +346,4 @@ GValue Signal::action_emit(std::vector < std::string > args) {
     g_value_unset(&params[i]);
   return result_value;
 }
-}  //namespace switcher
+}  // namespace switcher

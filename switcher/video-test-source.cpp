@@ -41,7 +41,7 @@ bool VideoTestSource::init_gpipe() {
   if (!made)
     return false;
 
-  //"pattern" property available atfer initialization
+  // "pattern" property available atfer initialization
   install_property(G_OBJECT(videotestsrc_),
                    "pattern", "pattern", "Video Pattern");
   return true;

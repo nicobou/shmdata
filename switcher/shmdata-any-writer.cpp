@@ -91,7 +91,7 @@ ShmdataAnyWriter::push_data(void *data,
                             void(*data_not_required_anymore)(void *),
                             void *user_data) {
   std::unique_lock < std::mutex > lock(thread_safe_);
-  //// g_print ("%s\n",__FUNCTION__);
+  // // g_print ("%s\n",__FUNCTION__);
   if (started_)
     shmdata_any_writer_push_data(writer_,
                                  data,
@@ -106,7 +106,7 @@ ShmdataAnyWriter::push_data_auto_clock(void *data,
                                        void(*data_not_required_anymore)
                                        (void *), void *user_data) {
   std::unique_lock < std::mutex > lock(thread_safe_);
-  //// g_print ("%s\n",__FUNCTION__);
+  // // g_print ("%s\n",__FUNCTION__);
   if (started_)
     shmdata_any_writer_push_data(writer_,
                                  data,

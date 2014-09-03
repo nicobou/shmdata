@@ -91,7 +91,7 @@ class QuiddityCommand {
   std::vector < std::string > result_;
   std::vector < std::string > expected_result_;
   bool success_;
-  gint64 time_;               //// monotonic time, in microseconds
+  gint64 time_;               // // monotonic time, in microseconds
   void clear();
   void set_id(command id);
   void add_arg(std::string arg);

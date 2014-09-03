@@ -253,7 +253,7 @@ bool QuiddityManager::save_command_history(const char *file_path) {
   return true;
 }
 
-//----------- API -----------------------------
+// ----------- API -----------------------------
 std::string
 QuiddityManager::get_properties_description(std::string quiddity_name) {
   return seq_invoke(QuiddityCommand::get_properties_description,

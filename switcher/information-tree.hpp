@@ -44,7 +44,7 @@
 
 namespace switcher {
 namespace data {
-//--------
+// --------
 class Tree {
  public:
   typedef std::shared_ptr < Tree > ptr;

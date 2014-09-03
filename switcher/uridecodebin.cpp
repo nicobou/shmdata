@@ -136,11 +136,11 @@ void Uridecodebin::init_uridecodebin() {
 
   g_object_set(G_OBJECT(uridecodebin_),
                // "ring-buffer-max-size",(guint64)200000000,
-               //"download",TRUE,
-               //"use-buffering",TRUE,
-               //"ring-buffer-max-size", 4294967295,
+               // "download",TRUE,
+               // "use-buffering",TRUE,
+               // "ring-buffer-max-size", 4294967295,
                "expose-all-streams", TRUE, "async-handling", TRUE,
-               //"buffer-duration",9223372036854775807,
+               // "buffer-duration",9223372036854775807,
                nullptr);
 }
 
@@ -289,8 +289,8 @@ gboolean Uridecodebin::process_eos(gpointer user_data) {
                        rate, GST_FORMAT_TIME,
                        (GstSeekFlags) (GST_SEEK_FLAG_FLUSH |
                                        GST_SEEK_FLAG_ACCURATE),
-                       //| GST_SEEK_FLAG_SKIP
-                       //| GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
+                       // | GST_SEEK_FLAG_SKIP
+                       // | GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
                        GST_SEEK_TYPE_SET,
                        0.0 * GST_SECOND,
                        GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);

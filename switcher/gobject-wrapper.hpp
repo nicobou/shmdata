@@ -25,7 +25,7 @@
 #include <string>
 #include <glib-object.h>
 #include "./gobject-custom-property.hpp"
-//#include "./gobject-custom-signal.hpp"
+// #include "./gobject-custom-signal.hpp"
 
 namespace switcher {
 struct _MyObject;
@@ -41,7 +41,7 @@ class GObjectWrapper {
 
   GObject *get_gobject();
 
-  //---------- properties
+  // ---------- properties
   static bool notify_property_changed(GObject * object, GParamSpec * pspec);
   // user data for set and get methods
   void property_set_user_data(std::string nickname, void *user_data);
@@ -79,7 +79,7 @@ class GObjectWrapper {
                                            GObjectCustomProperty::get_method_pointer
                                            get_method);
 
-  static GParamSpec *make_enum_property(const gchar * nickname, const gchar * description, const gint default_value, const GEnumValue * custom_enum,  //*must* be static
+  static GParamSpec *make_enum_property(const gchar * nickname, const gchar * description, const gint default_value, const GEnumValue * custom_enum,  // *must* be static
                                         GParamFlags read_write_flags,
                                         GObjectCustomProperty::set_method_pointer
                                         set_method,
@@ -115,12 +115,12 @@ class GObjectWrapper {
  private:
   struct _MyObject *my_object_;
 
-  //---------- properties
+  // ---------- properties
   static std::map < guint, GObjectCustomProperty::ptr > custom_properties_;
   static guint next_prop_id_;
   std::map < std::string, void *>property_user_datas_;
   void *property_default_user_data_;
-  //---------- signals
+  // ---------- signals
   // static std::map<guint, GObjectCustomSignal::ptr> custom_signals_;
   static guint next_signal_num_;      // this is only for generation of unique signal names
   std::map < std::string, void *>signal_user_datas_;

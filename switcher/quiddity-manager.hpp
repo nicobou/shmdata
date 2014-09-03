@@ -65,7 +65,7 @@ class QuiddityManager:public std::enable_shared_from_this <
   std::string get_name();
   void reboot();
 
-  //*************** command history ***********************************************************
+  // *************** command history ***********************************************************
   bool save_command_history(const char *file_path);
   CommandHistory get_command_history_from_file(const char *file_path);
   std::vector < std::string >
@@ -80,10 +80,10 @@ class QuiddityManager:public std::enable_shared_from_this <
                             bool mute_property_and_signal_subscribers);
   void reset_command_history(bool remove_created_quiddities);  // FIXME maybe implement undo and remove this  arg
 
-  //************** plugins *******************************************************************
+  // ************** plugins *******************************************************************
   bool scan_directory_for_plugins(std::string directory);
 
-  //***************** inspect ****************************************************************
+  // ***************** inspect ****************************************************************
   std::vector < std::string > get_classes();        // know which quiddities can be created
   std::vector < std::string > get_quiddities();     // know instances
   // doc (json formatted)
@@ -97,11 +97,11 @@ class QuiddityManager:public std::enable_shared_from_this <
   bool remove(std::string quiddity_name);
   bool rename(std::string nick_name, std::string new_nick_name);
 
-  //****************** informations **********************************************************
+  // ****************** informations **********************************************************
   std::string get_info(const std::string & nick_name,
                        const std::string & path);
 
-  //****************** properties ************************************************************
+  // ****************** properties ************************************************************
   // doc (json formatted)
   std::string get_properties_description(std::string quiddity_name);
   std::string get_property_description(std::string quiddity_name,
@@ -157,7 +157,7 @@ class QuiddityManager:public std::enable_shared_from_this <
                                Property::Callback cb, void *user_data);
   bool unsubscribe_property_glib(std::string quiddity_name, std::string name, Property::Callback cb, void *user_data);        // the same called with subscribe
 
-  //*********************** methods
+  // *********************** methods
   // doc (json formatted)
   std::string get_methods_description(std::string quiddity_name);
   std::string get_method_description(std::string quiddity_name,
@@ -178,7 +178,7 @@ class QuiddityManager:public std::enable_shared_from_this <
   bool has_method(const std::string quiddity_name,
                   const std::string method_name);
 
-  //************************ signals
+  // ************************ signals
   // doc (json formatted)
   std::string get_signals_description(std::string quiddity_name);
   std::string get_signal_description(std::string quiddity_name,

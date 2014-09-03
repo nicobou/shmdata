@@ -49,7 +49,7 @@ class GPipe:public Quiddity, public Segment {
 
  protected:
   // void init_gpipe (Quiddity &quiddity);// FIXME should called quiddity-manager-impl
-  //(privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
+  // (privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
   GstElement * get_bin();
   GstElement *bin_ {nullptr};                   // FIXME should be private
   bool reset_bin();

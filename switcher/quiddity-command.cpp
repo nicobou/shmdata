@@ -156,13 +156,13 @@ QuiddityCommand::parse_command_from_json_reader(JsonReader * reader) {
   command->set_id(QuiddityCommand::get_id_from_string
                   (json_reader_get_string_value(reader)));
   json_reader_end_member(reader);
-  //---
+  // ---
 
   // invokation time
   json_reader_read_member(reader, "calling time");
   command->time_ = json_reader_get_int_value(reader);
   json_reader_end_member(reader);
-  //---
+  // ---
 
   // arguments
   json_reader_read_member(reader, "arguments");
@@ -177,7 +177,7 @@ QuiddityCommand::parse_command_from_json_reader(JsonReader * reader) {
     json_reader_end_element(reader);
   }
   json_reader_end_member(reader);
-  //---
+  // ---
 
   // vector arguments
   json_reader_read_member(reader, "vector argument");
@@ -193,7 +193,7 @@ QuiddityCommand::parse_command_from_json_reader(JsonReader * reader) {
   }
   json_reader_end_member(reader);
   command->set_vector_arg(string_vect_arg);
-  //---
+  // ---
 
   // results
   json_reader_read_member(reader, "results");
@@ -208,7 +208,7 @@ QuiddityCommand::parse_command_from_json_reader(JsonReader * reader) {
   }
   json_reader_end_member(reader);
   command->expected_result_ = expected_result;
-  //---
+  // ---
 
   json_reader_end_element(reader);
   return command;

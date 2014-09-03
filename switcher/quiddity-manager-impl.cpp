@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-//#include <gmodule.h>
+// #include <gmodule.h>
 
 #include "./quiddity-documentation.hpp"
 #include "./quiddity-manager-impl.hpp"
@@ -861,7 +861,7 @@ get_method_description_by_class(std::string class_name,
   return descr;
 }
 
-//*** signals
+// *** signals
 std::string
 QuiddityManager_Impl::get_signals_description(std::string quiddity_name) {
   if (!exists(quiddity_name)) {

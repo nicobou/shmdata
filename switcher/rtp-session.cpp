@@ -290,7 +290,7 @@ bool RtpSession::write_sdp_file(std::string dest_name) {
 gboolean
 RtpSession::sink_factory_filter(GstPluginFeature * feature,
                                 gpointer data) {
-  //// g_print ("%s\n", __PRETTY_FUNCTION__);
+  // // g_print ("%s\n", __PRETTY_FUNCTION__);
   // guint rank;
   const gchar *klass;
 

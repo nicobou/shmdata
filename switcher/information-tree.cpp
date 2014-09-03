@@ -24,7 +24,7 @@
 
 namespace switcher {
 namespace data {
-//--------------- utils
+// --------------- utils
 // constructor
 Tree::ptr make_tree() {
   return std::make_shared < Tree > ();
@@ -47,7 +47,7 @@ preorder_tree_walk(Tree::ptr tree,
   }
 }
 
-//--------------- class
+// --------------- class
 Tree::Tree(const Any & data):data_(data) {
 }
 
