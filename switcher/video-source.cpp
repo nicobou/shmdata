@@ -249,17 +249,17 @@ VideoSource::set_codec_long_list(gboolean codec_long_list,
 
 void VideoSource::make_codec_properties() {
   codec_properties_.push_back("quality");     // jpegenc
-  codec_properties_.push_back("idct-method"); // jpegenc
+  codec_properties_.push_back("idct-method");  // jpegenc
   codec_properties_.push_back("speed-preset");        // x264
   codec_properties_.push_back("bitrate");     // x264
   codec_properties_.push_back("threads");     // x264
-  codec_properties_.push_back("ref"); // x264
+  codec_properties_.push_back("ref");  // x264
   codec_properties_.push_back("trellis");     // x264
-  codec_properties_.push_back("key-int-max"); // x264
+  codec_properties_.push_back("key-int-max");  // x264
   codec_properties_.push_back("speed");       // vp8
   codec_properties_.push_back("mode");        // vp8
   codec_properties_.push_back("error-resilient");     // vp8
-  codec_properties_.push_back("max-latency"); // vp8
+  codec_properties_.push_back("max-latency");  // vp8
   codec_properties_.push_back("max-keyframe-distance");       // vp8
   // codec_properties_.push_back ("");// vp8
 
@@ -267,8 +267,8 @@ void VideoSource::make_codec_properties() {
   codec_properties_.push_back("qmax");        // smokeenc
   codec_properties_.push_back("keyframe");    // smokeenc
   codec_properties_.push_back("rate-control");        // schroenc (dirac)
-  codec_properties_.push_back("max-bitrate"); // schroenc (dirac)
-  codec_properties_.push_back("min-bitrate"); // schroenc (dirac)
+  codec_properties_.push_back("max-bitrate");  // schroenc (dirac)
+  codec_properties_.push_back("min-bitrate");  // schroenc (dirac)
   codec_properties_.push_back("snapshot");    // png
   codec_properties_.push_back("compression-level");   // png
 }

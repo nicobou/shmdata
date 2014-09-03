@@ -738,7 +738,7 @@ void Uris::group_do_seek_datastream(Sample * sample) {
                          (GstSeekFlags) (GST_SEEK_FLAG_FLUSH |
                                          GST_SEEK_FLAG_ACCURATE),
                          //| GST_SEEK_FLAG_SKIP
-                         //| GST_SEEK_FLAG_KEY_UNIT, // using key unit is breaking synchronization
+                         //| GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
                          GST_SEEK_TYPE_SET,
                          sample->group->seek_position * GST_SECOND,
                          GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);

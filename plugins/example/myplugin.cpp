@@ -34,7 +34,7 @@ MyPlugin::MyPlugin():custom_props_(std::make_shared <
 bool MyPlugin::init() {
   init_startable(this);
   myprop_prop_ = custom_props_->make_boolean_property("myprop",       // name
-                                                      "myprop is a boolean property", // description
+                                                      "myprop is a boolean property",  // description
                                                       (gboolean) FALSE,       // default value
                                                       (GParamFlags)
                                                       G_PARAM_READWRITE,
@@ -48,7 +48,7 @@ bool MyPlugin::init() {
                  "say hello and repeat first argument",       // description
                  "the hello answer",  // return description
                  Method::make_arg_description("Text To Repeat",       // first arg long name
-                                              "text", // fisrt arg name
+                                              "text",  // fisrt arg name
                                               "string",       // first arg description
                                               nullptr),
                  (Method::method_ptr) & my_hello_world_method,

@@ -78,4 +78,4 @@ SWITCHER_DECLARE_PLUGIN(PostureMerge);
 
 }  // namespace switcher
 
-#endif // ifndef
+#endif

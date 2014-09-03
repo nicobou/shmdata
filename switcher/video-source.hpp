@@ -81,4 +81,4 @@ class VideoSource:public GPipe, public StartableQuiddity {
 
 }  // namespace switcher
 
-#endif // ifndef
+#endif

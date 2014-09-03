@@ -86,7 +86,7 @@ class Quiddity {
                      std::string ** return_value,
                      const std::vector < std::string > args);
   int method_get_num_value_args(std::string function_name);   // returns -1 if method not found
-  int method_get_num_pointer_args(std::string function_name); // returns -1 if method not found
+  int method_get_num_pointer_args(std::string function_name);  // returns -1 if method not found
   bool has_method(const std::string method_name);
   Method::ptr get_method_ptr(std::string method_name);
 
@@ -175,7 +175,7 @@ class Quiddity {
                                     int position_weight);
 
   // signals
-  bool register_signal_gobject(const std::string signal_name, // the name to give
+  bool register_signal_gobject(const std::string signal_name,  // the name to give
                                GObject * object, const std::string gobject_signal_name);      // the internal gobject signal name
 
   // allows for creation of signals in a parent class (like segment)
@@ -308,4 +308,4 @@ class Quiddity {
 
 }  // namespace switcher
 
-#endif // ifndef
+#endif

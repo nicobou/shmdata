@@ -49,4 +49,4 @@ class Decodebin2:public SinglePadGstSink {
 
 }  // namespace switcher
 
-#endif // ifndef
+#endif

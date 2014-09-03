@@ -46,4 +46,4 @@ class OnCaps {
 
 }  // namespace switcher
 
-#endif // ifndef
+#endif

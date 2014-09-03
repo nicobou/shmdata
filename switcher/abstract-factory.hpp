@@ -57,4 +57,4 @@ template < class T, class Key, class Doc > class AbstractFactory {
 
 #include "./abstract-factory_spec.hpp"
 
-#endif // ifndef
+#endif

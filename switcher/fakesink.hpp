@@ -63,4 +63,4 @@ class FakeSink:public SinglePadGstSink {
 
 }  // namespace switcher
 
-#endif // ifndef
+#endif

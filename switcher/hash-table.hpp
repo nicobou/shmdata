@@ -58,4 +58,4 @@ template < class T > class HashTable {
 // including the actual code here
 #include "./hash-table_spec.hpp"
 
-#endif // ifndef
+#endif

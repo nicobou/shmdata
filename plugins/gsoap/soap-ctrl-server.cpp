@@ -54,7 +54,7 @@ SoapCtrlServer::init()
   //release port
   soap_.connect_flags = SO_LINGER; 
   soap_.accept_flags = SO_LINGER;
-  soap_.accept_timeout =  100 * -1000; //100ms
+  soap_.accept_timeout =  100 * -1000;  //100ms
   soap_.fget = SoapCtrlServer::http_get;
     
   install_method("Set Port",

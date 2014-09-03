@@ -78,7 +78,7 @@ class QuiddityManager:public std::enable_shared_from_this <
                             QuiddityManager::SignalCallbackMap *
                             sig_cb_data,
                             bool mute_property_and_signal_subscribers);
-  void reset_command_history(bool remove_created_quiddities); // FIXME maybe implement undo and remove this  arg
+  void reset_command_history(bool remove_created_quiddities);  // FIXME maybe implement undo and remove this  arg
 
   //************** plugins *******************************************************************
   bool scan_directory_for_plugins(std::string directory);
@@ -221,10 +221,10 @@ class QuiddityManager:public std::enable_shared_from_this <
   std::thread invocation_thread_;
   // invokation in gmainloop
   std::condition_variable execution_done_cond_;     // sync current thread and gmainloop
-  std::mutex execution_done_mutex_; // sync current thread and gmainloop
+  std::mutex execution_done_mutex_;  // sync current thread and gmainloop
   // history
   CommandHistory command_history_;
-  gint64 history_begin_time_; // monotonic time, in microseconds
+  gint64 history_begin_time_;  // monotonic time, in microseconds
 
   QuiddityManager() = delete;
   QuiddityManager(std::string name);

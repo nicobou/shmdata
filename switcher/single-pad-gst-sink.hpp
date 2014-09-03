@@ -58,4 +58,4 @@ class SinglePadGstSink:public GPipe {
 
 }  // namespace switcher
 
-#endif // ifndef
+#endif

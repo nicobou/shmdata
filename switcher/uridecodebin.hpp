@@ -43,7 +43,7 @@ class Uridecodebin:public GPipe, public GstElementCleaner {
   bool discard_next_uncomplete_buffer_;
   void init_uridecodebin();
   void destroy_uridecodebin();
-  QuiddityCommand *on_error_command_; // for the pipeline error handler
+  QuiddityCommand *on_error_command_;  // for the pipeline error handler
   void clean_on_error_command();
 
   // custom properties

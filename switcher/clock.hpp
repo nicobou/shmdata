@@ -43,4 +43,4 @@ class CumulativeClock {
 };
 
 }  // namespace switcher
-#endif // ifndef
+#endif

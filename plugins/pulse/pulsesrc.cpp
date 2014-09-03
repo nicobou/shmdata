@@ -197,7 +197,7 @@ PulseSrc::pa_context_state_callback(pa_context * pulse_context,
                                 | PA_SUBSCRIPTION_MASK_SAMPLE_CACHE
                                 | PA_SUBSCRIPTION_MASK_SERVER
                                 | PA_SUBSCRIPTION_MASK_CARD),
-                               nullptr, // pa_context_success_cb_t cb,
+                               nullptr,  // pa_context_success_cb_t cb,
                                nullptr));  // void *userdata);
 
       break;

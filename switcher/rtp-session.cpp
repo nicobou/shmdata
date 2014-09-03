@@ -279,7 +279,7 @@ bool RtpSession::write_sdp_file(std::string dest_name) {
 
   g_remove(sdp_file.c_str());
 
-  if (!g_file_set_contents(sdp_file.c_str(), res.c_str(), -1, // no size, res is a null terminated string
+  if (!g_file_set_contents(sdp_file.c_str(), res.c_str(), -1,  // no size, res is a null terminated string
                            nullptr))  // not getting errors
     return false;
 

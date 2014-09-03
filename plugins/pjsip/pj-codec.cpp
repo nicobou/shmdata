@@ -186,4 +186,4 @@ pj_status_t PJCodec::install_codecs() {
   /* initialize your evil library here */
   return PJ_SUCCESS;
 }
-} // namespace switcher 
+}  // namespace switcher 

@@ -55,4 +55,4 @@ SWITCHER_DECLARE_PLUGIN(PostureDisplay);
 
 }  // namespace switcher
 
-#endif // ifndef
+#endif

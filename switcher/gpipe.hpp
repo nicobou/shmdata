@@ -109,4 +109,4 @@ class GPipe:public Quiddity, public Segment {
 };
 }  // namespace switcher
 
-#endif // ifndef
+#endif

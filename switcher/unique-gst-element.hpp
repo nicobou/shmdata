@@ -56,4 +56,4 @@ class UniqueGstElement {
 
 }  // namespace switcher
 
-#endif // ifndef
+#endif

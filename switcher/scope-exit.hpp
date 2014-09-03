@@ -54,4 +54,4 @@ ScopeGuard < Fun > operator+(ScopeGuardOnExit, Fun && fn) {
   auto CONCATENATE(on_scope_exit_var, __LINE__) \
   = ::scope_guard::ScopeGuardOnExit() + [&]()
 
-#endif //__SWITCHER_SCOPE_EXIT_H__
+#endif  //__SWITCHER_SCOPE_EXIT_H__

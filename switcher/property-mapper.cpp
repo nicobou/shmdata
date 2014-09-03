@@ -57,10 +57,10 @@ bool PropertyMapper::init() {
                  "success of fail",   // return description
                  Method::make_arg_description("Quiddity Name",        // first arg long name
                                               "quiddity_name",        // fisrt arg name
-                                              "Name of the quiddity", // first arg description
+                                              "Name of the quiddity",  // first arg description
                                               "property Name",        // first arg long name
                                               "property_name",        // fisrt arg name
-                                              "Name of the property", // first arg description
+                                              "Name of the property",  // first arg description
                                               nullptr),
                  (Method::method_ptr) & set_source_property_method,
                  G_TYPE_BOOLEAN,
@@ -68,16 +68,16 @@ bool PropertyMapper::init() {
                                                    G_TYPE_STRING,
                                                    nullptr), this);
 
-  install_method("Set Sink Property", // long name
-                 "set-sink-property", // name
+  install_method("Set Sink Property",  // long name
+                 "set-sink-property",  // name
                  "set the slave property",    // description
                  "success of fail",   // return description
                  Method::make_arg_description("Quiddity Name",        // first arg long name
                                               "quiddity_name",        // fisrt arg name
-                                              "Name of the quiddity", // first arg description
+                                              "Name of the quiddity",  // first arg description
                                               "property Name",        // first arg long name
                                               "property_name",        // fisrt arg name
-                                              "Name of the property", // first arg description
+                                              "Name of the property",  // first arg description
                                               nullptr),
                  (Method::method_ptr) & set_sink_property_method,
                  G_TYPE_BOOLEAN,

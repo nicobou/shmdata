@@ -231,4 +231,4 @@ template < typename T > struct DefaultSerializable {
   }
 };
 
-#endif // ifndef
+#endif

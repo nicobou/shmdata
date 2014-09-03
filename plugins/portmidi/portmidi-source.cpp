@@ -107,7 +107,7 @@ bool PortMidiSource::init() {
 
   install_method("Remove Midi Property",      // long name
                  "remove_midi_property",      // name
-                 "remove a property made with Make Property", // description
+                 "remove a property made with Make Property",  // description
                  "success or fail",   // return description
                  Method::make_arg_description("Property Long Name",   // first arg long name
                                               "property_long_name",   // fisrt arg name

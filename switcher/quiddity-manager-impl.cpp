@@ -699,7 +699,7 @@ list_subscribed_properties(std::string subscriber_name) {
 }
 
 std::string QuiddityManager_Impl::list_property_subscribers_json() {
-  return "{\"error\":\"to be implemented\"}"; // FIXME (list_property_subscriber_json)
+  return "{\"error\":\"to be implemented\"}";  // FIXME (list_property_subscriber_json)
 }
 
 std::string
@@ -1027,7 +1027,7 @@ list_subscribed_signals(std::string subscriber_name) {
 }
 
 std::string QuiddityManager_Impl::list_signal_subscribers_json() {
-  return "{\"error\":\"to be implemented\"}"; // FIXME (list_signal_subscriber_json)
+  return "{\"error\":\"to be implemented\"}";  // FIXME (list_signal_subscriber_json)
 }
 
 std::string
@@ -1151,7 +1151,7 @@ QuiddityManager_Impl::scan_directory_for_plugins(const char
   info = g_file_enumerator_next_file(enumerator, nullptr, &error);
   while ((info) && (!error)) {
     descend = g_file_get_child(dir, g_file_info_get_name(info));
-    absolute_path = g_file_get_path(descend); // g_file_get_relative_path (dir, descend);
+    absolute_path = g_file_get_path(descend);  // g_file_get_relative_path (dir, descend);
     // trying to load the module
     if (g_str_has_suffix(absolute_path, ".so")
         || g_str_has_suffix(absolute_path, ".dylib")) {

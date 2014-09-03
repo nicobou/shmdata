@@ -151,4 +151,4 @@ Tree::ptr make_tree(const char *data);      // Tree will store a std::string
 
 }  // namespace data
 }  // namespace switcher
-#endif // ifndef
+#endif

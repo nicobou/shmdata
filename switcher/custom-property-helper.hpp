@@ -95,7 +95,7 @@ class CustomPropertyHelper {
 
   GParamSpec *make_enum_property(const gchar *nickname,
                                  const gchar *description,
-                                 const gint default_value, // map key
+                                 const gint default_value,  // map key
                                  const GEnumValue * string_map_enum,
                                  GParamFlags read_write_flags,
                                  set_enum_method set_method,

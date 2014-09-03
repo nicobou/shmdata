@@ -95,8 +95,8 @@ main() {
   }
   {                             // set/get data with path
     Tree::ptr tree = make_tree();
-    // tree->set_data ("", 1.2f); // this is not possible
-    // float tree_data = tree->get_data ("."); // this is not possible
+    // tree->set_data ("", 1.2f);  // this is not possible
+    // float tree_data = tree->get_data (".");  // this is not possible
     // assert (1.2f == tree_data);
     tree->graft("child1.child2", make_tree());
     assert(tree->set_data("child1.child2", "test"));

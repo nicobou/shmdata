@@ -78,7 +78,7 @@ bool GstParseToBinSrc::to_shmdata() {
   // make a shmwriter
   ShmdataWriter::ptr writer;
   writer.reset(new ShmdataWriter());
-  writer->set_path(make_file_name("gstsrc").c_str()); // FIXME use caps name
+  writer->set_path(make_file_name("gstsrc").c_str());  // FIXME use caps name
   writer->plug(bin_, src_pad);
   register_shmdata(writer);
   gst_object_unref(src_pad);

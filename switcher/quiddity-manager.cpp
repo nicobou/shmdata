@@ -837,7 +837,7 @@ std::vector < std::string > QuiddityManager::get_quiddities() {
 }
 
 void QuiddityManager::init_command_sync() {
-  // command_queue_ = g_async_queue_new (); // FIXME release that
+  // command_queue_ = g_async_queue_new ();  // FIXME release that
   // invocation_thread_ (&invocation_thread, this);
   // invocation_thread_ = g_thread_new ("invocation_thread", GThreadFunc(invocation_thread), this);
 }

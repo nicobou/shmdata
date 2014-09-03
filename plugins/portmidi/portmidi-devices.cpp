@@ -319,7 +319,7 @@ void PortMidi::PortMidiScheduler::process_midi(PtTimestamp /*timestamp */ ,
     /* see if there is application midi data to process */
     while (!itr.second->empty()) {
       /* see if it is time to output the next message */
-      PmEvent *next = &(itr.second->front()); //(PmEvent *) Pm_QueuePeek(out_queue);
+      PmEvent *next = &(itr.second->front());  //(PmEvent *) Pm_QueuePeek(out_queue);
       // assert(next); /* must be non-null because queue is not empty */
       /* time to send a message, first make sure it's not blocked */
       int status = Pm_MessageStatus(next->message);

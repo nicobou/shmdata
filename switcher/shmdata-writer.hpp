@@ -66,4 +66,4 @@ class ShmdataWriter:public OnCaps {
 
 }  // namespace switcher
 
-#endif // ifndef
+#endif

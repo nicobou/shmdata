@@ -43,4 +43,4 @@ class AudioSource:public GPipe {
 
 }  // namespace switcher
 
-#endif // ifndef
+#endif

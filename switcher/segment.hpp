@@ -101,4 +101,4 @@ class Segment:public CounterMap
 };
 }  // namespace switcher
 
-#endif // ifndef
+#endif
