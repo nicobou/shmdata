@@ -154,7 +154,7 @@ bool ShmdataFromGDPFile::make_players() {
     manager_ = QuiddityManager::make_manager("manager_" + get_name());
     // FIXME pause pipeline
   }
-  for (auto & it:shmdata_names_) {
+  for (auto & it : shmdata_names_) {
     manager_->create("gstsrc", it.first.c_str());
     gchar *pipe =
         g_strdup_printf("filesrc location=%s ! gdpdepay ! identity sync=true",

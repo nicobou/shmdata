@@ -64,7 +64,7 @@ void QuiddityManager::reset_command_history(bool remove_created_quiddities) {
   if (remove_created_quiddities) {
     manager_impl_->mute_property_subscribers(true);
     manager_impl_->mute_signal_subscribers(true);
-    for (auto & it:command_history_) {
+    for (auto & it : command_history_) {
       if (g_str_has_prefix
           (QuiddityCommand::get_string_from_id(it->id_), "create"))
         remove(it->result_[0]);
@@ -101,7 +101,7 @@ play_command_history(QuiddityManager::CommandHistory histo,
     manager_impl_->mute_signal_subscribers(true);
   }
 
-  for (auto & it:histo) {
+  for (auto & it : histo) {
     if (it->id_ == QuiddityCommand::make_property_subscriber) {
       if (prop_cb_data != nullptr) {
         QuiddityManager::PropCallbackMap::iterator prop_it =
@@ -152,7 +152,7 @@ std::vector < std::string >
 QuiddityManager::
 get_property_subscribers_names(QuiddityManager::CommandHistory histo) {
   std::vector < std::string > res;
-  for (auto & it:histo)
+  for (auto & it : histo)
     if (it->id_ == QuiddityCommand::make_property_subscriber)
       res.push_back(it->args_[0]);
   return res;
@@ -162,7 +162,7 @@ std::vector < std::string >
 QuiddityManager::
 get_signal_subscribers_names(QuiddityManager::CommandHistory histo) {
   std::vector < std::string > res;
-  for (auto & it:histo)
+  for (auto & it : histo)
     if (it->id_ == QuiddityCommand::make_signal_subscriber)
       res.push_back(it->args_[0]);
   return res;
@@ -227,7 +227,7 @@ bool QuiddityManager::save_command_history(const char *file_path) {
   builder->set_member_name("history");
   builder->begin_array();
 
-  for (auto & it:command_history_)
+  for (auto & it : command_history_)
     builder->add_node_value(it->get_json_root_node());
   builder->end_array();
   builder->end_object();

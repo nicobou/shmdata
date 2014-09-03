@@ -316,12 +316,12 @@ void Segment::update_shmdata_writers_description() {
   shmdata_writers_description_->set_member_name("shmdata_writers");
   shmdata_writers_description_->begin_array();
 
-  for (auto it:shmdata_writers_)
+  for (auto it : shmdata_writers_)
     shmdata_writers_description_->add_node_value(it.
                                                  second->get_json_root_node
                                                  ());
 
-  for (auto it:shmdata_any_writers_)
+  for (auto it : shmdata_any_writers_)
     shmdata_writers_description_->add_node_value(it.
                                                  second->get_json_root_node
                                                  ());
@@ -338,12 +338,12 @@ void Segment::update_shmdata_readers_description() {
   shmdata_readers_description_->set_member_name("shmdata_readers");
   shmdata_readers_description_->begin_array();
 
-  for (auto & it:shmdata_readers_)
+  for (auto & it : shmdata_readers_)
     shmdata_readers_description_->add_node_value(it.
                                                  second->get_json_root_node
                                                  ());
 
-  for (auto & it:shmdata_any_readers_)
+  for (auto & it : shmdata_any_readers_)
     shmdata_readers_description_->add_node_value(it.
                                                  second->get_json_root_node
                                                  ());

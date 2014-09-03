@@ -50,16 +50,16 @@ RtpSession::~RtpSession() {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
 
   std::vector < std::string > paths;
-  for (auto & it:quiddity_managers_)
+  for (auto & it : quiddity_managers_)
     paths.push_back(it.first);
-  for (auto & it:paths)
+  for (auto & it : paths)
     remove_data_stream(it);
 
   // removing sdp files
   std::vector < std::string > destinations;
-  for (auto & it:destinations_)
+  for (auto & it : destinations_)
     destinations.push_back(it.first);
-  for (auto & it:destinations) {
+  for (auto & it : destinations) {
     std::string sdp_file = make_file_name(it);
     sdp_file.append(".sdp");
     g_remove(sdp_file.c_str());
@@ -792,7 +792,7 @@ bool RtpSession::remove_data_stream(std::string shmdata_socket_path) {
     return false;
   }
   quiddity_managers_.erase(shmdata_socket_path);
-  for (auto & it:destinations_) {
+  for (auto & it : destinations_) {
     if (it.second->has_shmdata(shmdata_socket_path))
       it.second->remove_stream(shmdata_socket_path);
   }
@@ -951,7 +951,7 @@ const gchar *RtpSession::get_destinations_json(void *user_data) {
   destinations_json->begin_object();
   destinations_json->set_member_name("destinations");
   destinations_json->begin_array();
-  for (auto & it:context->destinations_)
+  for (auto & it : context->destinations_)
     destinations_json->add_node_value(it.second->get_json_root_node());
   destinations_json->end_array();
   destinations_json->end_object();

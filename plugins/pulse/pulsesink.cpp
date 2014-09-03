@@ -221,7 +221,7 @@ void PulseSink::make_json_description() {
   builder->set_member_name("devices");
   builder->begin_array();
 
-  for (auto & it:devices_) {
+  for (auto & it : devices_) {
     builder->begin_object();
     builder->add_string_member("long name", it.description_.c_str());
     builder->add_string_member("name", it.name_.c_str());
@@ -423,7 +423,7 @@ void PulseSink::on_shmdata_connect(std::string /* shmdata_sochet_path */ ) {
 void PulseSink::update_output_device() {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
   gint i = 0;
-  for (auto & it:devices_) {
+  for (auto & it : devices_) {
     devices_enum_[i].value = i;
     // FIXME previous free here
     devices_enum_[i].value_name = g_strdup(it.description_.c_str());

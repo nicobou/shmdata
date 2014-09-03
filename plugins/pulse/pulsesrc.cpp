@@ -214,7 +214,7 @@ void PulseSrc::make_json_description() {
   builder->set_member_name("capture devices");
   builder->begin_array();
 
-  for (auto & it:capture_devices_) {
+  for (auto & it : capture_devices_) {
     builder->begin_object();
     builder->add_string_member("long name", it.description_.c_str());
     builder->add_string_member("name", it.name_.c_str());
@@ -416,7 +416,7 @@ bool PulseSrc::capture_device() {
 
 void PulseSrc::update_capture_device() {
   gint i = 0;
-  for (auto & it:capture_devices_) {
+  for (auto & it : capture_devices_) {
     devices_enum_[i].value = i;
     // FIXME previous free here
     devices_enum_[i].value_name = g_strdup(it.description_.c_str());

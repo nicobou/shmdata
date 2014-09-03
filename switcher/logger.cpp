@@ -144,7 +144,7 @@ void Logger::quiet_log_handler(const gchar * /*log_domain */ ,
 
 Logger::~Logger() {
   if (i_am_the_one_) {
-    for (auto & it:handler_ids_)
+    for (auto & it : handler_ids_)
       g_log_remove_handler(it.first.c_str(), it.second);
     installed_ = false;
   }

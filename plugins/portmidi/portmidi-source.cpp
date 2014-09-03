@@ -243,7 +243,7 @@ PortMidiSource::remove_property_method(gchar * long_name,
   }
 
   std::pair < guint, guint > midi_channel;
-  for (auto & it:context->midi_channels_) {
+  for (auto & it : context->midi_channels_) {
     if (g_strcmp0(it.second.c_str(), long_name) == 0) {
       midi_channel = it.first;
       break;

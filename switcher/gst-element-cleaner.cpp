@@ -26,7 +26,7 @@ GstElementCleaner::GstElementCleaner():elements_to_remove_(),
 }
 
 GstElementCleaner::~GstElementCleaner() {
-  for (auto & it:elements_to_remove_)
+  for (auto & it : elements_to_remove_)
     GstUtils::clean_element(it);
 }
 

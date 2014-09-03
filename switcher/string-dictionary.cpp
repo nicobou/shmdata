@@ -190,7 +190,7 @@ gboolean StringDictionary::save_file(const gchar * file_path) {
   // builder->set_member_name ("dictionary");
   builder->begin_array();
 
-  for (auto & it:dico_) {
+  for (auto & it : dico_) {
     builder->begin_object();
     Property::ptr prop = get_property_ptr(it.first);
     builder->add_string_member("name", it.first.c_str());

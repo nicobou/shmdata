@@ -179,7 +179,7 @@ bool VideoSource::remake_codec_elements() {
   if (codec_ == 0)
     return false;
 
-  for (auto & it:codec_properties_)
+  for (auto & it : codec_properties_)
     uninstall_property(it);
 
   GstElement *tmp_codec_element = codec_element_;
@@ -195,7 +195,7 @@ bool VideoSource::remake_codec_elements() {
     return false;
 
   // copy property value and register codec properties
-  for (auto & it:codec_properties_) {
+  for (auto & it : codec_properties_) {
     GstUtils::apply_property_value(G_OBJECT(tmp_codec_element),
                                    G_OBJECT(codec_element_), it.c_str());
     install_property(G_OBJECT(codec_element_), it, it, it);

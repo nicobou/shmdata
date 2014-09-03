@@ -146,7 +146,7 @@ gboolean ShmdataToFile::get_recording(void *user_data) {
 }
 
 bool ShmdataToFile::make_recorders() {
-  for (auto & it:file_names_) {
+  for (auto & it : file_names_) {
     // FIXME check file
     GError *error = nullptr;
     gchar *pipe = g_strdup_printf("gdppay ! filesink location=%s",
@@ -180,7 +180,7 @@ bool ShmdataToFile::make_recorders() {
 }
 
 bool ShmdataToFile::clean_recorders() {
-  for (auto & it:shmdata_recorders_) {
+  for (auto & it : shmdata_recorders_) {
     GstUtils::clean_element(it.second);
     unregister_shmdata(it.first);
   }

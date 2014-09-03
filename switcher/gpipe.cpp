@@ -39,7 +39,7 @@ GPipe::GPipe():pipeline_(gst_pipeline_new(nullptr)),
 
 GPipe::~GPipe() {
   if (!commands_.empty())
-    for (auto & it:commands_)
+    for (auto & it : commands_)
       if (!g_source_is_destroyed(it))
         g_source_destroy(it);
   if (position_tracking_source_ != nullptr)

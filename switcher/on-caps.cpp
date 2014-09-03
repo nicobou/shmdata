@@ -38,7 +38,7 @@ bool OnCaps::set_negociated_caps(std::string caps) {
 
   std::unique_lock < std::mutex > lock(caps_mutex_);
   negociated_caps_ = std::move(caps);
-  for (auto & it:on_caps_callback_)
+  for (auto & it : on_caps_callback_)
     it(negociated_caps_);
   return true;
 }
