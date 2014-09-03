@@ -25,7 +25,6 @@
 #include <utility>
 
 namespace scope_guard {
-
 template < typename Fun > class ScopeGuard {
  public:
   ScopeGuard(Fun && fun):
@@ -43,7 +42,6 @@ template < typename Fun >
 ScopeGuard < Fun > operator+(ScopeGuardOnExit, Fun && fn) {
   return ScopeGuard < Fun > (std::forward < Fun > (fn));
 }
-
 }  // namespace scope_guard
 
 #define CONCATENATE_IMPL(s1, s2) s1##s2

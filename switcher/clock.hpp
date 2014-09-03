@@ -23,7 +23,6 @@
 #include <chrono>
 
 namespace switcher {
-
 template < typename Clock_type = std::chrono::system_clock >
 class CumulativeClock {
  public:
@@ -41,6 +40,5 @@ class CumulativeClock {
  private:
   std::chrono::time_point < Clock_type > start_;
 };
-
 }  // namespace switcher
 #endif

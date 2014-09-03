@@ -27,7 +27,6 @@
 #include <memory>
 
 namespace switcher {
-
 class GstParseToBinSrc:public GPipe, StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstParseToBinSrc);
@@ -50,7 +49,6 @@ class GstParseToBinSrc:public GPipe, StartableQuiddity {
   static void set_gst_launch_pipeline(const gchar * value, void *user_data);
   static const gchar *get_gst_launch_pipeline(void *user_data);
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

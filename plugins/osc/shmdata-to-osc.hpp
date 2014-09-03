@@ -68,7 +68,6 @@ class ShmdataToOsc:public Quiddity, public Segment, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(ShmdataToOsc);
-
 }  // namespace switcher
 
 #endif                          // ifndef

@@ -26,7 +26,6 @@
 #include <map>
 
 namespace switcher {
-
 class Decodebin2:public SinglePadGstSink {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Decodebin2);
@@ -46,7 +45,6 @@ class Decodebin2:public SinglePadGstSink {
   static void make_decodebin_active(ShmdataReader * caller,
                                     void *decodebin2_instance);
 };
-
 }  // namespace switcher
 
 #endif

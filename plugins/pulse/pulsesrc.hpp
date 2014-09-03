@@ -29,7 +29,6 @@
 #include <condition_variable>
 
 namespace switcher {
-
 class PulseSrc:public AudioSource, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSrc);
@@ -105,7 +104,6 @@ class PulseSrc:public AudioSource, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(PulseSrc);
-
 }  // namespace switcher
 
 #endif                          // ifndef

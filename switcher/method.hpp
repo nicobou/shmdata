@@ -31,7 +31,6 @@
 #include "./categorizable.hpp"
 
 namespace switcher {
-
 class Method:public Categorizable {
  public:
   typedef std::shared_ptr < Method > ptr;
@@ -81,7 +80,6 @@ class Method:public Categorizable {
   uint num_of_value_args_;
   JSONBuilder::ptr json_description_;
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

@@ -81,7 +81,6 @@ class DecodebinToShmdata {
                             GstPad * pad, gpointer user_data);
   static gboolean rewind(gpointer user_data);
 };
-
 }  // namespace switcher
 
 #endif

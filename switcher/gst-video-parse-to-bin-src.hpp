@@ -26,7 +26,6 @@
 #include <memory>
 
 namespace switcher {
-
 class GstVideoParseToBinSrc:public VideoSource {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstVideoParseToBinSrc);
@@ -49,7 +48,6 @@ class GstVideoParseToBinSrc:public VideoSource {
   bool make_video_source(GstElement ** new_element);
   bool init_gpipe() final;
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

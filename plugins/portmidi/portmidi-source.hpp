@@ -27,7 +27,6 @@
 #include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
-
 class PortMidiSource:public Quiddity,
                      public Segment, public StartableQuiddity, public PortMidi {
  public:
@@ -83,7 +82,6 @@ class PortMidiSource:public Quiddity,
 };
 
 SWITCHER_DECLARE_PLUGIN(PortMidiSource);
-
 }  // namespace switcher
 
 #endif                          // ifndef

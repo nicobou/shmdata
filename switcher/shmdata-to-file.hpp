@@ -26,7 +26,6 @@
 #include <unordered_map>
 
 namespace switcher {
-
 class ShmdataToFile:public GPipe {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToFile);

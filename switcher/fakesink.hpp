@@ -27,7 +27,6 @@
 #include <memory>
 
 namespace switcher {
-
 class FakeSink:public SinglePadGstSink {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeSink);
@@ -60,7 +59,6 @@ class FakeSink:public SinglePadGstSink {
   static gint get_byte_rate(void *user_data);
   static const gchar *get_caps(void *user_data);
 };
-
 }  // namespace switcher
 
 #endif

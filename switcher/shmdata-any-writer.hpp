@@ -29,7 +29,6 @@
 #include "./on-caps.hpp"
 
 namespace switcher {
-
 class ShmdataAnyWriter:public OnCaps {
  public:
   typedef std::shared_ptr < ShmdataAnyWriter > ptr;
@@ -66,7 +65,6 @@ class ShmdataAnyWriter:public OnCaps {
   void make_json_description();
   bool set_path_without_deleting(std::string name);
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

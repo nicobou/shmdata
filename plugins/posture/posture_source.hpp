@@ -108,7 +108,6 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureSrc);
-
 }  // namespace switcher
 
 #endif

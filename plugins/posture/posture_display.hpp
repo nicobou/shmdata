@@ -48,11 +48,9 @@ class PostureDisplay:public Quiddity, public Segment {
   bool connect(std::string shmdata_socket_path);
   bool disconnect_all();
   bool can_sink_caps(std::string caps);
-
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureDisplay);
-
 }  // namespace switcher
 
 #endif

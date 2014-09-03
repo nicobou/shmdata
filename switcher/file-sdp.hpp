@@ -25,7 +25,6 @@
 #include <memory>
 
 namespace switcher {
-
 class FileSDP:public GPipe, public GstElementCleaner {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FileSDP);
@@ -44,7 +43,6 @@ class FileSDP:public GPipe, public GstElementCleaner {
   static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);
   static void no_more_pads_cb(GstElement * object, gpointer user_data);
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

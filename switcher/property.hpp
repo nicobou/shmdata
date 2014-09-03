@@ -28,7 +28,6 @@
 #include "./categorizable.hpp"
 
 namespace switcher {
-
 class Property:public Categorizable {
  public:
   typedef std::shared_ptr < Property > ptr;
@@ -74,7 +73,6 @@ class Property:public Categorizable {
   JSONBuilder::ptr json_description_;
   std::map < std::pair < Callback, void *>, gulong > subscribed_handlers_;
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

@@ -30,7 +30,6 @@
 #include <vector>
 #include <map>
 namespace switcher {
-
 template < class T > class HashTable {
  public:
   typedef std::shared_ptr < HashTable < T > >ptr;
@@ -52,7 +51,6 @@ template < class T > class HashTable {
   // FIX ME this is used only to keep ref count of shared pointer
   // std::map<std::string, T> keep_ref_count_;
 };
-
 }  // namespace switcher
 
 // including the actual code here

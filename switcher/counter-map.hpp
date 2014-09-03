@@ -33,7 +33,6 @@
  **/
 
 namespace switcher {
-
 class CounterMap {
  public:
   CounterMap();
@@ -47,7 +46,6 @@ class CounterMap {
   std::map < std::string, uint > counters_;
   std::mutex mutex_;
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

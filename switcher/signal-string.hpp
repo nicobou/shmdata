@@ -28,7 +28,6 @@
 #include "./json-builder.hpp"
 
 namespace switcher {
-
 class Signal {
  public:
   typedef std::shared_ptr < Signal > ptr;
@@ -92,7 +91,6 @@ class Signal {
   /*   va_list var_args_; */
   /* } EmitArgs; */
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

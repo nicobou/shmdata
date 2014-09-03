@@ -26,7 +26,6 @@
 #include <memory>
 
 namespace switcher {
-
 class JackAudioSource:public AudioSource, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JackAudioSource);
@@ -56,7 +55,6 @@ class JackAudioSource:public AudioSource, public StartableQuiddity {
   static void set_client_name(const gchar * value, void *user_data);
   static const gchar *get_client_name(void *user_data);
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

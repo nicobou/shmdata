@@ -27,7 +27,6 @@
 #include <mutex>
 
 namespace switcher {
-
 class Logger:public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Logger);
@@ -73,7 +72,6 @@ class Logger:public Quiddity {
                                 GLogLevelFlags log_level,
                                 const gchar * message, gpointer user_data);
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

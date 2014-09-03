@@ -44,7 +44,6 @@ namespace switcher {
 class QuiddityManager_Impl;
 
 class Quiddity {
-
   friend class StartableQuiddity;
   friend class Segment;
 
@@ -305,7 +304,6 @@ class Quiddity {
   extern "C" QuiddityDocumentation get_documentation() {                \
     return cpp_quiddity_class::switcher_doc_;			        \
   }
-
 }  // namespace switcher
 
 #endif

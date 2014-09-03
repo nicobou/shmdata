@@ -26,7 +26,6 @@
 // when using it
 
 namespace switcher {
-
 template < typename T, typename Key, typename Doc >
 template < class U > void
 AbstractFactory < T, Key, Doc >::register_class(Key Id, Doc doc) {
@@ -100,7 +99,6 @@ bool AbstractFactory < T, Key, Doc >::unregister_class(Key Id) {
 
 template < typename T, typename Key, typename Doc >
 std::shared_ptr < T > AbstractFactory < T, Key, Doc >::create(Key Id) {
-
   std::shared_ptr < T > pointer;
   if (constructor_map_.find(Id) != constructor_map_.end()) {
     if (destructor_map_.find(Id) != destructor_map_.end())
@@ -126,5 +124,4 @@ template < typename T, typename Key, typename Doc > AbstractFactory < T, Key, Do
     constructor_map_(),
     destructor_map_(), classes_documentation_() {
 }
-
 }  // namespace switcher

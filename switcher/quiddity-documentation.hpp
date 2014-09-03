@@ -24,9 +24,7 @@
 #include "./json-builder.hpp"
 
 namespace switcher {
-
 class QuiddityDocumentation {
-
  public:
   QuiddityDocumentation(std::string long_name,
                         std::string category,
@@ -62,7 +60,6 @@ class QuiddityDocumentation {
   JSONBuilder::ptr json_description_;
   void make_json_description();
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

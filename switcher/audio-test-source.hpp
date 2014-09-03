@@ -25,7 +25,6 @@
 #include <memory>
 
 namespace switcher {
-
 class AudioTestSource:public AudioSource, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AudioTestSource);
@@ -42,7 +41,6 @@ class AudioTestSource:public AudioSource, public StartableQuiddity {
   bool make_audiotestsrc();
   bool init_gpipe() final;
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

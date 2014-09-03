@@ -29,7 +29,6 @@
 #include <memory>
 
 namespace switcher {
-
 class PortMidiSink:public Quiddity, public Segment,
                    public StartableQuiddity, public PortMidi {
  public:
@@ -64,7 +63,6 @@ class PortMidiSink:public Quiddity, public Segment,
 };
 
 SWITCHER_DECLARE_PLUGIN(PortMidiSink);
-
 }  // namespace switcher
 
 #endif                          // ifndef

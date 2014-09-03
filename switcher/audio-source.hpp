@@ -40,7 +40,6 @@ class AudioSource:public GPipe {
   void set_raw_audio_element(GstElement * elt);
   void unset_raw_audio_element();
 };
-
 }  // namespace switcher
 
 #endif

@@ -31,7 +31,6 @@
 #include "./json-builder.hpp"
 
 namespace switcher {
-
 class QuiddityCommand {
  public:
   typedef std::shared_ptr < QuiddityCommand > ptr;
@@ -105,7 +104,6 @@ class QuiddityCommand {
   JSONBuilder::ptr json_builder_;
   static const std::map < int, const char *>command_names_;
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

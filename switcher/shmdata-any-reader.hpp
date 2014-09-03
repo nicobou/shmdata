@@ -29,7 +29,6 @@
 #include "./on-caps.hpp"
 
 namespace switcher {
-
 class ShmdataAnyReader:public OnCaps {
  public:
   typedef std::shared_ptr < ShmdataAnyReader > ptr;
@@ -73,7 +72,6 @@ class ShmdataAnyReader:public OnCaps {
                       int data_size, unsigned long long timestamp,
                       const char *type_description, void *user_data);
 };
-
 }  // namespace switcher
 
 #endif

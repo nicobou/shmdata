@@ -25,7 +25,6 @@
 #include "./custom-property-helper.hpp"
 
 namespace switcher {
-
 class StartableQuiddity {
  public:
   typedef std::shared_ptr < StartableQuiddity > ptr;
@@ -49,7 +48,6 @@ class StartableQuiddity {
   GParamSpec *started_prop_;  // FIXME should be static
   CustomPropertyHelper::ptr startable_custom_props_;
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

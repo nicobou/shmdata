@@ -125,7 +125,6 @@ class GObjectWrapper {
   static guint next_signal_num_;      // this is only for generation of unique signal names
   std::map < std::string, void *>signal_user_datas_;
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

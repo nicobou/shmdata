@@ -24,7 +24,6 @@
 #include <memory>
 
 namespace switcher {
-
 class CreateRemoveSpy:public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(CreateRemoveSpy);
@@ -40,7 +39,6 @@ class CreateRemoveSpy:public Quiddity {
  private:
   bool i_am_the_one_;
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

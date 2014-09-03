@@ -29,7 +29,6 @@
 #include <vector>
 
 namespace switcher {
-
 class PulseSink:public SinglePadGstSink {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSink);
@@ -99,7 +98,6 @@ class PulseSink:public SinglePadGstSink {
 };
 
 SWITCHER_DECLARE_PLUGIN(PulseSink);
-
 }  // namespace switcher
 
 #endif                          // ifndef

@@ -26,7 +26,6 @@
 #include <memory>
 
 namespace switcher {
-
 class VideoSource:public GPipe, public StartableQuiddity {
  public:
   typedef std::shared_ptr < VideoSource > ptr;
@@ -78,7 +77,6 @@ class VideoSource:public GPipe, public StartableQuiddity {
                                  GstPluginFeature * f2);
   static void print_list(gpointer data, gpointer user_data);
 };
-
 }  // namespace switcher
 
 #endif

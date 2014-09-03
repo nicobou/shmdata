@@ -155,7 +155,6 @@ class PJCall {
   bool make_hang_up(std::string contact_uri);
   static gboolean hang_up(gchar * sip_url, void *user_data);
 };
-
 }  // namespace switcher
 
 #endif  // PLUGINS_PJSIP_PJ_CALL_H_

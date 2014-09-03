@@ -101,5 +101,4 @@ template < typename T >
 void HashTable < T >::for_each(GHFunc function, void *user_data) {
   g_hash_table_foreach(table_, function, (gpointer) user_data);
 }
-
 }

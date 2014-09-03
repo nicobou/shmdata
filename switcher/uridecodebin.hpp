@@ -26,7 +26,6 @@
 #include <unordered_map>
 
 namespace switcher {
-
 class Uridecodebin:public GPipe, public GstElementCleaner {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Uridecodebin);

@@ -27,7 +27,6 @@
 #include <string>
 
 namespace switcher {
-
 class OscCtrlServer:public QuiddityManagerWrapper {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(OscCtrlServer);
@@ -65,7 +64,6 @@ class OscCtrlServer:public QuiddityManagerWrapper {
 };
 
 SWITCHER_DECLARE_PLUGIN(OscCtrlServer);
-
 }  // namespace switcher
 
 #endif                          // ifndef

@@ -229,7 +229,6 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   void init_gmainloop();
   void main_loop_thread();
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

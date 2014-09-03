@@ -44,7 +44,6 @@
 
 namespace switcher {
 namespace data {
-
 //--------
 class Tree {
  public:
@@ -139,7 +138,6 @@ class Tree {
   preorder_tree_walk(Tree::ptr tree,
                      Tree::OnNodeFunction on_visiting_node,
                      Tree::OnNodeFunction on_node_visited);
-
 };
 
 // constructor
@@ -148,7 +146,6 @@ template < typename ValueType > Tree::ptr make_tree(ValueType data) {
   return std::make_shared < Tree > (data);
 }
 Tree::ptr make_tree(const char *data);      // Tree will store a std::string
-
 }  // namespace data
 }  // namespace switcher
 #endif

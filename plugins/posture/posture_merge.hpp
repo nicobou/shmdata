@@ -75,7 +75,6 @@ class PostureMerge:public Quiddity, public Segment, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureMerge);
-
 }  // namespace switcher
 
 #endif

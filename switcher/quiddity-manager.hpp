@@ -239,7 +239,6 @@ class QuiddityManager:public std::enable_shared_from_this <
   static gboolean execute_command(gpointer user_data);        // gmainloop source callback
   void invoke_in_thread();
 };
-
 }  // namespace switcher
 
 #endif

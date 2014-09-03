@@ -31,7 +31,6 @@
 #include <string>
 
 namespace switcher {
-
 class JSONBuilder {
  public:
   typedef std::shared_ptr < JSONBuilder > ptr;
@@ -63,9 +62,7 @@ class JSONBuilder {
  private:
   JsonBuilder * builder_;
   std::mutex thread_safe_;
-
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef
