@@ -157,17 +157,17 @@ bool PortMidiSource::stop() {
 }
 
 void PortMidiSource::set_device(const gint value, void *user_data) {
-  PortMidiSource *context = static_cast < PortMidiSource * >(user_data);
+  PortMidiSource *context = static_cast<PortMidiSource *>(user_data);
   context->device_ = value;
 }
 
 gint PortMidiSource::get_device(void *user_data) {
-  PortMidiSource *context = static_cast < PortMidiSource * >(user_data);
+  PortMidiSource *context = static_cast<PortMidiSource *>(user_data);
   return context->device_;
 }
 
 void PortMidiSource::on_pm_event(PmEvent *event, void *user_data) {
-  PortMidiSource *context = static_cast < PortMidiSource * >(user_data);
+  PortMidiSource *context = static_cast<PortMidiSource *>(user_data);
 
   PmEvent *tmp_event = (PmEvent *) g_malloc(sizeof(PmEvent));
   tmp_event->message = event->message;
@@ -212,7 +212,7 @@ void PortMidiSource::on_pm_event(PmEvent *event, void *user_data) {
 gboolean
 PortMidiSource::next_midi_event_to_property_method(gchar *long_name,
                                                    void *user_data) {
-  PortMidiSource *context = static_cast < PortMidiSource * >(user_data);
+  PortMidiSource *context = static_cast<PortMidiSource *>(user_data);
   context->make_property_for_next_midi_event_ = TRUE;
   context->next_property_name_ = long_name;
 
@@ -227,7 +227,7 @@ PortMidiSource::next_midi_event_to_property_method(gchar *long_name,
 gboolean
 PortMidiSource::last_midi_event_to_property_method(gchar *long_name,
                                                    void *user_data) {
-  PortMidiSource *context = static_cast < PortMidiSource * >(user_data);
+  PortMidiSource *context = static_cast<PortMidiSource *>(user_data);
   if (!context->make_property(long_name))
     return FALSE;
 
@@ -236,7 +236,7 @@ PortMidiSource::last_midi_event_to_property_method(gchar *long_name,
 
 gint PortMidiSource::get_midi_property_value(void *user_data) {
   MidiPropertyContext *context =
-      static_cast < MidiPropertyContext * >(user_data);
+      static_cast<MidiPropertyContext *>(user_data);
   return context->port_midi_source_->
       midi_values_[context->property_long_name_];
 }
@@ -244,7 +244,7 @@ gint PortMidiSource::get_midi_property_value(void *user_data) {
 gboolean
 PortMidiSource::remove_property_method(gchar *long_name,
                                        void *user_data) {
-  PortMidiSource *context = static_cast < PortMidiSource * >(user_data);
+  PortMidiSource *context = static_cast<PortMidiSource *>(user_data);
 
   if (context->midi_property_contexts_.find(long_name) ==
       context->midi_property_contexts_.end()) {
@@ -252,7 +252,7 @@ PortMidiSource::remove_property_method(gchar *long_name,
     return FALSE;
   }
 
-  std::pair < guint, guint > midi_channel;
+  std::pair<guint, guint> midi_channel;
   for (auto & it : context->midi_channels_) {
     if (g_strcmp0(it.second.c_str(), long_name) == 0) {
       midi_channel = it.first;
@@ -326,7 +326,7 @@ bool PortMidiSource::make_property(std::string property_long_name) {
 }
 
 gint PortMidiSource::get_midi_value(void *user_data) {
-  PortMidiSource *context = static_cast < PortMidiSource * >(user_data);
+  PortMidiSource *context = static_cast<PortMidiSource *>(user_data);
   return context->last_data2_;
 }
 }

@@ -130,12 +130,12 @@ void GPipe::play(gboolean play) {
 }
 
 void GPipe::set_play(gboolean play, void *user_data) {
-  GPipe *context = static_cast < GPipe * >(user_data);
+  GPipe *context = static_cast<GPipe *>(user_data);
   context->play(play);
 }
 
 gboolean GPipe::get_play(void *user_data) {
-  GPipe *context = static_cast < GPipe * >(user_data);
+  GPipe *context = static_cast<GPipe *>(user_data);
   return context->play_;
 }
 
@@ -156,16 +156,16 @@ bool GPipe::seek(gdouble position) {
 }
 
 gdouble GPipe::get_seek(void *user_data) {
-  GPipe *context = static_cast < GPipe * >(user_data);
+  GPipe *context = static_cast<GPipe *>(user_data);
   return context->seek_;
 }
 void GPipe::set_seek(gdouble position, void *user_data) {
-  GPipe *context = static_cast < GPipe * >(user_data);
+  GPipe *context = static_cast<GPipe *>(user_data);
   context->seek(position);
 }
 
 gboolean GPipe::speed_wrapped(gdouble speed, gpointer user_data) {
-  GPipe *context = static_cast < GPipe * >(user_data);
+  GPipe *context = static_cast<GPipe *>(user_data);
 
   g_debug("speed_wrapped %f", speed);
 
@@ -223,14 +223,14 @@ void GPipe::query_position_and_length() {
 }
 
 gboolean GPipe::query_position(gpointer user_data) {
-  GPipe *context = static_cast < GPipe * >(user_data);
+  GPipe *context = static_cast<GPipe *>(user_data);
   context->query_position_and_length();
   /* call me again */
   return TRUE;
 }
 
 gboolean GPipe::run_command(gpointer user_data) {
-  QuidCommandArg *context = static_cast < QuidCommandArg * >(user_data);
+  QuidCommandArg *context = static_cast<QuidCommandArg *>(user_data);
   QuiddityManager_Impl::ptr manager = context->self->manager_impl_.lock();
   if ((bool) manager && context->command != nullptr) {
     switch (context->command->id_) {
@@ -311,7 +311,7 @@ GstBusSyncReply GPipe::bus_sync_handler(GstBus * /*bus */ ,
   shmdata_base_reader_t *reader =
       (shmdata_base_reader_t *) g_object_get_data(G_OBJECT(msg->src),
                                                   "shmdata_base_reader");
-  GPipe *context = static_cast < GPipe * >(user_data);
+  GPipe *context = static_cast<GPipe *>(user_data);
 
   // g_print ("-----------%s-----%s--------------------------\n",
   //      G_OBJECT_TYPE_NAME(G_OBJECT (msg->src)),

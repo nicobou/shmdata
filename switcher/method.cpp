@@ -85,7 +85,7 @@ uint Method::get_num_of_value_args() {
   return num_of_value_args_;
 }
 
-bool Method::invoke(std::vector < std::string > args, GValue *result_value) {
+bool Method::invoke(std::vector<std::string> args, GValue *result_value) {
   // GValue result_value = G_VALUE_INIT;
 
   if (args.size() != num_of_value_args_ && arg_types_[0] != G_TYPE_NONE) {
@@ -165,11 +165,11 @@ void Method::make_description() {
     for (it = arg_description_.begin(); it != arg_description_.end(); it++) {
       json_description_->begin_object();
       json_description_->add_string_member("long name",
-                                           std::get < 0 > (*it).c_str());
+                                           std::get<0> (*it).c_str());
       json_description_->add_string_member("name",
-                                           std::get < 1 > (*it).c_str());
+                                           std::get<1> (*it).c_str());
       json_description_->add_string_member("description",
-                                           std::get < 2 > (*it).c_str());
+                                           std::get<2> (*it).c_str());
       json_description_->add_string_member("type",
                                            g_type_name(arg_types_[j]));
       json_description_->end_object();
@@ -190,9 +190,9 @@ JSONBuilder::Node Method::get_json_root_node() {
   return json_description_->get_root();
 }
 
-std::vector < GType >
+std::vector<GType>
 Method::make_arg_type_description(GType first_arg_type, ...) {
-  std::vector < GType > res;
+  std::vector<GType> res;
   GType arg_type;
   va_list vl;
   va_start(vl, first_arg_type);

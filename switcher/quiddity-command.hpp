@@ -33,7 +33,7 @@
 namespace switcher {
 class QuiddityCommand {
  public:
-  typedef std::shared_ptr < QuiddityCommand > ptr;
+  typedef std::shared_ptr<QuiddityCommand> ptr;
   enum command {
     invalid_command = -1,
     auto_invoke = 0,
@@ -86,16 +86,16 @@ class QuiddityCommand {
 
   QuiddityCommand();
   command id_;
-  std::vector < std::string > args_;
-  std::vector < std::string > vector_arg_;
-  std::vector < std::string > result_;
-  std::vector < std::string > expected_result_;
+  std::vector<std::string> args_;
+  std::vector<std::string> vector_arg_;
+  std::vector<std::string> result_;
+  std::vector<std::string> expected_result_;
   bool success_;
   gint64 time_;               // // monotonic time, in microseconds
   void clear();
   void set_id(command id);
   void add_arg(std::string arg);
-  void set_vector_arg(std::vector < std::string > vector_arg);
+  void set_vector_arg(std::vector<std::string> vector_arg);
   static command get_id_from_string(const char *com);
   static const char *get_string_from_id(QuiddityCommand::command id);
   static QuiddityCommand::ptr parse_command_from_json_reader(JsonReader *

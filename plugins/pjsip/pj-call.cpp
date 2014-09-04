@@ -388,7 +388,7 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
       // "rtcp", current_media->clock_rate,
       //          current_media->samples_per_frame, 0);
 
-      current_media->shm = std::make_shared < ShmdataAnyWriter > ();
+      current_media->shm = std::make_shared<ShmdataAnyWriter> ();
       // FIXME use quid name:
       std::string shm_any_name("/tmp/switcher_sip_"
                                + call->peer_uri
@@ -538,7 +538,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   // and creating transport for receiving data offered
 
   call->media_count = 0;
-  std::vector < pjmedia_sdp_media * >media_to_receive;
+  std::vector<pjmedia_sdp_media *>media_to_receive;
   // FIXME start from last attributed
   pj_uint16_t rtp_port =
       (pj_uint16_t) (call->instance->starting_rtp_port_ & 0xFFFE);
@@ -1509,8 +1509,8 @@ PJCall::create_outgoing_sdp(struct call *call,
   // FIXME select appropriate shmdata to include, adding all for now
   SDPDescription desc;
 
-  std::forward_list < std::string > paths =
-      quid->get_child_keys < std::forward_list > ("rtp_caps.");
+  std::forward_list<std::string> paths =
+      quid->get_child_keys<std::forward_list> ("rtp_caps.");
 
   g_print ("--- %d\n", __LINE__);
   g_print ("%s\n", quid->get_info (".rtp_caps").c_str ());

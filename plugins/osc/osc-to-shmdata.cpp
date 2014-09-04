@@ -34,7 +34,7 @@ OscToShmdata::OscToShmdata():
     osc_thread_(nullptr),
     port_spec_(nullptr),
     start_(std::chrono::system_clock::now()),
-    shm_any_(std::make_shared < ShmdataAnyWriter > ()) {
+    shm_any_(std::make_shared<ShmdataAnyWriter> ()) {
 }
 
 bool OscToShmdata::init() {
@@ -60,12 +60,12 @@ OscToShmdata::~OscToShmdata() {
 }
 
 void OscToShmdata::set_port(const gint value, void *user_data) {
-  OscToShmdata *context = static_cast < OscToShmdata * >(user_data);
+  OscToShmdata *context = static_cast<OscToShmdata *>(user_data);
   context->port_ = value;
 }
 
 gint OscToShmdata::get_port(void *user_data) {
-  OscToShmdata *context = static_cast < OscToShmdata * >(user_data);
+  OscToShmdata *context = static_cast<OscToShmdata *>(user_data);
   return context->port_;
 }
 
@@ -94,7 +94,7 @@ bool OscToShmdata::start() {
 bool OscToShmdata::stop() {
   unregister_shmdata(make_file_name("osc"));
   {
-    ShmdataAnyWriter::ptr temp = std::make_shared < ShmdataAnyWriter > ();
+    ShmdataAnyWriter::ptr temp = std::make_shared<ShmdataAnyWriter> ();
     std::swap(shm_any_, temp);
   }
   if (nullptr != osc_thread_) {
@@ -111,16 +111,16 @@ OscToShmdata::osc_handler(const char *path,
                           const char *types,
                           lo_arg ** argv,
                           int argc, lo_message m, void *user_data) {
-  OscToShmdata *context = static_cast < OscToShmdata * >(user_data);
+  OscToShmdata *context = static_cast<OscToShmdata *>(user_data);
   lo_timetag timetag = lo_message_get_timestamp(m);
   // g_print ("timestamp %u %u", path, timetag.sec, timetag.frac);
   if (0 != timetag.sec) {
     // FIXME handle internal timetag
     // note: this is not implemented in osc-send
   }
-  std::chrono::time_point < std::chrono::system_clock > now =
+  std::chrono::time_point<std::chrono::system_clock> now =
       std::chrono::system_clock::now();
-  std::chrono::duration < unsigned long long, std::nano > clock =
+  std::chrono::duration<unsigned long long, std::nano> clock =
       now - context->start_;
   // g_print ("unknown osc path %s %llu", path, clock.count ());
 

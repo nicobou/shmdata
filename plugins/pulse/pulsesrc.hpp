@@ -69,7 +69,7 @@ class PulseSrc:public AudioSource, public StartableQuiddity {
   pa_mainloop_api *pa_mainloop_api_;
   pa_context *pa_context_;
   char *server_;
-  std::vector < DeviceDescription > capture_devices_;
+  std::vector<DeviceDescription> capture_devices_;
   // quit
   std::mutex quit_mutex_;
   std::condition_variable quit_cond_;

@@ -178,7 +178,7 @@ CustomPropertyHelper::make_user_method(const gchar *nickname,
                                        void(*set_method)(void),
                                        void(*get_method)(void),
                                        void *user_data) {
-  std::shared_ptr < UserMethod > user_method(new UserMethod());
+  std::shared_ptr<UserMethod> user_method(new UserMethod());
   user_method->set = (void (*)(void)) set_method;
   user_method->get = (void (*)(void)) get_method;
   user_method->user_data = user_data;
@@ -189,7 +189,7 @@ CustomPropertyHelper::make_user_method(const gchar *nickname,
 }
 
 bool CustomPropertyHelper::get_by_gvalue(GValue *value, void *user_data) {
-  UserMethod *user_method = static_cast < UserMethod * >(user_data);
+  UserMethod *user_method = static_cast<UserMethod *>(user_data);
 
   if (G_VALUE_TYPE(value) == G_TYPE_STRING) {
     const gchar *val =
@@ -219,7 +219,7 @@ bool CustomPropertyHelper::get_by_gvalue(GValue *value, void *user_data) {
 bool
 CustomPropertyHelper::set_by_gvalue(const GValue *value,
                                     void *user_data) {
-  UserMethod *user_method = static_cast < UserMethod * >(user_data);
+  UserMethod *user_method = static_cast<UserMethod *>(user_data);
 
   if (G_VALUE_TYPE(value) == G_TYPE_STRING) {
     ((set_string_method) user_method->set) (g_value_get_string(value),

@@ -30,9 +30,9 @@
 #include <vector>
 #include <map>
 namespace switcher {
-template < class T > class HashTable {
+template<class T> class HashTable {
  public:
-  typedef std::shared_ptr < HashTable < T > >ptr;
+  typedef std::shared_ptr<HashTable<T>>ptr;
 
   HashTable();
   ~HashTable();
@@ -42,8 +42,8 @@ template < class T > class HashTable {
   bool contains(const std::string key);
   unsigned int size();
   T *lookup(const std::string key);
-  std::vector < std::string > get_keys();
-  std::vector < T * >get_values();
+  std::vector<std::string> get_keys();
+  std::vector<T *>get_values();
   void for_each(GHFunc function, void *user_data);
 
  private:

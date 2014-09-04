@@ -61,7 +61,7 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   GParamSpec *capture_mode_prop_ {nullptr};
   GEnumValue capture_modes_enum_[16];
 
-  std::shared_ptr < posture::ZCamera > zcamera_ {nullptr};
+  std::shared_ptr<posture::ZCamera> zcamera_ {nullptr};
 
   ShmdataAnyWriter::ptr cloud_writer_ {nullptr};
   ShmdataAnyWriter::ptr depth_writer_ {nullptr};
@@ -92,20 +92,20 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   static void set_capture_mode(const int mode, void *user_data);
 
   static void cb_frame_cloud(void *context,
-                             const std::vector < char >&data);
+                             const std::vector<char>&data);
   static void cb_frame_depth(void *context,
-                             const std::vector < unsigned char >&data,
+                             const std::vector<unsigned char>&data,
                              int width, int height);
   static void cb_frame_rgb(void *context,
-                           const std::vector < unsigned char >&data,
+                           const std::vector<unsigned char>&data,
                            int width, int height);
   static void cb_frame_ir(void *context,
-                          const std::vector < unsigned char >&data,
+                          const std::vector<unsigned char>&data,
                           int width, int height);
   static void free_sent_buffer(void* data);
   void check_buffers();
 
-  std::shared_ptr < posture::Display > display_ {nullptr};
+  std::shared_ptr<posture::Display> display_ {nullptr};
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureSrc);

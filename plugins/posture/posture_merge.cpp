@@ -35,7 +35,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureMerge,
                                      "pclmergesink", "Emmanuel Durand");
 
 PostureMerge::PostureMerge():
-    custom_props_(std::make_shared < CustomPropertyHelper > ()) {
+    custom_props_(std::make_shared<CustomPropertyHelper> ()) {
 }
 
 PostureMerge::~PostureMerge() {

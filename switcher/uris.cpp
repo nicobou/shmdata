@@ -104,7 +104,7 @@ bool Uris::init() {
 }
 
 gboolean Uris::add_uri_wrapped(gpointer uri, gpointer user_data) {
-  Uris *context = static_cast < Uris * >(user_data);
+  Uris *context = static_cast<Uris *>(user_data);
   if (context->add_uri((char *) uri))
     return TRUE;
   else
@@ -119,7 +119,7 @@ bool Uris::add_uri(std::string uri) {
 
 gboolean Uris::play_wrapped(gpointer /*unused */ ,
                             gpointer user_data) {
-  Uris *context = static_cast < Uris * >(user_data);
+  Uris *context = static_cast<Uris *>(user_data);
 
   if (context->play())
     return TRUE;
@@ -135,7 +135,7 @@ bool Uris::play() {
 
 gboolean Uris::pause_wrapped(gpointer /*unused */ ,
                              gpointer user_data) {
-  Uris *context = static_cast < Uris * >(user_data);
+  Uris *context = static_cast<Uris *>(user_data);
 
   if (context->pause())
     return TRUE;
@@ -150,7 +150,7 @@ bool Uris::pause() {
 }
 
 gboolean Uris::seek_wrapped(gdouble position, gpointer user_data) {
-  Uris *context = static_cast < Uris * >(user_data);
+  Uris *context = static_cast<Uris *>(user_data);
 
   g_debug("seek_wrapped %f", position);
 
@@ -230,7 +230,7 @@ void
 Uris::uridecodebin_pad_added_cb(GstElement * object, GstPad *pad,
                                 gpointer user_data) {
   Group *group = (Group *) user_data;
-  Uris *context = static_cast < Uris * >(group->user_data);
+  Uris *context = static_cast<Uris *>(group->user_data);
 
   // const gchar *padname= gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
   // detecting type of media

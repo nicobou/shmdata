@@ -48,7 +48,7 @@ my_object_set_property(GObject *gobject,
                        const GValue * value, GParamSpec *pspec) {
   MyObject *myobj = (MyObject *) gobject;
   GObjectWrapper *context =
-      static_cast < GObjectWrapper * >(myobj->context);
+      static_cast<GObjectWrapper *>(myobj->context);
   (*context->get_set_method_pointer(prop_id)) (value,
                                                context->property_get_user_data
                                                (g_param_spec_get_nick
@@ -61,7 +61,7 @@ my_object_get_property(GObject *gobject,
 {
   MyObject *myobj = (MyObject *) gobject;
   GObjectWrapper *context =
-      static_cast < GObjectWrapper * >(myobj->context);
+      static_cast<GObjectWrapper *>(myobj->context);
   (*context->get_get_method_pointer(prop_id)) (value,
                                                context->property_get_user_data
                                                (g_param_spec_get_nick

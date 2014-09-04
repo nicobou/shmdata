@@ -42,7 +42,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SystemUsage,
                                      "LGPL",
                                      "systemusage", "Emmanuel Durand");
 SystemUsage::SystemUsage():
-    custom_props_(std::make_shared < CustomPropertyHelper > ()),
+    custom_props_(std::make_shared<CustomPropertyHelper> ()),
     period_prop_(nullptr), cpuNbr_(0), period_(0.1) {
 }
 
@@ -69,7 +69,7 @@ SystemUsage::init() {
 
   // Launch the polling thread
   running_ = true;
-  pollStateThread_ = make_shared < thread > ([&]() {
+  pollStateThread_ = make_shared<thread> ([&]() {
       pollState();
     });
 
@@ -347,14 +347,14 @@ SystemUsage::pollState() {
 void
 SystemUsage::setRefreshPeriod(double period, void *user_data) {
   SystemUsage *
-      ctx = static_cast < SystemUsage * >(user_data);
+      ctx = static_cast<SystemUsage *>(user_data);
   ctx->period_ = period;
 }
 
 double
 SystemUsage::getRefreshPeriod(void *user_data) {
   SystemUsage *
-      ctx = static_cast < SystemUsage * >(user_data);
+      ctx = static_cast<SystemUsage *>(user_data);
   return ctx->period_;
 }
 }

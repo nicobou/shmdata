@@ -26,7 +26,7 @@
 namespace switcher {
 class AudioSource:public GPipe {
  public:
-  typedef std::shared_ptr < AudioSource > ptr;
+  typedef std::shared_ptr<AudioSource> ptr;
   AudioSource();
   AudioSource(const AudioSource &) = delete;
   AudioSource & operator=(const AudioSource &) = delete;

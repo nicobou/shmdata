@@ -158,7 +158,7 @@ UDPSink::~UDPSink() {
 void
 UDPSink::add_elements_to_bin(ShmdataReader *caller,
                              void *udpbin_instance) {
-  UDPSink *context = static_cast < UDPSink * >(udpbin_instance);
+  UDPSink *context = static_cast<UDPSink *>(udpbin_instance);
 
   caller->set_sink_element(context->udpsink_bin_);
   gst_bin_add(GST_BIN(context->bin_), context->udpsink_bin_);
@@ -197,7 +197,7 @@ gboolean
 UDPSink::remove_client_wrapped(gpointer host, gint port,
                                gpointer user_data) {
   // std::string connector = static_cast<std::string>(connector_name);
-  UDPSink *context = static_cast < UDPSink * >(user_data);
+  UDPSink *context = static_cast<UDPSink *>(user_data);
 
   if (context->remove_client((char *) host, port))
     return TRUE;
@@ -214,7 +214,7 @@ gboolean
 UDPSink::add_client_wrapped(gpointer host, gint port, gpointer user_data)
 {
   // std::string connector = static_cast<std::string>(connector_name);
-  UDPSink *context = static_cast < UDPSink * >(user_data);
+  UDPSink *context = static_cast<UDPSink *>(user_data);
 
   if (context->add_client((char *) host, port))
     return TRUE;
@@ -229,7 +229,7 @@ bool UDPSink::add_client(gchar *host, gint port) {
 
 gboolean UDPSink::clear_wrapped(gpointer /*unused */ , gpointer user_data) {
   // std::string connector = static_cast<std::string>(connector_name);
-  UDPSink *context = static_cast < UDPSink * >(user_data);
+  UDPSink *context = static_cast<UDPSink *>(user_data);
 
   if (context->clear_clients())
     return TRUE;

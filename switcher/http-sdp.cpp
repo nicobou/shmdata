@@ -73,7 +73,7 @@ void HTTPSDP::no_more_pads_cb(GstElement * /*object */ ,
 
 void HTTPSDP::pad_added_cb(GstElement * /*object */ , GstPad *pad,
                            gpointer user_data) {
-  HTTPSDP *context = static_cast < HTTPSDP * >(user_data);
+  HTTPSDP *context = static_cast<HTTPSDP *>(user_data);
 
   const gchar *padname =
       gst_structure_get_name(gst_caps_get_structure
@@ -113,7 +113,7 @@ void HTTPSDP::pad_added_cb(GstElement * /*object */ , GstPad *pad,
 }
 
 gboolean HTTPSDP::to_shmdata_wrapped(gpointer uri, gpointer user_data) {
-  HTTPSDP *context = static_cast < HTTPSDP * >(user_data);
+  HTTPSDP *context = static_cast<HTTPSDP *>(user_data);
 
   if (context->to_shmdata((char *) uri))
     return TRUE;

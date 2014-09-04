@@ -74,19 +74,19 @@ MyPlugin::~MyPlugin() {
 }
 
 gboolean MyPlugin::get_myprop(void *user_data) {
-  MyPlugin *context = static_cast < MyPlugin * >(user_data);
+  MyPlugin *context = static_cast<MyPlugin *>(user_data);
   return context->myprop_;
 }
 
 void MyPlugin::set_myprop(gboolean myprop, void *user_data) {
-  MyPlugin *context = static_cast < MyPlugin * >(user_data);
+  MyPlugin *context = static_cast<MyPlugin *>(user_data);
   context->myprop_ = myprop;
   GObjectWrapper::notify_property_changed(context->gobject_->get_gobject(),
                                           context->myprop_prop_);
 }
 
 gchar *MyPlugin::my_hello_world_method(gchar *first_arg, void *user_data) {
-  MyPlugin *context = static_cast < MyPlugin * >(user_data);
+  MyPlugin *context = static_cast<MyPlugin *>(user_data);
 
   g_debug("hello world from myplugin");
   g_free(context->hello_);

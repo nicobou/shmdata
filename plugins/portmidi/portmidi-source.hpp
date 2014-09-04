@@ -56,11 +56,11 @@ class PortMidiSource:public Quiddity,
   GParamSpec *midi_value_spec_;
   gboolean make_property_for_next_midi_event_;
   std::string next_property_name_;
-  std::map < std::string, GParamSpec * >prop_specs_;
-  std::map < std::string, MidiPropertyContext > midi_property_contexts_;    // this is persistent to the quiddity
-  std::map < std::pair < guint, guint >, std::string > midi_channels_;
-  std::map < std::string, guint > midi_values_;
-  std::map < std::string, GParamSpec * >unused_props_specs_;        // using property name instead of long name
+  std::map<std::string, GParamSpec *>prop_specs_;
+  std::map<std::string, MidiPropertyContext> midi_property_contexts_;    // this is persistent to the quiddity
+  std::map<std::pair<guint, guint>, std::string> midi_channels_;
+  std::map<std::string, guint> midi_values_;
+  std::map<std::string, GParamSpec *>unused_props_specs_;        // using property name instead of long name
 
   bool init() final;
   bool start() final;

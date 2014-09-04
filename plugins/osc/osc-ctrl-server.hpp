@@ -36,13 +36,13 @@ class OscCtrlServer:public QuiddityManagerWrapper {
   OscCtrlServer & operator=(const OscCtrlServer &) = delete;
   void set_port(std::string port);
   // for invocation into osc handlers:
-  std::shared_ptr < QuiddityManager > get_quiddity_manager();
+  std::shared_ptr<QuiddityManager> get_quiddity_manager();
   // wrappers
   static gboolean set_port_wrapped(gpointer port, gpointer user_data);
 
  private:
   std::string port_;
-  std::map < std::string, std::pair < std::string, std::string > >osc_subscribers_;  //(host + port)
+  std::map<std::string, std::pair<std::string, std::string>>osc_subscribers_;  //(host + port)
   lo_server_thread osc_thread_;
 
   bool init() final;

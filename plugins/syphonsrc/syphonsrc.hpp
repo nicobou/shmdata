@@ -40,7 +40,7 @@ class SyphonSrc:public Quiddity, public Segment, public StartableQuiddity {
   SyphonSrc & operator=(const SyphonSrc &) = delete;
 
  private:
-  std::shared_ptr < SyphonReader > reader_;
+  std::shared_ptr<SyphonReader> reader_;
   ShmdataAnyWriter::ptr writer_;
 
   CustomPropertyHelper::ptr custom_props_;

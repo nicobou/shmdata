@@ -28,10 +28,10 @@ class QuiddityManager;
 
 class QuiddityManagerWrapper:public Quiddity {
  public:
-  typedef std::shared_ptr < QuiddityManagerWrapper > ptr;
-  void set_quiddity_manager(std::shared_ptr < QuiddityManager > manager);
+  typedef std::shared_ptr<QuiddityManagerWrapper> ptr;
+  void set_quiddity_manager(std::shared_ptr<QuiddityManager> manager);
  protected:
-  std::weak_ptr < QuiddityManager > manager_;
+  std::weak_ptr<QuiddityManager> manager_;
 };
 }  // namespace switcher
 

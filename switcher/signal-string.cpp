@@ -132,11 +132,11 @@ Signal::set_description(std::string long_name,
     for (it = arg_description.begin(); it != arg_description.end(); it++) {
       json_description_->begin_object();
       json_description_->add_string_member("long name",
-                                           std::get < 0 > (*it).c_str());
+                                           std::get<0> (*it).c_str());
       json_description_->add_string_member("name",
-                                           std::get < 1 > (*it).c_str());
+                                           std::get<1> (*it).c_str());
       json_description_->add_string_member("description",
-                                           std::get < 2 > (*it).c_str());
+                                           std::get<2> (*it).c_str());
       json_description_->add_string_member("type",
                                            g_type_name(arg_types_[j]));
       json_description_->end_object();
@@ -146,9 +146,9 @@ Signal::set_description(std::string long_name,
   json_description_->end_object();
 }
 
-std::vector < GType >
+std::vector<GType>
 Signal::make_arg_type_description(GType first_arg_type, ...) {
-  std::vector < GType > res;
+  std::vector<GType> res;
   GType arg_type;
   va_list vl;
   va_start(vl, first_arg_type);
@@ -223,12 +223,12 @@ Signal::on_signal_emitted(GSignalInvocationHint *,
                           guint n_param_values,
                           const GValue *param_values,
                           gpointer user_data) {
-  Signal *context = static_cast < Signal * >(user_data);
+  Signal *context = static_cast<Signal *>(user_data);
   GObject *object = (GObject *) g_value_peek_pointer(&param_values[0]);
   if (object != context->object_)
     return TRUE;
 
-  std::vector < std::string > params;
+  std::vector<std::string> params;
   // g_debug ("signal name n_value %d, object type %s\n", n_param_values, G_OBJECT_TYPE_NAME (object));
   guint i;
   for (i = 1; i < n_param_values; i++)        // we do not deserialize the gobject
@@ -301,7 +301,7 @@ void Signal::signal_emit(/*GMainContext *context, */ const gchar */*unused*/,
 //   return FALSE;
 // }
 
-GValue Signal::action_emit(std::vector < std::string > args) {
+GValue Signal::action_emit(std::vector<std::string> args) {
   GValue result_value = G_VALUE_INIT;
 
   if (!is_action_) {

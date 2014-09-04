@@ -110,9 +110,9 @@ void HTTPSDPDec::clean_on_error_command() {
 
 void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement * /*object */ ,
                                          GstPad *pad, gpointer user_data) {
-  HTTPSDPDec *context = static_cast < HTTPSDPDec * >(user_data);
-  GPipe *gpipe = static_cast < GPipe * >(user_data);
-  std::unique_ptr < DecodebinToShmdata >
+  HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
+  GPipe *gpipe = static_cast<GPipe *>(user_data);
+  std::unique_ptr<DecodebinToShmdata>
       decodebin(new DecodebinToShmdata(gpipe));
 
   decodebin->invoke(std::bind(gst_bin_add,
@@ -124,7 +124,7 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement * /*object */ ,
                            std::placeholders::_1,
                            "sink");
   GstPad *sinkpad =
-      decodebin->invoke_with_return < GstPad * >(std::move(get_pad));
+      decodebin->invoke_with_return<GstPad *>(std::move(get_pad));
   On_scope_exit {
     gst_object_unref(GST_OBJECT(sinkpad));
   };
@@ -145,7 +145,7 @@ void HTTPSDPDec::source_setup_cb(GstElement * /*httpsdpdec */ ,
 }
 
 gboolean HTTPSDPDec::to_shmdata_wrapped(gpointer uri, gpointer user_data) {
-  HTTPSDPDec *context = static_cast < HTTPSDPDec * >(user_data);
+  HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
 
   if (context->to_shmdata((char *) uri))
     return TRUE;
@@ -163,7 +163,7 @@ bool HTTPSDPDec::to_shmdata(std::string uri) {
   on_error_command_->time_ = 1000;    // 1 second
   on_error_command_->add_arg(get_nick_name());
   on_error_command_->add_arg("to_shmdata");
-  std::vector < std::string > vect_arg;
+  std::vector<std::string> vect_arg;
   vect_arg.push_back(uri);
   on_error_command_->set_vector_arg(vect_arg);
 

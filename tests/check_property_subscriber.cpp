@@ -74,7 +74,7 @@ main() {
     manager->create("videotestsrc", "vid");
     manager->subscribe_property("sub", "vid", "pattern");
 
-    std::vector < std::string > subscribers =
+    std::vector<std::string> subscribers =
         manager->list_property_subscribers();
     if (subscribers.size() != 1
         || g_strcmp0(subscribers.at(0).c_str(), "sub") != 0) {
@@ -82,7 +82,7 @@ main() {
       return 1;
     }
 
-    std::vector < std::pair < std::string, std::string > >properties =
+    std::vector<std::pair<std::string, std::string>>properties =
         manager->list_subscribed_properties("sub");
     if (properties.size() != 1
         || g_strcmp0(properties.at(0).first.c_str(), "vid")

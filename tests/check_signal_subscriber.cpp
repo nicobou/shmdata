@@ -28,7 +28,7 @@ void
 quiddity_created_removed_cb(std::string /*subscriber_name */ ,
                             std::string /*quiddity_name */ ,
                             std::string signal_name,
-                            std::vector < std::string > params,
+                            std::vector<std::string> params,
                             void * /*user_data */ ) {
   g_message("%s: %s", signal_name.c_str(), params[0].c_str());
   signal_counter++;
@@ -66,7 +66,7 @@ main() {
     // manager->set_property ("vid", "codec", "2");
     // manager->set_property ("vid", "started", "true");
 
-    std::vector < std::string > subscribers =
+    std::vector<std::string> subscribers =
         manager->list_signal_subscribers();
     if (subscribers.size() != 1
         || g_strcmp0(subscribers.at(0).c_str(), "signal_subscriber") != 0) {
@@ -74,7 +74,7 @@ main() {
       return 1;
     }
 
-    std::vector < std::pair < std::string, std::string > >signals =
+    std::vector<std::pair<std::string, std::string>>signals =
         manager->list_subscribed_signals("signal_subscriber");
     if (signals.size() != 2
         || g_strcmp0(signals.at(0).first.c_str(), "create_remove_spy")

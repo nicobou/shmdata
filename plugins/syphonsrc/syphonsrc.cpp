@@ -38,7 +38,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SyphonSrc,
                                      "syphonsrc", "Emmanuel Durand");
 
 SyphonSrc::SyphonSrc():
-    custom_props_(std::make_shared < CustomPropertyHelper > ()),
+    custom_props_(std::make_shared<CustomPropertyHelper> ()),
     syphon_servername_(""),
     syphon_servername_prop_(nullptr),
     syphon_appname_(""),

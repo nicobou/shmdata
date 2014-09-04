@@ -99,7 +99,7 @@ PortMidi::push_midi_message(int id, unsigned char status,
 }
 
 bool PortMidi::close_input_device(int id) {
-  std::map < guint, PmStream * >::iterator it = input_streams_.find(id);
+  std::map<guint, PmStream *>::iterator it = input_streams_.find(id);
   if (it == input_streams_.end())
     return false;
 
@@ -110,7 +110,7 @@ bool PortMidi::close_input_device(int id) {
 }
 
 bool PortMidi::close_output_device(int id) {
-  std::map < guint, PmStream * >::iterator it = output_streams_.find(id);
+  std::map<guint, PmStream *>::iterator it = output_streams_.find(id);
   if (it == output_streams_.end())
     return false;
 
@@ -121,7 +121,7 @@ bool PortMidi::close_output_device(int id) {
 }
 
 gchar *PortMidi::make_devices_description(void *user_data) {
-  PortMidi *context = static_cast < PortMidi * >(user_data);
+  PortMidi *context = static_cast<PortMidi *>(user_data);
 
   if (context->devices_description_ != nullptr)
     g_free(context->devices_description_);
@@ -175,7 +175,7 @@ PortMidi::PortMidiScheduler::PortMidiScheduler():
 PortMidi::PortMidiScheduler::~PortMidiScheduler() {
   portmidi_initialized_ = false;
   finalizing_ = TRUE;
-  std::unique_lock < std::mutex > lock(finalize_mutex_);
+  std::unique_lock<std::mutex> lock(finalize_mutex_);
   Pt_Stop();                  /* stop the timer */
   Pm_Terminate();
 }
@@ -197,7 +197,7 @@ PmStream *PortMidi::PortMidiScheduler::add_input_stream(int id,
   */
   Pm_SetFilter(midi_in, PM_FILT_ACTIVE | PM_FILT_CLOCK);
 
-  std::unique_lock < std::mutex > lock(streams_mutex_);
+  std::unique_lock<std::mutex> lock(streams_mutex_);
   input_callbacks_[midi_in] = std::make_pair(method, user_data);
   return midi_in;
 }
@@ -209,14 +209,14 @@ PmStream *PortMidi::PortMidiScheduler::add_output_stream(int id) {
                                  nullptr, nullptr,    /* time info */
                                  0))
     return nullptr;
-  std::unique_lock < std::mutex > lock(streams_mutex_);
-  output_queues_[midi_out] = new std::queue < PmEvent > ();
+  std::unique_lock<std::mutex> lock(streams_mutex_);
+  output_queues_[midi_out] = new std::queue<PmEvent> ();
   return midi_out;
 }
 
 bool PortMidi::PortMidiScheduler::remove_input_stream(PmStream *stream) {
   {
-    std::unique_lock < std::mutex > lock(streams_mutex_);
+    std::unique_lock<std::mutex> lock(streams_mutex_);
     input_callbacks_.erase(stream);
   }
   Pm_Close(stream);
@@ -225,7 +225,7 @@ bool PortMidi::PortMidiScheduler::remove_input_stream(PmStream *stream) {
 
 bool PortMidi::PortMidiScheduler::remove_output_stream(PmStream *stream) {
   {
-    std::unique_lock < std::mutex > lock(streams_mutex_);
+    std::unique_lock<std::mutex> lock(streams_mutex_);
     output_queues_.erase(stream);
   }
   Pm_Close(stream);
@@ -254,7 +254,7 @@ PortMidi::PortMidiScheduler::push_message(PmStream *stream,
 void PortMidi::PortMidiScheduler::process_midi(PtTimestamp /*timestamp */ ,
                                                void *user_data) {
   PortMidiScheduler *context =
-      static_cast < PortMidiScheduler * >(user_data);
+      static_cast<PortMidiScheduler *>(user_data);
 
   PmError result;
   PmEvent buffer;             /* just one message at a time */
@@ -263,8 +263,8 @@ void PortMidi::PortMidiScheduler::process_midi(PtTimestamp /*timestamp */ ,
   if (!context->portmidi_initialized_)
     return;
 
-  std::unique_lock < std::mutex > finalize_lock(context->finalize_mutex_);
-  std::unique_lock < std::mutex > streams_lock(context->streams_mutex_);
+  std::unique_lock<std::mutex> finalize_lock(context->finalize_mutex_);
+  std::unique_lock<std::mutex> streams_lock(context->streams_mutex_);
 
   for (auto & itr : context->input_callbacks_) {
     /* see if there is any midi input to process */
@@ -359,7 +359,7 @@ void PortMidi::PortMidiScheduler::process_midi(PtTimestamp /*timestamp */ ,
 }
 
 const gchar *PortMidi::get_devices_description_json(gpointer user_data) {
-  PortMidi *context = static_cast < PortMidi * >(user_data);
+  PortMidi *context = static_cast<PortMidi *>(user_data);
   return context->devices_description_;
 }
 

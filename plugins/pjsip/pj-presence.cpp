@@ -117,7 +117,7 @@ gboolean
 PJPresence::register_account_wrapped(gchar *user,
                                      gchar *domain,
                                      gchar *password, void *user_data) {
-  PJPresence *context = static_cast < PJPresence * >(user_data);
+  PJPresence *context = static_cast<PJPresence *>(user_data);
   if (nullptr == user || nullptr == domain || nullptr == password) {
     g_warning
         ("register sip account received nullptr user or domain or password");
@@ -135,7 +135,7 @@ void
 PJPresence::register_account(const std::string & sip_user,
                              const std::string & sip_domain,
                              const std::string & sip_password) {
-  std::unique_lock < std::mutex > lock(registration_mutex_);
+  std::unique_lock<std::mutex> lock(registration_mutex_);
 
   // Register to SIP server by creating SIP account.
   pjsua_acc_config cfg;
@@ -222,7 +222,7 @@ PJPresence::register_account(const std::string & sip_user,
 
 gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */ ,
                                                 void *user_data) {
-  PJPresence *context = static_cast < PJPresence * >(user_data);
+  PJPresence *context = static_cast<PJPresence *>(user_data);
   context->
       sip_instance_->run_command_sync(std::
                                       bind(&PJPresence::unregister_account,
@@ -233,7 +233,7 @@ gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */ ,
 }
 
 bool PJPresence::unregister_account() {
-  std::unique_lock < std::mutex > lock(registration_mutex_);
+  std::unique_lock<std::mutex> lock(registration_mutex_);
   if (-1 == account_id_)
     return false;
   change_online_status(PJPresence::OFFLINE);
@@ -272,8 +272,8 @@ void
 PJPresence::on_registration_state(pjsua_acc_id acc_id,
                                   pjsua_reg_info *info) {
   PJPresence *context =
-      static_cast < PJPresence * >(pjsua_acc_get_user_data(acc_id));
-  std::unique_lock < std::mutex > lock(context->registration_mutex_);
+      static_cast<PJPresence *>(pjsua_acc_get_user_data(acc_id));
+  std::unique_lock<std::mutex> lock(context->registration_mutex_);
   if (PJ_SUCCESS != info->cbparam->status) {
     if (-1 != context->account_id_) {
       pj_status_t status = pjsua_acc_del(context->account_id_);
@@ -288,7 +288,7 @@ PJPresence::on_registration_state(pjsua_acc_id acc_id,
 
 void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   PJPresence *context =
-      static_cast < PJPresence * >(pjsua_buddy_get_user_data(buddy_id));
+      static_cast<PJPresence *>(pjsua_buddy_get_user_data(buddy_id));
   if (nullptr == context)
     return;
   pjsua_buddy_info info;
@@ -353,8 +353,8 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
 }
 
 void PJPresence::set_status(const gint value, void *user_data) {
-  PJPresence *context = static_cast < PJPresence * >(user_data);
-  if (value < 0 || value >= OPT_MAX) {
+  PJPresence *context = static_cast<PJPresence *>(user_data);
+  if (value<0 || value>= OPT_MAX) {
     g_warning("invalide online status code");
     return;
   }
@@ -373,7 +373,7 @@ void PJPresence::set_status(const gint value, void *user_data) {
 }
 
 gint PJPresence::get_status(void *user_data) {
-  PJPresence *context = static_cast < PJPresence * >(user_data);
+  PJPresence *context = static_cast<PJPresence *>(user_data);
   return context->status_;
 }
 
@@ -436,7 +436,7 @@ void PJPresence::change_online_status(gint status) {
 }
 
 void PJPresence::set_note(const gchar *custom_status, void *user_data) {
-  PJPresence *context = static_cast < PJPresence * >(user_data);
+  PJPresence *context = static_cast<PJPresence *>(user_data);
   if (0 == context->custom_status_.compare(custom_status))
     return;
   context->custom_status_ = custom_status;
@@ -449,7 +449,7 @@ void PJPresence::set_note(const gchar *custom_status, void *user_data) {
 }
 
 const gchar *PJPresence::get_note(void *user_data) {
-  PJPresence *context = static_cast < PJPresence * >(user_data);
+  PJPresence *context = static_cast<PJPresence *>(user_data);
   return context->custom_status_.c_str();
 }
 

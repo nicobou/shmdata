@@ -36,7 +36,7 @@ class Uridecodebin:public GPipe, public GstElementCleaner {
 
  private:
   GstElement *uridecodebin_;
-  std::unordered_map < std::string, int >media_counters_;
+  std::unordered_map<std::string, int>media_counters_;
   GstPad *main_pad_;
   GstCaps *rtpgstcaps_;
   bool discard_next_uncomplete_buffer_;

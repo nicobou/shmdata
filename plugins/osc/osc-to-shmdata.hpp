@@ -42,7 +42,7 @@ class OscToShmdata:public Quiddity, public Segment, public StartableQuiddity {
   gint port_;
   lo_server_thread osc_thread_;
   GParamSpec *port_spec_;
-  std::chrono::time_point < std::chrono::system_clock > start_;
+  std::chrono::time_point<std::chrono::system_clock> start_;
   ShmdataAnyWriter::ptr shm_any_;
 
   bool init() final;

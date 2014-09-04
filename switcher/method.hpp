@@ -33,9 +33,9 @@
 namespace switcher {
 class Method:public Categorizable {
  public:
-  typedef std::shared_ptr < Method > ptr;
+  typedef std::shared_ptr<Method> ptr;
   typedef GType return_type;
-  typedef std::vector < GType > args_types;
+  typedef std::vector<GType> args_types;
   typedef std::vector < std::tuple < std::string, std::string,
                                      std::string > >args_doc;
   typedef void *method_ptr;
@@ -48,7 +48,7 @@ class Method:public Categorizable {
   bool set_method(method_ptr method,
                   return_type return_type,
                   args_types arg_types, gpointer user_data);
-  bool invoke(std::vector < std::string > args, GValue *return_value);
+  bool invoke(std::vector<std::string> args, GValue *return_value);
   uint get_num_of_value_args();
   void set_description(std::string long_name,
                        std::string method_name,

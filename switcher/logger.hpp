@@ -43,7 +43,7 @@ class Logger:public Quiddity {
   bool mute_;
   bool debug_;
   bool verbose_;
-  std::unordered_map < std::string, guint > handler_ids_;
+  std::unordered_map<std::string, guint> handler_ids_;
   // custom properties
   CustomPropertyHelper::ptr custom_props_;
   GParamSpec *last_line_prop_;

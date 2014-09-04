@@ -51,8 +51,8 @@ class ShmdataToFile:public GPipe {
   bool init_gpipe() final;
   bool make_recorders();
   bool clean_recorders();
-  std::unordered_map < std::string, std::string > file_names_;
-  std::unordered_map < std::string, GstElement * >shmdata_recorders_;
+  std::unordered_map<std::string, std::string> file_names_;
+  std::unordered_map<std::string, GstElement *>shmdata_recorders_;
 
   // wrapper for registering the data_stream functions
   static gboolean add_shmdata_wrapped(gpointer shmdata_socket_path,

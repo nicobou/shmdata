@@ -128,7 +128,7 @@ void
 ShmdataWriter::on_handoff_cb(GstElement *object,
                              GstBuffer *buf,
                              GstPad *pad, gpointer user_data) {
-  ShmdataWriter *context = static_cast < ShmdataWriter * >(user_data);
+  ShmdataWriter *context = static_cast<ShmdataWriter *>(user_data);
 
   GstCaps *caps = gst_pad_get_negotiated_caps(pad);
   if (nullptr == caps)

@@ -58,7 +58,7 @@ class PortMidi {
                          void *user_data);
   bool close_input_device(int id);
   // bool is_queue_empty(int id);
-  std::vector < unsigned char >poll(int id);
+  std::vector<unsigned char>poll(int id);
 
   // ouput
   int get_default_output_device_id();
@@ -69,8 +69,8 @@ class PortMidi {
 
  private:
   gchar *devices_description_;
-  std::map < guint, PmStream * >input_streams_;
-  std::map < guint, PmStream * >output_streams_;
+  std::map<guint, PmStream *>input_streams_;
+  std::map<guint, PmStream *>output_streams_;
 
   /** Prints the list of MIDI source devices. */
   static gchar *make_devices_description(void *user_data);
@@ -97,7 +97,7 @@ class PortMidi {
     gboolean finalizing_;
     std::map < PmStream *, std::pair < on_pm_event_method,
                                        void *>>input_callbacks_;
-    std::map < PmStream *, std::queue < PmEvent > *>output_queues_;
+    std::map<PmStream *, std::queue < PmEvent> *>output_queues_;
     bool portmidi_initialized_;
     bool app_sysex_in_progress_;
     bool thru_sysex_in_progress_;

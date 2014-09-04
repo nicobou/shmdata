@@ -65,7 +65,7 @@ class SystemUsage:public Quiddity {
   SystemUsage & operator=(const SystemUsage &) = delete;
 
  private:
-  std::shared_ptr < std::thread > pollStateThread_ {};
+  std::shared_ptr<std::thread> pollStateThread_ {};
   bool running_ {false};
 
   CustomPropertyHelper::ptr custom_props_;
@@ -75,8 +75,8 @@ class SystemUsage:public Quiddity {
 
   int cpuNbr_;
   double period_;
-  std::map < std::string, Cpu > _cpus {};
-  std::map < std::string, Net > _net {};
+  std::map<std::string, Cpu> _cpus {};
+  std::map<std::string, Net> _net {};
 
   bool init() final;
 

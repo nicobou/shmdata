@@ -46,7 +46,7 @@ DecodebinToShmdata::DecodebinToShmdata(GPipe *gpipe):
                              "pad-added",
                              (GCallback) DecodebinToShmdata::on_pad_added,
                              (gpointer) this);
-  cb_ids_.push_back(decodebin_.g_invoke_with_return < gulong >
+  cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>
                     (std::move(pad_added)));
 
   // autoplug callback
@@ -56,12 +56,12 @@ DecodebinToShmdata::DecodebinToShmdata(GPipe *gpipe):
                             (GCallback)
                             DecodebinToShmdata::on_autoplug_select,
                             (gpointer) this);
-  cb_ids_.push_back(decodebin_.g_invoke_with_return < gulong >
+  cb_ids_.push_back(decodebin_.g_invoke_with_return<gulong>
                     (std::move(autoplug)));
 }
 
 DecodebinToShmdata::~DecodebinToShmdata() {
-  std::unique_lock < std::mutex > lock(thread_safe_);
+  std::unique_lock<std::mutex> lock(thread_safe_);
   // for (auto &it: cb_ids_)
   //   if (0 != it)
   // decodebin_.g_invoke (std::bind (g_signal_handler_disconnect,
@@ -75,8 +75,8 @@ void
 DecodebinToShmdata::on_pad_added(GstElement * object, GstPad *pad,
                                  gpointer user_data) {
   DecodebinToShmdata *context =
-      static_cast < DecodebinToShmdata * >(user_data);
-  std::unique_lock < std::mutex > lock(context->thread_safe_);
+      static_cast<DecodebinToShmdata *>(user_data);
+  std::unique_lock<std::mutex> lock(context->thread_safe_);
   GstCaps *rtpcaps =
       gst_caps_from_string("application/x-rtp, media=(string)application");
   On_scope_exit {
@@ -166,8 +166,8 @@ gboolean DecodebinToShmdata::gstrtpdepay_buffer_probe_cb(GstPad * /*pad */ ,
                                                          /*mini_obj */ ,
                                                          gpointer user_data) {
   DecodebinToShmdata *context =
-      static_cast < DecodebinToShmdata * >(user_data);
-  std::unique_lock < std::mutex > lock(context->thread_safe_);
+      static_cast<DecodebinToShmdata *>(user_data);
+  std::unique_lock<std::mutex> lock(context->thread_safe_);
   if (true == context->discard_next_uncomplete_buffer_) {
     g_debug("discarding uncomplete custom frame due to a network loss");
     context->discard_next_uncomplete_buffer_ = false;
@@ -181,8 +181,8 @@ gboolean DecodebinToShmdata::gstrtpdepay_event_probe_cb(GstPad * /*pad */ ,
                                                         gpointer user_data)
 {
   DecodebinToShmdata *context =
-      static_cast < DecodebinToShmdata * >(user_data);
-  std::unique_lock < std::mutex > lock(context->thread_safe_);
+      static_cast<DecodebinToShmdata *>(user_data);
+  std::unique_lock<std::mutex> lock(context->thread_safe_);
   if (GST_EVENT_TYPE(event) == GST_EVENT_CUSTOM_DOWNSTREAM) {
     const GstStructure *s;
     s = gst_event_get_structure(event);
@@ -255,7 +255,7 @@ DecodebinToShmdata::pad_to_shmdata_writer(GstElement * bin, GstPad *pad)
   }
 
   // creating a shmdata
-  ShmdataAnyWriter::ptr shm_any = std::make_shared < ShmdataAnyWriter > ();
+  ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
   std::string shm_any_name = gpipe_->make_file_name(media_name);
   shm_any->set_path(shm_any_name.c_str());
   // shm_any->start ();
@@ -271,8 +271,8 @@ gboolean
 DecodebinToShmdata::eos_probe_cb(GstPad * pad, GstEvent *event,
                                  gpointer user_data) {
   DecodebinToShmdata *context =
-      static_cast < DecodebinToShmdata * >(user_data);
-  std::unique_lock < std::mutex > lock(context->thread_safe_);
+      static_cast<DecodebinToShmdata *>(user_data);
+  std::unique_lock<std::mutex> lock(context->thread_safe_);
 
   if (GST_EVENT_TYPE(event) == GST_EVENT_EOS) {
     if (context->main_pad_ == pad)
@@ -294,7 +294,7 @@ DecodebinToShmdata::eos_probe_cb(GstPad * pad, GstEvent *event,
 void DecodebinToShmdata::on_handoff_cb(GstElement * /*object */ ,
                                        GstBuffer *buf,
                                        GstPad *pad, gpointer user_data) {
-  ShmdataAnyWriter *writer = static_cast < ShmdataAnyWriter * >(user_data);
+  ShmdataAnyWriter *writer = static_cast<ShmdataAnyWriter *>(user_data);
 
   if (!writer->started()) {
     GstCaps *caps = gst_pad_get_negotiated_caps(pad);
@@ -314,16 +314,16 @@ void DecodebinToShmdata::on_handoff_cb(GstElement * /*object */ ,
   }
 }
 
-void DecodebinToShmdata::invoke(std::function < void(GstElement *) >
+void DecodebinToShmdata::invoke(std::function<void(GstElement *)>
                                 command) {
-  std::unique_lock < std::mutex > lock(thread_safe_);
+  std::unique_lock<std::mutex> lock(thread_safe_);
 
   decodebin_.invoke(command);
 }
 
 gboolean DecodebinToShmdata::rewind(gpointer user_data) {
   DecodebinToShmdata *context =
-      static_cast < DecodebinToShmdata * >(user_data);
+      static_cast<DecodebinToShmdata *>(user_data);
   GstQuery *query;
   gboolean res;
   query = gst_query_new_segment(GST_FORMAT_TIME);

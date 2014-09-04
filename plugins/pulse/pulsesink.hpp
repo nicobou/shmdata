@@ -61,7 +61,7 @@ class PulseSink:public SinglePadGstSink {
   pa_mainloop_api *pa_mainloop_api_;
   pa_context *pa_context_;
   char *server_;
-  std::vector < DeviceDescription > devices_;       // indexed by pulse_device_name
+  std::vector<DeviceDescription> devices_;       // indexed by pulse_device_name
   std::mutex devices_mutex_;
   std::condition_variable devices_cond_;
   // devices enumeration

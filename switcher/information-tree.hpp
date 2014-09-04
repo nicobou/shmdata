@@ -46,9 +46,9 @@ namespace switcher {
 namespace data {
 class Tree {
  public:
-  typedef std::shared_ptr < Tree > ptr;
-  typedef std::pair < std::string, Tree::ptr > child_type;
-  typedef std::list < child_type > child_list_type;
+  typedef std::shared_ptr<Tree> ptr;
+  typedef std::pair<std::string, Tree::ptr> child_type;
+  typedef std::list<child_type> child_list_type;
   typedef std::function < void (const std::string & name,
                                 const Tree::ptr tree,
                                 bool is_array_element) > OnNodeFunction;
@@ -85,9 +85,9 @@ class Tree {
   bool is_array(const std::string & path);
 
   // get child key in place, use with std::insert_iterator
-  template < typename Iter >
+  template<typename Iter>
   void get_child_keys(const std::string path, Iter pos) {
-    std::unique_lock < std::mutex > lock(mutex_);
+    std::unique_lock<std::mutex> lock(mutex_);
     auto found = get_node(path);
     if (!found.first.empty()) {
       std::transform(found.second->second->childrens_.begin(),
@@ -101,11 +101,11 @@ class Tree {
 
   // get child keys - returning a newly allocated container
   template < template < class T, class =
-                        std::allocator < T > >class Container =
-             std::list > Container < std::string >
+                        std::allocator<T >>class Container =
+             std::list > Container<std::string>
   get_child_keys(const std::string path) {
-    Container < std::string > res;
-    std::unique_lock < std::mutex > lock(mutex_);
+    Container<std::string> res;
+    std::unique_lock<std::mutex> lock(mutex_);
     auto found = get_node(path);
     if (!found.first.empty()) {
       res.resize(found.second->second->childrens_.size());
@@ -142,8 +142,8 @@ class Tree {
 
 // constructor
 Tree::ptr make_tree();
-template < typename ValueType > Tree::ptr make_tree(ValueType data) {
-  return std::make_shared < Tree > (data);
+template<typename ValueType> Tree::ptr make_tree(ValueType data) {
+  return std::make_shared<Tree> (data);
 }
 Tree::ptr make_tree(const char *data);      // Tree will store a std::string
 }  // namespace data

@@ -45,7 +45,7 @@ class SyphonReader {
 
   void *texture_;
   int width_, height_;
-  std::vector < char >frame_;
+  std::vector<char>frame_;
 
   unsigned int drawTex_, fbo_;
 

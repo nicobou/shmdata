@@ -41,8 +41,8 @@ class QuiddityManager:public std::enable_shared_from_this <
 // FIXME add const for method args
 {
  public:
-  typedef std::shared_ptr < QuiddityManager > ptr;
-  typedef std::vector < QuiddityCommand::ptr > CommandHistory;
+  typedef std::shared_ptr<QuiddityManager> ptr;
+  typedef std::vector<QuiddityCommand::ptr> CommandHistory;
   typedef void (*PropCallback) (std::string subscriber_name,
                                 std::string quiddity_name,
                                 std::string property_name,
@@ -50,7 +50,7 @@ class QuiddityManager:public std::enable_shared_from_this <
   typedef void (*SignalCallback) (std::string subscriber_name,
                                   std::string quiddity_name,
                                   std::string property_name,
-                                  std::vector < std::string > params,
+                                  std::vector<std::string> params,
                                   void *user_data);
   typedef std::map < std::string,
                      std::pair < QuiddityManager::PropCallback, void *>>PropCallbackMap;
@@ -68,9 +68,9 @@ class QuiddityManager:public std::enable_shared_from_this <
   // *************** command history ***********************************************************
   bool save_command_history(const char *file_path);
   CommandHistory get_command_history_from_file(const char *file_path);
-  std::vector < std::string >
+  std::vector<std::string>
   get_property_subscribers_names(QuiddityManager::CommandHistory histo);
-  std::vector < std::string >
+  std::vector<std::string>
   get_signal_subscribers_names(QuiddityManager::CommandHistory histo);
   void play_command_history(QuiddityManager::CommandHistory histo,
                             QuiddityManager::PropCallbackMap *
@@ -84,8 +84,8 @@ class QuiddityManager:public std::enable_shared_from_this <
   bool scan_directory_for_plugins(std::string directory);
 
   // ***************** inspect ****************************************************************
-  std::vector < std::string > get_classes();        // know which quiddities can be created
-  std::vector < std::string > get_quiddities();     // know instances
+  std::vector<std::string> get_classes();        // know which quiddities can be created
+  std::vector<std::string> get_quiddities();     // know instances
   // doc (json formatted)
   std::string get_classes_doc();
   std::string get_class_doc(std::string class_name);
@@ -133,7 +133,7 @@ class QuiddityManager:public std::enable_shared_from_this <
   bool unsubscribe_property(std::string subscriber_name,
                             std::string quiddity_name,
                             std::string property_name);
-  std::vector < std::string > list_property_subscribers();
+  std::vector<std::string> list_property_subscribers();
   std::vector < std::pair < std::string,
                             std::string > >list_subscribed_properties(std::string subscriber_name);
   // json // FIXME implement
@@ -170,7 +170,7 @@ class QuiddityManager:public std::enable_shared_from_this <
   bool invoke(const std::string quiddity_name,
               const std::string method_name,
               std::string ** return_value,
-              const std::vector < std::string > args);
+              const std::vector<std::string> args);
   bool invoke_va(const gchar *quiddity_name,
                  const gchar *method_name,
                  std::string ** return_value, ...);
@@ -204,7 +204,7 @@ class QuiddityManager:public std::enable_shared_from_this <
                           std::string quiddity_name,
                           std::string signal_name);
 
-  std::vector < std::string > list_signal_subscribers();
+  std::vector<std::string> list_signal_subscribers();
   std::vector < std::pair < std::string,
                             std::string > >list_subscribed_signals(std::string subscriber_name);
   // json // FIXME implement or remove

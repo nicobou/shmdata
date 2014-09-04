@@ -34,10 +34,10 @@ class PropertyMapper:public Quiddity {
   bool init();
 
  private:
-  std::weak_ptr < Quiddity > source_quiddity_;
+  std::weak_ptr<Quiddity> source_quiddity_;
   std::string source_property_name_;
 
-  std::weak_ptr < Quiddity > sink_quiddity_;
+  std::weak_ptr<Quiddity> sink_quiddity_;
   GParamSpec *sink_quiddity_pspec_;
   std::string sink_property_name_;
 

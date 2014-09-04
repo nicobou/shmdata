@@ -77,13 +77,13 @@ class GPipe:public Quiddity, public Segment {
   GSource *position_tracking_source_ {nullptr};
   GSourceFuncs source_funcs_;
   GSource *source_ {nullptr};
-  std::shared_ptr < CustomPropertyHelper > gpipe_custom_props_;
+  std::shared_ptr<CustomPropertyHelper> gpipe_custom_props_;
   GParamSpec *play_pause_spec_ {nullptr};
   bool play_ {true};
   GParamSpec *seek_spec_ {nullptr};
   gdouble seek_ {0.0};
   gint64 length_ {0};
-  std::vector < GSource * >commands_ {};
+  std::vector<GSource *>commands_ {};
 
   void make_bin();
   void clean_bin();

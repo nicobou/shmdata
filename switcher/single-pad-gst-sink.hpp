@@ -27,7 +27,7 @@
 namespace switcher {
 class SinglePadGstSink:public GPipe {
  public:
-  typedef std::shared_ptr < SinglePadGstSink > ptr;
+  typedef std::shared_ptr<SinglePadGstSink> ptr;
   SinglePadGstSink();
   ~SinglePadGstSink();
   SinglePadGstSink(const SinglePadGstSink &) = delete;

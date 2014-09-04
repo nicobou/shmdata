@@ -37,11 +37,11 @@ class Segment:public CounterMap
 /*inherit from CounterMap for sharing counters between multiple DecodebinToShmdata */
 {
  public:
-  typedef std::shared_ptr < Segment > ptr;
-  using OnConnect = std::function < bool(std::string) >;
-  using OnDisconnect = std::function < bool(std::string) >;
-  using OnDisconnectAll = std::function < bool() >;
-  using CanSinkCaps = std::function < bool(std::string) >;
+  typedef std::shared_ptr<Segment> ptr;
+  using OnConnect = std::function<bool(std::string)>;
+  using OnDisconnect = std::function<bool(std::string)>;
+  using OnDisconnectAll = std::function<bool()>;
+  using CanSinkCaps = std::function<bool(std::string)>;
 
   Segment();
   virtual ~ Segment();
@@ -68,8 +68,8 @@ class Segment:public CounterMap
                        ShmdataAnyWriter::ptr > shmdata_any_writers_;
   std::unordered_map < std::string,
                        ShmdataAnyReader::ptr > shmdata_any_readers_;
-  std::unordered_map < std::string, ShmdataWriter::ptr > shmdata_writers_;
-  std::unordered_map < std::string, ShmdataReader::ptr > shmdata_readers_;
+  std::unordered_map<std::string, ShmdataWriter::ptr> shmdata_writers_;
+  std::unordered_map<std::string, ShmdataReader::ptr> shmdata_readers_;
 
   // reader methods to install by a subclass
   OnConnect on_connect_cb_ {nullptr};

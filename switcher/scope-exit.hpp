@@ -25,7 +25,7 @@
 #include <utility>
 
 namespace scope_guard {
-template < typename Fun > class ScopeGuard {
+template<typename Fun> class ScopeGuard {
  public:
   explicit ScopeGuard(Fun && fun):
       fun_(std::move(fun)) {
@@ -38,9 +38,9 @@ template < typename Fun > class ScopeGuard {
 };
 
 enum class ScopeGuardOnExit { };
-template < typename Fun >
-ScopeGuard < Fun > operator+(ScopeGuardOnExit, Fun && fn) {
-  return ScopeGuard < Fun > (std::forward < Fun > (fn));
+template<typename Fun>
+ScopeGuard<Fun> operator+(ScopeGuardOnExit, Fun && fn) {
+  return ScopeGuard<Fun > (std::forward < Fun> (fn));
 }
 }  // namespace scope_guard
 

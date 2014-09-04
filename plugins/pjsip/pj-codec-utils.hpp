@@ -27,7 +27,7 @@
 
 namespace switcher {
 struct RTPCodec {
-  typedef std::unique_ptr < RTPCodec > ptr;
+  typedef std::unique_ptr<RTPCodec> ptr;
   std::string encoding_name_;
   int payload_;
   std::string media_;
@@ -38,8 +38,8 @@ struct RTPCodec {
 };
 
 namespace PJCodecUtils {
-typedef std::vector < RTPCodec::ptr > codecs;
-typedef std::vector < RTPCodec::ptr >::iterator codec_it;
+typedef std::vector<RTPCodec::ptr> codecs;
+typedef std::vector<RTPCodec::ptr>::iterator codec_it;
 
 PJCodecUtils::codecs inspect_rtp_codecs();
 PJCodecUtils::codecs
@@ -48,10 +48,10 @@ PJCodecUtils::codecs inspect_rtp_codec_from_gst_caps(GstCaps *caps);
 PJCodecUtils::codecs inspect_rtp_codec_from_gst_struct(GstStructure *
                                                        caps_struct);
 
-std::vector < std::string >
+std::vector<std::string>
 get_string_values_from_gst_struct(GstStructure *caps_struct,
                                   std::string key);
-std::vector < gint >
+std::vector<gint>
 get_int_values_from_gst_struct(GstStructure *caps_struct,
                                std::string key);
 }  // namespace PJCodecUtils

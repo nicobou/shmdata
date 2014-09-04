@@ -43,7 +43,7 @@ class CounterMap {
   void reset_counter_map();
 
  private:
-  std::map < std::string, uint > counters_;
+  std::map<std::string, uint> counters_;
   std::mutex mutex_;
 };
 }  // namespace switcher

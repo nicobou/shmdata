@@ -35,7 +35,7 @@ typedef switcher::QuiddityDocumentation get_documentation_t();
 
 class PluginLoader {
  public:
-  typedef std::shared_ptr < PluginLoader > ptr;
+  typedef std::shared_ptr<PluginLoader> ptr;
   PluginLoader();
   ~PluginLoader();
   PluginLoader(const PluginLoader &) = delete;

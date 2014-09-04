@@ -168,7 +168,7 @@ void
 Uridecodebin::unknown_type_cb(GstElement *bin,
                               GstPad *pad,
                               GstCaps *caps, gpointer user_data) {
-  Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
+  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   g_warning("Uridecodebin unknown type: %s (%s)\n",
             gst_caps_to_string(caps), gst_element_get_name(bin));
   context->pad_to_shmdata_writer(context->bin_, pad);
@@ -260,7 +260,7 @@ int Uridecodebin::autoplug_select_cb(GstElement * /*bin */ ,
 // }
 
 gboolean Uridecodebin::process_eos(gpointer user_data) {
-  Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
+  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   GstQuery *query;
   gboolean res;
   query = gst_query_new_segment(GST_FORMAT_TIME);
@@ -303,7 +303,7 @@ gboolean Uridecodebin::process_eos(gpointer user_data) {
 gboolean
 Uridecodebin::event_probe_cb(GstPad * pad, GstEvent *event,
                              gpointer user_data) {
-  Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
+  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   if (GST_EVENT_TYPE(event) == GST_EVENT_EOS) {
     // g_print ("----- pad with EOS %s:%s, src: %p %s\n",
     //         GST_DEBUG_PAD_NAME (pad),GST_EVENT_SRC(event), gst_element_get_name (GST_EVENT_SRC(event)));
@@ -330,7 +330,7 @@ Uridecodebin::event_probe_cb(GstPad * pad, GstEvent *event,
 void Uridecodebin::on_handoff_cb(GstElement * /*object */ ,
                                  GstBuffer *buf,
                                  GstPad *pad, gpointer user_data) {
-  ShmdataAnyWriter *writer = static_cast < ShmdataAnyWriter * >(user_data);
+  ShmdataAnyWriter *writer = static_cast<ShmdataAnyWriter *>(user_data);
 
   if (!writer->started()) {
     GstCaps *caps = gst_pad_get_negotiated_caps(pad);
@@ -349,7 +349,7 @@ void Uridecodebin::on_handoff_cb(GstElement * /*object */ ,
 }
 
 void Uridecodebin::release_buf(void *user_data) {
-  GstBuffer *buf = static_cast < GstBuffer * >(user_data);
+  GstBuffer *buf = static_cast<GstBuffer *>(user_data);
   gst_buffer_unref(buf);
 }
 
@@ -412,7 +412,7 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement * bin, GstPad *pad) {
   g_strfreev(padname_splitted);
 
   ShmdataAnyWriter::ptr connector =
-      std::make_shared < ShmdataAnyWriter > ();
+      std::make_shared<ShmdataAnyWriter> ();
   std::string connector_name = make_file_name(media_name);
   connector->set_path(connector_name.c_str());
 
@@ -428,7 +428,7 @@ gboolean Uridecodebin::gstrtpdepay_buffer_probe_cb(GstPad * /*pad */ ,
                                                    GstMiniObject *
                                                    /*mini_obj */ ,
                                                    gpointer user_data) {
-  Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
+  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
 
   /* if (GST_IS_BUFFER (mini_obj)) */
   /*   { */
@@ -449,7 +449,7 @@ gboolean Uridecodebin::gstrtpdepay_buffer_probe_cb(GstPad * /*pad */ ,
 gboolean Uridecodebin::gstrtpdepay_event_probe_cb(GstPad * /*pad */ ,
                                                   GstEvent *event,
                                                   gpointer user_data) {
-  Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
+  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
 
   if (GST_EVENT_TYPE(event) == GST_EVENT_CUSTOM_DOWNSTREAM) {
     const GstStructure *s;
@@ -466,7 +466,7 @@ void
 Uridecodebin::uridecodebin_pad_added_cb(GstElement *object,
                                         GstPad *pad, gpointer user_data)
 {
-  Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
+  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
 
   // g_print ("------------- caps 1 %s \n-------------- caps 2 %s\n",
   //      gst_caps_to_string (context->gstrtpcaps_),
@@ -512,7 +512,7 @@ Uridecodebin::uridecodebin_pad_added_cb(GstElement *object,
 void
 Uridecodebin::source_setup_cb(GstElement *uridecodebin,
                               GstElement *source, gpointer user_data) {
-  Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
+  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   g_debug("uridecodebin source element is %s %s\n",
           GST_ELEMENT_NAME(source),
           G_OBJECT_CLASS_NAME(G_OBJECT_GET_CLASS(source)));
@@ -532,7 +532,7 @@ Uridecodebin::source_setup_cb(GstElement *uridecodebin,
   context->on_error_command_->time_ = 1000;   // 1 second
   context->on_error_command_->add_arg(context->get_nick_name());
   context->on_error_command_->add_arg("started");
-  std::vector < std::string > vect_arg;
+  std::vector<std::string> vect_arg;
   vect_arg.push_back("false");
   context->on_error_command_->set_vector_arg(vect_arg);
 
@@ -556,17 +556,17 @@ bool Uridecodebin::to_shmdata() {
 }
 
 void Uridecodebin::set_loop(gboolean loop, void *user_data) {
-  Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
+  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   context->loop_ = loop;
 }
 
 gboolean Uridecodebin::get_loop(void *user_data) {
-  Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
+  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   return context->loop_;
 }
 
 void Uridecodebin::set_uri(const gchar *value, void *user_data) {
-  Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
+  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   g_free(context->uri_);
   context->uri_ = g_strdup(value);
   context->to_shmdata();
@@ -575,7 +575,7 @@ void Uridecodebin::set_uri(const gchar *value, void *user_data) {
 }
 
 const gchar *Uridecodebin::get_uri(void *user_data) {
-  Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
+  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   return context->uri_;
 }
 }

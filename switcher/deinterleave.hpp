@@ -34,7 +34,7 @@ class Deinterleave:public SinglePadGstSink, public GstElementCleaner {
 
  private:
   GstElement *deinterleave_;
-  std::map < std::string, int >media_counters_;
+  std::map<std::string, int>media_counters_;
 
   bool init_gpipe() final;
   bool can_sink_caps(std::string caps) final;

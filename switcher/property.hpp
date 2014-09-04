@@ -30,7 +30,7 @@
 namespace switcher {
 class Property:public Categorizable {
  public:
-  typedef std::shared_ptr < Property > ptr;
+  typedef std::shared_ptr<Property> ptr;
   typedef void (*Callback) (GObject * gobject, GParamSpec *pspec,
                             gpointer user_data);
   Property();
@@ -71,7 +71,7 @@ class Property:public Categorizable {
   GParamSpec *property_;
   GObject *object_;
   JSONBuilder::ptr json_description_;
-  std::map < std::pair < Callback, void *>, gulong > subscribed_handlers_;
+  std::map<std::pair < Callback, void *>, gulong> subscribed_handlers_;
 };
 }  // namespace switcher
 

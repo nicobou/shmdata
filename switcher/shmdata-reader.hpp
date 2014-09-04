@@ -33,7 +33,7 @@
 namespace switcher {
 class ShmdataReader:public OnCaps, public GstElementCleaner {
  public:
-  typedef std::shared_ptr < ShmdataReader > ptr;
+  typedef std::shared_ptr<ShmdataReader> ptr;
   typedef void (*on_first_data_hook) (ShmdataReader *caller,
                                       void *user_data);
 
@@ -61,7 +61,7 @@ class ShmdataReader:public OnCaps, public GstElementCleaner {
   GstElement *sink_element_;
   GstElement *funnel_;
   GMainContext *g_main_context_;
-  std::vector < GstElement * >elements_to_remove_;
+  std::vector<GstElement *>elements_to_remove_;
   JSONBuilder::ptr json_description_;
   std::mutex start_mutex_;
   std::condition_variable start_cond_;

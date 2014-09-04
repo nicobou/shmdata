@@ -26,7 +26,7 @@
 namespace switcher {
 class Categorizable {
  public:
-  typedef std::shared_ptr < Categorizable > ptr;
+  typedef std::shared_ptr<Categorizable> ptr;
 
   Categorizable();
   virtual ~ Categorizable();

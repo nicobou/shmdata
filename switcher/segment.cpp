@@ -72,7 +72,7 @@ bool Segment::init_segment(Quiddity *quid) {
 }
 
 bool Segment::register_shmdata(ShmdataAnyWriter::ptr writer) {
-  std::unique_lock < std::mutex > lock(writers_mutex_);
+  std::unique_lock<std::mutex> lock(writers_mutex_);
   std::string name = writer->get_path();
   if (name.empty() || 0 == name.compare("")) {
     g_warning("Segment cannot register shmdata writer with no path");
@@ -105,7 +105,7 @@ bool Segment::register_shmdata(ShmdataAnyWriter::ptr writer) {
 }
 
 bool Segment::register_shmdata(ShmdataWriter::ptr writer) {
-  std::unique_lock < std::mutex > lock(writers_mutex_);
+  std::unique_lock<std::mutex> lock(writers_mutex_);
   std::string name = writer->get_path();
   if (name.empty() || 0 == name.compare("")) {
     g_warning("Segment cannot register shmdata writer with no path");
@@ -138,7 +138,7 @@ bool Segment::register_shmdata(ShmdataWriter::ptr writer) {
 }
 
 bool Segment::register_shmdata(ShmdataReader::ptr reader) {
-  std::unique_lock < std::mutex > lock(readers_mutex_);
+  std::unique_lock<std::mutex> lock(readers_mutex_);
   std::string name = reader->get_path();
   if (name.empty() || 0 == name.compare("")) {
     g_warning("Segment cannot register shmdata writer with no path");
@@ -171,7 +171,7 @@ bool Segment::register_shmdata(ShmdataReader::ptr reader) {
 }
 
 bool Segment::register_shmdata(ShmdataAnyReader::ptr reader) {
-  std::unique_lock < std::mutex > lock(readers_mutex_);
+  std::unique_lock<std::mutex> lock(readers_mutex_);
   std::string name = reader->get_path();
   if (name.empty() || 0 == name.compare("")) {
     g_warning("Segment cannot register shmdata writer with no path");
@@ -204,8 +204,8 @@ bool Segment::register_shmdata(ShmdataAnyReader::ptr reader) {
 }
 
 bool Segment::unregister_shmdata(std::string shmdata_path) {
-  std::unique_lock < std::mutex > lock_w(writers_mutex_);
-  std::unique_lock < std::mutex > lock_r(readers_mutex_);
+  std::unique_lock<std::mutex> lock_w(writers_mutex_);
+  std::unique_lock<std::mutex> lock_r(readers_mutex_);
   bool update_writer = false;
   bool update_reader = false;
 
@@ -257,8 +257,8 @@ bool Segment::unregister_shmdata(std::string shmdata_path) {
 }
 
 bool Segment::clear_shmdatas() {
-  std::unique_lock < std::mutex > lock_w(writers_mutex_);
-  std::unique_lock < std::mutex > lock_r(readers_mutex_);
+  std::unique_lock<std::mutex> lock_w(writers_mutex_);
+  std::unique_lock<std::mutex> lock_r(readers_mutex_);
 
   bool update_writer_description = false;
   if (!shmdata_writers_.empty()) {
@@ -301,12 +301,12 @@ bool Segment::clear_shmdatas() {
 }
 
 const gchar *Segment::get_shmdata_writers_string(void *user_data) {
-  Segment *context = static_cast < Segment * >(user_data);
+  Segment *context = static_cast<Segment *>(user_data);
   return context->writers_string_.c_str();
 }
 
 const gchar *Segment::get_shmdata_readers_string(void *user_data) {
-  Segment *context = static_cast < Segment * >(user_data);
+  Segment *context = static_cast<Segment *>(user_data);
   return context->readers_string_.c_str();
 }
 
@@ -469,7 +469,7 @@ Segment::install_connect_method(OnConnect on_connect_cb,
 }
 
 gboolean Segment::connect_wrapped(gpointer path, gpointer user_data) {
-  Segment *context = static_cast < Segment * >(user_data);
+  Segment *context = static_cast<Segment *>(user_data);
 
   if (nullptr == context->on_connect_cb_) {
     g_warning("on connect callback not installed\n");
@@ -483,7 +483,7 @@ gboolean Segment::connect_wrapped(gpointer path, gpointer user_data) {
 }
 
 gboolean Segment::disconnect_wrapped(gpointer path, gpointer user_data) {
-  Segment *context = static_cast < Segment * >(user_data);
+  Segment *context = static_cast<Segment *>(user_data);
 
   if (nullptr == context->on_disconnect_cb_) {
     g_warning("on disconnect callback not installed\n");
@@ -498,7 +498,7 @@ gboolean Segment::disconnect_wrapped(gpointer path, gpointer user_data) {
 
 gboolean Segment::disconnect_all_wrapped(gpointer /*unused */ ,
                                          gpointer user_data) {
-  Segment *context = static_cast < Segment * >(user_data);
+  Segment *context = static_cast<Segment *>(user_data);
   On_scope_exit {
     context->clear_shmdatas();
   };
@@ -515,7 +515,7 @@ gboolean Segment::disconnect_all_wrapped(gpointer /*unused */ ,
 }
 
 gboolean Segment::can_sink_caps_wrapped(gpointer caps, gpointer user_data) {
-  Segment *context = static_cast < Segment * >(user_data);
+  Segment *context = static_cast<Segment *>(user_data);
 
   if (nullptr == context->on_can_sink_caps_cb_) {
     g_warning("on disconnect callback not installed\n");

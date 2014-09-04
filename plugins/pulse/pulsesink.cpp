@@ -52,7 +52,7 @@ bool PulseSink::init_gpipe() {
   if (!make_elements())
     return false;
 
-  std::unique_lock < std::mutex > lock(devices_mutex_);
+  std::unique_lock<std::mutex> lock(devices_mutex_);
   GstUtils::g_idle_add_full_with_context(get_g_main_context(),
                                          G_PRIORITY_DEFAULT_IDLE,
                                          async_get_pulse_devices,
@@ -81,7 +81,7 @@ bool PulseSink::init_gpipe() {
 PulseSink::~PulseSink() {
   GMainContext *main_context = get_g_main_context();
   if (nullptr != main_context && connected_to_pulse_) {
-    std::unique_lock < std::mutex > lock(quit_mutex_);
+    std::unique_lock<std::mutex> lock(quit_mutex_);
     GstUtils::g_idle_add_full_with_context(main_context,
                                            G_PRIORITY_DEFAULT_IDLE,
                                            quit_pulse, this, nullptr);
@@ -92,19 +92,19 @@ PulseSink::~PulseSink() {
 }
 
 gboolean PulseSink::quit_pulse(void *user_data) {
-  PulseSink *context = static_cast < PulseSink * >(user_data);
+  PulseSink *context = static_cast<PulseSink *>(user_data);
   pa_context_disconnect(context->pa_context_);
   // pa_context_unref (context->pa_context_);
   // context->pa_context_ = nullptr;
   pa_glib_mainloop_free(context->pa_glib_mainloop_);
-  std::unique_lock < std::mutex > lock(context->quit_mutex_);
+  std::unique_lock<std::mutex> lock(context->quit_mutex_);
   context->quit_cond_.notify_all();
   return FALSE;
 }
 
 gboolean PulseSink::async_get_pulse_devices(void *user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  PulseSink *context = static_cast < PulseSink * >(user_data);
+  PulseSink *context = static_cast<PulseSink *>(user_data);
   context->pa_glib_mainloop_ =
       pa_glib_mainloop_new(context->get_g_main_context());
   context->pa_mainloop_api_ =
@@ -172,7 +172,7 @@ PulseSink::pa_context_state_callback(pa_context *pulse_context,
                                      void *user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
 
-  PulseSink *context = static_cast < PulseSink * >(user_data);
+  PulseSink *context = static_cast<PulseSink *>(user_data);
 
   switch (pa_context_get_state(pulse_context)) {
     case PA_CONTEXT_CONNECTING:
@@ -257,7 +257,7 @@ PulseSink::get_sink_info_callback(pa_context *pulse_context,
                                   const pa_sink_info *i,
                                   int is_last, void *user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  PulseSink *context = static_cast < PulseSink * >(user_data);
+  PulseSink *context = static_cast<PulseSink *>(user_data);
 
   if (is_last < 0) {
     g_debug("Failed to get sink information: %s",
@@ -287,7 +287,7 @@ PulseSink::get_sink_info_callback(pa_context *pulse_context,
                                        "device", "Ouput Device");
 
     context->make_json_description();
-    std::unique_lock < std::mutex > lock(context->devices_mutex_);
+    std::unique_lock<std::mutex> lock(context->devices_mutex_);
     context->devices_cond_.notify_all();
     return;
   }
@@ -389,7 +389,7 @@ PulseSink::on_pa_event_callback(pa_context *pulse_context,
                                 pulse_event_type, uint32_t /*index */ ,
                                 void *user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  PulseSink *context = static_cast < PulseSink * >(user_data);
+  PulseSink *context = static_cast<PulseSink *>(user_data);
 
   if ((pulse_event_type & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) ==
       PA_SUBSCRIPTION_EVENT_SINK) {
@@ -412,7 +412,7 @@ PulseSink::on_pa_event_callback(pa_context *pulse_context,
 
 const gchar *PulseSink::get_devices_json(void *user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  PulseSink *context = static_cast < PulseSink * >(user_data);
+  PulseSink *context = static_cast<PulseSink *>(user_data);
   if (context->devices_description_ == nullptr)
     context->devices_description_ = g_strdup("{ \"devices\" : [] }");
 
@@ -448,13 +448,13 @@ void PulseSink::update_output_device() {
 
 void PulseSink::set_device(const gint value, void *user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  PulseSink *context = static_cast < PulseSink * >(user_data);
+  PulseSink *context = static_cast<PulseSink *>(user_data);
   context->device_ = value;
 }
 
 gint PulseSink::get_device(void *user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  PulseSink *context = static_cast < PulseSink * >(user_data);
+  PulseSink *context = static_cast<PulseSink *>(user_data);
   return context->device_;
 }
 

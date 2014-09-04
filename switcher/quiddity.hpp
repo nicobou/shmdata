@@ -48,7 +48,7 @@ class Quiddity {
   friend class Segment;
 
  public:
-  typedef std::shared_ptr < Quiddity > ptr;
+  typedef std::shared_ptr<Quiddity> ptr;
   Quiddity();
   Quiddity(const Quiddity &) = delete;
   Quiddity & operator=(const Quiddity &) = delete;
@@ -83,7 +83,7 @@ class Quiddity {
   std::string get_methods_description();
   bool invoke_method(const std::string function_name,
                      std::string ** return_value,
-                     const std::vector < std::string > args);
+                     const std::vector<std::string> args);
   int method_get_num_value_args(std::string function_name);   // returns -1 if method not found
   int method_get_num_pointer_args(std::string function_name);  // returns -1 if method not found
   bool has_method(const std::string method_name);
@@ -98,16 +98,16 @@ class Quiddity {
                           Signal::OnEmittedCallback cb, void *user_data);
   bool emit_action(const std::string signal_name,
                    std::string ** return_value,
-                   const std::vector < std::string > args);
+                   const std::vector<std::string> args);
 
   // information
   std::string get_info(const std::string & path);
   Any get_data(const std::string & path);
   template < template < class T, class =
-                        std::allocator < T > >class Container =
-             std::list > Container < std::string >
+                        std::allocator<T >>class Container =
+             std::list > Container<std::string>
   get_child_keys(const std::string path) {
-    return information_tree_->get_child_keys < Container > (path);
+    return information_tree_->get_child_keys<Container> (path);
   }
 
   // shmdata socket names
@@ -115,7 +115,7 @@ class Quiddity {
   static std::string get_socket_dir();
 
   // manager_impl  initialization
-  void set_manager_impl(std::shared_ptr < QuiddityManager_Impl >
+  void set_manager_impl(std::shared_ptr<QuiddityManager_Impl>
                         manager_impl);
 
  private:
@@ -123,13 +123,13 @@ class Quiddity {
   data::Tree::ptr information_tree_;
 
   // properties
-  std::unordered_map < std::string, Property::ptr > properties_;
-  std::unordered_map < std::string, Property::ptr > disabled_properties_;
+  std::unordered_map<std::string, Property::ptr> properties_;
+  std::unordered_map<std::string, Property::ptr> disabled_properties_;
   JSONBuilder::ptr properties_description_;
 
   // methods
-  std::unordered_map < std::string, Method::ptr > methods_;
-  std::unordered_map < std::string, Method::ptr > disabled_methods_;
+  std::unordered_map<std::string, Method::ptr> methods_;
+  std::unordered_map<std::string, Method::ptr> disabled_methods_;
   bool method_is_registered(std::string method_name);
   JSONBuilder::ptr methods_description_;
 
@@ -139,9 +139,9 @@ class Quiddity {
 
   // pair is <class_name, signal_name>
   // this map is static in order to avoid re-creation of the same signal for each quiddity instance
-  static std::map < std::pair < std::string, std::string >,
+  static std::map<std::pair < std::string, std::string>,
                     guint > signals_ids_;
-  std::unordered_map < std::string, Signal::ptr > signals_;
+  std::unordered_map<std::string, Signal::ptr> signals_;
   JSONBuilder::ptr signals_description_;
 
   // naming
@@ -263,7 +263,7 @@ class Quiddity {
 
   // used in order to dynamically create other quiddity, weak_ptr is used in order to
   // avoid circular references to the manager_impl
-  std::weak_ptr < QuiddityManager_Impl > manager_impl_;
+  std::weak_ptr<QuiddityManager_Impl> manager_impl_;
 
   // gobject wrapper for custom signals and properties
   GObjectWrapper::ptr gobject_;

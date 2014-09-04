@@ -27,7 +27,7 @@
 namespace switcher {
 class StartableQuiddity {
  public:
-  typedef std::shared_ptr < StartableQuiddity > ptr;
+  typedef std::shared_ptr<StartableQuiddity> ptr;
   StartableQuiddity();
   virtual ~ StartableQuiddity();
   StartableQuiddity(const StartableQuiddity &) = delete;

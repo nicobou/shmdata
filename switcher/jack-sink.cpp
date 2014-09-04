@@ -96,7 +96,7 @@ bool JackSink::stop() {
 }
 
 void JackSink::set_client_name(const gchar *value, void *user_data) {
-  JackSink *context = static_cast < JackSink * >(user_data);
+  JackSink *context = static_cast<JackSink *>(user_data);
   if (nullptr != context->client_name_)
     g_free(context->client_name_);
   context->client_name_ = g_strdup(value);
@@ -105,7 +105,7 @@ void JackSink::set_client_name(const gchar *value, void *user_data) {
 }
 
 const gchar *JackSink::get_client_name(void *user_data) {
-  JackSink *context = static_cast < JackSink * >(user_data);
+  JackSink *context = static_cast<JackSink *>(user_data);
   return context->client_name_;
 }
 

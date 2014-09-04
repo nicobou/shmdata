@@ -29,7 +29,7 @@
 #include <algorithm>
 
 namespace switcher {
-std::map < std::pair < std::string, std::string >,
+std::map<std::pair < std::string, std::string>,
            guint > Quiddity::signals_ids_;
 
 Quiddity::Quiddity():information_tree_(data::make_tree()),
@@ -212,7 +212,7 @@ bool Quiddity::make_custom_signal_with_class_name(const std::string class_name, 
     return false;
   }
 
-  std::pair < std::string, std::string > sig_pair =
+  std::pair<std::string, std::string> sig_pair =
       std::make_pair(class_name, signal_name);
   if (signals_ids_.find(sig_pair) == signals_ids_.end()) {
     guint id = GObjectWrapper::make_signal(return_type,
@@ -325,7 +325,7 @@ bool Quiddity::register_signal_action_with_class_name(const std::string class_na
     return false;
   }
 
-  std::pair < std::string, std::string > sig_pair =
+  std::pair<std::string, std::string> sig_pair =
       std::make_pair(class_name, method_name);
   GClosure *closure;
 
@@ -453,7 +453,7 @@ bool Quiddity::has_method(const std::string method_name) {
 bool
 Quiddity::invoke_method(const std::string method_name,
                         std::string ** return_value,
-                        const std::vector < std::string > args) {
+                        const std::vector<std::string> args) {
   auto it = methods_.find(method_name);
   if (methods_.end() == it) {
     g_debug("Quiddity::invoke_method error: method %s not found",
@@ -480,7 +480,7 @@ Quiddity::invoke_method(const std::string method_name,
 bool
 Quiddity::emit_action(const std::string signal_name,
                       std::string ** return_value,
-                      const std::vector < std::string > args) {
+                      const std::vector<std::string> args) {
   if (signals_.find(signal_name) == signals_.end()) {
     g_debug("Quiddity::invoke_signal error: %s not found",
             signal_name.c_str());
@@ -557,7 +557,7 @@ std::string Quiddity::get_methods_description() {
   methods_description_->begin_object();
   methods_description_->set_member_name("methods");
   methods_description_->begin_array();
-  std::vector < Method::ptr > methods;
+  std::vector<Method::ptr> methods;
   for (auto & it : methods_)
     methods.push_back(it.second);
   std::sort(methods.begin(), methods.end(), Categorizable::compare_ptr);
@@ -580,7 +580,7 @@ std::string Quiddity::get_properties_description() {
   properties_description_->begin_object();
   properties_description_->set_member_name("properties");
   properties_description_->begin_array();
-  std::vector < Property::ptr > properties;
+  std::vector<Property::ptr> properties;
   for (auto & it : properties_)
     properties.push_back(it.second);
   std::sort(properties.begin(),

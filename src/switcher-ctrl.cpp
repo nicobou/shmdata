@@ -188,7 +188,7 @@ main(int argc, char *argv[]) {
     std::cout << result << std::endl;
   }
   else if (listclasses) {
-    std::vector < std::string > resultlist;
+    std::vector<std::string> resultlist;
     switcher_control.get_factory_capabilities(&resultlist);
     for (uint i = 0; i < resultlist.size(); i++)
       std::cout << resultlist[i] << std::endl;
@@ -222,7 +222,7 @@ main(int argc, char *argv[]) {
     std::cout << resultlist << std::endl;
   }
   else if (listquiddities) {
-    std::vector < std::string > resultlist;
+    std::vector<std::string> resultlist;
     switcher_control.get_quiddity_names(&resultlist);
     for (uint i = 0; i < resultlist.size(); i++) {
       std::cout << resultlist[i] << std::endl;
@@ -384,7 +384,7 @@ main(int argc, char *argv[]) {
       g_printerr("not enough argument for invoking a function\n");
       return false;
     }
-    std::vector < std::string > args;
+    std::vector<std::string> args;
     int i = 2;
     while (remaining_args[i] != nullptr) {
       args.push_back(remaining_args[i]);

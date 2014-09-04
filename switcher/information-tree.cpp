@@ -27,17 +27,17 @@ namespace data {
 // --------------- utils
 // constructor
 Tree::ptr make_tree() {
-  return std::make_shared < Tree > ();
+  return std::make_shared<Tree> ();
 }
 Tree::ptr make_tree(const char *data) {
-  return std::make_shared < Tree > (std::string(data));
+  return std::make_shared<Tree> (std::string(data));
 }
 
 void
 preorder_tree_walk(Tree::ptr tree,
                    Tree::OnNodeFunction on_visiting_node,
                    Tree::OnNodeFunction on_node_visited) {
-  std::unique_lock < std::mutex > lock(tree->mutex_);
+  std::unique_lock<std::mutex> lock(tree->mutex_);
   if (!tree->childrens_.empty()) {
     for (auto & it : tree->childrens_) {
       on_visiting_node(it.first, it.second, tree->is_array_);
@@ -52,42 +52,42 @@ Tree::Tree(const Any & data):data_(data) {
 }
 
 bool Tree::is_leaf() {
-  std::unique_lock < std::mutex > lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   return childrens_.empty();
 }
 
 bool Tree::is_array() {
-  std::unique_lock < std::mutex > lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   return is_array_;
 }
 
 bool Tree::has_data() {
-  std::unique_lock < std::mutex > lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   return !data_.is_null();
 }
 
 Any Tree::get_data() {
-  std::unique_lock < std::mutex > lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   return data_;
 }
 
 void Tree::set_data(const Any & data) {
-  std::unique_lock < std::mutex > lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   data_ = data;
 }
 
 void Tree::set_data(const char *data) {
-  std::unique_lock < std::mutex > lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   data_ = std::string(data);
 }
 
 void Tree::set_data(std::nullptr_t ptr) {
-  std::unique_lock < std::mutex > lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   data_ = ptr;
 }
 
 bool Tree::is_leaf(const std::string & path) {
-  std::unique_lock < std::mutex > lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   auto found = get_node(path);
   if (!found.first.empty())
     return found.second->second->childrens_.empty();
@@ -95,7 +95,7 @@ bool Tree::is_leaf(const std::string & path) {
 }
 
 bool Tree::has_data(const std::string & path) {
-  std::unique_lock < std::mutex > lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   auto found = get_node(path);
   if (!found.first.empty())
     return found.second->second->data_.not_null();
@@ -103,7 +103,7 @@ bool Tree::has_data(const std::string & path) {
 }
 
 Any Tree::get_data(const std::string & path) {
-  std::unique_lock < std::mutex > lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   auto found = get_node(path);
   if (!found.first.empty())
     return found.second->second->data_;
@@ -112,7 +112,7 @@ Any Tree::get_data(const std::string & path) {
 }
 
 bool Tree::set_data(const std::string & path, const Any & data) {
-  std::unique_lock < std::mutex > lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   auto found = get_node(path);
   if (!found.first.empty()) {
     found.second->second->data_ = data;
@@ -139,7 +139,7 @@ Tree::get_child_iterator(const std::string & key) {
 }
 
 Tree::ptr Tree::prune(const std::string & path) {
-  std::unique_lock < std::mutex > lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   auto found = get_node(path);
   if (!found.first.empty()) {
     Tree::ptr res = found.second->second;
@@ -151,7 +151,7 @@ Tree::ptr Tree::prune(const std::string & path) {
 }
 
 Tree::ptr Tree::get(const std::string & path) {
-  std::unique_lock < std::mutex > lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   auto found = get_node(path);
   if (!found.first.empty())
     return found.second->second;
@@ -160,7 +160,7 @@ Tree::ptr Tree::get(const std::string & path) {
   return res;
 }
 
-std::pair < Tree::child_list_type, Tree::child_list_type::iterator >
+std::pair<Tree::child_list_type, Tree::child_list_type::iterator>
 Tree::get_node(const std::string & path) {
   std::istringstream iss(path);
   Tree::child_list_type child_list;
@@ -196,7 +196,7 @@ Tree::get_next(std::istringstream & path,
 bool Tree::graft(const std::string & where, Tree::ptr tree) {
   if (!tree)
     return false;
-  std::unique_lock < std::mutex > lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   std::istringstream iss(where);
   return !graft_next(iss, this, tree);
 }

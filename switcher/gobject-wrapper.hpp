@@ -33,7 +33,7 @@ struct _MyObjectClass;
 
 class GObjectWrapper {
  public:
-  typedef std::shared_ptr < GObjectWrapper > ptr;
+  typedef std::shared_ptr<GObjectWrapper> ptr;
   GObjectWrapper();
   ~GObjectWrapper();
   GObjectWrapper(const GObjectWrapper &) = delete;
@@ -116,7 +116,7 @@ class GObjectWrapper {
   struct _MyObject *my_object_;
 
   // ---------- properties
-  static std::map < guint, GObjectCustomProperty::ptr > custom_properties_;
+  static std::map<guint, GObjectCustomProperty::ptr> custom_properties_;
   static guint next_prop_id_;
   std::map < std::string, void *>property_user_datas_;
   void *property_default_user_data_;

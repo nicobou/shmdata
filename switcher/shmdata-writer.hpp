@@ -29,8 +29,8 @@
 namespace switcher {
 class ShmdataWriter:public OnCaps {
  public:
-  typedef std::shared_ptr < ShmdataWriter > ptr;
-  using CapsCallBack = std::function < void (std::string) >;
+  typedef std::shared_ptr<ShmdataWriter> ptr;
+  using CapsCallBack = std::function<void (std::string)>;
   ShmdataWriter();
   ~ShmdataWriter();
   ShmdataWriter(const ShmdataWriter &) = delete;

@@ -209,7 +209,7 @@ main(int argc, char *argv[]) {
   // checking if this is printing info only
   if (listclasses) {
     g_log_set_default_handler(quiet_log_handler, nullptr);
-    std::vector < std::string > resultlist = manager->get_classes();
+    std::vector<std::string> resultlist = manager->get_classes();
     for (uint i = 0; i < resultlist.size(); i++)
       g_print("%s\n", resultlist[i].c_str());
     return 0;
@@ -247,7 +247,7 @@ main(int argc, char *argv[]) {
   }
 
   std::string soap_name = manager->create("SOAPcontrolServer", "soapserver");
-  std::vector < std::string > port_arg;
+  std::vector<std::string> port_arg;
   port_arg.push_back(port_number);
   std::string *result;
   manager->invoke(soap_name, "set_port", &result, port_arg);
@@ -269,14 +269,14 @@ main(int argc, char *argv[]) {
   if (load_file != nullptr) {
     switcher::QuiddityManager::CommandHistory histo =
         manager->get_command_history_from_file(load_file);
-    std::vector < std::string > prop_subscriber_names =
+    std::vector<std::string> prop_subscriber_names =
         manager->get_property_subscribers_names(histo);
     if (!prop_subscriber_names.empty())
       g_warning
           ("creation of property subscriber not handled when loading file %s",
            load_file);
 
-    std::vector < std::string > signal_subscriber_names =
+    std::vector<std::string> signal_subscriber_names =
         manager->get_signal_subscribers_names(histo);
     if (!signal_subscriber_names.empty())
       g_warning

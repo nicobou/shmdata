@@ -29,7 +29,7 @@ StartableQuiddity::~StartableQuiddity() {
 }
 
 void StartableQuiddity::init_startable(void *quiddity) {
-  Quiddity *quid = static_cast < Quiddity * >(quiddity);
+  Quiddity *quid = static_cast<Quiddity *>(quiddity);
 
   started_prop_ =
       startable_custom_props_->make_boolean_property("started",
@@ -46,7 +46,7 @@ void StartableQuiddity::init_startable(void *quiddity) {
 
 gboolean StartableQuiddity::get_started(void *user_data) {
   StartableQuiddity *context =
-      static_cast < StartableQuiddity * >(user_data);
+      static_cast<StartableQuiddity *>(user_data);
   if (!context->started_)
     return FALSE;
   return TRUE;
@@ -54,7 +54,7 @@ gboolean StartableQuiddity::get_started(void *user_data) {
 
 void StartableQuiddity::set_started(gboolean started, void *user_data) {
   StartableQuiddity *context =
-      static_cast < StartableQuiddity * >(user_data);
+      static_cast<StartableQuiddity *>(user_data);
   if (started) {
     if (context->start())
       context->started_ = true;

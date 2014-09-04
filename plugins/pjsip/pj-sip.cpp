@@ -51,10 +51,10 @@ PJSIP::~PJSIP() {
 
 void PJSIP::run_command_sync(std::function<void()> command) {
   {
-    std::unique_lock < std::mutex > lock(work_mutex_);
+    std::unique_lock<std::mutex> lock(work_mutex_);
     command_ = command;
   }
-  std::unique_lock < std::mutex > lock_done(done_mutex_);
+  std::unique_lock<std::mutex> lock_done(done_mutex_);
   work_cond_.notify_one();
   done_cond_.wait(lock_done);
 }
@@ -65,7 +65,7 @@ bool PJSIP::init() {
     return false;
   }
 
-  std::unique_lock < std::mutex > lock(pj_init_mutex_);
+  std::unique_lock<std::mutex> lock(pj_init_mutex_);
   sip_thread_ = std::thread(&PJSIP::sip_handling_thread, this);
   pj_init_cond_.wait(lock);
 
@@ -184,17 +184,17 @@ void PJSIP::sip_worker_thread() {
 
 void PJSIP::sip_handling_thread() {
   {                           // init pj sip
-    std::unique_lock < std::mutex > lock(pj_init_mutex_);
+    std::unique_lock<std::mutex> lock(pj_init_mutex_);
     pj_sip_inited_ = pj_sip_init();
     pj_init_cond_.notify_all();
   }
 
   while (continue_) {
-    std::unique_lock < std::mutex > lock_work(work_mutex_);
+    std::unique_lock<std::mutex> lock_work(work_mutex_);
     work_cond_.wait(lock_work);
     // do_something
     {
-      std::unique_lock < std::mutex > lock_done(done_mutex_);
+      std::unique_lock<std::mutex> lock_done(done_mutex_);
       command_();
     }
     done_cond_.notify_one();
@@ -240,7 +240,7 @@ void PJSIP::start_udp_transport() {
 }
 
 void PJSIP::set_port(const gint value, void *user_data) {
-  PJSIP *context = static_cast < PJSIP * >(user_data);
+  PJSIP *context = static_cast<PJSIP *>(user_data);
   context->sip_port_ = value;
   context->run_command_sync(std::bind(&PJSIP::start_udp_transport,
                                       context));
@@ -249,7 +249,7 @@ void PJSIP::set_port(const gint value, void *user_data) {
 }
 
 gint PJSIP::get_port(void *user_data) {
-  PJSIP *context = static_cast < PJSIP * >(user_data);
+  PJSIP *context = static_cast<PJSIP *>(user_data);
   return context->sip_port_;
 }
 }  // namespace switcher

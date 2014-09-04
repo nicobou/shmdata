@@ -104,7 +104,7 @@ void ShmdataReader::start() {
 }
 
 gboolean ShmdataReader::start_idle(void *user_data) {
-  ShmdataReader *context = static_cast < ShmdataReader * >(user_data);
+  ShmdataReader *context = static_cast<ShmdataReader *>(user_data);
   g_debug("shmdata-reader::start_idle");
   shmdata_base_reader_close(context->reader_);
   GstUtils::clean_element(context->funnel_);
@@ -137,7 +137,7 @@ ShmdataReader::on_have_type(shmdata_base_reader_t *,
     g_warning("ShmdataReader::on_have_type cannot save caps");
     return;
   }
-  ShmdataReader *context = static_cast < ShmdataReader * >(user_data);
+  ShmdataReader *context = static_cast<ShmdataReader *>(user_data);
   gchar *string_caps = gst_caps_to_string(caps);
   On_scope_exit {
     if (nullptr != string_caps)
@@ -163,7 +163,7 @@ ShmdataReader::set_on_first_data_hook(on_first_data_hook cb,
 void
 ShmdataReader::on_first_data(shmdata_base_reader_t *context,
                              void *user_data) {
-  ShmdataReader *reader = static_cast < ShmdataReader * >(user_data);
+  ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
   g_debug(" ShmdataReader::on_first_data");
   if (reader->connection_hook_ != nullptr)    // user want to create the sink_element_
     reader->connection_hook_(reader, reader->hook_user_data_);

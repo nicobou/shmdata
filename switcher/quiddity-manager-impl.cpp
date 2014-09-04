@@ -158,93 +158,93 @@ std::string QuiddityManager_Impl::get_name() {
 
 void QuiddityManager_Impl::register_classes() {
   // registering quiddities
-  abstract_factory_.register_class < AudioTestSource >
+  abstract_factory_.register_class<AudioTestSource>
       (AudioTestSource::switcher_doc_.get_class_name(),
        AudioTestSource::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < AravisGenicam >
+  abstract_factory_.register_class<AravisGenicam>
       (AravisGenicam::switcher_doc_.get_class_name(),
        AravisGenicam::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < CreateRemoveSpy >
+  abstract_factory_.register_class<CreateRemoveSpy>
       (CreateRemoveSpy::switcher_doc_.get_class_name(),
        CreateRemoveSpy::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < Decodebin2 >
+  abstract_factory_.register_class<Decodebin2>
       (Decodebin2::switcher_doc_.get_class_name(),
        Decodebin2::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < Deinterleave >
+  abstract_factory_.register_class<Deinterleave>
       (Deinterleave::switcher_doc_.get_class_name(),
        Deinterleave::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < FakeShmdataWriter >
+  abstract_factory_.register_class<FakeShmdataWriter>
       (FakeShmdataWriter::switcher_doc_.get_class_name(),
        FakeShmdataWriter::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < FakeSink >
+  abstract_factory_.register_class<FakeSink>
       (FakeSink::switcher_doc_.get_class_name(),
        FakeSink::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < FileSDP >
+  abstract_factory_.register_class<FileSDP>
       (FileSDP::switcher_doc_.get_class_name(),
        FileSDP::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < GstParseToBinSrc >
+  abstract_factory_.register_class<GstParseToBinSrc>
       (GstParseToBinSrc::switcher_doc_.get_class_name(),
        GstParseToBinSrc::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < GstVideoParseToBinSrc >
+  abstract_factory_.register_class<GstVideoParseToBinSrc>
       (GstVideoParseToBinSrc::switcher_doc_.get_class_name(),
        GstVideoParseToBinSrc::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < HTTPSDP >
+  abstract_factory_.register_class<HTTPSDP>
       (HTTPSDP::switcher_doc_.get_class_name(),
        HTTPSDP::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < HTTPSDPDec >
+  abstract_factory_.register_class<HTTPSDPDec>
       (HTTPSDPDec::switcher_doc_.get_class_name(),
        HTTPSDPDec::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < JackAudioSource >
+  abstract_factory_.register_class<JackAudioSource>
       (JackAudioSource::switcher_doc_.get_class_name(),
        JackAudioSource::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < JackSink >
+  abstract_factory_.register_class<JackSink>
       (JackSink::switcher_doc_.get_class_name(),
        JackSink::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < Logger >
+  abstract_factory_.register_class<Logger>
       (Logger::switcher_doc_.get_class_name(),
        Logger::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < PropertyMapper >
+  abstract_factory_.register_class<PropertyMapper>
       (PropertyMapper::switcher_doc_.get_class_name(),
        PropertyMapper::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < RtpSession >
+  abstract_factory_.register_class<RtpSession>
       (RtpSession::switcher_doc_.get_class_name(),
        RtpSession::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < ShmdataFromGDPFile >
+  abstract_factory_.register_class<ShmdataFromGDPFile>
       (ShmdataFromGDPFile::switcher_doc_.get_class_name(),
        ShmdataFromGDPFile::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < ShmdataToFile >
+  abstract_factory_.register_class<ShmdataToFile>
       (ShmdataToFile::switcher_doc_.get_class_name(),
        ShmdataToFile::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < StringDictionary >
+  abstract_factory_.register_class<StringDictionary>
       (StringDictionary::switcher_doc_.get_class_name(),
        StringDictionary::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < UDPSink >
+  abstract_factory_.register_class<UDPSink>
       (UDPSink::switcher_doc_.get_class_name(),
        UDPSink::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < Uridecodebin >
+  abstract_factory_.register_class<Uridecodebin>
       (Uridecodebin::switcher_doc_.get_class_name(),
        Uridecodebin::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < VideoTestSource >
+  abstract_factory_.register_class<VideoTestSource>
       (VideoTestSource::switcher_doc_.get_class_name(),
        VideoTestSource::switcher_doc_.get_json_root_node());
-  abstract_factory_.register_class < Xvimagesink >
+  abstract_factory_.register_class<Xvimagesink>
       (Xvimagesink::switcher_doc_.get_class_name(),
        Xvimagesink::switcher_doc_.get_json_root_node());
 }
 
-std::vector < std::string > QuiddityManager_Impl::get_classes() {
+std::vector<std::string> QuiddityManager_Impl::get_classes() {
   // return abstract_factory_.get_classes_documentation ();
   return abstract_factory_.get_keys();
 }
 
 void QuiddityManager_Impl::make_classes_doc() {
-  std::vector < JSONBuilder::Node > docs =
+  std::vector<JSONBuilder::Node> docs =
       abstract_factory_.get_classes_documentation();
   classes_doc_->reset();
   classes_doc_->begin_object();
   classes_doc_->set_member_name("classes");
   classes_doc_->begin_array();
-  for (std::vector < JSONBuilder::Node >::iterator it = docs.begin();
+  for (std::vector<JSONBuilder::Node>::iterator it = docs.begin();
        it != docs.end(); ++it)
     classes_doc_->add_node_value(*it);
   classes_doc_->end_array();
@@ -390,8 +390,8 @@ QuiddityManager_Impl::rename(std::string nick_name,
   return true;
 }
 
-std::vector < std::string > QuiddityManager_Impl::get_instances() {
-  std::vector < std::string > res;
+std::vector<std::string> QuiddityManager_Impl::get_instances() {
+  std::vector<std::string> res;
   for (auto & it : quiddities_nick_names_)
     res.push_back(it.first);
   return res;
@@ -403,11 +403,11 @@ std::string QuiddityManager_Impl::get_quiddities_description() {
   descr->begin_object();
   descr->set_member_name("quiddities");
   descr->begin_array();
-  std::vector < std::string > quids = get_instances();
-  for (std::vector < std::string >::iterator it = quids.begin();
+  std::vector<std::string> quids = get_instances();
+  for (std::vector<std::string>::iterator it = quids.begin();
        it != quids.end(); ++it) {
     descr->begin_object();
-    std::shared_ptr < Quiddity > quid = get_quiddity(*it);
+    std::shared_ptr<Quiddity> quid = get_quiddity(*it);
     descr->add_string_member("name", quid->get_nick_name().c_str());
     descr->add_string_member("class",
                              quid->get_documentation().get_class_name().
@@ -675,9 +675,9 @@ QuiddityManager_Impl::unsubscribe_property(std::string subscriber_name,
                                                           property_name);
 }
 
-std::vector < std::string >
+std::vector<std::string>
 QuiddityManager_Impl::list_property_subscribers() {
-  std::vector < std::string > res;
+  std::vector<std::string> res;
   for (auto & it : property_subscribers_)
     res.push_back(it.first);
   return res;
@@ -692,7 +692,7 @@ list_subscribed_properties(std::string subscriber_name) {
     g_warning
         ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
          subscriber_name.c_str());
-    std::vector < std::pair < std::string, std::string > >empty;
+    std::vector<std::pair<std::string, std::string>>empty;
     return empty;
   }
   return
@@ -793,7 +793,7 @@ bool
 QuiddityManager_Impl::invoke(const std::string quiddity_name,
                              const std::string method_name,
                              std::string ** return_value,
-                             const std::vector < std::string > args) {
+                             const std::vector<std::string> args) {
   // g_debug ("QuiddityManager_Impl::quiddity_invoke_method %s %s, arg size %d",quiddity_name.c_str(), function_name.c_str(), args.size ());
 
   if (!exists(quiddity_name)) {
@@ -1004,8 +1004,8 @@ QuiddityManager_Impl::unsubscribe_signal(std::string subscriber_name,
                                                         signal_name);
 }
 
-std::vector < std::string > QuiddityManager_Impl::list_signal_subscribers() {
-  std::vector < std::string > res;
+std::vector<std::string> QuiddityManager_Impl::list_signal_subscribers() {
+  std::vector<std::string> res;
   for (auto & it : signal_subscribers_)
     res.push_back(it.first);
   return res;
@@ -1020,7 +1020,7 @@ list_subscribed_signals(std::string subscriber_name) {
     g_warning
         ("QuiddityManager_Impl, a subscriber named %s does not exists\n",
          subscriber_name.c_str());
-    std::vector < std::pair < std::string, std::string > >empty;
+    std::vector<std::pair<std::string, std::string>>empty;
     return empty;
   }
 

@@ -98,7 +98,7 @@ void
 GstVideoParseToBinSrc::set_gst_launch_pipeline(const gchar *value,
                                                void *user_data) {
   GstVideoParseToBinSrc *context =
-      static_cast < GstVideoParseToBinSrc * >(user_data);
+      static_cast<GstVideoParseToBinSrc *>(user_data);
   g_free(context->gst_launch_pipeline_);
   context->gst_launch_pipeline_ = g_strdup(value);
   context->custom_props_->
@@ -107,7 +107,7 @@ GstVideoParseToBinSrc::set_gst_launch_pipeline(const gchar *value,
 
 const gchar *GstVideoParseToBinSrc::get_gst_launch_pipeline(void *user_data) {
   GstVideoParseToBinSrc *context =
-      static_cast < GstVideoParseToBinSrc * >(user_data);
+      static_cast<GstVideoParseToBinSrc *>(user_data);
   return context->gst_launch_pipeline_;
 }
 

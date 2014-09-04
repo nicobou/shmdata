@@ -104,14 +104,14 @@ gboolean
 StringDictionary::create_entry(const gchar *entry_name,
                                const gchar *entry_description,
                                const gchar *long_name, void *user_data) {
-  StringDictionary *context = static_cast < StringDictionary * >(user_data);
+  StringDictionary *context = static_cast<StringDictionary *>(user_data);
 
   if (context->dico_.find(entry_name) != context->dico_.end()) {
     g_debug("cannot create entry named %s (already existing)", entry_name);
     return FALSE;
   }
 
-  std::shared_ptr < PropertySetGet > prop_context;
+  std::shared_ptr<PropertySetGet> prop_context;
   prop_context.reset(new PropertySetGet());
   prop_context->string_dictionary = context;
   prop_context->entry_name = entry_name;
@@ -138,7 +138,7 @@ StringDictionary::create_entry(const gchar *entry_name,
 gboolean
 StringDictionary::remove_entry(const gchar *entry_name, void *user_data)
 {
-  StringDictionary *context = static_cast < StringDictionary * >(user_data);
+  StringDictionary *context = static_cast<StringDictionary *>(user_data);
   auto it = context->dico_.find(entry_name);
   if (context->dico_.end() == it) {
     g_debug("cannot remove entry named %s (not existing)", entry_name);
@@ -152,12 +152,12 @@ StringDictionary::remove_entry(const gchar *entry_name, void *user_data)
 }
 
 const gchar *StringDictionary::string_getter(void *user_data) {
-  PropertySetGet *context = static_cast < PropertySetGet * >(user_data);
+  PropertySetGet *context = static_cast<PropertySetGet *>(user_data);
   return context->string_dictionary->dico_[context->entry_name];
 }
 
 void StringDictionary::string_setter(const gchar *value, void *user_data) {
-  PropertySetGet *context = static_cast < PropertySetGet * >(user_data);
+  PropertySetGet *context = static_cast<PropertySetGet *>(user_data);
   g_free(context->string_dictionary->dico_[context->entry_name]);
   context->string_dictionary->dico_[context->entry_name] = g_strdup(value);
   GObjectWrapper::notify_property_changed(context->
@@ -228,7 +228,7 @@ gboolean StringDictionary::save_file(const gchar *file_path) {
 }
 
 gboolean StringDictionary::save(gchar *file_path, void *user_data) {
-  StringDictionary *context = static_cast < StringDictionary * >(user_data);
+  StringDictionary *context = static_cast<StringDictionary *>(user_data);
   return context->save_file(file_path);
 }
 
@@ -291,7 +291,7 @@ gboolean StringDictionary::load_file(const gchar *file_path) {
 }
 
 gboolean StringDictionary::load(gchar *file_path, void *user_data) {
-  StringDictionary *context = static_cast < StringDictionary * >(user_data);
+  StringDictionary *context = static_cast<StringDictionary *>(user_data);
   return context->load_file(file_path);
 }
 }

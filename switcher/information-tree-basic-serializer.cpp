@@ -24,17 +24,17 @@ namespace switcher {
 namespace data {
 namespace BasicSerializer {
 typedef struct {
-  std::list < std::string > path_ {
+  std::list<std::string> path_ {
   };
   std::string result_ {
   };
 } BasicSerializerData;
 
-std::string path_to_string(std::list < std::string > path) {
+std::string path_to_string(std::list<std::string> path) {
   std::stringstream result;
   std::copy(path.begin(),
             path.end(),
-            std::ostream_iterator < std::string > (result, "."));
+            std::ostream_iterator<std::string> (result, "."));
   return result.str();
 }
 

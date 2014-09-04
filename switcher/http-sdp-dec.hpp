@@ -44,7 +44,7 @@ class HTTPSDPDec:public GPipe {
   void init_httpsdpdec();
   void destroy_httpsdpdec();
   QuiddityCommand *on_error_command_;  // for the pipeline error handler
-  std::list < std::unique_ptr < DecodebinToShmdata >> decodebins_;
+  std::list<std::unique_ptr < DecodebinToShmdata>> decodebins_;
   void clean_on_error_command();
   bool init_gpipe() final;
   static void httpsdpdec_pad_added_cb(GstElement *object,

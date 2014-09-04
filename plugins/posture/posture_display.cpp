@@ -36,7 +36,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureDisplay,
                                      "Emmanuel Durand");
 
 PostureDisplay::PostureDisplay():
-    custom_props_(std::make_shared < CustomPropertyHelper > ()) {
+    custom_props_(std::make_shared<CustomPropertyHelper> ()) {
 }
 
 PostureDisplay::~PostureDisplay() {
@@ -57,9 +57,9 @@ PostureDisplay::init() {
 
 bool
 PostureDisplay::connect(std::string shmdata_socket_path) {
-  display_ = make_shared < Display > (shmdata_socket_path);
+  display_ = make_shared<Display> (shmdata_socket_path);
 
-  ShmdataAnyReader::ptr reader = make_shared < ShmdataAnyReader > ();
+  ShmdataAnyReader::ptr reader = make_shared<ShmdataAnyReader> ();
   reader->set_path(shmdata_socket_path);
 
   // This is the callback for when new clouds are received

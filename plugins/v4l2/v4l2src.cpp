@@ -626,7 +626,7 @@ bool V4L2Src::on_stop() {
 }
 
 const gchar *V4L2Src::get_capture_devices_json(void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
 
   if (nullptr != context->capture_devices_description_) {
     g_free(context->capture_devices_description_);
@@ -749,83 +749,83 @@ const gchar *V4L2Src::get_capture_devices_json(void *user_data) {
 }
 
 void V4L2Src::set_camera(const gint value, void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
   context->device_ = value;
   context->update_device_specific_properties(context->device_);
 }
 
 gint V4L2Src::get_camera(void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
   return context->device_;
 }
 
 void V4L2Src::set_resolution(const gint value, void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
   context->resolution_ = value;
 }
 
 gint V4L2Src::get_resolution(void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
   return context->resolution_;
 }
 
 void V4L2Src::set_width(const gint value, void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
   context->width_ = value;
 }
 
 gint V4L2Src::get_width(void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
   return context->width_;
 }
 
 void V4L2Src::set_height(const gint value, void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
   context->height_ = value;
 }
 
 gint V4L2Src::get_height(void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
   return context->height_;
 }
 
 void V4L2Src::set_tv_standard(const gint value, void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
   context->tv_standard_ = value;
 }
 
 gint V4L2Src::get_tv_standard(void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
   return context->tv_standard_;
 }
 
 void V4L2Src::set_framerate(const gint value, void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
   context->framerate_ = value;
 }
 
 gint V4L2Src::get_framerate(void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
   return context->framerate_;
 }
 
 void V4L2Src::set_framerate_numerator(const gint value, void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
   context->framerate_numerator_ = value;
 }
 
 gint V4L2Src::get_framerate_numerator(void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
   return context->framerate_numerator_;
 }
 
 void V4L2Src::set_framerate_denominator(const gint value, void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
   context->framerate_denominator_ = value;
 }
 
 gint V4L2Src::get_framerate_denominator(void *user_data) {
-  V4L2Src *context = static_cast < V4L2Src * >(user_data);
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
   return context->framerate_denominator_;
 }
 

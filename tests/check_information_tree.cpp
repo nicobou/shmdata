@@ -24,7 +24,7 @@
 #include <algorithm>
 
 //----------------- a custom struct without operator <<
-struct Widget:public DefaultSerializable < Widget > {
+struct Widget:public DefaultSerializable<Widget> {
 };
 
 //----------------- a custom struct with operator <<
@@ -188,14 +188,14 @@ main() {
 
   {                             // get childs keys inserting in an existing container
     Tree::ptr tree = make_tree();
-    std::list < std::string > childs {
+    std::list<std::string> childs {
       "child1", "child2", "child3",
           "child4", "child5", "child6", "child7", "child8", "child9"};
     std::for_each(childs.begin(),
                   childs.end(),[tree] (const std::string & val) {
                     tree->graft(".root." + val, make_tree("val"));
                   });
-    std::vector < std::string > child_keys;
+    std::vector<std::string> child_keys;
     tree->get_child_keys(".root",
                          std::insert_iterator < std::vector <
                          std::string >> (child_keys, child_keys.begin()));
@@ -210,7 +210,7 @@ main() {
 
   {                             // get childs keys in a newly allocated container
     Tree::ptr tree = make_tree();
-    std::list < std::string > childs {
+    std::list<std::string> childs {
       "child1", "child2", "child3",
           "child4", "child5", "child6", "child7", "child8", "child9"};
     std::for_each(childs.begin(),
@@ -223,15 +223,15 @@ main() {
         };
 
     // using a list
-    std::list < std::string > child_keys_list =
+    std::list<std::string> child_keys_list =
         tree->get_child_keys <> (".root");
     assert(std::equal
            (childs.begin(), childs.end(), child_keys_list.begin(),
             string_compare));
 
     // using a vector
-    std::vector < std::string > child_keys_vector =
-        tree->get_child_keys < std::vector > (".root");
+    std::vector<std::string> child_keys_vector =
+        tree->get_child_keys<std::vector> (".root");
     assert(std::equal
            (childs.begin(), childs.end(), child_keys_vector.begin(),
             string_compare));

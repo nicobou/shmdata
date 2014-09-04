@@ -30,7 +30,7 @@ namespace switcher {
 
 class CustomPropertyHelper {
  public:
-  typedef std::shared_ptr < CustomPropertyHelper > ptr;
+  typedef std::shared_ptr<CustomPropertyHelper> ptr;
   typedef void (*set_string_method) (const gchar *value, void *user_data);
   typedef const gchar *(*get_string_method) (void *user_data);
   typedef void (*set_boolean_method) (const gboolean value,
@@ -107,7 +107,7 @@ class CustomPropertyHelper {
 
  private:
   GObjectWrapper::ptr gobject_;
-  std::vector < std::shared_ptr < UserMethod > >user_methods_;
+  std::vector<std::shared_ptr<UserMethod>>user_methods_;
   void make_user_method(const gchar *nickname,
                         GParamSpec *pspec,
                         void(*set_method)(void),

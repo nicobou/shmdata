@@ -57,7 +57,7 @@ Decodebin2::make_decodebin_active(ShmdataReader *caller,
   On_scope_exit {
     g_print("end %s\n", str.c_str());
   };
-  Decodebin2 *context = static_cast < Decodebin2 * >(user_data);
+  Decodebin2 *context = static_cast<Decodebin2 *>(user_data);
   // context->decodebin_->invoke (std::bind(&SinglePadGstSink::set_sink_element,
   //     context,
   //     std::placeholders::_1));

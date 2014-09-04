@@ -28,7 +28,7 @@
 namespace switcher {
 class VideoSource:public GPipe, public StartableQuiddity {
  public:
-  typedef std::shared_ptr < VideoSource > ptr;
+  typedef std::shared_ptr<VideoSource> ptr;
   VideoSource();
   ~VideoSource();
   VideoSource(const VideoSource &) = delete;
@@ -55,7 +55,7 @@ class VideoSource:public GPipe, public StartableQuiddity {
   GstElement *codec_element_;
   GstElement *queue_codec_element_;
   GstElement *color_space_codec_element_;
-  std::vector < std::string > codec_properties_;
+  std::vector<std::string> codec_properties_;
 
   virtual bool on_start() {
     return true;
