@@ -57,8 +57,12 @@ PostureMerge::start() {
 
 bool
 PostureMerge::stop() {
-  if (merger_.get() != nullptr)
+  lock_guard<mutex> lock(mutex_);
+
+  if (merger_.get() != nullptr) {
     merger_->stop();
+    merger_.reset();
+  }
 
   if (cloud_writer_.get() != nullptr) {
     unregister_shmdata(cloud_writer_->get_path());

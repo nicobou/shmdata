@@ -64,6 +64,8 @@ PostureDisplay::connect(std::string shmdata_socket_path) {
   // This is the callback for when new clouds are received
   reader->set_callback([=] (void *data, int size, unsigned long long timestamp, const char *type, void * /*unused */ )
   {
+    if (display_ == nullptr)
+        return;
     if (!display_mutex_.try_lock())
         return;
 
