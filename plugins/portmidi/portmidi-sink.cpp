@@ -21,8 +21,8 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSink,
-                                     "Midi (PortMidiSink)",
-                                     "midi sink",
+                                     "Midi (Port Midi)",
+                                     "midi",
                                      "shmdata to midi",
                                      "LGPL",
                                      "midisink", "Nicolas Bouillot");

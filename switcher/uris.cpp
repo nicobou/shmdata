@@ -26,7 +26,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uris,
                                      "Uri Player",
                                      "experimental uri player",
                                      "play/pause/seek/loop/synchronize multiple uris",
-                                     "LGPL", "uris", "Nicolas Bouillot");
+                                     "LGPL",
+                                     "urisOLD",
+                                     "Nicolas Bouillot");
 
 bool Uris::init() {
   group_ = g_new0(Group, 1);

@@ -22,10 +22,12 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToOsc,
-                                     "shmdata to OSC messages (default to localhost:1056)",
-                                     "osc sink",
+                                     "OSC sender",
+                                     "OSC",
                                      "OSCprop reveives OSC messages and updates associated property",
-                                     "LGPL", "shmOSC", "Nicolas Bouillot");
+                                     "LGPL",
+                                     "shmOSCsink",
+                                     "Nicolas Bouillot");
 
 ShmdataToOsc::ShmdataToOsc():custom_props_(new CustomPropertyHelper()),
                              port_(1056),

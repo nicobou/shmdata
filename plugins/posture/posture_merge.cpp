@@ -28,7 +28,7 @@ posture;
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureMerge,
-                                     "Point clouds merge",
+                                     "Point Clouds Merge",
                                      "video",
                                      "Merges point clouds captured with 3D cameras",
                                      "LGPL",

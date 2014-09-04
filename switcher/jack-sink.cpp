@@ -27,7 +27,7 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackSink,
                                      "Audio Display (Jack)",
-                                     "audio sink",
+                                     "audio",
                                      "Audio display with minimal features",
                                      "LGPL",
                                      "jacksink", "Nicolas Bouillot");
