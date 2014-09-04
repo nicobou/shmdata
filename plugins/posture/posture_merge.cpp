@@ -167,14 +167,15 @@ PostureMerge::connect(std::string shmdata_socket_path) {
       cloud_writer_->start();
     }
 
-    cloud_buffers_[cloud_buffer_index_] = make_shared<vector<char>>(merger_->getCloud());
-    cloud_writer_->push_data_auto_clock((void *)
-                                        cloud_buffers_
-                                        [cloud_buffer_index_]->data(),
-                                        cloud_buffers_
-                                        [cloud_buffer_index_]->size(), nullptr,
-                                        nullptr);
-    cloud_buffer_index_ = (cloud_buffer_index_ + 1) % 3;
+    check_buffers();
+    vector<char> cloud = merger_->getCloud();
+    shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(reinterpret_cast<const unsigned char*>(cloud.data()),
+                                                                        reinterpret_cast<const unsigned char*>(cloud.data()) + cloud.size()));
+    cloud_writer_->push_data_auto_clock((void *) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
+                                           cloud.size(),
+                                           PostureMerge::free_sent_buffer,
+                                           (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
+
     mutex_.unlock();
   },
   nullptr);
@@ -238,5 +239,23 @@ bool
 PostureMerge::can_sink_caps(std::string caps) {
   return (caps == POINTCLOUD_TYPE_BASE)
       || (caps == POINTCLOUD_TYPE_COMPRESSED);
+}
+
+void
+PostureMerge::free_sent_buffer(void* data)
+{
+  vector<unsigned char>* buffer = static_cast<vector<unsigned char>*>(data);
+  buffer->clear();
+}
+
+void
+PostureMerge::check_buffers()
+{
+  for (unsigned int i = 0; i < shmwriter_queue_.size();) {
+    if (shmwriter_queue_[i]->size() == 0)
+      shmwriter_queue_.erase(shmwriter_queue_.begin() + i);
+    else
+      i++;
+  }
 }
 }  // namespace switcher
