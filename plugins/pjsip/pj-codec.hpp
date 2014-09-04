@@ -77,6 +77,5 @@ class PJCodec {
                                              pjmedia_codec * codec);
   static pj_status_t alt_codec_deinit(void);
 };
-
 }  // namespace switcher
 #endif

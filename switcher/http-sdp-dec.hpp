@@ -28,7 +28,6 @@
 #include <string>
 
 namespace switcher {
-
 class HTTPSDPDec:public GPipe {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);
@@ -57,7 +56,6 @@ class HTTPSDPDec:public GPipe {
                                          GstElement * element,
                                          gpointer user_data);
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

@@ -26,7 +26,6 @@
 #include "./custom-property-helper.hpp"
 
 namespace switcher {
-
 class FakeShmdataWriter:public GPipe, StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeShmdataWriter);
@@ -51,7 +50,6 @@ class FakeShmdataWriter:public GPipe, StartableQuiddity {
   static void set_shmdata_path(const gchar * value, void *user_data);
   static const gchar *get_shmdata_path(void *user_data);
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

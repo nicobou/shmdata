@@ -37,7 +37,6 @@
 #include <mutex>
 
 namespace switcher {
-
 class PortMidi {
  public:
   typedef void (*on_pm_event_method) (PmEvent * midi_event,
@@ -109,7 +108,6 @@ class PortMidi {
   static PortMidiScheduler *scheduler_;
   static guint instance_counter_;
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

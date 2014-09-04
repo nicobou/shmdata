@@ -27,7 +27,7 @@ VideoSource::VideoSource():rawvideo_(nullptr),
                                                                                // GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y'),
                                                                                // "format", GST_TYPE_FOURCC,
                                                                                // GST_MAKE_FOURCC ('I', '4', '2', '0'),
-                                                                               //"framerate", GST_TYPE_FRACTION, 30, 1,
+                                                                               // "framerate", GST_TYPE_FRACTION, 30, 1,
                                                                                // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1,
                                                                                //  "width", G_TYPE_INT, 640,
                                                                                //  "height", G_TYPE_INT, 480,
@@ -234,8 +234,7 @@ VideoSource::set_codec_long_list(gboolean codec_long_list,
                                        custom_props_->get_gobject(),
                                        context->secondary_codec_spec_,
                                        "codec", "Video Codecs (Long List)");
-  }
-  else {
+  } else {
     context->uninstall_property("codec");
     context->install_property_by_pspec(context->
                                        custom_props_->get_gobject(),

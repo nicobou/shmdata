@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-//#include <gmodule.h>
+// #include <gmodule.h>
 
 #include "./quiddity-documentation.hpp"
 #include "./quiddity-manager-impl.hpp"
@@ -325,11 +325,12 @@ std::string QuiddityManager_Impl::create(std::string quiddity_class) {
     return "";
 
   Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class);
-  if (quiddity.get() != nullptr)
+  if (quiddity.get() != nullptr) {
     if (!init_quiddity(quiddity)) {
       g_debug("initialization of %s failled", quiddity_class.c_str());
       return "";
     }
+  }
   return quiddity->get_nick_name();
 }
 
@@ -346,9 +347,9 @@ QuiddityManager_Impl::create(std::string quiddity_class,
   Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class);
 
   if (quiddity.get() != nullptr) {
-    if (!nick_name.empty())
+    if (!nick_name.empty()) {
       quiddity->set_nick_name(nick_name);
-    else {
+    } else {
       g_debug
           ("QuiddityManager_Impl::create: nick name \"%s\" not valid",
            nick_name.c_str());
@@ -860,7 +861,7 @@ get_method_description_by_class(std::string class_name,
   return descr;
 }
 
-//*** signals
+// *** signals
 std::string
 QuiddityManager_Impl::get_signals_description(std::string quiddity_name) {
   if (!exists(quiddity_name)) {
@@ -1146,7 +1147,7 @@ QuiddityManager_Impl::scan_directory_for_plugins(const char
                                 G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
                                 nullptr, &error);
   if (!enumerator)
-    return false;;
+    return false;
   error = nullptr;
   info = g_file_enumerator_next_file(enumerator, nullptr, &error);
   while ((info) && (!error)) {

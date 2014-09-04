@@ -164,7 +164,7 @@ bool Uris::seek(gdouble position) {
   return true;
 }
 
-//************************* wrapping c code:
+// ************************* wrapping c code:
 
 void Uris::group_add_uri(Group * group, const char *uri) {
   gchar *uri_tmp;
@@ -355,8 +355,7 @@ Uris::uridecodebin_pad_added_cb(GstElement * object, GstPad * pad,
 
     // saving where to connect to the shmdata
     sample->element_to_link_with = funnel;
-  }
-  else {
+  } else {
     g_debug("not handled data type: %s", padname);
     GstElement *fake = gst_element_factory_make("fakesink", nullptr);
     gst_bin_add(GST_BIN(group->bin), fake);
@@ -412,8 +411,7 @@ void Uris::group_try_change_state(gpointer user_data) {
       if (group->state == GROUP_TO_PLAYING) {
         group->state = GROUP_PLAYING;
         g_debug("back to playing state %p", &(group->state));
-      }
-      else if (group->state == GROUP_TO_PAUSED) {
+      } else if (group->state == GROUP_TO_PAUSED) {
         group->state = GROUP_PAUSED;
         g_message("back to plaused state");
       }
@@ -430,8 +428,7 @@ void Uris::group_try_change_state(gpointer user_data) {
       g_debug("queue size %d", g_async_queue_length(group->numTasks));
       g_debug("** new command launched");
     }
-  }
-  else {
+  } else {
     g_debug("nothing to do for changing the state");
   }
 }
@@ -551,12 +548,11 @@ Uris::pad_blocked_cb(GstPad * pad, gboolean blocked, gpointer user_data) {
       group_unlink_datastream((gpointer) sample, nullptr, nullptr);
       g_debug("XXX pad_blocked_cb %p", pad);
       group_try_change_state(sample->group);
-    }
-    else
+    } else {
       g_debug("pad_blocked_cb: cannot remove from hash pad to block %p",
               sample->bin_srcpad);
-  }
-  else {
+    }
+  } else {
     g_debug("xxx pad unblocked %p", pad);
   }
 }
@@ -628,9 +624,9 @@ Uris::group_block_datastream_wrapped_for_hash(gpointer key,
   Sample *sample = (Sample *) key;
   g_debug("group_block_datastream_wrapped_for_hash: called %p",
           sample->bin_srcpad);
-  if (!gst_pad_is_blocked(sample->bin_srcpad))
+  if (!gst_pad_is_blocked(sample->bin_srcpad)) {
     group_do_block_datastream(sample);
-  else {
+  } else {
     g_warning
         ("group_block_datastream_wrapped_for_hash: WARNING not blocking unblocked pad");
     group_try_change_state(sample->group);
@@ -640,9 +636,9 @@ Uris::group_block_datastream_wrapped_for_hash(gpointer key,
 void Uris::group_do_block_datastream(Sample * sample) {
   if (!gst_pad_set_blocked_async
       (sample->bin_srcpad, TRUE, (GstPadBlockCallback) pad_blocked_cb,
-       sample))
+       sample)) {
     g_warning("play_source: pb blocking");
-  else {
+  } else {
     // keep the pad in memory for dequeueing task when necessary
     g_hash_table_insert(sample->group->padtoblock, sample->bin_srcpad,
                         sample->bin_srcpad);
@@ -737,8 +733,8 @@ void Uris::group_do_seek_datastream(Sample * sample) {
                          GST_FORMAT_TIME,
                          (GstSeekFlags) (GST_SEEK_FLAG_FLUSH |
                                          GST_SEEK_FLAG_ACCURATE),
-                         //| GST_SEEK_FLAG_SKIP
-                         //| GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
+                         // | GST_SEEK_FLAG_SKIP
+                         // | GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
                          GST_SEEK_TYPE_SET,
                          sample->group->seek_position * GST_SECOND,
                          GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);

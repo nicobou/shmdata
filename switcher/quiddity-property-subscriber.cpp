@@ -117,8 +117,7 @@ QuiddityPropertySubscriber::subscribe(Quiddity::ptr quid,
   if (quid->subscribe_property(property_name.c_str(), property_cb, prop)) {
     prop_datas_[cur_pair] = prop;
     return true;
-  }
-  else {
+  } else {
     g_warning("QuiddityPropertySubscriber: cannot subscribe to property");
     return false;
   }

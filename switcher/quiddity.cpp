@@ -485,8 +485,7 @@ Quiddity::emit_action(const std::string signal_name,
     g_debug("Quiddity::invoke_signal error: %s not found",
             signal_name.c_str());
     return false;
-  }
-  else {
+  } else {
     GValue res = signals_[signal_name]->action_emit(args);
     if (return_value != nullptr) {
       gchar *res_val = GstUtils::gvalue_serialize(&res);
@@ -677,7 +676,7 @@ void Quiddity::signal_emit(const std::string signal_name, ...) {
   // va_copy (va_cp, var_args);
   // signal->signal_emit (get_g_main_context (), signal_name.c_str (), va_cp);
   signal->signal_emit(/*get_g_main_context (), */ signal_name.c_str(),
-                       var_args);
+                      var_args);
   va_end(var_args);
 }
 

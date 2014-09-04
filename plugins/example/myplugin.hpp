@@ -26,7 +26,6 @@
 #include <memory>
 
 namespace switcher {
-
 class MyPlugin:public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(MyPlugin);
@@ -51,7 +50,6 @@ class MyPlugin:public Quiddity, public StartableQuiddity {
 };
 
 SWITCHER_DECLARE_PLUGIN(MyPlugin);
-
 }  // namespace switcher
 
 #endif                          // ifndef

@@ -143,8 +143,8 @@ bool GPipe::seek(gdouble position) {
   gboolean ret = FALSE;
   ret = gst_element_seek(pipeline_, speed_, GST_FORMAT_TIME, (GstSeekFlags) ( // GST_SEEK_FLAG_FLUSH |
       GST_SEEK_FLAG_ACCURATE),
-                         //| GST_SEEK_FLAG_SKIP
-                         //| GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
+                         // | GST_SEEK_FLAG_SKIP
+                         // | GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
                          GST_SEEK_TYPE_SET,
                          position * length_ * GST_MSECOND,
                          GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
@@ -191,8 +191,7 @@ bool GPipe::speed(gdouble speed) {
     gst_query_parse_position(query, nullptr, &cur_pos);
 
     g_debug("cur pos = %" GST_TIME_FORMAT "\n", GST_TIME_ARGS(cur_pos));
-  }
-  else {
+  } else {
     g_warning("position query failed...");
   }
   gst_query_unref(query);
@@ -367,8 +366,7 @@ GstBusSyncReply GPipe::bus_sync_handler(GstBus * /*bus */ ,
         context->commands_.push_back(args->src);
         g_source_attach(args->src, context->get_g_main_context());
         g_source_unref(args->src);
-      }
-      else {
+      } else {
         GstUtils::g_idle_add_full_with_context(context->get_g_main_context
                                                (), G_PRIORITY_DEFAULT_IDLE,
                                                (GSourceFunc) run_command,
@@ -380,15 +378,17 @@ GstBusSyncReply GPipe::bus_sync_handler(GstBus * /*bus */ ,
     return GST_BUS_DROP;
   }
 
-  if (nullptr != msg->structure)
+  if (nullptr != msg->structure) {
     if (gst_structure_has_name(msg->structure, "prepare-xwindow-id")) {
       guintptr *window_handle =
           (guintptr *) g_object_get_data(G_OBJECT(msg->src),
                                          "window-handle");
-      if (window_handle != nullptr)
+      if (window_handle != nullptr) {
         gst_x_overlay_set_window_handle(GST_X_OVERLAY(msg->src),
                                         *window_handle);
+      }
     }
+  }
 
   if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_TAG) {
     // GstTagList *tags = nullptr;

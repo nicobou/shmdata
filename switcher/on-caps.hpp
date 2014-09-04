@@ -25,13 +25,10 @@
 #include <mutex>
 
 namespace switcher {
-
 class OnCaps {
  public:
   using CapsCallBack = std::function < void (std::string) >;
-
-  virtual ~ OnCaps() {};
-
+  virtual ~OnCaps() {}
   void set_on_caps(CapsCallBack callback);
   std::string get_caps();
 
@@ -43,7 +40,6 @@ class OnCaps {
  protected:
   bool set_negociated_caps(std::string caps);
 };
-
 }  // namespace switcher
 
 #endif

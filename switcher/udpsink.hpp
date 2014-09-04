@@ -25,7 +25,6 @@
 #include <memory>
 
 namespace switcher {
-
 class UDPSink:public SinglePadGstSink {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(UDPSink);
@@ -61,9 +60,7 @@ class UDPSink:public SinglePadGstSink {
                                 gint port, gpointer user_data);
   static void add_elements_to_bin(ShmdataReader * caller,
                                   void *udpbin_instance);
-
 };
-
 }  // namespace switcher
 
 #endif

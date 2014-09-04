@@ -54,7 +54,7 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   // plugins
   bool scan_directory_for_plugins(const char *directory_path);
 
-  //**** info about manager
+  // **** info about manager
   std::string get_name();
   std::vector < std::string > get_classes();        // vector of class names
   std::vector < std::string > get_instances();      // vector of instance names
@@ -66,7 +66,7 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   bool class_exists(std::string class_name);
   bool exists(std::string quiddity_name);
 
-  //**** creation/remove/get
+  // **** creation/remove/get
   std::string create(std::string quiddity_class);
   std::string create(std::string quiddity_class, std::string nick_name);
   bool remove(std::string quiddity_name);
@@ -80,11 +80,11 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   bool set_removed_hook(quiddity_removed_hook hook, void *user_data);
   void reset_create_remove_hooks();
 
-  //**** information
+  // **** information
   std::string get_info(const std::string & nick_name,
                        const std::string & path);
 
-  //**** properties
+  // **** properties
   // doc (json formatted)
   std::string get_properties_description(std::string quiddity_name);
   std::string get_property_description(std::string quiddity_name,
@@ -134,7 +134,7 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
                                Property::Callback cb, void *user_data);
   bool unsubscribe_property_glib(std::string quiddity_name, std::string property_name, Property::Callback cb, void *user_data);       // the same as called with subscribe
 
-  //**** methods
+  // **** methods
   // doc (json formatted)
   std::string get_methods_description(std::string quiddity_name);
   std::string get_method_description(std::string quiddity_name,
@@ -151,7 +151,7 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
 
   bool has_method(std::string quiddity_name, std::string method_name);
 
-  //**** signals
+  // **** signals
   // doc (json formatted)
   std::string get_signals_description(std::string quiddity_name);
   std::string get_signal_description(std::string quiddity_name,
@@ -199,7 +199,7 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   bool load_plugin(const char *filename);
   void close_plugin(const std::string class_name);
   std::unordered_map < std::string, PluginLoader::ptr > plugins_;
-  QuiddityManager_Impl(const std::string &);
+  explicit QuiddityManager_Impl(const std::string &);
   void make_classes_doc();
   std::string name_;
   void register_classes();
@@ -229,7 +229,6 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   void init_gmainloop();
   void main_loop_thread();
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

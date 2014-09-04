@@ -32,7 +32,7 @@ namespace switcher {
 
 class DecodebinToShmdata {
  public:
-  DecodebinToShmdata(GPipe & gpipe);
+  explicit DecodebinToShmdata(GPipe *gpipe);
   ~DecodebinToShmdata();
   DecodebinToShmdata() = delete;
   DecodebinToShmdata(const DecodebinToShmdata &) = delete;
@@ -81,7 +81,6 @@ class DecodebinToShmdata {
                             GstPad * pad, gpointer user_data);
   static gboolean rewind(gpointer user_data);
 };
-
 }  // namespace switcher
 
 #endif

@@ -24,7 +24,6 @@
 #include <memory>
 
 namespace switcher {
-
 class Categorizable {
  public:
   typedef std::shared_ptr < Categorizable > ptr;
@@ -48,7 +47,6 @@ class Categorizable {
   std::string category_;
   int position_weight_;
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

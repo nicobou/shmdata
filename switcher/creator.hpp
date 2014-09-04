@@ -27,7 +27,6 @@
 #include <vector>
 
 namespace switcher {
-
 template < class T > class Creator {
  public:
   virtual ~ Creator() {
@@ -53,7 +52,6 @@ template < class T > class CustomDerivedCreator:public Creator < T > {
       custom_create_() {
   }
 };
-
 }  // namespace switcher
 
 #endif

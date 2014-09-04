@@ -114,7 +114,6 @@ class CustomPropertyHelper {
                         void(*get_method)(void),
                         void *user_data);
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

@@ -25,7 +25,6 @@
 
 namespace switcher
 {
-
 class SoapCtrlClient : public Quiddity
 {
  public:
@@ -79,10 +78,8 @@ class SoapCtrlClient : public Quiddity
                           gpointer arg3,
                           gpointer arg4,
                           gpointer user_data);
-
 };
 
 SWITCHER_DECLARE_PLUGIN(SoapCtrlClient);
-
 }  // namespace switcher
 #endif

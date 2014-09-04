@@ -58,7 +58,6 @@ class SDPDescription {
   GstSDPMessage * sdp_description_;
   uint index_;
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

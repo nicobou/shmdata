@@ -24,7 +24,6 @@
 #include <memory>
 
 namespace switcher {
-
 class VideoTestSource:public VideoSource {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VideoTestSource);
@@ -40,7 +39,6 @@ class VideoTestSource:public VideoSource {
   bool on_stop();
   bool init_gpipe() final;
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

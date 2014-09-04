@@ -24,7 +24,6 @@
 #include "./custom-property-helper.hpp"
 
 namespace switcher {
-
 class PropertyMapper:public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PropertyMapper);

@@ -29,7 +29,6 @@
 #include "./creator.hpp"
 
 namespace switcher {
-
 template < class T, class Key, class Doc > class AbstractFactory {
  public:
   template < class U > void register_class(Key Id, Doc doc);
@@ -52,7 +51,6 @@ template < class T, class Key, class Doc > class AbstractFactory {
   std::map < Key, void(*) (T *) > destructor_map_;
   std::map < Key, Doc > classes_documentation_;
 };
-
 }  // namespace switcher
 
 #include "./abstract-factory_spec.hpp"

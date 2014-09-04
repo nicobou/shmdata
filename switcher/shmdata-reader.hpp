@@ -31,7 +31,6 @@
 #include "./on-caps.hpp"
 
 namespace switcher {
-
 class ShmdataReader:public OnCaps, public GstElementCleaner {
  public:
   typedef std::shared_ptr < ShmdataReader > ptr;
@@ -75,7 +74,6 @@ class ShmdataReader:public OnCaps, public GstElementCleaner {
   void make_json_description();
   static gboolean start_idle(void *user_data);
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

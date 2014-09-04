@@ -26,7 +26,6 @@
 #include <map>
 
 namespace switcher {
-
 class Decodebin2:public SinglePadGstSink {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Decodebin2);
@@ -36,17 +35,16 @@ class Decodebin2:public SinglePadGstSink {
 
  private:
   std::unique_ptr < DecodebinToShmdata > decodebin_;
-  std::map < std::string, int >media_counters_;
+  std::map < std::string, int >media_counters_ {};
 
   bool init_gpipe() final;
-  bool can_sink_caps(std::string caps) final {
+  bool can_sink_caps(std::string /*caps*/) final {
     return true;
   };
 
   static void make_decodebin_active(ShmdataReader * caller,
                                     void *decodebin2_instance);
 };
-
 }  // namespace switcher
 
 #endif

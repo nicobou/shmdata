@@ -21,7 +21,6 @@
 #define __SWITCHER_QUIDDITY_BASIC_TEST_H__
 
 namespace switcher {
-
 class QuiddityBasicTest {
  public:
   static bool test_full(QuiddityManager::ptr manager,
@@ -35,7 +34,6 @@ class QuiddityBasicTest {
   static bool test_startable(QuiddityManager::ptr manager,
                              std::string quiddity_class_name);
 };
-
 }
 
 #endif                          // ifndef

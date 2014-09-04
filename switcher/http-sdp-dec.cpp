@@ -91,9 +91,9 @@ void HTTPSDPDec::destroy_httpsdpdec() {
 }
 
 void
-HTTPSDPDec::on_new_element_in_sdpdemux(GstBin * bin,
+HTTPSDPDec::on_new_element_in_sdpdemux(GstBin * /*bin*/,
                                        GstElement * element,
-                                       gpointer user_data) {
+                                       gpointer /*user_data*/) {
   // FIXME add that in uridecodebin
   g_object_set(G_OBJECT(element), "ntp-sync", TRUE, nullptr);
 }
@@ -110,7 +110,7 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement * /*object */ ,
   HTTPSDPDec *context = static_cast < HTTPSDPDec * >(user_data);
   GPipe *gpipe = static_cast < GPipe * >(user_data);
   std::unique_ptr < DecodebinToShmdata >
-      decodebin(new DecodebinToShmdata(*gpipe));
+      decodebin(new DecodebinToShmdata(gpipe));
 
   decodebin->invoke(std::bind(gst_bin_add,
                               GST_BIN(context->bin_),

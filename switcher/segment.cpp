@@ -359,32 +359,31 @@ void Segment::populate_tree(std::string key, std::string caps) {
   std::string mime_type(caps.begin(),
                         std::find(caps.begin(), caps.end(), (',')));
 
-  if (std::string::npos != mime_type.find("video/x-raw"))
+  if (std::string::npos != mime_type.find("video/x-raw")) {
     category = "video";
-  else if (std::string::npos != mime_type.find("video/x-"))
+  } else if (std::string::npos != mime_type.find("video/x-")) {
     category = "compressed video";
-  else if (std::string::npos != mime_type.find("audio/midi"))
+  } else if (std::string::npos != mime_type.find("audio/midi")) {
     category = "midi";
-  else if (std::string::npos != mime_type.find("audio/x-raw"))
+  } else if (std::string::npos != mime_type.find("audio/x-raw")) {
     category = "audio";
-  else if (std::string::npos != mime_type.find("audio/x-"))
+  } else if (std::string::npos != mime_type.find("audio/x-")) {
     category = "compressed audio";
-  else if (std::string::npos !=
-           mime_type.find("application/x-libloserialized-osc"))
+  } else if (std::string::npos !=
+             mime_type.find("application/x-libloserialized-osc")) {
     category = "osc";
-  else if (std::string::npos != mime_type.find("application/x-")) {
+  } else if (std::string::npos != mime_type.find("application/x-")) {
     auto it = std::find(mime_type.begin(),
                         mime_type.end(),
                         '-');
     it++;
     if (mime_type.end() == it)
       category = "unknown";
-    else
+    else 
       category = std::string(it, mime_type.end());
-  }
-  else
+  } else {
     category = mime_type;
-
+  }
   data::Tree::ptr tree = data::make_tree();
   tree->graft(".category", data::make_tree(category));
   tree->graft(".caps", data::make_tree(caps));

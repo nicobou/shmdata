@@ -128,7 +128,7 @@ Signal::set_description(std::string long_name,
   json_description_->begin_array();
   args_doc::iterator it;
   int j = 0;
-  if (!arg_description.empty())
+  if (!arg_description.empty()) {
     for (it = arg_description.begin(); it != arg_description.end(); it++) {
       json_description_->begin_object();
       json_description_->add_string_member("long name",
@@ -141,6 +141,7 @@ Signal::set_description(std::string long_name,
                                            g_type_name(arg_types_[j]));
       json_description_->end_object();
     }
+  }
   json_description_->end_array();
   json_description_->end_object();
 }
@@ -319,14 +320,14 @@ GValue Signal::action_emit(std::vector < std::string > args) {
   if (arg_types_[0] != G_TYPE_NONE)
     param_size = arg_types_.size() + 1;
 
-  GValue params[param_size];  //1 is instance and return value
+  GValue params[param_size];  // 1 is instance and return value
 
   params[0] = G_VALUE_INIT;
   g_value_init(&params[0], G_OBJECT_TYPE(object_));
   g_value_set_object(&params[0], object_);
 
   // with args
-  if (arg_types_[0] != G_TYPE_NONE)
+  if (arg_types_[0] != G_TYPE_NONE) {
     for (gsize i = 0; i < arg_types_.size(); i++) {
       params[i + 1] = G_VALUE_INIT;
       g_value_init(&params[i + 1], arg_types_[i]);
@@ -338,13 +339,11 @@ GValue Signal::action_emit(std::vector < std::string > args) {
         return result_value;
       }
     }
-
+  }
   g_value_init(&result_value, return_type_);
-
   g_signal_emitv(params, id_, 0, &result_value);
-
   for (gsize i = 0; i < param_size; i++)
     g_value_unset(&params[i]);
   return result_value;
 }
-}
+}  // namespace switcher

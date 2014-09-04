@@ -27,7 +27,6 @@
 #include <unordered_map>
 
 namespace switcher {
-
 class ShmdataFromGDPFile:public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataFromGDPFile);

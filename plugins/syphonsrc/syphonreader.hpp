@@ -53,7 +53,6 @@ class SyphonReader {
   void init();
   void handleNewFrame();
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

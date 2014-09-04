@@ -24,7 +24,7 @@
 
 namespace switcher {
 namespace data {
-//--------------- utils
+// --------------- utils
 // constructor
 Tree::ptr make_tree() {
   return std::make_shared < Tree > ();
@@ -47,7 +47,7 @@ preorder_tree_walk(Tree::ptr tree,
   }
 }
 
-//--------------- class
+// --------------- class
 Tree::Tree(const Any & data):data_(data) {
 }
 
@@ -213,8 +213,7 @@ Tree::graft_next(std::istringstream & path, Tree * tree,
   if (tree->childrens_.end() != it) {
     if (graft_next(path, it->second.get(), leaf))   // graft on already existing child
       it->second = leaf;    // replacing the previously empy tree with the one to graft
-  }
-  else {
+  } else {
     Tree::ptr child_node = make_tree();
     tree->childrens_.emplace_back(child, child_node);
     if (graft_next(path, child_node.get(), leaf))   // graft on already existing child

@@ -222,10 +222,10 @@ struct Any {
 
 template < typename T > struct DefaultSerializable {
   virtual ~
-  DefaultSerializable() {};
+  DefaultSerializable() {}
   template < typename U >
   friend std::ostream & operator<<(std::ostream & os,
-				   const DefaultSerializable < U > &) {
+                                   const DefaultSerializable < U > &) {
     os << "not serializable";
     return os;
   }

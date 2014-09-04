@@ -22,11 +22,16 @@
 #include <glib/gprintf.h>
 
 namespace switcher {
-DecodebinToShmdata::DecodebinToShmdata(GPipe &
-                                       gpipe):decodebin_("decodebin2"),
-                                              discard_next_uncomplete_buffer_(false), main_pad_(nullptr),
-                                              media_counters_(), media_counter_mutex_(), gpipe_(&gpipe),
-                                              shmdata_path_(), cb_ids_(), thread_safe_() {
+DecodebinToShmdata::DecodebinToShmdata(GPipe *gpipe):
+    decodebin_("decodebin2"),
+    discard_next_uncomplete_buffer_(false),
+    main_pad_(nullptr),
+    media_counters_(),
+    media_counter_mutex_(),
+    gpipe_(gpipe),
+    shmdata_path_(),
+    cb_ids_(),
+    thread_safe_() {
   // set async property
   auto set_prop = std::bind(g_object_set,
                             std::placeholders::_1,
@@ -302,8 +307,7 @@ void DecodebinToShmdata::on_handoff_cb(GstElement * /*object */ ,
     };
     writer->set_data_type(string_caps);
     writer->start();
-  }
-  else {
+  } else {
     writer->push_data(GST_BUFFER_DATA(buf),
                       GST_BUFFER_SIZE(buf),
                       GST_BUFFER_TIMESTAMP(buf), nullptr, nullptr);
@@ -334,8 +338,7 @@ gboolean DecodebinToShmdata::rewind(gpointer user_data) {
     //        rate,
     //        GST_TIME_ARGS (start_value),
     //        GST_TIME_ARGS (stop_value));
-  }
-  else {
+  } else {
     g_debug("duration query failed...");
   }
   gst_query_unref(query);
@@ -345,8 +348,8 @@ gboolean DecodebinToShmdata::rewind(gpointer user_data) {
                        rate, GST_FORMAT_TIME,
                        (GstSeekFlags) (GST_SEEK_FLAG_FLUSH |
                                        GST_SEEK_FLAG_ACCURATE),
-                       //| GST_SEEK_FLAG_SKIP
-                       //| GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
+                       // | GST_SEEK_FLAG_SKIP
+                       // | GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
                        GST_SEEK_TYPE_SET,
                        0.0 * GST_SECOND,
                        GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);

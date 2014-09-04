@@ -25,7 +25,6 @@
 #include <memory>
 
 namespace switcher {
-
 class SinglePadGstSink:public GPipe {
  public:
   typedef std::shared_ptr < SinglePadGstSink > ptr;
@@ -55,7 +54,6 @@ class SinglePadGstSink:public GPipe {
   virtual void on_shmdata_disconnect();
   virtual bool can_sink_caps(std::string caps);
 };
-
 }  // namespace switcher
 
 #endif

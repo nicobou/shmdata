@@ -25,7 +25,6 @@
 #include <memory>
 
 namespace switcher {
-
 class Xvimagesink:public SinglePadGstSink {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Xvimagesink);
@@ -43,7 +42,6 @@ class Xvimagesink:public SinglePadGstSink {
   bool init_gpipe() final;
   bool can_sink_caps(std::string caps) final;
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

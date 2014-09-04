@@ -45,8 +45,7 @@ bool Logger::init() {
   if (installed_) {
     g_warning("Only one logger instance is possible, cannot create");
     return false;
-  }
-  else {
+  } else {
     installed_ = true;
     i_am_the_one_ = true;
   }

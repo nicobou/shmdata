@@ -31,12 +31,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Decodebin2,
                                      "LGPL",
                                      "decodebin", "Nicolas Bouillot");
 
-Decodebin2::Decodebin2():decodebin_(new
-                                    DecodebinToShmdata(*
-                                                       (static_cast <
-                                                        GPipe *
-                                                        >(this)))),
-                         media_counters_() {
+Decodebin2::Decodebin2():
+    decodebin_(new DecodebinToShmdata(static_cast <GPipe *>(this))),
+    media_counters_() {
 }
 
 bool Decodebin2::init_gpipe() {

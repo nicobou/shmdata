@@ -25,7 +25,6 @@
 
 namespace switcher {
 namespace GstUtils {
-
 bool make_element(const gchar * class_name, GstElement ** target_element);
 bool link_static_to_request(GstElement * src, GstElement * sink);
 bool link_static_to_request(GstPad * srcpad, GstElement * sink);
@@ -57,7 +56,6 @@ gulong g_signal_connect_function(gpointer gobject,
                                  const gchar * signal,
                                  GCallback cb, gpointer user_data);
 bool can_sink_caps(std::string factory_name, std::string caps);
-
 }  // namespace GstUtils
 }  // namespace switcher
 #endif

@@ -25,7 +25,6 @@
 #include "./json-builder.hpp"
 
 namespace switcher {
-
 class Quiddity;
 class QuiddityDocumentation;
 
@@ -56,7 +55,6 @@ class PluginLoader {
   JSONBuilder::Node json_doc_;
   std::string class_name_;
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

@@ -136,11 +136,11 @@ void Uridecodebin::init_uridecodebin() {
 
   g_object_set(G_OBJECT(uridecodebin_),
                // "ring-buffer-max-size",(guint64)200000000,
-               //"download",TRUE,
-               //"use-buffering",TRUE,
-               //"ring-buffer-max-size", 4294967295,
+               // "download",TRUE,
+               // "use-buffering",TRUE,
+               // "ring-buffer-max-size", 4294967295,
                "expose-all-streams", TRUE, "async-handling", TRUE,
-               //"buffer-duration",9223372036854775807,
+               // "buffer-duration",9223372036854775807,
                nullptr);
 }
 
@@ -274,8 +274,7 @@ gboolean Uridecodebin::process_eos(gpointer user_data) {
     //        rate,
     //        GST_TIME_ARGS (start_value),
     //        GST_TIME_ARGS (stop_value));
-  }
-  else {
+  } else {
     g_debug("duration query failed...");
   }
   gst_query_unref(query);
@@ -290,8 +289,8 @@ gboolean Uridecodebin::process_eos(gpointer user_data) {
                        rate, GST_FORMAT_TIME,
                        (GstSeekFlags) (GST_SEEK_FLAG_FLUSH |
                                        GST_SEEK_FLAG_ACCURATE),
-                       //| GST_SEEK_FLAG_SKIP
-                       //| GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
+                       // | GST_SEEK_FLAG_SKIP
+                       // | GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
                        GST_SEEK_TYPE_SET,
                        0.0 * GST_SECOND,
                        GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
@@ -340,8 +339,7 @@ void Uridecodebin::on_handoff_cb(GstElement * /*object */ ,
     writer->start();
     g_free(string_caps);
     gst_caps_unref(caps);
-  }
-  else {
+  } else {
     GstBuffer *buftmp = gst_buffer_copy(buf);
     writer->push_data(GST_BUFFER_DATA(buftmp),
                       GST_BUFFER_SIZE(buftmp),

@@ -25,7 +25,6 @@
 #include <map>
 
 namespace switcher {
-
 class Deinterleave:public SinglePadGstSink, public GstElementCleaner {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Deinterleave);
@@ -46,7 +45,6 @@ class Deinterleave:public SinglePadGstSink, public GstElementCleaner {
                            gpointer user_data);
   static void no_more_pads_cb(GstElement * object, gpointer user_data);
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

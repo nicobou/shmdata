@@ -27,7 +27,6 @@
 #include "./on-caps.hpp"
 
 namespace switcher {
-
 class ShmdataWriter:public OnCaps {
  public:
   typedef std::shared_ptr < ShmdataWriter > ptr;
@@ -63,7 +62,6 @@ class ShmdataWriter:public OnCaps {
                             GstBuffer * buf,
                             GstPad * pad, gpointer user_data);
 };
-
 }  // namespace switcher
 
 #endif

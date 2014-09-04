@@ -60,7 +60,6 @@ class StringDictionary:public Quiddity {
   gboolean load_file(const gchar * file_path);
   gboolean save_file(const gchar * file_path);
 };
-
 }  // namespace switcher
 
 #endif                          // ifndef

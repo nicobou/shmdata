@@ -24,10 +24,9 @@
 #include "./gst-utils.hpp"
 
 namespace switcher {
-
 class UniqueGstElement {
  public:
-  UniqueGstElement(const gchar * class_name);
+  explicit UniqueGstElement(const gchar * class_name);
 
   // invoke as g_object
   template < typename Return_type >
@@ -53,7 +52,6 @@ class UniqueGstElement {
                                                decltype(&GstUtils::gst_element_deleter) >;
   gst_element_handle element_;
 };
-
 }  // namespace switcher
 
 #endif

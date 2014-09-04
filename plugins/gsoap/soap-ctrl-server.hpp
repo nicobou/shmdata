@@ -26,7 +26,6 @@
 #include "webservices/soapcontrolService.h"
 
 namespace switcher {
-
 class SoapCtrlServer : public QuiddityManagerWrapper
 {
  public:
@@ -58,7 +57,6 @@ class SoapCtrlServer : public QuiddityManagerWrapper
 };
 
 SWITCHER_DECLARE_PLUGIN(SoapCtrlServer);
-
 }  // namespace switcher
 
 #endif

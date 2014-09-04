@@ -84,7 +84,6 @@ class PJSIP:public Quiddity {
   void sip_worker_thread();
   void start_udp_transport();
 };
-
 }  // namespace switcher
 
 #endif
