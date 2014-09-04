@@ -57,8 +57,12 @@ PostureMerge::start() {
 
 bool
 PostureMerge::stop() {
-  if (merger_.get() != nullptr)
+  lock_guard<mutex> lock(mutex_);
+
+  if (merger_.get() != nullptr) {
     merger_->stop();
+    merger_.reset();
+  }
 
   if (cloud_writer_.get() != nullptr) {
     unregister_shmdata(cloud_writer_->get_path());
@@ -131,50 +135,39 @@ PostureMerge::connect(std::string shmdata_socket_path) {
                              int size,
                              unsigned long long timestamp,
                              const char *type,
-                             void * /*unused */ ) {
+                             void * /*unused */ )
+  {
+    if (merger_ == nullptr || (string(type) != string(POINTCLOUD_TYPE_BASE) && string(type) != string(POINTCLOUD_TYPE_COMPRESSED)))
+      return;
+
+    // Setting input clouds is thread safe, so lets do it
+    merger_->setInputCloud(index,
+                           vector<char>((char*)data, (char*) data + size),
+                           string(type) != string(POINTCLOUD_TYPE_BASE),
+                           timestamp);
+
+    // If another thread is trying to get the merged cloud, don't bother
     if (!mutex_.try_lock())
       return;
-    if (merger_ == nullptr)
-    {
-      mutex_.unlock();
-      return;
-    }
-    if (string(type) == string(POINTCLOUD_TYPE_BASE))
-      merger_->setInputCloud(index,
-                             vector <
-                             char >((char *) data,
-                                    (char *) data +
-                                    size), false,
-                             timestamp);
-    else if (string(type) == string(POINTCLOUD_TYPE_COMPRESSED))
-      merger_->setInputCloud(index, vector<char>((char *) data, (char *) data + size), true, timestamp);
-    else
-    {
-      mutex_.unlock();
-      return;
-    }
-
     if (cloud_writer_.get() == nullptr) {
       cloud_writer_.reset(new ShmdataAnyWriter);
       cloud_writer_->set_path(make_file_name("cloud"));
       register_shmdata(cloud_writer_);
       if (compress_cloud_)
-        cloud_writer_->set_data_type(string
-                                     (POINTCLOUD_TYPE_COMPRESSED));
+        cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_COMPRESSED));
       else
-        cloud_writer_->set_data_type(string
-                                     (POINTCLOUD_TYPE_BASE));
+        cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_BASE));
       cloud_writer_->start();
     }
 
     check_buffers();
     vector<char> cloud = merger_->getCloud();
     shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(reinterpret_cast<const unsigned char*>(cloud.data()),
-                                                                        reinterpret_cast<const unsigned char*>(cloud.data()) + cloud.size()));
+                                                                  reinterpret_cast<const unsigned char*>(cloud.data()) + cloud.size()));
     cloud_writer_->push_data_auto_clock((void *) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
-                                           cloud.size(),
-                                           PostureMerge::free_sent_buffer,
-                                           (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
+                                        cloud.size(),
+                                        PostureMerge::free_sent_buffer,
+                                        (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
 
     mutex_.unlock();
   },
