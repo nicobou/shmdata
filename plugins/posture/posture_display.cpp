@@ -28,11 +28,12 @@ posture;
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureDisplay,
-                                     "Point clouds display",
-                                     "video sink",
+                                     "Point Clouds Display",
+                                     "video",
                                      "Display point clouds in a window",
                                      "LGPL",
-                                     "posturedisplay", "Emmanuel Durand");
+                                     "pcldisplaysink",
+                                     "Emmanuel Durand");
 
 PostureDisplay::PostureDisplay():
     custom_props_(std::make_shared < CustomPropertyHelper > ()) {

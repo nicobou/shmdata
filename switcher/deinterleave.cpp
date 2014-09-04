@@ -25,7 +25,7 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Deinterleave,
                                      "Deinterleave",
-                                     "video sink",
+                                     "video",
                                      "connect to an audio shmdata and split channels to multiple shmdata(s)",
                                      "LGPL",
                                      "deinterleave", "Nicolas Bouillot");
