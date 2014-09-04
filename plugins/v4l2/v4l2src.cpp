@@ -15,48 +15,54 @@
  * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
 
-#include "./v4l2src.hpp"
-#include "switcher/gst-utils.hpp"
-#include <cstdlib>              // For srand() and rand()
-#include <ctime>                // For time()
-
 #include <linux/videodev2.h>
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <string.h>
 
+#include <cstdlib>              // For srand() and rand()
+#include <ctime>                // For time()
+
+#include "./v4l2src.hpp"
+#include "switcher/gst-utils.hpp"
+
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(V4L2Src,
-                                     "Video Capture (with v4l2)",
-                                     "video source",
+                                     "v4l2 Video Capture",
+                                     "video",
                                      "Discover and use v4l2 supported capture cards and cameras",
-                                     "GPL", "v4l2src", "Nicolas Bouillot");
+                                     "GPL",
+                                     "v4l2src",
+                                     "Nicolas Bouillot");
 
-V4L2Src::V4L2Src():v4l2src_(nullptr),
-                   v4l2_bin_(nullptr),
-                   capsfilter_(nullptr),
-                   custom_props_(new CustomPropertyHelper()),
-                   capture_devices_description_spec_(nullptr),
-                   capture_devices_description_(nullptr),
-                   devices_enum_spec_(nullptr),
-                   devices_enum_(),
-                   device_(0),
-                   resolutions_spec_(nullptr),
-                   resolutions_enum_(),
-                   resolution_(0),
-  width_spec_(nullptr),
-  height_spec_(nullptr),
-  width_(0),
-  height_(0),
-  tv_standards_spec_(nullptr),
-  tv_standards_enum_(),
+V4L2Src::V4L2Src():
+    v4l2src_(nullptr),
+    v4l2_bin_(nullptr),
+    capsfilter_(nullptr),
+    custom_props_(new CustomPropertyHelper()),
+    capture_devices_description_spec_(nullptr),
+    capture_devices_description_(nullptr),
+    devices_enum_spec_(nullptr),
+    devices_enum_(),
+    device_(0),
+    resolutions_spec_(nullptr),
+    resolutions_enum_(),
+    resolution_(0),
+    width_spec_(nullptr),
+    height_spec_(nullptr),
+    width_(0),
+    height_(0),
+    tv_standards_spec_(nullptr),
+    tv_standards_enum_(),
   tv_standard_(0),
   framerate_spec_(nullptr),
   framerates_enum_(),
   framerate_(-1),
   framerate_numerator_spec_(nullptr),
   framerate_denominator_spec_(nullptr),
-  framerate_numerator_(0), framerate_denominator_(1), capture_devices_() {
+  framerate_numerator_(0),
+  framerate_denominator_(1),
+  capture_devices_() {
 }
 
 bool V4L2Src::init_gpipe() {

@@ -25,14 +25,17 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(HTTPSDPDec,
-                                     "HTTP/SDP Decoder",
-                                     "network source",
+                                     "HTTP/SDP Player",
+                                     "network",
                                      "decode an sdp-described stream deliver through http and make shmdatas",
                                      "LGPL",
                                      "httpsdpdec", "Nicolas Bouillot");
 
-HTTPSDPDec::HTTPSDPDec():souphttpsrc_(nullptr),
-                         sdpdemux_(nullptr), on_error_command_(nullptr), decodebins_() {
+HTTPSDPDec::HTTPSDPDec():
+    souphttpsrc_(nullptr),
+    sdpdemux_(nullptr),
+    on_error_command_(nullptr),
+    decodebins_() {
 }
 
 HTTPSDPDec::~HTTPSDPDec() {

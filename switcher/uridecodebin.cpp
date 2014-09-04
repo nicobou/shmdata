@@ -25,11 +25,12 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
-                                     "Media Player (URI)",
-                                     "uri source",
+                                     "URI/URL Player",
+                                     "network",
                                      "decode an URI and writes to shmdata(s)",
                                      "LGPL",
-                                     "uridecodebin", "Nicolas Bouillot");
+                                     "urisrc",
+                                     "Nicolas Bouillot");
 
 Uridecodebin::~Uridecodebin() {
   g_free(uri_);

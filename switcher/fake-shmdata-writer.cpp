@@ -22,16 +22,17 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FakeShmdataWriter,
-                                     "Shmdata From Software",
-                                     "fake source",
+                                     "Raw Shmdata",
+                                     "other",
                                      "add a shmdata from an other software",
                                      "LGPL",
-                                     "fakeshmsrc", "Nicolas Bouillot");
+                                     "fakeshmsrc",
+                                     "Nicolas Bouillot");
 
-FakeShmdataWriter::FakeShmdataWriter():custom_props_(new
-                                                     CustomPropertyHelper
-                                                     ()),
-                                       shmdata_path_spec_(nullptr), shmdata_path_(g_strdup("none")) {
+FakeShmdataWriter::FakeShmdataWriter():
+    custom_props_(new CustomPropertyHelper ()),
+    shmdata_path_spec_(nullptr),
+    shmdata_path_(g_strdup("none")) {
 }
 
 bool FakeShmdataWriter::init_gpipe() {

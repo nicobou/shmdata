@@ -26,11 +26,15 @@ SinglePadGstSink::~SinglePadGstSink() {
 }
 
 SinglePadGstSink::SinglePadGstSink() {
-  install_connect_method(std::bind(&SinglePadGstSink::connect, this, std::placeholders::_1), nullptr,  // no disconnect
+  install_connect_method(std::bind(&SinglePadGstSink::connect,
+                                   this,
+                                   std::placeholders::_1),
+                         nullptr,  // no disconnect
                          std::bind(&SinglePadGstSink::disconnect_all,
                                    this),
                          std::bind(&SinglePadGstSink::can_sink_caps,
-                                   this, std::placeholders::_1), 1);
+                                   this, std::placeholders::_1),
+                         1);
 }
 
 bool SinglePadGstSink::disconnect_all() {

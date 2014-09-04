@@ -41,17 +41,15 @@ class GPipe:public Quiddity, public Segment {
 
  public:
   GPipe();
-  virtual ~ GPipe();
+  virtual ~GPipe();
   GPipe(const GPipe &) = delete;
   GPipe & operator=(const GPipe &) = delete;
   bool init() final;
   virtual bool init_gpipe() = 0;
 
  protected:
-  // void init_gpipe (Quiddity &quiddity);// FIXME should called quiddity-manager-impl
-  // (privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
   GstElement * get_bin();
-  GstElement *bin_ {nullptr};                   // FIXME should be private
+  GstElement *bin_ {nullptr}; // FIXME should be private
   bool reset_bin();
   GstElement *get_pipeline();
   void install_play_pause();

@@ -24,28 +24,33 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
-                                     "Audio Device Source (Pulse)",
-                                     "audio source",
+                                     "Pulse Audio Device",
+                                     "audio",
                                      "Inspecting Devices And Getting Audio From Inputs",
                                      "LGPL",
-                                     "pulsesrc", "Nicolas Bouillot");
+                                     "pulsesrc",
+                                     "Nicolas Bouillot");
 
-PulseSrc::PulseSrc():pulsesrc_(nullptr),
-                     capsfilter_(nullptr),
-                     pulsesrc_bin_(nullptr),
-                     connected_to_pulse_(false),
-                     devices_mutex_(),
-                     devices_cond_(),
-                     custom_props_(new CustomPropertyHelper()),
-                     capture_devices_description_spec_(nullptr),
-                     capture_devices_description_(nullptr),
-                     devices_enum_spec_(nullptr),
-                     devices_enum_(),
-  device_(0),
-  pa_glib_mainloop_(nullptr),
-  pa_mainloop_api_(nullptr),
-  pa_context_(nullptr),
-  server_(nullptr), capture_devices_(), quit_mutex_(), quit_cond_() {
+PulseSrc::PulseSrc():
+    pulsesrc_(nullptr),
+    capsfilter_(nullptr),
+    pulsesrc_bin_(nullptr),
+    connected_to_pulse_(false),
+    devices_mutex_(),
+    devices_cond_(),
+    custom_props_(new CustomPropertyHelper()),
+    capture_devices_description_spec_(nullptr),
+    capture_devices_description_(nullptr),
+    devices_enum_spec_(nullptr),
+    devices_enum_(),
+    device_(0),
+    pa_glib_mainloop_(nullptr),
+    pa_mainloop_api_(nullptr),
+    pa_context_(nullptr),
+    server_(nullptr),
+    capture_devices_(),
+  quit_mutex_(),
+  quit_cond_() {
 }
 
 bool PulseSrc::init_gpipe() {

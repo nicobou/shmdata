@@ -23,13 +23,17 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstParseToBinSrc,
                                      "GStreamer Pipeline",
-                                     "source",
+                                     "other",
                                      "GStreamer (src) pipeline description to a *single* shmdata",
-                                     "LGPL", "gstsrc", "Nicolas Bouillot");
+                                     "LGPL",
+                                     "gstsrc",
+                                     "Nicolas Bouillot");
 
-GstParseToBinSrc::GstParseToBinSrc():gst_parse_to_bin_src_(nullptr),
-                                     custom_props_(new CustomPropertyHelper()),
-                                     gst_launch_pipeline_spec_(nullptr), gst_launch_pipeline_(g_strdup("")) {
+GstParseToBinSrc::GstParseToBinSrc():
+    gst_parse_to_bin_src_(nullptr),
+    custom_props_(new CustomPropertyHelper()),
+    gst_launch_pipeline_spec_(nullptr),
+    gst_launch_pipeline_(g_strdup("")) {
 }
 
 GstParseToBinSrc::~GstParseToBinSrc() {

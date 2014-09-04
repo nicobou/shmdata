@@ -23,7 +23,7 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToOsc,
                                      "OSC sender",
-                                     "OSC",
+                                     "network",
                                      "OSCprop reveives OSC messages and updates associated property",
                                      "LGPL",
                                      "shmOSCsink",

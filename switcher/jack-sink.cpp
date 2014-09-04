@@ -30,7 +30,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackSink,
                                      "audio",
                                      "Audio display with minimal features",
                                      "LGPL",
-                                     "jacksink", "Nicolas Bouillot");
+                                     "jacksink",
+                                     "Nicolas Bouillot");
 
 bool JackSink::init_gpipe() {
   if (false == make_elements())

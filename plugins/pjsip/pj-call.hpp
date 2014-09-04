@@ -55,7 +55,7 @@ class PJCall {
     /* Current stream info: */
     pjmedia_stream_info si;
 
-    /* RTP session: FIXME remove this, managed by gst */
+    /* RTP session: */
     pjmedia_rtp_session out_sess;     /* outgoing RTP session */
     pjmedia_rtp_session in_sess;      /* incoming RTP session */
 

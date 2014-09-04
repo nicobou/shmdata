@@ -23,15 +23,17 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoParseToBinSrc,
                                      "GStreamer Video Pipeline",
-                                     "video source",
+                                     "other",
                                      "GStreamer (src) video pipeline description to a *single* shmdata",
                                      "LGPL",
-                                     "gstvideosrc", "Nicolas Bouillot");
+                                     "gstvideosrc",
+                                     "Nicolas Bouillot");
 
-GstVideoParseToBinSrc::GstVideoParseToBinSrc():gst_video_parse_to_bin_src_
-                                               (nullptr), custom_props_(new CustomPropertyHelper()),
-                                               gst_launch_pipeline_spec_(nullptr),
-                                               gst_launch_pipeline_(g_strdup("videotestsrc is-live=true")) {
+GstVideoParseToBinSrc::GstVideoParseToBinSrc():
+    gst_video_parse_to_bin_src_
+    (nullptr), custom_props_(new CustomPropertyHelper()),
+    gst_launch_pipeline_spec_(nullptr),
+    gst_launch_pipeline_(g_strdup("videotestsrc is-live=true")) {
 }
 
 GstVideoParseToBinSrc::~GstVideoParseToBinSrc() {

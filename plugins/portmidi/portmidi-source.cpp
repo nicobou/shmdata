@@ -23,19 +23,29 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSource,
                                      "Midi (PortMidi)",
-                                     "midi source",
+                                     "midi",
                                      "midi to shmdata and properties",
-                                     "LGPL", "midisrc", "Nicolas Bouillot");
+                                     "LGPL",
+                                     "midisrc",
+                                     "Nicolas Bouillot");
 
-PortMidiSource::PortMidiSource():shm_any_(std::make_shared <
-                                          ShmdataAnyWriter > ()),
-                                 last_status_(-1), last_data1_(-1), last_data2_(-1),
-                                 custom_props_(new CustomPropertyHelper()),
-                                 devices_description_spec_(nullptr), devices_enum_spec_(nullptr),
-                                 device_(0), midi_value_spec_(nullptr),
-                                 make_property_for_next_midi_event_(FALSE), next_property_name_(),
-  prop_specs_(), midi_property_contexts_(), midi_channels_(),
-  midi_values_(), unused_props_specs_() {
+PortMidiSource::PortMidiSource():
+    shm_any_(std::make_shared <ShmdataAnyWriter > ()),
+    last_status_(-1),
+    last_data1_(-1),
+    last_data2_(-1),
+    custom_props_(new CustomPropertyHelper()),
+    devices_description_spec_(nullptr),
+    devices_enum_spec_(nullptr),
+    device_(0),
+    midi_value_spec_(nullptr),
+    make_property_for_next_midi_event_(FALSE),
+    next_property_name_(),
+    prop_specs_(),
+    midi_property_contexts_(),
+    midi_channels_(),
+    midi_values_(),
+    unused_props_specs_() {
 }
 
 PortMidiSource::~PortMidiSource() {

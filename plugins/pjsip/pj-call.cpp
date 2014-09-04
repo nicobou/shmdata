@@ -673,21 +673,21 @@ PJCall::create_sdp(pj_pool_t * pool,
 
   /* Create and initialize basic SDP session */
   sdp =
-      reinterpret_cast<pjmedia_sdp_session *>
+      static_cast<pjmedia_sdp_session *>
       (pj_pool_zalloc(pool, sizeof(pjmedia_sdp_session)));
   pj_gettimeofday(&tv);
   sdp->origin.user = pj_str("pjsip-siprtp");
   sdp->origin.version = sdp->origin.id = tv.sec + 2208988800UL;
   sdp->origin.net_type = pj_str("IN");
   sdp->origin.addr_type = pj_str("IP4");
-  sdp->origin.addr = *pj_gethostname();       // FIXME this should be IP address
+  sdp->origin.addr = *pj_gethostname(); // FIXME this should be IP address
   sdp->name = pj_str("pjsip");
 
   /* Since we only support one media stream at present, put the
    * SDP connection line in the session level.
    */
   sdp->conn =
-      reinterpret_cast<pjmedia_sdp_conn *>
+      static_cast<pjmedia_sdp_conn *>
       (pj_pool_zalloc(pool, sizeof(pjmedia_sdp_conn)));
   sdp->conn->net_type = pj_str("IN");
   sdp->conn->addr_type = pj_str("IP4");
@@ -1514,25 +1514,29 @@ PJCall::create_outgoing_sdp(struct call * call,
   std::forward_list < std::string > paths =
       quid->get_child_keys < std::forward_list > ("rtp_caps.");
 
-  // g_print ("-------0000000---------- %s\n",
-  //       quid->get_info (".rtp_caps").c_str ());
-
-  // g_print ("00000000000000000000000000000\n");
-  // std::for_each (paths.begin (),
-  //      paths.end (),
-  //      [] (const std::string &val){g_print ("%s\n", val.c_str ());});
-
+  g_print ("--- %d\n", __LINE__);
+  g_print ("%s\n", quid->get_info (".rtp_caps").c_str ());
+  g_print ("--- %d\n", __LINE__);
+  std::for_each (paths.begin (),
+                 paths.end (),
+                 [] (const std::string &val){
+                   g_print ("%s\n", val.c_str ());
+                 });
+  g_print ("--- %d\n", __LINE__);
   // std::transform (paths.begin (),
-  //       paths.end (),
-  //       paths.begin (),
-  //       [] (const std::string &val){return std::string ("rtp_caps."+ val);});
-  // std::for_each (paths.begin (),
-  //    paths.end (),
-  //    [&quid] (const std::string &val)
-  //    {
-  //      std::string data = quid->get_data ("rtp_caps." + val);
-  //      g_print ("%s\n",  data.c_str ());
-  //    });
+  //                 paths.end (),
+  //                 paths.begin (),
+  //                 [] (const std::string &val){
+  //                   return std::string ("rtp_caps."+ val);
+  //                 });
+  g_print ("--- %d\n", __LINE__);
+  std::for_each (paths.begin (),
+                 paths.end (),
+                 [&quid] (const std::string &val) {
+                   std::string data = quid->get_data ("rtp_caps." + val);
+                   g_print ("%s\n",  data.c_str ());
+                 });
+  g_print ("--- %d\n", __LINE__);
 
   gint port = starting_rtp_port_;
   for (auto & it : paths) {
@@ -1550,6 +1554,7 @@ PJCall::create_outgoing_sdp(struct call * call,
     gst_caps_unref(caps);
     port += 2;
   }
+  g_print ("--- %d\n", __LINE__);
   return desc.get_string();
 }
 

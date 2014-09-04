@@ -22,13 +22,15 @@
 #include "./gst-utils.hpp"
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
-                                     "Audio Test",
-                                     "audio source",
+                                     "Sine",
+                                     "audio",
                                      "Creates audio test signals",
                                      "LGPL",
-                                     "audiotestsrc", "Nicolas Bouillot");
+                                     "audiotestsrc",
+                                     "Nicolas Bouillot");
 
-AudioTestSource::AudioTestSource():audiotestsrc_(nullptr) {
+AudioTestSource::AudioTestSource():
+    audiotestsrc_(nullptr) {
 }
 
 bool AudioTestSource::init_gpipe() {

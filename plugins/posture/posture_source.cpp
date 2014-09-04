@@ -29,16 +29,17 @@ posture;
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureSrc,
-                                     "3D camera",
-                                     "video source",
-                                     "Grabs 3D data (point clouds / meshes) using a zcamera",
+                                     "Depth Camera",
+                                     "video",
+                                     "Grabs point clouds/meshes using a zcamera",
                                      "LGPL",
-                                     "posturesrc", "Emmanuel Durand");
+                                     "posturesrc",
+                                     "Emmanuel Durand");
 
 PostureSrc::PostureSrc():
     custom_props_(std::make_shared < CustomPropertyHelper > ()) {
   zcamera_ = make_shared < ZCamera > ();
-
+  
   zcamera_->setCallbackCloud(cb_frame_cloud, this);
   zcamera_->setCallbackDepth(cb_frame_depth, this);
   zcamera_->setCallbackRgb(cb_frame_rgb, this);

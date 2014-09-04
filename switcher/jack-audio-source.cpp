@@ -22,10 +22,12 @@
 #include "./gst-utils.hpp"
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackAudioSource,
-                                     "Jack Audio",
-                                     "audio source",
+                                     "Jack Audio Device",
+                                     "audio",
                                      "get audio from jack",
-                                     "LGPL", "jacksrc", "Nicolas Bouillot");
+                                     "LGPL",
+                                     "jacksrc",
+                                     "Nicolas Bouillot");
 
 JackAudioSource::JackAudioSource():jackaudiosrc_(nullptr),
                                    audioconvert_(nullptr),

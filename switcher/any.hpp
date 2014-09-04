@@ -195,18 +195,13 @@ struct Any {
   }
 
  private:
-  AnyValueBase * clone()const {
+  AnyValueBase * clone() const {
     if (ptr_)
-      return
-          ptr_->
-          clone();
+      return ptr_->clone();
     else
-      return
-          nullptr;
+      return nullptr;
   }
-
-  AnyValueBase *
-  ptr_;
+  AnyValueBase *ptr_;
   friend std::ostream & operator<<(std::ostream & os, const Any & any) {
     if (any.ptr_)
       os << any.ptr_->to_string();
@@ -219,10 +214,8 @@ struct Any {
 // this is for Any of complex value, where default serilization will
 // be implemented as follow
 //
-
 template < typename T > struct DefaultSerializable {
-  virtual ~
-  DefaultSerializable() {}
+  virtual ~DefaultSerializable() {}
   template < typename U >
   friend std::ostream & operator<<(std::ostream & os,
                                    const DefaultSerializable < U > &) {

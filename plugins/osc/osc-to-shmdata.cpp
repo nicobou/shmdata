@@ -21,17 +21,20 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
-                                     "OSC message to shmdata",
-                                     "osc source",
-                                     "OSCprop receives OSC messages and write to shmdata",
-                                     "LGPL", "OSCshm", "Nicolas Bouillot");
+                                     "OSC Receiver",
+                                     "network",
+                                     "receives OSC messages and write to shmdata",
+                                     "LGPL",
+                                     "OSCsrc",
+                                     "Nicolas Bouillot");
 
-OscToShmdata::OscToShmdata():custom_props_(new CustomPropertyHelper()),
-                             port_(1056),
-                             osc_thread_(nullptr),
-                             port_spec_(nullptr),
-                             start_(std::chrono::system_clock::now()),
-                             shm_any_(std::make_shared < ShmdataAnyWriter > ()) {
+OscToShmdata::OscToShmdata():
+    custom_props_(new CustomPropertyHelper()),
+    port_(1056),
+    osc_thread_(nullptr),
+    port_spec_(nullptr),
+    start_(std::chrono::system_clock::now()),
+    shm_any_(std::make_shared < ShmdataAnyWriter > ()) {
 }
 
 bool OscToShmdata::init() {

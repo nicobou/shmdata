@@ -45,7 +45,6 @@ int main() {
 #endif
 
     return 0;
-
     // testing uncompressed data transmission
     manager->create("audiotestsrc", "a");
     manager->set_property("a", "started", "true");
@@ -57,11 +56,15 @@ int main() {
 
     manager->invoke_va("rtp",
                        "add_data_stream",
-                       nullptr, "/tmp/switcher_siptest_a_audio", nullptr);
+                       nullptr,
+                       "/tmp/switcher_siptest_a_audio",
+                       nullptr);
 
     manager->invoke_va("rtp",
                        "add_data_stream",
-                       nullptr, "/tmp/switcher_siptest_v_video", nullptr);
+                       nullptr,
+                       "/tmp/switcher_siptest_v_video",
+                       nullptr);
 
     // manager->invoke_va ("rtp",
     // "add_destination",
@@ -80,9 +83,12 @@ int main() {
 
     manager->set_property("test", "port", "5070");
 
-    if (!manager->invoke_va("test", "register", nullptr, "1004",        // user
-                            "10.10.30.179",     // domain
-                            "1234",     // password
+    if (!manager->invoke_va("test",
+                            "register",
+                            nullptr,
+                            "1004",  // user
+                            "10.10.30.179",  // domain
+                            "1234",  // password
                             nullptr)) {
       g_print("cannot register \n");
       return 1;
@@ -91,7 +97,10 @@ int main() {
     manager->set_property("test", "rtp-session", "rtp");
 
     manager->invoke_va("test",
-                       "call", nullptr, "sip:1002@10.10.30.223", nullptr);
+                       "call",
+                       nullptr,
+                       "sip:1002@10.10.30.223",
+                       nullptr);
 
     usleep(2000000);
 
@@ -112,7 +121,7 @@ int main() {
     usleep(20000000);
 
     manager->remove("test");
-  }                             // end of scope is releasing the manager
+  }  // end of scope is releasing the manager
 
   if (success)
     return 0;
