@@ -44,7 +44,6 @@
 
 namespace switcher {
 namespace data {
-// --------
 class Tree {
  public:
   typedef std::shared_ptr < Tree > ptr;
@@ -54,7 +53,7 @@ class Tree {
                                 const Tree::ptr tree,
                                 bool is_array_element) > OnNodeFunction;
   Tree() {}
-  Tree(const Any & data);
+  explicit Tree(const Any &data);
   bool is_leaf();
   bool is_array();
   bool has_data();

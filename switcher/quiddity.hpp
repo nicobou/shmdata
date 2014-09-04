@@ -272,14 +272,14 @@ class Quiddity {
   GMainContext *get_g_main_context();
 };
 
-#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(cpp_quiddity_class,	\
-					     long_name,			\
-					     category,			\
-					     short_description,		\
-					     license,			\
-					     class_name,		\
-					     author)			\
-  QuiddityDocumentation							\
+#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(cpp_quiddity_class,        \
+                                             long_name,                 \
+                                             category,                  \
+                                             short_description,         \
+                                             license,                   \
+                                             class_name,                \
+                                             author)                    \
+  QuiddityDocumentation                                                 \
   cpp_quiddity_class::switcher_doc_(long_name,                          \
                                     category,                           \
                                     short_description,                  \
@@ -289,20 +289,20 @@ class Quiddity {
   QuiddityDocumentation cpp_quiddity_class::get_documentation()         \
   {return switcher_doc_;}
 
-#define SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(cpp_quiddity_class)	\
-  typedef std::shared_ptr<cpp_quiddity_class> ptr;			\
+#define SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(cpp_quiddity_class)    \
+  typedef std::shared_ptr<cpp_quiddity_class> ptr;                      \
   QuiddityDocumentation get_documentation();                            \
   static QuiddityDocumentation switcher_doc_;
 
-#define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                     \
-  extern "C" Quiddity *create() {                                       \
-    return new cpp_quiddity_class;				        \
-  }								        \
-  extern "C" void destroy(Quiddity *quiddity) {			        \
-    delete quiddity;						        \
-  }								        \
-  extern "C" QuiddityDocumentation get_documentation() {                \
-    return cpp_quiddity_class::switcher_doc_;			        \
+#define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)             \
+  extern "C" Quiddity *create() {                               \
+    return new cpp_quiddity_class;                              \
+  }                                                             \
+  extern "C" void destroy(Quiddity *quiddity) {                 \
+    delete quiddity;                                            \
+  }                                                             \
+  extern "C" QuiddityDocumentation get_documentation() {        \
+    return cpp_quiddity_class::switcher_doc_;                   \
   }
 }  // namespace switcher
 

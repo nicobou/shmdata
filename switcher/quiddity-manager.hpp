@@ -227,7 +227,7 @@ class QuiddityManager:public std::enable_shared_from_this <
   gint64 history_begin_time_;  // monotonic time, in microseconds
 
   QuiddityManager() = delete;
-  QuiddityManager(std::string name);
+  explicit QuiddityManager(std::string name);
   // auto invoke and init
   void auto_init(std::string quiddity_name);
   void command_lock();

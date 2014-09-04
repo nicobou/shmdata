@@ -676,7 +676,7 @@ void Quiddity::signal_emit(const std::string signal_name, ...) {
   // va_copy (va_cp, var_args);
   // signal->signal_emit (get_g_main_context (), signal_name.c_str (), va_cp);
   signal->signal_emit(/*get_g_main_context (), */ signal_name.c_str(),
-                       var_args);
+                      var_args);
   va_end(var_args);
 }
 

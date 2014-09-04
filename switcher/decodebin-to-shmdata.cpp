@@ -22,11 +22,16 @@
 #include <glib/gprintf.h>
 
 namespace switcher {
-DecodebinToShmdata::DecodebinToShmdata(GPipe &
-                                       gpipe):decodebin_("decodebin2"),
-                                              discard_next_uncomplete_buffer_(false), main_pad_(nullptr),
-                                              media_counters_(), media_counter_mutex_(), gpipe_(&gpipe),
-                                              shmdata_path_(), cb_ids_(), thread_safe_() {
+DecodebinToShmdata::DecodebinToShmdata(GPipe *gpipe):
+    decodebin_("decodebin2"),
+    discard_next_uncomplete_buffer_(false),
+    main_pad_(nullptr),
+    media_counters_(),
+    media_counter_mutex_(),
+    gpipe_(gpipe),
+    shmdata_path_(),
+    cb_ids_(),
+    thread_safe_() {
   // set async property
   auto set_prop = std::bind(g_object_set,
                             std::placeholders::_1,

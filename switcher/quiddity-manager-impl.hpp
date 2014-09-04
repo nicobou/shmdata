@@ -199,7 +199,7 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   bool load_plugin(const char *filename);
   void close_plugin(const std::string class_name);
   std::unordered_map < std::string, PluginLoader::ptr > plugins_;
-  QuiddityManager_Impl(const std::string &);
+  explicit QuiddityManager_Impl(const std::string &);
   void make_classes_doc();
   std::string name_;
   void register_classes();

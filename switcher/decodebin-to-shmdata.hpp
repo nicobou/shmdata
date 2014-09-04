@@ -32,7 +32,7 @@ namespace switcher {
 
 class DecodebinToShmdata {
  public:
-  DecodebinToShmdata(GPipe & gpipe);
+  explicit DecodebinToShmdata(GPipe *gpipe);
   ~DecodebinToShmdata();
   DecodebinToShmdata() = delete;
   DecodebinToShmdata(const DecodebinToShmdata &) = delete;
