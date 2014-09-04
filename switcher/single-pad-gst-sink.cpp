@@ -64,13 +64,13 @@ bool SinglePadGstSink::connect(std::string shmdata_socket_path) {
   return true;
 }
 
-void SinglePadGstSink::set_sink_element(GstElement * sink) {
+void SinglePadGstSink::set_sink_element(GstElement *sink) {
   set_sink_element_no_connect(sink);
   if (!shmdata_path_.empty())
     connect(shmdata_path_);
 }
 
-void SinglePadGstSink::set_sink_element_no_connect(GstElement * sink) {
+void SinglePadGstSink::set_sink_element_no_connect(GstElement *sink) {
   if (sink_element_ != nullptr && sink_element_ != sink)
     GstUtils::clean_element(sink_element_);
   // sink element will be added to bin_ by the shmdata reader when appropriate

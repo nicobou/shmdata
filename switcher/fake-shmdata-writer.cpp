@@ -68,7 +68,7 @@ bool FakeShmdataWriter::add_shmdata_path(std::string name) {
 }
 
 void
-FakeShmdataWriter::set_shmdata_path(const gchar * value, void *user_data)
+FakeShmdataWriter::set_shmdata_path(const gchar *value, void *user_data)
 {
   FakeShmdataWriter *context =
       static_cast < FakeShmdataWriter * >(user_data);

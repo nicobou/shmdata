@@ -79,9 +79,9 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   bool init() final;
 
   static const gchar *get_calibration_path(void *user_data);
-  static void set_calibration_path(const gchar * name, void *user_data);
+  static void set_calibration_path(const gchar *name, void *user_data);
   static const gchar *get_devices_path(void *user_data);
-  static void set_devices_path(const gchar * name, void *user_data);
+  static void set_devices_path(const gchar *name, void *user_data);
   static int get_device_index(void *user_data);
   static void set_device_index(const int index, void *user_data);
   static int get_capture_ir(void *user_data);

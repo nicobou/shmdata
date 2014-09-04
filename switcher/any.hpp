@@ -195,7 +195,7 @@ struct Any {
   }
 
  private:
-  AnyValueBase * clone() const {
+  AnyValueBase *clone() const {
     if (ptr_)
       return ptr_->clone();
     else

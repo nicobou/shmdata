@@ -145,7 +145,7 @@ const char *QuiddityCommand::get_string_from_id(QuiddityCommand::command id) {
 }
 
 QuiddityCommand::ptr
-QuiddityCommand::parse_command_from_json_reader(JsonReader * reader) {
+QuiddityCommand::parse_command_from_json_reader(JsonReader *reader) {
   int j;
   int num_elements;
 

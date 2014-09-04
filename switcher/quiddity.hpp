@@ -149,8 +149,8 @@ class Quiddity {
   std::string nick_name_;
 
   // property
-  bool register_property(GObject * object,
-                         GParamSpec * pspec,
+  bool register_property(GObject *object,
+                         GParamSpec *pspec,
                          std::string name_to_give,
                          std::string long_name, std::string signal_to_emit);
 
@@ -175,13 +175,13 @@ class Quiddity {
 
   // signals
   bool register_signal_gobject(const std::string signal_name,  // the name to give
-                               GObject * object, const std::string gobject_signal_name);      // the internal gobject signal name
+                               GObject *object, const std::string gobject_signal_name);      // the internal gobject signal name
 
   // allows for creation of signals in a parent class (like segment)
   bool make_custom_signal_with_class_name(const std::string class_name,       // quiddity class name that is making the signal
                                           const std::string signal_name,      // the name to give
                                           GType return_type, guint n_params,  // number of params
-                                          GType * param_types);
+                                          GType *param_types);
 
   bool set_signal_description(const std::string long_name,
                               const std::string signal_name,
@@ -194,11 +194,11 @@ class Quiddity {
   // static gchar *my_signal_action (void *, gchar *first_arg, void *user_data);
   bool register_signal_action_with_class_name(const std::string class_name, const std::string method_name,    // the name to give
                                               void *method, GType return_type, guint n_params,        // number of params
-                                              GType * param_types,
+                                              GType *param_types,
                                               void *user_data);
   bool register_signal_action(const std::string method_name,  // the name to give
                               void *method, GType return_type, guint n_params,        // number of params
-                              GType * param_types, void *user_data);
+                              GType *param_types, void *user_data);
 
  protected:
   // information
@@ -207,15 +207,15 @@ class Quiddity {
   data::Tree::ptr prune_tree(const std::string & path);
 
   // property
-  bool install_property(GObject * object,
+  bool install_property(GObject *object,
                         std::string gobject_property_name,
                         std::string name_to_give, std::string long_name);
-  bool reinstall_property(GObject * replacement_object,
+  bool reinstall_property(GObject *replacement_object,
                           std::string gobject_property_name,
                           std::string name, std::string long_name);
 
-  bool install_property_by_pspec(GObject * object,
-                                 GParamSpec * pspec,
+  bool install_property_by_pspec(GObject *object,
+                                 GParamSpec *pspec,
                                  std::string name_to_give,
                                  std::string long_name);
   bool uninstall_property(std::string name);
@@ -242,7 +242,7 @@ class Quiddity {
                       const std::string signal_name,
                       const std::string short_description,
                       const Signal::args_doc arg_description,
-                      guint number_of_params, GType * param_types);
+                      guint number_of_params, GType *param_types);
 
   bool install_signal_with_class_name(const std::string class_name,
                                       const std::string long_name,
@@ -251,7 +251,7 @@ class Quiddity {
                                       const Signal::args_doc
                                       arg_description,
                                       guint number_of_params,
-                                      GType * param_types);
+                                      GType *param_types);
 
   void signal_emit(const std::string signal_name, ...);
 

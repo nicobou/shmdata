@@ -33,7 +33,7 @@ class VideoTestSource:public VideoSource {
   VideoTestSource & operator=(const VideoTestSource &) = delete;
 
  private:
-  GstElement * videotestsrc_;
+  GstElement *videotestsrc_;
   bool make_video_source(GstElement ** new_element);
   bool on_start();
   bool on_stop();

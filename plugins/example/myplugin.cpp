@@ -85,7 +85,7 @@ void MyPlugin::set_myprop(gboolean myprop, void *user_data) {
                                           context->myprop_prop_);
 }
 
-gchar *MyPlugin::my_hello_world_method(gchar * first_arg, void *user_data) {
+gchar *MyPlugin::my_hello_world_method(gchar *first_arg, void *user_data) {
   MyPlugin *context = static_cast < MyPlugin * >(user_data);
 
   g_debug("hello world from myplugin");

@@ -125,7 +125,7 @@ class Tree {
   child_list_type childrens_ {};
   std::mutex mutex_ {};
   child_list_type::iterator get_child_iterator(const std::string & key);
-  static bool graft_next(std::istringstream & path, Tree * tree,
+  static bool graft_next(std::istringstream & path, Tree *tree,
                          Tree::ptr leaf);
   std::pair < Tree::child_list_type,
               Tree::child_list_type::iterator > get_node(const std::string & path);

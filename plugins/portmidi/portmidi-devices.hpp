@@ -39,7 +39,7 @@
 namespace switcher {
 class PortMidi {
  public:
-  typedef void (*on_pm_event_method) (PmEvent * midi_event,
+  typedef void (*on_pm_event_method) (PmEvent *midi_event,
                                       void *user_data);
   PortMidi();
   virtual ~ PortMidi();
@@ -68,7 +68,7 @@ class PortMidi {
                          unsigned char data2);
 
  private:
-  gchar * devices_description_;
+  gchar *devices_description_;
   std::map < guint, PmStream * >input_streams_;
   std::map < guint, PmStream * >output_streams_;
 
@@ -84,11 +84,11 @@ class PortMidi {
     ~PortMidiScheduler();
     PmStream *add_input_stream(int id, on_pm_event_method method,
                                void *user_data);
-    bool remove_input_stream(PmStream * stream);
+    bool remove_input_stream(PmStream *stream);
 
     PmStream *add_output_stream(int id);
-    bool remove_output_stream(PmStream * stream);
-    bool push_message(PmStream * stream, unsigned char status,
+    bool remove_output_stream(PmStream *stream);
+    bool push_message(PmStream *stream, unsigned char status,
                       unsigned char data1, unsigned char data2);
 
    private:

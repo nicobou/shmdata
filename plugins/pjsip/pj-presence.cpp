@@ -35,7 +35,7 @@ GEnumValue PJPresence::status_enum_[8] = {
   {0, nullptr, nullptr}
 };
 
-PJPresence::PJPresence(PJSIP * sip_instance):
+PJPresence::PJPresence(PJSIP *sip_instance):
     sip_instance_(sip_instance),
     account_id_(-1),
     registration_mutex_(),
@@ -114,9 +114,9 @@ PJPresence::~PJPresence() {
 }
 
 gboolean
-PJPresence::register_account_wrapped(gchar * user,
-                                     gchar * domain,
-                                     gchar * password, void *user_data) {
+PJPresence::register_account_wrapped(gchar *user,
+                                     gchar *domain,
+                                     gchar *password, void *user_data) {
   PJPresence *context = static_cast < PJPresence * >(user_data);
   if (nullptr == user || nullptr == domain || nullptr == password) {
     g_warning
@@ -270,7 +270,7 @@ void PJPresence::add_buddy(const std::string & sip_user) {
 
 void
 PJPresence::on_registration_state(pjsua_acc_id acc_id,
-                                  pjsua_reg_info * info) {
+                                  pjsua_reg_info *info) {
   PJPresence *context =
       static_cast < PJPresence * >(pjsua_acc_get_user_data(acc_id));
   std::unique_lock < std::mutex > lock(context->registration_mutex_);
@@ -435,7 +435,7 @@ void PJPresence::change_online_status(gint status) {
   pjsua_acc_set_online_status2(account_id_, online_status, &elem);
 }
 
-void PJPresence::set_note(const gchar * custom_status, void *user_data) {
+void PJPresence::set_note(const gchar *custom_status, void *user_data) {
   PJPresence *context = static_cast < PJPresence * >(user_data);
   if (0 == context->custom_status_.compare(custom_status))
     return;
@@ -467,13 +467,13 @@ void PJPresence::on_reg_state(pjsua_acc_id acc_id) {
  */
 void
 PJPresence::on_incoming_subscribe(pjsua_acc_id acc_id,
-                                  pjsua_srv_pres * srv_pres,
+                                  pjsua_srv_pres *srv_pres,
                                   pjsua_buddy_id buddy_id,
-                                  const pj_str_t * from,
-                                  pjsip_rx_data * rdata,
-                                  pjsip_status_code * code,
-                                  pj_str_t * reason,
-                                  pjsua_msg_data * msg_data) {
+                                  const pj_str_t *from,
+                                  pjsip_rx_data *rdata,
+                                  pjsip_status_code *code,
+                                  pj_str_t *reason,
+                                  pjsua_msg_data *msg_data) {
   printf("%s\n", __FUNCTION__);
   /* Just accept the request (the default behavior) */
   PJ_UNUSED_ARG(acc_id);
@@ -491,7 +491,7 @@ PJPresence::on_incoming_subscribe(pjsua_acc_id acc_id,
  */
 void
 PJPresence::on_buddy_evsub_state(pjsua_buddy_id buddy_id,
-                                 pjsip_evsub * sub, pjsip_event * event) {
+                                 pjsip_evsub * sub, pjsip_event *event) {
   printf("%s\n", __FUNCTION__);
   char event_info[80];
 

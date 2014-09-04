@@ -48,7 +48,7 @@ class GPipe:public Quiddity, public Segment {
   virtual bool init_gpipe() = 0;
 
  protected:
-  GstElement * get_bin();
+  GstElement *get_bin();
   GstElement *bin_ {nullptr}; // FIXME should be private
   bool reset_bin();
   GstElement *get_pipeline();
@@ -93,17 +93,17 @@ class GPipe:public Quiddity, public Segment {
   static gdouble get_seek(void *user_data);
   static void set_seek(gdouble position, void *user_data);
   static gboolean speed_wrapped(gdouble speed, gpointer user_data);
-  static gboolean bus_called(GstBus * bus, GstMessage * msg, gpointer data);
-  static GstBusSyncReply bus_sync_handler(GstBus * bus, GstMessage * msg,
+  static gboolean bus_called(GstBus * bus, GstMessage *msg, gpointer data);
+  static GstBusSyncReply bus_sync_handler(GstBus * bus, GstMessage *msg,
                                           gpointer user_data);
   static gboolean run_command(gpointer user_data);
-  static gboolean source_prepare(GSource * source, gint * timeout);
-  static gboolean source_check(GSource * source);
-  static gboolean source_dispatch(GSource * source,
+  static gboolean source_prepare(GSource * source, gint *timeout);
+  static gboolean source_check(GSource *source);
+  static gboolean source_dispatch(GSource *source,
                                   GSourceFunc callback, gpointer user_data);
-  static void source_finalize(GSource * source);
-  static void print_one_tag(const GstTagList * list,
-                            const gchar * tag, gpointer user_data);
+  static void source_finalize(GSource *source);
+  static void print_one_tag(const GstTagList *list,
+                            const gchar *tag, gpointer user_data);
   static gboolean query_position(gpointer user_data);
 };
 }  // namespace switcher

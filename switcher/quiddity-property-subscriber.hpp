@@ -50,7 +50,7 @@ class QuiddityPropertySubscriber {
 
   void set_callback(Callback cb);
   void set_user_data(void *user_data);
-  void set_name(const gchar * name);
+  void set_name(const gchar *name);
   bool subscribe(std::shared_ptr < Quiddity > quid,
                  std::string property_name);
   bool unsubscribe(std::shared_ptr < Quiddity > quid,
@@ -58,7 +58,7 @@ class QuiddityPropertySubscriber {
   bool unsubscribe(std::shared_ptr < Quiddity > quid);
   std::vector < std::pair < std::string,
                             std::string > >list_subscribed_properties();
-  static void property_cb(GObject * gobject, GParamSpec * pspec,
+  static void property_cb(GObject * gobject, GParamSpec *pspec,
                           gpointer user_data);
 
   // manager_impl initialization

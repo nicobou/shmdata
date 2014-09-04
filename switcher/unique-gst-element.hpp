@@ -26,7 +26,7 @@
 namespace switcher {
 class UniqueGstElement {
  public:
-  explicit UniqueGstElement(const gchar * class_name);
+  explicit UniqueGstElement(const gchar *class_name);
 
   // invoke as g_object
   template < typename Return_type >

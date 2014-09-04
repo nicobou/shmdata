@@ -36,14 +36,14 @@ template < class T > class Creator {
 
 template < class T > class DerivedCreator:public Creator < T > {
  public:
-  T * Create() {
+  T *Create() {
     return new T;
   }
 };
 
 template < class T > class CustomDerivedCreator:public Creator < T > {
  public:
-  T * Create() {
+  T *Create() {
     return (*custom_create_) ();
   }
   T *(*custom_create_) ();

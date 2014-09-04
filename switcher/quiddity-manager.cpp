@@ -93,8 +93,8 @@ void QuiddityManager::command_unlock() {
 void
 QuiddityManager::
 play_command_history(QuiddityManager::CommandHistory histo,
-                     QuiddityManager::PropCallbackMap * prop_cb_data,
-                     QuiddityManager::SignalCallbackMap * sig_cb_data,
+                     QuiddityManager::PropCallbackMap *prop_cb_data,
+                     QuiddityManager::SignalCallbackMap *sig_cb_data,
                      bool mute_existing_subscribers) {
   if (mute_existing_subscribers) {
     manager_impl_->mute_property_subscribers(true);
@@ -234,7 +234,7 @@ bool QuiddityManager::save_command_history(const char *file_path) {
 
   g_output_stream_write((GOutputStream *) file_stream,
                         history,
-                        sizeof(gchar) * strlen(history), nullptr, &error);
+                        sizeof(gchar) *strlen(history), nullptr, &error);
   g_free(history);
   if (error != nullptr) {
     g_warning("%s", error->message);
@@ -462,8 +462,8 @@ QuiddityManager::unsubscribe_property_glib(std::string quiddity_name,
 }
 
 bool
-QuiddityManager::invoke_va(const gchar * quiddity_name,
-                           const gchar * method_name,
+QuiddityManager::invoke_va(const gchar *quiddity_name,
+                           const gchar *method_name,
                            std::string ** return_value, ...) {
   command_lock();
   std::vector < std::string > method_args;
@@ -863,7 +863,7 @@ void QuiddityManager::clear_command_sync() {
   command_unlock();
 }
 
-// works for char * args only. Use nullptr sentinel
+// works for char *args only. Use nullptr sentinel
 std::string
 QuiddityManager::seq_invoke(QuiddityCommand::command command, ...) {
   std::string res;
@@ -1028,7 +1028,7 @@ gboolean QuiddityManager::execute_command(gpointer user_data) {
       break;
     case QuiddityCommand::invoke:
       {
-        std::string * result = nullptr;
+        std::string *result = nullptr;
         if (context->manager_impl_->invoke(context->command_->args_[0],
                                            context->command_->args_[1],
                                            &result,

@@ -51,7 +51,7 @@ class QuidditySignalSubscriber {
 
   void set_callback(OnEmittedCallback cb);
   void set_user_data(void *user_data);
-  void set_name(const gchar * name);
+  void set_name(const gchar *name);
   bool subscribe(std::shared_ptr < Quiddity > quid,
                  std::string signal_name);
   bool unsubscribe(std::shared_ptr < Quiddity > quid,

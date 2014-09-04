@@ -94,11 +94,11 @@ std::shared_ptr < QuiddityManager > OscCtrlServer::get_quiddity_manager() {
   return manager_.lock();
 }
 
-gchar *OscCtrlServer::make_internal_subscriber_name(const gchar * name) {
+gchar *OscCtrlServer::make_internal_subscriber_name(const gchar *name) {
   return g_strdup_printf("%s%s", get_name().c_str(), name);
 }
 
-gchar *OscCtrlServer::retrieve_subscriber_name(const gchar * internal_name) {
+gchar *OscCtrlServer::retrieve_subscriber_name(const gchar *internal_name) {
   gchar *res;
   gchar **split = g_strsplit(internal_name,
                              get_name().c_str(),
@@ -109,7 +109,7 @@ gchar *OscCtrlServer::retrieve_subscriber_name(const gchar * internal_name) {
 }
 
 // floor
-gchar *OscCtrlServer::string_float_to_string_int(const gchar * string_float) {
+gchar *OscCtrlServer::string_float_to_string_int(const gchar *string_float) {
   gchar *res;
   gchar **split = g_strsplit(string_float,
                              ".",
@@ -410,7 +410,7 @@ OscCtrlServer::osc_handler(const char *path,
   return 0;
 }
 
-gchar *OscCtrlServer::string_from_osc_arg(char type, lo_arg * data) {
+gchar *OscCtrlServer::string_from_osc_arg(char type, lo_arg *data) {
   // lo_arg_host_endian ((lo_type) type, data);
   gchar *res = nullptr;       // = g_strdup_printf ("videotestsrc");
 

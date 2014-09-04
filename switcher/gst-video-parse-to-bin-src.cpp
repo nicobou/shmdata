@@ -95,7 +95,7 @@ bool GstVideoParseToBinSrc::make_video_source(GstElement ** new_element) {
 }
 
 void
-GstVideoParseToBinSrc::set_gst_launch_pipeline(const gchar * value,
+GstVideoParseToBinSrc::set_gst_launch_pipeline(const gchar *value,
                                                void *user_data) {
   GstVideoParseToBinSrc *context =
       static_cast < GstVideoParseToBinSrc * >(user_data);

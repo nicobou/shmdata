@@ -55,7 +55,7 @@ class ShmdataFromGDPFile:public Quiddity {
   std::unordered_map < std::string, std::string > shmdata_names_;
   QuiddityManager::ptr manager_;
 
-  static gboolean event_probe_cb(GstPad * pad, GstEvent * event,
+  static gboolean event_probe_cb(GstPad * pad, GstEvent *event,
                                  gpointer user_data);
   // wrappers
   static gboolean add_file_wrapped(gpointer file_path,

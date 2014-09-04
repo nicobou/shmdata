@@ -192,7 +192,7 @@ PostureMerge::get_calibration_path(void *user_data) {
 }
 
 void
-PostureMerge::set_calibration_path(const gchar * name, void *user_data) {
+PostureMerge::set_calibration_path(const gchar *name, void *user_data) {
   PostureMerge *
       ctx = (PostureMerge *) user_data;
   if (name != nullptr)
@@ -207,7 +207,7 @@ PostureMerge::get_devices_path(void *user_data) {
 }
 
 void
-PostureMerge::set_devices_path(const gchar * name, void *user_data) {
+PostureMerge::set_devices_path(const gchar *name, void *user_data) {
   PostureMerge *
       ctx = (PostureMerge *) user_data;
   if (name != nullptr)

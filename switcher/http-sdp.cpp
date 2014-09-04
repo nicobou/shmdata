@@ -71,7 +71,7 @@ void HTTPSDP::no_more_pads_cb(GstElement * /*object */ ,
   // HTTPSDP *context = static_cast<HTTPSDP *>(user_data);
 }
 
-void HTTPSDP::pad_added_cb(GstElement * /*object */ , GstPad * pad,
+void HTTPSDP::pad_added_cb(GstElement * /*object */ , GstPad *pad,
                            gpointer user_data) {
   HTTPSDP *context = static_cast < HTTPSDP * >(user_data);
 

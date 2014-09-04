@@ -41,7 +41,7 @@ std::string path_to_string(std::list < std::string > path) {
 void
 on_visiting_node(std::string key,
                  const Tree::ptr node,
-                 bool, BasicSerializerData * data) {
+                 bool, BasicSerializerData *data) {
   data->path_.push_back(key);
   auto value = node->get_data();
   if (value.not_null())
@@ -53,7 +53,7 @@ on_visiting_node(std::string key,
 
 void
 on_node_visited(std::string,
-                const Tree::ptr, bool, BasicSerializerData * data) {
+                const Tree::ptr, bool, BasicSerializerData *data) {
   data->path_.pop_back();
 }
 

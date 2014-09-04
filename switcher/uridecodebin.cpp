@@ -165,16 +165,16 @@ void Uridecodebin::no_more_pads_cb(GstElement * /*object */ ,
 }
 
 void
-Uridecodebin::unknown_type_cb(GstElement * bin,
-                              GstPad * pad,
-                              GstCaps * caps, gpointer user_data) {
+Uridecodebin::unknown_type_cb(GstElement *bin,
+                              GstPad *pad,
+                              GstCaps *caps, gpointer user_data) {
   Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
   g_warning("Uridecodebin unknown type: %s (%s)\n",
             gst_caps_to_string(caps), gst_element_get_name(bin));
   context->pad_to_shmdata_writer(context->bin_, pad);
 }
 
-gboolean sink_factory_filter(GstPluginFeature * feature, gpointer data) {
+gboolean sink_factory_filter(GstPluginFeature *feature, gpointer data) {
   GstCaps *caps = (GstCaps *) data;
 
   if (!GST_IS_ELEMENT_FACTORY(feature))
@@ -184,7 +184,7 @@ gboolean sink_factory_filter(GstPluginFeature * feature, gpointer data) {
       gst_element_factory_get_static_pad_templates(GST_ELEMENT_FACTORY
                                                    (feature));
   int not_any_number = 0;
-  for (GList * item = (GList *) static_pads; item; item = item->next) {
+  for (GList *item = (GList *) static_pads; item; item = item->next) {
     GstStaticPadTemplate *padTemplate = (GstStaticPadTemplate *) item->data;
     GstPadTemplate *pad = gst_static_pad_template_get(padTemplate);
     GstCaps *padCaps = gst_pad_template_get_caps(pad);
@@ -207,7 +207,7 @@ gboolean sink_factory_filter(GstPluginFeature * feature, gpointer data) {
 
 int Uridecodebin::autoplug_continue_cb(GstElement * /*bin */ ,
                                        GstPad * /*pad */ ,
-                                       GstCaps * caps,
+                                       GstCaps *caps,
                                        gpointer /*user_data */ ) {
   GList *list = gst_registry_feature_filter(gst_registry_get_default(),
                                             (GstPluginFeatureFilter)
@@ -222,8 +222,8 @@ int Uridecodebin::autoplug_continue_cb(GstElement * /*bin */ ,
 
 int Uridecodebin::autoplug_select_cb(GstElement * /*bin */ ,
                                      GstPad * /*pad */ ,
-                                     GstCaps * caps,
-                                     GstElementFactory * factory,
+                                     GstCaps *caps,
+                                     GstElementFactory *factory,
                                      gpointer /*user_data */ ) {
   g_debug("uridecodebin autoplug select %s, (factory %s)",
           gst_caps_to_string(caps), GST_OBJECT_NAME(factory));
@@ -301,7 +301,7 @@ gboolean Uridecodebin::process_eos(gpointer user_data) {
 }
 
 gboolean
-Uridecodebin::event_probe_cb(GstPad * pad, GstEvent * event,
+Uridecodebin::event_probe_cb(GstPad * pad, GstEvent *event,
                              gpointer user_data) {
   Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
   if (GST_EVENT_TYPE(event) == GST_EVENT_EOS) {
@@ -328,8 +328,8 @@ Uridecodebin::event_probe_cb(GstPad * pad, GstEvent * event,
 }
 
 void Uridecodebin::on_handoff_cb(GstElement * /*object */ ,
-                                 GstBuffer * buf,
-                                 GstPad * pad, gpointer user_data) {
+                                 GstBuffer *buf,
+                                 GstPad *pad, gpointer user_data) {
   ShmdataAnyWriter *writer = static_cast < ShmdataAnyWriter * >(user_data);
 
   if (!writer->started()) {
@@ -353,7 +353,7 @@ void Uridecodebin::release_buf(void *user_data) {
   gst_buffer_unref(buf);
 }
 
-void Uridecodebin::pad_to_shmdata_writer(GstElement * bin, GstPad * pad) {
+void Uridecodebin::pad_to_shmdata_writer(GstElement * bin, GstPad *pad) {
   // detecting type of media
   const gchar *padname;
   if (0 == g_strcmp0("ANY", gst_caps_to_string(gst_pad_get_caps(pad))))
@@ -447,7 +447,7 @@ gboolean Uridecodebin::gstrtpdepay_buffer_probe_cb(GstPad * /*pad */ ,
 }
 
 gboolean Uridecodebin::gstrtpdepay_event_probe_cb(GstPad * /*pad */ ,
-                                                  GstEvent * event,
+                                                  GstEvent *event,
                                                   gpointer user_data) {
   Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
 
@@ -463,8 +463,8 @@ gboolean Uridecodebin::gstrtpdepay_event_probe_cb(GstPad * /*pad */ ,
 }
 
 void
-Uridecodebin::uridecodebin_pad_added_cb(GstElement * object,
-                                        GstPad * pad, gpointer user_data)
+Uridecodebin::uridecodebin_pad_added_cb(GstElement *object,
+                                        GstPad *pad, gpointer user_data)
 {
   Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
 
@@ -510,8 +510,8 @@ Uridecodebin::uridecodebin_pad_added_cb(GstElement * object,
 }
 
 void
-Uridecodebin::source_setup_cb(GstElement * uridecodebin,
-                              GstElement * source, gpointer user_data) {
+Uridecodebin::source_setup_cb(GstElement *uridecodebin,
+                              GstElement *source, gpointer user_data) {
   Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
   g_debug("uridecodebin source element is %s %s\n",
           GST_ELEMENT_NAME(source),
@@ -565,7 +565,7 @@ gboolean Uridecodebin::get_loop(void *user_data) {
   return context->loop_;
 }
 
-void Uridecodebin::set_uri(const gchar * value, void *user_data) {
+void Uridecodebin::set_uri(const gchar *value, void *user_data) {
   Uridecodebin *context = static_cast < Uridecodebin * >(user_data);
   g_free(context->uri_);
   context->uri_ = g_strdup(value);

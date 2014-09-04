@@ -95,7 +95,7 @@ bool JackSink::stop() {
   return true;
 }
 
-void JackSink::set_client_name(const gchar * value, void *user_data) {
+void JackSink::set_client_name(const gchar *value, void *user_data) {
   JackSink *context = static_cast < JackSink * >(user_data);
   if (nullptr != context->client_name_)
     g_free(context->client_name_);

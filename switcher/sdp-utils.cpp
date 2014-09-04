@@ -31,7 +31,7 @@ SDPMedia::~SDPMedia() {
     gst_structure_free(caps_structure_);
 }
 
-bool SDPMedia::set_media_info_from_caps(const GstCaps * media_caps) {
+bool SDPMedia::set_media_info_from_caps(const GstCaps *media_caps) {
   if (nullptr == media_caps)
     return false;
   GstStructure *s = gst_caps_get_structure(media_caps, 0);
@@ -56,7 +56,7 @@ bool SDPMedia::set_port(uint port) {
 }
 
 bool
-SDPMedia::add_to_sdp_description(GstSDPMessage * sdp_description,
+SDPMedia::add_to_sdp_description(GstSDPMessage *sdp_description,
                                  uint index) const {
   if (0 == port_ || nullptr == caps_structure_) {
     g_warning("missing information for adding media to sdp description");

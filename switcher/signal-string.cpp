@@ -36,7 +36,7 @@ Signal::~Signal() {
 }
 
 bool
-Signal::set_gobject_signame(GObject * object,
+Signal::set_gobject_signame(GObject *object,
                             std::string gobject_signal_name) {
   if (!G_IS_OBJECT(object)) {
     g_debug("Signal: object is not a gobject");
@@ -55,7 +55,7 @@ Signal::set_gobject_signame(GObject * object,
   return set_gobject_sigid(object, id);
 }
 
-bool Signal::set_gobject_sigid(GObject * object, guint gobject_signal_id) {
+bool Signal::set_gobject_sigid(GObject *object, guint gobject_signal_id) {
   if (!G_IS_OBJECT(object)) {
     g_debug("Signal: object is not a gobject");
     return false;
@@ -160,7 +160,7 @@ Signal::make_arg_type_description(GType first_arg_type, ...) {
 }
 
 Signal::args_doc
-Signal::make_arg_description(const gchar * first_arg_long_name, ...) {
+Signal::make_arg_description(const gchar *first_arg_long_name, ...) {
   args_doc res;
   va_list vl;
   char *arg_long_name;
@@ -221,7 +221,7 @@ Signal::make_arg_description(const gchar * first_arg_long_name, ...) {
 gboolean
 Signal::on_signal_emitted(GSignalInvocationHint *,
                           guint n_param_values,
-                          const GValue * param_values,
+                          const GValue *param_values,
                           gpointer user_data) {
   Signal *context = static_cast < Signal * >(user_data);
   GObject *object = (GObject *) g_value_peek_pointer(&param_values[0]);

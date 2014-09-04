@@ -53,7 +53,7 @@ void JSONBuilder::begin_array() {
   json_builder_begin_array(builder_);
 }
 
-void JSONBuilder::add_string_value(const gchar * string_value) {
+void JSONBuilder::add_string_value(const gchar *string_value) {
   std::unique_lock < std::mutex > lock(thread_safe_);
   json_builder_add_string_value(builder_, string_value);
 }
@@ -68,28 +68,28 @@ void JSONBuilder::end_array() {
   json_builder_end_array(builder_);
 }
 
-void JSONBuilder::set_member_name(const gchar * member_name) {
+void JSONBuilder::set_member_name(const gchar *member_name) {
   std::unique_lock < std::mutex > lock(thread_safe_);
   json_builder_set_member_name(builder_, member_name);
 }
 
 void
-JSONBuilder::add_string_member(const gchar * member_name,
-                               const gchar * string_value) {
+JSONBuilder::add_string_member(const gchar *member_name,
+                               const gchar *string_value) {
   std::unique_lock < std::mutex > lock(thread_safe_);
   json_builder_set_member_name(builder_, member_name);
   json_builder_add_string_value(builder_, string_value);
 }
 
 void
-JSONBuilder::add_double_member(const gchar * member_name,
+JSONBuilder::add_double_member(const gchar *member_name,
                                gdouble double_value) {
   std::unique_lock < std::mutex > lock(thread_safe_);
   json_builder_set_member_name(builder_, member_name);
   json_builder_add_double_value(builder_, double_value);
 }
 
-void JSONBuilder::add_int_member(const gchar * member_name, gint int_value) {
+void JSONBuilder::add_int_member(const gchar *member_name, gint int_value) {
   std::unique_lock < std::mutex > lock(thread_safe_);
   json_builder_set_member_name(builder_, member_name);
   json_builder_add_int_value(builder_, int_value);
@@ -101,8 +101,8 @@ void JSONBuilder::add_node_value(Node node_value) {
 }
 
 void
-JSONBuilder::add_JsonNode_member(const gchar * member_name,
-                                 JsonNode * JsonNode_value) {
+JSONBuilder::add_JsonNode_member(const gchar *member_name,
+                                 JsonNode *JsonNode_value) {
   std::unique_lock < std::mutex > lock(thread_safe_);
   json_builder_set_member_name(builder_, member_name);
   json_builder_add_value(builder_, JsonNode_value);
@@ -136,7 +136,7 @@ JsonNode *JSONBuilder::get_root() {
   return json_builder_get_root(builder_);     // FIXME this might be leaking
 }
 
-void JSONBuilder::node_free(JsonNode * root_node) {
+void JSONBuilder::node_free(JsonNode *root_node) {
   json_node_free(root_node);
 }
 }

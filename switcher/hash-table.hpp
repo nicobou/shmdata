@@ -37,7 +37,7 @@ template < class T > class HashTable {
   HashTable();
   ~HashTable();
 
-  void insert(const std::string key, T * value);
+  void insert(const std::string key, T *value);
   bool remove(const std::string key);
   bool contains(const std::string key);
   unsigned int size();
@@ -47,7 +47,7 @@ template < class T > class HashTable {
   void for_each(GHFunc function, void *user_data);
 
  private:
-  GHashTable * table_;
+  GHashTable *table_;
   // FIX ME this is used only to keep ref count of shared pointer
   // std::map<std::string, T> keep_ref_count_;
 };

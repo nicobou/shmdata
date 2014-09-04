@@ -71,14 +71,14 @@ class PortMidiSource:public Quiddity,
   static gint get_device(void *user_data);
   static gint get_midi_value(void *user_data);
   // midi properties
-  static gboolean next_midi_event_to_property_method(gchar * long_name,
+  static gboolean next_midi_event_to_property_method(gchar *long_name,
                                                      void *user_data);
-  static gboolean last_midi_event_to_property_method(gchar * long_name,
+  static gboolean last_midi_event_to_property_method(gchar *long_name,
                                                      void *user_data);
-  static gboolean remove_property_method(gchar * long_name,
+  static gboolean remove_property_method(gchar *long_name,
                                          void *user_data);
   static gint get_midi_property_value(void *user_data);
-  static void on_pm_event(PmEvent * event, void *user_data);
+  static void on_pm_event(PmEvent *event, void *user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(PortMidiSource);

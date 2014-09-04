@@ -91,7 +91,7 @@ bool GstParseToBinSrc::to_shmdata() {
 }
 
 void
-GstParseToBinSrc::set_gst_launch_pipeline(const gchar * value,
+GstParseToBinSrc::set_gst_launch_pipeline(const gchar *value,
                                           void *user_data) {
   GstParseToBinSrc *context = static_cast < GstParseToBinSrc * >(user_data);
   g_free(context->gst_launch_pipeline_);

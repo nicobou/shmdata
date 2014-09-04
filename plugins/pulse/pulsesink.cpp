@@ -168,7 +168,7 @@ bool PulseSink::make_elements() {
 }
 
 void
-PulseSink::pa_context_state_callback(pa_context * pulse_context,
+PulseSink::pa_context_state_callback(pa_context *pulse_context,
                                      void *user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
 
@@ -253,8 +253,8 @@ void PulseSink::make_json_description() {
 }
 
 void
-PulseSink::get_sink_info_callback(pa_context * pulse_context,
-                                  const pa_sink_info * i,
+PulseSink::get_sink_info_callback(pa_context *pulse_context,
+                                  const pa_sink_info *i,
                                   int is_last, void *user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
   PulseSink *context = static_cast < PulseSink * >(user_data);
@@ -376,7 +376,7 @@ PulseSink::get_sink_info_callback(pa_context * pulse_context,
   // }
 }
 
-void PulseSink::make_device_description(pa_context * pulse_context) {
+void PulseSink::make_device_description(pa_context *pulse_context) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
   devices_.clear();
   pa_operation_unref(pa_context_get_sink_info_list
@@ -384,7 +384,7 @@ void PulseSink::make_device_description(pa_context * pulse_context) {
 }
 
 void
-PulseSink::on_pa_event_callback(pa_context * pulse_context,
+PulseSink::on_pa_event_callback(pa_context *pulse_context,
                                 pa_subscription_event_type_t
                                 pulse_event_type, uint32_t /*index */ ,
                                 void *user_data) {

@@ -100,8 +100,8 @@ gboolean FakeSink::update_byte_rate(gpointer user_data) {
 }
 
 void FakeSink::on_handoff_cb(GstElement * /*object */ ,
-                             GstBuffer * buf,
-                             GstPad * pad, gpointer user_data) {
+                             GstBuffer *buf,
+                             GstPad *pad, gpointer user_data) {
   FakeSink *context = static_cast < FakeSink * >(user_data);
 
   if (context->set_string_caps_) {

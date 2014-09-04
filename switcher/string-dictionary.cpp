@@ -101,9 +101,9 @@ bool StringDictionary::init() {
 }
 
 gboolean
-StringDictionary::create_entry(const gchar * entry_name,
-                               const gchar * entry_description,
-                               const gchar * long_name, void *user_data) {
+StringDictionary::create_entry(const gchar *entry_name,
+                               const gchar *entry_description,
+                               const gchar *long_name, void *user_data) {
   StringDictionary *context = static_cast < StringDictionary * >(user_data);
 
   if (context->dico_.find(entry_name) != context->dico_.end()) {
@@ -136,7 +136,7 @@ StringDictionary::create_entry(const gchar * entry_name,
 }
 
 gboolean
-StringDictionary::remove_entry(const gchar * entry_name, void *user_data)
+StringDictionary::remove_entry(const gchar *entry_name, void *user_data)
 {
   StringDictionary *context = static_cast < StringDictionary * >(user_data);
   auto it = context->dico_.find(entry_name);
@@ -156,7 +156,7 @@ const gchar *StringDictionary::string_getter(void *user_data) {
   return context->string_dictionary->dico_[context->entry_name];
 }
 
-void StringDictionary::string_setter(const gchar * value, void *user_data) {
+void StringDictionary::string_setter(const gchar *value, void *user_data) {
   PropertySetGet *context = static_cast < PropertySetGet * >(user_data);
   g_free(context->string_dictionary->dico_[context->entry_name]);
   context->string_dictionary->dico_[context->entry_name] = g_strdup(value);
@@ -168,7 +168,7 @@ void StringDictionary::string_setter(const gchar * value, void *user_data) {
                                           [context->entry_name]);
 }
 
-gboolean StringDictionary::save_file(const gchar * file_path) {
+gboolean StringDictionary::save_file(const gchar *file_path) {
   GFile *file = g_file_new_for_commandline_arg(file_path);
   GError *error = nullptr;
   GFileOutputStream *file_stream = g_file_replace(file,
@@ -208,7 +208,7 @@ gboolean StringDictionary::save_file(const gchar * file_path) {
 
   g_output_stream_write((GOutputStream *) file_stream,
                         dico_json,
-                        sizeof(gchar) * strlen(dico_json), nullptr, &error);
+                        sizeof(gchar) *strlen(dico_json), nullptr, &error);
   g_free(dico_json);
   if (error != nullptr) {
     g_warning("%s", error->message);
@@ -227,12 +227,12 @@ gboolean StringDictionary::save_file(const gchar * file_path) {
   return TRUE;
 }
 
-gboolean StringDictionary::save(gchar * file_path, void *user_data) {
+gboolean StringDictionary::save(gchar *file_path, void *user_data) {
   StringDictionary *context = static_cast < StringDictionary * >(user_data);
   return context->save_file(file_path);
 }
 
-gboolean StringDictionary::load_file(const gchar * file_path) {
+gboolean StringDictionary::load_file(const gchar *file_path) {
   JsonParser *parser = json_parser_new();
   GError *error = nullptr;
   json_parser_load_from_file(parser, file_path, &error);
@@ -290,7 +290,7 @@ gboolean StringDictionary::load_file(const gchar * file_path) {
   return TRUE;
 }
 
-gboolean StringDictionary::load(gchar * file_path, void *user_data) {
+gboolean StringDictionary::load(gchar *file_path, void *user_data) {
   StringDictionary *context = static_cast < StringDictionary * >(user_data);
   return context->load_file(file_path);
 }

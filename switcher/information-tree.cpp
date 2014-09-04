@@ -202,7 +202,7 @@ bool Tree::graft(const std::string & where, Tree::ptr tree) {
 }
 
 bool
-Tree::graft_next(std::istringstream & path, Tree * tree,
+Tree::graft_next(std::istringstream & path, Tree *tree,
                  Tree::ptr leaf) {
   std::string child;
   if (!std::getline(path, child, '.'))

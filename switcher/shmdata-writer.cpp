@@ -75,8 +75,8 @@ std::string ShmdataWriter::get_path() {
 }
 
 void
-ShmdataWriter::plug(GstElement * bin,
-                    GstElement * source_element, GstCaps * caps) {
+ShmdataWriter::plug(GstElement *bin,
+                    GstElement * source_element, GstCaps *caps) {
   g_debug("ShmdataWriter::plug (source element)");
   bin_ = bin;
   GstUtils::make_element("tee", &tee_);
@@ -99,7 +99,7 @@ ShmdataWriter::plug(GstElement * bin,
     g_debug("shmdata writer plugged (%s)", path_.c_str());
 }
 
-void ShmdataWriter::plug(GstElement * bin, GstPad * source_pad) {
+void ShmdataWriter::plug(GstElement * bin, GstPad *source_pad) {
   bin_ = bin;
   GstUtils::make_element("tee", &tee_);
   GstUtils::make_element("queue", &queue_);
@@ -125,9 +125,9 @@ void ShmdataWriter::plug(GstElement * bin, GstPad * source_pad) {
 }
 
 void
-ShmdataWriter::on_handoff_cb(GstElement * object,
-                             GstBuffer * buf,
-                             GstPad * pad, gpointer user_data) {
+ShmdataWriter::on_handoff_cb(GstElement *object,
+                             GstBuffer *buf,
+                             GstPad *pad, gpointer user_data) {
   ShmdataWriter *context = static_cast < ShmdataWriter * >(user_data);
 
   GstCaps *caps = gst_pad_get_negotiated_caps(pad);

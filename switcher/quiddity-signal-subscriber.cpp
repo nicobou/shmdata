@@ -83,7 +83,7 @@ void QuidditySignalSubscriber::set_user_data(void *user_data) {
   user_data_ = user_data;
 }
 
-void QuidditySignalSubscriber::set_name(const gchar * name) {
+void QuidditySignalSubscriber::set_name(const gchar *name) {
   name_ = g_strdup(name);
 }
 

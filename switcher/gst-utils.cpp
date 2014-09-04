@@ -23,7 +23,7 @@
 
 namespace switcher {
 bool
-GstUtils::make_element(const gchar * class_name,
+GstUtils::make_element(const gchar *class_name,
                        GstElement ** target_element) {
   // if (*target_element != nullptr)
   //   {
@@ -46,7 +46,7 @@ GstUtils::make_element(const gchar * class_name,
   }
 }
 
-bool GstUtils::link_static_to_request(GstElement * src, GstElement * sink) {
+bool GstUtils::link_static_to_request(GstElement * src, GstElement *sink) {
   GstPad *srcpad = gst_element_get_static_pad(src, "src");
   GstPad *sinkpad = gst_element_get_compatible_pad(sink,
                                                    srcpad,
@@ -61,7 +61,7 @@ bool GstUtils::link_static_to_request(GstElement * src, GstElement * sink) {
   return res;
 }
 
-bool GstUtils::link_static_to_request(GstPad * srcpad, GstElement * sink) {
+bool GstUtils::link_static_to_request(GstPad * srcpad, GstElement *sink) {
   GstPad *sinkpad = gst_element_get_compatible_pad(sink,
                                                    srcpad,
                                                    nullptr);  // const GstCaps *caps to use as a filter
@@ -104,7 +104,7 @@ bool GstUtils::check_pad_link_return(GstPadLinkReturn res) {
   return false;
 }
 
-void GstUtils::unlink_pad(GstPad * pad) {
+void GstUtils::unlink_pad(GstPad *pad) {
   GstPad *peer;
   if ((peer = gst_pad_get_peer(pad))) {
     if (gst_pad_get_direction(pad) == GST_PAD_SRC)
@@ -121,7 +121,7 @@ void GstUtils::unlink_pad(GstPad * pad) {
   }
 }
 
-void GstUtils::clean_element(GstElement * element) {
+void GstUtils::clean_element(GstElement *element) {
   if (element != nullptr && GST_IS_ELEMENT(element)
       && GST_STATE_CHANGE_FAILURE != GST_STATE_RETURN(element)) {
     if (GST_IS_BIN(element))
@@ -151,7 +151,7 @@ void GstUtils::clean_element(GstElement * element) {
   element = nullptr;
 }
 
-void GstUtils::wait_state_changed(GstElement * bin) {
+void GstUtils::wait_state_changed(GstElement *bin) {
   if (!GST_IS_BIN(bin)) {
     g_warning("GstUtils::wait_state_changed not a bin");
     return;
@@ -173,7 +173,7 @@ void GstUtils::wait_state_changed(GstElement * bin) {
   return;
 }
 
-void GstUtils::sync_state_with_parent(GstElement * element) {
+void GstUtils::sync_state_with_parent(GstElement *element) {
   if (!GST_IS_ELEMENT(element)) {
     g_debug("GstUtils::sync_state_with_parent, arg is not an element");
     return;
@@ -192,9 +192,9 @@ void GstUtils::sync_state_with_parent(GstElement * element) {
 }
 
 void
-GstUtils::set_element_property_in_bin(GstElement * bin,
-                                      const gchar * factory_name,
-                                      const gchar * property_name,
+GstUtils::set_element_property_in_bin(GstElement *bin,
+                                      const gchar *factory_name,
+                                      const gchar *property_name,
                                       gboolean property_value) {
   if (!GST_IS_BIN(bin))
     return;
@@ -231,7 +231,7 @@ GstUtils::set_element_property_in_bin(GstElement * bin,
   }
 }
 
-gchar *GstUtils::gvalue_serialize(const GValue * val) {
+gchar *GstUtils::gvalue_serialize(const GValue *val) {
   if (!G_IS_VALUE(val))
     return nullptr;
   gchar *val_str;
@@ -243,7 +243,7 @@ gchar *GstUtils::gvalue_serialize(const GValue * val) {
 }
 
 guint
-GstUtils::g_idle_add_full_with_context(GMainContext * context,
+GstUtils::g_idle_add_full_with_context(GMainContext *context,
                                        gint priority,
                                        GSourceFunc function,
                                        gpointer data,
@@ -269,7 +269,7 @@ GstUtils::g_idle_add_full_with_context(GMainContext * context,
 GSource *GstUtils::g_timeout_add_to_context(guint interval,
                                             GSourceFunc function,
                                             gpointer data,
-                                            GMainContext * context) {
+                                            GMainContext *context) {
   GSource *source;
   g_return_val_if_fail(function != nullptr, 0);
   source = g_timeout_source_new(interval);
@@ -280,8 +280,8 @@ GSource *GstUtils::g_timeout_add_to_context(guint interval,
 }
 
 bool
-GstUtils::apply_property_value(GObject * g_object_master,
-                               GObject * g_object_slave,
+GstUtils::apply_property_value(GObject *g_object_master,
+                               GObject *g_object_slave,
                                const char *property_name) {
   if (g_object_master == nullptr || g_object_slave == nullptr)
     return false;
@@ -323,7 +323,7 @@ GstUtils::apply_property_value(GObject * g_object_master,
 }
 
 void
-GstUtils::element_factory_list_to_g_enum(GEnumValue * target_enum,
+GstUtils::element_factory_list_to_g_enum(GEnumValue *target_enum,
                                          GstElementFactoryListType type,
                                          GstRank minrank) {
   GList *element_list =
@@ -352,7 +352,7 @@ GstUtils::element_factory_list_to_g_enum(GEnumValue * target_enum,
   gst_plugin_feature_list_free(element_list);
 }
 
-void GstUtils::gst_element_deleter(GstElement * element) {
+void GstUtils::gst_element_deleter(GstElement *element) {
   // delete if ownership has not been taken by a parent
   if (nullptr != element && nullptr == GST_OBJECT_PARENT(element))
     gst_object_unref(element);
@@ -361,7 +361,7 @@ void GstUtils::gst_element_deleter(GstElement * element) {
 // g_signal_connect is actually a macro, so wrapping it for use with std::bind
 gulong
 GstUtils::g_signal_connect_function(gpointer gobject,
-                                    const gchar * signal,
+                                    const gchar *signal,
                                     GCallback cb, gpointer user_data) {
   return g_signal_connect(gobject, signal, cb, user_data);
 }

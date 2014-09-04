@@ -146,7 +146,7 @@ bool GPipe::seek(gdouble position) {
                          // | GST_SEEK_FLAG_SKIP
                          // | GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
                          GST_SEEK_TYPE_SET,
-                         position * length_ * GST_MSECOND,
+                         position * length_ *GST_MSECOND,
                          GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
 
   gpipe_custom_props_->notify_property_changed(seek_spec_);
@@ -273,7 +273,7 @@ GstElement *GPipe::get_pipeline() {
 }
 
 void
-GPipe::print_one_tag(const GstTagList * list, const gchar * tag,
+GPipe::print_one_tag(const GstTagList * list, const gchar *tag,
                      gpointer user_data) {
   // int i, num;
 
@@ -306,7 +306,7 @@ GPipe::print_one_tag(const GstTagList * list, const gchar * tag,
 }
 
 GstBusSyncReply GPipe::bus_sync_handler(GstBus * /*bus */ ,
-                                        GstMessage * msg,
+                                        GstMessage *msg,
                                         gpointer user_data) {
   shmdata_base_reader_t *reader =
       (shmdata_base_reader_t *) g_object_get_data(G_OBJECT(msg->src),
@@ -402,7 +402,7 @@ GstBusSyncReply GPipe::bus_sync_handler(GstBus * /*bus */ ,
 }
 
 gboolean GPipe::bus_called(GstBus * /*bus */ ,
-                           GstMessage * msg, gpointer /*user_data */ ) {
+                           GstMessage *msg, gpointer /*user_data */ ) {
   switch (GST_MESSAGE_TYPE(msg)) {
     case GST_MESSAGE_EOS:
       g_debug("bus_call End of stream, name: %s", GST_MESSAGE_SRC_NAME(msg));
@@ -411,7 +411,7 @@ gboolean GPipe::bus_called(GstBus * /*bus */ ,
       g_debug("bus_call segment done");
       break;
     case GST_MESSAGE_ERROR:
-      gchar * debug;
+      gchar *debug;
       GError *error;
 
       gst_message_parse_error(msg, &error, &debug);
@@ -443,19 +443,19 @@ gboolean GPipe::bus_called(GstBus * /*bus */ ,
   return TRUE;
 }
 
-gboolean GPipe::source_prepare(GSource * source, gint * timeout) {
+gboolean GPipe::source_prepare(GSource * source, gint *timeout) {
   GstBusSource *bsrc = (GstBusSource *) source;
   *timeout = -1;
   return gst_bus_have_pending(bsrc->bus);
 }
 
-gboolean GPipe::source_check(GSource * source) {
+gboolean GPipe::source_check(GSource *source) {
   GstBusSource *bsrc = (GstBusSource *) source;
   return gst_bus_have_pending(bsrc->bus);
 }
 
 gboolean
-GPipe::source_dispatch(GSource * source, GSourceFunc callback,
+GPipe::source_dispatch(GSource *source, GSourceFunc callback,
                        gpointer user_data) {
   GstBusFunc handler = (GstBusFunc) callback;
   GstBusSource *bsrc = (GstBusSource *) source;
@@ -472,7 +472,7 @@ GPipe::source_dispatch(GSource * source, GSourceFunc callback,
   return result;
 }
 
-void GPipe::source_finalize(GSource * source) {
+void GPipe::source_finalize(GSource *source) {
   GstBusSource *bsrc = (GstBusSource *) source;
   gst_object_unref(bsrc->bus);
   bsrc->bus = nullptr;

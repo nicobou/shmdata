@@ -148,7 +148,7 @@ gint JackAudioSource::get_num_channels(void *user_data) {
   return context->num_channels_;
 }
 
-void JackAudioSource::set_client_name(const gchar * value, void *user_data) {
+void JackAudioSource::set_client_name(const gchar *value, void *user_data) {
   JackAudioSource *context = static_cast < JackAudioSource * >(user_data);
   if (nullptr != context->client_name_)
     g_free(context->client_name_);

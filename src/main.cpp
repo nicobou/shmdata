@@ -249,7 +249,7 @@ main(int argc, char *argv[]) {
   std::string soap_name = manager->create("SOAPcontrolServer", "soapserver");
   std::vector < std::string > port_arg;
   port_arg.push_back(port_number);
-  std::string * result;
+  std::string *result;
   manager->invoke(soap_name, "set_port", &result, port_arg);
   if (g_strcmp0("false", result->c_str()) == 0 && osc_port_number == nullptr)
     return 0;

@@ -166,7 +166,7 @@ bool PulseSrc::make_elements() {
 }
 
 void
-PulseSrc::pa_context_state_callback(pa_context * pulse_context,
+PulseSrc::pa_context_state_callback(pa_context *pulse_context,
                                     void *user_data) {
   PulseSrc *context = static_cast < PulseSrc * >(user_data);
 
@@ -252,8 +252,8 @@ void PulseSrc::make_json_description() {
 }
 
 void
-PulseSrc::get_source_info_callback(pa_context * pulse_context,
-                                   const pa_source_info * i,
+PulseSrc::get_source_info_callback(pa_context *pulse_context,
+                                   const pa_source_info *i,
                                    int is_last, void *user_data) {
   PulseSrc *context = static_cast < PulseSrc * >(user_data);
   if (is_last < 0) {
@@ -377,7 +377,7 @@ PulseSrc::get_source_info_callback(pa_context * pulse_context,
   // }
 }
 
-void PulseSrc::make_device_description(pa_context * pulse_context) {
+void PulseSrc::make_device_description(pa_context *pulse_context) {
   if (!capture_devices_.empty())
     capture_devices_.clear();
   pa_operation_unref(pa_context_get_source_info_list
@@ -385,7 +385,7 @@ void PulseSrc::make_device_description(pa_context * pulse_context) {
 }
 
 void
-PulseSrc::on_pa_event_callback(pa_context * pulse_context,
+PulseSrc::on_pa_event_callback(pa_context *pulse_context,
                                pa_subscription_event_type_t
                                pulse_event_type, uint32_t /*index */ ,
                                void *user_data) {

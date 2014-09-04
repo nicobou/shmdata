@@ -47,7 +47,7 @@ class Segment:public CounterMap
   virtual ~ Segment();
   Segment(const Segment &) = delete;
   Segment & operator=(const Segment &) = delete;
-  bool init_segment(Quiddity * quid);
+  bool init_segment(Quiddity *quid);
 
  protected:
   bool register_shmdata(ShmdataWriter::ptr writer);
@@ -63,7 +63,7 @@ class Segment:public CounterMap
                               uint max_reader);
 
  private:
-  Quiddity * quid_ {nullptr};
+  Quiddity *quid_ {nullptr};
   std::unordered_map < std::string,
                        ShmdataAnyWriter::ptr > shmdata_any_writers_;
   std::unordered_map < std::string,

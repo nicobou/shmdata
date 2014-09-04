@@ -37,7 +37,7 @@ class PJCall {
 
  public:
   PJCall() = delete;
-  explicit PJCall(PJSIP * sip_instance);
+  explicit PJCall(PJSIP *sip_instance);
   ~PJCall();
   PJCall(const PJCall &) = delete;
   PJCall & operator=(const PJCall &) = delete;
@@ -98,51 +98,51 @@ class PJCall {
   GParamSpec *starting_rtp_port_spec_ {nullptr};
   
   // sip functions
-  static pj_bool_t on_rx_request(pjsip_rx_data * rdata);
-  static void call_on_state_changed(pjsip_inv_session * inv,
-                                    pjsip_event * e);
-  static void call_on_forked(pjsip_inv_session * inv, pjsip_event * e);
-  static void call_on_media_update(pjsip_inv_session * inv,
+  static pj_bool_t on_rx_request(pjsip_rx_data *rdata);
+  static void call_on_state_changed(pjsip_inv_session *inv,
+                                    pjsip_event *e);
+  static void call_on_forked(pjsip_inv_session * inv, pjsip_event *e);
+  static void call_on_media_update(pjsip_inv_session *inv,
                                    pj_status_t status);
-  static void process_incoming_call(pjsip_rx_data * rdata);
+  static void process_incoming_call(pjsip_rx_data *rdata);
   void init_app();
-  static pj_status_t create_sdp(pj_pool_t * pool,
+  static pj_status_t create_sdp(pj_pool_t *pool,
                                 struct call *call,
                                 const std::vector <
                                 pjmedia_sdp_media * >&media_to_receive,
                                 pjmedia_sdp_session ** p_sdp);
   static void on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size);
   static void on_rx_rtcp(void *user_data, void *pkt, pj_ssize_t size);
-  static pj_status_t parse_SDP_from_incoming_request(pjsip_rx_data * rdata,
+  static pj_status_t parse_SDP_from_incoming_request(pjsip_rx_data *rdata,
                                                      pjmedia_sdp_session *
                                                      offer);
-  static void print_sdp(const pjmedia_sdp_session * local_sdp);
-  static pj_status_t stream_info_from_sdp(pjmedia_stream_info * si,
-                                          pj_pool_t * pool,
-                                          pjmedia_endpt * endpt,
+  static void print_sdp(const pjmedia_sdp_session *local_sdp);
+  static pj_status_t stream_info_from_sdp(pjmedia_stream_info *si,
+                                          pj_pool_t *pool,
+                                          pjmedia_endpt *endpt,
                                           const pjmedia_sdp_session *
                                           local,
                                           const pjmedia_sdp_session *
                                           remote, unsigned stream_idx);
-  static pj_status_t get_audio_codec_info_param(pjmedia_stream_info * si,
-                                                pj_pool_t * pool,
-                                                pjmedia_codec_mgr * mgr,
+  static pj_status_t get_audio_codec_info_param(pjmedia_stream_info *si,
+                                                pj_pool_t *pool,
+                                                pjmedia_codec_mgr *mgr,
                                                 const pjmedia_sdp_media *
                                                 local_m,
                                                 const pjmedia_sdp_media *
                                                 rem_m);
-  static void remove_from_sdp_media(pjmedia_sdp_media * sdp_media,
+  static void remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
                                     unsigned fmt_pos);
   pj_status_t make_call(std::string contact_uri);
-  static void set_rtp_session(const gchar * value, void *user_data);
+  static void set_rtp_session(const gchar *value, void *user_data);
   static const gchar *get_rtp_session(void *user_data);
   std::string create_outgoing_sdp(struct call *call, std::string dst_uri);
   Quiddity::ptr retrieve_rtp_manager();
-  static gboolean call_sip_url(gchar * sip_url, void *user_data);
+  static gboolean call_sip_url(gchar *sip_url, void *user_data);
   static void set_starting_rtp_port(const gint value, void *user_data);
   static gint get_starting_rtp_port(void *user_data);
   bool make_hang_up(std::string contact_uri);
-  static gboolean hang_up(gchar * sip_url, void *user_data);
+  static gboolean hang_up(gchar *sip_url, void *user_data);
 };
 }  // namespace switcher
 

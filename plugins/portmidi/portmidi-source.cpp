@@ -166,7 +166,7 @@ gint PortMidiSource::get_device(void *user_data) {
   return context->device_;
 }
 
-void PortMidiSource::on_pm_event(PmEvent * event, void *user_data) {
+void PortMidiSource::on_pm_event(PmEvent *event, void *user_data) {
   PortMidiSource *context = static_cast < PortMidiSource * >(user_data);
 
   PmEvent *tmp_event = (PmEvent *) g_malloc(sizeof(PmEvent));
@@ -210,7 +210,7 @@ void PortMidiSource::on_pm_event(PmEvent * event, void *user_data) {
 }
 
 gboolean
-PortMidiSource::next_midi_event_to_property_method(gchar * long_name,
+PortMidiSource::next_midi_event_to_property_method(gchar *long_name,
                                                    void *user_data) {
   PortMidiSource *context = static_cast < PortMidiSource * >(user_data);
   context->make_property_for_next_midi_event_ = TRUE;
@@ -225,7 +225,7 @@ PortMidiSource::next_midi_event_to_property_method(gchar * long_name,
 }
 
 gboolean
-PortMidiSource::last_midi_event_to_property_method(gchar * long_name,
+PortMidiSource::last_midi_event_to_property_method(gchar *long_name,
                                                    void *user_data) {
   PortMidiSource *context = static_cast < PortMidiSource * >(user_data);
   if (!context->make_property(long_name))
@@ -242,7 +242,7 @@ gint PortMidiSource::get_midi_property_value(void *user_data) {
 }
 
 gboolean
-PortMidiSource::remove_property_method(gchar * long_name,
+PortMidiSource::remove_property_method(gchar *long_name,
                                        void *user_data) {
   PortMidiSource *context = static_cast < PortMidiSource * >(user_data);
 

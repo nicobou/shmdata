@@ -63,7 +63,7 @@ class ShmdataToOsc:public Quiddity, public Segment, public StartableQuiddity {
 
   static void set_port(const gint value, void *user_data);
   static gint get_port(void *user_data);
-  static void set_host(const gchar * value, void *user_data);
+  static void set_host(const gchar *value, void *user_data);
   static const gchar *get_host(void *user_data);
 };
 

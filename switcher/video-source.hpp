@@ -37,7 +37,7 @@ class VideoSource:public GPipe, public StartableQuiddity {
   bool stop();
 
  private:
-  GstElement * rawvideo_;
+  GstElement *rawvideo_;
   GstElement *video_tee_;
   GstCaps *videocaps_;
   std::string shmdata_path_;
@@ -71,10 +71,10 @@ class VideoSource:public GPipe, public StartableQuiddity {
   static gint get_codec(void *user_data);
   static gboolean get_codec_long_list(void *user_data);
   static void set_codec_long_list(gboolean mute, void *user_data);
-  static gboolean sink_factory_filter(GstPluginFeature * feature,
+  static gboolean sink_factory_filter(GstPluginFeature *feature,
                                       gpointer data);
-  static gint sink_compare_ranks(GstPluginFeature * f1,
-                                 GstPluginFeature * f2);
+  static gint sink_compare_ranks(GstPluginFeature *f1,
+                                 GstPluginFeature *f2);
   static void print_list(gpointer data, gpointer user_data);
 };
 }  // namespace switcher

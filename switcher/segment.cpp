@@ -36,7 +36,7 @@ Segment::Segment():shmdata_any_writers_(),
 Segment::~Segment() {
 }
 
-bool Segment::init_segment(Quiddity * quid) {
+bool Segment::init_segment(Quiddity *quid) {
   if (nullptr == quid)
     return false;
   quid_ = quid;

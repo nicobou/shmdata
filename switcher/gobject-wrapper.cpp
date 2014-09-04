@@ -38,14 +38,14 @@ typedef struct _MyObjectClass {
 static GType my_object_get_type(void);
 G_DEFINE_TYPE(MyObject, my_object, G_TYPE_OBJECT);
 
-static void my_object_finalize(GObject * gobject) {
+static void my_object_finalize(GObject *gobject) {
   G_OBJECT_CLASS(my_object_parent_class)->finalize(gobject);
 }
 
 static void
-my_object_set_property(GObject * gobject,
+my_object_set_property(GObject *gobject,
                        guint prop_id,
-                       const GValue * value, GParamSpec * pspec) {
+                       const GValue * value, GParamSpec *pspec) {
   MyObject *myobj = (MyObject *) gobject;
   GObjectWrapper *context =
       static_cast < GObjectWrapper * >(myobj->context);
@@ -56,8 +56,8 @@ my_object_set_property(GObject * gobject,
 }
 
 static void
-my_object_get_property(GObject * gobject,
-                       guint prop_id, GValue * value, GParamSpec * pspec)
+my_object_get_property(GObject *gobject,
+                       guint prop_id, GValue * value, GParamSpec *pspec)
 {
   MyObject *myobj = (MyObject *) gobject;
   GObjectWrapper *context =
@@ -68,7 +68,7 @@ my_object_get_property(GObject * gobject,
                                                 (pspec)));
 }
 
-static void my_object_class_init(MyObjectClass * klass) {
+static void my_object_class_init(MyObjectClass *klass) {
   GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
   gobject_class->set_property = my_object_set_property;
   gobject_class->get_property = my_object_get_property;
@@ -95,8 +95,8 @@ GObjectWrapper::GObjectWrapper() {
 }
 
 bool
-GObjectWrapper::notify_property_changed(GObject * object,
-                                        GParamSpec * pspec) {
+GObjectWrapper::notify_property_changed(GObject *object,
+                                        GParamSpec *pspec) {
   if (!G_IS_OBJECT(object))
     return false;
   g_object_notify_by_pspec(object, pspec);
@@ -110,8 +110,8 @@ GObjectWrapper::property_set_user_data(std::string nickname,
 }
 
 // set_method and get_method must be static
-GParamSpec *GObjectWrapper::make_int_property(const gchar * nickname,
-                                              const gchar * description,
+GParamSpec *GObjectWrapper::make_int_property(const gchar *nickname,
+                                              const gchar *description,
                                               gint min_value,
                                               gint max_value,
                                               gint default_value,
@@ -146,8 +146,8 @@ GParamSpec *GObjectWrapper::make_int_property(const gchar * nickname,
   return param;
 }
 
-GParamSpec *GObjectWrapper::make_double_property(const gchar * nickname,
-                                                 const gchar * description,
+GParamSpec *GObjectWrapper::make_double_property(const gchar *nickname,
+                                                 const gchar *description,
                                                  gdouble min_value,
                                                  gdouble max_value,
                                                  gdouble default_value,
@@ -184,8 +184,8 @@ GParamSpec *GObjectWrapper::make_double_property(const gchar * nickname,
 }
 
 // set_method and get_method must be static
-GParamSpec *GObjectWrapper::make_string_property(const gchar * nickname,
-                                                 const gchar * description,
+GParamSpec *GObjectWrapper::make_string_property(const gchar *nickname,
+                                                 const gchar *description,
                                                  const gchar *
                                                  default_value,
                                                  GParamFlags
@@ -217,8 +217,8 @@ GParamSpec *GObjectWrapper::make_string_property(const gchar * nickname,
   return param;
 }
 
-GParamSpec *GObjectWrapper::make_enum_property(const gchar * nickname,
-                                               const gchar * description,
+GParamSpec *GObjectWrapper::make_enum_property(const gchar *nickname,
+                                               const gchar *description,
                                                const gint default_value,
                                                const GEnumValue *
                                                custom_enum,
@@ -271,7 +271,7 @@ GParamSpec *GObjectWrapper::make_enum_property(const gchar * nickname,
 }
 
 // set_method and get_method must be static
-GParamSpec *GObjectWrapper::make_boolean_property(const gchar * nickname,
+GParamSpec *GObjectWrapper::make_boolean_property(const gchar *nickname,
                                                   const gchar *
                                                   description,
                                                   gboolean default_value,
@@ -307,7 +307,7 @@ GParamSpec *GObjectWrapper::make_boolean_property(const gchar * nickname,
 
 guint
 GObjectWrapper::make_signal(GType return_type,
-                            guint n_params, GType * param_types) {
+                            guint n_params, GType *param_types) {
   guint sig_id = next_signal_num_;
   next_signal_num_++;
   gchar *name = g_strdup_printf("custom_signal_%d", sig_id);
@@ -331,9 +331,9 @@ GObjectWrapper::make_signal(GType return_type,
 }
 
 guint
-GObjectWrapper::make_signal_action(GClosure * class_closure,
+GObjectWrapper::make_signal_action(GClosure *class_closure,
                                    GType return_type,
-                                   guint n_params, GType * param_types) {
+                                   guint n_params, GType *param_types) {
   guint sig_id = next_signal_num_;
   next_signal_num_++;
   gchar *name = g_strdup_printf("custom_signal_%d", sig_id);

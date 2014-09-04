@@ -39,7 +39,7 @@ class HTTPSDPDec:public GPipe {
   bool to_shmdata(std::string uri);
 
  private:
-  GstElement * souphttpsrc_;
+  GstElement *souphttpsrc_;
   GstElement *sdpdemux_;
   void init_httpsdpdec();
   void destroy_httpsdpdec();
@@ -47,13 +47,13 @@ class HTTPSDPDec:public GPipe {
   std::list < std::unique_ptr < DecodebinToShmdata >> decodebins_;
   void clean_on_error_command();
   bool init_gpipe() final;
-  static void httpsdpdec_pad_added_cb(GstElement * object,
-                                      GstPad * pad, gpointer user_data);
+  static void httpsdpdec_pad_added_cb(GstElement *object,
+                                      GstPad *pad, gpointer user_data);
   static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);
-  static void source_setup_cb(GstElement * httpsdpdec,
-                              GstElement * source, gpointer user_data);
-  static void on_new_element_in_sdpdemux(GstBin * bin,
-                                         GstElement * element,
+  static void source_setup_cb(GstElement *httpsdpdec,
+                              GstElement *source, gpointer user_data);
+  static void on_new_element_in_sdpdemux(GstBin *bin,
+                                         GstElement *element,
                                          gpointer user_data);
 };
 }  // namespace switcher

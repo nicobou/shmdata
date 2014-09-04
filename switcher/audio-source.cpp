@@ -32,7 +32,7 @@ void AudioSource::make_audio_elements() {
   gst_bin_add(GST_BIN(bin_), audio_tee_);
 }
 
-void AudioSource::set_raw_audio_element(GstElement * elt) {
+void AudioSource::set_raw_audio_element(GstElement *elt) {
   unset_raw_audio_element();
   make_audio_elements();
   rawaudio_ = elt;

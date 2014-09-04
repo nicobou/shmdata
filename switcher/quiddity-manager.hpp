@@ -171,8 +171,8 @@ class QuiddityManager:public std::enable_shared_from_this <
               const std::string method_name,
               std::string ** return_value,
               const std::vector < std::string > args);
-  bool invoke_va(const gchar * quiddity_name,
-                 const gchar * method_name,
+  bool invoke_va(const gchar *quiddity_name,
+                 const gchar *method_name,
                  std::string ** return_value, ...);
 
   bool has_method(const std::string quiddity_name,

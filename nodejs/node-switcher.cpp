@@ -504,7 +504,7 @@ v8::Handle < v8::Value > Invoke(const v8::Arguments & args) {
     vector_arg.push_back(std::string(*val));
   }
 
-  std::string * return_value = nullptr;
+  std::string *return_value = nullptr;
   switcher_container[0]->invoke(std::string(*element_name),
                                 std::string(*method_name),
                                 &return_value, vector_arg);
@@ -616,11 +616,11 @@ v8::Handle < v8::Value > RegisterLogCallback(const v8::Arguments & args) {
 }
 
 void
-DoNothingAsync(uv_work_t * r) {
+DoNothingAsync(uv_work_t *r) {
 }
 
 void
-NotifyLog(uv_work_t * r) {
+NotifyLog(uv_work_t *r) {
   v8::HandleScope scope;
   async_req_log *
       req = reinterpret_cast < async_req_log * >(r->data);
@@ -665,7 +665,7 @@ v8::Handle < v8::Value > RegisterPropCallback(const v8::Arguments & args) {
 }
 
 void
-NotifyProp(uv_work_t * r) {
+NotifyProp(uv_work_t *r) {
   v8::HandleScope scope;
   async_req_prop *
       req = reinterpret_cast < async_req_prop * >(r->data);
@@ -771,7 +771,7 @@ v8::Handle < v8::Value > RegisterSignalCallback(const v8::Arguments & args) {
 }
 
 void
-NotifySignal(uv_work_t * r) {
+NotifySignal(uv_work_t *r) {
   v8::HandleScope scope;
   async_req_signal *
       req = reinterpret_cast < async_req_signal * >(r->data);

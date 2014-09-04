@@ -46,7 +46,7 @@ class MyPlugin:public Quiddity, public StartableQuiddity {
 
   static gboolean get_myprop(void *user_data);
   static void set_myprop(gboolean myprop, void *user_data);
-  static gchar *my_hello_world_method(gchar * first_arg, void *user_data);
+  static gchar *my_hello_world_method(gchar *first_arg, void *user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(MyPlugin);

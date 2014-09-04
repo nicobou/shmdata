@@ -142,7 +142,7 @@ bool Quiddity::set_nick_name(std::string nick_name) {
 
 bool
 Quiddity::register_signal_gobject(std::string signal_name,
-                                  GObject * object,
+                                  GObject *object,
                                   std::string gobject_signal_name) {
   if (signals_.find(signal_name) != signals_.end()) {
     g_warning
@@ -166,7 +166,7 @@ Quiddity::install_signal(const std::string long_name,
                          const std::string signal_name,
                          const std::string short_description,
                          const Signal::args_doc arg_description,
-                         guint number_of_params, GType * param_types) {
+                         guint number_of_params, GType *param_types) {
   if (!make_custom_signal_with_class_name
       (get_documentation().get_class_name(), signal_name, G_TYPE_NONE,
        number_of_params, param_types))
@@ -189,7 +189,7 @@ Quiddity::install_signal_with_class_name(const std::string class_name,
                                          const Signal::args_doc
                                          arg_description,
                                          guint number_of_params,
-                                         GType * param_types) {
+                                         GType *param_types) {
   if (!make_custom_signal_with_class_name(class_name,
                                           signal_name,
                                           G_TYPE_NONE,
@@ -206,7 +206,7 @@ Quiddity::install_signal_with_class_name(const std::string class_name,
 
 bool Quiddity::make_custom_signal_with_class_name(const std::string class_name, const std::string signal_name,        // the name to give
                                                   GType return_type, guint n_params,  // number of params
-                                                  GType * param_types) {
+                                                  GType *param_types) {
   if (signals_.find(signal_name) != signals_.end()) {
     // g_debug ("signals: a signal named %s has already been registered for this class",signal_name.c_str());
     return false;
@@ -259,8 +259,8 @@ Quiddity::set_signal_description(const std::string long_name,
 }
 
 bool
-Quiddity::register_property(GObject * object,
-                            GParamSpec * pspec,
+Quiddity::register_property(GObject *object,
+                            GParamSpec *pspec,
                             std::string name_to_give,
                             std::string long_name,
                             std::string signal_to_emit) {
@@ -282,8 +282,8 @@ Quiddity::register_property(GObject * object,
 }
 
 bool
-Quiddity::install_property_by_pspec(GObject * object,
-                                    GParamSpec * pspec,
+Quiddity::install_property_by_pspec(GObject *object,
+                                    GParamSpec *pspec,
                                     std::string name_to_give,
                                     std::string long_name) {
   return register_property(object,
@@ -311,7 +311,7 @@ Method::ptr Quiddity::get_method_ptr(std::string method_name) {
 
 bool Quiddity::register_signal_action_with_class_name(const std::string class_name, const std::string method_name,    // the name to give
                                                       void *method, GType return_type, guint n_params,        // number of params
-                                                      GType * param_types,
+                                                      GType *param_types,
                                                       void *user_data) {
   if (signals_.find(method_name) != signals_.end()) {
     g_warning
@@ -360,7 +360,7 @@ bool Quiddity::register_signal_action_with_class_name(const std::string class_na
 
 bool Quiddity::register_signal_action(const std::string method_name,  // the name to give
                                       void *method, GType return_type, guint n_params,        // number of params
-                                      GType * param_types, void *user_data) {
+                                      GType *param_types, void *user_data) {
   return
       register_signal_action_with_class_name(get_documentation
                                              ().get_class_name(),
@@ -399,7 +399,7 @@ bool Quiddity::disable_property(std::string property_name) {
 }
 
 bool
-Quiddity::install_property(GObject * object,
+Quiddity::install_property(GObject *object,
                            std::string gobject_property_name,
                            std::string name_to_give,
                            std::string long_name) {
@@ -415,7 +415,7 @@ Quiddity::install_property(GObject * object,
 }
 
 bool
-Quiddity::reinstall_property(GObject * object,
+Quiddity::reinstall_property(GObject *object,
                              std::string gobject_property_name,
                              std::string name, std::string long_name) {
   auto it = properties_.find(name);

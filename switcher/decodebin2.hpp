@@ -42,7 +42,7 @@ class Decodebin2:public SinglePadGstSink {
     return true;
   };
 
-  static void make_decodebin_active(ShmdataReader * caller,
+  static void make_decodebin_active(ShmdataReader *caller,
                                     void *decodebin2_instance);
 };
 }  // namespace switcher

@@ -57,10 +57,10 @@ class OscCtrlServer:public QuiddityManagerWrapper {
                          lo_arg ** argv, int argc, void *data,
                          void *user_data);
   static void osc_error(int num, const char *msg, const char *path);
-  static gchar *string_from_osc_arg(char types, lo_arg * data);
-  static gchar *string_float_to_string_int(const gchar * string_float);
-  gchar *make_internal_subscriber_name(const gchar * name);
-  gchar *retrieve_subscriber_name(const gchar * internal_name);
+  static gchar *string_from_osc_arg(char types, lo_arg *data);
+  static gchar *string_float_to_string_int(const gchar *string_float);
+  gchar *make_internal_subscriber_name(const gchar *name);
+  gchar *retrieve_subscriber_name(const gchar *internal_name);
 };
 
 SWITCHER_DECLARE_PLUGIN(OscCtrlServer);

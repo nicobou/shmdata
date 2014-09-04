@@ -56,8 +56,8 @@ void QuiddityPropertySubscriber::mute(bool muted) {
 }
 
 void
-QuiddityPropertySubscriber::property_cb(GObject * gobject,
-                                        GParamSpec * pspec,
+QuiddityPropertySubscriber::property_cb(GObject *gobject,
+                                        GParamSpec *pspec,
                                         gpointer user_data) {
   PropertyData *prop = static_cast < PropertyData * >(user_data);
 
@@ -84,7 +84,7 @@ void QuiddityPropertySubscriber::set_user_data(void *user_data) {
   user_data_ = user_data;
 }
 
-void QuiddityPropertySubscriber::set_name(const gchar * name) {
+void QuiddityPropertySubscriber::set_name(const gchar *name) {
   name_ = g_strdup(name);
 }
 

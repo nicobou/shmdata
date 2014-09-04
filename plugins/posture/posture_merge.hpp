@@ -70,9 +70,9 @@ class PostureMerge:public Quiddity, public Segment, public StartableQuiddity {
   bool can_sink_caps(std::string caps);
 
   static const gchar *get_calibration_path(void *user_data);
-  static void set_calibration_path(const gchar * name, void *user_data);
+  static void set_calibration_path(const gchar *name, void *user_data);
   static const gchar *get_devices_path(void *user_data);
-  static void set_devices_path(const gchar * name, void *user_data);
+  static void set_devices_path(const gchar *name, void *user_data);
   static int get_compress_cloud(void *user_data);
   static void set_compress_cloud(const int compress, void *user_data);
 

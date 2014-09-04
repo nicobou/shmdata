@@ -211,7 +211,7 @@ PostureSrc::get_calibration_path(void *user_data) {
 }
 
 void
-PostureSrc::set_calibration_path(const gchar * name, void *user_data) {
+PostureSrc::set_calibration_path(const gchar *name, void *user_data) {
   PostureSrc *
       ctx = (PostureSrc *) user_data;
   if (name != nullptr)
@@ -226,7 +226,7 @@ PostureSrc::get_devices_path(void *user_data) {
 }
 
 void
-PostureSrc::set_devices_path(const gchar * name, void *user_data) {
+PostureSrc::set_devices_path(const gchar *name, void *user_data) {
   PostureSrc *
       ctx = (PostureSrc *) user_data;
   if (name != nullptr)
@@ -342,7 +342,7 @@ PostureSrc::cb_frame_depth(void *context,
   ctx->check_buffers();
   ctx->shmwriters_queue_.push_back(make_shared<vector<unsigned char>>(data));
   ctx->depth_writer_->push_data_auto_clock((void *) ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1]->data(),
-                                         width * height * 2,
+                                         width *height * 2,
                                          PostureSrc::free_sent_buffer,
                                          (void*)(ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1].get()));
 }
@@ -376,7 +376,7 @@ PostureSrc::cb_frame_rgb(void *context,
   ctx->check_buffers();
   ctx->shmwriters_queue_.push_back(make_shared<vector<unsigned char>>(data));
   ctx->rgb_writer_->push_data_auto_clock((void *) ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1]->data(),
-                                         width * height * 3,
+                                         width *height * 3,
                                          PostureSrc::free_sent_buffer,
                                          (void*)(ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1].get()));
 }
@@ -408,7 +408,7 @@ PostureSrc::cb_frame_ir(void *context, const vector<unsigned char>&data,
   ctx->check_buffers();
   ctx->shmwriters_queue_.push_back(make_shared<vector<unsigned char>>(data));
   ctx->ir_writer_->push_data_auto_clock((void *) ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1]->data(),
-                                         width * height * 2,
+                                         width *height * 2,
                                          PostureSrc::free_sent_buffer,
                                          (void*)(ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1].get()));
 }

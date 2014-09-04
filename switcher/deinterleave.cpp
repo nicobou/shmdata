@@ -53,7 +53,7 @@ bool Deinterleave::init_gpipe() {
 }
 
 void
-Deinterleave::make_deinterleave_active(ShmdataReader * caller,
+Deinterleave::make_deinterleave_active(ShmdataReader *caller,
                                        void *deinterleave_instance) {
   Deinterleave *context =
       static_cast < Deinterleave * >(deinterleave_instance);
@@ -68,7 +68,7 @@ void Deinterleave::no_more_pads_cb(GstElement * /*0object */ ,
   // Deinterleave *context = static_cast<Deinterleave *>(user_data);
 }
 
-void Deinterleave::pad_added_cb(GstElement * /*object */ , GstPad * pad,
+void Deinterleave::pad_added_cb(GstElement * /*object */ , GstPad *pad,
                                 gpointer user_data) {
   Deinterleave *context = static_cast < Deinterleave * >(user_data);
 

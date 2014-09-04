@@ -84,7 +84,7 @@ class PulseSrc:public AudioSource, public StartableQuiddity {
   bool capture_device();
   void update_capture_device();
 
-  void make_device_description(pa_context * pulse_context);
+  void make_device_description(pa_context *pulse_context);
   void make_json_description();
 
   bool init_gpipe() final;
@@ -93,11 +93,11 @@ class PulseSrc:public AudioSource, public StartableQuiddity {
   static void set_device(const gint value, void *user_data);
   static gint get_device(void *user_data);
 
-  static void pa_context_state_callback(pa_context * c, void *userdata);
-  static void get_source_info_callback(pa_context * c,
-                                       const pa_source_info * i,
+  static void pa_context_state_callback(pa_context *c, void *userdata);
+  static void get_source_info_callback(pa_context *c,
+                                       const pa_source_info *i,
                                        int is_last, void *userdata);
-  static void on_pa_event_callback(pa_context * c,
+  static void on_pa_event_callback(pa_context *c,
                                    pa_subscription_event_type_t t,
                                    uint32_t idx, void *userdata);
   static gboolean quit_pulse(void *user_data);

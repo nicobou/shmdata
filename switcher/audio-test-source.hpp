@@ -37,7 +37,7 @@ class AudioTestSource:public AudioSource, public StartableQuiddity {
   bool stop();
 
  private:
-  GstElement * audiotestsrc_;
+  GstElement *audiotestsrc_;
   bool make_audiotestsrc();
   bool init_gpipe() final;
 };

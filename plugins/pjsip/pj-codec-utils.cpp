@@ -53,7 +53,7 @@ PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codecs() {
 
 PJCodecUtils::codecs
 PJCodecUtils::inspect_rtp_codec_from_gst_element_factory
-(GstElementFactory * factory) {
+(GstElementFactory *factory) {
   PJCodecUtils::codecs res;
 
   const GList *static_pads =
@@ -126,7 +126,7 @@ PJCodecUtils::get_string_values_from_gst_struct(GstStructure *
 }
 
 std::vector < gint >
-PJCodecUtils::get_int_values_from_gst_struct(GstStructure * caps_struct,
+PJCodecUtils::get_int_values_from_gst_struct(GstStructure *caps_struct,
                                              std::string key) {
   std::vector < gint > res;
   const GValue *val = gst_structure_get_value(caps_struct, key.c_str());
@@ -153,7 +153,7 @@ PJCodecUtils::get_int_values_from_gst_struct(GstStructure * caps_struct,
 }
 
 PJCodecUtils::codecs
-PJCodecUtils::inspect_rtp_codec_from_gst_caps(GstCaps * caps) {
+PJCodecUtils::inspect_rtp_codec_from_gst_caps(GstCaps *caps) {
   PJCodecUtils::codecs res;
   guint caps_size = gst_caps_get_size(caps);
   if (!gst_caps_is_any(caps)) {

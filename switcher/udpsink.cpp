@@ -156,7 +156,7 @@ UDPSink::~UDPSink() {
 }
 
 void
-UDPSink::add_elements_to_bin(ShmdataReader * caller,
+UDPSink::add_elements_to_bin(ShmdataReader *caller,
                              void *udpbin_instance) {
   UDPSink *context = static_cast < UDPSink * >(udpbin_instance);
 
@@ -205,7 +205,7 @@ UDPSink::remove_client_wrapped(gpointer host, gint port,
     return FALSE;
 }
 
-bool UDPSink::remove_client(gchar * host, gint port) {
+bool UDPSink::remove_client(gchar *host, gint port) {
   g_signal_emit_by_name(udpsink_, "remove", host, port, nullptr);
   return true;
 }
@@ -222,7 +222,7 @@ UDPSink::add_client_wrapped(gpointer host, gint port, gpointer user_data)
     return FALSE;
 }
 
-bool UDPSink::add_client(gchar * host, gint port) {
+bool UDPSink::add_client(gchar *host, gint port) {
   g_signal_emit_by_name(udpsink_, "add", host, port, nullptr);
   return true;
 }

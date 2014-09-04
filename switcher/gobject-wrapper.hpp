@@ -42,7 +42,7 @@ class GObjectWrapper {
   GObject *get_gobject();
 
   // ---------- properties
-  static bool notify_property_changed(GObject * object, GParamSpec * pspec);
+  static bool notify_property_changed(GObject * object, GParamSpec *pspec);
   // user data for set and get methods
   void property_set_user_data(std::string nickname, void *user_data);
   void *property_get_user_data(std::string nickname);
@@ -50,8 +50,8 @@ class GObjectWrapper {
   bool is_property_nickname_taken(std::string nickname);
 
   // TODO see g_value_... for  implementation of other types
-  static GParamSpec *make_int_property(const gchar * nickname,
-                                       const gchar * description,
+  static GParamSpec *make_int_property(const gchar *nickname,
+                                       const gchar *description,
                                        gint min_value,
                                        gint max_value,
                                        gint default_value,
@@ -61,17 +61,17 @@ class GObjectWrapper {
                                        GObjectCustomProperty::get_method_pointer
                                        get_method);
 
-  static GParamSpec *make_string_property(const gchar * nickname,
-                                          const gchar * description,
-                                          const gchar * default_value,
+  static GParamSpec *make_string_property(const gchar *nickname,
+                                          const gchar *description,
+                                          const gchar *default_value,
                                           GParamFlags read_write_flags,
                                           GObjectCustomProperty::set_method_pointer
                                           set_method,
                                           GObjectCustomProperty::get_method_pointer
                                           get_method);
 
-  static GParamSpec *make_boolean_property(const gchar * nickname,
-                                           const gchar * description,
+  static GParamSpec *make_boolean_property(const gchar *nickname,
+                                           const gchar *description,
                                            gboolean default_value,
                                            GParamFlags read_write_flags,
                                            GObjectCustomProperty::set_method_pointer
@@ -79,15 +79,15 @@ class GObjectWrapper {
                                            GObjectCustomProperty::get_method_pointer
                                            get_method);
 
-  static GParamSpec *make_enum_property(const gchar * nickname, const gchar * description, const gint default_value, const GEnumValue * custom_enum,  // *must* be static
+  static GParamSpec *make_enum_property(const gchar * nickname, const gchar * description, const gint default_value, const GEnumValue *custom_enum,  // *must* be static
                                         GParamFlags read_write_flags,
                                         GObjectCustomProperty::set_method_pointer
                                         set_method,
                                         GObjectCustomProperty::get_method_pointer
                                         get_method);
 
-  static GParamSpec *make_double_property(const gchar * nickname,
-                                          const gchar * description,
+  static GParamSpec *make_double_property(const gchar *nickname,
+                                          const gchar *description,
                                           gdouble min_value,
                                           gdouble max_value,
                                           gdouble default_value,
@@ -99,12 +99,12 @@ class GObjectWrapper {
 
   // signal
   static guint
-  make_signal(GType return_type, guint n_params, GType * param_types);
+  make_signal(GType return_type, guint n_params, GType *param_types);
 
   static guint
-  make_signal_action(GClosure * class_closure,
+  make_signal_action(GClosure *class_closure,
                      GType return_type,
-                     guint n_params, GType * param_types);
+                     guint n_params, GType *param_types);
 
   // for the gobject class
   GObjectCustomProperty::set_method_pointer get_set_method_pointer(guint

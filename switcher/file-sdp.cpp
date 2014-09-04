@@ -72,7 +72,7 @@ void FileSDP::no_more_pads_cb(GstElement * /*object */ ,
   // FileSDP *context = static_cast<FileSDP *>(user_data);
 }
 
-void FileSDP::pad_added_cb(GstElement * /*object */ , GstPad * pad,
+void FileSDP::pad_added_cb(GstElement * /*object */ , GstPad *pad,
                            gpointer user_data) {
   FileSDP *context = static_cast < FileSDP * >(user_data);
 

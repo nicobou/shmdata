@@ -26,7 +26,7 @@ namespace JSONSerializer {
 void
 on_visiting_node(std::string key,
                  const Tree::ptr node,
-                 bool is_array_element, JsonBuilder * builder) {
+                 bool is_array_element, JsonBuilder *builder) {
   if (!is_array_element)  // discarding here to get it as a member called "name"
     json_builder_set_member_name(builder, key.c_str());
 
@@ -64,7 +64,7 @@ on_visiting_node(std::string key,
 void
 on_node_visited(std::string,
                 const Tree::ptr node,
-                bool is_array_element, JsonBuilder * builder) {
+                bool is_array_element, JsonBuilder *builder) {
   if (node->is_array()) {
     // json_builder_end_object (builder);
     json_builder_end_array(builder);

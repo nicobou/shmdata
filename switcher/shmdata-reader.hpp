@@ -34,7 +34,7 @@ namespace switcher {
 class ShmdataReader:public OnCaps, public GstElementCleaner {
  public:
   typedef std::shared_ptr < ShmdataReader > ptr;
-  typedef void (*on_first_data_hook) (ShmdataReader * caller,
+  typedef void (*on_first_data_hook) (ShmdataReader *caller,
                                       void *user_data);
 
   ShmdataReader();
@@ -42,9 +42,9 @@ class ShmdataReader:public OnCaps, public GstElementCleaner {
   ShmdataReader(const ShmdataReader &) = delete;
   ShmdataReader & operator=(const ShmdataReader &) = delete;
   void set_path(const char *absolute_path);
-  void set_bin(GstElement * bin);
-  void set_g_main_context(GMainContext * context);
-  void set_sink_element(GstElement * sink_element);
+  void set_bin(GstElement *bin);
+  void set_g_main_context(GMainContext *context);
+  void set_sink_element(GstElement *sink_element);
   void set_on_first_data_hook(on_first_data_hook cb, void *user_data);
   std::string get_path();
   void start();
@@ -65,12 +65,12 @@ class ShmdataReader:public OnCaps, public GstElementCleaner {
   JSONBuilder::ptr json_description_;
   std::mutex start_mutex_;
   std::condition_variable start_cond_;
-  static void on_first_data(shmdata_base_reader_t * context,
+  static void on_first_data(shmdata_base_reader_t *context,
                             void *user_data);
   // static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);
-  static void unlink_pad(GstPad * pad);
-  static void on_have_type(shmdata_base_reader_t * base_reader,
-                           GstCaps * caps, void *user_data);
+  static void unlink_pad(GstPad *pad);
+  static void on_have_type(shmdata_base_reader_t *base_reader,
+                           GstCaps *caps, void *user_data);
   void make_json_description();
   static gboolean start_idle(void *user_data);
 };

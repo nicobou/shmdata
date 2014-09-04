@@ -288,7 +288,7 @@ bool RtpSession::write_sdp_file(std::string dest_name) {
 
 // function used as a filter for selecting the appropriate rtp payloader
 gboolean
-RtpSession::sink_factory_filter(GstPluginFeature * feature,
+RtpSession::sink_factory_filter(GstPluginFeature *feature,
                                 gpointer data) {
   // // g_print ("%s\n", __PRETTY_FUNCTION__);
   // guint rank;
@@ -313,8 +313,8 @@ RtpSession::sink_factory_filter(GstPluginFeature * feature,
 
 // sorting factory by rank
 gint
-RtpSession::sink_compare_ranks(GstPluginFeature * f1,
-                               GstPluginFeature * f2) {
+RtpSession::sink_compare_ranks(GstPluginFeature *f1,
+                               GstPluginFeature *f2) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
   gint diff;
 
@@ -327,9 +327,9 @@ RtpSession::sink_compare_ranks(GstPluginFeature * f1,
 
 // this is a typefind function, called when type of input stream from a shmdata is found
 void
-RtpSession::make_data_stream_available(GstElement * typefind,
+RtpSession::make_data_stream_available(GstElement *typefind,
                                        guint /*probability */ ,
-                                       GstCaps * caps, gpointer user_data) {
+                                       GstCaps *caps, gpointer user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
   RtpSession *context = static_cast < RtpSession * >(user_data);
   g_debug("RtpSession::make_data_stream_available");
@@ -490,7 +490,7 @@ RtpSession::make_data_stream_available(GstElement * typefind,
 }
 
 void
-RtpSession::attach_data_stream(ShmdataReader * caller,
+RtpSession::attach_data_stream(ShmdataReader *caller,
                                void *rtpsession_instance) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
   RtpSession *context = static_cast < RtpSession * >(rtpsession_instance);
@@ -915,7 +915,7 @@ void RtpSession::on_timeout(GstElement * /*rtpbin */ ,
 }
 
 void RtpSession::on_pad_added(GstElement * /*gstelement */ ,
-                              GstPad * new_pad, gpointer user_data) {
+                              GstPad *new_pad, gpointer user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
   RtpSession *context = static_cast < RtpSession * >(user_data);
   g_debug("on_pad_added, name: %s, direction: %d",
@@ -925,7 +925,7 @@ void RtpSession::on_pad_added(GstElement * /*gstelement */ ,
 }
 
 void RtpSession::on_pad_removed(GstElement * /*gstelement */ ,
-                                GstPad * new_pad, gpointer /*user_data */ ) {
+                                GstPad *new_pad, gpointer /*user_data */ ) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
   // RtpSession *context = static_cast<RtpSession *>(user_data);
   g_debug("on_pad_removed, name: %s, direction: %d",

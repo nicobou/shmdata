@@ -136,7 +136,7 @@ SyphonSrc::frameCallback(void *context, const char *data, int &width,
     set = true;
   }
 
-  ctx->writer_->push_data_auto_clock((void *) data, width * height * 4,
+  ctx->writer_->push_data_auto_clock((void *) data, width *height * 4,
                                      nullptr, nullptr);
 }
 
@@ -148,7 +148,7 @@ SyphonSrc::get_servername(void *user_data) {
 }
 
 void
-SyphonSrc::set_servername(const gchar * name, void *user_data) {
+SyphonSrc::set_servername(const gchar *name, void *user_data) {
   SyphonSrc *
       ctx = (SyphonSrc *) user_data;
 
@@ -164,7 +164,7 @@ SyphonSrc::get_appname(void *user_data) {
 }
 
 void
-SyphonSrc::set_appname(const gchar * name, void *user_data) {
+SyphonSrc::set_appname(const gchar *name, void *user_data) {
   SyphonSrc *
       ctx = (SyphonSrc *) user_data;
 

@@ -36,7 +36,7 @@ quiddity_created_removed_cb(std::string /*subscriber_name */ ,
                             std::vector < std::string > params,
                             void *user_data) {
   g_print("%s: %s\n", signal_name.c_str(), params[0].c_str());
-  switcher::QuiddityManager * ctx =
+  switcher::QuiddityManager *ctx =
       static_cast < switcher::QuiddityManager * >(user_data);
   std::cout << ctx->get_info(quiddity_name, params[0]) << std::endl;
 }

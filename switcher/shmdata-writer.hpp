@@ -41,8 +41,8 @@ class ShmdataWriter:public OnCaps {
   std::string get_path();
 
   // caps does not need to be fully specified:
-  void plug(GstElement * bin, GstElement * source_element, GstCaps * caps);
-  void plug(GstElement * bin, GstPad * source_pad);
+  void plug(GstElement * bin, GstElement * source_element, GstCaps *caps);
+  void plug(GstElement * bin, GstPad *source_pad);
 
   // get json doc:
   JSONBuilder::Node get_json_root_node();
@@ -58,9 +58,9 @@ class ShmdataWriter:public OnCaps {
   JSONBuilder::ptr json_description_ {new JSONBuilder()};
 
   void make_json_description();
-  static void on_handoff_cb(GstElement * object,
-                            GstBuffer * buf,
-                            GstPad * pad, gpointer user_data);
+  static void on_handoff_cb(GstElement *object,
+                            GstBuffer *buf,
+                            GstPad *pad, gpointer user_data);
 };
 }  // namespace switcher
 

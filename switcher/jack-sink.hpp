@@ -34,7 +34,7 @@ class JackSink:public SinglePadGstSink, public StartableQuiddity {
   JackSink & operator=(const JackSink &) = delete;
 
  private:
-  GstElement * jacksink_;
+  GstElement *jacksink_;
   CustomPropertyHelper::ptr custom_props_;
   GParamSpec *client_name_spec_;
   gchar *client_name_;
@@ -47,7 +47,7 @@ class JackSink:public SinglePadGstSink, public StartableQuiddity {
   bool can_sink_caps(std::string caps) final;
 
   bool make_elements();
-  static void set_client_name(const gchar * value, void *user_data);
+  static void set_client_name(const gchar *value, void *user_data);
   static const gchar *get_client_name(void *user_data);
 };
 }  // namespace switcher

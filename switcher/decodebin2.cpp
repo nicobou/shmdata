@@ -50,7 +50,7 @@ bool Decodebin2::init_gpipe() {
 }
 
 void
-Decodebin2::make_decodebin_active(ShmdataReader * caller,
+Decodebin2::make_decodebin_active(ShmdataReader *caller,
                                   void *user_data) {
   std::string str(__FUNCTION__);
   g_print("begin %s\n", str.c_str());

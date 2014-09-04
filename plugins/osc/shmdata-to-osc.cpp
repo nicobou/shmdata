@@ -103,7 +103,7 @@ bool ShmdataToOsc::stop() {
   return true;
 }
 
-void ShmdataToOsc::set_host(const gchar * value, void *user_data) {
+void ShmdataToOsc::set_host(const gchar *value, void *user_data) {
   ShmdataToOsc *context = static_cast < ShmdataToOsc * >(user_data);
   if (0 == context->host_.compare(value))
     return;

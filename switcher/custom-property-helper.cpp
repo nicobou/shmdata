@@ -82,7 +82,7 @@ GParamSpec *CustomPropertyHelper::make_boolean_property(const gchar *
   return pspec;
 }
 
-GParamSpec *CustomPropertyHelper::make_int_property(const gchar * nickname,
+GParamSpec *CustomPropertyHelper::make_int_property(const gchar *nickname,
                                                     const gchar *
                                                     description,
                                                     gint min_value,
@@ -188,7 +188,7 @@ CustomPropertyHelper::make_user_method(const gchar *nickname,
   gobject_->property_set_user_data(nickname, user_method.get());
 }
 
-bool CustomPropertyHelper::get_by_gvalue(GValue * value, void *user_data) {
+bool CustomPropertyHelper::get_by_gvalue(GValue *value, void *user_data) {
   UserMethod *user_method = static_cast < UserMethod * >(user_data);
 
   if (G_VALUE_TYPE(value) == G_TYPE_STRING) {
@@ -217,7 +217,7 @@ bool CustomPropertyHelper::get_by_gvalue(GValue * value, void *user_data) {
 }
 
 bool
-CustomPropertyHelper::set_by_gvalue(const GValue * value,
+CustomPropertyHelper::set_by_gvalue(const GValue *value,
                                     void *user_data) {
   UserMethod *user_method = static_cast < UserMethod * >(user_data);
 
@@ -246,7 +246,7 @@ CustomPropertyHelper::set_by_gvalue(const GValue * value,
   return TRUE;
 }
 
-bool CustomPropertyHelper::notify_property_changed(GParamSpec * pspec) {
+bool CustomPropertyHelper::notify_property_changed(GParamSpec *pspec) {
   return GObjectWrapper::notify_property_changed(gobject_->get_gobject(),
                                                  pspec);
 }

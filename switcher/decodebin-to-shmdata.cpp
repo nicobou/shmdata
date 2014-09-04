@@ -72,7 +72,7 @@ DecodebinToShmdata::~DecodebinToShmdata() {
 }
 
 void
-DecodebinToShmdata::on_pad_added(GstElement * object, GstPad * pad,
+DecodebinToShmdata::on_pad_added(GstElement * object, GstPad *pad,
                                  gpointer user_data) {
   DecodebinToShmdata *context =
       static_cast < DecodebinToShmdata * >(user_data);
@@ -126,9 +126,9 @@ DecodebinToShmdata::on_pad_added(GstElement * object, GstPad * pad,
 }
 
 int DecodebinToShmdata::on_autoplug_select(GstElement * /*bin */ ,
-                                           GstPad * pad,
+                                           GstPad *pad,
                                            GstCaps * /*caps */ ,
-                                           GstElementFactory * factory,
+                                           GstElementFactory *factory,
                                            gpointer /*user_data */ ) {
   //     typedef enum {
   //   GST_AUTOPLUG_SELECT_TRY,
@@ -177,7 +177,7 @@ gboolean DecodebinToShmdata::gstrtpdepay_buffer_probe_cb(GstPad * /*pad */ ,
 }
 
 gboolean DecodebinToShmdata::gstrtpdepay_event_probe_cb(GstPad * /*pad */ ,
-                                                        GstEvent * event,
+                                                        GstEvent *event,
                                                         gpointer user_data)
 {
   DecodebinToShmdata *context =
@@ -195,7 +195,7 @@ gboolean DecodebinToShmdata::gstrtpdepay_event_probe_cb(GstPad * /*pad */ ,
 }
 
 void
-DecodebinToShmdata::pad_to_shmdata_writer(GstElement * bin, GstPad * pad)
+DecodebinToShmdata::pad_to_shmdata_writer(GstElement * bin, GstPad *pad)
 {
   // looking for type of media
   std::string padname;
@@ -268,7 +268,7 @@ DecodebinToShmdata::pad_to_shmdata_writer(GstElement * bin, GstPad * pad)
 }
 
 gboolean
-DecodebinToShmdata::eos_probe_cb(GstPad * pad, GstEvent * event,
+DecodebinToShmdata::eos_probe_cb(GstPad * pad, GstEvent *event,
                                  gpointer user_data) {
   DecodebinToShmdata *context =
       static_cast < DecodebinToShmdata * >(user_data);
@@ -292,8 +292,8 @@ DecodebinToShmdata::eos_probe_cb(GstPad * pad, GstEvent * event,
 }
 
 void DecodebinToShmdata::on_handoff_cb(GstElement * /*object */ ,
-                                       GstBuffer * buf,
-                                       GstPad * pad, gpointer user_data) {
+                                       GstBuffer *buf,
+                                       GstPad *pad, gpointer user_data) {
   ShmdataAnyWriter *writer = static_cast < ShmdataAnyWriter * >(user_data);
 
   if (!writer->started()) {

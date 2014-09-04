@@ -22,7 +22,7 @@
 #include <glib/gprintf.h>
 
 namespace switcher {
-PortMidi::PortMidiScheduler * PortMidi::scheduler_ = nullptr;
+PortMidi::PortMidiScheduler *PortMidi::scheduler_ = nullptr;
 guint PortMidi::instance_counter_ = 0;
 
 PortMidi::PortMidi():devices_description_(nullptr),
@@ -214,7 +214,7 @@ PmStream *PortMidi::PortMidiScheduler::add_output_stream(int id) {
   return midi_out;
 }
 
-bool PortMidi::PortMidiScheduler::remove_input_stream(PmStream * stream) {
+bool PortMidi::PortMidiScheduler::remove_input_stream(PmStream *stream) {
   {
     std::unique_lock < std::mutex > lock(streams_mutex_);
     input_callbacks_.erase(stream);
@@ -223,7 +223,7 @@ bool PortMidi::PortMidiScheduler::remove_input_stream(PmStream * stream) {
   return true;
 }
 
-bool PortMidi::PortMidiScheduler::remove_output_stream(PmStream * stream) {
+bool PortMidi::PortMidiScheduler::remove_output_stream(PmStream *stream) {
   {
     std::unique_lock < std::mutex > lock(streams_mutex_);
     output_queues_.erase(stream);
@@ -233,7 +233,7 @@ bool PortMidi::PortMidiScheduler::remove_output_stream(PmStream * stream) {
 }
 
 bool
-PortMidi::PortMidiScheduler::push_message(PmStream * stream,
+PortMidi::PortMidiScheduler::push_message(PmStream *stream,
                                           unsigned char status,
                                           unsigned char data1,
                                           unsigned char data2) {

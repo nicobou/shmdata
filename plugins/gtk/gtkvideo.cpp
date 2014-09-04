@@ -190,7 +190,7 @@ void GTKVideo::gtk_main_loop_thread() {
 }
 
 gboolean GTKVideo::key_pressed_cb(GtkWidget * /*widget */ ,
-                                  GdkEventKey * event, gpointer data) {
+                                  GdkEventKey *event, gpointer data) {
   GTKVideo *context = static_cast < GTKVideo * >(data);
   QuiddityManager_Impl::ptr manager;
   switch (event->keyval) {
@@ -256,7 +256,7 @@ GTKVideo::~GTKVideo() {
     delete on_error_command_;
 }
 
-void GTKVideo::realize_cb(GtkWidget * widget, void *user_data) {
+void GTKVideo::realize_cb(GtkWidget *widget, void *user_data) {
   GTKVideo *context = static_cast < GTKVideo * >(user_data);
   GdkWindow *window = gtk_widget_get_window(widget);
 
@@ -372,7 +372,7 @@ void GTKVideo::on_shmdata_connect(std::string /*shmdata_sochet_path */ ) {
   gdk_threads_leave();
 }
 
-void GTKVideo::set_title(const gchar * value, void *user_data) {
+void GTKVideo::set_title(const gchar *value, void *user_data) {
   GTKVideo *context = static_cast < GTKVideo * >(user_data);
   if (nullptr != context->title_)
     g_free(context->title_);

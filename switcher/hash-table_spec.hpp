@@ -36,7 +36,7 @@ template < typename T > HashTable < T >::~HashTable() {
 }
 
 template < typename T >
-void HashTable < T >::insert(const std::string key, T * value) {
+void HashTable < T >::insert(const std::string key, T *value) {
   char *key_to_record = g_strdup(key.c_str());
   g_hash_table_insert(table_, (gpointer) key_to_record, (gpointer) value);
 }
@@ -60,7 +60,7 @@ template < typename T > unsigned int HashTable < T >::size() {
   return (unsigned int) g_hash_table_size(table_);
 }
 
-template < typename T > T * HashTable < T >::lookup(const std::string key) {
+template < typename T > T *HashTable < T >::lookup(const std::string key) {
   gboolean res;
   gpointer value;
   res = g_hash_table_lookup_extended(table_, (gconstpointer) key.c_str(), nullptr,    // origin key

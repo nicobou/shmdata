@@ -186,7 +186,7 @@ bool ShmdataFromGDPFile::clean_players() {
 // }
 
 // gboolean
-// ShmdataFromGDPFile::event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data)
+// ShmdataFromGDPFile::event_probe_cb (GstPad *pad, GstEvent *event, gpointer user_data)
 // {
 //   ShmdataFromGDPFile *context = static_cast<ShmdataFromGDPFile *>(user_data);
 //   if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) {

@@ -41,8 +41,8 @@ pjmedia_codec_factory_op PJCodec::alt_codec_factory_op = {
 // PJCodec::~PJCodec ()
 // {}
 
-pj_status_t PJCodec::alt_codec_test_alloc(pjmedia_codec_factory * factory,
-                                          const pjmedia_codec_info * id) {
+pj_status_t PJCodec::alt_codec_test_alloc(pjmedia_codec_factory *factory,
+                                          const pjmedia_codec_info *id) {
   // g_print ("*************************************** %s\n", __FUNCTION__);
   // for performance, "available_codecs" could become static and reused here
   PJCodecUtils::codecs available_codecs =
@@ -63,9 +63,9 @@ pj_status_t PJCodec::alt_codec_test_alloc(pjmedia_codec_factory * factory,
 }
 
 pj_status_t
-PJCodec::alt_codec_default_attr(pjmedia_codec_factory * factory,
-                                const pjmedia_codec_info * id,
-                                pjmedia_codec_param * attr) {
+PJCodec::alt_codec_default_attr(pjmedia_codec_factory *factory,
+                                const pjmedia_codec_info *id,
+                                pjmedia_codec_param *attr) {
   // g_print ("*************************************** %s\n", __FUNCTION__);
 
   // for performance, "available_codecs" could become static and reused here
@@ -98,7 +98,7 @@ PJCodec::alt_codec_default_attr(pjmedia_codec_factory * factory,
 }
 
 pj_status_t
-PJCodec::alt_codec_enum_codecs(pjmedia_codec_factory * factory,
+PJCodec::alt_codec_enum_codecs(pjmedia_codec_factory *factory,
                                unsigned *count,
                                pjmedia_codec_info codecs[]) {
   // g_print ("*************************************** %s\n", __FUNCTION__);
@@ -134,8 +134,8 @@ PJCodec::alt_codec_enum_codecs(pjmedia_codec_factory * factory,
 }
 
 pj_status_t
-PJCodec::alt_codec_alloc_codec(pjmedia_codec_factory * factory,
-                               const pjmedia_codec_info * id,
+PJCodec::alt_codec_alloc_codec(pjmedia_codec_factory *factory,
+                               const pjmedia_codec_info *id,
                                pjmedia_codec ** p_codec) {
   // g_print ("*************************************** %s\n", __FUNCTION__);
   /* This will never get called since we won't be using this codec */
@@ -144,8 +144,8 @@ PJCodec::alt_codec_alloc_codec(pjmedia_codec_factory * factory,
 }
 
 pj_status_t
-PJCodec::alt_codec_dealloc_codec(pjmedia_codec_factory * factory,
-                                 pjmedia_codec * codec) {
+PJCodec::alt_codec_dealloc_codec(pjmedia_codec_factory *factory,
+                                 pjmedia_codec *codec) {
   // g_print ("*************************************** %s\n", __FUNCTION__);
   /* This will never get called */
   // UNIMPLEMENTED(alt_codec_dealloc_codec)
