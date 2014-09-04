@@ -18,6 +18,7 @@
 
 #include "./posture_source.hpp"
 
+#include <functional>
 #include <iostream>
 
 using namespace std;
@@ -288,9 +289,8 @@ PostureSrc::set_capture_mode(const int mode, void *user_data) {
 }
 
 void
-PostureSrc::cb_frame_cloud(void *context, const vector < char >&data) {
-  PostureSrc *
-      ctx = (PostureSrc *) context;
+PostureSrc::cb_frame_cloud(void *context, const vector<char>&data) {
+  PostureSrc *ctx = (PostureSrc *) context;
 
   if (ctx->cloud_writer_.get() == nullptr) {
     ctx->cloud_writer_.reset(new ShmdataAnyWriter);
@@ -303,19 +303,19 @@ PostureSrc::cb_frame_cloud(void *context, const vector < char >&data) {
     ctx->cloud_writer_->start();
   }
 
-  ctx->cloud_buffers_[ctx->cloud_buffer_index_] =
-      make_shared < vector < char >>(data);
-  ctx->cloud_writer_->push_data_auto_clock((void *)
-                                           ctx->cloud_buffers_
-                                           [ctx->
-                                            cloud_buffer_index_]->data(),
-                                           data.size(), nullptr, nullptr);
-  ctx->cloud_buffer_index_ = (ctx->cloud_buffer_index_ + 1) % 3;
+  lock_guard<mutex> lock(ctx->shmwriters_queue_mutex_);
+  ctx->check_buffers();
+  ctx->shmwriters_queue_.push_back(make_shared<vector<unsigned char>>(reinterpret_cast<const unsigned char*>(data.data()),
+                                                                      reinterpret_cast<const unsigned char*>(data.data()) + data.size()));
+  ctx->cloud_writer_->push_data_auto_clock((void *) ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1]->data(),
+                                         data.size(),
+                                         PostureSrc::free_sent_buffer,
+                                         (void*)(ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1].get()));
 }
 
 void
 PostureSrc::cb_frame_depth(void *context,
-                           const vector < unsigned char >&data, int width,
+                           const vector<unsigned char>&data, int width,
                            int height) {
   PostureSrc *
       ctx = (PostureSrc *) context;
@@ -337,17 +337,22 @@ PostureSrc::cb_frame_depth(void *context,
     ctx->depth_writer_->start();
   }
 
-  ctx->depth_writer_->push_data_auto_clock((void *) data.data(),
-                                           width * height * 2, nullptr,
-                                           nullptr);
+  lock_guard<mutex> lock(ctx->shmwriters_queue_mutex_);
+  ctx->check_buffers();
+  ctx->shmwriters_queue_.push_back(make_shared<vector<unsigned char>>(data));
+  ctx->depth_writer_->push_data_auto_clock((void *) ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1]->data(),
+                                         width * height * 2,
+                                         PostureSrc::free_sent_buffer,
+                                         (void*)(ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1].get()));
 }
 
 void
 PostureSrc::cb_frame_rgb(void *context,
-                         const vector < unsigned char >&data, int width,
+                         const vector<unsigned char>&data, int width,
                          int height) {
-  PostureSrc *
-      ctx = (PostureSrc *) context;
+  using namespace std::placeholders;
+
+  PostureSrc *ctx = (PostureSrc *) context;
 
   if (ctx->rgb_writer_.get() == nullptr || ctx->rgb_width_ != width
       || ctx->rgb_height_ != height) {
@@ -366,13 +371,17 @@ PostureSrc::cb_frame_rgb(void *context,
     ctx->rgb_writer_->start();
   }
 
-  ctx->rgb_writer_->push_data_auto_clock((void *) data.data(),
-                                         width * height * 3, nullptr,
-                                         nullptr);
+  lock_guard<mutex> lock(ctx->shmwriters_queue_mutex_);
+  ctx->check_buffers();
+  ctx->shmwriters_queue_.push_back(make_shared<vector<unsigned char>>(data));
+  ctx->rgb_writer_->push_data_auto_clock((void *) ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1]->data(),
+                                         width * height * 3,
+                                         PostureSrc::free_sent_buffer,
+                                         (void*)(ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1].get()));
 }
 
 void
-PostureSrc::cb_frame_ir(void *context, const vector < unsigned char >&data,
+PostureSrc::cb_frame_ir(void *context, const vector<unsigned char>&data,
                         int width, int height) {
   PostureSrc *
       ctx = (PostureSrc *) context;
@@ -394,8 +403,31 @@ PostureSrc::cb_frame_ir(void *context, const vector < unsigned char >&data,
     ctx->ir_writer_->start();
   }
 
-  ctx->ir_writer_->push_data_auto_clock((void *) data.data(),
-                                        width * height * 2, nullptr,
-                                        nullptr);
+  lock_guard<mutex> lock(ctx->shmwriters_queue_mutex_);
+  ctx->check_buffers();
+  ctx->shmwriters_queue_.push_back(make_shared<vector<unsigned char>>(data));
+  ctx->ir_writer_->push_data_auto_clock((void *) ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1]->data(),
+                                         width * height * 2,
+                                         PostureSrc::free_sent_buffer,
+                                         (void*)(ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1].get()));
 }
+
+void
+PostureSrc::free_sent_buffer(void* data)
+{
+  vector<unsigned char>* buffer = static_cast<vector<unsigned char>*>(data);
+  buffer->clear();
+}
+
+void
+PostureSrc::check_buffers()
+{
+  for (unsigned int i = 0; i < shmwriters_queue_.size();) {
+    if (shmwriters_queue_[i]->size() == 0)
+      shmwriters_queue_.erase(shmwriters_queue_.begin() + i);
+    else
+      i++;
+  }
+}
+
 }

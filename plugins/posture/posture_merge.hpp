@@ -20,6 +20,7 @@
 #ifndef __SWITCHER_POSTURE_MERGE_H__
 #define __SWITCHER_POSTURE_MERGE_H__
 
+#include <deque>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -57,6 +58,8 @@ class PostureMerge:public Quiddity, public Segment, public StartableQuiddity {
 
   ShmdataAnyWriter::ptr cloud_writer_ {nullptr};
 
+  std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriter_queue_ {};
+
   std::shared_ptr < std::vector < char >>cloud_buffers_[3];
   unsigned int cloud_buffer_index_ {0};
 
@@ -72,6 +75,9 @@ class PostureMerge:public Quiddity, public Segment, public StartableQuiddity {
   static void set_devices_path(const gchar * name, void *user_data);
   static int get_compress_cloud(void *user_data);
   static void set_compress_cloud(const int compress, void *user_data);
+
+  static void free_sent_buffer(void* data);
+  void check_buffers();
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureMerge);

@@ -20,7 +20,9 @@
 #ifndef __SWITCHER_POSTURE_SRC_H__
 #define __SWITCHER_POSTURE_SRC_H__
 
+#include <deque>
 #include <memory>
+#include <mutex>
 #include <string>
 
 #include "./posture.hpp"
@@ -66,16 +68,13 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   ShmdataAnyWriter::ptr rgb_writer_ {nullptr};
   ShmdataAnyWriter::ptr ir_writer_ {nullptr};
 
-  std::shared_ptr < std::vector < char >>cloud_buffers_[3];
-  unsigned int cloud_buffer_index_ {0};
+  std::mutex shmwriters_queue_mutex_ {};
+  std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriters_queue_ {};
 
   bool cloud_compressed_ {false};
-  int depth_width_ {
-    0}, depth_height_ {0};
-  int rgb_width_ {
-    0}, rgb_height_ {0};
-  int ir_width_ {
-    0}, ir_height_ {0};
+  int depth_width_ {0}, depth_height_ {0};
+  int rgb_width_ {0}, rgb_height_ {0};
+  int ir_width_ {0}, ir_height_ {0};
 
   bool init() final;
 
@@ -103,6 +102,8 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   static void cb_frame_ir(void *context,
                           const std::vector < unsigned char >&data,
                           int width, int height);
+  static void free_sent_buffer(void* data);
+  void check_buffers();
 
   std::shared_ptr < posture::Display > display_ {nullptr};
 };
