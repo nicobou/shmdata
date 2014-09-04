@@ -62,18 +62,17 @@ PostureDisplay::connect(std::string shmdata_socket_path) {
   reader->set_path(shmdata_socket_path);
 
   // This is the callback for when new clouds are received
-  reader->set_callback([ =]
-                       (void *data, int size, unsigned long long timestamp,
-                        const char *type, void * /*unused */ ) {
-                         vector < char >buffer((char *)data,
-                                               (char *)data + size);
-                         if (string(type) == string(POINTCLOUD_TYPE_BASE))
-                           display_->setInputCloud(buffer, false, timestamp);
-                         else
-                           if (string(type) ==
-                               string(POINTCLOUD_TYPE_COMPRESSED))
-                             display_->setInputCloud(buffer, true, timestamp);}
-                       , nullptr);
+  reader->set_callback([=] (void *data, int size, unsigned long long timestamp, const char *type, void * /*unused */ )
+  {
+    if (!display_mutex_.try_lock())
+        return;
+
+    vector<char>buffer((char *)data, (char *)data + size);
+    display_->setInputCloud(buffer,
+                            string(type) == string(POINTCLOUD_TYPE_COMPRESSED),
+                            timestamp);
+    display_mutex_.unlock();
+  }, nullptr);
 
   reader->start();
   register_shmdata(reader);

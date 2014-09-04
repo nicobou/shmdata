@@ -42,6 +42,7 @@ class PostureDisplay:public Quiddity, public Segment {
   CustomPropertyHelper::ptr custom_props_;
 
   std::shared_ptr < posture::Display > display_ {nullptr};
+  std::mutex display_mutex_ {};
 
   bool init() final;
 
