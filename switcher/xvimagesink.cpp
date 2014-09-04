@@ -26,8 +26,8 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Xvimagesink,
-                                     "Video Display",
-                                     "video sink",
+                                     "Video Display (basic)",
+                                     "video",
                                      "Video window with minimal features",
                                      "LGPL",
                                      "videosink", "Nicolas Bouillot");

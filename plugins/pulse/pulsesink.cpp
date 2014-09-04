@@ -24,7 +24,7 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSink,
-                                     "Play To Audio Device (Pulse)",
+                                     "Audio Display (Pulse)",
                                      "audio sink",
                                      "Inspecting Devices And Playing Audio To Outputs",
                                      "LGPL",

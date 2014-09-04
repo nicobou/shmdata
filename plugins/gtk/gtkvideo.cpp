@@ -30,7 +30,7 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GTKVideo,
-                                     "Video Display",
+                                     "Video Display (configurable)",
                                      "video sink",
                                      "Video window with fullscreen",
                                      "LGPL",
