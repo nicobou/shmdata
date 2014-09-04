@@ -152,13 +152,12 @@ PJCall::PJCall(PJSIP * sip_instance):
                            PJCall::set_rtp_session,
                            PJCall::get_rtp_session,
                            this);
-
   sip_instance_->
-      install_property_by_pspec(sip_instance_->
-                                custom_props_->get_gobject(),
+      install_property_by_pspec(sip_instance_->custom_props_->get_gobject(),
                                 rtp_session_name_spec_,
                                 "rtp-session",
                                 "Quiddity name managing RTP destinations");
+
   starting_rtp_port_spec_ =
       sip_instance_->custom_props_->
       make_int_property("starting-rtp-port",
@@ -170,12 +169,11 @@ PJCall::PJCall(PJSIP * sip_instance):
                         PJCall::set_starting_rtp_port,
                         PJCall::get_starting_rtp_port,
                         this);
-
-  sip_instance_->install_property_by_pspec(sip_instance_->
-                                           custom_props_->get_gobject(),
-                                           starting_rtp_port_spec_,
-                                           "starting-rtp-port",
-                                           "First RTP port to try");
+  sip_instance_->
+      install_property_by_pspec(sip_instance_->custom_props_->get_gobject(),
+                                starting_rtp_port_spec_,
+                                "starting-rtp-port",
+                                "First RTP port to try");
 }
 
 PJCall::~PJCall() {

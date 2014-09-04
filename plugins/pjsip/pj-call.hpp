@@ -43,34 +43,23 @@ class PJCall {
   PJCall & operator=(const PJCall &) = delete;
 
  private:
-  struct media_stream {  /*media stream created when the call is active. */
-    /* Static: */
+  /* Media stream created when the call is active. */
+  struct media_stream {
     unsigned call_index {0}; /* Call owner. */
-    unsigned media_index {0}; /* Media index in call. */
-    pjmedia_transport *transport {nullptr}; /* To send/recv RTP/RTCP */
-
-    /* Active? */
+    unsigned media_index {0};  /* Media index in call. */
+    pjmedia_transport *transport {nullptr};  /* To send/recv RTP/RTCP */
     pj_bool_t active {PJ_FALSE};  /* Non-zero if is in call. */
-
-    /* Current stream info: */
-    pjmedia_stream_info si;
-
-    /* RTP session: */
+    pjmedia_stream_info si;  /* Current stream info: */
     pjmedia_rtp_session out_sess;     /* outgoing RTP session */
     pjmedia_rtp_session in_sess;      /* incoming RTP session */
-
-    /* RTCP stats: */
-    pjmedia_rtcp_session rtcp;        /* incoming RTCP session. */
-
+    pjmedia_rtcp_session rtcp;        /* incoming RTCP session (for stats). */
     // type + codec param
     std::string type {};              /* audio, video or appli */
     std::string extra_params {};
     // shmdata
     ShmdataAnyWriter::ptr shm {};     /* RTP, FIXME make RTCP shm */
-    // shmdata path to send
     std::string shm_path_to_send {};
-    // constructor for default init of pj types
-    media_stream():si(), out_sess(), in_sess(), rtcp() {}
+    media_stream(): si(), out_sess(), in_sess(), rtcp() {}
   };
 
   /* This is a call structure that is created when the application starts
@@ -79,7 +68,7 @@ class PJCall {
   struct call {
     unsigned index {0};
     pjsip_inv_session *inv {nullptr};
-    unsigned media_count {0};                       // FIXME make this more STL
+    unsigned media_count {0};
     struct media_stream media[64];
     pj_time_val start_time {0, 0};
     pj_time_val response_time {0, 0};
@@ -93,9 +82,9 @@ class PJCall {
     unsigned max_calls {256};
     unsigned uac_calls {0};
     pj_str_t local_addr {nullptr, 0};
-    struct call call[MAX_CALLS];      // FIXME make this more STL
+    struct call call[MAX_CALLS];
   } app_t;
-
+  
  private:
   static pjmedia_endpt *med_endpt_;
   static pjsip_module mod_siprtp_;
@@ -107,7 +96,7 @@ class PJCall {
   GParamSpec *rtp_session_name_spec_ {nullptr};
   uint starting_rtp_port_ {18000};
   GParamSpec *starting_rtp_port_spec_ {nullptr};
-
+  
   // sip functions
   static pj_bool_t on_rx_request(pjsip_rx_data * rdata);
   static void call_on_state_changed(pjsip_inv_session * inv,

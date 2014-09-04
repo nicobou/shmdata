@@ -44,7 +44,6 @@ int main() {
     return 1;
 #endif
 
-    return 0;
     // testing uncompressed data transmission
     manager->create("audiotestsrc", "a");
     manager->set_property("a", "started", "true");
@@ -99,22 +98,22 @@ int main() {
     manager->invoke_va("test",
                        "call",
                        nullptr,
-                       "sip:1002@10.10.30.223",
+                       "sip:1002@10.10.30.179",
                        nullptr);
 
     usleep(2000000);
 
-    manager->set_property("test", "status", "Away");
+    // manager->set_property("test", "status", "Away");
 
-    usleep(2000000);
+    // usleep(2000000);
 
-    manager->set_property("test", "status-note", "coucou");
+    // manager->set_property("test", "status-note", "coucou");
 
-    usleep(2000000);
+    // usleep(2000000);
 
-    manager->set_property("test", "status", "BRB");
+    // manager->set_property("test", "status", "BRB");
 
-    usleep(2000000);
+    // usleep(2000000);
     manager->invoke_va("test",
                        "hang-up", nullptr, "sip:1002@10.10.30.223", nullptr);
 
