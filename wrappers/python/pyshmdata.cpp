@@ -14,6 +14,7 @@
 
 #include "pyshmdata.h"
 
+#include <iostream>
 #include <string>
 
 using namespace std;
@@ -27,13 +28,18 @@ PyInit_pyshmdata(void)
 
     if (PyType_Ready(&pyshmdata_WriterType) < 0)
         return NULL;
+    if (PyType_Ready(&pyshmdata_ReaderType) < 0)
+        return NULL;
 
     m = PyModule_Create(&pyshmdatamodule);
     if (m == NULL)
         return NULL;
 
     Py_INCREF(&pyshmdata_WriterType);
+    Py_INCREF(&pyshmdata_ReaderType);
     PyModule_AddObject(m, "Writer", (PyObject*)&pyshmdata_WriterType);
+    PyModule_AddObject(m, "Reader", (PyObject*)&pyshmdata_ReaderType);
+
     return m;
 }
 
@@ -153,3 +159,118 @@ Writer_freeObject(void* user_data)
 
 /*************/
 // Any-data-reader
+void
+Reader_dealloc(pyshmdata_ReaderObject* self)
+{
+    lock_guard<mutex> lock(self->reader_mutex);
+
+    Py_XDECREF(self->path);
+    Py_XDECREF(self->datatype);
+    if (self->reader != NULL)
+        shmdata_any_reader_close(self->reader);
+
+    Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
+/*************/
+PyObject*
+Reader_new(PyTypeObject* type, PyObject* args, PyObject* kwds)
+{
+    pyshmdata_ReaderObject* self;
+
+    self = (pyshmdata_ReaderObject*)type->tp_alloc(type, 0);
+    if (self != NULL) {
+        self->path = PyUnicode_FromString("");
+        if (self->path == NULL) {
+            Py_DECREF(self);
+            return NULL;
+        }
+
+        self->datatype = PyUnicode_FromString("");
+        if (self->datatype == NULL) {
+            Py_DECREF(self);
+            return NULL;
+        }
+    }
+
+    return (PyObject*)self;
+}
+
+/*************/
+int
+Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
+{
+    PyObject *path = NULL;
+    PyObject *datatype = NULL;
+    PyObject *tmp = NULL;
+
+    static char *kwlist[] = {(char*)"path", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &path))
+        return -1;
+
+    if (path) {
+        tmp = self->path;
+        Py_INCREF(path);
+        self->path = path;
+        Py_XDECREF(tmp);
+    }
+
+    self->reader = shmdata_any_reader_init();
+    if (self->reader == NULL)
+        return NULL;
+    shmdata_any_reader_set_on_data_handler(self->reader, Reader_on_data_handler, self);
+    shmdata_any_reader_start(self->reader, PyUnicode_AsUTF8(self->path));
+
+    return 0;
+}
+
+/*************/
+PyObject*
+Reader_pull(pyshmdata_ReaderObject* self)
+{
+    return self->lastBuffer;
+}
+
+/*************/
+void
+Reader_freeObject(void* user_data)
+{
+    PyObject* buffer = (PyObject*)user_data;
+    Py_DECREF(buffer);
+}
+
+/*************/
+void
+Reader_on_data_handler(shmdata_any_reader_t* reader, void* shmbuf, void* data, int data_size, unsigned long long timestamp, const char* type, void* user_data)
+{
+    if (user_data == nullptr)
+        return;
+
+    pyshmdata_ReaderObject* self = static_cast<pyshmdata_ReaderObject*>(user_data);
+
+    lock_guard<mutex> lock(self->reader_mutex);
+
+    // Get the current type
+    PyObject *datatype = NULL;
+    PyObject *tmp = NULL;
+
+    datatype = PyUnicode_FromString(type);
+    tmp = self->datatype;
+    Py_INCREF(datatype);
+    self->datatype = datatype;
+    Py_XDECREF(tmp);
+
+    // Get the current buffer
+    PyObject *buffer = NULL;
+
+    buffer = PyByteArray_FromStringAndSize((char*)data, data_size);
+    tmp = NULL;
+    if (self->lastBuffer != NULL)
+        tmp = self->lastBuffer;
+    Py_INCREF(buffer);
+    self->lastBuffer = buffer;
+    if (tmp != NULL)
+        Py_XDECREF(tmp);
+    
+    shmdata_any_reader_free(shmbuf);
+}
