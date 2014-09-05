@@ -52,7 +52,7 @@ class Quiddity {
   Quiddity();
   Quiddity(const Quiddity &) = delete;
   Quiddity & operator=(const Quiddity &) = delete;
-  virtual ~ Quiddity();
+  virtual ~Quiddity();
 
   // class documentation
   virtual QuiddityDocumentation get_documentation() = 0;
@@ -103,10 +103,10 @@ class Quiddity {
   // information
   std::string get_info(const std::string & path);
   Any get_data(const std::string & path);
-  template < template < class T, class =
-                        std::allocator<T >>class Container =
-             std::list > Container<std::string>
-  get_child_keys(const std::string path) {
+  template<template<class T, class = std::allocator<T>>
+           class Container = std::list >
+      Container<std::string>
+      get_child_keys(const std::string path) {
     return information_tree_->get_child_keys<Container> (path);
   }
 

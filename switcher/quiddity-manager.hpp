@@ -36,8 +36,7 @@
 #include <stdarg.h>
 
 namespace switcher {
-class QuiddityManager:public std::enable_shared_from_this <
-  QuiddityManager >
+class QuiddityManager: public std::enable_shared_from_this<QuiddityManager>
 // FIXME add const for method args
 {
  public:
