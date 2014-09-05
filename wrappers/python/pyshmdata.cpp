@@ -201,17 +201,25 @@ int
 Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
 {
     PyObject *path = NULL;
-    PyObject *datatype = NULL;
+    PyObject *pyFunc = NULL;
     PyObject *tmp = NULL;
 
-    static char *kwlist[] = {(char*)"path", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &path))
+    static char *kwlist[] = {(char*)"path", (char*)"callback", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &path, &pyFunc))
         return -1;
 
     if (path) {
         tmp = self->path;
         Py_INCREF(path);
         self->path = path;
+        Py_XDECREF(tmp);
+    }
+
+    if (PyCallable_Check(pyFunc))
+    {
+        tmp = self->callback;
+        Py_INCREF(pyFunc);
+        self->callback = pyFunc;
         Py_XDECREF(tmp);
     }
 
@@ -271,6 +279,17 @@ Reader_on_data_handler(shmdata_any_reader_t* reader, void* shmbuf, void* data, i
     self->lastBuffer = buffer;
     if (tmp != NULL)
         Py_XDECREF(tmp);
+
+    // Call the callback, if present
+    if (self->callback != NULL && self->lastBuffer != NULL)
+    {
+        PyGILState_STATE gil = PyGILState_Ensure();
+        PyObject *arglist = Py_BuildValue("(O)", self->lastBuffer);
+        PyObject *pyobjresult = PyEval_CallObject(self->callback, arglist);
+        Py_DECREF(arglist);
+        Py_XDECREF(pyobjresult);
+        PyGILState_Release(gil);
+    }
     
     shmdata_any_reader_free(shmbuf);
 }
