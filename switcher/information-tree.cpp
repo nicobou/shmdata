@@ -34,7 +34,7 @@ Tree::ptr make_tree(const char *data) {
 }
 
 void
-preorder_tree_walk(Tree::ptr tree,
+preorder_tree_walk(Tree::ptrc tree,
                    Tree::OnNodeFunction on_visiting_node,
                    Tree::OnNodeFunction on_node_visited) {
   std::unique_lock<std::mutex> lock(tree->mutex_);
@@ -51,22 +51,27 @@ preorder_tree_walk(Tree::ptr tree,
 Tree::Tree(const Any & data):data_(data) {
 }
 
-bool Tree::is_leaf() {
+bool Tree::is_leaf() const {
   std::unique_lock<std::mutex> lock(mutex_);
   return childrens_.empty();
 }
 
-bool Tree::is_array() {
+bool Tree::is_array() const {
   std::unique_lock<std::mutex> lock(mutex_);
   return is_array_;
 }
 
-bool Tree::has_data() {
+bool Tree::has_data() const {
   std::unique_lock<std::mutex> lock(mutex_);
   return !data_.is_null();
 }
 
-Any Tree::get_data() {
+Any Tree::get_data(){
+  std::unique_lock<std::mutex> lock(mutex_);
+  return data_;
+}
+
+const Any Tree::read_data() const{
   std::unique_lock<std::mutex> lock(mutex_);
   return data_;
 }

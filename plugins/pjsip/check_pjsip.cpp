@@ -44,7 +44,7 @@ int main() {
     return 1;
 #endif
 
-    // testing uncompressed data transmission
+    return 0;    // testing uncompressed data transmission
     manager->create("audiotestsrc", "a");
     manager->set_property("a", "started", "true");
 
