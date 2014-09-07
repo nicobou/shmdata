@@ -202,10 +202,11 @@ Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
 {
     PyObject *path = NULL;
     PyObject *pyFunc = NULL;
+    PyObject *pyUserData = NULL;
     PyObject *tmp = NULL;
 
-    static char *kwlist[] = {(char*)"path", (char*)"callback", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|O", kwlist, &path, &pyFunc))
+    static char *kwlist[] = {(char*)"path", (char*)"callback", (char*)"user_data", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist, &path, &pyFunc, &pyUserData))
         return -1;
 
     if (path) {
@@ -215,11 +216,17 @@ Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
         Py_XDECREF(tmp);
     }
 
-    if (PyCallable_Check(pyFunc))
-    {
+    if (PyCallable_Check(pyFunc)) {
         tmp = self->callback;
         Py_INCREF(pyFunc);
         self->callback = pyFunc;
+        Py_XDECREF(tmp);
+    }
+
+    if (pyUserData) {
+        tmp = self->callback_user_data;
+        Py_INCREF(pyUserData);
+        self->callback_user_data = pyUserData;
         Py_XDECREF(tmp);
     }
 
@@ -284,7 +291,11 @@ Reader_on_data_handler(shmdata_any_reader_t* reader, void* shmbuf, void* data, i
     if (self->callback != NULL && self->lastBuffer != NULL)
     {
         PyGILState_STATE gil = PyGILState_Ensure();
-        PyObject *arglist = Py_BuildValue("(O)", self->lastBuffer);
+        PyObject *arglist;
+        if (self->callback_user_data == NULL)
+            arglist = Py_BuildValue("(OO)", Py_None, self->lastBuffer);
+        else
+            arglist = Py_BuildValue("(OO)", self->callback_user_data, self->lastBuffer);
         PyObject *pyobjresult = PyEval_CallObject(self->callback, arglist);
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);

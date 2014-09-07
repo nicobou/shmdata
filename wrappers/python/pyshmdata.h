@@ -104,6 +104,7 @@ typedef struct {
     PyObject* datatype {NULL};
     PyObject* lastBuffer {NULL};
     PyObject* callback {NULL};
+    PyObject* callback_user_data {NULL};
     shmdata_any_reader_t* reader;
     std::mutex reader_mutex;
 } pyshmdata_ReaderObject;
