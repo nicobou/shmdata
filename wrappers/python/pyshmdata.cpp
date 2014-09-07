@@ -293,9 +293,9 @@ Reader_on_data_handler(shmdata_any_reader_t* reader, void* shmbuf, void* data, i
         PyGILState_STATE gil = PyGILState_Ensure();
         PyObject *arglist;
         if (self->callback_user_data == NULL)
-            arglist = Py_BuildValue("(OO)", Py_None, self->lastBuffer);
+            arglist = Py_BuildValue("(OOO)", Py_None, self->lastBuffer, self->datatype);
         else
-            arglist = Py_BuildValue("(OO)", self->callback_user_data, self->lastBuffer);
+            arglist = Py_BuildValue("(OOO)", self->callback_user_data, self->lastBuffer, self->datatype);
         PyObject *pyobjresult = PyEval_CallObject(self->callback, arglist);
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);
