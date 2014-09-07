@@ -297,6 +297,9 @@ Reader_on_data_handler(shmdata_any_reader_t* reader, void* shmbuf, void* data, i
         else
             arglist = Py_BuildValue("(OOO)", self->callback_user_data, self->lastBuffer, self->datatype);
         PyObject *pyobjresult = PyEval_CallObject(self->callback, arglist);
+        PyObject *pyerr = PyErr_Occurred();
+        if (pyerr != NULL)
+            PyErr_Print();
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);
         PyGILState_Release(gil);
