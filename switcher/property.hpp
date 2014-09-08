@@ -35,8 +35,8 @@ class Property:public Categorizable {
                             gpointer user_data);
   Property();
   ~Property();
-  Property(const Property & source);
-  Property & operator=(const Property & source);
+  Property(const Property &source);
+  Property &operator=(const Property &source);
 
   // this is when using an existing property
   void set_gobject_pspec(GObject * object, GParamSpec *pspec);
@@ -65,7 +65,7 @@ class Property:public Categorizable {
 
  private:
   void make_description();
-  void copy_property(const Property & source);
+  void copy_property(const Property &source);
   std::string long_name_;
   std::string name_;
   GParamSpec *property_;

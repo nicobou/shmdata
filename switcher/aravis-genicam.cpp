@@ -65,7 +65,7 @@ bool AravisGenicam::init_gpipe() {
                                               "name",
                                               "the genicam camera name obtained with the command arv-tool-0.2 or 'default')",
                                               nullptr),
-                 (Method::method_ptr) & start_wrapped,
+                 (Method::method_ptr) &start_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);

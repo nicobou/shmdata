@@ -36,7 +36,7 @@ class DecodebinToShmdata {
   ~DecodebinToShmdata();
   DecodebinToShmdata() = delete;
   DecodebinToShmdata(const DecodebinToShmdata &) = delete;
-  DecodebinToShmdata & operator=(const DecodebinToShmdata &) = delete;
+  DecodebinToShmdata &operator=(const DecodebinToShmdata &) = delete;
 
   // invoke a std::function on the internal decodebin as GstElement
   template<typename Return_type>

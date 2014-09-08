@@ -31,7 +31,7 @@ class StartableQuiddity {
   StartableQuiddity();
   virtual ~ StartableQuiddity();
   StartableQuiddity(const StartableQuiddity &) = delete;
-  StartableQuiddity & operator=(const StartableQuiddity &) = delete;
+  StartableQuiddity &operator=(const StartableQuiddity &) = delete;
 
  protected:
   void init_startable(void *quiddity);        // FIXME should called quiddity-manager-impl

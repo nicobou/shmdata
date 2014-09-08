@@ -52,7 +52,7 @@ class Quiddity {
   typedef std::shared_ptr<Quiddity> ptr;
   Quiddity();
   Quiddity(const Quiddity &) = delete;
-  Quiddity & operator=(const Quiddity &) = delete;
+  Quiddity &operator=(const Quiddity &) = delete;
   virtual ~Quiddity();
 
   // class documentation
@@ -107,8 +107,8 @@ class Quiddity {
     return fun (information_tree_);
   }
   
-  std::string get_info(const std::string & path);
-  Any get_data(const std::string & path);
+  std::string get_info(const std::string &path);
+  Any get_data(const std::string &path);
   template<template<class T, class = std::allocator<T>>
            class Container = std::list >
       Container<std::string>
@@ -208,9 +208,9 @@ class Quiddity {
 
  protected:
   // information
-  bool graft_tree(const std::string & path,
+  bool graft_tree(const std::string &path,
                   data::Tree::ptr tree_to_graft);
-  data::Tree::ptr prune_tree(const std::string & path);
+  data::Tree::ptr prune_tree(const std::string &path);
 
   // property
   bool install_property(GObject *object,

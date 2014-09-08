@@ -32,7 +32,7 @@ class FakeShmdataWriter:public GPipe, StartableQuiddity {
   FakeShmdataWriter();
   ~FakeShmdataWriter();
   FakeShmdataWriter(const FakeShmdataWriter &) = delete;
-  FakeShmdataWriter & operator=(const FakeShmdataWriter &) = delete;
+  FakeShmdataWriter &operator=(const FakeShmdataWriter &) = delete;
 
   bool add_shmdata_path(std::string name);
   bool start();

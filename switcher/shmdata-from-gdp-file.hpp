@@ -33,7 +33,7 @@ class ShmdataFromGDPFile:public Quiddity {
   ShmdataFromGDPFile();
   ~ShmdataFromGDPFile();
   ShmdataFromGDPFile(const ShmdataFromGDPFile &) = delete;
-  ShmdataFromGDPFile & operator=(const ShmdataFromGDPFile &) = delete;
+  ShmdataFromGDPFile &operator=(const ShmdataFromGDPFile &) = delete;
   bool init();
 
   // local streams

@@ -42,7 +42,7 @@ class PJSIP: public Quiddity {
   PJSIP();
   ~PJSIP();
   PJSIP(const PJSIP &) = delete;
-  PJSIP & operator=(const PJSIP &) = delete;
+  PJSIP &operator=(const PJSIP &) = delete;
   bool init();
   bool start();
   bool stop();

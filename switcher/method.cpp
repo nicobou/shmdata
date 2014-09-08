@@ -33,16 +33,16 @@ Method::~Method() {
     g_closure_unref(closure_);
 }
 
-Method::Method(const Method & source) {
+Method::Method(const Method &source) {
   copy_method(source);
 }
 
-Method & Method::operator=(const Method & source) {
+Method &Method::operator=(const Method &source) {
   copy_method(source);
   return *this;
 }
 
-void Method::copy_method(const Method & source) {
+void Method::copy_method(const Method &source) {
   long_name_ = source.long_name_;
   method_name_ = source.method_name_;
   short_description_ = source.short_description_;

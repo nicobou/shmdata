@@ -31,7 +31,7 @@ class SinglePadGstSink:public GPipe {
   SinglePadGstSink();
   ~SinglePadGstSink();
   SinglePadGstSink(const SinglePadGstSink &) = delete;
-  SinglePadGstSink & operator=(const SinglePadGstSink &) = delete;
+  SinglePadGstSink &operator=(const SinglePadGstSink &) = delete;
 
   //  protected: // made public for allowing composition and/or delegation
   void set_sink_element(GstElement *sink);

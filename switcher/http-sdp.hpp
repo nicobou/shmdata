@@ -30,7 +30,7 @@ class HTTPSDP:public GPipe, public GstElementCleaner {
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDP);
   HTTPSDP();
   HTTPSDP(const HTTPSDP &) = delete;
-  HTTPSDP & operator=(const HTTPSDP &) = delete;
+  HTTPSDP &operator=(const HTTPSDP &) = delete;
 
   bool to_shmdata(std::string uri);
 

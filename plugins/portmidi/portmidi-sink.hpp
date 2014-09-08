@@ -36,7 +36,7 @@ class PortMidiSink:public Quiddity, public Segment,
   PortMidiSink();
   ~PortMidiSink();
   PortMidiSink(const PortMidiSink &) = delete;
-  PortMidiSink & operator=(const PortMidiSink &) = delete;
+  PortMidiSink &operator=(const PortMidiSink &) = delete;
 
  private:
   CustomPropertyHelper::ptr custom_props_;

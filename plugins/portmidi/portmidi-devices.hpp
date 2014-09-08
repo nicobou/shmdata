@@ -44,7 +44,7 @@ class PortMidi {
   PortMidi();
   virtual ~ PortMidi();
   PortMidi(const PortMidi &) = delete;
-  PortMidi & operator=(const PortMidi &) = delete;
+  PortMidi &operator=(const PortMidi &) = delete;
 
  protected:
   // info

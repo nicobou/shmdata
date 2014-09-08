@@ -41,7 +41,7 @@ class PJPresence {
   explicit PJPresence(PJSIP *sip_instance);
   ~PJPresence();
   PJPresence(const PJPresence &) = delete;
-  PJPresence & operator=(const PJPresence &) = delete;
+  PJPresence &operator=(const PJPresence &) = delete;
 
   enum {
     AVAILABLE, BUSY, OTP, IDLE, AWAY, BRB, OFFLINE, OPT_MAX
@@ -66,9 +66,9 @@ class PJPresence {
   // registration
   static void on_registration_state(pjsua_acc_id acc_id,
                                     pjsua_reg_info *info);
-  void register_account(const std::string & sip_user,
-                        const std::string & sip_domain,
-                        const std::string & sip_password);
+  void register_account(const std::string &sip_user,
+                        const std::string &sip_domain,
+                        const std::string &sip_password);
   static gboolean register_account_wrapped(gchar * user, gchar *domain,
                                            gchar *password,
                                            void *user_data);
@@ -77,7 +77,7 @@ class PJPresence {
                                              void *user_data);
 
   // buddies
-  void add_buddy(const std::string & sip_user);
+  void add_buddy(const std::string &sip_user);
   static void on_buddy_state(pjsua_buddy_id buddy_id);
 
   // online status

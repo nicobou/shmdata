@@ -32,7 +32,7 @@ class GstVideoParseToBinSrc:public VideoSource {
   GstVideoParseToBinSrc();
   ~GstVideoParseToBinSrc();
   GstVideoParseToBinSrc(const GstVideoParseToBinSrc &) = delete;
-  GstVideoParseToBinSrc & operator=(const GstVideoParseToBinSrc &) =
+  GstVideoParseToBinSrc &operator=(const GstVideoParseToBinSrc &) =
       delete;
 
   bool on_start();

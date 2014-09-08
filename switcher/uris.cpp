@@ -63,7 +63,7 @@ bool Uris::init() {
                                               "uri",
                                               "the uri to add",
                                               nullptr),
-                 (Method::method_ptr) & add_uri_wrapped,
+                 (Method::method_ptr) &add_uri_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
@@ -74,7 +74,7 @@ bool Uris::init() {
                  "success or fail",
                  Method::make_arg_description("none",
                                               nullptr),
-                 (Method::method_ptr) & play_wrapped,
+                 (Method::method_ptr) &play_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_NONE, nullptr),
                  this);
@@ -179,7 +179,7 @@ void Uris::group_add_uri(Group *group, const char *uri) {
       break;
     case GROUP_TO_PAUSED:
       uri_tmp = g_strdup(uri);
-      group_queue_command(group, (gpointer) & group_add_uri, uri_tmp);
+      group_queue_command(group, (gpointer) &group_add_uri, uri_tmp);
       return;
       break;
     case GROUP_PLAYING:
@@ -189,7 +189,7 @@ void Uris::group_add_uri(Group *group, const char *uri) {
       break;
     case GROUP_TO_PLAYING:
       uri_tmp = g_strdup(uri);
-      group_queue_command(group, (gpointer) & group_add_uri, uri_tmp);
+      group_queue_command(group, (gpointer) &group_add_uri, uri_tmp);
       return;
       break;
     default:
@@ -470,7 +470,7 @@ gboolean Uris::group_play(Group *group) {
       break;
     case GROUP_TO_PAUSED:
       group_queue_command(group,
-                          (gpointer) & group_play_wrapped_for_commands,
+                          (gpointer) &group_play_wrapped_for_commands,
                           nullptr);
       break;
     case GROUP_PLAYING:
@@ -609,7 +609,7 @@ gboolean Uris::group_pause(Group *group) {
       break;
     case GROUP_TO_PLAYING:
       group_queue_command(group,
-                          (gpointer) & group_pause_wrapped_for_commands,
+                          (gpointer) &group_pause_wrapped_for_commands,
                           nullptr);
       break;
     default:
@@ -669,13 +669,13 @@ gboolean Uris::group_seek(Group *group, gdouble position) {
   switch (group->state) {
     case GROUP_TO_PAUSED:
       group_queue_command(group,
-                          (gpointer) & group_seek_wrapped_for_commands,
+                          (gpointer) &group_seek_wrapped_for_commands,
                           nullptr);
       return FALSE;
       break;
     case GROUP_TO_PLAYING:
       group_queue_command(group,
-                          (gpointer) & group_seek_wrapped_for_commands,
+                          (gpointer) &group_seek_wrapped_for_commands,
                           nullptr);
       return FALSE;
       break;

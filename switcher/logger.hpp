@@ -33,7 +33,7 @@ class Logger:public Quiddity {
   Logger();
   ~Logger();
   Logger(const Logger &) = delete;
-  Logger & operator=(const Logger &) = delete;
+  Logger &operator=(const Logger &) = delete;
   bool init();
 
  private:

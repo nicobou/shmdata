@@ -368,7 +368,7 @@ void GTKVideo::set_fullscreen(gboolean fullscreen, void *user_data) {
 void GTKVideo::on_shmdata_connect(std::string /*shmdata_sochet_path */ ) {
   gdk_threads_enter();
   g_object_set_data(G_OBJECT(xvimagesink_),
-                    "window-handle", (gpointer) & window_handle_);
+                    "window-handle", (gpointer) &window_handle_);
   gdk_threads_leave();
 }
 

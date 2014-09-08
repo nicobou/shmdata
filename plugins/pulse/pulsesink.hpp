@@ -35,7 +35,7 @@ class PulseSink:public SinglePadGstSink {
   PulseSink();
   ~PulseSink();
   PulseSink(const PulseSink &) = delete;
-  PulseSink & operator=(const PulseSink &) = delete;
+  PulseSink &operator=(const PulseSink &) = delete;
 
  private:
   typedef struct {

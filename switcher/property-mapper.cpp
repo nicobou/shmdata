@@ -63,7 +63,7 @@ bool PropertyMapper::init() {
                                               "property_name",        // fisrt arg name
                                               "Name of the property",  // first arg description
                                               nullptr),
-                 (Method::method_ptr) & set_source_property_method,
+                 (Method::method_ptr) &set_source_property_method,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    G_TYPE_STRING,
@@ -80,7 +80,7 @@ bool PropertyMapper::init() {
                                               "property_name",        // fisrt arg name
                                               "Name of the property",  // first arg description
                                               nullptr),
-                 (Method::method_ptr) & set_sink_property_method,
+                 (Method::method_ptr) &set_sink_property_method,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    G_TYPE_STRING,

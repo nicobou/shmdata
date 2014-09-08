@@ -35,7 +35,7 @@ class PulseSrc:public AudioSource, public StartableQuiddity {
   PulseSrc();
   ~PulseSrc();
   PulseSrc(const PulseSrc &) = delete;
-  PulseSrc & operator=(const PulseSrc &) = delete;
+  PulseSrc &operator=(const PulseSrc &) = delete;
 
  private:
   typedef struct {

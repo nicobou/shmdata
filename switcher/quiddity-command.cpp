@@ -106,13 +106,13 @@ JSONBuilder::Node QuiddityCommand::get_json_root_node() {
   json_builder_->add_int_member("calling time", (gint) time_);
   json_builder_->set_member_name("arguments");
   json_builder_->begin_array();
-  for (auto & it : args_)
+  for (auto &it : args_)
     json_builder_->add_string_value(it.c_str());
   json_builder_->end_array();
 
   json_builder_->set_member_name("vector argument");
   json_builder_->begin_array();
-  for (auto & it : vector_arg_)
+  for (auto &it : vector_arg_)
     json_builder_->add_string_value(it.c_str());
   json_builder_->end_array();
   json_builder_->set_member_name("results");
@@ -120,7 +120,7 @@ JSONBuilder::Node QuiddityCommand::get_json_root_node() {
   if (result_.empty())
     json_builder_->add_string_value("");
   else
-    for (auto & it : result_)
+    for (auto &it : result_)
       json_builder_->add_string_value(it.c_str());
   json_builder_->end_array();
   json_builder_->end_object();

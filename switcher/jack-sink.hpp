@@ -31,7 +31,7 @@ class JackSink:public SinglePadGstSink, public StartableQuiddity {
   JackSink();
   ~JackSink();
   JackSink(const JackSink &) = delete;
-  JackSink & operator=(const JackSink &) = delete;
+  JackSink &operator=(const JackSink &) = delete;
 
  private:
   GstElement *jacksink_;

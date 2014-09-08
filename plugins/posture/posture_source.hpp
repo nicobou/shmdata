@@ -39,7 +39,7 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   PostureSrc();
   ~PostureSrc();
   PostureSrc(const PostureSrc &) = delete;
-  PostureSrc & operator=(const PostureSrc &) = delete;
+  PostureSrc &operator=(const PostureSrc &) = delete;
 
   bool start();
   bool stop();

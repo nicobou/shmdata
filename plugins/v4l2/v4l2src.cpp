@@ -108,7 +108,7 @@ bool V4L2Src::init_gpipe() {
 
 void V4L2Src::update_capture_device() {
   gint i = 0;
-  for (auto & it : capture_devices_) {
+  for (auto &it : capture_devices_) {
     devices_enum_[i].value = i;
     // FIXME previous free here
     devices_enum_[i].value_name = g_strdup(it.card_.c_str());
@@ -137,7 +137,7 @@ void V4L2Src::update_discrete_resolution(CaptureDescription cap_descr) {
   // resolution_ = -1;
   if (!cap_descr.frame_size_discrete_.empty()) {
     gint i = 0;
-    for (auto & it : cap_descr.frame_size_discrete_) {
+    for (auto &it : cap_descr.frame_size_discrete_) {
       resolutions_enum_[i].value = i;
       // FIXME free previous here
       resolutions_enum_[i].value_name = g_strdup_printf("%sx%s",
@@ -172,7 +172,7 @@ void V4L2Src::update_discrete_framerate(CaptureDescription cap_descr) {
   // framerate_ = -1;
   if (!cap_descr.frame_interval_discrete_.empty()) {
     gint i = 0;
-    for (auto & it : cap_descr.frame_interval_discrete_) {
+    for (auto &it : cap_descr.frame_interval_discrete_) {
       framerates_enum_[i].value = i;
       // FIXME free previous here
       // inversing enumerator and denominator because gst wants framerate while v4l2 gives frame interval
@@ -289,7 +289,7 @@ void V4L2Src::update_tv_standard(CaptureDescription cap_descr) {
   // tv_standard_ = -1;
   if (!cap_descr.tv_standards_.empty()) {
     gint i = 0;
-    for (auto & it : cap_descr.tv_standards_) {
+    for (auto &it : cap_descr.tv_standards_) {
       tv_standards_enum_[i].value = i;
       // FIXME free previous here
       tv_standards_enum_[i].value_name = g_strdup(it.c_str());
@@ -645,14 +645,14 @@ const gchar *V4L2Src::get_capture_devices_json(void *user_data) {
   builder->set_member_name("capture devices");
   builder->begin_array();
 
-  for (auto & it : context->capture_devices_) {
+  for (auto &it : context->capture_devices_) {
     builder->begin_object();
     builder->add_string_member("long name", it.card_.c_str());
     builder->add_string_member("file path", it.file_device_.c_str());
     builder->add_string_member("bus info", it.bus_info_.c_str());
     builder->set_member_name("resolutions list");
     builder->begin_array();
-    for (auto & frame_size_it : it.frame_size_discrete_) {
+    for (auto &frame_size_it : it.frame_size_discrete_) {
       builder->begin_object();
       builder->add_string_member("width", frame_size_it.first.c_str());
       builder->add_string_member("height", frame_size_it.second.c_str());
@@ -686,14 +686,14 @@ const gchar *V4L2Src::get_capture_devices_json(void *user_data) {
     g_free(stepwise_step_height);
     builder->set_member_name("tv standards list");
     builder->begin_array();
-    for (auto & tv_standards_it : it.tv_standards_)
+    for (auto &tv_standards_it : it.tv_standards_)
       builder->add_string_value(tv_standards_it.c_str());
     builder->end_array();
 
     builder->set_member_name("frame interval list (sec.)");
     builder->begin_array();
     if (!it.frame_interval_discrete_.empty())
-      for (auto & frame_interval_it : it.frame_interval_discrete_) {
+      for (auto &frame_interval_it : it.frame_interval_discrete_) {
         builder->begin_object();
         builder->add_string_member("numerator",
                                    frame_interval_it.first.c_str());

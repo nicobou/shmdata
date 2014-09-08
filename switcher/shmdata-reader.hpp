@@ -40,7 +40,7 @@ class ShmdataReader:public OnCaps, public GstElementCleaner {
   ShmdataReader();
   ~ShmdataReader();
   ShmdataReader(const ShmdataReader &) = delete;
-  ShmdataReader & operator=(const ShmdataReader &) = delete;
+  ShmdataReader &operator=(const ShmdataReader &) = delete;
   void set_path(const char *absolute_path);
   void set_bin(GstElement *bin);
   void set_g_main_context(GMainContext *context);

@@ -37,7 +37,7 @@ class GObjectWrapper {
   GObjectWrapper();
   ~GObjectWrapper();
   GObjectWrapper(const GObjectWrapper &) = delete;
-  GObjectWrapper & operator=(const GObjectWrapper &) = delete;
+  GObjectWrapper &operator=(const GObjectWrapper &) = delete;
 
   GObject *get_gobject();
 

@@ -39,7 +39,7 @@ class CounterMap {
   virtual ~ CounterMap();
 
  protected:
-  uint get_count(const std::string & key);
+  uint get_count(const std::string &key);
   void reset_counter_map();
 
  private:

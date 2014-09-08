@@ -37,7 +37,7 @@ class ShmdataToOsc:public Quiddity, public Segment, public StartableQuiddity {
   ShmdataToOsc();
   ~ShmdataToOsc();
   ShmdataToOsc(const ShmdataToOsc &) = delete;
-  ShmdataToOsc & operator=(const ShmdataToOsc &) = delete;
+  ShmdataToOsc &operator=(const ShmdataToOsc &) = delete;
 
  private:
   CustomPropertyHelper::ptr custom_props_;

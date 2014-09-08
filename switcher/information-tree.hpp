@@ -50,7 +50,7 @@ class Tree {
   typedef std::shared_ptr<const Tree> ptrc;
   typedef std::pair<std::string, Tree::ptr> child_type;
   typedef std::list<child_type> childs_t;
-  typedef std::function <void(const std::string & name,
+  typedef std::function <void(const std::string &name,
                               const Tree::ptrc tree,
                               bool is_array_element)> OnNodeFunction;
   typedef std::pair <Tree::childs_t,
@@ -63,10 +63,10 @@ class Tree {
   bool is_array() const;
   bool has_data() const;
   const Any read_data () const;
-  bool is_leaf(const std::string & path) const;
-  bool is_array(const std::string & path) const;
-  bool has_data(const std::string & path) const;
-  const Any read_data (const std::string & path) const;
+  bool is_leaf(const std::string &path) const;
+  bool is_array(const std::string &path) const;
+  bool has_data(const std::string &path) const;
+  const Any read_data (const std::string &path) const;
   // get child keys - returning a newly allocated container
   template<template<class T, class = std::allocator<T>>
            class Container = std::list>
@@ -80,7 +80,7 @@ class Tree {
       std::transform(found.second->second->childrens_.cbegin(),
                      found.second->second->childrens_.cend(),
                      res.begin(),
-                     [](const child_type & child) {
+                     [](const child_type &child) {
                        return child.first;
                      });
     }
@@ -95,7 +95,7 @@ class Tree {
       std::transform(found.second->second->childrens_.begin(),
                      found.second->second->childrens_.end(),
                      pos,
-                     [](const child_type & child) {
+                     [](const child_type &child) {
                        return child.first;
                      });
     }
@@ -109,10 +109,10 @@ class Tree {
   static bool is_array(Tree::ptrc tree);
   static bool has_data(Tree::ptrc tree);
   static const Any read_data (Tree::ptrc tree);
-  static bool is_leaf(Tree::ptrc tree, const std::string & path);
-  static bool is_array(Tree::ptrc tree, const std::string & path);
-  static bool has_data(Tree::ptrc tree, const std::string & path);
-  static const Any read_data (Tree::ptrc tree, const std::string & path);
+  static bool is_leaf(Tree::ptrc tree, const std::string &path);
+  static bool is_array(Tree::ptrc tree, const std::string &path);
+  static bool has_data(Tree::ptrc tree, const std::string &path);
+  static const Any read_data (Tree::ptrc tree, const std::string &path);
   // get child keys - returning a newly allocated container
   template<template<class T, class = std::allocator<T>>
            class Container = std::list>
@@ -127,31 +127,31 @@ class Tree {
   
   //Tree modifications:
   Any get_data();
-  void set_data(const Any & data);
+  void set_data(const Any &data);
   void set_data(const char *data);
   void set_data(std::nullptr_t ptr);
-  Any get_data(const std::string & path);
-  bool set_data(const std::string & path, const Any & data);
-  bool set_data(const std::string & path, const char *data);
-  bool set_data(const std::string & path, std::nullptr_t ptr);
+  Any get_data(const std::string &path);
+  bool set_data(const std::string &path, const Any &data);
+  bool set_data(const std::string &path, const char *data);
+  bool set_data(const std::string &path, std::nullptr_t ptr);
   // graft will create the path and graft the tree,
   // or remove old one and replace will the new tree
-  bool graft(const std::string & path, Tree::ptr);
+  bool graft(const std::string &path, Tree::ptr);
   // return empty tree if nothing can be pruned
-  Tree::ptr prune(const std::string & path);
+  Tree::ptr prune(const std::string &path);
   // get but not remove
-  Tree::ptr get(const std::string & path);
+  Tree::ptr get(const std::string &path);
   // return false if the path does not exist
   // when a path is tagged as an array, keys might be discarded
   // by some serializers, such as JSON
-  bool tag_as_array(const std::string & path, bool is_array);
+  bool tag_as_array(const std::string &path, bool is_array);
 
  private:
   Any data_ {};
   bool is_array_ {false};
   mutable childs_t childrens_ {};
   mutable std::mutex mutex_ {};
-  childs_t::iterator get_child_iterator(const std::string & key) const;
+  childs_t::iterator get_child_iterator(const std::string &key) const;
   static bool graft_next(std::istringstream &path, Tree *tree,
                          Tree::ptr leaf);
   GetNodeReturn get_node(const std::string &path) const;

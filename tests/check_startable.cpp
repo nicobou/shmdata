@@ -30,7 +30,7 @@ main() {
 
   std::vector<std::string> classes = manager->get_classes();
 
-  for (auto & it : classes)
+  for (auto &it : classes)
     if (!switcher::QuiddityBasicTest::test_startable(manager, it))
       success = false;
 

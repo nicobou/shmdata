@@ -36,7 +36,7 @@ class PostureDisplay:public Quiddity, public Segment {
   PostureDisplay();
   ~PostureDisplay();
   PostureDisplay(const PostureDisplay &) = delete;
-  PostureDisplay & operator=(const PostureDisplay &) = delete;
+  PostureDisplay &operator=(const PostureDisplay &) = delete;
 
  private:
   CustomPropertyHelper::ptr custom_props_;

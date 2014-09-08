@@ -45,7 +45,7 @@ class QuidditySignalSubscriber {
   QuidditySignalSubscriber();
   ~QuidditySignalSubscriber();
   QuidditySignalSubscriber(const QuidditySignalSubscriber &) = delete;
-  QuidditySignalSubscriber & operator=(const QuidditySignalSubscriber &)
+  QuidditySignalSubscriber &operator=(const QuidditySignalSubscriber &)
   = delete;
   void mute(bool muted);
 

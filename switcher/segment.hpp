@@ -46,7 +46,7 @@ class Segment:public CounterMap
   Segment();
   virtual ~ Segment();
   Segment(const Segment &) = delete;
-  Segment & operator=(const Segment &) = delete;
+  Segment &operator=(const Segment &) = delete;
   bool init_segment(Quiddity *quid);
 
  protected:

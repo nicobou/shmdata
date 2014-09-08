@@ -32,7 +32,7 @@ class VideoSource:public GPipe, public StartableQuiddity {
   VideoSource();
   ~VideoSource();
   VideoSource(const VideoSource &) = delete;
-  VideoSource & operator=(const VideoSource &) = delete;
+  VideoSource &operator=(const VideoSource &) = delete;
   bool start();
   bool stop();
 

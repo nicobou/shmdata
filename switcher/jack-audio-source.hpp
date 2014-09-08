@@ -32,7 +32,7 @@ class JackAudioSource:public AudioSource, public StartableQuiddity {
   JackAudioSource();
   ~JackAudioSource();
   JackAudioSource(const JackAudioSource &) = delete;
-  JackAudioSource & operator=(const JackAudioSource &) = delete;
+  JackAudioSource &operator=(const JackAudioSource &) = delete;
 
   bool start();
   bool stop();

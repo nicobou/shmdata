@@ -29,10 +29,10 @@ struct Widget:public DefaultSerializable<Widget> {
 
 //----------------- a custom struct with operator <<
 struct SerializableWidget {
-  friend std::ostream & operator<<(std::ostream & os,
+  friend std::ostream &operator<<(std::ostream &os,
                                    const SerializableWidget &);
 };
-std::ostream & operator<<(std::ostream & os, const SerializableWidget &) {
+std::ostream &operator<<(std::ostream &os, const SerializableWidget &) {
   os << "hello";
   return os;
 }
@@ -192,7 +192,7 @@ main() {
       "child1", "child2", "child3",
           "child4", "child5", "child6", "child7", "child8", "child9"};
     std::for_each(childs.begin(),
-                  childs.end(),[tree] (const std::string & val) {
+                  childs.end(),[tree] (const std::string &val) {
                     tree->graft(".root." + val, make_tree("val"));
                   });
     std::vector<std::string> child_keys;
@@ -214,11 +214,11 @@ main() {
       "child1", "child2", "child3",
           "child4", "child5", "child6", "child7", "child8", "child9"};
     std::for_each(childs.begin(),
-                  childs.end(),[tree] (const std::string & val) {
+                  childs.end(),[tree] (const std::string &val) {
                     tree->graft(".root." + val, make_tree("val"));
                   });
     auto string_compare =
-        [](const std::string & first, const std::string & second)
+        [](const std::string &first, const std::string &second)
         { return (0 == first.compare(second));
         };
 

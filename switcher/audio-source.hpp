@@ -29,7 +29,7 @@ class AudioSource:public GPipe {
   typedef std::shared_ptr<AudioSource> ptr;
   AudioSource();
   AudioSource(const AudioSource &) = delete;
-  AudioSource & operator=(const AudioSource &) = delete;
+  AudioSource &operator=(const AudioSource &) = delete;
  private:
   GstElement *rawaudio_ {nullptr};
   GstElement *audio_tee_ {nullptr};

@@ -33,7 +33,7 @@ class GstParseToBinSrc:public GPipe, StartableQuiddity {
   GstParseToBinSrc();
   ~GstParseToBinSrc();
   GstParseToBinSrc(const GstParseToBinSrc &) = delete;
-  GstParseToBinSrc & operator=(const GstParseToBinSrc &) = delete;
+  GstParseToBinSrc &operator=(const GstParseToBinSrc &) = delete;
 
   bool start();
   bool stop();

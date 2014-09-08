@@ -159,7 +159,7 @@ SDPDescription::SDPDescription():
   gst_sdp_message_set_version(sdp_description_, "0");
 
   // FIXME check and chose between IP4 and IP6, IP4 hardcoded
-  // FIXME generate proper session id & version
+  // FIXME generate proper session id &version
   gst_sdp_message_set_origin(sdp_description_, "-",   // the user name
                              "1188340656180883",      // a session id
                              "1",     // a session version
@@ -183,7 +183,7 @@ std::string SDPDescription::get_string() {
   return gst_sdp_message_as_text(sdp_description_);
 }
 
-bool SDPDescription::add_media(const SDPMedia & media) {
+bool SDPDescription::add_media(const SDPMedia &media) {
   if (!media.add_to_sdp_description(sdp_description_, index_))
     return false;
   index_++;

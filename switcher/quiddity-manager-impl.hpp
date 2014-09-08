@@ -45,11 +45,11 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
                                          void *user_data);
 
   static QuiddityManager_Impl::ptr make_manager();    // will get name "default"
-  static QuiddityManager_Impl::ptr make_manager(const std::string & name);
+  static QuiddityManager_Impl::ptr make_manager(const std::string &name);
   QuiddityManager_Impl() = delete;
   virtual ~ QuiddityManager_Impl();
   QuiddityManager_Impl(const QuiddityManager_Impl &) = delete;
-  QuiddityManager_Impl & operator=(const QuiddityManager_Impl &) = delete;
+  QuiddityManager_Impl &operator=(const QuiddityManager_Impl &) = delete;
 
   // plugins
   bool scan_directory_for_plugins(const char *directory_path);
@@ -102,7 +102,7 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   std::string get_property_description_by_class(std::string class_name,
                                                 std::string
                                                 property_name);
-  // set & get
+  // set &get
   bool set_property(std::string quiddity_name,
                     std::string property_name, std::string property_value);
   std::string get_property(std::string quiddity_name,

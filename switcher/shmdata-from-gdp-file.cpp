@@ -50,7 +50,7 @@ bool ShmdataFromGDPFile::init() {
                                               "shmpath",
                                               "shmdata socket path to create",
                                               nullptr),
-                 (Method::method_ptr) & add_file_wrapped,
+                 (Method::method_ptr) &add_file_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    G_TYPE_STRING,
@@ -65,7 +65,7 @@ bool ShmdataFromGDPFile::init() {
                                               "filepath",
                                               "file path to remove",
                                               nullptr),
-                 (Method::method_ptr) & remove_file_wrapped,
+                 (Method::method_ptr) &remove_file_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr),
@@ -158,7 +158,7 @@ bool ShmdataFromGDPFile::make_players() {
     manager_ = QuiddityManager::make_manager("manager_" + get_name());
     // FIXME pause pipeline
   }
-  for (auto & it : shmdata_names_) {
+  for (auto &it : shmdata_names_) {
     manager_->create("gstsrc", it.first.c_str());
     gchar *pipe =
         g_strdup_printf("filesrc location=%s ! gdpdepay ! identity sync=true",

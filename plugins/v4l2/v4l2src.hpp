@@ -29,7 +29,7 @@ class V4L2Src:public VideoSource {
   V4L2Src();
   ~V4L2Src();
   V4L2Src(const V4L2Src &) = delete;
-  V4L2Src & operator=(const V4L2Src &) = delete;
+  V4L2Src &operator=(const V4L2Src &) = delete;
 
   // use "NONE" for used arguments
   /* bool capture_full (const char *device_file_path,  */

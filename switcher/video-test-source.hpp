@@ -30,7 +30,7 @@ class VideoTestSource:public VideoSource {
   VideoTestSource();
   ~VideoTestSource();
   VideoTestSource(const VideoTestSource &) = delete;
-  VideoTestSource & operator=(const VideoTestSource &) = delete;
+  VideoTestSource &operator=(const VideoTestSource &) = delete;
 
  private:
   GstElement *videotestsrc_;

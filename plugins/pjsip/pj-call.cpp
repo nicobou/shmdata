@@ -142,7 +142,7 @@ PJCall::PJCall(PJSIP *sip_instance):
                                                   "url",  // name
                                                   "string",  // description
                                                   nullptr),
-                     (Method::method_ptr) & hang_up,
+                     (Method::method_ptr) &hang_up,
                      G_TYPE_BOOLEAN,
                      Method::make_arg_type_description
                      (G_TYPE_STRING, nullptr), this);
@@ -1479,7 +1479,7 @@ PJCall::create_outgoing_sdp(struct call *call,
                  });
 
   gint port = starting_rtp_port_;
-  for (auto & it : paths) {
+  for (auto &it : paths) {
     //std::string data = quid->get_data("rtp_caps." + it);
     std::string data = manager->
         invoke_info_tree<std::string>("siprtp",

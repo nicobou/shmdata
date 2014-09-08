@@ -117,7 +117,7 @@ class QuiddityManager: public std::enable_shared_from_this<QuiddityManager>
   std::string get_property_description_by_class(std::string class_name,
                                                 std::string
                                                 property_name);
-  // set & get
+  // set &get
   bool set_property(std::string quiddity_name,
                     std::string property_name, std::string property_value);
 

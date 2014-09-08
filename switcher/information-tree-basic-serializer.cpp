@@ -74,7 +74,7 @@ std::string serialize(Tree::ptrc tree) {
   return data.result_;
 }
 
-Tree::ptr deserialize(const std::string & serialized) {
+Tree::ptr deserialize(const std::string &serialized) {
   Tree::ptr tree = make_tree();
   std::istringstream ss(serialized);
   std::string line;

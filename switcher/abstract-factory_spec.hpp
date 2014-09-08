@@ -52,7 +52,7 @@ template<typename T, typename Key, typename Doc>
 std::vector<Key > AbstractFactory < T, Key, Doc>::get_keys() {
   std::vector<Key> constructor_names;
 
-  for (auto & it:constructor_map_) {
+  for (auto &it:constructor_map_) {
     constructor_names.push_back(it.first);
   }
 

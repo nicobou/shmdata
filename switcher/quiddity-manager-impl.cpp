@@ -59,12 +59,12 @@ QuiddityManager_Impl::ptr QuiddityManager_Impl::make_manager() {
 }
 
 QuiddityManager_Impl::ptr
-QuiddityManager_Impl::make_manager(const std::string & name) {
+QuiddityManager_Impl::make_manager(const std::string &name) {
   QuiddityManager_Impl::ptr manager(new QuiddityManager_Impl(name));
   return manager;
 }
 
-QuiddityManager_Impl::QuiddityManager_Impl(const std::string & name):
+QuiddityManager_Impl::QuiddityManager_Impl(const std::string &name):
     plugins_(),
     name_(name),
     abstract_factory_(),
@@ -392,7 +392,7 @@ QuiddityManager_Impl::rename(std::string nick_name,
 
 std::vector<std::string> QuiddityManager_Impl::get_instances() {
   std::vector<std::string> res;
-  for (auto & it : quiddities_nick_names_)
+  for (auto &it : quiddities_nick_names_)
     res.push_back(it.first);
   return res;
 }
@@ -497,9 +497,9 @@ bool QuiddityManager_Impl::remove_without_hook(std::string quiddity_name) {
             quiddity_name.c_str());
     return false;
   }
-  for (auto & it : property_subscribers_)
+  for (auto &it : property_subscribers_)
     it.second->unsubscribe(get_quiddity(quiddity_name));
-  for (auto & it : signal_subscribers_)
+  for (auto &it : signal_subscribers_)
     it.second->unsubscribe(get_quiddity(quiddity_name));
   quiddities_.erase(quiddities_nick_names_[quiddity_name]);
   quiddities_nick_names_.erase(quiddity_name);
@@ -512,9 +512,9 @@ bool QuiddityManager_Impl::remove(std::string quiddity_name) {
               quiddity_name.c_str());
     return false;
   }
-  for (auto & it : property_subscribers_)
+  for (auto &it : property_subscribers_)
     it.second->unsubscribe(get_quiddity(quiddity_name));
-  for (auto & it : signal_subscribers_)
+  for (auto &it : signal_subscribers_)
     it.second->unsubscribe(get_quiddity(quiddity_name));
   quiddities_.erase(quiddities_nick_names_[quiddity_name]);
   quiddities_nick_names_.erase(quiddity_name);
@@ -678,7 +678,7 @@ QuiddityManager_Impl::unsubscribe_property(std::string subscriber_name,
 std::vector<std::string>
 QuiddityManager_Impl::list_property_subscribers() {
   std::vector<std::string> res;
-  for (auto & it : property_subscribers_)
+  for (auto &it : property_subscribers_)
     res.push_back(it.first);
   return res;
 }
@@ -713,7 +713,7 @@ QuiddityManager_Impl::list_subscribed_properties_json(std::string
   doc->begin_object();
   doc->set_member_name("subscribed properties");
   doc->begin_array();
-  for (auto & it : subscribed_props) {
+  for (auto &it : subscribed_props) {
     doc->begin_object();
     doc->add_string_member("quiddity", it.first.c_str());
     doc->add_string_member("property", it.second.c_str());
@@ -915,12 +915,12 @@ get_signal_description_by_class(std::string class_name,
 // higher level subscriber
 
 void QuiddityManager_Impl::mute_signal_subscribers(bool muted) {
-  for (auto & it : signal_subscribers_)
+  for (auto &it : signal_subscribers_)
     it.second->mute(muted);
 }
 
 void QuiddityManager_Impl::mute_property_subscribers(bool muted) {
-  for (auto & it : property_subscribers_)
+  for (auto &it : property_subscribers_)
     it.second->mute(muted);
 }
 
@@ -1006,7 +1006,7 @@ QuiddityManager_Impl::unsubscribe_signal(std::string subscriber_name,
 
 std::vector<std::string> QuiddityManager_Impl::list_signal_subscribers() {
   std::vector<std::string> res;
-  for (auto & it : signal_subscribers_)
+  for (auto &it : signal_subscribers_)
     res.push_back(it.first);
   return res;
 }
@@ -1041,7 +1041,7 @@ QuiddityManager_Impl::list_subscribed_signals_json(std::string
   doc->begin_object();
   doc->set_member_name("subscribed signals");
   doc->begin_array();
-  for (auto & it : subscribed_sigs) {
+  for (auto &it : subscribed_sigs) {
     doc->begin_object();
     doc->add_string_member("quiddity", it.first.c_str());
     doc->add_string_member("signal", it.second.c_str());
@@ -1178,8 +1178,8 @@ QuiddityManager_Impl::scan_directory_for_plugins(const char
 }
 
 std::string
-QuiddityManager_Impl::get_info(const std::string & nick_name,
-                               const std::string & path) {
+QuiddityManager_Impl::get_info(const std::string &nick_name,
+                               const std::string &path) {
   auto it = quiddities_nick_names_.find(nick_name);
   if (quiddities_nick_names_.end() == it)
     return "{ \"error\":\"quiddity not found\"}";

@@ -57,7 +57,7 @@ bool HTTPSDP::init_gpipe() {
                                               "url",
                                               "the url to the sdp file",
                                               nullptr),
-                 (Method::method_ptr) & to_shmdata_wrapped,
+                 (Method::method_ptr) &to_shmdata_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);

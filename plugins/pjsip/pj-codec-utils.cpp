@@ -82,7 +82,7 @@ PJCodecUtils::inspect_rtp_codec_from_gst_element_factory
                        });
       if (from_caps.end() != not_null_encoding) {
         std::string encoding = (*not_null_encoding)->encoding_name_;
-        for (auto & it : from_caps)
+        for (auto &it : from_caps)
           if (0 == it->encoding_name_.compare("null"))
             it->encoding_name_ = encoding;
         // g_print ("found encoding name %s\n",
@@ -185,7 +185,7 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
         get_string_values_from_gst_struct(caps_struct, "encoding-name");
     std::for_each(encoding_names.begin(),
                   encoding_names.end(),
-                  [&res] (const std::string & str) {
+                  [&res] (const std::string &str) {
                     // g_print ("writing encoding in res\n");
                     // FIXME use make_unique and emplace_back when c++14
                     res.push_back(RTPCodec::ptr(new RTPCodec()));
@@ -201,12 +201,12 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
     PJCodecUtils::codecs with_payloads;
     std::for_each(payloads.begin(),
                   payloads.end(),
-                  [&res, &with_payloads] (const gint & pt) {
+                  [&res, &with_payloads] (const gint &pt) {
                     PJCodecUtils::codecs this_payload;
                     std::for_each(res.begin(),
                                   res.end(),
                                   [&this_payload,
-                                   &pt] (const RTPCodec::ptr & codec) {
+                                   &pt] (const RTPCodec::ptr &codec) {
                                     this_payload.push_back(RTPCodec::ptr
                                                            (new
                                                             RTPCodec
@@ -234,7 +234,7 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
                     PJCodecUtils::codecs this_media;
                     std::for_each(res.begin(),
                                   res.end(),
-                                  [&](const RTPCodec::ptr & codec) {
+                                  [&](const RTPCodec::ptr &codec) {
                                     this_media.emplace_back(RTPCodec::ptr
                                                             (new
                                                              RTPCodec
@@ -261,7 +261,7 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
                     PJCodecUtils::codecs this_clock_rate;
                     std::for_each(res.begin(),
                                   res.end(),
-                                  [&](const RTPCodec::ptr & codec) {
+                                  [&](const RTPCodec::ptr &codec) {
                                     this_clock_rate.emplace_back
                                         (RTPCodec::ptr(new RTPCodec(*codec)));
                                     this_clock_rate.back()->clock_rate_ =

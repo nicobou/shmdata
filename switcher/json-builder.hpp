@@ -37,8 +37,8 @@ class JSONBuilder {
   typedef JsonNode *Node;
   JSONBuilder();
   ~JSONBuilder();
-  JSONBuilder(const JSONBuilder & source) = delete;
-  JSONBuilder & operator=(const JSONBuilder & source) = delete;
+  JSONBuilder(const JSONBuilder &source) = delete;
+  JSONBuilder &operator=(const JSONBuilder &source) = delete;
 
   void reset();
   void begin_object();

@@ -38,7 +38,7 @@ class PostureMerge:public Quiddity, public Segment, public StartableQuiddity {
   PostureMerge();
   ~PostureMerge();
   PostureMerge(const PostureMerge &) = delete;
-  PostureMerge & operator=(const PostureMerge &) = delete;
+  PostureMerge &operator=(const PostureMerge &) = delete;
 
   bool start();
   bool stop();

@@ -33,7 +33,7 @@ class OscCtrlServer:public QuiddityManagerWrapper {
   OscCtrlServer();
   ~OscCtrlServer();
   OscCtrlServer(const OscCtrlServer &) = delete;
-  OscCtrlServer & operator=(const OscCtrlServer &) = delete;
+  OscCtrlServer &operator=(const OscCtrlServer &) = delete;
   void set_port(std::string port);
   // for invocation into osc handlers:
   std::shared_ptr<QuiddityManager> get_quiddity_manager();

@@ -32,7 +32,7 @@ class Uridecodebin:public GPipe, public GstElementCleaner {
   Uridecodebin();
   ~Uridecodebin();
   Uridecodebin(const Uridecodebin &) = delete;
-  Uridecodebin & operator=(const Uridecodebin &) = delete;
+  Uridecodebin &operator=(const Uridecodebin &) = delete;
 
  private:
   GstElement *uridecodebin_;

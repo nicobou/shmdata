@@ -43,7 +43,7 @@ class PJCall {
   explicit PJCall(PJSIP *sip_instance);
   ~PJCall();
   PJCall(const PJCall &) = delete;
-  PJCall & operator=(const PJCall &) = delete;
+  PJCall &operator=(const PJCall &) = delete;
 
  private:
   /* Media stream created when the call is active. */

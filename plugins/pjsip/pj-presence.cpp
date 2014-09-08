@@ -132,9 +132,9 @@ PJPresence::register_account_wrapped(gchar *user,
 }
 
 void
-PJPresence::register_account(const std::string & sip_user,
-                             const std::string & sip_domain,
-                             const std::string & sip_password) {
+PJPresence::register_account(const std::string &sip_user,
+                             const std::string &sip_domain,
+                             const std::string &sip_password) {
   std::unique_lock<std::mutex> lock(registration_mutex_);
 
   // Register to SIP server by creating SIP account.
@@ -247,7 +247,7 @@ bool PJPresence::unregister_account() {
   return true;
 }
 
-void PJPresence::add_buddy(const std::string & sip_user) {
+void PJPresence::add_buddy(const std::string &sip_user) {
   pjsua_buddy_config buddy_cfg;
   pjsua_buddy_id buddy_id;
   pj_status_t status = PJ_SUCCESS;

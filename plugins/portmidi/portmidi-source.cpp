@@ -97,7 +97,7 @@ bool PortMidiSource::init() {
                                               "property_long_name",   // fisrt arg name
                                               "string",       // first arg description
                                               nullptr),
-                 (Method::method_ptr) & next_midi_event_to_property_method,
+                 (Method::method_ptr) &next_midi_event_to_property_method,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
@@ -110,7 +110,7 @@ bool PortMidiSource::init() {
                                               "property_long_name",   // fisrt arg name
                                               "string",       // first arg description
                                               nullptr),
-                 (Method::method_ptr) & last_midi_event_to_property_method,
+                 (Method::method_ptr) &last_midi_event_to_property_method,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
@@ -123,7 +123,7 @@ bool PortMidiSource::init() {
                                               "property_long_name",   // fisrt arg name
                                               "string",       // first arg description
                                               nullptr),
-                 (Method::method_ptr) & remove_property_method,
+                 (Method::method_ptr) &remove_property_method,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
@@ -253,7 +253,7 @@ PortMidiSource::remove_property_method(gchar *long_name,
   }
 
   std::pair<guint, guint> midi_channel;
-  for (auto & it : context->midi_channels_) {
+  for (auto &it : context->midi_channels_) {
     if (g_strcmp0(it.second.c_str(), long_name) == 0) {
       midi_channel = it.first;
       break;

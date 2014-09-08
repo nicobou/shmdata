@@ -30,7 +30,7 @@ class FileSDP:public GPipe, public GstElementCleaner {
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FileSDP);
   FileSDP();
   FileSDP(const FileSDP &) = delete;
-  FileSDP & operator=(const FileSDP &) = delete;
+  FileSDP &operator=(const FileSDP &) = delete;
   bool to_shmdata(std::string uri);
 
  private:

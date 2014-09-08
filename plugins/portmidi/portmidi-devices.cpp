@@ -266,7 +266,7 @@ void PortMidi::PortMidiScheduler::process_midi(PtTimestamp /*timestamp */ ,
   std::unique_lock<std::mutex> finalize_lock(context->finalize_mutex_);
   std::unique_lock<std::mutex> streams_lock(context->streams_mutex_);
 
-  for (auto & itr : context->input_callbacks_) {
+  for (auto &itr : context->input_callbacks_) {
     /* see if there is any midi input to process */
     if (!context->app_sysex_in_progress_) {
       do {
@@ -315,7 +315,7 @@ void PortMidi::PortMidiScheduler::process_midi(PtTimestamp /*timestamp */ ,
     }
   }                           // end of "for input_streams_"
 
-  for (auto & itr : context->output_queues_) {
+  for (auto &itr : context->output_queues_) {
     /* see if there is application midi data to process */
     while (!itr.second->empty()) {
       /* see if it is time to output the next message */

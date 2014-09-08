@@ -338,12 +338,12 @@ void Segment::update_shmdata_readers_description() {
   shmdata_readers_description_->set_member_name("shmdata_readers");
   shmdata_readers_description_->begin_array();
 
-  for (auto & it : shmdata_readers_)
+  for (auto &it : shmdata_readers_)
     shmdata_readers_description_->add_node_value(it.
                                                  second->get_json_root_node
                                                  ());
 
-  for (auto & it : shmdata_any_readers_)
+  for (auto &it : shmdata_any_readers_)
     shmdata_readers_description_->add_node_value(it.
                                                  second->get_json_root_node
                                                  ());
@@ -421,7 +421,7 @@ Segment::install_connect_method(OnConnect on_connect_cb,
                                                      "path",
                                                      "shmdata path to connect with",
                                                      nullptr),
-                        (Method::method_ptr) & Segment::connect_wrapped,
+                        (Method::method_ptr) &Segment::connect_wrapped,
                         G_TYPE_BOOLEAN,
                         Method::make_arg_type_description(G_TYPE_STRING,
                                                           nullptr), this);
@@ -434,7 +434,7 @@ Segment::install_connect_method(OnConnect on_connect_cb,
                                                      "path",
                                                      "shmdata path to connect with",
                                                      nullptr),
-                        (Method::method_ptr) & Segment::disconnect_wrapped,
+                        (Method::method_ptr) &Segment::disconnect_wrapped,
                         G_TYPE_BOOLEAN,
                         Method::make_arg_type_description(G_TYPE_STRING,
                                                           nullptr), this);
@@ -446,7 +446,7 @@ Segment::install_connect_method(OnConnect on_connect_cb,
                         Method::make_arg_description("none",
                                                      nullptr),
                         (Method::
-                         method_ptr) & Segment::disconnect_all_wrapped,
+                         method_ptr) &Segment::disconnect_all_wrapped,
                         G_TYPE_BOOLEAN,
                         Method::make_arg_type_description(G_TYPE_NONE,
                                                           nullptr), this);
@@ -460,7 +460,7 @@ Segment::install_connect_method(OnConnect on_connect_cb,
                                                      "caps as a string",
                                                      nullptr),
                         (Method::
-                         method_ptr) & Segment::can_sink_caps_wrapped,
+                         method_ptr) &Segment::can_sink_caps_wrapped,
                         G_TYPE_BOOLEAN,
                         Method::make_arg_type_description(G_TYPE_STRING,
                                                           nullptr), this);

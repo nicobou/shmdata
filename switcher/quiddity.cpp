@@ -558,10 +558,10 @@ std::string Quiddity::get_methods_description() {
   methods_description_->set_member_name("methods");
   methods_description_->begin_array();
   std::vector<Method::ptr> methods;
-  for (auto & it : methods_)
+  for (auto &it : methods_)
     methods.push_back(it.second);
   std::sort(methods.begin(), methods.end(), Categorizable::compare_ptr);
-  for (auto & it : methods)
+  for (auto &it : methods)
     methods_description_->add_node_value(it->get_json_root_node());
   methods_description_->end_array();
   methods_description_->end_object();
@@ -581,11 +581,11 @@ std::string Quiddity::get_properties_description() {
   properties_description_->set_member_name("properties");
   properties_description_->begin_array();
   std::vector<Property::ptr> properties;
-  for (auto & it : properties_)
+  for (auto &it : properties_)
     properties.push_back(it.second);
   std::sort(properties.begin(),
             properties.end(), Categorizable::compare_ptr);
-  for (auto & it : properties)
+  for (auto &it : properties)
     properties_description_->add_node_value(it->get_json_root_node());
   properties_description_->end_array();
   properties_description_->end_object();
@@ -688,7 +688,7 @@ std::string Quiddity::get_signals_description() {
   signals_description_->set_member_name("signals");
   signals_description_->begin_array();
 
-  for (auto & it : signals_) {
+  for (auto &it : signals_) {
     signals_description_->begin_object();
     signals_description_->add_string_member("name", it.first.c_str());
     JsonNode *root_node = it.second->get_json_root_node();
@@ -800,25 +800,25 @@ bool Quiddity::disable_method(std::string method_name) {
   return true;
 }
 
-std::string Quiddity::get_info(const std::string & path) {
+std::string Quiddity::get_info(const std::string &path) {
   data::Tree::ptr tree = information_tree_->get(path);
   if (tree)
     return data::JSONSerializer::serialize(tree);
   return "{ \"error\": \"no such path\" }";
 }
 
-Any Quiddity::get_data(const std::string & path) {
+Any Quiddity::get_data(const std::string &path) {
   return information_tree_->get_data(path);
 }
 
-bool Quiddity::graft_tree(const std::string & path, data::Tree::ptr tree) {
+bool Quiddity::graft_tree(const std::string &path, data::Tree::ptr tree) {
   if (!information_tree_->graft(path, tree))
     return false;
   signal_emit("on-tree-grafted", path.c_str());
   return true;
 }
 
-data::Tree::ptr Quiddity::prune_tree(const std::string & path) {
+data::Tree::ptr Quiddity::prune_tree(const std::string &path) {
   data::Tree::ptr result = information_tree_->prune(path);
   if (!result)
     return result;
