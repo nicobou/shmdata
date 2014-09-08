@@ -128,10 +128,10 @@ PJCall::PJCall(PJSIP *sip_instance):
                                                   "url",  // name
                                                   "string",  // description
                                                   nullptr),
-                     (Method::method_ptr) & call_sip_url,
+                     (Method::method_ptr) &call_sip_url,
                      G_TYPE_BOOLEAN,
-                     Method::make_arg_type_description
-                     (G_TYPE_STRING, nullptr), this);
+                     Method::make_arg_type_description (G_TYPE_STRING, nullptr),
+                     this);
 
   sip_instance_->
       install_method("Hang Up",  // long name
@@ -146,6 +146,8 @@ PJCall::PJCall(PJSIP *sip_instance):
                      G_TYPE_BOOLEAN,
                      Method::make_arg_type_description
                      (G_TYPE_STRING, nullptr), this);
+
+  
 
   starting_rtp_port_spec_ =
       sip_instance_->custom_props_->

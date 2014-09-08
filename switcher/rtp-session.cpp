@@ -142,7 +142,8 @@ bool RtpSession::init_gpipe() {
                  (Method::method_ptr) & remove_data_stream_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
-                                                   nullptr), this);
+                                                   nullptr),
+                 this);
 
   install_method("Add Destination",
                  "add_destination",
@@ -159,7 +160,8 @@ bool RtpSession::init_gpipe() {
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    G_TYPE_STRING,
-                                                   nullptr), this);
+                                                   nullptr),
+                 this);
 
   install_method("Remove Destination",
                  "remove_destination",
@@ -190,7 +192,8 @@ bool RtpSession::init_gpipe() {
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    G_TYPE_STRING,
                                                    G_TYPE_STRING,
-                                                   nullptr), this);
+                                                   nullptr),
+                 this);
 
   install_method("Remove UDP Stream",
                  "remove_udp_stream_to_dest",
