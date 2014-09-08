@@ -80,9 +80,11 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   bool set_removed_hook(quiddity_removed_hook hook, void *user_data);
   void reset_create_remove_hooks();
 
-  // **** information
-  std::string get_info(const std::string & nick_name,
-                       const std::string & path);
+  // information tree
+  std::string invoke_info_tree (const std::string &nick_name,
+                                std::function<std::string(data::Tree::ptrc tree)> fun);  
+  std::string get_info(const std::string &nick_name,
+                       const std::string &path);
 
   // **** properties
   // doc (json formatted)

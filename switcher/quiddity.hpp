@@ -39,6 +39,7 @@
 #include "./quiddity-manager-impl.hpp"
 #include "./json-builder.hpp"
 #include "./gobject-wrapper.hpp"
+#include "./information-tree.hpp"
 
 namespace switcher {
 class QuiddityManager_Impl;
@@ -97,10 +98,15 @@ class Quiddity {
   bool unsubscribe_signal(std::string name,
                           Signal::OnEmittedCallback cb, void *user_data);
   bool emit_action(const std::string signal_name,
-                   std::string ** return_value,
+                   std::string **return_value,
                    const std::vector<std::string> args);
 
   // information
+  template <typename R>
+  R invoke_info_tree (std::function<R(data::Tree::ptrc tree)> fun) {
+    return fun (information_tree_);
+  }
+  
   std::string get_info(const std::string & path);
   Any get_data(const std::string & path);
   template<template<class T, class = std::allocator<T>>

@@ -275,6 +275,13 @@ QuiddityManager::get_info(const std::string & quiddity_name,
 }
 
 std::string
+QuiddityManager::invoke_info_tree(const std::string &nick_name,
+                                std::function<std::string(data::Tree::ptrc tree)> fun) {
+  return manager_impl_->invoke_info_tree (nick_name, fun);
+}
+
+
+std::string
 QuiddityManager::
 get_properties_description_by_class(std::string class_name) {
   return seq_invoke(QuiddityCommand::get_properties_description_by_class,

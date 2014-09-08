@@ -134,10 +134,9 @@ class Tree {
                 childs_t &parent_list_result,
                 childs_t::iterator &result_iterator) const;
   // walks
-  friend void
-  preorder_tree_walk(Tree::ptrc tree,
-                     Tree::OnNodeFunction on_visiting_node,
-                     Tree::OnNodeFunction on_node_visited);
+  friend void preorder_tree_walk(Tree::ptrc tree,
+                                 Tree::OnNodeFunction on_visiting_node,
+                                 Tree::OnNodeFunction on_node_visited);
 };
 
 // constructor
