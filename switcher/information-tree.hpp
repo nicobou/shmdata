@@ -49,10 +49,12 @@ class Tree {
   typedef std::shared_ptr<Tree> ptr;
   typedef std::shared_ptr<const Tree> ptrc;
   typedef std::pair<std::string, Tree::ptr> child_type;
-  typedef std::list<child_type> child_list_type;
-  typedef std::function < void (const std::string & name,
-                                const Tree::ptrc tree,
-                                bool is_array_element) > OnNodeFunction;
+  typedef std::list<child_type> childs_t;
+  typedef std::function <void(const std::string & name,
+                              const Tree::ptrc tree,
+                              bool is_array_element)> OnNodeFunction;
+  typedef std::pair <Tree::childs_t,
+                     Tree::childs_t::iterator> GetNodeReturn;
   Tree() {}
   explicit Tree(const Any &data);
   bool is_leaf() const;
@@ -65,8 +67,9 @@ class Tree {
   void set_data(std::nullptr_t ptr);
 
   // path based methods
-  bool is_leaf(const std::string & path);
-  bool has_data(const std::string & path);
+  bool is_leaf(const std::string & path) const;
+  bool is_array(const std::string & path) const;
+  bool has_data(const std::string & path) const;
   Any get_data(const std::string & path);
   bool set_data(const std::string & path, const Any & data);
   bool set_data(const std::string & path, const char *data);
@@ -84,11 +87,10 @@ class Tree {
   // when a path is tagged as an array, keys might be discarded
   // by some serializers, such as JSON
   bool tag_as_array(const std::string & path, bool is_array);
-  bool is_array(const std::string & path);
 
   // get child key in place, use with std::insert_iterator
   template<typename Iter>
-  void get_child_keys(const std::string path, Iter pos) {
+  void get_child_keys(const std::string path, Iter pos) const {
     std::unique_lock<std::mutex> lock(mutex_);
     auto found = get_node(path);
     if (!found.first.empty()) {
@@ -102,17 +104,17 @@ class Tree {
   }
 
   // get child keys - returning a newly allocated container
-  template < template < class T, class =
-                        std::allocator<T >>class Container =
-             std::list > Container<std::string>
-  get_child_keys(const std::string path) {
+  template<template<class T, class = std::allocator<T>>
+           class Container = std::list>
+      Container<std::string>
+      get_child_keys(const std::string path) const {
     Container<std::string> res;
     std::unique_lock<std::mutex> lock(mutex_);
     auto found = get_node(path);
     if (!found.first.empty()) {
       res.resize(found.second->second->childrens_.size());
-      std::transform(found.second->second->childrens_.begin(),
-                     found.second->second->childrens_.end(),
+      std::transform(found.second->second->childrens_.cbegin(),
+                     found.second->second->childrens_.cend(),
                      res.begin(),
                      [](const child_type & child) {
                        return child.first;
@@ -124,16 +126,15 @@ class Tree {
  private:
   Any data_ {};
   bool is_array_ {false};
-  child_list_type childrens_ {};
+  mutable childs_t childrens_ {};
   mutable std::mutex mutex_ {};
-  child_list_type::iterator get_child_iterator(const std::string & key);
-  static bool graft_next(std::istringstream & path, Tree *tree,
+  childs_t::iterator get_child_iterator(const std::string & key) const;
+  static bool graft_next(std::istringstream &path, Tree *tree,
                          Tree::ptr leaf);
-  std::pair < Tree::child_list_type,
-              Tree::child_list_type::iterator > get_node(const std::string & path);
-  bool get_next(std::istringstream & path,
-                child_list_type & parent_list_result,
-                child_list_type::iterator & result_iterator);
+  GetNodeReturn get_node(const std::string &path) const;
+  bool get_next(std::istringstream &path,
+                childs_t &parent_list_result,
+                childs_t::iterator &result_iterator) const;
 
   // walks
   friend void
