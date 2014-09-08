@@ -87,7 +87,7 @@ ShmdataFromGDPFile::add_file_wrapped(gpointer shmdata_socket_path,
                                      gpointer file_location,
                                      gpointer user_data) {
   ShmdataFromGDPFile *context =
-      static_cast < ShmdataFromGDPFile * >(user_data);
+      static_cast<ShmdataFromGDPFile *>(user_data);
 
   if (context->add_file
       ((char *) shmdata_socket_path, (char *) file_location))
@@ -113,7 +113,7 @@ gboolean
 ShmdataFromGDPFile::remove_file_wrapped(gpointer file_path,
                                         gpointer user_data) {
   ShmdataFromGDPFile *context =
-      static_cast < ShmdataFromGDPFile * >(user_data);
+      static_cast<ShmdataFromGDPFile *>(user_data);
   if (context->remove_file((char *) file_path))
     return TRUE;
   else
@@ -130,7 +130,7 @@ bool ShmdataFromGDPFile::remove_file(std::string file_path) {
 
 void ShmdataFromGDPFile::set_playing(gboolean playing, void *user_data) {
   ShmdataFromGDPFile *context =
-      static_cast < ShmdataFromGDPFile * >(user_data);
+      static_cast<ShmdataFromGDPFile *>(user_data);
 
   if (playing)
     context->make_players();
@@ -144,7 +144,7 @@ void ShmdataFromGDPFile::set_playing(gboolean playing, void *user_data) {
 
 gboolean ShmdataFromGDPFile::get_playing(void *user_data) {
   ShmdataFromGDPFile *context =
-      static_cast < ShmdataFromGDPFile * >(user_data);
+      static_cast<ShmdataFromGDPFile *>(user_data);
   return context->playing_;
 }
 
@@ -186,7 +186,7 @@ bool ShmdataFromGDPFile::clean_players() {
 // }
 
 // gboolean
-// ShmdataFromGDPFile::event_probe_cb (GstPad *pad, GstEvent * event, gpointer user_data)
+// ShmdataFromGDPFile::event_probe_cb (GstPad *pad, GstEvent *event, gpointer user_data)
 // {
 //   ShmdataFromGDPFile *context = static_cast<ShmdataFromGDPFile *>(user_data);
 //   if (GST_EVENT_TYPE (event) == GST_EVENT_EOS) {

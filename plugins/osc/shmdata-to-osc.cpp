@@ -22,10 +22,12 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToOsc,
-                                     "shmdata to OSC messages (default to localhost:1056)",
-                                     "osc sink",
+                                     "OSC sender",
+                                     "network",
                                      "OSCprop reveives OSC messages and updates associated property",
-                                     "LGPL", "shmOSC", "Nicolas Bouillot");
+                                     "LGPL",
+                                     "shmOSCsink",
+                                     "Nicolas Bouillot");
 
 ShmdataToOsc::ShmdataToOsc():custom_props_(new CustomPropertyHelper()),
                              port_(1056),
@@ -67,7 +69,7 @@ ShmdataToOsc::~ShmdataToOsc() {
 }
 
 void ShmdataToOsc::set_port(const gint value, void *user_data) {
-  ShmdataToOsc *context = static_cast < ShmdataToOsc * >(user_data);
+  ShmdataToOsc *context = static_cast<ShmdataToOsc *>(user_data);
   if (value == context->port_)
     return;
   context->stop();
@@ -77,14 +79,14 @@ void ShmdataToOsc::set_port(const gint value, void *user_data) {
 }
 
 gint ShmdataToOsc::get_port(void *user_data) {
-  ShmdataToOsc *context = static_cast < ShmdataToOsc * >(user_data);
+  ShmdataToOsc *context = static_cast<ShmdataToOsc *>(user_data);
   return context->port_;
 }
 
 bool ShmdataToOsc::start() {
   stop();
   {
-    std::unique_lock < std::mutex > lock(address_mutex_);
+    std::unique_lock<std::mutex> lock(address_mutex_);
     address_ = lo_address_new(host_.c_str(), std::to_string(port_).c_str());
   }
   if (nullptr == address_)
@@ -94,15 +96,15 @@ bool ShmdataToOsc::start() {
 
 bool ShmdataToOsc::stop() {
   if (nullptr != address_) {
-    std::unique_lock < std::mutex > lock(address_mutex_);
+    std::unique_lock<std::mutex> lock(address_mutex_);
     lo_address_free(address_);
     address_ = nullptr;
   }
   return true;
 }
 
-void ShmdataToOsc::set_host(const gchar * value, void *user_data) {
-  ShmdataToOsc *context = static_cast < ShmdataToOsc * >(user_data);
+void ShmdataToOsc::set_host(const gchar *value, void *user_data) {
+  ShmdataToOsc *context = static_cast<ShmdataToOsc *>(user_data);
   if (0 == context->host_.compare(value))
     return;
   context->stop();
@@ -112,12 +114,12 @@ void ShmdataToOsc::set_host(const gchar * value, void *user_data) {
 }
 
 const gchar *ShmdataToOsc::get_host(void *user_data) {
-  ShmdataToOsc *context = static_cast < ShmdataToOsc * >(user_data);
+  ShmdataToOsc *context = static_cast<ShmdataToOsc *>(user_data);
   return context->host_.c_str();
 }
 
 bool ShmdataToOsc::connect(std::string path) {
-  ShmdataAnyReader::ptr reader = std::make_shared < ShmdataAnyReader > ();
+  ShmdataAnyReader::ptr reader = std::make_shared<ShmdataAnyReader> ();
   reader->set_data_type("application/x-libloserialized-osc");
   reader->set_path(path);
   reader->set_callback(std::bind(&ShmdataToOsc::on_shmreader_data,
@@ -143,7 +145,7 @@ ShmdataToOsc::on_shmreader_data(void *data,
                                           data_size,
                                           nullptr);   // error code
   if (nullptr != msg) {
-    std::unique_lock < std::mutex > lock(address_mutex_);
+    std::unique_lock<std::mutex> lock(address_mutex_);
     // lo_message_pp (msg);
     if (nullptr != address_)
       lo_send_message(address_, path, msg);

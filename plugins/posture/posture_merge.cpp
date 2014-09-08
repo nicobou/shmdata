@@ -28,14 +28,14 @@ posture;
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureMerge,
-                                     "Point clouds merge",
-                                     "video sink",
+                                     "Point Clouds Merge",
+                                     "video",
                                      "Merges point clouds captured with 3D cameras",
                                      "LGPL",
-                                     "posturemerge", "Emmanuel Durand");
+                                     "pclmergesink", "Emmanuel Durand");
 
 PostureMerge::PostureMerge():
-    custom_props_(std::make_shared < CustomPropertyHelper > ()) {
+    custom_props_(std::make_shared<CustomPropertyHelper> ()) {
 }
 
 PostureMerge::~PostureMerge() {
@@ -192,7 +192,7 @@ PostureMerge::get_calibration_path(void *user_data) {
 }
 
 void
-PostureMerge::set_calibration_path(const gchar * name, void *user_data) {
+PostureMerge::set_calibration_path(const gchar *name, void *user_data) {
   PostureMerge *
       ctx = (PostureMerge *) user_data;
   if (name != nullptr)
@@ -207,7 +207,7 @@ PostureMerge::get_devices_path(void *user_data) {
 }
 
 void
-PostureMerge::set_devices_path(const gchar * name, void *user_data) {
+PostureMerge::set_devices_path(const gchar *name, void *user_data) {
   PostureMerge *
       ctx = (PostureMerge *) user_data;
   if (name != nullptr)

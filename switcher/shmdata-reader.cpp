@@ -46,7 +46,7 @@ ShmdataReader::~ShmdataReader() {
     g_debug("closing empty reader");
 }
 
-void ShmdataReader::unlink_pad(GstPad * pad) {
+void ShmdataReader::unlink_pad(GstPad *pad) {
   g_debug("ShmdataReader::unlink_pad SHOULD NOT BE CALLED, ");
   GstPad *peer;
   if ((peer = gst_pad_get_peer(pad))) {
@@ -76,15 +76,15 @@ void ShmdataReader::set_path(const char *absolute_path) {
   make_json_description();
 }
 
-void ShmdataReader::set_bin(GstElement * bin) {
+void ShmdataReader::set_bin(GstElement *bin) {
   bin_ = bin;
 }
 
-void ShmdataReader::set_g_main_context(GMainContext * context) {
+void ShmdataReader::set_g_main_context(GMainContext *context) {
   g_main_context_ = context;
 }
 
-void ShmdataReader::set_sink_element(GstElement * sink_element) {
+void ShmdataReader::set_sink_element(GstElement *sink_element) {
   sink_element_ = sink_element;
 }
 
@@ -104,7 +104,7 @@ void ShmdataReader::start() {
 }
 
 gboolean ShmdataReader::start_idle(void *user_data) {
-  ShmdataReader *context = static_cast < ShmdataReader * >(user_data);
+  ShmdataReader *context = static_cast<ShmdataReader *>(user_data);
   g_debug("shmdata-reader::start_idle");
   shmdata_base_reader_close(context->reader_);
   GstUtils::clean_element(context->funnel_);
@@ -132,12 +132,12 @@ gboolean ShmdataReader::start_idle(void *user_data) {
 
 void
 ShmdataReader::on_have_type(shmdata_base_reader_t *,
-                            GstCaps * caps, void *user_data) {
+                            GstCaps *caps, void *user_data) {
   if (nullptr == user_data || nullptr == caps) {
     g_warning("ShmdataReader::on_have_type cannot save caps");
     return;
   }
-  ShmdataReader *context = static_cast < ShmdataReader * >(user_data);
+  ShmdataReader *context = static_cast<ShmdataReader *>(user_data);
   gchar *string_caps = gst_caps_to_string(caps);
   On_scope_exit {
     if (nullptr != string_caps)
@@ -161,9 +161,9 @@ ShmdataReader::set_on_first_data_hook(on_first_data_hook cb,
 }
 
 void
-ShmdataReader::on_first_data(shmdata_base_reader_t * context,
+ShmdataReader::on_first_data(shmdata_base_reader_t *context,
                              void *user_data) {
-  ShmdataReader *reader = static_cast < ShmdataReader * >(user_data);
+  ShmdataReader *reader = static_cast<ShmdataReader *>(user_data);
   g_debug(" ShmdataReader::on_first_data");
   if (reader->connection_hook_ != nullptr)    // user want to create the sink_element_
     reader->connection_hook_(reader, reader->hook_user_data_);

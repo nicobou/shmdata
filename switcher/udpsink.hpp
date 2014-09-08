@@ -34,7 +34,7 @@ class UDPSink:public SinglePadGstSink {
   UDPSink & operator=(const UDPSink &) = delete;
 
  private:
-  GstElement * udpsink_;
+  GstElement *udpsink_;
   GstElement *udpsink_bin_;
   GstElement *typefind_;
   GstPad *ghost_sinkpad_;
@@ -45,20 +45,20 @@ class UDPSink:public SinglePadGstSink {
   };
 
   // client management
-  bool remove_client(gchar * host, gint port);
-  bool add_client(gchar * host, gint port);
+  bool remove_client(gchar *host, gint port);
+  bool add_client(gchar *host, gint port);
   bool clear_clients();
   static gboolean remove_client_wrapped(gpointer host,
                                         gint port, gpointer user_data);
   static gboolean add_client_wrapped(gpointer host,
                                      gint port, gpointer user_data);
   static gboolean clear_wrapped(gpointer unused, gpointer user_data);
-  static void on_client_added(GstElement * multiudpsink,
-                              gchar * host, gint port, gpointer user_data);
-  static void on_client_removed(GstElement * multiudpsink,
-                                gchar * host,
+  static void on_client_added(GstElement *multiudpsink,
+                              gchar *host, gint port, gpointer user_data);
+  static void on_client_removed(GstElement *multiudpsink,
+                                gchar *host,
                                 gint port, gpointer user_data);
-  static void add_elements_to_bin(ShmdataReader * caller,
+  static void add_elements_to_bin(ShmdataReader *caller,
                                   void *udpbin_instance);
 };
 }  // namespace switcher

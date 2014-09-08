@@ -34,10 +34,10 @@ class PropertyMapper:public Quiddity {
   bool init();
 
  private:
-  std::weak_ptr < Quiddity > source_quiddity_;
+  std::weak_ptr<Quiddity> source_quiddity_;
   std::string source_property_name_;
 
-  std::weak_ptr < Quiddity > sink_quiddity_;
+  std::weak_ptr<Quiddity> sink_quiddity_;
   GParamSpec *sink_quiddity_pspec_;
   std::string sink_property_name_;
 
@@ -55,13 +55,13 @@ class PropertyMapper:public Quiddity {
 
   void make_numerical_source_properties();
   void make_numerical_sink_properties();
-  static gboolean set_source_property_method(gchar * quiddity_name,
-                                             gchar * property_name,
+  static gboolean set_source_property_method(gchar *quiddity_name,
+                                             gchar *property_name,
                                              void *user_data);
-  static void property_cb(GObject * gobject,
-                          GParamSpec * pspec, gpointer user_data);
-  static gboolean set_sink_property_method(gchar * quiddity_name,
-                                           gchar * property_name,
+  static void property_cb(GObject *gobject,
+                          GParamSpec *pspec, gpointer user_data);
+  static gboolean set_sink_property_method(gchar *quiddity_name,
+                                           gchar *property_name,
                                            void *user_data);
   void unsubscribe_source_property();
   static void set_double_value(gdouble value, void *user_data);

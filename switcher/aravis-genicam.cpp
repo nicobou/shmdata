@@ -74,7 +74,7 @@ bool AravisGenicam::init_gpipe() {
 }
 
 gboolean AravisGenicam::start_wrapped(gpointer name, gpointer user_data) {
-  AravisGenicam *context = static_cast < AravisGenicam * >(user_data);
+  AravisGenicam *context = static_cast<AravisGenicam *>(user_data);
 
   if (context->start((char *) name))
     return TRUE;

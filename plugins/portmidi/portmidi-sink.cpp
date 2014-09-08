@@ -21,8 +21,8 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSink,
-                                     "Midi (PortMidiSink)",
-                                     "midi sink",
+                                     "Midi (Port Midi)",
+                                     "midi",
                                      "shmdata to midi",
                                      "LGPL",
                                      "midisink", "Nicolas Bouillot");
@@ -72,7 +72,7 @@ void PortMidiSink::on_shmreader_data(void *data, int /*data_size */ ,
                                      unsigned long long /*timestamp */ ,
                                      const char * /*type_description */ ,
                                      void *user_data) {
-  PmEvent *event = static_cast < PmEvent * >(data);
+  PmEvent *event = static_cast<PmEvent *>(data);
   push_midi_message(device_,
                     Pm_MessageStatus(event->message),
                     Pm_MessageData1(event->message),
@@ -80,12 +80,12 @@ void PortMidiSink::on_shmreader_data(void *data, int /*data_size */ ,
 }
 
 void PortMidiSink::set_device(const gint value, void *user_data) {
-  PortMidiSink *context = static_cast < PortMidiSink * >(user_data);
+  PortMidiSink *context = static_cast<PortMidiSink *>(user_data);
   context->device_ = value;
 }
 
 gint PortMidiSink::get_device(void *user_data) {
-  PortMidiSink *context = static_cast < PortMidiSink * >(user_data);
+  PortMidiSink *context = static_cast<PortMidiSink *>(user_data);
   return context->device_;
 }
 
@@ -108,7 +108,7 @@ bool PortMidiSink::stop() {
 }
 
 bool PortMidiSink::connect(std::string path) {
-  ShmdataAnyReader::ptr reader = std::make_shared < ShmdataAnyReader > ();
+  ShmdataAnyReader::ptr reader = std::make_shared<ShmdataAnyReader> ();
   reader->set_data_type("audio/midi");
   reader->set_absolute_timestamp(false);
   reader->set_path(path);

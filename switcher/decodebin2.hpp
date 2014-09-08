@@ -34,15 +34,15 @@ class Decodebin2:public SinglePadGstSink {
   Decodebin2 & operator=(const Decodebin2 &) = delete;
 
  private:
-  std::unique_ptr < DecodebinToShmdata > decodebin_;
-  std::map < std::string, int >media_counters_ {};
+  std::unique_ptr<DecodebinToShmdata> decodebin_;
+  std::map<std::string, int>media_counters_ {};
 
   bool init_gpipe() final;
   bool can_sink_caps(std::string /*caps*/) final {
     return true;
   };
 
-  static void make_decodebin_active(ShmdataReader * caller,
+  static void make_decodebin_active(ShmdataReader *caller,
                                     void *decodebin2_instance);
 };
 }  // namespace switcher

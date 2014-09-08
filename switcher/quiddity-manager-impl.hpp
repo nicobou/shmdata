@@ -38,7 +38,7 @@ class QuidditySignalSubscriber;
 class QuiddityManager_Impl:public std::enable_shared_from_this <
   QuiddityManager_Impl > {
  public:
-  typedef std::shared_ptr < QuiddityManager_Impl > ptr;
+  typedef std::shared_ptr<QuiddityManager_Impl> ptr;
   typedef void (*quiddity_created_hook) (std::string nick_name,
                                          void *user_data);
   typedef void (*quiddity_removed_hook) (std::string nick_name,
@@ -56,8 +56,8 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
 
   // **** info about manager
   std::string get_name();
-  std::vector < std::string > get_classes();        // vector of class names
-  std::vector < std::string > get_instances();      // vector of instance names
+  std::vector<std::string> get_classes();        // vector of class names
+  std::vector<std::string> get_instances();      // vector of instance names
   // doc (json formatted)
   std::string get_classes_doc();
   std::string get_class_doc(std::string class_name);
@@ -70,7 +70,7 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   std::string create(std::string quiddity_class);
   std::string create(std::string quiddity_class, std::string nick_name);
   bool remove(std::string quiddity_name);
-  std::shared_ptr < Quiddity >
+  std::shared_ptr<Quiddity>
   get_quiddity(std::string quiddity_nick_name);
   bool rename(std::string nick_name, std::string new_nick_name);      // FIXME remove that
   // only one hook is allowed now,
@@ -121,7 +121,7 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
                             std::string quiddity_name,
                             std::string property_name);
   // property subscribers info
-  std::vector < std::string > list_property_subscribers();
+  std::vector<std::string> list_property_subscribers();
   std::vector < std::pair < std::string,
                             std::string > >list_subscribed_properties(std::string subscriber_name);
   std::string list_property_subscribers_json();
@@ -147,7 +147,7 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   bool invoke(const std::string quiddity_name,
               const std::string method_name,
               std::string ** return_value,
-              const std::vector < std::string > args);
+              const std::vector<std::string> args);
 
   bool has_method(std::string quiddity_name, std::string method_name);
 
@@ -167,7 +167,7 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
                                                subscriber_name,
                                                std::string quiddity_name,
                                                std::string property_name,
-                                               std::vector < std::string >
+                                               std::vector<std::string>
                                                params, void *user_data),
                               void *user_data);
   bool remove_signal_subscriber(std::string subscriber_name);
@@ -180,7 +180,7 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   void mute_signal_subscribers(bool muted);
   void mute_property_subscribers(bool muted);
 
-  std::vector < std::string > list_signal_subscribers();
+  std::vector<std::string> list_signal_subscribers();
   std::vector < std::pair < std::string,
                             std::string > >list_subscribed_signals(std::string subscriber_name);
   std::string list_signal_subscribers_json();
@@ -198,7 +198,7 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   // plugins
   bool load_plugin(const char *filename);
   void close_plugin(const std::string class_name);
-  std::unordered_map < std::string, PluginLoader::ptr > plugins_;
+  std::unordered_map<std::string, PluginLoader::ptr> plugins_;
   explicit QuiddityManager_Impl(const std::string &);
   void make_classes_doc();
   std::string name_;
@@ -206,13 +206,13 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   AbstractFactory < Quiddity, std::string,
                     JSONBuilder::Node > abstract_factory_;
   std::unordered_map < std::string,
-                       std::shared_ptr < Quiddity > >quiddities_;
-  std::unordered_map < std::string, std::string > quiddities_nick_names_;
+                       std::shared_ptr<Quiddity >>quiddities_;
+  std::unordered_map<std::string, std::string> quiddities_nick_names_;
   std::unordered_map < std::string,
-                       std::shared_ptr < QuiddityPropertySubscriber > >property_subscribers_;
+                       std::shared_ptr<QuiddityPropertySubscriber >>property_subscribers_;
   std::unordered_map < std::string,
-                       std::shared_ptr < QuidditySignalSubscriber > >signal_subscribers_;
-  bool init_quiddity(std::shared_ptr < Quiddity > quiddity);
+                       std::shared_ptr<QuidditySignalSubscriber >>signal_subscribers_;
+  bool init_quiddity(std::shared_ptr<Quiddity> quiddity);
   void remove_shmdata_sockets();
   JSONBuilder::ptr classes_doc_;
   quiddity_created_hook creation_hook_;
@@ -220,7 +220,7 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   void *creation_hook_user_data_;
   void *removal_hook_user_data_;
   guint quiddity_created_counter_;
-  void give_name_if_unnamed(std::shared_ptr < Quiddity > quiddity);
+  void give_name_if_unnamed(std::shared_ptr<Quiddity> quiddity);
 
   // gmainloop
   std::thread thread_;      // this runs the main loop

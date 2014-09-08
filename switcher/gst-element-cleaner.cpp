@@ -30,14 +30,14 @@ GstElementCleaner::~GstElementCleaner() {
     GstUtils::clean_element(it);
 }
 
-void GstElementCleaner::add_element_to_cleaner(GstElement * element) {
+void GstElementCleaner::add_element_to_cleaner(GstElement *element) {
   elements_to_remove_.push_back(element);
 }
 
 void
 GstElementCleaner::
 add_labeled_element_to_cleaner(const std::string & new_label,
-                               GstElement * element) {
+                               GstElement *element) {
   labeled_elements_[new_label] = element;
 }
 

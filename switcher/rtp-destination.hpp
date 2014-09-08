@@ -30,7 +30,7 @@
 namespace switcher {
 class RtpDestination:public GstElementCleaner {
  public:
-  typedef std::shared_ptr < RtpDestination > ptr;
+  typedef std::shared_ptr<RtpDestination> ptr;
   RtpDestination();
   ~RtpDestination();
 
@@ -51,8 +51,8 @@ class RtpDestination:public GstElementCleaner {
  private:
   std::string name_;
   std::string host_name_;
-  std::map < std::string, QuiddityManager::ptr > ports_;    // maps port with rtp shmdata reader
-  std::map < std::string, std::string > source_streams_;    // maps shmdata source stream with port
+  std::map<std::string, QuiddityManager::ptr> ports_;    // maps port with rtp shmdata reader
+  std::map<std::string, std::string> source_streams_;    // maps shmdata source stream with port
   JSONBuilder::ptr json_description_;
   void make_json_description();
 };

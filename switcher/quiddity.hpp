@@ -48,7 +48,7 @@ class Quiddity {
   friend class Segment;
 
  public:
-  typedef std::shared_ptr < Quiddity > ptr;
+  typedef std::shared_ptr<Quiddity> ptr;
   Quiddity();
   Quiddity(const Quiddity &) = delete;
   Quiddity & operator=(const Quiddity &) = delete;
@@ -83,7 +83,7 @@ class Quiddity {
   std::string get_methods_description();
   bool invoke_method(const std::string function_name,
                      std::string ** return_value,
-                     const std::vector < std::string > args);
+                     const std::vector<std::string> args);
   int method_get_num_value_args(std::string function_name);   // returns -1 if method not found
   int method_get_num_pointer_args(std::string function_name);  // returns -1 if method not found
   bool has_method(const std::string method_name);
@@ -98,16 +98,16 @@ class Quiddity {
                           Signal::OnEmittedCallback cb, void *user_data);
   bool emit_action(const std::string signal_name,
                    std::string ** return_value,
-                   const std::vector < std::string > args);
+                   const std::vector<std::string> args);
 
   // information
   std::string get_info(const std::string & path);
   Any get_data(const std::string & path);
   template < template < class T, class =
-                        std::allocator < T > >class Container =
-             std::list > Container < std::string >
+                        std::allocator<T >>class Container =
+             std::list > Container<std::string>
   get_child_keys(const std::string path) {
-    return information_tree_->get_child_keys < Container > (path);
+    return information_tree_->get_child_keys<Container> (path);
   }
 
   // shmdata socket names
@@ -115,7 +115,7 @@ class Quiddity {
   static std::string get_socket_dir();
 
   // manager_impl  initialization
-  void set_manager_impl(std::shared_ptr < QuiddityManager_Impl >
+  void set_manager_impl(std::shared_ptr<QuiddityManager_Impl>
                         manager_impl);
 
  private:
@@ -123,13 +123,13 @@ class Quiddity {
   data::Tree::ptr information_tree_;
 
   // properties
-  std::unordered_map < std::string, Property::ptr > properties_;
-  std::unordered_map < std::string, Property::ptr > disabled_properties_;
+  std::unordered_map<std::string, Property::ptr> properties_;
+  std::unordered_map<std::string, Property::ptr> disabled_properties_;
   JSONBuilder::ptr properties_description_;
 
   // methods
-  std::unordered_map < std::string, Method::ptr > methods_;
-  std::unordered_map < std::string, Method::ptr > disabled_methods_;
+  std::unordered_map<std::string, Method::ptr> methods_;
+  std::unordered_map<std::string, Method::ptr> disabled_methods_;
   bool method_is_registered(std::string method_name);
   JSONBuilder::ptr methods_description_;
 
@@ -139,9 +139,9 @@ class Quiddity {
 
   // pair is <class_name, signal_name>
   // this map is static in order to avoid re-creation of the same signal for each quiddity instance
-  static std::map < std::pair < std::string, std::string >,
+  static std::map<std::pair < std::string, std::string>,
                     guint > signals_ids_;
-  std::unordered_map < std::string, Signal::ptr > signals_;
+  std::unordered_map<std::string, Signal::ptr> signals_;
   JSONBuilder::ptr signals_description_;
 
   // naming
@@ -149,8 +149,8 @@ class Quiddity {
   std::string nick_name_;
 
   // property
-  bool register_property(GObject * object,
-                         GParamSpec * pspec,
+  bool register_property(GObject *object,
+                         GParamSpec *pspec,
                          std::string name_to_give,
                          std::string long_name, std::string signal_to_emit);
 
@@ -175,13 +175,13 @@ class Quiddity {
 
   // signals
   bool register_signal_gobject(const std::string signal_name,  // the name to give
-                               GObject * object, const std::string gobject_signal_name);      // the internal gobject signal name
+                               GObject *object, const std::string gobject_signal_name);      // the internal gobject signal name
 
   // allows for creation of signals in a parent class (like segment)
   bool make_custom_signal_with_class_name(const std::string class_name,       // quiddity class name that is making the signal
                                           const std::string signal_name,      // the name to give
                                           GType return_type, guint n_params,  // number of params
-                                          GType * param_types);
+                                          GType *param_types);
 
   bool set_signal_description(const std::string long_name,
                               const std::string signal_name,
@@ -194,11 +194,11 @@ class Quiddity {
   // static gchar *my_signal_action (void *, gchar *first_arg, void *user_data);
   bool register_signal_action_with_class_name(const std::string class_name, const std::string method_name,    // the name to give
                                               void *method, GType return_type, guint n_params,        // number of params
-                                              GType * param_types,
+                                              GType *param_types,
                                               void *user_data);
   bool register_signal_action(const std::string method_name,  // the name to give
                               void *method, GType return_type, guint n_params,        // number of params
-                              GType * param_types, void *user_data);
+                              GType *param_types, void *user_data);
 
  protected:
   // information
@@ -207,15 +207,15 @@ class Quiddity {
   data::Tree::ptr prune_tree(const std::string & path);
 
   // property
-  bool install_property(GObject * object,
+  bool install_property(GObject *object,
                         std::string gobject_property_name,
                         std::string name_to_give, std::string long_name);
-  bool reinstall_property(GObject * replacement_object,
+  bool reinstall_property(GObject *replacement_object,
                           std::string gobject_property_name,
                           std::string name, std::string long_name);
 
-  bool install_property_by_pspec(GObject * object,
-                                 GParamSpec * pspec,
+  bool install_property_by_pspec(GObject *object,
+                                 GParamSpec *pspec,
                                  std::string name_to_give,
                                  std::string long_name);
   bool uninstall_property(std::string name);
@@ -242,7 +242,7 @@ class Quiddity {
                       const std::string signal_name,
                       const std::string short_description,
                       const Signal::args_doc arg_description,
-                      guint number_of_params, GType * param_types);
+                      guint number_of_params, GType *param_types);
 
   bool install_signal_with_class_name(const std::string class_name,
                                       const std::string long_name,
@@ -251,7 +251,7 @@ class Quiddity {
                                       const Signal::args_doc
                                       arg_description,
                                       guint number_of_params,
-                                      GType * param_types);
+                                      GType *param_types);
 
   void signal_emit(const std::string signal_name, ...);
 
@@ -263,7 +263,7 @@ class Quiddity {
 
   // used in order to dynamically create other quiddity, weak_ptr is used in order to
   // avoid circular references to the manager_impl
-  std::weak_ptr < QuiddityManager_Impl > manager_impl_;
+  std::weak_ptr<QuiddityManager_Impl> manager_impl_;
 
   // gobject wrapper for custom signals and properties
   GObjectWrapper::ptr gobject_;

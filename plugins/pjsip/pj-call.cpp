@@ -48,7 +48,7 @@ pjsip_module PJCall::mod_siprtp_ = {
   nullptr,                    /* on_tsx_state()  */
 };
 
-PJCall::PJCall(PJSIP * sip_instance):
+PJCall::PJCall(PJSIP *sip_instance):
     sip_instance_(sip_instance) {
   pj_status_t status;
   init_app();
@@ -152,13 +152,12 @@ PJCall::PJCall(PJSIP * sip_instance):
                            PJCall::set_rtp_session,
                            PJCall::get_rtp_session,
                            this);
-
   sip_instance_->
-      install_property_by_pspec(sip_instance_->
-                                custom_props_->get_gobject(),
+      install_property_by_pspec(sip_instance_->custom_props_->get_gobject(),
                                 rtp_session_name_spec_,
                                 "rtp-session",
                                 "Quiddity name managing RTP destinations");
+
   starting_rtp_port_spec_ =
       sip_instance_->custom_props_->
       make_int_property("starting-rtp-port",
@@ -170,12 +169,11 @@ PJCall::PJCall(PJSIP * sip_instance):
                         PJCall::set_starting_rtp_port,
                         PJCall::get_starting_rtp_port,
                         this);
-
-  sip_instance_->install_property_by_pspec(sip_instance_->
-                                           custom_props_->get_gobject(),
-                                           starting_rtp_port_spec_,
-                                           "starting-rtp-port",
-                                           "First RTP port to try");
+  sip_instance_->
+      install_property_by_pspec(sip_instance_->custom_props_->get_gobject(),
+                                starting_rtp_port_spec_,
+                                "starting-rtp-port",
+                                "First RTP port to try");
 }
 
 PJCall::~PJCall() {
@@ -198,7 +196,7 @@ PJCall::~PJCall() {
 }
 
 /* Callback to be called to handle incoming requests outside dialogs: */
-pj_bool_t PJCall::on_rx_request(pjsip_rx_data * rdata) {
+pj_bool_t PJCall::on_rx_request(pjsip_rx_data *rdata) {
   printf("%s %d %.*s\n",
          __FUNCTION__,
          __LINE__,
@@ -248,7 +246,7 @@ void PJCall::init_app() {
 }
 
 /* Callback to be called when invite session's state has changed: */
-void PJCall::call_on_state_changed(pjsip_inv_session * inv, pjsip_event * e) {
+void PJCall::call_on_state_changed(pjsip_inv_session * inv, pjsip_event *e) {
   struct call *call = (struct call *) inv->mod_data[mod_siprtp_.id];
 
   PJ_UNUSED_ARG(e);
@@ -312,11 +310,11 @@ void PJCall::call_on_state_changed(pjsip_inv_session * inv, pjsip_event * e) {
 }
 
 /* Callback to be called when dialog has forked: */
-void PJCall::call_on_forked(pjsip_inv_session * inv, pjsip_event * e) {
+void PJCall::call_on_forked(pjsip_inv_session * inv, pjsip_event *e) {
 }
 
 /* Callback to be called when SDP negotiation is done in the call: */
-void PJCall::call_on_media_update(pjsip_inv_session * inv,
+void PJCall::call_on_media_update(pjsip_inv_session *inv,
                                   pj_status_t status) {
   struct call *call;
   const pjmedia_sdp_session *local_sdp, *remote_sdp;
@@ -390,7 +388,7 @@ void PJCall::call_on_media_update(pjsip_inv_session * inv,
       // "rtcp", current_media->clock_rate,
       //          current_media->samples_per_frame, 0);
 
-      current_media->shm = std::make_shared < ShmdataAnyWriter > ();
+      current_media->shm = std::make_shared<ShmdataAnyWriter> ();
       // FIXME use quid name:
       std::string shm_any_name("/tmp/switcher_sip_"
                                + call->peer_uri
@@ -447,7 +445,7 @@ void PJCall::call_on_media_update(pjsip_inv_session * inv,
 /*
  * Receive incoming call
  */
-void PJCall::process_incoming_call(pjsip_rx_data * rdata) {
+void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   // finding caller info
   char uristr[PJSIP_MAX_URL_SIZE];
   int len;
@@ -540,7 +538,7 @@ void PJCall::process_incoming_call(pjsip_rx_data * rdata) {
   // and creating transport for receiving data offered
 
   call->media_count = 0;
-  std::vector < pjmedia_sdp_media * >media_to_receive;
+  std::vector<pjmedia_sdp_media *>media_to_receive;
   // FIXME start from last attributed
   pj_uint16_t rtp_port =
       (pj_uint16_t) (call->instance->starting_rtp_port_ & 0xFFFE);
@@ -658,8 +656,8 @@ void PJCall::process_incoming_call(pjsip_rx_data * rdata) {
  * Create SDP session for a call.
  */
 pj_status_t
-PJCall::create_sdp(pj_pool_t * pool,
-                   struct call * call,
+PJCall::create_sdp(pj_pool_t *pool,
+                   struct call *call,
                    const std::vector <
                    pjmedia_sdp_media * >&media_to_receive,
                    pjmedia_sdp_session ** p_sdp) {
@@ -673,21 +671,21 @@ PJCall::create_sdp(pj_pool_t * pool,
 
   /* Create and initialize basic SDP session */
   sdp =
-      reinterpret_cast<pjmedia_sdp_session *>
+      static_cast<pjmedia_sdp_session *>
       (pj_pool_zalloc(pool, sizeof(pjmedia_sdp_session)));
   pj_gettimeofday(&tv);
   sdp->origin.user = pj_str("pjsip-siprtp");
   sdp->origin.version = sdp->origin.id = tv.sec + 2208988800UL;
   sdp->origin.net_type = pj_str("IN");
   sdp->origin.addr_type = pj_str("IP4");
-  sdp->origin.addr = *pj_gethostname();       // FIXME this should be IP address
+  sdp->origin.addr = *pj_gethostname(); // FIXME this should be IP address
   sdp->name = pj_str("pjsip");
 
   /* Since we only support one media stream at present, put the
    * SDP connection line in the session level.
    */
   sdp->conn =
-      reinterpret_cast<pjmedia_sdp_conn *>
+      static_cast<pjmedia_sdp_conn *>
       (pj_pool_zalloc(pool, sizeof(pjmedia_sdp_conn)));
   sdp->conn->net_type = pj_str("IN");
   sdp->conn->addr_type = pj_str("IP4");
@@ -836,7 +834,7 @@ void PJCall::on_rx_rtcp(void *user_data, void *pkt, pj_ssize_t size) {
   pjmedia_rtcp_rx_rtcp(&strm->rtcp, pkt, size);
 }
 
-void PJCall::print_sdp(const pjmedia_sdp_session * local_sdp) {
+void PJCall::print_sdp(const pjmedia_sdp_session *local_sdp) {
   char sdpbuf1[4096];
   pj_ssize_t len1;
   len1 = pjmedia_sdp_print(local_sdp, sdpbuf1, sizeof(sdpbuf1));
@@ -853,11 +851,11 @@ void PJCall::print_sdp(const pjmedia_sdp_session * local_sdp) {
  * (Create stream info from SDP media line.)
  */
 pj_status_t
-PJCall::stream_info_from_sdp(pjmedia_stream_info * si,
-                             pj_pool_t * pool,
-                             pjmedia_endpt * endpt,
-                             const pjmedia_sdp_session * local,
-                             const pjmedia_sdp_session * remote,
+PJCall::stream_info_from_sdp(pjmedia_stream_info *si,
+                             pj_pool_t *pool,
+                             pjmedia_endpt *endpt,
+                             const pjmedia_sdp_session *local,
+                             const pjmedia_sdp_session *remote,
                              unsigned stream_idx) {
   pjmedia_codec_mgr *mgr;
   const pjmedia_sdp_attr *attr;
@@ -1070,11 +1068,11 @@ PJCall::stream_info_from_sdp(pjmedia_stream_info * si,
  * codec info and param from the SDP media.
  */
 pj_status_t
-PJCall::get_audio_codec_info_param(pjmedia_stream_info * si,
-                                   pj_pool_t * pool,
-                                   pjmedia_codec_mgr * mgr,
-                                   const pjmedia_sdp_media * local_m,
-                                   const pjmedia_sdp_media * rem_m) {
+PJCall::get_audio_codec_info_param(pjmedia_stream_info *si,
+                                   pj_pool_t *pool,
+                                   pjmedia_codec_mgr *mgr,
+                                   const pjmedia_sdp_media *local_m,
+                                   const pjmedia_sdp_media *rem_m) {
   const pjmedia_sdp_attr *attr;
   pjmedia_sdp_rtpmap *rtpmap;
   unsigned i, fmti, pt = 0;
@@ -1344,7 +1342,7 @@ PJCall::get_audio_codec_info_param(pjmedia_stream_info * si,
 }
 
 void
-PJCall::remove_from_sdp_media(pjmedia_sdp_media * sdp_media,
+PJCall::remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
                               unsigned fmt_pos) {
   // g_print ("sdp_media->desc.fmt_count %u\n", sdp_media->desc.fmt_count);
   // remove the rtpmap
@@ -1467,7 +1465,7 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
   return PJ_SUCCESS;
 }
 
-void PJCall::set_rtp_session(const gchar * quiddity_name, void *user_data) {
+void PJCall::set_rtp_session(const gchar *quiddity_name, void *user_data) {
   PJCall *context = static_cast<PJCall *>(user_data);
   context->rtp_session_name_ = quiddity_name;
   Quiddity::ptr quid = context->retrieve_rtp_manager();
@@ -1498,7 +1496,7 @@ Quiddity::ptr PJCall::retrieve_rtp_manager() {
 }
 
 std::string
-PJCall::create_outgoing_sdp(struct call * call,
+PJCall::create_outgoing_sdp(struct call *call,
                             std::string /*dst_uri */ ) {
   // g_print ("--> %s\n", __FUNCTION__);
 
@@ -1511,28 +1509,32 @@ PJCall::create_outgoing_sdp(struct call * call,
   // FIXME select appropriate shmdata to include, adding all for now
   SDPDescription desc;
 
-  std::forward_list < std::string > paths =
-      quid->get_child_keys < std::forward_list > ("rtp_caps.");
+  std::forward_list<std::string> paths =
+      quid->get_child_keys<std::forward_list> ("rtp_caps.");
 
-  // g_print ("-------0000000---------- %s\n",
-  //       quid->get_info (".rtp_caps").c_str ());
-
-  // g_print ("00000000000000000000000000000\n");
-  // std::for_each (paths.begin (),
-  //      paths.end (),
-  //      [] (const std::string &val){g_print ("%s\n", val.c_str ());});
-
+  g_print ("--- %d\n", __LINE__);
+  g_print ("%s\n", quid->get_info (".rtp_caps").c_str ());
+  g_print ("--- %d\n", __LINE__);
+  std::for_each (paths.begin (),
+                 paths.end (),
+                 [] (const std::string &val){
+                   g_print ("%s\n", val.c_str ());
+                 });
+  g_print ("--- %d\n", __LINE__);
   // std::transform (paths.begin (),
-  //       paths.end (),
-  //       paths.begin (),
-  //       [] (const std::string &val){return std::string ("rtp_caps."+ val);});
-  // std::for_each (paths.begin (),
-  //    paths.end (),
-  //    [&quid] (const std::string &val)
-  //    {
-  //      std::string data = quid->get_data ("rtp_caps." + val);
-  //      g_print ("%s\n",  data.c_str ());
-  //    });
+  //                 paths.end (),
+  //                 paths.begin (),
+  //                 [] (const std::string &val){
+  //                   return std::string ("rtp_caps."+ val);
+  //                 });
+  g_print ("--- %d\n", __LINE__);
+  std::for_each (paths.begin (),
+                 paths.end (),
+                 [&quid] (const std::string &val) {
+                   std::string data = quid->get_data ("rtp_caps." + val);
+                   g_print ("%s\n",  data.c_str ());
+                 });
+  g_print ("--- %d\n", __LINE__);
 
   gint port = starting_rtp_port_;
   for (auto & it : paths) {
@@ -1550,10 +1552,11 @@ PJCall::create_outgoing_sdp(struct call * call,
     gst_caps_unref(caps);
     port += 2;
   }
+  g_print ("--- %d\n", __LINE__);
   return desc.get_string();
 }
 
-gboolean PJCall::call_sip_url(gchar * sip_url, void *user_data) {
+gboolean PJCall::call_sip_url(gchar *sip_url, void *user_data) {
   if (nullptr == sip_url || nullptr == user_data) {
     g_warning("calling sip account received nullptr url");
     return FALSE;
@@ -1567,7 +1570,7 @@ gboolean PJCall::call_sip_url(gchar * sip_url, void *user_data) {
   return TRUE;
 }
 
-gboolean PJCall::hang_up(gchar * sip_url, void *user_data) {
+gboolean PJCall::hang_up(gchar *sip_url, void *user_data) {
   if (nullptr == sip_url || nullptr == user_data) {
     g_warning("hang up received nullptr url");
     return FALSE;

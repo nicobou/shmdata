@@ -66,13 +66,13 @@ OscCtrlServer::prop_cb(std::string internal_subscriber_name,
                        std::string quiddity_name,
                        std::string property_name,
                        std::string value, void *user_data) {
-  OscCtrlServer *context = static_cast < OscCtrlServer * >(user_data);
+  OscCtrlServer *context = static_cast<OscCtrlServer *>(user_data);
 
   auto it = context->osc_subscribers_.find(internal_subscriber_name);
   if (context->osc_subscribers_.end() == it)
     return;
 
-  std::pair < std::string, std::string > address =
+  std::pair<std::string, std::string> address =
       context->osc_subscribers_[internal_subscriber_name];
 
   lo_address t = lo_address_new(address.first.c_str(),
@@ -90,15 +90,15 @@ OscCtrlServer::prop_cb(std::string internal_subscriber_name,
   lo_address_free(t);
 }
 
-std::shared_ptr < QuiddityManager > OscCtrlServer::get_quiddity_manager() {
+std::shared_ptr<QuiddityManager> OscCtrlServer::get_quiddity_manager() {
   return manager_.lock();
 }
 
-gchar *OscCtrlServer::make_internal_subscriber_name(const gchar * name) {
+gchar *OscCtrlServer::make_internal_subscriber_name(const gchar *name) {
   return g_strdup_printf("%s%s", get_name().c_str(), name);
 }
 
-gchar *OscCtrlServer::retrieve_subscriber_name(const gchar * internal_name) {
+gchar *OscCtrlServer::retrieve_subscriber_name(const gchar *internal_name) {
   gchar *res;
   gchar **split = g_strsplit(internal_name,
                              get_name().c_str(),
@@ -109,7 +109,7 @@ gchar *OscCtrlServer::retrieve_subscriber_name(const gchar * internal_name) {
 }
 
 // floor
-gchar *OscCtrlServer::string_float_to_string_int(const gchar * string_float) {
+gchar *OscCtrlServer::string_float_to_string_int(const gchar *string_float) {
   gchar *res;
   gchar **split = g_strsplit(string_float,
                              ".",
@@ -120,7 +120,7 @@ gchar *OscCtrlServer::string_float_to_string_int(const gchar * string_float) {
 }
 
 gboolean OscCtrlServer::set_port_wrapped(gpointer port, gpointer user_data) {
-  OscCtrlServer *context = static_cast < OscCtrlServer * >(user_data);
+  OscCtrlServer *context = static_cast<OscCtrlServer *>(user_data);
   context->set_port((char *) port);
   return TRUE;
 }
@@ -151,8 +151,8 @@ OscCtrlServer::osc_handler(const char *path,
                            const char *types,
                            lo_arg ** argv, int argc, void * /*data */ ,
                            void *user_data) {
-  OscCtrlServer *context = static_cast < OscCtrlServer * >(user_data);
-  std::shared_ptr < QuiddityManager > manager =
+  OscCtrlServer *context = static_cast<OscCtrlServer *>(user_data);
+  std::shared_ptr<QuiddityManager> manager =
       context->get_quiddity_manager();
   if (!(bool) manager) {
     g_warning("OscCtrlServer: cannot get quiddity manager");
@@ -212,7 +212,7 @@ OscCtrlServer::osc_handler(const char *path,
       gchar *quid_name = string_from_osc_arg(types[0], argv[0]);
       gchar *method_name = string_from_osc_arg(types[1], argv[1]);
       int i;
-      std::vector < std::string > args;
+      std::vector<std::string> args;
       for (i = 2; i < argc; i++) {
         gchar *val = string_from_osc_arg(types[i], argv[i]);
         args.push_back(val);
@@ -410,7 +410,7 @@ OscCtrlServer::osc_handler(const char *path,
   return 0;
 }
 
-gchar *OscCtrlServer::string_from_osc_arg(char type, lo_arg * data) {
+gchar *OscCtrlServer::string_from_osc_arg(char type, lo_arg *data) {
   // lo_arg_host_endian ((lo_type) type, data);
   gchar *res = nullptr;       // = g_strdup_printf ("videotestsrc");
 

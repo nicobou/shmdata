@@ -35,30 +35,30 @@ class StringDictionary:public Quiddity {
   bool init();
 
  private:
-  std::map < std::string, gchar * >dico_;
+  std::map<std::string, gchar *>dico_;
 
   typedef struct {
     StringDictionary *string_dictionary;
     std::string entry_name;
   } PropertySetGet;
   std::map < std::string,
-             std::shared_ptr < PropertySetGet > >set_get_contexts_;
+             std::shared_ptr<PropertySetGet >>set_get_contexts_;
 
   // property
   CustomPropertyHelper::ptr custom_props_;
-  std::map < std::string, GParamSpec * >prop_specs_;
+  std::map<std::string, GParamSpec *>prop_specs_;
   static const gchar *string_getter(void *user_data);
-  static void string_setter(const gchar * value, void *user_data);
+  static void string_setter(const gchar *value, void *user_data);
 
   // methods
-  static gboolean create_entry(const gchar * entry_name,
-                               const gchar * description,
-                               const gchar * long_name, void *user_data);
-  static gboolean remove_entry(const gchar * entry_name, void *user_data);
-  static gboolean save(gchar * file_path, void *user_data);
-  static gboolean load(gchar * file_path, void *user_data);
-  gboolean load_file(const gchar * file_path);
-  gboolean save_file(const gchar * file_path);
+  static gboolean create_entry(const gchar *entry_name,
+                               const gchar *description,
+                               const gchar *long_name, void *user_data);
+  static gboolean remove_entry(const gchar *entry_name, void *user_data);
+  static gboolean save(gchar *file_path, void *user_data);
+  static gboolean load(gchar *file_path, void *user_data);
+  gboolean load_file(const gchar *file_path);
+  gboolean save_file(const gchar *file_path);
 };
 }  // namespace switcher
 

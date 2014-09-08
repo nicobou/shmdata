@@ -25,7 +25,7 @@
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Deinterleave,
                                      "Deinterleave",
-                                     "video sink",
+                                     "video",
                                      "connect to an audio shmdata and split channels to multiple shmdata(s)",
                                      "LGPL",
                                      "deinterleave", "Nicolas Bouillot");
@@ -53,10 +53,10 @@ bool Deinterleave::init_gpipe() {
 }
 
 void
-Deinterleave::make_deinterleave_active(ShmdataReader * caller,
+Deinterleave::make_deinterleave_active(ShmdataReader *caller,
                                        void *deinterleave_instance) {
   Deinterleave *context =
-      static_cast < Deinterleave * >(deinterleave_instance);
+      static_cast<Deinterleave *>(deinterleave_instance);
   caller->set_sink_element(context->deinterleave_);
   gst_bin_add(GST_BIN(context->bin_), context->deinterleave_);
   GstUtils::sync_state_with_parent(context->deinterleave_);
@@ -68,9 +68,9 @@ void Deinterleave::no_more_pads_cb(GstElement * /*0object */ ,
   // Deinterleave *context = static_cast<Deinterleave *>(user_data);
 }
 
-void Deinterleave::pad_added_cb(GstElement * /*object */ , GstPad * pad,
+void Deinterleave::pad_added_cb(GstElement * /*object */ , GstPad *pad,
                                 gpointer user_data) {
-  Deinterleave *context = static_cast < Deinterleave * >(user_data);
+  Deinterleave *context = static_cast<Deinterleave *>(user_data);
 
   const gchar *padname =
       gst_structure_get_name(gst_caps_get_structure

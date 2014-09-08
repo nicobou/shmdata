@@ -82,7 +82,7 @@ GParamSpec *CustomPropertyHelper::make_boolean_property(const gchar *
   return pspec;
 }
 
-GParamSpec *CustomPropertyHelper::make_int_property(const gchar * nickname,
+GParamSpec *CustomPropertyHelper::make_int_property(const gchar *nickname,
                                                     const gchar *
                                                     description,
                                                     gint min_value,
@@ -178,7 +178,7 @@ CustomPropertyHelper::make_user_method(const gchar *nickname,
                                        void(*set_method)(void),
                                        void(*get_method)(void),
                                        void *user_data) {
-  std::shared_ptr < UserMethod > user_method(new UserMethod());
+  std::shared_ptr<UserMethod> user_method(new UserMethod());
   user_method->set = (void (*)(void)) set_method;
   user_method->get = (void (*)(void)) get_method;
   user_method->user_data = user_data;
@@ -188,8 +188,8 @@ CustomPropertyHelper::make_user_method(const gchar *nickname,
   gobject_->property_set_user_data(nickname, user_method.get());
 }
 
-bool CustomPropertyHelper::get_by_gvalue(GValue * value, void *user_data) {
-  UserMethod *user_method = static_cast < UserMethod * >(user_data);
+bool CustomPropertyHelper::get_by_gvalue(GValue *value, void *user_data) {
+  UserMethod *user_method = static_cast<UserMethod *>(user_data);
 
   if (G_VALUE_TYPE(value) == G_TYPE_STRING) {
     const gchar *val =
@@ -217,9 +217,9 @@ bool CustomPropertyHelper::get_by_gvalue(GValue * value, void *user_data) {
 }
 
 bool
-CustomPropertyHelper::set_by_gvalue(const GValue * value,
+CustomPropertyHelper::set_by_gvalue(const GValue *value,
                                     void *user_data) {
-  UserMethod *user_method = static_cast < UserMethod * >(user_data);
+  UserMethod *user_method = static_cast<UserMethod *>(user_data);
 
   if (G_VALUE_TYPE(value) == G_TYPE_STRING) {
     ((set_string_method) user_method->set) (g_value_get_string(value),
@@ -246,7 +246,7 @@ CustomPropertyHelper::set_by_gvalue(const GValue * value,
   return TRUE;
 }
 
-bool CustomPropertyHelper::notify_property_changed(GParamSpec * pspec) {
+bool CustomPropertyHelper::notify_property_changed(GParamSpec *pspec) {
   return GObjectWrapper::notify_property_changed(gobject_->get_gobject(),
                                                  pspec);
 }

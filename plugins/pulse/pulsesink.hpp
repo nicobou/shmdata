@@ -61,7 +61,7 @@ class PulseSink:public SinglePadGstSink {
   pa_mainloop_api *pa_mainloop_api_;
   pa_context *pa_context_;
   char *server_;
-  std::vector < DeviceDescription > devices_;       // indexed by pulse_device_name
+  std::vector<DeviceDescription> devices_;       // indexed by pulse_device_name
   std::mutex devices_mutex_;
   std::condition_variable devices_cond_;
   // devices enumeration
@@ -79,16 +79,16 @@ class PulseSink:public SinglePadGstSink {
 
   bool make_elements();
   bool build_elements();
-  void make_device_description(pa_context * pulse_context);
+  void make_device_description(pa_context *pulse_context);
   void make_json_description();
   void update_output_device();
 
   static const gchar *get_devices_json(void *user_data);
-  static void pa_context_state_callback(pa_context * c, void *userdata);
-  static void get_sink_info_callback(pa_context * c,
-                                     const pa_sink_info * i,
+  static void pa_context_state_callback(pa_context *c, void *userdata);
+  static void get_sink_info_callback(pa_context *c,
+                                     const pa_sink_info *i,
                                      int is_last, void *userdata);
-  static void on_pa_event_callback(pa_context * c,
+  static void on_pa_event_callback(pa_context *c,
                                    pa_subscription_event_type_t t,
                                    uint32_t idx, void *userdata);
   static gboolean async_get_pulse_devices(void *user_data);

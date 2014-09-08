@@ -27,7 +27,7 @@ CounterMap::~CounterMap() {
 }
 
 uint CounterMap::get_count(const std::string & key) {
-  std::unique_lock < std::mutex > lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   auto it = counters_.find(key);
   if (counters_.end() != it)
     return ++(it->second);
@@ -37,7 +37,7 @@ uint CounterMap::get_count(const std::string & key) {
 }
 
 void CounterMap::reset_counter_map() {
-  std::unique_lock < std::mutex > lock(mutex_);
+  std::unique_lock<std::mutex> lock(mutex_);
   counters_.clear();
 }
 }  // namespace switcher

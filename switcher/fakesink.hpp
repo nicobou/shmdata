@@ -36,7 +36,7 @@ class FakeSink:public SinglePadGstSink {
   FakeSink & operator=(const FakeSink &) = delete;
 
  private:
-  GstElement * fakesink_;
+  GstElement *fakesink_;
   gsize num_bytes_since_last_update_;
   GSource *update_byterate_source_;
   gint byte_rate_;
@@ -52,9 +52,9 @@ class FakeSink:public SinglePadGstSink {
     return true;
   };
 
-  static void on_handoff_cb(GstElement * object,
-                            GstBuffer * buf,
-                            GstPad * pad, gpointer user_data);
+  static void on_handoff_cb(GstElement *object,
+                            GstBuffer *buf,
+                            GstPad *pad, gpointer user_data);
   static gboolean update_byte_rate(gpointer user_data);
   static gint get_byte_rate(void *user_data);
   static const gchar *get_caps(void *user_data);

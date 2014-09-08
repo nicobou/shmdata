@@ -27,7 +27,7 @@
 #include <ostream>
 #include <sstream>
 
-template < class T > using StorageType = typename std::decay < T >::type;
+template<class T > using StorageType = typename std::decay < T>::type;
 
 struct AnyValueBase {
   // AnyValueBase (const AnyValueBase &) = delete;
@@ -39,13 +39,13 @@ struct AnyValueBase {
   virtual std::string to_string()const = 0;
 };
 
-template < typename T > struct AnyValueDerived:
+template<typename T> struct AnyValueDerived:
 AnyValueBase {
   template <
     typename
     U >
   AnyValueDerived(U && value):
-      value_(std::forward < U > (value)) {
+      value_(std::forward<U> (value)) {
   }
   T
   value_;
@@ -75,7 +75,7 @@ AnyValueBase {
     typename
     U >
   AnyValueDerived(U && value):
-      value_(std::forward < U > (value)) {
+      value_(std::forward<U> (value)) {
   }
   std::nullptr_t
   value_;
@@ -109,7 +109,7 @@ struct Any {
     typename
     U >
   Any(U && value):
-      ptr_(new AnyValueDerived < StorageType < U >> (std::forward < U > (value))) {
+      ptr_(new AnyValueDerived<StorageType<U>> (std::forward < U> (value))) {
   }
 
   template <
@@ -122,7 +122,7 @@ struct Any {
       U >
         T;
     auto
-        derived = dynamic_cast < AnyValueDerived < T > *>(ptr_);
+        derived = dynamic_cast<AnyValueDerived < T> *>(ptr_);
     return
         derived;
   }
@@ -137,14 +137,14 @@ struct Any {
         StorageType <
       U >
         T;
-    auto derived = dynamic_cast < AnyValueDerived < T > *>(ptr_);
+    auto derived = dynamic_cast<AnyValueDerived < T> *>(ptr_);
     if (!derived)
       throw std::bad_cast();
     return derived->value_;
   }
 
-  template < class U > operator     U() {
-    return as < StorageType < U >> ();
+  template<class U> operator     U() {
+    return as<StorageType < U>> ();
   }
 
   Any():ptr_(nullptr) {
@@ -195,18 +195,13 @@ struct Any {
   }
 
  private:
-  AnyValueBase * clone()const {
+  AnyValueBase *clone() const {
     if (ptr_)
-      return
-          ptr_->
-          clone();
+      return ptr_->clone();
     else
-      return
-          nullptr;
+      return nullptr;
   }
-
-  AnyValueBase *
-  ptr_;
+  AnyValueBase *ptr_;
   friend std::ostream & operator<<(std::ostream & os, const Any & any) {
     if (any.ptr_)
       os << any.ptr_->to_string();
@@ -219,13 +214,11 @@ struct Any {
 // this is for Any of complex value, where default serilization will
 // be implemented as follow
 //
-
-template < typename T > struct DefaultSerializable {
-  virtual ~
-  DefaultSerializable() {}
-  template < typename U >
+template<typename T> struct DefaultSerializable {
+  virtual ~DefaultSerializable() {}
+  template<typename U>
   friend std::ostream & operator<<(std::ostream & os,
-                                   const DefaultSerializable < U > &) {
+                                   const DefaultSerializable<U> &) {
     os << "not serializable";
     return os;
   }

@@ -80,7 +80,7 @@ ShmdataAnyReader::on_data(shmdata_any_reader_t *,
                           int data_size,
                           unsigned long long timestamp,
                           const char *type_description, void *user_data) {
-  ShmdataAnyReader *context = static_cast < ShmdataAnyReader * >(user_data);
+  ShmdataAnyReader *context = static_cast<ShmdataAnyReader *>(user_data);
   if (!context->is_caps_set_) {
     context->set_negociated_caps(std::string(type_description));
     context->is_caps_set_ = true;

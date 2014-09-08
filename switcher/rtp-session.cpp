@@ -49,14 +49,14 @@ RtpSession::RtpSession():rtpsession_(nullptr), next_id_(79),  // this value is a
 RtpSession::~RtpSession() {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
 
-  std::vector < std::string > paths;
+  std::vector<std::string> paths;
   for (auto & it : quiddity_managers_)
     paths.push_back(it.first);
   for (auto & it : paths)
     remove_data_stream(it);
 
   // removing sdp files
-  std::vector < std::string > destinations;
+  std::vector<std::string> destinations;
   for (auto & it : destinations_)
     destinations.push_back(it.first);
   for (auto & it : destinations) {
@@ -252,7 +252,7 @@ gboolean
 RtpSession::write_sdp_file_wrapped(gpointer nick_name,
                                    gpointer user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  RtpSession *context = static_cast < RtpSession * >(user_data);
+  RtpSession *context = static_cast<RtpSession *>(user_data);
 
   if (context->write_sdp_file((char *) nick_name))
     return TRUE;
@@ -288,7 +288,7 @@ bool RtpSession::write_sdp_file(std::string dest_name) {
 
 // function used as a filter for selecting the appropriate rtp payloader
 gboolean
-RtpSession::sink_factory_filter(GstPluginFeature * feature,
+RtpSession::sink_factory_filter(GstPluginFeature *feature,
                                 gpointer data) {
   // // g_print ("%s\n", __PRETTY_FUNCTION__);
   // guint rank;
@@ -313,8 +313,8 @@ RtpSession::sink_factory_filter(GstPluginFeature * feature,
 
 // sorting factory by rank
 gint
-RtpSession::sink_compare_ranks(GstPluginFeature * f1,
-                               GstPluginFeature * f2) {
+RtpSession::sink_compare_ranks(GstPluginFeature *f1,
+                               GstPluginFeature *f2) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
   gint diff;
 
@@ -327,11 +327,11 @@ RtpSession::sink_compare_ranks(GstPluginFeature * f1,
 
 // this is a typefind function, called when type of input stream from a shmdata is found
 void
-RtpSession::make_data_stream_available(GstElement * typefind,
+RtpSession::make_data_stream_available(GstElement *typefind,
                                        guint /*probability */ ,
-                                       GstCaps * caps, gpointer user_data) {
+                                       GstCaps *caps, gpointer user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  RtpSession *context = static_cast < RtpSession * >(user_data);
+  RtpSession *context = static_cast<RtpSession *>(user_data);
   g_debug("RtpSession::make_data_stream_available");
   GstElement *pay = nullptr;
   GList *list = gst_registry_feature_filter(gst_registry_get_default(),
@@ -490,10 +490,10 @@ RtpSession::make_data_stream_available(GstElement * typefind,
 }
 
 void
-RtpSession::attach_data_stream(ShmdataReader * caller,
+RtpSession::attach_data_stream(ShmdataReader *caller,
                                void *rtpsession_instance) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  RtpSession *context = static_cast < RtpSession * >(rtpsession_instance);
+  RtpSession *context = static_cast<RtpSession *>(rtpsession_instance);
   GstElement *funnel, *typefind;
   GstUtils::make_element("funnel", &funnel);
   GstUtils::make_element("typefind", &typefind);
@@ -519,7 +519,7 @@ RtpSession::add_destination_wrapped(gpointer nick_name,
                                     gpointer host_name,
                                     gpointer user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  RtpSession *context = static_cast < RtpSession * >(user_data);
+  RtpSession *context = static_cast<RtpSession *>(user_data);
 
   if (context->add_destination((char *) nick_name, (char *) host_name))
     return TRUE;
@@ -549,7 +549,7 @@ gboolean
 RtpSession::remove_destination_wrapped(gpointer nick_name,
                                        gpointer user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  RtpSession *context = static_cast < RtpSession * >(user_data);
+  RtpSession *context = static_cast<RtpSession *>(user_data);
 
   if (context->remove_destination((char *) nick_name))
     return TRUE;
@@ -576,7 +576,7 @@ RtpSession::add_udp_stream_to_dest_wrapped(gpointer shmdata_name,
                                            gpointer port,
                                            gpointer user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  RtpSession *context = static_cast < RtpSession * >(user_data);
+  RtpSession *context = static_cast<RtpSession *>(user_data);
 
   if (context->add_udp_stream_to_dest
       ((char *) shmdata_name, (char *) nick_name, (char *) port))
@@ -627,7 +627,7 @@ RtpSession::add_udp_stream_to_dest(std::string shmdata_socket_path,
         QuiddityManager::make_manager("manager_" + get_name() + "_" + id);
     quiddity_managers_[shmdata_socket_path] = manager;
 
-    std::vector < std::string > arg;
+    std::vector<std::string> arg;
     manager->create("udpsink", "udpsend_rtp");
     manager->create("udpsink", "udpsend_rtcp");
 
@@ -649,7 +649,7 @@ RtpSession::add_udp_stream_to_dest(std::string shmdata_socket_path,
   // rtp stream (sending)
   RtpDestination::ptr dest = destinations_[nick_name];
   dest->add_stream(shmdata_socket_path, manager, port);
-  std::vector < std::string > arg;
+  std::vector<std::string> arg;
   arg.push_back(dest->get_host_name());
   arg.push_back(port);
   manager->invoke("udpsend_rtp", "add_client", nullptr, arg);
@@ -680,7 +680,7 @@ RtpSession::remove_udp_stream_to_dest_wrapped(gpointer
                                               gpointer dest_name,
                                               gpointer user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  RtpSession *context = static_cast < RtpSession * >(user_data);
+  RtpSession *context = static_cast<RtpSession *>(user_data);
 
   if (context->remove_udp_stream_to_dest((char *) shmdata_socket_path,
                                          (char *) dest_name))
@@ -720,7 +720,7 @@ RtpSession::remove_udp_stream_to_dest(std::string shmdata_socket_path,
   QuiddityManager::ptr manager = manager_it->second;
 
   // rtp
-  std::vector < std::string > arg;
+  std::vector<std::string> arg;
   arg.push_back(dest->get_host_name());
   arg.push_back(port);
   manager->invoke("udpsend_rtp", "remove_client", nullptr, arg);
@@ -740,7 +740,7 @@ gboolean
 RtpSession::add_data_stream_wrapped(gpointer connector_name,
                                     gpointer user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  RtpSession *context = static_cast < RtpSession * >(user_data);
+  RtpSession *context = static_cast<RtpSession *>(user_data);
 
   if (context->add_data_stream((char *) connector_name))
     return TRUE;
@@ -776,7 +776,7 @@ gboolean
 RtpSession::remove_data_stream_wrapped(gpointer connector_name,
                                        gpointer user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  RtpSession *context = static_cast < RtpSession * >(user_data);
+  RtpSession *context = static_cast<RtpSession *>(user_data);
   if (context->remove_data_stream((char *) connector_name))
     return TRUE;
   else
@@ -915,9 +915,9 @@ void RtpSession::on_timeout(GstElement * /*rtpbin */ ,
 }
 
 void RtpSession::on_pad_added(GstElement * /*gstelement */ ,
-                              GstPad * new_pad, gpointer user_data) {
+                              GstPad *new_pad, gpointer user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  RtpSession *context = static_cast < RtpSession * >(user_data);
+  RtpSession *context = static_cast<RtpSession *>(user_data);
   g_debug("on_pad_added, name: %s, direction: %d",
           gst_pad_get_name(new_pad), gst_pad_get_direction(new_pad));
   // gchar *bidule = g_strdup ("bidule");
@@ -925,7 +925,7 @@ void RtpSession::on_pad_added(GstElement * /*gstelement */ ,
 }
 
 void RtpSession::on_pad_removed(GstElement * /*gstelement */ ,
-                                GstPad * new_pad, gpointer /*user_data */ ) {
+                                GstPad *new_pad, gpointer /*user_data */ ) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
   // RtpSession *context = static_cast<RtpSession *>(user_data);
   g_debug("on_pad_removed, name: %s, direction: %d",
@@ -941,7 +941,7 @@ void RtpSession::on_no_more_pad(GstElement * /*gstelement */ ,
 
 const gchar *RtpSession::get_destinations_json(void *user_data) {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
-  RtpSession *context = static_cast < RtpSession * >(user_data);
+  RtpSession *context = static_cast<RtpSession *>(user_data);
 
   if (context->destinations_json_ != nullptr)
     g_free(context->destinations_json_);
@@ -963,12 +963,12 @@ const gchar *RtpSession::get_destinations_json(void *user_data) {
 void
 RtpSession::set_mtu_at_add_data_stream(const gint value, void *user_data)
 {
-  RtpSession *context = static_cast < RtpSession * >(user_data);
+  RtpSession *context = static_cast<RtpSession *>(user_data);
   context->mtu_at_add_data_stream_ = value;
 }
 
 gint RtpSession::get_mtu_at_add_data_stream(void *user_data) {
-  RtpSession *context = static_cast < RtpSession * >(user_data);
+  RtpSession *context = static_cast<RtpSession *>(user_data);
   return context->mtu_at_add_data_stream_;
 }
 

@@ -57,9 +57,9 @@ void QuidditySignalSubscriber::mute(bool muted) {
 }
 
 void
-QuidditySignalSubscriber::signal_cb(std::vector < std::string > params,
+QuidditySignalSubscriber::signal_cb(std::vector<std::string> params,
                                     gpointer user_data) {
-  SignalData *signal = static_cast < SignalData * >(user_data);
+  SignalData *signal = static_cast<SignalData *>(user_data);
 
   // g_print ("---------------- signal callback: %s -- %s -- %s -- %s\n",
   //      signal->quiddity_name,
@@ -83,7 +83,7 @@ void QuidditySignalSubscriber::set_user_data(void *user_data) {
   user_data_ = user_data;
 }
 
-void QuidditySignalSubscriber::set_name(const gchar * name) {
+void QuidditySignalSubscriber::set_name(const gchar *name) {
   name_ = g_strdup(name);
 }
 
@@ -99,7 +99,7 @@ QuidditySignalSubscriber::subscribe(Quiddity::ptr quid,
               quid->get_nick_name().c_str(), signal_name.c_str());
     return false;
   }
-  std::pair < std::string, std::string > cur_pair;
+  std::pair<std::string, std::string> cur_pair;
   cur_pair = std::make_pair(quid->get_nick_name(), signal_name);
   if (signal_datas_.find(cur_pair) != signal_datas_.end()) {
     g_warning("not subscribing twice the same signal (%s %s)",
@@ -125,7 +125,7 @@ QuidditySignalSubscriber::subscribe(Quiddity::ptr quid,
 bool
 QuidditySignalSubscriber::unsubscribe(Quiddity::ptr quid,
                                       std::string signal_name) {
-  std::pair < std::string, std::string > cur_pair;
+  std::pair<std::string, std::string> cur_pair;
   cur_pair = std::make_pair(quid->get_nick_name(), signal_name);
   SignalDataMap::iterator it = signal_datas_.find(cur_pair);
   if (it != signal_datas_.end()) {
@@ -142,7 +142,7 @@ QuidditySignalSubscriber::unsubscribe(Quiddity::ptr quid,
 
 bool QuidditySignalSubscriber::unsubscribe(Quiddity::ptr quid) {
   std::string quid_name = quid->get_nick_name();
-  std::vector < std::pair < std::string, std::string > >keys_to_remove;
+  std::vector<std::pair<std::string, std::string>>keys_to_remove;
   for (auto & it : signal_datas_)
     if (it.first.first == quid_name) {
       g_free(it.second->quiddity_name);
@@ -156,7 +156,7 @@ bool QuidditySignalSubscriber::unsubscribe(Quiddity::ptr quid) {
 
 std::vector < std::pair < std::string,
                           std::string > >QuidditySignalSubscriber::list_subscribed_signals() {
-  std::vector < std::pair < std::string, std::string > >res;
+  std::vector<std::pair<std::string, std::string>>res;
   SignalDataMap::iterator it;
   for (it = signal_datas_.begin(); it != signal_datas_.end(); it++) {
     res.push_back(it->first);

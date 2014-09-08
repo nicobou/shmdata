@@ -30,7 +30,7 @@ RtpDestination::~RtpDestination() {
   for (auto & it : ports_) {
     QuiddityManager::ptr manager = it.second;
     // cleaning rtp
-    std::vector < std::string > arg;
+    std::vector<std::string> arg;
     arg.push_back(host_name_);
     arg.push_back(it.first);
     manager->invoke("udpsend_rtp", "remove_client", nullptr, arg);

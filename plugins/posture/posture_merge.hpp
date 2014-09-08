@@ -53,14 +53,14 @@ class PostureMerge:public Quiddity, public Segment, public StartableQuiddity {
   GParamSpec *compress_cloud_prop_ {nullptr};
 
   unsigned int source_id_ {0};
-  std::shared_ptr < posture::PointCloudMerger > merger_ {nullptr};
+  std::shared_ptr<posture::PointCloudMerger> merger_ {nullptr};
   std::mutex mutex_ {};
 
   ShmdataAnyWriter::ptr cloud_writer_ {nullptr};
 
   std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriter_queue_ {};
 
-  std::shared_ptr < std::vector < char >>cloud_buffers_[3];
+  std::shared_ptr<std::vector < char>>cloud_buffers_[3];
   unsigned int cloud_buffer_index_ {0};
 
   bool init() final;
@@ -70,9 +70,9 @@ class PostureMerge:public Quiddity, public Segment, public StartableQuiddity {
   bool can_sink_caps(std::string caps);
 
   static const gchar *get_calibration_path(void *user_data);
-  static void set_calibration_path(const gchar * name, void *user_data);
+  static void set_calibration_path(const gchar *name, void *user_data);
   static const gchar *get_devices_path(void *user_data);
-  static void set_devices_path(const gchar * name, void *user_data);
+  static void set_devices_path(const gchar *name, void *user_data);
   static int get_compress_cloud(void *user_data);
   static void set_compress_cloud(const int compress, void *user_data);
 

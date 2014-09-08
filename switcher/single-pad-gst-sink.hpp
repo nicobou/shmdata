@@ -27,15 +27,15 @@
 namespace switcher {
 class SinglePadGstSink:public GPipe {
  public:
-  typedef std::shared_ptr < SinglePadGstSink > ptr;
+  typedef std::shared_ptr<SinglePadGstSink> ptr;
   SinglePadGstSink();
   ~SinglePadGstSink();
   SinglePadGstSink(const SinglePadGstSink &) = delete;
   SinglePadGstSink & operator=(const SinglePadGstSink &) = delete;
 
   //  protected: // made public for allowing composition and/or delegation
-  void set_sink_element(GstElement * sink);
-  void set_sink_element_no_connect(GstElement * sink);
+  void set_sink_element(GstElement *sink);
+  void set_sink_element_no_connect(GstElement *sink);
   void set_on_first_data_hook(ShmdataReader::on_first_data_hook cb,
                               void *user_data);
 

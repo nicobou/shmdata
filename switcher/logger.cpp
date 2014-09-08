@@ -152,18 +152,18 @@ Logger::~Logger() {
 gboolean
 Logger::install_log_handler_wrapped(gpointer log_domain,
                                     gpointer user_data) {
-  Logger *context = static_cast < Logger * >(user_data);
+  Logger *context = static_cast<Logger *>(user_data);
   return context->install_log_handler((gchar *) log_domain);
 }
 
 gboolean
 Logger::remove_log_handler_wrapped(gpointer log_domain,
                                    gpointer user_data) {
-  Logger *context = static_cast < Logger * >(user_data);
+  Logger *context = static_cast<Logger *>(user_data);
   return context->remove_log_handler((gchar *) log_domain);
 }
 
-gboolean Logger::install_log_handler(const gchar * log_domain) {
+gboolean Logger::install_log_handler(const gchar *log_domain) {
   auto it = handler_ids_.find(log_domain);
   if (handler_ids_.end() != it)
     return FALSE;
@@ -174,7 +174,7 @@ gboolean Logger::install_log_handler(const gchar * log_domain) {
   return TRUE;
 }
 
-gboolean Logger::remove_log_handler(const gchar * log_domain) {
+gboolean Logger::remove_log_handler(const gchar *log_domain) {
   auto it = handler_ids_.find(log_domain);
   if (handler_ids_.end() == it)
     return FALSE;
@@ -184,15 +184,15 @@ gboolean Logger::remove_log_handler(const gchar * log_domain) {
 }
 
 void Logger::replace_last_line(std::string next_line) {
-  std::unique_lock < std::mutex > lock(last_line_mutex_);
+  std::unique_lock<std::mutex> lock(last_line_mutex_);
   last_line_ = next_line;
 }
 
 void
-Logger::log_handler(const gchar * log_domain,
+Logger::log_handler(const gchar *log_domain,
                     GLogLevelFlags log_level,
-                    const gchar * message, gpointer user_data) {
-  Logger *context = static_cast < Logger * >(user_data);
+                    const gchar *message, gpointer user_data) {
+  Logger *context = static_cast<Logger *>(user_data);
   if (context->mute_)
     return;
   gboolean update_last_line = TRUE;
@@ -247,38 +247,38 @@ Logger::log_handler(const gchar * log_domain,
 }
 
 const gchar *Logger::get_last_line(void *user_data) {
-  Logger *context = static_cast < Logger * >(user_data);
-  std::unique_lock < std::mutex > lock(context->last_line_mutex_);
+  Logger *context = static_cast<Logger *>(user_data);
+  std::unique_lock<std::mutex> lock(context->last_line_mutex_);
   return context->last_line_.c_str();
 }
 
 gboolean Logger::get_mute(void *user_data) {
-  Logger *context = static_cast < Logger * >(user_data);
+  Logger *context = static_cast<Logger *>(user_data);
   return context->mute_;
 }
 
 void Logger::set_mute(gboolean mute, void *user_data) {
-  Logger *context = static_cast < Logger * >(user_data);
+  Logger *context = static_cast<Logger *>(user_data);
   context->mute_ = mute;
 }
 
 gboolean Logger::get_debug(void *user_data) {
-  Logger *context = static_cast < Logger * >(user_data);
+  Logger *context = static_cast<Logger *>(user_data);
   return context->debug_;
 }
 
 void Logger::set_debug(gboolean debug, void *user_data) {
-  Logger *context = static_cast < Logger * >(user_data);
+  Logger *context = static_cast<Logger *>(user_data);
   context->debug_ = debug;
 }
 
 gboolean Logger::get_verbose(void *user_data) {
-  Logger *context = static_cast < Logger * >(user_data);
+  Logger *context = static_cast<Logger *>(user_data);
   return context->verbose_;
 }
 
 void Logger::set_verbose(gboolean verbose, void *user_data) {
-  Logger *context = static_cast < Logger * >(user_data);
+  Logger *context = static_cast<Logger *>(user_data);
   context->verbose_ = verbose;
 }
 }

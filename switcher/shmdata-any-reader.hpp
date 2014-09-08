@@ -31,7 +31,7 @@
 namespace switcher {
 class ShmdataAnyReader:public OnCaps {
  public:
-  typedef std::shared_ptr < ShmdataAnyReader > ptr;
+  typedef std::shared_ptr<ShmdataAnyReader> ptr;
   using Callback = std::function < void (void *,
                                          int,
                                          unsigned long long,

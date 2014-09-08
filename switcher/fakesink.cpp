@@ -92,7 +92,7 @@ bool FakeSink::init_gpipe() {
 }
 
 gboolean FakeSink::update_byte_rate(gpointer user_data) {
-  FakeSink *context = static_cast < FakeSink * >(user_data);
+  FakeSink *context = static_cast<FakeSink *>(user_data);
   context->byte_rate_ = context->num_bytes_since_last_update_;
   context->num_bytes_since_last_update_ = 0;
   context->props_->notify_property_changed(context->byte_rate_spec_);
@@ -100,9 +100,9 @@ gboolean FakeSink::update_byte_rate(gpointer user_data) {
 }
 
 void FakeSink::on_handoff_cb(GstElement * /*object */ ,
-                             GstBuffer * buf,
-                             GstPad * pad, gpointer user_data) {
-  FakeSink *context = static_cast < FakeSink * >(user_data);
+                             GstBuffer *buf,
+                             GstPad *pad, gpointer user_data) {
+  FakeSink *context = static_cast<FakeSink *>(user_data);
 
   if (context->set_string_caps_) {
     context->set_string_caps_ = false;
@@ -116,12 +116,12 @@ void FakeSink::on_handoff_cb(GstElement * /*object */ ,
 }
 
 gint FakeSink::get_byte_rate(void *user_data) {
-  FakeSink *context = static_cast < FakeSink * >(user_data);
+  FakeSink *context = static_cast<FakeSink *>(user_data);
   return context->byte_rate_;
 }
 
 const gchar *FakeSink::get_caps(void *user_data) {
-  FakeSink *context = static_cast < FakeSink * >(user_data);
+  FakeSink *context = static_cast<FakeSink *>(user_data);
   return context->string_caps_;
 }
 }

@@ -29,18 +29,18 @@
 namespace switcher {
 class GstElementCleaner {
  public:
-  typedef std::shared_ptr < GstElementCleaner > ptr;
+  typedef std::shared_ptr<GstElementCleaner> ptr;
   GstElementCleaner();
   virtual ~ GstElementCleaner();
-  void add_element_to_cleaner(GstElement * element);
+  void add_element_to_cleaner(GstElement *element);
   void add_labeled_element_to_cleaner(const std::string & new_label,
-                                      GstElement * element);
+                                      GstElement *element);
   GstElement *get_labeled_element_from_cleaner(const std::string &
                                                new_label);
 
  private:
-  std::vector < GstElement * >elements_to_remove_;
-  std::map < std::string, GstElement * >labeled_elements_;
+  std::vector<GstElement *>elements_to_remove_;
+  std::map<std::string, GstElement *>labeled_elements_;
 };
 }  // namespace switcher
 

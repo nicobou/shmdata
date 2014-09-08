@@ -40,7 +40,7 @@ class SyphonSrc:public Quiddity, public Segment, public StartableQuiddity {
   SyphonSrc & operator=(const SyphonSrc &) = delete;
 
  private:
-  std::shared_ptr < SyphonReader > reader_;
+  std::shared_ptr<SyphonReader> reader_;
   ShmdataAnyWriter::ptr writer_;
 
   CustomPropertyHelper::ptr custom_props_;
@@ -58,9 +58,9 @@ class SyphonSrc:public Quiddity, public Segment, public StartableQuiddity {
   static void frameCallback(void *, const char *, int &, int &);
 
   static const gchar *get_servername(void *user_data);
-  static void set_servername(const gchar * name, void *user_data);
+  static void set_servername(const gchar *name, void *user_data);
   static const gchar *get_appname(void *user_data);
-  static void set_appname(const gchar * name, void *user_data);
+  static void set_appname(const gchar *name, void *user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(SyphonSrc);

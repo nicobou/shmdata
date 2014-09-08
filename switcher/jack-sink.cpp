@@ -26,11 +26,12 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackSink,
-                                     "Audio Display (with Jack Audio)",
-                                     "audio sink",
+                                     "Audio Display (Jack)",
+                                     "audio",
                                      "Audio display with minimal features",
                                      "LGPL",
-                                     "jacksink", "Nicolas Bouillot");
+                                     "jacksink",
+                                     "Nicolas Bouillot");
 
 bool JackSink::init_gpipe() {
   if (false == make_elements())
@@ -94,8 +95,8 @@ bool JackSink::stop() {
   return true;
 }
 
-void JackSink::set_client_name(const gchar * value, void *user_data) {
-  JackSink *context = static_cast < JackSink * >(user_data);
+void JackSink::set_client_name(const gchar *value, void *user_data) {
+  JackSink *context = static_cast<JackSink *>(user_data);
   if (nullptr != context->client_name_)
     g_free(context->client_name_);
   context->client_name_ = g_strdup(value);
@@ -104,7 +105,7 @@ void JackSink::set_client_name(const gchar * value, void *user_data) {
 }
 
 const gchar *JackSink::get_client_name(void *user_data) {
-  JackSink *context = static_cast < JackSink * >(user_data);
+  JackSink *context = static_cast<JackSink *>(user_data);
   return context->client_name_;
 }
 

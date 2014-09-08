@@ -26,7 +26,7 @@ std::string OnCaps::get_caps() {
 }
 
 void OnCaps::set_on_caps(CapsCallBack callback) {
-  std::unique_lock < std::mutex > lock(caps_mutex_);
+  std::unique_lock<std::mutex> lock(caps_mutex_);
   on_caps_callback_.push_back(callback);
   if (!negociated_caps_.empty())
     callback(negociated_caps_);
@@ -36,7 +36,7 @@ bool OnCaps::set_negociated_caps(std::string caps) {
   if (caps.empty())
     return false;
 
-  std::unique_lock < std::mutex > lock(caps_mutex_);
+  std::unique_lock<std::mutex> lock(caps_mutex_);
   negociated_caps_ = std::move(caps);
   for (auto & it : on_caps_callback_)
     it(negociated_caps_);

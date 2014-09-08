@@ -26,7 +26,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uris,
                                      "Uri Player",
                                      "experimental uri player",
                                      "play/pause/seek/loop/synchronize multiple uris",
-                                     "LGPL", "uris", "Nicolas Bouillot");
+                                     "LGPL",
+                                     "urisOLD",
+                                     "Nicolas Bouillot");
 
 bool Uris::init() {
   group_ = g_new0(Group, 1);
@@ -102,7 +104,7 @@ bool Uris::init() {
 }
 
 gboolean Uris::add_uri_wrapped(gpointer uri, gpointer user_data) {
-  Uris *context = static_cast < Uris * >(user_data);
+  Uris *context = static_cast<Uris *>(user_data);
   if (context->add_uri((char *) uri))
     return TRUE;
   else
@@ -117,7 +119,7 @@ bool Uris::add_uri(std::string uri) {
 
 gboolean Uris::play_wrapped(gpointer /*unused */ ,
                             gpointer user_data) {
-  Uris *context = static_cast < Uris * >(user_data);
+  Uris *context = static_cast<Uris *>(user_data);
 
   if (context->play())
     return TRUE;
@@ -133,7 +135,7 @@ bool Uris::play() {
 
 gboolean Uris::pause_wrapped(gpointer /*unused */ ,
                              gpointer user_data) {
-  Uris *context = static_cast < Uris * >(user_data);
+  Uris *context = static_cast<Uris *>(user_data);
 
   if (context->pause())
     return TRUE;
@@ -148,7 +150,7 @@ bool Uris::pause() {
 }
 
 gboolean Uris::seek_wrapped(gdouble position, gpointer user_data) {
-  Uris *context = static_cast < Uris * >(user_data);
+  Uris *context = static_cast<Uris *>(user_data);
 
   g_debug("seek_wrapped %f", position);
 
@@ -166,7 +168,7 @@ bool Uris::seek(gdouble position) {
 
 // ************************* wrapping c code:
 
-void Uris::group_add_uri(Group * group, const char *uri) {
+void Uris::group_add_uri(Group *group, const char *uri) {
   gchar *uri_tmp;
 
   switch (group->state) {
@@ -225,10 +227,10 @@ void Uris::group_add_uri(Group * group, const char *uri) {
 }
 
 void
-Uris::uridecodebin_pad_added_cb(GstElement * object, GstPad * pad,
+Uris::uridecodebin_pad_added_cb(GstElement * object, GstPad *pad,
                                 gpointer user_data) {
   Group *group = (Group *) user_data;
-  Uris *context = static_cast < Uris * >(group->user_data);
+  Uris *context = static_cast<Uris *>(group->user_data);
 
   // const gchar *padname= gst_structure_get_name (gst_caps_get_structure(gst_pad_get_caps (pad),0));
   // detecting type of media
@@ -389,7 +391,7 @@ void Uris::group_add_task(gpointer /*key */ ,
   g_debug("-- task added");
 }
 
-void Uris::group_queue_command(Group * group, gpointer func, gpointer arg) {
+void Uris::group_queue_command(Group *group, gpointer func, gpointer arg) {
   GroupCommand *command = g_new0(GroupCommand, 1);
   command->func = (gboolean(*)(gpointer, gpointer)) func;
   command->group = group;
@@ -446,7 +448,7 @@ gboolean Uris::group_launch_command(gpointer user_data) {
   return FALSE;               // to be removed from the gmain loop
 }
 
-gboolean Uris::group_play(Group * group) {
+gboolean Uris::group_play(Group *group) {
   g_debug("trying to play state %d, queue lenth %d", group->state,
           g_async_queue_length(group->numTasks));
 
@@ -539,7 +541,7 @@ Uris::group_play_wrapped_for_commands(gpointer user_data,
 }
 
 void
-Uris::pad_blocked_cb(GstPad * pad, gboolean blocked, gpointer user_data) {
+Uris::pad_blocked_cb(GstPad *pad, gboolean blocked, gpointer user_data) {
   Sample *sample = (Sample *) user_data;
   if (blocked) {
     // unlinking and changing state only if expected
@@ -563,7 +565,7 @@ void Uris::group_unlink_datastream(gpointer key, gpointer /*value */ ,
   unlink_pad(sample->bin_srcpad);
 }
 
-void Uris::unlink_pad(GstPad * pad) {
+void Uris::unlink_pad(GstPad *pad) {
   if (!GST_IS_PAD(pad)) {
     g_warning("(unlink_pad): trying to unlink something not a pad");
     return;
@@ -587,7 +589,7 @@ Uris::group_pause_wrapped_for_commands(gpointer user_data,
   return group_pause(group);
 }
 
-gboolean Uris::group_pause(Group * group) {
+gboolean Uris::group_pause(Group *group) {
   g_debug("try to pause, state is %d", group->state);
 
   switch (group->state) {
@@ -633,7 +635,7 @@ Uris::group_block_datastream_wrapped_for_hash(gpointer key,
   }
 }
 
-void Uris::group_do_block_datastream(Sample * sample) {
+void Uris::group_do_block_datastream(Sample *sample) {
   if (!gst_pad_set_blocked_async
       (sample->bin_srcpad, TRUE, (GstPadBlockCallback) pad_blocked_cb,
        sample)) {
@@ -659,7 +661,7 @@ Uris::group_seek_wrapped_for_commands(gpointer user_data,
   return group_seek(group, group->seek_position);
 }
 
-gboolean Uris::group_seek(Group * group, gdouble position) {
+gboolean Uris::group_seek(Group *group, gdouble position) {
   g_debug("trying to seek, state %d", group->state);
 
   group->seek_position = position;
@@ -704,7 +706,7 @@ gboolean Uris::group_seek(Group * group, gdouble position) {
   return FALSE;
 }
 
-void Uris::group_do_seek_datastream(Sample * sample) {
+void Uris::group_do_seek_datastream(Sample *sample) {
   g_debug("--------------: going to seek for a sample");
   // GstQuery *query;
   // gboolean res;
@@ -736,7 +738,7 @@ void Uris::group_do_seek_datastream(Sample * sample) {
                          // | GST_SEEK_FLAG_SKIP
                          // | GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
                          GST_SEEK_TYPE_SET,
-                         sample->group->seek_position * GST_SECOND,
+                         sample->group->seek_position *GST_SECOND,
                          GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
 
   if (!ret)
@@ -756,7 +758,7 @@ void Uris::group_do_seek_datastream(Sample * sample) {
   group_try_change_state(sample->group);
 }
 
-void Uris::group_do_group_seek(Group * group) {
+void Uris::group_do_group_seek(Group *group) {
   g_debug("*** group_seek");
   group_add_task(nullptr, nullptr, group);
   g_hash_table_foreach(group->datastreams, (GHFunc) group_add_task, group);
@@ -767,7 +769,7 @@ void Uris::group_do_group_seek(Group * group) {
 }
 
 void
-Uris::group_queue_command_unlocked(Group * group, gpointer func,
+Uris::group_queue_command_unlocked(Group *group, gpointer func,
                                    gpointer arg) {
   GroupCommand *command = g_new0(GroupCommand, 1);
   command->func = (gboolean(*)(gpointer, gpointer)) func;
@@ -777,7 +779,7 @@ Uris::group_queue_command_unlocked(Group * group, gpointer func,
   g_debug("-- queuing (unlocked) command");
 }
 
-gboolean Uris::event_probe_cb(GstPad * pad, GstEvent * event, gpointer data) {
+gboolean Uris::event_probe_cb(GstPad * pad, GstEvent *event, gpointer data) {
   Sample *sample = (Sample *) data;
   if (GST_EVENT_TYPE(event) == GST_EVENT_EOS) {
     // g_debug ("EOS caught and disabled ");
@@ -811,7 +813,7 @@ gboolean Uris::event_probe_cb(GstPad * pad, GstEvent * event, gpointer data) {
   return TRUE;
 }
 
-gboolean Uris::group_eos_rewind(Group * group) {
+gboolean Uris::group_eos_rewind(Group *group) {
   group->state = GROUP_TO_PAUSED;
   g_hash_table_foreach(group->datastreams, (GHFunc) group_add_task, group);
   g_hash_table_foreach(group->datastreams, (GHFunc) group_add_task, group);

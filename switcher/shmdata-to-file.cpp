@@ -87,7 +87,7 @@ gboolean
 ShmdataToFile::add_shmdata_wrapped(gpointer shmdata_socket_path,
                                    gpointer file_location,
                                    gpointer user_data) {
-  ShmdataToFile *context = static_cast < ShmdataToFile * >(user_data);
+  ShmdataToFile *context = static_cast<ShmdataToFile *>(user_data);
 
   if (context->add_shmdata
       ((char *) shmdata_socket_path, (char *) file_location))
@@ -118,7 +118,7 @@ ShmdataToFile::add_shmdata(std::string shmdata_socket_path,
 gboolean
 ShmdataToFile::remove_shmdata_wrapped(gpointer connector_name,
                                       gpointer user_data) {
-  ShmdataToFile *context = static_cast < ShmdataToFile * >(user_data);
+  ShmdataToFile *context = static_cast<ShmdataToFile *>(user_data);
   if (context->remove_shmdata((char *) connector_name))
     return TRUE;
   else
@@ -132,7 +132,7 @@ bool ShmdataToFile::remove_shmdata(std::string shmdata_socket_path) {
 }
 
 void ShmdataToFile::set_recording(gboolean recording, void *user_data) {
-  ShmdataToFile *context = static_cast < ShmdataToFile * >(user_data);
+  ShmdataToFile *context = static_cast<ShmdataToFile *>(user_data);
   if (recording)
     context->make_recorders();
   else
@@ -141,7 +141,7 @@ void ShmdataToFile::set_recording(gboolean recording, void *user_data) {
 }
 
 gboolean ShmdataToFile::get_recording(void *user_data) {
-  ShmdataToFile *context = static_cast < ShmdataToFile * >(user_data);
+  ShmdataToFile *context = static_cast<ShmdataToFile *>(user_data);
   return context->recording_;
 }
 

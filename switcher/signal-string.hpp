@@ -30,21 +30,21 @@
 namespace switcher {
 class Signal {
  public:
-  typedef std::shared_ptr < Signal > ptr;
-  typedef std::vector < GType > args_types;
+  typedef std::shared_ptr<Signal> ptr;
+  typedef std::vector<GType> args_types;
   // long name, name, description
   typedef std::vector < std::tuple < std::string, std::string,
                                      std::string > >args_doc;
-  typedef void (*OnEmittedCallback) (std::vector < std::string > params, gpointer user_data);  // FIXME params should be const
+  typedef void (*OnEmittedCallback) (std::vector<std::string> params, gpointer user_data);  // FIXME params should be const
 
   Signal();
   ~Signal();
   Signal(const Signal &) = delete;
   Signal & operator=(const Signal &) = delete;
 
-  bool set_gobject_signame(GObject * object,
+  bool set_gobject_signame(GObject *object,
                            std::string gobject_signal_name);
-  bool set_gobject_sigid(GObject * object, guint gobject_signal_id);
+  bool set_gobject_sigid(GObject *object, guint gobject_signal_id);
   void set_description(std::string long_name,
                        std::string signal_name,
                        std::string short_description,
@@ -55,9 +55,9 @@ class Signal {
   bool subscribe(OnEmittedCallback cb, void *user_data);
   bool unsubscribe(OnEmittedCallback cb, void *user_data);
 
-  void signal_emit(const gchar * unused_string, va_list var_args);
+  void signal_emit(const gchar *unused_string, va_list var_args);
 
-  GValue action_emit(std::vector < std::string > args);
+  GValue action_emit(std::vector<std::string> args);
 
   // helper methods, use nullptr sentinel
   // do not describe the first gobject (first signal arg)
@@ -65,11 +65,11 @@ class Signal {
   static args_types make_arg_type_description(GType arg_type, ...);
 
   // helper methods, use nullptr sentinel
-  static args_doc make_arg_description(const gchar * first_arg_name, ...);
+  static args_doc make_arg_description(const gchar *first_arg_name, ...);
   JSONBuilder::Node get_json_root_node();
 
  private:
-  GObject * object_;
+  GObject *object_;
   guint id_;
   args_types arg_types_;
   GType return_type_;
@@ -79,9 +79,9 @@ class Signal {
   gulong hook_id_;
   std::vector < std::pair < OnEmittedCallback,
                             void *>>subscribed_on_emitted_callbacks_;
-  static gboolean on_signal_emitted(GSignalInvocationHint * ihint,
+  static gboolean on_signal_emitted(GSignalInvocationHint *ihint,
                                     guint n_param_values,
-                                    const GValue * param_values,
+                                    const GValue *param_values,
                                     gpointer user_data);
 
   /* static gboolean signal_emit_in_main_loop (gpointer user_data); */

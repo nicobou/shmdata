@@ -207,25 +207,25 @@ bool VideoSource::remake_codec_elements() {
 }
 
 void VideoSource::set_codec(const gint value, void *user_data) {
-  VideoSource *context = static_cast < VideoSource * >(user_data);
+  VideoSource *context = static_cast<VideoSource *>(user_data);
   context->codec_ = value;
   context->remake_codec_elements();
 }
 
 gint VideoSource::get_codec(void *user_data) {
-  VideoSource *context = static_cast < VideoSource * >(user_data);
+  VideoSource *context = static_cast<VideoSource *>(user_data);
   return context->codec_;
 }
 
 gboolean VideoSource::get_codec_long_list(void *user_data) {
-  VideoSource *context = static_cast < VideoSource * >(user_data);
+  VideoSource *context = static_cast<VideoSource *>(user_data);
   return context->codec_long_list_;
 }
 
 void
 VideoSource::set_codec_long_list(gboolean codec_long_list,
                                  void *user_data) {
-  VideoSource *context = static_cast < VideoSource * >(user_data);
+  VideoSource *context = static_cast<VideoSource *>(user_data);
   context->codec_long_list_ = codec_long_list;
 
   if (codec_long_list) {

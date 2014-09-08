@@ -34,14 +34,14 @@ class FileSDP:public GPipe, public GstElementCleaner {
   bool to_shmdata(std::string uri);
 
  private:
-  GstElement * filesrc_;
+  GstElement *filesrc_;
   GstElement *sdpdemux_;
   int media_counter_;
   bool init_gpipe() final;
-  static void pad_added_cb(GstElement * object, GstPad * pad,
+  static void pad_added_cb(GstElement * object, GstPad *pad,
                            gpointer user_data);
   static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);
-  static void no_more_pads_cb(GstElement * object, gpointer user_data);
+  static void no_more_pads_cb(GstElement *object, gpointer user_data);
 };
 }  // namespace switcher
 

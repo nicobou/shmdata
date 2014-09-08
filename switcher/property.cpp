@@ -62,7 +62,7 @@ void Property::copy_property(const Property & source) {
   }
 }
 
-void Property::set_gobject_pspec(GObject * object, GParamSpec * pspec) {
+void Property::set_gobject_pspec(GObject * object, GParamSpec *pspec) {
   g_param_spec_ref(pspec);
   g_object_ref(object);
   property_ = pspec;
@@ -116,7 +116,7 @@ bool Property::unsubscribe(Callback cb, void *user_data) {
 }
 
 std::string
-Property::parse_callback_args(GObject * gobject, GParamSpec * pspec) {
+Property::parse_callback_args(GObject * gobject, GParamSpec *pspec) {
   const gchar *prop_name = g_param_spec_get_name(pspec);
   GValue val = G_VALUE_INIT;
   g_value_init(&val, pspec->value_type);

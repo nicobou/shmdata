@@ -72,9 +72,9 @@ void FileSDP::no_more_pads_cb(GstElement * /*object */ ,
   // FileSDP *context = static_cast<FileSDP *>(user_data);
 }
 
-void FileSDP::pad_added_cb(GstElement * /*object */ , GstPad * pad,
+void FileSDP::pad_added_cb(GstElement * /*object */ , GstPad *pad,
                            gpointer user_data) {
-  FileSDP *context = static_cast < FileSDP * >(user_data);
+  FileSDP *context = static_cast<FileSDP *>(user_data);
 
   const gchar *padname =
       gst_structure_get_name(gst_caps_get_structure
@@ -114,7 +114,7 @@ void FileSDP::pad_added_cb(GstElement * /*object */ , GstPad * pad,
 }
 
 gboolean FileSDP::to_shmdata_wrapped(gpointer uri, gpointer user_data) {
-  FileSDP *context = static_cast < FileSDP * >(user_data);
+  FileSDP *context = static_cast<FileSDP *>(user_data);
 
   if (context->to_shmdata((char *) uri))
     return TRUE;

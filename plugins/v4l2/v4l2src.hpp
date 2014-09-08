@@ -68,7 +68,7 @@ class V4L2Src:public VideoSource {
     gint frame_size_stepwise_max_height_;
     gint frame_size_stepwise_min_height_;
     gint frame_size_stepwise_step_height_;
-    std::vector < std::string > tv_standards_;
+    std::vector<std::string> tv_standards_;
     std::vector < std::pair < std::string /*numerator */ ,
                               std::string /*denominator */  > >frame_interval_discrete_;
     gint frame_interval_stepwise_min_numerator_;
@@ -162,7 +162,7 @@ class V4L2Src:public VideoSource {
   static void set_framerate_denominator(const gint value, void *user_data);
   static gint get_framerate_denominator(void *user_data);
 
-  std::vector < CaptureDescription > capture_devices_;      // FIXME should be static
+  std::vector<CaptureDescription> capture_devices_;      // FIXME should be static
 
   bool init_gpipe() final;
 };

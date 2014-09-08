@@ -42,8 +42,8 @@ PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codecs() {
         inspect_rtp_codec_from_gst_element_factory(
             reinterpret_cast<GstElementFactory *>(iter->data));
     res.insert(res.end(),
-               std::move_iterator < codec_it > (from_factory.begin()),
-               std::move_iterator < codec_it > (from_factory.end()));
+               std::move_iterator<codec_it> (from_factory.begin()),
+               std::move_iterator<codec_it> (from_factory.end()));
     iter = g_list_next(iter);
   }
   gst_plugin_feature_list_free(element_list);
@@ -53,7 +53,7 @@ PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codecs() {
 
 PJCodecUtils::codecs
 PJCodecUtils::inspect_rtp_codec_from_gst_element_factory
-(GstElementFactory * factory) {
+(GstElementFactory *factory) {
   PJCodecUtils::codecs res;
 
   const GList *static_pads =
@@ -91,8 +91,8 @@ PJCodecUtils::inspect_rtp_codec_from_gst_element_factory
     }
     // move result to res
     res.insert(res.end(),
-               std::move_iterator < codec_it > (from_caps.begin()),
-               std::move_iterator < codec_it > (from_caps.end()));
+               std::move_iterator<codec_it> (from_caps.begin()),
+               std::move_iterator<codec_it> (from_caps.end()));
     static_pads = g_list_next(static_pads);
     gst_caps_unref(caps);
   }
@@ -100,11 +100,11 @@ PJCodecUtils::inspect_rtp_codec_from_gst_element_factory
   return res;
 }
 
-std::vector < std::string >
+std::vector<std::string>
 PJCodecUtils::get_string_values_from_gst_struct(GstStructure *
                                                 caps_struct,
                                                 std::string key) {
-  std::vector < std::string > res;
+  std::vector<std::string> res;
   const GValue *val = gst_structure_get_value(caps_struct, key.c_str());
   if (nullptr != val) {
     // g_print ("%s struct type %s\n", key.c_str (), G_VALUE_TYPE_NAME (val));
@@ -125,10 +125,10 @@ PJCodecUtils::get_string_values_from_gst_struct(GstStructure *
   return res;
 }
 
-std::vector < gint >
-PJCodecUtils::get_int_values_from_gst_struct(GstStructure * caps_struct,
+std::vector<gint>
+PJCodecUtils::get_int_values_from_gst_struct(GstStructure *caps_struct,
                                              std::string key) {
-  std::vector < gint > res;
+  std::vector<gint> res;
   const GValue *val = gst_structure_get_value(caps_struct, key.c_str());
   if (nullptr != val) {
     // g_print ("%s struct type %s\n", key.c_str (), G_VALUE_TYPE_NAME (val));
@@ -153,7 +153,7 @@ PJCodecUtils::get_int_values_from_gst_struct(GstStructure * caps_struct,
 }
 
 PJCodecUtils::codecs
-PJCodecUtils::inspect_rtp_codec_from_gst_caps(GstCaps * caps) {
+PJCodecUtils::inspect_rtp_codec_from_gst_caps(GstCaps *caps) {
   PJCodecUtils::codecs res;
   guint caps_size = gst_caps_get_size(caps);
   if (!gst_caps_is_any(caps)) {
@@ -165,8 +165,8 @@ PJCodecUtils::inspect_rtp_codec_from_gst_caps(GstCaps * caps) {
         PJCodecUtils::codecs tmp =
             inspect_rtp_codec_from_gst_struct(caps_struct);
         res.insert(res.begin(),
-                   std::move_iterator < codec_it > (tmp.begin()),
-                   std::move_iterator < codec_it > (tmp.end()));
+                   std::move_iterator<codec_it> (tmp.begin()),
+                   std::move_iterator<codec_it> (tmp.end()));
       }
     }
   }
@@ -181,7 +181,7 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
   // building RTPCodec
   //-- encoding name
   {
-    std::vector < std::string > encoding_names =
+    std::vector<std::string> encoding_names =
         get_string_values_from_gst_struct(caps_struct, "encoding-name");
     std::for_each(encoding_names.begin(),
                   encoding_names.end(),
@@ -196,7 +196,7 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
 
   //-- payloads
   {
-    std::vector < gint > payloads =
+    std::vector<gint> payloads =
         get_int_values_from_gst_struct(caps_struct, "payload");
     PJCodecUtils::codecs with_payloads;
     std::for_each(payloads.begin(),
@@ -215,9 +215,9 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
                                         std::move(pt);
                                   });
                     with_payloads.insert(with_payloads.end(),
-                                         std::move_iterator < codec_it >
+                                         std::move_iterator<codec_it>
                                          (this_payload.begin()),
-                                         std::move_iterator < codec_it >
+                                         std::move_iterator<codec_it>
                                          (this_payload.end()));
                   });
     std::swap(res, with_payloads);
@@ -225,7 +225,7 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
   // g_print ("------ payload, res size %lu\n", res.size ());
 
   {                           //-- media
-    std::vector < std::string > media =
+    std::vector<std::string> media =
         get_string_values_from_gst_struct(caps_struct, "media");
     PJCodecUtils::codecs with_media;
     std::for_each(media.begin(),
@@ -243,16 +243,16 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
                                         std::move(media_str);
                                   });
                     with_media.insert(with_media.end(),
-                                      std::move_iterator < codec_it >
+                                      std::move_iterator<codec_it>
                                       (this_media.begin()),
-                                      std::move_iterator < codec_it >
+                                      std::move_iterator<codec_it>
                                       (this_media.end()));
                   });
     std::swap(res, with_media);
   }
   // g_print ("------ media, res size %lu\n", res.size ());
   {                           // clock rate
-    std::vector < gint > clock_rates =
+    std::vector<gint> clock_rates =
         get_int_values_from_gst_struct(caps_struct, "clock-rate");
     PJCodecUtils::codecs with_clock_rates;
     std::for_each(clock_rates.begin(),
@@ -268,9 +268,9 @@ PJCodecUtils::inspect_rtp_codec_from_gst_struct(GstStructure *
                                         std::move(rate);
                                   });
                     with_clock_rates.insert(with_clock_rates.end(),
-                                            std::move_iterator < codec_it >
+                                            std::move_iterator<codec_it>
                                             (this_clock_rate.begin()),
-                                            std::move_iterator < codec_it >
+                                            std::move_iterator<codec_it>
                                             (this_clock_rate.end()));
                   });
     std::swap(res, with_clock_rates);

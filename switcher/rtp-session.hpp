@@ -61,11 +61,11 @@ class RtpSession:public GPipe {
   bool write_sdp_file(std::string dest_name);
 
   // will be called by shmdata reader
-  static void attach_data_stream(ShmdataReader * caller,
+  static void attach_data_stream(ShmdataReader *caller,
                                  void *rtpsession_instance);
 
  private:
-  GstElement * rtpsession_;
+  GstElement *rtpsession_;
   // a counter used for setting id of internal streams
   guint next_id_;
 
@@ -77,57 +77,57 @@ class RtpSession:public GPipe {
   gint mtu_at_add_data_stream_;
 
   // local streams
-  std::map < std::string, std::string > internal_id_;       // maps shmdata path with internal id
-  std::map < std::string, std::string > rtp_ids_;   // maps shmdata path with rtp id
-  std::map < std::string, QuiddityManager::ptr > quiddity_managers_;
-  std::map < std::string, GstElementCleaner::ptr > funnels_;        // maps internal id with funnel cleaner
+  std::map<std::string, std::string> internal_id_;       // maps shmdata path with internal id
+  std::map<std::string, std::string> rtp_ids_;   // maps shmdata path with rtp id
+  std::map<std::string, QuiddityManager::ptr> quiddity_managers_;
+  std::map<std::string, GstElementCleaner::ptr> funnels_;        // maps internal id with funnel cleaner
 
   // std::map<std::string, GstElement *>rtp_udp_sinks_;
-  std::map < std::string, ShmdataWriter::ptr > internal_shmdata_writers_;
-  std::map < std::string, ShmdataReader::ptr > internal_shmdata_readers_;
+  std::map<std::string, ShmdataWriter::ptr> internal_shmdata_writers_;
+  std::map<std::string, ShmdataReader::ptr> internal_shmdata_readers_;
 
   // destinations
-  std::map < std::string, RtpDestination::ptr > destinations_;
+  std::map<std::string, RtpDestination::ptr> destinations_;
 
   bool init_gpipe() final;
 
   void on_rtp_caps(std::string shmdata_path, std::string caps);
 
-  static void make_data_stream_available(GstElement * typefind,
+  static void make_data_stream_available(GstElement *typefind,
                                          guint probability,
-                                         GstCaps * caps,
+                                         GstCaps *caps,
                                          gpointer user_data);
-  static gboolean sink_factory_filter(GstPluginFeature * feature,
+  static gboolean sink_factory_filter(GstPluginFeature *feature,
                                       gpointer data);
-  static gint sink_compare_ranks(GstPluginFeature * f1,
-                                 GstPluginFeature * f2);
+  static gint sink_compare_ranks(GstPluginFeature *f1,
+                                 GstPluginFeature *f2);
 
   // internal rtpbin signals
-  static void on_bye_ssrc(GstElement * rtpbin, guint session, guint ssrc,
+  static void on_bye_ssrc(GstElement *rtpbin, guint session, guint ssrc,
                           gpointer user_data);
-  static void on_bye_timeout(GstElement * rtpbin, guint session,
+  static void on_bye_timeout(GstElement *rtpbin, guint session,
                              guint ssrc, gpointer user_data);
-  static void on_new_ssrc(GstElement * rtpbin, guint session, guint ssrc,
+  static void on_new_ssrc(GstElement *rtpbin, guint session, guint ssrc,
                           gpointer user_data);
-  static void on_npt_stop(GstElement * rtpbin, guint session, guint ssrc,
+  static void on_npt_stop(GstElement *rtpbin, guint session, guint ssrc,
                           gpointer user_data);
-  static void on_sender_timeout(GstElement * rtpbin, guint session,
+  static void on_sender_timeout(GstElement *rtpbin, guint session,
                                 guint ssrc, gpointer user_data);
-  static void on_ssrc_active(GstElement * rtpbin, guint session,
+  static void on_ssrc_active(GstElement *rtpbin, guint session,
                              guint ssrc, gpointer user_data);
-  static void on_ssrc_collision(GstElement * rtpbin, guint session,
+  static void on_ssrc_collision(GstElement *rtpbin, guint session,
                                 guint ssrc, gpointer user_data);
-  static void on_ssrc_sdes(GstElement * rtpbin, guint session, guint ssrc,
+  static void on_ssrc_sdes(GstElement *rtpbin, guint session, guint ssrc,
                            gpointer user_data);
-  static void on_ssrc_validated(GstElement * rtpbin, guint session,
+  static void on_ssrc_validated(GstElement *rtpbin, guint session,
                                 guint ssrc, gpointer user_data);
-  static void on_timeout(GstElement * rtpbin, guint session, guint ssrc,
+  static void on_timeout(GstElement *rtpbin, guint session, guint ssrc,
                          gpointer user_data);
-  static void on_pad_added(GstElement * gstelement, GstPad * new_pad,
+  static void on_pad_added(GstElement * gstelement, GstPad *new_pad,
                            gpointer user_data);
-  static void on_pad_removed(GstElement * gstelement, GstPad * new_pad,
+  static void on_pad_removed(GstElement * gstelement, GstPad *new_pad,
                              gpointer user_data);
-  static void on_no_more_pad(GstElement * gstelement, gpointer user_data);
+  static void on_no_more_pad(GstElement *gstelement, gpointer user_data);
 
   // wrapper for registering the data_stream functions
   static gboolean add_data_stream_wrapped(gpointer shmdata_socket_path,

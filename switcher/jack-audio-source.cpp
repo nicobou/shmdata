@@ -22,10 +22,12 @@
 #include "./gst-utils.hpp"
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackAudioSource,
-                                     "Jack Audio",
-                                     "audio source",
+                                     "Jack Audio Device",
+                                     "audio",
                                      "get audio from jack",
-                                     "LGPL", "jacksrc", "Nicolas Bouillot");
+                                     "LGPL",
+                                     "jacksrc",
+                                     "Nicolas Bouillot");
 
 JackAudioSource::JackAudioSource():jackaudiosrc_(nullptr),
                                    audioconvert_(nullptr),
@@ -135,19 +137,19 @@ bool JackAudioSource::make_elements() {
 }
 
 void JackAudioSource::set_num_channels(const gint value, void *user_data) {
-  JackAudioSource *context = static_cast < JackAudioSource * >(user_data);
+  JackAudioSource *context = static_cast<JackAudioSource *>(user_data);
   context->num_channels_ = value;
   GObjectWrapper::notify_property_changed(context->gobject_->get_gobject(),
                                           context->num_channels_spec_);
 }
 
 gint JackAudioSource::get_num_channels(void *user_data) {
-  JackAudioSource *context = static_cast < JackAudioSource * >(user_data);
+  JackAudioSource *context = static_cast<JackAudioSource *>(user_data);
   return context->num_channels_;
 }
 
-void JackAudioSource::set_client_name(const gchar * value, void *user_data) {
-  JackAudioSource *context = static_cast < JackAudioSource * >(user_data);
+void JackAudioSource::set_client_name(const gchar *value, void *user_data) {
+  JackAudioSource *context = static_cast<JackAudioSource *>(user_data);
   if (nullptr != context->client_name_)
     g_free(context->client_name_);
   context->client_name_ = g_strdup(value);
@@ -156,7 +158,7 @@ void JackAudioSource::set_client_name(const gchar * value, void *user_data) {
 }
 
 const gchar *JackAudioSource::get_client_name(void *user_data) {
-  JackAudioSource *context = static_cast < JackAudioSource * >(user_data);
+  JackAudioSource *context = static_cast<JackAudioSource *>(user_data);
   return context->client_name_;
 }
 }

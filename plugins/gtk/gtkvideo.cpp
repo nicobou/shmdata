@@ -30,8 +30,8 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GTKVideo,
-                                     "Video Display",
-                                     "video sink",
+                                     "Video Display (configurable)",
+                                     "video",
                                      "Video window with fullscreen",
                                      "LGPL",
                                      "gtkvideosink", "Nicolas Bouillot");
@@ -147,7 +147,7 @@ bool GTKVideo::init_gpipe() {
                               title_prop_spec_, "title", "Window Title");
   }
 
-  std::unique_lock < std::mutex > lock(wait_window_mutex_);
+  std::unique_lock<std::mutex> lock(wait_window_mutex_);
   gtk_idle_add((GtkFunction) create_ui, this);
   wait_window_cond_.wait(lock);
   if (nullptr == display_)
@@ -190,8 +190,8 @@ void GTKVideo::gtk_main_loop_thread() {
 }
 
 gboolean GTKVideo::key_pressed_cb(GtkWidget * /*widget */ ,
-                                  GdkEventKey * event, gpointer data) {
-  GTKVideo *context = static_cast < GTKVideo * >(data);
+                                  GdkEventKey *event, gpointer data) {
+  GTKVideo *context = static_cast<GTKVideo *>(data);
   QuiddityManager_Impl::ptr manager;
   switch (event->keyval) {
     case GDK_f:
@@ -217,13 +217,13 @@ gboolean GTKVideo::key_pressed_cb(GtkWidget * /*widget */ ,
 }
 
 void GTKVideo::window_destroyed(gpointer user_data) {
-  GTKVideo *context = static_cast < GTKVideo * >(user_data);
-  std::unique_lock < std::mutex > lock(context->window_destruction_mutex_);
+  GTKVideo *context = static_cast<GTKVideo *>(user_data);
+  std::unique_lock<std::mutex> lock(context->window_destruction_mutex_);
   context->window_destruction_cond_.notify_all();
 }
 
 gboolean GTKVideo::destroy_window(gpointer user_data) {
-  GTKVideo *context = static_cast < GTKVideo * >(user_data);
+  GTKVideo *context = static_cast<GTKVideo *>(user_data);
   gtk_widget_destroy(GTK_WIDGET(context->main_window_));
   window_destroyed(context);
   return FALSE;
@@ -236,7 +236,7 @@ GTKVideo::~GTKVideo() {
     g_free(title_);
   // destroy child widgets too
   if (main_window_ != nullptr && GTK_IS_WIDGET(main_window_)) {
-    std::unique_lock < std::mutex > lock(window_destruction_mutex_);
+    std::unique_lock<std::mutex> lock(window_destruction_mutex_);
     // g_idle_add_full (G_PRIORITY_DEFAULT_IDLE,
     //     destroy_window,
     //     this,
@@ -256,8 +256,8 @@ GTKVideo::~GTKVideo() {
     delete on_error_command_;
 }
 
-void GTKVideo::realize_cb(GtkWidget * widget, void *user_data) {
-  GTKVideo *context = static_cast < GTKVideo * >(user_data);
+void GTKVideo::realize_cb(GtkWidget *widget, void *user_data) {
+  GTKVideo *context = static_cast<GTKVideo *>(user_data);
   GdkWindow *window = gtk_widget_get_window(widget);
 
   if (!gdk_window_ensure_native(window))
@@ -276,7 +276,7 @@ void GTKVideo::realize_cb(GtkWidget * widget, void *user_data) {
   context->window_handle_ = GDK_WINDOW_XID(window);
 #endif
   gdk_threads_leave();
-  std::unique_lock < std::mutex > lock(context->wait_window_mutex_);
+  std::unique_lock<std::mutex> lock(context->wait_window_mutex_);
   context->wait_window_cond_.notify_all();
 }
 
@@ -284,7 +284,7 @@ void GTKVideo::realize_cb(GtkWidget * widget, void *user_data) {
 void GTKVideo::delete_event_cb(GtkWidget * /*widget */ ,
                                GdkEvent * /*event */ ,
                                void *user_data) {
-  GTKVideo *context = static_cast < GTKVideo * >(user_data);
+  GTKVideo *context = static_cast<GTKVideo *>(user_data);
 
   context->reset_bin();
   gtk_widget_destroy(context->main_window_);
@@ -297,11 +297,11 @@ void GTKVideo::delete_event_cb(GtkWidget * /*widget */ ,
 }
 
 gboolean GTKVideo::create_ui(void *user_data) {
-  GTKVideo *context = static_cast < GTKVideo * >(user_data);
+  GTKVideo *context = static_cast<GTKVideo *>(user_data);
   context->display_ = gdk_display_get_default();
   if (nullptr == context->display_) {
     g_debug("gtkvideo: no default display, cannot create window");
-    std::unique_lock < std::mutex > lock(context->wait_window_mutex_);
+    std::unique_lock<std::mutex> lock(context->wait_window_mutex_);
     context->wait_window_cond_.notify_all();
     return FALSE;
   }
@@ -337,12 +337,12 @@ void GTKVideo::toggle_fullscreen() {
 }
 
 gboolean GTKVideo::get_fullscreen(void *user_data) {
-  GTKVideo *context = static_cast < GTKVideo * >(user_data);
+  GTKVideo *context = static_cast<GTKVideo *>(user_data);
   return context->is_fullscreen_;
 }
 
 void GTKVideo::set_fullscreen(gboolean fullscreen, void *user_data) {
-  GTKVideo *context = static_cast < GTKVideo * >(user_data);
+  GTKVideo *context = static_cast<GTKVideo *>(user_data);
 
   if (fullscreen) {
     if (context->main_window_ != nullptr) {
@@ -372,8 +372,8 @@ void GTKVideo::on_shmdata_connect(std::string /*shmdata_sochet_path */ ) {
   gdk_threads_leave();
 }
 
-void GTKVideo::set_title(const gchar * value, void *user_data) {
-  GTKVideo *context = static_cast < GTKVideo * >(user_data);
+void GTKVideo::set_title(const gchar *value, void *user_data) {
+  GTKVideo *context = static_cast<GTKVideo *>(user_data);
   if (nullptr != context->title_)
     g_free(context->title_);
   context->title_ = g_strdup(value);
@@ -383,7 +383,7 @@ void GTKVideo::set_title(const gchar * value, void *user_data) {
 }
 
 const gchar *GTKVideo::get_title(void *user_data) {
-  GTKVideo *context = static_cast < GTKVideo * >(user_data);
+  GTKVideo *context = static_cast<GTKVideo *>(user_data);
   return context->title_;
 }
 

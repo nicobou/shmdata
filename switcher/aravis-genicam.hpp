@@ -36,7 +36,7 @@ class AravisGenicam:public GPipe, public GstElementCleaner {
 
   bool start(std::string name);
  private:
-  GstElement * aravissrc_;
+  GstElement *aravissrc_;
   bool init_gpipe() final;
   static gboolean start_wrapped(gpointer name, gpointer user_data);
 };

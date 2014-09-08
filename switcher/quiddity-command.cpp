@@ -90,7 +90,7 @@ void QuiddityCommand::add_arg(std::string arg) {
   args_.push_back(arg);
 }
 
-void QuiddityCommand::set_vector_arg(std::vector < std::string > vector_arg) {
+void QuiddityCommand::set_vector_arg(std::vector<std::string> vector_arg) {
   vector_arg_ = vector_arg;
 }
 
@@ -145,7 +145,7 @@ const char *QuiddityCommand::get_string_from_id(QuiddityCommand::command id) {
 }
 
 QuiddityCommand::ptr
-QuiddityCommand::parse_command_from_json_reader(JsonReader * reader) {
+QuiddityCommand::parse_command_from_json_reader(JsonReader *reader) {
   int j;
   int num_elements;
 
@@ -182,7 +182,7 @@ QuiddityCommand::parse_command_from_json_reader(JsonReader * reader) {
   // vector arguments
   json_reader_read_member(reader, "vector argument");
   num_elements = json_reader_count_elements(reader);
-  std::vector < std::string > string_vect_arg;
+  std::vector<std::string> string_vect_arg;
   for (j = 0; j < num_elements; j++) {
     json_reader_read_element(reader, j);
     const char *stringValue = json_reader_get_string_value(reader);
@@ -198,7 +198,7 @@ QuiddityCommand::parse_command_from_json_reader(JsonReader * reader) {
   // results
   json_reader_read_member(reader, "results");
   num_elements = json_reader_count_elements(reader);
-  std::vector < std::string > expected_result;
+  std::vector<std::string> expected_result;
   for (j = 0; j < num_elements; j++) {
     json_reader_read_element(reader, j);
     const char *string_value = json_reader_get_string_value(reader);

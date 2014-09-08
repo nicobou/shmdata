@@ -123,10 +123,10 @@ void PropertyMapper::unsubscribe_source_property() {
 }
 
 gboolean
-PropertyMapper::set_source_property_method(gchar * quiddity_name,
-                                           gchar * property_name,
+PropertyMapper::set_source_property_method(gchar *quiddity_name,
+                                           gchar *property_name,
                                            void *user_data) {
-  PropertyMapper *context = static_cast < PropertyMapper * >(user_data);
+  PropertyMapper *context = static_cast<PropertyMapper *>(user_data);
 
   QuiddityManager_Impl::ptr manager = context->manager_impl_.lock();
 
@@ -238,9 +238,9 @@ void PropertyMapper::make_numerical_sink_properties() {
 }
 
 void
-PropertyMapper::property_cb(GObject * gobject, GParamSpec * pspec,
+PropertyMapper::property_cb(GObject * gobject, GParamSpec *pspec,
                             gpointer user_data) {
-  PropertyMapper *context = static_cast < PropertyMapper * >(user_data);
+  PropertyMapper *context = static_cast<PropertyMapper *>(user_data);
 
   // return if not property to update
   Quiddity::ptr quid = context->sink_quiddity_.lock();
@@ -315,10 +315,10 @@ PropertyMapper::property_cb(GObject * gobject, GParamSpec * pspec,
 }
 
 gboolean
-PropertyMapper::set_sink_property_method(gchar * quiddity_name,
-                                         gchar * property_name,
+PropertyMapper::set_sink_property_method(gchar *quiddity_name,
+                                         gchar *property_name,
                                          void *user_data) {
-  PropertyMapper *context = static_cast < PropertyMapper * >(user_data);
+  PropertyMapper *context = static_cast<PropertyMapper *>(user_data);
 
   QuiddityManager_Impl::ptr manager = context->manager_impl_.lock();
 

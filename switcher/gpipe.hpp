@@ -41,17 +41,15 @@ class GPipe:public Quiddity, public Segment {
 
  public:
   GPipe();
-  virtual ~ GPipe();
+  virtual ~GPipe();
   GPipe(const GPipe &) = delete;
   GPipe & operator=(const GPipe &) = delete;
   bool init() final;
   virtual bool init_gpipe() = 0;
 
  protected:
-  // void init_gpipe (Quiddity &quiddity);// FIXME should called quiddity-manager-impl
-  // (privite with manager-impl friend ? dynamic cast ?) this will avoid to invoke init_startable (this)
-  GstElement * get_bin();
-  GstElement *bin_ {nullptr};                   // FIXME should be private
+  GstElement *get_bin();
+  GstElement *bin_ {nullptr}; // FIXME should be private
   bool reset_bin();
   GstElement *get_pipeline();
   void install_play_pause();
@@ -79,13 +77,13 @@ class GPipe:public Quiddity, public Segment {
   GSource *position_tracking_source_ {nullptr};
   GSourceFuncs source_funcs_;
   GSource *source_ {nullptr};
-  std::shared_ptr < CustomPropertyHelper > gpipe_custom_props_;
+  std::shared_ptr<CustomPropertyHelper> gpipe_custom_props_;
   GParamSpec *play_pause_spec_ {nullptr};
   bool play_ {true};
   GParamSpec *seek_spec_ {nullptr};
   gdouble seek_ {0.0};
   gint64 length_ {0};
-  std::vector < GSource * >commands_ {};
+  std::vector<GSource *>commands_ {};
 
   void make_bin();
   void clean_bin();
@@ -95,17 +93,17 @@ class GPipe:public Quiddity, public Segment {
   static gdouble get_seek(void *user_data);
   static void set_seek(gdouble position, void *user_data);
   static gboolean speed_wrapped(gdouble speed, gpointer user_data);
-  static gboolean bus_called(GstBus * bus, GstMessage * msg, gpointer data);
-  static GstBusSyncReply bus_sync_handler(GstBus * bus, GstMessage * msg,
+  static gboolean bus_called(GstBus * bus, GstMessage *msg, gpointer data);
+  static GstBusSyncReply bus_sync_handler(GstBus * bus, GstMessage *msg,
                                           gpointer user_data);
   static gboolean run_command(gpointer user_data);
-  static gboolean source_prepare(GSource * source, gint * timeout);
-  static gboolean source_check(GSource * source);
-  static gboolean source_dispatch(GSource * source,
+  static gboolean source_prepare(GSource * source, gint *timeout);
+  static gboolean source_check(GSource *source);
+  static gboolean source_dispatch(GSource *source,
                                   GSourceFunc callback, gpointer user_data);
-  static void source_finalize(GSource * source);
-  static void print_one_tag(const GstTagList * list,
-                            const gchar * tag, gpointer user_data);
+  static void source_finalize(GSource *source);
+  static void print_one_tag(const GstTagList *list,
+                            const gchar *tag, gpointer user_data);
   static gboolean query_position(gpointer user_data);
 };
 }  // namespace switcher

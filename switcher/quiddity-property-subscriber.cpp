@@ -56,10 +56,10 @@ void QuiddityPropertySubscriber::mute(bool muted) {
 }
 
 void
-QuiddityPropertySubscriber::property_cb(GObject * gobject,
-                                        GParamSpec * pspec,
+QuiddityPropertySubscriber::property_cb(GObject *gobject,
+                                        GParamSpec *pspec,
                                         gpointer user_data) {
-  PropertyData *prop = static_cast < PropertyData * >(user_data);
+  PropertyData *prop = static_cast<PropertyData *>(user_data);
 
   // g_print ("---------------- property callback: %s -- %s -- %s -- %s\n",
   //      prop->quiddity_name,
@@ -84,7 +84,7 @@ void QuiddityPropertySubscriber::set_user_data(void *user_data) {
   user_data_ = user_data;
 }
 
-void QuiddityPropertySubscriber::set_name(const gchar * name) {
+void QuiddityPropertySubscriber::set_name(const gchar *name) {
   name_ = g_strdup(name);
 }
 
@@ -100,7 +100,7 @@ QuiddityPropertySubscriber::subscribe(Quiddity::ptr quid,
               quid->get_nick_name().c_str(), property_name.c_str());
     return false;
   }
-  std::pair < std::string, std::string > cur_pair;
+  std::pair<std::string, std::string> cur_pair;
   cur_pair = std::make_pair(quid->get_nick_name(), property_name);
   if (prop_datas_.find(cur_pair) != prop_datas_.end()) {
     g_warning("not subscribing twice the same property (%s %s)",
@@ -143,7 +143,7 @@ QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid,
 
 bool QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid) {
   auto quid_name = quid->get_nick_name();
-  std::vector < std::pair < std::string, std::string >> entries_to_remove;
+  std::vector<std::pair < std::string, std::string>> entries_to_remove;
   for (auto & it : prop_datas_)
     if (it.first.first == quid_name) {
       g_free(it.second->quiddity_name);
@@ -155,9 +155,9 @@ bool QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid) {
   return true;
 }
 
-std::vector < std::pair < std::string, std::string >>
+std::vector<std::pair < std::string, std::string>>
     QuiddityPropertySubscriber::list_subscribed_properties() {
-  std::vector < std::pair < std::string, std::string >> res;
+  std::vector<std::pair < std::string, std::string>> res;
   for (auto & it : prop_datas_)
     res.push_back(it.first);
   return res;

@@ -29,13 +29,13 @@ class Quiddity;
 class QuiddityDocumentation;
 
 // the types of the class factories for quiddity pluggins
-typedef switcher::Quiddity * create_t();
+typedef switcher::Quiddity *create_t();
 typedef void destroy_t(switcher::Quiddity *);
 typedef switcher::QuiddityDocumentation get_documentation_t();
 
 class PluginLoader {
  public:
-  typedef std::shared_ptr < PluginLoader > ptr;
+  typedef std::shared_ptr<PluginLoader> ptr;
   PluginLoader();
   ~PluginLoader();
   PluginLoader(const PluginLoader &) = delete;
@@ -50,7 +50,7 @@ class PluginLoader {
   destroy_t *destroy_;
 
  private:
-  GModule * module_;
+  GModule *module_;
   get_documentation_t *get_documentation_;
   JSONBuilder::Node json_doc_;
   std::string class_name_;

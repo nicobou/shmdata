@@ -23,7 +23,7 @@
 #include <chrono>
 
 namespace switcher {
-template < typename Clock_type = std::chrono::system_clock >
+template<typename Clock_type = std::chrono::system_clock>
 class CumulativeClock {
  public:
   CumulativeClock():
@@ -32,13 +32,13 @@ class CumulativeClock {
 
   template < typename Count_type = unsigned long long, typename Resolution =
              std::nano > Count_type get_count(){
-    std::chrono::time_point < Clock_type > now = Clock_type::now();
-    std::chrono::duration < Count_type, Resolution > clock = now - start_;
+    std::chrono::time_point<Clock_type> now = Clock_type::now();
+    std::chrono::duration<Count_type, Resolution> clock = now - start_;
     return clock.count();
   }
 
  private:
-  std::chrono::time_point < Clock_type > start_;
+  std::chrono::time_point<Clock_type> start_;
 };
 }  // namespace switcher
 #endif

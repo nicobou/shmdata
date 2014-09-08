@@ -30,8 +30,8 @@ namespace switcher {
 
 class CustomPropertyHelper {
  public:
-  typedef std::shared_ptr < CustomPropertyHelper > ptr;
-  typedef void (*set_string_method) (const gchar * value, void *user_data);
+  typedef std::shared_ptr<CustomPropertyHelper> ptr;
+  typedef void (*set_string_method) (const gchar *value, void *user_data);
   typedef const gchar *(*get_string_method) (void *user_data);
   typedef void (*set_boolean_method) (const gboolean value,
                                       void *user_data);
@@ -56,26 +56,26 @@ class CustomPropertyHelper {
   CustomPropertyHelper & operator=(const CustomPropertyHelper &) = delete;
 
   bool is_property_nickname_taken(std::string nickname);
-  bool notify_property_changed(GParamSpec * pspec);
+  bool notify_property_changed(GParamSpec *pspec);
   GObject *get_gobject();
-  GParamSpec *make_string_property(const gchar * nickname,
-                                   const gchar * description,
-                                   const gchar * default_value,
+  GParamSpec *make_string_property(const gchar *nickname,
+                                   const gchar *description,
+                                   const gchar *default_value,
                                    GParamFlags read_write_flags,
                                    set_string_method set_method,
                                    get_string_method get_method,
                                    void *user_data);
 
-  GParamSpec *make_boolean_property(const gchar * nickname,
-                                    const gchar * description,
+  GParamSpec *make_boolean_property(const gchar *nickname,
+                                    const gchar *description,
                                     gboolean default_value,
                                     GParamFlags read_write_flags,
                                     set_boolean_method set_method,
                                     get_boolean_method get_method,
                                     void *user_data);
 
-  GParamSpec *make_int_property(const gchar * nickname,
-                                const gchar * description,
+  GParamSpec *make_int_property(const gchar *nickname,
+                                const gchar *description,
                                 gint min_value,
                                 gint max_value,
                                 gint default_value,
@@ -83,8 +83,8 @@ class CustomPropertyHelper {
                                 set_int_method set_method,
                                 get_int_method get_method, void *user_data);
 
-  GParamSpec *make_double_property(const gchar * nickname,
-                                   const gchar * description,
+  GParamSpec *make_double_property(const gchar *nickname,
+                                   const gchar *description,
                                    gdouble min_value,
                                    gdouble max_value,
                                    gdouble default_value,
@@ -96,18 +96,18 @@ class CustomPropertyHelper {
   GParamSpec *make_enum_property(const gchar *nickname,
                                  const gchar *description,
                                  const gint default_value,  // map key
-                                 const GEnumValue * string_map_enum,
+                                 const GEnumValue *string_map_enum,
                                  GParamFlags read_write_flags,
                                  set_enum_method set_method,
                                  get_enum_method get_method,
                                  void *user_data);
 
-  static bool get_by_gvalue(GValue * value, void *user_data);
-  static bool set_by_gvalue(const GValue * val, void *user_data);
+  static bool get_by_gvalue(GValue *value, void *user_data);
+  static bool set_by_gvalue(const GValue *val, void *user_data);
 
  private:
   GObjectWrapper::ptr gobject_;
-  std::vector < std::shared_ptr < UserMethod > >user_methods_;
+  std::vector<std::shared_ptr<UserMethod>>user_methods_;
   void make_user_method(const gchar *nickname,
                         GParamSpec *pspec,
                         void(*set_method)(void),

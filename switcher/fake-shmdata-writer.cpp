@@ -22,16 +22,17 @@
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FakeShmdataWriter,
-                                     "Shmdata From Software",
-                                     "fake source",
+                                     "Raw Shmdata",
+                                     "other",
                                      "add a shmdata from an other software",
                                      "LGPL",
-                                     "fakeshmsrc", "Nicolas Bouillot");
+                                     "fakeshmsrc",
+                                     "Nicolas Bouillot");
 
-FakeShmdataWriter::FakeShmdataWriter():custom_props_(new
-                                                     CustomPropertyHelper
-                                                     ()),
-                                       shmdata_path_spec_(nullptr), shmdata_path_(g_strdup("none")) {
+FakeShmdataWriter::FakeShmdataWriter():
+    custom_props_(new CustomPropertyHelper ()),
+    shmdata_path_spec_(nullptr),
+    shmdata_path_(g_strdup("none")) {
 }
 
 bool FakeShmdataWriter::init_gpipe() {
@@ -67,10 +68,10 @@ bool FakeShmdataWriter::add_shmdata_path(std::string name) {
 }
 
 void
-FakeShmdataWriter::set_shmdata_path(const gchar * value, void *user_data)
+FakeShmdataWriter::set_shmdata_path(const gchar *value, void *user_data)
 {
   FakeShmdataWriter *context =
-      static_cast < FakeShmdataWriter * >(user_data);
+      static_cast<FakeShmdataWriter *>(user_data);
   g_free(context->shmdata_path_);
 
   context->shmdata_path_ = g_strdup(value);
@@ -80,7 +81,7 @@ FakeShmdataWriter::set_shmdata_path(const gchar * value, void *user_data)
 
 const gchar *FakeShmdataWriter::get_shmdata_path(void *user_data) {
   FakeShmdataWriter *context =
-      static_cast < FakeShmdataWriter * >(user_data);
+      static_cast<FakeShmdataWriter *>(user_data);
   return context->shmdata_path_;
 }
 

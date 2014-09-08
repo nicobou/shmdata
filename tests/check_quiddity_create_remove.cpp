@@ -28,7 +28,7 @@ main(int /*argc */ ,
   bool success = true;
   switcher::QuiddityManager::ptr manager =
       switcher::QuiddityManager::make_manager("test_manager");
-  std::vector < std::string > classes = manager->get_classes();
+  std::vector<std::string> classes = manager->get_classes();
 
   for (auto & it : classes) {
     // std::cout << class_name << std::endl;
