@@ -27,11 +27,15 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToFile,
                                      "file recorder",
                                      "record shmdata(s) to file(s)",
                                      "LGPL",
-                                     "shmtofile", "Nicolas Bouillot");
+                                     "shmtofile",
+                                     "Nicolas Bouillot");
 
-ShmdataToFile::ShmdataToFile():custom_prop_(new CustomPropertyHelper()),
-                               recording_param_(nullptr),
-                               recording_(FALSE), file_names_(), shmdata_recorders_() {
+ShmdataToFile::ShmdataToFile():
+    custom_prop_(new CustomPropertyHelper()),
+    recording_param_(nullptr),
+    recording_(FALSE),
+    file_names_(),
+    shmdata_recorders_() {
 }
 
 ShmdataToFile::~ShmdataToFile() {
@@ -107,7 +111,7 @@ ShmdataToFile::add_shmdata(std::string shmdata_socket_path,
 
   file_names_[shmdata_socket_path] = file_location;
 
-  if (recording_)             // starting the reader if pipeline is set
+  if (recording_) // starting the reader if pipeline is set
   {
     // FIXME make the recorder
   }
