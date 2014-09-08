@@ -47,17 +47,19 @@ namespace data {
 class Tree {
  public:
   typedef std::shared_ptr<Tree> ptr;
+  typedef std::shared_ptr<const Tree> ptrc;
   typedef std::pair<std::string, Tree::ptr> child_type;
   typedef std::list<child_type> child_list_type;
   typedef std::function < void (const std::string & name,
-                                const Tree::ptr tree,
+                                const Tree::ptrc tree,
                                 bool is_array_element) > OnNodeFunction;
   Tree() {}
   explicit Tree(const Any &data);
-  bool is_leaf();
-  bool is_array();
-  bool has_data();
+  bool is_leaf() const;
+  bool is_array() const;
+  bool has_data() const;
   Any get_data();
+  const Any read_data () const;
   void set_data(const Any & data);
   void set_data(const char *data);
   void set_data(std::nullptr_t ptr);
@@ -123,7 +125,7 @@ class Tree {
   Any data_ {};
   bool is_array_ {false};
   child_list_type childrens_ {};
-  std::mutex mutex_ {};
+  mutable std::mutex mutex_ {};
   child_list_type::iterator get_child_iterator(const std::string & key);
   static bool graft_next(std::istringstream & path, Tree *tree,
                          Tree::ptr leaf);
@@ -135,7 +137,7 @@ class Tree {
 
   // walks
   friend void
-  preorder_tree_walk(Tree::ptr tree,
+  preorder_tree_walk(Tree::ptrc tree,
                      Tree::OnNodeFunction on_visiting_node,
                      Tree::OnNodeFunction on_node_visited);
 };

@@ -40,10 +40,10 @@ std::string path_to_string(std::list<std::string> path) {
 
 void
 on_visiting_node(std::string key,
-                 const Tree::ptr node,
+                 const Tree::ptrc node,
                  bool, BasicSerializerData *data) {
   data->path_.push_back(key);
-  auto value = node->get_data();
+  auto value = node->read_data();
   if (value.not_null())
     data->result_.append("."
                          +
@@ -53,11 +53,13 @@ on_visiting_node(std::string key,
 
 void
 on_node_visited(std::string,
-                const Tree::ptr, bool, BasicSerializerData *data) {
+                const Tree::ptrc, 
+		bool, 
+		BasicSerializerData *data) {
   data->path_.pop_back();
 }
 
-std::string serialize(Tree::ptr tree) {
+std::string serialize(Tree::ptrc tree) {
   BasicSerializerData data;
   preorder_tree_walk(tree,
                      std::bind(BasicSerializer::on_visiting_node,
