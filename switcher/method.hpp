@@ -36,8 +36,9 @@ class Method:public Categorizable {
   typedef std::shared_ptr<Method> ptr;
   typedef GType return_type;
   typedef std::vector<GType> args_types;
-  typedef std::vector < std::tuple < std::string, std::string,
-                                     std::string > >args_doc;
+  typedef std::vector<std::tuple<std::string,
+                                 std::string,
+                                 std::string>>args_doc;
   typedef void *method_ptr;
 
   Method();

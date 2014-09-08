@@ -30,11 +30,11 @@ namespace switcher {
 PJCall::app_t PJCall::app;
 pjmedia_endpt *PJCall::med_endpt_ = nullptr;
 
-char *pjcall_pjsip_module_name = strdup ("mod-siprtpapp");
+char *pjcall_pjsip_module_name = strdup("mod-siprtpapp");
 
 pjsip_module PJCall::mod_siprtp_ = {
   nullptr, nullptr,                  /* prev, next.  */
-  pj_str (pjcall_pjsip_module_name), /* Name.   */
+  pj_str(pjcall_pjsip_module_name), /* Name.   */
   -1,                         /* Id   */
   // (before PJSIP_MOD_PRIORITY_UA_PROXY_LAYER):
   30,                         /* Priority */
@@ -81,14 +81,16 @@ PJCall::PJCall(PJSIP *sip_instance):
 
   /* Register our module to receive incoming requests. */
   status =
-      pjsip_endpt_register_module(sip_instance_->sip_endpt_, &mod_siprtp_);
+      pjsip_endpt_register_module(sip_instance_->sip_endpt_,
+                                  &mod_siprtp_);
   if (status != PJ_SUCCESS)
     g_warning("Register mod_siprtp_ failed");
 
   // /* Init media */
-  status =
-      pjmedia_endpt_create(&sip_instance_->cp_.factory, nullptr, 1,
-                           &med_endpt_);
+  status = pjmedia_endpt_create(&sip_instance_->cp_.factory,
+                                nullptr,
+                                1,
+                                &med_endpt_);
   if (status != PJ_SUCCESS)
     g_warning("Init media failed");
 
@@ -130,7 +132,7 @@ PJCall::PJCall(PJSIP *sip_instance):
                                                   nullptr),
                      (Method::method_ptr) &call_sip_url,
                      G_TYPE_BOOLEAN,
-                     Method::make_arg_type_description (G_TYPE_STRING, nullptr),
+                     Method::make_arg_type_description(G_TYPE_STRING, nullptr),
                      this);
 
   sip_instance_->
@@ -144,10 +146,32 @@ PJCall::PJCall(PJSIP *sip_instance):
                                                   nullptr),
                      (Method::method_ptr) &hang_up,
                      G_TYPE_BOOLEAN,
-                     Method::make_arg_type_description
-                     (G_TYPE_STRING, nullptr), this);
+                     Method::make_arg_type_description (G_TYPE_STRING, nullptr),
+                     this);
 
-  
+  sip_instance_->
+      install_method("Attach Shmdata To Contact",  // long name
+                     "attach_shmdata_to_contact",       // name
+                     "Register a shmdata for this contact",  // description
+                     "success or not",  // return desc
+                     Method::make_arg_description("Shmdata Path",  // long name
+                                                  "shmpath",  // name
+                                                  "string",  // description
+                                                  "Contact URI",  // long name
+                                                  "contact_uri",  // name
+                                                  "string",  // description
+                                                  "Attaching",  // long name
+                                                  "attach",  // name
+                                                  "gboolean",  // description
+                                                  nullptr),
+                     (Method::method_ptr) &attach_shmdata_to_contact,
+                     G_TYPE_BOOLEAN,
+                     Method::make_arg_type_description(G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       G_TYPE_BOOLEAN,
+                                                       nullptr),
+                     this);
+
 
   starting_rtp_port_spec_ =
       sip_instance_->custom_props_->
@@ -188,11 +212,11 @@ PJCall::~PJCall() {
 
 /* Callback to be called to handle incoming requests outside dialogs: */
 pj_bool_t PJCall::on_rx_request(pjsip_rx_data *rdata) {
-  printf("%s %d %.*s\n",
-         __FUNCTION__,
-         __LINE__,
-         static_cast<int>(rdata->msg_info.msg->line.req.method.name.slen),
-         rdata->msg_info.msg->line.req.method.name.ptr);
+  // printf("%s %d %.*s\n",
+  //        __FUNCTION__,
+  //        __LINE__,
+  //        static_cast<int>(rdata->msg_info.msg->line.req.method.name.slen),
+  //        rdata->msg_info.msg->line.req.method.name.ptr);
 
   /* Ignore strandled ACKs (must not send respone) */
   if (rdata->msg_info.msg->line.req.method.id == PJSIP_ACK_METHOD)
@@ -527,7 +551,7 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       (pj_uint16_t) (call->instance->starting_rtp_port_ & 0xFFFE);
 
   {
-    unsigned int j = 0; // counting media to receive
+    unsigned int j = 0;  // counting media to receive
     for (unsigned int media_index = 0; media_index < offer->media_count;
          media_index++) {
       bool recv = false;
@@ -1458,13 +1482,13 @@ PJCall::create_outgoing_sdp(struct call *call,
       invoke_info_tree<paths_t>("siprtp",
                                 get_paths);
 
-  std::for_each (paths.begin (),
-                 paths.end (),
+  std::for_each(paths.begin(),
+                 paths.end(),
                  [&] (const std::string &val) {
-                   g_print ("%s\n", val.c_str ());
+                   g_print("%s\n", val.c_str ());
                  });
-  std::for_each (paths.begin (),
-                 paths.end (),
+  std::for_each(paths.begin(),
+                paths.end(),
                  [&] (const std::string &val) {
                    //std::string data = quid->get_data ("rtp_caps." + val);
                    std::string data = manager->
@@ -1475,7 +1499,7 @@ PJCall::create_outgoing_sdp(struct call *call,
                                                                              "rtp_caps." + val);
                                                      });
                    
-                   g_print ("%s\n",  data.c_str ());
+                   g_print("%s\n",  data.c_str ());
                  });
 
   gint port = starting_rtp_port_;
@@ -1548,6 +1572,40 @@ bool PJCall::make_hang_up(std::string contact_uri) {
   }
   return res;
 }
+
+gboolean PJCall::attach_shmdata_to_contact(gchar *shmpath,
+                                           gchar *contact_uri,
+                                           gboolean attach,
+                                           void *user_data) {
+  if (nullptr == shmpath || nullptr == contact_uri || nullptr == user_data) {
+    g_warning("cannot add shmpath for user (received nullptr)");
+    return FALSE;
+  }
+  PJCall *context = static_cast<PJCall *>(user_data);
+  context->sip_instance_->run_command_sync(std::bind(&PJCall::make_attach_shmdata_to_contact,
+                                                     context,
+                                                     std::string(shmpath),
+                                                     std::string(contact_uri),
+                                                     attach));
+  return TRUE;
+}
+
+void PJCall::make_attach_shmdata_to_contact(std::string shmpath,
+                                            std::string contact_uri,
+                                            bool attach) {
+    manager_->invoke_va("siprtp",
+                        "add_data_stream",
+                        nullptr,
+                        shmpath.c_str(),
+                        nullptr);
+    //HERE
+    g_print("------------------------------------------------ %s %s\n",
+            shmpath.c_str(),
+            contact_uri.c_str());
+
+}
+
+
 
 void PJCall::set_starting_rtp_port(const gint value, void *user_data) {
   PJCall *context = static_cast<PJCall *>(user_data);

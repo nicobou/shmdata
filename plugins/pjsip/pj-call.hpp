@@ -149,6 +149,13 @@ class PJCall {
   static gint get_starting_rtp_port(void *user_data);
   bool make_hang_up(std::string contact_uri);
   static gboolean hang_up(gchar *sip_url, void *user_data);
+  static gboolean attach_shmdata_to_contact(gchar *shmpath,
+                                            gchar *contact_uri,
+                                            gboolean attach,
+                                            void *user_data);
+  void make_attach_shmdata_to_contact(std::string shmpath,
+                                      std::string contact_uri,
+                                      bool attach);
 };
 }  // namespace switcher
 
