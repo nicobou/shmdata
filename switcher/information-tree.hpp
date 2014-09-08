@@ -57,52 +57,15 @@ class Tree {
                      Tree::childs_t::iterator> GetNodeReturn;
   Tree() {}
   explicit Tree(const Any &data);
+
   bool is_leaf() const;
   bool is_array() const;
   bool has_data() const;
-  Any get_data();
   const Any read_data () const;
-  void set_data(const Any & data);
-  void set_data(const char *data);
-  void set_data(std::nullptr_t ptr);
-
-  // path based methods
   bool is_leaf(const std::string & path) const;
   bool is_array(const std::string & path) const;
   bool has_data(const std::string & path) const;
-  Any get_data(const std::string & path);
-  bool set_data(const std::string & path, const Any & data);
-  bool set_data(const std::string & path, const char *data);
-  bool set_data(const std::string & path, std::nullptr_t ptr);
-
-  // graft will create the path and graft the tree,
-  // or remove old one and replace will the new tree
-  bool graft(const std::string & path, Tree::ptr);
-  // return empty tree if nothing can be pruned
-  Tree::ptr prune(const std::string & path);
-  // get but not remove
-  Tree::ptr get(const std::string & path);
-
-  // return false if the path does not exist
-  // when a path is tagged as an array, keys might be discarded
-  // by some serializers, such as JSON
-  bool tag_as_array(const std::string & path, bool is_array);
-
-  // get child key in place, use with std::insert_iterator
-  template<typename Iter>
-  void get_child_keys(const std::string path, Iter pos) const {
-    std::unique_lock<std::mutex> lock(mutex_);
-    auto found = get_node(path);
-    if (!found.first.empty()) {
-      std::transform(found.second->second->childrens_.begin(),
-                     found.second->second->childrens_.end(),
-                     pos,
-                     [](const child_type & child) {
-                       return child.first;
-                     });
-    }
-  }
-
+  const Any read_data (const std::string & path) const;
   // get child keys - returning a newly allocated container
   template<template<class T, class = std::allocator<T>>
            class Container = std::list>
@@ -122,6 +85,41 @@ class Tree {
     }
     return res;
   }
+  // get child key in place, use with std::insert_iterator
+  template<typename Iter>
+  void get_child_keys(const std::string path, Iter pos) const {
+    std::unique_lock<std::mutex> lock(mutex_);
+    auto found = get_node(path);
+    if (!found.first.empty()) {
+      std::transform(found.second->second->childrens_.begin(),
+                     found.second->second->childrens_.end(),
+                     pos,
+                     [](const child_type & child) {
+                       return child.first;
+                     });
+    }
+  }
+
+  //Tree modifications:
+  Any get_data();
+  void set_data(const Any & data);
+  void set_data(const char *data);
+  void set_data(std::nullptr_t ptr);
+  Any get_data(const std::string & path);
+  bool set_data(const std::string & path, const Any & data);
+  bool set_data(const std::string & path, const char *data);
+  bool set_data(const std::string & path, std::nullptr_t ptr);
+  // graft will create the path and graft the tree,
+  // or remove old one and replace will the new tree
+  bool graft(const std::string & path, Tree::ptr);
+  // return empty tree if nothing can be pruned
+  Tree::ptr prune(const std::string & path);
+  // get but not remove
+  Tree::ptr get(const std::string & path);
+  // return false if the path does not exist
+  // when a path is tagged as an array, keys might be discarded
+  // by some serializers, such as JSON
+  bool tag_as_array(const std::string & path, bool is_array);
 
  private:
   Any data_ {};
@@ -135,7 +133,6 @@ class Tree {
   bool get_next(std::istringstream &path,
                 childs_t &parent_list_result,
                 childs_t::iterator &result_iterator) const;
-
   // walks
   friend void
   preorder_tree_walk(Tree::ptrc tree,

@@ -197,13 +197,13 @@ main() {
                   });
     std::vector<std::string> child_keys;
     tree->get_child_keys(".root",
-                         std::insert_iterator < std::vector <
-                         std::string >> (child_keys, child_keys.begin()));
+                         std::insert_iterator <std::vector<std::string >>
+                         (child_keys, child_keys.begin()));
     assert(std::equal(childs.begin(),
                       childs.end(),
                       child_keys.begin(),
-                      [](const std::string & first,
-                         const std::string & second) {
+                      [](const std::string &first,
+                         const std::string &second) {
                         return (0 == first.compare(second));
                       }));
   }
