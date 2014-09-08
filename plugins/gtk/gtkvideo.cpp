@@ -17,16 +17,16 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./gtkvideo.hpp"
-#include "switcher/gst-utils.hpp"
-#include "switcher/quiddity-command.hpp"
 #include <gst/gst.h>
 #include <gdk/gdkkeysyms.h>
 #include <gdk/gdkcursor.h>
-
+#include "switcher/gst-utils.hpp"
+#include "switcher/quiddity-command.hpp"
+#include "switcher/quiddity-manager-impl.hpp"
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
+#include "./gtkvideo.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GTKVideo,

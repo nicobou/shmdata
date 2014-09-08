@@ -1185,14 +1185,4 @@ QuiddityManager_Impl::get_info(const std::string & nick_name,
     return "{ \"error\":\"quiddity not found\"}";
   return quiddities_[quiddities_nick_names_[nick_name]]->get_info(path);
 }
-
-std::string
-QuiddityManager_Impl::invoke_info_tree (const std::string &nick_name,
-                                        std::function<std::string(data::Tree::ptrc tree)> fun) {
-  auto it = quiddities_nick_names_.find(nick_name);
-  if (quiddities_nick_names_.end() == it)
-    return "{ \"error\":\"quiddity not found\"}";
-  return quiddities_[quiddities_nick_names_[nick_name]]->invoke_info_tree<std::string>(fun);
-}
-
 }  // namespace switcher

@@ -33,10 +33,11 @@ Tree::ptr make_tree(const char *data) {
   return std::make_shared<Tree> (std::string(data));
 }
 
+// --------------- class
 void
-preorder_tree_walk(Tree::ptrc tree,
-                   Tree::OnNodeFunction on_visiting_node,
-                   Tree::OnNodeFunction on_node_visited) {
+Tree::preorder_tree_walk(Tree::ptrc tree,
+                         Tree::OnNodeFunction on_visiting_node,
+                         Tree::OnNodeFunction on_node_visited) {
   std::unique_lock<std::mutex> lock(tree->mutex_);
   if (!tree->childrens_.empty()) {
     for (auto & it : tree->childrens_) {
@@ -47,7 +48,6 @@ preorder_tree_walk(Tree::ptrc tree,
   }
 }
 
-// --------------- class
 Tree::Tree(const Any & data):data_(data) {
 }
 
@@ -254,5 +254,37 @@ bool Tree::is_array(const std::string & path) const {
     return found.second->second->is_array_;
   return false;
 }
-}  // namespace information
+
+bool Tree::is_leaf(Tree::ptrc tree) {
+  return tree->is_leaf();
+}
+
+bool Tree::is_array(Tree::ptrc tree) {
+  return tree->is_array();
+}
+
+bool Tree::has_data(Tree::ptrc tree) {
+  return tree->has_data();
+}
+
+const Any Tree::read_data (Tree::ptrc tree) {
+  return tree->read_data();
+}
+
+bool Tree::is_leaf(Tree::ptrc tree, const std::string & path) {
+  return tree->is_leaf(path);
+}
+
+bool Tree::is_array(Tree::ptrc tree, const std::string & path) {
+  return tree->is_array(path);
+}
+
+bool Tree::has_data(Tree::ptrc tree, const std::string & path) {
+  return tree->has_data(path);
+}
+
+const Any Tree::read_data (Tree::ptrc tree, const std::string & path) {
+  return tree->read_data(path);
+}
+}  // namespace data
 }  // namespace switcher

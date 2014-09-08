@@ -78,16 +78,16 @@ std::string serialize(Tree::ptrc tree) {
     g_object_unref(json_builder);
   };
   json_builder_begin_object(json_builder);
-  preorder_tree_walk(tree,
-                     std::bind(JSONSerializer::on_visiting_node,
-                               std::placeholders::_1,
-                               std::placeholders::_2,
-                               std::placeholders::_3,
-                               json_builder),
-                     std::bind(JSONSerializer::on_node_visited,
-                               std::placeholders::_1,
-                               std::placeholders::_2,
-                               std::placeholders::_3, json_builder));
+  Tree::preorder_tree_walk(tree,
+                           std::bind(JSONSerializer::on_visiting_node,
+                                     std::placeholders::_1,
+                                     std::placeholders::_2,
+                                     std::placeholders::_3,
+                                     json_builder),
+                           std::bind(JSONSerializer::on_node_visited,
+                                     std::placeholders::_1,
+                                     std::placeholders::_2,
+                                     std::placeholders::_3, json_builder));
   json_builder_end_object(json_builder);
   JsonNode *node = json_builder_get_root(json_builder);
   if (nullptr == node)

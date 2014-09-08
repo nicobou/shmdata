@@ -61,16 +61,16 @@ on_node_visited(std::string,
 
 std::string serialize(Tree::ptrc tree) {
   BasicSerializerData data;
-  preorder_tree_walk(tree,
-                     std::bind(BasicSerializer::on_visiting_node,
-                               std::placeholders::_1,
-                               std::placeholders::_2,
-                               std::placeholders::_3,
-                               &data),
-                     std::bind(BasicSerializer::on_node_visited,
-                               std::placeholders::_1,
-                               std::placeholders::_2,
-                               std::placeholders::_3, &data));
+  Tree::preorder_tree_walk(tree,
+                           std::bind(BasicSerializer::on_visiting_node,
+                                     std::placeholders::_1,
+                                     std::placeholders::_2,
+                                     std::placeholders::_3,
+                                     &data),
+                           std::bind(BasicSerializer::on_node_visited,
+                                     std::placeholders::_1,
+                                     std::placeholders::_2,
+                                     std::placeholders::_3, &data));
   return data.result_;
 }
 

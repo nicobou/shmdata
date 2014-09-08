@@ -17,9 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <math.h>
 #include "./property-mapper.hpp"
 #include "./gst-utils.hpp"
-#include <math.h>
+#include "./quiddity-manager-impl.hpp"
 
 // for python
 // #ifdef HAVE_CONFIG_H

@@ -33,7 +33,7 @@
 #include "./pj-presence.hpp"
 
 namespace switcher {
-class PJSIP:public Quiddity {
+class PJSIP: public Quiddity {
   friend PJCall;
   friend PJPresence;
 

@@ -21,14 +21,15 @@
  * The GPipe class
  */
 
+#include <shmdata/base-reader.h>
+#include <gst/interfaces/xoverlay.h>
+#include <algorithm>
 #include "./gpipe.hpp"
 #include "./quiddity.hpp"
 #include "./quiddity-command.hpp"
 #include "./custom-property-helper.hpp"
 #include "./gst-utils.hpp"
-#include <shmdata/base-reader.h>
-#include <gst/interfaces/xoverlay.h>
-#include <algorithm>
+#include "./quiddity-manager-impl.hpp"
 
 namespace switcher {
 GPipe::GPipe():pipeline_(gst_pipeline_new(nullptr)),

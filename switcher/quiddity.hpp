@@ -36,7 +36,7 @@
 #include "./signal-string.hpp"
 #include "./information-tree.hpp"
 #include "./quiddity-documentation.hpp"
-#include "./quiddity-manager-impl.hpp"
+//#include "./quiddity-manager-impl.hpp"
 #include "./json-builder.hpp"
 #include "./gobject-wrapper.hpp"
 #include "./information-tree.hpp"

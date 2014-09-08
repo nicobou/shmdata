@@ -100,8 +100,11 @@ class QuiddityManager: public std::enable_shared_from_this<QuiddityManager>
   // ****************** informations **********************************************************
   std::string get_info(const std::string &nick_name,
                        const std::string &path);
-  std::string invoke_info_tree (const std::string &nick_name,
-                                std::function<std::string(data::Tree::ptrc tree)> fun); 
+  template<typename R>
+  R invoke_info_tree (const std::string &nick_name,
+                      std::function<R(data::Tree::ptrc tree)> fun){
+    return manager_impl_->invoke_info_tree<R> (nick_name, fun);
+  }
   
   // ****************** properties ************************************************************
   // doc (json formatted)

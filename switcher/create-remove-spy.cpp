@@ -19,6 +19,7 @@
 
 #include "./create-remove-spy.hpp"
 #include "./gst-utils.hpp"
+#include "./quiddity-manager-impl.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(CreateRemoveSpy,

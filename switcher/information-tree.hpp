@@ -58,6 +58,7 @@ class Tree {
   Tree() {}
   explicit Tree(const Any &data);
 
+  //const methods
   bool is_leaf() const;
   bool is_array() const;
   bool has_data() const;
@@ -100,6 +101,30 @@ class Tree {
     }
   }
 
+  //static version of const methods, for being used with invoke_info_tree
+  static void preorder_tree_walk(Tree::ptrc tree,
+                                 Tree::OnNodeFunction on_visiting_node,
+                                 Tree::OnNodeFunction on_node_visited);
+  static bool is_leaf(Tree::ptrc tree);
+  static bool is_array(Tree::ptrc tree);
+  static bool has_data(Tree::ptrc tree);
+  static const Any read_data (Tree::ptrc tree);
+  static bool is_leaf(Tree::ptrc tree, const std::string & path);
+  static bool is_array(Tree::ptrc tree, const std::string & path);
+  static bool has_data(Tree::ptrc tree, const std::string & path);
+  static const Any read_data (Tree::ptrc tree, const std::string & path);
+  // get child keys - returning a newly allocated container
+  template<template<class T, class = std::allocator<T>>
+           class Container = std::list>
+      static Container<std::string> get_child_keys(Tree::ptrc tree, const std::string path) {
+    return tree->get_child_keys<Container>(path);
+  }
+  // get child key in place, use with std::insert_iterator
+  template<typename Iter>
+  static void get_child_keys(Tree::ptrc tree, const std::string path, Iter pos) {
+    tree->get_child_keys<Iter> (path, pos);
+  }
+  
   //Tree modifications:
   Any get_data();
   void set_data(const Any & data);
@@ -133,10 +158,6 @@ class Tree {
   bool get_next(std::istringstream &path,
                 childs_t &parent_list_result,
                 childs_t::iterator &result_iterator) const;
-  // walks
-  friend void preorder_tree_walk(Tree::ptrc tree,
-                                 Tree::OnNodeFunction on_visiting_node,
-                                 Tree::OnNodeFunction on_node_visited);
 };
 
 // constructor

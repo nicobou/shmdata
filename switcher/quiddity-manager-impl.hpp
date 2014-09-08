@@ -31,7 +31,7 @@
 #include "./plugin-loader.hpp"
 
 namespace switcher {
-class Quiddity;
+//class Quiddity;
 class QuiddityPropertySubscriber;
 class QuidditySignalSubscriber;
 
@@ -81,8 +81,14 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   void reset_create_remove_hooks();
 
   // information tree
-  std::string invoke_info_tree (const std::string &nick_name,
-                                std::function<std::string(data::Tree::ptrc tree)> fun);  
+  template<typename R>
+  R invoke_info_tree (const std::string &nick_name,
+                      std::function<R(data::Tree::ptrc tree)> fun){
+    auto it = quiddities_nick_names_.find(nick_name);
+    if (quiddities_nick_names_.end() == it)
+      return fun (data::make_tree ());
+  return quiddities_[quiddities_nick_names_[nick_name]]->invoke_info_tree<R>(fun);
+  }  
   std::string get_info(const std::string &nick_name,
                        const std::string &path);
 

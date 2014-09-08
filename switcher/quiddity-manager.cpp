@@ -274,12 +274,6 @@ QuiddityManager::get_info(const std::string & quiddity_name,
                     quiddity_name.c_str(), path.c_str(), nullptr);
 }
 
-std::string
-QuiddityManager::invoke_info_tree(const std::string &nick_name,
-                                std::function<std::string(data::Tree::ptrc tree)> fun) {
-  return manager_impl_->invoke_info_tree (nick_name, fun);
-}
-
 
 std::string
 QuiddityManager::
