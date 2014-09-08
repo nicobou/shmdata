@@ -104,8 +104,6 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
                           int width, int height);
   static void free_sent_buffer(void* data);
   void check_buffers();
-
-  std::shared_ptr < posture::Display > display_ {nullptr};
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureSrc);

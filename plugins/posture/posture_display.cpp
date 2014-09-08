@@ -21,10 +21,8 @@
 #include <iostream>
 
 using namespace std;
-using namespace
-switcher::data;
-using namespace
-posture;
+using namespace switcher::data;
+using namespace posture;
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureDisplay,
@@ -69,7 +67,7 @@ PostureDisplay::connect(std::string shmdata_socket_path) {
     if (!display_mutex_.try_lock())
         return;
 
-    vector<char>buffer((char *)data, (char *)data + size);
+    vector<char> buffer((char *)data, (char *)data + size);
     display_->setInputCloud(buffer,
                             string(type) == string(POINTCLOUD_TYPE_COMPRESSED),
                             timestamp);
