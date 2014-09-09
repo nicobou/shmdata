@@ -348,7 +348,7 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   tree->graft(".subscription_state",
               data::make_tree(std::string(info.sub_state_name)));
   context->sip_instance_->graft_tree(std::string(".presence."
-                                                 + std::to_string (buddy_id)),
+                                                 + std::to_string(buddy_id)),
                                      tree);
 }
 
@@ -492,7 +492,7 @@ PJPresence::on_incoming_subscribe(pjsua_acc_id acc_id,
 void
 PJPresence::on_buddy_evsub_state(pjsua_buddy_id buddy_id,
                                  pjsip_evsub * sub, pjsip_event *event) {
-  //printf("%s\n", __FUNCTION__);
+  // printf("%s\n", __FUNCTION__);
   char event_info[80];
 
   PJ_UNUSED_ARG(sub);
@@ -505,7 +505,6 @@ PJPresence::on_buddy_evsub_state(pjsua_buddy_id buddy_id,
     snprintf(event_info, sizeof(event_info),
              " (RX %s)", pjsip_rx_data_get_info(rdata));
   }
-
   // printf("Buddy %d: subscription state: %s (event: %s%s)",
   //        buddy_id, pjsip_evsub_get_state_name(sub),
   //        pjsip_event_str(event->type), event_info);

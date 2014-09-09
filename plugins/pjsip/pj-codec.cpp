@@ -21,7 +21,6 @@
 #include "./pj-call.hpp"
 #include "./pj-codec-utils.hpp"
 #include <glib.h>               // g_warning
-#include <iostream>
 #include <algorithm>
 
 namespace switcher {
@@ -41,7 +40,7 @@ pjmedia_codec_factory_op PJCodec::alt_codec_factory_op = {
 // PJCodec::~PJCodec ()
 // {}
 
-pj_status_t PJCodec::alt_codec_test_alloc(pjmedia_codec_factory *factory,
+pj_status_t PJCodec::alt_codec_test_alloc(pjmedia_codec_factory */*factory*/,
                                           const pjmedia_codec_info *id) {
   // g_print ("*************************************** %s\n", __FUNCTION__);
   // for performance, "available_codecs" could become static and reused here
@@ -63,7 +62,7 @@ pj_status_t PJCodec::alt_codec_test_alloc(pjmedia_codec_factory *factory,
 }
 
 pj_status_t
-PJCodec::alt_codec_default_attr(pjmedia_codec_factory *factory,
+PJCodec::alt_codec_default_attr(pjmedia_codec_factory */*factory*/,
                                 const pjmedia_codec_info *id,
                                 pjmedia_codec_param *attr) {
   // g_print ("*************************************** %s\n", __FUNCTION__);
@@ -98,7 +97,7 @@ PJCodec::alt_codec_default_attr(pjmedia_codec_factory *factory,
 }
 
 pj_status_t
-PJCodec::alt_codec_enum_codecs(pjmedia_codec_factory *factory,
+PJCodec::alt_codec_enum_codecs(pjmedia_codec_factory */*factory*/,
                                unsigned *count,
                                pjmedia_codec_info codecs[]) {
   // g_print ("*************************************** %s\n", __FUNCTION__);
@@ -108,10 +107,11 @@ PJCodec::alt_codec_enum_codecs(pjmedia_codec_factory *factory,
 
   unsigned i = 0;
   for (auto &it : available_codecs) {
-    std::cout << " encoding " << it->encoding_name_
-              << " payload " << it->payload_
-              << " media " << it->media_
-              << " clock rate " << it->clock_rate_ << std::endl;
+    g_print(" encoding %s, payload %d, media %s, clock rate %d\n",
+            it->encoding_name_.c_str(),
+            it->payload_,
+            it->media_.c_str(),
+            it->clock_rate_);
     if (i >= *count)  // default pjsip is 32, need a patch to get more, like 128
       break;
     pj_bzero(&codecs[i], sizeof(pjmedia_codec_info));
@@ -134,8 +134,8 @@ PJCodec::alt_codec_enum_codecs(pjmedia_codec_factory *factory,
 }
 
 pj_status_t
-PJCodec::alt_codec_alloc_codec(pjmedia_codec_factory *factory,
-                               const pjmedia_codec_info *id,
+PJCodec::alt_codec_alloc_codec(pjmedia_codec_factory */*factory*/,
+                               const pjmedia_codec_info */*id*/,
                                pjmedia_codec ** p_codec) {
   // g_print ("*************************************** %s\n", __FUNCTION__);
   /* This will never get called since we won't be using this codec */
@@ -144,8 +144,8 @@ PJCodec::alt_codec_alloc_codec(pjmedia_codec_factory *factory,
 }
 
 pj_status_t
-PJCodec::alt_codec_dealloc_codec(pjmedia_codec_factory *factory,
-                                 pjmedia_codec *codec) {
+PJCodec::alt_codec_dealloc_codec(pjmedia_codec_factory */*factory*/,
+                                 pjmedia_codec */*codec*/) {
   // g_print ("*************************************** %s\n", __FUNCTION__);
   /* This will never get called */
   // UNIMPLEMENTED(alt_codec_dealloc_codec)

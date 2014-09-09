@@ -45,11 +45,11 @@ class PJCodec {
   typedef struct alt_codec {
     pj_str_t encoding_name;
     pj_uint8_t payload_type;
-    unsigned clock_rate;
-    unsigned channel_cnt;
-    unsigned frm_ptime;
-    unsigned avg_bps;
-    unsigned max_bps;
+    // unsigned clock_rate;
+    // unsigned channel_cnt;
+    // unsigned frm_ptime;
+    // unsigned avg_bps;
+    // unsigned max_bps;
   } alt_codec_t;
 
   typedef struct alt_codec_factory {

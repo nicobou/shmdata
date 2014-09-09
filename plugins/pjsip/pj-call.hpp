@@ -64,7 +64,7 @@ class PJCall {
     std::string shm_path_to_send {};
     media_stream(): si(), out_sess(), in_sess(), rtcp() {}
     media_stream(const media_stream&) = delete;
-    const media_stream& operator=(const media_stream&) = delete;
+    media_stream& operator=(const media_stream&) = delete;
   };
 
   /* This is a call structure that is created when the application starts
@@ -82,20 +82,20 @@ class PJCall {
     PJCall *instance {nullptr};
   };
 
-  /* Application's global variables */
+  // Application's global variables
   typedef struct app {
     unsigned max_calls {256};
     unsigned uac_calls {0};
     pj_str_t local_addr {nullptr, 0};
     struct call call[MAX_CALLS];
   } app_t;
-  
+
  private:
   static pjmedia_endpt *med_endpt_;
   static pjsip_module mod_siprtp_;
   static app_t app;
   PJSIP *sip_instance_;
-  //internal rtp
+  // internal rtp
   QuiddityManager::ptr manager_;
 
   // external rtp session quidity for sending
@@ -104,7 +104,7 @@ class PJCall {
 
   uint starting_rtp_port_ {18000};
   GParamSpec *starting_rtp_port_spec_ {nullptr};
-  
+
   // sip functions
   static pj_bool_t on_rx_request(pjsip_rx_data *rdata);
   static void call_on_state_changed(pjsip_inv_session *inv,
@@ -116,14 +116,14 @@ class PJCall {
   void init_app();
   static pj_status_t create_sdp(pj_pool_t *pool,
                                 struct call *call,
-                                const std::vector <
-                                pjmedia_sdp_media * >&media_to_receive,
-                                pjmedia_sdp_session ** p_sdp);
+                                const std::vector <pjmedia_sdp_media *>&
+                                media_to_receive,
+                                pjmedia_sdp_session **p_sdp);
   static void on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size);
   static void on_rx_rtcp(void *user_data, void *pkt, pj_ssize_t size);
-  static pj_status_t parse_SDP_from_incoming_request(pjsip_rx_data *rdata,
-                                                     pjmedia_sdp_session *
-                                                     offer);
+  static
+  pj_status_t parse_SDP_from_incoming_request(pjsip_rx_data *rdata,
+                                              pjmedia_sdp_session *offer);
   static void print_sdp(const pjmedia_sdp_session *local_sdp);
   static pj_status_t stream_info_from_sdp(pjmedia_stream_info *si,
                                           pj_pool_t *pool,

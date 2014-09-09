@@ -17,12 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <unistd.h>             // usleep
+#include <unistd.h>  // usleep
 #include <assert.h>
 
 #include <vector>
 #include <string>
-#include <iostream>
 
 #include "switcher/quiddity-manager.hpp"
 #include "switcher/quiddity-basic-test.hpp"
@@ -44,19 +43,19 @@ int main() {
 #else
     return 1;
 #endif
-   
+
     // testing uncompressed data transmission
-    //g_print ("%s\n",  manager->create("audiotestsrc", "a").c_str());
-    assert(0 == manager->create("audiotestsrc", "a").compare ("a"));
+    // g_print("%s\n",  manager->create("audiotestsrc", "a").c_str());
+    assert(0 == manager->create("audiotestsrc", "a").compare("a"));
     assert(manager->set_property("a", "started", "true"));
 
-    assert(0 == manager->create("videotestsrc", "v").compare ("v"));
+    assert(0 == manager->create("videotestsrc", "v").compare("v"));
     assert(manager->set_property("v", "started", "true"));
 
     // SIP
     assert(0 == manager->create("sip", "test").compare("test"));
     assert(manager->set_property("test", "port", "5070"));
-    
+
     assert(manager->invoke_va("test",
                               "register",
                               nullptr,
@@ -80,14 +79,14 @@ int main() {
                               "true",
                               nullptr));
     usleep(200000);
-    
+
     assert(manager->invoke_va("test",
                               "call",
                               nullptr,
                               "sip:1002@10.10.30.179",
                               nullptr));
 
-        g_print ("____ %d\n", __LINE__);
+        g_print("____ %d\n", __LINE__);
 
     usleep(2000000);
     assert(manager->set_property("test", "status", "Away"));
