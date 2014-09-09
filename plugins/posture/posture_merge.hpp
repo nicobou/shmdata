@@ -48,9 +48,11 @@ class PostureMerge:public Quiddity, public Segment, public StartableQuiddity {
   std::string calibration_path_ {"default.kvc"};
   std::string devices_path_ {"devices.kvc"};
   bool compress_cloud_ {false};
+  bool reload_calibration_ {false};
   GParamSpec *calibration_path_prop_ {nullptr};
   GParamSpec *devices_path_prop_ {nullptr};
   GParamSpec *compress_cloud_prop_ {nullptr};
+  GParamSpec *reload_calibration_prop_ {nullptr};
 
   unsigned int source_id_ {0};
   std::shared_ptr<posture::PointCloudMerger> merger_ {nullptr};
@@ -75,6 +77,8 @@ class PostureMerge:public Quiddity, public Segment, public StartableQuiddity {
   static void set_devices_path(const gchar *name, void *user_data);
   static int get_compress_cloud(void *user_data);
   static void set_compress_cloud(const int compress, void *user_data);
+  static int get_reload_calibration(void *user_data);
+  static void set_reload_calibration(const int reload, void *user_data);
 
   static void free_sent_buffer(void* data);
   void check_buffers();

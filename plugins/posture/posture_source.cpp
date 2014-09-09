@@ -93,65 +93,75 @@ PostureSrc::init() {
   init_segment(this);
   calibration_path_prop_ =
       custom_props_->make_string_property("calibration_path",
-                                          "Path to the calibration file",
-                                          calibration_path_.c_str(),
-                                          (GParamFlags) G_PARAM_READWRITE,
-                                          PostureSrc::set_calibration_path,
-                                          PostureSrc::get_calibration_path,
-                                          this);
+                            "Path to the calibration file",
+                            calibration_path_.c_str(),
+                            (GParamFlags) G_PARAM_READWRITE,
+                            PostureSrc::set_calibration_path,
+                            PostureSrc::get_calibration_path,
+                            this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             calibration_path_prop_, "calibration_path",
                             "Path to the calibration file");
 
   devices_path_prop_ = custom_props_->make_string_property("devices_path",
-                                                           "Path to the devices description file",
-                                                           devices_path_.c_str
-                                                           (), (GParamFlags)
-                                                           G_PARAM_READWRITE,
-                                                           PostureSrc::set_devices_path,
-                                                           PostureSrc::get_devices_path,
-                                                           this);
+                            "Path to the devices description file",
+                            devices_path_.c_str
+                            (), (GParamFlags)
+                            G_PARAM_READWRITE,
+                            PostureSrc::set_devices_path,
+                            PostureSrc::get_devices_path,
+                            this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             devices_path_prop_, "devices",
                             "Path to the devices description file");
 
   device_index_prop_ = custom_props_->make_int_property("device_index",
-                                                        "Index of the device to use",
-                                                        0,
-                                                        7,
-                                                        device_index_,
-                                                        (GParamFlags)
-                                                        G_PARAM_READWRITE,
-                                                        PostureSrc::set_device_index,
-                                                        PostureSrc::get_device_index,
-                                                        this);
+                            "Index of the device to use",
+                            0,
+                            7,
+                            device_index_,
+                            (GParamFlags)
+                            G_PARAM_READWRITE,
+                            PostureSrc::set_device_index,
+                            PostureSrc::get_device_index,
+                            this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             device_index_prop_, "device_index",
                             "Index of the device to use");
 
   capture_ir_prop_ = custom_props_->make_boolean_property("capture_ir",
-                                                          "Grab the IR image if true",
-                                                          capture_ir_,
-                                                          (GParamFlags)
-                                                          G_PARAM_READWRITE,
-                                                          PostureSrc::set_capture_ir,
-                                                          PostureSrc::get_capture_ir,
-                                                          this);
+                            "Grab the IR image if true",
+                            capture_ir_,
+                            (GParamFlags)
+                            G_PARAM_READWRITE,
+                            PostureSrc::set_capture_ir,
+                            PostureSrc::get_capture_ir,
+                            this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             capture_ir_prop_, "capture_ir",
                             "Grab the IR image if true");
 
-  compress_cloud_prop_ =
-      custom_props_->make_boolean_property("compress_cloud",
-                                           "Compress the cloud if true",
-                                           compress_cloud_,
-                                           (GParamFlags) G_PARAM_READWRITE,
-                                           PostureSrc::set_compress_cloud,
-                                           PostureSrc::get_compress_cloud,
-                                           this);
+  compress_cloud_prop_ = custom_props_->make_boolean_property("compress_cloud",
+                            "Compress the cloud if true",
+                            compress_cloud_,
+                            (GParamFlags) G_PARAM_READWRITE,
+                            PostureSrc::set_compress_cloud,
+                            PostureSrc::get_compress_cloud,
+                            this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             compress_cloud_prop_, "compress_cloud",
                             "Compress the cloud if true");
+
+  reload_calibration_prop_ = custom_props_->make_boolean_property("reload_calibration",
+                                "Reload calibration at each frame",
+                                reload_calibration_,
+                                (GParamFlags) G_PARAM_READWRITE,
+                                PostureSrc::set_reload_calibration,
+                                PostureSrc::get_reload_calibration,
+                                this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            reload_calibration_prop_, "reload_calibration",
+                            "Reload calibration at each frame");
 
   capture_modes_enum_[0].value = 0;
   capture_modes_enum_[0].value_name = "Default mode";
@@ -205,80 +215,69 @@ PostureSrc::init() {
 
 const gchar *
 PostureSrc::get_calibration_path(void *user_data) {
-  PostureSrc *
-      ctx = (PostureSrc *) user_data;
+  PostureSrc *ctx = (PostureSrc *) user_data;
   return ctx->calibration_path_.c_str();
 }
 
 void
 PostureSrc::set_calibration_path(const gchar *name, void *user_data) {
-  PostureSrc *
-      ctx = (PostureSrc *) user_data;
+  PostureSrc *ctx = (PostureSrc *) user_data;
   if (name != nullptr)
     ctx->calibration_path_ = name;
 }
 
 const gchar *
 PostureSrc::get_devices_path(void *user_data) {
-  PostureSrc *
-      ctx = (PostureSrc *) user_data;
+  PostureSrc *ctx = (PostureSrc *) user_data;
   return ctx->devices_path_.c_str();
 }
 
 void
 PostureSrc::set_devices_path(const gchar *name, void *user_data) {
-  PostureSrc *
-      ctx = (PostureSrc *) user_data;
+  PostureSrc *ctx = (PostureSrc *) user_data;
   if (name != nullptr)
     ctx->devices_path_ = name;
 }
 
 int
 PostureSrc::get_device_index(void *user_data) {
-  PostureSrc *
-      ctx = (PostureSrc *) user_data;
+  PostureSrc *ctx = (PostureSrc *) user_data;
   return ctx->device_index_;
 }
 
 void
 PostureSrc::set_device_index(const int index, void *user_data) {
-  PostureSrc *
-      ctx = (PostureSrc *) user_data;
+  PostureSrc *ctx = (PostureSrc *) user_data;
   ctx->device_index_ = index;
 }
 
 int
 PostureSrc::get_capture_ir(void *user_data) {
-  PostureSrc *
-      ctx = (PostureSrc *) user_data;
+  PostureSrc *ctx = (PostureSrc *) user_data;
   return ctx->capture_ir_;
 }
 
 void
 PostureSrc::set_capture_ir(const int ir, void *user_data) {
-  PostureSrc *
-      ctx = (PostureSrc *) user_data;
+  PostureSrc *ctx = (PostureSrc *) user_data;
   ctx->capture_ir_ = ir;
 }
 
 int
 PostureSrc::get_compress_cloud(void *user_data) {
-  PostureSrc *
-      ctx = (PostureSrc *) user_data;
+  PostureSrc *ctx = (PostureSrc *) user_data;
   return ctx->compress_cloud_;
 }
 
 void
 PostureSrc::set_compress_cloud(const int compress, void *user_data) {
-  PostureSrc *
-      ctx = (PostureSrc *) user_data;
+  PostureSrc *ctx = (PostureSrc *) user_data;
   ctx->compress_cloud_ = compress;
 }
 
 int
 PostureSrc::get_capture_mode(void *user_data) {
-  PostureSrc *
-      ctx = (PostureSrc *) user_data;
+  PostureSrc *ctx = (PostureSrc *) user_data;
   return ctx->capture_mode_;
 }
 
@@ -287,6 +286,18 @@ PostureSrc::set_capture_mode(const int mode, void *user_data) {
   PostureSrc *
       ctx = (PostureSrc *) user_data;
   ctx->capture_mode_ = mode;
+}
+
+int
+PostureSrc::get_reload_calibration(void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  return ctx->reload_calibration_;
+}
+
+void
+PostureSrc::set_reload_calibration(const int reload, void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  ctx->reload_calibration_ = reload;
 }
 
 void
@@ -303,6 +314,9 @@ PostureSrc::cb_frame_cloud(void *context, const vector<char>&data) {
       ctx->cloud_writer_->set_data_type(string(POINTCLOUD_TYPE_BASE));
     ctx->cloud_writer_->start();
   }
+
+  if (ctx->reload_calibration_)
+    ctx->zcamera_->reloadCalibration();
 
   lock_guard<mutex> lock(ctx->shmwriters_queue_mutex_);
   ctx->check_buffers();
