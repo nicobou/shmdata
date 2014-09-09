@@ -55,7 +55,7 @@ PJCall::PJCall(PJSIP *sip_instance):
   pj_status_t status;
   init_app();
   // creating rtpsession for SIP transmission
-  manager_->create("siprtp", "siprtp");
+  manager_->create("rtpsession", "siprtp");
   
   /*  Init invite session module. */
   {
@@ -663,7 +663,6 @@ PJCall::create_sdp(pj_pool_t *pool,
                    const std::vector <
                    pjmedia_sdp_media * >&media_to_receive,
                    pjmedia_sdp_session ** p_sdp) {
-  g_print("--> %s\n", __FUNCTION__);
   pj_time_val tv;
   pjmedia_sdp_session *sdp;
   // pjmedia_sdp_media *m;
@@ -1481,7 +1480,6 @@ PJCall::create_outgoing_sdp(struct call *call,
   paths_t paths = manager->
       invoke_info_tree<paths_t>("siprtp",
                                 get_paths);
-
   std::for_each(paths.begin(),
                  paths.end(),
                  [&] (const std::string &val) {
@@ -1498,7 +1496,6 @@ PJCall::create_outgoing_sdp(struct call *call,
                                                        data::Tree::read_data(tree,
                                                                              "rtp_caps." + val);
                                                      });
-                   
                    g_print("%s\n",  data.c_str ());
                  });
 

@@ -323,7 +323,6 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   tree->graft(".sip_url", data::make_tree(buddy_url));
 
   std::string status("unknown");
-
   switch (info.status) {
     case PJSUA_BUDDY_STATUS_UNKNOWN:
       break;
@@ -348,7 +347,8 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
                                           (size_t) info.status_text.slen)));
   tree->graft(".subscription_state",
               data::make_tree(std::string(info.sub_state_name)));
-  context->sip_instance_->graft_tree(std::string(".presence." + buddy_url),
+  context->sip_instance_->graft_tree(std::string(".presence."
+                                                 + std::to_string (buddy_id)),
                                      tree);
 }
 

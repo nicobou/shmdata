@@ -31,14 +31,17 @@ QuiddityManager::ptr QuiddityManager::make_manager(std::string name) {
   return manager;
 }
 
-QuiddityManager::QuiddityManager(std::string
-                                 name):manager_impl_
-                                       (QuiddityManager_Impl::make_manager(name)), name_(name), command_(),
-                                       seq_mutex_(), command_queue_(g_async_queue_new()),
-                                       invocation_thread_(std::thread
-                                                          (&QuiddityManager::invocation_thread, this)),
-                                       execution_done_cond_(), execution_done_mutex_(), command_history_(),
-  history_begin_time_(0) {
+QuiddityManager::QuiddityManager(std::string name):
+    manager_impl_ (QuiddityManager_Impl::make_manager(name)),
+    name_(name),
+    command_(),
+    seq_mutex_(),
+    command_queue_(g_async_queue_new()),
+    invocation_thread_(std::thread(&QuiddityManager::invocation_thread, this)),
+    execution_done_cond_(),
+    execution_done_mutex_(),
+    command_history_(),
+    history_begin_time_(0) {
   reset_command_history(false);
 }
 

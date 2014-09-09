@@ -115,11 +115,11 @@ class QuiddityManager: public std::enable_shared_from_this<QuiddityManager>
   // avoiding possible properties created dynamically
   std::string get_properties_description_by_class(std::string class_name);
   std::string get_property_description_by_class(std::string class_name,
-                                                std::string
-                                                property_name);
+                                                std::string property_name);
   // set &get
   bool set_property(std::string quiddity_name,
-                    std::string property_name, std::string property_value);
+                    std::string property_name,
+                    std::string property_value);
 
   std::string get_property(std::string quiddity_name,
                            std::string property_name);
