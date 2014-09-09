@@ -119,6 +119,17 @@ PostureMerge::init() {
                             compress_cloud_prop_, "compress_cloud",
                             "Compress the cloud if true");
 
+  reload_calibration_prop_ = custom_props_->make_boolean_property("reload_calibration",
+                                "Reload calibration at each frame",
+                                reload_calibration_,
+                                (GParamFlags) G_PARAM_READWRITE,
+                                PostureMerge::set_reload_calibration,
+                                PostureMerge::get_reload_calibration,
+                                this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            reload_calibration_prop_, "reload_calibration",
+                            "Reload calibration at each frame");
+
   return true;
 }
 
@@ -139,6 +150,9 @@ PostureMerge::connect(std::string shmdata_socket_path) {
   {
     if (merger_ == nullptr || (string(type) != string(POINTCLOUD_TYPE_BASE) && string(type) != string(POINTCLOUD_TYPE_COMPRESSED)))
       return;
+
+    if (reload_calibration_)
+        merger_->reloadCalibration();
 
     // Setting input clouds is thread safe, so lets do it
     merger_->setInputCloud(index,
@@ -186,46 +200,52 @@ PostureMerge::disconnect_all() {
 
 const gchar *
 PostureMerge::get_calibration_path(void *user_data) {
-  PostureMerge *
-      ctx = (PostureMerge *) user_data;
+  PostureMerge *ctx = (PostureMerge *) user_data;
   return ctx->calibration_path_.c_str();
 }
 
 void
 PostureMerge::set_calibration_path(const gchar *name, void *user_data) {
-  PostureMerge *
-      ctx = (PostureMerge *) user_data;
+  PostureMerge *ctx = (PostureMerge *) user_data;
   if (name != nullptr)
     ctx->calibration_path_ = name;
 }
 
 const gchar *
 PostureMerge::get_devices_path(void *user_data) {
-  PostureMerge *
-      ctx = (PostureMerge *) user_data;
+  PostureMerge *ctx = (PostureMerge *) user_data;
   return ctx->devices_path_.c_str();
 }
 
 void
 PostureMerge::set_devices_path(const gchar *name, void *user_data) {
-  PostureMerge *
-      ctx = (PostureMerge *) user_data;
+  PostureMerge *ctx = (PostureMerge *) user_data;
   if (name != nullptr)
     ctx->devices_path_ = name;
 }
 
 int
 PostureMerge::get_compress_cloud(void *user_data) {
-  PostureMerge *
-      ctx = (PostureMerge *) user_data;
+  PostureMerge *ctx = (PostureMerge *) user_data;
   return ctx->compress_cloud_;
 }
 
 void
 PostureMerge::set_compress_cloud(const int compress, void *user_data) {
-  PostureMerge *
-      ctx = (PostureMerge *) user_data;
+  PostureMerge *ctx = (PostureMerge *) user_data;
   ctx->compress_cloud_ = compress;
+}
+
+int
+PostureMerge::get_reload_calibration(void *user_data) {
+  PostureMerge *ctx = (PostureMerge *) user_data;
+  return ctx->reload_calibration_;
+}
+
+void
+PostureMerge::set_reload_calibration(const int reload, void *user_data) {
+  PostureMerge *ctx = (PostureMerge *) user_data;
+  ctx->reload_calibration_ = reload;
 }
 
 bool

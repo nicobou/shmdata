@@ -51,11 +51,13 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   unsigned int device_index_ {0};
   bool capture_ir_ {false};
   bool compress_cloud_ {false};
+  bool reload_calibration_ {false};
   GParamSpec *calibration_path_prop_ {nullptr};
   GParamSpec *devices_path_prop_ {nullptr};
   GParamSpec *device_index_prop_ {nullptr};
   GParamSpec *capture_ir_prop_ {nullptr};
   GParamSpec *compress_cloud_prop_ {nullptr};
+  GParamSpec *reload_calibration_prop_ {nullptr};
 
   int capture_mode_ {0};
   GParamSpec *capture_mode_prop_ {nullptr};
@@ -90,6 +92,8 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   static void set_compress_cloud(const int compress, void *user_data);
   static int get_capture_mode(void *user_data);
   static void set_capture_mode(const int mode, void *user_data);
+  static int get_reload_calibration(void *user_data);
+  static void set_reload_calibration(const int reload, void *user_data);
 
   static void cb_frame_cloud(void *context,
                              const std::vector<char>&data);
