@@ -30,7 +30,7 @@ class Deinterleave:public SinglePadGstSink, public GstElementCleaner {
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Deinterleave);
   Deinterleave();
   Deinterleave(const Deinterleave &) = delete;
-  Deinterleave & operator=(const Deinterleave &) = delete;
+  Deinterleave &operator=(const Deinterleave &) = delete;
 
  private:
   GstElement *deinterleave_;

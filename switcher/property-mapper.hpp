@@ -30,7 +30,7 @@ class PropertyMapper:public Quiddity {
   PropertyMapper();
   ~PropertyMapper();
   PropertyMapper(const PropertyMapper &);
-  PropertyMapper & operator=(const PropertyMapper &);
+  PropertyMapper &operator=(const PropertyMapper &);
   bool init();
 
  private:

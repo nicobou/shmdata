@@ -48,7 +48,7 @@ class GTKVideo:public SinglePadGstSink {
   GTKVideo();
   ~GTKVideo();
   GTKVideo(const GTKVideo &) = delete;
-  GTKVideo & operator=(const GTKVideo &) = delete;
+  GTKVideo &operator=(const GTKVideo &) = delete;
   void toggle_fullscreen();
 
  private:

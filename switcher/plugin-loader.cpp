@@ -45,7 +45,7 @@ bool PluginLoader::load(const char *filename) {
     return false;
   }
 
-  if (!g_module_symbol(module_, "create", (gpointer *) & create_)) {
+  if (!g_module_symbol(module_, "create", (gpointer *) &create_)) {
     g_debug("loading %s: %s", filename, g_module_error());
     close();
     return false;
@@ -57,7 +57,7 @@ bool PluginLoader::load(const char *filename) {
     return false;
   }
 
-  if (!g_module_symbol(module_, "destroy", (gpointer *) & destroy_)) {
+  if (!g_module_symbol(module_, "destroy", (gpointer *) &destroy_)) {
     g_debug("%s: %s", filename, g_module_error());
     close();
     return false;
@@ -70,7 +70,7 @@ bool PluginLoader::load(const char *filename) {
   }
 
   if (!g_module_symbol
-      (module_, "get_documentation", (gpointer *) & get_documentation_)) {
+      (module_, "get_documentation", (gpointer *) &get_documentation_)) {
     g_debug("%s: %s", filename, g_module_error());
     close();
     return false;

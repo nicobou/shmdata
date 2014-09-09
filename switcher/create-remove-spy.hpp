@@ -30,7 +30,7 @@ class CreateRemoveSpy:public Quiddity {
   CreateRemoveSpy();
   ~CreateRemoveSpy();
   CreateRemoveSpy(const CreateRemoveSpy &) = delete;
-  CreateRemoveSpy & operator=(const CreateRemoveSpy &) = delete;
+  CreateRemoveSpy &operator=(const CreateRemoveSpy &) = delete;
   bool init();
 
   static void on_created(std::string quiddity_nick_name, void *user_data);

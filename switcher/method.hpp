@@ -36,14 +36,15 @@ class Method:public Categorizable {
   typedef std::shared_ptr<Method> ptr;
   typedef GType return_type;
   typedef std::vector<GType> args_types;
-  typedef std::vector < std::tuple < std::string, std::string,
-                                     std::string > >args_doc;
+  typedef std::vector<std::tuple<std::string,
+                                 std::string,
+                                 std::string>>args_doc;
   typedef void *method_ptr;
 
   Method();
   ~Method();
-  Method(const Method & source);
-  Method & operator=(const Method & source);
+  Method(const Method &source);
+  Method &operator=(const Method &source);
 
   bool set_method(method_ptr method,
                   return_type return_type,
@@ -68,7 +69,7 @@ class Method:public Categorizable {
  private:
   static void destroy_data(gpointer data, GClosure *closure);
   void make_description();
-  void copy_method(const Method & source);
+  void copy_method(const Method &source);
   std::string long_name_;
   std::string method_name_;
   std::string short_description_;

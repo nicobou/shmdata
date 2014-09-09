@@ -30,7 +30,7 @@ main(int /*argc */ ,
       switcher::QuiddityManager::make_manager("test_manager");
   std::vector<std::string> classes = manager->get_classes();
 
-  for (auto & it : classes) {
+  for (auto &it : classes) {
     // std::cout << class_name << std::endl;
     if (!switcher::QuiddityBasicTest::test_create(manager, it))
       success = false;

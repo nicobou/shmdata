@@ -37,7 +37,7 @@ class SyphonSrc:public Quiddity, public Segment, public StartableQuiddity {
   SyphonSrc();
   ~SyphonSrc();
   SyphonSrc(const SyphonSrc &) = delete;
-  SyphonSrc & operator=(const SyphonSrc &) = delete;
+  SyphonSrc &operator=(const SyphonSrc &) = delete;
 
  private:
   std::shared_ptr<SyphonReader> reader_;

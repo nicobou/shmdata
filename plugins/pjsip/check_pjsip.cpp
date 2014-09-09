@@ -44,35 +44,13 @@ int main() {
     return 1;
 #endif
 
-    return 0;    // testing uncompressed data transmission
+   
+    // testing uncompressed data transmission
     manager->create("audiotestsrc", "a");
     manager->set_property("a", "started", "true");
 
     manager->create("videotestsrc", "v");
     manager->set_property("v", "started", "true");
-
-    manager->create("rtpsession", "rtp");
-
-    manager->invoke_va("rtp",
-                       "add_data_stream",
-                       nullptr,
-                       "/tmp/switcher_siptest_a_audio",
-                       nullptr);
-
-    manager->invoke_va("rtp",
-                       "add_data_stream",
-                       nullptr,
-                       "/tmp/switcher_siptest_v_video",
-                       nullptr);
-
-    // manager->invoke_va ("rtp",
-    // "add_destination",
-    // nullptr,
-    // "local",
-    // "127.0.0.1",
-    // nullptr);
-
-    usleep(2000000);
 
     // SIP
     if (0 != manager->create("sip", "test").compare("test")) {
@@ -81,7 +59,7 @@ int main() {
     }
 
     manager->set_property("test", "port", "5070");
-
+    
     if (!manager->invoke_va("test",
                             "register",
                             nullptr,
@@ -93,13 +71,35 @@ int main() {
       return 1;
     }
 
-    manager->set_property("test", "rtp-session", "rtp");
+    g_print ("____ %d\n", __LINE__);
+    manager->invoke_va("test",
+                       "attach_shmdata_to_contact",
+                       nullptr,
+                       "/tmp/switcher_siptest_a_audio",
+                       "blalbal",
+                       "true",
+                       nullptr);
 
+    g_print ("____ %d\n", __LINE__);
+    manager->invoke_va("test",
+                       "attach_shmdata_to_contact",
+                       nullptr,
+                       "/tmp/switcher_siptest_v_audio",
+                       "blalbal",
+                       "true",
+                       nullptr);
+
+    g_print ("____ %d\n", __LINE__);
+    
+    usleep(2000000);
+    
     manager->invoke_va("test",
                        "call",
                        nullptr,
                        "sip:1002@10.10.30.179",
                        nullptr);
+
+        g_print ("____ %d\n", __LINE__);
 
     usleep(2000000);
 
@@ -115,7 +115,10 @@ int main() {
 
     // usleep(2000000);
     manager->invoke_va("test",
-                       "hang-up", nullptr, "sip:1002@10.10.30.223", nullptr);
+                       "hang-up",
+                       nullptr,
+                       "sip:1002@10.10.30.223",
+                       nullptr);
 
     usleep(20000000);
 

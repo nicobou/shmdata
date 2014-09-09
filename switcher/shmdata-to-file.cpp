@@ -27,11 +27,15 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToFile,
                                      "file recorder",
                                      "record shmdata(s) to file(s)",
                                      "LGPL",
-                                     "shmtofile", "Nicolas Bouillot");
+                                     "shmtofile",
+                                     "Nicolas Bouillot");
 
-ShmdataToFile::ShmdataToFile():custom_prop_(new CustomPropertyHelper()),
-                               recording_param_(nullptr),
-                               recording_(FALSE), file_names_(), shmdata_recorders_() {
+ShmdataToFile::ShmdataToFile():
+    custom_prop_(new CustomPropertyHelper()),
+    recording_param_(nullptr),
+    recording_(FALSE),
+    file_names_(),
+    shmdata_recorders_() {
 }
 
 ShmdataToFile::~ShmdataToFile() {
@@ -50,7 +54,7 @@ bool ShmdataToFile::init_gpipe() {
                                               "filepath",
                                               "file location",
                                               nullptr),
-                 (Method::method_ptr) & add_shmdata_wrapped,
+                 (Method::method_ptr) &add_shmdata_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    G_TYPE_STRING,
@@ -64,7 +68,7 @@ bool ShmdataToFile::init_gpipe() {
                                               "shmpath",
                                               "shmdata socket path to remove",
                                               nullptr),
-                 (Method::method_ptr) & remove_shmdata_wrapped,
+                 (Method::method_ptr) &remove_shmdata_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
@@ -107,7 +111,7 @@ ShmdataToFile::add_shmdata(std::string shmdata_socket_path,
 
   file_names_[shmdata_socket_path] = file_location;
 
-  if (recording_)             // starting the reader if pipeline is set
+  if (recording_) // starting the reader if pipeline is set
   {
     // FIXME make the recorder
   }
@@ -146,7 +150,7 @@ gboolean ShmdataToFile::get_recording(void *user_data) {
 }
 
 bool ShmdataToFile::make_recorders() {
-  for (auto & it : file_names_) {
+  for (auto &it : file_names_) {
     // FIXME check file
     GError *error = nullptr;
     gchar *pipe = g_strdup_printf("gdppay ! filesink location=%s",
@@ -180,7 +184,7 @@ bool ShmdataToFile::make_recorders() {
 }
 
 bool ShmdataToFile::clean_recorders() {
-  for (auto & it : shmdata_recorders_) {
+  for (auto &it : shmdata_recorders_) {
     GstUtils::clean_element(it.second);
     unregister_shmdata(it.first);
   }

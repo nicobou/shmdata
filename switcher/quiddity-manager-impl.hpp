@@ -31,7 +31,7 @@
 #include "./plugin-loader.hpp"
 
 namespace switcher {
-class Quiddity;
+//class Quiddity;
 class QuiddityPropertySubscriber;
 class QuidditySignalSubscriber;
 
@@ -45,11 +45,11 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
                                          void *user_data);
 
   static QuiddityManager_Impl::ptr make_manager();    // will get name "default"
-  static QuiddityManager_Impl::ptr make_manager(const std::string & name);
+  static QuiddityManager_Impl::ptr make_manager(const std::string &name);
   QuiddityManager_Impl() = delete;
   virtual ~ QuiddityManager_Impl();
   QuiddityManager_Impl(const QuiddityManager_Impl &) = delete;
-  QuiddityManager_Impl & operator=(const QuiddityManager_Impl &) = delete;
+  QuiddityManager_Impl &operator=(const QuiddityManager_Impl &) = delete;
 
   // plugins
   bool scan_directory_for_plugins(const char *directory_path);
@@ -80,9 +80,17 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   bool set_removed_hook(quiddity_removed_hook hook, void *user_data);
   void reset_create_remove_hooks();
 
-  // **** information
-  std::string get_info(const std::string & nick_name,
-                       const std::string & path);
+  // information tree
+  template<typename R>
+  R invoke_info_tree (const std::string &nick_name,
+                      std::function<R(data::Tree::ptrc tree)> fun){
+    auto it = quiddities_nick_names_.find(nick_name);
+    if (quiddities_nick_names_.end() == it)
+      return fun (data::make_tree ());
+  return quiddities_[quiddities_nick_names_[nick_name]]->invoke_info_tree<R>(fun);
+  }  
+  std::string get_info(const std::string &nick_name,
+                       const std::string &path);
 
   // **** properties
   // doc (json formatted)
@@ -94,7 +102,7 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   std::string get_property_description_by_class(std::string class_name,
                                                 std::string
                                                 property_name);
-  // set & get
+  // set &get
   bool set_property(std::string quiddity_name,
                     std::string property_name, std::string property_value);
   std::string get_property(std::string quiddity_name,

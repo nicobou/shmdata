@@ -21,14 +21,15 @@
  * The GPipe class
  */
 
+#include <shmdata/base-reader.h>
+#include <gst/interfaces/xoverlay.h>
+#include <algorithm>
 #include "./gpipe.hpp"
 #include "./quiddity.hpp"
 #include "./quiddity-command.hpp"
 #include "./custom-property-helper.hpp"
 #include "./gst-utils.hpp"
-#include <shmdata/base-reader.h>
-#include <gst/interfaces/xoverlay.h>
-#include <algorithm>
+#include "./quiddity-manager-impl.hpp"
 
 namespace switcher {
 GPipe::GPipe():pipeline_(gst_pipeline_new(nullptr)),
@@ -39,7 +40,7 @@ GPipe::GPipe():pipeline_(gst_pipeline_new(nullptr)),
 
 GPipe::~GPipe() {
   if (!commands_.empty())
-    for (auto & it : commands_)
+    for (auto &it : commands_)
       if (!g_source_is_destroyed(it))
         g_source_destroy(it);
   if (position_tracking_source_ != nullptr)
@@ -106,7 +107,7 @@ void GPipe::install_speed() {
                                               "speed",
                                               "1.0 is normal speed, 0.5 is half the speed and 2.0 is double speed",
                                               nullptr),
-                 (Method::method_ptr) & speed_wrapped,
+                 (Method::method_ptr) &speed_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_DOUBLE,
                                                    nullptr), this);

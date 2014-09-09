@@ -32,7 +32,7 @@ class MyPlugin:public Quiddity, public StartableQuiddity {
   MyPlugin();
   ~MyPlugin();
   MyPlugin(const MyPlugin &) = delete;
-  MyPlugin & operator=(const MyPlugin &) = delete;
+  MyPlugin &operator=(const MyPlugin &) = delete;
 
  private:
   CustomPropertyHelper::ptr custom_props_;

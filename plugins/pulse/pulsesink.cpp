@@ -232,7 +232,7 @@ void PulseSink::make_json_description() {
   builder->set_member_name("devices");
   builder->begin_array();
 
-  for (auto & it : devices_) {
+  for (auto &it : devices_) {
     builder->begin_object();
     builder->add_string_member("long name", it.description_.c_str());
     builder->add_string_member("name", it.name_.c_str());
@@ -391,18 +391,18 @@ PulseSink::on_pa_event_callback(pa_context *pulse_context,
   // g_print ("%s\n", __PRETTY_FUNCTION__);
   PulseSink *context = static_cast<PulseSink *>(user_data);
 
-  if ((pulse_event_type & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) ==
+  if ((pulse_event_type &PA_SUBSCRIPTION_EVENT_FACILITY_MASK) ==
       PA_SUBSCRIPTION_EVENT_SINK) {
-    if ((pulse_event_type & PA_SUBSCRIPTION_EVENT_TYPE_MASK) ==
+    if ((pulse_event_type &PA_SUBSCRIPTION_EVENT_TYPE_MASK) ==
         PA_SUBSCRIPTION_EVENT_NEW) {
       context->make_device_description(pulse_context);
       return;
     }
   }
 
-  if ((pulse_event_type & PA_SUBSCRIPTION_EVENT_FACILITY_MASK) ==
+  if ((pulse_event_type &PA_SUBSCRIPTION_EVENT_FACILITY_MASK) ==
       PA_SUBSCRIPTION_EVENT_SINK) {
-    if ((pulse_event_type & PA_SUBSCRIPTION_EVENT_TYPE_MASK) ==
+    if ((pulse_event_type &PA_SUBSCRIPTION_EVENT_TYPE_MASK) ==
         PA_SUBSCRIPTION_EVENT_REMOVE) {
       context->make_device_description(pulse_context);
       return;
@@ -434,7 +434,7 @@ void PulseSink::on_shmdata_connect(std::string /* shmdata_sochet_path */ ) {
 void PulseSink::update_output_device() {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
   gint i = 0;
-  for (auto & it : devices_) {
+  for (auto &it : devices_) {
     devices_enum_[i].value = i;
     // FIXME previous free here
     devices_enum_[i].value_name = g_strdup(it.description_.c_str());

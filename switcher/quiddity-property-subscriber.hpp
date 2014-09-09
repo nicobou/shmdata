@@ -44,7 +44,7 @@ class QuiddityPropertySubscriber {
   QuiddityPropertySubscriber();
   ~QuiddityPropertySubscriber();
   QuiddityPropertySubscriber(const QuiddityPropertySubscriber &) = delete;
-  QuiddityPropertySubscriber & operator=(const QuiddityPropertySubscriber
+  QuiddityPropertySubscriber &operator=(const QuiddityPropertySubscriber
                                          &) = delete;
   void mute(bool muted);
 

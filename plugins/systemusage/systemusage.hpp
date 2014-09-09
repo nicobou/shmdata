@@ -62,7 +62,7 @@ class SystemUsage:public Quiddity {
   SystemUsage();
   ~SystemUsage();
   SystemUsage(const SystemUsage &) = delete;
-  SystemUsage & operator=(const SystemUsage &) = delete;
+  SystemUsage &operator=(const SystemUsage &) = delete;
 
  private:
   std::shared_ptr<std::thread> pollStateThread_ {};

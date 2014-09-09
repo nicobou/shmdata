@@ -53,7 +53,7 @@ class CustomPropertyHelper {
 
   CustomPropertyHelper();
   CustomPropertyHelper(const CustomPropertyHelper &) = delete;
-  CustomPropertyHelper & operator=(const CustomPropertyHelper &) = delete;
+  CustomPropertyHelper &operator=(const CustomPropertyHelper &) = delete;
 
   bool is_property_nickname_taken(std::string nickname);
   bool notify_property_changed(GParamSpec *pspec);

@@ -132,9 +132,9 @@ PJPresence::register_account_wrapped(gchar *user,
 }
 
 void
-PJPresence::register_account(const std::string & sip_user,
-                             const std::string & sip_domain,
-                             const std::string & sip_password) {
+PJPresence::register_account(const std::string &sip_user,
+                             const std::string &sip_domain,
+                             const std::string &sip_password) {
   std::unique_lock<std::mutex> lock(registration_mutex_);
 
   // Register to SIP server by creating SIP account.
@@ -247,7 +247,7 @@ bool PJPresence::unregister_account() {
   return true;
 }
 
-void PJPresence::add_buddy(const std::string & sip_user) {
+void PJPresence::add_buddy(const std::string &sip_user) {
   pjsua_buddy_config buddy_cfg;
   pjsua_buddy_id buddy_id;
   pj_status_t status = PJ_SUCCESS;
@@ -302,20 +302,20 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
     activity = "busy";
 
-  g_print("%.*s status is %.*s, subscription state is %s "
-          "(last termination reason code=%d %.*s)\n"
-          "rpid  activity %s, note %.*s\n",
-          static_cast<int>(info.uri.slen),
-          info.uri.ptr,
-          static_cast<int>(info.status_text.slen),
-          info.status_text.ptr,
-          info.sub_state_name,
-          info.sub_term_code,
-          static_cast<int>(info.sub_term_reason.slen),
-          info.sub_term_reason.ptr,
-          activity.c_str(),
-          static_cast<int>(info.rpid.note.slen),
-          info.rpid.note.ptr);
+  // g_print("%.*s status is %.*s, subscription state is %s "
+  //         "(last termination reason code=%d %.*s)\n"
+  //         "rpid  activity %s, note %.*s\n",
+  //         static_cast<int>(info.uri.slen),
+  //         info.uri.ptr,
+  //         static_cast<int>(info.status_text.slen),
+  //         info.status_text.ptr,
+  //         info.sub_state_name,
+  //         info.sub_term_code,
+  //         static_cast<int>(info.sub_term_reason.slen),
+  //         info.sub_term_reason.ptr,
+  //         activity.c_str(),
+  //         static_cast<int>(info.rpid.note.slen),
+  //         info.rpid.note.ptr);
 
   data::Tree::ptr tree = data::make_tree();
 
@@ -492,7 +492,7 @@ PJPresence::on_incoming_subscribe(pjsua_acc_id acc_id,
 void
 PJPresence::on_buddy_evsub_state(pjsua_buddy_id buddy_id,
                                  pjsip_evsub * sub, pjsip_event *event) {
-  printf("%s\n", __FUNCTION__);
+  //printf("%s\n", __FUNCTION__);
   char event_info[80];
 
   PJ_UNUSED_ARG(sub);
@@ -506,8 +506,8 @@ PJPresence::on_buddy_evsub_state(pjsua_buddy_id buddy_id,
              " (RX %s)", pjsip_rx_data_get_info(rdata));
   }
 
-  printf("Buddy %d: subscription state: %s (event: %s%s)",
-         buddy_id, pjsip_evsub_get_state_name(sub),
-         pjsip_event_str(event->type), event_info);
+  // printf("Buddy %d: subscription state: %s (event: %s%s)",
+  //        buddy_id, pjsip_evsub_get_state_name(sub),
+  //        pjsip_event_str(event->type), event_info);
 }
 }  // namespace switcher

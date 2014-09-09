@@ -37,7 +37,7 @@ class RtpSession:public GPipe {
   RtpSession();
   ~RtpSession();
   RtpSession(const RtpSession &) = delete;
-  RtpSession & operator=(const RtpSession &) = delete;
+  RtpSession &operator=(const RtpSession &) = delete;
 
   // local streams
   bool add_data_stream(std::string shmdata_socket_path);

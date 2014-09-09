@@ -43,7 +43,7 @@ class GPipe:public Quiddity, public Segment {
   GPipe();
   virtual ~GPipe();
   GPipe(const GPipe &) = delete;
-  GPipe & operator=(const GPipe &) = delete;
+  GPipe &operator=(const GPipe &) = delete;
   bool init() final;
   virtual bool init_gpipe() = 0;
 

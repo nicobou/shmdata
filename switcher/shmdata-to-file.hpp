@@ -32,7 +32,7 @@ class ShmdataToFile:public GPipe {
   ShmdataToFile();
   ~ShmdataToFile();
   ShmdataToFile(const ShmdataToFile &);
-  ShmdataToFile & operator=(const ShmdataToFile &);
+  ShmdataToFile &operator=(const ShmdataToFile &);
 
   // local streams
   bool add_shmdata(std::string shmdata_socket_path,

@@ -31,7 +31,7 @@ class UDPSink:public SinglePadGstSink {
   UDPSink();
   ~UDPSink();
   UDPSink(const UDPSink &) = delete;
-  UDPSink & operator=(const UDPSink &) = delete;
+  UDPSink &operator=(const UDPSink &) = delete;
 
  private:
   GstElement *udpsink_;

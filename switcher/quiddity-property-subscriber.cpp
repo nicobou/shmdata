@@ -35,7 +35,7 @@ QuiddityPropertySubscriber::~QuiddityPropertySubscriber() {
   if (!(bool) manager)
     return;
 
-  for (auto & it : prop_datas_) {
+  for (auto &it : prop_datas_) {
     Quiddity::ptr quid = manager->get_quiddity(it.second->quiddity_name);
     if ((bool) quid) {
       g_debug
@@ -144,13 +144,13 @@ QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid,
 bool QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid) {
   auto quid_name = quid->get_nick_name();
   std::vector<std::pair < std::string, std::string>> entries_to_remove;
-  for (auto & it : prop_datas_)
+  for (auto &it : prop_datas_)
     if (it.first.first == quid_name) {
       g_free(it.second->quiddity_name);
       g_free(it.second->property_name);
       entries_to_remove.push_back(it.first);
     }
-  for (auto & it : entries_to_remove)
+  for (auto &it : entries_to_remove)
     prop_datas_.erase(it);
   return true;
 }
@@ -158,7 +158,7 @@ bool QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid) {
 std::vector<std::pair < std::string, std::string>>
     QuiddityPropertySubscriber::list_subscribed_properties() {
   std::vector<std::pair < std::string, std::string>> res;
-  for (auto & it : prop_datas_)
+  for (auto &it : prop_datas_)
     res.push_back(it.first);
   return res;
 }

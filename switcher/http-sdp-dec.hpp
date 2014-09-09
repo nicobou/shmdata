@@ -34,7 +34,7 @@ class HTTPSDPDec:public GPipe {
   HTTPSDPDec();
   ~HTTPSDPDec();
   HTTPSDPDec(const HTTPSDPDec &) = delete;
-  HTTPSDPDec & operator=(const HTTPSDPDec &) = delete;
+  HTTPSDPDec &operator=(const HTTPSDPDec &) = delete;
 
   bool to_shmdata(std::string uri);
 

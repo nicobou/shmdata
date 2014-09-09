@@ -21,11 +21,14 @@
 #define PLUGINS_PJSIP_PJ_CALL_H_
 
 #include <pjsua-lib/pjsua.h>
+
 #include <string>
 #include <vector>
+
 #include "./pj-codec.hpp"
 #include "switcher/shmdata-any-writer.hpp"
 #include "switcher/rtp-session.hpp"
+#include "switcher/quiddity-manager.hpp"
 
 #define MAX_CALLS 1024
 
@@ -40,7 +43,7 @@ class PJCall {
   explicit PJCall(PJSIP *sip_instance);
   ~PJCall();
   PJCall(const PJCall &) = delete;
-  PJCall & operator=(const PJCall &) = delete;
+  PJCall &operator=(const PJCall &) = delete;
 
  private:
   /* Media stream created when the call is active. */
@@ -60,6 +63,8 @@ class PJCall {
     ShmdataAnyWriter::ptr shm {};     /* RTP, FIXME make RTCP shm */
     std::string shm_path_to_send {};
     media_stream(): si(), out_sess(), in_sess(), rtcp() {}
+    media_stream(const media_stream&) = delete;
+    const media_stream& operator=(const media_stream&) = delete;
   };
 
   /* This is a call structure that is created when the application starts
@@ -90,10 +95,13 @@ class PJCall {
   static pjsip_module mod_siprtp_;
   static app_t app;
   PJSIP *sip_instance_;
+  //internal rtp
+  QuiddityManager::ptr manager_;
+
   // external rtp session quidity for sending
-  RtpSession::ptr rtp_session_ {};
-  std::string rtp_session_name_ {};
-  GParamSpec *rtp_session_name_spec_ {nullptr};
+  // std::string rtp_session_name_ {};
+  // GParamSpec *rtp_session_name_spec_ {nullptr};
+
   uint starting_rtp_port_ {18000};
   GParamSpec *starting_rtp_port_spec_ {nullptr};
   
@@ -134,8 +142,6 @@ class PJCall {
   static void remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
                                     unsigned fmt_pos);
   pj_status_t make_call(std::string contact_uri);
-  static void set_rtp_session(const gchar *value, void *user_data);
-  static const gchar *get_rtp_session(void *user_data);
   std::string create_outgoing_sdp(struct call *call, std::string dst_uri);
   Quiddity::ptr retrieve_rtp_manager();
   static gboolean call_sip_url(gchar *sip_url, void *user_data);
@@ -143,6 +149,13 @@ class PJCall {
   static gint get_starting_rtp_port(void *user_data);
   bool make_hang_up(std::string contact_uri);
   static gboolean hang_up(gchar *sip_url, void *user_data);
+  static gboolean attach_shmdata_to_contact(gchar *shmpath,
+                                            gchar *contact_uri,
+                                            gboolean attach,
+                                            void *user_data);
+  void make_attach_shmdata_to_contact(std::string shmpath,
+                                      std::string contact_uri,
+                                      bool attach);
 };
 }  // namespace switcher
 

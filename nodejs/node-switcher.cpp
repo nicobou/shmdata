@@ -72,7 +72,7 @@ struct async_req_signal {
 };
 
 //------------ history
-v8::Handle<v8::Value> SaveHistory(const v8::Arguments & args) {
+v8::Handle<v8::Value> SaveHistory(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 1) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -96,7 +96,7 @@ v8::Handle<v8::Value> SaveHistory(const v8::Arguments & args) {
 }
 
 v8::Handle<v8::Value>
-LoadHistoryFromCurrentState(const v8::Arguments & args) {
+LoadHistoryFromCurrentState(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 1) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -128,7 +128,7 @@ LoadHistoryFromCurrentState(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-v8::Handle<v8::Value> LoadHistoryFromScratch(const v8::Arguments & args) {
+v8::Handle<v8::Value> LoadHistoryFromScratch(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 1) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -164,7 +164,7 @@ v8::Handle<v8::Value> LoadHistoryFromScratch(const v8::Arguments & args) {
 }
 
 // ----------- life management
-v8::Handle<v8::Value> Remove(const v8::Arguments & args) {
+v8::Handle<v8::Value> Remove(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 1) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -183,7 +183,7 @@ v8::Handle<v8::Value> Remove(const v8::Arguments & args) {
     return v8::Boolean::New(false);
 }
 
-v8::Handle<v8::Value> Create(const v8::Arguments & args) {
+v8::Handle<v8::Value> Create(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 1 && args.Length() != 2) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -217,7 +217,7 @@ v8::Handle<v8::Value> Create(const v8::Arguments & args) {
   return scope.Close(name);
 }
 
-v8::Handle<v8::Value> GetInfo(const v8::Arguments & args) {
+v8::Handle<v8::Value> GetInfo(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 2) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -244,7 +244,7 @@ v8::Handle<v8::Value> GetInfo(const v8::Arguments & args) {
   return scope.Close(name);
 }
 
-v8::Handle<v8::Value> Rename(const v8::Arguments & args) {
+v8::Handle<v8::Value> Rename(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 2) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -274,7 +274,7 @@ v8::Handle<v8::Value> Rename(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-v8::Handle<v8::Value> SwitcherClose(const v8::Arguments & args) {
+v8::Handle<v8::Value> SwitcherClose(const v8::Arguments &args) {
   v8::HandleScope scope;
   // if (!user_log_cb.IsEmpty ())
   //  user_log_cb.Dispose ();
@@ -284,7 +284,7 @@ v8::Handle<v8::Value> SwitcherClose(const v8::Arguments & args) {
   return scope.Close(name);
 }
 
-v8::Handle<v8::Value> GetClassesDoc(const v8::Arguments & args) {
+v8::Handle<v8::Value> GetClassesDoc(const v8::Arguments &args) {
   v8::HandleScope scope;
 
   v8::Handle<v8::String> res =
@@ -292,7 +292,7 @@ v8::Handle<v8::Value> GetClassesDoc(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-v8::Handle<v8::Value> GetClassDoc(const v8::Arguments & args) {
+v8::Handle<v8::Value> GetClassDoc(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 1) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -313,7 +313,7 @@ v8::Handle<v8::Value> GetClassDoc(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-v8::Handle<v8::Value> GetQuiddityDescription(const v8::Arguments & args) {
+v8::Handle<v8::Value> GetQuiddityDescription(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 1) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -333,7 +333,7 @@ v8::Handle<v8::Value> GetQuiddityDescription(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-v8::Handle<v8::Value> GetQuidditiesDescription(const v8::Arguments & args) {
+v8::Handle<v8::Value> GetQuidditiesDescription(const v8::Arguments &args) {
   v8::HandleScope scope;
 
   v8::Handle<v8::String> res =
@@ -345,7 +345,7 @@ v8::Handle<v8::Value> GetQuidditiesDescription(const v8::Arguments & args) {
 // end life manager
 
 // ----------- properties
-v8::Handle<v8::Value> SetProperty(const v8::Arguments & args) {
+v8::Handle<v8::Value> SetProperty(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 3) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -369,7 +369,7 @@ v8::Handle<v8::Value> SetProperty(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-v8::Handle<v8::Value> GetProperty(const v8::Arguments & args) {
+v8::Handle<v8::Value> GetProperty(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 2) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -391,7 +391,7 @@ v8::Handle<v8::Value> GetProperty(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-v8::Handle<v8::Value> GetPropertiesDescription(const v8::Arguments & args) {
+v8::Handle<v8::Value> GetPropertiesDescription(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 1) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -411,7 +411,7 @@ v8::Handle<v8::Value> GetPropertiesDescription(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-v8::Handle<v8::Value> GetPropertyDescription(const v8::Arguments & args) {
+v8::Handle<v8::Value> GetPropertyDescription(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 2) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -434,7 +434,7 @@ v8::Handle<v8::Value> GetPropertyDescription(const v8::Arguments & args) {
 }
 
 v8::Handle<v8::Value>
-GetPropertiesDescriptionByClass(const v8::Arguments & args) {
+GetPropertiesDescriptionByClass(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 1) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -456,7 +456,7 @@ GetPropertiesDescriptionByClass(const v8::Arguments & args) {
 }
 
 v8::Handle<v8::Value>
-GetPropertyDescriptionByClass(const v8::Arguments & args) {
+GetPropertyDescriptionByClass(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 2) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -481,7 +481,7 @@ GetPropertyDescriptionByClass(const v8::Arguments & args) {
 // end properties
 
 // ----------- methods
-v8::Handle<v8::Value> Invoke(const v8::Arguments & args) {
+v8::Handle<v8::Value> Invoke(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() < 3) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -516,7 +516,7 @@ v8::Handle<v8::Value> Invoke(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-v8::Handle<v8::Value> GetMethodsDescription(const v8::Arguments & args) {
+v8::Handle<v8::Value> GetMethodsDescription(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 1) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -536,7 +536,7 @@ v8::Handle<v8::Value> GetMethodsDescription(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-v8::Handle<v8::Value> GetMethodDescription(const v8::Arguments & args) {
+v8::Handle<v8::Value> GetMethodDescription(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 2) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -559,7 +559,7 @@ v8::Handle<v8::Value> GetMethodDescription(const v8::Arguments & args) {
 }
 
 v8::Handle<v8::Value>
-GetMethodsDescriptionByClass(const v8::Arguments & args) {
+GetMethodsDescriptionByClass(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 1) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -580,7 +580,7 @@ GetMethodsDescriptionByClass(const v8::Arguments & args) {
 }
 
 v8::Handle<v8::Value>
-GetMethodDescriptionByClass(const v8::Arguments & args) {
+GetMethodDescriptionByClass(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 2) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -603,7 +603,7 @@ GetMethodDescriptionByClass(const v8::Arguments & args) {
 }
 
 // log callback
-v8::Handle<v8::Value> RegisterLogCallback(const v8::Arguments & args) {
+v8::Handle<v8::Value> RegisterLogCallback(const v8::Arguments &args) {
   v8::HandleScope scope;
   user_log_cb =
       v8::Persistent<v8::Function>::New(v8::Local <
@@ -650,7 +650,7 @@ logger_cb(std::string subscriber_name,
 }
 
 // prop callback
-v8::Handle<v8::Value> RegisterPropCallback(const v8::Arguments & args) {
+v8::Handle<v8::Value> RegisterPropCallback(const v8::Arguments &args) {
   v8::HandleScope scope;
   user_prop_cb =
       v8::Persistent<v8::Function>::New(v8::Local <
@@ -701,7 +701,7 @@ property_cb(std::string subscriber_name,
                 &req->req, DoNothingAsync, (uv_after_work_cb) NotifyProp);
 }
 
-v8::Handle<v8::Value> SubscribeToProperty(const v8::Arguments & args) {
+v8::Handle<v8::Value> SubscribeToProperty(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 2) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -723,7 +723,7 @@ v8::Handle<v8::Value> SubscribeToProperty(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-v8::Handle<v8::Value> UnsubscribeToProperty(const v8::Arguments & args) {
+v8::Handle<v8::Value> UnsubscribeToProperty(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 2) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -745,7 +745,7 @@ v8::Handle<v8::Value> UnsubscribeToProperty(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-v8::Handle<v8::Value> ListSubscribedProperties(const v8::Arguments & args) {
+v8::Handle<v8::Value> ListSubscribedProperties(const v8::Arguments &args) {
   v8::HandleScope scope;
 
   v8::Handle<v8::String> res =
@@ -756,7 +756,7 @@ v8::Handle<v8::Value> ListSubscribedProperties(const v8::Arguments & args) {
 }
 
 // signal callback
-v8::Handle<v8::Value> RegisterSignalCallback(const v8::Arguments & args) {
+v8::Handle<v8::Value> RegisterSignalCallback(const v8::Arguments &args) {
   v8::HandleScope scope;
   user_signal_cb =
       v8::Persistent<v8::Function>::New(v8::Local <
@@ -818,7 +818,7 @@ signal_cb(std::string subscriber_name,
                 &req->req, DoNothingAsync, (uv_after_work_cb) NotifySignal);
 }
 
-v8::Handle<v8::Value> SubscribeToSignal(const v8::Arguments & args) {
+v8::Handle<v8::Value> SubscribeToSignal(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 2) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -840,7 +840,7 @@ v8::Handle<v8::Value> SubscribeToSignal(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-v8::Handle<v8::Value> UnsubscribeToSignal(const v8::Arguments & args) {
+v8::Handle<v8::Value> UnsubscribeToSignal(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 2) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -862,7 +862,7 @@ v8::Handle<v8::Value> UnsubscribeToSignal(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-v8::Handle<v8::Value> ListSubscribedSignals(const v8::Arguments & args) {
+v8::Handle<v8::Value> ListSubscribedSignals(const v8::Arguments &args) {
   v8::HandleScope scope;
 
   v8::Handle<v8::String> res =
@@ -873,7 +873,7 @@ v8::Handle<v8::Value> ListSubscribedSignals(const v8::Arguments & args) {
 }
 
 // signal description
-v8::Handle<v8::Value> GetSignalsDescription(const v8::Arguments & args) {
+v8::Handle<v8::Value> GetSignalsDescription(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 1) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -893,7 +893,7 @@ v8::Handle<v8::Value> GetSignalsDescription(const v8::Arguments & args) {
   return scope.Close(res);
 }
 
-v8::Handle<v8::Value> GetSignalDescription(const v8::Arguments & args) {
+v8::Handle<v8::Value> GetSignalDescription(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 2) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -916,7 +916,7 @@ v8::Handle<v8::Value> GetSignalDescription(const v8::Arguments & args) {
 }
 
 v8::Handle<v8::Value>
-GetSignalsDescriptionByClass(const v8::Arguments & args) {
+GetSignalsDescriptionByClass(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 1) {
     ThrowException(v8::Exception::TypeError(v8::String::New
@@ -937,7 +937,7 @@ GetSignalsDescriptionByClass(const v8::Arguments & args) {
 }
 
 v8::Handle<v8::Value>
-GetSignalDescriptionByClass(const v8::Arguments & args) {
+GetSignalDescriptionByClass(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 2) {
     ThrowException(v8::Exception::TypeError(v8::String::New

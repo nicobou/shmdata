@@ -41,7 +41,7 @@ class ShmdataAnyReader:public OnCaps {
   ShmdataAnyReader();
   ~ShmdataAnyReader();
   ShmdataAnyReader(const ShmdataAnyReader &) = delete;
-  ShmdataAnyReader & operator=(const ShmdataAnyReader &) = delete;
+  ShmdataAnyReader &operator=(const ShmdataAnyReader &) = delete;
 
   // conrfiguration member before starting:
   bool set_path(std::string path);    // path needs to be fully specified

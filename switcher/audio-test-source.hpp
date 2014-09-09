@@ -31,7 +31,7 @@ class AudioTestSource:public AudioSource, public StartableQuiddity {
   AudioTestSource();
   ~AudioTestSource();
   AudioTestSource(const AudioTestSource &) = delete;
-  AudioTestSource & operator=(const AudioTestSource &) = delete;
+  AudioTestSource &operator=(const AudioTestSource &) = delete;
 
   bool start();
   bool stop();

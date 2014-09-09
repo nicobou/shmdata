@@ -150,21 +150,21 @@ struct Any {
   Any():ptr_(nullptr) {
   }
 
-  Any(Any & that):ptr_(that.clone()) {
+  Any(Any &that):ptr_(that.clone()) {
   }
 
   Any(Any && that):ptr_(that.ptr_) {
     that.ptr_ = nullptr;
   }
 
-  Any(const Any & that):ptr_(that.clone()) {
+  Any(const Any &that):ptr_(that.clone()) {
   }
 
   Any(const Any && that):
       ptr_(that.clone()) {
   }
 
-  Any & operator=(const Any & a) {
+  Any &operator=(const Any &a) {
     if (ptr_ == a.ptr_)
       return *this;
     auto old_ptr = ptr_;
@@ -174,7 +174,7 @@ struct Any {
     return *this;
   }
 
-  Any & operator=(Any && a) {
+  Any &operator=(Any && a) {
     if (ptr_ == a.ptr_)
       return *this;
     std::swap(ptr_, a.ptr_);
@@ -188,7 +188,7 @@ struct Any {
 
   static
   std::string
-  to_string(const Any & any) {
+  to_string(const Any &any) {
     std::stringstream ss;
     ss << any;
     return ss.str();
@@ -202,7 +202,7 @@ struct Any {
       return nullptr;
   }
   AnyValueBase *ptr_;
-  friend std::ostream & operator<<(std::ostream & os, const Any & any) {
+  friend std::ostream &operator<<(std::ostream &os, const Any &any) {
     if (any.ptr_)
       os << any.ptr_->to_string();
     else
@@ -217,7 +217,7 @@ struct Any {
 template<typename T> struct DefaultSerializable {
   virtual ~DefaultSerializable() {}
   template<typename U>
-  friend std::ostream & operator<<(std::ostream & os,
+  friend std::ostream &operator<<(std::ostream &os,
                                    const DefaultSerializable<U> &) {
     os << "not serializable";
     return os;

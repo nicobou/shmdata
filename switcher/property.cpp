@@ -36,16 +36,16 @@ Property::~Property() {
   g_object_unref(object_);
 }
 
-Property::Property(const Property & source) {
+Property::Property(const Property &source) {
   copy_property(source);
 }
 
-Property & Property::operator=(const Property & source) {
+Property &Property::operator=(const Property &source) {
   copy_property(source);
   return *this;
 }
 
-void Property::copy_property(const Property & source) {
+void Property::copy_property(const Property &source) {
   long_name_ = source.long_name_;
   name_ = source.name_;
   json_description_ = source.json_description_;
@@ -184,7 +184,7 @@ void Property::make_description() {
                                     get_position_weight());
   // name
   // json_description_->add_string_member ("internal name", g_param_spec_get_name (property_));
-  if (property_->flags & G_PARAM_WRITABLE)
+  if (property_->flags &G_PARAM_WRITABLE)
     json_description_->add_string_member("writable", "true");
   else
     json_description_->add_string_member("writable", "false");
@@ -510,7 +510,7 @@ void Property::print() {
 
   // first_flag = TRUE;
   // g_debug ("%-23.23s flags: ", "");
-  // if (property_->flags & G_PARAM_READABLE) {
+  // if (property_->flags &G_PARAM_READABLE) {
   // g_object_get_property (G_OBJECT (element), property_->name, &value);
   // readable = TRUE;
   // g_debug ("%s%s", (first_flag) ? "" : ", ", ("readable"));
@@ -521,19 +521,19 @@ void Property::print() {
   //  * unlikely corner-case anyway) */
   // g_param_value_set_default (property_, &value);
   // }
-  // if (property_->flags & G_PARAM_WRITABLE) {
+  // if (property_->flags &G_PARAM_WRITABLE) {
   // g_debug ("%s%s", (first_flag) ? "" : ", ", ("writable"));
   // first_flag = FALSE;
   // }
-  // if (property_->flags & GST_PARAM_CONTROLLABLE) {
+  // if (property_->flags &GST_PARAM_CONTROLLABLE) {
   // g_debug (", %s", ("controllable"));
   // first_flag = FALSE;
   // }
-  // if (property_->flags & GST_PARAM_MUTABLE_PLAYING) {
+  // if (property_->flags &GST_PARAM_MUTABLE_PLAYING) {
   // g_debug (", %s", ("changeable in nullptr, READY, PAUSED or PLAYING state"));
-  // } else if (property_->flags & GST_PARAM_MUTABLE_PAUSED) {
+  // } else if (property_->flags &GST_PARAM_MUTABLE_PAUSED) {
   // g_debug (", %s", ("changeable only in nullptr, READY or PAUSED state"));
-  // } else if (property_->flags & GST_PARAM_MUTABLE_READY) {
+  // } else if (property_->flags &GST_PARAM_MUTABLE_READY) {
   // g_debug (", %s", ("changeable only in nullptr or READY state"));
   // }
   // if (property_->flags & ~KNOWN_PARAM_FLAGS) {

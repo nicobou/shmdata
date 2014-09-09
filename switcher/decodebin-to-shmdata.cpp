@@ -67,7 +67,7 @@ DecodebinToShmdata::~DecodebinToShmdata() {
   // decodebin_.g_invoke (std::bind (g_signal_handler_disconnect,
   // std::placeholders::_1,
   // it));
-  for (auto & it : shmdata_path_)
+  for (auto &it : shmdata_path_)
     gpipe_->unregister_shmdata(it);
 }
 

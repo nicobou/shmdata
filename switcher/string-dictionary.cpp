@@ -51,7 +51,7 @@ bool StringDictionary::init() {
                                               "long-name",
                                               "string",
                                               nullptr),
-                 (Method::method_ptr) & create_entry,
+                 (Method::method_ptr) &create_entry,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    G_TYPE_STRING,
@@ -66,7 +66,7 @@ bool StringDictionary::init() {
                                               "name",
                                               "string",
                                               nullptr),
-                 (Method::method_ptr) & remove_entry,
+                 (Method::method_ptr) &remove_entry,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
@@ -79,7 +79,7 @@ bool StringDictionary::init() {
                                               "path",
                                               "string",
                                               nullptr),
-                 (Method::method_ptr) & save,
+                 (Method::method_ptr) &save,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
@@ -92,7 +92,7 @@ bool StringDictionary::init() {
                                               "path",
                                               "string",
                                               nullptr),
-                 (Method::method_ptr) & load,
+                 (Method::method_ptr) &load,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
@@ -190,7 +190,7 @@ gboolean StringDictionary::save_file(const gchar *file_path) {
   // builder->set_member_name ("dictionary");
   builder->begin_array();
 
-  for (auto & it : dico_) {
+  for (auto &it : dico_) {
     builder->begin_object();
     Property::ptr prop = get_property_ptr(it.first);
     builder->add_string_member("name", it.first.c_str());

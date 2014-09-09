@@ -31,7 +31,7 @@ class Xvimagesink:public SinglePadGstSink {
   Xvimagesink();
   ~Xvimagesink();
   Xvimagesink(const Xvimagesink &) = delete;
-  Xvimagesink & operator=(const Xvimagesink &) = delete;
+  Xvimagesink &operator=(const Xvimagesink &) = delete;
 
  private:
   GstElement *sink_bin_;

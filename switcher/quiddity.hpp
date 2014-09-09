@@ -36,9 +36,10 @@
 #include "./signal-string.hpp"
 #include "./information-tree.hpp"
 #include "./quiddity-documentation.hpp"
-#include "./quiddity-manager-impl.hpp"
+//#include "./quiddity-manager-impl.hpp"
 #include "./json-builder.hpp"
 #include "./gobject-wrapper.hpp"
+#include "./information-tree.hpp"
 
 namespace switcher {
 class QuiddityManager_Impl;
@@ -51,8 +52,8 @@ class Quiddity {
   typedef std::shared_ptr<Quiddity> ptr;
   Quiddity();
   Quiddity(const Quiddity &) = delete;
-  Quiddity & operator=(const Quiddity &) = delete;
-  virtual ~ Quiddity();
+  Quiddity &operator=(const Quiddity &) = delete;
+  virtual ~Quiddity();
 
   // class documentation
   virtual QuiddityDocumentation get_documentation() = 0;
@@ -97,16 +98,21 @@ class Quiddity {
   bool unsubscribe_signal(std::string name,
                           Signal::OnEmittedCallback cb, void *user_data);
   bool emit_action(const std::string signal_name,
-                   std::string ** return_value,
+                   std::string **return_value,
                    const std::vector<std::string> args);
 
   // information
-  std::string get_info(const std::string & path);
-  Any get_data(const std::string & path);
-  template < template < class T, class =
-                        std::allocator<T >>class Container =
-             std::list > Container<std::string>
-  get_child_keys(const std::string path) {
+  template <typename R>
+  R invoke_info_tree (std::function<R(data::Tree::ptrc tree)> fun) {
+    return fun (information_tree_);
+  }
+  
+  std::string get_info(const std::string &path);
+  Any get_data(const std::string &path);
+  template<template<class T, class = std::allocator<T>>
+           class Container = std::list >
+      Container<std::string>
+      get_child_keys(const std::string path) {
     return information_tree_->get_child_keys<Container> (path);
   }
 
@@ -202,9 +208,9 @@ class Quiddity {
 
  protected:
   // information
-  bool graft_tree(const std::string & path,
+  bool graft_tree(const std::string &path,
                   data::Tree::ptr tree_to_graft);
-  data::Tree::ptr prune_tree(const std::string & path);
+  data::Tree::ptr prune_tree(const std::string &path);
 
   // property
   bool install_property(GObject *object,

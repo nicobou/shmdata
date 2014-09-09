@@ -37,7 +37,7 @@ class PJCodec {
   PJCodec() = delete;
   ~PJCodec() = delete;
   PJCodec(const PJCodec &) = delete;
-  PJCodec & operator=(const PJCodec &) = delete;
+  PJCodec &operator=(const PJCodec &) = delete;
 
   static pj_status_t install_codecs();
 

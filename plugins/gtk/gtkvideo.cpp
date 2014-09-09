@@ -17,16 +17,16 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./gtkvideo.hpp"
-#include "switcher/gst-utils.hpp"
-#include "switcher/quiddity-command.hpp"
 #include <gst/gst.h>
 #include <gdk/gdkkeysyms.h>
 #include <gdk/gdkcursor.h>
-
+#include "switcher/gst-utils.hpp"
+#include "switcher/quiddity-command.hpp"
+#include "switcher/quiddity-manager-impl.hpp"
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
 #endif
+#include "./gtkvideo.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GTKVideo,
@@ -368,7 +368,7 @@ void GTKVideo::set_fullscreen(gboolean fullscreen, void *user_data) {
 void GTKVideo::on_shmdata_connect(std::string /*shmdata_sochet_path */ ) {
   gdk_threads_enter();
   g_object_set_data(G_OBJECT(xvimagesink_),
-                    "window-handle", (gpointer) & window_handle_);
+                    "window-handle", (gpointer) &window_handle_);
   gdk_threads_leave();
 }
 

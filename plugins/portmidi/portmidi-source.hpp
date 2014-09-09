@@ -34,7 +34,7 @@ class PortMidiSource:public Quiddity,
   PortMidiSource();
   ~PortMidiSource();
   PortMidiSource(const PortMidiSource &) = delete;
-  PortMidiSource & operator=(const PortMidiSource &) = delete;
+  PortMidiSource &operator=(const PortMidiSource &) = delete;
 
  private:
   typedef struct {

@@ -50,11 +50,12 @@ bool ShmdataFromGDPFile::init() {
                                               "shmpath",
                                               "shmdata socket path to create",
                                               nullptr),
-                 (Method::method_ptr) & add_file_wrapped,
+                 (Method::method_ptr) &add_file_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    G_TYPE_STRING,
-                                                   nullptr), this);
+                                                   nullptr),
+                 this);
 
   install_method("Remove File",
                  "remove_file",
@@ -64,10 +65,11 @@ bool ShmdataFromGDPFile::init() {
                                               "filepath",
                                               "file path to remove",
                                               nullptr),
-                 (Method::method_ptr) & remove_file_wrapped,
+                 (Method::method_ptr) &remove_file_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
-                                                   nullptr), this);
+                                                   nullptr),
+                 this);
 
   // registering playing property
   playing_param_ = custom_prop_->make_boolean_property("playing",
@@ -77,8 +79,10 @@ bool ShmdataFromGDPFile::init() {
                                                        ShmdataFromGDPFile::set_playing,
                                                        ShmdataFromGDPFile::get_playing,
                                                        this);
-  install_property_by_pspec(custom_prop_->get_gobject(), playing_param_,
-                            "playing", "Playing");
+  install_property_by_pspec(custom_prop_->get_gobject(),
+                            playing_param_,
+                            "playing",
+                            "Playing");
   return true;
 }
 
@@ -154,7 +158,7 @@ bool ShmdataFromGDPFile::make_players() {
     manager_ = QuiddityManager::make_manager("manager_" + get_name());
     // FIXME pause pipeline
   }
-  for (auto & it : shmdata_names_) {
+  for (auto &it : shmdata_names_) {
     manager_->create("gstsrc", it.first.c_str());
     gchar *pipe =
         g_strdup_printf("filesrc location=%s ! gdpdepay ! identity sync=true",
@@ -162,7 +166,10 @@ bool ShmdataFromGDPFile::make_players() {
     g_debug("ShmdataFromGDPFile::make_players %s", pipe);
     manager_->invoke_va(it.first.c_str(),
                         "to_shmdata_with_path",
-                        nullptr, pipe, it.second.c_str(), nullptr);
+                        nullptr,
+                        pipe,
+                        it.second.c_str(),
+                        nullptr);
     g_free(pipe);
   }
   // manager_->invoke_va("single_runtime",

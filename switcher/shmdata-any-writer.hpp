@@ -36,7 +36,7 @@ class ShmdataAnyWriter:public OnCaps {
   ShmdataAnyWriter();
   ~ShmdataAnyWriter();
   ShmdataAnyWriter(const ShmdataAnyWriter &) = delete;
-  ShmdataAnyWriter & operator=(const ShmdataAnyWriter &) = delete;
+  ShmdataAnyWriter &operator=(const ShmdataAnyWriter &) = delete;
   bool set_path(std::string name);    // path needs to be fully specified
   std::string get_path();
   void set_data_type(std::string data_type);

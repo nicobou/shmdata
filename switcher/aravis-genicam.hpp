@@ -32,7 +32,7 @@ class AravisGenicam:public GPipe, public GstElementCleaner {
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AravisGenicam);
   AravisGenicam();
   AravisGenicam(const AravisGenicam &) = delete;
-  AravisGenicam & operator=(const AravisGenicam &) = delete;
+  AravisGenicam &operator=(const AravisGenicam &) = delete;
 
   bool start(std::string name);
  private:

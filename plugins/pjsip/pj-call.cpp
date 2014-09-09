@@ -16,7 +16,7 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-
+#include <string.h>
 #include <cctype>
 #include <algorithm>
 #include <string>
@@ -30,10 +30,11 @@ namespace switcher {
 PJCall::app_t PJCall::app;
 pjmedia_endpt *PJCall::med_endpt_ = nullptr;
 
+char *pjcall_pjsip_module_name = strdup("mod-siprtpapp");
+
 pjsip_module PJCall::mod_siprtp_ = {
-  nullptr, nullptr,           /* prev, next.  */
-  {"mod-siprtpapp", 13}
-  ,                           /* Name.   */
+  nullptr, nullptr,                  /* prev, next.  */
+  pj_str(pjcall_pjsip_module_name), /* Name.   */
   -1,                         /* Id   */
   // (before PJSIP_MOD_PRIORITY_UA_PROXY_LAYER):
   30,                         /* Priority */
@@ -49,10 +50,13 @@ pjsip_module PJCall::mod_siprtp_ = {
 };
 
 PJCall::PJCall(PJSIP *sip_instance):
-    sip_instance_(sip_instance) {
+    sip_instance_(sip_instance),
+    manager_ (QuiddityManager::make_manager(sip_instance->get_name())) {
   pj_status_t status;
   init_app();
-
+  // creating rtpsession for SIP transmission
+  manager_->create("siprtp", "siprtp");
+  
   /*  Init invite session module. */
   {
     pjsip_inv_callback inv_cb;
@@ -62,7 +66,7 @@ PJCall::PJCall(PJSIP *sip_instance):
     inv_cb.on_state_changed = &call_on_state_changed;
     inv_cb.on_new_session = &call_on_forked;
     inv_cb.on_media_update = &call_on_media_update;
-
+    
     // unregister/shutdown default invite module
     status = pjsip_endpt_unregister_module(sip_instance_->sip_endpt_,
                                            pjsip_inv_usage_instance());
@@ -77,14 +81,16 @@ PJCall::PJCall(PJSIP *sip_instance):
 
   /* Register our module to receive incoming requests. */
   status =
-      pjsip_endpt_register_module(sip_instance_->sip_endpt_, &mod_siprtp_);
+      pjsip_endpt_register_module(sip_instance_->sip_endpt_,
+                                  &mod_siprtp_);
   if (status != PJ_SUCCESS)
     g_warning("Register mod_siprtp_ failed");
 
   // /* Init media */
-  status =
-      pjmedia_endpt_create(&sip_instance_->cp_.factory, nullptr, 1,
-                           &med_endpt_);
+  status = pjmedia_endpt_create(&sip_instance_->cp_.factory,
+                                nullptr,
+                                1,
+                                &med_endpt_);
   if (status != PJ_SUCCESS)
     g_warning("Init media failed");
 
@@ -124,10 +130,10 @@ PJCall::PJCall(PJSIP *sip_instance):
                                                   "url",  // name
                                                   "string",  // description
                                                   nullptr),
-                     (Method::method_ptr) & call_sip_url,
+                     (Method::method_ptr) &call_sip_url,
                      G_TYPE_BOOLEAN,
-                     Method::make_arg_type_description
-                     (G_TYPE_STRING, nullptr), this);
+                     Method::make_arg_type_description(G_TYPE_STRING, nullptr),
+                     this);
 
   sip_instance_->
       install_method("Hang Up",  // long name
@@ -138,25 +144,34 @@ PJCall::PJCall(PJSIP *sip_instance):
                                                   "url",  // name
                                                   "string",  // description
                                                   nullptr),
-                     (Method::method_ptr) & hang_up,
+                     (Method::method_ptr) &hang_up,
                      G_TYPE_BOOLEAN,
-                     Method::make_arg_type_description
-                     (G_TYPE_STRING, nullptr), this);
+                     Method::make_arg_type_description (G_TYPE_STRING, nullptr),
+                     this);
 
-  rtp_session_name_spec_ =
-      sip_instance_->custom_props_->
-      make_string_property("rtp-session",
-                           "Quiddity name managing RTP destinations",
-                           "", (GParamFlags)
-                           G_PARAM_READWRITE,
-                           PJCall::set_rtp_session,
-                           PJCall::get_rtp_session,
-                           this);
   sip_instance_->
-      install_property_by_pspec(sip_instance_->custom_props_->get_gobject(),
-                                rtp_session_name_spec_,
-                                "rtp-session",
-                                "Quiddity name managing RTP destinations");
+      install_method("Attach Shmdata To Contact",  // long name
+                     "attach_shmdata_to_contact",       // name
+                     "Register a shmdata for this contact",  // description
+                     "success or not",  // return desc
+                     Method::make_arg_description("Shmdata Path",  // long name
+                                                  "shmpath",  // name
+                                                  "string",  // description
+                                                  "Contact URI",  // long name
+                                                  "contact_uri",  // name
+                                                  "string",  // description
+                                                  "Attaching",  // long name
+                                                  "attach",  // name
+                                                  "gboolean",  // description
+                                                  nullptr),
+                     (Method::method_ptr) &attach_shmdata_to_contact,
+                     G_TYPE_BOOLEAN,
+                     Method::make_arg_type_description(G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       G_TYPE_BOOLEAN,
+                                                       nullptr),
+                     this);
+
 
   starting_rtp_port_spec_ =
       sip_instance_->custom_props_->
@@ -197,11 +212,11 @@ PJCall::~PJCall() {
 
 /* Callback to be called to handle incoming requests outside dialogs: */
 pj_bool_t PJCall::on_rx_request(pjsip_rx_data *rdata) {
-  printf("%s %d %.*s\n",
-         __FUNCTION__,
-         __LINE__,
-         static_cast<int>(rdata->msg_info.msg->line.req.method.name.slen),
-         rdata->msg_info.msg->line.req.method.name.ptr);
+  // printf("%s %d %.*s\n",
+  //        __FUNCTION__,
+  //        __LINE__,
+  //        static_cast<int>(rdata->msg_info.msg->line.req.method.name.slen),
+  //        rdata->msg_info.msg->line.req.method.name.ptr);
 
   /* Ignore strandled ACKs (must not send respone) */
   if (rdata->msg_info.msg->line.req.method.id == PJSIP_ACK_METHOD)
@@ -211,7 +226,8 @@ pj_bool_t PJCall::on_rx_request(pjsip_rx_data *rdata) {
   if (rdata->msg_info.msg->line.req.method.id != PJSIP_INVITE_METHOD) {
     return PJ_SUCCESS;
     // FIXME
-    pj_str_t reason = pj_str("Unsupported Operation");
+    pj_str_t reason;
+    pj_cstr(&reason, "Unsupported Operation");
     pjsip_endpt_respond_stateless(rdata->tp_info.transport->endpt,
                                   rdata, 500, &reason, nullptr, nullptr);
     return PJ_TRUE;
@@ -310,15 +326,15 @@ void PJCall::call_on_state_changed(pjsip_inv_session * inv, pjsip_event *e) {
 }
 
 /* Callback to be called when dialog has forked: */
-void PJCall::call_on_forked(pjsip_inv_session * inv, pjsip_event *e) {
+void PJCall::call_on_forked(pjsip_inv_session */*inv*/,
+                            pjsip_event */*e*/) {
 }
 
 /* Callback to be called when SDP negotiation is done in the call: */
 void PJCall::call_on_media_update(pjsip_inv_session *inv,
                                   pj_status_t status) {
-  struct call *call;
   const pjmedia_sdp_session *local_sdp, *remote_sdp;
-  call = (struct call *) inv->mod_data[mod_siprtp_.id];
+  struct call *call = (struct call *) inv->mod_data[mod_siprtp_.id];
 
   /* Do nothing if media negotiation has failed */
   if (status != PJ_SUCCESS) {
@@ -338,7 +354,10 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
     current_media = &call->media[i];
     status = stream_info_from_sdp(&current_media->si,
                                   inv->pool,
-                                  med_endpt_, local_sdp, remote_sdp, i);
+                                  med_endpt_,
+                                  local_sdp,
+                                  remote_sdp,
+                                  i);
 
     if (status != PJ_SUCCESS) {
       g_debug("Error geting stream info from sdp");
@@ -362,19 +381,15 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
           std::size_t found = value.find_first_of(" ");
           if (std::string::npos != found) {
             // testing if fmtp line is about the considered media fmt
-            if (0 ==
-                std::string(value, 0,
-                            found).compare(std::to_string
-                                           (current_media->si.fmt.pt))) {
+            if (0 == std::string(value, 0, found).
+                compare(std::to_string(current_media->si.fmt.pt))) {
               size_t string_len = value.length();
               size_t last_pos = string_len - (found + 1);
               // removing trailing "=" if present since it makes shmdata fail
               if ('=' == value[string_len - 1])
                 last_pos = last_pos - 1;
-              current_media->extra_params = std::string(value,
-                                                        found +
-                                                        1,
-                                                        last_pos).c_str();
+              current_media->extra_params =
+                  std::string(value, found + 1, last_pos).c_str();
             }
           }
         }
@@ -397,7 +412,6 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
       g_message("%s created a new shmdata any writer (%s)",
                 shm_any_name.c_str());
 
-      /* Attach media to transport */
       status = pjmedia_transport_attach(current_media->transport,
                                         current_media,  // user_data
                                         &current_media->si.rem_addr,
@@ -408,7 +422,7 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
         g_debug("Error on pjmedia_transport_attach()");
         return;
       }
-    }                         // end receiving
+    }  // end receiving
 
     // send streams
     if (PJMEDIA_DIR_ENCODING == current_media->si.dir
@@ -416,30 +430,21 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
         || PJMEDIA_DIR_ENCODING_DECODING == current_media->si.dir
         || PJMEDIA_DIR_CAPTURE_PLAYBACK == current_media->si.dir
         || PJMEDIA_DIR_CAPTURE_RENDER == current_media->si.dir) {
-      QuiddityManager_Impl::ptr manager =
-          call->instance->sip_instance_->manager_impl_.lock();
-      if (static_cast<bool>(manager)) {
-        {
-          manager->invoke(call->instance->rtp_session_name_,
-                          "add_destination", nullptr, {
-                            call->peer_uri,
-                                std::string(remote_sdp->origin.addr.ptr,
-                                            remote_sdp->origin.addr.slen)});
-
-          manager->invoke(call->instance->rtp_session_name_,
-                          "add_udp_stream_to_dest",
-                          nullptr,
-                          {
-                            current_media->shm_path_to_send, call->peer_uri,
-                                std::to_string(remote_sdp->media[i]->desc.port)
-                                });
-        }
-      }
+      QuiddityManager::ptr manager = call->instance->manager_;
+      manager->invoke("siprtp",
+                      "add_destination",
+                      nullptr,
+                      { call->peer_uri,
+                            std::string(remote_sdp->origin.addr.ptr,
+                                        remote_sdp->origin.addr.slen)});
+      manager->invoke("siprtp",
+                      "add_udp_stream_to_dest",
+                      nullptr,
+                      { current_media->shm_path_to_send, call->peer_uri,
+                            std::to_string(remote_sdp->media[i]->desc.port)});
     }
-
-    /* Set the media as active */
     current_media->active = PJ_TRUE;
-  }                           // end iterating media
+  }  // end iterating media
 }
 
 /*
@@ -476,7 +481,8 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   }
 
   if (i == app.max_calls) {
-    const pj_str_t reason = pj_str("Too many calls");
+    pj_str_t reason;
+    pj_cstr(&reason, "Too many calls");
     pjsip_endpt_respond_stateless(PJSIP::sip_endpt_, rdata,
                                   500, &reason, nullptr, nullptr);
     return;
@@ -528,7 +534,8 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   /* Create UAS dialog */
   status = pjsip_dlg_create_uas(pjsip_ua_instance(), rdata, nullptr, &dlg);
   if (status != PJ_SUCCESS) {
-    const pj_str_t reason = pj_str("Unable to create dialog");
+    pj_str_t reason;
+    pj_cstr(&reason, "Unable to create dialog");
     pjsip_endpt_respond_stateless(PJSIP::sip_endpt_,
                                   rdata, 500, &reason, nullptr, nullptr);
     return;
@@ -544,24 +551,19 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       (pj_uint16_t) (call->instance->starting_rtp_port_ & 0xFFFE);
 
   {
-    unsigned int j = 0;       // counting media to receive
-    // g_print ("media_count %d\n", offer->media_count);
+    unsigned int j = 0;  // counting media to receive
     for (unsigned int media_index = 0; media_index < offer->media_count;
          media_index++) {
-      // g_print ("++ attribut count %d\n", offer->media[i]->attr_count);
       bool recv = false;
       pjmedia_sdp_media *tmp_media = nullptr;
-      for (unsigned int j = 0; j < offer->media[media_index]->attr_count;
-           j++) {
-        if (0 ==
-            pj_strcmp2(&offer->media[media_index]->attr[j]->name,
-                       "sendrecv")
-            || 0 ==
-            pj_strcmp2(&offer->media[media_index]->attr[j]->name,
-                       "sendonly")) {
-          tmp_media =
-              pjmedia_sdp_media_clone(dlg->pool, offer->media[media_index]);
-          tmp_media->attr[j]->name.ptr = "recvonly";
+      for (unsigned int j = 0; j < offer->media[media_index]->attr_count; j++) {
+        if (0 == pj_strcmp2(&offer->media[media_index]->attr[j]->name,
+                            "sendrecv")
+            || 0 == pj_strcmp2(&offer->media[media_index]->attr[j]->name,
+                               "sendonly")) {
+          tmp_media = pjmedia_sdp_media_clone(dlg->pool,
+                                              offer->media[media_index]);
+          pj_cstr (&tmp_media->attr[j]->name, "recvonly");
           recv = true;
         }
         // g_print ("name %.*s, value%.*s\n",
@@ -674,12 +676,12 @@ PJCall::create_sdp(pj_pool_t *pool,
       static_cast<pjmedia_sdp_session *>
       (pj_pool_zalloc(pool, sizeof(pjmedia_sdp_session)));
   pj_gettimeofday(&tv);
-  sdp->origin.user = pj_str("pjsip-siprtp");
+  pj_cstr(&sdp->origin.user, "pjsip-siprtp");
   sdp->origin.version = sdp->origin.id = tv.sec + 2208988800UL;
-  sdp->origin.net_type = pj_str("IN");
-  sdp->origin.addr_type = pj_str("IP4");
+  pj_cstr(&sdp->origin.net_type, "IN");
+  pj_cstr(&sdp->origin.addr_type, "IP4");
   sdp->origin.addr = *pj_gethostname(); // FIXME this should be IP address
-  sdp->name = pj_str("pjsip");
+  pj_cstr(&sdp->name, "pjsip");
 
   /* Since we only support one media stream at present, put the
    * SDP connection line in the session level.
@@ -687,8 +689,8 @@ PJCall::create_sdp(pj_pool_t *pool,
   sdp->conn =
       static_cast<pjmedia_sdp_conn *>
       (pj_pool_zalloc(pool, sizeof(pjmedia_sdp_conn)));
-  sdp->conn->net_type = pj_str("IN");
-  sdp->conn->addr_type = pj_str("IP4");
+  pj_cstr(&sdp->conn->net_type, "IN");
+  pj_cstr(&sdp->conn->addr_type, "IP4");
   sdp->conn->addr = app.local_addr;
 
   /* SDP time and attributes. */
@@ -1385,8 +1387,7 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
     return PJ_EUNKNOWN;
   }
   pj_str_t local_uri;
-  pj_cstr(&local_uri,
-          sip_instance_->sip_presence_->sip_local_user_.c_str());
+  pj_cstr(&local_uri, sip_instance_->sip_presence_->sip_local_user_.c_str());
   unsigned i;
   struct call *call = nullptr;
   pjsip_dialog *dlg = nullptr;
@@ -1465,80 +1466,51 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
   return PJ_SUCCESS;
 }
 
-void PJCall::set_rtp_session(const gchar *quiddity_name, void *user_data) {
-  PJCall *context = static_cast<PJCall *>(user_data);
-  context->rtp_session_name_ = quiddity_name;
-  Quiddity::ptr quid = context->retrieve_rtp_manager();
-  if (!static_cast<bool>(quid)) {
-    g_warning("rtp manager %s not found", quiddity_name);
-    context->rtp_session_name_.clear();
-    return;
-  }
-
-  context->rtp_session_name_ = quiddity_name;
-  context->sip_instance_->custom_props_->
-      notify_property_changed(context->rtp_session_name_spec_);
-}
-
-const gchar *PJCall::get_rtp_session(void *user_data) {
-  PJCall *context = static_cast<PJCall *>(user_data);
-  return context->rtp_session_name_.c_str();
-}
-
-Quiddity::ptr PJCall::retrieve_rtp_manager() {
-  QuiddityManager_Impl::ptr manager = sip_instance_->manager_impl_.lock();
-  if (!static_cast<bool>(manager)) {
-    g_warning("manager not found");
-    Quiddity::ptr quid;
-    return quid;
-  }
-  return manager->get_quiddity(rtp_session_name_);
-}
-
 std::string
 PJCall::create_outgoing_sdp(struct call *call,
-                            std::string /*dst_uri */ ) {
-  // g_print ("--> %s\n", __FUNCTION__);
-
-  Quiddity::ptr quid = retrieve_rtp_manager();
-  if (!static_cast<bool>(quid)) {
-    g_warning("rtp manager not found");
-    return std::string();
-  }
-
+                            std::string /*dst_uri */) {
   // FIXME select appropriate shmdata to include, adding all for now
   SDPDescription desc;
 
-  std::forward_list<std::string> paths =
-      quid->get_child_keys<std::forward_list> ("rtp_caps.");
+  QuiddityManager::ptr manager = call->instance->manager_;
 
-  g_print ("--- %d\n", __LINE__);
-  g_print ("%s\n", quid->get_info (".rtp_caps").c_str ());
-  g_print ("--- %d\n", __LINE__);
-  std::for_each (paths.begin (),
-                 paths.end (),
-                 [] (const std::string &val){
-                   g_print ("%s\n", val.c_str ());
+  auto get_paths = [&] (data::Tree::ptrc tree) {
+    return data::Tree::get_child_keys<std::forward_list>(tree, "rtp_caps.");
+  };
+  using paths_t = std::forward_list<std::string>;
+  paths_t paths = manager->
+      invoke_info_tree<paths_t>("siprtp",
+                                get_paths);
+
+  std::for_each(paths.begin(),
+                 paths.end(),
+                 [&] (const std::string &val) {
+                   g_print("%s\n", val.c_str ());
                  });
-  g_print ("--- %d\n", __LINE__);
-  // std::transform (paths.begin (),
-  //                 paths.end (),
-  //                 paths.begin (),
-  //                 [] (const std::string &val){
-  //                   return std::string ("rtp_caps."+ val);
-  //                 });
-  g_print ("--- %d\n", __LINE__);
-  std::for_each (paths.begin (),
-                 paths.end (),
-                 [&quid] (const std::string &val) {
-                   std::string data = quid->get_data ("rtp_caps." + val);
-                   g_print ("%s\n",  data.c_str ());
+  std::for_each(paths.begin(),
+                paths.end(),
+                 [&] (const std::string &val) {
+                   //std::string data = quid->get_data ("rtp_caps." + val);
+                   std::string data = manager->
+                       invoke_info_tree<std::string>("siprtp",
+                                                     [&] (data::Tree::ptrc tree) {
+                                                       return 
+                                                       data::Tree::read_data(tree,
+                                                                             "rtp_caps." + val);
+                                                     });
+                   
+                   g_print("%s\n",  data.c_str ());
                  });
-  g_print ("--- %d\n", __LINE__);
 
   gint port = starting_rtp_port_;
-  for (auto & it : paths) {
-    std::string data = quid->get_data("rtp_caps." + it);
+  for (auto &it : paths) {
+    //std::string data = quid->get_data("rtp_caps." + it);
+    std::string data = manager->
+        invoke_info_tree<std::string>("siprtp",
+                                      [&] (data::Tree::ptrc tree) {
+                                        return 
+                                        data::Tree::read_data(tree, "rtp_caps." + it);
+                                      });
     GstCaps *caps = gst_caps_from_string(data.c_str());
     SDPMedia media;
     media.set_media_info_from_caps(caps);
@@ -1552,7 +1524,7 @@ PJCall::create_outgoing_sdp(struct call *call,
     gst_caps_unref(caps);
     port += 2;
   }
-  g_print ("--- %d\n", __LINE__);
+
   return desc.get_string();
 }
 
@@ -1600,6 +1572,40 @@ bool PJCall::make_hang_up(std::string contact_uri) {
   }
   return res;
 }
+
+gboolean PJCall::attach_shmdata_to_contact(gchar *shmpath,
+                                           gchar *contact_uri,
+                                           gboolean attach,
+                                           void *user_data) {
+  if (nullptr == shmpath || nullptr == contact_uri || nullptr == user_data) {
+    g_warning("cannot add shmpath for user (received nullptr)");
+    return FALSE;
+  }
+  PJCall *context = static_cast<PJCall *>(user_data);
+  context->sip_instance_->run_command_sync(std::bind(&PJCall::make_attach_shmdata_to_contact,
+                                                     context,
+                                                     std::string(shmpath),
+                                                     std::string(contact_uri),
+                                                     attach));
+  return TRUE;
+}
+
+void PJCall::make_attach_shmdata_to_contact(std::string shmpath,
+                                            std::string contact_uri,
+                                            bool attach) {
+    manager_->invoke_va("siprtp",
+                        "add_data_stream",
+                        nullptr,
+                        shmpath.c_str(),
+                        nullptr);
+    //HERE
+    g_print("------------------------------------------------ %s %s\n",
+            shmpath.c_str(),
+            contact_uri.c_str());
+
+}
+
+
 
 void PJCall::set_starting_rtp_port(const gint value, void *user_data) {
   PJCall *context = static_cast<PJCall *>(user_data);

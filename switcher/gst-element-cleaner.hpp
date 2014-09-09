@@ -33,7 +33,7 @@ class GstElementCleaner {
   GstElementCleaner();
   virtual ~ GstElementCleaner();
   void add_element_to_cleaner(GstElement *element);
-  void add_labeled_element_to_cleaner(const std::string & new_label,
+  void add_labeled_element_to_cleaner(const std::string &new_label,
                                       GstElement *element);
   GstElement *get_labeled_element_from_cleaner(const std::string &
                                                new_label);

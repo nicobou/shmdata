@@ -17,9 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <math.h>
 #include "./property-mapper.hpp"
 #include "./gst-utils.hpp"
-#include <math.h>
+#include "./quiddity-manager-impl.hpp"
 
 // for python
 // #ifdef HAVE_CONFIG_H
@@ -62,7 +63,7 @@ bool PropertyMapper::init() {
                                               "property_name",        // fisrt arg name
                                               "Name of the property",  // first arg description
                                               nullptr),
-                 (Method::method_ptr) & set_source_property_method,
+                 (Method::method_ptr) &set_source_property_method,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    G_TYPE_STRING,
@@ -79,7 +80,7 @@ bool PropertyMapper::init() {
                                               "property_name",        // fisrt arg name
                                               "Name of the property",  // first arg description
                                               nullptr),
-                 (Method::method_ptr) & set_sink_property_method,
+                 (Method::method_ptr) &set_sink_property_method,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    G_TYPE_STRING,

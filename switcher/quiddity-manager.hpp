@@ -24,6 +24,7 @@
 #ifndef __SWITCHER_QUIDDITY_MANAGER_H__
 #define __SWITCHER_QUIDDITY_MANAGER_H__
 
+#include <stdarg.h>
 #include <vector>
 #include <map>
 #include <string>
@@ -33,11 +34,10 @@
 #include "./quiddity-manager-impl.hpp"
 #include "./quiddity-command.hpp"
 #include "./quiddity-manager-wrapper.hpp"
-#include <stdarg.h>
+#include "./information-tree.hpp"
 
 namespace switcher {
-class QuiddityManager:public std::enable_shared_from_this <
-  QuiddityManager >
+class QuiddityManager: public std::enable_shared_from_this<QuiddityManager>
 // FIXME add const for method args
 {
  public:
@@ -98,9 +98,14 @@ class QuiddityManager:public std::enable_shared_from_this <
   bool rename(std::string nick_name, std::string new_nick_name);
 
   // ****************** informations **********************************************************
-  std::string get_info(const std::string & nick_name,
-                       const std::string & path);
-
+  std::string get_info(const std::string &nick_name,
+                       const std::string &path);
+  template<typename R>
+  R invoke_info_tree (const std::string &nick_name,
+                      std::function<R(data::Tree::ptrc tree)> fun){
+    return manager_impl_->invoke_info_tree<R> (nick_name, fun);
+  }
+  
   // ****************** properties ************************************************************
   // doc (json formatted)
   std::string get_properties_description(std::string quiddity_name);
@@ -112,7 +117,7 @@ class QuiddityManager:public std::enable_shared_from_this <
   std::string get_property_description_by_class(std::string class_name,
                                                 std::string
                                                 property_name);
-  // set & get
+  // set &get
   bool set_property(std::string quiddity_name,
                     std::string property_name, std::string property_value);
 

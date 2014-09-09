@@ -50,7 +50,7 @@ pj_status_t PJCodec::alt_codec_test_alloc(pjmedia_codec_factory *factory,
   auto it =
       std::find_if(available_codecs.begin(),
                    available_codecs.end(),
-                   [&id] (const RTPCodec::ptr & codec) {
+                   [&id] (const RTPCodec::ptr &codec) {
                      return
                      0 == codec->encoding_name_.compare(0,
                                                         id->encoding_name.slen,
@@ -75,7 +75,7 @@ PJCodec::alt_codec_default_attr(pjmedia_codec_factory *factory,
   auto it =
       std::find_if(available_codecs.begin(),
                    available_codecs.end(),
-                   [&id] (const RTPCodec::ptr & codec) {
+                   [&id] (const RTPCodec::ptr &codec) {
                      return
                      0 == codec->encoding_name_.compare(0,
                                                         id->encoding_name.slen,
@@ -107,7 +107,7 @@ PJCodec::alt_codec_enum_codecs(pjmedia_codec_factory *factory,
       PJCodecUtils::inspect_rtp_codecs();
 
   unsigned i = 0;
-  for (auto & it : available_codecs) {
+  for (auto &it : available_codecs) {
     std::cout << " encoding " << it->encoding_name_
               << " payload " << it->payload_
               << " media " << it->media_

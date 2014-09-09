@@ -90,7 +90,7 @@ void Signal::inspect_gobject_signal() {
   query = g_new0(GSignalQuery, 1);
   g_signal_query(id_, query);
 
-  if (query->signal_flags & G_SIGNAL_ACTION)
+  if (query->signal_flags &G_SIGNAL_ACTION)
     is_action_ = TRUE;
   else
     is_action_ = FALSE;

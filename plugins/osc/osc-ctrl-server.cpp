@@ -50,7 +50,7 @@ bool OscCtrlServer::init() {
                                               "port",
                                               "the port to bind",
                                               nullptr),
-                 (Method::method_ptr) & set_port_wrapped,
+                 (Method::method_ptr) &set_port_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);

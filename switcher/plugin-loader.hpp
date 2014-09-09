@@ -39,7 +39,7 @@ class PluginLoader {
   PluginLoader();
   ~PluginLoader();
   PluginLoader(const PluginLoader &) = delete;
-  PluginLoader & operator=(const PluginLoader &) = delete;
+  PluginLoader &operator=(const PluginLoader &) = delete;
 
   bool load(const char *filename);
   bool close();

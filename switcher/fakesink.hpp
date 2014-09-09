@@ -33,7 +33,7 @@ class FakeSink:public SinglePadGstSink {
   FakeSink();
   ~FakeSink();
   FakeSink(const FakeSink &) = delete;
-  FakeSink & operator=(const FakeSink &) = delete;
+  FakeSink &operator=(const FakeSink &) = delete;
 
  private:
   GstElement *fakesink_;

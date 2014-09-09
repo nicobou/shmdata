@@ -52,7 +52,7 @@ class SDPDescription {
   SDPDescription *operator=(const SDPDescription &) = delete;
   SDPDescription(const SDPDescription &) = delete;
 
-  bool add_media(const SDPMedia & media);
+  bool add_media(const SDPMedia &media);
   std::string get_string();
  private:
   GstSDPMessage *sdp_description_;

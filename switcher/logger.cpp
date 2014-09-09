@@ -114,7 +114,7 @@ bool Logger::init() {
                                               "log domain",
                                               "the glib log domain (e.g. shmdata, Glib or GStreamer)",
                                               nullptr),
-                 (Method::method_ptr) & install_log_handler_wrapped,
+                 (Method::method_ptr) &install_log_handler_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
@@ -127,7 +127,7 @@ bool Logger::init() {
                                               "log domain",
                                               "the glib log domain (e.g. shmdata, Glib or GStreamer)",
                                               nullptr),
-                 (Method::method_ptr) & remove_log_handler_wrapped,
+                 (Method::method_ptr) &remove_log_handler_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
@@ -143,7 +143,7 @@ void Logger::quiet_log_handler(const gchar * /*log_domain */ ,
 
 Logger::~Logger() {
   if (i_am_the_one_) {
-    for (auto & it : handler_ids_)
+    for (auto &it : handler_ids_)
       g_log_remove_handler(it.first.c_str(), it.second);
     installed_ = false;
   }

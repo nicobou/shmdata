@@ -58,7 +58,7 @@ bool FileSDP::init_gpipe() {
                                               "url",
                                               "The sdp file path (such as file:// / home/me/file.sdp)",
                                               nullptr),
-                 (Method::method_ptr) & to_shmdata_wrapped,
+                 (Method::method_ptr) &to_shmdata_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
                                                    nullptr), this);
