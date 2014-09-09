@@ -27,6 +27,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <string>
+#include <map>
 
 namespace switcher {
 class PJSIP;
@@ -48,28 +49,27 @@ class PJPresence {
   };
 
  private:
-  PJSIP *sip_instance_;
-  pjsua_acc_id account_id_;
-  std::mutex registration_mutex_;
-  std::condition_variable registration_cond_;
-
+  PJSIP *sip_instance_{nullptr};
+  pjsua_acc_id account_id_{-1};
+  std::mutex registration_mutex_{};
+  std::condition_variable registration_cond_{};
   // online status
-  GParamSpec *status_enum_spec_;
+  GParamSpec *status_enum_spec_{nullptr};
   static GEnumValue status_enum_[8];
   gint status_;
-  GParamSpec *custom_status_spec_;
-  std::string custom_status_;
-
+  GParamSpec *custom_status_spec_{nullptr};
+  std::string custom_status_{};
   // account info
-  std::string sip_local_user_;
-
+  std::string sip_local_user_{};
+  std::map<std::string, pjsua_buddy_id> buddy_id_{};
   // registration
   static void on_registration_state(pjsua_acc_id acc_id,
                                     pjsua_reg_info *info);
   void register_account(const std::string &sip_user,
                         const std::string &sip_domain,
                         const std::string &sip_password);
-  static gboolean register_account_wrapped(gchar * user, gchar *domain,
+  static gboolean register_account_wrapped(gchar *user,
+                                           gchar *domain,
                                            gchar *password,
                                            void *user_data);
   bool unregister_account();
@@ -77,9 +77,14 @@ class PJPresence {
                                              void *user_data);
 
   // buddies
-  void add_buddy(const std::string &sip_user);
+  bool add_buddy(const std::string &sip_user);
+  bool del_buddy(const std::string &sip_user);
+  static gboolean add_buddy_wrapped(gchar *buddy_uri,
+                                    void *user_data);
+  static gboolean del_buddy_wrapped(gchar *buddy_uri,
+                                    void *user_data);
   static void on_buddy_state(pjsua_buddy_id buddy_id);
-
+  
   // online status
   static void set_status(const gint value, void *user_data);
   static gint get_status(void *user_data);
@@ -100,6 +105,6 @@ class PJPresence {
   static void on_buddy_evsub_state(pjsua_buddy_id buddy_id,
                                    pjsip_evsub * sub, pjsip_event *event);
 };
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

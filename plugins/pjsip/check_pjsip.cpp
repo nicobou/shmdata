@@ -63,7 +63,16 @@ int main() {
                               "10.10.30.179",  // domain
                               "1234",  // password
                               nullptr));
-
+    assert(manager->invoke_va("test",
+                              "add_buddy",
+                              nullptr,
+                              "sip:1002@10.10.30.179",
+                              nullptr));
+    assert(manager->invoke_va("test",
+                              "add_buddy",
+                              nullptr,
+                              "sip:1004@10.10.30.179",
+                              nullptr));
     assert(manager->invoke_va("test",
                               "attach_shmdata_to_contact",
                               nullptr,
