@@ -36,12 +36,12 @@ ShmdataReader::ShmdataReader():connection_hook_(nullptr),
 
 ShmdataReader::~ShmdataReader() {
   if (!path_.empty())
-    g_debug("ShmdataReader: deleting %s", path_.c_str());
+    g_debug("ShmdataReader: closing %s", path_.c_str());
   else
     g_debug("closing empty reader");
-  shmdata_base_reader_close(reader_);
+  stop();
   if (!path_.empty())
-    g_debug("ShmdataReader: %s deleted ", path_.c_str());
+    g_debug("ShmdataReader: %s closed ", path_.c_str());
   else
     g_debug("closing empty reader");
 }
@@ -105,9 +105,8 @@ void ShmdataReader::start() {
 
 gboolean ShmdataReader::start_idle(void *user_data) {
   ShmdataReader *context = static_cast<ShmdataReader *>(user_data);
-  g_debug("shmdata-reader::start_idle");
-  shmdata_base_reader_close(context->reader_);
-  GstUtils::clean_element(context->funnel_);
+  context->stop();
+  g_debug("ShmdataReader::start_idle");
   context->reader_ = shmdata_base_reader_new();
   shmdata_base_reader_set_g_main_context(context->reader_,
                                          context->g_main_context_);
@@ -115,16 +114,14 @@ gboolean ShmdataReader::start_idle(void *user_data) {
                                                 ShmdataReader::on_have_type,
                                                 context);
   if (context->path_.empty() || context->bin_ == nullptr) {
-    g_warning
-        ("cannot start the shmdata reader: name or bin or sink element has not bin set");
+    g_warning("cannot start the shmdata reader: name or bin or sink element has not bin set");
     return FALSE;
   }
-  shmdata_base_reader_set_callback(context->reader_,
-                                   ShmdataReader::on_first_data, context);
+  shmdata_base_reader_set_callback(context->reader_, ShmdataReader::on_first_data, context);
   shmdata_base_reader_install_sync_handler(context->reader_, FALSE);
   shmdata_base_reader_set_bin(context->reader_, context->bin_);
   shmdata_base_reader_start(context->reader_, context->path_.c_str());
-  g_debug("shmdata-reader::start_idle done");
+  g_debug("ShmdataReader::start_idle done");
   // std::unique_lock<std::mutex> lock (context->start_mutex_);
   // context->start_cond_.notify_all ();
   return FALSE;               // do not repeat
@@ -149,6 +146,7 @@ ShmdataReader::on_have_type(shmdata_base_reader_t *,
 void ShmdataReader::stop() {
   g_debug("ShmdataReader::stop");
   shmdata_base_reader_close(reader_);
+  reader_ = nullptr;
   GstUtils::clean_element(funnel_);
 }
 
