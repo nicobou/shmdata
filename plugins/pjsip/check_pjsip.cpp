@@ -73,42 +73,42 @@ int main() {
                               nullptr,
                               "sip:1004@10.10.30.179",
                               nullptr));
-    assert(manager->invoke_va("test",
-                              "attach_shmdata_to_contact",
-                              nullptr,
-                              "/tmp/switcher_siptest_a_audio",
-                              "blalbal",
-                              "true",
-                              nullptr));
-    assert(manager->invoke_va("test",
-                              "attach_shmdata_to_contact",
-                              nullptr,
-                              "/tmp/switcher_siptest_v_video",
-                              "blalbal",
-                              "true",
-                              nullptr));
+    // assert(manager->invoke_va("test",
+    //                           "attach_shmdata_to_contact",
+    //                           nullptr,
+    //                           "/tmp/switcher_siptest_a_audio",
+    //                           "blalbal",
+    //                           "true",
+    //                           nullptr));
+    // assert(manager->invoke_va("test",
+    //                           "attach_shmdata_to_contact",
+    //                           nullptr,
+    //                           "/tmp/switcher_siptest_v_video",
+    //                           "blalbal",
+    //                           "true",
+    //                           nullptr));
     usleep(200000);
 
-    assert(manager->invoke_va("test",
-                              "call",
-                              nullptr,
-                              "sip:1002@10.10.30.179",
-                              nullptr));
+    // assert(manager->invoke_va("test",
+    //                           "call",
+    //                           nullptr,
+    //                           "sip:1002@10.10.30.179",
+    //                           nullptr));
 
-        g_print("____ %d\n", __LINE__);
+    g_print("____ %d\n", __LINE__);
 
-    usleep(2000000);
+    usleep(8000000);
     assert(manager->set_property("test", "status", "Away"));
-    usleep(2000000);
+    usleep(8000000);
     assert(manager->set_property("test", "status-note", "coucou"));
-    usleep(2000000);
+    usleep(8000000);
     assert(manager->set_property("test", "status", "BRB"));
     usleep(2000000);
-    assert(manager->invoke_va("test",
-                              "hang-up",
-                              nullptr,
-                              "sip:1002@10.10.30.223",
-                              nullptr));
+    // assert(manager->invoke_va("test",
+    //                           "hang-up",
+    //                           nullptr,
+    //                           "sip:1002@10.10.30.223",
+    //                           nullptr));
     assert(manager->remove("test"));
   }  // end of scope is releasing the manager
 

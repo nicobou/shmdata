@@ -282,11 +282,11 @@ bool PJPresence::add_buddy(const std::string &sip_user) {
   pj_status_t status = PJ_SUCCESS;
 
   if (pjsua_verify_url(sip_user.c_str()) != PJ_SUCCESS) {
-    g_warning("Invalid buddy URI %s", sip_user.c_str());
+    g_print("Invalid buddy URI %s", sip_user.c_str());
     return false;
   }
-  if (buddy_id_.end() == buddy_id_.find(sip_user)) {
-    g_debug("buddy %s already added", sip_user.c_str());
+  if (buddy_id_.end() != buddy_id_.find(sip_user)) {
+    g_print("buddy %s already added", sip_user.c_str());
     return false;
   }
 
@@ -296,11 +296,14 @@ bool PJPresence::add_buddy(const std::string &sip_user) {
   buddy_cfg.user_data = this;
   status = pjsua_buddy_add(&buddy_cfg, &buddy_id);
   if (status != PJ_SUCCESS) {
-    g_debug("buddy not found");
+    g_print("buddy not found");
     return false;
   }
-  g_debug("Buddy added");
+  g_print("Buddy added");
   buddy_id_[sip_user] = buddy_id;
+  sip_instance_->
+      graft_tree("buddy." + std::to_string(buddy_id),
+                 data::make_tree(sip_user));
   return true;
 }
 
@@ -322,6 +325,7 @@ bool PJPresence::del_buddy(const std::string &sip_user) {
     g_debug("cannot remove buddy");
     return false;
   }
+  sip_instance_->prune_tree("buddy."+std::to_string(it->second));
   buddy_id_.erase(it);
   g_debug("Buddy removed");
   return true;
@@ -368,6 +372,7 @@ PJPresence::on_registration_state(pjsua_acc_id acc_id,
 void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   PJPresence *context =
       static_cast<PJPresence *>(pjsua_buddy_get_user_data(buddy_id));
+  g_print ("\n*************** on buddy state\n");
   if (nullptr == context)
     return;
   pjsua_buddy_info info;
@@ -454,6 +459,7 @@ gint PJPresence::get_status(void *user_data) {
 void PJPresence::change_online_status(gint status) {
   if (-1 == account_id_)
     return;
+  g_print("%s\n", __FUNCTION__);
   pj_bool_t online_status = PJ_TRUE;
   pjrpid_element elem;
   pj_bzero(&elem, sizeof(elem));
@@ -507,6 +513,8 @@ void PJPresence::change_online_status(gint status) {
   }
 
   pjsua_acc_set_online_status2(account_id_, online_status, &elem);
+  g_print("%s fin\n", __FUNCTION__);
+
 }
 
 void PJPresence::set_note(const gchar *custom_status, void *user_data) {
