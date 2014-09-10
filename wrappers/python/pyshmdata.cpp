@@ -259,7 +259,10 @@ void
 Reader_on_data_handler(shmdata_any_reader_t* reader, void* shmbuf, void* data, int data_size, unsigned long long timestamp, const char* type, void* user_data)
 {
     if (user_data == nullptr)
+    {
+        shmdata_any_reader_free(shmbuf);
         return;
+    }
 
     pyshmdata_ReaderObject* self = static_cast<pyshmdata_ReaderObject*>(user_data);
 
@@ -271,7 +274,6 @@ Reader_on_data_handler(shmdata_any_reader_t* reader, void* shmbuf, void* data, i
 
     datatype = PyUnicode_FromString(type);
     tmp = self->datatype;
-    Py_INCREF(datatype);
     self->datatype = datatype;
     Py_XDECREF(tmp);
 
@@ -282,7 +284,6 @@ Reader_on_data_handler(shmdata_any_reader_t* reader, void* shmbuf, void* data, i
     tmp = NULL;
     if (self->lastBuffer != NULL)
         tmp = self->lastBuffer;
-    Py_INCREF(buffer);
     self->lastBuffer = buffer;
     if (tmp != NULL)
         Py_XDECREF(tmp);
