@@ -666,7 +666,6 @@ shmdata_base_reader_close (shmdata_base_reader_t * reader)
       g_mutex_clear (&reader->mutex_);
       shmdata_base_reader_init_members (reader);
       g_free (reader);
-      reader = NULL;
       g_debug ("base reader closed");
     }
 }
