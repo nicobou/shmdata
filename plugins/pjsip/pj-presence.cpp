@@ -37,12 +37,7 @@ GEnumValue PJPresence::status_enum_[8] = {
 
 PJPresence::PJPresence(PJSIP *sip_instance):
     sip_instance_(sip_instance),
-    account_id_(-1),
-    registration_mutex_(),
-    registration_cond_(),
-    status_enum_spec_(nullptr),
-    status_(PJPresence::OFFLINE),
-    custom_status_spec_(nullptr), custom_status_(), sip_local_user_() {
+    status_(PJPresence::OFFLINE) {
   // registering account
   sip_instance_->
       install_method("Register SIP Account",  // long name
@@ -61,9 +56,11 @@ PJPresence::PJPresence(PJSIP *sip_instance):
                                                   nullptr),
                      (Method::method_ptr) &
                      register_account_wrapped, G_TYPE_BOOLEAN,
-                     Method::make_arg_type_description
-                     (G_TYPE_STRING, G_TYPE_STRING,
-                      G_TYPE_STRING, nullptr), this);
+                     Method::make_arg_type_description(G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       nullptr),
+                     this);
 
   sip_instance_->
       install_method("Unregister SIP Account",  // long name
@@ -72,41 +69,74 @@ PJPresence::PJPresence(PJSIP *sip_instance):
                      "success",  // return description
                      Method::make_arg_description("none",
                                                   nullptr),
-                     (Method::method_ptr) &
-                     unregister_account_wrapped, G_TYPE_BOOLEAN,
-                     Method::make_arg_type_description
-                     (G_TYPE_NONE, nullptr), this);
+                     (Method::method_ptr) &unregister_account_wrapped,
+                     G_TYPE_BOOLEAN,
+                     Method::make_arg_type_description(G_TYPE_NONE,
+                                                       nullptr),
+                     this);
 
-  // online status
-  status_enum_spec_ =
-      sip_instance_->custom_props_->make_enum_property("status",
-                                                       "Possible Status",
-                                                       status_,
-                                                       status_enum_,
-                                                       (GParamFlags)
-                                                       G_PARAM_READWRITE,
-                                                       PJPresence::set_status,
-                                                       PJPresence::get_status,
-                                                       this);
+  //buddies
+    sip_instance_->
+      install_method("Add Buddy",  // long name
+                     "add_buddy",  // name
+                     "add a buddy",  // description
+                     "success",  // return description
+                     Method::make_arg_description("SIP User Name",  // long name
+                                                  "user",  // name
+                                                  "string",  // description
+                                                  nullptr),
+                     (Method::method_ptr)&add_buddy_wrapped,
+                     G_TYPE_BOOLEAN,
+                     Method::make_arg_type_description(G_TYPE_STRING,
+                                                       nullptr),
+                     this);
+    sip_instance_->
+      install_method("Del Buddy",  // long name
+                     "del_buddy",  // name
+                     "Delete a buddy",  // description
+                     "success",  // return description
+                     Method::make_arg_description("SIP User Name",  // long name
+                                                  "user",  // name
+                                                  "string",  // description
+                                                  nullptr),
+                     (Method::method_ptr)&del_buddy_wrapped,
+                     G_TYPE_BOOLEAN,
+                     Method::make_arg_type_description(G_TYPE_STRING,
+                                                       nullptr),
+                     this);
 
-  sip_instance_->install_property_by_pspec(sip_instance_->
-                                           custom_props_->get_gobject(),
-                                           status_enum_spec_, "status",
-                                           "Online Status");
-  custom_status_spec_ =
-      sip_instance_->custom_props_->make_string_property("status-note",
-                                                         "Custom status note",
-                                                         "", (GParamFlags)
-                                                         G_PARAM_READWRITE,
-                                                         PJPresence::set_note,
-                                                         PJPresence::get_note,
-                                                         this);
-
-  sip_instance_->install_property_by_pspec(sip_instance_->
-                                           custom_props_->get_gobject(),
-                                           custom_status_spec_,
-                                           "status-note",
-                                           "Custom status note");
+    // online status
+    status_enum_spec_ =
+        sip_instance_->custom_props_->
+        make_enum_property("status",
+                           "Possible Status",
+                           status_,
+                           status_enum_,
+                           (GParamFlags)
+                           G_PARAM_READWRITE,
+                           PJPresence::set_status,
+                           PJPresence::get_status,
+                           this);
+    sip_instance_->
+        install_property_by_pspec(sip_instance_->custom_props_->
+                                  get_gobject(),
+                                  status_enum_spec_,
+                                  "status",
+                                  "Online Status");
+    custom_status_spec_ = sip_instance_->custom_props_->
+        make_string_property("status-note",
+                             "Custom status note",
+                             "",
+                             (GParamFlags)G_PARAM_READWRITE,
+                             PJPresence::set_note,
+                             PJPresence::get_note,
+                             this);
+    sip_instance_->
+        install_property_by_pspec(sip_instance_->
+                                  custom_props_->get_gobject(),
+                                  custom_status_spec_,
+                                  "status-note",
+                                  "Custom status note");
 }
 
 PJPresence::~PJPresence() {
@@ -198,35 +228,34 @@ PJPresence::register_account(const std::string &sip_user,
     //        sip_instance_->sip_port_);
   }
 
-  add_buddy("sip:1000@10.10.30.179");
-  add_buddy("sip:1001@10.10.30.179");
-  add_buddy("sip:1002@10.10.30.179");
-  add_buddy("sip:1003@10.10.30.179");
-  add_buddy("sip:1004@10.10.30.179");
-  add_buddy("sip:1005@10.10.30.179");
-  add_buddy("sip:1006@10.10.30.179");
-  add_buddy("sip:1007@10.10.30.179");
-  add_buddy("sip:1008@10.10.30.179");
-  add_buddy("sip:1009@10.10.30.179");
-  add_buddy("sip:1010@10.10.30.179");
-  add_buddy("sip:1011@10.10.30.179");
-  add_buddy("sip:1012@10.10.30.179");
-  add_buddy("sip:1013@10.10.30.179");
-  add_buddy("sip:1014@10.10.30.179");
-  add_buddy("sip:1015@10.10.30.179");
-  add_buddy("sip:1016@10.10.30.179");
-  add_buddy("sip:1017@10.10.30.179");
-  add_buddy("sip:1018@10.10.30.179");
-  add_buddy("sip:1019@10.10.30.179");
+  // add_buddy("sip:1000@10.10.30.179");
+  // add_buddy("sip:1001@10.10.30.179");
+  // add_buddy("sip:1002@10.10.30.179");
+  // add_buddy("sip:1003@10.10.30.179");
+  // add_buddy("sip:1004@10.10.30.179");
+  // add_buddy("sip:1005@10.10.30.179");
+  // add_buddy("sip:1006@10.10.30.179");
+  // add_buddy("sip:1007@10.10.30.179");
+  // add_buddy("sip:1008@10.10.30.179");
+  // add_buddy("sip:1009@10.10.30.179");
+  // add_buddy("sip:1010@10.10.30.179");
+  // add_buddy("sip:1011@10.10.30.179");
+  // add_buddy("sip:1012@10.10.30.179");
+  // add_buddy("sip:1013@10.10.30.179");
+  // add_buddy("sip:1014@10.10.30.179");
+  // add_buddy("sip:1015@10.10.30.179");
+  // add_buddy("sip:1016@10.10.30.179");
+  // add_buddy("sip:1017@10.10.30.179");
+  // add_buddy("sip:1018@10.10.30.179");
+  // add_buddy("sip:1019@10.10.30.179");
 }
 
 gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */ ,
                                                 void *user_data) {
   PJPresence *context = static_cast<PJPresence *>(user_data);
-  context->
-      sip_instance_->run_command_sync(std::
-                                      bind(&PJPresence::unregister_account,
-                                           context));
+  context->sip_instance_->
+      run_command_sync(std::bind(&PJPresence::unregister_account,
+                                 context));
   if (-1 != context->account_id_)
     return FALSE;
   return TRUE;
@@ -247,25 +276,75 @@ bool PJPresence::unregister_account() {
   return true;
 }
 
-void PJPresence::add_buddy(const std::string &sip_user) {
+bool PJPresence::add_buddy(const std::string &sip_user) {
   pjsua_buddy_config buddy_cfg;
   pjsua_buddy_id buddy_id;
   pj_status_t status = PJ_SUCCESS;
 
   if (pjsua_verify_url(sip_user.c_str()) != PJ_SUCCESS) {
     g_warning("Invalid buddy URI %s", sip_user.c_str());
-    return;
+    return false;
+  }
+  if (buddy_id_.end() == buddy_id_.find(sip_user)) {
+    g_debug("buddy %s already added", sip_user.c_str());
+    return false;
   }
 
   pj_bzero(&buddy_cfg, sizeof(pjsua_buddy_config));
-  gchar *buddy = g_strdup(sip_user.c_str());
-  buddy_cfg.uri = pj_str(buddy);
+  pj_cstr(&buddy_cfg.uri, sip_user.c_str());
   buddy_cfg.subscribe = PJ_TRUE;
   buddy_cfg.user_data = this;
   status = pjsua_buddy_add(&buddy_cfg, &buddy_id);
-  if (status == PJ_SUCCESS)
-    g_debug("Buddy added");
-  g_free(buddy);
+  if (status != PJ_SUCCESS) {
+    g_debug("buddy not found");
+    return false;
+  }
+  g_debug("Buddy added");
+  buddy_id_[sip_user] = buddy_id;
+  return true;
+}
+
+bool PJPresence::del_buddy(const std::string &sip_user) {
+  pj_status_t status = PJ_SUCCESS;
+
+  if (pjsua_verify_url(sip_user.c_str()) != PJ_SUCCESS) {
+    g_warning("Invalid buddy URI %s", sip_user.c_str());
+    return false;
+  }
+  auto it = buddy_id_.find(sip_user);
+  if (buddy_id_.end() != it) {
+    g_debug("%s is not in buddy list, cannot delete", sip_user.c_str());
+    return false;
+  }
+
+  status = pjsua_buddy_del(it->second);
+  if (status != PJ_SUCCESS) {
+    g_debug("cannot remove buddy");
+    return false;
+  }
+  buddy_id_.erase(it);
+  g_debug("Buddy removed");
+  return true;
+}
+
+gboolean PJPresence::add_buddy_wrapped(gchar *buddy_uri,
+                                       void *user_data) {
+  PJPresence *context = static_cast<PJPresence *>(user_data);
+  context->sip_instance_->
+      run_command_sync(std::bind(&PJPresence::add_buddy,
+                                 context,
+                                 buddy_uri));
+  return TRUE;
+}
+
+gboolean PJPresence::del_buddy_wrapped(gchar *buddy_uri,
+                                       void *user_data) {
+  PJPresence *context = static_cast<PJPresence *>(user_data);
+  context->sip_instance_->
+      run_command_sync(std::bind(&PJPresence::del_buddy,
+                                 context,
+                                 buddy_uri));
+  return TRUE;
 }
 
 void
@@ -302,28 +381,25 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
     activity = "busy";
 
-  // g_print("%.*s status is %.*s, subscription state is %s "
-  //         "(last termination reason code=%d %.*s)\n"
-  //         "rpid  activity %s, note %.*s\n",
-  //         static_cast<int>(info.uri.slen),
-  //         info.uri.ptr,
-  //         static_cast<int>(info.status_text.slen),
-  //         info.status_text.ptr,
-  //         info.sub_state_name,
-  //         info.sub_term_code,
-  //         static_cast<int>(info.sub_term_reason.slen),
-  //         info.sub_term_reason.ptr,
-  //         activity.c_str(),
-  //         static_cast<int>(info.rpid.note.slen),
-  //         info.rpid.note.ptr);
+  g_print("%.*s status is %.*s, subscription state is %s "
+          "(last termination reason code=%d %.*s)\n"
+          "rpid  activity %s, note %.*s\n",
+          static_cast<int>(info.uri.slen),
+          info.uri.ptr,
+          static_cast<int>(info.status_text.slen),
+          info.status_text.ptr,
+          info.sub_state_name,
+          info.sub_term_code,
+          static_cast<int>(info.sub_term_reason.slen),
+          info.sub_term_reason.ptr,
+          activity.c_str(),
+          static_cast<int>(info.rpid.note.slen),
+          info.rpid.note.ptr);
 
   data::Tree::ptr tree = data::make_tree();
-
   std::string buddy_url(info.uri.ptr, (size_t) info.uri.slen);
   tree->graft(".sip_url", data::make_tree(buddy_url));
-
   std::string status("unknown");
-
   switch (info.status) {
     case PJSUA_BUDDY_STATUS_UNKNOWN:
       break;
@@ -340,21 +416,19 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
     status = "away";
   if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
     status = "busy";
-
   tree->graft(".status", data::make_tree(status));
-
   tree->graft(".status_text",
               data::make_tree(std::string(info.status_text.ptr,
                                           (size_t) info.status_text.slen)));
   tree->graft(".subscription_state",
               data::make_tree(std::string(info.sub_state_name)));
-  context->sip_instance_->graft_tree(std::string(".presence." + buddy_url),
-                                     tree);
+  context->sip_instance_->
+      graft_tree(std::string(".presence." + std::to_string(buddy_id)), tree);
 }
 
 void PJPresence::set_status(const gint value, void *user_data) {
   PJPresence *context = static_cast<PJPresence *>(user_data);
-  if (value<0 || value>= OPT_MAX) {
+  if (value < 0 || value >= OPT_MAX) {
     g_warning("invalide online status code");
     return;
   }
@@ -474,7 +548,6 @@ PJPresence::on_incoming_subscribe(pjsua_acc_id acc_id,
                                   pjsip_status_code *code,
                                   pj_str_t *reason,
                                   pjsua_msg_data *msg_data) {
-  printf("%s\n", __FUNCTION__);
   /* Just accept the request (the default behavior) */
   PJ_UNUSED_ARG(acc_id);
   PJ_UNUSED_ARG(srv_pres);
@@ -491,23 +564,20 @@ PJPresence::on_incoming_subscribe(pjsua_acc_id acc_id,
  */
 void
 PJPresence::on_buddy_evsub_state(pjsua_buddy_id buddy_id,
-                                 pjsip_evsub * sub, pjsip_event *event) {
-  //printf("%s\n", __FUNCTION__);
+                                 pjsip_evsub *sub,
+                                 pjsip_event *event) {
   char event_info[80];
-
   PJ_UNUSED_ARG(sub);
-
   event_info[0] = '\0';
-
   if (event->type == PJSIP_EVENT_TSX_STATE &&
       event->body.tsx_state.type == PJSIP_EVENT_RX_MSG) {
     pjsip_rx_data *rdata = event->body.tsx_state.src.rdata;
     snprintf(event_info, sizeof(event_info),
              " (RX %s)", pjsip_rx_data_get_info(rdata));
   }
-
-  // printf("Buddy %d: subscription state: %s (event: %s%s)",
-  //        buddy_id, pjsip_evsub_get_state_name(sub),
-  //        pjsip_event_str(event->type), event_info);
+  g_print("Buddy %d: subscription state: %s (event: %s%s)",
+         buddy_id, pjsip_evsub_get_state_name(sub),
+         pjsip_event_str(event->type), event_info);
 }
+
 }  // namespace switcher
