@@ -20,47 +20,57 @@
 #ifndef __SWITCHER_SHMDATA_TO_FILE_H__
 #define __SWITCHER_SHMDATA_TO_FILE_H__
 
-#include <gst/gst.h>
-#include "./gpipe.hpp"
-#include "./custom-property-helper.hpp"
+#include <string>
 #include <unordered_map>
 
+#include <gst/gst.h>
+
+#include "./gpipe.hpp"
+#include "./quiddity.hpp"
+#include "./segment.hpp"
+#include "./startable-quiddity.hpp"
+#include "./custom-property-helper.hpp"
+
 namespace switcher {
-class ShmdataToFile:public GPipe {
+class ShmdataToFile:public GPipe, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToFile);
   ShmdataToFile();
   ~ShmdataToFile();
-  ShmdataToFile(const ShmdataToFile &);
-  ShmdataToFile &operator=(const ShmdataToFile &);
+  ShmdataToFile(const ShmdataToFile &) = delete;
+  ShmdataToFile &operator=(const ShmdataToFile &) = delete;
+
+  bool start();
+  bool stop();
 
   // local streams
-  bool add_shmdata(std::string shmdata_socket_path,
-                   std::string file_location);
   bool remove_shmdata(std::string shmdata_socket_path);
-
-  static void set_recording(gboolean mute, void *user_data);
-  static gboolean get_recording(void *user_data);
 
  private:
   // custom properties:
   CustomPropertyHelper::ptr custom_prop_;
-  GParamSpec *recording_param_;
-  gboolean recording_;
+
+  std::string output_prefix_ {"shmfile_"};
+
+  GParamSpec *output_prefix_param_ {nullptr};
 
   bool init_gpipe() final;
+
+  bool connect(std::string shmdata_socket_path);
+  bool disconnect_all();
+  bool can_sink_caps(std::string /*unused*/);
+
   bool make_recorders();
   bool clean_recorders();
-  std::unordered_map<std::string, std::string> file_names_;
-  std::unordered_map<std::string, GstElement *>shmdata_recorders_;
+  std::unordered_map<std::string, std::string> file_names_ {};
+  std::unordered_map<std::string, ShmdataReader::ptr> shmdata_readers_ {};
+  std::unordered_map<std::string, GstElement *> shmdata_recorders_ {};
 
-  // wrapper for registering the data_stream functions
-  static gboolean add_shmdata_wrapped(gpointer shmdata_socket_path,
-                                      gpointer file_location,
-                                      gpointer user_data);
-  static gboolean remove_shmdata_wrapped(gpointer shmdata_socket_path,
-                                         gpointer user_data);
+  static const gchar *get_output_prefix(void *user_data);
+  static void set_output_prefix(const gchar *prefix, void *user_data);
+
 };
+
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif // ifndef
