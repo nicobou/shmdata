@@ -243,6 +243,8 @@ Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
 PyObject*
 Reader_pull(pyshmdata_ReaderObject* self)
 {
+    //lock_guard<mutex> lock(self->reader_mutex);
+    Py_INCREF(self->lastBuffer);
     return self->lastBuffer;
 }
 
@@ -265,6 +267,8 @@ Reader_on_data_handler(shmdata_any_reader_t* reader, void* shmbuf, void* data, i
     }
 
     pyshmdata_ReaderObject* self = static_cast<pyshmdata_ReaderObject*>(user_data);
+
+    PyGILState_STATE gil = PyGILState_Ensure(); // We need to check the GIL state here because of the mutex
 
     lock_guard<mutex> lock(self->reader_mutex);
 
@@ -291,7 +295,6 @@ Reader_on_data_handler(shmdata_any_reader_t* reader, void* shmbuf, void* data, i
     // Call the callback, if present
     if (self->callback != NULL && self->lastBuffer != NULL)
     {
-        PyGILState_STATE gil = PyGILState_Ensure();
         PyObject *arglist;
         if (self->callback_user_data == NULL)
             arglist = Py_BuildValue("(OOO)", Py_None, self->lastBuffer, self->datatype);
@@ -303,8 +306,8 @@ Reader_on_data_handler(shmdata_any_reader_t* reader, void* shmbuf, void* data, i
             PyErr_Print();
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);
-        PyGILState_Release(gil);
     }
     
+    PyGILState_Release(gil);
     shmdata_any_reader_free(shmbuf);
 }
