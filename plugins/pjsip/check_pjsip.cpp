@@ -55,6 +55,7 @@ int main() {
     // SIP
     assert(0 == manager->create("sip", "test").compare("test"));
     assert(manager->set_property("test", "port", "5070"));
+    assert(manager->set_property("test", "port", "5080"));
 
     assert(manager->invoke_va("test",
                               "register",
@@ -63,6 +64,7 @@ int main() {
                               "10.10.30.179",  // domain
                               "1234",  // password
                               nullptr));
+
     assert(manager->invoke_va("test",
                               "add_buddy",
                               nullptr,
@@ -73,6 +75,7 @@ int main() {
                               nullptr,
                               "sip:1004@10.10.30.179",
                               nullptr));
+
     // assert(manager->invoke_va("test",
     //                           "attach_shmdata_to_contact",
     //                           nullptr,

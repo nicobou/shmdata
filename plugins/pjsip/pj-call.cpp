@@ -212,11 +212,10 @@ PJCall::~PJCall() {
 
 /* Callback to be called to handle incoming requests outside dialogs: */
 pj_bool_t PJCall::on_rx_request(pjsip_rx_data *rdata) {
-  // printf("%s %d %.*s\n",
-  //        __FUNCTION__,
-  //        __LINE__,
-  //        static_cast<int>(rdata->msg_info.msg->line.req.method.name.slen),
-  //        rdata->msg_info.msg->line.req.method.name.ptr);
+  printf("%s %.*s\n",
+         __FUNCTION__,
+         static_cast<int>(rdata->msg_info.msg->line.req.method.name.slen),
+         rdata->msg_info.msg->line.req.method.name.ptr);
 
   /* Ignore strandled ACKs (must not send respone) */
   if (rdata->msg_info.msg->line.req.method.id == PJSIP_ACK_METHOD)
