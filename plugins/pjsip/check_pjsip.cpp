@@ -22,9 +22,11 @@
 
 #include <vector>
 #include <string>
+#include <list>
 
 #include "switcher/quiddity-manager.hpp"
 #include "switcher/quiddity-basic-test.hpp"
+#include "switcher/information-tree.hpp"
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
@@ -33,8 +35,17 @@
 int main() {
   bool success = true;
   {
+    const std::string manager_name ("siptest");
+    const std::string sip_name ("test");
+    const std::string audio_name ("a");
+    const std::string video_name ("v");
+    std::list<std::string> buddies =
+        { "sip:1002@10.10.30.179",
+          "sip:1004@10.10.30.179"};
+
     switcher::QuiddityManager::ptr manager =
-        switcher::QuiddityManager::make_manager("siptest");
+        switcher::QuiddityManager::make_manager(manager_name);
+
 
 #ifdef HAVE_CONFIG_H
     gchar *usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
@@ -44,20 +55,21 @@ int main() {
     return 1;
 #endif
 
+    
     // testing uncompressed data transmission
-    // g_print("%s\n",  manager->create("audiotestsrc", "a").c_str());
-    assert(0 == manager->create("audiotestsrc", "a").compare("a"));
-    assert(manager->set_property("a", "started", "true"));
+    // g_print("%s\n",  manager->create("audiotestsrc", audio_name).c_str());
+    assert(0 == manager->create("audiotestsrc", audio_name).compare(audio_name));
+    assert(manager->set_property(audio_name, "started", "true"));
 
-    assert(0 == manager->create("videotestsrc", "v").compare("v"));
-    assert(manager->set_property("v", "started", "true"));
+    assert(0 == manager->create("videotestsrc", video_name).compare(video_name));
+    assert(manager->set_property(video_name, "started", "true"));
 
     // SIP
-    assert(0 == manager->create("sip", "test").compare("test"));
-    assert(manager->set_property("test", "port", "5070"));
-    assert(manager->set_property("test", "port", "5080"));
+    assert(0 == manager->create("sip", sip_name).compare(sip_name));
+    assert(manager->set_property(sip_name, "port", "5070"));
+    assert(manager->set_property(sip_name, "port", "5080"));
 
-    assert(manager->invoke_va("test",
+    assert(manager->invoke_va(sip_name,
                               "register",
                               nullptr,
                               "1004",  // user
@@ -65,54 +77,76 @@ int main() {
                               "1234",  // password
                               nullptr));
 
-    assert(manager->invoke_va("test",
-                              "add_buddy",
+    for (auto &it : buddies) 
+      assert(manager->invoke_va(sip_name,
+                                "add_buddy",
+                                nullptr,
+                                it.c_str(),
+                                nullptr));
+    
+    assert(manager->invoke_va(sip_name,
+                              "attach_shmdata_to_contact",
                               nullptr,
-                              "sip:1002@10.10.30.179",
+                              std::string(
+                                  "/tmp/switcher_" +
+                                  manager_name + "_" +
+                                  audio_name + "_audio").c_str(),
+                              "blalbal",
+                              "true",
                               nullptr));
-    assert(manager->invoke_va("test",
-                              "add_buddy",
+    assert(manager->invoke_va(sip_name,
+                              "attach_shmdata_to_contact",
                               nullptr,
-                              "sip:1004@10.10.30.179",
+                              std::string(
+                                  "/tmp/switcher_" +
+                                  manager_name + "_" +
+                                  video_name + "_video").c_str(),
+                              "blalbal",
+                              "true",
                               nullptr));
 
-    // assert(manager->invoke_va("test",
-    //                           "attach_shmdata_to_contact",
-    //                           nullptr,
-    //                           "/tmp/switcher_siptest_a_audio",
-    //                           "blalbal",
-    //                           "true",
-    //                           nullptr));
-    // assert(manager->invoke_va("test",
-    //                           "attach_shmdata_to_contact",
-    //                           nullptr,
-    //                           "/tmp/switcher_siptest_v_video",
-    //                           "blalbal",
-    //                           "true",
-    //                           nullptr));
+    {// get added buddies from  
+      auto get_buddy_ids = [&] (switcher::data::Tree::ptrc tree) {
+        return switcher::data::Tree::get_child_keys<std::list>(tree, "buddy.");
+      };
+      using buddy_ids_t = std::list<std::string>;
+      buddy_ids_t buddy_ids = manager->
+          invoke_info_tree<buddy_ids_t>(sip_name,
+                                     get_buddy_ids);
+
+      std::list <std::string> buds_from_tree;
+      for (auto &it : buddy_ids) {
+        buds_from_tree.push_back(manager->invoke_info_tree<std::string>(
+            sip_name,
+            [&] (switcher::data::Tree::ptrc tree){
+              return switcher::data::Tree::read_data(tree, "buddy." + it);
+            }));
+      }
+      assert(std::equal (buddies.begin(), buddies.end(),
+                         buds_from_tree.begin()));
+    }
+
     usleep(200000);
 
-    // assert(manager->invoke_va("test",
-    //                           "call",
-    //                           nullptr,
-    //                           "sip:1002@10.10.30.179",
-    //                           nullptr));
-
-    g_print("____ %d\n", __LINE__);
+    assert(manager->invoke_va(sip_name,
+                              "call",
+                              nullptr,
+                              buddies.front().c_str(),
+                              nullptr));
 
     usleep(8000000);
-    assert(manager->set_property("test", "status", "Away"));
+    assert(manager->set_property(sip_name, "status", "Away"));
     usleep(8000000);
-    assert(manager->set_property("test", "status-note", "coucou"));
+    assert(manager->set_property(sip_name, "status-note", "coucou"));
     usleep(8000000);
-    assert(manager->set_property("test", "status", "BRB"));
+    assert(manager->set_property(sip_name, "status", "BRB"));
     usleep(2000000);
-    // assert(manager->invoke_va("test",
-    //                           "hang-up",
-    //                           nullptr,
-    //                           "sip:1002@10.10.30.223",
-    //                           nullptr));
-    assert(manager->remove("test"));
+    assert(manager->invoke_va(sip_name,
+                              "hang-up",
+                              nullptr,
+                              buddies.front().c_str(),
+                              nullptr));
+    assert(manager->remove(sip_name));
   }  // end of scope is releasing the manager
 
   if (success)

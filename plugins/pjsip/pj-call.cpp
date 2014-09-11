@@ -1479,28 +1479,25 @@ PJCall::create_outgoing_sdp(struct call *call,
   paths_t paths = manager->
       invoke_info_tree<paths_t>("siprtp",
                                 get_paths);
-  std::for_each(
-      paths.begin(),
-      paths.end(),
-      [&] (const std::string &val){
-        g_print("%s\n", val.c_str());
-      });
-  std::for_each(
-      paths.begin(),
-      paths.end(),
-      [&] (const std::string &val){
-        // std::string data = quid->get_data("rtp_caps." + val);
-        std::string data = manager->
-            invoke_info_tree<std::string>
-            ("siprtp",
-             [&] (data::Tree::ptrc tree){
-              return
-              data::Tree::read_data(tree,
-                                    "rtp_caps." + val);
-            });
-        g_print("%s\n",  data.c_str());
-      });
-
+  // std::for_each(paths.begin(), paths.end(),
+  //               [&] (const std::string &val){
+  //                 g_print("%s\n", val.c_str());
+  //               });
+  // std::for_each(
+  //     paths.begin(), paths.end(),
+  //     [&] (const std::string &val){
+  //       // std::string data = quid->get_data("rtp_caps." + val);
+  //       std::string data = manager->
+  //           invoke_info_tree<std::string>(
+  //               "siprtp",
+  //               [&] (data::Tree::ptrc tree){
+  //                 return
+  //                 data::Tree::read_data(tree,
+  //                                       "rtp_caps." + val);
+  //               });
+  //       g_print("%s\n",  data.c_str());
+  //     });
+  
   gint port = starting_rtp_port_;
   for (auto &it : paths) {
     // std::string data = quid->get_data("rtp_caps." + it);
