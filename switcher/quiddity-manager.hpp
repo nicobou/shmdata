@@ -117,9 +117,9 @@ class QuiddityManager: public std::enable_shared_from_this<QuiddityManager>
   std::string get_property_description_by_class(std::string class_name,
                                                 std::string property_name);
   // set &get
-  bool set_property(std::string quiddity_name,
-                    std::string property_name,
-                    std::string property_value);
+  bool set_property(const std::string &quiddity_name,
+                    const std::string &property_name,
+                    const std::string &property_value);
 
   std::string get_property(std::string quiddity_name,
                            std::string property_name);
@@ -176,8 +176,8 @@ class QuiddityManager: public std::enable_shared_from_this<QuiddityManager>
               const std::string method_name,
               std::string ** return_value,
               const std::vector<std::string> args);
-  bool invoke_va(const gchar *quiddity_name,
-                 const gchar *method_name,
+  bool invoke_va(const std::string &quiddity_name,
+                 const std::string &method_name,
                  std::string ** return_value, ...);
 
   bool has_method(const std::string quiddity_name,
