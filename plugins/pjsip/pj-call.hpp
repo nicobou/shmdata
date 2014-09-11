@@ -125,20 +125,19 @@ class PJCall {
   pj_status_t parse_SDP_from_incoming_request(pjsip_rx_data *rdata,
                                               pjmedia_sdp_session *offer);
   static void print_sdp(const pjmedia_sdp_session *local_sdp);
-  static pj_status_t stream_info_from_sdp(pjmedia_stream_info *si,
-                                          pj_pool_t *pool,
-                                          pjmedia_endpt *endpt,
-                                          const pjmedia_sdp_session *
-                                          local,
-                                          const pjmedia_sdp_session *
-                                          remote, unsigned stream_idx);
-  static pj_status_t get_audio_codec_info_param(pjmedia_stream_info *si,
-                                                pj_pool_t *pool,
-                                                pjmedia_codec_mgr *mgr,
-                                                const pjmedia_sdp_media *
-                                                local_m,
-                                                const pjmedia_sdp_media *
-                                                rem_m);
+  static
+  pj_status_t stream_info_from_sdp(pjmedia_stream_info *si,
+                                   pj_pool_t *pool,
+                                   pjmedia_endpt *endpt,
+                                   const pjmedia_sdp_session *local,
+                                   const pjmedia_sdp_session *remote,
+                                   unsigned stream_idx);
+  static
+  pj_status_t get_audio_codec_info_param(pjmedia_stream_info *si,
+                                         pj_pool_t *pool,
+                                         pjmedia_codec_mgr *mgr,
+                                         const pjmedia_sdp_media *local_m,
+                                         const pjmedia_sdp_media *rem_m);
   static void remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
                                     unsigned fmt_pos);
   pj_status_t make_call(std::string contact_uri);
@@ -149,12 +148,12 @@ class PJCall {
   static gint get_starting_rtp_port(void *user_data);
   bool make_hang_up(std::string contact_uri);
   static gboolean hang_up(gchar *sip_url, void *user_data);
-  static gboolean attach_shmdata_to_contact(gchar *shmpath,
-                                            gchar *contact_uri,
+  static gboolean attach_shmdata_to_contact(const gchar *shmpath,
+                                            const gchar *contact_uri,
                                             gboolean attach,
                                             void *user_data);
-  void make_attach_shmdata_to_contact(std::string shmpath,
-                                      std::string contact_uri,
+  void make_attach_shmdata_to_contact(const std::string &shmpath,
+                                      const std::string &contact_uri,
                                       bool attach);
 };
 }  // namespace switcher

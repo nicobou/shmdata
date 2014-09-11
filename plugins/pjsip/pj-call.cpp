@@ -1567,8 +1567,8 @@ bool PJCall::make_hang_up(std::string contact_uri) {
   return res;
 }
 
-gboolean PJCall::attach_shmdata_to_contact(gchar *shmpath,
-                                           gchar *contact_uri,
+gboolean PJCall::attach_shmdata_to_contact(const gchar *shmpath,
+                                           const gchar *contact_uri,
                                            gboolean attach,
                                            void *user_data) {
   if (nullptr == shmpath || nullptr == contact_uri || nullptr == user_data) {
@@ -1585,14 +1585,22 @@ gboolean PJCall::attach_shmdata_to_contact(gchar *shmpath,
   return TRUE;
 }
 
-void PJCall::make_attach_shmdata_to_contact(std::string shmpath,
-                                            std::string contact_uri,
+void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
+                                            const std::string &contact_uri,
                                             bool attach) {
     manager_->invoke_va("siprtp",
                         "add_data_stream",
                         nullptr,
                         shmpath.c_str(),
                         nullptr);
+    pj_str_t contact;
+    pj_cstr(&contact, contact_uri.c_str());
+    if (PJSUA_INVALID_ID == pjsua_buddy_find (&contact)) {
+      g_warning("buddy not found: cannot attach %s to %s",
+                shmpath.c_str(),
+                contact_uri.c_str());
+    }
+    
     // HERE
     g_print("------------------------------------------------ %s %s\n",
             shmpath.c_str(), contact_uri.c_str());

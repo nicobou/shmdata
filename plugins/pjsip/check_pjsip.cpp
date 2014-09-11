@@ -91,7 +91,7 @@ int main() {
                                   "/tmp/switcher_" +
                                   manager_name + "_" +
                                   audio_name + "_audio").c_str(),
-                              "blalbal",
+                              buddies.front().c_str(),
                               "true",
                               nullptr));
     assert(manager->invoke_va(sip_name,
@@ -101,7 +101,7 @@ int main() {
                                   "/tmp/switcher_" +
                                   manager_name + "_" +
                                   video_name + "_video").c_str(),
-                              "blalbal",
+                              buddies.front().c_str(),
                               "true",
                               nullptr));
 
@@ -112,7 +112,7 @@ int main() {
       using buddy_ids_t = std::list<std::string>;
       buddy_ids_t buddy_ids = manager->
           invoke_info_tree<buddy_ids_t>(sip_name,
-                                     get_buddy_ids);
+                                        get_buddy_ids);
 
       std::list <std::string> buds_from_tree;
       for (auto &it : buddy_ids) {
