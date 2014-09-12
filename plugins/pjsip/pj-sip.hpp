@@ -53,7 +53,7 @@ class PJSIP: public Quiddity {
   GParamSpec *sip_port_spec_ {nullptr};
   pj_thread_desc thread_handler_desc_ {};
   pj_thread_t *pj_thread_ref_ {nullptr};
-  pjsua_transport_id *transport_id_ {nullptr};
+  pjsua_transport_id transport_id_ {-1};
   std::thread sip_thread_ {};
   std::mutex pj_init_mutex_ {};
   std::condition_variable pj_init_cond_ {};

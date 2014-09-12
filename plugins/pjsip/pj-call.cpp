@@ -212,11 +212,10 @@ PJCall::~PJCall() {
 
 /* Callback to be called to handle incoming requests outside dialogs: */
 pj_bool_t PJCall::on_rx_request(pjsip_rx_data *rdata) {
-  // printf("%s %d %.*s\n",
-  //        __FUNCTION__,
-  //        __LINE__,
-  //        static_cast<int>(rdata->msg_info.msg->line.req.method.name.slen),
-  //        rdata->msg_info.msg->line.req.method.name.ptr);
+  printf("%s %.*s\n",
+         __FUNCTION__,
+         static_cast<int>(rdata->msg_info.msg->line.req.method.name.slen),
+         rdata->msg_info.msg->line.req.method.name.ptr);
 
   /* Ignore strandled ACKs (must not send respone) */
   if (rdata->msg_info.msg->line.req.method.id == PJSIP_ACK_METHOD)
@@ -1480,28 +1479,25 @@ PJCall::create_outgoing_sdp(struct call *call,
   paths_t paths = manager->
       invoke_info_tree<paths_t>("siprtp",
                                 get_paths);
-  std::for_each(
-      paths.begin(),
-      paths.end(),
-      [&] (const std::string &val){
-        g_print("%s\n", val.c_str());
-      });
-  std::for_each(
-      paths.begin(),
-      paths.end(),
-      [&] (const std::string &val){
-        // std::string data = quid->get_data("rtp_caps." + val);
-        std::string data = manager->
-            invoke_info_tree<std::string>
-            ("siprtp",
-             [&] (data::Tree::ptrc tree){
-              return
-              data::Tree::read_data(tree,
-                                    "rtp_caps." + val);
-            });
-        g_print("%s\n",  data.c_str());
-      });
-
+  // std::for_each(paths.begin(), paths.end(),
+  //               [&] (const std::string &val){
+  //                 g_print("%s\n", val.c_str());
+  //               });
+  // std::for_each(
+  //     paths.begin(), paths.end(),
+  //     [&] (const std::string &val){
+  //       // std::string data = quid->get_data("rtp_caps." + val);
+  //       std::string data = manager->
+  //           invoke_info_tree<std::string>(
+  //               "siprtp",
+  //               [&] (data::Tree::ptrc tree){
+  //                 return
+  //                 data::Tree::read_data(tree,
+  //                                       "rtp_caps." + val);
+  //               });
+  //       g_print("%s\n",  data.c_str());
+  //     });
+  
   gint port = starting_rtp_port_;
   for (auto &it : paths) {
     // std::string data = quid->get_data("rtp_caps." + it);
@@ -1571,8 +1567,8 @@ bool PJCall::make_hang_up(std::string contact_uri) {
   return res;
 }
 
-gboolean PJCall::attach_shmdata_to_contact(gchar *shmpath,
-                                           gchar *contact_uri,
+gboolean PJCall::attach_shmdata_to_contact(const gchar *shmpath,
+                                           const gchar *contact_uri,
                                            gboolean attach,
                                            void *user_data) {
   if (nullptr == shmpath || nullptr == contact_uri || nullptr == user_data) {
@@ -1589,14 +1585,22 @@ gboolean PJCall::attach_shmdata_to_contact(gchar *shmpath,
   return TRUE;
 }
 
-void PJCall::make_attach_shmdata_to_contact(std::string shmpath,
-                                            std::string contact_uri,
+void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
+                                            const std::string &contact_uri,
                                             bool attach) {
     manager_->invoke_va("siprtp",
                         "add_data_stream",
                         nullptr,
                         shmpath.c_str(),
                         nullptr);
+    pj_str_t contact;
+    pj_cstr(&contact, contact_uri.c_str());
+    if (PJSUA_INVALID_ID == pjsua_buddy_find (&contact)) {
+      g_warning("buddy not found: cannot attach %s to %s",
+                shmpath.c_str(),
+                contact_uri.c_str());
+    }
+    
     // HERE
     g_print("------------------------------------------------ %s %s\n",
             shmpath.c_str(), contact_uri.c_str());

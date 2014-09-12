@@ -225,14 +225,15 @@ void PJSIP::exit_cmd() {
 }
 
 void PJSIP::start_udp_transport() {
-  if (nullptr != transport_id_)
-    pjsua_transport_close(*transport_id_, PJ_FALSE);
+  if (-1 != transport_id_)
+    pjsua_transport_close(transport_id_, PJ_FALSE);
 
   pjsua_transport_config cfg;
   pjsua_transport_config_default(&cfg);
   cfg.port = sip_port_;
   pj_status_t status =
-      pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, nullptr);
+      pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, &transport_id_);
+  g_print ("transport id %d\n", transport_id_);
   if (status != PJ_SUCCESS) {
     g_warning("Error creating UDP transport");
     return;

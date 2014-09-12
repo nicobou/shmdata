@@ -294,9 +294,9 @@ QuiddityManager::get_property_description_by_class(std::string class_name,
 }
 
 bool
-QuiddityManager::set_property(std::string quiddity_name,
-                              std::string property_name,
-                              std::string property_value) {
+QuiddityManager::set_property(const std::string &quiddity_name,
+                              const std::string &property_name,
+                              const std::string &property_value) {
   std::string res = seq_invoke(QuiddityCommand::set_property,
                                quiddity_name.c_str(),
                                property_name.c_str(),
@@ -466,19 +466,19 @@ QuiddityManager::unsubscribe_property_glib(std::string quiddity_name,
 }
 
 bool
-QuiddityManager::invoke_va(const gchar *quiddity_name,
-                           const gchar *method_name,
+QuiddityManager::invoke_va(const std::string &quiddity_name,
+                           const std::string &method_name,
                            std::string ** return_value, ...) {
   command_lock();
   std::vector<std::string> method_args;
   command_->set_id(QuiddityCommand::invoke);
-  if (quiddity_name == nullptr) {
-    g_warning("trying to invoke with a nullptr quiddity name");
+  if (quiddity_name.empty ()) {
+    g_warning("trying to invoke with a quiddity with empty name");
     command_unlock();
     return false;
   }
-  if (method_name == nullptr) {
-    g_warning("trying to invoke with a nullptr method name");
+  if (method_name.empty()) {
+    g_warning("trying to invoke with a method with empty name");
     command_unlock();
     return false;
   }
