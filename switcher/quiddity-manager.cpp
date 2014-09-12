@@ -17,17 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <string.h>
 #include "./quiddity-manager.hpp"
 #include "./quiddity.hpp"
 #include "./gst-utils.hpp"
-#include <string.h>
-#include <iostream>             // to remove
 
 namespace switcher {
 QuiddityManager::ptr QuiddityManager::make_manager(std::string name) {
   if (!gst_is_initialized())
     gst_init(nullptr, nullptr);
   QuiddityManager::ptr manager(new QuiddityManager(name));
+  manager->me_ = manager;
   return manager;
 }
 
@@ -751,7 +751,7 @@ void QuiddityManager::auto_init(std::string quiddity_name) {
   QuiddityManagerWrapper::ptr wrapper =
       std::dynamic_pointer_cast<QuiddityManagerWrapper> (quidd);
   if (wrapper)
-    wrapper->set_quiddity_manager(shared_from_this());
+    wrapper->set_quiddity_manager(me_.lock());
 }
 
 std::string QuiddityManager::create(std::string quiddity_class) {

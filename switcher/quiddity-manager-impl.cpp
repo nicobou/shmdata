@@ -17,14 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-// #include <gmodule.h>
+// removing shmdata
+#include <gio/gio.h>
 
 #include "./quiddity-documentation.hpp"
 #include "./quiddity-manager-impl.hpp"
 #include "./quiddity.hpp"
-
-// removing shmdata
-#include <gio/gio.h>
 
 // the quiddities to manage (line sorted)
 #include "./aravis-genicam.hpp"
@@ -53,14 +51,15 @@
 #include "./xvimagesink.hpp"
 
 namespace switcher {
-QuiddityManager_Impl::ptr QuiddityManager_Impl::make_manager() {
-  QuiddityManager_Impl::ptr manager(new QuiddityManager_Impl("default"));
-  return manager;
-}
+// QuiddityManager_Impl::ptr QuiddityManager_Impl::make_manager() {
+//   QuiddityManager_Impl::ptr manager(new QuiddityManager_Impl("default"));
+//   return manager;
+// }
 
 QuiddityManager_Impl::ptr
 QuiddityManager_Impl::make_manager(const std::string &name) {
   QuiddityManager_Impl::ptr manager(new QuiddityManager_Impl(name));
+  manager->me_ = manager;
   return manager;
 }
 
@@ -283,7 +282,7 @@ void QuiddityManager_Impl::give_name_if_unnamed(Quiddity::ptr quiddity) {
 }
 
 bool QuiddityManager_Impl::init_quiddity(Quiddity::ptr quiddity) {
-  quiddity->set_manager_impl(shared_from_this());
+  quiddity->set_manager_impl(me_.lock());
 
   give_name_if_unnamed(quiddity);
 
@@ -307,7 +306,7 @@ QuiddityManager_Impl::create_without_hook(std::string quiddity_class) {
 
   Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class);
   if (quiddity.get() != nullptr) {
-    quiddity->set_manager_impl(shared_from_this());
+    quiddity->set_manager_impl(me_.lock());
     give_name_if_unnamed(quiddity);
 
     if (!quiddity->init())
@@ -609,7 +608,7 @@ make_property_subscriber(std::string subscriber_name,
 
   QuiddityPropertySubscriber::ptr subscriber;
   subscriber.reset(new QuiddityPropertySubscriber());
-  subscriber->set_manager_impl(shared_from_this());
+  subscriber->set_manager_impl(me_.lock());
   subscriber->set_name(subscriber_name.c_str());
   subscriber->set_user_data(user_data);
   subscriber->set_callback(cb);
@@ -938,7 +937,7 @@ QuiddityManager_Impl::make_signal_subscriber(std::string subscriber_name,
 
   QuidditySignalSubscriber::ptr subscriber;
   subscriber.reset(new QuidditySignalSubscriber());
-  subscriber->set_manager_impl(shared_from_this());
+  subscriber->set_manager_impl(me_.lock());
   subscriber->set_name(subscriber_name.c_str());
   subscriber->set_user_data(user_data);
   subscriber->set_callback(cb);

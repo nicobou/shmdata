@@ -37,7 +37,7 @@
 #include "./information-tree.hpp"
 
 namespace switcher {
-class QuiddityManager: public std::enable_shared_from_this<QuiddityManager>
+class QuiddityManager
 // FIXME add const for method args
 {
  public:
@@ -52,13 +52,13 @@ class QuiddityManager: public std::enable_shared_from_this<QuiddityManager>
                                   std::string property_name,
                                   std::vector<std::string> params,
                                   void *user_data);
-  typedef std::map < std::string,
-                     std::pair < QuiddityManager::PropCallback, void *>>PropCallbackMap;
-  typedef std::map < std::string,
-                     std::pair < QuiddityManager::SignalCallback, void *>>SignalCallbackMap;
+  typedef std::map<std::string, std::pair<PropCallback, void *>>
+      PropCallbackMap;
+  typedef std::map<std::string, std::pair<SignalCallback, void *>>
+      SignalCallbackMap;
 
+  ~QuiddityManager();  // FIXME should be private?
   static QuiddityManager::ptr make_manager(std::string name);
-  ~QuiddityManager();
   QuiddityManager *operator=(const QuiddityManager &) = delete;
   QuiddityManager(const QuiddityManager &) = delete;
 
@@ -227,12 +227,14 @@ class QuiddityManager: public std::enable_shared_from_this<QuiddityManager>
   // invokation in gmainloop
   std::condition_variable execution_done_cond_;     // sync current thread and gmainloop
   std::mutex execution_done_mutex_;  // sync current thread and gmainloop
+  std::weak_ptr<QuiddityManager> me_ {};
   // history
   CommandHistory command_history_;
   gint64 history_begin_time_;  // monotonic time, in microseconds
 
   QuiddityManager() = delete;
   explicit QuiddityManager(std::string name);
+
   // auto invoke and init
   void auto_init(std::string quiddity_name);
   void command_lock();

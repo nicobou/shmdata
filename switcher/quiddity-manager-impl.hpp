@@ -23,6 +23,7 @@
 #include <memory>
 #include <unordered_map>
 #include <thread>
+
 #include "./abstract-factory.hpp"
 #include "./quiddity.hpp"
 #include "./json-builder.hpp"
@@ -35,8 +36,8 @@ namespace switcher {
 class QuiddityPropertySubscriber;
 class QuidditySignalSubscriber;
 
-class QuiddityManager_Impl:public std::enable_shared_from_this <
-  QuiddityManager_Impl > {
+class QuiddityManager_Impl
+{
  public:
   typedef std::shared_ptr<QuiddityManager_Impl> ptr;
   typedef void (*quiddity_created_hook) (std::string nick_name,
@@ -44,10 +45,10 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   typedef void (*quiddity_removed_hook) (std::string nick_name,
                                          void *user_data);
 
-  static QuiddityManager_Impl::ptr make_manager();    // will get name "default"
-  static QuiddityManager_Impl::ptr make_manager(const std::string &name);
+  //  static QuiddityManager_Impl::ptr make_manager();    // will get name "default"
+  static QuiddityManager_Impl::ptr make_manager(const std::string &name = "default");
   QuiddityManager_Impl() = delete;
-  virtual ~ QuiddityManager_Impl();
+  virtual ~QuiddityManager_Impl();
   QuiddityManager_Impl(const QuiddityManager_Impl &) = delete;
   QuiddityManager_Impl &operator=(const QuiddityManager_Impl &) = delete;
 
@@ -203,16 +204,15 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   bool remove_without_hook(std::string quiddity_name);
 
  private:
-  // plugins
+  std::unordered_map<std::string, PluginLoader::ptr> plugins_;
+  std::string name_;
+  AbstractFactory<Quiddity, std::string, JSONBuilder::Node> abstract_factory_;
+  
   bool load_plugin(const char *filename);
   void close_plugin(const std::string class_name);
-  std::unordered_map<std::string, PluginLoader::ptr> plugins_;
   explicit QuiddityManager_Impl(const std::string &);
   void make_classes_doc();
-  std::string name_;
   void register_classes();
-  AbstractFactory < Quiddity, std::string,
-                    JSONBuilder::Node > abstract_factory_;
   std::unordered_map < std::string,
                        std::shared_ptr<Quiddity >>quiddities_;
   std::unordered_map<std::string, std::string> quiddities_nick_names_;
@@ -236,6 +236,9 @@ class QuiddityManager_Impl:public std::enable_shared_from_this <
   GMainLoop *mainloop_;
   void init_gmainloop();
   void main_loop_thread();
+
+  std::weak_ptr<QuiddityManager_Impl> me_ {};
+
 };
 }  // namespace switcher
 
