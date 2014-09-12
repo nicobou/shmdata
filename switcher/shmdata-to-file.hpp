@@ -63,8 +63,6 @@ class ShmdataToFile:public GPipe, public StartableQuiddity {
   bool make_recorders();
   bool clean_recorders();
   std::unordered_map<std::string, std::string> file_names_ {};
-  std::unordered_map<std::string, ShmdataReader::ptr> shmdata_readers_ {};
-  std::unordered_map<std::string, GstElement *> shmdata_recorders_ {};
 
   static const gchar *get_output_prefix(void *user_data);
   static void set_output_prefix(const gchar *prefix, void *user_data);

@@ -38,6 +38,7 @@ ShmdataWriter::~ShmdataWriter() {
     //   g_signal_handler_disconnect (G_OBJECT (fakesink_), handoff_handler_);
     GstUtils::clean_element(fakesink_);
   }
+  printf("writer %s closed\n", path_.c_str());
   shmdata_base_writer_close(writer_);
   if (!path_.empty())
     g_debug("ShmdataWriter: %s deleted", path_.c_str());
@@ -83,10 +84,8 @@ ShmdataWriter::plug(GstElement *bin,
   GstUtils::make_element("queue", &queue_);
   GstUtils::make_element("fakesink", &fakesink_);
   g_object_set(G_OBJECT(fakesink_), "sync", FALSE, nullptr);
-  g_object_set(G_OBJECT(fakesink_),
-               "silent", TRUE, "signal-handoffs", TRUE, nullptr);
-  handoff_handler_ =
-      g_signal_connect(fakesink_, "handoff", (GCallback) on_handoff_cb, this);
+  g_object_set(G_OBJECT(fakesink_), "silent", TRUE, "signal-handoffs", TRUE, nullptr);
+  handoff_handler_ = g_signal_connect(fakesink_, "handoff", (GCallback) on_handoff_cb, this);
   g_object_set(G_OBJECT(queue_), "leaky", 2, nullptr);
   gst_bin_add_many(GST_BIN(bin), tee_, queue_, fakesink_, nullptr);
   shmdata_base_writer_plug(writer_, bin, tee_);
