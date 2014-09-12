@@ -40,6 +40,7 @@
 #include <memory>
 #include <type_traits>
 #include <mutex>
+
 #include "./any.hpp"
 
 namespace switcher {
@@ -114,21 +115,24 @@ class Tree {
       Container<std::string>
       get_leaf_values(const std::string path) const {
     Container<std::string> res;
-    std::unique_lock<std::mutex> lock(mutex_);
-    auto found = get_node(path);
-    if (!found.first.empty()) {
-      auto tree = found.second->second;
-      preorder_tree_walk (tree,
-                          [&res](std::string key,
-                                 Tree::ptrc node,
-                                 bool is_array_element) {
-                            if (node->is_leaf())
-                              res.push_back(Any::to_string(node->read_data()));
-                          },
-                          [](std::string key,
-                             Tree::ptrc node,
-                             bool is_array_element){});
+    Tree::ptr tree;
+    {  // finding the node
+      std::unique_lock<std::mutex> lock(mutex_);
+      auto found = get_node(path);
+      if (found.first.empty()) 
+        return res;
+      tree = found.second->second;
     }
+    preorder_tree_walk (tree,
+                        [&res](std::string key,
+                               Tree::ptrc node,
+                               bool is_array_element) {
+                          if (node->is_leaf())
+                            res.push_back(Any::to_string(node->read_data()));
+                        },
+                        [](std::string key,
+                           Tree::ptrc node,
+                           bool is_array_element){});
     return res;
   }
 

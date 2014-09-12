@@ -19,6 +19,9 @@
 #include <iostream>
 #include <memory>
 #include <algorithm>
+#include <list>
+#include <vector>
+
 #include "switcher/information-tree.hpp"
 #include "switcher/information-tree-basic-serializer.hpp"
 #include "switcher/information-tree-json.hpp"
@@ -41,13 +44,18 @@ std::ostream &operator<<(std::ostream &os, const SerializableWidget &) {
 int
 main() {
   using namespace switcher::data;
+
+  auto string_compare =
+      [](const std::string &first, const std::string &second)
+      { return (0 == first.compare(second)); };
+
   {  // node data as std::string
     Tree::ptr tree = Tree::make(std::string("truc"));
     assert(tree->is_leaf());
     std::string data = tree->get_data();
     assert(0 == data.compare("truc"));
   }
-  {  // node data as const char * (converted to std::string for being stored in Any)
+  {  // node data as const char * (converted to std::string)
     Tree::ptr tree = Tree::make("test");
     assert(tree->is_leaf());
   }
@@ -192,7 +200,8 @@ main() {
       "child1", "child2", "child3",
           "child4", "child5", "child6", "child7", "child8", "child9"};
     std::for_each(childs.begin(),
-                  childs.end(),[tree] (const std::string &val) {
+                  childs.end(),
+                  [tree] (const std::string &val) {
                     tree->graft(".root." + val, Tree::make("val"));
                   });
     std::vector<std::string> child_keys;
@@ -214,12 +223,10 @@ main() {
       "child1", "child2", "child3",
           "child4", "child5", "child6", "child7", "child8", "child9"};
     std::for_each(childs.begin(),
-                  childs.end(),[tree] (const std::string &val) {
+                  childs.end(),
+                  [tree] (const std::string &val) {
                     tree->graft(".root." + val, Tree::make("val"));
                   });
-    auto string_compare =
-        [](const std::string &first, const std::string &second)
-        { return (0 == first.compare(second)); };
 
     // using a list
     std::list<std::string> child_keys_list =
@@ -232,23 +239,27 @@ main() {
     // using a vector
     std::vector<std::string> child_keys_vector =
         tree->get_child_keys<std::vector> (".root");
-    assert(std::equal
-           (childs.begin(), childs.end(), child_keys_vector.begin(),
-            string_compare));
+    assert(std::equal(childs.begin(), childs.end(),
+                      child_keys_vector.begin(),
+                      string_compare));
   }
 
-  {
+  {  // get_leaf_values
     Tree::ptr tree = Tree::make();
-    tree->graft(".branch.item", Tree::make(0));
-    tree->graft(".branch.item1", Tree::make(0));
-    tree->graft(".branch.item2", Tree::make(0));
-    tree->graft(".other.branch", Tree::make());
-    tree->tag_as_array("branch.", true); 
+    std::list<std::string> original_values {"0", "1", "2"};
+    for (auto &it : original_values)
+      tree->graft(std::string(".branch.item"+it),
+                              Tree::make(it));
+    tree->graft(".other.branch", Tree::make());  // not into get_leaf_values
+    tree->tag_as_array("branch.", true);
     // std::string serialized = JSONSerializer::serialize(tree);
     // std::cout << serialized << std::endl;
-    std::list<std::string> values = tree->get_leaf_values<> (".");
-    for (auto &it : values)
-      std::cout << it << std::endl;
+    std::list<std::string> values = tree->get_leaf_values<> (".branch");
+    assert(std::equal(original_values.begin(), original_values.end(),
+                      values.begin(),
+                      string_compare));
+    // for (auto &it : values)
+    //   std::cout << it << std::endl;
   }
 
   return 0;

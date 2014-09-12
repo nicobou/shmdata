@@ -182,7 +182,9 @@ Tree::GetNodeReturn Tree::get_node(const std::string &path) const {
   Tree::childs_t::iterator child_iterator;
   if (get_next(iss, child_list, child_iterator)) {
     // asking root node
-    // std::cout << "asking root node" << std::endl;
+    child_list.push_back(std::make_pair("__ROOT__",
+                                        me_.lock()));
+    child_iterator = child_list.begin();
   }
   return std::make_pair(child_list, child_iterator);
 }
