@@ -32,7 +32,7 @@ namespace switcher {
 std::map<std::pair < std::string, std::string>,
            guint > Quiddity::signals_ids_;
 
-Quiddity::Quiddity():information_tree_(data::make_tree()),
+Quiddity::Quiddity():information_tree_(data::Tree::make()),
                      properties_(),
                      disabled_properties_(),
                      properties_description_(new JSONBuilder()),

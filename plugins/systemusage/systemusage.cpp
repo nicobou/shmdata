@@ -65,7 +65,7 @@ SystemUsage::init() {
   install_property_by_pspec(custom_props_->get_gobject(), period_prop_, "period", "Update period");   // long name
 
   // Initialize the properties tree
-  tree_ = make_tree();
+  tree_ = Tree::make();
 
   // Launch the polling thread
   running_ = true;
@@ -137,11 +137,11 @@ SystemUsage::pollState() {
 
         // Initialize the tree
         if (firstRun) {
-          tree_->graft(".cpu." + core + ".total", make_tree());
-          tree_->graft(".cpu." + core + ".user", make_tree());
-          tree_->graft(".cpu." + core + ".nice", make_tree());
-          tree_->graft(".cpu." + core + ".system", make_tree());
-          tree_->graft(".cpu." + core + ".idle", make_tree());
+          tree_->graft(".cpu." + core + ".total", Tree::make());
+          tree_->graft(".cpu." + core + ".user", Tree::make());
+          tree_->graft(".cpu." + core + ".nice", Tree::make());
+          tree_->graft(".cpu." + core + ".system", Tree::make());
+          tree_->graft(".cpu." + core + ".idle", Tree::make());
 
           _cpus[core] = Cpu();
         }
@@ -204,12 +204,12 @@ SystemUsage::pollState() {
     for (string line; getline(file, line);) {
       // Initialize the tree
       if (firstRun) {
-        tree_->graft(".mem.total", make_tree());
-        tree_->graft(".mem.free", make_tree());
-        tree_->graft(".mem.buffers", make_tree());
-        tree_->graft(".mem.cached", make_tree());
-        tree_->graft(".mem.swap_total", make_tree());
-        tree_->graft(".mem.swap_free", make_tree());
+        tree_->graft(".mem.total", Tree::make());
+        tree_->graft(".mem.free", Tree::make());
+        tree_->graft(".mem.buffers", Tree::make());
+        tree_->graft(".mem.cached", Tree::make());
+        tree_->graft(".mem.swap_total", Tree::make());
+        tree_->graft(".mem.swap_free", Tree::make());
       }
 
       string type;
@@ -274,17 +274,17 @@ SystemUsage::pollState() {
         netName = netI.substr(0, netI.find(":"));
 
         if (firstRun) {
-          tree_->graft(".net." + netName + ".rx_rate", make_tree());
-          tree_->graft(".net." + netName + ".rx_bytes", make_tree());
-          tree_->graft(".net." + netName + ".rx_packets", make_tree());
-          tree_->graft(".net." + netName + ".rx_errors", make_tree());
-          tree_->graft(".net." + netName + ".rx_drop", make_tree());
+          tree_->graft(".net." + netName + ".rx_rate", Tree::make());
+          tree_->graft(".net." + netName + ".rx_bytes", Tree::make());
+          tree_->graft(".net." + netName + ".rx_packets", Tree::make());
+          tree_->graft(".net." + netName + ".rx_errors", Tree::make());
+          tree_->graft(".net." + netName + ".rx_drop", Tree::make());
 
-          tree_->graft(".net." + netName + ".tx_rate", make_tree());
-          tree_->graft(".net." + netName + ".tx_bytes", make_tree());
-          tree_->graft(".net." + netName + ".tx_packets", make_tree());
-          tree_->graft(".net." + netName + ".tx_errors", make_tree());
-          tree_->graft(".net." + netName + ".tx_drop", make_tree());
+          tree_->graft(".net." + netName + ".tx_rate", Tree::make());
+          tree_->graft(".net." + netName + ".tx_bytes", Tree::make());
+          tree_->graft(".net." + netName + ".tx_packets", Tree::make());
+          tree_->graft(".net." + netName + ".tx_errors", Tree::make());
+          tree_->graft(".net." + netName + ".tx_drop", Tree::make());
 
           _net[netName] = Net();
         }

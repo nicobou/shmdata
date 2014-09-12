@@ -75,7 +75,7 @@ std::string serialize(Tree::ptrc tree) {
 }
 
 Tree::ptr deserialize(const std::string &serialized) {
-  Tree::ptr tree = make_tree();
+  Tree::ptr tree = Tree::make();
   std::istringstream ss(serialized);
   std::string line;
   while (std::getline(ss, line)) {
@@ -88,7 +88,7 @@ Tree::ptr deserialize(const std::string &serialized) {
     while (std::getline(line_ss, value, ' ') && value.empty()) {
     }
     if (!absolute_key.empty() && !value.empty())
-      tree->graft(absolute_key, make_tree(value));
+      tree->graft(absolute_key, Tree::make(value));
   }
   return tree;
 }

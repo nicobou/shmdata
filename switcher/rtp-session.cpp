@@ -931,6 +931,6 @@ gint RtpSession::get_mtu_at_add_data_stream(void *user_data) {
 
 void RtpSession::on_rtp_caps(std::string shmdata_path, std::string caps) {
   graft_tree("rtp_caps." + std::move(shmdata_path),
-             data::make_tree(std::move(caps)));
+             data::Tree::make(std::move(caps)));
 }
 }

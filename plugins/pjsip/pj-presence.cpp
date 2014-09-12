@@ -303,7 +303,7 @@ bool PJPresence::add_buddy(const std::string &sip_user) {
   buddy_id_[sip_user] = buddy_id;
   sip_instance_->
       graft_tree("buddy." + std::to_string(buddy_id),
-                 data::make_tree(sip_user));
+                 data::Tree::make(sip_user));
   return true;
 }
 
@@ -401,9 +401,9 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
           static_cast<int>(info.rpid.note.slen),
           info.rpid.note.ptr);
 
-  data::Tree::ptr tree = data::make_tree();
+  data::Tree::ptr tree = data::Tree::make();
   std::string buddy_url(info.uri.ptr, (size_t) info.uri.slen);
-  tree->graft(".sip_url", data::make_tree(buddy_url));
+  tree->graft(".sip_url", data::Tree::make(buddy_url));
   std::string status("unknown");
   switch (info.status) {
     case PJSUA_BUDDY_STATUS_UNKNOWN:
@@ -421,12 +421,12 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
     status = "away";
   if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
     status = "busy";
-  tree->graft(".status", data::make_tree(status));
+  tree->graft(".status", data::Tree::make(status));
   tree->graft(".status_text",
-              data::make_tree(std::string(info.status_text.ptr,
+              data::Tree::make(std::string(info.status_text.ptr,
                                           (size_t) info.status_text.slen)));
   tree->graft(".subscription_state",
-              data::make_tree(std::string(info.sub_state_name)));
+              data::Tree::make(std::string(info.sub_state_name)));
   context->sip_instance_->
       graft_tree(std::string(".presence." + std::to_string(buddy_id)), tree);
 }

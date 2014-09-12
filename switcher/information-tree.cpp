@@ -24,17 +24,17 @@
 
 namespace switcher {
 namespace data {
-// --------------- utils
-// constructor
-Tree::ptr make_tree() {
-  return std::make_shared<Tree> ();
+
+Tree::ptr Tree::make() {
+  std::shared_ptr<Tree> tree;  //can't use make_shared because ctor is private
+  tree.reset(new Tree());
+  return tree;
 }
 
-Tree::ptr make_tree(const char *data) {
-  return std::make_shared<Tree> (std::string(data));
+Tree::ptr Tree::make(const char *data) {
+  return make (std::string(data));
 }
 
-// --------------- class
 void
 Tree::preorder_tree_walk(Tree::ptrc tree,
                          Tree::OnNodeFunction on_visiting_node,
@@ -230,7 +230,7 @@ Tree::graft_next(std::istringstream &path,
     if (graft_next(path, it->second.get(), leaf))  // graft on already existing child
       it->second = leaf;  // replacing the previously empy tree with the one to graft
   } else {
-    Tree::ptr child_node = make_tree();
+    Tree::ptr child_node = make();
     tree->childrens_.emplace_back(child, child_node);
     if (graft_next(path, child_node.get(), leaf))   // graft on already existing child
     {

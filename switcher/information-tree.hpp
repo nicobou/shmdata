@@ -55,8 +55,15 @@ class Tree {
                                              bool is_array_element)>;
   using GetNodeReturn = std::pair <Tree::childs_t, Tree::childs_t::iterator>;
   
-  Tree() {}
-  explicit Tree(const Any &data);
+  // factory
+  static Tree::ptr make();
+  template<typename ValueType>
+  static Tree::ptr make(ValueType data) {
+    std::shared_ptr<Tree> tree;  //can't use make_shared because ctor is private
+    tree.reset(new Tree(data));
+    return tree;
+  }
+  static Tree::ptr make(const char *data);  // Tree will store a std::string
 
   //const methods
   bool is_leaf() const;
@@ -181,6 +188,10 @@ class Tree {
   bool is_array_ {false};
   mutable childs_t childrens_ {};
   mutable std::mutex mutex_ {};
+
+  Tree() {}
+  explicit Tree(const Any &data);
+
   childs_t::iterator get_child_iterator(const std::string &key) const;
   static bool graft_next(std::istringstream &path, Tree *tree,
                          Tree::ptr leaf);
@@ -190,12 +201,6 @@ class Tree {
                 childs_t::iterator &result_iterator) const;
 };
 
-// constructor
-Tree::ptr make_tree();
-template<typename ValueType> Tree::ptr make_tree(ValueType data) {
-  return std::make_shared<Tree> (data);
-}
-Tree::ptr make_tree(const char *data);      // Tree will store a std::string
 }  // namespace data
 }  // namespace switcher
 #endif

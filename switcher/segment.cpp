@@ -384,9 +384,9 @@ void Segment::populate_tree(std::string key, std::string caps) {
   } else {
     category = mime_type;
   }
-  data::Tree::ptr tree = data::make_tree();
-  tree->graft(".category", data::make_tree(category));
-  tree->graft(".caps", data::make_tree(caps));
+  data::Tree::ptr tree = data::Tree::make();
+  tree->graft(".category", data::Tree::make(category));
+  tree->graft(".caps", data::Tree::make(caps));
   // attaching it to the quiddity (at the root)
   quid_->graft_tree(key, tree);
 }
@@ -404,8 +404,8 @@ Segment::install_connect_method(OnConnect on_connect_cb,
     return false;
   }
 
-  data::Tree::ptr tree = data::make_tree();
-  tree->graft(".max_reader", data::make_tree(max_reader));
+  data::Tree::ptr tree = data::Tree::make();
+  tree->graft(".max_reader", data::Tree::make(max_reader));
   quid_->graft_tree(".shmdata", tree);
 
   on_connect_cb_ = on_connect_cb;

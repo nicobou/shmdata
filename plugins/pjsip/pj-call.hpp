@@ -97,7 +97,7 @@ class PJCall {
   PJSIP *sip_instance_;
   // internal rtp
   QuiddityManager::ptr manager_;
-  data::Tree::ptr contact_shm_ {data::make_tree()};
+  data::Tree::ptr contact_shm_ {data::Tree::make()};
   // external rtp session quidity for sending
   // std::string rtp_session_name_ {};
   // GParamSpec *rtp_session_name_spec_ {nullptr};

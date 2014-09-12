@@ -57,11 +57,11 @@ bool MyPlugin::init() {
                                                    nullptr), this);
 
   // creating some custom infos
-  data::Tree::ptr tree = data::make_tree();
-  tree->graft(".child1.child2", data::make_tree("switch"));
-  tree->graft(".child1.child3", data::make_tree(1.2f));
-  tree->graft(".child1.child2.bla1", data::make_tree("wire"));
-  tree->graft(".child1.child2.bla2", data::make_tree("hub"));
+  data::Tree::ptr tree = data::Tree::make();
+  tree->graft(".child1.child2", data::Tree::make("switch"));
+  tree->graft(".child1.child3", data::Tree::make(1.2f));
+  tree->graft(".child1.child2.bla1", data::Tree::make("wire"));
+  tree->graft(".child1.child2.bla2", data::Tree::make("hub"));
   // attaching it to the quiddity (at the root)
   graft_tree(".custom.information.", tree);
 
