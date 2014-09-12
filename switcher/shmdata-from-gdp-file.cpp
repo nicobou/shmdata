@@ -17,8 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <iostream>
+
+#include <glib.h>
+#include <glib/gstdio.h>
+
 #include "./shmdata-from-gdp-file.hpp"
 #include "./gst-utils.hpp"
+#include "./scope-exit.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataFromGDPFile,
@@ -26,162 +32,141 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataFromGDPFile,
                                      "shmdata file player",
                                      "play file(s) recorded with shmdatatofile",
                                      "LGPL",
-                                     "shmfromfile", "Nicolas Bouillot");
+                                     "shmfromfilesource", "Nicolas Bouillot, Emmanuel Durand");
 
-ShmdataFromGDPFile::ShmdataFromGDPFile():custom_prop_(new
-                                                      CustomPropertyHelper
-                                                      ()),
-                                         playing_param_(), playing_(FALSE), shmdata_names_(), manager_() {
+ShmdataFromGDPFile::ShmdataFromGDPFile():custom_prop_(new CustomPropertyHelper()),
+                                                      shmdata_names_() {
 }
 
 ShmdataFromGDPFile::~ShmdataFromGDPFile() {
   clean_players();
 }
 
-bool ShmdataFromGDPFile::init() {
-  install_method("Add File",
-                 "add_file",
-                 "add a file to play",
-                 "success or fail",
-                 Method::make_arg_description("File Path",
-                                              "filepath",
-                                              "file location",
-                                              "Shmdata Path",
-                                              "shmpath",
-                                              "shmdata socket path to create",
-                                              nullptr),
-                 (Method::method_ptr) &add_file_wrapped,
-                 G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING,
-                                                   G_TYPE_STRING,
-                                                   nullptr),
-                 this);
+bool ShmdataFromGDPFile::init_gpipe() {
+  init_startable(this);
+  init_segment(this);
+  install_play_pause();
 
-  install_method("Remove File",
-                 "remove_file",
-                 "remove the file from the player",
-                 "success or fail",
-                 Method::make_arg_description("File Path",
-                                              "filepath",
-                                              "file path to remove",
-                                              nullptr),
-                 (Method::method_ptr) &remove_file_wrapped,
-                 G_TYPE_BOOLEAN,
-                 Method::make_arg_type_description(G_TYPE_STRING,
-                                                   nullptr),
-                 this);
-
-  // registering playing property
-  playing_param_ = custom_prop_->make_boolean_property("playing",
-                                                       "start/stop playing",
-                                                       FALSE, (GParamFlags)
-                                                       G_PARAM_READWRITE,
-                                                       ShmdataFromGDPFile::set_playing,
-                                                       ShmdataFromGDPFile::get_playing,
-                                                       this);
+  input_prefix_param_ = custom_prop_->make_string_property("filename_prefix",
+                          "Prefix of the files to look for",
+                          input_prefix_.c_str(),
+                          (GParamFlags) G_PARAM_READWRITE,
+                          ShmdataFromGDPFile::set_input_prefix,
+                          ShmdataFromGDPFile::get_input_prefix,
+                          this);
   install_property_by_pspec(custom_prop_->get_gobject(),
-                            playing_param_,
-                            "playing",
-                            "Playing");
+                            input_prefix_param_,
+                            "filename_prefix",
+                            "Prefix of the files to look for");
+
   return true;
 }
 
-gboolean
-ShmdataFromGDPFile::add_file_wrapped(gpointer shmdata_socket_path,
-                                     gpointer file_location,
-                                     gpointer user_data) {
-  ShmdataFromGDPFile *context =
-      static_cast<ShmdataFromGDPFile *>(user_data);
+const gchar *
+ShmdataFromGDPFile::get_input_prefix(void *user_data) {
+  ShmdataFromGDPFile *ctx = (ShmdataFromGDPFile*)user_data;
+  return ctx->input_prefix_.c_str();
+}
 
-  if (context->add_file
-      ((char *) shmdata_socket_path, (char *) file_location))
-    return TRUE;
-  else
-    return FALSE;
+void
+ShmdataFromGDPFile::set_input_prefix(const gchar *prefix, void *user_data) {
+  ShmdataFromGDPFile *ctx = (ShmdataFromGDPFile *) user_data;
+  if (prefix != nullptr)
+    ctx->input_prefix_ = prefix;
 }
 
 bool
-ShmdataFromGDPFile::add_file(std::string file_path,
-                             std::string shmdata_path) {
-  if (shmdata_names_.find(file_path) != shmdata_names_.end()) {
-    g_warning("ShmdataFromGDPFile::add_file: %s is already added",
-              file_path.c_str());
+ShmdataFromGDPFile::start() {
+  if (is_started())
     return false;
-  }
 
-  shmdata_names_[file_path] = shmdata_path;
+  make_players();
+
   return true;
 }
 
-gboolean
-ShmdataFromGDPFile::remove_file_wrapped(gpointer file_path,
-                                        gpointer user_data) {
-  ShmdataFromGDPFile *context =
-      static_cast<ShmdataFromGDPFile *>(user_data);
-  if (context->remove_file((char *) file_path))
-    return TRUE;
-  else
-    return FALSE;
-}
-
-bool ShmdataFromGDPFile::remove_file(std::string file_path) {
-  auto it = shmdata_names_.find(file_path);
-  if (shmdata_names_.end() != it)
+bool
+ShmdataFromGDPFile::stop() {
+  if (!is_started())
     return false;
-  shmdata_names_.erase(it);
+
+  clean_players();
   return true;
-}
-
-void ShmdataFromGDPFile::set_playing(gboolean playing, void *user_data) {
-  ShmdataFromGDPFile *context =
-      static_cast<ShmdataFromGDPFile *>(user_data);
-
-  if (playing)
-    context->make_players();
-  else
-    context->clean_players();
-  context->playing_ = playing;
-  GObjectWrapper::notify_property_changed(context->
-                                          custom_prop_->get_gobject(),
-                                          context->playing_param_);
-}
-
-gboolean ShmdataFromGDPFile::get_playing(void *user_data) {
-  ShmdataFromGDPFile *context =
-      static_cast<ShmdataFromGDPFile *>(user_data);
-  return context->playing_;
 }
 
 bool ShmdataFromGDPFile::make_players() {
-  if (!(bool) manager_) {
-    g_debug("creating manager");
-    manager_ = QuiddityManager::make_manager("manager_" + get_name());
-    // FIXME pause pipeline
+  reset_bin();
+
+  shmdata_names_ = getFilenames(input_prefix_);
+  for (auto& it : shmdata_names_) {
+    GError *error = nullptr;
+    gchar *pipe = g_strdup_printf("filesrc location=%s ! gdpdepay ! identity sync=true",
+                                  it.first.c_str());
+    On_scope_exit{ g_free(pipe); };
+    GstElement *reader_bin = gst_parse_bin_from_description(pipe, TRUE, &error);
+
+    if (error != nullptr) {
+      g_warning("ShmdataFromGDPFile - %s", error->message);
+      return false;
+    }
+    g_object_set(G_OBJECT(reader_bin), "async-handling", TRUE, nullptr);
+    GstPad *src_pad = gst_element_get_static_pad(reader_bin, "src");
+    On_scope_exit{ gst_object_unref(src_pad); };
+
+    gst_bin_add(GST_BIN(bin_), reader_bin);
+
+    ShmdataWriter::ptr writer = std::make_shared<ShmdataWriter>();
+    writer->set_path(make_file_name("shmfromfile" + std::to_string(shm_counter_)));
+    shm_counter_++;
+    writer->plug(bin_, src_pad);
+    register_shmdata(writer);
+
+    GstUtils::sync_state_with_parent(reader_bin);
   }
-  for (auto &it : shmdata_names_) {
-    manager_->create("gstsrc", it.first.c_str());
-    gchar *pipe =
-        g_strdup_printf("filesrc location=%s ! gdpdepay ! identity sync=true",
-                        it.first.c_str());
-    g_debug("ShmdataFromGDPFile::make_players %s", pipe);
-    manager_->invoke_va(it.first.c_str(),
-                        "to_shmdata_with_path",
-                        nullptr,
-                        pipe,
-                        it.second.c_str(),
-                        nullptr);
-    g_free(pipe);
-  }
-  // manager_->invoke_va("single_runtime",
-  // "play",
-  // nullptr,
-  // nullptr);
+
   return true;
 }
 
 bool ShmdataFromGDPFile::clean_players() {
-  manager_.reset();
+  reset_bin();
+
+  clear_shmdatas();
+  shm_counter_ = 0;
+  
   return true;
+}
+
+std::map<std::string, std::string> ShmdataFromGDPFile::getFilenames(std::string prefix) {
+  std::map<std::string, std::string> filenames {};
+  std::string dirName {};
+  std::string prefixName {};
+
+  dirName = prefix.substr(0, prefix.rfind("/"));
+  prefixName = prefix.substr(prefix.rfind("/") + 1);
+  if (prefix.rfind("/") == std::string::npos)
+    dirName = ".";
+  else if (prefix[0] != '/')
+    dirName = "./" + dirName;
+
+  GDir* dir = g_dir_open(dirName.c_str(), 0, NULL);
+  if (dir == NULL) {
+    g_warning("Cannot open the directory %s", dirName.c_str());
+    return filenames;
+  }
+
+  char* file = const_cast<char*>(g_dir_read_name(dir));
+  while (file != NULL) {
+    if (std::string(file).rfind(prefixName) != std::string::npos) {
+      std::string filename = dirName + "/" + std::string(file);
+      std::string shmname = std::string(file).substr(std::string(file).rfind(prefixName) + prefixName.size());
+      filenames[filename] = shmname;
+    }
+    file = const_cast<char*>(g_dir_read_name(dir));
+  }
+
+  g_dir_close(dir);
+
+  return filenames;
 }
 
 // FIXME use signals in switcher for handling gstsrc's eos
