@@ -28,6 +28,7 @@ namespace data {
 Tree::ptr Tree::make() {
   std::shared_ptr<Tree> tree;  //can't use make_shared because ctor is private
   tree.reset(new Tree());
+  tree->me_ = tree;
   return tree;
 }
 

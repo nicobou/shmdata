@@ -61,6 +61,7 @@ class Tree {
   static Tree::ptr make(ValueType data) {
     std::shared_ptr<Tree> tree;  //can't use make_shared because ctor is private
     tree.reset(new Tree(data));
+    tree->me_ = tree;
     return tree;
   }
   static Tree::ptr make(const char *data);  // Tree will store a std::string
@@ -127,13 +128,6 @@ class Tree {
                           [](std::string key,
                              Tree::ptrc node,
                              bool is_array_element){});
-      // res.resize(found.second->second->childrens_.size());
-      // std::transform(found.second->second->childrens_.cbegin(),
-      //                found.second->second->childrens_.cend(),
-      //                res.begin(),
-      //                [](const child_type &child) {
-      //                  return child.first;
-      //                });
     }
     return res;
   }
@@ -188,7 +182,8 @@ class Tree {
   bool is_array_ {false};
   mutable childs_t childrens_ {};
   mutable std::mutex mutex_ {};
-
+  std::weak_ptr<Tree> me_ {};
+  
   Tree() {}
   explicit Tree(const Any &data);
 
