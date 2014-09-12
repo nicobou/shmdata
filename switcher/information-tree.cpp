@@ -29,6 +29,7 @@ namespace data {
 Tree::ptr make_tree() {
   return std::make_shared<Tree> ();
 }
+
 Tree::ptr make_tree(const char *data) {
   return std::make_shared<Tree> (std::string(data));
 }
@@ -180,6 +181,7 @@ Tree::GetNodeReturn Tree::get_node(const std::string &path) const {
   Tree::childs_t::iterator child_iterator;
   if (get_next(iss, child_list, child_iterator)) {
     // asking root node
+    // std::cout << "asking root node" << std::endl;
   }
   return std::make_pair(child_list, child_iterator);
 }
@@ -215,17 +217,18 @@ bool Tree::graft(const std::string &where, Tree::ptr tree) {
 }
 
 bool
-Tree::graft_next(std::istringstream &path, Tree *tree,
+Tree::graft_next(std::istringstream &path,
+                 Tree *tree,
                  Tree::ptr leaf) {
   std::string child;
   if (!std::getline(path, child, '.'))
     return true;
-  if (child.empty())        // in case of two or more consecutive dots
+  if (child.empty())  // in case of two or more consecutive dots
     return graft_next(path, tree, leaf);
   auto it = tree->get_child_iterator(child);
   if (tree->childrens_.end() != it) {
-    if (graft_next(path, it->second.get(), leaf))   // graft on already existing child
-      it->second = leaf;    // replacing the previously empy tree with the one to graft
+    if (graft_next(path, it->second.get(), leaf))  // graft on already existing child
+      it->second = leaf;  // replacing the previously empy tree with the one to graft
   } else {
     Tree::ptr child_node = make_tree();
     tree->childrens_.emplace_back(child, child_node);

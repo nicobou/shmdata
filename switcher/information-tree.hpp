@@ -46,15 +46,15 @@ namespace switcher {
 namespace data {
 class Tree {
  public:
-  typedef std::shared_ptr<Tree> ptr;
-  typedef std::shared_ptr<const Tree> ptrc;
-  typedef std::pair<std::string, Tree::ptr> child_type;
-  typedef std::list<child_type> childs_t;
-  typedef std::function <void(const std::string &name,
-                              const Tree::ptrc tree,
-                              bool is_array_element)> OnNodeFunction;
-  typedef std::pair <Tree::childs_t,
-                     Tree::childs_t::iterator> GetNodeReturn;
+  using ptr = std::shared_ptr<Tree>;
+  using ptrc = std::shared_ptr<const Tree>;
+  using child_type = std::pair<std::string, Tree::ptr>;
+  using childs_t = std::list<child_type>;
+  using OnNodeFunction = std::function <void(const std::string &name,
+                                             const Tree::ptrc tree,
+                                             bool is_array_element)>;
+  using GetNodeReturn = std::pair <Tree::childs_t, Tree::childs_t::iterator>;
+  
   Tree() {}
   explicit Tree(const Any &data);
 
@@ -99,6 +99,36 @@ class Tree {
                        return child.first;
                      });
     }
+  }
+  // get leaf values in a newly allocated container
+  template<template<class T, class = std::allocator<T>>
+           class Container = std::list>
+      Container<std::string>
+      get_leaf_values(const std::string path) const {
+    Container<std::string> res;
+    std::unique_lock<std::mutex> lock(mutex_);
+    auto found = get_node(path);
+    if (!found.first.empty()) {
+      auto tree = found.second->second;
+      preorder_tree_walk (tree,
+                          [&res](std::string key,
+                                 Tree::ptrc node,
+                                 bool is_array_element) {
+                            if (node->is_leaf())
+                              res.push_back(Any::to_string(node->read_data()));
+                          },
+                          [](std::string key,
+                             Tree::ptrc node,
+                             bool is_array_element){});
+      // res.resize(found.second->second->childrens_.size());
+      // std::transform(found.second->second->childrens_.cbegin(),
+      //                found.second->second->childrens_.cend(),
+      //                res.begin(),
+      //                [](const child_type &child) {
+      //                  return child.first;
+      //                });
+    }
+    return res;
   }
 
   //static version of const methods, for being used with invoke_info_tree

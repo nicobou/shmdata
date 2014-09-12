@@ -14,14 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
  */
-#include "switcher/information-tree.hpp"
-#include "switcher/information-tree-basic-serializer.hpp"
-#include "switcher/information-tree-json.hpp"
 #include <string>
 #include <cassert>
 #include <iostream>
 #include <memory>
 #include <algorithm>
+#include "switcher/information-tree.hpp"
+#include "switcher/information-tree-basic-serializer.hpp"
+#include "switcher/information-tree-json.hpp"
 
 //----------------- a custom struct without operator <<
 struct Widget:public DefaultSerializable<Widget> {
@@ -219,14 +219,14 @@ main() {
                   });
     auto string_compare =
         [](const std::string &first, const std::string &second)
-        { return (0 == first.compare(second));
-        };
+        { return (0 == first.compare(second)); };
 
     // using a list
     std::list<std::string> child_keys_list =
         tree->get_child_keys <> (".root");
     assert(std::equal
-           (childs.begin(), childs.end(), child_keys_list.begin(),
+           (childs.begin(), childs.end(),
+            child_keys_list.begin(),
             string_compare));
 
     // using a vector
@@ -235,6 +235,20 @@ main() {
     assert(std::equal
            (childs.begin(), childs.end(), child_keys_vector.begin(),
             string_compare));
+  }
+
+  {
+    Tree::ptr tree = make_tree();
+    tree->graft(".branch.item", make_tree(0));
+    tree->graft(".branch.item1", make_tree(0));
+    tree->graft(".branch.item2", make_tree(0));
+    tree->graft(".other.branch", make_tree());
+    tree->tag_as_array("branch.", true); 
+    // std::string serialized = JSONSerializer::serialize(tree);
+    // std::cout << serialized << std::endl;
+    std::list<std::string> values = tree->get_leaf_values<> (".");
+    for (auto &it : values)
+      std::cout << it << std::endl;
   }
 
   return 0;

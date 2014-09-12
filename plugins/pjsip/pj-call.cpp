@@ -1600,6 +1600,7 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
                 shmpath.c_str(),
                 contact_uri.c_str());
     }
+
     
     // HERE
     g_print("------------------------------------------------ %s %s\n",
