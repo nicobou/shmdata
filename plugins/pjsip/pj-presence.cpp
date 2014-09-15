@@ -174,14 +174,15 @@ PJPresence::register_account(const std::string &sip_user,
   gchar *id = g_strdup_printf("sip:%s@%s",
                               sip_user.c_str(),
                               sip_domain.c_str());
-  gchar *reg_uri = g_strdup_printf("sip:%s", sip_domain.c_str());
+  //gchar *reg_uri = g_strdup_printf("sip:%s", sip_domain.c_str());
   gchar *user = g_strdup(sip_user.c_str());
   gchar *domain = g_strdup(sip_domain.c_str());
   gchar *digest = g_strdup("digest");
   gchar *password = g_strdup(sip_password.c_str());
   pjsua_acc_config_default(&cfg);
   cfg.id = pj_str(id);
-  cfg.reg_uri = pj_str(reg_uri);
+  //cfg.reg_uri = pj_str(reg_uri);
+  cfg.reg_uri = pj_str(id);
   cfg.cred_count = 1;
   cfg.cred_info[0].realm = pj_str(domain);
   cfg.cred_info[0].scheme = pj_str(digest);
@@ -194,7 +195,7 @@ PJPresence::register_account(const std::string &sip_user,
 
   status = pjsua_acc_add(&cfg, PJ_TRUE, &account_id_);
   g_free(id);
-  g_free(reg_uri);
+  //g_free(reg_uri);
   g_free(user);
   g_free(domain);
   g_free(digest);
@@ -219,8 +220,8 @@ PJPresence::register_account(const std::string &sip_user,
     // pj_ansi_strcpy(ip_addr, addr);
 
     sip_local_user_ =
-        std::string("sip:") + sip_user + addr +
-        std::to_string(sip_instance_->sip_port_);
+        std::string("sip:") + sip_user + "@" + addr +
+        + ":" + std::to_string(sip_instance_->sip_port_);
     // sprintf (sip_local_user_,
     //        "sip:%s@%s:%u",
     //        sip_user.c_str (),

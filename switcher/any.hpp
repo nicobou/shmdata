@@ -27,7 +27,7 @@
 #include <ostream>
 #include <sstream>
 
-template<class T > using StorageType = typename std::decay < T>::type;
+template<class T> using StorageType = typename std::decay<T>::type;
 
 struct AnyValueBase {
   // AnyValueBase (const AnyValueBase &) = delete;
@@ -101,50 +101,33 @@ struct Any {
   }
   bool
   not_null() const {
-    return
-        ptr_;
+    return ptr_;
   }
 
-  template <
-    typename
-    U >
+  template<typename U>
   Any(U && value):
-      ptr_(new AnyValueDerived<StorageType<U>> (std::forward < U> (value))) {
+      ptr_(new AnyValueDerived<StorageType<U>> (std::forward<U>(value))) {
   }
 
-  template <
-    class
-    U >
-  bool
-  is() const {
-    typedef
-        StorageType <
-      U >
-        T;
-    auto
-        derived = dynamic_cast<AnyValueDerived < T> *>(ptr_);
-    return
-        derived;
+  template<class U>
+  bool is() const {
+    typedef StorageType<U> T;
+    auto derived = dynamic_cast<AnyValueDerived<T>*>(ptr_);
+    return derived;
   }
 
-  template <
-    class
-    U >
-  StorageType <
-    U > &
-  as() {
-    typedef
-        StorageType <
-      U >
-        T;
-    auto derived = dynamic_cast<AnyValueDerived < T> *>(ptr_);
+  template<class U>
+  StorageType<U> &as() {
+    typedef StorageType<U> T;
+    auto derived = dynamic_cast<AnyValueDerived<T>*>(ptr_);
     if (!derived)
       throw std::bad_cast();
     return derived->value_;
   }
 
-  template<class U> operator     U() {
-    return as<StorageType < U>> ();
+  template<class U>
+  operator U() {
+    return as<StorageType<U>>();
   }
 
   Any():ptr_(nullptr) {
