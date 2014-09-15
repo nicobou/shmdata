@@ -136,7 +136,7 @@ PJCodec::alt_codec_enum_codecs(pjmedia_codec_factory */*factory*/,
 pj_status_t
 PJCodec::alt_codec_alloc_codec(pjmedia_codec_factory */*factory*/,
                                const pjmedia_codec_info */*id*/,
-                               pjmedia_codec ** p_codec) {
+                               pjmedia_codec **/*p_codec*/) {
   // g_print ("*************************************** %s\n", __FUNCTION__);
   /* This will never get called since we won't be using this codec */
   // UNIMPLEMENTED(alt_codec_alloc_codec)
