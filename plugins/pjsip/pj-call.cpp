@@ -460,15 +460,15 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   len = pjsip_uri_print(PJSIP_URI_IN_REQ_URI,
                         rdata->msg_info.msg->line.req.uri,
                         uristr, sizeof(uristr));
-  // g_print("---------- call req uri %.*s\n", len, uristr);
+  g_print("---------- call req uri %.*s\n", len, uristr);
   len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                         pjsip_uri_get_uri(rdata->msg_info.from->uri),
                         uristr, sizeof(uristr));
-  // g_print("---------- call from %.*s\n", len, uristr);
+  g_print("---------- call from %.*s\n", len, uristr);
   std::string from_uri(uristr, len);
   len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                         rdata->msg_info.to->uri, uristr, sizeof(uristr));
-  // g_print("----------- call to %.*s\n", len, uristr);
+  g_print("----------- call to %.*s\n", len, uristr);
 
   unsigned i, options;
   struct call *call;
@@ -687,9 +687,8 @@ PJCall::create_sdp(pj_pool_t *pool,
   /* Since we only support one media stream at present, put the
    * SDP connection line in the session level.
    */
-  sdp->conn =
-      static_cast<pjmedia_sdp_conn *>
-      (pj_pool_zalloc(pool, sizeof(pjmedia_sdp_conn)));
+  sdp->conn = static_cast<pjmedia_sdp_conn *>(
+      pj_pool_zalloc(pool, sizeof(pjmedia_sdp_conn)));
   pj_cstr(&sdp->conn->net_type, "IN");
   pj_cstr(&sdp->conn->addr_type, "IP4");
   sdp->conn->addr = app.local_addr;
@@ -763,6 +762,8 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
   status = pjmedia_rtp_decode_rtp(&strm->in_sess,
                                   buf, static_cast<int>(size),
                                   &hdr, &payload, &payload_len);
+
+  g_print("%s\n", __FUNCTION__);
 
   // PJ_LOG(4,(THIS_FILE, "Rx seq=%d", pj_ntohs(hdr->seq)));
 

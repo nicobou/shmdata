@@ -25,10 +25,10 @@
 #include <string>
 #include <vector>
 
-#include "./pj-codec.hpp"
 #include "switcher/shmdata-any-writer.hpp"
 #include "switcher/rtp-session.hpp"
 #include "switcher/quiddity-manager.hpp"
+#include "./pj-codec.hpp"
 
 #define MAX_CALLS 1024
 
