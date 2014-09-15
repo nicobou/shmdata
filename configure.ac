@@ -197,13 +197,9 @@ if test "${PUREDATA}" = "y" ; then
 fi
 
 # Check for Python to build a wrapper
-PKG_CHECK_MODULES(PYTHON3, python3)
-if test "x${have_python3}" = "xfalse" ; then
-    AC_MSG_WARN([Missing python3-dev package, not building python3 wrapper])
-    AM_CONDITIONAL(HAVE_PYTHON3, false)
-else
-    AM_CONDITIONAL(HAVE_PYTHON3, true)
-fi
+PKG_CHECK_MODULES(PYTHON3, python3,
+    AM_CONDITIONAL(HAVE_PYTHON3, true),
+    AM_CONDITIONAL(HAVE_PYTHON3, false))
 
 # Override the template file name of the generated .pc file, so that there
 # is no need to rename the template file when the API version changes.
