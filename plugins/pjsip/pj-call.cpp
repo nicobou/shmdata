@@ -21,6 +21,7 @@
 #include <cctype>
 #include <algorithm>
 #include <string>
+#include <list>
 #include <forward_list>
 #include <vector>
 
@@ -268,6 +269,8 @@ void PJCall::init_app() {
 void PJCall::call_on_state_changed(pjsip_inv_session * inv, pjsip_event *e) {
   struct call *call = (struct call *) inv->mod_data[mod_siprtp_.id];
 
+  g_print("%s\n", __FUNCTION__);
+  
   PJ_UNUSED_ARG(e);
 
   if (!call)
@@ -275,7 +278,7 @@ void PJCall::call_on_state_changed(pjsip_inv_session * inv, pjsip_event *e) {
 
   if (inv->state == PJSIP_INV_STATE_DISCONNECTED) {
     // pj_time_val null_time = {0, 0};
-    g_debug("Call #%d disconnected. Reason=%d (%.*s)",
+    g_print("Call #%d disconnected. Reason=%d (%.*s)",
             call->index,
             inv->cause,
             static_cast<int>(inv->cause_text.slen),
@@ -308,7 +311,7 @@ void PJCall::call_on_state_changed(pjsip_inv_session * inv, pjsip_event *e) {
     t = call->connect_time;
     PJ_TIME_VAL_SUB(t, call->start_time);
 
-    g_debug("Call #%d connected in %ld ms", call->index,
+    g_print("Call #%d connected in %ld ms", call->index,
             PJ_TIME_VAL_MSEC(t));
 
     // if (app.duration != 0) {
@@ -323,6 +326,7 @@ void PJCall::call_on_state_changed(pjsip_inv_session * inv, pjsip_event *e) {
     // }
   } else if (inv->state == PJSIP_INV_STATE_EARLY ||
              inv->state == PJSIP_INV_STATE_CONNECTING) {
+    g_print("state early or connecting\n");
     if (call->response_time.sec == 0)
       pj_gettimeofday(&call->response_time);
   }
@@ -337,7 +341,7 @@ void PJCall::call_on_forked(pjsip_inv_session */*inv*/,
 void PJCall::call_on_media_update(pjsip_inv_session *inv,
                                   pj_status_t status) {
   const pjmedia_sdp_session *local_sdp, *remote_sdp;
-  struct call *call = (struct call *) inv->mod_data[mod_siprtp_.id];
+  struct call *call = static_cast<struct call *>(inv->mod_data[mod_siprtp_.id]);
 
   /* Do nothing if media negotiation has failed */
   if (status != PJ_SUCCESS) {
@@ -407,10 +411,8 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
       //          current_media->samples_per_frame, 0);
 
       current_media->shm = std::make_shared<ShmdataAnyWriter>();
-      // FIXME use quid name:
-      std::string shm_any_name("/tmp/switcher_sip_"
-                               + call->peer_uri
-                               + "_" + std::to_string(i));
+      std::string shm_any_name = call->instance->sip_instance_->
+          make_file_name(call->peer_uri + "-" + std::to_string(i));
       current_media->shm->set_path(shm_any_name.c_str());
       g_message("%s created a new shmdata any writer (%s)",
                 shm_any_name.c_str());
@@ -510,12 +512,14 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       g_warning("Bad SDP in incoming INVITE");
   }
 
-  // g_print("*** offer ****\n");
   // print_sdp(offer);
   options = 0;
-  status =
-      pjsip_inv_verify_request(rdata, &options, nullptr, nullptr,
-                               PJSIP::sip_endpt_, &tdata);
+  status = pjsip_inv_verify_request(rdata,
+                                    &options,
+                                    nullptr,
+                                    nullptr,
+                                    PJSIP::sip_endpt_,
+                                    &tdata);
 
   if (status != PJ_SUCCESS) {
     /*
@@ -525,11 +529,18 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
       pjsip_response_addr res_addr;
 
       pjsip_get_response_addr(tdata->pool, rdata, &res_addr);
-      pjsip_endpt_send_response(PJSIP::sip_endpt_, &res_addr, tdata,
-                                nullptr, nullptr);
+      pjsip_endpt_send_response(PJSIP::sip_endpt_,
+                                &res_addr,
+                                tdata,
+                                nullptr,
+                                nullptr);
     } else {  /* Respond with 500 (Internal Server Error) */
-      pjsip_endpt_respond_stateless(PJSIP::sip_endpt_, rdata, 500,
-                                    nullptr, nullptr, nullptr);
+      pjsip_endpt_respond_stateless(PJSIP::sip_endpt_,
+                                    rdata,
+                                    500,
+                                    nullptr,
+                                    nullptr,
+                                    nullptr);
     }
     return;
   }
@@ -611,9 +622,6 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
   /* Create SDP */
   create_sdp(dlg->pool, call, media_to_receive, &sdp);
 
-  // g_print("sdp created from remote\n");
-  // print_sdp(sdp);
-
   /* Create UAS invite session */
   // sdp=nullptr;
   status = pjsip_inv_create_uas(dlg, rdata, sdp, 0, &call->inv);
@@ -647,14 +655,9 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
     return;
   }
 
-  // g_print("local sdp before sending :");
-  // print_sdp(sdp);
-
   /* Send the 200 response. */
   status = pjsip_inv_send_msg(call->inv, tdata);
   PJ_ASSERT_ON_FAIL(status == PJ_SUCCESS, return);
-
-  /* Done */
 }
 
 /*
@@ -763,7 +766,7 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
                                   buf, static_cast<int>(size),
                                   &hdr, &payload, &payload_len);
 
-  g_print("%s\n", __FUNCTION__);
+  //g_print("%s\n", __FUNCTION__);
 
   // PJ_LOG(4,(THIS_FILE, "Rx seq=%d", pj_ntohs(hdr->seq)));
 
@@ -1389,7 +1392,8 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
     return PJ_EUNKNOWN;
   }
   pj_str_t local_uri;
-  pj_cstr(&local_uri, sip_instance_->sip_presence_->sip_local_user_.c_str());
+  pj_cstr(&local_uri,
+          sip_instance_->sip_presence_->sip_local_user_.c_str());
   unsigned i;
   struct call *call = nullptr;
   pjsip_dialog *dlg = nullptr;
