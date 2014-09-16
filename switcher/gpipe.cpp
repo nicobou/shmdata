@@ -142,14 +142,17 @@ gboolean GPipe::get_play(void *user_data) {
 
 bool GPipe::seek(gdouble position) {
   gboolean ret = FALSE;
-  ret = gst_element_seek(pipeline_, speed_, GST_FORMAT_TIME, (GstSeekFlags) ( // GST_SEEK_FLAG_FLUSH |
-      GST_SEEK_FLAG_ACCURATE),
+  ret = gst_element_seek(pipeline_,
+                         speed_,
+                         GST_FORMAT_TIME,
+                         (GstSeekFlags)(GST_SEEK_FLAG_FLUSH |
+                                        GST_SEEK_FLAG_ACCURATE),
                          // | GST_SEEK_FLAG_SKIP
                          // | GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
                          GST_SEEK_TYPE_SET,
-                         position * length_ *GST_MSECOND,
-                         GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
-
+                         position  * GST_MSECOND,
+                         GST_SEEK_TYPE_NONE,
+                         GST_CLOCK_TIME_NONE);
   gpipe_custom_props_->notify_property_changed(seek_spec_);
   if (!ret)
     g_debug("seek not handled\n");
@@ -162,7 +165,7 @@ gdouble GPipe::get_seek(void *user_data) {
 }
 void GPipe::set_seek(gdouble position, void *user_data) {
   GPipe *context = static_cast<GPipe *>(user_data);
-  context->seek(position);
+  context->seek(position * context->length_);
 }
 
 gboolean GPipe::speed_wrapped(gdouble speed, gpointer user_data) {

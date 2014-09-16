@@ -261,42 +261,10 @@ int Uridecodebin::autoplug_select_cb(GstElement * /*bin */ ,
 
 gboolean Uridecodebin::process_eos(gpointer user_data) {
   Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-  GstQuery *query;
-  gboolean res;
-  query = gst_query_new_segment(GST_FORMAT_TIME);
-  res = gst_element_query(context->get_pipeline(), query);
-  gdouble rate = 1.0;
-  gint64 start_value = -2.0;
-  gint64 stop_value = -2.0;
-  if (res) {
-    gst_query_parse_segment(query, &rate, nullptr, &start_value,
-                            &stop_value);
-    // g_print ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n",
-    //        rate,
-    //        GST_TIME_ARGS (start_value),
-    //        GST_TIME_ARGS (stop_value));
-  } else {
-    g_debug("duration query failed...");
-  }
-  gst_query_unref(query);
-
+  context->seek(0.0);
   if (!context->loop_) {
     context->play(FALSE);
   }
-
-  gboolean ret = FALSE;
-  ret =
-      gst_element_seek(GST_ELEMENT(gst_pad_get_parent(context->main_pad_)),
-                       rate, GST_FORMAT_TIME,
-                       (GstSeekFlags) (GST_SEEK_FLAG_FLUSH |
-                                       GST_SEEK_FLAG_ACCURATE),
-                       // | GST_SEEK_FLAG_SKIP
-                       // | GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
-                       GST_SEEK_TYPE_SET,
-                       0.0 * GST_SECOND,
-                       GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
-  if (!ret)
-    g_warning("looping error\n");
   return FALSE;
 }
 
@@ -305,9 +273,6 @@ Uridecodebin::event_probe_cb(GstPad * pad, GstEvent *event,
                              gpointer user_data) {
   Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   if (GST_EVENT_TYPE(event) == GST_EVENT_EOS) {
-    // g_print ("----- pad with EOS %s:%s, src: %p %s\n",
-    //         GST_DEBUG_PAD_NAME (pad),GST_EVENT_SRC(event), gst_element_get_name (GST_EVENT_SRC(event)));
-
     if (pad == context->main_pad_) {
       GstUtils::g_idle_add_full_with_context(context->get_g_main_context(),
                                              G_PRIORITY_DEFAULT_IDLE,
@@ -353,7 +318,7 @@ void Uridecodebin::release_buf(void *user_data) {
   gst_buffer_unref(buf);
 }
 
-void Uridecodebin::pad_to_shmdata_writer(GstElement * bin, GstPad *pad) {
+void Uridecodebin::pad_to_shmdata_writer(GstElement *bin, GstPad *pad) {
   // detecting type of media
   const gchar *padname;
   if (0 == g_strcmp0("ANY", gst_caps_to_string(gst_pad_get_caps(pad))))
