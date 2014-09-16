@@ -65,29 +65,30 @@ class RtpSession:public GPipe {
                                  void *rtpsession_instance);
 
  private:
-  GstElement *rtpsession_;
+  GstElement *rtpsession_{nullptr};
   // a counter used for setting id of internal streams
-  guint next_id_;
+  // this value is arbitrary and can be changed
+  guint next_id_{79};
 
   // custom properties:
   CustomPropertyHelper::ptr custom_props_;
-  GParamSpec *destination_description_json_;
-  gchar *destinations_json_;
-  GParamSpec *mtu_at_add_data_stream_spec_;
-  gint mtu_at_add_data_stream_;
+  GParamSpec *destination_description_json_{nullptr};
+  gchar *destinations_json_{nullptr};
+  GParamSpec *mtu_at_add_data_stream_spec_{nullptr};
+  gint mtu_at_add_data_stream_{1400};
 
   // local streams
-  std::map<std::string, std::string> internal_id_;       // maps shmdata path with internal id
-  std::map<std::string, std::string> rtp_ids_;   // maps shmdata path with rtp id
-  std::map<std::string, QuiddityManager::ptr> quiddity_managers_;
-  std::map<std::string, GstElementCleaner::ptr> funnels_;        // maps internal id with funnel cleaner
+  std::map<std::string, std::string> internal_id_{};       // maps shmdata path with internal id
+  std::map<std::string, std::string> rtp_ids_{};   // maps shmdata path with rtp id
+  std::map<std::string, QuiddityManager::ptr> quiddity_managers_{};
+  std::map<std::string, GstElementCleaner::ptr> funnels_{};        // maps internal id with funnel cleaner
 
   // std::map<std::string, GstElement *>rtp_udp_sinks_;
-  std::map<std::string, ShmdataWriter::ptr> internal_shmdata_writers_;
-  std::map<std::string, ShmdataReader::ptr> internal_shmdata_readers_;
+  std::map<std::string, ShmdataWriter::ptr> internal_shmdata_writers_{};
+  std::map<std::string, ShmdataReader::ptr> internal_shmdata_readers_{};
 
   // destinations
-  std::map<std::string, RtpDestination::ptr> destinations_;
+  std::map<std::string, RtpDestination::ptr> destinations_{};
 
   bool init_gpipe() final;
 

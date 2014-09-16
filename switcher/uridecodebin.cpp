@@ -146,7 +146,7 @@ void Uridecodebin::init_uridecodebin() {
 }
 
 void Uridecodebin::destroy_uridecodebin() {
-  GstUtils::clean_element(uridecodebin_);
+  reset_bin();
   clean_on_error_command();
   clear_shmdatas();
 }
@@ -376,8 +376,8 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement * bin, GstPad *pad) {
   gst_object_unref(grandparent);
   gst_object_unref(parent);
   gst_bin_add_many(GST_BIN(bin), fakesink, funnel, nullptr);
-  GstUtils::link_static_to_request(pad, funnel);
   gst_element_link(funnel, fakesink);
+  GstUtils::link_static_to_request(pad, funnel);
 
   // GstUtils::wait_state_changed (bin);
   GstUtils::sync_state_with_parent(fakesink);
@@ -545,7 +545,6 @@ Uridecodebin::source_setup_cb(GstElement *uridecodebin,
 
 bool Uridecodebin::to_shmdata() {
   destroy_uridecodebin();
-  reset_bin();
   init_uridecodebin();
   g_debug("to_shmdata set uri %s", uri_);
   g_object_set(G_OBJECT(uridecodebin_), "uri", uri_, nullptr);
