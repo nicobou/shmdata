@@ -12,7 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with switcher.  If not, see <http:// www.gnu.org/licenses/>.
+ * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include <glib.h>
@@ -49,7 +49,7 @@ static gchar **remaining_args = nullptr;
 
 static GOptionEntry entries[24] = {
   {"server", 0, 0, G_OPTION_ARG_STRING, &server,
-   "server URI (default http:// localhost:27182)", nullptr},
+   "server URI (default http://localhost:27182)", nullptr},
   {"save", 'w', 0, G_OPTION_ARG_NONE, &save,
    "save history to file (--save filename)", nullptr},
   {"load", 'x', 0, G_OPTION_ARG_NONE, &load,
@@ -116,7 +116,7 @@ main(int argc, char *argv[]) {
   }
 
   if (server == nullptr)
-    server = g_strdup("http:// localhost:27182");
+    server = g_strdup("http://localhost:27182");
 
   if (!(renamequiddity
         ^ save
