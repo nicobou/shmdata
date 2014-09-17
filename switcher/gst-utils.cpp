@@ -167,8 +167,8 @@ void GstUtils::wait_state_changed(GstElement *bin) {
       g_debug("GstUtils::wait_state_changed, from %s to %s",
               gst_element_state_get_name(GST_STATE(bin)),
               gst_element_state_get_name(GST_STATE_TARGET(bin)));
-
-      gst_element_get_state(bin, nullptr, nullptr, GST_CLOCK_TIME_NONE);      // warning this may be blocking
+      // warning this may be blocking
+      gst_element_get_state(bin, nullptr, nullptr, GST_CLOCK_TIME_NONE);
     }
   g_value_unset(&val);
   return;

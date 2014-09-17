@@ -32,8 +32,10 @@
 #include "./quiddity-manager-impl.hpp"
 
 namespace switcher {
-GPipe::GPipe():pipeline_(gst_pipeline_new(nullptr)),
-               source_funcs_(), gpipe_custom_props_(new CustomPropertyHelper()) {
+GPipe::GPipe():
+    pipeline_(gst_pipeline_new(nullptr)),
+    source_funcs_(),
+    gpipe_custom_props_(new CustomPropertyHelper()) {
   make_bin();
   init_segment(this);
 }
@@ -45,7 +47,7 @@ GPipe::~GPipe() {
         g_source_destroy(it);
   if (position_tracking_source_ != nullptr)
     g_source_destroy(position_tracking_source_);
-  GstUtils::clean_element(pipeline_);
+  gst_object_unref(pipeline_);
   if (!g_source_is_destroyed(source_))
     g_source_destroy(source_);
 }
@@ -122,7 +124,8 @@ void GPipe::play(gboolean play) {
     position_tracking_source_ =
         GstUtils::g_timeout_add_to_context(200,
                                            (GSourceFunc) query_position,
-                                           this, get_g_main_context());
+                                           this,
+                                           get_g_main_context());
   if (TRUE == play)
     gst_element_set_state(pipeline_, GST_STATE_PLAYING);
   else
@@ -492,6 +495,7 @@ void GPipe::make_bin() {
 }
 
 void GPipe::clean_bin() {
+  
   g_debug("GPipe, bin state %s, target %s, num children %d ",
           gst_element_state_get_name(GST_STATE(bin_)),
           gst_element_state_get_name(GST_STATE_TARGET(bin_)),
