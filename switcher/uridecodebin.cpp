@@ -81,8 +81,7 @@ bool Uridecodebin::init_gpipe() {
 
 void Uridecodebin::init_uridecodebin() {
   if (!GstUtils::make_element("uridecodebin", &uridecodebin_)) {
-    g_warning
-        (" Uridecodebin::init_uridecodebin, cannot create uridecodebin");
+    g_warning("cannot create uridecodebin");
     return;
   }
 
@@ -143,7 +142,8 @@ void Uridecodebin::init_uridecodebin() {
                // "download",TRUE,
                // "use-buffering",TRUE,
                // "ring-buffer-max-size", 4294967295,
-               "expose-all-streams", TRUE, "async-handling", TRUE,
+               "expose-all-streams", TRUE,
+               "async-handling", TRUE,
                // "buffer-duration",9223372036854775807,
                nullptr);
 }
@@ -514,7 +514,6 @@ Uridecodebin::source_setup_cb(GstElement *uridecodebin,
   g_object_set_data(G_OBJECT(source),
                     "on-error-command",
                     (gpointer) context->on_error_command_);
-
   g_free(val_str);
 }
 

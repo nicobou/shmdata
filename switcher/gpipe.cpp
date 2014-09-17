@@ -495,17 +495,18 @@ void GPipe::make_bin() {
 }
 
 void GPipe::clean_bin() {
+
+  if (nullptr == bin_)
+    return;
   
   g_debug("GPipe, bin state %s, target %s, num children %d ",
           gst_element_state_get_name(GST_STATE(bin_)),
           gst_element_state_get_name(GST_STATE_TARGET(bin_)),
           GST_BIN_NUMCHILDREN(GST_BIN(bin_)));
-
+  
   GstUtils::wait_state_changed(bin_);
-
+  
   if (GST_IS_ELEMENT(bin_)) {
-    // FIXME clear_shmdatas ();
-
     g_debug("GPipe, bin state %s, target %s, num children %d ",
             gst_element_state_get_name(GST_STATE(bin_)),
             gst_element_state_get_name(GST_STATE_TARGET(bin_)),
