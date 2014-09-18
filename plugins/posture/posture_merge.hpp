@@ -32,7 +32,7 @@
 #include "switcher/custom-property-helper.hpp"
 
 namespace switcher {
-class PostureMerge:public Quiddity, public Segment, public StartableQuiddity {
+class PostureMerge : public Quiddity, public Segment, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureMerge);
   PostureMerge();
@@ -46,24 +46,22 @@ class PostureMerge:public Quiddity, public Segment, public StartableQuiddity {
  private:
   CustomPropertyHelper::ptr custom_props_;
   std::string calibration_path_ {"default.kvc"};
-  std::string devices_path_ {"devices.kvc"};
+  std::string devices_path_ {"devices.xml"};
   bool compress_cloud_ {false};
   bool reload_calibration_ {false};
+  bool save_cloud_ {false};
   GParamSpec *calibration_path_prop_ {nullptr};
   GParamSpec *devices_path_prop_ {nullptr};
   GParamSpec *compress_cloud_prop_ {nullptr};
   GParamSpec *reload_calibration_prop_ {nullptr};
+  GParamSpec *save_cloud_prop_ {nullptr};
 
   unsigned int source_id_ {0};
   std::shared_ptr<posture::PointCloudMerger> merger_ {nullptr};
   std::mutex mutex_ {};
 
   ShmdataAnyWriter::ptr cloud_writer_ {nullptr};
-
   std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriter_queue_ {};
-
-  std::shared_ptr<std::vector < char>>cloud_buffers_[3];
-  unsigned int cloud_buffer_index_ {0};
 
   bool init() final;
 
@@ -79,6 +77,8 @@ class PostureMerge:public Quiddity, public Segment, public StartableQuiddity {
   static void set_compress_cloud(const int compress, void *user_data);
   static int get_reload_calibration(void *user_data);
   static void set_reload_calibration(const int reload, void *user_data);
+  static int get_save_cloud(void *user_data);
+  static void set_save_cloud(const int save, void *user_data);
 
   static void free_sent_buffer(void* data);
   void check_buffers();
