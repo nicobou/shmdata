@@ -32,9 +32,14 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(UDPSink,
                                      "UDP Sender",
                                      "network",
                                      "send data stream with udp",
-                                     "LGPL", "udpsink", "Nicolas Bouillot");
-UDPSink::UDPSink():udpsink_(nullptr),
-                   udpsink_bin_(nullptr), typefind_(nullptr), ghost_sinkpad_(nullptr) {
+                                     "LGPL",
+                                     "udpsink",
+                                     "Nicolas Bouillot");
+UDPSink::UDPSink():
+    udpsink_(nullptr),
+    udpsink_bin_(nullptr),
+    typefind_(nullptr),
+    ghost_sinkpad_(nullptr) {
 }
 
 bool UDPSink::init_gpipe() {
@@ -44,10 +49,7 @@ bool UDPSink::init_gpipe() {
     return false;
 
   // g_object_set (G_OBJECT (udpsink_bin_), "async-handling", TRUE, nullptr);
-  ghost_sinkpad_ = nullptr;
 
-  // set the name before registering properties
-  set_name(gst_element_get_name(udpsink_));
   g_object_set(G_OBJECT(udpsink_), "sync", FALSE, nullptr);
 
 #if HAVE_OSX
@@ -58,18 +60,15 @@ bool UDPSink::init_gpipe() {
     return false;
   }
   guint bc_val = 1;
-  if (setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &bc_val,
-                 sizeof(bc_val)) < 0) {
+  if (setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &bc_val, sizeof(bc_val)) < 0) {
     g_warning("udp sink: cannot set broadcast to socket");
     return false;
   }
   g_object_set(G_OBJECT(udpsink_), "sockfd", sock, nullptr);
 #endif
 
-  install_property(G_OBJECT(udpsink_), "blocksize", "blocksize",
-                   "Blocksize");
-  install_property(G_OBJECT(udpsink_), "bytes-served", "bytes-served",
-                   "Bytes Served");
+  install_property(G_OBJECT(udpsink_), "blocksize", "blocksize", "Blocksize");
+  install_property(G_OBJECT(udpsink_), "bytes-served", "bytes-served", "Bytes Served");
   install_property(G_OBJECT(udpsink_), "clients", "clients", "Clients");
   install_property(G_OBJECT(udpsink_), "ttl", "ttl", "TTL");
   install_property(G_OBJECT(udpsink_), "ttl-mc", "ttl-mc", "TTL-MC");
@@ -95,7 +94,8 @@ bool UDPSink::init_gpipe() {
                  (Method::method_ptr) &add_client_wrapped,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
-                                                   G_TYPE_INT, nullptr),
+                                                   G_TYPE_INT,
+                                                   nullptr),
                  this);
 
   install_method("Remove Client",
@@ -133,12 +133,6 @@ bool UDPSink::init_gpipe() {
 }
 
 UDPSink::~UDPSink() {
-  g_debug("removing udpsink %s (%s)", get_nick_name().c_str(),
-          GST_ELEMENT_NAME(udpsink_bin_));
-
-  // GstBin *parent = GST_BIN( GST_ELEMENT_PARENT (udpsink_bin_));
-  // g_debug ("num child in parent bin : %d",
-  //      GST_BIN_NUMCHILDREN (parent));
 
   if (ghost_sinkpad_ != nullptr) {
     if (gst_pad_is_linked(ghost_sinkpad_)) {
@@ -164,8 +158,11 @@ UDPSink::add_elements_to_bin(ShmdataReader *caller,
   gst_bin_add(GST_BIN(context->bin_), context->udpsink_bin_);
 
   gst_bin_add_many(GST_BIN(context->udpsink_bin_),
-                   context->typefind_, context->udpsink_, nullptr);
-  gst_element_link(context->typefind_, context->udpsink_);
+                   context->typefind_,
+                   context->udpsink_,
+                   nullptr);
+  gst_element_link(context->typefind_,
+                   context->udpsink_);
 
   // GstUtils::wait_state_changed (context->udpsink_bin_);
   GstUtils::sync_state_with_parent(context->udpsink_bin_);
@@ -177,26 +174,24 @@ UDPSink::add_elements_to_bin(ShmdataReader *caller,
   gst_object_unref(sink_pad);
 }
 
-void UDPSink::on_client_added(GstElement * /*multiudpsink */ ,
-                              gchar * /*host */ ,
+void UDPSink::on_client_added(GstElement */*multiudpsink */ ,
+                              gchar */*host */ ,
                               gint /*port */ ,
                               gpointer /*user_data */ ) {
-  // UDPSink *context = static_cast<UDPSink *>(user_data);
   g_debug("UDPSink::on_client_added");
 }
 
-void UDPSink::on_client_removed(GstElement * /*multiudpsink */ ,
-                                gchar * /*host */ ,
+void UDPSink::on_client_removed(GstElement */*multiudpsink */ ,
+                                gchar */*host */ ,
                                 gint /*port */ ,
                                 gpointer /*user_data */ ) {
-  // UDPSink *context = static_cast<UDPSink *>(user_data);
   g_debug("UDPSink::on_client_removed");
 }
 
 gboolean
-UDPSink::remove_client_wrapped(gpointer host, gint port,
+UDPSink::remove_client_wrapped(gpointer host,
+                               gint port,
                                gpointer user_data) {
-  // std::string connector = static_cast<std::string>(connector_name);
   UDPSink *context = static_cast<UDPSink *>(user_data);
 
   if (context->remove_client((char *) host, port))
@@ -228,7 +223,6 @@ bool UDPSink::add_client(gchar *host, gint port) {
 }
 
 gboolean UDPSink::clear_wrapped(gpointer /*unused */ , gpointer user_data) {
-  // std::string connector = static_cast<std::string>(connector_name);
   UDPSink *context = static_cast<UDPSink *>(user_data);
 
   if (context->clear_clients())
