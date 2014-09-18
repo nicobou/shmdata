@@ -47,7 +47,7 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
  private:
   CustomPropertyHelper::ptr custom_props_;
   std::string calibration_path_ {"default.kvc"};
-  std::string devices_path_ {"devices.kvc"};
+  std::string devices_path_ {"devices.xml"};
   unsigned int device_index_ {0};
   bool capture_ir_ {false};
   bool compress_cloud_ {false};

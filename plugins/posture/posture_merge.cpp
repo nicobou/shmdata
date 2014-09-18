@@ -21,10 +21,8 @@
 #include <iostream>
 
 using namespace std;
-using namespace
-switcher::data;
-using namespace
-posture;
+using namespace switcher::data;
+using namespace posture;
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureMerge,
@@ -49,6 +47,7 @@ PostureMerge::start() {
   merger_->setCalibrationPath(calibration_path_);
   merger_->setDevicesPath(devices_path_);
   merger_->setCompression(compress_cloud_);
+  merger_->setSaveCloud(save_cloud_);
 
   merger_->start();
 
@@ -78,10 +77,9 @@ PostureMerge::init() {
   init_segment(this);
 
   install_connect_method(std::bind(&PostureMerge::connect, this, std::placeholders::_1), nullptr,     // FIXME implement this (disconnect with the shmdata as unique argument)
-                         std::bind(&PostureMerge::disconnect_all,
-                                   this),
-                         std::bind(&PostureMerge::can_sink_caps,
-                                   this, std::placeholders::_1), 8);
+                         std::bind(&PostureMerge::disconnect_all, this),
+                         std::bind(&PostureMerge::can_sink_caps, this, std::placeholders::_1),
+                         8);
 
   calibration_path_prop_ =
       custom_props_->make_string_property("calibration_path",
@@ -107,8 +105,7 @@ PostureMerge::init() {
                             devices_path_prop_, "devices",
                             "Path to the devices description file");
 
-  compress_cloud_prop_ =
-      custom_props_->make_boolean_property("compress_cloud",
+  compress_cloud_prop_ = custom_props_->make_boolean_property("compress_cloud",
                                            "Compress the cloud if true",
                                            compress_cloud_,
                                            (GParamFlags) G_PARAM_READWRITE,
@@ -129,6 +126,17 @@ PostureMerge::init() {
   install_property_by_pspec(custom_props_->get_gobject(),
                             reload_calibration_prop_, "reload_calibration",
                             "Reload calibration at each frame");
+
+  save_cloud_prop_ = custom_props_->make_boolean_property("save_cloud",
+                                           "Save the current cloud if true",
+                                           save_cloud_,
+                                           (GParamFlags) G_PARAM_READWRITE,
+                                           PostureMerge::set_save_cloud,
+                                           PostureMerge::get_save_cloud,
+                                           this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            save_cloud_prop_, "save_cloud",
+                            "Save the current cloud if true");
 
   return true;
 }
@@ -246,6 +254,18 @@ void
 PostureMerge::set_reload_calibration(const int reload, void *user_data) {
   PostureMerge *ctx = (PostureMerge *) user_data;
   ctx->reload_calibration_ = reload;
+}
+
+int
+PostureMerge::get_save_cloud(void *user_data) {
+  PostureMerge *ctx = (PostureMerge *) user_data;
+  return ctx->save_cloud_;
+}
+
+void
+PostureMerge::set_save_cloud(const int save, void *user_data) {
+  PostureMerge *ctx = (PostureMerge *) user_data;
+  ctx->save_cloud_ = save;
 }
 
 bool

@@ -3,6 +3,7 @@ pluginsdir = $(prefix)/switcher-@LIBSWITCHER_API_VERSION@/plugins
 plugins_LTLIBRARIES = \
     libposturedisplay.la \
     libposturemerge.la \
+		libposturesolidify.la \
     libposturesource.la 
 
 #libposturesource info
@@ -89,6 +90,34 @@ libposturedisplay_la_CXXFLAGS = \
 
 noinst_HEADERS += \
     posture_display.hpp
+
+#libposturesolidify info
+libposturesolidify_la_SOURCES = \
+    posture_solidify.cpp
+
+libposturesolidify_la_LDFLAGS = \
+    $(GLIB_LIBS) \
+    $(GST_LIBS) \
+    $(GMODULE_LIBS) \
+    $(JSONGLIB_LIBS) \
+    $(POSTURE_LIBS) \
+    $(SHMDATA_LIBS) \
+    -avoid-version \
+    -L$(top_builddir)/switcher/.libs \
+    -lswitcher-@LIBSWITCHER_API_VERSION@
+
+libposturesolidify_la_CXXFLAGS = \
+    $(GLIB_CFLAGS) \
+    $(GMODULE_CFLAGS) \
+    $(GST_CFLAGS) \
+    $(JSONGLIB_CFLAGS) \
+    $(POSTURE_CFLAGS) \
+    $(SHMDATA_CFLAGS) \
+    -I$(top_srcdir) \
+    -DG_LOG_DOMAIN=\"switcher\"
+
+noinst_HEADERS += \
+    posture_solidify.hpp
 
 #### plugin unit test
 # AM_CFLAGS = \
