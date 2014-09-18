@@ -20,18 +20,19 @@
 #ifndef __SWITCHER_RTPSESSION_H__
 #define __SWITCHER_RTPSESSION_H__
 
-#include "./gpipe.hpp"
-#include "./quiddity-manager.hpp"
-#include "./rtp-destination.hpp"
-#include "./custom-property-helper.hpp"
 #include <gst/gst.h>
 #include <gst/sdp/gstsdpmessage.h>
 #include <memory>
 #include <map>
 #include <string>
+#include "./gpipe.hpp"
+#include "./quiddity-manager.hpp"
+#include "./rtp-destination.hpp"
+#include "./custom-property-helper.hpp"
 
 namespace switcher {
-class RtpSession:public GPipe {
+class RtpSession: public GPipe {
+  friend RtpDestination;
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(RtpSession);
   RtpSession();

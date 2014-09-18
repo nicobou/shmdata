@@ -17,13 +17,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./rtp-destination.hpp"
 #include <sstream>
+#include "rtp-session.hpp"
+#include "./rtp-destination.hpp"
 #include "./sdp-utils.hpp"
 
 namespace switcher {
-RtpDestination::RtpDestination() {
-  json_description_.reset(new JSONBuilder());
+RtpDestination::RtpDestination(RtpSession *session) :
+    json_description_(std::make_shared<JSONBuilder>()),
+    session_ (session) {
 }
 
 RtpDestination::~RtpDestination() {

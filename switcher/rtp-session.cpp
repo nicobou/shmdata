@@ -493,8 +493,7 @@ RtpSession::add_destination(std::string nick_name, std::string host_name)
          nick_name.c_str());
     return false;
   }
-  RtpDestination::ptr dest;
-  dest.reset(new RtpDestination());
+  RtpDestination::ptr dest = std::make_shared<RtpDestination>(this);
   dest->set_name(nick_name);
   dest->set_host_name(host_name);
   destinations_[nick_name] = dest;
@@ -554,19 +553,16 @@ RtpSession::add_udp_stream_to_dest(std::string shmdata_socket_path,
               nick_name.c_str());
     return false;
   }
-  if (g_strcmp0
-      (destination_it->second->get_port(shmdata_socket_path).c_str(),
-       port.c_str()) == 0) {
-    g_warning
-        ("RtpSession: destination (%s) is already streaming shmdata (%s) to port %s",
-         nick_name.c_str(), shmdata_socket_path.c_str(), port.c_str());
+  if (0 == destination_it->second->get_port(shmdata_socket_path).compare(port)) {
+    g_warning ("destination (%s) is already streaming shmdata (%s) to port %s",
+               nick_name.c_str(), shmdata_socket_path.c_str(), port.c_str());
     return false;
   }
   // TODO check port has not been set for this destination
   gint rtp_port = atoi(port.c_str());
 
   if (rtp_port % 2 != 0) {
-    g_warning("RtpSession rtp destination port %s must be even, not odd",
+    g_warning("rtp destination port %s must be even, not odd",
               port.c_str());
     return false;
   }
@@ -593,23 +589,28 @@ RtpSession::add_udp_stream_to_dest(std::string shmdata_socket_path,
     // update manager_it with the new one
     manager_it = quiddity_managers_.find(shmdata_socket_path);
   }
+
   QuiddityManager::ptr manager = manager_it->second;
   if (!(bool) manager) {
-    g_warning("add_udp_stream_to_dest ...not a manager...");
+    g_warning("cannot find manager for udp");
     return false;
   }
+  
   // rtp stream (sending)
   RtpDestination::ptr dest = destinations_[nick_name];
   dest->add_stream(shmdata_socket_path, manager, port);
+
   std::vector<std::string> arg;
   arg.push_back(dest->get_host_name());
   arg.push_back(port);
   manager->invoke("udpsend_rtp", "add_client", nullptr, arg);
+
   // rtcp stream (sending)
   arg.clear();
   arg.push_back(dest->get_host_name());
   arg.push_back(std::to_string (rtp_port + 1));
   manager->invoke("udpsend_rtcp", "add_client", nullptr, arg);
+  
   // TODO rtcp receiving should be negociated
   // GstElementCleaner::ptr funnel_cleaner = funnels_[shmdata_socket_path];
   //  GstElement *funnel = funnel_cleaner->get_labeled_element_from_cleaner ("funnel");
