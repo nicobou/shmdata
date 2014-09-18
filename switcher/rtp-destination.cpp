@@ -18,9 +18,10 @@
  */
 
 #include <sstream>
-#include "rtp-session.hpp"
+#include "./rtp-session.hpp"
 #include "./rtp-destination.hpp"
 #include "./sdp-utils.hpp"
+#include "./scope-exit.hpp"
 
 namespace switcher {
 RtpDestination::RtpDestination(RtpSession *session) :
@@ -29,22 +30,6 @@ RtpDestination::RtpDestination(RtpSession *session) :
 }
 
 RtpDestination::~RtpDestination() {
-  for (auto &it : ports_) {
-    QuiddityManager::ptr manager = it.second;
-    // cleaning rtp
-    std::vector<std::string> arg;
-    arg.push_back(host_name_);
-    arg.push_back(it.first);
-    manager->invoke("udpsend_rtp", "remove_client", nullptr, arg);
-    // cleaning rtcp
-    arg.clear();
-    arg.push_back(host_name_);
-    std::ostringstream rtcp_port;
-    rtcp_port << atoi(it.first.c_str()) + 1;
-    arg.push_back(rtcp_port.str());
-    manager->invoke("udpsend_rtp", "remove_client", nullptr, arg);
-    // TODO remove connection to funnel
-  }
 }
 
 void RtpDestination::set_name(std::string name) {
@@ -69,21 +54,15 @@ std::string RtpDestination::get_port(std::string shmdata_path) {
 }
 
 bool
-RtpDestination::add_stream(std::string orig_shmdata_path,
-                           QuiddityManager::ptr manager,
+RtpDestination::add_stream(std::string shmdata_path,
                            std::string port) {
-  ports_[port] = manager;
-  source_streams_[orig_shmdata_path] = port;
+  source_streams_[shmdata_path] = port;
   make_json_description();
   return true;
 }
 
 bool RtpDestination::has_shmdata(std::string shmdata_path) {
   return (source_streams_.end() != source_streams_.find(shmdata_path));
-}
-
-bool RtpDestination::has_port(std::string port) {
-  return (ports_.end() != ports_.find(port));
 }
 
 bool RtpDestination::remove_stream(std::string shmdata_stream_path) {
@@ -93,7 +72,6 @@ bool RtpDestination::remove_stream(std::string shmdata_stream_path) {
               shmdata_stream_path.c_str());
     return false;
   }
-  ports_.erase(it->second);
   source_streams_.erase(it);
   make_json_description();
   return true;
@@ -102,19 +80,21 @@ bool RtpDestination::remove_stream(std::string shmdata_stream_path) {
 std::string RtpDestination::get_sdp() {
   SDPDescription desc;
 
-  for (auto &it : ports_) {
-    std::string string_caps =
-        (it.second)->get_property("udpsend_rtp", "caps");
+  for (auto &it : source_streams_) {
+    std::string string_caps = session_->
+        invoke_info_tree<std::string>(
+            [&](data::Tree::ptrc tree){
+              return data::Tree::read_data(tree,
+                                           "rtp_caps." + it.first);
+            });
     GstCaps *caps = gst_caps_from_string(string_caps.c_str());
-    gint port = atoi(it.first.c_str());
+    On_scope_exit{gst_caps_unref(caps);};
+    gint port = atoi(it.second.c_str());
     SDPMedia media;
     media.set_media_info_from_caps(caps);
     media.set_port(port);
-
     if (!desc.add_media(media))
       g_warning("a media has not been added to the SDP description");
-
-    gst_caps_unref(caps);
   }
 
   return desc.get_string();

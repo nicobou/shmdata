@@ -598,7 +598,7 @@ RtpSession::add_udp_stream_to_dest(std::string shmdata_socket_path,
   
   // rtp stream (sending)
   RtpDestination::ptr dest = destinations_[nick_name];
-  dest->add_stream(shmdata_socket_path, manager, port);
+  dest->add_stream(shmdata_socket_path, port);
 
   std::vector<std::string> arg;
   arg.push_back(dest->get_host_name());
