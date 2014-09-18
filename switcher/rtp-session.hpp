@@ -151,9 +151,14 @@ class RtpSession: public GPipe {
                                                     gpointer user_data);
   static gboolean write_sdp_file_wrapped(gpointer nick_name,
                                          gpointer user_data);
+  static void on_rtppayloder_caps(GstElement *typefind,
+                                  guint probability,
+                                  GstCaps *caps,
+                                  gpointer user_data);
   bool make_udp_sink(const std::string &shmpath,
                      GstElement *rtpsession,
                      const std::string &rtp_src_pad_name);
+
 };
 }  // namespace switcher
 

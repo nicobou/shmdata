@@ -450,8 +450,8 @@ RtpSession::make_data_stream_available(GstElement *typefind,
 
 void
 RtpSession::attach_data_stream(ShmdataReader *caller,
-                               void *rtpsession_instance) {
-  RtpSession *context = static_cast<RtpSession *>(rtpsession_instance);
+                               void *user_data) {
+  RtpSession *context = static_cast<RtpSession *>(user_data);
   GstElement *funnel, *typefind;
   GstUtils::make_element("funnel", &funnel);
   GstUtils::make_element("typefind", &typefind);
@@ -898,6 +898,23 @@ void RtpSession::on_rtp_caps(std::string shmdata_path, std::string caps) {
              data::Tree::make(std::move(caps)));
 }
 
+// this is a typefind function used in order to get rtp payloader caps
+void RtpSession::on_rtppayloder_caps(GstElement *typefind,
+                                     guint /*probability */ ,
+                                     GstCaps *caps,
+                                     gpointer /*user_data*/) {
+  RtpSession *context = static_cast<RtpSession *>(
+      g_object_get_data(G_OBJECT(typefind), "rtp_session"));
+  gchar *shmpath = static_cast<char *>(
+      g_object_get_data(G_OBJECT(typefind), "shmdata_path"));
+  On_scope_exit{g_free(shmpath);};
+  gchar *caps_str = gst_caps_to_string(caps);
+  On_scope_exit{g_free(caps_str);};
+  g_print("------------------------------%s \n",caps_str);
+  context->on_rtp_caps(std::string(shmpath),
+                       std::string(caps_str));
+}
+
 bool RtpSession::make_udp_sink(const std::string &shmpath,
                                GstElement *rtpsession,
                                const std::string &rtp_src_pad_name) {
@@ -914,9 +931,15 @@ bool RtpSession::make_udp_sink(const std::string &shmpath,
   g_print("%d\n", __LINE__);
   g_object_set (G_OBJECT (udpsink_bin), "async-handling", TRUE, nullptr);
   g_object_set(G_OBJECT(udpsink), "sync", FALSE, nullptr);
-  // g_signal_connect(typefind,
-  //                  "have-type", G_CALLBACK(RtpSession::make_data_stream_available),
-  //                  context);
+  // saving shmpath and this for use when type find will throw "have-type" 
+  g_object_set_data(G_OBJECT(typefind), "shmdata_path",
+                    (gpointer) g_strdup(shmpath.c_str()));
+  g_object_set_data(G_OBJECT(typefind), "rtp_session",
+                    (gpointer) this);
+  g_signal_connect(typefind,
+                   "have-type",
+                   G_CALLBACK(RtpSession::on_rtppayloder_caps),
+                   nullptr);
 
   g_print("%d\n", __LINE__);
 #if HAVE_OSX
