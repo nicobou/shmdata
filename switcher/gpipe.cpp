@@ -32,8 +32,10 @@
 #include "./quiddity-manager-impl.hpp"
 
 namespace switcher {
-GPipe::GPipe():pipeline_(gst_pipeline_new(nullptr)),
-               source_funcs_(), gpipe_custom_props_(new CustomPropertyHelper()) {
+GPipe::GPipe():
+    pipeline_(gst_pipeline_new(nullptr)),
+    source_funcs_(),
+    gpipe_custom_props_(new CustomPropertyHelper()) {
   make_bin();
   init_segment(this);
 }
@@ -45,7 +47,7 @@ GPipe::~GPipe() {
         g_source_destroy(it);
   if (position_tracking_source_ != nullptr)
     g_source_destroy(position_tracking_source_);
-  GstUtils::clean_element(pipeline_);
+  gst_object_unref(pipeline_);
   if (!g_source_is_destroyed(source_))
     g_source_destroy(source_);
 }
@@ -122,7 +124,8 @@ void GPipe::play(gboolean play) {
     position_tracking_source_ =
         GstUtils::g_timeout_add_to_context(200,
                                            (GSourceFunc) query_position,
-                                           this, get_g_main_context());
+                                           this,
+                                           get_g_main_context());
   if (TRUE == play)
     gst_element_set_state(pipeline_, GST_STATE_PLAYING);
   else
@@ -142,14 +145,17 @@ gboolean GPipe::get_play(void *user_data) {
 
 bool GPipe::seek(gdouble position) {
   gboolean ret = FALSE;
-  ret = gst_element_seek(pipeline_, speed_, GST_FORMAT_TIME, (GstSeekFlags) ( // GST_SEEK_FLAG_FLUSH |
-      GST_SEEK_FLAG_ACCURATE),
+  ret = gst_element_seek(pipeline_,
+                         speed_,
+                         GST_FORMAT_TIME,
+                         (GstSeekFlags)(GST_SEEK_FLAG_FLUSH |
+                                        GST_SEEK_FLAG_ACCURATE),
                          // | GST_SEEK_FLAG_SKIP
                          // | GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
                          GST_SEEK_TYPE_SET,
-                         position * length_ *GST_MSECOND,
-                         GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
-
+                         position  * GST_MSECOND,
+                         GST_SEEK_TYPE_NONE,
+                         GST_CLOCK_TIME_NONE);
   gpipe_custom_props_->notify_property_changed(seek_spec_);
   if (!ret)
     g_debug("seek not handled\n");
@@ -162,7 +168,7 @@ gdouble GPipe::get_seek(void *user_data) {
 }
 void GPipe::set_seek(gdouble position, void *user_data) {
   GPipe *context = static_cast<GPipe *>(user_data);
-  context->seek(position);
+  context->seek(position * context->length_);
 }
 
 gboolean GPipe::speed_wrapped(gdouble speed, gpointer user_data) {
@@ -489,16 +495,18 @@ void GPipe::make_bin() {
 }
 
 void GPipe::clean_bin() {
+
+  if (nullptr == bin_)
+    return;
+  
   g_debug("GPipe, bin state %s, target %s, num children %d ",
           gst_element_state_get_name(GST_STATE(bin_)),
           gst_element_state_get_name(GST_STATE_TARGET(bin_)),
           GST_BIN_NUMCHILDREN(GST_BIN(bin_)));
-
+  
   GstUtils::wait_state_changed(bin_);
-
+  
   if (GST_IS_ELEMENT(bin_)) {
-    // FIXME clear_shmdatas ();
-
     g_debug("GPipe, bin state %s, target %s, num children %d ",
             gst_element_state_get_name(GST_STATE(bin_)),
             gst_element_state_get_name(GST_STATE_TARGET(bin_)),

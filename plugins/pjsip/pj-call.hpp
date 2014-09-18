@@ -25,10 +25,10 @@
 #include <string>
 #include <vector>
 
-#include "./pj-codec.hpp"
 #include "switcher/shmdata-any-writer.hpp"
 #include "switcher/rtp-session.hpp"
 #include "switcher/quiddity-manager.hpp"
+#include "./pj-codec.hpp"
 
 #define MAX_CALLS 1024
 
@@ -79,6 +79,7 @@ class PJCall {
     pj_time_val response_time {0, 0};
     pj_time_val connect_time {0, 0};
     std::string peer_uri {};
+    gchar *outgoing_sdp {nullptr};
     PJCall *instance {nullptr};
   };
 

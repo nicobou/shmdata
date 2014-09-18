@@ -108,10 +108,12 @@ SDPMedia::add_to_sdp_description(GstSDPMessage *sdp_description,
   guint n_fields = gst_structure_n_fields(caps_structure_);
 
   for (uint j = 0; j < n_fields; j++) {
-    const gchar *fname, *fval;
+    const gchar *fname = nullptr;
+    const gchar *fval = nullptr;
 
     fname = gst_structure_nth_field_name(caps_structure_, j);
-
+    if (nullptr == fname)
+      continue;
     /* filter out standard properties */
     if (g_strcmp0(fname, "media") == 0)
       continue;
@@ -130,11 +132,12 @@ SDPMedia::add_to_sdp_description(GstSDPMessage *sdp_description,
     if (g_strcmp0(fname, "seqnum-base") == 0)
       continue;
 
+    const gchar *struct_str = gst_structure_get_string(caps_structure_, fname);
+    if (nullptr == struct_str)
+      continue;
     std::string fname_value(std::string(fname)
                             + "="
-                            +
-                            std::string(gst_structure_get_string
-                                        (caps_structure_, fname)));
+                            + std::string(struct_str));
 
     if ((fval = gst_structure_get_string(caps_structure_, fname))) {
       if (!first)

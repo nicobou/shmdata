@@ -76,6 +76,7 @@ class Tree {
   bool is_array(const std::string &path) const;
   bool has_data(const std::string &path) const;
   const Any read_data (const std::string &path) const;
+  
   // get child keys - returning a newly allocated container
   template<template<class T, class = std::allocator<T>>
            class Container = std::list>
@@ -95,6 +96,7 @@ class Tree {
     }
     return res;
   }
+
   // get child key in place, use with std::insert_iterator
   template<typename Iter>
   void get_child_keys(const std::string path, Iter pos) const {
@@ -109,6 +111,7 @@ class Tree {
                      });
     }
   }
+  
   // get leaf values in a newly allocated container
   template<template<class T, class = std::allocator<T>>
            class Container = std::list>
@@ -124,18 +127,17 @@ class Tree {
       tree = found.second->second;
     }
     preorder_tree_walk (tree,
-                        [&res](std::string key,
+                        [&res](std::string /*key*/,
                                Tree::ptrc node,
-                               bool is_array_element) {
+                               bool /*is_array_element*/) {
                           if (node->is_leaf())
                             res.push_back(Any::to_string(node->read_data()));
                         },
-                        [](std::string key,
-                           Tree::ptrc node,
-                           bool is_array_element){});
+                        [](std::string, Tree::ptrc, bool){});
     return res;
   }
-
+ 
+  
   //static version of const methods, for being used with invoke_info_tree
   static void preorder_tree_walk(Tree::ptrc tree,
                                  Tree::OnNodeFunction on_visiting_node,
@@ -158,6 +160,13 @@ class Tree {
   template<typename Iter>
   static void get_child_keys(Tree::ptrc tree, const std::string path, Iter pos) {
     tree->get_child_keys<Iter> (path, pos);
+  }
+  // get leaf values - returning a newly allocated container
+  // (not working with forward_list)
+  template<template<class T, class = std::allocator<T>>
+           class Container = std::list>
+      static Container<std::string> get_leaf_values(Tree::ptrc tree, const std::string path) {
+    return tree->get_leaf_values<Container>(path);
   }
   
   //Tree modifications:

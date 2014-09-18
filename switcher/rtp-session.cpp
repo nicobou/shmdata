@@ -17,10 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <glib/gstdio.h>        // writing sdp file
+#include "./scope-exit.hpp"
 #include "./rtp-session.hpp"
 #include "./gst-utils.hpp"
 #include "./json-builder.hpp"
-#include <glib/gstdio.h>        // writing sdp file
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RtpSession,
@@ -28,24 +29,13 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RtpSession,
                                      "network",
                                      "RTP session manager",
                                      "LGPL",
-                                     "rtpsession", "Nicolas Bouillot");
+                                     "rtpsession",
+                                     "Nicolas Bouillot");
 
-RtpSession::RtpSession():rtpsession_(nullptr), next_id_(79),  // this value is arbitrary and can be changed
-                         custom_props_(new CustomPropertyHelper()),
-                         destination_description_json_(nullptr),
-                         destinations_json_(nullptr),
-                         mtu_at_add_data_stream_spec_(nullptr),
-                         mtu_at_add_data_stream_(1400),
-                         internal_id_(),
-                         rtp_ids_(),
-                         quiddity_managers_(),
-                         funnels_(),
-  internal_shmdata_writers_(),
-  internal_shmdata_readers_(), destinations_() {
+RtpSession::RtpSession(): custom_props_(new CustomPropertyHelper()) {
 }
 
 RtpSession::~RtpSession() {
-
   std::vector<std::string> paths;
   for (auto &it : quiddity_managers_)
     paths.push_back(it.first);
@@ -339,10 +329,9 @@ RtpSession::make_data_stream_available(GstElement *typefind,
   // bypassing jpeg for high dimensions
   bool jpeg_payloader = true;
   GstStructure *caps_structure = gst_caps_get_structure(caps, 0);
-  if (g_str_has_prefix(gst_structure_get_name(caps_structure), "image/jpeg")) {       // check jpeg dimension are suported by jpeg payloader
+  // check jpeg dimension are suported by jpeg payloader
+  if (g_str_has_prefix(gst_structure_get_name(caps_structure), "image/jpeg")) {
     gint width = 0, height = 0;
-    /* these properties are not mandatory, we can get them from the SOF, if there
-     * is one. */
     if (gst_structure_get_int(caps_structure, "height", &height)) {
       if (height <= 0 || height > 2040)
         jpeg_payloader = false;
@@ -354,39 +343,37 @@ RtpSession::make_data_stream_available(GstElement *typefind,
   }
 
   if (list != nullptr && jpeg_payloader)
-    pay =
-        gst_element_factory_create(GST_ELEMENT_FACTORY(list->data), nullptr);
+    pay = gst_element_factory_create(GST_ELEMENT_FACTORY(list->data),
+                                     nullptr);
   else
     GstUtils::make_element("rtpgstpay", &pay);
 
-  ShmdataReader *reader =
-      (ShmdataReader *) g_object_get_data(G_OBJECT(typefind),
-                                          "shmdata-reader");
+  ShmdataReader *reader = static_cast<ShmdataReader *>(
+      g_object_get_data(G_OBJECT(typefind),
+                        "shmdata-reader"));
   reader->add_element_to_cleaner(pay);
 
   g_debug("RtpSession::make_data_stream_available: %s payloader",
           GST_ELEMENT_NAME(pay));
 
-  /* add capture and payloading to the pipeline and link */
+  // add capture and payloading to the pipeline and link
   gst_bin_add_many(GST_BIN(context->bin_), pay, nullptr);
   gst_element_link(typefind, pay);
-  g_debug("%s sync", __PRETTY_FUNCTION__);
   GstUtils::sync_state_with_parent(pay);
-  g_debug("%s after sync", __PRETTY_FUNCTION__);
-  g_object_set(G_OBJECT(pay), "mtu",
-               (guint) context->mtu_at_add_data_stream_, nullptr);
+  g_object_set(G_OBJECT(pay),
+               "mtu",
+               (guint)context->mtu_at_add_data_stream_,
+               nullptr);
 
-  /* now link all to the rtpbin, start by getting an RTP sinkpad for session "%d" */
+  // now link all to the rtpbin, start by getting an RTP sinkpad for session "%d"
   GstPad *sinkpad = gst_element_get_request_pad(context->rtpsession_,
                                                 "send_rtp_sink_%d");
-  GstPad *srcpad = gst_element_get_static_pad(pay,
-                                              "src");
+  On_scope_exit {gst_object_unref(sinkpad);}; 
+  GstPad *srcpad = gst_element_get_static_pad(pay, "src");
+  On_scope_exit {gst_object_unref(srcpad);}; 
   if (gst_pad_link(srcpad, sinkpad) != GST_PAD_LINK_OK)
-    g_warning
-        ("RtpSession::make_data_stream_available: failed to link payloader to rtpbin");
-  gst_object_unref(sinkpad);
-  gst_object_unref(srcpad);
-
+    g_warning("failed to link payloader to rtpbin");
+  
   // get name for the newly created pad
   gchar *rtp_sink_pad_name = gst_pad_get_name(sinkpad);
   gchar **rtp_session_array = g_strsplit_set(rtp_sink_pad_name, "_", 0);
@@ -394,20 +381,18 @@ RtpSession::make_data_stream_available(GstElement *typefind,
   gchar *rtp_session_id = g_strdup(rtp_session_array[3]);
   context->rtp_ids_[reader->get_path()] = rtp_session_id;
   // using internal session id for this local stream
-  std::
-      string internal_session_id(context->internal_id_[reader->get_path()]);
-
+  std::string internal_session_id(context->internal_id_[reader->get_path()]);
   g_free(rtp_sink_pad_name);
   g_strfreev(rtp_session_array);
 
-  // rtp src pad (is a static pad since created after the request of rtp sink pad)
-  gchar *rtp_src_pad_name =
-      g_strconcat("send_rtp_src_", rtp_session_id, nullptr);
-  g_debug
-      ("RtpSession: request rtp src pad and create a corresponding shmwriter %s",
-       rtp_src_pad_name);
-  GstPad *rtp_src_pad =
-      gst_element_get_static_pad(context->rtpsession_, rtp_src_pad_name);
+  // rtp src pad (static pad since created after the request of rtp sink pad)
+  gchar *rtp_src_pad_name = g_strconcat("send_rtp_src_",
+                                        rtp_session_id,
+                                        nullptr);
+  g_debug("request rtp src pad and create a corresponding shmwriter %s",
+          rtp_src_pad_name);
+  GstPad *rtp_src_pad = gst_element_get_static_pad(context->rtpsession_,
+                                                   rtp_src_pad_name);
 
   if (!GST_IS_PAD(rtp_src_pad))
     g_warning("RtpSession: rtp_src_pad is not a pad");
@@ -417,28 +402,27 @@ RtpSession::make_data_stream_available(GstElement *typefind,
   // // GstUtils::make_element ("fakesink", &myfake);
   // GstUtils::make_element ("multiudpsink", &myfake);
   // g_object_set (G_OBJECT (myfake), "sync", FALSE, nullptr);
-
   // gst_bin_add_many (GST_BIN (context->bin_), myfake, nullptr);
   // GstPad *fakepad = gst_element_get_static_pad (myfake, "sink");
   // if (gst_pad_link (rtp_src_pad, fakepad) != GST_PAD_LINK_OK)
   //   g_debug ("RtpSession::make_data_stream_available linking with multiudpsink failled");
   // GstUtils::sync_state_with_parent (myfake);
-
   // g_signal_emit_by_name (myfake, "add", "localhost", "8044", nullptr);
   // // g_signal_emit_by_name (myfake, "add", "localhost", "9040", nullptr);
-
   // end testing
 
   ShmdataWriter::ptr rtp_writer;
   rtp_writer.reset(new ShmdataWriter());
-  std::string rtp_writer_name =
-      context->make_file_name("send_rtp_src_" + internal_session_id);
+  std::string rtp_writer_name = context->make_file_name("send_rtp_src_"
+                                                        + internal_session_id);
   rtp_writer->set_path(rtp_writer_name.c_str());
   rtp_writer->plug(context->bin_, rtp_src_pad);
   context->internal_shmdata_writers_[rtp_writer_name] = rtp_writer;
   g_free(rtp_src_pad_name);
   // set call back for saving caps in a property tree
-  rtp_writer->set_on_caps(std::bind(&RtpSession::on_rtp_caps, context, reader->get_path(),    // std::move (rtp_writer_name),
+  rtp_writer->set_on_caps(std::bind(&RtpSession::on_rtp_caps,
+                                    context,
+                                    reader->get_path(),
                                     std::placeholders::_1));
 
   // rtcp src pad
@@ -447,6 +431,7 @@ RtpSession::make_data_stream_available(GstElement *typefind,
   g_debug("RtpSession: request rtcp src pad %s", rtcp_src_pad_name);
   GstPad *rtcp_src_pad =
       gst_element_get_request_pad(context->rtpsession_, rtcp_src_pad_name);
+
   ShmdataWriter::ptr rtcp_writer;
   rtcp_writer.reset(new ShmdataWriter());
   std::string rtcp_writer_name =
@@ -481,7 +466,6 @@ RtpSession::make_data_stream_available(GstElement *typefind,
   funnel_cleaning->add_labeled_element_to_cleaner("funnel", funnel);
   context->funnels_[reader->get_path()] = funnel_cleaning;
   g_free(rtp_session_id);
-
   g_debug("RtpSession::make_data_stream_available (done)");
 }
 

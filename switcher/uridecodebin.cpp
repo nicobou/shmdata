@@ -37,24 +37,27 @@ Uridecodebin::~Uridecodebin() {
   destroy_uridecodebin();
 }
 
-Uridecodebin::Uridecodebin():uridecodebin_(nullptr),
-                             media_counters_(),
-                             main_pad_(nullptr),
-                             rtpgstcaps_(nullptr),
-                             discard_next_uncomplete_buffer_(false),
-                             on_error_command_(nullptr),
-                             custom_props_(new CustomPropertyHelper()),
-                             loop_prop_(nullptr),
-                             loop_(false),
-                             playing_prop_(nullptr),
-  playing_(true), uri_spec_(nullptr), uri_(g_strdup("")) {
+Uridecodebin::Uridecodebin():
+    uridecodebin_(nullptr),
+    media_counters_(),
+    main_pad_(nullptr),
+    rtpgstcaps_(nullptr),
+    discard_next_uncomplete_buffer_(false),
+    on_error_command_(nullptr),
+    custom_props_(new CustomPropertyHelper()),
+    loop_prop_(nullptr),
+    loop_(false),
+    playing_prop_(nullptr),
+    playing_(true),
+    uri_spec_(nullptr),
+    uri_(g_strdup("")) {
 }
 
 bool Uridecodebin::init_gpipe() {
   if (!GstUtils::make_element("uridecodebin", &uridecodebin_))
     return false;
   install_play_pause();
-  // install_seek ();
+  //install_seek ();
   uri_spec_ =
       custom_props_->make_string_property("uri",
                                           "URI To Be Redirected Into Shmdata(s)",
@@ -78,8 +81,7 @@ bool Uridecodebin::init_gpipe() {
 
 void Uridecodebin::init_uridecodebin() {
   if (!GstUtils::make_element("uridecodebin", &uridecodebin_)) {
-    g_warning
-        (" Uridecodebin::init_uridecodebin, cannot create uridecodebin");
+    g_warning("cannot create uridecodebin");
     return;
   }
 
@@ -140,13 +142,14 @@ void Uridecodebin::init_uridecodebin() {
                // "download",TRUE,
                // "use-buffering",TRUE,
                // "ring-buffer-max-size", 4294967295,
-               "expose-all-streams", TRUE, "async-handling", TRUE,
+               "expose-all-streams", TRUE,
+               "async-handling", TRUE,
                // "buffer-duration",9223372036854775807,
                nullptr);
 }
 
 void Uridecodebin::destroy_uridecodebin() {
-  GstUtils::clean_element(uridecodebin_);
+  reset_bin();
   clean_on_error_command();
   clear_shmdatas();
 }
@@ -255,48 +258,19 @@ int Uridecodebin::autoplug_select_cb(GstElement * /*bin */ ,
 //   GValueArray *factories,
 //   gpointer user_data)
 // {
-//   g_print ("sort---------------- bin: %s\n%s\n", gst_element_get_name (bin), gst_caps_to_string (caps));
+//   g_print ("sort: %s\n%s\n", gst_element_get_name (bin),
+//                              gst_caps_to_string (caps));
 //   return g_value_array_copy(factories);
 // }
 
 gboolean Uridecodebin::process_eos(gpointer user_data) {
   Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-  GstQuery *query;
-  gboolean res;
-  query = gst_query_new_segment(GST_FORMAT_TIME);
-  res = gst_element_query(context->get_pipeline(), query);
-  gdouble rate = 1.0;
-  gint64 start_value = -2.0;
-  gint64 stop_value = -2.0;
-  if (res) {
-    gst_query_parse_segment(query, &rate, nullptr, &start_value,
-                            &stop_value);
-    // g_print ("rate = %f start = %"GST_TIME_FORMAT" stop = %"GST_TIME_FORMAT"\n",
-    //        rate,
-    //        GST_TIME_ARGS (start_value),
-    //        GST_TIME_ARGS (stop_value));
-  } else {
-    g_debug("duration query failed...");
-  }
-  gst_query_unref(query);
-
   if (!context->loop_) {
+    context->seek(0.0);
     context->play(FALSE);
+    return false;
   }
-
-  gboolean ret = FALSE;
-  ret =
-      gst_element_seek(GST_ELEMENT(gst_pad_get_parent(context->main_pad_)),
-                       rate, GST_FORMAT_TIME,
-                       (GstSeekFlags) (GST_SEEK_FLAG_FLUSH |
-                                       GST_SEEK_FLAG_ACCURATE),
-                       // | GST_SEEK_FLAG_SKIP
-                       // | GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
-                       GST_SEEK_TYPE_SET,
-                       0.0 * GST_SECOND,
-                       GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
-  if (!ret)
-    g_warning("looping error\n");
+  context->seek(0.0);
   return FALSE;
 }
 
@@ -305,15 +279,14 @@ Uridecodebin::event_probe_cb(GstPad * pad, GstEvent *event,
                              gpointer user_data) {
   Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   if (GST_EVENT_TYPE(event) == GST_EVENT_EOS) {
-    // g_print ("----- pad with EOS %s:%s, src: %p %s\n",
-    //         GST_DEBUG_PAD_NAME (pad),GST_EVENT_SRC(event), gst_element_get_name (GST_EVENT_SRC(event)));
-
     if (pad == context->main_pad_) {
       GstUtils::g_idle_add_full_with_context(context->get_g_main_context(),
                                              G_PRIORITY_DEFAULT_IDLE,
                                              (GSourceFunc) process_eos,
-                                             (gpointer) context, nullptr);
+                                             (gpointer) context,
+                                             nullptr);
     }
+    
     return FALSE;
   }
 
@@ -353,35 +326,32 @@ void Uridecodebin::release_buf(void *user_data) {
   gst_buffer_unref(buf);
 }
 
-void Uridecodebin::pad_to_shmdata_writer(GstElement * bin, GstPad *pad) {
+void Uridecodebin::pad_to_shmdata_writer(GstElement *bin, GstPad *pad) {
   // detecting type of media
   const gchar *padname;
   if (0 == g_strcmp0("ANY", gst_caps_to_string(gst_pad_get_caps(pad))))
     padname = "custom";
   else
-    padname =
-        gst_structure_get_name(gst_caps_get_structure
-                               (gst_pad_get_caps(pad), 0));
+    padname = gst_structure_get_name(gst_caps_get_structure
+                                     (gst_pad_get_caps(pad), 0));
 
   g_debug("uridecodebin new pad name is %s\n", padname);
 
   GstElement *fakesink;
   GstUtils::make_element("fakesink", &fakesink);
-  g_object_set(fakesink, "sync", TRUE, "signal-handoffs", TRUE, nullptr);
-  GstElement *funnel;
+  g_object_set(fakesink,
+               "sync", TRUE,
+               "signal-handoffs", TRUE,
+               nullptr);
+  GstElement *funnel = nullptr;
   GstUtils::make_element("funnel", &funnel);
-
   auto parent = gst_pad_get_parent(pad);
   auto grandparent = gst_object_get_parent(parent);
   gst_object_unref(grandparent);
   gst_object_unref(parent);
   gst_bin_add_many(GST_BIN(bin), fakesink, funnel, nullptr);
+  gst_element_link_many(funnel, fakesink, nullptr);
   GstUtils::link_static_to_request(pad, funnel);
-  gst_element_link(funnel, fakesink);
-
-  // GstUtils::wait_state_changed (bin);
-  GstUtils::sync_state_with_parent(fakesink);
-  GstUtils::sync_state_with_parent(funnel);
 
   // probing eos
   GstPad *srcpad = gst_element_get_static_pad(funnel, "src");
@@ -416,12 +386,17 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement * bin, GstPad *pad) {
   std::string connector_name = make_file_name(media_name);
   connector->set_path(connector_name.c_str());
 
-  g_signal_connect(fakesink, "handoff", (GCallback) on_handoff_cb,
+  g_signal_connect(fakesink, "handoff",
+                   (GCallback) on_handoff_cb,
                    connector.get());
 
   g_message("%s created a new shmdata any writer (%s)",
             get_nick_name().c_str(), connector_name.c_str());
   register_shmdata(connector);
+
+  // GstUtils::wait_state_changed (bin);
+  GstUtils::sync_state_with_parent(fakesink);
+  GstUtils::sync_state_with_parent(funnel);
 }
 
 gboolean Uridecodebin::gstrtpdepay_buffer_probe_cb(GstPad * /*pad */ ,
@@ -539,13 +514,11 @@ Uridecodebin::source_setup_cb(GstElement *uridecodebin,
   g_object_set_data(G_OBJECT(source),
                     "on-error-command",
                     (gpointer) context->on_error_command_);
-
   g_free(val_str);
 }
 
 bool Uridecodebin::to_shmdata() {
   destroy_uridecodebin();
-  reset_bin();
   init_uridecodebin();
   g_debug("to_shmdata set uri %s", uri_);
   g_object_set(G_OBJECT(uridecodebin_), "uri", uri_, nullptr);

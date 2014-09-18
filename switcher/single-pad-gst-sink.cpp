@@ -86,7 +86,8 @@ set_on_first_data_hook(ShmdataReader::on_first_data_hook cb,
 }
 
 bool SinglePadGstSink::can_sink_caps(std::string caps) {
-  g_warning("%s is not implemented for this quiddity");
+  g_warning("%s is not implemented for this quiddity",
+            caps.c_str());
   return false;
 }
 

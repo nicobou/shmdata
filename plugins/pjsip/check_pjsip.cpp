@@ -35,17 +35,16 @@
 int main() {
   bool success = true;
   {
-    const std::string manager_name ("siptest");
-    const std::string sip_name ("test");
-    const std::string audio_name ("a");
-    const std::string video_name ("v");
+    const std::string manager_name("siptest");
+    const std::string sip_name("test");
+    const std::string audio_name("a");
+    const std::string video_name("v");
     std::list<std::string> buddies =
         { "sip:1002@10.10.30.179",
-          "sip:1004@10.10.30.179"};
+          "sip:1003@10.10.30.179"};
 
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager(manager_name);
-
 
 #ifdef HAVE_CONFIG_H
     gchar *usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
@@ -55,13 +54,13 @@ int main() {
     return 1;
 #endif
 
-    
     // testing uncompressed data transmission
-    // g_print("%s\n",  manager->create("audiotestsrc", audio_name).c_str());
-    assert(0 == manager->create("audiotestsrc", audio_name).compare(audio_name));
+    assert(0 ==
+           manager->create("audiotestsrc", audio_name).compare(audio_name));
     assert(manager->set_property(audio_name, "started", "true"));
 
-    assert(0 == manager->create("videotestsrc", video_name).compare(video_name));
+    assert(0 ==
+           manager->create("videotestsrc", video_name).compare(video_name));
     assert(manager->set_property(video_name, "started", "true"));
 
     // SIP
@@ -77,34 +76,35 @@ int main() {
                               "1234",  // password
                               nullptr));
 
-    for (auto &it : buddies) 
+    for (auto &it : buddies) {
       assert(manager->invoke_va(sip_name,
                                 "add_buddy",
                                 nullptr,
                                 it.c_str(),
                                 nullptr));
+      
+      assert(manager->invoke_va(sip_name,
+                                "attach_shmdata_to_contact",
+                                nullptr,
+                                std::string(
+                                    "/tmp/switcher_" +
+                                    manager_name + "_" +
+                                    audio_name + "_audio").c_str(),
+                                it.c_str(),
+                                "true",
+                                nullptr));
+      assert(manager->invoke_va(sip_name,
+                                "attach_shmdata_to_contact",
+                                nullptr,
+                                std::string(
+                                    "/tmp/switcher_" +
+                                    manager_name + "_" +
+                                    video_name + "_video").c_str(),
+                                it.c_str(),
+                                "true",
+                                nullptr));
+    }
     
-    assert(manager->invoke_va(sip_name,
-                              "attach_shmdata_to_contact",
-                              nullptr,
-                              std::string(
-                                  "/tmp/switcher_" +
-                                  manager_name + "_" +
-                                  audio_name + "_audio").c_str(),
-                              buddies.front().c_str(),
-                              "true",
-                              nullptr));
-    assert(manager->invoke_va(sip_name,
-                              "attach_shmdata_to_contact",
-                              nullptr,
-                              std::string(
-                                  "/tmp/switcher_" +
-                                  manager_name + "_" +
-                                  video_name + "_video").c_str(),
-                              buddies.front().c_str(),
-                              "true",
-                              nullptr));
-
     {// get added buddies from  
       auto get_buddy_ids = [&] (switcher::data::Tree::ptrc tree) {
         return switcher::data::Tree::get_child_keys<std::list>(tree, "buddy.");
@@ -118,22 +118,23 @@ int main() {
       for (auto &it : buddy_ids) {
         buds_from_tree.push_back(manager->invoke_info_tree<std::string>(
             sip_name,
-            [&] (switcher::data::Tree::ptrc tree){
+            [&](switcher::data::Tree::ptrc tree){
               return switcher::data::Tree::read_data(tree, "buddy." + it);
             }));
       }
-      assert(std::equal (buddies.begin(), buddies.end(),
+      assert(std::equal(buddies.begin(), buddies.end(),
                          buds_from_tree.begin()));
     }
 
     usleep(200000);
 
-    assert(manager->invoke_va(sip_name,
-                              "call",
-                              nullptr,
-                              buddies.front().c_str(),
-                              nullptr));
-
+    for (auto &it : buddies)
+      assert(manager->invoke_va(sip_name,
+                                "call",
+                                nullptr,
+                                it.c_str(),
+                                nullptr));
+    
     usleep(8000000);
     assert(manager->set_property(sip_name, "status", "Away"));
     usleep(8000000);
@@ -141,11 +142,13 @@ int main() {
     usleep(8000000);
     assert(manager->set_property(sip_name, "status", "BRB"));
     usleep(2000000);
-    assert(manager->invoke_va(sip_name,
-                              "hang-up",
-                              nullptr,
-                              buddies.front().c_str(),
-                              nullptr));
+    
+    for (auto &it : buddies)
+      assert(manager->invoke_va(sip_name,
+                                "hang-up",
+                                nullptr,
+                                it.c_str(),
+                                nullptr));
     assert(manager->remove(sip_name));
   }  // end of scope is releasing the manager
 
