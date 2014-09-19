@@ -53,6 +53,9 @@ class PostureSolidify : public Quiddity, public Segment, public StartableQuiddit
   std::shared_ptr<posture::Solidify> solidify_ {nullptr};
   std::mutex mutex_ {};
 
+  ShmdataAnyWriter::ptr mesh_writer_ {nullptr};
+  std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriter_queue_ {};
+
   bool init() final;
 
   bool connect(std::string shmdata_socket_path);
@@ -63,6 +66,9 @@ class PostureSolidify : public Quiddity, public Segment, public StartableQuiddit
   static void set_marching_cubes_resolution(const int res, void *user_data);
   static int get_save_mesh(void *user_data);
   static void set_save_mesh(const int save, void *user_data);
+
+  static void free_sent_buffer(void* data);
+  void check_buffers();
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureSolidify);

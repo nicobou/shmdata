@@ -54,6 +54,12 @@ PostureSolidify::stop() {
   lock_guard<mutex> lock(mutex_);
   solidify_.reset();
 
+  if (mesh_writer_ != nullptr)
+  {
+    unregister_shmdata(mesh_writer_->get_path());
+    mesh_writer_.reset();
+  }
+
   return true;
 }
 
@@ -110,9 +116,32 @@ PostureSolidify::connect(std::string shmdata_socket_path) {
     if (solidify_ == nullptr || (string(type) != string(POINTCLOUD_TYPE_BASE) && string(type) != string(POINTCLOUD_TYPE_COMPRESSED)))
       return;
 
+    if (!mutex_.try_lock())
+      return;
+
     // Setting input clouds is thread safe, so lets do it
     solidify_->setInputCloud(vector<char>((char*)data, (char*) data + size),
                              string(type) != string(POINTCLOUD_TYPE_BASE));
+
+    // Get the result mesh, and send it through shmdata
+    vector<unsigned char> mesh = solidify_->getMesh();
+    if (mesh_writer_ == nullptr)
+    {
+      mesh_writer_ = make_shared<ShmdataAnyWriter>();
+      mesh_writer_->set_path(make_file_name("mesh"));
+      mesh_writer_->set_data_type(POLYGONMESH_TYPE_BASE);
+      register_shmdata(mesh_writer_);
+      mesh_writer_->start();
+    }
+
+    check_buffers();
+    shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(reinterpret_cast<const unsigned char*>(mesh.data()),
+                                                                  reinterpret_cast<const unsigned char*>(mesh.data()) + mesh.size()));
+    mesh_writer_->push_data_auto_clock((void *) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
+                                        mesh.size(),
+                                        PostureSolidify::free_sent_buffer,
+                                        (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
+
     mutex_.unlock();
   },
   nullptr);
@@ -157,6 +186,24 @@ void
 PostureSolidify::set_save_mesh(const int save, void *user_data) {
   PostureSolidify *ctx = (PostureSolidify *) user_data;
   ctx->save_mesh_ = save;
+}
+
+void
+PostureSolidify::free_sent_buffer(void* data)
+{
+  vector<unsigned char>* buffer = static_cast<vector<unsigned char>*>(data);
+  buffer->clear();
+}
+
+void
+PostureSolidify::check_buffers()
+{
+  for (unsigned int i = 0; i < shmwriter_queue_.size();) {
+    if (shmwriter_queue_[i]->size() == 0)
+      shmwriter_queue_.erase(shmwriter_queue_.begin() + i);
+    else
+      i++;
+  }
 }
 
 }  // namespace switcher

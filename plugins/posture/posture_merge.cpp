@@ -171,6 +171,7 @@ PostureMerge::connect(std::string shmdata_socket_path) {
     // If another thread is trying to get the merged cloud, don't bother
     if (!mutex_.try_lock())
       return;
+
     if (cloud_writer_.get() == nullptr) {
       cloud_writer_.reset(new ShmdataAnyWriter);
       cloud_writer_->set_path(make_file_name("cloud"));

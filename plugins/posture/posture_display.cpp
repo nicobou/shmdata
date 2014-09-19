@@ -61,17 +61,24 @@ PostureDisplay::connect(std::string shmdata_socket_path) {
   reader->set_path(shmdata_socket_path);
 
   // This is the callback for when new clouds are received
-  reader->set_callback([=] (void *data, int size, unsigned long long timestamp, const char *type, void * /*unused */ )
+  reader->set_callback([=] (void *data, int size, unsigned long long /* unused */, const char *type, void * /*unused */ )
   {
     if (display_ == nullptr)
         return;
     if (!display_mutex_.try_lock())
         return;
 
-    vector<char> buffer((char *)data, (char *)data + size);
-    display_->setInputCloud(buffer,
-                            string(type) == string(POINTCLOUD_TYPE_COMPRESSED),
-                            timestamp);
+    if (string(type) == string(POINTCLOUD_TYPE_COMPRESSED) || string(type) == string(POINTCLOUD_TYPE_BASE))
+    {
+      vector<char> buffer((char *)data, (char *)data + size);
+      display_->setInputCloud(buffer, string(type) == string(POINTCLOUD_TYPE_COMPRESSED));
+    }
+    else if (string(type) == string(POLYGONMESH_TYPE_BASE))
+    {
+        vector<unsigned char> buffer((unsigned char*)data, (unsigned char*)data + size);
+        display_->setPolygonMesh(buffer);
+    }
+
     display_mutex_.unlock();
   }, nullptr);
 
@@ -90,6 +97,7 @@ PostureDisplay::disconnect_all() {
 bool
 PostureDisplay::can_sink_caps(std::string caps) {
   return (caps == POINTCLOUD_TYPE_BASE)
-      || (caps == POINTCLOUD_TYPE_COMPRESSED);
+      || (caps == POINTCLOUD_TYPE_COMPRESSED)
+      || (caps == POLYGONMESH_TYPE_BASE);
 }
 }  // namespace switcher
