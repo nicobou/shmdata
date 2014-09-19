@@ -30,12 +30,14 @@
 #include "./custom-property-helper.hpp"
 #include "./gst-utils.hpp"
 #include "./quiddity-manager-impl.hpp"
+#include "./scope-exit.hpp"
 
 namespace switcher {
 GPipe::GPipe():
     pipeline_(gst_pipeline_new(nullptr)),
     source_funcs_(),
     gpipe_custom_props_(new CustomPropertyHelper()) {
+  gst_element_set_state(pipeline_, GST_STATE_PLAYING);
   make_bin();
   init_segment(this);
 }
@@ -43,11 +45,17 @@ GPipe::GPipe():
 GPipe::~GPipe() {
   if (!commands_.empty())
     for (auto &it : commands_)
+    {
       if (!g_source_is_destroyed(it))
         g_source_destroy(it);
+      delete it;
+    }
   if (position_tracking_source_ != nullptr)
     g_source_destroy(position_tracking_source_);
-  gst_object_unref(pipeline_);
+  clean_bin();
+  GstUtils::wait_state_changed(pipeline_);
+  //gst_element_set_state(pipeline_, GST_STATE_NULL);
+  gst_object_unref(GST_OBJECT(pipeline_));
   if (!g_source_is_destroyed(source_))
     g_source_destroy(source_);
 }
@@ -58,9 +66,12 @@ bool GPipe::init() {
   source_funcs_.dispatch = source_dispatch;
   source_funcs_.finalize = source_finalize;
   source_ = g_source_new(&source_funcs_, sizeof(GstBusSource));
+  On_scope_exit{g_source_unref(source_);};
   ((GstBusSource *) source_)->bus =
       gst_pipeline_get_bus(GST_PIPELINE(pipeline_));
-  g_source_set_callback(source_, (GSourceFunc) bus_called, nullptr,
+  g_source_set_callback(source_,
+                        (GSourceFunc) bus_called,
+                        nullptr,
                         nullptr);
   if (nullptr == get_g_main_context()) {
     g_warning("%s: g_main_context is nullptr", __FUNCTION__);
@@ -68,25 +79,25 @@ bool GPipe::init() {
   }
   g_source_attach(source_, get_g_main_context());
   gst_bus_set_sync_handler(((GstBusSource *) source_)->bus,
-                           bus_sync_handler, this);
-  g_source_unref(source_);
+                           bus_sync_handler,
+                           this);
   ((GstBusSource *) source_)->inited = FALSE;
-  gst_element_set_state(pipeline_, GST_STATE_PLAYING);
   // GstUtils::wait_state_changed (pipeline_);
-  play_pause_spec_ =
-      gpipe_custom_props_->make_boolean_property("play",
-                                                 "play",
-                                                 (gboolean) TRUE,
-                                                 (GParamFlags)
-                                                 G_PARAM_READWRITE,
-                                                 GPipe::set_play,
-                                                 GPipe::get_play, this);
-  seek_spec_ =
-      gpipe_custom_props_->make_double_property("seek", "seek (in percent)",
-                                                0.0, 1.0, 0.0, (GParamFlags)
-                                                G_PARAM_READWRITE,
-                                                GPipe::set_seek,
-                                                GPipe::get_seek, this);
+  play_pause_spec_ = gpipe_custom_props_->
+      make_boolean_property("play",
+                            "play",
+                            (gboolean) TRUE,
+                            (GParamFlags)
+                            G_PARAM_READWRITE,
+                            GPipe::set_play,
+                            GPipe::get_play, this);
+  seek_spec_ = gpipe_custom_props_->
+      make_double_property("seek", "seek (in percent)",
+                           0.0, 1.0, 0.0, (GParamFlags)
+                           G_PARAM_READWRITE,
+                           GPipe::set_seek,
+                           GPipe::get_seek,
+                           this);
   return init_gpipe();
 }
 
@@ -280,8 +291,9 @@ GstElement *GPipe::get_pipeline() {
 }
 
 void
-GPipe::print_one_tag(const GstTagList * list, const gchar *tag,
-                     gpointer user_data) {
+GPipe::print_one_tag(const GstTagList */*list*/,
+                     const gchar */*tag*/,
+                     gpointer /*user_data*/) {
   // int i, num;
 
   // num = gst_tag_list_get_tag_size (list, tag);
@@ -374,10 +386,11 @@ GstBusSyncReply GPipe::bus_sync_handler(GstBus * /*bus */ ,
         g_source_attach(args->src, context->get_g_main_context());
         g_source_unref(args->src);
       } else {
-        GstUtils::g_idle_add_full_with_context(context->get_g_main_context
-                                               (), G_PRIORITY_DEFAULT_IDLE,
+        GstUtils::g_idle_add_full_with_context(context->get_g_main_context (),
+                                               G_PRIORITY_DEFAULT_IDLE,
                                                (GSourceFunc) run_command,
-                                               (gpointer) args, nullptr);
+                                               (gpointer) args,
+                                               nullptr);
       }
     }
 

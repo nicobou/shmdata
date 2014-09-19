@@ -1391,7 +1391,7 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
     g_warning("cannot call if not registered");
     return PJ_EUNKNOWN;
   }
-  // g_print("--------- %d\n",__LINE__);
+
   pj_str_t local_uri;
   pj_cstr(&local_uri,
           sip_instance_->sip_presence_->sip_local_user_.c_str());
@@ -1402,24 +1402,20 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
   pjsip_tx_data *tdata = nullptr;
   pj_status_t status;
 
-  // g_print("--------- %d\n",__LINE__);
   /* Find unused call slot */
   for (i = 0; i < app.max_calls; ++i) {
     if (app.call[i].inv == nullptr)
       break;
   }
 
-  // g_print("--------- %d\n",__LINE__);
   if (i == app.max_calls)
     return PJ_ETOOMANY;
 
-  // g_print("--------- %d\n",__LINE__);
   call = &app.call[i];
 
   pj_str_t dest_str;
   pj_cstr(&dest_str, dst_uri.c_str());
 
-  // g_print("--------- %d\n",__LINE__);
   /* Create UAC dialog */
   status = pjsip_dlg_create_uac(pjsip_ua_instance(),
                                 &local_uri,  /* local URI */
@@ -1433,7 +1429,6 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
     return status;
   }
 
-  // g_print("--------- %d\n",__LINE__);
   call->peer_uri = dst_uri;
 
   /* Create SDP */
@@ -1449,7 +1444,6 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
     return status;
   }
 
-  // g_print("--------- %d\n",__LINE__);
   /* Create the INVITE session. */
   status = pjsip_inv_create_uac(dlg, sdp, 0, &call->inv);
   if (status != PJ_SUCCESS) {
@@ -1464,7 +1458,6 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
 
   /* Mark start of call */
   pj_gettimeofday(&call->start_time);
-  // g_print("--------- %d\n",__LINE__);
 
   /* Create initial INVITE request.
    * This INVITE request will contain a perfectly good request and
@@ -1472,7 +1465,6 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
    */
   status = pjsip_inv_invite(call->inv, &tdata);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
-  // g_print("--------- %d\n",__LINE__);
 
   /* Send initial INVITE request.
    * From now on, the invite session's state will be reported to us
@@ -1481,14 +1473,12 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
   status = pjsip_inv_send_msg(call->inv, tdata);
   PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  // g_print("--------- %d\n",__LINE__);
   return PJ_SUCCESS;
 }
 
 std::string
 PJCall::create_outgoing_sdp(struct call *call,
                             std::string dst_uri) {
-  // g_print("+++++++++++ %d\n", __LINE__);
   pj_str_t contact;
   pj_cstr(&contact, dst_uri.c_str());
   auto id = pjsua_buddy_find(&contact);
@@ -1499,7 +1489,6 @@ PJCall::create_outgoing_sdp(struct call *call,
     return res;
   }
 
-  // g_print("+++++++++++ %d\n", __LINE__);
   SDPDescription desc;
   using paths_t = std::list<std::string>;
   auto get_paths = [&] (data::Tree::ptrc tree) {
@@ -1507,16 +1496,13 @@ PJCall::create_outgoing_sdp(struct call *call,
                                                    "connections."
                                                    + std::to_string(id));
   };
-  // g_print("+++++++++++ %d\n", __LINE__);
   paths_t paths = call->instance->sip_instance_->
       invoke_info_tree<paths_t>(get_paths);
-  // g_print("+++++++++++ %d\n", __LINE__);
   // std::for_each(paths.begin(), paths.end(),
   //               [&] (const std::string &val){
   //                 g_print("----------------------- %s\n", val.c_str());
   //               });
   
-  // g_print("+++++++++++ %d\n", __LINE__);
   QuiddityManager::ptr manager = call->instance->manager_;
   gint port = starting_rtp_port_;
   for (auto &it : paths) {
@@ -1527,11 +1513,9 @@ PJCall::create_outgoing_sdp(struct call *call,
                                         data::Tree::read_data(tree, "rtp_caps."
                                                               + it);
                                       });
-  // g_print("+++++++++++ %d\n", __LINE__);
     GstCaps *caps = gst_caps_from_string(data.c_str());
     On_scope_exit {gst_caps_unref(caps);};
     SDPMedia media;
-  // g_print("+++++++++++ %d\n", __LINE__);
     media.set_media_info_from_caps(caps);
     media.set_port(port);
     if (!desc.add_media(media)) {
@@ -1540,10 +1524,8 @@ PJCall::create_outgoing_sdp(struct call *call,
       call->media[call->media_count].shm_path_to_send = it;
       call->media_count++;
     }
-  // g_print("+++++++++++ %d\n", __LINE__);
     port += 2;
   }
-  // g_print("+++++++++++ %d\n", __LINE__);
   return desc.get_string();
 }
 

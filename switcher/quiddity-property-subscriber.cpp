@@ -117,10 +117,10 @@ QuiddityPropertySubscriber::subscribe(Quiddity::ptr quid,
   if (quid->subscribe_property(property_name.c_str(), property_cb, prop)) {
     prop_datas_[cur_pair] = prop;
     return true;
-  } else {
-    g_warning("QuiddityPropertySubscriber: cannot subscribe to property");
-    return false;
   }
+  delete prop;
+  g_warning("QuiddityPropertySubscriber: cannot subscribe to property");
+  return false;
 }
 
 bool
@@ -133,6 +133,7 @@ QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid,
     quid->unsubscribe_property(property_name, property_cb, it->second);
     g_free(it->second->quiddity_name);
     g_free(it->second->property_name);
+    delete it->second;
     prop_datas_.erase(cur_pair);
     return true;
   }
@@ -143,11 +144,12 @@ QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid,
 
 bool QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid) {
   auto quid_name = quid->get_nick_name();
-  std::vector<std::pair < std::string, std::string>> entries_to_remove;
+  std::vector<std::pair<std::string, std::string>> entries_to_remove;
   for (auto &it : prop_datas_)
     if (it.first.first == quid_name) {
       g_free(it.second->quiddity_name);
       g_free(it.second->property_name);
+      delete it.second;
       entries_to_remove.push_back(it.first);
     }
   for (auto &it : entries_to_remove)
@@ -155,9 +157,9 @@ bool QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid) {
   return true;
 }
 
-std::vector<std::pair < std::string, std::string>>
+std::vector<std::pair<std::string, std::string>>
     QuiddityPropertySubscriber::list_subscribed_properties() {
-  std::vector<std::pair < std::string, std::string>> res;
+  std::vector<std::pair<std::string, std::string>> res;
   for (auto &it : prop_datas_)
     res.push_back(it.first);
   return res;

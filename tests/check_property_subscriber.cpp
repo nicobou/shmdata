@@ -17,15 +17,14 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/quiddity-manager.hpp"
+#include <gst/gst.h>
 #include <vector>
 #include <string>
+#include "switcher/quiddity-manager.hpp"
 
 static bool success;
 static const char *user_string = "hello world";
-static
-switcher::QuiddityManager::ptr
-manager;
+static switcher::QuiddityManager::ptr manager;
 
 void
 mon_property_cb(std::string /*subscriber_name */ ,
@@ -111,6 +110,7 @@ main() {
     manager.swap(empty);
   }
 
+  gst_deinit();
   if (success)
     return 0;
   else

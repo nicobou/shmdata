@@ -17,9 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/quiddity-manager.hpp"
+#include <unistd.h>  // sleep
+#include <gst/gst.h>
 #include <string>
-#include <unistd.h>             // sleep
+#include "switcher/quiddity-manager.hpp"
 
 void
 property_cb(std::string subscriber_name,
@@ -60,6 +61,7 @@ main() {
     manager->remove("vu");
   }                             // releasing manager
 
+  gst_deinit();
   // success
   return 0;
 }

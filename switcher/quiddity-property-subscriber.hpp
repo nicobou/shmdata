@@ -80,8 +80,8 @@ class QuiddityPropertySubscriber {
     Callback user_callback;
     void *user_data;
   } PropertyData;
-  typedef std::map<std::pair < std::string, std::string>,
-                     PropertyData * >PropDataMap;
+  typedef std::map<std::pair<std::string, std::string>,
+                    PropertyData *>PropDataMap;
   PropDataMap prop_datas_;
 };
 }  // namespace switcher

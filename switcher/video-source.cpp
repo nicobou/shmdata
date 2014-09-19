@@ -105,6 +105,7 @@ bool VideoSource::make_new_shmdatas() {
   reset_bin();
   if (!GstUtils::make_element("tee", &video_tee_)) {
     g_warning("missing element for starting video source\n");
+    
     return false;
   }
   gst_bin_add_many(GST_BIN(bin_), video_tee_, nullptr);

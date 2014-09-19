@@ -21,8 +21,9 @@
  * Class wrapping gobject for custum properties
  */
 
-#include "./gobject-wrapper.hpp"
 #include <glib/gprintf.h>
+#include "./gobject-wrapper.hpp"
+#include "./scope-exit.hpp"
 
 namespace switcher {
 // gobject
@@ -124,6 +125,7 @@ GParamSpec *GObjectWrapper::make_int_property(const gchar *nickname,
   next_prop_id_++;
 
   gchar *name = g_strdup_printf("customprop%d", prop_id);
+  On_scope_exit{g_free(name);};
   g_debug("custom property internal name %s", name);
 
   GParamSpec *param = g_param_spec_int(name,
@@ -161,6 +163,7 @@ GParamSpec *GObjectWrapper::make_double_property(const gchar *nickname,
   next_prop_id_++;
 
   gchar *name = g_strdup_printf("customprop%d", prop_id);
+  On_scope_exit{g_free(name);};
   g_debug("custom property internal name %s", name);
 
   GParamSpec *param = g_param_spec_double(name,
@@ -198,6 +201,7 @@ GParamSpec *GObjectWrapper::make_string_property(const gchar *nickname,
   next_prop_id_++;
 
   gchar *name = g_strdup_printf("customprop%d", prop_id);
+  On_scope_exit{g_free(name);};
 
   GParamSpec *param = g_param_spec_string(name,
                                           nickname,
@@ -231,6 +235,7 @@ GParamSpec *GObjectWrapper::make_enum_property(const gchar *nickname,
   guint prop_id = next_prop_id_;
   next_prop_id_++;
   gchar *name = g_strdup_printf("customprop%d", prop_id);
+  On_scope_exit{g_free(name);};
 
   //  static GEnumValue string_map_enum [1024];
   //   gint gint_default_value = 0;
@@ -285,6 +290,7 @@ GParamSpec *GObjectWrapper::make_boolean_property(const gchar *nickname,
   next_prop_id_++;
 
   gchar *name = g_strdup_printf("customprop%u", prop_id);
+  On_scope_exit{g_free(name);};
   g_debug("custom property internal name %s", name);
 
   GParamSpec *param = g_param_spec_boolean(name,
@@ -311,6 +317,7 @@ GObjectWrapper::make_signal(GType return_type,
   guint sig_id = next_signal_num_;
   next_signal_num_++;
   gchar *name = g_strdup_printf("custom_signal_%d", sig_id);
+  On_scope_exit{g_free(name);};
 
   // TODO find a way to get CLASS without instanciating an unused object
   MyObject *obj = (MyObject *) g_object_new(my_object_get_type(), nullptr);
@@ -337,6 +344,7 @@ GObjectWrapper::make_signal_action(GClosure *class_closure,
   guint sig_id = next_signal_num_;
   next_signal_num_++;
   gchar *name = g_strdup_printf("custom_signal_%d", sig_id);
+  On_scope_exit{g_free(name);};
 
   // TODO find a way to get CLASS without instanciating an unused object
   MyObject *obj = (MyObject *) g_object_new(my_object_get_type(), nullptr);

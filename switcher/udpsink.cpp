@@ -142,6 +142,7 @@ UDPSink::~UDPSink() {
     }
     gst_pad_set_active(ghost_sinkpad_, FALSE);
     gst_element_remove_pad(udpsink_bin_, ghost_sinkpad_);
+    gst_object_unref(ghost_sinkpad_);
   }
 
   GstUtils::clean_element(typefind_);

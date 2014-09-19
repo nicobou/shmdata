@@ -23,6 +23,7 @@
 #include "./quiddity-documentation.hpp"
 #include "./quiddity-manager-impl.hpp"
 #include "./quiddity.hpp"
+#include "./scope-exit.hpp"
 
 // the quiddities to manage (line sorted)
 #include "./aravis-genicam.hpp"
@@ -51,11 +52,6 @@
 #include "./xvimagesink.hpp"
 
 namespace switcher {
-// QuiddityManager_Impl::ptr QuiddityManager_Impl::make_manager() {
-//   QuiddityManager_Impl::ptr manager(new QuiddityManager_Impl("default"));
-//   return manager;
-// }
-
 QuiddityManager_Impl::ptr
 QuiddityManager_Impl::make_manager(const std::string &name) {
   QuiddityManager_Impl::ptr manager(new QuiddityManager_Impl(name));
@@ -86,69 +82,70 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string &name):
 
 QuiddityManager_Impl::~QuiddityManager_Impl() {
   g_main_loop_quit(mainloop_);
+  g_main_loop_unref(mainloop_);
   g_main_context_unref(main_context_);
   if (thread_.joinable())
     thread_.join();
 }
 
+void QuiddityManager_Impl::release_g_error(GError *error) {
+  if (nullptr != error) {
+    g_debug("GError message: %s\n", error->message);
+    g_error_free(error);
+    error = nullptr;
+  }
+}
+
 void QuiddityManager_Impl::remove_shmdata_sockets() {
   GFile *shmdata_dir =
       g_file_new_for_commandline_arg(Quiddity::get_socket_dir().c_str());
+  On_scope_exit{g_object_unref(shmdata_dir);};
 
   gchar *shmdata_prefix =
       g_strconcat(Quiddity::get_socket_name_prefix().c_str(),
                   name_.c_str(),
                   "_",
                   nullptr);
+  On_scope_exit{g_free(shmdata_prefix);};
 
-  gboolean res;
-  GError *error;
-  GFileEnumerator *enumerator;
-  GFileInfo *info;
   GFile *descend;
   char *relative_path;
 
-  error = nullptr;
-  enumerator =
-      g_file_enumerate_children(shmdata_dir, "*",
-                                G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS, nullptr,
+  GError *error = nullptr;
+  GFileEnumerator *enumerator =
+      g_file_enumerate_children(shmdata_dir,
+                                "*",
+                                G_FILE_QUERY_INFO_NOFOLLOW_SYMLINKS,
+                                nullptr,
                                 &error);
-  if (!enumerator)
+  release_g_error(error);
+  if (nullptr == enumerator)
     return;
-  error = nullptr;
-  info = g_file_enumerator_next_file(enumerator, nullptr, &error);
-  while ((info) && (!error)) {
-    descend = g_file_get_child(shmdata_dir, g_file_info_get_name(info));
-    // g_assert (descend != nullptr);
-    relative_path = g_file_get_relative_path(shmdata_dir, descend);
-
-    error = nullptr;
-
-    if (g_str_has_prefix(relative_path, shmdata_prefix)) {
-      g_debug("deleting previous shmdata socket (%s)",
-              g_file_get_path(descend));
-      res = g_file_delete(descend, nullptr, &error);
-      if (res != TRUE)
-        g_warning("previous switcher file \"%s\" cannot be deleted",
-                  g_file_get_path(descend));
+  On_scope_exit{
+    GError *error = nullptr;
+    g_file_enumerator_close(enumerator, nullptr, &error);
+    release_g_error(error);
+  };
+  {
+    GError *error = nullptr;
+    GFileInfo *info = g_file_enumerator_next_file(enumerator, nullptr, &error);
+    release_g_error(error);
+    while (info) {
+      descend = g_file_get_child(shmdata_dir, g_file_info_get_name(info));
+      On_scope_exit{g_object_unref(descend);};
+      relative_path = g_file_get_relative_path(shmdata_dir, descend);
+      if (g_str_has_prefix(relative_path, shmdata_prefix)) {
+        g_debug("deleting file %s",
+                g_file_get_path(descend));
+        if (!g_file_delete(descend, nullptr, &error))
+          g_warning("file %s cannot be deleted",
+                    g_file_get_path(descend));
+        On_scope_exit{release_g_error(error);};
+      }
+      info = g_file_enumerator_next_file(enumerator, nullptr, &error);
+      release_g_error(error);
     }
-
-    g_object_unref(descend);
-    error = nullptr;
-    info = g_file_enumerator_next_file(enumerator, nullptr, &error);
   }
-  if (error != nullptr)
-    g_debug("error not nullptr");
-
-  error = nullptr;
-  res = g_file_enumerator_close(enumerator, nullptr, &error);
-  if (res != TRUE)
-    g_debug("QuiddityManager_Impl: file enumerator not properly closed");
-  if (error != nullptr)
-    g_debug("error not nullptr");
-
-  g_object_unref(shmdata_dir);
-  g_free(shmdata_prefix);
 }
 
 std::string QuiddityManager_Impl::get_name() {

@@ -426,7 +426,6 @@ bool V4L2Src::inspect_file_device(const char *file_path) {
         frame_size_discrete_.push_back(std::make_pair(width, height));
     g_free(width);
     g_free(height);
-    // g_print ("++++++++++++++++ %d, %d \n",
     //  frmsize.discrete.width,
     //  frmsize.discrete.height);
     frmsize.index++;

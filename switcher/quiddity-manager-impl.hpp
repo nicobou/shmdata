@@ -238,8 +238,8 @@ class QuiddityManager_Impl
   void main_loop_thread();
 
   std::weak_ptr<QuiddityManager_Impl> me_ {};
-
+  static void release_g_error(GError *error);
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif
