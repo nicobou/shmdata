@@ -27,7 +27,7 @@
 #include "./on-caps.hpp"
 
 namespace switcher {
-class ShmdataWriter:public OnCaps {
+class ShmdataWriter: public OnCaps {
  public:
   typedef std::shared_ptr<ShmdataWriter> ptr;
   using CapsCallBack = std::function<void (std::string)>;

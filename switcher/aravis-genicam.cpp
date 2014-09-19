@@ -32,7 +32,7 @@ AravisGenicam::AravisGenicam():aravissrc_(nullptr) {
 bool AravisGenicam::init_gpipe() {
   if (!GstUtils::make_element("aravissrc", &aravissrc_)) {
     g_debug
-        ("aravissrc not available, install aravis (http:// git.gnome.org/browse/aravis/)");
+        ("aravissrc not available, install aravis (http://git.gnome.org/browse/aravis/)");
     return false;
   }
   set_name(gst_element_get_name(aravissrc_));

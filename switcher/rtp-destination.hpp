@@ -20,42 +20,48 @@
 #ifndef __SWITCHER_RTPDESTINATION_H__
 #define __SWITCHER_RTPDESTINATION_H__
 
-#include "./shmdata-reader.hpp"
-#include "./quiddity-manager.hpp"
-#include "./json-builder.hpp"
+/*
+ * class meant to be "possessed by" and "friend of" RtpSession class.
+ */
+
 #include <gst/gst.h>
 #include <map>
 #include <string>
+#include "./json-builder.hpp"
 
 namespace switcher {
-class RtpDestination:public GstElementCleaner {
+class RtpSession;
+class RtpDestination {
  public:
-  typedef std::shared_ptr<RtpDestination> ptr;
-  RtpDestination();
+  using ptr = std::shared_ptr<RtpDestination>;
+  RtpDestination() = delete;
+  RtpDestination(RtpSession *session); 
   ~RtpDestination();
-
+  RtpDestination(const RtpDestination &) = delete;
+  const RtpDestination &operator=(const RtpDestination &) = delete;
+  
   void set_name(std::string name);
   void set_host_name(std::string host_name);
   std::string get_host_name();
   std::string get_port(std::string shmndata_path);
   // the reader of the rtp stream sent
   bool add_stream(std::string orig_shmdata_path,
-                  QuiddityManager::ptr manager, std::string port);
+                  std::string port);
   bool has_shmdata(std::string shmdata_path);
-  bool has_port(std::string port);
   bool remove_stream(std::string shmdata_stream_path);
   std::string get_sdp();
   // get json doc:
   JSONBuilder::Node get_json_root_node();
 
  private:
-  std::string name_;
-  std::string host_name_;
-  std::map<std::string, QuiddityManager::ptr> ports_;    // maps port with rtp shmdata reader
-  std::map<std::string, std::string> source_streams_;    // maps shmdata source stream with port
-  JSONBuilder::ptr json_description_;
+  std::string name_{};
+  std::string host_name_{};
+  // maps shmdata source stream with port:
+  std::map<std::string, std::string> source_streams_{};
+  JSONBuilder::ptr json_description_{};
+  RtpSession *session_{nullptr};
   void make_json_description();
 };
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

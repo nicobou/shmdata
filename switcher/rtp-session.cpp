@@ -32,7 +32,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RtpSession,
                                      "rtpsession",
                                      "Nicolas Bouillot");
 
-RtpSession::RtpSession(): custom_props_(new CustomPropertyHelper()) {
+RtpSession::RtpSession():
+    custom_props_(new CustomPropertyHelper()) {
 }
 
 RtpSession::~RtpSession() {
@@ -316,9 +317,9 @@ RtpSession::sink_compare_ranks(GstPluginFeature *f1,
 void
 RtpSession::make_data_stream_available(GstElement *typefind,
                                        guint /*probability */ ,
-                                       GstCaps *caps, gpointer user_data) {
+                                       GstCaps *caps,
+                                       gpointer user_data) {
   RtpSession *context = static_cast<RtpSession *>(user_data);
-  g_debug("RtpSession::make_data_stream_available");
   GstElement *pay = nullptr;
   GList *list = gst_registry_feature_filter(gst_registry_get_default(),
                                             (GstPluginFeatureFilter)
@@ -349,13 +350,13 @@ RtpSession::make_data_stream_available(GstElement *typefind,
     GstUtils::make_element("rtpgstpay", &pay);
 
   ShmdataReader *reader = static_cast<ShmdataReader *>(
-      g_object_get_data(G_OBJECT(typefind),
-                        "shmdata-reader"));
+      g_object_get_data(G_OBJECT(typefind), "shmdata-reader"));
   reader->add_element_to_cleaner(pay);
-
-  g_debug("RtpSession::make_data_stream_available: %s payloader",
-          GST_ELEMENT_NAME(pay));
-
+  
+  g_debug("using %s payloader for %s",
+          GST_ELEMENT_NAME(pay),
+          reader->get_path().c_str());
+  
   // add capture and payloading to the pipeline and link
   gst_bin_add_many(GST_BIN(context->bin_), pay, nullptr);
   gst_element_link(typefind, pay);
@@ -376,41 +377,27 @@ RtpSession::make_data_stream_available(GstElement *typefind,
   
   // get name for the newly created pad
   gchar *rtp_sink_pad_name = gst_pad_get_name(sinkpad);
+  On_scope_exit{g_free(rtp_sink_pad_name);};
   gchar **rtp_session_array = g_strsplit_set(rtp_sink_pad_name, "_", 0);
+  On_scope_exit{g_strfreev(rtp_session_array);};
 
-  gchar *rtp_session_id = g_strdup(rtp_session_array[3]);
+  //gchar *rtp_session_id = g_strdup(rtp_session_array[3]);
+  std::string rtp_session_id (rtp_session_array[3]);
   context->rtp_ids_[reader->get_path()] = rtp_session_id;
   // using internal session id for this local stream
   std::string internal_session_id(context->internal_id_[reader->get_path()]);
-  g_free(rtp_sink_pad_name);
-  g_strfreev(rtp_session_array);
 
-  // rtp src pad (static pad since created after the request of rtp sink pad)
-  gchar *rtp_src_pad_name = g_strconcat("send_rtp_src_",
-                                        rtp_session_id,
-                                        nullptr);
-  g_debug("request rtp src pad and create a corresponding shmwriter %s",
-          rtp_src_pad_name);
-  GstPad *rtp_src_pad = gst_element_get_static_pad(context->rtpsession_,
-                                                   rtp_src_pad_name);
-
+  // context->make_udp_sink(reader->get_path(),
+  //                        context->rtpsession_,
+  //                        "send_rtp_src_" + rtp_session_id);
+  
+  GstPad *rtp_src_pad =
+      gst_element_get_static_pad(context->rtpsession_,
+                                 std::string("send_rtp_src_"
+                                             + rtp_session_id).c_str());
+  On_scope_exit{gst_object_unref(rtp_src_pad);};
   if (!GST_IS_PAD(rtp_src_pad))
     g_warning("RtpSession: rtp_src_pad is not a pad");
-
-  // testing
-  // GstElement *myfake;
-  // // GstUtils::make_element ("fakesink", &myfake);
-  // GstUtils::make_element ("multiudpsink", &myfake);
-  // g_object_set (G_OBJECT (myfake), "sync", FALSE, nullptr);
-  // gst_bin_add_many (GST_BIN (context->bin_), myfake, nullptr);
-  // GstPad *fakepad = gst_element_get_static_pad (myfake, "sink");
-  // if (gst_pad_link (rtp_src_pad, fakepad) != GST_PAD_LINK_OK)
-  //   g_debug ("RtpSession::make_data_stream_available linking with multiudpsink failled");
-  // GstUtils::sync_state_with_parent (myfake);
-  // g_signal_emit_by_name (myfake, "add", "localhost", "8044", nullptr);
-  // // g_signal_emit_by_name (myfake, "add", "localhost", "9040", nullptr);
-  // end testing
-
   ShmdataWriter::ptr rtp_writer;
   rtp_writer.reset(new ShmdataWriter());
   std::string rtp_writer_name = context->make_file_name("send_rtp_src_"
@@ -418,20 +405,17 @@ RtpSession::make_data_stream_available(GstElement *typefind,
   rtp_writer->set_path(rtp_writer_name.c_str());
   rtp_writer->plug(context->bin_, rtp_src_pad);
   context->internal_shmdata_writers_[rtp_writer_name] = rtp_writer;
-  g_free(rtp_src_pad_name);
   // set call back for saving caps in a property tree
   rtp_writer->set_on_caps(std::bind(&RtpSession::on_rtp_caps,
                                     context,
                                     reader->get_path(),
                                     std::placeholders::_1));
-
+  
   // rtcp src pad
-  gchar *rtcp_src_pad_name =
-      g_strconcat("send_rtcp_src_", rtp_session_id, nullptr);
-  g_debug("RtpSession: request rtcp src pad %s", rtcp_src_pad_name);
+  std::string rtcp_src_pad_name ("send_rtcp_src_" + rtp_session_id);
   GstPad *rtcp_src_pad =
-      gst_element_get_request_pad(context->rtpsession_, rtcp_src_pad_name);
-
+      gst_element_get_request_pad(context->rtpsession_,
+                                  rtcp_src_pad_name.c_str());
   ShmdataWriter::ptr rtcp_writer;
   rtcp_writer.reset(new ShmdataWriter());
   std::string rtcp_writer_name =
@@ -439,40 +423,35 @@ RtpSession::make_data_stream_available(GstElement *typefind,
   rtcp_writer->set_path(rtcp_writer_name.c_str());
   rtcp_writer->plug(context->bin_, rtcp_src_pad);
   context->internal_shmdata_writers_[rtcp_writer_name] = rtcp_writer;
-  g_free(rtcp_src_pad_name);
 
   // We also want to receive RTCP, request an RTCP sinkpad for given session and
   // link it to a funnel for future linking with network connections
   GstElement *funnel;
   GstUtils::make_element("funnel", &funnel);
   gst_bin_add(GST_BIN(context->bin_), funnel);
-  // GstUtils::wait_state_changed (context->bin_);
   GstUtils::sync_state_with_parent(funnel);
   GstPad *funnel_src_pad = gst_element_get_static_pad(funnel, "src");
-  gchar *rtcp_sink_pad_name =
-      g_strconcat("recv_rtcp_sink_", rtp_session_id, nullptr);
+  On_scope_exit{gst_object_unref(funnel_src_pad);};
+  std::string rtcp_sink_pad_name ("recv_rtcp_sink_" + rtp_session_id);
   GstPad *rtcp_sink_pad =
-      gst_element_get_request_pad(context->rtpsession_, rtcp_sink_pad_name);
+      gst_element_get_request_pad(context->rtpsession_,
+                                  rtcp_sink_pad_name.c_str());
+  On_scope_exit{gst_object_unref(rtcp_sink_pad);};
   if (gst_pad_link(funnel_src_pad, rtcp_sink_pad) != GST_PAD_LINK_OK)
-    g_warning
-        ("RtpSession::make_data_stream_available: Failed to link rtcpsrc to rtpbin");
-  gst_object_unref(funnel_src_pad);
-  g_free(rtcp_sink_pad_name);
-  // for cleaning of funnel
+    g_warning ("Failed to link rtcpsrc to rtpbin");
+
+  // saving for latter cleaning of funnel
   GstElementCleaner::ptr funnel_cleaning;
   funnel_cleaning.reset(new GstElementCleaner());
   funnel_cleaning->add_element_to_cleaner(funnel);
-  // saving funnel for being retried
   funnel_cleaning->add_labeled_element_to_cleaner("funnel", funnel);
   context->funnels_[reader->get_path()] = funnel_cleaning;
-  g_free(rtp_session_id);
-  g_debug("RtpSession::make_data_stream_available (done)");
 }
 
 void
 RtpSession::attach_data_stream(ShmdataReader *caller,
-                               void *rtpsession_instance) {
-  RtpSession *context = static_cast<RtpSession *>(rtpsession_instance);
+                               void *user_data) {
+  RtpSession *context = static_cast<RtpSession *>(user_data);
   GstElement *funnel, *typefind;
   GstUtils::make_element("funnel", &funnel);
   GstUtils::make_element("typefind", &typefind);
@@ -514,8 +493,7 @@ RtpSession::add_destination(std::string nick_name, std::string host_name)
          nick_name.c_str());
     return false;
   }
-  RtpDestination::ptr dest;
-  dest.reset(new RtpDestination());
+  RtpDestination::ptr dest = std::make_shared<RtpDestination>(this);
   dest->set_name(nick_name);
   dest->set_host_name(host_name);
   destinations_[nick_name] = dest;
@@ -575,19 +553,16 @@ RtpSession::add_udp_stream_to_dest(std::string shmdata_socket_path,
               nick_name.c_str());
     return false;
   }
-  if (g_strcmp0
-      (destination_it->second->get_port(shmdata_socket_path).c_str(),
-       port.c_str()) == 0) {
-    g_warning
-        ("RtpSession: destination (%s) is already streaming shmdata (%s) to port %s",
-         nick_name.c_str(), shmdata_socket_path.c_str(), port.c_str());
+  if (0 == destination_it->second->get_port(shmdata_socket_path).compare(port)) {
+    g_warning ("destination (%s) is already streaming shmdata (%s) to port %s",
+               nick_name.c_str(), shmdata_socket_path.c_str(), port.c_str());
     return false;
   }
   // TODO check port has not been set for this destination
   gint rtp_port = atoi(port.c_str());
 
   if (rtp_port % 2 != 0) {
-    g_warning("RtpSession rtp destination port %s must be even, not odd",
+    g_warning("rtp destination port %s must be even, not odd",
               port.c_str());
     return false;
   }
@@ -614,23 +589,28 @@ RtpSession::add_udp_stream_to_dest(std::string shmdata_socket_path,
     // update manager_it with the new one
     manager_it = quiddity_managers_.find(shmdata_socket_path);
   }
+
   QuiddityManager::ptr manager = manager_it->second;
   if (!(bool) manager) {
-    g_warning("add_udp_stream_to_dest ...not a manager...");
+    g_warning("cannot find manager for udp");
     return false;
   }
+  
   // rtp stream (sending)
   RtpDestination::ptr dest = destinations_[nick_name];
-  dest->add_stream(shmdata_socket_path, manager, port);
+  dest->add_stream(shmdata_socket_path, port);
+
   std::vector<std::string> arg;
   arg.push_back(dest->get_host_name());
   arg.push_back(port);
   manager->invoke("udpsend_rtp", "add_client", nullptr, arg);
+
   // rtcp stream (sending)
   arg.clear();
   arg.push_back(dest->get_host_name());
   arg.push_back(std::to_string (rtp_port + 1));
   manager->invoke("udpsend_rtcp", "add_client", nullptr, arg);
+  
   // TODO rtcp receiving should be negociated
   // GstElementCleaner::ptr funnel_cleaner = funnels_[shmdata_socket_path];
   //  GstElement *funnel = funnel_cleaner->get_labeled_element_from_cleaner ("funnel");
@@ -916,5 +896,91 @@ gint RtpSession::get_mtu_at_add_data_stream(void *user_data) {
 void RtpSession::on_rtp_caps(std::string shmdata_path, std::string caps) {
   graft_tree("rtp_caps." + std::move(shmdata_path),
              data::Tree::make(std::move(caps)));
+}
+
+// this is a typefind function used in order to get rtp payloader caps
+void RtpSession::on_rtppayloder_caps(GstElement *typefind,
+                                     guint /*probability */ ,
+                                     GstCaps *caps,
+                                     gpointer /*user_data*/) {
+  RtpSession *context = static_cast<RtpSession *>(
+      g_object_get_data(G_OBJECT(typefind), "rtp_session"));
+  gchar *shmpath = static_cast<char *>(
+      g_object_get_data(G_OBJECT(typefind), "shmdata_path"));
+  On_scope_exit{g_free(shmpath);};
+  gchar *caps_str = gst_caps_to_string(caps);
+  On_scope_exit{g_free(caps_str);};
+  g_print("------------------------------%s \n",caps_str);
+  context->on_rtp_caps(std::string(shmpath),
+                       std::string(caps_str));
+}
+
+bool RtpSession::make_udp_sink(const std::string &shmpath,
+                               GstElement *rtpsession,
+                               const std::string &rtp_src_pad_name) {
+  GstPad *src_pad = gst_element_get_static_pad(rtpsession,
+                                               rtp_src_pad_name.c_str());
+  On_scope_exit{gst_object_unref(src_pad);};
+  GstElement *udpsink_bin, *typefind, *udpsink;
+  g_print("%d\n", __LINE__);
+  if (!GstUtils::make_element("bin", &udpsink_bin)
+      || !GstUtils::make_element("typefind", &typefind)
+      || !GstUtils::make_element("multiudpsink", &udpsink))
+    return false;
+
+  g_print("%d\n", __LINE__);
+  g_object_set (G_OBJECT (udpsink_bin), "async-handling", TRUE, nullptr);
+  g_object_set(G_OBJECT(udpsink), "sync", FALSE, nullptr);
+  // saving shmpath and this for use when type find will throw "have-type" 
+  g_object_set_data(G_OBJECT(typefind), "shmdata_path",
+                    (gpointer) g_strdup(shmpath.c_str()));
+  g_object_set_data(G_OBJECT(typefind), "rtp_session",
+                    (gpointer) this);
+  g_signal_connect(typefind,
+                   "have-type",
+                   G_CALLBACK(RtpSession::on_rtppayloder_caps),
+                   nullptr);
+
+  g_print("%d\n", __LINE__);
+#if HAVE_OSX
+  // turnaround for OSX: create sender socket
+  int sock;
+  if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+    g_warning("udp sink: cannot create socket");
+    return false;
+  }
+  guint bc_val = 1;
+  if (setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &bc_val, sizeof(bc_val)) < 0) {
+    g_warning("udp sink: cannot set broadcast to socket");
+    return false;
+  }
+  g_object_set(G_OBJECT(udpsink), "sockfd", sock, nullptr);
+#endif
+
+  g_print("%d\n", __LINE__);
+  gst_bin_add_many(GST_BIN(udpsink_bin),
+                   typefind, udpsink, nullptr);
+  gst_element_link(typefind, udpsink);
+  gst_bin_add(GST_BIN(bin_), udpsink_bin);
+  g_print("%d\n", __LINE__);
+  GstUtils::sync_state_with_parent(udpsink_bin);
+
+  GstPad *sink_pad = gst_element_get_static_pad(typefind, "sink");
+  GstPad *ghost_sinkpad = gst_ghost_pad_new(nullptr, sink_pad);
+  gst_pad_set_active(ghost_sinkpad, TRUE);
+  gst_element_add_pad(udpsink_bin, ghost_sinkpad);
+  gst_object_unref(sink_pad);
+  g_print("%d\n", __LINE__);
+
+  if (gst_pad_link (src_pad, ghost_sinkpad) != GST_PAD_LINK_OK)
+    g_debug ("linking with multiudpsink bin failled");
+
+  g_print("%d\n", __LINE__);
+  g_signal_emit_by_name (udpsink, "add", "localhost", "9066", nullptr);
+  g_signal_emit_by_name (udpsink, "add", "localhost", "9076", nullptr);
+  g_print("%d\n", __LINE__);
+
+  g_print("%d\n", __LINE__);
+  return true;
 }
 }

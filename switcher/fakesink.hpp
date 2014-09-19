@@ -48,7 +48,7 @@ class FakeSink:public SinglePadGstSink {
   GParamSpec *caps_spec_;
 
   bool init_gpipe() final;
-  bool can_sink_caps(std::string caps) final {
+  bool can_sink_caps(std::string /*caps*/) final {
     return true;
   };
 

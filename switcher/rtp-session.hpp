@@ -20,18 +20,19 @@
 #ifndef __SWITCHER_RTPSESSION_H__
 #define __SWITCHER_RTPSESSION_H__
 
-#include "./gpipe.hpp"
-#include "./quiddity-manager.hpp"
-#include "./rtp-destination.hpp"
-#include "./custom-property-helper.hpp"
 #include <gst/gst.h>
 #include <gst/sdp/gstsdpmessage.h>
 #include <memory>
 #include <map>
 #include <string>
+#include "./gpipe.hpp"
+#include "./quiddity-manager.hpp"
+#include "./rtp-destination.hpp"
+#include "./custom-property-helper.hpp"
 
 namespace switcher {
-class RtpSession:public GPipe {
+class RtpSession: public GPipe {
+  friend RtpDestination;
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(RtpSession);
   RtpSession();
@@ -150,6 +151,14 @@ class RtpSession:public GPipe {
                                                     gpointer user_data);
   static gboolean write_sdp_file_wrapped(gpointer nick_name,
                                          gpointer user_data);
+  static void on_rtppayloder_caps(GstElement *typefind,
+                                  guint probability,
+                                  GstCaps *caps,
+                                  gpointer user_data);
+  bool make_udp_sink(const std::string &shmpath,
+                     GstElement *rtpsession,
+                     const std::string &rtp_src_pad_name);
+
 };
 }  // namespace switcher
 
