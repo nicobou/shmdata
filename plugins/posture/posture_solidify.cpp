@@ -109,7 +109,7 @@ PostureSolidify::connect(std::string shmdata_socket_path) {
   // This is the callback for when new clouds are received
   reader_->set_callback([=] (void *data,
                              int size,
-                             unsigned long long timestamp,
+                             unsigned long long /*unused*/,
                              const char *type,
                              void * /*unused */ )
   {
@@ -174,6 +174,9 @@ void
 PostureSolidify::set_marching_cubes_resolution(const int res, void *user_data) {
   PostureSolidify *ctx = (PostureSolidify *) user_data;
   ctx->marching_cubes_resolution_ = res;
+
+  if (ctx->solidify_ != nullptr)
+    ctx->solidify_->setGridResolution(res);
 }
 
 int
@@ -186,6 +189,9 @@ void
 PostureSolidify::set_save_mesh(const int save, void *user_data) {
   PostureSolidify *ctx = (PostureSolidify *) user_data;
   ctx->save_mesh_ = save;
+
+  if (ctx->solidify_ != nullptr)
+    ctx->solidify_->setSaveMesh(save);
 }
 
 void
