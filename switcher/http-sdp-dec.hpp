@@ -39,12 +39,12 @@ class HTTPSDPDec:public GPipe {
   bool to_shmdata(std::string uri);
 
  private:
-  GstElement *souphttpsrc_;
-  GstElement *sdpdemux_;
+  GstElement *souphttpsrc_{nullptr};
+  GstElement *sdpdemux_{nullptr};
   void init_httpsdpdec();
   void destroy_httpsdpdec();
-  QuiddityCommand *on_error_command_;  // for the pipeline error handler
-  std::list<std::unique_ptr < DecodebinToShmdata>> decodebins_;
+  QuiddityCommand *on_error_command_{nullptr};  // for the pipeline error handler
+  std::list<std::unique_ptr<DecodebinToShmdata>> decodebins_{};
   void clean_on_error_command();
   bool init_gpipe() final;
   static void httpsdpdec_pad_added_cb(GstElement *object,
@@ -58,4 +58,4 @@ class HTTPSDPDec:public GPipe {
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif

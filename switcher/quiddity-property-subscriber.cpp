@@ -27,27 +27,21 @@
 
 namespace switcher {
 QuiddityPropertySubscriber::QuiddityPropertySubscriber() {
-  muted_ = false;
 }
 
 QuiddityPropertySubscriber::~QuiddityPropertySubscriber() {
-  QuiddityManager_Impl::ptr manager = manager_impl_.lock();
-  if (!(bool) manager)
-    return;
-
   for (auto &it : prop_datas_) {
-    Quiddity::ptr quid = manager->get_quiddity(it.second->quiddity_name);
+    Quiddity::ptr quid = it.second->quid.lock();
     if ((bool) quid) {
-      g_debug
-          ("QuiddityPropertySubscriber: cleaning property not unsubscribed %s, %s, %s",
-           it.second->name, it.second->quiddity_name,
-           it.second->property_name);
       quid->unsubscribe_property(it.second->property_name, property_cb,
                                  it.second);
-      g_free(it.second->name);
-      g_free(it.second->quiddity_name);
-      g_free(it.second->property_name);
     }
+  }
+  for (auto &it : prop_datas_) {
+    g_free(it.second->name);
+    g_free(it.second->quiddity_name);
+    g_free(it.second->property_name);
+    delete it.second;
   }
 }
 
@@ -60,12 +54,6 @@ QuiddityPropertySubscriber::property_cb(GObject *gobject,
                                         GParamSpec *pspec,
                                         gpointer user_data) {
   PropertyData *prop = static_cast<PropertyData *>(user_data);
-
-  // g_print ("---------------- property callback: %s -- %s -- %s -- %s\n",
-  //      prop->quiddity_name,
-  //      prop->property_name,
-  //      Property::parse_callback_args (gobject, pspec).c_str (),
-  //      (gchar *)prop->user_data);
   if (!prop->property_subscriber->muted_)
     prop->user_callback(prop->name,
                         prop->quiddity_name,
@@ -107,13 +95,14 @@ QuiddityPropertySubscriber::subscribe(Quiddity::ptr quid,
               quid->get_nick_name().c_str(), property_name.c_str());
     return false;
   }
-  PropertyData *prop = new PropertyData();
+  PropertyData *prop = new PropertyData(); 
   prop->property_subscriber = this;
   prop->name = g_strdup(name_.c_str());
   prop->quiddity_name = g_strdup(quid->get_nick_name().c_str());
   prop->property_name = g_strdup(property_name.c_str());
   prop->user_callback = user_callback_;
   prop->user_data = user_data_;
+  prop->quid = quid;
   if (quid->subscribe_property(property_name.c_str(), property_cb, prop)) {
     prop_datas_[cur_pair] = prop;
     return true;
@@ -147,6 +136,9 @@ bool QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid) {
   std::vector<std::pair<std::string, std::string>> entries_to_remove;
   for (auto &it : prop_datas_)
     if (it.first.first == quid_name) {
+      quid->unsubscribe_property(it.second->property_name,
+                                 property_cb,
+                                 it.second);
       g_free(it.second->quiddity_name);
       g_free(it.second->property_name);
       delete it.second;

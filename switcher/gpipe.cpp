@@ -49,7 +49,6 @@ GPipe::~GPipe() {
     gst_element_set_state(pipeline_, GST_STATE_NULL);
     gst_object_unref(GST_OBJECT(pipeline_));
   }
-
   if (!commands_.empty())
     for (auto &it : commands_)
     {
@@ -57,13 +56,10 @@ GPipe::~GPipe() {
         g_source_destroy(it);
       delete it;
     }
-  g_print("%d\n",__LINE__);
   if (position_tracking_source_ != nullptr)
     g_source_destroy(position_tracking_source_);
-  g_print("%d\n",__LINE__);
   if (!g_source_is_destroyed(source_))
     g_source_destroy(source_);
-  g_print("fin -- %d\n",__LINE__);
 }
 
 void GPipe::play_pipe(GPipe *pipe) {
@@ -88,6 +84,7 @@ bool GPipe::init() {
   On_scope_exit{g_source_unref(source_);};
   ((GstBusSource *) source_)->bus =
       gst_pipeline_get_bus(GST_PIPELINE(pipeline_));
+  On_scope_exit{gst_object_unref(((GstBusSource *) source_)->bus);};
   g_source_set_callback(source_,
                         (GSourceFunc) bus_called,
                         nullptr,
@@ -284,7 +281,9 @@ gboolean GPipe::run_command(gpointer user_data) {
         break;
       case QuiddityCommand::invoke:
         {
-          manager->invoke(context->command->args_[0], context->command->args_[1], nullptr,      // do not care of return value
+          manager->invoke(context->command->args_[0],
+                          context->command->args_[1],
+                          nullptr,
                           context->command->vector_arg_);
         }
         break;
@@ -303,7 +302,7 @@ gboolean GPipe::run_command(gpointer user_data) {
   }
   else
     g_warning("GPipe::bus_sync_handler, cannot run command");
-
+  
   auto it = std::find(context->self->commands_.begin(),
                       context->self->commands_.end(),
                       context->src);

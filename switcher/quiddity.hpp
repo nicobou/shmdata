@@ -73,9 +73,11 @@ class Quiddity {
   bool set_property(std::string name, std::string value);
   std::string get_property(std::string name);
   bool subscribe_property(std::string name,
-                          Property::Callback cb, void *user_data);
+                          Property::Callback cb,
+                          void *user_data);
   bool unsubscribe_property(std::string name,
-                            Property::Callback cb, void *user_data);
+                            Property::Callback cb,
+                            void *user_data);
   bool has_property(std::string property_name);
   Property::ptr get_property_ptr(std::string property_name);
 

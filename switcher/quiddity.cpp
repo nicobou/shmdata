@@ -121,7 +121,6 @@ Quiddity::Quiddity():
 }
 
 Quiddity::~Quiddity() {
-  g_print("closing quiddity %s\n", name_.c_str());
 }
 
 std::string Quiddity::get_name() {

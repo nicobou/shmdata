@@ -35,8 +35,8 @@ class Property:public Categorizable {
                             gpointer user_data);
   Property();
   ~Property();
-  Property(const Property &source);
-  Property &operator=(const Property &source);
+  Property(const Property &source) = delete;
+  Property &operator=(const Property &source) = delete;
 
   // this is when using an existing property
   void set_gobject_pspec(GObject * object, GParamSpec *pspec);
@@ -65,13 +65,12 @@ class Property:public Categorizable {
 
  private:
   void make_description();
-  void copy_property(const Property &source);
-  std::string long_name_;
-  std::string name_;
-  GParamSpec *property_;
-  GObject *object_;
+  std::string long_name_{};
+  std::string name_{};
+  GParamSpec *property_{nullptr};
+  GObject *object_{nullptr};
   JSONBuilder::ptr json_description_;
-  std::map<std::pair < Callback, void *>, gulong> subscribed_handlers_;
+  std::map<std::pair<Callback, void *>, gulong> subscribed_handlers_{};
 };
 }  // namespace switcher
 

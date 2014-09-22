@@ -25,41 +25,15 @@
 #include "./gst-utils.hpp"
 
 namespace switcher {
-Property::Property():long_name_("undefined_long_name"),
-                     name_("undefined_name"),
-                     property_(nullptr),
-                     object_(nullptr), json_description_(new JSONBuilder()) {
+Property::Property():
+    long_name_("undefined_long_name"),
+    name_("undefined_name"),
+    json_description_(new JSONBuilder()) {
 }
 
 Property::~Property() {
-  g_param_spec_ref(property_);
+  g_param_spec_unref(property_);
   g_object_unref(object_);
-}
-
-Property::Property(const Property &source) {
-  copy_property(source);
-}
-
-Property &Property::operator=(const Property &source) {
-  copy_property(source);
-  return *this;
-}
-
-void Property::copy_property(const Property &source) {
-  long_name_ = source.long_name_;
-  name_ = source.name_;
-  json_description_ = source.json_description_;
-  subscribed_handlers_ = source.subscribed_handlers_;
-  property_ = nullptr;
-  object_ = nullptr;
-  if (source.property_ != nullptr) {
-    g_param_spec_ref(source.property_);
-    property_ = source.property_;
-  }
-  if (source.object_ != nullptr) {
-    g_object_ref(source.object_);
-    object_ = source.object_;
-  }
 }
 
 void Property::set_gobject_pspec(GObject * object, GParamSpec *pspec) {
@@ -92,7 +66,7 @@ void Property::set(std::string value) {
 }
 
 bool Property::subscribe(Callback cb, void *user_data) {
-  std::pair < Callback, void *>subscribe_id = std::make_pair(cb, user_data);
+  std::pair<Callback, void *>subscribe_id = std::make_pair(cb, user_data);
   gchar *signal = g_strconcat("notify::", property_->name, nullptr);
   if (subscribed_handlers_.find(subscribe_id) != subscribed_handlers_.end()) {
     g_debug("cannot subscribe callback/user_data");
@@ -105,7 +79,7 @@ bool Property::subscribe(Callback cb, void *user_data) {
 }
 
 bool Property::unsubscribe(Callback cb, void *user_data) {
-  std::pair < Callback, void *>subscribe_id = std::make_pair(cb, user_data);
+  std::pair<Callback, void *>subscribe_id = std::make_pair(cb, user_data);
   auto it = subscribed_handlers_.find(subscribe_id);
   if (subscribed_handlers_.end() == it)
     return false;

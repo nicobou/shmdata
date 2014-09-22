@@ -63,7 +63,6 @@ QuiddityManager_Impl::QuiddityManager_Impl(const std::string &name):
     mainloop_(std::make_shared<GlibMainLoop>()),
     name_(name),
     classes_doc_(new JSONBuilder()) {
-  g_print ("%s\n", __FUNCTION__);
   remove_shmdata_sockets();
   register_classes();
   make_classes_doc();
@@ -103,9 +102,10 @@ void QuiddityManager_Impl::remove_shmdata_sockets() {
   if (nullptr == enumerator)
     return;
   On_scope_exit{
-    GError *error = nullptr;
-    g_file_enumerator_close(enumerator, nullptr, &error);
-    release_g_error(error);
+    // GError *error = nullptr;
+    // g_file_enumerator_close(enumerator, nullptr, &error);
+    // release_g_error(error);
+    g_object_unref(enumerator);
   };
   {
     GError *error = nullptr;
@@ -1063,7 +1063,7 @@ GMainContext *QuiddityManager_Impl::get_g_main_context() {
 }
 
 bool QuiddityManager_Impl::load_plugin(const char *filename) {
-  PluginLoader::ptr plugin(new PluginLoader());
+  PluginLoader::ptr plugin = std::make_shared<PluginLoader>();
 
   if (!plugin->load(filename))
     return false;
@@ -1078,10 +1078,11 @@ bool QuiddityManager_Impl::load_plugin(const char *filename) {
     close_plugin(class_name);
   }
 
-  abstract_factory_.register_class_with_custom_factory(class_name,
-                                                       plugin->get_json_root_node
-                                                       (), plugin->create_,
-                                                       plugin->destroy_);
+  abstract_factory_.register_class_with_custom_factory(
+      class_name,
+      plugin->get_json_root_node(),
+      plugin->create_,
+      plugin->destroy_);
   plugins_[class_name] = plugin;
   return true;
 }

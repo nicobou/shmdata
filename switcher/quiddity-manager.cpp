@@ -22,6 +22,7 @@
 #include "./quiddity-manager.hpp"
 #include "./quiddity.hpp"
 #include "./gst-utils.hpp"
+#include "./scope-exit.hpp"
 
 namespace switcher {
 QuiddityManager::ptr QuiddityManager::make_manager(std::string name) {
@@ -903,15 +904,14 @@ void QuiddityManager::invoke_in_thread() {
   builder->reset();
   builder->begin_object();
   builder->set_member_name("command");
-  builder->add_node_value(command_->get_json_root_node());
+  JsonNode *node = command_->get_json_root_node();
+  On_scope_exit{json_node_free(node);};
+  builder->add_node_value(node);
   builder->end_object();
-  // g_print ("%s\n", builder->get_string(true).c_str ());
   {
     std::unique_lock<std::mutex> lock(execution_done_mutex_);
     g_async_queue_push(command_queue_, command_.get());
-    // g_print ("PUSHED - %s\n", builder->get_string(true).c_str ());
     execution_done_cond_.wait(lock);
-    // g_print ("DONE - %s\n", builder->get_string(true).c_str ());
   }
 }
 

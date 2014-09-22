@@ -24,7 +24,7 @@
 #include "./quiddity-command.hpp"
 
 namespace switcher {
-const std::map < int, const char *>QuiddityCommand::command_names_ = {
+const std::map<int, const char *>QuiddityCommand::command_names_ = {
   {auto_invoke, "auto_invoke"},
   {create, "create"},
   {create_nick_named, "create_nick_named"},
@@ -94,9 +94,8 @@ void QuiddityCommand::set_vector_arg(std::vector<std::string> vector_arg) {
   vector_arg_ = vector_arg;
 }
 
-QuiddityCommand::QuiddityCommand() {
-  json_builder_.reset(new JSONBuilder());
-  time_ = -1;
+QuiddityCommand::QuiddityCommand():
+    json_builder_(std::make_shared<JSONBuilder>()) {
 }
 
 JSONBuilder::Node QuiddityCommand::get_json_root_node() {

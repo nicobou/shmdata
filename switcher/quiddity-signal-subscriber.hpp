@@ -68,23 +68,24 @@ class QuidditySignalSubscriber {
                         manager_impl);
 
  private:
-  bool muted_;
-  OnEmittedCallback user_callback_;
-  void *user_data_;
-  std::string name_;
-  std::weak_ptr<QuiddityManager_Impl> manager_impl_;
+  bool muted_{false};
+  OnEmittedCallback user_callback_{nullptr};
+  void *user_data_{nullptr};
+  std::string name_{};
+  std::weak_ptr<QuiddityManager_Impl> manager_impl_{};
 
   typedef struct {
-    QuidditySignalSubscriber *subscriber;
-    gchar *name;
-    gchar *quiddity_name;
-    gchar *signal_name;
-    OnEmittedCallback user_callback;
-    void *user_data;
+    QuidditySignalSubscriber *subscriber{nullptr};
+    gchar *name{nullptr};
+    gchar *quiddity_name{nullptr};
+    gchar *signal_name{nullptr};
+    OnEmittedCallback user_callback{nullptr};
+    void *user_data{nullptr};
+    std::weak_ptr<Quiddity> quid{};
   } SignalData;
   typedef std::map<std::pair < std::string, std::string>,
                      SignalData * >SignalDataMap;
-  SignalDataMap signal_datas_;
+  SignalDataMap signal_datas_{};
 };
 }  // namespace switcher
 

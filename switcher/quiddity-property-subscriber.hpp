@@ -66,23 +66,24 @@ class QuiddityPropertySubscriber {
                         manager_impl);
 
  private:
-  Callback user_callback_;
-  void *user_data_;
-  std::string name_;
-  std::weak_ptr<QuiddityManager_Impl> manager_impl_;
-  bool muted_;
+  Callback user_callback_{nullptr};
+  void *user_data_{nullptr};
+  std::string name_{};
+  std::weak_ptr<QuiddityManager_Impl> manager_impl_{};
+  bool muted_{false};
 
   typedef struct {
-    QuiddityPropertySubscriber *property_subscriber;
-    gchar *name;
-    gchar *quiddity_name;
-    gchar *property_name;
-    Callback user_callback;
-    void *user_data;
+    QuiddityPropertySubscriber *property_subscriber{nullptr};
+    gchar *name{nullptr};
+    gchar *quiddity_name{nullptr};
+    gchar *property_name{nullptr};
+    Callback user_callback{nullptr};
+    void *user_data{nullptr};
+    std::weak_ptr<Quiddity> quid{};
   } PropertyData;
   typedef std::map<std::pair<std::string, std::string>,
                     PropertyData *>PropDataMap;
-  PropDataMap prop_datas_;
+  PropDataMap prop_datas_{};
 };
 }  // namespace switcher
 
