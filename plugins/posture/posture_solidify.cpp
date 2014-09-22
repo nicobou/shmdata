@@ -19,6 +19,7 @@
 #include "./posture_solidify.hpp"
 
 #include <iostream>
+#include <thread>
 
 using namespace std;
 using namespace switcher::data;
@@ -123,26 +124,29 @@ PostureSolidify::connect(std::string shmdata_socket_path) {
     solidify_->setInputCloud(vector<char>((char*)data, (char*) data + size),
                              string(type) != string(POINTCLOUD_TYPE_BASE));
 
-    // Get the result mesh, and send it through shmdata
-    vector<unsigned char> mesh = solidify_->getMesh();
-    if (mesh_writer_ == nullptr)
-    {
-      mesh_writer_ = make_shared<ShmdataAnyWriter>();
-      mesh_writer_->set_path(make_file_name("mesh"));
-      mesh_writer_->set_data_type(POLYGONMESH_TYPE_BASE);
-      register_shmdata(mesh_writer_);
-      mesh_writer_->start();
-    }
+    auto computeThread = thread([=] () {
+      // Get the result mesh, and send it through shmdata
+      vector<unsigned char> mesh = solidify_->getMesh();
+      if (mesh_writer_ == nullptr)
+      {
+        mesh_writer_ = make_shared<ShmdataAnyWriter>();
+        mesh_writer_->set_path(make_file_name("mesh"));
+        mesh_writer_->set_data_type(POLYGONMESH_TYPE_BASE);
+        register_shmdata(mesh_writer_);
+        mesh_writer_->start();
+      }
 
-    check_buffers();
-    shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(reinterpret_cast<const unsigned char*>(mesh.data()),
-                                                                  reinterpret_cast<const unsigned char*>(mesh.data()) + mesh.size()));
-    mesh_writer_->push_data_auto_clock((void *) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
-                                        mesh.size(),
-                                        PostureSolidify::free_sent_buffer,
-                                        (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
+      check_buffers();
+      shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(reinterpret_cast<const unsigned char*>(mesh.data()),
+                                                                    reinterpret_cast<const unsigned char*>(mesh.data()) + mesh.size()));
+      mesh_writer_->push_data_auto_clock((void *) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
+                                          mesh.size(),
+                                          PostureSolidify::free_sent_buffer,
+                                          (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
+      mutex_.unlock();
+    });
 
-    mutex_.unlock();
+    computeThread.detach();
   },
   nullptr);
 
