@@ -233,7 +233,7 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
     reader->timereset_ = FALSE;
   if (!reader->source_)
     {
-      g_critical ("Reader: \"shmsrc\" element could not be created, consider installing libshmdata.");
+      g_critical ("Reader: \"shmsrc\" element could not be created");
       g_mutex_unlock (&reader->mutex_);
       return FALSE;
     }
@@ -665,6 +665,7 @@ shmdata_base_reader_close (shmdata_base_reader_t * reader)
       g_mutex_unlock (&reader->mutex_);
       g_mutex_clear (&reader->mutex_);
       shmdata_base_reader_init_members (reader);
+      g_mutex_clear (&reader->mutex_);
       g_free (reader);
       g_debug ("base reader closed");
     }
