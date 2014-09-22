@@ -58,6 +58,7 @@ PostureSrc::start() {
   zcamera_->setCaptureIR(capture_ir_);
   zcamera_->setCompression(compress_cloud_);
   zcamera_->setCaptureMode((posture::ZCamera::CaptureMode) capture_mode_);
+  zcamera_->setOutlierFilterParameters(filter_outliers_, filter_mean_k_, filter_stddev_mul_);
 
   zcamera_->start();
   return true;
@@ -162,6 +163,28 @@ PostureSrc::init() {
   install_property_by_pspec(custom_props_->get_gobject(),
                             reload_calibration_prop_, "reload_calibration",
                             "Reload calibration at each frame");
+
+  downsample_prop_ = custom_props_->make_boolean_property("downsample",
+                                "Activate the cloud downsampling",
+                                downsample_,
+                                (GParamFlags) G_PARAM_READWRITE,
+                                PostureSrc::set_downsample_active,
+                                PostureSrc::get_downsample_active,
+                                this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            downsample_prop_, "downsample",
+                            "Activate the cloud downsampling");
+
+  filter_outliers_prop_ = custom_props_->make_boolean_property("filter_outliers",
+                                "Filter outlier points from the cloud",
+                                filter_outliers_,
+                                (GParamFlags) G_PARAM_READWRITE,
+                                PostureSrc::set_filter_outliers,
+                                PostureSrc::get_filter_outliers,
+                                this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            filter_outliers_prop_, "filter_outliers",
+                            "Filter outlier points from the cloud");
 
   capture_modes_enum_[0].value = 0;
   capture_modes_enum_[0].value_name = "Default mode";
@@ -298,6 +321,141 @@ void
 PostureSrc::set_reload_calibration(const int reload, void *user_data) {
   PostureSrc *ctx = (PostureSrc *) user_data;
   ctx->reload_calibration_ = reload;
+}
+
+int
+PostureSrc::get_downsample_active(void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  return ctx->downsample_;
+}
+
+void
+PostureSrc::set_downsample_active(const int active, void *user_data){
+  PostureSrc *ctx = (PostureSrc *) user_data;
+
+  if (ctx->downsample_ != active && active == true)
+  {
+    ctx->downsample_ = active;
+
+    ctx->downsample_resolution_prop_ = ctx->custom_props_->make_double_property("downsample_resolution",
+                                "Resampling resolution",
+                                0.01,
+                                1.0,
+                                ctx->downsample_resolution_,
+                                (GParamFlags)
+                                G_PARAM_READWRITE,
+                                PostureSrc::set_downsampling_resolution,
+                                PostureSrc::get_downsampling_resolution,
+                                ctx);
+    ctx->install_property_by_pspec(ctx->custom_props_->get_gobject(),
+                              ctx->downsample_resolution_prop_, "downsample_resolution",
+                              "Resampling resolution");
+  }
+  else if (ctx->downsample_ != active && active == false)
+  {
+    ctx->downsample_ = false;
+    ctx->uninstall_property("downsample_resolution");
+  }
+
+  if (ctx->zcamera_ != nullptr)
+    ctx->zcamera_->setDownsampling(ctx->downsample_, ctx->downsample_resolution_);
+}
+
+double
+PostureSrc::get_downsampling_resolution(void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  return ctx->downsample_resolution_;
+}
+
+void
+PostureSrc::set_downsampling_resolution(const double resolution, void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  ctx->downsample_resolution_ = resolution;
+
+  if (ctx->zcamera_ != nullptr)
+    ctx->zcamera_->setDownsampling(ctx->downsample_, ctx->downsample_resolution_);
+}
+
+int
+PostureSrc::get_filter_outliers(void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  return ctx->filter_outliers_;
+}
+
+void
+PostureSrc::set_filter_outliers(const int active, void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+
+  if (ctx->filter_outliers_ != active && active == true)
+  {
+    ctx->filter_outliers_ = active;
+    ctx->filter_mean_k_prop_ = ctx->custom_props_->make_int_property("filter_mean_k",
+                              "Number of points to consider for the outlier filtering",
+                              0,
+                              16,
+                              ctx->filter_mean_k_,
+                              (GParamFlags)
+                              G_PARAM_READWRITE,
+                              PostureSrc::set_filter_mean_k,
+                              PostureSrc::get_filter_mean_k,
+                              ctx);
+    ctx->install_property_by_pspec(ctx->custom_props_->get_gobject(),
+                              ctx->filter_mean_k_prop_, "filter_mean_k",
+                              "Number of points to consider for the outlier filtering");
+
+    ctx->filter_stddev_mul_prop_ = ctx->custom_props_->make_double_property("filter_stddev_mul",
+                                "Multiplier threshold on the statistical outlier filter (see PCL doc)",
+                                0.0,
+                                8.0,
+                                ctx->filter_stddev_mul_,
+                                (GParamFlags)
+                                G_PARAM_READWRITE,
+                                PostureSrc::set_filter_stddev_mul,
+                                PostureSrc::get_filter_stddev_mul,
+                                ctx);
+    ctx->install_property_by_pspec(ctx->custom_props_->get_gobject(),
+                              ctx->filter_stddev_mul_prop_, "filter_stddev_mul",
+                              "Multiplier threshold on the statistical outlier filter (see PCL doc)");
+  } 
+  else if (ctx->filter_outliers_ != active && active == false)
+  {
+    ctx->filter_outliers_ = active;
+    ctx->uninstall_property("filter_mean_k");
+    ctx->uninstall_property("filter_stddev_mul");
+  }
+
+  if (ctx->zcamera_ != nullptr)
+    ctx->zcamera_->setOutlierFilterParameters(ctx->filter_outliers_, ctx->filter_mean_k_, ctx->filter_stddev_mul_);
+}
+
+int
+PostureSrc::get_filter_mean_k(void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  return ctx->filter_mean_k_;
+}
+
+void
+PostureSrc::set_filter_mean_k(const int mean_k, void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  ctx->filter_mean_k_ = mean_k;
+
+  if (ctx->zcamera_ != nullptr)
+    ctx->zcamera_->setOutlierFilterParameters(ctx->filter_outliers_, ctx->filter_mean_k_, ctx->filter_stddev_mul_);
+}
+
+double
+PostureSrc::get_filter_stddev_mul(void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  return ctx->filter_stddev_mul_;
+}
+
+void
+PostureSrc::set_filter_stddev_mul(const double stddev_mul, void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  ctx->filter_stddev_mul_ = stddev_mul;
+
+  if (ctx->zcamera_ != nullptr)
+    ctx->zcamera_->setOutlierFilterParameters(ctx->filter_outliers_, ctx->filter_mean_k_, ctx->filter_stddev_mul_);
 }
 
 void

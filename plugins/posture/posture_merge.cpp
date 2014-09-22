@@ -138,6 +138,17 @@ PostureMerge::init() {
                             save_cloud_prop_, "save_cloud",
                             "Save the current cloud if true");
 
+  downsample_prop_ = custom_props_->make_boolean_property("downsample",
+                                "Activate the cloud downsampling",
+                                downsample_,
+                                (GParamFlags) G_PARAM_READWRITE,
+                                PostureMerge::set_downsample_active,
+                                PostureMerge::get_downsample_active,
+                                this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            downsample_prop_, "downsample",
+                            "Activate the cloud downsampling");
+
   return true;
 }
 
@@ -171,6 +182,7 @@ PostureMerge::connect(std::string shmdata_socket_path) {
     // If another thread is trying to get the merged cloud, don't bother
     if (!mutex_.try_lock())
       return;
+
     if (cloud_writer_.get() == nullptr) {
       cloud_writer_.reset(new ShmdataAnyWriter);
       cloud_writer_->set_path(make_file_name("cloud"));
@@ -266,6 +278,60 @@ void
 PostureMerge::set_save_cloud(const int save, void *user_data) {
   PostureMerge *ctx = (PostureMerge *) user_data;
   ctx->save_cloud_ = save;
+}
+
+
+int
+PostureMerge::get_downsample_active(void *user_data) {
+  PostureMerge *ctx = (PostureMerge *) user_data;
+  return ctx->downsample_;
+}
+
+void
+PostureMerge::set_downsample_active(const int active, void *user_data){
+  PostureMerge *ctx = (PostureMerge *) user_data;
+
+  if (ctx->downsample_ != active && active == true)
+  {
+    ctx->downsample_ = active;
+
+    ctx->downsample_resolution_prop_ = ctx->custom_props_->make_double_property("downsample_resolution",
+                                "Resampling resolution",
+                                0.01,
+                                1.0,
+                                ctx->downsample_resolution_,
+                                (GParamFlags)
+                                G_PARAM_READWRITE,
+                                PostureMerge::set_downsampling_resolution,
+                                PostureMerge::get_downsampling_resolution,
+                                ctx);
+    ctx->install_property_by_pspec(ctx->custom_props_->get_gobject(),
+                              ctx->downsample_resolution_prop_, "downsample_resolution",
+                              "Resampling resolution");
+  }
+  else if (ctx->downsample_ != active && active == false)
+  {
+    ctx->downsample_ = false;
+    ctx->uninstall_property("downsample_resolution");
+  }
+
+  if (ctx->merger_ != nullptr)
+    ctx->merger_->setDownsampling(ctx->downsample_, ctx->downsample_resolution_);
+}
+
+double
+PostureMerge::get_downsampling_resolution(void *user_data) {
+  PostureMerge *ctx = (PostureMerge *) user_data;
+  return ctx->downsample_resolution_;
+}
+
+void
+PostureMerge::set_downsampling_resolution(const double resolution, void *user_data) {
+  PostureMerge *ctx = (PostureMerge *) user_data;
+  ctx->downsample_resolution_ = resolution;
+
+  if (ctx->merger_ != nullptr)
+    ctx->merger_->setDownsampling(ctx->downsample_, ctx->downsample_resolution_);
 }
 
 bool
