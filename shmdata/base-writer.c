@@ -105,6 +105,7 @@ shmdata_base_writer_close (shmdata_base_writer_t *writer)
   g_mutex_unlock (&writer->mutex_);
   g_mutex_clear (&writer->mutex_);
   shmdata_base_writer_init_members (writer);
+  g_mutex_clear (&writer->mutex_);
   g_free (writer);
   writer = NULL;
 }
