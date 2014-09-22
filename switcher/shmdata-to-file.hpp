@@ -20,11 +20,9 @@
 #ifndef __SWITCHER_SHMDATA_TO_FILE_H__
 #define __SWITCHER_SHMDATA_TO_FILE_H__
 
+#include <gst/gst.h>
 #include <string>
 #include <unordered_map>
-
-#include <gst/gst.h>
-
 #include "./gpipe.hpp"
 #include "./quiddity.hpp"
 #include "./segment.hpp"

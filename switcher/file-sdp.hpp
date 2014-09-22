@@ -21,11 +21,10 @@
 #define __SWITCHER_FILE_SDP_H__
 
 #include "./gpipe.hpp"
-#include "./gst-element-cleaner.hpp"
 #include <memory>
 
 namespace switcher {
-class FileSDP:public GPipe, public GstElementCleaner {
+class FileSDP:public GPipe {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FileSDP);
   FileSDP();

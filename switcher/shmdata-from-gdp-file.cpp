@@ -39,7 +39,6 @@ ShmdataFromGDPFile::ShmdataFromGDPFile():custom_prop_(new CustomPropertyHelper()
 }
 
 ShmdataFromGDPFile::~ShmdataFromGDPFile() {
-  clean_players();
 }
 
 bool ShmdataFromGDPFile::init_gpipe() {

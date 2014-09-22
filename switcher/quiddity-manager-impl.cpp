@@ -60,32 +60,13 @@ QuiddityManager_Impl::make_manager(const std::string &name) {
 }
 
 QuiddityManager_Impl::QuiddityManager_Impl(const std::string &name):
-    plugins_(),
+    mainloop_(std::make_shared<GlibMainLoop>()),
     name_(name),
-    abstract_factory_(),
-    quiddities_(),
-    quiddities_nick_names_(),
-    property_subscribers_(),
-    signal_subscribers_(),
-    classes_doc_(new JSONBuilder()),
-    creation_hook_(nullptr),
-    removal_hook_(nullptr),
-    creation_hook_user_data_(nullptr),
-    removal_hook_user_data_(nullptr),
-    quiddity_created_counter_(0),
-    thread_(), main_context_(nullptr), mainloop_(nullptr) {
-  init_gmainloop();
+    classes_doc_(new JSONBuilder()) {
+  g_print ("%s\n", __FUNCTION__);
   remove_shmdata_sockets();
   register_classes();
   make_classes_doc();
-}
-
-QuiddityManager_Impl::~QuiddityManager_Impl() {
-  g_main_loop_quit(mainloop_);
-  g_main_loop_unref(mainloop_);
-  g_main_context_unref(main_context_);
-  if (thread_.joinable())
-    thread_.join();
 }
 
 void QuiddityManager_Impl::release_g_error(GError *error) {
@@ -1076,26 +1057,9 @@ void QuiddityManager_Impl::reset_create_remove_hooks() {
   removal_hook_user_data_ = nullptr;
 }
 
-void QuiddityManager_Impl::init_gmainloop() {
-  if (!gst_is_initialized())
-    gst_init(nullptr, nullptr);
-
-  main_context_ = g_main_context_new();
-  mainloop_ = g_main_loop_new(main_context_, FALSE);
-  // mainloop_ = g_main_loop_new (nullptr, FALSE);
-  GstRegistry *registry;
-  registry = gst_registry_get_default();
-  // TODO add option for scanning a path
-  gst_registry_scan_path(registry, "/usr/local/lib/gstreamer-0.10/");
-  thread_ = std::thread(&QuiddityManager_Impl::main_loop_thread, this);
-}
-
-void QuiddityManager_Impl::main_loop_thread() {
-  g_main_loop_run(mainloop_);
-}
 
 GMainContext *QuiddityManager_Impl::get_g_main_context() {
-  return main_context_;
+  return mainloop_->get_main_context();
 }
 
 bool QuiddityManager_Impl::load_plugin(const char *filename) {

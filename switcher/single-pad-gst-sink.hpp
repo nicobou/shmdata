@@ -25,7 +25,7 @@
 #include <memory>
 
 namespace switcher {
-class SinglePadGstSink:public GPipe {
+class SinglePadGstSink: public GPipe {
  public:
   typedef std::shared_ptr<SinglePadGstSink> ptr;
   SinglePadGstSink();

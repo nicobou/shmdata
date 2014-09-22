@@ -18,6 +18,7 @@
  */
 
 #include <string.h>
+
 #include "./quiddity-manager.hpp"
 #include "./quiddity.hpp"
 #include "./gst-utils.hpp"
@@ -26,6 +27,10 @@ namespace switcher {
 QuiddityManager::ptr QuiddityManager::make_manager(std::string name) {
   if (!gst_is_initialized())
     gst_init(nullptr, nullptr);
+  GstRegistry *registry = gst_registry_get_default();
+  // TODO add option for scanning a path
+  gst_registry_scan_path(registry, "/usr/local/lib/gstreamer-0.10/");
+  
   QuiddityManager::ptr manager(new QuiddityManager(name));
   manager->me_ = manager;
   return manager;

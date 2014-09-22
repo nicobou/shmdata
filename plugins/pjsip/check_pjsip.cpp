@@ -135,13 +135,13 @@ int main() {
                                 it.c_str(),
                                 nullptr));
     
-    usleep(8000000);
-    assert(manager->set_property(sip_name, "status", "Away"));
-    usleep(8000000);
-    assert(manager->set_property(sip_name, "status-note", "coucou"));
-    usleep(8000000);
-    assert(manager->set_property(sip_name, "status", "BRB"));
-    usleep(2000000);
+    // usleep(8000000);
+    // assert(manager->set_property(sip_name, "status", "Away"));
+    // usleep(8000000);
+    // assert(manager->set_property(sip_name, "status-note", "coucou"));
+    // usleep(8000000);
+    // assert(manager->set_property(sip_name, "status", "BRB"));
+    // usleep(2000000);
     
     for (auto &it : buddies)
       assert(manager->invoke_va(sip_name,

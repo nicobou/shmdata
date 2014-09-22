@@ -20,12 +20,12 @@
 #ifndef __SWITCHER_HTTP_SDP_DEC_H__
 #define __SWITCHER_HTTP_SDP_DEC_H__
 
-#include "./gpipe.hpp"
-#include "./quiddity-command.hpp"
-#include "./decodebin-to-shmdata.hpp"
 #include <memory>
 #include <map>
 #include <string>
+#include "./gpipe.hpp"
+#include "./quiddity-command.hpp"
+#include "./decodebin-to-shmdata.hpp"
 
 namespace switcher {
 class HTTPSDPDec:public GPipe {

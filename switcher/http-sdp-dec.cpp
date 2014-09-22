@@ -17,11 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <glib/gprintf.h>
+#include <memory>
 #include "./http-sdp-dec.hpp"
 #include "./gst-utils.hpp"
 #include "./scope-exit.hpp"
-#include <glib/gprintf.h>
-#include <memory>
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(HTTPSDPDec,
@@ -39,7 +39,6 @@ HTTPSDPDec::HTTPSDPDec():
 }
 
 HTTPSDPDec::~HTTPSDPDec() {
-  destroy_httpsdpdec();
 }
 
 bool HTTPSDPDec::init_gpipe() {

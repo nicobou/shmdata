@@ -27,6 +27,7 @@
 #include <gst/gst.h>
 #include <memory>
 #include <vector>
+#include <mutex>
 #include "./quiddity.hpp"
 #include "./segment.hpp"
 
@@ -84,7 +85,8 @@ class GPipe:public Quiddity, public Segment {
   gdouble seek_ {0.0};
   gint64 length_ {0};
   std::vector<GSource *>commands_ {};
-
+  std::mutex play_pipe_{};
+  std::condition_variable play_cond_{};
   void make_bin();
   void clean_bin();
   bool speed(gdouble speed);
@@ -105,6 +107,7 @@ class GPipe:public Quiddity, public Segment {
   static void print_one_tag(const GstTagList *list,
                             const gchar *tag, gpointer user_data);
   static gboolean query_position(gpointer user_data);
+  static void play_pipe(GPipe *pipe);
 };
 }  // namespace switcher
 

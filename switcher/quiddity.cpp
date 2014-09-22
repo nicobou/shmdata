@@ -21,30 +21,33 @@
  * The Quiddity class
  */
 
+#include <list>
+#include <algorithm>
+
 #include "./quiddity.hpp"
 #include "./quiddity-manager-impl.hpp"
 #include "./gst-utils.hpp"
 #include "./information-tree-json.hpp"
-#include <list>
-#include <algorithm>
 
 namespace switcher {
-std::map<std::pair < std::string, std::string>,
-           guint > Quiddity::signals_ids_;
+std::map<std::pair<std::string, std::string>, guint> Quiddity::signals_ids_;
 
-Quiddity::Quiddity():information_tree_(data::Tree::make()),
-                     properties_(),
-                     disabled_properties_(),
-                     properties_description_(new JSONBuilder()),
-                     methods_(),
-                     disabled_methods_(),
-                     methods_description_(new JSONBuilder()),
-                     position_weight_counter_(0),
-                     signals_(),
-                     signals_description_(new JSONBuilder()),
-                     name_(), nick_name_(), manager_impl_(), gobject_(new GObjectWrapper()) {
+Quiddity::Quiddity():
+    information_tree_(data::Tree::make()),
+    properties_(),
+    disabled_properties_(),
+    properties_description_(new JSONBuilder()),
+    methods_(),
+    disabled_methods_(),
+    methods_description_(new JSONBuilder()),
+    position_weight_counter_(0),
+    signals_(),
+    signals_description_(new JSONBuilder()),
+    name_(),
+    nick_name_(),
+    manager_impl_(),
+    gobject_(new GObjectWrapper()) {
   gobject_->property_set_default_user_data(this);
-
   GType arg_type[] = { G_TYPE_STRING };
   install_signal_with_class_name("Quiddity",
                                  "On New Property",
@@ -118,6 +121,7 @@ Quiddity::Quiddity():information_tree_(data::Tree::make()),
 }
 
 Quiddity::~Quiddity() {
+  g_print("closing quiddity %s\n", name_.c_str());
 }
 
 std::string Quiddity::get_name() {
@@ -742,7 +746,7 @@ GMainContext *Quiddity::get_g_main_context() {
   QuiddityManager_Impl::ptr manager = manager_impl_.lock();
   if ((bool) manager)
     return manager->get_g_main_context();
-  g_debug("%s: returning nullptr\n", __PRETTY_FUNCTION__);
+  g_print("%s: returning nullptr\n", __PRETTY_FUNCTION__);
   return nullptr;
 }
 

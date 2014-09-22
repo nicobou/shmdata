@@ -30,6 +30,7 @@
 #include "./quiddity-property-subscriber.hpp"
 #include "./quiddity-signal-subscriber.hpp"
 #include "./plugin-loader.hpp"
+#include "./glibmainloop.hpp"
 
 namespace switcher {
 //class Quiddity;
@@ -48,7 +49,7 @@ class QuiddityManager_Impl
   //  static QuiddityManager_Impl::ptr make_manager();    // will get name "default"
   static QuiddityManager_Impl::ptr make_manager(const std::string &name = "default");
   QuiddityManager_Impl() = delete;
-  virtual ~QuiddityManager_Impl();
+  virtual ~QuiddityManager_Impl(){}
   QuiddityManager_Impl(const QuiddityManager_Impl &) = delete;
   QuiddityManager_Impl &operator=(const QuiddityManager_Impl &) = delete;
 
@@ -204,38 +205,31 @@ class QuiddityManager_Impl
   bool remove_without_hook(std::string quiddity_name);
 
  private:
-  std::unordered_map<std::string, PluginLoader::ptr> plugins_;
-  std::string name_;
-  AbstractFactory<Quiddity, std::string, JSONBuilder::Node> abstract_factory_;
+  GlibMainLoop::ptr mainloop_;
+  std::unordered_map<std::string, PluginLoader::ptr> plugins_{};
+  std::string name_{};
+  AbstractFactory<Quiddity, std::string, JSONBuilder::Node> abstract_factory_{};
   
   bool load_plugin(const char *filename);
   void close_plugin(const std::string class_name);
   explicit QuiddityManager_Impl(const std::string &);
   void make_classes_doc();
   void register_classes();
-  std::unordered_map < std::string,
-                       std::shared_ptr<Quiddity >>quiddities_;
-  std::unordered_map<std::string, std::string> quiddities_nick_names_;
-  std::unordered_map < std::string,
-                       std::shared_ptr<QuiddityPropertySubscriber >>property_subscribers_;
-  std::unordered_map < std::string,
-                       std::shared_ptr<QuidditySignalSubscriber >>signal_subscribers_;
+  std::unordered_map<std::string, std::shared_ptr<Quiddity >>quiddities_{};
+  std::unordered_map<std::string, std::string> quiddities_nick_names_{};
+  std::unordered_map<std::string,
+                     std::shared_ptr<QuiddityPropertySubscriber>>property_subscribers_{};
+  std::unordered_map<std::string,
+                     std::shared_ptr<QuidditySignalSubscriber>>signal_subscribers_{};
   bool init_quiddity(std::shared_ptr<Quiddity> quiddity);
   void remove_shmdata_sockets();
-  JSONBuilder::ptr classes_doc_;
-  quiddity_created_hook creation_hook_;
-  quiddity_removed_hook removal_hook_;
-  void *creation_hook_user_data_;
-  void *removal_hook_user_data_;
-  guint quiddity_created_counter_;
+  JSONBuilder::ptr classes_doc_{};
+  quiddity_created_hook creation_hook_{nullptr};
+  quiddity_removed_hook removal_hook_{nullptr};
+  void *creation_hook_user_data_{nullptr};
+  void *removal_hook_user_data_{nullptr};
+  guint quiddity_created_counter_{0};
   void give_name_if_unnamed(std::shared_ptr<Quiddity> quiddity);
-
-  // gmainloop
-  std::thread thread_;      // this runs the main loop
-  GMainContext *main_context_;
-  GMainLoop *mainloop_;
-  void init_gmainloop();
-  void main_loop_thread();
 
   std::weak_ptr<QuiddityManager_Impl> me_ {};
   static void release_g_error(GError *error);

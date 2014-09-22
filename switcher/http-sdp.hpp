@@ -20,12 +20,11 @@
 #ifndef __SWITCHER_HTTP_SDP_H__
 #define __SWITCHER_HTTP_SDP_H__
 
-#include "./gpipe.hpp"
-#include "./gst-element-cleaner.hpp"
 #include <memory>
+#include "./gpipe.hpp"
 
 namespace switcher {
-class HTTPSDP:public GPipe, public GstElementCleaner {
+class HTTPSDP:public GPipe {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDP);
   HTTPSDP();

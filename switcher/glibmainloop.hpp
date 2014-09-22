@@ -17,28 +17,32 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_AUDIO_SOURCE_H__
-#define __SWITCHER_AUDIO_SOURCE_H__
+#ifndef __SWITCHER_GLIB_MAINLOOP_H__
+#define __SWITCHER_GLIB_MAINLOOP_H__
 
+#include <glib.h>
 #include <memory>
-#include "./gpipe.hpp"
+#include <thread>
 
 namespace switcher {
-class AudioSource: public GPipe {
- public:
-  typedef std::shared_ptr<AudioSource> ptr;
-  AudioSource();
-  AudioSource(const AudioSource &) = delete;
-  AudioSource &operator=(const AudioSource &) = delete;
- private:
-  GstElement *rawaudio_ {nullptr};
-  GstElement *audio_tee_ {nullptr};
-  std::string shmdata_path_;
-  void make_audio_elements();
 
- protected:
-  void set_raw_audio_element(GstElement *elt);
-  void unset_raw_audio_element();
+class GlibMainLoop
+{
+ public:
+  typedef std::shared_ptr<GlibMainLoop> ptr;
+  GlibMainLoop();
+  ~GlibMainLoop();
+  GlibMainLoop(const GlibMainLoop &) = delete;
+  GlibMainLoop &operator=(const GlibMainLoop &) = delete;
+
+  GMainContext *get_main_context();
+  
+ private:
+  GMainContext *main_context_;
+  GMainLoop *mainloop_;
+  std::thread thread_;  // this runs the main loop
+  void init_gmainloop();
+  void main_loop_thread();
 };
 }  // namespace switcher
 

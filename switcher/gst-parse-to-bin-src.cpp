@@ -38,8 +38,6 @@ GstParseToBinSrc::GstParseToBinSrc():
 
 GstParseToBinSrc::~GstParseToBinSrc() {
   g_free(gst_launch_pipeline_);
-  if (gst_parse_to_bin_src_ != nullptr)
-    GstUtils::clean_element(gst_parse_to_bin_src_);
 }
 
 bool GstParseToBinSrc::init_gpipe() {

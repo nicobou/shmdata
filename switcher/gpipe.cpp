@@ -34,15 +34,22 @@
 
 namespace switcher {
 GPipe::GPipe():
-    pipeline_(gst_pipeline_new(nullptr)),
+    pipeline_(nullptr),
     source_funcs_(),
     gpipe_custom_props_(new CustomPropertyHelper()) {
-  gst_element_set_state(pipeline_, GST_STATE_PLAYING);
-  make_bin();
   init_segment(this);
 }
 
 GPipe::~GPipe() {
+  if (nullptr != pipeline_) {
+    GstUtils::wait_state_changed(pipeline_);
+    clean_bin();
+    GstUtils::wait_state_changed(pipeline_);
+    clear_shmdatas();
+    gst_element_set_state(pipeline_, GST_STATE_NULL);
+    gst_object_unref(GST_OBJECT(pipeline_));
+  }
+
   if (!commands_.empty())
     for (auto &it : commands_)
     {
@@ -50,17 +57,29 @@ GPipe::~GPipe() {
         g_source_destroy(it);
       delete it;
     }
+  g_print("%d\n",__LINE__);
   if (position_tracking_source_ != nullptr)
     g_source_destroy(position_tracking_source_);
-  clean_bin();
-  GstUtils::wait_state_changed(pipeline_);
-  //gst_element_set_state(pipeline_, GST_STATE_NULL);
-  gst_object_unref(GST_OBJECT(pipeline_));
+  g_print("%d\n",__LINE__);
   if (!g_source_is_destroyed(source_))
     g_source_destroy(source_);
+  g_print("fin -- %d\n",__LINE__);
+}
+
+void GPipe::play_pipe(GPipe *pipe) {
+  std::unique_lock<std::mutex> lock(pipe->play_pipe_);
+  gst_element_set_state(pipe->pipeline_, GST_STATE_PLAYING);
+  GstUtils::wait_state_changed(pipe->pipeline_);
+  pipe->make_bin();
+  pipe->play_cond_.notify_one();
 }
 
 bool GPipe::init() {
+  if (nullptr == get_g_main_context()) {
+    g_warning("%s: g_main_context is nullptr", __FUNCTION__);
+    return false;
+  }
+  pipeline_ = gst_pipeline_new(nullptr);
   source_funcs_.prepare = source_prepare;
   source_funcs_.check = source_check;
   source_funcs_.dispatch = source_dispatch;
@@ -73,16 +92,24 @@ bool GPipe::init() {
                         (GSourceFunc) bus_called,
                         nullptr,
                         nullptr);
-  if (nullptr == get_g_main_context()) {
-    g_warning("%s: g_main_context is nullptr", __FUNCTION__);
-    return false;
-  }
   g_source_attach(source_, get_g_main_context());
   gst_bus_set_sync_handler(((GstBusSource *) source_)->bus,
                            bus_sync_handler,
                            this);
   ((GstBusSource *) source_)->inited = FALSE;
+  
+  {
+    std::unique_lock<std::mutex> lock(play_pipe_);
+    GstUtils::g_idle_add_full_with_context(get_g_main_context(),
+                                           G_PRIORITY_DEFAULT_IDLE,
+                                           (GSourceFunc)play_pipe,
+                                           (gpointer)this,
+                                           nullptr);
+    play_cond_.wait(lock);
+  }
+  // gst_element_set_state(pipeline_, GST_STATE_PLAYING);
   // GstUtils::wait_state_changed (pipeline_);
+
   play_pause_spec_ = gpipe_custom_props_->
       make_boolean_property("play",
                             "play",

@@ -24,19 +24,19 @@
 #ifndef __SWITCHER_QUIDDITY_H__
 #define __SWITCHER_QUIDDITY_H__
 
+#include <gst/gst.h>
+
 #include <string>
 #include <vector>
 #include <memory>
 #include <unordered_map>
 #include <map>
-#include <gst/gst.h>
 
 #include "./property.hpp"
 #include "./method.hpp"
 #include "./signal-string.hpp"
 #include "./information-tree.hpp"
 #include "./quiddity-documentation.hpp"
-//#include "./quiddity-manager-impl.hpp"
 #include "./json-builder.hpp"
 #include "./gobject-wrapper.hpp"
 #include "./information-tree.hpp"

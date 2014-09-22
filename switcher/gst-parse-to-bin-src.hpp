@@ -20,11 +20,11 @@
 #ifndef __SWITCHER_GST_PARSE_TO_BIN_SRC_H__
 #define __SWITCHER_GST_PARSE_TO_BIN_SRC_H__
 
+#include <gst/gst.h>
+#include <memory>
 #include "./gpipe.hpp"
 #include "./startable-quiddity.hpp"
 #include "./custom-property-helper.hpp"
-#include <gst/gst.h>
-#include <memory>
 
 namespace switcher {
 class GstParseToBinSrc:public GPipe, StartableQuiddity {
