@@ -52,6 +52,8 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   bool capture_ir_ {false};
   bool compress_cloud_ {false};
   bool reload_calibration_ {false};
+  bool downsample_ {false};
+  double downsample_resolution_ {0.1};
   bool filter_outliers_ {false};
   int filter_mean_k_ {8};
   double filter_stddev_mul_ {1.0};
@@ -62,6 +64,8 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   GParamSpec *capture_ir_prop_ {nullptr};
   GParamSpec *compress_cloud_prop_ {nullptr};
   GParamSpec *reload_calibration_prop_ {nullptr};
+  GParamSpec *downsample_prop_ {nullptr};
+  GParamSpec *downsample_resolution_prop_ {nullptr};
   GParamSpec *filter_outliers_prop_ {nullptr};
   GParamSpec *filter_mean_k_prop_ {nullptr};
   GParamSpec *filter_stddev_mul_prop_ {nullptr};
@@ -101,6 +105,12 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   static void set_capture_mode(const int mode, void *user_data);
   static int get_reload_calibration(void *user_data);
   static void set_reload_calibration(const int reload, void *user_data);
+
+  static int get_downsample_active(void *user_data);
+  static void set_downsample_active(const int active, void *user_data);
+  static double get_downsampling_resolution(void *user_data);
+  static void set_downsampling_resolution(const double resolution, void *user_data);
+
   static int get_filter_outliers(void *user_data);
   static void set_filter_outliers(const int active, void *user_data);
   static int get_filter_mean_k(void *user_data);

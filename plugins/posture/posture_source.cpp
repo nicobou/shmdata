@@ -164,6 +164,17 @@ PostureSrc::init() {
                             reload_calibration_prop_, "reload_calibration",
                             "Reload calibration at each frame");
 
+  downsample_prop_ = custom_props_->make_boolean_property("downsample",
+                                "Activate the cloud downsampling",
+                                downsample_,
+                                (GParamFlags) G_PARAM_READWRITE,
+                                PostureSrc::set_downsample_active,
+                                PostureSrc::get_downsample_active,
+                                this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            downsample_prop_, "downsample",
+                            "Activate the cloud downsampling");
+
   filter_outliers_prop_ = custom_props_->make_boolean_property("filter_outliers",
                                 "Filter outlier points from the cloud",
                                 filter_outliers_,
@@ -310,6 +321,59 @@ void
 PostureSrc::set_reload_calibration(const int reload, void *user_data) {
   PostureSrc *ctx = (PostureSrc *) user_data;
   ctx->reload_calibration_ = reload;
+}
+
+int
+PostureSrc::get_downsample_active(void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  return ctx->downsample_;
+}
+
+void
+PostureSrc::set_downsample_active(const int active, void *user_data){
+  PostureSrc *ctx = (PostureSrc *) user_data;
+
+  if (ctx->downsample_ != active && active == true)
+  {
+    ctx->downsample_ = active;
+
+    ctx->downsample_resolution_prop_ = ctx->custom_props_->make_double_property("downsample_resolution",
+                                "Resampling resolution",
+                                0.01,
+                                1.0,
+                                ctx->downsample_resolution_,
+                                (GParamFlags)
+                                G_PARAM_READWRITE,
+                                PostureSrc::set_downsampling_resolution,
+                                PostureSrc::get_downsampling_resolution,
+                                ctx);
+    ctx->install_property_by_pspec(ctx->custom_props_->get_gobject(),
+                              ctx->downsample_resolution_prop_, "downsample_resolution",
+                              "Resampling resolution");
+  }
+  else if (ctx->downsample_ != active && active == false)
+  {
+    ctx->downsample_ = false;
+    ctx->uninstall_property("downsample_resolution");
+  }
+
+  if (ctx->zcamera_ != nullptr)
+    ctx->zcamera_->setDownsampling(ctx->downsample_, ctx->downsample_resolution_);
+}
+
+double
+PostureSrc::get_downsampling_resolution(void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  return ctx->downsample_resolution_;
+}
+
+void
+PostureSrc::set_downsampling_resolution(const double resolution, void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  ctx->downsample_resolution_ = resolution;
+
+  if (ctx->zcamera_ != nullptr)
+    ctx->zcamera_->setDownsampling(ctx->downsample_, ctx->downsample_resolution_);
 }
 
 int
