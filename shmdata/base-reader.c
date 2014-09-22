@@ -25,7 +25,6 @@ struct shmdata_base_reader_
   GstElement *deserializer_;
   GstElement *typefind_;
   GstElement *sink_;
-  GstPad *sink_pad_;
   GstPad *src_pad_;
   GstCaps *caps_;
   //monitoring the shm file
@@ -61,7 +60,6 @@ shmdata_base_reader_init_members (shmdata_base_reader_t *reader)
   reader->deserializer_ = NULL;
   reader->typefind_ = NULL;
   reader->sink_ = NULL;
-  reader->sink_pad_ = NULL;
   reader->src_pad_ = NULL;
   reader->caps_ = NULL;
   reader->shmfile_ = NULL;
@@ -261,15 +259,16 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
 		    reader->source_, reader->deserializer_, reader->typefind_, NULL);
   reader->src_pad_ = gst_element_get_static_pad (reader->typefind_,
 						 "src");
-  reader->sink_pad_ = gst_element_get_compatible_pad (reader->sink_,
-						      reader->src_pad_,
-						      GST_PAD_CAPS
-						      (reader->src_pad_));
+  GstPad *sink_pad = gst_element_get_compatible_pad (reader->sink_,
+                                                     reader->src_pad_,
+                                                     GST_PAD_CAPS
+                                                     (reader->src_pad_));
   gst_element_link_many (reader->source_, 
 			 reader->deserializer_,
 			 reader->typefind_,
 			 NULL);
-  gst_pad_link (reader->src_pad_, reader->sink_pad_);
+  gst_pad_link (reader->src_pad_, sink_pad);
+  gst_object_unref(sink_pad);
   gst_element_set_state (reader->typefind_,GST_STATE_TARGET(reader->bin_));
   gst_element_set_state (reader->deserializer_,GST_STATE_TARGET(reader->bin_));
   gst_element_set_state (reader->source_,GST_STATE_TARGET(reader->bin_));
