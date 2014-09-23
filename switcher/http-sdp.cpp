@@ -36,9 +36,6 @@ bool HTTPSDP::init_gpipe() {
       || !GstUtils::make_element("sdpdemux", &sdpdemux_))
     return false;
 
-  add_element_to_cleaner(souphttpsrc_);
-  add_element_to_cleaner(sdpdemux_);
-
   g_signal_connect(G_OBJECT(sdpdemux_),
                    "pad-added",
                    (GCallback) HTTPSDP::pad_added_cb, (gpointer) this);

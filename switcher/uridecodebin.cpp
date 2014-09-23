@@ -34,7 +34,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
 
 Uridecodebin::~Uridecodebin() {
   g_free(uri_);
-  destroy_uridecodebin();
+  //destroy_uridecodebin();
 }
 
 Uridecodebin::Uridecodebin():

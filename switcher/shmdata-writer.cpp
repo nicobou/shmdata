@@ -26,19 +26,12 @@ ShmdataWriter::ShmdataWriter() {
 }
 
 ShmdataWriter::~ShmdataWriter() {
-  // g_debug ("ShmdataWriter: cleaning elements %s", path_.c_str());
-
   if (nullptr != tee_)
     GstUtils::clean_element(tee_);
   if (nullptr != queue_)
     GstUtils::clean_element(queue_);
-  if (nullptr != fakesink_) {
-    // if (0 != handoff_handler_)
-    // // FIXME this is blocking sometime :
-    //   g_signal_handler_disconnect (G_OBJECT (fakesink_), handoff_handler_);
+  if (nullptr != fakesink_)
     GstUtils::clean_element(fakesink_);
-  }
-  printf("writer %s closed\n", path_.c_str());
   shmdata_base_writer_close(writer_);
   if (!path_.empty())
     g_debug("ShmdataWriter: %s deleted", path_.c_str());

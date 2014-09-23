@@ -17,9 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/quiddity-manager.hpp"
+#include <gst/gst.h>
 #include <vector>
 #include <string>
+#include "switcher/quiddity-manager.hpp"
 
 static bool success;
 static int signal_counter = 0;
@@ -41,7 +42,7 @@ main() {
   {
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager("testing_signals");
-
+    
     // make on-quiddity-created and on-quiddity-removed signals
     manager->create("create_remove_spy", "create_remove_spy");
     manager->make_signal_subscriber("signal_subscriber",
@@ -51,12 +52,12 @@ main() {
                               "on-quiddity-created");
     manager->subscribe_signal("signal_subscriber", "create_remove_spy",
                               "on-quiddity-removed");
-
+    
     manager->create("videotestsrc", "vid1");
     manager->create("fakesink", "fake1");
     manager->create("videotestsrc", "vid2");
     manager->create("fakesink", "fake2");
-
+    
     // manager->create ("videotestsrc", "vid");
     // manager->subscribe_signal ("signal_subscriber","vid","on-property-added");
     // manager->subscribe_signal ("signal_subscriber","vid","on-property-removed");
@@ -101,7 +102,8 @@ main() {
     // manager->unsubscribe_signal ("signal_subscriber","create_remove_spy","on-quiddity-removed");
   }
 
-  if (signal_counter == 4)      //4 creations has been asked
+  gst_deinit();
+  if (signal_counter == 4)  // 4 creations has been asked
     success = true;
 
   if (success)

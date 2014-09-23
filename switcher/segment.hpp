@@ -44,7 +44,7 @@ class Segment:public CounterMap
   using CanSinkCaps = std::function<bool(std::string)>;
 
   Segment();
-  virtual ~ Segment();
+  virtual ~Segment();
   Segment(const Segment &) = delete;
   Segment &operator=(const Segment &) = delete;
   bool init_segment(Quiddity *quid);
@@ -64,10 +64,8 @@ class Segment:public CounterMap
 
  private:
   Quiddity *quid_ {nullptr};
-  std::unordered_map < std::string,
-                       ShmdataAnyWriter::ptr > shmdata_any_writers_;
-  std::unordered_map < std::string,
-                       ShmdataAnyReader::ptr > shmdata_any_readers_;
+  std::unordered_map<std::string, ShmdataAnyWriter::ptr> shmdata_any_writers_;
+  std::unordered_map<std::string, ShmdataAnyReader::ptr> shmdata_any_readers_;
   std::unordered_map<std::string, ShmdataWriter::ptr> shmdata_writers_;
   std::unordered_map<std::string, ShmdataReader::ptr> shmdata_readers_;
 

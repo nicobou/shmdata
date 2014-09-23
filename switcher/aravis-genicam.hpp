@@ -20,14 +20,13 @@
 #ifndef __SWITCHER_ARAVIS_GENICAM_H__
 #define __SWITCHER_ARAVIS_GENICAM_H__
 
-#include "./video-source.hpp"
-#include "./aravis-genicam.hpp"
-#include "./gst-element-cleaner.hpp"
 #include <gst/gst.h>
 #include <memory>
+#include "./video-source.hpp"
+#include "./aravis-genicam.hpp"
 
 namespace switcher {
-class AravisGenicam:public GPipe, public GstElementCleaner {
+class AravisGenicam:public GPipe {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AravisGenicam);
   AravisGenicam();

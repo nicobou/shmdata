@@ -17,31 +17,33 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_FILE_SDP_H__
-#define __SWITCHER_FILE_SDP_H__
+#ifndef __SWITCHER_GLIB_MAINLOOP_H__
+#define __SWITCHER_GLIB_MAINLOOP_H__
 
-#include "./gpipe.hpp"
+#include <glib.h>
 #include <memory>
+#include <thread>
 
 namespace switcher {
-class FileSDP:public GPipe {
- public:
-  SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FileSDP);
-  FileSDP();
-  FileSDP(const FileSDP &) = delete;
-  FileSDP &operator=(const FileSDP &) = delete;
-  bool to_shmdata(std::string uri);
 
+class GlibMainLoop
+{
+ public:
+  typedef std::shared_ptr<GlibMainLoop> ptr;
+  GlibMainLoop();
+  ~GlibMainLoop();
+  GlibMainLoop(const GlibMainLoop &) = delete;
+  GlibMainLoop &operator=(const GlibMainLoop &) = delete;
+
+  GMainContext *get_main_context();
+  
  private:
-  GstElement *filesrc_;
-  GstElement *sdpdemux_;
-  int media_counter_;
-  bool init_gpipe() final;
-  static void pad_added_cb(GstElement * object, GstPad *pad,
-                           gpointer user_data);
-  static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);
-  static void no_more_pads_cb(GstElement *object, gpointer user_data);
+  GMainContext *main_context_;
+  GMainLoop *mainloop_;
+  std::thread thread_;  // this runs the main loop
+  void init_gmainloop();
+  void main_loop_thread();
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif

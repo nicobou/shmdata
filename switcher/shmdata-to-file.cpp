@@ -37,7 +37,7 @@ ShmdataToFile::ShmdataToFile():
 }
 
 ShmdataToFile::~ShmdataToFile() {
-  clean_recorders();
+  //clean_recorders();
 }
 
 bool ShmdataToFile::init_gpipe() {

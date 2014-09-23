@@ -22,16 +22,19 @@
 #include "./scope-exit.hpp"
 
 namespace switcher {
-ShmdataReader::ShmdataReader():connection_hook_(nullptr),
-                               hook_user_data_(nullptr),
-                               path_(),
-                               reader_(shmdata_base_reader_new()),
-                               bin_(nullptr),
-                               sink_element_(nullptr),
-                               funnel_(nullptr),
-                               g_main_context_(nullptr),
-                               elements_to_remove_(),
-                               json_description_(new JSONBuilder()), start_mutex_(), start_cond_() {
+ShmdataReader::ShmdataReader():
+    connection_hook_(nullptr),
+    hook_user_data_(nullptr),
+    path_(),
+    reader_(shmdata_base_reader_new()),
+    bin_(nullptr),
+    sink_element_(nullptr),
+    funnel_(nullptr),
+    g_main_context_(nullptr),
+    elements_to_remove_(),
+    json_description_(new JSONBuilder()),
+    start_mutex_(),
+    start_cond_() {
 }
 
 ShmdataReader::~ShmdataReader() {

@@ -22,24 +22,24 @@
 #include <memory>
 
 namespace switcher {
-AudioSource::AudioSource():shmdata_path_() {
+AudioSource::AudioSource() {
   make_audio_elements();
 }
 
 void AudioSource::make_audio_elements() {
   if (!GstUtils::make_element("tee", &audio_tee_))
     g_debug("tee GStreamer element is missing (for audio source)");
-  gst_bin_add(GST_BIN(bin_), audio_tee_);
 }
 
 void AudioSource::set_raw_audio_element(GstElement *elt) {
   unset_raw_audio_element();
   make_audio_elements();
   rawaudio_ = elt;
-  gst_bin_add(GST_BIN(bin_), rawaudio_);
+  gst_bin_add_many(GST_BIN(bin_), rawaudio_, audio_tee_, nullptr);
   gst_element_link(rawaudio_, audio_tee_);
   GstCaps *audiocaps = gst_caps_new_simple("audio/x-raw-int",
-                                           "width", G_TYPE_INT, 16,
+                                           "width",
+                                           G_TYPE_INT, 16,
                                            nullptr);
   // creating a connector for raw audio
   ShmdataWriter::ptr shmdata_writer;

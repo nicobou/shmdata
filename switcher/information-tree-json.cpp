@@ -61,7 +61,7 @@ on_visiting_node(std::string key,
 void
 on_node_visited(std::string,
                 Tree::ptrc node,
-                bool is_array_element, 
+                bool /*is_array_element*/, 
 		JsonBuilder *builder) {
   if (node->is_array()) {
     // json_builder_end_object (builder);
@@ -90,19 +90,16 @@ std::string serialize(Tree::ptrc tree) {
                                      std::placeholders::_3, json_builder));
   json_builder_end_object(json_builder);
   JsonNode *node = json_builder_get_root(json_builder);
+  On_scope_exit {json_node_free(node);};
   if (nullptr == node)
     return std::string();
   JsonGenerator *generator = json_generator_new();
-  On_scope_exit {
-    g_object_unref(generator);
-  };
+  On_scope_exit {g_object_unref(generator);};
   json_generator_set_pretty(generator, TRUE);
   json_generator_set_root(generator, node);
   gsize length = 0;
   gchar *data = json_generator_to_data(generator, &length);
-  On_scope_exit {
-    g_free(data);
-  };
+  On_scope_exit {g_free(data);};
   std::string result(data);
   return result;
 }

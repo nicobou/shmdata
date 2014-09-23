@@ -52,20 +52,6 @@ RtpSession::~RtpSession() {
     sdp_file.append(".sdp");
     g_remove(sdp_file.c_str());
   }
-
-  // if (GST_IS_BIN (gst_element_get_parent (rtpsession_)))
-  //   {
-  // GstElement *parent = (GstElement *)gst_element_get_parent (rtpsession_);
-  // g_debug ("%d, %d, %d, state return %d",
-  //  GST_STATE(parent),
-  //  GST_STATE_TARGET (parent),
-  //  GST_STATE_PENDING (parent),
-  //  GST_STATE_RETURN(parent));
-  //   }
-
-  // // removing rtpsession
-  // GstUtils::clean_element (rtpsession_);
-
   g_debug("rtpsession deleted");
 }
 

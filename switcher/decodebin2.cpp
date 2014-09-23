@@ -37,11 +37,6 @@ Decodebin2::Decodebin2():
 }
 
 bool Decodebin2::init_gpipe() {
-  std::string str(__FUNCTION__);
-  g_print("begin %s\n", str.c_str());
-  On_scope_exit {
-    g_print("end %s\n", str.c_str());
-  };
   decodebin_->invoke(std::bind(&SinglePadGstSink::set_sink_element,
                                this, std::placeholders::_1));
   SinglePadGstSink::

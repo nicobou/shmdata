@@ -85,13 +85,13 @@ class QuiddityCommand {
   };
 
   QuiddityCommand();
-  command id_;
-  std::vector<std::string> args_;
-  std::vector<std::string> vector_arg_;
-  std::vector<std::string> result_;
-  std::vector<std::string> expected_result_;
+  command id_{invalid_command};
+  std::vector<std::string> args_{};
+  std::vector<std::string> vector_arg_{};
+  std::vector<std::string> result_{};
+  std::vector<std::string> expected_result_{};
+  gint64 time_{-1};  // monotonic time, in microseconds
   bool success_;
-  gint64 time_;               // // monotonic time, in microseconds
   void clear();
   void set_id(command id);
   void add_arg(std::string arg);
@@ -101,8 +101,8 @@ class QuiddityCommand {
   static QuiddityCommand::ptr parse_command_from_json_reader(JsonReader *
                                                              reader);
   JSONBuilder::Node get_json_root_node();
-  JSONBuilder::ptr json_builder_;
-  static const std::map < int, const char *>command_names_;
+  JSONBuilder::ptr json_builder_{};
+  static const std::map<int, const char *>command_names_;
 };
 }  // namespace switcher
 

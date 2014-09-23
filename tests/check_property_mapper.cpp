@@ -17,9 +17,10 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/quiddity-manager.hpp"
+#include <gst/gst.h>
 #include <vector>
 #include <string>
+#include "switcher/quiddity-manager.hpp"
 
 void
 property_cb(std::string /*subscriber_name */ ,
@@ -62,6 +63,7 @@ main() {
       return 1;
   }
 
+  gst_deinit();
   if (2 == count)
     return 0;
   else

@@ -25,26 +25,14 @@
 namespace switcher {
 bool
 GstUtils::make_element(const gchar *class_name,
-                       GstElement ** target_element) {
-  // if (*target_element != nullptr)
-  //   {
-  // g_warning ("cannot make element on a non nullptr element (%s, %s)",
-  //    class_name, GST_ELEMENT_NAME (*target_element));
-  // return false;
-  //   }
-
+                       GstElement **target_element) {
   *target_element = gst_element_factory_make(class_name, nullptr);
   if (*target_element == nullptr) {
     g_debug("gstreamer element class %s cannot be instanciated",
             class_name);
     return false;
   }
-  else
-  {
-    g_debug("gstreamer element class %s instanciated (%s)",
-            class_name, GST_ELEMENT_NAME(*target_element));
-    return true;
-  }
+  return true;
 }
 
 bool GstUtils::link_static_to_request(GstElement * src, GstElement *sink) {

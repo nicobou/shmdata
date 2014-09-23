@@ -17,11 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <glib/gprintf.h>
+#include <memory>
 #include "./http-sdp-dec.hpp"
 #include "./gst-utils.hpp"
 #include "./scope-exit.hpp"
-#include <glib/gprintf.h>
-#include <memory>
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(HTTPSDPDec,
@@ -31,15 +31,10 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(HTTPSDPDec,
                                      "LGPL",
                                      "httpsdpdec", "Nicolas Bouillot");
 
-HTTPSDPDec::HTTPSDPDec():
-    souphttpsrc_(nullptr),
-    sdpdemux_(nullptr),
-    on_error_command_(nullptr),
-    decodebins_() {
+HTTPSDPDec::HTTPSDPDec() {
 }
 
 HTTPSDPDec::~HTTPSDPDec() {
-  destroy_httpsdpdec();
 }
 
 bool HTTPSDPDec::init_gpipe() {
@@ -168,16 +163,12 @@ bool HTTPSDPDec::to_shmdata(std::string uri) {
   on_error_command_->set_vector_arg(vect_arg);
 
   g_object_set_data(G_OBJECT(sdpdemux_),
-                    "on-error-command", (gpointer) on_error_command_);
-
+                    "on-error-command",
+                    (gpointer) on_error_command_);
   g_debug("httpsdpdec: to_shmdata set uri %s", uri.c_str());
-
   g_object_set(G_OBJECT(souphttpsrc_), "location", uri.c_str(), nullptr);
-
   gst_bin_add_many(GST_BIN(bin_), souphttpsrc_, sdpdemux_, nullptr);
-
   gst_element_link(souphttpsrc_, sdpdemux_);
-
   GstUtils::sync_state_with_parent(souphttpsrc_);
   GstUtils::sync_state_with_parent(sdpdemux_);
   return true;

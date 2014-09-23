@@ -17,23 +17,25 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/quiddity-manager.hpp"
-#include "switcher/quiddity-basic-test.hpp"
+#include <gst/gst.h>
 #include <vector>
 #include <string>
 #include <iostream>
+#include "switcher/quiddity-manager.hpp"
+#include "switcher/quiddity-basic-test.hpp"
+
 int
 main() {
   bool success = true;
-  switcher::QuiddityManager::ptr manager =
-      switcher::QuiddityManager::make_manager("check_startable_manager");
+  {
+    switcher::QuiddityManager::ptr manager =
+        switcher::QuiddityManager::make_manager("startable");
+    for (auto &it : manager->get_classes())
+      if (!switcher::QuiddityBasicTest::test_startable(manager, it))
+        success = false;
+  }
 
-  std::vector<std::string> classes = manager->get_classes();
-
-  for (auto &it : classes)
-    if (!switcher::QuiddityBasicTest::test_startable(manager, it))
-      success = false;
-
+  gst_deinit();
   if (success)
     return 0;
   else

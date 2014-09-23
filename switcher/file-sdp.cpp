@@ -27,16 +27,16 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FileSDP,
                                      "network",
                                      "get raw stream from sdp file",
                                      "LGPL", "filesdp", "Nicolas Bouillot");
-FileSDP::FileSDP():filesrc_(nullptr), sdpdemux_(nullptr), media_counter_(0) {
+FileSDP::FileSDP():
+    filesrc_(nullptr),
+    sdpdemux_(nullptr),
+    media_counter_(0) {
 }
 
 bool FileSDP::init_gpipe() {
   if (!GstUtils::make_element("filesrc", &filesrc_)
       || !GstUtils::make_element("sdpdemux", &sdpdemux_))
     return false;
-
-  add_element_to_cleaner(filesrc_);
-  add_element_to_cleaner(sdpdemux_);
 
   g_signal_connect(G_OBJECT(sdpdemux_),
                    "pad-added",

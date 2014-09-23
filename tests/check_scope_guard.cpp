@@ -16,7 +16,7 @@
  */
 #include "switcher/scope-exit.hpp"
 
-// note: do not write On_scope_exit call in the same line
+// note: do not write multiple "On_scope_exit" call in the same line
 int
 main() {
   int counter = 0;
@@ -26,12 +26,12 @@ main() {
       counter = 2;
     };
     On_scope_exit {
-    };                          // ensuring multiple calls in the same scope
+    };  // ensuring multiple calls in the same scope
   }
 
   On_scope_exit {
     counter = 3;
-  };                            // should be assigned after "main"
+  };  // should be assigned after "main"
 
   if (2 == counter)
     return 0;

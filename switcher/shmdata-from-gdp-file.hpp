@@ -20,13 +20,11 @@
 #ifndef __SWITCHER_SHMDATA_FROM_GDP_FILE_H__
 #define __SWITCHER_SHMDATA_FROM_GDP_FILE_H__
 
+#include <gst/gst.h>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
-
-#include <gst/gst.h>
-
 #include "./custom-property-helper.hpp"
 #include "./gpipe.hpp"
 #include "./quiddity-manager.hpp"
