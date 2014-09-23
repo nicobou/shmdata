@@ -256,21 +256,30 @@ bool Segment::clear_shmdatas() {
   std::unique_lock<std::mutex> lock_w(writers_mutex_);
   std::unique_lock<std::mutex> lock_r(readers_mutex_);
 
-  while(shmdata_writers_.begin() != shmdata_writers_.begin()) {
-    unregister_shmdata(shmdata_writers_.begin()->first);
+  for (auto &it : shmdata_writers_) {
+    quid_->prune_tree(std::string(".shmdata.writer.")
+                      + it.first);
   }
 
-  while(shmdata_any_writers_.begin() != shmdata_any_writers_.begin()) {
-    unregister_shmdata(shmdata_any_writers_.begin()->first);
+  for (auto &it : shmdata_any_writers_) {
+    quid_->prune_tree(std::string(".shmdata.writer.")
+                      + it.first);
   }
 
-  while(shmdata_readers_.begin() != shmdata_readers_.begin()) {
-    unregister_shmdata(shmdata_readers_.begin()->first);
+  for (auto &it : shmdata_readers_) {
+    quid_->prune_tree(std::string(".shmdata.reader.")
+                      + it.first);
   }
 
-  while(shmdata_any_readers_.begin() != shmdata_any_readers_.begin()) {
-    unregister_shmdata(shmdata_any_readers_.begin()->first);
+  for (auto &it : shmdata_any_readers_) {
+    quid_->prune_tree(std::string(".shmdata.reader.")
+                      + it.first);
   }
+
+    shmdata_writers_.clear();
+    shmdata_any_writers_.clear();
+    shmdata_readers_.clear();
+    shmdata_any_writers_.clear();
   return true;
 }
 
