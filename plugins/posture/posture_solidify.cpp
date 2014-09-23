@@ -69,7 +69,8 @@ PostureSolidify::init() {
   init_startable(this);
   init_segment(this);
 
-  install_connect_method(std::bind(&PostureSolidify::connect, this, std::placeholders::_1), nullptr,     // FIXME implement this (disconnect with the shmdata as unique argument)
+  install_connect_method(std::bind(&PostureSolidify::connect, this, std::placeholders::_1),
+                         std::bind(&PostureSolidify::disconnect, this, std::placeholders::_1),
                          std::bind(&PostureSolidify::disconnect_all, this),
                          std::bind(&PostureSolidify::can_sink_caps, this, std::placeholders::_1),
                          1);
@@ -156,7 +157,13 @@ PostureSolidify::connect(std::string shmdata_socket_path) {
 }
 
 bool
+PostureSolidify::disconnect(std::string /*unused*/) {
+  return disconnect_all();
+}
+
+bool
 PostureSolidify::disconnect_all() {
+  std::lock_guard<mutex> lock(mutex_);
   if (solidify_ == nullptr)
     clear_shmdatas();
   return true;

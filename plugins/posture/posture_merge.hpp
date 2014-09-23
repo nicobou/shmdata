@@ -71,6 +71,7 @@ class PostureMerge : public Quiddity, public Segment, public StartableQuiddity {
   bool init() final;
 
   bool connect(std::string shmdata_socket_path);
+  bool disconnect(std::string shmName);
   bool disconnect_all();
   bool can_sink_caps(std::string caps);
 

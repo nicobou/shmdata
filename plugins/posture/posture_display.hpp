@@ -47,6 +47,7 @@ class PostureDisplay:public Quiddity, public Segment {
   bool init() final;
 
   bool connect(std::string shmdata_socket_path);
+  bool disconnect(std::string /*unused*/);
   bool disconnect_all();
   bool can_sink_caps(std::string caps);
 };
