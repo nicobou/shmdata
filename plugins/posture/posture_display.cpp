@@ -44,17 +44,20 @@ bool
 PostureDisplay::init() {
   init_segment(this);
 
-  install_connect_method(std::bind(&PostureDisplay::connect, this, std::placeholders::_1), nullptr,   // no disconnect
-                         std::bind(&PostureDisplay::disconnect_all,
-                                   this),
-                         std::bind(&PostureDisplay::can_sink_caps,
-                                   this, std::placeholders::_1), 1);
+  install_connect_method(std::bind(&PostureDisplay::connect, this, std::placeholders::_1),
+                         std::bind(&PostureDisplay::disconnect, this, std::placeholders::_1),
+                         std::bind(&PostureDisplay::disconnect_all, this),
+                         std::bind(&PostureDisplay::can_sink_caps, this, std::placeholders::_1),
+                         1);
 
   return true;
 }
 
 bool
 PostureDisplay::connect(std::string shmdata_socket_path) {
+  if (display_ != nullptr)
+    return false;
+
   display_ = make_shared<Display> (shmdata_socket_path);
 
   ShmdataAnyReader::ptr reader = make_shared<ShmdataAnyReader> ();
@@ -89,7 +92,14 @@ PostureDisplay::connect(std::string shmdata_socket_path) {
 }
 
 bool
+PostureDisplay::disconnect(std::string /*unused*/) {
+  return disconnect_all();
+}
+
+bool
 PostureDisplay::disconnect_all() {
+  std::lock_guard<mutex> lock(display_mutex_);
+  clear_shmdatas();
   display_.reset();
   return true;
 }

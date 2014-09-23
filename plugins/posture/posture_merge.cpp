@@ -76,7 +76,8 @@ PostureMerge::init() {
   init_startable(this);
   init_segment(this);
 
-  install_connect_method(std::bind(&PostureMerge::connect, this, std::placeholders::_1), nullptr,     // FIXME implement this (disconnect with the shmdata as unique argument)
+  install_connect_method(std::bind(&PostureMerge::connect, this, std::placeholders::_1),
+                         std::bind(&PostureMerge::disconnect, this, std::placeholders::_1),
                          std::bind(&PostureMerge::disconnect_all, this),
                          std::bind(&PostureMerge::can_sink_caps, this, std::placeholders::_1),
                          8);
@@ -209,6 +210,13 @@ PostureMerge::connect(std::string shmdata_socket_path) {
 
   reader_->start();
   register_shmdata(reader_);
+  return true;
+}
+
+bool
+PostureMerge::disconnect(std::string shmName) {
+  std::lock_guard<mutex> lock(mutex_);
+  unregister_shmdata(shmName);
   return true;
 }
 

@@ -59,6 +59,7 @@ class PostureSolidify : public Quiddity, public Segment, public StartableQuiddit
   bool init() final;
 
   bool connect(std::string shmdata_socket_path);
+  bool disconnect(std::string /*unused*/);
   bool disconnect_all();
   bool can_sink_caps(std::string caps);
 
