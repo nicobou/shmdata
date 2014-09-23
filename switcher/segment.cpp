@@ -23,14 +23,10 @@
 #include "./scope-exit.hpp"
 
 namespace switcher {
-Segment::Segment():shmdata_any_writers_(),
-                   shmdata_any_readers_(),
-                   shmdata_writers_(),
-                   shmdata_readers_(),
-                   shmdata_writers_description_(new JSONBuilder()),
-                   shmdata_readers_description_(new JSONBuilder()),
-                   segment_custom_props_(new CustomPropertyHelper()),
-                   json_writers_description_(nullptr), json_readers_description_(nullptr) {
+Segment::Segment():
+    shmdata_writers_description_(new JSONBuilder()),
+    shmdata_readers_description_(new JSONBuilder()),
+    segment_custom_props_(new CustomPropertyHelper()) {
 }
 
 Segment::~Segment() {
@@ -78,7 +74,7 @@ bool Segment::register_shmdata(ShmdataAnyWriter::ptr writer) {
     g_warning("Segment cannot register shmdata writer with no path");
     return false;
   }
-  {                           // removing old one if present
+  {  // removing old one if present
     auto it = shmdata_any_writers_.find(name);
     if (shmdata_any_writers_.end() != it)
       shmdata_any_writers_.erase(name);
@@ -88,10 +84,10 @@ bool Segment::register_shmdata(ShmdataAnyWriter::ptr writer) {
                                 this,
                                 std::string(".shmdata.writer.") + name,
                                 std::placeholders::_1));
-
+  
   shmdata_any_writers_[name] = writer;
-
-  {                           // JSON
+  
+  {  // JSON
     update_shmdata_writers_description();
     segment_custom_props_->notify_property_changed
         (json_writers_description_);
@@ -111,7 +107,7 @@ bool Segment::register_shmdata(ShmdataWriter::ptr writer) {
     g_warning("Segment cannot register shmdata writer with no path");
     return false;
   }
-  {                           // removing old one if present
+  {  // removing old one if present
     auto it = shmdata_writers_.find(name);
     if (shmdata_writers_.end() != it)
       shmdata_writers_.erase(name);
@@ -124,7 +120,7 @@ bool Segment::register_shmdata(ShmdataWriter::ptr writer) {
 
   shmdata_writers_[name] = writer;
 
-  {                           // JSON
+  {  // JSON
     update_shmdata_writers_description();
     segment_custom_props_->notify_property_changed
         (json_writers_description_);
@@ -144,7 +140,7 @@ bool Segment::register_shmdata(ShmdataReader::ptr reader) {
     g_warning("Segment cannot register shmdata writer with no path");
     return false;
   }
-  {                           // removing old one if present
+  {  // removing old one if present
     auto it = shmdata_readers_.find(name);
     if (shmdata_readers_.end() != it)
       shmdata_readers_.erase(name);
@@ -157,7 +153,7 @@ bool Segment::register_shmdata(ShmdataReader::ptr reader) {
 
   shmdata_readers_[name] = reader;
 
-  {                           // JSON
+  {  // JSON
     update_shmdata_readers_description();
     segment_custom_props_->notify_property_changed
         (json_readers_description_);
@@ -177,7 +173,7 @@ bool Segment::register_shmdata(ShmdataAnyReader::ptr reader) {
     g_warning("Segment cannot register shmdata writer with no path");
     return false;
   }
-  {                           // removing old one if present
+  {  // removing old one if present
     auto it = shmdata_any_readers_.find(name);
     if (shmdata_any_readers_.end() != it)
       shmdata_any_readers_.erase(name);
@@ -190,7 +186,7 @@ bool Segment::register_shmdata(ShmdataAnyReader::ptr reader) {
 
   shmdata_any_readers_[name] = reader;
 
-  {                           // JSON
+  {  // JSON
     update_shmdata_readers_description();
     segment_custom_props_->notify_property_changed
         (json_writers_description_);
@@ -209,7 +205,7 @@ bool Segment::unregister_shmdata(std::string shmdata_path) {
   bool update_writer = false;
   bool update_reader = false;
 
-  {                           // any reader
+  {  // any reader
     auto it = shmdata_any_readers_.find(shmdata_path);
     if (shmdata_any_readers_.end() != it) {
       shmdata_any_readers_.erase(it);
@@ -217,7 +213,7 @@ bool Segment::unregister_shmdata(std::string shmdata_path) {
     }
   }
 
-  {                           // reader
+  {  // reader
     auto it = shmdata_readers_.find(shmdata_path);
     if (shmdata_readers_.end() != it) {
       shmdata_readers_.erase(it);
@@ -227,11 +223,11 @@ bool Segment::unregister_shmdata(std::string shmdata_path) {
 
   if (update_reader) {
     update_shmdata_readers_description();
-    segment_custom_props_->notify_property_changed
-        (json_readers_description_);
+    quid_->prune_tree(std::string(".shmdata.reader.") + shmdata_path);
+    segment_custom_props_->notify_property_changed(json_readers_description_);
   }
 
-  {                           // any writer
+  {  // any writer
     auto it = shmdata_any_writers_.find(shmdata_path);
     if (shmdata_any_writers_.end() != it) {
       shmdata_any_writers_.erase(it);
@@ -239,7 +235,7 @@ bool Segment::unregister_shmdata(std::string shmdata_path) {
     }
   }
 
-  {                           // writer
+  {  // writer
     auto it = shmdata_writers_.find(shmdata_path);
     if (shmdata_writers_.end() != it) {
       shmdata_writers_.erase(it);
@@ -249,8 +245,8 @@ bool Segment::unregister_shmdata(std::string shmdata_path) {
 
   if (update_writer) {
     update_shmdata_writers_description();
-    segment_custom_props_->notify_property_changed
-        (json_writers_description_);
+    quid_->prune_tree(std::string(".shmdata.writer.") + shmdata_path);
+    segment_custom_props_->notify_property_changed(json_writers_description_);
   }
 
   return update_reader || update_writer;
@@ -260,42 +256,20 @@ bool Segment::clear_shmdatas() {
   std::unique_lock<std::mutex> lock_w(writers_mutex_);
   std::unique_lock<std::mutex> lock_r(readers_mutex_);
 
-  bool update_writer_description = false;
-  if (!shmdata_writers_.empty()) {
-    shmdata_writers_.clear();
-    update_writer_description = true;
+  while(shmdata_writers_.begin() != shmdata_writers_.begin()) {
+    unregister_shmdata(shmdata_writers_.begin()->first);
   }
 
-  if (!shmdata_any_writers_.empty()) {
-    shmdata_any_writers_.clear();
-    update_writer_description = true;
+  while(shmdata_any_writers_.begin() != shmdata_any_writers_.begin()) {
+    unregister_shmdata(shmdata_any_writers_.begin()->first);
   }
 
-  if (true == update_writer_description) {
-    update_shmdata_writers_description();
-    segment_custom_props_->notify_property_changed
-        (json_writers_description_);
+  while(shmdata_readers_.begin() != shmdata_readers_.begin()) {
+    unregister_shmdata(shmdata_readers_.begin()->first);
   }
 
-  if (!shmdata_readers_.empty()) {
-    shmdata_readers_.clear();
-    update_shmdata_readers_description();
-    segment_custom_props_->notify_property_changed
-        (json_readers_description_);
-  }
-
-  if (!shmdata_any_writers_.empty()) {
-    shmdata_any_writers_.clear();
-    update_shmdata_writers_description();
-    segment_custom_props_->notify_property_changed
-        (json_readers_description_);
-  }
-
-  if (!shmdata_any_readers_.empty()) {
-    shmdata_any_readers_.clear();
-    update_shmdata_readers_description();
-    segment_custom_props_->notify_property_changed
-        (json_readers_description_);
+  while(shmdata_any_readers_.begin() != shmdata_any_readers_.begin()) {
+    unregister_shmdata(shmdata_any_readers_.begin()->first);
   }
   return true;
 }
@@ -398,9 +372,7 @@ Segment::install_connect_method(OnConnect on_connect_cb,
                                 CanSinkCaps on_can_sink_caps_cb,
                                 uint max_reader) {
   if (quid_ == nullptr) {
-    g_warning
-        ("Segment::%s - Segment not initialized yet, call Segment::init_segment(this) first",
-         __FUNCTION__);
+    g_warning("Segment not initialized yet, call init_segment(this) first");
     return false;
   }
 
