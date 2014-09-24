@@ -64,10 +64,10 @@ class Segment:public CounterMap
 
  private:
   Quiddity *quid_ {nullptr};
-  std::unordered_map<std::string, ShmdataAnyWriter::ptr> shmdata_any_writers_;
-  std::unordered_map<std::string, ShmdataAnyReader::ptr> shmdata_any_readers_;
-  std::unordered_map<std::string, ShmdataWriter::ptr> shmdata_writers_;
-  std::unordered_map<std::string, ShmdataReader::ptr> shmdata_readers_;
+  std::unordered_map<std::string, ShmdataAnyWriter::ptr> shmdata_any_writers_{};
+  std::unordered_map<std::string, ShmdataAnyReader::ptr> shmdata_any_readers_{};
+  std::unordered_map<std::string, ShmdataWriter::ptr> shmdata_writers_{};
+  std::unordered_map<std::string, ShmdataReader::ptr> shmdata_readers_{};
 
   // reader methods to install by a subclass
   OnConnect on_connect_cb_ {nullptr};
@@ -88,8 +88,8 @@ class Segment:public CounterMap
   std::mutex readers_mutex_ {};                          // protecting from parallel registers
   std::string readers_string_ {};
   CustomPropertyHelper::ptr segment_custom_props_;
-  GParamSpec *json_writers_description_;
-  GParamSpec *json_readers_description_;
+  GParamSpec *json_writers_description_{nullptr};
+  GParamSpec *json_readers_description_{nullptr};
   void update_shmdata_writers_description();
   void update_shmdata_readers_description();
   static const gchar *get_shmdata_writers_string(void *user_data);
