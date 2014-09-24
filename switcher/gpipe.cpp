@@ -54,7 +54,6 @@ GPipe::~GPipe() {
     {
       if (!g_source_is_destroyed(it))
         g_source_destroy(it);
-      delete it;
     }
   if (position_tracking_source_ != nullptr)
     g_source_destroy(position_tracking_source_);
