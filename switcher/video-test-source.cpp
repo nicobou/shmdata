@@ -35,6 +35,7 @@ VideoTestSource::VideoTestSource():
 }
 
 VideoTestSource::~VideoTestSource() {
+  GstUtils::clean_element(videotestsrc_);
 }
 
 bool VideoTestSource::init_gpipe() {

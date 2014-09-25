@@ -22,7 +22,9 @@
 #include "./scope-exit.hpp"
 
 namespace switcher {
-ShmdataWriter::ShmdataWriter() {
+ShmdataWriter::ShmdataWriter() :
+    writer_(shmdata_base_writer_init()),
+    json_description_(std::make_shared<JSONBuilder>()) {
 }
 
 ShmdataWriter::~ShmdataWriter() {

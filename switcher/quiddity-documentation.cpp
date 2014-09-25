@@ -25,13 +25,14 @@ QuiddityDocumentation::QuiddityDocumentation(std::string long_name,
                                              std::string short_description,
                                              std::string license,
                                              std::string class_name,
-                                             std::string author) {
-  category_ = category;
-  class_name_ = class_name;
-  description_ = short_description;
-  long_name_ = long_name;
-  author_ = author;
-  license_ = license;
+                                             std::string author) :
+    category_(category),
+    class_name_(class_name),
+    description_(short_description),
+    long_name_(long_name),
+    author_(author),
+  license_(license),
+  json_description_(std::make_shared<JSONBuilder>()) {
 }
 
 std::string QuiddityDocumentation::get_category() const {

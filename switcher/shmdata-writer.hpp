@@ -49,13 +49,13 @@ class ShmdataWriter: public OnCaps {
 
  private:
   std::string path_ {};
-  shmdata_base_writer_t *writer_ {shmdata_base_writer_init()};
-  GstElement *bin_ {nullptr};
-  GstElement *tee_ {nullptr};
-  GstElement *queue_ {nullptr};
-  GstElement *fakesink_ {nullptr};
-  gulong handoff_handler_ {0};
-  JSONBuilder::ptr json_description_ {new JSONBuilder()};
+  shmdata_base_writer_t *writer_{nullptr};
+  GstElement *bin_{nullptr};
+  GstElement *tee_{nullptr};
+  GstElement *queue_{nullptr};
+  GstElement *fakesink_{nullptr};
+  gulong handoff_handler_{0};
+  JSONBuilder::ptr json_description_{};
 
   void make_json_description();
   static void on_handoff_cb(GstElement *object,

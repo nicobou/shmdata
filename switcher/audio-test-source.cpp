@@ -80,7 +80,7 @@ bool AudioTestSource::make_audiotestsrc() {
 }
 
 AudioTestSource::~AudioTestSource() {
-  //GstUtils::clean_element(audiotestsrc_);
+  GstUtils::clean_element(audiotestsrc_);
 }
 
 bool AudioTestSource::start() {

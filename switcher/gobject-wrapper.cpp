@@ -46,8 +46,9 @@ static void my_object_finalize(GObject *gobject) {
 static void
 my_object_set_property(GObject *gobject,
                        guint prop_id,
-                       const GValue * value, GParamSpec *pspec) {
-  MyObject *myobj = (MyObject *) gobject;
+                       const GValue *value,
+                       GParamSpec *pspec) {
+  MyObject *myobj = (MyObject *)gobject;
   GObjectWrapper *context =
       static_cast<GObjectWrapper *>(myobj->context);
   (*context->get_set_method_pointer(prop_id)) (value,

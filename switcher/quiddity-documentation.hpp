@@ -57,9 +57,9 @@ class QuiddityDocumentation {
   std::string author_;
   std::string license_;
 
-  JSONBuilder::ptr json_description_;
+  JSONBuilder::ptr json_description_{};
   void make_json_description();
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif

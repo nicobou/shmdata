@@ -53,12 +53,12 @@ bool JackSink::init_gpipe() {
   return true;
 }
 
-JackSink::JackSink():jacksink_(nullptr),
-                     custom_props_(new CustomPropertyHelper()),
-                     client_name_spec_(nullptr), client_name_(nullptr) {
+JackSink::JackSink():
+    custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 
 JackSink::~JackSink() {
+  GstUtils::clean_element(jacksink_);
   if (nullptr != client_name_)
     g_free(client_name_);
 }
@@ -67,8 +67,7 @@ bool JackSink::make_elements() {
   GError *error = nullptr;
 
   gchar *description =
-      g_strdup_printf
-      ("audioconvert ! audioresample ! queue max-size-buffers=2 leaky=downstream ! jackaudiosink provide-clock=false slave-method=none client-name=%s sync=false buffer-time=10000",
+      g_strdup_printf("audioconvert ! audioresample ! queue max-size-buffers=2 leaky=downstream ! jackaudiosink provide-clock=false slave-method=none client-name=%s sync=false buffer-time=10000",
        client_name_);
 
   jacksink_ = gst_parse_bin_from_description(description, TRUE, &error);
