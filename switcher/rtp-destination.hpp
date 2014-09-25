@@ -27,6 +27,7 @@
 #include <gst/gst.h>
 #include <map>
 #include <string>
+#include <forward_list>
 #include "./json-builder.hpp"
 
 namespace switcher {
@@ -43,13 +44,14 @@ class RtpDestination {
   void set_name(std::string name);
   void set_host_name(std::string host_name);
   std::string get_host_name();
-  std::string get_port(std::string shmndata_path);
+  std::string get_port(const std::string &shmndata_path);
   // the reader of the rtp stream sent
-  bool add_stream(std::string orig_shmdata_path,
+  bool add_stream(const std::string &orig_shmdata_path,
                   std::string port);
-  bool has_shmdata(std::string shmdata_path);
-  bool remove_stream(std::string shmdata_stream_path);
+  bool has_shmdata(const std::string &shmdata_path);
+  bool remove_stream(const std::string &shmdata_stream_path);
   std::string get_sdp();
+  bool write_to_file (std::string file_name);
   // get json doc:
   JSONBuilder::Node get_json_root_node();
 
@@ -59,6 +61,7 @@ class RtpDestination {
   // maps shmdata source stream with port:
   std::map<std::string, std::string> source_streams_{};
   JSONBuilder::ptr json_description_{};
+  std::forward_list<std::string> files_{};
   RtpSession *session_{nullptr};
   void make_json_description();
 };

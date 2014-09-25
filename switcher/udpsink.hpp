@@ -20,9 +20,9 @@
 #ifndef __SWITCHER_UDPSINK_H__
 #define __SWITCHER_UDPSINK_H__
 
-#include "./single-pad-gst-sink.hpp"
 #include <gst/gst.h>
 #include <memory>
+#include "./single-pad-gst-sink.hpp"
 
 namespace switcher {
 class UDPSink:public SinglePadGstSink {

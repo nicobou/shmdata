@@ -723,9 +723,6 @@ std::string Quiddity::make_file_name(std::string suffix) {
   if ((bool) manager)
     connector_name.append("/tmp/switcher_" + manager->get_name() + "_" +
                           nick_name_ + "_" + suffix);
-  else
-    connector_name.append("/tmp/switcher__" + nick_name_ + "_" + suffix);
-
   return connector_name;
 }
 

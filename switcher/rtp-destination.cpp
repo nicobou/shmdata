@@ -17,6 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <glib/gstdio.h>  // writing sdp file
 #include <sstream>
 #include "./rtp-session.hpp"
 #include "./rtp-destination.hpp"
@@ -30,15 +31,17 @@ RtpDestination::RtpDestination(RtpSession *session) :
 }
 
 RtpDestination::~RtpDestination() {
+  for (auto &it : files_)
+    g_remove(it.c_str());
 }
 
 void RtpDestination::set_name(std::string name) {
-  name_ = name;
+  name_ = std::move(name);
   make_json_description();
 }
 
 void RtpDestination::set_host_name(std::string host_name) {
-  host_name_ = host_name;
+  host_name_ = std::move(host_name);
   make_json_description();
 }
 
@@ -46,26 +49,26 @@ std::string RtpDestination::get_host_name() {
   return host_name_;
 }
 
-std::string RtpDestination::get_port(std::string shmdata_path) {
+std::string RtpDestination::get_port(const std::string &shmdata_path) {
   auto it = source_streams_.find(shmdata_path);
   if (source_streams_.end() == it)
-    return "";
+    return std::string();
   return it->second;
 }
 
 bool
-RtpDestination::add_stream(std::string shmdata_path,
+RtpDestination::add_stream(const std::string &shmdata_path,
                            std::string port) {
   source_streams_[shmdata_path] = port;
   make_json_description();
   return true;
 }
 
-bool RtpDestination::has_shmdata(std::string shmdata_path) {
+bool RtpDestination::has_shmdata(const std::string &shmdata_path) {
   return (source_streams_.end() != source_streams_.find(shmdata_path));
 }
 
-bool RtpDestination::remove_stream(std::string shmdata_stream_path) {
+bool RtpDestination::remove_stream(const std::string &shmdata_stream_path) {
   auto it = source_streams_.find(shmdata_stream_path);
   if (source_streams_.end() == it) {
     g_warning("RtpDestination: stream not found, cannot remove %s",
@@ -79,7 +82,6 @@ bool RtpDestination::remove_stream(std::string shmdata_stream_path) {
 
 std::string RtpDestination::get_sdp() {
   SDPDescription desc;
-
   for (auto &it : source_streams_) {
     std::string string_caps = session_->
         invoke_info_tree<std::string>(
@@ -96,7 +98,6 @@ std::string RtpDestination::get_sdp() {
     if (!desc.add_media(media))
       g_warning("a media has not been added to the SDP description");
   }
-
   return desc.get_string();
 }
 
@@ -119,5 +120,19 @@ void RtpDestination::make_json_description() {
 
 JSONBuilder::Node RtpDestination::get_json_root_node() {
   return json_description_->get_root();
+}
+
+bool RtpDestination::write_to_file(std::string file_name) {
+  GError *error;
+  if (!g_file_set_contents(file_name.c_str(),
+                           get_sdp().c_str(),
+                           -1,  // no size, res is a null terminated string
+                           &error)) {
+    g_warning("%s",error->message);
+    g_error_free(error);
+    return false;
+  }
+  files_.push_front(std::move(file_name));
+  return true;
 }
 }

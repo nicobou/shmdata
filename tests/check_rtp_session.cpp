@@ -19,7 +19,6 @@
 #include "../config.h"
 #endif
 
-#include <unistd.h>  // sleep
 #include <gst/gst.h>
 #include <vector>
 #include <string>
@@ -66,7 +65,11 @@ main() {
 #endif
     
     manager->create("SOAPcontrolServer", "soapserver");
-    manager->invoke_va("soapserver", "set_port", nullptr, "38084", nullptr);
+    manager->invoke_va("soapserver",
+                       "set_port",
+                       nullptr,
+                       "38084",
+                       nullptr);
 
     // audio
     manager->create("audiotestsrc", "a");
@@ -81,14 +84,18 @@ main() {
                        nullptr, "/tmp/switcher_rtptest_a_audio", nullptr);
     manager->invoke_va("rtp",
                        "add_data_stream",
-                       nullptr, "/tmp/switcher_rtptest_v_video", nullptr);
+                       nullptr,
+                       "/tmp/switcher_rtptest_v_video", nullptr);
     manager->invoke_va("rtp",
                        "add_data_stream",
                        nullptr,
                        "/tmp/switcher_rtptest_v_encoded-video", nullptr);
     manager->invoke_va("rtp",
                        "add_destination",
-                       nullptr, "local", "127.0.0.1", nullptr);
+                       nullptr,
+                       "local",
+                       "127.0.0.1",
+                       nullptr);
     manager->invoke_va("rtp",
                        "add_udp_stream_to_dest",
                        nullptr,
@@ -99,10 +106,6 @@ main() {
                        nullptr,
                        "/tmp/switcher_rtptest_v_video",
                        "local", "9076", nullptr);
-
-    // FIXME
-    usleep(1000000);
-
     // receiving
     manager->create("httpsdpdec", "uri");
     manager->invoke_va("uri",
@@ -113,12 +116,10 @@ main() {
     manager->make_property_subscriber("sub", mon_property_cb, nullptr);
     manager->create("fakesink", "audioprobe");
     manager->subscribe_property("sub", "audioprobe", "caps");
-    manager->subscribe_property("sub", "audioprobe", "last-message");
     manager->invoke_va("audioprobe",
                        "connect",
                        nullptr, "/tmp/switcher_rtptest_uri_audio-0", nullptr);
     manager->create("fakesink", "videoprobe");
-    manager->subscribe_property("sub", "videoprobe", "last-message");
     manager->subscribe_property("sub", "videoprobe", "caps");
     manager->invoke_va("videoprobe",
                        "connect",
