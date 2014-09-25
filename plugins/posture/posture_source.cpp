@@ -61,6 +61,23 @@ PostureSrc::start() {
   zcamera_->setOutlierFilterParameters(filter_outliers_, filter_mean_k_, filter_stddev_mul_);
 
   zcamera_->start();
+
+  rgb_focal_ = zcamera_->getRGBFocal();
+  // TODO: G_PARAM_READABLE are not displayed in Scenic2
+  rgb_focal_prop_ = custom_props_->make_double_property("rgb_focal",
+                              "RGB focal length",
+                              0.0,
+                              10000.0,
+                              rgb_focal_,
+                              (GParamFlags)
+                              G_PARAM_READWRITE,
+                              PostureSrc::nope,
+                              PostureSrc::get_rgb_focal,
+                              this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            rgb_focal_prop_, "rgb_focal",
+                            "RGB focal length");
+
   return true;
 }
 
@@ -85,6 +102,9 @@ PostureSrc::stop() {
     ir_writer_.reset();
   }
 
+  uninstall_property("rgb_focal_x");
+  uninstall_property("rgb_focal_y");
+
   return true;
 }
 
@@ -92,6 +112,7 @@ bool
 PostureSrc::init() {
   init_startable(this);
   init_segment(this);
+
   calibration_path_prop_ =
       custom_props_->make_string_property("calibration_path",
                             "Path to the calibration file",
@@ -456,6 +477,18 @@ PostureSrc::set_filter_stddev_mul(const double stddev_mul, void *user_data) {
 
   if (ctx->zcamera_ != nullptr)
     ctx->zcamera_->setOutlierFilterParameters(ctx->filter_outliers_, ctx->filter_mean_k_, ctx->filter_stddev_mul_);
+}
+
+double
+PostureSrc::get_rgb_focal(void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  return ctx->rgb_focal_;
+}
+
+void
+PostureSrc::nope(const double /*unused*/, void* /*unused*/)
+{
+  return;
 }
 
 void
