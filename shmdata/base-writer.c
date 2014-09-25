@@ -48,20 +48,48 @@ shmdata_base_writer_unlink_pad (GstPad * pad)
 void
 shmdata_base_writer_clean_element (GstElement *element)
 {
-  if (element != NULL )
-    if (GST_IS_ELEMENT (element))
-      {
-	GstIterator *pad_iter;
-	pad_iter = gst_element_iterate_pads (element);
-	gst_iterator_foreach (pad_iter, (GFunc) shmdata_base_writer_unlink_pad, element);
-	gst_iterator_free (pad_iter);
-	if (GST_STATE_TARGET (element) != GST_STATE_NULL && GST_STATE (element) != GST_STATE_NULL)
-	  if (GST_STATE_CHANGE_ASYNC == gst_element_set_state (element, GST_STATE_NULL))
-	    while (GST_STATE (element) != GST_STATE_NULL)
-	      gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
-	if (GST_IS_BIN (gst_element_get_parent (element)))
-	  gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element);
+  if (element != NULL && GST_IS_ELEMENT(element)
+      && GST_STATE_CHANGE_FAILURE != GST_STATE_RETURN(element)) {
+    // if (GST_IS_BIN(element))
+    //   g_debug("%d, %d, %d, state return %d", GST_STATE(element),
+    //           GST_STATE_TARGET(element), GST_STATE_PENDING(element),
+    //           GST_STATE_RETURN(element));
+
+    GstIterator *pad_iter;
+    pad_iter = gst_element_iterate_pads(element);
+    gst_iterator_foreach(pad_iter, (GFunc) shmdata_base_writer_unlink_pad, element);
+    gst_iterator_free(pad_iter);
+
+    GstState state = GST_STATE_TARGET(element);
+    if (state != GST_STATE_NULL) {
+      if (GST_STATE_CHANGE_ASYNC ==
+          gst_element_set_state(element, GST_STATE_NULL)) {
+        while (GST_STATE(element) != GST_STATE_NULL) {
+          // warning this may be blocking
+          gst_element_get_state(element, NULL, NULL,
+                                GST_CLOCK_TIME_NONE);
+        }
       }
+    }
+    if (GST_IS_BIN(gst_element_get_parent(element)))
+      gst_bin_remove(GST_BIN(gst_element_get_parent(element)), element);
+    else
+      gst_object_unref(element);
+  }
+  /* if (element != NULL ) */
+  /*   if (GST_IS_ELEMENT (element)) */
+  /*     { */
+  /*       GstIterator *pad_iter; */
+  /*       pad_iter = gst_element_iterate_pads (element); */
+  /*       gst_iterator_foreach (pad_iter, (GFunc) shmdata_base_writer_unlink_pad, element); */
+  /*       gst_iterator_free (pad_iter); */
+  /*       if (GST_STATE_TARGET (element) != GST_STATE_NULL && GST_STATE (element) != GST_STATE_NULL) */
+  /*         if (GST_STATE_CHANGE_ASYNC == gst_element_set_state (element, GST_STATE_NULL)) */
+  /*           while (GST_STATE (element) != GST_STATE_NULL) */
+  /*             gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking */
+  /*       if (GST_IS_BIN (gst_element_get_parent (element))) */
+  /*         gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element); */
+  /*     } */
 }
 
 void
