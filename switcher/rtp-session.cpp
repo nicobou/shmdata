@@ -466,10 +466,6 @@ RtpSession::add_udp_stream_to_dest(std::string shmpath,
   // rtp stream (sending)
   RtpDestination::ptr dest = destinations_[nick_name];
   dest->add_stream(shmpath, port);
-  g_print("%s host: %s port: %s\n",
-          __FUNCTION__,
-          dest->get_host_name().c_str(),
-          port.c_str());
   g_signal_emit_by_name (ds_it->second->udp_rtp_sink,
                          "add",
                          dest->get_host_name().c_str(),
@@ -528,14 +524,14 @@ RtpSession::remove_udp_stream_to_dest(std::string shmpath,
   g_signal_emit_by_name (ds_it->second->udp_rtp_sink,
                          "remove",
                          dest->get_host_name().c_str(),
-                         port.c_str(),
+                         rtp_port,
                          nullptr);
 
   // rtcp stream (sending)
   g_signal_emit_by_name (ds_it->second->udp_rtcp_sink,
                          "remove",
                          dest->get_host_name().c_str(),
-                         std::to_string (rtp_port + 1).c_str(),
+                         rtp_port + 1,
                          nullptr);
   return true;
 }
