@@ -28,14 +28,9 @@ ShmdataWriter::ShmdataWriter() :
 }
 
 ShmdataWriter::~ShmdataWriter() {
-  if (nullptr != tee_) {
-    
-    GstUtils::clean_element(tee_);
-  }
-  if (nullptr != queue_)
-    GstUtils::clean_element(queue_);
-  if (nullptr != fakesink_)
-    GstUtils::clean_element(fakesink_);
+  GstUtils::clean_element(tee_);
+  GstUtils::clean_element(queue_);
+  GstUtils::clean_element(fakesink_);
   shmdata_base_writer_close(writer_);
   if (!path_.empty())
     g_debug("ShmdataWriter: %s deleted", path_.c_str());

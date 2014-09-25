@@ -42,6 +42,7 @@ RtpSession::RtpSession():
 }
 
 RtpSession::~RtpSession() {
+  GstUtils::clean_element(rtpsession_);
 }
 
 bool RtpSession::init_gpipe() {
@@ -855,6 +856,7 @@ bool RtpSession::make_udp_sinks(const std::string &shmpath,
 RtpSession::DataStream_t::~DataStream_t() {
   if(nullptr != rtp_static_pad)
     gst_object_unref(rtp_static_pad);
+  GstUtils::clean_element(udp_rtp_sink);
   GstUtils::clean_element(udp_rtp_bin);
   if(nullptr != rtcp_requested_pad)
     gst_element_release_request_pad(rtp, rtcp_requested_pad);

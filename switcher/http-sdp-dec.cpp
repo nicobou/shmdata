@@ -35,6 +35,8 @@ HTTPSDPDec::HTTPSDPDec() {
 }
 
 HTTPSDPDec::~HTTPSDPDec() {
+  GstUtils::clean_element(souphttpsrc_);
+  GstUtils::clean_element(sdpdemux_);
 }
 
 bool HTTPSDPDec::init_gpipe() {

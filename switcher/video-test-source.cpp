@@ -30,8 +30,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
                                      "videotestsrc",
                                      "Nicolas Bouillot");
 
-VideoTestSource::VideoTestSource():
-    videotestsrc_(nullptr) {
+VideoTestSource::VideoTestSource() {
 }
 
 VideoTestSource::~VideoTestSource() {

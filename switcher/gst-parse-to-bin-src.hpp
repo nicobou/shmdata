@@ -51,4 +51,4 @@ class GstParseToBinSrc:public GPipe, StartableQuiddity {
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif

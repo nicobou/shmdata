@@ -48,8 +48,7 @@ class UniqueGstElement {
   void invoke(std::function<void(GstElement *)> command);
 
  private:
-  using gst_element_handle = std::unique_ptr < GstElement,
-                                               decltype(&GstUtils::gst_element_deleter) >;
+  using gst_element_handle = std::unique_ptr<GstElement,decltype(&GstUtils::gst_element_deleter)>;
   gst_element_handle element_;
 };
 }  // namespace switcher
