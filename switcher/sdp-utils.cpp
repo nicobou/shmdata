@@ -20,7 +20,10 @@
 #include "./sdp-utils.hpp"
 
 namespace switcher {
-SDPMedia::SDPMedia():media_(nullptr), caps_structure_(nullptr), port_(0)      // means "disabled media"
+SDPMedia::SDPMedia():
+    media_(nullptr),
+    caps_structure_(nullptr),
+    port_(0)  // means "disabled media"
 {
   gst_sdp_media_new(&media_);
 }
@@ -156,11 +159,12 @@ SDPMedia::add_to_sdp_description(GstSDPMessage *sdp_description,
 }
 
 SDPDescription::SDPDescription():
-    sdp_description_(nullptr), index_(0) {
+    sdp_description_(nullptr),
+    index_(0) {
   gst_sdp_message_new(&sdp_description_);
   /* some standard things first */
   gst_sdp_message_set_version(sdp_description_, "0");
-
+  
   // FIXME check and chose between IP4 and IP6, IP4 hardcoded
   // FIXME generate proper session id &version
   gst_sdp_message_set_origin(sdp_description_, "-",   // the user name

@@ -127,7 +127,7 @@ gboolean ShmdataReader::start_idle(void *user_data) {
   g_debug("ShmdataReader::start_idle done");
   // std::unique_lock<std::mutex> lock (context->start_mutex_);
   // context->start_cond_.notify_all ();
-  return FALSE;               // do not repeat
+  return FALSE;  // do not repeat
 }
 
 void

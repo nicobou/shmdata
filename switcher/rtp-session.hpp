@@ -20,11 +20,17 @@
 #ifndef __SWITCHER_RTPSESSION_H__
 #define __SWITCHER_RTPSESSION_H__
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #include <gst/gst.h>
 #include <gst/sdp/gstsdpmessage.h>
 #include <memory>
 #include <map>
 #include <string>
+#include <mutex>
+#include <condition_variable>
 #include "./gpipe.hpp"
 #include "./quiddity-manager.hpp"
 #include "./rtp-destination.hpp"
@@ -66,6 +72,25 @@ class RtpSession: public GPipe {
                                  void *rtpsession_instance);
 
  private:
+  using DataStream = struct DataStream_t {
+    using ptr=std::unique_ptr<DataStream_t>;
+    DataStream_t() = delete;
+    DataStream_t(GstElement *rtpsession): rtp (rtpsession) {}
+    DataStream_t(DataStream_t &) = delete;
+    const DataStream_t &operator=(const DataStream_t &) = delete;
+    ~DataStream_t();
+    guint id{};
+    // RTP session
+    GstElement *rtp{nullptr};
+    // UDP/RTP
+    GstPad *rtp_static_pad{nullptr};
+    GstElement *udp_rtp_bin{nullptr};
+    GstElement *udp_rtp_sink{nullptr};
+    // UDP/RTCP
+    GstPad *rtcp_requested_pad{nullptr};
+    GstElement *udp_rtcp_sink{nullptr};
+  };
+
   GstElement *rtpsession_{nullptr};
   // a counter used for setting id of internal streams
   // this value is arbitrary and can be changed
@@ -78,16 +103,11 @@ class RtpSession: public GPipe {
   GParamSpec *mtu_at_add_data_stream_spec_{nullptr};
   gint mtu_at_add_data_stream_{1400};
 
-  // local streams
-  std::map<std::string, std::string> internal_id_{};       // maps shmdata path with internal id
-  std::map<std::string, std::string> rtp_ids_{};   // maps shmdata path with rtp id
-  std::map<std::string, QuiddityManager::ptr> quiddity_managers_{};
-  std::map<std::string, GstElementCleaner::ptr> funnels_{};        // maps internal id with funnel cleaner
-
-  // std::map<std::string, GstElement *>rtp_udp_sinks_;
-  std::map<std::string, ShmdataWriter::ptr> internal_shmdata_writers_{};
-  std::map<std::string, ShmdataReader::ptr> internal_shmdata_readers_{};
-
+  // data streams
+  std::map<std::string, DataStream::ptr> data_streams_{};
+  std::mutex stream_mutex_{};
+  std::condition_variable stream_cond_{};
+  
   // destinations
   std::map<std::string, RtpDestination::ptr> destinations_{};
 
@@ -155,11 +175,12 @@ class RtpSession: public GPipe {
                                   guint probability,
                                   GstCaps *caps,
                                   gpointer user_data);
-  bool make_udp_sink(const std::string &shmpath,
-                     GstElement *rtpsession,
-                     const std::string &rtp_src_pad_name);
-
+  bool make_udp_sinks(const std::string &shmpath,
+                      const std::string &rtp_id);
+#if HAVE_OSX
+  static void set_udp_sock(GstElement *udpsink);
+#endif
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif

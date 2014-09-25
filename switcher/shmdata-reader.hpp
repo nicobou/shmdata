@@ -76,4 +76,4 @@ class ShmdataReader:public OnCaps, public GstElementCleaner {
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif
