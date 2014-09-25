@@ -21,6 +21,7 @@
 #define __SWITCHER_POSTURE_COLORIZE_H__
 
 #include <deque>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
@@ -45,9 +46,20 @@ class PostureColorize : public Quiddity, public Segment, public StartableQuiddit
 
  private:
   CustomPropertyHelper::ptr custom_props_;
+  std::string calibration_path_ {"default.kvc"};
+
+  GParamSpec *calibration_path_prop_ {nullptr};
 
   std::shared_ptr<posture::Colorize> colorize_ {nullptr};
   std::mutex mutex_ {};
+
+  bool has_input_mesh_ {false};
+  std::map<int, int> shm_index_ {};
+  std::vector<unsigned char> mesh_ {};
+  std::vector<std::vector<unsigned char>> images_ {};
+  std::vector<std::vector<unsigned int>> dims_ {};
+  std::vector<float> focals_ {};
+  unsigned int source_id_ {0};
 
   bool init() final;
 
@@ -55,6 +67,10 @@ class PostureColorize : public Quiddity, public Segment, public StartableQuiddit
   bool disconnect(std::string /*unused*/);
   bool disconnect_all();
   bool can_sink_caps(std::string caps);
+  bool check_image_caps(std::string caps, unsigned int& width, unsigned int& height, unsigned int& channels);
+
+  static const gchar *get_calibration_path(void *user_data);
+  static void set_calibration_path(const gchar *name, void *user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureColorize);

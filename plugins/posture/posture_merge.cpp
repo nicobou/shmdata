@@ -58,12 +58,12 @@ bool
 PostureMerge::stop() {
   lock_guard<mutex> lock(mutex_);
 
-  if (merger_.get() != nullptr) {
+  if (merger_ != nullptr) {
     merger_->stop();
     merger_.reset();
   }
 
-  if (cloud_writer_.get() != nullptr) {
+  if (cloud_writer_ != nullptr) {
     unregister_shmdata(cloud_writer_->get_path());
     cloud_writer_.reset();
   }
@@ -158,11 +158,11 @@ PostureMerge::connect(std::string shmdata_socket_path) {
   int index = source_id_;
   source_id_ += 1;
 
-  ShmdataAnyReader::ptr reader_ = make_shared<ShmdataAnyReader>();
-  reader_->set_path(shmdata_socket_path);
+  ShmdataAnyReader::ptr reader = make_shared<ShmdataAnyReader>();
+  reader->set_path(shmdata_socket_path);
 
   // This is the callback for when new clouds are received
-  reader_->set_callback([=] (void *data,
+  reader->set_callback([=] (void *data,
                              int size,
                              unsigned long long timestamp,
                              const char *type,
@@ -208,8 +208,8 @@ PostureMerge::connect(std::string shmdata_socket_path) {
   },
   nullptr);
 
-  reader_->start();
-  register_shmdata(reader_);
+  reader->start();
+  register_shmdata(reader);
   return true;
 }
 
