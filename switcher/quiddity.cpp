@@ -207,11 +207,12 @@ Quiddity::install_signal_with_class_name(const std::string class_name,
   return true;
 }
 
-bool Quiddity::make_custom_signal_with_class_name(const std::string class_name, const std::string signal_name,        // the name to give
-                                                  GType return_type, guint n_params,  // number of params
+bool Quiddity::make_custom_signal_with_class_name(const std::string class_name,
+                                                  const std::string signal_name,
+                                                  GType return_type,
+                                                  guint n_params,
                                                   GType *param_types) {
   if (signals_.find(signal_name) != signals_.end()) {
-    // g_debug ("signals: a signal named %s has already been registered for this class",signal_name.c_str());
     return false;
   }
 
@@ -234,7 +235,6 @@ bool Quiddity::make_custom_signal_with_class_name(const std::string class_name, 
       (gobject_->get_gobject(), signals_ids_[sig_pair]))
     return false;
   signals_[signal_name] = signal;
-  g_debug("signal %s registered", signal_name.c_str());
   return true;
 }
 

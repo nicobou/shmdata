@@ -29,13 +29,16 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackAudioSource,
                                      "jacksrc",
                                      "Nicolas Bouillot");
 
-JackAudioSource::JackAudioSource():jackaudiosrc_(nullptr),
-                                   audioconvert_(nullptr),
-                                   capsfilter_(nullptr),
-                                   jackaudiosrc_bin_(nullptr),
-                                   custom_props_(new CustomPropertyHelper()),
-                                   num_channels_spec_(nullptr),
-                                   num_channels_(2), client_name_spec_(nullptr), client_name_(nullptr) {
+JackAudioSource::JackAudioSource():
+    jackaudiosrc_(nullptr),
+    audioconvert_(nullptr),
+    capsfilter_(nullptr),
+    jackaudiosrc_bin_(nullptr),
+    custom_props_(new CustomPropertyHelper()),
+    num_channels_spec_(nullptr),
+    num_channels_(2),
+    client_name_spec_(nullptr),
+    client_name_(nullptr) {
 }
 
 bool JackAudioSource::init_gpipe() {
@@ -78,6 +81,10 @@ bool JackAudioSource::init_gpipe() {
 }
 
 JackAudioSource::~JackAudioSource() {
+  GstUtils::clean_element(jackaudiosrc_);  
+  GstUtils::clean_element(audioconvert_);  
+  GstUtils::clean_element(capsfilter_);  
+  GstUtils::clean_element(jackaudiosrc_bin_);  
   if (nullptr != client_name_)
     g_free(client_name_);
 }

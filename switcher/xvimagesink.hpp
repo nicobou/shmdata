@@ -34,11 +34,11 @@ class Xvimagesink:public SinglePadGstSink {
   Xvimagesink &operator=(const Xvimagesink &) = delete;
 
  private:
-  GstElement *sink_bin_;
-  GstElement *queue_;
-  GstElement *ffmpegcolorspace_;
-  GstElement *xvimagesink_;
-  QuiddityCommand *on_error_command_;  // for the pipeline error handler
+  GstElement *sink_bin_{nullptr};
+  GstElement *queue_{nullptr};
+  GstElement *ffmpegcolorspace_{nullptr};
+  GstElement *xvimagesink_{nullptr};
+  QuiddityCommand *on_error_command_{nullptr};  // for the pipeline error handler
   bool init_gpipe() final;
   bool can_sink_caps(std::string caps) final;
 };

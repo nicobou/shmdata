@@ -17,12 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./xvimagesink.hpp"
-#include "./gst-utils.hpp"
-#include "./quiddity-command.hpp"
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
 #endif
+
+#include "./xvimagesink.hpp"
+#include "./gst-utils.hpp"
+#include "./quiddity-command.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Xvimagesink,
@@ -33,12 +34,14 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Xvimagesink,
                                      "videosink",
                                      "Nicolas Bouillot");
 
-Xvimagesink::Xvimagesink():sink_bin_(nullptr),
-                           queue_(nullptr), ffmpegcolorspace_(nullptr), xvimagesink_(nullptr) {
+Xvimagesink::Xvimagesink() {
 }
 
 Xvimagesink::~Xvimagesink() {
   GstUtils::clean_element(xvimagesink_);
+  GstUtils::clean_element(ffmpegcolorspace_);
+  GstUtils::clean_element(queue_);
+  GstUtils::clean_element(sink_bin_);
   if (on_error_command_ != nullptr)
     delete on_error_command_;
 }
@@ -73,17 +76,13 @@ bool Xvimagesink::init_gpipe() {
   gst_element_add_pad(sink_bin_, ghost_sinkpad);
   gst_object_unref(sink_pad);
 
-  // install_property (G_OBJECT (xvimagesink_),
-  //        "force-aspect-ratio",
-  //        "force-aspect-ratio",
-  //        "Force Aspect Ratio");
-
   on_error_command_ = new QuiddityCommand();
   on_error_command_->id_ = QuiddityCommand::remove;
   on_error_command_->add_arg(get_nick_name());
 
   g_object_set_data(G_OBJECT(xvimagesink_),
-                    "on-error-command", (gpointer) on_error_command_);
+                    "on-error-command",
+                    (gpointer) on_error_command_);
 
   set_sink_element(sink_bin_);
 

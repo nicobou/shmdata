@@ -139,7 +139,6 @@ void GstUtils::clean_element(GstElement *element) {
     else
       gst_object_unref(element);
   }
-  element = nullptr;
 }
 
 void GstUtils::wait_state_changed(GstElement *bin) {

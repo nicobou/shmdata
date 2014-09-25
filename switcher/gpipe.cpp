@@ -57,9 +57,9 @@ GPipe::~GPipe() {
         g_source_destroy((*commands_.begin())->src);
       commands_.erase(commands_.begin());
     }
-  if (position_tracking_source_ != nullptr)
+  if (nullptr != position_tracking_source_)
     g_source_destroy(position_tracking_source_);
-  if (!g_source_is_destroyed(source_))
+  if (nullptr != source_ && !g_source_is_destroyed(source_))
     g_source_destroy(source_);
 }
 

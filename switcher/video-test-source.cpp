@@ -35,7 +35,6 @@ VideoTestSource::VideoTestSource():
 }
 
 VideoTestSource::~VideoTestSource() {
-  GstUtils::clean_element(videotestsrc_);
 }
 
 bool VideoTestSource::init_gpipe() {
@@ -49,7 +48,7 @@ bool VideoTestSource::init_gpipe() {
   return true;
 }
 
-bool VideoTestSource::make_video_source(GstElement ** new_element) {
+bool VideoTestSource::make_video_source(GstElement **new_element) {
   GstElement *videotest;
   if (!GstUtils::make_element("videotestsrc", &videotest))
     return false;

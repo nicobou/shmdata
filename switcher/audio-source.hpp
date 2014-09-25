@@ -28,6 +28,7 @@ class AudioSource: public GPipe {
  public:
   typedef std::shared_ptr<AudioSource> ptr;
   AudioSource();
+  ~AudioSource();
   AudioSource(const AudioSource &) = delete;
   AudioSource &operator=(const AudioSource &) = delete;
  private:

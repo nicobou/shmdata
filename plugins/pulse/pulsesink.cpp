@@ -155,6 +155,7 @@ bool PulseSink::build_elements() {
   gst_pad_set_active(ghost_sinkpad, TRUE);
   gst_element_add_pad(pulsesink_bin_, ghost_sinkpad);
   gst_object_unref(sink_pad);
+
   return true;
 }
 
