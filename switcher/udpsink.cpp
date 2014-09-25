@@ -45,9 +45,12 @@ UDPSink::UDPSink():
 bool UDPSink::init_gpipe() {
   if (!GstUtils::make_element("bin", &udpsink_bin_)
       || !GstUtils::make_element("typefind", &typefind_)
-      || !GstUtils::make_element("multiudpsink", &udpsink_))
+      || !GstUtils::make_element("multiudpsink", &udpsink_)) {
+    GstUtils::clean_element(typefind_);
+    GstUtils::clean_element(udpsink_);
+    GstUtils::clean_element(udpsink_bin_);
     return false;
-
+  }
   // g_object_set (G_OBJECT (udpsink_bin_), "async-handling", TRUE, nullptr);
 
   g_object_set(G_OBJECT(udpsink_), "sync", FALSE, nullptr);
@@ -128,12 +131,10 @@ bool UDPSink::init_gpipe() {
   // registering sink element
   set_on_first_data_hook(UDPSink::add_elements_to_bin, this);
   set_sink_element(udpsink_bin_);
-
   return true;
 }
 
 UDPSink::~UDPSink() {
-
   if (ghost_sinkpad_ != nullptr) {
     if (gst_pad_is_linked(ghost_sinkpad_)) {
       GstPad *peer_pad = gst_pad_get_peer(ghost_sinkpad_);

@@ -50,10 +50,12 @@ GPipe::~GPipe() {
     gst_object_unref(GST_OBJECT(pipeline_));
   }
   if (!commands_.empty())
-    for (auto &it : commands_)
+    while (commands_.begin() != commands_.end())
     {
-      if (!g_source_is_destroyed(it))
-        g_source_destroy(it);
+      delete (*commands_.begin())->command;
+      if (!g_source_is_destroyed((*commands_.begin())->src))
+        g_source_destroy((*commands_.begin())->src);
+      commands_.erase(commands_.begin());
     }
   if (position_tracking_source_ != nullptr)
     g_source_destroy(position_tracking_source_);
@@ -304,11 +306,14 @@ gboolean GPipe::run_command(gpointer user_data) {
   
   auto it = std::find(context->self->commands_.begin(),
                       context->self->commands_.end(),
-                      context->src);
+                      context);
   if (context->self->commands_.end() != it)
+  {
+    // it->src will be freed by the glib
+    delete (*it)->command;
     context->self->commands_.erase(it);
-  delete context;
-  return FALSE;               // do not repeat run_command
+  }
+  return FALSE;  // do not repeat run_command
 }
 
 GstElement *GPipe::get_pipeline() {
@@ -387,7 +392,7 @@ GstBusSyncReply GPipe::bus_sync_handler(GstBus * /*bus */ ,
 
     gst_message_parse_error(msg, &error, &debug);
     g_free(debug);
-    g_debug("GPipe::bus_sync_handler Error: %s from %s", error->message,
+    g_debug("Gstreamer error: %s (element %s)", error->message,
             GST_MESSAGE_SRC_NAME(msg));
 
     QuiddityCommand *command =
@@ -406,8 +411,10 @@ GstBusSyncReply GPipe::bus_sync_handler(GstBus * /*bus */ ,
       if (command->time_ > 1) {
         args->src = g_timeout_source_new((guint) command->time_);
         g_source_set_callback(args->src,
-                              (GSourceFunc) run_command, args, nullptr);
-        context->commands_.push_back(args->src);
+                              (GSourceFunc) run_command,
+                              args,
+                              nullptr);
+        context->commands_.push_back(args);
         g_source_attach(args->src, context->get_g_main_context());
         g_source_unref(args->src);
       } else {
@@ -418,7 +425,6 @@ GstBusSyncReply GPipe::bus_sync_handler(GstBus * /*bus */ ,
                                                nullptr);
       }
     }
-
     g_error_free(error);
     return GST_BUS_DROP;
   }

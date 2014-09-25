@@ -306,7 +306,8 @@ QuiddityManager::set_property(const std::string &quiddity_name,
   std::string res = seq_invoke(QuiddityCommand::set_property,
                                quiddity_name.c_str(),
                                property_name.c_str(),
-                               property_value.c_str(), nullptr);
+                               property_value.c_str(),
+                               nullptr);
   if (res == "true")
     return true;
   else
