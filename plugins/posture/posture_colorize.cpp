@@ -61,6 +61,9 @@ PostureColorize::stop() {
   if (colorize_ != nullptr)
     colorize_.reset();
 
+  mesh_writer_.reset();
+  clear_shmdatas();
+
   return true;
 }
 
@@ -125,6 +128,22 @@ PostureColorize::connect(std::string shmdata_socket_path) {
         colorize_->setInput(mesh_, images_, dims_, focals_);
         vector<unsigned char> texturedMesh = colorize_->getTexturedMesh();
 
+        if (mesh_writer_ == nullptr)
+        {
+          mesh_writer_ = make_shared<ShmdataAnyWriter>();
+          mesh_writer_->set_path(make_file_name("mesh"));
+          mesh_writer_->set_data_type(POLYGONMESH_TYPE_BASE);
+          register_shmdata(mesh_writer_);
+          mesh_writer_->start();
+        }
+
+        check_buffers();
+        shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(texturedMesh.data(), texturedMesh.data() + texturedMesh.size()));
+        mesh_writer_->push_data_auto_clock((void*) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
+                                           texturedMesh.size(),
+                                           PostureColorize::free_sent_buffer,
+                                           (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
+
         mutex_.unlock();
       });
 
@@ -143,7 +162,7 @@ PostureColorize::connect(std::string shmdata_socket_path) {
 
       images_[index] = vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size);
       dims_[index] = vector<unsigned int>({width, height, channels});
-      focals_[index] = 1.f; // TODO: replace with a correct value, somewhere, maybe in the calibration file
+      focals_[index] = 100.f; // TODO: replace with a correct value, somewhere, maybe in the calibration file
     }
 
     mutex_.unlock();
@@ -272,6 +291,24 @@ PostureColorize::set_calibration_path(const gchar *name, void *user_data) {
   PostureColorize *ctx = (PostureColorize *) user_data;
   if (name != nullptr)
     ctx->calibration_path_ = name;
+}
+
+void
+PostureColorize::free_sent_buffer(void* data)
+{
+  vector<unsigned char>* buffer = static_cast<vector<unsigned char>*>(data);
+  buffer->clear();
+}
+
+void
+PostureColorize::check_buffers()
+{
+  for (unsigned int i = 0; i < shmwriter_queue_.size();) {
+    if (shmwriter_queue_[i]->size() == 0)
+      shmwriter_queue_.erase(shmwriter_queue_.begin() + i);
+    else
+      i++;
+  }
 }
 
 }  // namespace switcher

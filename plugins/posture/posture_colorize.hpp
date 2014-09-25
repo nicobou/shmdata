@@ -61,6 +61,9 @@ class PostureColorize : public Quiddity, public Segment, public StartableQuiddit
   std::vector<float> focals_ {};
   unsigned int source_id_ {0};
 
+  ShmdataAnyWriter::ptr mesh_writer_ {nullptr};
+  std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriter_queue_ {};
+
   bool init() final;
 
   bool connect(std::string shmdata_socket_path);
@@ -71,6 +74,9 @@ class PostureColorize : public Quiddity, public Segment, public StartableQuiddit
 
   static const gchar *get_calibration_path(void *user_data);
   static void set_calibration_path(const gchar *name, void *user_data);
+
+  static void free_sent_buffer(void* data);
+  void check_buffers();  
 };
 
 SWITCHER_DECLARE_PLUGIN(PostureColorize);

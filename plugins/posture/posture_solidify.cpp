@@ -57,8 +57,8 @@ PostureSolidify::stop() {
 
   if (mesh_writer_ != nullptr)
   {
-    unregister_shmdata(mesh_writer_->get_path());
     mesh_writer_.reset();
+    unregister_shmdata(mesh_writer_->get_path());
   }
 
   return true;
