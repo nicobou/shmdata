@@ -43,9 +43,10 @@ GPipe::GPipe():
 GPipe::~GPipe() {
   if (nullptr != pipeline_) {
     GstUtils::wait_state_changed(pipeline_);
+    clear_shmdatas();
+    GstUtils::wait_state_changed(pipeline_);
     clean_bin();
     GstUtils::wait_state_changed(pipeline_);
-    clear_shmdatas();
     gst_element_set_state(pipeline_, GST_STATE_NULL);
     gst_object_unref(GST_OBJECT(pipeline_));
   }
