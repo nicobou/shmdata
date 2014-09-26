@@ -36,7 +36,7 @@ namespace switcher {
 GPipe::GPipe():
     pipeline_(nullptr),
     source_funcs_(),
-    gpipe_custom_props_(new CustomPropertyHelper()) {
+    gpipe_custom_props_(std::make_shared<CustomPropertyHelper>()) {
   init_segment(this);
 }
 
@@ -562,7 +562,7 @@ void GPipe::clean_bin() {
       for (child = children; child != nullptr; child = g_list_next(child)) {
         g_debug("segment warning: child %s",
                 GST_ELEMENT_NAME(GST_ELEMENT(child->data)));
-        // GstUtils::clean_element (GST_ELEMENT (child->data));
+        GstUtils::clean_element (GST_ELEMENT (child->data));
       }
     }
     g_debug("going to clean bin_");

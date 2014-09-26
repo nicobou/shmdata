@@ -46,21 +46,21 @@ bool SinglePadGstSink::connect(std::string shmdata_socket_path) {
   unregister_shmdata(shmdata_socket_path);
   on_shmdata_connect(shmdata_socket_path);
 
-  ShmdataReader::ptr reader_;
-  reader_.reset(new ShmdataReader());
-  reader_->set_path(shmdata_socket_path.c_str());
+  ShmdataReader::ptr reader;
+  reader.reset(new ShmdataReader());
+  reader->set_path(shmdata_socket_path.c_str());
   shmdata_path_ = shmdata_socket_path;
-  reader_->set_g_main_context(get_g_main_context());
-  reader_->set_bin(bin_);
+  reader->set_g_main_context(get_g_main_context());
+  reader->set_bin(bin_);
 
   if (sink_element_ != nullptr)
-    reader_->set_sink_element(sink_element_);
+    reader->set_sink_element(sink_element_);
   if (connection_hook_ != nullptr) {
     g_debug("SinglePadGstSink::connect set on_first_data_hook ");
-    reader_->set_on_first_data_hook(connection_hook_, hook_user_data_);
+    reader->set_on_first_data_hook(connection_hook_, hook_user_data_);
   }
-  reader_->start();
-  register_shmdata(reader_);
+  reader->start();
+  register_shmdata(reader);
   return true;
 }
 

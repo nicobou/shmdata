@@ -41,7 +41,6 @@ FakeSink::FakeSink():fakesink_(nullptr),
 FakeSink::~FakeSink() {
   if (update_byterate_source_ != nullptr)
     g_source_destroy(update_byterate_source_);
-  reset_bin();
   GstUtils::clean_element(fakesink_);
   g_free(string_caps_);
 }

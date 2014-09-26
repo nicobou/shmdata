@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./video-test-source.hpp"
 #include <gst/gst.h>
 #include "./gst-utils.hpp"
+#include "./video-test-source.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
