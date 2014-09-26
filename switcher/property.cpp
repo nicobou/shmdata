@@ -28,7 +28,7 @@ namespace switcher {
 Property::Property():
     long_name_("undefined_long_name"),
     name_("undefined_name"),
-    json_description_(new JSONBuilder()) {
+    json_description_(std::make_shared<JSONBuilder>()) {
 }
 
 Property::~Property() {
@@ -36,7 +36,11 @@ Property::~Property() {
   g_object_unref(object_);
 }
 
-void Property::set_gobject_pspec(GObject * object, GParamSpec *pspec) {
+void Property::set_gobject_pspec(GObject *object, GParamSpec *pspec) {
+  if(nullptr != object_) {
+    g_warning("trying to set gobject pspec twice, not setting");
+    return;
+  }
   g_param_spec_ref(pspec);
   g_object_ref(object);
   property_ = pspec;
@@ -55,12 +59,24 @@ std::string Property::get_name() {
   return name_;
 }
 
-void Property::set(std::string value) {
+void Property::set(const std::string &value) {
+  if(nullptr == object_) {
+    g_warning("trying to set a property of a NULL gobject");
+    return;
+  }
   GValue transformed_val = G_VALUE_INIT;
   g_value_init(&transformed_val, property_->value_type);
 
-  if (!gst_value_deserialize(&transformed_val, value.c_str()))
-    g_debug("string not transformable into gvalue ");
+  if (!gst_value_deserialize(&transformed_val, value.c_str())) {
+    const gchar *type_name = g_type_name(property_->value_type);
+    if (nullptr == type_name)
+      g_warning("property does not have a valid type");
+    else
+      g_warning("string %s not transformable into gvalue of type %s",
+                value.c_str(),
+                type_name);
+    return;
+  }
 
   g_object_set_property(object_, property_->name, &transformed_val);
 }
@@ -90,7 +106,7 @@ bool Property::unsubscribe(Callback cb, void *user_data) {
 }
 
 std::string
-Property::parse_callback_args(GObject * gobject, GParamSpec *pspec) {
+Property::parse_callback_args(GObject *gobject, GParamSpec *pspec) {
   const gchar *prop_name = g_param_spec_get_name(pspec);
   GValue val = G_VALUE_INIT;
   g_value_init(&val, pspec->value_type);
