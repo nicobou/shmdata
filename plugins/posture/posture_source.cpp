@@ -568,11 +568,8 @@ PostureSrc::cb_frame_rgb(void *context,
     ctx->rgb_width_ = width;
     ctx->rgb_height_ = height;
 
-    char
-        buffer[256] = "";
-    sprintf(buffer,
-            "video/x-raw-rgb,bpp=(int)24,endianness=(int)4321,depth=(int)24,red_mask=(int)16711680,green_mask=(int)65280,blue_mask=(int)255,width=(int)%i,height=(int)%i,framerate=30/1",
-            width, height);
+    char buffer[256] = "";
+    sprintf(buffer, "video/x-raw-rgb,bpp=(int)24,endianness=(int)4321,depth=(int)24,red_mask=(int)16711680,green_mask=(int)65280,blue_mask=(int)255,width=(int)%i,height=(int)%i,framerate=30/1", width, height);
     ctx->rgb_writer_->set_data_type(string(buffer));
     ctx->rgb_writer_->start();
   }

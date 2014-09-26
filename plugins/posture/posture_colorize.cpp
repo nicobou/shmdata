@@ -62,6 +62,7 @@ PostureColorize::stop() {
     colorize_.reset();
 
   mesh_writer_.reset();
+  tex_writer_.reset();
   clear_shmdatas();
 
   return true;
@@ -128,6 +129,10 @@ PostureColorize::connect(std::string shmdata_socket_path) {
         colorize_->setInput(mesh_, images_, dims_);
         vector<unsigned char> texturedMesh = colorize_->getTexturedMesh();
 
+        unsigned int width, height;
+        vector<unsigned char> texture = colorize_->getTexture(width, height);
+
+        // Write the mesh
         if (mesh_writer_ == nullptr)
         {
           mesh_writer_ = make_shared<ShmdataAnyWriter>();
@@ -143,6 +148,25 @@ PostureColorize::connect(std::string shmdata_socket_path) {
                                            texturedMesh.size(),
                                            PostureColorize::free_sent_buffer,
                                            (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
+
+        // Write the texture
+        if (tex_writer_ == nullptr)
+        {
+          tex_writer_ = make_shared<ShmdataAnyWriter>();
+          tex_writer_->set_path(make_file_name("texture"));
+          char buffer[256] = "";
+          sprintf(buffer, "video/x-raw-rgb,bpp=(int)24,endianness=(int)4321,depth=(int)24,red_mask=(int)16711680,green_mask=(int)65280,blue_mask=(int)255,width=(int)%i,height=(int)%i,framerate=30/1", width, height);
+          tex_writer_->set_data_type(buffer);
+          register_shmdata(tex_writer_);
+          tex_writer_->start();
+        }
+
+        check_buffers();
+        shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(texture.data(), texture.data() + texture.size()));
+        tex_writer_->push_data_auto_clock((void*) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
+                                          texture.size(),
+                                          PostureColorize::free_sent_buffer,
+                                          (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
 
         mutex_.unlock();
       });

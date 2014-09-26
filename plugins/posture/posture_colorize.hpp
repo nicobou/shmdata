@@ -61,6 +61,7 @@ class PostureColorize : public Quiddity, public Segment, public StartableQuiddit
   unsigned int source_id_ {0};
 
   ShmdataAnyWriter::ptr mesh_writer_ {nullptr};
+  ShmdataAnyWriter::ptr tex_writer_ {nullptr};
   std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriter_queue_ {};
 
   bool init() final;
