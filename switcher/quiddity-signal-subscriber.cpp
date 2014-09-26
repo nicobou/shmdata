@@ -115,6 +115,9 @@ QuidditySignalSubscriber::subscribe(Quiddity::ptr quid,
     return true;
   }
   g_warning("QuidditySignalSubscriber: cannot subscribe to signal");
+  g_free(signal->name);
+  g_free(signal->quiddity_name);
+  g_free(signal->signal_name);
   delete signal;
   return false;
 }

@@ -646,7 +646,8 @@ std::string Quiddity::get_property(std::string property_name) {
 
 bool
 Quiddity::subscribe_property(std::string property_name,
-                             Property::Callback cb, void *user_data) {
+                             Property::Callback cb,
+                             void *user_data) {
   auto it = properties_.find(property_name);
   if (properties_.end() == it) {
     g_debug("property not found (%s)", property_name.c_str());
@@ -657,12 +658,12 @@ Quiddity::subscribe_property(std::string property_name,
 
 bool
 Quiddity::unsubscribe_property(std::string property_name,
-                               Property::Callback cb, void *user_data) {
+                               Property::Callback cb,
+                               void *user_data) {
   auto it = properties_.find(property_name);
   if (properties_.end() == it)
     return false;
-  it->second->unsubscribe(cb, user_data);
-  return true;
+  return it->second->unsubscribe(cb, user_data);
 }
 
 bool
@@ -762,7 +763,7 @@ GMainContext *Quiddity::get_g_main_context() {
   QuiddityManager_Impl::ptr manager = manager_impl_.lock();
   if ((bool) manager)
     return manager->get_g_main_context();
-  g_print("%s: returning nullptr\n", __PRETTY_FUNCTION__);
+  g_warning("%s: returning nullptr\n", __PRETTY_FUNCTION__);
   return nullptr;
 }
 

@@ -32,6 +32,8 @@ Property::Property():
 }
 
 Property::~Property() {
+  for (auto &it : subscribed_handlers_)
+    g_signal_handler_disconnect(object_, it.second);
   g_param_spec_unref(property_);
   g_object_unref(object_);
 }
