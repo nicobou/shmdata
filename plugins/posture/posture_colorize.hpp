@@ -58,7 +58,6 @@ class PostureColorize : public Quiddity, public Segment, public StartableQuiddit
   std::vector<unsigned char> mesh_ {};
   std::vector<std::vector<unsigned char>> images_ {};
   std::vector<std::vector<unsigned int>> dims_ {};
-  std::vector<float> focals_ {};
   unsigned int source_id_ {0};
 
   ShmdataAnyWriter::ptr mesh_writer_ {nullptr};

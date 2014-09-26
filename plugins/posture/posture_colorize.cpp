@@ -125,7 +125,7 @@ PostureColorize::connect(std::string shmdata_socket_path) {
       }
 
       thread computeThread = thread([=] () {
-        colorize_->setInput(mesh_, images_, dims_, focals_);
+        colorize_->setInput(mesh_, images_, dims_);
         vector<unsigned char> texturedMesh = colorize_->getTexturedMesh();
 
         if (mesh_writer_ == nullptr)
@@ -156,13 +156,11 @@ PostureColorize::connect(std::string shmdata_socket_path) {
 
         images_.resize(shm_index_.size());
         dims_.resize(shm_index_.size());
-        focals_.resize(shm_index_.size());
       }
       int index = shm_index_[id];
 
       images_[index] = vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size);
       dims_[index] = vector<unsigned int>({width, height, channels});
-      focals_[index] = 100.f; // TODO: replace with a correct value, somewhere, maybe in the calibration file
     }
 
     mutex_.unlock();
