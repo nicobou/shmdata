@@ -47,13 +47,16 @@ class PostureColorize : public Quiddity, public Segment, public StartableQuiddit
  private:
   CustomPropertyHelper::ptr custom_props_;
   std::string calibration_path_ {"default.kvc"};
+  double face_sort_resolution_ {0.01};
 
   GParamSpec *calibration_path_prop_ {nullptr};
+  GParamSpec *face_sort_resolution_prop_ {nullptr};
 
   std::shared_ptr<posture::Colorize> colorize_ {nullptr};
   std::mutex mutex_ {};
 
   bool has_input_mesh_ {false};
+  int mesh_index_ {-1};
   std::map<int, int> shm_index_ {};
   std::vector<unsigned char> mesh_ {};
   std::vector<std::vector<unsigned char>> images_ {};
@@ -74,6 +77,8 @@ class PostureColorize : public Quiddity, public Segment, public StartableQuiddit
 
   static const gchar *get_calibration_path(void *user_data);
   static void set_calibration_path(const gchar *name, void *user_data);
+  static double get_face_sort_resolution(void *user_data);
+  static void set_face_sort_resolution(double resolution, void *user_data);
 
   static void free_sent_buffer(void* data);
   void check_buffers();  

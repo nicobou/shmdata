@@ -50,6 +50,7 @@ PostureColorize::start() {
   colorize_ = make_shared<Colorize>();
 
   colorize_->setCalibrationPath(calibration_path_);
+  colorize_->setFaceSortingResolution(face_sort_resolution_);
 
   return true;
 }
@@ -65,6 +66,9 @@ PostureColorize::stop() {
   tex_writer_.reset();
   clear_shmdatas();
 
+  has_input_mesh_ = false;
+  mesh_index_ = -1;
+
   return true;
 }
 
@@ -79,7 +83,6 @@ PostureColorize::init() {
                          std::bind(&PostureColorize::can_sink_caps, this, std::placeholders::_1),
                          1);
 
-
   calibration_path_prop_ = custom_props_->make_string_property("calibration_path",
                                           "Path to the calibration file",
                                           calibration_path_.c_str(),
@@ -90,6 +93,20 @@ PostureColorize::init() {
   install_property_by_pspec(custom_props_->get_gobject(),
                             calibration_path_prop_, "calibration_path",
                             "Path to the calibration file");
+
+  face_sort_resolution_prop_ = custom_props_->make_double_property("face_sort_resolution",
+                                  "Voxel resolution used for the face sorting pass",
+                                  0.01,
+                                  100.0,
+                                  face_sort_resolution_,
+                                  (GParamFlags)
+                                  G_PARAM_READWRITE,
+                                  PostureColorize::set_face_sort_resolution,
+                                  PostureColorize::get_face_sort_resolution,
+                                  this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            face_sort_resolution_prop_, "face_sort_resolution",
+                            "Voxel resolution used for the face sorting pass");
 
   return true;
 }
@@ -117,6 +134,8 @@ PostureColorize::connect(std::string shmdata_socket_path) {
     unsigned int width, height, channels;
     // Update the input mesh. This calls the update of colorize_
     if (string(type) == string(POLYGONMESH_TYPE_BASE)) {
+      has_input_mesh_ = true;
+      mesh_index_ = id;
       mesh_ = vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size);
 
       if (images_.size() == 0)
@@ -175,16 +194,23 @@ PostureColorize::connect(std::string shmdata_socket_path) {
     }
     // Update the input textures
     else if (check_image_caps(string(type), width, height, channels)) {
-      if (shm_index_.find(id) == shm_index_.end()) {
-        shm_index_[id] = shm_index_.size() - 1;
+      if (mesh_index_ != -1)
+      {
+        if (shm_index_.find(id) == shm_index_.end()) {
+          // The following test is to handle the different input types (mesh and image)
+          if (id < mesh_index_)
+            shm_index_[id] = id;
+          else
+            shm_index_[id] = id - 1;
 
-        images_.resize(shm_index_.size());
-        dims_.resize(shm_index_.size());
+          images_.resize(shm_index_.size());
+          dims_.resize(shm_index_.size());
+        }
+        int index = shm_index_[id];
+
+        images_[index] = vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size);
+        dims_[index] = vector<unsigned int>({width, height, channels});
       }
-      int index = shm_index_[id];
-
-      images_[index] = vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size);
-      dims_[index] = vector<unsigned int>({width, height, channels});
     }
 
     mutex_.unlock();
@@ -313,6 +339,21 @@ PostureColorize::set_calibration_path(const gchar *name, void *user_data) {
   PostureColorize *ctx = (PostureColorize *) user_data;
   if (name != nullptr)
     ctx->calibration_path_ = name;
+}
+
+double
+PostureColorize::get_face_sort_resolution(void *user_data) {
+  PostureColorize *ctx = (PostureColorize *) user_data;
+  return ctx->face_sort_resolution_;
+}
+
+void
+PostureColorize::set_face_sort_resolution(double resolution, void *user_data) {
+  PostureColorize *ctx = (PostureColorize *) user_data;
+  ctx->face_sort_resolution_ = resolution;
+
+  if (ctx->colorize_ != nullptr)
+    ctx->colorize_->setFaceSortingResolution(resolution);
 }
 
 void
