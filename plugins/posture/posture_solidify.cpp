@@ -55,11 +55,9 @@ PostureSolidify::stop() {
   lock_guard<mutex> lock(mutex_);
   solidify_.reset();
 
+  clear_shmdatas();
   if (mesh_writer_ != nullptr)
-  {
     mesh_writer_.reset();
-    unregister_shmdata(mesh_writer_->get_path());
-  }
 
   return true;
 }
@@ -115,11 +113,14 @@ PostureSolidify::connect(std::string shmdata_socket_path) {
                              const char *type,
                              void * /*unused */ )
   {
-    if (solidify_ == nullptr || (string(type) != string(POINTCLOUD_TYPE_BASE) && string(type) != string(POINTCLOUD_TYPE_COMPRESSED)))
-      return;
-
     if (!mutex_.try_lock())
       return;
+
+    if (solidify_ == nullptr || (string(type) != string(POINTCLOUD_TYPE_BASE) && string(type) != string(POINTCLOUD_TYPE_COMPRESSED)))
+    {
+      mutex_.unlock();
+      return;
+    }
 
     // Setting input clouds is thread safe, so lets do it
     solidify_->setInputCloud(vector<char>((char*)data, (char*) data + size),

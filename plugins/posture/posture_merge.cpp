@@ -168,8 +168,15 @@ PostureMerge::connect(std::string shmdata_socket_path) {
                              const char *type,
                              void * /*unused */ )
   {
-    if (merger_ == nullptr || (string(type) != string(POINTCLOUD_TYPE_BASE) && string(type) != string(POINTCLOUD_TYPE_COMPRESSED)))
+    // If another thread is trying to get the merged cloud, don't bother
+    if (!mutex_.try_lock())
       return;
+
+    if (merger_ == nullptr || (string(type) != string(POINTCLOUD_TYPE_BASE) && string(type) != string(POINTCLOUD_TYPE_COMPRESSED)))
+    {
+      mutex_.unlock();
+      return;
+    }
 
     if (reload_calibration_)
         merger_->reloadCalibration();
@@ -179,10 +186,6 @@ PostureMerge::connect(std::string shmdata_socket_path) {
                            vector<char>((char*)data, (char*) data + size),
                            string(type) != string(POINTCLOUD_TYPE_BASE),
                            timestamp);
-
-    // If another thread is trying to get the merged cloud, don't bother
-    if (!mutex_.try_lock())
-      return;
 
     if (cloud_writer_.get() == nullptr) {
       cloud_writer_.reset(new ShmdataAnyWriter);

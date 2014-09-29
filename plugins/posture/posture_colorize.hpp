@@ -57,7 +57,7 @@ class PostureColorize : public Quiddity, public Segment, public StartableQuiddit
 
   bool has_input_mesh_ {false};
   int mesh_index_ {-1};
-  std::map<int, int> shm_index_ {};
+  std::map<unsigned int, unsigned int> shm_index_ {};
   std::vector<unsigned char> mesh_ {};
   std::vector<std::vector<unsigned char>> images_ {};
   std::vector<std::vector<unsigned int>> dims_ {};

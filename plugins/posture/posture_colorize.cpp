@@ -125,11 +125,14 @@ PostureColorize::connect(std::string shmdata_socket_path) {
                             const char *type,
                             void * /*unused*/)
   {
-    if (colorize_ == nullptr)
-      return;
-
     if (!mutex_.try_lock())
       return;
+
+    if (colorize_ == nullptr)
+    {
+      mutex_.unlock();
+      return;
+    }
 
     unsigned int width, height, channels;
     // Update the input mesh. This calls the update of colorize_
@@ -203,8 +206,11 @@ PostureColorize::connect(std::string shmdata_socket_path) {
           else
             shm_index_[id] = id - 1;
 
-          images_.resize(shm_index_.size());
-          dims_.resize(shm_index_.size());
+          if (images_.size() < shm_index_[id] + 1)
+          {
+            images_.resize(shm_index_[id] + 1);
+            dims_.resize(shm_index_[id] + 1);
+          }
         }
         int index = shm_index_[id];
 
