@@ -31,7 +31,8 @@ namespace switcher {
 class Property:public Categorizable {
  public:
   typedef std::shared_ptr<Property> ptr;
-  typedef void (*Callback) (GObject * gobject, GParamSpec *pspec,
+  typedef void (*Callback) (GObject *gobject,
+                            GParamSpec *pspec,
                             gpointer user_data);
   Property();
   ~Property();
@@ -42,7 +43,7 @@ class Property:public Categorizable {
   void set_gobject_pspec(GObject * object, GParamSpec *pspec);
   void set_long_name(std::string long_name);
   void set_name(std::string name);
-  void set(std::string value);
+  void set(const std::string &value);
   std::string get();
 
   bool subscribe(Callback cb, void *user_data);
@@ -74,4 +75,4 @@ class Property:public Categorizable {
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif

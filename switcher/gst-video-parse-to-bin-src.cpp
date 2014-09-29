@@ -30,16 +30,15 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoParseToBinSrc,
                                      "Nicolas Bouillot");
 
 GstVideoParseToBinSrc::GstVideoParseToBinSrc():
-    gst_video_parse_to_bin_src_
-    (nullptr), custom_props_(new CustomPropertyHelper()),
+    gst_video_parse_to_bin_src_ (nullptr),
+    custom_props_(std::make_shared<CustomPropertyHelper>()),
     gst_launch_pipeline_spec_(nullptr),
     gst_launch_pipeline_(g_strdup("videotestsrc is-live=true")) {
 }
 
 GstVideoParseToBinSrc::~GstVideoParseToBinSrc() {
   g_free(gst_launch_pipeline_);
-  if (nullptr != gst_video_parse_to_bin_src_)
-    GstUtils::clean_element(gst_video_parse_to_bin_src_);
+  GstUtils::clean_element(gst_video_parse_to_bin_src_);
 }
 
 bool GstVideoParseToBinSrc::init_gpipe() {

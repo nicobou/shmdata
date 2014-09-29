@@ -62,7 +62,7 @@ QuiddityManager_Impl::make_manager(const std::string &name) {
 QuiddityManager_Impl::QuiddityManager_Impl(const std::string &name):
     mainloop_(std::make_shared<GlibMainLoop>()),
     name_(name),
-    classes_doc_(new JSONBuilder()) {
+    classes_doc_(std::make_shared<JSONBuilder>()) {
   remove_shmdata_sockets();
   register_classes();
   make_classes_doc();
@@ -77,8 +77,9 @@ void QuiddityManager_Impl::release_g_error(GError *error) {
 }
 
 void QuiddityManager_Impl::remove_shmdata_sockets() {
+  std::string dir = Quiddity::get_socket_dir();
   GFile *shmdata_dir =
-      g_file_new_for_commandline_arg(Quiddity::get_socket_dir().c_str());
+      g_file_new_for_commandline_arg(dir.c_str());
   On_scope_exit{g_object_unref(shmdata_dir);};
 
   gchar *shmdata_prefix =
@@ -123,6 +124,7 @@ void QuiddityManager_Impl::remove_shmdata_sockets() {
                     g_file_get_path(descend));
         On_scope_exit{release_g_error(error);};
       }
+      g_object_unref(info);
       info = g_file_enumerator_next_file(enumerator, nullptr, &error);
       release_g_error(error);
     }

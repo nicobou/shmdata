@@ -44,4 +44,4 @@ class GstElementCleaner {
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif

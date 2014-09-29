@@ -21,29 +21,20 @@
 #include "./gst-utils.hpp"
 
 namespace switcher {
-VideoSource::VideoSource():rawvideo_(nullptr),
-                           video_tee_(nullptr), videocaps_(gst_caps_new_simple("video/x-raw-yuv",
-                                                                               // "format", GST_TYPE_FOURCC,
-                                                                               // GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y'),
-                                                                               // "format", GST_TYPE_FOURCC,
-                                                                               // GST_MAKE_FOURCC ('I', '4', '2', '0'),
-                                                                               // "framerate", GST_TYPE_FRACTION, 30, 1,
-                                                                               // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1,
-                                                                               //  "width", G_TYPE_INT, 640,
-                                                                               //  "height", G_TYPE_INT, 480,
-                                                                               nullptr)),
-  shmdata_path_(),
-  custom_props_(new CustomPropertyHelper()),
-  primary_codec_spec_(nullptr),
-  primary_codec_(),
-  secondary_codec_spec_(nullptr),
-  secondary_codec_(),
-  codec_(0),
-  codec_long_list_spec_(nullptr),
-  codec_long_list_(false),
-  codec_element_(nullptr),
-  queue_codec_element_(nullptr),
-  color_space_codec_element_(nullptr), codec_properties_() {
+VideoSource::VideoSource():
+    videocaps_(gst_caps_new_simple("video/x-raw-yuv",
+                                   // "format", GST_TYPE_FOURCC,
+                                   // GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y'),
+                                   // "format", GST_TYPE_FOURCC,
+                                   // GST_MAKE_FOURCC ('I', '4', '2', '0'),
+                                   // "framerate", GST_TYPE_FRACTION, 30, 1,
+                                   // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1,
+                                   //  "width", G_TYPE_INT, 640,
+                                   //  "height", G_TYPE_INT, 480,
+                                   nullptr)),
+    custom_props_(std::make_shared<CustomPropertyHelper>()),
+    primary_codec_(),
+    secondary_codec_() {
   init_startable(this);
   GstUtils::element_factory_list_to_g_enum(primary_codec_,
                                            GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
@@ -88,6 +79,10 @@ VideoSource::VideoSource():rawvideo_(nullptr),
 }
 
 VideoSource::~VideoSource() {
+  GstUtils::clean_element(video_tee_);
+  GstUtils::clean_element(codec_element_);
+  GstUtils::clean_element(queue_codec_element_);
+  GstUtils::clean_element(color_space_codec_element_);
   gst_caps_unref(videocaps_);
 }
 

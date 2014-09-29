@@ -34,10 +34,9 @@ class UDPSink:public SinglePadGstSink {
   UDPSink &operator=(const UDPSink &) = delete;
 
  private:
-  GstElement *udpsink_;
-  GstElement *udpsink_bin_;
-  GstElement *typefind_;
-  GstPad *ghost_sinkpad_;
+  GstElement *udpsink_{nullptr};
+  GstElement *udpsink_bin_{nullptr};
+  GstElement *typefind_{nullptr};
 
   bool init_gpipe() final;
   bool can_sink_caps(std::string) final {

@@ -17,9 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./video-test-source.hpp"
 #include <gst/gst.h>
 #include "./gst-utils.hpp"
+#include "./video-test-source.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
@@ -30,8 +30,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
                                      "videotestsrc",
                                      "Nicolas Bouillot");
 
-VideoTestSource::VideoTestSource():
-    videotestsrc_(nullptr) {
+VideoTestSource::VideoTestSource() {
 }
 
 VideoTestSource::~VideoTestSource() {
@@ -49,7 +48,7 @@ bool VideoTestSource::init_gpipe() {
   return true;
 }
 
-bool VideoTestSource::make_video_source(GstElement ** new_element) {
+bool VideoTestSource::make_video_source(GstElement **new_element) {
   GstElement *videotest;
   if (!GstUtils::make_element("videotestsrc", &videotest))
     return false;

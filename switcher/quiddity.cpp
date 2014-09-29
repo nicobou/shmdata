@@ -53,21 +53,29 @@ Quiddity::Quiddity():
                                  "On New Property",
                                  "on-property-added",
                                  "A new property has been installed",
-                                 Signal::make_arg_description
-                                 ("Quiddity Name", "quiddity_name",
-                                  "the quiddity name", "Property Name",
-                                  "property_name", "the property name",
-                                  nullptr), 1, arg_type);
+                                 Signal::make_arg_description("Quiddity Name",
+                                                              "quiddity_name",
+                                                              "the quiddity name",
+                                                              "Property Name",
+                                                              "property_name",
+                                                              "the property name",
+                                                              nullptr),
+                                 1,
+                                 arg_type);
 
   install_signal_with_class_name("Quiddity",
                                  "On Property Removed",
                                  "on-property-removed",
                                  "A properties has been uninstalled",
-                                 Signal::make_arg_description
-                                 ("Quiddity Name", "quiddity_name",
-                                  "the quiddity name", "Property Name",
-                                  "property_name", "the property name",
-                                  nullptr), 1, arg_type);
+                                 Signal::make_arg_description("Quiddity Name",
+                                                              "quiddity_name",
+                                                              "the quiddity name",
+                                                              "Property Name",
+                                                              "property_name",
+                                                              "the property name",
+                                                              nullptr),
+                                 1,
+                                 arg_type);
 
   install_signal_with_class_name("Quiddity",
                                  "On Property reinstalled",
@@ -83,11 +91,15 @@ Quiddity::Quiddity():
                                  "On New Method",
                                  "on-method-added",
                                  "A new method has been installed",
-                                 Signal::make_arg_description
-                                 ("Quiddity Name", "quiddity_name",
-                                  "the quiddity name", "Method Name",
-                                  "method_name", "the method name",
-                                  nullptr), 1, arg_type);
+                                 Signal::make_arg_description("Quiddity Name",
+                                                              "quiddity_name",
+                                                              "the quiddity name",
+                                                              "Method Name",
+                                                              "method_name",
+                                                              "the method name",
+                                                              nullptr),
+                                 1,
+                                 arg_type);
 
   install_signal_with_class_name("Quiddity",
                                  "On Method Removed",
@@ -103,21 +115,29 @@ Quiddity::Quiddity():
                                  "On Tree Grafted",
                                  "on-tree-grafted",
                                  "A tree has been grafted to the quiddity tree",
-                                 Signal::make_arg_description
-                                 ("Quiddity Name", "quiddity_name",
-                                  "the quiddity name", "Branch Name",
-                                  "branch_name", "the branch name",
-                                  nullptr), 1, arg_type);
+                                 Signal::make_arg_description("Quiddity Name",
+                                                              "quiddity_name",
+                                                              "the quiddity name",
+                                                              "Branch Name",
+                                                              "branch_name",
+                                                              "the branch name",
+                                                              nullptr),
+                                 1,
+                                 arg_type);
 
   install_signal_with_class_name("Quiddity",
                                  "On Tree Pruned",
                                  "on-tree-pruned",
                                  "A tree has been pruned from the quiddity tree",
-                                 Signal::make_arg_description
-                                 ("Quiddity Name", "quiddity_name",
-                                  "the quiddity name", "Branch Name",
-                                  "branch_name", "the branch name",
-                                  nullptr), 1, arg_type);
+                                 Signal::make_arg_description("Quiddity Name",
+                                                              "quiddity_name",
+                                                              "the quiddity name",
+                                                              "Branch Name",
+                                                              "branch_name",
+                                                              "the branch name",
+                                                              nullptr),
+                                 1,
+                                 arg_type);
 }
 
 Quiddity::~Quiddity() {
@@ -207,11 +227,12 @@ Quiddity::install_signal_with_class_name(const std::string class_name,
   return true;
 }
 
-bool Quiddity::make_custom_signal_with_class_name(const std::string class_name, const std::string signal_name,        // the name to give
-                                                  GType return_type, guint n_params,  // number of params
+bool Quiddity::make_custom_signal_with_class_name(const std::string class_name,
+                                                  const std::string signal_name,
+                                                  GType return_type,
+                                                  guint n_params,
                                                   GType *param_types) {
   if (signals_.find(signal_name) != signals_.end()) {
-    // g_debug ("signals: a signal named %s has already been registered for this class",signal_name.c_str());
     return false;
   }
 
@@ -234,7 +255,6 @@ bool Quiddity::make_custom_signal_with_class_name(const std::string class_name, 
       (gobject_->get_gobject(), signals_ids_[sig_pair]))
     return false;
   signals_[signal_name] = signal;
-  g_debug("signal %s registered", signal_name.c_str());
   return true;
 }
 
@@ -626,7 +646,8 @@ std::string Quiddity::get_property(std::string property_name) {
 
 bool
 Quiddity::subscribe_property(std::string property_name,
-                             Property::Callback cb, void *user_data) {
+                             Property::Callback cb,
+                             void *user_data) {
   auto it = properties_.find(property_name);
   if (properties_.end() == it) {
     g_debug("property not found (%s)", property_name.c_str());
@@ -637,12 +658,12 @@ Quiddity::subscribe_property(std::string property_name,
 
 bool
 Quiddity::unsubscribe_property(std::string property_name,
-                               Property::Callback cb, void *user_data) {
+                               Property::Callback cb,
+                               void *user_data) {
   auto it = properties_.find(property_name);
   if (properties_.end() == it)
     return false;
-  it->second->unsubscribe(cb, user_data);
-  return true;
+  return it->second->unsubscribe(cb, user_data);
 }
 
 bool
@@ -677,7 +698,7 @@ void Quiddity::signal_emit(const std::string signal_name, ...) {
   va_start(var_args, signal_name);
   // va_list va_cp;
   // va_copy (va_cp, var_args);
-  // signal->signal_emit (get_g_main_context (), signal_name.c_str (), va_cp);
+  // signal->signal_emit (/*get_g_main_context (), */ signal_name.c_str (), va_cp);
   signal->signal_emit(/*get_g_main_context (), */ signal_name.c_str(),
                       var_args);
   va_end(var_args);
@@ -742,7 +763,7 @@ GMainContext *Quiddity::get_g_main_context() {
   QuiddityManager_Impl::ptr manager = manager_impl_.lock();
   if ((bool) manager)
     return manager->get_g_main_context();
-  g_print("%s: returning nullptr\n", __PRETTY_FUNCTION__);
+  g_warning("%s: returning nullptr\n", __PRETTY_FUNCTION__);
   return nullptr;
 }
 
@@ -819,10 +840,12 @@ bool Quiddity::graft_tree(const std::string &path, data::Tree::ptr tree) {
 }
 
 data::Tree::ptr Quiddity::prune_tree(const std::string &path) {
-  data::Tree::ptr result = information_tree_->prune(path);
-  if (!result)
-    return result;
-  signal_emit("on-tree-pruned", path.c_str());
+  data::Tree::ptr result  = information_tree_->prune(path);
+  if (result) {
+    signal_emit("on-tree-pruned", path.c_str());
+  } else {
+    g_warning("cannot prune %s", path.c_str());
+  }
   return result;
 }
 }

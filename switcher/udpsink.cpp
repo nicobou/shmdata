@@ -35,19 +35,18 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(UDPSink,
                                      "LGPL",
                                      "udpsink",
                                      "Nicolas Bouillot");
-UDPSink::UDPSink():
-    udpsink_(nullptr),
-    udpsink_bin_(nullptr),
-    typefind_(nullptr),
-    ghost_sinkpad_(nullptr) {
+UDPSink::UDPSink() {
 }
 
 bool UDPSink::init_gpipe() {
   if (!GstUtils::make_element("bin", &udpsink_bin_)
       || !GstUtils::make_element("typefind", &typefind_)
-      || !GstUtils::make_element("multiudpsink", &udpsink_))
+      || !GstUtils::make_element("multiudpsink", &udpsink_)) {
+    GstUtils::clean_element(typefind_);
+    GstUtils::clean_element(udpsink_);
+    GstUtils::clean_element(udpsink_bin_);
     return false;
-
+  }
   // g_object_set (G_OBJECT (udpsink_bin_), "async-handling", TRUE, nullptr);
 
   g_object_set(G_OBJECT(udpsink_), "sync", FALSE, nullptr);
@@ -128,23 +127,10 @@ bool UDPSink::init_gpipe() {
   // registering sink element
   set_on_first_data_hook(UDPSink::add_elements_to_bin, this);
   set_sink_element(udpsink_bin_);
-
   return true;
 }
 
 UDPSink::~UDPSink() {
-
-  if (ghost_sinkpad_ != nullptr) {
-    if (gst_pad_is_linked(ghost_sinkpad_)) {
-      GstPad *peer_pad = gst_pad_get_peer(ghost_sinkpad_);
-      gst_pad_unlink(peer_pad, ghost_sinkpad_);
-      gst_object_unref(peer_pad);
-    }
-    gst_pad_set_active(ghost_sinkpad_, FALSE);
-    gst_element_remove_pad(udpsink_bin_, ghost_sinkpad_);
-    gst_object_unref(ghost_sinkpad_);
-  }
-
   GstUtils::clean_element(typefind_);
   GstUtils::clean_element(udpsink_);
   GstUtils::clean_element(udpsink_bin_);
@@ -169,10 +155,11 @@ UDPSink::add_elements_to_bin(ShmdataReader *caller,
   GstUtils::sync_state_with_parent(context->udpsink_bin_);
 
   GstPad *sink_pad = gst_element_get_static_pad(context->typefind_, "sink");
-  context->ghost_sinkpad_ = gst_ghost_pad_new(nullptr, sink_pad);
-  gst_pad_set_active(context->ghost_sinkpad_, TRUE);
-  gst_element_add_pad(context->udpsink_bin_, context->ghost_sinkpad_);
+  GstPad *ghost_sinkpad = gst_ghost_pad_new(nullptr, sink_pad);
+  gst_pad_set_active(ghost_sinkpad, TRUE);
+  gst_element_add_pad(context->udpsink_bin_, ghost_sinkpad);
   gst_object_unref(sink_pad);
+
 }
 
 void UDPSink::on_client_added(GstElement */*multiudpsink */ ,

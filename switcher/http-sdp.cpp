@@ -26,9 +26,15 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(HTTPSDP,
                                      "HTTP/SDP Receiver",
                                      "network",
                                      "get raw stream from sdp file distributed with http",
-                                     "LGPL", "httpsdp", "Nicolas Bouillot");
-HTTPSDP::HTTPSDP():souphttpsrc_(nullptr),
-                   sdpdemux_(nullptr), media_counter_(0) {
+                                     "LGPL",
+                                     "httpsdp",
+                                     "Nicolas Bouillot");
+HTTPSDP::HTTPSDP() {
+}
+
+HTTPSDP::~HTTPSDP() {
+  GstUtils::clean_element(souphttpsrc_);
+  GstUtils::clean_element(sdpdemux_);
 }
 
 bool HTTPSDP::init_gpipe() {
@@ -107,7 +113,7 @@ void HTTPSDP::pad_added_cb(GstElement * /*object */ , GstPad *pad,
   context->register_shmdata(connector);
   g_message("%s created a new shmdata writer (%s)",
             context->get_nick_name().c_str(), connector_name.c_str());
-}
+} 
 
 gboolean HTTPSDP::to_shmdata_wrapped(gpointer uri, gpointer user_data) {
   HTTPSDP *context = static_cast<HTTPSDP *>(user_data);

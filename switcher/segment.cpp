@@ -44,16 +44,18 @@ bool Segment::init_segment(Quiddity *quid) {
   json_writers_description_ =
       segment_custom_props_->make_string_property("shmdata-writers",
                                                   "json formated shmdata writers description",
-                                                  "", (GParamFlags)
-                                                  G_PARAM_READABLE, nullptr,
+                                                  "",
+                                                  (GParamFlags) G_PARAM_READABLE,
+                                                  nullptr,
                                                   Segment::get_shmdata_writers_string,
                                                   this);
 
   json_readers_description_ =
       segment_custom_props_->make_string_property("shmdata-readers",
                                                   "json formated shmdata readers description",
-                                                  "", (GParamFlags)
-                                                  G_PARAM_READABLE, nullptr,
+                                                  "",
+                                                  (GParamFlags) G_PARAM_READABLE,
+                                                  nullptr,
                                                   Segment::get_shmdata_readers_string,
                                                   this);
 
@@ -253,33 +255,32 @@ bool Segment::unregister_shmdata(std::string shmdata_path) {
 }
 
 bool Segment::clear_shmdatas() {
-  std::unique_lock<std::mutex> lock_w(writers_mutex_);
-  std::unique_lock<std::mutex> lock_r(readers_mutex_);
-
+  {  // writers
+    std::unique_lock<std::mutex> lock(writers_mutex_);
+    shmdata_writers_.clear();
+    shmdata_any_writers_.clear();
+  }
   for (auto &it : shmdata_writers_) {
     quid_->prune_tree(std::string(".shmdata.writer.")
                       + it.first);
   }
-
   for (auto &it : shmdata_any_writers_) {
     quid_->prune_tree(std::string(".shmdata.writer.")
                       + it.first);
   }
-
-  for (auto &it : shmdata_readers_) {
-    quid_->prune_tree(std::string(".shmdata.reader.")
-                      + it.first);
+  {  //readers
+    std::unique_lock<std::mutex> lock(readers_mutex_);
+    shmdata_readers_.clear();
+    shmdata_any_writers_.clear();
   }
-
+  for (auto &it : shmdata_readers_) {
+      quid_->prune_tree(std::string(".shmdata.reader.")
+                        + it.first);
+  }
   for (auto &it : shmdata_any_readers_) {
     quid_->prune_tree(std::string(".shmdata.reader.")
                       + it.first);
   }
-
-    shmdata_writers_.clear();
-    shmdata_any_writers_.clear();
-    shmdata_readers_.clear();
-    shmdata_any_writers_.clear();
   return true;
 }
 
@@ -300,14 +301,12 @@ void Segment::update_shmdata_writers_description() {
   shmdata_writers_description_->begin_array();
 
   for (auto it : shmdata_writers_)
-    shmdata_writers_description_->add_node_value(it.
-                                                 second->get_json_root_node
-                                                 ());
+    shmdata_writers_description_->
+        add_node_value(it.second->get_json_root_node());
 
   for (auto it : shmdata_any_writers_)
-    shmdata_writers_description_->add_node_value(it.
-                                                 second->get_json_root_node
-                                                 ());
+    shmdata_writers_description_->
+        add_node_value(it.second->get_json_root_node());
 
   shmdata_writers_description_->end_array();
   shmdata_writers_description_->end_object();
@@ -322,14 +321,12 @@ void Segment::update_shmdata_readers_description() {
   shmdata_readers_description_->begin_array();
 
   for (auto &it : shmdata_readers_)
-    shmdata_readers_description_->add_node_value(it.
-                                                 second->get_json_root_node
-                                                 ());
+    shmdata_readers_description_->
+        add_node_value(it.second->get_json_root_node());
 
   for (auto &it : shmdata_any_readers_)
-    shmdata_readers_description_->add_node_value(it.
-                                                 second->get_json_root_node
-                                                 ());
+    shmdata_readers_description_->
+        add_node_value(it.second->get_json_root_node());
 
   shmdata_readers_description_->end_array();
   shmdata_readers_description_->end_object();

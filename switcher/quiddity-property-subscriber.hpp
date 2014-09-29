@@ -87,4 +87,5 @@ class QuiddityPropertySubscriber {
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif
+

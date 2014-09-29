@@ -45,7 +45,7 @@ class GstVideoParseToBinSrc:public VideoSource {
   gchar *gst_launch_pipeline_;
   static void set_gst_launch_pipeline(const gchar *value, void *user_data);
   static const gchar *get_gst_launch_pipeline(void *user_data);
-  bool make_video_source(GstElement ** new_element);
+  bool make_video_source(GstElement **new_element);
   bool init_gpipe() final;
 };
 }  // namespace switcher

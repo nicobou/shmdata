@@ -26,6 +26,10 @@ AudioSource::AudioSource() {
   make_audio_elements();
 }
 
+AudioSource::~AudioSource() {
+  GstUtils::clean_element(audio_tee_);
+}
+
 void AudioSource::make_audio_elements() {
   if (!GstUtils::make_element("tee", &audio_tee_))
     g_debug("tee GStreamer element is missing (for audio source)");

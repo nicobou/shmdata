@@ -34,10 +34,10 @@ class JackSink:public SinglePadGstSink, public StartableQuiddity {
   JackSink &operator=(const JackSink &) = delete;
 
  private:
-  GstElement *jacksink_;
-  CustomPropertyHelper::ptr custom_props_;
-  GParamSpec *client_name_spec_;
-  gchar *client_name_;
+  GstElement *jacksink_{nullptr};
+  CustomPropertyHelper::ptr custom_props_{};
+  GParamSpec *client_name_spec_{nullptr};
+  gchar *client_name_{nullptr};
 
   bool init_gpipe() final;
   bool start() final;

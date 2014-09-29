@@ -342,6 +342,7 @@ bool V4L2Src::make_elements() {
   gst_pad_set_active(ghost_srcpad, TRUE);
   gst_element_add_pad(v4l2_bin_, ghost_srcpad);
   gst_object_unref(src_pad);
+
   return true;
 }
 

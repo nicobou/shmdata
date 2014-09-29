@@ -37,25 +37,25 @@ class VideoSource:public GPipe, public StartableQuiddity {
   bool stop();
 
  private:
-  GstElement *rawvideo_;
-  GstElement *video_tee_;
-  GstCaps *videocaps_;
-  std::string shmdata_path_;
+  GstElement *rawvideo_{nullptr};
+  GstElement *video_tee_{nullptr};
+  GstCaps *videocaps_{nullptr};
+  std::string shmdata_path_{};
   // custom properties:
-  CustomPropertyHelper::ptr custom_props_;
+  CustomPropertyHelper::ptr custom_props_{};
   // codec // FIXME make this static
-  GParamSpec *primary_codec_spec_;
+  GParamSpec *primary_codec_spec_{nullptr};
   GEnumValue primary_codec_[128];
-  GParamSpec *secondary_codec_spec_;
-  GEnumValue secondary_codec_[128];
-  gint codec_;
+  GParamSpec *secondary_codec_spec_{nullptr};
+  GEnumValue secondary_codec_[128]{};
+  gint codec_{0};
   // short or long codec list
-  GParamSpec *codec_long_list_spec_;
-  bool codec_long_list_;
-  GstElement *codec_element_;
-  GstElement *queue_codec_element_;
-  GstElement *color_space_codec_element_;
-  std::vector<std::string> codec_properties_;
+  GParamSpec *codec_long_list_spec_{nullptr};
+  bool codec_long_list_{false};
+  GstElement *codec_element_{nullptr};
+  GstElement *queue_codec_element_{nullptr};
+  GstElement *color_space_codec_element_{nullptr};
+  std::vector<std::string> codec_properties_{};
 
   virtual bool on_start() {
     return true;

@@ -156,7 +156,6 @@ bool PulseSrc::make_elements() {
   gst_pad_set_active(ghost_srcpad, TRUE);
   gst_element_add_pad(pulsesrc_bin_, ghost_srcpad);
   gst_object_unref(src_pad);
-
   // uninstall_property ("volume");
   // uninstall_property ("mute");
   reinstall_property(G_OBJECT(pulsesrc_), "volume", "volume", "Volume");

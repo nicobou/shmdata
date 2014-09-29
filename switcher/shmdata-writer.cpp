@@ -22,16 +22,15 @@
 #include "./scope-exit.hpp"
 
 namespace switcher {
-ShmdataWriter::ShmdataWriter() {
+ShmdataWriter::ShmdataWriter() :
+    writer_(shmdata_base_writer_init()),
+    json_description_(std::make_shared<JSONBuilder>()) {
 }
 
 ShmdataWriter::~ShmdataWriter() {
-  if (nullptr != tee_)
-    GstUtils::clean_element(tee_);
-  if (nullptr != queue_)
-    GstUtils::clean_element(queue_);
-  if (nullptr != fakesink_)
-    GstUtils::clean_element(fakesink_);
+  GstUtils::clean_element(tee_);
+  GstUtils::clean_element(queue_);
+  GstUtils::clean_element(fakesink_);
   shmdata_base_writer_close(writer_);
   if (!path_.empty())
     g_debug("ShmdataWriter: %s deleted", path_.c_str());
@@ -70,7 +69,8 @@ std::string ShmdataWriter::get_path() {
 
 void
 ShmdataWriter::plug(GstElement *bin,
-                    GstElement * source_element, GstCaps *caps) {
+                    GstElement *source_element,
+                    GstCaps *caps) {
   g_debug("ShmdataWriter::plug (source element)");
   bin_ = bin;
   GstUtils::make_element("tee", &tee_);
@@ -91,7 +91,7 @@ ShmdataWriter::plug(GstElement *bin,
     g_debug("shmdata writer plugged (%s)", path_.c_str());
 }
 
-void ShmdataWriter::plug(GstElement * bin, GstPad *source_pad) {
+void ShmdataWriter::plug(GstElement *bin, GstPad *source_pad) {
   bin_ = bin;
   GstUtils::make_element("tee", &tee_);
   GstUtils::make_element("queue", &queue_);

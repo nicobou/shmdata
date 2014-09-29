@@ -33,8 +33,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
                                      "Nicolas Bouillot");
 
 Uridecodebin::~Uridecodebin() {
+  GstUtils::clean_element(uridecodebin_);
   g_free(uri_);
-  //destroy_uridecodebin();
 }
 
 Uridecodebin::Uridecodebin():
@@ -44,7 +44,7 @@ Uridecodebin::Uridecodebin():
     rtpgstcaps_(nullptr),
     discard_next_uncomplete_buffer_(false),
     on_error_command_(nullptr),
-    custom_props_(new CustomPropertyHelper()),
+    custom_props_(std::make_shared<CustomPropertyHelper>()),
     loop_prop_(nullptr),
     loop_(false),
     playing_prop_(nullptr),

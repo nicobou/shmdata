@@ -113,10 +113,10 @@ void GstUtils::unlink_pad(GstPad *pad) {
 void GstUtils::clean_element(GstElement *element) {
   if (element != nullptr && GST_IS_ELEMENT(element)
       && GST_STATE_CHANGE_FAILURE != GST_STATE_RETURN(element)) {
-    if (GST_IS_BIN(element))
-      g_debug("%d, %d, %d, state return %d", GST_STATE(element),
-              GST_STATE_TARGET(element), GST_STATE_PENDING(element),
-              GST_STATE_RETURN(element));
+    // if (GST_IS_BIN(element))
+    //   g_debug("%d, %d, %d, state return %d", GST_STATE(element),
+    //           GST_STATE_TARGET(element), GST_STATE_PENDING(element),
+    //           GST_STATE_RETURN(element));
 
     GstIterator *pad_iter;
     pad_iter = gst_element_iterate_pads(element);
@@ -136,8 +136,9 @@ void GstUtils::clean_element(GstElement *element) {
     }
     if (GST_IS_BIN(gst_element_get_parent(element)))
       gst_bin_remove(GST_BIN(gst_element_get_parent(element)), element);
+    else
+      gst_object_unref(element);
   }
-  element = nullptr;
 }
 
 void GstUtils::wait_state_changed(GstElement *bin) {

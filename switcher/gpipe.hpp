@@ -84,7 +84,7 @@ class GPipe:public Quiddity, public Segment {
   GParamSpec *seek_spec_ {nullptr};
   gdouble seek_ {0.0};
   gint64 length_ {0};
-  std::vector<GSource *>commands_ {};
+  std::vector<QuidCommandArg *>commands_ {};
   std::mutex play_pipe_{};
   std::condition_variable play_cond_{};
   void make_bin();
