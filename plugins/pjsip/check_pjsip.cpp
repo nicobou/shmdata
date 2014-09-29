@@ -136,11 +136,11 @@ int main() {
                                 nullptr));
     
     // usleep(8000000);
-    // assert(manager->set_property(sip_name, "status", "Away"));
+    assert(manager->set_property(sip_name, "status", "Away"));
     // usleep(8000000);
-    // assert(manager->set_property(sip_name, "status-note", "coucou"));
+    assert(manager->set_property(sip_name, "status-note", "coucou"));
     // usleep(8000000);
-    // assert(manager->set_property(sip_name, "status", "BRB"));
+    assert(manager->set_property(sip_name, "status", "BRB"));
     // usleep(2000000);
     
     for (auto &it : buddies)
@@ -149,9 +149,14 @@ int main() {
                                 nullptr,
                                 it.c_str(),
                                 nullptr));
+    
+    // usleep(8000000);
+    
     assert(manager->remove(sip_name));
-  }  // end of scope is releasing the manager
 
+    // usleep(8000000);
+  }  // end of scope is releasing the manager
+  
   if (success)
     return 0;
   else

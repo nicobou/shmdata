@@ -56,7 +56,9 @@ pjsip_module PJCall::mod_siprtp_ = {
 
 PJCall::PJCall(PJSIP *sip_instance):
     sip_instance_(sip_instance),
-    manager_(QuiddityManager::make_manager(sip_instance->get_name())) {
+    manager_(QuiddityManager::make_manager(sip_instance->get_manager_name()
+                                           + "-"
+                                           + sip_instance->get_name())) {
   pj_status_t status;
   init_app();
   // creating rtpsession for SIP transmission
@@ -197,8 +199,7 @@ PJCall::PJCall(PJSIP *sip_instance):
 }
 
 PJCall::~PJCall() {
-  unsigned i;
-  for (i = 0; i < app.max_calls; ++i) {
+  for (unsigned i = 0; i < app.max_calls; ++i) {
     unsigned j;
     for (j = 0; j < PJ_ARRAY_SIZE(app.call[0].media); ++j) {
       struct media_stream *m = &app.call[i].media[j];
@@ -290,8 +291,17 @@ void PJCall::call_on_state_changed(pjsip_inv_session * inv, pjsip_event *e) {
     // cleaning shmdatas
     for (uint i = 0; i < call->media_count; i++) {
       struct media_stream *current_media = &call->media[i];
-      ShmdataAnyWriter::ptr shm;
-      std::swap(current_media->shm, shm);
+      if (current_media->shm) {
+        ShmdataAnyWriter::ptr shm;
+        std::swap(current_media->shm, shm);
+        if(!call->instance->manager_->
+           remove(call->peer_uri
+                  + "-"
+                + std::to_string(current_media->call_index)
+                  + "-"
+                  + std::to_string(current_media->media_index)))
+          g_warning("decodebin not removed from sip call");
+      }
     }
 
     // FIXME destroy_call_media(call->index);
@@ -416,13 +426,28 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
       current_media->shm->set_path(shm_any_name.c_str());
       g_message("%s created a new shmdata any writer (%s)",
                 shm_any_name.c_str());
-      // HERE
+      //creating a decodebin for this media stream
+      std::string dec_name =
+          call->peer_uri
+          + "-"
+          + std::to_string(current_media->call_index)
+          + "-"
+          + std::to_string(current_media->media_index);
+      call->instance->manager_->create("decodebin", dec_name);
+      call->instance->manager_->
+          invoke_va(dec_name,
+                    "connect",
+                    nullptr,
+                    shm_any_name.c_str(),
+                    nullptr);
+      
       status = pjmedia_transport_attach(current_media->transport,
                                         current_media,  // user_data
                                         &current_media->si.rem_addr,
                                         &current_media->si.rem_rtcp,
                                         sizeof(pj_sockaddr_in),
-                                        &on_rx_rtp, &on_rx_rtcp);
+                                        &on_rx_rtp,
+                                        &on_rx_rtcp);
       if (status != PJ_SUCCESS) {
         g_debug("Error on pjmedia_transport_attach()");
         return;
@@ -765,10 +790,6 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
   status = pjmedia_rtp_decode_rtp(&strm->in_sess,
                                   buf, static_cast<int>(size),
                                   &hdr, &payload, &payload_len);
-
-  //g_print("%s\n", __FUNCTION__);
-
-  // PJ_LOG(4,(THIS_FILE, "Rx seq=%d", pj_ntohs(hdr->seq)));
 
   /* Update the RTCP session. */
   // pjmedia_rtcp_rx_rtp(&strm->rtcp, pj_ntohs(hdr->seq),
@@ -1561,9 +1582,12 @@ bool PJCall::make_hang_up(std::string contact_uri) {
     if (app.call[i].inv == nullptr)
       break;
     if (0 == contact_uri.compare(app.call[i].peer_uri)) {
+      g_print("make_hang_up: %d\n",__LINE__);
       status = pjsip_inv_end_session(app.call[i].inv, 603, nullptr, &tdata);
-      if (status == PJ_SUCCESS && tdata != nullptr)
+      if (status == PJ_SUCCESS && tdata != nullptr) {
+        g_print("make_hang_up: %d\n",__LINE__);
         pjsip_inv_send_msg(app.call[i].inv, tdata);
+      }
       res = true;
       if (nullptr != app.call[i].outgoing_sdp)
         g_free(app.call[i].outgoing_sdp);

@@ -389,8 +389,7 @@ bool
 RtpSession::add_destination(std::string nick_name, std::string host_name)
 {
   if (destinations_.end() != destinations_.find(nick_name)) {
-    g_warning
-        ("RtpSession: a destination named %s already exists, cannot add",
+    g_debug("RtpSession: a destination named %s already exists, cannot add",
          nick_name.c_str());
     return false;
   }

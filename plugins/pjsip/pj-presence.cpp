@@ -149,8 +149,7 @@ PJPresence::register_account_wrapped(gchar *user,
                                      gchar *password, void *user_data) {
   PJPresence *context = static_cast<PJPresence *>(user_data);
   if (nullptr == user || nullptr == domain || nullptr == password) {
-    g_warning
-        ("register sip account received nullptr user or domain or password");
+    g_warning("register sip account missing user or domain or password");
     return FALSE;
   }
   context->sip_instance_->run_command_sync(std::bind

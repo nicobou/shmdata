@@ -747,6 +747,15 @@ std::string Quiddity::make_file_name(std::string suffix) {
   return connector_name;
 }
 
+std::string Quiddity::get_manager_name() {
+  QuiddityManager_Impl::ptr manager = manager_impl_.lock();
+  if ((bool) manager)
+    return manager->get_name();
+
+  g_warning("manager name not accessible");
+  return std::string();
+}
+
 std::string Quiddity::get_socket_name_prefix() {
   return "switcher_";
 }

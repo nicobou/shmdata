@@ -266,9 +266,10 @@ class Quiddity {
   // custom signals
   void emit_on_interface_changed();   // in order to tell properties/methods has changed
 
-  // use a consistent naming for shmdatas FIXME move that to segment (or not?)
+  // use a consistent naming for shmdatas
   std::string make_file_name(std::string suffix);
-
+  std::string get_manager_name();
+  
   // used in order to dynamically create other quiddity, weak_ptr is used in order to
   // avoid circular references to the manager_impl
   std::weak_ptr<QuiddityManager_Impl> manager_impl_;
@@ -276,7 +277,6 @@ class Quiddity {
   // gobject wrapper for custom signals and properties
   GObjectWrapper::ptr gobject_;
 
-  // g_main_context
   GMainContext *get_g_main_context();
 };
 
