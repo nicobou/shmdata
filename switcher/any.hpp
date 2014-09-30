@@ -31,8 +31,7 @@ template<class T> using StorageType = typename std::decay<T>::type;
 
 struct AnyValueBase {
   // AnyValueBase (const AnyValueBase &) = delete;
-  virtual ~
-  AnyValueBase() {
+  virtual ~AnyValueBase() {
   }
   virtual AnyValueBase *
   clone() const = 0;
@@ -41,9 +40,7 @@ struct AnyValueBase {
 
 template<typename T> struct AnyValueDerived:
 AnyValueBase {
-  template <
-    typename
-    U >
+  template <typename U>
   AnyValueDerived(U && value):
       value_(std::forward<U> (value)) {
   }
@@ -121,7 +118,7 @@ struct Any {
     typedef StorageType<U> T;
     auto derived = dynamic_cast<AnyValueDerived<T>*>(ptr_);
     if (!derived)
-      throw std::bad_cast();
+      return (*new U);
     return derived->value_;
   }
 
