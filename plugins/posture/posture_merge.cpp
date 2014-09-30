@@ -184,8 +184,7 @@ PostureMerge::connect(std::string shmdata_socket_path) {
     // Setting input clouds is thread safe, so lets do it
     merger_->setInputCloud(index,
                            vector<char>((char*)data, (char*) data + size),
-                           string(type) != string(POINTCLOUD_TYPE_BASE),
-                           timestamp);
+                           string(type) != string(POINTCLOUD_TYPE_BASE));
 
     if (cloud_writer_.get() == nullptr) {
       cloud_writer_.reset(new ShmdataAnyWriter);
