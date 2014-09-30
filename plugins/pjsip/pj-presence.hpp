@@ -84,6 +84,8 @@ class PJPresence {
   static gboolean del_buddy_wrapped(gchar *buddy_uri,
                                     void *user_data);
   static void on_buddy_state(pjsua_buddy_id buddy_id);
+  static gboolean save_buddies_wrapped(gchar *file_name,
+                                       void *user_data);
   
   // online status
   static void set_status(const gint value, void *user_data);
@@ -104,6 +106,10 @@ class PJPresence {
 
   static void on_buddy_evsub_state(pjsua_buddy_id buddy_id,
                                    pjsip_evsub * sub, pjsip_event *event);
+  static gboolean name_buddy_wrapped(gchar *name,
+                                     gchar *uri,
+                                     void *user_data);
+  bool name_buddy(std::string name, std::string sip_user);
 };
 
 }  // namespace switcher

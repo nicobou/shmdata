@@ -18,10 +18,11 @@
  */
 
 #include <string>
-
+#include <list>
+#include "switcher/scope-exit.hpp"
+#include "switcher/information-tree-basic-serializer.hpp"
 #include "./pj-presence.hpp"
 #include "./pj-sip.hpp"
-#include "switcher/scope-exit.hpp"
 
 namespace switcher {
 GEnumValue PJPresence::status_enum_[8] = {
@@ -91,6 +92,24 @@ PJPresence::PJPresence(PJSIP *sip_instance):
                                                        nullptr),
                      this);
     sip_instance_->
+      install_method("Set Buddy Name",  // long name
+                     "name_buddy",  // name
+                     "give a name to a buddy",  // description
+                     "success",  // return description
+                     Method::make_arg_description("Name",  // long name
+                                                  "name",  // name
+                                                  "string",  // description
+                                                  "SIP URI",  // long name
+                                                  "uri",  // name
+                                                  "string",  // description
+                                                  nullptr),
+                     (Method::method_ptr)&name_buddy_wrapped,
+                     G_TYPE_BOOLEAN,
+                     Method::make_arg_type_description(G_TYPE_STRING,
+                                                       G_TYPE_STRING,
+                                                       nullptr),
+                     this);
+    sip_instance_->
       install_method("Del Buddy",  // long name
                      "del_buddy",  // name
                      "Delete a buddy",  // description
@@ -105,6 +124,22 @@ PJPresence::PJPresence(PJSIP *sip_instance):
                                                        nullptr),
                      this);
 
+    sip_instance_->
+        install_method("Save Buddies",  // long name
+                       "save_buddies",  // name
+                       "save buddy informations",  // description
+                       "success",  // return description
+                       Method::make_arg_description("File Name",  // long name
+                                                    "file",  // name
+                                                    "string",  // description
+                                                    nullptr),
+                       (Method::method_ptr)&save_buddies_wrapped,
+                       G_TYPE_BOOLEAN,
+                       Method::make_arg_type_description(G_TYPE_STRING,
+                                                         nullptr),
+                       this);
+
+    
     // online status
     status_enum_spec_ =
         sip_instance_->custom_props_->
@@ -302,7 +337,7 @@ bool PJPresence::add_buddy(const std::string &sip_user) {
   g_print("Buddy added");
   buddy_id_[sip_user] = buddy_id;
   sip_instance_->
-      graft_tree("buddy." + std::to_string(buddy_id),
+      graft_tree(".buddy." + std::to_string(buddy_id) + ".uri",
                  data::Tree::make(sip_user));
   return true;
 }
@@ -348,6 +383,40 @@ gboolean PJPresence::del_buddy_wrapped(gchar *buddy_uri,
       run_command_sync(std::bind(&PJPresence::del_buddy,
                                  context,
                                  buddy_uri));
+  return TRUE;
+}
+
+bool PJPresence::name_buddy(std::string name, std::string sip_user) {
+  g_print("---------------------- %s %d\n", __FUNCTION__, __LINE__);
+  if (pjsua_verify_url(sip_user.c_str()) != PJ_SUCCESS) {
+    g_warning("Invalid buddy URI %s", sip_user.c_str());
+    return false;
+  }
+  g_print("---------------------- %s %d\n", __FUNCTION__, __LINE__);
+  auto it = buddy_id_.find(sip_user);
+  if (buddy_id_.end() == it) {
+    g_warning("%s is not in buddy list", sip_user.c_str());
+    return false;
+  }
+  g_print("---------------------- %s %d\n", __FUNCTION__, __LINE__);
+  sip_instance_->
+      graft_tree(".buddy." + std::to_string(it->second) + ".name",
+                 data::Tree::make(std::string(name)));
+  g_print("---------------------- %s %d\n", __FUNCTION__, __LINE__);
+  return true;
+}
+
+gboolean PJPresence::name_buddy_wrapped(gchar *name,
+                                        gchar *buddy_uri,
+                                        void *user_data) {
+  PJPresence *context = static_cast<PJPresence *>(user_data);
+  g_print("---------------------- %s %d\n", __FUNCTION__, __LINE__);
+  context->sip_instance_->
+      run_command_sync(std::bind(&PJPresence::name_buddy,
+                                 context,
+                                 std::string(name),
+                                 std::string(buddy_uri)));
+  g_print("---------------------- %s %d\n", __FUNCTION__, __LINE__);
   return TRUE;
 }
 
@@ -586,6 +655,23 @@ PJPresence::on_buddy_evsub_state(pjsua_buddy_id buddy_id,
   g_print("Buddy %d: subscription state: %s (event: %s%s)",
          buddy_id, pjsip_evsub_get_state_name(sub),
          pjsip_event_str(event->type), event_info);
+}
+
+gboolean PJPresence::save_buddies_wrapped(gchar *file_name,
+                                          void *user_data) {
+  PJPresence *context = static_cast<PJPresence *>(user_data);
+
+  // HERE
+  // auto serialize_buddies = [&] (data::Tree::ptrc tree) {
+  //   data::Tree::ptr buds = tree->get("buddy");
+  //   return data::BasicSerializer::serialize(bud);
+  // };
+  
+  std::string buddies = context->sip_instance_->
+      invoke_info_tree<std::string>(data::BasicSerializer::serialize); 
+
+  g_print("%s\n", buddies.c_str());
+  return TRUE;
 }
 
 }  // namespace switcher

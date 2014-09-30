@@ -82,6 +82,13 @@ int main() {
                                 nullptr,
                                 it.c_str(),
                                 nullptr));
+
+      assert(manager->invoke_va(sip_name,
+                                "name_buddy",
+                                nullptr,
+                                std::string(it+"-nickname").c_str(),
+                                it.c_str(),
+                                nullptr));
       
       assert(manager->invoke_va(sip_name,
                                 "attach_shmdata_to_contact",
@@ -119,7 +126,7 @@ int main() {
         buds_from_tree.push_back(manager->invoke_info_tree<std::string>(
             sip_name,
             [&](switcher::data::Tree::ptrc tree){
-              return switcher::data::Tree::read_data(tree, "buddy." + it);
+              return switcher::data::Tree::read_data(tree, "buddy." + it + ".uri");
             }));
       }
       assert(std::equal(buddies.begin(), buddies.end(),
@@ -150,7 +157,12 @@ int main() {
                                 it.c_str(),
                                 nullptr));
     
-    // usleep(8000000);
+    assert(manager->invoke_va(sip_name,
+                              "save_buddies",
+                              nullptr,
+                              "buddies.list",
+                              nullptr));
+// usleep(8000000);
     
     assert(manager->remove(sip_name));
 
