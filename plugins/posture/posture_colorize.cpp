@@ -50,7 +50,6 @@ PostureColorize::start() {
   colorize_ = make_shared<Colorize>();
 
   colorize_->setCalibrationPath(calibration_path_);
-  colorize_->setFaceSortingResolution(face_sort_resolution_);
 
   return true;
 }
@@ -93,20 +92,6 @@ PostureColorize::init() {
   install_property_by_pspec(custom_props_->get_gobject(),
                             calibration_path_prop_, "calibration_path",
                             "Path to the calibration file");
-
-  face_sort_resolution_prop_ = custom_props_->make_double_property("face_sort_resolution",
-                                  "Voxel resolution used for the face sorting pass",
-                                  0.01,
-                                  100.0,
-                                  face_sort_resolution_,
-                                  (GParamFlags)
-                                  G_PARAM_READWRITE,
-                                  PostureColorize::set_face_sort_resolution,
-                                  PostureColorize::get_face_sort_resolution,
-                                  this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            face_sort_resolution_prop_, "face_sort_resolution",
-                            "Voxel resolution used for the face sorting pass");
 
   return true;
 }
@@ -345,21 +330,6 @@ PostureColorize::set_calibration_path(const gchar *name, void *user_data) {
   PostureColorize *ctx = (PostureColorize *) user_data;
   if (name != nullptr)
     ctx->calibration_path_ = name;
-}
-
-double
-PostureColorize::get_face_sort_resolution(void *user_data) {
-  PostureColorize *ctx = (PostureColorize *) user_data;
-  return ctx->face_sort_resolution_;
-}
-
-void
-PostureColorize::set_face_sort_resolution(double resolution, void *user_data) {
-  PostureColorize *ctx = (PostureColorize *) user_data;
-  ctx->face_sort_resolution_ = resolution;
-
-  if (ctx->colorize_ != nullptr)
-    ctx->colorize_->setFaceSortingResolution(resolution);
 }
 
 void
