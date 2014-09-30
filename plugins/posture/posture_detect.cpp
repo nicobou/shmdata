@@ -52,14 +52,11 @@ bool
 PostureDetect::stop() {
   lock_guard<mutex> lock(mutex_);
 
-  if (detect_ != nullptr) {
-    detect_.reset();
-  }
+  detect_.reset();
 
-  if (cloud_writer_ != nullptr) {
-    unregister_shmdata(cloud_writer_->get_path());
-    cloud_writer_.reset();
-  }
+  clear_shmdatas();
+  cloud_writer_.reset();
+  mesh_writer_.reset();
 
   return true;
 }
@@ -116,6 +113,14 @@ PostureDetect::connect(std::string shmdata_socket_path) {
         cloud_writer_->start();
       }
 
+      if (mesh_writer_.get() == nullptr) {
+        mesh_writer_.reset(new ShmdataAnyWriter);
+        mesh_writer_->set_path(make_file_name("mesh"));
+        register_shmdata(mesh_writer_);
+        mesh_writer_->set_data_type(string(POLYGONMESH_TYPE_BASE));
+        mesh_writer_->start();
+      }
+
       check_buffers();
       if (detect_->detect()) {
         vector<char> cloud = detect_->getProcessedCloud();
@@ -123,6 +128,14 @@ PostureDetect::connect(std::string shmdata_socket_path) {
                                                                       reinterpret_cast<const unsigned char*>(cloud.data()) + cloud.size()));
         cloud_writer_->push_data_auto_clock((void *) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
                                             cloud.size(),
+                                            PostureDetect::free_sent_buffer,
+                                            (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
+
+
+        vector<unsigned char> poly = detect_->getConvexHull(0);
+        shmwriter_queue_.push_back(make_shared<vector<unsigned char>>(poly.data(), poly.data() + poly.size()));
+        mesh_writer_->push_data_auto_clock((void *) shmwriter_queue_[shmwriter_queue_.size() - 1]->data(),
+                                            poly.size(),
                                             PostureDetect::free_sent_buffer,
                                             (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
       }

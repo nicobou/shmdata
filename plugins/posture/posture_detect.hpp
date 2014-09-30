@@ -51,6 +51,7 @@ class PostureDetect : public Quiddity, public Segment, public StartableQuiddity 
   std::mutex mutex_ {};
 
   ShmdataAnyWriter::ptr cloud_writer_ {nullptr};
+  ShmdataAnyWriter::ptr mesh_writer_ {nullptr};
   std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriter_queue_ {};
 
   bool init() final;
