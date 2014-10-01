@@ -20,22 +20,39 @@
 #ifndef __SWITCHER_CONST_METHODS_INVOKER_H__
 #define __SWITCHER_CONST_METHODS_INVOKER_H__
 
+namespace switcher {
+
 template<typename T>
 class ConstMethodsInvoker {
 public:
   // exposing T const methods accessible by T instance owner
-  template<typename R, typename ...Ts>
-  R cmi_invoke(R(T::*function)(Ts...) const, Ts ...args)
+  template<typename R,       // return type
+           typename ...DTs,  // Defined arguments types
+           typename ...ATs>  // Arguments types
+  R cmi_invoke(R(T::*function)(DTs...) const, ATs ...args)
   {
-    std::function<R(T *, Ts...)> fun = function;
+    std::function<R(T *, DTs...)> fun = function;
     return std::bind(std::move(fun),
-                     cmi_get()(),
-                     std::forward(args...))();
+                     cmi_get(),
+                     std::forward<ATs>(args)...)();
+  }
+
+  //
+  // template<typename R, typename ...DTs, typename ...ATS>
+  // R cmi_invoke(std::function)
+  
+  // helper for selecting wanted overloaded member
+  template<typename R, typename ...ATs>
+  using fptr = R(T::*)(ATs...) const;
+  
+  template<typename R, typename ...ATs, typename ...DTs>
+  fptr<R, ATs...> select_overload(R(T::*function)(DTs...) const) {
+    return static_cast<fptr<R, ATs...>>(function);
   }
 
   // disable invokation of non const
-  template<typename R, typename ...Ts>
-  R cmi_invoke(R(T::*function)(Ts...), Ts ...args)
+  template<typename R, typename ...DTs, typename ...ATs>
+  R cmi_invoke(R(T::*function)(DTs...), ATs ...args)
   {
     static_assert(std::is_const<decltype(function)>::value,
                   "ConstMethodsInvoker requires const methods only");
@@ -47,4 +64,5 @@ private:
   virtual T *cmi_get() = 0;
 };
 
+}  // namespace switcher 
 #endif
