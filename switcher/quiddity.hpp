@@ -39,12 +39,12 @@
 #include "./quiddity-documentation.hpp"
 #include "./json-builder.hpp"
 #include "./gobject-wrapper.hpp"
-#include "./information-tree.hpp"
+#include "./const-methods-invoker.hpp"
 
 namespace switcher {
 class QuiddityManager_Impl;
 
-class Quiddity {
+class Quiddity: public ConstMethodsInvoker<data::Tree> {
   friend class StartableQuiddity;
   friend class Segment;
 
@@ -110,13 +110,6 @@ class Quiddity {
   }
   
   std::string get_info(const std::string &path);
-  Any get_data(const std::string &path);
-  template<template<class T, class = std::allocator<T>>
-           class Container = std::list >
-      Container<std::string>
-      get_child_keys(const std::string path) {
-    return information_tree_->get_child_keys<Container> (path);
-  }
 
   // shmdata socket names
   static std::string get_socket_name_prefix();
@@ -129,7 +122,8 @@ class Quiddity {
  private:
   // information tree
   data::Tree::ptr information_tree_;
-
+  inline data::Tree *cmi_get() final {return information_tree_.get();}
+  
   // properties
   std::unordered_map<std::string, Property::ptr> properties_;
   std::unordered_map<std::string, Property::ptr> disabled_properties_;
