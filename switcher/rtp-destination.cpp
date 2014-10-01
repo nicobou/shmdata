@@ -123,7 +123,7 @@ JSONBuilder::Node RtpDestination::get_json_root_node() {
 }
 
 bool RtpDestination::write_to_file(std::string file_name) {
-  GError *error;
+  GError *error = NULL;
   if (!g_file_set_contents(file_name.c_str(),
                            get_sdp().c_str(),
                            -1,  // no size, res is a null terminated string
