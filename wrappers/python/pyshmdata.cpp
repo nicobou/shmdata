@@ -232,7 +232,7 @@ Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
 
     self->reader = shmdata_any_reader_init();
     if (self->reader == NULL)
-        return NULL;
+        return -1;
     shmdata_any_reader_set_on_data_handler(self->reader, Reader_on_data_handler, self);
     shmdata_any_reader_start(self->reader, PyUnicode_AsUTF8(self->path));
 
@@ -244,16 +244,13 @@ PyObject*
 Reader_pull(pyshmdata_ReaderObject* self)
 {
     //lock_guard<mutex> lock(self->reader_mutex);
-    Py_INCREF(self->lastBuffer);
-    return self->lastBuffer;
-}
-
-/*************/
-void
-Reader_freeObject(void* user_data)
-{
-    PyObject* buffer = (PyObject*)user_data;
-    Py_DECREF(buffer);
+    if (self->lastBuffer != NULL)
+    {
+        Py_INCREF(self->lastBuffer);
+        return self->lastBuffer;
+    }
+    else
+        return Py_BuildValue("");
 }
 
 /*************/
