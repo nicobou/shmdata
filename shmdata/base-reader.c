@@ -25,7 +25,6 @@ struct shmdata_base_reader_
   GstElement *deserializer_;
   GstElement *typefind_;
   GstElement *sink_;
-  GstPad *sink_pad_;
   GstPad *src_pad_;
   GstCaps *caps_;
   //monitoring the shm file
@@ -61,7 +60,6 @@ shmdata_base_reader_init_members (shmdata_base_reader_t *reader)
   reader->deserializer_ = NULL;
   reader->typefind_ = NULL;
   reader->sink_ = NULL;
-  reader->sink_pad_ = NULL;
   reader->src_pad_ = NULL;
   reader->caps_ = NULL;
   reader->shmfile_ = NULL;
@@ -106,19 +104,47 @@ shmdata_base_reader_unlink_pad (GstPad * pad)
 void
 shmdata_base_reader_clean_element (GstElement *element)
 {
-  if (element != NULL && GST_IS_ELEMENT (element))
-    {
-      GstIterator *pad_iter;
-      pad_iter = gst_element_iterate_pads (element);
-      gst_iterator_foreach (pad_iter, (GFunc) shmdata_base_reader_unlink_pad, element);
-      gst_iterator_free (pad_iter);
-      if (GST_STATE_TARGET (element) != GST_STATE_NULL)
-	if (GST_STATE_CHANGE_ASYNC == gst_element_set_state (element, GST_STATE_NULL))
-	  while (GST_STATE (element) != GST_STATE_NULL)
-	    gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking
-      if (GST_IS_BIN (gst_element_get_parent (element)))
-	gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element);
+  if (element != NULL && GST_IS_ELEMENT(element)
+      && GST_STATE_CHANGE_FAILURE != GST_STATE_RETURN(element)) {
+    // if (GST_IS_BIN(element))
+    //   g_debug("%d, %d, %d, state return %d", GST_STATE(element),
+    //           GST_STATE_TARGET(element), GST_STATE_PENDING(element),
+    //           GST_STATE_RETURN(element));
+
+    GstIterator *pad_iter;
+    pad_iter = gst_element_iterate_pads(element);
+    gst_iterator_foreach(pad_iter, (GFunc) shmdata_base_reader_unlink_pad, element);
+    gst_iterator_free(pad_iter);
+
+    GstState state = GST_STATE_TARGET(element);
+    if (state != GST_STATE_NULL) {
+      if (GST_STATE_CHANGE_ASYNC ==
+          gst_element_set_state(element, GST_STATE_NULL)) {
+        while (GST_STATE(element) != GST_STATE_NULL) {
+          // warning this may be blocking
+          gst_element_get_state(element, NULL, NULL,
+                                GST_CLOCK_TIME_NONE);
+        }
+      }
     }
+    if (GST_IS_BIN(gst_element_get_parent(element)))
+      gst_bin_remove(GST_BIN(gst_element_get_parent(element)), element);
+    else
+      gst_object_unref(element);
+  }
+  /* if (element != NULL && GST_IS_ELEMENT (element)) */
+  /*   { */
+  /*     GstIterator *pad_iter; */
+  /*     pad_iter = gst_element_iterate_pads (element); */
+  /*     gst_iterator_foreach (pad_iter, (GFunc) shmdata_base_reader_unlink_pad, element); */
+  /*     gst_iterator_free (pad_iter); */
+  /*     if (GST_STATE_TARGET (element) != GST_STATE_NULL) */
+  /*       if (GST_STATE_CHANGE_ASYNC == gst_element_set_state (element, GST_STATE_NULL)) */
+  /*         while (GST_STATE (element) != GST_STATE_NULL) */
+  /*           gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking */
+  /*     if (GST_IS_BIN (gst_element_get_parent (element))) */
+  /*       gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element); */
+  /*   } */
 }
 
 gboolean
@@ -233,7 +259,7 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
     reader->timereset_ = FALSE;
   if (!reader->source_)
     {
-      g_critical ("Reader: \"shmsrc\" element could not be created, consider installing libshmdata.");
+      g_critical ("Reader: \"shmsrc\" element could not be created");
       g_mutex_unlock (&reader->mutex_);
       return FALSE;
     }
@@ -261,15 +287,16 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
 		    reader->source_, reader->deserializer_, reader->typefind_, NULL);
   reader->src_pad_ = gst_element_get_static_pad (reader->typefind_,
 						 "src");
-  reader->sink_pad_ = gst_element_get_compatible_pad (reader->sink_,
-						      reader->src_pad_,
-						      GST_PAD_CAPS
-						      (reader->src_pad_));
+  GstPad *sink_pad = gst_element_get_compatible_pad (reader->sink_,
+                                                     reader->src_pad_,
+                                                     GST_PAD_CAPS
+                                                     (reader->src_pad_));
   gst_element_link_many (reader->source_, 
 			 reader->deserializer_,
 			 reader->typefind_,
 			 NULL);
-  gst_pad_link (reader->src_pad_, reader->sink_pad_);
+  gst_pad_link (reader->src_pad_, sink_pad);
+  gst_object_unref(sink_pad);
   gst_element_set_state (reader->typefind_,GST_STATE_TARGET(reader->bin_));
   gst_element_set_state (reader->deserializer_,GST_STATE_TARGET(reader->bin_));
   gst_element_set_state (reader->source_,GST_STATE_TARGET(reader->bin_));
@@ -665,6 +692,7 @@ shmdata_base_reader_close (shmdata_base_reader_t * reader)
       g_mutex_unlock (&reader->mutex_);
       g_mutex_clear (&reader->mutex_);
       shmdata_base_reader_init_members (reader);
+      g_mutex_clear (&reader->mutex_);
       g_free (reader);
       g_debug ("base reader closed");
     }
