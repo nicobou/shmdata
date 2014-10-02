@@ -34,25 +34,25 @@ class Uridecodebin:public GPipe {
   Uridecodebin &operator=(const Uridecodebin &) = delete;
 
  private:
-  GstElement *uridecodebin_;
-  std::unordered_map<std::string, int>media_counters_;
-  GstPad *main_pad_;
-  GstCaps *rtpgstcaps_;
-  bool discard_next_uncomplete_buffer_;
+  GstElement *uridecodebin_{nullptr};
+  std::unordered_map<std::string, int>media_counters_{};
+  GstPad *main_pad_{nullptr};
+  GstCaps *rtpgstcaps_{nullptr};
+  bool discard_next_uncomplete_buffer_{false};
   void init_uridecodebin();
   void destroy_uridecodebin();
-  QuiddityCommand *on_error_command_;  // for the pipeline error handler
+  QuiddityCommand *on_error_command_{nullptr};  // for the pipeline error handler
   void clean_on_error_command();
 
   // custom properties
-  CustomPropertyHelper::ptr custom_props_;
-  GParamSpec *loop_prop_;
-  bool loop_;
-  GParamSpec *playing_prop_;
-  bool playing_;
+  CustomPropertyHelper::ptr custom_props_{};
+  GParamSpec *loop_prop_{nullptr};
+  bool loop_{false};
+  GParamSpec *playing_prop_{nullptr};
+  bool playing_{true};
 
-  GParamSpec *uri_spec_;
-  gchar *uri_;
+  GParamSpec *uri_spec_{nullptr};
+  std::string uri_{};
 
   bool init_gpipe() final;
   static gboolean get_loop(void *user_data);
