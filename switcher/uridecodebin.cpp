@@ -17,11 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./uridecodebin.hpp"
-#include "./gst-utils.hpp"
 #include <glib/gprintf.h>
 #include <memory>
+#include "./scope-exit.hpp"
 #include "./quiddity-command.hpp"
+#include "./uridecodebin.hpp"
+#include "./gst-utils.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
@@ -64,7 +65,8 @@ bool Uridecodebin::init_gpipe() {
                                           "",
                                           (GParamFlags) G_PARAM_READWRITE,
                                           Uridecodebin::set_uri,
-                                          Uridecodebin::get_uri, this);
+                                          Uridecodebin::get_uri,
+                                          this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             uri_spec_, "uri", "URI");
   loop_prop_ =
@@ -266,9 +268,9 @@ int Uridecodebin::autoplug_select_cb(GstElement * /*bin */ ,
 gboolean Uridecodebin::process_eos(gpointer user_data) {
   Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   if (!context->loop_) {
-    context->seek(0.0);
     context->play(FALSE);
-    return false;
+    context->seek(0.0);
+    return FALSE;
   }
   context->seek(0.0);
   return FALSE;
@@ -328,16 +330,23 @@ void Uridecodebin::release_buf(void *user_data) {
 
 void Uridecodebin::pad_to_shmdata_writer(GstElement *bin, GstPad *pad) {
   // detecting type of media
-  const gchar *padname;
-  if (0 == g_strcmp0("ANY", gst_caps_to_string(gst_pad_get_caps(pad))))
-    padname = "custom";
-  else
-    padname = gst_structure_get_name(gst_caps_get_structure
-                                     (gst_pad_get_caps(pad), 0));
+  std::string padname;
 
-  g_debug("uridecodebin new pad name is %s\n", padname);
+  {  // determining padname
+    GstCaps *padcaps = gst_pad_get_caps(pad);
+    On_scope_exit{gst_caps_unref(padcaps);};
+    gchar *padcapsstr = gst_caps_to_string(padcaps);
+    On_scope_exit{g_free(padcapsstr);};
+    
+    if (0 == g_strcmp0("ANY", padcapsstr)) {
+      padname = "custom";
+    } else {
+      padname = gst_structure_get_name(gst_caps_get_structure(padcaps, 0));
+    }
+  }
+  g_debug("uridecodebin new pad name is %s", padname.c_str());
 
-  GstElement *fakesink;
+  GstElement *fakesink = nullptr;
   GstUtils::make_element("fakesink", &fakesink);
   g_object_set(fakesink,
                "sync", TRUE,
@@ -345,41 +354,36 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement *bin, GstPad *pad) {
                nullptr);
   GstElement *funnel = nullptr;
   GstUtils::make_element("funnel", &funnel);
-  auto parent = gst_pad_get_parent(pad);
-  auto grandparent = gst_object_get_parent(parent);
-  gst_object_unref(grandparent);
-  gst_object_unref(parent);
+
+  // auto parent = gst_pad_get_parent(pad);
+  // On_scope_exit{gst_object_unref(parent);};
+  // auto grandparent = gst_object_get_parent(parent);
+  // On_scope_exit{gst_object_unref(grandparent);};
+
   gst_bin_add_many(GST_BIN(bin), fakesink, funnel, nullptr);
   gst_element_link_many(funnel, fakesink, nullptr);
   GstUtils::link_static_to_request(pad, funnel);
 
   // probing eos
   GstPad *srcpad = gst_element_get_static_pad(funnel, "src");
-  if (main_pad_ == nullptr)
-    main_pad_ = srcpad;       // saving first pad for looping
+  On_scope_exit{gst_object_unref(srcpad);};
+  if (nullptr == main_pad_)
+    main_pad_ = srcpad;  // saving first pad for looping
   gst_pad_add_event_probe(srcpad, (GCallback) event_probe_cb, this);
-  gst_object_unref(srcpad);
 
   // giving a name to the stream
-  gchar **padname_splitted = g_strsplit_set(padname, "/", -1);
+  gchar **padname_splitted = g_strsplit_set(padname.c_str(), "/", -1);
+  On_scope_exit{g_strfreev(padname_splitted);};
   // counting
   int count = 0;
   auto it = media_counters_.find(padname_splitted[0]);
   if (media_counters_.end() != it)
     count = it->second + 1;
-  // else
-  //  {
-  //    std::string media_type ("unknown");
-  //    if (nullptr != padname_splitted[0])
-  //      media_type = padname_splitted[0];
-  //    media_counters_[media_type] = count;
-  //  }
   media_counters_[padname_splitted[0]] = count;
 
   gchar media_name[256];
   g_sprintf(media_name, "%s-%d", padname_splitted[0], count);
   g_debug("uridecodebin: new media %s %d\n", media_name, count);
-  g_strfreev(padname_splitted);
 
   ShmdataAnyWriter::ptr connector =
       std::make_shared<ShmdataAnyWriter> ();
@@ -415,10 +419,10 @@ gboolean Uridecodebin::gstrtpdepay_buffer_probe_cb(GstPad * /*pad */ ,
   if (context->discard_next_uncomplete_buffer_ == true) {
     g_debug("discarding uncomplete custom frame due to a network loss");
     context->discard_next_uncomplete_buffer_ = false;
-    return FALSE;             // drop buffer
+    return FALSE;  // drop buffer
+  } else {
+    return TRUE;   // pass buffer
   }
-  else
-    return TRUE;              // pass buffer
 }
 
 gboolean Uridecodebin::gstrtpdepay_event_probe_cb(GstPad * /*pad */ ,
@@ -439,7 +443,8 @@ gboolean Uridecodebin::gstrtpdepay_event_probe_cb(GstPad * /*pad */ ,
 
 void
 Uridecodebin::uridecodebin_pad_added_cb(GstElement *object,
-                                        GstPad *pad, gpointer user_data)
+                                        GstPad *pad,
+                                        gpointer user_data)
 {
   Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
 
@@ -447,41 +452,46 @@ Uridecodebin::uridecodebin_pad_added_cb(GstElement *object,
   //      gst_caps_to_string (context->gstrtpcaps_),
   //      gst_caps_to_string (gst_pad_get_caps (pad)));
 
-  if (gst_caps_can_intersect(context->rtpgstcaps_, gst_pad_get_caps(pad))) {
+  GstCaps *newcaps = gst_pad_get_caps(pad);
+  On_scope_exit{gst_caps_unref(newcaps);};
+  if (gst_caps_can_intersect(context->rtpgstcaps_, newcaps)) {
     // asking rtpbin to send an event when a packet is lost (do-lost property)
-    GstUtils::set_element_property_in_bin(object, "gstrtpbin", "do-lost",
+    GstUtils::set_element_property_in_bin(object,
+                                          "gstrtpbin",
+                                          "do-lost",
                                           TRUE);
 
     g_message("custom rtp stream found");
-    GstElement *rtpgstdepay;
+    GstElement *rtpgstdepay = nullptr;
     GstUtils::make_element("rtpgstdepay", &rtpgstdepay);
 
     // adding a probe for discarding uncomplete packets
     GstPad *depaysrcpad = gst_element_get_static_pad(rtpgstdepay, "src");
+    On_scope_exit{gst_object_unref(depaysrcpad);};
     gst_pad_add_buffer_probe(depaysrcpad,
                              G_CALLBACK
                              (Uridecodebin::gstrtpdepay_buffer_probe_cb),
                              context);
-    gst_object_unref(depaysrcpad);
 
     gst_bin_add(GST_BIN(context->bin_), rtpgstdepay);
     GstPad *sinkpad = gst_element_get_static_pad(rtpgstdepay, "sink");
+    On_scope_exit{gst_object_unref(sinkpad);};
     // adding a probe for handling loss messages from rtpbin
-    gst_pad_add_event_probe(sinkpad, (GCallback)
-                            Uridecodebin::gstrtpdepay_event_probe_cb,
+    gst_pad_add_event_probe(sinkpad,
+                            (GCallback) Uridecodebin::gstrtpdepay_event_probe_cb,
                             context);
 
     GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad));
-    gst_object_unref(sinkpad);
+    
     GstPad *srcpad = gst_element_get_static_pad(rtpgstdepay, "src");
     GstUtils::sync_state_with_parent(rtpgstdepay);
+    On_scope_exit{gst_object_unref (srcpad);};
     gst_element_get_state(rtpgstdepay, nullptr, nullptr,
                           GST_CLOCK_TIME_NONE);
     context->pad_to_shmdata_writer(context->bin_, srcpad);
-    // gst_object_unref (srcpad);
-  }
-  else
+  } else {
     context->pad_to_shmdata_writer(context->bin_, pad);
+  }
 }
 
 void

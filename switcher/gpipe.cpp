@@ -163,10 +163,12 @@ void GPipe::play(gboolean play) {
                                            (GSourceFunc) query_position,
                                            this,
                                            get_g_main_context());
-  if (TRUE == play)
+  if (TRUE == play) {
     gst_element_set_state(pipeline_, GST_STATE_PLAYING);
-  else
+  } else {
     gst_element_set_state(pipeline_, GST_STATE_PAUSED);
+  }
+  //GstUtils::wait_state_changed(pipeline_);
   gpipe_custom_props_->notify_property_changed(play_pause_spec_);
 }
 
@@ -311,7 +313,7 @@ gboolean GPipe::run_command(gpointer user_data) {
   if (context->self->commands_.end() != it)
   {
     // it->src will be freed by the glib
-    delete (*it)->command;
+    //delete (*it)->command;
     context->self->commands_.erase(it);
   }
   return FALSE;  // do not repeat run_command
@@ -457,7 +459,7 @@ gboolean GPipe::bus_called(GstBus * /*bus */ ,
                            GstMessage *msg, gpointer /*user_data */ ) {
   switch (GST_MESSAGE_TYPE(msg)) {
     case GST_MESSAGE_EOS:
-      g_debug("bus_call End of stream, name: %s", GST_MESSAGE_SRC_NAME(msg));
+      g_warning("bus_call End of stream, name: %s", GST_MESSAGE_SRC_NAME(msg));
       break;
     case GST_MESSAGE_SEGMENT_DONE:
       g_debug("bus_call segment done");

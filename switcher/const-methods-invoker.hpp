@@ -37,19 +37,6 @@ public:
                      std::forward<ATs>(args)...)();
   }
 
-  //
-  // template<typename R, typename ...DTs, typename ...ATS>
-  // R cmi_invoke(std::function)
-  
-  // helper for selecting wanted overloaded member
-  template<typename R, typename ...ATs>
-  using fptr = R(T::*)(ATs...) const;
-  
-  template<typename R, typename ...ATs, typename ...DTs>
-  fptr<R, ATs...> select_overload(R(T::*function)(DTs...) const) {
-    return static_cast<fptr<R, ATs...>>(function);
-  }
-
   // disable invokation of non const
   template<typename R, typename ...DTs, typename ...ATs>
   R cmi_invoke(R(T::*function)(DTs...), ATs ...args)

@@ -20,9 +20,9 @@
 #ifndef __SWITCHER_URIDECODEBIN_H__
 #define __SWITCHER_URIDECODEBIN_H__
 
+#include <unordered_map>
 #include "./gpipe.hpp"
 #include "./custom-property-helper.hpp"
-#include <unordered_map>
 
 namespace switcher {
 class Uridecodebin:public GPipe {
