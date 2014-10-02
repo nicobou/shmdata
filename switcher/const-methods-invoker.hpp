@@ -25,6 +25,8 @@ namespace switcher {
 template<typename T>
 class ConstMethodsInvoker {
 public:
+  virtual ~ConstMethodsInvoker(){}
+  
   // exposing T const methods accessible by T instance owner
   template<typename R,       // return type
            typename ...DTs,  // Defined arguments types
