@@ -89,7 +89,7 @@ bool GPipe::init() {
   On_scope_exit{gst_object_unref(((GstBusSource *) source_)->bus);};
   g_source_set_callback(source_,
                         (GSourceFunc) bus_called,
-                        nullptr,
+                        this,
                         nullptr);
   g_source_attach(source_, get_g_main_context());
   gst_bus_set_sync_handler(((GstBusSource *) source_)->bus,
@@ -156,19 +156,19 @@ void GPipe::play(gboolean play) {
   if (play_ == play)
     return;
   play_ = play;
-  if (nullptr == position_tracking_source_
-      && nullptr != get_g_main_context())
-    position_tracking_source_ =
-        GstUtils::g_timeout_add_to_context(200,
-                                           (GSourceFunc) query_position,
-                                           this,
-                                           get_g_main_context());
+  // if (nullptr == position_tracking_source_
+  //     && nullptr != get_g_main_context())
+  // position_tracking_source_ =
+  //     GstUtils::g_timeout_add_to_context(200,
+  //                                        (GSourceFunc) query_position,
+  //                                        this,
+  //                                        get_g_main_context());
   if (TRUE == play) {
     gst_element_set_state(pipeline_, GST_STATE_PLAYING);
   } else {
     gst_element_set_state(pipeline_, GST_STATE_PAUSED);
   }
-  //GstUtils::wait_state_changed(pipeline_);
+  GstUtils::wait_state_changed(pipeline_);
   gpipe_custom_props_->notify_property_changed(play_pause_spec_);
 }
 
@@ -187,8 +187,7 @@ bool GPipe::seek(gdouble position) {
   ret = gst_element_seek(pipeline_,
                          speed_,
                          GST_FORMAT_TIME,
-                         (GstSeekFlags)(GST_SEEK_FLAG_FLUSH |
-                                        GST_SEEK_FLAG_ACCURATE),
+                         (GstSeekFlags)(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE),
                          // | GST_SEEK_FLAG_SKIP
                          // | GST_SEEK_FLAG_KEY_UNIT,  // using key unit is breaking synchronization
                          GST_SEEK_TYPE_SET,
@@ -212,9 +211,7 @@ void GPipe::set_seek(gdouble position, void *user_data) {
 
 gboolean GPipe::speed_wrapped(gdouble speed, gpointer user_data) {
   GPipe *context = static_cast<GPipe *>(user_data);
-
   g_debug("speed_wrapped %f", speed);
-
   if (context->speed(speed))
     return TRUE;
   else
@@ -455,8 +452,9 @@ GstBusSyncReply GPipe::bus_sync_handler(GstBus * /*bus */ ,
   return GST_BUS_PASS;
 }
 
-gboolean GPipe::bus_called(GstBus * /*bus */ ,
-                           GstMessage *msg, gpointer /*user_data */ ) {
+gboolean GPipe::bus_called(GstBus */*bus */,
+                           GstMessage *msg,
+                           gpointer user_data) {
   switch (GST_MESSAGE_TYPE(msg)) {
     case GST_MESSAGE_EOS:
       g_warning("bus_call End of stream, name: %s", GST_MESSAGE_SRC_NAME(msg));
@@ -467,14 +465,12 @@ gboolean GPipe::bus_called(GstBus * /*bus */ ,
     case GST_MESSAGE_ERROR:
       gchar *debug;
       GError *error;
-
       gst_message_parse_error(msg, &error, &debug);
       g_free(debug);
       g_debug("bus_call Error: %s from %s", error->message,
               GST_MESSAGE_SRC_NAME(msg));
       g_error_free(error);
       return FALSE;
-
       break;
     case GST_MESSAGE_STATE_CHANGED:
       // GstState old_state, new_state;

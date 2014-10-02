@@ -34,7 +34,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
                                      "Nicolas Bouillot");
 
 Uridecodebin::~Uridecodebin() {
-  GstUtils::clean_element(uridecodebin_);
 }
 
 Uridecodebin::Uridecodebin():
@@ -465,26 +464,25 @@ void
 Uridecodebin::source_setup_cb(GstElement */*uridecodebin*/,
                               GstElement *source,
                               gpointer user_data) {
-  Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-
+  // Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   // g_debug("uridecodebin source element is %s %s\n",
   //         GST_ELEMENT_NAME(source),
   //         G_OBJECT_CLASS_NAME(G_OBJECT_GET_CLASS(source)));
 
-  // building the command
-  context->clean_on_error_command();
-  context->on_error_command_ = new QuiddityCommand();
-  context->on_error_command_->id_ = QuiddityCommand::set_property;
-  context->on_error_command_->time_ = 1000;   // 1 second
-  context->on_error_command_->add_arg(context->get_nick_name());
-  context->on_error_command_->add_arg("started");
-  std::vector<std::string> vect_arg;
-  vect_arg.push_back("false");
-  context->on_error_command_->set_vector_arg(vect_arg);
+  // // building the command
+  // context->clean_on_error_command();
+  // context->on_error_command_ = new QuiddityCommand();
+  // context->on_error_command_->id_ = QuiddityCommand::set_property;
+  // context->on_error_command_->time_ = 1000;   // 1 second
+  // context->on_error_command_->add_arg(context->get_nick_name());
+  // context->on_error_command_->add_arg("started");
+  // std::vector<std::string> vect_arg;
+  // vect_arg.push_back("false");
+  // context->on_error_command_->set_vector_arg(vect_arg);
 
-  g_object_set_data(G_OBJECT(source),
-                    "on-error-command",
-                    (gpointer) context->on_error_command_);
+  // g_object_set_data(G_OBJECT(source),
+  //                   "on-error-command",
+  //                   (gpointer) context->on_error_command_);
 }
 
 bool Uridecodebin::to_shmdata() {
@@ -515,7 +513,7 @@ void Uridecodebin::set_uri(const gchar *value, void *user_data) {
   Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   context->uri_ = value;
   context->to_shmdata();
-  context->query_position_and_length();
+  //context->query_position_and_length();
   context->custom_props_->notify_property_changed(context->uri_spec_);
 }
 

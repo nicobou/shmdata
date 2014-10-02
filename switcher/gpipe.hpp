@@ -37,7 +37,7 @@ class QuiddityCommand;
 class CustomPropertyHelper;
 class DecodebinToShmdata;
 
-class GPipe:public Quiddity, public Segment {
+class GPipe: public Quiddity, public Segment {
   friend DecodebinToShmdata;
 
  public:

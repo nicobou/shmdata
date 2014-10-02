@@ -98,12 +98,11 @@ class QuiddityCommand {
   void set_vector_arg(std::vector<std::string> vector_arg);
   static command get_id_from_string(const char *com);
   static const char *get_string_from_id(QuiddityCommand::command id);
-  static QuiddityCommand::ptr parse_command_from_json_reader(JsonReader *
-                                                             reader);
+  static QuiddityCommand::ptr parse_command_from_json_reader(JsonReader *reader);
   JSONBuilder::Node get_json_root_node();
   JSONBuilder::ptr json_builder_{};
   static const std::map<int, const char *>command_names_;
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif
