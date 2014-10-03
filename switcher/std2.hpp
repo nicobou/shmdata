@@ -17,37 +17,18 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_GLIB_MAINLOOP_H__
-#define __SWITCHER_GLIB_MAINLOOP_H__
+#ifndef __SWITCHER_STD2_H__
+#define __SWITCHER_STD2_H__
 
-#include <glib.h>
 #include <memory>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
 
-namespace switcher {
+namespace std2 {
 
-class GlibMainLoop
+template<typename T, typename ...Args>
+std::unique_ptr<T> make_unique(Args&& ...args)
 {
- public:
-  typedef std::shared_ptr<GlibMainLoop> ptr;
-  GlibMainLoop();
-  ~GlibMainLoop();
-  GlibMainLoop(const GlibMainLoop &) = delete;
-  GlibMainLoop &operator=(const GlibMainLoop &) = delete;
+  return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
 
-  GMainContext *get_main_context();
-  
- private:
-  GMainContext *main_context_{nullptr};
-  GMainLoop *mainloop_{nullptr};
-  std::mutex begin_{};
-  std::mutex end_{};
-  std::condition_variable end_cond_{};
-  std::thread thread_;  // this runs the main loop
-  void main_loop_thread();
-};
-}  // namespace switcher
-
+}  // namespace std2
 #endif

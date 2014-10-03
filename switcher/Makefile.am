@@ -42,6 +42,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     gpipe.cpp \
     gst-element-cleaner.cpp \
     gst-parse-to-bin-src.cpp \
+    gst-pipe.cpp \
     gst-video-parse-to-bin-src.cpp \
     gst-utils.cpp \
     http-sdp.cpp \
@@ -127,6 +128,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     gpipe.hpp \
     gst-element-cleaner.hpp \
     gst-parse-to-bin-src.hpp \
+    gst-pipe.hpp \
     gst-video-parse-to-bin-src.hpp \
     gst-utils.hpp \
     hash-table.hpp \
@@ -167,6 +169,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     shmdata-writer.hpp \
     signal-string.hpp \
     startable-quiddity.hpp \
+    std2.hpp \
     string-dictionary.hpp \
     udpsink.hpp \
     unique-gst-element.hpp \

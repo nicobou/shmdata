@@ -88,6 +88,7 @@ tests/.deps/
 tests/.libs/
 tests/check_description_by_class
 tests/check_fakesink
+tests/check_gst_pipeline
 tests/check_information_tree
 tests/check_property_mapper
 tests/check_property_subscriber

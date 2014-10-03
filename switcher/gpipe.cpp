@@ -31,12 +31,12 @@
 #include "./gst-utils.hpp"
 #include "./quiddity-manager-impl.hpp"
 #include "./scope-exit.hpp"
+#include "./std2.hpp"
 
 namespace switcher {
 GPipe::GPipe():
-    pipeline_(nullptr),
     source_funcs_(),
-    gpipe_custom_props_(std::make_shared<CustomPropertyHelper>()) {
+    gpipe_custom_props_(std2::make_unique<CustomPropertyHelper>()) {
   init_segment(this);
 }
 
@@ -455,6 +455,8 @@ GstBusSyncReply GPipe::bus_sync_handler(GstBus * /*bus */ ,
 gboolean GPipe::bus_called(GstBus */*bus */,
                            GstMessage *msg,
                            gpointer user_data) {
+  gchar *debug = nullptr;
+  GError *error = nullptr;
   switch (GST_MESSAGE_TYPE(msg)) {
     case GST_MESSAGE_EOS:
       g_warning("bus_call End of stream, name: %s", GST_MESSAGE_SRC_NAME(msg));
@@ -463,8 +465,6 @@ gboolean GPipe::bus_called(GstBus */*bus */,
       g_debug("bus_call segment done");
       break;
     case GST_MESSAGE_ERROR:
-      gchar *debug;
-      GError *error;
       gst_message_parse_error(msg, &error, &debug);
       g_free(debug);
       g_debug("bus_call Error: %s from %s", error->message,

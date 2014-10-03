@@ -26,7 +26,9 @@ GlibMainLoop::GlibMainLoop():
     main_context_(g_main_context_new()),
     mainloop_(g_main_loop_new(main_context_, FALSE)),
     thread_() {
+  std::unique_lock<std::mutex> lock_begin (begin_);
   thread_ = std::thread(&GlibMainLoop::main_loop_thread, this);
+  thread_.detach();
 }
 
 GMainContext *GlibMainLoop::get_main_context() {
@@ -34,16 +36,22 @@ GMainContext *GlibMainLoop::get_main_context() {
 }
 
 GlibMainLoop::~GlibMainLoop() {
+  while (!g_main_loop_is_running(mainloop_)){
+    g_debug("waiting for mainloop to be running");
+  }
   g_main_loop_quit(mainloop_);
+  std::unique_lock<std::mutex> lock_begin (begin_);
   g_main_loop_unref(mainloop_);
   g_main_context_unref(main_context_);
-  if (thread_.joinable())
-    thread_.join();
 }
 
 
 void GlibMainLoop::main_loop_thread() {
-  g_main_loop_run(mainloop_);
+  {
+    std::unique_lock<std::mutex> lock_begin (begin_);
+    g_main_loop_run(mainloop_);
+  }
+  //std::unique_lock<std::mutex> lock_end (end_);
 }
 
 }  // namespace switcher
