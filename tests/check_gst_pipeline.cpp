@@ -22,14 +22,18 @@ int
 main() {
   using namespace switcher;
 
-  // auto counter = 10;
+
+  gst_init (nullptr, nullptr);
+// auto counter = 10;
   // while (--counter > 0 )
   {
     {
       auto ml = std2::make_unique<GlibMainLoop>();
-      auto gp = std2::make_unique<GstPipe>(ml->get_main_context());
+      //auto gp = std2::make_unique<GstPipe>(ml->get_main_context());
+        
     }
   }
+    gst_deinit();
   
   return 0;
 }

@@ -17,8 +17,9 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./glibmainloop.hpp"
 #include <gst/gst.h>
+#include <chrono>
+#include "./glibmainloop.hpp"
 
 namespace switcher {
 
@@ -38,6 +39,7 @@ GMainContext *GlibMainLoop::get_main_context() {
 GlibMainLoop::~GlibMainLoop() {
   while (!g_main_loop_is_running(mainloop_)){
     g_debug("waiting for mainloop to be running");
+    std::this_thread::sleep_for(std::chrono::milliseconds(2));
   }
   g_main_loop_quit(mainloop_);
   std::unique_lock<std::mutex> lock_begin (begin_);
