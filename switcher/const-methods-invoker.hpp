@@ -25,8 +25,6 @@ namespace switcher {
 template<typename T>
 class ConstMethodsInvoker {
 public:
-  virtual ~ConstMethodsInvoker(){}
-  
   // exposing T const methods accessible by T instance owner
   template<typename R,       // return type
            typename ...DTs,  // Defined arguments types
@@ -48,6 +46,8 @@ public:
     return (*new R);  // for syntax only since assert should always fail
   }
 
+  virtual ~ConstMethodsInvoker(){}
+  
 private:
   // require child to pass instance
   virtual T *cmi_get() = 0;
