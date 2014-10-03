@@ -202,9 +202,9 @@ PostureColorize::connect(std::string shmdata_socket_path) {
         images_[index] = vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size);
         dims_[index] = vector<unsigned int>({width, height, channels});
       }
-    }
 
-    mutex_.unlock();
+      mutex_.unlock();
+    }
   },
   nullptr);
 
