@@ -111,9 +111,9 @@ gboolean GstPipe::bus_called(GstBus */*bus */,
 }
 
 
-GstBusSyncReply GstPipe::bus_sync_handler(GstBus * /*bus */ ,
+GstBusSyncReply GstPipe::bus_sync_handler(GstBus * /*bus*/,
                                           GstMessage *msg,
-                                          gpointer user_data) {
+                                          gpointer /*user_data*/) {
   shmdata_base_reader_t *reader =
       (shmdata_base_reader_t *) g_object_get_data(G_OBJECT(msg->src),
                                                   "shmdata_base_reader");
@@ -251,5 +251,70 @@ void GstPipe::source_finalize(GSource *source) {
   gst_object_unref(bsrc->bus);
   bsrc->bus = nullptr;
 }
+
+bool GstPipe::play(bool play)
+{
+  if (play) {
+    gst_element_set_state(pipeline_, GST_STATE_PLAYING);
+  } else {
+    gst_element_set_state(pipeline_, GST_STATE_PAUSED);
+  }
+  GstUtils::wait_state_changed(pipeline_);
+  return true;
+}
+
+bool GstPipe::seek(gdouble position) {
+  gboolean ret = gst_element_seek(pipeline_,
+                                  speed_,
+                                  GST_FORMAT_TIME,
+                                  (GstSeekFlags)(GST_SEEK_FLAG_FLUSH | GST_SEEK_FLAG_ACCURATE),
+                                  // | GST_SEEK_FLAG_SKIP
+                                  // using key unit is breaking synchronization
+                                  // | GST_SEEK_FLAG_KEY_UNIT,
+                                  GST_SEEK_TYPE_SET,
+                                  position  * GST_MSECOND,
+                                  GST_SEEK_TYPE_NONE,
+                                  GST_CLOCK_TIME_NONE);
+  if (!ret) {
+    g_debug("seek not handled\n");
+    return false;
+  }
+  return true;
+}
+
+bool GstPipe::speed(gdouble speed) {
+  g_debug("GPipe::speed %f", speed);
+
+  speed_ = speed;
+  GstQuery *query;
+  gboolean res;
+
+  // query position
+  query = gst_query_new_position(GST_FORMAT_TIME);
+  res = gst_element_query(pipeline_, query);
+  gint64 cur_pos = 0;
+  if (res) {
+    gst_query_parse_position(query, nullptr, &cur_pos);
+
+    g_debug("cur pos = %" GST_TIME_FORMAT "\n", GST_TIME_ARGS(cur_pos));
+  } else {
+    g_warning("position query failed...");
+  }
+  gst_query_unref(query);
+
+  gboolean ret;
+  ret = gst_element_seek(pipeline_,
+                         speed,
+                         GST_FORMAT_TIME,
+                         (GstSeekFlags) (GST_SEEK_FLAG_FLUSH |
+                                         GST_SEEK_FLAG_ACCURATE),
+                         GST_SEEK_TYPE_SET,
+                         cur_pos, GST_SEEK_TYPE_NONE, GST_CLOCK_TIME_NONE);
+
+  if (!ret)
+    g_debug("speed not handled\n");
+  return true;
+}
+
 
 }  // namespace switcher

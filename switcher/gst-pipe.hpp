@@ -31,7 +31,7 @@
 namespace switcher {
 
 class GstPipe {
-
+  
  public:
   GstPipe(GMainContext *context);
   ~GstPipe();
@@ -39,25 +39,32 @@ class GstPipe {
   GstPipe(const GstPipe &) = delete;
   GstPipe &operator=(const GstPipe &) = delete;
 
+  bool play(bool play);
+  bool seek(gdouble position);
+  bool speed(gdouble speed);
+  
  private:
-  // GstBus is a specific context:
-  typedef struct {
+  typedef struct {  // GstBus is a specific context:
     GSource source;
     GstBus *bus;
     gboolean inited;
   } GstBusSource;
+
   GstElement *pipeline_ {nullptr};
   GMainContext *gmaincontext_{nullptr};
-  // FIXME Source may be hidden
   GSourceFuncs source_funcs_;
+  gdouble speed_ {1.0};
   std::mutex play_pipe_{};
   std::condition_variable play_cond_{};
-  static gboolean source_prepare(GSource * source, gint *timeout);
+  GSource *source_ {nullptr};
+
+  static gboolean source_prepare(GSource *source,
+                                 gint *timeout);
   static gboolean source_check(GSource *source);
   static gboolean source_dispatch(GSource *source,
-                                  GSourceFunc callback, gpointer user_data);
+                                  GSourceFunc callback,
+                                  gpointer user_data);
   static void source_finalize(GSource *source);
-  GSource *source_ {nullptr};
   
   static gboolean bus_called(GstBus * bus, GstMessage *msg, gpointer data);
   static GstBusSyncReply bus_sync_handler(GstBus * bus, GstMessage *msg,
