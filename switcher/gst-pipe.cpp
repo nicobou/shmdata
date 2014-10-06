@@ -26,7 +26,6 @@
 #include <shmdata/base-reader.h>
 #include "./gst-utils.hpp"
 #include "./scope-exit.hpp"
-#include "./quiddity-command.hpp"
 #include "./gst-pipe.hpp"
 
 namespace switcher {
@@ -113,11 +112,11 @@ gboolean GstPipe::bus_called(GstBus */*bus */,
 
 GstBusSyncReply GstPipe::bus_sync_handler(GstBus * /*bus*/,
                                           GstMessage *msg,
-                                          gpointer /*user_data*/) {
+                                          gpointer user_data) {
   shmdata_base_reader_t *reader =
       (shmdata_base_reader_t *) g_object_get_data(G_OBJECT(msg->src),
                                                   "shmdata_base_reader");
-  // GstPipe *context = static_cast<GstPipe *>(user_data);
+  GstPipe *context = static_cast<GstPipe *>(user_data);
 
   // g_print ("-----------%s-----%s--------------------------\n",
   //      G_OBJECT_TYPE_NAME(G_OBJECT (msg->src)),
@@ -144,45 +143,17 @@ GstBusSyncReply GstPipe::bus_sync_handler(GstBus * /*bus*/,
   }
 
   if (GST_MESSAGE_TYPE(msg) == GST_MESSAGE_ERROR) {
-    gchar *debug;
-    GError *error;
-
+    gchar *debug = nullptr;
+    GError *error = nullptr;
     gst_message_parse_error(msg, &error, &debug);
     g_free(debug);
     g_debug("Gstreamer error: %s (element %s)", error->message,
             GST_MESSAGE_SRC_NAME(msg));
-
-    QuiddityCommand *command =
-        (QuiddityCommand *) g_object_get_data(G_OBJECT(msg->src),
-                                              "on-error-command");
-    // removing command in order to get it invoked once
-    g_object_set_data(G_OBJECT(msg->src),
-                      "on-error-command", (gpointer) nullptr);
-
-    if (command != nullptr) {
-      g_debug("error contains data (on-error-command) ");
-      // QuidCommandArg *args = new QuidCommandArg();
-      // args->self = context;
-      // args->command = command;
-      // args->src = nullptr;
-      // if (command->time_ > 1) {
-      //   args->src = g_timeout_source_new((guint) command->time_);
-      //   g_source_set_callback(args->src,
-      //                         (GSourceFunc) run_command,
-      //                         args,
-      //                         nullptr);
-      //   context->commands_.push_back(args);
-      //   g_source_attach(args->src, context->get_g_main_context());
-      //   g_source_unref(args->src);
-      // } else {
-      //   GstUtils::g_idle_add_full_with_context(context->get_g_main_context (),
-      //                                          G_PRIORITY_DEFAULT_IDLE,
-      //                                          (GSourceFunc) run_command,
-      //                                          (gpointer) args,
-      //                                          nullptr);
-      // }
-    }
     g_error_free(error);
+
+    if (context->on_error_function_)
+      context->on_error_function_(msg);
+
     return GST_BUS_DROP;
   }
 
@@ -316,5 +287,22 @@ bool GstPipe::speed(gdouble speed) {
   return true;
 }
 
+void GstPipe::query_position_and_length() {
+  GstFormat fmt = GST_FORMAT_TIME;
+  gint64 pos;
+  if (gst_element_query_position(pipeline_, &fmt, &pos)
+      && gst_element_query_duration(pipeline_, &fmt, &length_)) {
+    // g_print ("Time: %" GST_TIME_FORMAT " / %" GST_TIME_FORMAT "\r",
+    //  GST_TIME_ARGS (pos), GST_TIME_ARGS (length_));
+  }
+}
+
+GstElement *GstPipe::get_pipeline() {
+  return pipeline_;
+}
+
+void GstPipe::set_on_error_function(std::function<void(GstMessage *)> fun) {
+  on_error_function_ = std::move(fun);
+}
 
 }  // namespace switcher

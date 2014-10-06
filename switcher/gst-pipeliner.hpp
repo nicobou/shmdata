@@ -30,6 +30,7 @@
 #include <mutex>
 #include "./quiddity.hpp"
 #include "./segment.hpp"
+#include "./gst-pipe.hpp"
 
 namespace switcher {
 class Quiddity;
@@ -50,64 +51,49 @@ class GstPipeliner: public Quiddity, public Segment {
 
  protected:
   GstElement *get_bin();
-  GstElement *bin_ {nullptr}; // FIXME should be private
+  GstElement *bin_{nullptr}; // FIXME should be private
   bool reset_bin();
   GstElement *get_pipeline();
   void install_play_pause();
   void install_seek();
   void install_speed();
-  void play(gboolean);
+  void play(gboolean);  // FIXME use bool
   bool seek(gdouble position_in_ms);
   void query_position_and_length();
 
  private:
-  typedef struct {
+    typedef struct {
     GstPipeliner *self;
     QuiddityCommand *command;
     GSource *src;
   } QuidCommandArg;
-  // GstBus is a specific context:
-  typedef struct {
-    GSource source;
-    GstBus *bus;
-    gboolean inited;
-  } GstBusSource;
 
-  GstElement *pipeline_ {nullptr};
-  gdouble speed_ {1.0};
-  GSource *position_tracking_source_ {nullptr};
-  GSourceFuncs source_funcs_;
-  GSource *source_ {nullptr};
+  std::unique_ptr<GstPipe> gst_pipeline_{};
+
+  //GSource *position_tracking_source_ {nullptr};
+
   std::unique_ptr<CustomPropertyHelper> gpipe_custom_props_;
   GParamSpec *play_pause_spec_ {nullptr};
   bool play_ {true};
   GParamSpec *seek_spec_ {nullptr};
   gdouble seek_ {0.0};
-  gint64 length_ {0};
+
   std::vector<QuidCommandArg *>commands_ {};
-  std::mutex play_pipe_{};
-  std::condition_variable play_cond_{};
+
+  void on_gst_error(GstMessage *msg);
+  
   void make_bin();
   void clean_bin();
   bool speed(gdouble speed);
   static gboolean get_play(void *user_data);
   static void set_play(gboolean play, void *user_data);
-  static gdouble get_seek(void *user_data);
   static void set_seek(gdouble position, void *user_data);
+  static gdouble get_seek(void *user_data);
   static gboolean speed_wrapped(gdouble speed, gpointer user_data);
-  static gboolean bus_called(GstBus * bus, GstMessage *msg, gpointer data);
-  static GstBusSyncReply bus_sync_handler(GstBus * bus, GstMessage *msg,
-                                          gpointer user_data);
   static gboolean run_command(gpointer user_data);
-  static gboolean source_prepare(GSource * source, gint *timeout);
-  static gboolean source_check(GSource *source);
-  static gboolean source_dispatch(GSource *source,
-                                  GSourceFunc callback, gpointer user_data);
-  static void source_finalize(GSource *source);
   static void print_one_tag(const GstTagList *list,
                             const gchar *tag, gpointer user_data);
   static gboolean query_position(gpointer user_data);
-  static void play_pipe(GstPipeliner *pipe);
 };
 }  // namespace switcher
 
