@@ -40,10 +40,8 @@ GstPipe::GstPipe(GMainContext *context) :
   source_funcs_.dispatch = source_dispatch;
   source_funcs_.finalize = source_finalize;
   source_ = g_source_new(&source_funcs_, sizeof(GstBusSource));
-  On_scope_exit{g_source_unref(source_);};
   ((GstBusSource *) source_)->bus =
       gst_pipeline_get_bus(GST_PIPELINE(pipeline_));
-  On_scope_exit{gst_object_unref(((GstBusSource *) source_)->bus);};
   g_source_set_callback(source_,
                         (GSourceFunc) bus_called,
                         this,
@@ -53,7 +51,6 @@ GstPipe::GstPipe(GMainContext *context) :
                            bus_sync_handler,
                            this);
   ((GstBusSource *) source_)->inited = FALSE;
-  
   {
     std::unique_lock<std::mutex> lock(play_pipe_);
     GstUtils::g_idle_add_full_with_context(gmaincontext_,
@@ -65,7 +62,12 @@ GstPipe::GstPipe(GMainContext *context) :
   }
 
 }
-GstPipe::~GstPipe() {}
+GstPipe::~GstPipe() {
+  gst_element_set_state(pipeline_, GST_STATE_NULL);
+  gst_object_unref(GST_OBJECT(pipeline_));
+  g_source_destroy(source_);
+  g_source_unref(source_);
+}
 
 gboolean GstPipe::bus_called(GstBus */*bus */,
                              GstMessage *msg,
@@ -110,8 +112,8 @@ gboolean GstPipe::bus_called(GstBus */*bus */,
 
 
 GstBusSyncReply GstPipe::bus_sync_handler(GstBus * /*bus */ ,
-                                              GstMessage *msg,
-                                              gpointer user_data) {
+                                          GstMessage *msg,
+                                          gpointer user_data) {
   shmdata_base_reader_t *reader =
       (shmdata_base_reader_t *) g_object_get_data(G_OBJECT(msg->src),
                                                   "shmdata_base_reader");
@@ -229,7 +231,7 @@ gboolean GstPipe::source_check(GSource *source) {
 
 gboolean
 GstPipe::source_dispatch(GSource *source, GSourceFunc callback,
-                       gpointer user_data) {
+                         gpointer user_data) {
   GstBusFunc handler = (GstBusFunc) callback;
   GstBusSource *bsrc = (GstBusSource *) source;
   gboolean result = FALSE;
@@ -241,7 +243,6 @@ GstPipe::source_dispatch(GSource *source, GSourceFunc callback,
       gst_message_unref(message);
     }
   }
-
   return result;
 }
 
@@ -251,5 +252,4 @@ void GstPipe::source_finalize(GSource *source) {
   bsrc->bus = nullptr;
 }
 
-
-}
+}  // namespace switcher

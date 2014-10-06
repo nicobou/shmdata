@@ -29,8 +29,7 @@ main() {
   {
     {
       auto ml = std2::make_unique<GlibMainLoop>();
-      //auto gp = std2::make_unique<GstPipe>(ml->get_main_context());
-        
+      auto gp = std2::make_unique<GstPipe>(ml->get_main_context());
     }
   }
     gst_deinit();
