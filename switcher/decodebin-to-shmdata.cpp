@@ -22,7 +22,7 @@
 #include <glib/gprintf.h>
 
 namespace switcher {
-DecodebinToShmdata::DecodebinToShmdata(GPipe *gpipe):
+DecodebinToShmdata::DecodebinToShmdata(GstPipeliner *gpipe):
     decodebin_("decodebin2"),
     discard_next_uncomplete_buffer_(false),
     main_pad_(nullptr),

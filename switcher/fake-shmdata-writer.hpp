@@ -21,12 +21,12 @@
 #define __SWITCHER_FAKE_SHMDATA_WRITER_H__
 
 #include <memory>
-#include "./gpipe.hpp"
+#include "./gst-pipeliner.hpp"
 #include "./startable-quiddity.hpp"
 #include "./custom-property-helper.hpp"
 
 namespace switcher {
-class FakeShmdataWriter:public GPipe, StartableQuiddity {
+class FakeShmdataWriter:public GstPipeliner, StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeShmdataWriter);
   FakeShmdataWriter();

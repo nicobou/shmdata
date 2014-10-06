@@ -32,7 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Decodebin2,
                                      "decodebin", "Nicolas Bouillot");
 
 Decodebin2::Decodebin2():
-    decodebin_(new DecodebinToShmdata(static_cast <GPipe *>(this))),
+    decodebin_(new DecodebinToShmdata(static_cast <GstPipeliner *>(this))),
     media_counters_() {
 }
 

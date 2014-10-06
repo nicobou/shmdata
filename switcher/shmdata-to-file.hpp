@@ -23,14 +23,14 @@
 #include <gst/gst.h>
 #include <string>
 #include <unordered_map>
-#include "./gpipe.hpp"
+#include "./gst-pipeliner.hpp"
 #include "./quiddity.hpp"
 #include "./segment.hpp"
 #include "./startable-quiddity.hpp"
 #include "./custom-property-helper.hpp"
 
 namespace switcher {
-class ShmdataToFile:public GPipe, public StartableQuiddity {
+class ShmdataToFile:public GstPipeliner, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToFile);
   ShmdataToFile();

@@ -26,7 +26,7 @@
 #include "./aravis-genicam.hpp"
 
 namespace switcher {
-class AravisGenicam:public GPipe {
+class AravisGenicam:public GstPipeliner {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(AravisGenicam);
   AravisGenicam();

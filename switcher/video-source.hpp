@@ -20,13 +20,13 @@
 #ifndef __SWITCHER_VIDEO_SOURCE_H__
 #define __SWITCHER_VIDEO_SOURCE_H__
 
-#include "./gpipe.hpp"
+#include "./gst-pipeliner.hpp"
 #include "./gst-element-cleaner.hpp"
 #include "./startable-quiddity.hpp"
 #include <memory>
 
 namespace switcher {
-class VideoSource:public GPipe, public StartableQuiddity {
+class VideoSource:public GstPipeliner, public StartableQuiddity {
  public:
   typedef std::shared_ptr<VideoSource> ptr;
   VideoSource();

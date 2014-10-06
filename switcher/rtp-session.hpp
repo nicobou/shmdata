@@ -31,13 +31,13 @@
 #include <string>
 #include <mutex>
 #include <condition_variable>
-#include "./gpipe.hpp"
+#include "./gst-pipeliner.hpp"
 #include "./quiddity-manager.hpp"
 #include "./rtp-destination.hpp"
 #include "./custom-property-helper.hpp"
 
 namespace switcher {
-class RtpSession: public GPipe {
+class RtpSession: public GstPipeliner {
   friend RtpDestination;
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(RtpSession);

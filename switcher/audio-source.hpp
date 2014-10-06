@@ -21,10 +21,10 @@
 #define __SWITCHER_AUDIO_SOURCE_H__
 
 #include <memory>
-#include "./gpipe.hpp"
+#include "./gst-pipeliner.hpp"
 
 namespace switcher {
-class AudioSource: public GPipe {
+class AudioSource: public GstPipeliner {
  public:
   typedef std::shared_ptr<AudioSource> ptr;
   AudioSource();

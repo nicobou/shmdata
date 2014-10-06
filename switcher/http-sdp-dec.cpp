@@ -108,7 +108,7 @@ void HTTPSDPDec::clean_on_error_command() {
 void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement * /*object */ ,
                                          GstPad *pad, gpointer user_data) {
   HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
-  GPipe *gpipe = static_cast<GPipe *>(user_data);
+  GstPipeliner *gpipe = static_cast<GstPipeliner *>(user_data);
   std::unique_ptr<DecodebinToShmdata>
       decodebin(new DecodebinToShmdata(gpipe));
 

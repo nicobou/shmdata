@@ -20,12 +20,12 @@
 #ifndef __SWITCHER_BASE_SINK_H__
 #define __SWITCHER_BASE_SINK_H__
 
-#include "./gpipe.hpp"
+#include "./gst-pipeliner.hpp"
 #include "./shmdata-reader.hpp"
 #include <memory>
 
 namespace switcher {
-class SinglePadGstSink: public GPipe {
+class SinglePadGstSink: public GstPipeliner {
  public:
   typedef std::shared_ptr<SinglePadGstSink> ptr;
   SinglePadGstSink();

@@ -20,11 +20,11 @@
 #ifndef __SWITCHER_FILE_SDP_H__
 #define __SWITCHER_FILE_SDP_H__
 
-#include "./gpipe.hpp"
+#include "./gst-pipeliner.hpp"
 #include <memory>
 
 namespace switcher {
-class FileSDP:public GPipe {
+class FileSDP:public GstPipeliner {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FileSDP);
   FileSDP();

@@ -25,14 +25,14 @@
 #include <list>
 #include <mutex>
 #include "./unique-gst-element.hpp"
-#include "./gpipe.hpp"
+#include "./gst-pipeliner.hpp"
 
 namespace switcher {
 // this class has been designed for being possessed by a gpipe
 
 class DecodebinToShmdata {
  public:
-  explicit DecodebinToShmdata(GPipe *gpipe);
+  explicit DecodebinToShmdata(GstPipeliner *gpipe);
   ~DecodebinToShmdata();
   DecodebinToShmdata() = delete;
   DecodebinToShmdata(const DecodebinToShmdata &) = delete;
@@ -55,7 +55,7 @@ class DecodebinToShmdata {
   GstPad *main_pad_;
   std::map<std::string, uint> media_counters_;
   std::mutex media_counter_mutex_;
-  GPipe *gpipe_;
+  GstPipeliner *gpipe_;
   std::list<std::string> shmdata_path_;  // for unregistering in the segment
   std::vector<gulong> cb_ids_;
   std::mutex thread_safe_;

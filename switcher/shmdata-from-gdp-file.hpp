@@ -26,12 +26,12 @@
 #include <string>
 #include <vector>
 #include "./custom-property-helper.hpp"
-#include "./gpipe.hpp"
+#include "./gst-pipeliner.hpp"
 #include "./quiddity-manager.hpp"
 #include "./startable-quiddity.hpp"
 
 namespace switcher {
-class ShmdataFromGDPFile:public GPipe, public StartableQuiddity {
+class ShmdataFromGDPFile:public GstPipeliner, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataFromGDPFile);
   ShmdataFromGDPFile();

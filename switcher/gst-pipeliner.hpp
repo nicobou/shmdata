@@ -18,7 +18,7 @@
  */
 
 /**
- * The GPipe class
+ * The GstPipeliner class
  */
 
 #ifndef __SWITCHER_GPIPE_H__
@@ -37,14 +37,14 @@ class QuiddityCommand;
 class CustomPropertyHelper;
 class DecodebinToShmdata;
 
-class GPipe: public Quiddity, public Segment {
+class GstPipeliner: public Quiddity, public Segment {
   friend DecodebinToShmdata;
 
  public:
-  GPipe();
-  virtual ~GPipe();
-  GPipe(const GPipe &) = delete;
-  GPipe &operator=(const GPipe &) = delete;
+  GstPipeliner();
+  virtual ~GstPipeliner();
+  GstPipeliner(const GstPipeliner &) = delete;
+  GstPipeliner &operator=(const GstPipeliner &) = delete;
   bool init() final;
   virtual bool init_gpipe() = 0;
 
@@ -62,7 +62,7 @@ class GPipe: public Quiddity, public Segment {
 
  private:
   typedef struct {
-    GPipe *self;
+    GstPipeliner *self;
     QuiddityCommand *command;
     GSource *src;
   } QuidCommandArg;
@@ -107,7 +107,7 @@ class GPipe: public Quiddity, public Segment {
   static void print_one_tag(const GstTagList *list,
                             const gchar *tag, gpointer user_data);
   static gboolean query_position(gpointer user_data);
-  static void play_pipe(GPipe *pipe);
+  static void play_pipe(GstPipeliner *pipe);
 };
 }  // namespace switcher
 

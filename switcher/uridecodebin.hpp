@@ -21,11 +21,11 @@
 #define __SWITCHER_URIDECODEBIN_H__
 
 #include <unordered_map>
-#include "./gpipe.hpp"
+#include "./gst-pipeliner.hpp"
 #include "./custom-property-helper.hpp"
 
 namespace switcher {
-class Uridecodebin:public GPipe {
+class Uridecodebin:public GstPipeliner {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Uridecodebin);
   Uridecodebin();

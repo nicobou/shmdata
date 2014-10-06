@@ -283,7 +283,7 @@ bool GstPipe::seek(gdouble position) {
 }
 
 bool GstPipe::speed(gdouble speed) {
-  g_debug("GPipe::speed %f", speed);
+  g_debug("GstPipeliner::speed %f", speed);
 
   speed_ = speed;
   GstQuery *query;

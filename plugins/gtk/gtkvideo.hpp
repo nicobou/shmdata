@@ -70,7 +70,7 @@ class GTKVideo:public SinglePadGstSink {
 #else
   guintptr window_handle_;
 #endif
-  QuiddityCommand *on_error_command_;  // for the GPipe error handler
+  QuiddityCommand *on_error_command_;  // for the GstPipeliner error handler
   GdkCursor *blank_cursor_;
 
   CustomPropertyHelper::ptr gtk_custom_props_;

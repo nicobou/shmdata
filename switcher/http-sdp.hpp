@@ -21,10 +21,10 @@
 #define __SWITCHER_HTTP_SDP_H__
 
 #include <memory>
-#include "./gpipe.hpp"
+#include "./gst-pipeliner.hpp"
 
 namespace switcher {
-class HTTPSDP:public GPipe {
+class HTTPSDP:public GstPipeliner {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDP);
   HTTPSDP();

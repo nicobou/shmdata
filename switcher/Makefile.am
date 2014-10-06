@@ -39,7 +39,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     glibmainloop.cpp \
     gobject-custom-property.cpp \
     gobject-wrapper.cpp \
-    gpipe.cpp \
+    gst-pipeliner.cpp \
     gst-element-cleaner.cpp \
     gst-parse-to-bin-src.cpp \
     gst-pipe.cpp \
@@ -125,7 +125,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     glibmainloop.hpp \
     gobject-custom-property.hpp \
     gobject-wrapper.hpp \
-    gpipe.hpp \
+    gst-pipeliner.hpp \
     gst-element-cleaner.hpp \
     gst-parse-to-bin-src.hpp \
     gst-pipe.hpp \

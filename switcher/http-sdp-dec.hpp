@@ -23,12 +23,12 @@
 #include <memory>
 #include <map>
 #include <string>
-#include "./gpipe.hpp"
+#include "./gst-pipeliner.hpp"
 #include "./quiddity-command.hpp"
 #include "./decodebin-to-shmdata.hpp"
 
 namespace switcher {
-class HTTPSDPDec:public GPipe {
+class HTTPSDPDec:public GstPipeliner {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);
   HTTPSDPDec();

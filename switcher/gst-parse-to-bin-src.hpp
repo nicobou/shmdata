@@ -22,12 +22,12 @@
 
 #include <gst/gst.h>
 #include <memory>
-#include "./gpipe.hpp"
+#include "./gst-pipeliner.hpp"
 #include "./startable-quiddity.hpp"
 #include "./custom-property-helper.hpp"
 
 namespace switcher {
-class GstParseToBinSrc:public GPipe, StartableQuiddity {
+class GstParseToBinSrc:public GstPipeliner, StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstParseToBinSrc);
   GstParseToBinSrc();
