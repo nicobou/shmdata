@@ -32,9 +32,7 @@ VideoSource::VideoSource():
                                    //  "width", G_TYPE_INT, 640,
                                    //  "height", G_TYPE_INT, 480,
                                    nullptr)),
-    custom_props_(std::make_shared<CustomPropertyHelper>()),
-    primary_codec_(),
-    secondary_codec_() {
+    custom_props_(std::make_shared<CustomPropertyHelper>()) {
   init_startable(this);
   GstUtils::element_factory_list_to_g_enum(primary_codec_,
                                            GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
@@ -84,6 +82,8 @@ VideoSource::~VideoSource() {
   GstUtils::clean_element(queue_codec_element_);
   GstUtils::clean_element(color_space_codec_element_);
   gst_caps_unref(videocaps_);
+  GstUtils::free_g_enum_values(primary_codec_);
+  GstUtils::free_g_enum_values(secondary_codec_);
 }
 
 void VideoSource::print_list(gpointer /*data */ ,

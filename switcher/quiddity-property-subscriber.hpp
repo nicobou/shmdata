@@ -82,7 +82,7 @@ class QuiddityPropertySubscriber {
     std::weak_ptr<Quiddity> quid{};
   } PropertyData;
   typedef std::map<std::pair<std::string, std::string>,
-                    PropertyData *>PropDataMap;
+                   PropertyData *>PropDataMap;
   PropDataMap prop_datas_{};
 };
 }  // namespace switcher

@@ -45,7 +45,7 @@ class VideoSource:public GstPipeliner, public StartableQuiddity {
   CustomPropertyHelper::ptr custom_props_{};
   // codec // FIXME make this static
   GParamSpec *primary_codec_spec_{nullptr};
-  GEnumValue primary_codec_[128];
+  GEnumValue primary_codec_[128]{};
   GParamSpec *secondary_codec_spec_{nullptr};
   GEnumValue secondary_codec_[128]{};
   gint codec_{0};

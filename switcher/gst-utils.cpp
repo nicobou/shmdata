@@ -313,19 +313,33 @@ GstUtils::apply_property_value(GObject *g_object_master,
 }
 
 void
+GstUtils::free_g_enum_values(GEnumValue *target_enum) {
+  if (nullptr == target_enum) {
+    g_warning("cannot free a nullptr enum");
+    return;
+  }
+  gint i = 0;
+  while (nullptr != target_enum[i].value_name) {
+    g_free((gpointer)target_enum[i].value_name);
+    g_free((gpointer)target_enum[i].value_nick);
+    i++;    
+  }
+}
+
+void
 GstUtils::element_factory_list_to_g_enum(GEnumValue *target_enum,
                                          GstElementFactoryListType type,
                                          GstRank minrank) {
   GList *element_list =
       gst_element_factory_list_get_elements(type, minrank);
+
   GList *iter = element_list;
   target_enum[0].value = 0;
   target_enum[0].value_name = g_strdup("None");
-  target_enum[0].value_nick = target_enum[0].value_name;
+  target_enum[0].value_nick = g_strdup("None");;
   gint i = 1;
   while (iter != nullptr) {
     target_enum[i].value = i;
-    // FIXME this is leaking
     target_enum[i].value_name =
         g_strdup(gst_element_factory_get_longname
                  ((GstElementFactory *) iter->data));

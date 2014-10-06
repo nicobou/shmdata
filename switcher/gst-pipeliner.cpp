@@ -154,13 +154,6 @@ gboolean GstPipeliner::speed_wrapped(gdouble speed, gpointer user_data) {
     return FALSE;
 }
 
-gboolean GstPipeliner::query_position(gpointer user_data) {
-  GstPipeliner *context = static_cast<GstPipeliner *>(user_data);
-  context->gst_pipeline_->query_position_and_length();
-  /* call me again */
-  return TRUE;
-}
-
 gboolean GstPipeliner::run_command(gpointer user_data) {
   QuidCommandArg *context = static_cast<QuidCommandArg *>(user_data);
   QuiddityManager_Impl::ptr manager = context->self->manager_impl_.lock();
@@ -246,11 +239,8 @@ GstPipeliner::print_one_tag(const GstTagList */*list*/,
 
 void GstPipeliner::make_bin() {
   GstUtils::make_element("bin", &bin_);
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   g_object_set(G_OBJECT(bin_), "async-handling", TRUE, nullptr);
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), bin_);
-  g_print("%s %d\n", __FUNCTION__, __LINE__);
   GstUtils::wait_state_changed(gst_pipeline_->get_pipeline());
   GstUtils::sync_state_with_parent(bin_);
   GstUtils::wait_state_changed(bin_);
@@ -273,14 +263,14 @@ void GstPipeliner::clean_bin() {
             gst_element_state_get_name(GST_STATE_TARGET(bin_)),
             GST_BIN_NUMCHILDREN(GST_BIN(bin_)));
 
-    if (g_list_length(GST_BIN_CHILDREN(bin_)) > 0) {
-      GList *child = nullptr, *children = GST_BIN_CHILDREN(bin_);
-      for (child = children; child != nullptr; child = g_list_next(child)) {
-        g_debug("segment warning: child %s",
-                GST_ELEMENT_NAME(GST_ELEMENT(child->data)));
-        GstUtils::clean_element (GST_ELEMENT (child->data));
-      }
-    }
+    // if (g_list_length(GST_BIN_CHILDREN(bin_)) > 0) {
+    //   GList *child = nullptr, *children = GST_BIN_CHILDREN(bin_);
+    //   for (child = children; child != nullptr; child = g_list_next(child)) {
+    //     g_debug("segment warning: child %s",
+    //             GST_ELEMENT_NAME(GST_ELEMENT(child->data)));
+    //     GstUtils::clean_element (GST_ELEMENT (child->data));
+    //   }
+    // }
     g_debug("going to clean bin_");
     GstUtils::clean_element(bin_);
     g_debug("GstPipeliner: cleaning internal bin");

@@ -91,13 +91,12 @@ bool Segment::register_shmdata(ShmdataAnyWriter::ptr writer) {
   
   {  // JSON
     update_shmdata_writers_description();
-    segment_custom_props_->notify_property_changed
-        (json_writers_description_);
+    segment_custom_props_->notify_property_changed(json_writers_description_);
+    
     quid_->signal_emit("on-new-shmdata-writer",
                        quid_->get_nick_name().c_str(),
                        writer->get_path().c_str(),
-                       (JSONBuilder::get_string
-                        (writer->get_json_root_node(), true)).c_str());
+                       (JSONBuilder::get_string(writer->get_json_root_node(), true)).c_str());
   }
   return true;
 }
@@ -124,13 +123,11 @@ bool Segment::register_shmdata(ShmdataWriter::ptr writer) {
 
   {  // JSON
     update_shmdata_writers_description();
-    segment_custom_props_->notify_property_changed
-        (json_writers_description_);
+    segment_custom_props_->notify_property_changed(json_writers_description_);
     quid_->signal_emit("on-new-shmdata-writer",
                        quid_->get_nick_name().c_str(),
                        writer->get_path().c_str(),
-                       (JSONBuilder::get_string
-                        (writer->get_json_root_node(), true)).c_str());
+                       (JSONBuilder::get_string(writer->get_json_root_node(), true)).c_str());
   }
   return true;
 }
@@ -157,8 +154,7 @@ bool Segment::register_shmdata(ShmdataReader::ptr reader) {
 
   {  // JSON
     update_shmdata_readers_description();
-    segment_custom_props_->notify_property_changed
-        (json_readers_description_);
+    segment_custom_props_->notify_property_changed(json_readers_description_);
     quid_->signal_emit("on-new-shmdata-reader",
                        quid_->get_nick_name().c_str(),
                        reader->get_path().c_str(),
@@ -190,8 +186,7 @@ bool Segment::register_shmdata(ShmdataAnyReader::ptr reader) {
 
   {  // JSON
     update_shmdata_readers_description();
-    segment_custom_props_->notify_property_changed
-        (json_writers_description_);
+    segment_custom_props_->notify_property_changed(json_writers_description_);
     quid_->signal_emit("on-new-shmdata-reader",
                        quid_->get_nick_name().c_str(),
                        reader->get_path().c_str(),

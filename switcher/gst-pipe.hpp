@@ -44,7 +44,6 @@ class GstPipe {
   bool seek(gdouble position);
   bool speed(gdouble speed);
   GstElement *get_pipeline();  // FIXME remove that
-  void query_position_and_length();
   
  private:
 
@@ -64,6 +63,7 @@ class GstPipe {
   gint64 length_ {0};
   std::function<void(GstMessage *)> on_error_function_{};
 
+  void query_position_and_length();
   static gboolean source_prepare(GSource *source,
                                  gint *timeout);
   static gboolean source_check(GSource *source);

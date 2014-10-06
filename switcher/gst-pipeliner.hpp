@@ -59,7 +59,6 @@ class GstPipeliner: public Quiddity, public Segment {
   void install_speed();
   void play(gboolean);  // FIXME use bool
   bool seek(gdouble position_in_ms);
-  void query_position_and_length();
 
  private:
     typedef struct {
@@ -93,7 +92,6 @@ class GstPipeliner: public Quiddity, public Segment {
   static gboolean run_command(gpointer user_data);
   static void print_one_tag(const GstTagList *list,
                             const gchar *tag, gpointer user_data);
-  static gboolean query_position(gpointer user_data);
 };
 }  // namespace switcher
 

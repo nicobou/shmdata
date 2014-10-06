@@ -73,7 +73,7 @@ void QuiddityPropertySubscriber::set_user_data(void *user_data) {
 }
 
 void QuiddityPropertySubscriber::set_name(const gchar *name) {
-  name_ = g_strdup(name);
+  name_ = name;
 }
 
 void QuiddityPropertySubscriber::set_callback(Callback cb) {

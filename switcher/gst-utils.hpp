@@ -49,7 +49,7 @@ GSource *g_timeout_add_to_context(guint interval,
 bool apply_property_value(GObject *g_object_master,
                           GObject *g_object_slave,
                           const char *property_name);
-
+void free_g_enum_values(GEnumValue *target_enum);
 void element_factory_list_to_g_enum(GEnumValue *target_enum,
                                     GstElementFactoryListType type,
                                     GstRank minrank);
