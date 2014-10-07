@@ -127,19 +127,16 @@ Signal::set_description(std::string long_name,
   json_description_->set_member_name("arguments");
   json_description_->begin_array();
   args_doc::iterator it;
-  int j = 0;
   if (!arg_description.empty()) {
+    int j = 0;
     for (it = arg_description.begin(); it != arg_description.end(); it++) {
       json_description_->begin_object();
-      json_description_->add_string_member("long name",
-                                           std::get<0> (*it).c_str());
-      json_description_->add_string_member("name",
-                                           std::get<1> (*it).c_str());
-      json_description_->add_string_member("description",
-                                           std::get<2> (*it).c_str());
-      json_description_->add_string_member("type",
-                                           g_type_name(arg_types_[j]));
+      json_description_->add_string_member("long name", std::get<0> (*it).c_str());
+      json_description_->add_string_member("name", std::get<1> (*it).c_str());
+      json_description_->add_string_member("description", std::get<2> (*it).c_str());
+      //json_description_->add_string_member("type", g_type_name(arg_types_[j]));
       json_description_->end_object();
+      j++;
     }
   }
   json_description_->end_array();

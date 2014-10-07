@@ -54,7 +54,9 @@ bool CreateRemoveSpy::init() {
                  Signal::make_arg_description("Quiddity Name",
                                               "quiddity_name",
                                               "the quiddity name",
-                                              nullptr), 1, string_type);
+                                              nullptr),
+                 1,
+                 string_type);
 
   install_signal("On Quiddity Removed",
                  "on-quiddity-removed",
@@ -62,7 +64,9 @@ bool CreateRemoveSpy::init() {
                  Signal::make_arg_description("Quiddity Name",
                                               "quiddity_name",
                                               "the quiddity name",
-                                              nullptr), 1, string_type);
+                                              nullptr),
+                 1,
+                 string_type);
 
   set_name("manager-spy");    // supposed to be a singleton with the use of "set_..._hook ()"
   return true;

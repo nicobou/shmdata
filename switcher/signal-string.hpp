@@ -35,7 +35,8 @@ class Signal {
   // long name, name, description
   typedef std::vector < std::tuple < std::string, std::string,
                                      std::string > >args_doc;
-  typedef void (*OnEmittedCallback) (std::vector<std::string> params, gpointer user_data);  // FIXME params should be const
+  typedef void (*OnEmittedCallback) (std::vector<std::string> params,
+                                     gpointer user_data);  // FIXME params should be const
 
   Signal();
   ~Signal();

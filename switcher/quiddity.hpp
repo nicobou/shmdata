@@ -56,7 +56,7 @@ class Quiddity: public ConstMethodsInvoker<data::Tree> {
   virtual ~Quiddity();
 
   // class documentation
-  virtual QuiddityDocumentation get_documentation() = 0;
+  virtual QuiddityDocumentation *get_documentation() = 0;
 
   // class initialisation
   virtual bool init() = 0;
@@ -288,12 +288,12 @@ class Quiddity: public ConstMethodsInvoker<data::Tree> {
                                     license,                            \
                                     class_name,                         \
                                     author);                            \
-  QuiddityDocumentation cpp_quiddity_class::get_documentation()         \
-  {return switcher_doc_;}
+  QuiddityDocumentation *cpp_quiddity_class::get_documentation()        \
+  {return &switcher_doc_;}
 
 #define SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(cpp_quiddity_class)    \
   typedef std::shared_ptr<cpp_quiddity_class> ptr;                      \
-  QuiddityDocumentation get_documentation();                            \
+  QuiddityDocumentation *get_documentation();                           \
   static QuiddityDocumentation switcher_doc_;
 
 #define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)             \
@@ -303,8 +303,8 @@ class Quiddity: public ConstMethodsInvoker<data::Tree> {
   extern "C" void destroy(Quiddity *quiddity) {                 \
     delete quiddity;                                            \
   }                                                             \
-  extern "C" QuiddityDocumentation get_documentation() {        \
-    return cpp_quiddity_class::switcher_doc_;                   \
+  extern "C" QuiddityDocumentation *get_documentation() {       \
+    return &cpp_quiddity_class::switcher_doc_;                  \
   }
 }  // namespace switcher
 

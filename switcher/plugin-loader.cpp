@@ -21,12 +21,7 @@
 #include "./quiddity-documentation.hpp"
 
 namespace switcher {
-PluginLoader::PluginLoader():
-    create_(nullptr),
-    destroy_(nullptr),
-    module_(nullptr),
-    get_documentation_(nullptr),
-    json_doc_(nullptr) {
+PluginLoader::PluginLoader() {
 }
 
 PluginLoader::~PluginLoader() {
@@ -85,9 +80,9 @@ bool PluginLoader::load(const char *filename) {
     return false;
   }
 
-  QuiddityDocumentation doc = get_documentation_();
-  class_name_ = doc.get_class_name();
-  json_doc_ = doc.get_json_root_node();
+  QuiddityDocumentation *doc = get_documentation_();
+  class_name_ = doc->get_class_name();
+  //json_doc_ = doc.get_json_root_node();
   return true;
 }
 
@@ -112,6 +107,10 @@ std::string PluginLoader::get_class_name() {
 JSONBuilder::Node PluginLoader::get_json_root_node() {
   if (module_ == nullptr)
     return nullptr;
-  return json_doc_;
+  return get_documentation_()->get_json_root_node();
+}
+
+QuiddityDocumentation *PluginLoader::get_doc() {
+  return get_documentation_();
 }
 }

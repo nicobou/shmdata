@@ -21,9 +21,9 @@
  * the Abstract factory class
  */
 
-// no includes here since this file is included from abstract-factory.h
-// this separation is done in order to make abstract-factory.h easier to read
-// when using it
+// this file is included from abstract-factory.hpp
+// this separation is done in order to make abstract-factory.hpp easier to read
+
 
 namespace switcher {
 template<typename T, typename Key, typename Doc>
@@ -31,21 +31,21 @@ template<class U> void
 AbstractFactory<T, Key, Doc>::register_class(Key Id, Doc doc) {
   Creator<T > *Fn = (Creator<T> *)new DerivedCreator < U> ();
   constructor_map_[Id] = Fn;
-  classes_documentation_[Id] = doc;
+  classes_documentation_[Id] = std::move(doc);
 }
 
 template<typename T, typename Key, typename Doc>
 void
-AbstractFactory < T, Key,
-                  Doc >::register_class_with_custom_factory(Key Id, Doc doc,
-                                                            T * (*custom_create) (),
-                                                            void(*custom_destroy) (T *)) {
+AbstractFactory<T, Key, Doc>::register_class_with_custom_factory(Key Id,
+                                                                   Doc doc,
+                                                                   T * (*custom_create) (),
+                                                                   void(*custom_destroy) (T *)) {
   CustomDerivedCreator<T > *creator = new CustomDerivedCreator < T> ();
   creator->custom_create_ = custom_create;
   Creator<T > *Fn = (Creator < T> *)creator;
   constructor_map_[Id] = Fn;
   destructor_map_[Id] = custom_destroy;
-  classes_documentation_[Id] = doc;
+classes_documentation_[Id] = std::move(doc);
 }
 
 template<typename T, typename Key, typename Doc>
@@ -76,7 +76,9 @@ template<typename T, typename Key, typename Doc>
 Doc AbstractFactory<T, Key, Doc>::get_class_documentation(Key id) {
   typename std::map<Key, Doc>::iterator iter =
       classes_documentation_.find(id);
-  return iter->second;
+
+
+return iter->second;
 }
 
 template<typename T, typename Key, typename Doc>

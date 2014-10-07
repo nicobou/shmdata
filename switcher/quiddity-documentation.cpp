@@ -60,7 +60,7 @@ std::string QuiddityDocumentation::get_license() const {
 }
 
 void QuiddityDocumentation::make_json_description() {
-  json_description_.reset(new JSONBuilder());
+  json_description_ = std::make_shared<JSONBuilder>();
   json_description_->reset();
   json_description_->begin_object();
   json_description_->add_string_member("long name", long_name_.c_str());

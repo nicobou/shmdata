@@ -20,8 +20,8 @@
 #ifndef __SWITCHER_PLUGIN_H__
 #define __SWITCHER_PLUGIN_H__
 
-#include <memory>
 #include <gmodule.h>
+#include <memory>
 #include "./json-builder.hpp"
 
 namespace switcher {
@@ -29,9 +29,9 @@ class Quiddity;
 class QuiddityDocumentation;
 
 // the types of the class factories for quiddity pluggins
-typedef switcher::Quiddity *create_t();
+typedef Quiddity *create_t();
 typedef void destroy_t(switcher::Quiddity *);
-typedef switcher::QuiddityDocumentation get_documentation_t();
+typedef QuiddityDocumentation *get_documentation_t();
 
 class PluginLoader {
  public:
@@ -45,16 +45,17 @@ class PluginLoader {
   bool close();
   std::string get_class_name();
   JSONBuilder::Node get_json_root_node();
-
-  create_t *create_;
-  destroy_t *destroy_;
+  QuiddityDocumentation *get_doc();
+  
+  create_t *create_{nullptr};
+  destroy_t *destroy_{nullptr};
 
  private:
-  GModule *module_;
-  get_documentation_t *get_documentation_;
-  JSONBuilder::Node json_doc_;
-  std::string class_name_;
+  GModule *module_{nullptr};
+  get_documentation_t *get_documentation_{nullptr};
+  //JSONBuilder::Node json_doc_{};
+  std::string class_name_{};
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif

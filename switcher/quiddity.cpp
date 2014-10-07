@@ -48,7 +48,7 @@ Quiddity::Quiddity():
     manager_impl_(),
     gobject_(new GObjectWrapper()) {
   gobject_->property_set_default_user_data(this);
-  GType arg_type[] = { G_TYPE_STRING };
+  GType arg_type[] = { G_TYPE_STRING, G_TYPE_STRING };
   install_signal_with_class_name("Quiddity",
                                  "On New Property",
                                  "on-property-added",
@@ -60,7 +60,7 @@ Quiddity::Quiddity():
                                                               "property_name",
                                                               "the property name",
                                                               nullptr),
-                                 1,
+                                 2,
                                  arg_type);
 
   install_signal_with_class_name("Quiddity",
@@ -74,18 +74,22 @@ Quiddity::Quiddity():
                                                               "property_name",
                                                               "the property name",
                                                               nullptr),
-                                 1,
+                                 2,
                                  arg_type);
 
   install_signal_with_class_name("Quiddity",
                                  "On Property reinstalled",
                                  "on-property-reinstalled",
                                  "A property has been reinstalled",
-                                 Signal::make_arg_description
-                                 ("Quiddity Name", "quiddity_name",
-                                  "the quiddity name", "Property Name",
-                                  "property_name", "the property name",
-                                  nullptr), 1, arg_type);
+                                 Signal::make_arg_description("Quiddity Name",
+                                                              "quiddity_name",
+                                                              "the quiddity name",
+                                                              "Property Name",
+                                                              "property_name",
+                                                              "the property name",
+                                                              nullptr),
+                                 2,
+                                 arg_type);
 
   install_signal_with_class_name("Quiddity",
                                  "On New Method",
@@ -98,7 +102,7 @@ Quiddity::Quiddity():
                                                               "method_name",
                                                               "the method name",
                                                               nullptr),
-                                 1,
+                                 2,
                                  arg_type);
 
   install_signal_with_class_name("Quiddity",
@@ -122,7 +126,7 @@ Quiddity::Quiddity():
                                                               "branch_name",
                                                               "the branch name",
                                                               nullptr),
-                                 1,
+                                 2,
                                  arg_type);
 
   install_signal_with_class_name("Quiddity",
@@ -136,7 +140,7 @@ Quiddity::Quiddity():
                                                               "branch_name",
                                                               "the branch name",
                                                               nullptr),
-                                 1,
+                                 2,
                                  arg_type);
 }
 
@@ -189,17 +193,21 @@ Quiddity::install_signal(const std::string long_name,
                          const std::string signal_name,
                          const std::string short_description,
                          const Signal::args_doc arg_description,
-                         guint number_of_params, GType *param_types) {
-  if (!make_custom_signal_with_class_name
-      (get_documentation().get_class_name(), signal_name, G_TYPE_NONE,
-       number_of_params, param_types))
+                         guint number_of_params,
+                         GType *param_types) {
+  if (!make_custom_signal_with_class_name(get_documentation()->get_class_name(),
+                                          signal_name,
+                                          G_TYPE_NONE,
+                                          number_of_params,
+                                          param_types))
     return false;
-
+  
   if (!set_signal_description(long_name,
                               signal_name,
-                              short_description, "n/a", arg_description))
+                              short_description,
+                              "n/a",
+                              arg_description))
     return false;
-
   return true;
 }
 
@@ -382,14 +390,18 @@ bool Quiddity::register_signal_action_with_class_name(const std::string class_na
 }
 
 bool Quiddity::register_signal_action(const std::string method_name,  // the name to give
-                                      void *method, GType return_type, guint n_params,        // number of params
-                                      GType *param_types, void *user_data) {
-  return
-      register_signal_action_with_class_name(get_documentation
-                                             ().get_class_name(),
-                                             method_name, method,
-                                             return_type, n_params,
-                                             param_types, user_data);
+                                      void *method,
+                                      GType return_type,
+                                      guint n_params,  // number of params
+                                      GType *param_types,
+                                      void *user_data) {
+  return register_signal_action_with_class_name(get_documentation()->get_class_name(),
+                                                method_name,
+                                                method,
+                                                return_type,
+                                                n_params,
+                                                param_types,
+                                                user_data);
 }
 
 bool Quiddity::uninstall_property(std::string property_name) {
@@ -705,7 +717,7 @@ void Quiddity::signal_emit(const std::string signal_name, ...) {
 }
 
 std::string Quiddity::get_signals_description() {
-  std::string class_name = get_documentation().get_class_name();
+  std::string class_name = get_documentation()->get_class_name();
 
   signals_description_->reset();
   signals_description_->begin_object();
@@ -715,9 +727,9 @@ std::string Quiddity::get_signals_description() {
   for (auto &it : signals_) {
     signals_description_->begin_object();
     signals_description_->add_string_member("name", it.first.c_str());
-    JsonNode *root_node = it.second->get_json_root_node();
-    if (root_node != nullptr)
-      signals_description_->add_JsonNode_member("description", root_node);
+    JSONBuilder::Node root_node = it.second->get_json_root_node();
+    if (root_node)
+      signals_description_->add_JsonNode_member("description", std::move(root_node));
     else
       signals_description_->add_string_member("description",
                                               "missing description");

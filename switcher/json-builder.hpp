@@ -29,12 +29,32 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <forward_list>
 
 namespace switcher {
 class JSONBuilder {
  public:
-  typedef std::shared_ptr<JSONBuilder> ptr;
-  typedef JsonNode *Node;
+  class RootNodeCopy {
+   public:
+    RootNodeCopy(JsonBuilder *builder) :
+        copy_ (json_builder_get_root(builder)) {
+    }
+    ~RootNodeCopy() {
+      if (nullptr != copy_)
+        json_node_free(copy_);
+    }
+    RootNodeCopy() = delete;
+    RootNodeCopy(const RootNodeCopy &) = delete;
+    const RootNodeCopy &operator=(const RootNodeCopy &) = delete;
+
+    JsonNode *get() {return copy_;}
+   private:
+    JsonNode *copy_{nullptr};
+  };  // class RootNodeCopy
+
+  using Node = std::unique_ptr<RootNodeCopy>;
+  using ptr = std::shared_ptr<JSONBuilder>;
+  //typedef JsonNode *Node;
   JSONBuilder();
   ~JSONBuilder();
   JSONBuilder(const JSONBuilder &source) = delete;
@@ -47,6 +67,7 @@ class JSONBuilder {
   void add_string_value(const gchar *string_value);
   void add_double_value(gdouble double_value);
   void add_node_value(Node node_value);
+  void add_node_value(JsonNode *node_value);
   void end_array();
   void set_member_name(const gchar *member_name);
   void add_string_member(const gchar *member_name,
@@ -58,11 +79,11 @@ class JSONBuilder {
   std::string get_string(bool pretty);
   static std::string get_string(Node root_node, bool pretty);
   Node get_root();  // call node free when done if not used with add_node_value
-  static void node_free(Node root_node);
+  //static void node_free(Node root_node);
 
  private:
-  JsonBuilder *builder_;
-  std::mutex thread_safe_;
+  JsonBuilder *builder_{nullptr};
+  std::mutex thread_safe_{};
 };
 }  // namespace switcher
 

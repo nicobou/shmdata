@@ -139,76 +139,76 @@ void QuiddityManager_Impl::register_classes() {
   // registering quiddities
   abstract_factory_.register_class<AudioTestSource>
       (AudioTestSource::switcher_doc_.get_class_name(),
-       AudioTestSource::switcher_doc_.get_json_root_node());
+       &AudioTestSource::switcher_doc_);
   abstract_factory_.register_class<AravisGenicam>
       (AravisGenicam::switcher_doc_.get_class_name(),
-       AravisGenicam::switcher_doc_.get_json_root_node());
+       &AravisGenicam::switcher_doc_);
   abstract_factory_.register_class<CreateRemoveSpy>
       (CreateRemoveSpy::switcher_doc_.get_class_name(),
-       CreateRemoveSpy::switcher_doc_.get_json_root_node());
+       &CreateRemoveSpy::switcher_doc_);
   abstract_factory_.register_class<Decodebin2>
       (Decodebin2::switcher_doc_.get_class_name(),
-       Decodebin2::switcher_doc_.get_json_root_node());
+       &Decodebin2::switcher_doc_);
   abstract_factory_.register_class<Deinterleave>
       (Deinterleave::switcher_doc_.get_class_name(),
-       Deinterleave::switcher_doc_.get_json_root_node());
+       &Deinterleave::switcher_doc_);
   abstract_factory_.register_class<FakeShmdataWriter>
       (FakeShmdataWriter::switcher_doc_.get_class_name(),
-       FakeShmdataWriter::switcher_doc_.get_json_root_node());
+       &FakeShmdataWriter::switcher_doc_);
   abstract_factory_.register_class<FakeSink>
       (FakeSink::switcher_doc_.get_class_name(),
-       FakeSink::switcher_doc_.get_json_root_node());
+       &FakeSink::switcher_doc_);
   abstract_factory_.register_class<FileSDP>
       (FileSDP::switcher_doc_.get_class_name(),
-       FileSDP::switcher_doc_.get_json_root_node());
+       &FileSDP::switcher_doc_);
   abstract_factory_.register_class<GstParseToBinSrc>
       (GstParseToBinSrc::switcher_doc_.get_class_name(),
-       GstParseToBinSrc::switcher_doc_.get_json_root_node());
+       &GstParseToBinSrc::switcher_doc_);
   abstract_factory_.register_class<GstVideoParseToBinSrc>
       (GstVideoParseToBinSrc::switcher_doc_.get_class_name(),
-       GstVideoParseToBinSrc::switcher_doc_.get_json_root_node());
+       &GstVideoParseToBinSrc::switcher_doc_);
   abstract_factory_.register_class<HTTPSDP>
       (HTTPSDP::switcher_doc_.get_class_name(),
-       HTTPSDP::switcher_doc_.get_json_root_node());
+       &HTTPSDP::switcher_doc_);
   abstract_factory_.register_class<HTTPSDPDec>
       (HTTPSDPDec::switcher_doc_.get_class_name(),
-       HTTPSDPDec::switcher_doc_.get_json_root_node());
+       &HTTPSDPDec::switcher_doc_);
   abstract_factory_.register_class<JackAudioSource>
       (JackAudioSource::switcher_doc_.get_class_name(),
-       JackAudioSource::switcher_doc_.get_json_root_node());
+       &JackAudioSource::switcher_doc_);
   abstract_factory_.register_class<JackSink>
       (JackSink::switcher_doc_.get_class_name(),
-       JackSink::switcher_doc_.get_json_root_node());
+       &JackSink::switcher_doc_);
   abstract_factory_.register_class<Logger>
       (Logger::switcher_doc_.get_class_name(),
-       Logger::switcher_doc_.get_json_root_node());
+       &Logger::switcher_doc_);
   abstract_factory_.register_class<PropertyMapper>
       (PropertyMapper::switcher_doc_.get_class_name(),
-       PropertyMapper::switcher_doc_.get_json_root_node());
+       &PropertyMapper::switcher_doc_);
   abstract_factory_.register_class<RtpSession>
       (RtpSession::switcher_doc_.get_class_name(),
-       RtpSession::switcher_doc_.get_json_root_node());
+       &RtpSession::switcher_doc_);
   abstract_factory_.register_class<ShmdataFromGDPFile>
       (ShmdataFromGDPFile::switcher_doc_.get_class_name(),
-       ShmdataFromGDPFile::switcher_doc_.get_json_root_node());
+       &ShmdataFromGDPFile::switcher_doc_);
   abstract_factory_.register_class<ShmdataToFile>
       (ShmdataToFile::switcher_doc_.get_class_name(),
-       ShmdataToFile::switcher_doc_.get_json_root_node());
+       &ShmdataToFile::switcher_doc_);
   abstract_factory_.register_class<StringDictionary>
       (StringDictionary::switcher_doc_.get_class_name(),
-       StringDictionary::switcher_doc_.get_json_root_node());
+       &StringDictionary::switcher_doc_);
   abstract_factory_.register_class<UDPSink>
       (UDPSink::switcher_doc_.get_class_name(),
-       UDPSink::switcher_doc_.get_json_root_node());
+       &UDPSink::switcher_doc_);
   abstract_factory_.register_class<Uridecodebin>
       (Uridecodebin::switcher_doc_.get_class_name(),
-       Uridecodebin::switcher_doc_.get_json_root_node());
+       &Uridecodebin::switcher_doc_);
   abstract_factory_.register_class<VideoTestSource>
       (VideoTestSource::switcher_doc_.get_class_name(),
-       VideoTestSource::switcher_doc_.get_json_root_node());
+       &VideoTestSource::switcher_doc_);
   abstract_factory_.register_class<Xvimagesink>
       (Xvimagesink::switcher_doc_.get_class_name(),
-       Xvimagesink::switcher_doc_.get_json_root_node());
+       &Xvimagesink::switcher_doc_);
 }
 
 std::vector<std::string> QuiddityManager_Impl::get_classes() {
@@ -217,15 +217,14 @@ std::vector<std::string> QuiddityManager_Impl::get_classes() {
 }
 
 void QuiddityManager_Impl::make_classes_doc() {
-  std::vector<JSONBuilder::Node> docs =
+  std::vector<QuiddityDocumentation *> docs =
       abstract_factory_.get_classes_documentation();
   classes_doc_->reset();
   classes_doc_->begin_object();
   classes_doc_->set_member_name("classes");
   classes_doc_->begin_array();
-  for (std::vector<JSONBuilder::Node>::iterator it = docs.begin();
-       it != docs.end(); ++it)
-    classes_doc_->add_node_value(*it);
+  for (auto &it : docs)
+    classes_doc_->add_node_value(it->get_json_root_node());
   classes_doc_->end_array();
   classes_doc_->end_object();
 }
@@ -236,9 +235,9 @@ std::string QuiddityManager_Impl::get_classes_doc() {
 
 std::string QuiddityManager_Impl::get_class_doc(std::string class_name) {
   if (abstract_factory_.key_exists(class_name))
-    return JSONBuilder::
-        get_string(abstract_factory_.get_class_documentation(class_name),
-                   true);
+    return JSONBuilder::get_string(
+        abstract_factory_.get_class_documentation(class_name)->get_json_root_node(),
+        true);
 
   return "{ \"error\":\"class not found\" }";
 }
@@ -252,8 +251,7 @@ void QuiddityManager_Impl::give_name_if_unnamed(Quiddity::ptr quiddity) {
   if (g_strcmp0(quiddity->get_name().c_str(), "") == 0) {
     gchar *name = g_strdup_printf("%s%u",
                                   quiddity->
-                                  get_documentation().get_class_name().
-                                  c_str(),
+                                  get_documentation()->get_class_name().c_str(),
                                   quiddity_created_counter_);
     quiddity->set_name(name);
     g_free(name);
@@ -389,22 +387,22 @@ std::string QuiddityManager_Impl::get_quiddities_description() {
     std::shared_ptr<Quiddity> quid = get_quiddity(*it);
     descr->add_string_member("name", quid->get_nick_name().c_str());
     descr->add_string_member("class",
-                             quid->get_documentation().get_class_name().
+                             quid->get_documentation()->get_class_name().
                              c_str());
     descr->add_string_member("category",
-                             quid->get_documentation().
+                             quid->get_documentation()->
                              get_category().c_str());
     descr->add_string_member("long name",
-                             quid->get_documentation().
+                             quid->get_documentation()->
                              get_long_name().c_str());
     descr->add_string_member("description",
-                             quid->get_documentation().get_description().
+                             quid->get_documentation()->get_description().
                              c_str());
     descr->add_string_member("license",
-                             quid->get_documentation().
+                             quid->get_documentation()->
                              get_license().c_str());
     descr->add_string_member("author",
-                             quid->get_documentation().
+                             quid->get_documentation()->
                              get_author().c_str());
     descr->end_object();
   }
@@ -428,27 +426,27 @@ QuiddityManager_Impl::get_quiddity_description(std::string nick_name) {
   // FIXME should use json node
   descr->add_string_member("class",
                            quiddities_[quiddities_nick_names_
-                                       [nick_name]]->get_documentation().
+                                       [nick_name]]->get_documentation()->
                            get_class_name().c_str());
   descr->add_string_member("category",
                            quiddities_[quiddities_nick_names_
-                                       [nick_name]]->get_documentation().
+                                       [nick_name]]->get_documentation()->
                            get_category().c_str());
   descr->add_string_member("long name",
                            quiddities_[quiddities_nick_names_
-                                       [nick_name]]->get_documentation().
+                                       [nick_name]]->get_documentation()->
                            get_long_name().c_str());
   descr->add_string_member("description",
                            quiddities_[quiddities_nick_names_
-                                       [nick_name]]->get_documentation().
+                                       [nick_name]]->get_documentation()->
                            get_description().c_str());
   descr->add_string_member("license",
                            quiddities_[quiddities_nick_names_
-                                       [nick_name]]->get_documentation().
+                                       [nick_name]]->get_documentation()->
                            get_license().c_str());
   descr->add_string_member("author",
                            quiddities_[quiddities_nick_names_
-                                       [nick_name]]->get_documentation().
+                                       [nick_name]]->get_documentation()->
                            get_author().c_str());
   descr->end_object();
   return descr->get_string(true);
@@ -1082,7 +1080,7 @@ bool QuiddityManager_Impl::load_plugin(const char *filename) {
 
   abstract_factory_.register_class_with_custom_factory(
       class_name,
-      plugin->get_json_root_node(),
+      plugin->get_doc(),
       plugin->create_,
       plugin->destroy_);
   plugins_[class_name] = plugin;

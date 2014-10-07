@@ -905,9 +905,7 @@ void QuiddityManager::invoke_in_thread() {
   builder->reset();
   builder->begin_object();
   builder->set_member_name("command");
-  JsonNode *node = command_->get_json_root_node();
-  On_scope_exit{json_node_free(node);};
-  builder->add_node_value(node);
+  builder->add_node_value(command_->get_json_root_node());
   builder->end_object();
   {
     std::unique_lock<std::mutex> lock(execution_done_mutex_);

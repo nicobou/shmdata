@@ -22,17 +22,18 @@
  */
 
 #include "./json-builder.hpp"
+#include "./std2.hpp"
 
 namespace switcher {
 JSONBuilder::JSONBuilder():
-    builder_(json_builder_new()),
-    thread_safe_() {
+    builder_(json_builder_new()) {
 }
 
 JSONBuilder::~JSONBuilder() {
   std::unique_lock<std::mutex> lock(thread_safe_);
-  if (builder_ != nullptr && G_IS_OBJECT(builder_))
+  if (builder_ != nullptr && G_IS_OBJECT(builder_)) {
     g_object_unref(builder_);
+  }
 }
 
 void JSONBuilder::reset() {
@@ -99,22 +100,29 @@ void JSONBuilder::add_int_member(const gchar *member_name, gint int_value) {
 
 void JSONBuilder::add_node_value(Node node_value) {
   std::unique_lock<std::mutex> lock(thread_safe_);
-  json_builder_add_value(builder_, json_node_copy(node_value));
+  JsonNode *copy = json_node_copy(node_value->get());
+  json_builder_add_value(builder_, copy);
+}
+
+void JSONBuilder::add_node_value(JsonNode *node_value) {
+  std::unique_lock<std::mutex> lock(thread_safe_);
+  JsonNode *copy = json_node_copy(node_value);
+  json_builder_add_value(builder_, copy);
 }
 
 void
 JSONBuilder::add_JsonNode_member(const gchar *member_name,
-                                 JsonNode *JsonNode_value) {
+                                 Node JsonNode_value) {
   std::unique_lock<std::mutex> lock(thread_safe_);
   json_builder_set_member_name(builder_, member_name);
-  json_builder_add_value(builder_, JsonNode_value);
+  JsonNode *copy = json_node_copy(JsonNode_value->get());
+  json_builder_add_value(builder_, copy);
 }
 
 std::string JSONBuilder::get_string(bool pretty) {
   std::unique_lock<std::mutex> lock(thread_safe_);
-  JsonNode *node = json_builder_get_root(builder_);
-  std::string res = get_string(node, pretty);
-  json_node_free(node);
+  Node node = std2::make_unique<RootNodeCopy>(builder_);
+  std::string res = get_string(std::move(node), pretty);
   return res;
 }
 
@@ -125,7 +133,7 @@ std::string JSONBuilder::get_string(Node root_node, bool pretty) {
     json_generator_set_pretty(generator, TRUE);
   else
     json_generator_set_pretty(generator, FALSE);
-  json_generator_set_root(generator, root_node);
+  json_generator_set_root(generator, root_node->get());
   gchar *data = json_generator_to_data(generator, &length);
   std::string description(data);
   g_free(data);
@@ -133,12 +141,9 @@ std::string JSONBuilder::get_string(Node root_node, bool pretty) {
   return description;
 }
 
-JsonNode *JSONBuilder::get_root() {
+JSONBuilder::Node JSONBuilder::get_root() {
   std::unique_lock<std::mutex> lock(thread_safe_);
-  return json_builder_get_root(builder_);     // FIXME this might be leaking
+  return std2::make_unique<RootNodeCopy>(builder_);
 }
 
-void JSONBuilder::node_free(JsonNode *root_node) {
-  json_node_free(root_node);
-}
-}
+}  //namespace switcher
