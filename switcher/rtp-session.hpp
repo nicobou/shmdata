@@ -99,7 +99,7 @@ class RtpSession: public GstPipeliner {
   // custom properties:
   CustomPropertyHelper::ptr custom_props_;
   GParamSpec *destination_description_json_{nullptr};
-  gchar *destinations_json_{nullptr};
+  std::string destinations_json_{};
   GParamSpec *mtu_at_add_data_stream_spec_{nullptr};
   gint mtu_at_add_data_stream_{1400};
 

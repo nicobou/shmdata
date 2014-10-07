@@ -707,10 +707,7 @@ void RtpSession::on_no_more_pad(GstElement * /*gstelement */ ,
 const gchar *RtpSession::get_destinations_json(void *user_data) {
   RtpSession *context = static_cast<RtpSession *>(user_data);
 
-  if (context->destinations_json_ != nullptr)
-    g_free(context->destinations_json_);
-
-  JSONBuilder::ptr destinations_json(new JSONBuilder());
+  JSONBuilder::ptr destinations_json = std::make_shared<JSONBuilder>();
   destinations_json->reset();
   destinations_json->begin_object();
   destinations_json->set_member_name("destinations");
@@ -719,9 +716,8 @@ const gchar *RtpSession::get_destinations_json(void *user_data) {
     destinations_json->add_node_value(it.second->get_json_root_node());
   destinations_json->end_array();
   destinations_json->end_object();
-  context->destinations_json_ =
-      g_strdup(destinations_json->get_string(true).c_str());
-  return context->destinations_json_;
+  context->destinations_json_ = destinations_json->get_string(true);
+return context->destinations_json_.c_str();
 }
 
 void
