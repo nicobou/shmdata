@@ -85,14 +85,14 @@ void Property::set(const std::string &value) {
 
 bool Property::subscribe(Callback cb, void *user_data) {
   std::pair<Callback, void *>subscribe_id = std::make_pair(cb, user_data);
-  gchar *signal = g_strconcat("notify::", property_->name, nullptr);
+  std::string signal (std::string("notify::") + property_->name);
   if (subscribed_handlers_.find(subscribe_id) != subscribed_handlers_.end()) {
     g_debug("cannot subscribe callback/user_data");
     return false;
   }
 
   subscribed_handlers_[subscribe_id] =
-      g_signal_connect(object_, signal, G_CALLBACK(cb), user_data);
+      g_signal_connect(object_, signal.c_str(), G_CALLBACK(cb), user_data);
   return true;
 }
 

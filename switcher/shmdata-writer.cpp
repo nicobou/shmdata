@@ -39,19 +39,17 @@ ShmdataWriter::~ShmdataWriter() {
 // WARNING if the file exist it will be deleted
 bool ShmdataWriter::set_path(std::string name) {
   GFile *shmfile = g_file_new_for_commandline_arg(name.c_str());
+  On_scope_exit{g_object_unref(shmfile);};
   if (g_file_query_exists(shmfile, nullptr)) {
     // thrash it
-    g_debug
-        ("ShmdataWriter::set_path warning: file %s exists and will be deleted.",
-         name.c_str());
+    g_debug("file %s exists and will be deleted.",
+            name.c_str());
     if (!g_file_delete(shmfile, nullptr, nullptr)) {
-      g_debug
-          ("ShmdataWriter::set_path error: file %s is already existing and cannot be trashed.",
-           name.c_str());
+      g_debug("file %s is already existing and cannot be trashed.",
+              name.c_str());
       return false;
     }
   }
-
   return set_path_without_deleting(name);
 }
 

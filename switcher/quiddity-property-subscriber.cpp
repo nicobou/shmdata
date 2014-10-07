@@ -126,6 +126,7 @@ QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid,
       g_warning("cannot unsubscribe to %s", property_name.c_str());
       return false;
     }
+    g_free(it->second->name);
     g_free(it->second->quiddity_name);
     g_free(it->second->property_name);
     delete it->second;
@@ -149,6 +150,7 @@ bool QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid) {
                   quid_name.c_str());
         return false;
       }
+      g_free(it.second->name);
       g_free(it.second->quiddity_name);
       g_free(it.second->property_name);
       delete it.second;

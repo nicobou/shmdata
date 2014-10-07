@@ -35,8 +35,6 @@ Deinterleave::Deinterleave():deinterleave_(nullptr), media_counters_() {
 bool Deinterleave::init_gpipe() {
   if (!GstUtils::make_element("deinterleave", &deinterleave_))
     return false;
-  // set the name before registering properties
-  set_name(gst_element_get_name(deinterleave_));
   add_element_to_cleaner(deinterleave_);
   set_sink_element(deinterleave_);
   set_on_first_data_hook(Deinterleave::make_deinterleave_active, this);

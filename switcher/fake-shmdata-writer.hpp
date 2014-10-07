@@ -42,7 +42,7 @@ class FakeShmdataWriter:public GstPipeliner, StartableQuiddity {
   // custom properties:
   CustomPropertyHelper::ptr custom_props_;
   GParamSpec *shmdata_path_spec_;
-  gchar *shmdata_path_;
+  std::string shmdata_path_;
   bool clean();
   bool init_gpipe() final;
   static gboolean add_shmdata_path_wrapped(gpointer name,

@@ -238,6 +238,15 @@ GstPipeliner::print_one_tag(const GstTagList */*list*/,
 
 
 void GstPipeliner::make_bin() {
+  {  // reseting the pipeline too
+    std::unique_ptr<GstPipe> tmp;
+    std::swap(gst_pipeline_, tmp);
+  }
+  gst_pipeline_ = std2::make_unique<GstPipe>(get_g_main_context());
+  gst_pipeline_->set_on_error_function(std::bind(&GstPipeliner::on_gst_error,
+                                                 this,
+                                                 std::placeholders::_1));
+
   GstUtils::make_element("bin", &bin_);
   g_object_set(G_OBJECT(bin_), "async-handling", TRUE, nullptr);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), bin_);
@@ -263,14 +272,14 @@ void GstPipeliner::clean_bin() {
             gst_element_state_get_name(GST_STATE_TARGET(bin_)),
             GST_BIN_NUMCHILDREN(GST_BIN(bin_)));
 
-    // if (g_list_length(GST_BIN_CHILDREN(bin_)) > 0) {
-    //   GList *child = nullptr, *children = GST_BIN_CHILDREN(bin_);
-    //   for (child = children; child != nullptr; child = g_list_next(child)) {
-    //     g_debug("segment warning: child %s",
-    //             GST_ELEMENT_NAME(GST_ELEMENT(child->data)));
-    //     GstUtils::clean_element (GST_ELEMENT (child->data));
-    //   }
-    // }
+    if (g_list_length(GST_BIN_CHILDREN(bin_)) > 0) {
+      GList *child = nullptr, *children = GST_BIN_CHILDREN(bin_);
+      for (child = children; child != nullptr; child = g_list_next(child)) {
+        g_debug("segment warning: child %s",
+                GST_ELEMENT_NAME(GST_ELEMENT(child->data)));
+        GstUtils::clean_element (GST_ELEMENT (child->data));
+      }
+    }
     g_debug("going to clean bin_");
     GstUtils::clean_element(bin_);
     g_debug("GstPipeliner: cleaning internal bin");

@@ -35,8 +35,7 @@ bool AravisGenicam::init_gpipe() {
         ("aravissrc not available, install aravis (http://git.gnome.org/browse/aravis/)");
     return false;
   }
-  set_name(gst_element_get_name(aravissrc_));
-
+  
   // install_property (G_OBJECT (aravissrc_),"camera-name","aravissrc");
 
   install_property(G_OBJECT(aravissrc_), "gain", "gain", "Gain");
