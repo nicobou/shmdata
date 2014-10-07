@@ -111,10 +111,7 @@ void GstPipeliner::install_speed() {
 
 void GstPipeliner::set_play(gboolean play, void *user_data) {
   GstPipeliner *context = static_cast<GstPipeliner *>(user_data);
-  if (play)
-    context->play_ = context->gst_pipeline_->play(true);
-  else
-    context->play_ = context->gst_pipeline_->play(false);
+  context->play(play);
 }
 
 gboolean GstPipeliner::get_play(void *user_data) {
@@ -123,10 +120,14 @@ gboolean GstPipeliner::get_play(void *user_data) {
 }
 
 void GstPipeliner::play(gboolean play) {
-  if (play)
+  if (play) {
     gst_pipeline_->play(true);
-  else
+    play_ = true;
+  } else {
     gst_pipeline_->play(false);
+    play_ = false;
+  }
+  gpipe_custom_props_->notify_property_changed(play_pause_spec_);
 }
 
 bool GstPipeliner::seek(gdouble position_in_ms) {
@@ -272,14 +273,14 @@ void GstPipeliner::clean_bin() {
             gst_element_state_get_name(GST_STATE_TARGET(bin_)),
             GST_BIN_NUMCHILDREN(GST_BIN(bin_)));
 
-    if (g_list_length(GST_BIN_CHILDREN(bin_)) > 0) {
-      GList *child = nullptr, *children = GST_BIN_CHILDREN(bin_);
-      for (child = children; child != nullptr; child = g_list_next(child)) {
-        g_debug("segment warning: child %s",
-                GST_ELEMENT_NAME(GST_ELEMENT(child->data)));
-        GstUtils::clean_element (GST_ELEMENT (child->data));
-      }
-    }
+    // if (g_list_length(GST_BIN_CHILDREN(bin_)) > 0) {
+    //   GList *child = nullptr, *children = GST_BIN_CHILDREN(bin_);
+    //   for (child = children; child != nullptr; child = g_list_next(child)) {
+    //     g_debug("segment warning: child %s",
+    //             GST_ELEMENT_NAME(GST_ELEMENT(child->data)));
+    //     GstUtils::clean_element (GST_ELEMENT (child->data));
+    //   }
+    // }
     g_debug("going to clean bin_");
     GstUtils::clean_element(bin_);
     g_debug("GstPipeliner: cleaning internal bin");

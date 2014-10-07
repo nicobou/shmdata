@@ -231,7 +231,7 @@ bool GstPipe::play(bool play)
     gst_element_set_state(pipeline_, GST_STATE_PAUSED);
   }
   GstUtils::wait_state_changed(pipeline_);
-  return true;
+  return play;
 }
 
 bool GstPipe::seek(gdouble position) {
