@@ -24,8 +24,10 @@
 int
 main() {
   {
-    switcher::QuiddityManager::ptr manager =
-        switcher::QuiddityManager::make_manager("test-manager");
+    int c = 10;
+    while (--c > 0)
+      switcher::QuiddityManager::ptr manager =
+          switcher::QuiddityManager::make_manager("test-manager");
   }
   gst_deinit();
   return 0;
