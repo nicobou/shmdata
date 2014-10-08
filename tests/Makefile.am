@@ -29,7 +29,8 @@ check_PROGRAMS = \
     check_rtp_session \
     check_scope_guard \
     check_signal_subscriber \
-    check_startable 
+    check_startable \
+    check_ugstelem
 
 check_description_by_class_SOURCES = \
     check_description_by_class.cpp
@@ -66,5 +67,8 @@ check_signal_subscriber_SOURCES = \
 
 check_startable_SOURCES = \
     check_startable.cpp
+
+check_ugstelem_SOURCES = \
+    check_ugstelem.cpp
 
 TESTS = $(check_PROGRAMS)

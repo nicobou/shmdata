@@ -21,10 +21,11 @@
 #define __SWITCHER_UNIQUE_GST_ELEMENT_H__
 
 #include <memory>
+#include "./safe-bool-idiom.hpp"
 #include "./gst-utils.hpp"
 
 namespace switcher {
-class UGstElem {
+class UGstElem : public SafeBoolIdiom {
  public:
   explicit UGstElem(const gchar *class_name);
 
@@ -49,8 +50,11 @@ class UGstElem {
   
  private:
   using gst_element_handle =
-      std::unique_ptr<GstElement,decltype(&GstUtils::gst_element_deleter)>;
+      std::unique_ptr<GstElement, decltype(&GstUtils::gst_element_deleter)>;
   gst_element_handle element_;
+
+  // safe bool idiom implementation
+  bool safe_bool_idiom() const final;
 };
 }  // namespace switcher
 

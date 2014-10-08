@@ -25,6 +25,10 @@ UGstElem::UGstElem(const gchar *class_name):
              &GstUtils::gst_element_deleter) {
 }
 
+bool UGstElem::safe_bool_idiom() const {
+  return static_cast<bool>(element_);
+}
+
 void UGstElem::g_invoke(std::function<void(gpointer)> command) {
   command(G_OBJECT(element_.get()));
   return;

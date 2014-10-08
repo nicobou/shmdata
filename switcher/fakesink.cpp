@@ -28,14 +28,16 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FakeSink,
                                      "LGPL",
                                      "fakesink", "Nicolas Bouillot");
 
-FakeSink::FakeSink():fakesink_(nullptr),
-                     num_bytes_since_last_update_(0),
-                     update_byterate_source_(nullptr),
-                     byte_rate_(0),
-                     string_caps_(g_strdup("unknown")),
-                     set_string_caps_(true),
-                     props_(new CustomPropertyHelper()),
-                     byte_rate_spec_(nullptr), caps_spec_(nullptr) {
+FakeSink::FakeSink():
+    fakesink_(nullptr),
+    num_bytes_since_last_update_(0),
+    update_byterate_source_(nullptr),
+    byte_rate_(0),
+    string_caps_(g_strdup("unknown")),
+    set_string_caps_(true),
+    props_(new CustomPropertyHelper()),
+    byte_rate_spec_(nullptr),
+    caps_spec_(nullptr) {
 }
 
 FakeSink::~FakeSink() {

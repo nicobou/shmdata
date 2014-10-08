@@ -25,31 +25,30 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     aravis-genicam.cpp \
     audio-source.cpp \
     audio-test-source.cpp \
-    single-pad-gst-sink.cpp \
     categorizable.cpp \
     counter-map.cpp \
-    custom-property-helper.cpp \
     create-remove-spy.cpp \
-    decodebin2.cpp \
+    custom-property-helper.cpp \
     decodebin-to-shmdata.cpp \
+    decodebin2.cpp \
     deinterleave.cpp \
     fake-shmdata-writer.cpp \
-    file-sdp.cpp \
     fakesink.cpp \
+    file-sdp.cpp \
     glibmainloop.cpp \
     gobject-custom-property.cpp \
     gobject-wrapper.cpp \
-    gst-pipeliner.cpp \
     gst-element-cleaner.cpp \
     gst-parse-to-bin-src.cpp \
     gst-pipe.cpp \
-    gst-video-parse-to-bin-src.cpp \
+    gst-pipeliner.cpp \
     gst-utils.cpp \
-    http-sdp.cpp \
+    gst-video-parse-to-bin-src.cpp \
     http-sdp-dec.cpp \
-    information-tree.cpp \
+    http-sdp.cpp \
     information-tree-basic-serializer.cpp \
     information-tree-json.cpp \
+    information-tree.cpp \
     jack-audio-source.cpp \
     jack-sink.cpp \
     json-builder.cpp \
@@ -57,28 +56,30 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     method.cpp \
     on-caps.cpp \
     plugin-loader.cpp \
-    property.cpp \
     property-mapper.cpp \
+    property.cpp \
     quiddity-basic-test.cpp \
     quiddity-command.cpp \
     quiddity-documentation.cpp \
+    quiddity-manager-impl.cpp \
     quiddity-manager-wrapper.cpp \
     quiddity-manager.cpp \
-    quiddity-manager-impl.cpp \
     quiddity-property-subscriber.cpp \
     quiddity-signal-subscriber.cpp \
     quiddity.cpp \
     rtp-destination.cpp \
     rtp-session.cpp \
+    safe-bool-idiom.cpp \
     sdp-utils.cpp \
     segment.cpp \
-    shmdata-any-writer.cpp \
     shmdata-any-reader.cpp \
+    shmdata-any-writer.cpp \
     shmdata-from-gdp-file.cpp \
     shmdata-reader.cpp \
     shmdata-to-file.cpp \
     shmdata-writer.cpp \
     signal-string.cpp \
+    single-pad-gst-sink.cpp \
     startable-quiddity.cpp \
     string-dictionary.cpp \
     udpsink.cpp \
@@ -108,7 +109,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     aravis-genicam.hpp \
     audio-source.hpp \
     audio-test-source.hpp \
-    single-pad-gst-sink.hpp \
     categorizable.hpp \
     clock.hpp \
     const-methods-invoker.hpp \
@@ -116,8 +116,8 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     create-remove-spy.hpp \
     creator.hpp \
     custom-property-helper.hpp \
-    decodebin2.hpp \
     decodebin-to-shmdata.hpp \
+    decodebin2.hpp \
     deinterleave.hpp \
     fake-shmdata-writer.hpp \
     fakesink.hpp \
@@ -125,19 +125,19 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     glibmainloop.hpp \
     gobject-custom-property.hpp \
     gobject-wrapper.hpp \
-    gst-pipeliner.hpp \
     gst-element-cleaner.hpp \
     gst-parse-to-bin-src.hpp \
     gst-pipe.hpp \
-    gst-video-parse-to-bin-src.hpp \
+    gst-pipeliner.hpp \
     gst-utils.hpp \
+    gst-video-parse-to-bin-src.hpp \
     hash-table.hpp \
     hash-table_spec.hpp \
-    http-sdp.hpp \
     http-sdp-dec.hpp \
-    information-tree.hpp \
+    http-sdp.hpp \
     information-tree-basic-serializer.hpp \
     information-tree-json.hpp \
+    information-tree.hpp \
     jack-audio-source.hpp \
     jack-sink.hpp \
     json-builder.hpp \
@@ -145,29 +145,31 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     method.hpp \
     on-caps.hpp \
     plugin-loader.hpp \
-    property.hpp \
     property-mapper.hpp \
+    property.hpp \
     quiddity-basic-test.hpp \
     quiddity-command.hpp \
     quiddity-documentation.hpp \
+    quiddity-manager-impl.hpp \
     quiddity-manager-wrapper.hpp \
     quiddity-manager.hpp \
-    quiddity-manager-impl.hpp \
     quiddity-property-subscriber.hpp \
     quiddity-signal-subscriber.hpp \
     quiddity.hpp \
     rtp-destination.hpp \
     rtp-session.hpp \
+    safe-bool-idiom.hpp \
     scope-exit.hpp \
     sdp-utils.hpp \
     segment.hpp \
-    shmdata-any-writer.hpp \
     shmdata-any-reader.hpp \
+    shmdata-any-writer.hpp \
     shmdata-from-gdp-file.hpp \
     shmdata-reader.hpp \
     shmdata-to-file.hpp \
     shmdata-writer.hpp \
     signal-string.hpp \
+    single-pad-gst-sink.hpp \
     startable-quiddity.hpp \
     std2.hpp \
     string-dictionary.hpp \
