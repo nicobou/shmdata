@@ -29,7 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FakeSink,
                                      "fakesink", "Nicolas Bouillot");
 
 FakeSink::FakeSink():
-    fakesink_(nullptr),
+    fakesink_("fakesink"),
     num_bytes_since_last_update_(0),
     update_byterate_source_(nullptr),
     byte_rate_(0),
@@ -43,18 +43,16 @@ FakeSink::FakeSink():
 FakeSink::~FakeSink() {
   if (update_byterate_source_ != nullptr)
     g_source_destroy(update_byterate_source_);
-  GstUtils::clean_element(fakesink_);
   g_free(string_caps_);
 }
 
 bool FakeSink::init_gpipe() {
-  if (!GstUtils::make_element("fakesink", &fakesink_))
+  if (!fakesink_)
     return false;
-
-  g_object_set(G_OBJECT(fakesink_),
+  g_object_set(G_OBJECT(fakesink_.get_raw()),
                "sync", FALSE, "signal-handoffs", TRUE, nullptr);
 
-  g_signal_connect(fakesink_, "handoff", (GCallback) on_handoff_cb, this);
+  g_signal_connect(fakesink_.get_raw(), "handoff", (GCallback) on_handoff_cb, this);
 
   // registering some properties
   // install_property (G_OBJECT (fakesink_),"last-message","last-message", "Last Message");
@@ -88,7 +86,7 @@ bool FakeSink::init_gpipe() {
   install_property_by_pspec(props_->get_gobject(),
                             caps_spec_, "caps", "Capabilities");
 
-  set_sink_element(fakesink_);
+  set_sink_element(fakesink_.get_raw());
   return true;
 }
 

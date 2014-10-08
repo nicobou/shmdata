@@ -22,6 +22,7 @@
 
 #include <memory>
 #include "./gst-pipeliner.hpp"
+#include "./unique-gst-element.hpp"
 
 namespace switcher {
 class AudioSource: public GstPipeliner {
@@ -32,8 +33,8 @@ class AudioSource: public GstPipeliner {
   AudioSource(const AudioSource &) = delete;
   AudioSource &operator=(const AudioSource &) = delete;
  private:
-  GstElement *rawaudio_ {nullptr};
-  GstElement *audio_tee_ {nullptr};
+  GstElement *rawaudio_{nullptr};
+  UGstElem audio_tee_;
   std::string shmdata_path_{};
   void make_audio_elements();
 

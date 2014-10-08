@@ -30,7 +30,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
                                      "Nicolas Bouillot");
 
 AudioTestSource::AudioTestSource():
-    audiotestsrc_(nullptr) {
+    audiotestsrc_("audiotestsrc") {
 }
 
 bool AudioTestSource::init_gpipe() {
@@ -44,47 +44,44 @@ bool AudioTestSource::make_audiotestsrc() {
   uninstall_property("samplesperbuffer");
   uninstall_property("wave");
 
-  GstElement *audiotest;
-  if (!GstUtils::make_element("audiotestsrc", &audiotest))
+  UGstElem audiotest("audiotestsrc");
+  if (!audiotest)
     return false;
 
-  g_object_set(G_OBJECT(audiotest), "is-live", TRUE, nullptr);
+  g_object_set(G_OBJECT(audiotest.get_raw()), "is-live", TRUE, nullptr);
 
-  if (audiotestsrc_ != nullptr) {
-    GstUtils::apply_property_value(G_OBJECT(audiotestsrc_),
-                                   G_OBJECT(audiotest), "volume");
-    GstUtils::apply_property_value(G_OBJECT(audiotestsrc_),
-                                   G_OBJECT(audiotest), "freq");
-    GstUtils::apply_property_value(G_OBJECT(audiotestsrc_),
-                                   G_OBJECT(audiotest), "samplesperbuffer");
-    GstUtils::apply_property_value(G_OBJECT(audiotestsrc_),
-                                   G_OBJECT(audiotest), "wave");
-
-    GstUtils::clean_element(audiotestsrc_);
+  if (audiotestsrc_) {
+    GstUtils::apply_property_value(G_OBJECT(audiotestsrc_.get_raw()),
+                                   G_OBJECT(audiotest.get_raw()), "volume");
+    GstUtils::apply_property_value(G_OBJECT(audiotestsrc_.get_raw()),
+                                   G_OBJECT(audiotest.get_raw()), "freq");
+    GstUtils::apply_property_value(G_OBJECT(audiotestsrc_.get_raw()),
+                                   G_OBJECT(audiotest.get_raw()), "samplesperbuffer");
+    GstUtils::apply_property_value(G_OBJECT(audiotestsrc_.get_raw()),
+                                   G_OBJECT(audiotest.get_raw()), "wave");
   }
   else
-    g_object_set(G_OBJECT(audiotest), "samplesperbuffer", 512, nullptr);
+    g_object_set(G_OBJECT(audiotest.get_raw()), "samplesperbuffer", 512, nullptr);
 
-  audiotestsrc_ = audiotest;
+  audiotestsrc_ = std::move(audiotest);
 
   // registering
-  install_property(G_OBJECT(audiotestsrc_), "volume", "volume", "Volume");
-  install_property(G_OBJECT(audiotestsrc_), "freq", "freq", "Frequency");
-  // install_property (G_OBJECT (audiotestsrc_),
+  install_property(G_OBJECT(audiotestsrc_.get_raw()), "volume", "volume", "Volume");
+  install_property(G_OBJECT(audiotestsrc_.get_raw()), "freq", "freq", "Frequency");
+  // install_property (G_OBJECT (audiotestsrc_.get_raw()),
   //        "samplesperbuffer",
   //        "samplesperbuffer",
   //        "Samples Per Buffer");
-  install_property(G_OBJECT(audiotestsrc_), "wave", "wave", "Signal Form");
+  install_property(G_OBJECT(audiotestsrc_.get_raw()), "wave", "wave", "Signal Form");
 
   return true;
 }
 
 AudioTestSource::~AudioTestSource() {
-  GstUtils::clean_element(audiotestsrc_);
 }
 
 bool AudioTestSource::start() {
-  set_raw_audio_element(audiotestsrc_);
+  set_raw_audio_element(audiotestsrc_.get_raw());
   return true;
 }
 

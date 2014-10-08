@@ -23,6 +23,7 @@
 #include <memory>
 #include "./audio-source.hpp"
 #include "./startable-quiddity.hpp"
+#include "./unique-gst-element.hpp"
 
 namespace switcher {
 class AudioTestSource:public AudioSource, public StartableQuiddity {
@@ -37,7 +38,7 @@ class AudioTestSource:public AudioSource, public StartableQuiddity {
   bool stop();
 
  private:
-  GstElement *audiotestsrc_;
+  UGstElem audiotestsrc_;
   bool make_audiotestsrc();
   bool init_gpipe() final;
 };

@@ -20,11 +20,12 @@
 #ifndef __SWITCHER_FAKESINK_H__
 #define __SWITCHER_FAKESINK_H__
 
+#include <gst/gst.h>
+#include <memory>
 #include "./single-pad-gst-sink.hpp"
 #include "./gst-element-cleaner.hpp"
 #include "./custom-property-helper.hpp"
-#include <gst/gst.h>
-#include <memory>
+#include "./unique-gst-element.hpp"
 
 namespace switcher {
 class FakeSink:public SinglePadGstSink {
@@ -36,7 +37,7 @@ class FakeSink:public SinglePadGstSink {
   FakeSink &operator=(const FakeSink &) = delete;
 
  private:
-  GstElement *fakesink_;
+  UGstElem fakesink_;
   gsize num_bytes_since_last_update_;
   GSource *update_byterate_source_;
   gint byte_rate_;
