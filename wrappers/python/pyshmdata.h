@@ -113,7 +113,6 @@ static void Reader_dealloc(pyshmdata_ReaderObject* self);
 static PyObject* Reader_new(PyTypeObject* type, PyObject* args, PyObject* kwds);
 static int Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds);
 static PyObject* Reader_pull(pyshmdata_ReaderObject* self);
-static void Reader_freeObject(void* user_data);
 static void Reader_on_data_handler(shmdata_any_reader_t* reader, void* shmbuf, void* data, int data_size, unsigned long long timestamp, const char* type, void* user_data);
 
 static PyMemberDef Reader_members[] = {
