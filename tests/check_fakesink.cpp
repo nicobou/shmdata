@@ -35,7 +35,7 @@ int
 main() {
   {
     switcher::QuiddityManager::ptr manager =
-        switcher::QuiddityManager::make_manager("check_fakesink");
+        switcher::QuiddityManager::make_manager("check-fakesink");
 
     manager->make_property_subscriber("sub", property_cb, nullptr);
 

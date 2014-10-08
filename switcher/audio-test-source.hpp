@@ -20,9 +20,9 @@
 #ifndef __SWITCHER_AUDIO_TEST_SOURCE_H__
 #define __SWITCHER_AUDIO_TEST_SOURCE_H__
 
+#include <memory>
 #include "./audio-source.hpp"
 #include "./startable-quiddity.hpp"
-#include <memory>
 
 namespace switcher {
 class AudioTestSource:public AudioSource, public StartableQuiddity {

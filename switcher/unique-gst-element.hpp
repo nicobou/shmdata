@@ -24,9 +24,9 @@
 #include "./gst-utils.hpp"
 
 namespace switcher {
-class UniqueGstElement {
+class UGstElem {
  public:
-  explicit UniqueGstElement(const gchar *class_name);
+  explicit UGstElem(const gchar *class_name);
 
   // invoke as g_object
   template<typename Return_type>
@@ -34,21 +34,22 @@ class UniqueGstElement {
   g_invoke_with_return(std::function<Return_type(gpointer)> command) {
     return command(G_OBJECT(element_.get()));
   }
-
   void g_invoke(std::function<void(gpointer)> command);
 
   // invoke as GstElement
   template<typename Return_type>
   Return_type
-  invoke_with_return(std::function<Return_type(GstElement *)>
-                     command) {
+  invoke_with_return(std::function<Return_type(GstElement *)> command) {
     return command(element_.get());
   }
-
   void invoke(std::function<void(GstElement *)> command);
 
+  // get raw without taking ownership (do not unref)
+  GstElement *get_raw();
+  
  private:
-  using gst_element_handle = std::unique_ptr<GstElement,decltype(&GstUtils::gst_element_deleter)>;
+  using gst_element_handle =
+      std::unique_ptr<GstElement,decltype(&GstUtils::gst_element_deleter)>;
   gst_element_handle element_;
 };
 }  // namespace switcher

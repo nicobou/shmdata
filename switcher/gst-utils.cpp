@@ -17,7 +17,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <unistd.h>  // sleep
+//#include <unistd.h>  // sleep
 #include <string>
 #include "./gst-utils.hpp"
 #include "./scope-exit.hpp"
@@ -34,6 +34,8 @@ GstUtils::make_element(const gchar *class_name,
   }
   return true;
 }
+
+
 
 bool GstUtils::link_static_to_request(GstElement * src, GstElement *sink) {
   GstPad *srcpad = gst_element_get_static_pad(src, "src");
@@ -357,9 +359,21 @@ GstUtils::element_factory_list_to_g_enum(GEnumValue *target_enum,
 }
 
 void GstUtils::gst_element_deleter(GstElement *element) {
+  if (nullptr == element) {
+    g_warning("%s is trying to delete a null element");
+    return;
+  }
+  if (!G_IS_OBJECT(element)) {
+    g_warning("%s is trying to delete a non null ptr but not a GObject");
+    return;
+  }
+    
   // delete if ownership has not been taken by a parent
-  if (nullptr != element && nullptr == GST_OBJECT_PARENT(element))
+  if (nullptr == GST_OBJECT_PARENT(element))
     gst_object_unref(element);
+  else
+    GstUtils::clean_element(element);
+  
 }
 
 // g_signal_connect is actually a macro, so wrapping it for use with std::bind

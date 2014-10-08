@@ -20,19 +20,22 @@
 #include "./unique-gst-element.hpp"
 
 namespace switcher {
-UniqueGstElement::UniqueGstElement(const gchar *
-                                   class_name):element_
-                                               (gst_element_factory_make(class_name, nullptr),
-                                                &GstUtils::gst_element_deleter) {
+UGstElem::UGstElem(const gchar *class_name):
+    element_(gst_element_factory_make(class_name, nullptr),
+             &GstUtils::gst_element_deleter) {
 }
 
-void UniqueGstElement::g_invoke(std::function<void(gpointer)> command) {
+void UGstElem::g_invoke(std::function<void(gpointer)> command) {
   command(G_OBJECT(element_.get()));
   return;
 }
 
-void UniqueGstElement::invoke(std::function<void(GstElement *)> command) {
+void UGstElem::invoke(std::function<void(GstElement *)> command) {
   command(element_.get());
   return;
 }
+
+GstElement *UGstElem::get_raw() {
+  return element_.get();
 }
+}  // namespace switcher

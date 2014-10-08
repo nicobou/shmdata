@@ -50,7 +50,7 @@ class DecodebinToShmdata {
   void invoke(std::function<void(GstElement *)> command);
 
  private:
-  UniqueGstElement decodebin_;
+  UGstElem decodebin_;
   bool discard_next_uncomplete_buffer_;
   GstPad *main_pad_;
   std::map<std::string, uint> media_counters_;
