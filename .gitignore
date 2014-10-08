@@ -99,5 +99,6 @@ tests/check_rtp_session
 tests/check_scope_guard
 tests/check_signal_subscriber
 tests/check_startable
+tests/check_ugstelem
 xcode/switcher.xcodeproj/project.xcworkspace/xcuserdata
 xcode/switcher.xcodeproj/xcuserdata
