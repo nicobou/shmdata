@@ -1,4 +1,4 @@
-#N canvas 747 207 894 718 10;
+#N canvas 744 212 894 718 10;
 #X floatatom 115 97 5 0 0 0 - - -;
 #X floatatom 136 141 5 0 0 0 - - -;
 #X floatatom 157 189 5 0 0 0 - - -;
@@ -33,6 +33,7 @@ terminal:;
 #X obj 681 503 *~ 0.1;
 #X obj 115 384 shmsink~ testshm 6;
 #X obj 682 424 shmsrc~ testshm 6;
+#X msg 678 349 flush;
 #X connect 0 0 11 0;
 #X connect 1 0 7 0;
 #X connect 2 0 3 0;
@@ -53,3 +54,4 @@ terminal:;
 #X connect 26 3 24 0;
 #X connect 26 4 24 0;
 #X connect 26 5 24 0;
+#X connect 27 0 26 0;

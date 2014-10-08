@@ -452,6 +452,18 @@ shmsrc_tilde_set_prefix (t_shmsrc_tilde *x, t_symbol *prefix)
   shmsrc_tilde_reader_restart (x);
 }
 
+static void 
+shmsrc_tilde_flush (t_shmsrc_tilde *x, t_symbol *prefix)
+{
+  post("queue size before flushing: %d", g_async_queue_length(x->x_audio_queue));
+  t_shmsrc_tilde_buf *tmp = g_async_queue_try_pop (x->x_audio_queue);
+  while (NULL != tmp) {
+    shmsrc_tilde_audio_buffer_free(tmp);
+    tmp = g_async_queue_try_pop (x->x_audio_queue);
+  }
+  post("queue size after flushing: %d", g_async_queue_length(x->x_audio_queue));
+}
+
 
 void 
 shmsrc_tilde_setup(void)
@@ -472,4 +484,5 @@ shmsrc_tilde_setup(void)
   class_addmethod(shmsrc_tilde_class, (t_method)shmsrc_tilde_dsp, gensym("dsp"), 0);
   class_addmethod(shmsrc_tilde_class, (t_method)shmsrc_tilde_set_name, gensym("set_name"), A_DEFSYM, 0);
   class_addmethod(shmsrc_tilde_class, (t_method)shmsrc_tilde_set_prefix, gensym("set_prefix"), A_DEFSYM, 0);
+  class_addmethod(shmsrc_tilde_class, (t_method)shmsrc_tilde_flush, gensym("flush"), A_DEFSYM, 0);
 }
