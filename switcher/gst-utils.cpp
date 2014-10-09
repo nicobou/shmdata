@@ -103,11 +103,12 @@ void GstUtils::unlink_pad(GstPad *pad) {
     else
       gst_pad_unlink(peer, pad);
     // checking if the pad has been requested and releasing it needed
-    GstPadTemplate *pad_templ = gst_pad_get_pad_template(peer);       // check if this must be unrefed for GST 1
+    GstPadTemplate *pad_templ = gst_pad_get_pad_template(peer);
     if (nullptr != pad_templ
         && GST_PAD_TEMPLATE_PRESENCE(pad_templ) == GST_PAD_REQUEST)
       gst_element_release_request_pad(gst_pad_get_parent_element(peer),
                                       peer);
+    gst_object_unref(pad_templ);
     gst_object_unref(peer);
   }
 }
@@ -132,7 +133,8 @@ void GstUtils::clean_element(GstElement *element) {
   
   GstIterator *pad_iter;
   pad_iter = gst_element_iterate_pads(element);
-  gst_iterator_foreach(pad_iter, (GFunc) GstUtils::unlink_pad, element);
+  gst_iterator_foreach(pad_iter, (GFunc) GstUtils::unlink_pad, nullptr);
+  gst_iterator_foreach(pad_iter, (GFunc) gst_object_unref, nullptr);
   gst_iterator_free(pad_iter);
 
   GstState state = GST_STATE_TARGET(element);
