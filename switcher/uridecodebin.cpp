@@ -162,7 +162,7 @@ Uridecodebin::unknown_type_cb(GstElement *bin,
   Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   g_warning("Uridecodebin unknown type: %s (%s)\n",
             gst_caps_to_string(caps), gst_element_get_name(bin));
-  context->pad_to_shmdata_writer(context->bin_, pad);
+  context->pad_to_shmdata_writer(context->get_bin(), pad);
 }
 
 gboolean sink_factory_filter(GstPluginFeature *feature, gpointer data) {
@@ -439,7 +439,7 @@ Uridecodebin::uridecodebin_pad_added_cb(GstElement *object,
                              (Uridecodebin::gstrtpdepay_buffer_probe_cb),
                              context);
 
-    gst_bin_add(GST_BIN(context->bin_), rtpgstdepay);
+    gst_bin_add(GST_BIN(context->get_bin()), rtpgstdepay);
     GstPad *sinkpad = gst_element_get_static_pad(rtpgstdepay, "sink");
     On_scope_exit{gst_object_unref(sinkpad);};
     // adding a probe for handling loss messages from rtpbin
@@ -454,9 +454,9 @@ Uridecodebin::uridecodebin_pad_added_cb(GstElement *object,
     On_scope_exit{gst_object_unref (srcpad);};
     gst_element_get_state(rtpgstdepay, nullptr, nullptr,
                           GST_CLOCK_TIME_NONE);
-    context->pad_to_shmdata_writer(context->bin_, srcpad);
+    context->pad_to_shmdata_writer(context->get_bin(), srcpad);
   } else {
-    context->pad_to_shmdata_writer(context->bin_, pad);
+    context->pad_to_shmdata_writer(context->get_bin(), pad);
   }
 }
 
@@ -494,7 +494,7 @@ bool Uridecodebin::to_shmdata() {
   init_uridecodebin();
   g_debug("to_shmdata set uri %s", uri_.c_str());
   g_object_set(G_OBJECT(uridecodebin_), "uri", uri_.c_str(), nullptr);
-  gst_bin_add(GST_BIN(bin_), uridecodebin_);
+  gst_bin_add(GST_BIN(get_bin()), uridecodebin_);
   GstUtils::sync_state_with_parent(uridecodebin_);
   return true;
 }

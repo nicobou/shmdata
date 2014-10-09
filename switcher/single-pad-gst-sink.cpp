@@ -51,7 +51,7 @@ bool SinglePadGstSink::connect(std::string shmdata_socket_path) {
   reader->set_path(shmdata_socket_path.c_str());
   shmdata_path_ = shmdata_socket_path;
   reader->set_g_main_context(get_g_main_context());
-  reader->set_bin(bin_);
+  reader->set_bin(get_bin());
 
   if (sink_element_ != nullptr)
     reader->set_sink_element(sink_element_);
@@ -73,7 +73,7 @@ void SinglePadGstSink::set_sink_element(GstElement *sink) {
 void SinglePadGstSink::set_sink_element_no_connect(GstElement *sink) {
   if (sink_element_ != nullptr && sink_element_ != sink)
     GstUtils::clean_element(sink_element_);
-  // sink element will be added to bin_ by the shmdata reader when appropriate
+  // sink element will be added to get_bin() by the shmdata reader when appropriate
   sink_element_ = sink;
 }
 

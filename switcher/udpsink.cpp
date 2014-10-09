@@ -142,7 +142,7 @@ UDPSink::add_elements_to_bin(ShmdataReader *caller,
   UDPSink *context = static_cast<UDPSink *>(udpbin_instance);
 
   caller->set_sink_element(context->udpsink_bin_);
-  gst_bin_add(GST_BIN(context->bin_), context->udpsink_bin_);
+  gst_bin_add(GST_BIN(context->get_bin()), context->udpsink_bin_);
 
   gst_bin_add_many(GST_BIN(context->udpsink_bin_),
                    context->typefind_,

@@ -88,7 +88,7 @@ void HTTPSDP::pad_added_cb(GstElement * /*object */ , GstPad *pad,
   GstUtils::make_element("identity", &identity);
   g_object_set(identity, "sync", TRUE, nullptr);
 
-  gst_bin_add(GST_BIN(context->bin_), identity);
+  gst_bin_add(GST_BIN(context->get_bin()), identity);
   GstUtils::link_static_to_request(pad, identity);
   GstUtils::sync_state_with_parent(identity);
 
@@ -105,9 +105,9 @@ void HTTPSDP::pad_added_cb(GstElement * /*object */ , GstPad *pad,
   connector.reset(new ShmdataWriter());
   std::string connector_name = context->make_file_name(media_name);
   connector->set_path(connector_name.c_str());
-  // connector->plug (context->bin_, pad);
+  // connector->plug (context->get_bin(), pad);
   GstCaps *caps = gst_pad_get_caps_reffed(pad);
-  connector->plug(context->bin_, identity, caps);
+  connector->plug(context->get_bin(), identity, caps);
   if (G_IS_OBJECT(caps))
     gst_object_unref(caps);
   context->register_shmdata(connector);
@@ -127,7 +127,7 @@ gboolean HTTPSDP::to_shmdata_wrapped(gpointer uri, gpointer user_data) {
 bool HTTPSDP::to_shmdata(std::string uri) {
   g_debug("HTTPSDP::to_shmdata set location %s", uri.c_str());
   g_object_set(G_OBJECT(souphttpsrc_), "location", uri.c_str(), nullptr);
-  gst_bin_add_many(GST_BIN(bin_), souphttpsrc_, sdpdemux_, nullptr);
+  gst_bin_add_many(GST_BIN(get_bin()), souphttpsrc_, sdpdemux_, nullptr);
   gst_element_link(souphttpsrc_, sdpdemux_);
   GstUtils::sync_state_with_parent(souphttpsrc_);
   GstUtils::sync_state_with_parent(sdpdemux_);

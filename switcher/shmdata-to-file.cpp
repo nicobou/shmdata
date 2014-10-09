@@ -139,11 +139,11 @@ bool ShmdataToFile::make_recorders() {
     }
 
     g_object_set(G_OBJECT(recorder_bin), "async-handling", TRUE, nullptr);
-    gst_bin_add(GST_BIN(bin_), recorder_bin);
+    gst_bin_add(GST_BIN(get_bin()), recorder_bin);
 
     ShmdataReader::ptr reader = std::make_shared<ShmdataReader>();
     reader->set_path(it.first.c_str());
-    reader->set_bin(bin_);
+    reader->set_bin(get_bin());
     reader->set_g_main_context(get_g_main_context());
     reader->set_sink_element(recorder_bin);
     reader->start();

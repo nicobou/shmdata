@@ -112,12 +112,12 @@ bool ShmdataFromGDPFile::make_players() {
     GstPad *src_pad = gst_element_get_static_pad(reader_bin, "src");
     On_scope_exit{ gst_object_unref(src_pad); };
 
-    gst_bin_add(GST_BIN(bin_), reader_bin);
+    gst_bin_add(GST_BIN(get_bin()), reader_bin);
 
     ShmdataWriter::ptr writer = std::make_shared<ShmdataWriter>();
     writer->set_path(make_file_name("shmfromfile" + std::to_string(shm_counter_)));
     shm_counter_++;
-    writer->plug(bin_, src_pad);
+    writer->plug(get_bin(), src_pad);
     register_shmdata(writer);
 
     GstUtils::sync_state_with_parent(reader_bin);

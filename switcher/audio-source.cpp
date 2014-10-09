@@ -42,7 +42,7 @@ void AudioSource::set_raw_audio_element(GstElement *elt) {
   unset_raw_audio_element();
   make_audio_elements();
   rawaudio_ = elt;
-  gst_bin_add_many(GST_BIN(bin_), rawaudio_, audio_tee_.get_raw(), nullptr);
+  gst_bin_add_many(GST_BIN(get_bin()), rawaudio_, audio_tee_.get_raw(), nullptr);
   gst_element_link(rawaudio_, audio_tee_.get_raw());
   GstCaps *audiocaps = gst_caps_new_simple("audio/x-raw-int",
                                            "width",
@@ -53,7 +53,7 @@ void AudioSource::set_raw_audio_element(GstElement *elt) {
   shmdata_writer.reset(new ShmdataWriter());
   shmdata_path_ = make_file_name("audio");
   shmdata_writer->set_path(shmdata_path_.c_str());
-  shmdata_writer->plug(bin_, audio_tee_.get_raw(), audiocaps);
+  shmdata_writer->plug(get_bin(), audio_tee_.get_raw(), audiocaps);
   register_shmdata(shmdata_writer);
   gst_caps_unref(audiocaps);
   GstUtils::sync_state_with_parent(rawaudio_);

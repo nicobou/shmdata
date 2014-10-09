@@ -50,7 +50,7 @@ bool RtpSession::init_gpipe() {
     return false;
   g_object_set(G_OBJECT(rtpsession_), "ntp-sync", TRUE, nullptr);
 
-  g_object_set(G_OBJECT(bin_), "async-handling", TRUE, nullptr);
+  g_object_set(G_OBJECT(get_bin()), "async-handling", TRUE, nullptr);
 
   g_signal_connect(G_OBJECT(rtpsession_), "on-bye-ssrc",
                    (GCallback) on_bye_ssrc, (gpointer) this);
@@ -79,7 +79,7 @@ bool RtpSession::init_gpipe() {
   g_signal_connect(G_OBJECT(rtpsession_), "no-more-pads",
                    (GCallback) on_no_more_pad, (gpointer) this);
 
-  gst_bin_add(GST_BIN(bin_), rtpsession_);
+  gst_bin_add(GST_BIN(get_bin()), rtpsession_);
   GstUtils::sync_state_with_parent(rtpsession_);
 
   install_method("Add Data Stream",
@@ -321,7 +321,7 @@ RtpSession::make_data_stream_available(GstElement *typefind,
           reader->get_path().c_str());
   
   // add capture and payloading to the pipeline and link
-  gst_bin_add_many(GST_BIN(context->bin_), pay, nullptr);
+  gst_bin_add_many(GST_BIN(context->get_bin()), pay, nullptr);
   gst_element_link(typefind, pay);
   GstUtils::sync_state_with_parent(pay);
   g_object_set(G_OBJECT(pay),
@@ -364,7 +364,7 @@ RtpSession::attach_data_stream(ShmdataReader *caller,
   g_signal_connect(typefind, "have-type",
                    G_CALLBACK(RtpSession::make_data_stream_available),
                    context);
-  gst_bin_add_many(GST_BIN(context->bin_), funnel, typefind, nullptr);
+  gst_bin_add_many(GST_BIN(context->get_bin()), funnel, typefind, nullptr);
   gst_element_link(funnel, typefind);
   GstUtils::sync_state_with_parent(funnel);
   GstUtils::sync_state_with_parent(typefind);
@@ -559,7 +559,7 @@ bool RtpSession::add_data_stream(std::string shmpath) {
   reader.reset(new ShmdataReader());
   reader->set_path(shmpath.c_str());
   reader->set_g_main_context(get_g_main_context());
-  reader->set_bin(bin_);
+  reader->set_bin(get_bin());
   reader->set_on_first_data_hook(attach_data_stream, this);
   reader->start();
   g_debug("%s waiting for data in shm %s",
@@ -811,7 +811,7 @@ bool RtpSession::make_udp_sinks(const std::string &shmpath,
     gst_bin_add_many(GST_BIN(udpsink_bin),
                      typefind, udpsink, nullptr);
     gst_element_link(typefind, udpsink);
-    gst_bin_add(GST_BIN(bin_), udpsink_bin);
+    gst_bin_add(GST_BIN(get_bin()), udpsink_bin);
     GstPad *sink_pad = gst_element_get_static_pad(typefind, "sink");
     GstPad *ghost_sinkpad = gst_ghost_pad_new(nullptr, sink_pad);
     gst_pad_set_active(ghost_sinkpad, TRUE);
@@ -837,7 +837,7 @@ bool RtpSession::make_udp_sinks(const std::string &shmpath,
 #if HAVE_OSX
     set_udp_sock(udpsink);
 #endif
-    gst_bin_add(GST_BIN(bin_), udpsink);
+    gst_bin_add(GST_BIN(get_bin()), udpsink);
     GstUtils::sync_state_with_parent(udpsink);
     GstPad *sink_pad = gst_element_get_static_pad(udpsink, "sink");
     On_scope_exit{gst_object_unref(sink_pad);};

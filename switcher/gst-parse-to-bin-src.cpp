@@ -71,17 +71,17 @@ bool GstParseToBinSrc::to_shmdata() {
 
   g_object_set(G_OBJECT(gst_parse_to_bin_src_), "async-handling", TRUE,
                nullptr);
-  // GstUtils::wait_state_changed (bin_);
+  // GstUtils::wait_state_changed (get_bin());
 
   GstPad *src_pad =
       gst_element_get_static_pad(gst_parse_to_bin_src_, "src");
-  gst_bin_add(GST_BIN(bin_), gst_parse_to_bin_src_);
+  gst_bin_add(GST_BIN(get_bin()), gst_parse_to_bin_src_);
 
   // make a shmwriter
   ShmdataWriter::ptr writer;
   writer.reset(new ShmdataWriter());
   writer->set_path(make_file_name("gstsrc").c_str());  // FIXME use caps name
-  writer->plug(bin_, src_pad);
+  writer->plug(get_bin(), src_pad);
   register_shmdata(writer);
   gst_object_unref(src_pad);
   GstUtils::sync_state_with_parent(gst_parse_to_bin_src_);

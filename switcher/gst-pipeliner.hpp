@@ -51,7 +51,6 @@ class GstPipeliner: public Quiddity, public Segment {
 
  protected:
   GstElement *get_bin();
-  GstElement *bin_{nullptr}; // FIXME should be private
   bool reset_bin();
   GstElement *get_pipeline();
   void install_play_pause();
@@ -68,6 +67,7 @@ class GstPipeliner: public Quiddity, public Segment {
   } QuidCommandArg;
 
   std::unique_ptr<GstPipe> gst_pipeline_{};
+  GstElement *bin_{nullptr}; // FIXME should be private
 
   //GSource *position_tracking_source_ {nullptr};
 

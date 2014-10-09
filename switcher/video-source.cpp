@@ -103,16 +103,16 @@ bool VideoSource::make_new_shmdatas() {
     
     return false;
   }
-  gst_bin_add_many(GST_BIN(bin_), video_tee_, nullptr);
+  gst_bin_add_many(GST_BIN(get_bin()), video_tee_, nullptr);
 
-  gst_bin_add(GST_BIN(bin_), rawvideo_);
+  gst_bin_add(GST_BIN(get_bin()), rawvideo_);
   gst_element_link(rawvideo_, video_tee_);
 
   ShmdataWriter::ptr shmdata_writer;
   shmdata_writer.reset(new ShmdataWriter());
   shmdata_path_ = make_file_name("video");
   shmdata_writer->set_path(shmdata_path_.c_str());
-  shmdata_writer->plug(bin_, video_tee_, videocaps_);
+  shmdata_writer->plug(get_bin(), video_tee_, videocaps_);
   register_shmdata(shmdata_writer);
 
   GstUtils::sync_state_with_parent(rawvideo_);
@@ -120,7 +120,7 @@ bool VideoSource::make_new_shmdatas() {
 
   if (codec_ != 0) {
     remake_codec_elements();
-    gst_bin_add_many(GST_BIN(bin_),
+    gst_bin_add_many(GST_BIN(get_bin()),
                      queue_codec_element_,
                      codec_element_, color_space_codec_element_, nullptr);
 
@@ -135,7 +135,7 @@ bool VideoSource::make_new_shmdatas() {
     shmdata_codec->set_path(shmdata_path.c_str());
 
     GstPad *srcpad = gst_element_get_static_pad(codec_element_, "src");
-    shmdata_codec->plug(bin_, srcpad);
+    shmdata_codec->plug(get_bin(), srcpad);
     gst_object_unref(srcpad);
     register_shmdata(shmdata_codec);
     GstUtils::sync_state_with_parent(queue_codec_element_);

@@ -113,7 +113,7 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement * /*object */ ,
       decodebin(new DecodebinToShmdata(gpipe));
 
   decodebin->invoke(std::bind(gst_bin_add,
-                              GST_BIN(context->bin_),
+                              GST_BIN(context->get_bin()),
                               std::placeholders::_1));
 
   // GstPad *sinkpad = gst_element_get_static_pad (decodebin, "sink");
@@ -169,7 +169,7 @@ bool HTTPSDPDec::to_shmdata(std::string uri) {
                     (gpointer) on_error_command_);
   g_debug("httpsdpdec: to_shmdata set uri %s", uri.c_str());
   g_object_set(G_OBJECT(souphttpsrc_), "location", uri.c_str(), nullptr);
-  gst_bin_add_many(GST_BIN(bin_), souphttpsrc_, sdpdemux_, nullptr);
+  gst_bin_add_many(GST_BIN(get_bin()), souphttpsrc_, sdpdemux_, nullptr);
   gst_element_link(souphttpsrc_, sdpdemux_);
   GstUtils::sync_state_with_parent(souphttpsrc_);
   GstUtils::sync_state_with_parent(sdpdemux_);

@@ -56,7 +56,7 @@ Deinterleave::make_deinterleave_active(ShmdataReader *caller,
   Deinterleave *context =
       static_cast<Deinterleave *>(deinterleave_instance);
   caller->set_sink_element(context->deinterleave_);
-  gst_bin_add(GST_BIN(context->bin_), context->deinterleave_);
+  gst_bin_add(GST_BIN(context->get_bin()), context->deinterleave_);
   GstUtils::sync_state_with_parent(context->deinterleave_);
 }
 
@@ -93,7 +93,7 @@ void Deinterleave::pad_added_cb(GstElement * /*object */ , GstPad *pad,
   connector.reset(new ShmdataWriter());
   std::string connector_name = context->make_file_name(media_name);
   connector->set_path(connector_name.c_str());
-  connector->plug(context->bin_, pad);
+  connector->plug(context->get_bin(), pad);
   context->register_shmdata(connector);
 }
 

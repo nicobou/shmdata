@@ -26,7 +26,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AravisGenicam,
                                      "genicam video",
                                      "Genicam video source using the Aravis library",
                                      "LGPL", "genicam", "Nicolas Bouillot");
-AravisGenicam::AravisGenicam():aravissrc_(nullptr) {
+AravisGenicam::AravisGenicam():
+    aravissrc_(nullptr) {
 }
 
 bool AravisGenicam::init_gpipe() {
@@ -92,9 +93,9 @@ bool AravisGenicam::start(std::string name) {
   if (!GstUtils::make_element("ffmpegcolorspace", &colorspace))
     return false;
 
-  gst_bin_add_many(GST_BIN(bin_), aravissrc_, colorspace, nullptr);
+  gst_bin_add_many(GST_BIN(get_bin()), aravissrc_, colorspace, nullptr);
   gst_element_link(aravissrc_, colorspace);
-  // GstUtils::wait_state_changed (bin_);
+  // GstUtils::wait_state_changed (get_bin());
   GstUtils::sync_state_with_parent(aravissrc_);
   GstUtils::sync_state_with_parent(colorspace);
 
@@ -104,7 +105,7 @@ bool AravisGenicam::start(std::string name) {
   connector.reset(new ShmdataWriter());
   std::string connector_name = make_file_name("video");
   connector->set_path(connector_name.c_str());
-  connector->plug(bin_, srcpad);
+  connector->plug(get_bin(), srcpad);
   register_shmdata(connector);
 
   g_message("%s created a new shmdata writer (%s)",
