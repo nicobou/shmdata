@@ -24,13 +24,13 @@
 namespace switcher {
 ShmdataWriter::ShmdataWriter() :
     writer_(shmdata_base_writer_init()),
+    tee_("tee"),
+    queue_("queue"),
+    fakesink_("fakesink"),
     json_description_(std::make_shared<JSONBuilder>()) {
 }
 
 ShmdataWriter::~ShmdataWriter() {
-  GstUtils::clean_element(tee_);
-  GstUtils::clean_element(queue_);
-  GstUtils::clean_element(fakesink_);
   shmdata_base_writer_close(writer_);
   if (!path_.empty())
     g_debug("ShmdataWriter: %s deleted", path_.c_str());
@@ -71,45 +71,67 @@ ShmdataWriter::plug(GstElement *bin,
                     GstCaps *caps) {
   g_debug("ShmdataWriter::plug (source element)");
   bin_ = bin;
-  GstUtils::make_element("tee", &tee_);
-  GstUtils::make_element("queue", &queue_);
-  GstUtils::make_element("fakesink", &fakesink_);
-  g_object_set(G_OBJECT(fakesink_), "sync", FALSE, nullptr);
-  g_object_set(G_OBJECT(fakesink_), "silent", TRUE, "signal-handoffs", TRUE, nullptr);
-  handoff_handler_ = g_signal_connect(fakesink_, "handoff", (GCallback) on_handoff_cb, this);
-  g_object_set(G_OBJECT(queue_), "leaky", 2, nullptr);
-  gst_bin_add_many(GST_BIN(bin), tee_, queue_, fakesink_, nullptr);
-  shmdata_base_writer_plug(writer_, bin, tee_);
-  gst_element_link_filtered(source_element, tee_, caps);
-  gst_element_link_many(tee_, queue_, fakesink_, nullptr);
-  GstUtils::sync_state_with_parent(tee_);
-  GstUtils::sync_state_with_parent(queue_);
-  GstUtils::sync_state_with_parent(fakesink_);
+  UGstElem::renew(tee_);
+  UGstElem::renew(queue_);
+  UGstElem::renew(queue_);
+  // GstUtils::make_element("tee", &tee_);
+  // GstUtils::make_element("queue", &queue_);
+  // GstUtils::make_element("fakesink", &fakesink_);
+  g_object_set(G_OBJECT(fakesink_.get_raw()),
+               "sync", FALSE, nullptr);
+  g_object_set(G_OBJECT(fakesink_.get_raw()),
+               "silent", TRUE, "signal-handoffs", TRUE, nullptr);
+  handoff_handler_ = g_signal_connect(fakesink_.get_raw(),
+                                      "handoff", (GCallback) on_handoff_cb, this);
+  g_object_set(G_OBJECT(queue_.get_raw()),
+               "leaky", 2, nullptr);
+  gst_bin_add_many(GST_BIN(bin),
+                   tee_.get_raw(), queue_.get_raw(),
+                   fakesink_.get_raw(), nullptr);
+  shmdata_base_writer_plug(writer_, bin, tee_.get_raw());
+  gst_element_link_filtered(source_element, tee_.get_raw(), caps);
+  gst_element_link_many(tee_.get_raw(), queue_.get_raw(), fakesink_.get_raw(), nullptr);
+  GstUtils::sync_state_with_parent(tee_.get_raw());
+  GstUtils::sync_state_with_parent(queue_.get_raw());
+  GstUtils::sync_state_with_parent(fakesink_.get_raw());
   if (!path_.empty())
     g_debug("shmdata writer plugged (%s)", path_.c_str());
 }
 
 void ShmdataWriter::plug(GstElement *bin, GstPad *source_pad) {
   bin_ = bin;
-  GstUtils::make_element("tee", &tee_);
-  GstUtils::make_element("queue", &queue_);
-  GstUtils::make_element("fakesink", &fakesink_);
-  g_object_set(G_OBJECT(fakesink_),
-               "sync", FALSE, "signal-handoffs", TRUE, nullptr);
-  g_signal_connect(fakesink_, "handoff", (GCallback) on_handoff_cb, this);
-  g_object_set(G_OBJECT(fakesink_), "silent", TRUE, nullptr);
-  g_object_set(G_OBJECT(queue_), "leaky", 2, nullptr);
-  gst_bin_add_many(GST_BIN(bin), tee_, queue_, fakesink_, nullptr);
-  shmdata_base_writer_plug(writer_, bin, tee_);
-  GstPad *sinkpad = gst_element_get_static_pad(tee_,
-                                               "sink");
+  UGstElem::renew(tee_);
+  UGstElem::renew(queue_);
+  UGstElem::renew(queue_);
+  // GstUtils::make_element("tee", &tee_);
+  // GstUtils::make_element("queue", &queue_);
+  // GstUtils::make_element("fakesink", &fakesink_);
+  g_object_set(G_OBJECT(fakesink_.get_raw()),
+               "sync", FALSE,
+               "signal-handoffs", TRUE,
+               nullptr);
+  g_signal_connect(fakesink_.get_raw(),
+                   "handoff", (GCallback) on_handoff_cb, this);
+  g_object_set(G_OBJECT(fakesink_.get_raw()),
+               "silent", TRUE, nullptr);
+  g_object_set(G_OBJECT(queue_.get_raw()),
+               "leaky", 2, nullptr);
+  gst_bin_add_many(GST_BIN(bin),
+                   tee_.get_raw(), queue_.get_raw(),
+                   fakesink_.get_raw(), nullptr);
+  shmdata_base_writer_plug(writer_, bin, tee_.get_raw());
+  GstPad *sinkpad =
+      gst_element_get_static_pad(tee_.get_raw(), "sink");
   if (gst_pad_link(source_pad, sinkpad) != GST_PAD_LINK_OK)
     g_debug("ShmdataWriter: failed to link with tee");
   gst_object_unref(sinkpad);
-  gst_element_link_many(tee_, queue_, fakesink_, nullptr);
-  GstUtils::sync_state_with_parent(tee_);
-  GstUtils::sync_state_with_parent(queue_);
-  GstUtils::sync_state_with_parent(fakesink_);
+  gst_element_link_many(tee_.get_raw(),
+                        queue_.get_raw(),
+                        fakesink_.get_raw(),
+                        nullptr);
+  GstUtils::sync_state_with_parent(tee_.get_raw());
+  GstUtils::sync_state_with_parent(queue_.get_raw());
+  GstUtils::sync_state_with_parent(fakesink_.get_raw());
   if (!path_.empty())
     g_debug("shmdata writer pad plugged (%s)", path_.c_str());
 }
@@ -119,13 +141,10 @@ ShmdataWriter::on_handoff_cb(GstElement *object,
                              GstBuffer *buf,
                              GstPad *pad, gpointer user_data) {
   ShmdataWriter *context = static_cast<ShmdataWriter *>(user_data);
-
   GstCaps *caps = gst_pad_get_negotiated_caps(pad);
   if (nullptr == caps)
     return;
-  On_scope_exit {
-    gst_caps_unref(caps);
-  };
+  On_scope_exit {gst_caps_unref(caps);};
 
   gchar *string_caps = gst_caps_to_string(caps);
   On_scope_exit {
@@ -138,7 +157,8 @@ ShmdataWriter::on_handoff_cb(GstElement *object,
   if (context->handoff_handler_ > 0)
     g_signal_handler_disconnect(G_OBJECT(object),
                                 context->handoff_handler_);
-  g_object_set(G_OBJECT(context->fakesink_), "signal-handoffs", FALSE,
+  g_object_set(G_OBJECT(context->fakesink_.get_raw()),
+               "signal-handoffs", FALSE,
                nullptr);
 }
 

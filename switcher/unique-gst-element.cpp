@@ -18,9 +18,23 @@
  */
 
 #include "./unique-gst-element.hpp"
+#include "./std2.hpp"
 
 namespace switcher {
+
+bool UGstElem::renew(UGstElem &element) {
+  g_print("%s", __FUNCTION__);
+  gst_element_handle tmp(gst_element_factory_make(element.class_name_.c_str(),
+                                                  nullptr),
+                         &GstUtils::gst_element_deleter);
+  if (!tmp)
+    return false;
+  std::swap(tmp, element.element_);
+  return true;
+}
+
 UGstElem::UGstElem(const gchar *class_name):
+    class_name_(class_name),
     element_(gst_element_factory_make(class_name, nullptr),
              &GstUtils::gst_element_deleter) {
 }

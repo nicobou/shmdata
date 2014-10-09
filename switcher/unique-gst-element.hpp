@@ -45,14 +45,15 @@ class UGstElem : public SafeBoolIdiom {
   }
   void invoke(std::function<void(GstElement *)> command);
 
-  // get raw without taking ownership (do not unref)
+  // get raw without taking ownership (do not unref)  // FIXME get rid of this
   GstElement *get_raw();
-  
+
+  static bool renew(UGstElem &element);
  private:
+  std::string class_name_{};
   using gst_element_handle =
       std::unique_ptr<GstElement, decltype(&GstUtils::gst_element_deleter)>;
   gst_element_handle element_;
-
   // safe bool idiom implementation
   bool safe_bool_idiom() const final;
 };

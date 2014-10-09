@@ -23,30 +23,13 @@
 
 namespace switcher {
 ShmdataReader::ShmdataReader():
-    connection_hook_(nullptr),
-    hook_user_data_(nullptr),
-    path_(),
     reader_(shmdata_base_reader_new()),
-    bin_(nullptr),
-    sink_element_(nullptr),
-    funnel_(nullptr),
-    g_main_context_(nullptr),
-    elements_to_remove_(),
-    json_description_(new JSONBuilder()),
-    start_mutex_(),
-    start_cond_() {
+    funnel_("funnel"),
+    json_description_(std::make_shared<JSONBuilder>()) {
 }
 
 ShmdataReader::~ShmdataReader() {
-  if (!path_.empty())
-    g_debug("ShmdataReader: closing %s", path_.c_str());
-  else
-    g_debug("closing empty reader");
   stop();
-  if (!path_.empty())
-    g_debug("ShmdataReader: %s closed ", path_.c_str());
-  else
-    g_debug("closing empty reader");
 }
 
 void ShmdataReader::unlink_pad(GstPad *pad) {
@@ -150,7 +133,7 @@ void ShmdataReader::stop() {
   g_debug("ShmdataReader::stop");
   shmdata_base_reader_close(reader_);
   reader_ = nullptr;
-  GstUtils::clean_element(funnel_);
+  UGstElem::renew(funnel_);
 }
 
 void
@@ -177,12 +160,15 @@ ShmdataReader::on_first_data(shmdata_base_reader_t *context,
   //       GST_ELEMENT_NAME (reader->sink_element_),
   //       GST_ELEMENT_NAME(GST_ELEMENT_PARENT (reader->sink_element_)),
   //       GST_IS_ELEMENT(GST_ELEMENT_PARENT (reader->sink_element_)));
-  GstUtils::make_element("funnel", &reader->funnel_);
-  gst_bin_add(GST_BIN(reader->bin_), reader->funnel_);
-  gst_element_link(reader->funnel_, reader->sink_element_);
+  if (!reader->funnel_) {
+    g_warning("%s, funnel is empty", __FUNCTION__);
+    return;
+  }
+  gst_bin_add(GST_BIN(reader->bin_), reader->funnel_.get_raw());
+  gst_element_link(reader->funnel_.get_raw(), reader->sink_element_);
   GstUtils::sync_state_with_parent(reader->sink_element_);
-  GstUtils::sync_state_with_parent(reader->funnel_);
-  shmdata_base_reader_set_sink(context, reader->funnel_);
+  GstUtils::sync_state_with_parent(reader->funnel_.get_raw());
+  shmdata_base_reader_set_sink(context, reader->funnel_.get_raw());
 }
 
 void ShmdataReader::make_json_description() {

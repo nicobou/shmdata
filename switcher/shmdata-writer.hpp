@@ -25,6 +25,7 @@
 #include <shmdata/base-writer.h>
 #include "./json-builder.hpp"
 #include "./on-caps.hpp"
+#include "./unique-gst-element.hpp"
 
 namespace switcher {
 class ShmdataWriter: public OnCaps {
@@ -51,9 +52,9 @@ class ShmdataWriter: public OnCaps {
   std::string path_ {};
   shmdata_base_writer_t *writer_{nullptr};
   GstElement *bin_{nullptr};
-  GstElement *tee_{nullptr};
-  GstElement *queue_{nullptr};
-  GstElement *fakesink_{nullptr};
+  UGstElem tee_;
+  UGstElem queue_;
+  UGstElem fakesink_;
   gulong handoff_handler_{0};
   JSONBuilder::ptr json_description_{};
 

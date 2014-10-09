@@ -29,6 +29,7 @@
 #include "./gst-element-cleaner.hpp"
 #include "./json-builder.hpp"
 #include "./on-caps.hpp"
+#include "./unique-gst-element.hpp"
 
 namespace switcher {
 class ShmdataReader:public OnCaps, public GstElementCleaner {
@@ -36,7 +37,6 @@ class ShmdataReader:public OnCaps, public GstElementCleaner {
   typedef std::shared_ptr<ShmdataReader> ptr;
   typedef void (*on_first_data_hook) (ShmdataReader *caller,
                                       void *user_data);
-
   ShmdataReader();
   ~ShmdataReader();
   ShmdataReader(const ShmdataReader &) = delete;
@@ -53,18 +53,18 @@ class ShmdataReader:public OnCaps, public GstElementCleaner {
   JSONBuilder::Node get_json_root_node();
 
  private:
-  on_first_data_hook connection_hook_;
-  void *hook_user_data_;
-  std::string path_;
-  shmdata_base_reader_t *reader_;
-  GstElement *bin_;
-  GstElement *sink_element_;
-  GstElement *funnel_;
-  GMainContext *g_main_context_;
-  std::vector<GstElement *>elements_to_remove_;
-  JSONBuilder::ptr json_description_;
-  std::mutex start_mutex_;
-  std::condition_variable start_cond_;
+  on_first_data_hook connection_hook_{nullptr};
+  void *hook_user_data_{nullptr};
+  std::string path_{};
+  shmdata_base_reader_t *reader_{nullptr};
+  GstElement *bin_{nullptr};
+  GstElement *sink_element_{nullptr};
+  UGstElem funnel_;
+  GMainContext *g_main_context_{nullptr};
+  std::vector<GstElement *>elements_to_remove_{};
+  JSONBuilder::ptr json_description_{};
+  std::mutex start_mutex_{};
+  std::condition_variable start_cond_{};
   static void on_first_data(shmdata_base_reader_t *context,
                             void *user_data);
   // static GstBusSyncReply bus_sync_handler (GstBus *bus, GstMessage *msg, gpointer user_data);

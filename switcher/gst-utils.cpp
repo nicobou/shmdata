@@ -113,34 +113,43 @@ void GstUtils::unlink_pad(GstPad *pad) {
 }
 
 void GstUtils::clean_element(GstElement *element) {
-  if (element != nullptr && GST_IS_ELEMENT(element)
-      && GST_STATE_CHANGE_FAILURE != GST_STATE_RETURN(element)) {
-    // if (GST_IS_BIN(element))
-    //   g_debug("%d, %d, %d, state return %d", GST_STATE(element),
-    //           GST_STATE_TARGET(element), GST_STATE_PENDING(element),
-    //           GST_STATE_RETURN(element));
+  if (nullptr == element) {
+    g_warning("%s failed (nullptr)", __FUNCTION__);
+    return;
+  }
+  if (!GST_IS_ELEMENT(element)) {
+    g_warning("%s failed (not a gst element)", __FUNCTION__);
+    return;
+  }
+  if (GST_STATE_CHANGE_FAILURE == GST_STATE_RETURN(element)) {
+    g_warning("%s failed (state error)", __FUNCTION__);
+    return;
+  }
+  // if (GST_IS_BIN(element))
+  //   g_debug("%d, %d, %d, state return %d", GST_STATE(element),
+  //           GST_STATE_TARGET(element), GST_STATE_PENDING(element),
+  //           GST_STATE_RETURN(element));
+  
+  GstIterator *pad_iter;
+  pad_iter = gst_element_iterate_pads(element);
+  gst_iterator_foreach(pad_iter, (GFunc) GstUtils::unlink_pad, element);
+  gst_iterator_free(pad_iter);
 
-    GstIterator *pad_iter;
-    pad_iter = gst_element_iterate_pads(element);
-    gst_iterator_foreach(pad_iter, (GFunc) GstUtils::unlink_pad, element);
-    gst_iterator_free(pad_iter);
-
-    GstState state = GST_STATE_TARGET(element);
-    if (state != GST_STATE_NULL) {
-      if (GST_STATE_CHANGE_ASYNC ==
-          gst_element_set_state(element, GST_STATE_NULL)) {
-        while (GST_STATE(element) != GST_STATE_NULL) {
-          // warning this may be blocking
-          gst_element_get_state(element, nullptr, nullptr,
-                                GST_CLOCK_TIME_NONE);
-        }
+  GstState state = GST_STATE_TARGET(element);
+  if (state != GST_STATE_NULL) {
+    if (GST_STATE_CHANGE_ASYNC ==
+        gst_element_set_state(element, GST_STATE_NULL)) {
+      while (GST_STATE(element) != GST_STATE_NULL) {
+        // warning this may be blocking
+        gst_element_get_state(element, nullptr, nullptr,
+                              GST_CLOCK_TIME_NONE);
       }
     }
-    if (GST_IS_BIN(gst_element_get_parent(element)))
-      gst_bin_remove(GST_BIN(gst_element_get_parent(element)), element);
-    else
-      gst_object_unref(element);
   }
+  if (GST_IS_BIN(gst_element_get_parent(element)))
+    gst_bin_remove(GST_BIN(gst_element_get_parent(element)), element);
+  else
+    gst_object_unref(element);
 }
 
 void GstUtils::wait_state_changed(GstElement *bin) {
@@ -359,21 +368,26 @@ GstUtils::element_factory_list_to_g_enum(GEnumValue *target_enum,
 }
 
 void GstUtils::gst_element_deleter(GstElement *element) {
+  g_print("%s, %d\n", __FUNCTION__, __LINE__);
   if (nullptr == element) {
     g_warning("%s is trying to delete a null element");
     return;
   }
+  g_print("%s, %d\n", __FUNCTION__, __LINE__);
   if (!G_IS_OBJECT(element)) {
     g_warning("%s is trying to delete a non null ptr but not a GObject");
     return;
   }
+  g_print("%s, %d\n", __FUNCTION__, __LINE__);
     
   // delete if ownership has not been taken by a parent
-  if (nullptr == GST_OBJECT_PARENT(element))
+  if (nullptr == GST_OBJECT_PARENT(element)) {
     gst_object_unref(element);
-  else
+    g_print("%s, %d\n", __FUNCTION__, __LINE__);
+  } else {
     GstUtils::clean_element(element);
-  
+    g_print("%s, %d\n", __FUNCTION__, __LINE__);
+  }
 }
 
 // g_signal_connect is actually a macro, so wrapping it for use with std::bind
