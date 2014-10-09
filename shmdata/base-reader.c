@@ -79,6 +79,21 @@ shmdata_base_reader_init_members (shmdata_base_reader_t *reader)
   reader->have_type_handler_id_ = 0;
 }
 
+void
+shmdata_base_reader_release_request_pad (GstPad *pad, gpointer user_data)
+{
+  //checking if the pad has been requested and releasing it needed  
+  GstPadTemplate *pad_templ = gst_pad_get_pad_template (pad); 
+  if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST) { 
+    gst_element_release_request_pad ((GstElement *)user_data,
+                                     pad);
+    gst_object_unref(pad);
+  } 
+  // gst_object_unref(pad_templ);  // bug in gst 0.10 ? 
+  gst_object_unref(pad);  // for pad iterator
+}
+
+
 //FIXME this should be part of the library
 void
 shmdata_base_reader_unlink_pad (GstPad *pad)
@@ -89,13 +104,9 @@ shmdata_base_reader_unlink_pad (GstPad *pad)
       gst_pad_unlink (pad, peer);
     else
       gst_pad_unlink (peer, pad);
-    //checking if the pad has been requested and releasing it needed 
-    GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);
-    if (NULL != pad_templ && GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST) 
-      gst_element_release_request_pad (gst_pad_get_parent_element(peer), peer);
-    gst_object_unref(pad_templ);
     gst_object_unref (peer);
   }
+  gst_object_unref(pad);
 }
 
 //FIXME this should be part of the library
@@ -104,11 +115,19 @@ shmdata_base_reader_clean_element (GstElement *element)
 {
   if (element != NULL && GST_IS_ELEMENT(element)
       && GST_STATE_CHANGE_FAILURE != GST_STATE_RETURN(element)) {
-    GstIterator *pad_iter = gst_element_iterate_pads(element);
-    gst_iterator_foreach(pad_iter, (GFunc) shmdata_base_reader_unlink_pad, NULL);
-    gst_iterator_foreach(pad_iter, (GFunc) gst_object_unref, NULL);
-    gst_iterator_free(pad_iter);
-
+    {  // unlinking pads
+       GstIterator *pad_iter = gst_element_iterate_pads(element);
+       gst_iterator_foreach(pad_iter, (GFunc) shmdata_base_reader_unlink_pad, NULL);
+       gst_iterator_free(pad_iter);
+    }
+    {  // releasing request pads
+      GstIterator *pad_iter = gst_element_iterate_pads(element);
+      gst_iterator_foreach(pad_iter,
+                           (GFunc) shmdata_base_reader_release_request_pad,
+                           element);
+      gst_iterator_free(pad_iter);
+    }
+    
     GstState state = GST_STATE_TARGET(element);
     if (state != GST_STATE_NULL) {
       if (GST_STATE_CHANGE_ASYNC ==

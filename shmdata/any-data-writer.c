@@ -34,102 +34,99 @@ struct shmdata_any_writer_
 };
 
 void
-shmdata_any_writer_log_handler (const gchar * log_domain,
+shmdata_any_writer_log_handler (const gchar *log_domain,
 				GLogLevelFlags log_level,
-				const gchar * message, gpointer user_data)
+				const gchar *message,
+                                gpointer user_data)
 {
-  if (g_strcmp0 (log_domain, G_LOG_DOMAIN) == 0)
+  if (g_strcmp0 (log_domain, G_LOG_DOMAIN) == 0) {
+    shmdata_any_writer_t *context = (shmdata_any_writer_t *) user_data;
+    switch (log_level)
     {
-      shmdata_any_writer_t *context = (shmdata_any_writer_t *) user_data;
-      switch (log_level)
-	{
-	case G_LOG_LEVEL_ERROR:
-	  if (context->debug_ == SHMDATA_ENABLE_DEBUG)
-	    g_print ("%s, ERROR: %s\n", G_LOG_DOMAIN, message);
-	  break;
-	case G_LOG_LEVEL_CRITICAL:
-	  if (context->debug_ == SHMDATA_ENABLE_DEBUG)
-	    g_print ("%s, CRITICAL: %s\n", G_LOG_DOMAIN, message);
-	  break;
-	case G_LOG_LEVEL_WARNING:
-	  if (context->debug_ == SHMDATA_ENABLE_DEBUG)
-	    g_print ("%s, WARNING: %s\n", G_LOG_DOMAIN, message);
-	  break;
-	case G_LOG_LEVEL_MESSAGE:
-	  if (context->debug_ == SHMDATA_ENABLE_DEBUG)
-	    g_print ("%s, MESSAGE: %s\n", G_LOG_DOMAIN, message);
-	  break;
-	case G_LOG_LEVEL_INFO:
-	  if (context->debug_ == SHMDATA_ENABLE_DEBUG)
-	    g_print ("%s, INFO: %s\n", G_LOG_DOMAIN, message);
-	  break;
-	case G_LOG_LEVEL_DEBUG:
-	  if (context->debug_ == SHMDATA_ENABLE_DEBUG)
-	    g_print ("%s, DEBUG: %s\n", G_LOG_DOMAIN, message);
-	  break;
-	default:
-	  if (context->debug_ == SHMDATA_ENABLE_DEBUG)
-	    g_print ("%s: %s\n", G_LOG_DOMAIN, message);
-	  break;
-	}
+      case G_LOG_LEVEL_ERROR:
+        if (context->debug_ == SHMDATA_ENABLE_DEBUG)
+          g_print ("%s, ERROR: %s\n", G_LOG_DOMAIN, message);
+        break;
+      case G_LOG_LEVEL_CRITICAL:
+        if (context->debug_ == SHMDATA_ENABLE_DEBUG)
+          g_print ("%s, CRITICAL: %s\n", G_LOG_DOMAIN, message);
+        break;
+      case G_LOG_LEVEL_WARNING:
+        if (context->debug_ == SHMDATA_ENABLE_DEBUG)
+          g_print ("%s, WARNING: %s\n", G_LOG_DOMAIN, message);
+        break;
+      case G_LOG_LEVEL_MESSAGE:
+        if (context->debug_ == SHMDATA_ENABLE_DEBUG)
+          g_print ("%s, MESSAGE: %s\n", G_LOG_DOMAIN, message);
+        break;
+      case G_LOG_LEVEL_INFO:
+        if (context->debug_ == SHMDATA_ENABLE_DEBUG)
+          g_print ("%s, INFO: %s\n", G_LOG_DOMAIN, message);
+        break;
+      case G_LOG_LEVEL_DEBUG:
+        if (context->debug_ == SHMDATA_ENABLE_DEBUG)
+          g_print ("%s, DEBUG: %s\n", G_LOG_DOMAIN, message);
+        break;
+      default:
+        if (context->debug_ == SHMDATA_ENABLE_DEBUG)
+          g_print ("%s: %s\n", G_LOG_DOMAIN, message);
+        break;
     }
+  }
 }
 
 shmdata_any_writer_t *
-shmdata_any_writer_init ()
-{
+shmdata_any_writer_init () {
   shmdata_any_writer_t *writer =
-    (shmdata_any_writer_t *) g_malloc0 (sizeof (shmdata_any_writer_t));
+      (shmdata_any_writer_t *) g_malloc0 (sizeof (shmdata_any_writer_t));
   writer->debug_ = SHMDATA_DISABLE_DEBUG;
   g_log_set_default_handler (shmdata_any_writer_log_handler, writer);
   writer->type_ = NULL;
   writer->data_caps_ = NULL;
 
-  gst_init (NULL, NULL);
-
+  if (!gst_is_initialized())
+    gst_init (NULL, NULL);
+  
   writer->pipeline_ = gst_pipeline_new (NULL);
   g_assert (writer->pipeline_);
-
+  
   writer->base_writer_ =
-    shmdata_base_writer_init ();
-
+      shmdata_base_writer_init ();
+  
   return writer;
 }
 
 void
-shmdata_any_writer_set_debug (shmdata_any_writer_t * context, int debug)
-{
+shmdata_any_writer_set_debug (shmdata_any_writer_t * context, int debug) {
   context->debug_ = debug;
 }
 
 int
 shmdata_any_writer_set_path (shmdata_any_writer_t * writer,
-				 const char *socketPath)
-{
+                             const char *socketPath) {
   return (int)shmdata_base_writer_set_path (writer->base_writer_,
-					 socketPath);
+                                            socketPath);
 }
 
 
 void
 shmdata_any_writer_start (shmdata_any_writer_t * writer)
 {
-
   writer->src_ = gst_element_factory_make ("appsrc", NULL);
   g_assert (writer->src_);
   gst_bin_add (GST_BIN (writer->pipeline_), writer->src_);
-
+  
   if (writer->data_caps_ == NULL)
     writer->data_caps_ = gst_caps_new_simple ("application/shmdata_", NULL);
   gst_app_src_set_caps (GST_APP_SRC (writer->src_), writer->data_caps_);
-
+  
   writer->id_ = gst_element_factory_make ("identity", NULL);
   g_assert (writer->id_);
   gst_bin_add (GST_BIN (writer->pipeline_), writer->id_);
-
+  
   shmdata_base_writer_plug (writer->base_writer_, writer->pipeline_, writer->id_);
   gst_element_link (writer->src_, writer->id_);
-
+  
   gst_element_set_state (writer->pipeline_, GST_STATE_PLAYING);
 }
 
@@ -176,24 +173,22 @@ shmdata_any_writer_push_data_with_duration (shmdata_any_writer_t * context,
 }
 
 void
-shmdata_any_writer_close (shmdata_any_writer_t * writer)
+shmdata_any_writer_close (shmdata_any_writer_t *writer)
 {
   /* push EOS */
   //gst_app_src_end_of_stream (GST_APP_SRC (app->src));
-  if (writer != NULL)
-    {
-      if (writer->base_writer_ != NULL)
-	shmdata_base_writer_close (writer->base_writer_);
-      if (writer->pipeline_ != NULL)
-	{
-	  gst_element_set_state (writer->pipeline_, GST_STATE_NULL);
-	  gst_object_unref (GST_OBJECT (writer->pipeline_));
-	}
+  if (writer != NULL) {
+    if (writer->base_writer_ != NULL)
+      shmdata_base_writer_close (writer->base_writer_);
+      if (writer->pipeline_ != NULL) {
+        gst_element_set_state (writer->pipeline_, GST_STATE_NULL);
+        gst_object_unref (GST_OBJECT (writer->pipeline_));
+      }
       if (writer->data_caps_ != NULL)
 	gst_caps_unref (writer->data_caps_);
       if (writer->type_ != NULL)
 	g_free (writer->type_);
       g_free (writer);
-    }
+  }
 }
 
