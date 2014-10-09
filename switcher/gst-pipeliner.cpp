@@ -35,6 +35,7 @@
 
 namespace switcher {
 GstPipeliner::GstPipeliner():
+    bin_("bin"),
     gpipe_custom_props_(std2::make_unique<CustomPropertyHelper>()) {
   init_segment(this);
 }
@@ -70,8 +71,6 @@ bool GstPipeliner::init() {
 GstPipeliner::~GstPipeliner() {
   GstUtils::wait_state_changed(gst_pipeline_->get_pipeline());
   clear_shmdatas();
-  GstUtils::wait_state_changed(gst_pipeline_->get_pipeline());
-  clean_bin();
   if (!commands_.empty())
     while (commands_.begin() != commands_.end())
     {
@@ -247,48 +246,52 @@ void GstPipeliner::make_bin() {
   gst_pipeline_->set_on_error_function(std::bind(&GstPipeliner::on_gst_error,
                                                  this,
                                                  std::placeholders::_1));
-
-  GstUtils::make_element("bin", &bin_);
-  g_object_set(G_OBJECT(bin_), "async-handling", TRUE, nullptr);
-  gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), bin_);
+  g_object_set(G_OBJECT(bin_.get_raw()), "async-handling", TRUE, nullptr);
+  gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), bin_.get_raw());
   GstUtils::wait_state_changed(gst_pipeline_->get_pipeline());
-  GstUtils::sync_state_with_parent(bin_);
-  GstUtils::wait_state_changed(bin_);
+  GstUtils::sync_state_with_parent(bin_.get_raw());
+  GstUtils::wait_state_changed(bin_.get_raw());
 }
 
 void GstPipeliner::clean_bin() {
-  if (nullptr == bin_)
-    return;
-  
-  g_debug("GstPipeliner, bin state %s, target %s, num children %d ",
-          gst_element_state_get_name(GST_STATE(bin_)),
-          gst_element_state_get_name(GST_STATE_TARGET(bin_)),
-          GST_BIN_NUMCHILDREN(GST_BIN(bin_)));
-  
-  GstUtils::wait_state_changed(bin_);
-  
-  if (GST_IS_ELEMENT(bin_)) {
-    g_debug("GstPipeliner, bin state %s, target %s, num children %d ",
-            gst_element_state_get_name(GST_STATE(bin_)),
-            gst_element_state_get_name(GST_STATE_TARGET(bin_)),
-            GST_BIN_NUMCHILDREN(GST_BIN(bin_)));
-
-    // if (g_list_length(GST_BIN_CHILDREN(bin_)) > 0) {
-    //   GList *child = nullptr, *children = GST_BIN_CHILDREN(bin_);
-    //   for (child = children; child != nullptr; child = g_list_next(child)) {
-    //     g_debug("segment warning: child %s",
-    //             GST_ELEMENT_NAME(GST_ELEMENT(child->data)));
-    //     GstUtils::clean_element (GST_ELEMENT (child->data));
-    //   }
-    // }
-    g_debug("going to clean bin_");
-    GstUtils::clean_element(bin_);
-    g_debug("GstPipeliner: cleaning internal bin");
+  {
+    UGstElem tmp("bin");
+    if(!tmp)
+      return;
+    bin_ = std::move(tmp);
   }
+  // if (nullptr == bin_.get_raw())
+  //   return;
+  
+  // g_debug("GstPipeliner, bin state %s, target %s, num children %d ",
+  //         gst_element_state_get_name(GST_STATE(bin_)),
+  //         gst_element_state_get_name(GST_STATE_TARGET(bin_)),
+  //         GST_BIN_NUMCHILDREN(GST_BIN(bin_)));
+  
+  // GstUtils::wait_state_changed(bin_);
+  
+  // if (GST_IS_ELEMENT(bin_)) {
+  //   g_debug("GstPipeliner, bin state %s, target %s, num children %d ",
+  //           gst_element_state_get_name(GST_STATE(bin_)),
+  //           gst_element_state_get_name(GST_STATE_TARGET(bin_)),
+  //           GST_BIN_NUMCHILDREN(GST_BIN(bin_)));
+
+  //   // if (g_list_length(GST_BIN_CHILDREN(bin_)) > 0) {
+  //   //   GList *child = nullptr, *children = GST_BIN_CHILDREN(bin_);
+  //   //   for (child = children; child != nullptr; child = g_list_next(child)) {
+  //   //     g_debug("segment warning: child %s",
+  //   //             GST_ELEMENT_NAME(GST_ELEMENT(child->data)));
+  //   //     GstUtils::clean_element (GST_ELEMENT (child->data));
+  //   //   }
+  //   // }
+  //   g_debug("going to clean bin_");
+  //   GstUtils::clean_element(bin_);
+  //   g_debug("GstPipeliner: cleaning internal bin");
+  // }
 }
 
 GstElement *GstPipeliner::get_bin() {
-  return bin_;
+  return bin_.get_raw();
 }
 
 bool GstPipeliner::reset_bin() {

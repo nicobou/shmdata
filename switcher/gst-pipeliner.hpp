@@ -31,6 +31,7 @@
 #include "./quiddity.hpp"
 #include "./segment.hpp"
 #include "./gst-pipe.hpp"
+#include "./unique-gst-element.hpp"
 
 namespace switcher {
 class Quiddity;
@@ -67,7 +68,7 @@ class GstPipeliner: public Quiddity, public Segment {
   } QuidCommandArg;
 
   std::unique_ptr<GstPipe> gst_pipeline_{};
-  GstElement *bin_{nullptr}; // FIXME should be private
+  UGstElem bin_;
 
   //GSource *position_tracking_source_ {nullptr};
 
