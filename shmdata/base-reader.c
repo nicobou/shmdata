@@ -25,7 +25,6 @@ struct shmdata_base_reader_
   GstElement *deserializer_;
   GstElement *typefind_;
   GstElement *sink_;
-  GstPad *src_pad_;
   GstCaps *caps_;
   //monitoring the shm file
   GFile *shmfile_;
@@ -60,7 +59,6 @@ shmdata_base_reader_init_members (shmdata_base_reader_t *reader)
   reader->deserializer_ = NULL;
   reader->typefind_ = NULL;
   reader->sink_ = NULL;
-  reader->src_pad_ = NULL;
   reader->caps_ = NULL;
   reader->shmfile_ = NULL;
   reader->dirMonitor_ = NULL;
@@ -83,7 +81,7 @@ shmdata_base_reader_init_members (shmdata_base_reader_t *reader)
 
 //FIXME this should be part of the library
 void
-shmdata_base_reader_unlink_pad (GstPad * pad)
+shmdata_base_reader_unlink_pad (GstPad *pad)
 {
   GstPad *peer;
   if ((peer = gst_pad_get_peer (pad))) {
@@ -93,9 +91,9 @@ shmdata_base_reader_unlink_pad (GstPad * pad)
       gst_pad_unlink (peer, pad);
     //checking if the pad has been requested and releasing it needed 
     GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);
-    if (NULL != pad_templ)
-      if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
-	gst_element_release_request_pad (gst_pad_get_parent_element(peer), peer);
+    if (NULL != pad_templ && GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST) 
+      gst_element_release_request_pad (gst_pad_get_parent_element(peer), peer);
+    gst_object_unref(pad_templ);
     gst_object_unref (peer);
   }
 }
@@ -106,14 +104,9 @@ shmdata_base_reader_clean_element (GstElement *element)
 {
   if (element != NULL && GST_IS_ELEMENT(element)
       && GST_STATE_CHANGE_FAILURE != GST_STATE_RETURN(element)) {
-    // if (GST_IS_BIN(element))
-    //   g_debug("%d, %d, %d, state return %d", GST_STATE(element),
-    //           GST_STATE_TARGET(element), GST_STATE_PENDING(element),
-    //           GST_STATE_RETURN(element));
-
-    GstIterator *pad_iter;
-    pad_iter = gst_element_iterate_pads(element);
-    gst_iterator_foreach(pad_iter, (GFunc) shmdata_base_reader_unlink_pad, element);
+    GstIterator *pad_iter = gst_element_iterate_pads(element);
+    gst_iterator_foreach(pad_iter, (GFunc) shmdata_base_reader_unlink_pad, NULL);
+    gst_iterator_foreach(pad_iter, (GFunc) gst_object_unref, NULL);
     gst_iterator_free(pad_iter);
 
     GstState state = GST_STATE_TARGET(element);
@@ -132,19 +125,6 @@ shmdata_base_reader_clean_element (GstElement *element)
     else
       gst_object_unref(element);
   }
-  /* if (element != NULL && GST_IS_ELEMENT (element)) */
-  /*   { */
-  /*     GstIterator *pad_iter; */
-  /*     pad_iter = gst_element_iterate_pads (element); */
-  /*     gst_iterator_foreach (pad_iter, (GFunc) shmdata_base_reader_unlink_pad, element); */
-  /*     gst_iterator_free (pad_iter); */
-  /*     if (GST_STATE_TARGET (element) != GST_STATE_NULL) */
-  /*       if (GST_STATE_CHANGE_ASYNC == gst_element_set_state (element, GST_STATE_NULL)) */
-  /*         while (GST_STATE (element) != GST_STATE_NULL) */
-  /*           gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking */
-  /*     if (GST_IS_BIN (gst_element_get_parent (element))) */
-  /*       gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element); */
-  /*   } */
 }
 
 gboolean
@@ -195,7 +175,7 @@ shmdata_base_reader_get_caps (shmdata_base_reader_t *reader)
 }
 
 gboolean
-shmdata_base_reader_reset_time (GstPad * pad,
+shmdata_base_reader_reset_time (GstPad *pad,
 				GstMiniObject * mini_obj, 
 				gpointer user_data)
 {
@@ -239,13 +219,13 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
   reader->attached_ = TRUE;
   reader->source_ = gst_element_factory_make ("shmsrc", NULL);
   reader->deserializer_ = gst_element_factory_make ("gdpdepay", NULL);
-  GstPad *pad = gst_element_get_pad(reader->deserializer_, "src");
+  GstPad *pad = gst_element_get_static_pad(reader->deserializer_, "src");
   gst_pad_add_data_probe (pad,
 			  G_CALLBACK (shmdata_base_reader_reset_time),
 			  reader);
+  gst_object_unref(pad);
   reader->typefind_ = gst_element_factory_make ("typefind", NULL);
-  if (NULL == reader->typefind_)
-    {
+  if (NULL == reader->typefind_) {
       g_warning ("no typefind !");
       g_mutex_unlock (&reader->mutex_);
       return FALSE;
@@ -285,18 +265,18 @@ shmdata_base_reader_attach (shmdata_base_reader_t *reader)
 		reader->socket_name_, NULL);
   gst_bin_add_many (GST_BIN (reader->bin_),
 		    reader->source_, reader->deserializer_, reader->typefind_, NULL);
-  reader->src_pad_ = gst_element_get_static_pad (reader->typefind_,
-						 "src");
+  GstPad *src_pad = gst_element_get_static_pad (reader->typefind_,
+                                                "src");
   GstPad *sink_pad = gst_element_get_compatible_pad (reader->sink_,
-                                                     reader->src_pad_,
-                                                     GST_PAD_CAPS
-                                                     (reader->src_pad_));
+                                                     src_pad,
+                                                     GST_PAD_CAPS(src_pad));
   gst_element_link_many (reader->source_, 
 			 reader->deserializer_,
 			 reader->typefind_,
 			 NULL);
-  gst_pad_link (reader->src_pad_, sink_pad);
+  gst_pad_link (src_pad, sink_pad);
   gst_object_unref(sink_pad);
+  gst_object_unref(src_pad);
   gst_element_set_state (reader->typefind_,GST_STATE_TARGET(reader->bin_));
   gst_element_set_state (reader->deserializer_,GST_STATE_TARGET(reader->bin_));
   gst_element_set_state (reader->source_,GST_STATE_TARGET(reader->bin_));

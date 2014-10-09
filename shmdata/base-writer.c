@@ -28,7 +28,7 @@ struct shmdata_base_writer_
 
 //FIXME this should be part of the library
 void
-shmdata_base_writer_unlink_pad (GstPad * pad)
+shmdata_base_writer_unlink_pad (GstPad *pad)
 {
   GstPad *peer;
   if ((peer = gst_pad_get_peer (pad))) {
@@ -37,9 +37,10 @@ shmdata_base_writer_unlink_pad (GstPad * pad)
     else
       gst_pad_unlink (peer, pad);
     //checking if the pad has been requested and releasing it needed 
-    GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);//check if this must be unrefed for GST 1
+    GstPadTemplate *pad_templ = gst_pad_get_pad_template (peer);
     if (GST_PAD_TEMPLATE_PRESENCE (pad_templ) == GST_PAD_REQUEST)
       gst_element_release_request_pad (gst_pad_get_parent_element(peer), peer);
+    gst_object_unref(pad_templ);
     gst_object_unref (peer);
   }
 }
@@ -55,9 +56,9 @@ shmdata_base_writer_clean_element (GstElement *element)
     //           GST_STATE_TARGET(element), GST_STATE_PENDING(element),
     //           GST_STATE_RETURN(element));
 
-    GstIterator *pad_iter;
-    pad_iter = gst_element_iterate_pads(element);
-    gst_iterator_foreach(pad_iter, (GFunc) shmdata_base_writer_unlink_pad, element);
+    GstIterator *pad_iter = gst_element_iterate_pads(element);
+    gst_iterator_foreach(pad_iter, (GFunc) shmdata_base_writer_unlink_pad, NULL);
+    gst_iterator_foreach(pad_iter, (GFunc) gst_object_unref, NULL);
     gst_iterator_free(pad_iter);
 
     GstState state = GST_STATE_TARGET(element);
@@ -136,8 +137,8 @@ shmdata_base_writer_link_branch (shmdata_base_writer_t * writer,
 }
 
 void
-shmdata_base_writer_link_branch_pad (shmdata_base_writer_t * writer,
-				     GstPad * srcPad)
+shmdata_base_writer_link_branch_pad (shmdata_base_writer_t *writer,
+				     GstPad *srcPad)
 {
   GstPad *sinkPad = gst_element_get_static_pad (writer->qserial_, "sink");
   /* if (sinkPad) */
@@ -148,7 +149,8 @@ shmdata_base_writer_link_branch_pad (shmdata_base_writer_t * writer,
   /*   g_critical ("lres == GST_PAD_LINK_OK"); */
   gst_object_unref (sinkPad);
   gst_element_link_many (writer->qserial_,
-			 writer->serializer_, writer->shmsink_, NULL);
+			 writer->serializer_,
+                         writer->shmsink_, NULL);
 }
 
 void
@@ -170,7 +172,7 @@ shmdata_base_writer_set_branch_state_as_pipeline (shmdata_base_writer_t *
 }
 
 void
-shmdata_base_writer_pad_unblocked (GstPad * pad,
+shmdata_base_writer_pad_unblocked (GstPad *pad,
 				   gboolean blocked, 
 				   gpointer user_data)
 {
@@ -213,10 +215,12 @@ shmdata_base_writer_switch_to_new_serializer (GstPad *pad,
     gst_element_get_static_pad (context->serializer_, "src");
   gst_pad_link (newSrcPad, srcPadPeer);
   gst_pad_link (sinkPadPeer, newSinkPad);
+
   gst_object_unref (newSinkPad);
   gst_object_unref (newSrcPad);
   gst_object_unref (srcPadPeer);
   gst_object_unref (sinkPadPeer);
+
   if (!gst_element_set_state (context->serializer_,
 			      GST_STATE_TARGET(GST_ELEMENT_PARENT(context->serializer_))))
     g_critical ("Error: issue changing newSerializer state");
@@ -224,8 +228,7 @@ shmdata_base_writer_switch_to_new_serializer (GstPad *pad,
   //unblocking data stream
   gst_pad_set_blocked_async (pad,
 			     FALSE,
-			     (GstPadBlockCallback)
-			     (shmdata_base_writer_pad_unblocked),
+			     (GstPadBlockCallback) shmdata_base_writer_pad_unblocked,
 			     (void *) context);
   g_mutex_unlock (&context->mutex_);
 
@@ -260,15 +263,13 @@ shmdata_base_writer_on_client_connected (GstElement *shmsink,
   GstPad *padToBlock = gst_pad_get_peer (serializerSinkPad);
   gst_object_unref (serializerSinkPad);
 
-  if (!GST_IS_PAD (padToBlock))
-    {
+  if (!GST_IS_PAD (padToBlock)) {
       g_warning ("%s: peer pad is not a pad, cannot block");
       return;
     }
   gst_pad_set_blocked_async (padToBlock,
 			     TRUE,
-			     (GstPadBlockCallback)
-			     (shmdata_base_writer_switch_to_new_serializer),
+			     (GstPadBlockCallback) shmdata_base_writer_switch_to_new_serializer,
 			     (void *) context);
   gst_object_unref (padToBlock);
   g_mutex_unlock (&context->mutex_);
@@ -393,16 +394,14 @@ shmdata_base_writer_plug_pad (shmdata_base_writer_t *writer,
 			      GstElement *pipeline, 
 			      GstPad *srcPad)
 {
-  if (NULL == writer)
-    {
-      g_debug ("cannot plug a NULL writer");
-      return;
-    }
-  if (!GST_IS_BIN (pipeline))
-    {
-      g_critical ("shmdata_base_writer_plug, not a bin");
-      return;
-    }
+  if (NULL == writer) {
+    g_debug ("cannot plug a NULL writer");
+    return;
+  }
+  if (!GST_IS_BIN (pipeline)) {
+    g_critical ("shmdata_base_writer_plug, not a bin");
+    return;
+  }
   writer->parent_bin_ = pipeline; //TODO get rid of the pipeline arg
   if (writer->socket_path_ == NULL) 
     g_critical ("cannot start when socket path has not been set");

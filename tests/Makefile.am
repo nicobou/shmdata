@@ -1,8 +1,11 @@
 export GST_PLUGIN_PATH=$(top_builddir)/gst/shm:$GST_PLUGIN_PATH
 
-AM_CFLAGS = -I$(top_srcdir)
+AM_CFLAGS = \
+    -I$(top_srcdir) \
+    $(GST_CFLAGS) 
 
 LDADD = \
+    $(GST_LIBS) \
     $(top_builddir)/shmdata/libshmdata-@LIBSHMDATA_API_VERSION@.la \
     $(top_builddir)/shmdata/libshmdata-any-@LIBSHMDATA_API_VERSION@.la
 
@@ -10,21 +13,25 @@ LDADD = \
 #    $(top_builddir)/gst/shm/
 
 check_PROGRAMS = \
-    check_read_then_write \
+    check_gst_shm \
     check_read_and_write_onoff \
-    check_write_read \
-    check_write_and_read_onoff
+    check_read_then_write \
+    check_write_and_read_onoff \
+    check_write_read
 
 TESTS = $(check_PROGRAMS)
 
-check_write_read_SOURCES = \
-    check_write_read.c
-
-check_read_then_write_SOURCES = \
-    check_read_then_write.c
+check_gst_shm_SOURCES = \
+    check_gst_shm.c
 
 check_read_and_write_onoff_SOURCES = \
     check_read_and_write_onoff.c
 
+check_read_then_write_SOURCES = \
+    check_read_then_write.c
+
 check_write_and_read_onoff_SOURCES = \
     check_write_and_read_onoff.c
+
+check_write_read_SOURCES = \
+    check_write_read.c
