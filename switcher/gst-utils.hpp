@@ -29,6 +29,7 @@ bool make_element(const gchar *class_name, GstElement ** target_element);
 bool link_static_to_request(GstElement * src, GstElement *sink);
 bool link_static_to_request(GstPad * srcpad, GstElement *sink);
 bool check_pad_link_return(GstPadLinkReturn res);
+void release_request_pad(GstPad *pad, gpointer user_data);
 void unlink_pad(GstPad *pad);
 void clean_element(GstElement *element);
 void wait_state_changed(GstElement *bin);

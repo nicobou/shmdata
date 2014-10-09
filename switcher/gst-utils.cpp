@@ -102,15 +102,22 @@ void GstUtils::unlink_pad(GstPad *pad) {
       gst_pad_unlink(pad, peer);
     else
       gst_pad_unlink(peer, pad);
-    // checking if the pad has been requested and releasing it needed
-    GstPadTemplate *pad_templ = gst_pad_get_pad_template(peer);
-    if (nullptr != pad_templ
-        && GST_PAD_TEMPLATE_PRESENCE(pad_templ) == GST_PAD_REQUEST)
-      gst_element_release_request_pad(gst_pad_get_parent_element(peer),
-                                      peer);
-    gst_object_unref(pad_templ);
     gst_object_unref(peer);
   }
+  gst_object_unref(pad);  // for iterator
+}
+
+void GstUtils::release_request_pad(GstPad *pad, gpointer user_data) {
+  // checking if the pad has been requested and releasing it needed
+  GstPadTemplate *pad_templ = gst_pad_get_pad_template(pad);
+  if (nullptr != pad_templ
+      && GST_PAD_TEMPLATE_PRESENCE(pad_templ) == GST_PAD_REQUEST) {
+    gst_element_release_request_pad((GstElement *)user_data,
+                                    pad);
+    gst_object_unref(pad);  // release does not free
+  }
+  //gst_object_unref(pad_templ);  // bug in gst 0.10 ?
+  gst_object_unref(pad);  // for iterator
 }
 
 void GstUtils::clean_element(GstElement *element) {
@@ -131,11 +138,19 @@ void GstUtils::clean_element(GstElement *element) {
   //           GST_STATE_TARGET(element), GST_STATE_PENDING(element),
   //           GST_STATE_RETURN(element));
   
-  GstIterator *pad_iter;
-  pad_iter = gst_element_iterate_pads(element);
-  gst_iterator_foreach(pad_iter, (GFunc) GstUtils::unlink_pad, nullptr);
-  gst_iterator_foreach(pad_iter, (GFunc) gst_object_unref, nullptr);
-  gst_iterator_free(pad_iter);
+  {  // unlinking pads
+    GstIterator *pad_iter;
+    pad_iter = gst_element_iterate_pads(element);
+    gst_iterator_foreach(pad_iter, (GFunc) GstUtils::unlink_pad, nullptr);
+    gst_iterator_free(pad_iter);
+  }
+  
+  {  // releasing request pads
+    GstIterator *pad_iter;
+    pad_iter = gst_element_iterate_pads(element);
+    gst_iterator_foreach(pad_iter, (GFunc) GstUtils::release_request_pad, element);
+    gst_iterator_free(pad_iter);
+  }
 
   GstState state = GST_STATE_TARGET(element);
   if (state != GST_STATE_NULL) {
@@ -370,25 +385,20 @@ GstUtils::element_factory_list_to_g_enum(GEnumValue *target_enum,
 }
 
 void GstUtils::gst_element_deleter(GstElement *element) {
-  g_print("%s, %d\n", __FUNCTION__, __LINE__);
   if (nullptr == element) {
     g_warning("%s is trying to delete a null element");
     return;
   }
-  g_print("%s, %d\n", __FUNCTION__, __LINE__);
   if (!G_IS_OBJECT(element)) {
     g_warning("%s is trying to delete a non null ptr but not a GObject");
     return;
   }
-  g_print("%s, %d\n", __FUNCTION__, __LINE__);
     
   // delete if ownership has not been taken by a parent
   if (nullptr == GST_OBJECT_PARENT(element)) {
     gst_object_unref(element);
-    g_print("%s, %d\n", __FUNCTION__, __LINE__);
   } else {
     GstUtils::clean_element(element);
-    g_print("%s, %d\n", __FUNCTION__, __LINE__);
   }
 }
 

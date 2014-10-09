@@ -32,23 +32,6 @@ ShmdataReader::~ShmdataReader() {
   stop();
 }
 
-void ShmdataReader::unlink_pad(GstPad *pad) {
-  g_debug("ShmdataReader::unlink_pad SHOULD NOT BE CALLED, ");
-  GstPad *peer;
-  if ((peer = gst_pad_get_peer(pad))) {
-    if (gst_pad_get_direction(pad) == GST_PAD_SRC)
-      gst_pad_unlink(pad, peer);
-    else
-      gst_pad_unlink(peer, pad);
-    // checking if the pad has been requested and releasing it needed
-    GstPadTemplate *pad_templ = gst_pad_get_pad_template(peer);       // check if this must be unrefed for GST 1
-    if (GST_PAD_TEMPLATE_PRESENCE(pad_templ) == GST_PAD_REQUEST)
-      gst_element_release_request_pad(gst_pad_get_parent_element(peer),
-                                      peer);
-    gst_object_unref(peer);
-  }
-}
-
 std::string ShmdataReader::get_path() {
   return path_;
 }

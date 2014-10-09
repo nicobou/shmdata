@@ -23,7 +23,6 @@
 namespace switcher {
 
 bool UGstElem::renew(UGstElem &element) {
-  g_print("%s", __FUNCTION__);
   gst_element_handle tmp(gst_element_factory_make(element.class_name_.c_str(),
                                                   nullptr),
                          &GstUtils::gst_element_deleter);
