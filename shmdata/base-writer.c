@@ -76,20 +76,6 @@ shmdata_base_writer_clean_element (GstElement *element)
     else
       gst_object_unref(element);
   }
-  /* if (element != NULL ) */
-  /*   if (GST_IS_ELEMENT (element)) */
-  /*     { */
-  /*       GstIterator *pad_iter; */
-  /*       pad_iter = gst_element_iterate_pads (element); */
-  /*       gst_iterator_foreach (pad_iter, (GFunc) shmdata_base_writer_unlink_pad, element); */
-  /*       gst_iterator_free (pad_iter); */
-  /*       if (GST_STATE_TARGET (element) != GST_STATE_NULL && GST_STATE (element) != GST_STATE_NULL) */
-  /*         if (GST_STATE_CHANGE_ASYNC == gst_element_set_state (element, GST_STATE_NULL)) */
-  /*           while (GST_STATE (element) != GST_STATE_NULL) */
-  /*             gst_element_get_state (element, NULL, NULL, GST_CLOCK_TIME_NONE);//warning this may be blocking */
-  /*       if (GST_IS_BIN (gst_element_get_parent (element))) */
-  /*         gst_bin_remove (GST_BIN (gst_element_get_parent (element)), element); */
-  /*     } */
 }
 
 void
@@ -213,9 +199,11 @@ shmdata_base_writer_switch_to_new_serializer (GstPad *pad,
     g_critical ("Error: cannot unlink sink");
   gst_object_unref (srcPad);
   gst_object_unref (sinkPad);
+
   GstBin *bin = GST_BIN (GST_ELEMENT_PARENT (context->serializer_));
   gst_element_set_state (context->serializer_, GST_STATE_NULL); 
   gst_bin_remove (GST_BIN (bin), context->serializer_);
+
   //creating and linking the new serializer
   context->serializer_ = gst_element_factory_make ("gdppay", NULL);
   gst_bin_add (bin, context->serializer_);
@@ -287,37 +275,42 @@ shmdata_base_writer_on_client_connected (GstElement *shmsink,
 }
 
 void
-shmdata_base_writer_make_shm_branch (shmdata_base_writer_t * writer,
+shmdata_base_writer_make_shm_branch (shmdata_base_writer_t *writer,
 				     const char *socketPath)
 {
+  if (NULL != writer->qserial_ || NULL != writer->serializer_ || NULL != writer->shmsink_) {
+  if (0 != writer->client_connected_handler_id_)
+    g_signal_handler_disconnect (writer->shmsink_, 
+				 writer->client_connected_handler_id_);
+  if (0 != writer->client_disconnected_handler_id_)
+    g_signal_handler_disconnect (writer->shmsink_, 
+				 writer->client_disconnected_handler_id_);
+    shmdata_base_writer_clean_element (writer->qserial_);
+    shmdata_base_writer_clean_element (writer->serializer_);
+    shmdata_base_writer_clean_element (writer->shmsink_);
+  }
   writer->qserial_ = gst_element_factory_make ("queue", NULL);
-  
   writer->serializer_ = gst_element_factory_make ("gdppay", NULL);
   writer->shmsink_ = gst_element_factory_make ("shmsink", NULL);
-
-  if (!writer->qserial_)
-    {
-      g_critical ("Writer: \"queue\" element is not available");
-      return;
-    }
-  if (!writer->serializer_)
-    {
-      g_critical ("Writer: \"gdppay\" element is not available");
-      return;
-    }
-  if (!writer->shmsink_)
-    {
-      g_critical ("Writer: \"shmsink\" element is not available, consider installing libshmdata");
-      return;
-    }
-
+  if (NULL == writer->qserial_) {
+    g_critical ("Writer: \"queue\" element is not available");
+    return;
+  }
+  if (NULL == writer->serializer_) {
+    g_critical ("Writer: \"gdppay\" element is not available");
+    return;
+  }
+  if (NULL == writer->shmsink_) {
+    g_critical ("Writer: \"shmsink\" element is not available");
+    return;
+  }
+  
   g_object_set (G_OBJECT (writer->shmsink_), "socket-path", socketPath, NULL);
   g_object_set (G_OBJECT (writer->shmsink_), "shm-size", 94967295, NULL);
   g_object_set (G_OBJECT (writer->shmsink_), "sync", FALSE, NULL);
   g_object_set (G_OBJECT (writer->shmsink_), "wait-for-connection", FALSE, NULL);
   g_object_set (G_OBJECT (writer->qserial_), "leaky", 1, "max-size-buffers", 2, NULL);
   
-
   writer->client_connected_handler_id_ = 
     g_signal_connect (writer->shmsink_, "client-connected",
 		      G_CALLBACK (shmdata_base_writer_on_client_connected),
