@@ -137,7 +137,7 @@ check_read_then_write ()
 }
 
 int
-main (int argc, char *argv)
+main ()
 {
   if (check_read_then_write () != 0)
     return 1;

@@ -135,7 +135,7 @@ check_read_and_write_onoff ()
 }
 
 int
-main (int argc, char *argv)
+main ()
 {
   if (check_read_and_write_onoff () != 0)
     return 1;
