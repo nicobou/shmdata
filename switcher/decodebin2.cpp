@@ -56,10 +56,12 @@ Decodebin2::make_decodebin_active(ShmdataReader *caller,
   // context->decodebin_->invoke (std::bind(&SinglePadGstSink::set_sink_element,
   //     context,
   //     std::placeholders::_1));
-  context->decodebin_->invoke(std::bind(gst_bin_add,
-                                        GST_BIN(context->get_bin()),
-                                        std::placeholders::_1));
-  context->decodebin_->invoke(std::bind(GstUtils::sync_state_with_parent,
-                                        std::placeholders::_1));
+  context->decodebin_->
+    invoke_with_return<gboolean>(std::bind(gst_bin_add,
+					   GST_BIN(context->get_bin()),
+					   std::placeholders::_1));
+  context->decodebin_->
+    invoke(std::bind(GstUtils::sync_state_with_parent,
+		     std::placeholders::_1));
 }
 }

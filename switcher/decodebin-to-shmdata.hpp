@@ -21,6 +21,7 @@
 #define __SWITCHER_DECODEBIN_TO_SHMDATA_H__
 
 #include <memory>
+#include <string>
 #include <map>
 #include <list>
 #include <mutex>

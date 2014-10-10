@@ -17,15 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./udpsink.hpp"
-#include "./gst-utils.hpp"
 #ifdef HAVE_CONFIG_H
 #include "../config.h"
 #endif
 
 #if HAVE_OSX
 #include <sys/socket.h>
+#include <netinet/in.h>
 #endif
+
+#include "./udpsink.hpp"
+#include "./gst-utils.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(UDPSink,

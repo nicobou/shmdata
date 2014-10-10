@@ -21,6 +21,8 @@
 #define __SWITCHER_UNIQUE_GST_ELEMENT_H__
 
 #include <memory>
+#include <functional>
+#include <string>
 #include "./safe-bool-idiom.hpp"
 #include "./gst-utils.hpp"
 

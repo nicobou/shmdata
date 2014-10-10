@@ -17,8 +17,13 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#ifdef HAVE_CONFIG_H
+#include "../config.h"
+#endif
+
 #if HAVE_OSX
 #include <sys/socket.h>
+#include <netinet/in.h>
 #endif
 
 #include <glib/gstdio.h>  // writing sdp file
@@ -759,12 +764,12 @@ void RtpSession::set_udp_sock(GstElement *udpsink) {
   int sock;
   if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
     g_warning("udp sink: cannot create socket");
-    return false;
+    return;
   }
   guint bc_val = 1;
   if (setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &bc_val, sizeof(bc_val)) < 0) {
     g_warning("udp sink: cannot set broadcast to socket");
-    return false;
+    return;
   }
   g_object_set(G_OBJECT(udpsink), "sockfd", sock, nullptr);
 }

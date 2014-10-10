@@ -91,13 +91,10 @@ AnyValueBase {
 };
 
 struct Any {
-  bool
-  is_null() const {
-    return !
-        ptr_;
+  bool is_null() const {
+    return !ptr_;
   }
-  bool
-  not_null() const {
+  bool not_null() const {
     return ptr_;
   }
 
@@ -120,6 +117,15 @@ struct Any {
     if (!derived)
       return (*new U);
     return derived->value_;
+  }
+
+  template<class U>
+  StorageType<U> &copy_as() const {
+    typedef StorageType<U> T;
+    auto derived = dynamic_cast<AnyValueDerived<T>*>(ptr_);
+    if (!derived)
+      return (*new U);
+    return (*new U(derived->value_));
   }
 
   template<class U>

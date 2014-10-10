@@ -48,7 +48,7 @@ SyphonSrc::SyphonSrc():
 SyphonSrc::~SyphonSrc() {
 }
 
-bool SyphonSrc::init_gpipe() {
+bool SyphonSrc::init() {
   init_startable(this);
   init_segment(this);
 

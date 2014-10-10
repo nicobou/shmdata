@@ -386,11 +386,12 @@ GstUtils::element_factory_list_to_g_enum(GEnumValue *target_enum,
 
 void GstUtils::gst_element_deleter(GstElement *element) {
   if (nullptr == element) {
-    g_warning("%s is trying to delete a null element");
+    g_warning("%s is trying to delete a null element", __FUNCTION__);
     return;
   }
   if (!G_IS_OBJECT(element)) {
-    g_warning("%s is trying to delete a non null ptr but not a GObject");
+    g_warning("%s is trying to delete a non null ptr but not a GObject",
+	      __FUNCTION__);
     return;
   }
     

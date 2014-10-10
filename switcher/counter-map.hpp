@@ -20,13 +20,14 @@
 #ifndef __SWITCHER_COUNTER_MAP_H__
 #define __SWITCHER_COUNTER_MAP_H__
 
+#include <string>
 #include <map>
 #include <mutex>
 
 /**
  *
  * maintains a thread safe map of
- * string as key and a uint counter as value
+ * string as key and a unsigned int counter as value
  *
  * users should inherit from this class
  *
@@ -36,14 +37,14 @@ namespace switcher {
 class CounterMap {
  public:
   CounterMap();
-  virtual ~ CounterMap();
+  virtual ~CounterMap();
 
  protected:
-  uint get_count(const std::string &key);
+  unsigned int get_count(const std::string &key);
   void reset_counter_map();
 
  private:
-  std::map<std::string, uint> counters_;
+  std::map<std::string, unsigned int> counters_;
   std::mutex mutex_;
 };
 }  // namespace switcher

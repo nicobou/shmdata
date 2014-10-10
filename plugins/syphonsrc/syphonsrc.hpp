@@ -51,7 +51,7 @@ class SyphonSrc:public Quiddity, public Segment, public StartableQuiddity {
 
   int width_, height_;
 
-  bool init_gpipe() final;
+  bool init() final;
   bool start() final;
   bool stop() final;
 

@@ -18,11 +18,13 @@
  */
 
 #include <glib/gstdio.h>  // writing sdp file
+#include <string>
 #include <sstream>
 #include "./rtp-session.hpp"
 #include "./rtp-destination.hpp"
 #include "./sdp-utils.hpp"
 #include "./scope-exit.hpp"
+#include "./information-tree.hpp"
 
 namespace switcher {
 RtpDestination::RtpDestination(RtpSession *session) :
@@ -85,10 +87,8 @@ std::string RtpDestination::get_sdp() {
   
   for (auto &it : source_streams_) {
     std::string string_caps = session_->
-        invoke_info_tree<std::string>(
-            [&](data::Tree::ptrc tree){
-              return data::Tree::read_data(tree,
-                                           "rtp_caps." + it.first);
+      invoke_info_tree<std::string>([&](data::Tree::ptrc tree) -> std::string {
+	  return data::Tree::read_data(tree, "rtp_caps." + it.first).copy_as<std::string>();
             });
     // std::string string_caps =
     // session_->

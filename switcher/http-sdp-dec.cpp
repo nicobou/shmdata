@@ -112,9 +112,10 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement * /*object */ ,
   std::unique_ptr<DecodebinToShmdata>
       decodebin(new DecodebinToShmdata(gpipe));
 
-  decodebin->invoke(std::bind(gst_bin_add,
-                              GST_BIN(context->get_bin()),
-                              std::placeholders::_1));
+  decodebin->
+    invoke_with_return<gboolean>(std::bind(gst_bin_add,
+					   GST_BIN(context->get_bin()),
+					   std::placeholders::_1));
 
   // GstPad *sinkpad = gst_element_get_static_pad (decodebin, "sink");
   auto get_pad = std::bind(gst_element_get_static_pad,

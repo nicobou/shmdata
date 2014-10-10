@@ -308,7 +308,7 @@ Quiddity::register_property(GObject *object,
   position_weight_counter_ += 20;
 
   properties_[name_to_give] = prop;
-  signal_emit(signal_to_emit.c_str(), name_to_give.c_str());
+  signal_emit(signal_to_emit.c_str(), name_to_give.c_str(), nullptr);
   return true;
 }
 
@@ -409,7 +409,7 @@ bool Quiddity::uninstall_property(std::string property_name) {
   if (properties_.end() == it)
     return false;
   properties_.erase(it);
-  signal_emit("on-property-removed", property_name.c_str());
+  signal_emit("on-property-removed", property_name.c_str(), nullptr);
   return true;
 }
 
@@ -419,7 +419,7 @@ bool Quiddity::enable_property(std::string property_name) {
     return false;
   properties_[property_name] = it->second;
   disabled_properties_.erase(it);
-  signal_emit("on-property-added", property_name.c_str());
+  signal_emit("on-property-added", property_name.c_str(), nullptr);
   return true;
 }
 
@@ -429,7 +429,7 @@ bool Quiddity::disable_property(std::string property_name) {
     return false;
   disabled_properties_[property_name] = it->second;
   properties_.erase(it);
-  signal_emit("on-property-removed", property_name.c_str());
+  signal_emit("on-property-removed", property_name.c_str(), nullptr);
   return true;
 }
 
@@ -708,11 +708,11 @@ void Quiddity::signal_emit(const std::string signal_name, ...) {
   Signal::ptr signal = signals_[signal_name];
   va_list var_args;
   va_start(var_args, signal_name);
-  // va_list va_cp;
-  // va_copy (va_cp, var_args);
-  // signal->signal_emit (/*get_g_main_context (), */ signal_name.c_str (), va_cp);
-  signal->signal_emit(/*get_g_main_context (), */ signal_name.c_str(),
-                      var_args);
+//     va_list va_cp;
+//     va_copy (va_cp, var_args);
+//     signal->signal_emit (/*get_g_main_context (), */ signal_name.c_str (), va_cp);
+    signal->signal_emit(/*get_g_main_context (), */ signal_name.c_str(),
+                        var_args);
   va_end(var_args);
 }
 
@@ -809,7 +809,7 @@ Quiddity::install_method(const std::string long_name,
                               return_description, arg_description))
     return false;
 
-  signal_emit("on-method-added", method_name.c_str());
+  signal_emit("on-method-added", method_name.c_str(), nullptr);
   return true;
 }
 
@@ -818,7 +818,7 @@ bool Quiddity::uninstall_method(std::string method_name) {
   if (methods_.end() == it)
     return false;
   methods_.erase(it);
-  signal_emit("on-method-removed", method_name.c_str());
+  signal_emit("on-method-removed", method_name.c_str(), nullptr);
   return true;
 }
 
@@ -828,7 +828,7 @@ bool Quiddity::enable_method(std::string method_name) {
     return false;
   methods_[method_name] = it->second;
   disabled_methods_.erase(it);
-  signal_emit("on-method-added", method_name.c_str());
+  signal_emit("on-method-added", method_name.c_str(), nullptr);
   return true;
 }
 
@@ -838,7 +838,7 @@ bool Quiddity::disable_method(std::string method_name) {
     return false;
   disabled_methods_[method_name] = it->second;
   methods_.erase(it);
-  signal_emit("on-method-removed", method_name.c_str());
+  signal_emit("on-method-removed", method_name.c_str(), nullptr);
   return true;
 }
 
@@ -852,14 +852,14 @@ std::string Quiddity::get_info(const std::string &path) {
 bool Quiddity::graft_tree(const std::string &path, data::Tree::ptr tree) {
   if (!information_tree_->graft(path, tree))
     return false;
-  signal_emit("on-tree-grafted", path.c_str());
+  signal_emit("on-tree-grafted", path.c_str(), nullptr);
   return true;
 }
 
 data::Tree::ptr Quiddity::prune_tree(const std::string &path) {
   data::Tree::ptr result  = information_tree_->prune(path);
   if (result) {
-    signal_emit("on-tree-pruned", path.c_str());
+    signal_emit("on-tree-pruned", path.c_str(), nullptr);
   } else {
     g_warning("cannot prune %s", path.c_str());
   }

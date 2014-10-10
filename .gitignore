@@ -69,6 +69,7 @@ plugins/pulse/.libs/
 plugins/pulse/check_pulsesrc
 plugins/syphonsrc/.deps
 plugins/syphonsrc/.libs
+plugins/syphonsrc/check_syphonsrc_plugin
 plugins/systemusage/.deps/
 plugins/systemusage/.libs/
 plugins/systemusage/check_systemusage_plugin
@@ -90,11 +91,11 @@ tests/check_description_by_class
 tests/check_fakesink
 tests/check_gst_pipeline
 tests/check_information_tree
+tests/check_manager
 tests/check_property_mapper
 tests/check_property_subscriber
 tests/check_quiddity_create_remove
 tests/check_quiddity_create_remove_with_auto_pipeline
-tests/check_manager
 tests/check_rtp_session
 tests/check_scope_guard
 tests/check_signal_subscriber

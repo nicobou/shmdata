@@ -26,7 +26,7 @@ CounterMap::CounterMap():counters_(), mutex_() {
 CounterMap::~CounterMap() {
 }
 
-uint CounterMap::get_count(const std::string &key) {
+unsigned int CounterMap::get_count(const std::string &key) {
   std::unique_lock<std::mutex> lock(mutex_);
   auto it = counters_.find(key);
   if (counters_.end() != it)
