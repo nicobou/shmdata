@@ -151,12 +151,12 @@ main() {
     tree->graft(".child1.child2.bla1", Tree::make("wire"));
     tree->graft(".child1.child2.bla2", Tree::make("hub"));
 
-    std::string serialized = BasicSerializer::serialize(tree);
+    std::string serialized = BasicSerializer::serialize(tree.get());
     std::cout << serialized << std::endl;
 
     Tree::ptr tree2 = BasicSerializer::deserialize(serialized);
     assert(tree2);
-    std::string serialized2 = BasicSerializer::serialize(tree2);
+    std::string serialized2 = BasicSerializer::serialize(tree2.get());
     std::cout << serialized2 << std::endl;
 
     assert(serialized == serialized2);
@@ -190,7 +190,7 @@ main() {
     tree->graft(".child1.child2.black_door", elem2);
     tree->tag_as_array(".child1.child2", true);
 
-    std::string serialized = JSONSerializer::serialize(tree);
+    std::string serialized = JSONSerializer::serialize(tree.get());
     std::cout << serialized << std::endl;
   }
 

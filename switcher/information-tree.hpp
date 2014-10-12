@@ -48,11 +48,11 @@ namespace data {
 class Tree {
  public:
   using ptr = std::shared_ptr<Tree>;
-  using ptrc = std::shared_ptr<const Tree>;
+  using ptrc = const Tree *;
   using child_type = std::pair<std::string, Tree::ptr>;
   using childs_t = std::list<child_type>;
   using OnNodeFunction = std::function <void(const std::string &name,
-                                             const Tree::ptrc tree,
+                                             Tree::ptrc tree,
                                              bool is_array_element)>;
   using GetNodeReturn = std::pair <Tree::childs_t, Tree::childs_t::iterator>;
   
@@ -126,7 +126,7 @@ class Tree {
         return res;
       tree = found.second->second;
     }
-    preorder_tree_walk (tree,
+    preorder_tree_walk (tree.get(),
                         [&res](std::string /*key*/,
                                Tree::ptrc node,
                                bool /*is_array_element*/) {

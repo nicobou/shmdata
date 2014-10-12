@@ -43,9 +43,9 @@ Tree::preorder_tree_walk(Tree::ptrc tree,
   std::unique_lock<std::mutex> lock(tree->mutex_);
   if (!tree->childrens_.empty()) {
     for (auto &it : tree->childrens_) {
-      on_visiting_node(it.first, it.second, tree->is_array_);
-      preorder_tree_walk(it.second, on_visiting_node, on_node_visited);
-      on_node_visited(it.first, it.second, tree->is_array_);
+      on_visiting_node(it.first, it.second.get(), tree->is_array_);
+      preorder_tree_walk(it.second.get(), on_visiting_node, on_node_visited);
+      on_node_visited(it.first, it.second.get(), tree->is_array_);
     }
   }
 }

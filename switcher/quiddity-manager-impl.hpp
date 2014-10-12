@@ -88,7 +88,7 @@ class QuiddityManager_Impl
                       std::function<R(data::Tree::ptrc tree)> fun){
     auto it = quiddities_nick_names_.find(nick_name);
     if (quiddities_nick_names_.end() == it)
-      return fun (data::Tree::make ());
+      return fun (data::Tree::make ().get());
   return quiddities_[quiddities_nick_names_[nick_name]]->invoke_info_tree<R>(fun);
   }  
   std::string get_info(const std::string &nick_name,

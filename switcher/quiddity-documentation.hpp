@@ -30,7 +30,8 @@ class QuiddityDocumentation {
                         std::string category,
                         std::string short_description,
                         std::string license,
-                        std::string class_name, std::string author);
+                        std::string class_name, 
+			std::string author);
 
   std::string get_category() const;
   std::string get_class_name() const;
