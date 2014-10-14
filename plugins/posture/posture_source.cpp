@@ -320,7 +320,48 @@ PostureSrc::get_build_mesh(void *user_data) {
 void
 PostureSrc::set_build_mesh(const int build_mesh, void *user_data) {
   PostureSrc *ctx = (PostureSrc *) user_data;
-  ctx->build_mesh_ = build_mesh;
+
+  if (ctx->build_mesh_ != build_mesh && build_mesh == true)
+  {
+    ctx->build_mesh_ = build_mesh;
+
+    ctx->build_mesh_edge_length_prop_ = ctx->custom_props_->make_int_property("build_mesh_edge_length",
+                                "Edge length of the build mesh, in pixels",
+                                1,
+                                16,
+                                ctx->build_mesh_edge_length_,
+                                (GParamFlags)
+                                G_PARAM_READWRITE,
+                                PostureSrc::set_build_mesh_edge_length,
+                                PostureSrc::get_build_mesh_edge_length,
+                                ctx);
+    ctx->install_property_by_pspec(ctx->custom_props_->get_gobject(),
+                              ctx->build_mesh_edge_length_prop_, "build_mesh_edge_length",
+                              "Edge length of the  build mesh, in pixels");
+  }
+  else if (ctx->build_mesh_edge_length_ != build_mesh && build_mesh == false)
+  {
+    ctx->build_mesh_edge_length_ = false;
+    ctx->uninstall_property("build_mesh_edge_length");
+  }
+
+  if (ctx->zcamera_ != nullptr)
+    ctx->zcamera_->setBuildEdgeLength(ctx->build_mesh_edge_length_);
+}
+
+int
+PostureSrc::get_build_mesh_edge_length(void *user_data) {
+    PostureSrc *ctx = (PostureSrc*) user_data;
+    return ctx->build_mesh_edge_length_;
+}
+
+void
+PostureSrc::set_build_mesh_edge_length(const int edge_length, void *user_data) {
+    PostureSrc *ctx = (PostureSrc*) user_data;
+    ctx->build_mesh_edge_length_ = edge_length;
+
+    if (ctx->zcamera_ != nullptr)
+        ctx->zcamera_->setBuildEdgeLength(ctx->build_mesh_edge_length_);
 }
 
 int

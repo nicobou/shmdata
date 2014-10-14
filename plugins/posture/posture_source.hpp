@@ -52,6 +52,7 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   unsigned int device_index_ {0};
   bool capture_ir_ {false};
   bool build_mesh_ {false};
+  int build_mesh_edge_length_ {1};
   bool compress_cloud_ {false};
   bool reload_calibration_ {false};
   bool downsample_ {false};
@@ -66,6 +67,7 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   GParamSpec *device_index_prop_ {nullptr};
   GParamSpec *capture_ir_prop_ {nullptr};
   GParamSpec *build_mesh_prop_ {nullptr};
+  GParamSpec *build_mesh_edge_length_prop_ {nullptr};
   GParamSpec *compress_cloud_prop_ {nullptr};
   GParamSpec *reload_calibration_prop_ {nullptr};
   GParamSpec *downsample_prop_ {nullptr};
@@ -107,6 +109,8 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   static void set_capture_ir(const int ir, void *user_data);
   static int get_build_mesh(void *user_data);
   static void set_build_mesh(const int build_mesh, void *user_data);
+  static int get_build_mesh_edge_length(void *user_data);
+  static void set_build_mesh_edge_length(const int build_mesh, void *user_data);
   static int get_compress_cloud(void *user_data);
   static void set_compress_cloud(const int compress, void *user_data);
   static int get_capture_mode(void *user_data);
