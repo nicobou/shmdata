@@ -41,6 +41,7 @@ PostureSrc::PostureSrc():
   zcamera_ = make_shared<ZCamera> ();
   
   zcamera_->setCallbackCloud(cb_frame_cloud, this);
+  zcamera_->setCallbackMesh(cb_frame_mesh, this);
   zcamera_->setCallbackDepth(cb_frame_depth, this);
   zcamera_->setCallbackRgb(cb_frame_rgb, this);
   zcamera_->setCallbackIR(cb_frame_ir, this);
@@ -56,11 +57,29 @@ PostureSrc::start() {
   zcamera_->setDevicesPath(devices_path_);
   zcamera_->setDeviceIndex(device_index_);
   zcamera_->setCaptureIR(capture_ir_);
+  zcamera_->setBuildMesh(build_mesh_);
   zcamera_->setCompression(compress_cloud_);
   zcamera_->setCaptureMode((posture::ZCamera::CaptureMode) capture_mode_);
   zcamera_->setOutlierFilterParameters(filter_outliers_, filter_mean_k_, filter_stddev_mul_);
 
   zcamera_->start();
+
+  rgb_focal_ = zcamera_->getRGBFocal();
+  // TODO: G_PARAM_READABLE are not displayed in Scenic2
+  rgb_focal_prop_ = custom_props_->make_double_property("rgb_focal",
+                              "RGB focal length",
+                              0.0,
+                              10000.0,
+                              rgb_focal_,
+                              (GParamFlags)
+                              G_PARAM_READWRITE,
+                              PostureSrc::nope,
+                              PostureSrc::get_rgb_focal,
+                              this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            rgb_focal_prop_, "rgb_focal",
+                            "RGB focal length");
+
   return true;
 }
 
@@ -68,22 +87,15 @@ bool
 PostureSrc::stop() {
   zcamera_->stop();
 
-  if (cloud_writer_.get() != nullptr) {
-    unregister_shmdata(cloud_writer_->get_path());
-    cloud_writer_.reset();
-  }
-  if (depth_writer_.get() != nullptr) {
-    unregister_shmdata(depth_writer_->get_path());
-    depth_writer_.reset();
-  }
-  if (rgb_writer_.get() != nullptr) {
-    unregister_shmdata(rgb_writer_->get_path());
-    rgb_writer_.reset();
-  }
-  if (ir_writer_.get() != nullptr) {
-    unregister_shmdata(ir_writer_->get_path());
-    ir_writer_.reset();
-  }
+  clear_shmdatas();
+  cloud_writer_.reset();
+  mesh_writer_.reset();
+  depth_writer_.reset();
+  rgb_writer_.reset();
+  ir_writer_.reset();
+
+  uninstall_property("rgb_focal_x");
+  uninstall_property("rgb_focal_y");
 
   return true;
 }
@@ -92,6 +104,7 @@ bool
 PostureSrc::init() {
   init_startable(this);
   init_segment(this);
+
   calibration_path_prop_ =
       custom_props_->make_string_property("calibration_path",
                             "Path to the calibration file",
@@ -141,6 +154,18 @@ PostureSrc::init() {
   install_property_by_pspec(custom_props_->get_gobject(),
                             capture_ir_prop_, "capture_ir",
                             "Grab the IR image if true");
+
+  build_mesh_prop_ = custom_props_->make_boolean_property("build_mesh",
+                            "Build a mesh from the cloud",
+                            build_mesh_,
+                            (GParamFlags)
+                            G_PARAM_READWRITE,
+                            PostureSrc::set_build_mesh,
+                            PostureSrc::get_build_mesh,
+                            this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            build_mesh_prop_, "build_mesh",
+                            "Build a mesh from the cloud");
 
   compress_cloud_prop_ = custom_props_->make_boolean_property("compress_cloud",
                             "Compress the cloud if true",
@@ -284,6 +309,59 @@ void
 PostureSrc::set_capture_ir(const int ir, void *user_data) {
   PostureSrc *ctx = (PostureSrc *) user_data;
   ctx->capture_ir_ = ir;
+}
+
+int
+PostureSrc::get_build_mesh(void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  return ctx->build_mesh_;
+}
+
+void
+PostureSrc::set_build_mesh(const int build_mesh, void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+
+  if (ctx->build_mesh_ != build_mesh && build_mesh == true)
+  {
+    ctx->build_mesh_ = build_mesh;
+
+    ctx->build_mesh_edge_length_prop_ = ctx->custom_props_->make_int_property("build_mesh_edge_length",
+                                "Edge length of the build mesh, in pixels",
+                                1,
+                                16,
+                                ctx->build_mesh_edge_length_,
+                                (GParamFlags)
+                                G_PARAM_READWRITE,
+                                PostureSrc::set_build_mesh_edge_length,
+                                PostureSrc::get_build_mesh_edge_length,
+                                ctx);
+    ctx->install_property_by_pspec(ctx->custom_props_->get_gobject(),
+                              ctx->build_mesh_edge_length_prop_, "build_mesh_edge_length",
+                              "Edge length of the  build mesh, in pixels");
+  }
+  else if (ctx->build_mesh_edge_length_ != build_mesh && build_mesh == false)
+  {
+    ctx->build_mesh_edge_length_ = false;
+    ctx->uninstall_property("build_mesh_edge_length");
+  }
+
+  if (ctx->zcamera_ != nullptr)
+    ctx->zcamera_->setBuildEdgeLength(ctx->build_mesh_edge_length_);
+}
+
+int
+PostureSrc::get_build_mesh_edge_length(void *user_data) {
+    PostureSrc *ctx = (PostureSrc*) user_data;
+    return ctx->build_mesh_edge_length_;
+}
+
+void
+PostureSrc::set_build_mesh_edge_length(const int edge_length, void *user_data) {
+    PostureSrc *ctx = (PostureSrc*) user_data;
+    ctx->build_mesh_edge_length_ = edge_length;
+
+    if (ctx->zcamera_ != nullptr)
+        ctx->zcamera_->setBuildEdgeLength(ctx->build_mesh_edge_length_);
 }
 
 int
@@ -458,6 +536,18 @@ PostureSrc::set_filter_stddev_mul(const double stddev_mul, void *user_data) {
     ctx->zcamera_->setOutlierFilterParameters(ctx->filter_outliers_, ctx->filter_mean_k_, ctx->filter_stddev_mul_);
 }
 
+double
+PostureSrc::get_rgb_focal(void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  return ctx->rgb_focal_;
+}
+
+void
+PostureSrc::nope(const double /*unused*/, void* /*unused*/)
+{
+  return;
+}
+
 void
 PostureSrc::cb_frame_cloud(void *context, const vector<char>&data) {
   PostureSrc *ctx = (PostureSrc *) context;
@@ -484,6 +574,28 @@ PostureSrc::cb_frame_cloud(void *context, const vector<char>&data) {
                                          data.size(),
                                          PostureSrc::free_sent_buffer,
                                          (void*)(ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1].get()));
+}
+
+void
+PostureSrc::cb_frame_mesh(void* context, const vector<unsigned char>& data)
+{
+    PostureSrc *ctx = static_cast<PostureSrc*>(context);
+
+    if (ctx->mesh_writer_ == nullptr) {
+        ctx->mesh_writer_ = make_shared<ShmdataAnyWriter>();
+        ctx->mesh_writer_->set_path(ctx->make_file_name("mesh"));
+        ctx->register_shmdata(ctx->mesh_writer_);
+        ctx->mesh_writer_->set_data_type(string(POLYGONMESH_TYPE_BASE));
+        ctx->mesh_writer_->start();
+    }
+
+    lock_guard<mutex> lock(ctx->shmwriters_queue_mutex_);
+    ctx->check_buffers();
+    ctx->shmwriters_queue_.push_back(make_shared<vector<unsigned char>>(data));
+    ctx->mesh_writer_->push_data_auto_clock((void*) ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1]->data(),
+                                            data.size(),
+                                            PostureSrc::free_sent_buffer,
+                                            (void*)(ctx->shmwriters_queue_[ctx->shmwriters_queue_.size() - 1].get()));
 }
 
 void
@@ -535,11 +647,8 @@ PostureSrc::cb_frame_rgb(void *context,
     ctx->rgb_width_ = width;
     ctx->rgb_height_ = height;
 
-    char
-        buffer[256] = "";
-    sprintf(buffer,
-            "video/x-raw-rgb,bpp=24,endianness=4321,depth=24,red_mask=16711680,green_mask=65280,blue_mask=255,width=%i,height=%i,framerate=30/1",
-            width, height);
+    char buffer[256] = "";
+    sprintf(buffer, "video/x-raw-rgb,bpp=(int)24,endianness=(int)4321,depth=(int)24,red_mask=(int)16711680,green_mask=(int)65280,blue_mask=(int)255,width=(int)%i,height=(int)%i,framerate=30/1", width, height);
     ctx->rgb_writer_->set_data_type(string(buffer));
     ctx->rgb_writer_->start();
   }

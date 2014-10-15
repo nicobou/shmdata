@@ -58,12 +58,12 @@ bool
 PostureMerge::stop() {
   lock_guard<mutex> lock(mutex_);
 
-  if (merger_.get() != nullptr) {
+  if (merger_ != nullptr) {
     merger_->stop();
     merger_.reset();
   }
 
-  if (cloud_writer_.get() != nullptr) {
+  if (cloud_writer_ != nullptr) {
     unregister_shmdata(cloud_writer_->get_path());
     cloud_writer_.reset();
   }
@@ -158,18 +158,25 @@ PostureMerge::connect(std::string shmdata_socket_path) {
   int index = source_id_;
   source_id_ += 1;
 
-  ShmdataAnyReader::ptr reader_ = make_shared<ShmdataAnyReader>();
-  reader_->set_path(shmdata_socket_path);
+  ShmdataAnyReader::ptr reader = make_shared<ShmdataAnyReader>();
+  reader->set_path(shmdata_socket_path);
 
   // This is the callback for when new clouds are received
-  reader_->set_callback([=] (void *data,
+  reader->set_callback([=] (void *data,
                              int size,
-                             unsigned long long timestamp,
+                             unsigned long long /*timestamp*/,
                              const char *type,
                              void * /*unused */ )
   {
-    if (merger_ == nullptr || (string(type) != string(POINTCLOUD_TYPE_BASE) && string(type) != string(POINTCLOUD_TYPE_COMPRESSED)))
+    // If another thread is trying to get the merged cloud, don't bother
+    if (!mutex_.try_lock())
       return;
+
+    if (merger_ == nullptr || (string(type) != string(POINTCLOUD_TYPE_BASE) && string(type) != string(POINTCLOUD_TYPE_COMPRESSED)))
+    {
+      mutex_.unlock();
+      return;
+    }
 
     if (reload_calibration_)
         merger_->reloadCalibration();
@@ -177,12 +184,7 @@ PostureMerge::connect(std::string shmdata_socket_path) {
     // Setting input clouds is thread safe, so lets do it
     merger_->setInputCloud(index,
                            vector<char>((char*)data, (char*) data + size),
-                           string(type) != string(POINTCLOUD_TYPE_BASE),
-                           timestamp);
-
-    // If another thread is trying to get the merged cloud, don't bother
-    if (!mutex_.try_lock())
-      return;
+                           string(type) != string(POINTCLOUD_TYPE_BASE));
 
     if (cloud_writer_.get() == nullptr) {
       cloud_writer_.reset(new ShmdataAnyWriter);
@@ -208,8 +210,8 @@ PostureMerge::connect(std::string shmdata_socket_path) {
   },
   nullptr);
 
-  reader_->start();
-  register_shmdata(reader_);
+  reader->start();
+  register_shmdata(reader);
   return true;
 }
 

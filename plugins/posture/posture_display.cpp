@@ -66,10 +66,14 @@ PostureDisplay::connect(std::string shmdata_socket_path) {
   // This is the callback for when new clouds are received
   reader->set_callback([=] (void *data, int size, unsigned long long /* unused */, const char *type, void * /*unused */ )
   {
-    if (display_ == nullptr)
-        return;
     if (!display_mutex_.try_lock())
-        return;
+      return;
+
+    if (display_ == nullptr)
+    {
+      display_mutex_.unlock();
+      return;
+    }
 
     if (string(type) == string(POINTCLOUD_TYPE_COMPRESSED) || string(type) == string(POINTCLOUD_TYPE_BASE))
     {

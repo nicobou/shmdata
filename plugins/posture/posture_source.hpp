@@ -46,10 +46,13 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
 
  private:
   CustomPropertyHelper::ptr custom_props_;
+  double rgb_focal_ {0.0};
   std::string calibration_path_ {"default.kvc"};
   std::string devices_path_ {"devices.xml"};
   unsigned int device_index_ {0};
   bool capture_ir_ {false};
+  bool build_mesh_ {false};
+  int build_mesh_edge_length_ {1};
   bool compress_cloud_ {false};
   bool reload_calibration_ {false};
   bool downsample_ {false};
@@ -58,10 +61,13 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   int filter_mean_k_ {8};
   double filter_stddev_mul_ {1.0};
 
+  GParamSpec *rgb_focal_prop_ {nullptr};
   GParamSpec *calibration_path_prop_ {nullptr};
   GParamSpec *devices_path_prop_ {nullptr};
   GParamSpec *device_index_prop_ {nullptr};
   GParamSpec *capture_ir_prop_ {nullptr};
+  GParamSpec *build_mesh_prop_ {nullptr};
+  GParamSpec *build_mesh_edge_length_prop_ {nullptr};
   GParamSpec *compress_cloud_prop_ {nullptr};
   GParamSpec *reload_calibration_prop_ {nullptr};
   GParamSpec *downsample_prop_ {nullptr};
@@ -77,6 +83,7 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   std::shared_ptr<posture::ZCamera> zcamera_ {nullptr};
 
   ShmdataAnyWriter::ptr cloud_writer_ {nullptr};
+  ShmdataAnyWriter::ptr mesh_writer_ {nullptr};
   ShmdataAnyWriter::ptr depth_writer_ {nullptr};
   ShmdataAnyWriter::ptr rgb_writer_ {nullptr};
   ShmdataAnyWriter::ptr ir_writer_ {nullptr};
@@ -85,6 +92,7 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriters_queue_ {};
 
   bool cloud_compressed_ {false};
+
   int depth_width_ {0}, depth_height_ {0};
   int rgb_width_ {0}, rgb_height_ {0};
   int ir_width_ {0}, ir_height_ {0};
@@ -99,6 +107,10 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   static void set_device_index(const int index, void *user_data);
   static int get_capture_ir(void *user_data);
   static void set_capture_ir(const int ir, void *user_data);
+  static int get_build_mesh(void *user_data);
+  static void set_build_mesh(const int build_mesh, void *user_data);
+  static int get_build_mesh_edge_length(void *user_data);
+  static void set_build_mesh_edge_length(const int build_mesh, void *user_data);
   static int get_compress_cloud(void *user_data);
   static void set_compress_cloud(const int compress, void *user_data);
   static int get_capture_mode(void *user_data);
@@ -118,8 +130,14 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   static double get_filter_stddev_mul(void *user_data);
   static void set_filter_stddev_mul(const double stddev_mul, void *user_data);
 
+  static void nope(const double /*unused*/, void* /*unused*/);
+
+  static double get_rgb_focal(void *user_data);
+
   static void cb_frame_cloud(void *context,
                              const std::vector<char>&data);
+  static void cb_frame_mesh(void *context,
+                            const std::vector<unsigned char>&data);
   static void cb_frame_depth(void *context,
                              const std::vector<unsigned char>&data,
                              int width, int height);
