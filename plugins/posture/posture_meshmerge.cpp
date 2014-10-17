@@ -56,6 +56,7 @@ PostureMeshMerge::start() {
 bool
 PostureMeshMerge::stop() {
   lock_guard<mutex> lock(mutex_);
+  lock_guard<mutex> lockUpdate(updateMutex_);
 
   if (merger_ != nullptr) {
     merger_->stop();

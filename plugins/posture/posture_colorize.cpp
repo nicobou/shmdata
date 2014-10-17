@@ -110,18 +110,15 @@ PostureColorize::connect(std::string shmdata_socket_path) {
                             const char *type,
                             void * /*unused*/)
   {
-    if (!mutex_.try_lock())
-      return;
-
     if (colorize_ == nullptr)
-    {
-      mutex_.unlock();
       return;
-    }
 
     unsigned int width, height, channels;
     // Update the input mesh. This calls the update of colorize_
     if (string(type) == string(POLYGONMESH_TYPE_BASE)) {
+      if (!mutex_.try_lock())
+        return;
+
       has_input_mesh_ = true;
       mesh_index_ = id;
       mesh_ = vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size);
@@ -182,6 +179,7 @@ PostureColorize::connect(std::string shmdata_socket_path) {
     }
     // Update the input textures
     else if (check_image_caps(string(type), width, height, channels)) {
+      lock_guard<mutex> lock(mutex_);
       if (mesh_index_ != -1)
       {
         if (shm_index_.find(id) == shm_index_.end()) {
