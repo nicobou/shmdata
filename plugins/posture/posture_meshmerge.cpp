@@ -132,20 +132,12 @@ PostureMeshMerge::connect(std::string shmdata_socket_path) {
                              const char *type,
                              void * /*unused */ )
   {
-    // If another thread is trying to get the merged cloud, don't bother
-    if (!mutex_.try_lock())
-      return;
-
     if (merger_ == nullptr || (string(type) != string(POLYGONMESH_TYPE_BASE)))
-    {
-      mutex_.unlock();
       return;
-    }
 
     // Setting input mesh is thread safe, so lets do it
     merger_->setInputMesh(index, vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size));
 
-    mutex_.unlock();
     if (!updateMutex_.try_lock())
       return;
 
