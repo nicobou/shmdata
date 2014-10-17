@@ -48,7 +48,7 @@ Quiddity::Quiddity():
     manager_impl_(),
     gobject_(new GObjectWrapper()) {
   gobject_->property_set_default_user_data(this);
-  GType arg_type[] = { G_TYPE_STRING, G_TYPE_STRING };
+  GType arg_type[] = { G_TYPE_STRING };
   install_signal_with_class_name("Quiddity",
                                  "On New Property",
                                  "on-property-added",
@@ -60,7 +60,7 @@ Quiddity::Quiddity():
                                                               "property_name",
                                                               "the property name",
                                                               nullptr),
-                                 2,
+                                 1,
                                  arg_type);
 
   install_signal_with_class_name("Quiddity",
@@ -74,7 +74,7 @@ Quiddity::Quiddity():
                                                               "property_name",
                                                               "the property name",
                                                               nullptr),
-                                 2,
+                                 1,
                                  arg_type);
 
   install_signal_with_class_name("Quiddity",
@@ -88,7 +88,7 @@ Quiddity::Quiddity():
                                                               "property_name",
                                                               "the property name",
                                                               nullptr),
-                                 2,
+                                 1,
                                  arg_type);
 
   install_signal_with_class_name("Quiddity",
@@ -102,7 +102,7 @@ Quiddity::Quiddity():
                                                               "method_name",
                                                               "the method name",
                                                               nullptr),
-                                 2,
+                                 1,
                                  arg_type);
 
   install_signal_with_class_name("Quiddity",
@@ -126,7 +126,7 @@ Quiddity::Quiddity():
                                                               "branch_name",
                                                               "the branch name",
                                                               nullptr),
-                                 2,
+                                 1,
                                  arg_type);
 
   install_signal_with_class_name("Quiddity",
@@ -140,7 +140,7 @@ Quiddity::Quiddity():
                                                               "branch_name",
                                                               "the branch name",
                                                               nullptr),
-                                 2,
+                                 1,
                                  arg_type);
 }
 
