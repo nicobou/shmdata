@@ -203,10 +203,11 @@ Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
     PyObject *path = NULL;
     PyObject *pyFunc = NULL;
     PyObject *pyUserData = NULL;
+    PyObject *pyDropFrames = NULL;
     PyObject *tmp = NULL;
 
-    static char *kwlist[] = {(char*)"path", (char*)"callback", (char*)"user_data", NULL};
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist, &path, &pyFunc, &pyUserData))
+    static char *kwlist[] = {(char*)"path", (char*)"callback", (char*)"user_data", (char*)"drop_frames", NULL};
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OOO", kwlist, &path, &pyFunc, &pyUserData, &pyDropFrames))
         return -1;
 
     if (path) {
@@ -230,6 +231,10 @@ Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
         Py_XDECREF(tmp);
     }
 
+    if (pyDropFrames) {
+        self->drop_frames = PyObject_IsTrue(pyDropFrames);
+    }
+
     self->reader = shmdata_any_reader_init();
     if (self->reader == NULL)
         return -1;
@@ -243,7 +248,7 @@ Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds)
 PyObject*
 Reader_pull(pyshmdata_ReaderObject* self)
 {
-    //lock_guard<mutex> lock(self->reader_mutex);
+    lock_guard<mutex> lock(self->reader_mutex);
     if (self->lastBuffer != NULL)
     {
         Py_INCREF(self->lastBuffer);
@@ -257,13 +262,13 @@ Reader_pull(pyshmdata_ReaderObject* self)
 void
 Reader_on_data_handler(shmdata_any_reader_t* reader, void* shmbuf, void* data, int data_size, unsigned long long timestamp, const char* type, void* user_data)
 {
-    if (user_data == nullptr)
+    pyshmdata_ReaderObject* self = static_cast<pyshmdata_ReaderObject*>(user_data);
+
+    if (user_data == nullptr || (self->drop_frames && !self->frame_mutex.try_lock()))
     {
         shmdata_any_reader_free(shmbuf);
         return;
     }
-
-    pyshmdata_ReaderObject* self = static_cast<pyshmdata_ReaderObject*>(user_data);
 
     PyGILState_STATE gil = PyGILState_Ensure(); // We need to check the GIL state here because of the mutex
 
@@ -306,5 +311,9 @@ Reader_on_data_handler(shmdata_any_reader_t* reader, void* shmbuf, void* data, i
     }
     
     PyGILState_Release(gil);
+
+    if (self->drop_frames)
+        self->frame_mutex.unlock();
+
     shmdata_any_reader_free(shmbuf);
 }

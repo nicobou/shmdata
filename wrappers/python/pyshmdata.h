@@ -107,6 +107,8 @@ typedef struct {
     PyObject* callback_user_data {NULL};
     shmdata_any_reader_t* reader;
     std::mutex reader_mutex;
+    std::mutex frame_mutex;
+    bool drop_frames {false};
 } pyshmdata_ReaderObject;
 
 static void Reader_dealloc(pyshmdata_ReaderObject* self);
