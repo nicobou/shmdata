@@ -50,6 +50,7 @@ PostureColorize::start() {
   colorize_ = make_shared<Colorize>();
 
   colorize_->setCalibrationPath(calibration_path_);
+  colorize_->setComputeTexCoords(compute_tex_coords_);
 
   return true;
 }
@@ -93,6 +94,17 @@ PostureColorize::init() {
                             calibration_path_prop_, "calibration_path",
                             "Path to the calibration file");
 
+  compute_tex_coords_prop_ = custom_props_->make_boolean_property("compute_tex_coords",
+                                         "Compute texture coordinates",
+                                         compute_tex_coords_,
+                                         (GParamFlags) G_PARAM_READWRITE,
+                                         PostureColorize::set_compute_tex_coords,
+                                         PostureColorize::get_compute_tex_coords,
+                                         this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            compute_tex_coords_prop_, "compute_tex_coords",
+                            "Compute texture coordinates");
+
   return true;
 }
 
@@ -123,14 +135,18 @@ PostureColorize::connect(std::string shmdata_socket_path) {
       mesh_index_ = id;
       mesh_ = vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size);
 
+      imageMutex_.lock();
       if (images_.size() == 0)
       {
+        imageMutex_.unlock();
         mutex_.unlock();
         return;
       }
 
       thread computeThread = thread([=] () {
         colorize_->setInput(mesh_, images_, dims_);
+        imageMutex_.unlock();
+
         vector<unsigned char> texturedMesh = colorize_->getTexturedMesh();
 
         unsigned int width, height;
@@ -179,7 +195,7 @@ PostureColorize::connect(std::string shmdata_socket_path) {
     }
     // Update the input textures
     else if (check_image_caps(string(type), width, height, channels)) {
-      lock_guard<mutex> lock(mutex_);
+      lock_guard<mutex> lock(imageMutex_);
       if (mesh_index_ != -1)
       {
         if (shm_index_.find(id) == shm_index_.end()) {
@@ -200,8 +216,6 @@ PostureColorize::connect(std::string shmdata_socket_path) {
         images_[index] = vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size);
         dims_[index] = vector<unsigned int>({width, height, channels});
       }
-
-      mutex_.unlock();
     }
   },
   nullptr);
@@ -328,6 +342,18 @@ PostureColorize::set_calibration_path(const gchar *name, void *user_data) {
   PostureColorize *ctx = (PostureColorize *) user_data;
   if (name != nullptr)
     ctx->calibration_path_ = name;
+}
+
+int
+PostureColorize::get_compute_tex_coords(void *user_data) {
+    PostureColorize *ctx = (PostureColorize *) user_data;
+    return ctx->compute_tex_coords_;
+}
+
+void
+PostureColorize::set_compute_tex_coords(const int compute, void *user_data) {
+    PostureColorize *ctx = (PostureColorize *) user_data;
+    ctx->compute_tex_coords_ = compute;
 }
 
 void
