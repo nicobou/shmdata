@@ -48,9 +48,11 @@ class PostureColorize : public Quiddity, public Segment, public StartableQuiddit
   CustomPropertyHelper::ptr custom_props_;
   std::string calibration_path_ {"default.kvc"};
   bool compute_tex_coords_ {false};
+  bool compress_mesh_ {true};
 
   GParamSpec *calibration_path_prop_ {nullptr};
   GParamSpec *compute_tex_coords_prop_ {nullptr};
+  GParamSpec *compress_mesh_prop_ {nullptr};
 
   std::shared_ptr<posture::Colorize> colorize_ {nullptr};
   std::mutex mutex_ {};
@@ -80,6 +82,8 @@ class PostureColorize : public Quiddity, public Segment, public StartableQuiddit
   static void set_calibration_path(const gchar *name, void *user_data);
   static int get_compute_tex_coords(void *user_data);
   static void set_compute_tex_coords(const int compute, void *user_data);
+  static int get_compress_mesh(void *user_data);
+  static void set_compress_mesh(const int compress, void *user_data);
 
   static void free_sent_buffer(void* data);
   void check_buffers();  

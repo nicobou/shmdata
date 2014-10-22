@@ -51,6 +51,7 @@ PostureColorize::start() {
 
   colorize_->setCalibrationPath(calibration_path_);
   colorize_->setComputeTexCoords(compute_tex_coords_);
+  colorize_->setCompressMesh(compress_mesh_);
 
   return true;
 }
@@ -104,6 +105,17 @@ PostureColorize::init() {
   install_property_by_pspec(custom_props_->get_gobject(),
                             compute_tex_coords_prop_, "compute_tex_coords",
                             "Compute texture coordinates");
+
+  compress_mesh_prop_ = custom_props_->make_boolean_property("compress_mesh",
+                                         "Compress the output mesh",
+                                         compress_mesh_,
+                                         (GParamFlags) G_PARAM_READWRITE,
+                                         PostureColorize::set_compress_mesh,
+                                         PostureColorize::get_compress_mesh,
+                                         this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            compress_mesh_prop_, "compress_mesh",
+                            "Compress the output mesh");
 
   return true;
 }
@@ -354,6 +366,18 @@ void
 PostureColorize::set_compute_tex_coords(const int compute, void *user_data) {
     PostureColorize *ctx = (PostureColorize *) user_data;
     ctx->compute_tex_coords_ = compute;
+}
+
+int
+PostureColorize::get_compress_mesh(void *user_data) {
+    PostureColorize *ctx = (PostureColorize *) user_data;
+    return ctx->compress_mesh_;
+}
+
+void
+PostureColorize::set_compress_mesh(const int compress, void *user_data) {
+    PostureColorize *ctx = (PostureColorize *) user_data;
+    ctx->compress_mesh_ = compress;
 }
 
 void
