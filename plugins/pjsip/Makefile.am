@@ -23,33 +23,32 @@ libpjsip_plugin_la_includedir = \
 
 libpjsip_plugin_la_LDFLAGS = \
     $(GLIB_LIBS) \
-    $(GST_LIBS) \
     $(GMODULE_LIBS) \
+    $(GST_LIBS) \
     $(JSONGLIB_LIBS) \
-    `pkg-config --libs pjproject-2.2.1/install_dir/lib/pkgconfig/libpjproject.pc` \
     $(SHMDATA_LIBS) \
-    -avoid-version \
-    -module \
-    -fPIC \
     -L$(top_builddir)/switcher/.libs \
-    -lswitcher-@LIBSWITCHER_API_VERSION@ 
+    -avoid-version \
+    -lswitcher-@LIBSWITCHER_API_VERSION@ \
+    -module \
+    `pkg-config --libs pjproject-2.2.1/install_dir/lib/pkgconfig/libpjproject.pc`
 
-# libpjsip_plugin_la_LIBADD = \
-#     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpj-x86_64-unknown-linux-gnu.a \
-#     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjlib-util-x86_64-unknown-linux-gnu.a \
-#     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-audiodev-x86_64-unknown-linux-gnu.a \
-#     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-codec-x86_64-unknown-linux-gnu.a \
-#     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-videodev-x86_64-unknown-linux-gnu.a \
-#     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-x86_64-unknown-linux-gnu.a \
-#     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjnath-x86_64-unknown-linux-gnu.a \
-#     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsip-simple-x86_64-unknown-linux-gnu.a \
-#     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsip-ua-x86_64-unknown-linux-gnu.a \
-#     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsip-x86_64-unknown-linux-gnu.a \
-#     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua-x86_64-unknown-linux-gnu.a \
-#     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua2-x86_64-unknown-linux-gnu.a \
-#     $(srcdir)/pjproject-2.2.1/install_dir/lib/libresample-x86_64-unknown-linux-gnu.a \
-#     $(srcdir)/pjproject-2.2.1/install_dir/lib/libsrtp-x86_64-unknown-linux-gnu.a
-
+libpjsip_plugin_la_LIBADD = \
+     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua-x86_64-unknown-linux-gnu.a \
+     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpj-x86_64-unknown-linux-gnu.a \
+     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjlib-util-x86_64-unknown-linux-gnu.a \
+     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-audiodev-x86_64-unknown-linux-gnu.a \
+     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-codec-x86_64-unknown-linux-gnu.a \
+     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-videodev-x86_64-unknown-linux-gnu.a \
+     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-x86_64-unknown-linux-gnu.a \
+     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjnath-x86_64-unknown-linux-gnu.a \
+     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsip-simple-x86_64-unknown-linux-gnu.a \
+     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsip-ua-x86_64-unknown-linux-gnu.a \
+     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsip-x86_64-unknown-linux-gnu.a \
+     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua-x86_64-unknown-linux-gnu.a \
+     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua2-x86_64-unknown-linux-gnu.a \
+     $(srcdir)/pjproject-2.2.1/install_dir/lib/libresample-x86_64-unknown-linux-gnu.a \
+     $(srcdir)/pjproject-2.2.1/install_dir/lib/libsrtp-x86_64-unknown-linux-gnu.a
 
 libpjsip_plugin_la_CXXFLAGS = \
     $(GLIB_CFLAGS) \
@@ -62,13 +61,19 @@ libpjsip_plugin_la_CXXFLAGS = \
     -I$(top_srcdir) \
     -Wno-error=write-strings
 
-BUILT_SOURCES = \
-    pjproject-2.2.1/pjsip/include/pjsua-lib/pjsua.h
-
-$(srcdir)/pjproject-2.2.1/pjsip/include/pjsua-lib/pjsua.h: Makefile
+$(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua-x86_64-unknown-linux-gnu.a: Makefile
 	wget http://www.pjsip.org/release/2.2.1/pjproject-2.2.1.tar.bz2 \
         && tar -xjvf pjproject-2.2.1.tar.bz2 \
-        && sh build_pjproject.sh
+        && cd pjproject-2.2.1 \
+        && mkdir -p install_dir \
+        && patch -p0 < ../more_codecs.patch \
+        && ./configure --prefix `pwd`/install_dir --disable-video  \
+           --disable-sound --disable-g711-codec --disable-g7221-codec  \
+           --disable-g722-codec --disable-gsm-codec --disable-ilbc-codec \
+           --disable-l16-codec --disable-speex-aec  --disable-speex-codec \
+        && CFLAGS=-fPIC make dep \
+        && CFLAGS=-fPIC make \
+        && make install
 
 #### plugin unit test
 AM_CFLAGS = \
