@@ -250,31 +250,37 @@ bool Segment::unregister_shmdata(std::string shmdata_path) {
 }
 
 bool Segment::clear_shmdatas() {
-  {  // writers
+  // writers
+  {
     std::unique_lock<std::mutex> lock(writers_mutex_);
+    if (!shmdata_writers_.empty())
+      for (auto &it : shmdata_writers_) {
+        quid_->prune_tree(std::string(".shmdata.writer.")
+                          + it.first);
+      }
+    if (!shmdata_any_writers_.empty())
+      for (auto &it : shmdata_any_writers_) {
+        quid_->prune_tree(std::string(".shmdata.writer.")
+                          + it.first);
+    }
     shmdata_writers_.clear();
     shmdata_any_writers_.clear();
   }
-  for (auto &it : shmdata_writers_) {
-    quid_->prune_tree(std::string(".shmdata.writer.")
-                      + it.first);
-  }
-  for (auto &it : shmdata_any_writers_) {
-    quid_->prune_tree(std::string(".shmdata.writer.")
-                      + it.first);
-  }
-  {  //readers
+  //readers
+  {
     std::unique_lock<std::mutex> lock(readers_mutex_);
+    if (!shmdata_readers_.empty())
+      for (auto &it : shmdata_readers_) {
+        quid_->prune_tree(std::string(".shmdata.reader.")
+                          + it.first);
+      }
+    if (!shmdata_any_readers_.empty())
+      for (auto &it : shmdata_any_readers_) {
+        quid_->prune_tree(std::string(".shmdata.reader.")
+                          + it.first);
+      }
     shmdata_readers_.clear();
     shmdata_any_writers_.clear();
-  }
-  for (auto &it : shmdata_readers_) {
-      quid_->prune_tree(std::string(".shmdata.reader.")
-                        + it.first);
-  }
-  for (auto &it : shmdata_any_readers_) {
-    quid_->prune_tree(std::string(".shmdata.reader.")
-                      + it.first);
   }
   return true;
 }
