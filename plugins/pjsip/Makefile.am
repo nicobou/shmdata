@@ -11,6 +11,12 @@ libpjsip_plugin_la_SOURCES = \
     pj-presence.cpp \
     pj-sip.cpp 
 
+nodist_libpjsip_plugin_la_SOURCES = \
+    pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h
+
+BUILT_SOURCES = \
+    pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h
+
 libpjsip_plugin_la_include_HEADERS = \
     pj-call.hpp \
     pj-codec.hpp \
@@ -61,7 +67,10 @@ libpjsip_plugin_la_CXXFLAGS = \
     -I$(top_srcdir) \
     -Wno-error=write-strings
 
-$(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua-x86_64-unknown-linux-gnu.a: Makefile
+# # manually addind dependency of libpjsip_plugin to pjproject compilation
+# libpjsip_plugin_la.$(OBJEXT): pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h
+
+pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h: Makefile
 	wget http://www.pjsip.org/release/2.2.1/pjproject-2.2.1.tar.bz2 \
         && tar -xjvf pjproject-2.2.1.tar.bz2 \
         && cd pjproject-2.2.1 \
@@ -74,6 +83,12 @@ $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua-x86_64-unknown-linux-gnu.a: M
         && CFLAGS=-fPIC make dep \
         && CFLAGS=-fPIC make \
         && make install
+
+clean-local:
+	-rm -rf pjproject-2.2.1* 
+
+distclean-local:
+	-rm -rf pjproject-2.2.1* 
 
 #### plugin unit test
 AM_CFLAGS = \
