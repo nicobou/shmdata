@@ -573,20 +573,17 @@ QuiddityManager_Impl::set_property(std::string quiddity_name,
 
 // higher level subscriber
 bool
-QuiddityManager_Impl::
-make_property_subscriber(std::string subscriber_name,
-                         QuiddityPropertySubscriber::Callback cb,
-                         void *user_data) {
+QuiddityManager_Impl::make_property_subscriber(std::string subscriber_name,
+                                               QuiddityPropertySubscriber::Callback cb,
+                                               void *user_data) {
   if (property_subscribers_.end() !=
       property_subscribers_.find(subscriber_name)) {
-    g_warning
-        ("QuiddityManager_Impl, a subscriber named %s already exists\n",
-         subscriber_name.c_str());
+    g_warning("QuiddityManager_Impl, a subscriber named %s already exists",
+              subscriber_name.c_str());
     return false;
   }
 
-  QuiddityPropertySubscriber::ptr subscriber;
-  subscriber.reset(new QuiddityPropertySubscriber());
+  QuiddityPropertySubscriber::ptr subscriber(std::make_shared<QuiddityPropertySubscriber>());
   subscriber->set_manager_impl(me_.lock());
   subscriber->set_name(subscriber_name.c_str());
   subscriber->set_user_data(user_data);

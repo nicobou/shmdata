@@ -34,16 +34,13 @@ QuidditySignalSubscriber::~QuidditySignalSubscriber() {
     Quiddity::ptr quid = it.second->quid.lock();
     if ((bool) quid) {
       g_debug("QuidditySignalSubscriber: cleaning signal not unsubscribed %s, %s, %s",
-              it.second->name,
-              it.second->quiddity_name,
-              it.second->signal_name);
+              it.second->name.c_str(),
+              it.second->quiddity_name.c_str(),
+              it.second->signal_name.c_str());
       quid->unsubscribe_signal(it.second->signal_name,
                                signal_cb,
                                it.second);
     }
-    g_free(it.second->name);
-    g_free(it.second->quiddity_name);
-    g_free(it.second->signal_name);
     delete(it.second);
   }
 }
@@ -56,17 +53,17 @@ void
 QuidditySignalSubscriber::signal_cb(std::vector<std::string> params,
                                     gpointer user_data) {
   SignalData *signal = static_cast<SignalData *>(user_data);
+  g_print("name %s qname %s sname %s\n",
+          signal->name.c_str(),
+          signal->quiddity_name.c_str(),
+          signal->signal_name.c_str());
 
-  // g_print ("---------------- signal callback: %s -- %s -- %s -- %s\n",
-  //      signal->quiddity_name,
-  //      signal->signal_name,
-  //      Signal::parse_callback_args (gobject, pspec).c_str (),
-  //      (gchar *)signal->user_data);
   if (!signal->subscriber->muted_)
-    signal->user_callback(signal->name,
-                          signal->quiddity_name,
-                          signal->signal_name,
-                          params, (gchar *) signal->user_data);
+    signal->user_callback(signal->name.c_str(),
+                          signal->quiddity_name.c_str(),
+                          signal->signal_name.c_str(),
+                          params,
+                          (gchar *)signal->user_data);
 }
 
 void
@@ -104,9 +101,9 @@ QuidditySignalSubscriber::subscribe(Quiddity::ptr quid,
   }
   SignalData *signal = new SignalData();
   signal->subscriber = this;
-  signal->name = g_strdup(name_.c_str());
-  signal->quiddity_name = g_strdup(quid->get_nick_name().c_str());
-  signal->signal_name = g_strdup(signal_name.c_str());
+  signal->name = name_;
+  signal->quiddity_name = quid->get_nick_name();
+  signal->signal_name = signal_name;
   signal->user_callback = user_callback_;
   signal->user_data = user_data_;
   signal->quid = quid;
@@ -115,9 +112,6 @@ QuidditySignalSubscriber::subscribe(Quiddity::ptr quid,
     return true;
   }
   g_warning("QuidditySignalSubscriber: cannot subscribe to signal");
-  g_free(signal->name);
-  g_free(signal->quiddity_name);
-  g_free(signal->signal_name);
   delete signal;
   return false;
 }
@@ -130,9 +124,6 @@ QuidditySignalSubscriber::unsubscribe(Quiddity::ptr quid,
   SignalDataMap::iterator it = signal_datas_.find(cur_pair);
   if (it != signal_datas_.end()) {
     quid->unsubscribe_signal(signal_name, signal_cb, it->second);
-    g_free(it->second->name);
-    g_free(it->second->quiddity_name);
-    g_free(it->second->signal_name);
     delete(it->second);
     signal_datas_.erase(cur_pair);
     return true;
@@ -147,9 +138,6 @@ bool QuidditySignalSubscriber::unsubscribe(Quiddity::ptr quid) {
   std::vector<std::pair<std::string, std::string>>keys_to_remove;
   for (auto &it : signal_datas_)
     if (it.first.first == quid_name) {
-      g_free(it.second->name);
-      g_free(it.second->quiddity_name);
-      g_free(it.second->signal_name);
       delete(it.second);
       keys_to_remove.push_back(it.first);
     }
@@ -158,9 +146,9 @@ bool QuidditySignalSubscriber::unsubscribe(Quiddity::ptr quid) {
   return true;
 }
 
-std::vector < std::pair < std::string,
-                          std::string > >QuidditySignalSubscriber::list_subscribed_signals() {
-  std::vector<std::pair<std::string, std::string>>res;
+std::vector<std::pair<std::string, std::string>>
+    QuidditySignalSubscriber::list_subscribed_signals() {
+  std::vector<std::pair<std::string, std::string>> res;
   SignalDataMap::iterator it;
   for (it = signal_datas_.begin(); it != signal_datas_.end(); it++) {
     res.push_back(it->first);

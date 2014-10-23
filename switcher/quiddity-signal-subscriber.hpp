@@ -58,8 +58,7 @@ class QuidditySignalSubscriber {
                    std::string signal_name);
   bool unsubscribe(std::shared_ptr<Quiddity> quid);
 
-  std::vector < std::pair < std::string,
-                            std::string > >list_subscribed_signals();
+  std::vector<std::pair<std::string, std::string>> list_subscribed_signals();
   static void signal_cb(std::vector<std::string> params,
                         gpointer user_data);
 
@@ -76,17 +75,17 @@ class QuidditySignalSubscriber {
 
   typedef struct {
     QuidditySignalSubscriber *subscriber{nullptr};
-    gchar *name{nullptr};
-    gchar *quiddity_name{nullptr};
-    gchar *signal_name{nullptr};
+    std::string name{};
+    std::string quiddity_name{};
+    std::string signal_name{};
     OnEmittedCallback user_callback{nullptr};
     void *user_data{nullptr};
     std::weak_ptr<Quiddity> quid{};
   } SignalData;
-  typedef std::map<std::pair < std::string, std::string>,
-                     SignalData * >SignalDataMap;
+  typedef std::map<std::pair<std::string, std::string>,
+                   SignalData *>SignalDataMap;
   SignalDataMap signal_datas_{};
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif
