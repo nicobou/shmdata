@@ -71,7 +71,7 @@ libpjsip_plugin_la_CXXFLAGS = \
 # libpjsip_plugin_la.$(OBJEXT): pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h
 
 pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h: Makefile
-	wget http://www.pjsip.org/release/2.2.1/pjproject-2.2.1.tar.bz2 \
+	curl -O http://www.pjsip.org/release/2.2.1/pjproject-2.2.1.tar.bz2 \
         && tar -xjvf pjproject-2.2.1.tar.bz2 \
         && cd pjproject-2.2.1 \
         && mkdir -p install_dir \
