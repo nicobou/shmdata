@@ -126,7 +126,9 @@ int main() {
         buds_from_tree.push_back(manager->invoke_info_tree<std::string>(
             sip_name,
             [&](switcher::data::Tree::ptrc tree){
-              return switcher::data::Tree::read_data(tree, "buddy." + it + ".uri");
+              return 
+		switcher::data::Tree::read_data(tree, 
+						"buddy." + it + ".uri").copy_as<std::string>();
             }));
       }
       assert(std::equal(buddies.begin(), buddies.end(),

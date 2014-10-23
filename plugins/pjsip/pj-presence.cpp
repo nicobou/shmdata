@@ -296,33 +296,34 @@ gboolean PJPresence::unregister_account_wrapped(gpointer /*unused */ ,
   return TRUE;
 }
 
-bool PJPresence::unregister_account() {
+void PJPresence::unregister_account() {
   std::unique_lock<std::mutex> lock(registration_mutex_);
-  if (-1 == account_id_)
-    return false;
+  if (-1 == account_id_) {
+    g_warning("no account to unregister");
+    return;
+  }
   change_online_status(PJPresence::OFFLINE);
   if (PJ_SUCCESS != pjsua_acc_del(account_id_)) {
     g_warning("error when unregistering account");
-    return false;
+    return;
   }
   account_id_ = -1;
-
   sip_local_user_.clear();
-  return true;
+  return;
 }
 
-bool PJPresence::add_buddy(const std::string &sip_user) {
+void PJPresence::add_buddy(const std::string &sip_user) {
   pjsua_buddy_config buddy_cfg;
   pjsua_buddy_id buddy_id;
   pj_status_t status = PJ_SUCCESS;
 
   if (pjsua_verify_url(sip_user.c_str()) != PJ_SUCCESS) {
-    g_print("Invalid buddy URI %s", sip_user.c_str());
-    return false;
+    g_warning("Invalid buddy URI %s", sip_user.c_str());
+    return;
   }
   if (buddy_id_.end() != buddy_id_.find(sip_user)) {
-    g_print("buddy %s already added", sip_user.c_str());
-    return false;
+    g_message("buddy %s already added", sip_user.c_str());
+    return;
   }
 
   pj_bzero(&buddy_cfg, sizeof(pjsua_buddy_config));
@@ -331,39 +332,39 @@ bool PJPresence::add_buddy(const std::string &sip_user) {
   buddy_cfg.user_data = this;
   status = pjsua_buddy_add(&buddy_cfg, &buddy_id);
   if (status != PJ_SUCCESS) {
-    g_print("buddy not found");
-    return false;
+    g_warning("buddy not found");
+    return;
   }
-  g_print("Buddy added");
+  g_debug("Buddy added");
   buddy_id_[sip_user] = buddy_id;
   sip_instance_->
       graft_tree(".buddy." + std::to_string(buddy_id) + ".uri",
                  data::Tree::make(sip_user));
-  return true;
+  return;
 }
 
-bool PJPresence::del_buddy(const std::string &sip_user) {
+void PJPresence::del_buddy(const std::string &sip_user) {
   pj_status_t status = PJ_SUCCESS;
 
   if (pjsua_verify_url(sip_user.c_str()) != PJ_SUCCESS) {
     g_warning("Invalid buddy URI %s", sip_user.c_str());
-    return false;
+    return;
   }
   auto it = buddy_id_.find(sip_user);
   if (buddy_id_.end() != it) {
     g_debug("%s is not in buddy list, cannot delete", sip_user.c_str());
-    return false;
+    return;
   }
 
   status = pjsua_buddy_del(it->second);
   if (status != PJ_SUCCESS) {
-    g_debug("cannot remove buddy");
-    return false;
+    g_warning("cannot remove buddy");
+    return;
   }
   sip_instance_->prune_tree("buddy."+std::to_string(it->second));
   buddy_id_.erase(it);
   g_debug("Buddy removed");
-  return true;
+  return;
 }
 
 gboolean PJPresence::add_buddy_wrapped(gchar *buddy_uri,
@@ -386,37 +387,31 @@ gboolean PJPresence::del_buddy_wrapped(gchar *buddy_uri,
   return TRUE;
 }
 
-bool PJPresence::name_buddy(std::string name, std::string sip_user) {
-  g_print("---------------------- %s %d\n", __FUNCTION__, __LINE__);
+void PJPresence::name_buddy(std::string name, std::string sip_user) {
   if (pjsua_verify_url(sip_user.c_str()) != PJ_SUCCESS) {
     g_warning("Invalid buddy URI %s", sip_user.c_str());
-    return false;
+    return;
   }
-  g_print("---------------------- %s %d\n", __FUNCTION__, __LINE__);
   auto it = buddy_id_.find(sip_user);
   if (buddy_id_.end() == it) {
     g_warning("%s is not in buddy list", sip_user.c_str());
-    return false;
+    return;
   }
-  g_print("---------------------- %s %d\n", __FUNCTION__, __LINE__);
   sip_instance_->
       graft_tree(".buddy." + std::to_string(it->second) + ".name",
                  data::Tree::make(std::string(name)));
-  g_print("---------------------- %s %d\n", __FUNCTION__, __LINE__);
-  return true;
+  return;
 }
 
 gboolean PJPresence::name_buddy_wrapped(gchar *name,
                                         gchar *buddy_uri,
                                         void *user_data) {
   PJPresence *context = static_cast<PJPresence *>(user_data);
-  g_print("---------------------- %s %d\n", __FUNCTION__, __LINE__);
   context->sip_instance_->
       run_command_sync(std::bind(&PJPresence::name_buddy,
                                  context,
                                  std::string(name),
                                  std::string(buddy_uri)));
-  g_print("---------------------- %s %d\n", __FUNCTION__, __LINE__);
   return TRUE;
 }
 

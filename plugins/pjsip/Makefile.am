@@ -39,22 +39,29 @@ libpjsip_plugin_la_LDFLAGS = \
     -module \
     `pkg-config --libs pjproject-2.2.1/install_dir/lib/pkgconfig/libpjproject.pc`
 
+export PJPROJECT_STATIC_LIBS=''
+
 libpjsip_plugin_la_LIBADD = \
-     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua-x86_64-unknown-linux-gnu.a \
-     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpj-x86_64-unknown-linux-gnu.a \
-     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjlib-util-x86_64-unknown-linux-gnu.a \
-     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-audiodev-x86_64-unknown-linux-gnu.a \
-     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-codec-x86_64-unknown-linux-gnu.a \
-     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-videodev-x86_64-unknown-linux-gnu.a \
-     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-x86_64-unknown-linux-gnu.a \
-     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjnath-x86_64-unknown-linux-gnu.a \
-     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsip-simple-x86_64-unknown-linux-gnu.a \
-     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsip-ua-x86_64-unknown-linux-gnu.a \
-     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsip-x86_64-unknown-linux-gnu.a \
-     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua-x86_64-unknown-linux-gnu.a \
-     $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua2-x86_64-unknown-linux-gnu.a \
-     $(srcdir)/pjproject-2.2.1/install_dir/lib/libresample-x86_64-unknown-linux-gnu.a \
-     $(srcdir)/pjproject-2.2.1/install_dir/lib/libsrtp-x86_64-unknown-linux-gnu.a
+    $(PJPROJECT_STATIC_LIBS)
+
+#`ls $(srcdir)/pjproject-2.2.1/install_dir/lib/*.a`
+
+# libpjsip_plugin_la_LIBADD = \
+#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua-x86_64-unknown-linux-gnu.a \
+#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpj-x86_64-unknown-linux-gnu.a \
+#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjlib-util-x86_64-unknown-linux-gnu.a \
+#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-audiodev-x86_64-unknown-linux-gnu.a \
+#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-codec-x86_64-unknown-linux-gnu.a \
+#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-videodev-x86_64-unknown-linux-gnu.a \
+#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-x86_64-unknown-linux-gnu.a \
+#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjnath-x86_64-unknown-linux-gnu.a \
+#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsip-simple-x86_64-unknown-linux-gnu.a \
+#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsip-ua-x86_64-unknown-linux-gnu.a \
+#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsip-x86_64-unknown-linux-gnu.a \
+#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua-x86_64-unknown-linux-gnu.a \
+#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua2-x86_64-unknown-linux-gnu.a \
+#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libresample-x86_64-unknown-linux-gnu.a \
+#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libsrtp-x86_64-unknown-linux-gnu.a
 
 libpjsip_plugin_la_CXXFLAGS = \
     $(GLIB_CFLAGS) \
@@ -67,9 +74,6 @@ libpjsip_plugin_la_CXXFLAGS = \
     -I$(top_srcdir) \
     -Wno-error=write-strings
 
-# # manually addind dependency of libpjsip_plugin to pjproject compilation
-# libpjsip_plugin_la.$(OBJEXT): pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h
-
 pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h: Makefile
 	curl -O http://www.pjsip.org/release/2.2.1/pjproject-2.2.1.tar.bz2 \
         && tar -xjvf pjproject-2.2.1.tar.bz2 \
@@ -80,9 +84,10 @@ pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h: Makefile
            --disable-sound --disable-g711-codec --disable-g7221-codec  \
            --disable-g722-codec --disable-gsm-codec --disable-ilbc-codec \
            --disable-l16-codec --disable-speex-aec  --disable-speex-codec \
-        && CFLAGS=-fPIC make dep \
+        && CFLAGS=-fPIC make -j8 dep \
         && CFLAGS=-fPIC make \
-        && make install
+        && make install \
+        && PJPROJECT_STATIC_LIBS=`cd ..; ls pjproject-2.2.1/install_dir/lib/*.a`
 
 clean-local:
 	-rm -rf pjproject-2.2.1* 

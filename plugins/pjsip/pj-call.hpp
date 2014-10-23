@@ -141,13 +141,13 @@ class PJCall {
                                          const pjmedia_sdp_media *rem_m);
   static void remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
                                     unsigned fmt_pos);
-  pj_status_t make_call(std::string contact_uri);
+  void make_call(std::string contact_uri);
   std::string create_outgoing_sdp(struct call *call, std::string dst_uri);
   Quiddity::ptr retrieve_rtp_manager();
   static gboolean call_sip_url(gchar *sip_url, void *user_data);
   static void set_starting_rtp_port(const gint value, void *user_data);
   static gint get_starting_rtp_port(void *user_data);
-  bool make_hang_up(std::string contact_uri);
+  void make_hang_up(std::string contact_uri);
   static gboolean hang_up(gchar *sip_url, void *user_data);
   static gboolean attach_shmdata_to_contact(const gchar *shmpath,
                                             const gchar *contact_uri,
