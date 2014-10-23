@@ -1,5 +1,6 @@
 SUBDIRS= \
-    example
+    example \
+    pjsip
 
 if V4L2BUILD
 SUBDIRS += \
@@ -29,11 +30,6 @@ endif
 if PORTMIDIBUILD
 SUBDIRS += \
     portmidi
-endif
-
-if PJSIPBUILD
-SUBDIRS += \
-    pjsip
 endif
 
 if POSTUREBUILD

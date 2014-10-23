@@ -245,14 +245,14 @@ AC_CHECK_HEADER(linux/videodev2.h,
 AM_CONDITIONAL(V4L2BUILD, test "${V4L2BUILD}" = "enabled")
 
 #pjsip
-PKG_CHECK_MODULES(PJSIP, libpjproject, have_pjsip=true, have_pjsip=false)
-if test "x${have_pjsip}" = "xfalse" ; then
-    PJSIPBUILD=disabled
-    AC_MSG_WARN([Missing pjsip dev files])
-else
-    PJSIPBUILD=enabled
-fi
-AM_CONDITIONAL(PJSIPBUILD, test "${PJSIPBUILD}" = "enabled")
+dnl PKG_CHECK_MODULES(PJSIP, libpjproject, have_pjsip=true, have_pjsip=false)
+dnl if test "x${have_pjsip}" = "xfalse" ; then
+dnl     PJSIPBUILD=disabled
+dnl     AC_MSG_WARN([Missing pjsip dev files])
+dnl else
+dnl     PJSIPBUILD=enabled
+dnl fi
+dnl AM_CONDITIONAL(PJSIPBUILD, test "${PJSIPBUILD}" = "enabled")
 
 
 # check for gtk (compatible with gstreamer sdk)
@@ -432,7 +432,7 @@ AC_OUTPUT
 [echo "GTK fullscreen video       ${GTKBUILD}"]
 [echo "Pulse audio                ${PULSEBUILD}"]
 [echo "PortMidi                   ${PORTMIDIBUILD}"]
-[echo "PJSIP                      ${PJSIPBUILD}"]
+dnl [echo "PJSIP                      ${PJSIPBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]

@@ -424,7 +424,7 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
       std::string shm_any_name = call->instance->sip_instance_->
           make_file_name(call->peer_uri + "-" + std::to_string(i));
       current_media->shm->set_path(shm_any_name.c_str());
-      g_message("%s created a new shmdata any writer (%s)",
+      g_message("created a new shmdata any writer (%s)",
                 shm_any_name.c_str());
       //creating a decodebin for this media stream
       std::string dec_name =
@@ -1407,10 +1407,10 @@ PJCall::remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
 /*
  * Make outgoing call.
  */
-pj_status_t PJCall::make_call(std::string dst_uri) {
+void PJCall::make_call(std::string dst_uri) {
   if (sip_instance_->sip_presence_->sip_local_user_.empty()) {
     g_warning("cannot call if not registered");
-    return PJ_EUNKNOWN;
+    // return PJ_EUNKNOWN;
   }
 
   pj_str_t local_uri;
@@ -1430,7 +1430,7 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
   }
 
   if (i == app.max_calls)
-    return PJ_ETOOMANY;
+    return; // PJ_ETOOMANY;
 
   call = &app.call[i];
 
@@ -1447,7 +1447,8 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
 
   if (status != PJ_SUCCESS) {
     ++app.uac_calls;
-    return status;
+    g_warning("pjsip_dlg_create_uac FAILLED");
+    return; // status;
   }
 
   call->peer_uri = dst_uri;
@@ -1462,7 +1463,8 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
 
   if (status != PJ_SUCCESS) {
     ++app.uac_calls;
-    return status;
+    g_warning("pjmedia_sdp_parse FAILLLED");
+    return; // status;
   }
 
   /* Create the INVITE session. */
@@ -1470,7 +1472,8 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
   if (status != PJ_SUCCESS) {
     pjsip_dlg_terminate(dlg);
     ++app.uac_calls;
-    return status;
+    g_warning("pjsip_inv_create_uac FAILLED");
+    return; // status;
   }
 
   // g_print("--------- %d\n",__LINE__);
@@ -1485,16 +1488,16 @@ pj_status_t PJCall::make_call(std::string dst_uri) {
    * an SDP body as well.
    */
   status = pjsip_inv_invite(call->inv, &tdata);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  // PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
   /* Send initial INVITE request.
    * From now on, the invite session's state will be reported to us
    * via the invite session callbacks.
    */
   status = pjsip_inv_send_msg(call->inv, tdata);
-  PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
+  // PJ_ASSERT_RETURN(status == PJ_SUCCESS, status);
 
-  return PJ_SUCCESS;
+  return; // PJ_SUCCESS;
 }
 
 std::string
@@ -1529,10 +1532,10 @@ PJCall::create_outgoing_sdp(struct call *call,
   for (auto &it : paths) {
     std::string data = manager->
         invoke_info_tree<std::string>("siprtp",
-                                      [&](data::Tree::ptrc tree){
+                                      [&](data::Tree::ptrc tree) -> std::string {
                                         return
                                         data::Tree::read_data(tree, "rtp_caps."
-                                                              + it);
+                                                              + it).copy_as<std::string>();
                                       });
     GstCaps *caps = gst_caps_from_string(data.c_str());
     On_scope_exit {gst_caps_unref(caps);};
@@ -1568,13 +1571,13 @@ gboolean PJCall::hang_up(gchar *sip_url, void *user_data) {
     return FALSE;
   }
   PJCall *context = static_cast<PJCall *>(user_data);
-  context->sip_instance_->run_command_sync(
-      std::bind(&PJCall::make_hang_up, context,
-                std::string(sip_url)));
+  context->sip_instance_->run_command_sync(std::bind(&PJCall::make_hang_up, 
+						     context,
+						     std::string(sip_url)));
   return TRUE;
 }
 
-bool PJCall::make_hang_up(std::string contact_uri) {
+void PJCall::make_hang_up(std::string contact_uri) {
   pjsip_tx_data *tdata;
   pj_status_t status;
   bool res;
@@ -1582,10 +1585,8 @@ bool PJCall::make_hang_up(std::string contact_uri) {
     if (app.call[i].inv == nullptr)
       break;
     if (0 == contact_uri.compare(app.call[i].peer_uri)) {
-      g_print("make_hang_up: %d\n",__LINE__);
       status = pjsip_inv_end_session(app.call[i].inv, 603, nullptr, &tdata);
       if (status == PJ_SUCCESS && tdata != nullptr) {
-        g_print("make_hang_up: %d\n",__LINE__);
         pjsip_inv_send_msg(app.call[i].inv, tdata);
       }
       res = true;
@@ -1593,7 +1594,8 @@ bool PJCall::make_hang_up(std::string contact_uri) {
         g_free(app.call[i].outgoing_sdp);
     }
   }
-  return res;
+  if (!res) 
+    g_warning("%s failled", __FUNCTION__);
 }
 
 gboolean PJCall::attach_shmdata_to_contact(const gchar *shmpath,

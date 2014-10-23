@@ -58,6 +58,7 @@ plugins/osc/.libs/
 plugins/osc/check_osc
 plugins/pjsip/.deps
 plugins/pjsip/.libs
+plugins/pjsip/pjproject-*
 plugins/pjsip/check_pjsip
 plugins/portmidi/.deps/
 plugins/portmidi/.libs/

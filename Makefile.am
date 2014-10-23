@@ -32,7 +32,6 @@ htmldoc:
 # Documentation:
 
 if HAVE_DOXYGEN
-
 doxyfile.stamp:
 	echo "/*! \mainpage Switcher for audio, video, data and network streams " > doxymain.h
 	echo " * \verbatim" >> doxymain.h

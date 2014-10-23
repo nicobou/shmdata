@@ -72,13 +72,13 @@ class PJPresence {
                                            gchar *domain,
                                            gchar *password,
                                            void *user_data);
-  bool unregister_account();
+  void unregister_account();
   static gboolean unregister_account_wrapped(gpointer /*unused */ ,
                                              void *user_data);
 
   // buddies
-  bool add_buddy(const std::string &sip_user);
-  bool del_buddy(const std::string &sip_user);
+  void add_buddy(const std::string &sip_user);
+  void del_buddy(const std::string &sip_user);
   static gboolean add_buddy_wrapped(gchar *buddy_uri,
                                     void *user_data);
   static gboolean del_buddy_wrapped(gchar *buddy_uri,
@@ -109,7 +109,7 @@ class PJPresence {
   static gboolean name_buddy_wrapped(gchar *name,
                                      gchar *uri,
                                      void *user_data);
-  bool name_buddy(std::string name, std::string sip_user);
+  void name_buddy(std::string name, std::string sip_user);
 };
 
 }  // namespace switcher
