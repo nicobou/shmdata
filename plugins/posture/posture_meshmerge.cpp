@@ -46,6 +46,7 @@ PostureMeshMerge::start() {
   merger_ = make_shared<MeshMerger>("", source_id_);
 
   merger_->setCalibrationPath(calibration_path_);
+  merger_->setApplyCalibration(apply_calibration_);
   merger_->setDevicesPath(devices_path_);
 
   merger_->start();
@@ -114,6 +115,17 @@ PostureMeshMerge::init() {
   install_property_by_pspec(custom_props_->get_gobject(),
                             reload_calibration_prop_, "reload_calibration",
                             "Reload calibration at each frame");
+
+  apply_calibration_prop_ = custom_props_->make_boolean_property("apply_calibration",
+                                "Apply loaded calibration to meshes",
+                                apply_calibration_,
+                                (GParamFlags) G_PARAM_READWRITE,
+                                PostureMeshMerge::set_apply_calibration,
+                                PostureMeshMerge::get_apply_calibration,
+                                this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            apply_calibration_prop_, "apply_calibration",
+                            "Apply loaded calibration to meshes");
 
   return true;
 }
@@ -223,6 +235,18 @@ void
 PostureMeshMerge::set_reload_calibration(const int reload, void *user_data) {
   PostureMeshMerge *ctx = (PostureMeshMerge *) user_data;
   ctx->reload_calibration_ = reload;
+}
+
+int
+PostureMeshMerge::get_apply_calibration(void *user_data) {
+  PostureMeshMerge *ctx = (PostureMeshMerge *) user_data;
+  return ctx->apply_calibration_;
+}
+
+void
+PostureMeshMerge::set_apply_calibration(const int apply, void *user_data) {
+  PostureMeshMerge *ctx = (PostureMeshMerge *) user_data;
+  ctx->apply_calibration_ = apply;
 }
 
 bool

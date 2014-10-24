@@ -48,10 +48,12 @@ class PostureMeshMerge : public Quiddity, public Segment, public StartableQuiddi
   std::string calibration_path_ {"default.kvc"};
   std::string devices_path_ {"devices.xml"};
   bool reload_calibration_ {false};
+  bool apply_calibration_ {true};
 
   GParamSpec *calibration_path_prop_ {nullptr};
   GParamSpec *devices_path_prop_ {nullptr};
   GParamSpec *reload_calibration_prop_ {nullptr};
+  GParamSpec *apply_calibration_prop_ {nullptr};
 
   unsigned int source_id_ {0};
   std::shared_ptr<posture::MeshMerger> merger_ {nullptr};
@@ -74,6 +76,8 @@ class PostureMeshMerge : public Quiddity, public Segment, public StartableQuiddi
   static void set_devices_path(const gchar *name, void *user_data);
   static int get_reload_calibration(void *user_data);
   static void set_reload_calibration(const int reload, void *user_data);
+  static int get_apply_calibration(void *user_data);
+  static void set_apply_calibration(const int apply, void *user_data);
 
   static void free_sent_buffer(void* data);
   void check_buffers();
