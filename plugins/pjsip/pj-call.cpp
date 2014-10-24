@@ -270,8 +270,6 @@ void PJCall::init_app() {
 void PJCall::call_on_state_changed(pjsip_inv_session * inv, pjsip_event *e) {
   struct call *call = (struct call *) inv->mod_data[mod_siprtp_.id];
 
-  // g_print("%s\n", __FUNCTION__);
-  
   PJ_UNUSED_ARG(e);
 
   if (!call)
@@ -841,7 +839,6 @@ void PJCall::on_rx_rtp(void *user_data, void *pkt, pj_ssize_t size) {
  * This callback is called by media transport on receipt of RTCP packet.
  */
 void PJCall::on_rx_rtcp(void *user_data, void *pkt, pj_ssize_t size) {
-  // g_print("%s\n", __FUNCTION__);
   return;
 
   struct media_stream *strm;
@@ -871,7 +868,7 @@ void PJCall::print_sdp(const pjmedia_sdp_session *local_sdp) {
     return;
   }
   sdpbuf1[len1] = '\0';
-  g_print("sdp : \n%s \n\n ", sdpbuf1);
+  g_debug("sdp : \n%s \n\n ", sdpbuf1);
 }
 
 /*
@@ -1476,7 +1473,6 @@ void PJCall::make_call(std::string dst_uri) {
     return; // status;
   }
 
-  // g_print("--------- %d\n",__LINE__);
   /* Attach call data to invite session */
   call->inv->mod_data[mod_siprtp_.id] = call;
 

@@ -429,14 +429,13 @@ PJPresence::on_registration_state(pjsua_acc_id acc_id,
       context->account_id_ = -1;
     }
   }
-  g_print("registration SIP status code %d\n", info->cbparam->code);
+  g_debug("registration SIP status code %d\n", info->cbparam->code);
   context->registration_cond_.notify_one();
 }
 
 void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   PJPresence *context =
       static_cast<PJPresence *>(pjsua_buddy_get_user_data(buddy_id));
-  g_print ("\n*************** on buddy state\n");
   if (nullptr == context)
     return;
   pjsua_buddy_info info;
@@ -450,7 +449,7 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
   if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
     activity = "busy";
 
-  g_print("%.*s status is %.*s, subscription state is %s "
+  g_debug("%.*s status is %.*s, subscription state is %s "
           "(last termination reason code=%d %.*s)\n"
           "rpid  activity %s, note %.*s\n",
           static_cast<int>(info.uri.slen),
@@ -523,7 +522,6 @@ gint PJPresence::get_status(void *user_data) {
 void PJPresence::change_online_status(gint status) {
   if (-1 == account_id_)
     return;
-  g_print("%s\n", __FUNCTION__);
   pj_bool_t online_status = PJ_TRUE;
   pjrpid_element elem;
   pj_bzero(&elem, sizeof(elem));
@@ -577,8 +575,6 @@ void PJPresence::change_online_status(gint status) {
   }
 
   pjsua_acc_set_online_status2(account_id_, online_status, &elem);
-  g_print("%s fin\n", __FUNCTION__);
-
 }
 
 void PJPresence::set_note(const gchar *custom_status, void *user_data) {
@@ -647,7 +643,7 @@ PJPresence::on_buddy_evsub_state(pjsua_buddy_id buddy_id,
     snprintf(event_info, sizeof(event_info),
              " (RX %s)", pjsip_rx_data_get_info(rdata));
   }
-  g_print("Buddy %d: subscription state: %s (event: %s%s)",
+  g_debug("Buddy %d: subscription state: %s (event: %s%s)",
          buddy_id, pjsip_evsub_get_state_name(sub),
          pjsip_event_str(event->type), event_info);
 }
@@ -664,8 +660,6 @@ gboolean PJPresence::save_buddies_wrapped(gchar *file_name,
   
   std::string buddies = context->sip_instance_->
       invoke_info_tree<std::string>(data::BasicSerializer::serialize); 
-
-  g_print("%s\n", buddies.c_str());
   return TRUE;
 }
 

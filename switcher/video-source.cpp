@@ -164,7 +164,9 @@ bool VideoSource::start() {
 
 bool VideoSource::stop() {
   bool res = on_stop();
-  clear_shmdatas();
+  unregister_shmdata(make_file_name("encoded-video"));
+  unregister_shmdata(make_file_name("video"));
+  //clear_shmdatas();
   reset_bin();
   enable_property("codec");
   enable_property("more_codecs");

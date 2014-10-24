@@ -42,7 +42,6 @@ pjmedia_codec_factory_op PJCodec::alt_codec_factory_op = {
 
 pj_status_t PJCodec::alt_codec_test_alloc(pjmedia_codec_factory */*factory*/,
                                           const pjmedia_codec_info *id) {
-  // g_print ("*************************************** %s\n", __FUNCTION__);
   // for performance, "available_codecs" could become static and reused here
   PJCodecUtils::codecs available_codecs =
       PJCodecUtils::inspect_rtp_codecs();
@@ -65,7 +64,6 @@ pj_status_t
 PJCodec::alt_codec_default_attr(pjmedia_codec_factory */*factory*/,
                                 const pjmedia_codec_info *id,
                                 pjmedia_codec_param *attr) {
-  // g_print ("*************************************** %s\n", __FUNCTION__);
 
   // for performance, "available_codecs" could become static and reused here
   PJCodecUtils::codecs available_codecs =
@@ -100,18 +98,16 @@ pj_status_t
 PJCodec::alt_codec_enum_codecs(pjmedia_codec_factory */*factory*/,
                                unsigned *count,
                                pjmedia_codec_info codecs[]) {
-  // g_print ("*************************************** %s\n", __FUNCTION__);
-
   PJCodecUtils::codecs available_codecs =
       PJCodecUtils::inspect_rtp_codecs();
 
   unsigned i = 0;
   for (auto &it : available_codecs) {
-    g_print(" encoding %s, payload %d, media %s, clock rate %d\n",
-            it->encoding_name_.c_str(),
-            it->payload_,
-            it->media_.c_str(),
-            it->clock_rate_);
+    // g_print(" encoding %s, payload %d, media %s, clock rate %d\n",
+    //         it->encoding_name_.c_str(),
+    //         it->payload_,
+    //         it->media_.c_str(),
+    //         it->clock_rate_);
     if (i >= *count)  // default pjsip is 32, need a patch to get more, like 128
       break;
     pj_bzero(&codecs[i], sizeof(pjmedia_codec_info));
@@ -137,7 +133,6 @@ pj_status_t
 PJCodec::alt_codec_alloc_codec(pjmedia_codec_factory */*factory*/,
                                const pjmedia_codec_info */*id*/,
                                pjmedia_codec **/*p_codec*/) {
-  // g_print ("*************************************** %s\n", __FUNCTION__);
   /* This will never get called since we won't be using this codec */
   // UNIMPLEMENTED(alt_codec_alloc_codec)
   return PJ_ENOTSUP;
@@ -146,14 +141,12 @@ PJCodec::alt_codec_alloc_codec(pjmedia_codec_factory */*factory*/,
 pj_status_t
 PJCodec::alt_codec_dealloc_codec(pjmedia_codec_factory */*factory*/,
                                  pjmedia_codec */*codec*/) {
-  // g_print ("*************************************** %s\n", __FUNCTION__);
   /* This will never get called */
   // UNIMPLEMENTED(alt_codec_dealloc_codec)
   return PJ_ENOTSUP;
 }
 
 pj_status_t PJCodec::alt_codec_deinit(void) {
-  // g_print ("*************************************** %s\n", __FUNCTION__);
   if (nullptr == PJCall::med_endpt_) {
     g_warning("media endpoint is nullptr, cannot deinit");
     return PJ_TRUE;           // failure
@@ -165,7 +158,6 @@ pj_status_t PJCodec::alt_codec_deinit(void) {
 }
 
 pj_status_t PJCodec::install_codecs() {
-  // g_print ("*************************************** %s\n", __FUNCTION__);
   if (nullptr == PJCall::med_endpt_) {
     g_warning("cannot install codec (nullptr media endpoint)");
     return PJ_TRUE;           // failure

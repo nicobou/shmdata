@@ -233,7 +233,6 @@ void PJSIP::start_udp_transport() {
   cfg.port = sip_port_;
   pj_status_t status =
       pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, &transport_id_);
-  g_print ("transport id %d\n", transport_id_);
   if (status != PJ_SUCCESS) {
     g_warning("Error creating UDP transport");
     return;

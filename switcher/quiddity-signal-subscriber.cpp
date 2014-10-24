@@ -53,11 +53,6 @@ void
 QuidditySignalSubscriber::signal_cb(std::vector<std::string> params,
                                     gpointer user_data) {
   SignalData *signal = static_cast<SignalData *>(user_data);
-  g_print("name %s qname %s sname %s\n",
-          signal->name.c_str(),
-          signal->quiddity_name.c_str(),
-          signal->signal_name.c_str());
-
   if (!signal->subscriber->muted_)
     signal->user_callback(signal->name.c_str(),
                           signal->quiddity_name.c_str(),
