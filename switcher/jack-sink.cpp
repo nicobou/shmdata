@@ -38,7 +38,7 @@ bool JackSink::init_gpipe() {
     return false;
   init_startable(this);
 
-  client_name_ = g_strdup(get_nick_name().c_str());
+  client_name_ = get_nick_name();
   client_name_spec_ =
       custom_props_->make_string_property("jack-client-name",
                                           "the jack client name",
@@ -48,8 +48,10 @@ bool JackSink::init_gpipe() {
                                           JackSink::get_client_name, this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             client_name_spec_,
-                            "client-name", "Client Name");
-
+                            "client-name",
+                            "Client Name");
+  install_property(G_OBJECT(volume_), "volume", "volume", "Volume");
+  install_property(G_OBJECT(volume_), "mute", "mute", "Mute");
   return true;
 }
 
@@ -59,26 +61,36 @@ JackSink::JackSink():
 
 JackSink::~JackSink() {
   GstUtils::clean_element(jacksink_);
-  if (nullptr != client_name_)
-    g_free(client_name_);
 }
 
 bool JackSink::make_elements() {
   GError *error = nullptr;
-
-  gchar *description =
-      g_strdup_printf("audioconvert ! audioresample ! queue max-size-buffers=2 leaky=downstream ! jackaudiosink provide-clock=false slave-method=none client-name=%s sync=false buffer-time=10000",
-       client_name_);
-
-  jacksink_ = gst_parse_bin_from_description(description, TRUE, &error);
-  g_object_set(G_OBJECT(jacksink_), "async-handling", TRUE, nullptr);
-  g_free(description);
-
+  std::string description (std::string("audioconvert ! audioresample ! volume ! ")
+                           + "audioconvert ! queue max-size-buffers=2 leaky=downstream ! "
+                           + "jackaudiosink provide-clock=false slave-method=none "
+                           + "client-name=" + client_name_ + " sync=false");
+  GstElement *jacksink = gst_parse_bin_from_description(description.c_str(), TRUE, &error);
   if (error != nullptr) {
     g_warning("%s", error->message);
     g_error_free(error);
     return false;
   }
+  g_object_set(G_OBJECT(jacksink), "async-handling", TRUE, nullptr);
+  GstElement *volume = GstUtils::get_first_element_from_factory_name(GST_BIN(jacksink),
+                                                                     "volume");
+  if (nullptr != volume_) {
+    GstUtils::apply_property_value(G_OBJECT(volume_),
+                                   G_OBJECT(volume),
+                                   "volume");
+    GstUtils::apply_property_value(G_OBJECT(volume_),
+                                   G_OBJECT(volume),
+                                   "mute");
+  }
+
+  if (nullptr != jacksink_) 
+    GstUtils::clean_element(jacksink_);
+  jacksink_ = jacksink;
+  volume_ = volume;
   return true;
 }
 
@@ -86,26 +98,34 @@ bool JackSink::start() {
   if (false == make_elements())
     return false;
   set_sink_element(jacksink_);
+  reinstall_property(G_OBJECT(volume_),
+                     "volume", "volume", "Volume");
+  reinstall_property(G_OBJECT(volume_),
+                     "mute", "mute", "Mute");
   return true;
 }
 
 bool JackSink::stop() {
+  if (!make_elements())
+    return false;
   reset_bin();
+  reinstall_property(G_OBJECT(volume_),
+                     "volume", "volume", "Volume");
+  reinstall_property(G_OBJECT(volume_),
+                     "mute", "mute", "Mute");
   return true;
 }
 
 void JackSink::set_client_name(const gchar *value, void *user_data) {
   JackSink *context = static_cast<JackSink *>(user_data);
-  if (nullptr != context->client_name_)
-    g_free(context->client_name_);
-  context->client_name_ = g_strdup(value);
+  context->client_name_ = std::string(value);
   context->custom_props_->
       notify_property_changed(context->client_name_spec_);
 }
 
 const gchar *JackSink::get_client_name(void *user_data) {
   JackSink *context = static_cast<JackSink *>(user_data);
-  return context->client_name_;
+  return context->client_name_.c_str();
 }
 
 void JackSink::on_shmdata_disconnect() {
@@ -115,7 +135,6 @@ void JackSink::on_shmdata_disconnect() {
 void JackSink::on_shmdata_connect(std::string /* shmdata_sochet_path */ ) {
   if (is_started()) {
     stop();
-    make_elements();
     set_sink_element_no_connect(jacksink_);
   }
 }

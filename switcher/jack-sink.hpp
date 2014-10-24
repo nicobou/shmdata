@@ -35,9 +35,10 @@ class JackSink:public SinglePadGstSink, public StartableQuiddity {
 
  private:
   GstElement *jacksink_{nullptr};
+  GstElement *volume_{nullptr};
   CustomPropertyHelper::ptr custom_props_{};
   GParamSpec *client_name_spec_{nullptr};
-  gchar *client_name_{nullptr};
+  std::string client_name_{};
 
   bool init_gpipe() final;
   bool start() final;
@@ -52,4 +53,4 @@ class JackSink:public SinglePadGstSink, public StartableQuiddity {
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif

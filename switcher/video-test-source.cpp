@@ -49,7 +49,7 @@ bool VideoTestSource::init_gpipe() {
 }
 
 bool VideoTestSource::make_video_source(GstElement **new_element) {
-  GstElement *videotest;
+  GstElement *videotest = nullptr;
   if (!GstUtils::make_element("videotestsrc", &videotest))
     return false;
 
@@ -57,7 +57,8 @@ bool VideoTestSource::make_video_source(GstElement **new_element) {
 
   if (videotestsrc_ != nullptr) {
     GstUtils::apply_property_value(G_OBJECT(videotestsrc_),
-                                   G_OBJECT(videotest), "pattern");
+                                   G_OBJECT(videotest),
+                                   "pattern");
 
     GstUtils::clean_element(videotestsrc_);
   }

@@ -229,16 +229,15 @@ GstUtils::set_element_property_in_bin(GstElement *bin,
       //  gst_element_factory_get_klass (sub_factory),
       //  gst_element_factory_get_description (sub_factory));
 
-      if (g_strcmp0
-          (factory_name,
-           gst_plugin_feature_get_name(GST_PLUGIN_FEATURE(factory)))
+      if (g_strcmp0(factory_name,
+                    gst_plugin_feature_get_name(GST_PLUGIN_FEATURE(factory)))
           == 0) {
         g_debug("GstUtils: setting property for %s", factory_name);
         g_object_set(G_OBJECT(current_element), property_name,
                      property_value, nullptr);
       }
 
-      if (GST_IS_BIN(current_element))        // recursive
+      if (GST_IS_BIN(current_element))  // recursive
       {
         GstUtils::set_element_property_in_bin(current_element,
                                               factory_name,
@@ -247,6 +246,32 @@ GstUtils::set_element_property_in_bin(GstElement *bin,
       }
     }
   }
+}
+
+GstElement *
+GstUtils::get_first_element_from_factory_name(GstBin *bin,
+                                              const std::string &factory_name) {
+  if (!GST_IS_BIN(bin)) {
+    g_warning("%s: first argument is not a bin", __FUNCTION__);
+    return nullptr;
+  }
+
+  if (g_list_length(GST_BIN_CHILDREN(bin)) == 0) {
+    g_warning("%s: bin has no child");
+    return nullptr;
+  }
+
+  GList *child = nullptr, *children = GST_BIN_CHILDREN(GST_BIN(bin));
+  for (child = children; child != nullptr; child = g_list_next(child)) {
+    GstElement *current_element = GST_ELEMENT(child->data);
+    GstElementFactory *factory = gst_element_get_factory(current_element);
+    
+    if (factory_name == gst_plugin_feature_get_name(GST_PLUGIN_FEATURE(factory))) {
+      return current_element;
+    }
+  }
+  g_warning("%s: no element found for %s", factory_name.c_str());
+  return nullptr;
 }
 
 gchar *GstUtils::gvalue_serialize(const GValue *val) {
