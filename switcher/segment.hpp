@@ -33,11 +33,11 @@
 namespace switcher {
 class Quiddity;
 
-class Segment:public CounterMap
+class Segment: public CounterMap
 /*inherit from CounterMap for sharing counters between multiple DecodebinToShmdata */
 {
  public:
-  typedef std::shared_ptr<Segment> ptr;
+  using ptr = std::shared_ptr<Segment>;
   using OnConnect = std::function<bool(std::string)>;
   using OnDisconnect = std::function<bool(std::string)>;
   using OnDisconnectAll = std::function<bool()>;
@@ -55,6 +55,8 @@ class Segment:public CounterMap
   bool register_shmdata(ShmdataReader::ptr reader);
   bool register_shmdata(ShmdataAnyReader::ptr reader);
   bool unregister_shmdata(std::string shmdata_path);
+  bool clear_shmdata_readers();
+  bool clear_shmdata_writers();
   bool clear_shmdatas();
   bool install_connect_method(OnConnect on_connect_cb,
                               OnDisconnect on_disconnect_cb,

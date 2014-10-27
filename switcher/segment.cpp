@@ -249,21 +249,22 @@ bool Segment::unregister_shmdata(std::string shmdata_path) {
   return update_reader || update_writer;
 }
 
-bool Segment::clear_shmdatas() {
-  // writers
-  {
+bool Segment::clear_shmdata_readers() {
+  std::unique_lock<std::mutex> lock(readers_mutex_);
+  shmdata_readers_.clear();
+  shmdata_any_writers_.clear();
+  return true;
+}
+
+bool Segment::clear_shmdata_writers() {
     std::unique_lock<std::mutex> lock(writers_mutex_);
     shmdata_writers_.clear();
     shmdata_any_writers_.clear();
-  }
+    return true;
+}
 
-  //readers
-  {
-    std::unique_lock<std::mutex> lock(readers_mutex_);
-    shmdata_readers_.clear();
-    shmdata_any_writers_.clear();
-  }
-  return true;
+bool Segment::clear_shmdatas() {
+  return clear_shmdata_readers() && clear_shmdata_writers();
 }
 
 const gchar *Segment::get_shmdata_writers_string(void *user_data) {
@@ -450,17 +451,26 @@ gboolean Segment::disconnect_wrapped(gpointer path, gpointer user_data) {
     return FALSE;
   }
 
-  if (context->on_disconnect_cb_((char *) path))
+  if (context->on_disconnect_cb_((char *) path)) {
+    context->unregister_shmdata(std::string("shmdata.reader.") + (char *) path);
     return TRUE;
-  else
+  } else {
     return FALSE;
+  }
 }
 
 gboolean Segment::disconnect_all_wrapped(gpointer /*unused */ ,
                                          gpointer user_data) {
   Segment *context = static_cast<Segment *>(user_data);
   On_scope_exit {
-    context->clear_shmdatas();
+    context->quid_->invoke_info_tree<void>([&](data::Tree::ptrc tree) {
+        auto keys = tree->get_child_keys("shmdata.reader");
+        if (!keys.empty())
+          for (auto &it: keys) {
+            context->quid_->prune_tree(std::string("shmdata.reader."+it));
+          }
+      });
+    context->clear_shmdata_readers();
   };
 
   if (nullptr == context->on_disconnect_all_cb_) {
