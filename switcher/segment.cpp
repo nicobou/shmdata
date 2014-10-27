@@ -446,13 +446,14 @@ gboolean Segment::connect_wrapped(gpointer path, gpointer user_data) {
 gboolean Segment::disconnect_wrapped(gpointer path, gpointer user_data) {
   Segment *context = static_cast<Segment *>(user_data);
 
+  On_scope_exit{context->unregister_shmdata(std::string("shmdata.reader.") + (char *) path);}
+
   if (nullptr == context->on_disconnect_cb_) {
     g_warning("on disconnect callback not installed\n");
     return FALSE;
   }
 
   if (context->on_disconnect_cb_((char *) path)) {
-    context->unregister_shmdata(std::string("shmdata.reader.") + (char *) path);
     return TRUE;
   } else {
     return FALSE;
