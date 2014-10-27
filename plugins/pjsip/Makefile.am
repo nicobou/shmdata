@@ -11,6 +11,9 @@ libpjsip_plugin_la_SOURCES = \
     pj-presence.cpp \
     pj-sip.cpp 
 
+EXTRA_DIST = \
+    more_codecs.patch
+
 nodist_libpjsip_plugin_la_SOURCES = \
     pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h
 
@@ -44,25 +47,6 @@ export PJPROJECT_STATIC_LIBS=''
 libpjsip_plugin_la_LIBADD = \
     $(PJPROJECT_STATIC_LIBS)
 
-#`ls $(srcdir)/pjproject-2.2.1/install_dir/lib/*.a`
-
-# libpjsip_plugin_la_LIBADD = \
-#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua-x86_64-unknown-linux-gnu.a \
-#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpj-x86_64-unknown-linux-gnu.a \
-#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjlib-util-x86_64-unknown-linux-gnu.a \
-#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-audiodev-x86_64-unknown-linux-gnu.a \
-#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-codec-x86_64-unknown-linux-gnu.a \
-#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-videodev-x86_64-unknown-linux-gnu.a \
-#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjmedia-x86_64-unknown-linux-gnu.a \
-#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjnath-x86_64-unknown-linux-gnu.a \
-#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsip-simple-x86_64-unknown-linux-gnu.a \
-#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsip-ua-x86_64-unknown-linux-gnu.a \
-#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsip-x86_64-unknown-linux-gnu.a \
-#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua-x86_64-unknown-linux-gnu.a \
-#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libpjsua2-x86_64-unknown-linux-gnu.a \
-#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libresample-x86_64-unknown-linux-gnu.a \
-#      $(srcdir)/pjproject-2.2.1/install_dir/lib/libsrtp-x86_64-unknown-linux-gnu.a
-
 libpjsip_plugin_la_CXXFLAGS = \
     $(GLIB_CFLAGS) \
     $(GMODULE_CFLAGS) \
@@ -79,7 +63,7 @@ pjproject-2.2.1/install_dir/include/pjsua-lib/pjsua.h: Makefile
         && tar -xjvf pjproject-2.2.1.tar.bz2 \
         && cd pjproject-2.2.1 \
         && mkdir -p install_dir \
-        && patch -p0 < ../more_codecs.patch \
+        && patch -p0 < ../$(srcdir)/more_codecs.patch \
         && ./configure --prefix `pwd`/install_dir --disable-video  \
            --disable-sound --disable-g711-codec --disable-g7221-codec  \
            --disable-g722-codec --disable-gsm-codec --disable-ilbc-codec \
