@@ -210,7 +210,7 @@ PJPresence::register_account(const std::string &sip_user,
   // converting to gchar * in order to make pjsip happy
   gchar *domain = g_strdup(std::string(at + 1, sip_user.end()).c_str());
   On_scope_exit{g_free(domain);};
-  gchar *id = g_strdup_printf("sip:%s", sip_user.c_str());
+  gchar *id = g_strdup_printf("sip:%s;transport=tcp", sip_user.c_str());
   On_scope_exit{g_free(id);};
   gchar *user = g_strdup(sip_user.c_str());
   On_scope_exit{g_free(user);};
@@ -244,17 +244,17 @@ PJPresence::register_account(const std::string &sip_user,
   // char ip_addr[32];
   /* Get local IP address for the default IP address */
   {
-    const pj_str_t *hostname;
-    pj_sockaddr_in tmp_addr;
-    char *addr;
+    // const pj_str_t *hostname;
+    // pj_sockaddr_in tmp_addr;
+    // char *addr;
 
-    hostname = pj_gethostname();
-    pj_sockaddr_in_init(&tmp_addr, hostname, 0);
-    addr = pj_inet_ntoa(tmp_addr.sin_addr);
-    // pj_ansi_strcpy(ip_addr, addr);
+    // hostname = pj_gethostname();
+    // pj_sockaddr_in_init(&tmp_addr, hostname, 0);
+    // addr = pj_inet_ntoa(tmp_addr.sin_addr);
+    // // pj_ansi_strcpy(ip_addr, addr);
 
     sip_local_user_ =
-        std::string("sip:") + sip_user + "@" + addr +
+        std::string("sip:") + sip_user +
         + ":" + std::to_string(sip_instance_->sip_port_);
     // sprintf (sip_local_user_,
     //        "sip:%s@%s:%u",
