@@ -66,10 +66,8 @@ class PJPresence {
   static void on_registration_state(pjsua_acc_id acc_id,
                                     pjsua_reg_info *info);
   void register_account(const std::string &sip_user,
-                        const std::string &sip_domain,
                         const std::string &sip_password);
   static gboolean register_account_wrapped(gchar *user,
-                                           gchar *domain,
                                            gchar *password,
                                            void *user_data);
   void unregister_account();

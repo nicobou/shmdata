@@ -45,12 +45,9 @@ PJPresence::PJPresence(PJSIP *sip_instance):
                      "register",  // name
                      "register a SIP account",  // description
                      "success",  // return description
-                     Method::make_arg_description("SIP User Name",  // long name
-                                                  "user",  // name
+                     Method::make_arg_description("SIP address",  // long name
+                                                  "user address",  // name
                                                   "string",  // description
-                                                  "SIP Domain",
-                                                  "domain",
-                                                  "string",
                                                   "SIP password",
                                                   "password",
                                                   "string",
@@ -58,7 +55,6 @@ PJPresence::PJPresence(PJSIP *sip_instance):
                      (Method::method_ptr) &
                      register_account_wrapped, G_TYPE_BOOLEAN,
                      Method::make_arg_type_description(G_TYPE_STRING,
-                                                       G_TYPE_STRING,
                                                        G_TYPE_STRING,
                                                        nullptr),
                      this);
@@ -180,42 +176,52 @@ PJPresence::~PJPresence() {
 
 gboolean
 PJPresence::register_account_wrapped(gchar *user,
-                                     gchar *domain,
-                                     gchar *password, void *user_data) {
+                                     gchar *password,
+                                     void *user_data) {
   PJPresence *context = static_cast<PJPresence *>(user_data);
-  if (nullptr == user || nullptr == domain || nullptr == password) {
+  if (nullptr == user || nullptr == password) {
     g_warning("register sip account missing user or domain or password");
     return FALSE;
   }
   context->sip_instance_->run_command_sync(std::bind
                                            (&PJPresence::register_account,
-                                            context, std::string(user),
-                                            std::string(domain),
+                                            context,
+                                            std::string(user),
                                             std::string(password)));
   return TRUE;
 }
 
 void
 PJPresence::register_account(const std::string &sip_user,
-                             const std::string &sip_domain,
                              const std::string &sip_password) {
   std::unique_lock<std::mutex> lock(registration_mutex_);
-
+  
   // Register to SIP server by creating SIP account.
   pjsua_acc_config cfg;
   pj_status_t status;
 
-  gchar *id = g_strdup_printf("sip:%s@%s",
-                              sip_user.c_str(),
-                              sip_domain.c_str());
-  //gchar *reg_uri = g_strdup_printf("sip:%s", sip_domain.c_str());
+  // extracting domain information from sip uri
+  auto at = std::find(sip_user.begin(), sip_user.end(), '@');
+  if(sip_user.end() == at || sip_user.end() == (at + 1)) {
+    g_warning("%s: invalid sip uri", __FUNCTION__);
+    return;
+  }
+
+  // converting to gchar * in order to make pjsip happy
+  gchar *domain = g_strdup(std::string(at + 1, sip_user.end()).c_str());
+  On_scope_exit{g_free(domain);};
+  gchar *id = g_strdup_printf("sip:%s", sip_user.c_str());
+  On_scope_exit{g_free(id);};
   gchar *user = g_strdup(sip_user.c_str());
-  gchar *domain = g_strdup(sip_domain.c_str());
+  On_scope_exit{g_free(user);};
   gchar *digest = g_strdup("digest");
+  On_scope_exit{g_free(digest);};
   gchar *password = g_strdup(sip_password.c_str());
+  On_scope_exit{g_free(password);};
+
+  // setting pjsip account data structure
   pjsua_acc_config_default(&cfg);
   cfg.id = pj_str(id);
-  //cfg.reg_uri = pj_str(reg_uri);
   cfg.reg_uri = pj_str(id);
   cfg.cred_count = 1;
   cfg.cred_info[0].realm = pj_str(domain);
@@ -226,14 +232,8 @@ PJPresence::register_account(const std::string &sip_user,
   cfg.publish_enabled = PJ_TRUE;
   // pjsua_acc_set_registration (account_id_, PJ_TRUE) or:
   cfg.register_on_acc_add = PJ_TRUE;
-
+  
   status = pjsua_acc_add(&cfg, PJ_TRUE, &account_id_);
-  g_free(id);
-  //g_free(reg_uri);
-  g_free(user);
-  g_free(domain);
-  g_free(digest);
-  g_free(password);
   if (status != PJ_SUCCESS) {
     account_id_ = -1;
     return;
