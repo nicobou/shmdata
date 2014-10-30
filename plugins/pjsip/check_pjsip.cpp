@@ -40,8 +40,8 @@ int main() {
     const std::string audio_name("a");
     const std::string video_name("v");
     std::list<std::string> buddies =
-        { "sip:1002@10.10.30.179",
-          "sip:1003@10.10.30.179"};
+        { "sip:1002@scenic.sat.qc.ca",
+          "sip:1003@scenic.sat.qc.ca"};
 
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager(manager_name);
@@ -71,7 +71,7 @@ int main() {
     assert(manager->invoke_va(sip_name,
                               "register",
                               nullptr,
-                              "1001@10.10.30.179",  // user
+                              "1001@scenic.sat.qc.ca",  // user
                               "1234",  // password
                               nullptr));
 
