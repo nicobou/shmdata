@@ -74,9 +74,8 @@ void QuiddityManager::reset_command_history(bool remove_created_quiddities) {
     manager_impl_->mute_property_subscribers(true);
     manager_impl_->mute_signal_subscribers(true);
     for (auto &it : command_history_) {
-      if (g_str_has_prefix
-          (QuiddityCommand::get_string_from_id(it->id_), "create"))
-        remove(it->result_[0]);
+      if (g_str_has_prefix(QuiddityCommand::get_string_from_id(it->id_), "create"))
+        manager_impl_->remove(it->result_[0]);
     }
     manager_impl_->mute_property_subscribers(false);
     manager_impl_->mute_signal_subscribers(false);
