@@ -70,6 +70,8 @@ class PostureColorize : public Quiddity, public Segment, public StartableQuiddit
   ShmdataAnyWriter::ptr tex_writer_ {nullptr};
   std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriter_queue_ {};
 
+  unsigned int prev_width_ {0}, prev_height_ {0}; // Used to check the texture size did not change
+
   bool init() final;
 
   bool connect(std::string shmdata_socket_path);
