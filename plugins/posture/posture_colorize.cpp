@@ -182,7 +182,7 @@ PostureColorize::connect(std::string shmdata_socket_path) {
                                            (void*)(shmwriter_queue_[shmwriter_queue_.size() - 1].get()));
 
         // Write the texture
-        if (tex_writer_ == nullptr)
+        if (tex_writer_ == nullptr || width != prev_width_ || height != prev_height_)
         {
           tex_writer_ = make_shared<ShmdataAnyWriter>();
           tex_writer_->set_path(make_file_name("texture"));
@@ -191,6 +191,9 @@ PostureColorize::connect(std::string shmdata_socket_path) {
           tex_writer_->set_data_type(buffer);
           register_shmdata(tex_writer_);
           tex_writer_->start();
+
+          prev_width_ = width;
+          prev_height_ = height;
         }
 
         check_buffers();
