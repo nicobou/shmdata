@@ -154,6 +154,16 @@ bool PJSIP::pj_sip_init() {
 
   start_udp_transport();
 
+  // pj_dns_resolver *resv = pjsip_endpt_get_resolver(sip_endpt_);
+  // if (nullptr == resv) printf ("NULL RESOLVER -------------------------\n");
+  pj_dns_resolver *resv;
+  pjsip_endpt_create_resolver(sip_endpt_, &resv);
+  pj_str_t nameserver = pj_str("8.8.8.8");;
+  pj_uint16_t port = 53;
+  pj_dns_resolver_set_ns(resv, 1, &nameserver, &port);
+  pjsip_endpt_set_resolver(sip_endpt_, resv);
+
+
   sip_calls_ = new PJCall(this);
   sip_presence_ = new PJPresence(this);
 
@@ -232,7 +242,7 @@ void PJSIP::start_udp_transport() {
   pjsua_transport_config_default(&cfg);
   cfg.port = sip_port_;
   pj_status_t status =
-      pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, &transport_id_);
+      pjsua_transport_create(PJSIP_TRANSPORT_TCP, &cfg, &transport_id_);
   if (status != PJ_SUCCESS) {
     g_warning("Error creating UDP transport");
     return;

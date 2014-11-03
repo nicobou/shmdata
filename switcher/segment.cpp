@@ -446,8 +446,7 @@ gboolean Segment::connect_wrapped(gpointer path, gpointer user_data) {
 gboolean Segment::disconnect_wrapped(gpointer path, gpointer user_data) {
   Segment *context = static_cast<Segment *>(user_data);
 
-  On_scope_exit{context->unregister_shmdata(std::string("shmdata.reader.") + (char *) path);};
-
+  On_scope_exit{context->unregister_shmdata((char *) path);};
   if (nullptr == context->on_disconnect_cb_) {
     g_warning("on disconnect callback not installed\n");
     return FALSE;
@@ -465,10 +464,10 @@ gboolean Segment::disconnect_all_wrapped(gpointer /*unused */ ,
   Segment *context = static_cast<Segment *>(user_data);
   On_scope_exit {
     context->quid_->invoke_info_tree<void>([&](data::Tree::ptrc tree) {
-        auto keys = tree->get_child_keys("shmdata.reader");
+        auto keys = tree->get_child_keys(".shmdata.reader");
         if (!keys.empty())
           for (auto &it: keys) {
-            context->quid_->prune_tree(std::string("shmdata.reader."+it));
+            context->quid_->prune_tree(std::string(".shmdata.reader."+it));
           }
       });
     context->clear_shmdata_readers();
