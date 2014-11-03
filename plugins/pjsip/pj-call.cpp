@@ -1412,7 +1412,8 @@ void PJCall::make_call(std::string dst_uri) {
 
   pj_str_t local_uri;
   pj_cstr(&local_uri,
-          sip_instance_->sip_presence_->sip_local_user_.c_str());
+          std::string(sip_instance_->sip_presence_->sip_local_user_ // + ";transport=tcp"
+                      ).c_str());
   unsigned i;
   struct call *call = nullptr;
   pjsip_dialog *dlg = nullptr;
@@ -1432,14 +1433,19 @@ void PJCall::make_call(std::string dst_uri) {
   call = &app.call[i];
 
   pj_str_t dest_str;
-  pj_cstr(&dest_str, dst_uri.c_str());
+  pj_cstr(&dest_str, std::string("sip:" + dst_uri // + ";transport=tcp"
+                                 ).c_str());
 
+  g_print("local %s, dst %s\n",
+          std::string(sip_instance_->sip_presence_->sip_local_user_ + ";transport=tcp").c_str(),
+          std::string("sip:" + dst_uri + ";transport=tcp").c_str());
+  
   /* Create UAC dialog */
   status = pjsip_dlg_create_uac(pjsip_ua_instance(),
                                 &local_uri,  /* local URI */
-                                &local_uri,  /* local Contact */
+                                nullptr,  /* local Contact */
                                 &dest_str,  /* remote URI */
-                                &dest_str,  /* remote target */
+                                nullptr,  /* remote target */
                                 &dlg);  /* dialog */
 
   if (status != PJ_SUCCESS) {
@@ -1500,13 +1506,11 @@ std::string
 PJCall::create_outgoing_sdp(struct call *call,
                             std::string dst_uri) {
   pj_str_t contact;
-  pj_cstr(&contact, dst_uri.c_str());
+  pj_cstr(&contact, std::string("sip:" + dst_uri).c_str());
   auto id = pjsua_buddy_find(&contact);
   if (PJSUA_INVALID_ID == id) {
-    g_warning("buddy not found: cannot call %s",
-              dst_uri.c_str());
-    std::string res;
-    return res;
+    g_warning("buddy not found: cannot call %s", dst_uri.c_str());
+    return std::string();
   }
 
   SDPDescription desc;
@@ -1616,7 +1620,7 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
                                             const std::string &contact_uri,
                                             bool attach) {
   pj_str_t contact;
-  pj_cstr(&contact, contact_uri.c_str());
+  pj_cstr(&contact, std::string("sip:" + contact_uri).c_str());
   auto id = pjsua_buddy_find(&contact);
   if (PJSUA_INVALID_ID == id) {
     g_warning("buddy not found: cannot attach %s to %s",

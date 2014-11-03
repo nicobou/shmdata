@@ -40,8 +40,8 @@ int main() {
     const std::string audio_name("a");
     const std::string video_name("v");
     std::list<std::string> buddies =
-        { "sip:1002@scenic.sat.qc.ca",
-          "sip:1003@scenic.sat.qc.ca"};
+        { "1002@10.10.30.179",
+          "1003@10.10.30.179"};
 
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager(manager_name);
@@ -71,7 +71,7 @@ int main() {
     assert(manager->invoke_va(sip_name,
                               "register",
                               nullptr,
-                              "1001@scenic.sat.qc.ca",  // user
+                              "1001@10.10.30.179",  // user
                               "1234",  // password
                               nullptr));
 
@@ -126,8 +126,8 @@ int main() {
             sip_name,
             [&](switcher::data::Tree::ptrc tree){
               return 
-		switcher::data::Tree::read_data(tree, 
-						"buddy." + it + ".uri").copy_as<std::string>();
+        	switcher::data::Tree::read_data(tree, 
+        					"buddy." + it + ".uri").copy_as<std::string>();
             }));
       }
       assert(std::equal(buddies.begin(), buddies.end(),
@@ -143,13 +143,13 @@ int main() {
                                 it.c_str(),
                                 nullptr));
     
-    // usleep(8000000);
+    usleep(8000000);
     assert(manager->set_property(sip_name, "status", "Away"));
-    // usleep(8000000);
+    usleep(8000000);
     assert(manager->set_property(sip_name, "status-note", "coucou"));
-    // usleep(8000000);
+    usleep(8000000);
     assert(manager->set_property(sip_name, "status", "BRB"));
-    // usleep(2000000);
+    usleep(2000000);
     
     for (auto &it : buddies)
       assert(manager->invoke_va(sip_name,

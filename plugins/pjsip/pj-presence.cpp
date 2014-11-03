@@ -210,9 +210,10 @@ PJPresence::register_account(const std::string &sip_user,
   // converting to gchar * in order to make pjsip happy
   gchar *domain = g_strdup(std::string(at + 1, sip_user.end()).c_str());
   On_scope_exit{g_free(domain);};
+  //gchar *id = g_strdup_printf("sip:%s", sip_user.c_str());
   gchar *id = g_strdup_printf("sip:%s;transport=tcp", sip_user.c_str());
   On_scope_exit{g_free(id);};
-  gchar *user = g_strdup(sip_user.c_str());
+  gchar *user = g_strdup(std::string(sip_user.begin(), at).c_str());
   On_scope_exit{g_free(user);};
   gchar *digest = g_strdup("digest");
   On_scope_exit{g_free(digest);};
@@ -317,8 +318,9 @@ void PJPresence::add_buddy(const std::string &sip_user) {
   pjsua_buddy_id buddy_id;
   pj_status_t status = PJ_SUCCESS;
 
-  if (pjsua_verify_url(sip_user.c_str()) != PJ_SUCCESS) {
-    g_warning("Invalid buddy URI %s", sip_user.c_str());
+  std::string buddy_full_uri("sip:" + sip_user + ";transport=tcp");
+  if (pjsua_verify_url(buddy_full_uri.c_str()) != PJ_SUCCESS) {
+    g_warning("Invalid buddy URI (%s)", sip_user.c_str());
     return;
   }
   if (buddy_id_.end() != buddy_id_.find(sip_user)) {
@@ -327,7 +329,7 @@ void PJPresence::add_buddy(const std::string &sip_user) {
   }
 
   pj_bzero(&buddy_cfg, sizeof(pjsua_buddy_config));
-  pj_cstr(&buddy_cfg.uri, sip_user.c_str());
+  pj_cstr(&buddy_cfg.uri, buddy_full_uri.c_str());
   buddy_cfg.subscribe = PJ_TRUE;
   buddy_cfg.user_data = this;
   status = pjsua_buddy_add(&buddy_cfg, &buddy_id);
@@ -346,8 +348,8 @@ void PJPresence::add_buddy(const std::string &sip_user) {
 void PJPresence::del_buddy(const std::string &sip_user) {
   pj_status_t status = PJ_SUCCESS;
 
-  if (pjsua_verify_url(sip_user.c_str()) != PJ_SUCCESS) {
-    g_warning("Invalid buddy URI %s", sip_user.c_str());
+  if (pjsua_verify_url(std::string("sip:" + sip_user).c_str()) != PJ_SUCCESS) {
+    g_warning("Invalid buddy URI (%s) for deletion", sip_user.c_str());
     return;
   }
   auto it = buddy_id_.find(sip_user);
@@ -388,8 +390,9 @@ gboolean PJPresence::del_buddy_wrapped(gchar *buddy_uri,
 }
 
 void PJPresence::name_buddy(std::string name, std::string sip_user) {
-  if (pjsua_verify_url(sip_user.c_str()) != PJ_SUCCESS) {
-    g_warning("Invalid buddy URI %s", sip_user.c_str());
+  
+  if (pjsua_verify_url(std::string("sip:" + sip_user).c_str()) != PJ_SUCCESS) {
+    g_warning("Invalid buddy URI (%s) when giving a nick name", sip_user.c_str());
     return;
   }
   auto it = buddy_id_.find(sip_user);
@@ -418,6 +421,7 @@ gboolean PJPresence::name_buddy_wrapped(gchar *name,
 void
 PJPresence::on_registration_state(pjsua_acc_id acc_id,
                                   pjsua_reg_info *info) {
+  printf("%s\n", __FUNCTION__);
   PJPresence *context =
       static_cast<PJPresence *>(pjsua_acc_get_user_data(acc_id));
   std::unique_lock<std::mutex> lock(context->registration_mutex_);
@@ -428,6 +432,7 @@ PJPresence::on_registration_state(pjsua_acc_id acc_id,
         g_warning("Error deleting account after registration failled");
       context->account_id_ = -1;
     }
+    g_warning("registration failled");
   }
   g_debug("registration SIP status code %d\n", info->cbparam->code);
   context->registration_cond_.notify_one();
@@ -497,7 +502,7 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
 void PJPresence::set_status(const gint value, void *user_data) {
   PJPresence *context = static_cast<PJPresence *>(user_data);
   if (value < 0 || value >= OPT_MAX) {
-    g_warning("invalide online status code");
+    g_warning("invalid online status code");
     return;
   }
   if (-1 == context->account_id_) {
