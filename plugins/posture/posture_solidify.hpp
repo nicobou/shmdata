@@ -26,6 +26,7 @@
 #include <string>
 
 #include "./posture.hpp"
+#include "./posture_worker.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/segment.hpp"
 #include "switcher/startable-quiddity.hpp"
@@ -52,6 +53,7 @@ class PostureSolidify : public Quiddity, public Segment, public StartableQuiddit
 
   std::shared_ptr<posture::Solidify> solidify_ {nullptr};
   std::mutex mutex_ {};
+  Worker worker_ {};
 
   ShmdataAnyWriter::ptr mesh_writer_ {nullptr};
   std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriter_queue_ {};

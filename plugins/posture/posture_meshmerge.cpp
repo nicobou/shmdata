@@ -19,7 +19,6 @@
 #include "./posture_meshmerge.hpp"
 
 #include <iostream>
-#include <thread>
 
 using namespace std;
 using namespace switcher::data;
@@ -151,10 +150,10 @@ PostureMeshMerge::connect(std::string shmdata_socket_path) {
     // Setting input mesh is thread safe, so lets do it
     merger_->setInputMesh(index, vector<unsigned char>((unsigned char*)data, (unsigned char*)data + size));
 
-    if (!updateMutex_.try_lock())
+    if (!worker_.is_ready() || !updateMutex_.try_lock())
       return;
 
-    thread computeThread = thread([&]() {
+    worker_.set_task([&]() {
       if (reload_calibration_)
           merger_->reloadCalibration();
 
@@ -177,7 +176,7 @@ PostureMeshMerge::connect(std::string shmdata_socket_path) {
       updateMutex_.unlock();
     });
 
-    computeThread.detach();
+    worker_.do_task();
   },
   nullptr);
 

@@ -27,6 +27,7 @@
 #include <string>
 
 #include "./posture.hpp"
+#include "./posture_worker.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/segment.hpp"
 #include "switcher/startable-quiddity.hpp"
@@ -53,6 +54,8 @@ class PostureColorize : public Quiddity, public Segment, public StartableQuiddit
   GParamSpec *calibration_path_prop_ {nullptr};
   GParamSpec *compute_tex_coords_prop_ {nullptr};
   GParamSpec *compress_mesh_prop_ {nullptr};
+
+  Worker worker_ {};
 
   std::shared_ptr<posture::Colorize> colorize_ {nullptr};
   std::mutex mutex_ {};

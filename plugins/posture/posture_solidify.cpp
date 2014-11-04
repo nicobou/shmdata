@@ -19,7 +19,6 @@
 #include "./posture_solidify.hpp"
 
 #include <iostream>
-#include <thread>
 
 using namespace std;
 using namespace switcher::data;
@@ -113,7 +112,7 @@ PostureSolidify::connect(std::string shmdata_socket_path) {
                              const char *type,
                              void * /*unused */ )
   {
-    if (!mutex_.try_lock())
+    if (!worker_.is_ready() || !mutex_.try_lock())
       return;
 
     if (solidify_ == nullptr || (string(type) != string(POINTCLOUD_TYPE_BASE) && string(type) != string(POINTCLOUD_TYPE_COMPRESSED)))
@@ -126,7 +125,7 @@ PostureSolidify::connect(std::string shmdata_socket_path) {
     solidify_->setInputCloud(vector<char>((char*)data, (char*) data + size),
                              string(type) != string(POINTCLOUD_TYPE_BASE));
 
-    auto computeThread = thread([=] () {
+    worker_.set_task([=] () {
       // Get the result mesh, and send it through shmdata
       vector<unsigned char> mesh = solidify_->getMesh();
       if (mesh_writer_ == nullptr)
@@ -148,7 +147,7 @@ PostureSolidify::connect(std::string shmdata_socket_path) {
       mutex_.unlock();
     });
 
-    computeThread.detach();
+    worker_.do_task();
   },
   nullptr);
 

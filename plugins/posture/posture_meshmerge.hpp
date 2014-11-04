@@ -26,6 +26,7 @@
 #include <string>
 
 #include "./posture.hpp"
+#include "./posture_worker.hpp"
 #include "switcher/quiddity.hpp"
 #include "switcher/segment.hpp"
 #include "switcher/startable-quiddity.hpp"
@@ -59,6 +60,7 @@ class PostureMeshMerge : public Quiddity, public Segment, public StartableQuiddi
   std::shared_ptr<posture::MeshMerger> merger_ {nullptr};
   std::mutex mutex_ {};
   std::mutex updateMutex_ {};
+  Worker worker_ {};
 
   ShmdataAnyWriter::ptr mesh_writer_ {nullptr};
   std::deque<std::shared_ptr<std::vector<unsigned char>>> shmwriter_queue_ {};

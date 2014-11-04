@@ -20,7 +20,6 @@
 
 #include <iostream>
 #include <regex>
-#include <thread>
 
 using namespace std;
 using namespace switcher::data;
@@ -140,7 +139,7 @@ PostureColorize::connect(std::string shmdata_socket_path) {
     unsigned int width, height, channels;
     // Update the input mesh. This calls the update of colorize_
     if (string(type) == string(POLYGONMESH_TYPE_BASE)) {
-      if (!mutex_.try_lock())
+      if (!worker_.is_ready() || !mutex_.try_lock())
         return;
 
       has_input_mesh_ = true;
@@ -155,7 +154,7 @@ PostureColorize::connect(std::string shmdata_socket_path) {
         return;
       }
 
-      thread computeThread = thread([=] () {
+      worker_.set_task([=] () {
         colorize_->setInput(mesh_, images_, dims_);
         imageMutex_.unlock();
 
@@ -205,8 +204,7 @@ PostureColorize::connect(std::string shmdata_socket_path) {
 
         mutex_.unlock();
       });
-
-      computeThread.detach();
+      worker_.do_task();
     }
     // Update the input textures
     else if (check_image_caps(string(type), width, height, channels)) {
