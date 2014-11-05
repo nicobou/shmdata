@@ -80,6 +80,7 @@ class Signal {
   gulong hook_id_;
   std::vector < std::pair < OnEmittedCallback,
                             void *>>subscribed_on_emitted_callbacks_;
+  std::string name_{};
   static gboolean on_signal_emitted(GSignalInvocationHint *ihint,
                                     guint n_param_values,
                                     const GValue *param_values,

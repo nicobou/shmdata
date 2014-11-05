@@ -21,54 +21,29 @@
 #include <uv.h>
 #include "switcher/quiddity-manager.hpp"
 
-static
-std::vector <
-  switcher::QuiddityManager::ptr >
-switcher_container;
-static
-v8::Persistent <
-  v8::Function >
-user_log_cb;                  // must be disposed
-static
-v8::Persistent <
-  v8::Function >
-user_prop_cb;                 // must be disposed
-static
-v8::Persistent <
-  v8::Function >
-user_signal_cb;               // must be disposed
-static
-bool
-switcher_is_loading = false;
+static std::vector<switcher::QuiddityManager::ptr> switcher_container;
+static v8::Persistent<v8::Function> user_log_cb;                  // must be disposed
+static v8::Persistent<v8::Function> user_prop_cb;                 // must be disposed
+static v8::Persistent<v8::Function> user_signal_cb;               // must be disposed
+static bool switcher_is_loading = false;
 
 struct async_req_log {
-  uv_work_t
-  req;
-  std::string
-  msg;
+  uv_work_t req;
+  std::string msg;
 };
 
 struct async_req_prop {
-  uv_work_t
-  req;
-  std::string
-  quiddity_name;
-  std::string
-  property_name;
-  std::string
-  value;
+  uv_work_t req;
+  std::string quiddity_name;
+  std::string property_name;
+  std::string value;
 };
 
 struct async_req_signal {
-  uv_work_t
-  req;
-  std::string
-  quiddity_name;
-  std::string
-  signal_name;
-  std::vector <
-    std::string >
-  params;
+  uv_work_t req;
+  std::string quiddity_name;
+  std::string signal_name;
+  std::vector<std::string> params;
 };
 
 //------------ history
@@ -773,8 +748,7 @@ v8::Handle<v8::Value> RegisterSignalCallback(const v8::Arguments &args) {
 void
 NotifySignal(uv_work_t *r) {
   v8::HandleScope scope;
-  async_req_signal *
-      req = reinterpret_cast<async_req_signal *>(r->data);
+  async_req_signal *req = reinterpret_cast<async_req_signal *>(r->data);
   v8::TryCatch try_catch;
   v8::Local<v8::Value> argv[3];
   // Create a new empty array.
@@ -786,12 +760,9 @@ NotifySignal(uv_work_t *r) {
   for (it = req->params.begin(); it != req->params.end(); it++)
     array->Set(0, v8::String::New(it->c_str()));
 
-  argv[0] = {
-    v8::Local<v8::Value>::New(v8::String::New(req->quiddity_name.c_str()))};
-  argv[1] = {
-    v8::Local<v8::Value>::New(v8::String::New(req->signal_name.c_str()))};
-  argv[2] = {
-    v8::Local<v8::Value>::New(array)};
+  argv[0] = {v8::Local<v8::Value>::New(v8::String::New(req->quiddity_name.c_str()))};
+  argv[1] = {v8::Local<v8::Value>::New(v8::String::New(req->signal_name.c_str()))};
+  argv[2] = {v8::Local<v8::Value>::New(array)};
 
   if (!user_signal_cb.IsEmpty())
     if (user_signal_cb->IsCallable())
@@ -808,14 +779,15 @@ signal_cb(std::string subscriber_name,
           std::string quiddity_name,
           std::string signal_name,
           std::vector<std::string> params, void *user_data) {
-  async_req_signal *
-      req = new async_req_signal();
+  async_req_signal *req = new async_req_signal();
   req->req.data = req;
   req->quiddity_name = quiddity_name;
   req->signal_name = signal_name;
   req->params = params;
   uv_queue_work(uv_default_loop(),
-                &req->req, DoNothingAsync, (uv_after_work_cb) NotifySignal);
+                &req->req,
+                DoNothingAsync,
+                (uv_after_work_cb) NotifySignal);
 }
 
 v8::Handle<v8::Value> SubscribeToSignal(const v8::Arguments &args) {
