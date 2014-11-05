@@ -25,6 +25,36 @@ static std::vector<switcher::QuiddityManager::ptr> switcher_container;
 static v8::Persistent<v8::Function> user_log_cb;                  // must be disposed
 static v8::Persistent<v8::Function> user_prop_cb;                 // must be disposed
 static v8::Persistent<v8::Function> user_signal_cb;               // must be disposed
+
+//async log
+static uv_async_t switcher_log_async;
+static uv_mutex_t switcher_log_mutex;  // protecting the list
+static std::list<std::string> switcher_log_list;  // lines waiting to be pushed to js 
+
+//async props
+using PropUpdate = struct PropUpdate_t {
+  PropUpdate_t(std::string q, std::string p, std::string v):
+      quid_(q), prop_(p), val_(v) {}
+  std::string quid_{};
+  std::string prop_{};
+  std::string val_{};
+}; 
+static uv_async_t switcher_prop_async;
+static uv_mutex_t switcher_prop_mutex;  // protecting the list
+static std::list<PropUpdate> switcher_prop_list;  // lines waiting to be pushed to js 
+
+//async sigs
+using SigUpdate = struct SigUpdate_t {
+  SigUpdate_t(std::string q, std::string p, std::vector<std::string> v):
+      quid_(q), sig_(p), val_(v) {}
+  std::string quid_{};
+  std::string sig_{};
+  std::vector<std::string> val_{};
+}; 
+static uv_async_t switcher_sig_async;
+static uv_mutex_t switcher_sig_mutex;  // protecting the list
+static std::list<SigUpdate> switcher_sig_list;  // lines waiting to be pushed to js 
+
 static bool switcher_is_loading = false;
 
 struct async_req_log {
@@ -254,6 +284,9 @@ v8::Handle<v8::Value> SwitcherClose(const v8::Arguments &args) {
   // if (!user_log_cb.IsEmpty ())
   //  user_log_cb.Dispose ();
   // removing reference to manager in order to delete it
+  uv_close((uv_handle_t*)&switcher_log_async, nullptr);
+  uv_close((uv_handle_t*)&switcher_prop_async, nullptr);
+  uv_close((uv_handle_t*)&switcher_sig_async, nullptr);
   switcher_container.clear();
   v8::Local<v8::String> name = v8::String::New("closed");
   return scope.Close(name);
@@ -591,21 +624,19 @@ v8::Handle<v8::Value> RegisterLogCallback(const v8::Arguments &args) {
 }
 
 void
-DoNothingAsync(uv_work_t *r) {
-}
-
-void
-NotifyLog(uv_work_t *r) {
+NotifyLog(uv_async_t *async, int status) {
   v8::HandleScope scope;
-  async_req_log *
-      req = reinterpret_cast<async_req_log *>(r->data);
   v8::TryCatch try_catch;
-  v8::Local<v8::Value> argv[] = {
-    v8::Local<v8::Value>::New(v8::String::New(req->msg.c_str()))};
-  if (!user_log_cb.IsEmpty())
-    if (user_log_cb->IsCallable())
-      user_log_cb->Call(user_log_cb, 1, argv);
-  delete req;
+  uv_mutex_lock(&switcher_log_mutex);
+  for (auto &it: switcher_log_list) {
+    v8::Local<v8::Value> argv[] =
+        { v8::Local<v8::Value>::New(v8::String::New(it.c_str()))};
+    if (!user_log_cb.IsEmpty())
+      if (user_log_cb->IsCallable())
+        user_log_cb->Call(user_log_cb, 1, argv);
+  }
+  switcher_log_list.clear();
+  uv_mutex_unlock(&switcher_log_mutex);
   if (try_catch.HasCaught()) {
     node::FatalException(try_catch);
   }
@@ -615,21 +646,20 @@ NotifyLog(uv_work_t *r) {
 static void
 logger_cb(std::string subscriber_name,
           std::string quiddity_name,
-          std::string property_name, std::string value, void *user_data) {
-  async_req_log *
-      req = new async_req_log();
-  req->req.data = req;
-  req->msg = value;
-  uv_queue_work(uv_default_loop(),
-                &req->req, DoNothingAsync, (uv_after_work_cb) NotifyLog);
+          std::string property_name,
+          std::string value,
+          void *user_data) {
+  uv_mutex_lock(&switcher_log_mutex);
+  switcher_log_list.push_back(value);
+  uv_mutex_unlock(&switcher_log_mutex);
+  uv_async_send(&switcher_log_async);
 }
 
 // prop callback
 v8::Handle<v8::Value> RegisterPropCallback(const v8::Arguments &args) {
   v8::HandleScope scope;
   user_prop_cb =
-      v8::Persistent<v8::Function>::New(v8::Local <
-                                           v8::Function >::Cast(args[0]));
+      v8::Persistent<v8::Function>::New(v8::Local<v8::Function>::Cast(args[0]));
   // const unsigned argc = 3;
   // v8::Local<v8::Value> argv[argc];
   // argv [0] = { v8::Local<v8::Value>::New(v8::String::New("hw1")) };
@@ -640,22 +670,24 @@ v8::Handle<v8::Value> RegisterPropCallback(const v8::Arguments &args) {
 }
 
 void
-NotifyProp(uv_work_t *r) {
+NotifyProp(uv_async_t *async, int status) {
   v8::HandleScope scope;
-  async_req_prop *
-      req = reinterpret_cast<async_req_prop *>(r->data);
   v8::TryCatch try_catch;
-  v8::Local<v8::Value> argv[3];
-  argv[0] = {
-    v8::Local<v8::Value>::New(v8::String::New(req->quiddity_name.c_str()))};
-  argv[1] = {
-    v8::Local<v8::Value>::New(v8::String::New(req->property_name.c_str()))};
-  argv[2] = {
-    v8::Local<v8::Value>::New(v8::String::New(req->value.c_str()))};
-  if (!user_prop_cb.IsEmpty())
-    if (user_prop_cb->IsCallable())
-      user_prop_cb->Call(user_prop_cb, 3, argv);
-  delete req;
+  uv_mutex_lock(&switcher_prop_mutex);
+  for (auto &it: switcher_prop_list) {
+    v8::Local<v8::Value> argv[3];
+    argv[0] =
+        {v8::Local<v8::Value>::New(v8::String::New(it.quid_.c_str()))};
+    argv[1] =
+        {v8::Local<v8::Value>::New(v8::String::New(it.prop_.c_str()))};
+    argv[2] =
+        {v8::Local<v8::Value>::New(v8::String::New(it.val_.c_str()))};
+    if (!user_prop_cb.IsEmpty())
+      if (user_prop_cb->IsCallable())
+        user_prop_cb->Call(user_prop_cb, 3, argv);
+  }
+  switcher_prop_list.clear();
+  uv_mutex_unlock(&switcher_prop_mutex);
   if (try_catch.HasCaught()) {
     node::FatalException(try_catch);
   }
@@ -663,24 +695,24 @@ NotifyProp(uv_work_t *r) {
 
 // call client prop callback
 static void
-property_cb(std::string subscriber_name,
-            std::string quiddity_name,
-            std::string property_name, std::string value, void *user_data) {
-  async_req_prop *
-      req = new async_req_prop();
-  req->req.data = req;
-  req->quiddity_name = quiddity_name;
-  req->property_name = property_name;
-  req->value = value;
-  uv_queue_work(uv_default_loop(),
-                &req->req, DoNothingAsync, (uv_after_work_cb) NotifyProp);
+property_cb(std::string subscriber,
+            std::string quid,
+            std::string prop,
+            std::string val,
+            void *user_data) {
+  uv_mutex_lock(&switcher_prop_mutex);
+  switcher_prop_list.push_back(PropUpdate(std::move(quid),
+                                          std::move(prop),
+                                          std::move(val)));
+  uv_mutex_unlock(&switcher_prop_mutex);
+  uv_async_send(&switcher_prop_async);
 }
 
 v8::Handle<v8::Value> SubscribeToProperty(const v8::Arguments &args) {
   v8::HandleScope scope;
   if (args.Length() != 2) {
-    ThrowException(v8::Exception::TypeError(v8::String::New
-                                            ("Wrong number of arguments")));
+    ThrowException(v8::Exception::TypeError(
+        v8::String::New("Wrong number of arguments")));
     return scope.Close(v8::Undefined());
   }
   if (!args[0]->IsString() || !args[1]->IsString()) {
@@ -746,28 +778,28 @@ v8::Handle<v8::Value> RegisterSignalCallback(const v8::Arguments &args) {
 }
 
 void
-NotifySignal(uv_work_t *r) {
+NotifySignal(uv_async_t */*async*/, int /*status*/) {
   v8::HandleScope scope;
-  async_req_signal *req = reinterpret_cast<async_req_signal *>(r->data);
   v8::TryCatch try_catch;
-  v8::Local<v8::Value> argv[3];
-  // Create a new empty array.
-  v8::Local<v8::Array> array = v8::Array::New(req->params.size());
-  // // Return an empty result if there was an error creating the array.
-  //   if (array.IsEmpty())
-  //     return Handle<Array>();
-  std::vector<std::string>::iterator it;
-  for (it = req->params.begin(); it != req->params.end(); it++)
-    array->Set(0, v8::String::New(it->c_str()));
+  uv_mutex_lock(&switcher_sig_mutex);
+  // performing a copy in order to avoid
+  // deadlock from unknown behavior in user_signal_cb
+  auto sig_list = switcher_sig_list;
+  switcher_sig_list.clear();
+  uv_mutex_unlock(&switcher_sig_mutex);
 
-  argv[0] = {v8::Local<v8::Value>::New(v8::String::New(req->quiddity_name.c_str()))};
-  argv[1] = {v8::Local<v8::Value>::New(v8::String::New(req->signal_name.c_str()))};
-  argv[2] = {v8::Local<v8::Value>::New(array)};
-
-  if (!user_signal_cb.IsEmpty())
-    if (user_signal_cb->IsCallable())
-      user_signal_cb->Call(user_signal_cb, 3, argv);
-  delete req;
+  for (auto &it: sig_list) {
+    v8::Local<v8::Value> argv[3];
+    v8::Local<v8::Array> array = v8::Array::New(it.val_.size());
+    for (auto &item: it.val_)
+      array->Set(0, v8::String::New(item.c_str()));
+    argv[0] = {v8::Local<v8::Value>::New(v8::String::New(it.quid_.c_str()))};
+    argv[1] = {v8::Local<v8::Value>::New(v8::String::New(it.sig_.c_str()))};
+    argv[2] = {v8::Local<v8::Value>::New(array)};
+    if (!user_signal_cb.IsEmpty())
+      if (user_signal_cb->IsCallable())
+        user_signal_cb->Call(user_signal_cb, 3, argv);
+  }
   if (try_catch.HasCaught()) {
     node::FatalException(try_catch);
   }
@@ -776,18 +808,16 @@ NotifySignal(uv_work_t *r) {
 // call client signal callback
 static void
 signal_cb(std::string subscriber_name,
-          std::string quiddity_name,
-          std::string signal_name,
-          std::vector<std::string> params, void *user_data) {
-  async_req_signal *req = new async_req_signal();
-  req->req.data = req;
-  req->quiddity_name = quiddity_name;
-  req->signal_name = signal_name;
-  req->params = params;
-  uv_queue_work(uv_default_loop(),
-                &req->req,
-                DoNothingAsync,
-                (uv_after_work_cb) NotifySignal);
+          std::string quid,
+          std::string sig,
+          std::vector<std::string> params,
+          void *user_data) {
+  uv_mutex_lock(&switcher_sig_mutex);
+  switcher_sig_list.push_back(SigUpdate(quid,
+                                        sig,
+                                        params));
+  uv_mutex_unlock(&switcher_sig_mutex);
+  uv_async_send(&switcher_sig_async);
 }
 
 v8::Handle<v8::Value> SubscribeToSignal(const v8::Arguments &args) {
@@ -938,6 +968,23 @@ Init(v8::Handle<v8::Object> target) {
   switcher::QuiddityManager::ptr switcher_manager
       = switcher::QuiddityManager::make_manager("nodeserver");
 
+  switcher_container.push_back(switcher_manager); // keep reference only in the global container
+
+  // loading plugins
+  // FIXME use config.h for having the appropriate version
+  gchar *usr_plugin_dir = g_strdup_printf("/usr/switcher-0.6/plugins");
+  switcher_manager->scan_directory_for_plugins(usr_plugin_dir);
+  g_free(usr_plugin_dir);
+  
+  gchar *usr_local_plugin_dir = g_strdup_printf("/usr/local/switcher-0.6/plugins");
+  switcher_manager->scan_directory_for_plugins(usr_local_plugin_dir);
+  g_free(usr_local_plugin_dir);
+
+
+  // logs
+  uv_mutex_init(&switcher_log_mutex);
+  uv_async_init(uv_default_loop(), &switcher_log_async, NotifyLog);
+
   switcher_manager->create("logger", "internal_logger");
   switcher_manager->invoke_va("internal_logger", "install_log_handler",
                               nullptr, "shmdata", nullptr);
@@ -954,21 +1001,14 @@ Init(v8::Handle<v8::Object> target) {
   switcher_manager->subscribe_property("log_sub", "internal_logger",
                                        "last-line");
 
-  gchar *
-      usr_plugin_dir = g_strdup_printf("/usr/switcher-0.6/plugins");
-  switcher_manager->scan_directory_for_plugins(usr_plugin_dir);
-  g_free(usr_plugin_dir);
+  // props
+  uv_mutex_init(&switcher_prop_mutex);
+  uv_async_init(uv_default_loop(), &switcher_prop_async, NotifyProp);
+  switcher_manager->make_property_subscriber("prop_sub", property_cb, nullptr);
 
-  gchar *
-      usr_local_plugin_dir = g_strdup_printf("/usr/local/switcher-0.6/plugins");
-  switcher_manager->scan_directory_for_plugins(usr_local_plugin_dir);
-  g_free(usr_local_plugin_dir);
-
-  switcher_manager->make_property_subscriber("prop_sub", property_cb,
-                                             nullptr);
-
-  switcher_container.push_back(switcher_manager);       // keep reference only in the container
-
+  // signals
+  uv_mutex_init(&switcher_sig_mutex);
+  uv_async_init(uv_default_loop(), &switcher_sig_async, NotifySignal);
   switcher_manager->make_signal_subscriber("signal_sub", signal_cb, nullptr);
   switcher_manager->create("create_remove_spy", "create_remove_spy");
   switcher_manager->subscribe_signal("signal_sub", "create_remove_spy",
@@ -976,9 +1016,10 @@ Init(v8::Handle<v8::Object> target) {
   switcher_manager->subscribe_signal("signal_sub", "create_remove_spy",
                                      "on-quiddity-removed");
 
-  // do not play with previous config
+  // do not play with previous config when saving
   switcher_manager->reset_command_history(false);
 
+  // -------- registering functions ----------------
   // history
   target->Set(v8::String::NewSymbol("save_history"),
               v8::FunctionTemplate::New(SaveHistory)->GetFunction());
