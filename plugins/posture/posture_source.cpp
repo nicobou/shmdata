@@ -561,6 +561,7 @@ void
 PostureSrc::set_depth_focal(const double focal, void *user_data) {
     PostureSrc *ctx = (PostureSrc *) user_data;
     ctx->zcamera_->setDepthFocal(focal);
+    ctx->depth_focal_ = ctx->zcamera_->getDepthFocal();
 }
 
 double
