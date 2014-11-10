@@ -65,6 +65,7 @@ PostureSrc::start() {
   zcamera_->start();
 
   rgb_focal_ = zcamera_->getRGBFocal();
+  depth_focal_ = zcamera_->getDepthFocal();
   // TODO: G_PARAM_READABLE are not displayed in Scenic2
   rgb_focal_prop_ = custom_props_->make_double_property("rgb_focal",
                               "RGB focal length",
@@ -79,6 +80,20 @@ PostureSrc::start() {
   install_property_by_pspec(custom_props_->get_gobject(),
                             rgb_focal_prop_, "rgb_focal",
                             "RGB focal length");
+
+  depth_focal_prop_ = custom_props_->make_double_property("depth_focal",
+                              "Depth focal length",
+                              0.0,
+                              10000.0,
+                              depth_focal_,
+                              (GParamFlags)
+                              G_PARAM_READWRITE,
+                              PostureSrc::set_depth_focal,
+                              PostureSrc::get_depth_focal,
+                              this);
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            depth_focal_prop_, "depth_focal",
+                            "Depth focal length");
 
   return true;
 }
@@ -540,6 +555,19 @@ double
 PostureSrc::get_rgb_focal(void *user_data) {
   PostureSrc *ctx = (PostureSrc *) user_data;
   return ctx->rgb_focal_;
+}
+
+void
+PostureSrc::set_depth_focal(const double focal, void *user_data) {
+    PostureSrc *ctx = (PostureSrc *) user_data;
+    ctx->zcamera_->setDepthFocal(focal);
+}
+
+double
+PostureSrc::get_depth_focal(void *user_data) {
+  PostureSrc *ctx = (PostureSrc *) user_data;
+  ctx->depth_focal_ = ctx->zcamera_->getDepthFocal();
+  return ctx->depth_focal_;
 }
 
 void
