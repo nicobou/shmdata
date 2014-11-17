@@ -22,6 +22,7 @@
 #include "./http-sdp-dec.hpp"
 #include "./gst-utils.hpp"
 #include "./scope-exit.hpp"
+#include "./std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(HTTPSDPDec,
@@ -109,11 +110,11 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement * /*object */ ,
                                          GstPad *pad, gpointer user_data) {
   HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
   GstPipeliner *gpipe = static_cast<GstPipeliner *>(user_data);
-  std::unique_ptr<DecodebinToShmdata>
-      decodebin(new DecodebinToShmdata(gpipe));
+  std::unique_ptr<DecodebinToShmdata> decodebin = 
+      std2::make_unique<DecodebinToShmdata>(gpipe);
 
   decodebin->
-    invoke_with_return<gboolean>(std::bind(gst_bin_add,
+      invoke_with_return<gboolean>(std::bind(gst_bin_add,
 					   GST_BIN(context->get_bin()),
 					   std::placeholders::_1));
 
@@ -123,9 +124,7 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement * /*object */ ,
                            "sink");
   GstPad *sinkpad =
       decodebin->invoke_with_return<GstPad *>(std::move(get_pad));
-  On_scope_exit {
-    gst_object_unref(GST_OBJECT(sinkpad));
-  };
+  On_scope_exit {gst_object_unref(GST_OBJECT(sinkpad));};
 
   GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad));
   decodebin->invoke(std::bind(GstUtils::sync_state_with_parent,
@@ -137,7 +136,6 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement * /*object */ ,
 void HTTPSDPDec::source_setup_cb(GstElement * /*httpsdpdec */ ,
                                  GstElement *source,
                                  gpointer /*user_data */ ) {
-  // HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
   g_debug("source %s %s\n", GST_ELEMENT_NAME(source),
           G_OBJECT_CLASS_NAME(G_OBJECT_GET_CLASS(source)));
 }
@@ -168,6 +166,7 @@ bool HTTPSDPDec::to_shmdata(std::string uri) {
   g_object_set_data(G_OBJECT(sdpdemux_),
                     "on-error-command",
                     (gpointer) on_error_command_);
+
   g_debug("httpsdpdec: to_shmdata set uri %s", uri.c_str());
   g_object_set(G_OBJECT(souphttpsrc_), "location", uri.c_str(), nullptr);
   gst_bin_add_many(GST_BIN(get_bin()), souphttpsrc_, sdpdemux_, nullptr);
