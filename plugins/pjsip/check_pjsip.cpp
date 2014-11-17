@@ -40,8 +40,8 @@ int main() {
     const std::string audio_name("a");
     const std::string video_name("v");
     std::list<std::string> buddies =
-        { "1002@10.10.30.179",
-          "1003@10.10.30.179"};
+        { "1002@scenic.sat.qc.ca",
+          "1003@scenic.sat.qc.ca"};
 
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager(manager_name);
@@ -71,7 +71,7 @@ int main() {
     assert(manager->invoke_va(sip_name,
                               "register",
                               nullptr,
-                              "1001@10.10.30.179",  // user
+                              "1001@scenic.sat.qc.ca",  // user
                               "1234",  // password
                               nullptr));
 
@@ -134,35 +134,35 @@ int main() {
                          buds_from_tree.begin()));
     }
 
-    usleep(200000);
+    // usleep(200000);
 
-    for (auto &it : buddies)
-      assert(manager->invoke_va(sip_name,
-                                "call",
-                                nullptr,
-                                it.c_str(),
-                                nullptr));
+    // for (auto &it : buddies)
+    //   assert(manager->invoke_va(sip_name,
+    //                             "call",
+    //                             nullptr,
+    //                             it.c_str(),
+    //                             nullptr));
     
-    usleep(8000000);
-    assert(manager->set_property(sip_name, "status", "Away"));
-    usleep(8000000);
-    assert(manager->set_property(sip_name, "status-note", "coucou"));
-    usleep(8000000);
-    assert(manager->set_property(sip_name, "status", "BRB"));
-    usleep(2000000);
+    // usleep(8000000);
+    // assert(manager->set_property(sip_name, "status", "Away"));
+    // usleep(8000000);
+    // assert(manager->set_property(sip_name, "status-note", "coucou"));
+    // usleep(8000000);
+    // assert(manager->set_property(sip_name, "status", "BRB"));
+    // usleep(2000000);
     
-    for (auto &it : buddies)
-      assert(manager->invoke_va(sip_name,
-                                "hang-up",
-                                nullptr,
-                                it.c_str(),
-                                nullptr));
+    // for (auto &it : buddies)
+    //   assert(manager->invoke_va(sip_name,
+    //                             "hang-up",
+    //                             nullptr,
+    //                             it.c_str(),
+    //                             nullptr));
     
-    assert(manager->invoke_va(sip_name,
-                              "save_buddies",
-                              nullptr,
-                              "buddies.list",
-                              nullptr));
+    // assert(manager->invoke_va(sip_name,
+    //                           "save_buddies",
+    //                           nullptr,
+    //                           "buddies.list",
+    //                           nullptr));
 // usleep(8000000);
     
     assert(manager->remove(sip_name));
