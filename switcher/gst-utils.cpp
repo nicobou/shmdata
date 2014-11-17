@@ -285,28 +285,22 @@ gchar *GstUtils::gvalue_serialize(const GValue *val) {
   return val_str;
 }
 
-guint
+GSource *
 GstUtils::g_idle_add_full_with_context(GMainContext *context,
                                        gint priority,
                                        GSourceFunc function,
                                        gpointer data,
                                        GDestroyNotify notify) {
   GSource *source;
-  guint id;
-
   if (function == nullptr)
-    return 0;
-
+    return nullptr;
   source = g_idle_source_new();
-
   if (priority != G_PRIORITY_DEFAULT_IDLE)
     g_source_set_priority(source, priority);
-
   g_source_set_callback(source, function, data, notify);
-  id = g_source_attach(source, context);
+  g_source_attach(source, context);
   g_source_unref(source);
-
-  return id;
+  return source;
 }
 
 GSource *GstUtils::g_timeout_add_to_context(guint interval,

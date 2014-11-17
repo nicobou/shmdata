@@ -38,12 +38,12 @@ void set_element_property_in_bin(GstElement *bin,
                                  const gchar *factory_name,
                                  const gchar *property_name,
                                  gboolean property_value);
-gchar *gvalue_serialize(const GValue *val);        // g_free after use
-guint g_idle_add_full_with_context(GMainContext *context,
-                                   gint priority,  // use G_PRIORITY_DEFAULT_IDLE
-                                   GSourceFunc function,
-                                   gpointer data,
-                                   GDestroyNotify notify);
+gchar *gvalue_serialize(const GValue *val);   // g_free after use
+GSource *g_idle_add_full_with_context(GMainContext *context,
+                                      gint priority,  // G_PRIORITY_DEFAULT_IDLE
+                                      GSourceFunc function,
+                                      gpointer data,
+                                      GDestroyNotify notify);
 GSource *g_timeout_add_to_context(guint interval,
                                   GSourceFunc function,
                                   gpointer data, GMainContext *context);
