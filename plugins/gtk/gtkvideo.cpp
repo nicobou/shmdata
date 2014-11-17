@@ -34,7 +34,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GTKVideo,
                                      "video",
                                      "Video window with fullscreen",
                                      "LGPL",
-                                     "gtkvideosink", "Nicolas Bouillot");
+                                     "gtkvideosink",
+                                     "Nicolas Bouillot");
 
 guint GTKVideo::instances_counter_ = 0;
 std::thread GTKVideo::gtk_main_thread_ {
@@ -163,7 +164,9 @@ GTKVideo::GTKVideo():
     queue_(nullptr),
     ffmpegcolorspace_(nullptr),
     videoflip_(nullptr),
-    gamma_(nullptr), videobalance_(nullptr), xvimagesink_(nullptr),
+    gamma_(nullptr),
+    videobalance_(nullptr),
+    xvimagesink_(nullptr),
 #if HAVE_OSX
     window_handle_(nullptr),
 #else
@@ -178,7 +181,8 @@ GTKVideo::GTKVideo():
   title_(nullptr),
   wait_window_mutex_(),
   wait_window_cond_(),
-  window_destruction_mutex_(), window_destruction_cond_() {
+  window_destruction_mutex_(),
+  window_destruction_cond_() {
 }
 
 void GTKVideo::gtk_main_loop_thread() {
