@@ -35,6 +35,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     fake-shmdata-writer.cpp \
     fakesink.cpp \
     file-sdp.cpp \
+    g-source-wrapper.cpp \
     glibmainloop.cpp \
     gobject-custom-property.cpp \
     gobject-wrapper.cpp \
@@ -122,6 +123,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     fake-shmdata-writer.hpp \
     fakesink.hpp \
     file-sdp.hpp \
+    g-source-wrapper.hpp \
     glibmainloop.hpp \
     gobject-custom-property.hpp \
     gobject-wrapper.hpp \
