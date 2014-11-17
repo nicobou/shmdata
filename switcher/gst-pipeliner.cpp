@@ -204,8 +204,8 @@ GstElement *GstPipeliner::get_pipeline() {
 
 void
 GstPipeliner::print_one_tag(const GstTagList */*list*/,
-                     const gchar */*tag*/,
-                     gpointer /*user_data*/) {
+                            const gchar */*tag*/,
+                            gpointer /*user_data*/) {
   // int i, num;
 
   // num = gst_tag_list_get_tag_size (list, tag);
@@ -254,40 +254,10 @@ void GstPipeliner::make_bin() {
 }
 
 void GstPipeliner::clean_bin() {
-  {
-    UGstElem tmp("bin");
-    if(!tmp)
-      return;
-    bin_ = std::move(tmp);
-  }
-  // if (nullptr == bin_.get_raw())
-  //   return;
-  
-  // g_debug("GstPipeliner, bin state %s, target %s, num children %d ",
-  //         gst_element_state_get_name(GST_STATE(bin_)),
-  //         gst_element_state_get_name(GST_STATE_TARGET(bin_)),
-  //         GST_BIN_NUMCHILDREN(GST_BIN(bin_)));
-  
-  // GstUtils::wait_state_changed(bin_);
-  
-  // if (GST_IS_ELEMENT(bin_)) {
-  //   g_debug("GstPipeliner, bin state %s, target %s, num children %d ",
-  //           gst_element_state_get_name(GST_STATE(bin_)),
-  //           gst_element_state_get_name(GST_STATE_TARGET(bin_)),
-  //           GST_BIN_NUMCHILDREN(GST_BIN(bin_)));
-
-  //   // if (g_list_length(GST_BIN_CHILDREN(bin_)) > 0) {
-  //   //   GList *child = nullptr, *children = GST_BIN_CHILDREN(bin_);
-  //   //   for (child = children; child != nullptr; child = g_list_next(child)) {
-  //   //     g_debug("segment warning: child %s",
-  //   //             GST_ELEMENT_NAME(GST_ELEMENT(child->data)));
-  //   //     GstUtils::clean_element (GST_ELEMENT (child->data));
-  //   //   }
-  //   // }
-  //   g_debug("going to clean bin_");
-  //   GstUtils::clean_element(bin_);
-  //   g_debug("GstPipeliner: cleaning internal bin");
-  // }
+  UGstElem tmp("bin");
+  if(!tmp)
+    return;
+  bin_ = std::move(tmp);
 }
 
 GstElement *GstPipeliner::get_bin() {
@@ -301,11 +271,11 @@ bool GstPipeliner::reset_bin() {
 }
 
 void GstPipeliner::on_gst_error(GstMessage *msg) {
-  
-  QuiddityCommand *command =
-      (QuiddityCommand *) g_object_get_data(G_OBJECT(msg->src),
-                                            "on-error-command");
-  // removing command in order to get it invoked once
+  { // FIXME REMOVE on-error-command
+    QuiddityCommand *command =
+        (QuiddityCommand *) g_object_get_data(G_OBJECT(msg->src),
+                                              "on-error-command");
+    // removing command in order to get it invoked once
     g_object_set_data(G_OBJECT(msg->src),
                       "on-error-command", (gpointer) nullptr);
     if (command != nullptr) {
@@ -331,7 +301,7 @@ void GstPipeliner::on_gst_error(GstMessage *msg) {
                                                nullptr);
       }
     }
-
+  }
 }
 
 }  // namespace switcher
