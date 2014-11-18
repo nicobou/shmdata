@@ -492,7 +492,8 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
 
   data::Tree::ptr tree = context->sip_instance_->
       prune_tree(std::string(".buddy." + std::to_string(buddy_id)));
-  
+  if (!tree)
+    tree = data::Tree::make();
   // writing status and state
   tree->graft(".status", data::Tree::make(status));
   tree->graft(".status_text",
