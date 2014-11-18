@@ -21,8 +21,6 @@
 #define __SWITCHER_STRING_DICTIONARY_H__
 
 #include "./quiddity.hpp"
-#include "./custom-property-helper.hpp"
-#include <map>
 
 namespace switcher {
 class StringDictionary:public Quiddity {
@@ -35,31 +33,17 @@ class StringDictionary:public Quiddity {
   bool init();
 
  private:
-  std::map<std::string, gchar *>dico_;
-
-  typedef struct {
-    StringDictionary *string_dictionary;
-    std::string entry_name;
-  } PropertySetGet;
-  std::map < std::string,
-             std::shared_ptr<PropertySetGet >>set_get_contexts_;
-
-  // property
-  CustomPropertyHelper::ptr custom_props_;
-  std::map<std::string, GParamSpec *>prop_specs_;
-  static const gchar *string_getter(void *user_data);
-  static void string_setter(const gchar *value, void *user_data);
-
   // methods
-  static gboolean create_entry(const gchar *entry_name,
-                               const gchar *description,
-                               const gchar *long_name, void *user_data);
-  static gboolean remove_entry(const gchar *entry_name, void *user_data);
+  static gboolean update_entry(const gchar *name,
+                               const gchar *value,
+                               void *user_data);
+  static gboolean remove_entry(const gchar *name,
+                               void *user_data);
+  static const gchar *read_entry(const gchar *name, void *user_data);
   static gboolean save(gchar *file_path, void *user_data);
   static gboolean load(gchar *file_path, void *user_data);
   gboolean load_file(const gchar *file_path);
   gboolean save_file(const gchar *file_path);
 };
 }  // namespace switcher
-
-#endif                          // ifndef
+#endif

@@ -32,6 +32,7 @@
 #include "./quiddity-manager-impl.hpp"
 #include "./scope-exit.hpp"
 #include "./std2.hpp"
+#include "./g-source-wrapper.hpp"
 
 namespace switcher {
 GstPipeliner::GstPipeliner():
@@ -271,6 +272,23 @@ bool GstPipeliner::reset_bin() {
 }
 
 void GstPipeliner::on_gst_error(GstMessage *msg) {
+  {
+    GSourceWrapper *gsrc =
+        (GSourceWrapper *) g_object_get_data(G_OBJECT(msg->src),
+                                             "on-error-gsource");
+    g_print("%s %p\n", __FUNCTION__, gsrc);
+    if(nullptr != gsrc) {
+      // removing command in order to get it invoked once
+      g_object_set_data(G_OBJECT(msg->src),
+                        "on-error-gsource",
+                        (gpointer) nullptr);
+      gsrc->attach(get_g_main_context());
+
+    }
+    
+  }
+  
+
   { // FIXME REMOVE on-error-command
     QuiddityCommand *command =
         (QuiddityCommand *) g_object_get_data(G_OBJECT(msg->src),

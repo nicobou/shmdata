@@ -47,8 +47,9 @@ namespace switcher {
 namespace data {
 class Tree {
  public:
-  using ptr = std::shared_ptr<Tree>;
-  using ptrc = const Tree *;
+  using ptr = std::shared_ptr<Tree>;  // shared
+  using ptrc = const Tree *;  // sonst
+  using rptr = Tree *;  // raw
   using child_type = std::pair<std::string, Tree::ptr>;
   using childs_t = std::list<child_type>;
   using OnNodeFunction = std::function <void(const std::string &name,
@@ -58,6 +59,7 @@ class Tree {
   
   // factory
   static Tree::ptr make();
+
   template<typename ValueType>
   static Tree::ptr make(ValueType data) {
     std::shared_ptr<Tree> tree;  //can't use make_shared because ctor is private
@@ -65,8 +67,10 @@ class Tree {
     tree->me_ = tree;
     return tree;
   }
+
   static Tree::ptr make(const char *data);  // Tree will store a std::string
 
+  
   //const methods
   bool is_leaf() const;
   bool is_array() const;
@@ -161,6 +165,7 @@ class Tree {
   static void get_child_keys(Tree::ptrc tree, const std::string path, Iter pos) {
     tree->get_child_keys<Iter> (path, pos);
   }
+
   // get leaf values - returning a newly allocated container
   // (not working with forward_list)
   template<template<class T, class = std::allocator<T>>

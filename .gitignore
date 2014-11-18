@@ -58,8 +58,8 @@ plugins/osc/.libs/
 plugins/osc/check_osc
 plugins/pjsip/.deps
 plugins/pjsip/.libs
-plugins/pjsip/pjproject-*
 plugins/pjsip/check_pjsip
+plugins/pjsip/pjproject-*
 plugins/portmidi/.deps/
 plugins/portmidi/.libs/
 plugins/portmidi/check_midi_plugins
@@ -101,6 +101,7 @@ tests/check_rtp_session
 tests/check_scope_guard
 tests/check_signal_subscriber
 tests/check_startable
+tests/check_string_dictionary
 tests/check_ugstelem
 xcode/switcher.xcodeproj/project.xcworkspace/xcuserdata
 xcode/switcher.xcodeproj/xcuserdata

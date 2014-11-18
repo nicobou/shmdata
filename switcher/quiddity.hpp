@@ -106,7 +106,7 @@ class Quiddity: public ConstMethodsInvoker<data::Tree> {
   // information
   template <typename R>
   R invoke_info_tree (std::function<R(data::Tree::ptrc tree)> fun) {
-    return fun (information_tree_.get());
+    return fun(information_tree_.get());
   }
   
   std::string get_info(const std::string &path);

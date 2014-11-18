@@ -23,16 +23,21 @@
 #include "./gst-utils.hpp"
 #include "./scope-exit.hpp"
 #include "./std2.hpp"
+#include "./g-source-wrapper.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(HTTPSDPDec,
-                                     "HTTP/SDP Player",
-                                     "network",
-                                     "decode an sdp-described stream deliver through http and make shmdatas",
-                                     "LGPL",
-                                     "httpsdpdec", "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    HTTPSDPDec,
+    "HTTP/SDP Player",
+    "network",
+    "decode an sdp-described stream deliver through http and make shmdatas",
+    "LGPL",
+    "httpsdpdec",
+    "Nicolas Bouillot");
 
-HTTPSDPDec::HTTPSDPDec() {
+HTTPSDPDec::HTTPSDPDec():
+    on_error_(std2::make_unique<GSourceWrapper>([&](){uri_to_shmdata();},
+                                                on_error_retry_delay_)) {
 }
 
 HTTPSDPDec::~HTTPSDPDec() {
@@ -83,27 +88,34 @@ void HTTPSDPDec::init_httpsdpdec() {
 }
 
 void HTTPSDPDec::destroy_httpsdpdec() {
-  clean_on_error_command();
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
+  clean_on_error();
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
   clear_shmdatas();
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
   reset_bin();
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
   reset_counter_map();
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
   souphttpsrc_ = nullptr;
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
   sdpdemux_ = nullptr;
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
 }
 
 void
-HTTPSDPDec::on_new_element_in_sdpdemux(GstBin * /*bin*/,
+HTTPSDPDec::on_new_element_in_sdpdemux(GstBin */*bin*/,
                                        GstElement *element,
                                        gpointer /*user_data*/) {
   // FIXME add that in uridecodebin
   g_object_set(G_OBJECT(element), "ntp-sync", TRUE, nullptr);
 }
 
-void HTTPSDPDec::clean_on_error_command() {
-  if (nullptr != on_error_command_) {
-    delete on_error_command_;
-    on_error_command_ = nullptr;
-  }
+void HTTPSDPDec::clean_on_error() {
+  GSourceWrapper::uptr on_error =
+      std2::make_unique<GSourceWrapper>([&](){uri_to_shmdata();},
+                                        on_error_retry_delay_);
+  std::swap(on_error, on_error_);
 }
 
 void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement * /*object */ ,
@@ -149,30 +161,53 @@ gboolean HTTPSDPDec::to_shmdata_wrapped(gpointer uri, gpointer user_data) {
     return FALSE;
 }
 
+
+
 bool HTTPSDPDec::to_shmdata(std::string uri) {
-  destroy_httpsdpdec();
-  reset_bin();
-  init_httpsdpdec();
-  clean_on_error_command();
-  on_error_command_ = new QuiddityCommand();
-  on_error_command_->id_ = QuiddityCommand::invoke;
-  on_error_command_->time_ = 1000;    // 1 second
-  on_error_command_->add_arg(get_nick_name());
-  on_error_command_->add_arg("to_shmdata");
-  std::vector<std::string> vect_arg;
-  vect_arg.push_back(uri);
-  on_error_command_->set_vector_arg(vect_arg);
-
-  g_object_set_data(G_OBJECT(sdpdemux_),
-                    "on-error-command",
-                    (gpointer) on_error_command_);
-
-  g_debug("httpsdpdec: to_shmdata set uri %s", uri.c_str());
-  g_object_set(G_OBJECT(souphttpsrc_), "location", uri.c_str(), nullptr);
-  gst_bin_add_many(GST_BIN(get_bin()), souphttpsrc_, sdpdemux_, nullptr);
-  gst_element_link(souphttpsrc_, sdpdemux_);
-  GstUtils::sync_state_with_parent(souphttpsrc_);
-  GstUtils::sync_state_with_parent(sdpdemux_);
+  uri_ = uri;
+  uri_to_shmdata();
   return true;
+}
+
+void HTTPSDPDec::uri_to_shmdata() {
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
+  destroy_httpsdpdec();
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
+  reset_bin();
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
+  init_httpsdpdec();
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
+  g_print("%s %p\n", __FUNCTION__, on_error_.get());
+  g_object_set_data(G_OBJECT(sdpdemux_),
+                    "on-error-gsource",
+                    (gpointer) on_error_.get());
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
+
+  // on_error_command_ = new QuiddityCommand();
+  // on_error_command_->id_ = QuiddityCommand::invoke;
+  // on_error_command_->time_ = 1000;    // 1 second
+  // on_error_command_->add_arg(get_nick_name());
+  // on_error_command_->add_arg("to_shmdata");
+  // std::vector<std::string> vect_arg;
+  // vect_arg.push_back(uri);
+  // on_error_command_->set_vector_arg(vect_arg);
+
+  // g_object_set_data(G_OBJECT(sdpdemux_),
+  //                   "on-error-command",
+  //                   (gpointer) on_error_command_);
+
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
+  g_debug("httpsdpdec: to_shmdata set uri %s", uri_.c_str());
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
+  g_object_set(G_OBJECT(souphttpsrc_), "location", uri_.c_str(), nullptr);
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
+  gst_bin_add_many(GST_BIN(get_bin()), souphttpsrc_, sdpdemux_, nullptr);
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
+  gst_element_link(souphttpsrc_, sdpdemux_);
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
+  GstUtils::sync_state_with_parent(souphttpsrc_);
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
+  GstUtils::sync_state_with_parent(sdpdemux_);
+  g_print("%s line %d\n", __FUNCTION__, __LINE__);
 }
 }

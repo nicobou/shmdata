@@ -212,7 +212,7 @@ QuiddityManager::get_command_history_from_file(const char *file_path) {
 
 bool QuiddityManager::save_command_history(const char *file_path) {
   GFile *file = g_file_new_for_commandline_arg(file_path);
-
+  On_scope_exit{g_object_unref(file);};
   GError *error = nullptr;
   GFileOutputStream *file_stream = g_file_replace(file,
                                                   nullptr,
@@ -220,6 +220,7 @@ bool QuiddityManager::save_command_history(const char *file_path) {
                                                   G_FILE_CREATE_NONE,
                                                   nullptr,
                                                   &error);
+  On_scope_exit{g_object_unref(file_stream);};
   if (error != nullptr) {
     g_warning("%s", error->message);
     g_error_free(error);
@@ -239,10 +240,10 @@ bool QuiddityManager::save_command_history(const char *file_path) {
   builder->end_object();
 
   gchar *history = g_strdup(builder->get_string(true).c_str());
-
-  g_output_stream_write((GOutputStream *) file_stream,
+  g_output_stream_write((GOutputStream *)file_stream,
                         history,
-                        sizeof(gchar) *strlen(history), nullptr, &error);
+                        sizeof(gchar) *strlen(history),
+                        nullptr, &error);
   g_free(history);
   if (error != nullptr) {
     g_warning("%s", error->message);
@@ -257,7 +258,6 @@ bool QuiddityManager::save_command_history(const char *file_path) {
     return false;
   }
 
-  g_object_unref(file_stream);
   return true;
 }
 

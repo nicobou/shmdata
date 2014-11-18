@@ -125,7 +125,7 @@ struct Any {
     auto derived = dynamic_cast<AnyValueDerived<T>*>(ptr_);
     if (!derived)
       return (*new U);
-    return (*new U(derived->value_));
+    return (*new U(derived->value_));  // FIXME this is leaking
   }
 
   template<class U>
