@@ -47,6 +47,7 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
  private:
   CustomPropertyHelper::ptr custom_props_;
   double rgb_focal_ {0.0};
+  double depth_focal_ {0.0};
   std::string calibration_path_ {"default.kvc"};
   std::string devices_path_ {"devices.xml"};
   unsigned int device_index_ {0};
@@ -62,6 +63,7 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   double filter_stddev_mul_ {1.0};
 
   GParamSpec *rgb_focal_prop_ {nullptr};
+  GParamSpec *depth_focal_prop_ {nullptr};
   GParamSpec *calibration_path_prop_ {nullptr};
   GParamSpec *devices_path_prop_ {nullptr};
   GParamSpec *device_index_prop_ {nullptr};
@@ -133,6 +135,8 @@ class PostureSrc:public Quiddity, public Segment, public StartableQuiddity {
   static void nope(const double /*unused*/, void* /*unused*/);
 
   static double get_rgb_focal(void *user_data);
+  static void set_depth_focal(const double focal, void *user_data);
+  static double get_depth_focal(void *user_data);
 
   static void cb_frame_cloud(void *context,
                              const std::vector<char>&data);
