@@ -20,6 +20,8 @@
 #ifndef __SWITCHER_SEGMENT_H__
 #define __SWITCHER_SEGMENT_H__
 
+#include <vector>
+#include <unordered_map>
 #include "./shmdata-any-writer.hpp"
 #include "./shmdata-any-reader.hpp"
 #include "./shmdata-writer.hpp"
@@ -27,8 +29,6 @@
 #include "./counter-map.hpp"
 #include "./json-builder.hpp"
 #include "./custom-property-helper.hpp"
-#include <vector>
-#include <unordered_map>
 
 namespace switcher {
 class Quiddity;
@@ -78,25 +78,9 @@ class Segment: public CounterMap
   CanSinkCaps on_can_sink_caps_cb_ {nullptr};
   static gboolean connect_wrapped(gpointer path, gpointer user_data);
   static gboolean disconnect_wrapped(gpointer path, gpointer user_data);
-  static gboolean disconnect_all_wrapped(gpointer /*unused */ ,
+  static gboolean disconnect_all_wrapped(gpointer /*unused */,
                                          gpointer user_data);
   static gboolean can_sink_caps_wrapped(gpointer caps, gpointer user_data);
-
-  // JSON
-  JSONBuilder::ptr shmdata_writers_description_;
-  std::mutex writers_mutex_ {};                          // protecting from parallel registers
-  std::string writers_string_ {};
-  JSONBuilder::ptr shmdata_readers_description_;
-  std::mutex readers_mutex_ {};                          // protecting from parallel registers
-  std::string readers_string_ {};
-  CustomPropertyHelper::ptr segment_custom_props_;
-  GParamSpec *json_writers_description_{nullptr};
-  GParamSpec *json_readers_description_{nullptr};
-  void update_shmdata_writers_description();
-  void update_shmdata_readers_description();
-  static const gchar *get_shmdata_writers_string(void *user_data);
-  static const gchar *get_shmdata_readers_string(void *user_data);
-
   void populate_tree(std::string key, std::string caps);
 };
 }  // namespace switcher
