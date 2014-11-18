@@ -1517,8 +1517,9 @@ PJCall::create_outgoing_sdp(struct call *call,
   using paths_t = std::list<std::string>;
   auto get_paths = [&] (data::Tree::ptrc tree) {
     return data::Tree::get_leaf_values<std:: list>(tree,
-                                                   "connections."
-                                                   + std::to_string(id));
+                                                   "buddy."
+                                                   + std::to_string(id)
+                                                   + ".connections");
   };
   paths_t paths = call->instance->sip_instance_->
       invoke_info_tree<paths_t>(get_paths);
@@ -1629,22 +1630,28 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
     return;
   }
   if (attach) {
+    data::Tree::ptr tree = sip_instance_->
+        prune_tree(std::string(".buddy." + std::to_string(id)));
+  if (!tree)
+    tree = data::Tree::make();
+
     manager_->invoke_va("siprtp",
                         "add_data_stream",
                         nullptr,
                         shmpath.c_str(),
                         nullptr);
-    sip_instance_->graft_tree("connections." + std::to_string(id)
-                              + "." + shmpath,
-                              data::Tree::make(shmpath));
+    tree->graft(std::string(".connection." + shmpath),
+                            data::Tree::make(shmpath));
+    sip_instance_->graft_tree(".buddy." + std::to_string(id),
+                              tree);
   } else {
     manager_->invoke_va("siprtp",
                         "remove_data_stream",
                         nullptr,
                         shmpath.c_str(),
                         nullptr);
-    sip_instance_->prune_tree("connections." + std::to_string(id)
-                              + "." + shmpath);
+    sip_instance_->prune_tree("buddy." + std::to_string(id)
+                              + ".connection." + shmpath);
   }
 }
 

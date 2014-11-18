@@ -174,11 +174,11 @@ class QuiddityManager
   // invoke
   bool invoke(const std::string quiddity_name,
               const std::string method_name,
-              std::string ** return_value,
+              std::string **return_value,
               const std::vector<std::string> args);
   bool invoke_va(const std::string &quiddity_name,
                  const std::string &method_name,
-                 std::string ** return_value, ...);
+                 std::string **return_value, ...);
 
   bool has_method(const std::string quiddity_name,
                   const std::string method_name);

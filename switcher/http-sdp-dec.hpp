@@ -26,6 +26,7 @@
 #include "./gst-pipeliner.hpp"
 #include "./quiddity-command.hpp"
 #include "./decodebin-to-shmdata.hpp"
+#include "./g-source-wrapper.hpp"
 
 namespace switcher {
 class HTTPSDPDec:public GstPipeliner {
@@ -41,12 +42,16 @@ class HTTPSDPDec:public GstPipeliner {
  private:
   GstElement *souphttpsrc_{nullptr};
   GstElement *sdpdemux_{nullptr};
+  guint on_error_retry_delay_{1000};
+  GSourceWrapper::uptr on_error_{};
+  std::string uri_{};
   void init_httpsdpdec();
   void destroy_httpsdpdec();
-  QuiddityCommand *on_error_command_{nullptr};  // for the pipeline error handler
+  //QuiddityCommand *on_error_command_{nullptr};  // for the pipeline error handler
   std::list<std::unique_ptr<DecodebinToShmdata>> decodebins_{};
-  void clean_on_error_command();
+  void clean_on_error();
   bool init_gpipe() final;
+  void uri_to_shmdata();
   static void httpsdpdec_pad_added_cb(GstElement *object,
                                       GstPad *pad, gpointer user_data);
   static gboolean to_shmdata_wrapped(gpointer uri, gpointer user_data);
@@ -55,6 +60,7 @@ class HTTPSDPDec:public GstPipeliner {
   static void on_new_element_in_sdpdemux(GstBin *bin,
                                          GstElement *element,
                                          gpointer user_data);
+
 };
 }  // namespace switcher
 

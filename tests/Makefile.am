@@ -30,6 +30,7 @@ check_PROGRAMS = \
     check_scope_guard \
     check_signal_subscriber \
     check_startable \
+    check_string_dictionary \
     check_ugstelem
 
 check_description_by_class_SOURCES = \
@@ -64,6 +65,9 @@ check_scope_guard_SOURCES = \
 
 check_signal_subscriber_SOURCES = \
     check_signal_subscriber.cpp
+
+check_string_dictionary_SOURCES = \
+    check_string_dictionary.cpp
 
 check_startable_SOURCES = \
     check_startable.cpp

@@ -27,7 +27,7 @@ namespace switcher {
 class GSourceWrapper {
  public:
   using callback = std::function<void()>;
-  using ptr = std::unique_ptr<GSourceWrapper>;
+  using uptr = std::unique_ptr<GSourceWrapper>;
 
   // for imediate invocation
   GSourceWrapper(callback &&cb);
