@@ -40,7 +40,8 @@ int main() {
     const std::string audio_name("a");
     const std::string video_name("v");
     std::list<std::string> buddies =
-        { "1002@scenic.sat.qc.ca",
+        { "1001@scenic.sat.qc.ca",
+          "1002@scenic.sat.qc.ca",
           "1003@scenic.sat.qc.ca"};
 
     switcher::QuiddityManager::ptr manager =
