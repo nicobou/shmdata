@@ -43,6 +43,9 @@ main() {
                        nullptr);
     assert(nullptr != res && (*res) == "1234");
     delete res;
+
+    g_print("%s\n",manager->get_info("dic", ".").c_str());
+    
     manager->invoke_va("dic",
                        "save",
                        nullptr,

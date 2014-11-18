@@ -135,6 +135,8 @@ int main() {
                          buds_from_tree.begin()));
     }
 
+    g_print("%s\n", manager->get_info(sip_name, ".").c_str());
+    
     // usleep(200000);
 
     // for (auto &it : buddies)
