@@ -30,7 +30,7 @@ class StringDictionary:public Quiddity {
   ~StringDictionary();
   StringDictionary(const StringDictionary &) = delete;
   StringDictionary &operator=(const StringDictionary &) = delete;
-  bool init();
+  bool init() final;
 
  private:
   // methods
