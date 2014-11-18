@@ -98,7 +98,8 @@ bool StringDictionary::init() {
                  (Method::method_ptr) &save,
                  G_TYPE_BOOLEAN,
                  Method::make_arg_type_description(G_TYPE_STRING,
-                                                   nullptr), this);
+                                                   nullptr),
+                 this);
 
   install_method("Load From File",
                  "load",
@@ -122,6 +123,20 @@ StringDictionary::update_entry(const gchar *name,
                                const gchar *value,
                                void *user_data) {
   StringDictionary *context = static_cast<StringDictionary *>(user_data);
+  // // replacing dots in name by __DOT__, this will be replaced by json serializer
+  // std::string tmp(name);
+  // std::string escaped = std::string();
+  // auto i = tmp.begin();
+  // auto found = std::find(i, tmp.end(), '.');
+  // while (found != tmp.end()) {
+  //   if (found != tmp.begin())
+  //     escaped += std::string(i, found--);
+  //   escaped += "__DOT__";
+  //   i = found++;
+  //   found = std::find(i, tmp.end(), '.');
+  // }
+  // escaped += std::string(i, found);
+  // g_print("%s\n", escaped.c_str());
   if (context->graft_tree(std::string(".dico.") + std::string(name),
                           data::Tree::make(std::string(value))))
     return TRUE;
