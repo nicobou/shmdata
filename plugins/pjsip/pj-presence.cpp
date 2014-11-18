@@ -470,7 +470,6 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
           static_cast<int>(info.rpid.note.slen),
           info.rpid.note.ptr);
 
-  data::Tree::ptr tree = data::Tree::make();
   // std::string buddy_url(info.uri.ptr, (size_t) info.uri.slen);
   // tree->graft(".sip_url", data::Tree::make(buddy_url));
   std::string status("unknown");
@@ -490,24 +489,10 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
     status = "away";
   if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
     status = "busy";
-  // get name and uri in order to build a tree that will replace the old one
-  std::string name = context->sip_instance_->
-      invoke_info_tree<std::string>([&](data::Tree::ptrc tree) -> std::string {
-          return data::Tree::read_data(tree,
-                                       ".buddy."
-                                       + std::to_string(buddy_id)
-                                       + ".name").copy_as<std::string>();
-        });
-  tree->graft(".name",data::Tree::make(name));
-  std::string uri = context->sip_instance_->
-      invoke_info_tree<std::string>([&](data::Tree::ptrc tree) -> std::string {
-          return data::Tree::read_data(tree,
-                                       ".buddy."
-                                       + std::to_string(buddy_id)
-                                       + ".uri").copy_as<std::string>();
-        });
-  tree->graft(".uri",data::Tree::make(uri));
 
+  data::Tree::ptr tree = context->sip_instance_->
+      prune_tree(std::string(".buddy." + std::to_string(buddy_id)));
+  
   // writing status and state
   tree->graft(".status", data::Tree::make(status));
   tree->graft(".status_text",

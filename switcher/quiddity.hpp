@@ -207,7 +207,7 @@ class Quiddity: public ConstMethodsInvoker<data::Tree> {
   bool graft_tree(const std::string &path,
                   data::Tree::ptr tree_to_graft);
   data::Tree::ptr prune_tree(const std::string &path);
-
+  
   // property
   bool install_property(GObject *object,
                         std::string gobject_property_name,
