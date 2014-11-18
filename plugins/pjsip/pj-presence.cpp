@@ -120,20 +120,21 @@ PJPresence::PJPresence(PJSIP *sip_instance):
                                                        nullptr),
                      this);
 
-    sip_instance_->
-        install_method("Save Buddies",  // long name
-                       "save_buddies",  // name
-                       "save buddy informations",  // description
-                       "success",  // return description
-                       Method::make_arg_description("File Name",  // long name
-                                                    "file",  // name
-                                                    "string",  // description
-                                                    nullptr),
-                       (Method::method_ptr)&save_buddies_wrapped,
-                       G_TYPE_BOOLEAN,
-                       Method::make_arg_type_description(G_TYPE_STRING,
-                                                         nullptr),
-                       this);
+    // FIXME remove or implement
+    // sip_instance_->
+    //     install_method("Save Buddies",  // long name
+    //                    "save_buddies",  // name
+    //                    "save buddy informations",  // description
+    //                    "success",  // return description
+    //                    Method::make_arg_description("File Name",  // long name
+    //                                                 "file",  // name
+    //                                                 "string",  // description
+    //                                                 nullptr),
+    //                    (Method::method_ptr)&save_buddies_wrapped,
+    //                    G_TYPE_BOOLEAN,
+    //                    Method::make_arg_type_description(G_TYPE_STRING,
+    //                                                      nullptr),
+    //                    this);
 
     
     // online status
@@ -470,8 +471,8 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
           info.rpid.note.ptr);
 
   data::Tree::ptr tree = data::Tree::make();
-  std::string buddy_url(info.uri.ptr, (size_t) info.uri.slen);
-  tree->graft(".sip_url", data::Tree::make(buddy_url));
+  // std::string buddy_url(info.uri.ptr, (size_t) info.uri.slen);
+  // tree->graft(".sip_url", data::Tree::make(buddy_url));
   std::string status("unknown");
   switch (info.status) {
     case PJSUA_BUDDY_STATUS_UNKNOWN:
@@ -489,14 +490,37 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
     status = "away";
   if (PJRPID_ACTIVITY_BUSY == info.rpid.activity)
     status = "busy";
+  // get name and uri in order to build a tree that will replace the old one
+  std::string name = context->sip_instance_->
+      invoke_info_tree<std::string>([&](data::Tree::ptrc tree) -> std::string {
+          return data::Tree::read_data(tree,
+                                       ".buddy."
+                                       + std::to_string(buddy_id)
+                                       + ".name").copy_as<std::string>();
+        });
+  tree->graft(".name",data::Tree::make(name));
+  std::string uri = context->sip_instance_->
+      invoke_info_tree<std::string>([&](data::Tree::ptrc tree) -> std::string {
+          return data::Tree::read_data(tree,
+                                       ".buddy."
+                                       + std::to_string(buddy_id)
+                                       + ".uri").copy_as<std::string>();
+        });
+  tree->graft(".uri",data::Tree::make(uri));
+
+  // writing status and state
   tree->graft(".status", data::Tree::make(status));
   tree->graft(".status_text",
               data::Tree::make(std::string(info.status_text.ptr,
                                           (size_t) info.status_text.slen)));
   tree->graft(".subscription_state",
               data::Tree::make(std::string(info.sub_state_name)));
+
+  g_print("%s\n", data::BasicSerializer::serialize(tree.get()).c_str());
+  
+  // replacing old one
   context->sip_instance_->
-      graft_tree(std::string(".presence." + std::to_string(buddy_id)), tree);
+      graft_tree(std::string(".buddy." + std::to_string(buddy_id)), tree);
 }
 
 void PJPresence::set_status(const gint value, void *user_data) {
