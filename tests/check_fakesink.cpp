@@ -17,18 +17,25 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <unistd.h>  // sleep
 #include <gst/gst.h>
 #include <string>
+#include <cassert>
 #include "switcher/quiddity-manager.hpp"
 
+static bool success = false; 
 void
 property_cb(std::string subscriber_name,
             std::string quiddity_name,
-            std::string property_name, std::string value, void *user_data) {
+            std::string property_name,
+            std::string value,
+            void *user_data) {
+  // got a caps, success
+  success = true;
   g_debug("%s %s %s %s\n",
           subscriber_name.c_str(),
-          quiddity_name.c_str(), property_name.c_str(), value.c_str());
+          quiddity_name.c_str(),
+          property_name.c_str(),
+          value.c_str());
 }
 
 int
@@ -36,32 +43,46 @@ main() {
   {
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager("check-fakesink");
+    //preparing fakesink
+    assert("vu" == manager->create("fakesink", "vu"));
 
-    manager->make_property_subscriber("sub", property_cb, nullptr);
+    //preparing audio source for testing
+    assert("audio" == manager->create("audiotestsrc", "audio"));
+    assert(manager->set_property("audio", "started", "true"));
 
-    manager->create("audiotestsrc", "audio");
-    manager->subscribe_property("sub", "audio", "shmdata-writers");
-    manager->set_property("audio", "started", "true");
-    manager->create("fakesink", "vu");
-    manager->subscribe_property("sub", "vu", "byte-rate");
-    manager->invoke_va("vu", "connect", nullptr,
-                       "/tmp/switcher_check_fakesink_audio_audio", nullptr);
-    manager->invoke_va("vu", "disconnect-all", nullptr, nullptr);
-    manager->invoke_va("vu", "connect", nullptr,
-                       "/tmp/switcher_check_fakesink_audio_audio", nullptr);
-    manager->set_property("audio", "started", "false");
+    // connecting/disconnecting fakesink with audio source
+    assert(manager->invoke_va("vu", "connect", nullptr,
+                              "/tmp/switcher_check-fakesink_audio_audio", nullptr));
+    assert(manager->invoke_va("vu", "disconnect-all", nullptr, nullptr));
+    assert(manager->invoke_va("vu", "connect", nullptr,
+                              "/tmp/switcher_check-fakesink_audio_audio", nullptr));
+
+    // stoping audio and removing the fakesink "vu"
+    assert(manager->set_property("audio", "started", "false"));
     manager->remove("vu");
     manager->set_property("audio", "started", "true");
 
-    manager->create("fakesink", "vu");
-    manager->subscribe_property("sub", "vu", "byte-rate");
-    manager->invoke_va("vu", "disconnect-all", nullptr, nullptr);
-    manager->invoke_va("vu", "connect", nullptr,
-                       "/tmp/switcher_check_fakesink_audio_audio", nullptr);
-    manager->remove("vu");
-  }                             // releasing manager
+    //preparing a new fakesink with subscription to caps
+    assert("vu" == manager->create("fakesink", "vu"));
+    assert(manager->make_property_subscriber("sub", property_cb, nullptr));
+    assert(manager->subscribe_property("sub", "vu", "caps"));
+    assert(manager->invoke_va("vu", "connect", nullptr,
+                              "/tmp/switcher_check-fakesink_audio_audio", nullptr));
+
+    // waiting for caps being received. After 2 seconds, fail.
+    int count = 20;
+    while (--count > -1) {
+      if (!success)
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      else
+        count = 0;
+    }
+    
+    assert(manager->remove("vu"));
+  }  // releasing manager
 
   gst_deinit();
-  // success
-  return 0;
+  if (success)
+    return 0;
+  return 1;
 }
