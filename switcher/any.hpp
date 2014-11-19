@@ -31,10 +31,8 @@ template<class T> using StorageType = typename std::decay<T>::type;
 
 struct AnyValueBase {
   // AnyValueBase (const AnyValueBase &) = delete;
-  virtual ~AnyValueBase() {
-  }
-  virtual AnyValueBase *
-  clone() const = 0;
+  virtual ~AnyValueBase() {}
+  virtual AnyValueBase *clone() const = 0;
   virtual std::string to_string()const = 0;
 };
 
@@ -42,51 +40,30 @@ template<typename T> struct AnyValueDerived:
 AnyValueBase {
   template <typename U>
   AnyValueDerived(U && value):
-      value_(std::forward<U> (value)) {
+      value_(std::forward<U> (value)) {}
+  T value_;
+  AnyValueBase * clone() const {
+    return new AnyValueDerived <T> (value_);
   }
-  T
-  value_;
-  AnyValueBase *
-  clone() const {
-    return
-        new
-        AnyValueDerived <
-      T > (value_);
-  }
-  std::string
-  to_string() const {
-    std::stringstream
-        ss;
-    ss <<
-        value_;
-    return
-        ss.
-        str();
+  
+  std::string to_string() const {
+    std::stringstream ss;
+    ss << value_;
+    return ss.str();
   }
 };
 
-template <> struct AnyValueDerived <
-  std::nullptr_t >:
+template <> struct AnyValueDerived <std::nullptr_t> :
 AnyValueBase {
-  template <
-    typename
-    U >
-  AnyValueDerived(U && value):
+  template <typename U> AnyValueDerived(U && value):
       value_(std::forward<U> (value)) {
   }
-  std::nullptr_t
-  value_;
-  AnyValueBase *
-  clone() const {
-    return
-        new
-        AnyValueDerived <
-      std::nullptr_t > (value_);
+  std::nullptr_t value_;
+  AnyValueBase * clone() const {
+    return new AnyValueDerived <std::nullptr_t> (value_);
   }
-  std::string
-  to_string() const {
-    return
-        std::string("null");
+  std::string to_string() const {
+    return std::string("null");
   }
 };
 
@@ -97,9 +74,7 @@ struct Any {
   bool not_null() const {
     return ptr_;
   }
-
-  template<typename U>
-  Any(U && value):
+  template<typename U> Any(U && value):
       ptr_(new AnyValueDerived<StorageType<U>> (std::forward<U>(value))) {
   }
 
@@ -115,19 +90,19 @@ struct Any {
     typedef StorageType<U> T;
     auto derived = dynamic_cast<AnyValueDerived<T>*>(ptr_);
     if (!derived)
-      return (*new U);
+      return *new U;
     return derived->value_;
   }
-
+  
   template<class U>
-  StorageType<U> &copy_as() const {
+  StorageType<U> copy_as() const {
     typedef StorageType<U> T;
     auto derived = dynamic_cast<AnyValueDerived<T>*>(ptr_);
     if (!derived)
-      return (*new U);
-    return (*new U(derived->value_));  // FIXME this is leaking
+      return U();
+    return U(derived->value_);
   }
-
+  
   template<class U>
   operator U() {
     return as<StorageType<U>>();
@@ -203,8 +178,7 @@ struct Any {
 template<typename T> struct DefaultSerializable {
   virtual ~DefaultSerializable() {}
   template<typename U>
-  friend std::ostream &operator<<(std::ostream &os,
-                                   const DefaultSerializable<U> &) {
+  friend std::ostream &operator<<(std::ostream &os, const DefaultSerializable<U> &) {
     os << "not serializable";
     return os;
   }
