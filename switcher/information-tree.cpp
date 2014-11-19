@@ -292,5 +292,42 @@ bool Tree::has_data(Tree::ptrc tree, const std::string &path) {
 const Any Tree::read_data (Tree::ptrc tree, const std::string &path) {
   return tree->read_data(path);
 }
+
+std::string Tree::escape_dots(const std::string &str) {
+  // replacing dots in name by __DOT__
+  std::string escaped = std::string();
+  std::size_t i = 0;
+  while (std::string::npos != i) {
+    auto found = str.find('.', i);
+    if (i != found)
+      escaped += std::string(str, i, found - i);
+    if (std::string::npos != found) {
+      escaped += "__DOT__";
+      i = ++found;
+    } else {
+      i = std::string::npos;
+    }
+  }
+  return escaped;
+}
+
+std::string Tree::unescape_dots(const std::string &str) {
+  std::string unescaped = std::string();
+  std::string esc_char("__DOT__");
+  std::size_t i = 0;
+  while(std::string::npos != i) {
+    std::size_t found = str.find(esc_char, i);
+    if (i != found)
+      unescaped += std::string(str, i , found - i);
+    if (std::string::npos != found) {
+      unescaped += ".";
+      i = found + esc_char.size();
+    } else {
+      i = std::string::npos;
+    }
+  }
+  return unescaped;
+}
+
 }  // namespace data
 }  // namespace switcher

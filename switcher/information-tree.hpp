@@ -70,6 +70,9 @@ class Tree {
 
   static Tree::ptr make(const char *data);  // Tree will store a std::string
 
+  // escaping dots from a keys ("." internally replaced by "__DOT__")
+  static std::string escape_dots(const std::string &str);
+  static std::string unescape_dots(const std::string &str);
   
   //const methods
   bool is_leaf() const;

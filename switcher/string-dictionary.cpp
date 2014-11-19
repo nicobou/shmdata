@@ -123,21 +123,7 @@ StringDictionary::update_entry(const gchar *name,
                                const gchar *value,
                                void *user_data) {
   StringDictionary *context = static_cast<StringDictionary *>(user_data);
-  // // replacing dots in name by __DOT__, this will be replaced by json serializer
-  // std::string tmp(name);
-  // std::string escaped = std::string();
-  // auto i = tmp.begin();
-  // auto found = std::find(i, tmp.end(), '.');
-  // while (found != tmp.end()) {
-  //   if (found != tmp.begin())
-  //     escaped += std::string(i, found--);
-  //   escaped += "__DOT__";
-  //   i = found++;
-  //   found = std::find(i, tmp.end(), '.');
-  // }
-  // escaped += std::string(i, found);
-  // g_print("%s\n", escaped.c_str());
-  if (context->graft_tree(std::string(".dico.") + std::string(name),
+  if (context->graft_tree(std::string(".dico.") + data::Tree::escape_dots(name),
                           data::Tree::make(std::string(value))))
     return TRUE;
   g_warning("cannot update entry .dico.%s", name);
@@ -148,7 +134,7 @@ gboolean
 StringDictionary::remove_entry(const gchar *name, void *user_data)
 {
   StringDictionary *context = static_cast<StringDictionary *>(user_data);
-  if (context->prune_tree(std::string(".dico.") + name))
+  if (context->prune_tree(std::string(".dico.") + data::Tree::escape_dots(name)))
     return TRUE;
   g_warning("cannot remove entry .dico.%s", name);
   return FALSE;
@@ -163,7 +149,7 @@ StringDictionary::read_entry(const gchar *name, void *user_data)
           return data::Tree::read_data(
               tree,
               std::string("dico.")
-              + std::string(name)).copy_as<std::string>();
+              + data::Tree::escape_dots(name)).copy_as<std::string>();
         });
   return g_strdup(val.c_str());  // FIXME make method class not requiring g_strdup
 }

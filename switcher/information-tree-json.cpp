@@ -27,6 +27,7 @@ void
 on_visiting_node(std::string key,
                  Tree::ptrc node,
                  bool is_array_element, JsonBuilder *builder) {
+  key = data::Tree::unescape_dots(key);
   if (!is_array_element)  // discarding here to get it as a member called "name"
     json_builder_set_member_name(builder, key.c_str());
 

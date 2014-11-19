@@ -31,20 +31,34 @@ main() {
     manager->invoke_va("dic",
                        "update",
                        nullptr,
-                       "first",
+                       "me@example.net",
                        "1234",
                        nullptr);
 
-    std::string *res = nullptr;
-    manager->invoke_va("dic",
-                       "read",
-                       &res,
-                       "first",
-                       nullptr);
+    g_print("%s\n",manager->get_info("dic", ".").c_str());
+
+    {  // reading with original name
+      std::string *res = nullptr;
+      manager->invoke_va("dic",
+                         "read",
+                         &res,
+                         "me@example.net",
+                         nullptr);
+      assert(nullptr != res && (*res) == "1234");
+      delete res;
+    }
+
+    {  // reading with dot-escaped name
+      std::string *res = nullptr;
+      manager->invoke_va("dic",
+                         "read",
+                         &res,
+                         "me@example__DOT__net",
+                         nullptr);
     assert(nullptr != res && (*res) == "1234");
     delete res;
+    }
 
-    g_print("%s\n",manager->get_info("dic", ".").c_str());
     
     manager->invoke_va("dic",
                        "save",
@@ -54,24 +68,39 @@ main() {
     manager->invoke_va("dic",
                        "remove",
                        nullptr,
-                       "first",
+                       "me@example.net",
                        nullptr);
-    // creating an other dico and loading from the file 
+
+    // creating an other dico and loading from the saved file 
     manager->create("dico", "dic2");
     manager->invoke_va("dic2",
                        "load",
                        nullptr,
                        "./dico.save",
                        nullptr);
-    std::string *res2 = nullptr;
-    manager->invoke_va("dic2",
-                       "read",
-                       &res2,
-                       "first",
-                       nullptr);
-    assert(nullptr != res2 && (*res2) == "1234");
-    delete res2;
 
+    {  // reading with original name
+      std::string *res = nullptr;
+      manager->invoke_va("dic2",
+                         "read",
+                         &res,
+                         "me@example.net",
+                         nullptr);
+      assert(nullptr != res && (*res) == "1234");
+      delete res;
+    }
+    
+    {  // reading with dot-escaped name
+      std::string *res = nullptr;
+      manager->invoke_va("dic2",
+                         "read",
+                         &res,
+                         "me@example__DOT__net",
+                         nullptr);
+      assert(nullptr != res && (*res) == "1234");
+      delete res;
+    }
+    
     assert(0 == g_remove("./dico.save"));
     return 0;
 }
