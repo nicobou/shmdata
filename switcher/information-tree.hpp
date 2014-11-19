@@ -40,7 +40,6 @@
 #include <memory>
 #include <type_traits>
 #include <mutex>
-
 #include "./any.hpp"
 
 namespace switcher {
@@ -120,8 +119,7 @@ class Tree {
   }
   
   // get leaf values in a newly allocated container
-  template<template<class T, class = std::allocator<T>>
-           class Container = std::list>
+  template< template<class T, class = std::allocator<T>> class Container = std::list>
       Container<std::string>
       get_leaf_values(const std::string path) const {
     Container<std::string> res;

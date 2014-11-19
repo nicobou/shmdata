@@ -139,12 +139,12 @@ class QuiddityManager
                             std::string quiddity_name,
                             std::string property_name);
   std::vector<std::string> list_property_subscribers();
-  std::vector < std::pair < std::string,
-                            std::string > >list_subscribed_properties(std::string subscriber_name);
+  std::vector<std::pair<std::string, std::string>>
+      list_subscribed_properties(std::string subscriber_name);
+
   // json // FIXME implement
   std::string list_property_subscribers_json();
-  std::string
-  list_subscribed_properties_json(std::string subscriber_name);
+  std::string list_subscribed_properties_json(std::string subscriber_name);
 
   // LOWER LEVEL subscription
   // This is how to subscribe and get property values when changed:

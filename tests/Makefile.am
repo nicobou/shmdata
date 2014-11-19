@@ -19,6 +19,7 @@ AM_LDFLAGS = \
 
 check_PROGRAMS = \
     check_description_by_class \
+    check_fake_shmdata_writer \
     check_fakesink \
     check_gst_pipeline \
     check_information_tree \
@@ -35,6 +36,9 @@ check_PROGRAMS = \
 
 check_description_by_class_SOURCES = \
     check_description_by_class.cpp
+
+check_fake_shmdata_writer_SOURCES = \
+    check_fake_shmdata_writer.cpp
 
 check_fakesink_SOURCES = \
     check_fakesink.cpp
@@ -66,11 +70,11 @@ check_scope_guard_SOURCES = \
 check_signal_subscriber_SOURCES = \
     check_signal_subscriber.cpp
 
-check_string_dictionary_SOURCES = \
-    check_string_dictionary.cpp
-
 check_startable_SOURCES = \
     check_startable.cpp
+
+check_string_dictionary_SOURCES = \
+    check_string_dictionary.cpp
 
 check_ugstelem_SOURCES = \
     check_ugstelem.cpp
