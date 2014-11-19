@@ -1631,7 +1631,8 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
   }
   if (attach) {
     data::Tree::ptr tree = sip_instance_->
-        prune_tree(std::string(".buddy." + std::to_string(id)));
+        prune_tree(std::string(".buddy." + std::to_string(id)),
+                   false);  // do not signal since the branch will be re-grafted
   if (!tree)
     tree = data::Tree::make();
 

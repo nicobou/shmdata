@@ -30,23 +30,14 @@
 #include "./information-tree-json.hpp"
 
 namespace switcher {
-std::map<std::pair<std::string, std::string>, guint> Quiddity::signals_ids_;
+std::map<std::pair<std::string, std::string>, guint> Quiddity::signals_ids_{};
 
 Quiddity::Quiddity():
     information_tree_(data::Tree::make()),
-    properties_(),
-    disabled_properties_(),
-    properties_description_(new JSONBuilder()),
-    methods_(),
-    disabled_methods_(),
-    methods_description_(new JSONBuilder()),
-    position_weight_counter_(0),
-    signals_(),
-    signals_description_(new JSONBuilder()),
-    name_(),
-    nick_name_(),
-    manager_impl_(),
-    gobject_(new GObjectWrapper()) {
+    properties_description_(std::make_shared<JSONBuilder>()),
+    methods_description_(std::make_shared<JSONBuilder>()),
+    signals_description_(std::make_shared<JSONBuilder>()),
+    gobject_(std::make_shared<GObjectWrapper>()) {
   gobject_->property_set_default_user_data(this);
   GType arg_type[] = { G_TYPE_STRING };
   install_signal_with_class_name("Quiddity",
@@ -849,17 +840,21 @@ std::string Quiddity::get_info(const std::string &path) {
   return "{ \"error\": \"no such path\" }";
 }
 
-bool Quiddity::graft_tree(const std::string &path, data::Tree::ptr tree) {
+bool Quiddity::graft_tree(const std::string &path,
+                          data::Tree::ptr tree,
+                          bool do_signal) {
   if (!information_tree_->graft(path, tree))
     return false;
-  signal_emit("on-tree-grafted", path.c_str(), nullptr);
+  if (do_signal)
+    signal_emit("on-tree-grafted", path.c_str(), nullptr);
   return true;
 }
 
-data::Tree::ptr Quiddity::prune_tree(const std::string &path) {
+data::Tree::ptr Quiddity::prune_tree(const std::string &path, bool do_signal) {
   data::Tree::ptr result  = information_tree_->prune(path);
   if (result) {
-    signal_emit("on-tree-pruned", path.c_str(), nullptr);
+    if (do_signal)
+      signal_emit("on-tree-pruned", path.c_str(), nullptr);
   } else {
     g_warning("cannot prune %s", path.c_str());
   }

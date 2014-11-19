@@ -364,7 +364,7 @@ void PJPresence::del_buddy(const std::string &sip_user) {
     g_warning("cannot remove buddy");
     return;
   }
-  sip_instance_->prune_tree("buddy."+std::to_string(it->second));
+  sip_instance_->prune_tree("buddy."+ std::to_string(it->second));
   buddy_id_.erase(it);
   g_debug("Buddy removed");
   return;
@@ -491,7 +491,8 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
     status = "busy";
 
   data::Tree::ptr tree = context->sip_instance_->
-      prune_tree(std::string(".buddy." + std::to_string(buddy_id)));
+      prune_tree(std::string(".buddy." + std::to_string(buddy_id)),
+                 false);  // do not signal since the tree will be updated
   if (!tree)
     tree = data::Tree::make();
   // writing status and state

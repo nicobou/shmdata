@@ -125,30 +125,30 @@ class Quiddity: public ConstMethodsInvoker<data::Tree> {
   inline data::Tree *cmi_get() final {return information_tree_.get();}
   
   // properties
-  std::unordered_map<std::string, Property::ptr> properties_;
-  std::unordered_map<std::string, Property::ptr> disabled_properties_;
+  std::unordered_map<std::string, Property::ptr> properties_{};
+  std::unordered_map<std::string, Property::ptr> disabled_properties_{};
   JSONBuilder::ptr properties_description_;
 
   // methods
-  std::unordered_map<std::string, Method::ptr> methods_;
-  std::unordered_map<std::string, Method::ptr> disabled_methods_;
+  std::unordered_map<std::string, Method::ptr> methods_{};
+  std::unordered_map<std::string, Method::ptr> disabled_methods_{};
   bool method_is_registered(std::string method_name);
   JSONBuilder::ptr methods_description_;
 
   // position weight
-  gint position_weight_counter_;
+  gint position_weight_counter_{0};
   bool compare_properties(std::string first, std::string second);
 
   // pair is <class_name, signal_name>
-  // this map is static in order to avoid re-creation of the same signal for each quiddity instance
-  static std::map<std::pair < std::string, std::string>,
-                    guint > signals_ids_;
-  std::unordered_map<std::string, Signal::ptr> signals_;
+  // this map is static in order to avoid re-creation of the same signal
+  // for each quiddity instance
+  static std::map<std::pair<std::string, std::string>, guint> signals_ids_;
+  std::unordered_map<std::string, Signal::ptr> signals_{};
   JSONBuilder::ptr signals_description_;
 
   // naming
-  std::string name_;
-  std::string nick_name_;
+  std::string name_{};
+  std::string nick_name_{};
 
   // property
   bool register_property(GObject *object,
@@ -205,8 +205,10 @@ class Quiddity: public ConstMethodsInvoker<data::Tree> {
  protected:
   // information
   bool graft_tree(const std::string &path,
-                  data::Tree::ptr tree_to_graft);
-  data::Tree::ptr prune_tree(const std::string &path);
+                  data::Tree::ptr tree_to_graft,
+                  bool do_signal = true);
+  data::Tree::ptr prune_tree(const std::string &path,
+                             bool do_signal = true);
   
   // property
   bool install_property(GObject *object,
@@ -266,7 +268,7 @@ class Quiddity: public ConstMethodsInvoker<data::Tree> {
   
   // used in order to dynamically create other quiddity, weak_ptr is used in order to
   // avoid circular references to the manager_impl
-  std::weak_ptr<QuiddityManager_Impl> manager_impl_;
+  std::weak_ptr<QuiddityManager_Impl> manager_impl_{};
 
   // gobject wrapper for custom signals and properties
   GObjectWrapper::ptr gobject_;
