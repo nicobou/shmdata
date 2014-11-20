@@ -19,6 +19,7 @@
 
 #include "./fakesink.hpp"
 #include "./gst-utils.hpp"
+#include "./scope-exit.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FakeSink,
@@ -30,29 +31,24 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FakeSink,
 
 FakeSink::FakeSink():
     fakesink_("fakesink"),
-    num_bytes_since_last_update_(0),
-    update_byterate_source_(nullptr),
-    byte_rate_(0),
-    string_caps_(g_strdup("unknown")),
-    set_string_caps_(true),
-    props_(new CustomPropertyHelper()),
-    byte_rate_spec_(nullptr),
-    caps_spec_(nullptr) {
+    props_(std::make_shared<CustomPropertyHelper>()) {
 }
 
 FakeSink::~FakeSink() {
   if (update_byterate_source_ != nullptr)
     g_source_destroy(update_byterate_source_);
-  g_free(string_caps_);
 }
 
 bool FakeSink::init_gpipe() {
   if (!fakesink_)
     return false;
   g_object_set(G_OBJECT(fakesink_.get_raw()),
-               "sync", FALSE, "signal-handoffs", TRUE, nullptr);
+               "sync", FALSE,
+               "signal-handoffs", TRUE,
+               nullptr);
 
-  g_signal_connect(fakesink_.get_raw(), "handoff", (GCallback) on_handoff_cb, this);
+  g_signal_connect(fakesink_.get_raw(),
+                   "handoff", (GCallback)on_handoff_cb, this);
 
   // registering some properties
   // install_property (G_OBJECT (fakesink_),"last-message","last-message", "Last Message");
@@ -98,18 +94,22 @@ gboolean FakeSink::update_byte_rate(gpointer user_data) {
   return TRUE;
 }
 
-void FakeSink::on_handoff_cb(GstElement * /*object */ ,
+void FakeSink::on_handoff_cb(GstElement */*object */ ,
                              GstBuffer *buf,
-                             GstPad *pad, gpointer user_data) {
+                             GstPad *pad,
+                             gpointer user_data) {
   FakeSink *context = static_cast<FakeSink *>(user_data);
 
   if (context->set_string_caps_) {
+  g_print("+++++++++++++++++++++ %s %d\n", __FUNCTION__, __LINE__);
     context->set_string_caps_ = false;
     GstCaps *caps = gst_pad_get_negotiated_caps(pad);
-    g_free(context->string_caps_);
-    context->string_caps_ = gst_caps_to_string(caps);
+    On_scope_exit{gst_caps_unref(caps);};
+    gchar *strcaps = gst_caps_to_string(caps);
+    On_scope_exit{g_free(strcaps);};
+    context->string_caps_ = strcaps;
     context->props_->notify_property_changed(context->caps_spec_);
-    gst_caps_unref(caps);
+  g_print("+++++++++++++++++++++ %s %d\n", __FUNCTION__, __LINE__);
   }
   context->num_bytes_since_last_update_ += GST_BUFFER_SIZE(buf);
 }
@@ -121,6 +121,6 @@ gint FakeSink::get_byte_rate(void *user_data) {
 
 const gchar *FakeSink::get_caps(void *user_data) {
   FakeSink *context = static_cast<FakeSink *>(user_data);
-  return context->string_caps_;
+  return context->string_caps_.c_str();
 }
 }

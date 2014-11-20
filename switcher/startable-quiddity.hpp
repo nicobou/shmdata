@@ -34,7 +34,7 @@ class StartableQuiddity {
   StartableQuiddity &operator=(const StartableQuiddity &) = delete;
 
  protected:
-  void init_startable(void *quiddity);        // FIXME should called quiddity-manager-impl
+  void init_startable(void *quiddity);
   bool is_started();
   // find a way to avoid invoking init_startable (this) in quiddities (policies)
 
@@ -49,5 +49,4 @@ class StartableQuiddity {
   CustomPropertyHelper::ptr startable_custom_props_;
 };
 }  // namespace switcher
-
-#endif                          // ifndef
+#endif

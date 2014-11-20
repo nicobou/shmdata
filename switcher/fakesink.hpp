@@ -38,15 +38,15 @@ class FakeSink:public SinglePadGstSink {
 
  private:
   UGstElem fakesink_;
-  gsize num_bytes_since_last_update_;
-  GSource *update_byterate_source_;
-  gint byte_rate_;
-  gchar *string_caps_;
-  gboolean set_string_caps_;
+  gsize num_bytes_since_last_update_{0};
+  GSource *update_byterate_source_{nullptr};
+  gint byte_rate_{0};
+  std::string string_caps_{};
+  gboolean set_string_caps_{true};
   // byte rate property
   CustomPropertyHelper::ptr props_;
-  GParamSpec *byte_rate_spec_;
-  GParamSpec *caps_spec_;
+  GParamSpec *byte_rate_spec_{nullptr};
+  GParamSpec *caps_spec_{nullptr};
 
   bool init_gpipe() final;
   bool can_sink_caps(std::string /*caps*/) final {

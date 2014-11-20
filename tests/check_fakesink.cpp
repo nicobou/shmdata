@@ -45,7 +45,7 @@ main() {
     assert("audio" == manager->create("audiotestsrc", "audio"));
     assert(manager->set_property("audio", "started", "true"));
 
-    // FIXME shoud synchronize with audio registration of audio shmdata writer
+    // FIXME synchronize with audio registration of audio shmdata writer
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     
     // getting audio shmdata name and connecting fakesink with

@@ -63,6 +63,8 @@ class Segment: public CounterMap
                               OnDisconnectAll on_disconnect_all_cb,
                               CanSinkCaps on_can_sink_caps_cb,
                               uint max_reader);
+  // manual addition of an external shmdata
+  void populate_tree(std::string key, std::string caps);
 
  private:
   Quiddity *quid_ {nullptr};
@@ -81,7 +83,6 @@ class Segment: public CounterMap
   static gboolean disconnect_all_wrapped(gpointer /*unused */,
                                          gpointer user_data);
   static gboolean can_sink_caps_wrapped(gpointer caps, gpointer user_data);
-  void populate_tree(std::string key, std::string caps);
 };
 }  // namespace switcher
 

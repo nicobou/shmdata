@@ -47,6 +47,7 @@ class FakeShmdataWriter: public Quiddity,
   CustomPropertyHelper::ptr custom_props_;
   GParamSpec *shmdata_path_spec_{nullptr};
   std::string shmdata_path_{"none"};
+  std::string caps_{};
   QuiddityManager::ptr manager_{};
   // getting caps from fakesink
   static void caps_cb(std::string /*subscriber_name */ ,
