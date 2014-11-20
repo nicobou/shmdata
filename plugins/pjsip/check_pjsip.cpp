@@ -66,6 +66,7 @@ int main() {
 
     // SIP
     assert(0 == manager->create("sip", sip_name).compare(sip_name));
+    assert(manager->set_property(sip_name, "port", "5060"));
     assert(manager->set_property(sip_name, "port", "5070"));
     assert(manager->set_property(sip_name, "port", "5080"));
 

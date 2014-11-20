@@ -79,7 +79,8 @@ bool PJSIP::init() {
                                        65535,
                                        sip_port_,
                                        (GParamFlags) G_PARAM_READWRITE,
-                                       set_port, get_port, this);
+                                       set_port,
+                                       get_port, this);
 
   install_property_by_pspec(custom_props_->get_gobject(),
                             sip_port_spec_,
@@ -152,7 +153,7 @@ bool PJSIP::pj_sip_init() {
   /* Create application pool for misc. */
   pool_ = pj_pool_create(&cp_.factory, "switcher_sip", 1000, 1000, nullptr);
 
-  start_udp_transport();
+  start_tcp_transport();
 
   // pj_dns_resolver *resv = pjsip_endpt_get_resolver(sip_endpt_);
   // if (nullptr == resv) printf ("NULL RESOLVER -------------------------\n");
@@ -234,7 +235,7 @@ void PJSIP::exit_cmd() {
   continue_ = false;
 }
 
-void PJSIP::start_udp_transport() {
+void PJSIP::start_tcp_transport() {
   if (-1 != transport_id_)
     pjsua_transport_close(transport_id_, PJ_FALSE);
 
@@ -251,8 +252,10 @@ void PJSIP::start_udp_transport() {
 
 void PJSIP::set_port(const gint value, void *user_data) {
   PJSIP *context = static_cast<PJSIP *>(user_data);
+  if (value == (gint)context->sip_port_)
+    return;
   context->sip_port_ = value;
-  context->run_command_sync(std::bind(&PJSIP::start_udp_transport,
+  context->run_command_sync(std::bind(&PJSIP::start_tcp_transport,
                                       context));
   GObjectWrapper::notify_property_changed(context->gobject_->get_gobject(),
                                           context->sip_port_spec_);

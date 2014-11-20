@@ -82,7 +82,7 @@ class PJSIP: public Quiddity {
   static void set_port(const gint value, void *user_data);
   static gint get_port(void *user_data);
   void sip_worker_thread();
-  void start_udp_transport();
+  void start_tcp_transport();
 };
 }  // namespace switcher
 
