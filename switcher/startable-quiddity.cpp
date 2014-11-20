@@ -21,8 +21,9 @@
 #include "./quiddity.hpp"
 
 namespace switcher {
-StartableQuiddity::StartableQuiddity():started_(false),
-                                       startable_custom_props_(new CustomPropertyHelper()) {
+StartableQuiddity::StartableQuiddity():
+    started_(false),
+    startable_custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 
 StartableQuiddity::~StartableQuiddity() {
@@ -45,16 +46,14 @@ void StartableQuiddity::init_startable(void *quiddity) {
 }
 
 gboolean StartableQuiddity::get_started(void *user_data) {
-  StartableQuiddity *context =
-      static_cast<StartableQuiddity *>(user_data);
+  StartableQuiddity *context = static_cast<StartableQuiddity *>(user_data);
   if (!context->started_)
     return FALSE;
   return TRUE;
 }
 
 void StartableQuiddity::set_started(gboolean started, void *user_data) {
-  StartableQuiddity *context =
-      static_cast<StartableQuiddity *>(user_data);
+  StartableQuiddity *context = static_cast<StartableQuiddity *>(user_data);
   if (started) {
     if (context->start())
       context->started_ = true;

@@ -101,7 +101,6 @@ void FakeSink::on_handoff_cb(GstElement */*object */ ,
   FakeSink *context = static_cast<FakeSink *>(user_data);
 
   if (context->set_string_caps_) {
-  g_print("+++++++++++++++++++++ %s %d\n", __FUNCTION__, __LINE__);
     context->set_string_caps_ = false;
     GstCaps *caps = gst_pad_get_negotiated_caps(pad);
     On_scope_exit{gst_caps_unref(caps);};
@@ -109,7 +108,6 @@ void FakeSink::on_handoff_cb(GstElement */*object */ ,
     On_scope_exit{g_free(strcaps);};
     context->string_caps_ = strcaps;
     context->props_->notify_property_changed(context->caps_spec_);
-  g_print("+++++++++++++++++++++ %s %d\n", __FUNCTION__, __LINE__);
   }
   context->num_bytes_since_last_update_ += GST_BUFFER_SIZE(buf);
 }

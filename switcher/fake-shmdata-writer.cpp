@@ -52,7 +52,6 @@ void FakeShmdataWriter::caps_cb(std::string /*subscriber_name */,
                                 std::string /*property_name*/,
                                 std::string value,
                                 void *user_data) {
-  g_print("+++++++++++++++++++++ %s %d\n", __FUNCTION__, __LINE__);
   FakeShmdataWriter *context = static_cast<FakeShmdataWriter *>(user_data);
 
   context->caps_ = value;
@@ -61,7 +60,6 @@ void FakeShmdataWriter::caps_cb(std::string /*subscriber_name */,
 }
 
 bool FakeShmdataWriter::init() {
-  init_startable(this);
   shmdata_path_spec_ =
       custom_props_->make_string_property("shmdata-path",
                                           "Path Of The Shmdata The Include",
@@ -95,19 +93,14 @@ const gchar *FakeShmdataWriter::get_shmdata_path(void *user_data) {
 }
 
 bool FakeShmdataWriter::start() {
-  g_print("+++++++++++++++++++++ %s %d\n", __FUNCTION__, __LINE__);
   uninstall_property("shmdata-path");
-  g_print("+++++++++++++++++++++ %s %d\n", __FUNCTION__, __LINE__);
   if (shmdata_path_ == "none")
     return false;
-  g_print("+++++++++++++++++++++ %s %d\n", __FUNCTION__, __LINE__);
   if (caps_.empty())
     manager_->invoke_va("fakesink", "connect", nullptr, shmdata_path_.c_str(), nullptr);
   else
     populate_tree(std::string(".shmdata.writer.") + shmdata_path_,
                   caps_);
-  g_print("+++++++++++++++++++++ %s %d\n", __FUNCTION__, __LINE__);
-
   return true;
 }
 
