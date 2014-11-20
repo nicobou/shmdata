@@ -30,15 +30,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackAudioSource,
                                      "Nicolas Bouillot");
 
 JackAudioSource::JackAudioSource():
-    jackaudiosrc_(nullptr),
-    audioconvert_(nullptr),
-    capsfilter_(nullptr),
-    jackaudiosrc_bin_(nullptr),
-    custom_props_(new CustomPropertyHelper()),
-    num_channels_spec_(nullptr),
-    num_channels_(2),
-    client_name_spec_(nullptr),
-    client_name_(nullptr) {
+    custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 
 bool JackAudioSource::init_gpipe() {
@@ -58,6 +50,20 @@ bool JackAudioSource::init_gpipe() {
                                        this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             num_channels_spec_, "channels", "Channels");
+
+    connect_physical_port_prop_ =
+        custom_props_->make_boolean_property("connect",
+                                             "automatically connect to physical ports",
+                                             (gboolean) TRUE,
+                                             (GParamFlags)G_PARAM_READWRITE,
+                                             JackAudioSource::set_connect_phys,
+                                             JackAudioSource::get_connect_phys,
+                                             this);
+    install_property_by_pspec(custom_props_->get_gobject(),
+                              connect_physical_port_prop_,
+                              "connect",
+                              "automatically connect to physical ports");
+  
   client_name_ = g_strdup(get_nick_name().c_str());
 
   client_name_spec_ =
@@ -94,12 +100,14 @@ bool JackAudioSource::start() {
   set_raw_audio_element(jackaudiosrc_bin_);
   disable_property("channels");
   disable_property("client-name");
+  disable_property("connect");
   return true;
 }
 
 bool JackAudioSource::stop() {
   enable_property("channels");
   enable_property("client-name");
+  enable_property("connect");
   reset_bin();
   return true;
 }
@@ -114,6 +122,9 @@ bool JackAudioSource::make_elements() {
   if (!GstUtils::make_element("bin", &jackaudiosrc_bin_))
     return false;
 
+  if (!connect_phys_)
+    g_object_set(G_OBJECT(jackaudiosrc_), "connect", 0, nullptr);
+  
   // using caps compatible with L16 RTP payload
   GstCaps *caps = gst_caps_new_simple("audio/x-raw-int",
                                       "width", G_TYPE_INT, 16,
@@ -168,4 +179,20 @@ const gchar *JackAudioSource::get_client_name(void *user_data) {
   JackAudioSource *context = static_cast<JackAudioSource *>(user_data);
   return context->client_name_;
 }
+
+gboolean JackAudioSource::get_connect_phys(void *user_data) {
+  JackAudioSource *context = static_cast<JackAudioSource *>(user_data);
+  if (!context->connect_phys_)
+    return FALSE;
+  return TRUE;
 }
+
+void JackAudioSource::set_connect_phys(gboolean connect, void *user_data) {
+  JackAudioSource *context = static_cast<JackAudioSource *>(user_data);
+  if (connect)
+    context->connect_phys_ = true;
+  else
+    context->connect_phys_ = false;
+  context->custom_props_->notify_property_changed(context->connect_physical_port_prop_);
+}
+}  // namespace swittcher

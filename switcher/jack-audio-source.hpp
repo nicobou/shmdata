@@ -38,15 +38,17 @@ class JackAudioSource:public AudioSource, public StartableQuiddity {
   bool stop();
 
  private:
-  GstElement *jackaudiosrc_;
-  GstElement *audioconvert_;
-  GstElement *capsfilter_;
-  GstElement *jackaudiosrc_bin_;
+  GstElement *jackaudiosrc_{nullptr};
+  GstElement *audioconvert_{nullptr};
+  GstElement *capsfilter_{nullptr};
+  GstElement *jackaudiosrc_bin_{nullptr};
   CustomPropertyHelper::ptr custom_props_;
-  GParamSpec *num_channels_spec_;
-  uint num_channels_;
-  GParamSpec *client_name_spec_;
-  gchar *client_name_;
+  GParamSpec *num_channels_spec_{nullptr};
+  uint num_channels_{1};
+  GParamSpec *connect_physical_port_prop_{nullptr};
+  bool connect_phys_{true};
+  GParamSpec *client_name_spec_{nullptr};
+  gchar *client_name_{nullptr};
   bool init_gpipe() final;
   bool make_elements();
 
@@ -54,7 +56,9 @@ class JackAudioSource:public AudioSource, public StartableQuiddity {
   static gint get_num_channels(void *user_data);
   static void set_client_name(const gchar *value, void *user_data);
   static const gchar *get_client_name(void *user_data);
+  static gboolean get_connect_phys(void *user_data);
+  static void set_connect_phys(gboolean connect, void *user_data);
 };
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif
