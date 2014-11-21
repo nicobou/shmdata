@@ -33,21 +33,16 @@ class HTTPSDPDec:public GstPipeliner {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);
   HTTPSDPDec();
-  ~HTTPSDPDec();
-  HTTPSDPDec(const HTTPSDPDec &) = delete;
-  HTTPSDPDec &operator=(const HTTPSDPDec &) = delete;
-
-  bool to_shmdata(std::string uri);
 
  private:
-  GstElement *souphttpsrc_{nullptr};
-  GstElement *sdpdemux_{nullptr};
-  guint on_error_retry_delay_{1000};
+  UGstElem souphttpsrc_;
+  UGstElem sdpdemux_;
+  guint retry_delay_{1000};
   GSourceWrapper::uptr on_error_{};
   std::string uri_{};
+  bool to_shmdata(std::string uri);
   void init_httpsdpdec();
   void destroy_httpsdpdec();
-  //QuiddityCommand *on_error_command_{nullptr};  // for the pipeline error handler
   std::list<std::unique_ptr<DecodebinToShmdata>> decodebins_{};
   void clean_on_error();
   bool init_gpipe() final;
@@ -60,7 +55,6 @@ class HTTPSDPDec:public GstPipeliner {
   static void on_new_element_in_sdpdemux(GstBin *bin,
                                          GstElement *element,
                                          gpointer user_data);
-
 };
 }  // namespace switcher
 
