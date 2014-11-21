@@ -24,14 +24,7 @@
 namespace switcher {
 DecodebinToShmdata::DecodebinToShmdata(GstPipeliner *gpipe):
     decodebin_("decodebin2"),
-    discard_next_uncomplete_buffer_(false),
-    main_pad_(nullptr),
-    media_counters_(),
-    media_counter_mutex_(),
-    gpipe_(gpipe),
-    shmdata_path_(),
-    cb_ids_(),
-    thread_safe_() {
+    gpipe_(gpipe) {
   // set async property
   auto set_prop = std::bind(g_object_set,
                             std::placeholders::_1,
@@ -39,7 +32,7 @@ DecodebinToShmdata::DecodebinToShmdata(GstPipeliner *gpipe):
                             TRUE,
                             nullptr);
   decodebin_.g_invoke(std::move(set_prop));
-
+  
   // pad added callback
   auto pad_added = std::bind(GstUtils::g_signal_connect_function,
                              std::placeholders::_1,

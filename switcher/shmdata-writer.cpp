@@ -74,15 +74,14 @@ ShmdataWriter::plug(GstElement *bin,
   UGstElem::renew(tee_);
   UGstElem::renew(queue_);
   UGstElem::renew(queue_);
-  // GstUtils::make_element("tee", &tee_);
-  // GstUtils::make_element("queue", &queue_);
-  // GstUtils::make_element("fakesink", &fakesink_);
   g_object_set(G_OBJECT(fakesink_.get_raw()),
                "sync", FALSE, nullptr);
   g_object_set(G_OBJECT(fakesink_.get_raw()),
                "silent", TRUE, "signal-handoffs", TRUE, nullptr);
   handoff_handler_ = g_signal_connect(fakesink_.get_raw(),
-                                      "handoff", (GCallback) on_handoff_cb, this);
+                                      "handoff",
+                                      (GCallback)on_handoff_cb,
+                                      this);
   g_object_set(G_OBJECT(queue_.get_raw()),
                "leaky", 2, nullptr);
   gst_bin_add_many(GST_BIN(bin),
@@ -90,7 +89,10 @@ ShmdataWriter::plug(GstElement *bin,
                    fakesink_.get_raw(), nullptr);
   shmdata_base_writer_plug(writer_, bin, tee_.get_raw());
   gst_element_link_filtered(source_element, tee_.get_raw(), caps);
-  gst_element_link_many(tee_.get_raw(), queue_.get_raw(), fakesink_.get_raw(), nullptr);
+  gst_element_link_many(tee_.get_raw(),
+                        queue_.get_raw(),
+                        fakesink_.get_raw(),
+                        nullptr);
   GstUtils::sync_state_with_parent(tee_.get_raw());
   GstUtils::sync_state_with_parent(queue_.get_raw());
   GstUtils::sync_state_with_parent(fakesink_.get_raw());

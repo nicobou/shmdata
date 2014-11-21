@@ -47,10 +47,11 @@ class UGstElem : public SafeBoolIdiom {
   }
   void invoke(std::function<void(GstElement *)> command);
 
-  // get raw without taking ownership (do not unref)  // FIXME get rid of this
+  // get raw without taking ownership (do not unref)
   GstElement *get_raw();
 
   static bool renew(UGstElem &element);
+
  private:
   std::string class_name_{};
   using gst_element_handle =
