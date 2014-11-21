@@ -26,26 +26,28 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(MyPlugin,
                                      "Creates a quiddity from a plugin",
                                      "LGPL",
                                      "myplugin", "Nicolas Bouillot");
-MyPlugin::MyPlugin():custom_props_(std::make_shared <
-                                   CustomPropertyHelper > ()),
-                     myprop_(false), myprop_prop_(nullptr), hello_(g_strdup("hello")) {
+MyPlugin::MyPlugin():
+    custom_props_(std::make_shared<CustomPropertyHelper> ()) {
 }
 
 bool MyPlugin::init() {
   init_startable(this);
   myprop_prop_ = custom_props_->make_boolean_property("myprop",       // name
                                                       "myprop is a boolean property",  // description
-                                                      (gboolean) FALSE,       // default value
+                                                      (gboolean) FALSE,  // default value
                                                       (GParamFlags)
                                                       G_PARAM_READWRITE,
                                                       MyPlugin::set_myprop,
                                                       MyPlugin::get_myprop,
                                                       this);
-  install_property_by_pspec(custom_props_->get_gobject(), myprop_prop_, "myprop", "My Property");     // long name
+  install_property_by_pspec(custom_props_->get_gobject(),
+                            myprop_prop_,
+                            "myprop",
+                            "My Property");  // long name
 
-  install_method("Hello World",       // long name
-                 "hello-world",       // name
-                 "say hello and repeat first argument",       // description
+  install_method("Hello World",  // long name
+                 "hello-world",  // name
+                 "say hello and repeat first argument",  // description
                  "the hello answer",  // return description
                  Method::make_arg_description("Text To Repeat",       // first arg long name
                                               "text",  // fisrt arg name
@@ -70,7 +72,6 @@ bool MyPlugin::init() {
 }
 
 MyPlugin::~MyPlugin() {
-  g_free(hello_);
 }
 
 gboolean MyPlugin::get_myprop(void *user_data) {
@@ -85,13 +86,12 @@ void MyPlugin::set_myprop(gboolean myprop, void *user_data) {
                                           context->myprop_prop_);
 }
 
-gchar *MyPlugin::my_hello_world_method(gchar *first_arg, void *user_data) {
+const gchar *MyPlugin::my_hello_world_method(gchar *first_arg, void *user_data) {
   MyPlugin *context = static_cast<MyPlugin *>(user_data);
 
   g_debug("hello world from myplugin");
-  g_free(context->hello_);
-  context->hello_ = g_strdup_printf("hello %s", first_arg);
-  return context->hello_;
+  context->hello_ += first_arg;
+  return context->hello_.c_str();
 }
 
 bool MyPlugin::start() {

@@ -26,7 +26,7 @@
 #include <memory>
 
 namespace switcher {
-class MyPlugin:public Quiddity, public StartableQuiddity {
+class MyPlugin: public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(MyPlugin);
   MyPlugin();
@@ -36,9 +36,9 @@ class MyPlugin:public Quiddity, public StartableQuiddity {
 
  private:
   CustomPropertyHelper::ptr custom_props_;
-  bool myprop_;
-  GParamSpec *myprop_prop_;
-  gchar *hello_;
+  bool myprop_{false};
+  GParamSpec *myprop_prop_{nullptr};
+  std::string hello_{"hello"};
 
   bool init() final;
   bool start() final;
@@ -46,10 +46,10 @@ class MyPlugin:public Quiddity, public StartableQuiddity {
 
   static gboolean get_myprop(void *user_data);
   static void set_myprop(gboolean myprop, void *user_data);
-  static gchar *my_hello_world_method(gchar *first_arg, void *user_data);
+  static const gchar *my_hello_world_method(gchar *first_arg, void *user_data);
 };
 
 SWITCHER_DECLARE_PLUGIN(MyPlugin);
 }  // namespace switcher
 
-#endif                          // ifndef
+#endif
