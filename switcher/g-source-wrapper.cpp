@@ -17,12 +17,15 @@
  * Boston, MA 02111-1307, USA.
  */
 
+#include <future>
 #include "./g-source-wrapper.hpp"
 #include "./gst-utils.hpp"
 
 namespace switcher {
-GSourceWrapper::GSourceWrapper(callback &&cb):
+GSourceWrapper::GSourceWrapper(callback &&cb,
+                               bool async_invocation):
     cb_(std::move(cb)),
+    async_invocation_(async_invocation),
     gsource_(g_idle_source_new()) {
   g_source_set_priority(gsource_,
                         G_PRIORITY_DEFAULT_IDLE);
@@ -33,9 +36,11 @@ GSourceWrapper::GSourceWrapper(callback &&cb):
 }
 
 GSourceWrapper::GSourceWrapper(callback &&cb,
-                               guint delay_ms):
-    cb_(std::move(cb)) {
-  gsource_ = g_timeout_source_new(delay_ms);
+                               guint delay_ms,
+                               bool async_invocation):
+    cb_(std::move(cb)),
+    async_invocation_(async_invocation),
+    gsource_(g_timeout_source_new(delay_ms)) {
   g_source_set_callback(gsource_,
                         (GSourceFunc) &GSourceWrapper::source_func,
                         this,
@@ -62,8 +67,10 @@ GSourceWrapper::~GSourceWrapper() {
 
 gboolean GSourceWrapper::source_func(gpointer user_data){
   GSourceWrapper *context = static_cast<GSourceWrapper *>(user_data);
-  context->cb_();
+  if (!context->async_invocation_)
+    context->cb_();
+  else
+    std::async(context->cb_);  // not getting return value since void
   return FALSE;  // do not repeat in the glib mainloop
 }
-
 }  // namespace switcher

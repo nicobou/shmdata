@@ -54,15 +54,15 @@ bool GstPipeliner::init() {
   play_pause_spec_ = gpipe_custom_props_->
       make_boolean_property("play",
                             "play",
-                            (gboolean) TRUE,
-                            (GParamFlags) G_PARAM_READWRITE,
+                            TRUE,
+                            (GParamFlags)G_PARAM_READWRITE,
                             GstPipeliner::set_play,
                             GstPipeliner::get_play,
                             this);
   seek_spec_ = gpipe_custom_props_->
       make_double_property("seek", "seek (in percent)",
                            0.0, 1.0, 0.0,
-                           (GParamFlags) G_PARAM_READWRITE,
+                           (GParamFlags)G_PARAM_READWRITE,
                            GstPipeliner::set_seek,
                            GstPipeliner::get_seek,
                            this);
@@ -239,19 +239,30 @@ GstPipeliner::print_one_tag(const GstTagList */*list*/,
 
 
 void GstPipeliner::make_bin() {
+  g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
   {  // reseting the pipeline too
     std::unique_ptr<GstPipe> tmp;
     std::swap(gst_pipeline_, tmp);
   }
+  g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
+  g_print("+++++++++++++++ maincontext is %p\n", get_g_main_context());
   gst_pipeline_ = std2::make_unique<GstPipe>(get_g_main_context());
+g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
+  
   gst_pipeline_->set_on_error_function(std::bind(&GstPipeliner::on_gst_error,
                                                  this,
                                                  std::placeholders::_1));
-  g_object_set(G_OBJECT(bin_.get_raw()), "async-handling", TRUE, nullptr);
+    g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
+g_object_set(G_OBJECT(bin_.get_raw()), "async-handling", TRUE, nullptr);
+  g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), bin_.get_raw());
+  g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
   GstUtils::wait_state_changed(gst_pipeline_->get_pipeline());
+  g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
   GstUtils::sync_state_with_parent(bin_.get_raw());
+  g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
   GstUtils::wait_state_changed(bin_.get_raw());
+  g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
 }
 
 void GstPipeliner::clean_bin() {
@@ -266,8 +277,11 @@ GstElement *GstPipeliner::get_bin() {
 }
 
 bool GstPipeliner::reset_bin() {
+  g_print("blblalblalb %s %d\n", __FUNCTION__, __LINE__);
   clean_bin();
+  g_print("blblalblalb %s %d\n", __FUNCTION__, __LINE__);
   make_bin();
+  g_print("blblalblalb %s %d\n", __FUNCTION__, __LINE__);
   return true;
 }
 

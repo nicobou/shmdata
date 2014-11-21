@@ -30,10 +30,12 @@ class GSourceWrapper {
   using uptr = std::unique_ptr<GSourceWrapper>;
 
   // for imediate invocation
-  GSourceWrapper(callback &&cb);
+  GSourceWrapper(callback &&cb,
+                 bool async_invocation = false);
   // for delayed invocation
   GSourceWrapper(callback &&cb,
-                 guint delay_ms);
+                 guint delay_ms,
+                 bool async_invocation = false);
   bool attach(GMainContext *gcontext);
   
   GSourceWrapper() = delete;
@@ -45,6 +47,7 @@ class GSourceWrapper {
  private:
   callback cb_;
   bool attached_{false};
+  bool async_invocation_;
   GSource *gsource_{nullptr};  // a valid ID is greater than 0
   //the GSourceFunc that will be passed to glib
   static gboolean source_func(gpointer user_data);

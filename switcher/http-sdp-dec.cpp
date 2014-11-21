@@ -38,9 +38,9 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 HTTPSDPDec::HTTPSDPDec():
     souphttpsrc_("souphttpsrc"),
     sdpdemux_("sdpdemux"),
-    on_error_(std2::make_unique<GSourceWrapper>(
-        [&](){uri_to_shmdata();},
-        retry_delay_)) {
+    on_error_(std2::make_unique<GSourceWrapper>([&](){uri_to_shmdata();},
+                                                retry_delay_,
+                                                true /*async invocation*/)) {
 }
 
 bool HTTPSDPDec::init_gpipe() {
@@ -100,7 +100,8 @@ HTTPSDPDec::on_new_element_in_sdpdemux(GstBin */*bin*/,
 void HTTPSDPDec::clean_on_error() {
   GSourceWrapper::uptr on_error =
       std2::make_unique<GSourceWrapper>([&](){uri_to_shmdata();},
-                                        retry_delay_);
+                                        retry_delay_,
+                                        true);
   std::swap(on_error, on_error_);
 }
 
@@ -133,7 +134,8 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement * /*object */ ,
 void HTTPSDPDec::source_setup_cb(GstElement */*httpsdpdec */,
                                  GstElement *source,
                                  gpointer /*user_data */) {
-  g_debug("source %s %s\n", GST_ELEMENT_NAME(source),
+  g_debug("source %s %s",
+          GST_ELEMENT_NAME(source),
           G_OBJECT_CLASS_NAME(G_OBJECT_GET_CLASS(source)));
 }
 

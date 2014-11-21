@@ -181,11 +181,17 @@ GstBusSyncReply GstPipe::bus_sync_handler(GstBus * /*bus*/,
 }
 
 void GstPipe::play_pipe(GstPipe *pipe) {
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   std::unique_lock<std::mutex> lock(pipe->play_pipe_);
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   gst_element_set_state(pipe->pipeline_, GST_STATE_PLAYING);
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   GstUtils::wait_state_changed(pipe->pipeline_);
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   //pipe->make_bin();
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   pipe->play_cond_.notify_one();
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
 }
 
 
