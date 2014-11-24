@@ -170,51 +170,6 @@ gboolean GstPipeliner::run_remove_quid(gpointer user_data) {
   return FALSE;
 }
 
-gboolean GstPipeliner::run_command(gpointer user_data) {
-  // FIXME remove this method
-  QuidCommandArg *context = static_cast<QuidCommandArg *>(user_data);
-  QuiddityManager_Impl::ptr manager = context->self->manager_impl_.lock();
-  if ((bool) manager && context->command != nullptr) {
-    switch (context->command->id_) {
-      case QuiddityCommand::remove:
-        manager->remove(context->command->args_[0]);
-        break;
-      case QuiddityCommand::invoke:
-        {
-          manager->invoke(context->command->args_[0],
-                          context->command->args_[1],
-                          nullptr,
-                          context->command->vector_arg_);
-        }
-        break;
-      case QuiddityCommand::set_property:
-        {
-          manager->set_property(context->command->args_[0],
-                                context->command->args_[1],
-                                context->command->vector_arg_[0]);
-        }
-        break;
-
-      default:
-        g_debug("on-error-command: %s not implemented\n",
-                QuiddityCommand::get_string_from_id(context->command->id_));
-    }
-  }
-  else
-    g_warning("GstPipeliner::bus_sync_handler, cannot run command");
-  
-  auto it = std::find(context->self->commands_.begin(),
-                      context->self->commands_.end(),
-                      context);
-  if (context->self->commands_.end() != it)
-  {
-    // it->src will be freed by the glib
-    //delete (*it)->command;
-    context->self->commands_.erase(it);
-  }
-  return FALSE;  // do not repeat run_command
-}
-
 GstElement *GstPipeliner::get_pipeline() {
   return gst_pipeline_->get_pipeline();
 }
@@ -288,68 +243,33 @@ bool GstPipeliner::reset_bin() {
 }
 
 void GstPipeliner::on_gst_error(GstMessage *msg) {
-  {  // on-error-gsource
-    GSourceWrapper *gsrc =
-        (GSourceWrapper *) g_object_get_data(G_OBJECT(msg->src),
-                                             "on-error-gsource");
-    if(nullptr != gsrc) {
-      // removing command in order to get it invoked once
-      g_object_set_data(G_OBJECT(msg->src),
-                        "on-error-gsource",
-                        (gpointer) nullptr);
-      gsrc->attach(get_g_main_context());
-
-    }
-  }
-  
-  {  // on-error-delete
-    const char *name =
-        (const char *) g_object_get_data(G_OBJECT(msg->src),
-                                         "on-error-delete");
-    if (nullptr != name) {
-      // removing command in order to get it invoked once
-      g_object_set_data(G_OBJECT(msg->src),
-                        "on-error-delete",
-                        (gpointer) nullptr);
-      quids_to_remove_.push_back(std::string(name));
-      GstUtils::g_idle_add_full_with_context(get_g_main_context (),
-                                             G_PRIORITY_DEFAULT_IDLE,
-                                             (GSourceFunc)run_remove_quid,
-                                             (gpointer)this,
-                                             nullptr);
-    }
-  }
-  
-  { // FIXME REMOVE on-error-command
-    QuiddityCommand *command =
-        (QuiddityCommand *) g_object_get_data(G_OBJECT(msg->src),
-                                              "on-error-command");
+  // on-error-gsource
+  GSourceWrapper *gsrc =
+      (GSourceWrapper *) g_object_get_data(G_OBJECT(msg->src),
+                                           "on-error-gsource");
+  if(nullptr != gsrc) {
     // removing command in order to get it invoked once
     g_object_set_data(G_OBJECT(msg->src),
-                      "on-error-command", (gpointer) nullptr);
-    if (command != nullptr) {
-      g_debug("error contains data (on-error-command) ");
-      QuidCommandArg *args = new QuidCommandArg();
-      args->self = this;
-      args->command = command;
-      args->src = nullptr;
-      if (command->time_ > 1) {
-        args->src = g_timeout_source_new((guint) command->time_);
-        g_source_set_callback(args->src,
-                              (GSourceFunc) run_command,
-                              args,
-                              nullptr);
-        commands_.push_back(args);
-        g_source_attach(args->src, get_g_main_context());
-        g_source_unref(args->src);
-      } else {
-        GstUtils::g_idle_add_full_with_context(get_g_main_context (),
-                                               G_PRIORITY_DEFAULT_IDLE,
-                                               (GSourceFunc) run_command,
-                                               (gpointer) args,
-                                               nullptr);
-      }
-    }
+                      "on-error-gsource",
+                      (gpointer) nullptr);
+    gsrc->attach(get_g_main_context());
+  }
+  
+  // on-error-delete
+  const char *name =
+      (const char *) g_object_get_data(G_OBJECT(msg->src),
+                                       "on-error-delete");
+  if (nullptr != name) {
+    // removing command in order to get it invoked once
+    g_object_set_data(G_OBJECT(msg->src),
+                      "on-error-delete",
+                      (gpointer) nullptr);
+    quids_to_remove_.push_back(std::string(name));
+    GstUtils::g_idle_add_full_with_context(get_g_main_context (),
+                                           G_PRIORITY_DEFAULT_IDLE,
+                                           (GSourceFunc)run_remove_quid,
+                                           (gpointer)this,
+                                           nullptr);
   }
 }
 

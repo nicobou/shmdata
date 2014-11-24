@@ -20,12 +20,12 @@
 #ifndef __SWITCHER_GTK_VIDEO_H__
 #define __SWITCHER_GTK_VIDEO_H__
 
-#include "switcher/single-pad-gst-sink.hpp"
-#include "switcher/custom-property-helper.hpp"
 #include <memory>
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include "switcher/single-pad-gst-sink.hpp"
+#include "switcher/custom-property-helper.hpp"
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
@@ -42,7 +42,7 @@
 #endif
 
 namespace switcher {
-class GTKVideo:public SinglePadGstSink {
+class GTKVideo: public SinglePadGstSink {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GTKVideo);
   GTKVideo();
@@ -70,7 +70,6 @@ class GTKVideo:public SinglePadGstSink {
 #else
   guintptr window_handle_;
 #endif
-  QuiddityCommand *on_error_command_;  // for the GstPipeliner error handler
   GdkCursor *blank_cursor_;
 
   CustomPropertyHelper::ptr gtk_custom_props_;
@@ -107,6 +106,6 @@ class GTKVideo:public SinglePadGstSink {
 };
 
 SWITCHER_DECLARE_PLUGIN(GTKVideo);
-}  // namespace switcher
 
-#endif                          // ifndef
+}  // namespace switcher
+#endif

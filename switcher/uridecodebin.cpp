@@ -464,25 +464,6 @@ void
 Uridecodebin::source_setup_cb(GstElement */*uridecodebin*/,
                               GstElement */*source*/,
                               gpointer /*user_data*/) {
-  // Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
-  // g_debug("uridecodebin source element is %s %s\n",
-  //         GST_ELEMENT_NAME(source),
-  //         G_OBJECT_CLASS_NAME(G_OBJECT_GET_CLASS(source)));
-
-  // // building the command
-  // context->clean_on_error_command();
-  // context->on_error_command_ = new QuiddityCommand();
-  // context->on_error_command_->id_ = QuiddityCommand::set_property;
-  // context->on_error_command_->time_ = 1000;   // 1 second
-  // context->on_error_command_->add_arg(context->get_nick_name());
-  // context->on_error_command_->add_arg("started");
-  // std::vector<std::string> vect_arg;
-  // vect_arg.push_back("false");
-  // context->on_error_command_->set_vector_arg(vect_arg);
-
-  // g_object_set_data(G_OBJECT(source),
-  //                   "on-error-command",
-  //                   (gpointer) context->on_error_command_);
 }
 
 bool Uridecodebin::to_shmdata() {

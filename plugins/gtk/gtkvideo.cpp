@@ -90,15 +90,14 @@ bool GTKVideo::init_gpipe() {
   gst_object_unref(sink_pad);
 
   g_object_set(G_OBJECT(xvimagesink_),
-               "sync", FALSE, "qos", FALSE, nullptr);
-  // on_error_command_ = new QuiddityCommand ();
-  on_error_command_->id_ = QuiddityCommand::remove;
-  on_error_command_->add_arg(get_nick_name());
+               "sync", FALSE,
+               "qos", FALSE,
+               nullptr);
   g_object_set_data(G_OBJECT(xvimagesink_),
-                    "on-error-command", (gpointer) on_error_command_);
+                    "on-error-delete",
+                    (gpointer) get_nickname_cstr());
   set_sink_element(sink_bin_);
   is_fullscreen_ = FALSE;
-
   if (instances_counter_ == 0) {
     if (0 == gtk_main_level()) {
       gtk_main_thread_ = std::thread(&GTKVideo::gtk_main_loop_thread);
@@ -172,7 +171,6 @@ GTKVideo::GTKVideo():
 #else
     window_handle_(0),
 #endif
-    on_error_command_(new QuiddityCommand()),
     blank_cursor_(nullptr),
     gtk_custom_props_(new CustomPropertyHelper()),
     fullscreen_prop_spec_(nullptr),
@@ -256,8 +254,6 @@ GTKVideo::~GTKVideo() {
   // g_debug ("GTKVideo::~GTKVideo invoking gtk_main_quit");
   // gtk_main_quit ();
   //   }
-  if (on_error_command_ != nullptr)
-    delete on_error_command_;
 }
 
 void GTKVideo::realize_cb(GtkWidget *widget, void *user_data) {
