@@ -21,6 +21,7 @@
 #define __SWITCHER_G_SOURCE_WRAPPER_H__
 
 #include <memory>
+#include <future>
 #include <glib.h>
 
 namespace switcher {
@@ -48,6 +49,7 @@ class GSourceWrapper {
   callback cb_;
   bool attached_{false};
   bool async_invocation_;
+  std::future<void> fut_{};
   GSource *gsource_{nullptr};  // a valid ID is greater than 0
   //the GSourceFunc that will be passed to glib
   static gboolean source_func(gpointer user_data);

@@ -70,7 +70,8 @@ gboolean GSourceWrapper::source_func(gpointer user_data){
   if (!context->async_invocation_)
     context->cb_();
   else
-    std::async(context->cb_);  // not getting return value since void
+    context->fut_ = std::async(std::launch::async,
+                              context->cb_);
   return FALSE;  // do not repeat in the glib mainloop
 }
 }  // namespace switcher

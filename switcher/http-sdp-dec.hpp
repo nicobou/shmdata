@@ -38,13 +38,15 @@ class HTTPSDPDec:public GstPipeliner {
   UGstElem souphttpsrc_;
   UGstElem sdpdemux_;
   guint retry_delay_{1000};
-  GSourceWrapper::uptr on_error_{};
+  // will maintain a max of two GSourceWrapper in order to avoid destructing
+  // itself from inside the GSource 
+  std::list<GSourceWrapper::uptr> on_error_{};
   std::string uri_{};
+  std::list<std::unique_ptr<DecodebinToShmdata>> decodebins_{};
   bool to_shmdata(std::string uri);
   void init_httpsdpdec();
   void destroy_httpsdpdec();
-  std::list<std::unique_ptr<DecodebinToShmdata>> decodebins_{};
-  void clean_on_error();
+  void make_new_error_handler();
   bool init_gpipe() final;
   void uri_to_shmdata();
   static void httpsdpdec_pad_added_cb(GstElement *object,

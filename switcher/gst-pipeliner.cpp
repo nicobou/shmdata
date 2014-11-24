@@ -239,30 +239,19 @@ GstPipeliner::print_one_tag(const GstTagList */*list*/,
 
 
 void GstPipeliner::make_bin() {
-  g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
   {  // reseting the pipeline too
     std::unique_ptr<GstPipe> tmp;
     std::swap(gst_pipeline_, tmp);
   }
-  g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
-  g_print("+++++++++++++++ maincontext is %p\n", get_g_main_context());
   gst_pipeline_ = std2::make_unique<GstPipe>(get_g_main_context());
-g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
-  
   gst_pipeline_->set_on_error_function(std::bind(&GstPipeliner::on_gst_error,
                                                  this,
                                                  std::placeholders::_1));
-    g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
-g_object_set(G_OBJECT(bin_.get_raw()), "async-handling", TRUE, nullptr);
-  g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
+  g_object_set(G_OBJECT(bin_.get_raw()), "async-handling", TRUE, nullptr);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), bin_.get_raw());
-  g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
   GstUtils::wait_state_changed(gst_pipeline_->get_pipeline());
-  g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
   GstUtils::sync_state_with_parent(bin_.get_raw());
-  g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
   GstUtils::wait_state_changed(bin_.get_raw());
-  g_print("ksjdfg %s %d\n", __FUNCTION__, __LINE__);
 }
 
 void GstPipeliner::clean_bin() {
@@ -277,11 +266,8 @@ GstElement *GstPipeliner::get_bin() {
 }
 
 bool GstPipeliner::reset_bin() {
-  g_print("blblalblalb %s %d\n", __FUNCTION__, __LINE__);
   clean_bin();
-  g_print("blblalblalb %s %d\n", __FUNCTION__, __LINE__);
   make_bin();
-  g_print("blblalblalb %s %d\n", __FUNCTION__, __LINE__);
   return true;
 }
 
@@ -290,7 +276,6 @@ void GstPipeliner::on_gst_error(GstMessage *msg) {
     GSourceWrapper *gsrc =
         (GSourceWrapper *) g_object_get_data(G_OBJECT(msg->src),
                                              "on-error-gsource");
-    g_print("%s %p\n", __FUNCTION__, gsrc);
     if(nullptr != gsrc) {
       // removing command in order to get it invoked once
       g_object_set_data(G_OBJECT(msg->src),
