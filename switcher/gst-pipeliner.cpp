@@ -155,7 +155,23 @@ gboolean GstPipeliner::speed_wrapped(gdouble speed, gpointer user_data) {
     return FALSE;
 }
 
+gboolean GstPipeliner::run_remove_quid(gpointer user_data) {
+  GstPipeliner *context = static_cast<GstPipeliner *>(user_data);
+  QuiddityManager_Impl::ptr manager = context->manager_impl_.lock();
+  if (manager) {
+    // copying in case of self destruction
+    std::list<std::string> tmp = context->quids_to_remove_;
+    context->quids_to_remove_.clear();
+    for (auto &it: tmp) 
+      manager->remove(it);
+  } else {
+    g_warning("cannot recover from error with removing %s (no manager available)");
+  }
+  return FALSE;
+}
+
 gboolean GstPipeliner::run_command(gpointer user_data) {
+  // FIXME remove this method
   QuidCommandArg *context = static_cast<QuidCommandArg *>(user_data);
   QuiddityManager_Impl::ptr manager = context->self->manager_impl_.lock();
   if ((bool) manager && context->command != nullptr) {
@@ -272,7 +288,7 @@ bool GstPipeliner::reset_bin() {
 }
 
 void GstPipeliner::on_gst_error(GstMessage *msg) {
-  {
+  {  // on-error-gsource
     GSourceWrapper *gsrc =
         (GSourceWrapper *) g_object_get_data(G_OBJECT(msg->src),
                                              "on-error-gsource");
@@ -284,10 +300,26 @@ void GstPipeliner::on_gst_error(GstMessage *msg) {
       gsrc->attach(get_g_main_context());
 
     }
-    
   }
   
-
+  {  // on-error-delete
+    const char *name =
+        (const char *) g_object_get_data(G_OBJECT(msg->src),
+                                         "on-error-delete");
+    if (nullptr != name) {
+      // removing command in order to get it invoked once
+      g_object_set_data(G_OBJECT(msg->src),
+                        "on-error-delete",
+                        (gpointer) nullptr);
+      quids_to_remove_.push_back(std::string(name));
+      GstUtils::g_idle_add_full_with_context(get_g_main_context (),
+                                             G_PRIORITY_DEFAULT_IDLE,
+                                             (GSourceFunc)run_remove_quid,
+                                             (gpointer)this,
+                                             nullptr);
+    }
+  }
+  
   { // FIXME REMOVE on-error-command
     QuiddityCommand *command =
         (QuiddityCommand *) g_object_get_data(G_OBJECT(msg->src),

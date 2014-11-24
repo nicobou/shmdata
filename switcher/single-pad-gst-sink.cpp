@@ -91,7 +91,7 @@ bool SinglePadGstSink::can_sink_caps(std::string caps) {
   return false;
 }
 
-void SinglePadGstSink::on_shmdata_connect(std::string shmdata_sochet_path) {
+void SinglePadGstSink::on_shmdata_connect(std::string /*shmdata_sochet_path*/) {
 }
 
 void SinglePadGstSink::on_shmdata_disconnect() {

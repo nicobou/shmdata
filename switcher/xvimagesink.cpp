@@ -24,68 +24,58 @@
 #include "./xvimagesink.hpp"
 #include "./gst-utils.hpp"
 #include "./quiddity-command.hpp"
+#include "./scope-exit.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Xvimagesink,
-                                     "Video Display (basic)",
-                                     "video",
-                                     "Video window with minimal features",
-                                     "LGPL",
-                                     "videosink",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    Xvimagesink,
+    "Video Display (basic)",
+    "video",
+    "Video window with minimal features",
+    "LGPL",
+    "videosink",
+    "Nicolas Bouillot");
 
-Xvimagesink::Xvimagesink() {
-}
+Xvimagesink::Xvimagesink():
+    sink_bin_("bin"),
+    queue_("queue"),
+    ffmpegcolorspace_("ffmpegcolorspace"),
+#if HAVE_OSX
+    xvimagesink_("osxvideosink")
+#else
+    xvimagesink_("xvimagesink")
+#endif
+{}
 
 Xvimagesink::~Xvimagesink() {
-  GstUtils::clean_element(xvimagesink_);
-  GstUtils::clean_element(ffmpegcolorspace_);
-  GstUtils::clean_element(queue_);
-  GstUtils::clean_element(sink_bin_);
-  if (on_error_command_ != nullptr)
-    delete on_error_command_;
 }
 
 bool Xvimagesink::init_gpipe() {
-  if (!GstUtils::make_element("bin", &sink_bin_))
+  if (!sink_bin_ || !queue_ || ! ffmpegcolorspace_ || !xvimagesink_)
     return false;
-  if (!GstUtils::make_element("queue", &queue_))
-    return false;
-  if (!GstUtils::make_element("ffmpegcolorspace", &ffmpegcolorspace_))
-    return false;
-#if HAVE_OSX
-  if (!GstUtils::make_element("osxvideosink", &xvimagesink_))
-    return false;
-#else
-  if (!GstUtils::make_element("xvimagesink", &xvimagesink_))
-    return false;
-#endif
-
-  gst_bin_add_many(GST_BIN(sink_bin_),
-                   queue_, ffmpegcolorspace_, xvimagesink_, nullptr);
-  gst_element_link_many(queue_, ffmpegcolorspace_, xvimagesink_, nullptr);
-
-  g_object_set(G_OBJECT(xvimagesink_),
+  gst_bin_add_many(GST_BIN(sink_bin_.get_raw()),
+                   queue_.get_raw(),
+                   ffmpegcolorspace_.get_raw(),
+                   xvimagesink_.get_raw(),
+                   nullptr);
+  gst_element_link_many(queue_.get_raw(),
+                        ffmpegcolorspace_.get_raw(),
+                        xvimagesink_.get_raw(),
+                        nullptr);
+  g_object_set(G_OBJECT(xvimagesink_.get_raw()),
                "draw-borders", TRUE,
-               "force-aspect-ratio", TRUE, "sync", FALSE, nullptr);
-
-  GstPad *sink_pad = gst_element_get_static_pad(queue_,
-                                                "sink");
+               "force-aspect-ratio", TRUE,
+               "sync", FALSE,
+               nullptr);
+  GstPad *sink_pad = gst_element_get_static_pad(queue_.get_raw(), "sink");
+  On_scope_exit{gst_object_unref(sink_pad);};
   GstPad *ghost_sinkpad = gst_ghost_pad_new(nullptr, sink_pad);
   gst_pad_set_active(ghost_sinkpad, TRUE);
-  gst_element_add_pad(sink_bin_, ghost_sinkpad);
-  gst_object_unref(sink_pad);
-
-  on_error_command_ = new QuiddityCommand();
-  on_error_command_->id_ = QuiddityCommand::remove;
-  on_error_command_->add_arg(get_nick_name());
-
-  g_object_set_data(G_OBJECT(xvimagesink_),
-                    "on-error-command",
-                    (gpointer) on_error_command_);
-
-  set_sink_element(sink_bin_);
-
+  gst_element_add_pad(sink_bin_.get_raw(), ghost_sinkpad);
+  g_object_set_data(G_OBJECT(xvimagesink_.get_raw()),
+                    "on-error-delete",
+                    (gpointer) get_nickname_cstr());
+  set_sink_element(sink_bin_.get_raw());
   return true;
 }
 

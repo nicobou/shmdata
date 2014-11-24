@@ -63,7 +63,9 @@ class Quiddity: public ConstMethodsInvoker<data::Tree> {
 
   // instance name
   std::string get_name();
+  const char *get_name_cstr();
   std::string get_nick_name();
+  const char *get_nickname_cstr();
   bool set_nick_name(std::string nick_name);
   bool set_name(std::string name);
 

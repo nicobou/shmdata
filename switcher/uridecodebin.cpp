@@ -462,8 +462,8 @@ Uridecodebin::uridecodebin_pad_added_cb(GstElement *object,
 
 void
 Uridecodebin::source_setup_cb(GstElement */*uridecodebin*/,
-                              GstElement *source,
-                              gpointer user_data) {
+                              GstElement */*source*/,
+                              gpointer /*user_data*/) {
   // Uridecodebin *context = static_cast<Uridecodebin *>(user_data);
   // g_debug("uridecodebin source element is %s %s\n",
   //         GST_ELEMENT_NAME(source),

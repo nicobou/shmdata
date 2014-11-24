@@ -27,9 +27,10 @@
 #include "./quiddity-command.hpp"
 #include "./decodebin-to-shmdata.hpp"
 #include "./g-source-wrapper.hpp"
+#include "./unique-gst-element.hpp"
 
 namespace switcher {
-class HTTPSDPDec:public GstPipeliner {
+class HTTPSDPDec: public GstPipeliner {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDPDec);
   HTTPSDPDec();

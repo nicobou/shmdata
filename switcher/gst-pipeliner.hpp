@@ -28,6 +28,7 @@
 #include <memory>
 #include <vector>
 #include <mutex>
+#include <string>
 #include "./quiddity.hpp"
 #include "./segment.hpp"
 #include "./gst-pipe.hpp"
@@ -77,6 +78,7 @@ class GstPipeliner: public Quiddity, public Segment {
   bool play_ {true};
   GParamSpec *seek_spec_ {nullptr};
   gdouble seek_ {0.0};
+  std::list<std::string> quids_to_remove_{};
 
   std::vector<QuidCommandArg *>commands_ {};
 
@@ -90,9 +92,12 @@ class GstPipeliner: public Quiddity, public Segment {
   static void set_seek(gdouble position, void *user_data);
   static gdouble get_seek(void *user_data);
   static gboolean speed_wrapped(gdouble speed, gpointer user_data);
+  static gboolean run_remove_quid(gpointer user_data);
   static gboolean run_command(gpointer user_data);
   static void print_one_tag(const GstTagList *list,
-                            const gchar *tag, gpointer user_data);
+                            const gchar *tag,
+                            gpointer user_data);
+  
 };
 }  // namespace switcher
 

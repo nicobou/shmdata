@@ -139,11 +139,19 @@ Quiddity::~Quiddity() {
 }
 
 std::string Quiddity::get_name() {
-  return std::string(name_);
+  return name_;
+}
+
+const char *Quiddity::get_name_cstr() {
+  return name_.c_str();
 }
 
 std::string Quiddity::get_nick_name() {
-  return std::string(nick_name_);
+  return nick_name_;
+}
+
+const char *Quiddity::get_nickname_cstr() {
+  return nick_name_.c_str();
 }
 
 bool Quiddity::set_name(std::string name) {
