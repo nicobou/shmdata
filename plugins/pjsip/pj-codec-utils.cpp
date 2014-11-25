@@ -52,8 +52,7 @@ PJCodecUtils::codecs PJCodecUtils::inspect_rtp_codecs() {
 }
 
 PJCodecUtils::codecs
-PJCodecUtils::inspect_rtp_codec_from_gst_element_factory
-(GstElementFactory *factory) {
+PJCodecUtils::inspect_rtp_codec_from_gst_element_factory(GstElementFactory *factory) {
   PJCodecUtils::codecs res;
 
   const GList *static_pads =
@@ -96,7 +95,6 @@ PJCodecUtils::inspect_rtp_codec_from_gst_element_factory
     static_pads = g_list_next(static_pads);
     gst_caps_unref(caps);
   }
-  // g_print ("------ %s, res size %lu\n",__FUNCTION__, res.size ());
   return res;
 }
 

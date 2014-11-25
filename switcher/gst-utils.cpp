@@ -222,13 +222,11 @@ GstUtils::set_element_property_in_bin(GstElement *bin,
     for (child = children; child != nullptr; child = g_list_next(child)) {
       GstElement *current_element = GST_ELEMENT(child->data);
       GstElementFactory *factory = gst_element_get_factory(current_element);
-
       // g_print ("The '%s' element is a member of the category %s.\n"
       //  "Description: %s\n",
       //  gst_plugin_feature_get_name (GST_PLUGIN_FEATURE (sub_factory)),
       //  gst_element_factory_get_klass (sub_factory),
       //  gst_element_factory_get_description (sub_factory));
-
       if (g_strcmp0(factory_name,
                     gst_plugin_feature_get_name(GST_PLUGIN_FEATURE(factory)))
           == 0) {
@@ -237,13 +235,13 @@ GstUtils::set_element_property_in_bin(GstElement *bin,
                      property_value, nullptr);
       }
 
-      if (GST_IS_BIN(current_element))  // recursive
-      {
+      if (GST_IS_BIN(current_element)) {  // recursive
         GstUtils::set_element_property_in_bin(current_element,
                                               factory_name,
                                               property_name,
                                               property_value);
       }
+      
     }
   }
 }
@@ -265,7 +263,6 @@ GstUtils::get_first_element_from_factory_name(GstBin *bin,
   for (child = children; child != nullptr; child = g_list_next(child)) {
     GstElement *current_element = GST_ELEMENT(child->data);
     GstElementFactory *factory = gst_element_get_factory(current_element);
-    
     if (factory_name == gst_plugin_feature_get_name(GST_PLUGIN_FEATURE(factory))) {
       return current_element;
     }
