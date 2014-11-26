@@ -24,16 +24,6 @@
 
 namespace switcher {
 VideoSource::VideoSource():
-    videocaps_(gst_caps_new_simple("video/x-raw-yuv",
-                                   // "format", GST_TYPE_FOURCC,
-                                   // GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y'),
-                                   // "format", GST_TYPE_FOURCC,
-                                   // GST_MAKE_FOURCC ('I', '4', '2', '0'),
-                                   // "framerate", GST_TYPE_FRACTION, 30, 1,
-                                   // "pixel-aspect-ratio", GST_TYPE_FRACTION, 1, 1,
-                                   //  "width", G_TYPE_INT, 640,
-                                   //  "height", G_TYPE_INT, 480,
-                                   nullptr)),
     custom_props_(std::make_shared<CustomPropertyHelper>()),
     video_output_format_(std2::make_unique<DefaultVideoFormat>(this)) {
   init_startable(this);
@@ -85,7 +75,6 @@ VideoSource::~VideoSource() {
   GstUtils::clean_element(codec_element_);
   GstUtils::clean_element(queue_codec_element_);
   GstUtils::clean_element(color_space_codec_element_);
-  gst_caps_unref(videocaps_);
   GstUtils::free_g_enum_values(primary_codec_);
   GstUtils::free_g_enum_values(secondary_codec_);
 }
@@ -111,32 +100,25 @@ bool VideoSource::make_new_shmdatas() {
   GstElement *capsfilter = NULL;
   GstUtils::make_element("capsfilter", &capsfilter);
     std::string caps_str = video_output_format_->get_caps_str();
-    g_print("%s %d %s\n", __FUNCTION__, __LINE__, caps_str.c_str());
     GstCaps *usercaps = gst_caps_from_string(caps_str.c_str());
     g_object_set(G_OBJECT(capsfilter),
                  "caps", usercaps,
                  nullptr);
     gst_caps_unref(usercaps);
-    g_print("%s %d %s\n", __FUNCTION__, __LINE__, caps_str.c_str());
   gst_bin_add_many(GST_BIN(get_bin()),
                    rawvideo_,
                    video_tee_,
                    colorspace,
                    capsfilter,
                    nullptr);
-  g_print("%s %d %s\n", __FUNCTION__, __LINE__, caps_str.c_str());
   gst_element_link_many(rawvideo_,
                         video_tee_,
                         colorspace,
                         capsfilter,
                         nullptr);
-  g_print("%s %d %s\n", __FUNCTION__, __LINE__, caps_str.c_str());
-
   ShmdataWriter::ptr shmdata_writer = std::make_shared<ShmdataWriter>();
   shmdata_path_ = make_file_name("video");
   shmdata_writer->set_path(shmdata_path_.c_str());
-  // FIXME remove videocaps_
-  //shmdata_writer->plug(get_bin(), video_tee_, videocaps_);
   g_print("%s %d %s\n", __FUNCTION__, __LINE__, caps_str.c_str());
   GstCaps *caps = gst_caps_new_simple(caps_str.c_str(),
                                       nullptr);

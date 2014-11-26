@@ -40,7 +40,6 @@ class VideoSource: public GstPipeliner, public StartableQuiddity {
  private:
   GstElement *rawvideo_{nullptr};
   GstElement *video_tee_{nullptr};
-  GstCaps *videocaps_{nullptr};
   std::string shmdata_path_{};
   // custom properties:
   CustomPropertyHelper::ptr custom_props_{};
