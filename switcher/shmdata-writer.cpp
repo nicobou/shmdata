@@ -88,6 +88,7 @@ ShmdataWriter::plug(GstElement *bin,
                    tee_.get_raw(), queue_.get_raw(),
                    fakesink_.get_raw(), nullptr);
   shmdata_base_writer_plug(writer_, bin, tee_.get_raw());
+  // FIXME link_filtered might not be necessary
   gst_element_link_filtered(source_element, tee_.get_raw(), caps);
   gst_element_link_many(tee_.get_raw(),
                         queue_.get_raw(),
@@ -141,7 +142,8 @@ void ShmdataWriter::plug(GstElement *bin, GstPad *source_pad) {
 void
 ShmdataWriter::on_handoff_cb(GstElement *object,
                              GstBuffer *buf,
-                             GstPad *pad, gpointer user_data) {
+                             GstPad *pad,
+                             gpointer user_data) {
   ShmdataWriter *context = static_cast<ShmdataWriter *>(user_data);
   GstCaps *caps = gst_pad_get_negotiated_caps(pad);
   if (nullptr == caps)

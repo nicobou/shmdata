@@ -20,8 +20,8 @@
 #include <fcntl.h>
 #include <string.h>
 
-#include <cstdlib>              // For srand() and rand()
-#include <ctime>                // For time()
+#include <cstdlib>  // For srand() and rand()
+#include <ctime>  // For time()
 
 #include "./v4l2src.hpp"
 #include "switcher/gst-utils.hpp"
@@ -392,14 +392,12 @@ bool V4L2Src::inspect_file_device(const char *file_path) {
     if (fmt.pixelformat != 0) {
       if (default_pixel_format == 0)
         default_pixel_format = fmt.pixelformat;
-      // g_print ("******** pixel format  %s - %s\n",
-      //      pixel_format_to_string(fmt.pixelformat).c_str (),
-      //      (const char *)fmt.description);
-      description.pixel_formats_.push_back(std::make_pair
-                                           (pixel_format_to_string
-                                            (fmt.pixelformat),
-                                            (const char *)
-                                            fmt.description));
+      g_print ("******** pixel format  %s - %s\n",
+               pixel_format_to_string(fmt.pixelformat).c_str (),
+               (const char *)fmt.description);
+      description.pixel_formats_.push_back(
+          std::make_pair(pixel_format_to_string(fmt.pixelformat),
+                         (const char *)fmt.description));
     }
     fmt.index++;
   }

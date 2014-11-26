@@ -31,6 +31,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     custom-property-helper.cpp \
     decodebin-to-shmdata.cpp \
     decodebin2.cpp \
+    default-video-format.cpp \
     deinterleave.cpp \
     fake-shmdata-writer.cpp \
     fakesink.cpp \
@@ -119,6 +120,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     custom-property-helper.hpp \
     decodebin-to-shmdata.hpp \
     decodebin2.hpp \
+    default-video-format.hpp \
     deinterleave.hpp \
     fake-shmdata-writer.hpp \
     fakesink.hpp \

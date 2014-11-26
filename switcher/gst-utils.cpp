@@ -380,7 +380,7 @@ GstUtils::element_factory_list_to_g_enum(GEnumValue *target_enum,
   GList *iter = element_list;
   target_enum[0].value = 0;
   target_enum[0].value_name = g_strdup("None");
-  target_enum[0].value_nick = g_strdup("None");;
+  target_enum[0].value_nick = g_strdup("None");
   gint i = 1;
   while (iter != nullptr) {
     target_enum[i].value = i;

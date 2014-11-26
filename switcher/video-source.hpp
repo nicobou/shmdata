@@ -20,13 +20,14 @@
 #ifndef __SWITCHER_VIDEO_SOURCE_H__
 #define __SWITCHER_VIDEO_SOURCE_H__
 
+#include <memory>
 #include "./gst-pipeliner.hpp"
 #include "./gst-element-cleaner.hpp"
 #include "./startable-quiddity.hpp"
-#include <memory>
+#include "./default-video-format.hpp"
 
 namespace switcher {
-class VideoSource:public GstPipeliner, public StartableQuiddity {
+class VideoSource: public GstPipeliner, public StartableQuiddity {
  public:
   typedef std::shared_ptr<VideoSource> ptr;
   VideoSource();
@@ -56,7 +57,8 @@ class VideoSource:public GstPipeliner, public StartableQuiddity {
   GstElement *queue_codec_element_{nullptr};
   GstElement *color_space_codec_element_{nullptr};
   std::vector<std::string> codec_properties_{};
-
+  DefaultVideoFormat::uptr video_output_format_{};
+  
   virtual bool on_start() {
     return true;
   }

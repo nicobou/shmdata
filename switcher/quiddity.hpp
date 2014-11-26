@@ -47,7 +47,8 @@ class QuiddityManager_Impl;
 class Quiddity: public ConstMethodsInvoker<data::Tree> {
   friend class StartableQuiddity;
   friend class Segment;
-
+  friend class DefaultVideoFormat;
+  
  public:
   typedef std::shared_ptr<Quiddity> ptr;
   Quiddity();

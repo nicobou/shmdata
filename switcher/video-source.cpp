@@ -19,6 +19,8 @@
 
 #include "./video-source.hpp"
 #include "./gst-utils.hpp"
+#include "./std2.hpp"
+#include "./scope-exit.hpp"
 
 namespace switcher {
 VideoSource::VideoSource():
@@ -32,7 +34,8 @@ VideoSource::VideoSource():
                                    //  "width", G_TYPE_INT, 640,
                                    //  "height", G_TYPE_INT, 480,
                                    nullptr)),
-    custom_props_(std::make_shared<CustomPropertyHelper>()) {
+    custom_props_(std::make_shared<CustomPropertyHelper>()),
+    video_output_format_(std2::make_unique<DefaultVideoFormat>(this)) {
   init_startable(this);
   GstUtils::element_factory_list_to_g_enum(primary_codec_,
                                            GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
@@ -48,7 +51,8 @@ VideoSource::VideoSource():
                                         primary_codec_,
                                         (GParamFlags) G_PARAM_READWRITE,
                                         VideoSource::set_codec,
-                                        VideoSource::get_codec, this);
+                                        VideoSource::get_codec,
+                                        this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             primary_codec_spec_,
                             "codec", "Video Codecs (Short List)");
@@ -59,8 +63,8 @@ VideoSource::VideoSource():
                                         secondary_codec_,
                                         (GParamFlags) G_PARAM_READWRITE,
                                         VideoSource::set_codec,
-                                        VideoSource::get_codec, this);
-
+                                        VideoSource::get_codec,
+                                        this);
   codec_long_list_spec_ =
       custom_props_->make_boolean_property("more_codecs",
                                            "Get More codecs",
@@ -72,8 +76,8 @@ VideoSource::VideoSource():
   install_property_by_pspec(custom_props_->get_gobject(),
                             codec_long_list_spec_,
                             "more_codecs", "More Codecs");
-
   make_codec_properties();
+  video_output_format_->make_format_property("format", "Convert Raw Ouput Video Format To");
 }
 
 VideoSource::~VideoSource() {
@@ -100,23 +104,50 @@ bool VideoSource::make_new_shmdatas() {
   reset_bin();
   if (!GstUtils::make_element("tee", &video_tee_)) {
     g_warning("missing element for starting video source\n");
-    
     return false;
   }
-  gst_bin_add_many(GST_BIN(get_bin()), video_tee_, nullptr);
+  GstElement *colorspace = NULL;
+  GstUtils::make_element("ffmpegcolorspace", &colorspace);
+  GstElement *capsfilter = NULL;
+  GstUtils::make_element("capsfilter", &capsfilter);
+    std::string caps_str = video_output_format_->get_caps_str();
+    g_print("%s %d %s\n", __FUNCTION__, __LINE__, caps_str.c_str());
+    GstCaps *usercaps = gst_caps_from_string(caps_str.c_str());
+    g_object_set(G_OBJECT(capsfilter),
+                 "caps", usercaps,
+                 nullptr);
+    gst_caps_unref(usercaps);
+    g_print("%s %d %s\n", __FUNCTION__, __LINE__, caps_str.c_str());
+  gst_bin_add_many(GST_BIN(get_bin()),
+                   rawvideo_,
+                   video_tee_,
+                   colorspace,
+                   capsfilter,
+                   nullptr);
+  g_print("%s %d %s\n", __FUNCTION__, __LINE__, caps_str.c_str());
+  gst_element_link_many(rawvideo_,
+                        video_tee_,
+                        colorspace,
+                        capsfilter,
+                        nullptr);
+  g_print("%s %d %s\n", __FUNCTION__, __LINE__, caps_str.c_str());
 
-  gst_bin_add(GST_BIN(get_bin()), rawvideo_);
-  gst_element_link(rawvideo_, video_tee_);
-
-  ShmdataWriter::ptr shmdata_writer;
-  shmdata_writer.reset(new ShmdataWriter());
+  ShmdataWriter::ptr shmdata_writer = std::make_shared<ShmdataWriter>();
   shmdata_path_ = make_file_name("video");
   shmdata_writer->set_path(shmdata_path_.c_str());
-  shmdata_writer->plug(get_bin(), video_tee_, videocaps_);
+  // FIXME remove videocaps_
+  //shmdata_writer->plug(get_bin(), video_tee_, videocaps_);
+  g_print("%s %d %s\n", __FUNCTION__, __LINE__, caps_str.c_str());
+  GstCaps *caps = gst_caps_new_simple(caps_str.c_str(),
+                                      nullptr);
+  On_scope_exit{gst_caps_unref(caps);};
+  shmdata_writer->plug(get_bin(), capsfilter, caps);
   register_shmdata(shmdata_writer);
 
   GstUtils::sync_state_with_parent(rawvideo_);
   GstUtils::sync_state_with_parent(video_tee_);
+  GstUtils::sync_state_with_parent(colorspace);
+  GstUtils::sync_state_with_parent(capsfilter);
 
   if (codec_ != 0) {
     remake_codec_elements();
