@@ -71,9 +71,6 @@ bool MyPlugin::init() {
   return true;
 }
 
-MyPlugin::~MyPlugin() {
-}
-
 gboolean MyPlugin::get_myprop(void *user_data) {
   MyPlugin *context = static_cast<MyPlugin *>(user_data);
   return context->myprop_;
@@ -86,12 +83,12 @@ void MyPlugin::set_myprop(gboolean myprop, void *user_data) {
                                           context->myprop_prop_);
 }
 
-const gchar *MyPlugin::my_hello_world_method(gchar *first_arg, void *user_data) {
+gchar *MyPlugin::my_hello_world_method(gchar *first_arg, void *user_data) {
   MyPlugin *context = static_cast<MyPlugin *>(user_data);
-
   g_debug("hello world from myplugin");
-  context->hello_ += first_arg;
-  return context->hello_.c_str();
+  context->hello_ = std::string("hello ") + first_arg;
+  // the g_free will be invoked by the method system:
+  return g_strdup(context->hello_.c_str());  
 }
 
 bool MyPlugin::start() {

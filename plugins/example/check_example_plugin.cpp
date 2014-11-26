@@ -17,11 +17,12 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "switcher/quiddity-manager.hpp"
-#include "switcher/quiddity-basic-test.hpp"
+#include <cassert>
 #include <vector>
 #include <string>
 #include <iostream>
+#include "switcher/quiddity-manager.hpp"
+#include "switcher/quiddity-basic-test.hpp"
 
 #ifdef HAVE_CONFIG_H
 #include "../../config.h"
@@ -29,12 +30,9 @@
 
 int
 main() {
-  bool success = true;
-
   {
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager("test_manager");
-
 #ifdef HAVE_CONFIG_H
     gchar *usr_plugin_dir = g_strdup_printf("./%s", LT_OBJDIR);
     manager->scan_directory_for_plugins(usr_plugin_dir);
@@ -43,38 +41,27 @@ main() {
     return 1;
 #endif
 
-    if (!switcher::QuiddityBasicTest::test_full(manager, "myplugin"))
-      success = false;
+    assert(switcher::QuiddityBasicTest::test_full(manager, "myplugin"));
 
     // creating a "myplugin" quiddity
-    if (g_strcmp0(manager->create("myplugin", "test").c_str(), "test") != 0)
-      success = false;
+    assert(manager->create("myplugin", "test") == "test");
 
     // testing myprop property
-    if (!manager->set_property("test", "myprop", "true"))
-      success = false;
+    assert(manager->set_property("test", "myprop", "true"));
+    assert(manager->get_property("test", "myprop") == "true");
 
+    // get json formated information
     std::string info = manager->get_info("test", "custom.information");
-    std::cout << info << std::endl;
+    // std::cout << info << std::endl;
 
-    // if (g_strcmp0 (manager->get_property ("test", "myprop").c_str (), "true") != 0)
-    //   success = false;
-
-    //     // testing hello-world method
-    //     std::string *res;
-    //     if (!manager->invoke_va ("test", "hello-world", &res, "Nico", nullptr))
-    //       success = false;
-    //     if (g_strcmp0 (res->c_str (), "hello Nico") != 0)
-    //       success = false;
-    //     delete res;
-
-    //     // removing the quiddity
-    //     if (!manager->remove ("test"))
-    //       success = false;
-  }                             // end of scope is releasing the manager
-
-  if (success)
-    return 0;
-  else
-    return 1;
+    // testing hello-world method
+    std::string *res = nullptr;
+    assert(manager->invoke_va("test", "hello-world", &res, "Nico", nullptr));
+    assert(*res == "hello Nico");
+    delete res;
+    
+    // removing the quiddity
+    assert(manager->remove ("test"));
+  }  // end of scope is releasing the manager
+  return 0;
 }
