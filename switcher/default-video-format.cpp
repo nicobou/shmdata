@@ -29,6 +29,12 @@ void DefaultVideoFormat::make_format_property(const char *name,
                                                     const char *display_text) {
   GstElementFactory *factory = gst_element_factory_find("ffmpegcolorspace"); 
   const GList *list = gst_element_factory_get_static_pad_templates(factory);  
+  // first option is do not format
+  caps_.emplace_back("none");
+  formats_.emplace_back("Do not apply");
+  video_format_[0].value = 0;
+  video_format_[0].value_name = formats_.back().c_str();
+  video_format_[0].value_nick = caps_.back().c_str();
   guint i = 0;  
   while (NULL != list) {  
     GstStaticPadTemplate *templ = (GstStaticPadTemplate *)list->data;  
@@ -40,7 +46,7 @@ void DefaultVideoFormat::make_format_property(const char *name,
       guint size = gst_caps_get_size(copy);  
       i = 0;
       for (; i < size; i++) {  
-        GstStructure *structure = gst_caps_get_structure(copy, i);  
+        GstStructure *structure = gst_caps_get_structure(copy, i );  
         gst_structure_remove_fields(structure,  
                                     "format", "width", "height", "framerate",  
                                     NULL);  
@@ -51,7 +57,6 @@ void DefaultVideoFormat::make_format_property(const char *name,
         // copying the caps
         GstCaps *copy_nth = gst_caps_copy_nth(copy, i);   
         gchar *caps_str = gst_caps_to_string(copy_nth);
-        g_print("caps %s\n", caps_str);
         caps_.emplace_back(caps_str);
         // reducing the string for menu display
         std::string format(std::string(caps_str), 12);  // removing video/x-raw-
@@ -63,10 +68,9 @@ void DefaultVideoFormat::make_format_property(const char *name,
         }
         formats_.emplace_back(std::move(format));
         //
-        video_format_[i].value = i;
-        video_format_[i].value_name = formats_.back().c_str();
-        video_format_[i].value_nick = caps_.back().c_str();
-        g_print("    caps num %u is %s\n", i, caps_.back().c_str());   
+        video_format_[i+1].value = i+1;
+        video_format_[i+1].value_name = formats_.back().c_str();
+        video_format_[i+1].value_nick = caps_.back().c_str();
         g_free(caps_str);   
         gst_caps_unref(copy_nth);   
       }  
@@ -106,8 +110,6 @@ gint DefaultVideoFormat::get_format(void *user_data) {
 }
 
 std::string DefaultVideoFormat::get_caps_str() {
-  g_print("%s %s\n",
-          __FUNCTION__, caps_[format_].c_str());
   return caps_[format_];  
 }
 

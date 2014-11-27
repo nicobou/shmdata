@@ -19,56 +19,29 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #include <string.h>
-
 #include <cstdlib>  // For srand() and rand()
 #include <ctime>  // For time()
-
-#include "./v4l2src.hpp"
 #include "switcher/gst-utils.hpp"
+#include "switcher/scope-exit.hpp"
+#include "./v4l2src.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(V4L2Src,
-                                     "v4l2 Video Capture",
-                                     "video",
-                                     "Discover and use v4l2 supported capture cards and cameras",
-                                     "GPL",
-                                     "v4l2src",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    V4L2Src,
+    "v4l2 Video Capture",
+    "video",
+    "Discover and use v4l2 supported capture cards and cameras",
+    "GPL",
+    "v4l2src",
+    "Nicolas Bouillot");
 
 V4L2Src::V4L2Src():
-    v4l2src_(nullptr),
-    v4l2_bin_(nullptr),
-    capsfilter_(nullptr),
-    custom_props_(new CustomPropertyHelper()),
-    capture_devices_description_spec_(nullptr),
-    capture_devices_description_(nullptr),
-    devices_enum_spec_(nullptr),
-    devices_enum_(),
-    device_(0),
-    resolutions_spec_(nullptr),
-    resolutions_enum_(),
-    resolution_(0),
-    width_spec_(nullptr),
-    height_spec_(nullptr),
-    width_(0),
-    height_(0),
-    tv_standards_spec_(nullptr),
-    tv_standards_enum_(),
-  tv_standard_(0),
-  framerate_spec_(nullptr),
-  framerates_enum_(),
-  framerate_(-1),
-  framerate_numerator_spec_(nullptr),
-  framerate_denominator_spec_(nullptr),
-  framerate_numerator_(0),
-  framerate_denominator_(1),
-  capture_devices_() {
+    custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 
 bool V4L2Src::init_gpipe() {
   if (!make_elements())
     return false;
-
   // device inspector
   check_folder_for_v4l2_devices("/dev");
   update_capture_device();
@@ -81,15 +54,15 @@ bool V4L2Src::init_gpipe() {
       custom_props_->make_string_property("devices-json",
                                           "Description of capture devices (json formated)",
                                           get_capture_devices_json(this),
-                                          (GParamFlags) G_PARAM_READABLE,
+                                          (GParamFlags)G_PARAM_READABLE,
                                           nullptr,
                                           V4L2Src::get_capture_devices_json,
                                           this);
 
   install_property_by_pspec(custom_props_->get_gobject(),
                             capture_devices_description_spec_,
-                            "devices-json", "Capture Devices");
-
+                            "devices-json",
+                            "Capture Devices");
   devices_enum_spec_ =
       custom_props_->make_enum_property("device",
                                         "Enumeration of v4l2 capture devices",
@@ -110,7 +83,7 @@ void V4L2Src::update_capture_device() {
   gint i = 0;
   for (auto &it : capture_devices_) {
     devices_enum_[i].value = i;
-    // FIXME previous free here
+    // FIXME free previous...
     devices_enum_[i].value_name = g_strdup(it.card_.c_str());
     devices_enum_[i].value_nick = g_strdup(it.file_device_.c_str());
     i++;
@@ -123,8 +96,8 @@ void V4L2Src::update_capture_device() {
 void V4L2Src::update_device_specific_properties(gint device_enum_id) {
   if (capture_devices_.empty())
     return;
-  CaptureDescription cap_descr = capture_devices_.at(device_enum_id);
-
+  CaptureDescription cap_descr = capture_devices_[device_enum_id];
+  update_pixel_format(cap_descr);
   update_discrete_resolution(cap_descr);
   update_width_height(cap_descr);
   update_tv_standard(cap_descr);
@@ -132,7 +105,7 @@ void V4L2Src::update_device_specific_properties(gint device_enum_id) {
   update_framerate_numerator_denominator(cap_descr);
 }
 
-void V4L2Src::update_discrete_resolution(CaptureDescription cap_descr) {
+void V4L2Src::update_discrete_resolution(const CaptureDescription &cap_descr) {
   uninstall_property("resolution");
   // resolution_ = -1;
   if (!cap_descr.frame_size_discrete_.empty()) {
@@ -167,7 +140,7 @@ void V4L2Src::update_discrete_resolution(CaptureDescription cap_descr) {
   }
 }
 
-void V4L2Src::update_discrete_framerate(CaptureDescription cap_descr) {
+void V4L2Src::update_discrete_framerate(const CaptureDescription &cap_descr) {
   uninstall_property("framerate");
   // framerate_ = -1;
   if (!cap_descr.frame_interval_discrete_.empty()) {
@@ -175,7 +148,8 @@ void V4L2Src::update_discrete_framerate(CaptureDescription cap_descr) {
     for (auto &it : cap_descr.frame_interval_discrete_) {
       framerates_enum_[i].value = i;
       // FIXME free previous here
-      // inversing enumerator and denominator because gst wants framerate while v4l2 gives frame interval
+      // inversing enumerator and denominator because gst wants
+      // framerate while v4l2 gives frame interval
       framerates_enum_[i].value_name = g_strdup_printf("%s/%s",
                                                        it.second.c_str(),
                                                        it.first.c_str());
@@ -187,22 +161,58 @@ void V4L2Src::update_discrete_framerate(CaptureDescription cap_descr) {
     framerates_enum_[i].value_nick = nullptr;
 
     if (framerate_spec_ == nullptr)
-      framerate_spec_ = custom_props_->make_enum_property("framerate",
-                                                          "framerate of selected capture devices",
-                                                          0,
-                                                          framerates_enum_,
-                                                          (GParamFlags)
-                                                          G_PARAM_READWRITE,
-                                                          V4L2Src::set_framerate,
-                                                          V4L2Src::get_framerate,
-                                                          this);
+      framerate_spec_ =
+          custom_props_->make_enum_property("framerate",
+                                            "framerate of selected capture devices",
+                                            0,
+                                            framerates_enum_,
+                                            (GParamFlags)
+                                            G_PARAM_READWRITE,
+                                            V4L2Src::set_framerate,
+                                            V4L2Src::get_framerate,
+                                            this);
     // framerate_ = 0;
     install_property_by_pspec(custom_props_->get_gobject(),
                               framerate_spec_, "framerate", "Framerate");
   }
 }
 
-void V4L2Src::update_width_height(CaptureDescription cap_descr) {
+void V4L2Src::update_pixel_format(const CaptureDescription &cap_descr) {
+  uninstall_property("pixelformat");
+  if (!cap_descr.pixel_formats_.empty()) {
+    gint i = 0;
+    for (auto &it : cap_descr.pixel_formats_) {
+      pixel_format_enum_[i].value = i;
+      // FIXME free previous here
+      // inversing enumerator and denominator because gst wants
+      // framerate while v4l2 gives frame interval
+      pixel_format_enum_[i].value_name = g_strdup(it.second.c_str()); 
+      pixel_format_enum_[i].value_nick = g_strdup(it.first.c_str());
+      i++;
+    }
+    pixel_format_enum_[i].value = 0;
+    pixel_format_enum_[i].value_name = nullptr;
+    pixel_format_enum_[i].value_nick = nullptr;
+
+    if (pixel_format_spec_ == nullptr)
+      pixel_format_spec_ =
+          custom_props_->make_enum_property("pixelformat",
+                                            "Capture Pixel Format",
+                                            0,
+                                            pixel_format_enum_,
+                                            (GParamFlags)
+                                            G_PARAM_READWRITE,
+                                            V4L2Src::set_pixel_format,
+                                            V4L2Src::get_pixel_format,
+                                            this);
+    install_property_by_pspec(custom_props_->get_gobject(),
+                              pixel_format_spec_,
+                              "pixelformat",
+                              "Capture Pixel Format");
+  }
+}
+
+void V4L2Src::update_width_height(const CaptureDescription &cap_descr) {
   uninstall_property("width");
   uninstall_property("height");
   // width_ = -1;
@@ -241,34 +251,31 @@ void V4L2Src::update_width_height(CaptureDescription cap_descr) {
   }
 }
 
-void
-V4L2Src::update_framerate_numerator_denominator(CaptureDescription
-                                                cap_descr) {
+void V4L2Src::update_framerate_numerator_denominator(const CaptureDescription &cap_descr) {
   uninstall_property("framerate_numerator");
   uninstall_property("framerate_denominator");
-  // framerate_numerator_ = -1;
-  // framerate_denominator_ = -1;
   if (cap_descr.frame_interval_stepwise_max_numerator_ > 0) {
-    // framerate_numerator_ = 60;
-
     if (framerate_numerator_spec_ == nullptr)
-      framerate_numerator_spec_ = custom_props_->make_int_property("framerate_numerator", "framerate numerator of selected capture devices", 1,       // FIXME do actually use values
-                                                                   60,
-                                                                   60,
-                                                                   (GParamFlags)
-                                                                   G_PARAM_READWRITE,
-                                                                   V4L2Src::set_framerate_numerator,
-                                                                   V4L2Src::get_framerate_numerator,
-                                                                   this);
+      framerate_numerator_spec_ = custom_props_->
+          make_int_property("framerate_numerator",
+                            "framerate numerator",
+                            1, // FIXME do actually use values
+                            60,
+                            30,
+                            (GParamFlags)
+                            G_PARAM_READWRITE,
+                            V4L2Src::set_framerate_numerator,
+                            V4L2Src::get_framerate_numerator,
+                            this);
     install_property_by_pspec(custom_props_->get_gobject(),
                               framerate_numerator_spec_,
-                              "framerate_numerator", "Framerate Numerator");
-
+                              "framerate_numerator",
+                              "Framerate Numerator");
     framerate_denominator_ = 1;
     if (framerate_denominator_spec_ == nullptr)
       framerate_denominator_spec_ =
           custom_props_->make_int_property("framerate_denominator",
-                                           "Framerate denominator of selected capture devices",
+                                           "Framerate denominator",
                                            1,
                                            1,
                                            1,
@@ -284,7 +291,7 @@ V4L2Src::update_framerate_numerator_denominator(CaptureDescription
   }
 }
 
-void V4L2Src::update_tv_standard(CaptureDescription cap_descr) {
+void V4L2Src::update_tv_standard(const CaptureDescription &cap_descr) {
   uninstall_property("tv_standard");
   // tv_standard_ = -1;
   if (!cap_descr.tv_standards_.empty()) {
@@ -313,36 +320,31 @@ void V4L2Src::update_tv_standard(CaptureDescription cap_descr) {
     // tv_standard_ = 0;
     install_property_by_pspec(custom_props_->get_gobject(),
                               tv_standards_spec_,
-                              "tv_standard", "TV Standard");
+                              "tv_standard",
+                              "TV Standard");
   }
 }
 
 V4L2Src::~V4L2Src() {
   if (capture_devices_description_ != nullptr)
     g_free(capture_devices_description_);
-  // clean_elements ();
 }
 
 bool V4L2Src::make_elements() {
   clean_elements();
-
   if (!GstUtils::make_element("v4l2src", &v4l2src_))
     return false;
   if (!GstUtils::make_element("capsfilter", &capsfilter_))
     return false;
   if (!GstUtils::make_element("bin", &v4l2_bin_))
     return false;
-
   gst_bin_add_many(GST_BIN(v4l2_bin_), v4l2src_, capsfilter_, nullptr);
-
   gst_element_link(v4l2src_, capsfilter_);
-
   GstPad *src_pad = gst_element_get_static_pad(capsfilter_, "src");
   GstPad *ghost_srcpad = gst_ghost_pad_new(nullptr, src_pad);
   gst_pad_set_active(ghost_srcpad, TRUE);
   gst_element_add_pad(v4l2_bin_, ghost_srcpad);
   gst_object_unref(src_pad);
-
   return true;
 }
 
@@ -361,22 +363,17 @@ std::string V4L2Src::pixel_format_to_string(unsigned pf_id) {
 
 bool V4L2Src::inspect_file_device(const char *file_path) {
   int fd = open(file_path, O_RDWR);
-
   if (fd < 0) {
     g_debug("V4L2Src: inspecting file gets negative file descriptor");
     return false;
   }
-
   CaptureDescription description;
-
   struct v4l2_capability vcap;
   ioctl(fd, VIDIOC_QUERYCAP, &vcap);
-
   description.file_device_ = file_path;
-  description.card_ = (char *) vcap.card;
-  description.bus_info_ = (char *) vcap.bus_info;
-  description.driver_ = (char *) vcap.driver;
-
+  description.card_ = (char *)vcap.card;
+  description.bus_info_ = (char *)vcap.bus_info;
+  description.driver_ = (char *)vcap.driver;
   // g_print ("-------------------------- card %s bus %s driver %s\n",
   //        (char *)vcap.card,
   //        (char *)vcap.bus_info,
@@ -392,21 +389,29 @@ bool V4L2Src::inspect_file_device(const char *file_path) {
     if (fmt.pixelformat != 0) {
       if (default_pixel_format == 0)
         default_pixel_format = fmt.pixelformat;
-      g_print ("******** pixel format  %s - %s\n",
-               pixel_format_to_string(fmt.pixelformat).c_str (),
-               (const char *)fmt.description);
-      description.pixel_formats_.push_back(
-          std::make_pair(pixel_format_to_string(fmt.pixelformat),
-                         (const char *)fmt.description));
+      // g_print ("******** pixel format  %s \n %s",
+      //          pixel_format_to_string(fmt.pixelformat).c_str (),
+      //          (const char *)fmt.description);
+      GstStructure *structure = gst_v4l2_object_v4l2fourcc_to_structure(fmt.pixelformat);
+      if (nullptr != structure) {
+        GstCaps *caps = gst_caps_new_full(structure, nullptr);
+        On_scope_exit{gst_caps_unref(caps);};
+        gchar *tmp = gst_caps_to_string(caps);
+        On_scope_exit{g_free(tmp);};
+        description.pixel_formats_.push_back(
+            std::make_pair(std::string(tmp),
+                           (const char *)fmt.description));
+      } else {
+        g_warning("v4l2: pixel format %s not suported",
+                  pixel_format_to_string(fmt.pixelformat).c_str());
+      }
     }
     fmt.index++;
   }
-
   if (default_pixel_format == 0) {
     g_debug("no default pixel format found for %s, returning", file_path);
     return false;
   }
-
   v4l2_frmsizeenum frmsize;
   memset(&frmsize, 0, sizeof(frmsize));
   frmsize.pixel_format = default_pixel_format;
@@ -429,7 +434,6 @@ bool V4L2Src::inspect_file_device(const char *file_path) {
     //  frmsize.discrete.height);
     frmsize.index++;
   }
-
   if (frmsize.type != V4L2_FRMSIZE_TYPE_DISCRETE) {
     description.frame_size_stepwise_max_width_ = frmsize.stepwise.max_width;
     description.frame_size_stepwise_min_width_ = frmsize.stepwise.min_width;
@@ -454,7 +458,6 @@ bool V4L2Src::inspect_file_device(const char *file_path) {
     description.frame_size_stepwise_min_height_ = -1;
     description.frame_size_stepwise_step_height_ = -1;
   }
-
   v4l2_standard std;
   memset(&std, 0, sizeof(std));
   std.index = 0;
@@ -464,14 +467,12 @@ bool V4L2Src::inspect_file_device(const char *file_path) {
     // g_print ("TV standard %s\n", (char *)std.name);
     std.index++;
   }
-
   v4l2_frmivalenum frmival;
   memset(&frmival, 0, sizeof(frmival));
   frmival.pixel_format = default_pixel_format;
   frmival.width = default_width;
   frmival.height = default_height;
   frmival.index = 0;
-
   // g_print ("frame interval for default pixel format and default frame size:\n");
   while (ioctl(fd, VIDIOC_ENUM_FRAMEINTERVALS, &frmival) >= 0
          && frmival.type == V4L2_FRMIVAL_TYPE_DISCRETE) {
@@ -479,7 +480,6 @@ bool V4L2Src::inspect_file_device(const char *file_path) {
       char *numerator = g_strdup_printf("%u", frmival.discrete.numerator);
       char *denominator =
           g_strdup_printf("%u", frmival.discrete.denominator);
-
       description.
           frame_interval_discrete_.push_back(std::
                                              make_pair(numerator,
@@ -503,7 +503,6 @@ bool V4L2Src::inspect_file_device(const char *file_path) {
     //   frmival.stepwise.max.denominator,
     //   frmival.stepwise.step.numerator,
     //   frmival.stepwise.step.denominator);
-
     description.frame_interval_stepwise_max_numerator_ =
         frmival.stepwise.max.numerator;
     description.frame_interval_stepwise_max_denominator_ =
@@ -528,21 +527,18 @@ bool V4L2Src::inspect_file_device(const char *file_path) {
     description.frame_interval_stepwise_step_denominator_ = -1;
   }
   close(fd);
-
   capture_devices_.push_back(description);
   return true;
 }
 
 bool V4L2Src::check_folder_for_v4l2_devices(const char *dir_path) {
   GFile *inspected_dir = g_file_new_for_commandline_arg(dir_path);
-
   gboolean res;
   GError *error;
   GFileEnumerator *enumerator;
   GFileInfo *info;
   GFile *descend;
   char *absolute_path;
-
   error = nullptr;
   enumerator =
       g_file_enumerate_children(inspected_dir, "*",
@@ -555,7 +551,6 @@ bool V4L2Src::check_folder_for_v4l2_devices(const char *dir_path) {
   while ((info) && (!error)) {
     descend = g_file_get_child(inspected_dir, g_file_info_get_name(info));
     absolute_path = g_file_get_path(descend);
-
     if (g_str_has_prefix(absolute_path, "/dev/video")
         /*|| g_str_has_prefix (absolute_path, "/dev/radio")
           || g_str_has_prefix (absolute_path, "/dev/vbi")
@@ -563,15 +558,12 @@ bool V4L2Src::check_folder_for_v4l2_devices(const char *dir_path) {
         ) {
       inspect_file_device(absolute_path);
     }
-
     g_object_unref(descend);
     error = nullptr;
     info = g_file_enumerator_next_file(enumerator, nullptr, &error);
   }
-
   if (error != nullptr)
     g_debug("error not nullptr");
-
   error = nullptr;
   res = g_file_enumerator_close(enumerator, nullptr, &error);
   if (res != TRUE)
@@ -579,7 +571,6 @@ bool V4L2Src::check_folder_for_v4l2_devices(const char *dir_path) {
   if (error != nullptr)
     g_debug("V4L2Src: error not nullptr");
   g_object_unref(inspected_dir);
-
   return true;
 }
 
@@ -601,48 +592,43 @@ bool V4L2Src::on_start() {
   uninstall_property("framerate");
   uninstall_property("framerate_numerator");
   uninstall_property("framerate_denominator");
-
-  // install_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
-  // install_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
-  // install_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
-  // install_property (G_OBJECT (v4l2src_),"hue","hue", "Hue");
-
+  install_property (G_OBJECT (v4l2src_),"brightness","brightness", "Brightness");
+  install_property (G_OBJECT (v4l2src_),"contrast","contrast", "Contrast");
+  install_property (G_OBJECT (v4l2src_),"saturation","saturation", "Saturation");
+  install_property (G_OBJECT (v4l2src_),"hue","hue", "Hue");
   return true;
 }
 
 bool V4L2Src::on_stop() {
   clean_elements();
   install_property_by_pspec(custom_props_->get_gobject(),
-                            devices_enum_spec_, "device", "Capture Device");
+                            devices_enum_spec_,
+                            "device",
+                            "Capture Device");
   update_device_specific_properties(device_);
-  // uninstall_property ("brightness");
-  // uninstall_property ("contrast");
-  // uninstall_property ("saturation");
-  // uninstall_property ("hue");
-
+  uninstall_property ("brightness");
+  uninstall_property ("contrast");
+  uninstall_property ("saturation");
+  uninstall_property ("hue");
   return true;
 }
 
 const gchar *V4L2Src::get_capture_devices_json(void *user_data) {
   V4L2Src *context = static_cast<V4L2Src *>(user_data);
-
   if (nullptr != context->capture_devices_description_) {
     g_free(context->capture_devices_description_);
     context->capture_devices_description_ = nullptr;
   }
-
   if (context->capture_devices_.empty()) {
     g_warning("%s: no capture device, cannot make description",
               __PRETTY_FUNCTION__);
     return nullptr;
   }
-
   JSONBuilder::ptr builder(new JSONBuilder());
   builder->reset();
   builder->begin_object();
   builder->set_member_name("capture devices");
   builder->begin_array();
-
   for (auto &it : context->capture_devices_) {
     builder->begin_object();
     builder->add_string_member("long name", it.card_.c_str());
@@ -700,7 +686,6 @@ const gchar *V4L2Src::get_capture_devices_json(void *user_data) {
         builder->end_object();
       }
     builder->end_array();
-
     char *stepwise_max_numerator =
         g_strdup_printf("%d", it.frame_interval_stepwise_max_numerator_);
     char *stepwise_min_numerator =
@@ -714,7 +699,6 @@ const gchar *V4L2Src::get_capture_devices_json(void *user_data) {
     char *stepwise_step_denominator = g_strdup_printf("%d",
                                                       it.
                                                       frame_interval_stepwise_step_denominator_);
-
     builder->add_string_member("stepwise max frame interval numerator",
                                stepwise_max_numerator);
     builder->add_string_member("stepwise max frame interval denominator",
@@ -736,13 +720,10 @@ const gchar *V4L2Src::get_capture_devices_json(void *user_data) {
     g_free(stepwise_step_denominator);
     builder->end_object();
   }
-
   builder->end_array();
   builder->end_object();
   context->capture_devices_description_ =
       g_strdup(builder->get_string(true).c_str());
-  // g_print ("capture_devices_description_ %s\n",
-  //      context->capture_devices_description_);
   return context->capture_devices_description_;
 }
 
@@ -755,6 +736,22 @@ void V4L2Src::set_camera(const gint value, void *user_data) {
 gint V4L2Src::get_camera(void *user_data) {
   V4L2Src *context = static_cast<V4L2Src *>(user_data);
   return context->device_;
+}
+
+void V4L2Src::set_pixel_format(const gint value, void *user_data) {
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
+  // disabling VideoSource codec property if necessary  
+  if (!GstUtils::can_sink_caps("ffmpegcolorspace",
+                               context->pixel_format_enum_[value].value_nick))
+    context->disable_property("format");
+  else
+    context->enable_property("format");
+  context->pixel_format_ = value;
+}
+
+gint V4L2Src::get_pixel_format(void *user_data) {
+  V4L2Src *context = static_cast<V4L2Src *>(user_data);
+  return context->pixel_format_;
 }
 
 void V4L2Src::set_resolution(const gint value, void *user_data) {
@@ -832,21 +829,17 @@ bool V4L2Src::make_video_source(GstElement ** new_element) {
     g_debug("V4L2Src:: no capture device available for starting capture");
     return false;
   }
-
   make_elements();
-
   g_object_set(G_OBJECT(v4l2src_),
                "device",
-               capture_devices_.at(device_).file_device_.c_str(), nullptr);
-
+               capture_devices_[device_].file_device_.c_str(), nullptr);
   if (tv_standard_ > 0)       //0 is none
     g_object_set(G_OBJECT(v4l2src_),
                  "norm",
-                 capture_devices_.at(device_).
-                 tv_standards_.at(tv_standard_).c_str(), nullptr);
-
-  std::string caps;
-  caps = "video/x-raw-yuv";
+                 capture_devices_[device_].
+                 tv_standards_[tv_standard_].c_str(),
+                 nullptr);
+  std::string caps = std::string(pixel_format_enum_[pixel_format_].value_nick);
   if (width_ > 0) {
     gchar *width = g_strdup_printf("%d", width_);
     gchar *height = g_strdup_printf("%d", height_);
@@ -855,23 +848,18 @@ bool V4L2Src::make_video_source(GstElement ** new_element) {
     g_free(height);
   }
   else if (resolution_ > -1) {
-    caps =
-        caps + ", width=(int)"
-        +
-        capture_devices_.at(device_).frame_size_discrete_.
-        at(resolution_).first.c_str() + ", height=(int)" +
-        capture_devices_.at(device_).frame_size_discrete_.
-        at(resolution_).second.c_str();
+    caps = caps
+        + ", width=(int)"
+        + capture_devices_[device_].frame_size_discrete_[resolution_].first.c_str()
+        + ", height=(int)" +
+        capture_devices_[device_].frame_size_discrete_[resolution_].second.c_str();
   }
-
   if (framerate_ > -1) {
-    caps =
-        caps + ", framerate=(fraction)"
-        +
-        capture_devices_.at(device_).frame_interval_discrete_.at(framerate_).
-        second.c_str() + "/" +
-        capture_devices_.at(device_).frame_interval_discrete_.at(framerate_).
-        first.c_str();
+    caps = caps
+        + ", framerate=(fraction)"
+        + capture_devices_[device_].frame_interval_discrete_[framerate_].second.c_str()
+        + "/"
+        + capture_devices_[device_].frame_interval_discrete_[framerate_].first.c_str();
   }
   else if (framerate_numerator_ > 0) {
     gchar *numerator = g_strdup_printf("%d", framerate_numerator_);
@@ -880,14 +868,211 @@ bool V4L2Src::make_video_source(GstElement ** new_element) {
     g_free(numerator);
     g_free(denominator);
   }
-
-  // g_print ("CAPSCAPS ------------------- %s\n",
-  //      caps.c_str ());
   GstCaps *usercaps = gst_caps_from_string(caps.c_str());
   g_object_set(G_OBJECT(capsfilter_), "caps", usercaps, nullptr);
   gst_caps_unref(usercaps);
-
   *new_element = v4l2_bin_;
   return true;
 }
+
+GstStructure *
+V4L2Src::gst_v4l2_object_v4l2fourcc_to_structure (guint32 fourcc)
+{
+  GstStructure *structure = NULL;
+  switch (fourcc) {
+    case V4L2_PIX_FMT_MJPEG:   /* Motion-JPEG */
+#ifdef V4L2_PIX_FMT_PJPG
+    case V4L2_PIX_FMT_PJPG:    /* Progressive-JPEG */
+#endif
+    case V4L2_PIX_FMT_JPEG:    /* JFIF JPEG */
+      structure = gst_structure_new ("image/jpeg", NULL);
+      break;
+    case V4L2_PIX_FMT_RGB332:
+    case V4L2_PIX_FMT_RGB555:
+    case V4L2_PIX_FMT_RGB555X:
+    case V4L2_PIX_FMT_RGB565:
+    case V4L2_PIX_FMT_RGB565X:
+    case V4L2_PIX_FMT_RGB24:
+    case V4L2_PIX_FMT_BGR24:
+    case V4L2_PIX_FMT_RGB32:
+    case V4L2_PIX_FMT_BGR32:{
+      guint depth = 0, bpp = 0;
+      gint endianness = 0;
+      guint32 r_mask = 0, b_mask = 0, g_mask = 0;
+      switch (fourcc) {
+        case V4L2_PIX_FMT_RGB332:
+          bpp = depth = 8;
+          endianness = G_BYTE_ORDER;    /* 'like, whatever' */
+          r_mask = 0xe0;
+          g_mask = 0x1c;
+          b_mask = 0x03;
+          break;
+        case V4L2_PIX_FMT_RGB555:
+        case V4L2_PIX_FMT_RGB555X:
+          bpp = 16;
+          depth = 15;
+          endianness =
+              fourcc == V4L2_PIX_FMT_RGB555X ? G_BIG_ENDIAN : G_LITTLE_ENDIAN;
+          r_mask = 0x7c00;
+          g_mask = 0x03e0;
+          b_mask = 0x001f;
+          break;
+        case V4L2_PIX_FMT_RGB565:
+        case V4L2_PIX_FMT_RGB565X:
+          bpp = depth = 16;
+          endianness =
+              fourcc == V4L2_PIX_FMT_RGB565X ? G_BIG_ENDIAN : G_LITTLE_ENDIAN;
+          r_mask = 0xf800;
+          g_mask = 0x07e0;
+          b_mask = 0x001f;
+          break;
+        case V4L2_PIX_FMT_RGB24:
+          bpp = depth = 24;
+          endianness = G_BIG_ENDIAN;
+          r_mask = 0xff0000;
+          g_mask = 0x00ff00;
+          b_mask = 0x0000ff;
+          break;
+        case V4L2_PIX_FMT_BGR24:
+          bpp = depth = 24;
+          endianness = G_BIG_ENDIAN;
+          r_mask = 0x0000ff;
+          g_mask = 0x00ff00;
+          b_mask = 0xff0000;
+          break;
+        case V4L2_PIX_FMT_RGB32:
+          bpp = depth = 32;
+          endianness = G_BIG_ENDIAN;
+          r_mask = 0xff000000;
+          g_mask = 0x00ff0000;
+          b_mask = 0x0000ff00;
+          break;
+        case V4L2_PIX_FMT_BGR32:
+          bpp = depth = 32;
+          endianness = G_BIG_ENDIAN;
+          r_mask = 0x000000ff;
+          g_mask = 0x0000ff00;
+          b_mask = 0x00ff0000;
+          break;
+        default:
+          g_assert_not_reached ();
+          break;
+      }
+      structure = gst_structure_new ("video/x-raw-rgb",
+          "bpp", G_TYPE_INT, bpp,
+          "depth", G_TYPE_INT, depth,
+          "red_mask", G_TYPE_INT, r_mask,
+          "green_mask", G_TYPE_INT, g_mask,
+          "blue_mask", G_TYPE_INT, b_mask,
+          "endianness", G_TYPE_INT, endianness, NULL);
+      break;
+    }
+    case V4L2_PIX_FMT_GREY:    /*  8  Greyscale     */
+      structure = gst_structure_new ("video/x-raw-gray",
+          "bpp", G_TYPE_INT, 8, NULL);
+      break;
+    case V4L2_PIX_FMT_YYUV:    /* 16  YUV 4:2:2     */
+    case V4L2_PIX_FMT_HI240:   /*  8  8-bit color   */
+      /* FIXME: get correct fourccs here */
+      break;
+    case V4L2_PIX_FMT_NV12:    /* 12  Y/CbCr 4:2:0  */
+    case V4L2_PIX_FMT_NV21:    /* 12  Y/CrCb 4:2:0  */
+    case V4L2_PIX_FMT_YVU410:
+    case V4L2_PIX_FMT_YUV410:
+    case V4L2_PIX_FMT_YUV420:  /* I420/IYUV */
+    case V4L2_PIX_FMT_YUYV:
+    case V4L2_PIX_FMT_YVU420:
+    case V4L2_PIX_FMT_UYVY:
+    case V4L2_PIX_FMT_Y41P:
+    case V4L2_PIX_FMT_YUV422P:
+#ifdef V4L2_PIX_FMT_YVYU
+    case V4L2_PIX_FMT_YVYU:
+#endif
+    case V4L2_PIX_FMT_YUV411P:{
+      guint32 fcc = 0;
+
+      switch (fourcc) {
+        case V4L2_PIX_FMT_NV12:
+          fcc = GST_MAKE_FOURCC ('N', 'V', '1', '2');
+          break;
+        case V4L2_PIX_FMT_NV21:
+          fcc = GST_MAKE_FOURCC ('N', 'V', '2', '1');
+          break;
+        case V4L2_PIX_FMT_YVU410:
+          fcc = GST_MAKE_FOURCC ('Y', 'V', 'U', '9');
+          break;
+        case V4L2_PIX_FMT_YUV410:
+          fcc = GST_MAKE_FOURCC ('Y', 'U', 'V', '9');
+          break;
+        case V4L2_PIX_FMT_YUV420:
+          fcc = GST_MAKE_FOURCC ('I', '4', '2', '0');
+          break;
+        case V4L2_PIX_FMT_YUYV:
+          fcc = GST_MAKE_FOURCC ('Y', 'U', 'Y', '2');
+          break;
+        case V4L2_PIX_FMT_YVU420:
+          fcc = GST_MAKE_FOURCC ('Y', 'V', '1', '2');
+          break;
+        case V4L2_PIX_FMT_UYVY:
+          fcc = GST_MAKE_FOURCC ('U', 'Y', 'V', 'Y');
+          break;
+        case V4L2_PIX_FMT_Y41P:
+          fcc = GST_MAKE_FOURCC ('Y', '4', '1', 'P');
+          break;
+        case V4L2_PIX_FMT_YUV411P:
+          fcc = GST_MAKE_FOURCC ('Y', '4', '1', 'B');
+          break;
+        case V4L2_PIX_FMT_YUV422P:
+          fcc = GST_MAKE_FOURCC ('Y', '4', '2', 'B');
+          break;
+#ifdef V4L2_PIX_FMT_YVYU
+        case V4L2_PIX_FMT_YVYU:
+          fcc = GST_MAKE_FOURCC ('Y', 'V', 'Y', 'U');
+          break;
+#endif
+        default:
+          g_assert_not_reached ();
+          break;
+      }
+      structure = gst_structure_new ("video/x-raw-yuv",
+          "format", GST_TYPE_FOURCC, fcc, NULL);
+      break;
+    }
+    case V4L2_PIX_FMT_DV:
+      structure =
+          gst_structure_new ("video/x-dv", "systemstream", G_TYPE_BOOLEAN, TRUE,
+          NULL);
+      break;
+    case V4L2_PIX_FMT_MPEG:    /* MPEG          */
+      structure = gst_structure_new ("video/mpegts", NULL);
+      break;
+    case V4L2_PIX_FMT_WNVA:    /* Winnov hw compres */
+      break;
+#ifdef V4L2_PIX_FMT_SBGGR8
+    case V4L2_PIX_FMT_SBGGR8:
+      structure = gst_structure_new ("video/x-raw-bayer", NULL);
+      break;
+#endif
+#ifdef V4L2_PIX_FMT_SN9C10X
+    case V4L2_PIX_FMT_SN9C10X:
+      structure = gst_structure_new ("video/x-sonix", NULL);
+      break;
+#endif
+#ifdef V4L2_PIX_FMT_PWC1
+    case V4L2_PIX_FMT_PWC1:
+      structure = gst_structure_new ("video/x-pwc1", NULL);
+      break;
+#endif
+#ifdef V4L2_PIX_FMT_PWC2
+    case V4L2_PIX_FMT_PWC2:
+      structure = gst_structure_new ("video/x-pwc2", NULL);
+      break;
+#endif
+    default:
+      g_debug("Unknown fourcc 0x%08x %" GST_FOURCC_FORMAT,
+              fourcc, GST_FOURCC_ARGS (fourcc));
+      break;
+  }
+  return structure;
 }
+}  //namespace switcher

@@ -47,47 +47,48 @@ class V4L2Src:public VideoSource {
  private:
   bool on_start();
   bool on_stop();
-  bool make_video_source(GstElement ** new_element);
+  bool make_video_source(GstElement **new_element);
 
-  GstElement *v4l2src_;
-  GstElement *v4l2_bin_;
-  GstElement *capsfilter_;
+  GstElement *v4l2src_{nullptr};
+  GstElement *v4l2_bin_{nullptr};
+  GstElement *capsfilter_{nullptr};
 
   typedef struct {
-    std::string card_;
-    std::string file_device_;
-    std::string bus_info_;
-    std::string driver_;
-    std::vector < std::pair < std::string /*name */ ,
-                              std::string /*description */  > >pixel_formats_;
-    std::vector < std::pair < std::string /*width */ ,
-                              std::string /*height */  > >frame_size_discrete_;
-    gint frame_size_stepwise_max_width_;
-    gint frame_size_stepwise_min_width_;
-    gint frame_size_stepwise_step_width_;
-    gint frame_size_stepwise_max_height_;
-    gint frame_size_stepwise_min_height_;
-    gint frame_size_stepwise_step_height_;
-    std::vector<std::string> tv_standards_;
-    std::vector < std::pair < std::string /*numerator */ ,
-                              std::string /*denominator */  > >frame_interval_discrete_;
-    gint frame_interval_stepwise_min_numerator_;
-    gint frame_interval_stepwise_min_denominator_;
-    gint frame_interval_stepwise_max_numerator_;
-    gint frame_interval_stepwise_max_denominator_;
-    gint frame_interval_stepwise_step_numerator_;
-    gint frame_interval_stepwise_step_denominator_;
+    std::string card_{};
+    std::string file_device_{};
+    std::string bus_info_{};
+    std::string driver_{};
+    std::vector<std::pair<std::string/*name*/,
+                          std::string/*description*/>>pixel_formats_{};
+    std::vector<std::pair<std::string/*width*/,
+                          std::string/*height*/>>frame_size_discrete_{};
+    gint frame_size_stepwise_max_width_{0};
+    gint frame_size_stepwise_min_width_{0};
+    gint frame_size_stepwise_step_width_{0};
+    gint frame_size_stepwise_max_height_{0};
+    gint frame_size_stepwise_min_height_{0};
+    gint frame_size_stepwise_step_height_{0};
+    std::vector<std::string> tv_standards_{};
+    std::vector<std::pair<std::string/*numerator*/,
+                          std::string/*denominator*/>>frame_interval_discrete_{};
+    gint frame_interval_stepwise_min_numerator_{0};
+    gint frame_interval_stepwise_min_denominator_{0};
+    gint frame_interval_stepwise_max_numerator_{0};
+    gint frame_interval_stepwise_max_denominator_{0};
+    gint frame_interval_stepwise_step_numerator_{0};
+    gint frame_interval_stepwise_step_denominator_{0};
   } CaptureDescription;
 
   bool make_elements();
   void clean_elements();
   void update_capture_device();
   void update_device_specific_properties(gint device_enum_id);
-  void update_discrete_resolution(CaptureDescription descr);
-  void update_width_height(CaptureDescription descr);
-  void update_tv_standard(CaptureDescription descr);
-  void update_discrete_framerate(CaptureDescription cap_descr);
-  void update_framerate_numerator_denominator(CaptureDescription cap_descr);
+  void update_discrete_resolution(const CaptureDescription &descr);
+  void update_width_height(const CaptureDescription &descr);
+  void update_tv_standard(const CaptureDescription &descr);
+  void update_discrete_framerate(const CaptureDescription &cap_descr);
+  void update_framerate_numerator_denominator(const CaptureDescription &cap_descr);
+  void update_pixel_format(const CaptureDescription &cap_descr);
 
   /* static gboolean capture_full_wrapped (gpointer device_file_path,  */
   /*   gpointer width, */
@@ -107,30 +108,37 @@ class V4L2Src:public VideoSource {
   static const gchar *get_capture_devices_json(void *user_data);
 
   // custom properties:
-  CustomPropertyHelper::ptr custom_props_;
-  GParamSpec *capture_devices_description_spec_;      // json formated
-  gchar *capture_devices_description_;        // json formated
-
+  CustomPropertyHelper::ptr custom_props_{};
+  GParamSpec *capture_devices_description_spec_{nullptr};  // json formated
+  gchar *capture_devices_description_{nullptr};  // json formated
+  
   // device enum and select
-  GParamSpec *devices_enum_spec_;
+  GParamSpec *devices_enum_spec_{nullptr};
   GEnumValue devices_enum_[128];
-  gint device_;
+  gint device_{0};
   static void set_camera(const gint value, void *user_data);
   static gint get_camera(void *user_data);
 
+  // pixet format property
+  GParamSpec *pixel_format_spec_{nullptr};
+  GEnumValue pixel_format_enum_[128];
+  gint pixel_format_{0};
+  static void set_pixel_format(const gint value, void *user_data);
+  static gint get_pixel_format(void *user_data);
+
   // resolution enum and select for the currently selected device,
   // this is updated when selecting an other device
-  GParamSpec *resolutions_spec_;
+  GParamSpec *resolutions_spec_{nullptr};
   GEnumValue resolutions_enum_[128];
-  gint resolution_;
+  gint resolution_{0};
   static void set_resolution(const gint value, void *user_data);
   static gint get_resolution(void *user_data);
 
   // width height for the currently selected device
-  GParamSpec *width_spec_;
-  GParamSpec *height_spec_;
-  gint width_;
-  gint height_;
+  GParamSpec *width_spec_{nullptr};
+  GParamSpec *height_spec_{nullptr};
+  gint width_{0};
+  gint height_{0};
   static void set_width(const gint value, void *user_data);
   static gint get_width(void *user_data);
   static void set_height(const gint value, void *user_data);
@@ -138,36 +146,36 @@ class V4L2Src:public VideoSource {
 
   // tv standard enum and select for the currently selected device,
   // this is updated when selecting an other device
-  GParamSpec *tv_standards_spec_;
+  GParamSpec *tv_standards_spec_{nullptr};
   GEnumValue tv_standards_enum_[128];
-  gint tv_standard_;
+  gint tv_standard_{0};
   static void set_tv_standard(const gint value, void *user_data);
   static gint get_tv_standard(void *user_data);
 
   // framerate enum and select for the currently selected device,
   // this is updated when selecting an other device
-  GParamSpec *framerate_spec_;
+  GParamSpec *framerate_spec_{nullptr};
   GEnumValue framerates_enum_[128];
-  gint framerate_;
+  gint framerate_{-1};
   static void set_framerate(const gint value, void *user_data);
   static gint get_framerate(void *user_data);
 
   // width height for the currently selected device
-  GParamSpec *framerate_numerator_spec_;
-  GParamSpec *framerate_denominator_spec_;
-  gint framerate_numerator_;
-  gint framerate_denominator_;
+  GParamSpec *framerate_numerator_spec_{nullptr};
+  GParamSpec *framerate_denominator_spec_{nullptr};
+  gint framerate_numerator_{0};
+  gint framerate_denominator_{1};
   static void set_framerate_numerator(const gint value, void *user_data);
   static gint get_framerate_numerator(void *user_data);
   static void set_framerate_denominator(const gint value, void *user_data);
   static gint get_framerate_denominator(void *user_data);
-
-  std::vector<CaptureDescription> capture_devices_;      // FIXME should be static
-
+  // copy/paste from gstv4l2object.c for converting v4l2 pixel formats
+  // to GstStructure (and then caps)
+  static GstStructure *gst_v4l2_object_v4l2fourcc_to_structure (guint32 fourcc);
+  std::vector<CaptureDescription> capture_devices_{};  // FIXME should be static
   bool init_gpipe() final;
 };
 
 SWITCHER_DECLARE_PLUGIN(V4L2Src);
 }  // namespace switcher
-
-#endif                          // ifndef
+#endif
