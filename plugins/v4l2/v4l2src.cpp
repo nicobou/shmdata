@@ -740,12 +740,21 @@ gint V4L2Src::get_camera(void *user_data) {
 
 void V4L2Src::set_pixel_format(const gint value, void *user_data) {
   V4L2Src *context = static_cast<V4L2Src *>(user_data);
-  // disabling VideoSource codec property if necessary  
-  if (!GstUtils::can_sink_caps("ffmpegcolorspace",
-                               context->pixel_format_enum_[value].value_nick))
-    context->disable_property("format");
-  else
-    context->enable_property("format");
+  // FIXME need to disabling VideoSource codec property if necessary  
+  // std::string caps(context->pixel_format_enum_[value].value_nick);
+  // if (std::string::npos != caps.find("video/x-raw-yuv"))
+  //   caps = "video/x-raw-yuv";
+  // g_print("%s %s\n",
+  //         __FUNCTION__,
+  //         caps.c_str());
+  // if (!GstUtils::can_sink_caps("ffmpegcolorspace",
+  //                              caps)) {
+  //   g_print("disable");
+  //   context->disable_property("format");
+  // } else {
+  //   g_print("enable");
+  //   context->enable_property("format");
+  // }
   context->pixel_format_ = value;
 }
 

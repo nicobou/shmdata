@@ -21,6 +21,7 @@
  * The Param class
  */
 
+#include <gst/gst.h>
 #include "./property.hpp"
 #include "./gst-utils.hpp"
 
@@ -128,10 +129,14 @@ Property::parse_callback_args(GObject *gobject, GParamSpec *pspec) {
 std::string Property::get() {
   GValue val = G_VALUE_INIT;
   g_value_init(&val, property_->value_type);
-
   g_object_get_property(object_, property_->name, &val);
-
   gchar *val_str = GstUtils::gvalue_serialize(&val);
+  if(nullptr == val_str) {
+    g_warning("unable to serialize property %s (%s)",
+           name_.c_str(),
+           long_name_.c_str());
+    return std::string();
+  }
   std::string res(val_str);
   g_free(val_str);
   return res;
