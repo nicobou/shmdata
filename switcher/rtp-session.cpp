@@ -32,6 +32,7 @@
 #include "./rtp-session.hpp"
 #include "./gst-utils.hpp"
 #include "./json-builder.hpp"
+#include "./std2.hpp"
 
 namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(RtpSession,
@@ -555,13 +556,12 @@ RtpSession::add_data_stream_wrapped(gpointer connector_name,
 bool RtpSession::add_data_stream(std::string shmpath) {
   remove_data_stream(shmpath);
   std::unique_lock<std::mutex> lock(stream_mutex_);
-  DataStream::ptr ds (new DataStream(rtpsession_));
+  DataStream::ptr ds = std2::make_unique<DataStream>(rtpsession_);
   ds->id = next_id_;
   next_id_++;
   data_streams_[shmpath] = std::move(ds);
   
-  ShmdataReader::ptr reader;
-  reader.reset(new ShmdataReader());
+  ShmdataReader::ptr reader = std::make_shared<ShmdataReader>();
   reader->set_path(shmpath.c_str());
   reader->set_g_main_context(get_g_main_context());
   reader->set_bin(get_bin());

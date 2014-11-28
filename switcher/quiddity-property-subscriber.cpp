@@ -30,19 +30,6 @@ QuiddityPropertySubscriber::QuiddityPropertySubscriber() {
 }
 
 QuiddityPropertySubscriber::~QuiddityPropertySubscriber() {
-  for (auto &it : prop_datas_) {
-    Quiddity::ptr quid = it.second->quid.lock();
-    if ((bool) quid) {
-      quid->unsubscribe_property(it.second->property_name, property_cb,
-                                 it.second);
-    }
-  }
-  for (auto &it : prop_datas_) {
-    g_free(it.second->name);
-    g_free(it.second->quiddity_name);
-    g_free(it.second->property_name);
-    delete it.second;
-  }
 }
 
 void QuiddityPropertySubscriber::mute(bool muted) {

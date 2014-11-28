@@ -146,7 +146,6 @@ bool VideoSource::make_new_shmdatas() {
   }
 
   if (codec_ != 0) {
-    g_print("INSTALLING CODEC ELEMENTS\n");
     remake_codec_elements();
     gst_bin_add_many(GST_BIN(get_bin()),
                      queue_codec_element_,
