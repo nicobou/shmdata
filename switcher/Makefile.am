@@ -22,7 +22,6 @@ lib_LTLIBRARIES = \
     libswitcher-@LIBSWITCHER_API_VERSION@.la
 
 libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
-    aravis-genicam.cpp \
     audio-source.cpp \
     audio-test-source.cpp \
     categorizable.cpp \
@@ -32,7 +31,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_SOURCES = \
     decodebin-to-shmdata.cpp \
     decodebin2.cpp \
     default-video-format.cpp \
-    deinterleave.cpp \
     fake-shmdata-writer.cpp \
     fakesink.cpp \
     file-sdp.cpp \
@@ -108,7 +106,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     abstract-factory.hpp \
     abstract-factory_spec.hpp \
     any.hpp \
-    aravis-genicam.hpp \
     audio-source.hpp \
     audio-test-source.hpp \
     categorizable.hpp \
@@ -121,7 +118,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     decodebin-to-shmdata.hpp \
     decodebin2.hpp \
     default-video-format.hpp \
-    deinterleave.hpp \
     fake-shmdata-writer.hpp \
     fakesink.hpp \
     file-sdp.hpp \

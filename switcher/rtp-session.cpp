@@ -570,7 +570,7 @@ bool RtpSession::add_data_stream(std::string shmpath) {
   g_debug("%s waiting for data in shm %s",
           __FUNCTION__,
           shmpath.c_str());
-  stream_cond_.wait_for(lock, std::chrono::seconds(1));
+  stream_cond_.wait_for(lock, std::chrono::seconds(3));
   // testing if stream has been added
   if (nullptr == data_streams_[shmpath]->udp_rtp_sink) {
     remove_data_stream(shmpath);

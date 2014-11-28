@@ -26,11 +26,9 @@
 #include "./scope-exit.hpp"
 
 // the quiddities to manage (line sorted)
-#include "./aravis-genicam.hpp"
 #include "./audio-test-source.hpp"
 #include "./create-remove-spy.hpp"
 #include "./decodebin2.hpp"
-#include "./deinterleave.hpp"
 #include "./fake-shmdata-writer.hpp"
 #include "./fakesink.hpp"
 #include "./file-sdp.hpp"
@@ -141,18 +139,12 @@ void QuiddityManager_Impl::register_classes() {
   abstract_factory_.register_class<AudioTestSource>
       (AudioTestSource::switcher_doc_.get_class_name(),
        &AudioTestSource::switcher_doc_);
-  abstract_factory_.register_class<AravisGenicam>
-      (AravisGenicam::switcher_doc_.get_class_name(),
-       &AravisGenicam::switcher_doc_);
   abstract_factory_.register_class<CreateRemoveSpy>
       (CreateRemoveSpy::switcher_doc_.get_class_name(),
        &CreateRemoveSpy::switcher_doc_);
   abstract_factory_.register_class<Decodebin2>
       (Decodebin2::switcher_doc_.get_class_name(),
        &Decodebin2::switcher_doc_);
-  abstract_factory_.register_class<Deinterleave>
-      (Deinterleave::switcher_doc_.get_class_name(),
-       &Deinterleave::switcher_doc_);
   abstract_factory_.register_class<FakeShmdataWriter>
       (FakeShmdataWriter::switcher_doc_.get_class_name(),
        &FakeShmdataWriter::switcher_doc_);
