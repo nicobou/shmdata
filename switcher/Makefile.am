@@ -110,7 +110,6 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     audio-test-source.hpp \
     categorizable.hpp \
     clock.hpp \
-    const-methods-invoker.hpp \
     counter-map.hpp \
     create-remove-spy.hpp \
     creator.hpp \

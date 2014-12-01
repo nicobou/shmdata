@@ -39,12 +39,11 @@
 #include "./quiddity-documentation.hpp"
 #include "./json-builder.hpp"
 #include "./gobject-wrapper.hpp"
-#include "./const-methods-invoker.hpp"
 
 namespace switcher {
 class QuiddityManager_Impl;
 
-class Quiddity: public ConstMethodsInvoker<data::Tree> {
+class Quiddity {
   friend class StartableQuiddity;
   friend class Segment;
   friend class DefaultVideoFormat;
@@ -88,7 +87,7 @@ class Quiddity: public ConstMethodsInvoker<data::Tree> {
   std::string get_method_description(std::string method_name);
   std::string get_methods_description();
   bool invoke_method(const std::string function_name,
-                     std::string ** return_value,
+                     std::string **return_value,
                      const std::vector<std::string> args);
   int method_get_num_value_args(std::string function_name);   // returns -1 if method not found
   int method_get_num_pointer_args(std::string function_name);  // returns -1 if method not found
@@ -125,7 +124,6 @@ class Quiddity: public ConstMethodsInvoker<data::Tree> {
  private:
   // information tree
   data::Tree::ptr information_tree_;
-  inline data::Tree *cmi_get() final {return information_tree_.get();}
   
   // properties
   std::unordered_map<std::string, Property::ptr> properties_{};
