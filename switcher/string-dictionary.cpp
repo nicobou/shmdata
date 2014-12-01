@@ -34,12 +34,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "dico",
     "Nicolas Bouillot");
 
-StringDictionary::StringDictionary() {
-}
-
-StringDictionary::~StringDictionary() {
-}
-
 bool StringDictionary::init() {
   install_method("Update An Entry",
                  "update",

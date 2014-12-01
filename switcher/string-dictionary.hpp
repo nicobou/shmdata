@@ -26,8 +26,8 @@ namespace switcher {
 class StringDictionary:public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(StringDictionary);
-  StringDictionary();
-  ~StringDictionary();
+  StringDictionary() = default;
+  ~StringDictionary() = default;
   StringDictionary(const StringDictionary &) = delete;
   StringDictionary &operator=(const StringDictionary &) = delete;
   bool init() final;
