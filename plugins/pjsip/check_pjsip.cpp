@@ -18,11 +18,12 @@
  */
 
 #include <unistd.h>  // usleep
-#include <assert.h>
+#include <cassert>
 
 #include <vector>
 #include <string>
 #include <list>
+#include <iostream>
 
 #include "switcher/quiddity-manager.hpp"
 #include "switcher/quiddity-basic-test.hpp"
@@ -55,6 +56,35 @@ int main() {
     return 1;
 #endif
 
+    // // testing if dico containing log information & buddies is
+    // // available for the test.
+    // // if not cancel the test
+    // // example dico is
+    // /*
+    //   .buddies.1       foo@scenic.sat.qc.ca
+    //   .buddies.2       bar@scenic.sat.qc.ca
+    //   .buddies.3       space@scenic.sat.qc.ca
+    //   .me.uri        me@scenic.sat.qc.ca
+    //   .me.password   Udl3k0js
+    // */
+    // manager->create("dico", "info");
+    // manager->invoke_va("info",
+    //                    "load",
+    //                    nullptr,
+    //                    "./testinfo.dic",
+    //                    nullptr);
+    // // getting buddies
+    // std::list<std::string> buddies_truc =  manager->
+    //     invoke_info_tree<std::list<std::string>>(
+    //         "info",
+    //         [&](switcher::data::Tree::ptrc tree){
+    //           return tree->get_child_keys<std::list>(".dico.uri.");
+    //         });
+    // assert(!buddies_truc.empty());
+
+    // for (auto &it: buddies_truc)
+    //   std::printf("%s\n", it.c_str());
+          
     // testing uncompressed data transmission
     assert(0 ==
            manager->create("audiotestsrc", audio_name).compare(audio_name));
@@ -77,7 +107,7 @@ int main() {
                               "1234",  // password
                               nullptr));
 
-    for (auto &it : buddies) {
+    for (auto &it: buddies) {
       assert(manager->invoke_va(sip_name,
                                 "add_buddy",
                                 nullptr,
@@ -112,7 +142,7 @@ int main() {
                                 "true",
                                 nullptr));
     }
-    
+
     {// get added buddies from  
       auto get_buddy_ids = [&] (switcher::data::Tree::ptrc tree) {
         return switcher::data::Tree::get_child_keys<std::list>(tree, "buddy.");

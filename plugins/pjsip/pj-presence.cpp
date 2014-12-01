@@ -343,6 +343,9 @@ void PJPresence::add_buddy(const std::string &sip_user) {
   sip_instance_->
       graft_tree(".buddy." + std::to_string(buddy_id) + ".uri",
                  data::Tree::make(sip_user));
+  sip_instance_->
+      graft_tree(".buddy." + std::to_string(buddy_id) + ".call_status",
+                 data::Tree::make("disconnected"));
   return;
 }
 
