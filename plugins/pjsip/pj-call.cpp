@@ -315,6 +315,8 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event *e) {
       }
       tree->graft(std::string(".call_status."),
                   data::Tree::make("disconnected"));
+      call->instance->sip_instance_->
+          graft_tree(std::string(".buddy." + std::to_string(id)), tree);
     }  // endif PJSIP_INV_STATE_DISCONNECTED
 
     // FIXME destroy_call_media(call->index);
@@ -344,6 +346,8 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event *e) {
     }
     tree->graft(std::string(".call_status."),
                 data::Tree::make("calling"));
+    call->instance->sip_instance_->
+        graft_tree(std::string(".buddy." + std::to_string(id)), tree);
   } else if (inv->state == PJSIP_INV_STATE_EARLY ||
              inv->state == PJSIP_INV_STATE_CONNECTING) {
     g_debug("state early or connecting\n");
@@ -359,6 +363,8 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event *e) {
     }
     tree->graft(std::string(".call_status."),
                 data::Tree::make("connecting"));
+    call->instance->sip_instance_->
+        graft_tree(std::string(".buddy." + std::to_string(id)), tree);
   }
 }
 
@@ -1526,6 +1532,9 @@ void PJCall::make_call(std::string dst_uri) {
   }
   tree->graft(std::string(".call_status."),
               data::Tree::make("calling"));
+  sip_instance_->
+      graft_tree(std::string(".buddy." + std::to_string(id)), tree);
+
 }
 
 std::string
