@@ -139,10 +139,9 @@ StringDictionary::read_entry(const gchar *name, void *user_data)
 {
   StringDictionary *context = static_cast<StringDictionary *>(user_data);
   std::string val = context->
-      invoke_info_tree<std::string>([&](data::Tree::ptrc tree) -> std::string {
-          return tree->read_data(std::string("dico.")
-                                 + data::Tree::escape_dots(name)).copy_as<std::string>();
-        });
+      tree<const Any &, const std::string &>(
+          &data::Tree::read_branch_data,
+          std::string("dico.") + data::Tree::escape_dots(name)).copy_as<std::string>();
   return g_strdup(val.c_str());  // FIXME make method class not requiring g_strdup
 }
 
@@ -164,8 +163,7 @@ gboolean StringDictionary::save_file(const gchar *file_path) {
     return FALSE;
   }
 
-  std::string dico =
-      invoke_info_tree<std::string>(&data::BasicSerializer::serialize);
+  std::string dico = invoke_info_tree<std::string>(&data::BasicSerializer::serialize);
 
   g_output_stream_write((GOutputStream *) file_stream,
                         dico.c_str(),

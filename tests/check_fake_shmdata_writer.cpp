@@ -49,13 +49,11 @@ main() {
     // FIXME synchronize with audio registration of audio shmdata writer
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     
-    // getting audio shmdata name for fakeshmsrc
     auto audio_shmdata = manager->
-        invoke_info_tree<std::list<std::string>>(
+        use_tree<std::list<std::string>, const std::string &>(
             "audio",
-            [&](switcher::data::Tree::ptrc tree){
-              return tree->get_child_keys(".shmdata.writer.");
-            });
+            &switcher::data::Tree::get_child_keys,
+            std::string(".shmdata.writer."));
     assert(!audio_shmdata.empty());
     //assert(manager->set_property("audio", "started", "false"));
 
@@ -68,11 +66,10 @@ main() {
      
     // getting audio shmdata name for fakeshmsrc
     auto fakeshm_shm = manager->
-        invoke_info_tree<std::list<std::string>>(
+        use_tree<std::list<std::string>, const std::string &>(
             "fakeshmsrc",
-            [&](switcher::data::Tree::ptrc tree){
-              return tree->get_child_keys(".shmdata.writer.");
-            });
+            &switcher::data::Tree::get_child_keys,
+            std::string(".shmdata.writer."));
     // FIXME assert(!fakeshm_shm.empty());
     // checking fakeshmsrc is exposing the same shmdata path
     //FIXME assert((*audio_shmdata.begin()) == (*fakeshm_shm.begin()));

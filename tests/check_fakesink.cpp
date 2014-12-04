@@ -56,7 +56,7 @@ main() {
     // auto insert_it = std::insert_iterator<decltype(audio_shmdata)>(audio_shmdata,
     //                                                                audio_shmdata.begin());
     // auto inserted =
-    //     manager->use_tree_1<bool, std::string, decltype(insert_it)>(
+    //     manager->use_tree<bool, std::string, decltype(insert_it)>(
     //         std::string("audio"),
     //         &switcher::data::Tree::copy_and_insert_child_keys<decltype(insert_it)>,
     //         std::string(".shmdata.writer."),

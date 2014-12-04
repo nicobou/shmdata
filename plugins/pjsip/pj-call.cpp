@@ -1549,14 +1549,11 @@ PJCall::create_outgoing_sdp(struct call *call,
   }
 
   SDPDescription desc;
-  using paths_t = std::list<std::string>;
-  auto get_paths = [&] (data::Tree::ptrc tree) {
-    return tree->copy_leaf_values<std::list>("buddy."
-                                             + std::to_string(id)
-                                             + ".connections");
-  };
-  paths_t paths = call->instance->sip_instance_->
-      invoke_info_tree<paths_t>(get_paths);
+
+  auto paths = call->instance->sip_instance_->
+      tree<std::list<std::string>, const std::string &>(
+          &data::Tree::copy_leaf_values,
+          std::string("buddy." + std::to_string(id) + ".connections"));
   // std::for_each(paths.begin(), paths.end(),
   //               [&] (const std::string &val){
   //                 g_print("----------------------- %s\n", val.c_str());
@@ -1564,18 +1561,21 @@ PJCall::create_outgoing_sdp(struct call *call,
   
   QuiddityManager::ptr manager = call->instance->manager_;
   gint port = starting_rtp_port_;
+
   for (auto &it : paths) {
     std::string data = manager->
-        invoke_info_tree<std::string>("siprtp",
-                                      [&](data::Tree::ptrc tree) -> std::string {
-                                        return tree->read_data("rtp_caps."
-                                                               + it).copy_as<std::string>();
-                                      });
+        use_tree<const Any &, const std::string &>(
+        std::string("siprtp"),
+        &data::Tree::read_branch_data,
+        std::string("rtp_caps.") + it).copy_as<std::string>();
+
     GstCaps *caps = gst_caps_from_string(data.c_str());
     On_scope_exit {gst_caps_unref(caps);};
+
     SDPMedia media;
     media.set_media_info_from_caps(caps);
     media.set_port(port);
+
     if (!desc.add_media(media)) {
       g_warning("a media has not been added to the SDP description");
     } else {

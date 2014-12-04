@@ -331,13 +331,14 @@ gboolean Segment::disconnect_all_wrapped(gpointer /*unused */ ,
                                          gpointer user_data) {
   Segment *context = static_cast<Segment *>(user_data);
   On_scope_exit {
-    context->quid_->invoke_info_tree<void>([&](data::Tree::ptrc tree) {
-        auto keys = tree->get_child_keys(".shmdata.reader");
-        if (!keys.empty())
-          for (auto &it: keys) {
-            context->quid_->prune_tree(std::string(".shmdata.reader."+it));
-          }
-      });
+    auto keys = context->quid_->
+        tree<std::list<std::string>, const std::string &>(
+            &data::Tree::get_child_keys,
+            std::string(".shmdata.reader"));
+    if (!keys.empty())
+      for (auto &it: keys) {
+        context->quid_->prune_tree(std::string(".shmdata.reader."+it));
+      }
     context->clear_shmdata_readers();
   };
 

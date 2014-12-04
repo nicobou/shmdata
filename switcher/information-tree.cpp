@@ -118,7 +118,7 @@ Any Tree::get_data(const std::string &path) {
   return res;
 }
 
-const Any &Tree::read_data(const std::string &path) const {
+const Any &Tree::read_branch_data(const std::string &path) const {
   std::unique_lock<std::mutex> lock(mutex_);
   auto found = get_node(path);
   if (!found.first.empty())
@@ -295,6 +295,43 @@ std::string Tree::unescape_dots(const std::string &str) {
     }
   }
   return unescaped;
+}
+
+std::list<std::string> Tree::get_child_keys(const std::string &path) const {
+  std::list<std::string> res;
+  std::unique_lock<std::mutex> lock(mutex_);
+  auto found = get_node(path);
+  if (!found.first.empty()) {
+    res.resize(found.second->second->childrens_.size());
+    std::transform(found.second->second->childrens_.cbegin(),
+                   found.second->second->childrens_.cend(),
+                   res.begin(),
+                   [](const child_type &child) {
+                     return child.first;
+                   });
+  }
+  return res;
+}
+
+std::list<std::string> Tree::copy_leaf_values(const std::string &path) const {
+  std::list<std::string> res;
+  Tree::ptr tree;
+  {  // finding the node
+    std::unique_lock<std::mutex> lock(mutex_);
+    auto found = get_node(path);
+    if (found.first.empty()) 
+      return res;
+    tree = found.second->second;
+  }
+  preorder_tree_walk (tree.get(),
+                      [&res](std::string /*key*/,
+                             Tree::ptrc node,
+                             bool /*is_array_element*/) {
+                        if (node->is_leaf())
+                          res.push_back(Any::to_string(node->read_data()));
+                      },
+                      [](std::string, Tree::ptrc, bool){});
+  return res;
 }
 
 }  // namespace data

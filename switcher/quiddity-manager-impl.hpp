@@ -100,8 +100,10 @@ class QuiddityManager_Impl
               R(data::Tree::*function)(ATs...) const,
               ATs ...args) {
     auto it = quiddities_nick_names_.find(nick_name);
-    if (quiddities_nick_names_.end() == it)
-      return R();
+    if (quiddities_nick_names_.end() == it){
+      static typename std::decay<R>::type r; // in case of R is a reference
+      return r;
+    }
     return quiddities_[quiddities_nick_names_[nick_name]]->
         tree<R, ATs...>(std::forward<R(data::Tree::*)(ATs...) const>(function),
              std::forward<ATs>(args)...);

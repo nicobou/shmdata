@@ -83,24 +83,10 @@ class Tree {
   bool is_leaf(const std::string &path) const;
   bool is_array(const std::string &path) const;
   bool has_data(const std::string &path) const;
-  const Any &read_data (const std::string &path) const;
+  const Any &read_branch_data (const std::string &path) const;
   
   // get child keys - returning a newly allocated list
-  std::list<std::string> get_child_keys(const std::string &path) const {
-    std::list<std::string> res;
-    std::unique_lock<std::mutex> lock(mutex_);
-    auto found = get_node(path);
-    if (!found.first.empty()) {
-      res.resize(found.second->second->childrens_.size());
-      std::transform(found.second->second->childrens_.cbegin(),
-                     found.second->second->childrens_.cend(),
-                     res.begin(),
-                     [](const child_type &child) {
-                       return child.first;
-                     });
-    }
-    return res;
-  }
+  std::list<std::string> get_child_keys(const std::string &path) const;
 
   // get child key in place, use with std::insert_iterator
   template<typename Iter>
@@ -120,29 +106,9 @@ class Tree {
   }
   
   // get leaf values in a newly allocated container
-  template< template<class T, class = std::allocator<T>> class Container = std::list>
-      Container<std::string>
-      copy_leaf_values(const std::string &path) const {
-    Container<std::string> res;
-    Tree::ptr tree;
-    {  // finding the node
-      std::unique_lock<std::mutex> lock(mutex_);
-      auto found = get_node(path);
-      if (found.first.empty()) 
-        return res;
-      tree = found.second->second;
-    }
-    preorder_tree_walk (tree.get(),
-                        [&res](std::string /*key*/,
-                               Tree::ptrc node,
-                               bool /*is_array_element*/) {
-                          if (node->is_leaf())
-                            res.push_back(Any::to_string(node->read_data()));
-                        },
-                        [](std::string, Tree::ptrc, bool){});
-    return res;
-  }
- 
+  std::list<std::string> copy_leaf_values(const std::string &path) const;
+  
+
   //Tree modifications:
   Any get_data();
   void set_data(const Any &data);

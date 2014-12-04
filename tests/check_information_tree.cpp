@@ -248,7 +248,7 @@ main() {
     tree->tag_as_array("branch.", true);
     // std::string serialized = JSONSerializer::serialize(tree);
     // std::cout << serialized << std::endl;
-    std::list<std::string> values = tree->copy_leaf_values<> (".branch");
+    std::list<std::string> values = tree->copy_leaf_values(".branch");
     assert(std::equal(original_values.begin(), original_values.end(),
                       values.begin(),
                       string_compare));
