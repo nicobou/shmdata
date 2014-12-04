@@ -105,7 +105,29 @@ class QuiddityManager
                       std::function<R(data::Tree::ptrc tree)> fun){
     return manager_impl_->invoke_info_tree<R> (nick_name, fun);
   }
+
+
+  template<typename R,
+           typename ...ATs>
+  R use_tree(const std::string &nick_name,
+             R(data::Tree::*function)(ATs...) const,
+             ATs ...args) {
+    return manager_impl_->
+        use_tree<R, ATs...>(std::forward<const std::string &>(nick_name),
+                            std::forward<R(data::Tree::*)(ATs...) const>(function),
+                            std::forward<ATs>(args)...);
+  }
   
+  template<typename ...ATs>
+  void use_tree(const std::string &nick_name,
+                void(data::Tree::*function)(ATs...) const,
+                ATs ...args) {
+    manager_impl_->
+        use_tree<ATs...>(std::forward<const std::string &>(nick_name),
+                         std::forward<void(data::Tree::*)(ATs...) const>(function),
+                         std::forward<ATs>(args)...);
+  }
+
   // ****************** properties ************************************************************
   // doc (json formatted)
   std::string get_properties_description(std::string quiddity_name);
@@ -243,7 +265,7 @@ class QuiddityManager
   void init_command_sync();
   void clear_command_sync();
   void invocation_thread();
-  static gboolean execute_command(gpointer user_data);        // gmainloop source callback
+  static gboolean execute_command(gpointer user_data);  // gmainloop source callback
   void invoke_in_thread();
 };
 }  // namespace switcher

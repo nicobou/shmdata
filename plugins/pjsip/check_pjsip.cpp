@@ -78,7 +78,7 @@ int main() {
     //     invoke_info_tree<std::list<std::string>>(
     //         "info",
     //         [&](switcher::data::Tree::ptrc tree){
-    //           return tree->get_child_keys<std::list>(".dico.uri.");
+    //           return tree->get_child_keys(".dico.uri.");
     //         });
     // assert(!buddies_truc.empty());
 
@@ -145,7 +145,7 @@ int main() {
 
     {// get added buddies from  
       auto get_buddy_ids = [&] (switcher::data::Tree::ptrc tree) {
-        return switcher::data::Tree::get_child_keys<std::list>(tree, "buddy.");
+        return tree->switcher::data::Tree::get_child_keys("buddy.");
       };
       using buddy_ids_t = std::list<std::string>;
       buddy_ids_t buddy_ids = manager->

@@ -205,9 +205,10 @@ main() {
                     tree->graft(".root." + val, Tree::make("val"));
                   });
     std::vector<std::string> child_keys;
-    tree->get_child_keys(".root",
-                         std::insert_iterator <std::vector<std::string >>
-                         (child_keys, child_keys.begin()));
+    auto insert_it =
+        std::insert_iterator<decltype(child_keys)>(child_keys, child_keys.begin());
+    tree->copy_and_insert_child_keys(".root",
+                                     insert_it);
     assert(std::equal(childs.begin(),
                       childs.end(),
                       child_keys.begin(),
@@ -219,42 +220,35 @@ main() {
 
   {  // get childs keys in a newly allocated container
     Tree::ptr tree = Tree::make();
-    std::list<std::string> childs {
-      "child1", "child2", "child3",
-          "child4", "child5", "child6", "child7", "child8", "child9"};
+    std::list<std::string> childs { "child1", "child2", "child3", "child4",
+          "child5", "child6", "child7", "child8", "child9"};
     std::for_each(childs.begin(),
                   childs.end(),
                   [tree] (const std::string &val) {
                     tree->graft(".root." + val, Tree::make("val"));
                   });
 
-    // using a list
-    std::list<std::string> child_keys_list =
-        tree->get_child_keys <> (".root");
+    // using a default container
+    auto child_keys_list =
+        tree->get_child_keys (".root");
     assert(std::equal
            (childs.begin(), childs.end(),
             child_keys_list.begin(),
             string_compare));
 
-    // using a vector
-    std::vector<std::string> child_keys_vector =
-        tree->get_child_keys<std::vector> (".root");
-    assert(std::equal(childs.begin(), childs.end(),
-                      child_keys_vector.begin(),
-                      string_compare));
   }
 
-  {  // get_leaf_values
+  {  // copy_leaf_values
     Tree::ptr tree = Tree::make();
     std::list<std::string> original_values {"0", "1", "2"};
     for (auto &it : original_values)
       tree->graft(std::string(".branch.item"+it),
                               Tree::make(it));
-    tree->graft(".other.branch", Tree::make());  // not into get_leaf_values
+    tree->graft(".other.branch", Tree::make());  // not into copy_leaf_values
     tree->tag_as_array("branch.", true);
     // std::string serialized = JSONSerializer::serialize(tree);
     // std::cout << serialized << std::endl;
-    std::list<std::string> values = tree->get_leaf_values<> (".branch");
+    std::list<std::string> values = tree->copy_leaf_values<> (".branch");
     assert(std::equal(original_values.begin(), original_values.end(),
                       values.begin(),
                       string_compare));

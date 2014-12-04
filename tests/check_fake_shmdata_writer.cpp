@@ -50,11 +50,11 @@ main() {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     
     // getting audio shmdata name for fakeshmsrc
-    std::list<std::string> audio_shmdata = manager->
+    auto audio_shmdata = manager->
         invoke_info_tree<std::list<std::string>>(
             "audio",
             [&](switcher::data::Tree::ptrc tree){
-              return tree->get_child_keys<std::list>(".shmdata.writer.");
+              return tree->get_child_keys(".shmdata.writer.");
             });
     assert(!audio_shmdata.empty());
     //assert(manager->set_property("audio", "started", "false"));
@@ -67,11 +67,11 @@ main() {
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
      
     // getting audio shmdata name for fakeshmsrc
-    std::list<std::string> fakeshm_shm = manager->
+    auto fakeshm_shm = manager->
         invoke_info_tree<std::list<std::string>>(
             "fakeshmsrc",
             [&](switcher::data::Tree::ptrc tree){
-              return tree->get_child_keys<std::list>(".shmdata.writer.");
+              return tree->get_child_keys(".shmdata.writer.");
             });
     // FIXME assert(!fakeshm_shm.empty());
     // checking fakeshmsrc is exposing the same shmdata path

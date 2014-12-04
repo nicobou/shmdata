@@ -1551,7 +1551,7 @@ PJCall::create_outgoing_sdp(struct call *call,
   SDPDescription desc;
   using paths_t = std::list<std::string>;
   auto get_paths = [&] (data::Tree::ptrc tree) {
-    return data::Tree::get_leaf_values<std:: list>(tree,
+    return data::Tree::copy_leaf_values<std::list>(tree,
                                                    "buddy."
                                                    + std::to_string(id)
                                                    + ".connections");

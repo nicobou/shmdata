@@ -83,12 +83,29 @@ class Tree {
   bool has_data(const std::string &path) const;
   const Any read_data (const std::string &path) const;
   
-  // get child keys - returning a newly allocated container
-  template<template<class T, class = std::allocator<T>>
-           class Container = std::list>
-      Container<std::string>
-      get_child_keys(const std::string path) const {
-    Container<std::string> res;
+  // // get child keys - returning a newly allocated container
+  // template<template<class T, class = std::allocator<T>>
+  //          class Container = std::list>
+  //     Container<std::string>
+  //     get_child_keys(const std::string &path) const {
+  //   Container<std::string> res;
+  //   std::unique_lock<std::mutex> lock(mutex_);
+  //   auto found = get_node(path);
+  //   if (!found.first.empty()) {
+  //     res.resize(found.second->second->childrens_.size());
+  //     std::transform(found.second->second->childrens_.cbegin(),
+  //                    found.second->second->childrens_.cend(),
+  //                    res.begin(),
+  //                    [](const child_type &child) {
+  //                      return child.first;
+  //                    });
+  //   }
+  //   return res;
+  // }
+
+    // get child keys - returning a newly allocated list
+  std::list<std::string> get_child_keys(const std::string &path) const {
+    std::list<std::string> res;
     std::unique_lock<std::mutex> lock(mutex_);
     auto found = get_node(path);
     if (!found.first.empty()) {
@@ -105,7 +122,7 @@ class Tree {
 
   // get child key in place, use with std::insert_iterator
   template<typename Iter>
-  void get_child_keys(const std::string path, Iter pos) const {
+  bool copy_and_insert_child_keys(std::string path, Iter pos) const {
     std::unique_lock<std::mutex> lock(mutex_);
     auto found = get_node(path);
     if (!found.first.empty()) {
@@ -115,13 +132,15 @@ class Tree {
                      [](const child_type &child) {
                        return child.first;
                      });
+      return true;
     }
+    return false;
   }
   
   // get leaf values in a newly allocated container
   template< template<class T, class = std::allocator<T>> class Container = std::list>
       Container<std::string>
-      get_leaf_values(const std::string path) const {
+      copy_leaf_values(const std::string &path) const {
     Container<std::string> res;
     Tree::ptr tree;
     {  // finding the node
@@ -155,24 +174,13 @@ class Tree {
   static bool is_array(Tree::ptrc tree, const std::string &path);
   static bool has_data(Tree::ptrc tree, const std::string &path);
   static const Any read_data (Tree::ptrc tree, const std::string &path);
-  // get child keys - returning a newly allocated container
-  template<template<class T, class = std::allocator<T>>
-           class Container = std::list>
-      static Container<std::string> get_child_keys(Tree::ptrc tree, const std::string path) {
-    return tree->get_child_keys<Container>(path);
-  }
-  // get child key in place, use with std::insert_iterator
-  template<typename Iter>
-  static void get_child_keys(Tree::ptrc tree, const std::string path, Iter pos) {
-    tree->get_child_keys<Iter> (path, pos);
-  }
 
-  // get leaf values - returning a newly allocated container
+  // copy leaf values - returning a newly allocated container
   // (not working with forward_list)
   template<template<class T, class = std::allocator<T>>
            class Container = std::list>
-      static Container<std::string> get_leaf_values(Tree::ptrc tree, const std::string path) {
-    return tree->get_leaf_values<Container>(path);
+      static Container<std::string> copy_leaf_values(Tree::ptrc tree, const std::string path) {
+    return tree->copy_leaf_values<Container>(path);
   }
   
   //Tree modifications:

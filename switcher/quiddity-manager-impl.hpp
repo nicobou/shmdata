@@ -84,7 +84,7 @@ class QuiddityManager_Impl
 
   // information tree
   template<typename R>
-  R invoke_info_tree (const std::string &nick_name,
+  R invoke_info_tree(const std::string &nick_name,
                       std::function<R(data::Tree::ptrc tree)> fun){
     auto it = quiddities_nick_names_.find(nick_name);
     if (quiddities_nick_names_.end() == it)
@@ -93,6 +93,31 @@ class QuiddityManager_Impl
   }  
   std::string get_info(const std::string &nick_name,
                        const std::string &path);
+
+  template<typename R,
+           typename ...ATs>
+  R use_tree(const std::string &nick_name,
+              R(data::Tree::*function)(ATs...) const,
+              ATs ...args) {
+    auto it = quiddities_nick_names_.find(nick_name);
+    if (quiddities_nick_names_.end() == it)
+      return R();
+    return quiddities_[quiddities_nick_names_[nick_name]]->
+        tree<R, ATs...>(std::forward<R(data::Tree::*)(ATs...) const>(function),
+             std::forward<ATs>(args)...);
+  }
+
+  template<typename ...ATs>
+  void use_tree(const std::string &nick_name,
+                void(data::Tree::*function)(ATs...) const,
+                ATs ...args) {
+    auto it = quiddities_nick_names_.find(nick_name);
+    if (quiddities_nick_names_.end() == it)
+      return;
+    quiddities_[quiddities_nick_names_[nick_name]]->
+        tree<ATs...>(std::forward<void(data::Tree::*)(ATs...) const>(function),
+             std::forward<ATs>(args)...);
+  }
 
   // **** properties
   // doc (json formatted)

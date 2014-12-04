@@ -141,6 +141,7 @@ libswitcher_@LIBSWITCHER_API_VERSION@_la_include_HEADERS = \
     jack-sink.hpp \
     json-builder.hpp \
     logger.hpp \
+    make-consultable.hpp \
     method.hpp \
     on-caps.hpp \
     plugin-loader.hpp \

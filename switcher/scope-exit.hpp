@@ -27,7 +27,7 @@
 namespace scope_guard {
 template<typename Fun> class ScopeGuard {
  public:
-  explicit ScopeGuard(Fun && fun):
+  explicit ScopeGuard(Fun &&fun):
       fun_(std::move(fun)) {
   }
   ~ScopeGuard() {
@@ -52,4 +52,4 @@ ScopeGuard<Fun> operator+(ScopeGuardOnExit, Fun && fn) {
   auto CONCATENATE(on_scope_exit_var, __LINE__) \
   = ::scope_guard::ScopeGuardOnExit() + [&]()
 
-#endif  // __SWITCHER_SCOPE_EXIT_H__
+#endif

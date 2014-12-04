@@ -39,6 +39,7 @@
 #include "./quiddity-documentation.hpp"
 #include "./json-builder.hpp"
 #include "./gobject-wrapper.hpp"
+#include "./make-consultable.hpp"
 
 namespace switcher {
 class QuiddityManager_Impl;
@@ -110,9 +111,9 @@ class Quiddity {
   R invoke_info_tree (std::function<R(data::Tree::ptrc tree)> fun) {
     return fun(information_tree_.get());
   }
-  
   std::string get_info(const std::string &path);
-
+  Make_consultable(data::Tree, information_tree_.get(), tree);
+    
   // shmdata socket names
   static std::string get_socket_name_prefix();
   static std::string get_socket_dir();

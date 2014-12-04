@@ -23,6 +23,7 @@ check_PROGRAMS = \
     check_fakesink \
     check_gst_pipeline \
     check_information_tree \
+    check_make_consultable \
     check_manager \
     check_property_mapper \
     check_property_subscriber \
@@ -48,6 +49,9 @@ check_gst_pipeline_SOURCES = \
 
 check_information_tree_SOURCES = \
     check_information_tree.cpp
+
+check_make_consultable_SOURCES = \
+    check_make_consultable.cpp
 
 check_manager_SOURCES =\
     check_manager.cpp

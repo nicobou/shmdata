@@ -19,6 +19,8 @@
 
 //#include <gst/gst.h>
 #include <string>
+#include <list>
+#include <vector>
 #include <cassert>
 #include "switcher/quiddity-manager.hpp"
 #include "switcher/information-tree.hpp"
@@ -36,6 +38,8 @@ property_cb(std::string /*subscriber_name*/,
 int
 main() {
   {
+    using namespace std;
+    
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager("check-fakesink");
     //preparing fakesink
@@ -48,13 +52,22 @@ main() {
     // FIXME synchronize with audio registration of audio shmdata writer
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     
-    // getting audio shmdata name and connecting fakesink with
-    std::list<std::string> audio_shmdata = manager->
-        invoke_info_tree<std::list<std::string>>(
-            "audio",
-            [&](switcher::data::Tree::ptrc tree){
-              return tree->get_child_keys<std::list>(".shmdata.writer.");
-            });
+    // std::list<std::string> audio_shmdata;
+    // auto insert_it = std::insert_iterator<decltype(audio_shmdata)>(audio_shmdata,
+    //                                                                audio_shmdata.begin());
+    // auto inserted =
+    //     manager->use_tree_1<bool, std::string, decltype(insert_it)>(
+    //         std::string("audio"),
+    //         &switcher::data::Tree::copy_and_insert_child_keys<decltype(insert_it)>,
+    //         std::string(".shmdata.writer."),
+    //         insert_it);
+    // assert(inserted);
+
+    auto audio_shmdata =
+        manager->use_tree<std::list<std::string>, const std::string &>(
+            std::string("audio"),
+            &switcher::data::Tree::get_child_keys,
+           std::string(".shmdata.writer."));
     assert(!audio_shmdata.empty());
     assert(manager->invoke_va("vu", "connect", nullptr,
                               // connecting to first shmdata found:

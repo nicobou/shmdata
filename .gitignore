@@ -94,6 +94,7 @@ tests/check_fake_shmdata_writer
 tests/check_fakesink
 tests/check_gst_pipeline
 tests/check_information_tree
+tests/check_make_consultable
 tests/check_manager
 tests/check_property_mapper
 tests/check_property_subscriber

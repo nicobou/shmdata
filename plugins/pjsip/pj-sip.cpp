@@ -21,11 +21,14 @@
 
 namespace switcher {
 SWITCHER_DECLARE_PLUGIN(PJSIP);
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PJSIP,
-                                     "SIP (Session Initiation Protocol)",
-                                     "network",
-                                     "Manages user sessions",
-                                     "LGPL", "sip", "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    PJSIP,
+    "SIP (Session Initiation Protocol)",
+    "network",
+    "Manages user sessions",
+    "LGPL",
+    "sip",
+    "Nicolas Bouillot");
 
 // according to pjsip documentation:
 // Application should only instantiate
