@@ -140,10 +140,8 @@ StringDictionary::read_entry(const gchar *name, void *user_data)
   StringDictionary *context = static_cast<StringDictionary *>(user_data);
   std::string val = context->
       invoke_info_tree<std::string>([&](data::Tree::ptrc tree) -> std::string {
-          return data::Tree::read_data(
-              tree,
-              std::string("dico.")
-              + data::Tree::escape_dots(name)).copy_as<std::string>();
+          return tree->read_data(std::string("dico.")
+                                 + data::Tree::escape_dots(name)).copy_as<std::string>();
         });
   return g_strdup(val.c_str());  // FIXME make method class not requiring g_strdup
 }

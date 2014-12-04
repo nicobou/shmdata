@@ -47,7 +47,7 @@ namespace data {
 class Tree {
  public:
   using ptr = std::shared_ptr<Tree>;  // shared
-  using ptrc = const Tree *;  // sonst
+  using ptrc = const Tree *;  // const
   using rptr = Tree *;  // raw
   using child_type = std::pair<std::string, Tree::ptr>;
   using childs_t = std::list<child_type>;
@@ -58,52 +58,34 @@ class Tree {
   
   // factory
   static Tree::ptr make();
-
-  template<typename ValueType>
-  static Tree::ptr make(ValueType data) {
+  template<typename ValueType> static Tree::ptr make(ValueType data) {
     std::shared_ptr<Tree> tree;  //can't use make_shared because ctor is private
     tree.reset(new Tree(data));
     tree->me_ = tree;
     return tree;
   }
-
   static Tree::ptr make(const char *data);  // Tree will store a std::string
-
+  
   // escaping dots from a keys ("." internally replaced by "__DOT__")
   static std::string escape_dots(const std::string &str);
   static std::string unescape_dots(const std::string &str);
-  
+
+  //walk
+  static void preorder_tree_walk(Tree::ptrc tree,
+                                 Tree::OnNodeFunction on_visiting_node,
+                                 Tree::OnNodeFunction on_node_visited);
+
   //const methods
   bool is_leaf() const;
   bool is_array() const;
   bool has_data() const;
-  const Any read_data () const;
+  const Any &read_data () const;
   bool is_leaf(const std::string &path) const;
   bool is_array(const std::string &path) const;
   bool has_data(const std::string &path) const;
-  const Any read_data (const std::string &path) const;
+  const Any &read_data (const std::string &path) const;
   
-  // // get child keys - returning a newly allocated container
-  // template<template<class T, class = std::allocator<T>>
-  //          class Container = std::list>
-  //     Container<std::string>
-  //     get_child_keys(const std::string &path) const {
-  //   Container<std::string> res;
-  //   std::unique_lock<std::mutex> lock(mutex_);
-  //   auto found = get_node(path);
-  //   if (!found.first.empty()) {
-  //     res.resize(found.second->second->childrens_.size());
-  //     std::transform(found.second->second->childrens_.cbegin(),
-  //                    found.second->second->childrens_.cend(),
-  //                    res.begin(),
-  //                    [](const child_type &child) {
-  //                      return child.first;
-  //                    });
-  //   }
-  //   return res;
-  // }
-
-    // get child keys - returning a newly allocated list
+  // get child keys - returning a newly allocated list
   std::list<std::string> get_child_keys(const std::string &path) const {
     std::list<std::string> res;
     std::unique_lock<std::mutex> lock(mutex_);
@@ -161,28 +143,6 @@ class Tree {
     return res;
   }
  
-  
-  //static version of const methods, for being used with invoke_info_tree
-  static void preorder_tree_walk(Tree::ptrc tree,
-                                 Tree::OnNodeFunction on_visiting_node,
-                                 Tree::OnNodeFunction on_node_visited);
-  static bool is_leaf(Tree::ptrc tree);
-  static bool is_array(Tree::ptrc tree);
-  static bool has_data(Tree::ptrc tree);
-  static const Any read_data (Tree::ptrc tree);
-  static bool is_leaf(Tree::ptrc tree, const std::string &path);
-  static bool is_array(Tree::ptrc tree, const std::string &path);
-  static bool has_data(Tree::ptrc tree, const std::string &path);
-  static const Any read_data (Tree::ptrc tree, const std::string &path);
-
-  // copy leaf values - returning a newly allocated container
-  // (not working with forward_list)
-  template<template<class T, class = std::allocator<T>>
-           class Container = std::list>
-      static Container<std::string> copy_leaf_values(Tree::ptrc tree, const std::string path) {
-    return tree->copy_leaf_values<Container>(path);
-  }
-  
   //Tree modifications:
   Any get_data();
   void set_data(const Any &data);

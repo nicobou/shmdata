@@ -1551,10 +1551,9 @@ PJCall::create_outgoing_sdp(struct call *call,
   SDPDescription desc;
   using paths_t = std::list<std::string>;
   auto get_paths = [&] (data::Tree::ptrc tree) {
-    return data::Tree::copy_leaf_values<std::list>(tree,
-                                                   "buddy."
-                                                   + std::to_string(id)
-                                                   + ".connections");
+    return tree->copy_leaf_values<std::list>("buddy."
+                                             + std::to_string(id)
+                                             + ".connections");
   };
   paths_t paths = call->instance->sip_instance_->
       invoke_info_tree<paths_t>(get_paths);
@@ -1569,9 +1568,8 @@ PJCall::create_outgoing_sdp(struct call *call,
     std::string data = manager->
         invoke_info_tree<std::string>("siprtp",
                                       [&](data::Tree::ptrc tree) -> std::string {
-                                        return
-                                        data::Tree::read_data(tree, "rtp_caps."
-                                                              + it).copy_as<std::string>();
+                                        return tree->read_data("rtp_caps."
+                                                               + it).copy_as<std::string>();
                                       });
     GstCaps *caps = gst_caps_from_string(data.c_str());
     On_scope_exit {gst_caps_unref(caps);};

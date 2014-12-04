@@ -73,7 +73,7 @@ Any Tree::get_data(){
   return data_;
 }
 
-const Any Tree::read_data() const{
+const Any &Tree::read_data() const {
   std::unique_lock<std::mutex> lock(mutex_);
   return data_;
 }
@@ -118,13 +118,13 @@ Any Tree::get_data(const std::string &path) {
   return res;
 }
 
-const Any Tree::read_data(const std::string &path) const {
+const Any &Tree::read_data(const std::string &path) const {
   std::unique_lock<std::mutex> lock(mutex_);
   auto found = get_node(path);
   if (!found.first.empty())
     return found.second->second->data_;
-  const Any res;
-  return res;
+  static Any any;
+  return any;
 }
 
 bool Tree::set_data(const std::string &path, const Any &data) {
@@ -259,38 +259,6 @@ bool Tree::is_array(const std::string &path) const {
   if (!found.first.empty())
     return found.second->second->is_array_;
   return false;
-}
-
-bool Tree::is_leaf(Tree::ptrc tree) {
-  return tree->is_leaf();
-}
-
-bool Tree::is_array(Tree::ptrc tree) {
-  return tree->is_array();
-}
-
-bool Tree::has_data(Tree::ptrc tree) {
-  return tree->has_data();
-}
-
-const Any Tree::read_data (Tree::ptrc tree) {
-  return tree->read_data();
-}
-
-bool Tree::is_leaf(Tree::ptrc tree, const std::string &path) {
-  return tree->is_leaf(path);
-}
-
-bool Tree::is_array(Tree::ptrc tree, const std::string &path) {
-  return tree->is_array(path);
-}
-
-bool Tree::has_data(Tree::ptrc tree, const std::string &path) {
-  return tree->has_data(path);
-}
-
-const Any Tree::read_data (Tree::ptrc tree, const std::string &path) {
-  return tree->read_data(path);
 }
 
 std::string Tree::escape_dots(const std::string &str) {

@@ -88,14 +88,8 @@ std::string RtpDestination::get_sdp() {
   for (auto &it : source_streams_) {
     std::string string_caps = session_->
       invoke_info_tree<std::string>([&](data::Tree::ptrc tree) -> std::string {
-	  return data::Tree::read_data(tree, "rtp_caps." + it.first).copy_as<std::string>();
+	  return tree->read_data("rtp_caps." + it.first).copy_as<std::string>();
             });
-    // std::string string_caps =
-    // session_->
-    //     cmi_invoke<const Any>(
-    //         static_cast<const Any(data::Tree::*)(const std::string &) const>(&data::Tree::read_data), 
-    //         //session_->select_overload<const Any, const std::string &>(&data::Tree::read_data),
-    //         "rtp_caps." + it.first);
     GstCaps *caps = gst_caps_from_string(string_caps.c_str());
     On_scope_exit{gst_caps_unref(caps);};
     gint port = atoi(it.second.c_str());
