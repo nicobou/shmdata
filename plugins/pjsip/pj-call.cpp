@@ -1566,7 +1566,7 @@ PJCall::create_outgoing_sdp(struct call *call,
     std::string data = manager->
         use_tree<const Any &, const std::string &>(
         std::string("siprtp"),
-        &data::Tree::read_branch_data,
+        &data::Tree::branch_read_data,
         std::string("rtp_caps.") + it).copy_as<std::string>();
 
     GstCaps *caps = gst_caps_from_string(data.c_str());

@@ -27,7 +27,7 @@
 #include "switcher/information-tree-json.hpp"
 
 //----------------- a custom struct without operator <<
-struct Widget:public DefaultSerializable<Widget> {
+struct Widget: public DefaultSerializable<Widget> {
 };
 
 //----------------- a custom struct with operator <<
@@ -96,10 +96,10 @@ main() {
     tree->graft("child1", Tree::make());
     tree->graft("child1.child2", Tree::make());
     tree->graft("child1.child2.child3", Tree::make());
-    assert(tree->is_leaf("child1.child2.child3"));
-    assert(!tree->is_leaf("child1.child2"));
-    assert(!tree->is_leaf("child1"));
-    assert(!tree->is_leaf("foofoo"));
+    assert(tree->branch_is_leaf("child1.child2.child3"));
+    assert(!tree->branch_is_leaf("child1.child2"));
+    assert(!tree->branch_is_leaf("child1"));
+    assert(!tree->branch_is_leaf("foofoo"));
   }
   {  // set/get data with path
     Tree::ptr tree = Tree::make();
@@ -123,12 +123,12 @@ main() {
     tree->graft("child1.child2", Tree::make());
     assert(tree->set_data("child1.child2", "test"));
     assert(tree->set_data("child1", "test"));
-    assert(tree->has_data("child1.child2"));
-    assert(tree->has_data("child1"));
+    assert(tree->branch_has_data("child1.child2"));
+    assert(tree->branch_has_data("child1"));
     assert(tree->set_data("child1.child2", Any()));
     assert(tree->set_data("child1", Any()));
-    assert(!tree->has_data("child1.child2"));
-    assert(!tree->has_data("child1"));
+    assert(!tree->branch_has_data("child1.child2"));
+    assert(!tree->branch_has_data("child1"));
   }
   {  // Any to string
     Any n;

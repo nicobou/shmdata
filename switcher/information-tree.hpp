@@ -80,10 +80,10 @@ class Tree {
   bool is_array() const;
   bool has_data() const;
   const Any &read_data () const;
-  bool is_leaf(const std::string &path) const;
-  bool is_array(const std::string &path) const;
-  bool has_data(const std::string &path) const;
-  const Any &read_branch_data (const std::string &path) const;
+  bool branch_is_leaf(const std::string &path) const;
+  bool branch_is_array(const std::string &path) const;
+  bool branch_has_data(const std::string &path) const;
+  const Any &branch_read_data (const std::string &path) const;
   
   // get child keys - returning a newly allocated list
   std::list<std::string> get_child_keys(const std::string &path) const;

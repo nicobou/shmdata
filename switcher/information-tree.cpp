@@ -93,7 +93,7 @@ void Tree::set_data(std::nullptr_t ptr) {
   data_ = ptr;
 }
 
-bool Tree::is_leaf(const std::string &path) const {
+bool Tree::branch_is_leaf(const std::string &path) const {
   std::unique_lock<std::mutex> lock(mutex_);
   auto found = get_node(path);
   if (!found.first.empty())
@@ -101,7 +101,7 @@ bool Tree::is_leaf(const std::string &path) const {
   return false;
 }
 
-bool Tree::has_data(const std::string &path) const {
+bool Tree::branch_has_data(const std::string &path) const {
   std::unique_lock<std::mutex> lock(mutex_);
   auto found = get_node(path);
   if (!found.first.empty())
@@ -118,7 +118,7 @@ Any Tree::get_data(const std::string &path) {
   return res;
 }
 
-const Any &Tree::read_branch_data(const std::string &path) const {
+const Any &Tree::branch_read_data(const std::string &path) const {
   std::unique_lock<std::mutex> lock(mutex_);
   auto found = get_node(path);
   if (!found.first.empty())
@@ -253,7 +253,7 @@ bool Tree::tag_as_array(const std::string &path, bool is_array) {
   return true;
 }
 
-bool Tree::is_array(const std::string &path) const {
+bool Tree::branch_is_array(const std::string &path) const {
   std::unique_lock<std::mutex> lock(mutex_);
   auto found = get_node(path);
   if (!found.first.empty())

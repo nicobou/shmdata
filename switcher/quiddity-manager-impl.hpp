@@ -101,7 +101,7 @@ class QuiddityManager_Impl
               ATs ...args) {
     auto it = quiddities_nick_names_.find(nick_name);
     if (quiddities_nick_names_.end() == it){
-      static typename std::decay<R>::type r; // in case of R is a reference
+      static typename std::decay<R>::type r; // if R is a reference
       return r;
     }
     return quiddities_[quiddities_nick_names_[nick_name]]->
