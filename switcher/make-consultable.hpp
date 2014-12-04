@@ -70,4 +70,42 @@
                   "consultation requires const methods only");          \
   }
 
+
+// class that having objects in a map container member,
+// returning default constructed R if key not found
+#define Forward_consultable_from_map(_map_key_type,                     \
+                                     _map_value_type,                   \
+                                     _map_member,                       \
+                                     _consultable_type,                 \
+                                     _forward_metod_name,               \
+                                     _access_method_name)               \
+  template<typename R,                                                  \
+           typename ...ATs>                                             \
+      R _forward_method_name(                                           \
+          const typename std::decay<_map_key_type> &key,                \
+          R(_consultable_type::*function)(ATs...) const,                \
+          ATs ...args) {                                                \
+    auto it = _map_member.find(key);                                    \
+    if (_map_member.end() == it){                                       \
+      static typename std::decay<R>::type r; /*if R is a reference*/    \
+      return r;                                                         \
+    }                                                                   \
+    return it->tree<R, ATs...>(                                         \
+        std::forward<R(_consultable_type::*)(ATs...) const>(function),  \
+        std::forward<ATs>(args)...);                                    \
+  }                                                                     \
+                                                                        \
+  template<typename ...ATs>                                             \
+  void _forward_method_name(                                            \
+      const typename std::decay<_map_key_type> &key,                    \
+        voir(_consultable_type::*function)(ATs...) const,               \
+        ATs ...args) {                                                  \
+    auto it = _map_member.find(key);                                    \
+    if (_map_member.end() == it)                                        \
+      return;                                                           \
+    it->tree<R, ATs...>(                                                \
+        std::forward<void(_consultable_type::*)(ATs...) const>(function), \
+        std::forward<ATs>(args)...);                                    \
+  }                                                                     \
+
 #endif
