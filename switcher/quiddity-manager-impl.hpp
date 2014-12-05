@@ -84,42 +84,21 @@ class QuiddityManager_Impl
   // information tree
   template<typename R>
   R invoke_info_tree(const std::string &nick_name,
-                      std::function<R(data::Tree::ptrc tree)> fun){
+                     std::function<R(data::Tree::ptrc tree)> fun){
     auto it = quiddities_.find(nick_name);
     if (quiddities_.end() == it)
       return fun(data::Tree::make ().get());
-  return quiddities_[nick_name]->invoke_info_tree<R>(fun);
+    return quiddities_[nick_name]->invoke_info_tree<R>(fun);
   }  
   std::string get_info(const std::string &nick_name,
                        const std::string &path);
-
-  template<typename R,
-           typename ...ATs>
-  R use_tree(const std::string &nick_name,
-              R(data::Tree::*function)(ATs...) const,
-              ATs ...args) {
-    auto it = quiddities_.find(nick_name);
-    if (quiddities_.end() == it){
-      static typename std::decay<R>::type r; // if R is a reference
-      return r;
-    }
-    return quiddities_[nick_name]->
-        tree<R, ATs...>(std::forward<R(data::Tree::*)(ATs...) const>(function),
-                        std::forward<ATs>(args)...);
-  }
-
-  template<typename ...ATs>
-  void use_tree(const std::string &nick_name,
-                void(data::Tree::*function)(ATs...) const,
-                ATs ...args) {
-    auto it = quiddities_.find(nick_name);
-    if (quiddities_.end() == it)
-      return;
-    quiddities_[nick_name]->
-        tree<ATs...>(std::forward<void(data::Tree::*)(ATs...) const>(function),
-                     std::forward<ATs>(args)...);
-  }
-
+  
+  Forward_consultable_from_map(tree,  // method used by quiddities to access the tree
+                               use_tree,  // public method consultation by others 
+                               std::string,  // quiddities key
+                               quiddities_,  // map member 
+                               data::Tree);  // type to consult
+  
   // **** properties
   // doc (json formatted)
   std::string get_properties_description(std::string quiddity_name);
