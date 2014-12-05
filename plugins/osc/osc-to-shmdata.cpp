@@ -75,7 +75,7 @@ bool OscToShmdata::start() {
   std::string shm_any_name = make_file_name("osc");
   shm_any_->set_path(shm_any_name.c_str());
   g_message("%s created a new shmdata any writer (%s)",
-            get_nick_name().c_str(), shm_any_name.c_str());
+            get_name().c_str(), shm_any_name.c_str());
   shm_any_->set_data_type("application/x-libloserialized-osc");
   shm_any_->start();
   register_shmdata(shm_any_);

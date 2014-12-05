@@ -64,7 +64,7 @@ bool JackAudioSource::init_gpipe() {
                               "connect",
                               "automatically connect to physical ports");
   
-  client_name_ = g_strdup(get_nick_name().c_str());
+  client_name_ = g_strdup(get_name().c_str());
 
   client_name_spec_ =
       custom_props_->make_string_property("jack-client-name",

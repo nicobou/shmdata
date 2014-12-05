@@ -100,7 +100,7 @@ bool PluginLoader::close() {
 
 std::string PluginLoader::get_class_name() {
   if (module_ == nullptr)
-    return "";
+    return std::string();
   return class_name_;
 }
 

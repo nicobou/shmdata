@@ -138,32 +138,16 @@ Quiddity::Quiddity():
 Quiddity::~Quiddity() {
 }
 
-std::string Quiddity::get_name() {
+const std::string &Quiddity::get_name() {
   return name_;
 }
 
-const char *Quiddity::get_name_cstr() {
-  return name_.c_str();
-}
-
-std::string Quiddity::get_nick_name() {
-  return nick_name_;
-}
-
-const char *Quiddity::get_nickname_cstr() {
-  return nick_name_.c_str();
-}
-
 bool Quiddity::set_name(std::string name) {
-  name_ = name;
-  if (nick_name_.empty())
-    nick_name_ = name;
-  return true;
-}
-
-bool Quiddity::set_nick_name(std::string nick_name) {
-  nick_name_ = nick_name;
-  return true;
+  if (!name.empty()) {
+    name_ = std::move(name);
+    return true;
+  }
+  return false;
 }
 
 bool
@@ -282,7 +266,6 @@ Quiddity::set_signal_description(const std::string long_name,
                                          arg_description);
 
   // signal_emit ("on-new-signal-registered",
-  //  get_nick_name ().c_str (),
   //  signal_name.c_str (),
   //  (JSONBuilder::get_string (signals_[signal_name]->get_json_root_node (), true)).c_str ());
   return true;
@@ -743,7 +726,7 @@ std::string Quiddity::get_signals_description() {
 
 std::string Quiddity::get_signal_description(std::string signal_name) {
   if (signals_.find(signal_name) == signals_.end())
-    return "";
+    return std::string();
 
   Signal::ptr sig = signals_[signal_name];
   return sig->get_description();
@@ -754,7 +737,7 @@ std::string Quiddity::make_file_name(std::string suffix) {
   QuiddityManager_Impl::ptr manager = manager_impl_.lock();
   if ((bool) manager)
     connector_name.append("/tmp/switcher_" + manager->get_name() + "_" +
-                          nick_name_ + "_" + suffix);
+                          name_ + "_" + suffix);
   return connector_name;
 }
 

@@ -29,7 +29,7 @@ class StartableQuiddity {
  public:
   typedef std::shared_ptr<StartableQuiddity> ptr;
   StartableQuiddity();
-  virtual ~ StartableQuiddity();
+  virtual ~StartableQuiddity();
   StartableQuiddity(const StartableQuiddity &) = delete;
   StartableQuiddity &operator=(const StartableQuiddity &) = delete;
 
@@ -44,8 +44,8 @@ class StartableQuiddity {
   static gboolean get_started(void *user_data);
   static void set_started(gboolean started, void *user_data);
 
-  bool started_;
-  GParamSpec *started_prop_;  // FIXME should be static
+  bool started_{false};
+  GParamSpec *started_prop_{nullptr};  // FIXME should be static
   CustomPropertyHelper::ptr startable_custom_props_;
 };
 }  // namespace switcher

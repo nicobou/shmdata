@@ -751,11 +751,11 @@ QuiddityManager::get_signal_description_by_class(std::string class_name,
 }
 
 void QuiddityManager::auto_init(std::string quiddity_name) {
-  if (!manager_impl_->exists(quiddity_name))
-    return;
   Quiddity::ptr quidd = manager_impl_->get_quiddity(quiddity_name);
+  if (!quidd)
+    return;
   QuiddityManagerWrapper::ptr wrapper =
-      std::dynamic_pointer_cast<QuiddityManagerWrapper> (quidd);
+      std::dynamic_pointer_cast<QuiddityManagerWrapper>(quidd);
   if (wrapper)
     wrapper->set_quiddity_manager(me_.lock());
 }

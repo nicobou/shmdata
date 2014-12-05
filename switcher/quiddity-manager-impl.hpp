@@ -66,7 +66,6 @@ class QuiddityManager_Impl
   std::string get_quiddity_description(std::string quiddity_name);
   std::string get_quiddities_description();
   bool class_exists(std::string class_name);
-  bool exists(std::string quiddity_name);
 
   // **** creation/remove/get
   std::string create(std::string quiddity_class);
@@ -86,10 +85,10 @@ class QuiddityManager_Impl
   template<typename R>
   R invoke_info_tree(const std::string &nick_name,
                       std::function<R(data::Tree::ptrc tree)> fun){
-    auto it = quiddities_nick_names_.find(nick_name);
-    if (quiddities_nick_names_.end() == it)
-      return fun (data::Tree::make ().get());
-  return quiddities_[quiddities_nick_names_[nick_name]]->invoke_info_tree<R>(fun);
+    auto it = quiddities_.find(nick_name);
+    if (quiddities_.end() == it)
+      return fun(data::Tree::make ().get());
+  return quiddities_[nick_name]->invoke_info_tree<R>(fun);
   }  
   std::string get_info(const std::string &nick_name,
                        const std::string &path);
@@ -99,26 +98,26 @@ class QuiddityManager_Impl
   R use_tree(const std::string &nick_name,
               R(data::Tree::*function)(ATs...) const,
               ATs ...args) {
-    auto it = quiddities_nick_names_.find(nick_name);
-    if (quiddities_nick_names_.end() == it){
+    auto it = quiddities_.find(nick_name);
+    if (quiddities_.end() == it){
       static typename std::decay<R>::type r; // if R is a reference
       return r;
     }
-    return quiddities_[quiddities_nick_names_[nick_name]]->
+    return quiddities_[nick_name]->
         tree<R, ATs...>(std::forward<R(data::Tree::*)(ATs...) const>(function),
-             std::forward<ATs>(args)...);
+                        std::forward<ATs>(args)...);
   }
 
   template<typename ...ATs>
   void use_tree(const std::string &nick_name,
                 void(data::Tree::*function)(ATs...) const,
                 ATs ...args) {
-    auto it = quiddities_nick_names_.find(nick_name);
-    if (quiddities_nick_names_.end() == it)
+    auto it = quiddities_.find(nick_name);
+    if (quiddities_.end() == it)
       return;
-    quiddities_[quiddities_nick_names_[nick_name]]->
+    quiddities_[nick_name]->
         tree<ATs...>(std::forward<void(data::Tree::*)(ATs...) const>(function),
-             std::forward<ATs>(args)...);
+                     std::forward<ATs>(args)...);
   }
 
   // **** properties
@@ -159,8 +158,8 @@ class QuiddityManager_Impl
                             std::string property_name);
   // property subscribers info
   std::vector<std::string> list_property_subscribers();
-  std::vector < std::pair < std::string,
-                            std::string > >list_subscribed_properties(std::string subscriber_name);
+  std::vector<std::pair<std::string,
+                        std::string>>list_subscribed_properties(std::string subscriber_name);
   std::string list_property_subscribers_json();
   std::string
   list_subscribed_properties_json(std::string subscriber_name);
@@ -218,8 +217,8 @@ class QuiddityManager_Impl
   void mute_property_subscribers(bool muted);
 
   std::vector<std::string> list_signal_subscribers();
-  std::vector < std::pair < std::string,
-                            std::string > >list_subscribed_signals(std::string subscriber_name);
+  std::vector<std::pair<std::string, std::string>>
+      list_subscribed_signals(std::string subscriber_name);
   std::string list_signal_subscribers_json();
   std::string list_subscribed_signals_json(std::string subscriber_name);
 
@@ -242,8 +241,7 @@ class QuiddityManager_Impl
   explicit QuiddityManager_Impl(const std::string &);
   void make_classes_doc();
   void register_classes();
-  std::unordered_map<std::string, std::shared_ptr<Quiddity >>quiddities_{};
-  std::unordered_map<std::string, std::string> quiddities_nick_names_{};
+  std::unordered_map<std::string, std::shared_ptr<Quiddity>>quiddities_{};
   std::unordered_map<std::string,
                      std::shared_ptr<QuiddityPropertySubscriber>>property_subscribers_{};
   std::unordered_map<std::string,

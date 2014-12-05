@@ -70,22 +70,21 @@ void QuiddityPropertySubscriber::set_callback(Callback cb) {
 bool
 QuiddityPropertySubscriber::subscribe(Quiddity::ptr quid,
                                       std::string property_name) {
-  if (user_callback_ == nullptr) {
-    g_warning("cannot subscribe before setting a callback (%s %s)",
-              quid->get_nick_name().c_str(), property_name.c_str());
+  if (!quid || user_callback_ == nullptr) {
+    g_warning("cannot subscribe (%s %s)",
+              quid->get_name().c_str(), property_name.c_str());
     return false;
   }
-  std::pair<std::string, std::string> cur_pair;
-  cur_pair = std::make_pair(quid->get_nick_name(), property_name);
+  auto cur_pair = std::make_pair(quid->get_name(), property_name);
   if (prop_datas_.find(cur_pair) != prop_datas_.end()) {
     g_warning("not subscribing twice the same property (%s %s)",
-              quid->get_nick_name().c_str(), property_name.c_str());
+              quid->get_name().c_str(), property_name.c_str());
     return false;
   }
   PropertyData *prop = new PropertyData(); 
   prop->property_subscriber = this;
   prop->name = g_strdup(name_.c_str());
-  prop->quiddity_name = g_strdup(quid->get_nick_name().c_str());
+  prop->quiddity_name = g_strdup(quid->get_name().c_str());
   prop->property_name = g_strdup(property_name.c_str());
   prop->user_callback = user_callback_;
   prop->user_data = user_data_;
@@ -105,8 +104,9 @@ QuiddityPropertySubscriber::subscribe(Quiddity::ptr quid,
 bool
 QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid,
                                         std::string property_name) {
-  // std::pair<std::string, std::string> cur_pair;
-  auto cur_pair = std::make_pair(quid->get_nick_name(), property_name);
+  if (!quid)
+    return false;
+  auto cur_pair = std::make_pair(quid->get_name(), property_name);
   PropDataMap::iterator it = prop_datas_.find(cur_pair);
   if (it != prop_datas_.end()) {
     if(!quid->unsubscribe_property(property_name, property_cb, it->second)) {
@@ -121,12 +121,12 @@ QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid,
     return true;
   }
   g_warning("not unsubscribing a not registered property (%s %s)",
-            quid->get_nick_name().c_str(), property_name.c_str());
+            quid->get_name().c_str(), property_name.c_str());
   return false;
 }
 
 bool QuiddityPropertySubscriber::unsubscribe(Quiddity::ptr quid) {
-  auto quid_name = quid->get_nick_name();
+  auto quid_name = quid->get_name();
   std::vector<std::pair<std::string, std::string>> entries_to_remove;
   for (auto &it : prop_datas_)
     if (it.first.first == quid_name) {

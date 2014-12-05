@@ -82,22 +82,22 @@ void QuidditySignalSubscriber::set_callback(OnEmittedCallback cb) {
 bool
 QuidditySignalSubscriber::subscribe(Quiddity::ptr quid,
                                     std::string signal_name) {
-  if (user_callback_ == nullptr) {
-    g_warning("cannot subscribe before setting a callback (%s %s)",
-              quid->get_nick_name().c_str(), signal_name.c_str());
+  if (!quid || user_callback_ == nullptr) {
+    g_warning("cannot subscribe to signal (%s %s)",
+              quid->get_name().c_str(), signal_name.c_str());
     return false;
   }
   std::pair<std::string, std::string> cur_pair;
-  cur_pair = std::make_pair(quid->get_nick_name(), signal_name);
+  cur_pair = std::make_pair(quid->get_name(), signal_name);
   if (signal_datas_.find(cur_pair) != signal_datas_.end()) {
     g_warning("not subscribing twice the same signal (%s %s)",
-              quid->get_nick_name().c_str(), signal_name.c_str());
+              quid->get_name().c_str(), signal_name.c_str());
     return false;
   }
   SignalData *signal = new SignalData();
   signal->subscriber = this;
   signal->name = name_;
-  signal->quiddity_name = quid->get_nick_name();
+  signal->quiddity_name = quid->get_name();
   signal->signal_name = signal_name;
   signal->user_callback = user_callback_;
   signal->user_data = user_data_;
@@ -114,8 +114,10 @@ QuidditySignalSubscriber::subscribe(Quiddity::ptr quid,
 bool
 QuidditySignalSubscriber::unsubscribe(Quiddity::ptr quid,
                                       std::string signal_name) {
+  if(!quid)
+    return false;
   std::pair<std::string, std::string> cur_pair;
-  cur_pair = std::make_pair(quid->get_nick_name(), signal_name);
+  cur_pair = std::make_pair(quid->get_name(), signal_name);
   SignalDataMap::iterator it = signal_datas_.find(cur_pair);
   if (it != signal_datas_.end()) {
     quid->unsubscribe_signal(signal_name, signal_cb, it->second);
@@ -124,12 +126,12 @@ QuidditySignalSubscriber::unsubscribe(Quiddity::ptr quid,
     return true;
   }
   g_warning("not unsubscribing a not registered signal (%s %s)",
-            quid->get_nick_name().c_str(), signal_name.c_str());
+            quid->get_name().c_str(), signal_name.c_str());
   return false;
 }
 
 bool QuidditySignalSubscriber::unsubscribe(Quiddity::ptr quid) {
-  std::string quid_name = quid->get_nick_name();
+  std::string quid_name = quid->get_name();
   std::vector<std::pair<std::string, std::string>>keys_to_remove;
   for (auto &it : signal_datas_)
     if (it.first.first == quid_name) {
@@ -144,10 +146,10 @@ bool QuidditySignalSubscriber::unsubscribe(Quiddity::ptr quid) {
 std::vector<std::pair<std::string, std::string>>
     QuidditySignalSubscriber::list_subscribed_signals() {
   std::vector<std::pair<std::string, std::string>> res;
-  SignalDataMap::iterator it;
-  for (it = signal_datas_.begin(); it != signal_datas_.end(); it++) {
-    res.push_back(it->first);
+  for (auto &it: signal_datas_) {
+    res.push_back(it.first);
   }
   return res;
 }
-}
+
+}  // namespace switcher

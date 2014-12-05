@@ -63,11 +63,7 @@ class Quiddity {
   virtual bool init() = 0;
 
   // instance name
-  std::string get_name();
-  const char *get_name_cstr();
-  std::string get_nick_name();
-  const char *get_nickname_cstr();
-  bool set_nick_name(std::string nick_name);
+  const std::string &get_name();
   bool set_name(std::string name);
 
   // properties
@@ -150,7 +146,6 @@ class Quiddity {
 
   // naming
   std::string name_{};
-  std::string nick_name_{};
 
   // property
   bool register_property(GObject *object,

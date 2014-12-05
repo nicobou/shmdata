@@ -95,7 +95,7 @@ bool GTKVideo::init_gpipe() {
                nullptr);
   g_object_set_data(G_OBJECT(xvimagesink_),
                     "on-error-delete",
-                    (gpointer) get_nickname_cstr());
+                    (gpointer) get_name().c_str());
   set_sink_element(sink_bin_);
   is_fullscreen_ = FALSE;
   if (instances_counter_ == 0) {
@@ -135,7 +135,7 @@ bool GTKVideo::init_gpipe() {
     install_property(G_OBJECT(videobalance_), "hue", "hue", "Hue");
     install_property(G_OBJECT(videobalance_),
                      "saturation", "saturation", "Saturation");
-    title_ = g_strdup(get_nick_name().c_str());
+    title_ = g_strdup(get_name().c_str());
     title_prop_spec_ =
         gtk_custom_props_->make_string_property("title",
                                                 "Window Title",
@@ -208,7 +208,7 @@ gboolean GTKVideo::key_pressed_cb(GtkWidget * /*widget */ ,
     case GDK_q:
       manager = context->manager_impl_.lock();
       if ((bool) manager)
-        manager->remove(context->get_nick_name());
+        manager->remove(context->get_name());
       else
         g_debug("GTKVideo::key_pressed_cb q pressed, closing window");
       break;
@@ -291,7 +291,7 @@ void GTKVideo::delete_event_cb(GtkWidget * /*widget */ ,
   context->main_window_ = nullptr;
   QuiddityManager_Impl::ptr manager = context->manager_impl_.lock();
   if ((bool) manager)
-    manager->remove(context->get_nick_name());
+    manager->remove(context->get_name());
   else
     g_debug("GTKVideo::delete_event_cb cannot remove quiddity");
 }

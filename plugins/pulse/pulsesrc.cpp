@@ -144,7 +144,7 @@ bool PulseSrc::make_elements() {
   if (!GstUtils::make_element("bin", &pulsesrc_bin_))
     return false;
 
-  g_object_set(G_OBJECT(pulsesrc_), "client", get_nick_name().c_str(),
+  g_object_set(G_OBJECT(pulsesrc_), "client", get_name().c_str(),
                nullptr);
 
   gst_bin_add_many(GST_BIN(pulsesrc_bin_), pulsesrc_, capsfilter_, nullptr);

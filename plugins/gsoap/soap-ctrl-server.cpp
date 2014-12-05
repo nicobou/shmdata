@@ -491,12 +491,9 @@ controlService::create_quiddity(std::string quiddity_class,
     manager = ctrl_server->get_quiddity_manager();
 
   std::string name = manager->create(quiddity_class);
-  if (name != "")
-  {
+  if (!name.empty()) {
     *result = name;
-  }
-  else
-  {
+  } else {
     char *s = (char*)soap_malloc(this, 1024);
     sprintf(s, "%s cannot be created, see switcher logs", quiddity_class.c_str());
     return soap_senderfault("Quiddity creation error", s);
@@ -518,12 +515,9 @@ controlService::create_named_quiddity(std::string quiddity_class,
 
 
   std::string name = manager->create(quiddity_class, nick_name);
-  if (name != "")
-  {
+  if (!name.empty()) {
     *result = name;
-  }
-  else
-  {
+  } else {
     char *s = (char*)soap_malloc(this, 1024);
     sprintf(s, "%s cannot be created, see switcher logs", quiddity_class.c_str());
     return soap_senderfault("Quiddity creation error", s);

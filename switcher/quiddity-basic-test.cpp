@@ -57,7 +57,7 @@ QuiddityBasicTest::test_create(QuiddityManager::ptr manager,
 
   // testing without nick name
   std::string res_without_nick = manager->create(quiddity_class_name);
-  if (res_without_nick.compare("") == 0) {
+  if (res_without_nick.empty()) {
     g_warning("quiddity %s cannot be created (without nickname)",
               quiddity_class_name.c_str());
     return false;

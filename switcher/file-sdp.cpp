@@ -110,7 +110,7 @@ void FileSDP::pad_added_cb(GstElement * /*object */ , GstPad *pad,
     gst_object_unref(caps);
   context->register_shmdata(connector);
   g_message("%s created a new shmdata writer (%s)",
-            context->get_nick_name().c_str(), connector_name.c_str());
+            context->get_name().c_str(), connector_name.c_str());
 }
 
 gboolean FileSDP::to_shmdata_wrapped(gpointer uri, gpointer user_data) {

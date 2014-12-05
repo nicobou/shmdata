@@ -38,7 +38,7 @@ bool JackSink::init_gpipe() {
     return false;
   init_startable(this);
 
-  client_name_ = get_nick_name();
+  client_name_ = get_name();
   client_name_spec_ =
       custom_props_->make_string_property("jack-client-name",
                                           "the jack client name",

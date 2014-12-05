@@ -67,8 +67,6 @@ bool CreateRemoveSpy::init() {
                                               nullptr),
                  1,
                  string_type);
-
-  set_name("manager-spy");    // supposed to be a singleton with the use of "set_..._hook ()"
   return true;
 }
 

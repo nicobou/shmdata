@@ -256,7 +256,7 @@ DecodebinToShmdata::pad_to_shmdata_writer(GstElement * bin, GstPad *pad)
                     (fakesink, "handoff", (GCallback) on_handoff_cb,
                      shm_any.get()));
   g_debug("%s created a new shmdata writer (%s)",
-          gpipe_->get_nick_name().c_str(), shm_any_name.c_str());
+          gpipe_->get_name().c_str(), shm_any_name.c_str());
   gpipe_->register_shmdata(shm_any);
 }
 

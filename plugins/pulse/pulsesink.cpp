@@ -144,7 +144,7 @@ bool PulseSink::build_elements() {
   if (!devices_.empty())
     g_object_set(G_OBJECT(pulsesink), "device",
                  devices_.at(device_).name_.c_str(), nullptr);
-  g_object_set(G_OBJECT(pulsesink), "client", get_nick_name().c_str(),
+  g_object_set(G_OBJECT(pulsesink), "client", get_name().c_str(),
                nullptr);
   gst_bin_add_many(GST_BIN(pulsesink_bin_), pulsesink, audioconvert,
                    nullptr);

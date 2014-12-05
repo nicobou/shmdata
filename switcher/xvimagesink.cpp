@@ -74,7 +74,7 @@ bool Xvimagesink::init_gpipe() {
   gst_element_add_pad(sink_bin_.get_raw(), ghost_sinkpad);
   g_object_set_data(G_OBJECT(xvimagesink_.get_raw()),
                     "on-error-delete",
-                    (gpointer) get_nickname_cstr());
+                    (gpointer) get_name().c_str());
   set_sink_element(sink_bin_.get_raw());
   return true;
 }

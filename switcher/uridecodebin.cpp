@@ -376,7 +376,7 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement *bin, GstPad *pad) {
                    connector.get());
 
   g_message("%s created a new shmdata any writer (%s)",
-            get_nick_name().c_str(), connector_name.c_str());
+            get_name().c_str(), connector_name.c_str());
   register_shmdata(connector);
 
   // GstUtils::wait_state_changed (bin);

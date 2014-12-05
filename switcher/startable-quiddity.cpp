@@ -22,7 +22,6 @@
 
 namespace switcher {
 StartableQuiddity::StartableQuiddity():
-    started_(false),
     startable_custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 
@@ -31,7 +30,6 @@ StartableQuiddity::~StartableQuiddity() {
 
 void StartableQuiddity::init_startable(void *quiddity) {
   Quiddity *quid = static_cast<Quiddity *>(quiddity);
-
   started_prop_ =
       startable_custom_props_->make_boolean_property("started",
                                                      "started or not",
@@ -42,7 +40,9 @@ void StartableQuiddity::init_startable(void *quiddity) {
                                                      StartableQuiddity::get_started,
                                                      this);
   quid->install_property_by_pspec(startable_custom_props_->get_gobject(),
-                                  started_prop_, "started", "Started");
+                                  started_prop_,
+                                  "started",
+                                  "Started");
 }
 
 gboolean StartableQuiddity::get_started(void *user_data) {
@@ -68,4 +68,5 @@ void StartableQuiddity::set_started(gboolean started, void *user_data) {
 bool StartableQuiddity::is_started() {
   return started_;
 }
+
 }  // namespace switcher
