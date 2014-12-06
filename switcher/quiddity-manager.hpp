@@ -35,6 +35,7 @@
 #include "./quiddity-command.hpp"
 #include "./quiddity-manager-wrapper.hpp"
 #include "./information-tree.hpp"
+#include "./make-consultable.hpp"
 
 namespace switcher {
 class QuiddityManager
@@ -52,10 +53,8 @@ class QuiddityManager
                                   std::string property_name,
                                   std::vector<std::string> params,
                                   void *user_data);
-  typedef std::map<std::string, std::pair<PropCallback, void *>>
-      PropCallbackMap;
-  typedef std::map<std::string, std::pair<SignalCallback, void *>>
-      SignalCallbackMap;
+  typedef std::map<std::string, std::pair<PropCallback, void *>> PropCallbackMap;
+  typedef std::map<std::string, std::pair<SignalCallback, void *>> SignalCallbackMap;
 
   ~QuiddityManager();  // FIXME should be private?
   static QuiddityManager::ptr make_manager(std::string name);
@@ -73,12 +72,10 @@ class QuiddityManager
   std::vector<std::string>
   get_signal_subscribers_names(QuiddityManager::CommandHistory histo);
   void play_command_history(QuiddityManager::CommandHistory histo,
-                            QuiddityManager::PropCallbackMap *
-                            prop_cb_data,
-                            QuiddityManager::SignalCallbackMap *
-                            sig_cb_data,
+                            QuiddityManager::PropCallbackMap *prop_cb_data,
+                            QuiddityManager::SignalCallbackMap *sig_cb_data,
                             bool mute_property_and_signal_subscribers);
-  void reset_command_history(bool remove_created_quiddities);  // FIXME maybe implement undo and remove this  arg
+  void reset_command_history(bool remove_created_quiddities);
 
   // ************** plugins *******************************************************************
   bool scan_directory_for_plugins(std::string directory);
@@ -92,12 +89,13 @@ class QuiddityManager
   std::string get_quiddity_description(std::string quiddity_name);
   std::string get_quiddities_description();
   // create/remove/rename
-  std::string create(std::string class_name);       // returns the name
-  std::string create(std::string class_name, std::string nick_name);        // &?= chars are not allowed in nicknames
+  std::string create(std::string class_name);
+  // &?= chars are not allowed in nicknames
+  std::string create(std::string class_name, std::string nick_name);
   bool remove(std::string quiddity_name);
   bool rename(std::string nick_name, std::string new_nick_name);
 
-  // ****************** informations **********************************************************
+  // ****************** informations ******
   std::string get_info(const std::string &nick_name,
                        const std::string &path);
   template<typename R>
@@ -128,7 +126,7 @@ class QuiddityManager
                          std::forward<ATs>(args)...);
   }
 
-  // ****************** properties ************************************************************
+  // ****************** properties ********
   // doc (json formatted)
   std::string get_properties_description(std::string quiddity_name);
   std::string get_property_description(std::string quiddity_name,
