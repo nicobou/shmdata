@@ -30,15 +30,13 @@
   template<typename R,                                                  \
            typename ...ATs>                                             \
   inline R _consult_method(R(_member_type::*fun)(ATs...) const,		\
-			   ATs ...args)					\
-  {                                                                     \
+			   ATs ...args)	const {                         \
     return (_member_rawptr->*fun)(std::forward<ATs>(args)...);		\
   }                                                                     \
   									\
   template<typename ...ATs>                                             \
   inline void _consult_method(void(_member_type::*fun)(ATs...) const,	\
-			      ATs ...args)				\
-  {                                                                     \
+			      ATs ...args) const {                      \
     (_member_rawptr->*fun)(std::forward<ATs>(args)...);			\
   }                                                                     \
   									\
@@ -46,8 +44,7 @@
   template<typename R,                                                  \
            typename ...ATs>                                             \
   R _consult_method(R(_member_type::*function)(ATs...),                 \
-                    ATs ...args)                                        \
-  {                                                                     \
+                    ATs ...args) const {                                \
     static_assert(std::is_const<decltype(function)>::value,             \
                   "consultation is available for const methods only");  \
     return R();  /* for syntax only since assert should always fail */  \
@@ -55,8 +52,7 @@
                                                                         \
   template<typename ...ATs>                                             \
   void _consult_method(void(_member_type::*function)(ATs...),           \
-                       ATs ...args)                                     \
-  {                                                                     \
+                       ATs ...args) const {                             \
     static_assert(std::is_const<decltype(function)>::value,             \
                   "consultation is available for const methods only");  \
   }
@@ -72,56 +68,70 @@
   /*shared_ptr & unique_ptr*/                                           \
   /*using _forward_method##ConsultableType =*/				\
   /*  std::decay<_map_value_type>::type::*/                             \
-  /*  _consult_method ## ConsultableType; */				\
+      /*  _consult_method ## ConsultableType; */                        \
   									\
-    template<typename R,						\
-	     typename ...ATs>						\
-    R _forward_method(							\
-		      const typename std::decay<_map_key_type>::type &key, \
-		      R(_consultable_type::*function)(ATs...) const,	\
-		      ATs ...args) {					\
-      auto it = _map_member.find(key);					\
-      if (_map_member.end() == it){					\
-	static typename std::decay<R>::type r; /*if R is a reference*/	\
-	return r;							\
-      }									\
-      return it->second->_consult_method<R, ATs...>(			\
-						    std::forward<R(_consultable_type::*)(ATs...) const>(function), \
-						    std::forward<ATs>(args)...); \
+  template<typename R,                                                  \
+           typename ...ATs>						\
+  R _forward_method(							\
+      const typename std::decay<_map_key_type>::type &key,              \
+      R(_consultable_type::*function)(ATs...) const,                    \
+      ATs ...args) const {                                              \
+    auto it = _map_member.find(key);					\
+    if (_map_member.end() == it){					\
+      static typename std::decay<R>::type r; /*if R is a reference*/	\
+      return r;                                                         \
     }									\
+    return it->second->_consult_method<R, ATs...>(			\
+        std::forward<R(_consultable_type::*)(ATs...) const>(function),  \
+        std::forward<ATs>(args)...);                                    \
+  }									\
                                                                         \
-    template<typename ...ATs>						\
-    void _forward_method(						\
-			 const typename std::decay<_map_key_type>::type &key, \
-			 void(_consultable_type::*function)(ATs...) const, \
-			 ATs ...args) {					\
-      auto it = _map_member.find(key);					\
-      if (_map_member.end() == it)					\
-	return;								\
-      it->second->_consult_method<ATs...>(				\
-					  std::forward<void(_consultable_type::*)(ATs...) const>( \
-												 function), \
-					  std::forward<ATs>(args)...);	\
-    }									\
+  template<typename ...ATs>						\
+  void _forward_method(                                                 \
+      const typename std::decay<_map_key_type>::type &key,              \
+      void(_consultable_type::*function)(ATs...) const,                 \
+      ATs ...args) const {                                              \
+    auto it = _map_member.find(key);					\
+    if (_map_member.end() == it)					\
+      return;								\
+    it->second->_consult_method<ATs...>(				\
+        std::forward<void(_consultable_type::*)(ATs...) const>(         \
+            function),                                                  \
+        std::forward<ATs>(args)...);                                    \
+  }									\
                                                                         \
-    /* disable invokation of non const*/				\
-    template<typename R,						\
-	     typename ...ATs>						\
-    R _forward_method(R(_consultable_type::*function)(ATs...),		\
-		      ATs ...args)					\
-    {									\
-      static_assert(std::is_const<decltype(function)>::value,		\
-		    "consultation is available for const methods only"); \
-      return R();  /* for syntax only */				\
-    }									\
+  /* disable invokation of non const*/                                  \
+  template<typename R,                                                  \
+           typename ...ATs>						\
+  R _forward_method(R(_consultable_type::*function)(ATs...),		\
+                    ATs ...args) const {                                \
+    static_assert(std::is_const<decltype(function)>::value,		\
+                  "consultation is available for const methods only");  \
+    return R();  /* for syntax only */                                  \
+  }									\
                                                                         \
-    template<typename ...ATs>						\
-    void _forward_method(void(_consultable_type::*function)(ATs...),	\
-			 ATs ...args)					\
-    {									\
-      static_assert(std::is_const<decltype(function)>::value,		\
-		    "consultation is available for const methods only"); \
-    }
+  template<typename ...ATs>						\
+  void _forward_method(void(_consultable_type::*function)(ATs...),	\
+                       ATs ...args) const {                             \
+    static_assert(std::is_const<decltype(function)>::value,		\
+                  "consultation is available for const methods only");  \
+  }
 
+#define Forward_consultable(_consult_method,                            \
+                            _member_rawptr,                             \
+                            _forward_method)                            \
+                                                                        \
+  template<typename R,                                                  \
+           typename ...ATs>						\
+  inline R _forward_method(ATs ...args) const {                         \
+    return _member_rawptr->                                             \
+        _consult_method<R, ATs...>(std::forward<ATs>(args)...);         \
+  }									\
+                                                                        \
+  template<typename ...ATs>						\
+  inline void _forward_method(ATs ...args) const {                      \
+    _member_rawptr->                                                    \
+        _consult_method<ATs...>(std::forward<ATs>(args)...);            \
+  }									\
 
 #endif

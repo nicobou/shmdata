@@ -105,6 +105,7 @@ class QuiddityManager
   }
 
 
+  //  Forward_consultable(use_tree, manager_impl_, use_tree);
   template<typename R,
            typename ...ATs>
   R use_tree(const std::string &nick_name,
