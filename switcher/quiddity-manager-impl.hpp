@@ -97,7 +97,7 @@ class QuiddityManager_Impl
                                use_tree,  // public method consultation by others 
                                std::string,  // quiddities key
                                quiddities_,  // map member 
-                               data::Tree);  // type to consult
+                               Quiddity);
   
   // **** properties
   // doc (json formatted)

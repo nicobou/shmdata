@@ -105,27 +105,11 @@ class QuiddityManager
   }
 
 
-  //  Forward_consultable(use_tree, manager_impl_, use_tree);
-  template<typename R,
-           typename ...ATs>
-  R use_tree(const std::string &nick_name,
-             R(data::Tree::*function)(ATs...) const,
-             ATs ...args) {
-    return manager_impl_->
-        use_tree<R, ATs...>(std::forward<const std::string &>(nick_name),
-                            std::forward<R(data::Tree::*)(ATs...) const>(function),
-                            std::forward<ATs>(args)...);
-  }
-  
-  template<typename ...ATs>
-  void use_tree(const std::string &nick_name,
-                void(data::Tree::*function)(ATs...) const,
-                ATs ...args) {
-    manager_impl_->
-        use_tree<ATs...>(std::forward<const std::string &>(nick_name),
-                         std::forward<void(data::Tree::*)(ATs...) const>(function),
-                         std::forward<ATs>(args)...);
-  }
+  Forward_consultable(QuiddityManager_Impl,
+                      manager_impl_.get(),
+                      use_tree,
+                      use_tree,
+                      data::Tree);
 
   // ****************** properties ********
   // doc (json formatted)
