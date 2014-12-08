@@ -93,12 +93,12 @@ class QuiddityManager_Impl
   std::string get_info(const std::string &nick_name,
                        const std::string &path);
   
-  Forward_consultable_from_map(tree,  // method used by quiddities to access the tree
-                               use_tree,  // public method consultation by others 
-                               std::string,  // quiddities key
-                               quiddities_,  // map member 
-                               Quiddity);
-  
+  Forward_consultable_from_map(std::string,  // map key type
+                               Quiddity,  // map value type
+                               quiddities_,  // the map member 
+                               tree,  // method used by quiddities to access the consultable
+                               use_tree);  // public forwarding method 
+                               
   // **** properties
   // doc (json formatted)
   std::string get_properties_description(std::string quiddity_name);

@@ -108,8 +108,7 @@ class QuiddityManager
   Forward_consultable(QuiddityManager_Impl,
                       manager_impl_.get(),
                       use_tree,
-                      use_tree,
-                      data::Tree);
+                      use_tree);
 
   // ****************** properties ********
   // doc (json formatted)

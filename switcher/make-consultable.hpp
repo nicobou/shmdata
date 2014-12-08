@@ -27,9 +27,9 @@
                 "Make_consultable 2nd arg must be a class");            \
                                                                         \
   /*disabling key type for later forward*/                              \
-  using _consult_method##MapKeyType = decltype(nullptr);                \
+  using _consult_method##MapKey_t = decltype(nullptr);                  \
   /*saving consultable type for the forwarder(s)*/                      \
-  using _consult_method##ConsultableType = typename                     \
+  using _consult_method##Consult_t = typename                           \
       std::remove_pointer<std::decay<_member_type>::type>::type;        \
                                                                         \
   /* exposing T const methods accessible by T instance owner*/          \
@@ -39,13 +39,13 @@
 			   ATs ...args)	const {                         \
     return (_member_rawptr->*fun)(std::forward<ATs>(args)...);		\
   }                                                                     \
-  									\
+                                                                        \
   template<typename ...ATs>                                             \
   inline void _consult_method(void(_member_type::*fun)(ATs...) const,	\
 			      ATs ...args) const {                      \
     (_member_rawptr->*fun)(std::forward<ATs>(args)...);			\
   }                                                                     \
-  									\
+                                                                        \
   /* disable invokation of non const*/                                  \
   template<typename R,                                                  \
            typename ...ATs>                                             \
@@ -67,31 +67,26 @@
 
 // returns default constructed R if key not found
 // assuming the map is storing shared or unique pointers
-#define Forward_consultable_from_map(_consult_method,			\
-                                     _forward_method,			\
-                                     _map_key_type,                     \
+#define Forward_consultable_from_map(_map_key_type,                     \
+                                     _map_member_type,                  \
                                      _map_member,                       \
-                                     _member_type)                      \
+                                     _consult_method,			\
+                                     _fw_method)			\
                                                                         \
   /*saving key type for later forward*/                                 \
-  using _forward_method##MapKeyType =                                   \
+  using _fw_method##MapKey_t =                                          \
       const std::decay<_map_key_type>::type &;                          \
                                                                         \
   /*forwarding consultable type for other forwarder(s)*/                \
-  using _forward_method##ConsultableType = typename                     \
-      std::decay<_member_type>::type::                                  \
-      _consult_method##ConsultableType;                                 \
+  using _fw_method##Consult_t = typename                                \
+      std::decay<_map_member_type>::type::                              \
+      _consult_method##Consult_t;                                       \
                                                                         \
-  /*shared_ptr & unique_ptr*/                                           \
-  /*using _forward_method##ConsultableType =*/				\
-  /*  std::decay<_map_value_type>::type::*/                             \
-      /*  _consult_method ## ConsultableType; */                        \
-  									\
   template<typename R,                                                  \
            typename ...ATs>                                             \
-  R _forward_method(							\
+  R _fw_method(                                                         \
       const typename std::decay<_map_key_type>::type &key,              \
-      R( _forward_method##ConsultableType ::*function)(ATs...) const,                    \
+      R( _fw_method##Consult_t ::*function)(ATs...) const,              \
       ATs ...args) const {                                              \
     auto it = _map_member.find(key);					\
     if (_map_member.end() == it){					\
@@ -99,20 +94,21 @@
       return r;                                                         \
     }									\
     return it->second->_consult_method<R, ATs...>(			\
-        std::forward<R( _forward_method##ConsultableType ::*)(ATs...) const>(function),  \
+        std::forward<R( _fw_method##Consult_t ::*)(ATs...) const>(      \
+            function),                                                  \
         std::forward<ATs>(args)...);                                    \
   }									\
                                                                         \
   template<typename ...ATs>						\
-  void _forward_method(                                                 \
+  void _fw_method(                                                      \
       const typename std::decay<_map_key_type>::type &key,              \
-      void( _forward_method##ConsultableType ::*function)(ATs...) const,                 \
+      void( _fw_method##Consult_t ::*function)(ATs...) const,           \
       ATs ...args) const {                                              \
     auto it = _map_member.find(key);					\
     if (_map_member.end() == it)					\
       return;								\
     it->second->_consult_method<ATs...>(				\
-        std::forward<void( _forward_method##ConsultableType ::*)(ATs...) const>(         \
+        std::forward<void( _fw_method##Consult_t ::*)(ATs...) const>(   \
             function),                                                  \
         std::forward<ATs>(args)...);                                    \
   }									\
@@ -120,16 +116,16 @@
   /* disable invokation of non const*/                                  \
   template<typename R,                                                  \
            typename ...ATs>						\
-  R _forward_method(R( _forward_method##ConsultableType ::*function)(ATs...),		\
-                    ATs ...args) const {                                \
+  R _fw_method(R( _fw_method##Consult_t ::*function)(ATs...),           \
+               ATs ...args) const {                                     \
     static_assert(std::is_const<decltype(function)>::value,		\
                   "consultation is available for const methods only");  \
     return R();  /* for syntax only */                                  \
   }									\
                                                                         \
   template<typename ...ATs>						\
-  void _forward_method(void( _forward_method##ConsultableType ::*function)(ATs...),	\
-                       ATs ...args) const {                             \
+  void _fw_method(void( _fw_method##Consult_t ::*function)(ATs...),     \
+                  ATs ...args) const {                                  \
     static_assert(std::is_const<decltype(function)>::value,		\
                   "consultation is available for const methods only");  \
   }
@@ -138,64 +134,73 @@
 #define Forward_consultable(_member_type,                               \
                             _member_rawptr,                             \
                             _consult_method,                            \
-                            _forward_method,                            \
-                            _consultable_type)                          \
+                            _fw_method)                                 \
                                                                         \
   /*forwarding key type*/                                               \
-      using _forward_method##MapKeyType =                               \
-          typename std::decay<_member_type>::type::                     \
-          _consult_method##MapKeyType;                                  \
+  using _fw_method##MapKey_t =                                          \
+      typename std::decay<_member_type>::type::                         \
+      _consult_method##MapKey_t;                                        \
                                                                         \
+  /*forwarding consultable type for other forwarder(s)*/                \
+  using _fw_method##Consult_t = typename                                \
+      std::decay<_member_type>::type::                                  \
+      _consult_method##Consult_t;                                       \
                                                                         \
-      template<typename R,                                              \
-               typename ...ATs>						\
-      inline R _forward_method(                                         \
-          R(_consultable_type::*function)(ATs...) const,                \
-          ATs ...args) const {                                          \
-        return _member_rawptr->                                         \
-            _consult_method<R, ATs...>(function,                        \
-                                   std::forward<ATs>(args)...);         \
+  template<typename R,                                                  \
+           typename ...ATs>						\
+  inline R _fw_method(                                                  \
+      R( _fw_method##Consult_t ::*function)(ATs...) const,              \
+      ATs ...args) const {                                              \
+    return _member_rawptr->                                             \
+        _consult_method<R, ATs...>(                                     \
+            std::forward<R( _fw_method##Consult_t ::*)(ATs...) const>(  \
+                function),                                              \
+            std::forward<ATs>(args)...);                                \
   }                                                                     \
                                                                         \
   template<typename ...ATs>						\
-  inline void _forward_method(                                          \
-      void(_consultable_type::*function)(ATs...) const,                 \
+  inline void _fw_method(                                               \
+      void( _fw_method##Consult_t ::*function)(ATs...) const,           \
       ATs ...args) const {                                              \
-    _member_rawptr->                                                    \
-        _consult_method<ATs...>(function,                               \
-                                std::forward<ATs>(args)...);            \
+    _member_rawptr->_consult_method<ATs...>(                            \
+        std::forward<void( _fw_method##Consult_t ::*)(ATs...) const>(   \
+            function),                                                  \
+        std::forward<ATs>(args)...);                                    \
   }									\
                                                                         \
                                                                         \
   /*forwarding consult from map if the map key type is defined*/        \
   template<typename R,                                                  \
            typename ...ATs>						\
-  inline R _forward_method(                                             \
-      /*if _forward_method##MapKeyType is same type as nullptr*/        \
+  inline R _fw_method(                                                  \
+      /*if _fw_method##MapKey_t is same type as nullptr*/               \
       /* then this forward does not require map key forwarding*/        \
       typename std::enable_if<!std::is_same<decltype(nullptr),          \
-      _forward_method##MapKeyType >::value,                             \
-      _forward_method##MapKeyType >::type key,                          \
+      _fw_method##MapKey_t >::value,                                    \
+      _fw_method##MapKey_t >::type key,                                 \
       /*typename std::enable_if<!std::is_class<>::value, T>::type,*/    \
-      R(_consultable_type::*function)(ATs...) const,                    \
+      R( _fw_method##Consult_t ::*function)(ATs...) const,              \
       ATs ...args) const {                                              \
     return _member_rawptr->                                             \
-        _consult_method<R, ATs...>(key,                                 \
-                                   function,                            \
-                                   std::forward<ATs>(args)...);         \
+        _consult_method<R, ATs...>(                                     \
+            std::forward< _fw_method##MapKey_t >(key),                  \
+            std::forward<R( _fw_method##Consult_t ::*)(ATs...) const>(  \
+                function),                                              \
+            std::forward<ATs>(args)...);                                \
   }                                                                     \
                                                                         \
   template<typename ...ATs>						\
-  inline void _forward_method(                                          \
+  inline void _fw_method(                                               \
       typename std::enable_if<!std::is_same<decltype(nullptr),          \
-      _forward_method##MapKeyType >::value,                             \
-      _forward_method##MapKeyType >::type key,                          \
-      void(_consultable_type::*function)(ATs...) const,                 \
+      _fw_method##MapKey_t >::value,                                    \
+      _fw_method##MapKey_t >::type key,                                 \
+      void( _fw_method##Consult_t ::*function)(ATs...) const,           \
       ATs ...args) const {                                              \
-    _member_rawptr->                                                    \
-        _consult_method<ATs...>(key,                                    \
-                                function,                               \
-                                std::forward<ATs>(args)...);            \
+    _member_rawptr->_consult_method<ATs...>(                            \
+        std::forward< _fw_method##MapKey_t >(key),                      \
+        std::forward<void( _fw_method##Consult_t ::*)(ATs...) const>(   \
+            function),                                                  \
+        std::forward<ATs>(args)...);                                    \
   }									\
   
 
