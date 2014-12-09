@@ -150,17 +150,6 @@ class QuiddityManager
   std::string list_property_subscribers_json();
   std::string list_subscribed_properties_json(std::string subscriber_name);
 
-  // LOWER LEVEL subscription
-  // This is how to subscribe and get property values when changed:
-  /* static gchar *hello = "hello"; */
-  /* void prop_cb (GObject *gobject, GParamSpec *pspec, gpointer user_data) */
-  /*   g_print ("---------------- property callback: %s -- %s\n",  */
-  /* (gchar *)user_data,  */
-  /* switcher::Property::parse_callback_args (gobject, pspec).c_str ()); */
-  /* // testing property */
-  /* manager->create ("videotestsrc","vid"); */
-  /* manager->subscribe_property ("vid", "pattern", prop_cb, hello); */
-
   bool subscribe_property_glib(std::string quiddity_name,
                                std::string name,
                                Property::Callback cb, void *user_data);

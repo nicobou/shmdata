@@ -45,7 +45,7 @@ class PJPresence {
   PJPresence &operator=(const PJPresence &) = delete;
 
   enum {
-    AVAILABLE, BUSY, OTP, IDLE, AWAY, BRB, OFFLINE, OPT_MAX
+    AVAILABLE, BUSY, AWAY, OFFLINE, OPT_MAX
   };
 
  private:
@@ -55,10 +55,13 @@ class PJPresence {
   std::condition_variable registration_cond_{};
   // online status
   GParamSpec *status_enum_spec_{nullptr};
-  static GEnumValue status_enum_[8];
+  static GEnumValue status_enum_[5];
   gint status_;
   GParamSpec *custom_status_spec_{nullptr};
   std::string custom_status_{};
+  // sip registration status (read only)
+  bool registered_{false};
+  GParamSpec *sip_reg_status_spec_{nullptr};
   // account info
   std::string sip_local_user_{};
   std::map<std::string, pjsua_buddy_id> buddy_id_{};
@@ -91,7 +94,14 @@ class PJPresence {
   static void set_note(const gchar *cutom_status, void *user_data);
   static const gchar *get_note(void *user_data);
   void change_online_status(gint status);
-
+  // SIP registration prop
+  static gboolean get_sip_registration_status(void *user_data);
+  // name buddy method
+  static gboolean name_buddy_wrapped(gchar *name,
+                                     gchar *uri,
+                                     void *user_data);
+  void name_buddy(std::string name, std::string sip_user);
+  // pjsip functions
   static void on_reg_state(pjsua_acc_id acc_id);
   static void on_incoming_subscribe(pjsua_acc_id acc_id,
                                     pjsua_srv_pres *srv_pres,
@@ -101,13 +111,8 @@ class PJPresence {
                                     pjsip_status_code *code,
                                     pj_str_t *reason,
                                     pjsua_msg_data *msg_data);
-
   static void on_buddy_evsub_state(pjsua_buddy_id buddy_id,
                                    pjsip_evsub * sub, pjsip_event *event);
-  static gboolean name_buddy_wrapped(gchar *name,
-                                     gchar *uri,
-                                     void *user_data);
-  void name_buddy(std::string name, std::string sip_user);
 };
 
 }  // namespace switcher

@@ -218,10 +218,10 @@ PJCall::~PJCall() {
 
 /* Callback to be called to handle incoming requests outside dialogs: */
 pj_bool_t PJCall::on_rx_request(pjsip_rx_data *rdata) {
-  printf("%s %.*s\n",
-         __FUNCTION__,
-         static_cast<int>(rdata->msg_info.msg->line.req.method.name.slen),
-         rdata->msg_info.msg->line.req.method.name.ptr);
+  // printf("%s %.*s\n",
+  //        __FUNCTION__,
+  //        static_cast<int>(rdata->msg_info.msg->line.req.method.name.slen),
+  //        rdata->msg_info.msg->line.req.method.name.ptr);
 
   /* Ignore strandled ACKs (must not send respone) */
   if (rdata->msg_info.msg->line.req.method.id == PJSIP_ACK_METHOD)
@@ -1433,6 +1433,7 @@ PJCall::remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
  * Make outgoing call.
  */
 void PJCall::make_call(std::string dst_uri) {
+  g_print("%s called begin\n", __FUNCTION__);
   if (sip_instance_->sip_presence_->sip_local_user_.empty()) {
     g_warning("cannot call if not registered");
     return;
@@ -1535,6 +1536,7 @@ void PJCall::make_call(std::string dst_uri) {
   sip_instance_->
       graft_tree(std::string(".buddy." + std::to_string(id)), tree);
 
+  g_print("%s called end\n", __FUNCTION__);
 }
 
 std::string
@@ -1636,6 +1638,7 @@ gboolean PJCall::attach_shmdata_to_contact(const gchar *shmpath,
                                            const gchar *contact_uri,
                                            gboolean attach,
                                            void *user_data) {
+  g_print("%s called begin\n", __FUNCTION__);
   if (nullptr == shmpath || nullptr == contact_uri || nullptr == user_data) {
     g_warning("cannot add shmpath for user (received nullptr)");
     return FALSE;
@@ -1647,6 +1650,7 @@ gboolean PJCall::attach_shmdata_to_contact(const gchar *shmpath,
                 std::string(shmpath),
                 std::string(contact_uri),
                 attach));
+  g_print("%s called end\n", __FUNCTION__);
   return TRUE;
 }
 
