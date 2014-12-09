@@ -29,11 +29,13 @@ VideoSource::VideoSource():
   init_startable(this);
   GstUtils::element_factory_list_to_g_enum(primary_codec_,
                                            GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
-                                           GST_RANK_PRIMARY);
+                                           GST_RANK_PRIMARY,
+                                           false);
 
   GstUtils::element_factory_list_to_g_enum(secondary_codec_,
                                            GST_ELEMENT_FACTORY_TYPE_VIDEO_ENCODER,
-                                           GST_RANK_SECONDARY);
+                                           GST_RANK_SECONDARY,
+                                           false);
   primary_codec_spec_ =
       custom_props_->make_enum_property("codec",
                                         "Codec Short List",
@@ -45,7 +47,8 @@ VideoSource::VideoSource():
                                         this);
   install_property_by_pspec(custom_props_->get_gobject(),
                             primary_codec_spec_,
-                            "codec", "Video Codecs (Short List)");
+                            "codec",
+                            "Video Codecs (Short List)");
   secondary_codec_spec_ =
       custom_props_->make_enum_property("codec",
                                         "Codec Long List",
@@ -55,19 +58,31 @@ VideoSource::VideoSource():
                                         VideoSource::set_codec,
                                         VideoSource::get_codec,
                                         this);
-  codec_long_list_spec_ =
-      custom_props_->make_boolean_property("more_codecs",
-                                           "Get More codecs",
-                                           (gboolean) FALSE,
-                                           (GParamFlags) G_PARAM_READWRITE,
-                                           VideoSource::set_codec_long_list,
-                                           VideoSource::get_codec_long_list,
-                                           this);
-  install_property_by_pspec(custom_props_->get_gobject(),
-                            codec_long_list_spec_,
-                            "more_codecs", "More Codecs");
-  make_codec_properties();
+  install_method("Reset codec configuration",
+                 "reset",
+                 "Reset codec configuration to default",
+                 "success or fail",
+                 Method::make_arg_description("none", nullptr),
+                 (Method::method_ptr) &reset_codec_configuration,
+                 G_TYPE_BOOLEAN,
+                 Method::make_arg_type_description(G_TYPE_NONE,
+                                                   nullptr),
+                 this);
+  // FIXME decide what to do with this
+  // codec_long_list_spec_ =
+  //     custom_props_->make_boolean_property("more_codecs",
+  //                                          "Get More codecs",
+  //                                          (gboolean) FALSE,
+  //                                          (GParamFlags) G_PARAM_READWRITE,
+  //                                          VideoSource::set_codec_long_list,
+  //                                          VideoSource::get_codec_long_list,
+  //                                          this);
+  // install_property_by_pspec(custom_props_->get_gobject(),
+  //                           codec_long_list_spec_,
+  //                           "more_codecs", "More Codecs");
   video_output_format_->make_format_property("format", "Convert Pixel Format To");
+  make_codec_properties();
+  reset_codec_configuration(nullptr, this);
 }
 
 VideoSource::~VideoSource() {
@@ -182,12 +197,12 @@ bool VideoSource::start() {
   }
   if (!make_new_shmdatas())
     return false;
-
   if (!on_start())
     return false;
-
+  disable_method("reset");
   disable_property("codec");
   disable_property("more_codecs");
+  video_output_format_->disable_property();
   return true;
 }
 
@@ -195,36 +210,32 @@ bool VideoSource::stop() {
   bool res = on_stop();
   unregister_shmdata(make_file_name("encoded-video"));
   unregister_shmdata(make_file_name("video"));
-  //clear_shmdatas();
   reset_bin();
+  enable_method("reset");
   enable_property("codec");
   enable_property("more_codecs");
+  video_output_format_->enable_property();
   return res;
 }
 
 bool VideoSource::remake_codec_elements() {
   if (codec_ == 0)
     return false;
-
   for (auto &it : codec_properties_)
     uninstall_property(it);
-
   GstElement *tmp_codec_element = codec_element_;
   GstElement *tmp_color_space_codec_element = color_space_codec_element_;
   GstElement *tmp_queue_codec_element = queue_codec_element_;
-
-  // TODO queue property ?
   if (!GstUtils::make_element
       (secondary_codec_[codec_].value_nick, &codec_element_)
-      || !GstUtils::make_element("ffmpegcolorspace",
-                                 &color_space_codec_element_)
+      || !GstUtils::make_element("ffmpegcolorspace", &color_space_codec_element_)
       || !GstUtils::make_element("queue", &queue_codec_element_))
     return false;
-
   // copy property value and register codec properties
   for (auto &it : codec_properties_) {
     GstUtils::apply_property_value(G_OBJECT(tmp_codec_element),
-                                   G_OBJECT(codec_element_), it.c_str());
+                                   G_OBJECT(codec_element_),
+                                   it.c_str());
     install_property(G_OBJECT(codec_element_), it, it, it);
   }
   GstUtils::clean_element(tmp_codec_element);
@@ -296,4 +307,20 @@ void VideoSource::make_codec_properties() {
   codec_properties_.push_back("snapshot");    // png
   codec_properties_.push_back("compression-level");   // png
 }
+
+gboolean VideoSource::reset_codec_configuration(gpointer /*unused */ , gpointer user_data) {
+  VideoSource *context = static_cast<VideoSource *>(user_data);
+  context->set_property("format", "0");  // do not apply
+  context->set_property("codec","vp8enc");
+  context->set_property("quality","5");
+  context->set_property("bitrate","0");
+  context->set_property("threads","4");
+  context->set_property("speed","7");
+  context->set_property("mode","0");  // vbr
+  context->set_property("error-resilient","true");
+  context->set_property("max-latency","10");
+  context->set_property("max-keyframe-distance","5");
+  return TRUE;
+}
+
 }

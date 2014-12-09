@@ -33,7 +33,8 @@ SinglePadGstSink::SinglePadGstSink() {
                          std::bind(&SinglePadGstSink::disconnect_all,
                                    this),
                          std::bind(&SinglePadGstSink::can_sink_caps,
-                                   this, std::placeholders::_1),
+                                   this,
+                                   std::placeholders::_1),
                          1);
 }
 

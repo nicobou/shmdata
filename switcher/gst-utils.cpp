@@ -373,15 +373,19 @@ GstUtils::free_g_enum_values(GEnumValue *target_enum) {
 void
 GstUtils::element_factory_list_to_g_enum(GEnumValue *target_enum,
                                          GstElementFactoryListType type,
-                                         GstRank minrank) {
+                                         GstRank minrank,
+                                         bool insert_none_first) {
   GList *element_list =
       gst_element_factory_list_get_elements(type, minrank);
 
   GList *iter = element_list;
-  target_enum[0].value = 0;
-  target_enum[0].value_name = g_strdup("None");
-  target_enum[0].value_nick = g_strdup("None");
-  gint i = 1;
+  gint i = 0;
+  if (insert_none_first) {
+    target_enum[0].value = 0;
+    target_enum[0].value_name = g_strdup("None");
+    target_enum[0].value_nick = g_strdup("None");
+    i++;
+  }
   while (iter != nullptr) {
     target_enum[i].value = i;
     target_enum[i].value_name =
@@ -396,7 +400,6 @@ GstUtils::element_factory_list_to_g_enum(GEnumValue *target_enum,
   target_enum[i].value = 0;
   target_enum[i].value_name = nullptr;
   target_enum[i].value_nick = nullptr;
-
   gst_plugin_feature_list_free(element_list);
 }
 

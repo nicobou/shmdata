@@ -53,7 +53,8 @@ bool apply_property_value(GObject *g_object_master,
 void free_g_enum_values(GEnumValue *target_enum);
 void element_factory_list_to_g_enum(GEnumValue *target_enum,
                                     GstElementFactoryListType type,
-                                    GstRank minrank);
+                                    GstRank minrank,
+                                    bool insert_none_first = true);
 void gst_element_deleter(GstElement *element);
 gulong g_signal_connect_function(gpointer gobject,
                                  const gchar *signal,

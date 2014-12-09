@@ -77,6 +77,7 @@ class VideoSource: public GstPipeliner, public StartableQuiddity {
   static gint sink_compare_ranks(GstPluginFeature *f1,
                                  GstPluginFeature *f2);
   static void print_list(gpointer data, gpointer user_data);
+  static gboolean reset_codec_configuration(gpointer /*unused */ , gpointer user_data);
 };
 }  // namespace switcher
 

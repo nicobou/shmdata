@@ -38,7 +38,6 @@ GstVideoParseToBinSrc::GstVideoParseToBinSrc():
 
 GstVideoParseToBinSrc::~GstVideoParseToBinSrc() {
   g_free(gst_launch_pipeline_);
-  GstUtils::clean_element(gst_video_parse_to_bin_src_);
 }
 
 bool GstVideoParseToBinSrc::init_gpipe() {

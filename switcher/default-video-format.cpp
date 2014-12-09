@@ -26,7 +26,8 @@ DefaultVideoFormat::DefaultVideoFormat(Quiddity *quid):
 }
 
 void DefaultVideoFormat::make_format_property(const char *name,
-                                                    const char *display_text) {
+                                              const char *display_text) {
+  prop_name_ = name;
   GstElementFactory *factory = gst_element_factory_find("ffmpegcolorspace"); 
   const GList *list = gst_element_factory_get_static_pad_templates(factory);  
   // first option is do not format
@@ -113,4 +114,12 @@ std::string DefaultVideoFormat::get_caps_str() {
   return caps_[format_];  
 }
 
+bool DefaultVideoFormat::disable_property() {
+  return quid_->disable_property(prop_name_);
+}
+
+bool DefaultVideoFormat::enable_property() {
+  return quid_->enable_property(prop_name_);
+}
+ 
 }  // namespace switcher

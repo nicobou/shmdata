@@ -36,10 +36,13 @@ class DefaultVideoFormat {
   DefaultVideoFormat &operator=(const DefaultVideoFormat &) = delete;
 
   void make_format_property(const char *name, const char *display_text);
+  bool disable_property();
+  bool enable_property();
   std::string get_caps_str();
   
  private:
   Quiddity *quid_{nullptr};
+  std::string prop_name_{};
   // custom properties:
   CustomPropertyHelper::ptr custom_props_{};
   // video format
