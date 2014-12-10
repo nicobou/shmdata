@@ -96,8 +96,11 @@ std::string RtpDestination::get_sdp() {
     SDPMedia media;
     media.set_media_info_from_caps(caps);
     media.set_port(port);
-    if (!desc.add_media(media))
-      g_warning("a media has not been added to the SDP description");
+    if (!desc.add_media(media)) {
+      g_warning("a media has not been added to the SDP description,"
+                "returning empty description");
+      return std::string();
+    }
   }
   return desc.get_string();
 }
@@ -124,9 +127,12 @@ JSONBuilder::Node RtpDestination::get_json_root_node() {
 }
 
 bool RtpDestination::write_to_file(std::string file_name) {
+  std::string sdp = get_sdp();
+  if (sdp.empty())
+    return false;
   GError *error = NULL;
   if (!g_file_set_contents(file_name.c_str(),
-                           get_sdp().c_str(),
+                           sdp.c_str(),
                            -1,  // no size, res is a null terminated string
                            &error)) {
     g_warning("%s",error->message);
