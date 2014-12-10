@@ -523,31 +523,41 @@ void PJPresence::change_online_status(gint status) {
     if (nullptr != tmp)
       g_free(tmp);
   };
-  if (custom_status_.empty() || 0 == custom_status_.compare("")) {
+  if (custom_status_.empty()
+      || custom_status_ == ""
+      || custom_status_ == "Available"
+      || custom_status_ == "Away"
+      || custom_status_ == "Busy") {
     has_custom_status = false;
   } else {
     tmp = g_strdup(custom_status_.c_str());
     elem.note = pj_str(tmp);
   }
-
   switch (status) {
     case AVAILABLE:
+      if (!has_custom_status) {
+        pj_cstr(&elem.note, "Available");
+        custom_status_ = "Available";
+      }
       break;
     case BUSY:
       elem.activity = PJRPID_ACTIVITY_BUSY;
-      if (!has_custom_status)
+      if (!has_custom_status) {
         pj_cstr(&elem.note, "Busy");
+        custom_status_ = "Busy";
+      }
       break;
     case AWAY:
       elem.activity = PJRPID_ACTIVITY_AWAY;
-      if (!has_custom_status)
+      if (!has_custom_status) {
         pj_cstr(&elem.note, "Away");
+        custom_status_ = "Away";
+      }
       break;
     case OFFLINE:
       online_status = PJ_FALSE;
       break;
   }
-
   pjsua_acc_set_online_status2(account_id_, online_status, &elem);
 }
 
@@ -558,7 +568,8 @@ void PJPresence::set_note(const gchar *custom_status, void *user_data) {
   context->custom_status_ = custom_status;
   context->sip_instance_->run_command_sync(std::bind
                                            (&PJPresence::change_online_status,
-                                            context, context->status_));
+                                            context,
+                                            context->status_));
 
   context->sip_instance_->custom_props_->
       notify_property_changed(context->custom_status_spec_);
