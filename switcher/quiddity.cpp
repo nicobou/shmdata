@@ -732,13 +732,22 @@ std::string Quiddity::get_signal_description(std::string signal_name) {
   return sig->get_description();
 }
 
-std::string Quiddity::make_file_name(std::string suffix) {
+std::string Quiddity::make_file_name(const std::string &suffix) {
   std::string connector_name;
   QuiddityManager_Impl::ptr manager = manager_impl_.lock();
   if ((bool) manager)
     connector_name.append("/tmp/switcher_" + manager->get_name() + "_" +
                           name_ + "_" + suffix);
   return connector_name;
+}
+
+std::string Quiddity::get_quiddity_name_from_file_name(const std::string &path) {
+   QuiddityManager_Impl::ptr manager = manager_impl_.lock();
+   if ((bool) manager) {
+     auto prefix_size = std::string("/tmp/switcher_" + manager->get_name() + "_").size();
+     return std::string(path, prefix_size, path.find_last_of('_') - prefix_size);
+   }
+   return std::string();
 }
 
 std::string Quiddity::get_manager_name() {

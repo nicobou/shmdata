@@ -233,20 +233,23 @@ DecodebinToShmdata::pad_to_shmdata_writer(GstElement * bin, GstPad *pad)
   gst_pad_add_event_probe(srcpad, (GCallback) eos_probe_cb, this);
   gst_object_unref(srcpad);
 
-  std::string media_name("unknown");
+  std::string media_name(media_label_);
 
-  {                           // giving a name to the stream
+  {  // giving a name to the stream
     gchar **padname_splitted = g_strsplit_set(padname.c_str(), "/", -1);
     On_scope_exit {
       g_strfreev(padname_splitted);
     };
-    if (nullptr != padname_splitted[0])
-      media_name = padname_splitted[0];
-    media_name.append("-" + std::to_string(gpipe_->get_count(media_name)));
-
+    if (nullptr == padname_splitted[0])
+      media_name += "-unknown";
+    else
+      media_name += std::string("-") + padname_splitted[0];
+    auto count = gpipe_->get_count(media_name);
+    if (count != 0)
+      media_name.append("-" + std::to_string(count));
     g_debug("decodebin-to-shmdata: new media %s \n", media_name.c_str());
   }
-
+  
   // creating a shmdata
   ShmdataAnyWriter::ptr shm_any = std::make_shared<ShmdataAnyWriter> ();
   std::string shm_any_name = gpipe_->make_file_name(media_name);
@@ -351,4 +354,9 @@ gboolean DecodebinToShmdata::rewind(gpointer user_data) {
   g_debug("finish looping");
   return FALSE;
 }
+
+void DecodebinToShmdata::set_media_label(std::string label) {
+  media_label_ = std::move(label);
 }
+
+}  // namespace switcher

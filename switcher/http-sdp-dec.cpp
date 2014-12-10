@@ -99,18 +99,19 @@ void HTTPSDPDec::make_new_error_handler() {
         on_error_.pop_front();
 }
 
-void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement * /*object */ ,
-                                         GstPad *pad, gpointer user_data) {
+void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement */*object */ ,
+                                         GstPad *pad,
+                                         gpointer user_data) {
   HTTPSDPDec *context = static_cast<HTTPSDPDec *>(user_data);
   GstPipeliner *gpipe = static_cast<GstPipeliner *>(user_data);
   std::unique_ptr<DecodebinToShmdata> decodebin = 
       std2::make_unique<DecodebinToShmdata>(gpipe);
-
-  decodebin->
-      invoke_with_return<gboolean>(std::bind(gst_bin_add,
-                                             GST_BIN(context->get_bin()),
-                                             std::placeholders::_1));
-  
+  auto caps = gst_pad_get_caps(pad);
+  On_scope_exit{gst_caps_unref(caps);};
+  auto structure = gst_caps_get_structure(caps, 0);
+  decodebin->set_media_label(gst_structure_get_string (structure, "media_label"));
+  decodebin->invoke_with_return<gboolean>(
+      std::bind(gst_bin_add, GST_BIN(context->get_bin()), std::placeholders::_1));
   // GstPad *sinkpad = gst_element_get_static_pad (decodebin, "sink");
   auto get_pad = std::bind(gst_element_get_static_pad,
                            std::placeholders::_1,
@@ -118,7 +119,6 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement * /*object */ ,
   GstPad *sinkpad =
       decodebin->invoke_with_return<GstPad *>(std::move(get_pad));
   On_scope_exit {gst_object_unref(GST_OBJECT(sinkpad));};
-  
   GstUtils::check_pad_link_return(gst_pad_link(pad, sinkpad));
   decodebin->invoke(std::bind(GstUtils::sync_state_with_parent,
                               std::placeholders::_1));

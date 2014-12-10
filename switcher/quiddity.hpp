@@ -260,7 +260,8 @@ class Quiddity {
   void emit_on_interface_changed();   // in order to tell properties/methods has changed
 
   // use a consistent naming for shmdatas
-  std::string make_file_name(std::string suffix);
+  std::string make_file_name(const std::string &suffix);
+  std::string get_quiddity_name_from_file_name(const std::string &shmdata_path);
   std::string get_manager_name();
   
   // used in order to dynamically create other quiddity, weak_ptr is used in order to

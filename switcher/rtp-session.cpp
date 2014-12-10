@@ -252,7 +252,7 @@ RtpSession::sink_factory_filter(GstPluginFeature *feature,
                                 gpointer data) {
   const gchar *klass;
 
-  GstCaps *caps = (GstCaps *) data;
+  GstCaps *caps = (GstCaps *)data;
 
   // searching element factories only
   if (!GST_IS_ELEMENT_FACTORY(feature))
@@ -290,12 +290,12 @@ RtpSession::make_data_stream_available(GstElement *typefind,
                                        gpointer user_data) {
   RtpSession *context = static_cast<RtpSession *>(user_data);
   GstElement *pay = nullptr;
-  GList *list = gst_registry_feature_filter(gst_registry_get_default(),
-                                            (GstPluginFeatureFilter)
-                                            sink_factory_filter,
-                                            FALSE, caps);
+  GList *list = gst_registry_feature_filter(
+      gst_registry_get_default(),
+      (GstPluginFeatureFilter)sink_factory_filter,
+      FALSE,
+      caps);
   list = g_list_sort(list, (GCompareFunc) sink_compare_ranks);
-
   // bypassing jpeg for high dimensions
   bool jpeg_payloader = true;
   GstStructure *caps_structure = gst_caps_get_structure(caps, 0);
@@ -311,13 +311,10 @@ RtpSession::make_data_stream_available(GstElement *typefind,
         jpeg_payloader = false;
     }
   }
-
   if (list != nullptr && jpeg_payloader)
-    pay = gst_element_factory_create(GST_ELEMENT_FACTORY(list->data),
-                                     nullptr);
+    pay = gst_element_factory_create(GST_ELEMENT_FACTORY(list->data), nullptr);
   else 
     GstUtils::make_element("rtpgstpay", &pay);
-
   ShmdataReader *reader = static_cast<ShmdataReader *>(
       g_object_get_data(G_OBJECT(typefind), "shmdata-reader"));
   reader->add_element_to_cleaner(pay);
@@ -325,7 +322,6 @@ RtpSession::make_data_stream_available(GstElement *typefind,
   g_debug("using %s payloader for %s",
           GST_ELEMENT_NAME(pay),
           reader->get_path().c_str());
-  
   // add capture and payloading to the pipeline and link
   gst_bin_add_many(GST_BIN(context->get_bin()), pay, nullptr);
   gst_element_link(typefind, pay);
@@ -334,7 +330,6 @@ RtpSession::make_data_stream_available(GstElement *typefind,
                "mtu",
                (guint)context->mtu_at_add_data_stream_,
                nullptr);
-
   // now link all to the rtpbin, start by getting an RTP sinkpad for session "%d"
   GstPad *sinkpad = gst_element_get_request_pad(context->rtpsession_,
                                                 "send_rtp_sink_%d");
@@ -343,7 +338,6 @@ RtpSession::make_data_stream_available(GstElement *typefind,
   On_scope_exit {gst_object_unref(srcpad);}; 
   if (gst_pad_link(srcpad, sinkpad) != GST_PAD_LINK_OK)
     g_warning("failed to link payloader to rtpbin");
-  
   // get name for the newly created pad
   gchar *rtp_sink_pad_name = gst_pad_get_name(sinkpad);
   On_scope_exit{g_free(rtp_sink_pad_name);};
@@ -738,6 +732,7 @@ gint RtpSession::get_mtu_at_add_data_stream(void *user_data) {
 }
 
 void RtpSession::on_rtp_caps(std::string shmdata_path, std::string caps) {
+  caps += ", media_label=" + get_quiddity_name_from_file_name(shmdata_path);
   graft_tree("rtp_caps." + std::move(shmdata_path),
              data::Tree::make(std::move(caps)));
 }

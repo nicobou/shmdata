@@ -47,6 +47,7 @@ class DecodebinToShmdata {
     return decodebin_.invoke_with_return<Return_type> (command);
   }
   void invoke(std::function<void(GstElement *)> command);
+  void set_media_label(std::string label);
   
  private:
   UGstElem decodebin_;
@@ -58,6 +59,7 @@ class DecodebinToShmdata {
   std::list<std::string> shmdata_path_{};  // for unregistering in the segment
   std::vector<gulong> cb_ids_{};
   std::mutex thread_safe_{};
+  std::string media_label_{};
   static void on_pad_added(GstElement *object,
                            GstPad *pad,
                            gpointer user_data);
