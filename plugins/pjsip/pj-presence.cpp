@@ -324,23 +324,21 @@ void PJPresence::add_buddy(const std::string &sip_user) {
 
 void PJPresence::del_buddy(const std::string &sip_user) {
   pj_status_t status = PJ_SUCCESS;
-
   if (pjsua_verify_url(std::string("sip:" + sip_user).c_str()) != PJ_SUCCESS) {
     g_warning("Invalid buddy URI (%s) for deletion", sip_user.c_str());
     return;
   }
   auto it = buddy_id_.find(sip_user);
-  if (buddy_id_.end() != it) {
+  if (buddy_id_.end() == it) {
     g_debug("%s is not in buddy list, cannot delete", sip_user.c_str());
     return;
   }
-
   status = pjsua_buddy_del(it->second);
   if (status != PJ_SUCCESS) {
     g_warning("cannot remove buddy");
     return;
   }
-  sip_instance_->prune_tree("buddy."+ std::to_string(it->second));
+  sip_instance_->prune_tree(".buddy."+ std::to_string(it->second));
   buddy_id_.erase(it);
   g_debug("Buddy removed");
   return;
@@ -487,7 +485,6 @@ void PJPresence::on_buddy_state(pjsua_buddy_id buddy_id) {
 }
 
 void PJPresence::set_status(const gint value, void *user_data) {
-  printf("+++++++++++++++++++++ %s --begin\n", __FUNCTION__);
   PJPresence *context = static_cast<PJPresence *>(user_data);
   if (value < 0 || value >= OPT_MAX) {
     g_warning("invalid online status code");
@@ -506,7 +503,6 @@ void PJPresence::set_status(const gint value, void *user_data) {
   GObjectWrapper::notify_property_changed(context->sip_instance_->gobject_->
                                           get_gobject(),
                                           context->status_enum_spec_);
-  printf("+++++++++++++++++++++ %s --end\n", __FUNCTION__);
 }
 
 gint PJPresence::get_status(void *user_data) {
