@@ -1555,7 +1555,7 @@ PJCall::create_outgoing_sdp(struct call *call,
   auto paths = call->instance->sip_instance_->
       tree<std::list<std::string>, const std::string &>(
           &data::Tree::copy_leaf_values,
-          std::string("buddy." + std::to_string(id) + ".connections"));
+          std::string(".buddy." + std::to_string(id) + ".connections"));
   // std::for_each(paths.begin(), paths.end(),
   //               [&] (const std::string &val){
   //                 g_print("----------------------- %s\n", val.c_str());
@@ -1687,7 +1687,7 @@ void PJCall::make_attach_shmdata_to_contact(const std::string &shmpath,
                         nullptr,
                         shmpath.c_str(),
                         nullptr);
-    sip_instance_->prune_tree("buddy." + std::to_string(id)
+    sip_instance_->prune_tree(".buddy." + std::to_string(id)
                               + ".connection." + shmpath);
   }
 }
