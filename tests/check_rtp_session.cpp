@@ -55,7 +55,6 @@ main() {
   {
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager("rtptest");
-    
 #ifdef HAVE_CONFIG_H
     gchar *usr_plugin_dir = g_strdup_printf("../plugins/gsoap/%s", LT_OBJDIR);
     manager->scan_directory_for_plugins(usr_plugin_dir);
@@ -63,14 +62,12 @@ main() {
 #else
     return 1;
 #endif
-    
     manager->create("SOAPcontrolServer", "soapserver");
     manager->invoke_va("soapserver",
                        "set_port",
                        nullptr,
                        "38084",
                        nullptr);
-
     // audio
     manager->create("audiotestsrc", "a");
     manager->set_property("a", "started", "true");
@@ -81,15 +78,14 @@ main() {
     manager->create("rtpsession", "rtp");
     manager->invoke_va("rtp",
                        "add_data_stream",
-                       nullptr, "/tmp/switcher_rtptest_a_audio", nullptr);
+                       nullptr,
+                       "/tmp/switcher_rtptest_a_audio",
+                       nullptr);
     manager->invoke_va("rtp",
                        "add_data_stream",
                        nullptr,
-                       "/tmp/switcher_rtptest_v_video", nullptr);
-    manager->invoke_va("rtp",
-                       "add_data_stream",
-                       nullptr,
-                       "/tmp/switcher_rtptest_v_encoded-video", nullptr);
+                       "/tmp/switcher_rtptest_v_encoded-video",
+                       nullptr);
     manager->invoke_va("rtp",
                        "add_destination",
                        nullptr,
@@ -100,12 +96,16 @@ main() {
                        "add_udp_stream_to_dest",
                        nullptr,
                        "/tmp/switcher_rtptest_a_audio",
-                       "local", "9066", nullptr);
+                       "local",
+                       "9066",
+                       nullptr);
     manager->invoke_va("rtp",
                        "add_udp_stream_to_dest",
                        nullptr,
-                       "/tmp/switcher_rtptest_v_video",
-                       "local", "9076", nullptr);
+                       "/tmp/switcher_rtptest_v_encoded-video",
+                       "local",
+                       "9076",
+                       nullptr);
     // receiving
     manager->create("httpsdpdec", "uri");
     manager->invoke_va("uri",
@@ -118,12 +118,12 @@ main() {
     manager->subscribe_property("sub", "audioprobe", "caps");
     manager->invoke_va("audioprobe",
                        "connect",
-                       nullptr, "/tmp/switcher_rtptest_uri_audio-0", nullptr);
+                       nullptr, "/tmp/switcher_rtptest_uri_a-audio", nullptr);
     manager->create("fakesink", "videoprobe");
     manager->subscribe_property("sub", "videoprobe", "caps");
     manager->invoke_va("videoprobe",
                        "connect",
-                       nullptr, "/tmp/switcher_rtptest_uri_video-0", nullptr);
+                       nullptr, "/tmp/switcher_rtptest_uri_v-video", nullptr);
 
     // wait 3 seconds
     uint count = 3;
