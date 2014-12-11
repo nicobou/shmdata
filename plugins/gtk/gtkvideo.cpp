@@ -29,17 +29,17 @@
 #include "./gtkvideo.hpp"
 
 namespace switcher {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GTKVideo,
-                                     "Video Display (configurable)",
-                                     "video",
-                                     "Video window with fullscreen",
-                                     "LGPL",
-                                     "gtkvideosink",
-                                     "Nicolas Bouillot");
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
+    GTKVideo,
+    "Video Display (configurable)",
+    "video",
+    "Video window with fullscreen",
+    "LGPL",
+    "gtkvideosink",
+    "Nicolas Bouillot");
 
 guint GTKVideo::instances_counter_ = 0;
-std::thread GTKVideo::gtk_main_thread_ {
-};
+std::thread GTKVideo::gtk_main_thread_ {};
 
 bool GTKVideo::init_gpipe() {
   if (!GstUtils::make_element("bin", &sink_bin_))
@@ -156,31 +156,7 @@ bool GTKVideo::init_gpipe() {
 }
 
 GTKVideo::GTKVideo():
-    display_(nullptr),
-    main_window_(nullptr),
-    video_window_(nullptr),
-    sink_bin_(nullptr),
-    queue_(nullptr),
-    ffmpegcolorspace_(nullptr),
-    videoflip_(nullptr),
-    gamma_(nullptr),
-    videobalance_(nullptr),
-    xvimagesink_(nullptr),
-#if HAVE_OSX
-    window_handle_(nullptr),
-#else
-    window_handle_(0),
-#endif
-    blank_cursor_(nullptr),
-    gtk_custom_props_(new CustomPropertyHelper()),
-    fullscreen_prop_spec_(nullptr),
-    is_fullscreen_(FALSE),
-  title_prop_spec_(nullptr),
-  title_(nullptr),
-  wait_window_mutex_(),
-  wait_window_cond_(),
-  window_destruction_mutex_(),
-  window_destruction_cond_() {
+    gtk_custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 
 void GTKVideo::gtk_main_loop_thread() {
@@ -191,9 +167,15 @@ void GTKVideo::gtk_main_loop_thread() {
   gtk_main();
 }
 
-gboolean GTKVideo::key_pressed_cb(GtkWidget * /*widget */ ,
-                                  GdkEventKey *event, gpointer data) {
+gboolean GTKVideo::key_pressed_cb(GtkWidget */*widget */ ,
+                                  GdkEventKey *event,
+                                  gpointer data) {
   GTKVideo *context = static_cast<GTKVideo *>(data);
+  // gchar outbuf[] = "coucou";
+  // auto i = g_unichar_to_utf8(gdk_keyval_to_unicode(event->keyval),
+  //                            outbuf);
+  // outbuf[i] = '\0';
+  // g_print("(%d)%s", i, outbuf);
   QuiddityManager_Impl::ptr manager;
   switch (event->keyval) {
     case GDK_f:

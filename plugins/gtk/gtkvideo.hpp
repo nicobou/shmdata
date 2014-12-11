@@ -54,35 +54,35 @@ class GTKVideo: public SinglePadGstSink {
  private:
   static guint instances_counter_;
   static std::thread gtk_main_thread_;
-  GdkDisplay *display_;
-  GtkWidget *main_window_;
-  GtkWidget *video_window_;
-  GstElement *sink_bin_;
-  GstElement *queue_;
-  GstElement *ffmpegcolorspace_;
-  GstElement *videoflip_;
-  GstElement *gamma_;
-  GstElement *videobalance_;
-  GstElement *xvimagesink_;
+  GdkDisplay *display_{nullptr};
+  GtkWidget *main_window_{nullptr};
+  GtkWidget *video_window_{nullptr};
+  GstElement *sink_bin_{nullptr};
+  GstElement *queue_{nullptr};
+  GstElement *ffmpegcolorspace_{nullptr};
+  GstElement *videoflip_{nullptr};
+  GstElement *gamma_{nullptr};
+  GstElement *videobalance_{nullptr};
+  GstElement *xvimagesink_{nullptr};
 
 #if HAVE_OSX
-  NSView *window_handle_;
+  NSView *window_handle_{nullptr};
 #else
-  guintptr window_handle_;
+  guintptr window_handle_{0};
 #endif
-  GdkCursor *blank_cursor_;
+  GdkCursor *blank_cursor_{nullptr};
 
-  CustomPropertyHelper::ptr gtk_custom_props_;
-  GParamSpec *fullscreen_prop_spec_;
-  gboolean is_fullscreen_;
-  GParamSpec *title_prop_spec_;
-  gchar *title_;
+  CustomPropertyHelper::ptr gtk_custom_props_{};
+  GParamSpec *fullscreen_prop_spec_{nullptr};
+  gboolean is_fullscreen_{FALSE};
+  GParamSpec *title_prop_spec_{nullptr};
+  gchar *title_{nullptr};
 
-  std::mutex wait_window_mutex_;
-  std::condition_variable wait_window_cond_;
+  std::mutex wait_window_mutex_{};
+  std::condition_variable wait_window_cond_{};
 
-  std::mutex window_destruction_mutex_;
-  std::condition_variable window_destruction_cond_;
+  std::mutex window_destruction_mutex_{};
+  std::condition_variable window_destruction_cond_{};
 
   bool init_gpipe() final;
   void on_shmdata_connect(std::string shmdata_sochet_path) final;
