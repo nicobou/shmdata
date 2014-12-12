@@ -81,7 +81,7 @@ PostureColorize::init() {
                          std::bind(&PostureColorize::disconnect, this, std::placeholders::_1),
                          std::bind(&PostureColorize::disconnect_all, this),
                          std::bind(&PostureColorize::can_sink_caps, this, std::placeholders::_1),
-                         1);
+                         0);
 
   calibration_path_prop_ = custom_props_->make_string_property("calibration_path",
                                           "Path to the calibration file",
