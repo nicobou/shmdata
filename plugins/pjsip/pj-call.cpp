@@ -289,6 +289,11 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event *e) {
             inv->cause,
             static_cast<int>(inv->cause_text.slen),
             inv->cause_text.ptr);
+    g_warning("Call #%d disconnected. Reason=%d (%.*s)",
+              call->index,
+              inv->cause,
+              static_cast<int>(inv->cause_text.slen),
+              inv->cause_text.ptr);
     call->inv = nullptr;
     inv->mod_data[mod_siprtp_.id] = nullptr;
     // cleaning shmdatas

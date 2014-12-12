@@ -41,7 +41,7 @@ int main() {
     const std::string audio_name("a");
     const std::string video_name("v");
     std::list<std::string> buddies =
-        { "1003@10.10.30.179" };
+        { "1003@scenic.sat.qc.ca" };
 
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager(manager_name);
@@ -59,10 +59,10 @@ int main() {
     // // if not cancel the test
     // // example dico is
     // /*
-    //   .buddies.1       foo@10.10.30.179
-    //   .buddies.2       bar@10.10.30.179
-    //   .buddies.3       space@10.10.30.179
-    //   .me.uri        me@10.10.30.179
+    //   .buddies.1       foo@scenic.sat.qc.ca
+    //   .buddies.2       bar@scenic.sat.qc.ca
+    //   .buddies.3       space@scenic.sat.qc.ca
+    //   .me.uri        me@scenic.sat.qc.ca
     //   .me.password   Udl3k0js
     // */
     // manager->create("dico", "info");
@@ -101,7 +101,7 @@ int main() {
     assert(manager->invoke_va(sip_name,
                               "register",
                               nullptr,
-                              "1001@10.10.30.179",  // user
+                              "1001@scenic.sat.qc.ca",  // user
                               "1234",  // password
                               nullptr));
 
