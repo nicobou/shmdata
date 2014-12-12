@@ -41,9 +41,7 @@ int main() {
     const std::string audio_name("a");
     const std::string video_name("v");
     std::list<std::string> buddies =
-        { "1001@scenic.sat.qc.ca",
-          "1002@scenic.sat.qc.ca",
-          "1003@scenic.sat.qc.ca"};
+        { "1003@10.10.30.179" };
 
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager(manager_name);
@@ -61,10 +59,10 @@ int main() {
     // // if not cancel the test
     // // example dico is
     // /*
-    //   .buddies.1       foo@scenic.sat.qc.ca
-    //   .buddies.2       bar@scenic.sat.qc.ca
-    //   .buddies.3       space@scenic.sat.qc.ca
-    //   .me.uri        me@scenic.sat.qc.ca
+    //   .buddies.1       foo@10.10.30.179
+    //   .buddies.2       bar@10.10.30.179
+    //   .buddies.3       space@10.10.30.179
+    //   .me.uri        me@10.10.30.179
     //   .me.password   Udl3k0js
     // */
     // manager->create("dico", "info");
@@ -96,14 +94,14 @@ int main() {
 
     // SIP
     assert(0 == manager->create("sip", sip_name).compare(sip_name));
-    assert(manager->set_property(sip_name, "port", "5060"));
+    // assert(manager->set_property(sip_name, "port", "5060"));
     assert(manager->set_property(sip_name, "port", "5070"));
     assert(manager->set_property(sip_name, "port", "5080"));
 
     assert(manager->invoke_va(sip_name,
                               "register",
                               nullptr,
-                              "1003@scenic.sat.qc.ca",  // user
+                              "1001@10.10.30.179",  // user
                               "1234",  // password
                               nullptr));
 
@@ -166,25 +164,27 @@ int main() {
 
     g_print("%s\n", manager->get_info(sip_name, ".").c_str());
     
-    // usleep(200000);
+    //usleep(2000000);
 
-    // for (auto &it : buddies)
-    //   assert(manager->invoke_va(sip_name,
-    //                             "call",
-    //                             nullptr,
-    //                             it.c_str(),
-    //                             nullptr));
+    for (auto &it : buddies)
+      assert(manager->invoke_va(sip_name,
+                                "call",
+                                nullptr,
+                                it.c_str(),
+                                nullptr));
     
     // usleep(8000000);
-    // assert(manager->set_property(sip_name, "status", "Away"));
-    // usleep(8000000);
-    // assert(manager->set_property(sip_name, "status-note", "coucou"));
-    // usleep(8000000);
-    // assert(manager->set_property(sip_name, "status", "Busy"));
-    // usleep(8000000);
-    // assert(manager->set_property(sip_name, "status", "Offline"));
-    // usleep(8000000);
+    assert(manager->set_property(sip_name, "status", "Away"));
+    usleep(8000000);
+    assert(manager->set_property(sip_name, "status-note", "coucou"));
+    usleep(8000000);
+    assert(manager->set_property(sip_name, "status", "Busy"));
+    usleep(8000000);
+    //assert(manager->set_property(sip_name, "status", "Offline"));
+    usleep(8000000);
     
+    usleep(80000000);
+
     // for (auto &it : buddies)
     //   assert(manager->invoke_va(sip_name,
     //                             "hang-up",

@@ -274,7 +274,7 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event *e) {
     return;
   // finding id of the buddy related to the call 
   pj_str_t contact;
-  pj_cstr(&contact, call->peer_uri.c_str());
+  pj_cstr(&contact, std::string("sip:" + call->peer_uri + ";transport=tcp").c_str());
   auto id = pjsua_buddy_find(&contact);
   if (PJSUA_INVALID_ID == id) {
     g_warning("buddy not found: cannot update call status %s",
@@ -378,20 +378,16 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
                                   pj_status_t status) {
   const pjmedia_sdp_session *local_sdp, *remote_sdp;
   struct call *call = static_cast<struct call *>(inv->mod_data[mod_siprtp_.id]);
-
   /* Do nothing if media negotiation has failed */
   if (status != PJ_SUCCESS) {
     g_warning("SDP negotiation failed");
     return;
   }
-
   /* Capture stream definition from the SDP */
   pjmedia_sdp_neg_get_active_local(inv->neg, &local_sdp);
   pjmedia_sdp_neg_get_active_remote(inv->neg, &remote_sdp);
-
   // g_print ("negotiated LOCAL\n"); print_sdp(local_sdp);
   // g_print("negotiated REMOTE\n"); print_sdp(remote_sdp);
-
   for (uint i = 0; i < call->media_count; i++) {
     struct media_stream *current_media;
     current_media = &call->media[i];
@@ -401,7 +397,6 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
                                   local_sdp,
                                   remote_sdp,
                                   i);
-
     if (status != PJ_SUCCESS) {
       g_debug("Error geting stream info from sdp");
       return;
@@ -727,9 +722,8 @@ PJCall::create_sdp(pj_pool_t *pool,
   PJ_ASSERT_RETURN(pool && p_sdp, PJ_EINVAL);
 
   /* Create and initialize basic SDP session */
-  sdp =
-      static_cast<pjmedia_sdp_session *>
-      (pj_pool_zalloc(pool, sizeof(pjmedia_sdp_session)));
+  sdp =  static_cast<pjmedia_sdp_session *>(
+      pj_pool_zalloc(pool, sizeof(pjmedia_sdp_session)));
   pj_gettimeofday(&tv);
   pj_cstr(&sdp->origin.user, "pjsip-siprtp");
   sdp->origin.version = sdp->origin.id = tv.sec + 2208988800UL;
@@ -1433,15 +1427,14 @@ PJCall::remove_from_sdp_media(pjmedia_sdp_media *sdp_media,
  * Make outgoing call.
  */
 void PJCall::make_call(std::string dst_uri) {
-  g_print("%s called begin\n", __FUNCTION__);
   if (sip_instance_->sip_presence_->sip_local_user_.empty()) {
     g_warning("cannot call if not registered");
     return;
   }
   pj_str_t local_uri;
   pj_cstr(&local_uri,
-          std::string(sip_instance_->
-                      sip_presence_->sip_local_user_).c_str());
+          std::string("sip:" + sip_instance_->sip_presence_->
+                      sip_local_user_ + ";transport=tcp").c_str());
   unsigned i;
   struct call *call = nullptr;
   pjsip_dialog *dlg = nullptr;
@@ -1458,7 +1451,7 @@ void PJCall::make_call(std::string dst_uri) {
   call = &app.call[i];
   pj_str_t dest_str;
   pj_cstr(&dest_str,
-          std::string("sip:" + dst_uri/*+ ";transport=tcp"*/).c_str());
+          std::string("sip:" + dst_uri+ ";transport=tcp").c_str());
   auto id = pjsua_buddy_find(&dest_str);
   if (PJSUA_INVALID_ID == id) {
     g_warning("buddy not found: cannot call %s",
@@ -1536,7 +1529,6 @@ void PJCall::make_call(std::string dst_uri) {
   sip_instance_->
       graft_tree(std::string(".buddy." + std::to_string(id)), tree);
 
-  g_print("%s called end\n", __FUNCTION__);
 }
 
 std::string
@@ -1555,7 +1547,7 @@ PJCall::create_outgoing_sdp(struct call *call,
   auto paths = call->instance->sip_instance_->
       tree<std::list<std::string>, const std::string &>(
           &data::Tree::copy_leaf_values,
-          std::string(".buddy." + std::to_string(id) + ".connections"));
+          std::string(".buddy." + std::to_string(id) + ".connection"));
   // std::for_each(paths.begin(), paths.end(),
   //               [&] (const std::string &val){
   //                 g_print("----------------------- %s\n", val.c_str());
@@ -1638,7 +1630,6 @@ gboolean PJCall::attach_shmdata_to_contact(const gchar *shmpath,
                                            const gchar *contact_uri,
                                            gboolean attach,
                                            void *user_data) {
-  g_print("%s called begin\n", __FUNCTION__);
   if (nullptr == shmpath || nullptr == contact_uri || nullptr == user_data) {
     g_warning("cannot add shmpath for user (received nullptr)");
     return FALSE;
@@ -1650,7 +1641,6 @@ gboolean PJCall::attach_shmdata_to_contact(const gchar *shmpath,
                 std::string(shmpath),
                 std::string(contact_uri),
                 attach));
-  g_print("%s called end\n", __FUNCTION__);
   return TRUE;
 }
 

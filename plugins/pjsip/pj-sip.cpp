@@ -140,7 +140,7 @@ bool PJSIP::pj_sip_init() {
     // cfg.cb.on_call_media_event = &on_call_media_event;
 
     pjsua_logging_config_default(&log_cfg);
-    log_cfg.console_level = 1;
+    log_cfg.console_level = 0;
 
     status = pjsua_init(&cfg, &log_cfg, nullptr);
     if (status != PJ_SUCCESS) {
@@ -248,7 +248,7 @@ void PJSIP::start_tcp_transport() {
   pj_status_t status =
       pjsua_transport_create(PJSIP_TRANSPORT_TCP, &cfg, &transport_id_);
   if (status != PJ_SUCCESS) {
-    g_warning("Error creating UDP transport");
+    g_warning("Error creating transport");
     return;
   }
 }

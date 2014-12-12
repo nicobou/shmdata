@@ -157,6 +157,6 @@ class PJCall {
                                       const std::string &contact_uri,
                                       bool attach);
 };
-}  // namespace switcher
 
-#endif  // PLUGINS_PJSIP_PJ_CALL_H_
+}  // namespace switcher
+#endif
