@@ -411,6 +411,9 @@ PJPresence::on_registration_state(pjsua_acc_id acc_id,
   } else {
     context->registered_ = true;
   }
+  GObjectWrapper::notify_property_changed(context->sip_instance_->gobject_->
+                                          get_gobject(),
+                                          context->sip_reg_status_spec_);
   g_debug("registration SIP status code %d\n", info->cbparam->code);
   context->registration_cond_.notify_one();
 }
