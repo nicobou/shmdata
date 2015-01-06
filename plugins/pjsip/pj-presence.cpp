@@ -183,6 +183,10 @@ PJPresence::PJPresence(PJSIP *sip_instance):
 }
 
 PJPresence::~PJPresence() {
+  if(nullptr != acc_info_pool_) {
+    pj_pool_release(acc_info_pool_);
+    acc_info_pool_ = nullptr;
+  }
   unregister_account();
 }
 
@@ -207,46 +211,42 @@ void
 PJPresence::register_account(const std::string &sip_user,
                              const std::string &sip_password) {
   std::unique_lock<std::mutex> lock(registration_mutex_);
-  
   // Register to SIP server by creating SIP account.
-  pjsua_acc_config cfg;
+  //  pjsua_acc_config cfg;
   pj_status_t status;
-
   // extracting domain information from sip uri
   auto at = std::find(sip_user.begin(), sip_user.end(), '@');
   if(sip_user.end() == at || sip_user.end() == (at + 1)) {
     g_warning("%s: invalid sip uri", __FUNCTION__);
     return;
   }
-
-  // converting to gchar * in order to make pjsip happy
-  gchar *domain = g_strdup(std::string(at + 1, sip_user.end()).c_str());
-  On_scope_exit{g_free(domain);};
-  //gchar *id = g_strdup_printf("sip:%s", sip_user.c_str());
-  gchar *id = g_strdup_printf("sip:%s;transport=tcp", sip_user.c_str());
-  On_scope_exit{g_free(id);};
-  gchar *user = g_strdup(std::string(sip_user.begin(), at).c_str());
-  On_scope_exit{g_free(user);};
-  gchar *digest = g_strdup("digest");
-  On_scope_exit{g_free(digest);};
-  gchar *password = g_strdup(sip_password.c_str());
-  On_scope_exit{g_free(password);};
-
+  if(nullptr != acc_info_pool_) {
+    pj_pool_release(acc_info_pool_);
+    acc_info_pool_ = nullptr;
+  }
+  acc_info_pool_ = pj_pool_create(&sip_instance_->cp_.factory,
+                                  "account_config",
+                                  1024,
+                                  1024,
+                                  nullptr);
   // setting pjsip account data structure
-  pjsua_acc_config_default(&cfg);
-  cfg.id = pj_str(id);
-  cfg.reg_uri = pj_str(id);
-  cfg.cred_count = 1;
-  cfg.cred_info[0].realm = pj_str(domain);
-  cfg.cred_info[0].scheme = pj_str(digest);
-  cfg.cred_info[0].username = pj_str(user);
-  cfg.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
-  cfg.cred_info[0].data = pj_str(password);
-  cfg.publish_enabled = PJ_TRUE;
+  pjsua_acc_config_default(&cfg_);
+  cfg_.id = pj_strdup3(acc_info_pool_,
+                       std::string("sip:" + sip_user + ";transport=tcp").c_str());
+  cfg_.reg_uri = pj_strdup3(acc_info_pool_,
+                            std::string("sip:" + sip_user + ";transport=tcp").c_str());
+  cfg_.cred_count = 1;
+  cfg_.cred_info[0].realm = pj_strdup3(acc_info_pool_,
+                                       std::string(at + 1, sip_user.end()).c_str());
+  cfg_.cred_info[0].scheme = pj_strdup3(acc_info_pool_, "digest");
+  cfg_.cred_info[0].username = pj_strdup3(acc_info_pool_,
+                                          std::string(sip_user.begin(), at).c_str());
+  cfg_.cred_info[0].data_type = PJSIP_CRED_DATA_PLAIN_PASSWD;
+  cfg_.cred_info[0].data = pj_strdup3(acc_info_pool_, sip_password.c_str());
+  cfg_.publish_enabled = PJ_TRUE;
   // pjsua_acc_set_registration (account_id_, PJ_TRUE) or:
-  cfg.register_on_acc_add = PJ_TRUE;
-  
-  status = pjsua_acc_add(&cfg, PJ_TRUE, &account_id_);
+  cfg_.register_on_acc_add = PJ_TRUE;
+  status = pjsua_acc_add(&cfg_, PJ_TRUE, &account_id_);
   if (status != PJ_SUCCESS) {
     account_id_ = -1;
     return;

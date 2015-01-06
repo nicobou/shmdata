@@ -51,6 +51,7 @@ class PJPresence {
  private:
   PJSIP *sip_instance_{nullptr};
   pjsua_acc_id account_id_{-1};
+  pjsua_acc_config cfg_;
   std::mutex registration_mutex_{};
   std::condition_variable registration_cond_{};
   // online status
@@ -64,6 +65,7 @@ class PJPresence {
   GParamSpec *sip_reg_status_spec_{nullptr};
   // account info
   std::string sip_local_user_{};
+  pj_pool_t *acc_info_pool_{nullptr};
   std::map<std::string, pjsua_buddy_id> buddy_id_{};
   // registration
   static void on_registration_state(pjsua_acc_id acc_id,

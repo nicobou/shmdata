@@ -1456,7 +1456,7 @@ void PJCall::make_call(std::string dst_uri) {
   call = &app.call[i];
   pj_str_t dest_str;
   pj_cstr(&dest_str,
-          std::string("sip:" + dst_uri+ ";transport=tcp").c_str());
+          std::string("sip:" + dst_uri + ";transport=tcp").c_str());
   auto id = pjsua_buddy_find(&dest_str);
   if (PJSUA_INVALID_ID == id) {
     g_warning("buddy not found: cannot call %s",
@@ -1475,6 +1475,12 @@ void PJCall::make_call(std::string dst_uri) {
     g_warning("pjsip_dlg_create_uac FAILLED");
     return;
   }
+
+  /* we expect the outgoing INVITE to be challenged*/
+  pjsip_auth_clt_set_credentials(&dlg->auth_sess,
+                                 1,
+                                 &sip_instance_->sip_presence_->cfg_.cred_info[0]);
+  
   call->peer_uri = dst_uri;
   // Create SDP
   std::string outgoing_sdp = create_outgoing_sdp(call, dst_uri);
