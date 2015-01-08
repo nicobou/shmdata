@@ -34,11 +34,10 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackSink,
                                      "Nicolas Bouillot");
 
 bool JackSink::init_gpipe() {
+  client_name_ = get_name();
   if (false == make_elements())
     return false;
   init_startable(this);
-
-  client_name_ = get_name();
   client_name_spec_ =
       custom_props_->make_string_property("jack-client-name",
                                           "the jack client name",
@@ -66,8 +65,8 @@ JackSink::~JackSink() {
 bool JackSink::make_elements() {
   GError *error = nullptr;
   std::string description (std::string("audioconvert ! audioresample ! volume ! ")
-                           + "audioconvert ! queue max-size-buffers=2 leaky=downstream ! "
-                           + "jackaudiosink provide-clock=false slave-method=none "
+                           + "audioconvert ! "
+                           + "jackaudiosink provide-clock=false slave-method=resample "
                            + "client-name=" + client_name_ + " sync=false");
   GstElement *jacksink = gst_parse_bin_from_description(description.c_str(), TRUE, &error);
   if (error != nullptr) {
