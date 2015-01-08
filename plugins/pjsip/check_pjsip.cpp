@@ -41,7 +41,7 @@ int main() {
     const std::string audio_name("a");
     const std::string video_name("v");
     std::list<std::string> buddies =
-        { "1003@scenic.sat.qc.ca" };
+        { "1001@10.10.30.179" };
 
     switcher::QuiddityManager::ptr manager =
         switcher::QuiddityManager::make_manager(manager_name);
@@ -101,7 +101,7 @@ int main() {
     assert(manager->invoke_va(sip_name,
                               "register",
                               nullptr,
-                              "1001@scenic.sat.qc.ca",  // user
+                              "1002@10.10.30.179",  // user
                               "1234",  // password
                               nullptr));
 
@@ -166,24 +166,24 @@ int main() {
     
     //usleep(2000000);
 
-    for (auto &it : buddies)
-      assert(manager->invoke_va(sip_name,
-                                "call",
-                                nullptr,
-                                it.c_str(),
-                                nullptr));
+    // for (auto &it : buddies)
+    //   assert(manager->invoke_va(sip_name,
+    //                             "call",
+    //                             nullptr,
+    //                             it.c_str(),
+    //                             nullptr));
     
     // usleep(8000000);
-    assert(manager->set_property(sip_name, "status", "Away"));
-    usleep(8000000);
-    assert(manager->set_property(sip_name, "status-note", "coucou"));
-    usleep(8000000);
-    assert(manager->set_property(sip_name, "status", "Busy"));
-    usleep(8000000);
-    //assert(manager->set_property(sip_name, "status", "Offline"));
-    usleep(8000000);
+    // assert(manager->set_property(sip_name, "status", "Away"));
+    // usleep(8000000);
+    // assert(manager->set_property(sip_name, "status-note", "coucou"));
+    // usleep(8000000);
+    // assert(manager->set_property(sip_name, "status", "Busy"));
+    // usleep(8000000);
+    // //assert(manager->set_property(sip_name, "status", "Offline"));
+    // usleep(8000000);
     
-    usleep(80000000);
+    // usleep(80000000);
 
     // for (auto &it : buddies)
     //   assert(manager->invoke_va(sip_name,

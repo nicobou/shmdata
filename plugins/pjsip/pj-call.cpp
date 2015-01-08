@@ -479,7 +479,6 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
         return;
       }
     }  // end receiving
-
     // send streams
     if (PJMEDIA_DIR_ENCODING == current_media->si.dir
         || PJMEDIA_DIR_CAPTURE == current_media->si.dir
@@ -498,6 +497,9 @@ void PJCall::call_on_media_update(pjsip_inv_session *inv,
                       nullptr,
                       { current_media->shm_path_to_send, call->peer_uri,
                             std::to_string(remote_sdp->media[i]->desc.port)});
+      // g_print("----------- sending data to %s, port %s\n",
+      //         call->peer_uri.c_str(),
+      //         std::to_string(remote_sdp->media[i]->desc.port).c_str());
     }
     current_media->active = PJ_TRUE;
   }  // end iterating media
@@ -1437,9 +1439,10 @@ void PJCall::make_call(std::string dst_uri) {
     return;
   }
   pj_str_t local_uri;
+  std::string local_uri_tmp(sip_instance_->sip_presence_->
+                            sip_local_user_ + ";transport=tcp");
   pj_cstr(&local_uri,
-          std::string("sip:" + sip_instance_->sip_presence_->
-                      sip_local_user_ + ";transport=tcp").c_str());
+          local_uri_tmp.c_str());
   unsigned i;
   struct call *call = nullptr;
   pjsip_dialog *dlg = nullptr;
@@ -1451,7 +1454,7 @@ void PJCall::make_call(std::string dst_uri) {
     if (app.call[i].inv == nullptr)
       break;
   }
-  if (i == app.max_calls)
+      if (i == app.max_calls)
     return;
   call = &app.call[i];
   pj_str_t dest_str;
@@ -1463,6 +1466,7 @@ void PJCall::make_call(std::string dst_uri) {
               dst_uri.c_str());
     return;
   }
+  
   // Create UAC dialog
   status = pjsip_dlg_create_uac(pjsip_ua_instance(),
                                 &local_uri,  /* local URI */
@@ -1480,7 +1484,6 @@ void PJCall::make_call(std::string dst_uri) {
   pjsip_auth_clt_set_credentials(&dlg->auth_sess,
                                  1,
                                  &sip_instance_->sip_presence_->cfg_.cred_info[0]);
-  
   call->peer_uri = dst_uri;
   // Create SDP
   std::string outgoing_sdp = create_outgoing_sdp(call, dst_uri);
@@ -1489,7 +1492,6 @@ void PJCall::make_call(std::string dst_uri) {
                              call->outgoing_sdp,
                              outgoing_sdp.length(),
                              &sdp);
-
   if (status != PJ_SUCCESS) {
     ++app.uac_calls;
     g_warning("pjmedia_sdp_parse FAILLLED");
@@ -1516,7 +1518,6 @@ void PJCall::make_call(std::string dst_uri) {
     g_warning("pjsip_inv_invite error");
     return;
   }
-
   /* Send initial INVITE request.
    * From now on, the invite session's state will be reported to us
    * via the invite session callbacks.
@@ -1526,7 +1527,6 @@ void PJCall::make_call(std::string dst_uri) {
     g_warning("pjsip_inv_send_msg error");
     return;
   }
-
   // updating call status in the tree
   data::Tree::ptr tree = sip_instance_->
         prune_tree(std::string(".buddy." + std::to_string(id)),
