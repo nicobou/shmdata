@@ -232,9 +232,11 @@ PJPresence::register_account(const std::string &sip_user,
   // setting pjsip account data structure
   pjsua_acc_config_default(&cfg_);
   cfg_.id = pj_strdup3(acc_info_pool_,
-                       std::string("sip:" + sip_user + ";transport=tcp").c_str());
+                       std::string("sip:" + sip_user // + ";transport=tcp"
+                                   ).c_str());
   cfg_.reg_uri = pj_strdup3(acc_info_pool_,
-                            std::string("sip:" + sip_user + ";transport=tcp").c_str());
+                            std::string("sip:" + sip_user // + ";transport=tcp"
+                                        ).c_str());
   cfg_.cred_count = 1;
   cfg_.cred_info[0].realm = pj_strdup3(acc_info_pool_,
                                        std::string(at + 1, sip_user.end()).c_str());
@@ -292,7 +294,8 @@ void PJPresence::add_buddy(const std::string &sip_user) {
   pjsua_buddy_id buddy_id;
   pj_status_t status = PJ_SUCCESS;
 
-  std::string buddy_full_uri("sip:" + sip_user + ";transport=tcp");
+  std::string buddy_full_uri("sip:" + sip_user // + ";transport=tcp"
+                             );
   if (pjsua_verify_url(buddy_full_uri.c_str()) != PJ_SUCCESS) {
     g_warning("Invalid buddy URI (%s)", sip_user.c_str());
     return;

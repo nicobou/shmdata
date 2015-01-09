@@ -274,7 +274,8 @@ void PJCall::call_on_state_changed(pjsip_inv_session *inv, pjsip_event *e) {
     return;
   // finding id of the buddy related to the call 
   pj_str_t contact;
-  pj_cstr(&contact, std::string("sip:" + call->peer_uri + ";transport=tcp").c_str());
+  pj_cstr(&contact, std::string("sip:" + call->peer_uri // + ";transport=tcp"
+                                ).c_str());
   auto id = pjsua_buddy_find(&contact);
   if (PJSUA_INVALID_ID == id) {
     g_warning("buddy not found: cannot update call status %s",
@@ -1440,7 +1441,8 @@ void PJCall::make_call(std::string dst_uri) {
   }
   pj_str_t local_uri;
   std::string local_uri_tmp(sip_instance_->sip_presence_->
-                            sip_local_user_ + ";transport=tcp");
+                            sip_local_user_ // + ";transport=tcp"
+                            );
   pj_cstr(&local_uri,
           local_uri_tmp.c_str());
   unsigned i;
@@ -1459,7 +1461,8 @@ void PJCall::make_call(std::string dst_uri) {
   call = &app.call[i];
   pj_str_t dest_str;
   pj_cstr(&dest_str,
-          std::string("sip:" + dst_uri + ";transport=tcp").c_str());
+          std::string("sip:" + dst_uri // + ";transport=tcp"
+                      ).c_str());
   auto id = pjsua_buddy_find(&dest_str);
   if (PJSUA_INVALID_ID == id) {
     g_warning("buddy not found: cannot call %s",

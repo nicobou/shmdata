@@ -246,7 +246,7 @@ void PJSIP::start_tcp_transport() {
   pjsua_transport_config_default(&cfg);
   cfg.port = sip_port_;
   pj_status_t status =
-      pjsua_transport_create(PJSIP_TRANSPORT_TCP, &cfg, &transport_id_);
+      pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, &transport_id_);
   if (status != PJ_SUCCESS) {
     g_warning("Error creating transport");
     return;
