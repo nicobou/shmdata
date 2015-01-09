@@ -609,6 +609,12 @@ void PJCall::process_incoming_call(pjsip_rx_data *rdata) {
     return;
   }
 
+  /* we expect the outgoing INVITE to be challenged*/
+  pjsip_auth_clt_set_credentials(&dlg->auth_sess,
+                                 1,
+                                 &call->instance->sip_instance_->
+                                 sip_presence_->cfg_.cred_info[0]);
+
   // checking number of transport to create for receiving
   // and creating transport for receiving data offered
 
