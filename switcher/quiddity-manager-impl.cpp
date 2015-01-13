@@ -284,6 +284,7 @@ QuiddityManager_Impl::create_without_hook(std::string quiddity_class) {
 std::string QuiddityManager_Impl::create(std::string quiddity_class) {
   if (!class_exists(quiddity_class))
     return std::string();
+  // FIXME give name (or id) as ctor arg
   Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class);
   if (quiddity.get() != nullptr) {
     if (!init_quiddity(quiddity)) {
