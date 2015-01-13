@@ -47,3 +47,7 @@ SUBDIRS += \
     systemusage
 endif
 
+if JACKBUILD
+SUBDIRS += \
+    jack
+endif

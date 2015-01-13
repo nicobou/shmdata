@@ -77,6 +77,9 @@ plugins/systemusage/check_systemusage_plugin
 plugins/v4l2/.deps/
 plugins/v4l2/.libs/
 plugins/v4l2/check_v4l2_plugin
+plugins/jack/.deps/
+plugins/jack/.libs/
+plugins/jack/check_jack
 src/.deps/
 src/.libs/
 src/switcher

@@ -182,6 +182,16 @@ else
 fi
 AM_CONDITIONAL(OSCBUILD, test "${OSCBUILD}" = "enabled")
 
+#jack
+PKG_CHECK_MODULES(JACK, jack, have_jack=true, have_jack=false)
+if test "x${have_jack}" = "xfalse" ; then
+    JACKBUILD=disabled
+    AC_MSG_WARN([Missing libjack-jackd2-dev package])
+else
+    JACKBUILD=enabled
+fi
+AM_CONDITIONAL(JACKBUILD, test "${JACKBUILD}" = "enabled")
+
 # python
 PKG_CHECK_MODULES(PYTHON, python, have_python=true, have_python=false)
 if test "x${have_python}" = "xfalse" ; then
@@ -418,6 +428,7 @@ plugins/pulse/Makefile
 plugins/v4l2/Makefile
 plugins/pjsip/Makefile
 plugins/gtk/Makefile
+plugins/jack/Makefile
 nodejs/Makefile
 plugins/posture/Makefile
 ])
@@ -432,7 +443,7 @@ AC_OUTPUT
 [echo "GTK fullscreen video       ${GTKBUILD}"]
 [echo "Pulse audio                ${PULSEBUILD}"]
 [echo "PortMidi                   ${PORTMIDIBUILD}"]
-dnl [echo "PJSIP                      ${PJSIPBUILD}"]
+[echo "Jack                       ${JACKBUILD}"]
 [echo ""]
 [echo "-----------------------------------"]
 [echo ""]
