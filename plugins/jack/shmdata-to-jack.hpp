@@ -21,6 +21,7 @@
 #define __SWITCHER_SHMDATA_TO_JACK_H__
 
 #include <memory>
+#include <mutex>
 #include "switcher/single-pad-gst-sink.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
@@ -45,6 +46,7 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
   unsigned short channels_{0};
   CustomPropertyHelper::ptr custom_props_{};
   std::vector<jack_port_t *> output_ports_{};  // FIXME
+  std::mutex output_ports_mutex_{};
   bool init_gpipe() final;
   bool start() final;
   bool stop() final;
@@ -52,6 +54,7 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
   void on_shmdata_connect(std::string shmdata_sochet_path) final;
   bool can_sink_caps(std::string caps) final;
   bool make_elements();
+  void check_output_ports(int channels);
   static void on_handoff_cb(GstElement *object,
                             GstBuffer *buf,
                             GstPad *pad,
@@ -61,5 +64,4 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
 
 SWITCHER_DECLARE_PLUGIN(ShmdataToJack);
 }  // namespace switcher
-
 #endif

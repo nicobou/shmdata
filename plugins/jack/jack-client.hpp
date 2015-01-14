@@ -31,11 +31,14 @@ class JackClient : public SafeBoolIdiom {
  public:
   explicit JackClient(const char *name);
   JackClient() = delete;
+  JackClient(const JackClient &) = delete;
+  JackClient &operator=(const JackClient &) = delete;
+
   jack_nframes_t get_sample_rate() const;
   jack_nframes_t get_buffer_size() const;
   void set_jack_process_callback(JackProcessCallback cb,
                                  void *arg);
-  
+
  private:
   using jack_client_handle =
       std::unique_ptr<jack_client_t, decltype(&jack_client_close)>;
@@ -52,5 +55,4 @@ class JackClient : public SafeBoolIdiom {
 };
 
 }  // namespace switcher
-
 #endif

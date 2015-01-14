@@ -54,7 +54,7 @@ int ShmdataToJack::jack_process (jack_nframes_t nframes, void *arg){
   return 0;
 }
 void
-ShmdataToJack::on_handoff_cb(GstElement *object,
+ShmdataToJack::on_handoff_cb(GstElement */*object*/,
                              GstBuffer *buf,
                              GstPad *pad,
                              gpointer user_data) {
@@ -63,31 +63,40 @@ ShmdataToJack::on_handoff_cb(GstElement *object,
   if (nullptr == caps)
     return;
   On_scope_exit {gst_caps_unref(caps);};
-  gchar *string_caps = gst_caps_to_string(caps);
-  On_scope_exit {if (nullptr != string_caps) g_free(string_caps);};
-  g_print("on handoff, negotiated caps is %s\n", string_caps);
+  // gchar *string_caps = gst_caps_to_string(caps);
+  // On_scope_exit {if (nullptr != string_caps) g_free(string_caps);};
+  // g_print("on handoff, negotiated caps is %s\n", string_caps);
   const GValue *val =
       gst_structure_get_value(gst_caps_get_structure(caps, 0),
                               "channels");
   const int channels = g_value_get_int(val);
-  g_print("on handoff, channel number %d\n", channels);
-  if (channels != context->channels_) {
-    context->channels_ = channels;
-    jack_client_t *cl = context->jack_client_.get_raw();
+  // g_print("on handoff, channel number %d\n", channels);
+  context->check_output_ports(channels);
+  // HERE
+  g_print("audio data buffer %p, size %d\n",
+          GST_BUFFER_DATA(buf),
+          GST_BUFFER_SIZE(buf));
+}
+
+void ShmdataToJack::check_output_ports(int channels){
+  if (channels == channels_)
+    return;
+  channels_ = channels;
+  jack_client_t *cl = jack_client_.get_raw();
+  // thread safe operations on output ports
+  { std::unique_lock<std::mutex> lock(output_ports_mutex_);
     // unregistering previous ports
-    for (auto &it: context->output_ports_) {
+    for (auto &it: output_ports_)
       jack_port_unregister(cl, it);
-    }
     // registering new ports
-    for (int i = 0; i < channels; i++) {
-      context->output_ports_.
-          emplace_back(jack_port_register(cl,
-                                          std::string("output_" + std::to_string(i)).c_str(),
-                                          JACK_DEFAULT_AUDIO_TYPE,
-                                          JackPortIsOutput,
-                                          0));
-    }
-  }
+    for (int i = 0; i < channels; i++)
+      output_ports_.emplace_back(
+          jack_port_register(cl,
+                             std::string("output_" + std::to_string(i)).c_str(),
+                             JACK_DEFAULT_AUDIO_TYPE,
+                             JackPortIsOutput,
+                             0));
+  }  // unlocking output_ports_
 }
 
 bool ShmdataToJack::make_elements() {
