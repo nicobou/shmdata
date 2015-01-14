@@ -64,7 +64,7 @@ class Quiddity {
 
   // instance name
   const std::string &get_name();
-  bool set_name(std::string name);  // FIXME remove
+  bool set_name(const std::string &name);  // can be called once
 
   // properties
   std::string get_property_description(std::string property_name);

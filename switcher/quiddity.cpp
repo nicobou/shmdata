@@ -142,12 +142,11 @@ const std::string &Quiddity::get_name() {
   return name_;
 }
 
-bool Quiddity::set_name(std::string name) {
-  if (!name.empty()) {
-    name_ = std::move(name);
-    return true;
-  }
-  return false;
+bool Quiddity::set_name(const std::string &name) {
+  if (!name_.empty())
+    return false;
+  name_ = name;
+  return true;
 }
 
 bool
