@@ -29,7 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FakeShmdataWriter,
                                      "fakeshmsrc",
                                      "Nicolas Bouillot");
 
-FakeShmdataWriter::FakeShmdataWriter():
+FakeShmdataWriter::FakeShmdataWriter(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper>()),
     manager_(QuiddityManager::make_manager("fakeshm-fakesink")) {
   init_segment(this);

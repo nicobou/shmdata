@@ -27,7 +27,7 @@ namespace switcher {
 class FileSDP:public GstPipeliner {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FileSDP);
-  FileSDP();
+  FileSDP(const std::string &);
   FileSDP(const FileSDP &) = delete;
   FileSDP &operator=(const FileSDP &) = delete;
   bool to_shmdata(std::string uri);

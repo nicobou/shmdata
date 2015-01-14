@@ -26,9 +26,10 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSink,
                                      "shmdata to midi",
                                      "LGPL",
                                      "midisink", "Nicolas Bouillot");
-PortMidiSink::PortMidiSink():custom_props_(new CustomPropertyHelper()),
-                             devices_description_spec_(nullptr),
-                             devices_enum_spec_(nullptr), device_(0) {
+PortMidiSink::PortMidiSink(const std::string &):
+    custom_props_(new CustomPropertyHelper()),
+    devices_description_spec_(nullptr),
+    devices_enum_spec_(nullptr), device_(0) {
 }
 
 bool PortMidiSink::init() {

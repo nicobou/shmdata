@@ -29,7 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(HTTPSDP,
                                      "LGPL",
                                      "httpsdp",
                                      "Nicolas Bouillot");
-HTTPSDP::HTTPSDP() {
+HTTPSDP::HTTPSDP(const std::string &) {
 }
 
 HTTPSDP::~HTTPSDP() {

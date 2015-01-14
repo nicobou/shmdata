@@ -30,20 +30,24 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSink,
                                      "LGPL",
                                      "pulsesink", "Nicolas Bouillot");
 
-PulseSink::PulseSink():pulsesink_bin_(nullptr),
-                       connected_to_pulse_(false),
-                       custom_props_(new CustomPropertyHelper()),
-                       devices_description_spec_(nullptr),
-                       devices_description_(nullptr),
-                       pa_glib_mainloop_(nullptr),
-                       pa_mainloop_api_(nullptr),
-                       pa_context_(nullptr),
-                       server_(nullptr),
-                       devices_(),
-                       devices_mutex_(),
-  devices_cond_(),
-  devices_enum_spec_(nullptr),
-  devices_enum_(), device_(0), quit_mutex_(), quit_cond_() {
+PulseSink::PulseSink(const std::string &):
+    pulsesink_bin_(nullptr),
+    connected_to_pulse_(false),
+    custom_props_(new CustomPropertyHelper()),
+    devices_description_spec_(nullptr),
+    devices_description_(nullptr),
+    pa_glib_mainloop_(nullptr),
+    pa_mainloop_api_(nullptr),
+    pa_context_(nullptr),
+    server_(nullptr),
+    devices_(),
+    devices_mutex_(),
+    devices_cond_(),
+    devices_enum_spec_(nullptr),
+    devices_enum_(),
+    device_(0),
+    quit_mutex_(),
+    quit_cond_() {
   // g_print ("%s\n", __PRETTY_FUNCTION__);
 }
 

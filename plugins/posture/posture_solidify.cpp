@@ -32,7 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureSolidify,
                                      "LGPL",
                                      "pcltomeshsink", "Emmanuel Durand");
 
-PostureSolidify::PostureSolidify():
+PostureSolidify::PostureSolidify(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()) {
 }
 

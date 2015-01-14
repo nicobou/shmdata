@@ -29,7 +29,7 @@ namespace switcher {
 class MyPlugin: public Quiddity, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(MyPlugin);
-  MyPlugin();
+  MyPlugin(const std::string &);
   ~MyPlugin() = default;
   MyPlugin(const MyPlugin &) = delete;
   MyPlugin &operator=(const MyPlugin &) = delete;

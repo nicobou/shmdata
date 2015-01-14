@@ -29,7 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Logger,
                                      "LGPL",
                                      "logger", "Nicolas Bouillot");
 
-Logger::Logger():i_am_the_one_(false),
+Logger::Logger(const std::string &):i_am_the_one_(false),
                  last_line_(),
                  mute_(false),
                  debug_(true),

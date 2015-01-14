@@ -38,7 +38,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PropertyMapper,
                                      "LGPL",
                                      "property-mapper", "Nicolas Bouillot");
 
-PropertyMapper::PropertyMapper():source_quiddity_(),
+PropertyMapper::PropertyMapper(const std::string &):source_quiddity_(),
                                  source_property_name_(),
                                  sink_quiddity_(),
                                  sink_quiddity_pspec_(nullptr),

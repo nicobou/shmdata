@@ -213,7 +213,10 @@ class QuiddityManager_Impl
   GlibMainLoop::ptr mainloop_;
   std::unordered_map<std::string, PluginLoader::ptr> plugins_{};
   std::string name_{};
-  AbstractFactory<Quiddity, std::string, QuiddityDocumentation *> abstract_factory_{};
+  AbstractFactory<Quiddity,
+                  std::string,
+                  QuiddityDocumentation *,
+                  const std::string &> abstract_factory_{};
   
   bool load_plugin(const char *filename);
   void close_plugin(const std::string class_name);

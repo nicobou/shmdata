@@ -27,7 +27,7 @@ namespace switcher {
 class CreateRemoveSpy:public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(CreateRemoveSpy);
-  CreateRemoveSpy();
+  CreateRemoveSpy(const std::string &);
   ~CreateRemoveSpy();
   CreateRemoveSpy(const CreateRemoveSpy &) = delete;
   CreateRemoveSpy &operator=(const CreateRemoveSpy &) = delete;

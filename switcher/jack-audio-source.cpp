@@ -29,7 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackAudioSource,
                                      "jacksrc",
                                      "Nicolas Bouillot");
 
-JackAudioSource::JackAudioSource():
+JackAudioSource::JackAudioSource(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 

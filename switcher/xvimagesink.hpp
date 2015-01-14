@@ -30,7 +30,7 @@ namespace switcher {
 class Xvimagesink: public SinglePadGstSink {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Xvimagesink);
-  Xvimagesink();
+  Xvimagesink(const std::string &);
   ~Xvimagesink();
   Xvimagesink(const Xvimagesink &) = delete;
   Xvimagesink &operator=(const Xvimagesink &) = delete;

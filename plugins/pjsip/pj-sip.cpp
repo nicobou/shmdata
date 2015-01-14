@@ -35,7 +35,8 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
 // one SIP endpoint instance for every process.
 pjsip_endpoint *PJSIP::sip_endpt_ = nullptr;
 
-PJSIP::PJSIP():custom_props_(std::make_shared<CustomPropertyHelper>()), cp_() {
+PJSIP::PJSIP(const std::string &):
+    custom_props_(std::make_shared<CustomPropertyHelper>()), cp_() {
 }
 
 PJSIP::~PJSIP() {

@@ -35,7 +35,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "v4l2src",
     "Nicolas Bouillot");
 
-V4L2Src::V4L2Src():
+V4L2Src::V4L2Src(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 

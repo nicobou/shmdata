@@ -28,7 +28,7 @@ namespace switcher {
 class JackSink:public SinglePadGstSink, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(JackSink);
-  JackSink();
+  JackSink(const std::string &);
   ~JackSink();
   JackSink(const JackSink &) = delete;
   JackSink &operator=(const JackSink &) = delete;

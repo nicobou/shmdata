@@ -33,7 +33,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureDisplay,
                                      "pcldisplaysink",
                                      "Emmanuel Durand");
 
-PostureDisplay::PostureDisplay():
+PostureDisplay::PostureDisplay(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()) {
 }
 

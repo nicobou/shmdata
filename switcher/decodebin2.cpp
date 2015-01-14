@@ -31,7 +31,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Decodebin2,
                                      "LGPL",
                                      "decodebin", "Nicolas Bouillot");
 
-Decodebin2::Decodebin2():
+Decodebin2::Decodebin2(const std::string &):
     decodebin_(new DecodebinToShmdata(static_cast <GstPipeliner *>(this))),
     media_counters_() {
 }

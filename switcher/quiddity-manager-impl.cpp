@@ -248,9 +248,7 @@ void QuiddityManager_Impl::give_name_if_unnamed(Quiddity::ptr quiddity) {
 
 bool QuiddityManager_Impl::init_quiddity(Quiddity::ptr quiddity) {
   quiddity->set_manager_impl(me_.lock());
-
-  give_name_if_unnamed(quiddity);
-
+  //give_name_if_unnamed(quiddity);
   if (!quiddity->init())
     return false;
 
@@ -265,65 +263,89 @@ bool QuiddityManager_Impl::init_quiddity(Quiddity::ptr quiddity) {
 // for use of the "get description by class" methods
 std::string
 QuiddityManager_Impl::create_without_hook(std::string quiddity_class) {
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (!class_exists(quiddity_class))
     return std::string();
-  
-  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class);
-  if (quiddity.get() != nullptr) {
-    quiddity->set_manager_impl(me_.lock());
-    give_name_if_unnamed(quiddity);
-
-    if (!quiddity->init())
-      return "{\"error\":\"cannot init quiddity class\"}";
-    
-    quiddities_[quiddity->get_name()] = quiddity;
-  }
-  return quiddity->get_name();
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
+  std::string name = quiddity_class + std::to_string(quiddity_created_counter_);
+  quiddity_created_counter_++;
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
+  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class, name);
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
+  if (nullptr == quiddity.get())
+    return "{\"error\":\"cannot make quiddity\"}";
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
+  quiddity->set_manager_impl(me_.lock());
+  quiddity->set_name(name);
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
+    //give_name_if_unnamed(quiddity);
+  if (!quiddity->init())
+    return "{\"error\":\"cannot init quiddity class\"}";
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
+  quiddities_[name] = quiddity;
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
+  return name;
 }
 
 std::string QuiddityManager_Impl::create(std::string quiddity_class) {
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (!class_exists(quiddity_class))
     return std::string();
-  // FIXME give name (or id) as ctor arg
-  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class);
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
+  std::string name = quiddity_class + std::to_string(quiddity_created_counter_);
+  quiddity_created_counter_++;
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
+  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class, name);
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (quiddity.get() != nullptr) {
+    quiddity->set_name(name);
     if (!init_quiddity(quiddity)) {
       g_debug("initialization of %s failled", quiddity_class.c_str());
       return std::string();
     }
   }
-  return quiddity->get_name();
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
+  return name;
 }
 
 std::string
 QuiddityManager_Impl::create(std::string quiddity_class,
                              std::string nick_name) {
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (!class_exists(quiddity_class) || nick_name.empty())
     return std::string();
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   auto it = quiddities_.find(nick_name);
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (quiddities_.end() != it) {
     g_warning("cannot create a quiddity named %s, name is already taken",
               nick_name.c_str());
     return std::string();
   }
-  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class);
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
+  Quiddity::ptr quiddity = abstract_factory_.create(quiddity_class,
+                                                    nick_name);
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
   if (!quiddity) {
     g_warning("abstract factory failled to create %s (class %s)",
               nick_name.c_str(), quiddity_class.c_str());
     return std::string();
   }
-  quiddity->set_name(std::forward<std::string>(nick_name));
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
+  quiddity->set_name(nick_name);
   if (!init_quiddity(quiddity)) {
     g_debug("initialization of %s with name %s failled",
             quiddity_class.c_str(), quiddity->get_name().c_str());
     return std::string();
   }
-  return std::string(quiddity->get_name());
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
+  g_print("%s %d\n", __FUNCTION__, __LINE__);
+  return nick_name;
 }
 
 bool
-QuiddityManager_Impl::rename(std::string nick_name,
-                             std::string new_nick_name) {
+QuiddityManager_Impl::rename(std::string, std::string) {
   // FIXME remove rename
   return false;
 }
@@ -975,12 +997,9 @@ GMainContext *QuiddityManager_Impl::get_g_main_context() {
 
 bool QuiddityManager_Impl::load_plugin(const char *filename) {
   PluginLoader::ptr plugin = std::make_shared<PluginLoader>();
-
   if (!plugin->load(filename))
     return false;
-
   std::string class_name = plugin->get_class_name();
-
   // close the old one if exists
   auto it = plugins_.find(class_name);
   if (plugins_.end() != it) {
@@ -988,7 +1007,6 @@ bool QuiddityManager_Impl::load_plugin(const char *filename) {
             class_name.c_str());
     close_plugin(class_name);
   }
-
   abstract_factory_.register_class_with_custom_factory(
       class_name,
       plugin->get_doc(),

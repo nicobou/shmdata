@@ -43,7 +43,7 @@ bool ShmdataToJack::init_gpipe() {
   return true;
 }
 
-ShmdataToJack::ShmdataToJack():
+ShmdataToJack::ShmdataToJack(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 

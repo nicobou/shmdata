@@ -29,7 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FakeSink,
                                      "LGPL",
                                      "fakesink", "Nicolas Bouillot");
 
-FakeSink::FakeSink():
+FakeSink::FakeSink(const std::string &):
     fakesink_("fakesink"),
     props_(std::make_shared<CustomPropertyHelper>()) {
 }

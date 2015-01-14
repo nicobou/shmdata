@@ -33,7 +33,7 @@ class FakeShmdataWriter: public Quiddity,
                          public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(FakeShmdataWriter);
-  FakeShmdataWriter();
+  FakeShmdataWriter(const std::string &);
   ~FakeShmdataWriter();
   FakeShmdataWriter(const FakeShmdataWriter &) = delete;
   FakeShmdataWriter &operator=(const FakeShmdataWriter &) = delete;

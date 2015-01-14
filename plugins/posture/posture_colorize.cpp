@@ -33,7 +33,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PostureColorize,
                                      "LGPL",
                                      "texturetomeshsink", "Emmanuel Durand");
 
-PostureColorize::PostureColorize():
+PostureColorize::PostureColorize(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()) {
 }
 

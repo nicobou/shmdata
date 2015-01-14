@@ -37,7 +37,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SyphonSrc,
                                      "LGPL",
                                      "syphonsrc", "Emmanuel Durand");
 
-SyphonSrc::SyphonSrc():
+SyphonSrc::SyphonSrc(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper> ()),
     syphon_servername_(""),
     syphon_servername_prop_(nullptr),

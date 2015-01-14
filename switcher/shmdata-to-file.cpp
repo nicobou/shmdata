@@ -32,7 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToFile,
                                      "shmtofilesink",
                                      "Nicolas Bouillot, Emmanuel Durand");
 
-ShmdataToFile::ShmdataToFile():
+ShmdataToFile::ShmdataToFile(const std::string &):
     custom_prop_(std::make_shared<CustomPropertyHelper>()) {
 }
 

@@ -39,7 +39,7 @@ class PJSIP: public Quiddity {
 
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PJSIP);
-  PJSIP();
+  PJSIP(const std::string &);
   ~PJSIP();
   PJSIP(const PJSIP &) = delete;
   PJSIP &operator=(const PJSIP &) = delete;

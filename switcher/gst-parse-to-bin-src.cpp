@@ -29,7 +29,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstParseToBinSrc,
                                      "gstsrc",
                                      "Nicolas Bouillot");
 
-GstParseToBinSrc::GstParseToBinSrc():
+GstParseToBinSrc::GstParseToBinSrc(const std::string &):
     gst_parse_to_bin_src_(nullptr),
     custom_props_(new CustomPropertyHelper()),
     gst_launch_pipeline_spec_(nullptr),

@@ -31,7 +31,7 @@ namespace switcher {
 class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(ShmdataToJack);
-  ShmdataToJack();
+  ShmdataToJack(const std::string &);
   ~ShmdataToJack() = default;
   ShmdataToJack(const ShmdataToJack &) = delete;
   ShmdataToJack &operator=(const ShmdataToJack &) = delete;

@@ -155,7 +155,7 @@ bool GTKVideo::init_gpipe() {
   return true;
 }
 
-GTKVideo::GTKVideo():
+GTKVideo::GTKVideo(const std::string &):
     gtk_custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 

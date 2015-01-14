@@ -26,7 +26,7 @@ namespace switcher {
 class StringDictionary:public Quiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(StringDictionary);
-  StringDictionary() = default;
+  StringDictionary(const std::string &){}
   ~StringDictionary() = default;
   StringDictionary(const StringDictionary &) = delete;
   StringDictionary &operator=(const StringDictionary &) = delete;

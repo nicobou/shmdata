@@ -32,7 +32,7 @@ namespace switcher {
 class PulseSrc:public AudioSource, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PulseSrc);
-  PulseSrc();
+  PulseSrc(const std::string &);
   ~PulseSrc();
   PulseSrc(const PulseSrc &) = delete;
   PulseSrc &operator=(const PulseSrc &) = delete;

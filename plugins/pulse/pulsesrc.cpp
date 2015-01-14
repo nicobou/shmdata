@@ -31,7 +31,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
                                      "pulsesrc",
                                      "Nicolas Bouillot");
 
-PulseSrc::PulseSrc():
+PulseSrc::PulseSrc(const std::string &):
     pulsesrc_(nullptr),
     capsfilter_(nullptr),
     pulsesrc_bin_(nullptr),

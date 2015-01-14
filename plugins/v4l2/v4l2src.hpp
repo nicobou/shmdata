@@ -26,7 +26,7 @@ namespace switcher {
 class V4L2Src:public VideoSource {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(V4L2Src);
-  V4L2Src();
+  V4L2Src(const std::string &);
   ~V4L2Src();
   V4L2Src(const V4L2Src &) = delete;
   V4L2Src &operator=(const V4L2Src &) = delete;

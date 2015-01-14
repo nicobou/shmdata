@@ -41,7 +41,7 @@ class RtpSession: public GstPipeliner {
   friend RtpDestination;
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(RtpSession);
-  RtpSession();
+  RtpSession(const std::string &);
   ~RtpSession();
   RtpSession(const RtpSession &) = delete;
   RtpSession &operator=(const RtpSession &) = delete;

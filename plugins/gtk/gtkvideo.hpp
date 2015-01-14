@@ -45,7 +45,7 @@ namespace switcher {
 class GTKVideo: public SinglePadGstSink {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GTKVideo);
-  GTKVideo();
+  GTKVideo(const std::string &);
   ~GTKVideo();
   GTKVideo(const GTKVideo &) = delete;
   GTKVideo &operator=(const GTKVideo &) = delete;

@@ -27,7 +27,7 @@ namespace switcher {
 class VideoTestSource:public VideoSource {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(VideoTestSource);
-  VideoTestSource();
+  VideoTestSource(const std::string &);
   ~VideoTestSource();
   VideoTestSource(const VideoTestSource &) = delete;
   VideoTestSource &operator=(const VideoTestSource &) = delete;

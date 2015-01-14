@@ -30,7 +30,7 @@ namespace switcher {
 class OscCtrlServer:public QuiddityManagerWrapper {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(OscCtrlServer);
-  OscCtrlServer();
+  OscCtrlServer(const std::string &);
   ~OscCtrlServer();
   OscCtrlServer(const OscCtrlServer &) = delete;
   OscCtrlServer &operator=(const OscCtrlServer &) = delete;

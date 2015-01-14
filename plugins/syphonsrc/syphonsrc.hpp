@@ -20,21 +20,19 @@
 #ifndef __SWITCHER_SYPHONSRC_H__
 #define __SWITCHER_SYPHONSRC_H__
 
+#include <memory>
+#include <string>
 #include "switcher/quiddity.hpp"
 #include "switcher/segment.hpp"
 #include "switcher/startable-quiddity.hpp"
 #include "switcher/custom-property-helper.hpp"
-
 #include "./syphonreader.hpp"
 
-#include <memory>
-#include <string>
-
 namespace switcher {
-class SyphonSrc:public Quiddity, public Segment, public StartableQuiddity {
+class SyphonSrc: public Quiddity, public Segment, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SyphonSrc);
-  SyphonSrc();
+  SyphonSrc(const std::string &);
   ~SyphonSrc();
   SyphonSrc(const SyphonSrc &) = delete;
   SyphonSrc &operator=(const SyphonSrc &) = delete;

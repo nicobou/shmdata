@@ -36,7 +36,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "videosink",
     "Nicolas Bouillot");
 
-Xvimagesink::Xvimagesink():
+Xvimagesink::Xvimagesink(const std::string &):
     sink_bin_("bin"),
     queue_("queue"),
     ffmpegcolorspace_("ffmpegcolorspace"),

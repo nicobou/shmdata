@@ -27,7 +27,7 @@ namespace switcher {
 class HTTPSDP:public GstPipeliner {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(HTTPSDP);
-  HTTPSDP();
+  HTTPSDP(const std::string &);
   ~HTTPSDP();
   HTTPSDP(const HTTPSDP &) = delete;
   HTTPSDP &operator=(const HTTPSDP &) = delete;

@@ -29,7 +29,7 @@ class Quiddity;
 class QuiddityDocumentation;
 
 // the types of the class factories for quiddity pluggins
-typedef Quiddity *create_t();
+typedef Quiddity *create_t(const std::string &);
 typedef void destroy_t(switcher::Quiddity *);
 typedef QuiddityDocumentation *get_documentation_t();
 

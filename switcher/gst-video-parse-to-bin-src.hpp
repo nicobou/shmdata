@@ -29,7 +29,7 @@ namespace switcher {
 class GstVideoParseToBinSrc:public VideoSource {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(GstVideoParseToBinSrc);
-  GstVideoParseToBinSrc();
+  GstVideoParseToBinSrc(const std::string &);
   ~GstVideoParseToBinSrc();
   GstVideoParseToBinSrc(const GstVideoParseToBinSrc &) = delete;
   GstVideoParseToBinSrc &operator=(const GstVideoParseToBinSrc &) =

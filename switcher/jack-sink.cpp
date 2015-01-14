@@ -54,7 +54,7 @@ bool JackSink::init_gpipe() {
   return true;
 }
 
-JackSink::JackSink():
+JackSink::JackSink(const std::string &):
     custom_props_(std::make_shared<CustomPropertyHelper>()) {
 }
 

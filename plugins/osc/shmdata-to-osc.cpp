@@ -24,16 +24,17 @@ namespace switcher {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToOsc,
                                      "OSC sender",
                                      "network",
-                                     "OSCprop reveives OSC messages and updates associated property",
+                                     "shmOSCsink reveives OSC messages and updates associated property",
                                      "LGPL",
                                      "shmOSCsink",
                                      "Nicolas Bouillot");
 
-ShmdataToOsc::ShmdataToOsc():custom_props_(new CustomPropertyHelper()),
-                             port_(1056),
-                             host_("localhost"),
-                             port_spec_(nullptr),
-                             host_spec_(nullptr), address_(nullptr), address_mutex_() {
+ShmdataToOsc::ShmdataToOsc(const std::string &):
+    custom_props_(new CustomPropertyHelper()),
+    port_(1056),
+    host_("localhost"),
+    port_spec_(nullptr),
+    host_spec_(nullptr), address_(nullptr), address_mutex_() {
 }
 
 bool ShmdataToOsc::init() {

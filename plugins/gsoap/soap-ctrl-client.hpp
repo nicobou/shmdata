@@ -29,7 +29,7 @@ class SoapCtrlClient : public Quiddity
 {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(SoapCtrlClient);
-  SoapCtrlClient();
+  SoapCtrlClient(const std::string &);
   ~SoapCtrlClient();
   SoapCtrlClient(const SoapCtrlClient &) = delete;
   SoapCtrlClient &operator=(const SoapCtrlClient &) = delete;

@@ -36,7 +36,7 @@ namespace switcher {
 class PostureMeshMerge : public Quiddity, public Segment, public StartableQuiddity {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PostureMeshMerge);
-  PostureMeshMerge();
+  PostureMeshMerge(const std::string &);
   ~PostureMeshMerge();
   PostureMeshMerge(const PostureMeshMerge &) = delete;
   PostureMeshMerge &operator=(const PostureMeshMerge &) = delete;

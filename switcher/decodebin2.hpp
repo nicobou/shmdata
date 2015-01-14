@@ -29,7 +29,7 @@ namespace switcher {
 class Decodebin2:public SinglePadGstSink {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(Decodebin2);
-  Decodebin2();
+  Decodebin2(const std::string &);
   Decodebin2(const Decodebin2 &) = delete;
   Decodebin2 &operator=(const Decodebin2 &) = delete;
 

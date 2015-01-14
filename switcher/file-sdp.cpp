@@ -27,7 +27,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FileSDP,
                                      "network",
                                      "get raw stream from sdp file",
                                      "LGPL", "filesdp", "Nicolas Bouillot");
-FileSDP::FileSDP():
+FileSDP::FileSDP(const std::string &):
     filesrc_(nullptr),
     sdpdemux_(nullptr),
     media_counter_(0) {

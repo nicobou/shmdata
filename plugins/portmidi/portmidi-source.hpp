@@ -33,7 +33,7 @@ class PortMidiSource: public Quiddity,
                       public PortMidi {
  public:
   SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(PortMidiSource);
-  PortMidiSource();
+  PortMidiSource(const std::string &);
   ~PortMidiSource();
   PortMidiSource(const PortMidiSource &) = delete;
   PortMidiSource &operator=(const PortMidiSource &) = delete;
