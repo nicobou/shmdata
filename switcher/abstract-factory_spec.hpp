@@ -29,7 +29,7 @@ namespace switcher {
 template<typename T, typename Key, typename Doc, typename ...ATs>
 template<class U> void
 AbstractFactory<T, Key, Doc, ATs...>::register_class(Key Id, Doc doc) {
-  Creator<T > *Fn = (Creator<T> *) new DerivedCreator < U> ();
+  Creator<T, ATs...> *Fn = (Creator<T, ATs...> *) new DerivedCreator <U, ATs...> ();
   constructor_map_[Id] = Fn;
   classes_documentation_[Id] = std::move(doc);
 }
@@ -108,12 +108,14 @@ std::shared_ptr<T> AbstractFactory <T, Key, Doc, ATs...>::create(Key Id, ATs... 
 
 template<typename T, typename Key, typename Doc, typename ...ATs>
 AbstractFactory<T, Key, Doc, ATs...>::~AbstractFactory() {
-  typename std::map<Key, Creator < T> *>::iterator i =
-      constructor_map_.begin();
-  while (i != constructor_map_.end()) {
-    delete(*i).second;
-    ++i;
-  }
+  for (auto &it: constructor_map_)
+    delete it.second;
+  // typename std::map<Key, Creator <T, ATs...> *>::iterator i =
+  //     constructor_map_.begin();
+  // while (i != constructor_map_.end()) {
+  //   delete(*i).second;
+  //   ++i;
+  // }
 }
 
 template<typename T, typename Key, typename Doc, typename ...ATs>

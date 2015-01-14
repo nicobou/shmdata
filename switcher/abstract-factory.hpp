@@ -47,8 +47,8 @@ template<class T, class Key, class Doc, typename ...ATs> class AbstractFactory {
   bool key_exists(Key Id);
 
  private:
-  std::map<Key, Creator<T> *> constructor_map_;
-  std::map<Key, void(*) (T *)> destructor_map_;
+  std::map<Key, Creator<T, ATs...> *> constructor_map_;
+  std::map<Key, void(*)(T *)> destructor_map_;
   std::map<Key, Doc> classes_documentation_;
 };
 
