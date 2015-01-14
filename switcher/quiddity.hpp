@@ -51,7 +51,8 @@ class Quiddity {
   
  public:
   typedef std::shared_ptr<Quiddity> ptr;
-  Quiddity();
+  Quiddity(const std::string &name);
+  Quiddity();  // FIXME delete this ctor
   Quiddity(const Quiddity &) = delete;
   Quiddity &operator=(const Quiddity &) = delete;
   virtual ~Quiddity();
@@ -64,7 +65,7 @@ class Quiddity {
 
   // instance name
   const std::string &get_name();
-  bool set_name(std::string name);
+  bool set_name(std::string name);  // FIXME remove
 
   // properties
   std::string get_property_description(std::string property_name);
@@ -294,7 +295,9 @@ class Quiddity {
 #define SWITCHER_DECLARE_QUIDDITY_PUBLIC_MEMBERS(cpp_quiddity_class)    \
   typedef std::shared_ptr<cpp_quiddity_class> ptr;                      \
   QuiddityDocumentation *get_documentation();                           \
-  static QuiddityDocumentation switcher_doc_;
+  static QuiddityDocumentation switcher_doc_;                           \
+  cpp_quiddity_class(const std::string &):                              \
+      cpp_quiddity_class(){}
 
 #define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)             \
   extern "C" Quiddity *create() {                               \

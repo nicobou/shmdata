@@ -33,10 +33,15 @@ namespace switcher {
 std::map<std::pair<std::string, std::string>, guint> Quiddity::signals_ids_{};
 
 Quiddity::Quiddity():
+    Quiddity(std::string()){
+}
+
+Quiddity::Quiddity(const std::string &name):
     information_tree_(data::Tree::make()),
     properties_description_(std::make_shared<JSONBuilder>()),
     methods_description_(std::make_shared<JSONBuilder>()),
     signals_description_(std::make_shared<JSONBuilder>()),
+    name_(name),
     gobject_(std::make_shared<GObjectWrapper>()) {
   gobject_->property_set_default_user_data(this);
   GType arg_type[] = { G_TYPE_STRING };
