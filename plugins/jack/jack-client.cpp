@@ -50,12 +50,11 @@ JackClient::JackClient(const char *name) :
   jack_activate(client_.get());
 }
 
-int JackClient::jack_process (jack_nframes_t nframes, void *arg)
+int JackClient::jack_process(jack_nframes_t nframes, void *arg)
 {
-  //JackClient *context = static_cast<JackClient *>(arg);
-  // FIXME HERE
-  // if (nullptr != context->user_cb_)
-  //   return context->user_cb_(nframes, context->user_cb_arg_);
+  JackClient *context = static_cast<JackClient *>(arg);
+  if (nullptr != context->user_cb_)
+    return context->user_cb_(nframes, context->user_cb_arg_);
   g_print("no jack process callback set by user\n");
   return 0;
 }
@@ -65,11 +64,11 @@ bool JackClient::safe_bool_idiom() const {
   return static_cast<bool>(client_);
 }
 
-jack_nframes_t JackClient::get_sample_rate(){
+jack_nframes_t JackClient::get_sample_rate() const{
   return sample_rate_;
 }
 
-jack_nframes_t JackClient::get_buffer_size(){
+jack_nframes_t JackClient::get_buffer_size() const{
   return buffer_size_;
 }
 

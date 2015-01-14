@@ -31,8 +31,8 @@ class JackClient : public SafeBoolIdiom {
  public:
   explicit JackClient(const char *name);
   JackClient() = delete;
-  jack_nframes_t get_sample_rate();
-  jack_nframes_t get_buffer_size();
+  jack_nframes_t get_sample_rate() const;
+  jack_nframes_t get_buffer_size() const;
   void set_jack_process_callback(JackProcessCallback cb,
                                  void *arg);
   

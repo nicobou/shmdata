@@ -37,7 +37,7 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
   ShmdataToJack &operator=(const ShmdataToJack &) = delete;
 
  private:
-  JackClient jack_client_{nullptr};
+  JackClient jack_client_;
   GstElement *jacksink_{nullptr};
   GstElement *volume_{nullptr};
   GstElement *fakesink_{nullptr};
@@ -56,6 +56,7 @@ class ShmdataToJack: public SinglePadGstSink, public StartableQuiddity {
                             GstBuffer *buf,
                             GstPad *pad,
                             gpointer user_data);
+  static int jack_process (jack_nframes_t nframes, void *arg);
 };
 
 SWITCHER_DECLARE_PLUGIN(ShmdataToJack);

@@ -30,7 +30,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToJack,
                                      "jacksink2",
                                      "Nicolas Bouillot");
 bool ShmdataToJack::init_gpipe() {
-  jack_client_ = JackClient(get_name().c_str());
   if (!jack_client_) {
     g_warning("JackClient cannot be instancied");
     return false;
@@ -43,10 +42,17 @@ bool ShmdataToJack::init_gpipe() {
   return true;
 }
 
-ShmdataToJack::ShmdataToJack(const std::string &):
+ShmdataToJack::ShmdataToJack(const std::string &name):
+    jack_client_(name.c_str()),
     custom_props_(std::make_shared<CustomPropertyHelper>()) {
+  jack_client_.set_jack_process_callback(&ShmdataToJack::jack_process,
+                                         this);
 }
 
+int ShmdataToJack::jack_process (jack_nframes_t nframes, void *arg){
+  g_print("coucou");
+  return 0;
+}
 void
 ShmdataToJack::on_handoff_cb(GstElement *object,
                              GstBuffer *buf,
