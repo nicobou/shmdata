@@ -135,7 +135,11 @@ shmdata_any_writer_set_data_type (shmdata_any_writer_t * writer,
 				  const char *type)
 {
   writer->type_ = g_strdup (type);
-  writer->data_caps_ = gst_caps_from_string (writer->type_);
+  GstCaps *caps = gst_caps_from_string (writer->type_);
+  if (NULL == caps)
+    g_warning("cannot create caps from user defined data type");
+  else
+    writer->data_caps_ = caps;
 }
 
 void
